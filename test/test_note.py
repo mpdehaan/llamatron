@@ -1,3 +1,19 @@
+# noose6: a Python language and framework for producing MIDI clips.
+# Copyright (C) 2026  Michael DeHaan
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import dataclasses
 import unittest
 from fractions import Fraction
@@ -183,9 +199,10 @@ INVALID_LENGTHS = [0, -0.25, '0.25', None, True, float('nan'), float('inf')]
 
 class TestNoteLength(unittest.TestCase):
 
-    def test_length_is_required(self):
-        with self.assertRaises(TypeError):
-            Note('C', 4)
+    def test_length_is_optional(self):
+        self.assertIsNone(Note('C', 4).length)
+        self.assertIsNone(Note('C', 4).half_step(1).length)
+        self.assertIsNone(Note('C', 4).octave(1).length)
 
     def test_keeps_its_length(self):
         for length in [1, 0.5, 0.25, 0.125, Fraction(1, 12), 2]:
@@ -194,9 +211,10 @@ class TestNoteLength(unittest.TestCase):
 
     def test_rejects_invalid_lengths(self):
         for length in INVALID_LENGTHS:
-            with self.subTest(length=length):
-                with self.assertRaises(ValueError):
-                    Note('C', 4, length)
+            if length is not None:
+                with self.subTest(length=length):
+                    with self.assertRaises(ValueError):
+                        Note('C', 4, length)
 
     def test_methods_keep_the_length(self):
         note = Note('C', 4, 0.5)

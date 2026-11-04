@@ -1,3 +1,19 @@
+# noose6: a Python language and framework for producing MIDI clips.
+# Copyright (C) 2026  Michael DeHaan
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from dataclasses import dataclass
 from enum import Enum
 
@@ -68,12 +84,17 @@ class Chord:
 
     @property
     def length(self):
-        """The length of the longest note."""
-        return max(note.length for note in self.notes)
+        """The length of the longest note, or None if any note doesn't have a length yet."""
+        lengths = [note.length for note in self.notes]
+        return None if None in lengths else max(lengths)
 
     @property
     def _sorted_pitches_and_lengths(self):
-        return tuple(sorted((note.midi_number, note.length) for note in self.notes))
+        # The middle value stops a length of None being compared with a number.
+        ordered = sorted(
+            (note.midi_number, note.length is None, note.length or 0) for note in self.notes
+        )
+        return tuple(ordered)
 
     def __eq__(self, other):
         if not isinstance(other, Chord):

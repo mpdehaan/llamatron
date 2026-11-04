@@ -1,4 +1,20 @@
-from dataclasses import dataclass
+# noose6: a Python language and framework for producing MIDI clips.
+# Copyright (C) 2026  Michael DeHaan
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+from dataclasses import dataclass, replace
 from fractions import Fraction
 from math import isfinite
 
@@ -63,19 +79,65 @@ class Rest:
         _check_length(self.length)
 
 
+@dataclass(frozen=True)
+class Degree:
+    """A position in whichever scale applies when it's rendered, such as Degree(3, 0.25).
+
+    Numbers start at 1, which is the scale's root, and continue past the top of the
+    scale. A length of None uses the clip's note_length. The other fields move the
+    note away from that position, and they're also how a generator moves a degree
+    without needing to know the scale.
+    """
+
+    number: int
+    length: float = None
+    octave: int = 0
+    scale_notes: int = 0
+    half_steps: int = 0
+
+    def __post_init__(self):
+        # bool is a subclass of int, but True is not a real degree.
+        if type(self.number) is not int or self.number < 1:
+            raise ValueError(f'invalid degree: {self.number!r} (must be an integer of 1 or more)')
+        if self.length is not None:
+            _check_length(self.length)
+        _check_integer(self.octave)
+        _check_integer(self.scale_notes)
+        _check_integer(self.half_steps)
+
+    def moved(self, half_steps=0, octaves=0, scale_notes=0):
+        """Return a new Degree that will play higher, or lower for negative amounts."""
+        return replace(
+            self,
+            half_steps=self.half_steps + half_steps,
+            octave=self.octave + octaves,
+            scale_notes=self.scale_notes + scale_notes,
+        )
+
+    def to_note(self, scale):
+        """Return the Note that this degree plays in a scale."""
+        steps = scale.typ.value
+        octaves, index = divmod(self.number - 1 + self.scale_notes, len(steps))
+        half_steps = (octaves + self.octave) * 12 + steps[index] + self.half_steps
+        note = scale.root.half_step(half_steps)
+        return Note(note.name, note.octave_number, self.length)
+
+
 @dataclass(frozen=True, eq=False)
 class Note:
     """A pitch and length, such as Note('C#', 4, 0.25). Enharmonic spellings compare equal.
 
-    A length of 0.25 is a quarter note, 0.5 is a half note and so on.
+    A length of 0.25 is a quarter note, 0.5 is a half note and so on. A length of None
+    uses the note_length of the clip it's in.
     """
 
     name: str
     octave_number: int
-    length: float
+    length: float = None
 
     def __post_init__(self):
-        _check_length(self.length)
+        if self.length is not None:
+            _check_length(self.length)
         if not isinstance(self.name, str) or self.name not in SEMITONES_ABOVE_C:
             raise ValueError(f'invalid note name: {self.name!r}')
         # bool is a subclass of int, but Note('C', True) is not a real octave.
@@ -89,6 +151,13 @@ class Note:
                 f'{self.name}{self.octave_number} is outside the MIDI range: '
                 f'its number would be {self.midi_number}'
             )
+
+    @classmethod
+    def from_midi_number(cls, midi_number, length=None):
+        """Return the Note for a MIDI note number, spelled with sharps."""
+        _check_integer(midi_number)
+        octave_number, semitones = divmod(midi_number, 12)
+        return cls(SHARP_NAMES[semitones], octave_number, length)
 
     @property
     def midi_number(self):

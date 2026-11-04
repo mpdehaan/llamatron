@@ -1,3 +1,19 @@
+# noose6: a Python language and framework for producing MIDI clips.
+# Copyright (C) 2026  Michael DeHaan
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import unittest
 from fractions import Fraction
 
@@ -96,6 +112,52 @@ class TestNamedParts(unittest.TestCase):
                 self.assertEqual(part.id, original)
 
 
+class TestClipTrim(unittest.TestCase):
+
+    def setUp(self):
+        self.c = Note('C', 4, 0.25)
+        self.d = Note('D', 4, 0.25)
+        self.e = Note('E', 4, 0.25)
+
+    def test_keeps_the_first_notes(self):
+        clip = Clip(notes=[self.c, self.d, self.e])
+        clip.trim(2)
+        self.assertEqual(clip.notes, [self.c, self.d])
+
+    def test_returns_the_same_clip(self):
+        clip = Clip(notes=[self.c, self.d])
+        self.assertIs(clip.trim(1), clip)
+
+    def test_does_nothing_when_there_are_fewer_notes(self):
+        clip = Clip(notes=[self.c]).trim(5)
+        self.assertEqual(clip.notes, [self.c])
+
+    def test_zero_removes_every_note(self):
+        self.assertEqual(Clip(notes=[self.c]).trim(0).notes, [])
+
+    def test_chords_and_rests_count_as_one_position(self):
+        chord = self.c.to_chord(ChordType.MAJOR)
+        clip = Clip(notes=[chord, Rest(0.25), self.c]).trim(2)
+        self.assertEqual(clip.notes, [chord, Rest(0.25)])
+
+    def test_does_not_change_the_length(self):
+        clip = Clip(notes=[self.c, self.d], length=1).trim(1)
+        self.assertEqual(clip.length, 1)
+
+    def test_does_not_change_the_list_it_was_built_from(self):
+        notes = [self.c, self.d]
+        Clip(notes=notes).trim(1)
+        self.assertEqual(notes, [self.c, self.d])
+
+    def test_rejects_invalid_counts(self):
+        for n in [-1, 1.5, 2.0, '2', None, True]:
+            with self.subTest(n=n):
+                clip = Clip(notes=[self.c, self.d])
+                with self.assertRaises(ValueError):
+                    clip.trim(n)
+                self.assertEqual(len(clip.notes), 2)
+
+
 class TestClipLength(unittest.TestCase):
 
     def test_has_no_fixed_length_by_default(self):
@@ -158,7 +220,7 @@ class TestClipNotes(unittest.TestCase):
         self.assertEqual(second.notes, [Note('C', 4, 0.25)])
 
     def test_rejects_invalid_notes(self):
-        for notes in ['C4', Note('C', 4, 0.25), Chord([Note('C', 4, 0.25)]), ['C4'], [Note('C', 4, 0.25), 60], [None]]:
+        for notes in ['C4', Note('C', 4, 0.25), Chord([Note('C', 4, 0.25)]), ['H4'], [Note('C', 4, 0.25), 1.5], [None]]:
             with self.subTest(notes=notes):
                 with self.assertRaises(ValueError):
                     Clip(notes=notes)
@@ -168,7 +230,7 @@ class TestClipNotes(unittest.TestCase):
         clip.notes = [Note('C', 4, 0.25)]
         self.assertEqual(clip.notes, [Note('C', 4, 0.25)])
         with self.assertRaises(ValueError):
-            clip.notes = ['D4']
+            clip.notes = ['H4']
         self.assertEqual(clip.notes, [Note('C', 4, 0.25)])
 
 

@@ -1,14 +1,54 @@
+# noose6: a Python language and framework for producing MIDI clips.
+# Copyright (C) 2026  Michael DeHaan
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import re
+from dataclasses import replace
 from itertools import count
 from math import isfinite
 
 from src.chord import Chord
-from src.note import Note, Rest, _check_length
+from src.note import Degree, Note, Rest, _check_length
 from src.scale import Scale
 
 MIN_TEMPO = 10
 DEFAULT_TEMPO = 120
 
+# The objects that a clip's list of notes can hold.
+POSITION_TYPES = (Note, Chord, Rest, Degree)
+
+_QUARTER_NOTE = 0.25
+_NOTE_TEXT = re.compile(r'([A-G][#b]?)(\d+)')
+
 _next_clip_id = count(0)
+
+
+def _to_position(value):
+    """Turn shorthand for a clip into an object: 'E4' is a Note, 3 is a Degree and '--' is a Rest."""
+    if isinstance(value, POSITION_TYPES):
+        return value
+    # bool is a subclass of int, but True is not a real degree.
+    if type(value) is int:
+        return Degree(value)
+    if isinstance(value, str):
+        if value and set(value) == {'-'}:
+            return Rest(len(value) * _QUARTER_NOTE)
+        match = _NOTE_TEXT.fullmatch(value)
+        if match:
+            return Note(match[1], int(match[2]))
+    raise ValueError(f'expected a Note, Chord, Rest, Degree or shorthand for one, got {value!r}')
 
 
 def _check_name(name):
@@ -101,7 +141,11 @@ class Scene:
 
 
 class Clip:
-    """One cell of the song's grid: a list of notes, chords and rests played in order.
+    """One cell of the song's grid: a list of notes, chords, rests and degrees played in order.
+
+    The list can use shorthand: 'E4' is a Note, 3 is a Degree, and each dash is a
+    quarter note of rest, so '--' is a half rest. Notes and degrees without their own
+    length use note_length, and degrees use whichever scale applies when rendered.
 
     A length of None ends the clip after the last position. Otherwise the clip is
     exactly that long, adding silence or cutting off notes to fit. Like note
@@ -112,13 +156,15 @@ class Clip:
     name = _Validated(_check_name)
     scale = _Validated(_check_scale)
     length = _Validated(_check_clip_length)
+    note_length = _Validated(_check_clip_length)
 
-    def __init__(self, name=None, notes=None, scale=None, length=None):
+    def __init__(self, name=None, notes=None, scale=None, length=None, note_length=None):
         self._id = next(_next_clip_id)
         self.name = name
         self.notes = [] if notes is None else notes
         self.scale = scale
         self.length = length
+        self.note_length = note_length
 
     @property
     def id(self):
@@ -132,16 +178,41 @@ class Clip:
     def notes(self, notes):
         if not isinstance(notes, (list, tuple)):
             raise ValueError(f'expected a list of notes, chords and rests, got {notes!r}')
-        for position in notes:
-            if not isinstance(position, (Note, Chord, Rest)):
-                raise ValueError(f'expected a Note, Chord or Rest, got {position!r}')
-        # Copied so that clips built from the same list don't share it.
-        self._notes = list(notes)
+        # This makes a new list, so that clips built from the same list don't share it.
+        self._notes = [_to_position(position) for position in notes]
+
+    def resolved_notes(self):
+        """Return the notes with every missing length filled in from note_length.
+
+        Raises ValueError if a length is missing and there's no note_length. Degrees
+        stay as degrees, because they don't become notes until they're rendered.
+        """
+        return [self._with_length(position) for position in self._notes]
+
+    def _with_length(self, position):
+        if isinstance(position, Chord):
+            return Chord([self._with_length(note) for note in position.notes])
+        if not isinstance(position, (Note, Degree)) or position.length is not None:
+            return position
+        if self.note_length is None:
+            raise ValueError(f'{position!r} has no length, and the clip has no note_length')
+        return replace(position, length=self.note_length)
+
+    def trim(self, n):
+        """Keep only the first n positions in notes, and return this clip.
+
+        A chord or rest counts as one position, and a clip's length isn't changed.
+        """
+        # bool is a subclass of int, but True is not a real count.
+        if type(n) is not int or n < 0:
+            raise ValueError(f'invalid number of notes: {n!r} (must be 0 or more)')
+        del self._notes[n:]
+        return self
 
     def __repr__(self):
         return (
             f'Clip(name={self.name!r}, notes={self.notes!r}, scale={self.scale!r}, '
-            f'length={self.length!r}, id={self.id!r})'
+            f'length={self.length!r}, note_length={self.note_length!r}, id={self.id!r})'
         )
 
 

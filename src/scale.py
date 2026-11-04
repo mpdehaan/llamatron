@@ -1,8 +1,25 @@
+# noose6: a Python language and framework for producing MIDI clips.
+# Copyright (C) 2026  Michael DeHaan
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+from bisect import bisect_right
 from dataclasses import dataclass
 from enum import Enum
 from itertools import count, islice, takewhile
 
-from src.note import MAX_MIDI_NUMBER, Note
+from src.note import MAX_MIDI_NUMBER, Degree, Note
 
 
 def _check_positive_integer(n):
@@ -104,3 +121,16 @@ class Scale:
         if top > MAX_MIDI_NUMBER:
             raise ValueError(f'{n} octaves above {self.root!r} is outside the MIDI range')
         return list(takewhile(lambda note: note.midi_number <= top, self))
+
+    def degree_of(self, note):
+        """Return the Degree that plays this note in this scale, with the same length.
+
+        A note that isn't in the scale is described by the scale note below it, plus
+        the half steps needed to reach it.
+        """
+        octaves, above_root = divmod(note.midi_number - self.root.midi_number, 12)
+        steps = self.typ.value
+        index = bisect_right(steps, above_root) - 1
+        return Degree(
+            index + 1, note.length, octave=octaves, half_steps=above_root - steps[index],
+        )
