@@ -1,0 +1,78 @@
+from dataclasses import dataclass
+from enum import Enum
+from itertools import count
+
+from src.note import MAX_MIDI_NUMBER, Note
+
+
+class ScaleType(Enum):
+    """Each value is one octave of the scale, as half steps above the root."""
+
+    # Major and its modes. IONIAN is another name for MAJOR, and AEOLIAN and
+    # NATURAL_MINOR are other names for MINOR.
+    MAJOR = (0, 2, 4, 5, 7, 9, 11)
+    IONIAN = MAJOR
+    DORIAN = (0, 2, 3, 5, 7, 9, 10)
+    PHRYGIAN = (0, 1, 3, 5, 7, 8, 10)
+    LYDIAN = (0, 2, 4, 6, 7, 9, 11)
+    MIXOLYDIAN = (0, 2, 4, 5, 7, 9, 10)
+    MINOR = (0, 2, 3, 5, 7, 8, 10)
+    AEOLIAN = MINOR
+    NATURAL_MINOR = MINOR
+    LOCRIAN = (0, 1, 3, 5, 6, 8, 10)
+
+    # Other major and minor scales. MELODIC_MINOR is the ascending form.
+    HARMONIC_MINOR = (0, 2, 3, 5, 7, 8, 11)
+    MELODIC_MINOR = (0, 2, 3, 5, 7, 9, 11)
+    HARMONIC_MAJOR = (0, 2, 4, 5, 7, 8, 11)
+
+    # Pentatonic and blues
+    MAJOR_PENTATONIC = (0, 2, 4, 7, 9)
+    MINOR_PENTATONIC = (0, 3, 5, 7, 10)
+    BLUES = (0, 3, 5, 6, 7, 10)
+    MAJOR_BLUES = (0, 2, 3, 4, 7, 9)
+
+    # Symmetric scales
+    CHROMATIC = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
+    WHOLE_TONE = (0, 2, 4, 6, 8, 10)
+    WHOLE_HALF_DIMINISHED = (0, 2, 3, 5, 6, 8, 9, 11)
+    HALF_WHOLE_DIMINISHED = (0, 1, 3, 4, 6, 7, 9, 10)
+
+    # Jazz and other popular scales
+    LYDIAN_DOMINANT = (0, 2, 4, 6, 7, 9, 10)
+    ALTERED = (0, 1, 3, 4, 6, 8, 10)
+    BEBOP_DOMINANT = (0, 2, 4, 5, 7, 9, 10, 11)
+    PHRYGIAN_DOMINANT = (0, 1, 4, 5, 7, 8, 10)
+    HUNGARIAN_MINOR = (0, 2, 3, 6, 7, 8, 11)
+    DOUBLE_HARMONIC = (0, 1, 4, 5, 7, 8, 11)
+
+
+@dataclass(frozen=True)
+class Scale:
+    """A scale that runs upward from its root to the top of the MIDI range."""
+
+    root: Note
+    typ: ScaleType
+
+    def __post_init__(self):
+        if not isinstance(self.root, Note):
+            raise ValueError(f'expected a Note, got {self.root!r}')
+        if not isinstance(self.typ, ScaleType):
+            raise ValueError(f'expected a ScaleType, got {self.typ!r}')
+
+    def __iter__(self):
+        """Yield each note from the root upward, stopping at the top of the MIDI range.
+
+        The root keeps its spelling, and the other notes are spelled as
+        half_step spells them.
+        """
+        for octaves in count():
+            for half_steps in self.typ.value:
+                distance = octaves * 12 + half_steps
+                if self.root.midi_number + distance > MAX_MIDI_NUMBER:
+                    return
+                yield self.root if distance == 0 else self.root.half_step(distance)
+
+    def notes(self):
+        """Return every note in the scale as a list."""
+        return list(self)
