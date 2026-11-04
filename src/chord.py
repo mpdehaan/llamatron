@@ -51,7 +51,7 @@ class ChordType(Enum):
 
 @dataclass(frozen=True, eq=False)
 class Chord:
-    """A group of notes. Chords with the same pitches compare equal in any order."""
+    """A group of notes. Chords with the same pitches and lengths compare equal in any order."""
 
     notes: tuple
 
@@ -67,13 +67,18 @@ class Chord:
         object.__setattr__(self, 'notes', tuple(self.notes))
 
     @property
-    def _sorted_midi_numbers(self):
-        return tuple(sorted(note.midi_number for note in self.notes))
+    def length(self):
+        """The length of the longest note."""
+        return max(note.length for note in self.notes)
+
+    @property
+    def _sorted_pitches_and_lengths(self):
+        return tuple(sorted((note.midi_number, note.length) for note in self.notes))
 
     def __eq__(self, other):
         if not isinstance(other, Chord):
             return NotImplemented
-        return self._sorted_midi_numbers == other._sorted_midi_numbers
+        return self._sorted_pitches_and_lengths == other._sorted_pitches_and_lengths
 
     def __hash__(self):
-        return hash(self._sorted_midi_numbers)
+        return hash(self._sorted_pitches_and_lengths)

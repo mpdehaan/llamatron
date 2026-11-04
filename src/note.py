@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from fractions import Fraction
+from math import isfinite
 
 # Semitones above C in the same octave number. Octave numbers change at C, so
 # B# is a semitone above B in its octave (B#3 == C4) and Cb is a semitone below
@@ -43,14 +45,37 @@ def _check_integer(n):
         raise ValueError(f'expected an integer, got {n!r}')
 
 
+def _check_length(length):
+    # bool is a subclass of int, but True is not a real length.
+    if type(length) not in (int, float, Fraction) or not isfinite(length) or length <= 0:
+        raise ValueError(
+            f'invalid length: {length!r} (must be a positive fraction of a whole note)'
+        )
+
+
+@dataclass(frozen=True)
+class Rest:
+    """A silence, where a length of 0.25 is a quarter note, 0.5 is a half note and so on."""
+
+    length: float
+
+    def __post_init__(self):
+        _check_length(self.length)
+
+
 @dataclass(frozen=True, eq=False)
 class Note:
-    """A pitch, such as Note('C#', 4). Enharmonic spellings compare equal."""
+    """A pitch and length, such as Note('C#', 4, 0.25). Enharmonic spellings compare equal.
+
+    A length of 0.25 is a quarter note, 0.5 is a half note and so on.
+    """
 
     name: str
     octave_number: int
+    length: float
 
     def __post_init__(self):
+        _check_length(self.length)
         if not isinstance(self.name, str) or self.name not in SEMITONES_ABOVE_C:
             raise ValueError(f'invalid note name: {self.name!r}')
         # bool is a subclass of int, but Note('C', True) is not a real octave.
@@ -79,7 +104,7 @@ class Note:
         _check_integer(n)
         names = FLAT_NAMES if self.name.endswith('b') else SHARP_NAMES
         octave_number, semitones = divmod(self.midi_number + n, 12)
-        return Note(names[semitones], octave_number)
+        return Note(names[semitones], octave_number, self.length)
 
     def whole_step(self, n):
         """Return a new Note n whole steps higher, or lower if n is negative."""
@@ -92,7 +117,7 @@ class Note:
         The result keeps this note's spelling.
         """
         _check_integer(n)
-        return Note(self.name, self.octave_number + n)
+        return Note(self.name, self.octave_number + n, self.length)
 
     def to_chord(self, typ):
         """Return a new Chord of the given ChordType with this note as its root.
@@ -110,7 +135,7 @@ class Note:
     def __eq__(self, other):
         if not isinstance(other, Note):
             return NotImplemented
-        return self.midi_number == other.midi_number
+        return (self.midi_number, self.length) == (other.midi_number, other.length)
 
     def __hash__(self):
-        return hash(self.midi_number)
+        return hash((self.midi_number, self.length))

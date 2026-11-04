@@ -1,8 +1,14 @@
 from dataclasses import dataclass
 from enum import Enum
-from itertools import count
+from itertools import count, islice, takewhile
 
 from src.note import MAX_MIDI_NUMBER, Note
+
+
+def _check_positive_integer(n):
+    # bool is a subclass of int, but True is not a real count.
+    if type(n) is not int or n < 1:
+        raise ValueError(f'expected a positive integer, got {n!r}')
 
 
 class ScaleType(Enum):
@@ -49,7 +55,10 @@ class ScaleType(Enum):
 
 @dataclass(frozen=True)
 class Scale:
-    """A scale that runs upward from its root to the top of the MIDI range."""
+    """A scale that runs upward from its root to the top of the MIDI range.
+
+    Every note in the scale has the same length as the root.
+    """
 
     root: Note
     typ: ScaleType
@@ -76,3 +85,22 @@ class Scale:
     def notes(self):
         """Return every note in the scale as a list."""
         return list(self)
+
+    def count(self, n):
+        """Return the first n notes as a list, or raise ValueError if the scale has fewer."""
+        _check_positive_integer(n)
+        notes = list(islice(self, n))
+        if len(notes) < n:
+            raise ValueError(f'only {len(notes)} notes are available, but {n} were requested')
+        return notes
+
+    def octaves(self, n):
+        """Return a list from the root up to and including the root n octaves higher.
+
+        Raises ValueError if that would go past the top of the MIDI range.
+        """
+        _check_positive_integer(n)
+        top = self.root.midi_number + n * 12
+        if top > MAX_MIDI_NUMBER:
+            raise ValueError(f'{n} octaves above {self.root!r} is outside the MIDI range')
+        return list(takewhile(lambda note: note.midi_number <= top, self))
