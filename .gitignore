@@ -6,3 +6,6 @@ __pycache__/
 output/
 *.mid
 .DS_Store
+build/
+dist/
+*.egg-info/

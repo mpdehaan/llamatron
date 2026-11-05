@@ -1,4 +1,4 @@
-# noose6: a Python language and framework for producing MIDI clips.
+# llamatron: a Python language and framework for producing MIDI clips.
 # Copyright (C) 2026  Michael DeHaan
 #
 # This program is free software: you can redistribute it and/or modify
@@ -24,10 +24,10 @@ from pathlib import Path
 
 import mido
 
-from src.chord import Chord, ChordType
-from src.note import Note, Rest
-from src.renderers.clip_tree import TICKS_PER_BEAT, VELOCITY, ClipTree
-from src.song import Clip, Scene, Song, Track
+from llamatron.chord import Chord, ChordType
+from llamatron.note import Note, Rest
+from llamatron.renderers.clip_tree import TICKS_PER_BEAT, VELOCITY, ClipTree
+from llamatron.song import Clip, Scene, Song, Track
 
 C4 = Note('C', 4, 0.25)
 D4 = Note('D', 4, 0.25)
@@ -204,15 +204,6 @@ class TestFileNames(RenderTestCase):
         self.song.set_clip(scene, track, Clip('Riff'))
         render(self.renderer)
         self.assertEqual(self.files(), ['001-001-Riff.mid'])
-
-    def test_removed_tracks_leave_gaps_in_the_names(self):
-        tracks = [self.song.add_track(Track()) for _ in range(3)]
-        scene = self.song.add_scene(Scene())
-        for track in tracks:
-            self.song.set_clip(scene, track, Clip())
-        self.song.remove_track(tracks[1])
-        render(self.renderer)
-        self.assertEqual(self.files(), ['001-001.mid', '001-003.mid'])
 
     def test_empty_song_writes_nothing(self):
         self.song.add_track(Track())

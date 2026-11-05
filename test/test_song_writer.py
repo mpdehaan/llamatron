@@ -1,4 +1,4 @@
-# noose6: a Python language and framework for producing MIDI clips.
+# llamatron: a Python language and framework for producing MIDI clips.
 # Copyright (C) 2026  Michael DeHaan
 #
 # This program is free software: you can redistribute it and/or modify
@@ -19,8 +19,8 @@ import unittest
 
 import yaml
 
-from src.song_file import SongBuilder
-from src.song_writer import dump_song
+from llamatron.song_file import SongBuilder
+from llamatron.song_writer import dump_song
 
 SONG = {
     'tempo': 120, 'scale': 'main', 'scales': {'main': {'root': 'C', 'type': 'minor'}, 'A Minor': {'root': 'A', 'type': 'minor'}}, 'seed': 3,
@@ -37,12 +37,11 @@ SONG = {
     'tracks': ['lead', 'kick', 'plain'],
     'arps': {'bells': {'step': '1/8', 'order': 'up'}},
     'auto_ratchets': {'rolls': {'counts': [1, 4]}},
-    'chains': {'x': [{'mix_up': {'probabilities': [0.5, 0.25]}}, {'reverse': {}}], 'nothing': [], 'named': [{'arp': 'bells'}]},
+    'chains': {'x': [{'auto_ratchet': 'rolls'}, {'arp': 'bells'}], 'nothing': [], 'named': [{'arp': 'bells'}]},
     'scenes': [
         {'name': 'one', 'repeat': 3, 'scale': 'A Minor', 'tempo_start': 120, 'tempo_end': 130, 'tracks': {'lead': {'pattern': 'a', 'chain': 'x', 'loop': True, 'repeat': 2, 'morph_to': 'hit', 'morph_style': 'left', 'rhythm_from': 'hit', 'notes_from': 'rests'}}},
         {'tracks': {}},
     ],
-    'paint': [{'chain': 'x', 'tracks': ['lead', 'kick'], 'scenes': [1, 2]}],
 }
 
 
@@ -73,22 +72,20 @@ class TestDumpSong(unittest.TestCase):
         self.assertIn('arps:\n  bells: { step: 1/8, order: up }', text)
         self.assertIn('auto_ratchets:\n  rolls: { counts: [1, 4] }', text)
         self.assertIn('    - arp: bells', text)
-        self.assertIn('    - mix_up: { probabilities: [0.5, 0.25] }', text)
-        self.assertIn('  - { chain: x, tracks: [lead, kick], scenes: [1, 2] }', text)
+        self.assertIn('    - auto_ratchet: rolls', text)
         self.assertIn('scales:\n  main: { root: C, type: minor }\n  A Minor: { root: A, type: minor }', text)
 
     def test_awkward_names_survive(self):
         names = ['a, b', 'a: b', '#hash', 'yes', '123', 'null', '{x}', "it's", 'say "hi"', 'tab\there', ' spaced ']
         for name in names:
             song = {**SONG, 'tracks': [name], 'scenes': [{'name': name, 'tracks': {name: {'pattern': 'a'}}}]}
-            del song['paint']
             with self.subTest(name=name):
                 self.assertEqual(yaml.safe_load(dump_song(song)), song)
 
     def test_empty_sections_are_left_out(self):
-        song = {'tempo': 120, 'scale': None, 'scales': {}, 'patterns': {}, 'tracks': ['a'], 'chains': {}, 'scenes': [{'tracks': {}}], 'paint': []}
+        song = {'tempo': 120, 'scale': None, 'scales': {}, 'patterns': {}, 'tracks': ['a'], 'chains': {}, 'scenes': [{'tracks': {}}]}
         text = dump_song(song)
-        for section in ['patterns', 'scales', 'chains', 'paint']:
+        for section in ['patterns', 'scales', 'chains']:
             self.assertNotIn(section, text)
         SongBuilder(yaml.safe_load(text)).build()
 

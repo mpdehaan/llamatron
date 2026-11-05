@@ -1,4 +1,4 @@
-# noose6: a Python language and framework for producing MIDI clips.
+# llamatron: a Python language and framework for producing MIDI clips.
 # Copyright (C) 2026  Michael DeHaan
 #
 # This program is free software: you can redistribute it and/or modify
@@ -18,7 +18,7 @@ import dataclasses
 import unittest
 from fractions import Fraction
 
-from src.note import Note, Rest, SEMITONES_ABOVE_C
+from llamatron.note import Note, Rest, SEMITONES_ABOVE_C
 
 ALL_NAMES = [
     'C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'Fb', 'E#', 'F', 'F#', 'Gb',
@@ -138,60 +138,7 @@ class TestHalfStep(unittest.TestCase):
             Note('C', 0, 0.25).half_step(-1)
 
 
-class TestWholeStep(unittest.TestCase):
 
-    def test_moves_up_two_half_steps_each(self):
-        self.assertEqual(Note('C', 4, 0.25).whole_step(1), Note('D', 4, 0.25))
-        self.assertEqual(Note('C', 4, 0.25).whole_step(3), Note('F#', 4, 0.25))
-
-    def test_moves_down_two_half_steps_each(self):
-        self.assertEqual(Note('D', 4, 0.25).whole_step(-1), Note('C', 4, 0.25))
-        self.assertEqual(Note('C', 4, 0.25).whole_step(-1), Note('A#', 3, 0.25))
-
-    def test_returns_a_new_note(self):
-        note = Note('C', 4, 0.25)
-        self.assertIsNot(note.whole_step(0), note)
-
-    def test_cannot_leave_the_midi_range(self):
-        with self.assertRaises(ValueError):
-            Note('F', 10, 0.25).whole_step(2)
-        with self.assertRaises(ValueError):
-            Note('C#', 0, 0.25).whole_step(-1)
-
-
-class TestOctave(unittest.TestCase):
-
-    def test_moves_up_and_down(self):
-        self.assertEqual(Note('C', 4, 0.25).octave(1), Note('C', 5, 0.25))
-        self.assertEqual(Note('C', 4, 0.25).octave(-2), Note('C', 2, 0.25))
-
-    def test_keeps_the_spelling(self):
-        self.assertEqual(Note('Db', 4, 0.25).octave(1).name, 'Db')
-        self.assertEqual(Note('C#', 4, 0.25).octave(1).name, 'C#')
-
-    def test_returns_a_new_note(self):
-        note = Note('C', 4, 0.25)
-        self.assertIsNot(note.octave(0), note)
-
-    def test_cannot_leave_the_midi_range(self):
-        with self.assertRaises(ValueError):
-            Note('A', 9, 0.25).octave(1)
-        with self.assertRaises(ValueError):
-            Note('C', 0, 0.25).octave(-1)
-        with self.assertRaises(ValueError):
-            Note('Cb', 1, 0.25).octave(-1)
-
-
-class TestStepCountValidation(unittest.TestCase):
-
-    def test_methods_reject_non_integers(self):
-        note = Note('C', 4, 0.25)
-        methods = [note.half_step, note.whole_step, note.octave]
-        for method in methods:
-            for n in [1.5, 1.0, '1', None, True]:
-                with self.subTest(method=method.__name__, n=n):
-                    with self.assertRaises(ValueError):
-                        method(n)
 
 
 INVALID_LENGTHS = [0, -0.25, '0.25', None, True, float('nan'), float('inf')]
@@ -201,8 +148,9 @@ class TestNoteLength(unittest.TestCase):
 
     def test_length_is_optional(self):
         self.assertIsNone(Note('C', 4).length)
-        self.assertIsNone(Note('C', 4).half_step(1).length)
-        self.assertIsNone(Note('C', 4).octave(1).length)
+
+    def test_half_step_keeps_the_length(self):
+        self.assertEqual(Note('C', 4, 0.5).half_step(1).length, 0.5)
 
     def test_keeps_its_length(self):
         for length in [1, 0.5, 0.25, 0.125, Fraction(1, 12), 2]:
@@ -215,12 +163,6 @@ class TestNoteLength(unittest.TestCase):
                 with self.subTest(length=length):
                     with self.assertRaises(ValueError):
                         Note('C', 4, length)
-
-    def test_methods_keep_the_length(self):
-        note = Note('C', 4, 0.5)
-        self.assertEqual(note.half_step(1).length, 0.5)
-        self.assertEqual(note.whole_step(1).length, 0.5)
-        self.assertEqual(note.octave(1).length, 0.5)
 
     def test_different_lengths_are_not_equal(self):
         self.assertNotEqual(Note('C', 4, 0.25), Note('C', 4, 0.5))

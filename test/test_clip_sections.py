@@ -1,4 +1,4 @@
-# noose6: a Python language and framework for producing MIDI clips.
+# llamatron: a Python language and framework for producing MIDI clips.
 # Copyright (C) 2026  Michael DeHaan
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,10 +17,10 @@
 import unittest
 from fractions import Fraction
 
-from src.chord import Chord
-from src.note import Degree, Note, Rest
-from src.scale import Scale, ScaleType
-from src.song import Clip, join_clips
+from llamatron.chord import Chord
+from llamatron.note import Degree, Note, Rest
+from llamatron.scale import Scale, ScaleType
+from llamatron.song import Clip
 
 QUARTER = 0.25
 C4 = Note('C', 4, QUARTER)
@@ -132,29 +132,6 @@ class TestSection(unittest.TestCase):
                     self.clip.section(start, end)
 
 
-class TestMeasures(unittest.TestCase):
-
-    def setUp(self):
-        self.clip = Clip(notes=[Note('C', 4, 1), Note('D', 4, 1), Note('E', 4, 1)])
-
-    def test_counts_from_one_and_includes_both_ends(self):
-        self.assertEqual(self.clip.measures(2, 3).notes, [Note('D', 4, 1), Note('E', 4, 1)])
-
-    def test_one_measure(self):
-        self.assertEqual(self.clip.measures(1, 1).notes, [Note('C', 4, 1)])
-
-    def test_measure_length_can_change(self):
-        clip = Clip(notes=[Note('C', 4, 0.75), Note('D', 4, 0.75)])
-        self.assertEqual(clip.measures(2, 2, measure_length=0.75).notes, [Note('D', 4, 0.75)])
-
-    def test_rejects_invalid_measures(self):
-        for first, last in [(0, 1), (2, 1), (1.5, 2), ('1', 2), (1, None), (True, 2)]:
-            with self.subTest(first=first, last=last):
-                with self.assertRaises(ValueError):
-                    self.clip.measures(first, last)
-        with self.assertRaises(ValueError):
-            self.clip.measures(1, 1, measure_length=0)
-
 
 class TestRepeated(unittest.TestCase):
 
@@ -178,24 +155,6 @@ class TestRepeated(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     Clip(notes=[C4]).repeated(times)
 
-
-class TestJoinClips(unittest.TestCase):
-
-    def test_plays_one_after_another(self):
-        result = join_clips([Clip(notes=[C4]), Clip(notes=[D4, E4])])
-        self.assertEqual(result.notes, [C4, D4, E4])
-
-    def test_keeps_silence_from_a_set_length(self):
-        result = join_clips([Clip(notes=[C4], length=0.5), Clip(notes=[D4])])
-        self.assertEqual(result.notes, [C4, Rest(0.25), D4])
-
-    def test_uses_the_first_scale_and_given_name(self):
-        result = join_clips([Clip(scale=C_MAJOR), Clip(scale=A_MINOR)], name='Joined')
-        self.assertIs(result.scale, C_MAJOR)
-        self.assertEqual(result.name, 'Joined')
-
-    def test_nothing_to_join_gives_an_empty_clip(self):
-        self.assertEqual(join_clips([]).notes, [])
 
 
 if __name__ == '__main__':

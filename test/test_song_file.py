@@ -1,4 +1,4 @@
-# noose6: a Python language and framework for producing MIDI clips.
+# llamatron: a Python language and framework for producing MIDI clips.
 # Copyright (C) 2026  Michael DeHaan
 #
 # This program is free software: you can redistribute it and/or modify
@@ -23,17 +23,17 @@ import tempfile
 import unittest
 import xml.etree.ElementTree as ET
 from fractions import Fraction
+from unittest import mock
 
 import mido
 import yaml
 
-from src.analyzers.clash_finder import ClashFinder
-from src.chord import Chord
-from src.cli import main
-from src.note import Note, Rest
-from src.renderers.clip_tree import ClipTree
-from src.renderers.timing import GLIDE_OVERLAP, timed_events, timed_notes
-from src.song_file import GENERATORS, SongBuilder, SongFileError, load_song
+from llamatron.chord import Chord
+from llamatron.cli import main
+from llamatron.note import Note, Rest
+from llamatron.renderers.clip_tree import ClipTree
+from llamatron.renderers.timing import GLIDE_OVERLAP, timed_events
+from llamatron.song_file import GENERATORS, SongBuilder, SongFileError, load_song
 
 
 def pat(*steps, drum=False, **rows):
@@ -82,7 +82,7 @@ def clip(song, scene, track):
 
 
 def pitches(a_clip):
-    return [pitch for _, _, pitch in sorted(timed_notes(a_clip, a_clip.scale)[0])]
+    return [pitch for _, _, pitch, _ in sorted(timed_events(a_clip, a_clip.scale)[0])]
 
 
 def lead_song(*steps, cell=None, **parts):
@@ -377,14 +377,6 @@ class TestScenes(unittest.TestCase):
         data = with_parts(scales={'main': {'root': 'D', 'type': 'minor'}}, scale='main')
         self.assertEqual(pitches(clip(SongBuilder(data).build(), 1, 'lead')), [50, 53])
 
-    def test_a_generator_can_use_a_scale_by_name(self):
-        data = with_parts(
-            scales={'main': {'root': 'D', 'type': 'minor'}}, scale='main',
-            chains={'x': [{'force_scale': {'scale': 'main'}}]},
-            scenes=[{'tracks': {'lead': {'pattern': 'a', 'chain': 'x'}}}],
-        )
-        self.assertEqual(pitches(clip(SongBuilder(data).build(), 1, 'lead')), [50, 53])
-
     def test_scales_must_be_in_the_list(self):
         for parts in [{'scale': 'D major'}, {'scenes': [{'scale': 'D major', 'tracks': {}}]}]:
             with self.subTest(parts=parts), self.assertRaises(SongFileError):
@@ -432,144 +424,31 @@ class TestScenes(unittest.TestCase):
                 SongBuilder(with_parts(**parts))
 
 
-class TestChainsAndPaint(unittest.TestCase):
+class TestChains(unittest.TestCase):
 
-    def song(self, chains, scenes=None, paint=None):
-        parts = {'chains': chains}
-        if scenes:
-            parts['scenes'] = scenes
-        if paint:
-            parts['paint'] = paint
-        return SongBuilder(with_parts(**parts)).build()
-
-    def test_a_cell_can_use_a_chain(self):
-        song = self.song(
-            {'up': [{'transpose': {'octaves': 1}}]},
-            [{'tracks': {'lead': {'pattern': 'a', 'chain': 'up'}}}],
-        )
-        self.assertEqual(pitches(clip(song, 1, 'lead')), [60, 64])
-
-    def test_a_chain_applies_its_steps_in_order(self):
-        song = self.song(
-            {'both': [{'transpose': {'octaves': 1}}, {'reverse': {}}]},
-            [{'tracks': {'lead': {'pattern': 'a', 'chain': 'both'}}}],
-        )
-        self.assertEqual(pitches(clip(song, 1, 'lead')), [64, 60])
-
-    def test_paint_applies_only_to_its_scenes(self):
-        scene = {'tracks': {'lead': {'pattern': 'a'}}}
-        song = self.song(
-            {'up': [{'transpose': {'octaves': 1}}]}, [scene, scene, scene],
-            [{'chain': 'up', 'tracks': ['lead'], 'scenes': [2]}],
-        )
-        self.assertEqual([pitches(clip(song, n, 'lead'))[0] for n in (1, 2, 3)], [48, 60, 48])
-
-    def test_paint_only_touches_its_tracks(self):
-        song = self.song(
-            {'up': [{'transpose': {'octaves': 1}}]}, None,
-            [{'chain': 'up', 'tracks': ['lead'], 'scenes': [1]}],
-        )
-        self.assertEqual(set(pitches(clip(song, 1, 'kick'))), {36})
-
-    def test_paint_goes_on_top_of_a_cell_chain(self):
-        song = self.song(
-            {'up': [{'transpose': {'scale_notes': 1}}], 'flip': [{'reverse': {}}]},
-            [{'tracks': {'lead': {'pattern': 'a', 'chain': 'flip'}}}],
-            [{'chain': 'up', 'tracks': ['lead'], 'scenes': [1]}],
-        )
-        self.assertEqual(pitches(clip(song, 1, 'lead')), [53, 50])
-
-    def test_gradients_run_across_painted_scenes(self):
-        scene = {'tracks': {'lead': {'pattern': 'a'}}}
-        song = self.song(
-            {'climb': [{'transpose': {'half_steps_start': 0, 'half_steps_end': 4}}]}, [scene] * 3,
-            [{'chain': 'climb', 'tracks': ['lead'], 'scenes': [1, 2, 3]}],
-        )
-        self.assertEqual([pitches(clip(song, n, 'lead'))[0] for n in (1, 2, 3)], [48, 50, 52])
-
-    def test_gradients_run_across_a_repeated_scene(self):
-        song = self.song(
-            {'climb': [{'transpose': {'half_steps_start': 0, 'half_steps_end': 4}}]},
-            [{'repeat': 3, 'tracks': {'lead': {'pattern': 'a', 'chain': 'climb'}}}],
-        )
-        self.assertEqual([pitches(clip(song, n, 'lead'))[0] for n in (1, 2, 3)], [48, 50, 52])
-
-    def test_blend_runs_from_all_of_one_pattern_to_all_of_the_other(self):
-        scene = {'tracks': {'lead': {'pattern': 'a'}}}
-        song = self.song(
-            {'morph': [{'blend': {'to': 'b', 'style': 'left'}}]}, [scene] * 3,
-            [{'chain': 'morph', 'tracks': ['lead'], 'scenes': [1, 2, 3]}],
-        )
-        self.assertEqual(pitches(clip(song, 1, 'lead')), [48, 52])
-        self.assertEqual(pitches(clip(song, 3, 'lead')), [55, 57, 59, 60])
-
-    def test_same_file_gives_the_same_song(self):
-        chains = {'mix': [{'mix_up': {'probabilities': [0.5]}}]}
-        scenes = [{'tracks': {'lead': {'pattern': 'b', 'chain': 'mix'}}}]
-        self.assertEqual(
-            clip(self.song(chains, scenes), 1, 'lead').notes,
-            clip(self.song(chains, scenes), 1, 'lead').notes,
-        )
-
-    def test_order_in_a_paint_list_does_not_matter(self):
-        scene = {'tracks': {'lead': {'pattern': 'a'}}}
-        song = self.song(
-            {'up': [{'transpose': {'half_steps_start': 0, 'half_steps_end': 4}}]}, [scene] * 5,
-            [{'chain': 'up', 'tracks': ['lead'], 'scenes': [5, 1, 3]}],
-        )
-        self.assertEqual([pitches(clip(song, n, 'lead'))[0] for n in range(1, 6)], [48, 48, 50, 48, 52])
-
-    def test_empty_paint_lists_do_nothing(self):
-        scene = {'tracks': {'lead': {'pattern': 'a'}}}
-        for paint in [{'tracks': ['lead'], 'scenes': []}, {'tracks': [], 'scenes': [1]}]:
-            song = self.song({'up': [{'transpose': {'octaves': 1}}]}, [scene], [{'chain': 'up', **paint}])
-            with self.subTest(paint=paint):
-                self.assertEqual(pitches(clip(song, 1, 'lead'))[0], 48)
-
-
-class TestGeneratorSettings(unittest.TestCase):
-
-    def song(self, chain, patterns=None):
+    def song(self, chains):
         return SongBuilder(with_parts(
-            patterns=patterns or {}, chains={'x': chain},
+            arps={'slow': {'step': '1/2'}}, auto_ratchets={'twice': {'counts': [2]}, 'some': {'counts': [1, 3]}},
+            chains=chains,
             scenes=[{'tracks': {'lead': {'pattern': 'a', 'chain': 'x'}}}],
         )).build()
 
-    def test_every_blend_style_works(self):
-        for style in ['left', 'right', 'middle', 'slices', 'strong_beats', 'contour']:
-            with self.subTest(style=style):
-                self.assertEqual(clip(self.song([{'blend': {'to': 'b', 'style': style}}]), 1, 'lead').total_length(), 1)
+    def test_a_cell_can_use_a_chain(self):
+        song = self.song({'x': [{'auto_ratchet': 'twice'}]})
+        self.assertEqual(pitches(clip(song, 1, 'lead')), [48, 48, 52, 52])
 
-    def test_blend_can_set_its_slices(self):
-        chain = [{'blend': {'to': 'b', 'style': 'slices', 'slice_length': '1/4', 'seed': 2}}]
-        self.assertEqual(clip(self.song(chain), 1, 'lead').total_length(), 1)
+    def test_a_chain_applies_its_steps_in_order(self):
+        song = self.song({'x': [{'auto_ratchet': 'twice'}, {'auto_ratchet': 'some'}]})
+        self.assertEqual(pitches(clip(song, 1, 'lead')), [48] * 4 + [52] * 4)
 
-    def test_harmonize_takes_several_charts(self):
-        patterns = {'one': pat([1, 1], chord=[3]), 'two': pat([4, 1], chord=[3])}
-        result = self.song([{'harmonize': {'charts': ['one', 'two']}}], patterns)
-        self.assertIsInstance(clip(result, 1, 'lead').notes[0], Chord)
+    def test_settings_must_be_in_their_own_section(self):
+        with self.assertRaisesRegex(SongFileError, 'no arp called'):
+            self.song({'x': [{'arp': {'step': '1/2'}}]})
 
-    def test_generators_can_be_given_a_scale(self):
-        for step in [
-            {'accompany': {'scale': 'C major'}},
-            {'backfill': {'probabilities': [1], 'scale': 'C major'}},
-            {'transpose': {'scale_notes': 1, 'scale': 'C major'}},
-            {'harmonize': {'charts': ['b'], 'scale': 'C major'}},
-            {'counterpoint': {'chords': 'b', 'scale': 'C major'}},
-            {'blend': {'to': 'b', 'style': 'contour', 'scale': 'C major'}},
-        ]:
-            with self.subTest(step=step):
-                self.assertEqual(clip(self.song([step]), 1, 'lead').total_length(), 1)
-
-    def test_a_pattern_setting_after_stretch_fills_the_longer_clip(self):
-        for step in [
-            {'take_rhythm': {'rhythm': 'hit'}},
-            {'blend': {'to': 'b', 'style': 'left'}},
-            {'smoother': {'chords': 'b'}},
-        ]:
-            with self.subTest(step=step):
-                found = self.song([{'stretch': {'factor': 2}}, step])
-                self.assertEqual(clip(found, 1, 'lead').total_length(), 2)
+    def test_only_arps_and_auto_ratchets_can_be_in_a_chain(self):
+        for step in ['blend', 'repeater', 'take_rhythm', 'hold']:
+            with self.subTest(step=step), self.assertRaisesRegex(SongFileError, 'unknown generator'):
+                self.song({'x': [{step: 'twice'}]})
 
 
 class TestClipMorph(unittest.TestCase):
@@ -648,7 +527,7 @@ class TestRhythmAndNotesFrom(unittest.TestCase):
         return clip(SongBuilder(data).build(), 1, 'lead')
 
     def timed(self, found):
-        return [(str(start), pitch) for start, _, pitch in sorted(timed_notes(found, found.scale)[0])]
+        return [(str(start), pitch) for start, _, pitch, _ in sorted(timed_events(found, found.scale)[0])]
 
     def test_rhythm_from_plays_the_clips_notes_in_another_rhythm(self):
         found = self.clip(rhythm_from='groove')
@@ -828,14 +707,6 @@ class TestPlayDirections(unittest.TestCase):
         found = self.played(1, 'reverse_b', pattern=steps)
         self.assertEqual(found.notes, [Note('E', 4, Fraction(1, 4)), Rest(Fraction(1, 4)), Note('C', 4, Fraction(1, 4))])
 
-    def test_a_generator_reads_a_pattern_as_written(self):
-        data = with_parts(
-            patterns={'x': pat([1, '1/2'], [3, '1/2']), 'y': {**pat([5, '1/2'], [6, '1/2']), 'direction': 'reverse_b'}},
-            chains={'c': [{'blend': {'to': 'y', 'style': 'left'}}]},
-            scenes=[{'tracks': {'lead': {'pattern': 'x', 'chain': 'c'}}}],
-        )
-        self.assertEqual(pitches(clip(SongBuilder(data).build(), 1, 'lead')), [55, 57])
-
     def test_a_morph_target_uses_its_own_direction_and_not_the_clips(self):
         data = with_parts(
             patterns={'x': pat([1, '1/2'], [3, '1/2']), 'y': {**pat([5, '1/2'], [6, '1/2']), 'direction': 'reverse_b'}},
@@ -924,15 +795,6 @@ class TestGrab(unittest.TestCase):
         }
         data = with_parts(patterns=patterns, scenes=[{'tracks': {'lead': {'pattern': 'r', 'notes_from': 'n'}}}])
         self.assertEqual(pitches(clip(SongBuilder(data).build(), 1, 'lead')), [67, 52])
-
-    def test_a_generator_reading_a_pattern_ignores_grab(self):
-        patterns = {
-            'x': pat([1, '1/2']),
-            'y': pat([3, '1/2'], grab=[True], source_pattern='s'),
-            's': pat([5, '1/2']),
-        }
-        data = with_parts(patterns=patterns, chains={'c': [{'blend': {'to': 'y', 'style': 'left'}}]}, scenes=[{'tracks': {'lead': {'pattern': 'x', 'chain': 'c'}}}])
-        self.assertEqual(pitches(clip(SongBuilder(data).build(), 1, 'lead')), [52])
 
     def test_the_source_must_be_a_real_pattern(self):
         with self.assertRaises(SongFileError):
@@ -1056,14 +918,6 @@ class TestAccumulators(unittest.TestCase):
         events, _ = timed_events(found, None)
         self.assertEqual([event[2:] for event in sorted(events)], [(50, 60), (52, 70)])
 
-    def test_a_generator_reading_a_pattern_ignores_them(self):
-        data = with_parts(
-            patterns={'x': pat([1, '1/2']), 'y': pat([3, '1/2'], note_add=[3])},
-            chains={'c': [{'blend': {'to': 'y', 'style': 'left'}}]},
-            scenes=[{'tracks': {'lead': {'pattern': 'x', 'chain': 'c'}}}],
-        )
-        self.assertEqual(pitches(clip(SongBuilder(data).build(), 1, 'lead')), [52])
-
     def test_settings_are_checked(self):
         for rows in [{'note_add': ['x']}, {'velocity_add': [1.5]}, {'accumulator_limit': 0}]:
             with self.subTest(rows=rows), self.assertRaises(SongFileError):
@@ -1101,14 +955,12 @@ class TestArps(unittest.TestCase):
         )
         self.assertEqual(pitches(found), [48, 48, 52, 52])
 
-    def test_settings_in_a_chain_still_work(self):
-        self.assertEqual(pitches(self.lead(chains={'x': [{'arp': {'step': '1/2'}}]})), [48, 52])
-
     def test_unknown_names_and_types_are_refused(self):
         for parts in [
             {'chains': {'x': [{'arp': 'nope'}]}},
             {'chains': {'x': [{'auto_ratchet': 'nope'}]}},
-            {'chains': {'x': [{'reverse': 'nope'}]}},
+            {'chains': {'x': [{'hold': {'length': '1/128'}}]}},
+            {'paint': [{'chain': 'x', 'tracks': ['lead'], 'scenes': [1]}]},
         ]:
             with self.subTest(parts=parts), self.assertRaises(SongFileError):
                 self.lead(**parts)
@@ -1145,24 +997,19 @@ class TestErrors(unittest.TestCase):
 
     def test_unknown_generator_setting_names_the_chain(self):
         scenes = [{'tracks': {'lead': {'pattern': 'a', 'chain': 'x'}}}]
-        self.assert_error("chain 'x', auto_ratchet: unknown setting 'count'", chains={'x': [{'auto_ratchet': {'count': [2]}}]}, scenes=scenes)
+        self.assert_error(
+            "chain 'x', auto_ratchet: unknown setting 'count'",
+            auto_ratchets={'r': {'count': [2]}}, chains={'x': [{'auto_ratchet': 'r'}]}, scenes=scenes,
+        )
 
     def test_missing_generator_setting(self):
         scenes = [{'tracks': {'lead': {'pattern': 'a', 'chain': 'x'}}}]
-        self.assert_error('needs to', chains={'x': [{'blend': {'style': 'left'}}]}, scenes=scenes)
-
-    def test_paint_outside_the_song(self):
-        self.assert_error('scene numbers from 1 to 1', chains={'x': [{'reverse': {}}]},
-                          paint=[{'chain': 'x', 'tracks': ['lead'], 'scenes': [1, 9]}])
+        self.assert_error('needs step', arps={'r': {'order': 'up'}}, chains={'x': [{'arp': 'r'}]}, scenes=scenes)
 
     def test_bad_scale(self):
         self.assert_error('unknown scale type', scales={'x': {'root': 'C', 'type': 'wobbly'}}, scale='x')
         self.assert_error('root note', scales={'x': {'root': 'H', 'type': 'major'}}, scale='x')
         self.assert_error('root and a type', scales={'x': {'root': 'C'}}, scale='x')
-
-    def test_a_generator_cannot_read_another_track(self):
-        scenes = [{'tracks': {'lead': {'pattern': 'a', 'chain': 'x'}}}]
-        self.assert_error("unknown setting 'rhythm_from'", chains={'x': [{'take_rhythm': {'rhythm_from': 'kick'}}]}, scenes=scenes)
 
     def test_a_clip_needs_a_pattern(self):
         self.assert_error('needs a pattern', scenes=[{'tracks': {'lead': {'loop': True}}}])
@@ -1185,14 +1032,13 @@ class TestExamples(unittest.TestCase):
             ['acid_techno.yml', 'minimal_techno.yml', 'retro_chill.yml'],
         )
 
-    def test_every_generator_outside_legacy_is_used(self):
+    def test_every_generator_is_used(self):
         used = set()
         for path in self.paths:
             with open(path) as file:
                 for chain in yaml.safe_load(file)['chains'].values():
                     used |= {next(iter(step)) for step in chain}
-        current = {name for name, details in GENERATORS.items() if '.legacy.' not in details[0].__module__}
-        self.assertEqual(current - used, set())
+        self.assertEqual(set(GENERATORS) - used, set())
 
     def test_every_song_lasts_about_three_minutes(self):
         for path in self.paths:
@@ -1231,12 +1077,6 @@ class TestExamples(unittest.TestCase):
                 with self.subTest(scene=scene.name):
                     self.assertLessEqual(max(pitches(acid)), 72)
 
-    def test_acid_chords_never_clash_with_the_bass(self):
-        song = load_song('examples/acid_techno.yml')
-        for number in range(3, 11):
-            with self.subTest(scene=number):
-                self.assertEqual(ClashFinder().analyze(clip(song, number, 'acid'), clip(song, number, 'chords')), [])
-
     def test_every_example_renders_both_ways(self):
         for path in self.paths:
             for to in ['ableton', 'cliptree']:
@@ -1260,12 +1100,41 @@ class TestCli(unittest.TestCase):
         self.out = os.path.join(self.parent, 'out')
 
     def run_cli(self, *arguments):
+        if '--to' not in arguments:
+            arguments = ('--to', 'ableton', *arguments)
+        return self.run_exactly(self.song, '--out', self.out, *arguments)
+
+    def run_exactly(self, *arguments):
         stdout, stderr = io.StringIO(), io.StringIO()
         with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
-            code = main([self.song, '--out', self.out, *arguments])
+            try:
+                code = main(list(arguments))
+            except SystemExit as stop:
+                code = stop.code
         return code, stdout.getvalue(), stderr.getvalue()
 
-    def test_writes_an_ableton_set_by_default(self):
+    def test_without_to_it_opens_the_tracker(self):
+        with mock.patch('llamatron.tui.app.main', return_value=0) as tracker:
+            self.assertEqual(self.run_exactly()[0], 0)
+            tracker.assert_called_once_with([])
+            self.assertEqual(self.run_exactly(self.song)[0], 0)
+            tracker.assert_called_with([self.song])
+        self.assertFalse(os.path.exists(self.out))
+
+    def test_render_options_need_to(self):
+        for arguments in [['--out', self.out], ['--replace'], ['--template', self.song]]:
+            with self.subTest(arguments=arguments), mock.patch('llamatron.tui.app.main') as tracker:
+                code, _, stderr = self.run_exactly(self.song, *arguments)
+                self.assertEqual(code, 2)
+                self.assertIn('only works with --to', stderr)
+                tracker.assert_not_called()
+
+    def test_to_needs_a_song(self):
+        code, _, stderr = self.run_exactly('--to', 'ableton')
+        self.assertEqual(code, 2)
+        self.assertIn('--to needs a song file', stderr)
+
+    def test_writes_an_ableton_set(self):
         self.assertEqual(self.run_cli()[0], 0)
         self.assertEqual(os.listdir(self.out), ['out.als'])
         with gzip.open(os.path.join(self.out, 'out.als')) as file:

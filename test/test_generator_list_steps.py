@@ -1,4 +1,4 @@
-# noose6: a Python language and framework for producing MIDI clips.
+# llamatron: a Python language and framework for producing MIDI clips.
 # Copyright (C) 2026  Michael DeHaan
 #
 # This program is free software: you can redistribute it and/or modify
@@ -18,17 +18,11 @@
 
 import unittest
 
-from src.legacy.generators.backfill import Backfill
-from src.legacy.generators.duration_change import DurationChange
-from src.legacy.generators.mix_up import MixUp
-from src.legacy.generators.mix_up2 import MixUp2
-from src.generators.auto_ratchet import AutoRatchet
-from src.note import Note, Rest
-from src.scale import Scale, ScaleType
-from src.song import Clip
+from llamatron.generators.auto_ratchet import AutoRatchet
+from llamatron.note import Note, Rest
+from llamatron.song import Clip
 
 SIXTEENTH = 0.0625
-C_MAJOR = Scale(Note('C', 4), ScaleType.MAJOR)
 PITCHES = ['C', 'G', 'C', 'G', 'C', 'G', 'C']
 
 
@@ -56,39 +50,15 @@ class TestListsOnlyStepThroughNotes(unittest.TestCase):
         self.assertEqual(results[1], results[0])
         self.assertEqual(results[2], results[0])
 
-    def test_duration_change(self):
-        self.assert_rests_make_no_difference(DurationChange([0.25, 1, 0.5]))
-
     def test_stutter(self):
         self.assert_rests_make_no_difference(AutoRatchet([1, 3, 2]))
-
-    def test_backfill(self):
-        self.assert_rests_make_no_difference(Backfill([1, 0, 0], scale=C_MAJOR))
-
-    def test_mix_up(self):
-        self.assert_rests_make_no_difference(MixUp([1, 0, 0], seed=1))
-
-    def test_mix_up2(self):
-        self.assert_rests_make_no_difference(MixUp2([1, 0, 0]))
 
     def test_list_positions_line_up_with_notes(self):
         notes = pattern(5)
         third_note = notes_only(Clip(notes=notes))[2]
-
-        changed = notes_only(DurationChange([1, 1, 0.5]).generate(Clip(notes=notes)))
-        self.assertEqual(changed[2].length, third_note.length * 0.5)
-
         stuttered = notes_only(AutoRatchet([1, 1, 2]).generate(Clip(notes=notes)))
         self.assertEqual(stuttered[2].length, third_note.length / 2)
         self.assertEqual(stuttered[3], stuttered[2])
-
-        swapped = notes_only(MixUp2([0, 0, 1, 0, 0, 0]).generate(Clip(notes=notes)))
-        self.assertEqual(swapped[2], notes_only(Clip(notes=notes))[3])
-
-        filled = notes_only(Backfill([0, 0, 1, 0, 0, 0], scale=C_MAJOR).generate(Clip(notes=notes)))
-        self.assertEqual(len(filled), len(PITCHES) + 1)
-        self.assertEqual(filled[2], third_note)
-        self.assertEqual(filled[3].name, 'E')
 
 
 if __name__ == '__main__':

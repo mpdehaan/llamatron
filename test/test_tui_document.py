@@ -1,4 +1,4 @@
-# noose6: a Python language and framework for producing MIDI clips.
+# llamatron: a Python language and framework for producing MIDI clips.
 # Copyright (C) 2026  Michael DeHaan
 #
 # This program is free software: you can redistribute it and/or modify
@@ -22,12 +22,12 @@ from fractions import Fraction
 
 import yaml
 
-from src.song_file import SongBuilder, SongFileError
-from src.tui.document import DEFAULT_SCALE, Document, clock, new_song, unique_name
+from llamatron.song_file import SongBuilder, SongFileError
+from llamatron.tui.document import DEFAULT_SCALE, Document, clock, new_song, unique_name
 
 
 def song_with_things():
-    """Return a document with a little of everything, and paint that uses written-out scene numbers."""
+    """Return a document with a little of everything."""
     data = new_song()
     data['patterns'] = {
         'a': {'steps': 2, 'degree': [1, 3], 'duration': ['1/4', '1/4']},
@@ -39,15 +39,12 @@ def song_with_things():
     data['auto_ratchets'] = {'rolls': {'counts': [2]}}
     data['chains'] = {
         'named': [{'arp': 'up'}, {'auto_ratchet': 'rolls'}],
-        'reader': [{'take_rhythm': {'rhythm': 'b'}}],
-        'painted': [{'reverse': {}}],
     }
     data['scenes'] = [
         {'name': 'one', 'repeat': 2, 'tracks': {'lead': {'pattern': 'a', 'chain': 'named'}}},
         {'name': 'two', 'tracks': {'lead': {'pattern': 'a', 'repeat': 2, 'morph_to': 'b', 'morph_style': 'left'}, 'bass': {'pattern': 'b'}}},
         {'name': 'three', 'scale': DEFAULT_SCALE, 'tracks': {'bass': {'pattern': 'b'}}},
     ]
-    data['paint'] = [{'chain': 'painted', 'tracks': ['lead'], 'scenes': [2, 3]}]
     return Document(data)
 
 
@@ -225,7 +222,6 @@ class TestUses(unittest.TestCase):
         uses = song_with_things().pattern_uses('b')
         self.assertIn('scene 2 (two), track lead', uses)
         self.assertIn('scene 3 (three), track bass', uses)
-        self.assertIn('chain reader', uses)
         self.assertEqual(song_with_things().pattern_uses('unused'), [])
 
     def test_rhythm_and_notes_from_count_as_uses(self):
@@ -248,8 +244,6 @@ class TestUses(unittest.TestCase):
     def test_chain(self):
         document = song_with_things()
         self.assertEqual(document.chain_uses('named'), ['scene 1 (one), track lead'])
-        self.assertEqual(document.chain_uses('painted'), [])
-        self.assertEqual(document.chain_uses('reader'), [])
 
     def test_arp(self):
         self.assertEqual(song_with_things().generator_uses('arps', 'up'), ['chain named'])
@@ -259,22 +253,6 @@ class TestUses(unittest.TestCase):
 
     def test_scale(self):
         self.assertEqual(song_with_things().scale_uses(DEFAULT_SCALE), ['the song', 'scene 3 (three)'])
-
-
-class TestPaintIsLegacy(unittest.TestCase):
-
-    def test_deleting_a_painted_chain_removes_its_paint(self):
-        document = song_with_things()
-        document.delete_chain('painted')
-        self.assertEqual(document.data['paint'], [])
-        SongBuilder(document.data).build()
-
-    def test_deleting_a_painted_track_takes_it_out_of_the_paint(self):
-        document = song_with_things()
-        document.delete_cell(1, 'bass')
-        document.delete_track('lead')
-        self.assertEqual(document.data['paint'][0]['tracks'], [])
-        SongBuilder(document.data).build()
 
 
 class TestEveryStepTakesTime(unittest.TestCase):
@@ -308,7 +286,6 @@ class TestRenaming(unittest.TestCase):
         self.assertEqual(list(document.data['patterns']), ['a', 'new', 'unused'])
         self.assertEqual(document.cell(1, 'lead')['morph_to'], 'new')
         self.assertEqual(document.cell(2, 'bass')['pattern'], 'new')
-        self.assertEqual(document.data['chains']['reader'][0]['take_rhythm']['rhythm'], 'new')
         SongBuilder(document.data).build()
 
     def test_pattern_updates_rhythm_and_notes_from(self):
@@ -327,14 +304,11 @@ class TestRenaming(unittest.TestCase):
         document = song_with_things()
         document.rename_track('lead', 'new')
         self.assertEqual(document.data['tracks'], ['new', 'bass'])
-        self.assertEqual(document.data['paint'][0]['tracks'], ['new'])
         SongBuilder(document.data).build()
 
     def test_chain_updates_everything(self):
         document = song_with_things()
-        document.rename_chain('painted', 'new')
         document.rename_chain('named', 'other')
-        self.assertEqual(document.data['paint'][0]['chain'], 'new')
         self.assertEqual(document.cell(0, 'lead')['chain'], 'other')
 
     def test_arp_updates_chains(self):
@@ -397,42 +371,34 @@ class TestLists(unittest.TestCase):
         self.assertEqual(unique_name('a', ['a', 'a 2']), 'a 3')
 
 
-class TestSceneNumbers(unittest.TestCase):
-    """Paint lists written-out scene numbers, so they have to follow scenes around."""
+class TestScenes(unittest.TestCase):
 
     def setUp(self):
         self.document = song_with_things()
-        self.paint = self.document.data['paint'][0]
 
-    def test_moving_a_scene_moves_its_paint(self):
+    def names(self):
+        return [scene['name'] for scene in self.document.data['scenes']]
+
+    def test_moving_a_scene(self):
         self.document.move_scene(0, 1)
-        self.assertEqual([s['name'] for s in self.document.data['scenes']], ['two', 'one', 'three'])
-        self.assertEqual(self.paint['scenes'], [1, 3])
+        self.assertEqual(self.names(), ['two', 'one', 'three'])
 
-    def test_deleting_a_scene_drops_its_numbers(self):
+    def test_deleting_a_scene(self):
         self.document.delete_scene(1)
-        self.assertEqual(self.paint['scenes'], [2])
+        self.assertEqual(self.names(), ['one', 'three'])
 
-    def test_deleting_a_scene_renumbers_later_ones(self):
-        self.document.data['paint'][0]['scenes'] = [4]
-        self.document.delete_scene(1)
-        self.assertEqual(self.paint['scenes'], [3])
-
-    def test_adding_a_scene_renumbers_later_ones(self):
+    def test_adding_a_scene(self):
         self.document.add_scene(0, 'new')
-        self.assertEqual(self.paint['scenes'], [3, 4])
+        self.assertEqual(self.names(), ['new', 'one', 'two', 'three'])
 
-    def test_copying_a_scene_paints_the_copy_too(self):
+    def test_copying_a_scene(self):
         self.document.copy_scene(1)
-        self.assertEqual(self.paint['scenes'], [2, 3, 4])
+        self.assertEqual(self.names(), ['one', 'two', 'two copy', 'three'])
 
-    def test_more_repeats_paint_the_new_ones(self):
+    def test_repeats(self):
         self.document.set_scene_repeat(1, 3)
-        self.assertEqual(self.paint['scenes'], [2, 3, 4, 5])
-
-    def test_fewer_repeats_drop_the_last_ones(self):
+        self.assertEqual(self.document.data['scenes'][1]['repeat'], 3)
         self.document.set_scene_repeat(0, 1)
-        self.assertEqual(self.paint['scenes'], [2])
         self.assertNotIn('repeat', self.document.data['scenes'][0])
 
     def test_the_result_still_builds(self):

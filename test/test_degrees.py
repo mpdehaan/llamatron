@@ -1,4 +1,4 @@
-# noose6: a Python language and framework for producing MIDI clips.
+# llamatron: a Python language and framework for producing MIDI clips.
 # Copyright (C) 2026  Michael DeHaan
 #
 # This program is free software: you can redistribute it and/or modify
@@ -23,18 +23,13 @@ import unittest
 
 import mido
 
-import demo.mary
-import demo.mary_degrees
-from src.chord import Chord
-from src.generators.arp import Arp
-from src.legacy.generators.mix_up import MixUp
-from src.generators.repeater import Repeater
-from src.legacy.generators.reverse import Reverse
-from src.legacy.generators.transpose import Transpose
-from src.note import Degree, Note, Rest
-from src.renderers.clip_tree import ClipTree
-from src.scale import Scale, ScaleType
-from src.song import Clip, Scene, Song, Track
+from llamatron.chord import Chord
+from llamatron.generators.arp import Arp
+from llamatron.generators.auto_ratchet import AutoRatchet
+from llamatron.note import Degree, Note, Rest
+from llamatron.renderers.clip_tree import ClipTree
+from llamatron.scale import Scale, ScaleType
+from llamatron.song import Clip, Scene, Song, Track
 
 QUARTER = 0.25
 C_MAJOR = Scale(Note('C', 4), ScaleType.MAJOR)
@@ -105,15 +100,15 @@ class TestDegree(unittest.TestCase):
 
 class TestDegreeToNote(unittest.TestCase):
 
+    def test_every_degree_of_c_major(self):
+        played = [self.note(Degree(n)).midi_number for n in range(1, 8)]
+        self.assertEqual(played, [48, 50, 52, 53, 55, 57, 59])
+
     def note(self, degree, scale=C_MAJOR):
         return degree.to_note(scale)
 
     def test_one_is_the_root(self):
         self.assertEqual(self.note(Degree(1)), Note('C', 4))
-
-    def test_every_degree_of_c_major(self):
-        played = [self.note(Degree(n)).midi_number for n in range(1, 8)]
-        self.assertEqual(played, [48, 50, 52, 53, 55, 57, 59])
 
     def test_continues_past_the_top_of_the_scale(self):
         self.assertEqual(self.note(Degree(8)), Note('C', 5))
@@ -141,21 +136,6 @@ class TestDegreeToNote(unittest.TestCase):
         with self.assertRaises(ValueError):
             Degree(1, octave=10).to_note(C_MAJOR)
 
-
-class TestDegreeMoved(unittest.TestCase):
-
-    def test_returns_a_new_degree(self):
-        original = Degree(3, QUARTER)
-        self.assertIsNot(original.moved(octaves=1), original)
-        self.assertEqual(original.octave, 0)
-
-    def test_moves_add_up(self):
-        moved = Degree(1).moved(octaves=1).moved(octaves=1, half_steps=1)
-        self.assertEqual((moved.octave, moved.half_steps), (2, 1))
-
-    def test_scale_notes_can_go_below_the_root(self):
-        self.assertEqual(Degree(1).moved(scale_notes=-1).to_note(C_MAJOR), Note('B', 3))
-        self.assertEqual(Degree(1).moved(scale_notes=-8).to_note(C_MAJOR), Note('B', 2))
 
 
 class TestLengthsFromTheClip(unittest.TestCase):
@@ -210,12 +190,6 @@ class TestLengthsFromTheClip(unittest.TestCase):
             with self.subTest(note_length=note_length):
                 with self.assertRaises(ValueError):
                     Clip(note_length=note_length)
-
-    def test_scale_can_produce_notes_without_lengths(self):
-        notes = C_MAJOR.count(3)
-        self.assertEqual({note.length for note in notes}, {None})
-        clip = Clip(notes=notes, note_length=QUARTER)
-        self.assertEqual(clip.resolved_notes()[0], Note('C', 4, QUARTER))
 
 
 class TestShorthand(unittest.TestCase):
@@ -343,95 +317,29 @@ class TestGeneratorsWithDegrees(unittest.TestCase):
 
     def test_every_generator_keeps_degrees_as_degrees(self):
         clip = Clip(notes=[1, 2, 3], note_length=QUARTER)
-        generators = [
-            Repeater(2), Arp(QUARTER), MixUp([1], seed=1), Reverse(), Transpose(scale_notes=1),
-        ]
-        for generator in generators:
+        for generator in [AutoRatchet([2]), Arp(QUARTER)]:
             with self.subTest(generator=type(generator).__name__):
                 result = generator.generate(clip)
                 self.assertTrue(all(isinstance(p, Degree) for p in result.notes))
 
     def test_every_generator_keeps_note_length(self):
         clip = Clip(notes=[1], note_length=QUARTER)
-        for generator in [Repeater(2), Arp(QUARTER), MixUp([1]), Reverse(), Transpose(octaves=1)]:
+        for generator in [AutoRatchet([2]), Arp(QUARTER)]:
             with self.subTest(generator=type(generator).__name__):
                 self.assertEqual(generator.generate(clip).note_length, QUARTER)
 
-    def test_repeater_divides_lengths_taken_from_the_clip(self):
-        result = Repeater(2).generate(Clip(notes=[1], note_length=0.5))
-        self.assertEqual(result.notes, [Degree(1, 0.25), Degree(1, 0.25)])
-
-    def test_repeater_needs_a_length(self):
-        with self.assertRaises(ValueError):
-            Repeater(2).generate(Clip(notes=[1]))
-
-    def test_reverse_stays_lazy_without_a_set_length(self):
-        result = Reverse().generate(Clip(notes=[1, 2]))
-        self.assertEqual(result.notes, [Degree(2), Degree(1)])
-
-    def test_reverse_with_a_set_length_uses_the_clip_note_length(self):
-        result = Reverse().generate(Clip(notes=[1], note_length=QUARTER, length=1))
-        self.assertEqual(result.notes, [Rest(0.75), Degree(1, QUARTER)])
-
-    def test_mix_up_stays_lazy(self):
-        result = MixUp([1, 0], seed=1).generate(Clip(notes=[1, 2]))
-        self.assertEqual(result.notes, [Degree(2), Degree(1)])
-
-    def test_transpose_scale_notes_needs_no_scale_for_degrees(self):
-        result = Transpose(scale_notes=2).generate(Clip(notes=[1]))
-        self.assertEqual(result.notes, [Degree(1, scale_notes=2)])
-
-    def test_transpose_follows_the_scale_at_render(self):
-        clip = Transpose(scale_notes=-1).generate(Clip(notes=[1, 2], note_length=QUARTER))
-        self.assertEqual(pitches(clip, song_scale=C_MAJOR), [47, 48])
-        self.assertEqual(pitches(clip, song_scale=A_MINOR), [43, 45])
-
-    def test_transpose_half_whole_and_octaves_at_render(self):
-        clip = Clip(notes=[1], note_length=QUARTER)
-        cases = [(dict(half_steps=1), 49), (dict(whole_steps=-1), 46), (dict(octaves=-1), 36)]
-        for amounts, expected in cases:
-            with self.subTest(amounts=amounts):
-                result = Transpose(**amounts).generate(clip)
-                self.assertEqual(pitches(result, song_scale=C_MAJOR), [expected])
-
-    def test_transpose_still_needs_a_scale_for_literal_notes(self):
-        with self.assertRaises(ValueError):
-            Transpose(scale_notes=1).generate(Clip(notes=['C4']))
-
-    def test_transpose_keeps_notes_without_lengths_lazy(self):
-        result = Transpose(octaves=1).generate(Clip(notes=['C4']))
-        self.assertEqual(result.notes, [Note('C', 5)])
-        self.assertIsNone(result.notes[0].length)
-
-    def test_arp_leaves_degrees_alone_and_fills_chords(self):
-        chord = Chord([Note('C', 4), Note('E', 4)])
-        result = Arp(0.125).generate(Clip(notes=[1, chord], note_length=QUARTER))
-        self.assertEqual(result.notes, [Degree(1, QUARTER), Note('C', 4, 0.125), Note('E', 4, 0.125)])
-
     def test_generators_reject_invalid_items_added_to_a_list(self):
-        for generator in [Repeater(2), Arp(QUARTER), MixUp([1]), Reverse(), Transpose(octaves=1)]:
+        for generator in [AutoRatchet([2]), Arp(QUARTER)]:
             clip = Clip(notes=[1], note_length=QUARTER)
             clip.notes.append('C4')
             with self.subTest(generator=type(generator).__name__):
                 with self.assertRaises(ValueError):
                     generator.generate(clip)
 
-
-class TestMaryDegreesDemo(unittest.TestCase):
-
-    def test_melody_sounds_exactly_like_the_literal_version(self):
-        with tempfile.TemporaryDirectory() as directory:
-            literal_directory = os.path.join(directory, 'literal')
-            degrees_directory = os.path.join(directory, 'degrees')
-            ClipTree(literal_directory, demo.mary.build_song()).render()
-            ClipTree(degrees_directory, demo.mary_degrees.build_song()).render()
-            self.assertEqual(sorted(os.listdir(degrees_directory)), ['001-001.mid', '002-001.mid'])
-            for filename in os.listdir(degrees_directory):
-                with self.subTest(filename=filename):
-                    self.assertEqual(
-                        mido.MidiFile(os.path.join(degrees_directory, filename)).tracks[0],
-                        mido.MidiFile(os.path.join(literal_directory, filename)).tracks[0],
-                    )
+    def test_arp_leaves_degrees_alone_and_fills_chords(self):
+        chord = Chord([Note('C', 4), Note('E', 4)])
+        result = Arp(0.125).generate(Clip(notes=[1, chord], note_length=QUARTER))
+        self.assertEqual(result.notes, [Degree(1, QUARTER), Note('C', 4, 0.125), Note('E', 4, 0.125)])
 
 
 if __name__ == '__main__':

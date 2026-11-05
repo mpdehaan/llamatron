@@ -1,6 +1,6 @@
 # Retro chill: uplifting and nostalgic, a sunlit music box over a gentle beat, with a tune that keeps climbing.
 # It takes a breath in the middle, rises a whole step to G major, and comes home on the first chord.
-# Run it with: .venv/bin/python -m src.cli examples/retro_chill.yml --replace
+# Run it with: llamatron examples/retro_chill.yml --to ableton --replace
 # It suits soft, slightly detuned sounds: a bell or music box for the bells, and a warm pad.
 
 tempo: 96
@@ -102,33 +102,25 @@ patterns:
     duration: [1, 1, 1, 1, 1, 1, 1, 1]
     octave: [2, 2, 2, 2, 2, 2, 2, 2]
     chord: [3, 3, 3, 3, 3, 3, 3, 3]
+  tune2_busy:
+    steps: 19
+    degree: [3, 5, 6, 1, 6, 1, 3, 1, 6, 1, 1, 3, 2, 7, 1, 3, 2, 3, 5]
+    duration: [3/4, 1/8, 1/8, 1/2, 1/4, 1/4, 3/4, 1/4, 1/2, 1/2, 1/2, 1/2, 1/4, 1/4, 1/2, 1/2, 1/4, 1/4, 1/2]
+    octave: [3, 3, 3, 4, 3, 4, 4, 4, 3, 4, 4, 4, 4, 3, 4, 4, 4, 4, 4]
+    ratchet: [~, ~, ~, 2, ~, ~, 3, ~, 2, ~, ~, 2, ~, ~, 2, ~, ~, ~, 2]
+    ratchet_offset: [~, ~, ~, 1, ~, ~, -1, ~, 1, ~, ~, -1, ~, ~, 1, ~, ~, ~, -1]
 
 tracks: [kick, snare, hat, bass, pad, tune, answer, bells]
 
+arps:
+  bells: { step: 1/8, order: up }
+  bright_bells: { step: 1/16, order: up_down }
+
 chains:
   bells:
-    - arp: { step: 1/8, order: up }
-    - duration_change: { factors: [0.5, 1, 0.5, 0.75] }
+    - arp: bells
   bright_bells:
-    - arp: { step: 1/16, order: up_down }
-    - duration_change: { factors: [0.75, 1] }
-  opening_up:
-    - hold: { length_start: 0, length_end: 1/32, every: 1 }
-  late_snare:
-    - delay: { amount: 1/64 }
-  swung_hats:
-    - delay: { amount: 1/48, every: 2 }
-  wander:
-    - blend: { to: tune2, style: middle }
-  fit_to_chords:
-    - smoother: { chords: chords_tune }
-  backwards:
-    - reverse: {}
-  more_notes:
-    - duration_change: { factors: [0.5] }
-    - backfill: { probabilities: [1, 0, 0, 1, 0] }
-  answering:
-    - take_rhythm: { rhythm: answer_time }
+    - arp: bright_bells
 
 scenes:
   - name: bells
@@ -142,34 +134,33 @@ scenes:
   - name: nod
     tracks:
       kick: { pattern: kick, repeat: 4 }
-      snare: { pattern: snare, chain: late_snare, loop: true }
-      hat: { pattern: hat, chain: swung_hats, loop: true }
+      snare: { pattern: snare, loop: true }
+      hat: { pattern: hat, loop: true }
       bass: { pattern: bass, loop: true }
       pad: { pattern: chords_pad, loop: true }
       bells: { pattern: chords, chain: bells, loop: true }
   - name: tune
-    repeat: 3
     tracks:
-      kick: { pattern: kick, repeat: 4 }
-      snare: { pattern: snare, chain: late_snare, loop: true }
-      hat: { pattern: hat, chain: swung_hats, loop: true }
+      kick: { pattern: kick, repeat: 12 }
+      snare: { pattern: snare, loop: true }
+      hat: { pattern: hat, loop: true }
       bass: { pattern: bass, loop: true }
       pad: { pattern: chords_pad, loop: true }
       bells: { pattern: chords, chain: bells, loop: true }
-      tune: { pattern: tune, chain: wander, loop: true }
+      tune: { pattern: tune, repeat: 3, morph_to: tune2, morph_style: middle }
   - name: breath
     tracks:
-      hat: { pattern: hat, chain: swung_hats, repeat: 64 }
+      hat: { pattern: hat, repeat: 64 }
       bass: { pattern: bass, loop: true }
       pad: { pattern: breath_chords, loop: true }
       bells: { pattern: chords, chain: bells, loop: true }
-      tune: { pattern: tune, chain: backwards, loop: true }
+      tune: { pattern: tune, direction: reverse_b, loop: true }
   - name: rise
     scale: G Major
     tracks:
       kick: { pattern: kick, repeat: 4 }
-      snare: { pattern: snare, chain: late_snare, loop: true }
-      hat: { pattern: hat, chain: swung_hats, loop: true }
+      snare: { pattern: snare, loop: true }
+      hat: { pattern: hat, loop: true }
       bass: { pattern: bass, loop: true }
       pad: { pattern: chords_pad, loop: true }
       bells: { pattern: chords, chain: bright_bells, loop: true }
@@ -178,13 +169,13 @@ scenes:
     scale: G Major
     tracks:
       kick: { pattern: kick, repeat: 4 }
-      snare: { pattern: snare, chain: late_snare, loop: true }
-      hat: { pattern: hat, chain: swung_hats, loop: true }
+      snare: { pattern: snare, loop: true }
+      hat: { pattern: hat, loop: true }
       bass: { pattern: bass, loop: true }
       pad: { pattern: chords_pad, loop: true }
       bells: { pattern: chords, chain: bright_bells, loop: true }
-      tune: { pattern: tune2, chain: more_notes, loop: true }
-      answer: { pattern: tune2, chain: answering, loop: true }
+      tune: { pattern: tune2_busy, loop: true }
+      answer: { pattern: answer_time, notes_from: tune2, loop: true }
   - name: home
     scale: G Major
     tracks:
@@ -192,8 +183,3 @@ scenes:
       pad: { pattern: ending_chord, loop: true }
       bells: { pattern: ending_chord_bells, chain: bells, loop: true }
       tune: { pattern: ending_tune, loop: true }
-
-paint:
-  - { chain: opening_up, tracks: [bells], scenes: [2, 3, 4, 5, 6] }
-  - { chain: fit_to_chords, tracks: [tune], scenes: [4, 5, 6, 7] }
-  - { chain: fit_to_chords, tracks: [tune, answer], scenes: [8, 9] }

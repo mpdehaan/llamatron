@@ -1,4 +1,4 @@
-# noose6: a Python language and framework for producing MIDI clips.
+# llamatron: a Python language and framework for producing MIDI clips.
 # Copyright (C) 2026  Michael DeHaan
 #
 # This program is free software: you can redistribute it and/or modify
@@ -26,11 +26,11 @@ import xml.etree.ElementTree as ET
 from fractions import Fraction
 from pathlib import Path
 
-from src.chord import Chord
-from src.note import Degree, Note, Rest
-from src.renderers.ableton_project import DEFAULT_TEMPLATE, AbletonProject
-from src.scale import Scale, ScaleType
-from src.song import Clip, Scene, Song, Track
+from llamatron.chord import Chord
+from llamatron.note import Degree, Note, Rest
+from llamatron.renderers.ableton_project import DEFAULT_TEMPLATE, AbletonProject
+from llamatron.scale import Scale, ScaleType
+from llamatron.song import Clip, Scene, Song, Track
 
 QUARTER = 0.25
 C4 = Note('C', 4, QUARTER)
@@ -563,16 +563,6 @@ class TestTemplates(ProjectTestCase):
         with self.assertRaises(ValueError):
             self.render(template=self.write_template(remove_midi_tracks))
 
-    def test_rejects_a_template_without_a_clip_to_copy(self):
-        def remove_clips(root):
-            track = root.find('LiveSet/Tracks/MidiTrack')
-            for slot in track.find('DeviceChain/MainSequencer/ClipSlotList'):
-                value = slot.find('ClipSlot/Value')
-                for child in list(value):
-                    value.remove(child)
-        with self.assertRaises(ValueError):
-            self.render(template=self.write_template(remove_clips))
-
     def test_missing_template_raises(self):
         with self.assertRaises(FileNotFoundError):
             self.render(template=os.path.join(self.directory, 'missing.als'))
@@ -587,7 +577,7 @@ class TestFields(unittest.TestCase):
         self.assertIs(project.song, song)
         self.assertEqual(project.template, 'other.als')
 
-    def test_template_defaults_to_the_one_in_the_repository(self):
+    def test_template_defaults_to_the_one_installed_with_the_code(self):
         self.assertEqual(AbletonProject('output', Song()).template, DEFAULT_TEMPLATE)
         self.assertIsInstance(DEFAULT_TEMPLATE, Path)
 

@@ -1,5 +1,5 @@
 #!/bin/sh
-# noose6: a Python language and framework for producing MIDI clips.
+# llamatron: a Python language and framework for producing MIDI clips.
 # Copyright (C) 2026  Michael DeHaan
 #
 # This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,13 @@ cd "$(dirname "$0")"
 if [ ! -x .venv/bin/python ]; then
     echo '.venv is missing, so please set it up first:'
     echo '    python3 -m venv .venv'
-    echo '    .venv/bin/python -m pip install -r requirements.txt'
+    echo '    .venv/bin/python -m pip install -e .'
+    exit 1
+fi
+
+if ! .venv/bin/python -c 'import llamatron' 2>/dev/null; then
+    echo 'llamatron is not installed in .venv, so please install it first:'
+    echo '    .venv/bin/python -m pip install -e .'
     exit 1
 fi
 

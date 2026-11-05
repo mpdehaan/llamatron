@@ -1,4 +1,4 @@
-# noose6: a Python language and framework for producing MIDI clips.
+# llamatron: a Python language and framework for producing MIDI clips.
 # Copyright (C) 2026  Michael DeHaan
 #
 # This program is free software: you can redistribute it and/or modify
@@ -23,17 +23,17 @@ from textual import events
 from textual.app import App
 from textual.screen import Screen
 
-from src.song_file import SongBuilder
-from src.tui.app import NooseApp
-from src.tui.arrange import ArrangePage, ClipPage, ScenePage
-from src.tui.base import ChoiceDialog, ConfirmDialog, Dialog, MessageDialog, Page, PromptDialog
-from src.tui.document import Document, new_song
-from src.tui.lists import FieldPage, ListPage
-from src.tui.pages import (
+from llamatron.song_file import SongBuilder
+from llamatron.tui.app import LlamatronApp
+from llamatron.tui.arrange import ArrangePage, ClipPage, ScenePage
+from llamatron.tui.base import ChoiceDialog, ConfirmDialog, Dialog, MessageDialog, Page, PromptDialog
+from llamatron.tui.document import Document, new_song
+from llamatron.tui.lists import FieldPage, ListPage
+from llamatron.tui.pages import (
     ArpEditor, ArpsPage, AutoRatchetEditor, AutoRatchetsPage, ChainEditor, ChainsPage, FilePage,
     GeneratorsPage, MainPage, PatternsPage, ScalesPage, SongPage, TracksPage,
 )
-from src.tui.pattern_editor import PatternEditor
+from llamatron.tui.pattern_editor import PatternEditor
 
 
 def a_song(path=None):
@@ -49,7 +49,7 @@ def a_song(path=None):
     }
     data['tracks'] = ['lead', 'drums']
     data['arps'] = {'up': {'step': '1/8', 'order': 'up'}}
-    data['chains'] = {'named': [{'arp': 'up'}, {'reverse': {}}], 'empty': []}
+    data['chains'] = {'named': [{'arp': 'up'}, {'auto_ratchet': 'rolls'}], 'empty': []}
     data['scenes'] = [
         {'name': 'one', 'tracks': {'lead': {'pattern': 'tune'}, 'drums': {'pattern': 'beat', 'loop': True}}},
         {'name': 'two', 'tracks': {}},
@@ -97,7 +97,7 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         os.chdir(temporary.name)
         self.folder = temporary.name
         self.document = a_song()
-        self.app = NooseApp(self.document)
+        self.app = LlamatronApp(self.document)
         self.running = self.app.run_test(size=self.SIZE)
         self.pilot = await self.running.__aenter__()
         self.addAsyncCleanup(self.running.__aexit__, None, None, None)
@@ -1133,15 +1133,6 @@ class TestTracksScalesChainsAndArps(UITest):
         self.assertEqual(self.document.data['chains']['empty'], [{'arp': 'up'}])
         SongBuilder(self.document.data)
 
-    async def test_other_generators_are_read_only(self):
-        await self.press('c', 'enter', 'down')
-        self.assertIn('read-only', self.text())
-        labels = [item.shown_label() for item in self.app.screen.keys()]
-        self.assertNotIn('Bksp', labels)
-        self.assertNotIn('Enter', labels)
-        await self.press('backspace')
-        self.assertEqual(self.document.data['chains']['named'][1], {'reverse': {}})
-
     async def test_adding_a_chain_step_needs_an_arp_first(self):
         self.document.data['arps'] = {}
         self.document.data['auto_ratchets'] = {}
@@ -1235,10 +1226,10 @@ class TestSettingArrows(UITest):
 class TestLookAndNewKeys(UITest):
 
     async def test_the_title_is_plain_text_with_the_address_beside_it(self):
-        self.assertIn('noose6 home.laserllama.net', self.text())
+        self.assertIn('llamatron home.laserllama.net', self.text())
         self.assertNotIn('█', self.text())
         await self.press('p')
-        self.assertIn('noose6 home.laserllama.net', self.text())
+        self.assertIn('llamatron home.laserllama.net', self.text())
 
     async def test_new_songs_default_to_a_sixteenth_note(self):
         self.assertEqual(new_song()['default_length'], '1/16')
@@ -1617,18 +1608,6 @@ class TestAdvancedRowsOnAUsualConsole(UITest):
             await self.press('a')
 
 
-class TestLegacyIsHidden(UITest):
-
-    async def test_paint_is_not_mentioned_or_a_reason_to_refuse(self):
-        self.document.data['chains']['painted'] = []
-        self.document.data['paint'] = [{'chain': 'painted', 'tracks': ['lead'], 'scenes': [1]}]
-        self.document.changed()
-        await self.press('c', 'down', 'down', 'backspace')
-        self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press('y')
-        self.assertEqual(self.document.data['paint'], [])
-
-
 class TestHelp(UITest):
     """Help has to work on every page, and to fit a console of the usual size."""
 
@@ -1682,21 +1661,16 @@ class TestDesign(unittest.TestCase):
 
     def test_there_are_no_tooltips(self):
         for path in ['app', 'arrange', 'base', 'lists', 'pages', 'pattern_editor']:
-            with open(f'src/tui/{path}.py', encoding='utf-8') as file:
+            with open(f'src/llamatron/tui/{path}.py', encoding='utf-8') as file:
                 self.assertNotIn('tooltip', file.read())
 
-    def test_paint_is_not_in_any_screen(self):
-        for path in ['app', 'arrange', 'base', 'lists', 'pages', 'pattern_editor']:
-            with open(f'src/tui/{path}.py', encoding='utf-8') as file:
-                self.assertNotIn('paint', file.read().lower())
-
     def test_the_command_palette_is_off(self):
-        self.assertFalse(NooseApp.ENABLE_COMMAND_PALETTE)
-        self.assertTrue(issubclass(NooseApp, App))
+        self.assertFalse(LlamatronApp.ENABLE_COMMAND_PALETTE)
+        self.assertTrue(issubclass(LlamatronApp, App))
 
     def test_the_program_uses_terminal_colors_only(self):
         for path in ['arrange', 'base', 'lists', 'pages', 'pattern_editor']:
-            with open(f'src/tui/{path}.py', encoding='utf-8') as file:
+            with open(f'src/llamatron/tui/{path}.py', encoding='utf-8') as file:
                 text = file.read()
             for color in ['red', 'green', 'blue', 'yellow', 'cyan', 'magenta', 'white', 'black', '#']:
                 self.assertNotIn(f"style='{color}", text)

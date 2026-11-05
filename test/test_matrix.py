@@ -1,4 +1,4 @@
-# noose6: a Python language and framework for producing MIDI clips.
+# llamatron: a Python language and framework for producing MIDI clips.
 # Copyright (C) 2026  Michael DeHaan
 #
 # This program is free software: you can redistribute it and/or modify
@@ -20,10 +20,9 @@ import unittest
 
 import mido
 
-from src.note import Note
-from src.renderers.clip_tree import ClipTree
-from src.scale import Scale, ScaleType
-from src.song import Clip, Scene, Song, Track
+from llamatron.note import Note
+from llamatron.renderers.clip_tree import ClipTree
+from llamatron.song import Clip, Scene, Song, Track
 
 
 class TestMatrix(unittest.TestCase):
@@ -35,7 +34,7 @@ class TestMatrix(unittest.TestCase):
         tracks = [song.add_track(Track(name)) for name in ['T1', 'T2', 'T3']]
 
         # Every clip plays one octave of C major in quarter notes, from C4 up to C5.
-        c_major = Scale(Note('C', 4, 0.25), ScaleType.MAJOR).octaves(1)
+        c_major = [Note(*note, 0.25) for note in zip('CDEFGABC', [4, 4, 4, 4, 4, 4, 4, 5])]
         for scene in scenes:
             for track in tracks:
                 song.set_clip(scene, track, Clip(notes=c_major))

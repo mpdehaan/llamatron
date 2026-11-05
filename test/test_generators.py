@@ -1,4 +1,4 @@
-# noose6: a Python language and framework for producing MIDI clips.
+# llamatron: a Python language and framework for producing MIDI clips.
 # Copyright (C) 2026  Michael DeHaan
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,13 +17,13 @@
 import unittest
 from fractions import Fraction
 
-from src.chord import Chord, ChordType
-from src.generators.arp import Arp, ChordOrder
-from src.generators.base import ClipGenerator
-from src.generators.repeater import Repeater
-from src.note import Note, Rest
-from src.scale import Scale, ScaleType
-from src.song import Clip
+from llamatron.chord import Chord, ChordType
+from llamatron.generators.auto_ratchet import AutoRatchet
+from llamatron.generators.arp import Arp, ChordOrder
+from llamatron.generators.base import ClipGenerator
+from llamatron.note import Note, Rest
+from llamatron.scale import Scale, ScaleType
+from llamatron.song import Clip
 
 QUARTER = 0.25
 C4 = Note('C', 4, QUARTER)
@@ -58,15 +58,26 @@ class TestClipGenerator(unittest.TestCase):
         result = Backwards().generate(Clip(notes=[C4, D4]))
         self.assertEqual(result.notes, [D4, C4])
 
-    def test_every_generator_rejects_anything_but_a_clip(self):
-        for generator in [Repeater(2), Arp(QUARTER)]:
-            for value in [None, 'clip', [C4], C4]:
-                with self.subTest(generator=type(generator).__name__, value=value):
-                    with self.assertRaises(ValueError):
-                        generator.generate(value)
+    def test_one_generator_can_be_reused(self):
+        ratchet = AutoRatchet([2])
+        self.assertEqual(names(ratchet.generate(Clip(notes=[C4]))), 'C4 C4')
+        self.assertEqual(names(ratchet.generate(Clip(notes=[D4]))), 'D4 D4')
+
+    def test_generators_can_be_chained(self):
+        clip = Clip(notes=[C_MAJOR_WHOLE])
+        result = AutoRatchet([2]).generate(Arp(QUARTER).generate(clip))
+        self.assertEqual(names(result), 'C4 C4 E4 E4 G4 G4 C4 C4')
+
+    def test_every_generator_leaves_the_original_unchanged(self):
+        for generator in [AutoRatchet([2]), Arp(QUARTER)]:
+            with self.subTest(generator=type(generator).__name__):
+                original = Clip(notes=[C_MAJOR, Rest(QUARTER)], length=1)
+                generator.generate(original)
+                self.assertEqual(original.notes, [C_MAJOR, Rest(QUARTER)])
+                self.assertEqual(original.length, 1)
 
     def test_every_generator_makes_a_new_clip_and_keeps_the_details(self):
-        for generator in [Repeater(2), Arp(QUARTER)]:
+        for generator in [AutoRatchet([2]), Arp(QUARTER)]:
             with self.subTest(generator=type(generator).__name__):
                 original = Clip('Riff', notes=[C_MAJOR], scale=SCALE, length=1)
                 result = generator.generate(original)
@@ -75,112 +86,13 @@ class TestClipGenerator(unittest.TestCase):
                 self.assertEqual(result.name, 'Riff')
                 self.assertIs(result.scale, SCALE)
 
-    def test_every_generator_leaves_the_original_unchanged(self):
-        for generator in [Repeater(2), Arp(QUARTER)]:
-            with self.subTest(generator=type(generator).__name__):
-                original = Clip(notes=[C_MAJOR, Rest(QUARTER)], length=1)
-                generator.generate(original)
-                self.assertEqual(original.notes, [C_MAJOR, Rest(QUARTER)])
-                self.assertEqual(original.length, 1)
+    def test_every_generator_rejects_anything_but_a_clip(self):
+        for generator in [AutoRatchet([2]), Arp(QUARTER)]:
+            for value in [None, 'clip', [C4], C4]:
+                with self.subTest(generator=type(generator).__name__, value=value):
+                    with self.assertRaises(ValueError):
+                        generator.generate(value)
 
-    def test_generators_can_be_chained(self):
-        clip = Clip(notes=[C_MAJOR_WHOLE])
-        result = Repeater(2).generate(Arp(QUARTER).generate(clip))
-        self.assertEqual(names(result), 'C4 C4 E4 E4 G4 G4 C4 C4')
-
-    def test_one_generator_can_be_reused(self):
-        repeater = Repeater(2)
-        self.assertEqual(names(repeater.generate(Clip(notes=[C4]))), 'C4 C4')
-        self.assertEqual(names(repeater.generate(Clip(notes=[D4]))), 'D4 D4')
-
-
-class TestRepeater(unittest.TestCase):
-
-    def test_two_turns_a_whole_note_into_two_half_notes(self):
-        result = Repeater(2).generate(Clip(notes=[Note('C', 4, 1)]))
-        self.assertEqual(result.notes, [Note('C', 4, 0.5), Note('C', 4, 0.5)])
-
-    def test_each_position_repeats_before_the_next(self):
-        result = Repeater(2).generate(Clip(notes=[C4, D4]))
-        eighth_c, eighth_d = Note('C', 4, 0.125), Note('D', 4, 0.125)
-        self.assertEqual(result.notes, [eighth_c, eighth_c, eighth_d, eighth_d])
-
-    def test_three_makes_exact_triplets(self):
-        result = Repeater(3).generate(Clip(notes=[Note('C', 4, 1)]))
-        self.assertEqual(result.notes, [Note('C', 4, Fraction(1, 3))] * 3)
-
-    def test_chords_are_repeated_with_every_note_shortened(self):
-        chord = Note('C', 4, 1).to_chord(ChordType.MAJOR)
-        result = Repeater(2).generate(Clip(notes=[chord]))
-        half = Note('C', 4, 0.5).to_chord(ChordType.MAJOR)
-        self.assertEqual(result.notes, [half, half])
-
-    def test_chords_with_mixed_lengths_keep_their_proportions(self):
-        chord = Chord([Note('C', 4, 1), Note('E', 4, 0.5)])
-        result = Repeater(2).generate(Clip(notes=[chord]))
-        shorter = Chord([Note('C', 4, 0.5), Note('E', 4, 0.25)])
-        self.assertEqual(result.notes, [shorter, shorter])
-
-    def test_rests_are_repeated(self):
-        result = Repeater(2).generate(Clip(notes=[Rest(1)]))
-        self.assertEqual(result.notes, [Rest(0.5), Rest(0.5)])
-
-    def test_keeps_the_note_spelling(self):
-        result = Repeater(2).generate(Clip(notes=[Note('Db', 4, 1)]))
-        self.assertEqual(names(result), 'Db4 Db4')
-
-    def test_total_duration_stays_the_same(self):
-        notes = [Note('C', 4, 0.5), Rest(0.25), C_MAJOR]
-        for times in [1, 2, 3, 7]:
-            with self.subTest(times=times):
-                result = Repeater(times).generate(Clip(notes=notes))
-                self.assertEqual(sum(position.length for position in result.notes), 1)
-
-    def test_keeps_the_clip_length(self):
-        result = Repeater(2).generate(Clip(notes=[C4], length=1))
-        self.assertEqual(result.length, 1)
-        self.assertIsNone(Repeater(2).generate(Clip(notes=[C4])).length)
-
-    def test_set_length_keeps_the_silence_after_the_notes(self):
-        result = Repeater(2).generate(Clip(notes=[C4], length=1))
-        eighth = Note('C', 4, 0.125)
-        self.assertEqual(result.notes, [eighth, eighth])
-
-    def test_once_gives_a_copy(self):
-        original = Clip(notes=[C4, D4])
-        result = Repeater(1).generate(original)
-        self.assertEqual(result.notes, original.notes)
-        result.notes.append(E4)
-        self.assertEqual(len(original.notes), 2)
-
-    def test_empty_clip_stays_empty(self):
-        result = Repeater(3).generate(Clip(length=1))
-        self.assertEqual(result.notes, [])
-        self.assertEqual(result.length, 1)
-
-    def test_inexact_float_lengths_stay_exact(self):
-        result = Repeater(2).generate(Clip(notes=[Note('C', 4, 1 / 12)]))
-        self.assertEqual(result.notes[0].length, Fraction(1, 24))
-
-    def test_rejects_invalid_item_added_to_a_list(self):
-        clip = Clip(notes=[C4])
-        clip.notes.append('C4')
-        with self.assertRaises(ValueError):
-            Repeater(2).generate(clip)
-
-    def test_rejects_invalid_times(self):
-        for times in [0, -1, 1.5, 2.0, '2', None, True]:
-            with self.subTest(times=times):
-                with self.assertRaises(ValueError):
-                    Repeater(times)
-
-    def test_times_can_be_edited_and_is_validated(self):
-        repeater = Repeater(2)
-        repeater.times = 3
-        self.assertEqual(repeater.times, 3)
-        with self.assertRaises(ValueError):
-            repeater.times = 0
-        self.assertEqual(repeater.times, 3)
 
 
 class TestArpOrders(unittest.TestCase):

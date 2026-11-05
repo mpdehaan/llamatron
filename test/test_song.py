@@ -1,4 +1,4 @@
-# noose6: a Python language and framework for producing MIDI clips.
+# llamatron: a Python language and framework for producing MIDI clips.
 # Copyright (C) 2026  Michael DeHaan
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,10 +17,10 @@
 import unittest
 from fractions import Fraction
 
-from src.chord import Chord, ChordType
-from src.note import Note, Rest
-from src.scale import Scale, ScaleType
-from src.song import Clip, Scene, Song, Track
+from llamatron.chord import Chord, ChordType
+from llamatron.note import Note, Rest
+from llamatron.scale import Scale, ScaleType
+from llamatron.song import Clip, Scene, Song, Track
 
 C_MAJOR = Scale(Note('C', 0, 0.25), ScaleType.MAJOR)
 A_MINOR = Scale(Note('A', 0, 0.25), ScaleType.MINOR)
@@ -112,72 +112,6 @@ class TestNamedParts(unittest.TestCase):
                 self.assertEqual(part.id, original)
 
 
-class TestClipRenamed(unittest.TestCase):
-
-    def test_returns_a_new_clip_with_the_same_contents(self):
-        note = Note('C', 4, 0.25)
-        original = Clip('Old', notes=[note], scale=C_MAJOR, length=1, note_length=0.5)
-        result = original.renamed('New')
-        self.assertIsNot(result, original)
-        self.assertEqual(result.name, 'New')
-        self.assertEqual(result.notes, [note])
-        self.assertIs(result.scale, C_MAJOR)
-        self.assertEqual(result.length, 1)
-        self.assertEqual(result.note_length, 0.5)
-        self.assertNotEqual(result.id, original.id)
-
-    def test_leaves_the_original_alone(self):
-        original = Clip('Old', notes=[Note('C', 4, 0.25)])
-        result = original.renamed('New')
-        result.notes.clear()
-        self.assertEqual(original.name, 'Old')
-        self.assertEqual(len(original.notes), 1)
-
-
-class TestClipTrim(unittest.TestCase):
-
-    def setUp(self):
-        self.c = Note('C', 4, 0.25)
-        self.d = Note('D', 4, 0.25)
-        self.e = Note('E', 4, 0.25)
-
-    def test_keeps_the_first_notes(self):
-        clip = Clip(notes=[self.c, self.d, self.e])
-        clip.trim(2)
-        self.assertEqual(clip.notes, [self.c, self.d])
-
-    def test_returns_the_same_clip(self):
-        clip = Clip(notes=[self.c, self.d])
-        self.assertIs(clip.trim(1), clip)
-
-    def test_does_nothing_when_there_are_fewer_notes(self):
-        clip = Clip(notes=[self.c]).trim(5)
-        self.assertEqual(clip.notes, [self.c])
-
-    def test_zero_removes_every_note(self):
-        self.assertEqual(Clip(notes=[self.c]).trim(0).notes, [])
-
-    def test_chords_and_rests_count_as_one_position(self):
-        chord = self.c.to_chord(ChordType.MAJOR)
-        clip = Clip(notes=[chord, Rest(0.25), self.c]).trim(2)
-        self.assertEqual(clip.notes, [chord, Rest(0.25)])
-
-    def test_does_not_change_the_length(self):
-        clip = Clip(notes=[self.c, self.d], length=1).trim(1)
-        self.assertEqual(clip.length, 1)
-
-    def test_does_not_change_the_list_it_was_built_from(self):
-        notes = [self.c, self.d]
-        Clip(notes=notes).trim(1)
-        self.assertEqual(notes, [self.c, self.d])
-
-    def test_rejects_invalid_counts(self):
-        for n in [-1, 1.5, 2.0, '2', None, True]:
-            with self.subTest(n=n):
-                clip = Clip(notes=[self.c, self.d])
-                with self.assertRaises(ValueError):
-                    clip.trim(n)
-                self.assertEqual(len(clip.notes), 2)
 
 
 class TestClipLength(unittest.TestCase):
@@ -227,10 +161,6 @@ class TestClipNotes(unittest.TestCase):
         notes = [Note('C', 4, 0.25), Rest(0.25)]
         self.assertEqual(Clip(notes=notes).notes, notes)
 
-    def test_takes_a_scale_notes_list(self):
-        notes = Scale(Note('C', 4, 0.25), ScaleType.MAJOR).octaves(1)
-        self.assertEqual(Clip(notes=notes).notes, notes)
-
     def test_takes_a_tuple_and_stores_a_list(self):
         self.assertEqual(Clip(notes=(Note('C', 4, 0.25),)).notes, [Note('C', 4, 0.25)])
 
@@ -255,109 +185,6 @@ class TestClipNotes(unittest.TestCase):
             clip.notes = ['H4']
         self.assertEqual(clip.notes, [Note('C', 4, 0.25)])
 
-
-class TestRemovingTracksAndScenes(unittest.TestCase):
-
-    def setUp(self):
-        self.song = Song()
-        self.tracks = [self.song.add_track(Track()) for _ in range(2)]
-        self.scenes = [self.song.add_scene(Scene()) for _ in range(2)]
-        self.clips = {
-            (scene.id, track.id): self.song.set_clip(scene, track, Clip())
-            for scene in self.scenes
-            for track in self.tracks
-        }
-
-    def test_remove_track_keeps_the_others(self):
-        first, second = self.tracks
-        self.song.remove_track(first)
-        self.assertEqual(self.song.tracks, [second])
-
-    def test_remove_scene_keeps_the_others(self):
-        first, second = self.scenes
-        self.song.remove_scene(first)
-        self.assertEqual(self.song.scenes, [second])
-
-    def test_remove_track_removes_only_its_clips(self):
-        first, second = self.tracks
-        second_id = second.id
-        self.song.remove_track(first)
-        for scene in self.scenes:
-            self.assertIs(
-                self.song.get_clip(scene, second),
-                self.clips[(scene.id, second_id)],
-            )
-        self.assertEqual(
-            {scene_id: list(clips) for scene_id, clips in self.song._clips.items()},
-            {scene.id: [second_id] for scene in self.scenes},
-        )
-
-    def test_remove_scene_removes_only_its_clips(self):
-        first, second = self.scenes
-        second_id = second.id
-        self.song.remove_scene(first)
-        self.assertEqual(list(self.song._clips), [second_id])
-
-    def test_removing_every_track_leaves_no_clips(self):
-        for track in self.tracks:
-            self.song.remove_track(track)
-        self.assertEqual(self.song._clips, {})
-
-    def test_ids_are_not_reused(self):
-        self.song.remove_track(self.tracks[1])
-        self.song.remove_scene(self.scenes[1])
-        self.assertEqual(self.song.add_track(Track()).id, 2)
-        self.assertEqual(self.song.add_scene(Scene()).id, 2)
-
-    def test_removed_objects_have_no_id(self):
-        track, scene = self.tracks[0], self.scenes[0]
-        self.song.remove_track(track)
-        self.song.remove_scene(scene)
-        self.assertIsNone(track.id)
-        self.assertIsNone(scene.id)
-
-    def test_removed_objects_cannot_be_used_in_the_grid(self):
-        track, scene = self.tracks[0], self.scenes[0]
-        other_scene, other_track = self.scenes[1], self.tracks[1]
-        self.song.remove_track(track)
-        self.song.remove_scene(scene)
-        with self.assertRaises(ValueError):
-            self.song.get_clip(other_scene, track)
-        with self.assertRaises(ValueError):
-            self.song.get_clip(scene, other_track)
-
-    def test_removed_objects_can_be_added_again_with_a_new_id(self):
-        track = self.tracks[0]
-        self.song.remove_track(track)
-        self.song.add_track(track)
-        self.assertEqual(track.id, 2)
-        self.assertEqual(self.song.get_clip(self.scenes[0], track), None)
-
-    def test_removed_objects_can_join_another_song(self):
-        track = self.tracks[1]
-        self.song.remove_track(track)
-        self.assertEqual(Song().add_track(track).id, 0)
-
-    def test_rejects_objects_that_are_not_in_the_song(self):
-        for value in [Track(), None, 'Bass', Scene()]:
-            with self.subTest(value=value):
-                with self.assertRaises(ValueError):
-                    self.song.remove_track(value)
-        for value in [Scene(), None, 'Verse', Track()]:
-            with self.subTest(value=value):
-                with self.assertRaises(ValueError):
-                    self.song.remove_scene(value)
-
-    def test_rejects_objects_from_another_song_with_the_same_id(self):
-        other_song = Song()
-        track = other_song.add_track(Track())
-        scene = other_song.add_scene(Scene())
-        with self.assertRaises(ValueError):
-            self.song.remove_track(track)
-        with self.assertRaises(ValueError):
-            self.song.remove_scene(scene)
-        self.assertEqual(len(self.song.tracks), 2)
-        self.assertEqual(len(self.song.scenes), 2)
 
 
 class TestTempos(unittest.TestCase):
@@ -619,6 +446,18 @@ class TestTracksAndScenes(unittest.TestCase):
 
 class TestClipGrid(unittest.TestCase):
 
+    def test_rejects_scenes_and_tracks_from_outside_the_song(self):
+        outside_scene, outside_track = Scene(), Track()
+        calls = [
+            lambda scene, track: self.song.set_clip(scene, track, Clip()),
+            self.song.get_clip,
+        ]
+        for call in calls:
+            with self.assertRaises(ValueError):
+                call(outside_scene, self.track)
+            with self.assertRaises(ValueError):
+                call(self.scene, outside_track)
+
     def setUp(self):
         self.song = Song()
         self.track = self.song.add_track(Track('Bass'))
@@ -656,40 +495,11 @@ class TestClipGrid(unittest.TestCase):
         clip = self.song.set_clip(self.scene, self.track, Clip())
         self.assertEqual(self.song._clips, {self.scene.id: {self.track.id: clip}})
 
-    def test_removing_a_clip_empties_only_that_cell(self):
-        other = self.song.set_clip(self.scene, self.other_track, Clip())
-        self.song.set_clip(self.scene, self.track, Clip())
-        self.song.remove_clip(self.scene, self.track)
-        self.assertIsNone(self.song.get_clip(self.scene, self.track))
-        self.assertIs(self.song.get_clip(self.scene, self.other_track), other)
-
-    def test_removing_the_last_clip_in_a_scene_leaves_no_entry(self):
-        self.song.set_clip(self.scene, self.track, Clip())
-        self.song.remove_clip(self.scene, self.track)
-        self.assertEqual(self.song._clips, {})
-
-    def test_removing_from_an_empty_cell_does_nothing(self):
-        self.song.remove_clip(self.scene, self.track)
-        self.assertIsNone(self.song.get_clip(self.scene, self.track))
-
     def test_rejects_a_clip_of_the_wrong_type(self):
         for value in ['Riff', None, Track()]:
             with self.subTest(value=value):
                 with self.assertRaises(ValueError):
                     self.song.set_clip(self.scene, self.track, value)
-
-    def test_rejects_scenes_and_tracks_from_outside_the_song(self):
-        outside_scene, outside_track = Scene(), Track()
-        calls = [
-            lambda scene, track: self.song.set_clip(scene, track, Clip()),
-            self.song.get_clip,
-            self.song.remove_clip,
-        ]
-        for call in calls:
-            with self.assertRaises(ValueError):
-                call(outside_scene, self.track)
-            with self.assertRaises(ValueError):
-                call(self.scene, outside_track)
 
     def test_rejects_scene_and_track_in_the_wrong_order(self):
         with self.assertRaises(ValueError):

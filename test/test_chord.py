@@ -1,4 +1,4 @@
-# noose6: a Python language and framework for producing MIDI clips.
+# llamatron: a Python language and framework for producing MIDI clips.
 # Copyright (C) 2026  Michael DeHaan
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,8 @@
 import dataclasses
 import unittest
 
-from src.chord import Chord, ChordType
-from src.note import Note
+from llamatron.chord import Chord, ChordType
+from llamatron.note import Note
 
 
 def notes(text):

@@ -1,5 +1,5 @@
-# Acid techno: a bass line written in counterpoint against a short riff, getting darker.
-# Run it with: .venv/bin/python -m src.cli examples/acid_techno.yml --replace
+# Acid techno: a sliding bass riff over a four-on-the-floor kick, getting darker.
+# Run it with: llamatron examples/acid_techno.yml --to ableton --replace
 # Turn up the glide on your synth for the slides.
 
 tempo: 138
@@ -23,16 +23,41 @@ patterns:
     duration: [1/8, 1/8]
     accidental: [~, "#"]
     octave: [~, 1]
+  hat_fast:
+    steps: 4
+    drum: true
+    degree: [~, F, ~, F]
+    duration: [1/16, 1/16, 1/16, 1/16]
+    accidental: [~, "#", ~, "#"]
+    octave: [~, 1, ~, 1]
   seed:
     steps: 9
     degree: [1, 1, 3, 1, 5, 1, 7, 1, 3]
     duration: [1/8, 1/16, 1/8, 1/8, 1/16, 1/8, 1/8, 1/16, 3/16]
-    octave: [4, 4, 4, 4, 4, 4, 3, 4, 4]
-  seed_chords:
+    octave: [1, 1, 1, 1, 1, 1, 0, 1, 1]
+    velocity: [127, 90, 110, 90, 127, 90, 110, 90, 100]
+    glide: [~, true, ~, ~, true, ~, ~, true, ~]
+  seed_rising:
     steps: 9
+    accumulator_limit: 6
     degree: [1, 1, 3, 1, 5, 1, 7, 1, 3]
     duration: [1/8, 1/16, 1/8, 1/8, 1/16, 1/8, 1/8, 1/16, 3/16]
-    octave: [3, 3, 3, 3, 3, 3, 2, 3, 3]
+    octave: [1, 1, 1, 1, 1, 1, 0, 1, 1]
+    glide: [~, true, ~, ~, true, ~, ~, true, ~]
+    note_add: [~, ~, ~, ~, ~, ~, ~, ~, 1]
+  seed2:
+    steps: 9
+    degree: [1, 1, 4, 3, 5, 6, 5, 3, 1]
+    duration: [1/8, 1/16, 1/8, 1/8, 1/16, 1/8, 1/8, 1/16, 3/16]
+    octave: [1, 1, 1, 1, 1, 1, 1, 1, 1]
+    glide: [~, true, ~, true, ~, true, ~, true, ~]
+    ratchet: [~, ~, ~, ~, ~, ~, ~, 2, ~]
+  seed2_slow:
+    steps: 9
+    degree: [1, 1, 4, 3, 5, 6, 5, 3, 1]
+    duration: [1/4, 1/8, 1/4, 1/4, 1/8, 1/4, 1/4, 1/8, 3/8]
+    octave: [1, 1, 1, 1, 1, 1, 1, 1, 1]
+    glide: [~, true, ~, true, ~, true, ~, true, ~]
   clap:
     steps: 6
     drum: true
@@ -46,49 +71,21 @@ patterns:
     duration: [1, 1, 1, 1]
     octave: [3, 3, 2, 2]
     chord: [3, 3, 3, 3]
-  roots_acid:
-    steps: 4
-    degree: [1, 1, 6, 7]
-    duration: [1, 1, 1, 1]
-    octave: [4, 4, 3, 3]
-    chord: [3, 3, 3, 3]
-  seed2:
-    steps: 9
-    degree: [1, 1, 4, 3, 5, 6, 5, 3, 1]
-    duration: [1/8, 1/16, 1/8, 1/8, 1/16, 1/8, 1/8, 1/16, 3/16]
-    octave: [4, 4, 4, 4, 4, 4, 4, 4, 4]
+  stabs:
+    steps: 8
+    degree: [1, ~, 1, ~, 6, ~, 7, ~]
+    duration: [1/8, 7/8, 1/8, 7/8, 1/8, 7/8, 1/8, 7/8]
+    octave: [3, ~, 3, ~, 2, ~, 2, ~]
+    chord: [3, ~, 3, ~, 3, ~, 3, ~]
 
 tracks: [kick, hat, clap, acid, chords]
 
+auto_ratchets:
+  rolls: { counts: [1, 1, 1, 1, 1, 1, 1, 3] }
+
 chains:
-  steady_bass:
-    - counterpoint: { chords: roots_acid, style: note_against_note, low: A3, high: A4 }
-  running_bass:
-    - counterpoint: { chords: roots_acid, style: flowing, step: 1/16, low: A3, high: A4 }
-  echo_bass:
-    - counterpoint: { chords: roots_acid, style: canon, delay: 1/2, low: A3, high: A4 }
-  twist:
-    - blend: { to: seed2, style: right }
-  shuffle_a_little:
-    - mix_up2: { probabilities: [0.1] }
-  shuffle_more:
-    - mix_up: { probabilities: [0.2] }
-  half_time:
-    - stretch: { factor: 2 }
-    - register: { low: A3, high: G#4 }
-  double_hats:
-    - repeater: { times: 2 }
-  rolls:
-    - auto_ratchet: { counts: [1, 1, 1, 1, 1, 1, 1, 3] }
-  stabs:
-    - harmonize: { charts: [roots] }
-  darker:
-    - register: { low: A3, high: G#4 }
-    - transpose_scale: { input_scale: A minor, output_scale: A phrygian }
-  force_dark:
-    - force_scale: { scale: A phrygian }
-  climb:
-    - transpose: { octaves: 1 }
+  rolling_hats:
+    - auto_ratchet: rolls
 
 scenes:
   - name: kick
@@ -98,38 +95,31 @@ scenes:
     tracks:
       kick: { pattern: kick, repeat: 32 }
       hat: { pattern: hat, loop: true }
-      acid: { pattern: seed, chain: steady_bass, loop: true }
-  - name: squelch
-    repeat: 8
-    tracks:
-      kick: { pattern: kick, repeat: 16 }
-      hat: { pattern: hat, loop: true }
-      clap: { pattern: clap, loop: true }
       acid: { pattern: seed, loop: true }
-      chords: { pattern: seed_chords, chain: stabs, loop: true }
+  - name: squelch
+    tracks:
+      kick: { pattern: kick, repeat: 128 }
+      hat: { pattern: hat, chain: rolling_hats, loop: true }
+      clap: { pattern: clap, loop: true }
+      acid: { pattern: seed, repeat: 32, morph_to: seed2, morph_style: right }
+      chords: { pattern: stabs, loop: true }
   - name: break
+    scale: A Phrygian
     tracks:
       hat: { pattern: hat, repeat: 32 }
-      chords: { pattern: roots, chain: force_dark, loop: true }
-      acid: { pattern: seed2, chain: half_time, loop: true }
+      chords: { pattern: roots, loop: true }
+      acid: { pattern: seed2_slow, loop: true }
   - name: dark
     repeat: 4
     scale: A Phrygian
     tracks:
       kick: { pattern: kick, repeat: 32 }
-      hat: { pattern: hat, chain: double_hats, loop: true }
+      hat: { pattern: hat_fast, loop: true }
       clap: { pattern: clap, loop: true }
-      acid: { pattern: seed2, chain: echo_bass, loop: true }
+      acid: { pattern: seed2, direction: brownian, loop: true }
   - name: out
+    scale: A Phrygian
     tracks:
       kick: { pattern: kick, repeat: 64 }
-      hat: { pattern: hat, chain: double_hats, loop: true }
-      acid: { pattern: seed, chain: darker, loop: true }
-
-paint:
-  - { chain: twist, tracks: [acid], scenes: [3, 4, 5, 6, 7, 8, 9, 10] }
-  - { chain: running_bass, tracks: [acid], scenes: [3, 4, 5, 6, 7, 8, 9, 10] }
-  - { chain: rolls, tracks: [hat], scenes: [7, 8, 9, 10] }
-  - { chain: shuffle_a_little, tracks: [acid], scenes: [12, 13, 14, 15] }
-  - { chain: shuffle_more, tracks: [acid], scenes: [16] }
-  - { chain: climb, tracks: [acid], scenes: [16] }
+      hat: { pattern: hat_fast, loop: true }
+      acid: { pattern: seed_rising, loop: true }
