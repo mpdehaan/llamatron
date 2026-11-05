@@ -15,44 +15,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from abc import ABC, abstractmethod
-from dataclasses import replace
-from fractions import Fraction
 
-from src.chord import Chord
-from src.note import Rest
-from src.song import POSITION_TYPES, Clip
+from src.song import POSITION_TYPES, Clip, cut_position as _cut, exact_length, fit_to_length
 
-
-def exact_length(length):
-    """Return a length as an exact fraction.
-
-    Lengths like 1/12 are slightly inexact as floats, so without this, three of them
-    would fall just short of a quarter note and leave a tiny extra note or rest.
-    """
-    return Fraction(length).limit_denominator(1_000_000)
-
-
-def _cut(position, length):
-    """Return a position that lasts no longer than length."""
-    if exact_length(position.length) <= length:
-        return position
-    if isinstance(position, Chord):
-        return Chord([_cut(note, length) for note in position.notes])
-    return replace(position, length=length)
-
-
-def fit_to_length(positions, length):
-    """Return positions that last exactly length, cutting notes off or adding a final rest."""
-    result = []
-    remaining = exact_length(length)
-    for position in positions:
-        if remaining <= 0:
-            break
-        result.append(_cut(position, remaining))
-        remaining -= min(exact_length(position.length), remaining)
-    if remaining > 0:
-        result.append(Rest(remaining))
-    return result
+__all__ = ['ClipGenerator', '_cut', 'exact_length', 'fit_to_length']
 
 
 class ClipGenerator(ABC):

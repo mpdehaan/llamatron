@@ -1,6 +1,8 @@
+songs/
 __pycache__/
 *.py[cod]
 *$py.class
 .venv/
 output/
 *.mid
+.DS_Store

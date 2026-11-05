@@ -56,13 +56,13 @@ class TestBackfillDemo(unittest.TestCase):
 
     def test_writes_one_named_file_per_scene(self):
         self.assertEqual(sorted(os.listdir(self.directory)), [
-            '000-000-Run_0.mid', '001-000-Run_1.mid', '002-000-Run_2.mid',
+            '001-001-Run_0.mid', '002-001-Run_1.mid', '003-001-Run_2.mid',
         ])
 
     def test_each_scene_fills_in_more_of_the_pattern(self):
-        self.assertEqual(self.played('000-000-Run_0.mid'), RUN_0)
-        self.assertEqual(self.played('001-000-Run_1.mid'), RUN_1)
-        self.assertEqual(self.played('002-000-Run_2.mid'), RUN_2)
+        self.assertEqual(self.played('001-001-Run_0.mid'), RUN_0)
+        self.assertEqual(self.played('002-001-Run_1.mid'), RUN_1)
+        self.assertEqual(self.played('003-001-Run_2.mid'), RUN_2)
 
     def test_every_clip_lasts_two_seconds(self):
         for filename in os.listdir(self.directory):
@@ -70,7 +70,7 @@ class TestBackfillDemo(unittest.TestCase):
                 self.assertAlmostEqual(self.midi_file(filename).length, 2)
 
     def test_original_notes_stay_on_their_times(self):
-        for filename in ['001-000-Run_1.mid', '002-000-Run_2.mid']:
+        for filename in ['002-001-Run_1.mid', '003-001-Run_2.mid']:
             with self.subTest(filename=filename):
                 self.assertLessEqual(set(RUN_0), set(self.played(filename)))
 

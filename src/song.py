@@ -16,6 +16,7 @@
 
 import re
 from dataclasses import replace
+from fractions import Fraction
 from itertools import count
 from math import isfinite
 
@@ -33,6 +34,62 @@ _QUARTER_NOTE = 0.25
 _NOTE_TEXT = re.compile(r'([A-G][#b]?)(\d+)')
 
 _next_clip_id = count(0)
+
+
+def exact_length(length):
+    """Return a length as an exact fraction.
+
+    Lengths like 1/12 are slightly inexact as floats, so without this, three of them
+    would fall just short of a quarter note and leave a tiny extra note or rest.
+    """
+    return Fraction(length).limit_denominator(1_000_000)
+
+
+def cut_position(position, length):
+    """Return a position that lasts no longer than length."""
+    if exact_length(position.length) <= length:
+        return position
+    if isinstance(position, Chord):
+        return Chord([cut_position(note, length) for note in position.notes])
+    return replace(position, length=length)
+
+
+def fit_to_length(positions, length):
+    """Return positions that last exactly length, cutting notes off or adding a final rest."""
+    result = []
+    remaining = exact_length(length)
+    for position in positions:
+        if remaining <= 0:
+            break
+        result.append(cut_position(position, remaining))
+        remaining -= min(exact_length(position.length), remaining)
+    if remaining > 0:
+        result.append(Rest(remaining))
+    return result
+
+
+def _piece_of(position, offset, length):
+    """Return the part of a position that starts offset into it and lasts length."""
+    if isinstance(position, Rest):
+        return Rest(length)
+    if isinstance(position, Chord):
+        pieces = [
+            _piece_of(note, offset, length) for note in position.notes
+            if exact_length(note.length) > offset
+        ]
+        return Chord(pieces) if pieces else Rest(length)
+    return replace(position, length=min(exact_length(position.length) - offset, length))
+
+
+def join_clips(clips, name=None):
+    """Return a new Clip that plays clips one after another, using the first one's scale.
+
+    Each clip lasts as long as its own length, so silence at the end of a clip is kept.
+    """
+    notes = []
+    for clip in clips:
+        notes += clip.played_notes()
+    return Clip(name=name, notes=notes, scale=clips[0].scale if clips else None)
 
 
 def _to_position(value):
@@ -70,6 +127,11 @@ def _check_tempo_override(tempo):
 def _check_scale(scale):
     if scale is not None and not isinstance(scale, Scale):
         raise ValueError(f'expected a Scale, got {scale!r}')
+
+
+def _check_loop(loop):
+    if type(loop) is not bool:
+        raise ValueError(f'invalid loop: {loop!r} (must be True or False)')
 
 
 def _check_clip_length(length):
@@ -150,21 +212,24 @@ class Clip:
     A length of None ends the clip after the last position. Otherwise the clip is
     exactly that long, adding silence or cutting off notes to fit. Like note
     lengths, it's a fraction of a whole note, so 1 is a whole note or four quarters.
-    A scale of None uses the scene's or song's. Clips have no tempo of their own.
+    A scale of None uses the scene's or song's. Clips have no tempo of their own. Loop
+    is whether Live plays the clip again when it reaches its end.
     """
 
     name = _Validated(_check_name)
     scale = _Validated(_check_scale)
     length = _Validated(_check_clip_length)
     note_length = _Validated(_check_clip_length)
+    loop = _Validated(_check_loop)
 
-    def __init__(self, name=None, notes=None, scale=None, length=None, note_length=None):
+    def __init__(self, name=None, notes=None, scale=None, length=None, note_length=None, loop=True):
         self._id = next(_next_clip_id)
         self.name = name
         self.notes = [] if notes is None else notes
         self.scale = scale
         self.length = length
         self.note_length = note_length
+        self.loop = loop
 
     @property
     def id(self):
@@ -197,6 +262,56 @@ class Clip:
         if self.note_length is None:
             raise ValueError(f'{position!r} has no length, and the clip has no note_length')
         return replace(position, length=self.note_length)
+
+    def played_notes(self):
+        """Return resolved notes that fill the clip's set length, if it has one."""
+        positions = self.resolved_notes()
+        return positions if self.length is None else fit_to_length(positions, self.length)
+
+    def total_length(self):
+        """Return how long the clip lasts, as an exact fraction of a whole note."""
+        if self.length is not None:
+            return exact_length(self.length)
+        return sum((exact_length(position.length) for position in self.resolved_notes()), Fraction(0))
+
+    def section(self, start, end):
+        """Return a new Clip of the part from start to end, in fractions of a whole note.
+
+        A note that crosses either edge is cut, so its second half plays as a new note.
+        Anything past the end of the clip becomes silence, so the result always lasts
+        exactly end minus start.
+        """
+        start, end = exact_length(start), exact_length(end)
+        if start < 0 or end <= start:
+            raise ValueError(f'invalid section: from {start} to {end}')
+        notes = []
+        position_start = Fraction(0)
+        for position in self.played_notes():
+            position_end = position_start + exact_length(position.length)
+            piece_start, piece_end = max(position_start, start), min(position_end, end)
+            if piece_end > piece_start:
+                notes.append(_piece_of(position, piece_start - position_start, piece_end - piece_start))
+            position_start = position_end
+        if position_start < end:
+            notes.append(Rest(end - max(position_start, start)))
+        return Clip(name=self.name, notes=notes, scale=self.scale, note_length=self.note_length)
+
+    def measures(self, first, last, measure_length=1):
+        """Return a new Clip of measures first to last, counting from 1 and including both."""
+        if type(first) is not int or type(last) is not int or first < 1 or last < first:
+            raise ValueError(f'invalid measures: {first!r} to {last!r}')
+        _check_length(measure_length)
+        size = exact_length(measure_length)
+        return self.section((first - 1) * size, last * size)
+
+    def repeated(self, times):
+        """Return a new Clip that plays this one times in a row, so it lasts times as long."""
+        if type(times) is not int or times < 1:
+            raise ValueError(f'invalid times: {times!r} (must be a positive integer)')
+        return Clip(
+            name=self.name, notes=self.played_notes() * times, scale=self.scale,
+            note_length=self.note_length,
+        )
 
     def renamed(self, name):
         """Return a new Clip with the same contents and a different name."""

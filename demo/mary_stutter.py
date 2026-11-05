@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Mary Had a Little Lamb, with bursts of repeated melody notes using Stutter.
+"""Mary Had a Little Lamb, with bursts of repeated melody notes using AutoRatchet.
 
 Run it from the top folder of this project:
 
@@ -26,7 +26,7 @@ changing the counts to hear the difference.
 """
 
 from demo.mary import CHORDS, MELODY
-from src.generators.stutter import Stutter
+from src.generators.auto_ratchet import AutoRatchet
 from src.renderers.clip_tree import ClipTree
 from src.song import Clip, Scene, Song, Track
 
@@ -37,7 +37,7 @@ def build_song():
     song = Song(tempo=120)
     melody_track = song.add_track(Track('Melody'))
     chord_track = song.add_track(Track('Chords'))
-    machine_gun = Stutter([1, 1, 1, 4])
+    machine_gun = AutoRatchet([1, 1, 1, 4])
 
     for melody, chords in zip(MELODY, CHORDS):
         scene = song.add_scene(Scene())

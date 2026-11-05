@@ -15,11 +15,12 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import random
+from dataclasses import replace
 from enum import Enum, auto
 
 from src.chord import Chord
 from src.generators.base import ClipGenerator, exact_length, fit_to_length
-from src.note import Note, _check_length
+from src.note import _check_length
 from src.song import _Validated
 
 
@@ -101,7 +102,7 @@ class Arp(ClipGenerator):
         while remaining > 0:
             note = generator.choice(notes) if pattern is None else pattern[index % len(pattern)]
             length = self.step if step <= remaining else remaining
-            result.append(Note(note.name, note.octave_number, length))
+            result.append(replace(note, length=length))
             remaining -= min(step, remaining)
             index += 1
         return result

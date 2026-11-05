@@ -24,8 +24,8 @@ import demo.mary
 import demo.mary_stutter
 from src.renderers.clip_tree import ClipTree
 
-MELODY_FILES = ['000-000.mid', '001-000.mid']
-CHORD_FILES = ['000-001.mid', '001-001.mid']
+MELODY_FILES = ['001-001.mid', '002-001.mid']
+CHORD_FILES = ['001-002.mid', '002-002.mid']
 
 
 def render(song, directory):

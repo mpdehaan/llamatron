@@ -18,11 +18,11 @@
 
 import unittest
 
-from src.generators.backfill import Backfill
-from src.generators.duration_change import DurationChange
-from src.generators.mix_up import MixUp
-from src.generators.mix_up2 import MixUp2
-from src.generators.stutter import Stutter
+from src.legacy.generators.backfill import Backfill
+from src.legacy.generators.duration_change import DurationChange
+from src.legacy.generators.mix_up import MixUp
+from src.legacy.generators.mix_up2 import MixUp2
+from src.generators.auto_ratchet import AutoRatchet
 from src.note import Note, Rest
 from src.scale import Scale, ScaleType
 from src.song import Clip
@@ -60,7 +60,7 @@ class TestListsOnlyStepThroughNotes(unittest.TestCase):
         self.assert_rests_make_no_difference(DurationChange([0.25, 1, 0.5]))
 
     def test_stutter(self):
-        self.assert_rests_make_no_difference(Stutter([1, 3, 2]))
+        self.assert_rests_make_no_difference(AutoRatchet([1, 3, 2]))
 
     def test_backfill(self):
         self.assert_rests_make_no_difference(Backfill([1, 0, 0], scale=C_MAJOR))
@@ -78,7 +78,7 @@ class TestListsOnlyStepThroughNotes(unittest.TestCase):
         changed = notes_only(DurationChange([1, 1, 0.5]).generate(Clip(notes=notes)))
         self.assertEqual(changed[2].length, third_note.length * 0.5)
 
-        stuttered = notes_only(Stutter([1, 1, 2]).generate(Clip(notes=notes)))
+        stuttered = notes_only(AutoRatchet([1, 1, 2]).generate(Clip(notes=notes)))
         self.assertEqual(stuttered[2].length, third_note.length / 2)
         self.assertEqual(stuttered[3], stuttered[2])
 

@@ -18,7 +18,7 @@ import unittest
 
 from src.chord import Chord, ChordType
 from src.generators.base import ClipGenerator
-from src.generators.transpose import Transpose
+from src.legacy.generators.transpose import Transpose
 from src.note import Note, Rest
 from src.scale import Scale, ScaleType
 from src.song import Clip, Scene, Song, Track

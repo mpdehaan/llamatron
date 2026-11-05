@@ -27,10 +27,10 @@ import demo.mary
 import demo.mary_degrees
 from src.chord import Chord
 from src.generators.arp import Arp
-from src.generators.mix_up import MixUp
+from src.legacy.generators.mix_up import MixUp
 from src.generators.repeater import Repeater
-from src.generators.reverse import Reverse
-from src.generators.transpose import Transpose
+from src.legacy.generators.reverse import Reverse
+from src.legacy.generators.transpose import Transpose
 from src.note import Degree, Note, Rest
 from src.renderers.clip_tree import ClipTree
 from src.scale import Scale, ScaleType
@@ -294,7 +294,7 @@ class TestRendering(unittest.TestCase):
             played = [
                 [m.note for m in mido.MidiFile(os.path.join(directory, name)).tracks[0]
                  if m.type == 'note_on']
-                for name in ['000-000.mid', '001-000.mid']
+                for name in ['001-001.mid', '002-001.mid']
             ]
         self.assertEqual(played, [[48, 52], [48, 51]])
 
@@ -425,7 +425,7 @@ class TestMaryDegreesDemo(unittest.TestCase):
             degrees_directory = os.path.join(directory, 'degrees')
             ClipTree(literal_directory, demo.mary.build_song()).render()
             ClipTree(degrees_directory, demo.mary_degrees.build_song()).render()
-            self.assertEqual(sorted(os.listdir(degrees_directory)), ['000-000.mid', '001-000.mid'])
+            self.assertEqual(sorted(os.listdir(degrees_directory)), ['001-001.mid', '002-001.mid'])
             for filename in os.listdir(degrees_directory):
                 with self.subTest(filename=filename):
                     self.assertEqual(

@@ -26,7 +26,7 @@ The files appear in ./output/mary5.
 
 import os
 
-from src.generators.transpose_scale import TransposeScale
+from src.legacy.generators.transpose_scale import TransposeScale
 from src.importers.clip_tree import ClipTreeImporter
 from src.note import Note
 from src.renderers.clip_tree import ClipTree

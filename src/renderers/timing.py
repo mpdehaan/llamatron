@@ -23,7 +23,9 @@ from src.note import Degree, Note, Rest
 
 # A beat is a quarter note, which matches how MIDI and Live measure both time and tempo.
 BEATS_PER_WHOLE_NOTE = 4
-VELOCITY = 100
+VELOCITY = 127
+# How far a note with glide runs into the next one, in fractions of a whole note.
+GLIDE_OVERLAP = Fraction(1, 128)
 
 
 def _degree_to_note(position, scale):
@@ -36,22 +38,30 @@ def _degree_to_note(position, scale):
 
 
 def _sounding_notes(position):
-    """Return {MIDI number: length} for one position in a clip."""
+    """Return {MIDI number: note} for one position in a clip, keeping the longest of any pitch."""
     # A clip's list can be appended to directly, so its contents are checked again here.
     if isinstance(position, Rest):
         return {}
     if isinstance(position, Note):
-        return {position.midi_number: position.length}
+        return {position.midi_number: position}
     if isinstance(position, Chord):
-        lengths = {}
+        notes = {}
         for note in position.notes:
-            lengths[note.midi_number] = max(note.length, lengths.get(note.midi_number, 0))
-        return lengths
+            if note.midi_number not in notes or note.length > notes[note.midi_number].length:
+                notes[note.midi_number] = note
+        return notes
     raise ValueError(f'expected a Note, Chord or Rest, got {position!r}')
 
 
-def timed_notes(clip, scale):
-    """Return a clip's notes as (start, end, MIDI number), and the clip's total length.
+def _glide_end(note, end, following):
+    """Return when a note ends, running into what follows if it glides to a different pitch."""
+    if note.glide and following and note.midi_number not in following:
+        return end + GLIDE_OVERLAP
+    return end
+
+
+def timed_events(clip, scale):
+    """Return a clip's notes as (start, end, MIDI number, velocity), and the clip's total length.
 
     Times are exact fractions of a whole note. This is where lengths and degrees are
     finally settled, as late as possible. Notes are cut off at the end of the clip.
@@ -65,11 +75,20 @@ def timed_notes(clip, scale):
 
     timed = []
     position_start = Fraction(0)
-    for sounding_notes, position_length in positions:
+    for place, (sounding_notes, position_length) in enumerate(positions):
         start = min(position_start, clip_length)
-        for midi_number, note_length in sounding_notes.items():
-            end = min(position_start + Fraction(note_length), clip_length)
+        following = positions[place + 1][0] if place + 1 < len(positions) else {}
+        for midi_number, note in sounding_notes.items():
+            end = _glide_end(note, position_start + Fraction(note.length), following)
+            end = min(end, clip_length)
             if end > start:
-                timed.append((start, end, midi_number))
+                velocity = VELOCITY if note.velocity is None else note.velocity
+                timed.append((start, end, midi_number, velocity))
         position_start += Fraction(position_length)
     return timed, clip_length
+
+
+def timed_notes(clip, scale):
+    """Return a clip's notes as (start, end, MIDI number), and the clip's total length."""
+    events, clip_length = timed_events(clip, scale)
+    return [(start, end, midi_number) for start, end, midi_number, _ in events], clip_length

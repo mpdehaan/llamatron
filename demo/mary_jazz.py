@@ -37,17 +37,17 @@ import random
 from itertools import accumulate
 
 from demo.mary import MELODY
-from src.generators.accompany import Accompany
+from src.legacy.generators.accompany import Accompany
 from src.generators.arp import Arp, ChordOrder
-from src.generators.backfill import Backfill
-from src.generators.duration_change import DurationChange
-from src.generators.mix_up import MixUp
-from src.generators.mix_up2 import MixUp2
+from src.legacy.generators.backfill import Backfill
+from src.legacy.generators.duration_change import DurationChange
+from src.legacy.generators.mix_up import MixUp
+from src.legacy.generators.mix_up2 import MixUp2
 from src.generators.repeater import Repeater
-from src.generators.reverse import Reverse
-from src.generators.stutter import Stutter
-from src.generators.transpose import Transpose
-from src.generators.transpose_scale import TransposeScale
+from src.legacy.generators.reverse import Reverse
+from src.generators.auto_ratchet import AutoRatchet
+from src.legacy.generators.transpose import Transpose
+from src.legacy.generators.transpose_scale import TransposeScale
 from src.note import Note
 from src.renderers.ableton_project import AbletonProject
 from src.renderers.clip_tree import ClipTree
@@ -77,7 +77,7 @@ STACK = [
     MixUp([0.25], seed=SEED),
     Backfill([1]),
     Transpose(scale_notes=2),
-    Stutter([1, 1, 1, 2]),
+    AutoRatchet([1, 1, 1, 2]),
     Reverse(),
     Repeater(2),
     TO_MINOR,
@@ -86,7 +86,7 @@ STACK = [
 # One of these is picked at random for each scene on the way back.
 SMALL_MUTATIONS = [
     MixUp2([0.25], seed=SEED),
-    Stutter([1, 1, 1, 2]),
+    AutoRatchet([1, 1, 1, 2]),
     DurationChange([1, 0.5]),
     Transpose(scale_notes=1),
 ]

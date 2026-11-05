@@ -18,7 +18,7 @@ from fractions import Fraction
 
 from src.chord import Chord
 from src.generators.base import ClipGenerator, exact_length, fit_to_length
-from src.generators.transpose import _check_scale
+from src.legacy.generators.transpose import _check_scale
 from src.note import Degree, Note, Rest, _check_integer, _check_length
 from src.song import _Validated
 
@@ -77,6 +77,15 @@ class Accompany(ClipGenerator):
             number += 1
         return fit_to_length(result, total) if result else [], clip.length
 
+    def ranked_chords(self, clip):
+        """Return every chord in the scale for a one-measure clip, best fit first."""
+        scale = clip.scale if self.scale is None else self.scale
+        if scale is None:
+            raise ValueError('choosing chords needs a scale, but none was found')
+        measure = exact_length(self.measure_length)
+        times = self._sounding_times(clip.played_notes(), scale, measure).get(0, {})
+        return sorted(self._chords(scale, measure), key=self._score(times), reverse=True)
+
     def _chords(self, scale, length):
         """Return the three-note chord built on each note of the scale, favorites first."""
         size = len(scale.typ.value)
@@ -113,7 +122,10 @@ class Accompany(ClipGenerator):
 
     def _best_chord(self, chords, times):
         """Return the chord whose notes sound the longest, with the earliest chord winning ties."""
+        return max(chords, key=self._score(times))
+
+    def _score(self, times):
         def score(chord):
             pitch_classes = {note.midi_number % 12 for note in chord.notes}
             return sum(time for pitch, time in times.items() if pitch in pitch_classes)
-        return max(chords, key=score)
+        return score

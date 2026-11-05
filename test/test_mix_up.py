@@ -19,7 +19,7 @@ from collections import Counter
 
 from src.chord import ChordType
 from src.generators.base import ClipGenerator
-from src.generators.mix_up import MixUp
+from src.legacy.generators.mix_up import MixUp
 from src.note import Degree, Note, Rest
 from src.scale import Scale, ScaleType
 from src.song import Clip

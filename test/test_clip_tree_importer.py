@@ -147,8 +147,8 @@ class TestRoundTrip(ImporterTestCase):
         with tempfile.TemporaryDirectory() as other:
             ClipTree(other, self.load()).render()
             self.assertEqual(
-                mido.MidiFile(os.path.join(other, '000-000.mid')).tracks[0],
-                mido.MidiFile(self.path('000-000.mid')).tracks[0],
+                mido.MidiFile(os.path.join(other, '001-001.mid')).tracks[0],
+                mido.MidiFile(self.path('001-001.mid')).tracks[0],
             )
 
 
@@ -187,15 +187,15 @@ class TestSongLayout(ImporterTestCase):
         self.assertEqual(loaded.scenes[0].tempo, 90)
 
     def test_gaps_in_the_numbering_are_not_kept(self):
-        for filename in ['000-000.mid', '005-003.mid']:
+        for filename in ['001-001.mid', '006-004.mid']:
             self.write_midi(filename, [])
         loaded = self.load()
         self.assertEqual([scene.id for scene in loaded.scenes], [0, 1])
         self.assertEqual([track.id for track in loaded.tracks], [0, 1])
 
     def test_scenes_sort_as_numbers(self):
-        self.write_midi('002-000.mid', [mido.Message('note_on', note=48), mido.Message('note_off', note=48, time=480)])
-        self.write_midi('010-000.mid', [mido.Message('note_on', note=50), mido.Message('note_off', note=50, time=480)])
+        self.write_midi('003-001.mid', [mido.Message('note_on', note=48), mido.Message('note_off', note=48, time=480)])
+        self.write_midi('011-001.mid', [mido.Message('note_on', note=50), mido.Message('note_off', note=50, time=480)])
         loaded = self.load()
         self.assertEqual(
             [loaded.get_clip(scene, loaded.tracks[0]).notes[0].midi_number for scene in loaded.scenes],
@@ -203,18 +203,18 @@ class TestSongLayout(ImporterTestCase):
         )
 
     def test_loads_file_names_with_and_without_padding(self):
-        for filename in ['000-000.mid', '1-0.mid']:
+        for filename in ['001-001.mid', '002-001.mid']:
             self.write_midi(filename, [])
         self.assertEqual(len(self.load().scenes), 2)
 
     def test_padded_and_unpadded_names_for_one_slot_are_rejected(self):
-        for filename in ['000-000.mid', '0-0.mid']:
+        for filename in ['001-001.mid', '1-1.mid']:
             self.write_midi(filename, [])
         with self.assertRaises(ValueError):
             self.load()
 
     def test_ignores_other_files(self):
-        self.write_midi('000-000.mid', [])
+        self.write_midi('001-001.mid', [])
         with open(self.path('notes.txt'), 'w') as file:
             file.write('keep me')
         self.write_midi('song.mid', [])
@@ -244,8 +244,8 @@ class TestSongLayout(ImporterTestCase):
         self.assertEqual(importer.directory, 'second')
 
     def test_rejects_two_files_for_one_slot(self):
-        self.write_midi('000-000-Old.mid', [])
-        self.write_midi('000-000-New.mid', [])
+        self.write_midi('001-001-Old.mid', [])
+        self.write_midi('001-001-New.mid', [])
         with self.assertRaises(ValueError):
             self.load()
 
@@ -253,7 +253,7 @@ class TestSongLayout(ImporterTestCase):
 class TestFilesFromElsewhere(ImporterTestCase):
 
     def clip_from(self, messages, **options):
-        self.write_midi('000-000.mid', messages, **options)
+        self.write_midi('001-001.mid', messages, **options)
         loaded = self.load()
         return loaded.get_clip(loaded.scenes[0], loaded.tracks[0])
 
@@ -272,7 +272,7 @@ class TestFilesFromElsewhere(ImporterTestCase):
         self.assertEqual(clip.notes, [C4])
 
     def test_file_without_a_tempo_leaves_the_scene_alone(self):
-        self.write_midi('000-000.mid', [])
+        self.write_midi('001-001.mid', [])
         self.assertIsNone(self.load().scenes[0].tempo)
 
     def test_rejects_overlapping_notes(self):

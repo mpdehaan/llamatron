@@ -27,8 +27,8 @@ the seeds to get a different result every time.
 """
 
 from demo.mary import CHORDS, MELODY
-from src.generators.mix_up import MixUp
-from src.generators.mix_up2 import MixUp2
+from src.legacy.generators.mix_up import MixUp
+from src.legacy.generators.mix_up2 import MixUp2
 from src.renderers.clip_tree import ClipTree
 from src.song import Clip, Scene, Song, Track
 

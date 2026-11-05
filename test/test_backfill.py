@@ -24,7 +24,7 @@ from fractions import Fraction
 import mido
 
 from src.chord import Chord, ChordType
-from src.generators.backfill import Backfill
+from src.legacy.generators.backfill import Backfill
 from src.generators.base import ClipGenerator
 from src.note import Degree, Note, Rest
 from src.renderers.clip_tree import ClipTree
@@ -369,7 +369,7 @@ class TestRendering(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             with contextlib.redirect_stdout(io.StringIO()):
                 ClipTree(directory, song).render()
-            midi_file = mido.MidiFile(os.path.join(directory, '000-000.mid'))
+            midi_file = mido.MidiFile(os.path.join(directory, '001-001.mid'))
         tick = 0
         starts = []
         for message in midi_file.tracks[0]:

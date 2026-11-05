@@ -128,16 +128,24 @@ class Note:
     """A pitch and length, such as Note('C#', 4, 0.25). Enharmonic spellings compare equal.
 
     A length of 0.25 is a quarter note, 0.5 is a half note and so on. A length of None
-    uses the note_length of the clip it's in.
+    uses the note_length of the clip it's in. A velocity of None plays at the renderers'
+    usual velocity, and glide makes the note run slightly into the next one, so that a synth
+    with glide turned on slides between them. Neither changes how notes compare.
     """
 
     name: str
     octave_number: int
     length: float = None
+    velocity: int = None
+    glide: bool = False
 
     def __post_init__(self):
         if self.length is not None:
             _check_length(self.length)
+        if self.velocity is not None and (type(self.velocity) is not int or not 1 <= self.velocity <= 127):
+            raise ValueError(f'invalid velocity: {self.velocity!r} (must be a whole number from 1 to 127)')
+        if type(self.glide) is not bool:
+            raise ValueError(f'invalid glide: {self.glide!r} (must be True or False)')
         if not isinstance(self.name, str) or self.name not in SEMITONES_ABOVE_C:
             raise ValueError(f'invalid note name: {self.name!r}')
         # bool is a subclass of int, but Note('C', True) is not a real octave.
@@ -173,7 +181,7 @@ class Note:
         _check_integer(n)
         names = FLAT_NAMES if self.name.endswith('b') else SHARP_NAMES
         octave_number, semitones = divmod(self.midi_number + n, 12)
-        return Note(names[semitones], octave_number, self.length)
+        return replace(self, name=names[semitones], octave_number=octave_number)
 
     def whole_step(self, n):
         """Return a new Note n whole steps higher, or lower if n is negative."""
@@ -186,7 +194,7 @@ class Note:
         The result keeps this note's spelling.
         """
         _check_integer(n)
-        return Note(self.name, self.octave_number + n, self.length)
+        return replace(self, octave_number=self.octave_number + n)
 
     def to_chord(self, typ):
         """Return a new Chord of the given ChordType with this note as its root.

@@ -152,12 +152,12 @@ class TestExistingFiles(ProjectTestCase):
         self.assertEqual(self.read('my_song.als'), b'keep me')
 
     def test_other_files_are_kept_and_warned_about(self):
-        self.write('000-000.mid')
+        self.write('001-001.mid')
         output = self.render()
         self.assertIn('warning', output)
-        self.assertIn('000-000.mid', output)
-        self.assertEqual(self.read('000-000.mid'), b'keep me')
-        self.assertEqual(sorted(os.listdir(self.directory)), ['000-000.mid', 'my_song.als'])
+        self.assertIn('001-001.mid', output)
+        self.assertEqual(self.read('001-001.mid'), b'keep me')
+        self.assertEqual(sorted(os.listdir(self.directory)), ['001-001.mid', 'my_song.als'])
 
     def test_no_warning_for_an_empty_directory(self):
         self.assertEqual(self.render(), '')
@@ -349,6 +349,110 @@ class TestClips(ProjectTestCase):
         self.assertEqual([child.tag for child in clip], [child.tag for child in template_clip])
 
 
+class TestArrangement(ProjectTestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.melody = self.song.add_track(Track('Melody'))
+        self.chords = self.song.add_track(Track('Chords'))
+
+    def clips(self, live_set, number=0):
+        track = live_set.find('Tracks').findall('MidiTrack')[number]
+        return list(track.find('DeviceChain/MainSequencer/ClipTimeable/ArrangerAutomation/Events'))
+
+    def test_clips_play_one_after_another_from_the_start(self):
+        for length in [1, 2, 0.5]:
+            scene = self.song.add_scene(Scene())
+            self.song.set_clip(scene, self.melody, Clip('Riff', notes=[Note('C', 4, length)]))
+        clips = self.clips(self.live_set())
+        self.assertEqual([clip.get('Time') for clip in clips], ['0', '4', '12'])
+        self.assertEqual([clip.find('CurrentStart').get('Value') for clip in clips], ['0', '4', '12'])
+        self.assertEqual([clip.find('CurrentEnd').get('Value') for clip in clips], ['4', '12', '14'])
+
+    def test_the_loop_is_relative_to_the_clip(self):
+        self.song.add_scene(Scene())
+        scene = self.song.add_scene(Scene())
+        self.song.set_clip(self.song.scenes[0], self.melody, Clip(notes=[Note('C', 4, 1)]))
+        self.song.set_clip(scene, self.melody, Clip(notes=[Note('C', 4, 1)]))
+        clip = self.clips(self.live_set())[1]
+        self.assertEqual(clip.find('Loop/LoopStart').get('Value'), '0')
+        self.assertEqual(clip.find('Loop/LoopEnd').get('Value'), '4')
+
+    def test_notes_are_relative_to_the_clip(self):
+        self.song.add_scene(Scene())
+        scene = self.song.add_scene(Scene())
+        self.song.set_clip(self.song.scenes[0], self.melody, Clip(notes=[Note('C', 4, 1)]))
+        self.song.set_clip(scene, self.melody, Clip(notes=[Rest(0.25), C4]))
+        clip = self.clips(self.live_set())[1]
+        self.assertEqual(self.clip_notes(clip), [(48, 1, 1)])
+
+    def test_a_scene_lasts_as_long_as_its_longest_clip(self):
+        first = self.song.add_scene(Scene())
+        second = self.song.add_scene(Scene())
+        self.song.set_clip(first, self.melody, Clip(notes=[Note('C', 4, 1)]))
+        self.song.set_clip(first, self.chords, Clip(notes=[Note('C', 3, 2)]))
+        self.song.set_clip(second, self.chords, Clip(notes=[Note('C', 3, 1)]))
+        live_set = self.live_set()
+        self.assertEqual([clip.get('Time') for clip in self.clips(live_set, 1)], ['0', '8'])
+        self.assertEqual(self.clips(live_set, 0)[0].find('CurrentEnd').get('Value'), '4')
+
+    def test_a_scene_with_no_clips_still_takes_up_time(self):
+        self.song.add_scene(Scene())
+        scene = self.song.add_scene(Scene())
+        self.song.set_clip(scene, self.melody, Clip(notes=[C4]))
+        clips = self.clips(self.live_set())
+        self.assertEqual([clip.get('Time') for clip in clips], ['4'])
+
+    def test_clips_are_in_session_view_too(self):
+        scene = self.song.add_scene(Scene())
+        self.song.set_clip(scene, self.melody, Clip('Riff', notes=[C4]))
+        live_set = self.live_set()
+        session = self.first_clip(live_set)
+        arrangement = self.clips(live_set)[0]
+        self.assertEqual(session.get('Time'), '0')
+        self.assertEqual(session.find('TakeId').get('Value'), self.template_session_take())
+        self.assertEqual(session.find('Name').get('Value'), arrangement.find('Name').get('Value'))
+        self.assertEqual(self.clip_notes(session), self.clip_notes(arrangement))
+
+    def template_session_take(self):
+        return template_root().find('LiveSet/Tracks/MidiTrack').find('.//MidiClip/TakeId').get('Value')
+
+    def test_arrangement_clips_use_the_details_from_a_real_arrangement_clip(self):
+        scene = self.song.add_scene(Scene())
+        self.song.set_clip(scene, self.melody, Clip(notes=[C4]))
+        clip = self.clips(self.live_set())[0]
+        self.assertEqual(clip.find('TakeId').get('Value'), '1')
+        self.assertEqual(clip.find('GrooveSettings/GrooveId').get('Value'), '-1')
+        self.assertEqual(clip.find('Disabled').get('Value'), 'false')
+
+    def tempo_events(self, live_set):
+        main_track = live_set.find('MainTrack')
+        target = main_track.find('DeviceChain/Mixer/Tempo/AutomationTarget').get('Id')
+        for envelope in main_track.find('AutomationEnvelopes/Envelopes'):
+            if envelope.find('EnvelopeTarget/PointeeId').get('Value') == target:
+                return list(envelope.find('Automation/Events'))
+        return []
+
+    def test_no_tempo_changes_when_no_scene_has_a_tempo(self):
+        self.song.add_scene(Scene())
+        self.assertEqual(len(self.tempo_events(self.live_set())), 1)
+
+    def test_scene_tempos_change_the_tempo_when_each_scene_starts(self):
+        self.song.tempo = 100
+        first = self.song.add_scene(Scene(tempo=90))
+        second = self.song.add_scene(Scene())
+        self.song.set_clip(first, self.melody, Clip(notes=[Note('C', 4, 1)]))
+        self.song.set_clip(second, self.melody, Clip(notes=[Note('C', 4, 1)]))
+        events = self.tempo_events(self.live_set())
+        self.assertEqual(
+            [(event.tag, event.get('Time'), event.get('Value')) for event in events[1:]],
+            [('FloatEvent', '0', '90'), ('FloatEvent', '4', '100')],
+        )
+        self.assertEqual(events[0].get('Value'), '100')
+        ids = [event.get('Id') for event in events]
+        self.assertEqual(len(ids), len(set(ids)))
+
+
 class TestNotes(ProjectTestCase):
 
     def test_lengths_become_beats(self):
@@ -366,7 +470,7 @@ class TestNotes(ProjectTestCase):
         clip = self.first_clip(self.one_clip_set(Clip(notes=[C4])))
         event = clip.find('Notes/KeyTracks/KeyTrack/Notes/MidiNoteEvent')
         self.assertEqual(event.attrib, {
-            'Time': '0', 'Duration': '1', 'Velocity': '100', 'OffVelocity': '64', 'NoteId': '1',
+            'Time': '0', 'Duration': '1', 'Velocity': '127', 'OffVelocity': '64', 'NoteId': '1',
         })
         self.assertEqual(clip.find('Notes/NoteIdGenerator/NextId').get('Value'), '2')
 
@@ -514,6 +618,14 @@ class TestFields(unittest.TestCase):
             directory = os.path.join(parent, 'output')
             AbletonProject(directory, Song())
             self.assertFalse(os.path.exists(directory))
+
+
+class TestFileName(unittest.TestCase):
+
+    def test_the_name_sets_the_file_name(self):
+        with tempfile.TemporaryDirectory() as directory:
+            project = AbletonProject(directory, Song(), name='tune-007')
+            self.assertEqual(os.path.basename(project.path), 'tune-007.als')
 
 
 if __name__ == '__main__':

@@ -26,7 +26,7 @@ import mido
 
 from src.chord import Chord, ChordType
 from src.generators.base import ClipGenerator
-from src.generators.duration_change import DurationChange
+from src.legacy.generators.duration_change import DurationChange
 from src.note import Degree, Note, Rest
 from src.renderers.clip_tree import ClipTree
 from src.scale import Scale, ScaleType
@@ -64,7 +64,7 @@ def rendered(clip):
     with tempfile.TemporaryDirectory() as directory:
         with contextlib.redirect_stdout(io.StringIO()):
             ClipTree(directory, song).render()
-        midi_file = mido.MidiFile(os.path.join(directory, '000-000.mid'))
+        midi_file = mido.MidiFile(os.path.join(directory, '001-001.mid'))
     tick = 0
     result = []
     for message in midi_file.tracks[0]:

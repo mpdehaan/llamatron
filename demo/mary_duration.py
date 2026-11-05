@@ -26,7 +26,7 @@ changing the factors to hear the difference.
 """
 
 from demo.mary import CHORDS, MELODY
-from src.generators.duration_change import DurationChange
+from src.legacy.generators.duration_change import DurationChange
 from src.renderers.clip_tree import ClipTree
 from src.song import Clip, Scene, Song, Track
 

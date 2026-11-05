@@ -18,7 +18,7 @@ import unittest
 
 from demo.mary import MELODY
 from src.chord import Chord
-from src.generators.accompany import Accompany
+from src.legacy.generators.accompany import Accompany
 from src.generators.base import ClipGenerator
 from src.note import Degree, Note, Rest
 from src.scale import Scale, ScaleType

@@ -80,7 +80,7 @@ class TestScalesDemo(unittest.TestCase):
             self.assertEqual(
                 sorted(os.listdir(directory)),
                 sorted(
-                    f'{index:03d}-000-{scale_type.name}.mid'
+                    f'{index + 1:03d}-001-{scale_type.name}.mid'
                     for index, scale_type in enumerate(ScaleType)
                 ),
             )

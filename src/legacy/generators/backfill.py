@@ -22,7 +22,7 @@ from math import isfinite
 from src.chord import Chord
 from src.generators.arp import _check_seed
 from src.generators.base import ClipGenerator, exact_length, fit_to_length
-from src.generators.transpose import _check_scale
+from src.legacy.generators.transpose import _check_scale
 from src.note import Degree, Note, Rest
 from src.song import _Validated
 

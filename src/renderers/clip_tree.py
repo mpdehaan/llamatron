@@ -19,7 +19,7 @@ import re
 
 import mido
 
-from src.renderers.timing import BEATS_PER_WHOLE_NOTE, VELOCITY, timed_notes
+from src.renderers.timing import BEATS_PER_WHOLE_NOTE, VELOCITY, timed_events
 from src.song import Song, _Validated
 
 TICKS_PER_BEAT = 480
@@ -43,9 +43,10 @@ def _ticks(length):
 def _filename(scene, track, clip):
     """Return <scene_id>-<track_id>-<clip_name>.mid, leaving out the name if there isn't one.
 
-    Ids are zero-padded to three digits, so that files sort in order.
+    Numbers count from 1, like scenes and tracks in Live, and are zero-padded to three digits,
+    so that files sort in order.
     """
-    slot = f'{scene.id:03d}-{track.id:03d}'
+    slot = f'{scene.id + 1:03d}-{track.id + 1:03d}'
     if not clip.name:
         return f'{slot}.mid'
     # Slashes are replaced too, because they would otherwise point to another directory.
@@ -57,7 +58,7 @@ class ClipTree:
     """Renders a Song as a directory of MIDI files, one per filled scene and track slot.
 
     Files are named <scene_id>-<track_id>-<clip_name>.mid, such as 002-001-My_Riff.mid, with
-    ids zero-padded to three digits and spaces in the clip's name replaced by underscores.
+    numbers counting from 1 and zero-padded to three digits, and spaces in the clip's name replaced by underscores.
     A clip without a name has no last part.
     """
 
@@ -106,16 +107,16 @@ class ClipTree:
             midi_file.save(os.path.join(self.directory, filename))
 
     def _midi_file(self, name, scene, track, clip):
-        notes, clip_length = timed_notes(clip, self.song.scale_at(scene, track))
+        notes, clip_length = timed_events(clip, self.song.scale_at(scene, track))
 
-        # Each event is (tick, 0 for off or 1 for on, MIDI number). Sorting puts offs before
+        # Each event is (tick, 0 for off or 1 for on, MIDI number, velocity). Sorting puts offs before
         # ons at the same tick, so that a note can repeat straight after itself.
         events = []
-        for note_start, note_end, midi_number in notes:
+        for note_start, note_end, midi_number, velocity in notes:
             start, end = _ticks(note_start), _ticks(note_end)
             if end > start:
-                events.append((start, 1, midi_number))
-                events.append((end, 0, midi_number))
+                events.append((start, 1, midi_number, velocity))
+                events.append((end, 0, midi_number, 0))
 
         messages = [
             # MIDI text is latin-1, so any other characters become question marks here.
@@ -127,10 +128,10 @@ class ClipTree:
             ),
         ]
         now = 0
-        for tick, is_on, midi_number in sorted(events):
+        for tick, is_on, midi_number, velocity in sorted(events):
             if is_on:
                 message = mido.Message(
-                    'note_on', note=midi_number, velocity=VELOCITY, time=tick - now,
+                    'note_on', note=midi_number, velocity=velocity, time=tick - now,
                 )
             else:
                 message = mido.Message('note_off', note=midi_number, time=tick - now)

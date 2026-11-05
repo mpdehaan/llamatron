@@ -33,6 +33,16 @@ import demo.mary_jazz as jazz
 import src.generators
 from src.generators.arp import Arp
 from src.generators.base import ClipGenerator
+from src.generators.blend import Blend
+from src.legacy.generators.counterpoint import Counterpoint
+from src.legacy.generators.delay import Delay
+from src.legacy.generators.force_scale import ForceScale
+from src.legacy.generators.hold import Hold
+from src.legacy.generators.harmonize import Harmonize
+from src.legacy.generators.register import Register
+from src.legacy.generators.smoother import Smoother
+from src.legacy.generators.stretch import Stretch
+from src.generators.take_rhythm import TakeRhythm
 from src.note import Degree, Note, Rest
 from src.renderers.clip_tree import ClipTree
 
@@ -191,6 +201,8 @@ class TestEveryGeneratorIsUsed(unittest.TestCase):
     def test_every_generator_in_the_project_appears(self):
         used = {type(step) for step in jazz.STACK + jazz.SMALL_MUTATIONS}
         used |= {type(jazz.ACCOMPANY), type(jazz.ARPEGGIATE)}
+        # These came later, and need a second song, so demo/gifts_to_sun.py shows them.
+        used |= {Blend, Counterpoint, Delay, ForceScale, Harmonize, Hold, Register, Smoother, Stretch, TakeRhythm}
         self.assertEqual(every_generator_class() - used, set())
 
     def test_arp_is_used_on_the_accompaniment(self):
@@ -243,10 +255,10 @@ class TestRendering(unittest.TestCase):
     def test_writes_every_clip_with_names_that_sort_in_order(self):
         names = sorted(os.listdir(self.render()))
         self.assertEqual(len(names), TOTAL_SCENES * 2 - 1)
-        self.assertEqual(names[0], '000-000-Tune_Alone.mid')
-        self.assertEqual(names[1], '001-000-Tune_With_Chords.mid')
-        self.assertEqual(names[2], '001-001-Tune_With_Chords.mid')
-        self.assertEqual(names[-1], '021-001-Tune_Again.mid')
+        self.assertEqual(names[0], '001-001-Tune_Alone.mid')
+        self.assertEqual(names[1], '002-001-Tune_With_Chords.mid')
+        self.assertEqual(names[2], '002-002-Tune_With_Chords.mid')
+        self.assertEqual(names[-1], '022-002-Tune_Again.mid')
         self.assertEqual([name[:3] for name in names], sorted(name[:3] for name in names))
 
     def test_every_file_lasts_sixteen_seconds(self):
@@ -295,7 +307,7 @@ class TestChoosingARenderer(unittest.TestCase):
         self.assertEqual(names[0], 'Tune Alone')
         self.assertEqual(names[-1], 'Tune Again')
         clips = list(live_set.find('Tracks').iter('MidiClip'))
-        self.assertEqual(len(clips), TOTAL_SCENES * 2 - 1)
+        self.assertEqual(len(clips), (TOTAL_SCENES * 2 - 1) * 2)
         self.assertEqual({clip.find('Loop/LoopEnd').get('Value') for clip in clips}, {'32'})
 
     def test_clip_tree_writes_midi_files_into_the_output_directory(self):

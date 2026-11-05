@@ -25,7 +25,7 @@ import mido
 
 from src.chord import Chord, ChordType
 from src.generators.base import ClipGenerator
-from src.generators.stutter import Stutter
+from src.generators.auto_ratchet import AutoRatchet
 from src.note import Degree, Note, Rest
 from src.renderers.clip_tree import ClipTree
 from src.scale import Scale, ScaleType
@@ -42,7 +42,7 @@ C_MAJOR = Scale(Note('C', 4), ScaleType.MAJOR)
 
 
 def stutter(counts, notes, **clip_options):
-    return Stutter(counts).generate(Clip(notes=notes, **clip_options))
+    return AutoRatchet(counts).generate(Clip(notes=notes, **clip_options))
 
 
 def rendered(clip):
@@ -54,7 +54,7 @@ def rendered(clip):
     with tempfile.TemporaryDirectory() as directory:
         with contextlib.redirect_stdout(io.StringIO()):
             ClipTree(directory, song).render()
-        midi_file = mido.MidiFile(os.path.join(directory, '000-000.mid'))
+        midi_file = mido.MidiFile(os.path.join(directory, '001-001.mid'))
     tick = 0
     result = []
     for message in midi_file.tracks[0]:
@@ -67,7 +67,7 @@ def rendered(clip):
 class TestCounts(unittest.TestCase):
 
     def test_is_a_clip_generator(self):
-        self.assertIsInstance(Stutter([1]), ClipGenerator)
+        self.assertIsInstance(AutoRatchet([1]), ClipGenerator)
 
     def test_one_leaves_the_note_unchanged(self):
         self.assertEqual(stutter([1], [C, D]).notes, [C, D])
@@ -89,7 +89,7 @@ class TestCounts(unittest.TestCase):
         ])
 
     def test_each_generate_starts_the_cycle_again(self):
-        generator = Stutter([2, 1])
+        generator = AutoRatchet([2, 1])
         first = generator.generate(Clip(notes=[C]))
         second = generator.generate(Clip(notes=[C]))
         self.assertEqual(first.notes, second.notes)
@@ -215,7 +215,7 @@ class TestClipDetails(unittest.TestCase):
 
     def test_keeps_the_clip_details(self):
         original = Clip('Riff', notes=[C], scale=C_MAJOR, length=2, note_length=0.5)
-        result = Stutter([2]).generate(original)
+        result = AutoRatchet([2]).generate(original)
         self.assertIsNot(result, original)
         self.assertEqual(result.name, 'Riff')
         self.assertIs(result.scale, C_MAJOR)
@@ -223,35 +223,35 @@ class TestClipDetails(unittest.TestCase):
 
     def test_leaves_the_original_unchanged(self):
         original = Clip(notes=[C, Rest(QUARTER)])
-        Stutter([2]).generate(original)
+        AutoRatchet([2]).generate(original)
         self.assertEqual(original.notes, [C, Rest(QUARTER)])
 
 
-class TestStutterFields(unittest.TestCase):
+class TestAutoRatchetFields(unittest.TestCase):
 
     def test_counts_are_required(self):
         with self.assertRaises(TypeError):
-            Stutter()
+            AutoRatchet()
 
     def test_takes_a_list_or_tuple(self):
-        self.assertEqual(Stutter([1, 2]).counts, [1, 2])
-        self.assertEqual(Stutter((1, 2)).counts, (1, 2))
+        self.assertEqual(AutoRatchet([1, 2]).counts, [1, 2])
+        self.assertEqual(AutoRatchet((1, 2)).counts, (1, 2))
 
     def test_rejects_invalid_counts(self):
         invalid = [[], (), None, 2, '2', [0], [-1], [1.5], [2.0], ['2'], [None], [True], [1, 0]]
         for counts in invalid:
             with self.subTest(counts=counts):
                 with self.assertRaises(ValueError):
-                    Stutter(counts)
+                    AutoRatchet(counts)
 
     def test_rejects_anything_but_a_clip(self):
         for value in [None, 'clip', [C]]:
             with self.subTest(value=value):
                 with self.assertRaises(ValueError):
-                    Stutter([1]).generate(value)
+                    AutoRatchet([1]).generate(value)
 
     def test_counts_can_be_edited_and_are_validated(self):
-        generator = Stutter([1])
+        generator = AutoRatchet([1])
         generator.counts = [2]
         self.assertEqual(len(generator.generate(Clip(notes=[C])).notes), 2)
         with self.assertRaises(ValueError):

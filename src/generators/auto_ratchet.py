@@ -29,7 +29,7 @@ def _check_counts(counts):
             raise ValueError(f'invalid count: {count!r} (must be a positive integer)')
 
 
-class Stutter(ClipGenerator):
+class AutoRatchet(ClipGenerator):
     """Chops each note or chord into equal repeats, using the next count in a repeating cycle.
 
     With [1, 1, 4], the first two notes are unchanged, and the third becomes four adjacent

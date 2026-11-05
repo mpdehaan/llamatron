@@ -25,7 +25,7 @@ clip is Backfill applied to the clip before it. Try lowering the probabilities t
 have it fill in less, and more differently each time.
 """
 
-from src.generators.backfill import Backfill
+from src.legacy.generators.backfill import Backfill
 from src.note import Note, Rest
 from src.renderers.clip_tree import ClipTree
 from src.scale import Scale, ScaleType

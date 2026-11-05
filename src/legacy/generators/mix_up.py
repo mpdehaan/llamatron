@@ -17,7 +17,7 @@
 import random
 
 from src.generators.arp import _check_seed
-from src.generators.backfill import _check_probabilities
+from src.legacy.generators.backfill import _check_probabilities
 from src.generators.base import ClipGenerator
 from src.note import Rest
 from src.song import _Validated
