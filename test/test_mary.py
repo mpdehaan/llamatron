@@ -48,7 +48,7 @@ class TestMary(unittest.TestCase):
             ClipTree(directory, build_song()).render()
             self.assertEqual(
                 sorted(os.listdir(directory)),
-                ['0-0.mid', '0-1.mid', '1-0.mid', '1-1.mid'],
+                ['000-000.mid', '000-001.mid', '001-000.mid', '001-001.mid'],
             )
             for filename in os.listdir(directory):
                 with self.subTest(filename=filename):

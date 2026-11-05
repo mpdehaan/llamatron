@@ -294,7 +294,7 @@ class TestRendering(unittest.TestCase):
             played = [
                 [m.note for m in mido.MidiFile(os.path.join(directory, name)).tracks[0]
                  if m.type == 'note_on']
-                for name in ['0-0.mid', '1-0.mid']
+                for name in ['000-000.mid', '001-000.mid']
             ]
         self.assertEqual(played, [[48, 52], [48, 51]])
 
@@ -344,7 +344,7 @@ class TestGeneratorsWithDegrees(unittest.TestCase):
     def test_every_generator_keeps_degrees_as_degrees(self):
         clip = Clip(notes=[1, 2, 3], note_length=QUARTER)
         generators = [
-            Repeater(2), Arp(QUARTER), MixUp(2, seed=1), Reverse(), Transpose(scale_notes=1),
+            Repeater(2), Arp(QUARTER), MixUp([1], seed=1), Reverse(), Transpose(scale_notes=1),
         ]
         for generator in generators:
             with self.subTest(generator=type(generator).__name__):
@@ -353,7 +353,7 @@ class TestGeneratorsWithDegrees(unittest.TestCase):
 
     def test_every_generator_keeps_note_length(self):
         clip = Clip(notes=[1], note_length=QUARTER)
-        for generator in [Repeater(2), Arp(QUARTER), MixUp(1), Reverse(), Transpose(octaves=1)]:
+        for generator in [Repeater(2), Arp(QUARTER), MixUp([1]), Reverse(), Transpose(octaves=1)]:
             with self.subTest(generator=type(generator).__name__):
                 self.assertEqual(generator.generate(clip).note_length, QUARTER)
 
@@ -374,7 +374,7 @@ class TestGeneratorsWithDegrees(unittest.TestCase):
         self.assertEqual(result.notes, [Rest(0.75), Degree(1, QUARTER)])
 
     def test_mix_up_stays_lazy(self):
-        result = MixUp(1, seed=1).generate(Clip(notes=[1, 2]))
+        result = MixUp([1, 0], seed=1).generate(Clip(notes=[1, 2]))
         self.assertEqual(result.notes, [Degree(2), Degree(1)])
 
     def test_transpose_scale_notes_needs_no_scale_for_degrees(self):
@@ -409,7 +409,7 @@ class TestGeneratorsWithDegrees(unittest.TestCase):
         self.assertEqual(result.notes, [Degree(1, QUARTER), Note('C', 4, 0.125), Note('E', 4, 0.125)])
 
     def test_generators_reject_invalid_items_added_to_a_list(self):
-        for generator in [Repeater(2), Arp(QUARTER), MixUp(1), Reverse(), Transpose(octaves=1)]:
+        for generator in [Repeater(2), Arp(QUARTER), MixUp([1]), Reverse(), Transpose(octaves=1)]:
             clip = Clip(notes=[1], note_length=QUARTER)
             clip.notes.append('C4')
             with self.subTest(generator=type(generator).__name__):
@@ -425,7 +425,7 @@ class TestMaryDegreesDemo(unittest.TestCase):
             degrees_directory = os.path.join(directory, 'degrees')
             ClipTree(literal_directory, demo.mary.build_song()).render()
             ClipTree(degrees_directory, demo.mary_degrees.build_song()).render()
-            self.assertEqual(sorted(os.listdir(degrees_directory)), ['0-0.mid', '1-0.mid'])
+            self.assertEqual(sorted(os.listdir(degrees_directory)), ['000-000.mid', '001-000.mid'])
             for filename in os.listdir(degrees_directory):
                 with self.subTest(filename=filename):
                     self.assertEqual(

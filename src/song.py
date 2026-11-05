@@ -198,6 +198,13 @@ class Clip:
             raise ValueError(f'{position!r} has no length, and the clip has no note_length')
         return replace(position, length=self.note_length)
 
+    def renamed(self, name):
+        """Return a new Clip with the same contents and a different name."""
+        return Clip(
+            name=name, notes=self.notes, scale=self.scale, length=self.length,
+            note_length=self.note_length,
+        )
+
     def trim(self, n):
         """Keep only the first n positions in notes, and return this clip.
 

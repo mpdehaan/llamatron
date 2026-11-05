@@ -26,11 +26,16 @@ To run all of them in order, use `./run_demo.sh`. To run one at a time, use thes
 | `.venv/bin/python -m demo.mary_arp` | The same song, with the chords played one note at a time using `Arp` | `./output/mary3` |
 | `.venv/bin/python -m demo.mary_degrees` | The melody written as scale degrees, so it can change key | `./output/mary4` |
 | `.venv/bin/python -m demo.mary_transpose` | Loads the `demo.mary_arp` files back in and moves them down into B flat minor, so run that demo first | `./output/mary5` |
+| `.venv/bin/python -m demo.mary_duration` | The same song, with a choppier melody using `DurationChange` | `./output/mary6` |
+| `.venv/bin/python -m demo.mary_stutter` | The same song, with bursts of repeated melody notes using `Stutter` | `./output/mary7` |
+| `.venv/bin/python -m demo.mary_mix_up` | The same song, with a shuffled melody using `MixUp` and `MixUp2` | `./output/mary8` |
+| `.venv/bin/python -m demo.mary_jazz` | A 22-scene jazz song built from Mary, using every generator, written as an Ableton Live 12 set, or as MIDI files if you set `USE_ABLETON` to `False` | `./output/mary_jazz` |
+| `.venv/bin/python -m demo.backfill` | A sparse pattern that fills in a little more with each scene, using `Backfill` | `./output/backfill` |
 | `.venv/bin/python -m demo.scales` | Every supported scale, with each one in its own scene | `./output/scales` |
 
 The examples have to be run with `-m` as shown, because `python demo/mary.py` can't find the project's code.
 
-Each example writes one MIDI file per clip, named `<scene>-<track>-<clip name>.mid`, or `<scene>-<track>.mid` if the clip has no name. Rendering never deletes anything. If a file it needs to write already exists, it prints a warning and stops without writing anything, so delete the output folder before running an example again.
+Each example writes one MIDI file per clip, named `<scene>-<track>-<clip name>.mid`, or `<scene>-<track>.mid` if the clip has no name, with the numbers zero-padded to three digits, such as `002-001-My_Riff.mid`. Rendering never deletes anything. If a file it needs to write already exists, it prints a warning and stops without writing anything, so delete the output folder before running an example again.
 
 ## A short example
 
@@ -52,7 +57,7 @@ song.set_clip(scene, track, Clip('C Major', notes=notes))
 ClipTree('./output/my_song', song).render()
 ```
 
-This writes `./output/my_song/0-0-C_Major.mid`.
+This writes `./output/my_song/000-000-C_Major.mid`.
 
 ## Tests
 

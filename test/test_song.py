@@ -112,6 +112,28 @@ class TestNamedParts(unittest.TestCase):
                 self.assertEqual(part.id, original)
 
 
+class TestClipRenamed(unittest.TestCase):
+
+    def test_returns_a_new_clip_with_the_same_contents(self):
+        note = Note('C', 4, 0.25)
+        original = Clip('Old', notes=[note], scale=C_MAJOR, length=1, note_length=0.5)
+        result = original.renamed('New')
+        self.assertIsNot(result, original)
+        self.assertEqual(result.name, 'New')
+        self.assertEqual(result.notes, [note])
+        self.assertIs(result.scale, C_MAJOR)
+        self.assertEqual(result.length, 1)
+        self.assertEqual(result.note_length, 0.5)
+        self.assertNotEqual(result.id, original.id)
+
+    def test_leaves_the_original_alone(self):
+        original = Clip('Old', notes=[Note('C', 4, 0.25)])
+        result = original.renamed('New')
+        result.notes.clear()
+        self.assertEqual(original.name, 'Old')
+        self.assertEqual(len(original.notes), 1)
+
+
 class TestClipTrim(unittest.TestCase):
 
     def setUp(self):

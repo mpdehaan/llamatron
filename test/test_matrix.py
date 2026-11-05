@@ -44,9 +44,9 @@ class TestMatrix(unittest.TestCase):
             ClipTree(directory, song).render()
 
             self.assertEqual(sorted(os.listdir(directory)), [
-                '0-0.mid', '0-1.mid', '0-2.mid',
-                '1-0.mid', '1-1.mid', '1-2.mid',
-                '2-0.mid', '2-1.mid', '2-2.mid',
+                '000-000.mid', '000-001.mid', '000-002.mid',
+                '001-000.mid', '001-001.mid', '001-002.mid',
+                '002-000.mid', '002-001.mid', '002-002.mid',
             ])
 
             for filename in os.listdir(directory):

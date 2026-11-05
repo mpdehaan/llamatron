@@ -16,18 +16,13 @@
 
 import os
 import re
-from fractions import Fraction
 
 import mido
 
-from src.chord import Chord
-from src.note import Degree, Note, Rest
+from src.renderers.timing import BEATS_PER_WHOLE_NOTE, VELOCITY, timed_notes
 from src.song import Song, _Validated
 
-# A beat is a quarter note, which matches how MIDI measures both ticks and tempo.
 TICKS_PER_BEAT = 480
-BEATS_PER_WHOLE_NOTE = 4
-VELOCITY = 100
 
 
 def _check_directory(directory):
@@ -40,49 +35,30 @@ def _check_song(song):
         raise ValueError(f'expected a Song, got {song!r}')
 
 
-def _degree_to_note(position, scale):
-    """Return a Note for a Degree, leaving anything else as it is."""
-    if not isinstance(position, Degree):
-        return position
-    if scale is None:
-        raise ValueError(f'{position!r} needs a scale, but the clip, scene and song have none')
-    return position.to_note(scale)
-
-
-def _sounding_notes(position):
-    """Return {MIDI number: length} for one position in a clip."""
-    # A clip's list can be appended to directly, so its contents are checked again here.
-    if isinstance(position, Rest):
-        return {}
-    if isinstance(position, Note):
-        return {position.midi_number: position.length}
-    if isinstance(position, Chord):
-        lengths = {}
-        for note in position.notes:
-            lengths[note.midi_number] = max(note.length, lengths.get(note.midi_number, 0))
-        return lengths
-    raise ValueError(f'expected a Note, Chord or Rest, got {position!r}')
-
-
 def _ticks(length):
     """Convert a fraction of a whole note into MIDI ticks."""
     return round(length * BEATS_PER_WHOLE_NOTE * TICKS_PER_BEAT)
 
 
 def _filename(scene, track, clip):
-    """Return <scene_id>-<track_id>-<clip_name>.mid, leaving out the name if there isn't one."""
+    """Return <scene_id>-<track_id>-<clip_name>.mid, leaving out the name if there isn't one.
+
+    Ids are zero-padded to three digits, so that files sort in order.
+    """
+    slot = f'{scene.id:03d}-{track.id:03d}'
     if not clip.name:
-        return f'{scene.id}-{track.id}.mid'
+        return f'{slot}.mid'
     # Slashes are replaced too, because they would otherwise point to another directory.
     name = re.sub(r'[\s/\\]', '_', clip.name)
-    return f'{scene.id}-{track.id}-{name}.mid'
+    return f'{slot}-{name}.mid'
 
 
 class ClipTree:
     """Renders a Song as a directory of MIDI files, one per filled scene and track slot.
 
-    Files are named <scene_id>-<track_id>-<clip_name>.mid, with spaces in the clip's
-    name replaced by underscores. A clip without a name has no last part.
+    Files are named <scene_id>-<track_id>-<clip_name>.mid, such as 002-001-My_Riff.mid, with
+    ids zero-padded to three digits and spaces in the clip's name replaced by underscores.
+    A clip without a name has no last part.
     """
 
     directory = _Validated(_check_directory)
@@ -123,36 +99,29 @@ class ClipTree:
 
         # Built before any are saved, so that an invalid clip doesn't leave some files written.
         midi_files = [
-            (filename, self._midi_file(scene, track, clip))
+            (filename, self._midi_file(os.path.splitext(filename)[0], scene, track, clip))
             for filename, scene, track, clip in slots
         ]
         for filename, midi_file in midi_files:
             midi_file.save(os.path.join(self.directory, filename))
 
-    def _midi_file(self, scene, track, clip):
-        # This is where lengths and degrees are finally settled, as late as possible.
-        scale = self.song.scale_at(scene, track)
-        notes = [_degree_to_note(position, scale) for position in clip.resolved_notes()]
-        positions = [(_sounding_notes(position), position.length) for position in notes]
-        if clip.length is None:
-            clip_length = sum((Fraction(length) for _, length in positions), Fraction(0))
-        else:
-            clip_length = Fraction(clip.length)
+    def _midi_file(self, name, scene, track, clip):
+        notes, clip_length = timed_notes(clip, self.song.scale_at(scene, track))
 
         # Each event is (tick, 0 for off or 1 for on, MIDI number). Sorting puts offs before
         # ons at the same tick, so that a note can repeat straight after itself.
         events = []
-        position_start = Fraction(0)
-        for sounding_notes, position_length in positions:
-            start = _ticks(min(position_start, clip_length))
-            for midi_number, note_length in sounding_notes.items():
-                end = _ticks(min(position_start + Fraction(note_length), clip_length))
-                if end > start:
-                    events.append((start, 1, midi_number))
-                    events.append((end, 0, midi_number))
-            position_start += Fraction(position_length)
+        for note_start, note_end, midi_number in notes:
+            start, end = _ticks(note_start), _ticks(note_end)
+            if end > start:
+                events.append((start, 1, midi_number))
+                events.append((end, 0, midi_number))
 
         messages = [
+            # MIDI text is latin-1, so any other characters become question marks here.
+            mido.MetaMessage(
+                'track_name', name=name.encode('latin-1', 'replace').decode('latin-1'),
+            ),
             mido.MetaMessage(
                 'set_tempo', tempo=mido.bpm2tempo(self.song.tempo_at(scene))
             ),

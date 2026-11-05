@@ -81,20 +81,20 @@ class TestMaryTransposeDemo(unittest.TestCase):
         self.run_demo()
         self.assertEqual(
             sorted(os.listdir(self.output_directory)),
-            ['0-0.mid', '0-1.mid', '1-0.mid', '1-1.mid'],
+            ['000-000.mid', '000-001.mid', '001-000.mid', '001-001.mid'],
         )
 
     def test_melody_moves_to_b_flat_minor(self):
         self.write_input()
         self.run_demo()
-        self.assertEqual(self.played('0-0.mid'), FIRST_MELODY)
-        self.assertEqual(self.played('1-0.mid'), SECOND_MELODY)
+        self.assertEqual(self.played('000-000.mid'), FIRST_MELODY)
+        self.assertEqual(self.played('001-000.mid'), SECOND_MELODY)
 
     def test_chords_move_to_b_flat_minor(self):
         self.write_input()
         self.run_demo()
-        self.assertEqual(self.played('0-1.mid'), CHORDS)
-        self.assertEqual(self.played('1-1.mid'), CHORDS)
+        self.assertEqual(self.played('000-001.mid'), CHORDS)
+        self.assertEqual(self.played('001-001.mid'), CHORDS)
 
     def test_rhythm_and_tempo_stay_the_same(self):
         self.write_input()

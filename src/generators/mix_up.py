@@ -16,41 +16,42 @@
 
 import random
 
+from src.generators.arp import _check_seed
+from src.generators.backfill import _check_probabilities
 from src.generators.base import ClipGenerator
+from src.note import Rest
 from src.song import _Validated
 
 
-def _check_swaps(swaps):
-    # bool is a subclass of int, but True is not a real count.
-    if type(swaps) is not int or swaps < 0:
-        raise ValueError(f'invalid swaps: {swaps!r} (must be an integer of 0 or more)')
-
-
-def _check_seed(seed):
-    if seed is not None and type(seed) is not int:
-        raise ValueError(f'invalid seed: {seed!r} (must be an integer or None)')
-
-
 class MixUp(ClipGenerator):
-    """Swaps two randomly chosen positions in a clip, a number of times.
+    """Swaps notes with randomly chosen other notes, using a repeating list of probabilities.
 
-    Notes, chords and rests can all be swapped, and they keep their own lengths,
-    so the rhythm can change but the total duration doesn't. Set a seed to get the
-    same result every time.
+    Each note uses the next probability in the cycle, so [0, 0, 1] always swaps the third
+    note with another one. Every step works on the notes as they are by then, so a later
+    swap can undo an earlier one: two notes with [1] swap and then swap back. Steps only
+    count notes and chords. Rests stay where they are and don't use up a probability.
+    Notes keep their own lengths, so swapping different lengths moves the notes between
+    them. Set a seed to get the same result every time.
     """
 
-    swaps = _Validated(_check_swaps)
+    probabilities = _Validated(_check_probabilities)
     seed = _Validated(_check_seed)
 
-    def __init__(self, swaps, seed=None):
-        self.swaps = swaps
+    def __init__(self, probabilities, seed=None):
+        self.probabilities = probabilities
         self.seed = seed
 
     def _generate(self, clip):
-        notes = list(clip.notes)
-        if len(notes) >= 2:
-            generator = random.Random(self.seed)
-            for _ in range(self.swaps):
-                first, second = generator.sample(range(len(notes)), 2)
-                notes[first], notes[second] = notes[second], notes[first]
-        return notes, clip.length
+        positions = list(clip.notes)
+        note_places = [
+            place for place, position in enumerate(positions)
+            if not isinstance(position, Rest)
+        ]
+        generator = random.Random(self.seed)
+        for step, place in enumerate(note_places):
+            probability = self.probabilities[step % len(self.probabilities)]
+            others = [other for other in note_places if other != place]
+            if others and generator.random() < probability:
+                partner = generator.choice(others)
+                positions[place], positions[partner] = positions[partner], positions[place]
+        return positions, clip.length

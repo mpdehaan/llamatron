@@ -141,7 +141,7 @@ class TestFileNames(RenderTestCase):
         self.song.set_clip(scenes[0], tracks[2], Clip())
         self.song.set_clip(scenes[1], tracks[1], Clip())
         render(self.renderer)
-        self.assertEqual(self.files(), ['0-0.mid', '0-2.mid', '1-1.mid'])
+        self.assertEqual(self.files(), ['000-000.mid', '000-002.mid', '001-001.mid'])
 
     def render_clip_named(self, name):
         track = self.song.add_track(Track())
@@ -151,24 +151,43 @@ class TestFileNames(RenderTestCase):
         return self.files()
 
     def test_name_ends_with_the_clip_name(self):
-        self.assertEqual(self.render_clip_named('Riff'), ['0-0-Riff.mid'])
+        self.assertEqual(self.render_clip_named('Riff'), ['000-000-Riff.mid'])
 
     def test_spaces_in_the_clip_name_become_underscores(self):
         self.assertEqual(
             self.render_clip_named('Big  Bass Line'),
-            ['0-0-Big__Bass_Line.mid'],
+            ['000-000-Big__Bass_Line.mid'],
         )
 
+    def test_ids_are_zero_padded_to_three_digits(self):
+        tracks = [self.song.add_track(Track()) for _ in range(12)]
+        scenes = [self.song.add_scene(Scene()) for _ in range(3)]
+        self.song.set_clip(scenes[2], tracks[11], Clip())
+        render(self.renderer)
+        self.assertEqual(self.files(), ['002-011.mid'])
+
+    def test_ids_past_three_digits_still_work(self):
+        track = self.song.add_track(Track())
+        for _ in range(1000):
+            scene = self.song.add_scene(Scene())
+        self.song.set_clip(scene, track, Clip())
+        render(self.renderer)
+        self.assertEqual(self.files(), ['999-000.mid'])
+        self.song.set_clip(self.song.add_scene(Scene()), track, Clip())
+        os.remove(self.path('999-000.mid'))
+        render(self.renderer)
+        self.assertIn('1000-000.mid', self.files())
+
     def test_clip_without_a_name_has_no_last_part(self):
-        self.assertEqual(self.render_clip_named(None), ['0-0.mid'])
+        self.assertEqual(self.render_clip_named(None), ['000-000.mid'])
 
     def test_clip_with_an_empty_name_has_no_last_part(self):
-        self.assertEqual(self.render_clip_named(''), ['0-0.mid'])
+        self.assertEqual(self.render_clip_named(''), ['000-000.mid'])
 
     def test_slashes_in_the_clip_name_cannot_leave_the_directory(self):
         self.assertEqual(
             self.render_clip_named('../up/and\\out'),
-            ['0-0-.._up_and_out.mid'],
+            ['000-000-.._up_and_out.mid'],
         )
 
     def test_clips_with_the_same_name_get_different_files(self):
@@ -177,14 +196,14 @@ class TestFileNames(RenderTestCase):
         for track in tracks:
             self.song.set_clip(scene, track, Clip('Riff'))
         render(self.renderer)
-        self.assertEqual(self.files(), ['0-0-Riff.mid', '0-1-Riff.mid'])
+        self.assertEqual(self.files(), ['000-000-Riff.mid', '000-001-Riff.mid'])
 
     def test_track_and_scene_names_are_not_used(self):
         track = self.song.add_track(Track('Bass/Lead'))
         scene = self.song.add_scene(Scene('Verse: 1'))
         self.song.set_clip(scene, track, Clip('Riff'))
         render(self.renderer)
-        self.assertEqual(self.files(), ['0-0-Riff.mid'])
+        self.assertEqual(self.files(), ['000-000-Riff.mid'])
 
     def test_removed_tracks_leave_gaps_in_the_names(self):
         tracks = [self.song.add_track(Track()) for _ in range(3)]
@@ -193,7 +212,7 @@ class TestFileNames(RenderTestCase):
             self.song.set_clip(scene, track, Clip())
         self.song.remove_track(tracks[1])
         render(self.renderer)
-        self.assertEqual(self.files(), ['0-0.mid', '0-2.mid'])
+        self.assertEqual(self.files(), ['000-000.mid', '000-002.mid'])
 
     def test_empty_song_writes_nothing(self):
         self.song.add_track(Track())
@@ -207,14 +226,14 @@ class TestFileNames(RenderTestCase):
         scene = self.song.add_scene(Scene())
         self.song.set_clip(scene, track, Clip())
         render(ClipTree(nested, self.song))
-        self.assertEqual(os.listdir(nested), ['0-0.mid'])
+        self.assertEqual(os.listdir(nested), ['000-000.mid'])
 
     def test_accepts_a_path_object(self):
         track = self.song.add_track(Track())
         scene = self.song.add_scene(Scene())
         self.song.set_clip(scene, track, Clip())
         render(ClipTree(Path(self.directory), self.song))
-        self.assertEqual(self.files(), ['0-0.mid'])
+        self.assertEqual(self.files(), ['000-000.mid'])
 
 
 class TestFileContents(RenderTestCase):
@@ -227,7 +246,7 @@ class TestFileContents(RenderTestCase):
     def render_clip(self, clip):
         self.song.set_clip(self.scene, self.track, clip)
         render(self.renderer)
-        return self.path('0-0.mid')
+        return self.path('000-000.mid')
 
     def tempo(self, path):
         return next(m.tempo for m in mido.MidiFile(path).tracks[0] if m.type == 'set_tempo')
@@ -282,7 +301,7 @@ class TestFileContents(RenderTestCase):
                 self.song.set_clip(self.scene, self.track, Clip(notes=[Note('C', 4, length)]))
                 render(ClipTree(directory, self.song))
                 self.assertEqual(
-                    events(os.path.join(directory, '0-0.mid')),
+                    events(os.path.join(directory, '000-000.mid')),
                     [on(48, 0), off(48, beats), end(beats)],
                 )
 
@@ -364,6 +383,26 @@ class TestFileContents(RenderTestCase):
         self.song.tempo = 10
         self.assertEqual(self.tempo(self.render_clip(Clip())), mido.bpm2tempo(10))
 
+    def track_name(self, filename):
+        messages = mido.MidiFile(self.path(filename)).tracks[0]
+        names = [message.name for message in messages if message.type == 'track_name']
+        self.assertEqual(len(names), 1)
+        return names[0]
+
+    def test_track_name_is_the_file_name_without_the_extension(self):
+        self.render_clip(Clip('My Riff', notes=[C4]))
+        self.assertEqual(self.track_name('000-000-My_Riff.mid'), '000-000-My_Riff')
+
+    def test_clip_without_a_name_uses_the_scene_and_track(self):
+        self.render_clip(Clip(notes=[C4]))
+        self.assertEqual(self.track_name('000-000.mid'), '000-000')
+
+    def test_track_name_with_other_characters_can_still_be_saved(self):
+        self.song.set_clip(self.scene, self.track, Clip('Caf\u00e9 \u6771', notes=[C4]))
+        render(self.renderer)
+        self.assertEqual(self.files(), ['000-000-Caf\u00e9_\u6771.mid'])
+        self.assertEqual(self.track_name('000-000-Caf\u00e9_\u6771.mid'), '000-000-Caf\u00e9_?')
+
     def test_file_has_the_expected_resolution_and_format(self):
         midi_file = mido.MidiFile(self.render_clip(Clip()))
         self.assertEqual(midi_file.ticks_per_beat, TICKS_PER_BEAT)
@@ -386,11 +425,11 @@ class TestExistingNamedFiles(RenderTestCase):
         track = self.song.add_track(Track())
         scene = self.song.add_scene(Scene())
         self.song.set_clip(scene, track, Clip('My Riff', notes=[C4]))
-        with open(self.path('0-0-My_Riff.mid'), 'wb') as file:
+        with open(self.path('000-000-My_Riff.mid'), 'wb') as file:
             file.write(b'keep me')
         output = render(self.renderer)
         self.assertIn('warning: stopping', output)
-        with open(self.path('0-0-My_Riff.mid'), 'rb') as file:
+        with open(self.path('000-000-My_Riff.mid'), 'rb') as file:
             self.assertEqual(file.read(), b'keep me')
 
 
@@ -419,43 +458,43 @@ class TestExistingFiles(RenderTestCase):
         self.assertEqual(self.read('notes.txt'), b'keep me')
         self.assertIn('warning', output)
         self.assertIn('notes.txt', output)
-        self.assertEqual(self.files(), ['0-0.mid', 'notes.txt'])
+        self.assertEqual(self.files(), ['000-000.mid', 'notes.txt'])
 
     def test_stale_files_from_removed_clips_are_kept_and_warned_about(self):
-        self.write('5-5.mid')
+        self.write('005-005.mid')
         output = render(self.renderer)
-        self.assertEqual(self.read('5-5.mid'), b'keep me')
-        self.assertIn('5-5.mid', output)
-        self.assertEqual(self.files(), ['0-0.mid', '5-5.mid'])
+        self.assertEqual(self.read('005-005.mid'), b'keep me')
+        self.assertIn('005-005.mid', output)
+        self.assertEqual(self.files(), ['000-000.mid', '005-005.mid'])
 
     def test_matching_file_stops_with_a_warning_and_is_kept(self):
-        self.write('0-0.mid')
+        self.write('000-000.mid')
         output = render(self.renderer)
-        self.assertEqual(self.read('0-0.mid'), b'keep me')
+        self.assertEqual(self.read('000-000.mid'), b'keep me')
         self.assertIn('warning: stopping', output)
-        self.assertIn('0-0.mid', output)
+        self.assertIn('000-000.mid', output)
 
     def test_matching_file_stops_every_other_file_from_being_written(self):
         other_track = self.song.add_track(Track())
         self.song.set_clip(self.scene, other_track, Clip(notes=[C4]))
-        self.write('0-1.mid')
+        self.write('000-001.mid')
         render(self.renderer)
-        self.assertEqual(self.files(), ['0-1.mid'])
+        self.assertEqual(self.files(), ['000-001.mid'])
 
     def test_warning_lists_every_matching_file(self):
         other_track = self.song.add_track(Track())
         self.song.set_clip(self.scene, other_track, Clip(notes=[C4]))
-        self.write('0-0.mid')
-        self.write('0-1.mid')
+        self.write('000-000.mid')
+        self.write('000-001.mid')
         output = render(self.renderer)
-        self.assertIn('0-0.mid, 0-1.mid', output)
+        self.assertIn('000-000.mid, 000-001.mid', output)
 
     def test_rendering_twice_stops_and_keeps_the_first_files(self):
         render(self.renderer)
-        first = self.read('0-0.mid')
+        first = self.read('000-000.mid')
         self.song.get_clip(self.scene, self.track).length = 8
         output = render(self.renderer)
-        self.assertEqual(self.read('0-0.mid'), first)
+        self.assertEqual(self.read('000-000.mid'), first)
         self.assertIn('warning: stopping', output)
 
 

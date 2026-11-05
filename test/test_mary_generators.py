@@ -25,8 +25,8 @@ import demo.mary_arp
 import demo.mary_repeat
 from src.renderers.clip_tree import ClipTree
 
-MELODY_FILES = ['0-0.mid', '1-0.mid']
-CHORD_FILES = ['0-1.mid', '1-1.mid']
+MELODY_FILES = ['000-000.mid', '001-000.mid']
+CHORD_FILES = ['000-001.mid', '001-001.mid']
 
 
 def render(song, directory):
