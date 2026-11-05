@@ -15,8 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# Opens the text UI, or opens it on a song if one is named, such as:
-#     ./run_tui.sh examples/retro_chill.yml
+# Runs the llamatron command from the project folder, which opens the tracker,
+# on a song if one is named, or renders with --to, such as:
+#     ./llamatron.sh examples/retro_chill.yml
 
 set -e
 
