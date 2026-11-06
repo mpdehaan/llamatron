@@ -831,6 +831,13 @@ separate ids today. Making this a rule means:
   which exist only because names could repeat, could perhaps go, and the clip tree's file names,
   which use ids, could use names instead.
 
+## The grab_demo.yml doesn't make a good song
+
+The grab_demo.yml should take the original melody and not have different people come in at
+different times, it is just like four voices and they alternate singing notes so voice1 sings
+note1, voice2 does voice2, and so on.  The full "grab track" voice should be silent but
+music should start immediately with all voices active for the full track.
+
 ## Accumulators: research what they do and what they should do
 
 The user wants to research how the accumulators (the Note Add and Velocity Add rows, and the
