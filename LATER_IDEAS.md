@@ -187,7 +187,10 @@ makes undo, redo and wizards easier, because every change then goes through one 
 (`Song.read_file`), which save and load themselves, and `SongRenderer` in
 `src/llamatron/playback/` plays them into finished clips. Everything outside the text UI follows
 the readability rules in CLAUDE.md (named constants, `MSG_` templates, named helpers and
-`__slots__`). Still to do: the tracker moving onto the objects, page by page, and the accessor
+`__slots__`), including the symbols the format defines: note names are `NoteName` constants and
+chord symbols are `ChordSymbol` constants. The grid of finished clips is `ClipGrid` in
+`src/llamatron/clip_grid.py`, so `Song` in `composition/song.py` is the only song. Still to do:
+the tracker moving onto the objects, page by page, and the accessor
 audit, which replaces `_Validated` and attribute access with `get_` and `set_` methods in
 `clip_grid.py`, the generators and renderers, and `Note`'s `midi_number` property.
 
@@ -809,3 +812,35 @@ separate ids today. Making this a rule means:
 - **Ids may become unnecessary.** With unique scene names, the ids on `Track` and `Scene`,
   which exist only because names could repeat, could perhaps go, and the clip tree's file names,
   which use ids, could use names instead.
+
+## Accumulators: research what they do and what they should do
+
+The user wants to research how the accumulators (the Note Add and Velocity Add rows, and the
+pattern's add limit) work today, and decide what they should do, because they look incomplete
+or confusing. What the code does today (`Accumulators` in `src/llamatron/playback/`, used by
+`PatternPlayer.play_pass`):
+
+- Each clip keeps a note total and a velocity total, starting at zero when the clip starts and
+  carrying on across its repeats and loops. Each repeat of a scene is a new clip, so the totals
+  start again there.
+- A step's add is added before the step plays, so a step's own add already applies to it.
+- **Rests never add.** A Note Add or Velocity Add on a step with no degree is ignored, because a
+  rest skips the rest of the step. That's easy to miss in the editor, which lets a rest hold one.
+- **A morph adds twice.** While a clip morphs, each repeat plays its own pattern and the target,
+  and both passes add to the same totals, so the totals move twice as fast as written, and the
+  target's adds count too. This looks like a bug rather than a choice.
+- A step that probability drops still adds, since the add happens before the roll.
+- Steps add in the order they play, so a direction changes how the total builds.
+- When a total goes past the limit in either direction, it clears to zero, and the step that
+  went past plays at zero. The limit defaults to 36, and the note total uses the notes
+  pattern's limit while the velocity total uses the rhythm pattern's, which matters with
+  `rhythm_from`.
+- The note total moves notes along the scale, after the track's transpose, and moves grabbed
+  notes too. A note pushed out of the MIDI range moves to the nearest octave that fits.
+  Velocity stays from 1 to 127.
+- Nothing on screen shows the running totals, so the effect can only be heard.
+
+Questions to settle: whether rests and dropped steps should add; how morphs should handle the
+totals; whether clearing to zero is right, or whether a total should wrap or turn back at the
+limit, and what the Cirklon itself offers here; whether totals should carry across a scene's
+repeats; and how the editor could show what a total will be at each step.
