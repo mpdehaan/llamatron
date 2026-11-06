@@ -12,7 +12,8 @@ else is unranked.
 
 ### Note lengths as gates
 
-**HIGH PRIORITY.** The user's intent was that Granularity sets the width of each cell in the
+**HIGH PRIORITY, and next.** The user wants to do gates next, straight after the song_file.py
+refactoring now under way (see "Suggested order"). The user's intent was that Granularity sets the width of each cell in the
 pattern editor, and so how far apart steps and rests are, while a note's length is its gate:
 how long the note sounds, which can be shorter than its cell. Today it works the other way. Each
 step's Duration is both how long its note sounds and how far it is to the next step, so a short
@@ -72,11 +73,16 @@ safety net for refactoring is the existing tests, including the ones that check 
 generator against its sources, plus comparing what each demo renders before and after a change
 by hand, as a one-off check while refactoring, rather than as a kept test.
 
-**Phase 1: refactoring** (see "Refactoring")
+**Phase 1: refactoring** (see "Refactoring"). Started on 2026-11-06, in this order: steps 6
+and 7's new classes first, with the serialization, then the tracker moved onto them, then
+gates (Phase 2) as the next piece of work. Retiring AutoRatchet waits until after, as a step of
+its own, because it changes what songs play and would get in the way of checking that the
+refactoring changes nothing.
 
 4. Decide which is the real model of a song. The serialization plan under "Refactoring" answers
    it in favor of the objects, if the user agrees.
-5. Retire AutoRatchet, once what replaces it is decided, so that there's less to refactor.
+5. Retire AutoRatchet, once what replaces it is decided. Moved to after the refactoring: it's
+   converted to the new classes like everything else first, as the user decided.
 6. Eliminate `song_file.py` as a class: every object gets `to_data()` and `from_data()`, the song
    saves and loads itself through them, and the music logic moves into objects with one job
    each, keeping behavior identical.
@@ -176,6 +182,24 @@ also write into the song's data directly in places, such as the Song page doing
 makes undo, redo and wizards easier, because every change then goes through one place.
 
 ### Eliminating song_file.py, with every object saving and loading itself
+
+**In progress.** Decided with the user on 2026-11-06:
+
+- Every saved object extends a `LlamaData` base class, whose `to_data()` and `from_data()` raise
+  `NotImplementedError` unless the class defines them, and a test checks that every subclass
+  does. `from_data(data, where)` is a class method, and `where` names the place in the file for
+  error messages.
+- The saved objects are the composition model, in `src/llamatron/composition/`, one class to a
+  file, and the music logic goes in `src/llamatron/playback/`.
+- Today's `Song` in `src/llamatron/song.py`, the grid of finished clips that renderers take, is
+  renamed `ClipGrid`, since it maps clips to tracks and scenes. The composition model's song
+  becomes `Song`.
+- References between objects stay names, looked up when rendering, which keeps binding late.
+- The tracker moves onto the objects too: `Document` holds a `Song`, and pages call its methods
+  instead of editing the file's plain data, so that the objects are the only model.
+- While refactoring, every example song is rendered both ways, and saved, before and after each
+  step, and compared byte for byte, in Claude's scratchpad rather than in the project, along
+  with the full test suite. AutoRatchet is converted along with everything else.
 
 Object orientation is a design goal throughout. `src/llamatron/song_file.py` does three jobs in
 about 900 lines: it reads and checks the file, it holds most of the music logic (grabs,
