@@ -17,26 +17,30 @@
 """The pattern editor: a grid of steps that's already drawn, with one row per kind of value.
 
 The grid's size comes from the pattern's step count, and typing never changes it or moves the
-cursor. Each step has its own duration, so steps aren't fixed slices of time. A step with nothing
-to play is a rest, and is shown as a blank, and every step takes time.
+cursor. Every step lasts the pattern's step size. A step with a note sounds for its gate, which
+can run on past later steps, up to the end of the pattern, and a step with no note is a rest.
 """
 
 from rich.text import Text
 
+from llamatron.composition.checks import is_written_length
 from llamatron.composition.defaults import DEFAULT_ACCUMULATOR_LIMIT
-from llamatron.composition.file_format import CC_ROWS, CHORD_SYMBOLS, ChordSymbol, DIRECTIONS, FORWARD, NOTE_LETTERS
+from llamatron.composition.file_format import (
+    CC_ROWS, CHORD_SYMBOLS, DIRECTIONS, FORWARD, GATE_LENGTH_CHOICES, NOTE_LETTERS, ChordSymbol, GateModifier,
+)
+from llamatron.composition.limits import MAX_GATE, MAX_STEP_SIZE
 from llamatron.tui.base import ChoiceDialog, ConfirmDialog, GridChoiceDialog, Page, PromptDialog, columns, fit, grouped_grid, key, pressed_key
 from llamatron.composition.defaults import DEFAULT_PROBABILITY, DEFAULT_RATCHET, DEFAULT_VELOCITY
 from llamatron.tui.document import DIRECTION_NAMES, fraction, fraction_text
 
 # The rows on screen. Degree always shows, and the rest depend on the mode.
 ROW_LABELS = {
-    'degree': 'Degree', 'duration': 'Duration', 'accidental': '#/b', 'octave': 'Octave', 'chord': 'Chord',
+    'degree': 'Degree', 'gate': 'Gate', 'dot': 'Dot', 'accidental': '#/b', 'octave': 'Octave', 'chord': 'Chord',
     'velocity': 'Velocity', 'probability': 'Prob', 'glide': 'Glide', 'ratchet': 'Ratchet',
     'ratchet_offset': 'Ratchet Offset', 'note_add': 'Note Add', 'velocity_add': 'Velocity Add', 'grab': 'Grab',
     'cc1': 'CC 1', 'cc2': 'CC 2', 'cc3': 'CC 3', 'cc4': 'CC 4', 'slide': 'Slide',
 }
-NORMAL_ROWS = ['degree', 'duration', 'accidental', 'octave', 'chord', 'velocity', 'probability', 'glide']
+NORMAL_ROWS = ['degree', 'gate', 'dot', 'accidental', 'octave', 'chord', 'velocity', 'probability', 'glide']
 ADVANCED_ROWS = ['degree', 'ratchet', 'ratchet_offset', 'note_add', 'velocity_add', 'grab']
 CC_SET = ['degree', 'cc1', 'cc2', 'cc3', 'cc4', 'slide']
 # The sets of rows under Degree that A steps through, and what each is called on screen.
@@ -47,6 +51,19 @@ REST_EDITABLE = (*CC_ROWS, 'slide')
 TOGGLE_ON, TOGGLE_OFF = '*', ' '
 DRUM_LETTER_ROW = 'Note'
 ACCIDENTAL_CYCLE = [None, '#', 'b']
+# The Dot row's values in the order + steps through them: none, dotted, then triplet.
+DOT_CYCLE = [None, GateModifier.DOTTED, GateModifier.TRIPLET]
+# A gate that's doubled or halved stays between the shortest and longest gate lengths offered.
+SHORTEST_GATE = GATE_LENGTH_CHOICES[0]
+MSG_NOT_A_LENGTH = '{text!r} is not a whole number or a fraction like 1/8.'
+MSG_LENGTH_OUT_OF_RANGE = 'A length must be more than 0 and at most {most}.'
+GATE_PROMPT, STEP_SIZE_PROMPT = 'Gate', "Step size (blank for the song's)"
+DESCRIBE_EMPTY = 'Step {step}: empty'
+DESCRIBE_NOTE = 'Step {step}: {sound}, gate {gate}{chord}'
+DESCRIBE_CHORD = ', chord {chord}'
+DOT_NAMES = {GateModifier.DOTTED: ' dotted', GateModifier.TRIPLET: ' triplet'}
+STEP_SIZE_SHOWN = 'Step size {size}{whose}'
+SONG_STEP_SIZE_SHOWN = " (the song's)"
 CELL_WIDTH = 5
 MIN_OCTAVE, MAX_OCTAVE = -2, 8
 NUMBER_RANGE = {
@@ -113,12 +130,12 @@ def _chord_value(text):
 
 class PatternEditor(Page):
     HELP = (
-        'Each column is a step with its own Duration. The grid does not grow as you type. Arrows move, and typing never moves the cursor.',
+        'Each column is one step, as long as the step size, which E sets. Typing never moves the cursor.',
         '',
-        'Degree: 1 is the root of the scale. Bksp makes a rest.',
-        'Duration: + and - use the Granularity. * doubles and / halves.',
-        'Octave: exactly the octave you type, as Live numbers them.',
-        'Chord: Enter shows the chords. Numbers like 3 and 7 use the scale.',
+        'Degree: 1 is the scale\'s root. Bksp empties the step.',
+        'Gate: how long the note sounds, one step if blank. + and - step through lengths, * and / double and halve, Enter types one.',
+        'Dot: d is dotted, t a triplet. Octave: as Live numbers them.',
+        'Chord: Enter shows them, and 3 or 7 use the scale.',
         'Velocity, Prob: type numbers. Glide (*): runs into the next note.',
         '',
         'A steps through advanced and CC rows. Ratchet splits a step, and Ratchet Offset moves each slice along the scale. Note Add and Velocity Add build up totals. Grab takes a note from another track.',
@@ -197,6 +214,7 @@ class PatternEditor(Page):
             result.append(key('m', 'add limit', self.ask_limit))
         result += [
             key('r', 'resize', self.ask_steps),
+            key('e', 'step size', self.ask_step_size),
             key('t', 'drum on' if not self.is_drum() else 'drum off', self.toggle_drum),
             key('p', 'direction', self.pick_direction),
             key('i', 'insert step', self.insert_step),
@@ -210,16 +228,23 @@ class PatternEditor(Page):
         name = self.row_name()
         if name == 'degree':
             return self.degree_keys()
-        if name == 'duration':
-            return [
-                key(('+', '='), 'longer', lambda: self.nudge_duration(1), label='+'),
-                key('-', 'shorter', lambda: self.nudge_duration(-1)),
-                key('*', 'double', lambda: self.scale_duration(2)),
-                key('/', 'halve', lambda: self.scale_duration(0.5)),
-                key('backspace', 'default', self.reset_duration),
-            ]
         if not self.is_note() and name not in REST_EDITABLE:
             return []
+        if name == 'gate':
+            return [
+                key(('+', '='), 'longer', lambda: self.nudge_gate(1), label='+'),
+                key('-', 'shorter', lambda: self.nudge_gate(-1)),
+                key('*', 'double', lambda: self.scale_gate(2)),
+                key('/', 'halve', lambda: self.scale_gate(0.5)),
+                key('enter', 'type', self.ask_gate),
+                key('backspace', 'one step', lambda: self.set_value(None)),
+            ]
+        if name == 'dot':
+            return [
+                key(('space', '+', '='), 'next', lambda: self.cycle_dot(1), label='Space/+'),
+                key('-', 'back', lambda: self.cycle_dot(-1)),
+                key('backspace', 'clear', lambda: self.set_value(None)),
+            ]
         if name == 'accidental':
             return [
                 key(('space', '+', '='), 'next', lambda: self.cycle_accidental(1), label='Space/+'),
@@ -285,9 +310,7 @@ class PatternEditor(Page):
     # Editing each row.
 
     def fill_in(self):
-        """Give a new note what every note has: the default duration and octave."""
-        if self.value('duration') is None:
-            self.set_value(self.document.data['default_length'], 'duration')
+        """Give a new note what every note has: an octave. Its gate starts blank, which is one step."""
         if self.value('octave') is None:
             setting = 'default_drum_octave' if self.is_drum() else 'default_octave'
             self.set_value(self.document.data[setting], 'octave')
@@ -325,24 +348,50 @@ class PatternEditor(Page):
     def clear_degree(self):
         self.document.clear_sound(self.item, self.step)
 
-    def granularity(self):
-        return fraction(self.document.data['granularity'])
+    def gate_now(self, step=None):
+        """Return a step's gate before its Dot row, which is one step if it has none."""
+        current = self.value('gate', step)
+        return self.document.step_size(self.item) if current is None else fraction(current)
 
-    def duration_now(self, step=None):
-        """Return a step's duration, which is the song's default if the step doesn't have one."""
-        current = self.value('duration', step)
-        return fraction(self.document.data['default_length'] if current is None else current)
+    def nudge_gate(self, offset):
+        """Set the gate to the next plain length longer or shorter than it is now."""
+        now = self.gate_now()
+        lengths = [fraction(length) for length in GATE_LENGTH_CHOICES]
+        if offset > 0:
+            choices = [length for length in lengths if length > now] or [lengths[-1]]
+            self.set_value(fraction_text(choices[0]), 'gate')
+        else:
+            choices = [length for length in lengths if length < now] or [lengths[0]]
+            self.set_value(fraction_text(choices[-1]), 'gate')
 
-    def nudge_duration(self, offset):
-        new = self.duration_now() + offset * self.granularity()
-        self.set_value(fraction_text(max(new, self.granularity())), 'duration')
+    def scale_gate(self, factor):
+        new = self.gate_now() * 2 if factor == 2 else self.gate_now() / 2
+        new = max(min(new, MAX_GATE), fraction(SHORTEST_GATE))
+        self.set_value(fraction_text(new), 'gate')
 
-    def scale_duration(self, factor):
-        new = self.duration_now() * 2 if factor == 2 else self.duration_now() / 2
-        self.set_value(fraction_text(max(new, self.granularity())), 'duration')
+    def ask_gate(self):
+        self.ask_length(GATE_PROMPT, self.value('gate') or '', MAX_GATE, lambda text: self.set_value(text, 'gate'), blank_allowed=False)
 
-    def reset_duration(self):
-        self.set_value(self.document.data['default_length'], 'duration')
+    def ask_step_size(self):
+        current = self.pattern().get('step_size') or ''
+        self.ask_length(STEP_SIZE_PROMPT, current, MAX_STEP_SIZE, lambda text: self.document.set_step_size(self.item, text), blank_allowed=True)
+
+    def ask_length(self, title, current, most, then, blank_allowed):
+        """Ask for a length, a whole number or a fraction like 5/16, and pass it on if it's in range."""
+        def answered(text):
+            text = text.strip()
+            if not text and blank_allowed:
+                then(None)
+                return
+            if not is_written_length(text) or not 0 < fraction(text) <= most:
+                self.status = (MSG_LENGTH_OUT_OF_RANGE.format(most=most) if is_written_length(text) else MSG_NOT_A_LENGTH.format(text=text))
+                return
+            then(fraction_text(fraction(text)))
+        self.ask(PromptDialog(title, current), answered)
+
+    def cycle_dot(self, offset):
+        place = DOT_CYCLE.index(self.value())
+        self.set_value(DOT_CYCLE[(place + offset) % len(DOT_CYCLE)])
 
     def cycle_accidental(self, offset):
         place = ACCIDENTAL_CYCLE.index(self.value())
@@ -526,8 +575,8 @@ class PatternEditor(Page):
         note = self.is_note(step)
         if name == 'degree':
             return '' if value is None else str(value)
-        if name == 'duration':
-            return fraction_text(self.duration_now(step))
+        if name in ('gate', 'dot'):
+            return '' if not note or value is None else str(value)
         if name in ('glide', 'grab', 'slide') and (note or name in REST_EDITABLE):
             return TOGGLE_ON if value else TOGGLE_OFF
         if not note and name not in REST_EDITABLE:
@@ -557,8 +606,10 @@ class PatternEditor(Page):
             extra = f"Advanced rows    Add limit {limit}    Grab plays what each clip's Grab track last played"
         elif self.holder.row_set == 'cc':
             extra = 'CC rows: each track sets which CC number each row sends'
+        whose = '' if pattern.get('step_size') else SONG_STEP_SIZE_SHOWN
+        step_size = STEP_SIZE_SHOWN.format(size=fraction_text(self.document.step_size(self.item)), whose=whose)
         return [
-            Text(f'  Steps {pattern["steps"]}    Drum {drum}    Direction {direction}', no_wrap=True),
+            Text(f'  Steps {pattern["steps"]}    {step_size}    Drum {drum}    Direction {direction}', no_wrap=True),
             Text(f'  {extra}', no_wrap=True),
         ]
 
@@ -590,15 +641,15 @@ class PatternEditor(Page):
 
     def describe(self):
         step = self.step + 1
-        duration = fraction_text(self.duration_now())
         if not self.is_note():
-            return f'Step {step}: rest, {duration}'
+            return DESCRIBE_EMPTY.format(step=step)
         where = '' if self.is_drum() else f' in {self.document.data.get("scale") or "no scale"}'
         played = self.document.note_name(self.item, self.step)
         sound = f'{played}{where}' if played else f'degree {self.value("degree")}, no scale'
         chord = self.value('chord')
-        chord_text = f', chord {chord}' if chord is not None else ''
-        return f'Step {step}: {sound}, {duration}{chord_text}'
+        chord_text = DESCRIBE_CHORD.format(chord=chord) if chord is not None else ''
+        gate = str(fraction_text(self.gate_now())) + DOT_NAMES.get(self.value('dot'), '')
+        return DESCRIBE_NOTE.format(step=step, sound=sound, gate=gate, chord=chord_text)
 
     def body(self, width, height):
         self.clamp()

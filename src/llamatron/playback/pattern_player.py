@@ -20,15 +20,16 @@ from dataclasses import replace
 from fractions import Fraction
 
 from llamatron.chord import Chord
-from llamatron.composition.checks import number
+from llamatron.composition.checks import written_length
 from llamatron.composition.defaults import DEFAULT_PROBABILITY, DEFAULT_RATCHET, DEFAULT_VELOCITY
 from llamatron.composition.file_format import (
-    ACCIDENTALS, CC_ROWS, FIXED_CHORDS, LIVE_OCTAVE_OFFSET, NOTE_ROWS, PATTERN_ROWS, SCALE_CHORDS, Row,
+    ACCIDENTALS, CC_ROWS, FIXED_CHORDS, GATE_MODIFIERS, LIVE_OCTAVE_OFFSET, NOTE_ROWS, PATTERN_ROWS, SCALE_CHORDS, Row,
 )
-from llamatron.composition.limits import MAX_PROBABILITY, MAX_VELOCITY, MIN_VELOCITY
+from llamatron.composition.limits import MAX_GATE, MAX_PROBABILITY, MAX_VELOCITY, MIN_VELOCITY
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators.arp import along_scale
 from llamatron.generators.auto_ratchet import divide
+from llamatron.held import Held, phrase
 from llamatron.note import SHARP_NAMES, Degree, Note, Rest
 from llamatron.clip_grid import Clip, Control
 
@@ -56,23 +57,22 @@ class PatternPlayer:
     and the track's transpose.
     """
 
-    __slots__ = ('_song', '_scene', '_scale', '_transpose', '_default_length')
+    __slots__ = ('_song', '_scene', '_scale', '_transpose')
 
     def __init__(self, song, scene, scale, track):
         self._song = song
         self._scene = scene
         self._scale = scale
         self._transpose = track.get_transpose()
-        self._default_length = song.get_default_length()
 
     def play_pass(self, rhythm_name, notes_name, grab, direction, where, rolls, order, totals, start):
         """Return one pass through a rhythm, as notes, chords and rests, starting at a time in the clip.
 
-        The notes pattern's grab steps play what grab, a GrabSource, gives for the time they start,
-        if it's given. Whichever order the steps play in, a pass lasts as long as the rhythm pattern
-        does, so that a direction can't change how long a clip or scene is. The last step is cut to
-        fit. rolls is the random generator probability uses, order the StepOrder, and totals the
-        clip's Accumulators.
+        Every step of the rhythm takes the same time, its step size, whatever order the steps play
+        in. A step that plays sounds for its gate, which can run past later steps but not past the
+        end of the pass. The notes pattern's grab steps play what grab, a GrabSource, gives for the
+        time they start, if it's given. rolls is the random generator probability uses, order the
+        StepOrder, and totals the clip's Accumulators.
         """
         for name in (rhythm_name, notes_name):
             if not self._song.has_pattern(name):
@@ -84,48 +84,36 @@ class PatternPlayer:
         def direction_of(pattern):
             return direction or pattern.get_direction()
 
+        step_size = self._song.get_pattern_step_size(rhythm)
         length = self.pattern_length(rhythm)
         where = WHERE_PATTERN.format(name=notes_name)
-        positions, controls, time = [], [], Fraction(0)
-        while time < length:
+        sounding, controls = [], []
+        for slot in range(rhythm.get_steps()):
+            time = slot * step_size
             step = order.next_step((RHYTHM_STEPS, rhythm_name), rhythm.get_steps(), direction_of(rhythm))
             values = _step_values(rhythm, step, PATTERN_ROWS)
-            moment = start + time
-            duration = self._step_length(values, where)
-            # CC values belong to the rhythm, and a rest can send them too.
+            # CC values belong to the rhythm, and a step with no note can send them too.
             controls += _controls_sent(values, time)
-            time += duration
             if values[Row.DEGREE] is None or (combined and not note_steps):
-                positions.append(Rest(duration))
                 continue
             note_step = step
             if combined:
                 note_step = note_steps[order.next_step((NOTE_STEPS, notes_name), len(note_steps), direction_of(notes))]
                 values.update(_step_values(notes, note_step, NOTE_ROWS))
             drum = notes.is_drum()
-            values[GRABBED] = grab.note_at(moment) if grab and notes.get_value(Row.GRAB, note_step) else None
+            values[GRABBED] = grab.note_at(start + time) if grab and notes.get_value(Row.GRAB, note_step) else None
             note_total = totals.add(NOTE_TOTAL, values[Row.NOTE_ADD], notes.get_accumulator_limit())
             velocity_total = totals.add(VELOCITY_TOTAL, values[Row.VELOCITY_ADD], rhythm.get_accumulator_limit())
-            positions += self._step(values, drum, where, rolls, note_total, velocity_total)
-        clip = Clip(notes=positions, scale=self._scale, controls=controls)
-        return clip.section(0, length) if time > length else clip
+            gate = min(_gate(values, step_size, where), length - time)
+            sounding.append((time, self._step(values, gate, drum, where, rolls, note_total, velocity_total)))
+        return Clip(notes=_in_sequence(sounding, length, step_size), scale=self._scale, controls=controls)
 
     def pattern_length(self, pattern):
-        """Return how long one pass through a pattern lasts, in whole notes."""
-        return sum(
-            (self._step_length({Row.DURATION: pattern.get_value(Row.DURATION, step)}, Row.DURATION)
-             for step in range(pattern.get_steps())),
-            Fraction(0),
-        )
+        """Return how long one pass through a pattern lasts, in whole notes: its steps times its step size."""
+        return pattern.get_steps() * self._song.get_pattern_step_size(pattern)
 
-    def _step_length(self, values, where):
-        """Return how long a step lasts: its duration, or the song's default length if it has none."""
-        duration = values[Row.DURATION]
-        return self._default_length if duration is None else number(duration, where)
-
-    def _step(self, values, drum, where, rolls, note_total, velocity_total):
-        """Return what one step plays, as more than one position if it ratchets."""
-        length = self._step_length(values, where)
+    def _step(self, values, length, drum, where, rolls, note_total, velocity_total):
+        """Return what one step plays, lasting length, its gate, as more than one position if it ratchets."""
         default = self._song.get_default_drum_octave() if drum else self._song.get_default_octave()
         octave = _value_or(values[Row.OCTAVE], default) + LIVE_OCTAVE_OFFSET
         velocity = _clamped_velocity(_value_or(values[Row.VELOCITY], DEFAULT_VELOCITY) + velocity_total)
@@ -191,6 +179,46 @@ class PatternPlayer:
         if symbol in FIXED_CHORDS:
             return root.to_chord(FIXED_CHORDS[symbol])
         return _scale_chord(SCALE_CHORDS[symbol], degree, length, half_steps, shift, scale)
+
+
+def _gate(values, step_size, where):
+    """Return how long a step's note sounds: its gate, or one step if it has none, made dotted or a triplet by its Dot row."""
+    gate = step_size if values[Row.GATE] is None else written_length(values[Row.GATE], where, MAX_GATE)
+    modifier = values[Row.DOT]
+    return gate if modifier is None else gate * GATE_MODIFIERS[modifier]
+
+
+def _in_sequence(sounding, length, step_size):
+    """Return the notes of a pass as a clip's sequence of positions, from (start, what it plays) for each step that plays.
+
+    A note whose gate reaches exactly to the next note is an ordinary position, as it always
+    was. A shorter one is followed by rests, one for each step until the next note. A longer one
+    is Held, so the next note starts while it still sounds.
+    """
+    positions, now = [], Fraction(0)
+    for place, (start, played) in enumerate(sounding):
+        following = sounding[place + 1][0] if place + 1 < len(sounding) else length
+        positions += _rests(now, start, step_size)
+        gate = sum((piece.length for piece in played), Fraction(0))
+        gap = following - start
+        if gate > gap:
+            positions.append(Held(played[0] if len(played) == 1 else phrase(played), gap))
+            now = following
+        else:
+            positions += played
+            now = start + gate
+    return positions + _rests(now, length, step_size)
+
+
+def _rests(start, end, step_size):
+    """Return the rests from a start to an end, one for each step, with the first ending at the next step."""
+    rests, now = [], start
+    while now < end:
+        step_end = (now // step_size + 1) * step_size
+        piece_end = min(step_end, end)
+        rests.append(Rest(piece_end - now))
+        now = piece_end
+    return rests
 
 
 def _step_values(pattern, step, rows):

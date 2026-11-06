@@ -32,5 +32,9 @@ MIN_ACCUMULATOR_LIMIT = 1
 # Octaves as Live numbers them, where MIDI note 60 is C3.
 MIN_LIVE_OCTAVE, MAX_LIVE_OCTAVE = -2, 8
 
+# The longest a step or a gate can be, in whole notes: four bars of 4/4.
+MAX_STEP_SIZE = 4
+MAX_GATE = 4
+
 # How far a track can move its notes, in scale notes, either way.
 MAX_TRANSPOSE = 24

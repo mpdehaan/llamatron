@@ -1,3 +1,4 @@
+version: 1.0.5
 title: Basic classical demo
 description: |
   Basic classical demo: the opening of Pachelbel's Canon in D, with only patterns and scenes.
@@ -21,8 +22,6 @@ description: |
 tempo: 44
 scale: D Major
 seed: 1
-default_length: 1/16
-granularity: 1/16
 default_octave: 3
 default_drum_octave: 1
 
@@ -32,43 +31,43 @@ scales:
 patterns:
   ground_bass:
     steps: 8
+    step_size: 1/4
     degree: [1, 5, 6, 3, 4, 1, 4, 5]
-    duration: [1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4]
     octave: [2, 1, 1, 1, 1, 1, 1, 1]
   canon_falling_quarters:
     steps: 8
+    step_size: 1/4
     degree: [3, 2, 1, 7, 6, 5, 6, 7]
-    duration: [1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4]
     octave: [4, 4, 4, 3, 3, 3, 3, 3]
   canon_answering_quarters:
     steps: 8
+    step_size: 1/4
     degree: [1, 7, 6, 5, 4, 3, 4, 2]
-    duration: [1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4]
     octave: [4, 3, 3, 3, 3, 3, 3, 3]
   canon_flowing_eighths:
     steps: 16
+    step_size: 1/8
     degree: [1, 3, 5, 4, 3, 1, 3, 2, 1, 6, 1, 5, 4, 6, 5, 4]
-    duration: [1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8]
     octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 3, 3, 3, 3, 3, 3]
   ending_bass:
     steps: 1
+    step_size: 2
     degree: [1]
-    duration: [2]
     octave: [1]
   ending_top:
     steps: 1
+    step_size: 2
     degree: [1]
-    duration: [2]
     octave: [4]
   ending_middle:
     steps: 1
+    step_size: 2
     degree: [5]
-    duration: [2]
     octave: [3]
   ending_low:
     steps: 1
+    step_size: 2
     degree: [3]
-    duration: [2]
     octave: [3]
 
 tracks:

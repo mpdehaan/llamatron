@@ -33,11 +33,11 @@ _PLAIN = re.compile(r'[A-Za-z0-9_][A-Za-z0-9_#./ -]*')
 # written as a block after the title and author.
 _SETTINGS = [
     SongSetting.VERSION, SongSetting.TITLE, SongSetting.AUTHOR, SongSetting.TEMPO, SongSetting.SCALE, SongSetting.SEED,
-    SongSetting.DEFAULT_LENGTH, SongSetting.GRANULARITY, SongSetting.DEFAULT_OCTAVE, SongSetting.DEFAULT_DRUM_OCTAVE,
+    SongSetting.STEP_SIZE, SongSetting.DEFAULT_OCTAVE, SongSetting.DEFAULT_DRUM_OCTAVE,
 ]
 _BEFORE_DESCRIPTION = (SongSetting.VERSION, SongSetting.TITLE, SongSetting.AUTHOR)
 _GENERATOR_SECTIONS = [Section.ARPS, Section.AUTO_RATCHETS]
-_PATTERN_SETTINGS = [PatternSetting.DIRECTION, PatternSetting.ACCUMULATOR_LIMIT]
+_PATTERN_SETTINGS = [PatternSetting.STEP_SIZE, PatternSetting.DIRECTION, PatternSetting.ACCUMULATOR_LIMIT]
 
 # The pieces of YAML this writes.
 NULL = '~'

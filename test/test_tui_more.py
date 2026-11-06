@@ -298,11 +298,11 @@ class TestPatternEditorRefusals(UITest):
     async def test_shortening_past_steps_that_hold_something_asks_first(self):
         await self.open('tune')
         await self.press('r')
-        self.app.screen.value = '2'
+        self.app.screen.value = '1'
         await self.press('enter')
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press('y')
-        self.assertEqual(self.document.data['patterns']['tune']['steps'], 2)
+        self.assertEqual(self.document.data['patterns']['tune']['steps'], 1)
 
     async def test_the_add_limit_must_be_a_positive_whole_number(self):
         await self.open('tune')
@@ -344,11 +344,11 @@ class TestPatternEditorRefusals(UITest):
         self.assertIn('already in use', self.text())
         self.assertIn('tune', self.document.data['patterns'])
 
-    async def test_backspace_on_a_duration_sets_the_default(self):
+    async def test_backspace_on_a_gate_makes_it_one_step(self):
         await self.open('tune')
-        await self.go_to_row('duration')
+        await self.go_to_row('gate')
         await self.press('backspace')
-        self.assertEqual(self.document.step_value('tune', 'duration', 0), self.document.data['default_length'])
+        self.assertIsNone(self.document.step_value('tune', 'gate', 0))
 
     async def test_an_octave_without_a_value_starts_from_the_default(self):
         await self.open('other')

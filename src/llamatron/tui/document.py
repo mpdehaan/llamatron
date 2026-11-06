@@ -35,9 +35,9 @@ from llamatron.note import ROOT_NAMES, Note
 from llamatron.scale import ScaleType
 from llamatron.clip_grid import ClipGrid
 from llamatron.composition.defaults import (
-    DEFAULT_DRUM_OCTAVE, DEFAULT_LENGTH, DEFAULT_OCTAVE, DEFAULT_SEED, DEFAULT_TEMPO, GRANULARITIES,
+    DEFAULT_DRUM_OCTAVE, DEFAULT_OCTAVE, DEFAULT_SEED, DEFAULT_STEP_SIZE, DEFAULT_TEMPO,
 )
-from llamatron.composition.file_format import CC_ROWS, FORWARD, PATTERN_ROWS, TOGGLE_ROWS, SongSetting
+from llamatron.composition.file_format import CC_ROWS, FORWARD, PATTERN_ROWS, PatternSetting, Row, SongSetting, TOGGLE_ROWS
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.composition.song import Song
 from llamatron.playback.song_renderer import SongRenderer
@@ -65,7 +65,7 @@ def new_song():
     """Return the data for a new song, which has a C major scale that can be deleted."""
     return {
         'tempo': DEFAULT_TEMPO, 'scale': DEFAULT_SCALE, 'scales': {DEFAULT_SCALE: {'root': 'C', 'type': 'major'}}, 'seed': DEFAULT_SEED,
-        'default_length': DEFAULT_LENGTH, 'granularity': GRANULARITIES[0],
+        SongSetting.STEP_SIZE: DEFAULT_STEP_SIZE,
         'default_octave': DEFAULT_OCTAVE, 'default_drum_octave': DEFAULT_DRUM_OCTAVE,
         'patterns': {}, 'tracks': {}, 'arps': {}, 'auto_ratchets': {}, 'chains': {}, 'scenes': [],
     }
@@ -105,7 +105,7 @@ def blank(row):
 
 
 # What a rest keeps when a note is turned into one: its time, and the CC values it sends.
-REST_ROWS = ('duration', *CC_ROWS, 'slide')
+REST_ROWS = (*CC_ROWS, Row.SLIDE)
 
 
 def _moved(items, place, offset):
@@ -284,11 +284,25 @@ class Document:
     def pattern_length(self, name):
         """Return how long one play of a pattern lasts, in fractions of a whole note."""
         pattern = self.data['patterns'][name]
-        total = Fraction(0)
-        for step in range(pattern['steps']):
-            duration = self.step_value(name, 'duration', step)
-            total += fraction(self.data['default_length'] if duration is None else duration)
-        return total
+        return pattern['steps'] * self.step_size(name)
+
+    def step_size(self, name):
+        """Return how long each step of a pattern is: its own step size, or else the song's."""
+        own = self.data['patterns'][name].get(PatternSetting.STEP_SIZE)
+        return fraction(self.data[SongSetting.STEP_SIZE] if own is None else own)
+
+    def song_step_size(self):
+        """Return the song's step size, which a pattern without its own uses."""
+        return self.data[SongSetting.STEP_SIZE]
+
+    def set_step_size(self, name, step_size):
+        """Give a pattern its own step size, or None to use the song's."""
+        pattern = self.data['patterns'][name]
+        if step_size is None:
+            pattern.pop(PatternSetting.STEP_SIZE, None)
+        else:
+            pattern[PatternSetting.STEP_SIZE] = step_size
+        self.changed()
 
     # Reordering any list, and copying names.
 
@@ -362,8 +376,8 @@ class Document:
     # Patterns.
 
     def add_pattern(self, name, steps=16):
-        """Add a pattern of rests, because every step takes time."""
-        self.data['patterns'][name] = {'steps': steps, 'duration': [self.data['default_length']] * steps}
+        """Add a pattern of empty steps."""
+        self.data['patterns'][name] = {PatternSetting.STEPS: steps}
         self.changed()
 
     def copy_pattern(self, name):
@@ -403,36 +417,28 @@ class Document:
         self.changed()
 
     def clear_sound(self, name, step):
-        """Turn a note into a rest, which keeps its duration and CC values."""
+        """Empty a step, which keeps only its CC values, since they don't need a note."""
         for row in PATTERN_ROWS:
             if row not in REST_ROWS and self.data['patterns'][name].get(row):
                 self.data['patterns'][name][row][step] = blank(row)
         self.changed()
 
     def steps_with_anything_past(self, name, steps):
-        """Return how many steps from a position onward are more than a rest of the default length."""
+        """Return how many steps from a position onward hold a note or a CC value."""
         pattern = self.data['patterns'][name]
-        default = fraction(self.data['default_length'])
-        changed = 0
-        for step in range(steps, pattern['steps']):
-            duration = self.step_value(name, 'duration', step)
-            if self.step_value(name, 'degree', step) is not None or (duration is not None and fraction(duration) != default) or any(
-                self.step_value(name, row, step) is not None for row in CC_ROWS
-            ):
-                changed += 1
-        return changed
+        return sum(1 for step in range(steps, pattern['steps']) if self._step_holds_anything(name, step))
+
+    def _step_holds_anything(self, name, step):
+        """Return whether a step plays a note or sends a CC value."""
+        rows = (Row.DEGREE, *CC_ROWS)
+        return any(self.step_value(name, row, step) is not None for row in rows)
 
     def set_steps(self, name, steps):
-        """Change how many steps a pattern has, cutting them or adding rests at the end."""
+        """Change how many steps a pattern has, cutting them or adding empty steps at the end."""
         pattern = self.data['patterns'][name]
-        added = max(steps - pattern['steps'], 0)
         for row in PATTERN_ROWS:
             if pattern.get(row) is not None:
                 pattern[row] = (pattern[row] + [blank(row)] * steps)[:steps]
-        durations = pattern.get('duration') or [None] * steps
-        for step in range(steps - added, steps):
-            durations[step] = self.data['default_length']
-        pattern['duration'] = durations
         pattern['steps'] = steps
         self.changed()
 
@@ -442,7 +448,6 @@ class Document:
             if pattern.get(row) is not None:
                 pattern[row].insert(step, blank(row))
         pattern['steps'] += 1
-        self.set_step_value(name, 'duration', step, self.data['default_length'])
         self.changed()
 
     def remove_step(self, name, step):
@@ -654,7 +659,7 @@ class Document:
 
     def add_generator(self, section, name):
         if section == 'arps':
-            self.data[section][name] = {'step': self.data['default_length'], 'order': 'up'}
+            self.data[section][name] = {'step': self.data[SongSetting.STEP_SIZE], 'order': 'up'}
         else:
             self.data[section][name] = {'counts': [2]}
         self.changed()

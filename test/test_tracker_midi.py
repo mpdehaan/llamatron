@@ -28,6 +28,8 @@ import xml.etree.ElementTree as ET
 
 import mido
 
+from gate_conversion import to_gates
+
 from llamatron.tui.document import Document, new_song
 from test_tui_pages import UITest
 
@@ -39,12 +41,13 @@ Q, H, W = '1/4', '1/2', 1
 
 
 def melody(names, durations):
-    return {
+    """Return a melody as a pattern from its notes and their lengths, with each length as a gate."""
+    return to_gates({
         'steps': len(names),
         'degree': [DEGREES[name] for name in names],
         'duration': durations,
         'octave': [2] * len(names),
-    }
+    })
 
 
 def mary():
@@ -55,7 +58,7 @@ def mary():
         'first': melody(FIRST_VERSE, [Q, Q, Q, Q, Q, Q, H, Q, Q, H, Q, Q, H]),
         'second': melody(SECOND_VERSE, [Q, Q, Q, Q, Q, Q, Q, Q, Q, Q, Q, Q, W]),
         'chords': {
-            'steps': 4, 'degree': [1, 1, 5, 1], 'duration': [W, W, W, W], 'octave': [1, 1, 0, 1],
+            'steps': 4, 'step_size': W, 'degree': [1, 1, 5, 1], 'octave': [1, 1, 0, 1],
             'chord': ['M', 'M', 7, 'M'],
         },
     }

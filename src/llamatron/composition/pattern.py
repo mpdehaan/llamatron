@@ -16,20 +16,20 @@
 
 """A pattern: a row of steps, with one list of values for each row of the pattern editor."""
 
-from llamatron.composition.checks import check_keys, is_true_or_false, is_whole_number, is_whole_number_from, live_octave, positive_length
+from llamatron.composition.checks import check_keys, is_true_or_false, is_whole_number, is_whole_number_from, live_octave, written_length
 from llamatron.composition.defaults import DEFAULT_ACCUMULATOR_LIMIT
 from llamatron.composition.file_format import (
-    ACCIDENTALS, CC_ROWS, CHORD_SYMBOLS, DIRECTIONS, NOTE_LETTERS, PATTERN_ROWS, SIGNED_ROWS, TOGGLE_ROWS,
+    ACCIDENTALS, CC_ROWS, CHORD_SYMBOLS, DIRECTIONS, GATE_MODIFIERS, NOTE_LETTERS, PATTERN_ROWS, SIGNED_ROWS, TOGGLE_ROWS,
     Direction, PatternSetting, Row,
 )
 from llamatron.composition.limits import (
-    MAX_CC_VALUE, MAX_PROBABILITY, MAX_VELOCITY, MIN_ACCUMULATOR_LIMIT, MIN_CC_VALUE, MIN_DEGREE, MIN_PROBABILITY,
-    MIN_RATCHET, MIN_STEPS, MIN_VELOCITY,
+    MAX_CC_VALUE, MAX_GATE, MAX_PROBABILITY, MAX_STEP_SIZE, MAX_VELOCITY, MIN_ACCUMULATOR_LIMIT, MIN_CC_VALUE, MIN_DEGREE,
+    MIN_PROBABILITY, MIN_RATCHET, MIN_STEPS, MIN_VELOCITY,
 )
 from llamatron.composition.llama_data import LlamaData
 from llamatron.composition.song_file_error import SongFileError
 
-MSG_EXPECTED_SETTINGS = '{where}: expected settings like steps, degree and duration'
+MSG_EXPECTED_SETTINGS = '{where}: expected settings like steps, degree and gate'
 MSG_BAD_ACCUMULATOR_LIMIT = '{where}: accumulator_limit must be a whole number of {lowest} or more, got {value!r}'
 MSG_BAD_STEPS = '{where}: steps must be a whole number of {lowest} or more, got {value!r}'
 MSG_DRUM_NOT_TRUE_OR_FALSE = '{where}: drum must be true or false, got {value!r}'
@@ -41,20 +41,21 @@ MSG_BAD_STEP_VALUE = '{where}: {row} {problem}, got {value!r}'
 PROBLEM_NOT_NOTE_LETTER = 'in a drum pattern, must be a note letter from A to G'
 PROBLEM_NOT_DEGREE = 'must be a scale degree of {lowest} or more'
 PROBLEM_NOT_ACCIDENTAL = 'must be # or b'
+PROBLEM_NOT_GATE_MODIFIER = 'must be d for dotted or t for triplet'
 PROBLEM_CHORD_ON_DRUMS = "isn't used in a drum pattern"
 PROBLEM_NOT_CHORD = 'must be one of {symbols}'
 PROBLEM_NOT_IN_RANGE = 'must be a whole number from {lowest} to {highest}'
 PROBLEM_TOO_SMALL = 'must be a whole number of {lowest} or more'
 PROBLEM_NOT_TRUE_OR_FALSE = 'must be true or false'
 PROBLEM_NOT_WHOLE_NUMBER = 'must be a whole number'
-# How the places of a duration or an octave in a pattern are named in messages.
+# How the places of a gate, an octave or a step size in a pattern are named in messages.
 WHERE_IN_ROW = '{where}, {row}'
 # Chord symbols, as messages list them.
 SYMBOL_SEPARATOR = ', '
 # A drum pattern's degree row holds one note letter per step.
 NOTE_LETTER_LENGTH = 1
 # A pattern's settings besides its rows, in the order they're written to a file.
-SETTINGS = [PatternSetting.DRUM, PatternSetting.DIRECTION, PatternSetting.ACCUMULATOR_LIMIT]
+SETTINGS = [PatternSetting.STEP_SIZE, PatternSetting.DRUM, PatternSetting.DIRECTION, PatternSetting.ACCUMULATOR_LIMIT]
 
 
 class Pattern(LlamaData):
@@ -67,10 +68,13 @@ class Pattern(LlamaData):
 
     __slots__ = ('_steps', '_rows', '_settings')
 
-    def __init__(self, steps, rows, drum=None, direction=None, accumulator_limit=None):
+    def __init__(self, steps, rows, step_size=None, drum=None, direction=None, accumulator_limit=None):
         self._steps = steps
         self._rows = _copied_rows(rows)
-        self._settings = {PatternSetting.DRUM: drum, PatternSetting.DIRECTION: direction, PatternSetting.ACCUMULATOR_LIMIT: accumulator_limit}
+        self._settings = {
+            PatternSetting.STEP_SIZE: step_size, PatternSetting.DRUM: drum, PatternSetting.DIRECTION: direction,
+            PatternSetting.ACCUMULATOR_LIMIT: accumulator_limit,
+        }
 
     @classmethod
     def from_data(cls, data, where, song=None):
@@ -84,6 +88,8 @@ class Pattern(LlamaData):
         steps = data.get(PatternSetting.STEPS)
         if not is_whole_number_from(steps, MIN_STEPS):
             raise SongFileError(MSG_BAD_STEPS.format(where=where, lowest=MIN_STEPS, value=steps))
+        if PatternSetting.STEP_SIZE in data:
+            written_length(data[PatternSetting.STEP_SIZE], WHERE_IN_ROW.format(where=where, row=PatternSetting.STEP_SIZE), MAX_STEP_SIZE)
         drum = data.get(PatternSetting.DRUM, False)
         if not is_true_or_false(drum):
             raise SongFileError(MSG_DRUM_NOT_TRUE_OR_FALSE.format(where=where, value=drum))
@@ -100,6 +106,11 @@ class Pattern(LlamaData):
 
     def get_steps(self):
         return self._steps
+
+    def get_step_size(self):
+        """Return how long each of its steps is, in whole notes, or None to use the song's step size."""
+        step_size = self._settings[PatternSetting.STEP_SIZE]
+        return None if step_size is None else written_length(step_size, PatternSetting.STEP_SIZE, MAX_STEP_SIZE)
 
     def is_drum(self):
         return bool(self._settings[PatternSetting.DRUM])
@@ -154,8 +165,8 @@ def _check_row(row, values, steps, drum, where):
 
 def _check_step_value(row, value, drum, where):
     """Refuse a value that doesn't belong on a row, saying which row and what it should be."""
-    if row == Row.DURATION:
-        positive_length(value, WHERE_IN_ROW.format(where=where, row=row))
+    if row == Row.GATE:
+        written_length(value, WHERE_IN_ROW.format(where=where, row=row), MAX_GATE)
     elif row == Row.OCTAVE:
         live_octave(value, WHERE_IN_ROW.format(where=where, row=row))
     problem = _step_value_problem(row, value, drum)
@@ -172,6 +183,8 @@ def _step_value_problem(row, value, drum):
             return PROBLEM_NOT_DEGREE.format(lowest=MIN_DEGREE)
     elif row == Row.ACCIDENTAL and value not in ACCIDENTALS:
         return PROBLEM_NOT_ACCIDENTAL
+    elif row == Row.DOT and value not in GATE_MODIFIERS:
+        return PROBLEM_NOT_GATE_MODIFIER
     elif row == Row.CHORD:
         if drum:
             return PROBLEM_CHORD_ON_DRUMS

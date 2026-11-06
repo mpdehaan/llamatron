@@ -21,11 +21,13 @@ what it means and a misspelled name fails at once. The values are the plain stri
 holds.
 """
 
+from fractions import Fraction
+
 from llamatron.chord import ChordType
 # The defaults stay importable from here too, for code that reads the format and its defaults together.
 from llamatron.composition.defaults import (  # noqa: F401
-    DEFAULT_ACCUMULATOR_LIMIT, DEFAULT_DRUM_OCTAVE, DEFAULT_LENGTH, DEFAULT_OCTAVE, DEFAULT_PROBABILITY,
-    DEFAULT_RATCHET, DEFAULT_SEED, DEFAULT_TEMPO, DEFAULT_VELOCITY, GRANULARITIES,
+    DEFAULT_ACCUMULATOR_LIMIT, DEFAULT_DRUM_OCTAVE, DEFAULT_OCTAVE, DEFAULT_PROBABILITY,
+    DEFAULT_RATCHET, DEFAULT_SEED, DEFAULT_STEP_SIZE, DEFAULT_TEMPO, DEFAULT_VELOCITY,
 )
 # And so do the limits that the rest of the program reads from here.
 from llamatron.composition.limits import MAX_LIVE_OCTAVE, MAX_TRANSPOSE, MIN_LIVE_OCTAVE  # noqa: F401
@@ -53,8 +55,7 @@ class SongSetting:
     TEMPO = 'tempo'
     SCALE = 'scale'
     SEED = 'seed'
-    DEFAULT_LENGTH = 'default_length'
-    GRANULARITY = 'granularity'
+    STEP_SIZE = 'step_size'
     DEFAULT_OCTAVE = 'default_octave'
     DEFAULT_DRUM_OCTAVE = 'default_drum_octave'
 
@@ -79,6 +80,7 @@ class PatternSetting:
     """A pattern's settings, besides its rows."""
 
     STEPS = 'steps'
+    STEP_SIZE = 'step_size'
     DRUM = 'drum'
     DIRECTION = 'direction'
     ACCUMULATOR_LIMIT = 'accumulator_limit'
@@ -88,7 +90,8 @@ class Row:
     """A pattern's rows, each holding one value for every step, as in the pattern editor."""
 
     DEGREE = 'degree'
-    DURATION = 'duration'
+    GATE = 'gate'
+    DOT = 'dot'
     ACCIDENTAL = 'accidental'
     OCTAVE = 'octave'
     CHORD = 'chord'
@@ -153,6 +156,24 @@ class GeneratorKind:
     AUTO_RATCHET = 'auto_ratchet'
 
 
+# The step sizes the editor offers, shortest first. Any other length can be typed.
+STEP_SIZE_CHOICES = ['1/64', '1/32', '1/16', '1/8', '1/4', '1/2', '1']
+# The plain gate lengths that + and - step through, shortest first. The Dot row makes any of
+# them dotted or a triplet, and any other length can be typed.
+GATE_LENGTH_CHOICES = ['1/64', '1/32', '1/16', '1/8', '1/4', '1/2', '1', '2', '4']
+
+
+class GateModifier:
+    """What a step's Dot row can do to its gate: make it dotted or a triplet."""
+
+    DOTTED = 'd'
+    TRIPLET = 't'
+
+
+# How much each gate modifier changes a gate: dotted is half as long again, and a triplet two thirds as long.
+GATE_MODIFIERS = {GateModifier.DOTTED: Fraction(3, 2), GateModifier.TRIPLET: Fraction(2, 3)}
+
+
 class Accidental:
     """The accidentals a step can have."""
 
@@ -165,7 +186,7 @@ class Accidental:
 LIVE_OCTAVE_OFFSET = 2
 
 PATTERN_ROWS = [
-    Row.DEGREE, Row.DURATION, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.VELOCITY, Row.PROBABILITY, Row.GLIDE,
+    Row.DEGREE, Row.GATE, Row.DOT, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.VELOCITY, Row.PROBABILITY, Row.GLIDE,
     Row.RATCHET, Row.RATCHET_OFFSET, Row.NOTE_ADD, Row.VELOCITY_ADD, Row.GRAB,
     Row.CC1, Row.CC2, Row.CC3, Row.CC4, Row.SLIDE,
 ]

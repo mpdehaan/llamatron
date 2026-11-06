@@ -104,7 +104,7 @@ class TestPattern(RoundTrip):
 
     DATA = {
         'steps': 3, 'drum': False, 'direction': 'pendulum', 'accumulator_limit': 5,
-        'degree': [1, None, 5], 'duration': ['1/4', None, 1], 'glide': [True, False, False],
+        'degree': [1, None, 5], 'gate': ['1/4', None, 1], 'dot': ['d', None, None], 'glide': [True, False, False],
     }
 
     def test_round_trip(self):
@@ -244,7 +244,7 @@ class TestSong(RoundTrip):
         for data in [None, {}]:
             song = Song.from_data(data)
             self.assertEqual(song.to_data(), {})
-            self.assertEqual((song.get_tempo(), song.get_seed(), song.get_default_length()), (120, 1, Fraction(1, 16)))
+            self.assertEqual((song.get_tempo(), song.get_seed(), song.get_step_size()), (120, 1, Fraction(1, 16)))
             self.assertEqual((song.get_default_octave(), song.get_default_drum_octave(), song.get_scale_name()), (3, 1, None))
             self.assertEqual((song.get_track_names(), song.get_scenes()), ([], []))
 
@@ -261,7 +261,8 @@ class TestSong(RoundTrip):
         self.assert_refused("unknown setting 'themes'", Song, {'themes': {}})
         self.assert_refused('title must be text', Song, {'title': 3})
         self.assert_refused("scale: no scale called 'main'", Song, {'scale': 'main'})
-        self.assert_refused('granularity must be one of', Song, {'granularity': '1/3'})
+        self.assert_refused('step_size: expected a whole number or a fraction', Song, {'step_size': '0.25'})
+        self.assert_refused('step_size: a length can be at most 4', Song, {'step_size': 8})
         self.assert_refused("pattern 'a': steps must be", Song, {'patterns': {'a': {'steps': 0}}})
         self.assert_refused('tracks: expected named tracks', Song, {'tracks': ['lead']})
         self.assert_refused('arps: expected named settings', Song, {'arps': ['up']})

@@ -44,8 +44,8 @@ scale: main
 scales:
   main: { root: C, type: major }
 patterns:
-  a: { steps: 2, degree: [1, 3], duration: [1/4, 1/4] }
-  high: { steps: 1, drum: true, degree: [G], duration: [1/2], octave: [8] }
+  a: { steps: 2, step_size: 1/4, degree: [1, 3] }
+  high: { steps: 1, step_size: 1/2, drum: true, degree: [G], octave: [8] }
 tracks:
   lead: {}
   bass: {}
@@ -89,7 +89,8 @@ class TestMalformedFiles(unittest.TestCase):
             'tempo is words': changed(tempo='fast'),
             'tempo divides by zero': changed(tempo='1/0'),
             'scales is a list': changed(scales=['main']),
-            'granularity': changed(granularity='1/3'),
+            'step size is a decimal': changed(step_size='0.25'),
+            'step size is too long': changed(step_size=5),
             'pattern is a list': changed(patterns__a=[1, 2]),
             'drum is words': changed(patterns__a={'steps': 1, 'drum': 'yes'}),
             'track settings are a list': changed(tracks={'lead': [1], 'bass': {}}),
@@ -109,7 +110,7 @@ class TestMalformedFiles(unittest.TestCase):
                 render_data(data)
 
     def test_a_chord_pushed_past_the_top_of_midi_says_which_clip(self):
-        data = changed(patterns__a={'steps': 1, 'degree': [1], 'duration': [1], 'octave': [8], 'chord': ['M']})
+        data = changed(patterns__a={'steps': 1, 'step_size': 1, 'degree': [1], 'octave': [8], 'chord': ['M']})
         data['arps']['up']['octave_range'] = 4
         data['scenes'][0]['tracks']['lead']['chain'] = 'x'
         with self.assertRaises(SongFileError) as raised:

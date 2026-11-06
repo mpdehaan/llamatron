@@ -19,6 +19,7 @@
 Each raises SongFileError with a message that starts with where in the file the value is.
 """
 
+import re
 from fractions import Fraction
 
 from llamatron.composition.limits import MAX_LIVE_OCTAVE, MIN_LIVE_OCTAVE
@@ -27,6 +28,10 @@ from llamatron.composition.song_file_error import SongFileError
 # A length has to be longer than nothing.
 NO_LENGTH = 0
 
+# A length is written as a whole number or a fraction of whole numbers, like 2 or 5/16, never as a decimal.
+WRITTEN_LENGTH = re.compile(r'[0-9]+(/[0-9]+)?')
+MSG_BAD_WRITTEN_LENGTH = '{where}: expected a whole number or a fraction like 1/8, got {value!r}'
+MSG_LENGTH_TOO_LONG = '{where}: a length can be at most {most}, got {value!r}'
 MSG_UNKNOWN_SETTING = '{where}: unknown setting {name!r}, expected one of {allowed}'
 MSG_EXPECTED_NUMBER = '{where}: expected a number, got {value!r}'
 MSG_EXPECTED_NUMBER_LIKE = '{where}: expected a number like 2 or 1/8, got {value!r}'
@@ -83,3 +88,23 @@ def live_octave(value, where):
     if not is_whole_number_from(value, MIN_LIVE_OCTAVE, MAX_LIVE_OCTAVE):
         raise SongFileError(MSG_BAD_OCTAVE.format(where=where, lowest=MIN_LIVE_OCTAVE, highest=MAX_LIVE_OCTAVE, value=value))
     return value
+
+
+def written_length(value, where, most):
+    """Return a length written as a whole number or a fraction, like 2 or 5/16, more than zero and at most most.
+
+    Decimals are refused, since they're imprecise and hard to read.
+    """
+    if not is_written_length(value):
+        raise SongFileError(MSG_BAD_WRITTEN_LENGTH.format(where=where, value=value))
+    length = positive_length(value, where)
+    if length > most:
+        raise SongFileError(MSG_LENGTH_TOO_LONG.format(where=where, most=most, value=value))
+    return length
+
+
+def is_written_length(value):
+    """Return whether a value is a whole number or a fraction of whole numbers, not counting true and false."""
+    if is_whole_number(value):
+        return True
+    return isinstance(value, str) and WRITTEN_LENGTH.fullmatch(value) is not None

@@ -54,20 +54,20 @@ scales:
 patterns:
   riff:
     steps: 4
+    step_size: 1/4
     degree: [1, 3, ~, 5]
-    duration: [1/4, 1/4, 1/4, 1/4]
     cc1: [0, ~, 100, 127]
     cc2: [20, 40, ~, ~]
     slide: [false, false, true, false]
   hit:
     steps: 2
     drum: true
+    step_size: 1/4
     degree: [C, ~]
-    duration: [1/4, 1/4]
   chord:
     steps: 1
+    step_size: 1
     degree: [1]
-    duration: [1]
     chord: [M]
 tracks:
   lead: { cc: [1, 74, ~, ~] }
@@ -241,7 +241,7 @@ class TestControls(unittest.TestCase):
 
     def test_a_morph_uses_the_targets_values_where_the_target_plays(self):
         data = song_data()
-        data['patterns']['other'] = {'steps': 4, 'degree': [1, 1, 1, 1], 'duration': ['1/4'] * 4, 'cc1': [9, 9, 9, 9]}
+        data['patterns']['other'] = {'steps': 4, 'step_size': '1/4', 'degree': [1, 1, 1, 1], 'cc1': [9, 9, 9, 9]}
         data['scenes'][0]['tracks']['lead'] = {'pattern': 'riff', 'repeat': 2, 'morph_to': 'other', 'morph_style': 'left'}
         second = [item.value for item in lead_clip(data).controls if item.number == 1 and item.time >= 1]
         self.assertEqual(set(second), {9})

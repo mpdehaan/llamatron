@@ -34,6 +34,7 @@ from llamatron.note import Note, Rest
 from llamatron.renderers.clip_tree import ClipTree
 from llamatron.renderers.timing import GLIDE_OVERLAP, timed_events
 from llamatron.song_writer import dump_song
+from gate_conversion import to_gates
 from rendering import estimate_data, render_data, render_file
 
 from llamatron.composition.file_format import CHORD_SYMBOLS, FIXED_CHORDS, SCALE_CHORDS
@@ -43,12 +44,16 @@ from llamatron.composition.song_file_error import SongFileError
 
 
 def pat(*steps, drum=False, **rows):
-    """Return a pattern from [what, duration] steps, with None as what for a rest."""
+    """Return a pattern from [what, duration] steps, with None as what for a rest.
+
+    Each duration becomes a gate, followed by empty steps for the rest of its time, as
+    gate_conversion explains, so tests can still write a melody as notes and their lengths.
+    """
     pattern = {'steps': len(steps), 'degree': [s[0] for s in steps], 'duration': [s[1] for s in steps]}
     if drum:
         pattern['drum'] = True
     pattern.update(rows)
-    return pattern
+    return to_gates(pattern)
 
 
 BASIC = """
@@ -60,9 +65,9 @@ scales:
   C dorian: { root: C, type: dorian }
 default_octave: 2
 patterns:
-  a: { steps: 3, degree: [1, 3, ~], duration: [1/4, 1/4, 1/2] }
-  b: { steps: 4, degree: [5, 6, 7, 1], duration: [1/4, 1/4, 1/4, 1/4], octave: [2, 2, 2, 3] }
-  hit: { steps: 2, drum: true, degree: [C, ~], duration: [1/16, 3/16] }
+  a: { steps: 4, step_size: 1/4, degree: [1, 3, ~, ~] }
+  b: { steps: 4, step_size: 1/4, degree: [5, 6, 7, 1], octave: [2, 2, 2, 3] }
+  hit: { steps: 4, drum: true, degree: [C, ~, ~, ~] }
 tracks:
   lead: {}
   kick: {}
@@ -111,7 +116,8 @@ class TestPatterns(unittest.TestCase):
 
     def test_degrees_and_rests_and_lengths(self):
         found = clip(build(BASIC), 1, 'lead').notes
-        self.assertEqual(found, [Note('C', 4, Fraction(1, 4)), Note('E', 4, Fraction(1, 4)), Rest(Fraction(1, 2))])
+        # Each empty step is a rest of one step.
+        self.assertEqual(found, [Note('C', 4, Fraction(1, 4)), Note('E', 4, Fraction(1, 4)), Rest(Fraction(1, 4)), Rest(Fraction(1, 4))])
 
     def test_octaves_are_absolute_and_numbered_like_live(self):
         found = lead([1, '1/2'], [1, '1/2'], rows={'octave': [3, 1]})
@@ -141,8 +147,28 @@ class TestPatterns(unittest.TestCase):
         found = lead([1, '1/4'], [None, '1/4'], [3, '1/4'])
         self.assertEqual(found.total_length(), Fraction(3, 4))
 
-    def test_a_note_without_a_duration_uses_the_song_default(self):
-        self.assertEqual(lead([1, None], default_length='1/8').total_length(), Fraction(1, 8))
+    def test_a_note_without_a_gate_lasts_one_step(self):
+        found = lead([1, '1/8'], [None, '1/8'])
+        self.assertEqual(found.notes[0], Note('C', 4, Fraction(1, 8)))
+
+    def test_the_song_step_size_is_used_unless_the_pattern_has_its_own(self):
+        data = with_parts(patterns={'x': {'steps': 2, 'degree': [1, 1]}}, scenes=[{'tracks': {'lead': {'pattern': 'x'}}}], step_size='1/8')
+        self.assertEqual(clip(render_data(data), 1, 'lead').total_length(), Fraction(1, 4))
+        data['patterns']['x']['step_size'] = '1/4'
+        self.assertEqual(clip(render_data(data), 1, 'lead').total_length(), Fraction(1, 2))
+
+    def test_a_gate_can_run_past_later_steps_but_not_past_the_end_of_the_pattern(self):
+        pattern = {'steps': 8, 'degree': [1, 3, None, 5, None, None, None, None], 'gate': ['1/2', None, None, '1', None, None, None, None]}
+        data = with_parts(patterns={'x': pattern}, scenes=[{'tracks': {'lead': {'pattern': 'x', 'repeat': 2}}}])
+        events, _ = timed_events(clip(render_data(data), 1, 'lead'), None)
+        starts_and_ends = sorted((start, end) for start, end, _, _ in events)
+        # The first note sounds right through the next two, and the last is cut at the end of the pattern.
+        self.assertEqual(starts_and_ends[:3], [(0, Fraction(1, 2)), (Fraction(1, 16), Fraction(1, 8)), (Fraction(3, 16), Fraction(1, 2))])
+        self.assertEqual(starts_and_ends[3][0], Fraction(1, 2))
+
+    def test_dotted_and_triplet_gates(self):
+        found = lead([1, '1/4'], [1, '1/4'], rows={'gate': ['1/16', '1/16'], 'dot': ['d', 't']})
+        self.assertEqual([note.length for note in found.notes if isinstance(note, Note)], [Fraction(3, 32), Fraction(1, 24)])
 
     def test_a_pattern_needs_at_least_one_step(self):
         with self.assertRaises(SongFileError):
@@ -154,7 +180,8 @@ class TestPatterns(unittest.TestCase):
 
     def test_values_are_checked(self):
         for row, value in [
-            ('duration', 0), ('accidental', 'x'), ('octave', 9), ('chord', 'nope'), ('velocity', 0),
+            ('gate', 0), ('gate', '0.25'), ('gate', 0.25), ('gate', 5), ('dot', 'x'),
+            ('accidental', 'x'), ('octave', 9), ('chord', 'nope'), ('velocity', 0),
             ('velocity', 128), ('probability', 101), ('ratchet', 0), ('glide', 'yes'),
         ]:
             with self.subTest(row=row, value=value), self.assertRaises(SongFileError):
@@ -766,7 +793,9 @@ class TestPlayDirections(unittest.TestCase):
             scenes=[{'tracks': {'lead': {'pattern': 'n', 'rhythm_from': 'r'}}}],
         )
         found = clip(render_data(data), 1, 'lead')
-        self.assertEqual(found.notes, [Note('E', 4, Fraction(1, 8)), Rest(Fraction(1, 2)), Note('C', 4, Fraction(1, 4))])
+        # The rhythm plays its steps backwards, and so do the notes, so its last step plays first, with E.
+        played = [(start, end, number) for start, end, number, _ in timed_events(found, None)[0]]
+        self.assertEqual(played, [(0, Fraction(1, 8), 52), (Fraction(3, 4), Fraction(7, 8), 48)])
 
     def test_a_clip_direction_overrides_both_rhythm_and_notes(self):
         data = with_parts(

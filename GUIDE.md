@@ -118,7 +118,7 @@ Start `llamatron` with no song, then press `S`. A new song is 120 BPM in C major
 
 ### 2. Write a melody pattern
 
-Press `P` for Patterns, then `+`, and call the pattern `lead`. The pattern editor opens with 16 steps, all rests, each a 1/16 note long.
+Press `P` for Patterns, then `+`, and call the pattern `lead`. The pattern editor opens with 16 empty steps, each as long as the song's step size, a 1/16 note.
 
 The cursor starts on the Degree row of step 1. Degrees are notes of the scale, so in C major 1 is C, 2 is D, 3 is E, and so on up to 7. To write a melody:
 
@@ -126,7 +126,7 @@ The cursor starts on the Degree row of step 1. Degrees are notes of the scale, s
 2. Typing never moves the cursor, so you always press right yourself. A step with no degree is a rest, and shows as a blank.
 3. `Bksp` on a degree turns it back into a rest.
 
-To make a note longer, press down to the Duration row and use `+` and `-`, or `*` to double and `/` to halve. Every step keeps its own length, so a step can be a whole bar if you like. The line under the grid shows the note the cursor is on, like `Step 1: E3 in C Major, 1/16`.
+Every step lasts the same time, the pattern's step size, so each note starts where its step is. To make a note sound longer, press down to the Gate row and use `+` and `-` to step through lengths, or `*` to double and `/` to halve. A gate can be longer than its step, so a note can ring on while the next steps play, up to the end of the pattern. A blank gate lasts one step. The line under the grid shows the note the cursor is on, like `Step 1: E3 in C Major, gate 1/16`.
 
 Press `Tab` to go back to the list. It shows how long the pattern lasts.
 
@@ -170,8 +170,7 @@ Press `S` from the main screen.
 | Tempo | Beats per minute for the whole song, from 10 to 999. A scene can set its own. |
 | Scale | The song's scale, from the Scales page. A scene can use another. `Bksp` sets no scale, and then patterns with degrees can't render. |
 | Seed | Decides every random choice, so a song renders the same every time: which notes probability drops, random play directions and random arpeggiators. Change it for a different take. |
-| Default note length | How long a new step is, from 1/256 to a whole note. |
-| Granularity | How much `+` and `-` change a duration, from 1/16 down to 1/256. |
+| Step size | How long each step of a pattern is, unless the pattern sets its own, from 1/64 to a whole note. `Enter` chooses from the list. A pattern's own step size is set in the pattern editor with `E`. |
 | Default octave | The octave a new note gets, numbered as Live numbers them. |
 | Default drum octave | The octave a new drum note gets. |
 
@@ -256,7 +255,7 @@ Each column is a step and each row is one kind of value. The grid is as wide as 
 
 When typing numbers, digits build up in a cell, so `1` then `2` makes 12. A new number starts once you move the cursor, or when the next digit would go out of range.
 
-A step with no degree or note is a rest, and the rows below it are blank for that step. Every step takes time, even a rest, and a new note gets the song's default length and octave.
+A step with no degree or note is empty, which is a rest, and the rows below it are blank for that step. Every step lasts the pattern's step size, shown at the top with the number of steps. A step with a note sounds for its gate, which can run on past later steps but stops at the end of the pattern, and a new note gets the song's default octave and a blank gate, which lasts one step.
 
 The keys that work everywhere in the editor are:
 
@@ -268,9 +267,10 @@ The keys that work everywhere in the editor are:
 | `S` | Swap what's before the cursor with what's after it |
 | `L` | Load a copy of another pattern over this one, asking first if this one has notes |
 | `R` | Resize the pattern to a number of steps, from 1 to 4096. It asks first if steps with something in them would be cut. |
+| `E` | The pattern's own step size, typed as a whole number or a fraction like 1/8. Leave it blank to use the song's. |
 | `T` | Drum on or off. Notes and drums use different values, so changing it clears the notes, after asking. |
 | `P` | The play direction |
-| `I` | Insert a rest before the step at the cursor |
+| `I` | Insert an empty step before the step at the cursor |
 | `X` | Remove the step at the cursor, while there's more than one |
 | `N` | Rename the pattern |
 | `M` | The add limit for Note Add and Velocity Add. Advanced rows only. |
@@ -282,9 +282,10 @@ The cursor stays on its step after `F` and `S`, so pressing either again undoes 
 
 | Row | Values | Keys |
 | --- | --- | --- |
-| Degree | 1 up to the size of the scale, where 1 is the root | Digits, `+` `-`, `Bksp` makes a rest |
-| Note (drum patterns) | A to G | Letters, `Bksp` makes a rest |
-| Duration | A fraction of a whole note, like 1/16 or 3/16 | `+` `-` by the granularity, `*` doubles, `/` halves, `Bksp` sets the default |
+| Degree | 1 up to the size of the scale, where 1 is the root | Digits, `+` `-`, `Bksp` empties the step |
+| Note (drum patterns) | A to G | Letters, `Bksp` empties the step |
+| Gate | How long the note sounds, in whole notes, like 1/16 or 5/16. Blank is one step. | `+` `-` step through 1/64, 1/32, 1/16, 1/8, 1/4, 1/2, 1, 2 and 4. `*` doubles, `/` halves, `Enter` types a whole number or a fraction, and `Bksp` makes it one step. |
+| Dot | `d` makes the gate dotted, half as long again, and `t` makes it a triplet, two thirds as long, so 1/16 with `d` is 3/32 | `Space` or `+` goes to the next one, `-` back, `Bksp` clears |
 | #/b | Sharp or flat: moves the note a half step up or down | `Space` or `+` goes to the next one, `-` back, `Bksp` clears |
 | Octave | -2 to 8, as Live numbers them | Digits, `+` `-`, `Bksp` sets the default |
 | Chord | Builds a chord on the note | `Enter` to choose, `Space` or `+` goes to the next one, `-` back, `Bksp` clears |
@@ -559,7 +560,7 @@ Morph to and Morph direction only appear when Repeat is above 1, and setting Rep
 
 Rhythm from combines two patterns step by step:
 
-- **The rhythm** gives Duration, which steps are rests, Velocity, Prob, Ratchet, Glide and the CC rows, and decides how long the clip is.
+- **The rhythm** gives the step size, Gate and Dot, which steps are rests, Velocity, Prob, Ratchet, Glide and the CC rows, and decides how long the clip is.
 - **The clip's Pattern** gives Degree, #/b, Octave and Chord.
 - **Each step** of the rhythm that isn't a rest plays the next note, and rests in the notes are skipped.
 - **The notes carry on** across repeats and loops, so a five-note melody over a four-step rhythm drifts against it on purpose.

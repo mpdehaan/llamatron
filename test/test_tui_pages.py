@@ -28,6 +28,7 @@ from llamatron.composition.song import Song
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.arrange import ArrangePage, ClipPage, ScenePage
 from llamatron.tui.base import ChoiceDialog, ConfirmDialog, Dialog, GridChoiceDialog, MessageDialog, Page, PromptDialog
+from llamatron.composition.file_format import STEP_SIZE_CHOICES
 from llamatron.tui.document import Document, new_song
 from llamatron.version import VERSION
 from llamatron.tui.lists import FieldPage, ListPage
@@ -43,11 +44,11 @@ def a_song(path=None):
     data['auto_ratchets'] = {'rolls': {'counts': [1, 4]}}
     data['patterns'] = {
         'tune': {
-            'steps': 4, 'degree': [1, 3, None, None], 'duration': ['1/4', '1/4', '1/8', None],
+            'steps': 4, 'step_size': '1/8', 'degree': [1, 3, None, None], 'gate': ['1/4', '1/4', '1/8', None],
             'octave': [3, 3, None, None],
         },
-        'beat': {'steps': 2, 'drum': True, 'degree': ['C', None], 'duration': ['1/16', '3/16'], 'octave': [1, None]},
-        'other': {'steps': 1, 'degree': [5], 'duration': ['1/2']},
+        'beat': {'steps': 2, 'step_size': '1/8', 'drum': True, 'degree': ['C', None], 'gate': ['1/16', None], 'octave': [1, None]},
+        'other': {'steps': 1, 'step_size': '1/2', 'degree': [5]},
     }
     data['tracks'] = {'lead': {}, 'drums': {}}
     data['arps'] = {'up': {'step': '1/8', 'order': 'up'}}
@@ -179,13 +180,15 @@ class TestRealKeys(UITest):
         await self.pilot.press('right', '5')
         self.assertEqual(self.document.step_value('tune', 'degree', 1), 5)
         await self.pilot.press('down', 'plus')
-        self.assertEqual(self.document.step_value('tune', 'duration', 1), '5/16')
+        self.assertEqual(self.document.step_value('tune', 'gate', 1), '1/2')
         await self.pilot.press('asterisk')
-        self.assertEqual(self.document.step_value('tune', 'duration', 1), '5/8')
+        self.assertEqual(self.document.step_value('tune', 'gate', 1), 1)
         await self.pilot.press('slash')
-        self.assertEqual(self.document.step_value('tune', 'duration', 1), '5/16')
+        self.assertEqual(self.document.step_value('tune', 'gate', 1), '1/2')
         await self.pilot.press('minus')
-        self.assertEqual(self.document.step_value('tune', 'duration', 1), '1/4')
+        self.assertEqual(self.document.step_value('tune', 'gate', 1), '1/4')
+        await self.pilot.press('down', 'space')
+        self.assertEqual(self.document.step_value('tune', 'dot', 1), 'd')
         await self.pilot.press('down', 'space')
         self.assertEqual(self.document.step_value('tune', 'accidental', 1), '#')
         await self.pilot.press('backspace')
@@ -319,13 +322,13 @@ class TestSongPage(UITest):
         self.assertEqual(self.document.data['tempo'], 120)
         self.assertIn('not a whole number', self.text())
 
-    async def test_granularity_offers_only_the_allowed_values(self):
-        await self.press('down', 'down', 'down', 'down')
+    async def test_step_size_offers_only_the_allowed_values(self):
+        await self.select_field('Step size')
         await self.press('+')
-        self.assertEqual(self.document.data['granularity'], '1/32')
+        self.assertEqual(self.document.data['step_size'], '1/8')
         await self.press('enter')
         self.assertIsInstance(self.app.screen, ChoiceDialog)
-        self.assertEqual(self.app.screen.options, ['1/16', '1/32', '1/64', '1/128', '1/256'])
+        self.assertEqual(self.app.screen.options, STEP_SIZE_CHOICES)
 
     async def test_seed_can_be_set(self):
         await self.press('down', 'down', '+')
@@ -576,28 +579,28 @@ class TestPatternEditor(UITest):
         await self.press('right')
         self.assertEqual(self.editor.step, 1)
         await self.press('down')
-        self.assertEqual(self.editor.row_name(), 'duration')
+        self.assertEqual(self.editor.row_name(), 'gate')
         await self.press('down')
-        self.assertEqual(self.editor.row_name(), 'accidental')
+        self.assertEqual(self.editor.row_name(), 'dot')
         await self.press('up', 'left')
-        self.assertEqual((self.editor.row_name(), self.editor.step), ('duration', 0))
+        self.assertEqual((self.editor.row_name(), self.editor.step), ('gate', 0))
 
     async def test_the_rows_are_all_there_in_order(self):
         self.assertEqual([name for name, _ in self.editor.rows()], [
-            'degree', 'duration', 'accidental', 'octave', 'chord', 'velocity', 'probability', 'glide',
+            'degree', 'gate', 'dot', 'accidental', 'octave', 'chord', 'velocity', 'probability', 'glide',
         ])
 
-    async def test_a_new_note_gets_the_default_duration_and_octave(self):
-        self.document.data['default_length'] = '1/8'
+    async def test_a_new_note_gets_the_default_octave_and_a_gate_of_one_step(self):
         self.document.data['default_octave'] = 4
         await self.press('right', 'right', 'right', '5')
         self.assertEqual(self.value('degree'), 5)
-        self.assertEqual(self.value('duration'), '1/8')
+        self.assertIsNone(self.value('gate'))
         self.assertEqual(self.value('octave'), 4)
+        self.assertIn('gate 1/8', self.text())
 
-    async def test_a_new_note_keeps_a_duration_it_already_has(self):
+    async def test_a_new_note_keeps_a_gate_it_already_has(self):
         await self.press('right', 'right', '5')
-        self.assertEqual(self.value('duration'), '1/8')
+        self.assertEqual(self.value('gate'), '1/8')
 
     async def test_a_degree_must_fit_the_scale(self):
         self.document.data['scales']['small'] = {'root': 'C', 'type': 'major_pentatonic'}
@@ -611,46 +614,82 @@ class TestPatternEditor(UITest):
         await self.press('+')
         self.assertEqual(self.value('degree'), 5)
 
-    async def test_backspace_turns_a_note_into_a_rest_shown_as_a_blank(self):
+    async def test_backspace_empties_a_step_which_is_a_rest(self):
         await self.press('backspace')
         self.assertIsNone(self.value('degree'))
-        self.assertEqual(self.value('duration'), '1/4')
+        self.assertIsNone(self.value('gate'))
         self.assertIsNone(self.value('octave'))
-        self.assertIn('rest, 1/4', self.text())
+        self.assertIn('Step 1: empty', self.text())
 
-    async def test_backspace_on_a_rest_does_nothing_because_every_step_takes_time(self):
+    async def test_backspace_on_an_empty_step_does_nothing(self):
         await self.press('backspace', 'backspace', 'backspace')
-        self.assertEqual(self.value('duration'), '1/4')
-        self.assertIn('rest, 1/4', self.text())
+        self.assertIn('Step 1: empty', self.text())
 
-    async def test_a_step_with_no_duration_shows_and_changes_from_the_default(self):
+    async def test_an_empty_step_has_no_gate_to_change(self):
         await self.press('right', 'right', 'right')
-        self.assertIn('rest, 1/16', self.text())
+        self.assertIn('Step 4: empty', self.text())
         await self.press('down', '+')
-        self.assertEqual(self.value('duration'), '1/8')
+        self.assertIsNone(self.value('gate'))
 
-    async def test_plus_and_minus_change_duration_by_the_granularity(self):
-        await self.go_to_row('duration')
+    async def test_plus_and_minus_step_through_plain_lengths(self):
+        await self.go_to_row('gate')
         await self.press('+')
-        self.assertEqual(self.value('duration'), '5/16')
+        self.assertEqual(self.value('gate'), '1/2')
         await self.press('-', '-')
-        self.assertEqual(self.value('duration'), '3/16')
-        self.document.data['granularity'] = '1/32'
-        await self.press('+')
-        self.assertEqual(self.value('duration'), '7/32')
+        self.assertEqual(self.value('gate'), '1/8')
 
-    async def test_duration_cannot_go_below_the_granularity(self):
-        await self.go_to_row('duration')
-        for _ in range(6):
+    async def test_a_gate_cannot_go_below_the_shortest_length(self):
+        await self.go_to_row('gate')
+        for _ in range(8):
             await self.press('-')
-        self.assertEqual(self.value('duration'), '1/16')
+        self.assertEqual(self.value('gate'), '1/64')
 
     async def test_star_and_slash_double_and_halve(self):
-        await self.go_to_row('duration')
+        await self.go_to_row('gate')
         await self.press('*')
-        self.assertEqual(self.value('duration'), '1/2')
+        self.assertEqual(self.value('gate'), '1/2')
         await self.press('/', '/')
-        self.assertEqual(self.value('duration'), '1/8')
+        self.assertEqual(self.value('gate'), '1/8')
+
+    async def test_backspace_on_a_gate_makes_it_one_step(self):
+        await self.go_to_row('gate')
+        await self.press('backspace')
+        self.assertIsNone(self.value('gate'))
+
+    async def test_enter_types_a_gate_as_a_whole_number_or_a_fraction(self):
+        await self.go_to_row('gate')
+        await self.press('enter')
+        self.app.screen.value = '5/16'
+        await self.press('enter')
+        self.assertEqual(self.value('gate'), '5/16')
+        for typed in ['0.25', '0', '9']:
+            await self.press('enter')
+            self.app.screen.value = typed
+            await self.press('enter')
+            with self.subTest(typed=typed):
+                self.assertEqual(self.value('gate'), '5/16')
+
+    async def test_the_dot_row_makes_a_gate_dotted_or_a_triplet(self):
+        await self.go_to_row('dot')
+        await self.press('+')
+        self.assertEqual(self.value('dot'), 'd')
+        self.assertIn('gate 1/4 dotted', self.text())
+        await self.press('+')
+        self.assertEqual(self.value('dot'), 't')
+        await self.press('backspace')
+        self.assertIsNone(self.value('dot'))
+
+    async def test_e_sets_the_pattern_step_size_and_blank_uses_the_song(self):
+        await self.press('e')
+        self.app.screen.value = '1/8'
+        await self.press('enter')
+        self.assertEqual(self.document.data['patterns']['tune']['step_size'], '1/8')
+        self.assertIn('Step size 1/8', self.text())
+        await self.press('e')
+        self.app.screen.value = ''
+        await self.press('enter')
+        self.assertNotIn('step_size', self.document.data['patterns']['tune'])
+        self.assertIn("Step size 1/16 (the song's)", self.text())
 
     async def test_space_and_plus_and_minus_cycle_sharp_and_flat(self):
         await self.go_to_row('accidental')
@@ -718,7 +757,7 @@ class TestPatternEditor(UITest):
         self.assertIs(self.value('glide'), False)
         self.assertEqual(self.editor.cell_text('glide', 0), ' ')
 
-    async def test_rests_have_only_a_duration_to_change(self):
+    async def test_an_empty_step_has_nothing_to_change_but_cc_values(self):
         await self.press('right', 'right')
         await self.go_to_row('velocity')
         labels = [item.shown_label() for item in self.editor.keys()]
@@ -735,7 +774,7 @@ class TestPatternEditor(UITest):
 
     async def test_shortening_asks_only_if_it_loses_something(self):
         await self.press('r')
-        self.app.screen.value = '2'
+        self.app.screen.value = '1'
         await self.press('enter')
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press('n')
@@ -933,7 +972,7 @@ class TestClipPage(UITest):
         await self.go_to('Repeat')
         await self.press('+')
         self.assertEqual(self.cell()['repeat'], 2)
-        self.assertEqual(self.document.clip_seconds(0, 'lead'), Fraction(11, 4))
+        self.assertEqual(self.document.clip_seconds(0, 'lead'), 2)
 
     async def test_morph_only_appears_with_a_repeat_above_one(self):
         self.assertNotIn('Morph to', self.labels())
@@ -1110,7 +1149,7 @@ class TestScenePage(UITest):
         await self.go_to('Repeat')
         await self.press('+')
         self.assertEqual(self.scene()['repeat'], 2)
-        self.assertEqual(self.document.scene_seconds(0), Fraction(11, 4))
+        self.assertEqual(self.document.scene_seconds(0), 2)
 
     async def test_rename(self):
         await self.press('enter')
@@ -1495,9 +1534,7 @@ class TestSettingArrows(UITest):
         await self.press('down', 'right')
         self.assertEqual(self.document.data['seed'], 2)
         await self.press('down', 'right')
-        self.assertEqual(self.document.data['default_length'], '1/8')
-        await self.press('down', 'right')
-        self.assertEqual(self.document.data['granularity'], '1/32')
+        self.assertEqual(self.document.data['step_size'], '1/8')
         await self.press('down', 'left')
         self.assertEqual(self.document.data['default_octave'], 2)
         await self.press('down', 'right')
@@ -1518,11 +1555,11 @@ class TestLookAndNewKeys(UITest):
         await self.press('p')
         self.assertNotIn('home.laserllama.net', self.text())
 
-    async def test_new_songs_default_to_a_sixteenth_note(self):
-        self.assertEqual(new_song()['default_length'], '1/16')
+    async def test_new_songs_default_to_sixteenth_note_steps(self):
+        self.assertEqual(new_song()['step_size'], '1/16')
         document = Document()
         document.add_pattern('p', 2)
-        self.assertEqual(document.data['patterns']['p']['duration'], ['1/16', '1/16'])
+        self.assertEqual(document.pattern_length('p'), Fraction(1, 8))
 
     async def go_to_row(self, name):
         await self.press('p', 'enter')
@@ -1734,14 +1771,14 @@ class TestAdvancedRows(UITest):
         self.assertIn('│ Ratchet Offset', text)
         self.assertIn('│ Note Add', text)
         self.assertIn('│ Velocity Add', text)
-        self.assertNotIn('│ Duration', text)
+        self.assertNotIn('│ Gate', text)
         await self.press('a')
         text = self.text()
         for label in ['│ CC 1', '│ CC 4', '│ Slide']:
             self.assertIn(label, text)
         self.assertNotIn('│ Ratchet', text)
         await self.press('a')
-        self.assertIn('│ Duration', self.text())
+        self.assertIn('│ Gate', self.text())
 
     async def test_cc_rows_take_values_even_on_a_rest(self):
         await self.press('a', 'a')
@@ -1841,7 +1878,7 @@ class TestRearrangingAPattern(UITest):
     async def asyncSetUp(self):
         await super().asyncSetUp()
         self.document.data['patterns']['long'] = {
-            'steps': 5, 'degree': [1, 2, 3, 4, 5], 'duration': ['1/4', '1/8', '1/16', '1/2', '1'], 'velocity': [10, 20, 30, 40, 50],
+            'steps': 5, 'degree': [1, 2, 3, 4, 5], 'gate': ['1/4', '1/8', '1/16', '1/2', '1'], 'velocity': [10, 20, 30, 40, 50],
         }
         await self.press('p', 'down', 'down', 'down', 'enter')
         self.editor = self.app.screen
@@ -1855,7 +1892,7 @@ class TestRearrangingAPattern(UITest):
 
     async def test_every_row_moves_with_its_step(self):
         await self.press('right', 'f')
-        self.assertEqual(self.rows('duration'), ['1/4', '1/8', '1', '1/2', '1/16'])
+        self.assertEqual(self.rows('gate'), ['1/4', '1/8', '1', '1/2', '1/16'])
         self.assertEqual(self.rows('velocity'), [10, 20, 50, 40, 30])
 
     async def test_flip_twice_puts_it_back_and_the_cursor_stays(self):
@@ -1871,7 +1908,7 @@ class TestRearrangingAPattern(UITest):
     async def test_swap_exchanges_both_sides_of_the_cursor(self):
         await self.press('right', 's')
         self.assertEqual(self.rows(), [3, 4, 5, 2, 1])
-        self.assertEqual(self.rows('duration'), ['1/16', '1/2', '1', '1/8', '1/4'])
+        self.assertEqual(self.rows('gate'), ['1/16', '1/2', '1', '1/8', '1/4'])
 
     async def test_the_cursor_stays_on_its_step_so_swapping_twice_puts_it_back(self):
         await self.press('right', 's')

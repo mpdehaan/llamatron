@@ -19,11 +19,12 @@
 import yaml
 
 from llamatron.composition.chain import Chain
-from llamatron.composition.checks import check_keys, live_octave, number, positive_length
+from llamatron.composition.checks import check_keys, live_octave, number, written_length
 from llamatron.composition.defaults import (
-    DEFAULT_DRUM_OCTAVE, DEFAULT_GRANULARITY, DEFAULT_LENGTH, DEFAULT_OCTAVE, DEFAULT_SEED, DEFAULT_TEMPO, GRANULARITIES,
+    DEFAULT_DRUM_OCTAVE, DEFAULT_OCTAVE, DEFAULT_SEED, DEFAULT_STEP_SIZE, DEFAULT_TEMPO,
 )
 from llamatron.composition.file_format import NAMED_GENERATORS, Section, SongSetting
+from llamatron.composition.limits import MAX_STEP_SIZE
 from llamatron.composition.generator_settings import GENERATOR_SETTINGS
 from llamatron.composition.llama_data import LlamaData
 from llamatron.composition.named_scale import NamedScale
@@ -36,7 +37,7 @@ from llamatron.version import is_version
 # The song's own settings, in the order they're written to a file.
 SETTINGS = [
     SongSetting.VERSION, SongSetting.TITLE, SongSetting.AUTHOR, SongSetting.DESCRIPTION, SongSetting.TEMPO, SongSetting.SCALE,
-    SongSetting.SEED, SongSetting.DEFAULT_LENGTH, SongSetting.GRANULARITY, SongSetting.DEFAULT_OCTAVE,
+    SongSetting.SEED, SongSetting.STEP_SIZE, SongSetting.DEFAULT_OCTAVE,
     SongSetting.DEFAULT_DRUM_OCTAVE,
 ]
 # Settings that are only text for people, like the title.
@@ -54,7 +55,6 @@ MSG_NOT_TEXT = '{name} must be text, got {value!r}'
 MSG_BAD_VERSION = 'version: expected three whole numbers separated by dots, like 1.0.2, got {value!r}'
 MSG_SCALES_NOT_NAMED = 'scales: expected named scales like main: { root: F, type: minor }'
 MSG_NO_SUCH_SCALE = 'scale: no scale called {scale!r}'
-MSG_BAD_GRANULARITY = 'granularity must be one of {choices}, got {value!r}'
 MSG_TRACKS_NOT_NAMED = 'tracks: expected named tracks with their settings, like lead: { transpose: 2 }'
 MSG_GENERATORS_NOT_NAMED = '{section}: expected named settings, like bells: {{ step: 1/8 }}'
 MSG_SCENES_NOT_A_LIST = 'scenes: expected a list of scenes'
@@ -135,10 +135,7 @@ class Song(LlamaData):
         scale = data.get(SongSetting.SCALE)
         if scale is not None and not self.has_scale(scale):
             raise SongFileError(MSG_NO_SUCH_SCALE.format(scale=scale))
-        positive_length(data.get(SongSetting.DEFAULT_LENGTH, DEFAULT_LENGTH), SongSetting.DEFAULT_LENGTH)
-        granularity = data.get(SongSetting.GRANULARITY, DEFAULT_GRANULARITY)
-        if granularity not in GRANULARITIES:
-            raise SongFileError(MSG_BAD_GRANULARITY.format(choices=GRANULARITIES, value=granularity))
+        written_length(data.get(SongSetting.STEP_SIZE, DEFAULT_STEP_SIZE), SongSetting.STEP_SIZE, MAX_STEP_SIZE)
         live_octave(data.get(SongSetting.DEFAULT_OCTAVE, DEFAULT_OCTAVE), SongSetting.DEFAULT_OCTAVE)
         live_octave(data.get(SongSetting.DEFAULT_DRUM_OCTAVE, DEFAULT_DRUM_OCTAVE), SongSetting.DEFAULT_DRUM_OCTAVE)
         self._settings = {name: data.get(name) for name in SETTINGS}
@@ -194,9 +191,14 @@ class Song(LlamaData):
     def get_seed(self):
         return self._setting(SongSetting.SEED, DEFAULT_SEED)
 
-    def get_default_length(self):
-        """Return how long a step with no duration lasts, in whole notes."""
-        return positive_length(self._setting(SongSetting.DEFAULT_LENGTH, DEFAULT_LENGTH), SongSetting.DEFAULT_LENGTH)
+    def get_step_size(self):
+        """Return how long each step of a pattern is, in whole notes, unless the pattern sets its own."""
+        return written_length(self._setting(SongSetting.STEP_SIZE, DEFAULT_STEP_SIZE), SongSetting.STEP_SIZE, MAX_STEP_SIZE)
+
+    def get_pattern_step_size(self, pattern):
+        """Return how long each step of a pattern is: its own step size, or else the song's."""
+        step_size = pattern.get_step_size()
+        return self.get_step_size() if step_size is None else step_size
 
     def get_default_octave(self):
         return self._setting(SongSetting.DEFAULT_OCTAVE, DEFAULT_OCTAVE)

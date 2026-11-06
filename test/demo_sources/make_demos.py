@@ -28,11 +28,18 @@ has to be downloaded again. Nothing here uses the network.
 import collections
 import os
 import re
+import sys
 from fractions import Fraction as F
+from pathlib import Path
 
 import mido
 
 from llamatron.scale import ScaleType
+
+# The demos are written with durations, as they were first written, and gate_conversion, in the
+# test folder above this one, turns them into gates.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from gate_conversion import song_to_gates  # noqa: E402
 from llamatron.note import SEMITONES_ABOVE_C
 from llamatron.composition.file_format import PATTERN_ROWS, TOGGLE_ROWS
 from llamatron.song_writer import dump_song
@@ -72,9 +79,11 @@ def text_length(value):
 def pattern(steps, root=None, kind=None, drum=False, prefer='#', **settings):
     """Build a pattern from steps of (note, duration) or (note, duration, {row: value}).
 
-    A note is a name like 'A3', a MIDI number, or None for a rest.
+    A note is a name like 'A3', a MIDI number, or None for a rest. The pattern is written with
+    durations, as the demos were first written, and song_to_gates turns it into gates.
     """
-    rows = {row: [] for row in PATTERN_ROWS}
+    written_rows = ['duration', *PATTERN_ROWS]
+    rows = {row: [] for row in written_rows}
     for step in steps:
         note, duration = step[0], step[1]
         extra = step[2] if len(step) > 2 else {}
@@ -88,7 +97,7 @@ def pattern(steps, root=None, kind=None, drum=False, prefer='#', **settings):
             else:
                 degree, accidental, octave = place(number, root, kind, prefer)
         values = {'degree': degree, 'duration': text_length(duration), 'accidental': accidental, 'octave': octave, **extra}
-        for row in PATTERN_ROWS:
+        for row in written_rows:
             rows[row].append(values.get(row))
     result = {'steps': len(steps)}
     if drum:
@@ -180,7 +189,7 @@ def write(file_name, header, song):
     song = {'title': song.pop('title'), **({'author': song.pop('author')} if 'author' in song else {}),
             'description': description, **song}
     with open(path, 'w') as file:
-        file.write(dump_song(song))
+        file.write(dump_song(song_to_gates(song)))
 
 
 def song(title, tempo, scale, scales, patterns, tracks, scenes, **sections):

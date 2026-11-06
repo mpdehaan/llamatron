@@ -12,8 +12,12 @@ else is unranked.
 
 ### Note lengths as gates
 
-**HIGH PRIORITY, and next.** The user wants to do gates next, straight after the song_file.py
-refactoring now under way (see "Suggested order"). The user's intent was that Granularity sets the width of each cell in the
+**Done, in version 1.0.5.** Every step of a pattern now lasts its step size (`step_size`, set
+on the song and optionally on a pattern, replacing `granularity` and `default_length`), and a
+step's `gate` says how long its note sounds, with a `dot` row for dotted and triplet gates. A
+gate can run past later steps, up to the end of the pattern. Every example was converted, and
+renders exactly as before, except the scenes that play in a direction, which the user accepted.
+What follows is the original note. The user's intent was that Granularity sets the width of each cell in the
 pattern editor, and so how far apart steps and rests are, while a note's length is its gate:
 how long the note sounds, which can be shorter than its cell. Today it works the other way. Each
 step's Duration is both how long its note sounds and how far it is to the next step, so a short
@@ -41,7 +45,9 @@ To think through before building it:
 
 ### A Tie row
 
-**HIGH PRIORITY.** A toggle row on the editor's normal rows, the main page, that carries a note
+**HIGH PRIORITY, and smaller now.** Gates already hold a note across steps within a pattern, so a
+tie is only needed to carry a note across the end of a pattern, into the next repeat or clip,
+which gates deliberately don't do. A toggle row on the editor's normal rows, the main page, that carries a note
 on into the next step instead of playing it again, and across the end of a pattern into the
 next clip. The Entertainer needed it all through: a note held over the end of a four-bar phrase
 is cut there and played again. With equal cells, a tie also makes a long note out of several
@@ -115,8 +121,8 @@ refactoring changes nothing.
 
 **Phase 2: the HIGH PRIORITY timing changes**
 
-10. Gates, the Tie row and time signatures (with beats in bold), designed together, with the format version going
-    up. The pattern player objects from step 6 keep it to one well-contained change.
+10. Gates are done (version 1.0.5). Still to do here: the Tie row, for notes that carry across
+    the end of a pattern, and time signatures, with beats in bold.
 11. Undo and redo, which is simple once every change goes through `Document`. It could move
     earlier if it's needed while testing songs by hand.
 

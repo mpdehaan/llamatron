@@ -21,9 +21,8 @@ loads, and an empty file is an empty song.
 """
 
 DEFAULT_TEMPO = 120
-DEFAULT_LENGTH = '1/16'
-GRANULARITIES = ['1/16', '1/32', '1/64', '1/128', '1/256']
-DEFAULT_GRANULARITY = GRANULARITIES[0]
+# How long each step of a pattern is, unless the pattern sets its own.
+DEFAULT_STEP_SIZE = '1/16'
 DEFAULT_OCTAVE = 3
 DEFAULT_DRUM_OCTAVE = 1
 DEFAULT_SEED = 1

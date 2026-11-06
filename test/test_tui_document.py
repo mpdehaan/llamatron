@@ -32,9 +32,9 @@ def song_with_things():
     """Return a document with a little of everything."""
     data = new_song()
     data['patterns'] = {
-        'a': {'steps': 2, 'degree': [1, 3], 'duration': ['1/4', '1/4']},
-        'b': {'steps': 1, 'degree': [5], 'duration': ['1/2']},
-        'unused': {'steps': 1, 'duration': ['1/4']},
+        'a': {'steps': 2, 'step_size': '1/4', 'degree': [1, 3]},
+        'b': {'steps': 1, 'step_size': '1/2', 'degree': [5]},
+        'unused': {'steps': 1, 'step_size': '1/4'},
     }
     data['tracks'] = {'lead': {}, 'bass': {}}
     data['arps'] = {'up': {'step': '1/8', 'order': 'up'}}
@@ -65,8 +65,8 @@ class TestNewSong(unittest.TestCase):
 
     def test_has_the_song_defaults(self):
         data = Document().data
-        self.assertEqual(data['default_length'], '1/16')
-        self.assertEqual(data['granularity'], '1/16')
+        self.assertEqual(data['step_size'], '1/16')
+        self.assertNotIn('default_length', data)
         self.assertEqual(data['default_octave'], 3)
         self.assertEqual(data['default_drum_octave'], 1)
 
@@ -200,7 +200,7 @@ class TestDurations(unittest.TestCase):
     def test_pattern(self):
         self.assertEqual(song_with_things().pattern_seconds('a'), 1)
 
-    def test_a_note_without_a_duration_uses_the_default(self):
+    def test_a_new_pattern_uses_the_song_step_size(self):
         document = song_with_things()
         document.add_pattern('c', 1)
         document.set_step_value('c', 'degree', 0, 1)
@@ -215,8 +215,10 @@ class TestDurations(unittest.TestCase):
 
     def test_a_change_updates_the_times(self):
         document = song_with_things()
-        document.set_step_value('b', 'duration', 0, 1)
+        document.set_step_size('b', '1')
         self.assertEqual(document.scene_seconds(2), 2)
+        document.set_step_size('b', None)
+        self.assertEqual(document.pattern_length('b'), Fraction(1, 16))
 
     def test_a_scene_that_cannot_work_is_unknown_without_affecting_others(self):
         document = song_with_things()
@@ -258,22 +260,32 @@ class TestUses(unittest.TestCase):
         self.assertEqual(song_with_things().scale_uses(DEFAULT_SCALE), ['the song', 'scene 3 (three)'])
 
 
-class TestEveryStepTakesTime(unittest.TestCase):
+class TestStepSizes(unittest.TestCase):
 
-    def test_a_new_pattern_is_rests_of_the_default_length(self):
+    def test_a_new_pattern_is_empty_steps_of_the_song_step_size(self):
         document = Document()
-        document.data['default_length'] = '1/8'
+        document.data['step_size'] = '1/8'
         document.add_pattern('p', 4)
         self.assertEqual(document.pattern_length('p'), Fraction(1, 2))
+        self.assertEqual(document.data['patterns']['p'], {'steps': 4})
 
-    def test_added_and_inserted_steps_are_rests_of_the_default_length(self):
+    def test_added_and_inserted_steps_are_empty_steps(self):
         document = Document()
         document.add_pattern('p', 1)
         document.set_steps('p', 3)
         document.insert_step('p', 0)
-        self.assertEqual(document.data['patterns']['p']['duration'], ['1/16'] * 4)
+        self.assertEqual(document.data['patterns']['p'], {'steps': 4})
+        self.assertEqual(document.pattern_length('p'), Fraction(1, 4))
 
-    def test_a_pattern_with_no_duration_row_counts_the_default(self):
+    def test_a_pattern_can_have_its_own_step_size(self):
+        document = Document()
+        document.add_pattern('p', 4)
+        document.set_step_size('p', '1/8')
+        self.assertEqual(document.pattern_length('p'), Fraction(1, 2))
+        document.set_step_size('p', None)
+        self.assertNotIn('step_size', document.data['patterns']['p'])
+
+    def test_a_pattern_with_no_rows_counts_the_song_step_size(self):
         document = song_with_things()
         document.data['patterns']['x'] = {'steps': 2}
         self.assertEqual(document.pattern_length('x'), Fraction(1, 8))
@@ -428,20 +440,21 @@ class TestPatternSteps(unittest.TestCase):
         self.assertEqual(document.steps_with_anything_past('a', 1), 1)
         self.assertEqual(document.steps_with_anything_past('a', 2), 0)
 
-    def test_a_rest_of_the_default_length_is_not_something_to_lose(self):
+    def test_an_empty_step_is_not_something_to_lose(self):
         document = song_with_things()
         document.set_steps('a', 4)
         self.assertEqual(document.steps_with_anything_past('a', 2), 0)
-        document.set_step_value('a', 'duration', 3, '1/2')
+        document.set_step_value('a', 'degree', 3, 1)
         self.assertEqual(document.steps_with_anything_past('a', 2), 1)
 
     def test_setting_steps_keeps_rows_the_right_length(self):
         document = song_with_things()
         document.set_steps('a', 4)
         self.assertEqual(document.data['patterns']['a']['degree'], [1, 3, None, None])
-        self.assertEqual(document.data['patterns']['a']['duration'], ['1/4', '1/4', '1/16', '1/16'])
+        document.set_step_value('a', 'gate', 0, '1/2')
         document.set_steps('a', 1)
-        self.assertEqual(document.data['patterns']['a']['duration'], ['1/4'])
+        self.assertEqual(document.data['patterns']['a']['degree'], [1])
+        self.assertEqual(document.data['patterns']['a']['gate'], ['1/2'])
 
     def test_insert_and_remove(self):
         document = song_with_things()
@@ -459,7 +472,7 @@ class TestPatternSteps(unittest.TestCase):
         self.assertTrue(pattern['drum'])
         self.assertNotIn('degree', pattern)
         self.assertNotIn('chord', pattern)
-        self.assertEqual(pattern['duration'], ['1/4', '1/4'])
+        self.assertEqual((pattern['steps'], pattern['step_size']), (2, '1/4'))
         Song.from_data(document.data)
 
     def test_forward_is_not_written(self):

@@ -24,7 +24,7 @@ from rich.text import Text
 from llamatron.generators.arp import MAX_OCTAVE_RANGE, MAX_OFFSET, MAX_OFFSETS, ChordOrder, OctaveJump
 from llamatron.note import Note, NoteName
 from llamatron.scale import ScaleType
-from llamatron.composition.defaults import GRANULARITIES
+from llamatron.composition.file_format import STEP_SIZE_CHOICES, SongSetting
 from llamatron.composition.limits import MAX_TRANSPOSE
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.tui.arrange import ArrangePage
@@ -151,7 +151,7 @@ class SongPage(FieldPage):
         'Settings for the whole song. Up and down select one. Left and right, or + and -, change it, and Enter types or chooses.',
         '',
         'Title and Author: only for people reading or sharing the song file. Bksp clears them.',
-        'Default note length: what a new note gets. Granularity: how much + and - change a duration. Default octaves: what a new note or drum hit gets.',
+        'Step size: how long each step of a pattern is, unless the pattern sets its own. Default octaves: what a new note or drum hit gets.',
         'Seed: decides what probability drops, so a song renders the same every time.',
         '',
         'D opens the description, for notes about the song. L loads, N starts a new song, S saves, and W saves under a new name.',
@@ -190,12 +190,9 @@ class SongPage(FieldPage):
                   lambda: self.set_value('scale', None), 'no scale'),
             Field('Seed', lambda: data['seed'], lambda d: self.set_value('seed', data['seed'] + d),
                   lambda: self.ask_number('Seed', data['seed'], lambda n: self.set_value('seed', n))),
-            Field('Default note length', lambda: data['default_length'],
-                  lambda d: self.set_value('default_length', _stepped(NOTE_LENGTHS, data['default_length'], d)),
-                  lambda: self.pick('Default note length', NOTE_LENGTHS, 'default_length'), 'choose'),
-            Field('Granularity', lambda: data['granularity'],
-                  lambda d: self.set_value('granularity', _stepped(GRANULARITIES, data['granularity'], d)),
-                  lambda: self.pick('Granularity', GRANULARITIES, 'granularity'), 'choose'),
+            Field('Step size', lambda: data[SongSetting.STEP_SIZE],
+                  lambda d: self.set_value(SongSetting.STEP_SIZE, _stepped(STEP_SIZE_CHOICES, data[SongSetting.STEP_SIZE], d)),
+                  lambda: self.pick('Step size', STEP_SIZE_CHOICES, SongSetting.STEP_SIZE), 'choose'),
             Field('Default octave', lambda: data['default_octave'], lambda d: self.adjust_octave('default_octave', d)),
             Field('Default drum octave', lambda: data['default_drum_octave'], lambda d: self.adjust_octave('default_drum_octave', d)),
         ]

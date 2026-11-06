@@ -25,14 +25,14 @@ from llamatron.song_writer import dump_song
 
 SONG = {
     'tempo': 120, 'scale': 'main', 'scales': {'main': {'root': 'C', 'type': 'minor'}, 'A Minor': {'root': 'A', 'type': 'minor'}}, 'seed': 3,
-    'default_length': '1/8', 'granularity': '1/32', 'default_octave': 4, 'default_drum_octave': 0,
+    'step_size': '1/8', 'default_octave': 4, 'default_drum_octave': 0,
     'patterns': {
         'a': {
-            'steps': 3, 'degree': [1, None, 5], 'duration': ['1/4', '1/8', 1], 'accidental': ['#', None, 'b'],
+            'steps': 3, 'step_size': '1/4', 'degree': [1, None, 5], 'gate': ['1/4', '1/8', 1], 'dot': ['d', None, 't'], 'accidental': ['#', None, 'b'],
             'octave': [3, None, 2], 'chord': ['M7', None, 3], 'velocity': [100, None, 90],
             'probability': [50, None, 100], 'ratchet': [2, None, None], 'glide': [True, False, False],
         },
-        'hit': {'steps': 1, 'drum': True, 'direction': 'pendulum', 'accumulator_limit': 5, 'degree': ['C'], 'duration': ['1/16'], 'grab': [True], 'ratchet_offset': [1], 'note_add': [-1], 'velocity_add': [3]},
+        'hit': {'steps': 1, 'drum': True, 'direction': 'pendulum', 'accumulator_limit': 5, 'degree': ['C'], 'grab': [True], 'ratchet_offset': [1], 'note_add': [-1], 'velocity_add': [3]},
         'rests': {'steps': 2},
     },
     'tracks': {'lead': {'transpose': 2, 'cc': [74, None, None, 1]}, 'kick': {'drum': True}, 'plain': {}},
@@ -76,7 +76,9 @@ class TestDumpSong(unittest.TestCase):
     def test_pattern_rows_are_one_list_per_line(self):
         text = dump_song(SONG)
         self.assertIn('    degree: [1, ~, 5]\n', text)
-        self.assertIn('    duration: [1/4, 1/8, 1]\n', text)
+        self.assertIn('    gate: [1/4, 1/8, 1]\n', text)
+        self.assertIn('    dot: [d, ~, t]\n', text)
+        self.assertIn('    steps: 3\n    step_size: 1/4\n', text)
         self.assertIn('    accidental: ["#", ~, b]\n', text)
         self.assertIn('    glide: [true, false, false]\n', text)
         self.assertIn('    drum: true\n    direction: pendulum\n    accumulator_limit: 5\n', text)
@@ -112,7 +114,7 @@ class TestDumpSong(unittest.TestCase):
 
     def test_a_fraction_stays_text_and_a_number_stays_a_number(self):
         song = yaml.safe_load(dump_song(SONG))
-        self.assertEqual(song['patterns']['a']['duration'][0], '1/4')
+        self.assertEqual(song['patterns']['a']['gate'][0], '1/4')
         self.assertEqual(song['tempo'], 120)
 
     def test_a_song_that_was_written_still_builds(self):
