@@ -16,6 +16,8 @@
 
 """The song: everything a song file holds, as objects that save and load themselves."""
 
+import yaml
+
 from llamatron.composition.chain import Chain
 from llamatron.composition.checks import check_keys, live_octave, number, positive_length
 from llamatron.composition.defaults import (
@@ -43,6 +45,9 @@ SECTIONS = [Section.SCALES, Section.PATTERNS, Section.TRACKS, *NAMED_GENERATORS.
 # How error messages name the file as a whole, and one object in each section of named objects.
 THE_FILE = 'the file'
 ITEM_LABELS = {Section.PATTERNS: 'pattern', Section.CHAINS: 'chain'}
+MSG_CANT_READ = "can't read {path}: {reason}"
+MSG_NOT_YAML = "{path} isn't valid YAML: {problem}"
+FILE_ENCODING = 'utf-8'
 MSG_NOT_A_SONG = 'a song file must have settings like tempo, scale and scenes'
 MSG_NOT_TEXT = '{name} must be text, got {value!r}'
 MSG_SCALES_NOT_NAMED = 'scales: expected named scales like main: { root: F, type: minor }'
@@ -73,6 +78,22 @@ class Song(LlamaData):
         self._settings = {name: None for name in SETTINGS}
         self._sections = {name: None for name in SECTIONS}
         self._scenes = None
+
+    @classmethod
+    def read_file(cls, path):
+        """Return the song in a song file, or raise SongFileError if it can't be read or something's wrong with it.
+
+        The file is read with yaml.safe_load, which only ever makes plain data, so reading a file
+        can never run code.
+        """
+        try:
+            with open(path, encoding=FILE_ENCODING) as file:
+                data = yaml.safe_load(file)
+        except OSError as error:
+            raise SongFileError(MSG_CANT_READ.format(path=path, reason=error.strerror)) from error
+        except yaml.YAMLError as error:
+            raise SongFileError(MSG_NOT_YAML.format(path=path, problem=error)) from error
+        return cls.from_data(data)
 
     @classmethod
     def from_data(cls, data, where=THE_FILE, song=None):

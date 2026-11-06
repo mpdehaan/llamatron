@@ -22,7 +22,9 @@ from fractions import Fraction
 
 import yaml
 
-from llamatron.song_file import SongBuilder, SongFileError
+from llamatron.composition.song_file_error import SongFileError
+from rendering import render_data
+from llamatron.composition.song import Song
 from llamatron.tui.document import DEFAULT_SCALE, Document, clock, new_song, unique_name
 
 
@@ -287,7 +289,7 @@ class TestRenaming(unittest.TestCase):
         self.assertEqual(list(document.data['patterns']), ['a', 'new', 'unused'])
         self.assertEqual(document.cell(1, 'lead')['morph_to'], 'new')
         self.assertEqual(document.cell(2, 'bass')['pattern'], 'new')
-        SongBuilder(document.data).build()
+        render_data(document.data)
 
     def test_pattern_updates_rhythm_from(self):
         document = song_with_things()
@@ -314,7 +316,7 @@ class TestRenaming(unittest.TestCase):
         document = song_with_things()
         document.rename_track('lead', 'new')
         self.assertEqual(list(document.data['tracks']), ['new', 'bass'])
-        SongBuilder(document.data).build()
+        render_data(document.data)
 
     def test_chain_updates_everything(self):
         document = song_with_things()
@@ -336,7 +338,7 @@ class TestRenaming(unittest.TestCase):
         document.change_scale(DEFAULT_SCALE, 'D', 'minor')
         self.assertEqual(document.data['scale'], DEFAULT_SCALE)
         self.assertEqual(document.scale_notes_text(DEFAULT_SCALE), 'D minor')
-        SongBuilder(document.data).build()
+        render_data(document.data)
 
     def test_renaming_a_scale_updates_everything(self):
         document = song_with_things()
@@ -344,7 +346,7 @@ class TestRenaming(unittest.TestCase):
         self.assertEqual(document.data['scale'], 'main')
         self.assertEqual(document.data['scenes'][2]['scale'], 'main')
         self.assertEqual(list(document.data['scales']), ['main'])
-        SongBuilder(document.data).build()
+        render_data(document.data)
 
     def test_a_scale_can_be_copied_with_the_same_notes(self):
         document = song_with_things()
@@ -416,7 +418,7 @@ class TestScenes(unittest.TestCase):
         self.document.copy_scene(0)
         self.document.delete_scene(1)
         self.document.set_scene_repeat(0, 4)
-        SongBuilder(self.document.data).build()
+        render_data(self.document.data)
 
 
 class TestPatternSteps(unittest.TestCase):
@@ -458,7 +460,7 @@ class TestPatternSteps(unittest.TestCase):
         self.assertNotIn('degree', pattern)
         self.assertNotIn('chord', pattern)
         self.assertEqual(pattern['duration'], ['1/4', '1/4'])
-        SongBuilder(document.data)
+        Song.from_data(document.data)
 
     def test_forward_is_not_written(self):
         document = song_with_things()
@@ -528,7 +530,7 @@ class TestPickerLayouts(unittest.TestCase):
     """Every chord, scale and root has exactly one place in its picker."""
 
     def test_chord_groups_hold_every_chord_in_order(self):
-        from llamatron.song_file import CHORD_SYMBOLS
+        from llamatron.composition.file_format import CHORD_SYMBOLS
         from llamatron.tui.pattern_editor import CHORD_GROUPS, CHORD_NAMES
         flat = [symbol for _, symbols in CHORD_GROUPS for symbol in symbols]
         self.assertEqual(flat, CHORD_SYMBOLS)

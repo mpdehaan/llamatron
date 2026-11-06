@@ -19,7 +19,8 @@ import unittest
 
 import yaml
 
-from llamatron.song_file import SongBuilder
+from rendering import render_data
+from llamatron.composition.song import Song
 from llamatron.song_writer import dump_song
 
 SONG = {
@@ -102,12 +103,12 @@ class TestDumpSong(unittest.TestCase):
         text = dump_song(song)
         for section in ['patterns', 'scales', 'chains']:
             self.assertNotIn(section, text)
-        SongBuilder(yaml.safe_load(text)).build()
+        render_data(yaml.safe_load(text))
 
     def test_a_new_song_with_nothing_in_it_reads_back(self):
         song = {'tempo': 120, 'tracks': {}, 'scenes': []}
         self.assertEqual(yaml.safe_load(dump_song(song)), song)
-        SongBuilder(yaml.safe_load(dump_song(song))).build()
+        render_data(yaml.safe_load(dump_song(song)))
 
     def test_a_fraction_stays_text_and_a_number_stays_a_number(self):
         song = yaml.safe_load(dump_song(SONG))
@@ -119,7 +120,7 @@ class TestDumpSong(unittest.TestCase):
             with open(path) as file:
                 song = yaml.safe_load(file)
             with self.subTest(path=path):
-                SongBuilder(yaml.safe_load(dump_song(song)))
+                Song.from_data(yaml.safe_load(dump_song(song)))
 
 
 if __name__ == '__main__':

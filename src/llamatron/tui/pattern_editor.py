@@ -23,11 +23,11 @@ to play is a rest, and is shown as a blank, and every step takes time.
 
 from rich.text import Text
 
-from llamatron.song_file import CC_ROWS, CHORD_SYMBOLS, DEFAULT_ACCUMULATOR_LIMIT, DIRECTIONS, FORWARD, NOTE_LETTERS
+from llamatron.composition.defaults import DEFAULT_ACCUMULATOR_LIMIT
+from llamatron.composition.file_format import CC_ROWS, CHORD_SYMBOLS, DIRECTIONS, FORWARD, NOTE_LETTERS
 from llamatron.tui.base import ChoiceDialog, ConfirmDialog, GridChoiceDialog, Page, PromptDialog, columns, fit, grouped_grid, key, pressed_key
-from llamatron.tui.document import (
-    DEFAULT_PROBABILITY, DEFAULT_RATCHET, DEFAULT_VELOCITY, DIRECTION_NAMES, fraction, fraction_text,
-)
+from llamatron.composition.defaults import DEFAULT_PROBABILITY, DEFAULT_RATCHET, DEFAULT_VELOCITY
+from llamatron.tui.document import DIRECTION_NAMES, fraction, fraction_text
 
 # The rows on screen. Degree always shows, and the rest depend on the mode.
 ROW_LABELS = {

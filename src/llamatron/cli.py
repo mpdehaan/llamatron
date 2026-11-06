@@ -32,7 +32,9 @@ import sys
 from llamatron.renderers.ableton_project import DEFAULT_TEMPLATE, AbletonProject
 from llamatron.renderers.clip_tree import ClipTree
 from llamatron.song import ClipGrid
-from llamatron.song_file import SongFileError, load_song
+from llamatron.composition.song_file_error import SongFileError
+from llamatron.composition.song import Song
+from llamatron.playback.song_renderer import SongRenderer
 
 
 def _arguments(argv):
@@ -75,7 +77,7 @@ def main(argv=None):
     name = os.path.splitext(os.path.basename(arguments.song))[0]
     directory = arguments.out or os.path.join('output', name)
     try:
-        song = load_song(arguments.song)
+        song = SongRenderer(Song.read_file(arguments.song)).render()
         if arguments.replace:
             replace_output(arguments.to, directory)
         if arguments.to == 'ableton':

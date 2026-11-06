@@ -22,7 +22,7 @@ from unittest import mock
 
 from test_tui_pages import UITest
 
-from llamatron.song_file import SongBuilder
+from rendering import render_data
 from llamatron.tui.arrange import ArrangePage, ClipPage, ScenePage
 from llamatron.tui.base import ChoiceDialog, ConfirmDialog, MessageDialog, PromptDialog
 from llamatron.tui.pages import ArpEditor, ArpsPage, AutoRatchetsPage, ChainEditor, ChainsPage, MainPage, OffsetsEditor, SongPage, TrackEditor
@@ -101,7 +101,7 @@ class TestChainEditor(UITest):
         self.assertEqual(self.steps(), [{'arp': 'up'}, {'auto_ratchet': 'rolls'}, {'arp': 'up'}])
         await self.press('backspace', 'backspace')
         self.assertEqual(self.steps(), [{'arp': 'up'}])
-        SongBuilder(self.document.data).build()
+        render_data(self.document.data)
 
     async def test_a_step_cannot_move_past_the_ends(self):
         await self.press('u')

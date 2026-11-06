@@ -24,7 +24,9 @@ from rich.text import Text
 from llamatron.generators.arp import MAX_OCTAVE_RANGE, MAX_OFFSET, MAX_OFFSETS, ChordOrder, OctaveJump
 from llamatron.note import Note
 from llamatron.scale import ScaleType
-from llamatron.song_file import GRANULARITIES, MAX_TRANSPOSE, SongFileError
+from llamatron.composition.defaults import GRANULARITIES
+from llamatron.composition.limits import MAX_TRANSPOSE
+from llamatron.composition.song_file_error import SongFileError
 from llamatron.tui.arrange import ArrangePage
 from llamatron.tui.base import ARROWS, ARROWS_UP_DOWN, SITE, ChoiceDialog, ConfirmDialog, GridChoiceDialog, Page, PromptDialog, fit, grouped_grid, key, pressed_key
 from llamatron.tui.document import Document, GENERATOR_SECTIONS, ROOTS, SCALE_KINDS, clock, unique_name

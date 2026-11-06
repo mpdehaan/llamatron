@@ -19,8 +19,9 @@
 from rich.text import Text
 
 from llamatron.tui.base import ChoiceDialog, ConfirmDialog, Page, PromptDialog, columns, fit, key
-from llamatron.song_file import DIRECTIONS
-from llamatron.tui.document import DIRECTION_NAMES, MORPH_STYLES, clock, unique_name
+from llamatron.composition.file_format import DIRECTIONS
+from llamatron.composition.cell import MORPH_STYLES
+from llamatron.tui.document import DIRECTION_NAMES, clock, unique_name
 from llamatron.tui.lists import PLUS, Field, FieldPage
 
 FIRST_MORPH_STYLE = next(iter(MORPH_STYLES))

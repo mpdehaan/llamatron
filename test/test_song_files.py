@@ -34,7 +34,12 @@ from llamatron.note import Note, Rest
 from llamatron.renderers.clip_tree import ClipTree
 from llamatron.renderers.timing import GLIDE_OVERLAP, timed_events
 from llamatron.song_writer import dump_song
-from llamatron.song_file import CHORD_SYMBOLS, FIXED_CHORDS, GENERATORS, SCALE_CHORDS, SongBuilder, SongFileError, load_song
+from rendering import estimate_data, render_data, render_file
+
+from llamatron.composition.file_format import CHORD_SYMBOLS, FIXED_CHORDS, SCALE_CHORDS
+from llamatron.composition.generator_settings import GENERATOR_SETTINGS
+from llamatron.composition.song import Song
+from llamatron.composition.song_file_error import SongFileError
 
 
 def pat(*steps, drum=False, **rows):
@@ -70,7 +75,7 @@ scenes:
 
 
 def build(text):
-    return SongBuilder(yaml.safe_load(text)).build()
+    return render_data(yaml.safe_load(text))
 
 
 def with_parts(**parts):
@@ -95,7 +100,7 @@ def lead_song(*steps, cell=None, **parts):
         patterns={'x': pat(*steps, **rows), **parts.pop('patterns', {})},
         scenes=[{'tracks': {'lead': {'pattern': 'x', **(cell or {})}}}], **parts,
     )
-    return SongBuilder(data).build()
+    return render_data(data)
 
 
 def lead(*steps, **parts):
@@ -118,7 +123,7 @@ class TestPatterns(unittest.TestCase):
     def test_a_default_song_octave_is_live_c3(self):
         data = with_parts(patterns={'x': pat([1, '1/2'])}, scenes=[{'tracks': {'lead': {'pattern': 'x'}}}])
         del data['default_octave']
-        self.assertEqual(pitches(clip(SongBuilder(data).build(), 1, 'lead')), [60])
+        self.assertEqual(pitches(clip(render_data(data), 1, 'lead')), [60])
 
     def test_a_degree_past_the_scale_wraps_up_an_octave(self):
         self.assertEqual(pitches(lead([8, '1/2'])), [60])
@@ -331,7 +336,7 @@ class TestStepRows(unittest.TestCase):
 class TestClipsInAScene(unittest.TestCase):
 
     def scene(self, **cells):
-        return SongBuilder(with_parts(scenes=[{'tracks': cells}])).build()
+        return render_data(with_parts(scenes=[{'tracks': cells}]))
 
     def test_a_clip_plays_its_pattern_once_and_ends(self):
         song = self.scene(lead={'pattern': 'a'}, kick={'pattern': 'hit'})
@@ -355,7 +360,7 @@ class TestClipsInAScene(unittest.TestCase):
     def test_every_clip_looping_is_an_error(self):
         data = with_parts(scenes=[{'name': 'big', 'tracks': {'lead': {'pattern': 'a', 'loop': True}, 'kick': {'pattern': 'hit', 'loop': True}}}])
         with self.assertRaises(SongFileError) as caught:
-            SongBuilder(data).build()
+            render_data(data)
         self.assertIn('every clip is set to loop', str(caught.exception))
         self.assertIn('big', str(caught.exception))
 
@@ -374,21 +379,21 @@ class TestClipsInAScene(unittest.TestCase):
         self.assertTrue(clip(song, 1, 'kick').loop)
 
     def test_estimate_gives_seconds_for_scenes_and_clips(self):
-        builder = SongBuilder(with_parts(scenes=[{'tracks': {'lead': {'pattern': 'a', 'repeat': 2}, 'kick': {'pattern': 'hit'}}}]))
-        number, seconds, clips, problem = builder.estimate()[0]
+        estimates = estimate_data(with_parts(scenes=[{'tracks': {'lead': {'pattern': 'a', 'repeat': 2}, 'kick': {'pattern': 'hit'}}}]))
+        number, seconds, clips, problem = estimates[0]
         self.assertEqual((number, seconds, problem), (1, 4, None))
         self.assertEqual(clips, {'lead': 4, 'kick': Fraction(1, 2)})
 
     def test_estimate_uses_the_scene_tempo(self):
-        builder = SongBuilder(with_parts(scenes=[{'tempo': 60, 'tracks': {'lead': {'pattern': 'a'}}}]))
-        self.assertEqual(builder.estimate()[0][1], 4)
+        estimates = estimate_data(with_parts(scenes=[{'tempo': 60, 'tracks': {'lead': {'pattern': 'a'}}}]))
+        self.assertEqual(estimates[0][1], 4)
 
     def test_estimate_reports_a_problem_in_only_that_scene(self):
-        builder = SongBuilder(with_parts(scenes=[
+        estimates = estimate_data(with_parts(scenes=[
             {'tracks': {'lead': {'pattern': 'a', 'loop': True}}},
             {'tracks': {'lead': {'pattern': 'a'}}},
         ]))
-        first, second = builder.estimate()
+        first, second = estimates
         self.assertIn('every clip', first[3])
         self.assertIsNone(first[1])
         self.assertEqual(second[1], 2)
@@ -401,44 +406,44 @@ class TestScenes(unittest.TestCase):
             {'scale': 'C minor', 'tracks': {'lead': {'pattern': 'a'}}},
             {'tracks': {'lead': {'pattern': 'a'}}},
         ])
-        song = SongBuilder(data).build()
+        song = render_data(data)
         self.assertEqual(pitches(clip(song, 1, 'lead')), [48, 51])
         self.assertEqual(pitches(clip(song, 2, 'lead')), [48, 52])
 
     def test_degrees_with_no_scale_anywhere_name_the_problem(self):
         data = with_parts(scale=None, scenes=[{'tracks': {'lead': {'pattern': 'a'}}}])
         with self.assertRaises(SongFileError) as caught:
-            SongBuilder(data).build()
+            render_data(data)
         self.assertIn('no scale', str(caught.exception))
 
     def test_a_scene_scale_works_when_the_song_has_none(self):
         data = with_parts(scale=None, scenes=[{'scale': 'C minor', 'tracks': {'lead': {'pattern': 'a'}}}])
-        self.assertEqual(pitches(clip(SongBuilder(data).build(), 1, 'lead')), [48, 51])
+        self.assertEqual(pitches(clip(render_data(data), 1, 'lead')), [48, 51])
 
     def test_a_scale_can_have_any_name(self):
         data = with_parts(scales={'main': {'root': 'D', 'type': 'minor'}}, scale='main')
-        self.assertEqual(pitches(clip(SongBuilder(data).build(), 1, 'lead')), [50, 53])
+        self.assertEqual(pitches(clip(render_data(data), 1, 'lead')), [50, 53])
 
     def test_scales_must_be_in_the_list(self):
         for parts in [{'scale': 'D major'}, {'scenes': [{'scale': 'D major', 'tracks': {}}]}]:
             with self.subTest(parts=parts), self.assertRaises(SongFileError):
-                SongBuilder(with_parts(**parts))
+                Song.from_data(with_parts(**parts))
 
     def test_scale_list_is_checked(self):
         with self.assertRaises(SongFileError):
-            SongBuilder(with_parts(scales={'bad': {'root': 'C', 'type': 'wobbly'}}))
+            Song.from_data(with_parts(scales={'bad': {'root': 'C', 'type': 'wobbly'}}))
 
     def test_repeat_writes_numbered_scenes(self):
         data = with_parts(scenes=[{'name': 'x', 'repeat': 3, 'tracks': {}}])
-        self.assertEqual([s.name for s in SongBuilder(data).build().scenes], ['x 1', 'x 2', 'x 3'])
+        self.assertEqual([s.name for s in render_data(data).scenes], ['x 1', 'x 2', 'x 3'])
 
     def test_tempo_ramps_across_a_repeat(self):
         data = with_parts(scenes=[{'repeat': 3, 'tempo_start': 120, 'tempo_end': 124, 'tracks': {}}])
-        self.assertEqual([s.tempo for s in SongBuilder(data).build().scenes], [120, 122, 124])
+        self.assertEqual([s.tempo for s in render_data(data).scenes], [120, 122, 124])
 
     def test_a_scene_can_set_a_tempo(self):
         data = with_parts(scenes=[{'tempo': 90, 'tracks': {}}])
-        self.assertEqual(SongBuilder(data).build().scenes[0].tempo, 90)
+        self.assertEqual(render_data(data).scenes[0].tempo, 90)
 
     def test_no_tempo_uses_the_song_tempo(self):
         self.assertIsNone(build(BASIC).scenes[0].tempo)
@@ -447,33 +452,33 @@ class TestScenes(unittest.TestCase):
     def test_any_number_of_tracks(self):
         tracks = [f't{n}' for n in range(9)]
         data = with_parts(tracks={name: {} for name in tracks}, scenes=[{'tracks': {name: {'pattern': 'a'} for name in tracks}}])
-        self.assertEqual(len(SongBuilder(data).build().tracks), 9)
+        self.assertEqual(len(render_data(data).tracks), 9)
 
     def test_a_cell_can_be_empty(self):
-        self.assertIsNone(clip(SongBuilder(with_parts(scenes=[{'tracks': {}}])).build(), 1, 'lead'))
+        self.assertIsNone(clip(render_data(with_parts(scenes=[{'tracks': {}}])), 1, 'lead'))
 
     def test_a_song_can_start_with_nothing(self):
-        song = SongBuilder({'tempo': 120, 'tracks': {}, 'scenes': []}).build()
+        song = render_data({'tempo': 120, 'tracks': {}, 'scenes': []})
         self.assertEqual(song.scenes, [])
 
     def test_track_names_must_differ(self):
         with self.assertRaises(SongFileError):
-            SongBuilder(with_parts(tracks=['a', 'a']))
+            Song.from_data(with_parts(tracks=['a', 'a']))
 
     def test_song_settings_are_checked(self):
         for parts in [{'granularity': '1/3'}, {'default_length': 0}, {'default_octave': 20}, {'default_drum_octave': 'x'}]:
             with self.subTest(parts=parts), self.assertRaises(SongFileError):
-                SongBuilder(with_parts(**parts))
+                Song.from_data(with_parts(**parts))
 
 
 class TestChains(unittest.TestCase):
 
     def song(self, chains):
-        return SongBuilder(with_parts(
+        return render_data(with_parts(
             arps={'slow': {'step': '1/2'}}, auto_ratchets={'twice': {'counts': [2]}, 'some': {'counts': [1, 3]}},
             chains=chains,
             scenes=[{'tracks': {'lead': {'pattern': 'a', 'chain': 'x'}}}],
-        )).build()
+        ))
 
     def test_a_cell_can_use_a_chain(self):
         song = self.song({'x': [{'auto_ratchet': 'twice'}]})
@@ -508,7 +513,7 @@ class TestClipMorph(unittest.TestCase):
             },
             scenes=[{'tracks': {'lead': settings}}],
         )
-        return clip(SongBuilder(data).build(), 1, 'lead')
+        return clip(render_data(data), 1, 'lead')
 
     def test_runs_across_the_repeats_of_the_clip(self):
         found = self.morph(repeat=2)
@@ -531,7 +536,7 @@ class TestClipMorph(unittest.TestCase):
             patterns={'long': pat([1, 2]), 'short': pat([3, '1/2'])},
             scenes=[{'tracks': {'lead': {'pattern': 'a', 'repeat': 2, 'morph_to': 'long', 'morph_style': 'left'}, 'kick': {'pattern': 'a', 'repeat': 2, 'morph_to': 'short', 'morph_style': 'left'}}}],
         )
-        song = SongBuilder(data).build()
+        song = render_data(data)
         self.assertEqual(clip(song, 1, 'lead').total_length(), 2)
         self.assertEqual(clip(song, 1, 'kick').total_length(), 2)
 
@@ -546,11 +551,11 @@ class TestClipMorph(unittest.TestCase):
         bad += [{k: v for k, v in good.items() if k != missing} for missing in ['morph_to', 'morph_style']]
         for cell in bad:
             with self.subTest(cell=cell), self.assertRaises(SongFileError):
-                SongBuilder(with_parts(scenes=[{'tracks': {'lead': cell}}]))
+                Song.from_data(with_parts(scenes=[{'tracks': {'lead': cell}}]))
 
     def test_a_cell_cannot_set_a_scale(self):
         with self.assertRaises(SongFileError):
-            SongBuilder(with_parts(scenes=[{'tracks': {'lead': {'pattern': 'a', 'scale': 'C major'}}}]))
+            Song.from_data(with_parts(scenes=[{'tracks': {'lead': {'pattern': 'a', 'scale': 'C major'}}}]))
 
 
 class TestRhythmAndNotesFrom(unittest.TestCase):
@@ -570,7 +575,7 @@ class TestRhythmAndNotesFrom(unittest.TestCase):
         if rhythm_from is None and notes != 'plain':
             rhythm = {'rhythm_from': 'plain'}
         data = with_parts(patterns=self.PATTERNS, scenes=[{'tracks': {'lead': {'pattern': notes, **rhythm, **cell}}}])
-        return clip(SongBuilder(data).build(), 1, 'lead')
+        return clip(render_data(data), 1, 'lead')
 
     def timed(self, found):
         return [(str(start), pitch) for start, _, pitch, _ in sorted(timed_events(found, found.scale)[0])]
@@ -607,7 +612,7 @@ class TestRhythmAndNotesFrom(unittest.TestCase):
                 'kick': {'pattern': 'plain', 'repeat': 3},
             }}],
         )
-        found = clip(SongBuilder(data).build(), 1, 'lead')
+        found = clip(render_data(data), 1, 'lead')
         self.assertEqual(found.total_length(), 3)
         self.assertEqual([pitch for _, pitch in self.timed(found)][:5], [60, 52, 55, 60, 52])
 
@@ -641,13 +646,13 @@ class TestRhythmAndNotesFrom(unittest.TestCase):
             patterns=self.PATTERNS,
             scenes=[{'tracks': {'lead': {'pattern': 'line', 'rhythm_from': 'plain', 'repeat': 2, 'morph_to': 'plain', 'morph_style': 'left'}}}],
         )
-        found = clip(SongBuilder(data).build(), 1, 'lead')
+        found = clip(render_data(data), 1, 'lead')
         self.assertEqual([pitch for _, pitch in self.timed(found)], [60, 52, 57, 59])
 
     def test_probability_comes_from_the_rhythm(self):
         patterns = {**self.PATTERNS, 'silent': pat([1, '1/2'], [1, '1/2'], probability=[0, 0])}
         data = with_parts(patterns=patterns, scenes=[{'tracks': {'lead': {'pattern': 'plain', 'rhythm_from': 'silent'}}}])
-        self.assertEqual(pitches(clip(SongBuilder(data).build(), 1, 'lead')), [])
+        self.assertEqual(pitches(clip(render_data(data), 1, 'lead')), [])
 
     def test_the_same_every_time(self):
         self.assertEqual(self.clip(rhythm_from='groove', notes='line').notes, self.clip(rhythm_from='groove', notes='line').notes)
@@ -656,11 +661,11 @@ class TestRhythmAndNotesFrom(unittest.TestCase):
         for setting in ['rhythm_from', 'grab_track']:
             data = with_parts(patterns=self.PATTERNS, scenes=[{'tracks': {'lead': {'pattern': 'plain', setting: 'nope'}}}])
             with self.subTest(setting=setting), self.assertRaises(SongFileError):
-                SongBuilder(data)
+                Song.from_data(data)
 
     def test_estimate_uses_the_rhythm(self):
         data = with_parts(patterns=self.PATTERNS, scenes=[{'tracks': {'lead': {'pattern': 'plain', 'rhythm_from': 'groove'}}}])
-        self.assertEqual(SongBuilder(data).estimate()[0][2]['lead'], Fraction(5, 4))
+        self.assertEqual(estimate_data(data)[0][2]['lead'], Fraction(5, 4))
 
 
 class TestPlayDirections(unittest.TestCase):
@@ -676,7 +681,7 @@ class TestPlayDirections(unittest.TestCase):
         if clip_direction:
             cell['direction'] = clip_direction
         data = with_parts(patterns={'x': pattern}, scenes=[{'tracks': {'lead': cell}}], **parts)
-        return clip(SongBuilder(data).build(), 1, 'lead')
+        return clip(render_data(data), 1, 'lead')
 
     def order(self, *arguments, **parts):
         return pitches(self.played(*arguments, **parts))
@@ -740,7 +745,7 @@ class TestPlayDirections(unittest.TestCase):
             patterns={'x': {**self.NOTES, 'direction': 'alternate'}, 'long': pat([1, 2])},
             scenes=[{'tracks': {'lead': {'pattern': 'x', 'loop': True}, 'kick': {'pattern': 'long'}}}],
         )
-        found = clip(SongBuilder(data).build(), 1, 'lead')
+        found = clip(render_data(data), 1, 'lead')
         self.assertEqual(pitches(found)[:6], [self.C, self.D, self.E, self.E, self.D, self.C])
 
     def test_rests_play_in_order_too(self):
@@ -753,14 +758,14 @@ class TestPlayDirections(unittest.TestCase):
             patterns={'x': pat([1, '1/2'], [3, '1/2']), 'y': {**pat([5, '1/2'], [6, '1/2']), 'direction': 'reverse_b'}},
             scenes=[{'tracks': {'lead': {'pattern': 'x', 'repeat': 2, 'direction': 'reverse_b', 'morph_to': 'y', 'morph_style': 'left'}}}],
         )
-        self.assertEqual(pitches(clip(SongBuilder(data).build(), 1, 'lead')), [52, 48, 57, 55])
+        self.assertEqual(pitches(clip(render_data(data), 1, 'lead')), [52, 48, 57, 55])
 
     def test_rhythm_and_notes_each_use_their_own_direction(self):
         data = with_parts(
             patterns={'r': pat([1, '1/4'], [None, '1/2'], [1, '1/8'], direction='reverse_b'), 'n': pat([1, 1], [3, 1], direction='reverse_b')},
             scenes=[{'tracks': {'lead': {'pattern': 'n', 'rhythm_from': 'r'}}}],
         )
-        found = clip(SongBuilder(data).build(), 1, 'lead')
+        found = clip(render_data(data), 1, 'lead')
         self.assertEqual(found.notes, [Note('E', 4, Fraction(1, 8)), Rest(Fraction(1, 2)), Note('C', 4, Fraction(1, 4))])
 
     def test_a_clip_direction_overrides_both_rhythm_and_notes(self):
@@ -768,7 +773,7 @@ class TestPlayDirections(unittest.TestCase):
             patterns={'r': pat([1, '1/4'], [None, '1/2'], [1, '1/8']), 'n': pat([1, 1], [3, 1])},
             scenes=[{'tracks': {'lead': {'pattern': 'n', 'rhythm_from': 'r', 'direction': 'reverse_b'}}}],
         )
-        found = clip(SongBuilder(data).build(), 1, 'lead')
+        found = clip(render_data(data), 1, 'lead')
         self.assertEqual(found.notes[0], Note('E', 4, Fraction(1, 8)))
 
     def test_bad_directions_are_refused(self):
@@ -788,7 +793,7 @@ class TestGrab(unittest.TestCase):
             'lead': {'pattern': 'riff', 'grab_track': 'kick', **(lead_cell or {})},
             'kick': {'pattern': 'bass', **(kick_cell or {})},
         }}], **parts)
-        return SongBuilder(data).build()
+        return render_data(data)
 
     def lead(self, **parts):
         return clip(self.song(**parts), 1, 'lead')
@@ -832,7 +837,7 @@ class TestGrab(unittest.TestCase):
 
     def test_marks_without_a_grab_track_do_nothing(self):
         data = with_parts(patterns={'riff': pat([1, '1/4'], grab=[True])}, scenes=[{'tracks': {'lead': {'pattern': 'riff'}}}])
-        self.assertEqual(pitches(clip(SongBuilder(data).build(), 1, 'lead')), [48])
+        self.assertEqual(pitches(clip(render_data(data), 1, 'lead')), [48])
 
     def test_it_follows_the_other_track_across_repeats(self):
         found = self.lead(lead_cell={'repeat': 2}, kick_cell={'loop': True})
@@ -853,7 +858,7 @@ class TestGrab(unittest.TestCase):
                 'pad': {'pattern': 'top'},
             }}],
         )
-        self.assertEqual(pitches(clip(SongBuilder(data).build(), 1, 'lead')), [67])
+        self.assertEqual(pitches(clip(render_data(data), 1, 'lead')), [67])
 
     def test_grabbing_in_a_circle_stops_with_a_message(self):
         with self.assertRaises(SongFileError) as raised:
@@ -889,7 +894,7 @@ class TestGrab(unittest.TestCase):
 
     def test_grab_must_be_true_or_false(self):
         with self.assertRaises(SongFileError):
-            SongBuilder(with_parts(patterns={'x': pat([1, 1], grab=['yes'])}))
+            Song.from_data(with_parts(patterns={'x': pat([1, 1], grab=['yes'])}))
 
 
 class TestRatchetOffset(unittest.TestCase):
@@ -979,7 +984,7 @@ class TestAccumulators(unittest.TestCase):
             patterns={'x': pat([1, '1/4'], note_add=[1])},
             scenes=[{'repeat': 2, 'tracks': {'lead': {'pattern': 'x'}}}],
         )
-        song = SongBuilder(data).build()
+        song = render_data(data)
         self.assertEqual(pitches(clip(song, 1, 'lead')), pitches(clip(song, 2, 'lead')))
 
     def test_a_note_past_the_midi_range_moves_by_octaves_to_fit(self):
@@ -1001,7 +1006,7 @@ class TestAccumulators(unittest.TestCase):
             'n': pat([1, '1/4'], note_add=[1], velocity_add=[99], velocity=[99]),
         }
         data = with_parts(patterns=patterns, scenes=[{'tracks': {'lead': {'pattern': 'n', 'rhythm_from': 'r', 'repeat': 2}}}])
-        found = clip(SongBuilder(data).build(), 1, 'lead')
+        found = clip(render_data(data), 1, 'lead')
         events, _ = timed_events(found, None)
         self.assertEqual([event[2:] for event in sorted(events)], [(50, 60), (52, 70)])
 
@@ -1016,7 +1021,7 @@ class TestArps(unittest.TestCase):
     def lead(self, chain='x', **parts):
         scene = {'tracks': {'lead': {'pattern': 'c', 'chain': chain}}}
         data = with_parts(patterns={'c': pat([1, 1], chord=[3]), 'd': pat([1, '1/2'], [3, '1/2'])}, scenes=[scene], **parts)
-        return clip(SongBuilder(data).build(), 1, 'lead')
+        return clip(render_data(data), 1, 'lead')
 
     def test_a_chain_can_use_a_named_arp(self):
         found = self.lead(arps={'bells': {'step': '1/4', 'order': 'up'}}, chains={'x': [{'arp': 'bells'}]})
@@ -1027,13 +1032,13 @@ class TestArps(unittest.TestCase):
             patterns={'c': pat([1, 1], chord=[3], velocity=[40])}, arps={'bells': {'step': '1/4'}},
             chains={'x': [{'arp': 'bells'}]}, scenes=[{'tracks': {'lead': {'pattern': 'c', 'chain': 'x'}}}],
         )
-        events, _ = timed_events(clip(SongBuilder(data).build(), 1, 'lead'), None)
+        events, _ = timed_events(clip(render_data(data), 1, 'lead'), None)
         self.assertEqual({event[3] for event in events}, {40})
 
     def test_a_chain_can_use_a_named_auto_ratchet(self):
         scene = {'tracks': {'lead': {'pattern': 'd', 'chain': 'x'}}}
         data = with_parts(patterns={'d': pat([1, '1/2'], [3, '1/2'])}, scenes=[scene], auto_ratchets={'rolls': {'counts': [2]}}, chains={'x': [{'auto_ratchet': 'rolls'}]})
-        self.assertEqual(pitches(clip(SongBuilder(data).build(), 1, 'lead')), [48, 48, 52, 52])
+        self.assertEqual(pitches(clip(render_data(data), 1, 'lead')), [48, 48, 52, 52])
 
     def test_named_generators_run_in_chain_order(self):
         found = self.lead(
@@ -1061,7 +1066,7 @@ class TestErrors(unittest.TestCase):
 
     def assert_error(self, expected, **parts):
         with self.assertRaises(SongFileError) as caught:
-            SongBuilder(with_parts(**parts)).build()
+            render_data(with_parts(**parts))
         self.assertIn(expected, str(caught.exception))
 
     def test_unknown_top_level_setting(self):
@@ -1106,21 +1111,21 @@ class TestErrors(unittest.TestCase):
 
     def test_every_setting_has_a_default_so_an_empty_file_is_an_empty_song(self):
         for data in [None, {}]:
-            song = SongBuilder(data).build()
+            song = render_data(data)
             self.assertEqual((song.tempo, song.tracks, song.scenes, song.scale), (120, [], [], None))
 
     def test_a_file_without_tempo_tracks_or_scenes_still_loads(self):
         data = {'patterns': {'a': pat([1, '1/4'])}, 'scale': 'C major', 'scales': {'C major': {'root': 'C', 'type': 'major'}}}
-        self.assertEqual(SongBuilder(data).build().tempo, 120)
+        self.assertEqual(render_data(data).tempo, 120)
 
     def test_the_description_is_text(self):
-        SongBuilder({'description': 'Two lines\nof notes\n'}).build()
+        render_data({'description': 'Two lines\nof notes\n'})
         with self.assertRaisesRegex(SongFileError, 'description must be text'):
-            SongBuilder({'description': ['a list']})
+            Song.from_data({'description': ['a list']})
 
     def test_missing_file(self):
         with self.assertRaises(SongFileError):
-            load_song('/no/such/file.yml')
+            render_file('/no/such/file.yml')
 
 
 class TestExamples(unittest.TestCase):
@@ -1142,11 +1147,11 @@ class TestExamples(unittest.TestCase):
             with open(path) as file:
                 for chain in (yaml.safe_load(file).get('chains') or {}).values():
                     used |= {next(iter(step)) for step in chain}
-        self.assertEqual(set(GENERATORS) - used, set())
+        self.assertEqual(set(GENERATOR_SETTINGS) - used, set())
 
     def test_every_song_lasts_about_three_minutes(self):
         for path in self.songs:
-            song = load_song(path)
+            song = render_file(path)
             seconds = 0
             for scene in song.scenes:
                 lengths = [song.get_clip(scene, t).total_length() for t in song.tracks if song.get_clip(scene, t)]
@@ -1156,7 +1161,7 @@ class TestExamples(unittest.TestCase):
 
     def test_every_clip_lasts_as_long_as_its_scene_and_fits_a_piano(self):
         for path in self.paths:
-            song = load_song(path)
+            song = render_file(path)
             for scene in song.scenes:
                 clips = [song.get_clip(scene, t) for t in song.tracks if song.get_clip(scene, t)]
                 self.assertEqual(len({c.total_length() for c in clips}), 1)
@@ -1168,13 +1173,13 @@ class TestExamples(unittest.TestCase):
                             self.assertLessEqual(max(found), 108)
 
     def test_tempo_keeps_rising_through_minimal_techno(self):
-        song = load_song('examples/minimal_techno.yml')
+        song = render_file('examples/minimal_techno.yml')
         tempos = [scene.tempo or song.tempo for scene in song.scenes]
         self.assertEqual(tempos, sorted(tempos))
         self.assertGreater(tempos[-1], tempos[0])
 
     def test_acid_bass_stays_low(self):
-        song = load_song('examples/acid_techno.yml')
+        song = render_file('examples/acid_techno.yml')
         for scene in song.scenes[1:]:
             acid = clip(song, scene.id + 1, 'acid')
             if acid is not None:
@@ -1195,11 +1200,11 @@ class TestExamples(unittest.TestCase):
 class TestTitleAndAuthor(unittest.TestCase):
 
     def test_they_are_optional_text(self):
-        SongBuilder(with_parts(title='Rain', author='Someone'))
-        SongBuilder(with_parts())
+        Song.from_data(with_parts(title='Rain', author='Someone'))
+        Song.from_data(with_parts())
         for key in ['title', 'author']:
             with self.subTest(key=key), self.assertRaises(SongFileError):
-                SongBuilder(with_parts(**{key: 3}))
+                Song.from_data(with_parts(**{key: 3}))
 
     def test_they_are_written_first(self):
         text = dump_song({'tempo': 120, 'author': 'Someone', 'title': 'Rain: Part 2', 'tracks': {}, 'scenes': []})

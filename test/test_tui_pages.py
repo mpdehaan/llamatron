@@ -23,7 +23,8 @@ from textual import events
 from textual.app import App
 from textual.screen import Screen
 
-from llamatron.song_file import SongBuilder
+from rendering import render_data
+from llamatron.composition.song import Song
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.arrange import ArrangePage, ClipPage, ScenePage
 from llamatron.tui.base import ChoiceDialog, ConfirmDialog, Dialog, GridChoiceDialog, MessageDialog, Page, PromptDialog
@@ -727,7 +728,7 @@ class TestPatternEditor(UITest):
         await self.press('5')
         await self.go_to_row('glide')
         await self.press('space')
-        SongBuilder(self.document.data).build()
+        render_data(self.document.data)
         self.document.save('x.yml')
         Document.load('x.yml')
 
@@ -816,7 +817,7 @@ class TestDrumPatterns(UITest):
 
     async def test_it_builds(self):
         await self.press('right', 'f')
-        SongBuilder(self.document.data).build()
+        render_data(self.document.data)
 
 
 class TestArrange(UITest):
@@ -843,7 +844,7 @@ class TestArrange(UITest):
     async def test_u_and_d_move_scenes_in_render_order(self):
         await self.press('d')
         self.assertEqual(self.scenes(), ['two', 'one'])
-        song = SongBuilder(self.document.data).build()
+        song = render_data(self.document.data)
         self.assertEqual([scene.name for scene in song.scenes], ['two', 'one'])
 
     async def test_copy_and_delete_on_the_scene_name_act_on_the_scene(self):
@@ -952,7 +953,7 @@ class TestClipPage(UITest):
         self.assertEqual(self.cell()['morph_style'], 'right')
         await self.press('+')
         self.assertEqual(self.cell()['morph_style'], 'middle')
-        SongBuilder(self.document.data).build()
+        render_data(self.document.data)
 
     async def test_going_back_to_one_repeat_removes_the_morph(self):
         self.cell().update(repeat=2, morph_to='other', morph_style='left')
@@ -1046,7 +1047,7 @@ class TestRhythmAndNotesFromOnAClip(UITest):
         self.page.draw()
         await self.pilot.pause()
         self.assertNotIn('this pattern has none yet', self.text())
-        SongBuilder(self.document.data).build()
+        render_data(self.document.data)
 
     async def test_the_grid_marks_them(self):
         self.cell().update(rhythm_from='beat', grab_track='drums')
@@ -1099,7 +1100,7 @@ class TestScenePage(UITest):
         await self.press('+')
         self.assertEqual((self.scene()['tempo_start'], self.scene()['tempo_end']), (121, 122))
         self.assertNotIn('tempo', self.scene())
-        SongBuilder(self.document.data).build()
+        render_data(self.document.data)
         await self.press('backspace')
         self.assertEqual(self.scene()['tempo'], 121)
         self.assertNotIn('tempo_end', self.scene())
@@ -1155,7 +1156,7 @@ class TestTracksScalesChainsAndArps(UITest):
         self.assertIn('(drum track)', self.text())
         await self.press('tab')
         self.assertIn('drum', self.text())
-        SongBuilder(self.document.data).build()
+        render_data(self.document.data)
 
     async def test_editing_an_arps_offsets_and_octaves(self):
         await self.press('g', 'enter', 'enter')
@@ -1174,7 +1175,7 @@ class TestTracksScalesChainsAndArps(UITest):
         self.assertIn('0 7 - 0 0 0 0 0', self.text())
         await self.press('backspace')
         self.assertNotIn('offsets', self.document.data['arps']['up'])
-        SongBuilder(self.document.data).build()
+        render_data(self.document.data)
 
     async def test_offsets_have_one_to_sixteen_steps(self):
         self.document.data['arps']['up']['offsets'] = [0] * 16
@@ -1323,7 +1324,7 @@ class TestTracksScalesChainsAndArps(UITest):
         self.app.screen.value = 'main'
         await self.press('enter')
         self.assertEqual(self.document.data['scales']['main'], {'root': 'D', 'type': 'hirajoshi'})
-        SongBuilder(self.document.data).build()
+        render_data(self.document.data)
 
     async def test_two_scales_can_be_the_same_notes(self):
         await self.press('z', 'c')
@@ -1343,7 +1344,7 @@ class TestTracksScalesChainsAndArps(UITest):
         await self.press('enter')
         self.assertEqual(self.document.data['scale'], 'main')
         self.assertEqual(self.document.data['scenes'][0]['scale'], 'main')
-        SongBuilder(self.document.data).build()
+        render_data(self.document.data)
 
     async def test_arps_are_under_generators(self):
         await self.press('g')
@@ -1366,7 +1367,7 @@ class TestTracksScalesChainsAndArps(UITest):
         await self.type('rise')
         await self.press('enter')
         self.assertEqual(self.document.data['arps']['rise']['order'], 'up')
-        SongBuilder(self.document.data)
+        Song.from_data(self.document.data)
 
     async def test_an_auto_ratchet_can_be_made_edited_and_added_to_a_chain(self):
         await self.press('g', 'down', 'enter')
@@ -1385,7 +1386,7 @@ class TestTracksScalesChainsAndArps(UITest):
         self.assertEqual(self.app.screen.options, ['arp: up', 'auto_ratchet: rolls', 'auto_ratchet: fast'])
         await self.press('down', 'down', 'enter')
         self.assertEqual(self.document.data['chains']['empty'], [{'auto_ratchet': 'fast'}])
-        SongBuilder(self.document.data).build()
+        render_data(self.document.data)
 
     async def test_bad_counts_are_refused(self):
         await self.press('g', 'down', 'enter', 'enter', 'enter')
@@ -1410,7 +1411,7 @@ class TestTracksScalesChainsAndArps(UITest):
         self.assertIsInstance(self.app.screen, ChainEditor)
         await self.press('+', 'enter')
         self.assertEqual(self.document.data['chains']['empty'], [{'arp': 'up'}])
-        SongBuilder(self.document.data)
+        Song.from_data(self.document.data)
 
     async def test_adding_a_chain_step_needs_an_arp_first(self):
         self.document.data['arps'] = {}
@@ -1546,7 +1547,7 @@ class TestLookAndNewKeys(UITest):
         self.app.screen.place = self.app.screen.options.index('3')
         await self.press('enter')
         self.assertEqual(self.value('chord'), 3)
-        SongBuilder(self.document.data).build()
+        render_data(self.document.data)
 
     def dialog_text(self):
         return str(self.app.screen.query_one('#dialog-view').render())
@@ -1648,7 +1649,7 @@ class TestDirectionsAndGrab(UITest):
         await self.press('enter')
         self.assertEqual(self.document.data['patterns']['tune']['direction'], 'pendulum')
         self.assertIn('Direction pendulum', self.text())
-        SongBuilder(self.document.data).build()
+        render_data(self.document.data)
 
     async def clip_page(self):
         await self.press('a', 'right', 'enter')
@@ -1700,7 +1701,7 @@ class TestDirectionsAndGrab(UITest):
         await self.press('space')
         self.assertTrue(self.document.step_value('tune', 'grab', 0))
         self.assertEqual(self.app.screen.cell_text('grab', 0), '*')
-        SongBuilder(self.document.data).build()
+        render_data(self.document.data)
 
 
 class TestDirectionsAndGrabOnAUsualConsole(UITest):
@@ -1759,7 +1760,7 @@ class TestAdvancedRows(UITest):
         await self.press('space')
         self.assertIs(self.document.step_value('tune', 'slide', 2), True)
         self.assertEqual(self.editor.cell_text('slide', 2), '*')
-        SongBuilder(self.document.data).build()
+        render_data(self.document.data)
 
     async def test_the_mode_stays_on_for_other_patterns(self):
         await self.press('a', 'tab', 'enter')
@@ -1792,7 +1793,7 @@ class TestAdvancedRows(UITest):
         self.app.screen.value = '-3'
         await self.press('enter')
         self.assertEqual(self.document.step_value('tune', 'note_add', 0), -3)
-        SongBuilder(self.document.data).build()
+        render_data(self.document.data)
 
     async def test_the_limit(self):
         await self.press('a', 'm')
@@ -1918,7 +1919,7 @@ class TestRearrangingAPattern(UITest):
         self.app.screen.place = self.app.screen.options.index('other')
         await self.press('enter', 'y')
         self.assertEqual(self.document.cell(0, 'lead')['pattern'], 'long')
-        SongBuilder(self.document.data).build()
+        render_data(self.document.data)
 
     async def test_the_old_keys_moved(self):
         await self.press('r')

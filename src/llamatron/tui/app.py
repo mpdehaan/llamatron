@@ -24,7 +24,7 @@ import sys
 
 from textual.app import App
 
-from llamatron.song_file import SongFileError
+from llamatron.composition.song_file_error import SongFileError
 from llamatron.tui.base import ConfirmDialog
 from llamatron.tui.document import Document
 from llamatron.tui.pages import MainPage

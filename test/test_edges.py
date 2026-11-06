@@ -31,7 +31,8 @@ from llamatron.chord import Chord
 from llamatron.note import Note
 from llamatron.renderers.timing import timed_events
 from llamatron.song import Clip, Control, cut_position
-from llamatron.song_file import SongBuilder, SongFileError
+from llamatron.composition.song_file_error import SongFileError
+from rendering import render_data
 from llamatron.tui import app as tui_app
 from llamatron.tui.document import Document
 
@@ -105,21 +106,21 @@ class TestMalformedFiles(unittest.TestCase):
             if name in ('arp seed is words', 'counts is not a list'):
                 data['scenes'][0]['tracks']['lead']['chain'] = 'x'
             with self.subTest(name=name), self.assertRaises(SongFileError):
-                SongBuilder(data).build()
+                render_data(data)
 
     def test_a_chord_pushed_past_the_top_of_midi_says_which_clip(self):
         data = changed(patterns__a={'steps': 1, 'degree': [1], 'duration': [1], 'octave': [8], 'chord': ['M']})
         data['arps']['up']['octave_range'] = 4
         data['scenes'][0]['tracks']['lead']['chain'] = 'x'
         with self.assertRaises(SongFileError) as raised:
-            SongBuilder(data).build()
+            render_data(data)
         self.assertIn("scene 1, track 'lead'", str(raised.exception))
 
 
 class TestGrabEdges(unittest.TestCase):
 
     def lead(self, data):
-        song = SongBuilder(data).build()
+        song = render_data(data)
         track = next(track for track in song.tracks if track.name == 'lead')
         found = song.get_clip(song.scenes[0], track)
         return [pitch for _, _, pitch, _ in sorted(timed_events(found, found.scale)[0])]

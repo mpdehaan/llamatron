@@ -34,11 +34,13 @@ from llamatron.renderers.clip_tree import ClipTree
 from llamatron.note import Note
 from llamatron.scale import ScaleType
 from llamatron.song import ClipGrid
-from llamatron.song_file import (
-    DEFAULT_DRUM_OCTAVE, DEFAULT_LENGTH, DEFAULT_OCTAVE, DEFAULT_PROBABILITY, DEFAULT_RATCHET, DEFAULT_TEMPO,
-    CC_ROWS, DEFAULT_SEED, DEFAULT_VELOCITY, DIRECTIONS, FORWARD, GRANULARITIES, MORPH_STYLES, PATTERN_ROWS, TOGGLE_ROWS,
-    SongBuilder, SongFileError,
+from llamatron.composition.defaults import (
+    DEFAULT_DRUM_OCTAVE, DEFAULT_LENGTH, DEFAULT_OCTAVE, DEFAULT_SEED, DEFAULT_TEMPO, GRANULARITIES,
 )
+from llamatron.composition.file_format import CC_ROWS, FORWARD, PATTERN_ROWS, TOGGLE_ROWS
+from llamatron.composition.song_file_error import SongFileError
+from llamatron.composition.song import Song
+from llamatron.playback.song_renderer import SongRenderer
 from llamatron.song_writer import dump_song
 
 ROOTS = ['C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B']
@@ -145,7 +147,7 @@ class Document:
             raise SongFileError(f"{path} isn't valid YAML: {error}") from error
         # An empty file is an empty song.
         data = {} if data is None else data
-        SongBuilder(data)
+        Song.from_data(data)
         return cls(data, path)
 
     def save(self, path=None):
@@ -205,7 +207,7 @@ class Document:
         """Render the song, replacing earlier output, or raise SongFileError if it can't be."""
         if not self.data['tracks'] or not self.data['scenes']:
             raise SongFileError('there is nothing to render yet, because the song needs a track and a scene')
-        song = SongBuilder(self.data).build()
+        song = SongRenderer(Song.from_data(self.data)).render()
         directory = self.output_directory()
         replace_output(to, directory)
         # Renderers print warnings, which would write over the screen.
@@ -228,7 +230,7 @@ class Document:
     def _estimate(self):
         if self._estimates is None:
             try:
-                self._estimates = SongBuilder(self.data).estimate()
+                self._estimates = SongRenderer(Song.from_data(self.data)).estimate()
                 self._estimate_problem = None
             except SongFileError as error:
                 self._estimates = []

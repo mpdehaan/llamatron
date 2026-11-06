@@ -33,7 +33,7 @@ from fractions import Fraction as F
 import mido
 
 from llamatron.scale import ScaleType
-from llamatron.song_file import PATTERN_ROWS, TOGGLE_ROWS
+from llamatron.composition.file_format import PATTERN_ROWS, TOGGLE_ROWS
 from llamatron.song_writer import dump_song
 from llamatron.tui.pages import SCALE_PAGES
 

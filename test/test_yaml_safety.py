@@ -27,7 +27,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from llamatron.song_file import SongFileError, load_song
+from llamatron.composition.song_file_error import SongFileError
+from rendering import render_file
 from llamatron.tui.document import Document
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -57,7 +58,7 @@ class TestYamlSafety(unittest.TestCase):
             with self.assertRaises(SongFileError):
                 Document.load(path)
             with self.assertRaises(SongFileError):
-                load_song(path)
+                render_file(path)
 
 
 if __name__ == '__main__':

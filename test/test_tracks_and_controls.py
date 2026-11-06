@@ -38,7 +38,9 @@ from llamatron.renderers.clip_tree import ClipTree
 from llamatron.renderers.timing import SLIDE_STEP, control_events, timed_events
 from llamatron.scale import Scale, ScaleType
 from llamatron.song import Clip, Control
-from llamatron.song_file import SongBuilder, SongFileError
+from llamatron.composition.song_file_error import SongFileError
+from rendering import render_data
+from llamatron.composition.song import Song
 from llamatron.song_writer import dump_song
 from llamatron.tui.document import Document
 
@@ -86,7 +88,7 @@ def song_data(**changes):
 
 
 def lead_clip(data):
-    song = SongBuilder(data).build()
+    song = render_data(data)
     track = next(track for track in song.tracks if track.name == 'lead')
     return song.get_clip(song.scenes[0], track)
 
@@ -99,8 +101,8 @@ class TestTracks(unittest.TestCase):
 
     def test_tracks_are_named_objects(self):
         with self.assertRaises(SongFileError):
-            SongBuilder(song_data(tracks=['lead', 'kick']))
-        SongBuilder(song_data(tracks={'lead': {}, 'kick': None}))
+            Song.from_data(song_data(tracks=['lead', 'kick']))
+        Song.from_data(song_data(tracks={'lead': {}, 'kick': None}))
 
     def test_transpose_moves_notes_along_the_scale(self):
         data = song_data()
@@ -124,7 +126,7 @@ class TestTracks(unittest.TestCase):
             data = song_data()
             data['tracks']['lead'] = settings
             with self.subTest(settings=settings), self.assertRaises(SongFileError):
-                SongBuilder(data)
+                Song.from_data(data)
 
     def test_tracks_are_written_with_their_settings(self):
         data = song_data()
@@ -140,7 +142,7 @@ class TestToggles(unittest.TestCase):
         data = song_data()
         data['patterns']['riff']['slide'] = [True, None, False, False]
         with self.assertRaises(SongFileError):
-            SongBuilder(data)
+            Song.from_data(data)
 
     def test_saving_writes_off_as_false(self):
         document = Document(song_data())
@@ -249,7 +251,7 @@ class TestControls(unittest.TestCase):
             data = song_data()
             data['patterns']['riff']['cc1'] = [value, None, None, None]
             with self.subTest(value=value), self.assertRaises(SongFileError):
-                SongBuilder(data)
+                Song.from_data(data)
 
     def test_a_slide_ramps_in_steps_in_midi(self):
         clip = Clip(notes=[Rest(1)], controls=[Control(Fraction(0), 1, 0, True), Control(Fraction(1, 4), 1, 64)])
@@ -266,7 +268,7 @@ class TestRenderingControls(unittest.TestCase):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         self.folder = temporary.name
-        self.song = SongBuilder(song_data()).build()
+        self.song = render_data(song_data())
 
     def test_midi_files_send_control_changes_before_the_note(self):
         with contextlib.redirect_stdout(io.StringIO()):

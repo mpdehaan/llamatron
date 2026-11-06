@@ -24,7 +24,7 @@ import re
 
 import yaml
 
-from llamatron.song_file import PATTERN_ROWS
+from llamatron.composition.file_format import PATTERN_ROWS
 
 _PLAIN = re.compile(r'[A-Za-z0-9_][A-Za-z0-9_#./ -]*')
 _SETTINGS = ['title', 'author', 'tempo', 'scale', 'seed', 'default_length', 'granularity', 'default_octave', 'default_drum_octave']

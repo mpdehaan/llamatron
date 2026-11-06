@@ -724,9 +724,8 @@ so a section can be played again in a different key or with other changes. By de
 song has one section holding all its scenes, so every song written so far just has one
 section, and nothing about it changes.
 
-The user suggested it might be called a Stanza. Claude's suggestion is "Section", partly
-because `src/llamatron/song_file.py` already uses "stanza" for a scene while it's being read,
-so the internal name would need changing first to avoid confusion. A classical piece might call
+The user suggested it might be called a Stanza. Claude's suggestion is "Section", which says what
+it is more plainly. A classical piece might call
 its sections movements, which a section's name can say.
 
 ### What a section could override

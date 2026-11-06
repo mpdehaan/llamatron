@@ -37,7 +37,7 @@ import yaml
 from llamatron.renderers.ableton_project import AbletonProject
 from llamatron.renderers.clip_tree import ClipTree
 from llamatron.renderers.timing import timed_events
-from llamatron.song_file import load_song
+from rendering import render_file
 from llamatron.song_writer import dump_song
 from llamatron.tui.document import Document
 
@@ -63,7 +63,7 @@ class TestDemos(unittest.TestCase):
         for path in PATHS:
             name = os.path.splitext(os.path.basename(path))[0]
             with self.subTest(path=path):
-                song = load_song(path)
+                song = render_file(path)
                 output = io.StringIO()
                 with contextlib.redirect_stdout(output):
                     ClipTree(os.path.join(self.folder, 'clips', name), song).render()
@@ -143,7 +143,7 @@ class TestDemoSources(unittest.TestCase):
         cls.generator.main(cls.folder)
 
     def made(self, name):
-        return load_song(os.path.join(self.folder, name))
+        return render_file(os.path.join(self.folder, name))
 
     def test_it_writes_every_demo_and_each_one_builds(self):
         written = sorted(os.listdir(self.folder))
