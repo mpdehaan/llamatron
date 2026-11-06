@@ -76,6 +76,23 @@ interchange and jazz techniques, I have no idea where this would fit in most log
 can maybe do this as a pattern helper (name TBD) on the pattern page, along with where we might
 make some generators for lead patterns and bass patterns and so on
 
+**To discuss: much of this may already be possible.** Claude's look at the code, for the
+discussion. Modal interchange borrows chords or notes from a parallel mode, like the minor iv chord
+in a major key. What llamatron can already do:
+
+- A step's Chord row can use a named chord, like `m` or `dom7`, which is built in exact half
+  steps and can leave the scale, so degree 4 with `m` in C major plays F minor.
+- A step's `#/b` row moves a note a half step, so a flat 3, 6 or 7 can be borrowed one note at a
+  time.
+- A scene can set its own scale, so a whole section can move to the parallel minor or another
+  mode.
+
+What it can't do yet: a scale for one track or clip in a scene while the others keep the scene's,
+since scales resolve only from the scene and then the song, and the scale chords (`3`, `7` and the
+other numbers) always come from the scene's scale, so they can't be borrowed from another mode on
+one step. So there may be nothing to build, or only a per-clip scale or a "borrow from" setting on
+a step. To be decided in the discussion.
+
 ## Suggested order
 
 An order for working through this document, with refactoring first, as the user asked. Each step
@@ -946,3 +963,13 @@ probabilities, so a render is still always the same.
 should be rewritten with the program's newer features, such as gates, registers, grabs and
 morphs, to be decided when it's rewritten. For now, the one scene that used `rhythm_from` has
 been deleted, because `rhythm_from` was removed.
+
+## Euclidean sequencing
+
+Evaluate whether llamatron can already do Euclidean rhythms, which spread a number of hits as
+evenly as possible across a number of steps (like 3 hits in 8 steps, which gives the tresillo), or
+whether it needs a feature. Today a Euclidean rhythm can be typed by hand into a pattern, since
+steps are now all the same length, and a pattern's play direction and repeats work on it as on
+any other. What's missing is a way to make one without working it out: perhaps a pattern
+generator on the Patterns page (see "Pattern generators on the Patterns page") that fills a row
+from hits, steps and a rotation, or a chain generator that does it at render time. To be decided.
