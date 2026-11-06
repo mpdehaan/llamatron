@@ -896,3 +896,23 @@ Questions to settle: whether rests and dropped steps should add; how morphs shou
 totals; whether clearing to zero is right, or whether a total should wrap or turn back at the
 limit, and what the Cirklon itself offers here; whether totals should carry across a scene's
 repeats; and how the editor could show what a total will be at each step.
+
+## Reviewing every hotkey in the text UI
+
+Review the letter keys on every page of the text UI, to see whether any could be more logical,
+and only change them if it's warranted. This needs discussing before anything changes. Making
+one key more logical can mean moving another to free its letter, so the review should look at
+every page together. Each page lists its keys in its `keys()` method, which is also what draws
+them, so that's the complete list to work from.
+
+Things already worth a look:
+
+- **The same letter meaning different things on different pages.** `S` opens the Song page from
+  the main screen, saves on the Song page, and swaps both sides of the cursor in the pattern
+  editor. `D` opens the description on the Song page, and moves things down in lists.
+- **Letters that are text in some places.** On a drum pattern's Note row, `A` and `F` type note
+  letters, so the editor's `A` (change rows) and `F` (flip) aren't available there.
+- **Letters chosen because the obvious one was taken.** In the pattern editor, `R` resizes and `O`
+  was used for an older feature, and the new step size key is `E`, because `S` (swap) was taken.
+- **Whether every page offers the same key for the same kind of action,** such as renaming,
+  copying, deleting and moving up or down, wherever those apply.
