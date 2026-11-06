@@ -25,7 +25,7 @@ from llamatron.note import Note
 from llamatron.scale import ScaleType
 from llamatron.song_file import GRANULARITIES, MAX_TRANSPOSE, SongFileError
 from llamatron.tui.arrange import ArrangePage
-from llamatron.tui.base import ChoiceDialog, ConfirmDialog, GridChoiceDialog, Page, PromptDialog, fit, grouped_grid, key, pressed_key
+from llamatron.tui.base import SITE, ChoiceDialog, ConfirmDialog, GridChoiceDialog, Page, PromptDialog, fit, grouped_grid, key, pressed_key
 from llamatron.tui.document import Document, GENERATOR_SECTIONS, ROOTS, SCALE_KINDS, clock, unique_name
 from llamatron.tui.lists import Field, FieldPage, ListPage
 from llamatron.tui.pattern_editor import TOGGLE_OFF, TOGGLE_ON, PatternEditor
@@ -125,6 +125,8 @@ class MainPage(Page):
             line.append(f'  {item.what.ljust(11)}', style='bold')
             line.append(self.ABOUT[item.what], style='dim')
             lines.append(line)
+        # Three blank lines below the last page, right-justified, unless the screen is too short.
+        lines += [Text(''), Text(''), Text(''), Text(SITE.rjust(width - 1), style='dim', no_wrap=True)]
         return lines
 
 
@@ -133,6 +135,7 @@ class SongPage(FieldPage):
     HELP = (
         'Settings for the whole song. Up and down select one. Left and right, or + and -, change it, and Enter types or chooses.',
         '',
+        'Title and Author: only for people reading or sharing the song file. Bksp clears them.',
         'Default note length: what a new note gets. Granularity: how much + and - change a duration. Default octaves: what a new note or drum hit gets.',
         'Seed: decides what probability drops, so a song renders the same every time.',
         '',
@@ -147,9 +150,25 @@ class SongPage(FieldPage):
         self.document.data[name] = value
         self.document.changed()
 
+    def set_text(self, name, text):
+        text = text.strip()
+        if text:
+            self.document.data[name] = text
+        else:
+            self.document.data.pop(name, None)
+        self.document.changed()
+
+    def text_field(self, label, name):
+        data = self.document.data
+        return Field(label, lambda: data.get(name, ''), None,
+                     lambda: self.ask(PromptDialog(label, data.get(name, '')), lambda text: self.set_text(name, text)),
+                     'edit', lambda: self.set_text(name, ''), 'clear')
+
     def fields(self):
         data = self.document.data
         return [
+            self.text_field('Title', 'title'),
+            self.text_field('Author', 'author'),
             Field('Tempo', lambda: f"{data['tempo']} BPM", lambda d: self.set_value('tempo', max(10, int(data['tempo']) + d)),
                   lambda: self.ask_number('Tempo', data['tempo'], lambda n: self.set_value('tempo', n), 10, 999)),
             Field('Scale', lambda: data.get('scale') or '(none)', self.step_scale, self.pick_scale, 'choose',

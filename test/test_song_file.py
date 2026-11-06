@@ -33,6 +33,7 @@ from llamatron.cli import main
 from llamatron.note import Note, Rest
 from llamatron.renderers.clip_tree import ClipTree
 from llamatron.renderers.timing import GLIDE_OVERLAP, timed_events
+from llamatron.song_writer import dump_song
 from llamatron.song_file import CHORD_SYMBOLS, FIXED_CHORDS, GENERATORS, SCALE_CHORDS, SongBuilder, SongFileError, load_song
 
 
@@ -1158,6 +1159,21 @@ class TestExamples(unittest.TestCase):
                         self.assertEqual(main([path, '--to', to, '--out', out]), 0)
                     with self.subTest(path=path, to=to):
                         self.assertTrue(os.listdir(out))
+
+
+class TestTitleAndAuthor(unittest.TestCase):
+
+    def test_they_are_optional_text(self):
+        SongBuilder(with_parts(title='Rain', author='Someone'))
+        SongBuilder(with_parts())
+        for key in ['title', 'author']:
+            with self.subTest(key=key), self.assertRaises(SongFileError):
+                SongBuilder(with_parts(**{key: 3}))
+
+    def test_they_are_written_first(self):
+        text = dump_song({'tempo': 120, 'author': 'Someone', 'title': 'Rain: Part 2', 'tracks': {}, 'scenes': []})
+        self.assertTrue(text.startswith('title: "Rain: Part 2"\nauthor: Someone\ntempo: 120\n'))
+        self.assertEqual(yaml.safe_load(text)['title'], 'Rain: Part 2')
 
 
 class TestCli(unittest.TestCase):

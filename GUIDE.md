@@ -165,6 +165,8 @@ Press `S` from the main screen.
 
 | Setting | What it does |
 | --- | --- |
+| Title | The song's name, for anyone reading or sharing the file, such as in git. It doesn't change how the song plays, and `Bksp` clears it. |
+| Author | Who wrote it, also just for people reading the file |
 | Tempo | Beats per minute for the whole song, from 10 to 999. A scene can set its own. |
 | Scale | The song's scale, from the Scales page. A scene can use another. `Bksp` sets no scale, and then patterns with degrees can't render. |
 | Seed | Decides every random choice, so a song renders the same every time: which notes probability drops, random play directions and random arpeggiators. Change it for a different take. |

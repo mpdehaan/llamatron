@@ -269,7 +269,25 @@ class TestSongPage(UITest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self.press('s')
+        # Title and Author come first, so these start on Tempo.
+        await self.press('s', 'down', 'down')
+
+    async def test_title_and_author_come_first_and_start_blank(self):
+        labels = [field.label for field in self.app.screen.fields()]
+        self.assertEqual(labels[:3], ['Title', 'Author', 'Tempo'])
+        self.assertNotIn('title', self.document.data)
+        await self.press('up', 'up', 'enter')
+        await self.type('Rain on the Bridge')
+        await self.press('enter', 'down', 'enter')
+        await self.type('Someone')
+        await self.press('enter')
+        self.assertEqual((self.document.data['title'], self.document.data['author']), ('Rain on the Bridge', 'Someone'))
+        self.document.save('song.yml')
+        with open('song.yml') as file:
+            self.assertTrue(file.read().startswith('title: Rain on the Bridge\nauthor: Someone\ntempo: 120\n'))
+        self.assertEqual(Document.load('song.yml').data['title'], 'Rain on the Bridge')
+        await self.press('backspace')
+        self.assertNotIn('author', self.document.data)
 
     async def test_plus_and_minus_change_the_tempo(self):
         await self.press('+', '+', '-')
@@ -1102,7 +1120,7 @@ class TestTracksScalesChainsAndArps(UITest):
         await self.press('z', 'backspace')
         self.assertIsInstance(self.app.screen, MessageDialog)
         self.assertIn('the song', self.text())
-        await self.press('enter', 'tab', 's', 'down', 'backspace', 'tab', 'z', 'backspace', 'y')
+        await self.press('enter', 'tab', 's', 'down', 'down', 'down', 'backspace', 'tab', 'z', 'backspace', 'y')
         self.assertEqual(self.document.data['scales'], {})
 
     async def test_adding_a_scale_picks_a_root_a_kind_and_a_name(self):
@@ -1309,11 +1327,11 @@ class TestPlusRow(UITest):
 class TestSettingArrows(UITest):
 
     async def test_left_and_right_do_the_same_as_minus_and_plus(self):
-        await self.press('s', 'right', 'right', 'left')
+        await self.press('s', 'down', 'down', 'right', 'right', 'left')
         self.assertEqual(self.document.data['tempo'], 121)
 
     async def test_on_every_setting_with_a_value_to_step(self):
-        await self.press('s', 'down', 'left')
+        await self.press('s', 'down', 'down', 'down', 'left')
         self.assertIsNone(self.document.data['scale'])
         await self.press('right')
         self.assertEqual(self.document.data['scale'], 'C Major')
@@ -1331,11 +1349,17 @@ class TestSettingArrows(UITest):
 
 class TestLookAndNewKeys(UITest):
 
-    async def test_the_title_is_plain_text_with_the_address_beside_it(self):
-        self.assertIn('llamatron home.laserllama.net', self.text())
+    async def test_the_title_is_plain_text_and_the_address_is_on_the_main_screen(self):
+        lines = self.text().splitlines()
+        self.assertTrue(lines[0].startswith(' llamatron '))
+        self.assertNotIn('home.laserllama.net', lines[0])
         self.assertNotIn('█', self.text())
+        address = next(number for number, line in enumerate(lines) if 'home.laserllama.net' in line)
+        last_page = next(number for number, line in enumerate(lines) if 'Help' in line and 'What the page' in line)
+        self.assertEqual(address, last_page + 4)
+        self.assertTrue(lines[address].rstrip().endswith('home.laserllama.net'))
         await self.press('p')
-        self.assertIn('llamatron home.laserllama.net', self.text())
+        self.assertNotIn('home.laserllama.net', self.text())
 
     async def test_new_songs_default_to_a_sixteenth_note(self):
         self.assertEqual(new_song()['default_length'], '1/16')

@@ -37,7 +37,9 @@ KEY_NAMES = {
 }
 _NAMED_KEYS = {'tab', 'enter', 'backspace', 'up', 'down', 'left', 'right'}
 ARROWS_UP_DOWN = ('up', 'down')
-TITLE = 'llamatron home.laserllama.net'
+TITLE = 'llamatron'
+# Shown at the bottom right of the main screen.
+SITE = 'home.laserllama.net'
 ARROWS = ('left', 'right', 'up', 'down')
 
 

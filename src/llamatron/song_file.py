@@ -256,12 +256,16 @@ class SongBuilder:
         if not isinstance(data, dict):
             raise SongFileError('a song file must have settings like tempo, scale and scenes')
         self._check_keys(data, 'the file', {
-            'tempo', 'scale', 'scales', 'seed', 'default_length', 'granularity', 'default_octave',
+            'title', 'author', 'tempo', 'scale', 'scales', 'seed', 'default_length', 'granularity', 'default_octave',
             'default_drum_octave', 'patterns', 'arps', 'auto_ratchets', 'tracks', 'chains', 'scenes',
         })
         for key in ['tempo', 'tracks', 'scenes']:
             if key not in data:
                 raise SongFileError(f'the file needs a {key} section')
+        # The title and author are only for people reading or sharing the file.
+        for key in ('title', 'author'):
+            if not isinstance(data.get(key, ''), str):
+                raise SongFileError(f'{key} must be text, got {data[key]!r}')
         self.tempo = _number(data['tempo'], 'tempo')
         self.scales = data.get('scales') or {}
         if not isinstance(self.scales, dict):
