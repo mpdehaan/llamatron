@@ -1,0 +1,98 @@
+title: Direction demo
+description: |
+  Direction demo: one theme played in each of the Cirklon's step directions.
+  Run it with: llamatron examples/direction_demo.yml --to ableton --replace
+
+  The theme is the opening of Grieg's In the Hall of the Mountain King (1875), in B minor at
+  138 BPM as the flutetunes.com transcription has it, with its short detached notes written
+  as plain eighths. Its F and C naturals use the Accidental row. A pedal bass loops under it.
+
+  Each scene plays the theme twice. A direction changes the order the steps play in, but
+  never how long a pass lasts: the last step is cut to fit, so every scene is the same
+  length. Positions carry on from the first pass into the second, which you can hear in
+  pendulum, random and brownian. Random directions use the song's seed, so a render always
+  plays the same.
+
+  A direction can be set on a pattern, like theme_pendulum, or on a clip, and a clip's
+  direction overrides its pattern's, which the last scenes show. So "Pattern direction:
+  pendulum" sounds like "Clip direction: pendulum", and "Clip forward overrides pattern"
+  sounds like "Clip direction: forward", on purpose. The last scene reverses the pedal too.
+
+  When changing this demo:
+  Two pairs of scenes sound alike on purpose: a direction set on the pattern and the same
+  one on the clip, and a clip's forward overriding a pendulum pattern.
+tempo: 138
+scale: B Minor
+
+scales:
+  B Minor: { root: B, type: minor }
+
+patterns:
+  theme:
+    steps: 26
+    degree: [1, 2, 3, 4, 5, 3, 5, 5, 2, 5, 4, 2, 4, 1, 2, 3, 4, 5, 3, 5, 1, 7, 5, 3, 5, 7]
+    duration: [1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/4, 1/8, 1/8, 1/4, 1/8, 1/8, 1/4, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/2]
+    accidental: [~, ~, ~, ~, ~, ~, ~, b, ~, b, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2]
+  theme_pendulum:
+    steps: 26
+    direction: pendulum
+    degree: [1, 2, 3, 4, 5, 3, 5, 5, 2, 5, 4, 2, 4, 1, 2, 3, 4, 5, 3, 5, 1, 7, 5, 3, 5, 7]
+    duration: [1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/4, 1/8, 1/8, 1/4, 1/8, 1/8, 1/4, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/2]
+    accidental: [~, ~, ~, ~, ~, ~, ~, b, ~, b, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2]
+  pedal:
+    steps: 4
+    degree: [1, 3, 5, 7]
+    duration: [1/4, 1/4, 1/4, 1/4]
+    octave: [1, 1, 0, 0]
+
+tracks:
+  theme: {}
+  pedal: {}
+
+scenes:
+  - name: "Clip direction: forward"
+    tracks:
+      theme: { pattern: theme, repeat: 2 }
+      pedal: { pattern: pedal, loop: true }
+  - name: "Clip direction: reverse_a"
+    tracks:
+      theme: { pattern: theme, repeat: 2, direction: reverse_a }
+      pedal: { pattern: pedal, loop: true }
+  - name: "Clip direction: reverse_b"
+    tracks:
+      theme: { pattern: theme, repeat: 2, direction: reverse_b }
+      pedal: { pattern: pedal, loop: true }
+  - name: "Clip direction: alternate"
+    tracks:
+      theme: { pattern: theme, repeat: 2, direction: alternate }
+      pedal: { pattern: pedal, loop: true }
+  - name: "Clip direction: pendulum"
+    tracks:
+      theme: { pattern: theme, repeat: 2, direction: pendulum }
+      pedal: { pattern: pedal, loop: true }
+  - name: "Clip direction: random"
+    tracks:
+      theme: { pattern: theme, repeat: 2, direction: random }
+      pedal: { pattern: pedal, loop: true }
+  - name: "Clip direction: brownian"
+    tracks:
+      theme: { pattern: theme, repeat: 2, direction: brownian }
+      pedal: { pattern: pedal, loop: true }
+  - name: "Clip direction: eitherway"
+    tracks:
+      theme: { pattern: theme, repeat: 2, direction: eitherway }
+      pedal: { pattern: pedal, loop: true }
+  - name: "Pattern direction: pendulum"
+    tracks:
+      theme: { pattern: theme_pendulum, repeat: 2 }
+      pedal: { pattern: pedal, loop: true }
+  - name: Clip forward overrides pattern
+    tracks:
+      theme: { pattern: theme_pendulum, repeat: 2, direction: forward }
+      pedal: { pattern: pedal, loop: true }
+  - name: Theme and pedal both reverse_a
+    tracks:
+      theme: { pattern: theme, repeat: 2, direction: reverse_a }
+      pedal: { pattern: pedal, loop: true, direction: reverse_a }

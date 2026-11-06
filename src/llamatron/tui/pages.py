@@ -17,6 +17,7 @@
 """The main screen, and the pages for the song, patterns, tracks, chains, arps and scales."""
 
 import os
+import textwrap
 
 from rich.text import Text
 
@@ -25,7 +26,7 @@ from llamatron.note import Note
 from llamatron.scale import ScaleType
 from llamatron.song_file import GRANULARITIES, MAX_TRANSPOSE, SongFileError
 from llamatron.tui.arrange import ArrangePage
-from llamatron.tui.base import SITE, ChoiceDialog, ConfirmDialog, GridChoiceDialog, Page, PromptDialog, fit, grouped_grid, key, pressed_key
+from llamatron.tui.base import ARROWS, ARROWS_UP_DOWN, SITE, ChoiceDialog, ConfirmDialog, GridChoiceDialog, Page, PromptDialog, fit, grouped_grid, key, pressed_key
 from llamatron.tui.document import Document, GENERATOR_SECTIONS, ROOTS, SCALE_KINDS, clock, unique_name
 from llamatron.tui.lists import Field, FieldPage, ListPage
 from llamatron.tui.pattern_editor import TOGGLE_OFF, TOGGLE_ON, PatternEditor
@@ -149,7 +150,7 @@ class SongPage(FieldPage):
         'Default note length: what a new note gets. Granularity: how much + and - change a duration. Default octaves: what a new note or drum hit gets.',
         'Seed: decides what probability drops, so a song renders the same every time.',
         '',
-        'L loads, N starts a new song, S saves, and W saves under a new name.',
+        'D opens the description, for notes about the song. L loads, N starts a new song, S saves, and W saves under a new name.',
         'R writes an Ableton set and M writes a folder of MIDI clips, both under output/. Both ask before replacing an earlier render.',
     )
 
@@ -219,12 +220,19 @@ class SongPage(FieldPage):
 
     def notes(self, width):
         return [
-            Text(f"  File      {self.document.path or '(not saved yet)'}", style='dim'),
-            Text(f"  Renders   {self.document.output_directory()}", style='dim'),
+            Text(f"  File          {self.document.path or '(not saved yet)'}", style='dim'),
+            Text(f"  Renders       {self.document.output_directory()}", style='dim'),
+            Text(f"  Description   {self.description_size()}", style='dim'),
         ]
+
+    def description_size(self):
+        text = self.document.data.get('description', '')
+        lines = text.count('\n') + (not text.endswith('\n')) if text else 0
+        return f'{lines} line(s), D to read' if lines else 'not yet, D to write'
 
     def page_keys(self):
         return [
+            key('d', 'description', lambda: self.show_page(DescriptionPage(self.holder))),
             key('l', 'load', self.load),
             key('n', 'new', self.new),
             key('s', 'save', self.save),
@@ -301,6 +309,160 @@ class SongPage(FieldPage):
             return
         name = 'Ableton set' if to == 'ableton' else 'clip tree'
         self.status = f'Wrote the {name} to {directory}.'
+
+
+class DescriptionPage(Page):
+    """The song's description: text of any length, for people reading or sharing the file.
+
+    It opens for reading, and E starts editing. While editing, letters are text, as in a name
+    prompt, so H types an h, and Tab stops editing.
+    """
+
+    crumbs = ('SONG', 'DESCRIPTION')
+    HELP = (
+        'Notes about the song, for anyone reading or sharing its file. They don\'t change how it plays.',
+        '',
+        'Up and down scroll. E starts editing, and Bksp clears it all, after asking.',
+        'While editing, typing adds text where the cursor is, Enter starts a new line, Bksp erases,',
+        'and the arrows move the cursor. Tab stops editing, and Tab again goes back.',
+    )
+
+    def __init__(self, holder):
+        super().__init__(holder)
+        self.editing = False
+        self.top = 0
+        self.row = self.column = 0
+
+    def text_lines(self):
+        text = self.document.data.get('description', '')
+        lines = text.split('\n')
+        if text.endswith('\n'):
+            lines.pop()
+        return lines or ['']
+
+    def store(self, lines):
+        text = '\n'.join(lines)
+        if text.strip():
+            self.document.data['description'] = text + '\n'
+        else:
+            self.document.data.pop('description', None)
+        self.document.changed()
+
+    def keys(self):
+        if self.editing:
+            return [
+                key(ARROWS, 'move', self.move, label='←↑↓→', wants_key=True),
+                key('enter', 'new line', self.new_line),
+                key('backspace', 'erase', self.erase),
+                key('tab', 'stop editing', self.stop_editing),
+            ]
+        return [
+            key(ARROWS_UP_DOWN, 'scroll', self.scroll, label='↑↓', wants_key=True),
+            key('e', 'edit', self.start_editing),
+            key('backspace', 'clear', self.clear),
+            key('tab', 'back', self.go_back),
+        ]
+
+    def key_table(self):
+        # While editing, H is text, so help is only there while reading.
+        return self.keys() if self.editing else super().key_table()
+
+    def scroll(self, name):
+        self.top = max(self.top + (-1 if name == 'up' else 1), 0)
+
+    def start_editing(self):
+        self.editing = True
+        lines = self.text_lines()
+        self.row = len(lines) - 1
+        self.column = len(lines[-1])
+        self.status = 'Editing. Tab stops.'
+
+    def stop_editing(self):
+        self.editing = False
+        self.status = ''
+
+    def clear(self):
+        if 'description' in self.document.data:
+            self.ask(ConfirmDialog('Clear the description', ['Delete all of the description?']), lambda _: self.store(['']))
+
+    def move(self, name):
+        lines = self.text_lines()
+        if name in ('up', 'down'):
+            self.row = max(min(self.row + (-1 if name == 'up' else 1), len(lines) - 1), 0)
+            self.column = min(self.column, len(lines[self.row]))
+        elif name == 'left':
+            if self.column:
+                self.column -= 1
+            elif self.row:
+                self.row -= 1
+                self.column = len(lines[self.row])
+        elif self.column < len(lines[self.row]):
+            self.column += 1
+        elif self.row < len(lines) - 1:
+            self.row, self.column = self.row + 1, 0
+
+    def new_line(self):
+        lines = self.text_lines()
+        line = lines[self.row]
+        lines[self.row:self.row + 1] = [line[:self.column], line[self.column:]]
+        self.store(lines)
+        self.row, self.column = self.row + 1, 0
+
+    def erase(self):
+        lines = self.text_lines()
+        if self.column:
+            line = lines[self.row]
+            lines[self.row] = line[:self.column - 1] + line[self.column:]
+            self.column -= 1
+        elif self.row:
+            self.column = len(lines[self.row - 1])
+            lines[self.row - 1:self.row + 1] = [lines[self.row - 1] + lines[self.row]]
+            self.row -= 1
+        else:
+            return
+        self.store(lines)
+
+    def type_text(self, character):
+        lines = self.text_lines()
+        line = lines[self.row]
+        lines[self.row] = line[:self.column] + character + line[self.column:]
+        self.store(lines)
+        self.column += 1
+
+    def on_key(self, event):
+        if self.editing and event.character and event.character.isprintable() and pressed_key(event) not in ('enter', 'tab', 'backspace'):
+            event.stop()
+            event.prevent_default()
+            self.type_text(event.character)
+            self.draw()
+            return
+        super().on_key(event)
+
+    def body(self, width, height):
+        room = max(height, 1)
+        if self.editing:
+            lines = self.text_lines()
+            self.top = max(min(self.top, self.row), self.row - room + 1, 0)
+            shown = []
+            for number in range(self.top, min(self.top + room, len(lines))):
+                line = lines[number]
+                if number != self.row:
+                    shown.append(Text('  ' + line, no_wrap=True))
+                    continue
+                # The cursor's line scrolls sideways to keep the cursor on screen.
+                start = max(self.column - (width - 6), 0)
+                text = Text('  ' + line[start:self.column], no_wrap=True)
+                text.append(line[self.column:self.column + 1] or ' ', style='reverse')
+                text.append(line[self.column + 1:])
+                shown.append(text)
+            return shown
+        if 'description' not in self.document.data:
+            return [Text('  No description yet. Press E to write one.', style='dim')]
+        wrapped = []
+        for line in self.text_lines():
+            wrapped += [Text('  ' + part) for part in (textwrap.wrap(line, width - 4) or [''])]
+        self.top = min(self.top, max(len(wrapped) - room, 0))
+        return wrapped[self.top:self.top + room]
 
 
 class FilePage(ListPage):
@@ -438,18 +600,19 @@ class TracksPage(ListPage):
     HELP = (
         'The columns of the song, which become tracks in Ableton in this order.',
         '',
-        'Enter opens its settings: drum, transpose and the CC numbers its patterns send.',
+        'Enter opens its settings: drum, mute, transpose and the CC numbers its patterns send.',
         '+ adds one, N renames it, and C copies it along with its clips.',
         'U and D move it. Bksp deletes it and its clips, after asking.',
     )
-    columns = (('NAME', None, 'left'), ('TYPE', 5, 'left'), ('MOVE', 4, 'right'), ('CC 1-4', 16, 'left'), ('CLIPS', 5, 'right'))
+    columns = (('NAME', None, 'left'), ('TYPE', 5, 'left'), ('MUTE', 4, 'left'), ('MOVE', 4, 'right'), ('CC 1-4', 16, 'left'), ('CLIPS', 5, 'right'))
 
     def rows(self):
         rows = []
         for name, track in self.document.data['tracks'].items():
             drum = track.get('drum')
             move = '' if drum else (f"{track.get('transpose', 0):+d}" if track.get('transpose') else '')
-            rows.append((name, [name, 'drum' if drum else 'notes', move, _cc_text(track.get('cc', [None] * 4)), self.document.track_clips(name)]))
+            mute = TOGGLE_ON if track.get('mute') else TOGGLE_OFF
+            rows.append((name, [name, 'drum' if drum else 'notes', mute, move, _cc_text(track.get('cc', [None] * 4)), self.document.track_clips(name)]))
         return rows
 
     def keys(self):
@@ -501,6 +664,7 @@ class TrackEditor(FieldPage):
 
     HELP = (
         'Drum: a drum track is never transposed. Drum patterns never are either, on any track.',
+        'Mute: the track starts switched off in Live. Its clips are still written, and other tracks can still grab from it.',
         'Transpose: moves every note on the track along the scale when rendering, without changing its patterns.',
         'CC 1 to CC 4: the CC number that each of a pattern\'s CC rows sends on this track. A row with no number sends nothing here.',
         '',
@@ -545,6 +709,8 @@ class TrackEditor(FieldPage):
         drum = bool(track.get('drum'))
         result = [
             Field('Drum', lambda: TOGGLE_ON if drum else TOGGLE_OFF, None, lambda: self.set_value('drum', not drum), 'toggle'),
+            Field('Mute', lambda: TOGGLE_ON if track.get('mute') else TOGGLE_OFF, None,
+                  lambda: self.set_value('mute', not track.get('mute')), 'toggle'),
         ]
         if drum:
             result.append(Field('Transpose', lambda: '(drum track)'))

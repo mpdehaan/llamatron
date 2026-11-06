@@ -809,10 +809,15 @@ class TestGrab(unittest.TestCase):
         found = self.lead(bass=bass, kick_cell={'chain': 'x'}, arps={'up': {'step': '1/4'}}, chains={'x': [{'arp': 'up'}]})
         self.assertEqual(pitches(found), [60, 48, 67, 48])
 
-    def test_a_chord_is_grabbed_whole(self):
+    def test_a_chord_gives_its_lowest_note(self):
         bass = pat([1, 1], chord=['M'], octave=[3])
         found = self.lead(bass=bass).notes[0]
-        self.assertEqual(sorted(n.midi_number for n in found.notes), [60, 64, 67])
+        self.assertEqual(found.midi_number, 60)
+
+    def test_a_grab_step_ignores_its_own_chord(self):
+        riff = pat([1, '1/4'], grab=[True], chord=['M'])
+        found = self.lead(riff=riff).notes[0]
+        self.assertEqual(found.midi_number, 60)
 
     def test_the_clip_keeps_its_rhythm_velocity_and_other_settings(self):
         riff = pat([1, '1/8'], grab=[True], velocity=[33], ratchet=[2])
@@ -854,6 +859,15 @@ class TestGrab(unittest.TestCase):
         with self.assertRaises(SongFileError) as raised:
             self.song(kick_cell={'grab_track': 'lead'})
         self.assertIn('circular grab: lead → kick → lead', str(raised.exception))
+
+    def test_a_muted_track_can_still_be_grabbed_from(self):
+        song = self.song(tracks={'lead': {}, 'kick': {'mute': True}})
+        self.assertEqual([track.mute for track in song.tracks], [False, True])
+        self.assertEqual(pitches(clip(song, 1, 'lead')), [60, 48, 64, 48])
+
+    def test_mute_must_be_true_or_false(self):
+        with self.assertRaisesRegex(SongFileError, 'mute must be true or false'):
+            self.song(tracks={'lead': {}, 'kick': {'mute': 'yes'}})
 
     def test_transpose_moves_a_grabbed_note_along_this_tracks_scale(self):
         found = self.lead(tracks={'lead': {'transpose': 1}, 'kick': {}})
@@ -1090,6 +1104,20 @@ class TestErrors(unittest.TestCase):
     def test_a_clip_cannot_come_from_another_track(self):
         self.assert_error("unknown setting 'from'", scenes=[{'tracks': {'lead': {'from': 'kick'}}}])
 
+    def test_every_setting_has_a_default_so_an_empty_file_is_an_empty_song(self):
+        for data in [None, {}]:
+            song = SongBuilder(data).build()
+            self.assertEqual((song.tempo, song.tracks, song.scenes, song.scale), (120, [], [], None))
+
+    def test_a_file_without_tempo_tracks_or_scenes_still_loads(self):
+        data = {'patterns': {'a': pat([1, '1/4'])}, 'scale': 'C major', 'scales': {'C major': {'root': 'C', 'type': 'major'}}}
+        self.assertEqual(SongBuilder(data).build().tempo, 120)
+
+    def test_the_description_is_text(self):
+        SongBuilder({'description': 'Two lines\nof notes\n'}).build()
+        with self.assertRaisesRegex(SongFileError, 'description must be text'):
+            SongBuilder({'description': ['a list']})
+
     def test_missing_file(self):
         with self.assertRaises(SongFileError):
             load_song('/no/such/file.yml')
@@ -1097,11 +1125,14 @@ class TestErrors(unittest.TestCase):
 
 class TestExamples(unittest.TestCase):
 
+    # Every song in examples/, including the demos, which test_demos.py checks more closely.
     paths = sorted(glob.glob('examples/*.yml'))
+    # The songs that are meant to sound good, rather than to teach one feature.
+    songs = [path for path in paths if not path.endswith('_demo.yml')]
 
-    def test_there_are_three_songs(self):
+    def test_there_are_three_songs_besides_the_demos(self):
         self.assertEqual(
-            [os.path.basename(path) for path in self.paths],
+            [os.path.basename(path) for path in self.songs],
             ['acid_techno.yml', 'minimal_techno.yml', 'retro_chill.yml'],
         )
 
@@ -1109,12 +1140,12 @@ class TestExamples(unittest.TestCase):
         used = set()
         for path in self.paths:
             with open(path) as file:
-                for chain in yaml.safe_load(file)['chains'].values():
+                for chain in (yaml.safe_load(file).get('chains') or {}).values():
                     used |= {next(iter(step)) for step in chain}
         self.assertEqual(set(GENERATORS) - used, set())
 
     def test_every_song_lasts_about_three_minutes(self):
-        for path in self.paths:
+        for path in self.songs:
             song = load_song(path)
             seconds = 0
             for scene in song.scenes:

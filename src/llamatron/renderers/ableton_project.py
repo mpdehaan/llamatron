@@ -224,6 +224,8 @@ class AbletonProject:
         _set_value(element, 'Name/EffectiveName', track.name or f'{number + 1}-MIDI')
         _set_value(element, 'Name/UserName', track.name or '')
         _set_value(element, 'Color', color)
+        # The Speaker is the track's on switch, so a muted track is one that's switched off.
+        _set_value(element, 'DeviceChain/Mixer/Speaker/Manual', 'false' if track.mute else 'true')
 
         # A clip's CC envelopes point at the controllers of the track it's on.
         controllers = {

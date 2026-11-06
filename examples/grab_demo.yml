@@ -1,0 +1,135 @@
+title: Grab demo
+description: |
+  Grab demo: four tracks take turns playing a melody that a silent track holds, called hocketing.
+  Run it with: llamatron examples/grab_demo.yml --to ableton --replace
+
+  The tune is The Wellerman, a New Zealand whaling song from the 19th century, in A minor as
+  the sung setting on thesession.org (tune 20383, setting 8) has it, an octave higher. No
+  tempo is known from the original, so 100 BPM is an estimate of how it's commonly sung.
+
+  The SILENT melody track plays the verse or the chorus, but it has mute: true, so Live
+  starts with it switched off. Its clips are still written, so you can switch it on to hear
+  the tune. The four voice tracks each grab from it, in turn: voice 1 grabs the 1st, 5th and
+  9th notes, voice 2 the 2nd, 6th and 10th, and so on round, starting again with each verse
+  or chorus. Each voice has a verse and a chorus pattern, and each copies the melody's
+  durations, with Grab on its own notes and rests on the others', as you would program it
+  by hand. Put a different sound on each voice to hear the tune pass between
+  them. Every voice's own notes are the melody's too, so it still plays if the grab is
+  removed, but with the grab, changing a note in melody_verse or melody_chorus changes it for
+  whichever voice plays it.
+
+  When changing this demo:
+  The voices take turns, round robin, as someone would program them by hand. The muted
+  track has SILENT in its name, which a test checks. A voice's notes match the melody's, so
+  it still plays the tune without its grab.
+tempo: 100
+scale: A Minor
+
+scales:
+  A Minor: { root: A, type: minor }
+
+patterns:
+  melody_verse:
+    steps: 34
+    degree: [1, 1, 1, 1, 3, 5, 5, 5, 5, 6, 4, 4, 4, 6, 6, 1, 1, 5, 5, 5, 1, 1, 1, 3, 5, 5, 5, 5, 5, 4, 3, 3, 2, 1]
+    duration: [1/4, 1/8, 1/8, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/8, 1/8, 1/4, 1/8, 1/8, 1/8, 1/8, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/8, 1/8, 1/4, 1]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+  voice_1_verse:
+    steps: 34
+    degree: [1, ~, ~, ~, 3, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 2, ~]
+    duration: [1/4, 1/8, 1/8, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/8, 1/8, 1/4, 1/8, 1/8, 1/8, 1/8, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/8, 1/8, 1/4, 1]
+    octave: [3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 4, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~]
+    grab: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false]
+  voice_2_verse:
+    steps: 34
+    degree: [~, 1, ~, ~, ~, 5, ~, ~, ~, 6, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, 1, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 1]
+    duration: [1/4, 1/8, 1/8, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/8, 1/8, 1/4, 1/8, 1/8, 1/8, 1/8, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/8, 1/8, 1/4, 1]
+    octave: [~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3]
+    grab: [false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true]
+  voice_3_verse:
+    steps: 34
+    degree: [~, ~, 1, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, 1, ~, ~, ~, 5, ~, ~, ~, 3, ~, ~, ~]
+    duration: [1/4, 1/8, 1/8, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/8, 1/8, 1/4, 1/8, 1/8, 1/8, 1/8, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/8, 1/8, 1/4, 1]
+    octave: [~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~]
+    grab: [false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false]
+  voice_4_verse:
+    steps: 34
+    degree: [~, ~, ~, 1, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 1, ~, ~, ~, 5, ~, ~, ~, 3, ~, ~, ~, 5, ~, ~, ~, 3, ~, ~]
+    duration: [1/4, 1/8, 1/8, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/8, 1/8, 1/4, 1/8, 1/8, 1/8, 1/8, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/8, 1/8, 1/4, 1]
+    octave: [~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 4, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~]
+    grab: [false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false]
+  melody_chorus:
+    steps: 32
+    degree: [1, 1, 6, 7, 7, 5, 5, 5, 6, 4, 4, 4, 6, 1, 5, 5, 1, 1, 7, 6, 7, 5, 5, 5, 5, 6, 4, 3, 2, 1, ~, 5]
+    duration: [1/2, 3/8, 1/8, 1/8, 1/8, 1/4, 3/8, 1/8, 1/4, 1/4, 1/8, 1/8, 1/4, 1/4, 1/4, 1/2, 1/2, 1/4, 1/8, 1/8, 1/8, 1/8, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/2, 1/4, 1/4]
+    octave: [4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, ~, 3]
+  voice_1_chorus:
+    steps: 32
+    degree: [1, ~, ~, ~, 7, ~, ~, ~, 6, ~, ~, ~, 6, ~, ~, ~, 1, ~, ~, ~, 7, ~, ~, ~, 5, ~, ~, ~, 2, ~, ~, ~]
+    duration: [1/2, 3/8, 1/8, 1/8, 1/8, 1/4, 3/8, 1/8, 1/4, 1/4, 1/8, 1/8, 1/4, 1/4, 1/4, 1/2, 1/2, 1/4, 1/8, 1/8, 1/8, 1/8, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/2, 1/4, 1/4]
+    octave: [4, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 4, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~]
+    grab: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false]
+  voice_2_chorus:
+    steps: 32
+    degree: [~, 1, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 5, ~, ~, ~, 6, ~, ~, ~, 1, ~, ~]
+    duration: [1/2, 3/8, 1/8, 1/8, 1/8, 1/4, 3/8, 1/8, 1/4, 1/4, 1/8, 1/8, 1/4, 1/4, 1/4, 1/2, 1/2, 1/4, 1/8, 1/8, 1/8, 1/8, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/2, 1/4, 1/4]
+    octave: [~, 4, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~]
+    grab: [false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false]
+  voice_3_chorus:
+    steps: 32
+    degree: [~, ~, 6, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 5, ~, ~, ~, 7, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, ~, 5]
+    duration: [1/2, 3/8, 1/8, 1/8, 1/8, 1/4, 3/8, 1/8, 1/4, 1/4, 1/8, 1/8, 1/4, 1/4, 1/4, 1/2, 1/2, 1/4, 1/8, 1/8, 1/8, 1/8, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/2, 1/4, 1/4]
+    octave: [~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, ~, 3]
+    grab: [false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, false, true]
+  voice_4_chorus:
+    steps: 32
+    degree: [~, ~, ~, 7, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 5, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, 3, ~, ~, ~, ~]
+    duration: [1/2, 3/8, 1/8, 1/8, 1/8, 1/4, 3/8, 1/8, 1/4, 1/4, 1/8, 1/8, 1/4, 1/4, 1/4, 1/2, 1/2, 1/4, 1/8, 1/8, 1/8, 1/8, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/2, 1/4, 1/4]
+    octave: [~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, ~]
+    grab: [false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, false]
+
+tracks:
+  SILENT melody: { mute: true }
+  voice 1: {}
+  voice 2: {}
+  voice 3: {}
+  voice 4: {}
+
+scenes:
+  - name: "Verse: SILENT melody only (unmute it)"
+    tracks:
+      SILENT melody: { pattern: melody_verse }
+  - name: "Chorus: voice 1 alone"
+    tracks:
+      SILENT melody: { pattern: melody_chorus }
+      voice 1: { pattern: voice_1_chorus, grab_track: SILENT melody }
+  - name: "Verse: voices 1 and 2"
+    tracks:
+      SILENT melody: { pattern: melody_verse }
+      voice 1: { pattern: voice_1_verse, grab_track: SILENT melody }
+      voice 2: { pattern: voice_2_verse, grab_track: SILENT melody }
+  - name: "Chorus: voices 1 to 3"
+    tracks:
+      SILENT melody: { pattern: melody_chorus }
+      voice 1: { pattern: voice_1_chorus, grab_track: SILENT melody }
+      voice 2: { pattern: voice_2_chorus, grab_track: SILENT melody }
+      voice 3: { pattern: voice_3_chorus, grab_track: SILENT melody }
+  - name: "Verse: all four voices"
+    tracks:
+      SILENT melody: { pattern: melody_verse }
+      voice 1: { pattern: voice_1_verse, grab_track: SILENT melody }
+      voice 2: { pattern: voice_2_verse, grab_track: SILENT melody }
+      voice 3: { pattern: voice_3_verse, grab_track: SILENT melody }
+      voice 4: { pattern: voice_4_verse, grab_track: SILENT melody }
+  - name: "Chorus: all four voices"
+    tracks:
+      SILENT melody: { pattern: melody_chorus }
+      voice 1: { pattern: voice_1_chorus, grab_track: SILENT melody }
+      voice 2: { pattern: voice_2_chorus, grab_track: SILENT melody }
+      voice 3: { pattern: voice_3_chorus, grab_track: SILENT melody }
+      voice 4: { pattern: voice_4_chorus, grab_track: SILENT melody }
+  - name: "Verse: voices 2 and 4"
+    tracks:
+      SILENT melody: { pattern: melody_verse }
+      voice 2: { pattern: voice_2_verse, grab_track: SILENT melody }
+      voice 4: { pattern: voice_4_verse, grab_track: SILENT melody }

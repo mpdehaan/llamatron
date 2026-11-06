@@ -9,3 +9,5 @@ output/
 build/
 dist/
 *.egg-info/
+# Source data that tests and the demo generator read, kept so nothing is downloaded again.
+!test/demo_sources/*.mid

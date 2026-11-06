@@ -1,0 +1,192 @@
+title: Ratchet demo
+description: |
+  Ratchet demo: long notes, and what ratcheting does to them.
+  Run it with: llamatron examples/ratchet_demo.yml --to ableton --replace
+
+  The tune is the first line of Beethoven's Ode to Joy, in D major at 144 BPM as the
+  flutetunes.com transcription has it, with every note twice as long so it starts slow.
+
+  Scenes named Ratchet use the pattern's own Ratchet rows, so each one has its own pattern:
+  ratchet splits a step into equal notes in the same time, ratchet_offset moves each slice
+  along the scale, and probability is rolled for each slice. Scenes named AutoRatchet all
+  use the plain long_notes pattern (or one close to it) and do the chopping in a chain, so
+  the pattern stays the same and only the chain changes. AutoRatchet cycles through its
+  counts one note or chord at a time, and rests never use one up. The last two scenes run an
+  AutoRatchet over a pattern that already ratchets, so it chops the slices again.
+
+  The first AutoRatchet scene sounds the same as Ratchet 2 on purpose: the chain does to the
+  plain pattern what the Ratchet row does in the pattern itself.
+
+  When changing this demo:
+  Scenes that use the pattern rows start with "Ratchet", and scenes that use a chain start
+  with "AutoRatchet". "AutoRatchet 2, same as Ratchet 2" sounds the same as "Ratchet 2" on
+  purpose. Avoid religious tunes here, which is why it uses Ode to Joy.
+tempo: 144
+scale: D Major
+
+scales:
+  D Major: { root: D, type: major }
+
+patterns:
+  long_notes:
+    steps: 15
+    degree: [3, 3, 4, 5, 5, 4, 3, 2, 1, 1, 2, 3, 3, 2, 2]
+    duration: [1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 3/4, 1/4, 1]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+  ratchet_2:
+    steps: 15
+    degree: [3, 3, 4, 5, 5, 4, 3, 2, 1, 1, 2, 3, 3, 2, 2]
+    duration: [1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 3/4, 1/4, 1]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+    ratchet: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+  ratchet_3:
+    steps: 15
+    degree: [3, 3, 4, 5, 5, 4, 3, 2, 1, 1, 2, 3, 3, 2, 2]
+    duration: [1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 3/4, 1/4, 1]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+    ratchet: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+  ratchet_4:
+    steps: 15
+    degree: [3, 3, 4, 5, 5, 4, 3, 2, 1, 1, 2, 3, 3, 2, 2]
+    duration: [1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 3/4, 1/4, 1]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+    ratchet: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+  ratchet_mixed:
+    steps: 15
+    degree: [3, 3, 4, 5, 5, 4, 3, 2, 1, 1, 2, 3, 3, 2, 2]
+    duration: [1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 3/4, 1/4, 1]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+    ratchet: [1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3]
+  ratchet_building:
+    steps: 15
+    degree: [3, 3, 4, 5, 5, 4, 3, 2, 1, 1, 2, 3, 3, 2, 2]
+    duration: [1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 3/4, 1/4, 1]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+    ratchet: [1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 4, 4, 6, 8, 16]
+  ratchet_chords:
+    steps: 15
+    degree: [3, 3, 4, 5, 5, 4, 3, 2, 1, 1, 2, 3, 3, 2, 2]
+    duration: [1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 3/4, 1/4, 1]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+    chord: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+    ratchet: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+  ratchet_offset_up:
+    steps: 15
+    degree: [3, 3, 4, 5, 5, 4, 3, 2, 1, 1, 2, 3, 3, 2, 2]
+    duration: [1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 3/4, 1/4, 1]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+    ratchet: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+    ratchet_offset: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+  ratchet_offset_down:
+    steps: 15
+    degree: [3, 3, 4, 5, 5, 4, 3, 2, 1, 1, 2, 3, 3, 2, 2]
+    duration: [1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 3/4, 1/4, 1]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+    ratchet: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+    ratchet_offset: [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+  ratchet_offset_thirds:
+    steps: 15
+    degree: [3, 3, 4, 5, 5, 4, 3, 2, 1, 1, 2, 3, 3, 2, 2]
+    duration: [1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 3/4, 1/4, 1]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+    ratchet: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+    ratchet_offset: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+  ratchet_probability:
+    steps: 15
+    degree: [3, 3, 4, 5, 5, 4, 3, 2, 1, 1, 2, 3, 3, 2, 2]
+    duration: [1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 3/4, 1/4, 1]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+    probability: [60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60]
+    ratchet: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+  long_notes_with_rests:
+    steps: 30
+    degree: [3, ~, 3, ~, 4, ~, 5, ~, 5, ~, 4, ~, 3, ~, 2, ~, 1, ~, 1, ~, 2, ~, 3, ~, 3, ~, 2, ~, 2, ~]
+    duration: [1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 3/8, 3/8, 1/8, 1/8, 1/2, 1/2]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
+  long_chords:
+    steps: 15
+    degree: [3, 3, 4, 5, 5, 4, 3, 2, 1, 1, 2, 3, 3, 2, 2]
+    duration: [1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 1/2, 3/4, 1/4, 1]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+    chord: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+
+tracks:
+  tune: {}
+
+auto_ratchets:
+  two: { counts: [2] }
+  four_three_two_one: { counts: [4, 3, 2, 1] }
+  every_fourth_note_rolls: { counts: [1, 1, 1, 4] }
+  one_then_four: { counts: [1, 4] }
+  three: { counts: [3] }
+  one_then_three: { counts: [1, 3] }
+
+chains:
+  two:
+    - auto_ratchet: two
+  four_three_two_one:
+    - auto_ratchet: four_three_two_one
+  every_fourth_note_rolls:
+    - auto_ratchet: every_fourth_note_rolls
+  one_then_four:
+    - auto_ratchet: one_then_four
+  three:
+    - auto_ratchet: three
+  one_then_three:
+    - auto_ratchet: one_then_three
+
+scenes:
+  - name: Long notes
+    tracks:
+      tune: { pattern: long_notes }
+  - name: Ratchet 2
+    tracks:
+      tune: { pattern: ratchet_2 }
+  - name: Ratchet 3
+    tracks:
+      tune: { pattern: ratchet_3 }
+  - name: Ratchet 4
+    tracks:
+      tune: { pattern: ratchet_4 }
+  - name: "Ratchet 1 2 3 4, step by step"
+    tracks:
+      tune: { pattern: ratchet_mixed }
+  - name: Ratchet building up to 16
+    tracks:
+      tune: { pattern: ratchet_building }
+  - name: Ratchet 2 on chords
+    tracks:
+      tune: { pattern: ratchet_chords }
+  - name: "Ratchet offset +1 (climbing)"
+    tracks:
+      tune: { pattern: ratchet_offset_up }
+  - name: "Ratchet offset -1 (falling)"
+    tracks:
+      tune: { pattern: ratchet_offset_down }
+  - name: "Ratchet offset +2 (thirds)"
+    tracks:
+      tune: { pattern: ratchet_offset_thirds }
+  - name: "Ratchet 4 at 60% probability"
+    tracks:
+      tune: { pattern: ratchet_probability }
+  - name: "AutoRatchet 2, same as Ratchet 2"
+    tracks:
+      tune: { pattern: long_notes, chain: two }
+  - name: AutoRatchet 4 3 2 1
+    tracks:
+      tune: { pattern: long_notes, chain: four_three_two_one }
+  - name: AutoRatchet 1 1 1 4
+    tracks:
+      tune: { pattern: long_notes, chain: every_fourth_note_rolls }
+  - name: "AutoRatchet 1 4, rests skipped"
+    tracks:
+      tune: { pattern: long_notes_with_rests, chain: one_then_four }
+  - name: AutoRatchet 3 on chords
+    tracks:
+      tune: { pattern: long_chords, chain: three }
+  - name: AutoRatchet 1 3 over Ratchet 2
+    tracks:
+      tune: { pattern: ratchet_2, chain: one_then_three }
+  - name: AutoRatchet 2 over Ratchet offset
+    tracks:
+      tune: { pattern: ratchet_offset_up, chain: two }

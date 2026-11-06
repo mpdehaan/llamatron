@@ -30,6 +30,20 @@ _PLAIN = re.compile(r'[A-Za-z0-9_][A-Za-z0-9_#./ -]*')
 _SETTINGS = ['title', 'author', 'tempo', 'scale', 'seed', 'default_length', 'granularity', 'default_octave', 'default_drum_octave']
 
 
+def _description(text):
+    """Return a description as a YAML block, so that each line of it reads as it was written."""
+    # A number says how far the text is indented, which YAML needs when the first line starts
+    # with a space. Then |- drops the last line break, | keeps one, and |+ keeps them all.
+    if not text.strip():
+        return [f'description: {_text(text)}']
+    indent = '2' if text.lstrip('\n')[:1] == ' ' else ''
+    if not text.endswith('\n'):
+        chomp, body = '-', text
+    else:
+        chomp, body = ('+' if text.endswith('\n\n') else ''), text[:-1]
+    return [f'description: |{indent}{chomp}'] + [f'  {line}' if line else '' for line in body.split('\n')]
+
+
 def _text(value):
     """Return a value as YAML that's safe inside brackets and braces."""
     if value is None:
@@ -100,16 +114,21 @@ def _scenes(scenes):
 
 def dump_song(song):
     """Return a song's data as the text of a song file."""
-    sections = [[f'{key}: {_text(song[key])}' for key in _SETTINGS if key in song]]
+    settings = [f'{key}: {_text(song[key])}' for key in _SETTINGS if key in song]
+    if song.get('description'):
+        # The description comes straight after the title and author.
+        place = sum(key in song for key in ('title', 'author'))
+        settings[place:place] = _description(song['description'])
+    sections = [settings]
     if song.get('scales'):
         sections.append(_named('scales', song['scales']))
     if song.get('patterns'):
         sections.append(_patterns(song['patterns']))
-    sections.append(_named('tracks', song['tracks']) if song['tracks'] else ['tracks: {}'])
+    sections.append(_named('tracks', song['tracks']) if song.get('tracks') else ['tracks: {}'])
     for section in ['arps', 'auto_ratchets']:
         if song.get(section):
             sections.append(_named(section, song[section]))
     if song.get('chains'):
         sections.append(_chains(song['chains']))
-    sections.append(_scenes(song['scenes']))
+    sections.append(_scenes(song.get('scenes') or []))
     return '\n\n'.join('\n'.join(section) for section in sections) + '\n'

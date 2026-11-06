@@ -118,9 +118,19 @@ class TestSaving(unittest.TestCase):
     def test_a_bad_file_raises(self):
         path = os.path.join(self.folder, 'bad.yml')
         with open(path, 'w') as file:
-            file.write('tempo: 120\n')
+            file.write('tempo: fast\n')
         with self.assertRaises(SongFileError):
             Document.load(path)
+
+    def test_a_file_that_leaves_out_settings_gets_their_defaults(self):
+        for text in ['', 'tempo: 90\n']:
+            path = os.path.join(self.folder, 'short.yml')
+            with open(path, 'w') as file:
+                file.write(text)
+            document = Document.load(path)
+            with self.subTest(text=text):
+                self.assertEqual((document.data['tracks'], document.data['scenes']), ({}, []))
+                self.assertEqual(document.data['tempo'], 90 if text else 120)
 
     def test_the_name_comes_from_the_file(self):
         self.assertEqual(Document().name, 'untitled')

@@ -310,6 +310,14 @@ class TestTracks(ProjectTestCase):
         for track in tracks:
             self.assertIsNone(track.find('DeviceChain/FreezeSequencer').find('.//MidiClip'))
 
+    def test_muted_tracks_start_switched_off(self):
+        self.second.mute = True
+        tracks = self.live_set().find('Tracks').findall('MidiTrack')
+        self.assertEqual(
+            [track.find('DeviceChain/Mixer/Speaker/Manual').get('Value') for track in tracks],
+            ['true', 'false', 'true'],
+        )
+
     def test_no_audio_tracks_are_left(self):
         self.assertEqual(self.live_set().find('Tracks').findall('AudioTrack'), [])
 

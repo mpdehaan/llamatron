@@ -1,0 +1,216 @@
+title: Arpeggiator demo
+description: |
+  Arpeggiator demo: one chord pattern played through a different arpeggiator in each scene.
+  Run it with: llamatron examples/arpeggiator_demo.yml --to ableton --replace
+
+  The tune is the verse of What Shall We Do With the Drunken Sailor, a traditional sea shanty,
+  in D Dorian at 112 BPM as the flutetunes.com transcription has it. The tune track plays it
+  plainly in every scene for reference, so mute it in Live to hear only the arpeggio.
+
+  The chords pattern is Dm, C, Dm for a whole note each, then C for a half note and a single D.
+  An arpeggiator plays each chord for the chord's full length, so the shorter C gets fewer
+  notes. A plain arpeggiator leaves the single D alone, but one with offsets or an octave
+  range arpeggiates it as a chord of one note, which the last half note of each scene shows.
+
+  Each chain holds exactly one arpeggiator with the same name, so a scene's chain says what
+  it demonstrates. The first scenes change one setting at a time, from the step length and
+  the order to the octave range, the octave jump and the offsets. The last ones combine them.
+
+  When changing this demo:
+  Keep one arpeggiator per chain, with the chain named after it, and scene names that say
+  what changed. Up to about 30 scenes is fine. The single D at the end of the chords is
+  there on purpose, to show what offsets and octave ranges do to a single note.
+tempo: 112
+scale: D Dorian
+
+scales:
+  D Dorian: { root: D, type: dorian }
+
+patterns:
+  chords:
+    steps: 5
+    degree: [1, 7, 1, 7, 1]
+    duration: [1, 1, 1, 1/2, 1/2]
+    octave: [2, 1, 2, 1, 2]
+    chord: [3, 3, 3, 3, ~]
+  tune:
+    steps: 36
+    degree: [5, 5, 5, 5, 5, 5, 5, 1, 3, 5, 4, 4, 4, 4, 4, 4, 4, 7, 2, 4, 5, 5, 5, 5, 5, 5, 5, 6, 7, 1, 7, 5, 4, 2, 1, 1]
+    duration: [1/8, 1/16, 1/16, 1/8, 1/16, 1/16, 1/8, 1/8, 1/8, 1/8, 1/8, 1/16, 1/16, 1/8, 1/16, 1/16, 1/8, 1/8, 1/8, 1/8, 1/8, 1/16, 1/16, 1/8, 1/16, 1/16, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/4, 1/4]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3]
+    velocity: [90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90]
+
+tracks:
+  chords: {}
+  tune: {}
+
+arps:
+  up_eighths: { step: 1/8, order: up }
+  up_sixteenths: { step: 1/16, order: up }
+  up_triplets: { step: 1/12, order: up }
+  up_thirty_seconds: { step: 1/32, order: up }
+  down: { step: 1/16, order: down }
+  up_down: { step: 1/16, order: up_down }
+  down_up: { step: 1/16, order: down_up }
+  random_seed_1: { step: 1/16, order: random, seed: 1 }
+  random_seed_2: { step: 1/16, order: random, seed: 2 }
+  two_octaves_after_chord: { step: 1/16, order: up, octave_range: 2, octave_jump: after_chord }
+  two_octaves_after_each_note: { step: 1/16, order: up, octave_range: 2, octave_jump: after_each_note }
+  three_octaves_up_down: { step: 1/16, order: up_down, octave_range: 3 }
+  four_octaves_fast: { step: 1/32, order: up, octave_range: 4 }
+  offsets_octave_bounce: { step: 1/16, order: up, offsets: [0, 7] }
+  offsets_neighbors: { step: 1/16, order: up, offsets: [0, 1, 0, -1] }
+  offsets_silent_steps: { step: 1/16, order: up, offsets: [0, ~, 0, 0, ~, 0, ~, 0] }
+  offsets_climb: { step: 1/16, order: up, offsets: [0, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 2, 1, 0] }
+  offsets_drop: { step: 1/16, order: down, offsets: [0, -7] }
+  up_down_two_octaves_thirds: { step: 1/16, order: up_down, octave_range: 2, offsets: [0, 0, 2] }
+  random_three_octaves_each_note: { step: 1/16, order: random, seed: 3, octave_range: 3, octave_jump: after_each_note }
+  down_eighths_gaps: { step: 1/8, order: down, offsets: [0, ~, 7, ~] }
+  triplets_up_down_two_octaves: { step: 1/12, order: up_down, octave_range: 2 }
+  sparkle: { step: 1/32, order: up_down, octave_range: 4, offsets: [0, 7, ~, 2] }
+
+chains:
+  up_eighths:
+    - arp: up_eighths
+  up_sixteenths:
+    - arp: up_sixteenths
+  up_triplets:
+    - arp: up_triplets
+  up_thirty_seconds:
+    - arp: up_thirty_seconds
+  down:
+    - arp: down
+  up_down:
+    - arp: up_down
+  down_up:
+    - arp: down_up
+  random_seed_1:
+    - arp: random_seed_1
+  random_seed_2:
+    - arp: random_seed_2
+  two_octaves_after_chord:
+    - arp: two_octaves_after_chord
+  two_octaves_after_each_note:
+    - arp: two_octaves_after_each_note
+  three_octaves_up_down:
+    - arp: three_octaves_up_down
+  four_octaves_fast:
+    - arp: four_octaves_fast
+  offsets_octave_bounce:
+    - arp: offsets_octave_bounce
+  offsets_neighbors:
+    - arp: offsets_neighbors
+  offsets_silent_steps:
+    - arp: offsets_silent_steps
+  offsets_climb:
+    - arp: offsets_climb
+  offsets_drop:
+    - arp: offsets_drop
+  up_down_two_octaves_thirds:
+    - arp: up_down_two_octaves_thirds
+  random_three_octaves_each_note:
+    - arp: random_three_octaves_each_note
+  down_eighths_gaps:
+    - arp: down_eighths_gaps
+  triplets_up_down_two_octaves:
+    - arp: triplets_up_down_two_octaves
+  sparkle:
+    - arp: sparkle
+
+scenes:
+  - name: "Chords, no arp"
+    tracks:
+      chords: { pattern: chords }
+      tune: { pattern: tune }
+  - name: "Arp up, 1/8 steps"
+    tracks:
+      chords: { pattern: chords, chain: up_eighths }
+      tune: { pattern: tune }
+  - name: "Arp up, 1/16 steps"
+    tracks:
+      chords: { pattern: chords, chain: up_sixteenths }
+      tune: { pattern: tune }
+  - name: "Arp up, 1/12 steps (triplets)"
+    tracks:
+      chords: { pattern: chords, chain: up_triplets }
+      tune: { pattern: tune }
+  - name: "Arp up, 1/32 steps"
+    tracks:
+      chords: { pattern: chords, chain: up_thirty_seconds }
+      tune: { pattern: tune }
+  - name: "Order: down"
+    tracks:
+      chords: { pattern: chords, chain: down }
+      tune: { pattern: tune }
+  - name: "Order: up_down"
+    tracks:
+      chords: { pattern: chords, chain: up_down }
+      tune: { pattern: tune }
+  - name: "Order: down_up"
+    tracks:
+      chords: { pattern: chords, chain: down_up }
+      tune: { pattern: tune }
+  - name: "Order: random, seed 1"
+    tracks:
+      chords: { pattern: chords, chain: random_seed_1 }
+      tune: { pattern: tune }
+  - name: "Order: random, seed 2"
+    tracks:
+      chords: { pattern: chords, chain: random_seed_2 }
+      tune: { pattern: tune }
+  - name: "Octave range 2, jump after_chord"
+    tracks:
+      chords: { pattern: chords, chain: two_octaves_after_chord }
+      tune: { pattern: tune }
+  - name: "Octave range 2, jump after_each_note"
+    tracks:
+      chords: { pattern: chords, chain: two_octaves_after_each_note }
+      tune: { pattern: tune }
+  - name: "Octave range 3, up_down"
+    tracks:
+      chords: { pattern: chords, chain: three_octaves_up_down }
+      tune: { pattern: tune }
+  - name: "Octave range 4, 1/32 steps"
+    tracks:
+      chords: { pattern: chords, chain: four_octaves_fast }
+      tune: { pattern: tune }
+  - name: "Offsets 0 7 (octave bounce)"
+    tracks:
+      chords: { pattern: chords, chain: offsets_octave_bounce }
+      tune: { pattern: tune }
+  - name: "Offsets 0 1 0 -1 (neighbors)"
+    tracks:
+      chords: { pattern: chords, chain: offsets_neighbors }
+      tune: { pattern: tune }
+  - name: Offsets with silent steps
+    tracks:
+      chords: { pattern: chords, chain: offsets_silent_steps }
+      tune: { pattern: tune }
+  - name: Offsets climbing 0 to 7 and back
+    tracks:
+      chords: { pattern: chords, chain: offsets_climb }
+      tune: { pattern: tune }
+  - name: "Offsets 0 -7, order down"
+    tracks:
+      chords: { pattern: chords, chain: offsets_drop }
+      tune: { pattern: tune }
+  - name: "Combined: up_down, 2 octaves, thirds"
+    tracks:
+      chords: { pattern: chords, chain: up_down_two_octaves_thirds }
+      tune: { pattern: tune }
+  - name: "Combined: random, 3 octaves, each note"
+    tracks:
+      chords: { pattern: chords, chain: random_three_octaves_each_note }
+      tune: { pattern: tune }
+  - name: "Combined: down, 1/8, octave gaps"
+    tracks:
+      chords: { pattern: chords, chain: down_eighths_gaps }
+      tune: { pattern: tune }
+  - name: "Combined: triplets up_down 2 octaves"
+    tracks:
+      chords: { pattern: chords, chain: triplets_up_down_two_octaves }
+      tune: { pattern: tune }
+  - name: "Combined: 1/32 up_down 4 octaves offsets"
+    tracks:
+      chords: { pattern: chords, chain: sparkle }
+      tune: { pattern: tune }

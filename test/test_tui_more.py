@@ -210,9 +210,11 @@ class TestTrackSettingsEdges(UITest):
     async def test_a_cc_lane_turns_up_or_down_from_none(self):
         await self.press('t', 'enter')
         self.assertIsInstance(self.app.screen, TrackEditor)
-        await self.press('down', 'down', '+')
+        await self.select_field('CC 1')
+        await self.press('+')
         self.assertEqual(self.document.track('lead')['cc'], [1, None, None, None])
-        await self.press('down', '-')
+        await self.select_field('CC 2')
+        await self.press('-')
         self.assertEqual(self.document.track('lead')['cc'], [1, 0, None, None])
 
     async def test_deleting_a_track_that_others_grab_from_says_so(self):

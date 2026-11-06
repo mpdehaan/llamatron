@@ -1,0 +1,289 @@
+title: Scale demo
+description: |
+  Scale demo: every scale llamatron knows, run up an octave and back down from D.
+  Run it with: llamatron examples/scale_demo.yml --to ableton --replace
+
+  Each scene sets its own scale, and every clip is named after its scene, so the cells in
+  Live's Session View say which scale they play. Launch them one at a time to compare.
+  The scales come in the order the scale picker shows them. Names that are the same scale
+  (Major and Ionian, Minor, Aeolian and Natural Minor) share one scene.
+
+  There's one pattern for each size of scale, because a run of 1 to 8 only covers an octave
+  in a seven-note scale. A degree past the top of the scale wraps up an octave, so each run
+  goes from degree 1 up to the next octave's 1 and back. All of it is one track.
+
+  When changing this demo:
+  Keep it to scale runs only, one scene per distinct scale, in the order of the scale
+  picker (SCALE_PAGES in src/llamatron/tui/pages.py). A scale added to llamatron needs a
+  scene here, and a new size of scale needs its own run pattern.
+tempo: 120
+scale: D Major / Ionian
+
+scales:
+  D Major / Ionian: { root: D, type: major }
+  D Dorian: { root: D, type: dorian }
+  D Phrygian: { root: D, type: phrygian }
+  D Lydian: { root: D, type: lydian }
+  D Mixolydian: { root: D, type: mixolydian }
+  D Minor / Aeolian / Natural Minor: { root: D, type: minor }
+  D Locrian: { root: D, type: locrian }
+  D Harmonic Minor: { root: D, type: harmonic_minor }
+  D Melodic Minor: { root: D, type: melodic_minor }
+  D Harmonic Major: { root: D, type: harmonic_major }
+  D Chromatic: { root: D, type: chromatic }
+  D Whole Tone: { root: D, type: whole_tone }
+  D Whole Half Diminished: { root: D, type: whole_half_diminished }
+  D Half Whole Diminished: { root: D, type: half_whole_diminished }
+  D Augmented: { root: D, type: augmented }
+  D Major Pentatonic: { root: D, type: major_pentatonic }
+  D Minor Pentatonic: { root: D, type: minor_pentatonic }
+  D Blues: { root: D, type: blues }
+  D Major Blues: { root: D, type: major_blues }
+  D Egyptian: { root: D, type: egyptian }
+  D Dorian Flat2: { root: D, type: dorian_flat2 }
+  D Lydian Augmented: { root: D, type: lydian_augmented }
+  D Lydian Dominant: { root: D, type: lydian_dominant }
+  D Mixolydian Flat6: { root: D, type: mixolydian_flat6 }
+  D Locrian Natural2: { root: D, type: locrian_natural2 }
+  D Altered: { root: D, type: altered }
+  D Bebop Dominant: { root: D, type: bebop_dominant }
+  D Bebop Major: { root: D, type: bebop_major }
+  D Prometheus: { root: D, type: prometheus }
+  D Phrygian Dominant: { root: D, type: phrygian_dominant }
+  D Double Harmonic: { root: D, type: double_harmonic }
+  D Hungarian Minor: { root: D, type: hungarian_minor }
+  D Hungarian Major: { root: D, type: hungarian_major }
+  D Ukrainian Dorian: { root: D, type: ukrainian_dorian }
+  D Persian: { root: D, type: persian }
+  D Neapolitan Minor: { root: D, type: neapolitan_minor }
+  D Neapolitan Major: { root: D, type: neapolitan_major }
+  D Enigmatic: { root: D, type: enigmatic }
+  D Hirajoshi: { root: D, type: hirajoshi }
+  D In Sen: { root: D, type: in_sen }
+  D Iwato: { root: D, type: iwato }
+  D Kumoi: { root: D, type: kumoi }
+  D Yo: { root: D, type: yo }
+  D Ryukyu: { root: D, type: ryukyu }
+  D Todi: { root: D, type: todi }
+  D Marwa: { root: D, type: marwa }
+  D Purvi: { root: D, type: purvi }
+
+patterns:
+  run_5_notes:
+    steps: 11
+    degree: [1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1]
+    duration: [1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/4]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+  run_6_notes:
+    steps: 13
+    degree: [1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1]
+    duration: [1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/4]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+  run_7_notes:
+    steps: 15
+    degree: [1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1]
+    duration: [1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/4]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+  run_8_notes:
+    steps: 17
+    degree: [1, 2, 3, 4, 5, 6, 7, 8, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+    duration: [1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/4]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+  run_12_notes:
+    steps: 25
+    degree: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+    duration: [1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/8, 1/4]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+
+tracks:
+  scale: {}
+
+scenes:
+  - name: D Major / Ionian
+    scale: D Major / Ionian
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Dorian
+    scale: D Dorian
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Phrygian
+    scale: D Phrygian
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Lydian
+    scale: D Lydian
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Mixolydian
+    scale: D Mixolydian
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Minor / Aeolian / Natural Minor
+    scale: D Minor / Aeolian / Natural Minor
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Locrian
+    scale: D Locrian
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Harmonic Minor
+    scale: D Harmonic Minor
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Melodic Minor
+    scale: D Melodic Minor
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Harmonic Major
+    scale: D Harmonic Major
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Chromatic
+    scale: D Chromatic
+    tracks:
+      scale: { pattern: run_12_notes }
+  - name: D Whole Tone
+    scale: D Whole Tone
+    tracks:
+      scale: { pattern: run_6_notes }
+  - name: D Whole Half Diminished
+    scale: D Whole Half Diminished
+    tracks:
+      scale: { pattern: run_8_notes }
+  - name: D Half Whole Diminished
+    scale: D Half Whole Diminished
+    tracks:
+      scale: { pattern: run_8_notes }
+  - name: D Augmented
+    scale: D Augmented
+    tracks:
+      scale: { pattern: run_6_notes }
+  - name: D Major Pentatonic
+    scale: D Major Pentatonic
+    tracks:
+      scale: { pattern: run_5_notes }
+  - name: D Minor Pentatonic
+    scale: D Minor Pentatonic
+    tracks:
+      scale: { pattern: run_5_notes }
+  - name: D Blues
+    scale: D Blues
+    tracks:
+      scale: { pattern: run_6_notes }
+  - name: D Major Blues
+    scale: D Major Blues
+    tracks:
+      scale: { pattern: run_6_notes }
+  - name: D Egyptian
+    scale: D Egyptian
+    tracks:
+      scale: { pattern: run_5_notes }
+  - name: D Dorian Flat2
+    scale: D Dorian Flat2
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Lydian Augmented
+    scale: D Lydian Augmented
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Lydian Dominant
+    scale: D Lydian Dominant
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Mixolydian Flat6
+    scale: D Mixolydian Flat6
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Locrian Natural2
+    scale: D Locrian Natural2
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Altered
+    scale: D Altered
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Bebop Dominant
+    scale: D Bebop Dominant
+    tracks:
+      scale: { pattern: run_8_notes }
+  - name: D Bebop Major
+    scale: D Bebop Major
+    tracks:
+      scale: { pattern: run_8_notes }
+  - name: D Prometheus
+    scale: D Prometheus
+    tracks:
+      scale: { pattern: run_6_notes }
+  - name: D Phrygian Dominant
+    scale: D Phrygian Dominant
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Double Harmonic
+    scale: D Double Harmonic
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Hungarian Minor
+    scale: D Hungarian Minor
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Hungarian Major
+    scale: D Hungarian Major
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Ukrainian Dorian
+    scale: D Ukrainian Dorian
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Persian
+    scale: D Persian
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Neapolitan Minor
+    scale: D Neapolitan Minor
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Neapolitan Major
+    scale: D Neapolitan Major
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Enigmatic
+    scale: D Enigmatic
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Hirajoshi
+    scale: D Hirajoshi
+    tracks:
+      scale: { pattern: run_5_notes }
+  - name: D In Sen
+    scale: D In Sen
+    tracks:
+      scale: { pattern: run_5_notes }
+  - name: D Iwato
+    scale: D Iwato
+    tracks:
+      scale: { pattern: run_5_notes }
+  - name: D Kumoi
+    scale: D Kumoi
+    tracks:
+      scale: { pattern: run_5_notes }
+  - name: D Yo
+    scale: D Yo
+    tracks:
+      scale: { pattern: run_5_notes }
+  - name: D Ryukyu
+    scale: D Ryukyu
+    tracks:
+      scale: { pattern: run_5_notes }
+  - name: D Todi
+    scale: D Todi
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Marwa
+    scale: D Marwa
+    tracks:
+      scale: { pattern: run_7_notes }
+  - name: D Purvi
+    scale: D Purvi
+    tracks:
+      scale: { pattern: run_7_notes }

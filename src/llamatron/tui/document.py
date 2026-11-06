@@ -35,7 +35,7 @@ from llamatron.note import Note
 from llamatron.scale import ScaleType
 from llamatron.song import Song
 from llamatron.song_file import (
-    DEFAULT_DRUM_OCTAVE, DEFAULT_LENGTH, DEFAULT_OCTAVE, DEFAULT_PROBABILITY, DEFAULT_RATCHET,
+    DEFAULT_DRUM_OCTAVE, DEFAULT_LENGTH, DEFAULT_OCTAVE, DEFAULT_PROBABILITY, DEFAULT_RATCHET, DEFAULT_TEMPO,
     CC_ROWS, DEFAULT_SEED, DEFAULT_VELOCITY, DIRECTIONS, FORWARD, GRANULARITIES, MORPH_STYLES, PATTERN_ROWS, TOGGLE_ROWS,
     SongBuilder, SongFileError,
 )
@@ -61,7 +61,7 @@ CLIP_PATTERNS = ('pattern', 'morph_to', 'rhythm_from')
 def new_song():
     """Return the data for a new song, which has a C major scale that can be deleted."""
     return {
-        'tempo': 120, 'scale': DEFAULT_SCALE, 'scales': {DEFAULT_SCALE: {'root': 'C', 'type': 'major'}}, 'seed': DEFAULT_SEED,
+        'tempo': DEFAULT_TEMPO, 'scale': DEFAULT_SCALE, 'scales': {DEFAULT_SCALE: {'root': 'C', 'type': 'major'}}, 'seed': DEFAULT_SEED,
         'default_length': DEFAULT_LENGTH, 'granularity': GRANULARITIES[0],
         'default_octave': DEFAULT_OCTAVE, 'default_drum_octave': DEFAULT_DRUM_OCTAVE,
         'patterns': {}, 'tracks': {}, 'arps': {}, 'auto_ratchets': {}, 'chains': {}, 'scenes': [],
@@ -121,8 +121,9 @@ class Document:
     def __init__(self, data=None, path=None):
         self.data = new_song() if data is None else data
         for key, value in new_song().items():
-            if key not in ('scale', 'scales', 'tempo'):
+            if key not in ('scale', 'scales'):
                 self.data.setdefault(key, value)
+        # A file without a scale has none, rather than the C major that a new song starts with.
         self.data.setdefault('scale', None)
         self.data.setdefault('scales', {})
         self.path = path
@@ -142,6 +143,8 @@ class Document:
             raise SongFileError(f"can't read {path}: {error.strerror}") from error
         except yaml.YAMLError as error:
             raise SongFileError(f"{path} isn't valid YAML: {error}") from error
+        # An empty file is an empty song.
+        data = {} if data is None else data
         SongBuilder(data)
         return cls(data, path)
 

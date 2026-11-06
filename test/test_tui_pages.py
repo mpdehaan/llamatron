@@ -30,7 +30,7 @@ from llamatron.tui.base import ChoiceDialog, ConfirmDialog, Dialog, GridChoiceDi
 from llamatron.tui.document import Document, new_song
 from llamatron.tui.lists import FieldPage, ListPage
 from llamatron.tui.pages import (
-    ArpEditor, ArpsPage, AutoRatchetEditor, AutoRatchetsPage, ChainEditor, ChainsPage, FilePage,
+    ArpEditor, ArpsPage, AutoRatchetEditor, AutoRatchetsPage, ChainEditor, ChainsPage, DescriptionPage, FilePage,
     GeneratorsPage, MainPage, OffsetsEditor, PatternsPage, ScalesPage, SongPage, TrackEditor, TracksPage,
 )
 from llamatron.tui.pattern_editor import PatternEditor
@@ -115,6 +115,12 @@ class UITest(unittest.IsolatedAsyncioTestCase):
 
     def text(self):
         return screen_text(self.app)
+
+    async def select_field(self, label):
+        """Move a settings page's cursor to the field with this label, wherever the page puts it."""
+        labels = [field.label for field in self.app.screen.fields()]
+        offset = labels.index(label) - self.app.screen.place
+        await self.press(*(['down'] * offset if offset > 0 else ['up'] * -offset))
 
 
 class TestMainScreen(UITest):
@@ -203,7 +209,11 @@ class TestEveryKeyIsShown(UITest):
         for _ in range(6):
             await self.press('down')
             yield 'song field'
-        await self.press('tab', 'p')
+        await self.press('d')
+        yield 'description'
+        await self.press('e')
+        yield 'description editing'
+        await self.press('tab', 'tab', 'tab', 'p')
         yield 'patterns'
         await self.press('enter')
         yield 'pattern editor'
@@ -380,6 +390,64 @@ class TestSongPage(UITest):
         self.assertIsInstance(self.app.screen, MessageDialog)
         self.assertIn('every clip is set to loop', self.text().replace('\n', ' ').replace('┃', ' ').replace('  ', ' '))
         self.assertFalse(os.path.exists('output/untitled/untitled.als'))
+
+
+class TestDescriptionPage(UITest):
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        await self.press('s', 'd')
+
+    async def test_it_opens_from_the_song_page_for_reading(self):
+        self.assertIsInstance(self.app.screen, DescriptionPage)
+        self.assertIn('No description yet', self.text())
+        await self.press('tab')
+        self.assertIsInstance(self.app.screen, SongPage)
+        self.assertIn('not yet, D to write', self.text())
+
+    async def test_typing_new_lines_and_erasing(self):
+        await self.press('e')
+        await self.type('Hi there')
+        await self.press('enter')
+        await self.type('ok')
+        self.assertEqual(self.document.data['description'], 'Hi there\nok\n')
+        await self.press('backspace', 'backspace', 'backspace')
+        self.assertEqual(self.document.data['description'], 'Hi there\n')
+        # Six steps left from the end of 'Hi there' is just after 'Hi'.
+        await self.press(*['left'] * 6)
+        await self.type('X')
+        self.assertEqual(self.document.data['description'], 'HiX there\n')
+        await self.press('tab')
+        self.assertFalse(self.app.screen.editing)
+        self.assertIn('HiX there', self.text())
+        await self.press('tab')
+        self.assertIn('1 line(s), D to read', self.text())
+
+    async def test_h_is_text_while_editing_and_help_while_reading(self):
+        await self.press('e', 'h')
+        self.assertEqual(self.document.data['description'], 'h\n')
+        await self.press('tab', 'h')
+        self.assertIsInstance(self.app.screen, MessageDialog)
+
+    async def test_erasing_at_the_start_of_a_line_joins_it_to_the_one_before(self):
+        self.document.data['description'] = 'one\ntwo\n'
+        await self.press('e', 'up', 'down')
+        self.app.screen.column = 0
+        await self.press('backspace')
+        self.assertEqual(self.document.data['description'], 'onetwo\n')
+
+    async def test_clearing_asks_first(self):
+        self.document.data['description'] = 'one\n'
+        await self.press('backspace')
+        self.assertIsInstance(self.app.screen, ConfirmDialog)
+        await self.press('y')
+        self.assertNotIn('description', self.document.data)
+
+    async def test_a_long_description_scrolls(self):
+        self.document.data['description'] = ''.join(f'line {n}\n' for n in range(100))
+        await self.press('down', 'down')
+        self.assertNotIn('line 0\n', self.text().replace(' ', ''))
+        self.assertIn('line 2', self.text())
 
 
 class TestLoading(UITest):
@@ -1066,15 +1134,23 @@ class TestTracksScalesChainsAndArps(UITest):
     async def test_a_tracks_settings(self):
         await self.press('t', 'enter')
         self.assertIsInstance(self.app.screen, TrackEditor)
-        await self.press('down', '+', '+')
+        await self.select_field('Mute')
+        await self.press('enter')
+        self.assertIs(self.document.track('lead')['mute'], True)
+        await self.press('enter')
+        self.assertNotIn('mute', self.document.track('lead'))
+        await self.select_field('Transpose')
+        await self.press('+', '+')
         self.assertEqual(self.document.track('lead')['transpose'], 2)
-        await self.press('down', 'enter')
+        await self.select_field('CC 1')
+        await self.press('enter')
         self.app.screen.value = '74'
         await self.press('enter')
         self.assertEqual(self.document.track('lead')['cc'], [74, None, None, None])
         await self.press('backspace')
         self.assertNotIn('cc', self.document.track('lead'))
-        await self.press('up', 'up', 'enter')
+        await self.select_field('Drum')
+        await self.press('enter')
         self.assertIs(self.document.track('lead')['drum'], True)
         self.assertIn('(drum track)', self.text())
         await self.press('tab')
@@ -1886,7 +1962,7 @@ class TestHelp(UITest):
     async def test_every_page_has_help_that_fits(self):
         await self.assert_help_fits('main')
         for keys in [
-            ['s'], ['l'], ['tab', 'tab', 'p'], ['enter'], ['tab', 'tab', 't'],
+            ['s'], ['d'], ['tab', 'l'], ['tab', 'tab', 'p'], ['enter'], ['tab', 'tab', 't'],
             ['tab', 'c'], ['enter'], ['tab', 'tab', 'g'], ['enter'], ['enter'],
             ['tab', 'tab', 'down', 'enter'], ['enter'],
             ['tab', 'tab', 'tab', 'z'], ['tab', 'a'], ['right', 'enter'],

@@ -33,11 +33,10 @@ same. See the examples folder for complete songs, and raise SongFileError for an
 A clip can take its rhythm from another pattern with rhythm_from, and then its pattern gives the
 notes. They match step by step, and the notes carry on across repeats and skip any rests, so lists
 of different lengths drift apart. A clip's grab_track names another track in the same scene, like
-the Cirklon's note grab: each of the pattern's grab steps plays the note or chord that track most
-recently started, after its chain, so a silent track gives the last note it played. Clips that grab
-in a circle are refused. A pattern's direction sets the order its steps play in, and a clip's
-direction overrides it. A step's
-ratchet_offset moves each ratchet slice further along the scale. A step's note_add and velocity_add
+the Cirklon's note grab: each of the pattern's grab steps plays the note that track most recently
+started (the lowest, for a chord), after its chain, so a silent track gives the last note it
+played. Clips that grab in a circle are refused. A pattern's direction sets the order its steps
+play in, and a clip's direction overrides it. A step's ratchet_offset moves each ratchet slice further along the scale. A step's note_add and velocity_add
 add to running totals that apply from that step on, across the clip's repeats, and clear at the
 pattern's accumulator_limit.
 """
@@ -60,7 +59,9 @@ from llamatron.scale import Scale, ScaleType
 from llamatron.song import Clip, Control, Scene, Song, Track
 
 
-# The song settings that have defaults, as they're used when a file leaves them out.
+# The song settings that have defaults, as they're used when a file leaves them out. Every
+# setting has one, so that a file written by an older version still loads.
+DEFAULT_TEMPO = 120
 DEFAULT_LENGTH = '1/16'
 GRANULARITIES = ['1/16', '1/32', '1/64', '1/128', '1/256']
 DEFAULT_OCTAVE = 3
@@ -253,20 +254,19 @@ class SongBuilder:
     """Turns the contents of a song file into a Song."""
 
     def __init__(self, data):
+        # Every setting has a default, so an empty file is an empty song.
+        data = {} if data is None else data
         if not isinstance(data, dict):
             raise SongFileError('a song file must have settings like tempo, scale and scenes')
         self._check_keys(data, 'the file', {
-            'title', 'author', 'tempo', 'scale', 'scales', 'seed', 'default_length', 'granularity', 'default_octave',
+            'title', 'author', 'description', 'tempo', 'scale', 'scales', 'seed', 'default_length', 'granularity', 'default_octave',
             'default_drum_octave', 'patterns', 'arps', 'auto_ratchets', 'tracks', 'chains', 'scenes',
         })
-        for key in ['tempo', 'tracks', 'scenes']:
-            if key not in data:
-                raise SongFileError(f'the file needs a {key} section')
-        # The title and author are only for people reading or sharing the file.
-        for key in ('title', 'author'):
+        # The title, author and description are only for people reading or sharing the file.
+        for key in ('title', 'author', 'description'):
             if not isinstance(data.get(key, ''), str):
                 raise SongFileError(f'{key} must be text, got {data[key]!r}')
-        self.tempo = _number(data['tempo'], 'tempo')
+        self.tempo = _number(data.get('tempo', DEFAULT_TEMPO), 'tempo')
         self.scales = data.get('scales') or {}
         if not isinstance(self.scales, dict):
             raise SongFileError('scales: expected named scales like main: { root: F, type: minor }')
@@ -284,11 +284,11 @@ class SongBuilder:
         self.patterns = data.get('patterns') or {}
         for name, pattern in self.patterns.items():
             self._check_pattern(name, pattern)
-        self.tracks = self._read_tracks(data['tracks'])
+        self.tracks = self._read_tracks(data.get('tracks') or {})
         self.named_generators = {step: data.get(section) or {} for step, section in NAMED_GENERATORS.items()}
         self.chains = data.get('chains') or {}
         self._check_chains()
-        self.stanzas = self._read_scenes(data['scenes'])
+        self.stanzas = self._read_scenes(data.get('scenes') or [])
         self.resolved = {}
         self.lengths = {}
         # The tracks whose clips are waiting on a grab, to catch clips that grab in a circle.
@@ -297,7 +297,7 @@ class SongBuilder:
     def build(self):
         tempo = float(self.tempo)
         song = Song(tempo=int(tempo) if tempo.is_integer() else tempo)
-        tracks = {name: song.add_track(Track(name)) for name in self.tracks}
+        tracks = {name: song.add_track(Track(name, mute=settings.get('mute', False))) for name, settings in self.tracks.items()}
         for stanza in self.stanzas:
             scene = song.add_scene(self._scene(stanza))
             for name in self.tracks:
@@ -442,9 +442,10 @@ class SongBuilder:
             settings = {} if settings is None else settings
             if not isinstance(settings, dict):
                 raise SongFileError(f'{where}: expected settings like {{ drum: true }}, got {settings!r}')
-            self._check_keys(settings, where, {'drum', 'transpose', 'cc'})
-            if type(settings.get('drum', False)) is not bool:
-                raise SongFileError(f'{where}: drum must be true or false, got {settings["drum"]!r}')
+            self._check_keys(settings, where, {'drum', 'mute', 'transpose', 'cc'})
+            for flag in ('drum', 'mute'):
+                if type(settings.get(flag, False)) is not bool:
+                    raise SongFileError(f'{where}: {flag} must be true or false, got {settings[flag]!r}')
             transpose = settings.get('transpose', 0)
             if type(transpose) is not int or not -MAX_TRANSPOSE <= transpose <= MAX_TRANSPOSE:
                 raise SongFileError(f'{where}: transpose must be a whole number from -{MAX_TRANSPOSE} to {MAX_TRANSPOSE}, got {transpose!r}')
@@ -586,8 +587,10 @@ class SongBuilder:
         times = sorted(onsets)
 
         def grab(time):
+            # A chord gives its lowest note. Chords are built upward from the root, so that's
+            # the root for now, but inversions would need to change this.
             started = [moment for moment in times if moment <= time]
-            return sorted(onsets[started[-1]]) if started else None
+            return min(onsets[started[-1]]) if started else None
         return grab
 
     def _cell(self, stanza, track, grabbing=True):
@@ -748,7 +751,7 @@ class SongBuilder:
         transpose = 0 if drum else context.transpose
         for place in range(ratchet):
             shift = transpose + note_total + place * offset
-            if values['grabbed']:
+            if values['grabbed'] is not None:
                 played = self._grabbed_sound(values['grabbed'], length, shift, drum, context)
             else:
                 played = self._sound(values, drum, length, octave, shift, context, where)
@@ -763,21 +766,17 @@ class SongBuilder:
             for piece in slices
         ]
 
-    def _grabbed_sound(self, numbers, length, shift, drum, context):
-        """Return a grabbed note or chord, moved along this clip's scale, or by half steps for drums.
+    def _grabbed_sound(self, number, length, shift, drum, context):
+        """Return a grabbed note, moved along this clip's scale, or by half steps for drums.
 
         A note moved outside the MIDI range stays where it was grabbed.
         """
-        notes = []
-        for number in numbers:
-            octave, place = divmod(number, 12)
-            note = Note(SHARP_NAMES[place], octave, length)
-            try:
-                note = along_scale(note, shift, None if drum else context.scale)
-            except ValueError:
-                pass
-            notes.append(note)
-        return notes[0] if len(notes) == 1 else Chord(notes)
+        octave, place = divmod(number, 12)
+        note = Note(SHARP_NAMES[place], octave, length)
+        try:
+            return along_scale(note, shift, None if drum else context.scale)
+        except ValueError:
+            return note
 
     def _sound(self, values, drum, length, octave, shift, context, where):
         """Return a step's note or chord, moved by a number of scale degrees or, for drums, half steps.

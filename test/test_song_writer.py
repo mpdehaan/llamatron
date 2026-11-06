@@ -57,6 +57,21 @@ class TestDumpSong(unittest.TestCase):
             with self.subTest(path=path):
                 self.assertEqual(yaml.safe_load(dump_song(song)), song)
 
+    def test_a_description_is_a_readable_block_after_the_title_and_author(self):
+        song = {'title': 'T', 'author': 'A', 'description': 'First line\n\n  indented: # not a comment\n', 'tempo': 120, 'tracks': {}, 'scenes': []}
+        text = dump_song(song)
+        self.assertIn('author: A\ndescription: |\n  First line\n\n    indented: # not a comment\ntempo: 120\n', text)
+        self.assertEqual(yaml.safe_load(text), song)
+
+    def test_any_description_reads_back_the_same(self):
+        for description in ['one line', 'ends without\nbreak', ' starts indented\n', '\n\nblank first\n', 'many\n\n\n', '\n', '   ', 'a: b\n- c\n']:
+            song = {'description': description, 'tempo': 120, 'tracks': {}, 'scenes': []}
+            with self.subTest(description=description):
+                self.assertEqual(yaml.safe_load(dump_song(song)), song)
+
+    def test_a_song_with_nothing_in_it_writes(self):
+        self.assertEqual(yaml.safe_load(dump_song({})), {'tracks': {}, 'scenes': []})
+
     def test_pattern_rows_are_one_list_per_line(self):
         text = dump_song(SONG)
         self.assertIn('    degree: [1, ~, 5]\n', text)

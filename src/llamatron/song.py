@@ -123,6 +123,11 @@ def _check_loop(loop):
         raise ValueError(f'invalid loop: {loop!r} (must be True or False)')
 
 
+def _check_mute(mute):
+    if type(mute) is not bool:
+        raise ValueError(f'invalid mute: {mute!r} (must be True or False)')
+
+
 def _check_clip_length(length):
     if length is not None:
         _check_length(length)
@@ -148,20 +153,26 @@ class _Validated:
 
 
 class Track:
-    """A column of the song's grid. Its id is None unless it's in a song."""
+    """A column of the song's grid. Its id is None unless it's in a song.
+
+    A muted track still has its clips, so a renderer writes them, but Live starts with the
+    track switched off. It's for tracks that other tracks grab notes from.
+    """
 
     name = _Validated(_check_name)
+    mute = _Validated(_check_mute)
 
-    def __init__(self, name=None):
+    def __init__(self, name=None, mute=False):
         self._id = None
         self.name = name
+        self.mute = mute
 
     @property
     def id(self):
         return self._id
 
     def __repr__(self):
-        return f'Track(name={self.name!r}, id={self.id!r})'
+        return f'Track(name={self.name!r}, mute={self.mute!r}, id={self.id!r})'
 
 
 class Scene:

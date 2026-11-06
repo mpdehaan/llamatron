@@ -177,6 +177,12 @@ Press `S` from the main screen.
 
 The keys `L`, `N`, `S`, `W`, `R` and `M` are under [Loading, saving and rendering](#loading-saving-and-rendering).
 
+#### Description
+
+Press `D` on the Song page. The description is notes about the song, as long as you like, for anyone reading or sharing its file, such as what each scene is for or what to try. It doesn't change how the song plays. The Song page shows how many lines it has, and the description is saved at the top of the song file, where it reads as plain text.
+
+The page opens for reading, and `↑` and `↓` scroll it. `E` starts editing: typing adds text at the cursor, `Enter` starts a new line, `Bksp` erases, and the arrows move the cursor. While you're editing, letters are text, so `H` types an h. `Tab` stops editing, and `Tab` again goes back. `Bksp`, while reading, clears the whole description after asking.
+
 Octaves go from -2 to 8 and are numbered the way Live labels notes, so degree 1 of C major in octave 3 is middle C (C3, MIDI 60).
 
 ### Scales
@@ -353,7 +359,7 @@ Press `A` to see these instead of the normal rows, and again for the CC rows. De
 | Ratchet Offset | -24 to 24 | Moves each ratchet note that much further along the scale than the last one. In a drum pattern it moves by half steps instead. |
 | Note Add | -24 to 24 | Adds to a running total that moves notes along the scale |
 | Velocity Add | -127 to 127 | Adds to a running total of velocity |
-| Grab | `*` or blank | Plays the note that the clip's Grab track most recently played instead of this step's own |
+| Grab | `*` or blank | Plays the note that the clip's Grab track most recently played instead of this step's own, or the lowest note of a chord |
 
 Unset values show a dot. The number rows take digits, `+` and `-`, or `Enter` to type, and `Bksp` sets them back. Grab is toggled with `Space`.
 
@@ -401,7 +407,7 @@ Positions carry on across repeats. The random directions use the song's seed, ke
 
 ### Tracks
 
-Press `T` from the main screen. Tracks are the columns on the Arrange page, and become tracks in Live in the same order. The list shows each track's type, its transpose, its CC numbers and how many clips it has.
+Press `T` from the main screen. Tracks are the columns on the Arrange page, and become tracks in Live in the same order. The list shows each track's type, whether it's muted, its transpose, its CC numbers and how many clips it has.
 
 | Key | What it does |
 | --- | --- |
@@ -417,6 +423,7 @@ A track's settings apply to every clip on it:
 | Setting | What it does |
 | --- | --- |
 | Drum | `*` marks a drum track, which is never transposed. `Enter` toggles it. |
+| Mute | `*` makes the track start switched off in Live, so it's silent until you switch it on. Its clips are still written, so you can switch it on to hear them, and other tracks can still grab notes from it. It's meant for tracks that only feed grabs. `Enter` toggles it. |
 | Transpose | Moves every note on the track along the scale when rendering, from -24 to 24, without changing its patterns. In a seven-note scale, 7 is an octave. Drum patterns are never transposed, on any track. |
 | CC 1 to CC 4 | The CC number that each of a pattern's CC rows sends on this track, from 0 to 127. `Bksp` sets none, so that row sends nothing here. CC 1 is usually the mod wheel and CC 74 the filter cutoff. |
 
@@ -557,7 +564,7 @@ Rhythm from combines two patterns step by step:
 - **Each step** of the rhythm that isn't a rest plays the next note, and rests in the notes are skipped.
 - **The notes carry on** across repeats and loops, so a five-note melody over a four-step rhythm drifts against it on purpose.
 
-Grab track works like the Cirklon's note grab, and only changes the steps that Grab marks in the advanced rows. Each marked step plays the note or chord that the other track most recently started, at or before that moment: the note it's playing, or the last note it played if it's silent. If it hasn't played anything yet, the step keeps its own note. It hears the other track after its chain, so grabbing from an arpeggiated track takes the arpeggio's notes. Every other step, and everything else about the clip, such as its rhythm and velocity, stays its own. This track's transpose still applies.
+Grab track works like the Cirklon's note grab, and only changes the steps that Grab marks in the advanced rows. Each marked step plays the note that the other track most recently started, at or before that moment: the note it's playing, or the last note it played if it's silent. If it hasn't played anything yet, the step keeps its own note. If the other track played a chord, the step takes its lowest note, and a grab step never plays a chord of its own, even if its Chord row has one. It hears the other track after its chain, so grabbing from an arpeggiated track takes the arpeggio's notes. Every other step, and everything else about the clip, such as its rhythm and velocity, stays its own. This track's transpose still applies.
 
 Because it's set on the clip, one pattern can grab from different tracks in different clips. A clip can grab from a track that grabs from another, but not in a circle. The clip page refuses a grab that would go round in a circle, and says which clips to change, and pasting a clip drops a grab that would. A song file with a circle stops rendering with a message naming the tracks.
 
@@ -565,4 +572,4 @@ A clip's Direction also applies to its rhythm pattern, but not to a morph's targ
 
 ## Song files
 
-Songs are saved as YAML. The format is mainly for llamatron to read, but it stays readable so that songs can be compared in version control, and the files in `examples/` show every part of it. Patterns are stored the way the editor shows them, with one list per row, so a change in the tracker makes a small change to the file.
+Songs are saved as YAML. The format is mainly for llamatron to read, but it stays readable so that songs can be compared in version control, and the files in `examples/` show every part of it. The songs in `examples/` whose names end in `_demo` each show one feature, a scene at a time, and `examples/DEMOS.md` describes them. Every setting has a default, so a file can leave out anything it doesn't need, and a file written by an older version still loads. Patterns are stored the way the editor shows them, with one list per row, so a change in the tracker makes a small change to the file.

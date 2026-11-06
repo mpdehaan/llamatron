@@ -29,6 +29,17 @@ D_DORIAN = Scale(Note('D', 0, 0.25), ScaleType.DORIAN)
 INVALID_TEMPOS = [0, -1, -0.5, 1, 9, 9.99, '120', True, float('nan'), float('inf')]
 
 
+class TestTrackMute(unittest.TestCase):
+
+    def test_tracks_are_not_muted_unless_asked(self):
+        self.assertFalse(Track().mute)
+        self.assertTrue(Track('Input', mute=True).mute)
+
+    def test_mute_must_be_true_or_false(self):
+        with self.assertRaises(ValueError):
+            Track(mute=1)
+
+
 class TestNamedParts(unittest.TestCase):
 
     def test_names_are_optional(self):
