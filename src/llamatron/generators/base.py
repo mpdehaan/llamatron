@@ -20,6 +20,9 @@ from llamatron.song import POSITION_TYPES, Clip, cut_position as _cut, exact_len
 
 __all__ = ['ClipGenerator', '_cut', 'exact_length', 'fit_to_length']
 
+MSG_NOT_A_CLIP = 'expected a Clip, got {value!r}'
+MSG_NOT_A_POSITION = 'expected a Note, Chord, Rest or Degree, got {value!r}'
+
 
 class ClipGenerator(ABC):
     """Makes a new Clip from an existing one, which is left unchanged.
@@ -30,14 +33,16 @@ class ClipGenerator(ABC):
     clip.resolved_notes() if a generator needs to know how long each position is.
     """
 
+    __slots__ = ()
+
     def generate(self, clip):
         """Return a new Clip made from this one."""
         if not isinstance(clip, Clip):
-            raise ValueError(f'expected a Clip, got {clip!r}')
+            raise ValueError(MSG_NOT_A_CLIP.format(value=clip))
         # A clip's list can be appended to directly, so its contents are checked again here.
         for position in clip.notes:
             if not isinstance(position, POSITION_TYPES):
-                raise ValueError(f'expected a Note, Chord, Rest or Degree, got {position!r}')
+                raise ValueError(MSG_NOT_A_POSITION.format(value=position))
         notes, length = self._generate(clip)
         return Clip(
             name=clip.name, notes=notes, scale=self._new_scale(clip), length=length,

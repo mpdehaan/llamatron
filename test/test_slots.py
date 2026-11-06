@@ -22,7 +22,8 @@ objects quietly get a dictionary again.
 
 The exceptions are classes that only hold constants, which are never made into objects, and
 subclasses of classes from outside llamatron, such as Textual's screens, enums and exceptions,
-whose bases already give every object a dictionary.
+whose bases already give every object a dictionary. A base from outside that declares its own
+empty slots, like abc.ABC, doesn't excuse a class.
 """
 
 import importlib
@@ -35,7 +36,6 @@ import llamatron
 # Modules whose classes haven't been given __slots__ yet. Each is removed from here once it has.
 NOT_YET_CONVERTED = {
     'llamatron.song',
-    'llamatron.generators.arp', 'llamatron.generators.auto_ratchet', 'llamatron.generators.base', 'llamatron.generators.blend',
     'llamatron.renderers.ableton_project', 'llamatron.renderers.clip_tree', 'llamatron.renderers.timing',
     'llamatron.tui.app', 'llamatron.tui.arrange', 'llamatron.tui.base', 'llamatron.tui.document', 'llamatron.tui.lists',
     'llamatron.tui.pages', 'llamatron.tui.pattern_editor',
@@ -59,8 +59,14 @@ def classes_defined_in(module):
 
 
 def extends_an_outside_class(kind):
-    """Return whether a class builds on a class from outside llamatron, other than object."""
-    return any(base is not object and not base.__module__.startswith(PACKAGE) for base in kind.__mro__[1:])
+    """Return whether a class builds on a class from outside llamatron that gives its objects a dictionary anyway.
+
+    A base like abc.ABC declares empty slots itself, so classes built on it still need theirs.
+    """
+    return any(
+        base is not object and not base.__module__.startswith(PACKAGE) and '__slots__' not in vars(base)
+        for base in kind.__mro__[1:]
+    )
 
 
 def only_holds_constants(kind):

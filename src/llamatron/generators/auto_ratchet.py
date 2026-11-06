@@ -21,6 +21,11 @@ from llamatron.generators.base import ClipGenerator, exact_length, fit_to_length
 from llamatron.note import Rest
 from llamatron.song import _Validated
 
+# A count of one leaves a note as it is, and a count can't be less than that.
+UNCHANGED = 1
+MSG_NOT_A_LIST = 'expected a list of counts, got {value!r}'
+MSG_BAD_COUNT = 'invalid count: {value!r} (must be a positive integer)'
+
 
 def divide(position, times):
     """Return a position that lasts 1/times as long."""
@@ -31,11 +36,11 @@ def divide(position, times):
 
 def _check_counts(counts):
     if not isinstance(counts, (list, tuple)) or not counts:
-        raise ValueError(f'expected a list of counts, got {counts!r}')
+        raise ValueError(MSG_NOT_A_LIST.format(value=counts))
     for count in counts:
         # bool is a subclass of int, but True is not a real count.
-        if type(count) is not int or count < 1:
-            raise ValueError(f'invalid count: {count!r} (must be a positive integer)')
+        if type(count) is not int or count < UNCHANGED:
+            raise ValueError(MSG_BAD_COUNT.format(value=count))
 
 
 class AutoRatchet(ClipGenerator):
@@ -45,6 +50,8 @@ class AutoRatchet(ClipGenerator):
     notes that are each a quarter of its length. A chord uses one count and repeats as a
     whole, and rests don't use up a count. Every note still starts when it did before.
     """
+
+    __slots__ = ('_counts',)
 
     counts = _Validated(_check_counts)
 
@@ -64,7 +71,7 @@ class AutoRatchet(ClipGenerator):
                 continue
             count = self.counts[played % len(self.counts)]
             played += 1
-            if count == 1:
+            if count == UNCHANGED:
                 result.append(position)
             else:
                 result += [divide(position, count)] * count

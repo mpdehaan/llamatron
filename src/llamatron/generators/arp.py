@@ -20,13 +20,26 @@ from enum import Enum, auto
 
 from llamatron.chord import Chord
 from llamatron.generators.base import ClipGenerator, exact_length, fit_to_length
+from llamatron.midi import HALF_STEPS_PER_OCTAVE
 from llamatron.note import Note, Rest, _check_length
 from llamatron.song import _Validated
 
 # How many steps an arpeggiator's offsets can have, as on the Elektron Monomachine.
-MAX_OFFSETS = 16
-MAX_OCTAVE_RANGE = 4
+MIN_OFFSETS, MAX_OFFSETS = 1, 16
+# How many octaves it can play a chord across, and how far one offset can move a note.
+MIN_OCTAVE_RANGE, MAX_OCTAVE_RANGE = 1, 4
 MAX_OFFSET = 24
+# An offset of nothing leaves a note where it is, and so does a step with no offsets at all.
+NO_OFFSET = 0
+# A chord with nothing left of it to play.
+NO_LENGTH = 0
+
+MSG_NOT_AN_ORDER = 'expected a ChordOrder, got {value!r}'
+MSG_BAD_SEED = 'invalid seed: {value!r} (must be an integer or None)'
+MSG_NOT_A_JUMP = 'expected an OctaveJump, got {value!r}'
+MSG_BAD_OCTAVE_RANGE = 'invalid octave range: {value!r} (must be a whole number from {lowest} to {highest})'
+MSG_BAD_OFFSETS = 'invalid offsets: {value!r} (must be a list of {lowest} to {highest} steps)'
+MSG_BAD_OFFSET = 'invalid offset: {value!r} (must be a whole number from -{most} to {most}, or None to mute the step)'
 
 
 class ChordOrder(Enum):
@@ -53,32 +66,37 @@ class OctaveJump(Enum):
 
 def _check_order(order):
     if not isinstance(order, ChordOrder):
-        raise ValueError(f'expected a ChordOrder, got {order!r}')
+        raise ValueError(MSG_NOT_AN_ORDER.format(value=order))
 
 
 def _check_seed(seed):
     if seed is not None and type(seed) is not int:
-        raise ValueError(f'invalid seed: {seed!r} (must be an integer or None)')
+        raise ValueError(MSG_BAD_SEED.format(value=seed))
 
 
 def _check_jump(jump):
     if not isinstance(jump, OctaveJump):
-        raise ValueError(f'expected an OctaveJump, got {jump!r}')
+        raise ValueError(MSG_NOT_A_JUMP.format(value=jump))
 
 
 def _check_octave_range(octaves):
-    if type(octaves) is not int or not 1 <= octaves <= MAX_OCTAVE_RANGE:
-        raise ValueError(f'invalid octave range: {octaves!r} (must be a whole number from 1 to {MAX_OCTAVE_RANGE})')
+    if type(octaves) is not int or not MIN_OCTAVE_RANGE <= octaves <= MAX_OCTAVE_RANGE:
+        raise ValueError(MSG_BAD_OCTAVE_RANGE.format(value=octaves, lowest=MIN_OCTAVE_RANGE, highest=MAX_OCTAVE_RANGE))
 
 
 def _check_offsets(offsets):
     if offsets is None:
         return
-    if not isinstance(offsets, (list, tuple)) or not 1 <= len(offsets) <= MAX_OFFSETS:
-        raise ValueError(f'invalid offsets: {offsets!r} (must be a list of 1 to {MAX_OFFSETS} steps)')
+    if not isinstance(offsets, (list, tuple)) or not MIN_OFFSETS <= len(offsets) <= MAX_OFFSETS:
+        raise ValueError(MSG_BAD_OFFSETS.format(value=offsets, lowest=MIN_OFFSETS, highest=MAX_OFFSETS))
     for offset in offsets:
-        if offset is not None and (type(offset) is not int or not -MAX_OFFSET <= offset <= MAX_OFFSET):
-            raise ValueError(f'invalid offset: {offset!r} (must be a whole number from -{MAX_OFFSET} to {MAX_OFFSET}, or None to mute the step)')
+        if offset is not None and not _is_offset(offset):
+            raise ValueError(MSG_BAD_OFFSET.format(value=offset, most=MAX_OFFSET))
+
+
+def _is_offset(offset):
+    """Return whether an offset is a whole number of scale notes no further than MAX_OFFSET either way."""
+    return type(offset) is int and -MAX_OFFSET <= offset <= MAX_OFFSET
 
 
 def along_scale(note, steps, scale):
@@ -91,11 +109,17 @@ def along_scale(note, steps, scale):
     if scale is None:
         return note.half_step(steps)
     shape = scale.typ.value
-    octaves, within = divmod(note.midi_number - scale.root.midi_number, 12)
-    place = max(index for index, step in enumerate(shape) if step <= within)
+    above_root = note.midi_number - scale.root.midi_number
+    octaves, within = divmod(above_root, HALF_STEPS_PER_OCTAVE)
+    place = _scale_note_at_or_below(shape, within)
     extra = within - shape[place]
     more, place = divmod(place + steps, len(shape))
-    return note.half_step((octaves + more) * 12 + shape[place] + extra - (note.midi_number - scale.root.midi_number))
+    return note.half_step((octaves + more) * HALF_STEPS_PER_OCTAVE + shape[place] + extra - above_root)
+
+
+def _scale_note_at_or_below(shape, half_steps):
+    """Return which note of a scale's octave, counted from 0, is at or just below some half steps above its root."""
+    return max(index for index, step in enumerate(shape) if step <= half_steps)
 
 
 def _lowest_to_highest(chord):
@@ -120,6 +144,8 @@ class Arp(ClipGenerator):
     start again with each chord. With offsets or an octave range, a single note is played as a
     chord of one note, so that one note can make a melody. Without them it's left as it is.
     """
+
+    __slots__ = ('_step', '_order', '_seed', '_octave_range', '_octave_jump', '_offsets')
 
     step = _Validated(_check_length)
     order = _Validated(_check_order)
@@ -151,7 +177,7 @@ class Arp(ClipGenerator):
         return fit_to_length(positions, clip.length), clip.length
 
     def _plays_single_notes(self):
-        return self.offsets is not None or self.octave_range > 1
+        return self.offsets is not None or self.octave_range > MIN_OCTAVE_RANGE
 
     def _arpeggiate(self, positions, generator, scale):
         result = []
@@ -170,9 +196,9 @@ class Arp(ClipGenerator):
         remaining = exact_length(chord.length)
         index = 0
         place = 0
-        while remaining > 0:
+        while remaining > NO_LENGTH:
             length = self.step if step <= remaining else remaining
-            offset = 0 if self.offsets is None else self.offsets[place % len(self.offsets)]
+            offset = NO_OFFSET if self.offsets is None else self.offsets[place % len(self.offsets)]
             place += 1
             if offset is None:
                 result.append(Rest(length))
@@ -187,8 +213,8 @@ class Arp(ClipGenerator):
         """Return the chord's notes going up through the octave range, in the octave jump's order."""
         octaves = range(self.octave_range)
         if self.octave_jump is OctaveJump.AFTER_EACH_NOTE:
-            return [note.half_step(12 * octave) for note in notes for octave in octaves]
-        return [note.half_step(12 * octave) for octave in octaves for note in notes]
+            return [_up_octaves(note, octave) for note in notes for octave in octaves]
+        return [_up_octaves(note, octave) for octave in octaves for note in notes]
 
     def _pattern(self, notes):
         """Return the notes in the order they repeat, or None if the order is random."""
@@ -199,7 +225,17 @@ class Arp(ClipGenerator):
             return down
         # The turning points aren't repeated, so C E G becomes C E G E and then C E G E again.
         if self.order is ChordOrder.UP_DOWN:
-            return notes + notes[-2:0:-1]
+            return notes + _back_without_ends(notes)
         if self.order is ChordOrder.DOWN_UP:
-            return down + down[-2:0:-1]
+            return down + _back_without_ends(down)
         return None
+
+
+def _up_octaves(note, octaves):
+    """Return a note moved up a number of octaves."""
+    return note.half_step(HALF_STEPS_PER_OCTAVE * octaves)
+
+
+def _back_without_ends(notes):
+    """Return the notes in reverse, without the first or last, so a turn doesn't play either end twice."""
+    return notes[-2:0:-1]

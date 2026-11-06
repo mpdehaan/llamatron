@@ -22,6 +22,21 @@ from llamatron.generators.base import ClipGenerator, exact_length
 from llamatron.note import Degree
 from llamatron.song import Clip, _Validated
 
+# How far a blend has moved to its target, as a percentage.
+NONE_OF_THE_TARGET, ALL_OF_THE_TARGET = 0, 100
+# The amount's fraction is rounded to this, so that a float amount like 33.3 behaves.
+AMOUNT_PRECISION = 1_000_000
+# Where a clip starts, and the middle of a span, as a fraction of its length.
+START = Fraction(0)
+HALF = 2
+AMOUNT_TYPES = (int, float, Fraction)
+
+MSG_NOT_A_MODE = 'expected a BlendMode, got {value!r}'
+MSG_NOT_A_CLIP = 'expected a Clip, got {value!r}'
+MSG_BAD_AMOUNT = 'invalid amount: {value!r} (must be from {lowest} to {highest})'
+MSG_DEGREE_NEEDS_SCALE = "{degree!r} needs a scale, but the clip has none"
+MSG_LENGTHS_DIFFER = 'the clips must be the same length, but they last {first} and {second}'
+
 
 class BlendMode(Enum):
     """Where the target comes in from as Blend moves one clip towards another."""
@@ -33,18 +48,23 @@ class BlendMode(Enum):
 
 def _check_mode(mode):
     if not isinstance(mode, BlendMode):
-        raise ValueError(f'expected a BlendMode, got {mode!r}')
+        raise ValueError(MSG_NOT_A_MODE.format(value=mode))
 
 
 def _check_target(target):
     if not isinstance(target, Clip):
-        raise ValueError(f'expected a Clip, got {target!r}')
+        raise ValueError(MSG_NOT_A_CLIP.format(value=target))
 
 
 def _check_amount(amount):
     # bool is a subclass of int, but True is not a real amount.
-    if type(amount) not in (int, float, Fraction) or not isfinite(amount) or not 0 <= amount <= 100:
-        raise ValueError(f'invalid amount: {amount!r} (must be from 0 to 100)')
+    if not _is_amount(amount):
+        raise ValueError(MSG_BAD_AMOUNT.format(value=amount, lowest=NONE_OF_THE_TARGET, highest=ALL_OF_THE_TARGET))
+
+
+def _is_amount(amount):
+    """Return whether an amount is a finite percentage from 0 to 100, not counting true and false."""
+    return type(amount) in AMOUNT_TYPES and isfinite(amount) and NONE_OF_THE_TARGET <= amount <= ALL_OF_THE_TARGET
 
 
 def _concrete(clip):
@@ -56,7 +76,7 @@ def _concrete(clip):
     for position in clip.notes:
         if isinstance(position, Degree):
             if clip.scale is None:
-                raise ValueError(f'{position!r} needs a scale, but the clip has none')
+                raise ValueError(MSG_DEGREE_NEEDS_SCALE.format(degree=position))
             position = position.to_note(clip.scale)
         notes.append(position)
     return Clip(notes=notes, length=clip.length, note_length=clip.note_length)
@@ -71,6 +91,8 @@ class Blend(ClipGenerator):
     note in this clip, so its notes aren't cut.
     """
 
+    __slots__ = ('_target', '_amount', '_mode')
+
     target = _Validated(_check_target)
     amount = _Validated(_check_amount)
     mode = _Validated(_check_mode)
@@ -83,36 +105,34 @@ class Blend(ClipGenerator):
     def _generate(self, clip):
         total = clip.total_length()
         if self.target.total_length() != total:
-            raise ValueError(
-                f'the clips must be the same length, but they last {total} and {self.target.total_length()}'
-            )
+            raise ValueError(MSG_LENGTHS_DIFFER.format(first=total, second=self.target.total_length()))
         return self._sweep(_concrete(clip), _concrete(self.target), total), clip.length
 
     def region(self, clip):
         """Return where the target plays in the result, from start to end in whole notes."""
         total = clip.total_length()
         source = _concrete(clip)
-        share = total * Fraction(self.amount).limit_denominator(1_000_000) / 100
+        share = total * Fraction(self.amount).limit_denominator(AMOUNT_PRECISION) / ALL_OF_THE_TARGET
         if self.mode is BlendMode.LEFT:
-            start, end = Fraction(0), share
+            start, end = START, share
         elif self.mode is BlendMode.RIGHT:
             start, end = total - share, total
         else:
-            start, end = (total - share) / 2, (total + share) / 2
+            start, end = (total - share) / HALF, (total + share) / HALF
         start, end = self._nearest_edge(source, start, total), self._nearest_edge(source, end, total)
         if end <= start:
-            return (Fraction(0), Fraction(0)) if share < total else (Fraction(0), total)
+            return (START, START) if share < total else (START, total)
         return start, end
 
     def _sweep(self, source, target, total):
         start, end = self.region(source)
         if end <= start:
             return source.notes
-        if start == 0 and end == total:
+        if start == START and end == total:
             return target.notes
         notes = []
-        if start > 0:
-            notes += source.section(0, start).notes
+        if start > START:
+            notes += source.section(START, start).notes
         notes += target.section(start, end).notes
         if end < total:
             notes += source.section(end, total).notes
@@ -120,9 +140,19 @@ class Blend(ClipGenerator):
 
     def _nearest_edge(self, source, time, total):
         """Return the start of the note in the source closest to a time."""
-        edges = [Fraction(0), total]
-        now = Fraction(0)
-        for position in source.played_notes():
-            edges.append(now)
-            now += exact_length(position.length)
-        return min(edges, key=lambda edge: (abs(edge - time), edge))
+        return _closest(_note_starts(source, total), time)
+
+
+def _note_starts(source, total):
+    """Return where each note of a clip starts, and its start and end, which a blend's edges can move to."""
+    edges = [START, total]
+    now = START
+    for position in source.played_notes():
+        edges.append(now)
+        now += exact_length(position.length)
+    return edges
+
+
+def _closest(edges, time):
+    """Return the edge nearest a time, choosing the earlier of two that are equally near."""
+    return min(edges, key=lambda edge: (abs(edge - time), edge))
