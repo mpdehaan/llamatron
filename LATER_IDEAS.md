@@ -922,3 +922,14 @@ Things already worth a look:
   was used for an older feature, and the new step size key is `E`, because `S` (swap) was taken.
 - **Whether every page offers the same key for the same kind of action,** such as renaming,
   copying, deleting and moving up or down, wherever those apply.
+
+## A Skip row
+
+A pattern row that skips a step, with a probability, so that a pattern can be copied and made to
+skip a step now and then. A skip is not a rest: a rest still takes its step's time in silence,
+while a skip leaps straight ahead to the next step, so the steps after it come sooner and the
+pass is shorter. Things to settle: what a skipped step's CC values and accumulator changes do
+(probably nothing, since the step isn't played), how a skip combines with play directions, and
+how a pass that's shorter than its pattern fits a scene's length, since every pass lasts exactly
+steps times step size today. Probability would be rolled from the song's seed, like the other
+probabilities, so a render is still always the same.
