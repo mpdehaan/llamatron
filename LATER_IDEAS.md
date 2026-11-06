@@ -873,6 +873,12 @@ toggle and it should default to off, except for all the content that is included
 
 ## Accumulators: research what they do and what they should do
 
+**Replaced by Registers, being built from 2026-11-06.** The user designed a new system to take
+their place: four song-wide registers, AX, BX, CX and DX, each with a default, a minimum, a
+maximum and a choice to wrap, which pattern steps change with `AX+=` and read with `AX+Note`
+and `AX+Vel`, and which scenes can reset. The Note Add and Velocity Add rows and the add limit go.
+What follows is the earlier research, kept for its record of the old behavior.
+
 The user wants to research how the accumulators (the Note Add and Velocity Add rows, and the
 pattern's add limit) work today, and decide what they should do, because they look incomplete
 or confusing. What the code does today (`Accumulators` in `src/llamatron/playback/`, used by
@@ -933,3 +939,10 @@ pass is shorter. Things to settle: what a skipped step's CC values and accumulat
 how a pass that's shorter than its pattern fits a scene's length, since every pass lasts exactly
 steps times step size today. Probability would be rolled from the song's seed, like the other
 probabilities, so a render is still always the same.
+
+## Rewriting retro_chill
+
+`examples/retro_chill.yml` is one of the first example songs and the user isn't a fan of it. It
+should be rewritten with the program's newer features, such as gates, registers, grabs and
+morphs, to be decided when it's rewritten. For now, the one scene that used `rhythm_from` has
+been deleted, because `rhythm_from` was removed.
