@@ -17,6 +17,10 @@
 """The base class for everything a song file stores."""
 
 
+MSG_NEEDS_TO_DATA = '{kind} needs a to_data() method'
+MSG_NEEDS_FROM_DATA = '{kind} needs a from_data() class method'
+
+
 class LlamaData:
     """Something stored in a song file, which can turn itself into file data and back.
 
@@ -33,7 +37,7 @@ class LlamaData:
 
     def to_data(self):
         """Return this object's settings as plain data in the song file's format."""
-        raise NotImplementedError(f'{type(self).__name__} needs a to_data() method')
+        raise NotImplementedError(MSG_NEEDS_TO_DATA.format(kind=type(self).__name__))
 
     @classmethod
     def from_data(cls, data, where, song=None):
@@ -42,4 +46,4 @@ class LlamaData:
         where names the place in the file, like "scene 2", for error messages. song is the song
         being read, for objects that need to check names that other parts of the file define.
         """
-        raise NotImplementedError(f'{cls.__name__} needs a from_data() class method')
+        raise NotImplementedError(MSG_NEEDS_FROM_DATA.format(kind=cls.__name__))

@@ -16,7 +16,16 @@
 
 """The order a pattern's steps play in, for each of the Cirklon's directions."""
 
-from llamatron.composition.file_format import FORWARD
+from llamatron.composition.file_format import Direction
+
+# Every list of steps starts at its first step.
+FIRST_STEP = 0
+# How a step moves in the directions that choose as they go: on, back, or staying put.
+MOVE_ON, MOVE_BACK, STAY = 1, -1, 0
+# Brownian moves on half the time, back a quarter of the time, and stays put the rest. Eitherway
+# moves on or back, half the time each.
+CHANCE_OF_MOVING_ON = 0.5
+CHANCE_OF_MOVING_ON_OR_BACK = 0.75
 
 
 class StepOrder:
@@ -35,34 +44,41 @@ class StepOrder:
         key = (*key, direction)
         order = _walk_order(count, direction)
         if order is not None:
-            taken = self._places.get(key, 0)
+            taken = self._places.get(key, FIRST_STEP)
             self._places[key] = taken + 1
             return order[taken % len(order)]
-        if direction == 'random':
+        if direction == Direction.RANDOM:
             return self._choices.randrange(count)
         if key not in self._places:
-            self._places[key] = 0
-            return 0
-        chance = self._choices.random()
-        if direction == 'brownian':
-            move = 1 if chance < 0.5 else (-1 if chance < 0.75 else 0)
-        else:
-            move = 1 if chance < 0.5 else -1
-        self._places[key] = (self._places[key] + move) % count
+            self._places[key] = FIRST_STEP
+            return FIRST_STEP
+        self._places[key] = (self._places[key] + self._chosen_move(direction)) % count
         return self._places[key]
+
+    def _chosen_move(self, direction):
+        """Return which way a direction that chooses as it goes moves this time."""
+        chance = self._choices.random()
+        if chance < CHANCE_OF_MOVING_ON:
+            return MOVE_ON
+        if direction == Direction.BROWNIAN:
+            return MOVE_BACK if chance < CHANCE_OF_MOVING_ON_OR_BACK else STAY
+        return MOVE_BACK
 
 
 def _walk_order(count, direction):
     """Return the steps of a direction that repeats exactly, or None if it's chosen as it goes."""
-    forward, backward = list(range(count)), list(range(count - 1, -1, -1))
-    if direction == FORWARD:
+    forward = list(range(count))
+    backward = forward[::-1]
+    if direction == Direction.FORWARD:
         return forward
-    if direction == 'reverse_a':
-        return [0, *backward[:-1]]
-    if direction == 'reverse_b':
+    if direction == Direction.REVERSE_A:
+        # The first step, then the rest backwards.
+        return [forward[0], *backward[:-1]]
+    if direction == Direction.REVERSE_B:
         return backward
-    if direction == 'alternate':
+    if direction == Direction.ALTERNATE:
         return forward + backward
-    if direction == 'pendulum':
+    if direction == Direction.PENDULUM:
+        # Forward and back, without playing either end twice.
         return forward + backward[1:-1]
     return None

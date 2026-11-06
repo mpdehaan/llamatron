@@ -16,6 +16,14 @@
 
 """One scene of the song as it plays, with a repeating scene written out once for each repeat."""
 
+# Scenes are numbered from 1 as they play, and so are a scene's repeats in their names.
+FIRST_NUMBER = 1
+# A scene with no name of its own is named by its number, and a repeat adds its number to the name.
+UNNAMED_SCENE = 'Scene {number}'
+REPEAT_NAME = '{name} {repeat}'
+# How error messages name a scene.
+DESCRIPTION = 'scene {number} ({name})'
+
 
 class WrittenScene:
     """A scene's place in the song, counted from 1, with the name, scale and tempo it plays with."""
@@ -38,11 +46,11 @@ class WrittenScene:
             scale = scene.get_scale_name() or song.get_scale_name()
             repeat = scene.get_repeat()
             for place in range(repeat):
-                name = scene.get_name()
-                name = str(f'Scene {len(written) + 1}' if name is None else name)
+                number = len(written) + FIRST_NUMBER
+                name = _scene_name(scene.get_name(), number)
                 if repeat > 1:
-                    name = f'{name} {place + 1}'
-                written.append(cls(len(written) + 1, name, scale, scene.get_tempo(place), scene))
+                    name = REPEAT_NAME.format(name=name, repeat=place + FIRST_NUMBER)
+                written.append(cls(number, name, scale, scene.get_tempo(place), scene))
         return written
 
     def get_number(self):
@@ -68,4 +76,9 @@ class WrittenScene:
 
     def describe(self):
         """Return how error messages name it, like "scene 3 (verse)"."""
-        return f'scene {self._number} ({self._name})'
+        return DESCRIPTION.format(number=self._number, name=self._name)
+
+
+def _scene_name(name, number):
+    """Return a scene's name as text, or one made from its number if it has none."""
+    return str(UNNAMED_SCENE.format(number=number) if name is None else name)

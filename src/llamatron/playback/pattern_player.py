@@ -21,10 +21,11 @@ from fractions import Fraction
 
 from llamatron.chord import Chord
 from llamatron.composition.checks import number
+from llamatron.composition.defaults import DEFAULT_PROBABILITY, DEFAULT_RATCHET, DEFAULT_VELOCITY
 from llamatron.composition.file_format import (
-    ACCIDENTALS, CC_ROWS, DEFAULT_PROBABILITY, DEFAULT_RATCHET, DEFAULT_VELOCITY, FIXED_CHORDS, LIVE_OCTAVE_OFFSET,
-    NOTE_ROWS, PATTERN_ROWS, SCALE_CHORDS,
+    ACCIDENTALS, CC_ROWS, FIXED_CHORDS, LIVE_OCTAVE_OFFSET, NOTE_ROWS, PATTERN_ROWS, SCALE_CHORDS, Row,
 )
+from llamatron.composition.limits import MAX_PROBABILITY, MAX_VELOCITY, MIN_VELOCITY
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators.arp import along_scale
 from llamatron.generators.auto_ratchet import divide
@@ -33,6 +34,19 @@ from llamatron.song import Clip, Control
 
 # How many octaves away a moved note can go to find one that fits the MIDI range.
 MAX_OCTAVE_CHANGE = 10
+HALF_STEPS_PER_OCTAVE = 12
+# A step with no accidental moves its note by no half steps.
+NO_ACCIDENTAL, NO_HALF_STEPS = '', 0
+# A clip's running totals, and the lists of steps it keeps its place in.
+NOTE_TOTAL, VELOCITY_TOTAL = 'note', 'velocity'
+RHYTHM_STEPS, NOTE_STEPS = 'rhythm', 'notes'
+# Where a step's values hold the note its grab took, beside its rows.
+GRABBED = 'grabbed'
+# How messages name a pattern, and what goes wrong while playing one.
+WHERE_PATTERN = 'pattern {name!r}'
+MSG_NO_SUCH_PATTERN = '{where}: no pattern called {name!r}'
+MSG_CANT_PLAY = '{where}: {problem}'
+MSG_NO_SCALE = '{where}: it uses scale degrees, but scene {scene} and the song have no scale'
 
 
 class PatternPlayer:
@@ -60,7 +74,7 @@ class PatternPlayer:
         """
         for name in (rhythm_name, notes_name):
             if not self._song.has_pattern(name):
-                raise SongFileError(f'{where}: no pattern called {name!r}')
+                raise SongFileError(MSG_NO_SUCH_PATTERN.format(where=where, name=name))
         rhythm, notes = self._song.get_pattern(rhythm_name), self._song.get_pattern(notes_name)
         combined = rhythm_name != notes_name
         note_steps = notes.get_note_steps()
@@ -69,30 +83,27 @@ class PatternPlayer:
             return direction or pattern.get_direction()
 
         length = self.pattern_length(rhythm)
-        where = f'pattern {notes_name!r}'
+        where = WHERE_PATTERN.format(name=notes_name)
         positions, controls, time = [], [], Fraction(0)
         while time < length:
-            step = order.next_step(('rhythm', rhythm_name), rhythm.get_steps(), direction_of(rhythm))
-            values = {row: rhythm.get_value(row, step) for row in PATTERN_ROWS}
+            step = order.next_step((RHYTHM_STEPS, rhythm_name), rhythm.get_steps(), direction_of(rhythm))
+            values = _step_values(rhythm, step, PATTERN_ROWS)
             moment = start + time
-            duration = self._default_length if values['duration'] is None else number(values['duration'], where)
+            duration = self._step_length(values, where)
             # CC values belong to the rhythm, and a rest can send them too.
-            controls += [
-                Control(time, lane, values[row], bool(values['slide']))
-                for lane, row in enumerate(CC_ROWS) if values[row] is not None
-            ]
+            controls += _controls_sent(values, time)
             time += duration
-            if values['degree'] is None or (combined and not note_steps):
+            if values[Row.DEGREE] is None or (combined and not note_steps):
                 positions.append(Rest(duration))
                 continue
             note_step = step
             if combined:
-                note_step = note_steps[order.next_step(('notes', notes_name), len(note_steps), direction_of(notes))]
-                values.update({row: notes.get_value(row, note_step) for row in NOTE_ROWS})
+                note_step = note_steps[order.next_step((NOTE_STEPS, notes_name), len(note_steps), direction_of(notes))]
+                values.update(_step_values(notes, note_step, NOTE_ROWS))
             drum = notes.is_drum()
-            values['grabbed'] = grab.note_at(moment) if grab and notes.get_value('grab', note_step) else None
-            note_total = totals.add('note', values['note_add'], notes.get_accumulator_limit())
-            velocity_total = totals.add('velocity', values['velocity_add'], rhythm.get_accumulator_limit())
+            values[GRABBED] = grab.note_at(moment) if grab and notes.get_value(Row.GRAB, note_step) else None
+            note_total = totals.add(NOTE_TOTAL, values[Row.NOTE_ADD], notes.get_accumulator_limit())
+            velocity_total = totals.add(VELOCITY_TOTAL, values[Row.VELOCITY_ADD], rhythm.get_accumulator_limit())
             positions += self._step(values, drum, where, rolls, note_total, velocity_total)
         clip = Clip(notes=positions, scale=self._scale, controls=controls)
         return clip.section(0, length) if time > length else clip
@@ -100,45 +111,46 @@ class PatternPlayer:
     def pattern_length(self, pattern):
         """Return how long one pass through a pattern lasts, in whole notes."""
         return sum(
-            (self._default_length if pattern.get_value('duration', step) is None else number(pattern.get_value('duration', step), 'duration')
+            (self._step_length({Row.DURATION: pattern.get_value(Row.DURATION, step)}, Row.DURATION)
              for step in range(pattern.get_steps())),
             Fraction(0),
         )
 
+    def _step_length(self, values, where):
+        """Return how long a step lasts: its duration, or the song's default length if it has none."""
+        duration = values[Row.DURATION]
+        return self._default_length if duration is None else number(duration, where)
+
     def _step(self, values, drum, where, rolls, note_total, velocity_total):
         """Return what one step plays, as more than one position if it ratchets."""
-        length = self._default_length if values['duration'] is None else number(values['duration'], where)
+        length = self._step_length(values, where)
         default = self._song.get_default_drum_octave() if drum else self._song.get_default_octave()
-        octave = (default if values['octave'] is None else values['octave']) + LIVE_OCTAVE_OFFSET
-        velocity = DEFAULT_VELOCITY if values['velocity'] is None else values['velocity']
-        velocity = max(min(velocity + velocity_total, 127), 1)
-        ratchet = values['ratchet'] or DEFAULT_RATCHET
-        offset = values['ratchet_offset'] or 0
+        octave = _value_or(values[Row.OCTAVE], default) + LIVE_OCTAVE_OFFSET
+        velocity = _clamped_velocity(_value_or(values[Row.VELOCITY], DEFAULT_VELOCITY) + velocity_total)
+        ratchet = values[Row.RATCHET] or DEFAULT_RATCHET
+        offset = values[Row.RATCHET_OFFSET] or NO_HALF_STEPS
         slices = []
-        transpose = 0 if drum else self._transpose
+        transpose = NO_HALF_STEPS if drum else self._transpose
         for place in range(ratchet):
             shift = transpose + note_total + place * offset
-            if values['grabbed'] is not None:
-                played = self._grabbed_sound(values['grabbed'], length, shift, drum)
+            if values[GRABBED] is not None:
+                played = self._grabbed_sound(values[GRABBED], length, shift, drum)
             else:
                 played = self._sound(values, drum, length, octave, shift, where)
             slices.append(divide(with_sound(played, velocity=velocity), ratchet))
-        if values['glide']:
+        if values[Row.GLIDE]:
             slices[-1] = with_sound(slices[-1], glide=True)
-        probability = DEFAULT_PROBABILITY if values['probability'] is None else values['probability']
-        if probability >= 100:
+        probability = _value_or(values[Row.PROBABILITY], DEFAULT_PROBABILITY)
+        if probability >= MAX_PROBABILITY:
             return slices
-        return [
-            piece if rolls.random() * 100 < probability else Rest(piece.length)
-            for piece in slices
-        ]
+        return [piece if _rolls_under(rolls, probability) else Rest(piece.length) for piece in slices]
 
     def _grabbed_sound(self, number_grabbed, length, shift, drum):
         """Return a grabbed note, moved along this clip's scale, or by half steps for drums.
 
         A note moved outside the MIDI range stays where it was grabbed.
         """
-        octave, place = divmod(number_grabbed, 12)
+        octave, place = divmod(number_grabbed, HALF_STEPS_PER_OCTAVE)
         note = Note(SHARP_NAMES[place], octave, length)
         try:
             return along_scale(note, shift, None if drum else self._scale)
@@ -153,36 +165,77 @@ class PatternPlayer:
         def attempt(at_octave):
             if not drum:
                 return self._degree_sound(values, length, at_octave, shift, where)
-            note = Note(values['degree'] + (values['accidental'] or ''), at_octave, length)
+            note = Note(values[Row.DEGREE] + (values[Row.ACCIDENTAL] or NO_ACCIDENTAL), at_octave, length)
             return note.half_step(shift) if shift else note
 
-        changes = [0]
-        if shift:
-            changes += [change for size in range(1, MAX_OCTAVE_CHANGE + 1) for change in (-size, size)]
         problem = None
-        for change in changes:
+        for change in _octave_changes_to_try(shift):
             try:
                 return attempt(octave + change)
             except ValueError as error:
                 problem = problem or error
-        raise SongFileError(f'{where}: {problem}') from problem
+        raise SongFileError(MSG_CANT_PLAY.format(where=where, problem=problem)) from problem
 
     def _degree_sound(self, values, length, octave, shift, where):
         if self._scene.get_scale_name() is None:
-            raise SongFileError(f'{where}: it uses scale degrees, but scene {self._scene.get_number()} and the song have no scale')
+            raise SongFileError(MSG_NO_SCALE.format(where=where, scene=self._scene.get_number()))
         scale = self._song.get_named_scale(self._scene.get_scale_name()).scale_at(octave)
-        half_steps = ACCIDENTALS.get(values['accidental'], 0)
-        degree = values['degree']
+        half_steps = ACCIDENTALS.get(values[Row.ACCIDENTAL], NO_HALF_STEPS)
+        degree = values[Row.DEGREE]
         root = Degree(degree, length, half_steps=half_steps, scale_notes=shift).to_note(scale)
-        symbol = None if values['chord'] is None else str(values['chord'])
+        symbol = None if values[Row.CHORD] is None else str(values[Row.CHORD])
         if symbol is None:
             return root
         if symbol in FIXED_CHORDS:
             return root.to_chord(FIXED_CHORDS[symbol])
-        return Chord([
-            Degree(degree + above, length, half_steps=half_steps, scale_notes=shift).to_note(scale)
-            for above in SCALE_CHORDS[symbol]
-        ])
+        return _scale_chord(SCALE_CHORDS[symbol], degree, length, half_steps, shift, scale)
+
+
+def _step_values(pattern, step, rows):
+    """Return one step's values on some of a pattern's rows, by row."""
+    return {row: pattern.get_value(row, step) for row in rows}
+
+
+def _controls_sent(values, time):
+    """Return the CC values a step sends at a time, one for each CC lane it has a value on."""
+    return [
+        Control(time, lane, values[row], bool(values[Row.SLIDE]))
+        for lane, row in enumerate(CC_ROWS) if values[row] is not None
+    ]
+
+
+def _scale_chord(degrees_above, degree, length, half_steps, shift, scale):
+    """Return a chord of scale notes: the step's degree and the scale degrees above it that a symbol like 7 names."""
+    return Chord([
+        Degree(degree + above, length, half_steps=half_steps, scale_notes=shift).to_note(scale)
+        for above in degrees_above
+    ])
+
+
+def _value_or(value, default):
+    """Return a step's value, or a default if the step leaves it blank."""
+    return default if value is None else value
+
+
+def _clamped_velocity(velocity):
+    """Return a velocity moved into the range MIDI allows, if a running total pushed it out."""
+    return max(min(velocity, MAX_VELOCITY), MIN_VELOCITY)
+
+
+def _rolls_under(rolls, probability):
+    """Return whether a step with a probability, from 0 to 100, plays this time."""
+    return rolls.random() * MAX_PROBABILITY < probability
+
+
+def _octave_changes_to_try(shift):
+    """Return the octave changes to try for a note, nearest first, so a moved note can find an octave that fits.
+
+    A note that isn't moved is only tried where it is.
+    """
+    changes = [0]
+    if shift:
+        changes += [change for size in range(1, MAX_OCTAVE_CHANGE + 1) for change in (-size, size)]
+    return changes
 
 
 def with_sound(played, **changes):

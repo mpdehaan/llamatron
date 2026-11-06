@@ -18,9 +18,10 @@
 
 from llamatron.composition.chain import Chain
 from llamatron.composition.checks import check_keys, live_octave, number, positive_length
-from llamatron.composition.file_format import (
-    DEFAULT_DRUM_OCTAVE, DEFAULT_LENGTH, DEFAULT_OCTAVE, DEFAULT_SEED, DEFAULT_TEMPO, GRANULARITIES, NAMED_GENERATORS,
+from llamatron.composition.defaults import (
+    DEFAULT_DRUM_OCTAVE, DEFAULT_GRANULARITY, DEFAULT_LENGTH, DEFAULT_OCTAVE, DEFAULT_SEED, DEFAULT_TEMPO, GRANULARITIES,
 )
+from llamatron.composition.file_format import NAMED_GENERATORS, Section, SongSetting
 from llamatron.composition.generator_settings import GENERATOR_SETTINGS
 from llamatron.composition.llama_data import LlamaData
 from llamatron.composition.named_scale import NamedScale
@@ -31,11 +32,33 @@ from llamatron.composition.track import Track
 
 # The song's own settings, in the order they're written to a file.
 SETTINGS = [
-    'title', 'author', 'description', 'tempo', 'scale', 'seed', 'default_length', 'granularity',
-    'default_octave', 'default_drum_octave',
+    SongSetting.TITLE, SongSetting.AUTHOR, SongSetting.DESCRIPTION, SongSetting.TEMPO, SongSetting.SCALE,
+    SongSetting.SEED, SongSetting.DEFAULT_LENGTH, SongSetting.GRANULARITY, SongSetting.DEFAULT_OCTAVE,
+    SongSetting.DEFAULT_DRUM_OCTAVE,
 ]
+# Settings that are only text for people, like the title.
+TEXT_SETTINGS = (SongSetting.TITLE, SongSetting.AUTHOR, SongSetting.DESCRIPTION)
 # Its sections of named objects, in the order they're written to a file, before its scenes.
-SECTIONS = ['scales', 'patterns', 'tracks', *NAMED_GENERATORS.values(), 'chains']
+SECTIONS = [Section.SCALES, Section.PATTERNS, Section.TRACKS, *NAMED_GENERATORS.values(), Section.CHAINS]
+# How error messages name the file as a whole, and one object in each section of named objects.
+THE_FILE = 'the file'
+ITEM_LABELS = {Section.PATTERNS: 'pattern', Section.CHAINS: 'chain'}
+MSG_NOT_A_SONG = 'a song file must have settings like tempo, scale and scenes'
+MSG_NOT_TEXT = '{name} must be text, got {value!r}'
+MSG_SCALES_NOT_NAMED = 'scales: expected named scales like main: { root: F, type: minor }'
+MSG_NO_SUCH_SCALE = 'scale: no scale called {scale!r}'
+MSG_BAD_GRANULARITY = 'granularity must be one of {choices}, got {value!r}'
+MSG_TRACKS_NOT_NAMED = 'tracks: expected named tracks with their settings, like lead: { transpose: 2 }'
+MSG_GENERATORS_NOT_NAMED = '{section}: expected named settings, like bells: {{ step: 1/8 }}'
+MSG_SCENES_NOT_A_LIST = 'scenes: expected a list of scenes'
+# How messages name an object in the file: a named one by its kind and name, and a scene by its place.
+WHERE_NAMED = '{label} {name!r}'
+WHERE_SCENE_ENTRY = 'scene entry {number}'
+SCALE_LABEL, TRACK_LABEL = 'scale', 'track'
+# Scenes are counted from 1 in messages, as they're shown.
+FIRST_SCENE_NUMBER = 1
+# What a text setting is when the file leaves it out.
+NO_TEXT = ''
 
 
 class Song(LlamaData):
@@ -52,75 +75,77 @@ class Song(LlamaData):
         self._scenes = None
 
     @classmethod
-    def from_data(cls, data, where='the file', song=None):
+    def from_data(cls, data, where=THE_FILE, song=None):
         """Read a whole song file's data, checking every part of it, in the order the file is read."""
         # Every setting has a default, so an empty file is an empty song.
         data = {} if data is None else data
         if not isinstance(data, dict):
-            raise SongFileError('a song file must have settings like tempo, scale and scenes')
-        check_keys(data, where, {*SETTINGS, *SECTIONS, 'scenes'})
+            raise SongFileError(MSG_NOT_A_SONG)
+        check_keys(data, where, {*SETTINGS, *SECTIONS, Section.SCENES})
         song = cls()
         song._read_settings(data)
-        song._read_section(data, 'patterns', Pattern, 'pattern')
+        song._read_section(data, Section.PATTERNS, Pattern)
         song._read_tracks(data)
-        for section in NAMED_GENERATORS.values():
-            song._read_generators(data, section)
-        song._read_section(data, 'chains', Chain, 'chain')
+        for kind, section in NAMED_GENERATORS.items():
+            song._read_generators(data, kind, section)
+        song._read_section(data, Section.CHAINS, Chain)
         song._read_scenes(data)
         return song
 
     def _read_settings(self, data):
         # The title, author and description are only for people reading or sharing the file.
-        for key in ('title', 'author', 'description'):
-            if not isinstance(data.get(key, ''), str):
-                raise SongFileError(f'{key} must be text, got {data[key]!r}')
-        number(data.get('tempo', DEFAULT_TEMPO), 'tempo')
-        scales = data.get('scales') or {}
+        for name in TEXT_SETTINGS:
+            if not isinstance(data.get(name, NO_TEXT), str):
+                raise SongFileError(MSG_NOT_TEXT.format(name=name, value=data[name]))
+        number(data.get(SongSetting.TEMPO, DEFAULT_TEMPO), SongSetting.TEMPO)
+        scales = data.get(Section.SCALES) or {}
         if not isinstance(scales, dict):
-            raise SongFileError('scales: expected named scales like main: { root: F, type: minor }')
-        self._sections['scales'] = None if 'scales' not in data else {
-            name: NamedScale.from_data(scale, f'scale {name!r}', self) for name, scale in scales.items()
+            raise SongFileError(MSG_SCALES_NOT_NAMED)
+        self._sections[Section.SCALES] = None if Section.SCALES not in data else {
+            name: NamedScale.from_data(scale, WHERE_NAMED.format(label=SCALE_LABEL, name=name), self) for name, scale in scales.items()
         }
-        if data.get('scale') is not None and not self.has_scale(data['scale']):
-            raise SongFileError(f'scale: no scale called {data["scale"]!r}')
-        positive_length(data.get('default_length', DEFAULT_LENGTH), 'default_length')
-        granularity = data.get('granularity', GRANULARITIES[0])
+        scale = data.get(SongSetting.SCALE)
+        if scale is not None and not self.has_scale(scale):
+            raise SongFileError(MSG_NO_SUCH_SCALE.format(scale=scale))
+        positive_length(data.get(SongSetting.DEFAULT_LENGTH, DEFAULT_LENGTH), SongSetting.DEFAULT_LENGTH)
+        granularity = data.get(SongSetting.GRANULARITY, DEFAULT_GRANULARITY)
         if granularity not in GRANULARITIES:
-            raise SongFileError(f'granularity must be one of {GRANULARITIES}, got {granularity!r}')
-        live_octave(data.get('default_octave', DEFAULT_OCTAVE), 'default_octave')
-        live_octave(data.get('default_drum_octave', DEFAULT_DRUM_OCTAVE), 'default_drum_octave')
+            raise SongFileError(MSG_BAD_GRANULARITY.format(choices=GRANULARITIES, value=granularity))
+        live_octave(data.get(SongSetting.DEFAULT_OCTAVE, DEFAULT_OCTAVE), SongSetting.DEFAULT_OCTAVE)
+        live_octave(data.get(SongSetting.DEFAULT_DRUM_OCTAVE, DEFAULT_DRUM_OCTAVE), SongSetting.DEFAULT_DRUM_OCTAVE)
         self._settings = {name: data.get(name) for name in SETTINGS}
 
-    def _read_section(self, data, section, kind, label):
+    def _read_section(self, data, section, kind):
         """Read a section of named objects, like patterns, naming each one in any error."""
         if section in data:
+            label = ITEM_LABELS[section]
             self._sections[section] = {
-                name: kind.from_data(item, f'{label} {name!r}', self) for name, item in (data[section] or {}).items()
+                name: kind.from_data(item, WHERE_NAMED.format(label=label, name=name), self) for name, item in (data[section] or {}).items()
             }
 
     def _read_tracks(self, data):
-        tracks = data.get('tracks') or {}
+        tracks = data.get(Section.TRACKS) or {}
         if not isinstance(tracks, dict):
-            raise SongFileError('tracks: expected named tracks with their settings, like lead: { transpose: 2 }')
-        if 'tracks' in data:
-            self._sections['tracks'] = {name: Track.from_data(settings, f'track {name!r}', self) for name, settings in tracks.items()}
+            raise SongFileError(MSG_TRACKS_NOT_NAMED)
+        if Section.TRACKS in data:
+            self._sections[Section.TRACKS] = {name: Track.from_data(settings, WHERE_NAMED.format(label=TRACK_LABEL, name=name), self) for name, settings in tracks.items()}
 
-    def _read_generators(self, data, section):
-        kind = next(kind for kind, named in NAMED_GENERATORS.items() if named == section)
+    def _read_generators(self, data, kind, section):
         generators = data.get(section) or {}
         if not isinstance(generators, dict):
-            raise SongFileError(f'{section}: expected named settings, like bells: {{ step: 1/8 }}')
+            raise SongFileError(MSG_GENERATORS_NOT_NAMED.format(section=section))
         if section in data:
             self._sections[section] = {
-                name: GENERATOR_SETTINGS[kind].from_data(settings, f'{kind} {name!r}', self) for name, settings in generators.items()
+                name: GENERATOR_SETTINGS[kind].from_data(settings, WHERE_NAMED.format(label=kind, name=name), self) for name, settings in generators.items()
             }
 
     def _read_scenes(self, data):
-        scenes = data.get('scenes') or []
+        scenes = data.get(Section.SCENES) or []
         if not isinstance(scenes, list):
-            raise SongFileError('scenes: expected a list of scenes')
-        self._scenes = None if 'scenes' not in data else [
-            Scene.from_data(scene, f'scene entry {index}', self) for index, scene in enumerate(scenes, start=1)
+            raise SongFileError(MSG_SCENES_NOT_A_LIST)
+        self._scenes = None if Section.SCENES not in data else [
+            Scene.from_data(scene, WHERE_SCENE_ENTRY.format(number=number), self)
+            for number, scene in enumerate(scenes, start=FIRST_SCENE_NUMBER)
         ]
 
     def to_data(self):
@@ -129,34 +154,36 @@ class Song(LlamaData):
             if items is not None:
                 data[section] = {name: item.to_data() for name, item in items.items()}
         if self._scenes is not None:
-            data['scenes'] = [scene.to_data() for scene in self._scenes]
+            data[Section.SCENES] = [scene.to_data() for scene in self._scenes]
         return data
 
     # The song's settings, with their defaults.
 
     def get_tempo(self):
         """Return the song's tempo in quarter notes a minute, as an exact number."""
-        return number(self._settings['tempo'] if self._settings['tempo'] is not None else DEFAULT_TEMPO, 'tempo')
+        return number(self._setting(SongSetting.TEMPO, DEFAULT_TEMPO), SongSetting.TEMPO)
 
     def get_seed(self):
-        return DEFAULT_SEED if self._settings['seed'] is None else self._settings['seed']
+        return self._setting(SongSetting.SEED, DEFAULT_SEED)
 
     def get_default_length(self):
         """Return how long a step with no duration lasts, in whole notes."""
-        length = self._settings['default_length']
-        return positive_length(DEFAULT_LENGTH if length is None else length, 'default_length')
+        return positive_length(self._setting(SongSetting.DEFAULT_LENGTH, DEFAULT_LENGTH), SongSetting.DEFAULT_LENGTH)
 
     def get_default_octave(self):
-        octave = self._settings['default_octave']
-        return DEFAULT_OCTAVE if octave is None else octave
+        return self._setting(SongSetting.DEFAULT_OCTAVE, DEFAULT_OCTAVE)
 
     def get_default_drum_octave(self):
-        octave = self._settings['default_drum_octave']
-        return DEFAULT_DRUM_OCTAVE if octave is None else octave
+        return self._setting(SongSetting.DEFAULT_DRUM_OCTAVE, DEFAULT_DRUM_OCTAVE)
 
     def get_scale_name(self):
         """Return the name of the song's scale, or None if it has none."""
-        return self._settings['scale']
+        return self._settings[SongSetting.SCALE]
+
+    def _setting(self, name, default):
+        """Return one of the song's settings, or its default if the file leaves it out."""
+        value = self._settings[name]
+        return default if value is None else value
 
     # Looking up the song's named objects.
 
@@ -164,26 +191,26 @@ class Song(LlamaData):
         return self._sections[section] or {}
 
     def has_scale(self, name):
-        return name in self._named('scales')
+        return name in self._named(Section.SCALES)
 
     def get_named_scale(self, name):
-        return self._named('scales')[name]
+        return self._named(Section.SCALES)[name]
 
     def has_pattern(self, name):
-        return name in self._named('patterns')
+        return name in self._named(Section.PATTERNS)
 
     def get_pattern(self, name):
-        return self._named('patterns')[name]
+        return self._named(Section.PATTERNS)[name]
 
     def has_track(self, name):
-        return name in self._named('tracks')
+        return name in self._named(Section.TRACKS)
 
     def get_track(self, name):
-        return self._named('tracks')[name]
+        return self._named(Section.TRACKS)[name]
 
     def get_track_names(self):
         """Return the names of the tracks, in the song's order."""
-        return list(self._named('tracks'))
+        return list(self._named(Section.TRACKS))
 
     def has_generator(self, kind, name):
         """Return whether there's a generator of a kind, like arp, with this name."""
@@ -193,10 +220,10 @@ class Song(LlamaData):
         return self._named(NAMED_GENERATORS[kind])[name]
 
     def has_chain(self, name):
-        return name in self._named('chains')
+        return name in self._named(Section.CHAINS)
 
     def get_chain(self, name):
-        return self._named('chains')[name]
+        return self._named(Section.CHAINS)[name]
 
     def get_scenes(self):
         """Return the scenes in the order they play."""

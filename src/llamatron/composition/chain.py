@@ -20,6 +20,13 @@ from llamatron.composition.generator_settings import GENERATOR_SETTINGS
 from llamatron.composition.llama_data import LlamaData
 from llamatron.composition.song_file_error import SongFileError
 
+MSG_EXPECTED_LIST = '{where}: expected a list of generators'
+MSG_ONE_GENERATOR_PER_STEP = '{where}: each step must be one generator, got {step!r}'
+MSG_UNKNOWN_GENERATOR = '{where}: unknown generator {kind!r}, expected one of {kinds}'
+MSG_NO_SUCH_GENERATOR = '{where}: no {kind} called {name!r}'
+# Each step of a chain names exactly one generator.
+GENERATORS_PER_STEP = 1
+
 
 class Chain(LlamaData):
     """Steps like arp: bells or auto_ratchet: rolls, each naming a generator the song defines.
@@ -34,16 +41,16 @@ class Chain(LlamaData):
     @classmethod
     def from_data(cls, data, where, song=None):
         if not isinstance(data, list):
-            raise SongFileError(f'{where}: expected a list of generators')
+            raise SongFileError(MSG_EXPECTED_LIST.format(where=where))
         steps = []
         for step in data:
-            if not isinstance(step, dict) or len(step) != 1:
-                raise SongFileError(f'{where}: each step must be one generator, got {step!r}')
+            if not _names_one_generator(step):
+                raise SongFileError(MSG_ONE_GENERATOR_PER_STEP.format(where=where, step=step))
             kind, name = next(iter(step.items()))
             if kind not in GENERATOR_SETTINGS:
-                raise SongFileError(f'{where}: unknown generator {kind!r}, expected one of {sorted(GENERATOR_SETTINGS)}')
+                raise SongFileError(MSG_UNKNOWN_GENERATOR.format(where=where, kind=kind, kinds=sorted(GENERATOR_SETTINGS)))
             if not isinstance(name, str) or not song.has_generator(kind, name):
-                raise SongFileError(f'{where}: no {kind} called {name!r}')
+                raise SongFileError(MSG_NO_SUCH_GENERATOR.format(where=where, kind=kind, name=name))
             steps.append((kind, name))
         return cls(steps)
 
@@ -53,3 +60,8 @@ class Chain(LlamaData):
     def get_steps(self):
         """Return each step as (kind of generator, its name), in the order they run."""
         return list(self._steps)
+
+
+def _names_one_generator(step):
+    """Return whether a chain step is written like arp: bells, naming one generator by its kind."""
+    return isinstance(step, dict) and len(step) == GENERATORS_PER_STEP

@@ -23,10 +23,7 @@ class GrabSource:
     """The notes a finished clip starts, by when they start, like the Cirklon's note grab."""
 
     def __init__(self, clip):
-        events, _ = timed_events(clip, clip.scale)
-        self._onsets = {}
-        for start, _, number, _ in events:
-            self._onsets.setdefault(start, set()).add(number)
+        self._onsets = _notes_by_start(clip)
         self._times = sorted(self._onsets)
 
     def note_at(self, time):
@@ -35,5 +32,19 @@ class GrabSource:
         A chord gives its lowest note. Chords are built upward from the root, so that's the root
         for now, but inversions would need to change this.
         """
+        latest = self._latest_start_by(time)
+        return None if latest is None else min(self._onsets[latest])
+
+    def _latest_start_by(self, time):
+        """Return the latest time a note starts at or before a time, or None if none has started."""
         started = [moment for moment in self._times if moment <= time]
-        return min(self._onsets[started[-1]]) if started else None
+        return started[-1] if started else None
+
+
+def _notes_by_start(clip):
+    """Return the MIDI numbers of the notes a clip plays, grouped by when they start."""
+    events, _ = timed_events(clip, clip.scale)
+    notes = {}
+    for start, _, number, _ in events:
+        notes.setdefault(start, set()).add(number)
+    return notes

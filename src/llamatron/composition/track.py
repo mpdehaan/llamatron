@@ -16,10 +16,19 @@
 
 """A track: a column of the song, with settings that apply to every clip on it."""
 
-from llamatron.composition.checks import check_keys
-from llamatron.composition.file_format import CC_ROWS, MAX_TRANSPOSE
+from llamatron.composition.checks import check_keys, is_true_or_false, is_whole_number_from
+from llamatron.composition.defaults import DEFAULT_TRANSPOSE
+from llamatron.composition.file_format import CC_ROWS, TrackSetting
+from llamatron.composition.limits import MAX_CC_NUMBER, MAX_TRANSPOSE, MIN_CC_NUMBER
 from llamatron.composition.llama_data import LlamaData
 from llamatron.composition.song_file_error import SongFileError
+
+MSG_EXPECTED_SETTINGS = '{where}: expected settings like {{ drum: true }}, got {data!r}'
+MSG_NOT_TRUE_OR_FALSE = '{where}: {name} must be true or false, got {value!r}'
+MSG_BAD_TRANSPOSE = '{where}: transpose must be a whole number from -{most} to {most}, got {value!r}'
+MSG_BAD_CC_NUMBERS = "{where}: cc must be a list of {lanes} CC numbers from {lowest} to {highest}, or ~ for a lane it doesn't use, got {value!r}"
+# A track's settings, in the order they're written to a file.
+SETTINGS = [TrackSetting.DRUM, TrackSetting.MUTE, TrackSetting.TRANSPOSE, TrackSetting.CC]
 
 
 class Track(LlamaData):
@@ -30,44 +39,53 @@ class Track(LlamaData):
     """
 
     def __init__(self, drum=None, mute=None, transpose=None, cc=None):
-        self._drum = drum
-        self._mute = mute
-        self._transpose = transpose
-        self._cc = cc
+        self._settings = {TrackSetting.DRUM: drum, TrackSetting.MUTE: mute, TrackSetting.TRANSPOSE: transpose, TrackSetting.CC: cc}
 
     @classmethod
     def from_data(cls, data, where, song=None):
         data = {} if data is None else data
         if not isinstance(data, dict):
-            raise SongFileError(f'{where}: expected settings like {{ drum: true }}, got {data!r}')
-        check_keys(data, where, {'drum', 'mute', 'transpose', 'cc'})
-        for flag in ('drum', 'mute'):
-            if type(data.get(flag, False)) is not bool:
-                raise SongFileError(f'{where}: {flag} must be true or false, got {data[flag]!r}')
-        transpose = data.get('transpose', 0)
-        if type(transpose) is not int or not -MAX_TRANSPOSE <= transpose <= MAX_TRANSPOSE:
-            raise SongFileError(f'{where}: transpose must be a whole number from -{MAX_TRANSPOSE} to {MAX_TRANSPOSE}, got {transpose!r}')
-        numbers = data.get('cc', [None] * len(CC_ROWS))
-        if not isinstance(numbers, list) or len(numbers) != len(CC_ROWS) or not all(
-            number is None or (type(number) is int and 0 <= number <= 127) for number in numbers
-        ):
-            raise SongFileError(f'{where}: cc must be a list of {len(CC_ROWS)} CC numbers from 0 to 127, or ~ for a lane it doesn\'t use, got {numbers!r}')
-        return cls(data.get('drum'), data.get('mute'), data.get('transpose'), data.get('cc'))
+            raise SongFileError(MSG_EXPECTED_SETTINGS.format(where=where, data=data))
+        check_keys(data, where, set(SETTINGS))
+        for flag in (TrackSetting.DRUM, TrackSetting.MUTE):
+            if not is_true_or_false(data.get(flag, False)):
+                raise SongFileError(MSG_NOT_TRUE_OR_FALSE.format(where=where, name=flag, value=data[flag]))
+        if not is_whole_number_from(data.get(TrackSetting.TRANSPOSE, DEFAULT_TRANSPOSE), -MAX_TRANSPOSE, MAX_TRANSPOSE):
+            raise SongFileError(MSG_BAD_TRANSPOSE.format(where=where, most=MAX_TRANSPOSE, value=data[TrackSetting.TRANSPOSE]))
+        numbers = data.get(TrackSetting.CC, _no_cc_numbers())
+        if not _is_cc_number_list(numbers):
+            raise SongFileError(MSG_BAD_CC_NUMBERS.format(where=where, lanes=len(CC_ROWS), lowest=MIN_CC_NUMBER, highest=MAX_CC_NUMBER, value=numbers))
+        return cls(**{name: data.get(name) for name in SETTINGS})
 
     def to_data(self):
-        settings = {'drum': self._drum, 'mute': self._mute, 'transpose': self._transpose, 'cc': self._cc}
-        return {name: value for name, value in settings.items() if value is not None}
+        return {name: value for name, value in self._settings.items() if value is not None}
 
     def is_drum(self):
-        return bool(self._drum)
+        return bool(self._settings[TrackSetting.DRUM])
 
     def is_muted(self):
-        return bool(self._mute)
+        return bool(self._settings[TrackSetting.MUTE])
 
     def get_transpose(self):
         """Return how many scale notes the track moves its notes, which is always 0 on a drum track."""
-        return 0 if self.is_drum() else (self._transpose or 0)
+        if self.is_drum():
+            return DEFAULT_TRANSPOSE
+        transpose = self._settings[TrackSetting.TRANSPOSE]
+        return DEFAULT_TRANSPOSE if transpose is None else transpose
 
     def get_cc_numbers(self):
         """Return the CC number each of a pattern's CC lanes sends on this track, or None for a lane it doesn't use."""
-        return list(self._cc) if self._cc is not None else [None] * len(CC_ROWS)
+        numbers = self._settings[TrackSetting.CC]
+        return _no_cc_numbers() if numbers is None else list(numbers)
+
+
+def _no_cc_numbers():
+    """Return the CC numbers of a track that sends no CC values: none for every lane."""
+    return [None] * len(CC_ROWS)
+
+
+def _is_cc_number_list(numbers):
+    """Return whether numbers has a CC number, or None for a lane that sends nothing, for every CC lane."""
+    return isinstance(numbers, list) and len(numbers) == len(CC_ROWS) and all(
+        number is None or is_whole_number_from(number, MIN_CC_NUMBER, MAX_CC_NUMBER) for number in numbers
+    )

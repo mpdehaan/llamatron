@@ -18,10 +18,21 @@
 
 import re
 
+from llamatron.composition.file_format import ScaleSetting
 from llamatron.composition.llama_data import LlamaData
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.note import Note
 from llamatron.scale import Scale, ScaleType
+
+MSG_EXPECTED_ROOT_AND_TYPE = '{where}: expected a root and a type, like {{ root: F, type: minor }}, got {data!r}'
+MSG_EXPECTED_ROOT_NOTE = '{where}: expected a root note like F or Bb, got {root!r}'
+MSG_UNKNOWN_SCALE_TYPE = '{where}: unknown scale type {kind!r}, expected one of: {names}'
+# Scale type names, as error messages list them.
+NAME_LIST_SEPARATOR = ', '
+# A root note is a letter from A to G, then optionally # or b, like F, C# or Bb.
+ROOT_NOTE = re.compile(r'[A-G][#b]?')
+# A file can write a scale type with spaces, like natural minor, where its member name has underscores.
+WORD_GAP, MEMBER_WORD_GAP = ' ', '_'
 
 
 class NamedScale(LlamaData):
@@ -37,24 +48,38 @@ class NamedScale(LlamaData):
 
     @classmethod
     def from_data(cls, data, where, song=None):
-        if not isinstance(data, dict) or set(data) != {'root', 'type'}:
-            raise SongFileError(f'{where}: expected a root and a type, like {{ root: F, type: minor }}, got {data!r}')
-        root, kind = data['root'], data['type']
-        if not isinstance(root, str) or not re.fullmatch(r'[A-G][#b]?', root):
-            raise SongFileError(f'{where}: expected a root note like F or Bb, got {root!r}')
-        if _kind_name(kind) not in ScaleType.__members__:
-            names = ', '.join(sorted(name.lower() for name in ScaleType.__members__))
-            raise SongFileError(f'{where}: unknown scale type {kind!r}, expected one of: {names}')
+        if not isinstance(data, dict) or set(data) != {ScaleSetting.ROOT, ScaleSetting.TYPE}:
+            raise SongFileError(MSG_EXPECTED_ROOT_AND_TYPE.format(where=where, data=data))
+        root, kind = data[ScaleSetting.ROOT], data[ScaleSetting.TYPE]
+        if not is_root_note(root):
+            raise SongFileError(MSG_EXPECTED_ROOT_NOTE.format(where=where, root=root))
+        if not is_scale_type(kind):
+            raise SongFileError(MSG_UNKNOWN_SCALE_TYPE.format(where=where, kind=kind, names=NAME_LIST_SEPARATOR.join(scale_type_names())))
         return cls(root, kind)
 
     def to_data(self):
-        return {'root': self._root, 'type': self._kind}
+        return {ScaleSetting.ROOT: self._root, ScaleSetting.TYPE: self._kind}
 
     def scale_at(self, octave):
         """Return this scale with its root in an octave, in this project's numbering."""
-        return Scale(Note(self._root, octave), ScaleType[_kind_name(self._kind)])
+        return Scale(Note(self._root, octave), ScaleType[_scale_type_member(self._kind)])
 
 
-def _kind_name(kind):
-    """Return the ScaleType name a file's scale type means, so that 'natural minor' is NATURAL_MINOR."""
-    return str(kind).strip().upper().replace(' ', '_')
+def is_root_note(text):
+    """Return whether text names a root note, like F, C# or Bb."""
+    return isinstance(text, str) and ROOT_NOTE.fullmatch(text) is not None
+
+
+def is_scale_type(kind):
+    """Return whether a file's scale type, like 'minor' or 'natural minor', is one llamatron knows."""
+    return _scale_type_member(kind) in ScaleType.__members__
+
+
+def scale_type_names():
+    """Return every scale type's name as a file writes it, like 'minor', in alphabetical order."""
+    return sorted(member_name.lower() for member_name in ScaleType.__members__)
+
+
+def _scale_type_member(kind):
+    """Return the ScaleType member name a file's scale type means, so that 'natural minor' is NATURAL_MINOR."""
+    return str(kind).strip().upper().replace(WORD_GAP, MEMBER_WORD_GAP)

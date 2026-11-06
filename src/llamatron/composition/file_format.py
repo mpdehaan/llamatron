@@ -14,45 +14,177 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The song file format's fixed lists and defaults, shared by the objects that read and write it."""
+"""The names the song file format uses, and its fixed lists, shared by everything that reads or writes it.
+
+Each group of names is a class of constants, like Row.DEGREE for 'degree', so that code names
+what it means and a misspelled name fails at once. The values are the plain strings the file
+holds.
+"""
 
 from llamatron.chord import ChordType
+# The defaults stay importable from here too, for code that reads the format and its defaults together.
+from llamatron.composition.defaults import (  # noqa: F401
+    DEFAULT_ACCUMULATOR_LIMIT, DEFAULT_DRUM_OCTAVE, DEFAULT_LENGTH, DEFAULT_OCTAVE, DEFAULT_PROBABILITY,
+    DEFAULT_RATCHET, DEFAULT_SEED, DEFAULT_TEMPO, DEFAULT_VELOCITY, GRANULARITIES,
+)
+# And so do the limits that the rest of the program reads from here.
+from llamatron.composition.limits import MAX_LIVE_OCTAVE, MAX_TRANSPOSE, MIN_LIVE_OCTAVE  # noqa: F401
 
-# The song settings that have defaults, as they're used when a file leaves them out. Every
-# setting has one, so that a file written by an older version still loads.
-DEFAULT_TEMPO = 120
-DEFAULT_LENGTH = '1/16'
-GRANULARITIES = ['1/16', '1/32', '1/64', '1/128', '1/256']
-DEFAULT_OCTAVE = 3
-DEFAULT_DRUM_OCTAVE = 1
-DEFAULT_SEED = 1
-DEFAULT_VELOCITY = 127
-DEFAULT_PROBABILITY = 100
-DEFAULT_RATCHET = 1
+
+class Section:
+    """The sections of a song file that hold named objects, and its list of scenes."""
+
+    SCALES = 'scales'
+    PATTERNS = 'patterns'
+    TRACKS = 'tracks'
+    ARPS = 'arps'
+    AUTO_RATCHETS = 'auto_ratchets'
+    CHAINS = 'chains'
+    SCENES = 'scenes'
+
+
+class SongSetting:
+    """The song's own settings, at the top of a file."""
+
+    TITLE = 'title'
+    AUTHOR = 'author'
+    DESCRIPTION = 'description'
+    TEMPO = 'tempo'
+    SCALE = 'scale'
+    SEED = 'seed'
+    DEFAULT_LENGTH = 'default_length'
+    GRANULARITY = 'granularity'
+    DEFAULT_OCTAVE = 'default_octave'
+    DEFAULT_DRUM_OCTAVE = 'default_drum_octave'
+
+
+class ScaleSetting:
+    """A named scale's settings."""
+
+    ROOT = 'root'
+    TYPE = 'type'
+
+
+class TrackSetting:
+    """A track's settings."""
+
+    DRUM = 'drum'
+    MUTE = 'mute'
+    TRANSPOSE = 'transpose'
+    CC = 'cc'
+
+
+class PatternSetting:
+    """A pattern's settings, besides its rows."""
+
+    STEPS = 'steps'
+    DRUM = 'drum'
+    DIRECTION = 'direction'
+    ACCUMULATOR_LIMIT = 'accumulator_limit'
+
+
+class Row:
+    """A pattern's rows, each holding one value for every step, as in the pattern editor."""
+
+    DEGREE = 'degree'
+    DURATION = 'duration'
+    ACCIDENTAL = 'accidental'
+    OCTAVE = 'octave'
+    CHORD = 'chord'
+    VELOCITY = 'velocity'
+    PROBABILITY = 'probability'
+    GLIDE = 'glide'
+    RATCHET = 'ratchet'
+    RATCHET_OFFSET = 'ratchet_offset'
+    NOTE_ADD = 'note_add'
+    VELOCITY_ADD = 'velocity_add'
+    GRAB = 'grab'
+    CC1 = 'cc1'
+    CC2 = 'cc2'
+    CC3 = 'cc3'
+    CC4 = 'cc4'
+    SLIDE = 'slide'
+
+
+class CellSetting:
+    """What a scene's cell for a track can set."""
+
+    PATTERN = 'pattern'
+    CHAIN = 'chain'
+    LOOP = 'loop'
+    REPEAT = 'repeat'
+    DIRECTION = 'direction'
+    MORPH_TO = 'morph_to'
+    MORPH_STYLE = 'morph_style'
+    RHYTHM_FROM = 'rhythm_from'
+    GRAB_TRACK = 'grab_track'
+
+
+class SceneSetting:
+    """A scene's settings, and the cells it holds for its tracks."""
+
+    NAME = 'name'
+    REPEAT = 'repeat'
+    SCALE = 'scale'
+    TEMPO = 'tempo'
+    TEMPO_START = 'tempo_start'
+    TEMPO_END = 'tempo_end'
+    TRACKS = 'tracks'
+
+
+class Direction:
+    """The orders a pattern's steps can play in, with the Cirklon's names for them."""
+
+    FORWARD = 'forward'
+    REVERSE_A = 'reverse_a'
+    REVERSE_B = 'reverse_b'
+    ALTERNATE = 'alternate'
+    PENDULUM = 'pendulum'
+    RANDOM = 'random'
+    BROWNIAN = 'brownian'
+    EITHERWAY = 'eitherway'
+
+
+class GeneratorKind:
+    """The kinds of generator a chain step can name."""
+
+    ARP = 'arp'
+    AUTO_RATCHET = 'auto_ratchet'
+
+
+class Accidental:
+    """The accidentals a step can have."""
+
+    SHARP = '#'
+    FLAT = 'b'
+
 
 # Files and the UI number octaves the way Live displays them, where MIDI note 60 is C3. Notes in
 # this project number them two higher, so that same note is C5.
 LIVE_OCTAVE_OFFSET = 2
-MIN_LIVE_OCTAVE, MAX_LIVE_OCTAVE = -2, 8
 
 PATTERN_ROWS = [
-    'degree', 'duration', 'accidental', 'octave', 'chord', 'velocity', 'probability', 'glide',
-    'ratchet', 'ratchet_offset', 'note_add', 'velocity_add', 'grab',
-    'cc1', 'cc2', 'cc3', 'cc4', 'slide',
+    Row.DEGREE, Row.DURATION, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.VELOCITY, Row.PROBABILITY, Row.GLIDE,
+    Row.RATCHET, Row.RATCHET_OFFSET, Row.NOTE_ADD, Row.VELOCITY_ADD, Row.GRAB,
+    Row.CC1, Row.CC2, Row.CC3, Row.CC4, Row.SLIDE,
 ]
 # Rows that are on or off for each step, which files write as true or false.
-TOGGLE_ROWS = ('glide', 'grab', 'slide')
+TOGGLE_ROWS = (Row.GLIDE, Row.GRAB, Row.SLIDE)
 # A pattern's CC lanes, whose numbers each track sets for itself.
-CC_ROWS = ('cc1', 'cc2', 'cc3', 'cc4')
+CC_ROWS = (Row.CC1, Row.CC2, Row.CC3, Row.CC4)
 # Which pattern rows the notes side owns when a clip takes its rhythm from another pattern.
 # Everything else belongs to the rhythm.
-NOTE_ROWS = ('degree', 'accidental', 'octave', 'chord', 'note_add')
-MAX_TRANSPOSE = 24
-DEFAULT_ACCUMULATOR_LIMIT = 36
-FORWARD = 'forward'
-DIRECTIONS = [FORWARD, 'reverse_a', 'reverse_b', 'alternate', 'pendulum', 'random', 'brownian', 'eitherway']
+NOTE_ROWS = (Row.DEGREE, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.NOTE_ADD)
+# Rows that hold a whole number of any size, positive or negative.
+SIGNED_ROWS = (Row.RATCHET_OFFSET, Row.NOTE_ADD, Row.VELOCITY_ADD)
+FORWARD = Direction.FORWARD
+DIRECTIONS = [
+    Direction.FORWARD, Direction.REVERSE_A, Direction.REVERSE_B, Direction.ALTERNATE, Direction.PENDULUM,
+    Direction.RANDOM, Direction.BROWNIAN, Direction.EITHERWAY,
+]
 NOTE_LETTERS = 'ABCDEFG'
-ACCIDENTALS = {'#': 1, 'b': -1}
+# How many half steps each accidental moves a note.
+ACCIDENTALS = {Accidental.SHARP: 1, Accidental.FLAT: -1}
 
 # Chords built in exact half steps from the note, which can leave the scale, in the order the
 # editor offers them. Bare numbers are kept for chords built from the scale.
@@ -76,4 +208,4 @@ SCALE_CHORDS = {
 CHORD_SYMBOLS = [*FIXED_CHORDS, *SCALE_CHORDS]
 
 # The generators that a chain step can use by name, and the section of a file that names them.
-NAMED_GENERATORS = {'arp': 'arps', 'auto_ratchet': 'auto_ratchets'}
+NAMED_GENERATORS = {GeneratorKind.ARP: Section.ARPS, GeneratorKind.AUTO_RATCHET: Section.AUTO_RATCHETS}

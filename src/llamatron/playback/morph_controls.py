@@ -24,19 +24,44 @@ def morph_controls(source, target, start, end):
 
     Each side's values carry across the edges, so a lane holds what it would hold there.
     """
-    def in_effect(clip, time):
-        latest = {}
-        for item in clip.controls:
-            if item.time <= time:
-                latest[item.number] = item
-        return latest
-
     if end <= start:
         return list(source.controls)
-    result = [item for item in source.controls if item.time < start]
-    result += [replace(item, time=start) for item in in_effect(target, start).values() if item.time < start]
-    result += [item for item in target.controls if start <= item.time < end]
+    result = _sent_before(source, start)
+    result += _carried_to(target, start)
+    result += _sent_between(target, start, end)
     if end < source.total_length():
-        result += [replace(item, time=end) for item in in_effect(source, end).values() if item.time < end]
-        result += [item for item in source.controls if item.time >= end]
+        result += _carried_to(source, end)
+        result += _sent_from(source, end)
     return result
+
+
+def _sent_before(clip, time):
+    """Return the CC values a clip sends before a time."""
+    return [item for item in clip.controls if item.time < time]
+
+
+def _sent_between(clip, start, end):
+    """Return the CC values a clip sends from a start time until an end time."""
+    return [item for item in clip.controls if start <= item.time < end]
+
+
+def _sent_from(clip, time):
+    """Return the CC values a clip sends from a time on."""
+    return [item for item in clip.controls if item.time >= time]
+
+
+def _carried_to(clip, time):
+    """Return the values a clip's lanes were holding just before a time, sent again at that time.
+
+    A lane only holds a value if the clip sent one earlier, so lanes it hasn't used yet send nothing.
+    """
+    return [replace(item, time=time) for item in _values_in_effect(clip, time).values() if item.time < time]
+
+
+def _values_in_effect(clip, time):
+    """Return, for each CC lane, the last value a clip sent at or before a time."""
+    latest = {}
+    for item in clip.controls:
+        if item.time <= time:
+            latest[item.number] = item
+    return latest
