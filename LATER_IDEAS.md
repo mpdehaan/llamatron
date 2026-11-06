@@ -838,6 +838,33 @@ different times, it is just like four voices and they alternate singing notes so
 note1, voice2 does voice2, and so on.  The full "grab track" voice should be silent but
 music should start immediately with all voices active for the full track.
 
+## Arpeggiator demo notes
+
+The arp demo is good in the first section and then halfway into the synthwave section, but the
+rest of the demo should be dropped
+
+A lot of the other demos are EXCELLENT
+
+## Basic Classical Demo
+
+This is pachebel's cannon so rename it pachebel.yml
+
+## Other renames
+
+The arrangement_demo is the wellerman so rename it wellerman.yml
+
+## Original demos and names and redundancy
+
+the acid_techno and retro_chill demos are old, so we may want to rewrite them with new features and  make them
+even better.  To be discussed with respect to details.  The minimal techno example seems unneeded
+now that we have the morph demo, maybe rename the morph demo to minimal_morph.yml
+
+## File protect
+
+The song should have a protect option that allows it to be changed but not saved, so the demos
+can be protected and not accidentally overwritten.  You should be able to turn off the protec:wqt
+toggle and it should default to off, except for all the content that is included in the repo.
+
 ## Accumulators: research what they do and what they should do
 
 The user wants to research how the accumulators (the Note Add and Velocity Add rows, and the

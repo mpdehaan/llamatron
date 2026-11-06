@@ -20,6 +20,11 @@ description: |
   melody could be checked, so it's the Canon instead until one can.
 tempo: 44
 scale: D Major
+seed: 1
+default_length: 1/16
+granularity: 1/16
+default_octave: 3
+default_drum_octave: 1
 
 scales:
   D Major: { root: D, type: major }

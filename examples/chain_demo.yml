@@ -24,6 +24,11 @@ description: |
   directions have their own demos, so they don't belong here.
 tempo: 120
 scale: A Major
+seed: 1
+default_length: 1/16
+granularity: 1/16
+default_octave: 3
+default_drum_octave: 1
 
 scales:
   A Major: { root: A, type: major }
