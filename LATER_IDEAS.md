@@ -52,6 +52,24 @@ To think about: what a tie does into a rest or a different pitch, ties across re
 loops, ties into a clip on another scene, and how ties interact with ratchets, directions,
 morphs and grabs.
 
+### Scene names
+
+Ableton clips should use the name of the pattern, not the name of the scene.  Ableton scenes
+should keep the scene names.
+
+### Demo velocity and time signatures
+
+We should use the time signature information of the arrangement demo to add velocity on beats.
+We should research whether we can automatically use, in a per track setting, some knowledge
+of time signature to maybe auto fill in the velocity numbers, but this can be explored seperately.
+
+### Modal interchange exploration
+
+There was a suggestion to explore whether there is some way we can explore playing with modal
+interchange and jazz techniques, I have no idea where this would fit in most logically. We
+can maybe do this as a pattern helper (name TBD) on the pattern page, along with where we might
+make some generators for lead patterns and bass patterns and so on
+
 ## Suggested order
 
 An order for working through this document, with refactoring first, as the user asked. Each step
