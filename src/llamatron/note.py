@@ -20,32 +20,79 @@ from math import isfinite
 
 from llamatron.midi import HALF_STEPS_PER_OCTAVE, MAX_MIDI_NUMBER, MAX_VELOCITY, MIN_MIDI_NUMBER, MIN_VELOCITY
 
+class NoteName:
+    """Every way a note can be spelled: a letter, then # for sharp or b for flat.
+
+    Double sharps and double flats aren't supported.
+    """
+
+    C_FLAT = 'Cb'
+    C = 'C'
+    C_SHARP = 'C#'
+    D_FLAT = 'Db'
+    D = 'D'
+    D_SHARP = 'D#'
+    E_FLAT = 'Eb'
+    E = 'E'
+    E_SHARP = 'E#'
+    F_FLAT = 'Fb'
+    F = 'F'
+    F_SHARP = 'F#'
+    G_FLAT = 'Gb'
+    G = 'G'
+    G_SHARP = 'G#'
+    A_FLAT = 'Ab'
+    A = 'A'
+    A_SHARP = 'A#'
+    B_FLAT = 'Bb'
+    B = 'B'
+    B_SHARP = 'B#'
+
+
 # Semitones above C in the same octave number. Octave numbers change at C, so
 # B# is a semitone above B in its octave (B#3 == C4) and Cb is a semitone below
 # C (Cb4 == B3).
 SEMITONES_ABOVE_C = {
-    'B#': 12,
-    'C': 0,
-    'Cb': -1,
-    'C#': 1,
-    'Db': 1,
-    'D': 2,
-    'D#': 3,
-    'Eb': 3,
-    'E': 4,
-    'Fb': 4,
-    'E#': 5,
-    'F': 5,
-    'F#': 6,
-    'Gb': 6,
-    'G': 7,
-    'G#': 8,
-    'Ab': 8,
-    'A': 9,
-    'A#': 10,
-    'Bb': 10,
-    'B': 11,
+    NoteName.B_SHARP: 12,
+    NoteName.C: 0,
+    NoteName.C_FLAT: -1,
+    NoteName.C_SHARP: 1,
+    NoteName.D_FLAT: 1,
+    NoteName.D: 2,
+    NoteName.D_SHARP: 3,
+    NoteName.E_FLAT: 3,
+    NoteName.E: 4,
+    NoteName.F_FLAT: 4,
+    NoteName.E_SHARP: 5,
+    NoteName.F: 5,
+    NoteName.F_SHARP: 6,
+    NoteName.G_FLAT: 6,
+    NoteName.G: 7,
+    NoteName.G_SHARP: 8,
+    NoteName.A_FLAT: 8,
+    NoteName.A: 9,
+    NoteName.A_SHARP: 10,
+    NoteName.B_FLAT: 10,
+    NoteName.B: 11,
 }
+# Every spelling a note's name can have.
+NOTE_NAMES = list(SEMITONES_ABOVE_C)
+
+# Spellings for notes worked out from a MIDI number, indexed by semitones above C.
+SHARP_NAMES = [
+    NoteName.C, NoteName.C_SHARP, NoteName.D, NoteName.D_SHARP, NoteName.E, NoteName.F,
+    NoteName.F_SHARP, NoteName.G, NoteName.G_SHARP, NoteName.A, NoteName.A_SHARP, NoteName.B,
+]
+FLAT_NAMES = [
+    NoteName.C, NoteName.D_FLAT, NoteName.D, NoteName.E_FLAT, NoteName.E, NoteName.F,
+    NoteName.G_FLAT, NoteName.G, NoteName.A_FLAT, NoteName.A, NoteName.B_FLAT, NoteName.B,
+]
+# The roots the tracker offers for a scale: each key of the keyboard once, as a sharp and as a flat.
+ROOT_NAMES = [
+    NoteName.C, NoteName.C_SHARP, NoteName.D_FLAT, NoteName.D, NoteName.D_SHARP, NoteName.E_FLAT, NoteName.E,
+    NoteName.F, NoteName.F_SHARP, NoteName.G_FLAT, NoteName.G, NoteName.G_SHARP, NoteName.A_FLAT, NoteName.A,
+    NoteName.A_SHARP, NoteName.B_FLAT, NoteName.B,
+]
 
 MIN_OCTAVE = 0
 MAX_OCTAVE = 10
@@ -158,7 +205,7 @@ class Note:
             raise ValueError(MSG_BAD_VELOCITY.format(value=self.velocity, lowest=MIN_VELOCITY, highest=MAX_VELOCITY))
         if type(self.glide) is not bool:
             raise ValueError(MSG_BAD_GLIDE.format(value=self.glide))
-        if not isinstance(self.name, str) or self.name not in SEMITONES_ABOVE_C:
+        if not isinstance(self.name, str) or self.name not in NOTE_NAMES:
             raise ValueError(MSG_BAD_NOTE_NAME.format(value=self.name))
         # bool is a subclass of int, but Note('C', True) is not a real octave.
         if type(self.octave_number) is not int or not MIN_OCTAVE <= self.octave_number <= MAX_OCTAVE:

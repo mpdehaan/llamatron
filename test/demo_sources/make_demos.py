@@ -33,13 +33,14 @@ from fractions import Fraction as F
 import mido
 
 from llamatron.scale import ScaleType
+from llamatron.note import SEMITONES_ABOVE_C
 from llamatron.composition.file_format import PATTERN_ROWS, TOGGLE_ROWS
 from llamatron.song_writer import dump_song
 from llamatron.tui.pages import SCALE_PAGES
 
 SOURCES = os.path.dirname(os.path.abspath(__file__))
-PCS = {'C': 0, 'C#': 1, 'Db': 1, 'D': 2, 'D#': 3, 'Eb': 3, 'E': 4, 'F': 5, 'F#': 6, 'Gb': 6, 'G': 7,
-       'G#': 8, 'Ab': 8, 'A': 9, 'A#': 10, 'Bb': 10, 'B': 11}
+# Half steps above C for each note name, from the note names llamatron defines.
+PCS = SEMITONES_ABOVE_C
 
 
 def midi(name):

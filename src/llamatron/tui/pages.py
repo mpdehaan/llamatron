@@ -22,7 +22,7 @@ import textwrap
 from rich.text import Text
 
 from llamatron.generators.arp import MAX_OCTAVE_RANGE, MAX_OFFSET, MAX_OFFSETS, ChordOrder, OctaveJump
-from llamatron.note import Note
+from llamatron.note import Note, NoteName
 from llamatron.scale import ScaleType
 from llamatron.composition.defaults import GRANULARITIES
 from llamatron.composition.limits import MAX_TRANSPOSE
@@ -63,8 +63,10 @@ SHORT_SCALE_NAMES = {
 }
 # The root picker, laid out like a keyboard, with each flat under the sharp it shares a key with.
 ROOT_KEYBOARD = [
-    ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'],
-    [None, 'Db', None, 'Eb', None, None, 'Gb', None, 'Ab', None, 'Bb', None],
+    [NoteName.C, NoteName.C_SHARP, NoteName.D, NoteName.D_SHARP, NoteName.E, NoteName.F,
+     NoteName.F_SHARP, NoteName.G, NoteName.G_SHARP, NoteName.A, NoteName.A_SHARP, NoteName.B],
+    [None, NoteName.D_FLAT, None, NoteName.E_FLAT, None, None,
+     NoteName.G_FLAT, None, NoteName.A_FLAT, None, NoteName.B_FLAT, None],
 ]
 
 

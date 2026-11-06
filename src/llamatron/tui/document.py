@@ -31,7 +31,7 @@ import yaml
 from llamatron.cli import replace_output
 from llamatron.renderers.ableton_project import AbletonProject
 from llamatron.renderers.clip_tree import ClipTree
-from llamatron.note import Note
+from llamatron.note import ROOT_NAMES, Note
 from llamatron.scale import ScaleType
 from llamatron.clip_grid import ClipGrid
 from llamatron.composition.defaults import (
@@ -43,7 +43,7 @@ from llamatron.composition.song import Song
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.song_writer import dump_song
 
-ROOTS = ['C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B']
+ROOTS = ROOT_NAMES
 SCALE_KINDS = [name.lower() for name in ScaleType.__members__]
 DEFAULT_SCALE = 'C Major'
 # The sections of a file that name generators, and what a chain step calls each of them.

@@ -16,12 +16,10 @@
 
 """A scale the song names, like main: { root: F, type: minor }, for the song and scenes to use."""
 
-import re
-
 from llamatron.composition.file_format import ScaleSetting
 from llamatron.composition.llama_data import LlamaData
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.note import Note
+from llamatron.note import NOTE_NAMES, Note
 from llamatron.scale import Scale, ScaleType
 
 MSG_EXPECTED_ROOT_AND_TYPE = '{where}: expected a root and a type, like {{ root: F, type: minor }}, got {data!r}'
@@ -29,8 +27,6 @@ MSG_EXPECTED_ROOT_NOTE = '{where}: expected a root note like F or Bb, got {root!
 MSG_UNKNOWN_SCALE_TYPE = '{where}: unknown scale type {kind!r}, expected one of: {names}'
 # Scale type names, as error messages list them.
 NAME_LIST_SEPARATOR = ', '
-# A root note is a letter from A to G, then optionally # or b, like F, C# or Bb.
-ROOT_NOTE = re.compile(r'[A-G][#b]?')
 # A file can write a scale type with spaces, like natural minor, where its member name has underscores.
 WORD_GAP, MEMBER_WORD_GAP = ' ', '_'
 
@@ -69,7 +65,7 @@ class NamedScale(LlamaData):
 
 def is_root_note(text):
     """Return whether text names a root note, like F, C# or Bb."""
-    return isinstance(text, str) and ROOT_NOTE.fullmatch(text) is not None
+    return isinstance(text, str) and text in NOTE_NAMES
 
 
 def is_scale_type(kind):
