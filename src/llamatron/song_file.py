@@ -42,7 +42,6 @@ pattern's accumulator_limit.
 """
 
 import random
-import re
 from dataclasses import replace
 from fractions import Fraction
 from math import ceil
@@ -50,7 +49,7 @@ from math import ceil
 import yaml
 
 from llamatron.chord import Chord
-from llamatron.composition.checks import check_keys, live_octave, number, positive_length
+from llamatron.composition.checks import number
 # The file format's lists and defaults are imported from here by the rest of the program until
 # song_file.py is gone, so they stay importable under these names.
 from llamatron.composition.file_format import (  # noqa: F401
@@ -60,26 +59,18 @@ from llamatron.composition.file_format import (  # noqa: F401
     MIN_LIVE_OCTAVE, NAMED_GENERATORS, NOTE_LETTERS, NOTE_ROWS, PATTERN_ROWS, SCALE_CHORDS, TOGGLE_ROWS,
 )
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.generators.arp import MAX_OCTAVE_RANGE, Arp, ChordOrder, OctaveJump, _check_offsets, along_scale
-from llamatron.generators.blend import Blend, BlendMode
-from llamatron.generators.auto_ratchet import AutoRatchet, divide
+from llamatron.composition.cell import MORPH_STYLES  # noqa: F401
+from llamatron.composition.generator_settings import GENERATOR_SETTINGS
+from llamatron.composition.song import Song
+from llamatron.generators.arp import along_scale
+from llamatron.generators.auto_ratchet import divide
+from llamatron.generators.blend import Blend
 from llamatron.note import SHARP_NAMES, Degree, Note, Rest
 from llamatron.renderers.timing import timed_events
-from llamatron.scale import Scale, ScaleType
-from llamatron.song import Clip, Control, Scene, ClipGrid, Track
+from llamatron.song import Clip, ClipGrid, Control, Scene, Track
 
-
-# The kinds of value a generator setting can hold, and the choices that some settings have.
-WHOLE, LENGTH, WHOLES, OCTAVES, OFFSETS = 'whole number', 'length', 'list of whole numbers', 'octave range', 'offsets'
-ORDERS = {member.name.lower(): member for member in ChordOrder}
-OCTAVE_JUMPS = {member.name.lower(): member for member in OctaveJump}
-MORPH_STYLES = {member.name.lower(): member for member in BlendMode}
-
-# Each generator's class, its settings, and which of them are required.
-GENERATORS = {
-    'arp': (Arp, {'step': LENGTH, 'order': ORDERS, 'seed': WHOLE, 'octave_range': OCTAVES, 'octave_jump': OCTAVE_JUMPS, 'offsets': OFFSETS}, ['step']),
-    'auto_ratchet': (AutoRatchet, {'counts': WHOLES}, ['counts']),
-}
+# The generators a chain step can name.
+GENERATORS = GENERATOR_SETTINGS
 
 
 def _with_sound(played, **changes):
@@ -175,11 +166,12 @@ class _Play:
 
 
 class _Stanza:
-    """One scene in the song, after repeats have been written out."""
+    """One scene in the song, after repeats have been written out, with its cells by track."""
 
-    def __init__(self, number, name, scale, tempo, cells):
+    def __init__(self, number, name, scale, tempo, scene):
         self.number, self.name, self.scale = number, name, scale
-        self.tempo, self.cells = tempo, cells
+        self.tempo, self.scene = tempo, scene
+        self.cells = {track: scene.get_cell(track) for track in scene.get_track_names()}
 
 
 class _Context:
@@ -188,49 +180,22 @@ class _Context:
     def __init__(self, stanza, cell, scale, track, settings):
         self.stanza, self.cell, self.scale, self.track = stanza, cell, scale, track
         # A drum track never transposes, and neither does a drum pattern on any track.
-        self.transpose = 0 if settings.get('drum') else settings.get('transpose', 0)
-        self.cc = settings.get('cc', [None] * len(CC_ROWS))
+        self.transpose = settings.get_transpose()
+        self.cc = settings.get_cc_numbers()
 
 
 class SongBuilder:
     """Turns the contents of a song file into a ClipGrid of finished clips."""
 
     def __init__(self, data):
-        # Every setting has a default, so an empty file is an empty song.
-        data = {} if data is None else data
-        if not isinstance(data, dict):
-            raise SongFileError('a song file must have settings like tempo, scale and scenes')
-        self._check_keys(data, 'the file', {
-            'title', 'author', 'description', 'tempo', 'scale', 'scales', 'seed', 'default_length', 'granularity', 'default_octave',
-            'default_drum_octave', 'patterns', 'arps', 'auto_ratchets', 'tracks', 'chains', 'scenes',
-        })
-        # The title, author and description are only for people reading or sharing the file.
-        for key in ('title', 'author', 'description'):
-            if not isinstance(data.get(key, ''), str):
-                raise SongFileError(f'{key} must be text, got {data[key]!r}')
-        self.tempo = _number(data.get('tempo', DEFAULT_TEMPO), 'tempo')
-        self.scales = data.get('scales') or {}
-        if not isinstance(self.scales, dict):
-            raise SongFileError('scales: expected named scales like main: { root: F, type: minor }')
-        for name in self.scales:
-            self._named_scale(name, LIVE_OCTAVE_OFFSET + DEFAULT_OCTAVE, f'scale {name!r}')
-        self.scale_text = data.get('scale')
-        self._check_listed_scale(self.scale_text, 'scale')
-        self.seed = data.get('seed', DEFAULT_SEED)
-        self.default_length = self._positive_length(data.get('default_length', DEFAULT_LENGTH), 'default_length')
-        granularity = data.get('granularity', GRANULARITIES[0])
-        if granularity not in GRANULARITIES:
-            raise SongFileError(f'granularity must be one of {GRANULARITIES}, got {granularity!r}')
-        self.default_octave = self._octave(data.get('default_octave', DEFAULT_OCTAVE), 'default_octave')
-        self.default_drum_octave = self._octave(data.get('default_drum_octave', DEFAULT_DRUM_OCTAVE), 'default_drum_octave')
-        self.patterns = data.get('patterns') or {}
-        for name, pattern in self.patterns.items():
-            self._check_pattern(name, pattern)
-        self.tracks = self._read_tracks(data.get('tracks') or {})
-        self.named_generators = {step: data.get(section) or {} for step, section in NAMED_GENERATORS.items()}
-        self.chains = data.get('chains') or {}
-        self._check_chains()
-        self.stanzas = self._read_scenes(data.get('scenes') or [])
+        self.song = Song.from_data(data)
+        self.tempo = self.song.get_tempo()
+        self.seed = self.song.get_seed()
+        self.default_length = self.song.get_default_length()
+        self.default_octave = self.song.get_default_octave()
+        self.default_drum_octave = self.song.get_default_drum_octave()
+        self.tracks = self.song.get_track_names()
+        self.stanzas = self._write_out_scenes()
         self.resolved = {}
         self.lengths = {}
         # The tracks whose clips are waiting on a grab, to catch clips that grab in a circle.
@@ -239,7 +204,7 @@ class SongBuilder:
     def build(self):
         tempo = float(self.tempo)
         song = ClipGrid(tempo=int(tempo) if tempo.is_integer() else tempo)
-        tracks = {name: song.add_track(Track(name, mute=settings.get('mute', False))) for name, settings in self.tracks.items()}
+        tracks = {name: song.add_track(Track(name, mute=self.song.get_track(name).is_muted())) for name in self.tracks}
         for stanza in self.stanzas:
             scene = song.add_scene(self._scene(stanza))
             for name in self.tracks:
@@ -273,212 +238,22 @@ class SongBuilder:
         tempo = None if stanza.tempo is None else float(stanza.tempo)
         return Scene(stanza.name, tempo=tempo)
 
-    # Reading each section.
-
-    def _check_keys(self, data, where, allowed):
-        check_keys(data, where, allowed)
-
-    def _scale(self, root, kind, octave, where):
-        if not isinstance(root, str) or not re.fullmatch(r'[A-G][#b]?', root):
-            raise SongFileError(f'{where}: expected a root note like F or Bb, got {root!r}')
-        kind_name = str(kind).strip().upper().replace(' ', '_')
-        if kind_name not in ScaleType.__members__:
-            names = ', '.join(sorted(name.lower() for name in ScaleType.__members__))
-            raise SongFileError(f'{where}: unknown scale type {kind!r}, expected one of: {names}')
-        return Scale(Note(root, octave), ScaleType[kind_name])
-
-    def _named_scale(self, name, octave, where):
-        scale = self.scales[name]
-        if not isinstance(scale, dict) or set(scale) != {'root', 'type'}:
-            raise SongFileError(f'{where}: expected a root and a type, like {{ root: F, type: minor }}, got {scale!r}')
-        return self._scale(scale['root'], scale['type'], octave, where)
-
-    def _check_listed_scale(self, name, where):
-        if name is not None and name not in self.scales:
-            raise SongFileError(f'{where}: no scale called {name!r}')
-
-    def _positive_length(self, value, where):
-        return positive_length(value, where)
-
-    def _octave(self, value, where):
-        return live_octave(value, where)
-
-    def _check_pattern(self, name, pattern):
-        where = f'pattern {name!r}'
-        if not isinstance(pattern, dict):
-            raise SongFileError(f'{where}: expected settings like steps, degree and duration')
-        self._check_keys(pattern, where, {'steps', 'drum', 'direction', 'accumulator_limit', *PATTERN_ROWS})
-        limit = pattern.get('accumulator_limit', DEFAULT_ACCUMULATOR_LIMIT)
-        if type(limit) is not int or limit < 1:
-            raise SongFileError(f'{where}: accumulator_limit must be a whole number of 1 or more, got {limit!r}')
-        self._check_direction(pattern.get('direction', FORWARD), where)
-        steps = pattern.get('steps')
-        if type(steps) is not int or steps < 1:
-            raise SongFileError(f'{where}: steps must be a whole number of 1 or more, got {steps!r}')
-        drum = pattern.get('drum', False)
-        if type(drum) is not bool:
-            raise SongFileError(f'{where}: drum must be true or false, got {drum!r}')
-        for row in PATTERN_ROWS:
-            values = pattern.get(row)
-            if values is None:
-                continue
-            if not isinstance(values, list) or len(values) != steps:
-                raise SongFileError(f'{where}: {row} must be a list of {steps} values, got {values!r}')
-            for value in values:
-                if row in TOGGLE_ROWS and value is None:
-                    raise SongFileError(f'{where}: {row} must be true or false, got null')
-                if value is not None:
-                    self._check_step_value(row, value, drum, where)
-
-    def _check_direction(self, direction, where):
-        if direction not in DIRECTIONS:
-            raise SongFileError(f'{where}: direction must be one of {DIRECTIONS}, got {direction!r}')
-
-    def _check_step_value(self, row, value, drum, where):
-        problem = None
-        if row == 'degree':
-            if drum and (not isinstance(value, str) or value not in NOTE_LETTERS or len(value) != 1):
-                problem = 'in a drum pattern, must be a note letter from A to G'
-            if not drum and (type(value) is not int or value < 1):
-                problem = 'must be a scale degree of 1 or more'
-        elif row == 'duration':
-            self._positive_length(value, f'{where}, duration')
-        elif row == 'accidental' and value not in ACCIDENTALS:
-            problem = 'must be # or b'
-        elif row == 'octave':
-            self._octave(value, f'{where}, octave')
-        elif row == 'chord':
-            if drum:
-                problem = 'isn\'t used in a drum pattern'
-            elif str(value) not in CHORD_SYMBOLS:
-                problem = f"must be one of {', '.join(CHORD_SYMBOLS)}"
-        elif row == 'velocity' and (type(value) is not int or not 1 <= value <= 127):
-            problem = 'must be a whole number from 1 to 127'
-        elif row == 'probability' and (type(value) is not int or not 0 <= value <= 100):
-            problem = 'must be a whole number from 0 to 100'
-        elif row == 'ratchet' and (type(value) is not int or value < 1):
-            problem = 'must be a whole number of 1 or more'
-        elif row in TOGGLE_ROWS and type(value) is not bool:
-            problem = 'must be true or false'
-        elif row in CC_ROWS and (type(value) is not int or not 0 <= value <= 127):
-            problem = 'must be a whole number from 0 to 127'
-        elif row in ('ratchet_offset', 'note_add', 'velocity_add') and type(value) is not int:
-            problem = 'must be a whole number'
-        if problem:
-            raise SongFileError(f'{where}: {row} {problem}, got {value!r}')
-
-    def _read_tracks(self, tracks):
-        """Return each track's settings by name, in order."""
-        if not isinstance(tracks, dict):
-            raise SongFileError('tracks: expected named tracks with their settings, like lead: { transpose: 2 }')
-        result = {}
-        for name, settings in tracks.items():
-            where = f'track {name!r}'
-            settings = {} if settings is None else settings
-            if not isinstance(settings, dict):
-                raise SongFileError(f'{where}: expected settings like {{ drum: true }}, got {settings!r}')
-            self._check_keys(settings, where, {'drum', 'mute', 'transpose', 'cc'})
-            for flag in ('drum', 'mute'):
-                if type(settings.get(flag, False)) is not bool:
-                    raise SongFileError(f'{where}: {flag} must be true or false, got {settings[flag]!r}')
-            transpose = settings.get('transpose', 0)
-            if type(transpose) is not int or not -MAX_TRANSPOSE <= transpose <= MAX_TRANSPOSE:
-                raise SongFileError(f'{where}: transpose must be a whole number from -{MAX_TRANSPOSE} to {MAX_TRANSPOSE}, got {transpose!r}')
-            numbers = settings.get('cc', [None] * len(CC_ROWS))
-            if not isinstance(numbers, list) or len(numbers) != len(CC_ROWS) or not all(
-                number is None or (type(number) is int and 0 <= number <= 127) for number in numbers
-            ):
-                raise SongFileError(f'{where}: cc must be a list of {len(CC_ROWS)} CC numbers from 0 to 127, or ~ for a lane it doesn\'t use, got {numbers!r}')
-            result[name] = settings
-        return result
-
-    def _check_chains(self):
-        for name, chain in self.chains.items():
-            if not isinstance(chain, list):
-                raise SongFileError(f'chain {name!r}: expected a list of generators')
-            for step in chain:
-                if not isinstance(step, dict) or len(step) != 1:
-                    raise SongFileError(f'chain {name!r}: each step must be one generator, got {step!r}')
-                generator = next(iter(step))
-                if generator not in GENERATORS:
-                    raise SongFileError(
-                        f'chain {name!r}: unknown generator {generator!r}, expected one of {sorted(GENERATORS)}'
-                    )
-                # A chain step only names a generator, whose settings are in its own section.
-                if not isinstance(step[generator], str) or step[generator] not in self.named_generators[generator]:
-                    raise SongFileError(f'chain {name!r}: no {generator} called {step[generator]!r}')
-
-    def _read_scenes(self, scenes):
-        if not isinstance(scenes, list):
-            raise SongFileError('scenes: expected a list of scenes')
+    def _write_out_scenes(self):
+        """Return every scene, with a scene that repeats written out once for each repeat."""
         stanzas = []
-        for index, data in enumerate(scenes, start=1):
-            where = f'scene entry {index}'
-            if not isinstance(data, dict):
-                raise SongFileError(f'{where}: expected settings like name and tracks')
-            self._check_keys(data, where, {'name', 'repeat', 'scale', 'tempo', 'tempo_start', 'tempo_end', 'tracks'})
-            repeat = data.get('repeat', 1)
-            if type(repeat) is not int or repeat < 1:
-                raise SongFileError(f'{where}: repeat must be a positive whole number, got {repeat!r}')
-            cells = data.get('tracks') or {}
-            for track, cell in cells.items():
-                self._check_cell(track, cell, where)
-            scale = data.get('scale') or self.scale_text
-            self._check_listed_scale(data.get('scale'), where)
+        for scene in self.song.get_scenes():
+            scale = scene.get_scale_name() or self.song.get_scale_name()
+            repeat = scene.get_repeat()
             for place in range(repeat):
-                name = str(data.get('name', f'Scene {len(stanzas) + 1}'))
+                name = scene.get_name()
+                name = str(f'Scene {len(stanzas) + 1}' if name is None else name)
                 if repeat > 1:
                     name = f'{name} {place + 1}'
-                tempo = self._scene_tempo(data, place, repeat, where)
-                stanzas.append(_Stanza(len(stanzas) + 1, name, scale, tempo, cells))
+                stanzas.append(_Stanza(len(stanzas) + 1, name, scale, scene.get_tempo(place), scene))
         return stanzas
 
-    def _scene_tempo(self, data, place, repeat, where):
-        if 'tempo' in data:
-            return _number(data['tempo'], where)
-        if 'tempo_start' in data or 'tempo_end' in data:
-            if 'tempo_start' not in data or 'tempo_end' not in data:
-                raise SongFileError(f'{where}: needs both tempo_start and tempo_end')
-            start = _number(data['tempo_start'], where)
-            end = _number(data['tempo_end'], where)
-            return start + (end - start) * (Fraction(place, repeat - 1) if repeat > 1 else 0)
-        return None
-
-    def _check_cell(self, track, cell, where):
-        if track not in self.tracks:
-            raise SongFileError(f'{where}: no track called {track!r}, expected one of {sorted(self.tracks)}')
-        if not isinstance(cell, dict):
-            raise SongFileError(f'{where}, track {track!r}: expected settings like {{ pattern: a }}, got {cell!r}')
-        where = f'{where}, track {track!r}'
-        self._check_keys(cell, where, {'pattern', 'chain', 'loop', 'repeat', 'direction', 'morph_to', 'morph_style', 'rhythm_from', 'grab_track'})
-        self._check_direction(cell.get('direction', FORWARD), where)
-        if 'rhythm_from' in cell and cell['rhythm_from'] not in self.patterns:
-            raise SongFileError(f'{where}: rhythm_from: no pattern called {cell["rhythm_from"]!r}')
-        if 'grab_track' in cell:
-            if cell['grab_track'] not in self.tracks:
-                raise SongFileError(f'{where}: grab_track: no track called {cell["grab_track"]!r}')
-            if cell['grab_track'] == track:
-                raise SongFileError(f'{where}: grab_track: a clip can\'t grab from its own track')
-        repeat = cell.get('repeat', 1)
-        if type(repeat) is not int or repeat < 1:
-            raise SongFileError(f'{where}: repeat must be a positive whole number, got {repeat!r}')
-        if not isinstance(cell.get('loop', False), bool):
-            raise SongFileError(f'{where}: loop must be true or false, got {cell["loop"]!r}')
-        if ('morph_to' in cell) != ('morph_style' in cell):
-            raise SongFileError(f'{where}: a morph needs both morph_to and morph_style')
-        if 'morph_to' in cell:
-            if repeat < 2:
-                raise SongFileError(f'{where}: a morph needs a repeat of 2 or more')
-            if cell['morph_to'] not in self.patterns:
-                raise SongFileError(f'{where}: no pattern called {cell["morph_to"]!r}')
-            if cell['morph_style'] not in MORPH_STYLES:
-                raise SongFileError(f'{where}: morph_style must be one of {sorted(MORPH_STYLES)}, got {cell["morph_style"]!r}')
-        if 'pattern' not in cell:
-            raise SongFileError(f'{where}: needs a pattern')
-        if cell['pattern'] not in self.patterns:
-            raise SongFileError(f'{where}: no pattern called {cell["pattern"]!r}')
-        if 'chain' in cell and cell['chain'] not in self.chains:
-            raise SongFileError(f'{where}: no chain called {cell["chain"]!r}')
+    def _named_scale(self, name, octave, where):
+        return self.song.get_named_scale(name).scale_at(octave)
 
     # Writing each clip.
 
@@ -487,11 +262,11 @@ class SongBuilder:
         if stanza.number in self.lengths:
             return self.lengths[stanza.number]
         where = f'scene {stanza.number} ({stanza.name})'
-        if stanza.cells and all(cell.get('loop') for cell in stanza.cells.values()):
+        if stanza.cells and all(cell.loops() for cell in stanza.cells.values()):
             raise SongFileError(f'{where}: every clip is set to loop, so the scene would never end. Turn off loop on at least one clip.')
         length = Fraction(0)
         for track, cell in stanza.cells.items():
-            if not cell.get('loop'):
+            if not cell.loops():
                 # Grabbing only changes pitches, so lengths come from clips built without it, which
                 # means a clip can grab from one that loops to fill the scene.
                 length = max(length, self._cell(stanza, track, grabbing=False).total_length())
@@ -500,7 +275,7 @@ class SongBuilder:
 
     def _grabber(self, stanza, track, cell):
         """Return a function giving the MIDI numbers another track most recently started by a time."""
-        other = cell['grab_track']
+        other = cell.get_grab_track()
         if other not in stanza.cells:
             return None
         chain = [*self.grabbing, track]
@@ -532,23 +307,24 @@ class SongBuilder:
         cell = stanza.cells.get(track)
         if cell is None:
             return None
-        grabbing = grabbing and 'grab_track' in cell
+        grabbing = grabbing and cell.get_grab_track() is not None
         key = (stanza.number, track, grabbing)
         if key in self.resolved:
             return self.resolved[key]
         where = f'scene {stanza.number}, track {track!r}'
         octave = self._clip_octave(cell)
         scale = None if stanza.scale is None else self._named_scale(stanza.scale, octave, where)
-        context = _Context(stanza, cell, scale, track, self.tracks[track])
+        context = _Context(stanza, cell, scale, track, self.song.get_track(track))
         context.grab = self._grabber(stanza, track, cell) if grabbing else None
-        loop = bool(cell.get('loop'))
+        loop = cell.loops()
         fill = self._scene_length(stanza) if loop else None
         try:
             clip = self._source(context, where, fill)
             controls = clip.controls
-            if clip.total_length() > 0 and 'chain' in cell:
-                for index, step in enumerate(self.chains[cell['chain']]):
-                    clip = self._generator(step, context, cell['chain'], index).generate(clip)
+            chain = cell.get_chain_name()
+            if clip.total_length() > 0 and chain is not None:
+                for index, step in enumerate(self.song.get_chain(chain).get_steps()):
+                    clip = self._generator(step, context, chain, index).generate(clip)
             end = fill if loop else clip.total_length()
             notes = clip.section(0, end).notes if end > 0 else []
             # Until here a control's number is its lane, which the track turns into a CC number.
@@ -567,16 +343,15 @@ class SongBuilder:
 
         It's the octave of the first note the clip plays, in this project's numbering.
         """
-        pattern = self.patterns[cell['pattern']]
-        octave = next((value for value in (pattern.get('octave') or []) if value is not None), self.default_octave)
-        return octave + LIVE_OCTAVE_OFFSET
+        octave = self.song.get_pattern(cell.get_pattern_name()).get_first_octave()
+        return (self.default_octave if octave is None else octave) + LIVE_OCTAVE_OFFSET
 
     def _source(self, context, where, fill):
         """Return what a clip plays before any chains, filling a length if one is given."""
         cell, stanza = context.cell, context.stanza
         rolls = random.Random(f'{self.seed}/{stanza.number}/{context.track}')
         play = _Play(random.Random(f'{self.seed}/{stanza.number}/{context.track}/direction'))
-        repeat = cell.get('repeat', 1)
+        repeat = cell.get_repeat()
         notes, controls, total, place = [], [], Fraction(0), 0
         while (place < repeat) if fill is None else (total < fill):
             played = self._frame(cell, place % repeat, repeat, context, where, rolls, play, total)
@@ -597,15 +372,16 @@ class SongBuilder:
         target plays as it's written.
         """
         clip = self._one_pass(
-            cell.get('rhythm_from', cell['pattern']), cell['pattern'], context.grab,
-            cell.get('direction'), context, where, rolls, play, start,
+            cell.get_rhythm_pattern_name(), cell.get_pattern_name(), context.grab,
+            cell.get_direction(), context, where, rolls, play, start,
         )
-        if 'morph_to' not in cell or not clip.notes:
+        morph_to = cell.get_morph_target()
+        if morph_to is None or not clip.notes:
             return clip
-        target = self._one_pass(cell['morph_to'], cell['morph_to'], None, None, context, where, rolls, play, start)
+        target = self._one_pass(morph_to, morph_to, None, None, context, where, rolls, play, start)
         amount = Fraction(place, repeat - 1) * 100
         target = self._looped(target, clip.total_length())
-        blend = Blend(target, amount, mode=MORPH_STYLES[cell['morph_style']])
+        blend = Blend(target, amount, mode=cell.get_morph_style())
         controls = _blended_controls(clip, target, *blend.region(clip))
         return Clip(notes=blend.generate(clip).played_notes(), scale=context.scale, controls=controls)
 
@@ -616,12 +392,12 @@ class SongBuilder:
         return clip.section(0, length)
 
     def _row(self, pattern, row, step):
-        return pattern[row][step] if pattern.get(row) else None
+        return pattern.get_value(row, step)
 
     def _pattern_length(self, pattern):
         return sum(
             (self.default_length if self._row(pattern, 'duration', step) is None else _number(self._row(pattern, 'duration', step), 'duration')
-             for step in range(pattern['steps'])),
+             for step in range(pattern.get_steps())),
             Fraction(0),
         )
 
@@ -633,20 +409,20 @@ class SongBuilder:
         a direction can't change how long a clip or scene is. The last step is cut to fit.
         """
         for name in (rhythm_name, notes_name):
-            if name not in self.patterns:
+            if not self.song.has_pattern(name):
                 raise SongFileError(f'{where}: no pattern called {name!r}')
-        rhythm, notes = self.patterns[rhythm_name], self.patterns[notes_name]
+        rhythm, notes = self.song.get_pattern(rhythm_name), self.song.get_pattern(notes_name)
         combined = rhythm_name != notes_name
-        note_steps = [step for step in range(notes['steps']) if self._row(notes, 'degree', step) is not None]
+        note_steps = notes.get_note_steps()
 
         def order(pattern):
-            return direction or pattern.get('direction', FORWARD)
+            return direction or pattern.get_direction()
 
         length = self._pattern_length(rhythm)
         where = f'pattern {notes_name!r}'
         positions, controls, time = [], [], Fraction(0)
         while time < length:
-            step = play.next(('rhythm', rhythm_name), rhythm['steps'], order(rhythm))
+            step = play.next(('rhythm', rhythm_name), rhythm.get_steps(), order(rhythm))
             values = {row: self._row(rhythm, row, step) for row in PATTERN_ROWS}
             moment = start + time
             duration = self.default_length if values['duration'] is None else _number(values['duration'], where)
@@ -663,11 +439,11 @@ class SongBuilder:
             if combined:
                 note_step = note_steps[play.next(('notes', notes_name), len(note_steps), order(notes))]
                 values.update({row: self._row(notes, row, note_step) for row in NOTE_ROWS})
-            drum = notes.get('drum', False)
+            drum = notes.is_drum()
             values['grabbed'] = grab(moment) if grab and self._row(notes, 'grab', note_step) else None
             totals = (
-                play.accumulate('note', values['note_add'], notes.get('accumulator_limit', DEFAULT_ACCUMULATOR_LIMIT)),
-                play.accumulate('velocity', values['velocity_add'], rhythm.get('accumulator_limit', DEFAULT_ACCUMULATOR_LIMIT)),
+                play.accumulate('note', values['note_add'], notes.get_accumulator_limit()),
+                play.accumulate('velocity', values['velocity_add'], rhythm.get_accumulator_limit()),
             )
             positions += self._step(values, drum, context, where, rolls, *totals)
         clip = Clip(notes=positions, scale=context.scale, controls=controls)
@@ -755,44 +531,13 @@ class SongBuilder:
     # Building generators.
 
     def _generator(self, step, context, chain, index):
-        name, settings_name = next(iter(step.items()))
-        settings = self.named_generators[name][settings_name] or {}
-        where = f'chain {chain!r}, {name}'
-        generator_class, allowed, required = GENERATORS[name]
-        self._check_keys(settings, where, set(allowed))
-        values = {key: self._value(settings[key], kind, key, where) for key, kind in allowed.items() if key in settings}
-        for setting in required:
-            if setting not in values:
-                raise SongFileError(f'{where}: needs {setting}')
-        if name == 'arp' and 'seed' not in values:
-            track = list(self.tracks).index(context.track)
-            values['seed'] = self.seed * 1_000_003 + context.stanza.number * 1_009 + track * 31 + index
-        return generator_class(**values)
-
-    def _value(self, value, kind, key, where):
-        if isinstance(kind, dict):
-            if value not in kind:
-                raise SongFileError(f'{where}: {key} must be one of {sorted(kind)}, got {value!r}')
-            return kind[value]
-        if kind == WHOLE:
-            if type(value) is not int:
-                raise SongFileError(f'{where}: {key} must be a whole number, got {value!r}')
-            return value
-        if kind == LENGTH:
-            return _number(value, where)
-        if kind == OCTAVES:
-            if type(value) is not int or not 1 <= value <= MAX_OCTAVE_RANGE:
-                raise SongFileError(f'{where}: {key} must be a whole number from 1 to {MAX_OCTAVE_RANGE}, got {value!r}')
-            return value
-        if kind == OFFSETS:
-            try:
-                _check_offsets(value)
-            except ValueError as error:
-                raise SongFileError(f'{where}: {error}') from None
-            return value
-        if not isinstance(value, list):
-            raise SongFileError(f'{where}: {key} must be a list, got {value!r}')
-        return value
+        kind, name = step
+        settings = self.song.get_generator_settings(kind, name)
+        # An arp with no seed of its own gets one from the song's, which differs for every
+        # scene, track and place in the chain, so that a render is always the same.
+        track = self.tracks.index(context.track)
+        seed = self.seed * 1_000_003 + context.stanza.number * 1_009 + track * 31 + index
+        return settings.make_generator(f'chain {chain!r}, {kind}', seed)
 
 
 def load_song(path):

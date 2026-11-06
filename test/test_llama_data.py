@@ -51,6 +51,12 @@ class TestLlamaData(unittest.TestCase):
         with self.assertRaisesRegex(NotImplementedError, 'Incomplete needs a to_data'):
             Incomplete().to_data()
 
+    def test_every_kind_of_object_in_a_song_file_is_one(self):
+        names = {subclass.__name__ for subclass in every_subclass()}
+        for name in ['Song', 'Scene', 'Cell', 'Track', 'Pattern', 'NamedScale', 'Chain', 'ArpSettings', 'AutoRatchetSettings']:
+            with self.subTest(name=name):
+                self.assertIn(name, names)
+
     def test_every_subclass_defines_both_methods(self):
         for subclass in every_subclass():
             if subclass.__module__ == __name__:
