@@ -24,7 +24,7 @@ to play is a rest, and is shown as a blank, and every step takes time.
 from rich.text import Text
 
 from llamatron.composition.defaults import DEFAULT_ACCUMULATOR_LIMIT
-from llamatron.composition.file_format import CC_ROWS, CHORD_SYMBOLS, DIRECTIONS, FORWARD, NOTE_LETTERS
+from llamatron.composition.file_format import CC_ROWS, CHORD_SYMBOLS, ChordSymbol, DIRECTIONS, FORWARD, NOTE_LETTERS
 from llamatron.tui.base import ChoiceDialog, ConfirmDialog, GridChoiceDialog, Page, PromptDialog, columns, fit, grouped_grid, key, pressed_key
 from llamatron.composition.defaults import DEFAULT_PROBABILITY, DEFAULT_RATCHET, DEFAULT_VELOCITY
 from llamatron.tui.document import DIRECTION_NAMES, fraction, fraction_text
@@ -63,26 +63,42 @@ NUMBER_DEFAULT = {
 QUIET_ROWS = ('ratchet', 'ratchet_offset', 'note_add', 'velocity_add', *CC_ROWS)
 DIGITS = tuple('0123456789')
 # The chord picker's columns, which hold every chord symbol in the order + steps through them.
+# The chord picker's groups, each a heading and its symbols, in the order the picker shows them.
 CHORD_GROUPS = [
-    ('TRIADS', ['M', 'm', 'dim', 'aug', 'sus2', 'sus4', 'pow', 'M6', 'm6']),
-    ('SEVENTHS', ['dom7', 'M7', 'm7', 'mM7', 'dim7', 'm7b5', 'aug7', 'augM7', '7sus4']),
-    ('NINTHS', ['dom9', 'M9', 'm9', 'add9', 'madd9']),
-    ('11THS, 13THS', ['dom11', 'M11', 'm11', 'dom13', 'M13', 'm13']),
-    ('SCALE', ['5', '3', '7', '9', '11', '13']),
+    ('TRIADS', [
+        ChordSymbol.MAJOR, ChordSymbol.MINOR, ChordSymbol.DIMINISHED, ChordSymbol.AUGMENTED, ChordSymbol.SUS2,
+        ChordSymbol.SUS4, ChordSymbol.POWER, ChordSymbol.MAJOR6, ChordSymbol.MINOR6,
+    ]),
+    ('SEVENTHS', [
+        ChordSymbol.DOMINANT7, ChordSymbol.MAJOR7, ChordSymbol.MINOR7, ChordSymbol.MINOR_MAJOR7, ChordSymbol.DIMINISHED7,
+        ChordSymbol.HALF_DIMINISHED7, ChordSymbol.AUGMENTED7, ChordSymbol.AUGMENTED_MAJOR7, ChordSymbol.DOMINANT7_SUS4,
+    ]),
+    ('NINTHS', [ChordSymbol.DOMINANT9, ChordSymbol.MAJOR9, ChordSymbol.MINOR9, ChordSymbol.ADD9, ChordSymbol.MINOR_ADD9]),
+    ('11THS, 13THS', [
+        ChordSymbol.DOMINANT11, ChordSymbol.MAJOR11, ChordSymbol.MINOR11,
+        ChordSymbol.DOMINANT13, ChordSymbol.MAJOR13, ChordSymbol.MINOR13,
+    ]),
+    ('SCALE', [
+        ChordSymbol.SCALE_FIFTH, ChordSymbol.SCALE_TRIAD, ChordSymbol.SCALE_SEVENTH,
+        ChordSymbol.SCALE_NINTH, ChordSymbol.SCALE_ELEVENTH, ChordSymbol.SCALE_THIRTEENTH,
+    ]),
 ]
+# What each chord symbol means, as the editor describes it.
 CHORD_NAMES = {
-    'M': 'major', 'm': 'minor', 'dim': 'diminished', 'aug': 'augmented',
-    'sus2': 'suspended second', 'sus4': 'suspended fourth', 'pow': 'power, root and fifth',
-    'M6': 'major sixth', 'm6': 'minor sixth',
-    'dom7': 'dominant seventh', 'M7': 'major seventh', 'm7': 'minor seventh', 'mM7': 'minor-major seventh',
-    'dim7': 'diminished seventh', 'm7b5': 'half-diminished', 'aug7': 'augmented seventh',
-    'augM7': 'augmented major seventh', '7sus4': 'seventh, suspended fourth',
-    'add9': 'added ninth', 'madd9': 'minor added ninth',
-    'dom9': 'dominant ninth', 'M9': 'major ninth', 'm9': 'minor ninth',
-    'dom11': 'dominant eleventh', 'M11': 'major eleventh', 'm11': 'minor eleventh',
-    'dom13': 'dominant thirteenth', 'M13': 'major thirteenth', 'm13': 'minor thirteenth',
-    '5': 'root and fifth from the scale', '3': 'triad from the scale', '7': 'seventh from the scale',
-    '9': 'ninth from the scale', '11': 'eleventh from the scale', '13': 'thirteenth from the scale',
+    ChordSymbol.MAJOR: 'major', ChordSymbol.MINOR: 'minor', ChordSymbol.DIMINISHED: 'diminished',
+    ChordSymbol.AUGMENTED: 'augmented', ChordSymbol.SUS2: 'suspended second', ChordSymbol.SUS4: 'suspended fourth',
+    ChordSymbol.POWER: 'power, root and fifth', ChordSymbol.MAJOR6: 'major sixth', ChordSymbol.MINOR6: 'minor sixth',
+    ChordSymbol.DOMINANT7: 'dominant seventh', ChordSymbol.MAJOR7: 'major seventh', ChordSymbol.MINOR7: 'minor seventh',
+    ChordSymbol.MINOR_MAJOR7: 'minor-major seventh', ChordSymbol.DIMINISHED7: 'diminished seventh',
+    ChordSymbol.HALF_DIMINISHED7: 'half-diminished', ChordSymbol.AUGMENTED7: 'augmented seventh',
+    ChordSymbol.AUGMENTED_MAJOR7: 'augmented major seventh', ChordSymbol.DOMINANT7_SUS4: 'seventh, suspended fourth',
+    ChordSymbol.ADD9: 'added ninth', ChordSymbol.MINOR_ADD9: 'minor added ninth',
+    ChordSymbol.DOMINANT9: 'dominant ninth', ChordSymbol.MAJOR9: 'major ninth', ChordSymbol.MINOR9: 'minor ninth',
+    ChordSymbol.DOMINANT11: 'dominant eleventh', ChordSymbol.MAJOR11: 'major eleventh', ChordSymbol.MINOR11: 'minor eleventh',
+    ChordSymbol.DOMINANT13: 'dominant thirteenth', ChordSymbol.MAJOR13: 'major thirteenth', ChordSymbol.MINOR13: 'minor thirteenth',
+    ChordSymbol.SCALE_FIFTH: 'root and fifth from the scale', ChordSymbol.SCALE_TRIAD: 'triad from the scale',
+    ChordSymbol.SCALE_SEVENTH: 'seventh from the scale', ChordSymbol.SCALE_NINTH: 'ninth from the scale',
+    ChordSymbol.SCALE_ELEVENTH: 'eleventh from the scale', ChordSymbol.SCALE_THIRTEENTH: 'thirteenth from the scale',
 }
 
 

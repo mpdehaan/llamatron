@@ -20,7 +20,7 @@ from math import isfinite
 
 from llamatron.generators.base import ClipGenerator, exact_length
 from llamatron.note import Degree
-from llamatron.song import Clip, _Validated
+from llamatron.clip_grid import Clip, _Validated
 
 # How far a blend has moved to its target, as a percentage.
 NONE_OF_THE_TARGET, ALL_OF_THE_TARGET = 0, 100

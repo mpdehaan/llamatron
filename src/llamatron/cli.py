@@ -34,7 +34,7 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.renderers.ableton_project import DEFAULT_TEMPLATE, AbletonProject
 from llamatron.renderers.clip_tree import ClipTree
-from llamatron.song import ClipGrid
+from llamatron.clip_grid import ClipGrid
 
 PROGRAM = 'llamatron'
 # What --to can write.

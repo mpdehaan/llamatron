@@ -30,7 +30,7 @@ import yaml
 from llamatron.chord import Chord
 from llamatron.note import Note
 from llamatron.renderers.timing import timed_events
-from llamatron.song import Clip, Control, cut_position
+from llamatron.clip_grid import Clip, Control, cut_position
 from llamatron.composition.song_file_error import SongFileError
 from rendering import render_data
 from llamatron.tui import app as tui_app

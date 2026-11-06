@@ -22,7 +22,7 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.playback.cell_player import CellPlayer
 from llamatron.playback.grab_source import GrabSource
 from llamatron.playback.written_scene import WrittenScene
-from llamatron.song import ClipGrid, Scene, Track
+from llamatron.clip_grid import ClipGrid, Scene, Track
 
 MSG_EVERY_CLIP_LOOPS = '{scene}: every clip is set to loop, so the scene would never end. Turn off loop on at least one clip.'
 MSG_CIRCULAR_GRAB = '{scene}: circular grab: {loop}. Remove the grab track from one of these clips.'

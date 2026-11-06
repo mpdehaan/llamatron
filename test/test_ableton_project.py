@@ -30,7 +30,7 @@ from llamatron.chord import Chord
 from llamatron.note import Degree, Note, Rest
 from llamatron.renderers.ableton_project import DEFAULT_TEMPLATE, AbletonProject
 from llamatron.scale import Scale, ScaleType
-from llamatron.song import Clip, Scene, ClipGrid, Track
+from llamatron.clip_grid import Clip, Scene, ClipGrid, Track
 
 QUARTER = 0.25
 C4 = Note('C', 4, QUARTER)

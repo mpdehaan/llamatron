@@ -30,7 +30,7 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators.arp import along_scale
 from llamatron.generators.auto_ratchet import divide
 from llamatron.note import SHARP_NAMES, Degree, Note, Rest
-from llamatron.song import Clip, Control
+from llamatron.clip_grid import Clip, Control
 
 # How many octaves away a moved note can go to find one that fits the MIDI range.
 MAX_OCTAVE_CHANGE = 10

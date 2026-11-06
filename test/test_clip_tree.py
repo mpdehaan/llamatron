@@ -27,7 +27,7 @@ import mido
 from llamatron.chord import Chord, ChordType
 from llamatron.note import Note, Rest
 from llamatron.renderers.clip_tree import TICKS_PER_BEAT, VELOCITY, ClipTree
-from llamatron.song import Clip, Scene, ClipGrid, Track
+from llamatron.clip_grid import Clip, Scene, ClipGrid, Track
 
 C4 = Note('C', 4, 0.25)
 D4 = Note('D', 4, 0.25)

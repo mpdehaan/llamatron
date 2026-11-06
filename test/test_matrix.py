@@ -22,7 +22,7 @@ import mido
 
 from llamatron.note import Note
 from llamatron.renderers.clip_tree import ClipTree
-from llamatron.song import Clip, Scene, ClipGrid, Track
+from llamatron.clip_grid import Clip, Scene, ClipGrid, Track
 
 
 class TestMatrix(unittest.TestCase):

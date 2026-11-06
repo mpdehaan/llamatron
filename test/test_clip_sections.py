@@ -20,7 +20,7 @@ from fractions import Fraction
 from llamatron.chord import Chord
 from llamatron.note import Degree, Note, Rest
 from llamatron.scale import Scale, ScaleType
-from llamatron.song import Clip
+from llamatron.clip_grid import Clip
 
 QUARTER = 0.25
 C4 = Note('C', 4, QUARTER)

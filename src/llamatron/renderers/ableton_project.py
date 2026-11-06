@@ -25,7 +25,7 @@ from pathlib import Path
 
 from llamatron.renderers.clip_tree import _check_directory, _check_song
 from llamatron.renderers.timing import BEATS_PER_WHOLE_NOTE, control_points, timed_events
-from llamatron.song import _Validated
+from llamatron.clip_grid import _Validated
 
 # Installed along with the code, so that a set can be written from anywhere.
 DEFAULT_TEMPLATE = Path(__file__).resolve().parents[1] / 'templates' / 'live12.als'

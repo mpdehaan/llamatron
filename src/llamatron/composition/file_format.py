@@ -186,24 +186,76 @@ NOTE_LETTERS = 'ABCDEFG'
 # How many half steps each accidental moves a note.
 ACCIDENTALS = {Accidental.SHARP: 1, Accidental.FLAT: -1}
 
-# Chords built in exact half steps from the note, which can leave the scale, in the order the
-# editor offers them. Bare numbers are kept for chords built from the scale.
+class ChordSymbol:
+    """The chord symbols a step's Chord row can hold, as a file writes them.
+
+    Named symbols, like M or dom7, are exact half steps from the step's note, so they can leave
+    the scale. Plain numbers stack every other note of the scale from the step's degree, so they
+    follow the scale, which is why dominants are written dom7 rather than 7.
+    """
+
+    MAJOR = 'M'
+    MINOR = 'm'
+    DIMINISHED = 'dim'
+    AUGMENTED = 'aug'
+    SUS2 = 'sus2'
+    SUS4 = 'sus4'
+    POWER = 'pow'
+    MAJOR6 = 'M6'
+    MINOR6 = 'm6'
+    DOMINANT7 = 'dom7'
+    MAJOR7 = 'M7'
+    MINOR7 = 'm7'
+    MINOR_MAJOR7 = 'mM7'
+    DIMINISHED7 = 'dim7'
+    HALF_DIMINISHED7 = 'm7b5'
+    AUGMENTED7 = 'aug7'
+    AUGMENTED_MAJOR7 = 'augM7'
+    DOMINANT7_SUS4 = '7sus4'
+    DOMINANT9 = 'dom9'
+    MAJOR9 = 'M9'
+    MINOR9 = 'm9'
+    ADD9 = 'add9'
+    MINOR_ADD9 = 'madd9'
+    DOMINANT11 = 'dom11'
+    MAJOR11 = 'M11'
+    MINOR11 = 'm11'
+    DOMINANT13 = 'dom13'
+    MAJOR13 = 'M13'
+    MINOR13 = 'm13'
+    SCALE_FIFTH = '5'
+    SCALE_TRIAD = '3'
+    SCALE_SEVENTH = '7'
+    SCALE_NINTH = '9'
+    SCALE_ELEVENTH = '11'
+    SCALE_THIRTEENTH = '13'
+
+
+# The named chord symbols, in the order the editor offers them, and the chords they make.
 FIXED_CHORDS = {
-    'M': ChordType.MAJOR, 'm': ChordType.MINOR, 'dim': ChordType.DIMINISHED, 'aug': ChordType.AUGMENTED,
-    'sus2': ChordType.SUS2, 'sus4': ChordType.SUS4, 'pow': ChordType.POWER,
-    'M6': ChordType.MAJOR6, 'm6': ChordType.MINOR6,
-    'dom7': ChordType.DOMINANT7, 'M7': ChordType.MAJOR7, 'm7': ChordType.MINOR7, 'mM7': ChordType.MINOR_MAJOR7,
-    'dim7': ChordType.DIMINISHED7, 'm7b5': ChordType.HALF_DIMINISHED7, 'aug7': ChordType.AUGMENTED7,
-    'augM7': ChordType.AUGMENTED_MAJOR7, '7sus4': ChordType.DOMINANT7_SUS4,
-    'dom9': ChordType.DOMINANT9, 'M9': ChordType.MAJOR9, 'm9': ChordType.MINOR9,
-    'add9': ChordType.ADD9, 'madd9': ChordType.MINOR_ADD9,
-    'dom11': ChordType.DOMINANT11, 'M11': ChordType.MAJOR11, 'm11': ChordType.MINOR11,
-    'dom13': ChordType.DOMINANT13, 'M13': ChordType.MAJOR13, 'm13': ChordType.MINOR13,
+    ChordSymbol.MAJOR: ChordType.MAJOR, ChordSymbol.MINOR: ChordType.MINOR,
+    ChordSymbol.DIMINISHED: ChordType.DIMINISHED, ChordSymbol.AUGMENTED: ChordType.AUGMENTED,
+    ChordSymbol.SUS2: ChordType.SUS2, ChordSymbol.SUS4: ChordType.SUS4, ChordSymbol.POWER: ChordType.POWER,
+    ChordSymbol.MAJOR6: ChordType.MAJOR6, ChordSymbol.MINOR6: ChordType.MINOR6,
+    ChordSymbol.DOMINANT7: ChordType.DOMINANT7, ChordSymbol.MAJOR7: ChordType.MAJOR7, ChordSymbol.MINOR7: ChordType.MINOR7,
+    ChordSymbol.MINOR_MAJOR7: ChordType.MINOR_MAJOR7, ChordSymbol.DIMINISHED7: ChordType.DIMINISHED7,
+    ChordSymbol.HALF_DIMINISHED7: ChordType.HALF_DIMINISHED7, ChordSymbol.AUGMENTED7: ChordType.AUGMENTED7,
+    ChordSymbol.AUGMENTED_MAJOR7: ChordType.AUGMENTED_MAJOR7, ChordSymbol.DOMINANT7_SUS4: ChordType.DOMINANT7_SUS4,
+    ChordSymbol.DOMINANT9: ChordType.DOMINANT9, ChordSymbol.MAJOR9: ChordType.MAJOR9, ChordSymbol.MINOR9: ChordType.MINOR9,
+    ChordSymbol.ADD9: ChordType.ADD9, ChordSymbol.MINOR_ADD9: ChordType.MINOR_ADD9,
+    ChordSymbol.DOMINANT11: ChordType.DOMINANT11, ChordSymbol.MAJOR11: ChordType.MAJOR11, ChordSymbol.MINOR11: ChordType.MINOR11,
+    ChordSymbol.DOMINANT13: ChordType.DOMINANT13, ChordSymbol.MAJOR13: ChordType.MAJOR13, ChordSymbol.MINOR13: ChordType.MINOR13,
 }
-# Chords that use only notes of the scale, as how many scale degrees each note is above the root.
+# The chord symbols that stack notes of the scale, and how many scale degrees above the step's
+# degree each of their notes is. A scale fifth is the root and the fifth, and each of the others
+# adds every other scale note above the root.
 SCALE_CHORDS = {
-    '5': (0, 4), '3': (0, 2, 4), '7': (0, 2, 4, 6), '9': (0, 2, 4, 6, 8),
-    '11': (0, 2, 4, 6, 8, 10), '13': (0, 2, 4, 6, 8, 10, 12),
+    ChordSymbol.SCALE_FIFTH: (0, 4),
+    ChordSymbol.SCALE_TRIAD: (0, 2, 4),
+    ChordSymbol.SCALE_SEVENTH: (0, 2, 4, 6),
+    ChordSymbol.SCALE_NINTH: (0, 2, 4, 6, 8),
+    ChordSymbol.SCALE_ELEVENTH: (0, 2, 4, 6, 8, 10),
+    ChordSymbol.SCALE_THIRTEENTH: (0, 2, 4, 6, 8, 10, 12),
 }
 CHORD_SYMBOLS = [*FIXED_CHORDS, *SCALE_CHORDS]
 

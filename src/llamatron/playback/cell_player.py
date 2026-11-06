@@ -28,7 +28,7 @@ from llamatron.playback.accumulators import Accumulators
 from llamatron.playback.morph_controls import morph_controls
 from llamatron.playback.pattern_player import PatternPlayer
 from llamatron.playback.step_order import StepOrder
-from llamatron.song import Clip
+from llamatron.clip_grid import Clip
 
 # How messages name a cell: by its scene's number and its track.
 WHERE_CELL = 'scene {scene}, track {track!r}'

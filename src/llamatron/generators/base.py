@@ -16,7 +16,7 @@
 
 from abc import ABC, abstractmethod
 
-from llamatron.song import POSITION_TYPES, Clip, cut_position as _cut, exact_length, fit_to_length
+from llamatron.clip_grid import POSITION_TYPES, Clip, cut_position as _cut, exact_length, fit_to_length
 
 __all__ = ['ClipGenerator', '_cut', 'exact_length', 'fit_to_length']
 

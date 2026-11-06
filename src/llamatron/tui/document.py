@@ -33,7 +33,7 @@ from llamatron.renderers.ableton_project import AbletonProject
 from llamatron.renderers.clip_tree import ClipTree
 from llamatron.note import Note
 from llamatron.scale import ScaleType
-from llamatron.song import ClipGrid
+from llamatron.clip_grid import ClipGrid
 from llamatron.composition.defaults import (
     DEFAULT_DRUM_OCTAVE, DEFAULT_LENGTH, DEFAULT_OCTAVE, DEFAULT_SEED, DEFAULT_TEMPO, GRANULARITIES,
 )

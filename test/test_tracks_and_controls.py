@@ -37,7 +37,7 @@ from llamatron.renderers.ableton_project import AbletonProject
 from llamatron.renderers.clip_tree import ClipTree
 from llamatron.renderers.timing import SLIDE_STEP, control_events, timed_events
 from llamatron.scale import Scale, ScaleType
-from llamatron.song import Clip, Control
+from llamatron.clip_grid import Clip, Control
 from llamatron.composition.song_file_error import SongFileError
 from rendering import render_data
 from llamatron.composition.song import Song

@@ -21,7 +21,7 @@ from llamatron.generators.base import ClipGenerator
 from llamatron.generators.blend import Blend, BlendMode
 from llamatron.note import Degree, Note, Rest
 from llamatron.scale import Scale, ScaleType
-from llamatron.song import Clip
+from llamatron.clip_grid import Clip
 
 C_MAJOR = Scale(Note('C', 4), ScaleType.MAJOR)
 A_MINOR = Scale(Note('A', 3), ScaleType.MINOR)

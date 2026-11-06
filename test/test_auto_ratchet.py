@@ -29,7 +29,7 @@ from llamatron.generators.auto_ratchet import AutoRatchet
 from llamatron.note import Degree, Note, Rest
 from llamatron.renderers.clip_tree import ClipTree
 from llamatron.scale import Scale, ScaleType
-from llamatron.song import Clip, Scene, ClipGrid, Track
+from llamatron.clip_grid import Clip, Scene, ClipGrid, Track
 
 QUARTER = 0.25
 C = Note('C', 4, QUARTER)

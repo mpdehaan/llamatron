@@ -22,7 +22,7 @@ from llamatron.chord import Chord
 from llamatron.generators.base import ClipGenerator, exact_length, fit_to_length
 from llamatron.midi import HALF_STEPS_PER_OCTAVE
 from llamatron.note import Note, Rest, _check_length
-from llamatron.song import _Validated
+from llamatron.clip_grid import _Validated
 
 # How many steps an arpeggiator's offsets can have, as on the Elektron Monomachine.
 MIN_OFFSETS, MAX_OFFSETS = 1, 16

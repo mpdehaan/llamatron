@@ -189,7 +189,7 @@ makes undo, redo and wizards easier, because every change then goes through one 
 the readability rules in CLAUDE.md (named constants, `MSG_` templates, named helpers and
 `__slots__`). Still to do: the tracker moving onto the objects, page by page, and the accessor
 audit, which replaces `_Validated` and attribute access with `get_` and `set_` methods in
-`song.py`, the generators and renderers, and `Note`'s `midi_number` property.
+`clip_grid.py`, the generators and renderers, and `Note`'s `midi_number` property.
 
 Decided with the user on 2026-11-06:
 
@@ -199,8 +199,8 @@ Decided with the user on 2026-11-06:
   error messages.
 - The saved objects are the composition model, in `src/llamatron/composition/`, one class to a
   file, and the music logic goes in `src/llamatron/playback/`.
-- Today's `Song` in `src/llamatron/song.py`, the grid of finished clips that renderers take, is
-  renamed `ClipGrid`, since it maps clips to tracks and scenes. The composition model's song
+- What was `Song` in `src/llamatron/song.py`, the grid of finished clips that renderers take, is
+  now `ClipGrid` in `src/llamatron/clip_grid.py`, since it maps clips to tracks and scenes. The composition model's song
   becomes `Song`.
 - References between objects stay names, looked up when rendering, which keeps binding late.
 - The tracker moves onto the objects too: `Document` holds a `Song`, and pages call its methods

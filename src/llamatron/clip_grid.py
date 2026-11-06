@@ -14,6 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""The finished clips a song renders into, and the grid that maps them to tracks and scenes.
+
+ClipGrid is what the renderers write out. The song the user composes, which a song file holds,
+is the Song in llamatron.composition.song, and SongRenderer plays it into a ClipGrid.
+"""
+
 import re
 from dataclasses import dataclass, replace
 from fractions import Fraction

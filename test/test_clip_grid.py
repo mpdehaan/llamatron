@@ -20,7 +20,7 @@ from fractions import Fraction
 from llamatron.chord import Chord, ChordType
 from llamatron.note import Note, Rest
 from llamatron.scale import Scale, ScaleType
-from llamatron.song import Clip, Scene, ClipGrid, Track
+from llamatron.clip_grid import Clip, Scene, ClipGrid, Track
 
 C_MAJOR = Scale(Note('C', 0, 0.25), ScaleType.MAJOR)
 A_MINOR = Scale(Note('A', 0, 0.25), ScaleType.MINOR)

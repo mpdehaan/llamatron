@@ -19,7 +19,7 @@ from dataclasses import replace
 from llamatron.chord import Chord
 from llamatron.generators.base import ClipGenerator, exact_length, fit_to_length
 from llamatron.note import Rest
-from llamatron.song import _Validated
+from llamatron.clip_grid import _Validated
 
 # A count of one leaves a note as it is, and a count can't be less than that.
 UNCHANGED = 1

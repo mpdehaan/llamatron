@@ -23,7 +23,7 @@ from llamatron.generators.arp import Arp, ChordOrder
 from llamatron.generators.base import ClipGenerator
 from llamatron.note import Note, Rest
 from llamatron.scale import Scale, ScaleType
-from llamatron.song import Clip
+from llamatron.clip_grid import Clip
 
 QUARTER = 0.25
 C4 = Note('C', 4, QUARTER)
