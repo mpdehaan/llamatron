@@ -672,10 +672,8 @@ class Document:
 
     def copy_chain(self, name):
         new = unique_name(f'{name} copy', self.data['chains'])
-        self.data['chains'][new] = [
-            {generator: (dict(settings) if isinstance(settings, dict) else settings) for generator, settings in step.items()}
-            for step in self.data['chains'][name]
-        ]
+        # Each step only names a generator, so copying the step is enough.
+        self.data['chains'][new] = [dict(step) for step in self.data['chains'][name]]
         self.changed()
         return new
 
