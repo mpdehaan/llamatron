@@ -1158,9 +1158,10 @@ class TestTracksScalesChainsAndArps(UITest):
         await self.press('enter')
         dialog = self.app.screen
         text = self.dialog_text()
-        for word in ['MODES', 'MINOR & MAJOR', 'SYMMETRIC', 'PENTATONIC & BLUES', 'JAZZ & EXOTIC', 'whole half dim', 'phrygian dom', 'ionian']:
+        for word in ['MODES', 'MINOR & MAJOR', 'SYMMETRIC', 'PENTATONIC & BLUES', 'whole half dim', 'ionian', 'egyptian']:
             self.assertIn(word, text)
         self.assertNotIn('diminished', text)
+        self.assertNotIn('hirajoshi', text)
         self.assertLessEqual(len(text.splitlines()), 22)
         dialog.place = dialog.options.index('dorian')
         await self.press('down')
@@ -1169,6 +1170,84 @@ class TestTracksScalesChainsAndArps(UITest):
         self.assertIn('D dorian: D E F G A B C', self.dialog_text())
         await self.press('enter')
         self.assertEqual(self.app.screen.value, 'D Dorian')
+
+    async def open_scale_kinds(self):
+        await self.press('z', '+')
+        self.app.screen.place = self.app.screen.options.index('D')
+        await self.press('enter')
+        return self.app.screen
+
+    async def test_the_scale_picker_shows_its_other_page(self):
+        dialog = await self.open_scale_kinds()
+        dialog.place = dialog.options.index('dorian')
+        first = self.dialog_text().splitlines()
+        for word in [' COMMON ', ' JAZZ & WORLD ', 'PgDn ▸', 'PgUp/PgDn', 'other page']:
+            self.assertIn(word, '\n'.join(first))
+        self.assertNotIn('◂ PgUp', '\n'.join(first))
+        await self.press('pagedown')
+        text = self.dialog_text()
+        for word in ['MELODIC MINOR', 'MIDDLE EAST & EUROPE', 'EAST ASIA', 'INDIA', 'JAZZ', 'phrygian dom', 'mixolydian flat6', '◂ PgUp']:
+            self.assertIn(word, text)
+        self.assertNotIn('PgDn ▸', text)
+        self.assertNotIn('natural minor', text)
+        lines = text.splitlines()
+        self.assertLessEqual(len(lines), 22)
+        self.assertLessEqual(max(len(line) for line in lines), 76)
+        # The cursor stays in its column, on the nearest row.
+        self.assertEqual(dialog.options[dialog.place], 'lydian augmented')
+        await self.press('pagedown')
+        self.assertEqual(dialog.page, 1)
+        await self.press('pageup', 'pageup')
+        self.assertEqual(dialog.page, 0)
+
+    async def test_both_scale_pages_are_the_same_size(self):
+        dialog = await self.open_scale_kinds()
+        sizes = []
+        for page in range(len(dialog.pages)):
+            dialog.page = page
+            dialog.place = next(cell for row in dialog.grid for cell in row if isinstance(cell, int))
+            dialog.draw()
+            lines = self.dialog_text().splitlines()
+            sizes.append((len(lines), {len(line) for line in lines}))
+        self.assertEqual(len(set(map(str, sizes))), 1, sizes)
+        self.assertEqual(len(sizes[0][1]), 1)
+
+    async def test_a_long_title_does_not_widen_the_scale_picker(self):
+        dialog = await self.open_scale_kinds()
+        width = len(self.dialog_text().splitlines()[0])
+        dialog.title = 'Change ' + 'a very long scale name ' * 4
+        dialog.draw()
+        self.assertEqual({len(line) for line in self.dialog_text().splitlines()}, {width})
+        self.assertIn('JAZZ & WORLD', self.dialog_text())
+
+    async def test_arrows_cross_to_the_other_page(self):
+        dialog = await self.open_scale_kinds()
+        dialog.place = dialog.options.index('blues')
+        await self.press('right')
+        self.assertEqual(dialog.page, 1)
+        self.assertEqual(dialog.options[dialog.place], 'lydian augmented')
+        await self.press('left')
+        self.assertEqual(dialog.page, 0)
+        self.assertEqual(dialog.options[dialog.place], 'blues')
+        await self.press('left', 'left', 'left')
+        # The first page doesn't go round to the last.
+        self.assertEqual(dialog.page, 0)
+        self.assertEqual(dialog.options[dialog.place], 'dorian')
+        await self.press('pagedown', 'right', 'right', 'right')
+        self.assertEqual(dialog.page, 1)
+        self.assertEqual(dialog.options[dialog.place], 'iwato')
+
+    async def test_picking_a_world_scale(self):
+        dialog = await self.open_scale_kinds()
+        dialog.place = dialog.options.index('major')
+        await self.press('pagedown', 'right', 'right')
+        self.assertEqual(dialog.options[dialog.place], 'hirajoshi')
+        self.assertIn('D hirajoshi: D E F A A#', self.dialog_text())
+        await self.press('enter')
+        self.app.screen.value = 'main'
+        await self.press('enter')
+        self.assertEqual(self.document.data['scales']['main'], {'root': 'D', 'type': 'hirajoshi'})
+        SongBuilder(self.document.data).build()
 
     async def test_two_scales_can_be_the_same_notes(self):
         await self.press('z', 'c')

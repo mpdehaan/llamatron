@@ -33,9 +33,9 @@ from llamatron.tui.document import clock
 
 KEY_NAMES = {
     'tab': 'Tab', 'enter': 'Enter', 'backspace': 'Bksp', 'space': 'Space',
-    'up': '↑', 'down': '↓', 'left': '←', 'right': '→',
+    'up': '↑', 'down': '↓', 'left': '←', 'right': '→', 'pageup': 'PgUp', 'pagedown': 'PgDn',
 }
-_NAMED_KEYS = {'tab', 'enter', 'backspace', 'up', 'down', 'left', 'right'}
+_NAMED_KEYS = {'tab', 'enter', 'backspace', 'up', 'down', 'left', 'right', 'pageup', 'pagedown'}
 ARROWS_UP_DOWN = ('up', 'down')
 TITLE = 'llamatron'
 # Shown at the bottom right of the main screen.
@@ -250,12 +250,16 @@ class Dialog(ModalScreen):
     def lines(self, width):
         return []
 
+    def heading(self, width):
+        """Return the dialog's top line."""
+        return Text(self.title, style='bold')
+
     def draw(self):
         if not self.is_attached or not self.query('#dialog-view'):
             return
         width = min(self.app.size.width - 4, 70)
         inner = width - 4
-        result = [Text(self.title, style='bold'), Text('')]
+        result = [self.heading(inner), Text('')]
         result += self.lines(inner)
         result += [Text(''), *legend(self.keys(), inner)]
         boxed = [Text('┏' + '━' * (width - 2) + '┓')]
@@ -429,35 +433,104 @@ class GridChoiceDialog(ChoiceDialog):
     from the top of a column reaches the top line. Left and right go to the next column across,
     landing on the option nearest to the row the cursor was on. Each column is as wide as what's
     in it.
+
+    Instead of one grid, pages can be a list of (name, grid) pairs. The top line names every page
+    and says which key reaches the others. PgUp and PgDn change page, and so do left and right
+    off the edge of a page, stopping at the first and last pages. It opens on the first page
+    holding the current option. Every page is drawn as wide and as tall as the largest, so the
+    dialog keeps its size when the page changes.
     """
 
-    def __init__(self, title, options, grid, current=0, details=None, top=()):
+    def __init__(self, title, options, grid, current=0, details=None, top=(), pages=None):
         super().__init__(title, options, current)
-        width = max((len(cells) for cells in grid), default=1)
-        top_row = [*top, *[None] * (width - len(top))]
-        # Navigation works on one grid, with the top line as its first row when there is one.
         self.top = list(top)
-        self.cells = ([top_row] if top else []) + [list(cells) + [None] * (width - len(cells)) for cells in grid]
-        self.grid = grid
         self.details = details
+        self.pages = pages or [(None, grid)]
+        self.page_cells = [self.padded(page_grid) for _, page_grid in self.pages]
+        self.page = next((number for number, cells in enumerate(self.page_cells) if self.find(cells) is not None), 0)
+
+    def padded(self, grid):
+        """Return a grid with every row the same width, and the top line first when there is one."""
+        width = max((len(cells) for cells in grid), default=1)
+        top_row = [*self.top, *[None] * (width - len(self.top))]
+        # Navigation works on one grid, with the top line as its first row when there is one.
+        return ([top_row] if self.top else []) + [list(cells) + [None] * (width - len(cells)) for cells in grid]
+
+    @property
+    def grid(self):
+        return self.pages[self.page][1]
+
+    @property
+    def cells(self):
+        return self.page_cells[self.page]
 
     def keys(self):
-        return [
+        keys = [
             key(ARROWS, 'move', self.move, label='←↑↓→', wants_key=True),
             key('enter', 'choose', lambda: self.dismiss(self.place)),
             key('tab', 'cancel', lambda: self.dismiss(None)),
         ]
+        if len(self.pages) > 1:
+            keys.append(key(('pageup', 'pagedown'), 'other page', self.turn_key, label='PgUp/PgDn', wants_key=True))
+        return keys
 
-    def option_at(self, row, column):
-        cell = self.cells[row][column]
+    def heading(self, width):
+        if len(self.pages) == 1:
+            return Text(self.title, style='bold')
+        tabs = Text(no_wrap=True)
+        if self.page > 0:
+            tabs.append('◂ PgUp ', style='bold')
+        for number, (name, _) in enumerate(self.pages):
+            tabs.append(f' {name} ', style='reverse' if number == self.page else 'dim')
+            tabs.append(' ')
+        if self.page < len(self.pages) - 1:
+            tabs.append('PgDn ▸', style='bold')
+        tabs.rstrip()
+        # The page names always fit, so the title is cut short rather than widening the dialog.
+        line = Text(fit(self.title, max(width - tabs.cell_len - 2, 0)), style='bold')
+        line.append(' ' * max(width - line.cell_len - tabs.cell_len, 0))
+        line.append_text(tabs)
+        return line
+
+    def option_at(self, row, column, cells=None):
+        cells = self.cells if cells is None else cells
+        cell = cells[row][column]
         return None if cell is None or isinstance(cell, Heading) else cell
 
-    def where(self):
-        for row in range(len(self.cells)):
-            for column in range(len(self.cells[row])):
-                if self.option_at(row, column) == self.place:
+    def find(self, cells):
+        """Return the row and column of the selected option in a page's cells, or None."""
+        for row in range(len(cells)):
+            for column in range(len(cells[row])):
+                if self.option_at(row, column, cells) == self.place:
                     return row, column
-        return 0, 0
+        return None
+
+    def where(self):
+        return self.find(self.cells) or (0, 0)
+
+    def nearest(self, row, column):
+        """Return the option in a column nearest to a row, or None if the column has none."""
+        found = sorted((abs(other - row), other) for other in range(len(self.cells)) if self.option_at(other, column) is not None)
+        return self.option_at(found[0][1], column) if found else None
+
+    def turn(self, step, row, column):
+        """Go to the next or previous page, landing near a row, starting from a column and moving
+        inward when that column is empty."""
+        self.page = (self.page + step) % len(self.pages)
+        width = len(self.cells[0])
+        column = min(column, width - 1)
+        inward = 1 if column == 0 else -1
+        for search in (column, *range(column + inward, width if inward > 0 else -1, inward), *range(width)):
+            found = self.nearest(row, search)
+            if found is not None:
+                self.place = found
+                return
+
+    def turn_key(self, name):
+        step = -1 if name == 'pageup' else 1
+        if 0 <= self.page + step < len(self.pages):
+            row, column = self.where()
+            self.turn(step, row, column)
 
     def move(self, name):
         row, column = self.where()
@@ -475,18 +548,28 @@ class GridChoiceDialog(ChoiceDialog):
             return
         step = -1 if name == 'left' else 1
         for offset in range(1, width + 1):
-            target = (column + step * offset) % width
-            nearest = sorted((abs(other - row), other) for other in range(len(self.cells)) if self.option_at(other, target) is not None)
-            if nearest:
-                self.place = self.option_at(nearest[0][1], target)
+            target = column + step * offset
+            if not 0 <= target < width:
+                if len(self.pages) > 1:
+                    # Off the edge of a page goes to the edge of the next one across, but not
+                    # from the last page round to the first.
+                    if 0 <= self.page + step < len(self.pages):
+                        self.turn(step, row, 0 if step > 0 else width)
+                    return
+                target %= width
+            found = self.nearest(row, target)
+            if found is not None:
+                self.place = found
                 return
 
     def column_widths(self):
-        sizes = [0] * len(self.cells[0])
-        for cells in self.grid:
-            for column, cell in enumerate(cells):
-                if cell is not None:
-                    sizes[column] = max(sizes[column], len(cell if isinstance(cell, Heading) else str(self.options[cell])))
+        """Return each column's width, as wide as that column on any page."""
+        sizes = [0] * max(len(cells[0]) for cells in self.page_cells)
+        for _, grid in self.pages:
+            for cells in grid:
+                for column, cell in enumerate(cells):
+                    if cell is not None:
+                        sizes[column] = max(sizes[column], len(cell if isinstance(cell, Heading) else str(self.options[cell])))
         return [size + 3 for size in sizes]
 
     def option_text(self, place, size):
@@ -515,6 +598,8 @@ class GridChoiceDialog(ChoiceDialog):
                 else:
                     line.append_text(self.option_text(cell, size))
             result.append(line)
+        # Shorter pages are padded to the height of the tallest.
+        result += [Text('')] * (max(len(grid) for _, grid in self.pages) - len(self.grid))
         if self.details is not None:
             result += [Text(''), Text(fit(self.details(self.place), width))]
         return result

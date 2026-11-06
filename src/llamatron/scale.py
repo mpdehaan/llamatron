@@ -52,14 +52,46 @@ class ScaleType(Enum):
     WHOLE_TONE = (0, 2, 4, 6, 8, 10)
     WHOLE_HALF_DIMINISHED = (0, 2, 3, 5, 6, 8, 9, 11)
     HALF_WHOLE_DIMINISHED = (0, 1, 3, 4, 6, 7, 9, 10)
+    AUGMENTED = (0, 3, 4, 7, 8, 11)
 
-    # Jazz and other popular scales
+    # The modes of melodic minor, after melodic minor itself. Flat and natural are spelled
+    # out, so DORIAN_FLAT2 is dorian b2.
+    DORIAN_FLAT2 = (0, 1, 3, 5, 7, 9, 10)
+    LYDIAN_AUGMENTED = (0, 2, 4, 6, 8, 9, 11)
     LYDIAN_DOMINANT = (0, 2, 4, 6, 7, 9, 10)
+    MIXOLYDIAN_FLAT6 = (0, 2, 4, 5, 7, 8, 10)
+    LOCRIAN_NATURAL2 = (0, 2, 3, 5, 6, 8, 10)
     ALTERED = (0, 1, 3, 4, 6, 8, 10)
+
+    # Jazz
     BEBOP_DOMINANT = (0, 2, 4, 5, 7, 9, 10, 11)
+    BEBOP_MAJOR = (0, 2, 4, 5, 7, 8, 9, 11)
+    PROMETHEUS = (0, 2, 4, 6, 9, 10)
+
+    # The Middle East and Europe
     PHRYGIAN_DOMINANT = (0, 1, 4, 5, 7, 8, 10)
-    HUNGARIAN_MINOR = (0, 2, 3, 6, 7, 8, 11)
     DOUBLE_HARMONIC = (0, 1, 4, 5, 7, 8, 11)
+    HUNGARIAN_MINOR = (0, 2, 3, 6, 7, 8, 11)
+    HUNGARIAN_MAJOR = (0, 3, 4, 6, 7, 9, 10)
+    UKRAINIAN_DORIAN = (0, 2, 3, 6, 7, 9, 10)
+    PERSIAN = (0, 1, 4, 5, 6, 8, 11)
+    NEAPOLITAN_MINOR = (0, 1, 3, 5, 7, 8, 11)
+    NEAPOLITAN_MAJOR = (0, 1, 3, 5, 7, 9, 11)
+    ENIGMATIC = (0, 1, 4, 6, 8, 10, 11)
+
+    # Egypt and East Asia. RYUKYU is the Okinawan scale.
+    EGYPTIAN = (0, 2, 5, 7, 10)
+    HIRAJOSHI = (0, 2, 3, 7, 8)
+    IN_SEN = (0, 1, 5, 7, 10)
+    IWATO = (0, 1, 5, 6, 10)
+    KUMOI = (0, 2, 3, 7, 9)
+    YO = (0, 2, 5, 7, 9)
+    RYUKYU = (0, 4, 5, 7, 11)
+
+    # Indian ragas, in twelve notes to the octave
+    TODI = (0, 1, 3, 6, 7, 8, 11)
+    MARWA = (0, 1, 4, 6, 7, 9, 11)
+    PURVI = (0, 1, 4, 6, 7, 8, 11)
 
 
 @dataclass(frozen=True)

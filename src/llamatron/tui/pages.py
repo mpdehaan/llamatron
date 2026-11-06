@@ -35,15 +35,25 @@ ORDERS = [order.name.lower() for order in ChordOrder]
 JUMPS = [jump.name.lower() for jump in OctaveJump]
 # How many offsets a new set has, as on the Monomachine.
 DEFAULT_OFFSET_STEPS = 8
-# The scale picker's columns of groups, which hold every kind of scale, with the names to show
-# where the full ones are too long to fit.
-SCALE_GROUPS = [
-    [('MODES', ['major', 'ionian', 'dorian', 'phrygian', 'lydian', 'mixolydian', 'minor', 'aeolian', 'natural_minor', 'locrian'])],
-    [('MINOR & MAJOR', ['harmonic_minor', 'melodic_minor', 'harmonic_major']),
-     ('SYMMETRIC', ['chromatic', 'whole_tone', 'whole_half_diminished', 'half_whole_diminished'])],
-    [('PENTATONIC & BLUES', ['major_pentatonic', 'minor_pentatonic', 'blues', 'major_blues']),
-     ('JAZZ & EXOTIC', ['lydian_dominant', 'bebop_dominant', 'altered', 'phrygian_dominant', 'hungarian_minor', 'double_harmonic'])],
+# The scale picker's pages, each a name and its columns of (heading, scales) groups. The common
+# scales come first. Melodic minor is on both pages, the second time leading its modes.
+SCALE_PAGES = [
+    ('COMMON', [
+        [('MODES', ['major', 'ionian', 'dorian', 'phrygian', 'lydian', 'mixolydian', 'minor', 'aeolian', 'natural_minor', 'locrian'])],
+        [('MINOR & MAJOR', ['harmonic_minor', 'melodic_minor', 'harmonic_major']),
+         ('SYMMETRIC', ['chromatic', 'whole_tone', 'whole_half_diminished', 'half_whole_diminished', 'augmented'])],
+        [('PENTATONIC & BLUES', ['major_pentatonic', 'minor_pentatonic', 'blues', 'major_blues', 'egyptian'])],
+    ]),
+    ('JAZZ & WORLD', [
+        [('MELODIC MINOR', ['melodic_minor', 'dorian_flat2', 'lydian_augmented', 'lydian_dominant', 'mixolydian_flat6', 'locrian_natural2', 'altered']),
+         ('JAZZ', ['bebop_dominant', 'bebop_major', 'prometheus'])],
+        [('MIDDLE EAST & EUROPE', ['phrygian_dominant', 'double_harmonic', 'hungarian_minor', 'hungarian_major', 'ukrainian_dorian', 'persian',
+                                   'neapolitan_minor', 'neapolitan_major', 'enigmatic'])],
+        [('EAST ASIA', ['hirajoshi', 'in_sen', 'iwato', 'kumoi', 'yo', 'ryukyu']),
+         ('INDIA', ['todi', 'marwa', 'purvi'])],
+    ]),
 ]
+# Names to show where the full ones are too long to fit.
 SHORT_SCALE_NAMES = {
     'whole_half_diminished': 'whole half dim', 'half_whole_diminished': 'half whole dim',
     'lydian_dominant': 'lydian dom', 'bebop_dominant': 'bebop dom', 'phrygian_dominant': 'phrygian dom',
@@ -699,9 +709,12 @@ class ScalesPage(ListPage):
         return result
 
     def pick_scale(self, title, root, kind, then):
-        """Ask for a root on a keyboard, and then a kind of scale from its group."""
+        """Ask for a root on a keyboard, and then a kind of scale from its pages."""
         kinds = [scale_label(text) for text in SCALE_KINDS]
-        kind_grid = grouped_grid([[(heading, [SCALE_KINDS.index(name) for name in names]) for heading, names in groups] for groups in SCALE_GROUPS])
+        kind_pages = [
+            (page, grouped_grid([[(heading, [SCALE_KINDS.index(name) for name in names]) for heading, names in groups] for groups in columns]))
+            for page, columns in SCALE_PAGES
+        ]
         root_grid = [[None if name is None else ROOTS.index(name) for name in row] for row in ROOT_KEYBOARD]
 
         def rooted(root_place):
@@ -713,7 +726,7 @@ class ScalesPage(ListPage):
             def notes(place):
                 return f'{chosen_root} {kinds[place]}: {scale_notes(chosen_root, SCALE_KINDS[place])}'
             place = SCALE_KINDS.index(kind) if kind in SCALE_KINDS else 0
-            self.ask(GridChoiceDialog(f'{title}: {chosen_root}', kinds, kind_grid, place, notes), kinded)
+            self.ask(GridChoiceDialog(f'{title}: {chosen_root}', kinds, None, place, notes, pages=kind_pages), kinded)
         self.ask(GridChoiceDialog(f'{title}: root note', ROOTS, root_grid, ROOTS.index(root) if root in ROOTS else 0), rooted)
 
     def add(self):

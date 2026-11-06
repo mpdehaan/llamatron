@@ -203,17 +203,30 @@ The root is chosen on a keyboard, with each flat under the sharp it shares a key
 
 Left and right move along the keys, and up and down switch between a sharp and its flat. A scale rooted on a flat spells its notes with flats, and any other root spells them with sharps.
 
-The kind is then chosen from five groups. The line underneath shows the notes of the one under the cursor, like `D dorian: D E F G A B C`. Up and down move within a column, and left and right move to the next column.
+The kind is then chosen from two pages. The line underneath shows the notes of the one under the cursor, like `D dorian: D E F G A B C`. Up and down move within a column, and left and right move to the next column.
+
+The top line names both pages, with the one you're on highlighted, and shows `PgDn ▸` when there's a page after it or `◂ PgUp` when there's one before. `PgDn` and `PgUp` change page, and so do left and right past the edge of a page. Neither goes round from the last page to the first. The picker opens on the page holding the scale's current kind.
+
+**Common**
 
 | Group | Kinds |
 | --- | --- |
 | Modes | major, ionian, dorian, phrygian, lydian, mixolydian, minor, aeolian, natural minor, locrian |
 | Minor & major | harmonic minor, melodic minor, harmonic major |
-| Symmetric | chromatic, whole tone, whole half dim, half whole dim |
-| Pentatonic & blues | major pentatonic, minor pentatonic, blues, major blues |
-| Jazz & exotic | lydian dom, bebop dom, altered, phrygian dom, hungarian minor, double harmonic |
+| Symmetric | chromatic, whole tone, whole half dim, half whole dim, augmented |
+| Pentatonic & blues | major pentatonic, minor pentatonic, blues, major blues, egyptian |
 
-Ionian is the same scale as major, and aeolian and natural minor are the same as minor. The picker shortens "diminished" to "dim" and "dominant" to "dom" to fit, but song files keep the full names, like `whole_half_diminished`.
+**Jazz & world**
+
+| Group | Kinds |
+| --- | --- |
+| Melodic minor | melodic minor, dorian flat2, lydian augmented, lydian dom, mixolydian flat6, locrian natural2, altered |
+| Jazz | bebop dom, bebop major, prometheus |
+| Middle East & Europe | phrygian dom, double harmonic, hungarian minor, hungarian major, ukrainian dorian, persian, neapolitan minor, neapolitan major, enigmatic |
+| East Asia | hirajoshi, in sen, iwato, kumoi, yo, ryukyu |
+| India | todi, marwa, purvi |
+
+Ionian is the same scale as major, and aeolian and natural minor are the same as minor. Melodic minor is on both pages, the second time leading its modes, which spell out flat and natural: dorian flat2 is dorian ♭2. Ryukyu is the Okinawan scale. The ragas are their twelve-note versions. The picker shortens "diminished" to "dim" and "dominant" to "dom" to fit, but song files keep the full names, like `whole_half_diminished`.
 
 The list shows each scale's notes, how many there are and how many things use it.
 

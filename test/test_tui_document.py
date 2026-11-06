@@ -524,11 +524,19 @@ class TestPickerLayouts(unittest.TestCase):
         self.assertEqual(flat, CHORD_SYMBOLS)
         self.assertEqual(set(CHORD_NAMES), set(CHORD_SYMBOLS))
 
-    def test_scale_groups_hold_every_kind_once(self):
+    def test_scale_pages_hold_every_kind_once_except_melodic_minor(self):
         from llamatron.tui.document import SCALE_KINDS
-        from llamatron.tui.pages import SCALE_GROUPS
-        flat = [kind for groups in SCALE_GROUPS for _, kinds in groups for kind in kinds]
+        from llamatron.tui.pages import SCALE_PAGES
+        flat = [kind for _, columns in SCALE_PAGES for groups in columns for _, kinds in groups for kind in kinds]
+        flat.remove('melodic_minor')
         self.assertEqual(sorted(flat), sorted(SCALE_KINDS))
+
+    def test_a_paged_grid_opens_on_the_page_of_the_current_option(self):
+        from llamatron.tui.base import GridChoiceDialog
+        dialog = GridChoiceDialog('Pick', ['a', 'b', 'c'], None, 2, pages=[('ONE', [[0, 1]]), ('TWO', [[1, 2]])])
+        self.assertEqual(dialog.page, 1)
+        self.assertEqual(dialog.where(), (0, 1))
+        self.assertEqual(GridChoiceDialog('Pick', ['a', 'b', 'c'], None, 1, pages=[('ONE', [[0, 1]]), ('TWO', [[1, 2]])]).page, 0)
 
     def test_the_keyboard_holds_every_root_once(self):
         from llamatron.tui.document import ROOTS
