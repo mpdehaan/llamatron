@@ -20,7 +20,7 @@ from fractions import Fraction
 from llamatron.chord import Chord, ChordType
 from llamatron.note import Note, Rest
 from llamatron.scale import Scale, ScaleType
-from llamatron.song import Clip, Scene, Song, Track
+from llamatron.song import Clip, Scene, ClipGrid, Track
 
 C_MAJOR = Scale(Note('C', 0, 0.25), ScaleType.MAJOR)
 A_MINOR = Scale(Note('A', 0, 0.25), ScaleType.MINOR)
@@ -66,14 +66,14 @@ class TestNamedParts(unittest.TestCase):
         self.assertIsNone(Scene().id)
 
     def test_track_and_scene_ids_start_at_0_and_count_up_separately(self):
-        song = Song()
+        song = ClipGrid()
         tracks = [song.add_track(Track('Same')) for _ in range(3)]
         scenes = [song.add_scene(Scene('Same')) for _ in range(2)]
         self.assertEqual([track.id for track in tracks], [0, 1, 2])
         self.assertEqual([scene.id for scene in scenes], [0, 1])
 
     def test_ids_follow_the_order_added_not_created(self):
-        song = Song()
+        song = ClipGrid()
         first_created, second_created = Track(), Track()
         song.add_track(second_created)
         song.add_track(first_created)
@@ -82,7 +82,7 @@ class TestNamedParts(unittest.TestCase):
 
     def test_each_song_counts_its_own_ids_from_0(self):
         for _ in range(2):
-            song = Song()
+            song = ClipGrid()
             self.assertEqual(song.add_track(Track()).id, 0)
             self.assertEqual(song.add_scene(Scene()).id, 0)
 
@@ -107,7 +107,7 @@ class TestNamedParts(unittest.TestCase):
                 self.assertEqual(part.name, 'A')
 
     def test_ids_cannot_be_edited(self):
-        song = Song()
+        song = ClipGrid()
         for part in [song.add_track(Track()), song.add_scene(Scene()), Track(), Scene(), Clip()]:
             with self.subTest(part=part):
                 original = part.id
@@ -201,20 +201,20 @@ class TestClipNotes(unittest.TestCase):
 class TestTempos(unittest.TestCase):
 
     def test_song_defaults_to_120(self):
-        self.assertEqual(Song().tempo, 120)
+        self.assertEqual(ClipGrid().tempo, 120)
 
     def test_song_takes_a_tempo(self):
-        self.assertEqual(Song(90).tempo, 90)
-        self.assertEqual(Song(tempo=92.5).tempo, 92.5)
+        self.assertEqual(ClipGrid(90).tempo, 90)
+        self.assertEqual(ClipGrid(tempo=92.5).tempo, 92.5)
 
     def test_tempos_can_be_edited(self):
-        for part in [Song(), Scene()]:
+        for part in [ClipGrid(), Scene()]:
             with self.subTest(part=type(part).__name__):
                 part.tempo = 77
                 self.assertEqual(part.tempo, 77)
 
     def test_edited_tempos_are_validated(self):
-        for part in [Song(100), Scene(tempo=100)]:
+        for part in [ClipGrid(100), Scene(tempo=100)]:
             for tempo in INVALID_TEMPOS:
                 with self.subTest(part=type(part).__name__, tempo=tempo):
                     with self.assertRaises(ValueError):
@@ -227,7 +227,7 @@ class TestTempos(unittest.TestCase):
         self.assertIsNone(scene.tempo)
 
     def test_song_tempo_cannot_be_cleared(self):
-        song = Song(100)
+        song = ClipGrid(100)
         with self.assertRaises(ValueError):
             song.tempo = None
         self.assertEqual(song.tempo, 100)
@@ -247,19 +247,19 @@ class TestTempos(unittest.TestCase):
         for tempo in INVALID_TEMPOS:
             with self.subTest(tempo=tempo):
                 with self.assertRaises(ValueError):
-                    Song(tempo)
+                    ClipGrid(tempo)
                 with self.assertRaises(ValueError):
                     Scene(tempo=tempo)
 
     def test_song_rejects_none_as_a_tempo(self):
         with self.assertRaises(ValueError):
-            Song(None)
+            ClipGrid(None)
 
 
 class TestTempoAt(unittest.TestCase):
 
     def setUp(self):
-        self.song = Song(120)
+        self.song = ClipGrid(120)
 
     def test_uses_the_song_tempo_when_the_scene_has_none(self):
         scene = self.song.add_scene(Scene())
@@ -293,17 +293,17 @@ class TestTempoAt(unittest.TestCase):
 class TestScales(unittest.TestCase):
 
     def test_no_scale_by_default(self):
-        self.assertIsNone(Song().scale)
+        self.assertIsNone(ClipGrid().scale)
         self.assertIsNone(Scene().scale)
         self.assertIsNone(Clip().scale)
 
     def test_take_a_scale(self):
-        self.assertIs(Song(scale=C_MAJOR).scale, C_MAJOR)
+        self.assertIs(ClipGrid(scale=C_MAJOR).scale, C_MAJOR)
         self.assertIs(Scene(scale=C_MAJOR).scale, C_MAJOR)
         self.assertIs(Clip(scale=C_MAJOR).scale, C_MAJOR)
 
     def test_scales_can_be_edited_and_cleared(self):
-        for part in [Song(), Scene(), Clip()]:
+        for part in [ClipGrid(), Scene(), Clip()]:
             with self.subTest(part=type(part).__name__):
                 part.scale = C_MAJOR
                 self.assertIs(part.scale, C_MAJOR)
@@ -312,7 +312,7 @@ class TestScales(unittest.TestCase):
 
     def test_rejects_invalid_scales(self):
         for scale in ['C major', ScaleType.MAJOR, Note('C', 4, 0.25), 1]:
-            for make in [Song, Scene, Clip]:
+            for make in [ClipGrid, Scene, Clip]:
                 with self.subTest(part=make.__name__, scale=scale):
                     with self.assertRaises(ValueError):
                         make(scale=scale)
@@ -325,11 +325,11 @@ class TestScales(unittest.TestCase):
 class TestScaleAt(unittest.TestCase):
 
     def setUp(self):
-        self.song = Song(scale=C_MAJOR)
+        self.song = ClipGrid(scale=C_MAJOR)
         self.track = self.song.add_track(Track())
 
     def test_none_when_nothing_has_a_scale(self):
-        song = Song()
+        song = ClipGrid()
         track = song.add_track(Track())
         scene = song.add_scene(Scene())
         self.assertIsNone(song.scale_at(scene, track))
@@ -399,12 +399,12 @@ class TestScaleAt(unittest.TestCase):
 class TestTracksAndScenes(unittest.TestCase):
 
     def test_new_song_is_empty(self):
-        song = Song()
+        song = ClipGrid()
         self.assertEqual(song.tracks, [])
         self.assertEqual(song.scenes, [])
 
     def test_add_returns_the_object_and_keeps_order(self):
-        song = Song()
+        song = ClipGrid()
         first_track, second_track = Track('A'), Track('B')
         first_scene, second_scene = Scene('A'), Scene('B')
         self.assertIs(song.add_track(first_track), first_track)
@@ -415,7 +415,7 @@ class TestTracksAndScenes(unittest.TestCase):
         self.assertEqual(song.scenes, [first_scene, second_scene])
 
     def test_same_names_are_allowed(self):
-        song = Song()
+        song = ClipGrid()
         song.add_track(Track('Bass'))
         song.add_track(Track('Bass'))
         song.add_scene(Scene('Verse'))
@@ -424,7 +424,7 @@ class TestTracksAndScenes(unittest.TestCase):
         self.assertEqual(len(song.scenes), 2)
 
     def test_rejects_adding_the_same_object_twice(self):
-        song = Song()
+        song = ClipGrid()
         track = song.add_track(Track())
         scene = song.add_scene(Scene())
         with self.assertRaises(ValueError):
@@ -433,7 +433,7 @@ class TestTracksAndScenes(unittest.TestCase):
             song.add_scene(scene)
 
     def test_rejects_the_wrong_type(self):
-        song = Song()
+        song = ClipGrid()
         for value in ['Bass', None, Clip()]:
             with self.subTest(value=value):
                 with self.assertRaises(ValueError):
@@ -446,7 +446,7 @@ class TestTracksAndScenes(unittest.TestCase):
             song.add_scene(Track())
 
     def test_changing_the_returned_lists_does_not_change_the_song(self):
-        song = Song()
+        song = ClipGrid()
         song.add_track(Track())
         song.add_scene(Scene())
         song.tracks.clear()
@@ -470,7 +470,7 @@ class TestClipGrid(unittest.TestCase):
                 call(self.scene, outside_track)
 
     def setUp(self):
-        self.song = Song()
+        self.song = ClipGrid()
         self.track = self.song.add_track(Track('Bass'))
         self.other_track = self.song.add_track(Track('Bass'))
         self.scene = self.song.add_scene(Scene('Verse'))
@@ -523,7 +523,7 @@ class TestClipGrid(unittest.TestCase):
         self.assertIs(self.song.get_clip(self.scene, self.track), clip)
 
     def test_tracks_and_scenes_can_only_join_one_song(self):
-        other_song = Song()
+        other_song = ClipGrid()
         with self.assertRaises(ValueError):
             other_song.add_track(self.track)
         with self.assertRaises(ValueError):
@@ -532,7 +532,7 @@ class TestClipGrid(unittest.TestCase):
         self.assertEqual(other_song.scenes, [])
 
     def test_songs_with_the_same_ids_do_not_share_clips(self):
-        other_song = Song()
+        other_song = ClipGrid()
         other_track = other_song.add_track(Track())
         other_scene = other_song.add_scene(Scene())
         self.assertEqual((other_scene.id, other_track.id), (self.scene.id, self.track.id))
@@ -540,7 +540,7 @@ class TestClipGrid(unittest.TestCase):
         self.assertIsNone(other_song.get_clip(other_scene, other_track))
 
     def test_rejects_a_scene_or_track_from_another_song_with_the_same_id(self):
-        other_song = Song()
+        other_song = ClipGrid()
         other_track = other_song.add_track(Track())
         other_scene = other_song.add_scene(Scene())
         with self.assertRaises(ValueError):

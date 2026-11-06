@@ -351,7 +351,7 @@ class Clip:
         )
 
 
-class Song:
+class ClipGrid:
     """A grid of clips, with one cell for each combination of scene and track."""
 
     tempo = _Validated(_check_tempo)

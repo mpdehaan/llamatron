@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Reads a song written in the YAML song format, and builds a Song from it.
+"""Reads a song written in the YAML song format, and builds a ClipGrid from it.
 
 A file has song settings, named scales, patterns, tracks, arps, auto_ratchets, chains and scenes. A
 pattern holds one list per row, all as long as its step count, which mirrors the pattern editor:
@@ -66,7 +66,7 @@ from llamatron.generators.auto_ratchet import AutoRatchet, divide
 from llamatron.note import SHARP_NAMES, Degree, Note, Rest
 from llamatron.renderers.timing import timed_events
 from llamatron.scale import Scale, ScaleType
-from llamatron.song import Clip, Control, Scene, Song, Track
+from llamatron.song import Clip, Control, Scene, ClipGrid, Track
 
 
 # The kinds of value a generator setting can hold, and the choices that some settings have.
@@ -193,7 +193,7 @@ class _Context:
 
 
 class SongBuilder:
-    """Turns the contents of a song file into a Song."""
+    """Turns the contents of a song file into a ClipGrid of finished clips."""
 
     def __init__(self, data):
         # Every setting has a default, so an empty file is an empty song.
@@ -238,7 +238,7 @@ class SongBuilder:
 
     def build(self):
         tempo = float(self.tempo)
-        song = Song(tempo=int(tempo) if tempo.is_integer() else tempo)
+        song = ClipGrid(tempo=int(tempo) if tempo.is_integer() else tempo)
         tracks = {name: song.add_track(Track(name, mute=settings.get('mute', False))) for name, settings in self.tracks.items()}
         for stanza in self.stanzas:
             scene = song.add_scene(self._scene(stanza))

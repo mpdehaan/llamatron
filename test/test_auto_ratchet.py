@@ -29,7 +29,7 @@ from llamatron.generators.auto_ratchet import AutoRatchet
 from llamatron.note import Degree, Note, Rest
 from llamatron.renderers.clip_tree import ClipTree
 from llamatron.scale import Scale, ScaleType
-from llamatron.song import Clip, Scene, Song, Track
+from llamatron.song import Clip, Scene, ClipGrid, Track
 
 QUARTER = 0.25
 C = Note('C', 4, QUARTER)
@@ -47,7 +47,7 @@ def stutter(counts, notes, **clip_options):
 
 def rendered(clip):
     """Render a clip, and return (type, note, tick) for each note message."""
-    song = Song(scale=C_MAJOR)
+    song = ClipGrid(scale=C_MAJOR)
     track = song.add_track(Track())
     scene = song.add_scene(Scene())
     song.set_clip(scene, track, clip)

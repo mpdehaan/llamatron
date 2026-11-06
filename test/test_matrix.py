@@ -22,14 +22,14 @@ import mido
 
 from llamatron.note import Note
 from llamatron.renderers.clip_tree import ClipTree
-from llamatron.song import Clip, Scene, Song, Track
+from llamatron.song import Clip, Scene, ClipGrid, Track
 
 
 class TestMatrix(unittest.TestCase):
 
     def test_matrix(self):
         # A song at the default tempo of 120 bpm, with a 3 by 3 grid.
-        song = Song()
+        song = ClipGrid()
         scenes = [song.add_scene(Scene(name)) for name in ['A', 'B', 'C']]
         tracks = [song.add_track(Track(name)) for name in ['T1', 'T2', 'T3']]
 

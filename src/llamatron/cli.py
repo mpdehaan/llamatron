@@ -31,7 +31,7 @@ import sys
 
 from llamatron.renderers.ableton_project import DEFAULT_TEMPLATE, AbletonProject
 from llamatron.renderers.clip_tree import ClipTree
-from llamatron.song import Song
+from llamatron.song import ClipGrid
 from llamatron.song_file import SongFileError, load_song
 
 
@@ -57,7 +57,7 @@ def _arguments(argv):
 def replace_output(to, directory):
     """Remove what rendering a song to a directory would write, and leave everything else."""
     if to == 'ableton':
-        targets = [AbletonProject(directory, Song()).path]
+        targets = [AbletonProject(directory, ClipGrid()).path]
     else:
         targets = glob.glob(os.path.join(glob.escape(directory), '[0-9]*-[0-9]*.mid'))
     for path in targets:

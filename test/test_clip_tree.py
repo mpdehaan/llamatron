@@ -27,7 +27,7 @@ import mido
 from llamatron.chord import Chord, ChordType
 from llamatron.note import Note, Rest
 from llamatron.renderers.clip_tree import TICKS_PER_BEAT, VELOCITY, ClipTree
-from llamatron.song import Clip, Scene, Song, Track
+from llamatron.song import Clip, Scene, ClipGrid, Track
 
 C4 = Note('C', 4, 0.25)
 D4 = Note('D', 4, 0.25)
@@ -71,19 +71,19 @@ def end(beat):
 class TestClipTreeFields(unittest.TestCase):
 
     def test_keeps_directory_and_song(self):
-        song = Song()
+        song = ClipGrid()
         renderer = ClipTree('output', song)
         self.assertEqual(renderer.directory, 'output')
         self.assertIs(renderer.song, song)
 
     def test_directory_can_be_a_path(self):
-        self.assertEqual(ClipTree(Path('output'), Song()).directory, Path('output'))
+        self.assertEqual(ClipTree(Path('output'), ClipGrid()).directory, Path('output'))
 
     def test_rejects_invalid_directories(self):
-        for directory in ['', None, 1, Song()]:
+        for directory in ['', None, 1, ClipGrid()]:
             with self.subTest(directory=directory):
                 with self.assertRaises(ValueError):
-                    ClipTree(directory, Song())
+                    ClipTree(directory, ClipGrid())
 
     def test_rejects_invalid_songs(self):
         for song in [None, 'song', Track()]:
@@ -92,15 +92,15 @@ class TestClipTreeFields(unittest.TestCase):
                     ClipTree('output', song)
 
     def test_fields_can_be_edited(self):
-        renderer = ClipTree('output', Song())
-        other_song = Song()
+        renderer = ClipTree('output', ClipGrid())
+        other_song = ClipGrid()
         renderer.directory = 'elsewhere'
         renderer.song = other_song
         self.assertEqual(renderer.directory, 'elsewhere')
         self.assertIs(renderer.song, other_song)
 
     def test_edited_fields_are_validated(self):
-        song = Song()
+        song = ClipGrid()
         renderer = ClipTree('output', song)
         with self.assertRaises(ValueError):
             renderer.directory = None
@@ -112,7 +112,7 @@ class TestClipTreeFields(unittest.TestCase):
     def test_creating_a_renderer_does_not_create_the_directory(self):
         with tempfile.TemporaryDirectory() as parent:
             directory = os.path.join(parent, 'output')
-            ClipTree(directory, Song())
+            ClipTree(directory, ClipGrid())
             self.assertFalse(os.path.exists(directory))
 
 
@@ -122,7 +122,7 @@ class RenderTestCase(unittest.TestCase):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         self.directory = temporary.name
-        self.song = Song()
+        self.song = ClipGrid()
         self.renderer = ClipTree(self.directory, self.song)
 
     def path(self, filename):

@@ -33,7 +33,7 @@ from llamatron.renderers.ableton_project import AbletonProject
 from llamatron.renderers.clip_tree import ClipTree
 from llamatron.note import Note
 from llamatron.scale import ScaleType
-from llamatron.song import Song
+from llamatron.song import ClipGrid
 from llamatron.song_file import (
     DEFAULT_DRUM_OCTAVE, DEFAULT_LENGTH, DEFAULT_OCTAVE, DEFAULT_PROBABILITY, DEFAULT_RATCHET, DEFAULT_TEMPO,
     CC_ROWS, DEFAULT_SEED, DEFAULT_VELOCITY, DIRECTIONS, FORWARD, GRANULARITIES, MORPH_STYLES, PATTERN_ROWS, TOGGLE_ROWS,
@@ -189,7 +189,7 @@ class Document:
     def render_path(self, to):
         """Return where a render will write: a set's file, or the folder of a clip tree."""
         if to == 'ableton':
-            return AbletonProject(self.output_directory(), Song()).path
+            return AbletonProject(self.output_directory(), ClipGrid()).path
         return self.output_directory()
 
     def render_exists(self, to):

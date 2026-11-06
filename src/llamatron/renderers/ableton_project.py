@@ -60,7 +60,7 @@ def _beats(whole_notes):
 
 
 class AbletonProject:
-    """Renders a Song as an Ableton Live 12 set, in both Session View and Arrangement View.
+    """Renders a ClipGrid as an Ableton Live 12 set, in both Session View and Arrangement View.
 
     In Session View, each scene and track slot holds its clip. In Arrangement View, the
     scenes play one after another from the start, each lasting as long as its longest clip.

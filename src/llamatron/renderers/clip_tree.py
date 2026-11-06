@@ -20,7 +20,7 @@ import re
 import mido
 
 from llamatron.renderers.timing import BEATS_PER_WHOLE_NOTE, VELOCITY, control_events, timed_events
-from llamatron.song import Song, _Validated
+from llamatron.song import ClipGrid, _Validated
 
 TICKS_PER_BEAT = 480
 
@@ -31,8 +31,8 @@ def _check_directory(directory):
 
 
 def _check_song(song):
-    if not isinstance(song, Song):
-        raise ValueError(f'expected a Song, got {song!r}')
+    if not isinstance(song, ClipGrid):
+        raise ValueError(f'expected a ClipGrid, got {song!r}')
 
 
 def _ticks(length):
@@ -55,7 +55,7 @@ def _filename(scene, track, clip):
 
 
 class ClipTree:
-    """Renders a Song as a directory of MIDI files, one per filled scene and track slot.
+    """Renders a ClipGrid as a directory of MIDI files, one per filled scene and track slot.
 
     Files are named <scene_id>-<track_id>-<clip_name>.mid, such as 002-001-My_Riff.mid, with
     numbers counting from 1 and zero-padded to three digits, and spaces in the clip's name replaced by underscores.

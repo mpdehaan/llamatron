@@ -30,7 +30,7 @@ from llamatron.chord import Chord
 from llamatron.note import Degree, Note, Rest
 from llamatron.renderers.ableton_project import DEFAULT_TEMPLATE, AbletonProject
 from llamatron.scale import Scale, ScaleType
-from llamatron.song import Clip, Scene, Song, Track
+from llamatron.song import Clip, Scene, ClipGrid, Track
 
 QUARTER = 0.25
 C4 = Note('C', 4, QUARTER)
@@ -51,7 +51,7 @@ class ProjectTestCase(unittest.TestCase):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         self.directory = os.path.join(temporary.name, 'my_song')
-        self.song = Song()
+        self.song = ClipGrid()
 
     def render(self, **options):
         """Render and return what was printed."""
@@ -579,21 +579,21 @@ class TestTemplates(ProjectTestCase):
 class TestFields(unittest.TestCase):
 
     def test_keeps_its_values(self):
-        song = Song()
+        song = ClipGrid()
         project = AbletonProject('output', song, template='other.als')
         self.assertEqual(project.directory, 'output')
         self.assertIs(project.song, song)
         self.assertEqual(project.template, 'other.als')
 
     def test_template_defaults_to_the_one_installed_with_the_code(self):
-        self.assertEqual(AbletonProject('output', Song()).template, DEFAULT_TEMPLATE)
+        self.assertEqual(AbletonProject('output', ClipGrid()).template, DEFAULT_TEMPLATE)
         self.assertIsInstance(DEFAULT_TEMPLATE, Path)
 
     def test_rejects_invalid_values(self):
         for directory in ['', None, 1]:
             with self.subTest(directory=directory):
                 with self.assertRaises(ValueError):
-                    AbletonProject(directory, Song())
+                    AbletonProject(directory, ClipGrid())
         for song in [None, 'song', Track()]:
             with self.subTest(song=song):
                 with self.assertRaises(ValueError):
@@ -601,10 +601,10 @@ class TestFields(unittest.TestCase):
         for template in ['', None, 1]:
             with self.subTest(template=template):
                 with self.assertRaises(ValueError):
-                    AbletonProject('output', Song(), template=template)
+                    AbletonProject('output', ClipGrid(), template=template)
 
     def test_fields_can_be_edited_and_are_validated(self):
-        project = AbletonProject('output', Song())
+        project = AbletonProject('output', ClipGrid())
         project.directory = 'elsewhere'
         self.assertEqual(project.directory, 'elsewhere')
         with self.assertRaises(ValueError):
@@ -614,7 +614,7 @@ class TestFields(unittest.TestCase):
     def test_creating_it_does_not_create_the_directory(self):
         with tempfile.TemporaryDirectory() as parent:
             directory = os.path.join(parent, 'output')
-            AbletonProject(directory, Song())
+            AbletonProject(directory, ClipGrid())
             self.assertFalse(os.path.exists(directory))
 
 
@@ -622,7 +622,7 @@ class TestFileName(unittest.TestCase):
 
     def test_the_name_sets_the_file_name(self):
         with tempfile.TemporaryDirectory() as directory:
-            project = AbletonProject(directory, Song(), name='tune-007')
+            project = AbletonProject(directory, ClipGrid(), name='tune-007')
             self.assertEqual(os.path.basename(project.path), 'tune-007.als')
 
 

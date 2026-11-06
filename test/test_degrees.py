@@ -29,7 +29,7 @@ from llamatron.generators.auto_ratchet import AutoRatchet
 from llamatron.note import Degree, Note, Rest
 from llamatron.renderers.clip_tree import ClipTree
 from llamatron.scale import Scale, ScaleType
-from llamatron.song import Clip, Scene, Song, Track
+from llamatron.song import Clip, Scene, ClipGrid, Track
 
 QUARTER = 0.25
 C_MAJOR = Scale(Note('C', 4), ScaleType.MAJOR)
@@ -39,7 +39,7 @@ C_PENTATONIC = Scale(Note('C', 4), ScaleType.MAJOR_PENTATONIC)
 
 def render_clip(clip, song_scale=None, scene_scale=None):
     """Render one clip, and return its messages as (note, start in beats, end in beats)."""
-    song = Song(scale=song_scale)
+    song = ClipGrid(scale=song_scale)
     track = song.add_track(Track())
     scene = song.add_scene(Scene(scale=scene_scale))
     song.set_clip(scene, track, clip)
@@ -256,7 +256,7 @@ class TestRendering(unittest.TestCase):
         self.assertEqual(pitches(clip, scene_scale=A_MINOR), [48, 50, 52])
 
     def test_one_clip_can_play_in_two_scenes_with_different_scales(self):
-        song = Song()
+        song = ClipGrid()
         track = song.add_track(Track())
         clip = Clip(notes=[1, 3], note_length=QUARTER)
         major_scene = song.add_scene(Scene(scale=C_MAJOR))
@@ -288,7 +288,7 @@ class TestRendering(unittest.TestCase):
         ])
 
     def test_missing_scale_stops_before_writing_anything(self):
-        song = Song()
+        song = ClipGrid()
         track = song.add_track(Track())
         scene = song.add_scene(Scene())
         other_track = song.add_track(Track())
@@ -300,7 +300,7 @@ class TestRendering(unittest.TestCase):
             self.assertEqual(os.listdir(directory), [])
 
     def test_missing_length_stops_before_writing_anything(self):
-        song = Song(scale=C_MAJOR)
+        song = ClipGrid(scale=C_MAJOR)
         track = song.add_track(Track())
         scene = song.add_scene(Scene())
         song.set_clip(scene, track, Clip(notes=[1]))
