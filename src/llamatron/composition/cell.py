@@ -60,6 +60,8 @@ class Cell(LlamaData):
     other patterns and tracks are kept as names, and looked up when the song renders.
     """
 
+    __slots__ = ('_settings',)
+
     def __init__(self, **settings):
         self._settings = {name: settings.get(name) for name in SETTINGS}
 

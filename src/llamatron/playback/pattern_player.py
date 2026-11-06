@@ -56,6 +56,8 @@ class PatternPlayer:
     and the track's transpose.
     """
 
+    __slots__ = ('_song', '_scene', '_scale', '_transpose', '_default_length')
+
     def __init__(self, song, scene, scale, track):
         self._song = song
         self._scene = scene

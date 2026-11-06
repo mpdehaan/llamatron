@@ -75,6 +75,8 @@ class GeneratorSettings(LlamaData):
     one is, and which are required.
     """
 
+    __slots__ = ('_settings',)
+
     GENERATOR = None
     SETTINGS = {}
     REQUIRED = []
@@ -114,6 +116,8 @@ class GeneratorSettings(LlamaData):
 class ArpSettings(GeneratorSettings):
     """An arpeggiator's settings: its step length, order, seed, octave range and jump, and offsets."""
 
+    __slots__ = ()
+
     GENERATOR = Arp
     SETTINGS = {
         ArpSetting.STEP: ValueKind.LENGTH, ArpSetting.ORDER: ORDERS, ArpSetting.SEED: ValueKind.WHOLE,
@@ -129,6 +133,8 @@ class ArpSettings(GeneratorSettings):
 
 class AutoRatchetSettings(GeneratorSettings):
     """An AutoRatchet's settings: the counts it cycles through."""
+
+    __slots__ = ()
 
     GENERATOR = AutoRatchet
     SETTINGS = {AutoRatchetSetting.COUNTS: ValueKind.WHOLES}

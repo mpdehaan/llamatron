@@ -47,6 +47,8 @@ class Scene(LlamaData):
     the name of one of the song's scales.
     """
 
+    __slots__ = ('_settings', '_cells')
+
     def __init__(self, cells=None, **settings):
         self._settings = {name: settings.get(name) for name in SETTINGS}
         self._cells = None if cells is None else dict(cells)

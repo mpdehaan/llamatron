@@ -35,6 +35,8 @@ class StepOrder:
     made from the song's seed, so a render is always the same.
     """
 
+    __slots__ = ('_choices', '_places')
+
     def __init__(self, choices):
         self._choices = choices
         self._places = {}

@@ -35,6 +35,8 @@ class Chain(LlamaData):
     name, so that several chains can share one.
     """
 
+    __slots__ = ('_steps',)
+
     def __init__(self, steps):
         self._steps = [(kind, name) for kind, name in steps]
 

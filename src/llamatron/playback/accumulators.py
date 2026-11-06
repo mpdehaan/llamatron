@@ -20,6 +20,8 @@
 class Accumulators:
     """Running totals that start at zero with each clip and carry on across its repeats."""
 
+    __slots__ = ('_totals',)
+
     def __init__(self):
         self._totals = {}
 

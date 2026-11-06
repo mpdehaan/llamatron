@@ -22,6 +22,8 @@ from llamatron.renderers.timing import timed_events
 class GrabSource:
     """The notes a finished clip starts, by when they start, like the Cirklon's note grab."""
 
+    __slots__ = ('_onsets', '_times')
+
     def __init__(self, clip):
         self._onsets = _notes_by_start(clip)
         self._times = sorted(self._onsets)

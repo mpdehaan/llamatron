@@ -28,6 +28,8 @@ DESCRIPTION = 'scene {number} ({name})'
 class WrittenScene:
     """A scene's place in the song, counted from 1, with the name, scale and tempo it plays with."""
 
+    __slots__ = ('_number', '_name', '_scale_name', '_tempo', '_scene')
+
     def __init__(self, number, name, scale_name, tempo, scene):
         self._number = number
         self._name = name

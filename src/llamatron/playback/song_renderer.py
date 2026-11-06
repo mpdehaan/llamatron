@@ -44,6 +44,8 @@ class SongRenderer:
     can simply ask for that track's clip, and a grab that goes round in a circle is caught.
     """
 
+    __slots__ = ('_song', '_scenes', '_clips', '_lengths', '_grabbing')
+
     def __init__(self, song):
         self._song = song
         self._scenes = WrittenScene.write_out(song)

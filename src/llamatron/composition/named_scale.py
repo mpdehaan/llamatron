@@ -42,6 +42,8 @@ class NamedScale(LlamaData):
     writes them back the same way.
     """
 
+    __slots__ = ('_root', '_kind')
+
     def __init__(self, root, kind):
         self._root = root
         self._kind = kind

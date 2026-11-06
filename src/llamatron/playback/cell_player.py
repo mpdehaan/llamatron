@@ -51,6 +51,8 @@ class CellPlayer:
     for the notes of a track it grabs from.
     """
 
+    __slots__ = ('_renderer', '_song', '_scene', '_track_name', '_cell', '_track')
+
     def __init__(self, renderer, song, scene, track_name):
         self._renderer = renderer
         self._song = song

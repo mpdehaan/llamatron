@@ -74,6 +74,8 @@ class Song(LlamaData):
     name, and the song looks the names up.
     """
 
+    __slots__ = ('_settings', '_sections', '_scenes')
+
     def __init__(self):
         self._settings = {name: None for name in SETTINGS}
         self._sections = {name: None for name in SECTIONS}

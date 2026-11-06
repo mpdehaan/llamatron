@@ -35,6 +35,8 @@ class LlamaData:
     object is stored.
     """
 
+    __slots__ = ()
+
     def to_data(self):
         """Return this object's settings as plain data in the song file's format."""
         raise NotImplementedError(MSG_NEEDS_TO_DATA.format(kind=type(self).__name__))

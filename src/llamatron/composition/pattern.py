@@ -65,6 +65,8 @@ class Pattern(LlamaData):
     letters in its degree row instead of scale degrees.
     """
 
+    __slots__ = ('_steps', '_rows', '_settings')
+
     def __init__(self, steps, rows, drum=None, direction=None, accumulator_limit=None):
         self._steps = steps
         self._rows = _copied_rows(rows)

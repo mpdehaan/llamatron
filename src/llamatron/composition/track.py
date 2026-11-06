@@ -38,6 +38,8 @@ class Track(LlamaData):
     back only what was set.
     """
 
+    __slots__ = ('_settings',)
+
     def __init__(self, drum=None, mute=None, transpose=None, cc=None):
         self._settings = {TrackSetting.DRUM: drum, TrackSetting.MUTE: mute, TrackSetting.TRANSPOSE: transpose, TrackSetting.CC: cc}
 
