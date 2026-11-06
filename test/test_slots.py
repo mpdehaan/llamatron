@@ -34,7 +34,7 @@ import llamatron
 
 # Modules whose classes haven't been given __slots__ yet. Each is removed from here once it has.
 NOT_YET_CONVERTED = {
-    'llamatron.note', 'llamatron.chord', 'llamatron.scale', 'llamatron.song',
+    'llamatron.song',
     'llamatron.generators.arp', 'llamatron.generators.auto_ratchet', 'llamatron.generators.base', 'llamatron.generators.blend',
     'llamatron.renderers.ableton_project', 'llamatron.renderers.clip_tree', 'llamatron.renderers.timing',
     'llamatron.tui.app', 'llamatron.tui.arrange', 'llamatron.tui.base', 'llamatron.tui.document', 'llamatron.tui.lists',

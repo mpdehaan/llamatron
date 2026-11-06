@@ -19,6 +19,9 @@ from enum import Enum
 
 from llamatron.note import Note
 
+MSG_NOT_A_NOTE = 'expected a Note, got {value!r}'
+MSG_NOT_A_SCALE_TYPE = 'expected a ScaleType, got {value!r}'
+
 
 class ScaleType(Enum):
     """Each value is one octave of the scale, as half steps above the root."""
@@ -94,7 +97,7 @@ class ScaleType(Enum):
     PURVI = (0, 1, 4, 6, 7, 8, 11)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Scale:
     """A scale that runs upward from its root to the top of the MIDI range.
 
@@ -106,6 +109,6 @@ class Scale:
 
     def __post_init__(self):
         if not isinstance(self.root, Note):
-            raise ValueError(f'expected a Note, got {self.root!r}')
+            raise ValueError(MSG_NOT_A_NOTE.format(value=self.root))
         if not isinstance(self.typ, ScaleType):
-            raise ValueError(f'expected a ScaleType, got {self.typ!r}')
+            raise ValueError(MSG_NOT_A_SCALE_TYPE.format(value=self.typ))

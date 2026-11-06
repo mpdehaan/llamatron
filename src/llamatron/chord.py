@@ -19,6 +19,12 @@ from enum import Enum
 
 from llamatron.note import Note
 
+MSG_NOT_A_LIST = 'expected a list of notes, got {value!r}'
+MSG_NO_NOTES = 'a chord needs at least one note'
+MSG_NOT_A_NOTE = 'expected a Note, got {value!r}'
+# A note with no length yet sorts as if it had none, after the ones that have one.
+NO_LENGTH = 0
+
 
 class ChordType(Enum):
     """Each value is the chord's notes as half steps above the root."""
@@ -65,7 +71,7 @@ class ChordType(Enum):
     MINOR13 = (3, 7, 10, 14, 17, 21)
 
 
-@dataclass(frozen=True, eq=False)
+@dataclass(frozen=True, eq=False, slots=True)
 class Chord:
     """A group of notes. Chords with the same pitches and lengths compare equal in any order."""
 
@@ -73,12 +79,12 @@ class Chord:
 
     def __post_init__(self):
         if not isinstance(self.notes, (list, tuple)):
-            raise ValueError(f'expected a list of notes, got {self.notes!r}')
+            raise ValueError(MSG_NOT_A_LIST.format(value=self.notes))
         if not self.notes:
-            raise ValueError('a chord needs at least one note')
+            raise ValueError(MSG_NO_NOTES)
         for note in self.notes:
             if not isinstance(note, Note):
-                raise ValueError(f'expected a Note, got {note!r}')
+                raise ValueError(MSG_NOT_A_NOTE.format(value=note))
         # Copied into a tuple so that changing the caller's list can't change the chord.
         object.__setattr__(self, 'notes', tuple(self.notes))
 
@@ -92,7 +98,7 @@ class Chord:
     def _sorted_pitches_and_lengths(self):
         # The middle value stops a length of None being compared with a number.
         ordered = sorted(
-            (note.midi_number, note.length is None, note.length or 0) for note in self.notes
+            (note.midi_number, note.length is None, note.length or NO_LENGTH) for note in self.notes
         )
         return tuple(ordered)
 
