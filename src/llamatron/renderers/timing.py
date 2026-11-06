@@ -86,3 +86,48 @@ def timed_events(clip, scale):
                 timed.append((start, end, midi_number, velocity))
         position_start += Fraction(position_length)
     return timed, clip_length
+
+
+# How often a slide sends a new CC value, in fractions of a whole note, where a format can't ramp.
+SLIDE_STEP = Fraction(1, 64)
+
+
+def control_points(clip, length):
+    """Return each CC number's values as (time, value, slide) points, in time order.
+
+    Points at or after the clip's length are left out, and a later value at the same time as an
+    earlier one replaces it.
+    """
+    points = {}
+    for item in clip.controls:
+        time = Fraction(item.time)
+        if time >= length:
+            continue
+        lane = points.setdefault(item.number, [])
+        if lane and lane[-1][0] == time:
+            lane.pop()
+        lane.append((time, item.value, item.slide))
+    return points
+
+
+def control_events(clip, length):
+    """Return a clip's CC values as (time, CC number, value), with slides written out as steps.
+
+    A slide ramps in a straight line to the next value for the same number, sending a value every
+    SLIDE_STEP, and a slide with nothing after it holds.
+    """
+    events = []
+    for number, lane in control_points(clip, length).items():
+        for place, (time, value, slide) in enumerate(lane):
+            events.append((time, number, value))
+            if not slide or place + 1 == len(lane):
+                continue
+            end, target, _ = lane[place + 1]
+            now = time + SLIDE_STEP
+            while now < end:
+                ramped = round(value + (target - value) * (now - time) / (end - time))
+                if ramped != events[-1][2]:
+                    events.append((now, number, ramped))
+                now += SLIDE_STEP
+    return sorted(events)
+

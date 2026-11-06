@@ -398,3 +398,121 @@ class ChoiceDialog(Dialog):
             style = 'reverse' if place == self.place else ''
             result.append(Text(fit(f' {self.options[place]}', width), style=style))
         return result
+
+
+class Heading(str):
+    """A column heading in a GridChoiceDialog, which can't be chosen."""
+
+
+def grouped_grid(columns):
+    """Return grid rows from columns of (heading, [option place, ...]) groups, with a gap
+    between the groups in a column."""
+    built = []
+    for groups in columns:
+        cells = []
+        for heading, items in groups:
+            if cells:
+                cells.append(None)
+            cells += [Heading(heading), *items]
+        built.append(cells)
+    height = max((len(cells) for cells in built), default=0)
+    return [[cells[row] if row < len(cells) else None for cells in built] for row in range(height)]
+
+
+class GridChoiceDialog(ChoiceDialog):
+    """Offers options laid out in a grid, with a line under it saying what the selected one is.
+
+    The grid is rows of cells, each an option's place in the list, a Heading, or None for a gap.
+    Options in top go on a line of their own above it. Up and down move within a column, and up
+    from the top of a column reaches the top line. Left and right go to the next column across,
+    landing on the option nearest to the row the cursor was on. Each column is as wide as what's
+    in it.
+    """
+
+    def __init__(self, title, options, grid, current=0, details=None, top=()):
+        super().__init__(title, options, current)
+        width = max((len(cells) for cells in grid), default=1)
+        top_row = [*top, *[None] * (width - len(top))]
+        # Navigation works on one grid, with the top line as its first row when there is one.
+        self.top = list(top)
+        self.cells = ([top_row] if top else []) + [list(cells) + [None] * (width - len(cells)) for cells in grid]
+        self.grid = grid
+        self.details = details
+
+    def keys(self):
+        return [
+            key(ARROWS, 'move', self.move, label='←↑↓→', wants_key=True),
+            key('enter', 'choose', lambda: self.dismiss(self.place)),
+            key('tab', 'cancel', lambda: self.dismiss(None)),
+        ]
+
+    def option_at(self, row, column):
+        cell = self.cells[row][column]
+        return None if cell is None or isinstance(cell, Heading) else cell
+
+    def where(self):
+        for row in range(len(self.cells)):
+            for column in range(len(self.cells[row])):
+                if self.option_at(row, column) == self.place:
+                    return row, column
+        return 0, 0
+
+    def move(self, name):
+        row, column = self.where()
+        width = len(self.cells[0])
+        if name in ('up', 'down'):
+            step = -1 if name == 'up' else 1
+            others = list(range(row + step, -1 if step < 0 else len(self.cells), step))
+            # Keep to the column, or else take the nearest option in any column, like the top line.
+            for search in (column, *range(width)):
+                for other in others:
+                    found = self.option_at(other, search)
+                    if found is not None:
+                        self.place = found
+                        return
+            return
+        step = -1 if name == 'left' else 1
+        for offset in range(1, width + 1):
+            target = (column + step * offset) % width
+            nearest = sorted((abs(other - row), other) for other in range(len(self.cells)) if self.option_at(other, target) is not None)
+            if nearest:
+                self.place = self.option_at(nearest[0][1], target)
+                return
+
+    def column_widths(self):
+        sizes = [0] * len(self.cells[0])
+        for cells in self.grid:
+            for column, cell in enumerate(cells):
+                if cell is not None:
+                    sizes[column] = max(sizes[column], len(cell if isinstance(cell, Heading) else str(self.options[cell])))
+        return [size + 3 for size in sizes]
+
+    def option_text(self, place, size):
+        text = Text(no_wrap=True)
+        text.append(f' {self.options[place]} ', style='reverse' if place == self.place else '')
+        text.append(' ' * max(size - len(str(self.options[place])) - 2, 0))
+        return text
+
+    def lines(self, width):
+        sizes = self.column_widths()
+        result = []
+        if self.top:
+            line = Text(no_wrap=True)
+            for place in self.top:
+                line.append_text(self.option_text(place, 0))
+                line.append(' ')
+            result += [line, Text('')]
+        for cells in self.grid:
+            line = Text(no_wrap=True)
+            for column, cell in enumerate(cells):
+                size = sizes[column]
+                if cell is None:
+                    line.append(' ' * size)
+                elif isinstance(cell, Heading):
+                    line.append(fit(f' {cell}', size), style='bold')
+                else:
+                    line.append_text(self.option_text(cell, size))
+            result.append(line)
+        if self.details is not None:
+            result += [Text(''), Text(fit(self.details(self.place), width))]
+        return result

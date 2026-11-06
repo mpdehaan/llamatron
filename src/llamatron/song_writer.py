@@ -62,7 +62,7 @@ def _patterns(patterns):
         lines.append(f'    steps: {pattern["steps"]}')
         if pattern.get('drum'):
             lines.append('    drum: true')
-        for setting in ['direction', 'source_pattern', 'accumulator_limit']:
+        for setting in ['direction', 'accumulator_limit']:
             if pattern.get(setting):
                 lines.append(f'    {setting}: {_text(pattern[setting])}')
         lines += [f'    {row}: {_text(pattern[row])}' for row in PATTERN_ROWS if pattern.get(row) is not None]
@@ -105,7 +105,7 @@ def dump_song(song):
         sections.append(_named('scales', song['scales']))
     if song.get('patterns'):
         sections.append(_patterns(song['patterns']))
-    sections.append([f'tracks: {_text(song["tracks"])}'])
+    sections.append(_named('tracks', song['tracks']) if song['tracks'] else ['tracks: {}'])
     for section in ['arps', 'auto_ratchets']:
         if song.get(section):
             sections.append(_named(section, song[section]))

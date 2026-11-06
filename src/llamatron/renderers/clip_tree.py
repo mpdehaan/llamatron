@@ -19,7 +19,7 @@ import re
 
 import mido
 
-from llamatron.renderers.timing import BEATS_PER_WHOLE_NOTE, VELOCITY, timed_events
+from llamatron.renderers.timing import BEATS_PER_WHOLE_NOTE, VELOCITY, control_events, timed_events
 from llamatron.song import Song, _Validated
 
 TICKS_PER_BEAT = 480
@@ -109,14 +109,17 @@ class ClipTree:
     def _midi_file(self, name, scene, track, clip):
         notes, clip_length = timed_events(clip, self.song.scale_at(scene, track))
 
-        # Each event is (tick, 0 for off or 1 for on, MIDI number, velocity). Sorting puts offs before
-        # ons at the same tick, so that a note can repeat straight after itself.
+        # Each event is (tick, kind, number, value), where the kind is 0 for a note off, 1 for a CC
+        # and 2 for a note on. Sorting puts offs first at the same tick, so that a note can repeat
+        # straight after itself, and then CCs, so that a note starts with the new value.
         events = []
         for note_start, note_end, midi_number, velocity in notes:
             start, end = _ticks(note_start), _ticks(note_end)
             if end > start:
-                events.append((start, 1, midi_number, velocity))
+                events.append((start, 2, midi_number, velocity))
                 events.append((end, 0, midi_number, 0))
+        for time, number, value in control_events(clip, clip_length):
+            events.append((_ticks(time), 1, number, value))
 
         messages = [
             # MIDI text is latin-1, so any other characters become question marks here.
@@ -128,13 +131,13 @@ class ClipTree:
             ),
         ]
         now = 0
-        for tick, is_on, midi_number, velocity in sorted(events):
-            if is_on:
-                message = mido.Message(
-                    'note_on', note=midi_number, velocity=velocity, time=tick - now,
-                )
+        for tick, kind, number, value in sorted(events):
+            if kind == 2:
+                message = mido.Message('note_on', note=number, velocity=value, time=tick - now)
+            elif kind == 1:
+                message = mido.Message('control_change', control=number, value=value, time=tick - now)
             else:
-                message = mido.Message('note_off', note=midi_number, time=tick - now)
+                message = mido.Message('note_off', note=number, time=tick - now)
             messages.append(message)
             now = tick
         messages.append(mido.MetaMessage('end_of_track', time=_ticks(clip_length) - now))

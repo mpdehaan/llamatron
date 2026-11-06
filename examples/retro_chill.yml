@@ -110,11 +110,19 @@ patterns:
     ratchet: [~, ~, ~, 2, ~, ~, 3, ~, 2, ~, ~, 2, ~, ~, 2, ~, ~, ~, 2]
     ratchet_offset: [~, ~, ~, 1, ~, ~, -1, ~, 1, ~, ~, -1, ~, ~, 1, ~, ~, ~, -1]
 
-tracks: [kick, snare, hat, bass, pad, tune, answer, bells]
+tracks:
+  kick: { drum: true }
+  snare: { drum: true }
+  hat: { drum: true }
+  bass: {}
+  pad: {}
+  tune: {}
+  answer: {}
+  bells: {}
 
 arps:
   bells: { step: 1/8, order: up }
-  bright_bells: { step: 1/16, order: up_down }
+  bright_bells: { step: 1/16, order: up_down, octave_range: 2, octave_jump: after_each_note, offsets: [-7, -7, ~, -9, -7, ~] }
 
 chains:
   bells:
@@ -175,7 +183,7 @@ scenes:
       pad: { pattern: chords_pad, loop: true }
       bells: { pattern: chords, chain: bright_bells, loop: true }
       tune: { pattern: tune2_busy, loop: true }
-      answer: { pattern: answer_time, notes_from: tune2, loop: true }
+      answer: { pattern: tune2, rhythm_from: answer_time, loop: true }
   - name: home
     scale: G Major
     tracks:

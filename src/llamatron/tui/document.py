@@ -21,6 +21,7 @@ draws anything, and nothing is saved or rendered unless one of those methods is 
 """
 
 import contextlib
+import copy
 import io
 import os
 from fractions import Fraction
@@ -35,7 +36,7 @@ from llamatron.scale import ScaleType
 from llamatron.song import Song
 from llamatron.song_file import (
     DEFAULT_DRUM_OCTAVE, DEFAULT_LENGTH, DEFAULT_OCTAVE, DEFAULT_PROBABILITY, DEFAULT_RATCHET,
-    DEFAULT_SEED, DEFAULT_VELOCITY, DIRECTIONS, FORWARD, GRANULARITIES, MORPH_STYLES, PATTERN_ROWS,
+    CC_ROWS, DEFAULT_SEED, DEFAULT_VELOCITY, DIRECTIONS, FORWARD, GRANULARITIES, MORPH_STYLES, PATTERN_ROWS, TOGGLE_ROWS,
     SongBuilder, SongFileError,
 )
 from llamatron.song_writer import dump_song
@@ -54,7 +55,7 @@ DIRECTION_NAMES = {
     'brownian': 'on 50%, back 25%, stay 25%', 'eitherway': 'on or back, 50% each',
 }
 # The settings on a clip that name a pattern.
-CLIP_PATTERNS = ('pattern', 'morph_to', 'rhythm_from', 'notes_from')
+CLIP_PATTERNS = ('pattern', 'morph_to', 'rhythm_from')
 
 
 def new_song():
@@ -63,7 +64,7 @@ def new_song():
         'tempo': 120, 'scale': DEFAULT_SCALE, 'scales': {DEFAULT_SCALE: {'root': 'C', 'type': 'major'}}, 'seed': DEFAULT_SEED,
         'default_length': DEFAULT_LENGTH, 'granularity': GRANULARITIES[0],
         'default_octave': DEFAULT_OCTAVE, 'default_drum_octave': DEFAULT_DRUM_OCTAVE,
-        'patterns': {}, 'tracks': [], 'arps': {}, 'auto_ratchets': {}, 'chains': {}, 'scenes': [],
+        'patterns': {}, 'tracks': {}, 'arps': {}, 'auto_ratchets': {}, 'chains': {}, 'scenes': [],
     }
 
 
@@ -93,6 +94,15 @@ def unique_name(base, taken):
     while f'{base} {number}' in taken:
         number += 1
     return f'{base} {number}'
+
+
+def blank(row):
+    """Return what a step holds when nothing is set: off for an on or off row, and None otherwise."""
+    return False if row in TOGGLE_ROWS else None
+
+
+# What a rest keeps when a note is turned into one: its time, and the CC values it sends.
+REST_ROWS = ('duration', *CC_ROWS, 'slide')
 
 
 def _moved(items, place, offset):
@@ -147,14 +157,20 @@ class Document:
         self.dirty = False
 
     def _saved_data(self):
-        """Return the data without pattern rows that hold nothing, so that files stay short."""
+        """Return the data without pattern rows that hold nothing, so that files stay short.
+
+        On or off rows are written as true and false, so a step that's off is false.
+        """
         data = dict(self.data)
         patterns = {}
         for name, pattern in data['patterns'].items():
-            patterns[name] = {
-                key: value for key, value in pattern.items()
-                if key not in PATTERN_ROWS or any(item is not None for item in value)
-            }
+            saved = {}
+            for key, value in pattern.items():
+                if key in TOGGLE_ROWS:
+                    value = [bool(item) for item in value]
+                if key not in PATTERN_ROWS or any(item is not None and item is not False for item in value):
+                    saved[key] = value
+            patterns[name] = saved
         data['patterns'] = patterns
         return data
 
@@ -269,14 +285,7 @@ class Document:
     # Reordering any list, and copying names.
 
     def move_track(self, place, offset):
-        return self._set_list('tracks', _moved(self.data['tracks'], place, offset))
-
-    def _set_list(self, key, moved):
-        if moved is None:
-            return False
-        self.data[key] = moved
-        self.changed()
-        return True
+        return self.move_named('tracks', place, offset)
 
     def move_named(self, section, place, offset):
         """Move a pattern, arp or chain up or down its section."""
@@ -320,9 +329,6 @@ class Document:
         for number, scene, track, cell in self._cells():
             if name in (cell.get(setting) for setting in CLIP_PATTERNS):
                 uses.append(f'{self._scene_label(number, scene)}, track {track}')
-        for other, pattern in self.data['patterns'].items():
-            if pattern.get('source_pattern') == name:
-                uses.append(f'pattern {other}')
         return uses
 
     def track_clips(self, name):
@@ -369,9 +375,6 @@ class Document:
             for key in CLIP_PATTERNS:
                 if cell.get(key) == old:
                     cell[key] = new
-        for pattern in self.data['patterns'].values():
-            if pattern.get('source_pattern') == old:
-                pattern['source_pattern'] = new
         self.changed()
 
     def _rename_in_chains(self, kind, old, new):
@@ -387,15 +390,15 @@ class Document:
     def set_step_value(self, name, row, step, value):
         pattern = self.data['patterns'][name]
         if pattern.get(row) is None:
-            pattern[row] = [None] * pattern['steps']
+            pattern[row] = [blank(row)] * pattern['steps']
         pattern[row][step] = value
         self.changed()
 
     def clear_sound(self, name, step):
-        """Turn a note into a rest, which only keeps its duration."""
+        """Turn a note into a rest, which keeps its duration and CC values."""
         for row in PATTERN_ROWS:
-            if row != 'duration' and self.data['patterns'][name].get(row):
-                self.data['patterns'][name][row][step] = None
+            if row not in REST_ROWS and self.data['patterns'][name].get(row):
+                self.data['patterns'][name][row][step] = blank(row)
         self.changed()
 
     def steps_with_anything_past(self, name, steps):
@@ -405,7 +408,9 @@ class Document:
         changed = 0
         for step in range(steps, pattern['steps']):
             duration = self.step_value(name, 'duration', step)
-            if self.step_value(name, 'degree', step) is not None or (duration is not None and fraction(duration) != default):
+            if self.step_value(name, 'degree', step) is not None or (duration is not None and fraction(duration) != default) or any(
+                self.step_value(name, row, step) is not None for row in CC_ROWS
+            ):
                 changed += 1
         return changed
 
@@ -415,7 +420,7 @@ class Document:
         added = max(steps - pattern['steps'], 0)
         for row in PATTERN_ROWS:
             if pattern.get(row) is not None:
-                pattern[row] = (pattern[row] + [None] * steps)[:steps]
+                pattern[row] = (pattern[row] + [blank(row)] * steps)[:steps]
         durations = pattern.get('duration') or [None] * steps
         for step in range(steps - added, steps):
             durations[step] = self.data['default_length']
@@ -427,7 +432,7 @@ class Document:
         pattern = self.data['patterns'][name]
         for row in PATTERN_ROWS:
             if pattern.get(row) is not None:
-                pattern[row].insert(step, None)
+                pattern[row].insert(step, blank(row))
         pattern['steps'] += 1
         self.set_step_value(name, 'duration', step, self.data['default_length'])
         self.changed()
@@ -458,16 +463,6 @@ class Document:
             self.data['patterns'][name]['direction'] = direction
         self.changed()
 
-    def set_source_pattern(self, name, source):
-        """Set where a pattern's grab row takes notes from. With no source, the row is cleared."""
-        pattern = self.data['patterns'][name]
-        if source is None:
-            pattern.pop('source_pattern', None)
-            pattern.pop('grab', None)
-        else:
-            pattern['source_pattern'] = source
-        self.changed()
-
     def _rearranged(self, name, order):
         """Put a pattern's steps in a new order, with all of each step's values moving together."""
         pattern = self.data['patterns'][name]
@@ -493,6 +488,10 @@ class Document:
         source = self.data['patterns'][other]
         self.data['patterns'][name] = {key: list(value) if isinstance(value, list) else value for key, value in source.items()}
         self.changed()
+
+    def has_grab_steps(self, name):
+        """Return whether a pattern has any steps marked to grab."""
+        return any(self.data['patterns'][name].get('grab') or [])
 
     def has_notes(self, name):
         return any(value is not None for value in (self.data['patterns'][name].get('degree') or []))
@@ -535,12 +534,22 @@ class Document:
     # Tracks.
 
     def add_track(self, name):
-        self.data['tracks'].append(name)
+        self.data['tracks'][name] = {}
         self.changed()
+
+    def track_names(self):
+        return list(self.data['tracks'])
+
+    def track(self, name):
+        """Return a track's settings, which the page for it changes in place."""
+        return self.data['tracks'][name]
 
     def copy_track(self, name):
         new = unique_name(f'{name} copy', self.data['tracks'])
-        self.data['tracks'].insert(self.data['tracks'].index(name) + 1, new)
+        items = list(self.data['tracks'].items())
+        place = [key for key, _ in items].index(name) + 1
+        items.insert(place, (new, copy.deepcopy(self.data['tracks'][name])))
+        self.data['tracks'] = dict(items)
         for scene in self.data['scenes']:
             cells = scene.get('tracks') or {}
             if name in cells:
@@ -548,19 +557,48 @@ class Document:
         self.changed()
         return new
 
+    def grabbers(self, name):
+        """Return the clips that grab from a track, as descriptions."""
+        return [
+            f'{self._scene_label(number, scene)}, track {track}'
+            for number, scene, track, cell in self._cells() if cell.get('grab_track') == name
+        ]
+
     def delete_track(self, name):
-        self.data['tracks'].remove(name)
+        """Delete a track and its clips, and stop any clips grabbing from it."""
+        del self.data['tracks'][name]
         for scene in self.data['scenes']:
             (scene.get('tracks') or {}).pop(name, None)
+        for _, _, _, cell in self._cells():
+            if cell.get('grab_track') == name:
+                del cell['grab_track']
         self.changed()
 
     def rename_track(self, old, new):
-        self.data['tracks'] = [new if name == old else name for name in self.data['tracks']]
+        self.data['tracks'] = self._replace_key('tracks', old, new)
         for scene in self.data['scenes']:
             cells = scene.get('tracks') or {}
             if old in cells:
                 scene['tracks'] = {new if key == old else key: value for key, value in cells.items()}
+        for _, _, _, cell in self._cells():
+            if cell.get('grab_track') == old:
+                cell['grab_track'] = new
         self.changed()
+
+    def grab_circle(self, index, track, other):
+        """Return the tracks a grab would go round in a circle, like [lead, bass, lead], or None.
+
+        A clip grabbing from other follows other's grab, and so on, within the scene.
+        """
+        cells = self.data['scenes'][index].get('tracks') or {}
+        path = [track, other]
+        while True:
+            if path[-1] == track:
+                return path
+            following = (cells.get(path[-1]) or {}).get('grab_track')
+            if following is None or following in path[1:]:
+                return None
+            path.append(following)
 
     # Scales.
 

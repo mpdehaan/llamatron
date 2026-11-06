@@ -65,7 +65,13 @@ patterns:
     velocity: [~, 110, ~, 80]
     probability: [~, 100, ~, 70]
 
-tracks: [kick, hat, clap, bass, stab, lead]
+tracks:
+  kick: { drum: true }
+  hat: { drum: true }
+  clap: { drum: true }
+  bass: {}
+  stab: {}
+  lead: {}
 
 auto_ratchets:
   tumble: { counts: [1, 1, 1, 1, 1, 1, 1, 4] }

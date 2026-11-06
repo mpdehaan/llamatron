@@ -46,8 +46,8 @@ class LlamatronApp(App):
     def __init__(self, document=None):
         super().__init__(ansi_color=True)
         self.document = document or Document()
-        # Whether the pattern editor shows its advanced rows, which stays as you move between patterns.
-        self.advanced_rows = False
+        # Which rows the pattern editor shows under Degree, which stays as you move between patterns.
+        self.row_set = 'normal'
 
     def on_mount(self):
         self.push_screen(MainPage(self))

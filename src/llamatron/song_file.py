@@ -30,11 +30,13 @@ repeat above 1 can morph into a second pattern across its repeats. Scales come f
 then the song. Probability is rolled here from the song's seed, so that a song always renders the
 same. See the examples folder for complete songs, and raise SongFileError for anything wrong.
 
-A clip can take its rhythm from one pattern with rhythm_from, and its notes from another with
-notes_from. They match step by step, and the notes carry on across repeats and skip any rests, so
-lists of different lengths drift apart. A pattern's direction sets the order its steps play in, and
-a clip's direction overrides it. A pattern's source_pattern gives its grab row somewhere to take
-notes from: the source moves on every step, and steps marked grab play its note. A step's
+A clip can take its rhythm from another pattern with rhythm_from, and then its pattern gives the
+notes. They match step by step, and the notes carry on across repeats and skip any rests, so lists
+of different lengths drift apart. A clip's grab_track names another track in the same scene, like
+the Cirklon's note grab: each of the pattern's grab steps plays the note or chord that track most
+recently started, after its chain, so a silent track gives the last note it played. Clips that grab
+in a circle are refused. A pattern's direction sets the order its steps play in, and a clip's
+direction overrides it. A step's
 ratchet_offset moves each ratchet slice further along the scale. A step's note_add and velocity_add
 add to running totals that apply from that step on, across the clip's repeats, and clear at the
 pattern's accumulator_limit.
@@ -49,12 +51,13 @@ from math import ceil
 import yaml
 
 from llamatron.chord import Chord, ChordType
-from llamatron.generators.arp import Arp, ChordOrder
+from llamatron.generators.arp import MAX_OCTAVE_RANGE, Arp, ChordOrder, OctaveJump, _check_offsets, along_scale
 from llamatron.generators.blend import Blend, BlendMode
 from llamatron.generators.auto_ratchet import AutoRatchet, divide
-from llamatron.note import Degree, Note, Rest
+from llamatron.note import SHARP_NAMES, Degree, Note, Rest
+from llamatron.renderers.timing import timed_events
 from llamatron.scale import Scale, ScaleType
-from llamatron.song import Clip, Scene, Song, Track
+from llamatron.song import Clip, Control, Scene, Song, Track
 
 
 # The song settings that have defaults, as they're used when a file leaves them out.
@@ -75,25 +78,43 @@ MIN_LIVE_OCTAVE, MAX_LIVE_OCTAVE = -2, 8
 PATTERN_ROWS = [
     'degree', 'duration', 'accidental', 'octave', 'chord', 'velocity', 'probability', 'glide',
     'ratchet', 'ratchet_offset', 'note_add', 'velocity_add', 'grab',
+    'cc1', 'cc2', 'cc3', 'cc4', 'slide',
 ]
+# Rows that are on or off for each step, which files write as true or false.
+TOGGLE_ROWS = ('glide', 'grab', 'slide')
+# A pattern's CC lanes, whose numbers each track sets for itself.
+CC_ROWS = ('cc1', 'cc2', 'cc3', 'cc4')
+MAX_TRANSPOSE = 24
 DEFAULT_ACCUMULATOR_LIMIT = 36
 MAX_OCTAVE_CHANGE = 10
 FORWARD = 'forward'
 DIRECTIONS = [FORWARD, 'reverse_a', 'reverse_b', 'alternate', 'pendulum', 'random', 'brownian', 'eitherway']
 NOTE_LETTERS = 'ABCDEFG'
 ACCIDENTALS = {'#': 1, 'b': -1}
-# Chords with a fixed sound, and how many notes the ones that are built from the scale have.
+# Chords built in exact half steps from the note, which can leave the scale, in the order the
+# editor offers them. Bare numbers are kept for chords built from the scale.
 FIXED_CHORDS = {
-    'M': ChordType.MAJOR, 'm': ChordType.MINOR, 'M7': ChordType.MAJOR7, 'm7': ChordType.MINOR7,
-    'dim': ChordType.DIMINISHED, 'sus4': ChordType.SUS4,
+    'M': ChordType.MAJOR, 'm': ChordType.MINOR, 'dim': ChordType.DIMINISHED, 'aug': ChordType.AUGMENTED,
+    'sus2': ChordType.SUS2, 'sus4': ChordType.SUS4, 'pow': ChordType.POWER,
+    'M6': ChordType.MAJOR6, 'm6': ChordType.MINOR6,
+    'dom7': ChordType.DOMINANT7, 'M7': ChordType.MAJOR7, 'm7': ChordType.MINOR7, 'mM7': ChordType.MINOR_MAJOR7,
+    'dim7': ChordType.DIMINISHED7, 'm7b5': ChordType.HALF_DIMINISHED7, 'aug7': ChordType.AUGMENTED7,
+    'augM7': ChordType.AUGMENTED_MAJOR7, '7sus4': ChordType.DOMINANT7_SUS4,
+    'dom9': ChordType.DOMINANT9, 'M9': ChordType.MAJOR9, 'm9': ChordType.MINOR9,
+    'add9': ChordType.ADD9, 'madd9': ChordType.MINOR_ADD9,
+    'dom11': ChordType.DOMINANT11, 'M11': ChordType.MAJOR11, 'm11': ChordType.MINOR11,
+    'dom13': ChordType.DOMINANT13, 'M13': ChordType.MAJOR13, 'm13': ChordType.MINOR13,
 }
-SCALE_CHORDS = {'3': 3, '7': 4}
+# Chords that use only notes of the scale, as how many scale degrees each note is above the root.
+SCALE_CHORDS = {
+    '5': (0, 4), '3': (0, 2, 4), '7': (0, 2, 4, 6), '9': (0, 2, 4, 6, 8),
+    '11': (0, 2, 4, 6, 8, 10), '13': (0, 2, 4, 6, 8, 10, 12),
+}
 # The generators that a chain step can use by name, and the section of a file that names them.
 NAMED_GENERATORS = {'arp': 'arps', 'auto_ratchet': 'auto_ratchets'}
-# Which pattern rows a grab takes, and which a clip's notes_from takes. Everything else belongs to
-# the rhythm.
-GRAB_ROWS = ('degree', 'accidental', 'octave', 'chord')
-NOTE_ROWS = (*GRAB_ROWS, 'note_add')
+# Which pattern rows the notes side owns when a clip takes its rhythm from another pattern.
+# Everything else belongs to the rhythm.
+NOTE_ROWS = ('degree', 'accidental', 'octave', 'chord', 'note_add')
 CHORD_SYMBOLS = [*FIXED_CHORDS, *SCALE_CHORDS]
 
 
@@ -102,13 +123,14 @@ class SongFileError(Exception):
 
 
 # The kinds of value a generator setting can hold, and the choices that some settings have.
-WHOLE, LENGTH, WHOLES = 'whole number', 'length', 'list of whole numbers'
+WHOLE, LENGTH, WHOLES, OCTAVES, OFFSETS = 'whole number', 'length', 'list of whole numbers', 'octave range', 'offsets'
 ORDERS = {member.name.lower(): member for member in ChordOrder}
+OCTAVE_JUMPS = {member.name.lower(): member for member in OctaveJump}
 MORPH_STYLES = {member.name.lower(): member for member in BlendMode}
 
 # Each generator's class, its settings, and which of them are required.
 GENERATORS = {
-    'arp': (Arp, {'step': LENGTH, 'order': ORDERS, 'seed': WHOLE}, ['step']),
+    'arp': (Arp, {'step': LENGTH, 'order': ORDERS, 'seed': WHOLE, 'octave_range': OCTAVES, 'octave_jump': OCTAVE_JUMPS, 'offsets': OFFSETS}, ['step']),
     'auto_ratchet': (AutoRatchet, {'counts': WHOLES}, ['counts']),
 }
 
@@ -118,6 +140,29 @@ def _with_sound(played, **changes):
     if isinstance(played, Chord):
         return Chord([replace(note, **changes) for note in played.notes])
     return replace(played, **changes)
+
+
+def _blended_controls(source, target, start, end):
+    """Return the CC values of a morph: the target's from start to end, and the source's elsewhere.
+
+    Each side's values carry across the edges, so a lane holds what it would hold there.
+    """
+    def in_effect(clip, time):
+        latest = {}
+        for item in clip.controls:
+            if item.time <= time:
+                latest[item.number] = item
+        return latest
+
+    if end <= start:
+        return list(source.controls)
+    result = [item for item in source.controls if item.time < start]
+    result += [replace(item, time=start) for item in in_effect(target, start).values() if item.time < start]
+    result += [item for item in target.controls if start <= item.time < end]
+    if end < source.total_length():
+        result += [replace(item, time=end) for item in in_effect(source, end).values() if item.time < end]
+        result += [item for item in source.controls if item.time >= end]
+    return result
 
 
 def _number(value, where):
@@ -195,10 +240,13 @@ class _Stanza:
 
 
 class _Context:
-    """What's needed while writing one cell."""
+    """What's needed while writing one cell, including its track's transpose."""
 
-    def __init__(self, stanza, cell, scale, track):
+    def __init__(self, stanza, cell, scale, track, settings):
         self.stanza, self.cell, self.scale, self.track = stanza, cell, scale, track
+        # A drum track never transposes, and neither does a drum pattern on any track.
+        self.transpose = 0 if settings.get('drum') else settings.get('transpose', 0)
+        self.cc = settings.get('cc', [None] * len(CC_ROWS))
 
 
 class SongBuilder:
@@ -239,6 +287,8 @@ class SongBuilder:
         self.stanzas = self._read_scenes(data['scenes'])
         self.resolved = {}
         self.lengths = {}
+        # The tracks whose clips are waiting on a grab, to catch clips that grab in a circle.
+        self.grabbing = []
 
     def build(self):
         tempo = float(self.tempo)
@@ -318,13 +368,11 @@ class SongBuilder:
         where = f'pattern {name!r}'
         if not isinstance(pattern, dict):
             raise SongFileError(f'{where}: expected settings like steps, degree and duration')
-        self._check_keys(pattern, where, {'steps', 'drum', 'direction', 'source_pattern', 'accumulator_limit', *PATTERN_ROWS})
+        self._check_keys(pattern, where, {'steps', 'drum', 'direction', 'accumulator_limit', *PATTERN_ROWS})
         limit = pattern.get('accumulator_limit', DEFAULT_ACCUMULATOR_LIMIT)
         if type(limit) is not int or limit < 1:
             raise SongFileError(f'{where}: accumulator_limit must be a whole number of 1 or more, got {limit!r}')
         self._check_direction(pattern.get('direction', FORWARD), where)
-        if 'source_pattern' in pattern and pattern['source_pattern'] not in self.patterns:
-            raise SongFileError(f'{where}: source_pattern: no pattern called {pattern["source_pattern"]!r}')
         steps = pattern.get('steps')
         if type(steps) is not int or steps < 1:
             raise SongFileError(f'{where}: steps must be a whole number of 1 or more, got {steps!r}')
@@ -338,6 +386,8 @@ class SongBuilder:
             if not isinstance(values, list) or len(values) != steps:
                 raise SongFileError(f'{where}: {row} must be a list of {steps} values, got {values!r}')
             for value in values:
+                if row in TOGGLE_ROWS and value is None:
+                    raise SongFileError(f'{where}: {row} must be true or false, got null')
                 if value is not None:
                     self._check_step_value(row, value, drum, where)
 
@@ -362,24 +412,45 @@ class SongBuilder:
             if drum:
                 problem = 'isn\'t used in a drum pattern'
             elif str(value) not in CHORD_SYMBOLS:
-                problem = f'must be one of {CHORD_SYMBOLS}'
+                problem = f"must be one of {', '.join(CHORD_SYMBOLS)}"
         elif row == 'velocity' and (type(value) is not int or not 1 <= value <= 127):
             problem = 'must be a whole number from 1 to 127'
         elif row == 'probability' and (type(value) is not int or not 0 <= value <= 100):
             problem = 'must be a whole number from 0 to 100'
         elif row == 'ratchet' and (type(value) is not int or value < 1):
             problem = 'must be a whole number of 1 or more'
-        elif row in ('glide', 'grab') and type(value) is not bool:
+        elif row in TOGGLE_ROWS and type(value) is not bool:
             problem = 'must be true or false'
+        elif row in CC_ROWS and (type(value) is not int or not 0 <= value <= 127):
+            problem = 'must be a whole number from 0 to 127'
         elif row in ('ratchet_offset', 'note_add', 'velocity_add') and type(value) is not int:
             problem = 'must be a whole number'
         if problem:
             raise SongFileError(f'{where}: {row} {problem}, got {value!r}')
 
     def _read_tracks(self, tracks):
-        if not isinstance(tracks, list) or len(set(tracks)) != len(tracks):
-            raise SongFileError('tracks: expected a list of different track names')
-        return list(tracks)
+        """Return each track's settings by name, in order."""
+        if not isinstance(tracks, dict):
+            raise SongFileError('tracks: expected named tracks with their settings, like lead: { transpose: 2 }')
+        result = {}
+        for name, settings in tracks.items():
+            where = f'track {name!r}'
+            settings = {} if settings is None else settings
+            if not isinstance(settings, dict):
+                raise SongFileError(f'{where}: expected settings like {{ drum: true }}, got {settings!r}')
+            self._check_keys(settings, where, {'drum', 'transpose', 'cc'})
+            if type(settings.get('drum', False)) is not bool:
+                raise SongFileError(f'{where}: drum must be true or false, got {settings["drum"]!r}')
+            transpose = settings.get('transpose', 0)
+            if type(transpose) is not int or not -MAX_TRANSPOSE <= transpose <= MAX_TRANSPOSE:
+                raise SongFileError(f'{where}: transpose must be a whole number from -{MAX_TRANSPOSE} to {MAX_TRANSPOSE}, got {transpose!r}')
+            numbers = settings.get('cc', [None] * len(CC_ROWS))
+            if not isinstance(numbers, list) or len(numbers) != len(CC_ROWS) or not all(
+                number is None or (type(number) is int and 0 <= number <= 127) for number in numbers
+            ):
+                raise SongFileError(f'{where}: cc must be a list of {len(CC_ROWS)} CC numbers from 0 to 127, or ~ for a lane it doesn\'t use, got {numbers!r}')
+            result[name] = settings
+        return result
 
     def _check_chains(self):
         for name, chain in self.chains.items():
@@ -439,11 +510,15 @@ class SongBuilder:
         if not isinstance(cell, dict):
             raise SongFileError(f'{where}, track {track!r}: expected settings like {{ pattern: a }}, got {cell!r}')
         where = f'{where}, track {track!r}'
-        self._check_keys(cell, where, {'pattern', 'chain', 'loop', 'repeat', 'direction', 'morph_to', 'morph_style', 'rhythm_from', 'notes_from'})
+        self._check_keys(cell, where, {'pattern', 'chain', 'loop', 'repeat', 'direction', 'morph_to', 'morph_style', 'rhythm_from', 'grab_track'})
         self._check_direction(cell.get('direction', FORWARD), where)
-        for setting in ['rhythm_from', 'notes_from']:
-            if setting in cell and cell[setting] not in self.patterns:
-                raise SongFileError(f'{where}: {setting}: no pattern called {cell[setting]!r}')
+        if 'rhythm_from' in cell and cell['rhythm_from'] not in self.patterns:
+            raise SongFileError(f'{where}: rhythm_from: no pattern called {cell["rhythm_from"]!r}')
+        if 'grab_track' in cell:
+            if cell['grab_track'] not in self.tracks:
+                raise SongFileError(f'{where}: grab_track: no track called {cell["grab_track"]!r}')
+            if cell['grab_track'] == track:
+                raise SongFileError(f'{where}: grab_track: a clip can\'t grab from its own track')
         repeat = cell.get('repeat', 1)
         if type(repeat) is not int or repeat < 1:
             raise SongFileError(f'{where}: repeat must be a positive whole number, got {repeat!r}')
@@ -477,31 +552,69 @@ class SongBuilder:
         length = Fraction(0)
         for track, cell in stanza.cells.items():
             if not cell.get('loop'):
-                length = max(length, self._cell(stanza, track).total_length())
+                # Grabbing only changes pitches, so lengths come from clips built without it, which
+                # means a clip can grab from one that loops to fill the scene.
+                length = max(length, self._cell(stanza, track, grabbing=False).total_length())
         self.lengths[stanza.number] = length
         return length
 
-    def _cell(self, stanza, track):
-        key = (stanza.number, track)
-        if key in self.resolved:
-            return self.resolved[key]
+    def _grabber(self, stanza, track, cell):
+        """Return a function giving the MIDI numbers another track most recently started by a time."""
+        other = cell['grab_track']
+        if other not in stanza.cells:
+            return None
+        chain = [*self.grabbing, track]
+        if other in chain:
+            loop = ' → '.join([*chain[chain.index(other):], other])
+            raise SongFileError(
+                f'scene {stanza.number} ({stanza.name}): circular grab: {loop}. '
+                'Remove the grab track from one of these clips.'
+            )
+        self.grabbing.append(track)
+        try:
+            source = self._cell(stanza, other)
+        finally:
+            self.grabbing.pop()
+        events, _ = timed_events(source, source.scale)
+        onsets = {}
+        for start, _, number, _ in events:
+            onsets.setdefault(start, set()).add(number)
+        times = sorted(onsets)
+
+        def grab(time):
+            started = [moment for moment in times if moment <= time]
+            return sorted(onsets[started[-1]]) if started else None
+        return grab
+
+    def _cell(self, stanza, track, grabbing=True):
         cell = stanza.cells.get(track)
         if cell is None:
             return None
+        grabbing = grabbing and 'grab_track' in cell
+        key = (stanza.number, track, grabbing)
+        if key in self.resolved:
+            return self.resolved[key]
         where = f'scene {stanza.number}, track {track!r}'
         octave = self._clip_octave(cell)
         scale = None if stanza.scale is None else self._named_scale(stanza.scale, octave, where)
-        context = _Context(stanza, cell, scale, track)
+        context = _Context(stanza, cell, scale, track, self.tracks[track])
+        context.grab = self._grabber(stanza, track, cell) if grabbing else None
         loop = bool(cell.get('loop'))
         fill = self._scene_length(stanza) if loop else None
         try:
             clip = self._source(context, where, fill)
+            controls = clip.controls
             if clip.total_length() > 0 and 'chain' in cell:
                 for index, step in enumerate(self.chains[cell['chain']]):
                     clip = self._generator(step, context, cell['chain'], index).generate(clip)
             end = fill if loop else clip.total_length()
             notes = clip.section(0, end).notes if end > 0 else []
-            clip = Clip(name=stanza.name, notes=notes, scale=scale, loop=loop)
+            # Until here a control's number is its lane, which the track turns into a CC number.
+            controls = [
+                replace(item, number=context.cc[item.number]) for item in controls
+                if item.time < end and context.cc[item.number] is not None
+            ]
+            clip = Clip(name=stanza.name, notes=notes, scale=scale, loop=loop, controls=controls)
         except (ValueError, TypeError) as error:
             raise SongFileError(f'{where}: {error}') from error
         self.resolved[key] = clip
@@ -512,7 +625,7 @@ class SongBuilder:
 
         It's the octave of the first note the clip plays, in this project's numbering.
         """
-        pattern = self.patterns[cell.get('notes_from', cell['pattern'])]
+        pattern = self.patterns[cell['pattern']]
         octave = next((value for value in (pattern.get('octave') or []) if value is not None), self.default_octave)
         return octave + LIVE_OCTAVE_OFFSET
 
@@ -522,42 +635,43 @@ class SongBuilder:
         rolls = random.Random(f'{self.seed}/{stanza.number}/{context.track}')
         play = _Play(random.Random(f'{self.seed}/{stanza.number}/{context.track}/direction'))
         repeat = cell.get('repeat', 1)
-        notes, total, place = [], Fraction(0), 0
+        notes, controls, total, place = [], [], Fraction(0), 0
         while (place < repeat) if fill is None else (total < fill):
-            played = self._frame(cell, place % repeat, repeat, context, where, rolls, play)
-            length = sum((Fraction(position.length) for position in played), Fraction(0))
+            played = self._frame(cell, place % repeat, repeat, context, where, rolls, play, total)
+            length = played.total_length()
             if length == 0:
                 break
-            notes += played
+            notes += played.notes
+            controls += [replace(item, time=item.time + total) for item in played.controls]
             total += length
             place += 1
-        clip = Clip(notes=notes, scale=context.scale)
+        clip = Clip(notes=notes, scale=context.scale, controls=controls)
         return clip.section(0, fill) if fill else clip
 
-    def _frame(self, cell, place, repeat, context, where, rolls, play):
+    def _frame(self, cell, place, repeat, context, where, rolls, play, start):
         """Return one pass through a clip's pattern, part way through any morph.
 
-        Only the first pattern takes a rhythm, notes or a direction from the clip, and a morph's
+        Only the first pattern takes a rhythm, grabs or a direction from the clip, and a morph's
         target plays as it's written.
         """
-        notes = self._one_pass(
-            cell.get('rhythm_from', cell['pattern']), cell.get('notes_from', cell['pattern']),
-            cell.get('direction'), context, where, rolls, play,
+        clip = self._one_pass(
+            cell.get('rhythm_from', cell['pattern']), cell['pattern'], context.grab,
+            cell.get('direction'), context, where, rolls, play, start,
         )
-        if 'morph_to' not in cell or not notes:
-            return notes
-        clip = Clip(notes=notes, scale=context.scale)
-        target = self._one_pass(cell['morph_to'], cell['morph_to'], None, context, where, rolls, play)
+        if 'morph_to' not in cell or not clip.notes:
+            return clip
+        target = self._one_pass(cell['morph_to'], cell['morph_to'], None, None, context, where, rolls, play, start)
         amount = Fraction(place, repeat - 1) * 100
-        target = self._looped(target, context, clip.total_length())
-        return Blend(target, amount, mode=MORPH_STYLES[cell['morph_style']]).generate(clip).played_notes()
+        target = self._looped(target, clip.total_length())
+        blend = Blend(target, amount, mode=MORPH_STYLES[cell['morph_style']])
+        controls = _blended_controls(clip, target, *blend.region(clip))
+        return Clip(notes=blend.generate(clip).played_notes(), scale=context.scale, controls=controls)
 
-    def _looped(self, notes, context, length):
-        """Return a clip of notes that repeat or are cut to last a length."""
-        clip = Clip(notes=notes, scale=context.scale)
+    def _looped(self, clip, length):
+        """Return a clip repeated or cut to last a length."""
         if clip.total_length() > 0:
             clip = clip.repeated(ceil(length / clip.total_length()))
-        return Clip(notes=clip.section(0, length).notes, scale=context.scale)
+        return clip.section(0, length)
 
     def _row(self, pattern, row, step):
         return pattern[row][step] if pattern.get(row) else None
@@ -569,9 +683,10 @@ class SongBuilder:
             Fraction(0),
         )
 
-    def _one_pass(self, rhythm_name, notes_name, direction, context, where, rolls, play):
-        """Return one pass through a rhythm, as notes, chords and rests.
+    def _one_pass(self, rhythm_name, notes_name, grab, direction, context, where, rolls, play, start):
+        """Return one pass through a rhythm, as notes, chords and rests, starting at a time in the clip.
 
+        The notes pattern's grab steps play what grab gives for the time they start, if anything.
         Whichever order the steps play in, a pass lasts as long as the rhythm pattern does, so that
         a direction can't change how long a clip or scene is. The last step is cut to fit.
         """
@@ -581,21 +696,23 @@ class SongBuilder:
         rhythm, notes = self.patterns[rhythm_name], self.patterns[notes_name]
         combined = rhythm_name != notes_name
         note_steps = [step for step in range(notes['steps']) if self._row(notes, 'degree', step) is not None]
-        source_name = notes.get('source_pattern')
-        source = self.patterns.get(source_name)
 
         def order(pattern):
             return direction or pattern.get('direction', FORWARD)
 
         length = self._pattern_length(rhythm)
         where = f'pattern {notes_name!r}'
-        positions, time = [], Fraction(0)
+        positions, controls, time = [], [], Fraction(0)
         while time < length:
             step = play.next(('rhythm', rhythm_name), rhythm['steps'], order(rhythm))
-            # A source pattern keeps moving on every step, whether or not this one takes from it.
-            source_step = play.next(('source', source_name), source['steps'], order(source)) if source else None
             values = {row: self._row(rhythm, row, step) for row in PATTERN_ROWS}
+            moment = start + time
             duration = self.default_length if values['duration'] is None else _number(values['duration'], where)
+            # CC values belong to the rhythm, and a rest can send them too.
+            controls += [
+                Control(time, lane, values[row], bool(values['slide']))
+                for lane, row in enumerate(CC_ROWS) if values[row] is not None
+            ]
             time += duration
             if values['degree'] is None or (combined and not note_steps):
                 positions.append(Rest(duration))
@@ -605,17 +722,14 @@ class SongBuilder:
                 note_step = note_steps[play.next(('notes', notes_name), len(note_steps), order(notes))]
                 values.update({row: self._row(notes, row, note_step) for row in NOTE_ROWS})
             drum = notes.get('drum', False)
-            if source and self._row(notes, 'grab', note_step) and self._row(source, 'degree', source_step) is not None:
-                values.update({row: self._row(source, row, source_step) for row in GRAB_ROWS})
-                drum = source.get('drum', False)
+            values['grabbed'] = grab(moment) if grab and self._row(notes, 'grab', note_step) else None
             totals = (
                 play.accumulate('note', values['note_add'], notes.get('accumulator_limit', DEFAULT_ACCUMULATOR_LIMIT)),
                 play.accumulate('velocity', values['velocity_add'], rhythm.get('accumulator_limit', DEFAULT_ACCUMULATOR_LIMIT)),
             )
             positions += self._step(values, drum, context, where, rolls, *totals)
-        if time > length:
-            positions = Clip(notes=positions, scale=context.scale).section(0, length).notes
-        return positions
+        clip = Clip(notes=positions, scale=context.scale, controls=controls)
+        return clip.section(0, length) if time > length else clip
 
     def _step(self, values, drum, context, where, rolls, note_total, velocity_total):
         """Return what one step plays, as more than one position if it ratchets."""
@@ -627,8 +741,13 @@ class SongBuilder:
         ratchet = values['ratchet'] or DEFAULT_RATCHET
         offset = values['ratchet_offset'] or 0
         slices = []
+        transpose = 0 if drum else context.transpose
         for place in range(ratchet):
-            played = self._sound(values, drum, length, octave, note_total + place * offset, context, where)
+            shift = transpose + note_total + place * offset
+            if values['grabbed']:
+                played = self._grabbed_sound(values['grabbed'], length, shift, drum, context)
+            else:
+                played = self._sound(values, drum, length, octave, shift, context, where)
             slices.append(divide(_with_sound(played, velocity=velocity), ratchet))
         if values['glide']:
             slices[-1] = _with_sound(slices[-1], glide=True)
@@ -639,6 +758,22 @@ class SongBuilder:
             piece if rolls.random() * 100 < probability else Rest(piece.length)
             for piece in slices
         ]
+
+    def _grabbed_sound(self, numbers, length, shift, drum, context):
+        """Return a grabbed note or chord, moved along this clip's scale, or by half steps for drums.
+
+        A note moved outside the MIDI range stays where it was grabbed.
+        """
+        notes = []
+        for number in numbers:
+            octave, place = divmod(number, 12)
+            note = Note(SHARP_NAMES[place], octave, length)
+            try:
+                note = along_scale(note, shift, None if drum else context.scale)
+            except ValueError:
+                pass
+            notes.append(note)
+        return notes[0] if len(notes) == 1 else Chord(notes)
 
     def _sound(self, values, drum, length, octave, shift, context, where):
         """Return a step's note or chord, moved by a number of scale degrees or, for drums, half steps.
@@ -675,8 +810,8 @@ class SongBuilder:
         if symbol in FIXED_CHORDS:
             return root.to_chord(FIXED_CHORDS[symbol])
         return Chord([
-            Degree(degree + stack * 2, length, half_steps=half_steps, scale_notes=shift).to_note(scale)
-            for stack in range(SCALE_CHORDS[symbol])
+            Degree(degree + above, length, half_steps=half_steps, scale_notes=shift).to_note(scale)
+            for above in SCALE_CHORDS[symbol]
         ])
 
     # Building generators.
@@ -707,6 +842,16 @@ class SongBuilder:
             return value
         if kind == LENGTH:
             return _number(value, where)
+        if kind == OCTAVES:
+            if type(value) is not int or not 1 <= value <= MAX_OCTAVE_RANGE:
+                raise SongFileError(f'{where}: {key} must be a whole number from 1 to {MAX_OCTAVE_RANGE}, got {value!r}')
+            return value
+        if kind == OFFSETS:
+            try:
+                _check_offsets(value)
+            except ValueError as error:
+                raise SongFileError(f'{where}: {error}') from None
+            return value
         if not isinstance(value, list):
             raise SongFileError(f'{where}: {key} must be a list, got {value!r}')
         return value

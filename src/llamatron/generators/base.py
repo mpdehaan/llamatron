@@ -41,7 +41,7 @@ class ClipGenerator(ABC):
         notes, length = self._generate(clip)
         return Clip(
             name=clip.name, notes=notes, scale=self._new_scale(clip), length=length,
-            note_length=clip.note_length,
+            note_length=clip.note_length, controls=clip.controls,
         )
 
     def _new_scale(self, clip):

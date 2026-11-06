@@ -20,16 +20,50 @@ import os
 
 from rich.text import Text
 
-from llamatron.generators.arp import ChordOrder
-from llamatron.song_file import GRANULARITIES, SongFileError
+from llamatron.generators.arp import MAX_OCTAVE_RANGE, MAX_OFFSET, MAX_OFFSETS, ChordOrder, OctaveJump
+from llamatron.note import Note
+from llamatron.scale import ScaleType
+from llamatron.song_file import GRANULARITIES, MAX_TRANSPOSE, SongFileError
 from llamatron.tui.arrange import ArrangePage
-from llamatron.tui.base import ChoiceDialog, ConfirmDialog, Page, PromptDialog, key
+from llamatron.tui.base import ChoiceDialog, ConfirmDialog, GridChoiceDialog, Page, PromptDialog, fit, grouped_grid, key, pressed_key
 from llamatron.tui.document import Document, GENERATOR_SECTIONS, ROOTS, SCALE_KINDS, clock, unique_name
 from llamatron.tui.lists import Field, FieldPage, ListPage
-from llamatron.tui.pattern_editor import PatternEditor
+from llamatron.tui.pattern_editor import TOGGLE_OFF, TOGGLE_ON, PatternEditor
 
 NOTE_LENGTHS = ['1/256', '1/128', '1/64', '1/32', '1/16', '1/8', '1/4', '1/2', '1']
 ORDERS = [order.name.lower() for order in ChordOrder]
+JUMPS = [jump.name.lower() for jump in OctaveJump]
+# How many offsets a new set has, as on the Monomachine.
+DEFAULT_OFFSET_STEPS = 8
+# The scale picker's columns of groups, which hold every kind of scale, with the names to show
+# where the full ones are too long to fit.
+SCALE_GROUPS = [
+    [('MODES', ['major', 'ionian', 'dorian', 'phrygian', 'lydian', 'mixolydian', 'minor', 'aeolian', 'natural_minor', 'locrian'])],
+    [('MINOR & MAJOR', ['harmonic_minor', 'melodic_minor', 'harmonic_major']),
+     ('SYMMETRIC', ['chromatic', 'whole_tone', 'whole_half_diminished', 'half_whole_diminished'])],
+    [('PENTATONIC & BLUES', ['major_pentatonic', 'minor_pentatonic', 'blues', 'major_blues']),
+     ('JAZZ & EXOTIC', ['lydian_dominant', 'bebop_dominant', 'altered', 'phrygian_dominant', 'hungarian_minor', 'double_harmonic'])],
+]
+SHORT_SCALE_NAMES = {
+    'whole_half_diminished': 'whole half dim', 'half_whole_diminished': 'half whole dim',
+    'lydian_dominant': 'lydian dom', 'bebop_dominant': 'bebop dom', 'phrygian_dominant': 'phrygian dom',
+}
+# The root picker, laid out like a keyboard, with each flat under the sharp it shares a key with.
+ROOT_KEYBOARD = [
+    ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'],
+    [None, 'Db', None, 'Eb', None, None, 'Gb', None, 'Ab', None, 'Bb', None],
+]
+
+
+def scale_label(kind):
+    return SHORT_SCALE_NAMES.get(kind, kind.replace('_', ' '))
+
+
+def scale_notes(root, kind):
+    """Return a scale's notes, like D E F G A B C, spelled as the rest of the program spells them."""
+    start = Note(root, 4)
+    return ' '.join(start.half_step(step).name for step in ScaleType[kind.upper()].value)
+
 
 def _stepped(values, current, offset):
     """Return the next value in a list, starting from the middle if the current one isn't there."""
@@ -366,24 +400,35 @@ class PatternsPage(ListPage):
         self.place = list(self.document.data['patterns']).index(current)
 
 
+def _cc_text(numbers):
+    return ' '.join('-' if number is None else str(number) for number in numbers)
+
+
 class TracksPage(ListPage):
     crumbs = ('TRACKS',)
     HELP = (
         'The columns of the song, which become tracks in Ableton in this order.',
         '',
-        '+ adds one, Enter or N renames it, and C copies it along with its clips.',
+        'Enter opens its settings: drum, transpose and the CC numbers its patterns send.',
+        '+ adds one, N renames it, and C copies it along with its clips.',
         'U and D move it. Bksp deletes it and its clips, after asking.',
     )
-    columns = (('NAME', None, 'left'), ('CLIPS', 5, 'right'))
+    columns = (('NAME', None, 'left'), ('TYPE', 5, 'left'), ('MOVE', 4, 'right'), ('CC 1-4', 16, 'left'), ('CLIPS', 5, 'right'))
 
     def rows(self):
-        return [(name, [name, self.document.track_clips(name)]) for name in self.document.data['tracks']]
+        rows = []
+        for name, track in self.document.data['tracks'].items():
+            drum = track.get('drum')
+            move = '' if drum else (f"{track.get('transpose', 0):+d}" if track.get('transpose') else '')
+            rows.append((name, [name, 'drum' if drum else 'notes', move, _cc_text(track.get('cc', [None] * 4)), self.document.track_clips(name)]))
+        return rows
 
     def keys(self):
         result = [*self.move_keys(), key('+', 'add', self.add)]
         if self.current() is not None:
             result += [
-                key(('enter', 'n'), 'rename', self.rename, label='Enter'),
+                key('enter', 'settings', lambda: self.show_page(TrackEditor(self.holder, self.current()))),
+                key('n', 'rename', self.rename),
                 key('c', 'copy', self.copy),
                 key('backspace', 'delete', self.delete),
                 key('u', 'move up', lambda: self.shift(-1)),
@@ -411,12 +456,189 @@ class TracksPage(ListPage):
     def delete(self):
         name = self.current()
         clips = self.document.track_clips(name)
-        extra = f'This also deletes its {clips} clip(s).' if clips else None
-        self.delete_after_checks(f'track {name}', [], lambda: self.document.delete_track(name), extra)
+        notes = [f'This also deletes its {clips} clip(s).'] if clips else []
+        grabbers = self.document.grabbers(name)
+        if grabbers:
+            notes.append(f'{len(grabbers)} clip(s) that grab from it will stop grabbing.')
+        self.delete_after_checks(f'track {name}', [], lambda: self.document.delete_track(name), ' '.join(notes) or None)
 
     def shift(self, offset):
         if self.document.move_track(self.place, offset):
             self.place += offset
+
+
+class TrackEditor(FieldPage):
+    """One track's settings, which apply to every clip on it."""
+
+    HELP = (
+        'Drum: a drum track is never transposed. Drum patterns never are either, on any track.',
+        'Transpose: moves every note on the track along the scale when rendering, without changing its patterns.',
+        'CC 1 to CC 4: the CC number that each of a pattern\'s CC rows sends on this track. A row with no number sends nothing here.',
+        '',
+        'Up and down select a setting. Left and right, or + and -, change it, and Enter types or toggles. Bksp clears.',
+    )
+
+    def __init__(self, holder, name):
+        super().__init__(holder)
+        self.item = name
+        self.crumbs = ('TRACKS', name)
+
+    def track(self):
+        return self.document.track(self.item)
+
+    def numbers(self):
+        return list(self.track().get('cc', [None] * 4))
+
+    def set_value(self, name, value):
+        track = self.track()
+        if value in (None, False, 0) and name != 'cc':
+            track.pop(name, None)
+        elif name == 'cc' and all(number is None for number in value):
+            track.pop('cc', None)
+        else:
+            track[name] = value
+        self.document.changed()
+
+    def set_cc(self, lane, number):
+        numbers = self.numbers()
+        numbers[lane] = number
+        self.set_value('cc', numbers)
+
+    def nudge_cc(self, lane, offset):
+        current = self.numbers()[lane]
+        self.set_cc(lane, max(min((1 if current is None and offset > 0 else 0 if current is None else current + offset), 127), 0))
+
+    def nudge_transpose(self, offset):
+        self.set_value('transpose', max(min(self.track().get('transpose', 0) + offset, MAX_TRANSPOSE), -MAX_TRANSPOSE))
+
+    def fields(self):
+        track = self.track()
+        drum = bool(track.get('drum'))
+        result = [
+            Field('Drum', lambda: TOGGLE_ON if drum else TOGGLE_OFF, None, lambda: self.set_value('drum', not drum), 'toggle'),
+        ]
+        if drum:
+            result.append(Field('Transpose', lambda: '(drum track)'))
+        else:
+            result.append(Field(
+                'Transpose', lambda: f"{track.get('transpose', 0):+d}" if track.get('transpose') else '0',
+                self.nudge_transpose,
+                lambda: self.ask_number('Transpose', track.get('transpose', 0), lambda n: self.set_value('transpose', n), -MAX_TRANSPOSE, MAX_TRANSPOSE),
+                'edit', lambda: self.set_value('transpose', 0), 'no transpose',
+            ))
+        for lane in range(4):
+            result.append(Field(
+                f'CC {lane + 1}', lambda lane=lane: '(none)' if self.numbers()[lane] is None else str(self.numbers()[lane]),
+                lambda offset, lane=lane: self.nudge_cc(lane, offset),
+                lambda lane=lane: self.ask_number(f'CC {lane + 1} number', self.numbers()[lane] or 0, lambda n, lane=lane: self.set_cc(lane, n), 0, 127),
+                'edit', lambda lane=lane: self.set_cc(lane, None), 'none',
+            ))
+        return result
+
+    def notes(self, width):
+        return [Text('  Transpose counts notes of the scale, so 7 is an octave in a seven-note scale.', style='dim')]
+
+
+def offsets_text(offsets):
+    if offsets is None:
+        return '(none)'
+    return ' '.join('-' if offset is None else str(offset) for offset in offsets)
+
+
+class OffsetsEditor(Page):
+    """An arpeggiator's offsets: one row of up to 16 steps, like a pattern row."""
+
+    HELP = (
+        'The arpeggiator plays one note of the chord each step, moved this many notes along the scale.',
+        'A blank step is silent, and the next step plays the note it would have played.',
+        'The steps start again with each chord, so a length that doesn\'t match the chord makes a new rhythm.',
+        '',
+        'Digits type an offset, + and - change it, and Space makes the step silent or plays it again.',
+        'I inserts a step, X removes one, and there can be 1 to 16.',
+    )
+
+    def __init__(self, holder, name):
+        super().__init__(holder)
+        self.item = name
+        self.step = 0
+        self.typed = ''
+        self.crumbs = ('GENERATORS', 'ARPEGGIATORS', name, 'OFFSETS')
+
+    def offsets(self):
+        return self.document.data['arps'][self.item]['offsets']
+
+    def on_key(self, event):
+        name = pressed_key(event)
+        if not (name and name.isdigit()):
+            self.typed = ''
+        super().on_key(event)
+
+    def keys(self):
+        self.step = max(min(self.step, len(self.offsets()) - 1), 0)
+        result = [
+            key(('left', 'right'), 'move', self.move, label='←→', wants_key=True),
+            key(tuple('0123456789'), 'type', self.type_digit, label='0-9', wants_key=True),
+            key(('+', '='), 'more', lambda: self.nudge(1), label='+'),
+            key('-', 'less', lambda: self.nudge(-1)),
+            key('space', 'silent' if self.offsets()[self.step] is not None else 'play', self.toggle),
+        ]
+        if len(self.offsets()) < MAX_OFFSETS:
+            result.append(key('i', 'insert step', self.insert))
+        if len(self.offsets()) > 1:
+            result.append(key('x', 'remove step', self.remove_step))
+        result.append(key('tab', 'back', self.go_back))
+        return result
+
+    def move(self, name):
+        self.step = (self.step + (1 if name == 'right' else -1)) % len(self.offsets())
+
+    def set_offset(self, value):
+        self.offsets()[self.step] = value
+        self.document.changed()
+
+    def type_digit(self, digit):
+        for text in (self.typed + digit, digit):
+            if int(text) <= MAX_OFFSET:
+                self.typed = text
+                current = self.offsets()[self.step]
+                self.set_offset(-int(text) if current is not None and current < 0 else int(text))
+                return
+
+    def nudge(self, offset):
+        current = self.offsets()[self.step] or 0
+        self.set_offset(max(min(current + offset, MAX_OFFSET), -MAX_OFFSET))
+
+    def toggle(self):
+        self.set_offset(0 if self.offsets()[self.step] is None else None)
+
+    def insert(self):
+        self.offsets().insert(self.step, 0)
+        self.document.changed()
+
+    def remove_step(self):
+        self.offsets().pop(self.step)
+        self.document.changed()
+        self.step = min(self.step, len(self.offsets()) - 1)
+
+    def body(self, width, height):
+        offsets = self.offsets()
+        size = 5
+        rule = '─' * size
+        per_block = max((width - 12) // (size + 1), 1)
+        lines = [Text('  Steps start again with each chord. A blank step is silent.', style='dim')]
+        for first in range(0, len(offsets), per_block):
+            places = range(first, min(first + per_block, len(offsets)))
+            lines += [Text(''), Text('┌────────┬' + '┬'.join([rule] * len(places)) + '┐', style='dim', no_wrap=True)]
+            head = Text('│ Step   │', no_wrap=True)
+            row = Text('│ Offset │', no_wrap=True)
+            for place in places:
+                offset = offsets[place]
+                head.append(fit(str(place + 1), size, 'center'), style='bold')
+                head.append('│')
+                row.append(fit('' if offset is None else str(offset), size, 'center'), style='reverse' if place == self.step else '')
+                row.append('│')
+            lines += [head, row, Text('└────────┴' + '┴'.join([rule] * len(places)) + '┘', style='dim', no_wrap=True)]
+        return lines
 
 
 class ScalesPage(ListPage):
@@ -458,15 +680,22 @@ class ScalesPage(ListPage):
         return result
 
     def pick_scale(self, title, root, kind, then):
-        """Ask for a root, and then a kind of scale."""
-        kinds = [text.replace('_', ' ') for text in SCALE_KINDS]
+        """Ask for a root on a keyboard, and then a kind of scale from its group."""
+        kinds = [scale_label(text) for text in SCALE_KINDS]
+        kind_grid = grouped_grid([[(heading, [SCALE_KINDS.index(name) for name in names]) for heading, names in groups] for groups in SCALE_GROUPS])
+        root_grid = [[None if name is None else ROOTS.index(name) for name in row] for row in ROOT_KEYBOARD]
 
         def rooted(root_place):
+            chosen_root = ROOTS[root_place]
+
             def kinded(kind_place):
-                then(ROOTS[root_place], SCALE_KINDS[kind_place])
+                then(chosen_root, SCALE_KINDS[kind_place])
+
+            def notes(place):
+                return f'{chosen_root} {kinds[place]}: {scale_notes(chosen_root, SCALE_KINDS[place])}'
             place = SCALE_KINDS.index(kind) if kind in SCALE_KINDS else 0
-            self.ask(ChoiceDialog(f'{title}: {ROOTS[root_place]}', kinds, place), kinded)
-        self.ask(ChoiceDialog(f'{title}: root note', ROOTS, ROOTS.index(root) if root in ROOTS else 0), rooted)
+            self.ask(GridChoiceDialog(f'{title}: {chosen_root}', kinds, kind_grid, place, notes), kinded)
+        self.ask(GridChoiceDialog(f'{title}: root note', ROOTS, root_grid, ROOTS.index(root) if root in ROOTS else 0), rooted)
 
     def add(self):
         scales = self.document.data['scales']
@@ -802,6 +1031,8 @@ class ArpEditor(FieldPage):
     HELP = (
         'Step: how long each note of the chord plays.',
         'Order: which way it goes through the chord. Random uses the seed.',
+        'Octave range: plays the chord again in up to 4 octaves. Octave jump: up after the whole chord, or after each note.',
+        'Offsets: the arp\'s own steps, like the Monomachine\'s. Each moves its note along the scale, and a blank step is silent. Bksp removes them.',
         'Seed: leave it to use the song seed, or set one for just this arpeggiator.',
         '',
         'Up and down select a setting. Left and right, or + and -, change it, and Enter types or chooses.',
@@ -827,13 +1058,43 @@ class ArpEditor(FieldPage):
         current = str(self.arp().get(name, default))
         self.ask(ChoiceDialog(title, options, options.index(current) if current in options else 0), lambda chosen: self.set_value(name, options[chosen]))
 
+    def clear(self, name):
+        self.arp().pop(name, None)
+        self.document.changed()
+
+    def set_range(self, octaves):
+        if octaves == 1:
+            self.clear('octave_range')
+        else:
+            self.set_value('octave_range', octaves)
+
+    def set_jump(self, jump):
+        if jump == JUMPS[0]:
+            self.clear('octave_jump')
+        else:
+            self.set_value('octave_jump', jump)
+
+    def edit_offsets(self):
+        if 'offsets' not in self.arp():
+            self.set_value('offsets', [0] * DEFAULT_OFFSET_STEPS)
+        self.show_page(OffsetsEditor(self.holder, self.item))
+
     def fields(self):
         arp = self.arp()
+        jump = arp.get('octave_jump', JUMPS[0])
         return [
             Field('Step', lambda: arp.get('step', ''), lambda d: self.set_value('step', _stepped(NOTE_LENGTHS, arp.get('step'), d)),
                   lambda: self.pick('Step', NOTE_LENGTHS, 'step', '1/16'), 'choose'),
             Field('Order', lambda: arp.get('order', 'up'), lambda d: self.set_value('order', _stepped(ORDERS, arp.get('order', 'up'), d)),
                   lambda: self.pick('Order', ORDERS, 'order', 'up'), 'choose'),
+            Field('Octave range', lambda: arp.get('octave_range', 1),
+                  lambda d: self.set_range(max(min(arp.get('octave_range', 1) + d, MAX_OCTAVE_RANGE), 1)),
+                  lambda: self.ask_number('Octave range', arp.get('octave_range', 1), self.set_range, 1, MAX_OCTAVE_RANGE)),
+            Field('Octave jump', lambda: jump.replace('_', ' '), lambda d: self.set_jump(_stepped(JUMPS, jump, d)),
+                  lambda: self.ask(ChoiceDialog('Octave jump', [name.replace('_', ' ') for name in JUMPS], JUMPS.index(jump)),
+                                   lambda chosen: self.set_jump(JUMPS[chosen])), 'choose'),
+            Field('Offsets', lambda: offsets_text(arp.get('offsets')), None, self.edit_offsets, 'edit',
+                  lambda: self.clear('offsets'), 'remove'),
             Field('Seed', lambda: arp.get('seed', '(song)'), lambda d: self.set_value('seed', arp.get('seed', 0) + d),
                   lambda: self.ask_number('Seed', arp.get('seed', 0), lambda n: self.set_value('seed', n)), 'edit',
                   self.clear_seed, 'use the song seed'),

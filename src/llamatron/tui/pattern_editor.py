@@ -23,8 +23,8 @@ to play is a rest, and is shown as a blank, and every step takes time.
 
 from rich.text import Text
 
-from llamatron.song_file import CHORD_SYMBOLS, DEFAULT_ACCUMULATOR_LIMIT, DIRECTIONS, FORWARD, NOTE_LETTERS
-from llamatron.tui.base import ChoiceDialog, ConfirmDialog, Page, PromptDialog, columns, fit, key, pressed_key
+from llamatron.song_file import CC_ROWS, CHORD_SYMBOLS, DEFAULT_ACCUMULATOR_LIMIT, DIRECTIONS, FORWARD, NOTE_LETTERS
+from llamatron.tui.base import ChoiceDialog, ConfirmDialog, GridChoiceDialog, Page, PromptDialog, columns, fit, grouped_grid, key, pressed_key
 from llamatron.tui.document import (
     DEFAULT_PROBABILITY, DEFAULT_RATCHET, DEFAULT_VELOCITY, DIRECTION_NAMES, fraction, fraction_text,
 )
@@ -34,9 +34,17 @@ ROW_LABELS = {
     'degree': 'Degree', 'duration': 'Duration', 'accidental': '#/b', 'octave': 'Octave', 'chord': 'Chord',
     'velocity': 'Velocity', 'probability': 'Prob', 'glide': 'Glide', 'ratchet': 'Ratchet',
     'ratchet_offset': 'Ratchet Offset', 'note_add': 'Note Add', 'velocity_add': 'Velocity Add', 'grab': 'Grab',
+    'cc1': 'CC 1', 'cc2': 'CC 2', 'cc3': 'CC 3', 'cc4': 'CC 4', 'slide': 'Slide',
 }
 NORMAL_ROWS = ['degree', 'duration', 'accidental', 'octave', 'chord', 'velocity', 'probability', 'glide']
 ADVANCED_ROWS = ['degree', 'ratchet', 'ratchet_offset', 'note_add', 'velocity_add', 'grab']
+CC_SET = ['degree', 'cc1', 'cc2', 'cc3', 'cc4', 'slide']
+# The sets of rows under Degree that A steps through, and what each is called on screen.
+ROW_SETS = {'normal': NORMAL_ROWS, 'advanced': ADVANCED_ROWS, 'cc': CC_SET}
+ROW_SET_NAMES = {'normal': 'normal rows', 'advanced': 'advanced rows', 'cc': 'CC rows'}
+# Rows that a rest can hold, because CC values don't need a note.
+REST_EDITABLE = (*CC_ROWS, 'slide')
+TOGGLE_ON, TOGGLE_OFF = '*', ' '
 DRUM_LETTER_ROW = 'Note'
 ACCIDENTAL_CYCLE = [None, '#', 'b']
 CELL_WIDTH = 5
@@ -44,17 +52,37 @@ MIN_OCTAVE, MAX_OCTAVE = -2, 8
 NUMBER_RANGE = {
     'velocity': (1, 127), 'probability': (0, 100), 'ratchet': (1, 16), 'ratchet_offset': (-24, 24),
     'note_add': (-24, 24), 'velocity_add': (-127, 127),
+    'cc1': (0, 127), 'cc2': (0, 127), 'cc3': (0, 127), 'cc4': (0, 127),
 }
 NUMBER_DEFAULT = {
     'velocity': DEFAULT_VELOCITY, 'probability': DEFAULT_PROBABILITY, 'ratchet': DEFAULT_RATCHET,
     'ratchet_offset': 0, 'note_add': 0, 'velocity_add': 0,
+    'cc1': 64, 'cc2': 64, 'cc3': 64, 'cc4': 64,
 }
 # Rows whose default means nothing happens, so that they show a dot until they're set.
-QUIET_ROWS = ('ratchet', 'ratchet_offset', 'note_add', 'velocity_add')
+QUIET_ROWS = ('ratchet', 'ratchet_offset', 'note_add', 'velocity_add', *CC_ROWS)
 DIGITS = tuple('0123456789')
+# The chord picker's columns, which hold every chord symbol in the order + steps through them.
+CHORD_GROUPS = [
+    ('TRIADS', ['M', 'm', 'dim', 'aug', 'sus2', 'sus4', 'pow', 'M6', 'm6']),
+    ('SEVENTHS', ['dom7', 'M7', 'm7', 'mM7', 'dim7', 'm7b5', 'aug7', 'augM7', '7sus4']),
+    ('NINTHS', ['dom9', 'M9', 'm9', 'add9', 'madd9']),
+    ('11THS, 13THS', ['dom11', 'M11', 'm11', 'dom13', 'M13', 'm13']),
+    ('SCALE', ['5', '3', '7', '9', '11', '13']),
+]
 CHORD_NAMES = {
-    'M': 'major', 'm': 'minor', 'M7': 'major seventh', 'm7': 'minor seventh', 'dim': 'diminished',
-    'sus4': 'suspended fourth', '3': 'triad from the scale', '7': 'seventh from the scale',
+    'M': 'major', 'm': 'minor', 'dim': 'diminished', 'aug': 'augmented',
+    'sus2': 'suspended second', 'sus4': 'suspended fourth', 'pow': 'power, root and fifth',
+    'M6': 'major sixth', 'm6': 'minor sixth',
+    'dom7': 'dominant seventh', 'M7': 'major seventh', 'm7': 'minor seventh', 'mM7': 'minor-major seventh',
+    'dim7': 'diminished seventh', 'm7b5': 'half-diminished', 'aug7': 'augmented seventh',
+    'augM7': 'augmented major seventh', '7sus4': 'seventh, suspended fourth',
+    'add9': 'added ninth', 'madd9': 'minor added ninth',
+    'dom9': 'dominant ninth', 'M9': 'major ninth', 'm9': 'minor ninth',
+    'dom11': 'dominant eleventh', 'M11': 'major eleventh', 'm11': 'minor eleventh',
+    'dom13': 'dominant thirteenth', 'M13': 'major thirteenth', 'm13': 'minor thirteenth',
+    '5': 'root and fifth from the scale', '3': 'triad from the scale', '7': 'seventh from the scale',
+    '9': 'ninth from the scale', '11': 'eleventh from the scale', '13': 'thirteenth from the scale',
 }
 
 
@@ -71,13 +99,14 @@ class PatternEditor(Page):
     HELP = (
         'Each column is a step with its own Duration. The grid does not grow as you type. Arrows move, and typing never moves the cursor.',
         '',
-        'Degree: 1 is the root of the scale. Bksp makes a rest, shown as a blank.',
+        'Degree: 1 is the root of the scale. Bksp makes a rest.',
         'Duration: + and - use the Granularity. * doubles and / halves.',
         'Octave: exactly the octave you type, as Live numbers them.',
-        'Chord: Enter shows the chords. 3 and 7 build from the scale.',
-        'Velocity, Prob: type numbers. Glide: slides into the next note.',
+        'Chord: Enter shows the chords. Numbers like 3 and 7 use the scale.',
+        'Velocity, Prob: type numbers. Glide (*): runs into the next note.',
         '',
-        'A switches to advanced rows. Ratchet splits a step into quick notes, and Ratchet Offset moves each along the scale. Note Add and Velocity Add build up a running total. O sets a source pattern for the Grab row.',
+        'A steps through advanced and CC rows. Ratchet splits a step, and Ratchet Offset moves each slice along the scale. Note Add and Velocity Add build up totals. Grab takes a note from another track.',
+        'CC 1 to 4 send values, even on rests, as the CC numbers each track sets. Slide ramps them to the next value.',
         'F reverses every step after the cursor, and S swaps both sides of it. L loads another pattern over this one.',
     )
 
@@ -110,10 +139,10 @@ class PatternEditor(Page):
 
     def rows(self):
         """Return the rows on screen. Chords aren't used in a drum pattern."""
-        names = ADVANCED_ROWS if self.holder.advanced_rows else NORMAL_ROWS
+        names = ROW_SETS[self.holder.row_set]
         names = [
             name for name in names
-            if not (self.is_drum() and name == 'chord') and not (name == 'grab' and not self.pattern().get('source_pattern'))
+            if not (self.is_drum() and name == 'chord')
         ]
         return [(name, DRUM_LETTER_ROW if self.is_drum() and name == 'degree' else ROW_LABELS[name]) for name in names]
 
@@ -145,11 +174,11 @@ class PatternEditor(Page):
         # On a drum pattern's Note row, the letters A and F are notes.
         on_letters = self.is_drum() and self.row_name() == 'degree'
         if not on_letters:
-            result.append(key('a', 'normal rows' if self.holder.advanced_rows else 'advanced rows', self.toggle_advanced))
+            result.append(key('a', ROW_SET_NAMES[self.next_row_set()], self.toggle_advanced))
             result.append(key('f', 'flip after', self.flip))
         result += [key('s', 'swap sides', self.swap), key('l', 'load over', self.load_over)]
-        if self.holder.advanced_rows:
-            result += [key('o', 'source', self.pick_source), key('m', 'add limit', self.ask_limit)]
+        if self.holder.row_set == 'advanced':
+            result.append(key('m', 'add limit', self.ask_limit))
         result += [
             key('r', 'resize', self.ask_steps),
             key('t', 'drum on' if not self.is_drum() else 'drum off', self.toggle_drum),
@@ -173,7 +202,7 @@ class PatternEditor(Page):
                 key('/', 'halve', lambda: self.scale_duration(0.5)),
                 key('backspace', 'default', self.reset_duration),
             ]
-        if not self.is_note():
+        if not self.is_note() and name not in REST_EDITABLE:
             return []
         if name == 'accidental':
             return [
@@ -195,10 +224,10 @@ class PatternEditor(Page):
                 key('-', 'back', lambda: self.cycle_chord(-1)),
                 key('backspace', 'clear', lambda: self.set_value(None)),
             ]
-        if name in ('glide', 'grab'):
+        if name in ('glide', 'grab', 'slide'):
             return [
                 key('space', 'toggle', self.toggle_glide),
-                key('backspace', 'clear', lambda: self.set_value(None)),
+                key('backspace', 'clear', lambda: self.set_value(False)),
             ]
         low, high = NUMBER_RANGE[name]
         return [
@@ -305,9 +334,12 @@ class PatternEditor(Page):
 
     def pick_chord(self):
         options = [None, *CHORD_SYMBOLS]
-        labels = columns([('(none)', ''), *[(symbol, CHORD_NAMES[symbol]) for symbol in CHORD_SYMBOLS]])
+        labels = ['(none)', *CHORD_SYMBOLS]
+        details = ['No chord, just the note', *[CHORD_NAMES[symbol] for symbol in CHORD_SYMBOLS]]
+        details = [text[0].upper() + text[1:] for text in details]
+        grid = grouped_grid([[(heading, [labels.index(symbol) for symbol in symbols])] for heading, symbols in CHORD_GROUPS])
         self.ask(
-            ChoiceDialog('Chord', labels, options.index(_chord_text(self.value()))),
+            GridChoiceDialog('Chord', labels, grid, options.index(_chord_text(self.value())), lambda place: details[place], top=[0]),
             lambda chosen: self.set_value(_chord_value(options[chosen])),
         )
 
@@ -348,8 +380,8 @@ class PatternEditor(Page):
             if low <= number <= high:
                 self.set_value(number)
             else:
-                self.status = f'{name.capitalize()} must be from {low} to {high}.'
-        self.ask(PromptDialog(f'{name.capitalize()} ({low} to {high})', self.number_now()), answered)
+                self.status = f'{ROW_LABELS[name]} must be from {low} to {high}.'
+        self.ask(PromptDialog(f'{ROW_LABELS[name]} ({low} to {high})', self.number_now()), answered)
 
     def pick_direction(self):
         current = self.pattern().get('direction', FORWARD)
@@ -359,21 +391,14 @@ class PatternEditor(Page):
             lambda chosen: self.document.set_direction(self.item, DIRECTIONS[chosen]),
         )
 
-    def pick_source(self):
-        patterns = list(self.document.data['patterns'])
-        options = ['(none)', *patterns]
-        current = self.pattern().get('source_pattern')
-        place = options.index(current) if current in options else 0
-
-        def chosen(item):
-            self.document.set_source_pattern(self.item, None if item == 0 else patterns[item - 1])
-            self.clamp()
-        self.ask(ChoiceDialog('Source pattern for the Grab row', options, place), chosen)
+    def next_row_set(self):
+        names = list(ROW_SETS)
+        return names[(names.index(self.holder.row_set) + 1) % len(names)]
 
     def toggle_advanced(self):
-        """Switch the rows under Degree, staying on the same row if the other mode has it."""
+        """Switch to the next rows under Degree, staying on the same row if they have it."""
         name = self.row_name()
-        self.holder.advanced_rows = not self.holder.advanced_rows
+        self.holder.row_set = self.next_row_set()
         names = [row for row, _ in self.rows()]
         self.row = names.index(name) if name in names else 0
 
@@ -425,7 +450,7 @@ class PatternEditor(Page):
         self.ask(PromptDialog('Note Add and Velocity Add clear past', current), answered)
 
     def toggle_glide(self):
-        self.set_value(None if self.value() else True)
+        self.set_value(not self.value())
 
     # The whole pattern.
 
@@ -487,10 +512,10 @@ class PatternEditor(Page):
             return '' if value is None else str(value)
         if name == 'duration':
             return fraction_text(self.duration_now(step))
-        if not note:
+        if name in ('glide', 'grab', 'slide') and (note or name in REST_EDITABLE):
+            return TOGGLE_ON if value else TOGGLE_OFF
+        if not note and name not in REST_EDITABLE:
             return ''
-        if name in ('glide', 'grab'):
-            return 'G' if value else '.'
         if name == 'octave':
             return str(self.document.data['default_drum_octave' if self.is_drum() else 'default_octave'] if value is None else value)
         if name in NUMBER_DEFAULT:
@@ -510,11 +535,12 @@ class PatternEditor(Page):
         drum = '[x]' if pattern.get('drum') else '[ ]'
         scale = 'no scale needed' if pattern.get('drum') else f"song: {self.document.data.get('scale') or 'none'}, or the scene's"
         direction = pattern.get('direction', FORWARD).replace('_', ' ')
-        source = pattern.get('source_pattern', '(none)')
         extra = f'Scale {scale}'
-        if self.holder.advanced_rows:
+        if self.holder.row_set == 'advanced':
             limit = pattern.get('accumulator_limit', DEFAULT_ACCUMULATOR_LIMIT)
-            extra = f'Advanced rows    Source {source}    Add limit {limit}'
+            extra = f"Advanced rows    Add limit {limit}    Grab plays what each clip's Grab track last played"
+        elif self.holder.row_set == 'cc':
+            extra = 'CC rows: each track sets which CC number each row sends'
         return [
             Text(f'  Steps {pattern["steps"]}    Drum {drum}    Direction {direction}', no_wrap=True),
             Text(f'  {extra}', no_wrap=True),

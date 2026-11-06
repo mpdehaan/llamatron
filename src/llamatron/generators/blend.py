@@ -88,7 +88,10 @@ class Blend(ClipGenerator):
             )
         return self._sweep(_concrete(clip), _concrete(self.target), total), clip.length
 
-    def _sweep(self, source, target, total):
+    def region(self, clip):
+        """Return where the target plays in the result, from start to end in whole notes."""
+        total = clip.total_length()
+        source = _concrete(clip)
         share = total * Fraction(self.amount).limit_denominator(1_000_000) / 100
         if self.mode is BlendMode.LEFT:
             start, end = Fraction(0), share
@@ -98,7 +101,15 @@ class Blend(ClipGenerator):
             start, end = (total - share) / 2, (total + share) / 2
         start, end = self._nearest_edge(source, start, total), self._nearest_edge(source, end, total)
         if end <= start:
-            return source.notes if share < total else target.notes
+            return (Fraction(0), Fraction(0)) if share < total else (Fraction(0), total)
+        return start, end
+
+    def _sweep(self, source, target, total):
+        start, end = self.region(source)
+        if end <= start:
+            return source.notes
+        if start == 0 and end == total:
+            return target.notes
         notes = []
         if start > 0:
             notes += source.section(0, start).notes

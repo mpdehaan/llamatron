@@ -34,7 +34,7 @@ def song_with_things():
         'b': {'steps': 1, 'degree': [5], 'duration': ['1/2']},
         'unused': {'steps': 1, 'duration': ['1/4']},
     }
-    data['tracks'] = ['lead', 'bass']
+    data['tracks'] = {'lead': {}, 'bass': {}}
     data['arps'] = {'up': {'step': '1/8', 'order': 'up'}}
     data['auto_ratchets'] = {'rolls': {'counts': [2]}}
     data['chains'] = {
@@ -228,15 +228,6 @@ class TestUses(unittest.TestCase):
         document = song_with_things()
         document.set_cell(0, 'bass', {'pattern': 'a', 'rhythm_from': 'unused'})
         self.assertEqual(document.pattern_uses('unused'), ['scene 1 (one), track bass'])
-        document.set_cell(0, 'bass', {'pattern': 'a', 'notes_from': 'unused'})
-        self.assertEqual(document.pattern_uses('unused'), ['scene 1 (one), track bass'])
-
-    def test_a_source_pattern_counts_as_a_use(self):
-        document = song_with_things()
-        document.set_source_pattern('a', 'unused')
-        self.assertEqual(document.pattern_uses('unused'), ['pattern a'])
-        document.set_source_pattern('a', None)
-        self.assertEqual(document.pattern_uses('unused'), [])
 
     def test_track_clips_are_counted_separately(self):
         self.assertEqual(song_with_things().track_clips('bass'), 2)
@@ -288,22 +279,31 @@ class TestRenaming(unittest.TestCase):
         self.assertEqual(document.cell(2, 'bass')['pattern'], 'new')
         SongBuilder(document.data).build()
 
-    def test_pattern_updates_rhythm_and_notes_from(self):
+    def test_pattern_updates_rhythm_from(self):
         document = song_with_things()
-        document.set_cell(0, 'bass', {'pattern': 'a', 'rhythm_from': 'unused', 'notes_from': 'unused'})
+        document.set_cell(0, 'bass', {'pattern': 'a', 'rhythm_from': 'unused'})
         document.rename_pattern('unused', 'new')
-        self.assertEqual(document.cell(0, 'bass'), {'pattern': 'a', 'rhythm_from': 'new', 'notes_from': 'new'})
+        self.assertEqual(document.cell(0, 'bass'), {'pattern': 'a', 'rhythm_from': 'new'})
 
-    def test_pattern_updates_a_source_pattern(self):
+    def test_renaming_or_deleting_a_track_updates_grabs_from_it(self):
         document = song_with_things()
-        document.set_source_pattern('a', 'unused')
-        document.rename_pattern('unused', 'new')
-        self.assertEqual(document.data['patterns']['a']['source_pattern'], 'new')
+        document.set_cell(0, 'bass', {'pattern': 'a', 'grab_track': 'lead'})
+        document.rename_track('lead', 'top')
+        self.assertEqual(document.cell(0, 'bass')['grab_track'], 'top')
+        self.assertEqual(document.grabbers('top'), ['scene 1 (one), track bass'])
+        document.delete_track('top')
+        self.assertEqual(document.cell(0, 'bass'), {'pattern': 'a'})
+
+    def test_finding_a_grab_circle(self):
+        document = song_with_things()
+        document.set_cell(0, 'bass', {'pattern': 'a', 'grab_track': 'lead'})
+        self.assertEqual(document.grab_circle(0, 'lead', 'bass'), ['lead', 'bass', 'lead'])
+        self.assertIsNone(document.grab_circle(0, 'bass', 'lead'))
 
     def test_track_updates_everything(self):
         document = song_with_things()
         document.rename_track('lead', 'new')
-        self.assertEqual(document.data['tracks'], ['new', 'bass'])
+        self.assertEqual(list(document.data['tracks']), ['new', 'bass'])
         SongBuilder(document.data).build()
 
     def test_chain_updates_everything(self):
@@ -363,7 +363,7 @@ class TestLists(unittest.TestCase):
     def test_copying_a_track_copies_its_clips(self):
         document = song_with_things()
         document.copy_track('bass')
-        self.assertEqual(document.data['tracks'], ['lead', 'bass', 'bass copy'])
+        self.assertEqual(list(document.data['tracks']), ['lead', 'bass', 'bass copy'])
         self.assertEqual(document.cell(2, 'bass copy'), {'pattern': 'b'})
 
     def test_unique_name(self):
@@ -450,13 +450,6 @@ class TestPatternSteps(unittest.TestCase):
         self.assertEqual(pattern['duration'], ['1/4', '1/4'])
         SongBuilder(document.data)
 
-    def test_clearing_a_source_clears_the_marks(self):
-        document = song_with_things()
-        document.set_source_pattern('a', 'b')
-        document.set_step_value('a', 'grab', 0, True)
-        document.set_source_pattern('a', None)
-        self.assertNotIn('grab', document.data['patterns']['a'])
-
     def test_forward_is_not_written(self):
         document = song_with_things()
         document.set_direction('a', 'pendulum')
@@ -519,6 +512,37 @@ class TestPatternSteps(unittest.TestCase):
         document.data['scale'] = None
         self.assertIsNone(document.note_name('a', 0))
 
+
+
+class TestPickerLayouts(unittest.TestCase):
+    """Every chord, scale and root has exactly one place in its picker."""
+
+    def test_chord_groups_hold_every_chord_in_order(self):
+        from llamatron.song_file import CHORD_SYMBOLS
+        from llamatron.tui.pattern_editor import CHORD_GROUPS, CHORD_NAMES
+        flat = [symbol for _, symbols in CHORD_GROUPS for symbol in symbols]
+        self.assertEqual(flat, CHORD_SYMBOLS)
+        self.assertEqual(set(CHORD_NAMES), set(CHORD_SYMBOLS))
+
+    def test_scale_groups_hold_every_kind_once(self):
+        from llamatron.tui.document import SCALE_KINDS
+        from llamatron.tui.pages import SCALE_GROUPS
+        flat = [kind for groups in SCALE_GROUPS for _, kinds in groups for kind in kinds]
+        self.assertEqual(sorted(flat), sorted(SCALE_KINDS))
+
+    def test_the_keyboard_holds_every_root_once(self):
+        from llamatron.tui.document import ROOTS
+        from llamatron.tui.pages import ROOT_KEYBOARD
+        flat = [name for row in ROOT_KEYBOARD for name in row if name]
+        self.assertEqual(sorted(flat), sorted(ROOTS))
+
+    def test_scale_notes(self):
+        from llamatron.tui.pages import scale_label, scale_notes
+        self.assertEqual(scale_notes('D', 'dorian'), 'D E F G A B C')
+        self.assertEqual(scale_notes('A', 'minor_pentatonic'), 'A C D E G')
+        self.assertEqual(scale_label('whole_half_diminished'), 'whole half dim')
+        self.assertEqual(scale_label('bebop_dominant'), 'bebop dom')
+        self.assertEqual(scale_label('natural_minor'), 'natural minor')
 
 if __name__ == '__main__':
     unittest.main()

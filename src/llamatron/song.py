@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import re
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from fractions import Fraction
 from itertools import count
 from math import isfinite
@@ -191,6 +191,29 @@ class Scene:
         )
 
 
+@dataclass(frozen=True)
+class Control:
+    """A MIDI CC value sent at a time in a clip, in fractions of a whole note from its start.
+
+    With slide, the value ramps to the next value for the same number instead of holding.
+    """
+
+    time: Fraction
+    number: int
+    value: int
+    slide: bool = False
+
+    def __post_init__(self):
+        if exact_length(self.time) < 0:
+            raise ValueError(f'invalid time: {self.time!r} (must not be negative)')
+        for name in ('number', 'value'):
+            item = getattr(self, name)
+            if type(item) is not int or not 0 <= item <= 127:
+                raise ValueError(f'invalid {name}: {item!r} (must be a whole number from 0 to 127)')
+        if type(self.slide) is not bool:
+            raise ValueError(f'invalid slide: {self.slide!r} (must be True or False)')
+
+
 class Clip:
     """One cell of the song's grid: a list of notes, chords, rests and degrees played in order.
 
@@ -202,7 +225,9 @@ class Clip:
     exactly that long, adding silence or cutting off notes to fit. Like note
     lengths, it's a fraction of a whole note, so 1 is a whole note or four quarters.
     A scale of None uses the scene's or song's. Clips have no tempo of their own. Loop
-    is whether Live plays the clip again when it reaches its end.
+    is whether Live plays the clip again when it reaches its end. Controls are the MIDI CC
+    values it sends, which generators keep, and sections and repeats cut and repeat with the
+    notes.
     """
 
     name = _Validated(_check_name)
@@ -211,7 +236,7 @@ class Clip:
     note_length = _Validated(_check_clip_length)
     loop = _Validated(_check_loop)
 
-    def __init__(self, name=None, notes=None, scale=None, length=None, note_length=None, loop=True):
+    def __init__(self, name=None, notes=None, scale=None, length=None, note_length=None, loop=True, controls=None):
         self._id = next(_next_clip_id)
         self.name = name
         self.notes = [] if notes is None else notes
@@ -219,6 +244,17 @@ class Clip:
         self.length = length
         self.note_length = note_length
         self.loop = loop
+        self.controls = [] if controls is None else controls
+
+    @property
+    def controls(self):
+        return self._controls
+
+    @controls.setter
+    def controls(self, controls):
+        if not isinstance(controls, (list, tuple)) or not all(isinstance(item, Control) for item in controls):
+            raise ValueError(f'expected a list of Controls, got {controls!r}')
+        self._controls = sorted(controls, key=lambda item: item.time)
 
     @property
     def id(self):
@@ -283,15 +319,18 @@ class Clip:
             position_start = position_end
         if position_start < end:
             notes.append(Rest(end - max(position_start, start)))
-        return Clip(name=self.name, notes=notes, scale=self.scale, note_length=self.note_length)
+        controls = [replace(item, time=item.time - start) for item in self._controls if start <= item.time < end]
+        return Clip(name=self.name, notes=notes, scale=self.scale, note_length=self.note_length, controls=controls)
 
     def repeated(self, times):
         """Return a new Clip that plays this one times in a row, so it lasts times as long."""
         if type(times) is not int or times < 1:
             raise ValueError(f'invalid times: {times!r} (must be a positive integer)')
+        length = self.total_length()
+        controls = [replace(item, time=item.time + length * place) for place in range(times) for item in self._controls]
         return Clip(
             name=self.name, notes=self.played_notes() * times, scale=self.scale,
-            note_length=self.note_length,
+            note_length=self.note_length, controls=controls,
         )
 
     def __repr__(self):

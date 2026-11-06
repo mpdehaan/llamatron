@@ -38,8 +38,8 @@ def cell_text(cell):
         marks += 'd'
     if cell.get('rhythm_from'):
         marks += 'r'
-    if cell.get('notes_from'):
-        marks += 'n'
+    if cell.get('grab_track'):
+        marks += 'g'
     if cell.get('morph_to'):
         marks += '~'
     if cell.get('loop'):
@@ -60,7 +60,7 @@ class ArrangePage(Page):
         'On a scene name: Enter opens its settings, C copies it, and Bksp deletes it.',
         '+ adds a scene, or Enter on the + at the bottom. U and D move the selected one.',
         '',
-        '×3 means repeats, ∞ loop, ~ morph, d its own direction, r rhythm from and n notes from another pattern.',
+        '×3 means repeats, ∞ loop, ~ morph, d its own direction, r rhythm from another pattern, and g grabs from another track.',
     )
 
     def __init__(self, holder):
@@ -78,7 +78,7 @@ class ArrangePage(Page):
         return self.document.data['scenes']
 
     def tracks(self):
-        return self.document.data['tracks']
+        return self.document.track_names()
 
     def on_scene_name(self):
         return self.column == 0
@@ -251,7 +251,13 @@ class ArrangePage(Page):
         self.status = 'Copied the clip. Press V on another cell to paste it.'
 
     def paste_clip(self):
-        self.document.set_cell(self.row, self.track(), dict(self.copied))
+        cell = dict(self.copied)
+        other = cell.get('grab_track')
+        if other is not None and (other == self.track() or self.document.grab_circle(self.row, self.track(), other)):
+            # The pasted clip can't grab from its own track or in a circle, so it keeps its notes.
+            del cell['grab_track']
+            self.status = f'Pasted without its grab from {other}, which would go round in a circle here.'
+        self.document.set_cell(self.row, self.track(), cell)
 
     def delete_clip(self):
         track, row = self.track(), self.row
@@ -379,7 +385,7 @@ class ClipPage(FieldPage):
         '',
         'With Repeat above 1, Morph to chooses a second pattern to change into across the repeats, and Morph direction is where the change starts.',
         '',
-        'Rhythm from takes Duration, rests, Velocity, Prob, Ratchet and Glide from another pattern. Notes from takes Degree, #/b, Octave and Chord, skips rests, and carries on across repeats.',
+        'Rhythm from takes the rhythm and CC rows from another pattern, and Pattern gives the notes. Grab track: Grab steps play the note that track last started.',
         '',
         'Up and down select. Left and right, or + and -, change. Enter chooses.',
     )
@@ -427,6 +433,27 @@ class ClipPage(FieldPage):
             else:
                 self.set_value(name, patterns[item - 1])
         self.ask(ChoiceDialog(title, options, options.index(current) if current in options else 0), chosen)
+
+    def pick_grab_track(self):
+        tracks = [name for name in self.document.track_names() if name != self.track]
+        if not tracks:
+            self.tell('No other tracks', 'Add another track to grab notes from, on the Tracks page.')
+            return
+        options = ['(none)', *tracks]
+        current = self.cell().get('grab_track')
+
+        def chosen(item):
+            if item == 0:
+                self.clear('grab_track')
+                return
+            other = tracks[item - 1]
+            circle = self.document.grab_circle(self.index, self.track, other)
+            if circle:
+                self.tell('Circular grab', f"Grabbing from {other} would go round in a circle: {' → '.join(circle)}.",
+                          'Remove the grab from another clip in this scene first.')
+                return
+            self.set_value('grab_track', other)
+        self.ask(ChoiceDialog('Grab track', options, options.index(current) if current in options else 0), chosen)
 
     def pick_chain(self):
         chains = list(self.document.data['chains'])
@@ -509,8 +536,8 @@ class ClipPage(FieldPage):
         result += [
             Field('Rhythm from', lambda: cell.get('rhythm_from', '(none)'), None, lambda: self.pick_other_pattern('Rhythm from', 'rhythm_from'), 'choose',
                   lambda: self.clear('rhythm_from'), 'no pattern'),
-            Field('Notes from', lambda: cell.get('notes_from', '(none)'), None, lambda: self.pick_other_pattern('Notes from', 'notes_from'), 'choose',
-                  lambda: self.clear('notes_from'), 'no pattern'),
+            Field('Grab track', lambda: cell.get('grab_track', '(none)'), None, self.pick_grab_track, 'choose',
+                  lambda: self.clear('grab_track'), 'no grab'),
         ]
         return result
 
@@ -521,8 +548,8 @@ class ClipPage(FieldPage):
             lines.append(Text('  Plays until the other clips are done. One clip in a scene must not loop.', style='dim'))
         elif self.cell().get('repeat', 1) == 1:
             lines.append(Text('  Set Repeat above 1 to choose a pattern to morph to.', style='dim'))
-        if 'rhythm_from' in self.cell() and 'notes_from' in self.cell():
-            lines.append(Text('  With Rhythm from and Notes from both set, Pattern is not played.', style='dim'))
+        if 'grab_track' in self.cell() and not self.document.has_grab_steps(self.cell()['pattern']):
+            lines.append(Text('  Grab track only changes Grab steps, and this pattern has none yet.', style='dim'))
         problem = document.scene_problem(self.index)
         if problem:
             lines.append(Text(f'  Problem   {problem}'[:width]))

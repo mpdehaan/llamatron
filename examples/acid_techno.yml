@@ -1,6 +1,6 @@
 # Acid techno: a sliding bass riff over a four-on-the-floor kick, getting darker.
 # Run it with: llamatron examples/acid_techno.yml --to ableton --replace
-# Turn up the glide on your synth for the slides.
+# Turn up the glide on your synth for the slides. CC 74, usually the filter cutoff, sweeps on the acid track.
 
 tempo: 138
 scale: A Minor
@@ -36,28 +36,32 @@ patterns:
     duration: [1/8, 1/16, 1/8, 1/8, 1/16, 1/8, 1/8, 1/16, 3/16]
     octave: [1, 1, 1, 1, 1, 1, 0, 1, 1]
     velocity: [127, 90, 110, 90, 127, 90, 110, 90, 100]
-    glide: [~, true, ~, ~, true, ~, ~, true, ~]
+    glide: [false, true, false, false, true, false, false, true, false]
+    cc1: [20, ~, ~, ~, 90, ~, ~, ~, 40]
+    slide: [true, false, false, false, true, false, false, false, false]
   seed_rising:
     steps: 9
     accumulator_limit: 6
     degree: [1, 1, 3, 1, 5, 1, 7, 1, 3]
     duration: [1/8, 1/16, 1/8, 1/8, 1/16, 1/8, 1/8, 1/16, 3/16]
     octave: [1, 1, 1, 1, 1, 1, 0, 1, 1]
-    glide: [~, true, ~, ~, true, ~, ~, true, ~]
+    glide: [false, true, false, false, true, false, false, true, false]
     note_add: [~, ~, ~, ~, ~, ~, ~, ~, 1]
   seed2:
     steps: 9
     degree: [1, 1, 4, 3, 5, 6, 5, 3, 1]
     duration: [1/8, 1/16, 1/8, 1/8, 1/16, 1/8, 1/8, 1/16, 3/16]
     octave: [1, 1, 1, 1, 1, 1, 1, 1, 1]
-    glide: [~, true, ~, true, ~, true, ~, true, ~]
+    glide: [false, true, false, true, false, true, false, true, false]
     ratchet: [~, ~, ~, ~, ~, ~, ~, 2, ~]
+    cc1: [60, ~, ~, ~, ~, ~, ~, ~, 110]
+    slide: [true, false, false, false, false, false, false, false, false]
   seed2_slow:
     steps: 9
     degree: [1, 1, 4, 3, 5, 6, 5, 3, 1]
     duration: [1/4, 1/8, 1/4, 1/4, 1/8, 1/4, 1/4, 1/8, 3/8]
     octave: [1, 1, 1, 1, 1, 1, 1, 1, 1]
-    glide: [~, true, ~, true, ~, true, ~, true, ~]
+    glide: [false, true, false, true, false, true, false, true, false]
   clap:
     steps: 6
     drum: true
@@ -78,7 +82,12 @@ patterns:
     octave: [3, ~, 3, ~, 2, ~, 2, ~]
     chord: [3, ~, 3, ~, 3, ~, 3, ~]
 
-tracks: [kick, hat, clap, acid, chords]
+tracks:
+  kick: { drum: true }
+  hat: { drum: true }
+  clap: { drum: true }
+  acid: { cc: [74, ~, ~, ~] }
+  chords: {}
 
 auto_ratchets:
   rolls: { counts: [1, 1, 1, 1, 1, 1, 1, 3] }

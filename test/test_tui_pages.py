@@ -26,12 +26,12 @@ from textual.screen import Screen
 from llamatron.song_file import SongBuilder
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.arrange import ArrangePage, ClipPage, ScenePage
-from llamatron.tui.base import ChoiceDialog, ConfirmDialog, Dialog, MessageDialog, Page, PromptDialog
+from llamatron.tui.base import ChoiceDialog, ConfirmDialog, Dialog, GridChoiceDialog, MessageDialog, Page, PromptDialog
 from llamatron.tui.document import Document, new_song
 from llamatron.tui.lists import FieldPage, ListPage
 from llamatron.tui.pages import (
     ArpEditor, ArpsPage, AutoRatchetEditor, AutoRatchetsPage, ChainEditor, ChainsPage, FilePage,
-    GeneratorsPage, MainPage, PatternsPage, ScalesPage, SongPage, TracksPage,
+    GeneratorsPage, MainPage, OffsetsEditor, PatternsPage, ScalesPage, SongPage, TrackEditor, TracksPage,
 )
 from llamatron.tui.pattern_editor import PatternEditor
 
@@ -47,7 +47,7 @@ def a_song(path=None):
         'beat': {'steps': 2, 'drum': True, 'degree': ['C', None], 'duration': ['1/16', '3/16'], 'octave': [1, None]},
         'other': {'steps': 1, 'degree': [5], 'duration': ['1/2']},
     }
-    data['tracks'] = ['lead', 'drums']
+    data['tracks'] = {'lead': {}, 'drums': {}}
     data['arps'] = {'up': {'step': '1/8', 'order': 'up'}}
     data['chains'] = {'named': [{'arp': 'up'}, {'auto_ratchet': 'rolls'}], 'empty': []}
     data['scenes'] = [
@@ -588,10 +588,14 @@ class TestPatternEditor(UITest):
     async def test_chord_cycles_through_the_symbols(self):
         await self.go_to_row('chord')
         seen = []
-        for _ in range(9):
+        for _ in range(4):
             await self.press('+')
             seen.append(self.value('chord'))
-        self.assertEqual(seen, ['M', 'm', 'M7', 'm7', 'dim', 'sus4', 3, 7, None])
+        self.assertEqual(seen, ['M', 'm', 'dim', 'aug'])
+        await self.press('-', '-', '-', '-', '-')
+        self.assertEqual(self.value('chord'), 13)
+        await self.press('-')
+        self.assertEqual(self.value('chord'), 11)
 
     async def test_velocity_probability_and_ratchet(self):
         await self.go_to_row('velocity')
@@ -616,14 +620,15 @@ class TestPatternEditor(UITest):
         self.assertIsNone(self.value('velocity'))
         self.assertIn('from 1 to 127', self.text())
 
-    async def test_glide_toggles_with_space_and_shows_a_g(self):
+    async def test_glide_toggles_with_space_and_shows_a_star(self):
         await self.go_to_row('glide')
-        self.assertEqual(self.editor.cell_text('glide', 0), '.')
+        self.assertEqual(self.editor.cell_text('glide', 0), ' ')
         await self.press('space')
-        self.assertTrue(self.value('glide'))
-        self.assertEqual(self.editor.cell_text('glide', 0), 'G')
+        self.assertIs(self.value('glide'), True)
+        self.assertEqual(self.editor.cell_text('glide', 0), '*')
         await self.press('space')
-        self.assertIsNone(self.value('glide'))
+        self.assertIs(self.value('glide'), False)
+        self.assertEqual(self.editor.cell_text('glide', 0), ' ')
 
     async def test_rests_have_only_a_duration_to_change(self):
         await self.press('right', 'right')
@@ -802,7 +807,7 @@ class TestArrange(UITest):
 
     async def test_scrolls_to_keep_the_cursor_on_screen(self):
         for number in range(20):
-            self.document.data['tracks'].append(f't{number}')
+            self.document.data['tracks'][f't{number}'] = {}
         self.document.changed()
         await self.press(*['right'] * 22)
         self.assertIn('t19', self.text())
@@ -905,7 +910,7 @@ class TestRhythmAndNotesFromOnAClip(UITest):
     async def test_they_are_at_the_bottom_of_the_page(self):
         self.cell().update(repeat=2, morph_to='other', morph_style='left')
         labels = [field.label for field in self.page.fields()]
-        self.assertEqual(labels[-2:], ['Rhythm from', 'Notes from'])
+        self.assertEqual(labels[-2:], ['Rhythm from', 'Grab track'])
 
     async def test_choosing_and_clearing(self):
         await self.go_to('Rhythm from')
@@ -919,36 +924,57 @@ class TestRhythmAndNotesFromOnAClip(UITest):
         self.assertNotIn('rhythm_from', self.cell())
 
     async def test_choosing_none_clears(self):
-        self.cell()['notes_from'] = 'other'
-        await self.go_to('Notes from')
+        self.cell()['grab_track'] = 'drums'
+        await self.go_to('Grab track')
         await self.press('enter')
         self.app.screen.place = 0
         await self.press('enter')
-        self.assertNotIn('notes_from', self.cell())
+        self.assertNotIn('grab_track', self.cell())
 
-    async def test_says_when_the_pattern_is_not_played(self):
-        self.cell().update(rhythm_from='beat')
+    async def test_choosing_a_grab_track(self):
+        await self.go_to('Grab track')
+        await self.press('enter')
+        self.assertEqual(self.app.screen.options, ['(none)', 'drums'])
+        self.app.screen.place = 1
+        await self.press('enter')
+        self.assertEqual(self.cell()['grab_track'], 'drums')
+
+    async def test_a_circular_grab_is_refused_with_a_message(self):
+        self.document.cell(0, 'drums')['grab_track'] = 'lead'
+        await self.go_to('Grab track')
+        await self.press('enter')
+        self.app.screen.place = 1
+        await self.press('enter')
+        self.assertIsInstance(self.app.screen, MessageDialog)
+        self.assertIn('Circular grab', self.text())
+        self.assertIn('a circle: lead → drums →', self.text())
+        self.assertIn('Remove the grab from another clip in this scene first.', self.text())
+        self.assertNotIn('grab_track', self.cell())
+
+    async def test_says_when_the_grab_track_has_no_grab_steps_to_change(self):
+        self.cell().update(grab_track='drums')
         self.page.draw()
         await self.pilot.pause()
-        self.assertNotIn('Pattern is not played', self.text())
-        self.cell().update(notes_from='other')
+        self.assertIn('this pattern has none yet', self.text())
+        self.document.set_step_value('tune', 'grab', 0, True)
         self.page.draw()
         await self.pilot.pause()
-        self.assertIn('Pattern is not played', self.text())
+        self.assertNotIn('this pattern has none yet', self.text())
+        SongBuilder(self.document.data).build()
 
     async def test_the_grid_marks_them(self):
-        self.cell().update(rhythm_from='beat', notes_from='other')
+        self.cell().update(rhythm_from='beat', grab_track='drums')
         await self.press('tab')
-        self.assertIn('tune rn', self.text())
+        self.assertIn('tune rg', self.text())
 
     async def test_a_pattern_in_use_this_way_cannot_be_deleted(self):
-        self.cell()['notes_from'] = 'other'
+        self.cell()['rhythm_from'] = 'other'
         await self.press('tab', 'tab', 'p', 'down', 'down', 'backspace')
         self.assertIsInstance(self.app.screen, MessageDialog)
         self.assertIn('scene 1 (one), track lead', self.text())
 
     async def test_the_result_saves_and_loads(self):
-        self.cell().update(rhythm_from='beat', notes_from='other')
+        self.cell().update(rhythm_from='beat', grab_track='drums')
         self.document.save('x.yml')
         self.assertEqual(Document.load('x.yml').cell(0, 'lead'), self.cell())
 
@@ -1011,20 +1037,65 @@ class TestTracksScalesChainsAndArps(UITest):
         await self.press('t', '+')
         await self.type('bass')
         await self.press('enter')
-        self.assertEqual(self.document.data['tracks'], ['lead', 'drums', 'bass'])
-        await self.press('enter')
+        self.assertEqual(list(self.document.data['tracks']), ['lead', 'drums', 'bass'])
+        await self.press('n')
         self.app.screen.value = 'low'
         await self.press('enter', 'u')
-        self.assertEqual(self.document.data['tracks'], ['lead', 'low', 'drums'])
+        self.assertEqual(list(self.document.data['tracks']), ['lead', 'low', 'drums'])
         await self.press('c')
         self.assertIn('low copy', self.document.data['tracks'])
+
+    async def test_a_tracks_settings(self):
+        await self.press('t', 'enter')
+        self.assertIsInstance(self.app.screen, TrackEditor)
+        await self.press('down', '+', '+')
+        self.assertEqual(self.document.track('lead')['transpose'], 2)
+        await self.press('down', 'enter')
+        self.app.screen.value = '74'
+        await self.press('enter')
+        self.assertEqual(self.document.track('lead')['cc'], [74, None, None, None])
+        await self.press('backspace')
+        self.assertNotIn('cc', self.document.track('lead'))
+        await self.press('up', 'up', 'enter')
+        self.assertIs(self.document.track('lead')['drum'], True)
+        self.assertIn('(drum track)', self.text())
+        await self.press('tab')
+        self.assertIn('drum', self.text())
+        SongBuilder(self.document.data).build()
+
+    async def test_editing_an_arps_offsets_and_octaves(self):
+        await self.press('g', 'enter', 'enter')
+        self.assertIsInstance(self.app.screen, ArpEditor)
+        await self.press('down', 'down', '+')
+        self.assertEqual(self.document.data['arps']['up']['octave_range'], 2)
+        await self.press('down', '+')
+        self.assertEqual(self.document.data['arps']['up']['octave_jump'], 'after_each_note')
+        self.assertIn('after each note', self.text())
+        await self.press('down', 'enter')
+        self.assertIsInstance(self.app.screen, OffsetsEditor)
+        self.assertEqual(self.document.data['arps']['up']['offsets'], [0] * 8)
+        await self.press('right', '7', 'right', 'space', 'right', '-', '-', 'x', 'i')
+        self.assertEqual(self.document.data['arps']['up']['offsets'], [0, 7, None, 0, 0, 0, 0, 0])
+        await self.press('tab')
+        self.assertIn('0 7 - 0 0 0 0 0', self.text())
+        await self.press('backspace')
+        self.assertNotIn('offsets', self.document.data['arps']['up'])
+        SongBuilder(self.document.data).build()
+
+    async def test_offsets_have_one_to_sixteen_steps(self):
+        self.document.data['arps']['up']['offsets'] = [0] * 16
+        await self.press('g', 'enter', 'enter', *['down'] * 4, 'enter')
+        self.assertNotIn('« I »', self.text())
+        self.document.data['arps']['up']['offsets'] = [3]
+        await self.press('right')
+        self.assertNotIn('« X »', self.text())
 
     async def test_deleting_a_track_says_it_deletes_its_clips(self):
         await self.press('t', 'backspace')
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         self.assertIn('1 clip(s)', self.text())
         await self.press('y')
-        self.assertEqual(self.document.data['tracks'], ['drums'])
+        self.assertEqual(list(self.document.data['tracks']), ['drums'])
         self.assertIsNone(self.document.cell(0, 'lead'))
 
     async def test_the_default_scale_must_be_unset_before_deleting_it(self):
@@ -1045,6 +1116,41 @@ class TestTracksScalesChainsAndArps(UITest):
         self.app.screen.value = 'main'
         await self.press('enter')
         self.assertEqual(self.document.data['scales']['main'], {'root': 'F#', 'type': 'dorian'})
+
+    def dialog_text(self):
+        return str(self.app.screen.query_one('#dialog-view').render())
+
+    async def test_roots_are_laid_out_like_a_keyboard(self):
+        await self.press('z', '+')
+        dialog = self.app.screen
+        self.assertIsInstance(dialog, GridChoiceDialog)
+        lines = self.dialog_text().splitlines()
+        self.assertIn('C   C#   D   D#   E   F   F#   G   G#   A   A#   B', '\n'.join(lines))
+        dialog.place = dialog.options.index('C')
+        await self.press('right')
+        self.assertEqual(dialog.options[dialog.place], 'C#')
+        await self.press('down')
+        self.assertEqual(dialog.options[dialog.place], 'Db')
+        await self.press('right')
+        self.assertEqual(dialog.options[dialog.place], 'D')
+
+    async def test_scales_are_grouped_and_show_their_notes(self):
+        await self.press('z', '+')
+        self.app.screen.place = self.app.screen.options.index('D')
+        await self.press('enter')
+        dialog = self.app.screen
+        text = self.dialog_text()
+        for word in ['MODES', 'MINOR & MAJOR', 'SYMMETRIC', 'PENTATONIC & BLUES', 'JAZZ & EXOTIC', 'whole half dim', 'phrygian dom', 'ionian']:
+            self.assertIn(word, text)
+        self.assertNotIn('diminished', text)
+        self.assertLessEqual(len(text.splitlines()), 22)
+        dialog.place = dialog.options.index('dorian')
+        await self.press('down')
+        self.assertEqual(dialog.options[dialog.place], 'phrygian')
+        await self.press('up')
+        self.assertIn('D dorian: D E F G A B C', self.dialog_text())
+        await self.press('enter')
+        self.assertEqual(self.app.screen.value, 'D Dorian')
 
     async def test_two_scales_can_be_the_same_notes(self):
         await self.press('z', 'c')
@@ -1154,7 +1260,7 @@ class TestPlusRow(UITest):
         self.assertIsInstance(self.app.screen, PromptDialog)
         await self.type('bass')
         await self.press('enter')
-        self.assertEqual(self.document.data['tracks'], ['lead', 'drums', 'bass'])
+        self.assertEqual(list(self.document.data['tracks']), ['lead', 'drums', 'bass'])
 
     async def test_every_list_has_one(self):
         for keys, page in [
@@ -1170,14 +1276,14 @@ class TestPlusRow(UITest):
         self.assertIsNone(self.app.screen.current())
 
     async def test_an_empty_list_starts_on_it(self):
-        self.document.data['tracks'] = []
+        self.document.data['tracks'] = {}
         self.document.data['scenes'] = []
         await self.press('t', 'enter')
         self.assertIsInstance(self.app.screen, PromptDialog)
 
     async def test_backspace_and_copy_do_nothing_on_it(self):
         await self.press('t', 'up', 'backspace', 'c', 'u', 'd')
-        self.assertEqual(self.document.data['tracks'], ['lead', 'drums'])
+        self.assertEqual(list(self.document.data['tracks']), ['lead', 'drums'])
         self.assertIsInstance(self.app.screen, TracksPage)
 
     async def test_lists_that_cannot_add_have_none(self):
@@ -1195,7 +1301,7 @@ class TestPlusRow(UITest):
 
     async def test_arrange_with_no_scenes_starts_on_it(self):
         self.document.data['scenes'] = []
-        self.document.data['tracks'] = []
+        self.document.data['tracks'] = {}
         await self.press('a', 'enter')
         self.assertEqual(len(self.document.data['scenes']), 1)
 
@@ -1250,17 +1356,59 @@ class TestLookAndNewKeys(UITest):
     async def test_enter_on_a_chord_cell_opens_a_picker(self):
         await self.go_to_row('chord')
         await self.press('enter')
-        self.assertIsInstance(self.app.screen, ChoiceDialog)
-        self.assertIn('M7      major seventh', self.app.screen.options)
-        self.app.screen.place = self.app.screen.options.index('m7      minor seventh')
+        self.assertIsInstance(self.app.screen, GridChoiceDialog)
+        self.assertIn('M7', self.app.screen.options)
+        self.app.screen.place = self.app.screen.options.index('m7')
         await self.press('enter')
         self.assertEqual(self.value('chord'), 'm7')
         await self.press('enter')
-        self.assertEqual(self.app.screen.options[self.app.screen.place], 'm7      minor seventh')
-        self.app.screen.place = self.app.screen.options.index('3       triad from the scale')
+        self.assertEqual(self.app.screen.options[self.app.screen.place], 'm7')
+        self.assertIn('Minor seventh', self.dialog_text())
+        self.app.screen.place = self.app.screen.options.index('3')
         await self.press('enter')
         self.assertEqual(self.value('chord'), 3)
         SongBuilder(self.document.data).build()
+
+    def dialog_text(self):
+        return str(self.app.screen.query_one('#dialog-view').render())
+
+    async def test_the_chord_grid_shows_every_chord_at_once(self):
+        await self.go_to_row('chord')
+        await self.press('enter')
+        text = self.dialog_text()
+        for word in ['(none)', 'TRIADS', 'SEVENTHS', 'NINTHS', '11THS, 13THS', 'SCALE', 'M', 'm6', '7sus4', 'madd9', 'm13', '13']:
+            self.assertIn(word, text)
+        self.assertLessEqual(len(text.splitlines()), 22)
+        self.assertLessEqual(max(len(line) for line in text.splitlines()), 76)
+
+    async def test_arrows_move_around_the_chord_grid(self):
+        await self.go_to_row('chord')
+        await self.press('enter')
+        dialog = self.app.screen
+
+        def at():
+            return dialog.options[dialog.place]
+        self.assertEqual(at(), '(none)')
+        await self.press('down')
+        self.assertEqual(at(), 'M')
+        await self.press('right')
+        self.assertEqual(at(), 'dom7')
+        await self.press('down')
+        self.assertEqual(at(), 'M7')
+        await self.press('right', 'right')
+        self.assertEqual(at(), 'M11')
+        await self.press('down', 'down', 'down', 'down', 'left')
+        # Ninths has nothing that low, so left lands on its lowest chord.
+        self.assertEqual(at(), 'madd9')
+        await self.press('up', 'up', 'up', 'up', 'up')
+        self.assertEqual(at(), '(none)')
+        await self.press('tab')
+        self.assertNotIsInstance(self.app.screen, GridChoiceDialog)
+
+    async def test_the_detail_line_names_the_selected_chord(self):
+        await self.go_to_row('chord')
+        await self.press('enter', 'down', 'right', 'down', 'down', 'down', 'down', 'down')
+        self.assertIn('Half-diminished', self.dialog_text())
 
     async def test_typing_numbers_into_ratchet(self):
         await self.go_to_row('ratchet')
@@ -1359,40 +1507,21 @@ class TestDirectionsAndGrab(UITest):
         await self.press('a')
         self.assertIn('tune d', self.text())
 
-    async def test_the_grab_row_only_shows_with_a_source(self):
-        await self.press('p', 'enter', 'a')
+    async def test_the_grab_row_is_always_in_the_advanced_rows(self):
+        await self.press('p', 'enter')
         self.assertNotIn('│ Grab', self.text())
-        await self.press('o')
-        self.app.screen.place = self.app.screen.options.index('other')
-        await self.press('enter')
+        await self.press('a')
         self.assertIn('│ Grab', self.text())
-        self.assertIn('Source other', self.text())
+        self.assertIn("Grab plays what each clip's Grab track last played", self.text())
 
     async def test_marking_a_step_with_space(self):
-        self.document.data['patterns']['tune']['source_pattern'] = 'other'
         await self.press('p', 'enter', 'a')
         await self.press(*['down'] * 5)
         self.assertEqual(self.app.screen.row_name(), 'grab')
         await self.press('space')
         self.assertTrue(self.document.step_value('tune', 'grab', 0))
-        self.assertEqual(self.app.screen.cell_text('grab', 0), 'G')
+        self.assertEqual(self.app.screen.cell_text('grab', 0), '*')
         SongBuilder(self.document.data).build()
-
-    async def test_clearing_the_source_hides_the_row_and_moves_the_cursor_back_onto_the_grid(self):
-        self.document.data['patterns']['tune']['source_pattern'] = 'other'
-        await self.press('p', 'enter', 'a')
-        await self.press(*['down'] * 5)
-        await self.press('o')
-        self.app.screen.place = 0
-        await self.press('enter')
-        self.assertNotIn('│ Grab', self.text())
-        self.assertEqual(self.app.screen.row_name(), 'velocity_add')
-
-    async def test_a_pattern_used_as_a_source_cannot_be_deleted(self):
-        self.document.data['patterns']['tune']['source_pattern'] = 'other'
-        await self.press('p', 'down', 'down', 'backspace')
-        self.assertIsInstance(self.app.screen, MessageDialog)
-        self.assertIn('pattern tune', self.text())
 
 
 class TestDirectionsAndGrabOnAUsualConsole(UITest):
@@ -1426,7 +1555,32 @@ class TestAdvancedRows(UITest):
         self.assertIn('│ Velocity Add', text)
         self.assertNotIn('│ Duration', text)
         await self.press('a')
+        text = self.text()
+        for label in ['│ CC 1', '│ CC 4', '│ Slide']:
+            self.assertIn(label, text)
+        self.assertNotIn('│ Ratchet', text)
+        await self.press('a')
         self.assertIn('│ Duration', self.text())
+
+    async def test_cc_rows_take_values_even_on_a_rest(self):
+        await self.press('a', 'a')
+        self.assertEqual(self.app.row_set, 'cc')
+        # Step 3 of tune is a rest.
+        await self.press('right', 'right', 'down')
+        self.assertEqual(self.editor.row_name(), 'cc1')
+        self.assertEqual(self.editor.cell_text('cc1', 2), '.')
+        await self.press('1', '0', '0')
+        self.assertEqual(self.document.step_value('tune', 'cc1', 2), 100)
+        await self.press('+')
+        self.assertEqual(self.document.step_value('tune', 'cc1', 2), 101)
+        await self.press('backspace')
+        self.assertIsNone(self.document.step_value('tune', 'cc1', 2))
+        await self.press('down', 'down', 'down', 'down')
+        self.assertEqual(self.editor.row_name(), 'slide')
+        await self.press('space')
+        self.assertIs(self.document.step_value('tune', 'slide', 2), True)
+        self.assertEqual(self.editor.cell_text('slide', 2), '*')
+        SongBuilder(self.document.data).build()
 
     async def test_the_mode_stays_on_for_other_patterns(self):
         await self.press('a', 'tab', 'enter')
@@ -1474,19 +1628,18 @@ class TestAdvancedRows(UITest):
         self.assertEqual(self.document.data['patterns']['tune']['accumulator_limit'], 5)
         self.assertIn('1 or more', self.text())
 
-    async def test_source_and_limit_keys_only_show_in_advanced(self):
-        self.assertNotIn('« O »', self.text())
+    async def test_the_limit_key_only_shows_in_advanced(self):
         self.assertNotIn('« M »', self.text())
         await self.press('a')
-        self.assertIn('« O »', self.text())
         self.assertIn('« M »', self.text())
+        self.assertNotIn('« O »', self.text())
 
     async def test_on_a_drum_note_row_a_and_f_are_notes(self):
         await self.press('tab', 'down', 'enter')
         editor = self.app.screen
         await self.press('right', 'a')
         self.assertEqual(self.document.step_value('beat', 'degree', 1), 'A')
-        self.assertFalse(self.app.advanced_rows)
+        self.assertEqual(self.app.row_set, 'normal')
         await self.press('f')
         self.assertEqual(self.document.step_value('beat', 'degree', 1), 'F')
         labels = [item.shown_label() for item in editor.key_table()]
@@ -1499,7 +1652,7 @@ class TestAdvancedRows(UITest):
         self.assertIn('A', labels)
         self.assertIn('F', labels)
         await self.press('a')
-        self.assertTrue(self.app.advanced_rows)
+        self.assertEqual(self.app.row_set, 'advanced')
 
 
 class TestRearrangingAPattern(UITest):

@@ -59,7 +59,7 @@ def mary():
             'chord': ['M', 'M', 7, 'M'],
         },
     }
-    data['tracks'] = ['melody', 'accompaniment']
+    data['tracks'] = {'melody': {}, 'accompaniment': {}}
     data['arps'] = {'broken': {'step': '1/8', 'order': 'up_down'}}
     data['chains'] = {'broken_chords': [{'arp': 'broken'}]}
     data['scenes'] = [
@@ -140,7 +140,7 @@ class TestTypedInTheUI(UITest):
     async def asyncSetUp(self):
         await super().asyncSetUp()
         data = new_song()
-        data['tracks'] = ['melody']
+        data['tracks'] = {'melody': {}}
         data['scenes'] = [{'name': 'verse', 'tracks': {'melody': {'pattern': 'tune'}}}]
         self.document = Document(data)
         self.document.add_pattern('tune', steps=len(FIRST_VERSE))

@@ -24,7 +24,7 @@ from fractions import Fraction
 from pathlib import Path
 
 from llamatron.renderers.clip_tree import _check_directory, _check_song
-from llamatron.renderers.timing import BEATS_PER_WHOLE_NOTE, timed_events
+from llamatron.renderers.timing import BEATS_PER_WHOLE_NOTE, control_points, timed_events
 from llamatron.song import _Validated
 
 # Installed along with the code, so that a set can be written from anywhere.
@@ -36,6 +36,10 @@ EMPTY_CLIP_BEATS = 4
 NOTE_OFF_VELOCITY = 64
 NO_GROOVE = '-1'
 ARRANGEMENT_TAKE_ID = 1
+# Where Live puts a clip envelope's value from before the clip starts.
+BEFORE_CLIP = '-63072000'
+# A MIDI track's controllers start with pitch bend and channel pressure, and then CC 0 to 127.
+FIRST_CC_TARGET = 2
 
 # Live gives these elements ids that must be unique across the whole set.
 _SHARED_ID_TAGS = re.compile(r'(Target|Targets\.\d+|Pointee)$')
@@ -221,11 +225,16 @@ class AbletonProject:
         _set_value(element, 'Name/UserName', track.name or '')
         _set_value(element, 'Color', color)
 
+        # A clip's CC envelopes point at the controllers of the track it's on.
+        controllers = {
+            int(item.tag.split('.')[1]) - FIRST_CC_TARGET: item.get('Id')
+            for item in element.find('DeviceChain/MainSequencer/MidiControllers')
+        }
         clips = [self.song.get_clip(scene, track) for scene in self.song.scenes]
         slots = element.find('DeviceChain/MainSequencer/ClipSlotList')
         empty_slot = self._empty_slot(slots[0])
         slots[:] = [
-            self._build_slot(empty_slot, clip_prototype, clip, scene, track, place, color)
+            self._build_slot(empty_slot, clip_prototype, clip, scene, track, place, color, controllers)
             for place, (scene, clip) in enumerate(zip(self.song.scenes, clips))
         ]
         frozen_slots = element.find('DeviceChain/FreezeSequencer/ClipSlotList')
@@ -234,7 +243,7 @@ class AbletonProject:
         ]
         arrangement = element.find('DeviceChain/MainSequencer/ClipTimeable/ArrangerAutomation/Events')
         arrangement[:] = [
-            self._build_clip(clip_prototype, clip, scene, track, place, color, start=start)
+            self._build_clip(clip_prototype, clip, scene, track, place, color, controllers, start=start)
             for place, (scene, clip, start) in enumerate(zip(self.song.scenes, clips, starts))
             if clip is not None
         ]
@@ -252,15 +261,15 @@ class AbletonProject:
         result.set('Id', str(number))
         return result
 
-    def _build_slot(self, empty_slot, clip_prototype, clip, scene, track, place, color):
+    def _build_slot(self, empty_slot, clip_prototype, clip, scene, track, place, color, controllers):
         slot = self._numbered_copy(empty_slot, place)
         if clip is not None:
             slot.find('ClipSlot/Value').append(
-                self._build_clip(clip_prototype, clip, scene, track, place, color)
+                self._build_clip(clip_prototype, clip, scene, track, place, color, controllers)
             )
         return slot
 
-    def _build_clip(self, prototype, clip, scene, track, place, color, start=None):
+    def _build_clip(self, prototype, clip, scene, track, place, color, controllers, start=None):
         notes, length = timed_events(clip, self.song.scale_at(scene, track))
         beats = _beats(length) if length > 0 else str(EMPTY_CLIP_BEATS)
 
@@ -288,7 +297,37 @@ class AbletonProject:
         _set_value(element, 'GrooveSettings/GrooveId', NO_GROOVE)
         _set_value(element, 'IsInKey', 'false')
         self._write_notes(element.find('Notes'), notes)
+        self._write_envelopes(element.find('Envelopes/Envelopes'), clip, length, controllers)
         return element
+
+    def _write_envelopes(self, envelopes, clip, length, controllers):
+        """Write one clip envelope for each CC number the clip sends.
+
+        Live draws a straight line between points, which is what a slide is. A value that doesn't
+        slide holds until the next one, so it gets a second point there at the old value.
+        """
+        for child in list(envelopes):
+            envelopes.remove(child)
+        for envelope_id, (number, lane) in enumerate(sorted(control_points(clip, length).items())):
+            envelope = ET.SubElement(envelopes, 'ClipEnvelope', Id=str(envelope_id))
+            target = ET.SubElement(envelope, 'EnvelopeTarget')
+            ET.SubElement(target, 'PointeeId', Value=controllers[number])
+            automation = ET.SubElement(envelope, 'Automation')
+            events = ET.SubElement(automation, 'Events')
+            points = [(BEFORE_CLIP, lane[0][1])]
+            for place, (time, value, _) in enumerate(lane):
+                if place and not lane[place - 1][2]:
+                    points.append((_beats(time), lane[place - 1][1]))
+                points.append((_beats(time), value))
+            for event_id, (time, value) in enumerate(points):
+                ET.SubElement(events, 'FloatEvent', Id=str(event_id), Time=time, Value=str(value))
+            view = ET.SubElement(automation, 'AutomationTransformViewState')
+            ET.SubElement(view, 'IsTransformPending', Value='false')
+            ET.SubElement(view, 'TimeAndValueTransforms')
+            ET.SubElement(ET.SubElement(envelope, 'LoopSlot'), 'Value')
+            scroller = ET.SubElement(envelope, 'ScrollerTimePreserver')
+            ET.SubElement(scroller, 'LeftTime', Value='0')
+            ET.SubElement(scroller, 'RightTime', Value='0')
 
     def _write_notes(self, element, notes):
         key_tracks = element.find('KeyTracks')
