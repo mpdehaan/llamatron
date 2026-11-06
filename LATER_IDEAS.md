@@ -183,7 +183,15 @@ makes undo, redo and wizards easier, because every change then goes through one 
 
 ### Eliminating song_file.py, with every object saving and loading itself
 
-**In progress.** Decided with the user on 2026-11-06:
+**In progress.** Done so far: `song_file.py` is gone. Songs load into the composition objects
+(`Song.read_file`), which save and load themselves, and `SongRenderer` in
+`src/llamatron/playback/` plays them into finished clips. Everything outside the text UI follows
+the readability rules in CLAUDE.md (named constants, `MSG_` templates, named helpers and
+`__slots__`). Still to do: the tracker moving onto the objects, page by page, and the accessor
+audit, which replaces `_Validated` and attribute access with `get_` and `set_` methods in
+`song.py`, the generators and renderers, and `Note`'s `midi_number` property.
+
+Decided with the user on 2026-11-06:
 
 - Every saved object extends a `LlamaData` base class, whose `to_data()` and `from_data()` raise
   `NotImplementedError` unless the class defines them, and a test checks that every subclass
