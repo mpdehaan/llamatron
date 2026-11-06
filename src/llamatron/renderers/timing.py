@@ -75,8 +75,9 @@ def timed_events(clip, scale):
     finally settled, as late as possible. Notes are cut off at the end of the clip.
     """
     positions = clip.resolved_notes()
-    clip_length = _clip_length(clip, positions)
+    # Placing the positions checks each one, so an invalid one is reported before its length is read.
     slots = _slots(positions, scale)
+    clip_length = _clip_length(clip, positions)
 
     timed = []
     for place, (slot_start, sounding_notes) in enumerate(slots):
