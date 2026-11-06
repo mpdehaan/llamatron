@@ -77,7 +77,8 @@ class CellPlayer:
             end = fill if loop else clip.total_length()
             notes = clip.section(NO_LENGTH, end).notes if end > NO_LENGTH else []
             controls = self._sent_controls(controls, end)
-            return Clip(name=scene.get_name(), notes=notes, scale=scale, loop=loop, controls=controls)
+            # A clip is named after the pattern it plays, while its scene keeps the scene's name.
+            return Clip(name=cell.get_pattern_name(), notes=notes, scale=scale, loop=loop, controls=controls)
         except (ValueError, TypeError) as error:
             raise SongFileError(MSG_CANT_PLAY.format(where=where, problem=error)) from error
 

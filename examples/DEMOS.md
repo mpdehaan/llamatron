@@ -18,7 +18,8 @@ Or render one straight to a Live set, then open it in Live and put an instrument
 llamatron examples/arpeggiator_demo.yml --to ableton --replace
 ```
 
-Live names every clip after its scene, so the cells in Session View say what each one shows.
+Live's scenes keep the demo's scene names, which say what each one shows, and each clip is
+named after the pattern it plays.
 Launch the scenes from the top, one at a time. Every demo also has a description, which
 explains it in more detail than this page and says what to keep in mind when changing it. It's
 at the top of the file, and in the tracker, `D` on the Song page shows it.

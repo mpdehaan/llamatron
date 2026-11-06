@@ -1268,11 +1268,20 @@ class TestCli(unittest.TestCase):
             ['lead', 'kick'],
         )
 
+    def test_live_clips_are_named_after_their_patterns_and_scenes_after_the_scene(self):
+        self.run_cli()
+        with gzip.open(os.path.join(self.out, 'out.als')) as file:
+            live_set = ET.fromstring(file.read()).find('LiveSet')
+        self.assertEqual([scene.find('Name').get('Value') for scene in live_set.find('Scenes')], ['one'])
+        clips = [clip.find('Name').get('Value') for clip in live_set.find('Tracks').iter('MidiClip')]
+        # Each clip is in Session View and Arrangement View.
+        self.assertEqual(sorted(set(clips)), ['a', 'hit'])
+
     def test_writes_midi_files_numbered_from_1(self):
         self.run_cli('--to', 'cliptree')
-        self.assertEqual(sorted(os.listdir(self.out)), ['001-001-one.mid', '001-002-one.mid'])
-        played = mido.MidiFile(os.path.join(self.out, '001-001-one.mid'))
-        self.assertEqual(played.tracks[0].name, '001-001-one')
+        self.assertEqual(sorted(os.listdir(self.out)), ['001-001-a.mid', '001-002-hit.mid'])
+        played = mido.MidiFile(os.path.join(self.out, '001-001-a.mid'))
+        self.assertEqual(played.tracks[0].name, '001-001-a')
 
     def test_stops_with_a_warning_if_the_output_exists(self):
         self.run_cli()
@@ -1296,7 +1305,7 @@ class TestCli(unittest.TestCase):
         self.run_cli('--to', 'cliptree', '--replace')
         self.run_cli('--to', 'cliptree', '--replace')
         self.assertTrue(os.path.exists(keep))
-        self.assertEqual(sorted(os.listdir(self.out)), ['001-001-one.mid', '001-002-one.mid', 'notes.txt'])
+        self.assertEqual(sorted(os.listdir(self.out)), ['001-001-a.mid', '001-002-hit.mid', 'notes.txt'])
 
     def test_errors_are_explained_without_a_traceback(self):
         with open(self.song, 'w') as file:

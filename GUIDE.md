@@ -88,7 +88,7 @@ Loading or starting a new song asks first if there are unsaved changes.
 
 The song name is the file name without `.yml`, so an unsaved song renders to `output/untitled/`. A render asks before replacing an earlier one, and replacing it loses anything you saved over that set in Live. To keep work you've done in Live, save it under another name in Live.
 
-In Live, each llamatron track is a MIDI track with its clips in Session View, and the scenes are also laid end to end in Arrangement View. The tracks have no instruments, so drop one onto each track to hear it.
+In Live, each llamatron track is a MIDI track with its clips in Session View, and the scenes are also laid end to end in Arrangement View. Scenes keep their names, and each clip is named after the pattern it plays. The tracks have no instruments, so drop one onto each track to hear it.
 
 ### From the command line
 
