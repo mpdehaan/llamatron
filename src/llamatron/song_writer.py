@@ -32,10 +32,10 @@ _PLAIN = re.compile(r'[A-Za-z0-9_][A-Za-z0-9_#./ -]*')
 # The song's settings, in the order they're written at the top of a file. The description is
 # written as a block after the title and author.
 _SETTINGS = [
-    SongSetting.TITLE, SongSetting.AUTHOR, SongSetting.TEMPO, SongSetting.SCALE, SongSetting.SEED,
+    SongSetting.VERSION, SongSetting.TITLE, SongSetting.AUTHOR, SongSetting.TEMPO, SongSetting.SCALE, SongSetting.SEED,
     SongSetting.DEFAULT_LENGTH, SongSetting.GRANULARITY, SongSetting.DEFAULT_OCTAVE, SongSetting.DEFAULT_DRUM_OCTAVE,
 ]
-_BEFORE_DESCRIPTION = (SongSetting.TITLE, SongSetting.AUTHOR)
+_BEFORE_DESCRIPTION = (SongSetting.VERSION, SongSetting.TITLE, SongSetting.AUTHOR)
 _GENERATOR_SECTIONS = [Section.ARPS, Section.AUTO_RATCHETS]
 _PATTERN_SETTINGS = [PatternSetting.DIRECTION, PatternSetting.ACCUMULATOR_LIMIT]
 

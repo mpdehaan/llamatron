@@ -37,11 +37,12 @@ from llamatron.clip_grid import ClipGrid
 from llamatron.composition.defaults import (
     DEFAULT_DRUM_OCTAVE, DEFAULT_LENGTH, DEFAULT_OCTAVE, DEFAULT_SEED, DEFAULT_TEMPO, GRANULARITIES,
 )
-from llamatron.composition.file_format import CC_ROWS, FORWARD, PATTERN_ROWS, TOGGLE_ROWS
+from llamatron.composition.file_format import CC_ROWS, FORWARD, PATTERN_ROWS, TOGGLE_ROWS, SongSetting
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.composition.song import Song
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.song_writer import dump_song
+from llamatron.version import VERSION
 
 ROOTS = ROOT_NAMES
 SCALE_KINDS = [name.lower() for name in ScaleType.__members__]
@@ -177,6 +178,8 @@ class Document:
                     saved[key] = value
             patterns[name] = saved
         data['patterns'] = patterns
+        # Every saved file records the version of llamatron that wrote it.
+        data[SongSetting.VERSION] = VERSION
         return data
 
     @property

@@ -29,6 +29,7 @@ from llamatron.tui.app import LlamatronApp
 from llamatron.tui.arrange import ArrangePage, ClipPage, ScenePage
 from llamatron.tui.base import ChoiceDialog, ConfirmDialog, Dialog, GridChoiceDialog, MessageDialog, Page, PromptDialog
 from llamatron.tui.document import Document, new_song
+from llamatron.version import VERSION
 from llamatron.tui.lists import FieldPage, ListPage
 from llamatron.tui.pages import (
     ArpEditor, ArpsPage, AutoRatchetEditor, AutoRatchetsPage, ChainEditor, ChainsPage, DescriptionPage, FilePage,
@@ -295,7 +296,7 @@ class TestSongPage(UITest):
         self.assertEqual((self.document.data['title'], self.document.data['author']), ('Rain on the Bridge', 'Someone'))
         self.document.save('song.yml')
         with open('song.yml') as file:
-            self.assertTrue(file.read().startswith('title: Rain on the Bridge\nauthor: Someone\ntempo: 120\n'))
+            self.assertTrue(file.read().startswith(f'version: {VERSION}\ntitle: Rain on the Bridge\nauthor: Someone\ntempo: 120\n'))
         self.assertEqual(Document.load('song.yml').data['title'], 'Rain on the Bridge')
         await self.press('backspace')
         self.assertNotIn('author', self.document.data)

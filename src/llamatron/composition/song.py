@@ -31,10 +31,11 @@ from llamatron.composition.pattern import Pattern
 from llamatron.composition.scene import Scene
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.composition.track import Track
+from llamatron.version import is_version
 
 # The song's own settings, in the order they're written to a file.
 SETTINGS = [
-    SongSetting.TITLE, SongSetting.AUTHOR, SongSetting.DESCRIPTION, SongSetting.TEMPO, SongSetting.SCALE,
+    SongSetting.VERSION, SongSetting.TITLE, SongSetting.AUTHOR, SongSetting.DESCRIPTION, SongSetting.TEMPO, SongSetting.SCALE,
     SongSetting.SEED, SongSetting.DEFAULT_LENGTH, SongSetting.GRANULARITY, SongSetting.DEFAULT_OCTAVE,
     SongSetting.DEFAULT_DRUM_OCTAVE,
 ]
@@ -50,6 +51,7 @@ MSG_NOT_YAML = "{path} isn't valid YAML: {problem}"
 FILE_ENCODING = 'utf-8'
 MSG_NOT_A_SONG = 'a song file must have settings like tempo, scale and scenes'
 MSG_NOT_TEXT = '{name} must be text, got {value!r}'
+MSG_BAD_VERSION = 'version: expected three whole numbers separated by dots, like 1.0.2, got {value!r}'
 MSG_SCALES_NOT_NAMED = 'scales: expected named scales like main: { root: F, type: minor }'
 MSG_NO_SUCH_SCALE = 'scale: no scale called {scale!r}'
 MSG_BAD_GRANULARITY = 'granularity must be one of {choices}, got {value!r}'
@@ -120,6 +122,9 @@ class Song(LlamaData):
         for name in TEXT_SETTINGS:
             if not isinstance(data.get(name, NO_TEXT), str):
                 raise SongFileError(MSG_NOT_TEXT.format(name=name, value=data[name]))
+        # The version of llamatron that wrote the file. Nothing depends on it yet, but it has to be one.
+        if SongSetting.VERSION in data and not is_version(data[SongSetting.VERSION]):
+            raise SongFileError(MSG_BAD_VERSION.format(value=data[SongSetting.VERSION]))
         number(data.get(SongSetting.TEMPO, DEFAULT_TEMPO), SongSetting.TEMPO)
         scales = data.get(Section.SCALES) or {}
         if not isinstance(scales, dict):

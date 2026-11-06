@@ -46,6 +46,7 @@ class Section:
 class SongSetting:
     """The song's own settings, at the top of a file."""
 
+    VERSION = 'version'
     TITLE = 'title'
     AUTHOR = 'author'
     DESCRIPTION = 'description'

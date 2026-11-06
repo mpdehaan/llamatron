@@ -21,15 +21,20 @@
 This adds the llamatron command, which turns a song file into a Live set or MIDI files.
 """
 
+import re
 from pathlib import Path
 
 from setuptools import find_packages, setup
 
 HERE = Path(__file__).resolve().parent
+# The version is read from the code's own version.py, as text, so that installing doesn't run it.
+VERSION_FILE = HERE / 'src' / 'llamatron' / 'version.py'
+VERSION_LINE = re.compile(r"^VERSION = '([^']+)'$", re.MULTILINE)
+VERSION = VERSION_LINE.search(VERSION_FILE.read_text(encoding='utf-8')).group(1)
 
 setup(
     name='llamatron',
-    version='0.1.0',
+    version=VERSION,
     description='A tracker for writing MIDI clips and Ableton Live sets',
     long_description=(HERE / 'README.md').read_text(encoding='utf-8'),
     long_description_content_type='text/markdown',

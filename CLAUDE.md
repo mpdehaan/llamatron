@@ -28,6 +28,10 @@ Tests use the standard library's `unittest`. Run these from the repository root,
 
 Don't add `__init__.py` to `test/`, because a package with that name would clash with Python's standard library `test` package.
 
+## Version
+
+`src/llamatron/version.py` holds `VERSION`, a string of three whole numbers separated by dots, like `1.0.2`, which `setup.py` reads, the tracker's title shows, and every saved song file records as `version`. Versions are compared number by number with `version_numbers()`, never as decimals. Bump the last number in every commit that changes Python code under `src/`, and leave the first two to the user. Commits that only change docs, notes, tests or examples don't bump it. The program and the files share the one number.
+
 ## Code
 
 Source code is in `src/llamatron`, and tests are in a `test` folder at the top.

@@ -30,6 +30,7 @@ from textual.screen import ModalScreen, Screen
 from textual.widgets import Static
 
 from llamatron.tui.document import clock
+from llamatron.version import VERSION
 
 KEY_NAMES = {
     'tab': 'Tab', 'enter': 'Enter', 'backspace': 'Bksp', 'space': 'Space',
@@ -37,7 +38,10 @@ KEY_NAMES = {
 }
 _NAMED_KEYS = {'tab', 'enter', 'backspace', 'up', 'down', 'left', 'right', 'pageup', 'pagedown'}
 ARROWS_UP_DOWN = ('up', 'down')
-TITLE = 'llamatron'
+PROGRAM_NAME = 'llamatron'
+# The title at the top of every page: the program's name and version, like llamatron 1.0.2.
+TITLE_FORMAT = '{name} {version}'
+TITLE = TITLE_FORMAT.format(name=PROGRAM_NAME, version=VERSION)
 # Shown at the bottom right of the main screen.
 SITE = 'home.laserllama.net'
 ARROWS = ('left', 'right', 'up', 'down')
