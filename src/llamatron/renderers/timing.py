@@ -19,6 +19,7 @@
 from fractions import Fraction
 
 from llamatron.chord import Chord
+from llamatron.held import Held, is_phrase
 from llamatron.midi import MAX_VELOCITY
 from llamatron.note import Degree, Note, Rest
 
@@ -73,41 +74,62 @@ def timed_events(clip, scale):
     Times are exact fractions of a whole note. This is where lengths and degrees are
     finally settled, as late as possible. Notes are cut off at the end of the clip.
     """
-    positions = _what_each_position_sounds(clip, scale)
+    positions = clip.resolved_notes()
     clip_length = _clip_length(clip, positions)
+    slots = _slots(positions, scale)
 
     timed = []
-    position_start = START
-    for place, (sounding_notes, position_length) in enumerate(positions):
-        start = min(position_start, clip_length)
-        following = _what_follows(positions, place)
+    for place, (slot_start, sounding_notes) in enumerate(slots):
+        start = min(slot_start, clip_length)
+        following = _what_follows(slots, place)
         for midi_number, note in sounding_notes.items():
-            end = _glide_end(note, position_start + Fraction(note.length), following)
+            end = _glide_end(note, slot_start + Fraction(note.length), following)
             end = min(end, clip_length)
             if end > start:
                 velocity = VELOCITY if note.velocity is None else note.velocity
                 timed.append((start, end, midi_number, velocity))
-        position_start += Fraction(position_length)
     return timed, clip_length
 
 
-def _what_each_position_sounds(clip, scale):
-    """Return, for each position of a clip, the notes it sounds by MIDI number, and how long the position lasts."""
-    notes = [_degree_to_note(position, scale) for position in clip.resolved_notes()]
-    return [(_sounding_notes(position), position.length) for position in notes]
+def _slots(positions, scale):
+    """Return when each position starts and the notes it sounds by MIDI number, in time order.
+
+    A Held's sound is placed at its own start, with a held phrase's parts one after another from
+    there, while the next position starts after the Held's length. Sorting by start keeps
+    positions that start together in the clip's order.
+    """
+    slots = []
+    start = START
+    for position in positions:
+        _place(position, start, scale, slots)
+        start += Fraction(position.length)
+    return sorted(slots, key=lambda slot: slot[0])
+
+
+def _place(position, start, scale, slots):
+    """Add the slots a position sounds, starting at a time, including everything a Held holds."""
+    if not isinstance(position, Held):
+        slots.append((start, _sounding_notes(_degree_to_note(position, scale))))
+        return
+    if not is_phrase(position.sound):
+        _place(position.sound, start, scale, slots)
+        return
+    for part in position.sound:
+        _place(part, start, scale, slots)
+        start += Fraction(part.length)
 
 
 def _clip_length(clip, positions):
     """Return how long a clip lasts: its own length if it has one, or else all its positions end to end."""
     if clip.length is not None:
         return Fraction(clip.length)
-    return sum((Fraction(length) for _, length in positions), START)
+    return sum((Fraction(position.length) for position in positions), START)
 
 
-def _what_follows(positions, place):
-    """Return the notes the position after a place sounds, or none if it's the last."""
+def _what_follows(slots, place):
+    """Return the notes the slot after a place sounds, or none if it's the last."""
     following = place + 1
-    return positions[following][0] if following < len(positions) else {}
+    return slots[following][1] if following < len(slots) else {}
 
 
 # How often a slide sends a new CC value, in fractions of a whole note, where a format can't ramp.

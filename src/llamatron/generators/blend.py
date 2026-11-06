@@ -19,6 +19,7 @@ from fractions import Fraction
 from math import isfinite
 
 from llamatron.generators.base import ClipGenerator, exact_length
+from llamatron.held import Held, is_phrase, phrase
 from llamatron.note import Degree
 from llamatron.clip_grid import Clip, _Validated
 
@@ -72,14 +73,21 @@ def _concrete(clip):
 
     Slices from two songs can't share one scale, so degrees have to be settled here.
     """
-    notes = []
-    for position in clip.notes:
-        if isinstance(position, Degree):
-            if clip.scale is None:
-                raise ValueError(MSG_DEGREE_NEEDS_SCALE.format(degree=position))
-            position = position.to_note(clip.scale)
-        notes.append(position)
+    notes = [_settled(position, clip.scale) for position in clip.notes]
     return Clip(notes=notes, length=clip.length, note_length=clip.note_length)
+
+
+def _settled(position, scale):
+    """Return a position with any degree in it, including inside a Held, turned into a note of a scale."""
+    if isinstance(position, Held):
+        sound = position.sound
+        sound = phrase(_settled(part, scale) for part in sound) if is_phrase(sound) else _settled(sound, scale)
+        return Held(sound, position.length)
+    if not isinstance(position, Degree):
+        return position
+    if scale is None:
+        raise ValueError(MSG_DEGREE_NEEDS_SCALE.format(degree=position))
+    return position.to_note(scale)
 
 
 class Blend(ClipGenerator):

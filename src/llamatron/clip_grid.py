@@ -27,6 +27,7 @@ from itertools import count
 from math import isfinite
 
 from llamatron.chord import Chord
+from llamatron.held import Held, is_phrase, phrase
 from llamatron.note import Degree, Note, Rest, _check_length
 from llamatron.scale import Scale
 
@@ -34,7 +35,7 @@ MIN_TEMPO = 10
 DEFAULT_TEMPO = 120
 
 # The objects that a clip's list of notes can hold.
-POSITION_TYPES = (Note, Chord, Rest, Degree)
+POSITION_TYPES = (Note, Chord, Rest, Degree, Held)
 
 _QUARTER_NOTE = 0.25
 _NOTE_TEXT = re.compile(r'([A-G][#b]?)(\d+)')
@@ -55,6 +56,9 @@ def cut_position(position, length):
     """Return a position that lasts no longer than length."""
     if exact_length(position.length) <= length:
         return position
+    if isinstance(position, Held):
+        # Only its place is cut. Its sound is cut where the clip ends, when it's played.
+        return replace(position, length=length)
     if isinstance(position, Chord):
         return Chord([cut_position(note, length) for note in position.notes])
     return replace(position, length=length)
@@ -78,6 +82,11 @@ def _piece_of(position, offset, length):
     """Return the part of a position that starts offset into it and lasts length."""
     if isinstance(position, Rest):
         return Rest(length)
+    if isinstance(position, Held):
+        rest_of_sound = sound_from(position.sound, offset)
+        if rest_of_sound is None:
+            return Rest(length)
+        return Held(rest_of_sound, min(exact_length(position.length) - offset, length))
     if isinstance(position, Chord):
         pieces = [
             _piece_of(note, offset, length) for note in position.notes
@@ -85,6 +94,28 @@ def _piece_of(position, offset, length):
         ]
         return Chord(pieces) if pieces else Rest(length)
     return replace(position, length=min(exact_length(position.length) - offset, length))
+
+
+def sound_from(sound, offset):
+    """Return what's left of a held sound from offset into it, or None if it's over by then."""
+    if not is_phrase(sound):
+        remaining = [note for note in _notes_of(sound) if exact_length(note.length) > offset]
+        if not remaining:
+            return None
+        piece = _piece_of(sound, offset, max(exact_length(note.length) for note in remaining) - offset)
+        return None if isinstance(piece, Rest) else piece
+    parts, start = [], Fraction(0)
+    for part in sound:
+        end = start + exact_length(part.length)
+        if end > offset:
+            parts.append(part if start >= offset else _piece_of(part, offset - start, end - offset))
+        start = end
+    return phrase(parts) if parts else None
+
+
+def _notes_of(sound):
+    """Return the notes of a note or chord."""
+    return list(sound.notes) if isinstance(sound, Chord) else [sound]
 
 
 def _to_position(value):
@@ -299,6 +330,10 @@ class Clip:
     def _with_length(self, position):
         if isinstance(position, Chord):
             return Chord([self._with_length(note) for note in position.notes])
+        if isinstance(position, Held):
+            sound = position.sound
+            sound = phrase(self._with_length(part) for part in sound) if is_phrase(sound) else self._with_length(sound)
+            return replace(position, sound=sound)
         if not isinstance(position, (Note, Degree)) or position.length is not None:
             return position
         if self.note_length is None:

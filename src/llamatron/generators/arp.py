@@ -20,6 +20,7 @@ from enum import Enum, auto
 
 from llamatron.chord import Chord
 from llamatron.generators.base import ClipGenerator, exact_length, fit_to_length
+from llamatron.held import Held, is_phrase, phrase
 from llamatron.midi import HALF_STEPS_PER_OCTAVE
 from llamatron.note import Note, Rest, _check_length
 from llamatron.clip_grid import _Validated
@@ -182,11 +183,18 @@ class Arp(ClipGenerator):
     def _arpeggiate(self, positions, generator, scale):
         result = []
         for position in positions:
-            if isinstance(position, Chord) or (isinstance(position, Note) and self._plays_single_notes()):
+            if isinstance(position, Held):
+                result.append(self._arpeggiate_held(position, generator, scale))
+            elif isinstance(position, Chord) or (isinstance(position, Note) and self._plays_single_notes()):
                 result += self._arpeggiate_chord(position, generator, scale)
             else:
                 result.append(position)
         return result
+
+    def _arpeggiate_held(self, held, generator, scale):
+        """Return a held sound arpeggiated across its own length, still held in the same place."""
+        parts = held.sound if is_phrase(held.sound) else [held.sound]
+        return Held(phrase(self._arpeggiate(parts, generator, scale)), held.length)
 
     def _arpeggiate_chord(self, chord, generator, scale):
         notes = self._climb(_lowest_to_highest(chord) if isinstance(chord, Chord) else [chord])
