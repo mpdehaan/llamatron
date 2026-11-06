@@ -19,11 +19,18 @@
 from fractions import Fraction
 
 from llamatron.chord import Chord
+from llamatron.midi import MAX_VELOCITY
 from llamatron.note import Degree, Note, Rest
 
 # A beat is a quarter note, which matches how MIDI and Live measure both time and tempo.
 BEATS_PER_WHOLE_NOTE = 4
-VELOCITY = 127
+# A note with no velocity of its own plays as loud as MIDI allows.
+VELOCITY = MAX_VELOCITY
+# Where a clip starts.
+START = Fraction(0)
+
+MSG_DEGREE_NEEDS_SCALE = '{degree!r} needs a scale, but the clip, scene and song have none'
+MSG_NOT_A_POSITION = 'expected a Note, Chord or Rest, got {value!r}'
 # How far a note with glide runs into the next one, in fractions of a whole note.
 GLIDE_OVERLAP = Fraction(1, 128)
 
@@ -33,7 +40,7 @@ def _degree_to_note(position, scale):
     if not isinstance(position, Degree):
         return position
     if scale is None:
-        raise ValueError(f'{position!r} needs a scale, but the clip, scene and song have none')
+        raise ValueError(MSG_DEGREE_NEEDS_SCALE.format(degree=position))
     return position.to_note(scale)
 
 
@@ -50,7 +57,7 @@ def _sounding_notes(position):
             if note.midi_number not in notes or note.length > notes[note.midi_number].length:
                 notes[note.midi_number] = note
         return notes
-    raise ValueError(f'expected a Note, Chord or Rest, got {position!r}')
+    raise ValueError(MSG_NOT_A_POSITION.format(value=position))
 
 
 def _glide_end(note, end, following):
@@ -66,18 +73,14 @@ def timed_events(clip, scale):
     Times are exact fractions of a whole note. This is where lengths and degrees are
     finally settled, as late as possible. Notes are cut off at the end of the clip.
     """
-    notes = [_degree_to_note(position, scale) for position in clip.resolved_notes()]
-    positions = [(_sounding_notes(position), position.length) for position in notes]
-    if clip.length is None:
-        clip_length = sum((Fraction(length) for _, length in positions), Fraction(0))
-    else:
-        clip_length = Fraction(clip.length)
+    positions = _what_each_position_sounds(clip, scale)
+    clip_length = _clip_length(clip, positions)
 
     timed = []
-    position_start = Fraction(0)
+    position_start = START
     for place, (sounding_notes, position_length) in enumerate(positions):
         start = min(position_start, clip_length)
-        following = positions[place + 1][0] if place + 1 < len(positions) else {}
+        following = _what_follows(positions, place)
         for midi_number, note in sounding_notes.items():
             end = _glide_end(note, position_start + Fraction(note.length), following)
             end = min(end, clip_length)
@@ -86,6 +89,25 @@ def timed_events(clip, scale):
                 timed.append((start, end, midi_number, velocity))
         position_start += Fraction(position_length)
     return timed, clip_length
+
+
+def _what_each_position_sounds(clip, scale):
+    """Return, for each position of a clip, the notes it sounds by MIDI number, and how long the position lasts."""
+    notes = [_degree_to_note(position, scale) for position in clip.resolved_notes()]
+    return [(_sounding_notes(position), position.length) for position in notes]
+
+
+def _clip_length(clip, positions):
+    """Return how long a clip lasts: its own length if it has one, or else all its positions end to end."""
+    if clip.length is not None:
+        return Fraction(clip.length)
+    return sum((Fraction(length) for _, length in positions), START)
+
+
+def _what_follows(positions, place):
+    """Return the notes the position after a place sounds, or none if it's the last."""
+    following = place + 1
+    return positions[following][0] if following < len(positions) else {}
 
 
 # How often a slide sends a new CC value, in fractions of a whole note, where a format can't ramp.
@@ -120,14 +142,27 @@ def control_events(clip, length):
     for number, lane in control_points(clip, length).items():
         for place, (time, value, slide) in enumerate(lane):
             events.append((time, number, value))
-            if not slide or place + 1 == len(lane):
-                continue
-            end, target, _ = lane[place + 1]
-            now = time + SLIDE_STEP
-            while now < end:
-                ramped = round(value + (target - value) * (now - time) / (end - time))
-                if ramped != events[-1][2]:
-                    events.append((now, number, ramped))
-                now += SLIDE_STEP
+            following = place + 1
+            if slide and following < len(lane):
+                end, target, _ = lane[following]
+                events += _slide_steps(number, time, value, end, target)
     return sorted(events)
+
+
+def _slide_steps(number, start, value, end, target):
+    """Return the values a slide sends between two points, every SLIDE_STEP, leaving out repeats of the same value."""
+    steps, sent = [], value
+    now = start + SLIDE_STEP
+    while now < end:
+        ramped = _value_on_the_way(start, value, end, target, now)
+        if ramped != sent:
+            steps.append((now, number, ramped))
+            sent = ramped
+        now += SLIDE_STEP
+    return steps
+
+
+def _value_on_the_way(start, value, end, target, now):
+    """Return the whole-number value a straight line from one point to the next passes through at a time."""
+    return round(value + (target - value) * (now - start) / (end - start))
 

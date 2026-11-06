@@ -29,42 +29,79 @@ import glob
 import os
 import sys
 
+from llamatron.composition.song import Song
+from llamatron.composition.song_file_error import SongFileError
+from llamatron.playback.song_renderer import SongRenderer
 from llamatron.renderers.ableton_project import DEFAULT_TEMPLATE, AbletonProject
 from llamatron.renderers.clip_tree import ClipTree
 from llamatron.song import ClipGrid
-from llamatron.composition.song_file_error import SongFileError
-from llamatron.composition.song import Song
-from llamatron.playback.song_renderer import SongRenderer
+
+PROGRAM = 'llamatron'
+# What --to can write.
+TO_ABLETON, TO_CLIP_TREE = 'ableton', 'cliptree'
+RENDER_TARGETS = [TO_ABLETON, TO_CLIP_TREE]
+# Where a song's output goes unless --out says otherwise: output/<song name>.
+OUTPUT_DIRECTORY = 'output'
+# The MIDI files a clip tree writes, which --replace removes: <scene>-<track>-<name>.mid.
+CLIP_TREE_FILES = '[0-9]*-[0-9]*.mid'
+OPTION_TO, OPTION_OUT, OPTION_TEMPLATE, OPTION_REPLACE = '--to', '--out', '--template', '--replace'
+SONG_ARGUMENT = 'song'
+ONE_OR_NONE = '?'
+STORE_TRUE = 'store_true'
+SUCCEEDED, FAILED = 0, 1
+
+HELP_DESCRIPTION = 'Open the tracker, or with --to, turn a song file into Ableton Live or MIDI files.'
+HELP_SONG = 'the song file to open, or to read with --to'
+HELP_TO = 'write the song instead of opening the tracker'
+HELP_OUT = 'the directory to write to (default: output/<song name>)'
+HELP_TEMPLATE = 'the Live set to build from (default: the one installed with llamatron)'
+HELP_REPLACE = "replace this song's earlier output, so you can regenerate and listen"
+MSG_ONLY_WITH_TO = '{options} only works with --to'
+MSG_TO_NEEDS_SONG = '--to needs a song file'
+MSG_ERROR = 'error: {problem}'
+MSG_WROTE = 'wrote {target} output to {directory}'
+# Options, as the message about them lists them.
+OPTION_SEPARATOR = ', '
 
 
 def _arguments(argv):
-    parser = argparse.ArgumentParser(
-        prog='llamatron',
-        description='Open the tracker, or with --to, turn a song file into Ableton Live or MIDI files.')
-    parser.add_argument('song', nargs='?', help='the song file to open, or to read with --to')
-    parser.add_argument('--to', choices=['ableton', 'cliptree'], help='write the song instead of opening the tracker')
-    parser.add_argument('--out', help='the directory to write to (default: output/<song name>)')
-    parser.add_argument('--template', help='the Live set to build from (default: the one installed with llamatron)')
-    parser.add_argument('--replace', action='store_true', help='replace this song\'s earlier output, so you can regenerate and listen')
+    parser = argparse.ArgumentParser(prog=PROGRAM, description=HELP_DESCRIPTION)
+    parser.add_argument(SONG_ARGUMENT, nargs=ONE_OR_NONE, help=HELP_SONG)
+    parser.add_argument(OPTION_TO, choices=RENDER_TARGETS, help=HELP_TO)
+    parser.add_argument(OPTION_OUT, help=HELP_OUT)
+    parser.add_argument(OPTION_TEMPLATE, help=HELP_TEMPLATE)
+    parser.add_argument(OPTION_REPLACE, action=STORE_TRUE, help=HELP_REPLACE)
     arguments = parser.parse_args(argv)
     if arguments.to is None:
-        given = [option for option, value in [('--out', arguments.out), ('--template', arguments.template), ('--replace', arguments.replace)] if value]
+        given = _render_options_given(arguments)
         if given:
-            parser.error(f"{', '.join(given)} only works with --to")
+            parser.error(MSG_ONLY_WITH_TO.format(options=OPTION_SEPARATOR.join(given)))
     elif arguments.song is None:
-        parser.error('--to needs a song file')
+        parser.error(MSG_TO_NEEDS_SONG)
     return arguments
+
+
+def _render_options_given(arguments):
+    """Return the options given that only mean something when rendering with --to."""
+    options = [(OPTION_OUT, arguments.out), (OPTION_TEMPLATE, arguments.template), (OPTION_REPLACE, arguments.replace)]
+    return [option for option, value in options if value]
 
 
 def replace_output(to, directory):
     """Remove what rendering a song to a directory would write, and leave everything else."""
-    if to == 'ableton':
+    if to == TO_ABLETON:
         targets = [AbletonProject(directory, ClipGrid()).path]
     else:
-        targets = glob.glob(os.path.join(glob.escape(directory), '[0-9]*-[0-9]*.mid'))
+        targets = glob.glob(os.path.join(glob.escape(directory), CLIP_TREE_FILES))
     for path in targets:
         if os.path.exists(path):
             os.remove(path)
+
+
+def output_directory(song_path):
+    """Return where a song's output goes unless --out says otherwise: output/<song name>."""
+    name = os.path.splitext(os.path.basename(song_path))[0]
+    return os.path.join(OUTPUT_DIRECTORY, name)
 
 
 def main(argv=None):
@@ -74,21 +111,20 @@ def main(argv=None):
         # Imported here so that rendering doesn't need to load the text UI.
         from llamatron.tui.app import main as open_tracker
         return open_tracker([arguments.song] if arguments.song else [])
-    name = os.path.splitext(os.path.basename(arguments.song))[0]
-    directory = arguments.out or os.path.join('output', name)
+    directory = arguments.out or output_directory(arguments.song)
     try:
         song = SongRenderer(Song.read_file(arguments.song)).render()
         if arguments.replace:
             replace_output(arguments.to, directory)
-        if arguments.to == 'ableton':
+        if arguments.to == TO_ABLETON:
             AbletonProject(directory, song, template=arguments.template or DEFAULT_TEMPLATE).render()
         else:
             ClipTree(directory, song).render()
     except (SongFileError, ValueError, OSError) as error:
-        print(f'error: {error}', file=sys.stderr)
-        return 1
-    print(f'wrote {arguments.to} output to {directory}')
-    return 0
+        print(MSG_ERROR.format(problem=error), file=sys.stderr)
+        return FAILED
+    print(MSG_WROTE.format(target=arguments.to, directory=directory))
+    return SUCCEEDED
 
 
 if __name__ == '__main__':
