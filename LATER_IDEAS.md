@@ -116,6 +116,8 @@ by hand, as a one-off check while refactoring, rather than as a kept test.
     before adding the first jump.
     Profile the same song for performance hot spots at this point (see "Performance hot
     spots"), since big songs are where they show.
+    Fix moving through long patterns in the pattern editor here too, or with time signatures,
+    since bars may decide how a long pattern is laid out.
 18. Looking at other trackers for ideas, before designing the larger features below. This can
     also happen at any time in the background.
 
@@ -367,6 +369,31 @@ shows where a plain list of patterns starts to strain:
   their scene and track, would cut that down.
 - **Size on disk.** The file is about 50 KB and still reads well in a diff, so the file format
   isn't the limit yet.
+
+### Long patterns in the pattern editor
+
+When a pattern has more steps than fit across the screen, the editor wraps them into blocks
+stacked down the screen (`steps_per_block` and `body` in `src/llamatron/tui/pattern_editor.py`),
+about 10 steps to a block on an 80-column console. But Up and Down only move between the rows of
+the block the cursor is in, and from the last row they wrap back to its first row (`move` in the
+same file), so the block below can only be reached with Right, a step at a time. The user is
+fine with either of two fixes:
+
+- **Scroll sideways instead of wrapping.** Show one block, as wide as the screen, that scrolls
+  left and right to follow the cursor, so Up and Down always mean the rows. The top line would
+  need to say which steps are showing, like "steps 17-26 of 64", perhaps with a mark at an edge
+  when there are more steps that way. It's simple, and works for any length, but only part of a
+  long pattern can be seen at once.
+- **Keep wrapping, and let Up and Down cross blocks.** Down from a block's last row goes to the
+  first row of the block below, on the step in the same column, and Up from the first row goes
+  to the last row of the block above. The whole pattern stays visible, but moving up or down then
+  changes which step the cursor is on, which could surprise, and the last block is usually
+  shorter, so the cursor needs a step to land on when the column below is empty. Today's wrap
+  from the last row back to the first would go, except perhaps at the very top and bottom.
+
+Either way, the pattern editor's tests and GUIDE.md change with it. Time signatures (above)
+could also shape the choice: blocks, or the sideways scroll, could move a bar at a time, with
+the beats in bold lining up from block to block.
 
 ### What Tab means, once pages can jump
 
