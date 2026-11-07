@@ -22,10 +22,34 @@ from fractions import Fraction
 
 import yaml
 
+from llamatron.composition.defaults import DEFAULT_DRUM_OCTAVE, DEFAULT_OCTAVE, DEFAULT_STEP_SIZE, DEFAULT_TEMPO
+from llamatron.composition.file_format import Accidental, CellSetting, ChordSymbol, Direction, GeneratorKind, PatternSetting, Row, SceneSetting, Section
+from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.song_file_error import SongFileError
-from rendering import render_data
-from llamatron.composition.song import Song
+from rendering import render_song
+from llamatron.note import NoteName
+from llamatron.scale import ScaleType
 from llamatron.tui.document import DEFAULT_SCALE, Document, clock, new_song, unique_name
+
+# A setting from an early version of the format, which a new song must not write.
+OLD_LENGTH_SETTING = 'default_length'
+# A four-step pattern the flip and swap test rearranges, with a gap in one row.
+FLIPPED_PATTERN_STEPS = 4
+FLIPPED_PATTERN_ROWS = {Row.DEGREE: [1, 2, 3, 4], Row.VELOCITY: [10, None, 30, 40]}
+
+
+def add_pattern_with_rows(document, name, steps, rows):
+    """Add a pattern through the document and fill its rows, given as {row: [value per step]}."""
+    document.add_pattern(name, steps)
+    for row, values in rows.items():
+        for step, value in enumerate(values):
+            document.set_step_value(name, row, step, value)
+
+
+def root_and_kind(document, name):
+    """Return a named scale's root and type as the file writes them."""
+    scale = document.song().get_named_scale(name)
+    return scale.get_root(), scale.get_kind()
 
 
 def song_with_things():
@@ -54,21 +78,21 @@ class TestNewSong(unittest.TestCase):
 
     def test_has_a_c_major_scale_that_can_be_deleted(self):
         document = Document()
-        self.assertEqual(document.data['scale'], 'C Major')
-        self.assertEqual(document.data['scales'], {'C Major': {'root': 'C', 'type': 'major'}})
-        self.assertEqual(document.scale_uses('C Major'), ['the song'])
-        document.data['scale'] = None
-        document.changed()
-        self.assertEqual(document.scale_uses('C Major'), [])
-        document.delete_scale('C Major')
-        self.assertEqual(document.data['scales'], {})
+        self.assertEqual(document.song().get_scale_name(), DEFAULT_SCALE)
+        self.assertEqual(document.song().get_scale_names(), [DEFAULT_SCALE])
+        self.assertEqual(root_and_kind(document, DEFAULT_SCALE), (NoteName.C, scale_type_name(ScaleType.MAJOR)))
+        self.assertEqual(document.scale_uses(DEFAULT_SCALE), ['the song'])
+        document.set_scale_name(None)
+        self.assertEqual(document.scale_uses(DEFAULT_SCALE), [])
+        document.delete_scale(DEFAULT_SCALE)
+        self.assertEqual(document.song().get_scale_names(), [])
 
     def test_has_the_song_defaults(self):
-        data = Document().data
-        self.assertEqual(data['step_size'], '1/16')
-        self.assertNotIn('default_length', data)
-        self.assertEqual(data['default_octave'], 3)
-        self.assertEqual(data['default_drum_octave'], 1)
+        song = Document().song()
+        self.assertEqual(song.get_step_size(), Fraction(DEFAULT_STEP_SIZE))
+        self.assertNotIn(OLD_LENGTH_SETTING, song.to_data())
+        self.assertEqual(song.get_default_octave(), DEFAULT_OCTAVE)
+        self.assertEqual(song.get_default_drum_octave(), DEFAULT_DRUM_OCTAVE)
 
     def test_starts_with_nothing_unsaved(self):
         self.assertFalse(Document().dirty)
@@ -104,13 +128,13 @@ class TestSaving(unittest.TestCase):
 
     def test_rows_with_nothing_in_them_are_not_written(self):
         document = song_with_things()
-        document.set_step_value('a', 'velocity', 0, 90)
-        document.set_step_value('a', 'velocity', 0, None)
+        document.set_step_value('a', Row.VELOCITY, 0, 90)
+        document.set_step_value('a', Row.VELOCITY, 0, None)
         path = os.path.join(self.folder, 'x.yml')
         document.save(path)
         with open(path) as file:
             self.assertNotIn('velocity', yaml.safe_load(file)['patterns']['a'])
-        self.assertIn('velocity', document.data['patterns']['a'])
+        self.assertIsNotNone(document.song().get_pattern('a').get_row(Row.VELOCITY))
 
     def test_makes_folders(self):
         path = os.path.join(self.folder, 'new', 'x.yml')
@@ -131,8 +155,8 @@ class TestSaving(unittest.TestCase):
                 file.write(text)
             document = Document.load(path)
             with self.subTest(text=text):
-                self.assertEqual((document.data['tracks'], document.data['scenes']), ({}, []))
-                self.assertEqual(document.data['tempo'], 90 if text else 120)
+                self.assertEqual((document.song().get_track_names(), document.song().get_scenes()), ([], []))
+                self.assertEqual(document.song().get_tempo(), 90 if text else DEFAULT_TEMPO)
 
     def test_the_name_comes_from_the_file(self):
         self.assertEqual(Document().name, 'untitled')
@@ -179,7 +203,8 @@ class TestRendering(unittest.TestCase):
         document.add_pattern('p', 1)
         document.add_track('t')
         document.add_scene(0, 's')
-        document.set_cell(0, 't', {'pattern': 'p', 'loop': True})
+        document.add_cell(0, 't', 'p')
+        document.set_cell_setting(0, 't', CellSetting.LOOP, True)
         with self.assertRaises(SongFileError) as caught:
             document.render('ableton')
         self.assertIn('every clip is set to loop', str(caught.exception))
@@ -203,7 +228,7 @@ class TestDurations(unittest.TestCase):
     def test_a_new_pattern_uses_the_song_step_size(self):
         document = song_with_things()
         document.add_pattern('c', 1)
-        document.set_step_value('c', 'degree', 0, 1)
+        document.set_step_value('c', Row.DEGREE, 0, 1)
         self.assertEqual(document.pattern_length('c'), Fraction(1, 16))
 
     def test_clip_scene_and_song(self):
@@ -222,8 +247,7 @@ class TestDurations(unittest.TestCase):
 
     def test_a_scene_that_cannot_work_is_unknown_without_affecting_others(self):
         document = song_with_things()
-        document.data['scenes'][2]['tracks']['bass']['loop'] = True
-        document.changed()
+        document.set_cell_setting(2, 'bass', CellSetting.LOOP, True)
         self.assertIsNone(document.scene_seconds(2))
         self.assertIn('every clip', document.scene_problem(2))
         self.assertEqual(document.scene_seconds(1), 2)
@@ -240,7 +264,9 @@ class TestUses(unittest.TestCase):
 
     def test_a_morph_target_counts_as_a_use(self):
         document = song_with_things()
-        document.set_cell(0, 'bass', {'pattern': 'a', 'repeat': 2, 'morph_to': 'unused'})
+        document.add_cell(0, 'bass', 'a')
+        document.set_cell_setting(0, 'bass', CellSetting.REPEAT, 2)
+        document.set_cell_morph_target(0, 'bass', 'unused')
         self.assertEqual(document.pattern_uses('unused'), ['scene 1 (one), track bass'])
 
     def test_track_clips_are_counted_separately(self):
@@ -264,17 +290,17 @@ class TestStepSizes(unittest.TestCase):
 
     def test_a_new_pattern_is_empty_steps_of_the_song_step_size(self):
         document = Document()
-        document.data['step_size'] = '1/8'
+        document.set_song_step_size('1/8')
         document.add_pattern('p', 4)
         self.assertEqual(document.pattern_length('p'), Fraction(1, 2))
-        self.assertEqual(document.data['patterns']['p'], {'steps': 4})
+        self.assertEqual(document.song().get_pattern('p').to_data(), {PatternSetting.STEPS: 4})
 
     def test_added_and_inserted_steps_are_empty_steps(self):
         document = Document()
         document.add_pattern('p', 1)
         document.set_steps('p', 3)
         document.insert_step('p', 0)
-        self.assertEqual(document.data['patterns']['p'], {'steps': 4})
+        self.assertEqual(document.song().get_pattern('p').to_data(), {PatternSetting.STEPS: 4})
         self.assertEqual(document.pattern_length('p'), Fraction(1, 4))
 
     def test_a_pattern_can_have_its_own_step_size(self):
@@ -283,11 +309,11 @@ class TestStepSizes(unittest.TestCase):
         document.set_step_size('p', '1/8')
         self.assertEqual(document.pattern_length('p'), Fraction(1, 2))
         document.set_step_size('p', None)
-        self.assertNotIn('step_size', document.data['patterns']['p'])
+        self.assertIsNone(document.song().get_pattern('p').get_step_size())
 
     def test_a_pattern_with_no_rows_counts_the_song_step_size(self):
         document = song_with_things()
-        document.data['patterns']['x'] = {'steps': 2}
+        document.add_pattern('x', 2)
         self.assertEqual(document.pattern_length('x'), Fraction(1, 8))
         document.set_steps('x', 3)
         self.assertEqual(document.pattern_length('x'), Fraction(3, 16))
@@ -298,67 +324,71 @@ class TestRenaming(unittest.TestCase):
     def test_pattern_updates_everything(self):
         document = song_with_things()
         document.rename_pattern('b', 'new')
-        self.assertEqual(list(document.data['patterns']), ['a', 'new', 'unused'])
-        self.assertEqual(document.cell(1, 'lead')['morph_to'], 'new')
-        self.assertEqual(document.cell(2, 'bass')['pattern'], 'new')
-        render_data(document.data)
+        self.assertEqual(document.song().get_pattern_names(), ['a', 'new', 'unused'])
+        self.assertEqual(document.cell(1, 'lead').get_morph_target(), 'new')
+        self.assertEqual(document.cell(2, 'bass').get_pattern_name(), 'new')
+        render_song(document.song())
 
     def test_pattern_updates_morph_to(self):
         document = song_with_things()
-        document.set_cell(0, 'bass', {'pattern': 'a', 'repeat': 2, 'morph_to': 'unused'})
+        document.add_cell(0, 'bass', 'a')
+        document.set_cell_setting(0, 'bass', CellSetting.REPEAT, 2)
+        document.set_cell_morph_target(0, 'bass', 'unused')
         document.rename_pattern('unused', 'new')
-        self.assertEqual(document.cell(0, 'bass'), {'pattern': 'a', 'repeat': 2, 'morph_to': 'new'})
+        self.assertEqual(document.cell(0, 'bass').get_morph_target(), 'new')
 
     def test_renaming_or_deleting_a_track_updates_grabs_from_it(self):
         document = song_with_things()
-        document.set_cell(0, 'bass', {'pattern': 'a', 'grab_track': 'lead'})
+        document.add_cell(0, 'bass', 'a')
+        document.set_cell_setting(0, 'bass', CellSetting.GRAB_TRACK, 'lead')
         document.rename_track('lead', 'top')
-        self.assertEqual(document.cell(0, 'bass')['grab_track'], 'top')
+        self.assertEqual(document.cell(0, 'bass').get_grab_track(), 'top')
         self.assertEqual(document.grabbers('top'), ['scene 1 (one), track bass'])
         document.delete_track('top')
-        self.assertEqual(document.cell(0, 'bass'), {'pattern': 'a'})
+        self.assertEqual(document.cell(0, 'bass').to_data(), {CellSetting.PATTERN: 'a'})
 
     def test_finding_a_grab_circle(self):
         document = song_with_things()
-        document.set_cell(0, 'bass', {'pattern': 'a', 'grab_track': 'lead'})
+        document.add_cell(0, 'bass', 'a')
+        document.set_cell_setting(0, 'bass', CellSetting.GRAB_TRACK, 'lead')
         self.assertEqual(document.grab_circle(0, 'lead', 'bass'), ['lead', 'bass', 'lead'])
         self.assertIsNone(document.grab_circle(0, 'bass', 'lead'))
 
     def test_track_updates_everything(self):
         document = song_with_things()
         document.rename_track('lead', 'new')
-        self.assertEqual(list(document.data['tracks']), ['new', 'bass'])
-        render_data(document.data)
+        self.assertEqual(document.song().get_track_names(), ['new', 'bass'])
+        render_song(document.song())
 
     def test_chain_updates_everything(self):
         document = song_with_things()
         document.rename_chain('named', 'other')
-        self.assertEqual(document.cell(0, 'lead')['chain'], 'other')
+        self.assertEqual(document.cell(0, 'lead').get_chain_name(), 'other')
 
     def test_arp_updates_chains(self):
         document = song_with_things()
-        document.rename_generator('arps', 'up', 'new')
-        self.assertEqual(document.data['chains']['named'], [{'arp': 'new'}, {'auto_ratchet': 'rolls'}])
+        document.rename_generator(Section.ARPS, 'up', 'new')
+        self.assertEqual(document.song().get_chain('named').get_steps(), [(GeneratorKind.ARP, 'new'), (GeneratorKind.AUTO_RATCHET, 'rolls')])
 
     def test_auto_ratchet_updates_chains(self):
         document = song_with_things()
-        document.rename_generator('auto_ratchets', 'rolls', 'new')
-        self.assertEqual(document.data['chains']['named'], [{'arp': 'up'}, {'auto_ratchet': 'new'}])
+        document.rename_generator(Section.AUTO_RATCHETS, 'rolls', 'new')
+        self.assertEqual(document.song().get_chain('named').get_steps(), [(GeneratorKind.ARP, 'up'), (GeneratorKind.AUTO_RATCHET, 'new')])
 
     def test_changing_a_scale_keeps_its_name(self):
         document = song_with_things()
-        document.change_scale(DEFAULT_SCALE, 'D', 'minor')
-        self.assertEqual(document.data['scale'], DEFAULT_SCALE)
+        document.change_scale(DEFAULT_SCALE, NoteName.D, scale_type_name(ScaleType.MINOR))
+        self.assertEqual(document.song().get_scale_name(), DEFAULT_SCALE)
         self.assertEqual(document.scale_notes_text(DEFAULT_SCALE), 'D minor')
-        render_data(document.data)
+        render_song(document.song())
 
     def test_renaming_a_scale_updates_everything(self):
         document = song_with_things()
         document.rename_scale(DEFAULT_SCALE, 'main')
-        self.assertEqual(document.data['scale'], 'main')
-        self.assertEqual(document.data['scenes'][2]['scale'], 'main')
-        self.assertEqual(list(document.data['scales']), ['main'])
-        render_data(document.data)
+        self.assertEqual(document.song().get_scale_name(), 'main')
+        self.assertEqual(document.song().get_scenes()[2].get_scale_name(), 'main')
+        self.assertEqual(document.song().get_scale_names(), ['main'])
+        render_song(document.song())
 
     def test_a_scale_can_be_copied_with_the_same_notes(self):
         document = song_with_things()
@@ -370,25 +400,25 @@ class TestLists(unittest.TestCase):
 
     def test_moving_and_sorting(self):
         document = song_with_things()
-        self.assertTrue(document.move_named('patterns', 0, 1))
-        self.assertEqual(list(document.data['patterns']), ['b', 'a', 'unused'])
-        self.assertFalse(document.move_named('patterns', 0, -1))
-        document.sort_named('patterns')
-        self.assertEqual(list(document.data['patterns']), ['a', 'b', 'unused'])
+        self.assertTrue(document.move_named(Section.PATTERNS, 0, 1))
+        self.assertEqual(document.song().get_pattern_names(), ['b', 'a', 'unused'])
+        self.assertFalse(document.move_named(Section.PATTERNS, 0, -1))
+        document.sort_named(Section.PATTERNS)
+        self.assertEqual(document.song().get_pattern_names(), ['a', 'b', 'unused'])
 
     def test_copying_makes_separate_data(self):
         document = song_with_things()
         new = document.copy_pattern('a')
         self.assertEqual(new, 'a copy')
         document.set_step_value(new, 'degree', 0, 7)
-        self.assertEqual(document.step_value('a', 'degree', 0), 1)
+        self.assertEqual(document.step_value('a', Row.DEGREE, 0), 1)
         self.assertEqual(document.copy_pattern('a'), 'a copy 2')
 
     def test_copying_a_track_copies_its_clips(self):
         document = song_with_things()
         document.copy_track('bass')
-        self.assertEqual(list(document.data['tracks']), ['lead', 'bass', 'bass copy'])
-        self.assertEqual(document.cell(2, 'bass copy'), {'pattern': 'b'})
+        self.assertEqual(document.song().get_track_names(), ['lead', 'bass', 'bass copy'])
+        self.assertEqual(document.cell(2, 'bass copy').to_data(), {CellSetting.PATTERN: 'b'})
 
     def test_unique_name(self):
         self.assertEqual(unique_name('a', ['b']), 'a')
@@ -401,7 +431,7 @@ class TestScenes(unittest.TestCase):
         self.document = song_with_things()
 
     def names(self):
-        return [scene['name'] for scene in self.document.data['scenes']]
+        return [scene.get_name() for scene in self.document.song().get_scenes()]
 
     def test_moving_a_scene(self):
         self.document.move_scene(0, 1)
@@ -421,16 +451,16 @@ class TestScenes(unittest.TestCase):
 
     def test_repeats(self):
         self.document.set_scene_repeat(1, 3)
-        self.assertEqual(self.document.data['scenes'][1]['repeat'], 3)
+        self.assertEqual(self.document.song().get_scenes()[1].get_repeat(), 3)
         self.document.set_scene_repeat(0, 1)
-        self.assertNotIn('repeat', self.document.data['scenes'][0])
+        self.assertNotIn(SceneSetting.REPEAT, self.document.song().get_scenes()[0].to_data())
 
     def test_the_result_still_builds(self):
         self.document.move_scene(0, 1)
         self.document.copy_scene(0)
         self.document.delete_scene(1)
         self.document.set_scene_repeat(0, 4)
-        render_data(self.document.data)
+        render_song(self.document.song())
 
 
 class TestPatternSteps(unittest.TestCase):
@@ -444,97 +474,96 @@ class TestPatternSteps(unittest.TestCase):
         document = song_with_things()
         document.set_steps('a', 4)
         self.assertEqual(document.steps_with_anything_past('a', 2), 0)
-        document.set_step_value('a', 'degree', 3, 1)
+        document.set_step_value('a', Row.DEGREE, 3, 1)
         self.assertEqual(document.steps_with_anything_past('a', 2), 1)
 
     def test_setting_steps_keeps_rows_the_right_length(self):
         document = song_with_things()
         document.set_steps('a', 4)
-        self.assertEqual(document.data['patterns']['a']['degree'], [1, 3, None, None])
-        document.set_step_value('a', 'gate', 0, '1/2')
+        self.assertEqual(document.song().get_pattern('a').get_row(Row.DEGREE), [1, 3, None, None])
+        document.set_step_value('a', Row.GATE, 0, '1/2')
         document.set_steps('a', 1)
-        self.assertEqual(document.data['patterns']['a']['degree'], [1])
-        self.assertEqual(document.data['patterns']['a']['gate'], ['1/2'])
+        self.assertEqual(document.song().get_pattern('a').get_row(Row.DEGREE), [1])
+        self.assertEqual(document.song().get_pattern('a').get_row(Row.GATE), ['1/2'])
 
     def test_insert_and_remove(self):
         document = song_with_things()
         document.insert_step('a', 1)
-        self.assertEqual(document.data['patterns']['a']['degree'], [1, None, 3])
-        self.assertEqual(document.data['patterns']['a']['steps'], 3)
+        self.assertEqual(document.song().get_pattern('a').get_row(Row.DEGREE), [1, None, 3])
+        self.assertEqual(document.song().get_pattern('a').get_steps(), 3)
         document.remove_step('a', 0)
-        self.assertEqual(document.data['patterns']['a']['degree'], [None, 3])
+        self.assertEqual(document.song().get_pattern('a').get_row(Row.DEGREE), [None, 3])
 
     def test_changing_type_clears_notes_and_keeps_timing(self):
         document = song_with_things()
-        document.set_step_value('a', 'chord', 0, 'M')
+        document.set_step_value('a', Row.CHORD, 0, ChordSymbol.MAJOR)
         document.set_drum('a', True)
-        pattern = document.data['patterns']['a']
-        self.assertTrue(pattern['drum'])
-        self.assertNotIn('degree', pattern)
-        self.assertNotIn('chord', pattern)
-        self.assertEqual((pattern['steps'], pattern['step_size']), (2, '1/4'))
-        Song.from_data(document.data)
+        pattern = document.song().get_pattern('a')
+        self.assertTrue(pattern.is_drum())
+        self.assertIsNone(pattern.get_row(Row.DEGREE))
+        self.assertIsNone(pattern.get_row(Row.CHORD))
+        self.assertEqual((pattern.get_steps(), pattern.get_step_size()), (2, Fraction(1, 4)))
 
     def test_forward_is_not_written(self):
         document = song_with_things()
-        document.set_direction('a', 'pendulum')
-        self.assertEqual(document.data['patterns']['a']['direction'], 'pendulum')
-        document.set_direction('a', 'forward')
-        self.assertNotIn('direction', document.data['patterns']['a'])
+        document.set_direction('a', Direction.PENDULUM)
+        self.assertEqual(document.song().get_pattern('a').get_direction(), Direction.PENDULUM)
+        document.set_direction('a', Direction.FORWARD)
+        self.assertNotIn(PatternSetting.DIRECTION, document.song().get_pattern('a').to_data())
 
     def test_flip_and_swap_move_every_row(self):
         document = song_with_things()
-        document.data['patterns']['x'] = {'steps': 4, 'degree': [1, 2, 3, 4], 'velocity': [10, None, 30, 40]}
+        add_pattern_with_rows(document, 'x', FLIPPED_PATTERN_STEPS, FLIPPED_PATTERN_ROWS)
         document.flip_after('x', 0)
-        self.assertEqual(document.data['patterns']['x']['degree'], [1, 4, 3, 2])
-        self.assertEqual(document.data['patterns']['x']['velocity'], [10, 40, 30, None])
+        self.assertEqual(document.song().get_pattern('x').get_row(Row.DEGREE), [1, 4, 3, 2])
+        self.assertEqual(document.song().get_pattern('x').get_row(Row.VELOCITY), [10, 40, 30, None])
         self.assertEqual(document.swap_around('x', 1), 2)
-        self.assertEqual(document.data['patterns']['x']['degree'], [3, 2, 4, 1])
+        self.assertEqual(document.song().get_pattern('x').get_row(Row.DEGREE), [3, 2, 4, 1])
         self.assertTrue(document.dirty)
 
     def test_load_over_copies_everything_and_stays_separate(self):
         document = song_with_things()
         document.load_over('unused', 'a')
-        self.assertEqual(document.data['patterns']['unused'], document.data['patterns']['a'])
-        document.set_step_value('unused', 'degree', 0, 7)
-        self.assertEqual(document.step_value('a', 'degree', 0), 1)
+        self.assertEqual(document.song().get_pattern('unused').to_data(), document.song().get_pattern('a').to_data())
+        document.set_step_value('unused', Row.DEGREE, 0, 7)
+        self.assertEqual(document.step_value('a', Row.DEGREE, 0), 1)
 
     def test_degree_limit_uses_the_biggest_scale_this_pattern_can_play_in(self):
         document = song_with_things()
         self.assertEqual(document.degree_limit('unused'), 7)
-        document.data['scale'] = None
+        document.set_scale_name(None)
         self.assertEqual(document.degree_limit('unused'), 7)
-        document.data['scales']['all'] = {'root': 'C', 'type': 'chromatic'}
-        document.data['scenes'][0]['scale'] = 'all'
+        document.add_scale('all', NoteName.C, scale_type_name(ScaleType.CHROMATIC))
+        document.set_scene_scale(0, 'all')
         self.assertEqual(document.degree_limit('a'), 12)
         self.assertEqual(document.degree_limit('unused'), 7)
 
     def test_note_names(self):
         document = song_with_things()
-        document.data['scale'] = 'main'
-        document.data['scales']['main'] = {'root': 'F', 'type': 'major'}
-        document.set_step_value('a', 'octave', 0, 2)
+        document.add_scale('main', NoteName.F, scale_type_name(ScaleType.MAJOR))
+        document.set_scale_name('main')
+        document.set_step_value('a', Row.OCTAVE, 0, 2)
         self.assertEqual(document.note_name('a', 0), 'F2')
         self.assertEqual(document.note_name('a', 1), 'A3')
-        document.set_step_value('a', 'accidental', 1, 'b')
+        document.set_step_value('a', Row.ACCIDENTAL, 1, Accidental.FLAT)
         self.assertEqual(document.note_name('a', 1), 'G#3')
 
     def test_note_name_past_the_top_of_the_scale_wraps_up(self):
         document = song_with_things()
-        document.set_step_value('a', 'degree', 0, 8)
+        document.set_step_value('a', Row.DEGREE, 0, 8)
         self.assertEqual(document.note_name('a', 0), 'C4')
 
     def test_note_name_for_a_drum(self):
         document = song_with_things()
         document.add_pattern('d', 1)
         document.set_drum('d', True)
-        document.set_step_value('d', 'degree', 0, 'F')
-        document.set_step_value('d', 'accidental', 0, '#')
+        document.set_step_value('d', Row.DEGREE, 0, 'F')
+        document.set_step_value('d', Row.ACCIDENTAL, 0, Accidental.SHARP)
         self.assertEqual(document.note_name('d', 0), 'F#1')
 
     def test_note_name_without_a_scale(self):
         document = song_with_things()
-        document.data['scale'] = None
+        document.set_scale_name(None)
         self.assertIsNone(document.note_name('a', 0))
 
 

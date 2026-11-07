@@ -30,6 +30,11 @@ def render_data(data):
     return SongRenderer(Song.from_data(data)).render()
 
 
+def render_song(song):
+    """Return the ClipGrid of finished clips that a Song renders into."""
+    return SongRenderer(song).render()
+
+
 def render_file(path):
     """Return the ClipGrid of finished clips that a song file renders into."""
     return SongRenderer(Song.read_file(path)).render()

@@ -64,8 +64,15 @@ class ValueKind:
 
 
 # The choices for settings that pick one of several names, by the name a file uses.
-ORDERS = {member.name.lower(): member for member in ChordOrder}
-OCTAVE_JUMPS = {member.name.lower(): member for member in OctaveJump}
+
+
+def written_name(member):
+    """Return a chord order or octave jump as a file writes it, like 'up' or 'after_each_note'."""
+    return member.name.lower()
+
+
+ORDERS = {written_name(member): member for member in ChordOrder}
+OCTAVE_JUMPS = {written_name(member): member for member in OctaveJump}
 
 
 class GeneratorSettings(LlamaData):

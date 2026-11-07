@@ -25,7 +25,7 @@ from rich.text import Text
 
 from llamatron.composition.checks import is_written_length
 from llamatron.composition.file_format import (
-    CC_ROWS, CHORD_SYMBOLS, DIRECTIONS, FORWARD, GATE_LENGTH_CHOICES, NOTE_LETTERS, REGISTER_ADD_ROWS,
+    CC_ROWS, CHORD_SYMBOLS, DIRECTIONS, GATE_LENGTH_CHOICES, NOTE_LETTERS, REGISTER_ADD_ROWS,
     REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, TOGGLE_ROWS, ChordSymbol, GateModifier,
 )
 from llamatron.composition.limits import MAX_GATE, MAX_REGISTER_VALUE, MAX_STEP_SIZE, MIN_REGISTER_VALUE
@@ -205,10 +205,15 @@ class PatternEditor(Page):
     # What's under the cursor.
 
     def pattern(self):
-        return self.document.data['patterns'][self.item]
+        return self.document.song().get_pattern(self.item)
 
     def is_drum(self):
-        return bool(self.pattern().get('drum'))
+        return self.pattern().is_drum()
+
+    def default_octave(self):
+        """Return the octave a step of this pattern starts on when it has none: the song's drum or note default."""
+        song = self.document.song()
+        return song.get_default_drum_octave() if self.is_drum() else song.get_default_octave()
 
     def rows(self):
         """Return the rows on screen. Chords and moving notes by registers aren't used in a drum pattern."""
@@ -227,7 +232,7 @@ class PatternEditor(Page):
         return self.value('degree', step) is not None
 
     def steps(self):
-        return self.pattern()['steps']
+        return self.pattern().get_steps()
 
     def clamp(self):
         self.step = max(min(self.step, self.steps() - 1), 0)
@@ -352,8 +357,7 @@ class PatternEditor(Page):
         if self.value(TIE_ROW):
             self.set_value(False, TIE_ROW)
         if self.value('octave') is None:
-            setting = 'default_drum_octave' if self.is_drum() else 'default_octave'
-            self.set_value(self.document.data[setting], 'octave')
+            self.set_value(self.default_octave(), 'octave')
 
     def typed_number(self, digit, low, high):
         """Return the number made by another digit, or just that digit if it would be too big."""
@@ -413,7 +417,7 @@ class PatternEditor(Page):
         self.ask_length(GATE_PROMPT, self.value('gate') or '', MAX_GATE, lambda text: self.set_value(text, 'gate'), blank_allowed=False)
 
     def ask_step_size(self):
-        current = self.pattern().get('step_size') or ''
+        current = self.pattern().get_written_step_size() or ''
         self.ask_length(STEP_SIZE_PROMPT, current, MAX_STEP_SIZE, lambda text: self.document.set_step_size(self.item, text), blank_allowed=True)
 
     def ask_length(self, title, current, most, then, blank_allowed):
@@ -457,7 +461,7 @@ class PatternEditor(Page):
         current = self.value()
         if current is not None:
             return current
-        return self.document.data['default_drum_octave' if self.is_drum() else 'default_octave']
+        return self.default_octave()
 
     def nudge_octave(self, offset):
         self.set_value(max(min(self.octave_now() + offset, MAX_OCTAVE), MIN_OCTAVE))
@@ -489,7 +493,7 @@ class PatternEditor(Page):
         self.ask(PromptDialog(f'{ROW_LABELS[name]} ({low} to {high})', self.number_now()), answered)
 
     def pick_direction(self):
-        current = self.pattern().get('direction', FORWARD)
+        current = self.pattern().get_direction()
         labels = columns([(name.replace('_', ' '), DIRECTION_NAMES[name]) for name in DIRECTIONS])
         self.ask(
             ChoiceDialog('Play direction', labels, DIRECTIONS.index(current)),
@@ -521,7 +525,7 @@ class PatternEditor(Page):
         self.step = self.document.swap_around(self.item, self.step)
 
     def load_over(self):
-        others = [name for name in self.document.data['patterns'] if name != self.item]
+        others = [name for name in self.document.song().get_pattern_names() if name != self.item]
         if not others:
             self.status = 'There are no other patterns to load.'
             return
@@ -583,7 +587,7 @@ class PatternEditor(Page):
     def rename(self):
         def named(text):
             text = text.strip()
-            patterns = self.document.data['patterns']
+            patterns = self.document.song().get_pattern_names()
             if not text or (text != self.item and text in patterns):
                 self.status = 'That name is empty or already in use.'
             elif text != self.item:
@@ -607,7 +611,7 @@ class PatternEditor(Page):
         if not note and name not in REST_EDITABLE:
             return ''
         if name == 'octave':
-            return str(self.document.data['default_drum_octave' if self.is_drum() else 'default_octave'] if value is None else value)
+            return str(self.default_octave() if value is None else value)
         if name in NUMBER_DEFAULT:
             if value is None:
                 return '.' if name in QUIET_ROWS else str(NUMBER_DEFAULT[name])
@@ -622,14 +626,14 @@ class PatternEditor(Page):
 
     def header_lines(self):
         pattern = self.pattern()
-        drum = '[x]' if pattern.get('drum') else '[ ]'
-        scale = 'no scale needed' if pattern.get('drum') else f"song: {self.document.data.get('scale') or 'none'}, or the scene's"
-        direction = pattern.get('direction', FORWARD).replace('_', ' ')
+        drum = '[x]' if pattern.is_drum() else '[ ]'
+        scale = 'no scale needed' if pattern.is_drum() else f"song: {self.document.song().get_scale_name() or 'none'}, or the scene's"
+        direction = pattern.get_direction().replace('_', ' ')
         extra = ROW_SET_HEADERS.get(self.holder.row_set, f'Scale {scale}')
-        whose = '' if pattern.get('step_size') else SONG_STEP_SIZE_SHOWN
+        whose = '' if pattern.get_written_step_size() else SONG_STEP_SIZE_SHOWN
         step_size = STEP_SIZE_SHOWN.format(size=fraction_text(self.document.step_size(self.item)), whose=whose)
         return [
-            Text(f'  Steps {pattern["steps"]}    {step_size}    Drum {drum}    Direction {direction}', no_wrap=True),
+            Text(f'  Steps {pattern.get_steps()}    {step_size}    Drum {drum}    Direction {direction}', no_wrap=True),
             Text(f'  {extra}', no_wrap=True),
         ]
 
@@ -663,7 +667,7 @@ class PatternEditor(Page):
         step = self.step + 1
         if not self.is_note():
             return (DESCRIBE_TIED if self.value(TIE_ROW) else DESCRIBE_EMPTY).format(step=step)
-        where = '' if self.is_drum() else f' in {self.document.data.get("scale") or "no scale"}'
+        where = '' if self.is_drum() else f' in {self.document.song().get_scale_name() or "no scale"}'
         played = self.document.note_name(self.item, self.step)
         sound = f'{played}{where}' if played else f'degree {self.value("degree")}, no scale'
         chord = self.value('chord')

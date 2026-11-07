@@ -110,6 +110,18 @@ class Scene(LlamaData):
         end = number(settings[SceneSetting.TEMPO_END])
         return start + (end - start) * _ramp_fraction(place, self.get_repeat())
 
+    def get_tempo_setting(self):
+        """Return the tempo it sets for all its repeats, as written, or None if it has none or ramps."""
+        return self._settings[SceneSetting.TEMPO]
+
+    def get_tempo_start(self):
+        """Return the tempo its ramp starts from, as written, or None if it doesn't ramp."""
+        return self._settings[SceneSetting.TEMPO_START]
+
+    def get_tempo_end(self):
+        """Return the tempo its ramp ends at, as written, or None if it doesn't ramp."""
+        return self._settings[SceneSetting.TEMPO_END]
+
     def get_reset_names(self):
         """Return the registers it sets back to their defaults as it starts, in the order the registers come."""
         reset = self._settings[SceneSetting.RESET] or []

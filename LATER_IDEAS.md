@@ -186,10 +186,15 @@ makes undo, redo and wizards easier, because every change then goes through one 
 the readability rules in CLAUDE.md (named constants, `MSG_` templates, named helpers and
 `__slots__`), including the symbols the format defines: note names are `NoteName` constants and
 chord symbols are `ChordSymbol` constants. The grid of finished clips is `ClipGrid` in
-`src/llamatron/clip_grid.py`, so `Song` in `composition/song.py` is the only song. Still to do:
-the tracker moving onto the objects, page by page, and the accessor
-audit, which replaces `_Validated` and attribute access with `get_` and `set_` methods in
-`clip_grid.py`, the generators and renderers, and `Note`'s `midi_number` property.
+`src/llamatron/clip_grid.py`, so `Song` in `composition/song.py` is the only song. Every page
+of the tracker now reads the song through `document.song()`, a `Song` built from the document's
+data and kept until the next change, and changes it only through `Document` methods, and the
+tests do the same (no test touches `document.data`). Still to do: `Document` itself still holds
+the file's data and edits it in those methods, so the next step is setters on the composition
+objects that share their checks with `from_data`, after which `Document` holds a `Song` and the
+data goes away; then the accessor audit, which replaces `_Validated` and attribute access with
+`get_` and `set_` methods in `clip_grid.py`, the generators and renderers, and `Note`'s
+`midi_number` property.
 
 Decided with the user on 2026-11-06:
 

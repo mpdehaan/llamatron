@@ -26,14 +26,14 @@ from llamatron.note import Note, NoteName
 from llamatron.scale import ScaleType
 from llamatron.composition.defaults import DEFAULT_TRANSPOSE
 from llamatron.composition.file_format import CC_ROWS, NAMED_GENERATORS, STEP_SIZE_CHOICES, GeneratorKind, Section
-from llamatron.composition.generator_settings import ArpSetting, AutoRatchetSetting
+from llamatron.composition.generator_settings import ArpSetting, AutoRatchetSetting, written_name
 from llamatron.composition.limits import MAX_CC_NUMBER, MAX_LIVE_OCTAVE, MAX_TEMPO, MAX_TRANSPOSE, MIN_CC_NUMBER, MIN_LIVE_OCTAVE, MIN_TEMPO
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.song import NO_TEXT
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.tui.arrange import ArrangePage
 from llamatron.tui.base import ARROWS, ARROWS_UP_DOWN, SITE, ChoiceDialog, ConfirmDialog, GridChoiceDialog, Page, PromptDialog, fit, grouped_grid, key, pressed_key
-from llamatron.tui.document import Document, NO_OFFSET, ROOTS, SCALE_KINDS, clock, unique_name
+from llamatron.tui.document import Document, NO_OFFSET, ROOTS, SCALE_KINDS, clock, tempo_text, unique_name
 from llamatron.tui.lists import Field, FieldPage, ListPage
 from llamatron.tui.pattern_editor import TOGGLE_OFF, TOGGLE_ON, PatternEditor
 from llamatron.tui.registers_page import RegistersPage
@@ -64,9 +64,9 @@ NO_STEP_SHOWN = ''
 SONG_SEED_SHOWN = '(song)'
 NO_SEED = 0
 DEFAULT_ARP_STEP = '1/16'
-ORDERS = [order.name.lower() for order in ChordOrder]
+ORDERS = [written_name(order) for order in ChordOrder]
 DEFAULT_ORDER = ORDERS[0]
-JUMPS = [jump.name.lower() for jump in OctaveJump]
+JUMPS = [written_name(jump) for jump in OctaveJump]
 # How many offsets a new set has, as on the Monomachine.
 DEFAULT_OFFSET_STEPS = 8
 # The scale picker's pages, each a name and its columns of (heading, scales) groups. The common
@@ -110,10 +110,6 @@ def scale_notes(root, kind):
     start = Note(root, 4)
     return ' '.join(start.half_step(step).name for step in ScaleType[kind.upper()].value)
 
-
-def tempo_text(tempo):
-    """Return a tempo as people write it: 120 rather than 120/1, and 97.5 for a tempo between whole numbers."""
-    return str(int(tempo)) if tempo.denominator == 1 else str(float(tempo))
 
 
 def _octave_moved(octave, offset):

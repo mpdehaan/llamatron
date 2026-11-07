@@ -31,6 +31,7 @@ from llamatron.chord import Chord
 from llamatron.note import Note
 from llamatron.renderers.timing import timed_events
 from llamatron.clip_grid import Clip, Control, cut_position
+from llamatron.composition.file_format import GeneratorKind
 from llamatron.composition.song_file_error import SongFileError
 from rendering import render_data
 from llamatron.tui import app as tui_app
@@ -200,9 +201,9 @@ class TestDocumentEdges(unittest.TestCase):
     def test_copying_a_chain_copies_its_steps(self):
         document = Document(good())
         new = document.copy_chain('x')
-        self.assertEqual(document.data['chains'][new], [{'arp': 'up'}])
-        document.data['chains'][new][0]['arp'] = 'other'
-        self.assertEqual(document.data['chains']['x'], [{'arp': 'up'}])
+        self.assertEqual(document.song().get_chain(new).get_steps(), [(GeneratorKind.ARP, 'up')])
+        document.remove_chain_step(new, 0)
+        self.assertEqual(document.song().get_chain('x').get_steps(), [(GeneratorKind.ARP, 'up')])
 
 
 class TestWaysIn(unittest.TestCase):

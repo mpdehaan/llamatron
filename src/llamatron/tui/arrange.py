@@ -19,36 +19,60 @@
 from rich.text import Text
 
 from llamatron.tui.base import ChoiceDialog, ConfirmDialog, Page, PromptDialog, columns, fit, key
-from llamatron.composition.file_format import DIRECTIONS, REGISTER_NAMES
+from llamatron.composition.defaults import DEFAULT_REPEAT
+from llamatron.composition.file_format import DIRECTIONS, REGISTER_NAMES, CellSetting
 from llamatron.composition.cell import MORPH_STYLES
-from llamatron.tui.document import DIRECTION_NAMES, clock, unique_name
+from llamatron.composition.limits import MAX_TEMPO, MIN_REPEAT, MIN_TEMPO
+from llamatron.tui.document import DIRECTION_NAMES, FIRST_MORPH_STYLE, clock, plain_number, tempo_text, unique_name
 from llamatron.tui.lists import PLUS, Field, FieldPage
 from llamatron.tui.pattern_editor import TOGGLE_OFF, TOGGLE_ON
 
-FIRST_MORPH_STYLE = next(iter(MORPH_STYLES))
 SCENE_WIDTH = 24
 # A scene's field for each register it can reset, like "Reset AX".
 RESET_LABEL = 'Reset {name}'
 RESET_WHAT = 'toggle'
 CELL_WIDTH = 13
+# What a scene is called when the file gives it no name, by its place from 1.
+UNNAMED_SCENE = 'scene {number}'
+# The marks after a clip's pattern on the grid, for anything beyond the pattern itself.
+DIRECTION_MARK = 'd'
+GRAB_MARK = 'g'
+MORPH_MARK = '~'
+LOOP_MARK = '∞'
+REPEAT_MARK = '×{repeat}'
+NONE_SHOWN = '(none)'
+NO_SCALE_SHOWN = 'none'
+SONG_SCALE_SHOWN = '(song: {scale})'
+SONG_TEMPO_SHOWN = '(song: {tempo} BPM)'
+TEMPO_SHOWN = '{tempo} BPM'
+MSG_PASTED_WITHOUT_GRAB = 'Pasted without its grab from {track}, which would go round in a circle here.'
+# How many times a clip can play, and how many a scene can.
+MAX_CLIP_REPEAT = 9999
+MAX_SCENE_REPEAT = 999
+
+
+def scene_name(scene, index):
+    """Return a scene's name, or what it's called by its place if the file gives it none."""
+    name = scene.get_name()
+    return UNNAMED_SCENE.format(number=index + 1) if name is None else str(name)
 
 
 def cell_text(cell):
     """Return what a clip shows on the grid, with marks for anything beyond its pattern."""
     if cell is None:
-        return '+'
-    name = cell['pattern']
+        return PLUS
+    name = cell.get_pattern_name()
     marks = ''
-    if cell.get('direction'):
-        marks += 'd'
-    if cell.get('grab_track'):
-        marks += 'g'
-    if cell.get('morph_to'):
-        marks += '~'
-    if cell.get('loop'):
-        marks += '∞'
-    if cell.get('repeat', 1) > 1:
-        marks += f"×{cell['repeat']}"
+    if cell.get_direction():
+        marks += DIRECTION_MARK
+    if cell.get_grab_track():
+        marks += GRAB_MARK
+    if cell.get_morph_target():
+        marks += MORPH_MARK
+    if cell.loops():
+        marks += LOOP_MARK
+    if cell.get_repeat() > DEFAULT_REPEAT:
+        marks += REPEAT_MARK.format(repeat=cell.get_repeat())
     if marks:
         return f'{fit(name, max(CELL_WIDTH - len(marks) - 2, 1)).rstrip()} {marks}'
     return name
@@ -78,7 +102,7 @@ class ArrangePage(Page):
         return self.document.song_seconds()
 
     def scenes(self):
-        return self.document.data['scenes']
+        return self.document.song().get_scenes()
 
     def tracks(self):
         return self.document.track_names()
@@ -150,9 +174,9 @@ class ArrangePage(Page):
 
     def scene_label(self, index):
         scene = self.scenes()[index]
-        repeat = scene.get('repeat', 1)
-        name = str(scene.get('name', f'scene {index + 1}'))
-        if repeat > 1:
+        repeat = scene.get_repeat()
+        name = scene_name(scene, index)
+        if repeat > DEFAULT_REPEAT:
             name += f' ×{repeat}'
         length = clock(self.document.scene_seconds(index))
         return f'{fit(f"{index + 1:>2} {name}", SCENE_WIDTH - len(length) - 1)}{length} '
@@ -198,8 +222,7 @@ class ArrangePage(Page):
         if self.on_plus_row():
             return 'Press Enter to add a scene.'
         document = self.document
-        scene = self.scenes()[self.row]
-        name = scene.get('name', f'scene {self.row + 1}')
+        name = scene_name(self.scenes()[self.row], self.row)
         length = clock(document.scene_seconds(self.row))
         problem = document.scene_problem(self.row)
         if problem and 'every clip' in problem:
@@ -217,8 +240,8 @@ class ArrangePage(Page):
 
     def add_scene(self):
         index = len(self.scenes()) if self.on_plus_row() else self.row + 1
-        names = {scene.get('name') for scene in self.scenes()}
-        self.document.add_scene(index, unique_name(f'scene {len(self.scenes()) + 1}', names))
+        names = {scene.get_name() for scene in self.scenes()}
+        self.document.add_scene(index, unique_name(UNNAMED_SCENE.format(number=len(self.scenes()) + 1), names))
         self.row, self.column = index, 0
 
     def copy_scene(self):
@@ -227,8 +250,8 @@ class ArrangePage(Page):
 
     def delete_scene(self):
         scene = self.scenes()[self.row]
-        count = len(scene.get('tracks') or {})
-        message = [f"Delete scene {scene.get('name', self.row + 1)}?"]
+        count = len(scene.get_track_names())
+        message = [f'Delete scene {scene_name(scene, self.row)}?']
         if count:
             message.append(f'This also deletes its {count} clip(s).')
         self.ask(ConfirmDialog('Delete', message), lambda _: self.document.delete_scene(self.row))
@@ -238,29 +261,25 @@ class ArrangePage(Page):
             self.row += offset
 
     def add_clip(self):
-        patterns = list(self.document.data['patterns'])
+        patterns = self.document.song().get_pattern_names()
         if not patterns:
             self.tell('No patterns', 'Add a pattern first, on the Patterns page.')
             return
         row, track = self.row, self.track()
 
         def chosen(place):
-            self.document.set_cell(row, track, {'pattern': patterns[place]})
+            self.document.add_cell(row, track, patterns[place])
             self.show_page(ClipPage(self.holder, row, track))
         self.ask(ChoiceDialog('Pattern for this clip', patterns), chosen)
 
     def copy_clip(self):
-        self.copied = dict(self.document.cell(self.row, self.track()))
+        self.copied = self.document.cell(self.row, self.track()).to_data()
         self.status = 'Copied the clip. Press V on another cell to paste it.'
 
     def paste_clip(self):
-        cell = dict(self.copied)
-        other = cell.get('grab_track')
-        if other is not None and (other == self.track() or self.document.grab_circle(self.row, self.track(), other)):
-            # The pasted clip can't grab from its own track or in a circle, so it keeps its notes.
-            del cell['grab_track']
-            self.status = f'Pasted without its grab from {other}, which would go round in a circle here.'
-        self.document.set_cell(self.row, self.track(), cell)
+        dropped = self.document.paste_cell(self.row, self.track(), self.copied)
+        if dropped is not None:
+            self.status = MSG_PASTED_WITHOUT_GRAB.format(track=dropped)
 
     def delete_clip(self):
         track, row = self.track(), self.row
@@ -284,89 +303,76 @@ class ScenePage(FieldPage):
     def __init__(self, holder, index):
         super().__init__(holder)
         self.index = index
-        self.crumbs = ('ARRANGE', self.scene().get('name', f'scene {index + 1}'))
+        self.crumbs = ('ARRANGE', scene_name(self.scene(), index))
 
     def duration(self):
         return self.document.scene_seconds(self.index)
 
     def scene(self):
-        return self.document.data['scenes'][self.index]
+        return self.document.song().get_scenes()[self.index]
 
     def rename(self):
         def named(text):
             text = text.strip()
             if text:
-                self.scene()['name'] = text
-                self.document.changed()
+                self.document.set_scene_name(self.index, text)
                 self.crumbs = ('ARRANGE', text)
-        self.ask(PromptDialog('Scene name', self.scene().get('name', '')), named)
+        self.ask(PromptDialog('Scene name', self.scene().get_name() or ''), named)
 
     def pick_scale(self):
-        scales = list(self.document.data['scales'])
+        scales = self.document.song().get_scale_names()
         options = ['(song)', *scales]
-        current = self.scene().get('scale')
+        current = self.scene().get_scale_name()
 
         def chosen(place):
-            if place == 0:
-                self.clear_scale()
-            else:
-                self.scene()['scale'] = scales[place - 1]
-                self.document.changed()
+            self.document.set_scene_scale(self.index, None if place == 0 else scales[place - 1])
         self.ask(ChoiceDialog('Scene scale', options, options.index(current) if current in options else 0), chosen)
 
     def clear_scale(self):
-        self.scene().pop('scale', None)
-        self.document.changed()
+        self.document.set_scene_scale(self.index, None)
 
     def tempo(self):
+        """Return the tempo the scene sets, or starts its ramp from, or None if it uses the song's."""
         scene = self.scene()
-        return scene.get('tempo', scene.get('tempo_start'))
+        return scene.get_tempo_start() if scene.get_tempo_setting() is None else scene.get_tempo_setting()
 
     def set_tempo(self, value):
-        scene = self.scene()
-        if 'tempo_end' in scene:
-            scene['tempo_start'] = value
-        else:
-            scene['tempo'] = value
-        self.document.changed()
+        self.document.set_scene_tempo(self.index, value)
 
     def clear_tempo(self):
-        for name in ('tempo', 'tempo_start', 'tempo_end'):
-            self.scene().pop(name, None)
-        self.document.changed()
+        self.document.clear_scene_tempo(self.index)
 
     def set_ramp(self, value):
-        scene = self.scene()
-        start = self.tempo() or self.document.data['tempo']
-        scene.pop('tempo', None)
-        scene['tempo_start'], scene['tempo_end'] = start, value
-        self.document.changed()
+        self.document.set_scene_tempo_ramp(self.index, value)
 
     def clear_ramp(self):
-        scene = self.scene()
-        start = scene.pop('tempo_start', None)
-        scene.pop('tempo_end', None)
-        if start is not None:
-            scene['tempo'] = start
-        self.document.changed()
+        self.document.clear_scene_tempo_ramp(self.index)
+
+    def scale_text(self):
+        scene_scale = self.scene().get_scale_name()
+        if scene_scale is not None:
+            return scene_scale
+        return SONG_SCALE_SHOWN.format(scale=self.document.song().get_scale_name() or NO_SCALE_SHOWN)
 
     def fields(self):
-        scene, song_tempo = self.scene(), self.document.data['tempo']
+        scene = self.scene()
+        song_tempo = plain_number(self.document.song().get_tempo())
         tempo = self.tempo()
-        end = scene.get('tempo_end')
+        end = scene.get_tempo_end()
+        repeat = scene.get_repeat()
         return [
-            Field('Name', lambda: scene.get('name', ''), None, self.rename),
-            Field('Scale', lambda: scene.get('scale') or f"(song: {self.document.data.get('scale') or 'none'})", None, self.pick_scale, 'choose', self.clear_scale, 'use the song scale'),
-            Field('Tempo', lambda: f'{tempo} BPM' if tempo is not None else f'(song: {song_tempo} BPM)',
+            Field('Name', lambda: scene.get_name() or '', None, self.rename),
+            Field('Scale', self.scale_text, None, self.pick_scale, 'choose', self.clear_scale, 'use the song scale'),
+            Field('Tempo', lambda: TEMPO_SHOWN.format(tempo=tempo) if tempo is not None else SONG_TEMPO_SHOWN.format(tempo=tempo_text(self.document.song().get_tempo())),
                   lambda d: self.set_tempo((tempo or song_tempo) + d),
-                  lambda: self.ask_number('Tempo', tempo or song_tempo, self.set_tempo, 10, 999), 'edit',
+                  lambda: self.ask_number('Tempo', tempo or song_tempo, self.set_tempo, MIN_TEMPO, MAX_TEMPO), 'edit',
                   self.clear_tempo, 'use the song tempo'),
-            Field('Tempo ramps to', lambda: f'{end} BPM' if end is not None else '(off)',
+            Field('Tempo ramps to', lambda: TEMPO_SHOWN.format(tempo=end) if end is not None else '(off)',
                   lambda d: self.set_ramp((end or tempo or song_tempo) + d),
-                  lambda: self.ask_number('Tempo ramps to', end or tempo or song_tempo, self.set_ramp, 10, 999), 'edit',
+                  lambda: self.ask_number('Tempo ramps to', end or tempo or song_tempo, self.set_ramp, MIN_TEMPO, MAX_TEMPO), 'edit',
                   self.clear_ramp, 'no ramp'),
-            Field('Repeat', lambda: scene.get('repeat', 1), lambda d: self.document.set_scene_repeat(self.index, max(scene.get('repeat', 1) + d, 1)),
-                  lambda: self.ask_number('Repeat', scene.get('repeat', 1), lambda n: self.document.set_scene_repeat(self.index, n), 1, 999)),
+            Field('Repeat', lambda: repeat, lambda d: self.document.set_scene_repeat(self.index, max(repeat + d, MIN_REPEAT)),
+                  lambda: self.ask_number('Repeat', repeat, lambda n: self.document.set_scene_repeat(self.index, n), MIN_REPEAT, MAX_SCENE_REPEAT)),
             *[self.reset_field(name) for name in REGISTER_NAMES],
         ]
 
@@ -404,8 +410,7 @@ class ClipPage(FieldPage):
     def __init__(self, holder, index, track):
         super().__init__(holder)
         self.index, self.track = index, track
-        name = holder.document.data['scenes'][index].get('name', f'scene {index + 1}')
-        self.crumbs = ('ARRANGE', str(name), track)
+        self.crumbs = ('ARRANGE', scene_name(holder.document.song().get_scenes()[index], index), track)
 
     def duration(self):
         return self.document.clip_seconds(self.index, self.track)
@@ -413,37 +418,36 @@ class ClipPage(FieldPage):
     def cell(self):
         return self.document.cell(self.index, self.track)
 
-    def set_value(self, name, value):
-        self.cell()[name] = value
-        self.document.changed()
+    def set_value(self, setting, value):
+        """Set one of the clip's settings, or None to leave it out and use its default."""
+        self.document.set_cell_setting(self.index, self.track, setting, value)
 
-    def clear(self, *names):
-        for name in names:
-            self.cell().pop(name, None)
-        self.document.changed()
+    def clear(self, setting):
+        self.set_value(setting, None)
 
-    def pick_pattern(self, title, name):
-        patterns = list(self.document.data['patterns'])
-        current = self.cell().get(name)
+    def pick_pattern(self, title, current, then):
+        """Ask for one of the song's patterns, starting on the current one, and pass its name to then."""
+        patterns = self.document.song().get_pattern_names()
         place = patterns.index(current) if current in patterns else 0
+        self.ask(ChoiceDialog(title, patterns, place), lambda item: then(patterns[item]))
 
-        def chosen(item):
-            self.set_value(name, patterns[item])
-            if name == 'morph_to':
-                self.cell().setdefault('morph_style', FIRST_MORPH_STYLE)
-        self.ask(ChoiceDialog(title, patterns, place), chosen)
+    def set_morph_target(self, pattern):
+        self.document.set_cell_morph_target(self.index, self.track, pattern)
+
+    def clear_morph(self):
+        self.document.clear_cell_morph(self.index, self.track)
 
     def pick_grab_track(self):
         tracks = [name for name in self.document.track_names() if name != self.track]
         if not tracks:
             self.tell('No other tracks', 'Add another track to grab notes from, on the Tracks page.')
             return
-        options = ['(none)', *tracks]
-        current = self.cell().get('grab_track')
+        options = [NONE_SHOWN, *tracks]
+        current = self.cell().get_grab_track()
 
         def chosen(item):
             if item == 0:
-                self.clear('grab_track')
+                self.clear(CellSetting.GRAB_TRACK)
                 return
             other = tracks[item - 1]
             circle = self.document.grab_circle(self.index, self.track, other)
@@ -451,41 +455,27 @@ class ClipPage(FieldPage):
                 self.tell('Circular grab', f"Grabbing from {other} would go round in a circle: {' → '.join(circle)}.",
                           'Remove the grab from another clip in this scene first.')
                 return
-            self.set_value('grab_track', other)
+            self.set_value(CellSetting.GRAB_TRACK, other)
         self.ask(ChoiceDialog('Grab track', options, options.index(current) if current in options else 0), chosen)
 
     def pick_chain(self):
-        chains = list(self.document.data['chains'])
-        options = ['(none)', *chains]
-        current = self.cell().get('chain')
+        chains = self.document.song().get_chain_names()
+        options = [NONE_SHOWN, *chains]
+        current = self.cell().get_chain_name()
 
         def chosen(item):
-            if item == 0:
-                self.clear('chain')
-            else:
-                self.set_value('chain', chains[item - 1])
+            self.set_value(CellSetting.CHAIN, None if item == 0 else chains[item - 1])
         self.ask(ChoiceDialog('Chain', options, options.index(current) if current in options else 0), chosen)
 
     def set_repeat(self, value):
-        cell = self.cell()
-        value = max(value, 1)
-        if value > 1:
-            cell['repeat'] = value
-        else:
-            # A morph runs across repeats, so it can't stay without them.
-            for name in ('repeat', 'morph_to', 'morph_style'):
-                cell.pop(name, None)
-        self.document.changed()
+        self.document.set_cell_repeat(self.index, self.track, value)
 
     def set_direction(self, direction):
-        if direction is None:
-            self.clear('direction')
-        else:
-            self.set_value('direction', direction)
+        self.set_value(CellSetting.DIRECTION, direction)
 
     def step_direction(self, offset):
         options = [None, *DIRECTIONS]
-        place = options.index(self.cell().get('direction'))
+        place = options.index(self.cell().get_direction())
         self.set_direction(options[(place + offset) % len(options)])
 
     def pick_direction(self):
@@ -494,58 +484,61 @@ class ClipPage(FieldPage):
             ('(pattern)', "use each pattern's direction"),
             *[(name.replace('_', ' '), DIRECTION_NAMES[name]) for name in DIRECTIONS],
         ])
-        place = options.index(self.cell().get('direction'))
+        place = options.index(self.cell().get_direction())
         self.ask(ChoiceDialog('Play direction', labels, place), lambda chosen: self.set_direction(options[chosen]))
 
     def direction_text(self):
-        direction = self.cell().get('direction')
+        direction = self.cell().get_direction()
         if direction:
             return direction.replace('_', ' ')
-        pattern = self.document.data['patterns'][self.cell()['pattern']]
-        return f"(pattern: {pattern.get('direction', 'forward').replace('_', ' ')})"
+        pattern = self.document.song().get_pattern(self.cell().get_pattern_name())
+        return f"(pattern: {pattern.get_direction().replace('_', ' ')})"
 
     def toggle_loop(self):
-        if self.cell().get('loop'):
-            self.clear('loop')
-        else:
-            self.set_value('loop', True)
+        self.set_value(CellSetting.LOOP, None if self.cell().loops() else True)
+
+    def morph_style(self):
+        return self.cell().get_morph_style_name() or FIRST_MORPH_STYLE
 
     def step_style(self, offset):
-        style = self.cell().get('morph_style', FIRST_MORPH_STYLE)
         styles = list(MORPH_STYLES)
-        place = styles.index(style)
-        self.set_value('morph_style', styles[(place + offset) % len(styles)])
+        place = styles.index(self.morph_style())
+        self.set_value(CellSetting.MORPH_STYLE, styles[(place + offset) % len(styles)])
 
     def fields(self):
         cell = self.cell()
+        repeat = cell.get_repeat()
         result = [
-            Field('Pattern', lambda: cell['pattern'], None, lambda: self.pick_pattern('Pattern', 'pattern'), 'choose'),
-            Field('Chain', lambda: cell.get('chain', '(none)'), None, self.pick_chain, 'choose', lambda: self.clear('chain'), 'no chain'),
-            Field('Repeat', lambda: cell.get('repeat', 1), lambda d: self.set_repeat(cell.get('repeat', 1) + d),
-                  lambda: self.ask_number('Repeat', cell.get('repeat', 1), self.set_repeat, 1, 9999)),
-            Field('Loop', lambda: 'on' if cell.get('loop') else 'off', None, self.toggle_loop, 'toggle'),
+            Field('Pattern', cell.get_pattern_name, None,
+                  lambda: self.pick_pattern('Pattern', cell.get_pattern_name(), lambda name: self.set_value(CellSetting.PATTERN, name)), 'choose'),
+            Field('Chain', lambda: cell.get_chain_name() or NONE_SHOWN, None, self.pick_chain, 'choose', lambda: self.clear(CellSetting.CHAIN), 'no chain'),
+            Field('Repeat', lambda: repeat, lambda d: self.set_repeat(repeat + d),
+                  lambda: self.ask_number('Repeat', repeat, self.set_repeat, MIN_REPEAT, MAX_CLIP_REPEAT)),
+            Field('Loop', lambda: 'on' if cell.loops() else 'off', None, self.toggle_loop, 'toggle'),
             Field('Direction', self.direction_text, self.step_direction, self.pick_direction, 'choose',
-                  lambda: self.clear('direction'), 'use the pattern\'s'),
+                  lambda: self.clear(CellSetting.DIRECTION), 'use the pattern\'s'),
         ]
-        if cell.get('repeat', 1) > 1:
-            result.append(Field('Morph to', lambda: cell.get('morph_to', '(none)'), None, lambda: self.pick_pattern('Morph to', 'morph_to'), 'choose',
-                                lambda: self.clear('morph_to', 'morph_style'), 'no morph'))
-            if cell.get('morph_to'):
-                result.append(Field('Morph direction', lambda: cell.get('morph_style', FIRST_MORPH_STYLE), self.step_style, lambda: self.step_style(1), 'next'))
+        if repeat > DEFAULT_REPEAT:
+            result.append(Field('Morph to', lambda: cell.get_morph_target() or NONE_SHOWN, None,
+                                lambda: self.pick_pattern('Morph to', cell.get_morph_target(), self.set_morph_target), 'choose',
+                                self.clear_morph, 'no morph'))
+            if cell.get_morph_target():
+                result.append(Field('Morph direction', self.morph_style, self.step_style, lambda: self.step_style(1), 'next'))
         result += [
-            Field('Grab track', lambda: cell.get('grab_track', '(none)'), None, self.pick_grab_track, 'choose',
-                  lambda: self.clear('grab_track'), 'no grab'),
+            Field('Grab track', lambda: cell.get_grab_track() or NONE_SHOWN, None, self.pick_grab_track, 'choose',
+                  lambda: self.clear(CellSetting.GRAB_TRACK), 'no grab'),
         ]
         return result
 
     def notes(self, width):
         document = self.document
+        cell = self.cell()
         lines = [Text(f'  Length    {clock(document.clip_seconds(self.index, self.track))}  of a {clock(document.scene_seconds(self.index))} scene', style='dim')]
-        if self.cell().get('loop'):
+        if cell.loops():
             lines.append(Text('  Plays until the other clips are done. One clip in a scene must not loop.', style='dim'))
-        elif self.cell().get('repeat', 1) == 1:
+        elif cell.get_repeat() == DEFAULT_REPEAT:
             lines.append(Text('  Set Repeat above 1 to choose a pattern to morph to.', style='dim'))
-        if 'grab_track' in self.cell() and not self.document.has_grab_steps(self.cell()['pattern']):
+        if cell.get_grab_track() is not None and not self.document.has_grab_steps(cell.get_pattern_name()):
             lines.append(Text('  Grab track only changes Grab steps, and this pattern has none yet.', style='dim'))
         problem = document.scene_problem(self.index)
         if problem:

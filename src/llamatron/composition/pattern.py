@@ -108,8 +108,12 @@ class Pattern(LlamaData):
 
     def get_step_size(self):
         """Return how long each of its steps is, in whole notes, or None to use the song's step size."""
-        step_size = self._settings[PatternSetting.STEP_SIZE]
+        step_size = self.get_written_step_size()
         return None if step_size is None else written_length(step_size, MAX_STEP_SIZE)
+
+    def get_written_step_size(self):
+        """Return its step size as the file writes it, like 1/8, or None to use the song's."""
+        return self._settings[PatternSetting.STEP_SIZE]
 
     def is_drum(self):
         return bool(self._settings[PatternSetting.DRUM])

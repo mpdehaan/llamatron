@@ -35,13 +35,15 @@ from llamatron.note import ROOT_NAMES, Note
 from llamatron.scale import ScaleType
 from llamatron.clip_grid import ClipGrid
 from llamatron.composition.defaults import (
-    DEFAULT_DRUM_OCTAVE, DEFAULT_OCTAVE, DEFAULT_SEED, DEFAULT_STEP_SIZE, DEFAULT_TEMPO, DEFAULT_TRANSPOSE,
+    DEFAULT_DRUM_OCTAVE, DEFAULT_OCTAVE, DEFAULT_SEED, DEFAULT_STEP_SIZE, DEFAULT_TEMPO, DEFAULT_TRANSPOSE, DEFAULT_REPEAT,
 )
 from llamatron.composition.file_format import (
     CC_ROWS, FORWARD, PATTERN_ROWS, REGISTER_ADD_ROWS, REGISTER_NAMES, REGISTER_NOTE_ROWS, PatternSetting,
-    Row, SceneSetting, Section, SongSetting, TOGGLE_ROWS, TrackSetting,
+    Row, SceneSetting, Section, SongSetting, TOGGLE_ROWS, TrackSetting, CellSetting,
 )
+from llamatron.composition.cell import MORPH_STYLES
 from llamatron.composition.generator_settings import ArpSetting
+from llamatron.composition.limits import MIN_REPEAT
 from llamatron.composition.register import Register
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.composition.song import Song
@@ -86,6 +88,16 @@ def fraction_text(value):
     return int(value) if value.denominator == 1 else f'{value.numerator}/{value.denominator}'
 
 
+def plain_number(number):
+    """Return an exact number as a whole number if it is one, and otherwise as a decimal, for showing and nudging."""
+    return int(number) if number.denominator == 1 else float(number)
+
+
+def tempo_text(tempo):
+    """Return a tempo as text, like 120 or 120.5."""
+    return str(plain_number(tempo))
+
+
 def clock(seconds):
     """Return seconds as minutes and seconds, like 3:05, or dashes if they aren't known."""
     if seconds is None:
@@ -114,6 +126,9 @@ def blank(row):
 REST_ROWS = (*CC_ROWS, Row.SLIDE, *REGISTER_ADD_ROWS.values())
 # A register change of nothing, which is the same as none.
 NO_CHANGE = 0
+# A scene's tempo is one of these: a tempo of its own, or a ramp from one to another.
+SCENE_TEMPO_SETTINGS = (SceneSetting.TEMPO, SceneSetting.TEMPO_START, SceneSetting.TEMPO_END)
+FIRST_MORPH_STYLE = next(iter(MORPH_STYLES))
 # An arp offset that leaves the note where it is, which a new step of offsets starts with.
 NO_OFFSET = 0
 # How a register's settings are named when one is refused.
@@ -623,7 +638,7 @@ class Document:
     def track_names(self):
         return list(self.data['tracks'])
 
-    def track(self, name):
+    def _track_data(self, name):
         """Return a track's settings, which the page for it changes in place."""
         return self.data['tracks'][name]
 
@@ -932,31 +947,122 @@ class Document:
         self.changed()
 
     def set_scene_repeat(self, index, repeat):
-        if repeat > 1:
-            self.data['scenes'][index]['repeat'] = repeat
+        self._set_scene_setting(index, SceneSetting.REPEAT, repeat if repeat > DEFAULT_REPEAT else None)
+
+    def set_scene_name(self, index, name):
+        self._set_scene_setting(index, SceneSetting.NAME, name)
+
+    def set_scene_scale(self, index, name):
+        """Set the scale a scene uses instead of the song's, or None to use the song's."""
+        self._set_scene_setting(index, SceneSetting.SCALE, name)
+
+    def set_scene_tempo(self, index, tempo):
+        """Set a scene's tempo, which is where its ramp starts if it has one."""
+        scene = self.data[Section.SCENES][index]
+        if SceneSetting.TEMPO_END in scene:
+            self._set_scene_setting(index, SceneSetting.TEMPO_START, tempo)
         else:
-            self.data['scenes'][index].pop('repeat', None)
+            self._set_scene_setting(index, SceneSetting.TEMPO, tempo)
+
+    def clear_scene_tempo(self, index):
+        """Make a scene use the song's tempo, dropping any ramp."""
+        scene = self.data[Section.SCENES][index]
+        for setting in SCENE_TEMPO_SETTINGS:
+            scene.pop(setting, None)
+        self.changed()
+
+    def set_scene_tempo_ramp(self, index, end):
+        """Make a scene's tempo ramp to a value across its repeats, from its tempo or the song's."""
+        scene = self.data[Section.SCENES][index]
+        start = scene.get(SceneSetting.TEMPO, scene.get(SceneSetting.TEMPO_START, self.data[SongSetting.TEMPO]))
+        scene.pop(SceneSetting.TEMPO, None)
+        scene[SceneSetting.TEMPO_START] = start
+        scene[SceneSetting.TEMPO_END] = end
+        self.changed()
+
+    def clear_scene_tempo_ramp(self, index):
+        """Stop a scene's tempo ramping, keeping where it started as its tempo."""
+        scene = self.data[Section.SCENES][index]
+        start = scene.pop(SceneSetting.TEMPO_START, None)
+        scene.pop(SceneSetting.TEMPO_END, None)
+        if start is not None:
+            scene[SceneSetting.TEMPO] = start
+        self.changed()
+
+    def _set_scene_setting(self, index, setting, value):
+        """Set one setting of a scene, or None to leave it out and use its default."""
+        scene = self.data[Section.SCENES][index]
+        if value is None:
+            scene.pop(setting, None)
+        else:
+            scene[setting] = value
         self.changed()
 
     # Clips.
 
     def cell(self, index, track):
-        return (self.data['scenes'][index].get('tracks') or {}).get(track)
+        """Return the Cell a track plays in a scene, or None if it plays nothing there."""
+        return self.song().get_scenes()[index].get_cell(track)
 
-    def set_cell(self, index, track, cell):
-        scene = self.data['scenes'][index]
-        if not scene.get('tracks'):
-            scene['tracks'] = {}
-        scene['tracks'][track] = cell
+    def _cell_data(self, index, track):
+        return (self.data[Section.SCENES][index].get(SceneSetting.TRACKS) or {}).get(track)
+
+    def add_cell(self, index, track, pattern):
+        """Give a track a clip in a scene, playing a pattern once."""
+        self._put_cell(index, track, {CellSetting.PATTERN: pattern})
+
+    def paste_cell(self, index, track, data):
+        """Put a copied cell on a track in a scene, and return the track a grab was dropped from, or None.
+
+        A pasted clip can't grab from its own track or in a circle, so then it keeps its own notes.
+        """
+        cell = dict(data)
+        other = cell.get(CellSetting.GRAB_TRACK)
+        dropped = None
+        if other is not None and (other == track or self.grab_circle(index, track, other)):
+            del cell[CellSetting.GRAB_TRACK]
+            dropped = other
+        self._put_cell(index, track, cell)
+        return dropped
+
+    def _put_cell(self, index, track, cell):
+        scene = self.data[Section.SCENES][index]
+        if not scene.get(SceneSetting.TRACKS):
+            scene[SceneSetting.TRACKS] = {}
+        scene[SceneSetting.TRACKS][track] = cell
         self.changed()
 
     def set_cell_setting(self, index, track, setting, value):
         """Set one setting of a cell, or None to leave it out and use its default."""
-        cell = self.data[Section.SCENES][index][SceneSetting.TRACKS][track]
+        cell = self._cell_data(index, track)
         if value is None:
             cell.pop(setting, None)
         else:
             cell[setting] = value
+        self.changed()
+
+    def set_cell_repeat(self, index, track, repeat):
+        """Set how many times a clip plays. Going back to once drops its morph, which runs across repeats."""
+        cell = self._cell_data(index, track)
+        repeat = max(repeat, MIN_REPEAT)
+        if repeat > DEFAULT_REPEAT:
+            cell[CellSetting.REPEAT] = repeat
+        else:
+            for setting in (CellSetting.REPEAT, CellSetting.MORPH_TO, CellSetting.MORPH_STYLE):
+                cell.pop(setting, None)
+        self.changed()
+
+    def set_cell_morph_target(self, index, track, pattern):
+        """Make a clip morph to a pattern across its repeats, in the first style unless it has one."""
+        cell = self._cell_data(index, track)
+        cell[CellSetting.MORPH_TO] = pattern
+        cell.setdefault(CellSetting.MORPH_STYLE, FIRST_MORPH_STYLE)
+        self.changed()
+
+    def clear_cell_morph(self, index, track):
+        cell = self._cell_data(index, track)
+        for setting in (CellSetting.MORPH_TO, CellSetting.MORPH_STYLE):
+            cell.pop(setting, None)
         self.changed()
 
     def delete_cell(self, index, track):

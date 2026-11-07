@@ -120,8 +120,12 @@ class Cell(LlamaData):
 
     def get_morph_style(self):
         """Return how it morphs, as a BlendMode, or None if it doesn't morph."""
-        style = self._settings[CellSetting.MORPH_STYLE]
+        style = self.get_morph_style_name()
         return None if style is None else MORPH_STYLES[style]
+
+    def get_morph_style_name(self):
+        """Return how it morphs as the file writes it, like 'left', or None if it doesn't morph."""
+        return self._settings[CellSetting.MORPH_STYLE]
 
     def get_grab_track(self):
         """Return the track its grab steps take notes from, or None if it doesn't grab."""
