@@ -1149,3 +1149,20 @@ the rules and still need refactoring:
 It's mechanical but wide: the text UI tests alone are thousands of lines. Doing it a test file at
 a time, with the full suite passing after each, keeps it safe, and it fits with the earlier note
 on making the tests less hard-coded.
+
+## The Registers page as a grid
+
+The Registers page (`R` on the main screen) lists sixteen settings in one column: AX default, AX
+minimum, AX maximum, AX wraps, then the same for BX, CX and DX. The user wants it drawn as a grid
+like the pattern editor's instead, with the registers' names, AX, BX, CX and DX, across the top
+and one row for each kind of setting down the side: default, minimum, maximum and wraps. Each
+value is then a cell, four columns by four rows, which reads at a glance and is much shorter.
+
+What it touches in the code: `RegistersPage` in `src/llamatron/tui/registers_page.py` is a
+`FieldPage`, a column of `Field`s, so it would become a page that draws its own grid, with a
+cursor that moves in both directions like the pattern editor's, and the keys depending on the
+row under the cursor: digits, `+` and `-`, `Enter` and `Bksp` on the number rows, and `Space` or
+`Enter` on the wraps row. The grid drawing in `PatternEditor.block_lines` could be shared, since
+it's the same box characters and reverse-video cursor. `Document.set_register_setting` and the
+refusal messages stay as they are, and `test_tui_pages.TestRegistersPage` would change with the
+keys. The help text would need rewriting for the new keys.
