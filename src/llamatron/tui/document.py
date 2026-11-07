@@ -27,6 +27,7 @@ import os
 
 import yaml
 
+from llamatron.safe_yaml import load_safely
 from llamatron.rational import Rational
 from llamatron.cli import replace_output
 from llamatron.renderers.ableton_project import AbletonProject
@@ -179,7 +180,7 @@ class Document:
         """Return a song from a file, or raise SongFileError if something's wrong with it."""
         try:
             with open(path, encoding='utf-8') as file:
-                data = yaml.safe_load(file)
+                data = load_safely(file)
         except OSError as error:
             raise SongFileError(f"can't read {path}: {error.strerror}") from error
         except yaml.YAMLError as error:

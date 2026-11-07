@@ -22,6 +22,23 @@ python3 -m venv .venv
 
 This adds the `llamatron` command to `.venv/bin`, along with the Live set it builds from, so it works from any folder. `-e` makes it use the code in this folder, so changes take effect without installing again.
 
+### The faster YAML parser
+
+Song files are YAML, and PyYAML reads them about ten times faster when it's built with [libyaml](https://github.com/yaml/libyaml), which makes a big song open almost instantly. Everything works without it. To see which parser you have:
+
+```
+.venv/bin/python -c "import yaml; print(yaml.__with_libyaml__)"
+```
+
+`True` means libyaml is in use. The PyYAML wheels on PyPI include it, so a Python version that has a wheel gets it with the install above. For a Python version with no wheel yet, pip builds PyYAML from source, and it only includes libyaml if it finds the library and a working C compiler at that moment, so install those first and then rebuild:
+
+```
+brew install libyaml                                   # macOS; on Debian or Ubuntu: sudo apt install libyaml-dev
+.venv/bin/python -m pip install --force-reinstall --no-binary pyyaml --no-cache-dir "pyyaml==6.0.3"
+```
+
+On a Mac the compiler is Xcode's, which has to have had its license accepted once (`sudo xcodebuild -license accept`), and the library has to match the Python: an Apple Silicon Python needs Apple Silicon Homebrew in `/opt/homebrew`, not the Intel one in `/usr/local`. If the C parser can't be built, pip quietly builds PyYAML without it and llamatron falls back to the pure-Python parser.
+
 ## The text UI
 
 ```

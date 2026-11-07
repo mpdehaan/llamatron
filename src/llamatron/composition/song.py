@@ -18,6 +18,7 @@
 
 import yaml
 
+from llamatron.safe_yaml import load_safely
 from llamatron.composition.chain import Chain
 from llamatron.composition.checks import check_keys, live_octave, number, reading, written_length
 from llamatron.composition.defaults import (
@@ -91,12 +92,12 @@ class Song(LlamaData):
     def read_file(cls, path):
         """Return the song in a song file, or raise SongFileError if it can't be read or something's wrong with it.
 
-        The file is read with yaml.safe_load, which only ever makes plain data, so reading a file
+        The file is read with load_safely, which only ever makes plain data, so reading a file
         can never run code.
         """
         try:
             with open(path, encoding=FILE_ENCODING) as file:
-                data = yaml.safe_load(file)
+                data = load_safely(file)
         except OSError as error:
             raise SongFileError(MSG_CANT_READ.format(path=path, reason=error.strerror)) from error
         except yaml.YAMLError as error:

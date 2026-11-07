@@ -24,6 +24,7 @@ import re
 
 import yaml
 
+from llamatron.safe_yaml import load_safely
 from llamatron.composition.file_format import PATTERN_ROWS, PatternSetting, Section, SceneSetting, SongSetting
 
 # Text that can be written without quotes: it starts with a letter, digit or underscore, and
@@ -97,7 +98,7 @@ def _text(value):
 
 def _reads_back_as_itself(text):
     """Return whether text can be written without quotes and still read back as the same text."""
-    return _PLAIN.fullmatch(text) is not None and yaml.safe_load(LIST.format(items=text)) == [text]
+    return _PLAIN.fullmatch(text) is not None and load_safely(LIST.format(items=text)) == [text]
 
 
 def _first_line(text):
