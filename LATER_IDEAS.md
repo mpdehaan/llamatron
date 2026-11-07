@@ -3,45 +3,14 @@
 The user's ideas for later, recorded by Claude, with what each one would mean for the code. It's
 also where the user asks what they want to do and what would need to change as a result, so each
 idea notes its implications: what it touches, what it depends on, and what's still undecided.
-Nothing here is built or fully agreed yet. Ideas are added when the user asks.
+Nothing here is finished: an idea is removed once it's built. Ideas are added when the user asks.
 
 Ideas are marked **HIGH PRIORITY** or **low priority** where the user has said so. Everything
-else is unranked.
+else is unranked. Anything marked **In progress**, started but not finished, counts as a
+priority without being marked one: when the user asks what to do next, name the unfinished work
+first, before any idea that hasn't been started.
 
 ## HIGH PRIORITY
-
-### Note lengths as gates
-
-**Done, in version 1.0.5.** Every step of a pattern now lasts its step size (`step_size`, set
-on the song and optionally on a pattern, replacing `granularity` and `default_length`), and a
-step's `gate` says how long its note sounds, with a `dot` row for dotted and triplet gates. A
-gate can run past later steps, up to the end of the pattern. Every example was converted, and
-renders exactly as before, except the scenes that play in a direction, which the user accepted.
-What follows is the original note. The user's intent was that Granularity sets the width of each cell in the
-pattern editor, and so how far apart steps and rests are, while a note's length is its gate:
-how long the note sounds, which can be shorter than its cell. Today it works the other way. Each
-step's Duration is both how long its note sounds and how far it is to the next step, so a short
-note needs a rest step after it. CLAUDE.md describes the current way as deliberate ("steps aren't
-fixed slices of time"), so that rule changes with this.
-
-The demos show the cost. The staccato theme of In the Hall of the Mountain King had to be
-written as plain legato eighths, and The Entertainer needed a rest step after every note that
-doesn't fill its space.
-
-To think through before building it:
-
-- **Existing files.** Songs written today use Duration as spacing. They'd need to keep working,
-  which makes this a structural change of the kind the format version number (below) is for.
-- **Notes longer than their cell.** If a gate can be longer than the cell, notes overlap, and a
-  track plays more than one note at once. Whether that's allowed, cut at the next note, or
-  handled by the tie row needs deciding.
-- **Everything that works on steps.** Ratchet would split the cell or the gate. Glide runs a
-  note into the next one. Directions, `rhythm_from`, morphing and grabs all assume a step's
-  length today, and arpeggiators and AutoRatchets fill a note's length.
-- **The pattern editor.** Cells of equal width make bars visible, which the editor deliberately
-  doesn't draw today, so the screen could change a lot.
-- **The renderers.** Timing comes from `src/llamatron/renderers/timing.py` for both renderers,
-  so the change would be made in one place there.
 
 ### Better Readme
 
@@ -53,28 +22,6 @@ Make sure every song mentions where it came from or if it is original, and what 
 Keep the format consistent for each song, keep the demos sorted by name in this file.
 
 The README needs a screenshot so I'll take one and you can add it above the fold after the initial description.
-
-### A Tie row
-
-**Done, in version 1.0.9.** A Tie row on the editor's normal rows, only on empty steps: a tied
-step holds the note that played just before it through the step, the longer of the gate and the
-ties wins, a tie at the start of a pass continues the last note of the pass before across a
-clip's repeats and loops, and a tie at the very start of a clip (including a new scene's) is
-silence, as the user decided. The Entertainer turned out to have no notes held over a phrase end,
-so it didn't need ties. What follows is the original note.
-
-Gates already hold a note across steps within a pattern, so a
-tie is only needed to carry a note across the end of a pattern, into the next repeat or clip,
-which gates deliberately don't do. A toggle row on the editor's normal rows, the main page, that carries a note
-on into the next step instead of playing it again, and across the end of a pattern into the
-next clip. The Entertainer needed it all through: a note held over the end of a four-bar phrase
-is cut there and played again. With equal cells, a tie also makes a long note out of several
-cells, which could make a separate gate length less needed. The two ideas have to be thought
-through together.
-
-To think about: what a tie does into a rest or a different pitch, ties across repeats and
-loops, ties into a clip on another scene, and how ties interact with ratchets, directions,
-morphs and grabs.
 
 ### Scene names
 
@@ -132,71 +79,69 @@ safety net for refactoring is the existing tests, including the ones that check 
 generator against its sources, plus comparing what each demo renders before and after a change
 by hand, as a one-off check while refactoring, rather than as a kept test.
 
-**Phase 1: refactoring** (see "Refactoring"). Started on 2026-11-06, in this order: steps 6
-and 7's new classes first, with the serialization, then the tracker moved onto them, then
-gates (Phase 2) as the next piece of work.
+**Phase 1: refactoring** (see "Refactoring"). Started on 2026-11-06, in this order: step 5's
+new classes first, with the serialization, which is done, then the tracker moved onto them and
+step 6's accessor audit, which are still to do. Gates, the Tie row and registers were built in
+between.
 
 4. Decide which is the real model of a song. The serialization plan under "Refactoring" answers
    it in favor of the objects, if the user agrees.
-5. (AutoRatchet was going to be retired here. The user decided on 2026-11-06 to keep it, so
-   this step is gone.)
-6. Eliminate `song_file.py` as a class: every object gets `to_data()` and `from_data()`, the song
+5. Eliminate `song_file.py` as a class: every object gets `to_data()` and `from_data()`, the song
    saves and loads itself through them, and the music logic moves into objects with one job
    each, keeping behavior identical.
-7. The accessor audit: one class per file, `get_` and `set_` methods with validation in place
+6. The accessor audit: one class per file, `get_` and `set_` methods with validation in place
    of `_Validated` and attribute access, only where other classes use them, and every page
    change going through `Document` methods.
-8. Octave numbering: the song file switches to llamatron's own numbering, starting at 0, with
+7. Octave numbering: the song file switches to llamatron's own numbering, starting at 0, with
    the format version going up and the examples converted, and the tracker shows octaves through
    a display setting on the song that defaults to Live's labels (see "Octave numbering" under
    "Other design decisions to revisit").
-9. The seed check, which may change random outcomes once, on purpose.
+8. The seed check, which may change random outcomes once, on purpose.
 
 **Phase 2: the HIGH PRIORITY timing changes**
 
-10. Gates (version 1.0.5) and the Tie row (version 1.0.9) are done. Still to do here: time
-    signatures, with beats in bold.
-11. Undo and redo, which is simple once every change goes through `Document`. It could move
+9. Time signatures, with beats in bold.
+10. Undo and redo, which is simple once every change goes through `Document`. It could move
     earlier if it's needed while testing songs by hand.
 
 **Phase 3: what a song can express**
 
-12. Transpose on a clip.
-13. Pickups, if they can be made intuitive, after gates, ties and time signatures change how
+11. Transpose on a clip.
+12. Pickups, if they can be made intuitive, after gates, ties and time signatures change how
     bars work.
-14. Custom chord types and scale types, then inversions, with grabs aware of them, then grabbing
+13. Custom chord types and scale types, then inversions, with grabs aware of them, then grabbing
     whole chords.
-15. Sections, with their overrides, and the song order list of sections that plays them, which
+14. Sections, with their overrides, and the song order list of sections that plays them, which
     together replace the separate song order idea. Unique names (scenes especially) come first,
     and naming copies with numbers can be done at any time, since it's small.
-16. Swing and groove: the discussion of what it does to the MIDI first, then building it, after
+15. Swing and groove: the discussion of what it does to the MIDI first, then building it, after
     gates, since swing moves notes against their cells.
 
 **Phase 4: working with big songs**
 
-17. The many-patterns ideas: filtering, usage counts and going straight from a clip to its
+16. The many-patterns ideas: filtering, usage counts and going straight from a clip to its
     pattern, with `examples/entertainer_demo.yml` as the test case. Decide what Tab means
     before adding the first jump.
     Profile the same song for performance hot spots at this point (see "Performance hot
     spots"), since big songs are where they show.
     Fix moving through long patterns in the pattern editor here too, or with time signatures,
     since bars may decide how a long pattern is laid out.
-18. Looking at other trackers for ideas, before designing the larger features below. This can
+17. Looking at other trackers for ideas, before designing the larger features below. This can
     also happen at any time in the background.
 
 **Phase 5: generators, morphing and wizards**
 
-19. More morph types, and morphers as objects.
-20. Pattern generators and transforms, as generators or pattern mutators.
-21. A wizard framework, starting with the Metrics Wizard, which only reports and changes nothing.
-22. The Optimizer Wizard, which keeps a rewrite only if the song renders exactly the same notes.
-23. The MIDI import wizard, the hardest, building on the demo generator's approach.
+18. More morph types, and morphers as objects.
+19. Pattern generators and transforms, as generators or pattern mutators.
+20. A wizard framework, starting with the Metrics Wizard, which only reports and changes nothing.
+21. The Optimizer Wizard, which keeps a rewrite only if the song renders exactly the same notes.
+22. The MIDI import wizard, the hardest, building on the demo generator's approach.
 
 **Phase 6: getting music out**
 
-24. Exporting to Reaper, which is straightforward once the pattern player is separate from the
+23. Exporting to Reaper, which is straightforward once the pattern player is separate from the
     file reading. It could move up if trying another DAW soon matters.
-25. Real-time preview: a MIDI channel per track, choosing a port, the discussion of Python's
+24. Real-time preview: a MIDI channel per track, choosing a port, the discussion of Python's
     timing, then the helper program.
 
 **Low priority, whenever it suits:** named drum maps, and the shared library of patterns, chains
@@ -269,14 +214,12 @@ Decided with the user on 2026-11-06:
   step, and compared byte for byte, in Claude's scratchpad rather than in the project, along
   with the full test suite. AutoRatchet is converted along with everything else.
 
-Object orientation is a design goal throughout. `src/llamatron/song_file.py` does three jobs in
-about 900 lines: it reads and checks the file, it holds most of the music logic (grabs,
-accumulators, directions, `rhythm_from`, morphs, probability, CC lanes and turning steps into
-notes), and it builds the `Song` objects. It should go away as a class, with its work moved into
-the objects it's about: a pattern player that turns a pattern's steps into notes, separate
-classes for grabs, accumulators and directions, and the reading and writing below. Real-time
-preview, exports to other DAWs and the wizards would all want the music logic without the file
-reading, and it would be easier to test and read in pieces.
+Object orientation is a design goal throughout. `src/llamatron/song_file.py` used to do three
+jobs in about 900 lines: reading and checking the file, most of the music logic, and building
+the `Song` objects. It's gone now, split as planned into the composition objects and the pattern
+player, with separate classes for grabs, registers and directions (see below). Real-time
+preview, exports to other DAWs and the wizards all want the music logic without the file
+reading, which that split gives them.
 
 **Every object serializes itself.** Each object in a song, such as a track, has two clear
 methods: `to_data()`, which returns its settings as plain data (dictionaries, lists, text and
@@ -443,7 +386,7 @@ shows where a plain list of patterns starts to strain:
 - **Going straight from a clip to its pattern.** From a clip's page, or from a cell on the
   Arrange page, a key that opens that clip's pattern in the pattern editor, without going
   through the pattern list, would save the most steps in a long song. The same could work for
-  its `morph_to` and `rhythm_from` patterns, and for its chain. See "What Tab means" below,
+  its `morph_to` pattern, and for its chain. See "What Tab means" below,
   because a jump like this changes what going back means.
 - **Making many patterns at once.** Typing in a long piece means making one pattern per phrase
   per track. Copying a scene's patterns to new names in one step, or naming new patterns from
@@ -520,7 +463,7 @@ without counting key presses.
 ## Ideas from other trackers
 
 Look through other trackers for features worth borrowing, the way the Cirklon and the Elektron
-Monomachine have already given llamatron note grab, accumulators, step directions, CC slides
+Monomachine have already given llamatron note grab, registers, step directions, CC slides
 and its arpeggiator. Ones worth a look include Renoise, OpenMPT, Furnace and SunVox on the
 computer, LSDJ on the Game Boy, and the Polyend Tracker and Dirtywave M8 as hardware. Things to
 look for: how they handle long songs and many patterns (see above), effect columns and per-step
@@ -659,7 +602,6 @@ The search would try rewrites like these, each of which can be checked exactly:
 - two patterns that are the same become one;
 - patterns that differ only by moving along the scale become one pattern plus a transpose,
   where the tracks allow it;
-- patterns that share a rhythm but not notes use `rhythm_from`;
 - repeated equal notes become a Ratchet, or an AutoRatchet in a chain;
 - a run of notes that walks a chord becomes the chord plus an arpeggiator;
 - a passage that repeats becomes a clip with a repeat count.
@@ -927,44 +869,6 @@ The song should have a protect option that allows it to be changed but not saved
 can be protected and not accidentally overwritten.  You should be able to turn off the protec:wqt
 toggle and it should default to off, except for all the content that is included in the repo.
 
-## Accumulators: research what they do and what they should do
-
-**Replaced by Registers, built on 2026-11-06 in version 1.0.7.** The user designed a new system to take
-their place: four song-wide registers, AX, BX, CX and DX, each with a default, a minimum, a
-maximum and a choice to wrap, which pattern steps change with `AX+=` and read with `AX+Note`
-and `AX+Vel`, and which scenes can reset. The Note Add and Velocity Add rows and the add limit go.
-What follows is the earlier research, kept for its record of the old behavior.
-
-The user wants to research how the accumulators (the Note Add and Velocity Add rows, and the
-pattern's add limit) work today, and decide what they should do, because they look incomplete
-or confusing. What the code does today (`Accumulators` in `src/llamatron/playback/`, used by
-`PatternPlayer.play_pass`):
-
-- Each clip keeps a note total and a velocity total, starting at zero when the clip starts and
-  carrying on across its repeats and loops. Each repeat of a scene is a new clip, so the totals
-  start again there.
-- A step's add is added before the step plays, so a step's own add already applies to it.
-- **Rests never add.** A Note Add or Velocity Add on a step with no degree is ignored, because a
-  rest skips the rest of the step. That's easy to miss in the editor, which lets a rest hold one.
-- **A morph adds twice.** While a clip morphs, each repeat plays its own pattern and the target,
-  and both passes add to the same totals, so the totals move twice as fast as written, and the
-  target's adds count too. This looks like a bug rather than a choice.
-- A step that probability drops still adds, since the add happens before the roll.
-- Steps add in the order they play, so a direction changes how the total builds.
-- When a total goes past the limit in either direction, it clears to zero, and the step that
-  went past plays at zero. The limit defaults to 36, and the note total uses the notes
-  pattern's limit while the velocity total uses the rhythm pattern's, which matters with
-  `rhythm_from`.
-- The note total moves notes along the scale, after the track's transpose, and moves grabbed
-  notes too. A note pushed out of the MIDI range moves to the nearest octave that fits.
-  Velocity stays from 1 to 127.
-- Nothing on screen shows the running totals, so the effect can only be heard.
-
-Questions to settle: whether rests and dropped steps should add; how morphs should handle the
-totals; whether clearing to zero is right, or whether a total should wrap or turn back at the
-limit, and what the Cirklon itself offers here; whether totals should carry across a scene's
-repeats; and how the editor could show what a total will be at each step.
-
 ## Reviewing every hotkey in the text UI
 
 Review the letter keys on every page of the text UI, to see whether any could be more logical,
@@ -990,7 +894,7 @@ Things already worth a look:
 A pattern row that skips a step, with a probability, so that a pattern can be copied and made to
 skip a step now and then. A skip is not a rest: a rest still takes its step's time in silence,
 while a skip leaps straight ahead to the next step, so the steps after it come sooner and the
-pass is shorter. Things to settle: what a skipped step's CC values and accumulator changes do
+pass is shorter. Things to settle: what a skipped step's CC values and register changes do
 (probably nothing, since the step isn't played), how a skip combines with play directions, and
 how a pass that's shorter than its pattern fits a scene's length, since every pass lasts exactly
 steps times step size today. Probability would be rolled from the song's seed, like the other
@@ -1036,10 +940,10 @@ What the code does today, and what it means for this:
 - **Velocity can't change during a note.** In MIDI, velocity is sent once, when a note starts,
   so a held note can't swell by velocity. A riser on one long note needs a CC instead, such as
   CC 11 (expression), CC 7 (volume) or a filter cutoff the synth listens to, set in the track's
-  `cc` numbers. Velocity, and the registers being built now, can only change from note to note.
+  `cc` numbers. Velocity, and the registers, can only change from note to note.
   The GUIDE should say so where risers come up.
 - **Long notes:** a gate can now be up to 4 whole notes, but it's cut at the end of the
-  pattern, so a riser longer than one pattern needs the planned Tie row, or a long pattern.
+  pattern, so a riser longer than one pattern needs the Tie row, or a long pattern.
 - **Slides:** a step with `slide` ramps each CC value to that lane's next value. Live gets two
   envelope points and draws a straight line between them, which is smooth. The `.mid` files get
   a value every `SLIDE_STEP`, which is stepped at a fine grain. Things to check: whether
@@ -1114,16 +1018,6 @@ What the refactoring involves:
   a filled-in template or its fixed part.
 - It goes with the other test rules: format strings in tests as constants, one constant per
   line, and limits taken from the program (see CLAUDE.md).
-
-## Saving updates a song's version
-
-**Already done.** The user asked (2026-11-06) that saving a song updates its `version` field to
-the version of llamatron that saved it. That's how it works already: every save from the tracker,
-with `S` or `W`, goes through `Document.save`, whose `_saved_data` sets `version` to the
-program's `VERSION` before writing, whatever version the file had when it was loaded.
-`test/test_version.py` checks that a new song's saved file records the version. A second test
-checks that a file saved by an older version comes back with the current one. Rendering never writes the song file, so it never changes the
-version.
 
 ## Refactoring the tests to the program's style rules
 
