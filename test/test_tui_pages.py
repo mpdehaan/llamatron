@@ -34,7 +34,7 @@ from llamatron.tui.arrange import RESET_LABEL, ArrangePage, ClipPage, ScenePage
 from llamatron.tui.base import ChoiceDialog, ConfirmDialog, Dialog, GridChoiceDialog, MessageDialog, Page, PromptDialog
 from llamatron.composition.file_format import (
     REGISTER_ADD_ROWS, REGISTER_NAMES, REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, STEP_SIZE_CHOICES, RegisterName, Row,
-    SceneSetting, Section,
+    CellSetting, SceneSetting, Section,
 )
 from llamatron.composition.file_format import NAMED_GENERATORS
 from llamatron.composition.defaults import DEFAULT_REGISTER_MAXIMUM, DEFAULT_REGISTER_MINIMUM
@@ -62,6 +62,14 @@ QUIET_VALUE = '.'
 SMALL_SCALE = 'small'
 CHROMATIC_SCALE = 'all'
 EMPTY_CHAIN = 'x'
+# A five-step pattern the rearranging tests flip and swap, with a different value on every step.
+LONG_PATTERN = 'long'
+LONG_PATTERN_STEPS = 5
+LONG_PATTERN_ROWS = {
+    Row.DEGREE: [1, 2, 3, 4, 5],
+    Row.GATE: ['1/4', '1/8', '1/16', '1/2', '1'],
+    Row.VELOCITY: [10, 20, 30, 40, 50],
+}
 
 
 def fixed_text(template):
@@ -157,6 +165,13 @@ class UITest(unittest.IsolatedAsyncioTestCase):
             self.document.delete_scene(index)
         for name in self.document.song().get_track_names():
             self.document.delete_track(name)
+
+    def add_pattern_with_rows(self, name, steps, rows):
+        """Add a pattern through the document and fill its rows, given as {row: [value per step]}."""
+        self.document.add_pattern(name, steps)
+        for row, values in rows.items():
+            for step, value in enumerate(values):
+                self.document.set_step_value(name, row, step, value)
 
     def delete_every_generator(self):
         """Delete every arp and AutoRatchet, which the chains must have stopped using first."""
@@ -2046,14 +2061,12 @@ class TestRearrangingAPattern(UITest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.document.data['patterns']['long'] = {
-            'steps': 5, 'degree': [1, 2, 3, 4, 5], 'gate': ['1/4', '1/8', '1/16', '1/2', '1'], 'velocity': [10, 20, 30, 40, 50],
-        }
+        self.add_pattern_with_rows(LONG_PATTERN, LONG_PATTERN_STEPS, LONG_PATTERN_ROWS)
         await self.press('p', 'down', 'down', 'down', 'enter')
         self.editor = self.app.screen
 
-    def rows(self, row='degree'):
-        return self.document.data['patterns']['long'][row]
+    def rows(self, row=Row.DEGREE):
+        return self.document.song().get_pattern(LONG_PATTERN).get_row(row)
 
     async def test_flip_reverses_everything_after_the_cursor(self):
         await self.press('right', 'f')
@@ -2061,8 +2074,8 @@ class TestRearrangingAPattern(UITest):
 
     async def test_every_row_moves_with_its_step(self):
         await self.press('right', 'f')
-        self.assertEqual(self.rows('gate'), ['1/4', '1/8', '1', '1/2', '1/16'])
-        self.assertEqual(self.rows('velocity'), [10, 20, 50, 40, 30])
+        self.assertEqual(self.rows(Row.GATE), ['1/4', '1/8', '1', '1/2', '1/16'])
+        self.assertEqual(self.rows(Row.VELOCITY), [10, 20, 50, 40, 30])
 
     async def test_flip_twice_puts_it_back_and_the_cursor_stays(self):
         await self.press('right', 'f', 'f')
@@ -2077,12 +2090,12 @@ class TestRearrangingAPattern(UITest):
     async def test_swap_exchanges_both_sides_of_the_cursor(self):
         await self.press('right', 's')
         self.assertEqual(self.rows(), [3, 4, 5, 2, 1])
-        self.assertEqual(self.rows('gate'), ['1/16', '1/2', '1', '1/8', '1/4'])
+        self.assertEqual(self.rows(Row.GATE), ['1/16', '1/2', '1', '1/8', '1/4'])
 
     async def test_the_cursor_stays_on_its_step_so_swapping_twice_puts_it_back(self):
         await self.press('right', 's')
         self.assertEqual(self.editor.step, 3)
-        self.assertEqual(self.document.step_value('long', 'degree', self.editor.step), 2)
+        self.assertEqual(self.document.step_value(LONG_PATTERN, Row.DEGREE, self.editor.step), 2)
         await self.press('s')
         self.assertEqual(self.rows(), [1, 2, 3, 4, 5])
         self.assertEqual(self.editor.step, 1)
@@ -2093,14 +2106,14 @@ class TestRearrangingAPattern(UITest):
         self.assertEqual(self.editor.step, 4)
 
     async def test_the_time_stays_the_same(self):
-        before = self.document.pattern_length('long')
+        before = self.document.pattern_length(LONG_PATTERN)
         await self.press('right', 'f', 's')
-        self.assertEqual(self.document.pattern_length('long'), before)
+        self.assertEqual(self.document.pattern_length(LONG_PATTERN), before)
 
     async def test_load_replaces_everything_after_asking(self):
         await self.press('l')
         self.assertIsInstance(self.app.screen, ChoiceDialog)
-        self.assertNotIn('long', self.app.screen.options)
+        self.assertNotIn(LONG_PATTERN, self.app.screen.options)
         self.app.screen.place = self.app.screen.options.index('beat')
         await self.press('enter')
         self.assertIsInstance(self.app.screen, ConfirmDialog)
@@ -2109,7 +2122,8 @@ class TestRearrangingAPattern(UITest):
         await self.press('l')
         self.app.screen.place = self.app.screen.options.index('beat')
         await self.press('enter', 'y')
-        self.assertEqual(self.document.data['patterns']['long'], self.document.data['patterns']['beat'])
+        song = self.document.song()
+        self.assertEqual(song.get_pattern(LONG_PATTERN).to_data(), song.get_pattern('beat').to_data())
         self.assertEqual(self.editor.steps(), 2)
         self.assertIn('│ Note', self.text())
 
@@ -2117,15 +2131,15 @@ class TestRearrangingAPattern(UITest):
         await self.press('l')
         self.app.screen.place = self.app.screen.options.index('beat')
         await self.press('enter', 'y', 'right', 'f')
-        self.assertEqual(self.document.step_value('long', 'degree', 1), 'F')
+        self.assertEqual(self.document.step_value(LONG_PATTERN, Row.DEGREE, 1), 'F')
         self.assertIsNone(self.document.step_value('beat', 'degree', 1))
 
     async def test_load_keeps_the_name_and_what_uses_it(self):
-        self.document.cell(0, 'lead')['pattern'] = 'long'
+        self.document.set_cell_setting(0, 'lead', CellSetting.PATTERN, LONG_PATTERN)
         await self.press('l')
         self.app.screen.place = self.app.screen.options.index('other')
         await self.press('enter', 'y')
-        self.assertEqual(self.document.cell(0, 'lead')['pattern'], 'long')
+        self.assertEqual(self.document.song().get_scenes()[0].get_cell('lead').get_pattern_name(), LONG_PATTERN)
         render_data(self.document.data)
 
     async def test_the_old_keys_moved(self):

@@ -60,6 +60,14 @@ class NamedScale(LlamaData):
     def to_data(self):
         return {ScaleSetting.ROOT: self._root, ScaleSetting.TYPE: self._kind}
 
+    def get_root(self):
+        """Return its root as the file writes it, like 'F#'."""
+        return self._root
+
+    def get_kind(self):
+        """Return its type as the file writes it, like 'minor'."""
+        return self._kind
+
     def scale_at(self, octave):
         """Return this scale with its root in an octave, in this project's numbering."""
         return Scale(Note(self._root, octave), ScaleType[_scale_type_member(self._kind)])

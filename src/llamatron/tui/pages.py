@@ -21,16 +21,19 @@ import textwrap
 
 from rich.text import Text
 
-from llamatron.generators.arp import MAX_OCTAVE_RANGE, MAX_OFFSET, MAX_OFFSETS, ChordOrder, OctaveJump
+from llamatron.generators.arp import MAX_OCTAVE_RANGE, MAX_OFFSET, MAX_OFFSETS, MIN_OCTAVE_RANGE, ChordOrder, OctaveJump
 from llamatron.note import Note, NoteName
 from llamatron.scale import ScaleType
-from llamatron.composition.file_format import STEP_SIZE_CHOICES
-from llamatron.composition.limits import MAX_LIVE_OCTAVE, MAX_TEMPO, MAX_TRANSPOSE, MIN_LIVE_OCTAVE, MIN_TEMPO
+from llamatron.composition.defaults import DEFAULT_TRANSPOSE
+from llamatron.composition.file_format import CC_ROWS, NAMED_GENERATORS, STEP_SIZE_CHOICES, GeneratorKind, Section
+from llamatron.composition.generator_settings import ArpSetting, AutoRatchetSetting
+from llamatron.composition.limits import MAX_CC_NUMBER, MAX_LIVE_OCTAVE, MAX_TEMPO, MAX_TRANSPOSE, MIN_CC_NUMBER, MIN_LIVE_OCTAVE, MIN_TEMPO
+from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.song import NO_TEXT
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.tui.arrange import ArrangePage
 from llamatron.tui.base import ARROWS, ARROWS_UP_DOWN, SITE, ChoiceDialog, ConfirmDialog, GridChoiceDialog, Page, PromptDialog, fit, grouped_grid, key, pressed_key
-from llamatron.tui.document import Document, GENERATOR_SECTIONS, ROOTS, SCALE_KINDS, clock, unique_name
+from llamatron.tui.document import Document, NO_OFFSET, ROOTS, SCALE_KINDS, clock, unique_name
 from llamatron.tui.lists import Field, FieldPage, ListPage
 from llamatron.tui.pattern_editor import TOGGLE_OFF, TOGGLE_ON, PatternEditor
 from llamatron.tui.registers_page import RegistersPage
@@ -51,7 +54,18 @@ NO_SCALE = 'no scale'
 SONG_SUMMARY = '{tempo} BPM   {scale}   {patterns} patterns   {tracks} tracks   {scenes} scenes'
 MSG_ADD_A_SCALE_FIRST = 'Add a scale first, on the Scales page.'
 SONG_SCALE_TITLE = 'Song scale'
+# What the scale picker starts on when there's no scale to start from.
+NEW_SCALE_ROOT = NoteName.C
+NEW_SCALE_KIND = scale_type_name(ScaleType.MAJOR)
+# How a chain's step is shown: the kind of generator and its name.
+CHAIN_STEP_SHOWN = '{kind}: {name}'
+# How the arp pages show settings a file leaves out, and what they start from.
+NO_STEP_SHOWN = ''
+SONG_SEED_SHOWN = '(song)'
+NO_SEED = 0
+DEFAULT_ARP_STEP = '1/16'
 ORDERS = [order.name.lower() for order in ChordOrder]
+DEFAULT_ORDER = ORDERS[0]
 JUMPS = [jump.name.lower() for jump in OctaveJump]
 # How many offsets a new set has, as on the Monomachine.
 DEFAULT_OFFSET_STEPS = 8
@@ -548,14 +562,12 @@ class PatternsPage(ListPage):
     columns = (('NAME', None, 'left'), ('TYPE', 5, 'left'), ('STEPS', 5, 'right'), ('TIME', 6, 'right'), ('USED', 4, 'right'))
 
     def rows(self):
-        document = self.document
-        return [
-            (name, [
-                name, 'drum' if pattern.get('drum') else 'notes', pattern['steps'],
-                clock(document.pattern_seconds(name)), len(document.pattern_uses(name)),
-            ])
-            for name, pattern in document.data['patterns'].items()
-        ]
+        document, song = self.document, self.document.song()
+        return [(name, self.row_of(name, song.get_pattern(name), document)) for name in song.get_pattern_names()]
+
+    def row_of(self, name, pattern, document):
+        kind = 'drum' if pattern.is_drum() else 'notes'
+        return [name, kind, pattern.get_steps(), clock(document.pattern_seconds(name)), len(document.pattern_uses(name))]
 
     def keys(self):
         result = [*self.move_keys(), key('+', 'add', self.add)]
@@ -573,7 +585,7 @@ class PatternsPage(ListPage):
         return result
 
     def add(self):
-        patterns = self.document.data['patterns']
+        patterns = self.document.song().get_pattern_names()
         default = unique_name('pattern', patterns)
 
         def named(text):
@@ -582,17 +594,17 @@ class PatternsPage(ListPage):
                 self.status = 'That name is empty or already in use.'
                 return
             self.document.add_pattern(text)
-            self.place = len(patterns) - 1
+            self.place = len(patterns)
             self.show_page(PatternEditor(self.holder, text))
         self.ask(PromptDialog('New pattern name', default), named)
 
     def rename(self):
         name = self.current()
-        self.ask_name('Rename pattern', name, self.document.data['patterns'], lambda new: self.document.rename_pattern(name, new))
+        self.ask_name('Rename pattern', name, self.document.song().get_pattern_names(), lambda new: self.document.rename_pattern(name, new))
 
     def copy(self):
         self.document.copy_pattern(self.current())
-        names = list(self.document.data['patterns'])
+        names = self.document.song().get_pattern_names()
         self.status = f'Copied to {names[-1]}.'
         self.place = len(names) - 1
 
@@ -607,7 +619,7 @@ class PatternsPage(ListPage):
     def sort(self):
         current = self.current()
         self.document.sort_named('patterns')
-        self.place = list(self.document.data['patterns']).index(current)
+        self.place = self.document.song().get_pattern_names().index(current)
 
 
 def _cc_text(numbers):
@@ -626,13 +638,14 @@ class TracksPage(ListPage):
     columns = (('NAME', None, 'left'), ('TYPE', 5, 'left'), ('MUTE', 4, 'left'), ('MOVE', 4, 'right'), ('CC 1-4', 16, 'left'), ('CLIPS', 5, 'right'))
 
     def rows(self):
-        rows = []
-        for name, track in self.document.data['tracks'].items():
-            drum = track.get('drum')
-            move = '' if drum else (f"{track.get('transpose', 0):+d}" if track.get('transpose') else '')
-            mute = TOGGLE_ON if track.get('mute') else TOGGLE_OFF
-            rows.append((name, [name, 'drum' if drum else 'notes', mute, move, _cc_text(track.get('cc', [None] * 4)), self.document.track_clips(name)]))
-        return rows
+        song = self.document.song()
+        return [(name, self.row_of(name, song.get_track(name))) for name in song.get_track_names()]
+
+    def row_of(self, name, track):
+        kind = 'drum' if track.is_drum() else 'notes'
+        mute = TOGGLE_ON if track.is_muted() else TOGGLE_OFF
+        move = f'{track.get_transpose():+d}' if track.get_transpose() else ''
+        return [name, kind, mute, move, _cc_text(track.get_cc_numbers()), self.document.track_clips(name)]
 
     def keys(self):
         result = [*self.move_keys(), key('+', 'add', self.add)]
@@ -649,16 +662,16 @@ class TracksPage(ListPage):
         return result
 
     def add(self):
-        tracks = self.document.data['tracks']
+        tracks = self.document.song().get_track_names()
 
         def named(text):
             self.document.add_track(text)
-            self.place = len(tracks) - 1
+            self.place = len(tracks)
         self.ask_name('New track name', '', tracks, named)
 
     def rename(self):
         name = self.current()
-        self.ask_name('Rename track', name, self.document.data['tracks'], lambda new: self.document.rename_track(name, new))
+        self.ask_name('Rename track', name, self.document.song().get_track_names(), lambda new: self.document.rename_track(name, new))
 
     def copy(self):
         self.document.copy_track(self.current())
@@ -696,55 +709,50 @@ class TrackEditor(FieldPage):
         self.crumbs = ('TRACKS', name)
 
     def track(self):
-        return self.document.track(self.item)
+        return self.document.song().get_track(self.item)
 
     def numbers(self):
-        return list(self.track().get('cc', [None] * 4))
-
-    def set_value(self, name, value):
-        track = self.track()
-        if value in (None, False, 0) and name != 'cc':
-            track.pop(name, None)
-        elif name == 'cc' and all(number is None for number in value):
-            track.pop('cc', None)
-        else:
-            track[name] = value
-        self.document.changed()
+        return self.track().get_cc_numbers()
 
     def set_cc(self, lane, number):
-        numbers = self.numbers()
-        numbers[lane] = number
-        self.set_value('cc', numbers)
+        self.document.set_track_cc_number(self.item, lane, number)
 
     def nudge_cc(self, lane, offset):
         current = self.numbers()[lane]
-        self.set_cc(lane, max(min((1 if current is None and offset > 0 else 0 if current is None else current + offset), 127), 0))
+        if current is None:
+            moved = MIN_CC_NUMBER + 1 if offset > 0 else MIN_CC_NUMBER
+        else:
+            moved = current + offset
+        self.set_cc(lane, max(min(moved, MAX_CC_NUMBER), MIN_CC_NUMBER))
+
+    def set_transpose(self, transpose):
+        self.document.set_track_transpose(self.item, transpose)
 
     def nudge_transpose(self, offset):
-        self.set_value('transpose', max(min(self.track().get('transpose', 0) + offset, MAX_TRANSPOSE), -MAX_TRANSPOSE))
+        self.set_transpose(max(min(self.track().get_transpose() + offset, MAX_TRANSPOSE), -MAX_TRANSPOSE))
 
     def fields(self):
         track = self.track()
-        drum = bool(track.get('drum'))
+        drum = track.is_drum()
         result = [
-            Field('Drum', lambda: TOGGLE_ON if drum else TOGGLE_OFF, None, lambda: self.set_value('drum', not drum), 'toggle'),
-            Field('Mute', lambda: TOGGLE_ON if track.get('mute') else TOGGLE_OFF, None,
-                  lambda: self.set_value('mute', not track.get('mute')), 'toggle'),
+            Field('Drum', lambda: TOGGLE_ON if drum else TOGGLE_OFF, None, lambda: self.document.set_track_drum(self.item, not drum), 'toggle'),
+            Field('Mute', lambda: TOGGLE_ON if track.is_muted() else TOGGLE_OFF, None,
+                  lambda: self.document.set_track_mute(self.item, not track.is_muted()), 'toggle'),
         ]
         if drum:
             result.append(Field('Transpose', lambda: '(drum track)'))
         else:
             result.append(Field(
-                'Transpose', lambda: f"{track.get('transpose', 0):+d}" if track.get('transpose') else '0',
+                'Transpose', lambda: f'{track.get_transpose():+d}' if track.get_transpose() else '0',
                 self.nudge_transpose,
-                lambda: self.ask_number('Transpose', track.get('transpose', 0), lambda n: self.set_value('transpose', n), -MAX_TRANSPOSE, MAX_TRANSPOSE),
-                'edit', lambda: self.set_value('transpose', 0), 'no transpose',
+                lambda: self.ask_number('Transpose', track.get_transpose(), self.set_transpose, -MAX_TRANSPOSE, MAX_TRANSPOSE),
+                'edit', lambda: self.set_transpose(DEFAULT_TRANSPOSE), 'no transpose',
             ))
-        for lane in range(4):
+        for lane in range(len(CC_ROWS)):
             result.append(Field(
                 f'CC {lane + 1}', lambda lane=lane: '(none)' if self.numbers()[lane] is None else str(self.numbers()[lane]),
                 lambda offset, lane=lane: self.nudge_cc(lane, offset),
-                lambda lane=lane: self.ask_number(f'CC {lane + 1} number', self.numbers()[lane] or 0, lambda n, lane=lane: self.set_cc(lane, n), 0, 127),
+                lambda lane=lane: self.ask_number(f'CC {lane + 1} number', self.numbers()[lane] or MIN_CC_NUMBER, lambda n, lane=lane: self.set_cc(lane, n), MIN_CC_NUMBER, MAX_CC_NUMBER),
                 'edit', lambda lane=lane: self.set_cc(lane, None), 'none',
             ))
         return result
@@ -757,6 +765,11 @@ def offsets_text(offsets):
     if offsets is None:
         return '(none)'
     return ' '.join('-' if offset is None else str(offset) for offset in offsets)
+
+
+def counts_text(counts):
+    """Return an AutoRatchet's counts as typed, like 1 1 4, or nothing when it has none yet."""
+    return ' '.join(str(count) for count in counts or [])
 
 
 class OffsetsEditor(Page):
@@ -779,7 +792,7 @@ class OffsetsEditor(Page):
         self.crumbs = ('GENERATORS', 'ARPEGGIATORS', name, 'OFFSETS')
 
     def offsets(self):
-        return self.document.data['arps'][self.item]['offsets']
+        return self.document.song().get_generator_settings(GeneratorKind.ARP, self.item).get_offsets()
 
     def on_key(self, event):
         name = pressed_key(event)
@@ -807,8 +820,7 @@ class OffsetsEditor(Page):
         self.step = (self.step + (1 if name == 'right' else -1)) % len(self.offsets())
 
     def set_offset(self, value):
-        self.offsets()[self.step] = value
-        self.document.changed()
+        self.document.set_arp_offset(self.item, self.step, value)
 
     def type_digit(self, digit):
         for text in (self.typed + digit, digit):
@@ -826,12 +838,10 @@ class OffsetsEditor(Page):
         self.set_offset(0 if self.offsets()[self.step] is None else None)
 
     def insert(self):
-        self.offsets().insert(self.step, 0)
-        self.document.changed()
+        self.document.insert_arp_offset(self.item, self.step)
 
     def remove_step(self):
-        self.offsets().pop(self.step)
-        self.document.changed()
+        self.document.remove_arp_offset(self.item, self.step)
         self.step = min(self.step, len(self.offsets()) - 1)
 
     def body(self, width, height):
@@ -870,13 +880,13 @@ class ScalesPage(ListPage):
     columns = (('NAME', None, 'left'), ('SCALE', 24, 'left'), ('NOTES', 5, 'right'), ('USED', 4, 'right'))
 
     def rows(self):
-        document = self.document
+        document, song = self.document, self.document.song()
         return [
             (name, [
-                name + (' (song)' if document.data.get('scale') == name else ''),
+                name + (' (song)' if song.get_scale_name() == name else ''),
                 document.scale_notes_text(name), document.scale_size(name), len(document.scale_uses(name)),
             ])
-            for name in document.data['scales']
+            for name in song.get_scale_names()
         ]
 
     def keys(self):
@@ -915,8 +925,9 @@ class ScalesPage(ListPage):
         self.ask(GridChoiceDialog(f'{title}: root note', ROOTS, root_grid, ROOTS.index(root) if root in ROOTS else 0), rooted)
 
     def add(self):
-        scales = self.document.data['scales']
-        current = scales.get(self.current()) or {'root': 'C', 'type': 'major'}
+        song = self.document.song()
+        scales = song.get_scale_names()
+        root, kind = self.root_and_kind(self.current()) if self.current() in scales else (NEW_SCALE_ROOT, NEW_SCALE_KIND)
 
         def chosen(root, kind):
             default = unique_name(f"{root} {kind.replace('_', ' ').title()}", scales)
@@ -927,22 +938,26 @@ class ScalesPage(ListPage):
                     self.status = 'That name is empty or already in use.'
                     return
                 self.document.add_scale(text, root, kind)
-                self.place = len(scales) - 1
+                self.place = len(scales)
             self.ask(PromptDialog('Scale name', default), named)
-        self.pick_scale('New scale', current['root'], current['type'], chosen)
+        self.pick_scale('New scale', root, kind, chosen)
+
+    def root_and_kind(self, name):
+        scale = self.document.song().get_named_scale(name)
+        return scale.get_root(), scale.get_kind()
 
     def change(self):
         name = self.current()
-        scale = self.document.data['scales'][name]
-        self.pick_scale(f'Change {name}', scale['root'], scale['type'], lambda root, kind: self.document.change_scale(name, root, kind))
+        root, kind = self.root_and_kind(name)
+        self.pick_scale(f'Change {name}', root, kind, lambda root, kind: self.document.change_scale(name, root, kind))
 
     def rename(self):
         name = self.current()
-        self.ask_name('Rename scale', name, self.document.data['scales'], lambda new: self.document.rename_scale(name, new))
+        self.ask_name('Rename scale', name, self.document.song().get_scale_names(), lambda new: self.document.rename_scale(name, new))
 
     def copy(self):
         self.document.copy_scale(self.current())
-        self.place = len(self.document.data['scales']) - 1
+        self.place = len(self.document.song().get_scale_names()) - 1
 
     def delete(self):
         name = self.current()
@@ -964,9 +979,10 @@ class ChainsPage(ListPage):
     columns = (('NAME', None, 'left'), ('STEPS', 5, 'right'), ('USED', 4, 'right'))
 
     def rows(self):
+        song = self.document.song()
         return [
-            (name, [name, len(steps), len(self.document.chain_uses(name))])
-            for name, steps in self.document.data['chains'].items()
+            (name, [name, len(song.get_chain(name).get_steps()), len(self.document.chain_uses(name))])
+            for name in song.get_chain_names()
         ]
 
     def keys(self):
@@ -984,20 +1000,20 @@ class ChainsPage(ListPage):
         return result
 
     def add(self):
-        chains = self.document.data['chains']
+        chains = self.document.song().get_chain_names()
 
         def named(text):
             self.document.add_chain(text)
-            self.place = len(chains) - 1
+            self.place = len(chains)
         self.ask_name('New chain name', '', chains, named)
 
     def rename(self):
         name = self.current()
-        self.ask_name('Rename chain', name, self.document.data['chains'], lambda new: self.document.rename_chain(name, new))
+        self.ask_name('Rename chain', name, self.document.song().get_chain_names(), lambda new: self.document.rename_chain(name, new))
 
     def copy(self):
         self.document.copy_chain(self.current())
-        self.place = len(self.document.data['chains']) - 1
+        self.place = len(self.document.song().get_chain_names()) - 1
 
     def delete(self):
         name = self.current()
@@ -1024,13 +1040,11 @@ class ChainEditor(ListPage):
         self.crumbs = ('CHAINS', name)
 
     def steps(self):
-        return self.document.data['chains'][self.item]
+        """Return the chain's steps, each (kind of generator, its name)."""
+        return self.document.song().get_chain(self.item).get_steps()
 
     def rows(self):
-        return [
-            (place, ['{}: {}'.format(*next(iter(step.items())))])
-            for place, step in enumerate(self.steps())
-        ]
+        return [(place, [CHAIN_STEP_SHOWN.format(kind=kind, name=name)]) for place, (kind, name) in enumerate(self.steps())]
 
     def keys(self):
         result = [*self.move_keys(), key('+', 'add', self.add)]
@@ -1046,48 +1060,35 @@ class ChainEditor(ListPage):
         return result
 
     def pick_generator(self, title, then):
-        data = self.document.data
-        options = [
-            (kind, name) for section, kind in GENERATOR_SECTIONS.items() for name in data[section]
-        ]
+        song = self.document.song()
+        options = [(kind, name) for kind in NAMED_GENERATORS for name in song.get_generator_names(kind)]
         if not options:
             self.tell('Nothing to add', 'Make an arpeggiator or AutoRatchet first, on the Generators page.')
             return
-        labels = [f'{kind}: {name}' for kind, name in options]
+        labels = [CHAIN_STEP_SHOWN.format(kind=kind, name=name) for kind, name in options]
         self.ask(ChoiceDialog(title, labels), lambda chosen: then(*options[chosen]))
 
     def add(self):
         def chosen(kind, name):
-            self.steps().append({kind: name})
-            self.document.changed()
+            self.document.add_chain_step(self.item, kind, name)
             self.place = len(self.steps()) - 1
         self.pick_generator('Add to chain', chosen)
 
     def change(self):
         place = self.current()
-
-        def chosen(kind, name):
-            self.steps()[place] = {kind: name}
-            self.document.changed()
-        self.pick_generator('Change step', chosen)
+        self.pick_generator('Change step', lambda kind, name: self.document.set_chain_step(self.item, place, kind, name))
 
     def copy(self):
-        self.steps().insert(self.place + 1, dict(self.steps()[self.place]))
-        self.document.changed()
+        self.document.copy_chain_step(self.item, self.place)
         self.place += 1
 
     def remove_step(self):
-        self.steps().pop(self.place)
-        self.document.changed()
+        self.document.remove_chain_step(self.item, self.place)
         self.clamp()
 
     def shift(self, offset):
-        steps = self.steps()
-        target = self.place + offset
-        if 0 <= target < len(steps):
-            steps.insert(target, steps.pop(self.place))
-            self.document.changed()
-            self.place = target
+        if self.document.move_chain_step(self.item, self.place, offset):
+            self.place += offset
 
 
 class GeneratorsPage(ListPage):
@@ -1101,10 +1102,10 @@ class GeneratorsPage(ListPage):
     columns = (('GENERATOR', None, 'left'), ('COUNT', 5, 'right'))
 
     def rows(self):
-        data = self.document.data
+        song = self.document.song()
         return [
-            ('arps', ['Arpeggiators', len(data['arps'])]),
-            ('auto_ratchets', ['AutoRatchets', len(data['auto_ratchets'])]),
+            (Section.ARPS, ['Arpeggiators', len(song.get_generator_names(GeneratorKind.ARP))]),
+            (Section.AUTO_RATCHETS, ['AutoRatchets', len(song.get_generator_names(GeneratorKind.AUTO_RATCHET))]),
         ]
 
     def keys(self):
@@ -1115,20 +1116,24 @@ class GeneratorsPage(ListPage):
         ]
 
     def open_section(self):
-        self.show_page(ArpsPage(self.holder) if self.current() == 'arps' else AutoRatchetsPage(self.holder))
+        self.show_page(ArpsPage(self.holder) if self.current() == Section.ARPS else AutoRatchetsPage(self.holder))
 
 
 class NamedGeneratorsPage(ListPage):
     """A list of generators of one kind, which chains use by name."""
 
     section = ''
+    kind = ''
     label = ''
 
     def uses(self, name):
         return self.document.generator_uses(self.section, name)
 
-    def items(self):
-        return self.document.data[self.section]
+    def names(self):
+        return self.document.song().get_generator_names(self.kind)
+
+    def settings_of(self, name):
+        return self.document.song().get_generator_settings(self.kind, name)
 
     def keys(self):
         result = [*self.move_keys(), key('+', 'add', self.add)]
@@ -1147,16 +1152,16 @@ class NamedGeneratorsPage(ListPage):
     def add(self):
         def named(text):
             self.document.add_generator(self.section, text)
-            self.place = len(self.items()) - 1
-        self.ask_name(f'New {self.label} name', '', self.items(), named)
+            self.place = len(self.names()) - 1
+        self.ask_name(f'New {self.label} name', '', self.names(), named)
 
     def rename(self):
         name = self.current()
-        self.ask_name(f'Rename {self.label}', name, self.items(), lambda new: self.document.rename_generator(self.section, name, new))
+        self.ask_name(f'Rename {self.label}', name, self.names(), lambda new: self.document.rename_generator(self.section, name, new))
 
     def copy(self):
         self.document.copy_generator(self.section, self.current())
-        self.place = len(self.items()) - 1
+        self.place = len(self.names()) - 1
 
     def delete(self):
         name = self.current()
@@ -1169,7 +1174,8 @@ class NamedGeneratorsPage(ListPage):
 
 class ArpsPage(NamedGeneratorsPage):
     crumbs = ('GENERATORS', 'ARPEGGIATORS')
-    section = 'arps'
+    section = Section.ARPS
+    kind = GeneratorKind.ARP
     label = 'arpeggiator'
     HELP = (
         'An arpeggiator plays each chord one note at a time. Add it to a chain to use it.',
@@ -1184,15 +1190,17 @@ class ArpsPage(NamedGeneratorsPage):
         return ArpEditor
 
     def rows(self):
-        return [
-            (name, [name, arp.get('step', ''), arp.get('order', 'up'), len(self.uses(name))])
-            for name, arp in self.items().items()
-        ]
+        return [(name, self.row_of(name, self.settings_of(name))) for name in self.names()]
+
+    def row_of(self, name, arp):
+        step = NO_STEP_SHOWN if arp.get_step() is None else arp.get_step()
+        return [name, step, arp.get_order() or DEFAULT_ORDER, len(self.uses(name))]
 
 
 class AutoRatchetsPage(NamedGeneratorsPage):
     crumbs = ('GENERATORS', 'AUTORATCHETS')
-    section = 'auto_ratchets'
+    section = Section.AUTO_RATCHETS
+    kind = GeneratorKind.AUTO_RATCHET
     label = 'AutoRatchet'
     HELP = (
         'An AutoRatchet chops each note or chord into quick equal repeats in the same time, using the next count in a repeating list. Rests do not use up a count.',
@@ -1209,10 +1217,7 @@ class AutoRatchetsPage(NamedGeneratorsPage):
         return AutoRatchetEditor
 
     def rows(self):
-        return [
-            (name, [name, ' '.join(str(count) for count in item.get('counts', [])), len(self.uses(name))])
-            for name, item in self.items().items()
-        ]
+        return [(name, [name, counts_text(self.settings_of(name).get_counts()), len(self.uses(name))]) for name in self.names()]
 
 
 class AutoRatchetEditor(FieldPage):
@@ -1227,8 +1232,8 @@ class AutoRatchetEditor(FieldPage):
         self.item = name
         self.crumbs = ('GENERATORS', 'AUTORATCHETS', name)
 
-    def settings(self):
-        return self.document.data['auto_ratchets'][self.item]
+    def counts(self):
+        return self.document.song().get_generator_settings(GeneratorKind.AUTO_RATCHET, self.item).get_counts()
 
     def ask_counts(self):
         def answered(text):
@@ -1236,12 +1241,11 @@ class AutoRatchetEditor(FieldPage):
             if not parts or not all(part.isdigit() and int(part) >= 1 for part in parts):
                 self.status = 'Counts must be whole numbers of 1 or more, like 1 1 4.'
                 return
-            self.settings()['counts'] = [int(part) for part in parts]
-            self.document.changed()
-        self.ask(PromptDialog('Counts', ' '.join(str(count) for count in self.settings()['counts'])), answered)
+            self.document.set_generator_setting(Section.AUTO_RATCHETS, self.item, AutoRatchetSetting.COUNTS, [int(part) for part in parts])
+        self.ask(PromptDialog('Counts', counts_text(self.counts())), answered)
 
     def fields(self):
-        return [Field('Counts', lambda: ' '.join(str(count) for count in self.settings()['counts']), None, self.ask_counts)]
+        return [Field('Counts', lambda: counts_text(self.counts()), None, self.ask_counts)]
 
 
 class ArpEditor(FieldPage):
@@ -1261,59 +1265,48 @@ class ArpEditor(FieldPage):
         self.crumbs = ('GENERATORS', 'ARPEGGIATORS', name)
 
     def arp(self):
-        return self.document.data['arps'][self.item]
+        return self.document.song().get_generator_settings(GeneratorKind.ARP, self.item)
 
-    def set_value(self, name, value):
-        self.arp()[name] = value
-        self.document.changed()
+    def set_value(self, setting, value):
+        """Set one of the arp's settings, or None to leave it out and use its default."""
+        self.document.set_generator_setting(Section.ARPS, self.item, setting, value)
 
-    def clear_seed(self):
-        self.arp().pop('seed', None)
-        self.document.changed()
-
-    def pick(self, title, options, name, default):
-        current = str(self.arp().get(name, default))
-        self.ask(ChoiceDialog(title, options, options.index(current) if current in options else 0), lambda chosen: self.set_value(name, options[chosen]))
-
-    def clear(self, name):
-        self.arp().pop(name, None)
-        self.document.changed()
+    def pick(self, title, options, setting, current):
+        place = options.index(str(current)) if str(current) in options else 0
+        self.ask(ChoiceDialog(title, options, place), lambda chosen: self.set_value(setting, options[chosen]))
 
     def set_range(self, octaves):
-        if octaves == 1:
-            self.clear('octave_range')
-        else:
-            self.set_value('octave_range', octaves)
+        self.set_value(ArpSetting.OCTAVE_RANGE, None if octaves == MIN_OCTAVE_RANGE else octaves)
 
     def set_jump(self, jump):
-        if jump == JUMPS[0]:
-            self.clear('octave_jump')
-        else:
-            self.set_value('octave_jump', jump)
+        self.set_value(ArpSetting.OCTAVE_JUMP, None if jump == JUMPS[0] else jump)
 
     def edit_offsets(self):
-        if 'offsets' not in self.arp():
-            self.set_value('offsets', [0] * DEFAULT_OFFSET_STEPS)
+        if self.arp().get_offsets() is None:
+            self.set_value(ArpSetting.OFFSETS, [NO_OFFSET] * DEFAULT_OFFSET_STEPS)
         self.show_page(OffsetsEditor(self.holder, self.item))
 
     def fields(self):
         arp = self.arp()
-        jump = arp.get('octave_jump', JUMPS[0])
+        step = arp.get_step()
+        order = arp.get_order() or DEFAULT_ORDER
+        octaves = arp.get_octave_range() or MIN_OCTAVE_RANGE
+        jump = arp.get_octave_jump() or JUMPS[0]
+        seed = arp.get_seed()
         return [
-            Field('Step', lambda: arp.get('step', ''), lambda d: self.set_value('step', _stepped(NOTE_LENGTHS, arp.get('step'), d)),
-                  lambda: self.pick('Step', NOTE_LENGTHS, 'step', '1/16'), 'choose'),
-            Field('Order', lambda: arp.get('order', 'up'), lambda d: self.set_value('order', _stepped(ORDERS, arp.get('order', 'up'), d)),
-                  lambda: self.pick('Order', ORDERS, 'order', 'up'), 'choose'),
-            Field('Octave range', lambda: arp.get('octave_range', 1),
-                  lambda d: self.set_range(max(min(arp.get('octave_range', 1) + d, MAX_OCTAVE_RANGE), 1)),
-                  lambda: self.ask_number('Octave range', arp.get('octave_range', 1), self.set_range, 1, MAX_OCTAVE_RANGE)),
+            Field('Step', lambda: NO_STEP_SHOWN if step is None else step, lambda d: self.set_value(ArpSetting.STEP, _stepped(NOTE_LENGTHS, step, d)),
+                  lambda: self.pick('Step', NOTE_LENGTHS, ArpSetting.STEP, DEFAULT_ARP_STEP if step is None else step), 'choose'),
+            Field('Order', lambda: order, lambda d: self.set_value(ArpSetting.ORDER, _stepped(ORDERS, order, d)),
+                  lambda: self.pick('Order', ORDERS, ArpSetting.ORDER, order), 'choose'),
+            Field('Octave range', lambda: octaves, lambda d: self.set_range(max(min(octaves + d, MAX_OCTAVE_RANGE), MIN_OCTAVE_RANGE)),
+                  lambda: self.ask_number('Octave range', octaves, self.set_range, MIN_OCTAVE_RANGE, MAX_OCTAVE_RANGE)),
             Field('Octave jump', lambda: jump.replace('_', ' '), lambda d: self.set_jump(_stepped(JUMPS, jump, d)),
                   lambda: self.ask(ChoiceDialog('Octave jump', [name.replace('_', ' ') for name in JUMPS], JUMPS.index(jump)),
                                    lambda chosen: self.set_jump(JUMPS[chosen])), 'choose'),
-            Field('Offsets', lambda: offsets_text(arp.get('offsets')), None, self.edit_offsets, 'edit',
-                  lambda: self.clear('offsets'), 'remove'),
-            Field('Seed', lambda: arp.get('seed', '(song)'), lambda d: self.set_value('seed', arp.get('seed', 0) + d),
-                  lambda: self.ask_number('Seed', arp.get('seed', 0), lambda n: self.set_value('seed', n)), 'edit',
-                  self.clear_seed, 'use the song seed'),
+            Field('Offsets', lambda: offsets_text(arp.get_offsets()), None, self.edit_offsets, 'edit',
+                  lambda: self.set_value(ArpSetting.OFFSETS, None), 'remove'),
+            Field('Seed', lambda: SONG_SEED_SHOWN if seed is None else seed, lambda d: self.set_value(ArpSetting.SEED, (seed or NO_SEED) + d),
+                  lambda: self.ask_number('Seed', seed or NO_SEED, lambda n: self.set_value(ArpSetting.SEED, n)), 'edit',
+                  lambda: self.set_value(ArpSetting.SEED, None), 'use the song seed'),
         ]
 

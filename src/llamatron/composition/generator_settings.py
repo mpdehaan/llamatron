@@ -92,6 +92,10 @@ class GeneratorSettings(LlamaData):
     def to_data(self):
         return dict(self._settings) if isinstance(self._settings, dict) else self._settings
 
+    def _written(self, name):
+        """Return a setting as the file writes it, or None if the file leaves it out."""
+        return self._settings.get(name) if isinstance(self._settings, dict) else None
+
     def make_generator(self, where, default_seed):
         """Return the generator these settings describe, or raise SongFileError if they're wrong.
 
@@ -131,6 +135,27 @@ class ArpSettings(GeneratorSettings):
             values[ArpSetting.SEED] = default_seed
         return values
 
+    # Each setting as the file writes it, or None when the file leaves it out, for the tracker to show.
+
+    def get_step(self):
+        return self._written(ArpSetting.STEP)
+
+    def get_order(self):
+        return self._written(ArpSetting.ORDER)
+
+    def get_seed(self):
+        return self._written(ArpSetting.SEED)
+
+    def get_octave_range(self):
+        return self._written(ArpSetting.OCTAVE_RANGE)
+
+    def get_octave_jump(self):
+        return self._written(ArpSetting.OCTAVE_JUMP)
+
+    def get_offsets(self):
+        offsets = self._written(ArpSetting.OFFSETS)
+        return None if offsets is None else list(offsets)
+
 
 class AutoRatchetSettings(GeneratorSettings):
     """An AutoRatchet's settings: the counts it cycles through."""
@@ -140,6 +165,11 @@ class AutoRatchetSettings(GeneratorSettings):
     GENERATOR = AutoRatchet
     SETTINGS = {AutoRatchetSetting.COUNTS: ValueKind.WHOLES}
     REQUIRED = [AutoRatchetSetting.COUNTS]
+
+    def get_counts(self):
+        """Return its counts as the file writes them, or None when the file leaves them out."""
+        counts = self._written(AutoRatchetSetting.COUNTS)
+        return None if counts is None else list(counts)
 
 
 # Each generator a chain step can name, and the class that holds its settings.

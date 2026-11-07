@@ -35,12 +35,13 @@ from llamatron.note import ROOT_NAMES, Note
 from llamatron.scale import ScaleType
 from llamatron.clip_grid import ClipGrid
 from llamatron.composition.defaults import (
-    DEFAULT_DRUM_OCTAVE, DEFAULT_OCTAVE, DEFAULT_SEED, DEFAULT_STEP_SIZE, DEFAULT_TEMPO,
+    DEFAULT_DRUM_OCTAVE, DEFAULT_OCTAVE, DEFAULT_SEED, DEFAULT_STEP_SIZE, DEFAULT_TEMPO, DEFAULT_TRANSPOSE,
 )
 from llamatron.composition.file_format import (
     CC_ROWS, FORWARD, PATTERN_ROWS, REGISTER_ADD_ROWS, REGISTER_NAMES, REGISTER_NOTE_ROWS, PatternSetting,
-    Row, SceneSetting, Section, SongSetting, TOGGLE_ROWS,
+    Row, SceneSetting, Section, SongSetting, TOGGLE_ROWS, TrackSetting,
 )
+from llamatron.composition.generator_settings import ArpSetting
 from llamatron.composition.register import Register
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.composition.song import Song
@@ -113,6 +114,8 @@ def blank(row):
 REST_ROWS = (*CC_ROWS, Row.SLIDE, *REGISTER_ADD_ROWS.values())
 # A register change of nothing, which is the same as none.
 NO_CHANGE = 0
+# An arp offset that leaves the note where it is, which a new step of offsets starts with.
+NO_OFFSET = 0
 # How a register's settings are named when one is refused.
 WHERE_REGISTER = 'register {name}'
 
@@ -624,6 +627,41 @@ class Document:
         """Return a track's settings, which the page for it changes in place."""
         return self.data['tracks'][name]
 
+    def set_track_drum(self, name, drum):
+        self._set_track_flag(name, TrackSetting.DRUM, drum)
+
+    def set_track_mute(self, name, muted):
+        self._set_track_flag(name, TrackSetting.MUTE, muted)
+
+    def _set_track_flag(self, name, flag, on):
+        """Turn a track's drum or mute on or off, leaving it out of the file when off."""
+        track = self.data[Section.TRACKS][name]
+        if on:
+            track[flag] = True
+        else:
+            track.pop(flag, None)
+        self.changed()
+
+    def set_track_transpose(self, name, transpose):
+        """Set how far a track moves its notes along the scale, left out of the file when it's 0."""
+        track = self.data[Section.TRACKS][name]
+        if transpose == DEFAULT_TRANSPOSE:
+            track.pop(TrackSetting.TRANSPOSE, None)
+        else:
+            track[TrackSetting.TRANSPOSE] = transpose
+        self.changed()
+
+    def set_track_cc_number(self, name, lane, number):
+        """Set the CC number one of a track's four lanes sends, or None for a lane that sends nothing."""
+        track = self.data[Section.TRACKS][name]
+        numbers = list(track.get(TrackSetting.CC) or [None] * len(CC_ROWS))
+        numbers[lane] = number
+        if all(number is None for number in numbers):
+            track.pop(TrackSetting.CC, None)
+        else:
+            track[TrackSetting.CC] = numbers
+        self.changed()
+
     def copy_track(self, name):
         new = unique_name(f'{name} copy', self.data['tracks'])
         items = list(self.data['tracks'].items())
@@ -741,6 +779,29 @@ class Document:
         del self.data[section][name]
         self.changed()
 
+    def set_generator_setting(self, section, name, setting, value):
+        """Set one setting of a named arp or AutoRatchet, or None to leave it out and use its default."""
+        settings = self.data[section][name]
+        if value is None:
+            settings.pop(setting, None)
+        else:
+            settings[setting] = value
+        self.changed()
+
+    def set_arp_offset(self, name, step, offset):
+        """Set one step of an arp's offsets, where None is a silent step."""
+        self.data[Section.ARPS][name][ArpSetting.OFFSETS][step] = offset
+        self.changed()
+
+    def insert_arp_offset(self, name, step):
+        """Add a step of 0 before a step of an arp's offsets."""
+        self.data[Section.ARPS][name][ArpSetting.OFFSETS].insert(step, NO_OFFSET)
+        self.changed()
+
+    def remove_arp_offset(self, name, step):
+        self.data[Section.ARPS][name][ArpSetting.OFFSETS].pop(step)
+        self.changed()
+
     def rename_generator(self, section, old, new):
         self.data[section] = self._replace_key(section, old, new)
         self._rename_in_chains(GENERATOR_SECTIONS[section], old, new)
@@ -760,6 +821,35 @@ class Document:
     def delete_chain(self, name):
         del self.data['chains'][name]
         self.changed()
+
+    def add_chain_step(self, chain, kind, name):
+        """Add a generator, by kind and name, to the end of a chain."""
+        self.data[Section.CHAINS][chain].append({kind: name})
+        self.changed()
+
+    def set_chain_step(self, chain, place, kind, name):
+        self.data[Section.CHAINS][chain][place] = {kind: name}
+        self.changed()
+
+    def copy_chain_step(self, chain, place):
+        """Put a copy of a chain's step right after it. A step only names a generator, so copying it is enough."""
+        steps = self.data[Section.CHAINS][chain]
+        steps.insert(place + 1, dict(steps[place]))
+        self.changed()
+
+    def remove_chain_step(self, chain, place):
+        self.data[Section.CHAINS][chain].pop(place)
+        self.changed()
+
+    def move_chain_step(self, chain, place, offset):
+        """Move a chain's step up or down, and return whether it moved."""
+        steps = self.data[Section.CHAINS][chain]
+        target = place + offset
+        if not 0 <= target < len(steps):
+            return False
+        steps.insert(target, steps.pop(place))
+        self.changed()
+        return True
 
     def rename_chain(self, old, new):
         self.data['chains'] = self._replace_key('chains', old, new)
@@ -858,6 +948,15 @@ class Document:
         if not scene.get('tracks'):
             scene['tracks'] = {}
         scene['tracks'][track] = cell
+        self.changed()
+
+    def set_cell_setting(self, index, track, setting, value):
+        """Set one setting of a cell, or None to leave it out and use its default."""
+        cell = self.data[Section.SCENES][index][SceneSetting.TRACKS][track]
+        if value is None:
+            cell.pop(setting, None)
+        else:
+            cell[setting] = value
         self.changed()
 
     def delete_cell(self, index, track):

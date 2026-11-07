@@ -118,6 +118,11 @@ class Pattern(LlamaData):
         """Return the order its steps play in, forward unless the pattern sets another."""
         return self._settings[PatternSetting.DIRECTION] or Direction.FORWARD
 
+    def get_row(self, row):
+        """Return a copy of one row's values, one per step, or None if the row is blank throughout."""
+        values = self._rows[row]
+        return None if values is None else list(values)
+
     def get_value(self, row, step):
         """Return one step's value on a row, or None if it's blank there."""
         values = self._rows[row]
