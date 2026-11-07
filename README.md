@@ -52,7 +52,7 @@ llamatron examples/minimal_techno.yml --to cliptree --out output/my_song
 It is very much the goal of llamatron to enable human produced intentional music with random elements, but our examples (for expediciency) are for right now AI generated and don't sound all that
 great. We'll evolve these over time.
 
-`examples/` has `minimal_techno.yml` and `retro_chill.yml`, which run about three minutes each, and demos named `*_demo.yml` or `demo_*.yml` that each show one feature a scene at a time, described in `examples/DEMOS.md`. Output goes to `output/<song name>` unless you set `--out`. `--replace` removes that song's earlier output first, and `--template` picks the Live set to build from. These three only work with `--to`.
+`examples/` has `minimal_techno.yml` and `retro_chill.yml`, which run about three minutes each, and demos named `*_demo.yml` that each show one feature a scene at a time, described in `examples/DEMOS.md`. Output goes to `output/<song name>` unless you set `--out`. `--replace` removes that song's earlier output first, and `--template` picks the Live set to build from. These three only work with `--to`.
 
 To write a Live set for every song in `examples/` at once, use `./run_examples.sh`. It replaces each song's earlier set, including anything saved over it in Live, so save your own work under another name.
 

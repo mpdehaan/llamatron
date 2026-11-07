@@ -22,7 +22,7 @@ from llamatron.composition.song import Song
 from llamatron.playback.song_renderer import SongRenderer
 
 # How the demos in examples/ are named.
-DEMO_ENDING, DEMO_START = '_demo.yml', 'demo_'
+DEMO_ENDING = '_demo.yml'
 
 
 def render_data(data):
@@ -41,6 +41,5 @@ def estimate_data(data):
 
 
 def is_demo(path):
-    """Return whether a song in examples/ is a demo, which teaches one feature: its name ends in _demo or starts with demo_."""
-    name = os.path.basename(path)
-    return name.endswith(DEMO_ENDING) or name.startswith(DEMO_START)
+    """Return whether a song in examples/ is a demo, which teaches one feature: its name ends in _demo."""
+    return os.path.basename(path).endswith(DEMO_ENDING)

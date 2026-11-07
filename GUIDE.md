@@ -523,7 +523,7 @@ Each number can be from -127 to 127, and the minimum can't be above the default,
 
 When a register wraps, it lands exactly on the other end, whatever was left over. With a range of 0 to 3, adding 1 to 3 gives 0, and so does adding 2. Without wrapping, it stays at 3.
 
-`examples/demo_registers.yml` shows every register at work.
+`examples/registers_demo.yml` shows every register at work.
 
 ### Arrange
 

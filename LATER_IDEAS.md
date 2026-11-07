@@ -914,7 +914,7 @@ the acid_techno and retro_chill demos are old, so we may want to rewrite them wi
 even better.  To be discussed with respect to details.  The minimal techno example seems unneeded
 now that we have the morph demo, maybe rename the morph demo to minimal_morph.yml
 
-(Since then, acid_techno was deleted and replaced by `demo_registers.yml`, an acid techno riff built around registers, and retro_chill lost its `rhythm_from` scene.)
+(Since then, acid_techno was deleted and replaced by `registers_demo.yml`, an acid techno riff built around registers, and retro_chill lost its `rhythm_from` scene.)
 
 ## File protect
 
@@ -1116,7 +1116,31 @@ What the refactoring involves:
 the version of llamatron that saved it. That's how it works already: every save from the tracker,
 with `S` or `W`, goes through `Document.save`, whose `_saved_data` sets `version` to the
 program's `VERSION` before writing, whatever version the file had when it was loaded.
-`test/test_version.py` checks that a new song's saved file records the version. What it doesn't
-check yet is that a file loaded with an older version comes back with the current one, which
-would be a small test to add. Rendering never writes the song file, so it never changes the
+`test/test_version.py` checks that a new song's saved file records the version. A second test
+checks that a file saved by an older version comes back with the current one. Rendering never writes the song file, so it never changes the
 version.
+
+## Refactoring the tests to the program's style rules
+
+**Deferred by the user on 2026-11-06.** The tests are held to the same style rules as the
+program (see CLAUDE.md), and new tests follow them, but most existing tests were written before
+the rules and still need refactoring:
+
+- **Format strings and messages as constants.** Tests build many strings inline, with f-strings
+  and `.format`, like `f'« {item.shown_label()} »'`. Each should be a named constant at the top of
+  its test file, or in a shared test module when several files use it.
+- **Limits and meaningful numbers named.** Literals like `128` for "just past the top" should
+  come from the program's constants (`MAX_REGISTER_VALUE + 1`), and a number that means
+  something, like a register's maximum, should be a named variable, so that two 3s that mean
+  different things can't be confused. `test/test_registers.py` is an example of the style.
+- **Shown text through the program's constants**, as in "Tests that check shown text through the
+  program's constants" above, which first needs the text UI to have those constants.
+- **Demo tests read from the YAML.** A test of a demo checks values it reads from the demo's
+  file, not values written into the test, so that hand edits to a demo don't break it.
+- **One constant per line.** About 44 places define several constants on one line with tuple
+  syntax, like `MIN_PROBABILITY, MAX_PROBABILITY = 0, 100`, mostly in `src/` but some in tests.
+  The rule is new, so these need splitting too, in the program as well as the tests.
+
+It's mechanical but wide: the text UI tests alone are thousands of lines. Doing it a test file at
+a time, with the full suite passing after each, keeps it safe, and it fits with the earlier note
+on making the tests less hard-coded.

@@ -2,7 +2,7 @@ version: 1.0.7
 title: Registers demo
 description: |
   Registers demo: an acid techno riff of five notes, changed bar by bar by the four registers.
-  Run it with: llamatron examples/demo_registers.yml --to ableton --replace
+  Run it with: llamatron examples/registers_demo.yml --to ableton --replace
 
   The registers AX, BX, CX and DX are four numbers the whole song shares, set on the Registers
   page. A pattern step changes one with its AX+= row, even an empty step, and a note uses one

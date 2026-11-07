@@ -22,12 +22,18 @@ import unittest
 
 import yaml
 
+from llamatron.composition.file_format import SongSetting
 from llamatron.composition.song import Song
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.song_writer import dump_song
 from llamatron.tui.base import TITLE
 from llamatron.tui.document import Document
 from llamatron.version import VERSION, is_version, version_numbers
+
+# A version older than any llamatron that writes files with a version, standing in for a song
+# saved by an older llamatron.
+OLDER_VERSION = '0.0.1'
+SONG_FILE = 'song.yml'
 
 
 class TestVersion(unittest.TestCase):
@@ -59,6 +65,17 @@ class TestVersion(unittest.TestCase):
             self.assertTrue(text.startswith(f'version: {VERSION}\n'))
             self.assertEqual(yaml.safe_load(text)['version'], VERSION)
             Song.read_file(path)
+
+    def test_saving_a_song_from_an_older_version_updates_its_version(self):
+        self.assertLess(version_numbers(OLDER_VERSION), version_numbers(VERSION))
+        with tempfile.TemporaryDirectory() as folder:
+            path = os.path.join(folder, SONG_FILE)
+            with open(path, 'w') as file:
+                file.write(dump_song({SongSetting.VERSION: OLDER_VERSION}))
+            document = Document.load(path)
+            document.save()
+            with open(path) as file:
+                self.assertEqual(yaml.safe_load(file)[SongSetting.VERSION], VERSION)
 
     def test_a_song_file_with_a_bad_version_is_refused(self):
         with self.assertRaisesRegex(SongFileError, 'version: expected three whole numbers'):
