@@ -18,6 +18,7 @@
 
 from dataclasses import dataclass
 from fractions import Fraction
+from typing import NamedTuple
 
 from llamatron.chord import Chord
 from llamatron.composition.checks import written_length
@@ -61,6 +62,13 @@ class Pass:
     tied_from_before: Fraction
     # How long the pass lasts, which is the pattern's length however the clip changes along the way.
     length: Fraction
+class Sounding(NamedTuple):
+    """What one step plays: the pieces it sounds, a note or chord for each ratchet, from a start time in the pass."""
+
+    start: Fraction
+    pieces: list
+
+
 # Where a step's values hold the note its grab took, beside its rows.
 GRABBED = 'grabbed'
 # How messages name a pattern, and what goes wrong while playing one.
@@ -134,7 +142,7 @@ class PatternPlayer:
             note_moved = NOTHING_ADDED if drum else _used_values(values, current, REGISTER_NOTE_ROWS)
             velocity_added = _used_values(values, current, REGISTER_VELOCITY_ROWS)
             gate = min(_gate(values, step_size), length - time)
-            sounding.append((time, self._step(values, gate, drum, where, rolls, note_moved, velocity_added)))
+            sounding.append(Sounding(time, self._step(values, gate, drum, where, rolls, note_moved, velocity_added)))
         clip = Clip(notes=_in_sequence(sounding, length, step_size), scale=self._scale, controls=controls)
         return Pass(clip, leading_ties * step_size, length)
 
@@ -240,17 +248,17 @@ def check_pattern_has_a_scale(song, scene, pattern_name):
         raise no_scale_error(WHERE_PATTERN.format(name=pattern_name), scene)
 
 
-def _lengthened_to(entry, end):
-    """Return a sounding entry, (start, pieces), with its last piece lengthened so the sound lasts until end, if it doesn't already.
+def _lengthened_to(sounding, end):
+    """Return a Sounding with its last piece lengthened so the sound lasts until end, if it doesn't already.
 
     A piece that probability turned into a rest stays as it is, because there's no note to hold.
     """
-    start, pieces = entry
+    pieces = sounding.pieces
     total = sum((piece.length for piece in pieces), Fraction(0))
-    extra = end - (start + total)
+    extra = end - (sounding.start + total)
     if extra <= 0 or isinstance(pieces[-1], Rest):
-        return entry
-    return start, [*pieces[:-1], with_sound_length(pieces[-1], pieces[-1].length + extra)]
+        return sounding
+    return Sounding(sounding.start, [*pieces[:-1], with_sound_length(pieces[-1], pieces[-1].length + extra)])
 
 
 def _gate(values, step_size):
@@ -261,7 +269,7 @@ def _gate(values, step_size):
 
 
 def _in_sequence(sounding, length, step_size):
-    """Return the notes of a pass as a clip's sequence of positions, from (start, what it plays) for each step that plays.
+    """Return the notes of a pass as a clip's sequence of positions, from a Sounding for each step that plays.
 
     A note whose gate reaches exactly to the next note is an ordinary position, as it always
     was. A shorter one is followed by rests, one for each step until the next note. A longer one
@@ -269,7 +277,7 @@ def _in_sequence(sounding, length, step_size):
     """
     positions, now = [], Fraction(0)
     for place, (start, played) in enumerate(sounding):
-        following = sounding[place + 1][0] if place + 1 < len(sounding) else length
+        following = sounding[place + 1].start if place + 1 < len(sounding) else length
         positions += _rests(now, start, step_size)
         gate = sum((piece.length for piece in played), Fraction(0))
         gap = following - start

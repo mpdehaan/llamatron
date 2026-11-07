@@ -1,4 +1,4 @@
-version: 1.0.16
+version: 1.0.17
 title: Arpeggiator demo
 description: |
   Arpeggiator demo: one chord pattern played through a different arpeggiator in each scene.

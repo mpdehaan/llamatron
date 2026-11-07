@@ -17,6 +17,7 @@
 """Works out when each note in a clip plays, for renderers to write out."""
 
 from fractions import Fraction
+from typing import NamedTuple
 
 from llamatron.chord import Chord
 from llamatron.held import Held, is_phrase
@@ -34,6 +35,31 @@ MSG_DEGREE_NEEDS_SCALE = '{degree!r} needs a scale, but the clip, scene and song
 MSG_NOT_A_POSITION = 'expected a Note, Chord or Rest, got {value!r}'
 # How far a note with glide runs into the next one, in fractions of a whole note.
 GLIDE_OVERLAP = Fraction(1, 128)
+
+
+class NoteEvent(NamedTuple):
+    """One note as it plays: when it starts and ends, in whole notes from the clip's start, its MIDI number and velocity."""
+
+    start: Fraction
+    end: Fraction
+    midi_number: int
+    velocity: int
+
+
+class ControlPoint(NamedTuple):
+    """One point of a CC lane: a value sent at a time, sliding to the lane's next point if slide is set."""
+
+    time: Fraction
+    value: int
+    slide: bool
+
+
+class ControlEvent(NamedTuple):
+    """One CC value as it's sent: at a time, on a CC number."""
+
+    time: Fraction
+    number: int
+    value: int
 
 
 def _degree_to_note(position, scale):
@@ -69,7 +95,7 @@ def _glide_end(note, end, following):
 
 
 def timed_events(clip, scale):
-    """Return a clip's notes as (start, end, MIDI number, velocity), and the clip's total length.
+    """Return a clip's notes as NoteEvents, and the clip's total length.
 
     Times are exact fractions of a whole note. This is where lengths and degrees are
     finally settled, as late as possible. Notes are cut off at the end of the clip.
@@ -88,7 +114,7 @@ def timed_events(clip, scale):
             end = min(end, clip_length)
             if end > start:
                 velocity = VELOCITY if note.velocity is None else note.velocity
-                timed.append((start, end, midi_number, velocity))
+                timed.append(NoteEvent(start, end, midi_number, velocity))
     return timed, clip_length
 
 
@@ -138,7 +164,7 @@ SLIDE_STEP = Fraction(1, 64)
 
 
 def control_points(clip, length):
-    """Return each CC number's values as (time, value, slide) points, in time order.
+    """Return each CC number's values as ControlPoints, in time order.
 
     Points at or after the clip's length are left out, and a later value at the same time as an
     earlier one replaces it.
@@ -149,37 +175,36 @@ def control_points(clip, length):
         if time >= length:
             continue
         lane = points.setdefault(item.number, [])
-        if lane and lane[-1][0] == time:
+        if lane and lane[-1].time == time:
             lane.pop()
-        lane.append((time, item.value, item.slide))
+        lane.append(ControlPoint(time, item.value, item.slide))
     return points
 
 
 def control_events(clip, length):
-    """Return a clip's CC values as (time, CC number, value), with slides written out as steps.
+    """Return a clip's CC values as ControlEvents, with slides written out as steps.
 
     A slide ramps in a straight line to the next value for the same number, sending a value every
     SLIDE_STEP, and a slide with nothing after it holds.
     """
     events = []
     for number, lane in control_points(clip, length).items():
-        for place, (time, value, slide) in enumerate(lane):
-            events.append((time, number, value))
+        for place, point in enumerate(lane):
+            events.append(ControlEvent(point.time, number, point.value))
             following = place + 1
-            if slide and following < len(lane):
-                end, target, _ = lane[following]
-                events += _slide_steps(number, time, value, end, target)
+            if point.slide and following < len(lane):
+                events += _slide_steps(number, point, lane[following])
     return sorted(events)
 
 
-def _slide_steps(number, start, value, end, target):
-    """Return the values a slide sends between two points, every SLIDE_STEP, leaving out repeats of the same value."""
-    steps, sent = [], value
-    now = start + SLIDE_STEP
-    while now < end:
-        ramped = _value_on_the_way(start, value, end, target, now)
+def _slide_steps(number, point, following):
+    """Return the values a slide sends between a point and the one after it, every SLIDE_STEP, leaving out repeats of the same value."""
+    steps, sent = [], point.value
+    now = point.time + SLIDE_STEP
+    while now < following.time:
+        ramped = _value_on_the_way(point.time, point.value, following.time, following.value, now)
         if ramped != sent:
-            steps.append((now, number, ramped))
+            steps.append(ControlEvent(now, number, ramped))
             sent = ramped
         now += SLIDE_STEP
     return steps

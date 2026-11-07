@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
+from typing import NamedTuple
 import re
 
 import mido
@@ -151,23 +152,32 @@ class ClipTree:
             mido.MetaMessage(TEMPO_META, tempo=mido.bpm2tempo(self.song.tempo_at(scene))),
         ]
         now = 0
-        for tick, kind, number, value in sorted(_events(notes, clip, clip_length)):
-            messages.append(_message(kind, number, value, tick - now))
-            now = tick
+        for event in sorted(_events(notes, clip, clip_length)):
+            messages.append(_message(event.kind, event.number, event.value, event.tick - now))
+            now = event.tick
         messages.append(mido.MetaMessage(END_OF_TRACK_META, time=_ticks(clip_length) - now))
         return mido.MidiFile(type=SINGLE_TRACK_FILE, ticks_per_beat=TICKS_PER_BEAT, tracks=[mido.MidiTrack(messages)])
 
 
+class MidiEvent(NamedTuple):
+    """One MIDI message to write: at a tick, of a kind, with its number (note or CC) and value (velocity or CC value)."""
+
+    tick: int
+    kind: str
+    number: int
+    value: int
+
+
 def _events(notes, clip, clip_length):
-    """Return a clip's notes and CC values as (tick, kind, number, value), in no particular order."""
+    """Return a clip's notes and CC values as MidiEvents, in no particular order."""
     events = []
-    for note_start, note_end, midi_number, velocity in notes:
-        start, end = _ticks(note_start), _ticks(note_end)
+    for note in notes:
+        start, end = _ticks(note.start), _ticks(note.end)
         if end > start:
-            events.append((start, NOTE_ON, midi_number, velocity))
-            events.append((end, NOTE_OFF, midi_number, NO_VELOCITY))
-    for time, number, value in control_events(clip, clip_length):
-        events.append((_ticks(time), CONTROL_CHANGE, number, value))
+            events.append(MidiEvent(start, NOTE_ON, note.midi_number, note.velocity))
+            events.append(MidiEvent(end, NOTE_OFF, note.midi_number, NO_VELOCITY))
+    for event in control_events(clip, clip_length):
+        events.append(MidiEvent(_ticks(event.time), CONTROL_CHANGE, event.number, event.value))
     return events
 
 

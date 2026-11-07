@@ -90,6 +90,11 @@ def render_examples(folder):
     open(os.path.join(folder, MARKER), 'w').close()
 
 
+def plain_estimates(song):
+    """Return a song's scene estimates as plain tuples, which is how the estimate file has always been written."""
+    return [tuple(estimate) for estimate in SongRenderer(song).estimate()]
+
+
 def render_example(path, folder):
     """Render one song into a folder named after it inside folder."""
     name = os.path.splitext(os.path.basename(path))[0]
@@ -103,7 +108,7 @@ def render_example(path, folder):
     keep_live_set_as_xml(out)
     Document.load(path).save(os.path.join(out, SAVED_SONG))
     with open(os.path.join(out, ESTIMATE), 'w') as file:
-        file.write(repr(SongRenderer(Song.read_file(path)).estimate()) + '\n')
+        file.write(repr(plain_estimates(Song.read_file(path))) + '\n')
 
 
 def keep_live_set_as_xml(out):

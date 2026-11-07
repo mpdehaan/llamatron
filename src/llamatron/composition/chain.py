@@ -16,6 +16,8 @@
 
 """A chain: a list of named generators that a clip's notes go through, in order."""
 
+from typing import NamedTuple
+
 from llamatron.composition.generator_settings import GENERATOR_SETTINGS
 from llamatron.composition.llama_data import LlamaData
 from llamatron.composition.checks import reading
@@ -29,6 +31,13 @@ MSG_NO_SUCH_GENERATOR = 'no {kind} called {name!r}'
 GENERATORS_PER_STEP = 1
 
 
+class ChainStep(NamedTuple):
+    """One step of a chain: the kind of generator, like arp, and the name of the one to use."""
+
+    kind: str
+    name: str
+
+
 class Chain(LlamaData):
     """Steps like arp: bells or auto_ratchet: rolls, each naming a generator the song defines.
 
@@ -39,7 +48,7 @@ class Chain(LlamaData):
     __slots__ = ('_steps',)
 
     def __init__(self, steps):
-        self._steps = [(kind, name) for kind, name in steps]
+        self._steps = [ChainStep(kind, name) for kind, name in steps]
 
     @classmethod
     def from_data(cls, data, where, song=None):
@@ -55,14 +64,14 @@ class Chain(LlamaData):
                     raise InvalidValue(MSG_UNKNOWN_GENERATOR.format(kind=kind, kinds=sorted(GENERATOR_SETTINGS)))
                 if not isinstance(name, str) or not song.has_generator(kind, name):
                     raise InvalidValue(MSG_NO_SUCH_GENERATOR.format(kind=kind, name=name))
-                steps.append((kind, name))
+                steps.append(ChainStep(kind, name))
             return cls(steps)
 
     def to_data(self):
-        return [{kind: name} for kind, name in self._steps]
+        return [{step.kind: step.name} for step in self._steps]
 
     def get_steps(self):
-        """Return each step as (kind of generator, its name), in the order they run."""
+        """Return each step as a ChainStep, in the order they run."""
         return list(self._steps)
 
 

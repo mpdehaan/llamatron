@@ -17,6 +17,7 @@
 """Rendering a composed Song into a ClipGrid of finished clips, for the renderers to write."""
 
 from fractions import Fraction
+from typing import NamedTuple
 
 from llamatron.composition.file_format import REGISTER_NAMES
 from llamatron.composition.song_file_error import SongFileError
@@ -43,6 +44,18 @@ SECONDS_PER_MINUTE = 60
 QUARTER_NOTES_PER_WHOLE_NOTE = 4
 # How long a scene with nothing in it lasts.
 NO_LENGTH = Fraction(0)
+
+
+class SceneEstimate(NamedTuple):
+    """How long one written-out scene lasts: its number, its seconds, each track's clip's seconds, and what stops it, if anything.
+
+    A scene with a problem has no seconds and no clip seconds, and the problem says why.
+    """
+
+    number: int
+    seconds: object
+    clip_seconds: dict
+    problem: object
 
 
 class SongRenderer:
@@ -101,10 +114,9 @@ class SongRenderer:
         return list(self._scenes)
 
     def estimate(self):
-        """Return how long each written-out scene and its clips last, in seconds, without playing anything.
+        """Return a SceneEstimate for each written-out scene, in seconds, without playing anything.
 
-        Each item is (number, seconds or None, {track: seconds or None}, problem or None). The
-        lengths come from get_scene_length and get_clip_length, which render uses too, so the two
+        The lengths come from get_scene_length and get_clip_length, which render uses too, so the two
         can't disagree, and a problem in one scene only affects that scene. The problems it
         reports are the ones that show without playing: every clip looping, scale degrees with no
         scale, and grabs that go round in a circle. A note a render can't fit in the MIDI range
@@ -124,7 +136,7 @@ class SongRenderer:
                 seconds = length * whole_notes_to_seconds
             except SongFileError as error:
                 problem = str(error)
-            result.append((scene.get_number(), seconds, clips, problem))
+            result.append(SceneEstimate(scene.get_number(), seconds, clips, problem))
         return result
 
     def _check_plays(self, scene):
@@ -245,11 +257,10 @@ class SongRenderer:
         An arp with no seed of its own gets one from the song's, which differs for every scene,
         track and place in the chain, so that a render is always the same.
         """
-        kind, name = step
-        settings = self._song.get_generator_settings(kind, name)
+        settings = self._song.get_generator_settings(step.kind, step.name)
         place = self._song.get_track_names().index(track)
         seed = self._song.get_seed() * SEED_SONG_FACTOR + scene.get_number() * SEED_SCENE_FACTOR + place * SEED_TRACK_FACTOR + index
-        return settings.make_generator(WHERE_CHAIN.format(chain=chain, kind=kind), seed)
+        return settings.make_generator(WHERE_CHAIN.format(chain=chain, kind=step.kind), seed)
 
 
 def _whole_if_possible(number):
@@ -291,7 +302,7 @@ def _every_clip_loops(scene):
 
 def _before(changes, end):
     """Return the register changes made before a time, the end of their scene."""
-    return [change for change in changes if change[0] < end]
+    return [change for change in changes if change.time < end]
 
 
 def _grab_loop(waiting, track):

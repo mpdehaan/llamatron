@@ -282,9 +282,9 @@ class Document:
     def song_seconds(self):
         """Return how long the song lasts, or None if any scene can't be worked out."""
         estimates = self._estimate()
-        if self._estimate_problem or any(item[1] is None for item in estimates):
+        if self._estimate_problem or any(item.seconds is None for item in estimates):
             return None
-        return sum((item[1] for item in estimates), Fraction(0))
+        return sum((item.seconds for item in estimates), Fraction(0))
 
     def _stanzas_of(self, index):
         """Return the written-out scene numbers of one scene, counting from 1."""
@@ -296,7 +296,7 @@ class Document:
         estimates = self._estimate()
         if self._estimate_problem:
             return None
-        values = [estimates[number - 1][1] for number in self._stanzas_of(index)]
+        values = [estimates[number - 1].seconds for number in self._stanzas_of(index)]
         return None if any(value is None for value in values) else sum(values, Fraction(0))
 
     def scene_problem(self, index):
@@ -305,8 +305,8 @@ class Document:
         if self._estimate_problem:
             return self._estimate_problem
         for number in self._stanzas_of(index):
-            if estimates[number - 1][3]:
-                return estimates[number - 1][3]
+            if estimates[number - 1].problem:
+                return estimates[number - 1].problem
         return None
 
     def clip_seconds(self, index, track):
@@ -314,7 +314,7 @@ class Document:
         estimates = self._estimate()
         if self._estimate_problem:
             return None
-        return estimates[self._stanzas_of(index)[0] - 1][2].get(track)
+        return estimates[self._stanzas_of(index)[0] - 1].clip_seconds.get(track)
 
     def pattern_seconds(self, name):
         """Return how long one play of a pattern lasts at the song's tempo."""

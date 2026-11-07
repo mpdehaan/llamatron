@@ -49,6 +49,6 @@ def _notes_by_start(clip):
     """Return the MIDI numbers of the notes a clip plays, grouped by when they start."""
     events, _ = timed_events(clip, clip.scale)
     notes = {}
-    for start, _, number, _ in events:
-        notes.setdefault(start, set()).add(number)
+    for event in events:
+        notes.setdefault(event.start, set()).add(event.midi_number)
     return notes

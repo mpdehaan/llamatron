@@ -26,11 +26,20 @@ when anything plays, so both plays go through exactly the same steps.
 """
 
 from bisect import bisect_right
+from typing import NamedTuple
 
 from llamatron.composition.file_format import REGISTER_NAMES
 
-# What a step sees while a clip is only played to find its changes and length.
+# What a step sees while a clip is only played to find its changes.
 NO_VALUE = 0
+
+
+class RegisterChange(NamedTuple):
+    """What one step adds to the registers: at a time in its scene, from the track at a place in the song."""
+
+    time: object
+    place: int
+    adds: dict
 
 
 def starting_values(registers):
@@ -52,8 +61,7 @@ def with_resets(values, registers, names):
 class RegisterTimeline:
     """The values of every register through one scene, from what its steps add to them.
 
-    Each change is (time in the scene, the track's place in the song, {register: amount}).
-    Changes apply in time order, and those at the same time in track order.
+    Changes are RegisterChanges, applied in time order, and at the same time in track order.
     """
 
     __slots__ = ('_start', '_moments', '_values')
@@ -62,10 +70,10 @@ class RegisterTimeline:
         self._start = dict(start)
         self._moments, self._values = [], []
         values = dict(start)
-        for time, place, adds in sorted(changes, key=_moment_of):
-            for name, amount in adds.items():
+        for change in sorted(changes, key=_moment_of):
+            for name, amount in change.adds.items():
                 values[name] = registers[name].added(values[name], amount)
-            self._moments.append((time, place))
+            self._moments.append((change.time, change.place))
             self._values.append(dict(values))
 
     def values_at(self, time, place):
@@ -79,7 +87,7 @@ class RegisterTimeline:
 
 
 class RegisterRecorder:
-    """Stands in for the registers while a clip is played to find its length and what it adds to the registers.
+    """Stands in for the registers while a clip is played to find what it adds to the registers.
 
     Every step sees no value, which doesn't matter, because registers never change when a step plays.
     """
@@ -93,11 +101,11 @@ class RegisterRecorder:
     def at_step(self, time, adds):
         """Note what a step adds to the registers at a time in the scene, and return the values it sees."""
         if adds:
-            self._changes.append((time, self._place, adds))
+            self._changes.append(RegisterChange(time, self._place, adds))
         return no_values()
 
     def get_changes(self):
-        """Return every change noted, as (time, track place, {register: amount})."""
+        """Return every change noted, as RegisterChanges."""
         return list(self._changes)
 
 
@@ -122,5 +130,4 @@ def no_values():
 
 def _moment_of(change):
     """Return when a change happens, as (time, track place), which is the order changes apply in."""
-    time, place, _ = change
-    return time, place
+    return change.time, change.place
