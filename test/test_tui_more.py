@@ -304,19 +304,6 @@ class TestPatternEditorRefusals(UITest):
         await self.press('y')
         self.assertEqual(self.document.data['patterns']['tune']['steps'], 1)
 
-    async def test_the_add_limit_must_be_a_positive_whole_number(self):
-        await self.open('tune')
-        await self.press('a')
-        for text, message in [('x', 'not a whole number'), ('0', 'must be 1 or more')]:
-            await self.press('m')
-            self.app.screen.value = text
-            await self.press('enter')
-            self.assertIn(message, self.text())
-        await self.press('m')
-        self.app.screen.value = '5'
-        await self.press('enter')
-        self.assertEqual(self.document.data['patterns']['tune']['accumulator_limit'], 5)
-
     async def test_a_typed_velocity_must_be_in_range(self):
         await self.open('tune')
         await self.go_to_row('velocity')

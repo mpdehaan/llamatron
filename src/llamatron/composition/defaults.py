@@ -31,4 +31,9 @@ DEFAULT_PROBABILITY = 100
 DEFAULT_RATCHET = 1
 DEFAULT_REPEAT = 1
 DEFAULT_TRANSPOSE = 0
-DEFAULT_ACCUMULATOR_LIMIT = 36
+# A register runs from its minimum to its maximum, starts at its default, and stops at the ends
+# unless it's set to wrap.
+DEFAULT_REGISTER_MINIMUM = 0
+DEFAULT_REGISTER_MAXIMUM = 10
+DEFAULT_REGISTER_VALUE = 0
+DEFAULT_REGISTER_WRAP = False

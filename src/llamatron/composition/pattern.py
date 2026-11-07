@@ -17,20 +17,18 @@
 """A pattern: a row of steps, with one list of values for each row of the pattern editor."""
 
 from llamatron.composition.checks import check_keys, is_true_or_false, is_whole_number, is_whole_number_from, live_octave, written_length
-from llamatron.composition.defaults import DEFAULT_ACCUMULATOR_LIMIT
 from llamatron.composition.file_format import (
-    ACCIDENTALS, CC_ROWS, CHORD_SYMBOLS, DIRECTIONS, GATE_MODIFIERS, NOTE_LETTERS, PATTERN_ROWS, SIGNED_ROWS, TOGGLE_ROWS,
-    Direction, PatternSetting, Row,
+    ACCIDENTALS, CC_ROWS, CHORD_SYMBOLS, DIRECTIONS, GATE_MODIFIERS, NOTE_LETTERS, PATTERN_ROWS, REGISTER_ADD_ROWS,
+    REGISTER_NOTE_ROWS, SIGNED_ROWS, TOGGLE_ROWS, Direction, PatternSetting, Row,
 )
 from llamatron.composition.limits import (
-    MAX_CC_VALUE, MAX_GATE, MAX_PROBABILITY, MAX_STEP_SIZE, MAX_VELOCITY, MIN_ACCUMULATOR_LIMIT, MIN_CC_VALUE, MIN_DEGREE,
-    MIN_PROBABILITY, MIN_RATCHET, MIN_STEPS, MIN_VELOCITY,
+    MAX_CC_VALUE, MAX_GATE, MAX_PROBABILITY, MAX_REGISTER_VALUE, MAX_STEP_SIZE, MAX_VELOCITY, MIN_CC_VALUE, MIN_DEGREE,
+    MIN_PROBABILITY, MIN_RATCHET, MIN_REGISTER_VALUE, MIN_STEPS, MIN_VELOCITY,
 )
 from llamatron.composition.llama_data import LlamaData
 from llamatron.composition.song_file_error import SongFileError
 
 MSG_EXPECTED_SETTINGS = '{where}: expected settings like steps, degree and gate'
-MSG_BAD_ACCUMULATOR_LIMIT = '{where}: accumulator_limit must be a whole number of {lowest} or more, got {value!r}'
 MSG_BAD_STEPS = '{where}: steps must be a whole number of {lowest} or more, got {value!r}'
 MSG_DRUM_NOT_TRUE_OR_FALSE = '{where}: drum must be true or false, got {value!r}'
 MSG_BAD_DIRECTION = '{where}: direction must be one of {directions}, got {value!r}'
@@ -43,6 +41,7 @@ PROBLEM_NOT_DEGREE = 'must be a scale degree of {lowest} or more'
 PROBLEM_NOT_ACCIDENTAL = 'must be # or b'
 PROBLEM_NOT_GATE_MODIFIER = 'must be d for dotted or t for triplet'
 PROBLEM_CHORD_ON_DRUMS = "isn't used in a drum pattern"
+PROBLEM_REGISTER_NOTE_ON_DRUMS = "can't move notes in a drum pattern, so it can only be false"
 PROBLEM_NOT_CHORD = 'must be one of {symbols}'
 PROBLEM_NOT_IN_RANGE = 'must be a whole number from {lowest} to {highest}'
 PROBLEM_TOO_SMALL = 'must be a whole number of {lowest} or more'
@@ -55,7 +54,7 @@ SYMBOL_SEPARATOR = ', '
 # A drum pattern's degree row holds one note letter per step.
 NOTE_LETTER_LENGTH = 1
 # A pattern's settings besides its rows, in the order they're written to a file.
-SETTINGS = [PatternSetting.STEP_SIZE, PatternSetting.DRUM, PatternSetting.DIRECTION, PatternSetting.ACCUMULATOR_LIMIT]
+SETTINGS = [PatternSetting.STEP_SIZE, PatternSetting.DRUM, PatternSetting.DIRECTION]
 
 
 class Pattern(LlamaData):
@@ -68,22 +67,16 @@ class Pattern(LlamaData):
 
     __slots__ = ('_steps', '_rows', '_settings')
 
-    def __init__(self, steps, rows, step_size=None, drum=None, direction=None, accumulator_limit=None):
+    def __init__(self, steps, rows, step_size=None, drum=None, direction=None):
         self._steps = steps
         self._rows = _copied_rows(rows)
-        self._settings = {
-            PatternSetting.STEP_SIZE: step_size, PatternSetting.DRUM: drum, PatternSetting.DIRECTION: direction,
-            PatternSetting.ACCUMULATOR_LIMIT: accumulator_limit,
-        }
+        self._settings = {PatternSetting.STEP_SIZE: step_size, PatternSetting.DRUM: drum, PatternSetting.DIRECTION: direction}
 
     @classmethod
     def from_data(cls, data, where, song=None):
         if not isinstance(data, dict):
             raise SongFileError(MSG_EXPECTED_SETTINGS.format(where=where))
         check_keys(data, where, {PatternSetting.STEPS, *SETTINGS, *PATTERN_ROWS})
-        limit = data.get(PatternSetting.ACCUMULATOR_LIMIT, DEFAULT_ACCUMULATOR_LIMIT)
-        if not is_whole_number_from(limit, MIN_ACCUMULATOR_LIMIT):
-            raise SongFileError(MSG_BAD_ACCUMULATOR_LIMIT.format(where=where, lowest=MIN_ACCUMULATOR_LIMIT, value=limit))
         check_direction(data.get(PatternSetting.DIRECTION, Direction.FORWARD), where)
         steps = data.get(PatternSetting.STEPS)
         if not is_whole_number_from(steps, MIN_STEPS):
@@ -118,11 +111,6 @@ class Pattern(LlamaData):
     def get_direction(self):
         """Return the order its steps play in, forward unless the pattern sets another."""
         return self._settings[PatternSetting.DIRECTION] or Direction.FORWARD
-
-    def get_accumulator_limit(self):
-        """Return how far its note and velocity totals can go, either way, before they clear."""
-        limit = self._settings[PatternSetting.ACCUMULATOR_LIMIT]
-        return DEFAULT_ACCUMULATOR_LIMIT if limit is None else limit
 
     def get_value(self, row, step):
         """Return one step's value on a row, or None if it's blank there."""
@@ -198,6 +186,10 @@ def _step_value_problem(row, value, drum):
         return PROBLEM_TOO_SMALL.format(lowest=MIN_RATCHET)
     elif row in TOGGLE_ROWS and not is_true_or_false(value):
         return PROBLEM_NOT_TRUE_OR_FALSE
+    elif row in REGISTER_NOTE_ROWS.values() and drum and value:
+        return PROBLEM_REGISTER_NOTE_ON_DRUMS
+    elif row in REGISTER_ADD_ROWS.values() and not is_whole_number_from(value, MIN_REGISTER_VALUE, MAX_REGISTER_VALUE):
+        return PROBLEM_NOT_IN_RANGE.format(lowest=MIN_REGISTER_VALUE, highest=MAX_REGISTER_VALUE)
     elif row in CC_ROWS and not is_whole_number_from(value, MIN_CC_VALUE, MAX_CC_VALUE):
         return PROBLEM_NOT_IN_RANGE.format(lowest=MIN_CC_VALUE, highest=MAX_CC_VALUE)
     elif row in SIGNED_ROWS and not is_whole_number(value):

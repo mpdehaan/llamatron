@@ -1,0 +1,141 @@
+version: 1.0.7
+title: Registers demo
+description: |
+  Registers demo: an acid techno riff of five notes, changed bar by bar by the four registers.
+  Run it with: llamatron examples/demo_registers.yml --to ableton --replace
+
+  The registers AX, BX, CX and DX are four numbers the whole song shares, set on the Registers
+  page. A pattern step changes one with its AX+= row, even an empty step, and a note uses one
+  with AX+Note, which moves it that many notes along the scale, or AX+Vel, which adds it to the
+  velocity. Each register stops at its minimum and maximum, or wraps to the other end. A scene
+  can reset registers to their defaults as it starts, but not on its own repeats.
+
+  Every bar here is the same five notes. The register changes happen on the last step of the
+  bar, which has no note, so each scene's first bar plays the riff as written.
+
+  Scene 1: AX runs from 0 to 3 and wraps, and moves the third note, so it climbs and drops back
+  every four bars.
+  Scene 2: BX runs from 0 to 5 and wraps, and moves the fifth note, so it climbs higher before
+  it drops, every six bars.
+  Scene 3: CX runs from 0 down to -4 and wraps, and moves the second note down instead.
+  Scene 4: all three at once, each starting again from 0, so the three cycles of 4, 6 and 5 bars
+  drift against each other.
+  Scene 5: DX fades the whole track out over 6 repeats of the scene. Only the riff adds to DX,
+  -18 a bar, but the kick and hat use DX for their velocity too, so they fade with it. The scene
+  resets DX only as it first starts.
+
+  When changing this demo:
+  Each of the first three scenes should show one register on its own, and keep the riff
+  recognisable. Only one track may add to a register in a scene, or the adds pile up. Keep the
+  adds on an empty step at the end of the bar, so the first bar of each scene is the riff as
+  written. The drums listen to DX in every scene, so DX has to stay at 0 until the fade.
+tempo: 132
+scale: A Minor
+
+scales:
+  A Minor: { root: A, type: minor }
+
+patterns:
+  kick:
+    steps: 16
+    drum: true
+    degree: [C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~]
+    octave: [1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~]
+    velocity: [120, ~, ~, ~, 120, ~, ~, ~, 120, ~, ~, ~, 120, ~, ~, ~]
+    dx_velocity: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false]
+  hat:
+    steps: 16
+    drum: true
+    degree: [~, ~, F, ~, ~, ~, F, ~, ~, ~, F, ~, ~, ~, F, ~]
+    accidental: [~, ~, "#", ~, ~, ~, "#", ~, ~, ~, "#", ~, ~, ~, "#", ~]
+    octave: [~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~]
+    velocity: [~, ~, 85, ~, ~, ~, 85, ~, ~, ~, 85, ~, ~, ~, 85, ~]
+    dx_velocity: [false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false]
+  riff_ax:
+    steps: 16
+    degree: [1, ~, ~, 1, ~, ~, 3, ~, ~, ~, 5, ~, ~, 7, ~, ~]
+    octave: [1, ~, ~, 2, ~, ~, 1, ~, ~, ~, 1, ~, ~, 1, ~, ~]
+    velocity: [120, ~, ~, 95, ~, ~, 110, ~, ~, ~, 95, ~, ~, 105, ~, ~]
+    glide: [false, false, false, true, false, false, false, false, false, false, true, false, false, false, false, false]
+    ax_note: [false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false]
+    ax_add: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1]
+  riff_bx:
+    steps: 16
+    degree: [1, ~, ~, 1, ~, ~, 3, ~, ~, ~, 5, ~, ~, 7, ~, ~]
+    octave: [1, ~, ~, 2, ~, ~, 1, ~, ~, ~, 1, ~, ~, 1, ~, ~]
+    velocity: [120, ~, ~, 95, ~, ~, 110, ~, ~, ~, 95, ~, ~, 105, ~, ~]
+    glide: [false, false, false, true, false, false, false, false, false, false, true, false, false, false, false, false]
+    bx_note: [false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false]
+    bx_add: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1]
+  riff_cx:
+    steps: 16
+    degree: [1, ~, ~, 1, ~, ~, 3, ~, ~, ~, 5, ~, ~, 7, ~, ~]
+    octave: [1, ~, ~, 2, ~, ~, 1, ~, ~, ~, 1, ~, ~, 1, ~, ~]
+    velocity: [120, ~, ~, 95, ~, ~, 110, ~, ~, ~, 95, ~, ~, 105, ~, ~]
+    glide: [false, false, false, true, false, false, false, false, false, false, true, false, false, false, false, false]
+    cx_note: [false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false]
+    cx_add: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, -1]
+  riff_abc:
+    steps: 16
+    degree: [1, ~, ~, 1, ~, ~, 3, ~, ~, ~, 5, ~, ~, 7, ~, ~]
+    octave: [1, ~, ~, 2, ~, ~, 1, ~, ~, ~, 1, ~, ~, 1, ~, ~]
+    velocity: [120, ~, ~, 95, ~, ~, 110, ~, ~, ~, 95, ~, ~, 105, ~, ~]
+    glide: [false, false, false, true, false, false, false, false, false, false, true, false, false, false, false, false]
+    ax_note: [false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false]
+    bx_note: [false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false]
+    cx_note: [false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false]
+    ax_add: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1]
+    bx_add: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1]
+    cx_add: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, -1]
+  riff_fade:
+    steps: 16
+    degree: [1, ~, ~, 1, ~, ~, 3, ~, ~, ~, 5, ~, ~, 7, ~, ~]
+    octave: [1, ~, ~, 2, ~, ~, 1, ~, ~, ~, 1, ~, ~, 1, ~, ~]
+    velocity: [120, ~, ~, 95, ~, ~, 110, ~, ~, ~, 95, ~, ~, 105, ~, ~]
+    glide: [false, false, false, true, false, false, false, false, false, false, true, false, false, false, false, false]
+    dx_velocity: [true, false, false, true, false, false, true, false, false, false, true, false, false, true, false, false]
+    dx_add: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, -18]
+
+tracks:
+  kick: { drum: true }
+  hat: { drum: true }
+  acid: {}
+
+registers:
+  AX: { maximum: 3, wrap: true }
+  BX: { maximum: 5, wrap: true }
+  CX: { minimum: -4, maximum: 0, wrap: true }
+  DX: { minimum: -90, maximum: 0 }
+
+scenes:
+  - name: AX moves the third note
+    reset: [AX]
+    tracks:
+      kick: { pattern: kick, loop: true }
+      hat: { pattern: hat, loop: true }
+      acid: { pattern: riff_ax, repeat: 8 }
+  - name: BX moves the fifth note
+    reset: [BX]
+    tracks:
+      kick: { pattern: kick, loop: true }
+      hat: { pattern: hat, loop: true }
+      acid: { pattern: riff_bx, repeat: 12 }
+  - name: CX moves the second note down
+    reset: [CX]
+    tracks:
+      kick: { pattern: kick, loop: true }
+      hat: { pattern: hat, loop: true }
+      acid: { pattern: riff_cx, repeat: 10 }
+  - name: "AX, BX and CX together"
+    reset: [AX, BX, CX]
+    tracks:
+      kick: { pattern: kick, loop: true }
+      hat: { pattern: hat, loop: true }
+      acid: { pattern: riff_abc, repeat: 16 }
+  - name: DX fades out
+    repeat: 6
+    reset: [DX]
+    tracks:
+      kick: { pattern: kick, loop: true }
+      hat: { pattern: hat, loop: true }
+      acid: { pattern: riff_fade }

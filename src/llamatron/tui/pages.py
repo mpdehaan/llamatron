@@ -32,6 +32,7 @@ from llamatron.tui.base import ARROWS, ARROWS_UP_DOWN, SITE, ChoiceDialog, Confi
 from llamatron.tui.document import Document, GENERATOR_SECTIONS, ROOTS, SCALE_KINDS, clock, unique_name
 from llamatron.tui.lists import Field, FieldPage, ListPage
 from llamatron.tui.pattern_editor import TOGGLE_OFF, TOGGLE_ON, PatternEditor
+from llamatron.tui.registers_page import RegistersPage
 
 NOTE_LENGTHS = ['1/256', '1/128', '1/64', '1/32', '1/16', '1/8', '1/4', '1/2', '1']
 ORDERS = [order.name.lower() for order in ChordOrder]
@@ -104,6 +105,7 @@ class MainPage(Page):
         'Chains': 'Lists of generators used by clips',
         'Generators': 'Arpeggiators and AutoRatchets',
         'Scales': 'The scales scenes and the song can use',
+        'Registers': 'AX to DX, numbers that steps change and use',
         'Arrange': 'Scenes and clips, in the order they render',
         'Quit': 'Asks first if there are unsaved changes',
         'Help': 'What the page you are on does',
@@ -117,6 +119,7 @@ class MainPage(Page):
             key('c', 'Chains', lambda: self.show_page(ChainsPage(self.holder))),
             key('g', 'Generators', lambda: self.show_page(GeneratorsPage(self.holder))),
             key('z', 'Scales', lambda: self.show_page(ScalesPage(self.holder))),
+            key('r', 'Registers', lambda: self.show_page(RegistersPage(self.holder))),
             key('a', 'Arrange', lambda: self.show_page(ArrangePage(self.holder))),
             key('q', 'Quit', self.app.request_quit),
         ]

@@ -1,4 +1,4 @@
-version: 1.0.6
+version: 1.0.7
 title: Grab demo
 description: |
   Grab demo: four tracks take turns playing a melody that a silent track holds, called hocketing.

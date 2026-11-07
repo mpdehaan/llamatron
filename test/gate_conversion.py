@@ -36,7 +36,7 @@ SONG_STEP_SIZE = F(1, 16)
 DOTTED, TRIPLET = F(3, 2), F(2, 3)
 LONGEST_PLAIN = (1, 2, 4)
 # Settings a pattern keeps as they are.
-KEPT_SETTINGS = (PatternSetting.DRUM, PatternSetting.DIRECTION, PatternSetting.ACCUMULATOR_LIMIT)
+KEPT_SETTINGS = (PatternSetting.DRUM, PatternSetting.DIRECTION)
 
 
 def text_length(length):

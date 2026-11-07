@@ -18,9 +18,11 @@
 
 from fractions import Fraction
 
+from llamatron.composition.file_format import REGISTER_NAMES
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.playback.cell_player import CellPlayer
 from llamatron.playback.grab_source import GrabSource
+from llamatron.playback.registers import RegisterReader, RegisterRecorder, RegisterTimeline, starting_values, with_resets
 from llamatron.playback.written_scene import WrittenScene
 from llamatron.clip_grid import ClipGrid, Scene, Track
 
@@ -42,15 +44,23 @@ class SongRenderer:
 
     Clips are played when they're first asked for, so that a clip that grabs from another track
     can simply ask for that track's clip, and a grab that goes round in a circle is caught.
+
+    Each clip is played twice: first counted, without grabs or register values, to find how long
+    it is and what it adds to the registers, and then finished, reading the registers from the
+    scene's RegisterTimeline. See registers.py.
     """
 
-    __slots__ = ('_song', '_scenes', '_clips', '_lengths', '_grabbing')
+    __slots__ = ('_song', '_scenes', '_registers', '_clips', '_counted', '_lengths', '_timelines', '_grabbing')
 
     def __init__(self, song):
         self._song = song
         self._scenes = WrittenScene.write_out(song)
+        self._registers = {name: song.get_register(name) for name in REGISTER_NAMES}
         self._clips = {}
+        # Clips played only to find their lengths and register changes, with those changes.
+        self._counted = {}
         self._lengths = {}
+        self._timelines = {}
         # The tracks whose clips are waiting on a grab, to catch clips that grab in a circle.
         self._grabbing = []
 
@@ -95,16 +105,62 @@ class SongRenderer:
             result.append((scene.get_number(), seconds, clips, problem))
         return result
 
-    def get_clip(self, scene, track, grabbing=True):
+    def get_clip(self, scene, track):
         """Return the finished clip a track plays in a written-out scene, or None if it plays nothing."""
         cell = scene.get_cell(track)
         if cell is None:
             return None
-        grabbing = grabbing and cell.get_grab_track() is not None
-        key = (scene.get_number(), track, grabbing)
+        key = (scene.get_number(), track)
         if key not in self._clips:
-            self._clips[key] = CellPlayer(self, self._song, scene, track).play(grabbing)
+            registers = RegisterReader(self.get_timeline(scene), self._track_place(track))
+            self._clips[key] = CellPlayer(self, self._song, scene, track).play(cell.get_grab_track() is not None, registers)
         return self._clips[key]
+
+    def _counted_clip(self, scene, track):
+        """Return a track's clip in a scene played without grabs or register values, and what it adds to the registers.
+
+        Grabs and registers only change pitches and velocities, so this clip is as long as the
+        finished one, which means a clip can grab from one that loops to fill the scene.
+        """
+        key = (scene.get_number(), track)
+        if key not in self._counted:
+            recorder = RegisterRecorder(self._track_place(track))
+            clip = CellPlayer(self, self._song, scene, track).play(False, recorder)
+            self._counted[key] = (clip, recorder.get_changes())
+        return self._counted[key]
+
+    def _track_place(self, track):
+        """Return a track's place in the song, counted from 0, which orders register changes made at the same time."""
+        return self._song.get_track_names().index(track)
+
+    def get_timeline(self, scene):
+        """Return the register values through a written-out scene.
+
+        A scene starts with the values the scene before it ended with, or the registers' defaults
+        for the first scene, and then sets the registers it resets back to their defaults. A scene
+        before it that can't be played changes nothing, so that estimates can still show this one.
+        """
+        values = starting_values(self._registers)
+        for written in self._scenes[:self._scenes.index(scene) + 1]:
+            number = written.get_number()
+            if number not in self._timelines:
+                start = with_resets(values, self._registers, written.get_reset_names())
+                try:
+                    self._timelines[number] = RegisterTimeline(self._registers, start, self._scene_changes(written))
+                except SongFileError:
+                    if written is scene:
+                        raise
+                    continue
+            values = self._timelines[number].end_values()
+        return self._timelines[scene.get_number()]
+
+    def _scene_changes(self, scene):
+        """Return every change a scene's clips make to the registers before the scene ends."""
+        length = self.get_scene_length(scene)
+        changes = []
+        for track in scene.get_track_names():
+            changes += _before(self._counted_clip(scene, track)[1], length)
+        return changes
 
     def get_scene_length(self, scene):
         """Return how long a scene lasts, which is its longest clip that doesn't loop."""
@@ -116,9 +172,7 @@ class SongRenderer:
         length = Fraction(0)
         for track in scene.get_track_names():
             if not scene.get_cell(track).loops():
-                # Grabbing only changes pitches, so lengths come from clips played without it, which
-                # means a clip can grab from one that loops to fill the scene.
-                length = max(length, self.get_clip(scene, track, grabbing=False).total_length())
+                length = max(length, self._counted_clip(scene, track)[0].total_length())
         self._lengths[number] = length
         return length
 
@@ -159,6 +213,11 @@ def _every_clip_loops(scene):
     """Return whether every clip in a scene loops, which would leave the scene with no end."""
     cells = [scene.get_cell(track) for track in scene.get_track_names()]
     return bool(cells) and all(cell.loops() for cell in cells)
+
+
+def _before(changes, end):
+    """Return the register changes made before a time, the end of their scene."""
+    return [change for change in changes if change[0] < end]
 
 
 def _grab_loop(waiting, track):

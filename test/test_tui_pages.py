@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
+import string
 import tempfile
 import unittest
 from fractions import Fraction
@@ -26,9 +27,16 @@ from textual.screen import Screen
 from rendering import render_data
 from llamatron.composition.song import Song
 from llamatron.tui.app import LlamatronApp
-from llamatron.tui.arrange import ArrangePage, ClipPage, ScenePage
+from llamatron.tui.arrange import RESET_LABEL, ArrangePage, ClipPage, ScenePage
 from llamatron.tui.base import ChoiceDialog, ConfirmDialog, Dialog, GridChoiceDialog, MessageDialog, Page, PromptDialog
-from llamatron.composition.file_format import STEP_SIZE_CHOICES
+from llamatron.composition.file_format import (
+    REGISTER_ADD_ROWS, REGISTER_NAMES, REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, STEP_SIZE_CHOICES, RegisterName, Row,
+    SceneSetting, Section,
+)
+from llamatron.composition.defaults import DEFAULT_REGISTER_MAXIMUM, DEFAULT_REGISTER_MINIMUM
+from llamatron.composition.register import MSG_OUT_OF_ORDER
+from llamatron.tui.registers_page import FIELD_LABEL, NUMBER_FIELDS, WRAP_FIELD, RegistersPage
+from llamatron.composition.limits import MAX_REGISTER_VALUE
 from llamatron.tui.document import Document, new_song
 from llamatron.version import VERSION
 from llamatron.tui.lists import FieldPage, ListPage
@@ -36,7 +44,26 @@ from llamatron.tui.pages import (
     ArpEditor, ArpsPage, AutoRatchetEditor, AutoRatchetsPage, ChainEditor, ChainsPage, DescriptionPage, FilePage,
     GeneratorsPage, MainPage, OffsetsEditor, PatternsPage, ScalesPage, SongPage, TrackEditor, TracksPage,
 )
-from llamatron.tui.pattern_editor import PatternEditor
+from llamatron.tui.pattern_editor import (
+    ADVANCED, CC, NORMAL, REGISTER_CHANGES, REGISTERS, ROW_LABELS, ROW_SET_HEADERS, ROW_SET_NAMES, ROW_SETS, TOGGLE_ON,
+    PatternEditor,
+)
+
+# How the pattern editor shows a row's label at the left of the grid, a key in the key list,
+# and a step whose quiet row isn't set.
+ROW_SHOWN = '│ {label}'
+KEY_SHOWN = '« {label} »'
+QUIET_VALUE = '.'
+
+
+def fixed_text(template):
+    """Return the longest piece of a message template that isn't filled in, to look for on screen."""
+    pieces = [literal for literal, _, _, _ in string.Formatter().parse(template)]
+    return max(pieces, key=len)
+
+
+# What shows when a register's settings would be out of order.
+OUT_OF_ORDER_START = fixed_text(MSG_OUT_OF_ORDER)
 
 
 def a_song(path=None):
@@ -734,7 +761,7 @@ class TestPatternEditor(UITest):
         self.assertEqual(self.value('velocity'), 60)
         await self.press('down', '-')
         self.assertEqual(self.value('probability'), 99)
-        await self.press('a')
+        await self.press('pagedown')
         await self.go_to_row('ratchet')
         await self.press('+')
         self.assertEqual(self.value('ratchet'), 2)
@@ -1095,6 +1122,64 @@ class TestRhythmAndNotesFromOnAClip(UITest):
         self.assertEqual(Document.load('x.yml').cell(0, 'lead'), self.cell())
 
 
+class TestRegistersPage(UITest):
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        await self.press('r')
+        self.page = self.app.screen
+
+    def label(self, name, what):
+        return FIELD_LABEL.format(name=name, what=what)
+
+    def register(self, name):
+        return self.document.register(name)
+
+    async def test_it_opens_from_the_main_screen_with_every_register(self):
+        self.assertIsInstance(self.page, RegistersPage)
+        labels = [field.label for field in self.page.fields()]
+        for name in REGISTER_NAMES:
+            for _, what in NUMBER_FIELDS:
+                self.assertIn(self.label(name, what), labels)
+            self.assertIn(self.label(name, WRAP_FIELD), labels)
+
+    async def test_numbers_change_and_go_back_to_their_defaults(self):
+        await self.select_field(self.label(RegisterName.BX, 'maximum'))
+        await self.press('+')
+        self.assertEqual(self.register(RegisterName.BX).get_maximum(), DEFAULT_REGISTER_MAXIMUM + 1)
+        await self.press('backspace')
+        self.assertEqual(self.register(RegisterName.BX).get_maximum(), DEFAULT_REGISTER_MAXIMUM)
+        self.assertNotIn(Section.REGISTERS, self.document.data)
+
+    async def test_a_typed_number_can_be_negative(self):
+        lowest = -50
+        await self.select_field(self.label(RegisterName.DX, 'minimum'))
+        await self.press('enter')
+        self.app.screen.value = str(lowest)
+        await self.press('enter')
+        self.assertEqual(self.register(RegisterName.DX).get_minimum(), lowest)
+        render_data(self.document.data)
+
+    async def test_settings_out_of_order_are_refused_with_the_reason(self):
+        await self.select_field(self.label(RegisterName.AX, 'minimum'))
+        await self.press('+')
+        self.assertEqual(self.register(RegisterName.AX).get_minimum(), DEFAULT_REGISTER_MINIMUM)
+        self.assertIn(OUT_OF_ORDER_START, self.text())
+
+    async def test_wrapping_toggles(self):
+        await self.select_field(self.label(RegisterName.CX, WRAP_FIELD))
+        await self.press('enter')
+        self.assertTrue(self.register(RegisterName.CX).wraps())
+        await self.press('enter')
+        self.assertFalse(self.register(RegisterName.CX).wraps())
+
+    async def test_settings_save_and_load(self):
+        await self.select_field(self.label(RegisterName.AX, 'maximum'))
+        await self.press('-')
+        self.document.save('x.yml')
+        self.assertEqual(Document.load('x.yml').register(RegisterName.AX).get_maximum(), DEFAULT_REGISTER_MAXIMUM - 1)
+
+
 class TestScenePage(UITest):
 
     async def asyncSetUp(self):
@@ -1146,6 +1231,14 @@ class TestScenePage(UITest):
         await self.press('enter')
         self.assertEqual(self.scene()['name'], 'intro')
 
+
+    async def test_it_can_reset_each_register(self):
+        label = RESET_LABEL.format(name=RegisterName.BX)
+        await self.go_to(label)
+        await self.press('enter')
+        self.assertEqual(self.scene()[SceneSetting.RESET], [RegisterName.BX])
+        await self.press('enter')
+        self.assertNotIn(SceneSetting.RESET, self.scene())
 
 class TestTracksScalesChainsAndArps(UITest):
 
@@ -1553,7 +1646,7 @@ class TestLookAndNewKeys(UITest):
     async def go_to_row(self, name):
         await self.press('p', 'enter')
         if name == 'ratchet':
-            await self.press('a')
+            await self.press('pagedown')
         names = [row for row, _ in self.app.screen.rows()]
         await self.press(*['down'] * names.index(name))
 
@@ -1716,15 +1809,15 @@ class TestDirectionsAndGrab(UITest):
 
     async def test_the_grab_row_is_always_in_the_advanced_rows(self):
         await self.press('p', 'enter')
-        self.assertNotIn('│ Grab', self.text())
-        await self.press('a')
-        self.assertIn('│ Grab', self.text())
-        self.assertIn("Grab plays what each clip's Grab track last played", self.text())
+        self.assertNotIn(ROW_SHOWN.format(label=ROW_LABELS[Row.GRAB]), self.text())
+        await self.press('pagedown')
+        self.assertIn(ROW_SHOWN.format(label=ROW_LABELS[Row.GRAB]), self.text())
+        self.assertIn(ROW_SET_HEADERS[ADVANCED], self.text())
 
     async def test_marking_a_step_with_space(self):
-        await self.press('p', 'enter', 'a')
-        await self.press(*['down'] * 5)
-        self.assertEqual(self.app.screen.row_name(), 'grab')
+        await self.press('p', 'enter', 'pagedown')
+        while self.app.screen.row_name() != Row.GRAB:
+            await self.press('down')
         await self.press('space')
         self.assertTrue(self.document.step_value('tune', 'grab', 0))
         self.assertEqual(self.app.screen.cell_text('grab', 0), '*')
@@ -1736,130 +1829,147 @@ class TestDirectionsAndGrabOnAUsualConsole(UITest):
 
     async def test_everything_still_fits_with_the_grab_row(self):
         self.document.data['patterns']['tune']['source_pattern'] = 'other'
-        await self.press('p', 'enter', 'a')
+        await self.press('p', 'enter', 'pagedown')
         text = self.text()
-        self.assertIn('│ Grab', text)
+        self.assertIn(ROW_SHOWN.format(label=ROW_LABELS[Row.GRAB]), text)
         self.assertIn('Step 1:', text)
         for item in self.app.screen.key_table():
             self.assertIn(f'« {item.shown_label()} »', text)
 
 
-class TestAdvancedRows(UITest):
+class TestRowSets(UITest):
+    """PgDn and PgUp step the rows under Degree through the editor's sets of rows."""
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
         await self.press('p', 'enter')
         self.editor = self.app.screen
 
-    async def test_a_switches_the_rows_under_degree(self):
-        self.assertIn('│ Velocity', self.text())
-        self.assertNotIn('│ Ratchet', self.text())
-        await self.press('a')
-        text = self.text()
-        self.assertIn('│ Degree', text)
-        self.assertIn('│ Ratchet Offset', text)
-        self.assertIn('│ Note Add', text)
-        self.assertIn('│ Velocity Add', text)
-        self.assertNotIn('│ Gate', text)
-        await self.press('a')
-        text = self.text()
-        for label in ['│ CC 1', '│ CC 4', '│ Slide']:
-            self.assertIn(label, text)
-        self.assertNotIn('│ Ratchet', text)
-        await self.press('a')
-        self.assertIn('│ Gate', self.text())
+    async def go_to_set(self, row_set):
+        """Press PgDn until a set of rows shows."""
+        while self.app.row_set != row_set:
+            await self.press('pagedown')
+
+    def shown(self, row):
+        return ROW_SHOWN.format(label=ROW_LABELS[row])
+
+    async def test_pgdn_goes_through_every_set_in_order_and_round(self):
+        for row_set, rows in ROW_SETS.items():
+            self.assertEqual(self.app.row_set, row_set)
+            text = self.text()
+            for row in rows:
+                self.assertIn(self.shown(row), text)
+            await self.press('pagedown')
+        self.assertEqual(self.app.row_set, NORMAL)
+
+    async def test_pgup_goes_back(self):
+        await self.press('pageup')
+        self.assertEqual(self.app.row_set, list(ROW_SETS)[-1])
+        await self.press('pagedown')
+        self.assertEqual(self.app.row_set, NORMAL)
+
+    async def test_the_key_names_the_next_set(self):
+        self.assertIn(ROW_SET_NAMES[ADVANCED], self.text())
 
     async def test_cc_rows_take_values_even_on_a_rest(self):
-        await self.press('a', 'a')
-        self.assertEqual(self.app.row_set, 'cc')
-        # Step 3 of tune is a rest.
+        await self.go_to_set(CC)
+        rest = 2
+        value = 100
         await self.press('right', 'right', 'down')
-        self.assertEqual(self.editor.row_name(), 'cc1')
-        self.assertEqual(self.editor.cell_text('cc1', 2), '.')
-        await self.press('1', '0', '0')
-        self.assertEqual(self.document.step_value('tune', 'cc1', 2), 100)
+        self.assertEqual(self.editor.row_name(), Row.CC1)
+        self.assertEqual(self.editor.cell_text(Row.CC1, rest), QUIET_VALUE)
+        await self.press(*str(value))
+        self.assertEqual(self.document.step_value('tune', Row.CC1, rest), value)
         await self.press('+')
-        self.assertEqual(self.document.step_value('tune', 'cc1', 2), 101)
+        self.assertEqual(self.document.step_value('tune', Row.CC1, rest), value + 1)
         await self.press('backspace')
-        self.assertIsNone(self.document.step_value('tune', 'cc1', 2))
-        await self.press('down', 'down', 'down', 'down')
-        self.assertEqual(self.editor.row_name(), 'slide')
+        self.assertIsNone(self.document.step_value('tune', Row.CC1, rest))
+        while self.editor.row_name() != Row.SLIDE:
+            await self.press('down')
         await self.press('space')
-        self.assertIs(self.document.step_value('tune', 'slide', 2), True)
-        self.assertEqual(self.editor.cell_text('slide', 2), '*')
+        self.assertIs(self.document.step_value('tune', Row.SLIDE, rest), True)
+        self.assertEqual(self.editor.cell_text(Row.SLIDE, rest), TOGGLE_ON)
         render_data(self.document.data)
 
-    async def test_the_mode_stays_on_for_other_patterns(self):
-        await self.press('a', 'tab', 'enter')
-        self.assertIn('│ Ratchet Offset', self.text())
+    async def test_the_set_stays_for_other_patterns(self):
+        await self.press('pagedown', 'tab', 'enter')
+        self.assertIn(self.shown(Row.RATCHET_OFFSET), self.text())
 
     async def test_switching_keeps_degree_and_otherwise_goes_to_it(self):
-        await self.press('down', 'a')
-        self.assertEqual(self.editor.row_name(), 'degree')
-        await self.press('down', 'a')
-        self.assertEqual(self.editor.row_name(), 'degree')
-        await self.press('a')
-        self.assertEqual(self.editor.row_name(), 'degree')
+        for _ in ROW_SETS:
+            await self.press('down', 'pagedown')
+            self.assertEqual(self.editor.row_name(), Row.DEGREE)
 
     async def test_typing_a_ratchet_offset_and_going_negative(self):
-        await self.press('a', 'down', 'down')
-        self.assertEqual(self.editor.row_name(), 'ratchet_offset')
-        await self.press('2')
-        self.assertEqual(self.document.step_value('tune', 'ratchet_offset', 0), 2)
-        await self.press('-', '-', '-')
-        self.assertEqual(self.document.step_value('tune', 'ratchet_offset', 0), -1)
-        self.assertEqual(self.editor.cell_text('ratchet_offset', 0), '-1')
+        await self.go_to_set(ADVANCED)
+        while self.editor.row_name() != Row.RATCHET_OFFSET:
+            await self.press('down')
+        typed = 2
+        await self.press(str(typed))
+        self.assertEqual(self.document.step_value('tune', Row.RATCHET_OFFSET, 0), typed)
+        presses = typed + 1
+        await self.press(*['-'] * presses)
+        self.assertEqual(self.document.step_value('tune', Row.RATCHET_OFFSET, 0), typed - presses)
+        self.assertEqual(self.editor.cell_text(Row.RATCHET_OFFSET, 0), str(typed - presses))
 
-    async def test_unset_rows_show_a_dot(self):
-        await self.press('a')
-        self.assertEqual(self.editor.cell_text('note_add', 0), '.')
-        self.assertEqual(self.editor.cell_text('velocity_add', 0), '.')
+    async def test_unset_register_changes_show_a_dot(self):
+        await self.go_to_set(REGISTER_CHANGES)
+        for row in REGISTER_ADD_ROWS.values():
+            self.assertEqual(self.editor.cell_text(row, 0), QUIET_VALUE)
 
-    async def test_adds_take_typed_values_including_negative_ones(self):
-        await self.press('a', 'down', 'down', 'down', 'enter')
-        self.app.screen.value = '-3'
+    async def test_register_changes_take_typed_values_including_negative_ones_even_on_a_rest(self):
+        await self.go_to_set(REGISTER_CHANGES)
+        rest = 2
+        typed = -3
+        row = REGISTER_ADD_ROWS[RegisterName.BX]
+        await self.press('right', 'right')
+        while self.editor.row_name() != row:
+            await self.press('down')
         await self.press('enter')
-        self.assertEqual(self.document.step_value('tune', 'note_add', 0), -3)
+        self.app.screen.value = str(typed)
+        await self.press('enter')
+        self.assertEqual(self.document.step_value('tune', row, rest), typed)
+        await self.press('enter')
+        self.app.screen.value = str(MAX_REGISTER_VALUE + 1)
+        await self.press('enter')
+        self.assertEqual(self.document.step_value('tune', row, rest), typed)
         render_data(self.document.data)
 
-    async def test_the_limit(self):
-        await self.press('a', 'm')
-        self.assertEqual(self.app.screen.value, '36')
-        self.app.screen.value = '5'
-        await self.press('enter')
-        self.assertEqual(self.document.data['patterns']['tune']['accumulator_limit'], 5)
-        self.assertIn('Add limit 5', self.text())
-        await self.press('m')
-        self.app.screen.value = '0'
-        await self.press('enter')
-        self.assertEqual(self.document.data['patterns']['tune']['accumulator_limit'], 5)
-        self.assertIn('1 or more', self.text())
+    async def test_register_uses_are_toggles_on_notes(self):
+        await self.go_to_set(REGISTERS)
+        row = REGISTER_VELOCITY_ROWS[RegisterName.CX]
+        while self.editor.row_name() != row:
+            await self.press('down')
+        await self.press('space')
+        self.assertIs(self.document.step_value('tune', row, 0), True)
+        self.assertEqual(self.editor.cell_text(row, 0), TOGGLE_ON)
+        await self.press('backspace')
+        self.assertIs(self.document.step_value('tune', row, 0), False)
 
-    async def test_the_limit_key_only_shows_in_advanced(self):
-        self.assertNotIn('« M »', self.text())
-        await self.press('a')
-        self.assertIn('« M »', self.text())
-        self.assertNotIn('« O »', self.text())
+    async def test_a_drum_pattern_has_no_rows_that_move_notes(self):
+        await self.go_to_set(REGISTERS)
+        await self.press('tab', 'down', 'enter')
+        rows = [name for name, _ in self.app.screen.rows()]
+        for name in REGISTER_NOTE_ROWS.values():
+            self.assertNotIn(name, rows)
+        for name in REGISTER_VELOCITY_ROWS.values():
+            self.assertIn(name, rows)
 
     async def test_on_a_drum_note_row_a_and_f_are_notes(self):
         await self.press('tab', 'down', 'enter')
         editor = self.app.screen
         await self.press('right', 'a')
-        self.assertEqual(self.document.step_value('beat', 'degree', 1), 'A')
-        self.assertEqual(self.app.row_set, 'normal')
+        self.assertEqual(self.document.step_value('beat', Row.DEGREE, 1), 'A')
+        self.assertEqual(self.app.row_set, NORMAL)
         await self.press('f')
-        self.assertEqual(self.document.step_value('beat', 'degree', 1), 'F')
+        self.assertEqual(self.document.step_value('beat', Row.DEGREE, 1), 'F')
         labels = [item.shown_label() for item in editor.key_table()]
-        self.assertNotIn('A', labels)
         self.assertNotIn('F', labels)
 
-    async def test_on_other_drum_rows_a_and_f_are_commands(self):
+    async def test_on_other_drum_rows_f_is_a_command(self):
         await self.press('tab', 'down', 'enter', 'down')
         labels = [item.shown_label() for item in self.app.screen.key_table()]
-        self.assertIn('A', labels)
         self.assertIn('F', labels)
-        await self.press('a')
-        self.assertEqual(self.app.row_set, 'advanced')
 
 
 class TestRearrangingAPattern(UITest):
@@ -1957,15 +2067,14 @@ class TestRearrangingAPattern(UITest):
 class TestAdvancedRowsOnAUsualConsole(UITest):
     SIZE = (80, 24)
 
-    async def test_both_modes_fit(self):
-        self.document.data['patterns']['tune']['source_pattern'] = 'other'
+    async def test_every_set_of_rows_fits(self):
         await self.press('p', 'enter')
-        for _ in range(2):
+        for _ in ROW_SETS:
             text = self.text()
             self.assertIn('Step 1:', text)
             for item in self.app.screen.key_table():
-                self.assertIn(f'« {item.shown_label()} »', text)
-            await self.press('a')
+                self.assertIn(KEY_SHOWN.format(label=item.shown_label()), text)
+            await self.press('pagedown')
 
 
 class TestHelp(UITest):

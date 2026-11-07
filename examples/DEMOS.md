@@ -1,7 +1,7 @@
 # Demos
 
-The songs in this folder whose names end in `_demo` are meant to teach, while the others, like
-`acid_techno.yml`, are meant to sound good. Each demo takes one feature of llamatron and shows
+The songs in this folder whose names end in `_demo`, or start with `demo_`, are meant to teach,
+while the others, like `minimal_techno.yml`, are meant to sound good. Each demo takes one feature of llamatron and shows
 it a scene at a time, so you can hear what the feature
 does and read how it's set up. Most of them play a well-known tune, so that you can hear what a
 feature changes.
@@ -68,6 +68,12 @@ that changing one pattern changes every part that follows it.
 
 A 16-step minimal techno groove whose bass and lead slowly turn into other patterns over 8 or
 16 bars, in each morph style. The lead turns into the opening of Für Elise.
+
+### Registers: `demo_registers.yml`
+
+An acid techno riff of five notes, changed bar by bar by the four registers, AX to DX. AX, BX
+and CX each move a different note of the riff, in cycles of 4, 6 and 5 bars, then all three
+at once. Then DX fades the riff, kick and hat out together over six repeats of the last scene.
 
 ### Directions: `direction_demo.yml`
 

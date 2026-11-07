@@ -329,7 +329,7 @@ is stored. What this means:
 
 ### Retiring AutoRatchet
 
-The user thinks AutoRatchet should be retired. Today it's used by `acid_techno.yml`,
+The user thinks AutoRatchet should be retired. It was used by `acid_techno.yml`, since deleted,
 `chain_demo.yml` and `ratchet_demo.yml`, and a test requires every generator to appear in an
 example, so those would need rewriting, most likely with the pattern's own Ratchet row, and the
 ratchet demo would become only Ratchet scenes. Removing it also takes it out of `GENERATORS`,
@@ -914,6 +914,8 @@ the acid_techno and retro_chill demos are old, so we may want to rewrite them wi
 even better.  To be discussed with respect to details.  The minimal techno example seems unneeded
 now that we have the morph demo, maybe rename the morph demo to minimal_morph.yml
 
+(Since then, acid_techno was deleted and replaced by `demo_registers.yml`, an acid techno riff built around registers, and retro_chill lost its `rhythm_from` scene.)
+
 ## File protect
 
 The song should have a protect option that allows it to be changed but not saved, so the demos
@@ -922,7 +924,7 @@ toggle and it should default to off, except for all the content that is included
 
 ## Accumulators: research what they do and what they should do
 
-**Replaced by Registers, being built from 2026-11-06.** The user designed a new system to take
+**Replaced by Registers, built on 2026-11-06 in version 1.0.7.** The user designed a new system to take
 their place: four song-wide registers, AX, BX, CX and DX, each with a default, a minimum, a
 maximum and a choice to wrap, which pattern steps change with `AX+=` and read with `AX+Note`
 and `AX+Vel`, and which scenes can reset. The Note Add and Velocity Add rows and the add limit go.

@@ -37,7 +37,11 @@ from llamatron.clip_grid import ClipGrid
 from llamatron.composition.defaults import (
     DEFAULT_DRUM_OCTAVE, DEFAULT_OCTAVE, DEFAULT_SEED, DEFAULT_STEP_SIZE, DEFAULT_TEMPO,
 )
-from llamatron.composition.file_format import CC_ROWS, FORWARD, PATTERN_ROWS, PatternSetting, Row, SongSetting, TOGGLE_ROWS
+from llamatron.composition.file_format import (
+    CC_ROWS, FORWARD, PATTERN_ROWS, REGISTER_ADD_ROWS, REGISTER_NAMES, REGISTER_NOTE_ROWS, PatternSetting,
+    Row, SceneSetting, Section, SongSetting, TOGGLE_ROWS,
+)
+from llamatron.composition.register import Register
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.composition.song import Song
 from llamatron.playback.song_renderer import SongRenderer
@@ -104,8 +108,13 @@ def blank(row):
     return False if row in TOGGLE_ROWS else None
 
 
-# What a rest keeps when a note is turned into one: its time, and the CC values it sends.
-REST_ROWS = (*CC_ROWS, Row.SLIDE)
+# What a rest keeps when a note is turned into one: its time, the CC values it sends, and what it
+# adds to the registers.
+REST_ROWS = (*CC_ROWS, Row.SLIDE, *REGISTER_ADD_ROWS.values())
+# The rows that make a step worth keeping even without a note.
+KEPT_WITHOUT_A_NOTE = (*CC_ROWS, *REGISTER_ADD_ROWS.values())
+# How a register's settings are named when one is refused.
+WHERE_REGISTER = 'register {name}'
 
 
 def _moved(items, place, offset):
@@ -429,9 +438,11 @@ class Document:
         return sum(1 for step in range(steps, pattern['steps']) if self._step_holds_anything(name, step))
 
     def _step_holds_anything(self, name, step):
-        """Return whether a step plays a note or sends a CC value."""
-        rows = (Row.DEGREE, *CC_ROWS)
-        return any(self.step_value(name, row, step) is not None for row in rows)
+        """Return whether a step plays a note, sends a CC value or adds to a register."""
+        if self.step_value(name, Row.DEGREE, step) is not None:
+            return True
+        return any(self.step_value(name, row, step) not in (None, 0) or (row in CC_ROWS and self.step_value(name, row, step) == 0)
+                   for row in KEPT_WITHOUT_A_NOTE)
 
     def set_steps(self, name, steps):
         """Change how many steps a pattern has, cutting them or adding empty steps at the end."""
@@ -461,7 +472,7 @@ class Document:
     def set_drum(self, name, drum):
         """Change a pattern's type, which clears the notes because they mean something else."""
         pattern = self.data['patterns'][name]
-        for row in ('degree', 'accidental', 'chord'):
+        for row in ('degree', 'accidental', 'chord', *REGISTER_NOTE_ROWS.values()):
             pattern.pop(row, None)
         if drum:
             pattern['drum'] = True
@@ -728,6 +739,51 @@ class Document:
         self.data['scenes'] = moved
         self.changed()
         return True
+
+    # Registers. There are always four, and the file only holds the settings that differ from the defaults.
+
+    def register(self, name):
+        """Return a register, AX to DX, as a Register, with its defaults for anything not set."""
+        settings = (self.data.get(Section.REGISTERS) or {}).get(name) or {}
+        return Register.from_data(settings, WHERE_REGISTER.format(name=name))
+
+    def set_register_setting(self, name, setting, value):
+        """Change one setting of a register, or return why it can't change, like a default above the maximum.
+
+        A value of None goes back to the setting's default.
+        """
+        registers = dict(self.data.get(Section.REGISTERS) or {})
+        settings = dict(registers.get(name) or {})
+        if value is None:
+            settings.pop(setting, None)
+        else:
+            settings[setting] = value
+        try:
+            Register.from_data(settings, WHERE_REGISTER.format(name=name))
+        except SongFileError as error:
+            return str(error)
+        registers[name] = settings
+        self.data[Section.REGISTERS] = {register: registers[register] for register in REGISTER_NAMES if registers.get(register)}
+        if not self.data[Section.REGISTERS]:
+            del self.data[Section.REGISTERS]
+        self.changed()
+        return None
+
+    def resets(self, index, register):
+        """Return whether a scene sets a register back to its default as it starts."""
+        return register in (self.data['scenes'][index].get(SceneSetting.RESET) or [])
+
+    def set_reset(self, index, register, on):
+        """Make a scene set a register back to its default as it starts, or stop it, keeping the registers in order."""
+        scene = self.data['scenes'][index]
+        chosen = set(scene.get(SceneSetting.RESET) or [])
+        chosen = chosen | {register} if on else chosen - {register}
+        reset = [name for name in REGISTER_NAMES if name in chosen]
+        if reset:
+            scene[SceneSetting.RESET] = reset
+        else:
+            scene.pop(SceneSetting.RESET, None)
+        self.changed()
 
     def set_scene_repeat(self, index, repeat):
         if repeat > 1:

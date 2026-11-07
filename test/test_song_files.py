@@ -35,7 +35,7 @@ from llamatron.renderers.clip_tree import ClipTree
 from llamatron.renderers.timing import GLIDE_OVERLAP, timed_events
 from llamatron.song_writer import dump_song
 from gate_conversion import to_gates
-from rendering import estimate_data, render_data, render_file
+from rendering import estimate_data, is_demo, render_data, render_file
 
 from llamatron.composition.file_format import CHORD_SYMBOLS, FIXED_CHORDS, SCALE_CHORDS
 from llamatron.composition.generator_settings import GENERATOR_SETTINGS
@@ -843,75 +843,6 @@ class TestRatchetOffset(unittest.TestCase):
             lead([1, '1/4'], rows={'ratchet_offset': ['x']})
 
 
-class TestAccumulators(unittest.TestCase):
-
-    def test_note_add_applies_from_its_step_on(self):
-        found = lead([1, '1/4'], [1, '1/4'], [1, '1/4'], rows={'note_add': [None, 1, None]})
-        self.assertEqual(pitches(found), [48, 50, 50])
-
-    def test_the_total_builds_up_across_repeats(self):
-        found = lead([1, '1/4'], cell={'repeat': 4}, rows={'note_add': [1]})
-        self.assertEqual(pitches(found), [50, 52, 53, 55])
-
-    def test_moves_along_the_scale_the_clip_plays_in(self):
-        found = lead([1, '1/4'], cell={'repeat': 3}, scale='C minor', rows={'note_add': [1]})
-        self.assertEqual(pitches(found), [50, 51, 53])
-
-    def test_can_go_negative(self):
-        found = lead([1, '1/4'], cell={'repeat': 2}, rows={'note_add': [-1]})
-        self.assertEqual(pitches(found), [47, 45])
-
-    def test_a_drum_moves_by_half_steps(self):
-        found = lead(['C', '1/4'], cell={'repeat': 3}, rows={'drum': True, 'note_add': [1]})
-        self.assertEqual(pitches(found), [37, 38, 39])
-
-    def test_velocity_add_builds_up_and_stays_in_range(self):
-        found = lead([1, '1/4'], cell={'repeat': 3}, rows={'velocity': [100], 'velocity_add': [20], 'accumulator_limit': 99})
-        events, _ = timed_events(found, None)
-        self.assertEqual([event[3] for event in sorted(events)], [120, 127, 127])
-
-    def test_velocity_add_going_down_stops_at_one(self):
-        found = lead([1, '1/4'], cell={'repeat': 2}, rows={'velocity': [10], 'velocity_add': [-20], 'accumulator_limit': 99})
-        events, _ = timed_events(found, None)
-        self.assertEqual({event[3] for event in events}, {1})
-
-    def test_the_total_clears_past_the_limit(self):
-        rows = {'note_add': [1], 'accumulator_limit': 2}
-        found = lead([1, '1/4'], cell={'repeat': 4}, rows=rows)
-        self.assertEqual(pitches(found), [50, 52, 48, 50])
-
-    def test_a_limit_applies_going_down_too(self):
-        rows = {'note_add': [-1], 'accumulator_limit': 1}
-        found = lead([1, '1/4'], cell={'repeat': 3}, rows=rows)
-        self.assertEqual(pitches(found), [47, 48, 47])
-
-    def test_starts_again_in_each_clip(self):
-        data = with_parts(
-            patterns={'x': pat([1, '1/4'], note_add=[1])},
-            scenes=[{'repeat': 2, 'tracks': {'lead': {'pattern': 'x'}}}],
-        )
-        song = render_data(data)
-        self.assertEqual(pitches(clip(song, 1, 'lead')), pitches(clip(song, 2, 'lead')))
-
-    def test_a_note_past_the_midi_range_moves_by_octaves_to_fit(self):
-        found = lead([1, '1/4'], cell={'repeat': 2}, rows={'octave': [8], 'note_add': [12], 'accumulator_limit': 99})
-        self.assertTrue(all(0 <= pitch <= 127 for pitch in pitches(found)))
-        self.assertEqual(len(pitches(found)), 2)
-
-    def test_a_note_written_past_the_range_is_still_an_error(self):
-        with self.assertRaises(SongFileError):
-            lead([1, '1/4'], [8, '1/4'], rows={'octave': [8, 8], 'accidental': [None, None], 'degree': [80, 90]})
-
-    def test_a_rest_adds_nothing(self):
-        found = lead([None, '1/4'], [1, '1/4'], rows={'note_add': [5, None]})
-        self.assertEqual(pitches(found), [48])
-
-    def test_settings_are_checked(self):
-        for rows in [{'note_add': ['x']}, {'velocity_add': [1.5]}, {'accumulator_limit': 0}]:
-            with self.subTest(rows=rows), self.assertRaises(SongFileError):
-                lead([1, '1/4'], rows=rows)
-
-
 class TestArps(unittest.TestCase):
 
     def lead(self, chain='x', **parts):
@@ -1029,13 +960,10 @@ class TestExamples(unittest.TestCase):
     # Every song in examples/, including the demos, which test_demos.py checks more closely.
     paths = sorted(glob.glob('examples/*.yml'))
     # The songs that are meant to sound good, rather than to teach one feature.
-    songs = [path for path in paths if not path.endswith('_demo.yml')]
+    songs = [path for path in paths if not is_demo(path)]
 
-    def test_there_are_three_songs_besides_the_demos(self):
-        self.assertEqual(
-            [os.path.basename(path) for path in self.songs],
-            ['acid_techno.yml', 'minimal_techno.yml', 'retro_chill.yml'],
-        )
+    def test_there_are_two_songs_besides_the_demos(self):
+        self.assertEqual([os.path.basename(path) for path in self.songs], ['minimal_techno.yml', 'retro_chill.yml'])
 
     def test_every_generator_is_used(self):
         used = set()
@@ -1073,14 +1001,6 @@ class TestExamples(unittest.TestCase):
         tempos = [scene.tempo or song.tempo for scene in song.scenes]
         self.assertEqual(tempos, sorted(tempos))
         self.assertGreater(tempos[-1], tempos[0])
-
-    def test_acid_bass_stays_low(self):
-        song = render_file('examples/acid_techno.yml')
-        for scene in song.scenes[1:]:
-            acid = clip(song, scene.id + 1, 'acid')
-            if acid is not None:
-                with self.subTest(scene=scene.name):
-                    self.assertLessEqual(max(pitches(acid)), 72)
 
     def test_every_example_renders_both_ways(self):
         for path in self.paths:

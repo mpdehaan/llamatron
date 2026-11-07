@@ -37,7 +37,7 @@ _SETTINGS = [
 ]
 _BEFORE_DESCRIPTION = (SongSetting.VERSION, SongSetting.TITLE, SongSetting.AUTHOR)
 _GENERATOR_SECTIONS = [Section.ARPS, Section.AUTO_RATCHETS]
-_PATTERN_SETTINGS = [PatternSetting.STEP_SIZE, PatternSetting.DIRECTION, PatternSetting.ACCUMULATOR_LIMIT]
+_PATTERN_SETTINGS = [PatternSetting.STEP_SIZE, PatternSetting.DIRECTION]
 
 # The pieces of YAML this writes.
 NULL = '~'
@@ -189,5 +189,7 @@ def dump_song(song):
             sections.append(_named(section, song[section]))
     if song.get(Section.CHAINS):
         sections.append(_chains(song[Section.CHAINS]))
+    if song.get(Section.REGISTERS):
+        sections.append(_named(Section.REGISTERS, song[Section.REGISTERS]))
     sections.append(_scenes(song.get(Section.SCENES) or []))
     return BLANK_LINE.join(LINE_BREAK.join(section) for section in sections) + LINE_BREAK

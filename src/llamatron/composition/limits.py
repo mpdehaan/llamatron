@@ -27,7 +27,10 @@ MIN_STEPS = 1
 MIN_DEGREE = 1
 MIN_RATCHET = 1
 MIN_REPEAT = 1
-MIN_ACCUMULATOR_LIMIT = 1
+
+# The range of a register's settings, and of what a step can add to one.
+MIN_REGISTER_VALUE = -127
+MAX_REGISTER_VALUE = 127
 
 # Octaves as Live numbers them, where MIDI note 60 is C3.
 MIN_LIVE_OCTAVE, MAX_LIVE_OCTAVE = -2, 8

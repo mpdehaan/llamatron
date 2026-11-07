@@ -16,8 +16,13 @@
 
 """Helpers that tests share for turning song data or a song file into finished clips."""
 
+import os
+
 from llamatron.composition.song import Song
 from llamatron.playback.song_renderer import SongRenderer
+
+# How the demos in examples/ are named.
+DEMO_ENDING, DEMO_START = '_demo.yml', 'demo_'
 
 
 def render_data(data):
@@ -33,3 +38,9 @@ def render_file(path):
 def estimate_data(data):
     """Return how long each scene of a song file's data lasts, as SongRenderer.estimate() gives it."""
     return SongRenderer(Song.from_data(data)).estimate()
+
+
+def is_demo(path):
+    """Return whether a song in examples/ is a demo, which teaches one feature: its name ends in _demo or starts with demo_."""
+    name = os.path.basename(path)
+    return name.endswith(DEMO_ENDING) or name.startswith(DEMO_START)

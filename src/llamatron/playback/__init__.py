@@ -18,5 +18,5 @@
 
 SongRenderer is where it starts: it writes out each scene, and has each track's cell played by
 a CellPlayer, which plays its patterns a pass at a time with a PatternPlayer. The other classes
-here are the parts those share: the order steps play in, running totals, grabs and morphing.
+here are the parts those share: the order steps play in, registers, grabs and morphing.
 """

@@ -29,6 +29,11 @@ from llamatron.composition.chain import Chain
 from llamatron.composition.generator_settings import ArpSettings, AutoRatchetSettings
 from llamatron.composition.named_scale import NamedScale
 from llamatron.composition.pattern import Pattern
+from llamatron.composition.defaults import (
+    DEFAULT_REGISTER_MAXIMUM, DEFAULT_REGISTER_MINIMUM, DEFAULT_REGISTER_VALUE, DEFAULT_REGISTER_WRAP,
+)
+from llamatron.composition.limits import MAX_REGISTER_VALUE, MIN_REGISTER_VALUE
+from llamatron.composition.register import Register
 from llamatron.composition.scene import Scene
 from llamatron.composition.song import Song
 from llamatron.composition.song_file_error import SongFileError
@@ -76,6 +81,36 @@ class TestNamedScale(RoundTrip):
         self.assert_refused("unknown scale type 'wobbly'", NamedScale, {'root': 'C', 'type': 'wobbly'})
 
 
+class TestRegister(RoundTrip):
+
+    def test_round_trip_and_defaults(self):
+        self.assert_round_trip(Register, {'default': 1, 'minimum': -3, 'maximum': 3, 'wrap': True})
+        self.assert_round_trip(Register, {})
+        plain = Register.from_data({}, 'here')
+        self.assertEqual(
+            (plain.get_default(), plain.get_minimum(), plain.get_maximum(), plain.wraps()),
+            (DEFAULT_REGISTER_VALUE, DEFAULT_REGISTER_MINIMUM, DEFAULT_REGISTER_MAXIMUM, DEFAULT_REGISTER_WRAP),
+        )
+
+    def test_adding_stops_at_the_ends_or_wraps_to_the_other_one(self):
+        lowest = 0
+        highest = 3
+        stops = Register.from_data({'minimum': lowest, 'maximum': highest}, 'here')
+        self.assertEqual([stops.added(highest - 1, 1), stops.added(highest - 1, highest), stops.added(lowest, -1)], [highest, highest, lowest])
+        wraps = Register.from_data({'minimum': lowest, 'maximum': highest, 'wrap': True}, 'here')
+        # Past an end, it lands on the other end, whatever is left over.
+        self.assertEqual([wraps.added(highest - 1, 1), wraps.added(highest - 1, highest), wraps.added(lowest, -highest)], [highest, lowest, highest])
+
+    def test_refusals(self):
+        too_high = MAX_REGISTER_VALUE + 1
+        self.assert_refused(f'maximum must be a whole number from {MIN_REGISTER_VALUE} to {MAX_REGISTER_VALUE}', Register, {'maximum': too_high})
+        self.assert_refused('wrap must be true or false', Register, {'wrap': 1})
+        above = DEFAULT_REGISTER_MAXIMUM + 1
+        expected = f'needs minimum ({DEFAULT_REGISTER_MINIMUM}) <= default ({above}) <= maximum ({DEFAULT_REGISTER_MAXIMUM})'
+        self.assert_refused(expected, Register, {'default': above})
+        self.assert_refused("unknown setting 'step'", Register, {'step': 1})
+
+
 class TestTrack(RoundTrip):
 
     def test_round_trip(self):
@@ -103,7 +138,7 @@ class TestTrack(RoundTrip):
 class TestPattern(RoundTrip):
 
     DATA = {
-        'steps': 3, 'drum': False, 'direction': 'pendulum', 'accumulator_limit': 5,
+        'steps': 3, 'drum': False, 'direction': 'pendulum', 'ax_add': [1, None, -2], 'bx_note': [False, False, True],
         'degree': [1, None, 5], 'gate': ['1/4', None, 1], 'dot': ['d', None, None], 'glide': [True, False, False],
     }
 
@@ -113,13 +148,14 @@ class TestPattern(RoundTrip):
 
     def test_values_and_defaults(self):
         pattern = Pattern.from_data(self.DATA, 'here')
-        self.assertEqual((pattern.get_steps(), pattern.get_direction(), pattern.get_accumulator_limit()), (3, 'pendulum', 5))
+        self.assertEqual((pattern.get_steps(), pattern.get_direction()), (3, 'pendulum'))
+        self.assertEqual([pattern.get_value('ax_add', step) for step in range(3)], [1, None, -2])
         self.assertEqual([pattern.get_value('degree', step) for step in range(3)], [1, None, 5])
         self.assertIsNone(pattern.get_value('velocity', 0))
         self.assertEqual(pattern.get_note_steps(), [0, 2])
         self.assertIsNone(pattern.get_first_octave())
         plain = Pattern.from_data({'steps': 2, 'octave': [None, 4]}, 'here')
-        self.assertEqual((plain.get_direction(), plain.get_accumulator_limit(), plain.is_drum()), ('forward', 36, False))
+        self.assertEqual((plain.get_direction(), plain.is_drum()), ('forward', False))
         self.assertEqual(plain.get_first_octave(), 4)
 
     def test_its_lists_are_its_own(self):

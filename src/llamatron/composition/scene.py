@@ -21,7 +21,7 @@ from fractions import Fraction
 from llamatron.composition.cell import Cell
 from llamatron.composition.checks import check_keys, is_whole_number_from, number
 from llamatron.composition.defaults import DEFAULT_REPEAT
-from llamatron.composition.file_format import SceneSetting
+from llamatron.composition.file_format import REGISTER_NAMES, SceneSetting
 from llamatron.composition.limits import MIN_REPEAT
 from llamatron.composition.llama_data import LlamaData
 from llamatron.composition.song_file_error import SongFileError
@@ -31,12 +31,13 @@ MSG_BAD_REPEAT = '{where}: repeat must be a positive whole number, got {value!r}
 MSG_NO_SUCH_TRACK = '{where}: no track called {track!r}, expected one of {tracks}'
 MSG_NO_SUCH_SCALE = '{where}: no scale called {scale!r}'
 MSG_RAMP_NEEDS_BOTH = '{where}: needs both tempo_start and tempo_end'
+MSG_BAD_RESET = '{where}: reset must be a list of registers from {names}, like [AX, DX], got {value!r}'
 # How far through a tempo ramp a scene that plays only once is: at its start.
 NO_RAMP = 0
 # A scene's settings, in the order they're written to a file, before its tracks.
 SETTINGS = [
     SceneSetting.NAME, SceneSetting.REPEAT, SceneSetting.SCALE, SceneSetting.TEMPO,
-    SceneSetting.TEMPO_START, SceneSetting.TEMPO_END,
+    SceneSetting.TEMPO_START, SceneSetting.TEMPO_END, SceneSetting.RESET,
 ]
 
 
@@ -70,6 +71,9 @@ class Scene(LlamaData):
         if scale is not None and not song.has_scale(scale):
             raise SongFileError(MSG_NO_SUCH_SCALE.format(where=where, scale=scale))
         _check_tempo(data, where)
+        reset = data.get(SceneSetting.RESET, [])
+        if not is_register_list(reset):
+            raise SongFileError(MSG_BAD_RESET.format(where=where, names=REGISTER_NAMES, value=reset))
         settings = {name: data[name] for name in SETTINGS if name in data}
         return cls(cells if SceneSetting.TRACKS in data else None, **settings)
 
@@ -105,6 +109,11 @@ class Scene(LlamaData):
         end = number(settings[SceneSetting.TEMPO_END], SceneSetting.TEMPO)
         return start + (end - start) * _ramp_fraction(place, self.get_repeat())
 
+    def get_reset_names(self):
+        """Return the registers it sets back to their defaults as it starts, in the order the registers come."""
+        reset = self._settings[SceneSetting.RESET] or []
+        return [name for name in REGISTER_NAMES if name in reset]
+
     def get_track_names(self):
         """Return the tracks it plays a cell on, in the order the file lists them."""
         return list(self._cells or {})
@@ -112,6 +121,11 @@ class Scene(LlamaData):
     def get_cell(self, track):
         """Return its cell for a track, or None if it plays nothing there."""
         return (self._cells or {}).get(track)
+
+
+def is_register_list(value):
+    """Return whether a value is a list of register names, each at most once."""
+    return isinstance(value, list) and all(name in REGISTER_NAMES for name in value) and len(set(value)) == len(value)
 
 
 def _check_tempo(data, where):

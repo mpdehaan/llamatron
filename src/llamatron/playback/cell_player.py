@@ -24,7 +24,6 @@ from math import ceil
 from llamatron.composition.file_format import LIVE_OCTAVE_OFFSET
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators.blend import Blend
-from llamatron.playback.accumulators import Accumulators
 from llamatron.playback.morph_controls import morph_controls
 from llamatron.playback.pattern_player import PatternPlayer
 from llamatron.playback.step_order import StepOrder
@@ -61,8 +60,11 @@ class CellPlayer:
         self._cell = scene.get_cell(track_name)
         self._track = song.get_track(track_name)
 
-    def play(self, grabbing):
-        """Return the finished clip, with its grab steps grabbing only if grabbing is true."""
+    def play(self, grabbing, registers):
+        """Return the finished clip, with its grab steps grabbing only if grabbing is true.
+
+        registers is the RegisterRecorder or RegisterReader its steps use.
+        """
         cell, scene = self._cell, self._scene
         where = WHERE_CELL.format(scene=scene.get_number(), track=self._track_name)
         scale = self._clip_scale()
@@ -71,7 +73,7 @@ class CellPlayer:
         loop = cell.loops()
         fill = self._renderer.get_scene_length(scene) if loop else None
         try:
-            clip = self._play_passes(player, grab, scale, where, fill)
+            clip = self._play_passes(player, grab, scale, where, fill, registers)
             controls = clip.controls
             clip = self._through_chain(clip)
             end = fill if loop else clip.total_length()
@@ -117,16 +119,15 @@ class CellPlayer:
         octave = self._song.get_pattern(self._cell.get_pattern_name()).get_first_octave()
         return (self._song.get_default_octave() if octave is None else octave) + LIVE_OCTAVE_OFFSET
 
-    def _play_passes(self, player, grab, scale, where, fill):
+    def _play_passes(self, player, grab, scale, where, fill, registers):
         """Return what the clip plays before any chains: its repeats, or enough passes to fill a length."""
         seed, number = self._song.get_seed(), self._scene.get_number()
         rolls = random.Random(PROBABILITY_SEED.format(seed=seed, scene=number, track=self._track_name))
         order = StepOrder(random.Random(DIRECTION_SEED.format(seed=seed, scene=number, track=self._track_name)))
-        totals = Accumulators()
         repeat = self._cell.get_repeat()
         notes, controls, total, place = [], [], Fraction(0), 0
         while (place < repeat) if fill is None else (total < fill):
-            played = self._play_pass(player, grab, scale, place % repeat, repeat, where, rolls, order, totals, total)
+            played = self._play_pass(player, grab, scale, place % repeat, repeat, where, rolls, order, registers, total)
             length = played.total_length()
             if length == NO_LENGTH:
                 break
@@ -137,18 +138,19 @@ class CellPlayer:
         clip = Clip(notes=notes, scale=scale, controls=controls)
         return clip.section(NO_LENGTH, fill) if fill else clip
 
-    def _play_pass(self, player, grab, scale, place, repeat, where, rolls, order, totals, start):
+    def _play_pass(self, player, grab, scale, place, repeat, where, rolls, order, registers, start):
         """Return one pass through the cell's pattern, part way through any morph.
 
         Only the first pattern takes grabs or a direction from the cell, and a morph's target
-        plays as it's written.
+        plays as it's written. A morph's target uses the registers but doesn't add to them, so
+        that a step isn't counted twice.
         """
         cell = self._cell
-        clip = player.play_pass(cell.get_pattern_name(), grab, cell.get_direction(), where, rolls, order, totals, start)
+        clip = player.play_pass(cell.get_pattern_name(), grab, cell.get_direction(), where, rolls, order, registers, start)
         morph_to = cell.get_morph_target()
         if morph_to is None or not clip.notes:
             return clip
-        target = player.play_pass(morph_to, None, None, where, rolls, order, totals, start)
+        target = player.play_pass(morph_to, None, None, where, rolls, order, registers, start, changes_registers=False)
         amount = Fraction(place, repeat - 1) * FULL_MORPH
         target = _looped(target, clip.total_length())
         blend = Blend(target, amount, mode=cell.get_morph_style())

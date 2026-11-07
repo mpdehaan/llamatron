@@ -70,6 +70,7 @@ The main screen shows the song's name, length, tempo and scale, and how many pat
 | `C` | Chains | Lists of generators that clips can use |
 | `G` | Generators | Arpeggiators and AutoRatchets |
 | `Z` | Scales | The named scales that the song and its scenes use |
+| `R` | Registers | AX to DX, four numbers that pattern steps change and use |
 | `A` | Arrange | Scenes and clips, in the order they play |
 | `Q` | Quit | Asks first if there are unsaved changes |
 
@@ -262,7 +263,7 @@ The keys that work everywhere in the editor are:
 | Key | What it does |
 | --- | --- |
 | Arrows | Move |
-| `A` | Step the rows under Degree through normal, advanced and CC rows |
+| `PgDn` `PgUp` | Step the rows under Degree through normal, advanced, CC, register and register change rows, and back |
 | `F` | Flip: reverse every step after the cursor |
 | `S` | Swap what's before the cursor with what's after it |
 | `L` | Load a copy of another pattern over this one, asking first if this one has notes |
@@ -273,10 +274,9 @@ The keys that work everywhere in the editor are:
 | `I` | Insert an empty step before the step at the cursor |
 | `X` | Remove the step at the cursor, while there's more than one |
 | `N` | Rename the pattern |
-| `M` | The add limit for Note Add and Velocity Add. Advanced rows only. |
 | `Tab` | Back |
 
-The cursor stays on its step after `F` and `S`, so pressing either again undoes it. On a drum pattern's Note row, `A` and `F` type the notes A and F, so move to another row to use them as commands.
+The cursor stays on its step after `F` and `S`, so pressing either again undoes it. On a drum pattern's Note row, `F` types the note F, so move to another row to flip.
 
 #### Normal rows
 
@@ -352,31 +352,21 @@ Drum patterns have no Chord row.
 
 #### Advanced rows
 
-Press `A` to see these instead of the normal rows, and again for the CC rows. Degree stays at the top of every set, and the editor remembers which rows you were on as you move between patterns. The header shows the source pattern and the add limit.
+Press `PgDn` to see these instead of the normal rows, and again for the CC rows, the register rows and the register change rows, after which it comes back round to the normal rows. `PgUp` goes the other way. Degree stays at the top of every set, and the editor remembers which rows you were on as you move between patterns.
 
 | Row | Values | What it does |
 | --- | --- | --- |
 | Ratchet | 1 to 16 | Splits the step into that many equal notes in the same time |
 | Ratchet Offset | -24 to 24 | Moves each ratchet note that much further along the scale than the last one. In a drum pattern it moves by half steps instead. |
-| Note Add | -24 to 24 | Adds to a running total that moves notes along the scale |
-| Velocity Add | -127 to 127 | Adds to a running total of velocity |
 | Grab | `*` or blank | Plays the note that the clip's Grab track most recently played instead of this step's own, or the lowest note of a chord |
 
 Unset values show a dot. The number rows take digits, `+` and `-`, or `Enter` to type, and `Bksp` sets them back. Grab is toggled with `Space`.
-
-Note Add and Velocity Add work like the accumulators on a Sequentix Cirklon:
-
-- Each total starts at zero when a clip starts.
-- A total applies from the step that adds to it onwards, and carries on across repeats.
-- A total clears once it goes past the pattern's add limit in either direction. The limit defaults to 36, and `M` changes it.
-- Velocity stays between 1 and 127.
-- A note pushed out of the MIDI range moves to the nearest octave that fits.
 
 Grab works like the Cirklon's note grab, taking notes from the track that each clip names in Grab track. See [Clips](#clips) for how it works.
 
 #### CC rows
 
-Press `A` twice from the normal rows to see these. They send MIDI CC values, like the Cirklon's aux rows, and each track decides which CC number each row sends, so the same pattern can move different controls on different tracks.
+Press `PgDn` twice from the normal rows to see these. They send MIDI CC values, like the Cirklon's aux rows, and each track decides which CC number each row sends, so the same pattern can move different controls on different tracks.
 
 | Row | Values | What it does |
 | --- | --- | --- |
@@ -386,6 +376,31 @@ Press `A` twice from the normal rows to see these. They send MIDI CC values, lik
 CC rows and Slide can be set on a rest, so a sweep can carry on through silence. The number rows take digits, `+` and `-`, or `Enter` to type, and `Bksp` clears them. A ratchet doesn't repeat the values, and probability doesn't drop them.
 
 In a Live set, each CC becomes a clip envelope, and Live draws a slide as a straight line. In MIDI files, a slide is sent as a new value every 1/64 note.
+
+#### Register rows
+
+The song has four registers, AX, BX, CX and DX: numbers the whole song shares, which pattern steps change and use as the song plays. Their settings are on the [Registers](#registers) page. They're for changes that build up from bar to bar, like a note that climbs each time a riff comes round, or a fade.
+
+`PgDn` three times from the normal rows shows the rows that use the registers, and once more shows the rows that change them.
+
+| Row | Values | What it does |
+| --- | --- | --- |
+| AX+Note to DX+Note | `*` or blank | Moves the note along the scale by the register's value, which can be negative. Not in drum patterns. |
+| AX+Vel to DX+Vel | `*` or blank | Adds the register's value to the velocity, which stays between 1 and 127 |
+| AX+= to DX+= | -127 to 127 | Adds this much to the register when the step plays |
+
+How they work:
+
+- A step adds to the registers before it uses them, so a step's own `+=` already changes its note.
+- Every step adds, even an empty one or one that probability drops, so a change can go on a step with no note. Putting it on the last step of a pattern means the first time through plays as written.
+- A step that uses several registers adds all their values together.
+- A ratcheted step adds once, and every slice uses the same value.
+- The registers are shared by every track, so one track can change a register that others use. Within a scene, steps are taken in time order, and steps at the same moment in track order. Only one track adding to a register usually makes the most sense.
+- Values carry on from scene to scene, unless a scene resets them (see [Scenes](#scenes)).
+- A morph's target pattern uses the registers but doesn't add to them.
+- A note pushed out of the MIDI range moves to the nearest octave that fits.
+
+The register change rows take digits, `+` and `-`, or `Enter` to type a negative number, and `Bksp` clears them, and they can be set on an empty step. The rows that use registers are toggled with `Space`.
 
 #### Play directions
 
@@ -493,6 +508,23 @@ Inside a chain:
 
 Order matters. An AutoRatchet before an arpeggiator ratchets the chords and then arpeggiates the repeats, while the other way round ratchets each arpeggiated note.
 
+### Registers
+
+Press `R` from the main screen. The four registers, AX to DX, are numbers that the whole song shares, which pattern steps change with their register change rows and use with their register rows (see [Register rows](#register-rows)). Each one has:
+
+| Setting | Default | What it does |
+| --- | --- | --- |
+| Default | 0 | Where it starts when rendering starts, and when a scene resets it |
+| Minimum | 0 | The lowest it can go |
+| Maximum | 10 | The highest it can go |
+| Wraps | off | Whether going past one end jumps to the other end, instead of staying at the end it reached |
+
+Each number can be from -127 to 127, and the minimum can't be above the default, or the default above the maximum. A change that would break that is refused with the reason. Left and right, or `+` and `-`, change a number, `Enter` types one, and `Bksp` sets it back to its default. `Enter` turns Wraps on and off.
+
+When a register wraps, it lands exactly on the other end, whatever was left over. With a range of 0 to 3, adding 1 to 3 gives 0, and so does adding 2. Without wrapping, it stays at 3.
+
+`examples/demo_registers.yml` shows every register at work.
+
 ### Arrange
 
 Press `A` from the main screen. Scenes are the rows and tracks are the columns. The first column holds the scene names, with each scene's repeat count and length. Scenes play from top to bottom, and a `+` is an empty cell. Arrows move around the grid, and it scrolls when there are more tracks than fit.
@@ -536,6 +568,7 @@ A scene starts all of its clips together, and lasts as long as its longest clip 
 | Tempo | A tempo instead of the song's. `Bksp` goes back to the song's. |
 | Tempo ramps to | Moves the tempo from Tempo to this across the scene's repeats. `Bksp` turns the ramp off. |
 | Repeat | Plays the whole scene this many times |
+| Reset AX to Reset DX | Sets that register back to its default as the scene starts. `Enter` toggles it. A scene that repeats resets only as it first starts, so a register can keep changing across its repeats. |
 
 The page shows how long the scene lasts and any problem, such as every clip looping.
 

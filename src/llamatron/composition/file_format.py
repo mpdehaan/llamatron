@@ -26,7 +26,7 @@ from fractions import Fraction
 from llamatron.chord import ChordType
 # The defaults stay importable from here too, for code that reads the format and its defaults together.
 from llamatron.composition.defaults import (  # noqa: F401
-    DEFAULT_ACCUMULATOR_LIMIT, DEFAULT_DRUM_OCTAVE, DEFAULT_OCTAVE, DEFAULT_PROBABILITY,
+    DEFAULT_DRUM_OCTAVE, DEFAULT_OCTAVE, DEFAULT_PROBABILITY,
     DEFAULT_RATCHET, DEFAULT_SEED, DEFAULT_STEP_SIZE, DEFAULT_TEMPO, DEFAULT_VELOCITY,
 )
 # And so do the limits that the rest of the program reads from here.
@@ -42,6 +42,7 @@ class Section:
     ARPS = 'arps'
     AUTO_RATCHETS = 'auto_ratchets'
     CHAINS = 'chains'
+    REGISTERS = 'registers'
     SCENES = 'scenes'
 
 
@@ -83,7 +84,6 @@ class PatternSetting:
     STEP_SIZE = 'step_size'
     DRUM = 'drum'
     DIRECTION = 'direction'
-    ACCUMULATOR_LIMIT = 'accumulator_limit'
 
 
 class Row:
@@ -100,14 +100,27 @@ class Row:
     GLIDE = 'glide'
     RATCHET = 'ratchet'
     RATCHET_OFFSET = 'ratchet_offset'
-    NOTE_ADD = 'note_add'
-    VELOCITY_ADD = 'velocity_add'
     GRAB = 'grab'
     CC1 = 'cc1'
     CC2 = 'cc2'
     CC3 = 'cc3'
     CC4 = 'cc4'
     SLIDE = 'slide'
+    # Whether each register's value moves the step's note along the scale.
+    AX_NOTE = 'ax_note'
+    BX_NOTE = 'bx_note'
+    CX_NOTE = 'cx_note'
+    DX_NOTE = 'dx_note'
+    # Whether each register's value is added to the step's velocity.
+    AX_VELOCITY = 'ax_velocity'
+    BX_VELOCITY = 'bx_velocity'
+    CX_VELOCITY = 'cx_velocity'
+    DX_VELOCITY = 'dx_velocity'
+    # How much the step adds to each register, which can be negative.
+    AX_ADD = 'ax_add'
+    BX_ADD = 'bx_add'
+    CX_ADD = 'cx_add'
+    DX_ADD = 'dx_add'
 
 
 class CellSetting:
@@ -132,7 +145,26 @@ class SceneSetting:
     TEMPO = 'tempo'
     TEMPO_START = 'tempo_start'
     TEMPO_END = 'tempo_end'
+    RESET = 'reset'
     TRACKS = 'tracks'
+
+
+class RegisterName:
+    """The song's four registers, whose names are fixed."""
+
+    AX = 'AX'
+    BX = 'BX'
+    CX = 'CX'
+    DX = 'DX'
+
+
+class RegisterSetting:
+    """A register's settings."""
+
+    DEFAULT = 'default'
+    MINIMUM = 'minimum'
+    MAXIMUM = 'maximum'
+    WRAP = 'wrap'
 
 
 class Direction:
@@ -184,17 +216,33 @@ class Accidental:
 # this project number them two higher, so that same note is C5.
 LIVE_OCTAVE_OFFSET = 2
 
+# The registers, in the order the Registers page and the pattern editor show them.
+REGISTER_NAMES = [RegisterName.AX, RegisterName.BX, RegisterName.CX, RegisterName.DX]
+# Each register's rows in a pattern: whether it moves the note, whether it changes the velocity,
+# and how much a step adds to it.
+REGISTER_NOTE_ROWS = {
+    RegisterName.AX: Row.AX_NOTE, RegisterName.BX: Row.BX_NOTE, RegisterName.CX: Row.CX_NOTE, RegisterName.DX: Row.DX_NOTE,
+}
+REGISTER_VELOCITY_ROWS = {
+    RegisterName.AX: Row.AX_VELOCITY, RegisterName.BX: Row.BX_VELOCITY,
+    RegisterName.CX: Row.CX_VELOCITY, RegisterName.DX: Row.DX_VELOCITY,
+}
+REGISTER_ADD_ROWS = {
+    RegisterName.AX: Row.AX_ADD, RegisterName.BX: Row.BX_ADD, RegisterName.CX: Row.CX_ADD, RegisterName.DX: Row.DX_ADD,
+}
+
 PATTERN_ROWS = [
     Row.DEGREE, Row.GATE, Row.DOT, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.VELOCITY, Row.PROBABILITY, Row.GLIDE,
-    Row.RATCHET, Row.RATCHET_OFFSET, Row.NOTE_ADD, Row.VELOCITY_ADD, Row.GRAB,
+    Row.RATCHET, Row.RATCHET_OFFSET, Row.GRAB,
     Row.CC1, Row.CC2, Row.CC3, Row.CC4, Row.SLIDE,
+    *REGISTER_NOTE_ROWS.values(), *REGISTER_VELOCITY_ROWS.values(), *REGISTER_ADD_ROWS.values(),
 ]
 # Rows that are on or off for each step, which files write as true or false.
-TOGGLE_ROWS = (Row.GLIDE, Row.GRAB, Row.SLIDE)
+TOGGLE_ROWS = (Row.GLIDE, Row.GRAB, Row.SLIDE, *REGISTER_NOTE_ROWS.values(), *REGISTER_VELOCITY_ROWS.values())
 # A pattern's CC lanes, whose numbers each track sets for itself.
 CC_ROWS = (Row.CC1, Row.CC2, Row.CC3, Row.CC4)
 # Rows that hold a whole number of any size, positive or negative.
-SIGNED_ROWS = (Row.RATCHET_OFFSET, Row.NOTE_ADD, Row.VELOCITY_ADD)
+SIGNED_ROWS = (Row.RATCHET_OFFSET,)
 FORWARD = Direction.FORWARD
 DIRECTIONS = [
     Direction.FORWARD, Direction.REVERSE_A, Direction.REVERSE_B, Direction.ALTERNATE, Direction.PENDULUM,

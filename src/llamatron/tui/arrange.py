@@ -19,13 +19,17 @@
 from rich.text import Text
 
 from llamatron.tui.base import ChoiceDialog, ConfirmDialog, Page, PromptDialog, columns, fit, key
-from llamatron.composition.file_format import DIRECTIONS
+from llamatron.composition.file_format import DIRECTIONS, REGISTER_NAMES
 from llamatron.composition.cell import MORPH_STYLES
 from llamatron.tui.document import DIRECTION_NAMES, clock, unique_name
 from llamatron.tui.lists import PLUS, Field, FieldPage
+from llamatron.tui.pattern_editor import TOGGLE_OFF, TOGGLE_ON
 
 FIRST_MORPH_STYLE = next(iter(MORPH_STYLES))
 SCENE_WIDTH = 24
+# A scene's field for each register it can reset, like "Reset AX".
+RESET_LABEL = 'Reset {name}'
+RESET_WHAT = 'toggle'
 CELL_WIDTH = 13
 
 
@@ -272,6 +276,7 @@ class ScenePage(FieldPage):
         'Scale: used by its clips, instead of the song\'s. Tempo: instead of the song\'s.',
         'Tempo ramps to: moves from Tempo to this across the scene\'s repeats.',
         'Repeat: plays the whole scene that many times.',
+        'Reset AX to DX: sets that register back to its default as the scene starts, but not on its repeats.',
         '',
         'Up and down select a setting. Left and right, or + and -, change it, and Enter types or chooses. Bksp goes back to the song\'s value.',
     )
@@ -362,7 +367,14 @@ class ScenePage(FieldPage):
                   self.clear_ramp, 'no ramp'),
             Field('Repeat', lambda: scene.get('repeat', 1), lambda d: self.document.set_scene_repeat(self.index, max(scene.get('repeat', 1) + d, 1)),
                   lambda: self.ask_number('Repeat', scene.get('repeat', 1), lambda n: self.document.set_scene_repeat(self.index, n), 1, 999)),
+            *[self.reset_field(name) for name in REGISTER_NAMES],
         ]
+
+    def reset_field(self, register):
+        """Return the field that makes the scene reset a register as it starts."""
+        on = self.document.resets(self.index, register)
+        return Field(RESET_LABEL.format(name=register), lambda: TOGGLE_ON if on else TOGGLE_OFF, None,
+                     lambda: self.document.set_reset(self.index, register, not on), RESET_WHAT)
 
     def notes(self, width):
         document = self.document

@@ -23,12 +23,13 @@ from llamatron.composition.checks import check_keys, live_octave, number, writte
 from llamatron.composition.defaults import (
     DEFAULT_DRUM_OCTAVE, DEFAULT_OCTAVE, DEFAULT_SEED, DEFAULT_STEP_SIZE, DEFAULT_TEMPO,
 )
-from llamatron.composition.file_format import NAMED_GENERATORS, Section, SongSetting
+from llamatron.composition.file_format import NAMED_GENERATORS, REGISTER_NAMES, Section, SongSetting
 from llamatron.composition.limits import MAX_STEP_SIZE
 from llamatron.composition.generator_settings import GENERATOR_SETTINGS
 from llamatron.composition.llama_data import LlamaData
 from llamatron.composition.named_scale import NamedScale
 from llamatron.composition.pattern import Pattern
+from llamatron.composition.register import Register
 from llamatron.composition.scene import Scene
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.composition.track import Track
@@ -43,7 +44,7 @@ SETTINGS = [
 # Settings that are only text for people, like the title.
 TEXT_SETTINGS = (SongSetting.TITLE, SongSetting.AUTHOR, SongSetting.DESCRIPTION)
 # Its sections of named objects, in the order they're written to a file, before its scenes.
-SECTIONS = [Section.SCALES, Section.PATTERNS, Section.TRACKS, *NAMED_GENERATORS.values(), Section.CHAINS]
+SECTIONS = [Section.SCALES, Section.PATTERNS, Section.TRACKS, *NAMED_GENERATORS.values(), Section.CHAINS, Section.REGISTERS]
 # How error messages name the file as a whole, and one object in each section of named objects.
 THE_FILE = 'the file'
 ITEM_LABELS = {Section.PATTERNS: 'pattern', Section.CHAINS: 'chain'}
@@ -58,10 +59,13 @@ MSG_NO_SUCH_SCALE = 'scale: no scale called {scale!r}'
 MSG_TRACKS_NOT_NAMED = 'tracks: expected named tracks with their settings, like lead: { transpose: 2 }'
 MSG_GENERATORS_NOT_NAMED = '{section}: expected named settings, like bells: {{ step: 1/8 }}'
 MSG_SCENES_NOT_A_LIST = 'scenes: expected a list of scenes'
+MSG_REGISTERS_NOT_NAMED = 'registers: expected registers from {names} with their settings, like AX: {{ maximum: 3 }}'
 # How messages name an object in the file: a named one by its kind and name, and a scene by its place.
 WHERE_NAMED = '{label} {name!r}'
 WHERE_SCENE_ENTRY = 'scene entry {number}'
-SCALE_LABEL, TRACK_LABEL = 'scale', 'track'
+SCALE_LABEL = 'scale'
+TRACK_LABEL = 'track'
+REGISTER_LABEL = 'register'
 # Scenes are counted from 1 in messages, as they're shown.
 FIRST_SCENE_NUMBER = 1
 # What a text setting is when the file leaves it out.
@@ -114,6 +118,7 @@ class Song(LlamaData):
         for kind, section in NAMED_GENERATORS.items():
             song._read_generators(data, kind, section)
         song._read_section(data, Section.CHAINS, Chain)
+        song._read_registers(data)
         song._read_scenes(data)
         return song
 
@@ -162,6 +167,16 @@ class Song(LlamaData):
         if section in data:
             self._sections[section] = {
                 name: GENERATOR_SETTINGS[kind].from_data(settings, WHERE_NAMED.format(label=kind, name=name), self) for name, settings in generators.items()
+            }
+
+    def _read_registers(self, data):
+        """Read the registers' settings. There are always four, so the file only names those it changes."""
+        registers = data.get(Section.REGISTERS) or {}
+        if not isinstance(registers, dict) or not set(registers) <= set(REGISTER_NAMES):
+            raise SongFileError(MSG_REGISTERS_NOT_NAMED.format(names=REGISTER_NAMES))
+        if Section.REGISTERS in data:
+            self._sections[Section.REGISTERS] = {
+                name: Register.from_data(settings, WHERE_NAMED.format(label=REGISTER_LABEL, name=name)) for name, settings in registers.items()
             }
 
     def _read_scenes(self, data):
@@ -254,6 +269,10 @@ class Song(LlamaData):
 
     def get_chain(self, name):
         return self._named(Section.CHAINS)[name]
+
+    def get_register(self, name):
+        """Return a register by its name, AX to DX, with its default settings if the file leaves it out."""
+        return self._named(Section.REGISTERS).get(name) or Register()
 
     def get_scenes(self):
         """Return the scenes in the order they play."""

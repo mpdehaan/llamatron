@@ -32,15 +32,16 @@ SONG = {
             'octave': [3, None, 2], 'chord': ['M7', None, 3], 'velocity': [100, None, 90],
             'probability': [50, None, 100], 'ratchet': [2, None, None], 'glide': [True, False, False],
         },
-        'hit': {'steps': 1, 'drum': True, 'direction': 'pendulum', 'accumulator_limit': 5, 'degree': ['C'], 'grab': [True], 'ratchet_offset': [1], 'note_add': [-1], 'velocity_add': [3]},
+        'hit': {'steps': 1, 'drum': True, 'direction': 'pendulum', 'degree': ['C'], 'grab': [True], 'ratchet_offset': [1], 'ax_velocity': [True], 'bx_add': [-3]},
         'rests': {'steps': 2},
     },
     'tracks': {'lead': {'transpose': 2, 'cc': [74, None, None, 1]}, 'kick': {'drum': True}, 'plain': {}},
     'arps': {'bells': {'step': '1/8', 'order': 'up'}},
     'auto_ratchets': {'rolls': {'counts': [1, 4]}},
     'chains': {'x': [{'auto_ratchet': 'rolls'}, {'arp': 'bells'}], 'nothing': [], 'named': [{'arp': 'bells'}]},
+    'registers': {'AX': {'maximum': 3, 'wrap': True}, 'DX': {'minimum': -100, 'default': -5}},
     'scenes': [
-        {'name': 'one', 'repeat': 3, 'scale': 'A Minor', 'tempo_start': 120, 'tempo_end': 130, 'tracks': {'lead': {'pattern': 'a', 'chain': 'x', 'loop': True, 'repeat': 2, 'morph_to': 'hit', 'morph_style': 'left', 'grab_track': 'kick'}}},
+        {'name': 'one', 'repeat': 3, 'reset': ['AX', 'DX'], 'scale': 'A Minor', 'tempo_start': 120, 'tempo_end': 130, 'tracks': {'lead': {'pattern': 'a', 'chain': 'x', 'loop': True, 'repeat': 2, 'morph_to': 'hit', 'morph_style': 'left', 'grab_track': 'kick'}}},
         {'tracks': {}},
     ],
 }
@@ -81,13 +82,16 @@ class TestDumpSong(unittest.TestCase):
         self.assertIn('    steps: 3\n    step_size: 1/4\n', text)
         self.assertIn('    accidental: ["#", ~, b]\n', text)
         self.assertIn('    glide: [true, false, false]\n', text)
-        self.assertIn('    drum: true\n    direction: pendulum\n    accumulator_limit: 5\n', text)
+        self.assertIn('    drum: true\n    direction: pendulum\n', text)
+        self.assertIn('    ax_velocity: [true]\n    bx_add: [-3]\n', text)
 
     def test_follows_the_format_rules(self):
         text = dump_song(SONG)
         self.assertIn('tracks:\n  lead: { transpose: 2, cc: [74, ~, ~, 1] }\n  kick: { drum: true }\n  plain: {}\n', text)
         self.assertIn('      lead: { pattern: a, chain: x, loop: true, repeat: 2, morph_to: hit, morph_style: left, grab_track: kick }', text)
         self.assertIn('arps:\n  bells: { step: 1/8, order: up }', text)
+        self.assertIn('registers:\n  AX: { maximum: 3, wrap: true }\n  DX: { minimum: -100, default: -5 }\n\nscenes:', text)
+        self.assertIn("  - name: one\n    repeat: 3\n    reset: [AX, DX]\n", text)
         self.assertIn('auto_ratchets:\n  rolls: { counts: [1, 4] }', text)
         self.assertIn('    - arp: bells', text)
         self.assertIn('    - auto_ratchet: rolls', text)

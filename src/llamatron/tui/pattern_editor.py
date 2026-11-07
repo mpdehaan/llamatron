@@ -24,30 +24,64 @@ can run on past later steps, up to the end of the pattern, and a step with no no
 from rich.text import Text
 
 from llamatron.composition.checks import is_written_length
-from llamatron.composition.defaults import DEFAULT_ACCUMULATOR_LIMIT
 from llamatron.composition.file_format import (
-    CC_ROWS, CHORD_SYMBOLS, DIRECTIONS, FORWARD, GATE_LENGTH_CHOICES, NOTE_LETTERS, ChordSymbol, GateModifier,
+    CC_ROWS, CHORD_SYMBOLS, DIRECTIONS, FORWARD, GATE_LENGTH_CHOICES, NOTE_LETTERS, REGISTER_ADD_ROWS,
+    REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, TOGGLE_ROWS, ChordSymbol, GateModifier,
 )
-from llamatron.composition.limits import MAX_GATE, MAX_STEP_SIZE
+from llamatron.composition.limits import MAX_GATE, MAX_REGISTER_VALUE, MAX_STEP_SIZE, MIN_REGISTER_VALUE
 from llamatron.tui.base import ChoiceDialog, ConfirmDialog, GridChoiceDialog, Page, PromptDialog, columns, fit, grouped_grid, key, pressed_key
 from llamatron.composition.defaults import DEFAULT_PROBABILITY, DEFAULT_RATCHET, DEFAULT_VELOCITY
 from llamatron.tui.document import DIRECTION_NAMES, fraction, fraction_text
 
-# The rows on screen. Degree always shows, and the rest depend on the mode.
+# How each register's rows are labelled: AX+Note moves the note by AX, AX+Vel adds AX to the
+# velocity, and AX+= adds to AX.
+REGISTER_NOTE_LABEL = '{name}+Note'
+REGISTER_VELOCITY_LABEL = '{name}+Vel'
+REGISTER_ADD_LABEL = '{name}+='
+
+
+def register_labels(rows, label):
+    """Return each register's row in a group of register rows with its label, like ax_note with AX+Note."""
+    return {row: label.format(name=name) for name, row in rows.items()}
+
+
+# The rows on screen. Degree always shows, and the rest depend on the set of rows showing.
 ROW_LABELS = {
     'degree': 'Degree', 'gate': 'Gate', 'dot': 'Dot', 'accidental': '#/b', 'octave': 'Octave', 'chord': 'Chord',
     'velocity': 'Velocity', 'probability': 'Prob', 'glide': 'Glide', 'ratchet': 'Ratchet',
-    'ratchet_offset': 'Ratchet Offset', 'note_add': 'Note Add', 'velocity_add': 'Velocity Add', 'grab': 'Grab',
+    'ratchet_offset': 'Ratchet Offset', 'grab': 'Grab',
     'cc1': 'CC 1', 'cc2': 'CC 2', 'cc3': 'CC 3', 'cc4': 'CC 4', 'slide': 'Slide',
+    **register_labels(REGISTER_NOTE_ROWS, REGISTER_NOTE_LABEL),
+    **register_labels(REGISTER_VELOCITY_ROWS, REGISTER_VELOCITY_LABEL),
+    **register_labels(REGISTER_ADD_ROWS, REGISTER_ADD_LABEL),
 }
 NORMAL_ROWS = ['degree', 'gate', 'dot', 'accidental', 'octave', 'chord', 'velocity', 'probability', 'glide']
-ADVANCED_ROWS = ['degree', 'ratchet', 'ratchet_offset', 'note_add', 'velocity_add', 'grab']
+ADVANCED_ROWS = ['degree', 'ratchet', 'ratchet_offset', 'grab']
 CC_SET = ['degree', 'cc1', 'cc2', 'cc3', 'cc4', 'slide']
-# The sets of rows under Degree that A steps through, and what each is called on screen.
-ROW_SETS = {'normal': NORMAL_ROWS, 'advanced': ADVANCED_ROWS, 'cc': CC_SET}
-ROW_SET_NAMES = {'normal': 'normal rows', 'advanced': 'advanced rows', 'cc': 'CC rows'}
-# Rows that a rest can hold, because CC values don't need a note.
-REST_EDITABLE = (*CC_ROWS, 'slide')
+# The rows that use the registers' values, and then the rows that change them.
+REGISTER_SET = ['degree', *REGISTER_NOTE_ROWS.values(), *REGISTER_VELOCITY_ROWS.values()]
+REGISTER_CHANGE_SET = ['degree', *REGISTER_ADD_ROWS.values()]
+# The sets of rows under Degree that PgUp and PgDn step through, in order, and what each is called on screen.
+NORMAL = 'normal'
+ADVANCED = 'advanced'
+CC = 'cc'
+REGISTERS = 'registers'
+REGISTER_CHANGES = 'register_changes'
+ROW_SETS = {NORMAL: NORMAL_ROWS, ADVANCED: ADVANCED_ROWS, CC: CC_SET, REGISTERS: REGISTER_SET, REGISTER_CHANGES: REGISTER_CHANGE_SET}
+ROW_SET_NAMES = {
+    NORMAL: 'normal rows', ADVANCED: 'advanced rows', CC: 'CC rows', REGISTERS: 'registers', REGISTER_CHANGES: 'register changes',
+}
+# Rows that don't belong in a drum pattern, which has no chords and no scale to move notes along.
+NOT_FOR_DRUMS = ('chord', *REGISTER_NOTE_ROWS.values())
+# Rows that a rest can hold, because CC values and register changes don't need a note.
+REST_EDITABLE = (*CC_ROWS, 'slide', *REGISTER_ADD_ROWS.values())
+# What the second line of the header says for each set of rows, besides the normal ones.
+ROW_SET_HEADERS = {
+    ADVANCED: "Advanced rows: Grab plays what each clip's Grab track last played",
+    CC: 'CC rows: each track sets which CC number each row sends',
+    REGISTERS: "Registers: +Note moves the note along the scale by the register's value, +Vel adds it to the velocity",
+    REGISTER_CHANGES: 'Register changes: each step adds to the registers as it plays, even an empty one',
+}
 TOGGLE_ON, TOGGLE_OFF = '*', ' '
 DRUM_LETTER_ROW = 'Note'
 ACCIDENTAL_CYCLE = [None, '#', 'b']
@@ -67,17 +101,19 @@ SONG_STEP_SIZE_SHOWN = " (the song's)"
 CELL_WIDTH = 5
 MIN_OCTAVE, MAX_OCTAVE = -2, 8
 NUMBER_RANGE = {
-    'velocity': (1, 127), 'probability': (0, 100), 'ratchet': (1, 16), 'ratchet_offset': (-24, 24),
-    'note_add': (-24, 24), 'velocity_add': (-127, 127),
+    'velocity': (1, 127), 'probability': (0, 100), 'ratchet': (1, 16),
+    'ratchet_offset': (-24, 24),
     'cc1': (0, 127), 'cc2': (0, 127), 'cc3': (0, 127), 'cc4': (0, 127),
+    **dict.fromkeys(REGISTER_ADD_ROWS.values(), (MIN_REGISTER_VALUE, MAX_REGISTER_VALUE)),
 }
 NUMBER_DEFAULT = {
     'velocity': DEFAULT_VELOCITY, 'probability': DEFAULT_PROBABILITY, 'ratchet': DEFAULT_RATCHET,
-    'ratchet_offset': 0, 'note_add': 0, 'velocity_add': 0,
+    'ratchet_offset': 0,
     'cc1': 64, 'cc2': 64, 'cc3': 64, 'cc4': 64,
+    **dict.fromkeys(REGISTER_ADD_ROWS.values(), 0),
 }
 # Rows whose default means nothing happens, so that they show a dot until they're set.
-QUIET_ROWS = ('ratchet', 'ratchet_offset', 'note_add', 'velocity_add', *CC_ROWS)
+QUIET_ROWS = ('ratchet', 'ratchet_offset', *CC_ROWS, *REGISTER_ADD_ROWS.values())
 DIGITS = tuple('0123456789')
 # The chord picker's columns, which hold every chord symbol in the order + steps through them.
 # The chord picker's groups, each a heading and its symbols, in the order the picker shows them.
@@ -138,8 +174,9 @@ class PatternEditor(Page):
         'Chord: Enter shows them, and 3 or 7 use the scale.',
         'Velocity, Prob: type numbers. Glide (*): runs into the next note.',
         '',
-        'A steps through advanced and CC rows. Ratchet splits a step, and Ratchet Offset moves each slice along the scale. Note Add and Velocity Add build up totals. Grab takes a note from another track.',
-        'CC 1 to 4 send values, even on rests, as the CC numbers each track sets. Slide ramps them to the next value.',
+        'PgUp/PgDn change rows. Advanced: Ratchet splits a step, Ratchet Offset moves each slice, Grab takes another track\'s note.',
+        'CC 1 to 4 send values even on rests. Slide ramps them on.',
+        'AX+= adds to AX. AX+Note, AX+Vel add it to the note or velocity.',
         'F reverses every step after the cursor, and S swaps both sides of it. L loads another pattern over this one.',
     )
 
@@ -171,12 +208,10 @@ class PatternEditor(Page):
         return bool(self.pattern().get('drum'))
 
     def rows(self):
-        """Return the rows on screen. Chords aren't used in a drum pattern."""
+        """Return the rows on screen. Chords and moving notes by registers aren't used in a drum pattern."""
         names = ROW_SETS[self.holder.row_set]
-        names = [
-            name for name in names
-            if not (self.is_drum() and name == 'chord')
-        ]
+        if self.is_drum():
+            names = [name for name in names if name not in NOT_FOR_DRUMS]
         return [(name, DRUM_LETTER_ROW if self.is_drum() and name == 'degree' else ROW_LABELS[name]) for name in names]
 
     def row_name(self):
@@ -204,14 +239,12 @@ class PatternEditor(Page):
         self.clamp()
         result = [key(('left', 'right', 'up', 'down'), 'move', self.move, label='←↑↓→', wants_key=True)]
         result += self.row_keys()
-        # On a drum pattern's Note row, the letters A and F are notes.
+        result.append(key(('pageup', 'pagedown'), ROW_SET_NAMES[self.next_row_set(1)], self.change_row_set, label='PgUp/PgDn', wants_key=True))
+        # On a drum pattern's Note row, the letter F is a note.
         on_letters = self.is_drum() and self.row_name() == 'degree'
         if not on_letters:
-            result.append(key('a', ROW_SET_NAMES[self.next_row_set()], self.toggle_advanced))
             result.append(key('f', 'flip after', self.flip))
         result += [key('s', 'swap sides', self.swap), key('l', 'load over', self.load_over)]
-        if self.holder.row_set == 'advanced':
-            result.append(key('m', 'add limit', self.ask_limit))
         result += [
             key('r', 'resize', self.ask_steps),
             key('e', 'step size', self.ask_step_size),
@@ -265,7 +298,7 @@ class PatternEditor(Page):
                 key('-', 'back', lambda: self.cycle_chord(-1)),
                 key('backspace', 'clear', lambda: self.set_value(None)),
             ]
-        if name in ('glide', 'grab', 'slide'):
+        if name in TOGGLE_ROWS:
             return [
                 key('space', 'toggle', self.toggle_glide),
                 key('backspace', 'clear', lambda: self.set_value(False)),
@@ -456,14 +489,15 @@ class PatternEditor(Page):
             lambda chosen: self.document.set_direction(self.item, DIRECTIONS[chosen]),
         )
 
-    def next_row_set(self):
+    def next_row_set(self, offset):
+        """Return the set of rows after the one showing, or before it if offset is -1, going round."""
         names = list(ROW_SETS)
-        return names[(names.index(self.holder.row_set) + 1) % len(names)]
+        return names[(names.index(self.holder.row_set) + offset) % len(names)]
 
-    def toggle_advanced(self):
-        """Switch to the next rows under Degree, staying on the same row if they have it."""
+    def change_row_set(self, pressed):
+        """Switch to the next rows under Degree with PgDn, or the ones before with PgUp, staying on the same row if they have it."""
         name = self.row_name()
-        self.holder.row_set = self.next_row_set()
+        self.holder.row_set = self.next_row_set(-1 if pressed == 'pageup' else 1)
         names = [row for row, _ in self.rows()]
         self.row = names.index(name) if name in names else 0
 
@@ -497,22 +531,6 @@ class PatternEditor(Page):
             else:
                 load(name)
         self.ask(ChoiceDialog(f'Load over {self.item}', others), chosen)
-
-    def ask_limit(self):
-        current = self.pattern().get('accumulator_limit', DEFAULT_ACCUMULATOR_LIMIT)
-
-        def answered(text):
-            try:
-                limit = int(text.strip())
-            except ValueError:
-                self.status = f'{text!r} is not a whole number.'
-                return
-            if limit < 1:
-                self.status = 'The limit must be 1 or more.'
-                return
-            self.pattern()['accumulator_limit'] = limit
-            self.document.changed()
-        self.ask(PromptDialog('Note Add and Velocity Add clear past', current), answered)
 
     def toggle_glide(self):
         self.set_value(not self.value())
@@ -577,7 +595,7 @@ class PatternEditor(Page):
             return '' if value is None else str(value)
         if name in ('gate', 'dot'):
             return '' if not note or value is None else str(value)
-        if name in ('glide', 'grab', 'slide') and (note or name in REST_EDITABLE):
+        if name in TOGGLE_ROWS and (note or name in REST_EDITABLE):
             return TOGGLE_ON if value else TOGGLE_OFF
         if not note and name not in REST_EDITABLE:
             return ''
@@ -600,12 +618,7 @@ class PatternEditor(Page):
         drum = '[x]' if pattern.get('drum') else '[ ]'
         scale = 'no scale needed' if pattern.get('drum') else f"song: {self.document.data.get('scale') or 'none'}, or the scene's"
         direction = pattern.get('direction', FORWARD).replace('_', ' ')
-        extra = f'Scale {scale}'
-        if self.holder.row_set == 'advanced':
-            limit = pattern.get('accumulator_limit', DEFAULT_ACCUMULATOR_LIMIT)
-            extra = f"Advanced rows    Add limit {limit}    Grab plays what each clip's Grab track last played"
-        elif self.holder.row_set == 'cc':
-            extra = 'CC rows: each track sets which CC number each row sends'
+        extra = ROW_SET_HEADERS.get(self.holder.row_set, f'Scale {scale}')
         whose = '' if pattern.get('step_size') else SONG_STEP_SIZE_SHOWN
         step_size = STEP_SIZE_SHOWN.format(size=fraction_text(self.document.step_size(self.item)), whose=whose)
         return [

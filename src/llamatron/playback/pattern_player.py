@@ -23,24 +23,27 @@ from llamatron.chord import Chord
 from llamatron.composition.checks import written_length
 from llamatron.composition.defaults import DEFAULT_PROBABILITY, DEFAULT_RATCHET, DEFAULT_VELOCITY
 from llamatron.composition.file_format import (
-    ACCIDENTALS, CC_ROWS, FIXED_CHORDS, GATE_MODIFIERS, LIVE_OCTAVE_OFFSET, PATTERN_ROWS, SCALE_CHORDS, Row,
+    ACCIDENTALS, CC_ROWS, FIXED_CHORDS, GATE_MODIFIERS, LIVE_OCTAVE_OFFSET, PATTERN_ROWS, REGISTER_ADD_ROWS,
+    REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, SCALE_CHORDS, Row,
 )
 from llamatron.composition.limits import MAX_GATE, MAX_PROBABILITY, MAX_VELOCITY, MIN_VELOCITY
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators.arp import along_scale
 from llamatron.generators.auto_ratchet import divide
 from llamatron.held import Held, phrase
-from llamatron.note import SHARP_NAMES, Degree, Note, Rest
+from llamatron.note import MAX_OCTAVE, MIN_OCTAVE, SHARP_NAMES, Degree, Note, Rest
 from llamatron.clip_grid import Clip, Control
 
-# How many octaves away a moved note can go to find one that fits the MIDI range.
+# How many octaves away a moved note can go to find one that fits the MIDI range. A move of
+# whole octaves is taken out first, so this only has to cover the MIDI range itself.
 MAX_OCTAVE_CHANGE = 10
 HALF_STEPS_PER_OCTAVE = 12
 # A step with no accidental moves its note by no half steps.
 NO_ACCIDENTAL, NO_HALF_STEPS = '', 0
-# A clip's running totals, and the lists of steps it keeps its place in.
-NOTE_TOTAL, VELOCITY_TOTAL = 'note', 'velocity'
+# The list of steps a clip keeps its place in.
 PATTERN_STEPS = 'steps'
+# What registers add to a note or velocity when a step uses none of them.
+NOTHING_ADDED = 0
 # Where a step's values hold the note its grab took, beside its rows.
 GRABBED = 'grabbed'
 # How messages name a pattern, and what goes wrong while playing one.
@@ -65,15 +68,18 @@ class PatternPlayer:
         self._scale = scale
         self._transpose = track.get_transpose()
 
-    def play_pass(self, pattern_name, grab, direction, where, rolls, order, totals, start):
+    def play_pass(self, pattern_name, grab, direction, where, rolls, order, registers, start, changes_registers=True):
         """Return one pass through a pattern, as notes, chords and rests, starting at a time in the clip.
 
         Every step takes the same time, its step size, whatever order the steps play in, which is
         the pattern's direction unless direction overrides it. A step that plays sounds for its
         gate, which can run past later steps but not past the end of the pass. The pattern's grab
         steps play what grab, a GrabSource, gives for the time they start, if it's given. rolls is
-        the random generator probability uses, order the StepOrder, and totals the clip's
-        Accumulators.
+        the random generator probability uses, and order the StepOrder.
+
+        registers is a RegisterRecorder or RegisterReader. Every step adds to the registers, even
+        one with no note, unless changes_registers is false, as for a morph's target, and then
+        moves its note and velocity by the values of the registers it uses, after its own adds.
         """
         if not self._song.has_pattern(pattern_name):
             raise SongFileError(MSG_NO_SUCH_PATTERN.format(where=where, name=pattern_name))
@@ -86,33 +92,38 @@ class PatternPlayer:
             time = slot * step_size
             step = order.next_step((PATTERN_STEPS, pattern_name), pattern.get_steps(), direction or pattern.get_direction())
             values = _step_values(pattern, step, PATTERN_ROWS)
-            # A step with no note can send CC values too.
+            # A step with no note can send CC values and add to the registers too.
             controls += _controls_sent(values, time)
+            current = registers.at_step(start + time, _register_adds(values) if changes_registers else {})
             if values[Row.DEGREE] is None:
                 continue
             drum = pattern.is_drum()
             values[GRABBED] = grab.note_at(start + time) if grab and values[Row.GRAB] else None
-            note_total = totals.add(NOTE_TOTAL, values[Row.NOTE_ADD], pattern.get_accumulator_limit())
-            velocity_total = totals.add(VELOCITY_TOTAL, values[Row.VELOCITY_ADD], pattern.get_accumulator_limit())
+            # Drum patterns have no scale to move a note along, so registers only change their velocity.
+            note_moved = NOTHING_ADDED if drum else _used_values(values, current, REGISTER_NOTE_ROWS)
+            velocity_added = _used_values(values, current, REGISTER_VELOCITY_ROWS)
             gate = min(_gate(values, step_size, where), length - time)
-            sounding.append((time, self._step(values, gate, drum, where, rolls, note_total, velocity_total)))
+            sounding.append((time, self._step(values, gate, drum, where, rolls, note_moved, velocity_added)))
         return Clip(notes=_in_sequence(sounding, length, step_size), scale=self._scale, controls=controls)
 
     def pattern_length(self, pattern):
         """Return how long one pass through a pattern lasts, in whole notes: its steps times its step size."""
         return pattern.get_steps() * self._song.get_pattern_step_size(pattern)
 
-    def _step(self, values, length, drum, where, rolls, note_total, velocity_total):
-        """Return what one step plays, lasting length, its gate, as more than one position if it ratchets."""
+    def _step(self, values, length, drum, where, rolls, note_moved, velocity_added):
+        """Return what one step plays, lasting length, its gate, as more than one position if it ratchets.
+
+        Registers move its note note_moved scale notes and add velocity_added to its velocity.
+        """
         default = self._song.get_default_drum_octave() if drum else self._song.get_default_octave()
         octave = _value_or(values[Row.OCTAVE], default) + LIVE_OCTAVE_OFFSET
-        velocity = _clamped_velocity(_value_or(values[Row.VELOCITY], DEFAULT_VELOCITY) + velocity_total)
+        velocity = _clamped_velocity(_value_or(values[Row.VELOCITY], DEFAULT_VELOCITY) + velocity_added)
         ratchet = values[Row.RATCHET] or DEFAULT_RATCHET
         offset = values[Row.RATCHET_OFFSET] or NO_HALF_STEPS
         slices = []
         transpose = NO_HALF_STEPS if drum else self._transpose
         for place in range(ratchet):
-            shift = transpose + note_total + place * offset
+            shift = transpose + note_moved + place * offset
             if values[GRABBED] is not None:
                 played = self._grabbed_sound(values[GRABBED], length, shift, drum)
             else:
@@ -148,13 +159,23 @@ class PatternPlayer:
             note = Note(values[Row.DEGREE] + (values[Row.ACCIDENTAL] or NO_ACCIDENTAL), at_octave, length)
             return note.half_step(shift) if shift else note
 
+        # Moving by a whole octave's worth of notes is the same as moving the octave, so a big
+        # move, like four registers can make, starts from an octave in the MIDI range.
+        octaves, shift = divmod(shift, self._notes_per_octave(drum))
+        octave = max(MIN_OCTAVE, min(octave + octaves, MAX_OCTAVE))
         problem = None
-        for change in _octave_changes_to_try(shift):
+        for change in _octave_changes_to_try(shift or octaves):
             try:
                 return attempt(octave + change)
             except ValueError as error:
                 problem = problem or error
         raise SongFileError(MSG_CANT_PLAY.format(where=where, problem=problem)) from problem
+
+    def _notes_per_octave(self, drum):
+        """Return how many notes a move needs to go up an octave: the size of the scene's scale, or 12 half steps for drums."""
+        if drum or self._scene.get_scale_name() is None:
+            return HALF_STEPS_PER_OCTAVE
+        return len(self._song.get_named_scale(self._scene.get_scale_name()).scale_at(MIN_OCTAVE).typ.value)
 
     def _degree_sound(self, values, length, octave, shift, where):
         if self._scene.get_scale_name() is None:
@@ -216,6 +237,16 @@ def _step_values(pattern, step, rows):
     return {row: pattern.get_value(row, step) for row in rows}
 
 
+def _register_adds(values):
+    """Return what a step adds to each register it adds to, by register name."""
+    return {name: values[row] for name, row in REGISTER_ADD_ROWS.items() if values[row]}
+
+
+def _used_values(values, current, rows):
+    """Return the total of the registers a step uses on some rows, like its +Note rows, from their current values."""
+    return sum((current[name] for name, row in rows.items() if values[row]), NOTHING_ADDED)
+
+
 def _controls_sent(values, time):
     """Return the CC values a step sends at a time, one for each CC lane it has a value on."""
     return [
@@ -238,7 +269,7 @@ def _value_or(value, default):
 
 
 def _clamped_velocity(velocity):
-    """Return a velocity moved into the range MIDI allows, if a running total pushed it out."""
+    """Return a velocity moved into the range MIDI allows, if registers pushed it out."""
     return max(min(velocity, MAX_VELOCITY), MIN_VELOCITY)
 
 

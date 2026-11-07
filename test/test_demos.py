@@ -37,11 +37,15 @@ import yaml
 from llamatron.renderers.ableton_project import AbletonProject
 from llamatron.renderers.clip_tree import ClipTree
 from llamatron.renderers.timing import timed_events
-from rendering import render_file
+from rendering import is_demo, render_file
 from llamatron.song_writer import dump_song
 from llamatron.tui.document import Document
 
-PATHS = sorted(glob.glob('examples/*_demo.yml'))
+PATHS = sorted(path for path in glob.glob('examples/*.yml') if is_demo(path))
+# Demos written by hand, rather than first written by test/demo_sources/make_demos.py.
+HAND_WRITTEN = ['demo_registers.yml']
+# Song files' names end like this.
+YAML_ENDING = '.yml'
 SOURCES = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'demo_sources')
 
 
@@ -102,7 +106,7 @@ class TestDemos(unittest.TestCase):
             with self.subTest(name=name):
                 self.assertIn(f'`{name}`', text)
         words = [word.strip('`.,') for word in text.split() if word.startswith('`')]
-        mentioned = {word for word in words if word.endswith('_demo.yml')}
+        mentioned = {word for word in words if word.endswith(YAML_ENDING) and is_demo(word)}
         self.assertEqual(mentioned - set(names()), set())
 
     def test_muted_tracks_and_only_those_are_named_silent(self):
@@ -147,7 +151,7 @@ class TestDemoSources(unittest.TestCase):
 
     def test_it_writes_every_demo_and_each_one_builds(self):
         written = sorted(os.listdir(self.folder))
-        self.assertEqual(written, names())
+        self.assertEqual(sorted(written + HAND_WRITTEN), names())
         for name in written:
             with self.subTest(name=name):
                 self.made(name)
