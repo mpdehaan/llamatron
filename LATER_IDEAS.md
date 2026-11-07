@@ -134,14 +134,12 @@ by hand, as a one-off check while refactoring, rather than as a kept test.
 
 **Phase 1: refactoring** (see "Refactoring"). Started on 2026-11-06, in this order: steps 6
 and 7's new classes first, with the serialization, then the tracker moved onto them, then
-gates (Phase 2) as the next piece of work. Retiring AutoRatchet waits until after, as a step of
-its own, because it changes what songs play and would get in the way of checking that the
-refactoring changes nothing.
+gates (Phase 2) as the next piece of work.
 
 4. Decide which is the real model of a song. The serialization plan under "Refactoring" answers
    it in favor of the objects, if the user agrees.
-5. Retire AutoRatchet, once what replaces it is decided. Moved to after the refactoring: it's
-   converted to the new classes like everything else first, as the user decided.
+5. (AutoRatchet was going to be retired here. The user decided on 2026-11-06 to keep it, so
+   this step is gone.)
 6. Eliminate `song_file.py` as a class: every object gets `to_data()` and `from_data()`, the song
    saves and loads itself through them, and the music logic moves into objects with one job
    each, keeping behavior identical.
@@ -344,17 +342,6 @@ is stored. What this means:
   follows scale changes, but a chain's result can never be seen or edited in the tracker, and a
   generator can't think in steps. Worth keeping in mind when designing the pattern generators
   above, which would write steps instead.
-
-### Retiring AutoRatchet
-
-The user thinks AutoRatchet should be retired. It was used by `acid_techno.yml`, since deleted,
-`chain_demo.yml` and `ratchet_demo.yml`, and a test requires every generator to appear in an
-example, so those would need rewriting, most likely with the pattern's own Ratchet row, and the
-ratchet demo would become only Ratchet scenes. Removing it also takes it out of `GENERATORS`,
-the Generators page, the file format (`auto_ratchets`) and GUIDE.md. By the defaults rule, older
-files that still have an `auto_ratchets` section should probably still load, perhaps with a
-warning that it's ignored, rather than fail. Whatever replaces what only AutoRatchet can do, such
-as cycling counts that ignore the pattern's length, is still to be decided.
 
 ## Time signatures
 
