@@ -546,6 +546,19 @@ repeats exactly. The hard parts it shows are guessing where bars and phrases sta
 chords that no chord symbol fits, notes held across a phrase's end, choosing a key to write
 degrees in, and naming everything. A wizard would ask about each of these rather than guess.
 
+The user's request (2026-11-08): an import on the Song page, or a wizard, that takes the path
+to a MIDI file and splits it intelligently into a smart arrangement. It doesn't need to use any
+of llamatron's features, just plain patterns, tracks and scenes, but it should make a small
+number of scenes rather than one long one, with each MIDI track becoming a track, and it should
+identify repeating patterns, as an option, so that a phrase that comes back is one pattern used
+in several scenes rather than written out each time. What that needs, roughly: read the file
+with `mido`, take the tempo and time signature from it (or ask), choose a step size that fits
+the shortest note (or ask), cut the piece at bar lines into phrases of a few bars, which become
+the scenes, give each track's phrase a pattern, and merge patterns whose steps come out
+identical, exactly or after moving them to the same octave, when the option is on. Overlapping
+notes on one track go into voices, as the Entertainer generator does, or into chords where a
+chord symbol fits. Everything it can't decide, it asks, in keeping with the wizard rules above.
+
 ## Previewing with real-time MIDI
 
 A PREVIEW feature that plays the song, or a clip, out of the computer's MIDI ports in real time,
