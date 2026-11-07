@@ -1046,3 +1046,18 @@ What the code does today, and what it means for this:
 - **Testing:** a test can check that the envelope points and the `.mid` control changes are
   where they should be and move in one direction without jumps, but only listening in Live
   proves the result is smooth. A riser scene in a demo would give the user something to check.
+
+## Grouping the main screen's pages
+
+The main screen lists every page in one column: Song, Patterns, Tracks, Chains, Generators,
+Scales, Arrange and Quit, with Registers about to join them. The user wants to think about
+splitting it into groups with a blank line between them: Song on its own, then the most common
+pages, then the more advanced ones, like Registers and the wizards when they come, together.
+
+Which page goes in which group is still to decide. One possibility is Song; then Patterns,
+Tracks, Arrange and Scales; then Chains, Generators and Registers; then Quit. In the code,
+`MainPage.body` in `src/llamatron/tui/pages.py` draws one line for each of `keys()`, so the groups
+could be a small list of where the gaps go, and the order of `keys()` would follow the groups.
+The keys stay listed once in `keys()`, as the rule for every page requires, and the test that
+every key is shown still applies. It's the main screen of the hotkey review too, so the two could
+be done together.
