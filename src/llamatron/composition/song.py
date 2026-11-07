@@ -220,6 +220,10 @@ class Song(LlamaData):
         step_size = pattern.get_step_size()
         return self.get_step_size() if step_size is None else step_size
 
+    def adds_to_registers(self):
+        """Return whether any pattern adds to a register, so that playing changes the registers' values."""
+        return any(self.get_pattern(name).adds_to_registers() for name in self.get_pattern_names())
+
     def get_pattern_length(self, pattern):
         """Return how long one pass through a pattern lasts, in whole notes: its steps times its step size.
 

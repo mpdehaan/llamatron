@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from fractions import Fraction
 from math import isfinite
 
@@ -75,8 +75,9 @@ SEMITONES_ABOVE_C = {
     NoteName.B_FLAT: 10,
     NoteName.B: 11,
 }
-# Every spelling a note's name can have.
+# Every spelling a note's name can have, and the same as a set, for checking a name quickly.
 NOTE_NAMES = list(SEMITONES_ABOVE_C)
+KNOWN_NOTE_NAMES = frozenset(NOTE_NAMES)
 
 # Spellings for notes worked out from a MIDI number, indexed by semitones above C.
 SHARP_NAMES = [
@@ -115,11 +116,6 @@ NO_LENGTH = 0
 # The kinds of number a length can be.
 LENGTH_TYPES = (int, float, Fraction)
 
-# Spellings for notes worked out from a MIDI number, indexed by semitones above C.
-SHARP_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-FLAT_NAMES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
-
-
 def _check_integer(n):
     # bool is a subclass of int, but half_step(True) is not a real step count.
     if type(n) is not int:
@@ -133,8 +129,15 @@ def _check_length(length):
 
 
 def _is_positive_length(length):
-    """Return whether a length is a finite number of whole notes above zero, not counting true and false."""
-    return type(length) in LENGTH_TYPES and isfinite(length) and length > NO_LENGTH
+    """Return whether a length is a finite number of whole notes above zero, not counting true and false.
+
+    Rendering checks this for every note it builds, so fractions and whole numbers, which are
+    always finite, skip the float check, which would turn them into floats first.
+    """
+    kind = type(length)
+    if kind is Fraction or kind is int:
+        return length > NO_LENGTH
+    return kind in LENGTH_TYPES and isfinite(length) and length > NO_LENGTH
 
 
 @dataclass(frozen=True, slots=True)
@@ -173,13 +176,17 @@ class Degree:
         _check_integer(self.scale_notes)
         _check_integer(self.half_steps)
 
+    def with_length(self, length):
+        """Return the same degree with another length."""
+        return Degree(self.number, length, self.octave, self.scale_notes, self.half_steps)
+
     def to_note(self, scale):
-        """Return the Note that this degree plays in a scale."""
+        """Return the Note that this degree plays in a scale, spelled as the root's half_step spells it."""
         steps = scale.typ.value
         octaves, index = divmod(self.number - FIRST_DEGREE + self.scale_notes, len(steps))
         half_steps = (octaves + self.octave) * HALF_STEPS_PER_OCTAVE + steps[index] + self.half_steps
-        note = scale.root.half_step(half_steps)
-        return Note(note.name, note.octave_number, self.length)
+        name, octave_number = scale.root.spelled_half_step(half_steps)
+        return Note(name, octave_number, self.length)
 
 
 @dataclass(frozen=True, eq=False, slots=True)
@@ -205,7 +212,7 @@ class Note:
             raise ValueError(MSG_BAD_VELOCITY.format(value=self.velocity, lowest=MIN_VELOCITY, highest=MAX_VELOCITY))
         if type(self.glide) is not bool:
             raise ValueError(MSG_BAD_GLIDE.format(value=self.glide))
-        if not isinstance(self.name, str) or self.name not in NOTE_NAMES:
+        if not isinstance(self.name, str) or self.name not in KNOWN_NOTE_NAMES:
             raise ValueError(MSG_BAD_NOTE_NAME.format(value=self.name))
         # bool is a subclass of int, but Note('C', True) is not a real octave.
         if type(self.octave_number) is not int or not MIN_OCTAVE <= self.octave_number <= MAX_OCTAVE:
@@ -224,10 +231,27 @@ class Note:
         The result is spelled with flats if this note's name has a flat, and
         with sharps otherwise.
         """
+        name, octave_number = self.spelled_half_step(n)
+        return Note(name, octave_number, self.length, self.velocity, self.glide)
+
+    def spelled_half_step(self, n):
+        """Return the name and octave number of the note n half steps away, spelled as half_step spells it."""
         _check_integer(n)
         names = FLAT_NAMES if self.name.endswith(FLAT_SIGN) else SHARP_NAMES
         octave_number, semitones = divmod(self.midi_number + n, HALF_STEPS_PER_OCTAVE)
-        return replace(self, name=names[semitones], octave_number=octave_number)
+        return names[semitones], octave_number
+
+    def with_length(self, length):
+        """Return the same note with another length."""
+        return Note(self.name, self.octave_number, length, self.velocity, self.glide)
+
+    def with_velocity(self, velocity):
+        """Return the same note at another velocity."""
+        return Note(self.name, self.octave_number, self.length, velocity, self.glide)
+
+    def with_glide(self):
+        """Return the same note, gliding into the next."""
+        return Note(self.name, self.octave_number, self.length, self.velocity, True)
 
     def to_chord(self, typ):
         """Return a new Chord of the given ChordType with this note as its root.

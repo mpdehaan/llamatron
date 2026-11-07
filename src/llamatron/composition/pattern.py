@@ -132,6 +132,21 @@ class Pattern(LlamaData):
         values = self._rows[row]
         return values[step] if values else None
 
+    def get_step_values(self, step, rows):
+        """Return one step's values on some rows, by row, with None where the step is blank.
+
+        Playing reads every row of every step this way, so it reads the rows directly.
+        """
+        return {row: (self._rows[row][step] if self._rows[row] else None) for row in rows}
+
+    def adds_to_registers(self):
+        """Return whether any step adds to a register, which is a non-zero value on a register change row."""
+        return any(self._adds_on(row) for row in REGISTER_ADD_ROWS.values())
+
+    def _adds_on(self, row):
+        """Return whether any step has a non-zero value on a row."""
+        return any(self._rows[row] or [])
+
     def get_note_steps(self):
         """Return the steps that play something, which are the ones with a degree."""
         return [step for step in range(self._steps) if self.get_value(Row.DEGREE, step) is not None]

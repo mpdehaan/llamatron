@@ -21,7 +21,7 @@ is the Song in llamatron.composition.song, and SongRenderer plays it into a Clip
 """
 
 import re
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from fractions import Fraction
 from itertools import count
 from math import isfinite
@@ -43,25 +43,40 @@ _NOTE_TEXT = re.compile(r'([A-G][#b]?)(\d+)')
 _next_clip_id = count(0)
 
 
+# The largest denominator an exact length can have: anything finer is a float's rounding error.
+FINEST_LENGTH = 1_000_000
+
+
 def exact_length(length):
     """Return a length as an exact fraction.
 
     Lengths like 1/12 are slightly inexact as floats, so without this, three of them
-    would fall just short of a quarter note and leave a tiny extra note or rest.
+    would fall just short of a quarter note and leave a tiny extra note or rest. A length
+    that's already an exact fraction is returned as it is, which is what rendering always
+    passes, so this is cheap in the places it's called most.
     """
-    return Fraction(length).limit_denominator(1_000_000)
+    if type(length) is Fraction and length.denominator <= FINEST_LENGTH:
+        return length
+    return Fraction(length).limit_denominator(FINEST_LENGTH)
+
+
+def with_length(position, length):
+    """Return a note, degree, rest or held sound with another length, keeping everything else."""
+    if isinstance(position, Rest):
+        return Rest(length)
+    if isinstance(position, Held):
+        return Held(position.sound, length)
+    return position.with_length(length)
 
 
 def cut_position(position, length):
     """Return a position that lasts no longer than length."""
     if exact_length(position.length) <= length:
         return position
-    if isinstance(position, Held):
-        # Only its place is cut. Its sound is cut where the clip ends, when it's played.
-        return replace(position, length=length)
     if isinstance(position, Chord):
         return Chord([cut_position(note, length) for note in position.notes])
-    return replace(position, length=length)
+    # A Held only has its place cut. Its sound is cut where the clip ends, when it's played.
+    return with_length(position, length)
 
 
 def fit_to_length(positions, length):
@@ -79,7 +94,12 @@ def fit_to_length(positions, length):
 
 
 def _piece_of(position, offset, length):
-    """Return the part of a position that starts offset into it and lasts length."""
+    """Return the part of a position that starts offset into it and lasts length.
+
+    A piece that is the whole position is the position itself.
+    """
+    if offset == 0 and length >= exact_length(position.length):
+        return position
     if isinstance(position, Rest):
         return Rest(length)
     if isinstance(position, Held):
@@ -93,7 +113,7 @@ def _piece_of(position, offset, length):
             if exact_length(note.length) > offset
         ]
         return Chord(pieces) if pieces else Rest(length)
-    return replace(position, length=min(exact_length(position.length) - offset, length))
+    return position.with_length(min(exact_length(position.length) - offset, length))
 
 
 def sound_from(sound, offset):
@@ -116,6 +136,11 @@ def sound_from(sound, offset):
 def _notes_of(sound):
     """Return the notes of a note or chord."""
     return list(sound.notes) if isinstance(sound, Chord) else [sound]
+
+
+def _same_objects(first, second):
+    """Return whether two sequences hold the very same objects, in order."""
+    return len(first) == len(second) and all(a is b for a, b in zip(first, second))
 
 
 def _to_position(value):
@@ -239,7 +264,7 @@ class Scene:
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Control:
     """A MIDI CC value sent at a time in a clip, in fractions of a whole note from its start.
 
@@ -260,6 +285,18 @@ class Control:
                 raise ValueError(f'invalid {name}: {item!r} (must be a whole number from 0 to 127)')
         if type(self.slide) is not bool:
             raise ValueError(f'invalid slide: {self.slide!r} (must be True or False)')
+
+    def at_time(self, time):
+        """Return the same value sent at another time."""
+        return Control(time, self.number, self.value, self.slide)
+
+    def moved_by(self, offset):
+        """Return the same value sent offset later, or earlier if offset is negative."""
+        return Control(self.time + offset, self.number, self.value, self.slide)
+
+    def with_number(self, number):
+        """Return the same value sent on another CC number."""
+        return Control(self.time, number, self.value, self.slide)
 
 
 class Clip:
@@ -328,17 +365,39 @@ class Clip:
         return [self._with_length(position) for position in self._notes]
 
     def _with_length(self, position):
+        """Return a position with its missing lengths filled in, or the position itself if none were missing."""
         if isinstance(position, Chord):
-            return Chord([self._with_length(note) for note in position.notes])
+            notes = [self._with_length(note) for note in position.notes]
+            return position if _same_objects(notes, position.notes) else Chord(notes)
         if isinstance(position, Held):
             sound = position.sound
-            sound = phrase(self._with_length(part) for part in sound) if is_phrase(sound) else self._with_length(sound)
-            return replace(position, sound=sound)
+            if is_phrase(sound):
+                parts = [self._with_length(part) for part in sound]
+                return position if _same_objects(parts, sound) else Held(phrase(parts), position.length)
+            filled = self._with_length(sound)
+            return position if filled is sound else Held(filled, position.length)
         if not isinstance(position, (Note, Degree)) or position.length is not None:
             return position
+        return position.with_length(self._note_length_for(position))
+
+    def _note_length_for(self, position):
+        """Return the length for a note or degree that has none, which is the clip's note_length."""
         if self.note_length is None:
             raise ValueError(f'{position!r} has no length, and the clip has no note_length')
-        return replace(position, length=self.note_length)
+        return self.note_length
+
+    def _resolved_length(self, position):
+        """Return how long a position lasts once its missing lengths are filled in, without building anything."""
+        if isinstance(position, Chord):
+            return max(self._resolved_length(note) for note in position.notes)
+        if isinstance(position, Held):
+            # Its sound is checked for missing lengths too, as resolving it would.
+            for part in position.sound if is_phrase(position.sound) else [position.sound]:
+                self._resolved_length(part)
+            return exact_length(position.length)
+        if isinstance(position, (Note, Degree)) and position.length is None:
+            return exact_length(self._note_length_for(position))
+        return exact_length(position.length)
 
     def played_notes(self):
         """Return resolved notes that fill the clip's set length, if it has one."""
@@ -349,7 +408,7 @@ class Clip:
         """Return how long the clip lasts, as an exact fraction of a whole note."""
         if self.length is not None:
             return exact_length(self.length)
-        return sum((exact_length(position.length) for position in self.resolved_notes()), Fraction(0))
+        return sum((self._resolved_length(position) for position in self._notes), Fraction(0))
 
     def section(self, start, end):
         """Return a new Clip of the part from start to end, in fractions of a whole note.
@@ -371,7 +430,7 @@ class Clip:
             position_start = position_end
         if position_start < end:
             notes.append(Rest(end - max(position_start, start)))
-        controls = [replace(item, time=item.time - start) for item in self._controls if start <= item.time < end]
+        controls = [item.moved_by(-start) for item in self._controls if start <= item.time < end]
         return Clip(name=self.name, notes=notes, scale=self.scale, note_length=self.note_length, controls=controls)
 
     def repeated(self, times):
@@ -379,7 +438,7 @@ class Clip:
         if type(times) is not int or times < 1:
             raise ValueError(f'invalid times: {times!r} (must be a positive integer)')
         length = self.total_length()
-        controls = [replace(item, time=item.time + length * place) for place in range(times) for item in self._controls]
+        controls = [item.moved_by(length * place) for place in range(times) for item in self._controls]
         return Clip(
             name=self.name, notes=self.played_notes() * times, scale=self.scale,
             note_length=self.note_length, controls=controls,

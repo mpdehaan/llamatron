@@ -17,7 +17,6 @@
 """Playing what one track plays in one scene into a finished clip."""
 
 import random
-from dataclasses import replace
 from fractions import Fraction
 from math import ceil
 
@@ -28,7 +27,7 @@ from llamatron.generators.blend import Blend
 from llamatron.held import Held, is_phrase
 from llamatron.note import Note
 from llamatron.playback.morph_controls import morph_controls
-from llamatron.playback.pattern_player import PatternPlayer, with_sound
+from llamatron.playback.pattern_player import PatternPlayer, with_sound_length
 from llamatron.playback.step_order import StepOrder
 from llamatron.clip_grid import Clip
 
@@ -110,7 +109,7 @@ class CellPlayer:
         """
         numbers = self._track.get_cc_numbers()
         return [
-            replace(item, number=numbers[item.number]) for item in controls
+            item.with_number(numbers[item.number]) for item in controls
             if item.time < end and numbers[item.number] is not None
         ]
 
@@ -131,7 +130,7 @@ class CellPlayer:
         notes, controls, total, place = [], [], Fraction(0), 0
         while (place < repeat) if fill is None else (total < fill):
             played = self._play_pass(player, grab, scale, place % repeat, repeat, where, rolls, order, registers, total)
-            length = played.clip.total_length()
+            length = played.length
             if length == NO_LENGTH:
                 break
             # Ties at the start of this pass hold the note the passes so far ended with.
@@ -159,7 +158,7 @@ class CellPlayer:
             return played
         target = player.play_pass(morph_to, None, None, where, rolls, order, registers, start, changes_registers=False).clip
         amount = Fraction(place, repeat - 1) * FULL_MORPH
-        target = _looped(target, clip.total_length())
+        target = _looped(target, played.length)
         blend = Blend(target, amount, mode=cell.get_morph_style())
         controls = morph_controls(clip, target, *blend.region(clip))
         played.clip = Clip(notes=blend.generate(clip).played_notes(), scale=scale, controls=controls)
@@ -177,9 +176,9 @@ def _tied_on(notes, extra):
         return notes
     last = notes[-1]
     if isinstance(last, (Note, Chord)):
-        held = Held(with_sound(last, length=last.length + extra), last.length)
+        held = Held(with_sound_length(last, last.length + extra), last.length)
     elif isinstance(last, Held) and not is_phrase(last.sound) and last.sound.length >= last.length:
-        held = Held(with_sound(last.sound, length=last.sound.length + extra), last.length)
+        held = Held(with_sound_length(last.sound, last.sound.length + extra), last.length)
     else:
         return notes
     return [*notes[:-1], held]
@@ -194,4 +193,4 @@ def _looped(clip, length):
 
 def _moved_later(controls, time):
     """Return CC values moved later by a time, for a pass that starts there."""
-    return [replace(item, time=item.time + time) for item in controls]
+    return [item.moved_by(time) for item in controls]

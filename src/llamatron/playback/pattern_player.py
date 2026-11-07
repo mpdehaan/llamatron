@@ -16,7 +16,7 @@
 
 """Playing one pass through a pattern, step by step, into notes, chords and rests."""
 
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from fractions import Fraction
 
 from llamatron.chord import Chord
@@ -59,6 +59,8 @@ class Pass:
 
     clip: Clip
     tied_from_before: Fraction
+    # How long the pass lasts, which is the pattern's length however the clip changes along the way.
+    length: Fraction
 # Where a step's values hold the note its grab took, beside its rows.
 GRABBED = 'grabbed'
 # How messages name a pattern, and what goes wrong while playing one.
@@ -112,7 +114,7 @@ class PatternPlayer:
         for slot in range(pattern.get_steps()):
             time = slot * step_size
             step = order.next_step((PATTERN_STEPS, pattern_name), pattern.get_steps(), direction or pattern.get_direction())
-            values = _step_values(pattern, step, PATTERN_ROWS)
+            values = pattern.get_step_values(step, PATTERN_ROWS)
             # A step with no note can send CC values and add to the registers too.
             controls += _controls_sent(values, time)
             current = registers.at_step(start + time, _register_adds(values) if changes_registers else {})
@@ -134,7 +136,7 @@ class PatternPlayer:
             gate = min(_gate(values, step_size), length - time)
             sounding.append((time, self._step(values, gate, drum, where, rolls, note_moved, velocity_added)))
         clip = Clip(notes=_in_sequence(sounding, length, step_size), scale=self._scale, controls=controls)
-        return Pass(clip, leading_ties * step_size)
+        return Pass(clip, leading_ties * step_size, length)
 
     def pattern_length(self, pattern):
         """Return how long one pass through a pattern lasts, in whole notes."""
@@ -158,9 +160,9 @@ class PatternPlayer:
                 played = self._grabbed_sound(values[GRABBED], length, shift, drum)
             else:
                 played = self._sound(values, drum, length, octave, shift, where)
-            slices.append(divide(with_sound(played, velocity=velocity), ratchet))
+            slices.append(divide(_with_velocity(played, velocity), ratchet))
         if values[Row.GLIDE]:
-            slices[-1] = with_sound(slices[-1], glide=True)
+            slices[-1] = _with_glide(slices[-1])
         probability = _value_or(values[Row.PROBABILITY], DEFAULT_PROBABILITY)
         if probability >= MAX_PROBABILITY:
             return slices
@@ -248,7 +250,7 @@ def _lengthened_to(entry, end):
     extra = end - (start + total)
     if extra <= 0 or isinstance(pieces[-1], Rest):
         return entry
-    return start, [*pieces[:-1], with_sound(pieces[-1], length=pieces[-1].length + extra)]
+    return start, [*pieces[:-1], with_sound_length(pieces[-1], pieces[-1].length + extra)]
 
 
 def _gate(values, step_size):
@@ -289,11 +291,6 @@ def _rests(start, end, step_size):
         rests.append(Rest(piece_end - now))
         now = piece_end
     return rests
-
-
-def _step_values(pattern, step, rows):
-    """Return one step's values on some of a pattern's rows, by row."""
-    return {row: pattern.get_value(row, step) for row in rows}
 
 
 def _register_adds(values):
@@ -348,8 +345,22 @@ def _octave_changes_to_try(shift):
     return changes
 
 
-def with_sound(played, **changes):
-    """Return a note or chord with changes to how every note in it plays."""
+def with_sound_length(played, length):
+    """Return a note or chord with every note in it lasting length."""
     if isinstance(played, Chord):
-        return Chord([replace(note, **changes) for note in played.notes])
-    return replace(played, **changes)
+        return Chord([note.with_length(length) for note in played.notes])
+    return played.with_length(length)
+
+
+def _with_velocity(played, velocity):
+    """Return a note or chord with every note in it at a velocity."""
+    if isinstance(played, Chord):
+        return Chord([note.with_velocity(velocity) for note in played.notes])
+    return played.with_velocity(velocity)
+
+
+def _with_glide(played):
+    """Return a note or chord with every note in it gliding into the next."""
+    if isinstance(played, Chord):
+        return Chord([note.with_glide() for note in played.notes])
+    return played.with_glide()

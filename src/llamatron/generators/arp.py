@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import random
-from dataclasses import replace
 from enum import Enum, auto
 
 from llamatron.chord import Chord
@@ -212,7 +211,7 @@ class Arp(ClipGenerator):
                 result.append(Rest(length))
             else:
                 note = generator.choice(notes) if pattern is None else pattern[index % len(pattern)]
-                result.append(replace(along_scale(note, offset, scale), length=length))
+                result.append(along_scale(note, offset, scale).with_length(length))
                 index += 1
             remaining -= min(step, remaining)
         return result

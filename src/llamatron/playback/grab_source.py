@@ -16,6 +16,8 @@
 
 """What a track has played, for another track's grab steps to take notes from."""
 
+from bisect import bisect_right
+
 from llamatron.renderers.timing import timed_events
 
 
@@ -39,8 +41,8 @@ class GrabSource:
 
     def _latest_start_by(self, time):
         """Return the latest time a note starts at or before a time, or None if none has started."""
-        started = [moment for moment in self._times if moment <= time]
-        return started[-1] if started else None
+        started = bisect_right(self._times, time)
+        return self._times[started - 1] if started else None
 
 
 def _notes_by_start(clip):

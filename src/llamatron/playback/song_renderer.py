@@ -55,9 +55,11 @@ class SongRenderer:
     get_scene_length work that out from the patterns and cells without playing anything, and the
     estimate the tracker shows after every change uses nothing else.
 
-    Each clip is played twice: first counted, without grabs or register values, to record what it
-    adds to the registers, and then finished, reading the registers from the scene's
-    RegisterTimeline. See registers.py.
+    In a song where a step adds to a register, each clip is played twice: first counted, without
+    grabs or register values, to record what it adds to the registers, and then finished, reading
+    the registers from the scene's RegisterTimeline. See registers.py. In a song where nothing
+    adds to a register, the registers keep their defaults throughout, so the counting pass would
+    record nothing, and only the finished pass is played.
     """
 
     __slots__ = ('_song', '_scenes', '_registers', '_clips', '_counted', '_lengths', '_timelines', '_grabbing')
@@ -185,6 +187,8 @@ class SongRenderer:
 
     def _scene_changes(self, scene):
         """Return every change a scene's clips make to the registers before the scene ends."""
+        if not self._song.adds_to_registers():
+            return []
         length = self.get_scene_length(scene)
         changes = []
         for track in scene.get_track_names():

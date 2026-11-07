@@ -22,7 +22,7 @@ first two when they choose. Versions are compared number by number, never as dec
 1.0.10 comes after 1.0.9.
 """
 
-VERSION = '1.0.15'
+VERSION = '1.0.16'
 
 VERSION_SEPARATOR = '.'
 VERSION_PARTS = 3

@@ -107,6 +107,45 @@ USES_NOTE = REGISTER_NOTE_ROWS[AX]
 USES_VELOCITY = REGISTER_VELOCITY_ROWS[AX]
 
 
+class TestWhetherASongAddsToRegisters(unittest.TestCase):
+    """Render plays a first pass to record register changes only in songs where a step adds to a register.
+
+    The other tests here cover songs that add. These cover the ones that don't, which play the
+    same way, and the check that tells the two apart.
+    """
+
+    ADD = 1
+    NO_ADD = 0
+    DEFAULT = 2
+
+    def test_a_song_adds_when_a_step_has_a_non_zero_change(self):
+        self.assertTrue(Song.from_data(one_clip({ADDS: [self.ADD]})).adds_to_registers())
+
+    def test_a_song_does_not_add_with_no_change_rows_or_only_zeros(self):
+        self.assertFalse(Song.from_data(one_clip({})).adds_to_registers())
+        self.assertFalse(Song.from_data(one_clip({ADDS: [self.NO_ADD]})).adds_to_registers())
+        self.assertFalse(Song.from_data(one_clip({USES_NOTE: [True], USES_VELOCITY: [True]})).adds_to_registers())
+
+    def test_a_change_row_of_zeros_plays_the_same_as_no_change_row(self):
+        registers = {AX: {RegisterSetting.DEFAULT: self.DEFAULT}}
+        with_zeros = one_clip({ADDS: every_step(self.NO_ADD, 2), USES_NOTE: every_step(True, 2)}, steps=2, registers=registers)
+        without = one_clip({USES_NOTE: every_step(True, 2)}, steps=2, registers=registers)
+        self.assertEqual(played(with_zeros), played(without))
+        self.assertEqual(pitches(without), scale_notes([self.DEFAULT, self.DEFAULT]))
+
+    def test_a_song_that_does_not_add_uses_the_defaults_on_every_track_and_scene(self):
+        patterns = {'x': pattern(1, **{USES_NOTE: [True], USES_VELOCITY: [True], Row.VELOCITY: [VELOCITY]})}
+        scenes = [
+            {SceneSetting.TRACKS: {'lead': {'pattern': 'x'}, 'bass': {'pattern': 'x'}}},
+            {SceneSetting.TRACKS: {'lead': {'pattern': 'x'}}},
+        ]
+        data = song(patterns, scenes, {AX: {RegisterSetting.DEFAULT: self.DEFAULT}}, tracks=('lead', 'bass'))
+        expected = [(scale_note(self.DEFAULT), VELOCITY + self.DEFAULT)]
+        self.assertEqual(played(data, scene=1, track='lead'), expected)
+        self.assertEqual(played(data, scene=1, track='bass'), expected)
+        self.assertEqual(played(data, scene=2, track='lead'), expected)
+
+
 class TestAddingAndUsing(unittest.TestCase):
 
     ADD = 1

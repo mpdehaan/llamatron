@@ -14,13 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from dataclasses import replace
 
 from llamatron.chord import Chord
 from llamatron.generators.base import ClipGenerator, exact_length, fit_to_length
 from llamatron.held import Held, is_phrase, phrase
 from llamatron.note import Rest
-from llamatron.clip_grid import _Validated
+from llamatron.clip_grid import _Validated, with_length
 
 # A count of one leaves a note as it is, and a count can't be less than that.
 UNCHANGED = 1
@@ -32,7 +31,7 @@ def divide(position, times):
     """Return a position that lasts 1/times as long."""
     if isinstance(position, Chord):
         return Chord([divide(note, times) for note in position.notes])
-    return replace(position, length=exact_length(position.length) / times)
+    return with_length(position, exact_length(position.length) / times)
 
 
 def _check_counts(counts):

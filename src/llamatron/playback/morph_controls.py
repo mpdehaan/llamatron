@@ -16,7 +16,6 @@
 
 """The CC values of a clip that morphs into another pattern."""
 
-from dataclasses import replace
 
 
 def morph_controls(source, target, start, end):
@@ -55,7 +54,7 @@ def _carried_to(clip, time):
 
     A lane only holds a value if the clip sent one earlier, so lanes it hasn't used yet send nothing.
     """
-    return [replace(item, time=time) for item in _values_in_effect(clip, time).values() if item.time < time]
+    return [item.at_time(time) for item in _values_in_effect(clip, time).values() if item.time < time]
 
 
 def _values_in_effect(clip, time):
