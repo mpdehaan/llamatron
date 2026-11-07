@@ -26,7 +26,8 @@ from llamatron.composition.file_format import (
     ACCIDENTALS, CC_ROWS, FIXED_CHORDS, GATE_MODIFIERS, LIVE_OCTAVE_OFFSET, PATTERN_ROWS, REGISTER_ADD_ROWS,
     REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, SCALE_CHORDS, Row,
 )
-from llamatron.composition.limits import MAX_GATE, MAX_PROBABILITY, MAX_VELOCITY, MIN_VELOCITY
+from llamatron.composition.limits import MAX_GATE, MAX_PROBABILITY
+from llamatron.midi import MAX_VELOCITY, MIN_VELOCITY
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators.arp import along_scale
 from llamatron.generators.auto_ratchet import divide

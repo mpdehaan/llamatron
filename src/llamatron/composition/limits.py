@@ -16,11 +16,11 @@
 
 """The ranges that values in a song file must fall in, shared by the objects that check and play them."""
 
-# MIDI's own ranges, for velocities, CC numbers and CC values.
-from llamatron.midi import MAX_CC_NUMBER, MAX_CC_VALUE, MAX_VELOCITY, MIN_CC_NUMBER, MIN_CC_VALUE, MIN_VELOCITY  # noqa: F401
+# MIDI's own ranges, for velocities, CC numbers and CC values, are in llamatron.midi.
 
 # A step's probability is a percentage.
-MIN_PROBABILITY, MAX_PROBABILITY = 0, 100
+MIN_PROBABILITY = 0
+MAX_PROBABILITY = 100
 
 # Counts that start at one.
 MIN_STEPS = 1

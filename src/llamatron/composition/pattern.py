@@ -22,9 +22,9 @@ from llamatron.composition.file_format import (
     REGISTER_NOTE_ROWS, SIGNED_ROWS, TOGGLE_ROWS, Direction, PatternSetting, Row,
 )
 from llamatron.composition.limits import (
-    MAX_CC_VALUE, MAX_GATE, MAX_PROBABILITY, MAX_REGISTER_VALUE, MAX_STEP_SIZE, MAX_VELOCITY, MIN_CC_VALUE, MIN_DEGREE,
-    MIN_PROBABILITY, MIN_RATCHET, MIN_REGISTER_VALUE, MIN_STEPS, MIN_VELOCITY,
+    MAX_GATE, MAX_PROBABILITY, MAX_REGISTER_VALUE, MAX_STEP_SIZE, MIN_DEGREE, MIN_PROBABILITY, MIN_RATCHET, MIN_REGISTER_VALUE, MIN_STEPS,
 )
+from llamatron.midi import MAX_CC_VALUE, MAX_VELOCITY, MIN_CC_VALUE, MIN_VELOCITY
 from llamatron.composition.llama_data import LlamaData
 from llamatron.composition.invalid_value import InvalidValue
 

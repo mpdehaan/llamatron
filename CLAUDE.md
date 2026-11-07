@@ -36,11 +36,10 @@ Don't add `__init__.py` to `test/`, because a package with that name would clash
 ```
 .venv/bin/python tools/compare_renders.py capture /some/folder   # before a change that shouldn't alter the music
 .venv/bin/python tools/compare_renders.py compare /some/folder   # after it: lists every file that differs
-.venv/bin/python tools/check_unused_imports.py                   # unused imports in src/, test/ and tools/
 .venv/bin/python tools/show_midi.py some.mid                     # a MIDI file's notes as names and lengths
 ```
 
-Before committing a change to code, run `tools/check_unused_imports.py`. Before and after a refactoring, or any change that should leave the music alone, use `tools/compare_renders.py`, which proves byte for byte that every example still renders the same, or shows which songs changed.
+The suite runs pyflakes over `src/`, `test/` and `tools/` (`test/test_pyflakes.py`), so an unused import, an undefined name or a name defined twice fails the tests; `pyflakes` is in `requirements.txt` for that. Before and after a refactoring, or any change that should leave the music alone, use `tools/compare_renders.py`, which proves byte for byte that every example still renders the same, or shows which songs changed.
 
 ## Version
 

@@ -51,15 +51,17 @@ def names():
     return [os.path.basename(path) for path in PATHS]
 
 
-class TestDemos(unittest.TestCase):
+class TemporaryFolderTest(unittest.TestCase):
+    """A test with an empty folder of its own, removed when it's done."""
 
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         self.folder = temporary.name
 
-    def test_there_are_demos(self):
-        self.assertGreaterEqual(len(PATHS), 10)
+
+class TestDemosRender(TemporaryFolderTest):
+    """Renders every demo both ways, in a class of its own so that it runs alongside the other checks."""
 
     def test_every_demo_renders_both_ways(self):
         for path in PATHS:
@@ -72,6 +74,12 @@ class TestDemos(unittest.TestCase):
                     AbletonProject(os.path.join(self.folder, 'live', name), song).render()
                 self.assertNotIn('warning', output.getvalue())
                 self.assertTrue(os.path.exists(os.path.join(self.folder, 'live', name, f'{name}.als')))
+
+
+class TestDemos(TemporaryFolderTest):
+
+    def test_there_are_demos(self):
+        self.assertGreaterEqual(len(PATHS), 10)
 
     def test_every_demo_reads_back_the_same_after_writing(self):
         for path in PATHS:

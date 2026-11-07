@@ -27,7 +27,8 @@ from llamatron.scale import ScaleType
 from llamatron.composition.defaults import DEFAULT_TRANSPOSE
 from llamatron.composition.file_format import CC_ROWS, NAMED_GENERATORS, STEP_SIZE_CHOICES, GeneratorKind, Section
 from llamatron.composition.generator_settings import ArpSetting, AutoRatchetSetting, written_name
-from llamatron.composition.limits import MAX_CC_NUMBER, MAX_LIVE_OCTAVE, MAX_TEMPO, MAX_TRANSPOSE, MIN_CC_NUMBER, MIN_LIVE_OCTAVE, MIN_TEMPO
+from llamatron.composition.limits import MAX_LIVE_OCTAVE, MAX_TEMPO, MAX_TRANSPOSE, MIN_LIVE_OCTAVE, MIN_TEMPO
+from llamatron.midi import MAX_CC_NUMBER, MIN_CC_NUMBER
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.song import NO_TEXT
 from llamatron.composition.song_file_error import SongFileError

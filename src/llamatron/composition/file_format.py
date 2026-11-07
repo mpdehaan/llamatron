@@ -24,13 +24,6 @@ holds.
 from fractions import Fraction
 
 from llamatron.chord import ChordType
-# The defaults stay importable from here too, for code that reads the format and its defaults together.
-from llamatron.composition.defaults import (  # noqa: F401
-    DEFAULT_DRUM_OCTAVE, DEFAULT_OCTAVE, DEFAULT_PROBABILITY,
-    DEFAULT_RATCHET, DEFAULT_SEED, DEFAULT_STEP_SIZE, DEFAULT_TEMPO, DEFAULT_VELOCITY,
-)
-# And so do the limits that the rest of the program reads from here.
-from llamatron.composition.limits import MAX_LIVE_OCTAVE, MAX_TRANSPOSE, MIN_LIVE_OCTAVE  # noqa: F401
 
 
 class Section:

@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import contextlib
+import functools
 import glob
 import gzip
 import io
@@ -29,7 +30,7 @@ import mido
 import yaml
 
 from llamatron.chord import Chord
-from llamatron.cli import main
+from llamatron.cli import TO_ABLETON, TO_CLIP_TREE, main
 from llamatron.note import Note, Rest
 from llamatron.renderers.clip_tree import ClipTree
 from llamatron.renderers.timing import GLIDE_OVERLAP, timed_events
@@ -955,12 +956,22 @@ class TestErrors(unittest.TestCase):
             render_file('/no/such/file.yml')
 
 
+# Every song in examples/, including the demos, which test_demos.py checks more closely.
+EXAMPLE_PATHS = sorted(glob.glob('examples/*.yml'))
+# The songs that are meant to sound good, rather than to teach one feature.
+SONG_PATHS = [path for path in EXAMPLE_PATHS if not is_demo(path)]
+
+
+@functools.cache
+def example_grid(path):
+    """Return an example's finished clips, rendered once however many tests read them."""
+    return render_file(path)
+
+
 class TestExamples(unittest.TestCase):
 
-    # Every song in examples/, including the demos, which test_demos.py checks more closely.
-    paths = sorted(glob.glob('examples/*.yml'))
-    # The songs that are meant to sound good, rather than to teach one feature.
-    songs = [path for path in paths if not is_demo(path)]
+    paths = EXAMPLE_PATHS
+    songs = SONG_PATHS
 
     def test_there_are_two_songs_besides_the_demos(self):
         self.assertEqual([os.path.basename(path) for path in self.songs], ['minimal_techno.yml', 'retro_chill.yml'])
@@ -975,7 +986,7 @@ class TestExamples(unittest.TestCase):
 
     def test_every_song_lasts_about_three_minutes(self):
         for path in self.songs:
-            song = render_file(path)
+            song = example_grid(path)
             seconds = 0
             for scene in song.scenes:
                 lengths = [song.get_clip(scene, t).total_length() for t in song.tracks if song.get_clip(scene, t)]
@@ -985,7 +996,7 @@ class TestExamples(unittest.TestCase):
 
     def test_every_clip_lasts_as_long_as_its_scene_and_fits_a_piano(self):
         for path in self.paths:
-            song = render_file(path)
+            song = example_grid(path)
             for scene in song.scenes:
                 clips = [song.get_clip(scene, t) for t in song.tracks if song.get_clip(scene, t)]
                 self.assertEqual(len({c.total_length() for c in clips}), 1)
@@ -997,20 +1008,37 @@ class TestExamples(unittest.TestCase):
                             self.assertLessEqual(max(found), 108)
 
     def test_tempo_keeps_rising_through_minimal_techno(self):
-        song = render_file('examples/minimal_techno.yml')
+        song = example_grid('examples/minimal_techno.yml')
         tempos = [scene.tempo or song.tempo for scene in song.scenes]
         self.assertEqual(tempos, sorted(tempos))
         self.assertGreater(tempos[-1], tempos[0])
 
-    def test_every_example_renders_both_ways(self):
-        for path in self.paths:
-            for to in ['ableton', 'cliptree']:
-                with tempfile.TemporaryDirectory() as parent:
-                    out = os.path.join(parent, 'song')
-                    with contextlib.redirect_stdout(io.StringIO()):
-                        self.assertEqual(main([path, '--to', to, '--out', out]), 0)
-                    with self.subTest(path=path, to=to):
-                        self.assertTrue(os.listdir(out))
+
+
+class RendersEveryExample:
+    """Renders every example through the command line to one kind of output, set by TO.
+
+    It's mixed into one test class per kind, so that the kinds render in parallel.
+    """
+
+    TO = None
+
+    def test_every_example_renders(self):
+        for path in EXAMPLE_PATHS:
+            with tempfile.TemporaryDirectory() as parent:
+                out = os.path.join(parent, 'song')
+                with contextlib.redirect_stdout(io.StringIO()):
+                    self.assertEqual(main([path, '--to', self.TO, '--out', out]), 0)
+                with self.subTest(path=path, to=self.TO):
+                    self.assertTrue(os.listdir(out))
+
+
+class TestExamplesRenderToAbleton(RendersEveryExample, unittest.TestCase):
+    TO = TO_ABLETON
+
+
+class TestExamplesRenderToClipTree(RendersEveryExample, unittest.TestCase):
+    TO = TO_CLIP_TREE
 
 
 class TestTitleAndAuthor(unittest.TestCase):

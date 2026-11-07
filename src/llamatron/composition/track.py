@@ -19,7 +19,8 @@
 from llamatron.composition.checks import reading, check_keys, is_true_or_false, is_whole_number_from
 from llamatron.composition.defaults import DEFAULT_TRANSPOSE
 from llamatron.composition.file_format import CC_ROWS, TrackSetting
-from llamatron.composition.limits import MAX_CC_NUMBER, MAX_TRANSPOSE, MIN_CC_NUMBER
+from llamatron.composition.limits import MAX_TRANSPOSE
+from llamatron.midi import MAX_CC_NUMBER, MIN_CC_NUMBER
 from llamatron.composition.llama_data import LlamaData
 from llamatron.composition.invalid_value import InvalidValue
 

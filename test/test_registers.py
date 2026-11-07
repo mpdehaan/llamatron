@@ -27,7 +27,8 @@ from llamatron.composition.file_format import (
     REGISTER_ADD_ROWS, REGISTER_NAMES, REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, PatternSetting, RegisterName,
     RegisterSetting, Row, SceneSetting, Section,
 )
-from llamatron.composition.limits import MAX_REGISTER_VALUE, MAX_VELOCITY, MIN_REGISTER_VALUE, MIN_VELOCITY
+from llamatron.composition.limits import MAX_REGISTER_VALUE, MIN_REGISTER_VALUE
+from llamatron.midi import MAX_VELOCITY, MIN_VELOCITY
 from llamatron.composition.song import Song
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.renderers.timing import timed_events

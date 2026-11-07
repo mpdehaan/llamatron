@@ -50,6 +50,7 @@ import os
 import shutil
 import sys
 import tempfile
+from concurrent.futures import ProcessPoolExecutor
 
 from llamatron.composition.song import Song
 from llamatron.playback.song_renderer import SongRenderer
@@ -81,21 +82,28 @@ FAILURE = 1
 
 
 def render_examples(folder):
-    """Render every example song into its own folder inside folder."""
-    for path in sorted(glob.glob(EXAMPLES)):
-        name = os.path.splitext(os.path.basename(path))[0]
-        out = os.path.join(folder, name)
-        os.makedirs(out)
-        song = SongRenderer(Song.read_file(path)).render()
-        # The renderers print what they write, which isn't needed here.
-        with contextlib.redirect_stdout(io.StringIO()):
-            ClipTree(os.path.join(out, CLIPS_FOLDER), song).render()
-            AbletonProject(os.path.join(out, LIVE_FOLDER), song).render()
-        keep_live_set_as_xml(out)
-        Document.load(path).save(os.path.join(out, SAVED_SONG))
-        with open(os.path.join(out, ESTIMATE), 'w') as file:
-            file.write(repr(SongRenderer(Song.read_file(path)).estimate()) + '\n')
+    """Render every example song into its own folder inside folder, as many at once as the computer has cores."""
+    paths = sorted(glob.glob(EXAMPLES))
+    with ProcessPoolExecutor() as pool:
+        # list() waits for every song, and raises the first error any of them hit.
+        list(pool.map(render_example, paths, [folder] * len(paths)))
     open(os.path.join(folder, MARKER), 'w').close()
+
+
+def render_example(path, folder):
+    """Render one song into a folder named after it inside folder."""
+    name = os.path.splitext(os.path.basename(path))[0]
+    out = os.path.join(folder, name)
+    os.makedirs(out)
+    song = SongRenderer(Song.read_file(path)).render()
+    # The renderers print what they write, which isn't needed here.
+    with contextlib.redirect_stdout(io.StringIO()):
+        ClipTree(os.path.join(out, CLIPS_FOLDER), song).render()
+        AbletonProject(os.path.join(out, LIVE_FOLDER), song).render()
+    keep_live_set_as_xml(out)
+    Document.load(path).save(os.path.join(out, SAVED_SONG))
+    with open(os.path.join(out, ESTIMATE), 'w') as file:
+        file.write(repr(SongRenderer(Song.read_file(path)).estimate()) + '\n')
 
 
 def keep_live_set_as_xml(out):
