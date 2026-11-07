@@ -1109,3 +1109,14 @@ What the refactoring involves:
   a filled-in template or its fixed part.
 - It goes with the other test rules: format strings in tests as constants, one constant per
   line, and limits taken from the program (see CLAUDE.md).
+
+## Saving updates a song's version
+
+**Already done.** The user asked (2026-11-06) that saving a song updates its `version` field to
+the version of llamatron that saved it. That's how it works already: every save from the tracker,
+with `S` or `W`, goes through `Document.save`, whose `_saved_data` sets `version` to the
+program's `VERSION` before writing, whatever version the file had when it was loaded.
+`test/test_version.py` checks that a new song's saved file records the version. What it doesn't
+check yet is that a file loaded with an older version comes back with the current one, which
+would be a small test to add. Rendering never writes the song file, so it never changes the
+version.
