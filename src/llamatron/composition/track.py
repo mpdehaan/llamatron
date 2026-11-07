@@ -16,17 +16,17 @@
 
 """A track: a column of the song, with settings that apply to every clip on it."""
 
-from llamatron.composition.checks import check_keys, is_true_or_false, is_whole_number_from
+from llamatron.composition.checks import reading, check_keys, is_true_or_false, is_whole_number_from
 from llamatron.composition.defaults import DEFAULT_TRANSPOSE
 from llamatron.composition.file_format import CC_ROWS, TrackSetting
 from llamatron.composition.limits import MAX_CC_NUMBER, MAX_TRANSPOSE, MIN_CC_NUMBER
 from llamatron.composition.llama_data import LlamaData
-from llamatron.composition.song_file_error import SongFileError
+from llamatron.composition.invalid_value import InvalidValue
 
-MSG_EXPECTED_SETTINGS = '{where}: expected settings like {{ drum: true }}, got {data!r}'
-MSG_NOT_TRUE_OR_FALSE = '{where}: {name} must be true or false, got {value!r}'
-MSG_BAD_TRANSPOSE = '{where}: transpose must be a whole number from -{most} to {most}, got {value!r}'
-MSG_BAD_CC_NUMBERS = "{where}: cc must be a list of {lanes} CC numbers from {lowest} to {highest}, or ~ for a lane it doesn't use, got {value!r}"
+MSG_EXPECTED_SETTINGS = 'expected settings like {{ drum: true }}, got {data!r}'
+MSG_NOT_TRUE_OR_FALSE = '{name} must be true or false, got {value!r}'
+MSG_BAD_TRANSPOSE = 'transpose must be a whole number from -{most} to {most}, got {value!r}'
+MSG_BAD_CC_NUMBERS = "cc must be a list of {lanes} CC numbers from {lowest} to {highest}, or ~ for a lane it doesn't use, got {value!r}"
 # A track's settings, in the order they're written to a file.
 SETTINGS = [TrackSetting.DRUM, TrackSetting.MUTE, TrackSetting.TRANSPOSE, TrackSetting.CC]
 
@@ -45,19 +45,20 @@ class Track(LlamaData):
 
     @classmethod
     def from_data(cls, data, where, song=None):
-        data = {} if data is None else data
-        if not isinstance(data, dict):
-            raise SongFileError(MSG_EXPECTED_SETTINGS.format(where=where, data=data))
-        check_keys(data, where, set(SETTINGS))
-        for flag in (TrackSetting.DRUM, TrackSetting.MUTE):
-            if not is_true_or_false(data.get(flag, False)):
-                raise SongFileError(MSG_NOT_TRUE_OR_FALSE.format(where=where, name=flag, value=data[flag]))
-        if not is_whole_number_from(data.get(TrackSetting.TRANSPOSE, DEFAULT_TRANSPOSE), -MAX_TRANSPOSE, MAX_TRANSPOSE):
-            raise SongFileError(MSG_BAD_TRANSPOSE.format(where=where, most=MAX_TRANSPOSE, value=data[TrackSetting.TRANSPOSE]))
-        numbers = data.get(TrackSetting.CC, _no_cc_numbers())
-        if not _is_cc_number_list(numbers):
-            raise SongFileError(MSG_BAD_CC_NUMBERS.format(where=where, lanes=len(CC_ROWS), lowest=MIN_CC_NUMBER, highest=MAX_CC_NUMBER, value=numbers))
-        return cls(**{name: data.get(name) for name in SETTINGS})
+        with reading(where):
+            data = {} if data is None else data
+            if not isinstance(data, dict):
+                raise InvalidValue(MSG_EXPECTED_SETTINGS.format(data=data))
+            check_keys(data, set(SETTINGS))
+            for flag in (TrackSetting.DRUM, TrackSetting.MUTE):
+                if not is_true_or_false(data.get(flag, False)):
+                    raise InvalidValue(MSG_NOT_TRUE_OR_FALSE.format(name=flag, value=data[flag]))
+            if not is_whole_number_from(data.get(TrackSetting.TRANSPOSE, DEFAULT_TRANSPOSE), -MAX_TRANSPOSE, MAX_TRANSPOSE):
+                raise InvalidValue(MSG_BAD_TRANSPOSE.format(most=MAX_TRANSPOSE, value=data[TrackSetting.TRANSPOSE]))
+            numbers = data.get(TrackSetting.CC, _no_cc_numbers())
+            if not _is_cc_number_list(numbers):
+                raise InvalidValue(MSG_BAD_CC_NUMBERS.format(lanes=len(CC_ROWS), lowest=MIN_CC_NUMBER, highest=MAX_CC_NUMBER, value=numbers))
+            return cls(**{name: data.get(name) for name in SETTINGS})
 
     def to_data(self):
         return {name: value for name, value in self._settings.items() if value is not None}

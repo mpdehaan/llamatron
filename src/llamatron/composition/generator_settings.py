@@ -20,19 +20,19 @@ A generator's settings are checked when a chain uses it, rather than when the fi
 that a problem is reported with the name of the chain that uses it, as it always has been.
 """
 
-from llamatron.composition.checks import check_keys, is_whole_number, is_whole_number_from, number
+from llamatron.composition.checks import check_keys, reading, is_whole_number, is_whole_number_from, number
 from llamatron.composition.file_format import GeneratorKind
 from llamatron.composition.llama_data import LlamaData
-from llamatron.composition.song_file_error import SongFileError
+from llamatron.composition.invalid_value import InvalidValue
 from llamatron.generators.arp import MAX_OCTAVE_RANGE, Arp, ChordOrder, OctaveJump, _check_offsets
 from llamatron.generators.auto_ratchet import AutoRatchet
 
-MSG_NEEDS_SETTING = '{where}: needs {name}'
-MSG_NOT_A_CHOICE = '{where}: {name} must be one of {choices}, got {value!r}'
-MSG_NOT_WHOLE_NUMBER = '{where}: {name} must be a whole number, got {value!r}'
-MSG_BAD_OCTAVE_RANGE = '{where}: {name} must be a whole number from {lowest} to {highest}, got {value!r}'
-MSG_BAD_OFFSETS = '{where}: {problem}'
-MSG_NOT_A_LIST = '{where}: {name} must be a list, got {value!r}'
+MSG_NEEDS_SETTING = 'needs {name}'
+MSG_NOT_A_CHOICE = '{name} must be one of {choices}, got {value!r}'
+MSG_NOT_WHOLE_NUMBER = '{name} must be a whole number, got {value!r}'
+MSG_BAD_OCTAVE_RANGE = '{name} must be a whole number from {lowest} to {highest}, got {value!r}'
+MSG_BAD_OFFSETS = '{problem}'
+MSG_NOT_A_LIST = '{name} must be a list, got {value!r}'
 MIN_OCTAVE_RANGE = 1
 
 
@@ -98,15 +98,16 @@ class GeneratorSettings(LlamaData):
         where names the chain using it. default_seed is used by a generator that chooses at
         random, when its settings don't give a seed.
         """
-        check_keys(self._settings, where, set(self.SETTINGS))
-        values = {
-            name: _value(self._settings[name], kind, name, where)
-            for name, kind in self.SETTINGS.items() if name in self._settings
-        }
-        for name in self.REQUIRED:
-            if name not in values:
-                raise SongFileError(MSG_NEEDS_SETTING.format(where=where, name=name))
-        return self.GENERATOR(**self._with_default_seed(values, default_seed))
+        with reading(where):
+            check_keys(self._settings, set(self.SETTINGS))
+            values = {
+                name: _value(self._settings[name], kind, name)
+                for name, kind in self.SETTINGS.items() if name in self._settings
+            }
+            for name in self.REQUIRED:
+                if name not in values:
+                    raise InvalidValue(MSG_NEEDS_SETTING.format(name=name))
+            return self.GENERATOR(**self._with_default_seed(values, default_seed))
 
     def _with_default_seed(self, values, default_seed):
         """Return the generator's values, with a seed added if it needs one. Most don't."""
@@ -145,28 +146,28 @@ class AutoRatchetSettings(GeneratorSettings):
 GENERATOR_SETTINGS = {GeneratorKind.ARP: ArpSettings, GeneratorKind.AUTO_RATCHET: AutoRatchetSettings}
 
 
-def _value(value, kind, name, where):
-    """Return one setting's value as the generator takes it, or raise SongFileError if it's wrong."""
+def _value(value, kind, name):
+    """Return one setting's value as the generator takes it, or raise InvalidValue if it's wrong."""
     if isinstance(kind, dict):
         if value not in kind:
-            raise SongFileError(MSG_NOT_A_CHOICE.format(where=where, name=name, choices=sorted(kind), value=value))
+            raise InvalidValue(MSG_NOT_A_CHOICE.format(name=name, choices=sorted(kind), value=value))
         return kind[value]
     if kind == ValueKind.WHOLE:
         if not is_whole_number(value):
-            raise SongFileError(MSG_NOT_WHOLE_NUMBER.format(where=where, name=name, value=value))
+            raise InvalidValue(MSG_NOT_WHOLE_NUMBER.format(name=name, value=value))
         return value
     if kind == ValueKind.LENGTH:
-        return number(value, where)
+        return number(value)
     if kind == ValueKind.OCTAVES:
         if not is_whole_number_from(value, MIN_OCTAVE_RANGE, MAX_OCTAVE_RANGE):
-            raise SongFileError(MSG_BAD_OCTAVE_RANGE.format(where=where, name=name, lowest=MIN_OCTAVE_RANGE, highest=MAX_OCTAVE_RANGE, value=value))
+            raise InvalidValue(MSG_BAD_OCTAVE_RANGE.format(name=name, lowest=MIN_OCTAVE_RANGE, highest=MAX_OCTAVE_RANGE, value=value))
         return value
     if kind == ValueKind.OFFSETS:
         try:
             _check_offsets(value)
         except ValueError as error:
-            raise SongFileError(MSG_BAD_OFFSETS.format(where=where, problem=error)) from None
+            raise InvalidValue(MSG_BAD_OFFSETS.format(problem=error)) from None
         return value
     if not isinstance(value, list):
-        raise SongFileError(MSG_NOT_A_LIST.format(where=where, name=name, value=value))
+        raise InvalidValue(MSG_NOT_A_LIST.format(name=name, value=value))
     return value

@@ -16,19 +16,19 @@
 
 """A register: one of the song's four values, AX to DX, that pattern steps change and read as the song plays."""
 
-from llamatron.composition.checks import check_keys, is_true_or_false, is_whole_number_from
+from llamatron.composition.checks import reading, check_keys, is_true_or_false, is_whole_number_from
 from llamatron.composition.defaults import (
     DEFAULT_REGISTER_MAXIMUM, DEFAULT_REGISTER_MINIMUM, DEFAULT_REGISTER_VALUE, DEFAULT_REGISTER_WRAP,
 )
 from llamatron.composition.file_format import RegisterSetting
 from llamatron.composition.limits import MAX_REGISTER_VALUE, MIN_REGISTER_VALUE
 from llamatron.composition.llama_data import LlamaData
-from llamatron.composition.song_file_error import SongFileError
+from llamatron.composition.invalid_value import InvalidValue
 
-MSG_EXPECTED_SETTINGS = '{where}: expected settings like {{ minimum: 0, maximum: 3, wrap: true }}, got {data!r}'
-MSG_BAD_VALUE = '{where}: {name} must be a whole number from {lowest} to {highest}, got {value!r}'
-MSG_WRAP_NOT_TRUE_OR_FALSE = '{where}: wrap must be true or false, got {value!r}'
-MSG_OUT_OF_ORDER = '{where}: needs minimum ({minimum}) <= default ({default}) <= maximum ({maximum})'
+MSG_EXPECTED_SETTINGS = 'expected settings like {{ minimum: 0, maximum: 3, wrap: true }}, got {data!r}'
+MSG_BAD_VALUE = '{name} must be a whole number from {lowest} to {highest}, got {value!r}'
+MSG_WRAP_NOT_TRUE_OR_FALSE = 'wrap must be true or false, got {value!r}'
+MSG_OUT_OF_ORDER = 'needs minimum ({minimum}) <= default ({default}) <= maximum ({maximum})'
 # The settings that are numbers, in the order they're written to a file.
 NUMBER_SETTINGS = [RegisterSetting.DEFAULT, RegisterSetting.MINIMUM, RegisterSetting.MAXIMUM]
 SETTINGS = [*NUMBER_SETTINGS, RegisterSetting.WRAP]
@@ -55,24 +55,21 @@ class Register(LlamaData):
 
     @classmethod
     def from_data(cls, data, where, song=None):
-        data = {} if data is None else data
-        if not isinstance(data, dict):
-            raise SongFileError(MSG_EXPECTED_SETTINGS.format(where=where, data=data))
-        check_keys(data, where, set(SETTINGS))
-        for name in NUMBER_SETTINGS:
-            value = data.get(name, DEFAULTS[name])
-            if not is_whole_number_from(value, MIN_REGISTER_VALUE, MAX_REGISTER_VALUE):
-                raise SongFileError(MSG_BAD_VALUE.format(
-                    where=where, name=name, lowest=MIN_REGISTER_VALUE, highest=MAX_REGISTER_VALUE, value=value,
-                ))
-        if not is_true_or_false(data.get(RegisterSetting.WRAP, DEFAULT_REGISTER_WRAP)):
-            raise SongFileError(MSG_WRAP_NOT_TRUE_OR_FALSE.format(where=where, value=data[RegisterSetting.WRAP]))
-        register = cls(**{name: data[name] for name in SETTINGS if name in data})
-        if not register.is_in_order():
-            raise SongFileError(MSG_OUT_OF_ORDER.format(
-                where=where, minimum=register.get_minimum(), default=register.get_default(), maximum=register.get_maximum(),
-            ))
-        return register
+        with reading(where):
+            data = {} if data is None else data
+            if not isinstance(data, dict):
+                raise InvalidValue(MSG_EXPECTED_SETTINGS.format(data=data))
+            check_keys(data, set(SETTINGS))
+            for name in NUMBER_SETTINGS:
+                value = data.get(name, DEFAULTS[name])
+                if not is_whole_number_from(value, MIN_REGISTER_VALUE, MAX_REGISTER_VALUE):
+                    raise InvalidValue(MSG_BAD_VALUE.format(name=name, lowest=MIN_REGISTER_VALUE, highest=MAX_REGISTER_VALUE, value=value))
+            if not is_true_or_false(data.get(RegisterSetting.WRAP, DEFAULT_REGISTER_WRAP)):
+                raise InvalidValue(MSG_WRAP_NOT_TRUE_OR_FALSE.format(value=data[RegisterSetting.WRAP]))
+            register = cls(**{name: data[name] for name in SETTINGS if name in data})
+            if not register.is_in_order():
+                raise InvalidValue(MSG_OUT_OF_ORDER.format(minimum=register.get_minimum(), default=register.get_default(), maximum=register.get_maximum()))
+            return register
 
     def to_data(self):
         return {name: value for name, value in self._settings.items() if value is not None}

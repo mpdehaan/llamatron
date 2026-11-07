@@ -19,7 +19,7 @@
 import yaml
 
 from llamatron.composition.chain import Chain
-from llamatron.composition.checks import check_keys, live_octave, number, written_length
+from llamatron.composition.checks import check_keys, live_octave, number, reading, written_length
 from llamatron.composition.defaults import (
     DEFAULT_DRUM_OCTAVE, DEFAULT_OCTAVE, DEFAULT_SEED, DEFAULT_STEP_SIZE, DEFAULT_TEMPO,
 )
@@ -110,7 +110,8 @@ class Song(LlamaData):
         data = {} if data is None else data
         if not isinstance(data, dict):
             raise SongFileError(MSG_NOT_A_SONG)
-        check_keys(data, where, {*SETTINGS, *SECTIONS, Section.SCENES})
+        with reading(where):
+            check_keys(data, {*SETTINGS, *SECTIONS, Section.SCENES})
         song = cls()
         song._read_settings(data)
         song._read_section(data, Section.PATTERNS, Pattern)
@@ -130,7 +131,8 @@ class Song(LlamaData):
         # The version of llamatron that wrote the file. Nothing depends on it yet, but it has to be one.
         if SongSetting.VERSION in data and not is_version(data[SongSetting.VERSION]):
             raise SongFileError(MSG_BAD_VERSION.format(value=data[SongSetting.VERSION]))
-        number(data.get(SongSetting.TEMPO, DEFAULT_TEMPO), SongSetting.TEMPO)
+        with reading(SongSetting.TEMPO):
+            number(data.get(SongSetting.TEMPO, DEFAULT_TEMPO))
         scales = data.get(Section.SCALES) or {}
         if not isinstance(scales, dict):
             raise SongFileError(MSG_SCALES_NOT_NAMED)
@@ -140,9 +142,12 @@ class Song(LlamaData):
         scale = data.get(SongSetting.SCALE)
         if scale is not None and not self.has_scale(scale):
             raise SongFileError(MSG_NO_SUCH_SCALE.format(scale=scale))
-        written_length(data.get(SongSetting.STEP_SIZE, DEFAULT_STEP_SIZE), SongSetting.STEP_SIZE, MAX_STEP_SIZE)
-        live_octave(data.get(SongSetting.DEFAULT_OCTAVE, DEFAULT_OCTAVE), SongSetting.DEFAULT_OCTAVE)
-        live_octave(data.get(SongSetting.DEFAULT_DRUM_OCTAVE, DEFAULT_DRUM_OCTAVE), SongSetting.DEFAULT_DRUM_OCTAVE)
+        with reading(SongSetting.STEP_SIZE):
+            written_length(data.get(SongSetting.STEP_SIZE, DEFAULT_STEP_SIZE), MAX_STEP_SIZE)
+        with reading(SongSetting.DEFAULT_OCTAVE):
+            live_octave(data.get(SongSetting.DEFAULT_OCTAVE, DEFAULT_OCTAVE))
+        with reading(SongSetting.DEFAULT_DRUM_OCTAVE):
+            live_octave(data.get(SongSetting.DEFAULT_DRUM_OCTAVE, DEFAULT_DRUM_OCTAVE))
         self._settings = {name: data.get(name) for name in SETTINGS}
 
     def _read_section(self, data, section, kind):
@@ -201,14 +206,14 @@ class Song(LlamaData):
 
     def get_tempo(self):
         """Return the song's tempo in quarter notes a minute, as an exact number."""
-        return number(self._setting(SongSetting.TEMPO, DEFAULT_TEMPO), SongSetting.TEMPO)
+        return number(self._setting(SongSetting.TEMPO, DEFAULT_TEMPO))
 
     def get_seed(self):
         return self._setting(SongSetting.SEED, DEFAULT_SEED)
 
     def get_step_size(self):
         """Return how long each step of a pattern is, in whole notes, unless the pattern sets its own."""
-        return written_length(self._setting(SongSetting.STEP_SIZE, DEFAULT_STEP_SIZE), SongSetting.STEP_SIZE, MAX_STEP_SIZE)
+        return written_length(self._setting(SongSetting.STEP_SIZE, DEFAULT_STEP_SIZE), MAX_STEP_SIZE)
 
     def get_pattern_step_size(self, pattern):
         """Return how long each step of a pattern is: its own step size, or else the song's."""

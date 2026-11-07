@@ -14,14 +14,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Checks that several objects make on the values they read from a song file.
+"""Checks that several objects make on their values, whether read from a song file or typed in the tracker.
 
-Each raises SongFileError with a message that starts with where in the file the value is.
+Each check raises InvalidValue with a message that says only what's wrong with the value. While
+a file is being read, the object's from_data() wraps its checks in reading(where), which adds
+where in the file the value is and raises SongFileError instead, so a file's problems are
+reported with their place and an edit's problems without one.
 """
 
 import re
+from contextlib import contextmanager
 from fractions import Fraction
 
+from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.limits import MAX_LIVE_OCTAVE, MIN_LIVE_OCTAVE
 from llamatron.composition.song_file_error import SongFileError
 
@@ -30,20 +35,34 @@ NO_LENGTH = 0
 
 # A length is written as a whole number or a fraction of whole numbers, like 2 or 5/16, never as a decimal.
 WRITTEN_LENGTH = re.compile(r'[0-9]+(/[0-9]+)?')
-MSG_BAD_WRITTEN_LENGTH = '{where}: expected a whole number or a fraction like 1/8, got {value!r}'
-MSG_LENGTH_TOO_LONG = '{where}: a length can be at most {most}, got {value!r}'
-MSG_UNKNOWN_SETTING = '{where}: unknown setting {name!r}, expected one of {allowed}'
-MSG_EXPECTED_NUMBER = '{where}: expected a number, got {value!r}'
-MSG_EXPECTED_NUMBER_LIKE = '{where}: expected a number like 2 or 1/8, got {value!r}'
-MSG_LENGTH_NOT_POSITIVE = '{where}: a length must be more than zero, got {value!r}'
-MSG_BAD_OCTAVE = '{where}: an octave must be a whole number from {lowest} to {highest}, got {value!r}'
+MSG_AT = '{where}: {problem}'
+MSG_BAD_WRITTEN_LENGTH = 'expected a whole number or a fraction like 1/8, got {value!r}'
+MSG_LENGTH_TOO_LONG = 'a length can be at most {most}, got {value!r}'
+MSG_UNKNOWN_SETTING = 'unknown setting {name!r}, expected one of {allowed}'
+MSG_EXPECTED_NUMBER = 'expected a number, got {value!r}'
+MSG_EXPECTED_NUMBER_LIKE = 'expected a number like 2 or 1/8, got {value!r}'
+MSG_LENGTH_NOT_POSITIVE = 'a length must be more than zero, got {value!r}'
+MSG_BAD_OCTAVE = 'an octave must be a whole number from {lowest} to {highest}, got {value!r}'
 
 
-def check_keys(data, where, allowed):
+@contextmanager
+def reading(where):
+    """Turn an InvalidValue raised inside into a SongFileError that says where in the file it was.
+
+    where names the place, like "scene 2, track 'bass'". A SongFileError raised inside, by a
+    part of the file that was read within this one, already says where it was and passes through.
+    """
+    try:
+        yield
+    except InvalidValue as problem:
+        raise SongFileError(MSG_AT.format(where=where, problem=problem)) from None
+
+
+def check_keys(data, allowed):
     """Refuse any setting that isn't one of the allowed names, naming the first one found."""
     unknown = unknown_settings(data, allowed)
     if unknown:
-        raise SongFileError(MSG_UNKNOWN_SETTING.format(where=where, name=unknown[0], allowed=sorted(allowed)))
+        raise InvalidValue(MSG_UNKNOWN_SETTING.format(name=unknown[0], allowed=sorted(allowed)))
 
 
 def unknown_settings(data, allowed):
@@ -65,41 +84,41 @@ def is_true_or_false(value):
     return type(value) is bool
 
 
-def number(value, where):
+def number(value):
     """Return a number written like 2 or 1/8 as an exact fraction."""
     if isinstance(value, bool):
-        raise SongFileError(MSG_EXPECTED_NUMBER.format(where=where, value=value))
+        raise InvalidValue(MSG_EXPECTED_NUMBER.format(value=value))
     try:
         return Fraction(str(value))
     except (ValueError, ZeroDivisionError):
-        raise SongFileError(MSG_EXPECTED_NUMBER_LIKE.format(where=where, value=value)) from None
+        raise InvalidValue(MSG_EXPECTED_NUMBER_LIKE.format(value=value)) from None
 
 
-def positive_length(value, where):
+def positive_length(value):
     """Return a length in whole notes, which has to be more than zero."""
-    length = number(value, where)
+    length = number(value)
     if length <= NO_LENGTH:
-        raise SongFileError(MSG_LENGTH_NOT_POSITIVE.format(where=where, value=value))
+        raise InvalidValue(MSG_LENGTH_NOT_POSITIVE.format(value=value))
     return length
 
 
-def live_octave(value, where):
+def live_octave(value):
     """Return an octave as Live numbers them, checking that it's in range."""
     if not is_whole_number_from(value, MIN_LIVE_OCTAVE, MAX_LIVE_OCTAVE):
-        raise SongFileError(MSG_BAD_OCTAVE.format(where=where, lowest=MIN_LIVE_OCTAVE, highest=MAX_LIVE_OCTAVE, value=value))
+        raise InvalidValue(MSG_BAD_OCTAVE.format(lowest=MIN_LIVE_OCTAVE, highest=MAX_LIVE_OCTAVE, value=value))
     return value
 
 
-def written_length(value, where, most):
+def written_length(value, most):
     """Return a length written as a whole number or a fraction, like 2 or 5/16, more than zero and at most most.
 
     Decimals are refused, since they're imprecise and hard to read.
     """
     if not is_written_length(value):
-        raise SongFileError(MSG_BAD_WRITTEN_LENGTH.format(where=where, value=value))
-    length = positive_length(value, where)
+        raise InvalidValue(MSG_BAD_WRITTEN_LENGTH.format(value=value))
+    length = positive_length(value)
     if length > most:
-        raise SongFileError(MSG_LENGTH_TOO_LONG.format(where=where, most=most, value=value))
+        raise InvalidValue(MSG_LENGTH_TOO_LONG.format(most=most, value=value))
     return length
 
 

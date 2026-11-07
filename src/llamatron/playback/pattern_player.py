@@ -130,7 +130,7 @@ class PatternPlayer:
             # Drum patterns have no scale to move a note along, so registers only change their velocity.
             note_moved = NOTHING_ADDED if drum else _used_values(values, current, REGISTER_NOTE_ROWS)
             velocity_added = _used_values(values, current, REGISTER_VELOCITY_ROWS)
-            gate = min(_gate(values, step_size, where), length - time)
+            gate = min(_gate(values, step_size), length - time)
             sounding.append((time, self._step(values, gate, drum, where, rolls, note_moved, velocity_added)))
         clip = Clip(notes=_in_sequence(sounding, length, step_size), scale=self._scale, controls=controls)
         return Pass(clip, leading_ties * step_size)
@@ -234,9 +234,9 @@ def _lengthened_to(entry, end):
     return start, [*pieces[:-1], with_sound(pieces[-1], length=pieces[-1].length + extra)]
 
 
-def _gate(values, step_size, where):
+def _gate(values, step_size):
     """Return how long a step's note sounds: its gate, or one step if it has none, made dotted or a triplet by its Dot row."""
-    gate = step_size if values[Row.GATE] is None else written_length(values[Row.GATE], where, MAX_GATE)
+    gate = step_size if values[Row.GATE] is None else written_length(values[Row.GATE], MAX_GATE)
     modifier = values[Row.DOT]
     return gate if modifier is None else gate * GATE_MODIFIERS[modifier]
 

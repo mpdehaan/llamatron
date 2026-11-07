@@ -18,13 +18,14 @@
 
 from llamatron.composition.file_format import ScaleSetting
 from llamatron.composition.llama_data import LlamaData
-from llamatron.composition.song_file_error import SongFileError
+from llamatron.composition.checks import reading
+from llamatron.composition.invalid_value import InvalidValue
 from llamatron.note import NOTE_NAMES, Note
 from llamatron.scale import Scale, ScaleType
 
-MSG_EXPECTED_ROOT_AND_TYPE = '{where}: expected a root and a type, like {{ root: F, type: minor }}, got {data!r}'
-MSG_EXPECTED_ROOT_NOTE = '{where}: expected a root note like F or Bb, got {root!r}'
-MSG_UNKNOWN_SCALE_TYPE = '{where}: unknown scale type {kind!r}, expected one of: {names}'
+MSG_EXPECTED_ROOT_AND_TYPE = 'expected a root and a type, like {{ root: F, type: minor }}, got {data!r}'
+MSG_EXPECTED_ROOT_NOTE = 'expected a root note like F or Bb, got {root!r}'
+MSG_UNKNOWN_SCALE_TYPE = 'unknown scale type {kind!r}, expected one of: {names}'
 # Scale type names, as error messages list them.
 NAME_LIST_SEPARATOR = ', '
 # A file can write a scale type with spaces, like natural minor, where its member name has underscores.
@@ -46,14 +47,15 @@ class NamedScale(LlamaData):
 
     @classmethod
     def from_data(cls, data, where, song=None):
-        if not isinstance(data, dict) or set(data) != {ScaleSetting.ROOT, ScaleSetting.TYPE}:
-            raise SongFileError(MSG_EXPECTED_ROOT_AND_TYPE.format(where=where, data=data))
-        root, kind = data[ScaleSetting.ROOT], data[ScaleSetting.TYPE]
-        if not is_root_note(root):
-            raise SongFileError(MSG_EXPECTED_ROOT_NOTE.format(where=where, root=root))
-        if not is_scale_type(kind):
-            raise SongFileError(MSG_UNKNOWN_SCALE_TYPE.format(where=where, kind=kind, names=NAME_LIST_SEPARATOR.join(scale_type_names())))
-        return cls(root, kind)
+        with reading(where):
+            if not isinstance(data, dict) or set(data) != {ScaleSetting.ROOT, ScaleSetting.TYPE}:
+                raise InvalidValue(MSG_EXPECTED_ROOT_AND_TYPE.format(data=data))
+            root, kind = data[ScaleSetting.ROOT], data[ScaleSetting.TYPE]
+            if not is_root_note(root):
+                raise InvalidValue(MSG_EXPECTED_ROOT_NOTE.format(root=root))
+            if not is_scale_type(kind):
+                raise InvalidValue(MSG_UNKNOWN_SCALE_TYPE.format(kind=kind, names=NAME_LIST_SEPARATOR.join(scale_type_names())))
+            return cls(root, kind)
 
     def to_data(self):
         return {ScaleSetting.ROOT: self._root, ScaleSetting.TYPE: self._kind}

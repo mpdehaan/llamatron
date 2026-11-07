@@ -19,19 +19,19 @@
 from fractions import Fraction
 
 from llamatron.composition.cell import Cell
-from llamatron.composition.checks import check_keys, is_whole_number_from, number
+from llamatron.composition.checks import check_keys, is_whole_number_from, number, reading
 from llamatron.composition.defaults import DEFAULT_REPEAT
 from llamatron.composition.file_format import REGISTER_NAMES, SceneSetting
 from llamatron.composition.limits import MIN_REPEAT
 from llamatron.composition.llama_data import LlamaData
-from llamatron.composition.song_file_error import SongFileError
+from llamatron.composition.invalid_value import InvalidValue
 
-MSG_EXPECTED_SETTINGS = '{where}: expected settings like name and tracks'
-MSG_BAD_REPEAT = '{where}: repeat must be a positive whole number, got {value!r}'
-MSG_NO_SUCH_TRACK = '{where}: no track called {track!r}, expected one of {tracks}'
-MSG_NO_SUCH_SCALE = '{where}: no scale called {scale!r}'
-MSG_RAMP_NEEDS_BOTH = '{where}: needs both tempo_start and tempo_end'
-MSG_BAD_RESET = '{where}: reset must be a list of registers from {names}, like [AX, DX], got {value!r}'
+MSG_EXPECTED_SETTINGS = 'expected settings like name and tracks'
+MSG_BAD_REPEAT = 'repeat must be a positive whole number, got {value!r}'
+MSG_NO_SUCH_TRACK = 'no track called {track!r}, expected one of {tracks}'
+MSG_NO_SUCH_SCALE = 'no scale called {scale!r}'
+MSG_RAMP_NEEDS_BOTH = 'needs both tempo_start and tempo_end'
+MSG_BAD_RESET = 'reset must be a list of registers from {names}, like [AX, DX], got {value!r}'
 # How far through a tempo ramp a scene that plays only once is: at its start.
 NO_RAMP = 0
 # A scene's settings, in the order they're written to a file, before its tracks.
@@ -56,26 +56,27 @@ class Scene(LlamaData):
 
     @classmethod
     def from_data(cls, data, where, song=None):
-        if not isinstance(data, dict):
-            raise SongFileError(MSG_EXPECTED_SETTINGS.format(where=where))
-        check_keys(data, where, {*SETTINGS, SceneSetting.TRACKS})
-        repeat = data.get(SceneSetting.REPEAT, DEFAULT_REPEAT)
-        if not is_whole_number_from(repeat, MIN_REPEAT):
-            raise SongFileError(MSG_BAD_REPEAT.format(where=where, value=repeat))
-        cells = {}
-        for track, cell in (data.get(SceneSetting.TRACKS) or {}).items():
-            if not song.has_track(track):
-                raise SongFileError(MSG_NO_SUCH_TRACK.format(where=where, track=track, tracks=sorted(song.get_track_names())))
-            cells[track] = Cell.from_data(cell, where, song, track=track)
-        scale = data.get(SceneSetting.SCALE)
-        if scale is not None and not song.has_scale(scale):
-            raise SongFileError(MSG_NO_SUCH_SCALE.format(where=where, scale=scale))
-        _check_tempo(data, where)
-        reset = data.get(SceneSetting.RESET, [])
-        if not is_register_list(reset):
-            raise SongFileError(MSG_BAD_RESET.format(where=where, names=REGISTER_NAMES, value=reset))
-        settings = {name: data[name] for name in SETTINGS if name in data}
-        return cls(cells if SceneSetting.TRACKS in data else None, **settings)
+        with reading(where):
+            if not isinstance(data, dict):
+                raise InvalidValue(MSG_EXPECTED_SETTINGS)
+            check_keys(data, {*SETTINGS, SceneSetting.TRACKS})
+            repeat = data.get(SceneSetting.REPEAT, DEFAULT_REPEAT)
+            if not is_whole_number_from(repeat, MIN_REPEAT):
+                raise InvalidValue(MSG_BAD_REPEAT.format(value=repeat))
+            cells = {}
+            for track, cell in (data.get(SceneSetting.TRACKS) or {}).items():
+                if not song.has_track(track):
+                    raise InvalidValue(MSG_NO_SUCH_TRACK.format(track=track, tracks=sorted(song.get_track_names())))
+                cells[track] = Cell.from_data(cell, where, song, track=track)
+            scale = data.get(SceneSetting.SCALE)
+            if scale is not None and not song.has_scale(scale):
+                raise InvalidValue(MSG_NO_SUCH_SCALE.format(scale=scale))
+            _check_tempo(data)
+            reset = data.get(SceneSetting.RESET, [])
+            if not is_register_list(reset):
+                raise InvalidValue(MSG_BAD_RESET.format(names=REGISTER_NAMES, value=reset))
+            settings = {name: data[name] for name in SETTINGS if name in data}
+            return cls(cells if SceneSetting.TRACKS in data else None, **settings)
 
     def to_data(self):
         data = {name: value for name, value in self._settings.items() if value is not None}
@@ -102,11 +103,11 @@ class Scene(LlamaData):
         """
         settings = self._settings
         if settings[SceneSetting.TEMPO] is not None:
-            return number(settings[SceneSetting.TEMPO], SceneSetting.TEMPO)
+            return number(settings[SceneSetting.TEMPO])
         if settings[SceneSetting.TEMPO_START] is None:
             return None
-        start = number(settings[SceneSetting.TEMPO_START], SceneSetting.TEMPO)
-        end = number(settings[SceneSetting.TEMPO_END], SceneSetting.TEMPO)
+        start = number(settings[SceneSetting.TEMPO_START])
+        end = number(settings[SceneSetting.TEMPO_END])
         return start + (end - start) * _ramp_fraction(place, self.get_repeat())
 
     def get_reset_names(self):
@@ -128,15 +129,15 @@ def is_register_list(value):
     return isinstance(value, list) and all(name in REGISTER_NAMES for name in value) and len(set(value)) == len(value)
 
 
-def _check_tempo(data, where):
+def _check_tempo(data):
     """Refuse a tempo that isn't a number, or a ramp that doesn't give both its start and end."""
     if SceneSetting.TEMPO in data:
-        number(data[SceneSetting.TEMPO], where)
+        number(data[SceneSetting.TEMPO])
     elif SceneSetting.TEMPO_START in data or SceneSetting.TEMPO_END in data:
         if SceneSetting.TEMPO_START not in data or SceneSetting.TEMPO_END not in data:
-            raise SongFileError(MSG_RAMP_NEEDS_BOTH.format(where=where))
-        number(data[SceneSetting.TEMPO_START], where)
-        number(data[SceneSetting.TEMPO_END], where)
+            raise InvalidValue(MSG_RAMP_NEEDS_BOTH)
+        number(data[SceneSetting.TEMPO_START])
+        number(data[SceneSetting.TEMPO_END])
 
 
 def _ramp_fraction(place, repeat):

@@ -16,7 +16,7 @@
 
 """A pattern: a row of steps, with one list of values for each row of the pattern editor."""
 
-from llamatron.composition.checks import check_keys, is_true_or_false, is_whole_number, is_whole_number_from, live_octave, written_length
+from llamatron.composition.checks import check_keys, reading, is_true_or_false, is_whole_number, is_whole_number_from, live_octave, written_length
 from llamatron.composition.file_format import (
     ACCIDENTALS, CC_ROWS, CHORD_SYMBOLS, DIRECTIONS, GATE_MODIFIERS, NOTE_LETTERS, PATTERN_ROWS, REGISTER_ADD_ROWS,
     REGISTER_NOTE_ROWS, SIGNED_ROWS, TOGGLE_ROWS, Direction, PatternSetting, Row,
@@ -26,16 +26,16 @@ from llamatron.composition.limits import (
     MIN_PROBABILITY, MIN_RATCHET, MIN_REGISTER_VALUE, MIN_STEPS, MIN_VELOCITY,
 )
 from llamatron.composition.llama_data import LlamaData
-from llamatron.composition.song_file_error import SongFileError
+from llamatron.composition.invalid_value import InvalidValue
 
-MSG_EXPECTED_SETTINGS = '{where}: expected settings like steps, degree and gate'
-MSG_BAD_STEPS = '{where}: steps must be a whole number of {lowest} or more, got {value!r}'
-MSG_DRUM_NOT_TRUE_OR_FALSE = '{where}: drum must be true or false, got {value!r}'
-MSG_BAD_DIRECTION = '{where}: direction must be one of {directions}, got {value!r}'
-MSG_ROW_WRONG_LENGTH = '{where}: {row} must be a list of {steps} values, got {value!r}'
-MSG_TOGGLE_IS_NULL = '{where}: {row} must be true or false, got null'
-MSG_BAD_STEP_VALUE = '{where}: {row} {problem}, got {value!r}'
-MSG_TIE_ON_A_NOTE = "{where}: step {step} has a note and a tie, but a tied step only holds the note before it, so it can't have its own"
+MSG_EXPECTED_SETTINGS = 'expected settings like steps, degree and gate'
+MSG_BAD_STEPS = 'steps must be a whole number of {lowest} or more, got {value!r}'
+MSG_DRUM_NOT_TRUE_OR_FALSE = 'drum must be true or false, got {value!r}'
+MSG_BAD_DIRECTION = 'direction must be one of {directions}, got {value!r}'
+MSG_ROW_WRONG_LENGTH = '{row} must be a list of {steps} values, got {value!r}'
+MSG_TOGGLE_IS_NULL = '{row} must be true or false, got null'
+MSG_BAD_STEP_VALUE = '{row} {problem}, got {value!r}'
+MSG_TIE_ON_A_NOTE = "step {step} has a note and a tie, but a tied step only holds the note before it, so it can't have its own"
 # Steps are counted from 1 in messages, as the editor shows them.
 FIRST_STEP_NUMBER = 1
 # What a step's value has to be on each kind of row, for MSG_BAD_STEP_VALUE.
@@ -77,23 +77,25 @@ class Pattern(LlamaData):
 
     @classmethod
     def from_data(cls, data, where, song=None):
-        if not isinstance(data, dict):
-            raise SongFileError(MSG_EXPECTED_SETTINGS.format(where=where))
-        check_keys(data, where, {PatternSetting.STEPS, *SETTINGS, *PATTERN_ROWS})
-        check_direction(data.get(PatternSetting.DIRECTION, Direction.FORWARD), where)
-        steps = data.get(PatternSetting.STEPS)
-        if not is_whole_number_from(steps, MIN_STEPS):
-            raise SongFileError(MSG_BAD_STEPS.format(where=where, lowest=MIN_STEPS, value=steps))
-        if PatternSetting.STEP_SIZE in data:
-            written_length(data[PatternSetting.STEP_SIZE], WHERE_IN_ROW.format(where=where, row=PatternSetting.STEP_SIZE), MAX_STEP_SIZE)
-        drum = data.get(PatternSetting.DRUM, False)
-        if not is_true_or_false(drum):
-            raise SongFileError(MSG_DRUM_NOT_TRUE_OR_FALSE.format(where=where, value=drum))
-        for row in PATTERN_ROWS:
-            _check_row(row, data.get(row), steps, drum, where)
-        _check_ties(data, steps, where)
-        rows = {row: data.get(row) for row in PATTERN_ROWS}
-        return cls(steps, rows, **{name: data.get(name) for name in SETTINGS})
+        with reading(where):
+            if not isinstance(data, dict):
+                raise InvalidValue(MSG_EXPECTED_SETTINGS)
+            check_keys(data, {PatternSetting.STEPS, *SETTINGS, *PATTERN_ROWS})
+            check_direction(data.get(PatternSetting.DIRECTION, Direction.FORWARD))
+            steps = data.get(PatternSetting.STEPS)
+            if not is_whole_number_from(steps, MIN_STEPS):
+                raise InvalidValue(MSG_BAD_STEPS.format(lowest=MIN_STEPS, value=steps))
+            if PatternSetting.STEP_SIZE in data:
+                with reading(WHERE_IN_ROW.format(where=where, row=PatternSetting.STEP_SIZE)):
+                    written_length(data[PatternSetting.STEP_SIZE], MAX_STEP_SIZE)
+            drum = data.get(PatternSetting.DRUM, False)
+            if not is_true_or_false(drum):
+                raise InvalidValue(MSG_DRUM_NOT_TRUE_OR_FALSE.format(value=drum))
+            for row in PATTERN_ROWS:
+                _check_row(row, data.get(row), steps, drum, where)
+            _check_ties(data, steps)
+            rows = {row: data.get(row) for row in PATTERN_ROWS}
+            return cls(steps, rows, **{name: data.get(name) for name in SETTINGS})
 
     def to_data(self):
         data = {PatternSetting.STEPS: self._steps}
@@ -107,7 +109,7 @@ class Pattern(LlamaData):
     def get_step_size(self):
         """Return how long each of its steps is, in whole notes, or None to use the song's step size."""
         step_size = self._settings[PatternSetting.STEP_SIZE]
-        return None if step_size is None else written_length(step_size, PatternSetting.STEP_SIZE, MAX_STEP_SIZE)
+        return None if step_size is None else written_length(step_size, MAX_STEP_SIZE)
 
     def is_drum(self):
         return bool(self._settings[PatternSetting.DRUM])
@@ -136,10 +138,10 @@ def _copied_rows(rows):
     return {row: (None if rows.get(row) is None else list(rows[row])) for row in PATTERN_ROWS}
 
 
-def check_direction(direction, where):
+def check_direction(direction):
     """Refuse a play direction that isn't one of the Cirklon's names for them."""
     if direction not in DIRECTIONS:
-        raise SongFileError(MSG_BAD_DIRECTION.format(where=where, directions=DIRECTIONS, value=direction))
+        raise InvalidValue(MSG_BAD_DIRECTION.format(directions=DIRECTIONS, value=direction))
 
 
 def _check_row(row, values, steps, drum, where):
@@ -147,33 +149,34 @@ def _check_row(row, values, steps, drum, where):
     if values is None:
         return
     if not isinstance(values, list) or len(values) != steps:
-        raise SongFileError(MSG_ROW_WRONG_LENGTH.format(where=where, row=row, steps=steps, value=values))
+        raise InvalidValue(MSG_ROW_WRONG_LENGTH.format(row=row, steps=steps, value=values))
     for value in values:
         if row in TOGGLE_ROWS and value is None:
-            raise SongFileError(MSG_TOGGLE_IS_NULL.format(where=where, row=row))
+            raise InvalidValue(MSG_TOGGLE_IS_NULL.format(row=row))
         if value is not None:
             _check_step_value(row, value, drum, where)
 
 
-def _check_ties(data, steps, where):
+def _check_ties(data, steps):
     """Refuse a tie on a step that has a note, since a tied step plays nothing of its own."""
     ties, degrees = data.get(Row.TIE), data.get(Row.DEGREE)
     if not ties or not degrees:
         return
     for step in range(steps):
         if ties[step] and degrees[step] is not None:
-            raise SongFileError(MSG_TIE_ON_A_NOTE.format(where=where, step=step + FIRST_STEP_NUMBER))
+            raise InvalidValue(MSG_TIE_ON_A_NOTE.format(step=step + FIRST_STEP_NUMBER))
 
 
 def _check_step_value(row, value, drum, where):
     """Refuse a value that doesn't belong on a row, saying which row and what it should be."""
-    if row == Row.GATE:
-        written_length(value, WHERE_IN_ROW.format(where=where, row=row), MAX_GATE)
-    elif row == Row.OCTAVE:
-        live_octave(value, WHERE_IN_ROW.format(where=where, row=row))
+    with reading(WHERE_IN_ROW.format(where=where, row=row)):
+        if row == Row.GATE:
+            written_length(value, MAX_GATE)
+        elif row == Row.OCTAVE:
+            live_octave(value)
     problem = _step_value_problem(row, value, drum)
     if problem:
-        raise SongFileError(MSG_BAD_STEP_VALUE.format(where=where, row=row, problem=problem, value=value))
+        raise InvalidValue(MSG_BAD_STEP_VALUE.format(row=row, problem=problem, value=value))
 
 
 def _step_value_problem(row, value, drum):
