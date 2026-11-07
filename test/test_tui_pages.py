@@ -25,7 +25,10 @@ from textual.app import App
 from textual.screen import Screen
 
 from rendering import render_data
+from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.song import Song
+from llamatron.note import NoteName
+from llamatron.scale import ScaleType
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.arrange import RESET_LABEL, ArrangePage, ClipPage, ScenePage
 from llamatron.tui.base import ChoiceDialog, ConfirmDialog, Dialog, GridChoiceDialog, MessageDialog, Page, PromptDialog
@@ -33,6 +36,7 @@ from llamatron.composition.file_format import (
     REGISTER_ADD_ROWS, REGISTER_NAMES, REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, STEP_SIZE_CHOICES, RegisterName, Row,
     SceneSetting, Section,
 )
+from llamatron.composition.file_format import NAMED_GENERATORS
 from llamatron.composition.defaults import DEFAULT_REGISTER_MAXIMUM, DEFAULT_REGISTER_MINIMUM
 from llamatron.composition.register import MSG_OUT_OF_ORDER
 from llamatron.tui.registers_page import FIELD_LABEL, NUMBER_FIELDS, WRAP_FIELD, RegistersPage
@@ -54,6 +58,10 @@ from llamatron.tui.pattern_editor import (
 ROW_SHOWN = '│ {label}'
 KEY_SHOWN = '« {label} »'
 QUIET_VALUE = '.'
+# Names the tests give to the scales and chains they add.
+SMALL_SCALE = 'small'
+CHROMATIC_SCALE = 'all'
+EMPTY_CHAIN = 'x'
 
 
 def fixed_text(template):
@@ -142,6 +150,20 @@ class UITest(unittest.IsolatedAsyncioTestCase):
 
     async def type(self, text):
         await self.press(*[{' ': 'space'}.get(letter, letter) for letter in text])
+
+    def empty_the_arrangement(self):
+        """Delete every scene and then every track, through the document, as a page would."""
+        for index in reversed(range(len(self.document.song().get_scenes()))):
+            self.document.delete_scene(index)
+        for name in self.document.song().get_track_names():
+            self.document.delete_track(name)
+
+    def delete_every_generator(self):
+        """Delete every arp and AutoRatchet, which the chains must have stopped using first."""
+        song = self.document.song()
+        for kind, section in NAMED_GENERATORS.items():
+            for name in song.get_generator_names(kind):
+                self.document.delete_generator(section, name)
 
     def text(self):
         return screen_text(self.app)
@@ -462,21 +484,21 @@ class TestDescriptionPage(UITest):
         self.assertIsInstance(self.app.screen, MessageDialog)
 
     async def test_erasing_at_the_start_of_a_line_joins_it_to_the_one_before(self):
-        self.document.data['description'] = 'one\ntwo\n'
+        self.document.set_description('one\ntwo\n')
         await self.press('e', 'up', 'down')
         self.app.screen.column = 0
         await self.press('backspace')
         self.assertEqual(self.document.data['description'], 'onetwo\n')
 
     async def test_clearing_asks_first(self):
-        self.document.data['description'] = 'one\n'
+        self.document.set_description('one\n')
         await self.press('backspace')
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press('y')
         self.assertNotIn('description', self.document.data)
 
     async def test_a_long_description_scrolls(self):
-        self.document.data['description'] = ''.join(f'line {n}\n' for n in range(100))
+        self.document.set_description(''.join(f'line {n}\n' for n in range(100)))
         await self.press('down', 'down')
         self.assertNotIn('line 0\n', self.text().replace(' ', ''))
         self.assertIn('line 2', self.text())
@@ -616,7 +638,7 @@ class TestPatternEditor(UITest):
         self.assertEqual([name for name, _ in self.editor.rows()], NORMAL_ROWS)
 
     async def test_a_new_note_gets_the_default_octave_and_a_gate_of_one_step(self):
-        self.document.data['default_octave'] = 4
+        self.document.set_default_octave(4)
         await self.press('right', 'right', 'right', '5')
         self.assertEqual(self.value('degree'), 5)
         self.assertIsNone(self.value('gate'))
@@ -628,8 +650,8 @@ class TestPatternEditor(UITest):
         self.assertEqual(self.value('gate'), '1/8')
 
     async def test_a_degree_must_fit_the_scale(self):
-        self.document.data['scales']['small'] = {'root': 'C', 'type': 'major_pentatonic'}
-        self.document.data['scale'] = 'small'
+        self.document.add_scale(SMALL_SCALE, NoteName.C, scale_type_name(ScaleType.MAJOR_PENTATONIC))
+        self.document.set_scale_name(SMALL_SCALE)
         self.document.data['scenes'][0].pop('scale', None)
         self.document.changed()
         await self.press('6')
@@ -859,7 +881,7 @@ class TestDrumPatterns(UITest):
         self.assertEqual(self.value('degree'), 'G')
 
     async def test_a_new_hit_gets_the_drum_octave(self):
-        self.document.data['default_drum_octave'] = 2
+        self.document.set_default_drum_octave(2)
         await self.press('i', 'c')
         self.assertEqual(self.value('octave'), 2)
 
@@ -929,7 +951,8 @@ class TestArrange(UITest):
         self.assertEqual(self.document.cell(1, 'lead'), {'pattern': 'beat'})
 
     async def test_no_patterns_is_explained(self):
-        self.document.data['patterns'] = {}
+        for name in self.document.song().get_pattern_names():
+            self.document.delete_pattern(name)
         await self.press('right', 'down', 'enter')
         self.assertIsInstance(self.app.screen, MessageDialog)
         self.assertIn('Patterns page', self.text())
@@ -1534,9 +1557,10 @@ class TestTracksScalesChainsAndArps(UITest):
         Song.from_data(self.document.data)
 
     async def test_adding_a_chain_step_needs_an_arp_first(self):
-        self.document.data['arps'] = {}
-        self.document.data['auto_ratchets'] = {}
-        self.document.data['chains'] = {'x': []}
+        for name in self.document.song().get_chain_names():
+            self.document.delete_chain(name)
+        self.delete_every_generator()
+        self.document.add_chain(EMPTY_CHAIN)
         await self.press('c', 'enter', '+')
         self.assertIsInstance(self.app.screen, MessageDialog)
         self.assertIn('Generators', self.text())
@@ -1570,8 +1594,7 @@ class TestPlusRow(UITest):
         self.assertIsNone(self.app.screen.current())
 
     async def test_an_empty_list_starts_on_it(self):
-        self.document.data['tracks'] = {}
-        self.document.data['scenes'] = []
+        self.empty_the_arrangement()
         await self.press('t', 'enter')
         self.assertIsInstance(self.app.screen, PromptDialog)
 
@@ -1594,8 +1617,7 @@ class TestPlusRow(UITest):
         self.assertEqual(self.document.data['scenes'][2]['tracks'], {})
 
     async def test_arrange_with_no_scenes_starts_on_it(self):
-        self.document.data['scenes'] = []
-        self.document.data['tracks'] = {}
+        self.empty_the_arrangement()
         await self.press('a', 'enter')
         self.assertEqual(len(self.document.data['scenes']), 1)
 
@@ -1749,8 +1771,8 @@ class TestLookAndNewKeys(UITest):
         self.assertEqual((self.app.screen.step, self.app.screen.row), before)
 
     async def test_a_scale_with_more_than_nine_notes_takes_two_digits(self):
-        self.document.data['scales']['all'] = {'root': 'C', 'type': 'chromatic'}
-        self.document.data['scale'] = 'all'
+        self.document.add_scale(CHROMATIC_SCALE, NoteName.C, scale_type_name(ScaleType.CHROMATIC))
+        self.document.set_scale_name(CHROMATIC_SCALE)
         self.document.changed()
         await self.press('p', 'enter', '1', '2')
         self.assertEqual(self.value('degree'), 12)

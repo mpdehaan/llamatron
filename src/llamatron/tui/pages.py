@@ -24,8 +24,9 @@ from rich.text import Text
 from llamatron.generators.arp import MAX_OCTAVE_RANGE, MAX_OFFSET, MAX_OFFSETS, ChordOrder, OctaveJump
 from llamatron.note import Note, NoteName
 from llamatron.scale import ScaleType
-from llamatron.composition.file_format import STEP_SIZE_CHOICES, SongSetting
-from llamatron.composition.limits import MAX_TRANSPOSE
+from llamatron.composition.file_format import STEP_SIZE_CHOICES
+from llamatron.composition.limits import MAX_LIVE_OCTAVE, MAX_TEMPO, MAX_TRANSPOSE, MIN_LIVE_OCTAVE, MIN_TEMPO
+from llamatron.composition.song import NO_TEXT
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.tui.arrange import ArrangePage
 from llamatron.tui.base import ARROWS, ARROWS_UP_DOWN, SITE, ChoiceDialog, ConfirmDialog, GridChoiceDialog, Page, PromptDialog, fit, grouped_grid, key, pressed_key
@@ -35,6 +36,21 @@ from llamatron.tui.pattern_editor import TOGGLE_OFF, TOGGLE_ON, PatternEditor
 from llamatron.tui.registers_page import RegistersPage
 
 NOTE_LENGTHS = ['1/256', '1/128', '1/64', '1/32', '1/16', '1/8', '1/4', '1/2', '1']
+# The Song page's fields, and how it shows what has no value.
+TITLE_LABEL = 'Title'
+AUTHOR_LABEL = 'Author'
+TEMPO_LABEL = 'Tempo'
+SCALE_LABEL = 'Scale'
+SEED_LABEL = 'Seed'
+STEP_SIZE_LABEL = 'Step size'
+DEFAULT_OCTAVE_LABEL = 'Default octave'
+DEFAULT_DRUM_OCTAVE_LABEL = 'Default drum octave'
+TEMPO_SHOWN = '{tempo} BPM'
+NO_SCALE_SHOWN = '(none)'
+NO_SCALE = 'no scale'
+SONG_SUMMARY = '{tempo} BPM   {scale}   {patterns} patterns   {tracks} tracks   {scenes} scenes'
+MSG_ADD_A_SCALE_FIRST = 'Add a scale first, on the Scales page.'
+SONG_SCALE_TITLE = 'Song scale'
 ORDERS = [order.name.lower() for order in ChordOrder]
 JUMPS = [jump.name.lower() for jump in OctaveJump]
 # How many offsets a new set has, as on the Monomachine.
@@ -79,6 +95,16 @@ def scale_notes(root, kind):
     """Return a scale's notes, like D E F G A B C, spelled as the rest of the program spells them."""
     start = Note(root, 4)
     return ' '.join(start.half_step(step).name for step in ScaleType[kind.upper()].value)
+
+
+def tempo_text(tempo):
+    """Return a tempo as people write it: 120 rather than 120/1, and 97.5 for a tempo between whole numbers."""
+    return str(int(tempo)) if tempo.denominator == 1 else str(float(tempo))
+
+
+def _octave_moved(octave, offset):
+    """Return an octave moved by an offset, kept within Live's range."""
+    return max(min(octave + offset, MAX_LIVE_OCTAVE), MIN_LIVE_OCTAVE)
 
 
 def _stepped(values, current, offset):
@@ -128,12 +154,12 @@ class MainPage(Page):
         return self.document.song_seconds()
 
     def body(self, width, height):
-        data = self.document.data
+        song = self.document.song()
         lines = [Text('')]
         lines.append(Text(f"  {self.document.name}   {clock(self.document.song_seconds())}", style='bold'))
-        summary = (
-            f"{data['tempo']} BPM   {data.get('scale') or 'no scale'}   "
-            f"{len(data['patterns'])} patterns   {len(data['tracks'])} tracks   {len(data['scenes'])} scenes"
+        summary = SONG_SUMMARY.format(
+            tempo=tempo_text(song.get_tempo()), scale=song.get_scale_name() or NO_SCALE, patterns=len(song.get_pattern_names()),
+            tracks=len(song.get_track_names()), scenes=len(song.get_scenes()),
         )
         lines += [Text('  ' + summary), Text('')]
         for item in self.key_table():
@@ -164,63 +190,56 @@ class SongPage(FieldPage):
     def duration(self):
         return self.document.song_seconds()
 
-    def set_value(self, name, value):
-        self.document.data[name] = value
-        self.document.changed()
+    def song(self):
+        return self.document.song()
 
-    def set_text(self, name, text):
-        text = text.strip()
-        if text:
-            self.document.data[name] = text
-        else:
-            self.document.data.pop(name, None)
-        self.document.changed()
-
-    def text_field(self, label, name):
-        data = self.document.data
-        return Field(label, lambda: data.get(name, ''), None,
-                     lambda: self.ask(PromptDialog(label, data.get(name, '')), lambda text: self.set_text(name, text)),
-                     'edit', lambda: self.set_text(name, ''), 'clear')
+    def text_field(self, label, current, set_text):
+        """A field for text like the title: current() reads it, and set_text(text) stores it, blank text clearing it."""
+        return Field(label, current, None, lambda: self.ask(PromptDialog(label, current()), set_text), 'edit',
+                     lambda: set_text(NO_TEXT), 'clear')
 
     def fields(self):
-        data = self.document.data
+        document, song = self.document, self.song()
         return [
-            self.text_field('Title', 'title'),
-            self.text_field('Author', 'author'),
-            Field('Tempo', lambda: f"{data['tempo']} BPM", lambda d: self.set_value('tempo', max(10, int(data['tempo']) + d)),
-                  lambda: self.ask_number('Tempo', data['tempo'], lambda n: self.set_value('tempo', n), 10, 999)),
-            Field('Scale', lambda: data.get('scale') or '(none)', self.step_scale, self.pick_scale, 'choose',
-                  lambda: self.set_value('scale', None), 'no scale'),
-            Field('Seed', lambda: data['seed'], lambda d: self.set_value('seed', data['seed'] + d),
-                  lambda: self.ask_number('Seed', data['seed'], lambda n: self.set_value('seed', n))),
-            Field('Step size', lambda: data[SongSetting.STEP_SIZE],
-                  lambda d: self.set_value(SongSetting.STEP_SIZE, _stepped(STEP_SIZE_CHOICES, data[SongSetting.STEP_SIZE], d)),
-                  lambda: self.pick('Step size', STEP_SIZE_CHOICES, SongSetting.STEP_SIZE), 'choose'),
-            Field('Default octave', lambda: data['default_octave'], lambda d: self.adjust_octave('default_octave', d)),
-            Field('Default drum octave', lambda: data['default_drum_octave'], lambda d: self.adjust_octave('default_drum_octave', d)),
+            self.text_field(TITLE_LABEL, song.get_title, document.set_title),
+            self.text_field(AUTHOR_LABEL, song.get_author, document.set_author),
+            Field(TEMPO_LABEL, lambda: TEMPO_SHOWN.format(tempo=tempo_text(song.get_tempo())), self.adjust_tempo,
+                  lambda: self.ask_number(TEMPO_LABEL, tempo_text(song.get_tempo()), document.set_tempo, MIN_TEMPO, MAX_TEMPO)),
+            Field(SCALE_LABEL, lambda: song.get_scale_name() or NO_SCALE_SHOWN, self.step_scale, self.pick_scale, 'choose',
+                  lambda: document.set_scale_name(None), NO_SCALE),
+            Field(SEED_LABEL, song.get_seed, lambda offset: document.set_seed(song.get_seed() + offset),
+                  lambda: self.ask_number(SEED_LABEL, song.get_seed(), document.set_seed)),
+            Field(STEP_SIZE_LABEL, lambda: str(song.get_step_size()),
+                  lambda offset: document.set_song_step_size(_stepped(STEP_SIZE_CHOICES, song.get_step_size(), offset)),
+                  self.pick_step_size, 'choose'),
+            Field(DEFAULT_OCTAVE_LABEL, song.get_default_octave,
+                  lambda offset: document.set_default_octave(_octave_moved(song.get_default_octave(), offset))),
+            Field(DEFAULT_DRUM_OCTAVE_LABEL, song.get_default_drum_octave,
+                  lambda offset: document.set_default_drum_octave(_octave_moved(song.get_default_drum_octave(), offset))),
         ]
 
-    def adjust_octave(self, name, offset):
-        self.set_value(name, max(min(self.document.data[name] + offset, 8), -2))
+    def adjust_tempo(self, offset):
+        self.document.set_tempo(max(MIN_TEMPO, int(self.song().get_tempo()) + offset))
 
-    def pick(self, title, options, name):
-        current = str(self.document.data[name])
-        place = options.index(current) if current in options else 0
-        self.ask(ChoiceDialog(title, options, place), lambda chosen: self.set_value(name, options[chosen]))
+    def pick_step_size(self):
+        current = str(self.song().get_step_size())
+        place = STEP_SIZE_CHOICES.index(current) if current in STEP_SIZE_CHOICES else 0
+        self.ask(ChoiceDialog(STEP_SIZE_LABEL, STEP_SIZE_CHOICES, place), lambda chosen: self.document.set_song_step_size(STEP_SIZE_CHOICES[chosen]))
 
     def step_scale(self, offset):
-        names = [None, *self.document.data['scales']]
-        place = names.index(self.document.data.get('scale'))
-        self.set_value('scale', names[max(min(place + offset, len(names) - 1), 0)])
+        """Move to the next or previous of the song's scales, with no scale before the first."""
+        names = [None, *self.song().get_scale_names()]
+        place = names.index(self.song().get_scale_name())
+        self.document.set_scale_name(names[max(min(place + offset, len(names) - 1), 0)])
 
     def pick_scale(self):
-        scales = list(self.document.data['scales'])
+        scales = self.song().get_scale_names()
         if not scales:
-            self.status = 'Add a scale first, on the Scales page.'
+            self.status = MSG_ADD_A_SCALE_FIRST
             return
-        current = self.document.data.get('scale')
+        current = self.song().get_scale_name()
         place = scales.index(current) if current in scales else 0
-        self.ask(ChoiceDialog('Song scale', scales, place), lambda chosen: self.set_value('scale', scales[chosen]))
+        self.ask(ChoiceDialog(SONG_SCALE_TITLE, scales, place), lambda chosen: self.document.set_scale_name(scales[chosen]))
 
     def notes(self, width):
         return [
@@ -230,7 +249,7 @@ class SongPage(FieldPage):
         ]
 
     def description_size(self):
-        text = self.document.data.get('description', '')
+        text = self.song().get_description()
         lines = text.count('\n') + (not text.endswith('\n')) if text else 0
         return f'{lines} line(s), D to read' if lines else 'not yet, D to write'
 
@@ -338,19 +357,15 @@ class DescriptionPage(Page):
         self.row = self.column = 0
 
     def text_lines(self):
-        text = self.document.data.get('description', '')
+        text = self.document.song().get_description()
         lines = text.split('\n')
         if text.endswith('\n'):
             lines.pop()
         return lines or ['']
 
     def store(self, lines):
-        text = '\n'.join(lines)
-        if text.strip():
-            self.document.data['description'] = text + '\n'
-        else:
-            self.document.data.pop('description', None)
-        self.document.changed()
+        # A description ends with a newline, so that it reads as plain text in the file.
+        self.document.set_description('\n'.join(lines) + '\n')
 
     def keys(self):
         if self.editing:
@@ -386,7 +401,7 @@ class DescriptionPage(Page):
         self.status = ''
 
     def clear(self):
-        if 'description' in self.document.data:
+        if self.document.song().has_description():
             self.ask(ConfirmDialog('Clear the description', ['Delete all of the description?']), lambda _: self.store(['']))
 
     def move(self, name):
@@ -460,7 +475,7 @@ class DescriptionPage(Page):
                 text.append(line[self.column + 1:])
                 shown.append(text)
             return shown
-        if 'description' not in self.document.data:
+        if not self.document.song().has_description():
             return [Text('  No description yet. Press E to write one.', style='dim')]
         wrapped = []
         for line in self.text_lines():

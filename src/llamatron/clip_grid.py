@@ -30,8 +30,8 @@ from llamatron.chord import Chord
 from llamatron.held import Held, is_phrase, phrase
 from llamatron.note import Degree, Note, Rest, _check_length
 from llamatron.scale import Scale
+from llamatron.composition.limits import MIN_TEMPO
 
-MIN_TEMPO = 10
 DEFAULT_TEMPO = 120
 
 # The objects that a clip's list of notes can hold.

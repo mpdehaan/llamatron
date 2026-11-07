@@ -230,6 +230,18 @@ class Song(LlamaData):
         """Return the name of the song's scale, or None if it has none."""
         return self._settings[SongSetting.SCALE]
 
+    def get_title(self):
+        return self._setting(SongSetting.TITLE, NO_TEXT)
+
+    def get_author(self):
+        return self._setting(SongSetting.AUTHOR, NO_TEXT)
+
+    def get_description(self):
+        return self._setting(SongSetting.DESCRIPTION, NO_TEXT)
+
+    def has_description(self):
+        return bool(self._settings[SongSetting.DESCRIPTION])
+
     def _setting(self, name, default):
         """Return one of the song's settings, or its default if the file leaves it out."""
         value = self._settings[name]
@@ -243,6 +255,10 @@ class Song(LlamaData):
     def has_scale(self, name):
         return name in self._named(Section.SCALES)
 
+    def get_scale_names(self):
+        """Return the names of the song's scales, in the song's order."""
+        return list(self._named(Section.SCALES))
+
     def get_named_scale(self, name):
         return self._named(Section.SCALES)[name]
 
@@ -251,6 +267,10 @@ class Song(LlamaData):
 
     def get_pattern(self, name):
         return self._named(Section.PATTERNS)[name]
+
+    def get_pattern_names(self):
+        """Return the names of the patterns, in the song's order."""
+        return list(self._named(Section.PATTERNS))
 
     def has_track(self, name):
         return name in self._named(Section.TRACKS)
@@ -269,11 +289,19 @@ class Song(LlamaData):
     def get_generator_settings(self, kind, name):
         return self._named(NAMED_GENERATORS[kind])[name]
 
+    def get_generator_names(self, kind):
+        """Return the names of the generators of a kind, like arp, in the song's order."""
+        return list(self._named(NAMED_GENERATORS[kind]))
+
     def has_chain(self, name):
         return name in self._named(Section.CHAINS)
 
     def get_chain(self, name):
         return self._named(Section.CHAINS)[name]
+
+    def get_chain_names(self):
+        """Return the names of the chains, in the song's order."""
+        return list(self._named(Section.CHAINS))
 
     def get_register(self, name):
         """Return a register by its name, AX to DX, with its default settings if the file leaves it out."""

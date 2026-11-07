@@ -108,8 +108,9 @@ class TestChainEditor(UITest):
         self.assertEqual(self.steps(), [{'arp': 'up'}, {'auto_ratchet': 'rolls'}])
 
     async def test_adding_needs_a_generator_first(self):
-        self.document.data['arps'] = {}
-        self.document.data['auto_ratchets'] = {}
+        # The chain's own steps go first, since a generator a chain uses can't be deleted.
+        await self.press('backspace', 'backspace')
+        self.delete_every_generator()
         await self.press('+')
         self.assertIsInstance(self.app.screen, MessageDialog)
         self.assertIn('Nothing to add', self.text())
@@ -272,7 +273,12 @@ class TestPatternEditorRefusals(UITest):
         self.assertIn('no other steps to swap', self.text())
 
     async def test_load_over_needs_another_pattern(self):
-        self.document.data['patterns'] = {'tune': self.document.data['patterns']['tune']}
+        # Only one pattern can stay, so the scenes that play the others go first, as a person would have to delete them.
+        for index in reversed(range(len(self.document.song().get_scenes()))):
+            self.document.delete_scene(index)
+        for name in self.document.song().get_pattern_names():
+            if name != 'tune':
+                self.document.delete_pattern(name)
         await self.open('tune')
         await self.press('l')
         self.assertIn('no other patterns to load', self.text())
@@ -468,7 +474,9 @@ class TestSongPageEdges(UITest):
         self.assertNotIsInstance(self.app.screen, SongPage)
 
     async def test_choosing_a_scale_needs_one_first(self):
-        self.document.data.update(scale=None, scales={})
+        self.document.set_scale_name(None)
+        for name in self.document.song().get_scale_names():
+            self.document.delete_scale(name)
         await self.press('s', 'down', 'down', 'down', 'enter')
         self.assertIn('Add a scale first', self.text())
 

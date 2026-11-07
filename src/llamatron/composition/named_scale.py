@@ -75,9 +75,14 @@ def is_scale_type(kind):
     return _scale_type_member(kind) in ScaleType.__members__
 
 
+def scale_type_name(kind):
+    """Return a scale type's name as a file writes it, like 'minor' for ScaleType.MINOR."""
+    return kind.name.lower()
+
+
 def scale_type_names():
     """Return every scale type's name as a file writes it, like 'minor', in alphabetical order."""
-    return sorted(member_name.lower() for member_name in ScaleType.__members__)
+    return sorted(scale_type_name(ScaleType[member_name]) for member_name in ScaleType.__members__)
 
 
 def _scale_type_member(kind):

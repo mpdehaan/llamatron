@@ -33,7 +33,11 @@ MIN_REGISTER_VALUE = -127
 MAX_REGISTER_VALUE = 127
 
 # Octaves as Live numbers them, where MIDI note 60 is C3.
-MIN_LIVE_OCTAVE, MAX_LIVE_OCTAVE = -2, 8
+MIN_LIVE_OCTAVE = -2
+MAX_LIVE_OCTAVE = 8
+# Tempo, in quarter notes a minute. Live's own limit is 999.
+MIN_TEMPO = 10
+MAX_TEMPO = 999
 
 # The longest a step or a gate can be, in whole notes: four bars of 4/4.
 MAX_STEP_SIZE = 4

@@ -140,8 +140,19 @@ class Document:
         self.data.setdefault('scales', {})
         self.path = path
         self.dirty = False
+        self._song = None
         self._estimates = None
         self._estimate_problem = None
+
+    def song(self):
+        """Return the song as composition objects, built from the data and kept until the next change.
+
+        Pages read the song through this, and change it only through this document's methods,
+        which forget the objects so that the next read sees the change.
+        """
+        if self._song is None:
+            self._song = Song.from_data(self.data)
+        return self._song
 
     # Loading, saving and rendering.
 
@@ -235,6 +246,7 @@ class Document:
 
     def changed(self):
         self.dirty = True
+        self._song = None
         self._estimates = None
 
     # How long everything lasts.
@@ -242,7 +254,7 @@ class Document:
     def _estimate(self):
         if self._estimates is None:
             try:
-                self._estimates = SongRenderer(Song.from_data(self.data)).estimate()
+                self._estimates = SongRenderer(self.song()).estimate()
                 self._estimate_problem = None
             except SongFileError as error:
                 self._estimates = []
@@ -303,6 +315,49 @@ class Document:
     def song_step_size(self):
         """Return the song's step size, which a pattern without its own uses."""
         return self.data[SongSetting.STEP_SIZE]
+
+    # The song's own settings, from the Song page.
+
+    def set_tempo(self, tempo):
+        self._set_song_setting(SongSetting.TEMPO, tempo)
+
+    def set_scale_name(self, name):
+        """Give the song a scale by name, or None for no scale."""
+        self._set_song_setting(SongSetting.SCALE, name)
+
+    def set_seed(self, seed):
+        self._set_song_setting(SongSetting.SEED, seed)
+
+    def set_song_step_size(self, step_size):
+        self._set_song_setting(SongSetting.STEP_SIZE, step_size)
+
+    def set_default_octave(self, octave):
+        self._set_song_setting(SongSetting.DEFAULT_OCTAVE, octave)
+
+    def set_default_drum_octave(self, octave):
+        self._set_song_setting(SongSetting.DEFAULT_DRUM_OCTAVE, octave)
+
+    def set_title(self, text):
+        self._set_song_text(SongSetting.TITLE, text.strip())
+
+    def set_author(self, text):
+        self._set_song_text(SongSetting.AUTHOR, text.strip())
+
+    def set_description(self, text):
+        """Set the description, kept as given, so that its lines stay as written. Blank text removes it."""
+        self._set_song_text(SongSetting.DESCRIPTION, text)
+
+    def _set_song_setting(self, name, value):
+        self.data[name] = value
+        self.changed()
+
+    def _set_song_text(self, name, text):
+        """Store text that's only for people, or leave it out of the file when it's blank."""
+        if text.strip():
+            self.data[name] = text
+        else:
+            self.data.pop(name, None)
+        self.changed()
 
     def set_step_size(self, name, step_size):
         """Give a pattern its own step size, or None to use the song's."""
