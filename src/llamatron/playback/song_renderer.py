@@ -16,9 +16,9 @@
 
 """Rendering a composed Song into a ClipGrid of finished clips, for the renderers to write."""
 
-from fractions import Fraction
 from typing import NamedTuple
 
+from llamatron.rational import Rational
 from llamatron.composition.file_format import REGISTER_NAMES
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.playback.cell_player import CellPlayer
@@ -43,7 +43,7 @@ SEED_TRACK_FACTOR = 31
 SECONDS_PER_MINUTE = 60
 QUARTER_NOTES_PER_WHOLE_NOTE = 4
 # How long a scene with nothing in it lasts.
-NO_LENGTH = Fraction(0)
+NO_LENGTH = Rational(0)
 
 
 class SceneEstimate(NamedTuple):
@@ -125,7 +125,7 @@ class SongRenderer:
         result = []
         for scene in self._scenes:
             tempo = self._song.get_tempo() if scene.get_tempo() is None else scene.get_tempo()
-            whole_notes_to_seconds = Fraction(SECONDS_PER_MINUTE * QUARTER_NOTES_PER_WHOLE_NOTE) / tempo
+            whole_notes_to_seconds = Rational(SECONDS_PER_MINUTE * QUARTER_NOTES_PER_WHOLE_NOTE) / tempo
             clips, problem, seconds = {}, None, None
             try:
                 length = self.get_scene_length(scene)

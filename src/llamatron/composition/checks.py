@@ -24,8 +24,8 @@ reported with their place and an edit's problems without one.
 
 import re
 from contextlib import contextmanager
-from fractions import Fraction
 
+from llamatron.rational import Rational
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.limits import MAX_LIVE_OCTAVE, MIN_LIVE_OCTAVE
 from llamatron.composition.song_file_error import SongFileError
@@ -89,7 +89,7 @@ def number(value):
     if isinstance(value, bool):
         raise InvalidValue(MSG_EXPECTED_NUMBER.format(value=value))
     try:
-        return Fraction(str(value))
+        return Rational(str(value))
     except (ValueError, ZeroDivisionError):
         raise InvalidValue(MSG_EXPECTED_NUMBER_LIKE.format(value=value)) from None
 

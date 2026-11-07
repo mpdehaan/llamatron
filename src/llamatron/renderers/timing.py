@@ -16,9 +16,9 @@
 
 """Works out when each note in a clip plays, for renderers to write out."""
 
-from fractions import Fraction
 from typing import NamedTuple
 
+from llamatron.rational import Rational
 from llamatron.chord import Chord
 from llamatron.held import Held, is_phrase
 from llamatron.midi import MAX_VELOCITY
@@ -29,19 +29,19 @@ BEATS_PER_WHOLE_NOTE = 4
 # A note with no velocity of its own plays as loud as MIDI allows.
 VELOCITY = MAX_VELOCITY
 # Where a clip starts.
-START = Fraction(0)
+START = Rational(0)
 
 MSG_DEGREE_NEEDS_SCALE = '{degree!r} needs a scale, but the clip, scene and song have none'
 MSG_NOT_A_POSITION = 'expected a Note, Chord or Rest, got {value!r}'
 # How far a note with glide runs into the next one, in fractions of a whole note.
-GLIDE_OVERLAP = Fraction(1, 128)
+GLIDE_OVERLAP = Rational(1, 128)
 
 
 class NoteEvent(NamedTuple):
     """One note as it plays: when it starts and ends, in whole notes from the clip's start, its MIDI number and velocity."""
 
-    start: Fraction
-    end: Fraction
+    start: Rational
+    end: Rational
     midi_number: int
     velocity: int
 
@@ -49,7 +49,7 @@ class NoteEvent(NamedTuple):
 class ControlPoint(NamedTuple):
     """One point of a CC lane: a value sent at a time, sliding to the lane's next point if slide is set."""
 
-    time: Fraction
+    time: Rational
     value: int
     slide: bool
 
@@ -57,7 +57,7 @@ class ControlPoint(NamedTuple):
 class ControlEvent(NamedTuple):
     """One CC value as it's sent: at a time, on a CC number."""
 
-    time: Fraction
+    time: Rational
     number: int
     value: int
 
@@ -110,7 +110,7 @@ def timed_events(clip, scale):
         start = min(slot_start, clip_length)
         following = _what_follows(slots, place)
         for midi_number, note in sounding_notes.items():
-            end = _glide_end(note, slot_start + Fraction(note.length), following)
+            end = _glide_end(note, slot_start + Rational(note.length), following)
             end = min(end, clip_length)
             if end > start:
                 velocity = VELOCITY if note.velocity is None else note.velocity
@@ -129,7 +129,7 @@ def _slots(positions, scale):
     start = START
     for position in positions:
         _place(position, start, scale, slots)
-        start += Fraction(position.length)
+        start += Rational(position.length)
     return sorted(slots, key=lambda slot: slot[0])
 
 
@@ -143,14 +143,14 @@ def _place(position, start, scale, slots):
         return
     for part in position.sound:
         _place(part, start, scale, slots)
-        start += Fraction(part.length)
+        start += Rational(part.length)
 
 
 def _clip_length(clip, positions):
     """Return how long a clip lasts: its own length if it has one, or else all its positions end to end."""
     if clip.length is not None:
-        return Fraction(clip.length)
-    return sum((Fraction(position.length) for position in positions), START)
+        return Rational(clip.length)
+    return sum((Rational(position.length) for position in positions), START)
 
 
 def _what_follows(slots, place):
@@ -160,7 +160,7 @@ def _what_follows(slots, place):
 
 
 # How often a slide sends a new CC value, in fractions of a whole note, where a format can't ramp.
-SLIDE_STEP = Fraction(1, 64)
+SLIDE_STEP = Rational(1, 64)
 
 
 def control_points(clip, length):
@@ -171,7 +171,7 @@ def control_points(clip, length):
     """
     points = {}
     for item in clip.controls:
-        time = Fraction(item.time)
+        time = Rational(item.time)
         if time >= length:
             continue
         lane = points.setdefault(item.number, [])

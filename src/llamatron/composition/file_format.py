@@ -21,8 +21,8 @@ what it means and a misspelled name fails at once. The values are the plain stri
 holds.
 """
 
-from fractions import Fraction
 
+from llamatron.rational import Rational
 from llamatron.chord import ChordType
 
 
@@ -197,7 +197,7 @@ class GateModifier:
 
 
 # How much each gate modifier changes a gate: dotted is half as long again, and a triplet two thirds as long.
-GATE_MODIFIERS = {GateModifier.DOTTED: Fraction(3, 2), GateModifier.TRIPLET: Fraction(2, 3)}
+GATE_MODIFIERS = {GateModifier.DOTTED: Rational(3, 2), GateModifier.TRIPLET: Rational(2, 3)}
 
 
 class Accidental:

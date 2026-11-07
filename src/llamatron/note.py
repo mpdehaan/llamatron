@@ -19,6 +19,7 @@ from fractions import Fraction
 from math import isfinite
 
 from llamatron.midi import HALF_STEPS_PER_OCTAVE, MAX_MIDI_NUMBER, MAX_VELOCITY, MIN_MIDI_NUMBER, MIN_VELOCITY
+from llamatron.rational import Rational
 
 class NoteName:
     """Every way a note can be spelled: a letter, then # for sharp or b for flat.
@@ -114,7 +115,7 @@ MSG_NOT_A_CHORD_TYPE = 'expected a ChordType, got {value!r}'
 # A length has to be longer than nothing.
 NO_LENGTH = 0
 # The kinds of number a length can be.
-LENGTH_TYPES = (int, float, Fraction)
+LENGTH_TYPES = (int, float, Rational, Fraction)
 
 def _check_integer(n):
     # bool is a subclass of int, but half_step(True) is not a real step count.
@@ -135,7 +136,7 @@ def _is_positive_length(length):
     always finite, skip the float check, which would turn them into floats first.
     """
     kind = type(length)
-    if kind is Fraction or kind is int:
+    if kind is Rational or kind is int:
         return length > NO_LENGTH
     return kind in LENGTH_TYPES and isfinite(length) and length > NO_LENGTH
 

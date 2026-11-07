@@ -17,9 +17,9 @@
 """Playing one pass through a pattern, step by step, into notes, chords and rests."""
 
 from dataclasses import dataclass
-from fractions import Fraction
 from typing import NamedTuple
 
+from llamatron.rational import Rational
 from llamatron.chord import Chord
 from llamatron.composition.checks import written_length
 from llamatron.composition.defaults import DEFAULT_PROBABILITY, DEFAULT_RATCHET, DEFAULT_VELOCITY
@@ -47,7 +47,7 @@ PATTERN_STEPS = 'steps'
 # What registers add to a note or velocity when a step uses none of them.
 NOTHING_ADDED = 0
 # How long the ties at the start of a pass last when there are none.
-NO_TIES = Fraction(0)
+NO_TIES = Rational(0)
 
 
 @dataclass(slots=True)
@@ -59,13 +59,13 @@ class Pass:
     """
 
     clip: Clip
-    tied_from_before: Fraction
+    tied_from_before: Rational
     # How long the pass lasts, which is the pattern's length however the clip changes along the way.
-    length: Fraction
+    length: Rational
 class Sounding(NamedTuple):
     """What one step plays: the pieces it sounds, a note or chord for each ratchet, from a start time in the pass."""
 
-    start: Fraction
+    start: Rational
     pieces: list
 
 
@@ -254,7 +254,7 @@ def _lengthened_to(sounding, end):
     A piece that probability turned into a rest stays as it is, because there's no note to hold.
     """
     pieces = sounding.pieces
-    total = sum((piece.length for piece in pieces), Fraction(0))
+    total = sum((piece.length for piece in pieces), Rational(0))
     extra = end - (sounding.start + total)
     if extra <= 0 or isinstance(pieces[-1], Rest):
         return sounding
@@ -275,11 +275,11 @@ def _in_sequence(sounding, length, step_size):
     was. A shorter one is followed by rests, one for each step until the next note. A longer one
     is Held, so the next note starts while it still sounds.
     """
-    positions, now = [], Fraction(0)
+    positions, now = [], Rational(0)
     for place, (start, played) in enumerate(sounding):
         following = sounding[place + 1].start if place + 1 < len(sounding) else length
         positions += _rests(now, start, step_size)
-        gate = sum((piece.length for piece in played), Fraction(0))
+        gate = sum((piece.length for piece in played), Rational(0))
         gap = following - start
         if gate > gap:
             positions.append(Held(played[0] if len(played) == 1 else phrase(played), gap))

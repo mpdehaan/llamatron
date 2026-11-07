@@ -24,10 +24,10 @@ import contextlib
 import copy
 import io
 import os
-from fractions import Fraction
 
 import yaml
 
+from llamatron.rational import Rational
 from llamatron.cli import replace_output
 from llamatron.renderers.ableton_project import AbletonProject
 from llamatron.renderers.clip_tree import ClipTree
@@ -80,7 +80,7 @@ def new_song():
 
 def fraction(value):
     """Return a duration from a file as an exact fraction."""
-    return Fraction(str(value))
+    return Rational(str(value))
 
 
 def fraction_text(value):
@@ -284,7 +284,7 @@ class Document:
         estimates = self._estimate()
         if self._estimate_problem or any(item.seconds is None for item in estimates):
             return None
-        return sum((item.seconds for item in estimates), Fraction(0))
+        return sum((item.seconds for item in estimates), Rational(0))
 
     def _stanzas_of(self, index):
         """Return the written-out scene numbers of one scene, counting from 1."""
@@ -297,7 +297,7 @@ class Document:
         if self._estimate_problem:
             return None
         values = [estimates[number - 1].seconds for number in self._stanzas_of(index)]
-        return None if any(value is None for value in values) else sum(values, Fraction(0))
+        return None if any(value is None for value in values) else sum(values, Rational(0))
 
     def scene_problem(self, index):
         """Return what stops a scene from rendering, or None."""
@@ -318,7 +318,7 @@ class Document:
 
     def pattern_seconds(self, name):
         """Return how long one play of a pattern lasts at the song's tempo."""
-        return self.pattern_length(name) * 240 / Fraction(str(self.data['tempo']))
+        return self.pattern_length(name) * 240 / Rational(str(self.data['tempo']))
 
     def pattern_length(self, name):
         """Return how long one play of a pattern lasts, in fractions of a whole note."""

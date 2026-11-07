@@ -22,10 +22,10 @@ is the Song in llamatron.composition.song, and SongRenderer plays it into a Clip
 
 import re
 from dataclasses import dataclass
-from fractions import Fraction
 from itertools import count
 from math import isfinite
 
+from llamatron.rational import Rational
 from llamatron.chord import Chord
 from llamatron.held import Held, is_phrase, phrase
 from llamatron.note import Degree, Note, Rest, _check_length
@@ -55,9 +55,9 @@ def exact_length(length):
     that's already an exact fraction is returned as it is, which is what rendering always
     passes, so this is cheap in the places it's called most.
     """
-    if type(length) is Fraction and length.denominator <= FINEST_LENGTH:
+    if type(length) is Rational and length.denominator <= FINEST_LENGTH:
         return length
-    return Fraction(length).limit_denominator(FINEST_LENGTH)
+    return Rational(length).limit_denominator(FINEST_LENGTH)
 
 
 def with_length(position, length):
@@ -124,7 +124,7 @@ def sound_from(sound, offset):
             return None
         piece = _piece_of(sound, offset, max(exact_length(note.length) for note in remaining) - offset)
         return None if isinstance(piece, Rest) else piece
-    parts, start = [], Fraction(0)
+    parts, start = [], Rational(0)
     for part in sound:
         end = start + exact_length(part.length)
         if end > offset:
@@ -271,7 +271,7 @@ class Control:
     With slide, the value ramps to the next value for the same number instead of holding.
     """
 
-    time: Fraction
+    time: Rational
     number: int
     value: int
     slide: bool = False
@@ -408,7 +408,7 @@ class Clip:
         """Return how long the clip lasts, as an exact fraction of a whole note."""
         if self.length is not None:
             return exact_length(self.length)
-        return sum((self._resolved_length(position) for position in self._notes), Fraction(0))
+        return sum((self._resolved_length(position) for position in self._notes), Rational(0))
 
     def section(self, start, end):
         """Return a new Clip of the part from start to end, in fractions of a whole note.
@@ -421,7 +421,7 @@ class Clip:
         if start < 0 or end <= start:
             raise ValueError(f'invalid section: from {start} to {end}')
         notes = []
-        position_start = Fraction(0)
+        position_start = Rational(0)
         for position in self.played_notes():
             position_end = position_start + exact_length(position.length)
             piece_start, piece_end = max(position_start, start), min(position_end, end)

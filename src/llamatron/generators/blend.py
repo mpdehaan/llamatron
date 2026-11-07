@@ -18,6 +18,7 @@ from enum import Enum, auto
 from fractions import Fraction
 from math import isfinite
 
+from llamatron.rational import Rational
 from llamatron.generators.base import ClipGenerator, exact_length
 from llamatron.held import Held, is_phrase, phrase
 from llamatron.note import Degree
@@ -28,9 +29,9 @@ NONE_OF_THE_TARGET, ALL_OF_THE_TARGET = 0, 100
 # The amount's fraction is rounded to this, so that a float amount like 33.3 behaves.
 AMOUNT_PRECISION = 1_000_000
 # Where a clip starts, and the middle of a span, as a fraction of its length.
-START = Fraction(0)
+START = Rational(0)
 HALF = 2
-AMOUNT_TYPES = (int, float, Fraction)
+AMOUNT_TYPES = (int, float, Rational, Fraction)
 
 MSG_NOT_A_MODE = 'expected a BlendMode, got {value!r}'
 MSG_NOT_A_CLIP = 'expected a Clip, got {value!r}'
@@ -120,7 +121,7 @@ class Blend(ClipGenerator):
         """Return where the target plays in the result, from start to end in whole notes."""
         total = clip.total_length()
         source = _concrete(clip)
-        share = total * Fraction(self.amount).limit_denominator(AMOUNT_PRECISION) / ALL_OF_THE_TARGET
+        share = total * Rational(self.amount).limit_denominator(AMOUNT_PRECISION) / ALL_OF_THE_TARGET
         if self.mode is BlendMode.LEFT:
             start, end = START, share
         elif self.mode is BlendMode.RIGHT:

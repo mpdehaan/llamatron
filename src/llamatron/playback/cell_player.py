@@ -17,9 +17,9 @@
 """Playing what one track plays in one scene into a finished clip."""
 
 import random
-from fractions import Fraction
 from math import ceil
 
+from llamatron.rational import Rational
 from llamatron.chord import Chord
 from llamatron.composition.file_format import LIVE_OCTAVE_OFFSET
 from llamatron.composition.song_file_error import SongFileError
@@ -127,7 +127,7 @@ class CellPlayer:
         rolls = random.Random(PROBABILITY_SEED.format(seed=seed, scene=number, track=self._track_name))
         order = StepOrder(random.Random(DIRECTION_SEED.format(seed=seed, scene=number, track=self._track_name)))
         repeat = self._cell.get_repeat()
-        notes, controls, total, place = [], [], Fraction(0), 0
+        notes, controls, total, place = [], [], Rational(0), 0
         while (place < repeat) if fill is None else (total < fill):
             played = self._play_pass(player, grab, scale, place % repeat, repeat, where, rolls, order, registers, total)
             length = played.length
@@ -157,7 +157,7 @@ class CellPlayer:
         if morph_to is None or not clip.notes:
             return played
         target = player.play_pass(morph_to, None, None, where, rolls, order, registers, start, changes_registers=False).clip
-        amount = Fraction(place, repeat - 1) * FULL_MORPH
+        amount = Rational(place, repeat - 1) * FULL_MORPH
         target = _looped(target, played.length)
         blend = Blend(target, amount, mode=cell.get_morph_style())
         controls = morph_controls(clip, target, *blend.region(clip))

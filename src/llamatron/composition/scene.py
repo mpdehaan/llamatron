@@ -16,8 +16,8 @@
 
 """A scene: a row of the song, launching one cell on each track that has one."""
 
-from fractions import Fraction
 
+from llamatron.rational import Rational
 from llamatron.composition.cell import Cell
 from llamatron.composition.checks import check_keys, is_whole_number_from, number, reading
 from llamatron.composition.defaults import DEFAULT_REPEAT
@@ -155,4 +155,4 @@ def _check_tempo(data):
 def _ramp_fraction(place, repeat):
     """Return how far through a tempo ramp a repeat is, from 0 on the first to 1 on the last."""
     last_place = repeat - 1
-    return Fraction(place, last_place) if last_place > 0 else NO_RAMP
+    return Rational(place, last_place) if last_place > 0 else NO_RAMP

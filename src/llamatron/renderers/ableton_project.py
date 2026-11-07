@@ -20,9 +20,9 @@ import itertools
 import os
 import re
 import xml.etree.ElementTree as ET
-from fractions import Fraction
 from pathlib import Path
 
+from llamatron.rational import Rational
 from llamatron.renderers.clip_tree import _check_directory, _check_song
 from llamatron.renderers.timing import BEATS_PER_WHOLE_NOTE, control_points, timed_events
 from llamatron.clip_grid import _Validated
@@ -192,7 +192,7 @@ def _live_boolean(value):
 
 def _empty_clip_length():
     """Return how long a clip with nothing in it lasts in Arrangement View, in whole notes."""
-    return Fraction(EMPTY_CLIP_BEATS, BEATS_PER_WHOLE_NOTE)
+    return Rational(EMPTY_CLIP_BEATS, BEATS_PER_WHOLE_NOTE)
 
 
 def _remove_children(element):
@@ -282,7 +282,7 @@ class AbletonProject:
     def _scene_starts(self):
         """Return when each scene starts in Arrangement View, in fractions of a whole note."""
         starts = []
-        now = Fraction(CLIP_START)
+        now = Rational(CLIP_START)
         for scene in self.song.scenes:
             starts.append(now)
             now += self._scene_length(scene) or _empty_clip_length()
