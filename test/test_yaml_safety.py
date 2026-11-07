@@ -38,7 +38,7 @@ UNSAFE = re.compile(r'yaml\.(load|load_all|full_load|full_load_all|unsafe_load|u
 class TestYamlSafety(unittest.TestCase):
 
     def test_no_python_file_uses_an_unsafe_yaml_loader(self):
-        files = [Path(path) for pattern in ('src/**/*.py', 'test/**/*.py', '*.py')
+        files = [Path(path) for pattern in ('src/**/*.py', 'test/**/*.py', 'tools/**/*.py', '*.py')
                  for path in glob.glob(str(ROOT / pattern), recursive=True)]
         self.assertTrue(files)
         for path in files:

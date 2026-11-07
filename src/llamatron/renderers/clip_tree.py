@@ -19,7 +19,7 @@ import re
 
 import mido
 
-from llamatron.renderers.timing import BEATS_PER_WHOLE_NOTE, VELOCITY, control_events, timed_events
+from llamatron.renderers.timing import BEATS_PER_WHOLE_NOTE, control_events, timed_events
 from llamatron.clip_grid import ClipGrid, _Validated
 
 TICKS_PER_BEAT = 480

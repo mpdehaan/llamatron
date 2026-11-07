@@ -31,6 +31,17 @@ Always run the full suite with `./run_tests.sh`, which runs `test/parallel.py`: 
 
 Don't add `__init__.py` to `test/`, because a package with that name would clash with Python's standard library `test` package.
 
+`tools/` keeps scripts for working on llamatron that are worth running again, rather than one-off scripts, and the user wants reusable scripts preserved there instead of being lost in a temporary folder. They follow the same style rules as the program and start with the GPL header below their `#!` line, and each one's docstring says what it's for and how to run it. Run them from the top folder:
+
+```
+.venv/bin/python tools/compare_renders.py capture /some/folder   # before a change that shouldn't alter the music
+.venv/bin/python tools/compare_renders.py compare /some/folder   # after it: lists every file that differs
+.venv/bin/python tools/check_unused_imports.py                   # unused imports in src/, test/ and tools/
+.venv/bin/python tools/show_midi.py some.mid                     # a MIDI file's notes as names and lengths
+```
+
+Before committing a change to code, run `tools/check_unused_imports.py`. Before and after a refactoring, or any change that should leave the music alone, use `tools/compare_renders.py`, which proves byte for byte that every example still renders the same, or shows which songs changed.
+
 ## Version
 
 `src/llamatron/version.py` holds `VERSION`, a string of three whole numbers separated by dots, like `1.0.2`, which `setup.py` reads, the tracker's title shows, and every saved song file records as `version`. Versions are compared number by number with `version_numbers()`, never as decimals. Bump the last number in every commit that changes Python code under `src/`, and leave the first two to the user. Commits that only change docs, notes, tests or examples don't bump it. The program and the files share the one number.

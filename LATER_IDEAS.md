@@ -43,6 +43,17 @@ To think through before building it:
 - **The renderers.** Timing comes from `src/llamatron/renderers/timing.py` for both renderers,
   so the change would be made in one place there.
 
+### Better Readme
+
+The readme should make sure it showcases the demos prominently.  Link with DEMOS.md in a way
+that makes the hyperlink work in GitHub
+
+Make sure every song mentions where it came from or if it is original, and what features it showcases.
+
+Keep the format consistent for each song, keep the demos sorted by name in this file.
+
+The README needs a screenshot so I'll take one and you can add it above the fold after the initial description.
+
 ### A Tie row
 
 **HIGH PRIORITY, and smaller now.** Gates already hold a note across steps within a pattern, so a
