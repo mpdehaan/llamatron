@@ -15,7 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# Runs every test. Add a name to only run tests matching it: ./run_tests.sh test_blend
+# Runs every test, several test classes at once, which takes about 20 seconds rather than
+# about two minutes, and reports every result. Add a name to only run the tests matching it,
+# one at a time: ./run_tests.sh test_blend. Use ./run_tests.sh --serial to run every test in
+# one process, the plain unittest way.
 
 set -e
 
@@ -35,7 +38,10 @@ if ! .venv/bin/python -c 'import llamatron' 2>/dev/null; then
     exit 1
 fi
 
+if [ "$1" = "--serial" ]; then
+    exec .venv/bin/python -m unittest discover -s test
+fi
 if [ -n "$1" ]; then
     exec .venv/bin/python -m unittest discover -s test -k "$1"
 fi
-exec .venv/bin/python -m unittest discover -s test
+exec .venv/bin/python test/parallel.py

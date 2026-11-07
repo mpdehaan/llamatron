@@ -19,12 +19,15 @@ python3 -m venv .venv
 .venv/bin/python -m pip install -e .
 ```
 
-Tests use the standard library's `unittest`. Run these from the repository root, after the install above:
+Tests use the standard library's `unittest`. Run them from the repository root, after the install above:
 
 ```
-.venv/bin/python -m unittest discover -s test                # all tests
-.venv/bin/python -m unittest discover -s test -k test_name   # tests matching a name
+./run_tests.sh                # all tests, in parallel: about 20 seconds
+./run_tests.sh test_name      # tests matching a name
+./run_tests.sh --serial       # all tests in one process, the plain unittest way: about two minutes
 ```
+
+Always run the full suite with `./run_tests.sh`, which runs `test/parallel.py`: one process per test class, as many at once as there are cores, reporting every failure in full and the total count. It exits with a failure if any class fails, so check its exit code or its last line (`OK` or `FAILED: ...`) before committing. `.venv/bin/python -m unittest discover -s test` still works and gives the same results, just slower.
 
 Don't add `__init__.py` to `test/`, because a package with that name would clash with Python's standard library `test` package.
 
