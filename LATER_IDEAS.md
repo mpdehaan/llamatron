@@ -857,11 +857,10 @@ The arrangement_demo is the wellerman so rename it wellerman.yml
 
 ## Original demos and names and redundancy
 
-the acid_techno and retro_chill demos are old, so we may want to rewrite them with new features and  make them
-even better.  To be discussed with respect to details.  The minimal techno example seems unneeded
-now that we have the morph demo, maybe rename the morph demo to minimal_morph.yml
-
-(Since then, acid_techno was deleted and replaced by `registers_demo.yml`, an acid techno riff built around registers, and retro_chill lost its `rhythm_from` scene.)
+The minimal techno example seems unneeded now that we have the morph demo, maybe rename the morph
+demo to minimal_morph.yml. (acid_techno was replaced by `registers_demo.yml`, and retro_chill was
+rewritten on 2026-11-07 as an original piece using ties, registers, grabs, a morph, a CC slide, a
+scene scale change and a tempo ramp.)
 
 ## File protect
 
@@ -899,13 +898,6 @@ pass is shorter. Things to settle: what a skipped step's CC values and register 
 how a pass that's shorter than its pattern fits a scene's length, since every pass lasts exactly
 steps times step size today. Probability would be rolled from the song's seed, like the other
 probabilities, so a render is still always the same.
-
-## Rewriting retro_chill
-
-`examples/retro_chill.yml` is one of the first example songs and the user isn't a fan of it. It
-should be rewritten with the program's newer features, such as gates, registers, grabs and
-morphs, to be decided when it's rewritten. For now, the one scene that used `rhythm_from` has
-been deleted, because `rhythm_from` was removed.
 
 ## Euclidean sequencing
 
