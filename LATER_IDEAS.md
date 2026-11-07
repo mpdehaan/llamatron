@@ -1014,3 +1014,35 @@ arps, AutoRatchets, morphs, grabs, directions, CC rows and slides, ratchet offse
 mute, tempo ramps, scene scales, gates and dots, and registers once they're built. Each demo
 teaches one feature (see `examples/DEMOS.md`), so a feature without one is a candidate for a new
 demo or for a scene in an existing one.
+
+## Risers, horns and filter sweeps, with smooth automation
+
+Techno often has risers and horn-like swells: a long sustained note while its loudness, filter or
+another sound setting moves underneath it. Filter sweeps are the same idea on any sound. Earlier
+we talked about how the Elektron Monomachine's parameter locks work (a value set on a step, as
+other gear does too), and llamatron's CC rows and Slide already work that way. What needs making
+sure of is that when MIDI automation is drawn, the transitions are smooth, not stepped. This may
+need a test, and the user checking the result in Ableton Live.
+
+What the code does today, and what it means for this:
+
+- **Velocity can't change during a note.** In MIDI, velocity is sent once, when a note starts,
+  so a held note can't swell by velocity. A riser on one long note needs a CC instead, such as
+  CC 11 (expression), CC 7 (volume) or a filter cutoff the synth listens to, set in the track's
+  `cc` numbers. Velocity, and the registers being built now, can only change from note to note.
+  The GUIDE should say so where risers come up.
+- **Long notes:** a gate can now be up to 4 whole notes, but it's cut at the end of the
+  pattern, so a riser longer than one pattern needs the planned Tie row, or a long pattern.
+- **Slides:** a step with `slide` ramps each CC value to that lane's next value. Live gets two
+  envelope points and draws a straight line between them, which is smooth. The `.mid` files get
+  a value every `SLIDE_STEP`, which is stepped at a fine grain. Things to check: whether
+  `SLIDE_STEP` is fine enough to sound smooth on a slow sweep, since a CC only has 128 values
+  anyway; what a slide does when the lane has no later value in the pattern, and across the
+  end of a pass into the next repeat; and the hold points (a held value gets a second point at
+  the moment of the next one), which have never been confirmed in Live.
+- **Shapes:** Live draws straight lines, so a riser that should curve, like an exponential
+  filter sweep, would need several points or Live's curved segments. The curve format in a
+  `.als` isn't known yet, so that would mean saving a set from Live with a curve and reading it.
+- **Testing:** a test can check that the envelope points and the `.mid` control changes are
+  where they should be and move in one direction without jumps, but only listening in Live
+  proves the result is smooth. A riser scene in a demo would give the user something to check.
