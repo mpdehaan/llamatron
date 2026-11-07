@@ -1061,3 +1061,25 @@ could be a small list of where the gaps go, and the order of `keys()` would foll
 The keys stay listed once in `keys()`, as the rule for every page requires, and the test that
 every key is shown still applies. It's the main screen of the hotkey review too, so the two could
 be done together.
+
+## Moving the help text into help.py
+
+The user wants every page's help text moved into one module, perhaps `src/llamatron/tui/help.py`,
+as multi-line string constants, so that help can be edited by hand easily and safely, without
+touching code or risking breaking it.
+
+Today each of the 15 pages keeps its help as a `HELP` tuple of lines on its class, with `''` for
+a blank line, and `Page.show_help` in `src/llamatron/tui/base.py` shows them in a dialog that
+wraps each line. Things the move would touch:
+
+- Each constant would be a triple-quoted string, like `PATTERN_EDITOR_HELP = """..."""`, and each
+  page would say `HELP = PATTERN_EDITOR_HELP`. Hand-written line breaks inside a paragraph would
+  need joining before wrapping, so the rule would be that a blank line starts a new paragraph
+  and other line breaks are only for editing. `textwrap.dedent` keeps the indentation in the file
+  from showing.
+- The test that every page's help fits an 80 by 24 console stays, and runs on the new text, so a
+  hand edit that makes help too long fails a test rather than spilling off the screen.
+- The guide (`GUIDE.md`) and the help say many of the same things, which is a separate question:
+  one could be built from the other someday, but the user edits `GUIDE.md` by hand.
+- The format strings in help that name keys or values could use the constants too, but plain text
+  is easier to edit, so that's a choice to make when it's done.
