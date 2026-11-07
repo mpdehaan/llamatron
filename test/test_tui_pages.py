@@ -45,8 +45,8 @@ from llamatron.tui.pages import (
     GeneratorsPage, MainPage, OffsetsEditor, PatternsPage, ScalesPage, SongPage, TrackEditor, TracksPage,
 )
 from llamatron.tui.pattern_editor import (
-    ADVANCED, CC, NORMAL, REGISTER_CHANGES, REGISTERS, ROW_LABELS, ROW_SET_HEADERS, ROW_SET_NAMES, ROW_SETS, TOGGLE_ON,
-    PatternEditor,
+    ADVANCED, CC, DESCRIBE_TIED, NORMAL, NORMAL_ROWS, REGISTER_CHANGES, REGISTERS, ROW_LABELS, ROW_SET_HEADERS,
+    ROW_SET_NAMES, ROW_SETS, TOGGLE_ON, PatternEditor,
 )
 
 # How the pattern editor shows a row's label at the left of the grid, a key in the key list,
@@ -613,9 +613,7 @@ class TestPatternEditor(UITest):
         self.assertEqual((self.editor.row_name(), self.editor.step), ('gate', 0))
 
     async def test_the_rows_are_all_there_in_order(self):
-        self.assertEqual([name for name, _ in self.editor.rows()], [
-            'degree', 'gate', 'dot', 'accidental', 'octave', 'chord', 'velocity', 'probability', 'glide',
-        ])
+        self.assertEqual([name for name, _ in self.editor.rows()], NORMAL_ROWS)
 
     async def test_a_new_note_gets_the_default_octave_and_a_gate_of_one_step(self):
         self.document.data['default_octave'] = 4
@@ -1970,6 +1968,56 @@ class TestRowSets(UITest):
         await self.press('tab', 'down', 'enter', 'down')
         labels = [item.shown_label() for item in self.app.screen.key_table()]
         self.assertIn('F', labels)
+
+
+class TestTieRow(UITest):
+    """Tie is on the normal rows, works only on empty steps, and holds the note before it."""
+
+    EMPTY_STEP = 2
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        await self.press('p', 'enter')
+        self.editor = self.app.screen
+        while self.editor.row_name() != Row.TIE:
+            await self.press('down')
+
+    def tie(self, step):
+        return self.document.step_value('tune', Row.TIE, step)
+
+    async def test_it_is_a_normal_row_and_toggles_on_an_empty_step(self):
+        self.assertIn(ROW_SHOWN.format(label=ROW_LABELS[Row.TIE]), self.text())
+        await self.press(*['right'] * self.EMPTY_STEP)
+        await self.press('space')
+        self.assertIs(self.tie(self.EMPTY_STEP), True)
+        self.assertEqual(self.editor.cell_text(Row.TIE, self.EMPTY_STEP), TOGGLE_ON)
+        self.assertIn(DESCRIBE_TIED.format(step=self.EMPTY_STEP + 1), self.text())
+        render_data(self.document.data)
+        await self.press('backspace')
+        self.assertIs(self.tie(self.EMPTY_STEP), False)
+
+    async def test_a_step_with_a_note_has_no_tie_keys(self):
+        labels = [item.shown_label() for item in self.editor.key_table()]
+        self.assertNotIn('Space', labels)
+        await self.press('space')
+        self.assertFalse(self.tie(0))
+
+    async def test_typing_a_degree_on_a_tied_step_removes_the_tie(self):
+        await self.press(*['right'] * self.EMPTY_STEP, 'space')
+        while self.editor.row_name() != Row.DEGREE:
+            await self.press('up')
+        await self.press('5')
+        self.assertIs(self.tie(self.EMPTY_STEP), False)
+        self.assertEqual(self.document.step_value('tune', Row.DEGREE, self.EMPTY_STEP), 5)
+        render_data(self.document.data)
+
+    async def test_shortening_past_a_tie_asks_first(self):
+        last = self.editor.steps() - 1
+        await self.press(*['right'] * last, 'space')
+        await self.press('r')
+        self.app.screen.value = str(last)
+        await self.press('enter')
+        self.assertIsInstance(self.app.screen, ConfirmDialog)
 
 
 class TestRearrangingAPattern(UITest):

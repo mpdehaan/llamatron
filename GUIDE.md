@@ -127,7 +127,7 @@ The cursor starts on the Degree row of step 1. Degrees are notes of the scale, s
 2. Typing never moves the cursor, so you always press right yourself. A step with no degree is a rest, and shows as a blank.
 3. `Bksp` on a degree turns it back into a rest.
 
-Every step lasts the same time, the pattern's step size, so each note starts where its step is. To make a note sound longer, press down to the Gate row and use `+` and `-` to step through lengths, or `*` to double and `/` to halve. A gate can be longer than its step, so a note can ring on while the next steps play, up to the end of the pattern. A blank gate lasts one step. The line under the grid shows the note the cursor is on, like `Step 1: E3 in C Major, gate 1/16`.
+Every step lasts the same time, the pattern's step size, so each note starts where its step is. To make a note sound longer, press down to the Gate row and use `+` and `-` to step through lengths, or `*` to double and `/` to halve. A gate can be longer than its step, so a note can ring on while the next steps play, up to the end of the pattern. A blank gate lasts one step. Or draw the length instead: press down to the Tie row and mark the empty steps after the note, and it sounds through every one of them. The line under the grid shows the note the cursor is on, like `Step 1: E3 in C Major, gate 1/16`.
 
 Press `Tab` to go back to the list. It shows how long the pattern lasts.
 
@@ -292,8 +292,17 @@ The cursor stays on its step after `F` and `S`, so pressing either again undoes 
 | Velocity | 1 to 127, default 127 | Digits, `+` `-`, `Enter` to type, `Bksp` sets the default |
 | Prob | Chance of playing, 0 to 100, default 100 | Digits, `+` `-`, `Enter` to type, `Bksp` sets the default |
 | Glide | `*` makes the note run slightly into the next one, which a synth with glide turned on slides across. A blank is off. | `Space` toggles, `Bksp` turns it off |
+| Tie | `*` on an empty step keeps the note before it sounding through the step. See below. | `Space` toggles, `Bksp` turns it off. Only on empty steps. |
 
 The highest degree you can type is the size of the largest scale the pattern plays in. If a scene uses a smaller scale, a degree past its top wraps up an octave.
+
+Tie draws a note out across the steps after it. Put a note on one step, then mark Tie on the empty steps that follow, and the note keeps sounding through every tied step, like drawing a line: a sixteenth note followed by three ties is a quarter note. Ties and the gate both set how long a note sounds, and the longer wins, so you can ignore the gate and draw with ties, or type a gate and leave the ties alone. The Tie row only works on empty steps, because a tied step plays nothing of its own, and typing a degree on a tied step removes the tie. Some details:
+
+- A tie after an empty step holds nothing, so it's silence, and so is a tie after a note that probability dropped.
+- Ties go in the order the steps play, so with a play direction a tie holds whichever note played just before it.
+- A tie on the first step of a pattern holds the last note of the pass before it, across repeats and loops of the same clip. That's the one thing a gate can't do, since gates stop at the end of the pattern. At the very start of a clip there's nothing before it, so it's silence, and that includes the start of a new scene.
+- A tie holds a whole chord, or the last slice of a ratchet, and glide on the note acts at the end of the held note.
+- A tied step can still send CC values and change registers, like any empty step. During a morph, a tie on the first step follows the clip's own pattern.
 
 Glide does nothing before a rest or before the same pitch. Probability is rolled when you render, using the song's seed, once for each repeat and each ratchet slice. A render plays the same every time until you change the seed.
 

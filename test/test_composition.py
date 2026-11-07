@@ -140,6 +140,7 @@ class TestPattern(RoundTrip):
     DATA = {
         'steps': 3, 'drum': False, 'direction': 'pendulum', 'ax_add': [1, None, -2], 'bx_note': [False, False, True],
         'degree': [1, None, 5], 'gate': ['1/4', None, 1], 'dot': ['d', None, None], 'glide': [True, False, False],
+        'tie': [False, True, False],
     }
 
     def test_round_trip(self):
@@ -171,6 +172,7 @@ class TestPattern(RoundTrip):
         self.assert_refused('steps must be a whole number of 1 or more', Pattern, {'steps': 0})
         self.assert_refused('degree must be a list of 2 values', Pattern, {'steps': 2, 'degree': [1]})
         self.assert_refused('glide must be true or false, got null', Pattern, {'steps': 1, 'glide': [None]})
+        self.assert_refused('step 1 has a note and a tie', Pattern, {'steps': 1, 'degree': [1], 'tie': [True]})
         self.assert_refused('direction must be one of', Pattern, {'steps': 1, 'direction': 'sideways'})
         self.assert_refused('velocity must be a whole number from 1 to 127', Pattern, {'steps': 1, 'velocity': [0]})
         self.assert_refused('must be a note letter', Pattern, {'steps': 1, 'drum': True, 'degree': [1]})

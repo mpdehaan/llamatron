@@ -48,14 +48,14 @@ def register_labels(rows, label):
 # The rows on screen. Degree always shows, and the rest depend on the set of rows showing.
 ROW_LABELS = {
     'degree': 'Degree', 'gate': 'Gate', 'dot': 'Dot', 'accidental': '#/b', 'octave': 'Octave', 'chord': 'Chord',
-    'velocity': 'Velocity', 'probability': 'Prob', 'glide': 'Glide', 'ratchet': 'Ratchet',
+    'velocity': 'Velocity', 'probability': 'Prob', 'glide': 'Glide', 'tie': 'Tie', 'ratchet': 'Ratchet',
     'ratchet_offset': 'Ratchet Offset', 'grab': 'Grab',
     'cc1': 'CC 1', 'cc2': 'CC 2', 'cc3': 'CC 3', 'cc4': 'CC 4', 'slide': 'Slide',
     **register_labels(REGISTER_NOTE_ROWS, REGISTER_NOTE_LABEL),
     **register_labels(REGISTER_VELOCITY_ROWS, REGISTER_VELOCITY_LABEL),
     **register_labels(REGISTER_ADD_ROWS, REGISTER_ADD_LABEL),
 }
-NORMAL_ROWS = ['degree', 'gate', 'dot', 'accidental', 'octave', 'chord', 'velocity', 'probability', 'glide']
+NORMAL_ROWS = ['degree', 'gate', 'dot', 'accidental', 'octave', 'chord', 'velocity', 'probability', 'glide', 'tie']
 ADVANCED_ROWS = ['degree', 'ratchet', 'ratchet_offset', 'grab']
 CC_SET = ['degree', 'cc1', 'cc2', 'cc3', 'cc4', 'slide']
 # The rows that use the registers' values, and then the rows that change them.
@@ -73,8 +73,10 @@ ROW_SET_NAMES = {
 }
 # Rows that don't belong in a drum pattern, which has no chords and no scale to move notes along.
 NOT_FOR_DRUMS = ('chord', *REGISTER_NOTE_ROWS.values())
-# Rows that a rest can hold, because CC values and register changes don't need a note.
-REST_EDITABLE = (*CC_ROWS, 'slide', *REGISTER_ADD_ROWS.values())
+# Rows that a rest can hold, because CC values, register changes and ties don't need a note. A
+# tie is only for an empty step: it holds the note before it, so a step with a note can't have one.
+REST_EDITABLE = (*CC_ROWS, 'slide', *REGISTER_ADD_ROWS.values(), 'tie')
+TIE_ROW = 'tie'
 # What the second line of the header says for each set of rows, besides the normal ones.
 ROW_SET_HEADERS = {
     ADVANCED: "Advanced rows: Grab plays what each clip's Grab track last played",
@@ -93,6 +95,7 @@ MSG_NOT_A_LENGTH = '{text!r} is not a whole number or a fraction like 1/8.'
 MSG_LENGTH_OUT_OF_RANGE = 'A length must be more than 0 and at most {most}.'
 GATE_PROMPT, STEP_SIZE_PROMPT = 'Gate', "Step size (blank for the song's)"
 DESCRIBE_EMPTY = 'Step {step}: empty'
+DESCRIBE_TIED = 'Step {step}: tie, holding the note before it'
 DESCRIBE_NOTE = 'Step {step}: {sound}, gate {gate}{chord}'
 DESCRIBE_CHORD = ', chord {chord}'
 DOT_NAMES = {GateModifier.DOTTED: ' dotted', GateModifier.TRIPLET: ' triplet'}
@@ -172,7 +175,7 @@ class PatternEditor(Page):
         'Gate: how long the note sounds, one step if blank. + and - step through lengths, * and / double and halve, Enter types one.',
         'Dot: d is dotted, t a triplet. Octave: as Live numbers them.',
         'Chord: Enter shows them, and 3 or 7 use the scale.',
-        'Velocity, Prob: type numbers. Glide (*): runs into the next note.',
+        'Velocity, Prob: type numbers. Glide (*): runs into the next note. Tie (*) on an empty step holds the note before it through the step.',
         '',
         'PgUp/PgDn change rows. Advanced: Ratchet splits a step, Ratchet Offset moves each slice, Grab takes another track\'s note.',
         'CC 1 to 4 send values even on rests. Slide ramps them on.',
@@ -263,6 +266,8 @@ class PatternEditor(Page):
             return self.degree_keys()
         if not self.is_note() and name not in REST_EDITABLE:
             return []
+        if name == TIE_ROW and self.is_note():
+            return []
         if name == 'gate':
             return [
                 key(('+', '='), 'longer', lambda: self.nudge_gate(1), label='+'),
@@ -343,7 +348,9 @@ class PatternEditor(Page):
     # Editing each row.
 
     def fill_in(self):
-        """Give a new note what every note has: an octave. Its gate starts blank, which is one step."""
+        """Give a new note what every note has: an octave, and no tie, since a tie only holds the note before it. Its gate starts blank, which is one step."""
+        if self.value(TIE_ROW):
+            self.set_value(False, TIE_ROW)
         if self.value('octave') is None:
             setting = 'default_drum_octave' if self.is_drum() else 'default_octave'
             self.set_value(self.document.data[setting], 'octave')
@@ -655,7 +662,7 @@ class PatternEditor(Page):
     def describe(self):
         step = self.step + 1
         if not self.is_note():
-            return DESCRIBE_EMPTY.format(step=step)
+            return (DESCRIBE_TIED if self.value(TIE_ROW) else DESCRIBE_EMPTY).format(step=step)
         where = '' if self.is_drum() else f' in {self.document.data.get("scale") or "no scale"}'
         played = self.document.note_name(self.item, self.step)
         sound = f'{played}{where}' if played else f'degree {self.value("degree")}, no scale'
@@ -680,6 +687,8 @@ class PatternEditor(Page):
             if first >= self.steps():
                 break
             lines += self.block_lines(first, min(first + per_block, self.steps()))
-        lines += [Text(''), Text(' ' + fit(self.describe(), width - 1), style='bold')]
-        return lines
+        # A blank line sets the description apart from the grid, unless the console is too short for one.
+        description = Text(' ' + fit(self.describe(), width - 1), style='bold')
+        spacer = [Text('')] if len(lines) + 2 <= height else []
+        return lines + spacer + [description]
 

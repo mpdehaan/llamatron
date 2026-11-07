@@ -111,8 +111,8 @@ def blank(row):
 # What a rest keeps when a note is turned into one: its time, the CC values it sends, and what it
 # adds to the registers.
 REST_ROWS = (*CC_ROWS, Row.SLIDE, *REGISTER_ADD_ROWS.values())
-# The rows that make a step worth keeping even without a note.
-KEPT_WITHOUT_A_NOTE = (*CC_ROWS, *REGISTER_ADD_ROWS.values())
+# A register change of nothing, which is the same as none.
+NO_CHANGE = 0
 # How a register's settings are named when one is refused.
 WHERE_REGISTER = 'register {name}'
 
@@ -438,11 +438,12 @@ class Document:
         return sum(1 for step in range(steps, pattern['steps']) if self._step_holds_anything(name, step))
 
     def _step_holds_anything(self, name, step):
-        """Return whether a step plays a note, sends a CC value or adds to a register."""
-        if self.step_value(name, Row.DEGREE, step) is not None:
+        """Return whether a step plays a note, holds one with a tie, sends a CC value or adds to a register."""
+        if self.step_value(name, Row.DEGREE, step) is not None or self.step_value(name, Row.TIE, step):
             return True
-        return any(self.step_value(name, row, step) not in (None, 0) or (row in CC_ROWS and self.step_value(name, row, step) == 0)
-                   for row in KEPT_WITHOUT_A_NOTE)
+        if any(self.step_value(name, row, step) is not None for row in CC_ROWS):
+            return True
+        return any(self.step_value(name, row, step) not in (None, NO_CHANGE) for row in REGISTER_ADD_ROWS.values())
 
     def set_steps(self, name, steps):
         """Change how many steps a pattern has, cutting them or adding empty steps at the end."""

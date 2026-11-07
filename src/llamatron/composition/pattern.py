@@ -35,6 +35,9 @@ MSG_BAD_DIRECTION = '{where}: direction must be one of {directions}, got {value!
 MSG_ROW_WRONG_LENGTH = '{where}: {row} must be a list of {steps} values, got {value!r}'
 MSG_TOGGLE_IS_NULL = '{where}: {row} must be true or false, got null'
 MSG_BAD_STEP_VALUE = '{where}: {row} {problem}, got {value!r}'
+MSG_TIE_ON_A_NOTE = "{where}: step {step} has a note and a tie, but a tied step only holds the note before it, so it can't have its own"
+# Steps are counted from 1 in messages, as the editor shows them.
+FIRST_STEP_NUMBER = 1
 # What a step's value has to be on each kind of row, for MSG_BAD_STEP_VALUE.
 PROBLEM_NOT_NOTE_LETTER = 'in a drum pattern, must be a note letter from A to G'
 PROBLEM_NOT_DEGREE = 'must be a scale degree of {lowest} or more'
@@ -88,6 +91,7 @@ class Pattern(LlamaData):
             raise SongFileError(MSG_DRUM_NOT_TRUE_OR_FALSE.format(where=where, value=drum))
         for row in PATTERN_ROWS:
             _check_row(row, data.get(row), steps, drum, where)
+        _check_ties(data, steps, where)
         rows = {row: data.get(row) for row in PATTERN_ROWS}
         return cls(steps, rows, **{name: data.get(name) for name in SETTINGS})
 
@@ -149,6 +153,16 @@ def _check_row(row, values, steps, drum, where):
             raise SongFileError(MSG_TOGGLE_IS_NULL.format(where=where, row=row))
         if value is not None:
             _check_step_value(row, value, drum, where)
+
+
+def _check_ties(data, steps, where):
+    """Refuse a tie on a step that has a note, since a tied step plays nothing of its own."""
+    ties, degrees = data.get(Row.TIE), data.get(Row.DEGREE)
+    if not ties or not degrees:
+        return
+    for step in range(steps):
+        if ties[step] and degrees[step] is not None:
+            raise SongFileError(MSG_TIE_ON_A_NOTE.format(where=where, step=step + FIRST_STEP_NUMBER))
 
 
 def _check_step_value(row, value, drum, where):

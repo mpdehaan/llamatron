@@ -16,7 +16,7 @@
 
 """Playing one pass through a pattern, step by step, into notes, chords and rests."""
 
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from fractions import Fraction
 
 from llamatron.chord import Chord
@@ -44,6 +44,20 @@ NO_ACCIDENTAL, NO_HALF_STEPS = '', 0
 PATTERN_STEPS = 'steps'
 # What registers add to a note or velocity when a step uses none of them.
 NOTHING_ADDED = 0
+# How long the ties at the start of a pass last when there are none.
+NO_TIES = Fraction(0)
+
+
+@dataclass(slots=True)
+class Pass:
+    """One pass through a pattern: its clip, and how long the ties at its start last.
+
+    Ties at the very start of a pass continue the note that the pass before it ended with, which
+    the pass can't reach, so whoever joins the passes lengthens that note by tied_from_before.
+    """
+
+    clip: Clip
+    tied_from_before: Fraction
 # Where a step's values hold the note its grab took, beside its rows.
 GRABBED = 'grabbed'
 # How messages name a pattern, and what goes wrong while playing one.
@@ -69,13 +83,16 @@ class PatternPlayer:
         self._transpose = track.get_transpose()
 
     def play_pass(self, pattern_name, grab, direction, where, rolls, order, registers, start, changes_registers=True):
-        """Return one pass through a pattern, as notes, chords and rests, starting at a time in the clip.
+        """Return one pass through a pattern as a Pass, with notes, chords and rests, starting at a time in the clip.
 
         Every step takes the same time, its step size, whatever order the steps play in, which is
         the pattern's direction unless direction overrides it. A step that plays sounds for its
-        gate, which can run past later steps but not past the end of the pass. The pattern's grab
-        steps play what grab, a GrabSource, gives for the time they start, if it's given. rolls is
-        the random generator probability uses, and order the StepOrder.
+        gate, which can run past later steps but not past the end of the pass. A tied step plays
+        nothing and keeps the note that played just before it, in time, sounding to the end of
+        the tied step, or for its gate if that's longer. A tie after an empty step is silence, and
+        ties at the start of the pass are left for the caller to join to the pass before. The
+        pattern's grab steps play what grab, a GrabSource, gives for the time they start, if it's
+        given. rolls is the random generator probability uses, and order the StepOrder.
 
         registers is a RegisterRecorder or RegisterReader. Every step adds to the registers, even
         one with no note, unless changes_registers is false, as for a morph's target, and then
@@ -88,6 +105,9 @@ class PatternPlayer:
         length = self.pattern_length(pattern)
         where = WHERE_PATTERN.format(name=pattern_name)
         sounding, controls = [], []
+        # Which entry of sounding the last step left sounding for a tie to lengthen, if any, and
+        # how many tied steps came before anything else.
+        tied_to, leading_ties = None, 0
         for slot in range(pattern.get_steps()):
             time = slot * step_size
             step = order.next_step((PATTERN_STEPS, pattern_name), pattern.get_steps(), direction or pattern.get_direction())
@@ -95,8 +115,16 @@ class PatternPlayer:
             # A step with no note can send CC values and add to the registers too.
             controls += _controls_sent(values, time)
             current = registers.at_step(start + time, _register_adds(values) if changes_registers else {})
-            if values[Row.DEGREE] is None:
+            if values[Row.TIE]:
+                if tied_to is not None:
+                    sounding[tied_to] = _lengthened_to(sounding[tied_to], time + step_size)
+                elif slot == leading_ties:
+                    leading_ties += 1
                 continue
+            if values[Row.DEGREE] is None:
+                tied_to = None
+                continue
+            tied_to = len(sounding)
             drum = pattern.is_drum()
             values[GRABBED] = grab.note_at(start + time) if grab and values[Row.GRAB] else None
             # Drum patterns have no scale to move a note along, so registers only change their velocity.
@@ -104,7 +132,8 @@ class PatternPlayer:
             velocity_added = _used_values(values, current, REGISTER_VELOCITY_ROWS)
             gate = min(_gate(values, step_size, where), length - time)
             sounding.append((time, self._step(values, gate, drum, where, rolls, note_moved, velocity_added)))
-        return Clip(notes=_in_sequence(sounding, length, step_size), scale=self._scale, controls=controls)
+        clip = Clip(notes=_in_sequence(sounding, length, step_size), scale=self._scale, controls=controls)
+        return Pass(clip, leading_ties * step_size)
 
     def pattern_length(self, pattern):
         """Return how long one pass through a pattern lasts, in whole notes: its steps times its step size."""
@@ -190,6 +219,19 @@ class PatternPlayer:
         if symbol in FIXED_CHORDS:
             return root.to_chord(FIXED_CHORDS[symbol])
         return _scale_chord(SCALE_CHORDS[symbol], degree, length, half_steps, shift, scale)
+
+
+def _lengthened_to(entry, end):
+    """Return a sounding entry, (start, pieces), with its last piece lengthened so the sound lasts until end, if it doesn't already.
+
+    A piece that probability turned into a rest stays as it is, because there's no note to hold.
+    """
+    start, pieces = entry
+    total = sum((piece.length for piece in pieces), Fraction(0))
+    extra = end - (start + total)
+    if extra <= 0 or isinstance(pieces[-1], Rest):
+        return entry
+    return start, [*pieces[:-1], with_sound(pieces[-1], length=pieces[-1].length + extra)]
 
 
 def _gate(values, step_size, where):

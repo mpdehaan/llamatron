@@ -96,7 +96,7 @@ def to_gates(old, default=F(1, 16)):
         new_rows[Row.DOT].append(dot)
         for _ in range(int(duration / step) - 1):
             for row in rows:
-                new_rows[row].append(False if row in TOGGLE_ROWS else None)
+                new_rows[row].append(_filler_value(row, old[row][place]))
             new_rows[Row.GATE].append(None)
             new_rows[Row.DOT].append(None)
     new = {PatternSetting.STEPS: len(new_rows[Row.GATE])}
@@ -110,6 +110,13 @@ def to_gates(old, default=F(1, 16)):
             new[row] = values
     new.update(misfits)
     return new
+
+
+def _filler_value(row, value):
+    """Return what a step added to fill out an old step's duration holds on a row: nothing, except that a tie covers the whole duration."""
+    if row == Row.TIE:
+        return value
+    return False if row in TOGGLE_ROWS else None
 
 
 def _given(old, row, place, worked_out):

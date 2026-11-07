@@ -98,6 +98,8 @@ class Row:
     VELOCITY = 'velocity'
     PROBABILITY = 'probability'
     GLIDE = 'glide'
+    # A tied step plays nothing of its own and keeps the note before it sounding through the step.
+    TIE = 'tie'
     RATCHET = 'ratchet'
     RATCHET_OFFSET = 'ratchet_offset'
     GRAB = 'grab'
@@ -233,12 +235,12 @@ REGISTER_ADD_ROWS = {
 
 PATTERN_ROWS = [
     Row.DEGREE, Row.GATE, Row.DOT, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.VELOCITY, Row.PROBABILITY, Row.GLIDE,
-    Row.RATCHET, Row.RATCHET_OFFSET, Row.GRAB,
+    Row.TIE, Row.RATCHET, Row.RATCHET_OFFSET, Row.GRAB,
     Row.CC1, Row.CC2, Row.CC3, Row.CC4, Row.SLIDE,
     *REGISTER_NOTE_ROWS.values(), *REGISTER_VELOCITY_ROWS.values(), *REGISTER_ADD_ROWS.values(),
 ]
 # Rows that are on or off for each step, which files write as true or false.
-TOGGLE_ROWS = (Row.GLIDE, Row.GRAB, Row.SLIDE, *REGISTER_NOTE_ROWS.values(), *REGISTER_VELOCITY_ROWS.values())
+TOGGLE_ROWS = (Row.GLIDE, Row.TIE, Row.GRAB, Row.SLIDE, *REGISTER_NOTE_ROWS.values(), *REGISTER_VELOCITY_ROWS.values())
 # A pattern's CC lanes, whose numbers each track sets for itself.
 CC_ROWS = (Row.CC1, Row.CC2, Row.CC3, Row.CC4)
 # Rows that hold a whole number of any size, positive or negative.

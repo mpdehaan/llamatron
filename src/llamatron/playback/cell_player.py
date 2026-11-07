@@ -21,11 +21,14 @@ from dataclasses import replace
 from fractions import Fraction
 from math import ceil
 
+from llamatron.chord import Chord
 from llamatron.composition.file_format import LIVE_OCTAVE_OFFSET
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators.blend import Blend
+from llamatron.held import Held, is_phrase
+from llamatron.note import Note
 from llamatron.playback.morph_controls import morph_controls
-from llamatron.playback.pattern_player import PatternPlayer
+from llamatron.playback.pattern_player import PatternPlayer, with_sound
 from llamatron.playback.step_order import StepOrder
 from llamatron.clip_grid import Clip
 
@@ -128,34 +131,58 @@ class CellPlayer:
         notes, controls, total, place = [], [], Fraction(0), 0
         while (place < repeat) if fill is None else (total < fill):
             played = self._play_pass(player, grab, scale, place % repeat, repeat, where, rolls, order, registers, total)
-            length = played.total_length()
+            length = played.clip.total_length()
             if length == NO_LENGTH:
                 break
-            notes += played.notes
-            controls += _moved_later(played.controls, total)
+            # Ties at the start of this pass hold the note the passes so far ended with.
+            notes = _tied_on(notes, played.tied_from_before)
+            notes += played.clip.notes
+            controls += _moved_later(played.clip.controls, total)
             total += length
             place += 1
         clip = Clip(notes=notes, scale=scale, controls=controls)
         return clip.section(NO_LENGTH, fill) if fill else clip
 
     def _play_pass(self, player, grab, scale, place, repeat, where, rolls, order, registers, start):
-        """Return one pass through the cell's pattern, part way through any morph.
+        """Return one pass through the cell's pattern as a Pass, part way through any morph.
 
         Only the first pattern takes grabs or a direction from the cell, and a morph's target
         plays as it's written. A morph's target uses the registers but doesn't add to them, so
-        that a step isn't counted twice.
+        that a step isn't counted twice, and ties at the start of a pass follow the cell's own
+        pattern, whatever the morph puts there.
         """
         cell = self._cell
-        clip = player.play_pass(cell.get_pattern_name(), grab, cell.get_direction(), where, rolls, order, registers, start)
+        played = player.play_pass(cell.get_pattern_name(), grab, cell.get_direction(), where, rolls, order, registers, start)
+        clip = played.clip
         morph_to = cell.get_morph_target()
         if morph_to is None or not clip.notes:
-            return clip
-        target = player.play_pass(morph_to, None, None, where, rolls, order, registers, start, changes_registers=False)
+            return played
+        target = player.play_pass(morph_to, None, None, where, rolls, order, registers, start, changes_registers=False).clip
         amount = Fraction(place, repeat - 1) * FULL_MORPH
         target = _looped(target, clip.total_length())
         blend = Blend(target, amount, mode=cell.get_morph_style())
         controls = morph_controls(clip, target, *blend.region(clip))
-        return Clip(notes=blend.generate(clip).played_notes(), scale=scale, controls=controls)
+        played.clip = Clip(notes=blend.generate(clip).played_notes(), scale=scale, controls=controls)
+        return played
+
+
+def _tied_on(notes, extra):
+    """Return a clip's positions with the note still sounding at their end held for extra longer, for ties that follow.
+
+    The last position is that note if it's a note or chord, or a Held whose sound reaches the end.
+    Anything else, like a rest, means nothing is sounding, so the ties are silence and nothing
+    changes. The note becomes a Held, so that the next positions still start on time.
+    """
+    if extra <= 0 or not notes:
+        return notes
+    last = notes[-1]
+    if isinstance(last, (Note, Chord)):
+        held = Held(with_sound(last, length=last.length + extra), last.length)
+    elif isinstance(last, Held) and not is_phrase(last.sound) and last.sound.length >= last.length:
+        held = Held(with_sound(last.sound, length=last.sound.length + extra), last.length)
+    else:
+        return notes
+    return [*notes[:-1], held]
 
 
 def _looped(clip, length):

@@ -56,7 +56,14 @@ The README needs a screenshot so I'll take one and you can add it above the fold
 
 ### A Tie row
 
-**HIGH PRIORITY, and smaller now.** Gates already hold a note across steps within a pattern, so a
+**Done, in version 1.0.9.** A Tie row on the editor's normal rows, only on empty steps: a tied
+step holds the note that played just before it through the step, the longer of the gate and the
+ties wins, a tie at the start of a pass continues the last note of the pass before across a
+clip's repeats and loops, and a tie at the very start of a clip (including a new scene's) is
+silence, as the user decided. The Entertainer turned out to have no notes held over a phrase end,
+so it didn't need ties. What follows is the original note.
+
+Gates already hold a note across steps within a pattern, so a
 tie is only needed to carry a note across the end of a pattern, into the next repeat or clip,
 which gates deliberately don't do. A toggle row on the editor's normal rows, the main page, that carries a note
 on into the next step instead of playing it again, and across the end of a pattern into the
@@ -149,8 +156,8 @@ refactoring changes nothing.
 
 **Phase 2: the HIGH PRIORITY timing changes**
 
-10. Gates are done (version 1.0.5). Still to do here: the Tie row, for notes that carry across
-    the end of a pattern, and time signatures, with beats in bold.
+10. Gates (version 1.0.5) and the Tie row (version 1.0.9) are done. Still to do here: time
+    signatures, with beats in bold.
 11. Undo and redo, which is simple once every change goes through `Document`. It could move
     earlier if it's needed while testing songs by hand.
 

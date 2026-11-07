@@ -1012,9 +1012,9 @@ def entertainer_demo():
         'no symbol fits, so each hand is split into voices. "treble 1" is the top note of the right',
         'hand, the melody, and "treble 2" and "treble 3" are the notes under it. "bass 1" is the',
         'lowest note of the left hand, and "bass 2" and "bass 3" are the notes above it. A voice',
-        'with nothing to play in a phrase has no clip there. Notes held over a phrase\'s end are',
-        'cut there and the next phrase plays them again, and the rare fourth note of a chord is',
-        'left out.',
+        'with nothing to play in a phrase has no clip there. No note in the piece is held over the',
+        'end of a four-bar phrase, so the phrases cut nothing, and the rare fourth note of a chord',
+        'is left out.',
     ], song('The Entertainer', 72, 'C Major', scales, patterns, tracks, scenes, author='Scott Joplin'))
 
 
