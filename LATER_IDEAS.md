@@ -23,11 +23,6 @@ Keep the format consistent for each song, keep the demos sorted by name in this 
 
 The README needs a screenshot so I'll take one and you can add it above the fold after the initial description.
 
-### Scene names
-
-Ableton clips should use the name of the pattern, not the name of the scene.  Ableton scenes
-should keep the scene names.
-
 ### Demo velocity and time signatures
 
 We should use the time signature information of the arrangement demo to add velocity on beats.
@@ -70,9 +65,9 @@ each feature after the refactoring that makes it cheap.
 1. The long-term direction conversation (see "Asking about the long-term direction"). It
    decides which ideas matter most, and so how the refactoring should be shaped.
 2. A format version number, needed before any structural change to the file.
-3. A faster test loop, and the first part of the test refactoring: split out the slow text UI
-   tests, and extend `select_field` to rows and dialogs. Refactoring means running tests
-   constantly and changing pages, so both pay off at once.
+3. The first part of the test refactoring: extend `select_field` to rows and dialogs.
+   Refactoring means changing pages constantly, so it pays off at once. (The test suite runs in
+   parallel now, about 20 seconds, so the faster test loop is done.)
 
 The user doesn't want exact MIDI timing tested for now, so there are no render snapshots. The
 safety net for refactoring is the existing tests, including the ones that check each demo
@@ -698,12 +693,6 @@ where the gate change above happens.
 Keeping each demo's rendered notes as data files and comparing against them. The user doesn't
 want exact MIDI timing tested for now, so this isn't planned. It's kept here in case it's wanted
 later, and Claude should advise on setting it up if it is.
-
-### A faster test loop
-
-The full suite takes about 110 seconds, nearly all of it in the text UI tests that press real
-keys. Splitting the slow page tests from the quick ones would give a fast run for most changes,
-with the whole suite run before committing. This goes with the test refactoring idea above.
 
 ### Named drum maps (low priority)
 
