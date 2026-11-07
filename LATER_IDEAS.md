@@ -1068,7 +1068,7 @@ The user wants every page's help text moved into one module, perhaps `src/llamat
 as multi-line string constants, so that help can be edited by hand easily and safely, without
 touching code or risking breaking it.
 
-Today each of the 15 pages keeps its help as a `HELP` tuple of lines on its class, with `''` for
+Today each of the 22 pages and dialogs that have help keeps its help as a `HELP` tuple of lines on its class, with `''` for
 a blank line, and `Page.show_help` in `src/llamatron/tui/base.py` shows them in a dialog that
 wraps each line. Things the move would touch:
 
@@ -1083,3 +1083,27 @@ wraps each line. Things the move would touch:
   one could be built from the other someday, but the user edits `GUIDE.md` by hand.
 - The format strings in help that name keys or values could use the constants too, but plain text
   is easier to edit, so that's a choice to make when it's done.
+
+## Tests that check shown text through the program's constants
+
+**A rule from the user, with the refactoring still to do.** When a test checks text the program
+shows, like a row label (`'│ Degree'`), a key's name, a page's title or a message, it should import
+the program's constant for it, like `ROW_LABELS[Row.DEGREE]` or `MSG_NO_SUCH_SCALE`, instead of
+writing the words out again. Then renaming something in the program changes the tests with it,
+rather than breaking them. CLAUDE.md states the rule, and new tests follow it.
+
+What the refactoring involves:
+
+- The text UI doesn't have constants for most of what it shows yet. Labels, key descriptions,
+  field names, status messages and dialog titles are mostly written inline in
+  `src/llamatron/tui/`, which is still on `test_slots.py`'s NOT_YET_CONVERTED list and hasn't had
+  the constants pass the rest of the program had. So the TUI needs its constants first, page by
+  page, which fits the planned move of the tracker onto the composition objects (step 5).
+- Then the tests, mostly `test_tui_pages.py`, `test_tui_more.py` and `test_tui_document.py`, swap
+  their literal strings for those constants, along with the drawing they wrap them in, like the
+  `│` before a row label, which can be a helper in the test file.
+- Messages from the non-TUI code are already `MSG_` constants, so tests of song files and
+  rendering can switch over straight away, with `assert_refused`-style checks comparing against
+  a filled-in template or its fixed part.
+- It goes with the other test rules: format strings in tests as constants, one constant per
+  line, and limits taken from the program (see CLAUDE.md).
