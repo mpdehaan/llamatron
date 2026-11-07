@@ -220,6 +220,14 @@ class Song(LlamaData):
         step_size = pattern.get_step_size()
         return self.get_step_size() if step_size is None else step_size
 
+    def get_pattern_length(self, pattern):
+        """Return how long one pass through a pattern lasts, in whole notes: its steps times its step size.
+
+        Every pass lasts exactly this, whatever the steps hold and whatever order they play in,
+        which is what lets clip and scene lengths be worked out without playing anything.
+        """
+        return pattern.get_steps() * self.get_pattern_step_size(pattern)
+
     def get_default_octave(self):
         return self._setting(SongSetting.DEFAULT_OCTAVE, DEFAULT_OCTAVE)
 

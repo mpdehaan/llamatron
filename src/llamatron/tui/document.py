@@ -322,8 +322,8 @@ class Document:
 
     def pattern_length(self, name):
         """Return how long one play of a pattern lasts, in fractions of a whole note."""
-        pattern = self.data['patterns'][name]
-        return pattern['steps'] * self.step_size(name)
+        song = self.song()
+        return song.get_pattern_length(song.get_pattern(name))
 
     def step_size(self, name):
         """Return how long each step of a pattern is: its own step size, or else the song's."""

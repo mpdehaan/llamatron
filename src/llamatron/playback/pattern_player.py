@@ -137,8 +137,8 @@ class PatternPlayer:
         return Pass(clip, leading_ties * step_size)
 
     def pattern_length(self, pattern):
-        """Return how long one pass through a pattern lasts, in whole notes: its steps times its step size."""
-        return pattern.get_steps() * self._song.get_pattern_step_size(pattern)
+        """Return how long one pass through a pattern lasts, in whole notes."""
+        return self._song.get_pattern_length(pattern)
 
     def _step(self, values, length, drum, where, rolls, note_moved, velocity_added):
         """Return what one step plays, lasting length, its gate, as more than one position if it ratchets.
@@ -209,7 +209,7 @@ class PatternPlayer:
 
     def _degree_sound(self, values, length, octave, shift, where):
         if self._scene.get_scale_name() is None:
-            raise SongFileError(MSG_NO_SCALE.format(where=where, scene=self._scene.get_number()))
+            raise no_scale_error(where, self._scene)
         scale = self._song.get_named_scale(self._scene.get_scale_name()).scale_at(octave)
         half_steps = ACCIDENTALS.get(values[Row.ACCIDENTAL], NO_HALF_STEPS)
         degree = values[Row.DEGREE]
@@ -220,6 +220,22 @@ class PatternPlayer:
         if symbol in FIXED_CHORDS:
             return root.to_chord(FIXED_CHORDS[symbol])
         return _scale_chord(SCALE_CHORDS[symbol], degree, length, half_steps, shift, scale)
+
+
+def no_scale_error(where, scene):
+    """Return the error for a pattern that uses scale degrees in a scene that has no scale, and nor does the song."""
+    return SongFileError(MSG_NO_SCALE.format(where=where, scene=scene.get_number()))
+
+
+def check_pattern_has_a_scale(song, scene, pattern_name):
+    """Raise the error playing a pattern in a scene would, if it has scale degrees and the scene has no scale.
+
+    This is the check the estimate makes without playing, so it has to agree with _degree_sound:
+    a drum pattern's notes are letters, not degrees, so it needs no scale.
+    """
+    pattern = song.get_pattern(pattern_name)
+    if scene.get_scale_name() is None and not pattern.is_drum() and pattern.get_note_steps():
+        raise no_scale_error(WHERE_PATTERN.format(name=pattern_name), scene)
 
 
 def _lengthened_to(entry, end):

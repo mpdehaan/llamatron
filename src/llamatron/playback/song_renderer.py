@@ -21,6 +21,7 @@ from fractions import Fraction
 from llamatron.composition.file_format import REGISTER_NAMES
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.playback.cell_player import CellPlayer
+from llamatron.playback.pattern_player import check_pattern_has_a_scale
 from llamatron.playback.grab_source import GrabSource
 from llamatron.playback.registers import RegisterReader, RegisterRecorder, RegisterTimeline, starting_values, with_resets
 from llamatron.playback.written_scene import WrittenScene
@@ -34,9 +35,14 @@ GRAB_ARROW = ' → '
 WHERE_CHAIN = 'chain {chain!r}, {kind}'
 # An arp with no seed of its own gets one made from the song's seed, its scene, its track and its
 # place in the chain, multiplied by these so that each comes out different.
-SEED_SONG_FACTOR, SEED_SCENE_FACTOR, SEED_TRACK_FACTOR = 1_000_003, 1_009, 31
+SEED_SONG_FACTOR = 1_000_003
+SEED_SCENE_FACTOR = 1_009
+SEED_TRACK_FACTOR = 31
 # Turning a length in whole notes into seconds, at a tempo in quarter notes a minute.
-SECONDS_PER_MINUTE, QUARTER_NOTES_PER_WHOLE_NOTE = 60, 4
+SECONDS_PER_MINUTE = 60
+QUARTER_NOTES_PER_WHOLE_NOTE = 4
+# How long a scene with nothing in it lasts.
+NO_LENGTH = Fraction(0)
 
 
 class SongRenderer:
@@ -45,9 +51,13 @@ class SongRenderer:
     Clips are played when they're first asked for, so that a clip that grabs from another track
     can simply ask for that track's clip, and a grab that goes round in a circle is caught.
 
-    Each clip is played twice: first counted, without grabs or register values, to find how long
-    it is and what it adds to the registers, and then finished, reading the registers from the
-    scene's RegisterTimeline. See registers.py.
+    How long a clip or a scene lasts never depends on what it plays, so get_clip_length and
+    get_scene_length work that out from the patterns and cells without playing anything, and the
+    estimate the tracker shows after every change uses nothing else.
+
+    Each clip is played twice: first counted, without grabs or register values, to record what it
+    adds to the registers, and then finished, reading the registers from the scene's
+    RegisterTimeline. See registers.py.
     """
 
     __slots__ = ('_song', '_scenes', '_registers', '_clips', '_counted', '_lengths', '_timelines', '_grabbing')
@@ -57,7 +67,7 @@ class SongRenderer:
         self._scenes = WrittenScene.write_out(song)
         self._registers = {name: song.get_register(name) for name in REGISTER_NAMES}
         self._clips = {}
-        # Clips played only to find their lengths and register changes, with those changes.
+        # Clips played only to record their register changes, with those changes.
         self._counted = {}
         self._lengths = {}
         self._timelines = {}
@@ -84,12 +94,19 @@ class SongRenderer:
             tracks[name] = grid.add_track(Track(name, mute=self._song.get_track(name).is_muted()))
         return tracks
 
-    def estimate(self):
-        """Return how long each written-out scene and its clips last, in seconds.
+    def get_scenes(self):
+        """Return the song's scenes as they play, written out once for each repeat."""
+        return list(self._scenes)
 
-        Each item is (number, seconds or None, {track: seconds or None}, problem or None). This
-        runs the same code as render, so that it can't disagree with a render, but a problem in
-        one scene only affects that scene.
+    def estimate(self):
+        """Return how long each written-out scene and its clips last, in seconds, without playing anything.
+
+        Each item is (number, seconds or None, {track: seconds or None}, problem or None). The
+        lengths come from get_scene_length and get_clip_length, which render uses too, so the two
+        can't disagree, and a problem in one scene only affects that scene. The problems it
+        reports are the ones that show without playing: every clip looping, scale degrees with no
+        scale, and grabs that go round in a circle. A note a render can't fit in the MIDI range
+        only shows when rendering.
         """
         result = []
         for scene in self._scenes:
@@ -97,13 +114,25 @@ class SongRenderer:
             whole_notes_to_seconds = Fraction(SECONDS_PER_MINUTE * QUARTER_NOTES_PER_WHOLE_NOTE) / tempo
             clips, problem, seconds = {}, None, None
             try:
-                seconds = self.get_scene_length(scene) * whole_notes_to_seconds
+                length = self.get_scene_length(scene)
+                self._check_plays(scene)
                 for track in scene.get_track_names():
-                    clips[track] = self.get_clip(scene, track).total_length() * whole_notes_to_seconds
+                    clips[track] = self.get_clip_length(scene, track) * whole_notes_to_seconds
+                # A scene with a problem has no length, so it's set only once the checks pass.
+                seconds = length * whole_notes_to_seconds
             except SongFileError as error:
                 problem = str(error)
             result.append((scene.get_number(), seconds, clips, problem))
         return result
+
+    def _check_plays(self, scene):
+        """Raise the SongFileError a render of a scene would, for the problems that show without playing."""
+        for track in scene.get_track_names():
+            for pattern_name in _patterns_played(scene.get_cell(track)):
+                check_pattern_has_a_scale(self._song, scene, pattern_name)
+        circle = _grab_circle(scene)
+        if circle is not None:
+            raise SongFileError(MSG_CIRCULAR_GRAB.format(scene=scene.describe(), loop=GRAB_ARROW.join(circle)))
 
     def get_clip(self, scene, track):
         """Return the finished clip a track plays in a written-out scene, or None if it plays nothing."""
@@ -119,8 +148,8 @@ class SongRenderer:
     def _counted_clip(self, scene, track):
         """Return a track's clip in a scene played without grabs or register values, and what it adds to the registers.
 
-        Grabs and registers only change pitches and velocities, so this clip is as long as the
-        finished one, which means a clip can grab from one that loops to fill the scene.
+        Register changes from every track have to be collected, and put in time order, before any
+        finished clip can read them, which is why this pass comes first.
         """
         key = (scene.get_number(), track)
         if key not in self._counted:
@@ -163,18 +192,33 @@ class SongRenderer:
         return changes
 
     def get_scene_length(self, scene):
-        """Return how long a scene lasts, which is its longest clip that doesn't loop."""
+        """Return how long a scene lasts, in whole notes: its longest clip that doesn't loop, worked out without playing."""
         number = scene.get_number()
         if number in self._lengths:
             return self._lengths[number]
         if _every_clip_loops(scene):
             raise SongFileError(MSG_EVERY_CLIP_LOOPS.format(scene=scene.describe()))
-        length = Fraction(0)
+        length = NO_LENGTH
         for track in scene.get_track_names():
             if not scene.get_cell(track).loops():
-                length = max(length, self._counted_clip(scene, track)[0].total_length())
+                length = max(length, self.get_clip_length(scene, track))
         self._lengths[number] = length
         return length
+
+    def get_clip_length(self, scene, track):
+        """Return how long a track's clip lasts in a written-out scene, in whole notes, worked out without playing.
+
+        A looping clip lasts as long as its scene. Any other plays its pattern repeat times, and
+        every pass lasts the pattern's steps times its step size whatever the steps hold: a gate
+        is cut at the end of its pass, ties and glides only lengthen a note's sound, a direction
+        only reorders the steps, a morph's target is looped or cut to the pass, grabs and
+        registers change only pitches and velocities, and a chain's generators keep a clip's
+        length. test_clip_lengths.py checks this against a real play of every example.
+        """
+        cell = scene.get_cell(track)
+        if cell.loops():
+            return self.get_scene_length(scene)
+        return cell.get_repeat() * self._song.get_pattern_length(self._song.get_pattern(cell.get_pattern_name()))
 
     def get_grab_source(self, scene, track):
         """Return the notes the track that a track's cell grabs from plays in a scene, or None if it plays nothing there."""
@@ -207,6 +251,32 @@ class SongRenderer:
 def _whole_if_possible(number):
     """Return a number as a whole number if it is one, like 120 rather than 120.0."""
     return int(number) if number.is_integer() else number
+
+
+def _patterns_played(cell):
+    """Return the names of the patterns a cell plays: its own, and the one it morphs to if it morphs."""
+    names = [cell.get_pattern_name()]
+    if cell.get_morph_target() is not None:
+        names.append(cell.get_morph_target())
+    return names
+
+
+def _grab_circle(scene):
+    """Return the tracks whose grabs go round in a circle in a scene, like [lead, kick, lead], or None.
+
+    A clip grabbing from a track follows that track's grab, and so on. A grab from a track with
+    nothing in the scene grabs nothing, so it can't be part of a circle.
+    """
+    for start in scene.get_track_names():
+        path = [start]
+        while True:
+            following = scene.get_cell(path[-1]).get_grab_track()
+            if following is None or scene.get_cell(following) is None or following in path[1:]:
+                break
+            if following == start:
+                return [*path, start]
+            path.append(following)
+    return None
 
 
 def _every_clip_loops(scene):
