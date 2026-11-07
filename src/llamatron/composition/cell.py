@@ -33,7 +33,6 @@ MORPH_STYLES = {member.name.lower(): member for member in BlendMode}
 MSG_EXPECTED_SETTINGS = '{where}, track {track!r}: expected settings like {{ pattern: a }}, got {data!r}'
 # How a cell is named in its messages: by its scene and its track.
 WHERE_CELL = '{where}, track {track!r}'
-MSG_NO_RHYTHM_PATTERN = '{where}: rhythm_from: no pattern called {name!r}'
 MSG_NO_GRAB_TRACK = '{where}: grab_track: no track called {name!r}'
 MSG_GRABS_ITSELF = "{where}: grab_track: a clip can't grab from its own track"
 MSG_BAD_REPEAT = '{where}: repeat must be a positive whole number, got {value!r}'
@@ -47,14 +46,14 @@ MSG_BAD_MORPH_STYLE = '{where}: morph_style must be one of {styles}, got {value!
 # A cell's settings, in the order they're written to a file.
 SETTINGS = [
     CellSetting.PATTERN, CellSetting.CHAIN, CellSetting.LOOP, CellSetting.REPEAT, CellSetting.DIRECTION,
-    CellSetting.MORPH_TO, CellSetting.MORPH_STYLE, CellSetting.RHYTHM_FROM, CellSetting.GRAB_TRACK,
+    CellSetting.MORPH_TO, CellSetting.MORPH_STYLE, CellSetting.GRAB_TRACK,
 ]
 # A morph has to play its first pattern and its target, so it needs at least two repeats.
 MIN_MORPH_REPEAT = 2
 
 
 class Cell(LlamaData):
-    """A pattern to play, and how: its chain, repeats or loop, direction, morph, rhythm and grab.
+    """A pattern to play, and how: its chain, repeats or loop, direction, morph and grab.
 
     Settings the file leaves out are kept as None, meaning their defaults. The pattern, chain and
     other patterns and tracks are kept as names, and looked up when the song renders.
@@ -73,9 +72,6 @@ class Cell(LlamaData):
         where = WHERE_CELL.format(where=where, track=track)
         check_keys(data, where, set(SETTINGS))
         check_direction(data.get(CellSetting.DIRECTION, Direction.FORWARD), where)
-        rhythm_from = data.get(CellSetting.RHYTHM_FROM)
-        if rhythm_from is not None and not song.has_pattern(rhythm_from):
-            raise SongFileError(MSG_NO_RHYTHM_PATTERN.format(where=where, name=rhythm_from))
         if CellSetting.GRAB_TRACK in data:
             grab_track = data[CellSetting.GRAB_TRACK]
             if not song.has_track(grab_track):
@@ -101,10 +97,6 @@ class Cell(LlamaData):
 
     def get_pattern_name(self):
         return self._settings[CellSetting.PATTERN]
-
-    def get_rhythm_pattern_name(self):
-        """Return the pattern its rhythm comes from, which is its own pattern unless rhythm_from names another."""
-        return self._settings[CellSetting.RHYTHM_FROM] or self._settings[CellSetting.PATTERN]
 
     def get_chain_name(self):
         """Return the name of its chain, or None if it has none."""

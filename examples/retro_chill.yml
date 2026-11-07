@@ -1,4 +1,4 @@
-version: 1.0.5
+version: 1.0.6
 tempo: 96
 scale: F Major
 
@@ -88,12 +88,6 @@ patterns:
     degree: [3, 5, 1, ~]
     gate: [~, ~, 2, ~]
     octave: [3, 3, 4, ~]
-  answer_time:
-    steps: 8
-    step_size: 1/2
-    degree: [~, ~, ~, ~, 1, 1, 1, ~]
-    gate: [~, ~, ~, ~, ~, ~, 1, ~]
-    octave: [~, ~, ~, ~, 3, 3, 3, ~]
   chords_4:
     steps: 2
     step_size: 2
@@ -106,15 +100,6 @@ patterns:
     degree: [5, 4, 1, 4, 6, 4, 1, 1]
     octave: [2, 2, 2, 2, 2, 2, 2, 2]
     chord: [3, 3, 3, 3, 3, 3, 3, 3]
-  tune2_busy:
-    steps: 60
-    step_size: 1/8
-    degree: [3, ~, ~, ~, ~, ~, 5, 6, 1, ~, ~, ~, 6, ~, 1, ~, 3, ~, ~, ~, ~, ~, 1, ~, 6, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 3, ~, ~, ~, 2, ~, 7, ~, 1, ~, ~, ~, 3, ~, ~, ~, 2, ~, 3, ~, 5, ~, ~, ~]
-    gate: [1/2, ~, ~, ~, ~, ~, ~, ~, 1/2, ~, ~, ~, 1/4, ~, 1/4, ~, 1/2, ~, ~, ~, ~, ~, 1/4, ~, 1/2, ~, ~, ~, 1/2, ~, ~, ~, 1/2, ~, ~, ~, 1/2, ~, ~, ~, 1/4, ~, 1/4, ~, 1/2, ~, ~, ~, 1/2, ~, ~, ~, 1/4, ~, 1/4, ~, 1/2, ~, ~, ~]
-    dot: [d, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, d, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    octave: [3, ~, ~, ~, ~, ~, 3, 3, 4, ~, ~, ~, 3, ~, 4, ~, 4, ~, ~, ~, ~, ~, 4, ~, 3, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, 3, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~]
-    ratchet: [~, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~]
-    ratchet_offset: [~, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, -1, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, -1, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, -1, ~, ~, ~]
 
 tracks:
   kick: { drum: true }
@@ -123,7 +108,6 @@ tracks:
   bass: {}
   pad: {}
   tune: {}
-  answer: {}
   bells: {}
 
 arps:
@@ -172,24 +156,13 @@ scenes:
   - name: rise
     scale: G Major
     tracks:
-      kick: { pattern: kick, repeat: 4 }
+      kick: { pattern: kick, repeat: 8 }
       snare: { pattern: snare, loop: true }
       hat: { pattern: hat, loop: true }
       bass: { pattern: bass, loop: true }
       pad: { pattern: chords_pad, loop: true }
       bells: { pattern: chords, chain: bright_bells, loop: true }
       tune: { pattern: tune2, loop: true }
-  - name: sun
-    scale: G Major
-    tracks:
-      kick: { pattern: kick, repeat: 4 }
-      snare: { pattern: snare, loop: true }
-      hat: { pattern: hat, loop: true }
-      bass: { pattern: bass, loop: true }
-      pad: { pattern: chords_pad, loop: true }
-      bells: { pattern: chords, chain: bright_bells, loop: true }
-      tune: { pattern: tune2_busy, loop: true }
-      answer: { pattern: tune2, rhythm_from: answer_time, loop: true }
   - name: home
     scale: G Major
     tracks:

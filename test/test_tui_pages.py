@@ -271,7 +271,7 @@ class TestEveryKeyIsShownOnAUsualConsole(TestEveryKeyIsShown):
     SIZE = (80, 24)
 
     async def test_a_long_line_cannot_push_the_keys_off_the_screen(self):
-        self.document.data['scenes'][0]['tracks']['lead'].update(loop=True, rhythm_from='beat', notes_from='other')
+        self.document.data['scenes'][0]['tracks']['lead'].update(loop=True, grab_track='drums', direction='eitherway')
         self.document.data['scenes'][0]['tracks']['drums'].pop('loop')
         self.document.data['scenes'][0]['tracks']['drums']['pattern'] = 'other'
         self.document.changed()
@@ -1037,18 +1037,7 @@ class TestRhythmAndNotesFromOnAClip(UITest):
     async def test_they_are_at_the_bottom_of_the_page(self):
         self.cell().update(repeat=2, morph_to='other', morph_style='left')
         labels = [field.label for field in self.page.fields()]
-        self.assertEqual(labels[-2:], ['Rhythm from', 'Grab track'])
-
-    async def test_choosing_and_clearing(self):
-        await self.go_to('Rhythm from')
-        await self.press('enter')
-        self.assertEqual(self.app.screen.options[0], '(none)')
-        self.app.screen.place = self.app.screen.options.index('beat')
-        await self.press('enter')
-        self.assertEqual(self.cell()['rhythm_from'], 'beat')
-        self.assertEqual(self.document.clip_seconds(0, 'lead'), Fraction(1, 2))
-        await self.press('backspace')
-        self.assertNotIn('rhythm_from', self.cell())
+        self.assertEqual(labels[-1], 'Grab track')
 
     async def test_choosing_none_clears(self):
         self.cell()['grab_track'] = 'drums'
@@ -1090,18 +1079,18 @@ class TestRhythmAndNotesFromOnAClip(UITest):
         render_data(self.document.data)
 
     async def test_the_grid_marks_them(self):
-        self.cell().update(rhythm_from='beat', grab_track='drums')
+        self.cell().update(grab_track='drums')
         await self.press('tab')
-        self.assertIn('tune rg', self.text())
+        self.assertIn('tune g', self.text())
 
     async def test_a_pattern_in_use_this_way_cannot_be_deleted(self):
-        self.cell()['rhythm_from'] = 'other'
+        self.cell().update(repeat=2, morph_to='other')
         await self.press('tab', 'tab', 'p', 'down', 'down', 'backspace')
         self.assertIsInstance(self.app.screen, MessageDialog)
         self.assertIn('scene 1 (one), track lead', self.text())
 
     async def test_the_result_saves_and_loads(self):
-        self.cell().update(rhythm_from='beat', grab_track='drums')
+        self.cell().update(grab_track='drums')
         self.document.save('x.yml')
         self.assertEqual(Document.load('x.yml').cell(0, 'lead'), self.cell())
 

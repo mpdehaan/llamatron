@@ -23,7 +23,7 @@ from llamatron.chord import Chord
 from llamatron.composition.checks import written_length
 from llamatron.composition.defaults import DEFAULT_PROBABILITY, DEFAULT_RATCHET, DEFAULT_VELOCITY
 from llamatron.composition.file_format import (
-    ACCIDENTALS, CC_ROWS, FIXED_CHORDS, GATE_MODIFIERS, LIVE_OCTAVE_OFFSET, NOTE_ROWS, PATTERN_ROWS, SCALE_CHORDS, Row,
+    ACCIDENTALS, CC_ROWS, FIXED_CHORDS, GATE_MODIFIERS, LIVE_OCTAVE_OFFSET, PATTERN_ROWS, SCALE_CHORDS, Row,
 )
 from llamatron.composition.limits import MAX_GATE, MAX_PROBABILITY, MAX_VELOCITY, MIN_VELOCITY
 from llamatron.composition.song_file_error import SongFileError
@@ -40,7 +40,7 @@ HALF_STEPS_PER_OCTAVE = 12
 NO_ACCIDENTAL, NO_HALF_STEPS = '', 0
 # A clip's running totals, and the lists of steps it keeps its place in.
 NOTE_TOTAL, VELOCITY_TOTAL = 'note', 'velocity'
-RHYTHM_STEPS, NOTE_STEPS = 'rhythm', 'notes'
+PATTERN_STEPS = 'steps'
 # Where a step's values hold the note its grab took, beside its rows.
 GRABBED = 'grabbed'
 # How messages name a pattern, and what goes wrong while playing one.
@@ -65,45 +65,35 @@ class PatternPlayer:
         self._scale = scale
         self._transpose = track.get_transpose()
 
-    def play_pass(self, rhythm_name, notes_name, grab, direction, where, rolls, order, totals, start):
-        """Return one pass through a rhythm, as notes, chords and rests, starting at a time in the clip.
+    def play_pass(self, pattern_name, grab, direction, where, rolls, order, totals, start):
+        """Return one pass through a pattern, as notes, chords and rests, starting at a time in the clip.
 
-        Every step of the rhythm takes the same time, its step size, whatever order the steps play
-        in. A step that plays sounds for its gate, which can run past later steps but not past the
-        end of the pass. The notes pattern's grab steps play what grab, a GrabSource, gives for the
-        time they start, if it's given. rolls is the random generator probability uses, order the
-        StepOrder, and totals the clip's Accumulators.
+        Every step takes the same time, its step size, whatever order the steps play in, which is
+        the pattern's direction unless direction overrides it. A step that plays sounds for its
+        gate, which can run past later steps but not past the end of the pass. The pattern's grab
+        steps play what grab, a GrabSource, gives for the time they start, if it's given. rolls is
+        the random generator probability uses, order the StepOrder, and totals the clip's
+        Accumulators.
         """
-        for name in (rhythm_name, notes_name):
-            if not self._song.has_pattern(name):
-                raise SongFileError(MSG_NO_SUCH_PATTERN.format(where=where, name=name))
-        rhythm, notes = self._song.get_pattern(rhythm_name), self._song.get_pattern(notes_name)
-        combined = rhythm_name != notes_name
-        note_steps = notes.get_note_steps()
-
-        def direction_of(pattern):
-            return direction or pattern.get_direction()
-
-        step_size = self._song.get_pattern_step_size(rhythm)
-        length = self.pattern_length(rhythm)
-        where = WHERE_PATTERN.format(name=notes_name)
+        if not self._song.has_pattern(pattern_name):
+            raise SongFileError(MSG_NO_SUCH_PATTERN.format(where=where, name=pattern_name))
+        pattern = self._song.get_pattern(pattern_name)
+        step_size = self._song.get_pattern_step_size(pattern)
+        length = self.pattern_length(pattern)
+        where = WHERE_PATTERN.format(name=pattern_name)
         sounding, controls = [], []
-        for slot in range(rhythm.get_steps()):
+        for slot in range(pattern.get_steps()):
             time = slot * step_size
-            step = order.next_step((RHYTHM_STEPS, rhythm_name), rhythm.get_steps(), direction_of(rhythm))
-            values = _step_values(rhythm, step, PATTERN_ROWS)
-            # CC values belong to the rhythm, and a step with no note can send them too.
+            step = order.next_step((PATTERN_STEPS, pattern_name), pattern.get_steps(), direction or pattern.get_direction())
+            values = _step_values(pattern, step, PATTERN_ROWS)
+            # A step with no note can send CC values too.
             controls += _controls_sent(values, time)
-            if values[Row.DEGREE] is None or (combined and not note_steps):
+            if values[Row.DEGREE] is None:
                 continue
-            note_step = step
-            if combined:
-                note_step = note_steps[order.next_step((NOTE_STEPS, notes_name), len(note_steps), direction_of(notes))]
-                values.update(_step_values(notes, note_step, NOTE_ROWS))
-            drum = notes.is_drum()
-            values[GRABBED] = grab.note_at(start + time) if grab and notes.get_value(Row.GRAB, note_step) else None
-            note_total = totals.add(NOTE_TOTAL, values[Row.NOTE_ADD], notes.get_accumulator_limit())
-            velocity_total = totals.add(VELOCITY_TOTAL, values[Row.VELOCITY_ADD], rhythm.get_accumulator_limit())
+            drum = pattern.is_drum()
+            values[GRABBED] = grab.note_at(start + time) if grab and values[Row.GRAB] else None
+            note_total = totals.add(NOTE_TOTAL, values[Row.NOTE_ADD], pattern.get_accumulator_limit())
+            velocity_total = totals.add(VELOCITY_TOTAL, values[Row.VELOCITY_ADD], pattern.get_accumulator_limit())
             gate = min(_gate(values, step_size, where), length - time)
             sounding.append((time, self._step(values, gate, drum, where, rolls, note_total, velocity_total)))
         return Clip(notes=_in_sequence(sounding, length, step_size), scale=self._scale, controls=controls)

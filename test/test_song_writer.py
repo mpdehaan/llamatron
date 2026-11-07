@@ -40,7 +40,7 @@ SONG = {
     'auto_ratchets': {'rolls': {'counts': [1, 4]}},
     'chains': {'x': [{'auto_ratchet': 'rolls'}, {'arp': 'bells'}], 'nothing': [], 'named': [{'arp': 'bells'}]},
     'scenes': [
-        {'name': 'one', 'repeat': 3, 'scale': 'A Minor', 'tempo_start': 120, 'tempo_end': 130, 'tracks': {'lead': {'pattern': 'a', 'chain': 'x', 'loop': True, 'repeat': 2, 'morph_to': 'hit', 'morph_style': 'left', 'rhythm_from': 'hit', 'grab_track': 'kick'}}},
+        {'name': 'one', 'repeat': 3, 'scale': 'A Minor', 'tempo_start': 120, 'tempo_end': 130, 'tracks': {'lead': {'pattern': 'a', 'chain': 'x', 'loop': True, 'repeat': 2, 'morph_to': 'hit', 'morph_style': 'left', 'grab_track': 'kick'}}},
         {'tracks': {}},
     ],
 }
@@ -86,7 +86,7 @@ class TestDumpSong(unittest.TestCase):
     def test_follows_the_format_rules(self):
         text = dump_song(SONG)
         self.assertIn('tracks:\n  lead: { transpose: 2, cc: [74, ~, ~, 1] }\n  kick: { drum: true }\n  plain: {}\n', text)
-        self.assertIn('      lead: { pattern: a, chain: x, loop: true, repeat: 2, morph_to: hit, morph_style: left, rhythm_from: hit, grab_track: kick }', text)
+        self.assertIn('      lead: { pattern: a, chain: x, loop: true, repeat: 2, morph_to: hit, morph_style: left, grab_track: kick }', text)
         self.assertIn('arps:\n  bells: { step: 1/8, order: up }', text)
         self.assertIn('auto_ratchets:\n  rolls: { counts: [1, 4] }', text)
         self.assertIn('    - arp: bells', text)

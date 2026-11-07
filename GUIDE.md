@@ -383,7 +383,7 @@ Press `A` twice from the normal rows to see these. They send MIDI CC values, lik
 | CC 1 to CC 4 | 0 to 127 | Sends that value at the start of the step. A dot sends nothing, so the last value holds. |
 | Slide | `*` or blank | Ramps each of this step's CC values to that row's next value, instead of jumping, like slide on an Elektron Monomachine |
 
-CC rows and Slide can be set on a rest, so a sweep can carry on through silence. The number rows take digits, `+` and `-`, or `Enter` to type, and `Bksp` clears them. A ratchet doesn't repeat the values, and probability doesn't drop them. With Rhythm from, the CC rows come from the rhythm pattern.
+CC rows and Slide can be set on a rest, so a sweep can carry on through silence. The number rows take digits, `+` and `-`, or `Enter` to type, and `Bksp` clears them. A ratchet doesn't repeat the values, and probability doesn't drop them.
 
 In a Live set, each CC becomes a clip envelope, and Live draws a slide as a straight line. In MIDI files, a slide is sent as a new value every 1/64 note.
 
@@ -521,7 +521,6 @@ Marks after a clip's pattern name show its settings:
 | `∞` | Loops |
 | `~` | Morphs to another pattern |
 | `d` | Has its own play direction |
-| `r` | Takes its rhythm from another pattern |
 | `g` | Grabs notes from another track |
 
 The line at the bottom shows how long the selected clip and scene last, and anything that would stop the scene rendering.
@@ -553,23 +552,15 @@ A clip is one pattern on one track in one scene.
 | Direction | Overrides the play direction of its patterns. `Bksp` goes back to the patterns' own. |
 | Morph to | With Repeat above 1, a second pattern to change into across the repeats |
 | Morph direction | `left`, `right` or `middle`: where the change sweeps in from |
-| Rhythm from | Another pattern to take the rhythm from, while Pattern gives the notes |
 | Grab track | Another track in this scene, whose notes Pattern's Grab steps play. `Bksp` sets none. |
 
 Morph to and Morph direction only appear when Repeat is above 1, and setting Repeat back to 1 removes the morph. The pattern being morphed to is looped or cut to the clip's length, and is played as written.
-
-Rhythm from combines two patterns step by step:
-
-- **The rhythm** gives the step size, Gate and Dot, which steps are rests, Velocity, Prob, Ratchet, Glide and the CC rows, and decides how long the clip is.
-- **The clip's Pattern** gives Degree, #/b, Octave and Chord.
-- **Each step** of the rhythm that isn't a rest plays the next note, and rests in the notes are skipped.
-- **The notes carry on** across repeats and loops, so a five-note melody over a four-step rhythm drifts against it on purpose.
 
 Grab track works like the Cirklon's note grab, and only changes the steps that Grab marks in the advanced rows. Each marked step plays the note that the other track most recently started, at or before that moment: the note it's playing, or the last note it played if it's silent. If it hasn't played anything yet, the step keeps its own note. If the other track played a chord, the step takes its lowest note, and a grab step never plays a chord of its own, even if its Chord row has one. It hears the other track after its chain, so grabbing from an arpeggiated track takes the arpeggio's notes. Every other step, and everything else about the clip, such as its rhythm and velocity, stays its own. This track's transpose still applies.
 
 Because it's set on the clip, one pattern can grab from different tracks in different clips. A clip can grab from a track that grabs from another, but not in a circle. The clip page refuses a grab that would go round in a circle, and says which clips to change, and pasting a clip drops a grab that would. A song file with a circle stops rendering with a message naming the tracks.
 
-A clip's Direction also applies to its rhythm pattern, but not to a morph's target, which plays as written and doesn't grab.
+A clip's Direction doesn't apply to a morph's target, which plays as written and doesn't grab.
 
 ## Song files
 

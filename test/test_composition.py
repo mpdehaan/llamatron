@@ -188,11 +188,11 @@ class TestCell(RoundTrip):
         self.assert_round_trip(Cell, {'pattern': 'a', 'loop': False}, a_song(), track='lead')
 
     def test_values_and_defaults(self):
-        cell = Cell.from_data({'pattern': 'a', 'rhythm_from': 'b', 'morph_to': 'b', 'morph_style': 'middle', 'repeat': 3}, 'here', a_song(), track='lead')
-        self.assertEqual((cell.get_pattern_name(), cell.get_rhythm_pattern_name(), cell.get_repeat()), ('a', 'b', 3))
+        cell = Cell.from_data({'pattern': 'a', 'morph_to': 'b', 'morph_style': 'middle', 'repeat': 3}, 'here', a_song(), track='lead')
+        self.assertEqual((cell.get_pattern_name(), cell.get_repeat()), ('a', 3))
         self.assertEqual((cell.get_morph_target(), cell.get_morph_style()), ('b', BlendMode.MIDDLE))
         plain = Cell.from_data({'pattern': 'a'}, 'here', a_song(), track='lead')
-        self.assertEqual((plain.get_rhythm_pattern_name(), plain.get_repeat(), plain.loops()), ('a', 1, False))
+        self.assertEqual((plain.get_pattern_name(), plain.get_repeat(), plain.loops()), ('a', 1, False))
         self.assertIsNone(plain.get_chain_name())
         self.assertIsNone(plain.get_direction())
         self.assertIsNone(plain.get_morph_style())

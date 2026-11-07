@@ -238,9 +238,9 @@ class TestUses(unittest.TestCase):
         self.assertIn('scene 3 (three), track bass', uses)
         self.assertEqual(song_with_things().pattern_uses('unused'), [])
 
-    def test_rhythm_and_notes_from_count_as_uses(self):
+    def test_a_morph_target_counts_as_a_use(self):
         document = song_with_things()
-        document.set_cell(0, 'bass', {'pattern': 'a', 'rhythm_from': 'unused'})
+        document.set_cell(0, 'bass', {'pattern': 'a', 'repeat': 2, 'morph_to': 'unused'})
         self.assertEqual(document.pattern_uses('unused'), ['scene 1 (one), track bass'])
 
     def test_track_clips_are_counted_separately(self):
@@ -303,11 +303,11 @@ class TestRenaming(unittest.TestCase):
         self.assertEqual(document.cell(2, 'bass')['pattern'], 'new')
         render_data(document.data)
 
-    def test_pattern_updates_rhythm_from(self):
+    def test_pattern_updates_morph_to(self):
         document = song_with_things()
-        document.set_cell(0, 'bass', {'pattern': 'a', 'rhythm_from': 'unused'})
+        document.set_cell(0, 'bass', {'pattern': 'a', 'repeat': 2, 'morph_to': 'unused'})
         document.rename_pattern('unused', 'new')
-        self.assertEqual(document.cell(0, 'bass'), {'pattern': 'a', 'rhythm_from': 'new'})
+        self.assertEqual(document.cell(0, 'bass'), {'pattern': 'a', 'repeat': 2, 'morph_to': 'new'})
 
     def test_renaming_or_deleting_a_track_updates_grabs_from_it(self):
         document = song_with_things()

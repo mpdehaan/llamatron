@@ -58,7 +58,7 @@ DIRECTION_NAMES = {
     'brownian': 'on 50%, back 25%, stay 25%', 'eitherway': 'on or back, 50% each',
 }
 # The settings on a clip that name a pattern.
-CLIP_PATTERNS = ('pattern', 'morph_to', 'rhythm_from')
+CLIP_PATTERNS = ('pattern', 'morph_to')
 
 
 def new_song():

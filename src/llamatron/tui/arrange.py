@@ -37,8 +37,6 @@ def cell_text(cell):
     marks = ''
     if cell.get('direction'):
         marks += 'd'
-    if cell.get('rhythm_from'):
-        marks += 'r'
     if cell.get('grab_track'):
         marks += 'g'
     if cell.get('morph_to'):
@@ -61,7 +59,7 @@ class ArrangePage(Page):
         'On a scene name: Enter opens its settings, C copies it, and Bksp deletes it.',
         '+ adds a scene, or Enter on the + at the bottom. U and D move the selected one.',
         '',
-        '×3 means repeats, ∞ loop, ~ morph, d its own direction, r rhythm from another pattern, and g grabs from another track.',
+        '×3 means repeats, ∞ loop, ~ morph, d its own direction, and g grabs from another track.',
     )
 
     def __init__(self, holder):
@@ -386,7 +384,7 @@ class ClipPage(FieldPage):
         '',
         'With Repeat above 1, Morph to chooses a second pattern to change into across the repeats, and Morph direction is where the change starts.',
         '',
-        'Rhythm from takes the rhythm and CC rows from another pattern, and Pattern gives the notes. Grab track: Grab steps play the note that track last started.',
+        'Grab track: Grab steps play the note that track last started.',
         '',
         'Up and down select. Left and right, or + and -, change. Enter chooses.',
     )
@@ -422,18 +420,6 @@ class ClipPage(FieldPage):
             if name == 'morph_to':
                 self.cell().setdefault('morph_style', FIRST_MORPH_STYLE)
         self.ask(ChoiceDialog(title, patterns, place), chosen)
-
-    def pick_other_pattern(self, title, name):
-        patterns = list(self.document.data['patterns'])
-        options = ['(none)', *patterns]
-        current = self.cell().get(name)
-
-        def chosen(item):
-            if item == 0:
-                self.clear(name)
-            else:
-                self.set_value(name, patterns[item - 1])
-        self.ask(ChoiceDialog(title, options, options.index(current) if current in options else 0), chosen)
 
     def pick_grab_track(self):
         tracks = [name for name in self.document.track_names() if name != self.track]
@@ -535,8 +521,6 @@ class ClipPage(FieldPage):
             if cell.get('morph_to'):
                 result.append(Field('Morph direction', lambda: cell.get('morph_style', FIRST_MORPH_STYLE), self.step_style, lambda: self.step_style(1), 'next'))
         result += [
-            Field('Rhythm from', lambda: cell.get('rhythm_from', '(none)'), None, lambda: self.pick_other_pattern('Rhythm from', 'rhythm_from'), 'choose',
-                  lambda: self.clear('rhythm_from'), 'no pattern'),
             Field('Grab track', lambda: cell.get('grab_track', '(none)'), None, self.pick_grab_track, 'choose',
                   lambda: self.clear('grab_track'), 'no grab'),
         ]

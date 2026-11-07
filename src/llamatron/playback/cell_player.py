@@ -140,18 +140,15 @@ class CellPlayer:
     def _play_pass(self, player, grab, scale, place, repeat, where, rolls, order, totals, start):
         """Return one pass through the cell's pattern, part way through any morph.
 
-        Only the first pattern takes a rhythm, grabs or a direction from the cell, and a morph's
-        target plays as it's written.
+        Only the first pattern takes grabs or a direction from the cell, and a morph's target
+        plays as it's written.
         """
         cell = self._cell
-        clip = player.play_pass(
-            cell.get_rhythm_pattern_name(), cell.get_pattern_name(), grab,
-            cell.get_direction(), where, rolls, order, totals, start,
-        )
+        clip = player.play_pass(cell.get_pattern_name(), grab, cell.get_direction(), where, rolls, order, totals, start)
         morph_to = cell.get_morph_target()
         if morph_to is None or not clip.notes:
             return clip
-        target = player.play_pass(morph_to, morph_to, None, None, where, rolls, order, totals, start)
+        target = player.play_pass(morph_to, None, None, where, rolls, order, totals, start)
         amount = Fraction(place, repeat - 1) * FULL_MORPH
         target = _looped(target, clip.total_length())
         blend = Blend(target, amount, mode=cell.get_morph_style())

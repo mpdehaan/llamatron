@@ -120,7 +120,6 @@ class CellSetting:
     DIRECTION = 'direction'
     MORPH_TO = 'morph_to'
     MORPH_STYLE = 'morph_style'
-    RHYTHM_FROM = 'rhythm_from'
     GRAB_TRACK = 'grab_track'
 
 
@@ -194,9 +193,6 @@ PATTERN_ROWS = [
 TOGGLE_ROWS = (Row.GLIDE, Row.GRAB, Row.SLIDE)
 # A pattern's CC lanes, whose numbers each track sets for itself.
 CC_ROWS = (Row.CC1, Row.CC2, Row.CC3, Row.CC4)
-# Which pattern rows the notes side owns when a clip takes its rhythm from another pattern.
-# Everything else belongs to the rhythm.
-NOTE_ROWS = (Row.DEGREE, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.NOTE_ADD)
 # Rows that hold a whole number of any size, positive or negative.
 SIGNED_ROWS = (Row.RATCHET_OFFSET, Row.NOTE_ADD, Row.VELOCITY_ADD)
 FORWARD = Direction.FORWARD

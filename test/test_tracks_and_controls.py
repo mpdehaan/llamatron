@@ -17,7 +17,6 @@
 """Track settings, the arpeggiator's offsets and octaves, and CC values with slides."""
 
 import contextlib
-import copy
 import glob
 import gzip
 import io
@@ -233,11 +232,6 @@ class TestControls(unittest.TestCase):
         data['scenes'][0]['tracks']['lead']['repeat'] = 2
         controls = [item for item in lead_clip(data).controls if item.number == 1]
         self.assertEqual([item.time for item in controls], [0, Fraction(1, 2), Fraction(3, 4), 1, Fraction(3, 2), Fraction(7, 4)])
-
-    def test_rhythm_from_takes_the_cc_rows_from_the_rhythm(self):
-        data = song_data()
-        data['scenes'][0]['tracks']['lead'] = {'pattern': 'chord', 'rhythm_from': 'riff'}
-        self.assertEqual(len(lead_clip(data).controls), 5)
 
     def test_a_morph_uses_the_targets_values_where_the_target_plays(self):
         data = song_data()

@@ -585,116 +585,6 @@ class TestClipMorph(unittest.TestCase):
             Song.from_data(with_parts(scenes=[{'tracks': {'lead': {'pattern': 'a', 'scale': 'C major'}}}]))
 
 
-class TestRhythmAndNotesFrom(unittest.TestCase):
-
-    PATTERNS = {
-        'groove': pat([1, '1/8'], [None, '1/8'], [1, '1/16'], [1, '1/16'], [1, '1/4'], velocity=[40, None, 50, 60, 70], ratchet=[None, None, None, None, 2]),
-        'line': pat([1, '1/4'], [None, '1/4'], [3, '1/4'], [5, '1/4'], octave=[3, None, 2, 2]),
-        'plain': pat([6, '1/2'], [7, '1/2']),
-        'hits': pat(['C', '1/4'], [None, '1/4'], ['D', '1/4'], drum=True),
-        'restful': pat([None, '1/4'], [None, '1/4']),
-        'colored': pat([1, '1/4'], chord=['M'], accidental=['#'], octave=[3]),
-    }
-
-    def clip(self, notes='plain', rhythm_from=None, **cell):
-        """Return a clip whose pattern gives the notes, in another pattern's rhythm if there is one."""
-        rhythm = {} if rhythm_from in (None, notes) else {'rhythm_from': rhythm_from}
-        if rhythm_from is None and notes != 'plain':
-            rhythm = {'rhythm_from': 'plain'}
-        data = with_parts(patterns=self.PATTERNS, scenes=[{'tracks': {'lead': {'pattern': notes, **rhythm, **cell}}}])
-        return clip(render_data(data), 1, 'lead')
-
-    def timed(self, found):
-        return [(str(start), pitch) for start, _, pitch, _ in sorted(timed_events(found, found.scale)[0])]
-
-    def test_rhythm_from_plays_the_clips_notes_in_another_rhythm(self):
-        found = self.clip(rhythm_from='groove')
-        self.assertEqual(found.total_length(), Fraction(5, 8))
-        self.assertEqual(self.timed(found)[:3], [('0', 57), ('1/4', 59), ('5/16', 57)])
-
-    def test_another_patterns_notes_in_the_rhythm(self):
-        found = self.clip(notes='line')
-        self.assertEqual(found.total_length(), 1)
-        self.assertEqual(self.timed(found), [('0', 60), ('1/2', 52)])
-
-    def test_rests_in_the_notes_are_skipped(self):
-        found = self.clip(rhythm_from='line', notes='line')
-        self.assertEqual(self.timed(found), [('0', 60), ('1/2', 52), ('3/4', 55)])
-
-    def test_rests_come_from_the_rhythm_even_if_the_notes_have_none_there(self):
-        self.assertNotIn('1/8', [start for start, _ in self.timed(self.clip(rhythm_from='groove'))])
-
-    def test_the_notes_carry_on_across_repeats_and_drift(self):
-        found = self.clip(rhythm_from='groove', notes='line', repeat=2)
-        self.assertEqual(found.total_length(), Fraction(5, 4))
-        pitches_played = [pitch for _, pitch in self.timed(found)]
-        # Each step: 1 3 5 1 1, then 3 5 1 3 3, with the last step of each repeat ratcheted.
-        self.assertEqual(pitches_played, [60, 52, 55, 60, 60, 52, 55, 60, 52, 52])
-
-    def test_a_looped_clip_carries_on_too(self):
-        data = with_parts(
-            patterns=self.PATTERNS,
-            scenes=[{'tracks': {
-                'lead': {'pattern': 'line', 'rhythm_from': 'hits', 'loop': True},
-                'kick': {'pattern': 'plain', 'repeat': 3},
-            }}],
-        )
-        found = clip(render_data(data), 1, 'lead')
-        self.assertEqual(found.total_length(), 3)
-        self.assertEqual([pitch for _, pitch in self.timed(found)][:5], [60, 52, 55, 60, 52])
-
-    def test_the_rhythm_side_owns_velocity_ratchet_and_duration(self):
-        found = self.clip(rhythm_from='groove')
-        events, _ = timed_events(found, None)
-        self.assertEqual([event[3] for event in sorted(events)][:4], [40, 50, 60, 70])
-        self.assertEqual(sorted(events)[-1][1] - sorted(events)[-1][0], Fraction(1, 8))
-
-    def test_the_notes_side_owns_octave_chord_and_accidental(self):
-        found = self.clip(notes='colored')
-        self.assertIsInstance(found.notes[0], Chord)
-        self.assertEqual(sorted(n.midi_number for n in found.notes[0].notes), [61, 65, 68])
-        self.assertEqual(found.notes[0].length, Fraction(1, 2))
-
-    def test_a_melody_in_the_rhythm_of_a_drum_pattern(self):
-        found = self.clip(rhythm_from='hits')
-        self.assertEqual(self.timed(found), [('0', 57), ('1/2', 59)])
-
-    def test_notes_from_a_drum_pattern_use_its_fixed_notes(self):
-        found = self.clip(notes='hits')
-        self.assertEqual([pitch for _, pitch in self.timed(found)], [36, 38])
-
-    def test_notes_with_nothing_to_play_are_rests(self):
-        found = self.clip(notes='restful')
-        self.assertEqual(pitches(found), [])
-        self.assertEqual(found.total_length(), 1)
-
-    def test_a_morph_target_plays_as_written(self):
-        data = with_parts(
-            patterns=self.PATTERNS,
-            scenes=[{'tracks': {'lead': {'pattern': 'line', 'rhythm_from': 'plain', 'repeat': 2, 'morph_to': 'plain', 'morph_style': 'left'}}}],
-        )
-        found = clip(render_data(data), 1, 'lead')
-        self.assertEqual([pitch for _, pitch in self.timed(found)], [60, 52, 57, 59])
-
-    def test_probability_comes_from_the_rhythm(self):
-        patterns = {**self.PATTERNS, 'silent': pat([1, '1/2'], [1, '1/2'], probability=[0, 0])}
-        data = with_parts(patterns=patterns, scenes=[{'tracks': {'lead': {'pattern': 'plain', 'rhythm_from': 'silent'}}}])
-        self.assertEqual(pitches(clip(render_data(data), 1, 'lead')), [])
-
-    def test_the_same_every_time(self):
-        self.assertEqual(self.clip(rhythm_from='groove', notes='line').notes, self.clip(rhythm_from='groove', notes='line').notes)
-
-    def test_names_must_be_real_patterns(self):
-        for setting in ['rhythm_from', 'grab_track']:
-            data = with_parts(patterns=self.PATTERNS, scenes=[{'tracks': {'lead': {'pattern': 'plain', setting: 'nope'}}}])
-            with self.subTest(setting=setting), self.assertRaises(SongFileError):
-                Song.from_data(data)
-
-    def test_estimate_uses_the_rhythm(self):
-        data = with_parts(patterns=self.PATTERNS, scenes=[{'tracks': {'lead': {'pattern': 'plain', 'rhythm_from': 'groove'}}}])
-        self.assertEqual(estimate_data(data)[0][2]['lead'], Fraction(5, 4))
-
-
 class TestPlayDirections(unittest.TestCase):
 
     NOTES = pat([1, '1/4'], [2, '1/4'], [3, '1/4'])
@@ -787,24 +677,6 @@ class TestPlayDirections(unittest.TestCase):
         )
         self.assertEqual(pitches(clip(render_data(data), 1, 'lead')), [52, 48, 57, 55])
 
-    def test_rhythm_and_notes_each_use_their_own_direction(self):
-        data = with_parts(
-            patterns={'r': pat([1, '1/4'], [None, '1/2'], [1, '1/8'], direction='reverse_b'), 'n': pat([1, 1], [3, 1], direction='reverse_b')},
-            scenes=[{'tracks': {'lead': {'pattern': 'n', 'rhythm_from': 'r'}}}],
-        )
-        found = clip(render_data(data), 1, 'lead')
-        # The rhythm plays its steps backwards, and so do the notes, so its last step plays first, with E.
-        played = [(start, end, number) for start, end, number, _ in timed_events(found, None)[0]]
-        self.assertEqual(played, [(0, Fraction(1, 8), 52), (Fraction(3, 4), Fraction(7, 8), 48)])
-
-    def test_a_clip_direction_overrides_both_rhythm_and_notes(self):
-        data = with_parts(
-            patterns={'r': pat([1, '1/4'], [None, '1/2'], [1, '1/8']), 'n': pat([1, 1], [3, 1])},
-            scenes=[{'tracks': {'lead': {'pattern': 'n', 'rhythm_from': 'r', 'direction': 'reverse_b'}}}],
-        )
-        found = clip(render_data(data), 1, 'lead')
-        self.assertEqual(found.notes[0], Note('E', 4, Fraction(1, 8)))
-
     def test_bad_directions_are_refused(self):
         with self.assertRaises(SongFileError):
             self.played(pattern_direction='sideways')
@@ -863,6 +735,11 @@ class TestGrab(unittest.TestCase):
     def test_a_marked_rest_stays_a_rest(self):
         riff = pat([None, '1/4'], [1, '1/4'], grab=[True, False])
         self.assertEqual(pitches(self.lead(riff=riff)), [48])
+
+    def test_the_grab_track_must_be_a_real_track(self):
+        data = with_parts(patterns={'riff': pat([1, '1/4'])}, scenes=[{'tracks': {'lead': {'pattern': 'riff', 'grab_track': 'nope'}}}])
+        with self.assertRaises(SongFileError):
+            Song.from_data(data)
 
     def test_marks_without_a_grab_track_do_nothing(self):
         data = with_parts(patterns={'riff': pat([1, '1/4'], grab=[True])}, scenes=[{'tracks': {'lead': {'pattern': 'riff'}}}])
@@ -1028,16 +905,6 @@ class TestAccumulators(unittest.TestCase):
     def test_a_rest_adds_nothing(self):
         found = lead([None, '1/4'], [1, '1/4'], rows={'note_add': [5, None]})
         self.assertEqual(pitches(found), [48])
-
-    def test_note_add_belongs_to_the_notes_and_velocity_add_to_the_rhythm(self):
-        patterns = {
-            'r': pat([1, '1/4'], velocity_add=[10], note_add=[5], velocity=[50]),
-            'n': pat([1, '1/4'], note_add=[1], velocity_add=[99], velocity=[99]),
-        }
-        data = with_parts(patterns=patterns, scenes=[{'tracks': {'lead': {'pattern': 'n', 'rhythm_from': 'r', 'repeat': 2}}}])
-        found = clip(render_data(data), 1, 'lead')
-        events, _ = timed_events(found, None)
-        self.assertEqual([event[2:] for event in sorted(events)], [(50, 60), (52, 70)])
 
     def test_settings_are_checked(self):
         for rows in [{'note_add': ['x']}, {'velocity_add': [1.5]}, {'accumulator_limit': 0}]:

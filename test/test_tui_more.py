@@ -399,11 +399,11 @@ class TestScenesAndClipsEdges(UITest):
         self.assertIsInstance(self.app.screen, ClipPage)
         return self.app.screen
 
-    async def test_choosing_none_clears_the_rhythm_and_chain(self):
+    async def test_choosing_none_clears_the_chain(self):
         cell = self.document.cell(0, 'lead')
-        cell.update(rhythm_from='beat', chain='named')
+        cell.update(chain='named')
         page = await self.clip_page()
-        for label, name in [('Rhythm from', 'rhythm_from'), ('Chain', 'chain')]:
+        for label, name in [('Chain', 'chain')]:
             await self.go_to(page, label)
             await self.press('enter')
             self.app.screen.place = 0
