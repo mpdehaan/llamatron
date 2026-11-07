@@ -596,6 +596,33 @@ each track's clips on its own track as MIDI items, laid end to end as in Live's 
 View, since Reaper has nothing like Session View. Renderers already share their note timing
 through `src/llamatron/renderers/timing.py`, so a new one mainly needs to write the format.
 
+### MIDI export with a choice of layout
+
+The user's idea (2026-11-08): the MIDI export should come in two versions, chosen in a dialog
+that opens when the export key is pressed. One is the clip tree as it is now, a file per clip.
+The other is one long MIDI file per track, with the scenes laid end to end in order as Live's
+Arrangement View lays them, for DAWs that have no session grid. A track that plays nothing in
+the first scenes is padded with silence so that every track's file starts at the song's start
+and they all line up when dropped into a DAW together. The Live export stays exactly as it is;
+this is only about exports to the file system.
+
+Claude's view: worth doing and not large, because every piece exists. The rendered `ClipGrid`
+already holds one scene per written-out repeat, with looping clips filled to the scene, so a
+track's long file is its clips placed at the scene starts, and a scene it plays nothing in is
+just a gap, which costs nothing in MIDI since the next event's delta time covers it. The scene
+starts are what `AbletonProject` works out for Arrangement View, so that arithmetic should move
+somewhere both can share, such as the grid. Per-scene tempos become tempo meta messages at the
+scene starts, as the Live arrangement does with its tempo automation, and every file ends with
+an end-of-track at the song's end so the files are the same length. One thing to consider
+adding as a third choice: a single multi-track MIDI file (format 1), with a tempo track and one
+track per llamatron track, because most DAWs without a session grid (Logic, Reaper, Bitwig,
+Cubase) import one such file as aligned tracks with the tempo map in one drop, which is the
+surest way to have everything line up; separate files rely on the person dropping each at the
+same position. The per-track files are still right for hardware and samplers that take one file.
+Without time signatures (see above) a DAW will assume 4/4 for bar lines, which is the same gap
+the clip tree has today. The command line would take the new layouts as values of `--to`, and
+the Song page's `M` would open the choice dialog, with the help text and `GUIDE.md` updated.
+
 ## Asking about the long-term direction
 
 At some point, ask Claude about where the program is heading in the long run, and which
