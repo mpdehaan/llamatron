@@ -14,45 +14,48 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Opens the tracker, or turns a song file into an Ableton Live set or a directory of MIDI clips.
+"""Opens the tracker, or turns a song file into an Ableton Live set or MIDI files.
 
     llamatron
     llamatron examples/minimal_techno.yml
-    llamatron examples/minimal_techno.yml --to ableton
-    llamatron examples/minimal_techno.yml --to cliptree --out output/my_song
+    llamatron examples/minimal_techno.yml --to
+    llamatron examples/minimal_techno.yml --to midi
+    llamatron examples/minimal_techno.yml --to stems --out output/my_song
 
-Without --to it opens the tracker, on the song if one is named.
+Without --to it opens the tracker, on the song if one is named. --to writes the song instead,
+as a Live set unless it says which kind of output: midi (one file), stems (a file per track)
+or cliptree (a file per clip).
 """
 
 import argparse
-import glob
 import os
 import sys
 
 from llamatron.composition.song import Song
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.renderers.ableton_project import DEFAULT_TEMPLATE, AbletonProject
-from llamatron.renderers.clip_tree import ClipTree
-from llamatron.clip_grid import ClipGrid
+from llamatron.renderers.outputs import OUTPUT_KINDS, OutputKind, make_writer, replace_output
 
 PROGRAM = 'llamatron'
-# What --to can write.
-TO_ABLETON, TO_CLIP_TREE = 'ableton', 'cliptree'
-RENDER_TARGETS = [TO_ABLETON, TO_CLIP_TREE]
+# What --to writes when it doesn't say.
+DEFAULT_KIND = OutputKind.ABLETON
 # Where a song's output goes unless --out says otherwise: output/<song name>.
 OUTPUT_DIRECTORY = 'output'
-# The MIDI files a clip tree writes, which --replace removes: <scene>-<track>-<name>.mid.
-CLIP_TREE_FILES = '[0-9]*-[0-9]*.mid'
-OPTION_TO, OPTION_OUT, OPTION_TEMPLATE, OPTION_REPLACE = '--to', '--out', '--template', '--replace'
+OPTION_TO = '--to'
+OPTION_OUT = '--out'
+OPTION_TEMPLATE = '--template'
+OPTION_REPLACE = '--replace'
 SONG_ARGUMENT = 'song'
 ONE_OR_NONE = '?'
 STORE_TRUE = 'store_true'
 SUCCEEDED, FAILED = 0, 1
 
-HELP_DESCRIPTION = 'Open the tracker, or with --to, turn a song file into Ableton Live or MIDI files.'
+HELP_DESCRIPTION = 'Open the tracker, or with --to, turn a song file into an Ableton Live set or MIDI files.'
 HELP_SONG = 'the song file to open, or to read with --to'
-HELP_TO = 'write the song instead of opening the tracker'
+HELP_TO = (
+    'write the song instead of opening the tracker, as an Ableton Live set (ableton, the default), '
+    'one MIDI file of every track (midi), a MIDI file per track (stems) or a MIDI file per clip (cliptree)'
+)
 HELP_OUT = 'the directory to write to (default: output/<song name>)'
 HELP_TEMPLATE = 'the Live set to build from (default: the one installed with llamatron)'
 HELP_REPLACE = "replace this song's earlier output, so you can regenerate and listen"
@@ -67,7 +70,7 @@ OPTION_SEPARATOR = ', '
 def _arguments(argv):
     parser = argparse.ArgumentParser(prog=PROGRAM, description=HELP_DESCRIPTION)
     parser.add_argument(SONG_ARGUMENT, nargs=ONE_OR_NONE, help=HELP_SONG)
-    parser.add_argument(OPTION_TO, choices=RENDER_TARGETS, help=HELP_TO)
+    parser.add_argument(OPTION_TO, nargs=ONE_OR_NONE, const=DEFAULT_KIND, choices=OUTPUT_KINDS, help=HELP_TO)
     parser.add_argument(OPTION_OUT, help=HELP_OUT)
     parser.add_argument(OPTION_TEMPLATE, help=HELP_TEMPLATE)
     parser.add_argument(OPTION_REPLACE, action=STORE_TRUE, help=HELP_REPLACE)
@@ -85,17 +88,6 @@ def _render_options_given(arguments):
     """Return the options given that only mean something when rendering with --to."""
     options = [(OPTION_OUT, arguments.out), (OPTION_TEMPLATE, arguments.template), (OPTION_REPLACE, arguments.replace)]
     return [option for option, value in options if value]
-
-
-def replace_output(to, directory):
-    """Remove what rendering a song to a directory would write, and leave everything else."""
-    if to == TO_ABLETON:
-        targets = [AbletonProject(directory, ClipGrid()).path]
-    else:
-        targets = glob.glob(os.path.join(glob.escape(directory), CLIP_TREE_FILES))
-    for path in targets:
-        if os.path.exists(path):
-            os.remove(path)
 
 
 def output_directory(song_path):
@@ -116,10 +108,7 @@ def main(argv=None):
         song = SongRenderer(Song.read_file(arguments.song)).render()
         if arguments.replace:
             replace_output(arguments.to, directory)
-        if arguments.to == TO_ABLETON:
-            AbletonProject(directory, song, template=arguments.template or DEFAULT_TEMPLATE).render()
-        else:
-            ClipTree(directory, song).render()
+        make_writer(arguments.to, directory, song, template=arguments.template).render()
     except (SongFileError, ValueError, OSError) as error:
         print(MSG_ERROR.format(problem=error), file=sys.stderr)
         return FAILED

@@ -23,7 +23,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from llamatron.rational import Rational
-from llamatron.renderers.clip_tree import _check_directory, _check_song
+from llamatron.renderers.midi_messages import check_directory, check_grid
 from llamatron.renderers.timing import BEATS_PER_WHOLE_NOTE, control_points, timed_events
 from llamatron.clip_grid import _Validated
 
@@ -218,8 +218,8 @@ class AbletonProject:
 
     __slots__ = ('_directory', '_song', '_template', 'name')
 
-    directory = _Validated(_check_directory)
-    song = _Validated(_check_song)
+    directory = _Validated(check_directory)
+    song = _Validated(check_grid)
     template = _Validated(_check_template)
 
     def __init__(self, directory, song, template=DEFAULT_TEMPLATE, name=None):
@@ -285,14 +285,8 @@ class AbletonProject:
         now = Rational(CLIP_START)
         for scene in self.song.scenes:
             starts.append(now)
-            now += self._scene_length(scene) or _empty_clip_length()
+            now += self.song.scene_length(scene) or _empty_clip_length()
         return starts
-
-    def _scene_length(self, scene):
-        """Return how long a scene's longest clip lasts, or nothing if it has no clips."""
-        clips = [self.song.get_clip(scene, track) for track in self.song.tracks]
-        lengths = [clip.total_length() for clip in clips if clip is not None]
-        return max(lengths, default=NO_LENGTH)
 
     def _set_tempo(self, live_set, starts):
         """Set the tempo control and its automation, with changes for any scene tempos."""

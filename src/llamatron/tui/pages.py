@@ -32,6 +32,7 @@ from llamatron.midi import MAX_CC_NUMBER, MIN_CC_NUMBER
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.song import NO_TEXT
 from llamatron.composition.song_file_error import SongFileError
+from llamatron.renderers.outputs import MIDI_KINDS, OUTPUT_NAMES, OutputKind
 from llamatron.tui.arrange import ArrangePage
 from llamatron.tui.base import ARROWS, ARROWS_UP_DOWN, SITE, ChoiceDialog, ConfirmDialog, GridChoiceDialog, Page, PromptDialog, fit, grouped_grid, key, pressed_key
 from llamatron.tui.document import Document, NO_OFFSET, ROOTS, SCALE_KINDS, clock, tempo_text, unique_name
@@ -55,6 +56,14 @@ NO_SCALE = 'no scale'
 SONG_SUMMARY = '{tempo} BPM   {scale}   {patterns} patterns   {tracks} tracks   {scenes} scenes'
 MSG_ADD_A_SCALE_FIRST = 'Add a scale first, on the Scales page.'
 SONG_SCALE_TITLE = 'Song scale'
+# What M offers, in the order of MIDI_KINDS: one file, stems, named clips.
+MIDI_DIALOG_TITLE = 'Render MIDI'
+MIDI_CHOICES = [
+    'One MIDI file, with a track for each track',
+    'MIDI stems: a file for each track, all the same length',
+    'Named clips: a file for each clip, by scene and track',
+]
+MSG_WROTE = 'Wrote the {name} to {directory}.'
 # What the scale picker starts on when there's no scale to start from.
 NEW_SCALE_ROOT = NoteName.C
 NEW_SCALE_KIND = scale_type_name(ScaleType.MAJOR)
@@ -195,7 +204,7 @@ class SongPage(FieldPage):
         'Seed: decides what probability drops, so a song renders the same every time.',
         '',
         'D opens the description, for notes about the song. L loads, N starts a new song, S saves, and W saves under a new name.',
-        'R writes an Ableton set and M writes a folder of MIDI clips, both under output/. Both ask before replacing an earlier render.',
+        'R writes an Ableton set under output/. M asks which MIDI files to write there: one file of every track, stems (a file per track) or named clips (a file per clip). Both ask before replacing an earlier render.',
     )
 
     def duration(self):
@@ -271,8 +280,8 @@ class SongPage(FieldPage):
             key('n', 'new', self.new),
             key('s', 'save', self.save),
             key('w', 'save as', self.save_as),
-            key('r', 'render Ableton', lambda: self.render_song('ableton')),
-            key('m', 'render clip tree', lambda: self.render_song('cliptree')),
+            key('r', 'render Ableton', lambda: self.render_song(OutputKind.ABLETON)),
+            key('m', 'render MIDI', self.choose_midi),
         ]
 
     def unless_unsaved(self, then):
@@ -324,6 +333,10 @@ class SongPage(FieldPage):
             return
         self.status = f'Saved {path}.'
 
+    def choose_midi(self):
+        """Ask which MIDI files to write, and write them."""
+        self.ask(ChoiceDialog(MIDI_DIALOG_TITLE, MIDI_CHOICES), lambda place: self.render_song(MIDI_KINDS[place]))
+
     def render_song(self, to):
         document = self.document
         if document.render_exists(to):
@@ -341,8 +354,7 @@ class SongPage(FieldPage):
         except SongFileError as error:
             self.tell("Can't render", str(error))
             return
-        name = 'Ableton set' if to == 'ableton' else 'clip tree'
-        self.status = f'Wrote the {name} to {directory}.'
+        self.status = MSG_WROTE.format(name=OUTPUT_NAMES[to], directory=directory)
 
 
 class DescriptionPage(Page):

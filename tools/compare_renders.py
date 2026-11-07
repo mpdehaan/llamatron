@@ -25,6 +25,7 @@ nothing else moved.
 
 For each song it keeps:
 - clips/: the MIDI file of every clip, as `llamatron song.yml --to cliptree` writes them
+- arrangement/: the whole song as one MIDI file and as stems, as `--to midi` and `--to stems` write them
 - live.xml: the Live set, unzipped, so that it compares as text
 - saved.yml: the song after the tracker loads and saves it
 - estimate.txt: how long the tracker estimates the song and each scene lasts
@@ -56,6 +57,7 @@ from llamatron.composition.song import Song
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.renderers.ableton_project import AbletonProject
 from llamatron.renderers.clip_tree import ClipTree
+from llamatron.renderers.midi_arrangement import MidiSong, MidiStems
 from llamatron.tui.document import Document
 
 EXAMPLES = 'examples/*.yml'
@@ -64,6 +66,7 @@ COMPARE = 'compare'
 # A file in every capture, so that capture knows a folder it may replace.
 MARKER = '.llamatron_renders'
 CLIPS_FOLDER = 'clips'
+ARRANGEMENT_FOLDER = 'arrangement'
 LIVE_FOLDER = 'live'
 LIVE_SET = 'live.als'
 LIVE_XML = 'live.xml'
@@ -104,6 +107,8 @@ def render_example(path, folder):
     # The renderers print what they write, which isn't needed here.
     with contextlib.redirect_stdout(io.StringIO()):
         ClipTree(os.path.join(out, CLIPS_FOLDER), song).render()
+        MidiSong(os.path.join(out, ARRANGEMENT_FOLDER), song).render()
+        MidiStems(os.path.join(out, ARRANGEMENT_FOLDER), song).render()
         AbletonProject(os.path.join(out, LIVE_FOLDER), song).render()
     keep_live_set_as_xml(out)
     Document.load(path).save(os.path.join(out, SAVED_SONG))

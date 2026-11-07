@@ -30,6 +30,7 @@ import mido
 
 from gate_conversion import to_gates
 
+from llamatron.renderers.outputs import MIDI_KINDS, OutputKind
 from llamatron.tui.document import Document, new_song
 from test_tui_pages import UITest
 
@@ -153,7 +154,8 @@ class TestTypedInTheUI(UITest):
         await self.press('p', 'enter')
         for name in FIRST_VERSE:
             await self.press(str(DEGREES[name]), 'right')
-        await self.press('tab', 'tab', 's', 'm')
+        # M asks which MIDI files to write, and the named clips give one file for the one clip.
+        await self.press('tab', 'tab', 's', 'm', *(['down'] * MIDI_KINDS.index(OutputKind.CLIP_TREE)), 'enter')
         files = glob.glob(os.path.join(self.document.output_directory(), '*.mid'))
         self.assertEqual(len(files), 1)
         self.assertEqual(played(files[0]), FIRST_VERSE)

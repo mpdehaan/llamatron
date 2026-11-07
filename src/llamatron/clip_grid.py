@@ -32,6 +32,9 @@ from llamatron.note import Degree, Note, Rest, _check_length
 from llamatron.scale import Scale
 from llamatron.composition.limits import MIN_TEMPO
 
+# How long a scene with no clips lasts.
+NO_LENGTH = 0
+
 DEFAULT_TEMPO = 120
 
 # The objects that a clip's list of notes can hold.
@@ -514,6 +517,29 @@ class ClipGrid:
         """Return the tempo for a scene: its own if it has one, else the song's."""
         self._check_scene(scene)
         return self.tempo if scene.tempo is None else scene.tempo
+
+    def scene_length(self, scene):
+        """Return how long a scene lasts, in whole notes: as long as its longest clip, or 0 with no clips."""
+        self._check_scene(scene)
+        lengths = [clip.total_length() for clip in self._clips_in(scene)]
+        return max(lengths, default=NO_LENGTH)
+
+    def scene_starts(self):
+        """Return when each scene starts when the scenes are laid end to end in order, in whole notes."""
+        starts = []
+        now = Rational(0)
+        for scene in self.scenes:
+            starts.append(now)
+            now += self.scene_length(scene)
+        return starts
+
+    def song_length(self):
+        """Return how long the scenes last laid end to end, in whole notes."""
+        return sum((self.scene_length(scene) for scene in self.scenes), Rational(0))
+
+    def _clips_in(self, scene):
+        """Return a scene's clips, in track order."""
+        return [clip for clip in (self.get_clip(scene, track) for track in self.tracks) if clip is not None]
 
     def scale_at(self, scene, track):
         """Return the scale for a cell: its clip's, else its scene's, else the song's.

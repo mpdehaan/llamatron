@@ -63,7 +63,7 @@ Songs are saved as YAML, which is mainly for the program to read, but stays read
 
 ```
 llamatron examples/minimal_techno.yml --to ableton --replace
-llamatron examples/minimal_techno.yml --to cliptree --out output/my_song
+llamatron examples/minimal_techno.yml --to midi --out output/my_song
 ```
 
 It is very much the goal of llamatron to enable human produced intentional music with random elements, but our examples (for expediciency) are for right now AI generated and don't sound all that

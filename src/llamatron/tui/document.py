@@ -29,12 +29,9 @@ import yaml
 
 from llamatron.safe_yaml import load_safely
 from llamatron.rational import Rational
-from llamatron.cli import replace_output
-from llamatron.renderers.ableton_project import AbletonProject
-from llamatron.renderers.clip_tree import ClipTree
+from llamatron.renderers.outputs import earlier_output, make_writer, output_path, replace_output
 from llamatron.note import ROOT_NAMES, Note
 from llamatron.scale import ScaleType
-from llamatron.clip_grid import ClipGrid
 from llamatron.composition.defaults import (
     DEFAULT_DRUM_OCTAVE, DEFAULT_OCTAVE, DEFAULT_SEED, DEFAULT_STEP_SIZE, DEFAULT_TEMPO, DEFAULT_TRANSPOSE, DEFAULT_REPEAT,
 )
@@ -231,19 +228,12 @@ class Document:
         return os.path.join('output', self.name)
 
     def render_path(self, to):
-        """Return where a render will write: a set's file, or the folder of a clip tree."""
-        if to == 'ableton':
-            return AbletonProject(self.output_directory(), ClipGrid()).path
-        return self.output_directory()
+        """Return where a render will write: the file, for a set or a single MIDI file, or the folder for stems and a clip tree."""
+        return output_path(to, self.output_directory())
 
     def render_exists(self, to):
-        """Return whether rendering would replace earlier output."""
-        directory = self.output_directory()
-        if to == 'ableton':
-            return os.path.exists(self.render_path(to))
-        return os.path.isdir(directory) and any(
-            name.endswith('.mid') and name[:3].isdigit() for name in os.listdir(directory)
-        )
+        """Return whether rendering would replace earlier output of the same kind."""
+        return bool(earlier_output(to, self.output_directory()))
 
     def render(self, to):
         """Render the song, replacing earlier output, or raise SongFileError if it can't be."""
@@ -255,10 +245,7 @@ class Document:
         # Renderers print warnings, which would write over the screen.
         with contextlib.redirect_stdout(io.StringIO()):
             try:
-                if to == 'ableton':
-                    AbletonProject(directory, song).render()
-                else:
-                    ClipTree(directory, song).render()
+                make_writer(to, directory, song).render()
             except (ValueError, OSError) as error:
                 raise SongFileError(str(error)) from error
         return directory

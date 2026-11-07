@@ -30,9 +30,11 @@ import mido
 import yaml
 
 from llamatron.chord import Chord
-from llamatron.cli import TO_ABLETON, TO_CLIP_TREE, main
+from llamatron.cli import main
 from llamatron.note import Note, Rest
 from llamatron.renderers.clip_tree import ClipTree
+from llamatron.renderers.midi_arrangement import MULTI_TRACK_FILE, SONG_FILE, STEM_FILE
+from llamatron.renderers.outputs import OutputKind
 from llamatron.renderers.timing import GLIDE_OVERLAP, timed_events
 from llamatron.song_writer import dump_song
 from gate_conversion import to_gates
@@ -1034,11 +1036,19 @@ class RendersEveryExample:
 
 
 class TestExamplesRenderToAbleton(RendersEveryExample, unittest.TestCase):
-    TO = TO_ABLETON
+    TO = OutputKind.ABLETON
+
+
+class TestExamplesRenderToOneMidiFile(RendersEveryExample, unittest.TestCase):
+    TO = OutputKind.MIDI_FILE
+
+
+class TestExamplesRenderToStems(RendersEveryExample, unittest.TestCase):
+    TO = OutputKind.STEMS
 
 
 class TestExamplesRenderToClipTree(RendersEveryExample, unittest.TestCase):
-    TO = TO_CLIP_TREE
+    TO = OutputKind.CLIP_TREE
 
 
 class TestTitleAndAuthor(unittest.TestCase):
@@ -1054,6 +1064,10 @@ class TestTitleAndAuthor(unittest.TestCase):
         text = dump_song({'tempo': 120, 'author': 'Someone', 'title': 'Rain: Part 2', 'tracks': {}, 'scenes': []})
         self.assertTrue(text.startswith('title: "Rain: Part 2"\nauthor: Someone\ntempo: 120\n'))
         self.assertEqual(yaml.safe_load(text)['title'], 'Rain: Part 2')
+
+
+# The output folder's name, which names the MIDI file and the stems.
+OUT_NAME = 'out'
 
 
 class TestCli(unittest.TestCase):
@@ -1126,6 +1140,32 @@ class TestCli(unittest.TestCase):
         self.assertEqual(sorted(os.listdir(self.out)), ['001-001-a.mid', '001-002-hit.mid'])
         played = mido.MidiFile(os.path.join(self.out, '001-001-a.mid'))
         self.assertEqual(played.tracks[0].name, '001-001-a')
+
+    def test_to_on_its_own_writes_an_ableton_set(self):
+        code, _, _ = self.run_exactly(self.song, '--out', self.out, '--to')
+        self.assertEqual(code, 0)
+        self.assertEqual(os.listdir(self.out), ['out.als'])
+
+    def test_to_midi_writes_one_file_with_a_tempo_track_and_a_track_per_track(self):
+        self.run_cli('--to', OutputKind.MIDI_FILE)
+        name = SONG_FILE.format(name=OUT_NAME)
+        self.assertEqual(os.listdir(self.out), [name])
+        midi = mido.MidiFile(os.path.join(self.out, name))
+        self.assertEqual(midi.type, MULTI_TRACK_FILE)
+        self.assertEqual([track.name for track in midi.tracks], [OUT_NAME, 'lead', 'kick'])
+
+    def test_to_stems_writes_a_file_per_track_numbered_from_1(self):
+        self.run_cli('--to', OutputKind.STEMS)
+        expected = [STEM_FILE.format(name=OUT_NAME, number=1, track='lead'), STEM_FILE.format(name=OUT_NAME, number=2, track='kick')]
+        self.assertEqual(sorted(os.listdir(self.out)), expected)
+
+    def test_replacing_stems_keeps_a_clip_tree_in_the_same_folder(self):
+        self.run_cli('--to', OutputKind.CLIP_TREE)
+        self.run_cli('--to', OutputKind.STEMS)
+        code, stdout, _ = self.run_cli('--to', OutputKind.STEMS, '--replace')
+        self.assertEqual(code, 0)
+        self.assertNotIn('warning: stopping', stdout)
+        self.assertEqual(len(os.listdir(self.out)), 4)
 
     def test_stops_with_a_warning_if_the_output_exists(self):
         self.run_cli()

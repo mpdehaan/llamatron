@@ -298,6 +298,10 @@ To think through:
 
 - **Where a time signature is set.** On the song, with scenes able to change it, the way scales
   work, seems most natural. A pattern could also be written in a time signature of its own.
+- **The MIDI files need it too.** The MIDI file, the stems and the clip tree carry no time
+  signature today, so a DAW assumes 4/4 for its bar lines. Each should get a time signature meta
+  message at the start of every scene whose signature differs from the one before, written the
+  way `_Arrangement.tempo_events` writes tempo changes, with the clip tree writing its clip's.
 - **Quarter notes or beats.** In 4/4 the quarter notes are the beats. In 6/8 the beats are
   dotted quarters, so bolding quarter notes there wouldn't match how the bar is counted. Whether
   to bold the beats, or the quarter notes as such, needs deciding, and the first beat of each bar
@@ -597,6 +601,14 @@ View, since Reaper has nothing like Session View. Renderers already share their 
 through `src/llamatron/renderers/timing.py`, so a new one mainly needs to write the format.
 
 ### MIDI export with a choice of layout
+
+**Done (2026-11-08):** `M` on the Song page offers one MIDI file, stems and named clips, and
+`--to midi`, `--to stems` and `--to cliptree` do the same from the command line, with muted
+tracks left out of the first two. What's still to do is in the time signatures section: until
+there is one, the MIDI files carry none, so a DAW draws bar lines as if the song were in 4/4,
+and the time signature work should write a time signature meta message at the start of each
+scene whose signature changes, in `tempo_events`' way, into the song file, the stems and the
+clip tree.
 
 The user's idea (2026-11-08): the MIDI export should come in two versions, chosen in a dialog
 that opens when the export key is pressed. One is the clip tree as it is now, a file per clip.

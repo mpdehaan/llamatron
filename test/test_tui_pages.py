@@ -33,15 +33,19 @@ from llamatron.scale import ScaleType
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.arrange import ArrangePage, ClipPage, ScenePage
 from llamatron.tui.base import ChoiceDialog, ConfirmDialog, Dialog, GridChoiceDialog, MessageDialog, Page, PromptDialog
+from llamatron.renderers.outputs import OutputKind, earlier_output, output_path
 from llamatron.tui.document import DEFAULT_SCALE, Document, new_song
 from llamatron.tui.lists import FieldPage, ListPage
 from llamatron.tui.pages import (
     ArpEditor, ArpsPage, AutoRatchetEditor, AutoRatchetsPage, ChainEditor, ChainsPage, DescriptionPage, FilePage,
-    GeneratorsPage, MainPage, PatternsPage, ScalesPage, SongPage, TracksPage,
+    GeneratorsPage, MainPage, MIDI_CHOICES, PatternsPage, ScalesPage, SongPage, TracksPage,
 )
 from llamatron.tui.pattern_editor import PatternEditor
 from llamatron.version import VERSION
 from rendering import render_song
+
+# Where an unsaved song's renders go, under the test's temporary folder.
+UNTITLED_OUTPUT = 'output/untitled'
 
 
 class TestMainScreen(UITest):
@@ -302,7 +306,21 @@ class TestSongPage(UITest):
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         self.assertIn('Replace', self.text())
         await self.press('tab', 'm')
-        self.assertTrue(os.listdir('output/untitled'))
+        self.assertIsInstance(self.app.screen, ChoiceDialog)
+        self.assertEqual(self.app.screen.options, MIDI_CHOICES)
+        await self.press('enter')
+        self.assertTrue(os.path.exists(output_path(OutputKind.MIDI_FILE, UNTITLED_OUTPUT)))
+
+    async def test_m_offers_stems_and_named_clips_too(self):
+        await self.press('m', 'down', 'enter')
+        self.assertTrue(earlier_output(OutputKind.STEMS, UNTITLED_OUTPUT))
+        await self.press('m', 'down', 'down', 'enter')
+        self.assertTrue(earlier_output(OutputKind.CLIP_TREE, UNTITLED_OUTPUT))
+        self.assertEqual(earlier_output(OutputKind.MIDI_FILE, UNTITLED_OUTPUT), [])
+
+    async def test_m_can_be_cancelled(self):
+        await self.press('m', 'tab')
+        self.assertFalse(os.path.exists(UNTITLED_OUTPUT))
 
     async def test_changes_do_not_render_or_save_by_themselves(self):
         await self.press('+', '+')

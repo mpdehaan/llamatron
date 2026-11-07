@@ -2,7 +2,7 @@
 
 llamatron is a tracker for your terminal. Unlike most trackers, it does not output live music, but aims to output MIDI and Ableton Live sets. 
 
-You write patterns of notes, put them on tracks in scenes, and render the song as an Ableton Live set or a folder of MIDI clips. This guide covers installing llamatron, loading and rendering a song, building a first song step by step, and then every feature of each page.
+You write patterns of notes, put them on tracks in scenes, and render the song as an Ableton Live set or as MIDI files for any other DAW. This guide covers installing llamatron, loading and rendering a song, building a first song step by step, and then every feature of each page.
 
 ## Installing
 
@@ -83,7 +83,10 @@ All of this is on the Song page, so press `S` from the main screen.
 - **`S` saves** the song. If it hasn't been saved before, it asks for a file name first, starting from `songs/untitled.yml`, and adds `.yml` if you leave it off. Folders are made as needed.
 - **`W` saves** under a new name, and asks before replacing another file.
 - **`R` renders** an Ableton Live set to `output/<song name>/<song name>.als`.
-- **`M` renders** a clip tree: one MIDI file per clip, in `output/<song name>/`, named by scene, track and pattern.
+- **`M` renders** MIDI files, for DAWs other than Live, and asks which kind first:
+  - **One MIDI file**, `output/<song name>/<song name>.mid`, with a track for each llamatron track and the tempo changes, which most DAWs import as aligned tracks in one drop.
+  - **MIDI stems**: one file for each track, `output/<song name>/<song name>-001-<track>.mid` and so on, each the full length of the song and each carrying the tempo changes, so they line up when dropped in together. This suits hardware and samplers that take one file at a time.
+  - **Named clips**: one file for each clip, in `output/<song name>/`, named by scene, track and pattern, like `002-001-My_Riff.mid`.
 
 Loading or starting a new song asks first if there are unsaved changes.
 
@@ -91,13 +94,16 @@ The song name is the file name without `.yml`, so an unsaved song renders to `ou
 
 In Live, each llamatron track is a MIDI track with its clips in Session View, and the scenes are also laid end to end in Arrangement View. Scenes keep their names, and each clip is named after the pattern it plays. The tracks have no instruments, so drop one onto each track to hear it.
 
+The MIDI file and the stems lay the scenes end to end in the same order as Live's Arrangement View, and a track that plays nothing in the first scenes starts with silence, so every track starts at the beginning of the song. Muted tracks are left out of both, since they're silent in Live and a MIDI file has no mute. There are no time signatures yet, so a DAW will draw bar lines as if the song were in 4/4.
+
 ### From the command line
 
-`--to` renders a song without opening the tracker:
+`--to` renders a song without opening the tracker. On its own it writes a Live set, and it can say which kind of output instead: `ableton`, `midi` (one MIDI file), `stems` (a file per track) or `cliptree` (a file per clip, the named clips). Put it after the song's name:
 
 ```
-llamatron examples/minimal_techno.yml --to ableton
-llamatron examples/minimal_techno.yml --to cliptree --out output/my_song
+llamatron examples/minimal_techno.yml --to
+llamatron examples/minimal_techno.yml --to midi
+llamatron examples/minimal_techno.yml --to stems --out output/my_song
 llamatron examples/minimal_techno.yml --to ableton --replace
 ```
 
@@ -107,7 +113,7 @@ llamatron examples/minimal_techno.yml --to ableton --replace
 
 These three only work with `--to`. `./run_examples.sh` renders every song in `examples/` as a Live set, replacing earlier renders.
 
-Cliptree is intended for DAWS other than Ableton Live.  This project was made with Ableton 12.3, so any future version should theoretically work with the Ableton export modes.
+The MIDI outputs are intended for DAWS other than Ableton Live.  This project was made with Ableton 12.3, so any future version should theoretically work with the Ableton export modes.
 
 ## Making a first song
 

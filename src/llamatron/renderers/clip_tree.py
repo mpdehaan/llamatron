@@ -14,29 +14,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Writes a ClipGrid as a directory of MIDI files, one per clip, named after their scene, track and pattern."""
+
 import os
-from typing import NamedTuple
-import re
 
 import mido
 
-from llamatron.renderers.timing import BEATS_PER_WHOLE_NOTE, control_events, timed_events
-from llamatron.clip_grid import ClipGrid, _Validated
-
-TICKS_PER_BEAT = 480
-# A MIDI file of type 0 holds a single track.
-SINGLE_TRACK_FILE = 0
-# The kinds of event a clip's file holds, in the order they're written when they fall on the same
-# tick: a note off first, so a note can repeat straight after itself, then a CC, so that a note
-# starts with the new value, then a note on.
-NOTE_OFF, CONTROL_CHANGE, NOTE_ON = 0, 1, 2
-# The names mido gives MIDI's messages.
-NOTE_ON_MESSAGE, NOTE_OFF_MESSAGE, CONTROL_CHANGE_MESSAGE = 'note_on', 'note_off', 'control_change'
-TRACK_NAME_META, TEMPO_META, END_OF_TRACK_META = 'track_name', 'set_tempo', 'end_of_track'
-# A note off carries no velocity.
-NO_VELOCITY = 0
-# MIDI text is latin-1, so any other characters in a track's name become question marks.
-MIDI_TEXT_ENCODING, REPLACE_UNKNOWN_CHARACTERS = 'latin-1', 'replace'
+from llamatron.renderers.midi_messages import (
+    FILE_LIST_SEPARATOR, SINGLE_TRACK_FILE, TICKS_PER_BEAT, check_directory, check_grid, clip_events,
+    midi_track, safe_file_name, tempo_event, ticks,
+)
+from llamatron.renderers.timing import timed_events
+from llamatron.clip_grid import _Validated
 
 # A clip's file name: its scene's and track's numbers, counted from 1 like Live's and
 # zero-padded so that files sort in order, then the clip's name if it has one.
@@ -44,31 +33,12 @@ FIRST_NUMBER = 1
 SLOT_NAME = '{scene:03d}-{track:03d}'
 NAMED_FILE = '{slot}-{name}.mid'
 UNNAMED_FILE = '{slot}.mid'
-# Spaces and slashes in a clip's name become underscores, since a slash would point to another directory.
-UNSAFE_IN_FILE_NAMES = re.compile(r'[\s/\\]')
-SAFE_REPLACEMENT = '_'
+MIDI_SUFFIX = '.mid'
+# The tempo is set as the clip starts.
+AT_THE_START = 0
 
-MSG_BAD_DIRECTORY = 'invalid directory: {value!r}'
-MSG_NOT_A_GRID = 'expected a ClipGrid, got {value!r}'
 MSG_FILES_EXIST = 'warning: stopping without writing anything, because {directory} already contains: {files}'
 MSG_OTHER_FILES = 'warning: {directory} already contains {count} other item(s), which will not be deleted: {files}'
-# File names, as the warnings list them.
-FILE_LIST_SEPARATOR = ', '
-
-
-def _check_directory(directory):
-    if not isinstance(directory, (str, os.PathLike)) or not os.fspath(directory):
-        raise ValueError(MSG_BAD_DIRECTORY.format(value=directory))
-
-
-def _check_song(song):
-    if not isinstance(song, ClipGrid):
-        raise ValueError(MSG_NOT_A_GRID.format(value=song))
-
-
-def _ticks(length):
-    """Convert a fraction of a whole note into MIDI ticks."""
-    return round(length * BEATS_PER_WHOLE_NOTE * TICKS_PER_BEAT)
 
 
 def _filename(scene, track, clip):
@@ -80,12 +50,7 @@ def _filename(scene, track, clip):
     slot = SLOT_NAME.format(scene=scene.id + FIRST_NUMBER, track=track.id + FIRST_NUMBER)
     if not clip.name:
         return UNNAMED_FILE.format(slot=slot)
-    return NAMED_FILE.format(slot=slot, name=UNSAFE_IN_FILE_NAMES.sub(SAFE_REPLACEMENT, clip.name))
-
-
-def _midi_text(text):
-    """Return text that a MIDI file can hold, with any character latin-1 doesn't have as a question mark."""
-    return text.encode(MIDI_TEXT_ENCODING, REPLACE_UNKNOWN_CHARACTERS).decode(MIDI_TEXT_ENCODING)
+    return NAMED_FILE.format(slot=slot, name=safe_file_name(clip.name))
 
 
 class ClipTree:
@@ -98,8 +63,8 @@ class ClipTree:
 
     __slots__ = ('_directory', '_song')
 
-    directory = _Validated(_check_directory)
-    song = _Validated(_check_song)
+    directory = _Validated(check_directory)
+    song = _Validated(check_grid)
 
     def __init__(self, directory, song):
         self.directory = directory
@@ -141,50 +106,13 @@ class ClipTree:
     def _built_files(self, slots):
         """Return (file name, MIDI file) for each filled slot, with the file name, less .mid, as its track's name."""
         return [
-            (filename, self._midi_file(os.path.splitext(filename)[0], scene, track, clip))
+            (filename, self._midi_file(filename.removesuffix(MIDI_SUFFIX), scene, track, clip))
             for filename, scene, track, clip in slots
         ]
 
     def _midi_file(self, name, scene, track, clip):
         notes, clip_length = timed_events(clip, self.song.scale_at(scene, track))
-        messages = [
-            mido.MetaMessage(TRACK_NAME_META, name=_midi_text(name)),
-            mido.MetaMessage(TEMPO_META, tempo=mido.bpm2tempo(self.song.tempo_at(scene))),
-        ]
-        now = 0
-        for event in sorted(_events(notes, clip, clip_length)):
-            messages.append(_message(event.kind, event.number, event.value, event.tick - now))
-            now = event.tick
-        messages.append(mido.MetaMessage(END_OF_TRACK_META, time=_ticks(clip_length) - now))
-        return mido.MidiFile(type=SINGLE_TRACK_FILE, ticks_per_beat=TICKS_PER_BEAT, tracks=[mido.MidiTrack(messages)])
-
-
-class MidiEvent(NamedTuple):
-    """One MIDI message to write: at a tick, of a kind, with its number (note or CC) and value (velocity or CC value)."""
-
-    tick: int
-    kind: str
-    number: int
-    value: int
-
-
-def _events(notes, clip, clip_length):
-    """Return a clip's notes and CC values as MidiEvents, in no particular order."""
-    events = []
-    for note in notes:
-        start, end = _ticks(note.start), _ticks(note.end)
-        if end > start:
-            events.append(MidiEvent(start, NOTE_ON, note.midi_number, note.velocity))
-            events.append(MidiEvent(end, NOTE_OFF, note.midi_number, NO_VELOCITY))
-    for event in control_events(clip, clip_length):
-        events.append(MidiEvent(_ticks(event.time), CONTROL_CHANGE, event.number, event.value))
-    return events
-
-
-def _message(kind, number, value, delay):
-    """Return the MIDI message for one event, coming a delay in ticks after the one before."""
-    if kind == NOTE_ON:
-        return mido.Message(NOTE_ON_MESSAGE, note=number, velocity=value, time=delay)
-    if kind == CONTROL_CHANGE:
-        return mido.Message(CONTROL_CHANGE_MESSAGE, control=number, value=value, time=delay)
-    return mido.Message(NOTE_OFF_MESSAGE, note=number, time=delay)
+        events = [tempo_event(AT_THE_START, self.song.tempo_at(scene))]
+        events.extend(clip_events(clip, notes, clip_length))
+        midi = midi_track(name, events, ticks(clip_length))
+        return mido.MidiFile(type=SINGLE_TRACK_FILE, ticks_per_beat=TICKS_PER_BEAT, tracks=[midi])
