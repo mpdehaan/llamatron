@@ -555,6 +555,38 @@ llamatron must not become an AI music generator, so a wizard never decides the m
 Every wizard asks plenty of questions and does only what the answers say, and what it makes is
 ordinary patterns, tracks and scenes that can be edited afterwards. To be explored later.
 
+### Style wizards for starter songs
+
+**MEDIUM PRIORITY, and very interesting to the user.** Wizards that make a starter song in a
+style, which the user then edits like any other: every pattern, track and scene stays ordinary
+and editable. Styles the user mentioned:
+
+- country rock, with options named in the spirit of artists without copying them, like "Neil"
+  and "LargeBirds"
+- classic metal, and the new wave of British heavy metal
+- classical composers' styles
+- jazz, in its various modes
+- blues, especially 12-bar blues and its variations
+
+The rules:
+
+- It's a fun starting point, not an AI generator. Each wizard asks key questions every time, so
+  the user has to make the human choices: how long the song is, which scale to use from a list
+  the style suggests, and so on.
+- Styles, not songs: nothing copies a real piece's melody or arrangement, so there's no copyright
+  problem. A style is things like its chord progressions, rhythms, tempos, scales and form.
+- Songs consider key changes where the style has them, such as a modulation up for a last
+  chorus, which scenes' own scales can already do.
+- Each style needs research before it's written, and styles can be added and improved over time.
+- It needs its own package, perhaps `src/llamatron/wizards/`, with one module per style, to keep
+  the code clean.
+
+What it touches in the code: wizards would build songs through the composition objects rather
+than file data, so this fits best after the tracker moves onto the objects (step 5). It likely
+shares code with the pattern generators above, and blues and jazz progressions would want the
+scale chords and per-scene scales that already exist. The wizard key is still to be decided (see
+above, and the hotkey review).
+
 ### A MIDI import wizard
 
 One wizard could import a MIDI file, working out how to cut it into patterns, tracks and
@@ -973,3 +1005,12 @@ steps are now all the same length, and a pattern's play direction and repeats wo
 any other. What's missing is a way to make one without working it out: perhaps a pattern
 generator on the Patterns page (see "Pattern generators on the Patterns page") that fills a row
 from hits, steps and a rotation, or a chain generator that does it at render time. To be decided.
+
+## Features the demos underuse
+
+Assess whether any features are used little or not at all in `examples/`, and so may need new
+demos. To check when it's done: which settings and rows each example song uses, across chains,
+arps, AutoRatchets, morphs, grabs, directions, CC rows and slides, ratchet offsets, transpose,
+mute, tempo ramps, scene scales, gates and dots, and registers once they're built. Each demo
+teaches one feature (see `examples/DEMOS.md`), so a feature without one is a candidate for a new
+demo or for a scene in an existing one.
