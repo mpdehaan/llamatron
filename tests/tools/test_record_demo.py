@@ -43,6 +43,8 @@ AN_EXAMPLE_NAME = 'Hocket Shanty'
 SET_NAME = 'A Set'
 OTHER_WORDS = 'live at the barn'
 SCROLL_TEXT_OPTION = '--scroll-text'
+ANNOUNCE_OPTION = '--announce'
+ANNOUNCE = 'announce'
 NO_SCROLL_OPTION = '--no-scroll'
 SUCCESS = 0
 OTHER_PORT = 'Some Synth'
@@ -205,7 +207,7 @@ class TestRecordDemo(unittest.TestCase):
         with mock.patch('builtins.input', return_value=NO_SUCH), contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
             self.assertIs(self.tool.ask_for_view(), False)
 
-    def visualizer_take(self, *, staged, path=SET_PATH, scroll=True, scroll_text=None):
+    def visualizer_take(self, *, staged, path=SET_PATH, scroll=True, scroll_text=None, announce=False):
         """Record a take of the last visualizer mode, chosen when asked, with everything it runs replaced, and return what the tracker was launched with."""
         # A take gives the set's tracks instruments, so each take is of a set no take has touched.
         self.document = a_song()
@@ -220,7 +222,7 @@ class TestRecordDemo(unittest.TestCase):
                 mock.patch('builtins.input', return_value=str(len(MODES) + 1)), contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
             trim.side_effect = lambda command, **named: pathlib.Path(command[command.index(self.tool.OUTPUT_FLAG) + 1]).write_bytes(TRIMMED_BYTES)
             self.tool.record(path=path, driver=PORT, audio_device=self.tool.DEFAULT_AUDIO_DEVICE, assignment=None, max_seconds=SMALL_LIMIT, window_id=None,
-                             go=True, ask_view=True, staged=staged, recording=StandInRecording, scroll=scroll, scroll_text=scroll_text)
+                             go=True, ask_view=True, staged=staged, recording=StandInRecording, scroll=scroll, scroll_text=scroll_text, announce=announce)
         return app.call_args.kwargs['launch']
 
     def test_a_take_scrolls_the_sets_name_from_its_file_unless_told_other_words_or_none(self):
@@ -236,6 +238,17 @@ class TestRecordDemo(unittest.TestCase):
                 self.assertEqual(self.visualizer_take(staged=staged, path=AN_EXAMPLE).scroll_text, MSG_DEMO_SCROLL.format(name=AN_EXAMPLE_NAME))
                 self.assertEqual(self.visualizer_take(staged=staged, scroll_text=OTHER_WORDS).scroll_text, OTHER_WORDS)
                 self.assertIsNone(self.visualizer_take(staged=staged, scroll=False).scroll_text)
+
+    def test_announce_goes_to_a_batch_take_and_a_plain_take_and_is_off_unless_asked(self):
+        for staged in (True, False):
+            with self.subTest(staged=staged):
+                self.assertTrue(self.visualizer_take(staged=staged, announce=True).announce)
+                self.assertFalse(self.visualizer_take(staged=staged).announce)
+        with mock.patch.object(self.tool, 'record', return_value=SUCCESS) as record:
+            self.tool.main(argv=[SET_PATH, ANNOUNCE_OPTION])
+            self.assertTrue(record.call_args.kwargs[ANNOUNCE])
+            self.tool.main(argv=[SET_PATH])
+            self.assertFalse(record.call_args.kwargs[ANNOUNCE])
 
     def test_the_command_line_passes_the_words_or_none_and_refuses_both(self):
         with mock.patch.object(self.tool, 'record', return_value=SUCCESS) as record:

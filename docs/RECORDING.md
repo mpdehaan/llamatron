@@ -132,6 +132,8 @@ The recorder runs the tracker with options of the `llamatron` command that make 
 
 A recording shows the set's name after the opening splash: `DEMO:` and the file's name as words, such as `DEMO: HOCKET SHANTY` for `19_hocket_shanty.yml`, in large light orange capitals that cross the screen from right to left. `--scroll-text WORDS` on `user_scripts/record.sh` shows other words, and `--no-scroll` shows none.
 
+A recording that plays by itself draws a blue box around the name of the scene that plays, so that the playing scene shows on a small screen, and draws no box around Arrange's cursor; a take performed with `--interactive` keeps the cursor's box and has no blue box. `--announce`, on `user_scripts/record.sh` and `user_scripts/record_all.sh`, also shows each scene's name as the scene starts, such as `SCENE: verse`, in reverse video near the bottom of the screen for eight seconds, where a visualizer mode's name otherwise shows; with `--announce` the modes' names are not shown.
+
 `internal_tools/demo_splash_screen.sh` shows the splash alone, to look at it, and `internal_tools/demo_splash_screen.sh --scroll-text 'DEMO: Hocket Shanty'` shows the splash and then those words crossing the screen.
 
 ## Tutorial Videos

@@ -100,6 +100,8 @@ class TestPlan(unittest.TestCase):
         with self.assertRaises(ValueError):
             most_takes({MOST_VARIABLE: NOT_A_NUMBER})
 
+ANNOUNCE = 'announce'
+
 
 class TestRecordAll(unittest.TestCase):
 
@@ -114,6 +116,18 @@ class TestRecordAll(unittest.TestCase):
                 with contextlib.redirect_stdout(io.StringIO()):
                     record_all(takes=[(SHORT, PAIRED_MODE, 3.0)], record=record, driver=None, max_seconds=None, audio_device=None, fluidsynth_output=None, window_id=None, scroll=scroll)
                 self.assertIs(asked[0]['scroll'], scroll)
+
+    def test_each_take_announces_its_scenes_only_when_asked(self):
+        for announce in (True, False):
+            with self.subTest(announce=announce):
+                asked = []
+
+                def record(**named):
+                    asked.append(named)
+                    return SUCCESS
+                with contextlib.redirect_stdout(io.StringIO()):
+                    record_all(takes=[(SHORT, PAIRED_MODE, 3.0)], record=record, driver=None, max_seconds=None, audio_device=None, fluidsynth_output=None, window_id=None, announce=announce)
+                self.assertIs(asked[0][ANNOUNCE], announce)
 
     def test_each_take_is_a_batch_video_through_fluidsynth_and_the_first_failure_stops_the_rest(self):
         asked = []

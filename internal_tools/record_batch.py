@@ -154,11 +154,11 @@ def recorder():
     return module
 
 
-def record_all(*, takes, record, driver, max_seconds, audio_device, fluidsynth_output, window_id, scroll=True):
+def record_all(*, takes, record, driver, max_seconds, audio_device, fluidsynth_output, window_id, scroll=True, announce=False):
     """Record each take in turn with record (record_demo.record), stopping at the first that fails. Return the exit code."""
     for path, mode, _ in takes:
         code = record(path=path, driver=driver, audio_device=audio_device, assignment=None, max_seconds=max_seconds, window_id=window_id, go=True,
-                      visualizer=mode, fluidsynth=True, fluidsynth_output=fluidsynth_output, batch=True, scroll=scroll)
+                      visualizer=mode, fluidsynth=True, fluidsynth_output=fluidsynth_output, batch=True, scroll=scroll, announce=announce)
         if code != SUCCESS:
             print(TAKE_FAILED.format(stem=file_stem(path)), file=sys.stderr)
             return FAILURE
@@ -174,6 +174,7 @@ def main(*, argv=None, environment=os.environ):
     parser.add_argument('--window-id', type=int, default=None, help='the id of the window to record, when the terminal program cannot be asked')
     parser.add_argument('--go', action='store_true', help='start at once, without waiting for ENTER after the list of takes')
     parser.add_argument('--no-scroll', action='store_true', help="show no words crossing the screen after each take's title, where each demo's name crosses unless told")
+    parser.add_argument('--announce', action='store_true', help="show each scene's name as the scene starts, such as SCENE: verse, near the bottom of each video")
     arguments = parser.parse_args(argv)
     try:
         takes = plan(paths=example_sets(), paired=pairings(), most=most_takes(environment),
@@ -189,7 +190,7 @@ def main(*, argv=None, environment=os.environ):
     total = sum(seconds + EACH_TAKE_ADDS for _, _, seconds in takes)
     print(PLAN_TOTAL.format(count=len(takes), minutes=total / SECONDS_IN_A_MINUTE))
     shared.wait_for_go(go=arguments.go)
-    return record_all(takes=takes, record=shared.record, driver=shared.DEFAULT_DRIVER, max_seconds=shared.DEFAULT_MAX_SECONDS, audio_device=arguments.audio_device, fluidsynth_output=arguments.fluidsynth_output, window_id=arguments.window_id, scroll=not arguments.no_scroll)
+    return record_all(takes=takes, record=shared.record, driver=shared.DEFAULT_DRIVER, max_seconds=shared.DEFAULT_MAX_SECONDS, audio_device=arguments.audio_device, fluidsynth_output=arguments.fluidsynth_output, window_id=arguments.window_id, scroll=not arguments.no_scroll, announce=arguments.announce)
 
 
 if __name__ == '__main__':

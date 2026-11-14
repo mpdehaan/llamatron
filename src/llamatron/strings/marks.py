@@ -27,6 +27,8 @@ MSG_NONE_SHOWN = '(none)'
 MSG_CONFIRM_BUTTON_GAP = '    '
 
 # tui/screens/arrange/arrange_page.py
+# A scene's name as a recording announces the scene when it starts, the user's wording.
+MSG_SCENE_ANNOUNCED = 'SCENE: {name}'
 # A scene's row: its number from 1, then its name.
 MSG_SCENE_ROW = '{number:>2} {name}'
 # The marks after a clip's pattern on the grid, for anything beyond the pattern itself.

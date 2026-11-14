@@ -69,16 +69,20 @@ from llamatron.strings.messages import (
     MSG_CLIP_ON_TRACK, MSG_DELETE_TRACK_QUESTION, MSG_GRABBERS_STOP, MSG_PASTED_WITHOUT_GRAB, MSG_PATTERN_FOR_CLIP_TITLE, MSG_PLAYING_CLIP, MSG_PLAYING_FROM,
     MSG_EVERY_VISUALIZER_HIDDEN, MSG_SCENE_NUMBER, MSG_STOPPED, MSG_STOPPED_TRACK,
 )
-from llamatron.strings.marks import MSG_SCENE_VIEW_CLOSING, MSG_SCENE_VIEW_TITLE
+from llamatron.strings.marks import MSG_SCENE_ANNOUNCED, MSG_SCENE_VIEW_CLOSING, MSG_SCENE_VIEW_TITLE
 from llamatron.strings.names import MSG_CHAIN_WORD, MSG_GROOVE_WORD, MSG_INSTRUMENT_WORD, MSG_NEW_SCENE_WORD, MSG_NEW_TRACK_WORD, MSG_SCALE_WORD
 from llamatron.tui import keybindings
 from llamatron.visualizers.modes import MODES, mode_called
-from llamatron.tui.drawing import NOTHING
+from rich.text import Text
+
+from llamatron.tui.drawing import NOTHING, Style, laid_over, padded
 
 
 # How often the visualizer draws a frame while it shows, in seconds, and how long a mode's name shows when it changes, the user's choice of 2026-11-10.
 FRAME_SECONDS = 0.05
 NAME_SECONDS = 8.0
+# How many lines above the bottom of a batch video's frame a scene's announcement is drawn.
+ANNOUNCED_ROWS_UP = 2
 # The row of track names above the first scene, which the cursor can move onto.
 HEADER_ROW = -1
 # The scene names are column 0, and the tracks count from 1.
@@ -99,6 +103,18 @@ DETAIL_PAGES = {
 }
 
 
+def announced(*, lines, text, inside):
+    """Return a batch video's screen with a scene's announcement laid over it in reverse video, centred near the bottom of the frame's inside, or as it is with nothing to announce or no room."""
+    row = inside.bottom - ANNOUNCED_ROWS_UP
+    if text is None or row <= inside.top or row >= len(lines):
+        return lines
+    piece = Text(padded(text), style=Style.REVERSE)
+    start = inside.left + max((inside.right - inside.left + 1 - piece.cell_len) // 2, 0)
+    shown = list(lines)
+    shown[row] = laid_over(line=lines[row], start=start, piece=piece)
+    return shown
+
+
 class ArrangePage(Page):
 
     KEYS = keybindings.ArrangePage
@@ -116,6 +132,9 @@ class ArrangePage(Page):
         # The name the visualizer last showed, and since when, so that a change shows the new name for NAME_SECONDS.
         self._name_shown = None
         self._name_since = None
+        # The scene last announced, and since when, so that a launch that announces shows each scene's name for NAME_SECONDS as it starts.
+        self._scene_announced = None
+        self._scene_since = None
         # A batch video's stage (tui/batch_stage.py), which draws the whole screen while it runs, or None.
         self.stage = None
         self.row = 0
@@ -558,7 +577,10 @@ class ArrangePage(Page):
             now = time.monotonic()
             lines = self.drawing.visualized_body(width=width, height=height, mode=self.visualizer, now=now - self._visualizer_began, heard=heard)
             return self.drawing.with_name(lines=lines, name=self.name_to_show(now))
-        return self.drawing.body(width=width, height=height)
+        lines = self.drawing.body(width=width, height=height)
+        if self.app.launch.announce and self.stage is None:
+            return self.drawing.with_name(lines=lines, name=self.scene_to_announce(time.monotonic()))
+        return lines
 
     def with_inset(self, *, screen, width, height):
         """Return the screen with Scene View's Inset Window laid over it."""
@@ -586,16 +608,42 @@ class ArrangePage(Page):
             inside = inside_of(frame_box(width=width, height=height))
             clips = self.page_lines(width=max(inside.right - inside.left + 1, 1), height=max(inside.bottom - inside.top + 1, 1))
         playing = self.transport().playing_scenes()
-        return self.stage.screen(arrange=screen, width=width, height=height, now=now, frame=frame, clips=clips, seconds_per_beat=heard.seconds_per_beat,
-                                 scene=max(playing) if playing else None)
+        staged = self.stage.screen(arrange=screen, width=width, height=height, now=now, frame=frame, clips=clips, seconds_per_beat=heard.seconds_per_beat,
+                                   scene=max(playing) if playing else None)
+        if self.app.launch.announce and not self.stage.is_black():
+            return announced(lines=staged, text=self.scene_to_announce(now), inside=inside_of(frame_box(width=width, height=height)))
+        return staged
 
     def name_to_show(self, now):
         """Return the visualizer's name to show at a moment, for NAME_SECONDS after it changes, by a key or by a mode of modes moving on, or None."""
+        if self.app.launch.announce:
+            return self.scene_to_announce(now)
         name = self.visualizer.shown_name()
         if name != self._name_shown:
             self._name_shown = name
             self._name_since = now
         return name if now - self._name_since < NAME_SECONDS else None
+
+    def playing_scene(self):
+        """Return the index of the scene that plays, the lowest on the page when a start by hand left two playing, or None."""
+        playing = self.transport().playing_scenes()
+        return max(playing) if playing else None
+
+    def boxes_playing_scene(self):
+        return self.app.launch.boxes_playing_scene()
+
+    def scene_to_announce(self, now):
+        """Return the playing scene's announcement at a moment, for NAME_SECONDS after the scene starts, or None: a scene playing again announces nothing."""
+        index = self.playing_scene()
+        if index is None:
+            self._scene_announced = None
+            return None
+        if index != self._scene_announced:
+            self._scene_announced = index
+            self._scene_since = now
+        if now - self._scene_since >= NAME_SECONDS:
+            return None
+        return MSG_SCENE_ANNOUNCED.format(name=scene_name(scene=self.scenes()[index], index=index))
 
     # Scenes.
 

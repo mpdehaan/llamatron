@@ -53,13 +53,13 @@ class Launch:
 
     __slots__ = (
         'autoplay', 'quit_when_finished', 'for_recording', 'test_splash', 'max_seconds', 'splash_seconds', 'lead_in_seconds', 'lead_out_seconds',
-        'driven_by', 'visualizer', 'hold_seconds', 'interactive', 'batch_video', 'opening_only', 'ready_seconds', 'title_seconds', 'alternate', 'scroll_text', 'scroll_seconds',
+        'driven_by', 'visualizer', 'hold_seconds', 'interactive', 'batch_video', 'opening_only', 'ready_seconds', 'title_seconds', 'alternate', 'scroll_text', 'scroll_seconds', 'announce',
     )
 
     def __init__(self, *, autoplay=False, quit_when_finished=False, for_recording=False, test_splash=False, max_seconds=None,
                  splash_seconds=SPLASH_SECONDS, lead_in_seconds=LEAD_IN_SECONDS, lead_out_seconds=LEAD_OUT_SECONDS,
                  driven_by=None, visualizer=None, hold_seconds=NO_HOLD, interactive=False, batch_video=False, opening_only=False,
-                 ready_seconds=READY_SECONDS, title_seconds=None, alternate=True, scroll_text=None, scroll_seconds=None):
+                 ready_seconds=READY_SECONDS, title_seconds=None, alternate=True, scroll_text=None, scroll_seconds=None, announce=False):
         """quit_when_finished implies autoplay, and so does visualizer, which opens Arrange with that mode showing; test_splash shows the start screen for splash_seconds, fading out, and quits (internal_tools/demo_splash_screen.py), and max_seconds quits after that many seconds whatever plays. The three timings are for the tests, which can't wait.
 
         driven_by is a function of the app that returns what drives the tracker from outside, the
@@ -79,6 +79,9 @@ class Launch:
 
         interactive, launched for recording, plays nothing by itself: Arrange waits on its corner for
         the person recording, and the take ends when they stop everything from the corner or press Esc.
+
+        announce, the user's design, shows each scene's name as it starts, where a visualizer mode's name
+        shows, and no mode's name then.
         """
         self.autoplay = (autoplay or quit_when_finished or visualizer is not None) and driven_by is None
         self.quit_when_finished = quit_when_finished
@@ -100,6 +103,8 @@ class Launch:
         self.alternate = alternate
         # The words that cross the screen after the opening title, the demo's name when an example is recorded, or None for none.
         self.scroll_text = scroll_text
+        # Whether each scene's name is shown as the scene starts, in place of the visualizer modes' names.
+        self.announce = announce
         # How long the words are shown: as long as they take to cross the screen, None, unless a test says less.
         self.scroll_seconds = scroll_seconds
         # How long a batch video's title shows: the whole of it unless a test says less.
@@ -116,6 +121,11 @@ class Launch:
     def needs_set(self):
         """Return whether the launch needs a set to play: everything but the splash alone."""
         return not self.is_plain() and not self.test_splash
+
+
+    def boxes_playing_scene(self):
+        """Return whether Arrange draws a blue box around the playing scene and no box around its cursor: in a recording nobody performs, the user's design."""
+        return self.for_recording and not self.interactive
 
 
 def start_screen_wanted(environment):

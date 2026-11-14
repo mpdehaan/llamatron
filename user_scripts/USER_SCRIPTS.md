@@ -122,6 +122,7 @@ on Arrange's corner, and stopping there, or ESC, ends the take.
 sh user_scripts/record.sh examples/learning/01_hello_world.yml --sound fluidsynth
 sh user_scripts/record.sh examples/learning/01_hello_world.yml --sound fluidsynth --visualizer plasma --go
 sh user_scripts/record.sh examples/learning/01_hello_world.yml --sound fluidsynth --interactive
+sh user_scripts/record.sh examples/learning/01_hello_world.yml --sound fluidsynth --announce   # each scene named as it starts
 sh user_scripts/record.sh my_set.yml --use-driver "My Synth" --track-assign 1,1,2
 ```
 

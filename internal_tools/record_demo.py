@@ -450,14 +450,14 @@ def scroll_text_of(*, path, scroll=True, scroll_text=None):
     return scroll_text or scroll_text_for(path)
 
 
-def record_performance(*, document, video, window, device, max_seconds, visualizer, recording=None, scroll_text=None):
+def record_performance(*, document, video, window, device, max_seconds, visualizer, recording=None, scroll_text=None, announce=False):
     """Record an interactive take: the screen until the tracker quits, which the person recording decides, then the video's end trimmed as a take's is. Return the exit code."""
-    launch = Launch(for_recording=True, interactive=True, max_seconds=max_seconds, visualizer=visualizer, hold_seconds=HOLD_SECONDS, scroll_text=scroll_text)
+    launch = Launch(for_recording=True, interactive=True, max_seconds=max_seconds, visualizer=visualizer, hold_seconds=HOLD_SECONDS, scroll_text=scroll_text, announce=announce)
     return recorded_until_quit(document=document, video=video, window=window, device=device, launch=launch, region=None, recording=recording)
 
 
 def record(*, path, driver, audio_device, assignment, max_seconds, window_id, go=False, visualizer=None, ask_view=False, fluidsynth=False, fluidsynth_output=None,
-           interactive=False, recording=None, batch=False, region=None, staged=True, alternate=True, scroll=True, scroll_text=None):
+           interactive=False, recording=None, batch=False, region=None, staged=True, alternate=True, scroll=True, scroll_text=None, announce=False):
     """Set the take up, start the screen recording, run the tracker launched for recording, and report the video. Return the exit code.
 
     With ask_view, it asks whether the take shows the clips or a visualizer mode, once the port,
@@ -551,11 +551,11 @@ def record(*, path, driver, audio_device, assignment, max_seconds, window_id, go
         os.unlink(video)
     scroll_text = scroll_text_of(path=path, scroll=scroll, scroll_text=scroll_text)
     if interactive:
-        return record_performance(document=document, video=video, window=window, device=device, max_seconds=max_seconds, visualizer=visualizer, recording=recording, scroll_text=scroll_text)
+        return record_performance(document=document, video=video, window=window, device=device, max_seconds=max_seconds, visualizer=visualizer, recording=recording, scroll_text=scroll_text, announce=announce)
     if batch:
-        launch = Launch(batch_video=True, max_seconds=max_seconds, visualizer=visualizer, hold_seconds=HOLD_SECONDS, alternate=alternate, scroll_text=scroll_text)
+        launch = Launch(batch_video=True, max_seconds=max_seconds, visualizer=visualizer, hold_seconds=HOLD_SECONDS, alternate=alternate, scroll_text=scroll_text, announce=announce)
     else:
-        launch = Launch(quit_when_finished=True, for_recording=True, max_seconds=max_seconds, visualizer=visualizer, hold_seconds=HOLD_SECONDS, scroll_text=scroll_text)
+        launch = Launch(quit_when_finished=True, for_recording=True, max_seconds=max_seconds, visualizer=visualizer, hold_seconds=HOLD_SECONDS, scroll_text=scroll_text, announce=announce)
     return recorded_until_quit(document=document, video=video, window=window, device=device, launch=launch, region=region_argument, recording=recording)
 
 
@@ -608,6 +608,7 @@ def main(*, argv=None):
     parser.add_argument('--no-alternate', action='store_true', help='in a staged take, show the visualizer alone in the frame, rather than the clips and the visualizer by turns every ten seconds')
     parser.add_argument('--plain', action='store_true', help='record a visualizer take in the older style, the visualizer over the clip area of Arrange, rather than the title, READY and the framed visualizer every take of a visualizer has by default')
     parser.add_argument('--batch', action='store_true', help='record a batch video: the title, READY, then the visualizer mode filling a frame, from the window\'s cells alone (sh user_scripts/record_all.sh records every example)')
+    parser.add_argument('--announce', action='store_true', help='show each scene\'s name as the scene starts, such as SCENE: verse, near the bottom of the screen, in place of the visualizer modes\' names')
     parser.add_argument('--interactive', action='store_true', help='perform the take: nothing plays until you press Space on Arrange\'s corner, and stopping there, or ESC, ends it')
     words = parser.add_mutually_exclusive_group()
     words.add_argument('--scroll-text', default=None, help='the words that cross the screen after the opening title, in place of DEMO: and the set\'s name from its file')
@@ -622,7 +623,7 @@ def main(*, argv=None):
                       max_seconds=arguments.max_seconds, window_id=arguments.window_id, go=arguments.go, visualizer=arguments.visualizer,
                       ask_view=arguments.visualizer is None and not arguments.clips, fluidsynth=arguments.fluidsynth or arguments.sound == SOUND_FLUIDSYNTH, fluidsynth_output=arguments.fluidsynth_output, interactive=arguments.interactive,
                       batch=arguments.batch, staged=not arguments.plain, alternate=not arguments.no_alternate, scroll=not arguments.no_scroll,
-                      scroll_text=arguments.scroll_text)
+                      scroll_text=arguments.scroll_text, announce=arguments.announce)
     except ValueError as error:
         print(error, file=sys.stderr)
         return FAILURE

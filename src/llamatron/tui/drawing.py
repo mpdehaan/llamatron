@@ -67,6 +67,8 @@ class Style:
     REFUSAL = 'rgb(255,176,0)'
     DELETE_TITLE = 'bold red'
     DETAILS_DIVIDER = 'blue'
+    # The box around the playing scene's name on Arrange in a recording nobody performs, the user's design.
+    PLAYING_SCENE = 'bold blue'
     # The box around a cell Tab has locked into, so that the lock shows, and the word for a cell with no details of its own.
     DETAILS_LOCKED = 'bold green'
     DETAILS_STOCK = 'red'

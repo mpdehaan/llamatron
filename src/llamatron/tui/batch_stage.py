@@ -99,6 +99,10 @@ class BatchStage:
             self._ended = at
             self._end_seconds = max(seconds, 1e-6)
 
+    def is_black(self):
+        """Return whether the stage has cut to black, where nothing more is drawn over it."""
+        return self._black
+
     def cut_to_black(self):
         """Show black from now on, as the opening alone ends (internal_tools/demo_splash_screen.py)."""
         self._black = True

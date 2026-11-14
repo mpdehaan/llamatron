@@ -287,6 +287,11 @@ such name, and `tests/rules/test_naming.py` holds that nothing else numbers one)
   apart from the notes written.
   The piano roll's keyswitch light, `◆` in the top pitch row on screen in the column of a step whose note has keyswitches, is
   magenta (`Style.KEYSWITCH_LIGHT`), the user's design and the ninth allowance of colour, drawn over a note's bar when one is there.
+  In a recording nobody performs (`Launch.boxes_playing_scene`: launched for recording and not interactive), Arrange draws a blue
+  double-lined box around the playing scene's name (`Style.PLAYING_SCENE`) and no box around its cursor, the user's design and the
+  tenth allowance of colour; with `--announce` on the recorders (`Launch.announce`) each scene's name shows as the scene starts,
+  `SCENE: verse` (`MSG_SCENE_ANNOUNCED`), in reverse video where a visualizer mode's name shows, for `NAME_SECONDS`, on the batch
+  stage near the bottom of the frame (`announced` in `tui/screens/arrange/arrange_page.py`), and no mode's name shows then.
   Arrange's details view (`D`) is the third, the user's design, and only for what it lists:
   its dividers in blue (`Style.DETAILS_DIVIDER`), so that the view shows itself, each chain
   and generator in green (`Style.DETAILS_GENERATOR`), the box around a cell Tab has locked into in
