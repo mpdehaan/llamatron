@@ -552,10 +552,10 @@ class TestChordsEditorUndo(UndoTest):
         await self.select_field(MSG_CHORDS_LABEL)
         await self.press(Key.ENTER, *[Key.DOWN] * QUALITY_ROW)
         before = self.data()
-        # A quality, a tension and a scale together: Down picks the first quality, Tab reaches the tensions, Space turns the first on, Tab reaches the scales, where Down
+        # A quality, a tension and a scale together: Down picks the first quality, Tab twice reaches the tensions, past the inversions, Space turns the first on, Tab reaches the scales, where Down
         # and Enter open the first category's flyout and Enter picks its first scale, and the last Enter takes the chord.
         await self.press(
-            keybindings.ChordsEditor.CHOOSE, Key.DOWN, keybindings.ChordDialog.NEXT_LIST, keybindings.ChordDialog.FLIP, keybindings.ChordDialog.NEXT_LIST, Key.DOWN,
+            keybindings.ChordsEditor.CHOOSE, Key.DOWN, keybindings.ChordDialog.NEXT_LIST, keybindings.ChordDialog.NEXT_LIST, keybindings.ChordDialog.FLIP, keybindings.ChordDialog.NEXT_LIST, Key.DOWN,
             keybindings.ChordDialog.OPEN, keybindings.ChordDialog.CHOOSE, keybindings.ChordDialog.CHOOSE,
         )
         self.assertIsNotNone(self.document.song().get_generator_settings(kind=GeneratorKind.PROGRESSION, name=POP).get_scales()[0])
