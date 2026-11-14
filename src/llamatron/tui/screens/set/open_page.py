@@ -64,7 +64,16 @@ class OpenPage(ListPage):
         self.chosen = chosen
         if crumbs is not None:
             self.crumbs = crumbs
-        self.folder = folder or (EXAMPLES_FOLDER if os.path.isdir(EXAMPLES_FOLDER) else HERE)
+        self.folder = self.remembered_folder() or folder or (EXAMPLES_FOLDER if os.path.isdir(EXAMPLES_FOLDER) else HERE)
+
+    def remembered_folder(self):
+        """Return the directory a picker of these files last showed in this session, while it is still there, or None."""
+        folder = self.holder.last_folders.get(self.suffixes)
+        return folder if folder is not None and os.path.isdir(folder) else None
+
+    def remember_folder(self):
+        """Keep the directory shown, for the session, so that the next picker of these files starts in it (the user's ask)."""
+        self.holder.last_folders[self.suffixes] = self.folder
 
     def duration(self):
         return False
@@ -100,7 +109,9 @@ class OpenPage(ListPage):
         if os.path.isdir(path):
             self.folder = path
             self.place = 0
+            self.remember_folder()
             return
+        self.remember_folder()
         if self.chosen is not None:
             self.chosen(path)
             return

@@ -22,6 +22,7 @@ from tests.support.ui_testing import UITest, a_song
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.file_page import FilePage
+from llamatron.tui.screens.set.importing import home_folder
 from llamatron.tui.screens.set.open_page import OpenPage
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.strings.labels import MSG_SET_CRUMB, MSG_SONG_CRUMB
@@ -34,6 +35,7 @@ DRUMS = 'drums'
 FOLDER_OF_SETS = 'sets'
 INNER_FOLDER = 'more'
 PARENT_FOLDER = '..'
+HERE = '.'
 SECOND_SONG = 'second'
 WRITE_TEXT = 'w'
 # A directory the Open page goes into, and the row that goes back up.
@@ -67,6 +69,43 @@ class TestOpenPage(UITest):
         self.app.screen.place = [row[0] for row in self.app.screen.rows()].index(PARENT_FOLDER)
         await self.press(Key.ENTER)
         self.assertIn(INNER_FOLDER, [row[0] for row in self.app.screen.rows()])
+
+    async def enter(self, name):
+        """Press ENTER on the Open page's row of this name."""
+        self.app.screen.place = [row[0] for row in self.app.screen.rows()].index(name)
+        await self.press(Key.ENTER)
+
+    async def test_it_comes_back_to_the_directory_it_last_showed(self):
+        # The user's ask: kept for the session, whether a file was opened there or the page was left with ESC.
+        os.makedirs(os.path.join(FOLDER_OF_SETS, INNER_FOLDER))
+        a_song().save(path=os.path.join(FOLDER_OF_SETS, 'kept song.yml'))
+        await self.press(Key.CTRL_O)
+        await self.enter(FOLDER_OF_SETS)
+        await self.press(Key.ESCAPE, Key.CTRL_O)
+        self.assertIn('kept song.yml', [row[0] for row in self.app.screen.rows()])
+        await self.enter('kept song.yml')
+        await self.press(Key.CTRL_O)
+        self.assertIn('kept song.yml', [row[0] for row in self.app.screen.rows()])
+        await self.enter(INNER_FOLDER)
+        await self.enter(PARENT_FOLDER)
+        await self.press(Key.ESCAPE, Key.CTRL_O)
+        self.assertIn('kept song.yml', [row[0] for row in self.app.screen.rows()])
+
+    async def test_a_remembered_directory_that_is_gone_is_forgotten(self):
+        os.makedirs(FOLDER_OF_SETS)
+        await self.press(Key.CTRL_O)
+        await self.enter(FOLDER_OF_SETS)
+        await self.press(Key.ESCAPE)
+        os.rmdir(FOLDER_OF_SETS)
+        await self.press(Key.CTRL_O)
+        self.assertEqual(self.app.screen.folder, HERE)
+
+    async def test_the_import_picker_remembers_a_directory_of_its_own(self):
+        os.makedirs(FOLDER_OF_SETS)
+        await self.press(Key.CTRL_O)
+        await self.enter(FOLDER_OF_SETS)
+        await self.press(Key.ESCAPE, keybindings.MainPage.IMPORT_HERE)
+        self.assertEqual(self.app.screen.folder, home_folder())
 
     async def test_an_opened_set_starts_on_its_first_song(self):
         two_songs = a_song()

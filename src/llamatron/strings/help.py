@@ -131,6 +131,7 @@ A protected set's notes can only be read, so they open reading, with no E or Bks
 # OpenPage
 HELP_OPEN_PAGE = """
 Choose a set file. ENTER opens a file, or goes into a folder. ../ goes up a folder.
+The page comes back to the folder it last showed, until llamatron is closed.
 / searches the list as you type: Tab completes, ENTER keeps your place, ESC goes back to the whole list.
 """
 
