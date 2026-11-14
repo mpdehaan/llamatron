@@ -1,46 +1,46 @@
-version: 1.0.364
+version: 1.0.365
 title: Meeting the eye
-description: "a hard-rock cartoon theme of the mid eighties in the manner of the theme of The Transformers (Ford Kinder and Anne Bryant), with a tune of its own"
+description: "a one-minute hard-rock cartoon theme of the mid eighties in the manner of the theme of The Transformers (Ford Kinder and Anne Bryant), with a tune of its own"
 notes: |
-  Meeting the eye: a hard-rock cartoon theme of the mid eighties in the manner of the theme of The
-  Transformers (Ford Kinder and Anne Bryant), with a tune of its own. This is a homage to the theme of
-  The Transformers (Ford Kinder and Anne Bryant): its chords, form, sounds and drums follow that work
-  as Claude knows it, and every tune and rhythm here is new. Rebuild version 1.
+  Meeting the eye: a one-minute hard-rock cartoon theme of the mid eighties in the manner of the theme
+  of The Transformers (Ford Kinder and Anne Bryant), with a tune of its own. This is a homage to the
+  theme of The Transformers (Ford Kinder and Anne Bryant): its chords, form, sounds and drums follow
+  that work as Claude knows it, and every tune and rhythm here is new. Rebuild version 2.
 
-  Chugging power chords and a synth bass in eighths; a low verse on i and VI and VII; a shouted chorus
-  on i VII VI V that a robot voice answers; a bridge, a synth solo and a drum break.
+  The band plays the slogan's rhythm alone, then the voices shout it; a chorus on i VII i V and VI VII
+  i that a robot voice answers; one low verse; a drum break with the robot alone; the chorus and the
+  slogan again.
 
-  Subgenre: hard-rock and synthesizer theme for an action cartoon of the mid eighties. Drums: a
-  driving rock kit, kick on one and three with pushes, a big snare on two and four, eighth hats, the
-  kick doubled in the chorus under a crash. Tempo 138, straight. Bass: a synth bass in steady eighths.
-  Builds: a drum break before the last chorus. Sounds: distorted power chords, synth brass stabs, a
-  sung lead, a robot voice that answers, a screaming synth solo. Melody manner: a low heroic verse, a
-  chorus of short shouted phrases, each answered by the robot voice. Form: riff, verse, chorus,
-  bridge, solo, chorus.
+  Subgenre: hard-rock and synthesizer theme for an action cartoon of the mid eighties, a minute long
+  because it opens a children's show. Drums: a driving rock kit, a big snare on two and four, eighth
+  hats, the kick on every eighth under the chorus with a crash at its start. Tempo 138, straight.
+  Bass: a synth bass in steady eighths. Builds: none are needed in a minute; a two-bar drum break sets
+  up the last chorus. Sounds: distorted power chords, synth brass stabs, a sung lead, a robot voice
+  that answers. Melody manner: a slogan of two short shouts and a long high note, said again and again
+  with the whole band hitting its rhythm, and a robot voice answering low; a low, busy verse. Form:
+  the slogan on the band alone, chorus, verse, chorus, drum break, chorus, the slogan to end.
 
-  Band and song: the theme is known for a chorus short enough to shout, a processed robot voice that
-  answers the singers, and metal guitars under bright synthesizers.
+  Band and song: the theme is known for a slogan short enough to shout that starts the song, a
+  processed robot voice that answers the singers, and metal guitars under bright synthesizers, all
+  over in the time of a title sequence.
 
-  Checklist: it is good and memorable because the chorus is a slogan and a machine answers it. The
-  hook is the shouted chorus with the robot answer; the emotion is heroic urgency; the lift is the
-  chorus, the tune an octave up with voices a third above, brass stabs, the doubled kick and a crash;
-  the contrast is the verse, low over chugging guitars; the sounds are a voice lead, a choir, a square
-  lead for the robot, a distortion guitar, synth brass, a saw lead and a synth bass.
+  Checklist: it is good and memorable because the slogan comes first, comes often, and the band plays
+  its rhythm with the voices. The hook is the slogan: two shouts, a gap and a long note a fourth up,
+  the guitars and brass on the same rhythm, heard nine times in a minute; the emotion is heroic
+  urgency; the lift is the slogan climbing a step at a time in the chorus's second half; the contrast
+  is the verse, low over chugging guitars, and the robot voice alone over the drums; the sounds are a
+  voice lead, a choir a third above, a square lead for the robot, a distortion guitar, synth brass and
+  a synth bass.
 
   Run it with: llamatron examples/by_genre/tv_theme/meeting_the_eye.yml
 
-  Scene 1, riff, 4 bars.
-  Scene 2, verse, 16 bars.
-  Scene 3, chorus, 8 bars.
-  Scene 4, riff 2, 4 bars.
-  Scene 5, verse 2, 8 bars.
-  Scene 6, chorus 2, 8 bars.
-  Scene 7, bridge, 8 bars.
-  Scene 8, solo, 16 bars.
-  Scene 9, chorus 3, 16 bars.
-  Scene 10, drum break, 4 bars.
-  Scene 11, last chorus, 8 bars.
-  Scene 12, ending, 4 bars.
+  Scene 1, slogan, 2 bars.
+  Scene 2, chorus, 8 bars.
+  Scene 3, verse, 8 bars.
+  Scene 4, chorus 2, 8 bars.
+  Scene 5, drum break, 2 bars.
+  Scene 6, last chorus, 8 bars.
+  Scene 7, ending, 2 bars.
 
   When changing this demo:
   - Keep the drums as the Subgenre paragraph describes them, the kick first.
@@ -90,6 +90,14 @@ patterns:
     accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     velocity: [108, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  crash short:
+    steps: 32
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [108, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
   fill:
     steps: 16
     drum: true
@@ -108,81 +116,126 @@ patterns:
     steps: 8
     step_size: 1/8
     degree: [1, 1, 1, 1, 1, 1, 1, 1]
-    octave: [2, 2, 2, 2, 2, 2, 2, 2]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3]
     velocity: [110, 104, 104, 104, 104, 104, 104, 104]
   chug:
     steps: 8
     step_size: 1/8
     degree: [1, 1, ~, 1, 1, ~, 1, ~]
-    octave: [3, 3, ~, 3, 3, ~, 3, ~]
+    octave: [4, 4, ~, 4, 4, ~, 4, ~]
     chord: [pow, pow, ~, pow, pow, ~, pow, ~]
     velocity: [104, 98, ~, 98, 98, ~, 98, ~]
     tie: [false, false, false, false, false, false, false, true]
-  stab:
-    steps: 8
+  chorus guitar:
+    steps: 64
     step_size: 1/8
-    degree: [1, ~, ~, 1, ~, ~, 1, ~]
-    octave: [5, ~, ~, 5, ~, ~, 5, ~]
-    chord: ["3", ~, ~, "3", ~, ~, "3", ~]
-    velocity: [98, ~, ~, 92, ~, ~, 92, ~]
-    tie: [false, false, false, false, false, false, false, true]
-  robot:
+    degree: [1, 1, ~, 1, ~, ~, ~, ~, 1, 1, ~, 1, 1, ~, 1, ~, 1, 1, ~, 1, ~, ~, ~, ~, 1, 1, ~, 1, 1, ~, 1, ~, 1, 1, ~, 1, ~, ~, ~, ~, 1, 1, ~, 1, ~, ~, ~, ~, 1, 1, ~, 1, 1, ~, 1, ~, 1, 1, ~, 1, ~, 1, 1, ~]
+    octave: [4, 4, ~, 4, ~, ~, ~, ~, 4, 4, ~, 4, 4, ~, 4, ~, 4, 4, ~, 4, ~, ~, ~, ~, 4, 4, ~, 4, 4, ~, 4, ~, 4, 4, ~, 4, ~, ~, ~, ~, 4, 4, ~, 4, ~, ~, ~, ~, 4, 4, ~, 4, 4, ~, 4, ~, 4, 4, ~, 4, ~, 4, 4, ~]
+    chord: [pow, pow, ~, pow, ~, ~, ~, ~, pow, pow, ~, pow, pow, ~, pow, ~, pow, pow, ~, pow, ~, ~, ~, ~, pow, pow, ~, pow, pow, ~, pow, ~, pow, pow, ~, pow, ~, ~, ~, ~, pow, pow, ~, pow, ~, ~, ~, ~, pow, pow, ~, pow, pow, ~, pow, ~, pow, pow, ~, pow, ~, pow, pow, ~]
+    velocity: [110, 104, ~, 104, ~, ~, ~, ~, 110, 104, ~, 104, 104, ~, 104, ~, 110, 104, ~, 104, ~, ~, ~, ~, 110, 104, ~, 104, 104, ~, 104, ~, 110, 104, ~, 104, ~, ~, ~, ~, 110, 104, ~, 104, ~, ~, ~, ~, 110, 104, ~, 104, 104, ~, 104, ~, 110, 104, ~, 104, ~, 104, 104, ~]
+    tie: [false, false, false, false, true, true, true, true, false, false, false, false, false, false, false, true, false, false, false, false, true, true, true, true, false, false, false, false, false, false, false, true, false, false, false, false, true, true, true, true, false, false, false, false, true, true, true, true, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, true]
+  chorus brass:
+    steps: 64
+    step_size: 1/8
+    degree: [1, 1, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1, 1, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1, 1, ~, 1, ~, ~, ~, ~, 1, 1, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1, ~, 1, ~]
+    octave: [5, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, 5, ~, 5, ~, ~, ~, ~, 5, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, ~]
+    chord: ["3", "3", ~, "3", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "3", "3", ~, "3", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "3", "3", ~, "3", ~, ~, ~, ~, "3", "3", ~, "3", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "3", ~, "3", ~]
+    velocity: [104, 98, ~, 98, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 104, 98, ~, 98, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 104, 98, ~, 98, ~, ~, ~, ~, 104, 98, ~, 98, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 98, ~, 98, ~]
+    tie: [false, false, false, false, true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, false, false, false, false, true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true]
+  slogan guitar:
     steps: 16
     step_size: 1/8
-    degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1, 1, 1, ~]
-    octave: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, 3, 3, ~]
-    velocity: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 104, 104, 104, ~]
-    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true]
+    degree: [1, 1, ~, 1, ~, ~, ~, ~, 1, 1, ~, 1, ~, 1, 1, ~]
+    octave: [4, 4, ~, 4, ~, ~, ~, ~, 4, 4, ~, 4, ~, 4, 4, ~]
+    chord: [pow, pow, ~, pow, ~, ~, ~, ~, pow, pow, ~, pow, ~, pow, pow, ~]
+    velocity: [112, 106, ~, 106, ~, ~, ~, ~, 112, 106, ~, 106, ~, 106, 106, ~]
+    tie: [false, false, false, false, true, true, true, true, false, false, false, false, false, false, false, true]
+  slogan brass:
+    steps: 16
+    step_size: 1/8
+    degree: [1, 1, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, 1, ~, 1, ~]
+    octave: [5, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, ~]
+    chord: ["3", "3", ~, "3", ~, ~, ~, ~, ~, ~, ~, ~, "3", ~, "3", ~]
+    velocity: [104, 98, ~, 98, ~, ~, ~, ~, ~, ~, ~, ~, 98, ~, 98, ~]
+    tie: [false, false, false, false, true, true, true, true, false, false, false, false, false, false, false, true]
+  end guitar:
+    steps: 16
+    step_size: 1/8
+    degree: [1, 1, ~, 1, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, 4, ~, 4, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~]
+    chord: [pow, pow, ~, pow, ~, ~, ~, ~, pow, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [114, 108, ~, 108, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, true, true, true, true, false, true, true, true, true, true, true, true]
+  end brass:
+    steps: 16
+    step_size: 1/8
+    degree: [1, 1, ~, 1, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, 5, ~, 5, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", "3", ~, "3", ~, ~, ~, ~, "3", ~, ~, ~, ~, ~, ~, ~]
+    velocity: [106, 100, ~, 100, ~, ~, ~, ~, 106, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, true, true, true, true, false, true, true, true, true, true, true, true]
+  end tune:
+    steps: 16
+    step_size: 1/8
+    degree: [5, 5, ~, 1, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, 5, ~, 6, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [124, 118, ~, 118, ~, ~, ~, ~, 124, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, true, true, true, true, false, true, true, true, true, true, true, true]
+  end bass:
+    steps: 16
+    step_size: 1/8
+    degree: [1, 1, ~, 1, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, 3, ~, 3, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [112, 106, ~, 106, ~, ~, ~, ~, 112, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, true, true, true, true, false, true, true, true, true, true, true, true]
+  robot:
+    steps: 64
+    step_size: 1/8
+    degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1, 1, 1, ~, 1, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 4, 4, 4, ~, 4, 4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 110, 110, 110, ~, 110, 110, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false]
+  robot alone:
+    steps: 16
+    step_size: 1/8
+    degree: [~, 1, 1, 1, ~, 1, 1, ~, ~, 1, 1, 1, ~, 1, 1, ~]
+    octave: [~, 4, 4, 4, ~, 4, 4, ~, ~, 4, 4, 4, ~, 4, 4, ~]
+    velocity: [~, 112, 112, 112, ~, 112, 112, ~, ~, 112, 112, 112, ~, 112, 112, ~]
+    tie: [false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, true]
   verse tune:
     steps: 64
     step_size: 1/8
     degree: [1, ~, 1, 3, 4, ~, 5, ~, 5, ~, ~, 4, 3, ~, ~, ~, 6, ~, 6, 5, 4, ~, 6, ~, 7, ~, 5, ~, 2, ~, ~, ~, 1, ~, 1, 3, 4, ~, 5, ~, 1, ~, ~, 7, 5, ~, ~, ~, 6, ~, 4, ~, 1, ~, 6, ~, 7, ~, ~, ~, ~, ~, ~, ~]
-    octave: [4, ~, 4, 4, 4, ~, 4, ~, 4, ~, ~, 4, 4, ~, ~, ~, 4, ~, 4, 4, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, 4, 4, ~, 4, ~, 5, ~, ~, 4, 4, ~, ~, ~, 4, ~, 4, ~, 5, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [108, ~, 102, 102, 102, ~, 102, ~, 108, ~, ~, 102, 102, ~, ~, ~, 108, ~, 102, 102, 102, ~, 102, ~, 108, ~, 102, ~, 102, ~, ~, ~, 108, ~, 102, 102, 102, ~, 102, ~, 108, ~, ~, 102, 102, ~, ~, ~, 108, ~, 102, ~, 102, ~, 102, ~, 108, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, 5, 5, 5, ~, 5, ~, 5, ~, ~, 5, 5, ~, ~, ~, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, 5, 5, ~, 5, ~, 6, ~, ~, 5, 5, ~, ~, ~, 5, ~, 5, ~, 6, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, 104, 104, 104, ~, 104, ~, 110, ~, ~, 104, 104, ~, ~, ~, 110, ~, 104, 104, 104, ~, 104, ~, 110, ~, 104, ~, 104, ~, ~, ~, 110, ~, 104, 104, 104, ~, 104, ~, 110, ~, ~, 104, 104, ~, ~, ~, 110, ~, 104, ~, 104, ~, 104, ~, 110, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, false, false, true, false, true, false, true, true, false, false, true, true, true, false, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, false, false, false, true, false, true, false, true, true, false, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
   chorus tune:
     steps: 64
     step_size: 1/8
-    degree: [5, ~, 5, ~, 1, ~, ~, ~, 7, ~, 7, ~, 2, ~, ~, ~, 6, ~, 6, ~, 1, ~, 3, ~, 2, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, ~, 1, ~, ~, ~, 7, ~, 2, ~, 4, ~, ~, ~, 3, ~, 1, ~, 6, ~, 1, ~, 7, ~, ~, ~, 2, ~, ~, ~]
-    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~]
-    octave: [5, ~, 5, ~, 6, ~, ~, ~, 5, ~, 5, ~, 6, ~, ~, ~, 5, ~, 5, ~, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, ~, 6, ~, ~, ~, 5, ~, 6, ~, 6, ~, ~, ~, 6, ~, 6, ~, 5, ~, 6, ~, 5, ~, ~, ~, 6, ~, ~, ~]
-    velocity: [122, ~, 116, ~, 116, ~, ~, ~, 122, ~, 116, ~, 116, ~, ~, ~, 122, ~, 116, ~, 116, ~, 116, ~, 122, ~, ~, ~, ~, ~, ~, ~, 122, ~, 116, ~, 116, ~, ~, ~, 122, ~, 116, ~, 116, ~, ~, ~, 122, ~, 116, ~, 116, ~, 116, ~, 122, ~, ~, ~, 116, ~, ~, ~]
-    tie: [false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true]
+    degree: [5, 5, ~, 1, ~, ~, ~, ~, 2, 2, 1, 7, 1, ~, ~, ~, 5, 5, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 6, 6, ~, 3, ~, ~, ~, ~, 7, 7, ~, 4, ~, ~, ~, ~, 5, ~, 4, ~, 3, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, 5, ~, 6, ~, ~, ~, ~, 6, 6, 6, 5, 6, ~, ~, ~, 5, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, 5, ~, 6, ~, ~, ~, ~, 5, 5, ~, 6, ~, ~, ~, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [122, 116, ~, 116, ~, ~, ~, ~, 122, 116, 116, 116, 116, ~, ~, ~, 122, 116, ~, 116, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 122, 116, ~, 116, ~, ~, ~, ~, 122, 116, ~, 116, ~, ~, ~, ~, 122, ~, 116, ~, 116, ~, 116, ~, 122, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, true, true, true, true, false, false, false, false, false, true, false, false, false, false, false, false, true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, false, false, false, false, true, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
   chorus above:
     steps: 64
     step_size: 1/8
-    degree: [7, ~, 7, ~, 3, ~, ~, ~, 2, ~, 2, ~, 4, ~, ~, ~, 1, ~, 1, ~, 3, ~, 5, ~, 4, ~, ~, ~, ~, ~, ~, ~, 7, ~, 7, ~, 3, ~, ~, ~, 2, ~, 4, ~, 6, ~, ~, ~, 5, ~, 3, ~, 1, ~, 3, ~, 2, ~, ~, ~, 4, ~, ~, ~]
-    octave: [5, ~, 5, ~, 6, ~, ~, ~, 6, ~, 6, ~, 6, ~, ~, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, ~, 6, ~, ~, ~, 6, ~, 6, ~, 6, ~, ~, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, ~, ~, 6, ~, ~, ~]
-    velocity: [104, ~, 98, ~, 98, ~, ~, ~, 104, ~, 98, ~, 98, ~, ~, ~, 104, ~, 98, ~, 98, ~, 98, ~, 104, ~, ~, ~, ~, ~, ~, ~, 104, ~, 98, ~, 98, ~, ~, ~, 104, ~, 98, ~, 98, ~, ~, ~, 104, ~, 98, ~, 98, ~, 98, ~, 104, ~, ~, ~, 98, ~, ~, ~]
-    tie: [false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true]
-  bridge tune:
-    steps: 64
-    step_size: 1/8
-    degree: [4, ~, ~, ~, 6, ~, 4, ~, 1, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, 1, ~, 6, ~, 7, ~, ~, ~, 2, ~, ~, ~, 4, ~, ~, ~, 6, ~, 1, ~, 4, ~, ~, ~, ~, ~, ~, ~, 3, ~, 1, ~, 6, ~, 1, ~, 2, ~, ~, ~, ~, ~, ~, ~]
-    octave: [5, ~, ~, ~, 5, ~, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 6, ~, 5, ~, 5, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, 5, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~, 6, ~, 6, ~, 5, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [112, ~, ~, ~, 106, ~, 106, ~, 112, ~, ~, ~, ~, ~, ~, ~, 112, ~, ~, ~, 106, ~, 106, ~, 112, ~, ~, ~, 106, ~, ~, ~, 112, ~, ~, ~, 106, ~, 106, ~, 112, ~, ~, ~, ~, ~, ~, ~, 112, ~, 106, ~, 106, ~, 106, ~, 112, ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
-  solo:
-    steps: 64
-    step_size: 1/8
-    degree: [1, 2, 3, 5, 4, 3, 2, 1, 7, 1, 2, 4, 3, 2, 1, 7, 6, 1, 3, 6, 5, 3, 1, 6, 7, ~, 2, ~, 5, ~, ~, ~, 5, ~, 4, 3, 1, ~, 3, ~, 4, ~, 2, 1, 7, ~, ~, ~, 6, 7, 1, 3, 6, ~, 5, ~, 7, 2, 4, 2, 5, ~, ~, ~]
-    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~]
-    octave: [6, 6, 6, 6, 6, 6, 6, 6, 5, 6, 6, 6, 6, 6, 6, 5, 5, 6, 6, 6, 6, 6, 6, 5, 5, ~, 6, ~, 6, ~, ~, ~, 6, ~, 6, 6, 6, ~, 6, ~, 6, ~, 6, 6, 5, ~, ~, ~, 5, 5, 6, 6, 6, ~, 6, ~, 5, 6, 6, 6, 6, ~, ~, ~]
-    velocity: [114, 108, 108, 108, 108, 108, 108, 108, 114, 108, 108, 108, 108, 108, 108, 108, 114, 108, 108, 108, 108, 108, 108, 108, 114, ~, 108, ~, 108, ~, ~, ~, 114, ~, 108, 108, 108, ~, 108, ~, 114, ~, 108, 108, 108, ~, ~, ~, 114, 108, 108, 108, 108, ~, 108, ~, 114, 108, 108, 108, 108, ~, ~, ~]
-    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, true, true, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, true, true, false, false, false, false, false, true, false, true, false, false, false, false, false, true, true, true]
+    degree: [7, 7, ~, 3, ~, ~, ~, ~, 4, 4, 3, 2, 3, ~, ~, ~, 7, 7, ~, 3, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1, 1, ~, 5, ~, ~, ~, ~, 2, 2, ~, 6, ~, ~, ~, ~, 7, ~, 6, ~, 5, ~, 4, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, 5, ~, 6, ~, ~, ~, ~, 6, 6, 6, 6, 6, ~, ~, ~, 5, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 6, 6, ~, 6, ~, ~, ~, ~, 6, 6, ~, 6, ~, ~, ~, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [102, 96, ~, 96, ~, ~, ~, ~, 102, 96, 96, 96, 96, ~, ~, ~, 102, 96, ~, 96, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 102, 96, ~, 96, ~, ~, ~, ~, 102, 96, ~, 96, ~, ~, ~, ~, 102, ~, 96, ~, 96, ~, 96, ~, 102, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, true, true, true, true, false, false, false, false, false, true, false, false, false, false, false, false, true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, false, false, false, false, true, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
 
 progressions:
   verse: { chords: [1, 1, 6, 7] }
-  chorus: { chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] }
-  bridge: { chords: [4, 4, 6, 7] }
+  chorus: { chords: [1, 7, 1, 5, 6, 7, 1, 1], qualities: [~, ~, ~, M, ~, ~, ~, ~] }
+  tonic: { chords: [1] }
 
 chains:
   verse:
     - progression: verse
   chorus:
     - progression: chorus
-  bridge:
-    - progression: bridge
+  tonic:
+    - progression: tonic
 
 instruments:
   distortion guitar: { device: "*FluidSynth", gm_sound: 31 }
@@ -191,7 +244,6 @@ instruments:
   voice lead: { device: "*FluidSynth", gm_sound: 86 }
   choir: { device: "*FluidSynth", gm_sound: 53 }
   square lead: { device: "*FluidSynth", gm_sound: 81 }
-  saw lead: { device: "*FluidSynth", gm_sound: 82 }
   drum kit: { device: "*FluidSynth" }
 
 songs:
@@ -212,46 +264,29 @@ songs:
       lead: { instrument: voice lead }
       voices: { instrument: choir }
       robot: { instrument: square lead }
-      solo: { instrument: saw lead }
 
     scenes:
-      - name: riff
+      - name: slogan
         tracks:
-          kick: { pattern: kick, repeat: 4 }
+          kick: { pattern: kick drive, repeat: 2 }
           snare: { pattern: snare, loop: true }
           hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [verse], loop: true }
-          guitar: { pattern: chug, chains: [verse], loop: true }
-          brass: { pattern: stab, chains: [verse], loop: true }
-      - name: verse
-        tracks:
-          kick: { pattern: kick, repeat: 16 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [verse], loop: true }
-          guitar: { pattern: chug, chains: [verse], loop: true }
-          lead: { pattern: verse tune, loop: true }
+          crash: { pattern: crash short, loop: true }
+          bass: { pattern: bass, chains: [tonic], loop: true }
+          guitar: { pattern: slogan guitar, chains: [tonic], loop: true }
+          brass: { pattern: slogan brass, chains: [tonic], loop: true }
       - name: chorus
         tracks:
           kick: { pattern: kick drive, repeat: 8 }
           snare: { pattern: snare, loop: true }
           hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [chorus], loop: true }
-          guitar: { pattern: chug, chains: [chorus], loop: true }
           crash: { pattern: crash, loop: true }
-          brass: { pattern: stab, chains: [chorus], loop: true }
+          bass: { pattern: bass, chains: [chorus], loop: true }
+          guitar: { pattern: chorus guitar, chains: [chorus], loop: true }
+          brass: { pattern: chorus brass, chains: [chorus], loop: true }
           lead: { pattern: chorus tune, loop: true }
           robot: { pattern: robot, chains: [chorus], loop: true }
-          voices: { pattern: chorus above, loop: true }
-      - name: riff 2
-        tracks:
-          kick: { pattern: kick, repeat: 4 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [verse], loop: true }
-          guitar: { pattern: chug, chains: [verse], loop: true }
-          brass: { pattern: stab, chains: [verse], loop: true }
-      - name: verse 2
+      - name: verse
         tracks:
           kick: { pattern: kick, repeat: 8 }
           snare: { pattern: snare, loop: true }
@@ -264,67 +299,37 @@ songs:
           kick: { pattern: kick drive, repeat: 8 }
           snare: { pattern: snare, loop: true }
           hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [chorus], loop: true }
-          guitar: { pattern: chug, chains: [chorus], loop: true }
           crash: { pattern: crash, loop: true }
-          brass: { pattern: stab, chains: [chorus], loop: true }
-          lead: { pattern: chorus tune, loop: true }
-          robot: { pattern: robot, chains: [chorus], loop: true }
-          voices: { pattern: chorus above, loop: true }
-      - name: bridge
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [bridge], loop: true }
-          guitar: { pattern: chug, chains: [bridge], loop: true }
-          brass: { pattern: stab, chains: [bridge], loop: true }
-          lead: { pattern: bridge tune, loop: true }
-      - name: solo
-        tracks:
-          kick: { pattern: kick drive, repeat: 16 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
           bass: { pattern: bass, chains: [chorus], loop: true }
-          guitar: { pattern: chug, chains: [chorus], loop: true }
-          crash: { pattern: crash, loop: true }
-          solo: { pattern: solo, loop: true }
-      - name: chorus 3
-        tracks:
-          kick: { pattern: kick drive, repeat: 16 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [chorus], loop: true }
-          guitar: { pattern: chug, chains: [chorus], loop: true }
-          crash: { pattern: crash, loop: true }
-          brass: { pattern: stab, chains: [chorus], loop: true }
+          guitar: { pattern: chorus guitar, chains: [chorus], loop: true }
+          brass: { pattern: chorus brass, chains: [chorus], loop: true }
           lead: { pattern: chorus tune, loop: true }
           robot: { pattern: robot, chains: [chorus], loop: true }
           voices: { pattern: chorus above, loop: true }
       - name: drum break
         tracks:
-          kick: { pattern: kick drive, repeat: 4 }
+          kick: { pattern: kick drive, repeat: 2 }
           snare: { pattern: fill, loop: true }
           toms: { pattern: toms, loop: true }
-          robot: { pattern: robot, chains: [chorus], loop: true }
+          robot: { pattern: robot alone, chains: [tonic], loop: true }
       - name: last chorus
         tracks:
           kick: { pattern: kick drive, repeat: 8 }
           snare: { pattern: snare, loop: true }
           hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [chorus], loop: true }
-          guitar: { pattern: chug, chains: [chorus], loop: true }
           crash: { pattern: crash, loop: true }
-          brass: { pattern: stab, chains: [chorus], loop: true }
+          bass: { pattern: bass, chains: [chorus], loop: true }
+          guitar: { pattern: chorus guitar, chains: [chorus], loop: true }
+          brass: { pattern: chorus brass, chains: [chorus], loop: true }
           lead: { pattern: chorus tune, loop: true }
           robot: { pattern: robot, chains: [chorus], loop: true }
           voices: { pattern: chorus above, loop: true }
       - name: ending
         tracks:
-          kick: { pattern: kick drive, repeat: 4 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [verse], loop: true }
-          guitar: { pattern: chug, chains: [verse], loop: true }
-          crash: { pattern: crash, loop: true }
-          brass: { pattern: stab, chains: [verse], loop: true }
+          kick: { pattern: kick drive, repeat: 2 }
+          crash: { pattern: crash short, loop: true }
+          bass: { pattern: end bass, chains: [tonic], loop: true }
+          guitar: { pattern: end guitar, chains: [tonic], loop: true }
+          brass: { pattern: end brass, chains: [tonic], loop: true }
+          lead: { pattern: end tune, loop: true }
+          robot: { pattern: robot alone, chains: [tonic], loop: true }
