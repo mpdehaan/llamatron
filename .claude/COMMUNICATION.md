@@ -65,14 +65,14 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   so Claude keeps all of them consistent and correct as needed. For now, until the work reaches the video tutorial, the
   user has given Claude leave to edit the documents as it judges best and report what changed, rather than proposing each
   change first.
-- The documentation website is rebuilt whenever its sources change, and published only together with the code (the user's
-  rule, so that the website never describes code nobody can get): when a commit changes `GUIDE.md`, a page in `docs/`, a new
-  page among them, or what builds the site (`internal_tools/stage_docs_site.py`, `internal_tools/build_docs.sh`, the VitePress
-  configuration), or retakes screenshots in `docs/screenshots/` (which `README.md`, GitHub's front page, shows too), Claude
-  runs `internal_tools/build_docs.sh` and commits `web_docs/`, and publishes nothing. Claude pushes nothing unasked. When the
-  user asks Claude to push, in any words, Claude runs `internal_tools/push_all.sh`, which pushes `main` and then publishes the
-  website with `internal_tools/publish_docs.sh`, in that order; `publish_docs.sh` refuses while `main` holds commits GitHub's
-  `main` doesn't. A reply that leaves commits waiting says how many wait for a push.
+- The documentation website and the screenshots are brought up to date only before a push, or when the user asks for a rebuild
+  (the user's rule, since rebuilding with every change was too much): a commit that changes `GUIDE.md`, a page in `docs/` or what
+  the tracker draws brings no rebuild of `web_docs/` and no new screenshots. When the user asks Claude to push, in any words, Claude
+  first retakes the screenshots if what the tracker draws changed since the last push (`internal_tools/screenshots.sh`, committing
+  only the shots that changed), then runs `internal_tools/push_all.sh`, which rebuilds the website with `internal_tools/build_docs.sh`,
+  commits `web_docs/` if the build changed it, pushes `main` and then publishes the website with `internal_tools/publish_docs.sh`,
+  in that order, so that the website never describes code nobody can get; `publish_docs.sh` refuses while `main` holds commits
+  GitHub's `main` doesn't. Claude pushes nothing unasked. A reply that leaves commits waiting says how many wait for a push.
 - Claude commits only the files it changed, naming them, never `git add -A`, and checks
   `git status` first: a change it didn't make, like a hand edit of the user's in progress, stays
   out of its commit and is mentioned, so that the user's work is never swept into Claude's.
@@ -256,11 +256,11 @@ row says which, and a reply says which too.
 | the crumbs | the path at the left of every header | `Crumb`, `crumbs` |
 | a picker | a dialog with a list of choices | `ChoiceDialog`, `GridChoiceDialog` |
 | a settings page, a list page | a page of fields, and a page of rows with a `+` row at the bottom | `FieldPage` with `Field` and `Button`, and `ListPage` |
-| protected | the Protected toggle on the Set File page | `protected`, `file_is_protected` |
+| protected | the Protected toggle on the File/Global page | `protected`, `file_is_protected` |
 | the demos, the examples | the sets in `examples/` | every set there but the pieces, and the pieces, `PIECES` in `tests/support/rendering.py` |
 | the ideas file | `dev_notes/IDEAS.md`, and `dev_notes/DOCS_IDEAS.md` for the documentation's ideas | |
 | the support folder | nothing on screen: `internal_tools/`, the folder of development tools and scripts (the user's word, since there is no other support folder at the top) | `internal_tools/` |
-| follow action, advance | Follow action on the clip page, "With Scene" or "Off", and Default follow action on the Set File page | `FollowAction`, `ClipSlotSetting.FOLLOW_ACTION`, `follow_action_of` |
+| follow action, advance | Follow action on the clip page, "With Scene" or "Off", and Default follow action on the File/Global page | `FollowAction`, `ClipSlotSetting.FOLLOW_ACTION`, `follow_action_of` |
 | launch together, advance together | Launch together on the Scene page, and `┆` after a scene's name on Arrange when off | `SceneSetting.LAUNCH_TOGETHER`, `Scene.launches_together` |
 | an instrument, a device | an instrument on the Instruments page, with its Device and Channel; the Real Time switch on the main screen | `Instrument`, `Section.INSTRUMENTS`, `TrackSetting.INSTRUMENT`, `Setlist.is_real_time` |
 | the Realtime Sender Process | nothing on screen: the separate process that plays MIDI in real time, fed each clip's events by the player | `RealtimeMIDISenderProcess` |

@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The fields that choose visualizer modes, the user's design: the mode Arrange's visualizer key shows first, on the Set File page and the Song page, the song's over the set's, and the Set File page's Hide Visualizers section."""
+"""The fields that choose visualizer modes, the user's design: the mode Arrange's visualizer key shows first, on the File/Global page and the Song page, the song's over the set's, and the File/Global page's Hide Visualizers section."""
 
 from llamatron.composition.file_format import VISUALIZER_NAMES
 from llamatron.strings.labels import MSG_HIDE_VISUALIZERS_LABEL, MSG_VISUALIZER_LABEL

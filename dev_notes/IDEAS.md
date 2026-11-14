@@ -831,7 +831,7 @@ first:
 Bigger tools, possibly opened with `W`, for changes too large to make by hand comfortably:
 starting a song from a template (a set of tracks, scales and empty scenes for a style), or
 utility work like renaming a set of patterns, copying a section to a new key, or splitting a
-long pattern into phrases. W already saves under a new name on the Set File page, so the key
+long pattern into phrases. W already saves under a new name on the File/Global page, so the key
 would need some thought.
 
 llamatron must not become an AI music generator, so a wizard never decides the music for you.
@@ -1022,10 +1022,10 @@ user's design of 2026-11-07 and 2026-11-09 still has in it, to do one item at a 
 
 ## Buttons: rows on a page that do what a key does
 
-The Set File page already has Save and Open rows that do what Ctrl+S and Ctrl+O do, so that the page
+The File/Global page already has Save and Open rows that do what Ctrl+S and Ctrl+O do, so that the page
 can be worked with the arrow keys alone, and the user wants that idea finished and named: a
 "button" is a row on a page, drawn like the menu rows on the main screen, that Enter presses and
-that shows the hotkey it stands for, so nothing is reachable only by a key. The Set File page has
+that shows the hotkey it stands for, so nothing is reachable only by a key. The File/Global page has
 Save and Open buttons below its settings, and the clip page Play and Stop; Save as is still `W`
 alone. Buttons are for places where a Ctrl+ or
 other shortcut has a logical home on the page too; the rest of the UI is easy enough to move
@@ -1037,7 +1037,7 @@ around that it doesn't need them yet. Where they'd go next:
   editor keeps to the `L` key alone, since the page is full, by the user's choice of 2026-11-09.
 - **Claude's other candidates, to weigh**: an Export button on the Song page already exists as a
   row, which is the same idea; a Rename button on the editors that rename with `N`; Load over on
-  the pattern editor beside Munge; New set and Save as on the Set File page; Add at the bottom of
+  the pattern editor beside Munge; New set and Save as on the File/Global page; Add at the bottom of
   every list, which the `+` row is already; and a Help button is probably not worth a row, since
   F1 is on every legend.
 
@@ -1045,7 +1045,7 @@ The footer stays the key legend for the page's own keys, as "F1 as the hotkey di
 shorter footer" below describes, so a button's key still shows there. What it would mean for the
 code: `Button` in `screens/field.py` exists, made by
 `FieldPage.button` and drawn below the settings after a blank line with its key's name in front,
-as the main menu draws a row, so what's left is a Save as button on the Set File page, a cursor
+as the main menu draws a row, so what's left is a Save as button on the File/Global page, a cursor
 position below the grid in the pattern editor, which is new for it, and a check in
 `tests/tui/test_tui_pages.py` that every button's key is still in `keys()`, so pressing the key and the
 button do the same.
@@ -1134,7 +1134,7 @@ sets and a person can set to switch colour off.
 
 Save is Ctrl+S, Open is Ctrl+O, Export is Ctrl+X, Help is F1 and About is F2, so that the
 plain letters are always local to the screen in question and free to change, as the user decided
-on 2026-11-07; Quit became the plain Q on the main screen alone on 2026-11-08, because Ctrl+Q was awkward to type. New and Save As are still plain letters on the Set File page, and whether they count
+on 2026-11-07; Quit became the plain Q on the main screen alone on 2026-11-08, because Ctrl+Q was awkward to type. New and Save As are still plain letters on the File/Global page, and whether they count
 as global and should move to Ctrl+ keys too is to discuss. Ctrl+C, Ctrl+Z and a few others are taken by the
 terminal, and on a Mac F1 needs Fn unless the function keys are set to standard keys.
 

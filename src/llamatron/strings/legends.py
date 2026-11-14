@@ -209,7 +209,7 @@ class What:
 # The main screen's footer says help and about in lower case like the rest of a legend, where the F1 dialog's capitals would shout.
 MSG_HELP_FOOTER_WHAT = 'help'
 MSG_ABOUT_FOOTER_WHAT = 'about'
-# What the Set File page's keys do.
+# What the File/Global page's keys do.
 MSG_NEW_WHAT = 'new'
 MSG_SAVE_AS_WHAT = 'save as'
 

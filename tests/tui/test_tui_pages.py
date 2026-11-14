@@ -351,7 +351,7 @@ class TestMainPage(UITest):
         self.assertEqual(next(line for line in lines if '« P »' in line).count('«'), COLUMNS)
         self.assertIn('« O »', next(line for line in lines if '« F »' in line))
         self.assertIn('« Q »', next(line for line in lines if '« X »' in line))
-        self.assertIn(PageName.FILE_GLOBAL, text)
+        self.assertIn(PageName.FILE, text)
         self.assertIn('« F1 »', lines[-1])
         self.assertTrue(lines[-1].rstrip().endswith(MSG_ABOUT_FOOTER_WHAT))
 

@@ -195,7 +195,7 @@ settings page's fields. The keys that work everywhere are listed once:
 
 ## MainPage
 
-- **anywhere**: `F` Set File · `S` Songs · `P` Patterns · `C` Chains · `G` Generators · `Z` Scales · `V` Grooves · `I` Instruments · `R` Registers · `A` Arrange · `T` Real Time · `O` OPEN · `X` EXPORT · `M` IMPORT MIDI · `Q` QUIT · `←↑↓→` select · `Enter` open
+- **anywhere**: `F` File/Global · `S` Songs · `P` Patterns · `C` Chains · `G` Generators · `Z` Scales · `V` Grooves · `I` Instruments · `R` Registers · `A` Arrange · `T` Real Time · `O` OPEN · `X` EXPORT · `M` IMPORT MIDI · `Q` QUIT · `←↑↓→` select · `Enter` open
 
 ## NotesPage
 
@@ -768,7 +768,7 @@ settings page's fields. The keys that work everywhere are listed once:
 
 ## `F`
 
-- MainPage: Set File (anywhere)
+- MainPage: File/Global (anywhere)
 
 ## `F2`
 

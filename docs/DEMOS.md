@@ -26,10 +26,10 @@ llamatron examples/learning/12_sailor_arpeggiator.yml --to ableton --replace
 Live's scenes keep the demo's scene names, which say what each one shows, and each clip is
 named after the pattern it plays. Launch the scenes from the top, one at a time. Every demo also has notes, which explain it in
 more detail than this page and say what to keep in mind when changing it. They're at the top of
-the file, and in the tracker, the Notes field of the Set File page opens them.
+the file, and in the tracker, the Notes field of the File/Global page opens them.
 
 Every example set is protected, so you can try things in one without spoiling it: `Ctrl+S`
-offers to save a copy under another name, and the copy is yours. The Set File page's Protected setting
+offers to save a copy under another name, and the copy is yours. The File/Global page's Protected setting
 turns the protection off if you'd rather change the original.
 
 ## Demo Pages

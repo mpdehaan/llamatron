@@ -63,7 +63,7 @@ Name: what the grid and the exports call it, or its pattern's name if it has non
 Repeat: how many times it plays, then silence while other clips finish. Loop: plays until the other clips are done. One clip in each scene must not loop, or exporting stops.
 Direction: overrides its pattern's play direction. With Repeat above 1, Morph to chooses a second pattern to change into across the repeats, and Morph direction is where the change starts.
 Grab track: Grab steps play the note that track last started, with their chord.
-Advance: real-time playback only, never an export. With Scene starts the clip below when the whole scene is done, Next when this clip ends, Off never. Blank, it shows the Set File page's default.
+Advance: real-time playback only, never an export. With Scene starts the clip below when the whole scene is done, Next when this clip ends, Off never. Blank, it shows File/Global's default.
 
 Up and down select. Left and right change. Enter chooses. J jumps to the pattern in its editor. L plays the clip as its scene would, again and again, and stops it; Play and Stop below do the same.
 """
@@ -113,7 +113,7 @@ Seed: none makes each export a new take; set one to repeat it.
 Groove: every clip's swing, unless a scene or track chooses.
 Live response: when an edit made while the song plays is heard: at the next bar, at each clip's next pass, or ASAP.
 Preview instrument: what Listen plays a pattern through.
-Visualizer: Arrange shows it first, over the Set File page's.
+Visualizer: Arrange shows it first, over the File/Global page's.
 The Export row does the same as Ctrl+X, which works on every page: it writes this song as a Live set or MIDI files.
 """
 
@@ -121,7 +121,7 @@ The Export row does the same as Ctrl+X, which works on every page: it writes thi
 HELP_NOTES_PAGE = """
 Notes about the set, for anyone reading or sharing its file. They don't change how it plays.
 
-It opens editing from the Set File page. Typing adds text where the cursor is, Enter starts a new
+It opens editing from the File/Global page. Typing adds text where the cursor is, Enter starts a new
 line, Bksp erases, and the arrows move the cursor. Tab reaches the Save and Cancel buttons under
 the text, and Tab again comes back; Esc cancels, throwing the typing away. While reading, up and
 down scroll, E starts editing again, Bksp clears it all, after asking, and Esc goes back.

@@ -293,7 +293,7 @@ code.
   pattern like `foo_bar_stem_*.mid` otherwise), then says where it went (`MSG_EXPORTED`).
 - A set with no file yet can't export (`Document.can_export`, `ERR_SAVE_BEFORE_EXPORT`), so
   Ctrl+X asks to save it first (`MSG_SAVE_BEFORE_EXPORT_TITLE`), runs Save as and goes on to the
-  export dialog once it's saved. The Set File page's Exports note says `(save the set first)` until
+  export dialog once it's saved. The File/Global page's Exports note says `(save the set first)` until
   then.
 - Only a Live set asks before it's written over, and only the first time in a session for that
   path (`LlamatronApp.has_confirmed_overwrite`). The MIDI kinds just overwrite.
@@ -614,7 +614,7 @@ code.
   colour in place of the header's rule, with a blank line under it where the screen is `ROOM_FOR_THE_GAP` (30) lines or taller
   (`has_room_for_the_gap`, `header_lines`), so that an 80 by 24 console keeps every line. A page shares its section's colour with
   its list (`theme_of`, through `ShowsNamedItem.theme` and `NamedListPage.theme`): songs blue, patterns green, chains violet,
-  generators magenta, scales teal, grooves orange, instruments yellow, the Registers page red, the Set File, Notes and Open pages
+  generators magenta, scales teal, grooves orange, instruments yellow, the Registers page red, the File/Global, Notes and Open pages
   grey, and the pages reached from Arrange (Scene, clip, track) cyan; the main screen's is white, the user's choice, and Arrange keeps the rule.
 
 - `Page.header` draws two lines and the rule, each line by `header_line(left=, right=)`, which
@@ -638,7 +638,7 @@ code.
 
 ## File and Notes
 
-- The Set File page (`F`, `FilePage`) shows, in the user's order, the loose settings alphabetically (Author, Default follow
+- The File/Global page (`F`, `FilePage`) shows, in the user's order, the loose settings alphabetically (Author, Default follow
   action, Description, Notes, Protected, Title), then the sections Notes & Octaves (Default drum octave, Default octave,
   Octave labels, Step size) and Visualizers (Visualizer, and Hide Visualizers, a field opening a `PickManyDialog`,
   `tui/dialogs/pick_many_dialog.py`, where Space picks modes and Enter keeps them), then Save and Open
@@ -665,7 +665,7 @@ code.
 - It adds, copies, renames, moves, sorts and deletes songs, refusing to delete the last one.
 - `SongPage` has the song's name, which `Enter` on the Name field renames, then tempo, time
   signature, entry size, scale, seed, groove, genre (a `text_field`, which `FieldPage` holds for
-  every settings page, as the Set File page's title uses), Live response (a `ChoiceField` of
+  every settings page, as the File/Global page's title uses), Live response (a `ChoiceField` of
   `LIVE_RESPONSIVENESSES`, named by `MSG_LIVE_RESPONSIVENESS_NAMES`) and an Export button.
 - Registers and Arrange edit the current song.
 - A brand-new song (`Song.started`, `started_song`, `Setlist.add_started_song`, which
@@ -1065,7 +1065,7 @@ code.
   first the song's or the set's choice (`first_mode`) and goes on through the rest to the clips, `[` and `]`
   (`ArrangePage.STEP_VISUALIZER`, `step_visualizer`) step to the mode before or after, going round, and with every mode
   hidden the key says `MSG_EVERY_VISUALIZER_HIDDEN`. A mode is made with `made_for(hidden=)`, which Cycle heeds by leaving
-  the hidden modes out of its turns. The Set File page's Visualizer field and its Hide Visualizers section, a toggle per
+  the hidden modes out of its turns. The File/Global page's Visualizer field and its Hide Visualizers section, a toggle per
   mode, and the Song page's Visualizer field are `screens/visualizer_fields.py`.
 - When the name a mode shows changes (`Visualizer.shown_name`), by the key or by Cycle moving on,
   `ArrangePage.name_to_show` returns it for `NAME_SECONDS` (8), and `ArrangeDrawing.with_name`

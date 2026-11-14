@@ -22,7 +22,7 @@ Patterns hold the notes, and belong to the set, so every song can play them. Pre
 
 ![The piano roll, on a bass pattern](screenshots/pattern_editor.svg)
 
-A pattern that isn't a drum pattern opens on its piano roll. Each column is a step, and each row is one note of the scale, highest at the top, labelled with the note and its octave in the Set File page's octave labels and then the degree, such as `E3   3`. A rule runs across the grid where each octave starts. When the pattern plays under more than one scale, the rows are labelled with the octave and degree alone, such as `oct3  3`, and the header says so.
+A pattern that isn't a drum pattern opens on its piano roll. Each column is a step, and each row is one note of the scale, highest at the top, labelled with the note and its octave in the File/Global page's octave labels and then the degree, such as `E3   3`. A rule runs across the grid where each octave starts. When the pattern plays under more than one scale, the rows are labelled with the octave and degree alone, such as `oct3  3`, and the header says so.
 
 ### Drawing
 
@@ -148,7 +148,7 @@ Basics and Timing start open, and the editor remembers which sections are open, 
 | --- | --- | --- |
 | Degree | The gauge, 1 up to the size of the scale, where 1 is the root | Digits, `[` `]`, `Bksp` empties the step |
 | Note (drum patterns) | A to G, with no gauge | Letters, `Bksp` empties the step |
-| Octave | -2 to 8 with Live's labels, 0 to 10 with llamatron's (see Octave labels on the Set File page) | Digits, `[` `]`, `Bksp` sets the default |
+| Octave | -2 to 8 with Live's labels, 0 to 10 with llamatron's (see Octave labels on the File/Global page) | Digits, `[` `]`, `Bksp` sets the default |
 | Tie | `●` on an empty step after a note holds the note through that step. See below. | `Space` or `Enter` toggles, `Bksp` turns it off. Only on empty steps. |
 | Gate | How long the note sounds, in whole notes, like 1/16 or 5/16. Blank is one step. | `[` `]` step through 1/64, 1/32, 1/16, 1/8, 1/4, 1/2, 1, 2 and 4, `Enter` types a whole number or a fraction, and `Bksp` makes it one step. |
 | Dot | `d` makes the gate dotted, half as long again, and `t` makes it a triplet, two thirds as long, so 1/16 with `d` is 3/32 | `Space` or `Enter` goes to the next one, `[` (dec) and `]` (inc) step back and forward, `Bksp` clears |

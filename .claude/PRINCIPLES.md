@@ -11,8 +11,8 @@ says what llamatron is for; this file says how the user weighs one way of buildi
 - **Consistency wins over novelty.** One key means one thing across the tracker, one way of moving, choosing and confirming
   works everywhere, and a new thing looks like the existing thing it's most like. Where a feature already does what's asked,
   that's said first.
-- **What people see is current.** Every visible change carries its docs, its screenshots and the website, rebuilt, and the code and the
-  website go up together when the user asks for a push; GitHub's front page should never look stale, and the website never leads the code.
+- **What people see is current.** Every visible change carries its docs, and the screenshots and the website are brought up to date
+  before a push, when the code and the website go up together; GitHub's front page should never look stale, and the website never leads the code.
 - **Demos are music first.** They're starting points people enjoy and learn from, each a plain workout of its feature or a
   piece that sounds good; one is rewritten only with the user's say-so, asked upfront, and new demo ideas wait at the bottom of
   the queue.

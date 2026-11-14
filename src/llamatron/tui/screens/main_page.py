@@ -340,11 +340,9 @@ class MainPage(Page):
 
     def shown_name(self, item):
         """Return the name drawn on a cell: its own, but Arrange/Play on the Arrange cell while the set's Real Time switch is on,
-        so that the cell says where a song is played, and File/Global on the Set File page's (the user's design)."""
+        so that the cell says where a song is played (the user's design)."""
         if item.binding is self.KEYS.ARRANGE and self.document().setlist().is_real_time():
             return PageName.ARRANGE_PLAY
-        if item.binding is self.KEYS.FILE:
-            return PageName.FILE_GLOBAL
         return cell_name(item)
 
     def edge_style(self, item):

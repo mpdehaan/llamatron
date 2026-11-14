@@ -632,7 +632,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   `default_follow_action` (`SetlistSetting.DEFAULT_FOLLOW_ACTION`, same choices, default
   `with_scene`, `DEFAULT_FOLLOW_ACTION`), written only when set, so the demos stay as they
   are; `Setlist.follow_action_of(clip_slot)` resolves it. The clip page's Advance field shows
-  the resolved value as the clip's own, with no "(default)" choice, and the Set File page's
+  the resolved value as the clip's own, with no "(default)" choice, and the File/Global page's
   Default follow action field sets the set's.
 - "With Scene" sends a start to the clip directly below when the whole scene is done; "Next"
   sends it the moment the clip's own repeats end, whatever the rest of the scene is doing;

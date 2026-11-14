@@ -76,7 +76,7 @@ MSG_ALSO_DELETES_CLIPS = 'This also deletes its {count} clip(s).'
 # tui/screens/main_page.py, tui/screens/file_page.py and tui/screens/everywhere.py
 MSG_QUIT_TITLE = PageName.QUIT
 MSG_SONG_SCALE_TITLE = 'Song scale'
-# The notes under the Set File page's fields.
+# The notes under the File/Global page's fields.
 MSG_FILE_NOTE = '  Path          {path}'
 MSG_EXPORTS_NOTE = '  Exports to    {where}'
 # Opening, saving and exporting, from any page.
@@ -91,9 +91,9 @@ MSG_SAVED = 'saved {path}'
 MSG_FILE_UNCHANGED = 'no changes to save: {path} is up to date'
 MSG_FILE_CHANGED_ELSEWHERE_TITLE = 'File changed'
 MSG_FILE_CHANGED_ELSEWHERE_QUESTION = '{path} has changed since it was opened or saved here. Write over it?'
-# A protected set, like the demos, is never saved over: Ctrl+S offers a copy, and the Set File page turns the protection off.
+# A protected set, like the demos, is never saved over: Ctrl+S offers a copy, and the File/Global page turns the protection off.
 MSG_PROTECTED_TITLE = 'Protected set'
-MSG_PROTECTED_EXPLAINED = '{path} is protected, so it is not written over. Protected on the Set File page turns that off.'
+MSG_PROTECTED_EXPLAINED = '{path} is protected, so it is not written over. Protected on the File/Global page turns that off.'
 MSG_PROTECTED_SAVE_COPY_QUESTION = 'Save a copy under another name?'
 MSG_PROTECTED_CHOOSE_ANOTHER_NAME = 'Choose another name for the copy.'
 # composition/corrections.py and tui/dialogs/corrections_dialog.py: a set file that holds values that cannot be
@@ -255,8 +255,8 @@ MSG_LISTENING_TO_PATTERN = 'listening to ({name})'
 # A clip listened to while Real Time is off.
 MSG_LISTENING_GENERAL_MIDI = 'listening to ({name}) through General MIDI'
 MSG_STARTS_AT_NEXT_BAR = '{what} starts at the next bar'
-# The visualizer key on Arrange when the Set File page hides every visualizer mode.
-MSG_EVERY_VISUALIZER_HIDDEN = 'every visualizer is hidden on the Set File page'
+# The visualizer key on Arrange when the File/Global page hides every visualizer mode.
+MSG_EVERY_VISUALIZER_HIDDEN = 'every visualizer is hidden on the File/Global page'
 MSG_STOPPED = 'stopped'
 # tui/transport.py: an edit made while the song plays that can't be heard, which the status line says, what plays going on as it was.
 MSG_LIVE_EDIT_NOT_HEARD = 'the edit cannot be heard while playing: {problem}'
