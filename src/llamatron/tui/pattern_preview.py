@@ -53,8 +53,8 @@ PREVIEW_SCENE = 0
 PREVIEW_CHANNEL_BYTE = MELODIC_CHANNEL_BYTES[-1]
 # General MIDI's first sound, the piano, as the program byte sent.
 PIANO_PROGRAM = 0
-# How many passes a preview plays of a direction that chooses its steps as it goes, before the same choices come round again.
-CHOSEN_PASSES = 8
+# How many passes a preview plays of a direction that chooses its steps as it goes: one, as many choices as the pattern has steps (the user's rule).
+CHOSEN_PASSES = 1
 
 
 def passes_to_come_round(*, steps, direction):
@@ -190,6 +190,16 @@ class PatternPreview(Transport):
         if not self.is_connected(instrument.get_device()):
             return ERR_PREVIEW_DEVICE_NOT_CONNECTED.format(name=name, device=instrument.get_device())
         return None
+
+    def shares_a_channel_with(self, *, pattern, routes):
+        """Return whether a pattern's preview would choose its sound on a port and channel that one of a song's routes uses, which only a song with
+        fifteen tracks through FluidSynth comes to. A drum pattern chooses no sound, so it shares the drum channel freely."""
+        if self.real().song().get_pattern(pattern).is_drum():
+            return False
+        name = self.instrument_of(pattern)
+        if name is not None and not self.real().setlist().get_instrument(name).uses_fluidsynth():
+            return False
+        return any((route.port, route.channel) == (FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE) for route in routes.values())
 
     def routes(self, *, instead=None):
         """Return the one route of the track made for the pattern."""

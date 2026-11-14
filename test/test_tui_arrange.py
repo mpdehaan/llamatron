@@ -147,7 +147,7 @@ class TestArrangePage(UITest):
         self.assertIs(self.app.screen, self.page)
         self.assertEqual((self.page.row, self.page.column), place)
 
-    async def test_p_opens_no_pattern_on_a_scene_a_track_an_empty_cell_or_the_add_row_and_on_a_scene_opens_scene_view(self):
+    async def test_jump_opens_no_pattern_on_a_scene_a_track_an_empty_cell_or_the_add_row_and_scene_view_has_a_key_of_its_own(self):
         # The page opens on the first scene's name; Down is the second scene's name, Right the empty cell beside it, Up twice the track's name and Down three times the + row.
         shown = KEY_SHOWN.format(label=key_name(keybindings.ArrangePage.OPEN_PATTERN)) + MSG_LEGEND_WHAT.format(what=MSG_OPEN_PATTERN_WHAT)
         for keys in ([], [Key.DOWN], [Key.RIGHT], [Key.UP, Key.UP], [Key.DOWN, Key.DOWN, Key.DOWN]):
@@ -156,10 +156,13 @@ class TestArrangePage(UITest):
                 self.assertFalse(self.page.on_clip_slot() and self.document.clip_slot(index=self.page.row, track=self.page.track()) is not None)
                 self.assertNotIn(shown, self.text())
                 scene_name = self.page.on_scene_name() and not self.page.on_plus_row()
+                # Jump to pattern does nothing away from a clip, and it is a key of its own now, so it never opens Scene View either.
                 await self.press(keybindings.ArrangePage.OPEN_PATTERN)
                 self.assertIs(self.app.screen, self.page)
-                self.assertEqual(self.page.inset is not None, scene_name)
+                self.assertIsNone(self.page.inset)
                 if scene_name:
+                    await self.press(keybindings.ArrangePage.SCENE_VIEW)
+                    self.assertIsNotNone(self.page.inset)
                     await self.press(keybindings.ArrangePage.CLOSE_INSET)
 
     def grid_lines(self):

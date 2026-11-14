@@ -188,7 +188,7 @@ class PatternDrawing(GridDrawing):
         view = self.rows()
         if rows is None:
             rows = view.scrolled_rows()
-        lines = [self.top_rule(first=first, last=last), self.step_line(first=first, last=last)]
+        lines = [self.top_rule(first=first, last=last), self.step_line(first=first, last=last, sounding=self._editor.playing_step())]
         blocks = self.row_blocks([*view.pinned_rows(), *rows])
         for number, (row, rule_before) in enumerate(blocks):
             if rule_before:

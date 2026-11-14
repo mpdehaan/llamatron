@@ -37,7 +37,7 @@ def help_lines(text):
 # ArrangePage
 HELP_ARRANGE_PAGE = """
 Scenes are rows, tracks columns, a box marks the cursor. Bars: a scene against the longest, a clip against its scene.
-On an empty cell, Enter chooses a pattern and adds a clip. On a clip, Enter edits it, P opens its pattern, C copies it, V pastes it, Bksp deletes it.
+On an empty cell, Enter chooses a pattern and adds a clip. On a clip, Enter edits it, J jumps to its pattern, C copies it, V pastes it, Bksp deletes it.
 On a scene's row, I inserts a scene above, C copies it below; on a track name, I inserts one before, C copies it right. M picks up a scene, track or clip to carry with the arrows.
 Enter on a scene or track name opens its settings, P on a scene's shows Scene View, Bksp deletes it, never the last. A adds a scene, or a track on the top row. ×3 repeats, ∞ loops, ~ morphs, d own direction, g grabs. D shows or hides details; Tab opens a cell's, ↑↓ pick, Enter opens, Tab leaves.
 
@@ -65,7 +65,7 @@ Direction: overrides its pattern's play direction. With Repeat above 1, Morph to
 Grab track: Grab steps play the note that track last started, with their chord.
 Advance: real-time playback only, never an export. With Scene starts the clip below when the whole scene is done, Next when this clip ends, Off never. Blank, it shows the Set File page's default.
 
-Up and down select. Left and right change. Enter chooses. P opens the pattern in its editor. L plays the clip as its scene would, again and again, and stops it; Play and Stop below do the same.
+Up and down select. Left and right change. Enter chooses. J jumps to the pattern in its editor. L plays the clip as its scene would, again and again, and stops it; Play and Stop below do the same.
 """
 
 # MainPage

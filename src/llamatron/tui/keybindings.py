@@ -293,9 +293,9 @@ class ScenePage(FieldPage):
 
 
 class ClipPage(FieldPage):
-    """The clip page: the settings keys, and P, which opens the clip's pattern in the pattern editor from any field, since the page has one pattern."""
+    """The clip page: the settings keys, and J, which jumps to the clip's pattern in the pattern editor from any field, since the page has one pattern."""
 
-    OPEN_PATTERN = (Key.P, KeyName.P, MSG_OPEN_PATTERN_WHAT)
+    OPEN_PATTERN = (Key.J, KeyName.J, MSG_OPEN_PATTERN_WHAT)
     # Real-time playback: L plays the clip as its scene would, looping until stopped, and L again stops it, with the Play and Stop buttons below the fields doing the same.
     LISTEN = (Key.L, KeyName.L, MSG_LISTEN_WHAT)
     STOP_LISTENING = (Key.L, KeyName.L, MSG_STOP_LISTENING_WHAT)
@@ -542,7 +542,7 @@ class ArrangePage(Page):
     BLANK_PATTERN = (Key.B, KeyName.B, MSG_BLANK_PATTERN_WHAT)
     EDIT_CLIP = (Key.ENTER, KeyName.ENTER, MSG_EDIT_CLIP_WHAT)
     # P opens the clip's pattern in the pattern editor, the user's choice of 2026-11-09 over Shift+Enter, which a stock terminal sends as Enter.
-    OPEN_PATTERN = (Key.P, KeyName.P, MSG_OPEN_PATTERN_WHAT)
+    OPEN_PATTERN = (Key.J, KeyName.J, MSG_OPEN_PATTERN_WHAT)
     COPY_CLIP = (Key.C, KeyName.C, MSG_COPY_CLIP_WHAT)
     DELETE_CLIP = (Key.BACKSPACE, KeyName.BACKSPACE, MSG_DELETE_CLIP_WHAT)
     PASTE_CLIP = (Key.V, KeyName.V, MSG_PASTE_CLIP_WHAT)
