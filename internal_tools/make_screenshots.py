@@ -102,8 +102,8 @@ SHOTS = [
     Shot(name='pattern_editor_rows', keys=[keybindings.MainPage.PATTERNS, Key.DOWN, Key.DOWN, Key.ENTER, keybindings.PatternEditor.TO_EDITOR]),
     # Tab opens the rows under the roll, PgDn jumps from heading to heading (Basics, Chord, Timing, Advanced, CCs, Reg. Apply, Reg. Mod), Space opens the section and Down goes to its first row.
     Shot(name='pattern_editor_advanced', keys=[keybindings.MainPage.PATTERNS, Key.DOWN, Key.DOWN, Key.ENTER, keybindings.PatternEditor.TO_EDITOR, *[Key.PAGE_DOWN] * 4, Key.SPACE, Key.DOWN]),
-    # The Chord section's heading is the second: Space opens it, Down reaches the Chord row and Enter opens the Chord Selector, where Left reaches the scales and Down and Enter open the flyout of Common.
-    Shot(name='chord_selector', keys=[keybindings.MainPage.PATTERNS, Key.DOWN, Key.DOWN, Key.ENTER, keybindings.PatternEditor.TO_EDITOR, Key.PAGE_DOWN, Key.PAGE_DOWN, Key.SPACE, Key.DOWN, Key.ENTER, Key.LEFT, Key.DOWN, Key.ENTER]),
+    # The Chord section's heading is the second: Space opens it, Down reaches the Chord row and Enter opens the Chord Selector, where Right twice reaches the scales and Down and Enter open the flyout of Common.
+    Shot(name='chord_selector', keys=[keybindings.MainPage.PATTERNS, Key.DOWN, Key.DOWN, Key.ENTER, keybindings.PatternEditor.TO_EDITOR, Key.PAGE_DOWN, Key.PAGE_DOWN, Key.SPACE, Key.DOWN, Key.ENTER, Key.RIGHT, Key.RIGHT, Key.DOWN, Key.ENTER]),
     Shot(name='pattern_editor_cc', keys=[keybindings.MainPage.PATTERNS, Key.DOWN, Key.DOWN, Key.ENTER, keybindings.PatternEditor.TO_EDITOR, *[Key.PAGE_DOWN] * 5, Key.SPACE, Key.DOWN]),
     Shot(name='pattern_editor_registers', keys=[keybindings.MainPage.PATTERNS, Key.DOWN, Key.DOWN, Key.ENTER, keybindings.PatternEditor.TO_EDITOR, *[Key.PAGE_DOWN] * 6, Key.SPACE, Key.DOWN]),
     Shot(name='pattern_editor_register_changes', keys=[keybindings.MainPage.PATTERNS, Key.DOWN, Key.DOWN, Key.ENTER, keybindings.PatternEditor.TO_EDITOR, *[Key.PAGE_DOWN] * 7, Key.SPACE, Key.DOWN]),

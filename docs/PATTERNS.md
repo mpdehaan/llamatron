@@ -134,7 +134,7 @@ Degree and Octave stay at the top, and under them the rows come in sections that
 Basics and Timing start open, and the editor remembers which sections are open, for every pattern, for as long as it runs. When the open rows don't fit the screen, they scroll to keep the cursor's row in view. The sections, in the order a step works them out, are:
 
 - **Basics:** #/b, Velocity;
-- **Chord:** Chord, Scale, Tension, Inversion;
+- **Chord:** Chord, Tension, Scale, Inversion;
 - **Timing:** Tie, Gate, Dot, Glide;
 - **Advanced:** Probability, Ratchet, Ratchet Offset, Grab;
 - **CCs:** CC 1 to CC 4, Slide;
@@ -178,7 +178,7 @@ Glide does nothing before a rest or before the same pitch. Probability, on the A
 
 ### Chords
 
-The Chord section holds everything about a step's chord: the Chord row, the Scale row, the Tension row and the Inversion row. `Enter` on the Chord, Scale or Tension row opens the [Chord Selector](#chord-selector), and on each of the three rows `[`, `]` and `Space` step through the choices; the Scale row steps through every scale type in the Chord Selector's order. While the cursor rests on a step that holds a chord, the status line names the chord and its notes.
+The Chord section holds everything about a step's chord: the Chord row, the Tension row, the Scale row and the Inversion row. `Enter` on the Chord, Tension or Scale row opens the [Chord Selector](#chord-selector), and on each of the three rows `[`, `]` and `Space` step through the choices; the Scale row steps through every scale type in the Chord Selector's order. While the cursor rests on a step that holds a chord, the status line names the chord and its notes.
 
 A step whose Scale is set takes its degree and its scale chord from that scale type on the clip's root, which is how a chord is borrowed: in C major, degree 6 with the Scale "Minor" and the chord `3` plays A flat major. A tension is added above the chord's root, so `dom7` on degree 5 with `b9` and `13` plays G B D F A♭ E. A single note takes no tensions.
 
@@ -319,7 +319,7 @@ Positions carry on across repeats. The random directions draw their own random n
 
 ![The Chord Selector with the flyout of the Common scales open](screenshots/chord_selector.svg)
 
-The Chord Selector chooses a step's chord in one place. `Enter` on the Chord, Scale or Tension row of the rows view opens it, and so does `H` on a note of the piano roll. It holds three lists side by side, in the order a chord is worked out: the scale the step borrows its notes from, with `(the clip's own)` at the top; the chord's quality, with `(single note)` at the top; and its tensions, the notes added on top, such as a flat ninth.
+The Chord Selector chooses a step's chord in one place. `Enter` on the Chord, Tension or Scale row of the rows view opens it, and so does `H` on a note of the piano roll. It holds three lists side by side: the chord's quality, with `(single note)` at the top; its tensions, the notes added on top, such as a flat ninth; and the scale the step borrows its notes from, with `(the clip's own)` at the top.
 
 | Key | What it does |
 | --- | --- |
@@ -330,6 +330,6 @@ The Chord Selector chooses a step's chord in one place. `Enter` on the Chord, Sc
 | `Enter` | On a quality or a tension, takes the chord. |
 | `Esc` | Cancels, changing nothing. |
 
-The scale list holds categories: Common, Modes, Harmonic & Melodic, Pentatonic & Blues, Symmetric, Jazz, Mid. East & Europe, East Asia and India. A category opens a flyout of its scale types beside it. In the flyout, Up and Down move, `Enter` picks a scale type and closes the flyout, and `Esc` or Left closes the flyout with nothing changed. After a pick the cursor goes on to the qualities, so that the next `Enter` takes the chord, and the category shows the scale type picked. Common holds the six scales most often borrowed from, which are also found in their own categories.
+The scale list, the last of the three, holds categories: Common, Modes, Harmonic & Melodic, Pentatonic & Blues, Symmetric, Jazz, Mid. East & Europe, East Asia and India. A category opens a flyout of its scale types beside it, over the other two lists. In the flyout, Up and Down move, `Enter` picks a scale type and closes the flyout, and `Esc` or Left closes the flyout with nothing changed. After a pick the cursor goes on to the qualities, so that the next `Enter` takes the chord, and the category shows the scale type picked. Common holds the six scales most often borrowed from, which are also found in their own categories.
 
 The lines under the lists say what the chord comes to as the choice moves: its name in the scale it is drawn from, its name in the clip's own scale when it borrows another, and its exact notes. The pattern underneath shows the chord at the same time: the piano roll draws the chord's other notes as thin green lines, and the rows show the values in their cells. Cancelling puts the step back as it was.

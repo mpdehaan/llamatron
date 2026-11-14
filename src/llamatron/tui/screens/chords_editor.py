@@ -16,7 +16,7 @@
 """The chord editor: a progression's chords as a row of bars rising to each chord's degree, with its numeral and its name in the song's scale, and rows of sharps and flats and of inversions beneath.
 
 The user's design of 2026-11-11. Up and Down move the cursor between the Chord row, the #/b row,
-the Scale, Quality and Tens. rows and the Inv. row, and Left and Right along the chords. On the Chord row, [ and ] step the degree from 1 to 7 and digits type one; on the #/b
+the Quality, Tens. and Scale rows and the Inv. row, and Left and Right along the chords. On the Chord row, [ and ] step the degree from 1 to 7 and digits type one; on the #/b
 and Inv. rows, [ and ] and Space or Enter step through their choices. I inserts a chord I before
 the cursor's, D removes the cursor's, and H fills the chords with a named progression, matched to
 the song's scale.
@@ -59,12 +59,13 @@ from llamatron.tui.screens.step_editor import StepEditor
 from llamatron.tui.screens.step_grid import StepGrid
 from llamatron.tui.screens.shows_named_item import ShowsNamedItem
 
-# The rows the cursor edits, top to bottom, which is the order a chord is worked out in: its root, the scale it borrows, its quality, its tensions, and how it is voiced.
+# The rows the cursor edits, top to bottom, in the user's order, the same wherever a chord is chosen: its root, with the root's sharp or flat, then its quality, its
+# tensions, the scale it borrows, and how it is voiced.
 CHORD_ROW = 0
 ACCIDENTAL_ROW = 1
-SCALE_ROW = 2
-QUALITY_ROW = 3
-TENSION_ROW = 4
+QUALITY_ROW = 2
+TENSION_ROW = 3
+SCALE_ROW = 4
 INVERSION_ROW = 5
 EDITED_ROWS = 6
 # The rows the Chord dialog edits together, and the list it opens on from each.
@@ -153,7 +154,7 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
         """Return the chords and the rows beside them, in the order of the rows on screen, as lists of one length."""
         progression = self.progression()
         return [
-            progression.get_chords(), progression.get_accidentals(), progression.get_scales(), progression.get_qualities(), progression.get_tensions(),
+            progression.get_chords(), progression.get_accidentals(), progression.get_qualities(), progression.get_tensions(), progression.get_scales(),
             progression.get_inversions(),
         ]
 
@@ -291,7 +292,7 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
         self.keep_step()
         first, last = self.scroll_to_cursor(width)
         places = range(first, last)
-        chords, accidentals, scales, qualities, tensions, inversions = self.rows()
+        chords, accidentals, qualities, tensions, scales, inversions = self.rows()
         selected = {row: self.step if self.edited_row == row else None for row in range(EDITED_ROWS)}
         lines = [
             self.with_steps_shown(text=MSG_CHORDS_NOTE, style=Style.DIM, width=width, first=first, last=last),
@@ -307,12 +308,12 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
             label=MSG_PROGRESSION_ACCIDENTAL_ROW_LABEL, cells=[(place, MSG_ACCIDENTAL_MARKS.get(accidentals[place], NOTHING)) for place in places],
             selected=selected[ACCIDENTAL_ROW],
         ))
+        lines.append(self.grid_line(label=MSG_PROGRESSION_QUALITY_ROW_LABEL, cells=[(place, qualities[place] or NOTHING) for place in places], selected=selected[QUALITY_ROW]))
+        lines.append(self.grid_line(label=MSG_PROGRESSION_TENSIONS_ROW_LABEL, cells=[(place, tensions_shown(tensions[place])) for place in places], selected=selected[TENSION_ROW]))
         lines.append(self.grid_line(
             label=MSG_PROGRESSION_SCALE_ROW_LABEL, cells=[(place, NOTHING if scales[place] is None else words(scales[place]).title()[:CELL_ROOM]) for place in places],
             selected=selected[SCALE_ROW],
         ))
-        lines.append(self.grid_line(label=MSG_PROGRESSION_QUALITY_ROW_LABEL, cells=[(place, qualities[place] or NOTHING) for place in places], selected=selected[QUALITY_ROW]))
-        lines.append(self.grid_line(label=MSG_PROGRESSION_TENSIONS_ROW_LABEL, cells=[(place, tensions_shown(tensions[place])) for place in places], selected=selected[TENSION_ROW]))
         lines.append(self.grid_line(
             label=MSG_INVERSION_ROW_LABEL, cells=[(place, NOTHING if inversions[place] is None else str(inversions[place])) for place in places],
             selected=selected[INVERSION_ROW],
