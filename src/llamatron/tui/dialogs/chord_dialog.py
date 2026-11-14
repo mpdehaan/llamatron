@@ -33,7 +33,7 @@ from rich.text import Text
 from llamatron.composition.file_format import TENSIONS
 from llamatron.composition.naming import words
 from llamatron.strings.labels import Column
-from llamatron.strings.marks import MSG_FIELD_TOGGLE_OFF, MSG_FLYOUT_CHOSEN, MSG_FLYOUT_CLOSED, MSG_FLYOUT_TITLE, MSG_TOGGLE_ON
+from llamatron.strings.marks import MSG_FIELD_TOGGLE_OFF, MSG_FLYOUT_CHOSEN, MSG_FLYOUT_CHOSEN_ALONE, MSG_FLYOUT_CLOSED, MSG_FLYOUT_TITLE, MSG_TOGGLE_ON
 from llamatron.strings.messages import MSG_SCALE_NOT_BORROWED
 from llamatron.tui.dialogs.dialog import DIALOG_MARGIN, Dialog
 from llamatron.tui.drawing import NOTHING, SPACE, Style, cursor_mark, fit, legend
@@ -47,7 +47,7 @@ TENSION_LIST = 1
 SCALE_LIST = 2
 LISTS = 3
 # How wide each list is drawn, and the gap between two.
-LIST_WIDTHS = (24, 12, 26)
+LIST_WIDTHS = (24, 12, 32)
 LIST_GAP = 2
 # The room for the sentences under the lists, so that the dialog keeps its height as the choice moves.
 SENTENCE_LINES = 3
@@ -211,7 +211,8 @@ class ChordDialog(Dialog):
         return ChordChoice(quality=self.qualities[self.places[QUALITY_LIST]], tensions=tensions, kind=self.shown_kind())
 
     def scale_row_text(self, row):
-        """Return a row of the scale list: the row that borrows none, or a category, with the scale type borrowed after the one that holds it."""
+        """Return a row of the scale list: the row that borrows none, or a category, drawn as a button since it opens a flyout (the user's design), with the scale type
+        borrowed after the name of the one that holds it, the only row with the mark."""
         if row == NOT_BORROWED_ROW:
             return MSG_SCALE_NOT_BORROWED
         name, kinds = self.categories[row - 1]
@@ -219,7 +220,9 @@ class ChordDialog(Dialog):
             # The scale type borrowed is shown whole, and the category's name gives way to it where both don't fit.
             chosen = words(self.kind).title()
             room = LIST_WIDTHS[SCALE_LIST] - len(cursor_mark(False)) - len(MSG_FLYOUT_CHOSEN.format(name=NOTHING, chosen=chosen))
-            return MSG_FLYOUT_CHOSEN.format(name=fit(text=name, width=room).rstrip() if room >= SHORTEST_CATEGORY_NAME else NOTHING, chosen=chosen).lstrip()
+            if room < SHORTEST_CATEGORY_NAME:
+                return MSG_FLYOUT_CHOSEN_ALONE.format(chosen=chosen)
+            return MSG_FLYOUT_CHOSEN.format(name=fit(text=name, width=room).rstrip(), chosen=chosen)
         return MSG_FLYOUT_CLOSED.format(name=name)
 
     def row_text(self, *, part, place):
