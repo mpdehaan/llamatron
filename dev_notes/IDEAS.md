@@ -107,6 +107,15 @@ every use, and the Patterns page's USED column the count; the row needs the trac
 to the width the page is given, and the answer remembered until the set changes. This covers what was left of "Where a
 pattern is used" for the Patterns page.
 
+## Importing patterns from another llamatron set
+
+The main screen's Import opens a dialog that chooses between two kinds of import. The first is the MIDI import, as today. The
+second imports patterns from another llamatron set: a file is picked, then a list of every pattern of that set is shown, perhaps
+in three columns, where the patterns wanted are marked. The marked patterns all become global patterns of the set that is open,
+and a name that is taken is renamed by the naming rule (`.claude/UX.md`, "Names the tracker makes"). The mockups and what the
+import means for the rest, such as the scales, grooves and generators a pattern leans on, are to be discussed with the user
+when this is reached. It depends on global patterns.
+
 ## A scroll bar wherever a list scrolls
 
 The user liked the scroll bar drawn at the right of the list in the mockup of the "Copy Pattern to Songs" dialog, a column of
