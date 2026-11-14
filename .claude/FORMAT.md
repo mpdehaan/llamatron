@@ -1326,6 +1326,13 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   riff or bass line, which Claude neither reads nor reproduces, even where it knows them. A homage's own melody moves the way
   melodies of the genre usually move and has the same kind of feel, written new. The rhythms of its parts are written new as well
   (Claude's reading, to keep each demo an original piece).
+- A homage's melody is written from measured traits of the work's melody, never from its notes (the user's rule): a separate
+  lookup reports only traits, section by section, such as the range and where it sits above the tonic, how simple or busy the
+  line is, how many beats a note lasts, the share of steps, leaps and repeated notes, the share of chord tones, and how
+  syncopated it is; no note, rhythm or tab in order reaches Claude, and nothing of them is stored. Claude writes the tune new
+  from those traits and the chords.
+- A homage's notes carry a line saying which rebuild the file is, like "Rebuild version 2.", counted from 1 for the first
+  version checked in, so that a later rebuild knows which one it follows (the user's ask).
 - A homage that is written or rewritten uses the generators that fit (the user's rules): the Progression generator heavily, so
   that a part is one written bar a Progression moves through the song's chords, section by section; Guitarify on guitar parts;
   Voice leading on keyboard and pad chords; Strum on plucked parts that aren't guitars; a Hocket where two instruments trade a
