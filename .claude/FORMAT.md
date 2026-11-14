@@ -1339,6 +1339,15 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   answered by steps the other way, note lengths make a rhythm that repeats, a phrase ends on a longer note of the chord, and the
   manner is the genre's own. An effect is used only where the style has it: a piece in an old style stays old, so no modern
   club build, Density or Swell, goes on a baroque or novelty synthesizer tune.
+- Before a note of a homage is written, three blocks are written into its notes, from what Claude knows, and every part is then
+  checked against them (the user's rules). **Subgenre:** its name, and its drums, tempo and feel, bass, builds, sounds, melody
+  manner and form; the subgenre is named exactly, since two styles filed under one genre share little. **Band and song:** what
+  the band is known for and what the song is known for. **The checklist:** the hook and the instrument that carries it; the
+  emotion; the lift, where the biggest moment is and what changes there in register, loudness, voices and drums; the contrast
+  between quiet and loud sections; the sounds of the lead, the chords and the bass, each a General MIDI sound with the right
+  attack, a sung lead never on a soft sound alone; and each section's tune, its register, note lengths and shape, the chorus
+  above the verse where the song lifts. The drums come first: a homage with the wrong drum style has failed whatever else is
+  right, and the bass's rhythm is next.
 - A homage's notes carry a line saying which rebuild the file is, like "Rebuild version 2.", counted from 1 for the first
   version checked in, so that a later rebuild knows which one it follows (the user's ask).
 - A homage that is written or rewritten uses the generators that fit (the user's rules): the Progression generator heavily, so
