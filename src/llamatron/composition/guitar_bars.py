@@ -27,6 +27,8 @@ from llamatron.composition.file_format import ReadyBar, Stroke
 EIGHTH = '1/8'
 SIXTEENTH = '1/16'
 QUARTER = '1/4'
+# A third of a beat, for a bar of triplets.
+TRIPLET = '1/12'
 
 
 class GuitarBar(NamedTuple):
@@ -58,8 +60,12 @@ READY_BARS = {
     ReadyBar.FOUR_TO_THE_BAR: GuitarBar(cell=QUARTER, strokes=(D, D, D, D), accents=(O, Y, O, Y)),
     ReadyBar.BACKBEAT: GuitarBar(cell=EIGHTH, strokes=(N, N, U, M, N, N, U, M), accents=(O, O, Y, O, O, O, Y, O)),
     ReadyBar.BOOGIE: GuitarBar(cell=EIGHTH, strokes=(D, D, D, D, D, D, D, D), accents=(O, O, Y, O, O, O, Y, O)),
+    # A shuffle, the user's choice to offer: each beat a long stroke and a short one, the backbeats accented.
+    ReadyBar.SHUFFLE: GuitarBar(cell=TRIPLET, strokes=(D, N, D) * 4, accents=(O, O, O, Y, O, O) * 2),
     ReadyBar.SCRATCH: GuitarBar(cell=SIXTEENTH, strokes=(D, M, M, U, M, M, D, M, M, U, D, M, M, U, M, M), accents=(Y, O, O, O, O, O, Y, O, O, O, Y, O, O, O, O, O)),
     ReadyBar.ALL_DOWN: GuitarBar(cell=EIGHTH, strokes=(D, D, D, D, D, D, D, D), accents=(O, O, O, O, O, O, O, O)),
+    # Three strokes a bar left to ring, on the beat, the and of two and the and of three, the user's choice to offer.
+    ReadyBar.ARENA: GuitarBar(cell=EIGHTH, strokes=(D, N, N, D, N, D, N, N), accents=(Y, O, O, O, O, O, O, O)),
     ReadyBar.CHUG: GuitarBar(cell=EIGHTH, strokes=(M, M, D, M, M, M, D, M), accents=(O, O, Y, O, O, O, Y, O)),
     ReadyBar.GALLOP: GuitarBar(cell=SIXTEENTH, strokes=(M, N, M, M, M, N, M, M, M, N, M, M, D, N, M, M), accents=(Y, O, O, O, Y, O, O, O, Y, O, O, O, Y, O, O, O)),
     ReadyBar.THRASH: GuitarBar(cell=SIXTEENTH, strokes=(D, M, M, M, M, M, D, M, M, M, D, M, M, M, M, M), accents=(Y, O, O, O, O, O, Y, O, O, O, Y, O, O, O, O, O)),

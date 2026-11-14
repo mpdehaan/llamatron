@@ -50,7 +50,7 @@ The bar's editor shows one cell a column, with the stroke above and the accent b
 
 Where a bar has any accented cell, the strokes without an accent play a little softer.
 
-The ready-made bars are folk strum, boom-chick, travis pick, crosspick, four to the bar, backbeat, boogie, scratch, all down, chug, gallop, thrash, tremolo, chime, roll up, roll down and held. Picking one replaces the strokes, the accents and the cell length together, and the bar can be edited from there. A rolled chord is the roll up or the roll down bar with Let ring on.
+The ready-made bars are folk strum, boom-chick, travis pick, crosspick, four to the bar, backbeat, boogie, shuffle, scratch, all down, arena, chug, gallop, thrash, tremolo, chime, roll up, roll down and held. Picking one replaces the strokes, the accents and the cell length together, and the bar can be edited from there. A rolled chord is the roll up or the roll down bar with Let ring on.
 
 ## Applying the Generator
 
@@ -63,25 +63,24 @@ The Guitarify demo, `examples/learning/23_guitarify.yml`, plays twenty short exa
 | Genre | Example Name | Guitar | BPM | Shape | Strokes |
 | --- | --- | --- | --- | --- | --- |
 | country | porch | steel | 104 | | Bar: boom-chick, 8 cells of 1/8 |
-| country | thumb and fingers | steel | 96 | | Bar: travis pick, 8 cells of 1/8<br>Let ring: ● |
-| bluegrass | crosspick | steel | 126 | | Bar: crosspick, 8 cells of 1/8<br>Let ring: ● |
+| country | thumb and fingers | steel | 96 | | Bar: travis pick, 8 cells of 1/8<br>Let ring: on |
+| bluegrass | crosspick | steel | 126 | | Bar: crosspick, 8 cells of 1/8<br>Let ring: on |
 | jazz | four to the bar | jazz | 132 | Position: fret 3<br>Strings: 4 | Bar: four to the bar, 4 cells of 1/4<br>Spread: 4 ms |
-| blues | open g | steel | 84 | Tuning: open G | Bar: folk strum, 8 cells of 1/8<br>Let ring: ●<br>Spread: 14 ms |
+| blues | open g | steel | 84 | Tuning: open G | Bar: folk strum, 8 cells of 1/8<br>Let ring: on<br>Spread: 14 ms |
 | rock and roll | boogie | clean | 152 | Single notes: power chord | Bar: boogie, 8 cells of 1/8<br>Spread: 2 ms |
 | surf | tremolo | clean | 150 | Position: fret 5 | Bar: tremolo, 16 cells of 1/16 |
 | folk | campfire | steel | 96 | | Bar: folk strum, 8 cells of 1/8 |
-| folk rock | chime | clean | 116 | | Bar: chime, 8 cells of 1/8<br>Let ring: ● |
+| folk rock | chime | clean | 116 | | Bar: chime, 8 cells of 1/8<br>Let ring: on |
 | soul | backbeat | clean | 104 | Position: fret 4<br>Strings: 4 | Bar: backbeat, 8 cells of 1/8<br>Spread: 3 ms |
 | funk | scratch | muted | 100 | Position: fret 6<br>Strings: 4 | Bar: scratch, 16 cells of 1/16<br>Spread: 2 ms |
-| singer-songwriter | harp | nylon | 80 | | Bar: roll up, 8 cells of 1/8<br>Let ring: ● |
-| hard rock | arena | overdriven | 120 | Single notes: power chord | Bar: custom, 8 cells of 1/8<br>Let ring: ●<br>Spread: 2 ms |
+| singer-songwriter | harp | nylon | 80 | | Bar: roll up, 8 cells of 1/8<br>Let ring: on |
+| hard rock | arena | overdriven | 120 | Single notes: power chord | Bar: arena, 8 cells of 1/8<br>Let ring: on<br>Spread: 2 ms |
 | punk | three chords loud | distortion | 184 | Single notes: power chord | Bar: all down, 8 cells of 1/8<br>Spread: 2 ms<br>Fade: 0 |
 | metal | gallop | distortion | 150 | Single notes: power chord | Bar: gallop, 16 cells of 1/16<br>Spread: 2 ms<br>Fade: 0 |
 | metal | thrash | distortion | 190 | Single notes: power chord | Bar: thrash, 16 cells of 1/16<br>Spread: 2 ms<br>Fade: 0 |
-| metal | low and slow | distortion | 70 | Tuning: drop D<br>Single notes: power chord | Bar: held, 4 cells of 1/4<br>Let ring: ●<br>Spread: 2 ms<br>Fade: 0 |
-| alternative | quiet loud | overdriven | 110 | | Bar: custom, 32 cells of 1/8<br>Let ring: ● |
-| blues | shuffle | clean | 120 | Strings: 4 | Bar: custom, 12 cells of 1/12<br>Spread: 4 ms |
-| finale | last chord | steel | 92 | | Bar: custom, 32 cells of 1/8<br>Let ring: ● |
+| metal | low and slow | distortion | 70 | Tuning: drop D<br>Single notes: power chord | Bar: held, 4 cells of 1/4<br>Let ring: on<br>Spread: 2 ms<br>Fade: 0 |
+| alternative | quiet loud | overdriven | 110 | | Bar: custom, 32 cells of 1/8<br>Let ring: on |
+| blues | shuffle | clean | 120 | Strings: 4 | Bar: shuffle, 12 cells of 1/12<br>Spread: 4 ms |
+| finale | last chord | steel | 92 | | Bar: custom, 32 cells of 1/8<br>Let ring: on |
 
-A Bar shown as custom was written by hand in the bar editor: arena plays three ringing down strokes a bar, shuffle a bar of twelve triplet cells in a long and short swing, quiet loud two bars picked string by string and then two strummed, and last chord three bars strummed and then one rolled from the bass string up. Opening the demo and pressing `ENTER` on the Bar of each shows the strokes.
-
+A Bar shown as custom was written by hand in the bar editor: quiet loud plays two bars picked string by string and then two strummed, and last chord three bars strummed and then one rolled from the bass string up. Opening the demo and pressing `ENTER` on the Bar of each shows the strokes. A switch that is on, which the editor shows as `●`, is written as on.

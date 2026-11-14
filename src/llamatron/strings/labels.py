@@ -313,8 +313,8 @@ MSG_GUITAR_STROKE_NAMES = {
 }
 MSG_READY_BAR_NAMES = {
     ReadyBar.FOLK_STRUM: 'folk strum', ReadyBar.BOOM_CHICK: 'boom-chick', ReadyBar.TRAVIS_PICK: 'travis pick', ReadyBar.CROSSPICK: 'crosspick',
-    ReadyBar.FOUR_TO_THE_BAR: 'four to the bar', ReadyBar.BACKBEAT: 'backbeat', ReadyBar.BOOGIE: 'boogie', ReadyBar.SCRATCH: 'scratch',
-    ReadyBar.ALL_DOWN: 'all down', ReadyBar.CHUG: 'chug', ReadyBar.GALLOP: 'gallop', ReadyBar.THRASH: 'thrash', ReadyBar.TREMOLO: 'tremolo',
+    ReadyBar.FOUR_TO_THE_BAR: 'four to the bar', ReadyBar.BACKBEAT: 'backbeat', ReadyBar.BOOGIE: 'boogie', ReadyBar.SHUFFLE: 'shuffle', ReadyBar.SCRATCH: 'scratch',
+    ReadyBar.ALL_DOWN: 'all down', ReadyBar.ARENA: 'arena', ReadyBar.CHUG: 'chug', ReadyBar.GALLOP: 'gallop', ReadyBar.THRASH: 'thrash', ReadyBar.TREMOLO: 'tremolo',
     ReadyBar.CHIME: 'chime', ReadyBar.ROLL_UP: 'roll up', ReadyBar.ROLL_DOWN: 'roll down', ReadyBar.HELD: 'held',
 }
 MSG_OWN_BAR = 'custom'
