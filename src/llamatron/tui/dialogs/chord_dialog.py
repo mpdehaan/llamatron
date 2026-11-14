@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The Chord dialog (the user's design): one chord's quality, tensions and borrowed scale as three lists side by side, in the
+"""The Chord dialog (the user's design): one chord's quality, inversion, tensions and borrowed scale as four lists side by side, in the
 user's order, with what the chord comes to said under them as the choice moves, its name in the scale it is
 drawn from and its exact notes.
 
@@ -33,7 +33,7 @@ from rich.text import Text
 from llamatron.composition.file_format import TENSIONS
 from llamatron.composition.naming import words
 from llamatron.strings.labels import Column
-from llamatron.strings.marks import MSG_FIELD_TOGGLE_OFF, MSG_FLYOUT_CHOSEN, MSG_FLYOUT_CHOSEN_ALONE, MSG_FLYOUT_CLOSED, MSG_FLYOUT_TITLE, MSG_TOGGLE_ON
+from llamatron.strings.marks import MSG_NONE_SHOWN, MSG_FIELD_TOGGLE_OFF, MSG_FLYOUT_CHOSEN, MSG_FLYOUT_CHOSEN_ALONE, MSG_FLYOUT_CLOSED, MSG_FLYOUT_TITLE, MSG_TOGGLE_ON
 from llamatron.strings.messages import MSG_SCALE_NOT_BORROWED
 from llamatron.tui.dialogs.dialog import DIALOG_MARGIN, Dialog
 from llamatron.tui.drawing import NOTHING, SPACE, Style, cursor_mark, fit, legend
@@ -41,14 +41,15 @@ from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import ARROWS_LEFT_RIGHT, Key
 from llamatron.tui import keybindings
 
-# The three lists, left to right, in the user's order, the same wherever a chord is chosen: quality, tensions, scale.
+# The four lists, left to right, in the user's order: quality, inversion, tensions, scale.
 QUALITY_LIST = 0
-TENSION_LIST = 1
-SCALE_LIST = 2
-LISTS = 3
-# How wide each list is drawn, and the gap between two.
-LIST_WIDTHS = (24, 12, 32)
-LIST_GAP = 2
+INVERSION_LIST = 1
+TENSION_LIST = 2
+SCALE_LIST = 3
+LISTS = 4
+# How wide each list is drawn, and the gap between two: together they take the room an 80 column console leaves inside the dialog.
+LIST_WIDTHS = (24, 8, 10, 27)
+LIST_GAP = 1
 # The room for the sentences under the lists, so that the dialog keeps its height as the choice moves.
 SENTENCE_LINES = 3
 # A width no legend reaches, for measuring one laid out on a single line.
@@ -60,12 +61,14 @@ NOT_BORROWED_ROW = 0
 
 
 class ChordChoice:
-    """What the Chord dialog answers with: a chord symbol or None, the tensions as a tuple, lowest first, or None, and a scale type or None."""
+    """What the Chord dialog answers with: a chord symbol or None, an inversion or None for root position, the tensions as a tuple, lowest first, or None, and a
+    scale type or None."""
 
-    __slots__ = ('quality', 'tensions', 'kind')
+    __slots__ = ('quality', 'inversion', 'tensions', 'kind')
 
-    def __init__(self, *, quality, tensions, kind):
+    def __init__(self, *, quality, tensions, kind, inversion=None):
         self.quality = quality
+        self.inversion = inversion
         self.tensions = tensions
         self.kind = kind
 
@@ -77,8 +80,8 @@ class ChordDialog(Dialog):
     # How many rows of a list show at once, each list scrolling to keep its cursor's in view: enough for every category and for the longest flyout.
     SHOWN = 10
 
-    def __init__(self, *, title, qualities, quality_names, categories, current, said, opens_on=QUALITY_LIST, moved=None):
-        """qualities are the chord symbols offered, None first, named by quality_names; categories the scale types offered,
+    def __init__(self, *, title, qualities, quality_names, inversions, categories, current, said, opens_on=QUALITY_LIST, moved=None):
+        """qualities are the chord symbols offered, None first, named by quality_names; inversions the inversions offered, None, root position, first; categories the scale types offered,
         each a name and its scale types; current the ChordChoice the dialog opens on; and said a function from a ChordChoice
         to the lines said under the lists. moved, when given, is called with the ChordChoice whenever the choice moves, and
         with the choice the dialog opened on when it is cancelled, so that the page underneath can show the chord before it is taken."""
@@ -86,6 +89,7 @@ class ChordDialog(Dialog):
         self.title = title
         self.qualities = list(qualities)
         self.quality_names = list(quality_names)
+        self.inversions = list(inversions)
         self.categories = list(categories)
         self.said = said
         self.moved = moved
@@ -94,7 +98,7 @@ class ChordDialog(Dialog):
         self.picked = set(current.tensions or ())
         self.kind = current.kind
         self.part = opens_on
-        self.places = [self.qualities.index(current.quality), 0, self.row_of_kind(current.kind)]
+        self.places = [self.qualities.index(current.quality), self.inversions.index(current.inversion), 0, self.row_of_kind(current.kind)]
         # The category whose flyout is open, or None, and the cursor's place in it.
         self.flyout = None
         self.flyout_place = 0
@@ -109,7 +113,7 @@ class ChordDialog(Dialog):
         return self.list_keys(self.part)
 
     def list_keys(self, part):
-        """Return the keys that work with the cursor in one of the three lists."""
+        """Return the keys that work with the cursor in one of the lists."""
         result = [
             self.bind(self.KEYS.CANCEL, action=self.cancel),
             self.bind(self.KEYS.MOVE, action=self.move, wants_key=True),
@@ -133,7 +137,7 @@ class ChordDialog(Dialog):
         if self.moved is None:
             return
         choice = self.choice()
-        now = (choice.quality, choice.tensions, choice.kind)
+        now = (choice.quality, choice.inversion, choice.tensions, choice.kind)
         if self.shown is None:
             self.shown = now
         elif now != self.shown:
@@ -141,7 +145,7 @@ class ChordDialog(Dialog):
             self.moved(choice)
 
     def counts(self):
-        return (len(self.qualities), len(TENSIONS), len(self.categories) + 1)
+        return (len(self.qualities), len(self.inversions), len(TENSIONS), len(self.categories) + 1)
 
     def move(self, name):
         """Move within the cursor's list with Up and Down and from list to list with Left and Right, stopping at every edge."""
@@ -208,7 +212,9 @@ class ChordDialog(Dialog):
 
     def choice(self):
         tensions = tuple(tension for tension in TENSIONS if tension in self.picked) or None
-        return ChordChoice(quality=self.qualities[self.places[QUALITY_LIST]], tensions=tensions, kind=self.shown_kind())
+        return ChordChoice(
+            quality=self.qualities[self.places[QUALITY_LIST]], inversion=self.inversions[self.places[INVERSION_LIST]], tensions=tensions, kind=self.shown_kind(),
+        )
 
     def scale_row_text(self, row):
         """Return a row of the scale list: the row that borrows none, or a category, drawn as a button since it opens a flyout (the user's design), with the scale type
@@ -226,9 +232,11 @@ class ChordDialog(Dialog):
         return MSG_FLYOUT_CLOSED.format(name=name)
 
     def row_text(self, *, part, place):
-        """Return one row of a list: a quality's name, a tension with its mark, or a scale type."""
+        """Return one row of a list: a quality's name, an inversion, a tension with its mark, or a scale type."""
         if part == QUALITY_LIST:
             return self.quality_names[place]
+        if part == INVERSION_LIST:
+            return MSG_NONE_SHOWN if self.inversions[place] is None else str(self.inversions[place])
         if part == TENSION_LIST:
             tension = list(TENSIONS)[place]
             return (MSG_TOGGLE_ON if tension in self.picked else MSG_FIELD_TOGGLE_OFF) + SPACE + tension
@@ -277,7 +285,7 @@ class ChordDialog(Dialog):
         return [*[Text(text) for text in said], *[Text(NOTHING) for _ in range(SENTENCE_LINES - len(said))]]
 
     def lines(self, width):
-        headings = (Column.SELECT_QUALITY, Column.TENSIONS, Column.BORROW_SCALE)
+        headings = (Column.SELECT_QUALITY, Column.INVERSION, Column.TENSIONS, Column.BORROW_SCALE)
         heading = Text(NOTHING)
         for part, name in enumerate(headings):
             heading.append(fit(text=SPACE * len(cursor_mark(False)) + name, width=LIST_WIDTHS[part]), style=Style.BOLD if part == self.part else Style.DIM)

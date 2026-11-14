@@ -319,7 +319,7 @@ Positions carry on across repeats. The random directions draw their own random n
 
 ![The Chord Selector with the flyout of the Common scales open](screenshots/chord_selector.svg)
 
-The Chord Selector chooses a step's chord in one place. `Enter` on the Chord, Tension or Scale row of the rows view opens it, and so does `H` on a note of the piano roll. It holds three lists side by side: the chord's quality, with `(single note)` at the top; its tensions, the notes added on top, such as a flat ninth; and the scale the step borrows its notes from, with `(the clip's own)` at the top.
+The Chord Selector chooses a step's chord in one place. `Enter` on the Chord, Tension or Scale row of the rows view opens it, and so does `H` on a note of the piano roll. It holds four lists side by side: the chord's quality, with `(single note)` at the top; its inversion, with `(none)` for root position at the top; its tensions, the notes added on top, such as a flat ninth; and the scale the step borrows its notes from, with `(the clip's own)` at the top.
 
 | Key | What it does |
 | --- | --- |
@@ -327,9 +327,9 @@ The Chord Selector chooses a step's chord in one place. `Enter` on the Chord, Te
 | `Tab` | Goes to the next list, and round to the first. |
 | `Space` | On a tension, turns it on or off. |
 | `Space`, `Enter` | On a category of scales, opens its flyout; on `(the clip's own)`, borrows no scale. |
-| `Enter` | On a quality or a tension, takes the chord. |
+| `Enter` | On a quality, an inversion or a tension, takes the chord. |
 | `Esc` | Cancels, changing nothing. |
 
-The scale list, the last of the three, holds categories: Common, Modes, Harmonic & Melodic, Pentatonic & Blues, Symmetric, Jazz, Mid. East & Europe, East Asia and India. A category opens a flyout of its scale types, a box drawn over the Chord Selector, a little down and to the right. In the flyout, Up and Down move, `Enter` picks a scale type and closes the flyout, and `Esc` or Left closes the flyout with nothing changed. After a pick the cursor goes on to the qualities, so that the next `Enter` takes the chord, and the category shows the scale type picked, as in `[ Common ▸ Major ]`. Common holds the six scales most often borrowed from, which are also found in their own categories.
+The scale list, the last of the four, holds categories: Common, Modes, Harmonic & Melodic, Pentatonic & Blues, Symmetric, Jazz, Mid. East & Europe, East Asia and India. A category opens a flyout of its scale types, a box drawn over the Chord Selector, a little down and to the right. In the flyout, Up and Down move, `Enter` picks a scale type and closes the flyout, and `Esc` or Left closes the flyout with nothing changed. After a pick the cursor goes on to the qualities, so that the next `Enter` takes the chord, and the category shows the scale type picked, as in `[ Common ▸ Major ]`. Common holds the six scales most often borrowed from, which are also found in their own categories.
 
 The lines under the lists say what the chord comes to as the choice moves: its name in the scale it is drawn from, its name in the clip's own scale when it borrows another, and its exact notes. The pattern underneath shows the chord at the same time: the piano roll draws the chord's other notes as thin green lines, and the rows show the values in their cells. Cancelling puts the step back as it was.

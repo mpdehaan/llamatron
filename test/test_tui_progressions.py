@@ -20,7 +20,8 @@ from llamatron.composition.file_format import Section, ONE_BAR_WRITTEN, TIME_CHO
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.music.scale import ScaleType
 from llamatron.strings.messages import MSG_CHORD_OWN_SENTENCE, MSG_CHORD_SENTENCE, MSG_RESTING_CHORD
-from llamatron.tui.dialogs.chord_dialog import QUALITY_LIST, SCALE_LIST, TENSION_LIST, ChordDialog
+from llamatron.composition.generator_settings import PROGRESSION_INVERSIONS
+from llamatron.tui.dialogs.chord_dialog import INVERSION_LIST, LISTS, QUALITY_LIST, SCALE_LIST, TENSION_LIST, ChordDialog
 from llamatron.composition.limits import MAX_PROGRESSION_CHORDS, MAX_PROGRESSION_DEGREE, MIN_PROGRESSION_DEGREE
 from llamatron.composition.progressions import named_progression
 from llamatron.strings.labels import MSG_CHORDS_LABEL, MSG_EVERY_LABEL, MSG_PROGRESSION_NAMES, MSG_RESTART_LABEL, MSG_RESTART_NAMES
@@ -175,15 +176,19 @@ class TestChordsEditor(UITest):
         self.assertEqual(dialog.part, QUALITY_LIST)
         dialog.places[QUALITY_LIST] = dialog.qualities.index(ChordSymbol.DOMINANT7)
         # Right stops at the scales, the last list, and Left goes back and stops at the qualities, the first.
-        await self.press(Key.RIGHT, Key.RIGHT, Key.RIGHT)
+        await self.press(*[Key.RIGHT] * LISTS)
         self.assertEqual(dialog.part, SCALE_LIST)
-        await self.press(Key.LEFT, Key.LEFT, Key.LEFT)
+        await self.press(*[Key.LEFT] * LISTS)
         self.assertEqual(dialog.part, QUALITY_LIST)
+        # The inversions come next, where Down picks the first inversion, and then the tensions.
+        await self.press(Key.RIGHT, Key.DOWN)
+        self.assertEqual(dialog.part, INVERSION_LIST)
         await self.press(Key.RIGHT)
         self.assertEqual(dialog.part, TENSION_LIST)
         await self.press(Key.ENTER)
         self.assertEqual(self.progression().get_tensions()[1], (Tension.FLAT_NINTH,))
         self.assertEqual(self.progression().get_qualities()[1], ChordSymbol.DOMINANT7)
+        self.assertEqual(self.progression().get_inversions()[1], PROGRESSION_INVERSIONS[0])
         self.assertIn(G_SEVEN_FLAT_NINE, self.text())
 
     async def test_escape_in_the_dialog_changes_nothing(self):
