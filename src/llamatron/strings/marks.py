@@ -223,6 +223,10 @@ MSG_NOTE_UNDER_CURSOR = '▓▓▓▓▓'
 MSG_NOTE_UNDER_CURSOR_WITH_MARK = '▓▓{mark}▓▓'
 MSG_CURSOR_BLOCK = '▓'
 MSG_GRAB_NOTE_MARK = 'G'
+# A note whose chord's inversion lifts its root an octave doesn't sound where it is written, so its bar is drawn hollow (the user's design): light where a note's bar is
+# solid, and medium under the cursor.
+MSG_NOTE_HOLLOW = '░'
+MSG_NOTE_HOLLOW_UNDER_CURSOR = '▒'
 MSG_OUT_OF_RANGE_CELL = '·····'
 # A chord's other notes on the piano roll: thin dim lines, the user's choice of 2026-11-08 over hollow boxes, which can't be edited on their own.
 MSG_GHOST_LINE = '─'

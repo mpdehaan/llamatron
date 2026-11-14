@@ -275,6 +275,11 @@ class PianoRoll(BindsKeys):
                 ghosts.add(pitch)
         return ghosts
 
+    def root_is_lifted(self, step):
+        """Return whether a step's note doesn't sound where it is written: its chord has an inversion, which plays the root an octave up."""
+        document = self.document()
+        return bool(document.step_value(name=self.name(), row=Row.INVERSION, step=step)) and document.step_value(name=self.name(), row=Row.CHORD, step=step) is not None
+
     def grabs(self, step):
         """Return whether a step takes its note from the clip's grab track, which the roll marks with G in place of the accidental."""
         return bool(self.document().step_value(name=self.name(), row=Row.GRAB, step=step))
