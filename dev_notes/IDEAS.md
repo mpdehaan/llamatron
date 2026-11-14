@@ -94,9 +94,13 @@ clips of it play the pattern, like `in 8 clips`, with no OK button. Settled sinc
 copy of its own, so the dialog is titled "Copy Pattern to Songs"; it shows ten songs at most and scrolls, with a scroll bar drawn
 at the right of the list, since a set may hold fifty songs; and because each song then has names of its own, making a pattern
 global when another song has a pattern of that name asks for a rename first, in a dialog to be drawn for the user. Once the
-copies are made the global pattern is removed, and ENTER is refused while no song is marked. The user is content with copies
-being numbered; whether names are then unique across the whole set, which would make the rename dialog unneeded, is being
-confirmed. The user wants generators and chains to work exactly as
+copies are made the global pattern is removed, and ENTER is refused while no song is marked. Names: each song has names of its
+own, so two songs may each have a pattern of one name, but a global pattern's name and any song's own pattern's name never
+match; a copy made into a song keeps the global pattern's name, which can't clash. Making a pattern global, or renaming one,
+where that rule would break opens a dialog titled "New name required, conflict in N song(s)", holding only the tracker's
+standard text field, opened on a free numbered name, and its keys, ENTER reading "rename/promote"; only a name free everywhere
+the pattern would be seen is accepted. How numbered names are made, here and everywhere in the tracker, is to be one rule,
+being discussed with the user. The user wants generators and chains to work exactly as
 patterns do in all of this, a song's own or global, once Claude has shown it understands what that means; open there: a global
 chain that links a song's own generator, the order of the Generators page, and what the pages' columns show. What it would mean for the code: `uses_of` in `tui/uses.py` already knows
 every use, and the Patterns page's USED column the count; the row needs the track names of the uses, without repeats, fitted
