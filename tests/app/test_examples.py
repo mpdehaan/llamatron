@@ -51,8 +51,9 @@ WRITTEN_BEFORE_THE_LENGTH_RULE = {
     '12_sailor_arpeggiator.yml', '20_arrangement_shanty.yml', '17_complex_gifts_chain.yml', '10_mtn_king_direction.yml', 'entertainer.yml', '19_hocket_shanty.yml', '09_groove.yml', '01_hello_world.yml',
     '03_mary_keychange.yml', '02_pachelbel.yml', '11_ode_to_joy_ratchet.yml', '22_registers.yml', '04_scale.yml', '18_techno_morph.yml', '08_tie.yml',
 }
-# The examples the user asked to run another length, by name, with that length in seconds.
-OTHER_LENGTHS = {'incoming_message.yml': 526}
+# The examples the user asked to run another length, by name, with that length in seconds: the nine-minute video game piece, and the
+# guitar showpiece, which is short as the solo it follows is.
+OTHER_LENGTHS = {'incoming_message.yml': 526, 'volcano.yml': 89}
 # The songs that are meant to sound good, rather than to teach one feature.
 SONG_PATHS = [path for path in EXAMPLE_PATHS if not is_demo(path)]
 
