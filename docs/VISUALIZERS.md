@@ -11,7 +11,7 @@ Visualizers need real-time playback, so the set's Real Time switch has to be on;
 | Key | What it does |
 | --- | --- |
 | `Z` | Show the first visualizer mode over the clip area, and each press after that the next mode, and after the last, the clips again. |
-| `Esc` | Bring the clips back, staying on Arrange. |
+| `ESC` | Bring the clips back, staying on Arrange. |
 
 A visualizer can show while nothing plays, and follows the music once the song starts with `Space` on the corner. When the mode changes, the mode's name shows near the bottom for eight seconds, steady, and then goes away.
 

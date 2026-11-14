@@ -27,10 +27,10 @@ Press `I` on the main screen to open the Instruments page. The list shows each i
 | Key | What it does |
 | --- | --- |
 | `A` | Adds an instrument with no device yet, named `instrument 1` and so on, and opens it. |
-| `Enter` | Opens the instrument. |
+| `ENTER` | Opens the instrument. |
 | `C` | Copies the instrument to the end of the list. |
 | `N` | Renames the instrument, updating every track that chose it. |
-| `M` | Picks the instrument up: `↑↓` carry it, and `Enter` drops it. |
+| `M` | Picks the instrument up: `↑↓` carry it, and `ENTER` drops it. |
 | `S` | Sorts the instruments by name. |
 | `Bksp` | Deletes the instrument, once no track uses it. |
 
@@ -40,7 +40,7 @@ Press `I` on the main screen to open the Instruments page. The list shows each i
 
 | Setting | What it does |
 | --- | --- |
-| Name | `Enter` renames the instrument. |
-| Device | The MIDI output port, chosen with `Enter` from `(none)`, then `*FluidSynth`, then the ports this computer has now, sorted. A port the set names that has disconnected is still offered, so that the set opens without the port and keeps it. `Bksp` sets none. |
-| Channel | 1 to 16, as the device numbers them. `[` and `]` step it, and `Enter` types it. With `*FluidSynth` it shows `(auto)` and can't be changed, since each track gets its own channel. |
-| GM sound | One of General MIDI's 128 sounds, or `(none)`. `Enter` opens a picker of General MIDI's sixteen families, two to a page, with `(none)` above them, where `Tab` and `Shift+Tab` turn the pages; `[` and `]` step through the sounds by number, and `Bksp` sets none. A drum track always plays channel 10's drum kit. |
+| Name | `ENTER` renames the instrument. |
+| Device | The MIDI output port, chosen with `ENTER` from `(none)`, then `*FluidSynth`, then the ports this computer has now, sorted. A port the set names that has disconnected is still offered, so that the set opens without the port and keeps it. `Bksp` sets none. |
+| Channel | 1 to 16, as the device numbers them. `[` and `]` step it, and `ENTER` types it. With `*FluidSynth` it shows `(auto)` and can't be changed, since each track gets its own channel. |
+| GM sound | One of General MIDI's 128 sounds, or `(none)`. `ENTER` opens a picker of General MIDI's sixteen families, two to a page, with `(none)` above them, where `Tab` and `Shift+Tab` turn the pages; `[` and `]` step through the sounds by number, and `Bksp` sets none. A drum track always plays channel 10's drum kit. |

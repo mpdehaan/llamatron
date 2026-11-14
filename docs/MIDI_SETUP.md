@@ -18,7 +18,7 @@ Every program that opens the bus sees the bus by that name. A hardware MIDI inte
 
 On the main screen, `I` opens **Instruments**. Add an instrument, and on its page set **Device** to the port, `IAC Driver Bus 1`, and **Channel** to the channel the synthesizer listens on, 1 unless you have set another. Adding the first instrument turns the main screen's **Real Time** switch on.
 
-On Arrange, `Enter` on a track's name opens the track editor, whose **Instrument** field picks the instrument for that track; a track with no instrument is silent in real time. Then, with the cursor on the `▶ song` corner over the scene names, `Space` plays the song from the top. While the song plays, the corner reads `■ song`, a playing clip shows a red `■`, and a green `●` follows a track's name while a note sounds on the track. `Space` on the corner again stops everything.
+On Arrange, `ENTER` on a track's name opens the track editor, whose **Instrument** field picks the instrument for that track; a track with no instrument is silent in real time. Then, with the cursor on the `▶ song` corner over the scene names, `Space` plays the song from the top. While the song plays, the corner reads `■ song`, a playing clip shows a red `■`, and a green `●` follows a track's name while a note sounds on the track. `Space` on the corner again stops everything.
 
 ## Ableton Live Setup
 

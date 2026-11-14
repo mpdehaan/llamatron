@@ -25,10 +25,10 @@ Press `C` on the main screen to open the Chains page.
 | Key | What it does |
 | --- | --- |
 | `A` | Add a chain |
-| `Enter` | Edit its steps |
+| `ENTER` | Edit its steps |
 | `N` | Rename it, which updates every clip |
 | `C` | Copy it |
-| `M` | Pick it up: `↑↓` carry it, and `Enter` drops it |
+| `M` | Pick it up: `↑↓` carry it, and `ENTER` drops it |
 | `S` | Sort the list by name |
 | `Bksp` | Delete it, once no clip uses it |
 
@@ -41,9 +41,9 @@ Press `C` on the main screen to open the Chains page.
 | Key | What it does |
 | --- | --- |
 | `A` | Add a step: any generator, made first on the Generators page |
-| `Enter` | Change the step to another generator |
+| `ENTER` | Change the step to another generator |
 | `C` | Copy the step |
-| `M` | Pick it up: `↑↓` carry it, and `Enter` drops it |
+| `M` | Pick it up: `↑↓` carry it, and `ENTER` drops it |
 | `Bksp` | Remove it |
 | `N` | Rename the chain, which updates every clip that uses it |
 

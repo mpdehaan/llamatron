@@ -19,13 +19,18 @@ The black keys sit on a row above the white keys, each between the two it belong
 keys are filled and the rest hatched, and the row of names beneath brackets the root, so that a
 glance shows where a scale's half steps fall. It returns plain strings and knows nothing of any
 toolkit, so the Scale page draws it under its fields.
+
+The Chord dialog draws the same keyboard with a chord on it (the user's design): rows() gives each
+line as pieces, each a text and the kind of key it is, a key of the chord, a key of the scale or a
+key outside it, so that the dialog draws the chord's keys filled and the scale's in an outline's
+colour. chord_keys() says which keys a chord's notes are, from its root up.
 """
 
 from llamatron.composition.named_scale import SPELLING_OCTAVE
 from llamatron.music.midi import HALF_STEPS_PER_OCTAVE
 from llamatron.music.note import Note, SHARP_NAMES
 from llamatron.tui.drawing import NOTHING, SPACE
-from llamatron.strings.marks import MSG_KEY_IN_SCALE, MSG_KEY_OUT_OF_SCALE, MSG_ROOT_KEY_NAME
+from llamatron.strings.marks import MSG_KEY_IN_CHORD, MSG_KEY_IN_SCALE, MSG_KEY_OF_SCALE_OUTLINED, MSG_KEY_OUT_OF_SCALE, MSG_ROOT_KEY_NAME
 
 # The white keys of an octave as half steps above C, and the black key after each white key that has one.
 WHITE_KEYS = [0, 2, 4, 5, 7, 9, 11]
@@ -37,16 +42,54 @@ KEY_GAP = 1
 KEY_STRIDE = KEY_WIDTH + KEY_GAP
 WHITE_ROW_INDENT = 4
 BLACK_KEY_SHIFT = 2
+# How many keys the keyboard has, numbered from its lowest C.
+KEY_COUNT = OCTAVES * HALF_STEPS_PER_OCTAVE
+# The natural notes as half steps above C, and the marks that raise and lower one, for reading a note's name.
+NATURAL_HALF_STEPS = {'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11}
+SHARP_MARK = '#'
+FLAT_MARK = 'b'
+
+
+class KeyKind:
+    """What a key of the keyboard is, when a chord is drawn on it: a key of the chord, a key of the scale, or a key outside the scale."""
+
+    CHORD = 'chord'
+    SCALE = 'scale'
+    OUTSIDE = 'outside'
+
+
+def pitch_class_of(name):
+    """Return a note name's half steps above C, such as 1 for C# and 10 for Bb, whatever sharps and flats spell it."""
+    return (NATURAL_HALF_STEPS[name[0]] + name.count(SHARP_MARK) - name[1:].count(FLAT_MARK)) % HALF_STEPS_PER_OCTAVE
+
+
+def chord_keys(*, note_names, inversion=None):
+    """Return the keys of the keyboard a chord's notes are, as numbers from the lowest C: the root in the first octave and each
+    note after it the next key up of its name, an inversion's lowest notes an octave higher, and a note past the last key an
+    octave lower, so that every note of the chord has a key."""
+    keys = []
+    last = -1
+    for name in note_names:
+        key = pitch_class_of(name)
+        while key <= last:
+            key += HALF_STEPS_PER_OCTAVE
+        last = key
+        keys.append(key)
+    for place in range(min(inversion or 0, len(keys))):
+        keys[place] += HALF_STEPS_PER_OCTAVE
+    return {key if key < KEY_COUNT else key % HALF_STEPS_PER_OCTAVE + HALF_STEPS_PER_OCTAVE for key in keys}
 
 
 class Keyboard:
     """The three lines of a keyboard showing a scale: the black keys, the white keys and the names with the root bracketed."""
 
-    __slots__ = ('root', 'half_steps')
+    __slots__ = ('root', 'half_steps', 'chord')
 
-    def __init__(self, *, root, half_steps):
+    def __init__(self, *, root, half_steps, chord=()):
+        """chord is the keys a chord's notes are, numbered from the lowest C, which rows() draws apart."""
         self.root = root
         self.half_steps = half_steps
+        self.chord = set(chord)
 
     def root_pitch_class(self):
         return Note(name=self.root, octave_number=SPELLING_OCTAVE).get_midi_number() % HALF_STEPS_PER_OCTAVE
@@ -100,3 +143,29 @@ class Keyboard:
 
     def lines(self):
         return [self.black_row(), self.white_row(), self.names_row()]
+
+    def key_kind(self, key):
+        """Return what a key is, by its number from the lowest C."""
+        if key in self.chord:
+            return KeyKind.CHORD
+        return KeyKind.SCALE if key % HALF_STEPS_PER_OCTAVE in self.pitch_classes() else KeyKind.OUTSIDE
+
+    def key_piece(self, key):
+        """Return a key as a piece, its text and its kind: a chord's key filled, a scale's outlined and one outside the scale hatched."""
+        kind = self.key_kind(key)
+        return {KeyKind.CHORD: MSG_KEY_IN_CHORD, KeyKind.SCALE: MSG_KEY_OF_SCALE_OUTLINED, KeyKind.OUTSIDE: MSG_KEY_OUT_OF_SCALE}[kind], kind
+
+    def rows(self):
+        """Return the keyboard's three lines as pieces, each a text and a KeyKind, or None for what is no key: the black keys, the
+        white keys, and the names, with the chord's keys told apart from the scale's (the user's design for the Chord dialog)."""
+        black = [(SPACE * (WHITE_ROW_INDENT + BLACK_KEY_SHIFT), None)]
+        white = [(SPACE * WHITE_ROW_INDENT, None)]
+        for octave in range(OCTAVES):
+            for pitch_class in WHITE_KEYS:
+                first = octave * HALF_STEPS_PER_OCTAVE
+                after = BLACK_KEY_AFTER.get(pitch_class)
+                black.append(self.key_piece(first + after) if after is not None else (SPACE * KEY_WIDTH, None))
+                black.append((SPACE * KEY_GAP, None))
+                white.append(self.key_piece(first + pitch_class))
+                white.append((SPACE * KEY_GAP, None))
+        return [black, white, [(self.names_row(), None)]]

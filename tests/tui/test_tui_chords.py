@@ -19,6 +19,7 @@ cleared, the Chord dialog all three open with its three lists, what the dialog s
 status line naming the chord under the cursor, and the whole choice as one step of undo."""
 
 import unittest
+from unittest import mock
 
 from tests.support.ui_testing import TUNE, UITest, key_name
 from llamatron.composition.file_format import ChordSymbol, Row, ScaleKind, Tension
@@ -26,13 +27,13 @@ from llamatron.composition.naming import words
 from llamatron.strings.labels import MSG_SCALE_CATEGORY_COMMON, Column
 from llamatron.composition.named_scale import scale_type_name, scale_type_names
 from llamatron.music.scale import ScaleType
-from llamatron.strings.marks import MSG_BLOCKED_CELL, MSG_FLYOUT_CHOSEN, MSG_FLYOUT_CLOSED, MSG_FLYOUT_TITLE, MSG_TENSIONS_COUNTED
+from llamatron.strings.marks import MSG_BLOCKED_CELL, MSG_KEY_IN_CHORD, MSG_KEY_OF_SCALE_OUTLINED, MSG_KEY_OUT_OF_SCALE, MSG_FLYOUT_CHOSEN, MSG_FLYOUT_CLOSED, MSG_FLYOUT_TITLE, MSG_TENSIONS_COUNTED
 from llamatron.strings.messages import MSG_CHORD_DIALOG_TITLE, MSG_CHORD_OF_STEP, MSG_NOTE_SENTENCE, MSG_RESTING_STEP
 from llamatron.tui import keybindings
 from llamatron.composition.limits import INVERSIONS
 from llamatron.tui.dialogs.chord_dialog import INVERSION_LIST, LISTS, NOT_BORROWED_ROW, QUALITY_LIST, SCALE_LIST, TENSION_LIST, ChordDialog
 from llamatron.tui.dialogs.dialog import DIALOG_MARGIN, DIALOG_SELECTOR, FLYOUT_SHIFT
-from llamatron.tui.drawing import Box
+from llamatron.tui.drawing import Box, NOTHING, SPACE
 from llamatron.tui.scale_categories import COMMON_SCALE_TYPES, SCALE_CATEGORIES, SCALE_TYPES_IN_ORDER, SORTED_SCALE_CATEGORIES
 from llamatron.tui.keys import Key, RowSection
 from llamatron.tui.screens.pattern_editor import PatternEditor
@@ -49,6 +50,10 @@ CONSOLE_WIDTH = 80
 CONSOLE_LINES = 24
 C_MAJOR = 'C Major'
 C_MINOR = 'C Minor'
+# The keyboard's lines that hold keys, the black and the white, and the notes of a major chord.
+KEYBOARD_ROWS_OF_KEYS = 2
+MAJOR_TRIAD_NOTES = 3
+SCALES_OF_PATTERN = 'scales_of_pattern'
 
 
 class TestPatternEditorChords(UITest):
@@ -324,6 +329,47 @@ class TestPatternEditorChords(UITest):
         self.assertEqual(self.document.song().get_pattern(TUNE).to_data(), before)
 
 
+    async def open_on_the_chord(self):
+        await self.go_to_row(Row.CHORD)
+        await self.press(keybindings.ChordRow.CHOOSE)
+        self.assertIsInstance(self.app.screen, ChordDialog)
+        return self.app.screen
+
+    def keyboard_lines(self):
+        """Return the dialog's lines that hold the keyboard's keys, and the number of the first."""
+        lines = self.dialog_text().splitlines()
+        numbers = [number for number, line in enumerate(lines) if MSG_KEY_OF_SCALE_OUTLINED in line or MSG_KEY_OUT_OF_SCALE in line]
+        return [lines[number] for number in numbers], (numbers[0] if numbers else None)
+
+    async def test_the_keyboard_under_the_sentences_outlines_the_scale_and_fills_the_chord_one_blank_line_down(self):
+        # The user's design: where the pattern's scale is known for certain and the console has room, a keyboard under the
+        # sentences, one blank line down, the scale's keys outlined and the chord's filled. It takes no key.
+        dialog = await self.open_on_the_chord()
+        keys_before = [item.keys for item in dialog.keys()]
+        height = len(self.dialog_text().splitlines())
+        keyboard, first = self.keyboard_lines()
+        self.assertEqual(len(keyboard), KEYBOARD_ROWS_OF_KEYS)
+        # A single note: one key filled.
+        self.assertEqual(NOTHING.join(keyboard).count(MSG_KEY_IN_CHORD), 1)
+        lines = self.dialog_text().splitlines()
+        self.assertEqual(lines[first - 1].strip(Box.HEAVY_BAR + SPACE), NOTHING)
+        self.assertNotEqual(lines[first - 2].strip(Box.HEAVY_BAR + SPACE), NOTHING)
+        # Major: three keys filled, and the dialog is as tall as it was, the keyboard still one blank line under the last sentence.
+        await self.press(Key.DOWN)
+        keyboard, first = self.keyboard_lines()
+        self.assertEqual(NOTHING.join(keyboard).count(MSG_KEY_IN_CHORD), MAJOR_TRIAD_NOTES)
+        lines = self.dialog_text().splitlines()
+        self.assertEqual(len(lines), height)
+        self.assertEqual(lines[first - 1].strip(Box.HEAVY_BAR + SPACE), NOTHING)
+        self.assertNotEqual(lines[first - 2].strip(Box.HEAVY_BAR + SPACE), NOTHING)
+        self.assertEqual([item.keys for item in dialog.keys()], keys_before)
+
+    async def test_no_keyboard_where_the_patterns_uses_play_it_under_more_than_one_scale(self):
+        with mock.patch.object(type(self.document), SCALES_OF_PATTERN, return_value=[C_MAJOR, C_MINOR]):
+            await self.open_on_the_chord()
+            self.assertEqual(self.keyboard_lines(), ([], None))
+
+
 class TestChordDialogOnASmallConsole(TestPatternEditorChords):
     """The Chord dialog and every flyout on the smallest console, 80 by 24, where the keys take two lines."""
 
@@ -331,6 +377,11 @@ class TestChordDialogOnASmallConsole(TestPatternEditorChords):
     # Two tests of the class above are about a console with room to spare, and the test below says the same of this one.
     test_a_flyout_is_a_box_of_the_dialogs_size_stacked_over_it_and_the_dialog_stays_where_it_was = None
     test_the_dialog_is_one_size_on_every_list_wide_enough_for_the_most_keys_on_one_line = None
+    test_the_keyboard_under_the_sentences_outlines_the_scale_and_fills_the_chord_one_blank_line_down = None
+
+    async def test_a_console_with_no_room_has_no_keyboard_under_the_sentences(self):
+        await self.open_on_the_chord()
+        self.assertEqual(self.keyboard_lines(), ([], None))
 
     async def test_the_dialog_is_one_size_on_every_list_and_every_flyout_is_whole_on_the_console(self):
         dialog = await self.open_on_scales()

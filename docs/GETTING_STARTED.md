@@ -20,7 +20,7 @@ A file holds a set of songs, like the songs of one concert. The patterns, scales
 Every screen is laid out the same way, from top to bottom:
 
 - **The header:** where you are at the left, the crumbs, such as `PATTERNS › lead` or `GENERATORS › my arp › OFFSETS`, and `MAIN SCREEN` on the main screen; `llamatron` in the middle; and at the right the open set, such as `set: first.yml`, or `set: (unsaved)` before the set has been saved, with the save mark beside it: `● unsaved` for a set that has no file yet, `● unsaved changes` for a set changed since it was saved or opened, and `○ saved` otherwise. Under the set is the current song, with how long the song, scene, clip or pattern on the page lasts. The version is in the About dialog, `F3`.
-- **The page:** a triangle, `▶`, marks the row the cursor is on, and the arrow keys move it, so you never need to know a key to get around: `Enter` opens or edits what is marked. Grids mark the selected cell differently: the pattern editor in reverse video, the piano roll by shading the note under the cursor, Arrange with a double-lined box, and the main screen with a box around the selected cell alone. Keys and buttons, the things that act, are shown in reverse video.
+- **The page:** a triangle, `▶`, marks the row the cursor is on, and the arrow keys move it, so you never need to know a key to get around: `ENTER` opens or edits what is marked. Grids mark the selected cell differently: the pattern editor in reverse video, the piano roll by shading the note under the cursor, Arrange with a double-lined box, and the main screen with a box around the selected cell alone. Keys and buttons, the things that act, are shown in reverse video.
 - **The status line:** one dim line saying what the last key did when that isn't obvious, such as where a save or an export went, what an undo undid or why a key did nothing. The next key press clears it.
 - **The legend:** the page's own keys, each as a reversed label, changing with what is under the cursor. The keys that work on every page aren't repeated there; `F1` lists them with the page's own.
 
@@ -44,25 +44,25 @@ On a Mac, `F1`, `F2` and `F3` are `Fn`+`F1`, `Fn`+`F2` and `Fn`+`F3` unless Syst
 
 These hold on every page:
 
-- `Esc` goes back one page at a time and never quits; in a dialog it cancels. Every legend starts with it, then the arrows, then the keys that are always there, then the rest.
-- `Q` quits, from the main screen only. With unsaved changes it asks first, and `Enter` quits without saving.
+- `ESC` goes back one page at a time and never quits; in a dialog it cancels. Every legend starts with it, then the arrows, then the keys that are always there, then the rest.
+- `Q` quits, from the main screen only. With unsaved changes it asks first, and `ENTER` quits without saving.
 - A cursor stops at the edges: holding an arrow down takes you to the end and no further.
 - `[` (dec) and `]` (inc) step any value: a number down and up, a cycle of choices back and forward, a gate shorter and longer, and on the piano roll they shrink and stretch the note under the cursor. `-`, `+` and `=` do the same, off the legend, and so do Left and Right on a settings page.
-- Anything that is on or off answers to `Space` and `Enter` alike, shown as one key, `Space/Enter`. A row with a short cycle of choices, such as Dot or Register +Note, goes to the next choice on either too.
+- Anything that is on or off answers to `Space` and `ENTER` alike, shown as one key, `Space/ENTER`. A row with a short cycle of choices, such as Dot or Register +Note, goes to the next choice on either too.
 - Upper and lower case are the same key, and so are `Bksp` and `Delete`.
 - Nothing is saved or exported until you ask.
 
-**Lists.** Up and Down select. A list you can add to has a `+` row at the bottom, where `Enter` adds, as `A` does. `/` searches the list as you type: the rows shrink to those containing the text, `Tab` completes, `Enter` keeps your place and `Esc` returns to the whole list. Deleting something still in use is refused, with a list of what uses it; otherwise it asks first. Every list you pick from is sorted by name, while the pages keep the file's order until `S` sorts them for good.
+**Lists.** Up and Down select. A list you can add to has a `+` row at the bottom, where `ENTER` adds, as `A` does. `/` searches the list as you type: the rows shrink to those containing the text, `Tab` completes, `ENTER` keeps your place and `ESC` returns to the whole list. Deleting something still in use is refused, with a list of what uses it; otherwise it asks first. Every list you pick from is sorted by name, while the pages keep the file's order until `S` sorts them for good.
 
-**Settings pages.** Up and Down select a setting, `[` and `]` change it, `Enter` types a value or opens a list to choose from, and `Bksp` clears it where that makes sense. A page with many settings groups some into sections: a heading reads `+ Density` while closed and `- Density` while open, `Space` or `Enter` toggles it, and `PgUp` and `PgDn` jump between headings. Sections start closed and stay as you leave them, by name, for as long as the tracker runs. A closed heading says `(set)` when anything inside holds a value, so a section never hides a setting silently.
+**Settings pages.** Up and Down select a setting, `[` and `]` change it, `ENTER` types a value or opens a list to choose from, and `Bksp` clears it where that makes sense. A page with many settings groups some into sections: a heading reads `+ Density` while closed and `- Density` while open, `Space` or `ENTER` toggles it, and `PgUp` and `PgDn` jump between headings. Sections start closed and stay as you leave them, by name, for as long as the tracker runs. A closed heading says `(set)` when anything inside holds a value, so a section never hides a setting silently.
 
-**Dialogs.** In a list, `Enter` chooses, `Esc` cancels, typing searches and `Tab` completes. In a text prompt, Left and Right move the cursor, `Bksp` erases before it, `Enter` finishes and `Esc` cancels; the cursor starts at the end. In a question, `Yes` and `No` are buttons that Left and Right move between, `Enter` presses the marked one, `Y` and `N` answer at once, and `Esc` means no.
+**Dialogs.** In a list, `ENTER` chooses, `ESC` cancels, typing searches and `Tab` completes. In a text prompt, Left and Right move the cursor, `Bksp` erases before it, `ENTER` finishes and `ESC` cancels; the cursor starts at the end. In a question, `Yes` and `No` are buttons that Left and Right move between, `ENTER` presses the marked one, `Y` and `N` answer at once, and `ESC` means no.
 
 ## Main Screen
 
 ![The main screen, showing minimal_techno](screenshots/main.svg)
 
-On a console of 80 by 24, the main screen is a grid of cells in three columns. Arrange has the first column, drawn as a small green monitor that shows the current song's scale, tempo and time signature, how many scenes and tracks the song has, and, while the Real Time switch is on, a light for each track that turns bright while the track sounds, with a clock while the song plays. The Real Time switch is under Arrange, and the pages are in the two columns beside them. A bar under the grid holds File/Global, Save, Open, Export, Import and Quit. On a console of 28 lines or more, Arrange takes the whole left side, and the Real Time switch, the pages and the file's actions are in two narrow columns at the right. Arrange's cell then shows a map of the song: a line for each track, with a block for each scene where the track has a clip, and a clip that is playing glows. Press a cell's letter, or move the box with the arrows and press `Enter`; the arrows move to the cell beside, above or below. A cell whose page is a list counts what the set holds there. The line above the keys at the bottom says what the selected cell is for, and the box stays where it was when you come back with `Esc`.
+On a console of 80 by 24, the main screen is a grid of cells in three columns. Arrange has the first column, drawn as a small green monitor that shows the current song's scale, tempo and time signature, how many scenes and tracks the song has, and, while the Real Time switch is on, a light for each track that turns bright while the track sounds, with a clock while the song plays. The Real Time switch is under Arrange, and the pages are in the two columns beside them. A bar under the grid holds File/Global, Save, Open, Export, Import and Quit. On a console of 28 lines or more, Arrange takes the whole left side, and the Real Time switch, the pages and the file's actions are in two narrow columns at the right. Arrange's cell then shows a map of the song: a line for each track, with a block for each scene where the track has a clip, and a clip that is playing glows. Press a cell's letter, or move the box with the arrows and press `ENTER`; the arrows move to the cell beside, above or below. A cell whose page is a list counts what the set holds there. The line above the keys at the bottom says what the selected cell is for, and the box stays where it was when you come back with `ESC`.
 
 | Key | Page | What it is for |
 | --- | --- | --- |
@@ -84,7 +84,7 @@ Registers and Arrange edit the current song, which the Songs page picks. Pattern
 
 ## Screen Map
 
-Every screen opens from the main screen, and `Esc` goes back up the map one step at a time. The Open page opens with `Ctrl+O` from every page, so it is drawn from the main screen. The label on an arrow is the key that opens the screen; an arrow with no label is a screen opened from a list, with `Enter` on an item, or in more than one way. The map is generated from the code by `internal_tools/make_diagrams.py`.
+Every screen opens from the main screen, and `ESC` goes back up the map one step at a time. The Open page opens with `Ctrl+O` from every page, so it is drawn from the main screen. The label on an arrow is the key that opens the screen; an arrow with no label is a screen opened from a list, with `ENTER` on an item, or in more than one way. The map is generated from the code by `internal_tools/make_diagrams.py`.
 
 <!-- generated by internal_tools/make_diagrams.py: screens -->
 ```mermaid
@@ -111,13 +111,13 @@ flowchart TD
     InstrumentEditor["Instrument editor"]
     ScalePage["Scale"]
     SongPage["Song"]
-    ArrangePage -- "Enter" --> ClipPage
+    ArrangePage -- "ENTER" --> ClipPage
     ArrangePage --> PatternEditor
-    ArrangePage -- "Enter" --> ScenePage
-    ArrangePage -- "Enter" --> TrackEditor
+    ArrangePage -- "ENTER" --> ScenePage
+    ArrangePage -- "ENTER" --> TrackEditor
     ChainsPage --> ChainEditor
     ClipPage --> PatternEditor
-    FilePage -- "Enter" --> NotesPage
+    FilePage -- "ENTER" --> NotesPage
     GroovesPage --> GrooveEditor
     InstrumentsPage --> InstrumentEditor
     MainPage -- "A" --> ArrangePage
@@ -141,7 +141,7 @@ flowchart TD
 
 - **`Ctrl+S` saves** the set. The first time, it asks for a file name, starting from `songs/untitled.yml`, and adds `.yml` if you leave it off; folders are made as needed. A protected set, such as a demo, is never written over: a dialog offers to save a copy under another name, which isn't protected. The File/Global page's Protected setting turns the protection off. Saving writes nothing when the file already holds exactly what it would save, and asks before writing over a file something else has changed since it was opened.
 - **`W` saves as** a new name, on the File/Global page, asking before replacing another file.
-- **`Ctrl+O` opens** a set file. The Open page starts in `examples/`, where folders show with a trailing slash, such as `learning/`: `Enter` opens a file or goes into a folder, and `../` goes up. A file that holds values llamatron can't use, such as a velocity of 200 typed in by hand, opens only after a dialog lists each with the value that takes its place: the nearest number allowed, the longest length allowed, or the default. `Yes` opens the set with those changes, marked unsaved, and the file stays as it is until you save; `No` opens nothing. Anything else wrong with a file, such as a clip that names a missing pattern, is refused with a message saying where.
+- **`Ctrl+O` opens** a set file. The Open page starts in `examples/`, where folders show with a trailing slash, such as `learning/`: `ENTER` opens a file or goes into a folder, and `../` goes up. A file that holds values llamatron can't use, such as a velocity of 200 typed in by hand, opens only after a dialog lists each with the value that takes its place: the nearest number allowed, the longest length allowed, or the default. `Yes` opens the set with those changes, marked unsaved, and the file stays as it is until you save; `No` opens nothing. Anything else wrong with a file, such as a clip that names a missing pattern, is refused with a message saying where.
 - **`N` starts** a new set, on the File/Global page, with one song called `untitled` whose first track plays a starter pattern.
 - **`Ctrl+X` exports** the current song, as [Exporting](EXPORTING.md) describes, and **`M` imports** a MIDI file as a new song, as [Importing](IMPORTING.md) describes.
 
@@ -157,11 +157,11 @@ Start `llamatron` with no file. llamatron opens a new set with one song, `untitl
 
 ![The Songs page](screenshots/songs.svg)
 
-Press `Enter` on the song to open its settings:
+Press `ENTER` on the song to open its settings:
 
 ![A song's settings](screenshots/song.svg)
 
- A new song is 120 BPM in C major; the pictures show a demo's song. Change the tempo with `[` and `]`, or press `Enter` and type a number. Leave the rest alone for now, and press `Esc` twice to go back.
+ A new song is 120 BPM in C major; the pictures show a demo's song. Change the tempo with `[` and `]`, or press `ENTER` and type a number. Leave the rest alone for now, and press `ESC` twice to go back.
 
 ### 2. Melody
 
@@ -171,23 +171,23 @@ Press `P` for Patterns, then `A`, and name the pattern `lead` in place of the `p
 2. `Space` places a note one step long, drawn as a bar, and never moves the cursor, so you press Right yourself. A step with no note is a rest.
 3. `Bksp` on a note takes it out again.
 
-To make a note longer, press `]` on it to drag its end through one more step, and `[` to take a step back off, or choose how long placed notes are first with `E`. The line under the grid describes the note under the cursor, such as `Step 1: E3 in C Major, gate 1/16`. `Tab` shows the same notes as rows of values, where the Gate row sets lengths finer than whole steps. [Patterns](PATTERNS.md) describes the editor in full. Press `Esc` to go back to the list.
+To make a note longer, press `]` on it to drag its end through one more step, and `[` to take a step back off, or choose how long placed notes are first with `E`. The line under the grid describes the note under the cursor, such as `Step 1: E3 in C Major, gate 1/16`. `Tab` shows the same notes as rows of values, where the Gate row sets lengths finer than whole steps. [Patterns](PATTERNS.md) describes the editor in full. Press `ESC` to go back to the list.
 
 ### 3. Drum Pattern
 
-Press `A` again and name this one `kick`. Press `R` and choose `drum on` to make it a drum pattern: the top row is now called Note, and takes note letters rather than degrees, since drums follow no scale. Type `C` on steps 1, 5, 9 and 13. A drum note goes in the set's default drum octave, octave 1 as Live labels it, so `C` is C1, MIDI note 36, the first pad of a Drum Rack. Press `Esc` twice to get back to the main screen.
+Press `A` again and name this one `kick`. Press `R` and choose `drum on` to make it a drum pattern: the top row is now called Note, and takes note letters rather than degrees, since drums follow no scale. Type `C` on steps 1, 5, 9 and 13. A drum note goes in the set's default drum octave, octave 1 as Live labels it, so `C` is C1, MIDI note 36, the first pad of a Drum Rack. Press `ESC` twice to get back to the main screen.
 
 ### 4. Tracks
 
-Press `A` for Arrange. A new song starts with one track, `track 1`, across the top and one scene, `scene 1`, down the side. Press Up onto the track's name, then `Enter`, and rename it `lead` on the Name field. Press `Esc`, then move to the `+` after the last track's name and press `Enter` to add `track 2`, and rename it `drums` the same way.
+Press `A` for Arrange. A new song starts with one track, `track 1`, across the top and one scene, `scene 1`, down the side. Press Up onto the track's name, then `ENTER`, and rename it `lead` on the Name field. Press `ESC`, then move to the `+` after the last track's name and press `ENTER` to add `track 2`, and rename it `drums` the same way.
 
 ### 5. Scene Arrangement
 
 Scenes are rows and tracks are columns, and a `+` is an empty cell where a clip can go.
 
-1. Move onto `scene 1`'s `lead` cell and press `Enter`. Choose `lead`; the clip page opens.
-2. Set Repeat to 4 with `]`, so the melody plays four times, and press `Esc`.
-3. Move onto the `drums` cell, press `Enter` and choose `kick`. Select Loop and press `Space` to turn it on, so the kick plays for as long as the melody does. Press `Esc`.
+1. Move onto `scene 1`'s `lead` cell and press `ENTER`. Choose `lead`; the clip page opens.
+2. Set Repeat to 4 with `]`, so the melody plays four times, and press `ESC`.
+3. Move onto the `drums` cell, press `ENTER` and choose `kick`. Select Loop and press `Space` to turn it on, so the kick plays for as long as the melody does. Press `ESC`.
 
 A scene lasts as long as its longest clip that doesn't loop, so at least one clip in every scene must not loop. The grid marks the clips: `lead ×4` repeats and `kick ∞` loops. To add a second section, press `C` on the scene's row to copy the scene below it, then change its clips. [Arrange](ARRANGE.md) describes the page in full.
 

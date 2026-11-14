@@ -52,6 +52,10 @@ LIST_WIDTHS = (24, 8, 10, 27)
 LIST_GAP = 1
 # The room for the sentences under the lists, so that the dialog keeps its height as the choice moves.
 SENTENCE_LINES = 3
+# The keyboard under the sentences: its lines, the blank line over it, and the lines of the box's top and bottom edges.
+KEYBOARD_LINES = 3
+KEYBOARD_GAP = 1
+DIALOG_BORDERS = 2
 # A width no legend reaches, for measuring one laid out on a single line.
 WIDEST = 1000
 # The fewest cells worth showing of a category's name beside the scale type borrowed.
@@ -80,12 +84,15 @@ class ChordDialog(Dialog):
     # How many rows of a list show at once, each list scrolling to keep its cursor's in view: enough for every category and for the longest flyout.
     SHOWN = 10
 
-    def __init__(self, *, title, qualities, quality_names, inversions, categories, current, said, opens_on=QUALITY_LIST, moved=None):
+    def __init__(self, *, title, qualities, quality_names, inversions, categories, current, said, opens_on=QUALITY_LIST, moved=None, keyboard=None):
         """qualities are the chord symbols offered, None first, named by quality_names; inversions the inversions offered, None, root position, first; categories the scale types offered,
         each a name and its scale types; current the ChordChoice the dialog opens on; and said a function from a ChordChoice
         to the lines said under the lists. moved, when given, is called with the ChordChoice whenever the choice moves, and
-        with the choice the dialog opened on when it is cancelled, so that the page underneath can show the chord before it is taken."""
+        with the choice the dialog opened on when it is cancelled, so that the page underneath can show the chord before it is taken.
+        keyboard, when given, is a function from a ChordChoice to the lines of a keyboard showing the chord in its scale, or to None
+        where the scale isn't known for certain; the dialog draws it under the sentences where the console has the room."""
         super().__init__()
+        self.keyboard = keyboard
         self.title = title
         self.qualities = list(qualities)
         self.quality_names = list(quality_names)
@@ -299,4 +306,19 @@ class ChordDialog(Dialog):
                 line.append(SPACE * LIST_GAP if part < LISTS - 1 else NOTHING)
             result.append(line)
         result.append(Text(NOTHING))
-        return [*result, *self.sentences(width)]
+        return [*result, *self.sentences_and_keyboard(width)]
+
+    def has_room_for_keyboard(self, width):
+        """Return whether the console is tall enough for the dialog with the keyboard under its sentences."""
+        without = 2 + 1 + self.SHOWN + 1 + SENTENCE_LINES + 1 + len(self.legend_lines(width)) + DIALOG_BORDERS
+        return self.app.size.height >= without + KEYBOARD_GAP + KEYBOARD_LINES
+
+    def sentences_and_keyboard(self, width):
+        """Return what is said of the choice and then, where the scale is known for certain and the console has the room, the
+        keyboard, one blank line under the last sentence (the user's design), the lines left over under it so that the dialog
+        keeps its height as the choice moves. The keyboard can't be selected."""
+        keyboard = self.keyboard(self.choice()) if self.keyboard is not None and self.has_room_for_keyboard(width) else None
+        if keyboard is None:
+            return self.sentences(width)
+        said = [Text(fit(text=text, width=width).rstrip()) for text in self.said(self.choice())][:SENTENCE_LINES]
+        return [*said, *[Text(NOTHING)] * KEYBOARD_GAP, *keyboard, *[Text(NOTHING)] * (SENTENCE_LINES - len(said))]

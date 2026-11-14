@@ -8,10 +8,10 @@ A Drag is a row of steps, each on or off, as [Generators](../GENERATORS.md#rows-
 
 | Setting | What it does |
 | --- | --- |
-| Name | `Enter` renames it, and every chain using it follows. |
+| Name | `ENTER` renames it, and every chain using it follows. |
 | Step | How long each step of the row lasts: `(pattern)`, the clip's pattern's step size, or a time from the list every time setting shares. |
 | Amount | The Drag amount, 20% of a step by default, up to half a step. |
-| Steps | The row, from 1 to 16 steps. `Enter` opens it. |
+| Steps | The row, from 1 to 16 steps. `ENTER` opens it. |
 | Restart | When it starts over, as [Generators](../GENERATORS.md#restart) describes. |
 
 ## Applying the Generator

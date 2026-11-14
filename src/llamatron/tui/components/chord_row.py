@@ -18,7 +18,11 @@
 from llamatron.composition.file_format import CHORD_SYMBOLS, Row
 from llamatron.composition.limits import INVERSIONS
 
+from rich.text import Text
+
+from llamatron.tui.components.keyboard import chord_keys, Keyboard, KeyKind
 from llamatron.tui.components.pattern_row import PatternRow
+from llamatron.tui.drawing import NOTHING, Style
 from llamatron.tui.key_table import STEP_FORWARD
 from llamatron.tui.chord_text import ChordInWords
 from llamatron.tui.scale_categories import SCALE_CATEGORIES
@@ -37,6 +41,8 @@ def chord_value(text):
     return int(text) if text and text.isdigit() else text
 
 
+# The style of each kind of key on the Chord dialog's keyboard.
+KEY_STYLES = {KeyKind.CHORD: Style.CHORD_KEY, KeyKind.SCALE: Style.SCALE_KEY, KeyKind.OUTSIDE: Style.DIM}
 # The rows the Chord dialog edits together, and the list it opens on from each.
 OPENS_ON = {Row.CHORD: QUALITY_LIST, Row.TENSION: TENSION_LIST, Row.CHORD_SCALE: SCALE_LIST}
 
@@ -55,6 +61,31 @@ def step_chord_in_words(*, editor, step, choice=None):
         scale=editor.known_scale() if isinstance(degree, int) else None, degree=degree, accidental=editor.value(row=Row.ACCIDENTAL, step=step),
         kind=current.kind, symbol=current.quality, tensions=current.tensions, single_note=True,
     )
+
+
+def step_keyboard(*, editor, step, choice):
+    """Return the lines of a keyboard showing a step's chord in the pattern's scale, for the Chord dialog: the scale's keys in an
+    outline's colour and the chord's filled (the user's design). None where the scale isn't known for certain: a drum pattern,
+    a pattern its uses play under more than one scale, or a step that grabs its note."""
+    if editor.is_drum() or len(editor.document().scales_of_pattern(editor.item)) != 1:
+        return None
+    names = step_chord_in_words(editor=editor, step=step, choice=choice).note_names()
+    if not names:
+        return None
+    scale = editor.known_scale()
+    keyboard = Keyboard(root=scale.get_root(), half_steps=scale.get_half_steps(), chord=chord_keys(note_names=names, inversion=choice.inversion if choice.quality is not None else None))
+    return keyboard_lines(keyboard)
+
+
+def keyboard_lines(keyboard):
+    """Return a keyboard's lines as the Chord dialog draws them, each kind of key in its style."""
+    lines = []
+    for row in keyboard.rows():
+        line = Text(NOTHING, no_wrap=True)
+        for text, kind in row:
+            line.append(text, style=KEY_STYLES.get(kind, Style.PLAIN))
+        lines.append(line)
+    return lines
 
 
 def step_choice(*, editor, step):
@@ -85,6 +116,7 @@ def pick_chord(*, editor, step, opens_on=QUALITY_LIST):
         qualities=[None, *CHORD_SYMBOLS], quality_names=[MSG_QUALITY_SINGLE_NOTE, *quality_names(CHORD_SYMBOLS)], inversions=[None, *INVERSIONS], categories=SCALE_CATEGORIES,
         current=step_choice(editor=editor, step=step), opens_on=opens_on, moved=moved,
         said=lambda choice: step_chord_in_words(editor=editor, step=step, choice=choice).sentences(),
+        keyboard=lambda choice: step_keyboard(editor=editor, step=step, choice=choice),
     )
     editor.ask(dialog=dialog, then=chosen)
 

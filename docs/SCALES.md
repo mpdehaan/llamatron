@@ -17,10 +17,10 @@ Press `Z` on the main screen to open the Scales page. The list shows each scale'
 | Key | What it does |
 | --- | --- |
 | `A` | Add a C major scale, named after what it is, and open its page |
-| `Enter` | Open the scale's page, below |
+| `ENTER` | Open the scale's page, below |
 | `N` | Rename it, which updates every song, scene and clip that uses it |
 | `C` | Copy it |
-| `M` | Pick it up: `↑↓` carry it, and `Enter` drops it |
+| `M` | Pick it up: `↑↓` carry it, and `ENTER` drops it |
 | `S` | Sort the list by name |
 | `Bksp` | Delete it, once nothing uses it. To delete the song's scale, clear it on the Song page first. |
 
@@ -32,9 +32,9 @@ The Scale page holds one scale's name, root and kind, with the notes they make u
 
 | Setting | What it does |
 | --- | --- |
-| Name | `Enter` renames the scale, and the song and every scene using it follow. |
-| Root | The note the scale starts on. `[` and `]` step through the roots, and `Enter` picks one on a keyboard. |
-| Kind | Major, minor, a mode or a world scale. `[` and `]` step through the kinds, and `Enter` picks from two pages. |
+| Name | `ENTER` renames the scale, and the song and every scene using it follow. |
+| Root | The note the scale starts on. `[` and `]` step through the roots, and `ENTER` picks one on a keyboard. |
+| Kind | Major, minor, a mode or a world scale. `[` and `]` step through the kinds, and `ENTER` picks from two pages. |
 
 A scale still named after its root and kind, such as `C Major`, is renamed as its root and kind change, so that the name keeps saying what the scale plays. A name of your own, such as `main`, stays as it is, and so does a name of that default form when the new name is already taken.
 

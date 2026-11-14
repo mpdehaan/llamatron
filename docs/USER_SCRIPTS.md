@@ -136,7 +136,7 @@ The visualizer modes a recording can show are `lava_lamp`, `piano_roll`, `spectr
 
 ### `record.sh`
 
-Records a video of the tracker playing a set on Arrange. `--sound` says where the sound comes from: `daw`, the default, plays the set's tracks over MIDI into your DAW, so the song sounds as your own instruments play it, and `fluidsynth` plays the set's own FluidSynth instruments, so no DAW is needed, the simplest recording. With `--interactive` you perform the take: nothing plays until you press `Space` on Arrange's corner, and stopping there, or `Esc`, ends it, so that you can launch scenes and edit as the song plays. A take of a visualizer opens on the title and READY and fills the screen with the visualizer in its frame, unless `--plain` is given.
+Records a video of the tracker playing a set on Arrange. `--sound` says where the sound comes from: `daw`, the default, plays the set's tracks over MIDI into your DAW, so the song sounds as your own instruments play it, and `fluidsynth` plays the set's own FluidSynth instruments, so no DAW is needed, the simplest recording. With `--interactive` you perform the take: nothing plays until you press `Space` on Arrange's corner, and stopping there, or `ESC`, ends it, so that you can launch scenes and edit as the song plays. A take of a visualizer opens on the title and READY and fills the screen with the visualizer in its frame, unless `--plain` is given.
 
 ```
 sh user_scripts/record.sh examples/learning/01_hello_world.yml --sound fluidsynth
@@ -159,7 +159,7 @@ Parameters:
 - `--audio-device DEVICE`: the audio input device to record the sound from, the first whose name holds this text.
 - `--max-seconds SECONDS`: the longest the take may run.
 - `--window-id ID`: the id of the window to record, when the terminal program cannot be asked.
-- `--go`: start the take at once, without waiting for Enter after the setup is explained.
+- `--go`: start the take at once, without waiting for ENTER after the setup is explained.
 
 With `--sound daw`:
 
@@ -185,7 +185,7 @@ Parameters:
 - `--audio-device DEVICE`: the audio input device to record the sound from, the first whose name holds this text.
 - `--fluidsynth-output DEVICE`: the audio output FluidSynth plays to, such as a Multi-Output Device that reaches the recorded one too.
 - `--window-id ID`: the id of the window to record, when the terminal program cannot be asked.
-- `--go`: start at once, without waiting for Enter after the list of takes.
+- `--go`: start at once, without waiting for ENTER after the list of takes.
 
 Environment:
 

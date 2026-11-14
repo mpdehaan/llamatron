@@ -20,7 +20,7 @@ On 2026-11-09 the keys that add, move and adjust changed, and the help of severa
 the old ones until each was read by hand. This reads every page's help for the keys it names and
 tours the tracker, noting which keys each page binds wherever its cursor can go.
 
-A key in a help text is: a key's name (Enter, Esc, Tab, Bksp, Space, Ctrl+S, F1, Home, PgUp and
+A key in a help text is: a key's name (ENTER, ESC, Tab, Bksp, Space, Ctrl+S, F1, Home, PgUp and
 the capitalised arrows Up, Down, Left and Right); a capital letter standing alone, where A and I
 count only before a verb, like "A adds" and "I inserts", since "A name can be anything" is not a
 key; and a mark standing alone between spaces, like [ or /. A capital that is a note's name, as in
@@ -83,7 +83,7 @@ NOTE_PHRASES = ('middle C', 'C major', 'C Major')
 LEGEND_MARKS = ('∞', '~')
 BLANK = ' '
 # Keys a page's help names that work on another page, which the help says: Song's help says N renames on the Songs page,
-# File's that Tab reaches the buttons of the Notes page it opens, and the main screen's that Esc goes back, which it does on every other page.
+# File's that Tab reaches the buttons of the Notes page it opens, and the main screen's that ESC goes back, which it does on every other page.
 ELSEWHERE = {
     (SongPage, first_key(keybindings.SongsPage.RENAME)): SongsPage,
     (FilePage, Key.TAB): NotesPage,
@@ -97,7 +97,7 @@ MSG_STRAY_BINDING = '{page} binds {binding}, which is not a binding of keybindin
 MSG_KEY_CLASH = '{page}: {key!r} is bound to {first!r} and to {second!r} at once'
 # Help texts of the test's own, and the keys each names.
 HELP_WITH_AN_ARTICLE = 'A name can be anything. A adds one, I inserts a step and C copies it.'
-HELP_WITH_NAMED_KEYS = 'Shift+Tab goes back, Ctrl+S saves, and Up and down select. Space or Enter toggles; PgUp/PgDn jump.'
+HELP_WITH_NAMED_KEYS = 'Shift+Tab goes back, Ctrl+S saves, and Up and down select. Space or ENTER toggles; PgUp/PgDn jump.'
 HELP_WITH_A_NOTE = 'Middle is where middle C is, and A adds a C major scale.'
 HELP_WITH_MARKS = '[ and ] drag its end, late (+) or early (-), and ~ means a morph.'
 

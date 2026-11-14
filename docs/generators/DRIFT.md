@@ -10,7 +10,7 @@ A drift triggers every so often and picks new amounts, holding them until the ne
 
 | Setting | What it does |
 | --- | --- |
-| Name | `Enter` renames the drift, and every chain using it follows. |
+| Name | `ENTER` renames the drift, and every chain using it follows. |
 | Every | How often it triggers: `1 bar` of the song, the default, or another time from the list every time setting shares. |
 | Steps to B | How many triggers it takes to get from A to B, 16 unless set. |
 | Direction | `forward` goes from A to B and stays there, `loop` starts again at A, `pendulum` goes from A to B and back forever, and `brownian` wanders a step either way at each trigger. |
@@ -19,7 +19,7 @@ A drift triggers every so often and picks new amounts, holding them until the ne
 
 ## Versions A and B
 
-Below the settings, each row has a value for A and for B side by side, the one Left and Right picked marked `< >`. `[` and `]` change the one picked, `Enter` types it or picks from a list, and `Bksp` clears it. Numbers are blended between A and B by how far the drift has moved, and a scale or a root is B's with a chance of how far it has moved.
+Below the settings, each row has a value for A and for B side by side, the one Left and Right picked marked `< >`. `[` and `]` change the one picked, `ENTER` types it or picks from a list, and `Bksp` clears it. Numbers are blended between A and B by how far the drift has moved, and a scale or a root is B's with a chance of how far it has moved.
 
 | Row | What it does at each trigger |
 | --- | --- |

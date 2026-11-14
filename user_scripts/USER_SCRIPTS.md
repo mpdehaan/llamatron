@@ -116,7 +116,7 @@ These need the setup `docs/INSTALLING_RECORDING.md` describes; `docs/RECORDING.m
 
 Records a video of the tracker playing a set on Arrange. `--sound daw`, the default, takes the sound from your DAW over MIDI;
 `--sound fluidsynth` uses the set's own instruments and needs no DAW. With `--interactive` nothing plays until you press Space
-on Arrange's corner, and stopping there, or Esc, ends the take.
+on Arrange's corner, and stopping there, or ESC, ends the take.
 
 ```
 sh user_scripts/record.sh examples/learning/01_hello_world.yml --sound fluidsynth

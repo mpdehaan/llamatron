@@ -172,7 +172,7 @@ def main(*, argv=None, environment=os.environ):
     parser.add_argument('--audio-device', default=shared.DEFAULT_AUDIO_DEVICE, help='the audio input device to record the sound from: the first whose name holds this text')
     parser.add_argument('--fluidsynth-output', default=None, help='the audio output FluidSynth plays to, such as a Multi-Output Device that reaches the recorded one too')
     parser.add_argument('--window-id', type=int, default=None, help='the id of the window to record, when the terminal program cannot be asked')
-    parser.add_argument('--go', action='store_true', help='start at once, without waiting for Enter after the list of takes')
+    parser.add_argument('--go', action='store_true', help='start at once, without waiting for ENTER after the list of takes')
     arguments = parser.parse_args(argv)
     try:
         takes = plan(paths=example_sets(), paired=pairings(), most=most_takes(environment),

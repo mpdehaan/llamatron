@@ -49,13 +49,13 @@ MSG_NARRATE_WOULD_EXPORT = 'To export it now we would press Ctrl+X.'
 MSG_NARRATE_TUTORIAL_COMPLETE = 'The tutorial is now complete.'
 MSG_NARRATE_QUITTING = 'In exiting the app, we will be asked if we want to save any changes.'
 # What a key does, said the first time it is pressed where it matters, the user's design of 2026-11-10:
-# the arrows anywhere and again on the piano roll and in the rows view, Enter and Esc anywhere, and
+# the arrows anywhere and again on the piano roll and in the rows view, ENTER and ESC anywhere, and
 # Space once on each kind of page.
 MSG_EXPLAIN_ARROWS = 'Arrow keys navigate around the app.'
-MSG_EXPLAIN_ESCAPE = 'Escape always goes back to the previous screen.'
+MSG_EXPLAIN_ESCAPE = 'ESC always goes back to the previous screen.'
 MSG_EXPLAIN_ARROWS_ON_ROLL = 'We move around with arrow keys.'
 MSG_EXPLAIN_ARROWS_IN_ROWS = 'In the extra details on the pattern, the arrow keys are also used to navigate.'
-MSG_EXPLAIN_ENTER = 'Enter is always available.'
+MSG_EXPLAIN_ENTER = 'ENTER is always available.'
 MSG_EXPLAIN_SPACE_ON_ROLL = 'Space is used to enter notes.'
 MSG_EXPLAIN_BACKSPACE_ON_ROLL = 'If we need to, notes can be removed with Bksp.'
 MSG_EXPLAIN_SPACE_ON_ARRANGE = 'Space starts and stops songs, scenes, and tracks.'

@@ -6,8 +6,8 @@ Each of the other pages covers one part of the tracker in full. This page covers
 
 A song is easiest to write when every change is heard as it is made. llamatron plays a set in real time through its instruments: each instrument names a device, either a MIDI port connected to a synthesizer or DAW, or `*FluidSynth`, the software synthesizer the tracker starts by itself. A track chooses the instrument it plays through. While a song plays, every edit on any page is heard, at the moment the song's Live Response setting says.
 
-1. On the main screen, press `I` for Instruments and `A` to add one. On its Device field, press `Enter` and choose `*FluidSynth`, or one of your MIDI ports, and give it a General MIDI sound if it plays through FluidSynth. Adding the first instrument turns the set's Real Time switch on. See [Instruments](INSTRUMENTS.md).
-2. On Arrange, move to a track's name and press `Enter` for the track editor, and choose the instrument on its Instrument field. A drum track wants Drum on, and plays on channel 10 through FluidSynth. See [Tracks](TRACKS.md).
+1. On the main screen, press `I` for Instruments and `A` to add one. On its Device field, press `ENTER` and choose `*FluidSynth`, or one of your MIDI ports, and give it a General MIDI sound if it plays through FluidSynth. Adding the first instrument turns the set's Real Time switch on. See [Instruments](INSTRUMENTS.md).
+2. On Arrange, move to a track's name and press `ENTER` for the track editor, and choose the instrument on its Instrument field. A drum track wants Drum on, and plays on channel 10 through FluidSynth. See [Tracks](TRACKS.md).
 3. On Arrange, move to the top left corner, where `▶ song` shows, and press `Space`. The song plays on while you move to any page. See [Playing Live](PLAYING_LIVE.md).
 
 ## Chord Progressions
@@ -15,7 +15,7 @@ A song is easiest to write when every change is heard as it is made. llamatron p
 A pattern is written once and played in many places, and a generator changes how it plays without changing what it says. The most useful case is a chord progression: write a one-bar figure over chord I, an arpeggio, a bass line or a chord, and a Progression generator moves the figure through the chords, so that one bar becomes a whole section, and changing the progression rewrites the section without touching the pattern.
 
 1. On Patterns, `P`, write a one-bar figure on degree 1. See [Patterns](PATTERNS.md).
-2. On Generators, `G`, open Progressions and press `A`. In the progression's editor, press `Enter` on Chords, then `H` to pick a named progression, such as pop or twelve-bar blues, matched to the song's scale. See [Progression](generators/PROGRESSION.md).
+2. On Generators, `G`, open Progressions and press `A`. In the progression's editor, press `ENTER` on Chords, then `H` to pick a named progression, such as pop or twelve-bar blues, matched to the song's scale. See [Progression](generators/PROGRESSION.md).
 3. On Chains, `C`, add a chain and put the progression in it. See [Chains](CHAINS.md).
 4. Put the chain on the clips that play the figure, on the clip page's Chains field, or on the Scene page to move a whole section, or in the track editor to move every clip of a track. See [Clips](CLIPS.md) and [Scenes](SCENES.md).
 5. For chords that move smoothly rather than jumping, add a Voice Leading generator after the progression in the same chain. See [Voice Leading](generators/VOICE_LEADING.md).

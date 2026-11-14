@@ -35,7 +35,7 @@ default, the Mac's bus from one program to another), one channel each, turns Rea
 the song on Arrange, and once the song has ended quits the tracker through its Quit cell without
 saving. Before the build it says which track
 will play on which channel and what to set up in the DAW, and then, with or without --no-play,
-waits for Enter after its last line, "Ready? Press Enter to Start - DO NOT MOVE YOUR MOUSE
+waits for ENTER after its last line, "Ready? Press ENTER to Start - DO NOT MOVE YOUR MOUSE
 CURSOR", unless --go. Keep
 your hands off the keyboard while it runs: a key of yours would land in the tracker among the plan's.
 Nothing is saved: the set built is thrown away with the tracker, unless --save-set-yaml names a file
@@ -244,7 +244,7 @@ def main(*, argv=None):
     parser.add_argument('--pace', type=float, default=HUMAN_PACE, help='seconds between two keys (default %(default)s)')
     parser.add_argument('--no-play', dest='play', action='store_false', help='build the set and quit, with no instruments and no MIDI port needed')
     parser.add_argument('--save-set-yaml', default=None, metavar='FILE', help='write the set the tutorial built to this file, for debugging')
-    parser.add_argument('--go', action='store_true', help='start at once, without waiting for Enter after the setup is explained')
+    parser.add_argument('--go', action='store_true', help='start at once, without waiting for ENTER after the setup is explained')
     parser.add_argument('--no-video', dest='video', action='store_false', help='run in the terminal without recording a video')
     parser.add_argument('--window-id', type=int, default=None, help='the id of the window to record, when the terminal program cannot be asked')
     parser.add_argument('--max-seconds', type=float, default=DEFAULT_MAX_SECONDS, help='the longest the tracker runs while recording, which ends the recording (default an hour)')

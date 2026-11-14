@@ -11,10 +11,10 @@ Patterns hold the notes, and belong to the set, so every song can play them. Pre
 | Key | What it does |
 | --- | --- |
 | `A` | Adds a pattern and opens it. A new pattern starts one bar long in the current song's time signature at the set's step size: 16 steps in 4/4 at 1/16, 12 in 3/4 or 6/8, or 16 when a bar isn't a whole number of steps. |
-| `Enter` | Edits the selected pattern. |
+| `ENTER` | Edits the selected pattern. |
 | `N` | Renames the pattern, updating every clip that uses it. |
 | `C` | Copies the pattern. |
-| `M` | Picks the pattern up: `↑↓` carry it, and `Enter` drops it. |
+| `M` | Picks the pattern up: `↑↓` carry it, and `ENTER` drops it. |
 | `S` | Sorts the list by name. |
 | `Bksp` | Deletes the pattern, once nothing uses it. |
 
@@ -38,7 +38,7 @@ The two lines over the grid show the pattern's settings in aligned columns: Step
 
 ### The Pencil
 
-The roll is one pencil. `Space`, or `Enter`, draws a note of the entry size at the cursor, writing the note on its step and a tie on each further step it covers, so the rows show exactly what was painted; only an entry size shorter than a step writes a gate. `Space` on a note at the cursor's pitch erases that note with every step it holds, from any of the note's cells, exactly as `Bksp` does, so `Space` turns a note on and off. A note drawn again is a new note of the entry size, and `Ctrl+Z` brings back an erased note.
+The roll is one pencil. `Space`, or `ENTER`, draws a note of the entry size at the cursor, writing the note on its step and a tie on each further step it covers, so the rows show exactly what was painted; only an entry size shorter than a step writes a gate. `Space` on a note at the cursor's pitch erases that note with every step it holds, from any of the note's cells, exactly as `Bksp` does, so `Space` turns a note on and off. A note drawn again is a new note of the entry size, and `Ctrl+Z` brings back an erased note.
 
 A note drawn at another pitch inside a held note cuts the held note where the new one starts, and the rest of the old note carries on after the new one as a note of its own, so drawing never silences anything to the right. A note whose gate reached over the new note's step is cut to end where the new note starts, and a note running past the end of the pattern is cut there. A note drawn on the step where a chord starts moves the chord's root to that pitch and keeps the chord, its tensions, scale, inversion and length; erasing the note removes the chord with it.
 
@@ -48,8 +48,8 @@ A note drawn at another pitch inside a held note cuts the held note where the ne
 | --- | --- |
 | Arrows | Move along the steps, and up and down a note of the scale, stopping at the edges. |
 | `Home`, `End` | Go to the first and last step. |
-| `Space`, `Enter` | Draw a note of the entry size at the cursor, or erase the note under the cursor. |
-| `H` | Picks the chord of the note under the cursor, from any of its cells, with `(none)` at the top to make it a single note again. A chord's other notes are drawn as thin dim lines on their own rows, as long as the note, and follow the note rather than being edited on their own. |
+| `Space`, `ENTER` | Draw a note of the entry size at the cursor, or erase the note under the cursor. |
+| `H` | Picks the chord of the note under the cursor, from any of its cells, with `(none)` at the top to make it a single note again. Where every clip that plays the pattern plays it under one scale, and the console has the room, the picker draws a keyboard under its lists, with the scale's keys outlined and the chord's keys filled. A chord's other notes are drawn as thin dim lines on their own rows, as long as the note, and follow the note rather than being edited on their own. |
 | `[` (shrink), `]` (stretch) | Drag the end of the note under the cursor a step earlier or later, from any of its cells. A note shorter than a step becomes a whole step first, and the drag stops at one step and at the next note on the row. On a note whose length is a gate, stretching adds a tie after the gate's reach. |
 | `K` | The knife: splits the held note under the cursor at the cursor's step, so the rest of the note is a note of its own at the same pitch. |
 | `.` | Cycles the note under the cursor through sharp, flat and natural. The note moves to the row that sounds it, a row of its own between two degrees, and the cursor follows. |
@@ -60,7 +60,7 @@ A note drawn at another pitch inside a held note cuts the held note where the ne
 
 The legend under the roll keeps to drawing, while `K` and `G` still work there; `F1` lists them. The keys that work on the whole pattern, `S` and `R`, described under Editor Keys below, work on the roll too. Steps are inserted and removed in the rows view.
 
-Velocity, probability and the other values are set on the rows, as are dotted and triplet gates; the roll draws the bar of what sounds. A chord can be picked in either view: `H` on the roll's note and `Enter` on the Chord row's cell open the same [Chord Selector](#chord-selector). The roll shows a named chord's other notes where they sound in the scale the pattern plays under, so C minor in C major shows its E♭ on a dim `D#3` row between D and E, and shows none of them when the pattern plays under more than one scale; a scale chord's notes are degrees and always show. A chord with an inversion plays its root an octave up, so the note is drawn hollow (`░░░░░`) where it is written, since nothing sounds there, with a thin line where the root does sound. Drum patterns have no roll, and open on their rows.
+Velocity, probability and the other values are set on the rows, as are dotted and triplet gates; the roll draws the bar of what sounds. A chord can be picked in either view: `H` on the roll's note and `ENTER` on the Chord row's cell open the same [Chord Selector](#chord-selector). The roll shows a named chord's other notes where they sound in the scale the pattern plays under, so C minor in C major shows its E♭ on a dim `D#3` row between D and E, and shows none of them when the pattern plays under more than one scale; a scale chord's notes are degrees and always show. A chord with an inversion plays its root an octave up, so the note is drawn hollow (`░░░░░`) where it is written, since nothing sounds there, with a thin line where the root does sound. Drum patterns have no roll, and open on their rows.
 
 ## Rows View
 
@@ -88,7 +88,7 @@ These keys work throughout the rows view:
 
 | Key | What it does |
 | --- | --- |
-| `Esc` | Goes back. |
+| `ESC` | Goes back. |
 | Arrows | Move. |
 | `Home`, `End` | Go to the first and last step. |
 | `PgUp`, `PgDn` | Jump to the previous or next section heading under Octave, stopping at the first and the last. |
@@ -129,7 +129,7 @@ The cursor stays on its step, so choosing the same reverse or pivot again undoes
 
 ## Rows and Sections
 
-Degree and Octave stay at the top, and under them the rows come in sections that open and close like an accordion. Each section is headed by a row of the grid with a rule above and below it and no step dividers across it, labelled `+` and the section's name while closed, such as `+ Advanced`, and `-` and the name while open. The cursor moves onto a heading like any row, keeping its step, and the heading's name shows in reverse video; `Space` or `Enter` opens or closes the section, and `PgDn` and `PgUp` jump from heading to heading.
+Degree and Octave stay at the top, and under them the rows come in sections that open and close like an accordion. Each section is headed by a row of the grid with a rule above and below it and no step dividers across it, labelled `+` and the section's name while closed, such as `+ Advanced`, and `-` and the name while open. The cursor moves onto a heading like any row, keeping its step, and the heading's name shows in reverse video; `Space` or `ENTER` opens or closes the section, and `PgDn` and `PgUp` jump from heading to heading.
 
 Basics and Timing start open, and the editor remembers which sections are open, for every pattern, for as long as it runs. When the open rows don't fit the screen, they scroll to keep the cursor's row in view. The sections, in the order a step works them out, are:
 
@@ -149,14 +149,14 @@ Basics and Timing start open, and the editor remembers which sections are open, 
 | Degree | The gauge, 1 up to the size of the scale, where 1 is the root | Digits, `[` `]`, `Bksp` empties the step |
 | Note (drum patterns) | A to G, with no gauge | Letters, `Bksp` empties the step |
 | Octave | -2 to 8 with Live's labels, 0 to 10 with llamatron's (see Octave labels on the File/Global page) | Digits, `[` `]`, `Bksp` sets the default |
-| Tie | `●` on an empty step after a note holds the note through that step. See below. | `Space` or `Enter` toggles, `Bksp` turns it off. Only on empty steps. |
-| Gate | How long the note sounds, in whole notes, like 1/16 or 5/16. Blank is one step. | `[` `]` step through 1/64, 1/32, 1/16, 1/8, 1/4, 1/2, 1, 2 and 4, `Enter` types a whole number or a fraction, and `Bksp` makes it one step. |
-| Dot | `d` makes the gate dotted, half as long again, and `t` makes it a triplet, two thirds as long, so 1/16 with `d` is 3/32 | `Space` or `Enter` goes to the next one, `[` (dec) and `]` (inc) step back and forward, `Bksp` clears |
-| #/b | Sharp or flat: moves the note a half step up or down | `Space` or `Enter` goes to the next one, `[` (dec) and `]` (inc) step back and forward, `Bksp` clears |
-| Chord | Builds a chord on the note | `Enter` to choose from the list, `Space` goes to the next one, `[` (dec) and `]` (inc) step back and forward, `Bksp` clears |
-| Inversion | Which of the chord's notes is at the bottom: blank for root position, `1` moves the chord's lowest note up an octave, `2` the lowest two and `3` the lowest three, which only a chord of four notes or more has, so a triad plays `3` as `2`. A step with no chord shows `/`, and the piano roll draws the chord's other notes where the inversion plays them. | `Space` or `Enter` goes to the next one, `[` (dec) and `]` (inc) step back and forward, `Bksp` clears |
-| Velocity | 1 to 127, default 127 | Digits, `[` `]`, `Enter` to type, `Bksp` sets the default |
-| Glide | `●` makes the note run slightly into the next one, which a synth with glide turned on slides across. A blank is off. | `Space` or `Enter` toggles, `Bksp` turns it off |
+| Tie | `●` on an empty step after a note holds the note through that step. See below. | `Space` or `ENTER` toggles, `Bksp` turns it off. Only on empty steps. |
+| Gate | How long the note sounds, in whole notes, like 1/16 or 5/16. Blank is one step. | `[` `]` step through 1/64, 1/32, 1/16, 1/8, 1/4, 1/2, 1, 2 and 4, `ENTER` types a whole number or a fraction, and `Bksp` makes it one step. |
+| Dot | `d` makes the gate dotted, half as long again, and `t` makes it a triplet, two thirds as long, so 1/16 with `d` is 3/32 | `Space` or `ENTER` goes to the next one, `[` (dec) and `]` (inc) step back and forward, `Bksp` clears |
+| #/b | Sharp or flat: moves the note a half step up or down | `Space` or `ENTER` goes to the next one, `[` (dec) and `]` (inc) step back and forward, `Bksp` clears |
+| Chord | Builds a chord on the note | `ENTER` to choose from the list, `Space` goes to the next one, `[` (dec) and `]` (inc) step back and forward, `Bksp` clears |
+| Inversion | Which of the chord's notes is at the bottom: blank for root position, `1` moves the chord's lowest note up an octave, `2` the lowest two and `3` the lowest three, which only a chord of four notes or more has, so a triad plays `3` as `2`. A step with no chord shows `/`, and the piano roll draws the chord's other notes where the inversion plays them. | `Space` or `ENTER` goes to the next one, `[` (dec) and `]` (inc) step back and forward, `Bksp` clears |
+| Velocity | 1 to 127, default 127 | Digits, `[` `]`, `ENTER` to type, `Bksp` sets the default |
+| Glide | `●` makes the note run slightly into the next one, which a synth with glide turned on slides across. A blank is off. | `Space` or `ENTER` toggles, `Bksp` turns it off |
 
 When the scale is known, the Degree gauge is as tall as the scale, five rows for a pentatonic scale and seven for a major one, and a degree can't go past it: `]` at the top and `[` at the bottom stay where they are, and the status line says `top of C Major: change the octave on the Octave row`, since the gauge and the Octave row together make the note. A file can hold a degree past the scale's top, such as 9 in a seven-note scale; the editor shows and plays it as degree 2 an octave higher, and writes it back within the scale when nudged. When the scale isn't known, the gauge has seven numbered rows, any degree up to the largest scale the pattern plays in can be typed, and a degree above the rows fills the gauge and marks its number with `▲`.
 
@@ -178,7 +178,7 @@ Glide does nothing before a rest or before the same pitch. Probability, on the A
 
 ### Chords
 
-The Chord section holds everything about a step's chord: the Chord row, the Tension row, the Scale row and the Inversion row. `Enter` on the Chord, Tension or Scale row opens the [Chord Selector](#chord-selector), and on each of the three rows `[`, `]` and `Space` step through the choices, stopping at the first and the last; the Scale row steps through every scale type in the Chord Selector's order. While the cursor rests on a step that holds a chord, the status line names the chord and its notes.
+The Chord section holds everything about a step's chord: the Chord row, the Tension row, the Scale row and the Inversion row. `ENTER` on the Chord, Tension or Scale row opens the [Chord Selector](#chord-selector), and on each of the three rows `[`, `]` and `Space` step through the choices, stopping at the first and the last; the Scale row steps through every scale type in the Chord Selector's order. While the cursor rests on a step that holds a chord, the status line names the chord and its notes.
 
 A step whose Scale is set takes its degree and its scale chord from that scale type on the clip's root, which is how a chord is borrowed: in C major, degree 6 with the Scale "Minor" and the chord `3` plays A flat major. A tension is added above the chord's root, so `dom7` on degree 5 with `b9` and `13` plays G B D F A♭ E. A single note takes no tensions.
 
@@ -241,12 +241,12 @@ Open the `Advanced` section to see these: `PgDn` to its heading and `Space`.
 
 | Row | Values | What it does |
 | --- | --- | --- |
-| Probability | Chance of playing, 0 to 100, default 100 | Digits, `[` `]`, `Enter` to type, `Bksp` sets the default |
+| Probability | Chance of playing, 0 to 100, default 100 | Digits, `[` `]`, `ENTER` to type, `Bksp` sets the default |
 | Ratchet | 1 to 16 | Splits the step into that many equal notes in the same time |
 | Ratchet Offset | -24 to 24 | Moves each ratchet note that much further along the scale than the last one. In a drum pattern it moves by half steps instead. |
 | Grab | `●` or blank | Plays the note that the clip's Grab track most recently played instead of this step's own, or the root of a chord, however the chord is inverted or voiced. A chord on the step's Chord row is built on the grabbed note. The Grab row works on an empty step too: marking one gives it the root in the default octave as a note of its own, so the step has a velocity and a gate like any other, and a marked step can't hold a chord. |
 
-Gate and Dot are in Timing, with Tie, because ties draw a note's length where you can see it, and most patterns need nothing else. Unset values show a dot. The number rows take digits, `[` (dec) and `]` (inc), or `Enter` to type, and `Bksp` sets them back. Grab is toggled with `Space`.
+Gate and Dot are in Timing, with Tie, because ties draw a note's length where you can see it, and most patterns need nothing else. Unset values show a dot. The number rows take digits, `[` (dec) and `]` (inc), or `ENTER` to type, and `Bksp` sets them back. Grab is toggled with `Space`.
 
 Grab works like a step sequencer's note grab, taking notes from the track that each clip names in Grab track. See [Clips](CLIPS.md) for how it works.
 
@@ -261,7 +261,7 @@ Open the `CCs` section to see these. The CC rows send MIDI CC values, like a ste
 | CC 1 to CC 4 | 0 to 127 | Sends that value at the start of the step. A dot sends nothing, so the last value holds. The row's label says which CC number the lane sends on the tracks that play the pattern, like `CC 1 (74)`, or `(off)` when it sends nothing there, or `(?)` when the tracks send different numbers; a pattern no track plays yet shows the plain `CC 1`. |
 | Slide | `●` or blank | Ramps each of this step's CC values to that row's next value, instead of jumping, like slide on a groovebox |
 
-CC rows and Slide can be set on a rest, so a sweep can carry on through silence. The number rows take digits, `[` (dec) and `]` (inc), or `Enter` to type, and `Bksp` clears them. A ratchet doesn't repeat the values, and probability doesn't drop them.
+CC rows and Slide can be set on a rest, so a sweep can carry on through silence. The number rows take digits, `[` (dec) and `]` (inc), or `ENTER` to type, and `Bksp` clears them. A ratchet doesn't repeat the values, and probability doesn't drop them.
 
 In a Live set, each CC becomes a clip envelope, and Live draws a slide as a straight line. In MIDI files, a slide is sent as a new value every 1/64 note.
 
@@ -277,11 +277,11 @@ The `Reg. Mod` section holds the rows that change the registers, `Reg. Apply` th
 
 | Row | Values | What it does |
 | --- | --- | --- |
-| AX+Note to DX+Note | `+`, `-` or blank | `+` moves the note up the scale by the register's value and `-` moves it down; blank leaves it. `Space` or `Enter` cycles the three, `[` (dec) and `]` (inc) step back and forward, and `Bksp` clears. Not in drum patterns. Can be set on an empty step, where nothing moves. |
+| AX+Note to DX+Note | `+`, `-` or blank | `+` moves the note up the scale by the register's value and `-` moves it down; blank leaves it. `Space` or `ENTER` cycles the three, `[` (dec) and `]` (inc) step back and forward, and `Bksp` clears. Not in drum patterns. Can be set on an empty step, where nothing moves. |
 | AX+Vel to DX+Vel | `+`, `-` or blank | `+` adds the register's value to the velocity and `-` takes it off, keeping the velocity between 1 and 127; blank leaves it. The same keys. Can be set on an empty step, where nothing changes. |
 | AX= to DX= | blank, or a value | Sets the register to this value when the step plays, before anything adds to it, held between the register's Minimum and Maximum; blank leaves it. `]` (inc) on a blank step gives the register's Minimum in the current song, `[` (dec) on the Minimum gives blank again, and `Bksp` clears. |
 | AX+= to DX+= | minus to plus the register's Allowed Inc Max | Adds this much to the register when the step plays, or takes it away. `[` (dec) and `]` (inc) stop at the register's Allowed Inc Max on the [Registers](REGISTERS.md) page, 20 unless changed, the narrowest of the songs that play the pattern. |
-| AX,BX, AX,CX, AX,DX | `<`, `>`, `=` or blank | The note sounds only when AX is less than, more than or the same as that register, after the step's own changes; blank makes no comparison, and when a step has several, every one has to hold. A step that fails sounds nothing, a ratchet's slices all together and a chord whole, and its changes still happen. `Space` or `Enter` cycles them, `[` (dec) and `]` (inc) step back and forward, and `Bksp` clears. Only a note's step can hold one. |
+| AX,BX, AX,CX, AX,DX | `<`, `>`, `=` or blank | The note sounds only when AX is less than, more than or the same as that register, after the step's own changes; blank makes no comparison, and when a step has several, every one has to hold. A step that fails sounds nothing, a ratchet's slices all together and a chord whole, and its changes still happen. `Space` or `ENTER` cycles them, `[` (dec) and `]` (inc) step back and forward, and `Bksp` clears. Only a note's step can hold one. |
 
 How they work:
 
@@ -294,7 +294,7 @@ How they work:
 - A morph's target pattern uses the registers but doesn't add to them.
 - A note pushed out of the MIDI range moves to the nearest octave that fits.
 
-The register change rows take digits, `[` (dec) and `]` (inc), or `Enter` to type a negative number, and `Bksp` clears them, and every register row can be set on an empty step: no register setting is ever locked out for want of a note, and erasing a note leaves the step's register rows as they are. The rows that use registers are toggled with `Space` or `Enter`.
+The register change rows take digits, `[` (dec) and `]` (inc), or `ENTER` to type a negative number, and `Bksp` clears them, and every register row can be set on an empty step: no register setting is ever locked out for want of a note, and erasing a note leaves the step's register rows as they are. The rows that use registers are toggled with `Space` or `ENTER`.
 
 ## Play Directions
 
@@ -319,17 +319,17 @@ Positions carry on across repeats. The random directions draw their own random n
 
 ![The Chord Selector with the flyout of the Common scales open](screenshots/chord_selector.svg)
 
-The Chord Selector chooses a step's chord in one place. `Enter` on the Chord, Tension or Scale row of the rows view opens it, and so does `H` on a note of the piano roll. It holds four lists side by side: the chord's quality, with `(single note)` at the top; its inversion, with `(none)` for root position at the top; its tensions, the notes added on top, such as a flat ninth; and the scale the step borrows its notes from, with `(the clip's own)` at the top.
+The Chord Selector chooses a step's chord in one place. `ENTER` on the Chord, Tension or Scale row of the rows view opens it, and so does `H` on a note of the piano roll. It holds four lists side by side: the chord's quality, with `(single note)` at the top; its inversion, with `(none)` for root position at the top; its tensions, the notes added on top, such as a flat ninth; and the scale the step borrows its notes from, with `(the clip's own)` at the top.
 
 | Key | What it does |
 | --- | --- |
 | Arrows | Up and Down move within a list, Left and Right from list to list, stopping at the edges. |
 | `Tab` | Goes to the next list, and round to the first. |
 | `Space` | On a tension, turns it on or off. |
-| `Space`, `Enter` | On a category of scales, opens its flyout; on `(the clip's own)`, borrows no scale. |
-| `Enter` | On a quality, an inversion or a tension, takes the chord. |
-| `Esc` | Cancels, changing nothing. |
+| `Space`, `ENTER` | On a category of scales, opens its flyout; on `(the clip's own)`, borrows no scale. |
+| `ENTER` | On a quality, an inversion or a tension, takes the chord. |
+| `ESC` | Cancels, changing nothing. |
 
-The scale list, the last of the four, holds categories: Common, Modes, Harmonic & Melodic, Pentatonic & Blues, Symmetric, Jazz, Mid. East & Europe, East Asia and India. A category opens a flyout of its scale types, a box drawn over the Chord Selector, a little down and to the right. In the flyout, Up and Down move, `Enter` picks a scale type and closes the flyout, and `Esc` or Left closes the flyout with nothing changed. After a pick the cursor goes on to the qualities, so that the next `Enter` takes the chord, and the category shows the scale type picked, as in `[ Common ▸ Major ]`. Common holds the six scales most often borrowed from, which are also found in their own categories.
+The scale list, the last of the four, holds categories: Common, Modes, Harmonic & Melodic, Pentatonic & Blues, Symmetric, Jazz, Mid. East & Europe, East Asia and India. A category opens a flyout of its scale types, a box drawn over the Chord Selector, a little down and to the right. In the flyout, Up and Down move, `ENTER` picks a scale type and closes the flyout, and `ESC` or Left closes the flyout with nothing changed. After a pick the cursor goes on to the qualities, so that the next `ENTER` takes the chord, and the category shows the scale type picked, as in `[ Common ▸ Major ]`. Common holds the six scales most often borrowed from, which are also found in their own categories.
 
 The lines under the lists say what the chord comes to as the choice moves: its name in the scale it is drawn from, its name in the clip's own scale when it borrows another, and its exact notes. The pattern underneath shows the chord at the same time: the piano roll draws the chord's other notes as thin green lines, and the rows show the values in their cells. Cancelling puts the step back as it was.

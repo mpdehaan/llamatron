@@ -27,10 +27,10 @@ class KeyName:
     """
 
     TAB = 'Tab'
-    ENTER = 'Enter'
+    ENTER = 'ENTER'
     BACKSPACE = 'Bksp'
     SPACE = 'Space'
-    ESCAPE = 'Esc'
+    ESCAPE = 'ESC'
     CTRL_S = 'Ctrl+S'
     CTRL_O = 'Ctrl+O'
     CTRL_X = 'Ctrl+X'
@@ -76,15 +76,15 @@ class KeyName:
     ARROWS = '←↑↓→'
     UP_DOWN = '↑↓'
     LEFT_RIGHT = '←→'
-    ENTER_ESC_M = 'Enter/Esc/M'
-    SPACE_ENTER = 'Space/Enter'
+    ENTER_ESC_M = 'ENTER/ESC/M'
+    SPACE_ENTER = 'Space/ENTER'
     TAB_SHIFT_TAB = 'Tab/Shift+Tab'
     MINUS_EQUALS = '-/='
     BRACKETS = '[/]'
     HOME_END = 'Home/End'
     PAGE_UP_DOWN = 'PgUp/PgDn'
     TAB_ARROWS = 'Tab/←→'
-    ENTER_ESCAPE = 'Enter/Esc'
+    ENTER_ESCAPE = 'ENTER/ESC'
     # The keys that type into a search, in a picker or on a list page, and the keys that type a number or a note.
     SEARCH_CHARACTERS = 'A-Z 0-9'
     DIGITS = '0-9'
@@ -146,7 +146,7 @@ class What:
     HELP = 'HELP'
     BACK = 'back'
     MOVE = 'move'
-    # Move mode, the user's design: M picks up what the cursor is on, the arrows carry it, and Enter, Esc or M drops it.
+    # Move mode, the user's design: M picks up what the cursor is on, the arrows carry it, and ENTER, ESC or M drops it.
     CARRY = 'carry'
     DROP = 'drop'
     ENDS = 'ends'
@@ -217,7 +217,7 @@ MSG_SAVE_AS_WHAT = 'save as'
 MSG_IMPORT_WHAT = 'import'
 MSG_PRESS_WHAT = 'press'
 
-# tui/screens/arrange_page.py: the visualizer key, and Esc while it shows, which brings the clips back.
+# tui/screens/arrange_page.py: the visualizer key, and ESC while it shows, which brings the clips back.
 MSG_VISUALIZER_WHAT = 'visualizer'
 MSG_STEP_VISUALIZER_WHAT = 'mode'
 MSG_SHOW_DETAILS_WHAT = 'details'
@@ -271,7 +271,7 @@ MSG_LISTEN_WHAT = 'listen'
 MSG_STOP_LISTENING_WHAT = 'stop'.ljust(len(MSG_LISTEN_WHAT))
 
 # tui/screens/pattern_editor.py, its two drawings and the rows in tui/components/
-# What a section's row does with Space or Enter, and what Tab does.
+# What a section's row does with Space or ENTER, and what Tab does.
 MSG_OPEN_SECTION_WHAT = 'open section'
 MSG_CLOSE_SECTION_WHAT = 'close section'
 MSG_NEXT_SECTION_WHAT = 'next section'

@@ -68,7 +68,7 @@ MSG_DETAILS_TRANSPOSE = 'transpose: {amount:+d}'
 MSG_DETAILS_EUCLID = 'euclid: {hits}/{steps}'
 MSG_DETAILS_MUTED = 'muted'
 MSG_DETAILS_LIST_SEPARATOR = ', '
-# Around the line of details Tab picked, which Enter opens, the user's choice over the triangle, which marks play.
+# Around the line of details Tab picked, which ENTER opens, the user's choice over the triangle, which marks play.
 MSG_DETAILS_STOCK = 'stock'
 
 # tui/components/scene_view.py and tui/scene_notes.py: Scene View, the user's design, an inset window over Arrange showing
@@ -186,6 +186,8 @@ MSG_SONG_SCALE_MARK = ' (song)'
 # The keyboard under the scale's fields (tui/components/keyboard.py): a key in the scale, one outside it, and the root's name.
 MSG_KEY_IN_SCALE = '███'
 MSG_KEY_OUT_OF_SCALE = '░░░'
+MSG_KEY_OF_SCALE_OUTLINED = '▒▒▒'
+MSG_KEY_IN_CHORD = '███'
 MSG_ROOT_KEY_NAME = '[{name}]'
 
 # tui/screens/pattern_editor.py, its two drawings and the rows in tui/components/
@@ -248,7 +250,7 @@ MSG_OVER_THE_TOP_MARK = '▲'
 MSG_CC_LANE_OFF = 'off'
 MSG_CC_LANE_VARIES = '?'
 MSG_TOGGLE_OFF = ' '
-# After the value of a settings field whose Enter opens a list of choices, the user's choice (tui/screens/field_page.py).
+# After the value of a settings field whose ENTER opens a list of choices, the user's choice (tui/screens/field_page.py).
 MSG_PICKER_MARK = '▾'
 # tui/dialogs/chord_dialog.py: a row that opens a flyout, drawn as a button, alone and with the choice made inside it, with and without room for its own name, and the
 # flyout's heading.

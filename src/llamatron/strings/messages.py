@@ -148,7 +148,7 @@ MSG_RENAME_SONG_PROMPT = 'Rename song'
 
 # tui/screens/track_editor.py
 MSG_RENAME_TRACK_PROMPT = 'Rename track'
-MSG_EDITING = 'editing: Tab reaches Save and Cancel, Esc cancels'
+MSG_EDITING = 'editing: Tab reaches Save and Cancel, ESC cancels'
 MSG_CLEAR_NOTES_TITLE = 'Clear the notes'
 MSG_CLEAR_NOTES_QUESTION = 'Delete all of the notes?'
 MSG_NO_NOTES_NOTE = '  No notes yet. Press E to write some.'
@@ -293,7 +293,7 @@ MSG_STEP_ROW_NOTES = {
 }
 
 # tui/screens/list_page.py and tui/screens/arrange_page.py: Move mode, the user's design.
-MSG_MOVING = 'moving {what}: the arrows carry it, Enter drops it'
+MSG_MOVING = 'moving {what}: the arrows carry it, ENTER drops it'
 MSG_MOVING_SCENE = 'scene ({name})'
 MSG_MOVING_TRACK = 'track ({name})'
 MSG_MOVING_CLIP = 'clip ({name})'
