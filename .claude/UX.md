@@ -274,8 +274,8 @@ such name, and `tests/rules/test_naming.py` holds that nothing else numbers one)
   too, `▶` to `■` and the dot appearing, so that the state shows without the colour. The title
   on black that the start screen, the recordings' splash and the batch videos show
   (`tui/components/title_card.py`) is all in blue, block letters, scanner, address and prompt, the
-  user's design after a classic video game's start page, and so is the demo's name that a recording of an example scrolls from right
-  to left after the title, `DEMO:` and the file's name in camel case, capitals twice the size of small letters (`tui/components/scroll_text.py`); the user wants the questions of a colour
+  user's design after a classic video game's start page, and so is the set's name that a recording scrolls from right
+  to left after the title, `DEMO:` and the file's name as words, in large capitals (`tui/components/scroll_text.py`); the user wants the questions of a colour
   mode for the rest explored as the demos are built (`dev_notes/IDEAS.yml`). The
   visualizer (`visualizers/`), shown over Arrange's clip area while a song plays in real time, is
   the other place colour is allowed, the user's design, and it never strobes and

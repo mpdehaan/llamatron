@@ -25,7 +25,7 @@ from llamatron.strings.about import MSG_BLOCK, MSG_SPLASH_ADDRESS, MSG_SPLASH_WO
 from llamatron.tui import keybindings
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.components import scroll_text, title_card
-from llamatron.tui.components.scroll_text import BANNER_ROWS, COLUMNS_PER_SECOND, banner, camel_case, demo_name, scroll_lines, scroll_seconds, scroll_text_for
+from llamatron.tui.components.scroll_text import BANNER_ROWS, COLUMNS_PER_SECOND, banner, demo_name, words_of, scroll_lines, scroll_seconds, scroll_text_for
 from llamatron.strings.about import MSG_BLOCK_LETTERS, MSG_DEMO_SCROLL
 from llamatron.tui.components.title_card import (
     ADDRESS_ROW, BLACK, LETTER_ROWS, NARROW, PROMPT_ROW, SCANNER_ROW, WIDE, Entrance, prompt_level, scan_end, scan_start, scanner_level,
@@ -69,11 +69,11 @@ def colours_of(line):
 
 
 A_LEARNING_DEMO = 'examples/learning/19_hocket_shanty.yml'
-A_LEARNING_DEMO_NAME = 'HocketShanty'
+A_LEARNING_DEMO_NAME = 'Hocket Shanty'
 A_GENRE_DEMO = 'examples/by_genre/ragtime/entertainer.yml'
 A_GENRE_DEMO_NAME = 'Entertainer'
 WORDS_WITH_A_NUMBER = 'take-5 blues'
-WORDS_WITH_A_NUMBER_AS_CAMEL = 'Take5Blues'
+WORDS_WITH_A_NUMBER_AS_WORDS = 'Take 5 Blues'
 ONLY_A_NUMBER = 'sets/1999.yml'
 ONLY_A_NUMBER_NAME = '1999'
 COLON_AND_SPACE = ': '
@@ -149,10 +149,10 @@ class TestTitleCard(unittest.TestCase):
 class TestScrollText(unittest.TestCase):
     """The demo's name crossing the screen after the title when an example is recorded, the user's design: DEMO: and the file's name in camel case, in the title's blue."""
 
-    def test_a_files_name_loses_its_folder_ending_and_number_and_is_camel_case(self):
+    def test_a_files_name_loses_its_folder_ending_and_number_and_is_words(self):
         self.assertEqual(demo_name(A_LEARNING_DEMO), A_LEARNING_DEMO_NAME)
         self.assertEqual(demo_name(A_GENRE_DEMO), A_GENRE_DEMO_NAME)
-        self.assertEqual(camel_case(WORDS_WITH_A_NUMBER), WORDS_WITH_A_NUMBER_AS_CAMEL)
+        self.assertEqual(words_of(WORDS_WITH_A_NUMBER), WORDS_WITH_A_NUMBER_AS_WORDS)
         self.assertEqual(scroll_text_for(A_LEARNING_DEMO), MSG_DEMO_SCROLL.format(name=A_LEARNING_DEMO_NAME))
 
     def test_a_name_that_is_only_a_number_keeps_it(self):
@@ -163,15 +163,12 @@ class TestScrollText(unittest.TestCase):
             with self.subTest(character=character):
                 self.assertEqual([len(row) for row in MSG_BLOCK_LETTERS[character]], [scroll_text.LETTER_ROWS] * scroll_text.LETTER_ROWS)
 
-    def test_a_capital_is_twice_a_small_letters_size_and_a_small_letter_stands_on_the_bottom_row(self):
-        large = banner(A_CAPITAL)
-        small = banner(A_CAPITAL.lower())
-        self.assertEqual(len(large), BANNER_ROWS)
-        self.assertEqual(len(small), BANNER_ROWS)
-        self.assertEqual(len(large[0]), len(small[0]) * scroll_text.LARGE_TIMES)
-        self.assertTrue(all(not row.strip() for row in small[:BANNER_ROWS // scroll_text.LARGE_TIMES]))
-        self.assertIn(MSG_BLOCK, small[-1])
-        self.assertIn(MSG_BLOCK, large[0])
+    def test_every_letter_is_a_capital_of_one_size(self):
+        # The user's choice: the block letters have no lower case, so the words are capitals.
+        self.assertEqual(banner(A_CAPITAL), banner(A_CAPITAL.lower()))
+        self.assertEqual(len(banner(A_CAPITAL)), BANNER_ROWS)
+        self.assertEqual(len(banner(A_CAPITAL)[0]), scroll_text.LETTER_ROWS * scroll_text.BLOCK_COLUMNS)
+        self.assertIn(MSG_BLOCK, banner(A_CAPITAL)[0])
 
     def test_a_character_with_no_shape_is_a_space(self):
         self.assertEqual(banner(NO_SUCH_LETTER), banner(SPACE))

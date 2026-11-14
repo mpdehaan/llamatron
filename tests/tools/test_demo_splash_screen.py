@@ -26,8 +26,7 @@ from llamatron.strings.about import MSG_DEMO_SCROLL
 SCRIPT = pathlib.Path(__file__).resolve().parent.parent.parent / 'internal_tools' / 'demo_splash_screen.py'
 MODULE_NAME = 'demo_splash_screen'
 SCROLL_FLAG = '--scroll-text'
-A_DEMO = 'examples/learning/19_hocket_shanty.yml'
-A_DEMO_NAME = 'HocketShanty'
+SOME_WORDS = 'DEMO: Hocket Shanty'
 THE_DEFAULT_DEMO_NAME = 'Entertainer'
 SUCCESS = 0
 
@@ -55,12 +54,12 @@ class TestDemoSplashScreen(unittest.TestCase):
         self.assertTrue(launch.test_splash)
         self.assertIsNone(launch.scroll_text)
 
-    def test_scroll_text_shows_the_named_sets_name_after_the_title(self):
-        launch = self.launched_with([SCROLL_FLAG, A_DEMO])
+    def test_scroll_text_shows_the_words_given_after_the_title(self):
+        launch = self.launched_with([SCROLL_FLAG, SOME_WORDS])
         self.assertTrue(launch.test_splash)
-        self.assertEqual(launch.scroll_text, MSG_DEMO_SCROLL.format(name=A_DEMO_NAME))
+        self.assertEqual(launch.scroll_text, SOME_WORDS)
 
-    def test_scroll_text_with_no_set_named_shows_the_entertainers(self):
+    def test_scroll_text_with_no_words_shows_the_entertainers(self):
         self.assertEqual(self.launched_with([SCROLL_FLAG]).scroll_text, MSG_DEMO_SCROLL.format(name=THE_DEFAULT_DEMO_NAME))
 
 

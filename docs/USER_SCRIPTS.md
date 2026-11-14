@@ -156,6 +156,8 @@ Parameters:
 - `--plain`: with `--visualizer`, show the visualizer over Arrange's clip area, the older style, rather than the title, READY and the framed visualizer.
 - `--no-alternate`: show the visualizer alone in the frame, rather than the clips and the visualizer by turns every ten seconds.
 - `--batch`: record the take as one of a batch video's, from the window's cells alone.
+- `--scroll-text WORDS`: the words that cross the screen after the opening splash, in place of `DEMO:` and the set's name from its file.
+- `--no-scroll`: show no words crossing the screen after the opening splash.
 - `--audio-device DEVICE`: the audio input device to record the sound from, the first whose name holds this text.
 - `--max-seconds SECONDS`: the longest the take may run.
 - `--window-id ID`: the id of the window to record, when the terminal program cannot be asked.
@@ -186,6 +188,7 @@ Parameters:
 - `--fluidsynth-output DEVICE`: the audio output FluidSynth plays to, such as a Multi-Output Device that reaches the recorded one too.
 - `--window-id ID`: the id of the window to record, when the terminal program cannot be asked.
 - `--go`: start at once, without waiting for ENTER after the list of takes.
+- `--no-scroll`: show no words crossing the screen after each take's title.
 
 Environment:
 

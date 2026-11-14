@@ -14,13 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The demo's name scrolling across the screen: what a recording of an example shows after the title, the user's design.
+"""The demo's name scrolling across the screen: what a recording shows after the title, the user's design.
 
-The words are DEMO: and the set's file name in camel case, in the title's blue on black, in the
-title's block letters. A capital, a digit and the colon are drawn twice the size of a small
-letter, which is its capital's shape at the size the title's letters have, so that the camel
-case shows in letters that have no lower case. The words come in at the right edge, cross at one
-speed and leave at the left.
+The words are DEMO: and the set's file name as words, like DEMO: HOCKET SHANTY, or whatever the
+recorder was told to show instead, in the title's blue on black and in the title's block letters,
+which are capitals, drawn large. The words come in at the right edge, cross at one speed and
+leave at the left.
 """
 
 import os
@@ -32,32 +31,31 @@ from llamatron.strings.about import MSG_BLOCK, MSG_BLOCK_LETTERS, MSG_DEMO_SCROL
 from llamatron.tui.components.title_card import BLACK_STYLE, TITLE_BLUE, blank_line, shaded
 from llamatron.tui.drawing import NOTHING, SPACE
 
-# How many columns and rows one block of a small letter takes, a square on most consoles, and how many times larger a large letter is.
-SMALL_COLUMNS = 2
-SMALL_ROWS = 1
-LARGE_TIMES = 2
+# How many columns and rows one block of a letter takes, a square on most consoles and twice the size of the title's.
+BLOCK_COLUMNS = 4
+BLOCK_ROWS = 2
 LETTER_ROWS = 5
-# How tall the words are: a large letter's rows.
-BANNER_ROWS = LETTER_ROWS * SMALL_ROWS * LARGE_TIMES
+# How tall the words are.
+BANNER_ROWS = LETTER_ROWS * BLOCK_ROWS
 # The columns between two letters.
-LETTER_GAP = 2
+LETTER_GAP = 4
 # How fast the words cross, in columns a second.
-COLUMNS_PER_SECOND = 90.0
+COLUMNS_PER_SECOND = 120.0
 FULL = 1.0
 # What parts the words of a file's name, and the number a learning demo's name starts with, which is its place and not its name.
 WORD_BREAK = re.compile(r'[^A-Za-z0-9]+')
 LEADING_NUMBER = re.compile(r'^[0-9]+[^A-Za-z0-9]+(?=.)')
 
 
-def camel_case(name):
-    """Return a name's words run together, each starting with a capital: hocket_shanty gives HocketShanty."""
-    return NOTHING.join(word[:1].upper() + word[1:] for word in WORD_BREAK.split(name) if word)
+def words_of(name):
+    """Return a name's words with a space between them, each starting with a capital: hocket_shanty gives Hocket Shanty."""
+    return SPACE.join(word[:1].upper() + word[1:] for word in WORD_BREAK.split(name) if word)
 
 
 def demo_name(path):
-    """Return a set's name for the scroll from its file: no folder, no ending, no number in front, in camel case."""
+    """Return a set's name for the scroll from its file: no folder, no ending, no number in front, as words."""
     name = os.path.splitext(os.path.basename(path))[0]
-    return camel_case(LEADING_NUMBER.sub(NOTHING, name))
+    return words_of(LEADING_NUMBER.sub(NOTHING, name))
 
 
 def scroll_text_for(path):
@@ -65,23 +63,14 @@ def scroll_text_for(path):
     return MSG_DEMO_SCROLL.format(name=demo_name(path))
 
 
-def is_large(character):
-    """Return whether a character is drawn large: a capital, a digit and the colon, and not a small letter or a space."""
-    return not character.islower() and character != SPACE
-
-
 def letter_lines(character):
-    """Return one character's rows, BANNER_ROWS of them: its capital's shape, large or small, a small one standing on the bottom row. A character with no shape is a space."""
-    if character.upper() not in MSG_BLOCK_LETTERS:
-        character = SPACE
-    shape = MSG_BLOCK_LETTERS[character.upper()]
-    times = LARGE_TIMES if is_large(character) else 1
-    columns = SMALL_COLUMNS * times
+    """Return one character's rows, BANNER_ROWS of them, in its capital's shape. A character with no shape is a space."""
+    shape = MSG_BLOCK_LETTERS.get(character.upper(), MSG_BLOCK_LETTERS[SPACE])
     drawn = []
     for row in shape:
-        line = NOTHING.join((MSG_BLOCK if block != SPACE else SPACE) * columns for block in row)
-        drawn.extend([line] * (SMALL_ROWS * times))
-    return [SPACE * len(drawn[0])] * (BANNER_ROWS - len(drawn)) + drawn
+        line = NOTHING.join((MSG_BLOCK if block != SPACE else SPACE) * BLOCK_COLUMNS for block in row)
+        drawn.extend([line] * BLOCK_ROWS)
+    return drawn
 
 
 def banner(text):

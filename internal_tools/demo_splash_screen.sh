@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# What it does: show the start screen on its own, its title coming in and holding five seconds (or --seconds N), then fading out and quitting; --scroll-text SET then shows the name of that demo crossing the screen, as a recording of an example does
+# What it does: show the start screen on its own, its title coming in and holding five seconds (or --seconds N), then fading out and quitting; --scroll-text WORDS then shows those words crossing the screen, as a recording shows the name of a demo
 
 set -eu
 # Plain sh. Run from the top folder, the one above this script's, wherever it is started from.
