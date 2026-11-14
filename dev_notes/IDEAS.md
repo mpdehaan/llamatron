@@ -83,7 +83,10 @@ it lists the global patterns and the current song's own, in alphabetical order, 
 blank line separates the caption from the column headings; the column for global patterns is headed GLOBAL and holds a solid
 circle where the pattern is global; TYPE becomes DRUM, a solid circle for a drum pattern and nothing otherwise; USED counts the
 clips that play the pattern; and TRACKS, where there is room, reads as the number of tracks and then their names in
-parentheses, like `(2 lead, pad)`, cut with an ellipsis when the names don't fit. What it would mean for the code: `uses_of` in `tui/uses.py` already knows
+parentheses, like `(2 lead, pad)`, cut with an ellipsis when the names don't fit; every column, heading and value, is
+left-justified; the key that makes a pattern global or a song's own again is named for Global; a new pattern is the current
+song's own; and the keys that move and sort rows leave the Patterns page alone, since its order is alphabetical, the other list
+pages keeping both. What it would mean for the code: `uses_of` in `tui/uses.py` already knows
 every use, and the Patterns page's USED column the count; the row needs the track names of the uses, without repeats, fitted
 to the width the page is given, and the answer remembered until the set changes. This covers what was left of "Where a
 pattern is used" for the Patterns page.
