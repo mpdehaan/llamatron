@@ -1,50 +1,55 @@
-version: 1.0.364
+version: 1.0.365
 title: Bad pelican
 description: "a galloping heavy metal epic of the mid eighties in the manner of Rime of the Ancient Mariner (Iron Maiden), with riffs and tunes of its own"
 notes: |
   Bad pelican: a galloping heavy metal epic of the mid eighties in the manner of Rime of the Ancient
   Mariner (Iron Maiden), with riffs and tunes of its own. This is a homage to Rime of the Ancient
   Mariner (Iron Maiden): its chords, form, sounds and drums follow that work as Claude knows it, and
-  every tune and rhythm here is new. Rebuild version 1.
+  every tune and rhythm here is new. Rebuild version 2.
 
-  A bass and guitars galloping on i VI VII; a narrating verse and a broad chorus; twin guitars in
-  thirds; a middle at 80 for a bass alone, a clean guitar and a pad; a build on tom-toms into a fast
-  instrumental at 168; the chorus again at the gallop.
+  A bass and guitars galloping on i VI VII over a plain beat; a twin-guitar tune in thirds that opens
+  the song and returns; a narrating verse and a broad chorus; a middle at 80 for a bass alone, a clean
+  guitar remembering the tune and a pad; a build on tom-toms into a fast instrumental at 168; the
+  chorus and the tune again at the gallop.
 
-  Subgenre: British heavy metal of the mid eighties in its long, storytelling form. Drums: a gallop,
-  the kick playing an eighth and two sixteenths under a snare on two and four and eighth hats; in the
-  quiet middle no drums at all, then tom-toms building. Tempo 152 for the gallop, 80 in the quiet
-  middle, 168 for the fast instrumental. Bass: the gallop itself, played loud and leading, and alone
-  in the middle. Builds: the middle grows from a bass alone to the fastest part of the song. Sounds: a
-  galloping bass, two guitars in harmony, a narrating high voice, a clean guitar and a low pad in the
-  middle. Melody manner: a narrative verse of repeated notes; a broader chorus; twin-guitar tunes in
-  thirds. Form: gallop, verse, chorus, twin guitars, a slow still middle, a build, a fast instrumental
-  with a solo, chorus.
+  Subgenre: British heavy metal of the mid eighties in its long, storytelling form. Drums: plain, one
+  bass drum: the kick on one and three with a push, a snare on two and four and eighth hats, since the
+  gallop belongs to the bass and the guitars; in the quiet middle no drums at all, then tom-toms
+  building. Tempo 152 for the gallop, 80 in the quiet middle, 168 for the fast instrumental. Bass: the
+  gallop itself, an eighth and two sixteenths, played loud and leading, and alone in the middle.
+  Builds: the middle grows from a bass alone to the fastest part of the song. Sounds: a galloping
+  bass, two guitars in harmony, a narrating high voice, a clean guitar and a low pad in the middle.
+  Melody manner: a narrative verse of repeated notes; a broader chorus; one twin-guitar tune in thirds
+  that keeps coming back. Form: gallop, the twin-guitar tune, verse, chorus, the tune, verse, chorus,
+  a slow still middle, a build, a fast instrumental with a solo, chorus, the tune.
 
   Band and song: the band is known for a galloping bass that leads, two guitars in harmony and long
   songs that tell old stories; this song for its epic length and its becalmed middle, the bass alone
   in near silence before the storm returns.
 
-  Checklist: it is good and memorable because it tells a voyage in its form: the gallop, the dead
-  calm, the storm. The hook is the gallop under the twin-guitar tune; the emotion is adventure, then
-  dread, then release; the lift is the fast instrumental after the build; the contrast is the quiet
-  middle, a bass, a clean guitar and a pad at half the speed; the sounds are a pick bass, two
-  distortion guitars, an overdriven guitar, a voice lead, a clean guitar and a warm pad.
+  Checklist: it is good and memorable because it tells a voyage in its form, the gallop, the dead
+  calm, the storm, and one guitar tune carries the listener through all of it. The hook is the twin-
+  guitar tune over the gallop: it opens the song, returns after each chorus, is remembered slowly by
+  the clean guitar in the calm, and ends the song; the emotion is adventure, then dread, then release;
+  the lift is the fast instrumental after the build; the contrast is the quiet middle, a bass, a clean
+  guitar and a pad at half the speed; the sounds are a pick bass, two distortion guitars, an
+  overdriven guitar, a voice lead, a clean guitar and a warm pad.
 
   Run it with: llamatron examples/by_genre/metal/bad_pelican.yml
 
   Scene 1, gallop, 4 bars.
-  Scene 2, verse, 16 bars.
-  Scene 3, chorus, 8 bars.
-  Scene 4, twin guitars, 8 bars.
-  Scene 5, verse 2, 8 bars.
-  Scene 6, chorus 2, 8 bars.
-  Scene 7, becalmed, 8 bars.
-  Scene 8, the wind rises, 8 bars.
-  Scene 9, storm, 16 bars.
-  Scene 10, solo, 8 bars.
-  Scene 11, last chorus, 8 bars.
-  Scene 12, twin guitars 2, 8 bars.
+  Scene 2, twin guitars, 8 bars.
+  Scene 3, verse, 16 bars.
+  Scene 4, chorus, 8 bars.
+  Scene 5, twin guitars again, 4 bars.
+  Scene 6, verse 2, 8 bars.
+  Scene 7, chorus 2, 8 bars.
+  Scene 8, becalmed, 8 bars.
+  Scene 9, the wind rises, 8 bars.
+  Scene 10, storm, 8 bars.
+  Scene 11, solo, 8 bars.
+  Scene 12, last chorus, 8 bars.
+  Scene 13, twin guitars to end, 8 bars.
 
   When changing this demo:
   - Keep the drums as the Subgenre paragraph describes them, the kick first.
@@ -61,16 +66,16 @@ patterns:
     steps: 16
     drum: true
     step_size: 1/16
-    degree: [C, ~, C, C, C, ~, C, C, C, ~, C, C, C, ~, C, C]
-    octave: [3, ~, 3, 3, 3, ~, 3, 3, 3, ~, 3, 3, 3, ~, 3, 3]
-    velocity: [106, ~, 106, 106, 106, ~, 106, 106, 106, ~, 106, 106, 106, ~, 106, 106]
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, ~, ~, 110, ~, 110, ~, ~, ~, ~, ~]
   snare:
     steps: 16
     drum: true
     step_size: 1/16
     degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
     octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
-    velocity: [~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 116, ~, ~, ~, ~, ~, ~, ~, 116, ~, ~, ~]
   hat:
     steps: 16
     drum: true
@@ -78,7 +83,7 @@ patterns:
     degree: [F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~]
     accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
     octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
-    velocity: [72, ~, 72, ~, 72, ~, 72, ~, 72, ~, 72, ~, 72, ~, 72, ~]
+    velocity: [80, ~, 58, ~, 80, ~, 58, ~, 80, ~, 58, ~, 80, ~, 58, ~]
   crash:
     steps: 64
     drum: true
@@ -91,9 +96,9 @@ patterns:
     steps: 16
     drum: true
     step_size: 1/16
-    degree: [C, ~, C, ~, C, ~, C, ~, C, ~, C, ~, C, ~, C, ~]
-    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
-    velocity: [108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~]
+    degree: [C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~]
+    octave: [3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~]
   toms:
     steps: 16
     drum: true
@@ -113,7 +118,7 @@ patterns:
     step_size: 1/16
     degree: [1, ~, 1, 1, 1, ~, 1, 1, 1, ~, 1, 1, 1, ~, 1, 1]
     octave: [2, ~, 2, 2, 2, ~, 2, 2, 2, ~, 2, 2, 2, ~, 2, 2]
-    velocity: [114, ~, 108, 108, 108, ~, 108, 108, 108, ~, 108, 108, 108, ~, 108, 108]
+    velocity: [116, ~, 110, 110, 110, ~, 110, 110, 110, ~, 110, 110, 110, ~, 110, 110]
   gallop chords:
     steps: 16
     step_size: 1/16
@@ -139,42 +144,56 @@ patterns:
     step_size: 1/8
     degree: [1, ~, ~, ~, 1, ~, 6, ~, 2, ~, ~, ~, 7, ~, ~, ~, 3, ~, ~, ~, 3, ~, 1, ~, 5, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, 3, ~, 6, ~, 4, ~, ~, ~, 2, ~, ~, ~, 7, ~, ~, ~, 2, ~, 7, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    octave: [6, ~, ~, ~, 6, ~, 5, ~, 6, ~, ~, ~, 5, ~, ~, ~, 6, ~, ~, ~, 6, ~, 6, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, 6, ~, 5, ~, 6, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, 6, ~, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, ~, 5, ~, 4, ~, 5, ~, ~, ~, 4, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 4, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 5, ~, 4, ~, 5, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 5, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     velocity: [120, ~, ~, ~, 114, ~, 114, ~, 120, ~, ~, ~, 114, ~, ~, ~, 120, ~, ~, ~, 114, ~, 114, ~, 120, ~, ~, ~, ~, ~, ~, ~, 120, ~, ~, ~, 114, ~, 114, ~, 120, ~, ~, ~, 114, ~, ~, ~, 120, ~, ~, ~, 114, ~, 114, ~, 120, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false]
   twin:
     steps: 64
     step_size: 1/8
     degree: [1, ~, 2, 3, 2, ~, 1, ~, 6, ~, 1, ~, 3, ~, ~, ~, 7, ~, 1, 2, 4, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~, 3, ~, 4, 5, 4, ~, 3, ~, 3, ~, 1, ~, 6, ~, ~, ~, 2, ~, 4, ~, 2, ~, 7, ~, 1, ~, ~, ~, ~, ~, ~, ~]
-    octave: [6, ~, 6, 6, 6, ~, 6, ~, 5, ~, 6, ~, 6, ~, ~, ~, 5, ~, 6, 6, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~, 6, ~, 6, 6, 6, ~, 6, ~, 6, ~, 6, ~, 5, ~, ~, ~, 6, ~, 6, ~, 6, ~, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [112, ~, 106, 106, 106, ~, 106, ~, 112, ~, 106, ~, 106, ~, ~, ~, 112, ~, 106, 106, 106, ~, 106, ~, 112, ~, ~, ~, ~, ~, ~, ~, 112, ~, 106, 106, 106, ~, 106, ~, 112, ~, 106, ~, 106, ~, ~, ~, 112, ~, 106, ~, 106, ~, 106, ~, 112, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, 5, 5, 5, ~, 5, ~, 4, ~, 5, ~, 5, ~, ~, ~, 4, ~, 5, 5, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, ~, 4, ~, ~, ~, 5, ~, 5, ~, 5, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [114, ~, 108, 108, 108, ~, 108, ~, 114, ~, 108, ~, 108, ~, ~, ~, 114, ~, 108, 108, 108, ~, 108, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, 108, 108, 108, ~, 108, ~, 114, ~, 108, ~, 108, ~, ~, ~, 114, ~, 108, ~, 108, ~, 108, ~, 114, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, false, false, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
   twin above:
     steps: 64
     step_size: 1/8
     degree: [3, ~, 4, 5, 4, ~, 3, ~, 1, ~, 3, ~, 5, ~, ~, ~, 2, ~, 3, 4, 6, ~, 4, ~, 3, ~, ~, ~, ~, ~, ~, ~, 5, ~, 6, 7, 6, ~, 5, ~, 5, ~, 3, ~, 1, ~, ~, ~, 4, ~, 6, ~, 4, ~, 2, ~, 3, ~, ~, ~, ~, ~, ~, ~]
-    octave: [6, ~, 6, 6, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, ~, ~, 6, ~, 6, 6, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~, 6, ~, 6, 6, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, ~, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [104, ~, 98, 98, 98, ~, 98, ~, 104, ~, 98, ~, 98, ~, ~, ~, 104, ~, 98, 98, 98, ~, 98, ~, 104, ~, ~, ~, ~, ~, ~, ~, 104, ~, 98, 98, 98, ~, 98, ~, 104, ~, 98, ~, 98, ~, ~, ~, 104, ~, 98, ~, 98, ~, 98, ~, 104, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [106, ~, 100, 100, 100, ~, 100, ~, 106, ~, 100, ~, 100, ~, ~, ~, 106, ~, 100, 100, 100, ~, 100, ~, 106, ~, ~, ~, ~, ~, ~, ~, 106, ~, 100, 100, 100, ~, 100, ~, 106, ~, 100, ~, 100, ~, ~, ~, 106, ~, 100, ~, 100, ~, 100, ~, 106, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, false, false, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+  twin half:
+    steps: 32
+    step_size: 1/8
+    degree: [1, ~, 2, 3, 2, ~, 1, ~, 6, ~, 1, ~, 3, ~, ~, ~, 7, ~, 1, 2, 4, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, 5, 5, 5, ~, 5, ~, 4, ~, 5, ~, 5, ~, ~, ~, 4, ~, 5, 5, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [114, ~, 108, 108, 108, ~, 108, ~, 114, ~, 108, ~, 108, ~, ~, ~, 114, ~, 108, 108, 108, ~, 108, ~, 114, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, false, false, false, true, false, true, false, true, true, true, true, true, false, false]
+  twin half above:
+    steps: 32
+    step_size: 1/8
+    degree: [3, ~, 4, 5, 4, ~, 3, ~, 1, ~, 3, ~, 5, ~, ~, ~, 2, ~, 3, 4, 6, ~, 4, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [106, ~, 100, 100, 100, ~, 100, ~, 106, ~, 100, ~, 100, ~, ~, ~, 106, ~, 100, 100, 100, ~, 100, ~, 106, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, false, false, false, true, false, true, false, true, true, true, true, true, false, false]
   fast:
     steps: 32
     step_size: 1/8
     degree: [5, 1, 2, 3, 2, 1, 7, 1, 7, 2, 4, 2, 7, ~, 5, ~, 6, 1, 3, 1, 6, 1, 3, 5, 4, ~, 2, ~, 7, ~, ~, ~]
-    octave: [5, 6, 6, 6, 6, 6, 5, 6, 5, 6, 6, 6, 5, ~, 5, ~, 5, 6, 6, 6, 5, 6, 6, 6, 6, ~, 6, ~, 5, ~, ~, ~]
+    octave: [4, 5, 5, 5, 5, 5, 4, 5, 4, 5, 5, 5, 4, ~, 4, ~, 4, 5, 5, 5, 4, 5, 5, 5, 5, ~, 5, ~, 4, ~, ~, ~]
     velocity: [112, 106, 106, 106, 106, 106, 106, 106, 112, 106, 106, 106, 106, ~, 106, ~, 112, 106, 106, 106, 106, 106, 106, 106, 112, ~, 106, ~, 106, ~, ~, ~]
     tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, true, false, true, false, true, true, true]
   fast above:
     steps: 32
     step_size: 1/8
     degree: [7, 3, 4, 5, 4, 3, 2, 3, 2, 4, 6, 4, 2, ~, 7, ~, 1, 3, 5, 3, 1, 3, 5, 7, 6, ~, 4, ~, 2, ~, ~, ~]
-    octave: [5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, ~, 5, ~, 6, 6, 6, 6, 6, 6, 6, 6, 6, ~, 6, ~, 6, ~, ~, ~]
+    octave: [4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, ~, 4, ~, 5, 5, 5, 5, 5, 5, 5, 5, 5, ~, 5, ~, 5, ~, ~, ~]
     velocity: [104, 98, 98, 98, 98, 98, 98, 98, 104, 98, 98, 98, 98, ~, 98, ~, 104, 98, 98, 98, 98, 98, 98, 98, 104, ~, 98, ~, 98, ~, ~, ~]
     tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, true, false, true, false, true, true, true]
   solo:
     steps: 64
     step_size: 1/8
     degree: [1, 3, 5, 3, 1, 3, 5, 7, 6, ~, 5, 4, 2, ~, ~, ~, 6, 1, 3, 6, 5, 3, 1, 3, 4, 2, 7, 2, 4, ~, ~, ~, 5, ~, 3, 1, 5, ~, 1, ~, 2, 4, 7, ~, 5, ~, ~, ~, 6, 5, 3, 1, 6, 1, 3, 6, 7, ~, 4, ~, 2, ~, ~, ~]
-    octave: [6, 6, 6, 6, 6, 6, 6, 6, 6, ~, 6, 6, 6, ~, ~, ~, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 5, 6, 6, ~, ~, ~, 6, ~, 6, 6, 5, ~, 6, ~, 6, 6, 6, ~, 6, ~, ~, ~, 6, 6, 6, 6, 5, 6, 6, 6, 6, ~, 6, ~, 6, ~, ~, ~]
+    octave: [5, 5, 5, 5, 5, 5, 5, 5, 5, ~, 5, 5, 5, ~, ~, ~, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 5, 5, ~, ~, ~, 5, ~, 5, 5, 4, ~, 5, ~, 5, 5, 5, ~, 5, ~, ~, ~, 5, 5, 5, 5, 4, 5, 5, 5, 5, ~, 5, ~, 5, ~, ~, ~]
     velocity: [114, 108, 108, 108, 108, 108, 108, 108, 114, ~, 108, 108, 108, ~, ~, ~, 114, 108, 108, 108, 108, 108, 108, 108, 114, 108, 108, 108, 108, ~, ~, ~, 114, ~, 108, 108, 108, ~, 108, ~, 114, 108, 108, ~, 108, ~, ~, ~, 114, 108, 108, 108, 108, 108, 108, 108, 114, ~, 108, ~, 108, ~, ~, ~]
     tie: [false, false, false, false, false, false, false, false, false, true, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, true, false, false, false, true, false, true, false, false, false, true, false, true, true, true, false, false, false, false, false, false, false, false, false, true, false, true, false, true, true, true]
   calm bass:
@@ -187,10 +206,10 @@ patterns:
   calm guitar:
     steps: 32
     step_size: 1/8
-    degree: [~, ~, ~, ~, 5, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, ~, 6, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    octave: [~, ~, ~, ~, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [~, ~, ~, ~, 64, ~, 64, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 64, ~, 64, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, false, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, false, false, false, false, false, false, false]
+    degree: [~, ~, ~, ~, ~, ~, ~, ~, 1, ~, 2, 3, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, 6, ~, 1, ~, 3, ~, ~, ~]
+    octave: [~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, 5, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, 4, ~, 5, ~, 5, ~, ~, ~]
+    velocity: [~, ~, ~, ~, ~, ~, ~, ~, 76, ~, 70, 70, 70, ~, 70, ~, ~, ~, ~, ~, ~, ~, ~, ~, 76, ~, 70, ~, 70, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, false, false, true, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, true, false, true, false, true, true, true]
   drone:
     steps: 8
     step_size: 1/8
@@ -203,7 +222,7 @@ patterns:
     steps: 8
     step_size: 1/8
     degree: [1, 5, 1, 5, 3, 5, 1, 5]
-    octave: [4, 4, 5, 4, 5, 4, 5, 4]
+    octave: [3, 3, 4, 3, 4, 3, 4, 3]
     velocity: [90, 84, 84, 84, 84, 84, 84, 84]
 
 progressions:
@@ -260,6 +279,16 @@ songs:
           hat: { pattern: hat, loop: true }
           bass: { pattern: gallop, chains: [verse], loop: true }
           rhythm: { pattern: gallop chords, chains: [verse], loop: true }
+      - name: twin guitars
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: gallop, chains: [twin], loop: true }
+          rhythm: { pattern: gallop chords, chains: [twin], loop: true }
+          crash: { pattern: crash, loop: true }
+          guitar 1: { pattern: twin, loop: true }
+          guitar 2: { pattern: twin above, loop: true }
       - name: verse
         tracks:
           kick: { pattern: kick, repeat: 16 }
@@ -277,15 +306,16 @@ songs:
           rhythm: { pattern: gallop chords, chains: [chorus], loop: true }
           lead: { pattern: chorus tune, loop: true }
           crash: { pattern: crash, loop: true }
-      - name: twin guitars
+      - name: twin guitars again
         tracks:
-          kick: { pattern: kick, repeat: 8 }
+          kick: { pattern: kick, repeat: 4 }
           snare: { pattern: snare, loop: true }
           hat: { pattern: hat, loop: true }
           bass: { pattern: gallop, chains: [twin], loop: true }
           rhythm: { pattern: gallop chords, chains: [twin], loop: true }
-          guitar 1: { pattern: twin, loop: true }
-          guitar 2: { pattern: twin above, loop: true }
+          crash: { pattern: crash, loop: true }
+          guitar 1: { pattern: twin half, loop: true }
+          guitar 2: { pattern: twin half above, loop: true }
       - name: verse 2
         tracks:
           kick: { pattern: kick, repeat: 8 }
@@ -320,7 +350,7 @@ songs:
       - name: storm
         tempo: 168
         tracks:
-          kick: { pattern: kick fast, repeat: 16 }
+          kick: { pattern: kick fast, repeat: 8 }
           snare: { pattern: snare, loop: true }
           hat: { pattern: hat, loop: true }
           crash: { pattern: crash, loop: true }
@@ -346,13 +376,14 @@ songs:
           rhythm: { pattern: gallop chords, chains: [chorus], loop: true }
           lead: { pattern: chorus tune, loop: true }
           crash: { pattern: crash, loop: true }
-          guitar 2: { pattern: twin above, loop: true }
-      - name: twin guitars 2
+          guitar 2: { pattern: twin half above, loop: true }
+      - name: twin guitars to end
         tracks:
           kick: { pattern: kick, repeat: 8 }
           snare: { pattern: snare, loop: true }
           hat: { pattern: hat, loop: true }
           bass: { pattern: gallop, chains: [twin], loop: true }
           rhythm: { pattern: gallop chords, chains: [twin], loop: true }
+          crash: { pattern: crash, loop: true }
           guitar 1: { pattern: twin, loop: true }
           guitar 2: { pattern: twin above, loop: true }
