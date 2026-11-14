@@ -35,8 +35,11 @@ from llamatron.tui.screens.grid_drawing import CELL_WIDTH, GridDrawing
 from llamatron.composition.checks import fraction_text
 from llamatron.strings.marks import (
     MSG_CURSOR_BLOCK, MSG_ENTRY_SIZE_SHOWN, MSG_FROM_SONG_SHOWN, MSG_GHOST_LINE, MSG_GRAB_NOTE_MARK, MSG_NOTE_CELL, MSG_NOTE_CELL_WITH_MARK,
-    MSG_NOTE_EDGE, MSG_NOTE_UNDER_CURSOR, MSG_NOTE_UNDER_CURSOR_WITH_MARK, MSG_OUT_OF_RANGE_CELL,
+    MSG_NOTE_EDGE, MSG_NOTE_HOLLOW, MSG_NOTE_HOLLOW_UNDER_CURSOR, MSG_NOTE_UNDER_CURSOR, MSG_NOTE_UNDER_CURSOR_WITH_MARK, MSG_OUT_OF_RANGE_CELL,
 )
+
+# What a solid bar's blocks become in a hollow one.
+HOLLOW = str.maketrans({MSG_NOTE_EDGE: MSG_NOTE_HOLLOW, MSG_CURSOR_BLOCK: MSG_NOTE_HOLLOW_UNDER_CURSOR})
 
 # The lines around the pitch rows: the two header lines, the top rule, the Step row, its double rule, the bottom rule and the description.
 LINES_AROUND_ROWS = 7
@@ -56,12 +59,14 @@ class DrawnNotes(NamedTuple):
     """What drawing the roll's rows needs to know about the pattern's notes.
 
     covering is the step of the note sounding through each step, ghosts the rows of the notes
-    each note's chord adds, and pitches each note's row, the last two by the note's step.
+    each note's chord adds, and pitches each note's row, the last two by the note's step; lifted
+    holds the steps of the notes an inversion plays an octave up, whose bars are drawn hollow.
     """
 
     covering: dict
     ghosts: dict
     pitches: dict
+    lifted: frozenset
 
 
 class RollDrawing(GridDrawing):
@@ -124,8 +129,15 @@ class RollDrawing(GridDrawing):
         # A sharp or flat has a row of its own when the scale is known, so the mark is only for numbered rows.
         return roll.accidental_symbol(start) if roll.scale_name() is None else None
 
-    def note_cell(self, *, mark, selected, columns=CELL_WIDTH):
-        """Return a note's cell, shaded under the cursor, with its mark in reverse video in the middle so that it reads against the bar.
+    def note_cell(self, *, mark, selected, columns=CELL_WIDTH, hollow=False):
+        """Return a note's cell, shaded under the cursor, with its mark in reverse video in the middle so that it reads against the bar, and hollow for a note an inversion
+        plays an octave up.
+        """
+        cell = self.solid_note_cell(mark=mark, selected=selected, columns=columns)
+        return Text(cell.plain.translate(HOLLOW), spans=cell.spans, no_wrap=True) if hollow else cell
+
+    def solid_note_cell(self, *, mark, selected, columns):
+        """Return a note's cell with its bar solid.
 
         A cell the note only partly fills, where its gate ends inside the step, is that many
         columns of bar and then blank, with the mark in the bar's last column when the middle is
@@ -171,7 +183,8 @@ class RollDrawing(GridDrawing):
         roll = self.roll()
         covering = roll.covering()
         starts = set(covering.values())
-        return DrawnNotes(covering=covering, ghosts=self.ghosts_of(starts), pitches=self.pitches_of(starts))
+        lifted = frozenset(start for start in starts if roll.root_is_lifted(start))
+        return DrawnNotes(covering=covering, ghosts=self.ghosts_of(starts), pitches=self.pitches_of(starts), lifted=lifted)
 
     def ghosts_of(self, starts):
         """Return each note's ghosts, the rows of the notes its chord adds, by the note's step."""
@@ -226,8 +239,9 @@ class RollDrawing(GridDrawing):
         for step in range(first, last):
             mark = self.note_mark(notes=notes, pitch=pitch, step=step)
             ghost = mark is False and self.ghost_here(notes=notes, pitch=pitch, step=step)
+            hollow = notes.covering.get(step) in notes.lifted
             if self.continues(notes=notes, pitch=pitch, step=step):
-                replaced = MSG_NOTE_EDGE
+                replaced = MSG_NOTE_HOLLOW if hollow else MSG_NOTE_EDGE
             elif ghost and notes.covering.get(step) != step:
                 replaced = Text(MSG_GHOST_LINE, style=Style.CHORD_NOTE)
             elif step in cursor_edges:
@@ -237,7 +251,7 @@ class RollDrawing(GridDrawing):
             self.append_edge(line=line, step=step, beats=beats, single=Box.BAR, double=Box.DOUBLE_BAR, replaced=replaced)
             selected = on_row and step == editor.step
             if mark is not False:
-                line.append_text(self.note_cell(mark=mark, selected=selected, columns=self.columns_filled(notes=notes, step=step)))
+                line.append_text(self.note_cell(mark=mark, selected=selected, columns=self.columns_filled(notes=notes, step=step), hollow=hollow))
             elif ghost:
                 line.append_text(self.ghost_cell(notes=notes, step=step, selected=selected))
             elif selected:

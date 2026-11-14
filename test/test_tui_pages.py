@@ -33,7 +33,7 @@ from llamatron.tui.drawing import Box, NOTHING, SELECTED_MARK, SPACE, Style
 from llamatron.tui.screens.main_page import CELL_COLUMNS
 from llamatron.tui.dialogs import about_dialog
 from llamatron.tui.dialogs.about_dialog import EIGHT_BALL_CHANCE, QUOTE_LINES
-from llamatron.tui.dialogs.dialog import DIALOG_MARGIN, DIALOG_WIDTH
+from llamatron.tui.dialogs.dialog import DIALOG_MARGIN, DIALOG_VIEW_SELECTOR, DIALOG_WIDTH
 from llamatron.tui.dialogs.about_dialog import AboutDialog
 from llamatron.tui.dialogs.help_dialog import HelpDialog
 from llamatron.composition.file_format import (
@@ -2102,6 +2102,19 @@ class TestQuitting(UITest):
             self.assertIsInstance(self.app.screen, MainPage)
             await self.press(keybindings.MainPage.QUIT, keybindings.QuitDialog.QUIT)
             leave.assert_called_once()
+
+
+    async def test_the_quit_dialogs_buttons_are_inside_its_box(self):
+        self.document.changed()
+        await self.press(keybindings.MainPage.QUIT)
+        lines = str(self.app.screen.query_one(DIALOG_VIEW_SELECTOR).render()).splitlines()
+        # The box is as wide as its three buttons need: every line is the box's width and ends at its side.
+        self.assertEqual({len(line) for line in lines}, {len(lines[0])})
+        for line in lines[1:-1]:
+            self.assertEqual((line[0], line[-1]), (Box.HEAVY_BAR, Box.HEAVY_BAR))
+        for label in MSG_QUIT_BUTTONS:
+            self.assertTrue(any(label in line for line in lines), label)
+        self.assertLessEqual(len(lines[0]), self.app.size.width)
 
 
 def tracker_sources():

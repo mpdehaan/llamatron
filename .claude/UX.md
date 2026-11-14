@@ -67,7 +67,7 @@ a feature that already exists does what's being asked, that's pointed out first
   around the step number and `<+7▲>` around the offset, in reverse video too, the piano roll stands the cursor's cell between two bold double bars, shading the note under
   it (`▓▓▓▓▓`) or reversing the blank of an empty cell, since reverse video on a solid bar is
   blank and the shading alone was hard to find, with the rule beside the cursor's row meeting the bars in double-armed
-  joints, and Arrange draws a
+  joints, a note that an inversion plays an octave up drawn hollow (`░░░░░`, and `▒▒▒▒▒` under the cursor), and Arrange draws a
   double-lined box around the clip, scene, track or `+` under the cursor, because its cells hold
   bars that reverse video would hide. Every dialog's answers are boxed buttons, as a real window's (`tui/components/button_row.py`, the user's design): each
   key reversed and then its name, the selected button double-lined, Left and Right moving between them and Enter pressing,

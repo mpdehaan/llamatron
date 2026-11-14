@@ -17,7 +17,8 @@
 
 from ui_testing import TUNE, UITest
 from llamatron.composition.file_format import Row
-from llamatron.strings.marks import MSG_BLOCKED_CELL
+from llamatron.strings.marks import MSG_BLOCKED_CELL, MSG_NOTE_HOLLOW, MSG_NOTE_HOLLOW_UNDER_CURSOR
+from llamatron.tui.screens.grid_drawing import CELL_WIDTH
 from llamatron.tui.keys import Key, RowSection
 from llamatron.tui.screens.pattern_editor import PatternEditor
 from llamatron.tui import keybindings
@@ -56,6 +57,27 @@ class TestInversionRow(UITest):
 
     async def test_a_note_with_no_chord_is_blocked(self):
         self.assertEqual(self.editor.row_for(Row.INVERSION).cell_lines(step=FIRST_STEP), [MSG_BLOCKED_CELL])
+
+    async def test_the_roll_draws_a_note_hollow_while_its_inversion_plays_the_root_an_octave_up(self):
+        await self.press(keybindings.PatternEditor.TO_EDITOR)
+        roll = self.editor.roll
+        self.assertFalse(roll.root_is_lifted(FIRST_STEP))
+        self.assertNotIn(MSG_NOTE_HOLLOW, self.text())
+        self.assertNotIn(MSG_NOTE_HOLLOW_UNDER_CURSOR, self.text())
+        # An inversion with no chord lifts nothing: one note has no inversion.
+        self.document.set_step_value(name=TUNE, row=Row.INVERSION, step=FIRST_STEP, value=1)
+        self.assertFalse(roll.root_is_lifted(FIRST_STEP))
+        # With a chord, the written note doesn't sound where it is drawn: its bar is hollow, medium under the cursor and light once the cursor has left.
+        self.document.set_step_value(name=TUNE, row=Row.CHORD, step=FIRST_STEP, value=TRIAD)
+        self.assertTrue(roll.root_is_lifted(FIRST_STEP))
+        self.editor.draw()
+        self.assertIn(MSG_NOTE_HOLLOW_UNDER_CURSOR * CELL_WIDTH, self.text())
+        await self.press(Key.RIGHT)
+        self.assertIn(MSG_NOTE_HOLLOW * CELL_WIDTH, self.text())
+        # Root position again, and the bar is solid.
+        self.document.set_step_value(name=TUNE, row=Row.INVERSION, step=FIRST_STEP, value=None)
+        self.editor.draw()
+        self.assertNotIn(MSG_NOTE_HOLLOW, self.text())
 
     async def test_a_chord_cycles_through_the_inversions_and_back(self):
         self.document.set_step_value(name=TUNE, row=Row.CHORD, step=FIRST_STEP, value=TRIAD)
