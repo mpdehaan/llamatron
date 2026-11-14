@@ -320,6 +320,8 @@ MSG_VIEW_WHAT = 'view'
 
 # tui/screens/set/groove_editor.py
 MSG_CELL_LENGTH_WHAT = 'cell length'
+MSG_ACCENT_WHAT = 'accent'
+MSG_READY_BARS_WHAT = 'ready-made'
 
 # tui/screens/arrange/groove_choice.py: the Groove field on the Song, Scene and Track pages
 MSG_USE_SONG_GROOVE_WHAT = 'use the song groove'

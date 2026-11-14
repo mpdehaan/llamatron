@@ -1054,6 +1054,33 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   set's hockets, whose `REFERENCES` name `Section.TRACKS`), the user's rule.
 - `tests/generators/test_hocket.py` tests it; `19_hocket_shanty.yml`, which replaced `grab.yml`, is its demo.
 
+### Guitarify
+
+- The generator section `guitarifies` (`GuitarifySettings`, kind `guitarify`, `GuitarifySetting` in `composition/file_format.py`),
+  the user's design: one generator of two halves, each with a switch (`shape`, `strokes`, both on unless written false), every
+  setting left out for its default, so a new one writes `{}`. `generators/guitarify.py` is the generator, a `ClipGenerator` in
+  the chains like any other.
+- Shape (`tuning` of `TUNINGS`, `position` 0 to 12 with 0 the open position, `capo`, `strings` 3 to 6 counted from the highest,
+  `single_notes` of `SINGLE_NOTES`): a chord is voiced again as its pitch classes on the strings (`OPEN_STRINGS`), at most one
+  note a string, within `REACH` frets, the best of every way by `_cost`: a note left out costs most (the root most of all, the
+  fifth least), then the bass not being the chord's lowest written note, a silent string between sounding ones, each silent
+  string, and frets from the position. Each chord's voicing is worked out once a generator. A single note is left, made a
+  power chord (root, fifth, octave from the lowest string that reaches the root) or the triad its place in the clip's scale
+  builds, then voiced; a note outside the scale builds none. Degrees are settled into notes by the clip's scale first.
+- Strokes (`bar`, a list of `STROKES`, at most 32; `accents` beside it; `cell`, a time setting; `let_ring`; `spread` in
+  milliseconds, `fade` and `loose_timing` in percent, `upstroke`, how many top strings, 0 for all): the bar goes round under
+  the clip, following the song's bars from the generator's Restart (`continuation.offset`), and each cell's stroke strikes
+  whatever note or chord sounds there. Struck strings are held sounds (`HELD`) staggered by the spread, which is turned into
+  time by the scene's tempo, the one generator handed it (`GeneratorSettings._with_tempo`, `SongRenderer.make_generator`);
+  a strum takes at most half the time to the next stroke, and every delay is put on a grid of `STRUM_TICKS` to a whole note so
+  that lengths stay exact fractions under `FINEST_LENGTH`. A string stops at the next stroke, or with Let ring when the same
+  pitch is struck again or the chord ends, never past the chord. Mute is a quarter of a cell at half velocity; where a bar has
+  an accent, the other strokes play at four fifths. Loose timing draws from the render's seed.
+- The ready-made bars are `READY_BARS` in `composition/guitar_bars.py`, named by `ReadyBar`; a bar that matches one exactly is
+  shown by its name (`ready_bar_matching`), and nothing in a file says which was picked. The Strum generator and the strum
+  settings of a track and a clip are apart and unchanged (the user's choice).
+- `tests/generators/test_guitarify.py` tests it; `23_guitarify.yml` is its demo, twenty scenes by genre, guitars only.
+
 ### Restart
 
 - Every generator's `restart` (`GENERATOR_RESTART`, `Restart`: every_clip, on_new_scene,

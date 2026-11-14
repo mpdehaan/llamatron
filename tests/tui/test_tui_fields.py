@@ -22,7 +22,7 @@ to Space and Enter alike.
 
 import unittest
 
-from tests.support.ui_testing import TRADE, CLIPS, LAZY, PUSH, SLIDES, CLAVE, CLIPPED, FADE, FOLK, POP, SMOOTH, SWAY, LEAD, ROLLS, THIN, UITest, UP_ARP, leaf_pages
+from tests.support.ui_testing import PICKED, TRADE, CLIPS, LAZY, PUSH, SLIDES, CLAVE, CLIPPED, FADE, FOLK, POP, SMOOTH, SWAY, LEAD, ROLLS, THIN, UITest, UP_ARP, leaf_pages
 from llamatron.composition.limits import MAX_CLIP_REPEAT, MAX_SCENE_REPEAT, MAX_TEMPO, MIN_REPEAT, MIN_TEMPO
 from llamatron.composition.setlist import DEFAULT_SCALE
 from llamatron.strings.errors import ERR_OUT_OF_RANGE
@@ -41,6 +41,7 @@ from llamatron.tui.screens.arrange.clip_page import ClipPage
 from llamatron.tui.screens.generators.density_editor import DensityEditor
 from llamatron.tui.screens.generators.progression_editor import ProgressionEditor
 from llamatron.tui.screens.generators.voice_leading_editor import VoiceLeadingEditor
+from llamatron.tui.screens.generators.guitarify_editor import GuitarifyEditor
 from llamatron.tui.screens.generators.hocket_editor import HocketEditor
 from llamatron.tui.screens.generators.strum_editor import StrumEditor
 from llamatron.tui.screens.generators.euclid_editor import EuclidEditor
@@ -261,7 +262,7 @@ class TestFieldsOnThePages(UITest):
         return [
             SongPage(holder), ScenePage(holder=holder, index=FIRST_SCENE), ClipPage(holder=holder, index=FIRST_SCENE, track=LEAD), ArpEditor(holder=holder, name=UP_ARP),
             TrackEditor(holder=holder, name=LEAD), RegistersPage(holder), FilePage(holder), AutoRatchetEditor(holder=holder, name=ROLLS), DriftEditor(holder=holder, name=SWAY),
-            ProgressionEditor(holder=holder, name=POP), VoiceLeadingEditor(holder=holder, name=SMOOTH), HocketEditor(holder=holder, name=TRADE), StrumEditor(holder=holder, name=FOLK), EuclidEditor(holder=holder, name=CLAVE), GlideEditor(holder=holder, name=SLIDES), ShortenEditor(holder=holder, name=CLIPS),
+            ProgressionEditor(holder=holder, name=POP), VoiceLeadingEditor(holder=holder, name=SMOOTH), HocketEditor(holder=holder, name=TRADE), GuitarifyEditor(holder=holder, name=PICKED), StrumEditor(holder=holder, name=FOLK), EuclidEditor(holder=holder, name=CLAVE), GlideEditor(holder=holder, name=SLIDES), ShortenEditor(holder=holder, name=CLIPS),
             RushEditor(holder=holder, name=PUSH), DragEditor(holder=holder, name=LAZY),
             DensityEditor(holder=holder, name=THIN), SwellEditor(holder=holder, name=FADE), ArticulateEditor(holder=holder, name=CLIPPED),
             ScalePage(holder=holder, name=DEFAULT_SCALE), InstrumentEditor(holder=holder, name=AN_INSTRUMENT),

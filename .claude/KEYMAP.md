@@ -174,6 +174,15 @@ settings page's fields. The keys that work everywhere are listed once:
 - **the + row**: `ESC` back · `ENTER` add · `↑↓` select · `A` add · `/` search
 - **while searching**: `ESC` CANCEL · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
 
+## GuitarBarEditor
+
+- **anywhere**: `ESC` back · `←→` move · `[` dec · `]` inc · `Space/ENTER` accent · `I` insert cell · `D` remove cell · `S` cell length · `R` ready-made
+
+## GuitarifyEditor
+
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `PgUp/PgDn` next section · `F2` rename
+- **the Shape heading, the Strokes heading**: `ESC` back · `↑↓` select · `Space/ENTER` toggle · `PgUp/PgDn` next section · `F2` rename
+
 ## HocketEditor
 
 - **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `F2` rename
@@ -394,6 +403,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - FilePage: dec (the Default follow action field)
 - GlideEditor: dec (the Step field, the Glide amount field, the Restart field)
 - GrooveEditor: dec (anywhere)
+- GuitarBarEditor: dec (anywhere)
 - HocketEditor: dec (the Source track field, the Restart field)
 - InstrumentEditor: dec (the Channel field, the GM sound field)
 - OffsetsEditor: dec (anywhere)
@@ -429,6 +439,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - FilePage: inc (the Default follow action field)
 - GlideEditor: inc (the Step field, the Glide amount field, the Restart field)
 - GrooveEditor: inc (anywhere)
+- GuitarBarEditor: inc (anywhere)
 - HocketEditor: inc (the Source track field, the Restart field)
 - InstrumentEditor: inc (the Channel field, the GM sound field)
 - OffsetsEditor: inc (anywhere)
@@ -578,6 +589,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - DragStepsEditor: remove step (anywhere)
 - GlideStepsEditor: remove step (anywhere)
 - GrooveEditor: remove cell (anywhere)
+- GuitarBarEditor: remove cell (anywhere)
 - OffsetsEditor: remove step (anywhere)
 - PatternEditor: remove step (the degree row, the octave row, the accidental row, the velocity row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
 - RushStepsEditor: remove step (anywhere)
@@ -646,6 +658,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - GroovesPage: edit (a row)
 - GroovesPage: add (the + row)
 - GroovesPage: keep (while searching)
+- GuitarifyEditor: rename (the Name field)
 - HocketEditor: rename (the Name field)
 - HocketEditor: choose (the Source track field, the Restart field)
 - InstrumentEditor: rename (the Name field)
@@ -736,6 +749,8 @@ settings page's fields. The keys that work everywhere are listed once:
 - GrooveEditor: back (anywhere)
 - GroovesPage: back (a row, the + row)
 - GroovesPage: CANCEL (while searching)
+- GuitarBarEditor: back (anywhere)
+- GuitarifyEditor: back (the Name field, the Shape heading, the Strokes heading)
 - HocketEditor: back (the Name field, the Source track field, the Restart field)
 - InstrumentEditor: back (the Name field, the Device field, the Channel field, the GM sound field)
 - InstrumentsPage: back (a row, the + row)
@@ -781,6 +796,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - DriftEditor: rename (the Name field, the Every field, the Steps to B field, the Direction field, the Restart field, the Seed field, the AX+= field, the BX+= field, the CX+= field, the DX+= field, the Vel+= field, the Prob ± field, the Degree + field, the Degree random field, the Scale prob field, the Root prob field, the Scale field, the Root field)
 - EuclidEditor: rename (the Name field, the Hits field, the Steps field, the Rotate field, the Step field, the Restart field)
 - GlideEditor: rename (the Name field, the Step field, the Glide amount field, the Restart field, the Steps field)
+- GuitarifyEditor: rename (the Name field, the Shape heading, the Strokes heading)
 - HocketEditor: rename (the Name field, the Source track field, the Restart field)
 - InstrumentEditor: rename (the Name field, the Device field, the Channel field, the GM sound field)
 - PatternEditor: rename (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
@@ -818,6 +834,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - DragStepsEditor: insert step (anywhere)
 - GlideStepsEditor: insert step (anywhere)
 - GrooveEditor: insert cell (anywhere)
+- GuitarBarEditor: insert cell (anywhere)
 - MainPage: Instruments (anywhere)
 - OffsetsEditor: insert step (anywhere)
 - PatternEditor: insert step (the degree row, the octave row, the accidental row, the velocity row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
@@ -886,6 +903,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - ArrangePage: bar (Scene View)
 - ClipPage: next section (the Name field, the Pattern field, the Scale field, the Chains field, the Repeat field, the Loop field, the Strum heading, the Density heading, the Swell heading, the Articulate heading, the Direction field, the Grab track field, the Advance field, the Play button, the Stop button)
 - FilePage: next section (the Author field, the Description field, the Title field, the Default follow action field, the Notes field, the Protected field, the Notes & Octaves heading, the Visualizers heading, the Save button, the Open button)
+- GuitarifyEditor: next section (the Name field, the Shape heading, the Strokes heading)
 - PatternEditor: next section (the degree row, the octave row, the accidental row, the velocity row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
 - ScenePage: next section (the Name field, the Scale field, the Groove field, the Tempo field, the Tempo ramps to field, the Repeat field, the Reset AX field, the Reset BX field, the Reset CX field, the Reset DX field, the Launch together field, the Density heading, the Swell heading, the Articulate heading, the Chains field)
 - TrackEditor: next section (the Name field, the Drum field, the Mute field, the Euclid heading, the Strum heading, the Groove field, the Transpose field, the Lowest octave field, the Highest octave field, the CC 1 field, the CC 2 field, the CC 3 field, the CC 4 field, the CC1 Reg field, the CC2 Reg field, the CC3 Reg field, the CC4 Reg field, the Vel Reg field, the Chains field, the Instrument field)
@@ -896,6 +914,7 @@ settings page's fields. The keys that work everywhere are listed once:
 
 ## `R`
 
+- GuitarBarEditor: ready-made (anywhere)
 - MainPage: Registers (anywhere)
 - PatternEditor: reconfigure (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
 
@@ -904,6 +923,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - ChainsPage: sort (a row)
 - GrooveEditor: cell length (anywhere)
 - GroovesPage: sort (a row)
+- GuitarBarEditor: cell length (anywhere)
 - InstrumentsPage: sort (a row)
 - MainPage: Songs (anywhere)
 - PatternEditor: size (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
@@ -927,6 +947,8 @@ settings page's fields. The keys that work everywhere are listed once:
 - DragStepsEditor: toggle (anywhere)
 - FilePage: toggle (the Protected field, the Notes & Octaves heading, the Visualizers heading)
 - GlideStepsEditor: toggle (anywhere)
+- GuitarBarEditor: accent (anywhere)
+- GuitarifyEditor: toggle (the Shape heading, the Strokes heading)
 - OffsetsEditor: silent (anywhere)
 - PatternEditor: note (the piano roll)
 - PatternEditor: close section (the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row)
@@ -1001,6 +1023,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - FilePage: select (the Save button, the Open button)
 - GlideStepsEditor: move (anywhere)
 - GrooveEditor: move (anywhere)
+- GuitarBarEditor: move (anywhere)
 - NotesPage: select (anywhere)
 - OffsetsEditor: move (anywhere)
 - RushStepsEditor: move (anywhere)
@@ -1026,6 +1049,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - GeneratorsPage: select (a row, the + row, while searching)
 - GlideEditor: select (the Name field, the Step field, the Glide amount field, the Restart field, the Steps field)
 - GroovesPage: select (a row, the + row, while searching)
+- GuitarifyEditor: select (the Name field, the Shape heading, the Strokes heading)
 - HocketEditor: select (the Name field, the Source track field, the Restart field)
 - InstrumentEditor: select (the Name field, the Device field, the Channel field, the GM sound field)
 - InstrumentsPage: select (a row, the + row, while searching)
@@ -1057,6 +1081,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - **EuclidEditor**: Name, Hits, Steps, Rotate, Step, Restart
 - **FilePage**: Author, Default follow action, Description, Notes, Protected, Title, [Notes & Octaves], Default drum octave, Default octave, Octave labels, Step size, [Visualizers], Visualizer, Hide Visualizers, (Save), (Open)
 - **GlideEditor**: Name, Step, Glide amount, Steps, Restart
+- **GuitarifyEditor**: Name, [Shape], Shape chords, Tuning, Position, Capo, Strings, Single notes, [Strokes], Play strokes, Bar, Let ring, Spread, Fade, Loose timing, Upstroke strings, Restart
 - **HocketEditor**: Name, Source track, Restart
 - **InstrumentEditor**: Name, Device, Channel, GM sound
 - **ProgressionEditor**: Name, Every, Chords, Restart

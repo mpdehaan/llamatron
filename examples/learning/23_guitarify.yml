@@ -1,0 +1,467 @@
+version: 1.0.357
+title: Guitarify
+description: "twenty short scenes, each a way a guitar is played, from a porch to an arena, on guitars alone"
+notes: |
+  Guitarify: an original tour of guitar playing, twenty scenes by genre, each four bars (the
+  shuffle its full twelve), on seven General MIDI guitars and nothing else, one guitar a scene.
+  Run it with: llamatron examples/learning/23_guitarify.yml
+
+  Every pattern here is only a row of chords or low notes, one a bar or two a bar. The playing
+  is the Guitarify generator's, one for each scene. Its Shape half holds each chord as a hand
+  would, one note a string, in the scene's tuning and position, and makes a single low note a
+  power chord in the loud scenes. Its Strokes half plays a bar of strokes on whatever sounds:
+  strums down and up, muted strums, the bass string, the alternate bass and single strings.
+
+  Scenes 1 and 2: country. A bass note and a strum, then thumb and fingers picking with Let ring.
+  Scene 3: bluegrass crosspicking. Scene 4: jazz, four strums to the bar on four strings.
+  Scene 5: blues in open G tuning. Scene 6: rock and roll, power chords in eighths.
+  Scene 7: surf, one string picked fast. Scene 8: the folk strum. Scene 9: folk rock, ringing.
+  Scene 10: soul, the chord on the backbeat. Scene 11: funk, sixteenths mostly muted.
+  Scene 12: a singer's rolled chords, each string heard. Scenes 13 and 14: hard rock and punk.
+  Scenes 15 to 17: metal, galloping, thrashing, then slow in drop D.
+  Scene 18: alternative, two bars picked quietly and two strummed hard, one bar of 32 strokes.
+  Scene 19: a twelve bar blues shuffle, the bar in triplets. Scene 20: the last chord, rolled.
+
+  When changing this demo:
+  - Keep it guitars only, one guitar a scene, and every scene its own Guitarify.
+  - Keep the patterns plain chords, so that everything heard between them is the generator's.
+  - Each scene is an original progression: none is taken from an existing song.
+real_time: true
+protected: true
+
+scales:
+  G Major: { root: G, type: major }
+  C Major: { root: C, type: major }
+  A Major: { root: A, type: major }
+  A Minor: { root: A, type: minor }
+  D Major: { root: D, type: major }
+  E Major: { root: E, type: major }
+  E Minor: { root: E, type: minor }
+  D Minor: { root: D, type: minor }
+
+patterns:
+  porch:
+    steps: 4
+    step_size: 1
+    degree: [1, 4, 5, 1]
+    octave: [3, 3, 3, 3]
+    chord: [3, 3, 3, 3]
+  thumb and fingers:
+    steps: 4
+    step_size: 1
+    degree: [1, 4, 1, 5]
+    octave: [3, 3, 3, 3]
+    chord: [3, 3, 3, 7]
+  crosspick:
+    steps: 8
+    step_size: 1/2
+    degree: [1, 1, 4, 4, 1, 5, 1, 1]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3]
+    chord: [3, 3, 3, 3, 3, 3, 3, 3]
+  four to the bar:
+    steps: 4
+    step_size: 1
+    degree: [2, 5, 1, 6]
+    octave: [3, 3, 3, 3]
+    chord: [7, 7, 7, dom7]
+  open g:
+    steps: 4
+    step_size: 1
+    degree: [1, 4, 1, 5]
+    octave: [3, 3, 3, 3]
+    chord: [dom7, dom7, dom7, dom7]
+  boogie:
+    steps: 4
+    step_size: 1
+    degree: [1, 4, 1, 5]
+    octave: [2, 2, 2, 2]
+  tremolo:
+    steps: 4
+    step_size: 1
+    degree: [1, 7, 6, 5]
+    octave: [3, 3, 3, 3]
+    chord: [3, 3, 3, M]
+  campfire:
+    steps: 4
+    step_size: 1
+    degree: [1, 6, 4, 5]
+    octave: [3, 3, 3, 3]
+    chord: [3, 3, 3, 3]
+  chime:
+    steps: 4
+    step_size: 1
+    degree: [1, 7, 4, 1]
+    octave: [3, 3, 3, 3]
+    chord: [3, M, 3, 3]
+    accidental: [~, b, ~, ~]
+  backbeat:
+    steps: 4
+    step_size: 1
+    degree: [1, 4, 2, 5]
+    octave: [3, 3, 3, 3]
+    chord: [3, 3, 3, 3]
+  scratch:
+    steps: 4
+    step_size: 1
+    degree: [1, 1, 1, 1]
+    octave: [3, 3, 3, 3]
+    chord: [dom9, dom9, dom9, dom9]
+  harp:
+    steps: 4
+    step_size: 1
+    degree: [1, 5, 6, 4]
+    octave: [3, 3, 3, 3]
+    chord: [3, 3, 3, 3]
+    inversion: [~, 1, ~, ~]
+  arena:
+    steps: 4
+    step_size: 1
+    degree: [1, 3, 4, 1]
+    octave: [2, 2, 2, 2]
+    accidental: [~, b, ~, ~]
+  three chords loud:
+    steps: 4
+    step_size: 1
+    degree: [1, 4, 5, 4]
+    octave: [2, 2, 2, 2]
+  gallop:
+    steps: 4
+    step_size: 1
+    degree: [1, 1, 6, 7]
+    octave: [2, 2, 2, 2]
+  thrash:
+    steps: 8
+    step_size: 1/2
+    degree: [1, 1, 2, 2, 1, 1, 3, 2]
+    octave: [2, 2, 2, 2, 2, 2, 2, 2]
+    accidental: [~, ~, b, b, ~, ~, ~, b]
+  low and slow:
+    steps: 4
+    step_size: 1
+    degree: [1, 1, 3, 5]
+    octave: [2, 2, 2, 2]
+    accidental: [~, ~, ~, b]
+  quiet loud:
+    steps: 4
+    step_size: 1
+    degree: [1, 3, 7, 4]
+    octave: [3, 3, 3, 3]
+    chord: [3, 3, 3, M]
+  shuffle:
+    steps: 12
+    step_size: 1
+    degree: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+    chord: [dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7]
+  last chord:
+    steps: 4
+    step_size: 1
+    degree: [1, 4, 5, 1]
+    octave: [3, 3, 3, 3]
+    chord: [3, 3, 3, 3]
+
+guitarifies:
+  porch:
+    # the ready-made bar: boom chick
+    bar: [bass, nothing, down, nothing, alt_bass, nothing, down, nothing]
+    accents: [true, false, false, false, true, false, false, false]
+    cell: 1/8
+  thumb and fingers:
+    # the ready-made bar: travis pick
+    bar: [bass, string_2, alt_bass, string_1, bass, string_3, alt_bass, string_2]
+    accents: [false, false, false, false, false, false, false, false]
+    cell: 1/8
+    let_ring: true
+  crosspick:
+    # the ready-made bar: crosspick
+    bar: [string_3, string_2, string_1, string_3, string_2, string_1, string_3, string_2]
+    accents: [true, false, false, true, false, false, true, false]
+    cell: 1/8
+    let_ring: true
+  four to the bar:
+    # the ready-made bar: four to the bar
+    bar: [down, down, down, down]
+    accents: [false, true, false, true]
+    cell: 1/4
+    position: 3
+    strings: 4
+    spread: 4
+  open g:
+    # the ready-made bar: folk strum
+    bar: [down, nothing, down, up, nothing, up, down, up]
+    accents: [true, false, false, false, false, false, true, false]
+    cell: 1/8
+    tuning: open_g
+    let_ring: true
+    spread: 14
+  boogie:
+    # the ready-made bar: boogie
+    bar: [down, down, down, down, down, down, down, down]
+    accents: [false, false, true, false, false, false, true, false]
+    cell: 1/8
+    single_notes: power_chord
+    spread: 2
+  tremolo:
+    # the ready-made bar: tremolo
+    bar: [string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1]
+    accents: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false]
+    cell: 1/16
+    position: 5
+  campfire:
+    # the ready-made bar: folk strum
+    bar: [down, nothing, down, up, nothing, up, down, up]
+    accents: [true, false, false, false, false, false, true, false]
+    cell: 1/8
+  chime:
+    # the ready-made bar: chime
+    bar: [string_4, string_2, string_1, string_3, string_2, string_1, string_3, string_2]
+    accents: [false, false, false, false, false, false, false, false]
+    cell: 1/8
+    let_ring: true
+  backbeat:
+    # the ready-made bar: backbeat
+    bar: [nothing, nothing, up, mute, nothing, nothing, up, mute]
+    accents: [false, false, true, false, false, false, true, false]
+    cell: 1/8
+    position: 4
+    strings: 4
+    spread: 3
+  scratch:
+    # the ready-made bar: scratch
+    bar: [down, mute, mute, up, mute, mute, down, mute, mute, up, down, mute, mute, up, mute, mute]
+    accents: [true, false, false, false, false, false, true, false, false, false, true, false, false, false, false, false]
+    cell: 1/16
+    position: 6
+    strings: 4
+    spread: 2
+  harp:
+    # the ready-made bar: roll up
+    bar: [bass, string_4, string_3, string_2, string_1, nothing, nothing, nothing]
+    accents: [false, false, false, false, false, false, false, false]
+    cell: 1/8
+    let_ring: true
+  arena:
+    bar: [down, nothing, nothing, down, nothing, down, nothing, nothing]
+    accents: [true, false, false, false, false, false, false, false]
+    cell: 1/8
+    single_notes: power_chord
+    let_ring: true
+    spread: 2
+  three chords loud:
+    # the ready-made bar: all down
+    bar: [down, down, down, down, down, down, down, down]
+    accents: [false, false, false, false, false, false, false, false]
+    cell: 1/8
+    single_notes: power_chord
+    spread: 2
+    fade: 0
+  gallop:
+    # the ready-made bar: gallop
+    bar: [mute, nothing, mute, mute, mute, nothing, mute, mute, mute, nothing, mute, mute, down, nothing, mute, mute]
+    accents: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false]
+    cell: 1/16
+    single_notes: power_chord
+    spread: 2
+    fade: 0
+  thrash:
+    # the ready-made bar: thrash
+    bar: [down, mute, mute, mute, mute, mute, down, mute, mute, mute, down, mute, mute, mute, mute, mute]
+    accents: [true, false, false, false, false, false, true, false, false, false, true, false, false, false, false, false]
+    cell: 1/16
+    single_notes: power_chord
+    spread: 2
+    fade: 0
+  low and slow:
+    # the ready-made bar: held
+    bar: [down, nothing, nothing, nothing]
+    accents: [false, false, false, false]
+    cell: 1/4
+    tuning: drop_d
+    single_notes: power_chord
+    let_ring: true
+    spread: 2
+    fade: 0
+  quiet loud:
+    bar: [bass, string_3, string_2, string_1, string_2, string_3, string_2, string_1, bass, string_3, string_2, string_1, string_2, string_3, string_2, string_1, down, nothing, down, up, nothing, up, down, up, down, nothing, down, up, nothing, up, down, up]
+    accents: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false]
+    cell: 1/8
+    let_ring: true
+  shuffle:
+    bar: [down, nothing, down, down, nothing, down, down, nothing, down, down, nothing, down]
+    accents: [false, false, false, true, false, false, false, false, false, true, false, false]
+    cell: 1/12
+    strings: 4
+    spread: 4
+  last chord:
+    bar: [down, nothing, down, up, nothing, up, down, up, down, nothing, down, up, nothing, up, down, up, down, nothing, down, up, nothing, up, down, up, bass, string_4, string_3, string_2, string_1, nothing, nothing, nothing]
+    accents: [true, false, false, false, false, false, true, false, true, false, false, false, false, false, true, false, true, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false]
+    cell: 1/8
+    let_ring: true
+
+chains:
+  porch:
+    - guitarify: porch
+  thumb and fingers:
+    - guitarify: thumb and fingers
+  crosspick:
+    - guitarify: crosspick
+  four to the bar:
+    - guitarify: four to the bar
+  open g:
+    - guitarify: open g
+  boogie:
+    - guitarify: boogie
+  tremolo:
+    - guitarify: tremolo
+  campfire:
+    - guitarify: campfire
+  chime:
+    - guitarify: chime
+  backbeat:
+    - guitarify: backbeat
+  scratch:
+    - guitarify: scratch
+  harp:
+    - guitarify: harp
+  arena:
+    - guitarify: arena
+  three chords loud:
+    - guitarify: three chords loud
+  gallop:
+    - guitarify: gallop
+  thrash:
+    - guitarify: thrash
+  low and slow:
+    - guitarify: low and slow
+  quiet loud:
+    - guitarify: quiet loud
+  shuffle:
+    - guitarify: shuffle
+  last chord:
+    - guitarify: last chord
+
+instruments:
+  nylon guitar: { device: "*FluidSynth", gm_sound: 25 }
+  steel guitar: { device: "*FluidSynth", gm_sound: 26 }
+  jazz guitar: { device: "*FluidSynth", gm_sound: 27 }
+  clean guitar: { device: "*FluidSynth", gm_sound: 28 }
+  muted guitar: { device: "*FluidSynth", gm_sound: 29 }
+  overdriven guitar: { device: "*FluidSynth", gm_sound: 30 }
+  distortion guitar: { device: "*FluidSynth", gm_sound: 31 }
+
+songs:
+  guitarify:
+    tempo: 104
+    scale: G Major
+    genre: Exercise
+
+    tracks:
+      nylon: { instrument: nylon guitar }
+      steel: { instrument: steel guitar }
+      jazz: { instrument: jazz guitar }
+      clean: { instrument: clean guitar }
+      muted: { instrument: muted guitar }
+      overdriven: { instrument: overdriven guitar }
+      distortion: { instrument: distortion guitar }
+
+    scenes:
+      - name: "country: porch"
+        scale: G Major
+        tempo: 104
+        tracks:
+          steel: { pattern: porch, chains: [porch] }
+      - name: "country: thumb and fingers"
+        scale: C Major
+        tempo: 96
+        tracks:
+          steel: { pattern: thumb and fingers, chains: [thumb and fingers] }
+      - name: "bluegrass: crosspick"
+        scale: G Major
+        tempo: 126
+        tracks:
+          steel: { pattern: crosspick, chains: [crosspick] }
+      - name: "jazz: four to the bar"
+        scale: C Major
+        tempo: 132
+        tracks:
+          jazz: { pattern: four to the bar, chains: [four to the bar] }
+      - name: "blues: open g"
+        scale: G Major
+        tempo: 84
+        tracks:
+          steel: { pattern: open g, chains: [open g] }
+      - name: "rock and roll: boogie"
+        scale: A Major
+        tempo: 152
+        tracks:
+          clean: { pattern: boogie, chains: [boogie] }
+      - name: "surf: tremolo"
+        scale: A Minor
+        tempo: 150
+        tracks:
+          clean: { pattern: tremolo, chains: [tremolo] }
+      - name: "folk: campfire"
+        scale: G Major
+        tempo: 96
+        tracks:
+          steel: { pattern: campfire, chains: [campfire] }
+      - name: "folk rock: chime"
+        scale: D Major
+        tempo: 116
+        tracks:
+          clean: { pattern: chime, chains: [chime] }
+      - name: "soul: backbeat"
+        scale: E Major
+        tempo: 104
+        tracks:
+          clean: { pattern: backbeat, chains: [backbeat] }
+      - name: "funk: scratch"
+        scale: E Major
+        tempo: 100
+        tracks:
+          muted: { pattern: scratch, chains: [scratch] }
+      - name: "singer-songwriter: harp"
+        scale: D Major
+        tempo: 80
+        tracks:
+          nylon: { pattern: harp, chains: [harp] }
+      - name: "hard rock: arena"
+        scale: A Major
+        tempo: 120
+        tracks:
+          overdriven: { pattern: arena, chains: [arena] }
+      - name: "punk: three chords loud"
+        scale: G Major
+        tempo: 184
+        tracks:
+          distortion: { pattern: three chords loud, chains: [three chords loud] }
+      - name: "metal: gallop"
+        scale: E Minor
+        tempo: 150
+        tracks:
+          distortion: { pattern: gallop, chains: [gallop] }
+      - name: "metal: thrash"
+        scale: E Minor
+        tempo: 190
+        tracks:
+          distortion: { pattern: thrash, chains: [thrash] }
+      - name: "metal: low and slow"
+        scale: D Minor
+        tempo: 70
+        tracks:
+          distortion: { pattern: low and slow, chains: [low and slow] }
+      - name: "alternative: quiet loud"
+        scale: A Minor
+        tempo: 110
+        tracks:
+          overdriven: { pattern: quiet loud, chains: [quiet loud] }
+      - name: "blues: shuffle"
+        scale: E Major
+        tempo: 120
+        tracks:
+          clean: { pattern: shuffle, chains: [shuffle] }
+      - name: "finale: last chord"
+        scale: G Major
+        tempo: 92
+        tracks:
+          steel: { pattern: last chord, chains: [last chord] }

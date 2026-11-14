@@ -745,6 +745,15 @@ code.
 - The `HocketEditor` has Name,
   Source track (a `ChoiceField` of `(none)` and the current song's tracks, sorted, the Hocket's own
   source kept among them when the song lacks it) and Restart. `tests/tui/test_tui_hocket.py` tests them.
+- The `GuitarifyEditor` (`screens/generators/guitarify_editor.py`) has Name, a `+ Shape` section (Shape chords, Tuning,
+  Position shown as `open` or `fret 5`, Capo, Strings, Single notes) and a `+ Strokes` section (Play strokes, Bar, Let ring,
+  Spread in ms, Fade, Loose timing, Upstroke strings, `all` for every string), then Restart; each setting is left out of the
+  file at its default. Bar shows the ready-made bar's name or `custom`, the cells and the cell length, and ENTER opens the
+  `GuitarBarEditor` (`screens/generators/guitar_bar_editor.py`), a `StepGrid` of a Stroke row over an Accent row: Left and
+  Right move, `[` and `]` (Up and Down too) step the stroke through `STROKES`, stopping at both ends, Space or ENTER accents,
+  `I` and `D` insert and remove a cell (1 to 32), `S` steps the cell length round `CELL_LENGTHS`, and `R` picks a ready-made
+  bar from a list, which replaces strokes, accents and cell length as one undo step. The line above the grid says the
+  cursor's stroke in words. `tests/tui/test_tui_guitarify.py` tests both.
 - Every generator's editor ends its own settings with `restart_field(page)`
   (`screens/generators/restart_field.py`), a `ChoiceField` of `RESTARTS` named by `MSG_RESTART_NAMES`, found by
   the page's `SECTION` and `item`.

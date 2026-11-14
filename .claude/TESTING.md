@@ -187,6 +187,10 @@ shared helpers are modules beside them:
 - **Strum.** `tests/generators/test_strum.py`: each direction, the spread in milliseconds at two tempos, fade,
   upstroke strings, loose timing from a seed, which of a generator, a clip and a track wins, and
   what a file refuses.
+- **Guitarify.** `tests/generators/test_guitarify.py`: Shape's voicings by tuning, position, capo and strings, single notes
+  left, made power chords and scale chords, each stroke, accents, Let ring, spread, fade, loose timing from a seed, the bar
+  following the song's bars under each Restart, the ready-made bars, and what a file refuses; `tests/tui/test_tui_guitarify.py`
+  its editor and the editor of its bar of strokes.
 - **The Euclidean mask.** `tests/generators/test_euclid.py`: the named rhythms, rotation, a track's mask, its
   steps and step, a generator stacked on the track's, and what a file refuses.
 - **Glide, Shorten, Rush and Drag.** `tests/playback/test_step_rows.py`: glides, short notes, the glide

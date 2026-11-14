@@ -25,6 +25,7 @@ The demos in `examples/learning/`, in the order to learn them, each teaching one
 - [Few Patterns](#arrangement_shanty): `20_arrangement_shanty.yml`
 - [Grabbed Parts](#look_ma_no_notes): `21_look_ma_no_notes.yml`
 - [Registers](#registers): `22_registers.yml`
+- [Guitarify](#guitarify): `23_guitarify.yml`
 <!-- end of the generated index -->
 
 <a id="hello_world"></a>
@@ -349,3 +350,20 @@ at once. Then DX fades the riff, kick and hat out together over six repeats of t
 | :---: |
 | ✓ |
 <!-- end of the generated summary of 22_registers -->
+
+<a id="guitarify"></a>
+## Guitarify: `23_guitarify.yml`
+
+A tour of guitar playing in twenty short scenes, each a way a guitar is played, on seven General
+MIDI guitars and nothing else: a country bass note and strum, picking with thumb and fingers,
+bluegrass crosspicking, jazz comping, a blues in open G, power chords, a surf tremolo, the folk
+strum, funk scratching, a singer's rolled chords, metal gallops and a twelve bar shuffle. Every
+pattern is only a row of chords or low notes, and the Guitarify generator of each scene does the
+playing, so the demo shows what its Shape and Strokes sections do to the same kind of pattern.
+
+[`examples/learning/23_guitarify.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/23_guitarify.yml) · G major · 104 BPM · 3:09 · 20 scenes · 7 tracks
+
+| chords | chains | guitarify | key changes | tempo changes | progressions |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+<!-- end of the generated summary of 23_guitarify -->

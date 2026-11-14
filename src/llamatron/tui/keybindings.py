@@ -38,7 +38,7 @@ from llamatron.strings.labels import PageName
 from llamatron.strings.legends import (
     MSG_PICK_PROGRESSION_WHAT,
     MSG_PICK_RHYTHM_WHAT,
-    KeyName, What, MSG_ABOUT_FOOTER_WHAT, MSG_ACCIDENTAL_WHAT, MSG_ADD_CLIP_WHAT, MSG_ADD_SCENE_WHAT, MSG_ADD_TRACK_WHAT, MSG_CELL_LENGTH_WHAT,
+    KeyName, What, MSG_ABOUT_FOOTER_WHAT, MSG_ACCIDENTAL_WHAT, MSG_ADD_CLIP_WHAT, MSG_ADD_SCENE_WHAT, MSG_ADD_TRACK_WHAT, MSG_ACCENT_WHAT, MSG_CELL_LENGTH_WHAT, MSG_READY_BARS_WHAT,
     MSG_CHORD_WHAT, MSG_NEXT_LIST_WHAT, MSG_CLOSE_SECTION_WHAT, MSG_COPY_CLIP_WHAT, MSG_COPY_SCENE_WHAT, MSG_COPY_TRACK_WHAT, MSG_DEGREE_WHAT, MSG_DELETE_CLIP_WHAT,
     MSG_DELETE_SCENE_WHAT, MSG_DELETE_TRACK_WHAT, MSG_EDIT_CLIP_WHAT, MSG_IMPORT_WHAT, MSG_PRESS_WHAT, MSG_OPEN_PATTERN_WHAT, MSG_SHRINK_WHAT, MSG_STRETCH_WHAT, MSG_ENTRY_SIZE_WHAT, MSG_GRAB_WHAT, MSG_HELP_FOOTER_WHAT, MSG_INSERT_SCENE_WHAT,
     MSG_INSERT_TRACK_WHAT, MSG_MAKE_CURRENT_WHAT, MSG_ADD_CHAIN_WHAT, MSG_BLANK_PATTERN_WHAT, MSG_REMOVE_CHAIN_WHAT, MSG_MOVE_CLIP_WHAT, MSG_QUIT_WITHOUT_SAVING_WHAT, MSG_SAVE_THEN_QUIT_WHAT, MSG_MOVE_SCENE_WHAT, MSG_MOVE_TRACK_WHAT, MSG_NEW_LINE_WHAT, MSG_NEW_WHAT,
@@ -335,6 +335,10 @@ class HocketEditor(FieldPage):
     """A Hocket's editor, with the settings keys alone."""
 
 
+class GuitarifyEditor(FieldPage):
+    """A Guitarify's editor, with the settings keys alone."""
+
+
 class StrumEditor(FieldPage):
     """A Strum's editor, with the settings keys alone."""
 
@@ -472,6 +476,22 @@ class StepRowEditor(StepEditor):
     INSERT_STEP = (Key.I, KeyName.I, What.INSERT_STEP)
     REMOVE_STEP = (Key.D, KeyName.D, What.REMOVE_STEP)
     IN_HELP = [Page.BACK, MOVE, TOGGLE, INSERT_STEP, REMOVE_STEP]
+    IN_LEGEND = IN_HELP
+
+
+class GuitarBarEditor(StepEditor):
+    """A Guitarify's bar of strokes: Left and Right move, [ and ] change the stroke, Space or ENTER accents, I and D insert and remove, S the cell length, R a ready-made bar."""
+
+    MOVE = (ARROWS_LEFT_RIGHT, KeyName.LEFT_RIGHT, What.MOVE)
+    # Up and Down change the stroke too, off the legend, since no row lies below the cursor.
+    LESS = (NUDGE_LESS_KEYS, KeyName.LEFT_BRACKET, What.LESS)
+    MORE = (NUDGE_MORE_KEYS, KeyName.RIGHT_BRACKET, What.MORE)
+    ACCENT = (TOGGLE_KEYS, KeyName.SPACE_ENTER, MSG_ACCENT_WHAT)
+    INSERT_CELL = (Key.I, KeyName.I, What.INSERT_CELL)
+    REMOVE_CELL = (Key.D, KeyName.D, What.REMOVE_CELL)
+    CELL_LENGTH = (Key.S, KeyName.S, MSG_CELL_LENGTH_WHAT)
+    READY_BARS = (Key.R, KeyName.R, MSG_READY_BARS_WHAT)
+    IN_HELP = [Page.BACK, MOVE, LESS, MORE, ACCENT, INSERT_CELL, REMOVE_CELL, CELL_LENGTH, READY_BARS]
     IN_LEGEND = IN_HELP
 
 

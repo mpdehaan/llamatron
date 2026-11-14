@@ -19,7 +19,7 @@ from typing import NamedTuple
 
 from llamatron.composition.file_format import GeneratorKind, Section, Shape
 from llamatron.strings.labels import (
-    MSG_ARP_LABEL, MSG_AUTO_RATCHET_LABEL, MSG_DRAG_LABEL, MSG_DRIFT_LABEL, MSG_EUCLID_LABEL, MSG_GLIDE_LABEL, MSG_HOCKET_LABEL,
+    MSG_ARP_LABEL, MSG_AUTO_RATCHET_LABEL, MSG_DRAG_LABEL, MSG_DRIFT_LABEL, MSG_EUCLID_LABEL, MSG_GLIDE_LABEL, MSG_GUITARIFY_LABEL, MSG_HOCKET_LABEL,
     MSG_PROGRESSION_LABEL, MSG_RUSH_LABEL, MSG_SHAPE_NAMES, MSG_SHORTEN_LABEL_NAME, MSG_STRUM_LABEL, MSG_VOICE_LEADING_LABEL,
 )
 from llamatron.tui.screens.generators.arp_editor import ArpEditor
@@ -30,6 +30,7 @@ from llamatron.tui.screens.generators.drag_editor import DragEditor
 from llamatron.tui.screens.generators.drift_editor import DriftEditor
 from llamatron.tui.screens.generators.euclid_editor import EuclidEditor
 from llamatron.tui.screens.generators.glide_editor import GlideEditor
+from llamatron.tui.screens.generators.guitarify_editor import GuitarifyEditor
 from llamatron.tui.screens.generators.hocket_editor import HocketEditor
 from llamatron.tui.screens.generators.progression_editor import ProgressionEditor
 from llamatron.tui.screens.generators.rush_editor import RushEditor
@@ -66,6 +67,7 @@ GENERATOR_PAGES = {
         GeneratorListing(kind=GeneratorKind.RUSH, section=Section.RUSHES, label=MSG_RUSH_LABEL, EDITOR=RushEditor),
         GeneratorListing(kind=GeneratorKind.DRAG, section=Section.DRAGS, label=MSG_DRAG_LABEL, EDITOR=DragEditor),
         GeneratorListing(kind=GeneratorKind.HOCKET, section=Section.HOCKETS, label=MSG_HOCKET_LABEL, EDITOR=HocketEditor),
+        GeneratorListing(kind=GeneratorKind.GUITARIFY, section=Section.GUITARIFIES, label=MSG_GUITARIFY_LABEL, EDITOR=GuitarifyEditor),
     )
 }
 

@@ -46,6 +46,7 @@ The generators fall into six categories by what they change, as the sidebar grou
 | Articulation | [Glide](generators/GLIDE.md) | Runs notes on chosen steps into the next note | `examples/learning/14_acid_glide.yml` |
 | Articulation | [Shorten](generators/SHORTEN.md) | Plays notes on chosen steps short | `examples/learning/14_acid_glide.yml` |
 | Chords | [Arpeggiator](generators/ARPEGGIATOR.md) | Plays a chord one note at a time, with offsets | `examples/learning/12_sailor_arpeggiator.yml` |
+| Chords | [Guitarify](generators/GUITARIFY.md) | Holds chords as a hand does and plays a bar of strokes on them | `examples/learning/23_guitarify.yml` |
 | Chords | [Progression](generators/PROGRESSION.md) | Moves a figure through a progression of chords | `examples/learning/06_chord_progression_generator.yml` |
 | Chords | [Strum](generators/STRUM.md) | Spreads a chord's notes in time like a pick | `examples/learning/13_classic_strum.yml` |
 | Chords | [Voice Leading](generators/VOICE_LEADING.md) | Voices each chord nearest the chord before | `examples/learning/05_voice_leading.yml` |

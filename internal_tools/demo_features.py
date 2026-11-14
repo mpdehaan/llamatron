@@ -217,6 +217,7 @@ FEATURES = [
     ('rushes', has_section(Section.RUSHES)),
     ('drags', has_section(Section.DRAGS)),
     ('hockets', has_section(Section.HOCKETS)),
+    ('guitarifies', has_section(Section.GUITARIFIES)),
     ('strums', lambda data: has_section(Section.STRUMS)(data) or any_track_setting(TrackSetting.STRUM_DIRECTION)(data) or any_clip_slot_setting(ClipSlotSetting.STRUM_DIRECTION)(data)),
     ('Densities', has_section(Section.DENSITIES)),
     ('Swells', has_section(Section.SWELLS)),

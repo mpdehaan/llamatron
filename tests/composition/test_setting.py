@@ -28,7 +28,8 @@ from llamatron.composition.file_format import (
     SetlistSetting, SongSetting, TrackSetting,
 )
 from llamatron.composition.file_format import DRIFT_VERSIONS, DriftValue
-from llamatron.composition.generator_settings import HocketSetting, HocketSettings, DriftSetting, DriftSettings, ProgressionSetting, ProgressionSettings, ShapeSetting, VoiceLeadingSetting, VoiceLeadingSettings, StepRowSetting, GlideSettings, ShortenSettings, RushSettings, SwellSettings, versioned, ArpSetting, ArpSettings, AutoRatchetSetting, AutoRatchetSettings
+from llamatron.composition.file_format import GuitarifySetting
+from llamatron.composition.generator_settings import GuitarifySettings, HocketSetting, HocketSettings, DriftSetting, DriftSettings, ProgressionSetting, ProgressionSettings, ShapeSetting, VoiceLeadingSetting, VoiceLeadingSettings, StepRowSetting, GlideSettings, ShortenSettings, RushSettings, SwellSettings, versioned, ArpSetting, ArpSettings, AutoRatchetSetting, AutoRatchetSettings
 from llamatron.composition.groove import Groove, new_groove
 from llamatron.composition.instrument import Instrument
 from llamatron.music.midi import MAX_CHANNEL
@@ -120,6 +121,7 @@ DESCRIBED = [
     # A Glide's, a Shorten's, a Rush's and a Drag's settings share one class of names.
     (StepRowSetting, {**GlideSettings.SETTINGS, **ShortenSettings.SETTINGS, **RushSettings.SETTINGS}, ()),
     (HocketSetting, HocketSettings.SETTINGS, ()),
+    (GuitarifySetting, GuitarifySettings.SETTINGS, ()),
 ]
 
 

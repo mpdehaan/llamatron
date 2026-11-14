@@ -46,7 +46,7 @@ from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.set.song_page import SongPage
 from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.strings.help import HELP_NONE
-from llamatron.strings.labels import MSG_CHORDS_LABEL, MSG_STEPS_LABEL, MSG_CHAINS_LABEL, MSG_NOTES_LABEL, MSG_OFFSETS_LABEL
+from llamatron.strings.labels import MSG_GUITAR_BAR_LABEL, MSG_CHORDS_LABEL, MSG_STEPS_LABEL, MSG_CHAINS_LABEL, MSG_NOTES_LABEL, MSG_OFFSETS_LABEL
 from llamatron.strings.legends import KeyName
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import first_key
@@ -284,6 +284,12 @@ class KeyTour(UITest):
             await self.press(Key.ENTER)
             await self.walk()
             await self.press(Key.ESCAPE, Key.ESCAPE, Key.ESCAPE)
+        # A Guitarify's Bar field, in its Strokes section, opens the bar of strokes.
+        await self.open_generator(section=Section.GUITARIFIES)
+        await self.select_field(MSG_GUITAR_BAR_LABEL)
+        await self.press(Key.ENTER)
+        await self.walk()
+        await self.press(Key.ESCAPE, Key.ESCAPE, Key.ESCAPE)
         # A progression's Chords field opens the chord editor.
         await self.open_generator(section=Section.PROGRESSIONS)
         await self.select_field(MSG_CHORDS_LABEL)

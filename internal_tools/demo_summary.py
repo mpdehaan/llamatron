@@ -68,6 +68,7 @@ FEATURE_COLUMNS = [
     ('chains', ['chains']),
     ('grabs', ['grab steps', 'grab track']),
     ('hocket', ['hockets']),
+    ('guitarify', ['guitarifies']),
     ('morphs', ['morphs']),
     ('directions', ['pattern direction', 'clip direction']),
     ('ties', ['ties']),

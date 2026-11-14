@@ -38,6 +38,9 @@ from llamatron.music.note import MAX_OCTAVE, MIN_OCTAVE
 from llamatron.support.rational import Rational
 from llamatron.generators.progression import Progression
 from llamatron.generators.voice_leading import VoiceLeading
+from llamatron.generators.guitarify import Guitarify
+from llamatron.composition.file_format import SINGLE_NOTES, STROKES, TUNINGS, GuitarifySetting, SingleNotes, Tuning
+from llamatron.composition.guitar_bars import DEFAULT_BAR, READY_BARS
 from llamatron.generators.euclid import EuclidMask
 from llamatron.generators.glide import Glide
 from llamatron.generators.shorten import Shorten
@@ -50,6 +53,7 @@ from llamatron.strings.errors import (
     ERR_BAD_PROGRESSION_CHORDS,
     ERR_BAD_PROGRESSION_ROW, ERR_BAD_PROGRESSION_TENSIONS,
     ERR_VOICE_LEADING_RANGE,
+    ERR_BAD_GUITAR_ACCENTS, ERR_BAD_GUITAR_BAR, ERR_GUITARIFY_NOT_TRUE_OR_FALSE,
     ERR_ROOT_IN_BASS_NOT_TRUE_OR_FALSE,
     ERR_EUCLID_TOO_MANY_HITS,
     ERR_BAD_STEP_ROW,
@@ -282,17 +286,19 @@ class GeneratorSettings(LlamaData):
         """Return when the generator starts over, every clip unless set."""
         return self._written(GENERATOR_RESTART) or Restart.EVERY_CLIP
 
-    def make_generator(self, *, where, default_seed, default_step=None, bar=None, continuation=None):
+    def make_generator(self, *, where, default_seed, default_step=None, bar=None, continuation=None, tempo=None):
         """Return the generator these settings describe, or raise SongFileError if they're wrong.
 
         where names the chain using it. default_seed is used by a generator that chooses at
         random, when its settings don't give a seed, default_step, the step size of the
         pattern the clip plays, by one whose step is left as "(pattern)", and bar, the length of
-        the song's bar, by one whose time is written in bars.
+        the song's bar, by one whose time is written in bars, and tempo, the scene's, by one
+        that works in milliseconds.
         """
         with reading(where):
             self.check_data(self._settings)
             values = self._with_defaults(values=self._taken_values(), default_seed=default_seed, default_step=default_step, bar=bar)
+            values = self._with_tempo(values=values, tempo=tempo)
             # Restart is the renderer's to read; the generator is handed where it carries on from instead.
             values.pop(GENERATOR_RESTART, None)
             return self.GENERATOR(**values, continuation=continuation)
@@ -303,6 +309,10 @@ class GeneratorSettings(LlamaData):
 
     def _with_defaults(self, *, values, default_seed, default_step, bar):
         """Return the generator's values, with a seed and a step added where it needs them. Most don't."""
+        return values
+
+    def _with_tempo(self, *, values, tempo):
+        """Return the generator's values, with the scene's tempo added where it needs it. Most don't."""
         return values
 
 
@@ -612,6 +622,139 @@ class VoiceLeadingSettings(GeneratorSettings):
 
     def keeps_root_in_bass(self):
         return bool(self._written(VoiceLeadingSetting.ROOT_IN_BASS))
+
+
+# What a Guitarify does with each setting left out: both halves on, a standard guitar held in the open position with no capo, single
+# notes left alone, the default bar, nothing ringing on, and a strum of normal spread, fading a little, slightly loose, its upstrokes
+# catching the top four strings.
+DEFAULT_GUITAR_POSITION = 0
+DEFAULT_GUITAR_CAPO = 0
+DEFAULT_GUITAR_STRINGS = 6
+DEFAULT_GUITAR_SPREAD = 8
+DEFAULT_GUITAR_FADE = 20
+DEFAULT_GUITAR_LOOSE_TIMING = 10
+DEFAULT_GUITAR_UPSTROKE = 4
+MIN_GUITAR_STRINGS = 3
+MAX_GUITAR_STRINGS = 6
+MAX_GUITAR_FRET = 12
+MAX_GUITAR_BAR = 32
+MAX_GUITAR_SPREAD = 60
+MAX_GUITAR_PERCENT = 50
+# An upstroke that catches every string.
+EVERY_STRING = 0
+
+
+def _check_guitar_bar(values):
+    """Check a bar of strokes: a list of 1 to MAX_GUITAR_BAR, each a stroke's name."""
+    if not (isinstance(values, list) and 1 <= len(values) <= MAX_GUITAR_BAR and all(value in STROKES for value in values)):
+        raise InvalidValue(ERR_BAD_GUITAR_BAR.format(name=GuitarifySetting.BAR, most=MAX_GUITAR_BAR, choices=listed(STROKES), value=values))
+
+
+def _check_guitar_accents(values):
+    """Check the accents beside a bar of strokes: a list of at most MAX_GUITAR_BAR, each on or off."""
+    if not (isinstance(values, list) and len(values) <= MAX_GUITAR_BAR and all(is_true_or_false(value) for value in values)):
+        raise InvalidValue(ERR_BAD_GUITAR_ACCENTS.format(name=GuitarifySetting.ACCENTS, most=MAX_GUITAR_BAR, value=values))
+
+
+def _guitar_flag(name):
+    return Flag(name=name, error=ERR_GUITARIFY_NOT_TRUE_OR_FALSE.format(name=name, value='{value!r}'))
+
+
+class GuitarifySettings(GeneratorSettings):
+    """A Guitarify's settings: Shape and the strokes, each half with a switch, every setting left out for its default."""
+
+    __slots__ = ()
+
+    GENERATOR = Guitarify
+    SETTINGS = described(
+        _guitar_flag(GuitarifySetting.SHAPE),
+        Choice(name=GuitarifySetting.TUNING, choices=TUNINGS, default=LEFT_OUT, error=ERR_NOT_A_CHOICE),
+        WholeNumber(name=GuitarifySetting.POSITION, lowest=0, highest=MAX_GUITAR_FRET, error=ERR_BAD_SHAPE_PERCENT),
+        WholeNumber(name=GuitarifySetting.CAPO, lowest=0, highest=MAX_GUITAR_FRET, error=ERR_BAD_SHAPE_PERCENT),
+        WholeNumber(name=GuitarifySetting.STRINGS, lowest=MIN_GUITAR_STRINGS, highest=MAX_GUITAR_STRINGS, error=ERR_BAD_SHAPE_PERCENT),
+        Choice(name=GuitarifySetting.SINGLE_NOTES, choices=SINGLE_NOTES, default=LEFT_OUT, error=ERR_NOT_A_CHOICE),
+        _guitar_flag(GuitarifySetting.STROKES),
+        Checked(name=GuitarifySetting.BAR, check=_check_guitar_bar),
+        Checked(name=GuitarifySetting.ACCENTS, check=_check_guitar_accents),
+        Checked(name=GuitarifySetting.CELL, check=time_length),
+        _guitar_flag(GuitarifySetting.LET_RING),
+        WholeNumber(name=GuitarifySetting.SPREAD, lowest=0, highest=MAX_GUITAR_SPREAD, error=ERR_BAD_SHAPE_PERCENT),
+        WholeNumber(name=GuitarifySetting.FADE, lowest=0, highest=MAX_GUITAR_PERCENT, error=ERR_BAD_SHAPE_PERCENT),
+        WholeNumber(name=GuitarifySetting.LOOSE_TIMING, lowest=0, highest=MAX_GUITAR_PERCENT, error=ERR_BAD_SHAPE_PERCENT),
+        WholeNumber(name=GuitarifySetting.UPSTROKE, lowest=EVERY_STRING, highest=MAX_GUITAR_STRINGS, error=ERR_BAD_SHAPE_PERCENT),
+        RESTART_SETTING,
+    )
+    TAKEN_AS = {GuitarifySetting.CELL: time_length}
+
+    @classmethod
+    def new(cls):
+        return cls({})
+
+    def _with_defaults(self, *, values, default_seed, default_step, bar):
+        cell = time_length(self.get_cell())
+        return dict(
+            shape=self.shapes(), tuning=self.get_tuning(), position=self.get_position(), capo=self.get_capo(), strings=self.get_strings(),
+            single_notes=self.get_single_notes(), strokes=self.strikes(), bar=self.get_bar(), accents=self.get_accents(),
+            cell=bar * cell.count if isinstance(cell, Bars) else cell, let_ring=self.lets_ring(), spread=self.get_spread(), fade=self.get_fade(),
+            loose_timing=self.get_loose_timing(), upstroke=self.get_upstroke() or None, seed=default_seed,
+        )
+
+    def _with_tempo(self, *, values, tempo):
+        return dict(values, tempo=tempo)
+
+    def shapes(self):
+        """Return whether the Shape half is on, which it is unless switched off."""
+        return self._written(GuitarifySetting.SHAPE) is not False
+
+    def strikes(self):
+        """Return whether the Strokes half is on, which it is unless switched off."""
+        return self._written(GuitarifySetting.STROKES) is not False
+
+    def lets_ring(self):
+        return bool(self._written(GuitarifySetting.LET_RING))
+
+    def get_tuning(self):
+        return self._written(GuitarifySetting.TUNING) or Tuning.STANDARD
+
+    def get_position(self):
+        return or_default(value=self._written(GuitarifySetting.POSITION), default=DEFAULT_GUITAR_POSITION)
+
+    def get_capo(self):
+        return or_default(value=self._written(GuitarifySetting.CAPO), default=DEFAULT_GUITAR_CAPO)
+
+    def get_strings(self):
+        return or_default(value=self._written(GuitarifySetting.STRINGS), default=DEFAULT_GUITAR_STRINGS)
+
+    def get_single_notes(self):
+        return self._written(GuitarifySetting.SINGLE_NOTES) or SingleNotes.LEAVE
+
+    def get_bar(self):
+        """Return the stroke of each cell, the default bar's unless written."""
+        return list(self._written(GuitarifySetting.BAR) or READY_BARS[DEFAULT_BAR].strokes)
+
+    def get_accents(self):
+        """Return whether each cell is accented, as long as the bar: the default bar's while the bar is unwritten, and none where a written bar has none."""
+        if self._written(GuitarifySetting.BAR) is None and self._written(GuitarifySetting.ACCENTS) is None:
+            return list(READY_BARS[DEFAULT_BAR].accents)
+        count = len(self.get_bar())
+        return (list(self._written(GuitarifySetting.ACCENTS) or []) + [False] * count)[:count]
+
+    def get_cell(self):
+        """Return how long a cell lasts, as a file writes it: the default bar's unless written."""
+        return self._written(GuitarifySetting.CELL) or READY_BARS[DEFAULT_BAR].cell
+
+    def get_spread(self):
+        return or_default(value=self._written(GuitarifySetting.SPREAD), default=DEFAULT_GUITAR_SPREAD)
+
+    def get_fade(self):
+        return or_default(value=self._written(GuitarifySetting.FADE), default=DEFAULT_GUITAR_FADE)
+
+    def get_loose_timing(self):
+        return or_default(value=self._written(GuitarifySetting.LOOSE_TIMING), default=DEFAULT_GUITAR_LOOSE_TIMING)
+
+    def get_upstroke(self):
+        """Return how many of the top strings an upstroke catches, or EVERY_STRING for all."""
+        return or_default(value=self._written(GuitarifySetting.UPSTROKE), default=DEFAULT_GUITAR_UPSTROKE)
 
 
 class StrumSettings(GeneratorSettings):
@@ -1005,6 +1148,6 @@ GENERATOR_SETTINGS = {
     GeneratorKind.STRUM: StrumSettings, GeneratorKind.EUCLID: EuclidSettings, GeneratorKind.GLIDE: GlideSettings, GeneratorKind.SHORTEN: ShortenSettings,
     GeneratorKind.RUSH: RushSettings, GeneratorKind.DRAG: DragSettings,
     GeneratorKind.DENSITY: DensitySettings, GeneratorKind.SWELL: SwellSettings, GeneratorKind.ARTICULATE: ArticulateSettings,
-    GeneratorKind.HOCKET: HocketSettings,
+    GeneratorKind.HOCKET: HocketSettings, GeneratorKind.GUITARIFY: GuitarifySettings,
 }
 

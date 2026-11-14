@@ -35,6 +35,7 @@ from llamatron.tui.drawing import Box, NOTHING
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.chords_editor import ChordsEditor
 from llamatron.tui.screens.generators.glide_steps_editor import GlideStepsEditor
+from llamatron.tui.screens.generators.guitar_bar_editor import GuitarBarEditor
 from llamatron.tui.screens.generators.shorten_steps_editor import ShortenStepsEditor
 from llamatron.tui.screens.generators.rush_steps_editor import RushStepsEditor
 from llamatron.tui.screens.generators.drag_steps_editor import DragStepsEditor
@@ -241,9 +242,9 @@ class TestEveryStepEditorIsChecked(unittest.TestCase):
         self.assertEqual(sorted(page.__name__ for page in pages), sorted(checks.PAGE.__name__ for checks in CHECKED))
 
     def test_the_editors_of_steps_are_the_pattern_editor_the_chord_editor_and_the_editors_of_one_row(self):
-        # The chord editor has three rows, which Up and Down move between, and degrees from 1 to 7, and the steps pages of Glide, Shorten, Rush and Drag hold toggles, so none is an editor of one row of numbers either side of zero; test_tui_progressions.py and test_tui_step_rows.py test them.
+        # The chord editor has three rows, which Up and Down move between, and degrees from 1 to 7, a Guitarify's bar holds strokes over accents, and the steps pages of Glide, Shorten, Rush and Drag hold toggles, so none is an editor of one row of numbers either side of zero; test_tui_progressions.py and test_tui_step_rows.py test them.
         pages = [page for page in leaf_pages() if issubclass(page, StepEditor)]
-        self.assertEqual(sorted(page.__name__ for page in pages), sorted(page.__name__ for page in (PatternEditor, ChordsEditor, GlideStepsEditor, ShortenStepsEditor, RushStepsEditor, DragStepsEditor, *[checks.PAGE for checks in CHECKED])))
+        self.assertEqual(sorted(page.__name__ for page in pages), sorted(page.__name__ for page in (PatternEditor, ChordsEditor, GuitarBarEditor, GlideStepsEditor, ShortenStepsEditor, RushStepsEditor, DragStepsEditor, *[checks.PAGE for checks in CHECKED])))
 
     def test_every_editor_of_one_row_says_what_the_row_holds(self):
         for checks in CHECKED:
