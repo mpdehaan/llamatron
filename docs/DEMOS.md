@@ -59,7 +59,7 @@ pages current.
 | [Pop](demos/POP.md) | 5 |
 | [Ragtime](demos/RAGTIME.md) | 1 |
 | [Rock](demos/ROCK.md) | 10 |
-| [Rock Mashup](demos/ROCK_MASHUP.md) | 2 |
+| [Rock Mashup](demos/ROCK_MASHUP.md) | 3 |
 | [Soundtrack](demos/SOUNDTRACK.md) | 7 |
 | [TV Theme](demos/TV_THEME.md) | 12 |
 | [TV theme](demos/TV_THEME.md) | 3 |
