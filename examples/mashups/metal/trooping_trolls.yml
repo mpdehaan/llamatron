@@ -32,7 +32,7 @@ notes: |
   bare bass at the start and the silences between the last crashes; the sounds are two overdriven lead
   guitars, a distortion guitar on power chords and a picked bass.
 
-  Run it with: llamatron examples/mashups/trooping_trolls.yml
+  Run it with: llamatron examples/mashups/metal/trooping_trolls.yml
 
   Scene 1, the call, 1 bars.
   Scene 2, bass alone, 4 bars.
@@ -893,7 +893,7 @@ songs:
   trooping_trolls:
     tempo: 138
     scale: B Minor
-    genre: Mashup
+    genre: Metal Mashup
 
     tracks:
       kick: { drum: true, instrument: drum kit }

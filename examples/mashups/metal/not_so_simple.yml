@@ -35,7 +35,7 @@ notes: |
   distortion guitar for the lead, a saw lead for the keyboard, a low distortion guitar and a picked
   bass.
 
-  Run it with: llamatron examples/mashups/not_so_simple.yml
+  Run it with: llamatron examples/mashups/metal/not_so_simple.yml
 
   Scene 1, simple, 9 bars.
   Scene 2, second strain, 8 bars.
@@ -585,7 +585,7 @@ songs:
   not_so_simple:
     tempo: 96
     scale: D Major
-    genre: Mashup
+    genre: Metal Mashup
 
     tracks:
       kick: { drum: true, instrument: drum kit }
