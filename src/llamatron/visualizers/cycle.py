@@ -47,7 +47,7 @@ from llamatron.strings.visualizers import MSG_CYCLE
 # How long each mode shows before the next, hard-coded for now as the user asked, and the modes it goes through.
 CYCLE_SECONDS = 15.0
 CYCLED = (
-    LavaLamp, Spectrum, PianoRoll, Milkdrop, Llamas, Hypercube, Fireworks, WarpZone, Pipes, Plasma, Maze, Mystify, LaserLlama, Mandelbrot, Life, DigitalRain,
+    LavaLamp, PianoRoll, Spectrum, Milkdrop, Llamas, Hypercube, Fireworks, WarpZone, Pipes, Plasma, Maze, Mystify, LaserLlama, Mandelbrot, Life, DigitalRain,
 )
 
 
