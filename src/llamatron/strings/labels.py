@@ -37,6 +37,8 @@ def register_labels(*, rows, label):
 MSG_QUIT_BUTTONS = ('Quit without saving', 'Save, then Quit', 'CANCEL')
 # A message's one button.
 MSG_OK_BUTTON = 'OK'
+# The buttons of a dialog that is finished or cancelled, in that order.
+MSG_OK_CANCEL_BUTTONS = ('OK', 'CANCEL')
 # The confirm dialog's two buttons, in the order they're drawn and the arrows move: yes first, since ENTER presses the selected one.
 MSG_CONFIRM_BUTTONS = ('YES', 'NO')
 
@@ -429,7 +431,7 @@ MSG_ROW_LABELS = {
     Row.DEGREE: 'Degree', Row.GATE: 'Gate', Row.DOT: 'Dot', Row.ACCIDENTAL: '#/b', Row.OCTAVE: 'Octave', Row.CHORD: 'Chord', Row.INVERSION: 'Inversion',
     Row.TENSION: 'Tension', Row.CHORD_SCALE: 'Scale',
     Row.VELOCITY: 'Velocity', Row.PROBABILITY: 'Probability', Row.GLIDE: 'Glide', Row.TIE: 'Tie', Row.RATCHET: 'Ratchet',
-    Row.RATCHET_OFFSET: 'Ratchet Offset', Row.GRAB: 'Grab',
+    Row.RATCHET_OFFSET: 'Ratchet Offset', Row.GRAB: 'Grab', Row.KEYSWITCH: 'Keyswitch',
     Row.CC1: 'CC 1', Row.CC2: 'CC 2', Row.CC3: 'CC 3', Row.CC4: 'CC 4', Row.SLIDE: 'Slide',
     **register_labels(rows=REGISTER_NOTE_ROWS, label=MSG_REGISTER_NOTE_LABEL),
     **register_labels(rows=REGISTER_VELOCITY_ROWS, label=MSG_REGISTER_VELOCITY_LABEL),
@@ -679,5 +681,7 @@ MSG_GM_FAMILIES = [
     'Sound Effects',
 ]
 MSG_GM_SOUND_LABEL = 'GM sound'
+MSG_KEYSWITCH_MAP_LABEL = 'Keyswitch Map'
+MSG_KEYSWITCH_LEAD_LABEL = 'Keyswitch lead'
 MSG_GM_SOUND_SHOWN = '{number} {name}'
 MSG_GM_PAGE_NAME = 'page {number}'

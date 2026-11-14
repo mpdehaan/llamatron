@@ -208,6 +208,10 @@ class Pattern(PatternNotes, LlamaData):
         """Return whether any step reads a register: a row of +Note or +Vel switched on there, or a condition."""
         return any(self._adds_on(row) for rows in (REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, CONDITION_ROWS) for row in rows.values())
 
+    def sends_keyswitches(self):
+        """Return whether any step names a keyswitch slot."""
+        return any(self._rows[Row.KEYSWITCH] or [])
+
     def sends_controls(self):
         """Return whether any step holds a CC value, which a value of 0 is too."""
         return any(value is not None for row in CC_ROWS for value in self._rows[row] or [])

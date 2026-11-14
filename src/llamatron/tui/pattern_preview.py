@@ -221,16 +221,16 @@ class PatternPreview(Transport):
     def _route(self):
         real = self.real()
         if self._clip is not None:
-            return Route(FLUIDSYNTH_PORT, DRUM_CHANNEL_BYTE) if self._clip_is_drums() else Route(FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, PIANO_PROGRAM)
+            return Route(FLUIDSYNTH_PORT, DRUM_CHANNEL_BYTE, None, keyswitches=False) if self._clip_is_drums() else Route(FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, PIANO_PROGRAM, keyswitches=False)
         if real.song().get_pattern(self._pattern).is_drum():
-            return Route(FLUIDSYNTH_PORT, DRUM_CHANNEL_BYTE)
+            return Route(FLUIDSYNTH_PORT, DRUM_CHANNEL_BYTE, None, keyswitches=False)
         name = self.instrument_of(self._pattern)
         if name is None:
-            return Route(FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, PIANO_PROGRAM)
+            return Route(FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, PIANO_PROGRAM, keyswitches=False)
         instrument = real.setlist().get_instrument(name)
         if instrument.uses_fluidsynth():
             sound = instrument.get_gm_sound()
-            return Route(FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, None if sound is None else sound - MIN_GM_SOUND)
+            return Route(FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, None if sound is None else sound - MIN_GM_SOUND, keyswitches=False)
         return Route(instrument.get_device(), instrument.get_channel() - CHANNEL_OFFSET)
 
     # Playing.

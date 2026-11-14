@@ -169,3 +169,11 @@ class Keyboard:
                 white.append(self.key_piece(first + pitch_class))
                 white.append((SPACE * KEY_GAP, None))
         return [black, white, [(self.names_row(), None)]]
+
+
+def one_octave_rows(pitch_class):
+    """Return the three lines of one octave of keys as pieces, each a text and a KeyKind, with one key filled and its name bracketed: the keyswitch note picker's keys (the user's design)."""
+    black, white, names = Keyboard(root=SHARP_NAMES[pitch_class], half_steps=(), chord={pitch_class}).rows()
+    pieces = 1 + len(WHITE_KEYS) * 2
+    width = WHITE_ROW_INDENT + len(WHITE_KEYS) * KEY_STRIDE
+    return [black[:pieces], white[:pieces], [(names[0][0][:width].rstrip(), None)]]

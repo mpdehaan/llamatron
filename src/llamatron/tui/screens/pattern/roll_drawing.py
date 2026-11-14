@@ -30,13 +30,14 @@ from typing import NamedTuple
 
 from rich.text import Text
 
+from llamatron.composition.file_format import Row
 from llamatron.tui.drawing import Box, fit, NOTHING, SPACE, Style
 from llamatron.tui.screens.pattern.grid_drawing import CELL_WIDTH, GridDrawing
 from llamatron.composition.checks import fraction_text
 from llamatron.strings.marks import (
     MSG_CURSOR_BLOCK, MSG_ENTRY_SIZE_SHOWN, MSG_FROM_SONG_SHOWN, MSG_GHOST_LINE, MSG_GRAB_NOTE_MARK, MSG_NOTE_CELL, MSG_NOTE_CELL_WITH_MARK,
     MSG_NOTE_EDGE, MSG_NOTE_HOLLOW, MSG_NOTE_HOLLOW_UNDER_CURSOR, MSG_NOTE_UNDER_CURSOR, MSG_NOTE_UNDER_CURSOR_WITH_MARK, MSG_OUT_OF_RANGE_CELL,
-    MSG_READ_HEAD,
+    MSG_KEYSWITCH_LIGHT, MSG_READ_HEAD,
 )
 
 # The blocks of a note's bar, which the read head never draws over, and how wide the edge before each step is.
@@ -51,6 +52,8 @@ LINES_AROUND_ROWS = 7
 MIN_ROWS = 1
 # The column of a cell that holds a note's mark, its sharp, flat or G, in the middle, or the bar's last column when the bar is shorter.
 MARK_COLUMN = CELL_WIDTH // 2
+# Which of the grid's lines is the roll's top row, under the top rule, the step numbers and the heading's rule: where the keyswitch lights go.
+TOP_PITCH_LINE = 3
 
 
 def filled_columns(part):
@@ -290,7 +293,24 @@ class RollDrawing(GridDrawing):
             if roll.starts_an_octave(pitch) and pitch != pitches[-1]:
                 lines.append(self.inner_rule(first=first, last=last, boxed=self.boxed_beside(pitch, pitches[place + 1])))
         lines.append(self.bottom_rule(first=first, last=last, boxed=self.boxed_beside(pitches[-1])))
+        lines[TOP_PITCH_LINE] = self.with_keyswitch_lights(line=lines[TOP_PITCH_LINE], first=first, last=last)
         return self.with_read_head(lines=lines, first=first, last=last)
+
+    def with_keyswitch_lights(self, *, line, first, last):
+        """Return the roll's top row with a light in the middle of the cell of every step shown whose note has keyswitches, drawn over a note's bar when one is
+        there (the user's design): the top row stays in view however far the roll scrolls. The line drawn is kept as it is, and the lights go on a copy."""
+        editor = self._editor
+        steps = [step for step in range(first, last) if editor.value(row=Row.KEYSWITCH, step=step) and editor.is_note(step=step)]
+        if not steps:
+            return line
+        marked = line.copy()
+        for step in steps:
+            column = EDGE_WIDTH + self.label_width() + (step - first) * (CELL_WIDTH + EDGE_WIDTH) + EDGE_WIDTH + MARK_COLUMN
+            after = marked[column + 1:]
+            marked = marked[:column]
+            marked.append(MSG_KEYSWITCH_LIGHT, style=Style.KEYSWITCH_LIGHT)
+            marked.append_text(after)
+        return marked
 
     def with_read_head(self, *, lines, first, last):
         """Return the roll's lines with the read head down them at the left edge of the step that sounds, while the pattern plays: a thin light yellow line, left

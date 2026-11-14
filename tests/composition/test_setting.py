@@ -24,7 +24,7 @@ from llamatron.composition import clip_slot, file_format, generator_settings, gr
 from llamatron.composition.clip_slot import FIRST_MORPH_STYLE, MORPH_STYLES, ClipSlot
 from llamatron.composition.checks import listed
 from llamatron.composition.file_format import (
-    DIRECTIONS, OCTAVE_LABEL_CHOICES, ClipSlotSetting, GrooveSetting, InstrumentSetting, PatternSetting, RegisterSetting, ScaleSetting, SceneSetting, Section,
+    DIRECTIONS, OCTAVE_LABEL_CHOICES, ClipSlotSetting, GrooveSetting, InstrumentSetting, KeyswitchSetting, PatternSetting, RegisterSetting, ScaleSetting, SceneSetting, Section,
     SetlistSetting, SongSetting, TrackSetting,
 )
 from llamatron.composition.file_format import DRIFT_VERSIONS, DriftValue
@@ -103,6 +103,7 @@ DESCRIBED = [
     (ScaleSetting, named_scale.SETTINGS, ()),
     (GrooveSetting, groove.SETTINGS, ()),
     (InstrumentSetting, instrument.SETTINGS, ()),
+    (KeyswitchSetting, instrument.KEYSWITCH_SETTINGS, ()),
     (TrackSetting, track.SETTINGS, ()),
     (PatternSetting, pattern.SETTINGS, (PatternSetting.STEPS,)),
     # chain is only read, from a file saved before a clip held a list of chains.

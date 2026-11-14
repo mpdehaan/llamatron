@@ -17,7 +17,7 @@
 """Playing one pass through a pattern, step by step, into notes, chords and rests."""
 
 import operator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import NamedTuple
 
 from llamatron.support.length import ZERO, Length
@@ -38,6 +38,7 @@ from llamatron.music.note import MAX_OCTAVE, MIN_OCTAVE, SHARP_NAMES
 from llamatron.music.sound import CHORD, KIND, LENGTH, MIDI, NOTES, REST, Sound
 from llamatron.grid.clip import Clip
 from llamatron.grid.control import Control
+from llamatron.grid.keyswitch import SwitchedSlots
 from llamatron.strings.errors import ERR_CANT_PLAY, ERR_NO_SCALE, ERR_PATTERN_PLAYER_NO_SUCH_PATTERN, ERR_WHERE_PATTERN
 
 # How many octaves away a moved note can go to find one that fits the MIDI range. A move of
@@ -68,6 +69,8 @@ class Pass:
     tied_from_before: Rational
     # How long the pass lasts, which is the pattern's length however the clip changes along the way.
     length: Rational
+    # The keyswitch slots its steps' notes are played with, SwitchedSlots in time order, which no morph or generator touches.
+    keyswitches: list = field(default_factory=list)
 class PlayedPattern(NamedTuple):
     """What playing needs to know of a pattern, gathered once for a clip: every step's values, and what no step of it does.
 
@@ -77,6 +80,7 @@ class PlayedPattern(NamedTuple):
 
     values: list
     sends_controls: bool
+    sends_keyswitches: bool
     changes_registers: bool
     uses_registers: bool
 
@@ -120,7 +124,7 @@ class PatternPlayer:
         """Return a pattern's PlayedPattern, gathered the first time the pattern plays."""
         if pattern_name not in self._played_patterns:
             self._played_patterns[pattern_name] = PlayedPattern(
-                pattern.get_every_step_values(rows=PATTERN_ROWS), pattern.sends_controls(),
+                pattern.get_every_step_values(rows=PATTERN_ROWS), pattern.sends_controls(), pattern.sends_keyswitches(),
                 pattern.changes_registers(), pattern.uses_registers(),
             )
         return self._played_patterns[pattern_name]
@@ -173,6 +177,9 @@ class PatternPlayer:
         # What each step that plays sounds: when it starts in the pass, and its pieces, a note or chord for each ratchet.
         sounding = []
         controls = []
+        # The keyswitch slots of the steps that play, and which of them the last step left for a tie to lengthen, if any.
+        keyswitches = []
+        switch_tied_to = None
         # Which entry of sounding the last step left sounding for a tie to lengthen, if any, and
         # how many tied steps came before anything else.
         tied_to = None
@@ -197,6 +204,8 @@ class PatternPlayer:
             if values[Row.TIE]:
                 if tied_to is not None:
                     sounding[tied_to] = _tied_to(sounding=sounding[tied_to], end=Length.add(time, step_length))
+                    if switch_tied_to is not None:
+                        keyswitches[switch_tied_to] = keyswitches[switch_tied_to].ending((slot + 1) * step_size)
                 elif slot == leading_ties:
                     leading_ties += 1
                 continue
@@ -225,12 +234,17 @@ class PatternPlayer:
                 if not drum:
                     note_moved += effects.degree
             gate = Length.shorter(_gate(values=values, step_length=step_length), Length.subtract(pass_length, time))
+            switch_tied_to = None
+            if played.sends_keyswitches and values[Row.KEYSWITCH]:
+                # A keyswitch lasts as long as its note is written, whatever the note's probability or conditions decide.
+                switch_tied_to = len(keyswitches)
+                keyswitches.append(SwitchedSlots(slot * step_size, slot * step_size + Length.rational(gate), values[Row.KEYSWITCH]))
             sounding.append((time, self._step(
                 values=values, grabbed=grabbed, length=gate, drum=drum, where=where, rolls=rolls, note_moved=note_moved, velocity=velocity,
                 velocity_added=velocity_added, heard=heard, counting=counting, effects=effects,
             )))
         clip = Clip(sounds=_in_sequence(sounding=sounding, length=pass_length, step_length=step_length), scale=self._scale, controls=controls)
-        return Pass(clip=clip, tied_from_before=leading_ties * step_size, length=length)
+        return Pass(clip=clip, tied_from_before=leading_ties * step_size, length=length, keyswitches=keyswitches)
 
     def pattern_length(self, pattern):
         """Return how long one pass through a pattern lasts, in whole notes."""

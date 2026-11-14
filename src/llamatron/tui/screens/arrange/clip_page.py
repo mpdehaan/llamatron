@@ -120,7 +120,7 @@ class ClipPage(FieldPage):
 
     def open_pattern(self):
         """Open the pattern editor on the clip's pattern, from any field, with this page's crumbs before the pattern's, so that Esc comes back here."""
-        self.show_page(PatternEditor(holder=self.holder, name=self.clip_slot().get_pattern_name(), opened_from=self))
+        self.show_page(PatternEditor(holder=self.holder, name=self.clip_slot().get_pattern_name(), opened_from=self, track=self.track))
 
     def set_value(self, *, setting, value):
         """Set one of the clip's settings, or None to leave it out and use its default."""

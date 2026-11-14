@@ -33,8 +33,9 @@ from llamatron.strings.marks import (
     MSG_DIRECTION_HEADER, MSG_DRUM_HEADER, MSG_DRUM_OFF, MSG_DRUM_ON, MSG_FROM_SONG_SHOWN, MSG_HEADER_CELL_GAP, MSG_HEADER_INDENT, MSG_SCALE_SHOWN,
     MSG_STEPS_HEADER, MSG_STEP_SIZE_SHOWN, MSG_TIME_SIGNATURE_SHOWN,
 )
+from llamatron.tui.keyswitch_text import keyswitches_of, slots_in_words
 from llamatron.strings.messages import (
-    MSG_DEGREE_WITHOUT_SCALE, MSG_DESCRIBE_CHORD, MSG_DESCRIBE_EMPTY, MSG_DESCRIBE_GATE_OVERRIDDEN, MSG_DESCRIBE_NOTE,
+    MSG_DEGREE_WITHOUT_SCALE, MSG_DESCRIBE_CHORD, MSG_DESCRIBE_KEYSWITCHES, MSG_DESCRIBE_EMPTY, MSG_DESCRIBE_GATE_OVERRIDDEN, MSG_DESCRIBE_NOTE,
     MSG_DESCRIBE_TIED, MSG_GRABBED_SOUND, MSG_IN_SCALE, MSG_NO_SCALE,
 )
 
@@ -243,7 +244,15 @@ class GridDrawing:
         gate = str(fraction_text(self._editor.gate_now())) + MSG_DOT_NAMES.get(self._editor.value(row=Row.DOT), NOTHING)
         if self._editor.gate_is_overridden():
             gate += MSG_DESCRIBE_GATE_OVERRIDDEN
-        return MSG_DESCRIBE_NOTE.format(step=step, sound=sound, gate=gate, chord=chord_text)
+        return MSG_DESCRIBE_NOTE.format(step=step, sound=sound, gate=gate, chord=chord_text) + self.keyswitches_described()
+
+    def keyswitches_described(self):
+        """Return the end of the description that names the cursor's keyswitches, each by its instrument's name for it or by its number, or nothing for none."""
+        slots = self._editor.value(row=Row.KEYSWITCH)
+        if not slots:
+            return NOTHING
+        instrument, _ = self._editor.keyswitch_instrument()
+        return MSG_DESCRIBE_KEYSWITCHES.format(names=slots_in_words(keyswitches=keyswitches_of(instrument), slots=slots))
 
     def with_description(self, *, lines, width, height):
         """Return the header and grid lines with the description after them, set apart by a blank line unless the console is too short for one."""

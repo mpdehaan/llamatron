@@ -774,7 +774,7 @@ class ArrangePage(Page):
 
     def open_pattern(self, clip_slot):
         """Open the pattern editor on the clip's pattern, with this page's crumbs before the pattern's, so that Esc comes back here."""
-        self.show_page(PatternEditor(holder=self.holder, name=clip_slot.get_pattern_name(), opened_from=self))
+        self.show_page(PatternEditor(holder=self.holder, name=clip_slot.get_pattern_name(), opened_from=self, track=self.track()))
 
     def copy_clip(self):
         self.copied = self.document().clip_slot(index=self.row, track=self.track()).copy()

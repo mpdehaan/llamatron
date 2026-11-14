@@ -44,3 +44,32 @@ Press `I` on the main screen to open the Instruments page. The list shows each i
 | Device | The MIDI output port, chosen with `ENTER` from `(none)`, then `*FluidSynth`, then the ports this computer has now, sorted. A port the set names that has disconnected is still offered, so that the set opens without the port and keeps it. `Bksp` sets none. |
 | Channel | 1 to 16, as the device numbers them. `[` and `]` step it, and `ENTER` types it. With `*FluidSynth` it shows `(auto)` and can't be changed, since each track gets its own channel. |
 | GM sound | One of General MIDI's 128 sounds, or `(none)`. `ENTER` opens a picker of General MIDI's sixteen families, two to a page, with `(none)` above them, where `Tab` and `Shift+Tab` turn the pages; `[` and `]` step through the sounds by number, and `Bksp` sets none. A drum track always plays channel 10's drum kit. |
+| Keyswitch lead | How many milliseconds before its note a keyswitch is sent, 0 to 500, `0 ms` unless set. `[` and `]` step it, and `ENTER` types it. See Keyswitches below. |
+| Keyswitch Map | A button: `ENTER` on it, or `K` from any field, opens the instrument's Keyswitch Map. See Keyswitches below. |
+
+## Keyswitches
+
+A keyswitch is a note that a plugin reads as an order to change how it plays, such as a string library's sustain, staccato and pizzicato, rather than as a note to sound. An instrument holds a Keyswitch Map of ten slots, numbered 0 to 9, each with a name and the note that switches it. A pattern's steps name slots, on the Keyswitch row described in [Patterns](PATTERNS.md), so the same pattern works with whatever notes the instrument's plugin uses.
+
+### Keyswitch Map
+
+| Key | What it does |
+| --- | --- |
+| Up, Down | Move through the ten slots, and down from the last slot to the OK and CANCEL buttons. |
+| `N` or `F2` | Names the slot. A blank name leaves the slot without one. |
+| `ENTER` | On a slot, opens the note picker. On a button, presses it. |
+| `Bksp` | Empties the slot, its name and its note. |
+| `O` | OK: the ten slots go into the instrument together, as one undo step. |
+| `ESC` | CANCEL: nothing changes. |
+
+A note is written in the set's octave labels with its MIDI number, such as `C0 (24)`. A slot may have a name and no note yet; a step that names such a slot plays nothing for it until the slot has a note.
+
+### Note Picker
+
+The note picker is drawn over the Keyswitch Map and shows one octave of keys, with the octave picked apart from the key. Left and Right move along the keys of the octave, Up and Down change the octave, `ENTER` takes the note and `ESC` closes the picker with nothing changed. The picker opens on the slot's own note. For a slot with no note, it opens a half step above the highest note in the map, or on the lowest C when the map is empty.
+
+### How Keyswitches Play
+
+A step's keyswitch notes start at the same moment as the step's note and are sent before it, and each lasts as long as the note is written, ties included. For a plugin that needs the keyswitch earlier, the instrument's Keyswitch lead sends every keyswitch that many milliseconds before its note. A keyswitch moves with its note when a groove, a Rush or a Drag moves the note. Nothing else touches a keyswitch: a track's Transpose, the scale, a strum and every other generator leave the note exactly as the map holds it, and its velocity is always 100.
+
+Keyswitches go to an instrument that plays through a MIDI port, and into the MIDI file, MIDI stems, MIDI clips and Ableton Live set exports. An instrument that plays through FluidSynth sends none, and the General MIDI file and the WAV file leave them out, since a General MIDI player would sound each keyswitch as a low note.

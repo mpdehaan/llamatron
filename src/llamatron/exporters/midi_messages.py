@@ -26,7 +26,7 @@ from typing import NamedTuple
 
 import mido
 
-from llamatron.exporters.timing import BEATS_PER_WHOLE_NOTE, control_events
+from llamatron.exporters.timing import BEATS_PER_WHOLE_NOTE, control_events, keyswitch_events
 from llamatron.music.time_signature import TimeSignature
 
 TICKS_PER_BEAT = 480
@@ -35,13 +35,15 @@ SINGLE_TRACK_FILE = 0
 MULTI_TRACK_FILE = 1
 # The kinds of event, in the order they're written when they fall on the same tick: a tempo
 # change first, so that what follows plays at it, then a note off, so a note can repeat straight
-# after itself, then a CC, so that a note starts with the new value, then a note on. A time
-# signature comes before everything, since it only says how the DAW draws its bars.
+# after itself, then a CC, so that a note starts with the new value, then a keyswitch's note on,
+# which a plugin has to hear before the note it changes, then a note on. A time signature comes
+# before everything, since it only says how the DAW draws its bars.
 TIME_SIGNATURE = 0
 SET_TEMPO = 1
 NOTE_OFF = 2
 CONTROL_CHANGE = 3
-NOTE_ON = 4
+KEYSWITCH_ON = 4
+NOTE_ON = 5
 # The names mido gives MIDI's messages.
 NOTE_ON_MESSAGE = 'note_on'
 NOTE_OFF_MESSAGE = 'note_off'
@@ -115,9 +117,18 @@ def tempo_event(*, tick, tempo):
     return MidiEvent(tick, SET_TEMPO, NO_NUMBER, mido.bpm2tempo(tempo))
 
 
-def clip_events(*, clip, notes, clip_length, start=FIRST_TICK):
-    """Return a clip's notes (its NoteEvents) and CC values as MidiEvents, from a start tick, in no particular order."""
+def clip_events(*, clip, notes, clip_length, start=FIRST_TICK, keyswitches=True):
+    """Return a clip's notes (its NoteEvents), its keyswitch notes and its CC values as MidiEvents, from a start tick, in no particular order.
+
+    keyswitches=False leaves the keyswitch notes out, for a file a General MIDI player plays, which would sound each as a note.
+    """
     events = []
+    for note in keyswitch_events(clip=clip, clip_length=clip_length) if keyswitches else ():
+        note_start = start + ticks(note.start)
+        note_end = start + ticks(note.end)
+        if note_end > note_start:
+            events.append(MidiEvent(note_start, KEYSWITCH_ON, note.midi_number, note.velocity))
+            events.append(MidiEvent(note_end, NOTE_OFF, note.midi_number, NO_VELOCITY))
     for note in notes:
         note_start = start + ticks(note.start)
         note_end = start + ticks(note.end)
@@ -135,7 +146,7 @@ def message(*, event, delay, channel=FIRST_CHANNEL_BYTE):
         return time_signature_message(event=event, delay=delay)
     if event.kind == SET_TEMPO:
         return mido.MetaMessage(TEMPO_META, tempo=event.value, time=delay)
-    if event.kind == NOTE_ON:
+    if event.kind == NOTE_ON or event.kind == KEYSWITCH_ON:
         return mido.Message(NOTE_ON_MESSAGE, channel=channel, note=event.number, velocity=event.value, time=delay)
     if event.kind == CONTROL_CHANGE:
         return mido.Message(CONTROL_CHANGE_MESSAGE, channel=channel, control=event.number, value=event.value, time=delay)

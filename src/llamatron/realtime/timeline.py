@@ -26,7 +26,7 @@ tag naming the scene and track it belongs to, so that one clip's events can be d
 
 from typing import NamedTuple
 
-from llamatron.exporters.timing import control_events, timed_events
+from llamatron.exporters.timing import control_events, keyswitch_events, timed_events
 from llamatron.support.rational import Rational
 
 # What a tempo counts, quarter notes per minute, and the seconds in a minute.
@@ -53,6 +53,8 @@ class Route(NamedTuple):
     port: str
     channel: int
     program: int = None
+    # Whether keyswitch notes go this way: to a plugin through a MIDI port, never to FluidSynth, which would sound each as a note.
+    keyswitches: bool = True
 
 
 class Tag(NamedTuple):
@@ -74,6 +76,8 @@ class Playing(NamedTuple):
     number: int
     value: int
     tag: Tag
+    # Whether the event is a keyswitch's, a note a plugin reads as an order, which sounds nothing: the lights and the visualizers pass it by.
+    switch: bool = False
 
     def data(self):
         """Return the event's bytes: two for a program change, which has no value, and three for the rest."""
@@ -123,6 +127,10 @@ def clip_timeline(*, clip, scale, route, tag, scene_start, scene_seconds, whole)
     if route.program is not None:
         events.append(at(Rational(0), PROGRAM_CHANGE, route.program, NO_VELOCITY))
     notes, clip_length = timed_events(clip=clip, scale=scale)
+    # Keyswitches go to a plugin through a MIDI port, never to FluidSynth, which would sound each as a note, and come before the notes they change at the same instant.
+    for switch in () if not route.keyswitches else keyswitch_events(clip=clip, clip_length=clip_length):
+        events.append(at(switch.start, NOTE_ON, switch.midi_number, switch.velocity)._replace(switch=True))
+        events.append(at(switch.end, NOTE_OFF, switch.midi_number, NO_VELOCITY)._replace(switch=True))
     for note in notes:
         if note.end > note.start:
             events.append(at(note.start, NOTE_ON, note.midi_number, note.velocity))

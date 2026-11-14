@@ -214,6 +214,8 @@ class Row:
     RATCHET = 'ratchet'
     RATCHET_OFFSET = 'ratchet_offset'
     GRAB = 'grab'
+    # Which of its instrument's keyswitches a step's note is played with: a list of slots, or blank for none.
+    KEYSWITCH = 'keyswitch'
     CC1 = 'cc1'
     CC2 = 'cc2'
     CC3 = 'cc3'
@@ -459,6 +461,22 @@ class InstrumentSetting:
     CHANNEL = 'channel'
     # The General MIDI sound a General MIDI export gives the instrument's tracks, numbered 1 to 128 as people number them (the user's design of 2026-11-11).
     GM_SOUND = 'gm_sound'
+    # The notes that switch a plugin's articulations, a list of the ten slots, each blank or a name and a note (the user's design).
+    KEYSWITCHES = 'keyswitches'
+    # How many milliseconds before its note a keyswitch is sent, for a plugin that needs it early.
+    KEYSWITCH_LEAD = 'keyswitch_lead'
+
+
+class KeyswitchSetting:
+    """One keyswitch slot of an instrument: what the user calls it and the MIDI note that switches it, either of which may be missing."""
+
+    NAME = 'name'
+    NOTE = 'note'
+
+
+# An instrument's keyswitch slots, numbered from 0 as a computer counts (the user's choice), which a pattern's Keyswitch row names.
+KEYSWITCH_SLOT_COUNT = 10
+KEYSWITCH_SLOTS = tuple(range(KEYSWITCH_SLOT_COUNT))
 
 
 # The Device an instrument names to play through FluidSynth, the software synthesizer the tracker starts, rather than
@@ -527,7 +545,7 @@ CONDITION_ROWS = {RegisterName.BX: Row.AX_BX, RegisterName.CX: Row.AX_CX, Regist
 
 PATTERN_ROWS = [
     Row.DEGREE, Row.GATE, Row.DOT, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.INVERSION, Row.TENSION, Row.CHORD_SCALE, Row.VELOCITY, Row.PROBABILITY, Row.GLIDE,
-    Row.TIE, Row.RATCHET, Row.RATCHET_OFFSET, Row.GRAB,
+    Row.TIE, Row.RATCHET, Row.RATCHET_OFFSET, Row.GRAB, Row.KEYSWITCH,
     Row.CC1, Row.CC2, Row.CC3, Row.CC4, Row.SLIDE,
     *REGISTER_NOTE_ROWS.values(), *REGISTER_VELOCITY_ROWS.values(), *REGISTER_ADD_ROWS.values(),
     *REGISTER_SET_ROWS.values(), *CONDITION_ROWS.values(),

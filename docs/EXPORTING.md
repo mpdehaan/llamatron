@@ -33,7 +33,8 @@ follow action and a scene's Launch together, the Live response, and anything you
 song played. Muted tracks are left out of the MIDI and WAV exports, and in the Live set they are switched
 off. The MIDI files lay the scenes end to end as Live's Arrangement View does, so a track that plays
 nothing in the first scenes starts with silence and every file lines up. Every MIDI file carries the song's time signature, and so does the Live set, so a DAW draws its bar
-lines on the song's beats.
+lines on the song's beats. The MIDI file, the MIDI stems, the MIDI clips and the Live set carry the keyswitch notes described in
+[Instruments](INSTRUMENTS.md); the General MIDI file and the WAV file leave them out.
 
 ## File Locations
 

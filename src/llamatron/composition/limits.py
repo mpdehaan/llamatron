@@ -69,6 +69,9 @@ MAX_RUSH_OR_DRAG = 50
 MIN_GM_SOUND = 1
 MAX_GM_SOUND = 128
 GM_FAMILY_SIZE = 8
+# How early a keyswitch may be sent before its note, in milliseconds.
+MIN_KEYSWITCH_LEAD = 0
+MAX_KEYSWITCH_LEAD = 500
 # The percentages each shape runs between: the share of notes that play, how loud they play, and how long, as a share of what's written.
 MIN_DENSITY = 0
 MAX_DENSITY = 100

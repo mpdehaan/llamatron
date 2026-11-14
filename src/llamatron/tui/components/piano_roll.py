@@ -34,6 +34,7 @@ import functools
 from llamatron.composition.file_format import ACCIDENTALS, STEP_SIZE_CHOICES, Accidental, Row
 from llamatron.composition.limits import MAX_OCTAVE, MIN_DEGREE, MIN_OCTAVE
 from llamatron.tui.components.chord_row import pick_chord
+from llamatron.tui.components.keyswitch_row import pick_keyswitches
 from llamatron.tui.components.degree_row import GAUGE_ROWS_WITHOUT_SCALE
 from llamatron.music.midi import HALF_STEPS_PER_OCTAVE
 from llamatron.music.note import ROOT_NAMES
@@ -42,7 +43,7 @@ from llamatron.tui.key_table import STEP_BACK, STEP_FORWARD, cursor_moved, Binds
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
 from llamatron.strings.errors import (
-    ERR_NO_NOTE_HERE, ERR_NO_ROOM_AFTER, ERR_NOTE_IS_ONE_STEP, ERR_NOTHING_TO_SPLIT,
+    ERR_NO_NOTE_HERE, ERR_NO_NOTE_ON_STEP, ERR_NO_ROOM_AFTER, ERR_NOTE_IS_ONE_STEP, ERR_NOTHING_TO_SPLIT,
 )
 from llamatron.strings.labels import MSG_ENTRY_SIZE_LABEL, MSG_ROLL_ROW_LABEL, MSG_SONG_ENTRY_SIZE_CHOICE
 from llamatron.strings.marks import MSG_ROLL_OCTAVE_ONLY
@@ -341,6 +342,7 @@ class PianoRoll(BindsKeys):
         return [
             self.bind(self.KEYS.PLACE, action=self.place_or_erase),
             self.bind(self.KEYS.CHORD, action=self.pick_chord),
+            self.bind(self.KEYS.KEYSWITCH, action=self.pick_keyswitches),
             self.bind(self.KEYS.SHORTER, action=lambda: self.drag(STEP_BACK)),
             self.bind(self.KEYS.LONGER, action=lambda: self.drag(STEP_FORWARD)),
             self.bind(self.KEYS.KNIFE, action=self.split),
@@ -389,6 +391,13 @@ class PianoRoll(BindsKeys):
         if self.editor.step not in self.covering():
             self.place()
         pick_chord(editor=self.editor, step=self.covering()[self.editor.step])
+
+    def pick_keyswitches(self):
+        """Open the dialog that picks the keyswitches of the note that covers the cursor's step, whichever row the cursor is on, as the chord key goes by the step. A step no note covers takes none, and says so (the user's choice)."""
+        if self.editor.step not in self.covering():
+            self.editor.refuse(ERR_NO_NOTE_ON_STEP)
+            return
+        pick_keyswitches(editor=self.editor, step=self.covering()[self.editor.step])
 
     def split(self):
         """Split the note under the cursor at the cursor's step, which has to be one of the steps it holds, not its first."""
