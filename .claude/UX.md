@@ -234,6 +234,8 @@ a feature that already exists does what's being asked, that's pointed out first
   the other place colour is allowed, the user's design, and it never strobes and
   never flashes brightly, since some people are sensitive to that: brightness rises and falls
   gently, a limiter holds the whole picture down as more plays, and nothing jumps to white.
+  The piano roll's read head, a thin line on the step that sounds while the pattern plays, is light yellow (`Style.READ_HEAD`), the user's
+  design, and is never drawn over a note's bar.
   The piano roll's thin lines of a chord's other notes are green (`Style.CHORD_NOTE`), the user's design, so that they stand
   apart from the notes written.
   Arrange's details view (`D`) is the third, the user's design, and only for what it lists:

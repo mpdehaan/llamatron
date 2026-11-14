@@ -38,6 +38,7 @@ from llamatron.tui.screens.splash import Splash
 from llamatron.tui.screens.start_screen import StartScreen
 from llamatron.tui.keys import OPEN_AT_START
 from llamatron.tui.status_line import StatusLine
+from llamatron.tui.pattern_preview import PatternPreview
 from llamatron.tui.transport import Transport
 from llamatron.tui.silent_instruments import warn_of_silent_instruments
 from llamatron.strings.errors import ERR_PRINTED
@@ -93,13 +94,24 @@ class LlamatronApp(App, inherit_bindings=False):
         self._confirmed_overwrites = set()
         # Real-time playback, which ticks on a timer of the app's while anything plays and redraws the page on top for its lights.
         self.transport = Transport(document_holder=self, set_timer=self.playback_timer)
+        # The pattern preview, made when first asked for, beside the transport it shares a clock and FluidSynth with.
+        self._pattern_preview = None
+        self._preview_beside = None
 
     def get_document(self):
         return self._document
 
+    def pattern_preview(self):
+        """Return the pattern preview, which plays one pattern beside whatever the transport plays, made beside the transport the first time it's asked for."""
+        if self._pattern_preview is None or self._preview_beside is not self.transport:
+            self._pattern_preview = PatternPreview(beside=self.transport)
+            self._preview_beside = self.transport
+        return self._pattern_preview
+
     def set_document(self, document):
         """Hold another set, after opening a file or starting a new one. A set comes with a history of its own, with nothing to undo, and nothing of the old one plays on."""
         self.transport.forget()
+        self.pattern_preview().forget()
         self._document = document
 
     def playback_timer(self, *, seconds, tick):
@@ -108,7 +120,7 @@ class LlamatronApp(App, inherit_bindings=False):
             tick()
             # The timer can tick once more as the tracker quits, with no screen left to draw.
             if self.screen_stack and isinstance(self.screen, Page):
-                message = self.transport.take_live_message()
+                message = self.transport.take_live_message() or self.pattern_preview().take_live_message()
                 if message is not None:
                     self.screen.refuse(message)
                 self.screen.draw()
@@ -116,6 +128,7 @@ class LlamatronApp(App, inherit_bindings=False):
 
     def exit(self, *arguments, **named):
         """Quit, silencing and ending the Realtime Sender Process first."""
+        self.pattern_preview().close()
         self.transport.close()
         super().exit(*arguments, **named)
 

@@ -230,6 +230,8 @@ MSG_NOTE_HOLLOW_UNDER_CURSOR = '▒'
 MSG_OUT_OF_RANGE_CELL = '·····'
 # A chord's other notes on the piano roll: thin dim lines, the user's choice of 2026-11-08 over hollow boxes, which can't be edited on their own.
 MSG_GHOST_LINE = '─'
+# The piano roll's read head, a thin line down the roll at the left edge of the step that sounds.
+MSG_READ_HEAD = '│'
 MSG_DRUM_ON = '[x]'
 MSG_DRUM_OFF = '[ ]'
 # A toggle that's on shows a dot, from the few characters every terminal has, as the user asked.

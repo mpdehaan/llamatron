@@ -228,7 +228,7 @@ settings page's fields. The keys that work everywhere are listed once:
 
 ## PatternsPage
 
-- **a row**: `Esc` back · `↑↓` select · `A` add · `Enter` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `S` sort · `/` search
+- **a row**: `Esc` back · `↑↓` select · `A` add · `Enter` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `S` sort · `/` search · `L` listen
 - **the + row**: `Esc` back · `Enter` add · `↑↓` select · `A` add · `/` search
 - **while searching**: `Esc` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `Enter` keep
 
@@ -300,7 +300,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - **the Seed field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `Bksp` no seed · `F2` rename
 - **the Groove field, the Live response field, the Visualizer field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `F2` rename
 - **the Genre field**: `Esc` back · `↑↓` select · `Enter` edit · `Bksp` clear · `F2` rename
-- **the Preview instrument field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` (the pattern's track) · `F2` rename
+- **the Preview instrument field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` (General MIDI piano) · `F2` rename
 - **the Export button**: `Esc` back · `↑↓` select · `←→` select · `Enter` EXPORT · `F2` rename
 
 ## SongsPage
@@ -540,7 +540,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - SongPage: no scale (the Scale field)
 - SongPage: no seed (the Seed field)
 - SongPage: clear (the Genre field)
-- SongPage: (the pattern's track) (the Preview instrument field)
+- SongPage: (General MIDI piano) (the Preview instrument field)
 - SongsPage: delete (a row)
 - SongsPage: erase (while searching)
 - StrumEditor: clear (the Fade field, the Loose timing field)
@@ -832,6 +832,7 @@ settings page's fields. The keys that work everywhere are listed once:
 
 - ClipPage: listen (the Name field, the Pattern field, the Scale field, the Chains field, the Repeat field, the Loop field, the Strum heading, the Density heading, the Swell heading, the Articulate heading, the Direction field, the Grab track field, the Advance field, the Play button, the Stop button)
 - PatternEditor: listen (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
+- PatternsPage: listen (a row)
 
 ## `M`
 

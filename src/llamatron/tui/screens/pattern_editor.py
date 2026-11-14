@@ -46,7 +46,7 @@ from llamatron.tui.components.chord_row import step_chord_in_words
 from llamatron.tui.components.pattern_rows import PatternRows
 from llamatron.tui.components.piano_roll import PianoRoll
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui.screens.listening import listen_to_pattern, stop_listening
+from llamatron.tui.screens.listening import pattern_listen_keys
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.screens.shows_named_item import ShowsNamedItem
@@ -243,16 +243,14 @@ class PatternEditor(ShowsNamedItem, StepEditor):
             self.bind(self.KEYS.RESIZE, action=self.ask_steps),
             self.bind(self.KEYS.RECONFIGURE, action=self.reconfigure),
             self.bind(self.KEYS.RENAME, action=self.rename),
-            self.bind(self.KEYS.STOP_LISTENING, action=self.stop) if self.app.transport.is_playing() else self.bind(self.KEYS.LISTEN, action=self.listen),
+            *pattern_listen_keys(page=self, pattern=self.item),
         ]
         return result + view.keys()
 
-    def listen(self):
-        """Play the pattern through a track, again and again, asking which track where the tracks that play it don't share one instrument."""
-        listen_to_pattern(page=self, pattern=self.item)
-
-    def stop(self):
-        stop_listening(self)
+    def playing_step(self):
+        """Return the step of the pattern that sounds now, in its preview or else in a clip of the song that plays, for the piano roll's read head, or None."""
+        step = self.app.pattern_preview().playing_step(self.item)
+        return self.app.transport.playing_step(self.item) if step is None else step
 
     def reconfigure(self):
         """Offer the whole-pattern actions in one dialog, and run the chosen one, which may ask on in a dialog of its own."""

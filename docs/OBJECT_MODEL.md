@@ -86,7 +86,7 @@ Press `S` on the main screen to open the Songs page. The set's songs are listed 
 | Groove | The swing or other timing feel every clip plays with, unless its scene or track chooses another, from the Grooves page. `none`, which a new song starts with, plays straight. `[` and `]` step through the grooves, and `Enter` picks one from a list. |
 | Genre | A word or two saying what kind of music the song is, such as Folk or Electronic, only for people to read. `Enter` types it and `Bksp` clears it. [About Demos](DEMOS.md) groups the examples by genre. |
 | Live response | When an edit made while the song plays is heard: "next bar", the default, "clip restart", at each playing clip's next pass, or "ASAP", at once. |
-| Preview instrument | The instrument that Listen plays a pattern through. `(the pattern's track)`, which a new song starts with, plays a pattern through the track that uses it. `[` and `]` step through the set's instruments, `Enter` picks one, and `Bksp` clears. |
+| Preview instrument | The instrument that Listen plays a pattern through. `(General MIDI piano)`, which a new song starts with, plays a pattern on General MIDI's piano through FluidSynth. `[` and `]` step through the set's instruments, `Enter` picks one, and `Bksp` clears. |
 | Export | `Enter` here exports this song, the same as `Ctrl+X` anywhere, asking which kind of output first. |
 
 ## Set Files

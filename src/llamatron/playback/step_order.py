@@ -49,7 +49,7 @@ class StepOrder:
         A direction that repeats exactly has its order worked out once for the pass. One that
         chooses as it goes makes its choices one after another, as it would a step at a time.
         """
-        order = _walk_order(count=count, direction=direction)
+        order = walk_order(count=count, direction=direction)
         if order is None:
             return [self._chosen_step(key=(*key, direction), count=count, direction=direction) for _ in range(count)]
         key = (*key, direction)
@@ -77,7 +77,7 @@ class StepOrder:
         return MOVE_BACK
 
 
-def _walk_order(*, count, direction):
+def walk_order(*, count, direction):
     """Return the steps of a direction that repeats exactly, or None if it's chosen as it goes."""
     forward = list(range(count))
     backward = forward[::-1]

@@ -246,8 +246,8 @@ MSG_GENRE_LABEL = 'Genre'
 # When an edit made while the song plays is heard, the Song page's field and its choices.
 MSG_LIVE_RESPONSIVENESS_LABEL = 'Live response'
 MSG_PREVIEW_INSTRUMENT_LABEL = 'Preview instrument'
-# What the Preview instrument field shows when the song names none: Listen plays a pattern through the pattern's own track.
-MSG_PREVIEW_INSTRUMENT_UNSET = "(the pattern's track)"
+# What the Preview instrument field shows when the song names none: Listen plays a pattern through General MIDI's piano in FluidSynth.
+MSG_PREVIEW_INSTRUMENT_UNSET = '(General MIDI piano)'
 MSG_LIVE_RESPONSIVENESS_NAMES = {LiveResponsiveness.NEXT_BAR: 'next bar', LiveResponsiveness.CLIP_RESTART: 'clip restart', LiveResponsiveness.ASAP: 'ASAP'}
 MSG_TITLE_LABEL = 'Title'
 MSG_AUTHOR_LABEL = 'Author'

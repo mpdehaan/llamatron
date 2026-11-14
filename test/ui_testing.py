@@ -67,6 +67,8 @@ SETTLED = 0
 MSG_REAL_FLUIDSYNTH = 'a test started a real FluidSynth: give its transport a stand-in, as test_tui_playback.py does'
 # Where the warning of silent instruments asks whether FluidSynth is installed.
 FLUIDSYNTH_INSTALLED = 'llamatron.tui.silent_instruments.fluidsynth_installed'
+# Where the transport asks the same.
+TRANSPORT_FINDS_FLUIDSYNTH = 'llamatron.tui.transport.is_installed'
 ROW_SHOWN = '│ {label}'
 
 
@@ -260,6 +262,10 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         installed = mock.patch(FLUIDSYNTH_INSTALLED, return_value=True)
         installed.start()
         self.addCleanup(installed.stop)
+        # The transport and the pattern preview find FluidSynth installed too, so that Listen is offered the same on every computer.
+        found = mock.patch(TRANSPORT_FINDS_FLUIDSYNTH, return_value=True)
+        found.start()
+        self.addCleanup(found.stop)
         # No test starts a real FluidSynth, which would load a SoundFont and open the Mac's audio: the tests of FluidSynth give the transport a stand-in.
         refused = mock.patch.object(FluidSynth, '_popen', side_effect=AssertionError(MSG_REAL_FLUIDSYNTH))
         refused.start()

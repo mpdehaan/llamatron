@@ -75,6 +75,7 @@ def everywhere_key(*, page, binding):
 
 def silence(page):
     """The emergency stop: silence every channel the instruments use on every connected device, and say what was silenced."""
+    page.app.pattern_preview().stop()
     page.say(page.app.transport.silence_everything())
 
 

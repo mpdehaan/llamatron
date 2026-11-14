@@ -25,7 +25,9 @@ import asyncio
 import unittest
 from unittest import mock
 
-from llamatron.composition.file_format import FLUIDSYNTH_DEVICE, ClipSlotSetting, LiveResponsiveness, Row, Section
+from rich.text import Text
+
+from llamatron.composition.file_format import FLUIDSYNTH_DEVICE, ClipSlotSetting, Direction, LiveResponsiveness, Row, Section
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.screens.arrange_page import SCENE_COLUMN
@@ -39,19 +41,22 @@ from llamatron.tui.uses import looping_scenes
 from llamatron.strings.errors import (
     ERR_SCENE_PLAYING_SHOWN, ERR_TRACK_PLAYING_SHOWN,
     ERR_ADD_INSTRUMENT_FIRST, ERR_CANT_PLAY_TITLE, ERR_DEVICE_NOT_CONNECTED, ERR_FLUIDSYNTH_NOT_INSTALLED, ERR_NO_INSTRUMENTS_TITLE, ERR_NO_TRACK_HAS_A_DEVICE, ERR_NO_TRACK_HAS_AN_INSTRUMENT,
-    ERR_LOOP_SCENES_TITLE, ERR_REAL_TIME_OFF, ERR_RECORDING_SONG_LOOPS,
+    ERR_LOOP_SCENES_TITLE, ERR_PREVIEW_DEVICE_NOT_CONNECTED, ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED, ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE, ERR_REAL_TIME_OFF, ERR_RECORDING_SONG_LOOPS,
 )
 from llamatron.strings.labels import MSG_PLAY_LABEL, MSG_STOP_LABEL
-from llamatron.strings.legends import MSG_PLAY_CLIP_WHAT, MSG_PLAY_SONG_WHAT, MSG_STOP_CLIP_WHAT, MSG_STOP_WHAT
-from llamatron.strings.marks import MSG_PLAY_MARK, MSG_SAVED_MARK, MSG_SONG_BUTTON, MSG_SOUNDING_MARK, MSG_STOP_MARK, MSG_UNSAVED_CHANGES_MARK, MSG_UNSAVED_MARK
+from llamatron.strings.legends import MSG_LISTEN_WHAT, MSG_PLAY_CLIP_WHAT, MSG_PLAY_SONG_WHAT, MSG_STOP_CLIP_WHAT, MSG_STOP_WHAT
+from llamatron.strings.marks import MSG_NOTE_EDGE, MSG_READ_HEAD, MSG_PLAY_MARK, MSG_SAVED_MARK, MSG_SONG_BUTTON, MSG_SOUNDING_MARK, MSG_STOP_MARK, MSG_UNSAVED_CHANGES_MARK, MSG_UNSAVED_MARK
 from llamatron.strings.messages import MSG_REAL_TIME_OFF_STOPPED
 from llamatron.strings.messages import (
     MSG_LIVE_EDIT_NOT_HEARD,
-    MSG_CLIP_ON_TRACK, MSG_LISTEN_INSTRUMENT_TITLE, MSG_LISTEN_TRACK_TITLE, MSG_LISTENING, MSG_NOTHING_TO_SILENCE, MSG_PLAYING_CLIP, MSG_PLAYING_FROM, MSG_SCENE_NUMBER,
+    MSG_CLIP_ON_TRACK, MSG_LISTEN_INSTRUMENT_TITLE, MSG_LISTENING, MSG_LISTENING_GENERAL_MIDI, MSG_LISTENING_IN_SCALE, MSG_LISTENING_TO_PATTERN, MSG_NOTHING_TO_SILENCE, MSG_PLAYING_CLIP, MSG_PLAYING_FROM, MSG_SCENE_NUMBER,
     MSG_SILENCED, MSG_STARTS_AT_NEXT_BAR, MSG_STOPPED, MSG_STOPPED_TRACK,
 )
 from llamatron.tui import keybindings
 from llamatron.tui.app import LlamatronApp
+from llamatron.tui.drawing import Style
+from llamatron.tui.pattern_preview import CHOSEN_PASSES, PIANO_PROGRAM, PREVIEW_CHANNEL_BYTE, passes_to_come_round
+from llamatron.tui.screens.pattern_editor import PatternEditor
 from llamatron.tui.batch_stage import GROW_SECONDS
 from llamatron.tui.launch import FINISHED_CHECK_SECONDS, Launch, recording_problem
 from llamatron.tui.screens.arrange_page import ArrangePage
@@ -59,7 +64,7 @@ from llamatron.tui.screens.splash import Splash
 from llamatron.tui.drawing import Box
 from llamatron.tui.keys import Key
 from llamatron.tui.transport import Transport
-from ui_testing import a_song, BEAT, DRUMS, LEAD, OTHER, TUNE, UITest, fixed_text
+from ui_testing import a_song, BEAT, DRUMS, LEAD, OTHER, TUNE, UITest, fixed_text, key_name
 from llamatron.visualizers.modes import MODES
 
 SYNTH = 'synth'
@@ -121,6 +126,12 @@ VIOLIN = 41
 VIOLIN_PROGRAM = VIOLIN - 1
 FLUID = 'fluid'
 DRUM_KIT = 'drum kit'
+# The pattern preview's tests: how long the tune lasts, four eighth notes at 120 a minute, how many passes a test hears and the clock's steps in each, the tune's last step, and what a pattern is renamed to.
+TUNE_SECONDS = 1.0
+PASSES_HEARD = 3
+TICKS_A_PASS = 10
+LAST_TUNE_STEP = 3
+RENAMED_PATTERN = 'another'
 
 
 class FakeFluidSynth:
@@ -652,50 +663,303 @@ class TestClipPagePlayback(PlaybackTest):
         self.assertEqual(len(self.note_ons(DRUM_PORT)), 1)
         self.assertFalse(self.document.song().get_track(DRUMS).get_instrument_name())
 
-    async def test_real_time_off_is_told_in_a_dialog(self):
+    async def test_real_time_off_is_told_in_a_dialog_where_fluidsynth_is_not_installed(self):
+        self.fluidsynth_installed = False
         await self.open_clip(track_steps=1)
         await self.press(keybindings.ClipPage.LISTEN)
         self.assertIn(ERR_CANT_PLAY_TITLE, self.text())
         self.assert_told(ERR_REAL_TIME_OFF)
 
-
-class TestPatternEditorPlayback(PlaybackTest):
-
-    async def test_l_plays_a_pattern_through_the_one_track_that_plays_it(self):
-        self.give_lead_an_instrument()
-        await self.press(keybindings.MainPage.PATTERNS)
-        await self.type_search(TUNE)
-        await self.press(Key.ENTER)
-        self.page = self.app.screen
-        await self.press(keybindings.PatternEditor.LISTEN)
-        self.assertIn(MSG_LISTENING.format(name=TUNE, track=LEAD), self.text())
-        await self.let_time_pass(A_MOMENT)
-        self.assertEqual(len(self.note_ons(SYNTH_PORT)), 1)
-        await self.press(keybindings.PatternEditor.STOP_LISTENING)
+    async def test_with_real_time_off_the_clip_plays_through_general_midi_and_l_again_stops(self):
+        self.assertFalse(self.document.setlist().is_real_time())
+        await self.open_clip(track_steps=1)
+        await self.press(keybindings.ClipPage.LISTEN)
+        self.assertIn(MSG_LISTENING_GENERAL_MIDI.format(name=TUNE), self.text())
+        self.assertTrue(self.page.is_listening())
+        preview = self.app.pattern_preview()
+        self.clock.advance(A_MOMENT)
+        preview.tick()
+        preview.player().sender().send_due()
+        # The lead's clip plays General MIDI's piano, on the preview's channel.
+        sent = [list(data) for _, data in self.outputs[FLUIDSYNTH_PORT].sent]
+        self.assertIn([PROGRAM_CHANGE | PREVIEW_CHANNEL_BYTE, PIANO_PROGRAM], sent)
+        self.assertEqual([data[0] for data in self.note_ons(FLUIDSYNTH_PORT)], [NOTE_ON | PREVIEW_CHANNEL_BYTE])
+        await self.press(keybindings.ClipPage.STOP_LISTENING)
+        self.assertFalse(self.page.is_listening())
         self.assertIn(MSG_STOPPED, self.text())
-        self.assertFalse(self.transport().is_playing())
 
-    async def test_a_pattern_played_nowhere_asks_which_track_and_plays_through_a_scene_of_its_own(self):
-        self.give_lead_an_instrument()
-        revision_before = self.document.revision()
+    async def test_with_real_time_off_a_drum_patterns_clip_plays_general_midis_drum_kit_and_leaving_stops_it(self):
+        await self.open_clip(track_steps=2)
+        await self.press(keybindings.ClipPage.LISTEN)
+        preview = self.app.pattern_preview()
+        self.clock.advance(A_MOMENT)
+        preview.tick()
+        preview.player().sender().send_due()
+        self.assertEqual([data[0] for data in self.note_ons(FLUIDSYNTH_PORT)], [NOTE_ON | DRUM_CHANNEL_BYTE])
+        await self.press(Key.ESCAPE)
+        self.assertIsNone(preview.playing_clip())
+
+
+class PatternPreviewTest(PlaybackTest):
+    """The pattern preview, which plays beside the transport: its own clock steps and its own sender."""
+
+    def preview(self):
+        return self.app.pattern_preview()
+
+    def name_a_preview_instrument(self, *, device=SYNTH_PORT):
+        """Add an instrument on a device, which turns Real Time on, and make it the song's Preview instrument."""
+        self.document.add_instrument(SYNTH)
+        self.document.set_instrument_device(name=SYNTH, device=device)
+        self.document.set_preview_instrument_name(SYNTH)
+
+    async def let_the_preview_play(self, seconds):
+        """Move the clock on, tick the preview as its timer would, send what is due and redraw the page."""
+        self.clock.advance(seconds)
+        self.preview().tick()
+        if self.preview().player() is not None:
+            self.preview().player().sender().send_due()
+        self.app.screen.draw()
+        await self.pilot.pause()
+
+    async def open_pattern(self, name):
         await self.press(keybindings.MainPage.PATTERNS)
-        await self.type_search(OTHER)
+        await self.type_search(name)
         await self.press(Key.ENTER)
         self.page = self.app.screen
-        await self.press(keybindings.PatternEditor.LISTEN)
-        self.assertIn(MSG_LISTEN_TRACK_TITLE, self.text())
-        await self.type(LEAD)
-        await self.press(Key.ENTER)
-        self.assertIn(MSG_LISTENING.format(name=OTHER, track=LEAD), self.text())
-        await self.let_time_pass(A_MOMENT)
-        self.assertEqual(len(self.note_ons(SYNTH_PORT)), 1)
-        # The scene the pattern plays in belongs to a copy of the song: the set is untouched.
-        self.assertEqual(self.document.revision(), revision_before)
 
     async def type_search(self, name):
         await self.press(keybindings.ListPage.SEARCH)
         await self.type(name)
         await self.press(Key.ENTER)
+
+    def pitches_on(self, port):
+        return [data[1] for data in self.note_ons(port)]
+
+
+class TestPatternEditorPlayback(PatternPreviewTest):
+
+    async def test_l_plays_the_pattern_at_once_through_the_preview_instrument_and_l_again_stops(self):
+        self.name_a_preview_instrument()
+        revision_before = self.document.revision()
+        await self.open_pattern(TUNE)
+        await self.press(keybindings.PatternEditor.LISTEN)
+        # Nothing is asked: the status line says the scale, the first of the scales the pattern's clips play in.
+        self.assertIsInstance(self.app.screen, PatternEditor)
+        self.assertIn(MSG_LISTENING_IN_SCALE.format(name=TUNE, scale=self.document.scales_of_pattern(TUNE)[0]), self.text())
+        self.assertEqual(self.preview().playing_pattern(), TUNE)
+        await self.let_the_preview_play(A_MOMENT)
+        self.assertEqual(len(self.note_ons(SYNTH_PORT)), 1)
+        # The clip it plays belongs to a copy of the set: the set is untouched, and the song's transport plays nothing.
+        self.assertEqual(self.document.revision(), revision_before)
+        self.assertFalse(self.transport().is_playing())
+        await self.press(keybindings.PatternEditor.STOP_LISTENING)
+        self.assertIn(MSG_STOPPED, self.text())
+        self.assertIsNone(self.preview().playing_pattern())
+
+    async def test_it_plays_again_and_again(self):
+        self.name_a_preview_instrument()
+        await self.open_pattern(TUNE)
+        await self.press(keybindings.PatternEditor.LISTEN)
+        for _ in range(PASSES_HEARD * TICKS_A_PASS):
+            await self.let_the_preview_play(TUNE_SECONDS / TICKS_A_PASS)
+        self.assertGreaterEqual(len(self.note_ons(SYNTH_PORT)), PASSES_HEARD * TUNE_NOTE_ONS)
+        self.assertEqual(self.preview().playing_pattern(), TUNE)
+
+    async def test_with_no_preview_instrument_it_plays_general_midis_piano_through_fluidsynth(self):
+        await self.open_pattern(TUNE)
+        await self.press(keybindings.PatternEditor.LISTEN)
+        await self.let_the_preview_play(A_MOMENT)
+        self.assertEqual(self.fluidsynth.starts, 1)
+        sent = [data for _, data in self.outputs[FLUIDSYNTH_PORT].sent]
+        self.assertIn([PROGRAM_CHANGE | PREVIEW_CHANNEL_BYTE, PIANO_PROGRAM], [list(data) for data in sent])
+        self.assertEqual([data[0] for data in self.note_ons(FLUIDSYNTH_PORT)], [NOTE_ON | PREVIEW_CHANNEL_BYTE])
+
+    async def test_a_preview_instrument_through_fluidsynth_sends_its_sound(self):
+        self.document.add_instrument(FLUID)
+        self.document.set_instrument_device(name=FLUID, device=FLUIDSYNTH_DEVICE)
+        self.document.set_instrument_gm_sound(name=FLUID, sound=VIOLIN)
+        self.document.set_preview_instrument_name(FLUID)
+        await self.open_pattern(TUNE)
+        await self.press(keybindings.PatternEditor.LISTEN)
+        await self.let_the_preview_play(A_MOMENT)
+        sent = [list(data) for _, data in self.outputs[FLUIDSYNTH_PORT].sent]
+        self.assertIn([PROGRAM_CHANGE | PREVIEW_CHANNEL_BYTE, VIOLIN_PROGRAM], sent)
+
+    async def test_a_drum_pattern_plays_general_midis_drum_kit_whatever_the_preview_instrument(self):
+        self.name_a_preview_instrument()
+        await self.open_pattern(BEAT)
+        await self.press(keybindings.PatternEditor.LISTEN)
+        # A drum pattern has no scale to say.
+        self.assertIn(MSG_LISTENING_TO_PATTERN.format(name=BEAT), self.text())
+        await self.let_the_preview_play(A_MOMENT)
+        self.assertEqual([data[0] for data in self.note_ons(FLUIDSYNTH_PORT)], [NOTE_ON | DRUM_CHANNEL_BYTE])
+        self.assertNotIn(SYNTH_PORT, self.outputs)
+
+    async def test_without_a_preview_instrument_or_fluidsynth_listen_is_not_offered(self):
+        self.fluidsynth_installed = False
+        await self.open_pattern(TUNE)
+        self.assertFalse(self.preview().can_sound(TUNE))
+        self.assertNotIn(key_name(keybindings.PatternEditor.LISTEN) + SPACE + MSG_LISTEN_WHAT, self.words_shown())
+        await self.press(keybindings.PatternEditor.LISTEN)
+        self.assertIsNone(self.preview().playing_pattern())
+        self.assertIsInstance(self.app.screen, PatternEditor)
+        # A Preview instrument on a device needs no FluidSynth, so Listen is offered again.
+        self.name_a_preview_instrument()
+        await self.press(keybindings.PatternEditor.LISTEN)
+        self.assertEqual(self.preview().playing_pattern(), TUNE)
+
+    async def test_a_preview_instrument_that_cannot_sound_is_refused_on_the_status_line(self):
+        self.name_a_preview_instrument(device=UNPLUGGED_PORT)
+        await self.open_pattern(TUNE)
+        await self.press(keybindings.PatternEditor.LISTEN)
+        self.assertIn(ERR_PREVIEW_DEVICE_NOT_CONNECTED.format(name=SYNTH, device=UNPLUGGED_PORT), self.words_shown())
+        self.assertIsNone(self.preview().playing_pattern())
+        # General MIDI is no silent substitute: FluidSynth was never started.
+        self.assertEqual(self.fluidsynth.starts, 0)
+        self.document.set_instrument_device(name=SYNTH, device=None)
+        await self.press(keybindings.PatternEditor.LISTEN)
+        self.assertIn(ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE.format(name=SYNTH), self.words_shown())
+        self.document.set_instrument_device(name=SYNTH, device=FLUIDSYNTH_DEVICE)
+        self.fluidsynth_installed = False
+        await self.press(keybindings.PatternEditor.LISTEN)
+        self.assertIn(ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED.format(name=SYNTH), self.words_shown())
+
+    async def test_it_plays_with_real_time_off(self):
+        self.assertFalse(self.document.setlist().is_real_time())
+        await self.open_pattern(TUNE)
+        await self.press(keybindings.PatternEditor.LISTEN)
+        await self.let_the_preview_play(A_MOMENT)
+        self.assertEqual(len(self.note_ons(FLUIDSYNTH_PORT)), 1)
+        self.assertEqual(self.preview().playing_pattern(), TUNE)
+
+    async def test_the_preview_plays_beside_a_song_played_from_arrange_and_stopping_it_leaves_the_song(self):
+        self.give_lead_an_instrument()
+        self.document.add_instrument(DRUM_MACHINE)
+        self.document.set_instrument_device(name=DRUM_MACHINE, device=DRUM_PORT)
+        self.document.set_preview_instrument_name(DRUM_MACHINE)
+        await self.press(keybindings.MainPage.ARRANGE, *CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
+        await self.let_time_pass(BRIEFLY)
+        self.assertTrue(self.transport().is_playing())
+        await self.press(Key.ESCAPE)
+        await self.open_pattern(OTHER)
+        await self.press(keybindings.PatternEditor.LISTEN)
+        await self.let_the_preview_play(A_MOMENT)
+        # The pattern is heard at once on the Preview instrument, and the song plays on.
+        self.assertEqual(len(self.note_ons(DRUM_PORT)), 1)
+        self.assertTrue(self.transport().is_playing())
+        await self.press(keybindings.PatternEditor.STOP_LISTENING)
+        self.assertIsNone(self.preview().playing_pattern())
+        self.assertTrue(self.transport().is_playing())
+
+    async def test_an_edit_made_while_it_plays_is_heard_at_the_next_pass(self):
+        self.name_a_preview_instrument()
+        await self.open_pattern(TUNE)
+        await self.press(keybindings.PatternEditor.LISTEN)
+        await self.let_the_preview_play(A_MOMENT)
+        self.document.set_step_value(name=TUNE, row=Row.DEGREE, step=FIRST_INDEX, value=EDITED_DEGREE)
+        heard_before = len(self.note_ons(SYNTH_PORT))
+        for _ in range(PASSES_HEARD * TICKS_A_PASS):
+            await self.let_the_preview_play(TUNE_SECONDS / TICKS_A_PASS)
+        self.assertEqual(self.preview().playing_pattern(), TUNE)
+        self.assertIn(FIFTH, self.pitches_on(SYNTH_PORT)[heard_before:])
+
+    async def test_leaving_the_editor_and_ctrl_t_and_renaming_the_pattern_each_stop_it(self):
+        self.name_a_preview_instrument()
+        await self.open_pattern(TUNE)
+        await self.press(keybindings.PatternEditor.LISTEN)
+        await self.press(keybindings.Page.SILENCE)
+        self.assertIsNone(self.preview().playing_pattern())
+        await self.press(keybindings.PatternEditor.LISTEN)
+        self.document.rename_named(section=Section.PATTERNS, old=OTHER, new=RENAMED_PATTERN)
+        await self.let_the_preview_play(A_MOMENT)
+        self.assertEqual(self.preview().playing_pattern(), TUNE)
+        await self.press(Key.ESCAPE)
+        self.assertIsNone(self.preview().playing_pattern())
+
+    async def test_the_pattern_plays_in_its_own_direction_and_the_read_head_follows(self):
+        self.name_a_preview_instrument()
+        await self.open_pattern(TUNE)
+        self.assertIsNone(self.page.playing_step())
+        await self.press(keybindings.PatternEditor.LISTEN)
+        # An eighth note lasts a quarter of a second, so past the second note the second step sounds.
+        await self.let_the_preview_play(PAST_THE_SECOND_NOTE)
+        self.assertEqual(self.page.playing_step(), SECOND_INDEX)
+        await self.press(keybindings.PatternEditor.STOP_LISTENING)
+        # Played backward, the last step comes first: the tune's first note, on its first step, is not heard at the start, and the read head runs right to left.
+        self.document.set_direction(name=TUNE, direction=Direction.REVERSE_B)
+        heard_before = len(self.note_ons(SYNTH_PORT))
+        await self.press(keybindings.PatternEditor.LISTEN)
+        await self.let_the_preview_play(A_MOMENT)
+        self.assertEqual(len(self.note_ons(SYNTH_PORT)), heard_before)
+        self.assertEqual(self.page.playing_step(), LAST_TUNE_STEP)
+        await self.let_the_preview_play(PAST_THE_SECOND_NOTE)
+        self.assertEqual(self.page.playing_step(), LAST_TUNE_STEP - 1)
+        # A direction that chooses its steps as it goes has no read head.
+        await self.press(keybindings.PatternEditor.STOP_LISTENING)
+        self.document.set_direction(name=TUNE, direction=Direction.RANDOM)
+        await self.press(keybindings.PatternEditor.LISTEN)
+        await self.let_the_preview_play(A_MOMENT)
+        self.assertIsNone(self.page.playing_step())
+
+    async def test_the_roll_draws_the_read_head_as_a_thin_line_and_never_over_a_notes_bar(self):
+        self.name_a_preview_instrument()
+        await self.open_pattern(TUNE)
+        before = self.read_head_cells()
+        self.assertEqual(before, 0)
+        await self.press(keybindings.PatternEditor.LISTEN)
+        await self.let_the_preview_play(PAST_THE_SECOND_NOTE)
+        self.assertGreater(self.read_head_cells(), 0)
+        drawing = self.page.roll_drawing
+        self.assertEqual(drawing.read_head_on(line=Text(MSG_NOTE_EDGE), column=FIRST_INDEX).plain, MSG_NOTE_EDGE)
+        self.assertEqual(drawing.read_head_on(line=Text(SPACE), column=FIRST_INDEX).plain, MSG_READ_HEAD)
+
+    def read_head_cells(self):
+        """Return how many cells of the roll, as drawn now, are in the read head's style."""
+        drawing = self.page.roll_drawing
+        lines = drawing.body(width=self.SIZE[0], height=self.SIZE[1])
+        return sum(1 for line in lines if isinstance(line, Text) for span in line.spans if span.style == Style.READ_HEAD)
+
+    async def test_the_read_head_follows_a_clip_of_the_song_played_from_arrange(self):
+        self.give_lead_an_instrument()
+        await self.press(keybindings.MainPage.ARRANGE, *CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
+        await self.let_time_pass(PAST_THE_SECOND_NOTE)
+        await self.press(Key.ESCAPE)
+        await self.open_pattern(TUNE)
+        self.assertEqual(self.page.playing_step(), SECOND_INDEX)
+        # A pattern no playing clip plays has no read head.
+        await self.press(Key.ESCAPE)
+        await self.open_pattern(OTHER)
+        self.assertIsNone(self.page.playing_step())
+
+
+class TestPatternsPagePlayback(PatternPreviewTest):
+
+    async def test_l_plays_the_selected_pattern_and_l_on_another_row_plays_that_one_and_leaving_stops(self):
+        self.name_a_preview_instrument()
+        await self.press(keybindings.MainPage.PATTERNS)
+        await self.type_search(TUNE)
+        await self.press(keybindings.PatternsPage.LISTEN)
+        self.assertEqual(self.preview().playing_pattern(), TUNE)
+        await self.let_the_preview_play(A_MOMENT)
+        self.assertEqual(len(self.note_ons(SYNTH_PORT)), 1)
+        await self.press(keybindings.PatternsPage.STOP_LISTENING)
+        self.assertIsNone(self.preview().playing_pattern())
+        await self.press(keybindings.PatternsPage.LISTEN)
+        await self.type_search(OTHER)
+        await self.press(keybindings.PatternsPage.LISTEN)
+        self.assertEqual(self.preview().playing_pattern(), OTHER)
+        await self.press(Key.ESCAPE)
+        self.assertIsNone(self.preview().playing_pattern())
+
+
+class TestDirectionsComeRound(unittest.TestCase):
+
+    def test_a_loop_plays_as_many_passes_as_the_direction_takes_to_come_round(self):
+        self.assertEqual(passes_to_come_round(steps=LAST_TUNE_STEP + 1, direction=Direction.FORWARD), 1)
+        self.assertEqual(passes_to_come_round(steps=LAST_TUNE_STEP + 1, direction=Direction.ALTERNATE), 2)
+        # Four steps as a pendulum are six long, 0 1 2 3 2 1, which comes round after three passes of four.
+        self.assertEqual(passes_to_come_round(steps=LAST_TUNE_STEP + 1, direction=Direction.PENDULUM), 3)
+        self.assertEqual(passes_to_come_round(steps=LAST_TUNE_STEP + 1, direction=Direction.RANDOM), CHOSEN_PASSES)
 
 
 class TestHeard(PlaybackTest):

@@ -1145,12 +1145,26 @@ code.
 - Listening (`screens/listening.py`): `listen(page=, index=, track=, song=, name=)` plays one
   clip on its own and again and again (`forever=True`), asking with a `ChoiceDialog` of the
   set's instruments (`MSG_LISTEN_INSTRUMENT_TITLE`) when the track's instrument has no device,
-  and says `MSG_LISTENING`. The clip page's `L` and buttons call it. The pattern editor's `L`
-  (`PatternEditor.LISTEN`, `listen_to_pattern`) plays the pattern through the one track that
-  plays it, or any of them when they share one instrument, and otherwise asks which track
-  (`MSG_LISTEN_TRACK_TITLE`); a track that plays the pattern nowhere gets a scene of its own in
-  a copy of the set's song (`listen_through`), so the set is untouched. `L` again, or the Stop
-  button, is `stop_listening`.
+  and says `MSG_LISTENING`. The clip page's `L` and buttons call it; while Real Time is off
+  and FluidSynth is installed, the clip plays through General MIDI in the pattern preview
+  (`PatternPreview.play_clip_of_song`), the user's rule. `L` again, or the Stop button, is `stop_listening`.
+- The pattern preview (`tui/pattern_preview.py`, `app.pattern_preview()`), the user's design: `L` in the
+  pattern editor and on the Patterns page (`pattern_listen_keys`, `listen_to_pattern`) plays the pattern
+  at once with nothing asked, and `L` stops it. `PatternPreview` is a second `Transport` beside the
+  song's (`Transport.shared()`), with a player and a sender of its own, so that it never stops the song
+  and plays whatever the Real Time switch says (`may_play`). It plays a copy of the set (`PreviewSet`,
+  made again when the set's revision moves, so an edit is heard at the next pass) whose current song
+  holds one scene, the pattern's clip on a track of its own, in the pattern's direction for as many
+  passes as the direction takes to come round (`passes_to_come_round`), in the first of
+  `scales_of_pattern`. Its one route is the song's Preview instrument, or General MIDI's piano on
+  `PREVIEW_CHANNEL_BYTE` of FluidSynth, and the drum channel for a drum pattern always. `L` is not bound
+  when nothing could sound (`can_sound`); a Preview instrument that cannot sound is refused on the status
+  line (`refusal`). Leaving the page, Ctrl+T, quitting and a rename or delete of the pattern stop it.
+- The read head: `Transport.playing_step(pattern)` gives the step that sounds, from a playing clip's
+  elapsed time and its direction's order (`step_sounding`), None for a direction that chooses as it goes;
+  `PatternEditor.playing_step` asks the preview and then the song's transport, and
+  `RollDrawing.with_read_head` draws a thin line in `Style.READ_HEAD` at the step's left edge on copies
+  of the kept lines, never over a note's bar. The rows view shows none yet.
 - Ctrl+T (`everywhere.silence`) says what `Transport.silence_everything()` did: note offs, CC
   123 and CC 120 on every (device, channel) the instruments use among the connected devices
   (`channels_in_use`), `MSG_SILENCED` or `MSG_NOTHING_TO_SILENCE`.

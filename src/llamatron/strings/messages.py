@@ -249,6 +249,11 @@ MSG_CLIP_ON_TRACK = 'clip ({name}) on track ({track})'
 MSG_PLAYING_FROM = 'playing from {scene}'
 MSG_PLAYING_CLIP = 'playing {clip} on its own'
 MSG_LISTENING = 'listening to ({name}) through track ({track})'
+# tui/screens/listening.py: a pattern's preview, with its scale, and a drum pattern's, which has none.
+MSG_LISTENING_IN_SCALE = 'listening to ({name}) in {scale}'
+MSG_LISTENING_TO_PATTERN = 'listening to ({name})'
+# A clip listened to while Real Time is off.
+MSG_LISTENING_GENERAL_MIDI = 'listening to ({name}) through General MIDI'
 MSG_STARTS_AT_NEXT_BAR = '{what} starts at the next bar'
 # The visualizer key on Arrange when the Set File page hides every visualizer mode.
 MSG_EVERY_VISUALIZER_HIDDEN = 'every visualizer is hidden on the Set File page'
@@ -259,7 +264,6 @@ MSG_LIVE_EDIT_NEEDS_A_DEVICE = 'the edit plays through a MIDI device not open ye
 MSG_STOPPED_TRACK = 'stopped track ({track})'
 MSG_SILENCED = 'silenced {channels} channels on {devices} devices'
 MSG_NOTHING_TO_SILENCE = 'no instrument has a connected device to silence'
-MSG_LISTEN_TRACK_TITLE = 'Listen through which track?'
 MSG_LISTEN_INSTRUMENT_TITLE = 'Listen through which instrument?'
 
 # tui/screens/groove_editor.py
