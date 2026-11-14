@@ -93,12 +93,24 @@ pattern stops being global is titled "Pattern Moving to Local, Select Songs" and
 clips of it play the pattern, like `in 8 clips`, with no OK button. Settled since: several songs can be selected and each gets a
 copy of its own, so the dialog is titled "Copy Pattern to Songs"; it shows ten songs at most and scrolls, with a scroll bar drawn
 at the right of the list, since a set may hold fifty songs; and because each song then has names of its own, making a pattern
-global when another song has a pattern of that name asks for a rename first, in a dialog to be drawn for the user. The user wants generators and chains to work exactly as
+global when another song has a pattern of that name asks for a rename first, in a dialog to be drawn for the user. Once the
+copies are made the global pattern is removed, and ENTER is refused while no song is marked. The user is content with copies
+being numbered; whether names are then unique across the whole set, which would make the rename dialog unneeded, is being
+confirmed. The user wants generators and chains to work exactly as
 patterns do in all of this, a song's own or global, once Claude has shown it understands what that means; open there: a global
 chain that links a song's own generator, the order of the Generators page, and what the pages' columns show. What it would mean for the code: `uses_of` in `tui/uses.py` already knows
 every use, and the Patterns page's USED column the count; the row needs the track names of the uses, without repeats, fitted
 to the width the page is given, and the answer remembered until the set changes. This covers what was left of "Where a
 pattern is used" for the Patterns page.
+
+## A scroll bar wherever a list scrolls
+
+The user liked the scroll bar drawn at the right of the list in the mockup of the "Copy Pattern to Songs" dialog, a column of
+the list's height whose solid part shows which part of the list is in view, and wants to explore where else it could be used.
+Places to consider: every picker and every list page whose rows don't all fit, the Chord dialog's lists, the Open page, the
+F1 dialog, the pattern editor's rows view and Arrange when the scenes or tracks run past the console. What it would mean for
+the code: one component that draws the bar from the count of rows, the rows shown and the first row in view, used by
+`ChoiceDialog`, `ListPage` and the rest, each giving up one column at its right.
 
 ## (High priority) A view of a progression's chords as keyboards
 
