@@ -59,7 +59,7 @@ code.
 - Where one key means different things as the cursor moves, each meaning is a binding of its own
   and the page binds the one that applies: `ArrangePage.ADD_SCENE` and `ADD_TRACK`,
   `OffsetsEditor.SILENT` and `PLAY`, `SectionRow.OPEN` and `CLOSE`, `PatternEditor.TO_ROLL` and
-  `TO_EDITOR`, and `ListPage.ADD_HERE` for Enter on the `+` row. Two bindings of one class can
+  `TO_EDITOR`, and `ListPage.ADD_HERE` for ENTER on the `+` row. Two bindings of one class can
   hold the same keys and words, like `ArrangePage.MOVE` and `INSET_MOVE`, the arrows on the grid and in Scene View, so a binding is found
   in a list as the constant it is (`place_of` in `tui/key_table.py`), never by what it holds.
 - A class that binds keys inherits `BindsKeys` (`tui/key_table.py`) and declares
@@ -69,14 +69,14 @@ code.
   (digits, note letters, search text) or an arrow that moves a cursor, whose action is passed the
   key's name, and three overrides for what depends on the set: `keys=` and `name=` (the Degree
   row binds the digits of its scale's degrees, and the Octave row names its range) and `what=` (a
-  settings page says what Enter and Bksp do on the field under the cursor).
+  settings page says what ENTER and Bksp do on the field under the cursor).
 - An action bound to a `Steps` is called with `STEP_BACK` (-1) or `STEP_FORWARD` (1), never the
   key: the groove and offsets editors' nudge, Move mode's carries (`ListPage.carry`, calling `page.shift`, and Arrange's `carry`), `PianoRoll.drag`, `PatternEditor.jump_end`, `PatternRows.jump_section`,
   `GridChoiceDialog.turn_key` and `NotesPage.scroll`.
 - `Page.key_table()` is `everywhere_keys(page)` joined to `page_key_table()`, which is
   `self.in_order(self.keys())`: the class's own bindings in the order of its `IN_HELP`. A page
   made of parts lists its parts' keys among its own, each part already in its own class's order,
-  and `BindsKeys.in_order` leaves those where they are. The pattern editor lists Esc, the view's
+  and `BindsKeys.in_order` leaves those where they are. The pattern editor lists ESC, the view's
   `move_keys()`, Tab, the view's `step_keys(can_remove=)` (`I` and `D` on the rows, none on the roll,
   which neither inserts nor removes a step, the user's rule, as Live's piano roll never did), `S`, `R` and then the view's `keys()`,
   which on the rows are the keys of the cursor's row.
@@ -90,7 +90,7 @@ code.
   than acting as keys: true while a `ListPage` is `searching`, while `NotesPage` edits its
   text, in a `PromptDialog` and in a `ChoiceDialog`, false in a `GridChoiceDialog`. The tests'
   `type(text)` asks first.
-- Legends keep one order: Esc first, then the arrows, then the keys the page has in all of its
+- Legends keep one order: ESC first, then the arrows, then the keys the page has in all of its
   modes, then the rest, which is the order of each class's `IN_HELP`.
 - The rules are kept by `tests/rules/test_keybindings.py` (every class that binds keys has the bindings
   class of its name, inheriting the same way; every binding is keys, a name and words, is listed
@@ -116,7 +116,7 @@ code.
   built with `inherit_bindings=False` so that Textual's own Ctrl+Q does nothing. Quitting quits at
   once with nothing unsaved, and otherwise asks with a `ChoiceDialog` of `MSG_QUIT_CHOICES`, quit
   without saving first and as the default.
-- Esc goes back on every page and cancels every dialog. Tab never goes back: it switches the
+- ESC goes back on every page and cancels every dialog. Tab never goes back: it switches the
   pattern editor's view, turns a `GridChoiceDialog`'s pages, completes in the pickers and the list
   search, and reaches the Notes page's buttons.
 
@@ -124,7 +124,7 @@ code.
 
 - `HelpDialog` (`tui/dialogs/help_dialog.py`, `Page.show_help`) shows the everywhere keys, a blank
   line and the page's own keys in two columns (`key_columns`). Tab, Left and Right turn to the
-  panel with the page's `HELP` text (`MSG_HELP_PANELS`). Enter, Esc or F1 again closes it, and
+  panel with the page's `HELP` text (`MSG_HELP_PANELS`). ENTER, ESC or F1 again closes it, and
   `Page.show_help` leaves F1 out of the everywhere keys it lists, so that the seven left fill two
   columns downwards over four lines, Silence last in the first column, with Undo still above
   Redo in the second, the user's choice.
@@ -183,13 +183,13 @@ code.
   `main` passes when the command line names no file, `MainPage.select_open`), the user's ask.
 - The cursor (`place`, `menu_items()`, `row_and_column`, `move_cursor`, `open_selected`) moves
   with all four arrows: Left and Right along the cells from row to row, Up and Down between rows
-  keeping the column where the row has one, none going past an edge. Enter follows. The cursor
+  keeping the column where the row has one, none going past an edge. ENTER follows. The cursor
   keeps its place while a page is open over it.
 
 ## Dialogs, pickers and searching
 
 - `ConfirmDialog` draws Yes and No as buttons (`MSG_CONFIRM_BUTTONS`, `choice`), moved by Left and
-  Right and pressed by Enter, with `Y` and `N` still answering.
+  Right and pressed by ENTER, with `Y` and `N` still answering.
 - `PromptDialog` keeps a cursor that Left and Right move, so text is inserted and erased where the
   cursor is.
 - `ChoiceDialog` searches as you type (`SEARCH_CHARACTERS`): `typed`, `matches()` through
@@ -202,7 +202,7 @@ code.
 - `ListPage` searches with `/` (`keybindings.ListPage.SEARCH`): `searching`, `typed`, `place_before_search`,
   `search_keys()` in place of the page's own keys while searching, and the same two helpers from
   `choice_dialog.py`. The status line shows `/text` (`MSG_SEARCH_STATUS`).
-- Every list a page can add to has a `+` row at the bottom, where Enter does the same as `A`
+- Every list a page can add to has a `+` row at the bottom, where ENTER does the same as `A`
   (`keybindings.ListPage.ADD` and `ADD_HERE`, as `ArrangePage.ADD_SCENE` and `ADD_TRACK` have
   their `_HERE` bindings on Arrange).
 - On settings pages `[` and `]` change a value and are what the legend names
@@ -214,7 +214,7 @@ code.
   and the two generator pages, are each a `NamedListPage` (`screens/named_list_page.py`), which
   holds `rename`, `copy`, `delete`, `shift` and `sort` once, each calling the document's edit
   that takes the section (`rename_named` and the rest). A page names its `LISTED_SECTION`, its
-  `RENAME_PROMPT` and its `WHAT` (the words for one thing in a question), and says what Enter
+  `RENAME_PROMPT` and its `WHAT` (the words for one thing in a question), and says what ENTER
   opens with `open_item`. `S` sorts on every one of them, the Grooves page sorting the set's own
   grooves under the factory ones. `LISTED_SECTION` is not `SECTION`, which is the
   section of the one thing an editor shows. What a page alone does is an override: the Songs
@@ -238,7 +238,7 @@ code.
 ## Settings pages
 
 - A `FieldPage`'s widgets (`screens/field.py`) are `Field`s, one setting each, and `Button`s,
-  rows that act on Enter (`FieldPage.button` makes one from a main screen action).
+  rows that act on ENTER (`FieldPage.button` makes one from a main screen action).
 - A `Button` is drawn as the main menu draws a row: the key's name in reverse video and then the
   button's name, with no explanation beside it.
 - Buttons always come after the settings in `fields()`, and `FieldPage.body` draws them as one row of boxes
@@ -246,7 +246,7 @@ code.
   that gap itself. Down from the last setting reaches the first button, Left and Right move along them
   (`FieldPage.ALONG_BUTTONS`, `move_along_buttons`), Up from any goes back to the last setting, and Down on them stays
   (`move_cursor`, `first_button_place`), the user's design.
-- A `Field` is a label, the text of its value and what Left and Right, Enter and Bksp do, each
+- A `Field` is a label, the text of its value and what Left and Right, ENTER and Bksp do, each
   a function, so any setting can be one. Most settings are one of four kinds, each a class in
   `screens/field.py` that is given what the setting is and works those functions out: `Toggle`
   (`on=`, `set=`, `●` on and `○` off (`MSG_FIELD_TOGGLE_OFF`, the user's design) unless given words of its own), `NameField` (`value=`,
@@ -259,16 +259,16 @@ code.
   song's time signature, entry size, scale and groove, a scale's root and kind and a clip's
   pattern, chain, direction and grab track.
 - A `NumberField` keeps the number between its ends whether Left and Right step the number or
-  Enter types one, so a tempo stops at `MIN_TEMPO` and `MAX_TEMPO` and a scene's or a clip's
+  ENTER types one, so a tempo stops at `MIN_TEMPO` and `MAX_TEMPO` and a scene's or a clip's
   Repeat at `MAX_SCENE_REPEAT` or `MAX_CLIP_REPEAT`. A seed has no ends.
-- A `Toggle` answers to Space and Enter alike (`TOGGLE_KEYS`, `KeyName.SPACE_ENTER`):
+- A `Toggle` answers to Space and ENTER alike (`TOGGLE_KEYS`, `KeyName.SPACE_ENTER`):
   `FieldPage.keys` asks the field `is_toggle()`, never what the field's words are.
 - A settings page groups fields into sections with `FieldPage.heading(label=, is_set=)`, a
   `Heading` field (`screens/field.py`): the fields after it, up to the next heading, show only
   while it is open (`shown_fields`, which the cursor, the drawing and the tests' `select_field`
   go by, a page's buttons always showing). A heading is drawn as the rows view's are,
   `MSG_SECTION_LABEL` with `+` or `-`, bold, and `MSG_SECTION_SET` (`(set)`) when `is_set()`;
-  `Space` or `Enter` toggles it (`is_toggle`), and `PgUp`/`PgDn` (`FieldPage.SECTION`, bound
+  `Space` or `ENTER` toggles it (`is_toggle`), and `PgUp`/`PgDn` (`FieldPage.SECTION`, bound
   only on a page with headings) jump between headings (`jump_section`). The open sections are
   kept by label on the app as `open_field_sections`, closed to begin with, for the session.
 - `tests/tui/test_tui_fields.py` tests each kind, and tours every settings page for the ends of its
@@ -454,7 +454,7 @@ code.
   `ERR_RECORDING_SONG_LOOPS`), since real time waits on such a scene for the human; `--max-seconds` quits after that many seconds whatever plays. An interactive launch for
   recording (`Launch(interactive=True)`, `internal_tools/record_demo.py --interactive`, the user's design) opens Arrange after
   the splash with the cursor on the corner (`ArrangePage.go_to_corner`) and plays nothing; Space on the corner while playing
-  (`stop_from_the_corner`) or Esc on Arrange (`ArrangePage.go_back`) calls `LlamatronApp.end_take`, which lets the
+  (`stop_from_the_corner`) or ESC on Arrange (`ArrangePage.go_back`) calls `LlamatronApp.end_take`, which lets the
   lead-out ring and then `_finish`es on the splash; a looping song isn't refused, and the recorder records with the
   tutorial's `ScreenRecording`, which has no time limit and stops when the tracker quits. The three
   timings are arguments of `Launch` so that the tests needn't wait. `Launch(test_splash=True)` shows
@@ -487,7 +487,7 @@ code.
   credits of Monty Python and the Holy Grail, keeping the waves as the entrance. It draws every `FRAME_SECONDS` on its
   own timer, and takes a clock for the tests.
 - The start screen (`StartScreen`, `tui/screens/start_screen.py`, `keybindings.StartScreen`) is the splash with
-  `MSG_START_PROMPT` six lines under the address, pulsing between dim and bright (`prompt_level`), until Enter takes
+  `MSG_START_PROMPT` six lines under the address, pulsing between dim and bright (`prompt_level`), until ENTER takes
   it away. Only the command line asks for it (`LlamatronApp(start_screen=)`, `start_screen_wanted` in
   `tui/launch.py`), unless `LLAMATRON_NO_SPLASH=1`, and only on a plain launch; it goes over the main screen and any
   dialog the opening raised, so the tests and the tools that make the app never see it.
@@ -511,10 +511,10 @@ code.
   cursor's box onto the page's cell with the arrows (`select_cell`, `cell_place`), saying
   "Opening Patterns" after a blank line (`Gap`, `MSG_NARRATE_OPENING`, or "Turning on Real
   Time" for the switch), and
-  pressing Enter, never with the page's letter, so that a viewer sees where it is going
+  pressing ENTER, never with the page's letter, so that a viewer sees where it is going
   (`open_page`, the user's wish, which reversed the letters of earlier that day),
   which `tests/tui/test_tutorial.py` holds it to. A page that is open already, under what is on top,
-  is gone back to with Esc instead and nothing is said (`CELL_PAGES`, `go_back_to`), so that no
+  is gone back to with ESC instead and nothing is said (`CELL_PAGES`, `go_back_to`), so that no
   page is opened twice in a row.
 - The build goes the song's settings, the scales, then one track at a time, each track's clips
   scene by scene from the top, each pattern drawn on the piano roll when a track first needs it
@@ -548,7 +548,7 @@ code.
   legend's words (`letter_call`, `MSG_CALL_LETTER`, `WORDS`), and the pattern editor's two views
   are two kinds (`page_kind`). Some keys are explained once, as a `Say` before the press
   (`explaining`): the arrows the first time anywhere, "Arrow keys navigate around the app.", and
-  again on the piano roll and in the rows view (`ARROWS_EXPLAINED`); Enter and Esc the first time
+  again on the piano roll and in the rows view (`ARROWS_EXPLAINED`); ENTER and ESC the first time
   anywhere; and Space once on each kind of page, in that
   page's words on the piano roll and Arrange (`SPACE_EXPLAINED`) and "Pressing space toggles
   many types of cells" on every other. Nothing else is called, and typing, into a prompt or into
@@ -592,16 +592,16 @@ code.
 - `M` on the main screen (`keybindings.MainPage.IMPORT_HERE`), the Import cell after Export,
   calls `import_midi` (`screens/importing.py`), which shows the Open page given
   `suffixes=MIDI_SUFFIXES`, `folder=home_folder()`, the crumbs `IMPORT MIDI` and `chosen`, what
-  Enter on a file does in place of opening a set, until the file picker is designed for the
+  ENTER on a file does in place of opening a set, until the file picker is designed for the
   whole tracker (dev_notes/IDEAS.md). `offer_import` reads the file with `MidiImport`, telling a file that
   can't be read in a `MessageDialog`, and asks with an `ImportDialog`.
 - `ImportDialog` (`tui/dialogs/import_dialog.py`, `keybindings.ImportDialog`) is a dialog of
   fields, the user's design: the found line (`MidiImport.found`), Song name,
   Longest pattern, Use unique names, Chords, Import CCs and Step size, the line of what the import makes and
   its warnings, and Import and Cancel side by side, each its key reversed and its name. The keys
-  bound depend on the row: Enter renames on Song name (a `PromptDialog` over the dialog), `[`
-  and `]` step Longest pattern and Step size, Space or Enter flips the toggles, and on the
-  buttons Left and Right choose and Enter presses; Esc and `I` work on every row. Each change
+  bound depend on the row: ENTER renames on Song name (a `PromptDialog` over the dialog), `[`
+  and `]` step Longest pattern and Step size, Space or ENTER flips the toggles, and on the
+  buttons Left and Right choose and ENTER presses; ESC and `I` work on every row. Each change
   asks `MidiImport.imported` again, remembered for each set of choices (`made`), so nothing is
   added until Import, which dismisses with what was made.
 - `finish_import` calls `Document.import_song` (`SetEdits`), which adds the song with
@@ -609,7 +609,7 @@ code.
   back to the main screen, says `MSG_IMPORTED` and shows an `ImportedDialog`
   (`tui/dialogs/imported_dialog.py`), the user's design: "Song imported as
   (name).", what it holds, and every warning, or "Import complete with no warnings.", with one
-  OK button that Enter or Esc presses and no key list (`Dialog.shows_legend`). `tests/tui/test_tui_import.py` tests it, with the
+  OK button that ENTER or ESC presses and no key list (`Dialog.shows_legend`). `tests/tui/test_tui_import.py` tests it, with the
   home directory pointed at a folder of the test's own.
 
 ## The status line
@@ -656,18 +656,18 @@ code.
 - The File/Global page (`F`, `FilePage`) shows, in the user's order, the loose settings alphabetically (Author, Default follow
   action, Description, Notes, Protected, Title), then the sections Notes & Octaves (Default drum octave, Default octave,
   Octave labels, Step size) and Visualizers (Visualizer, and Hide Visualizers, a field opening a `PickManyDialog`,
-  `tui/dialogs/pick_many_dialog.py`, where Space picks modes and Enter keeps them), then Save and Open
+  `tui/dialogs/pick_many_dialog.py`, where Space picks modes and ENTER keeps them), then Save and Open
   buttons, with the path of the set's file and where the current song exports noted below. `N`
   starts a new set and `W` saves as.
 - The Description field is one line of text, typed in a prompt like the title. The Notes field
-  shows the notes' first line or `not set`, and Enter on it opens `NotesPage` editing
+  shows the notes' first line or `not set`, and ENTER on it opens `NotesPage` editing
   (`editing=True`). The page was the Description page until the user made the
   description one line and the long text the notes.
 - Editing types into a draft of the page's own until Tab reaches the Save and Cancel buttons
-  under the text (`MSG_NOTES_BUTTONS`, `on_buttons`, `button`; Left and Right choose, Enter
-  presses, Tab comes back to the text). Save stores the draft as one edit. Cancel, or Esc
+  under the text (`MSG_NOTES_BUTTONS`, `on_buttons`, `button`; Left and Right choose, ENTER
+  presses, Tab comes back to the text). Save stores the draft as one edit. Cancel, or ESC
   anywhere, throws the draft away.
-- Reading, Esc goes back, Up and Down scroll (`scroll`), `E` edits and `Bksp` clears after
+- Reading, ESC goes back, Up and Down scroll (`scroll`), `E` edits and `Bksp` clears after
   asking.
 - A protected set's notes open reading with no `E` or `Bksp`
   (`MSG_NOTES_PROTECTED`): it is read-only even though the set's other settings can be
@@ -676,9 +676,9 @@ code.
 ## Songs and Song
 
 - The Songs page (`S`, `SongsPage`) lists the songs and marks the current one with `●`. `Space`
-  makes the selected song current, and `Enter` makes it current and opens `SongPage`.
+  makes the selected song current, and `ENTER` makes it current and opens `SongPage`.
 - It adds, copies, renames, moves, sorts and deletes songs, refusing to delete the last one.
-- `SongPage` has the song's name, which `Enter` on the Name field renames, then tempo, time
+- `SongPage` has the song's name, which `ENTER` on the Name field renames, then tempo, time
   signature, entry size, scale, seed, groove, genre (a `text_field`, which `FieldPage` holds for
   every settings page, as the File/Global page's title uses), Live response (a `ChoiceField` of
   `LIVE_RESPONSIVENESSES`, named by `MSG_LIVE_RESPONSIVENESS_NAMES`) and an Export button.
@@ -691,7 +691,7 @@ code.
 
 ## Scales and Scale
 
-- The Scales page (`Z`) lists the set's scales. `Enter` opens `ScalePage`
+- The Scales page (`Z`) lists the set's scales. `ENTER` opens `ScalePage`
   (`tui/screens/scale_page.py`), and `A` adds a C major scale and opens it.
 - `ScalePage` has one scale's Name, Root and Kind on one page, laid out by `SCALE_PAGES` and
   `ROOT_KEYBOARD`. The scale picker shortens long names only on screen.
@@ -708,7 +708,7 @@ code.
 
 - The Generators page (`G`, `screens/generators_page.py`, the user's design) lists every generator of the set on one
   list, its kind in parentheses beside its name (`MSG_GENERATOR_KIND_SHOWN`), in the order `Setlist.ordered_generators`
-  gives: the set's `generator_order` (`.claude/FORMAT.md`), then any it leaves out, kind by kind. Enter opens the editor
+  gives: the set's `generator_order` (`.claude/FORMAT.md`), then any it leaves out, kind by kind. ENTER opens the editor
   (`GENERATOR_PAGES` in `screens/generator_pages.py`, a `GeneratorListing` of kind, section, label and `EDITOR` for each kind);
   `A` asks for a kind, names one after it and opens it; `N`/F2, `C` (the copy straight after), `Bksp` (refused while a chain
   uses it) and `/` as on every list; Move mode keeps the order in the set (`Document.move_generator`). There's no sort, and no
@@ -723,11 +723,11 @@ code.
   with the shape's name in front of each label), through `set_scene_shape_setting` and
   `set_clip_shape_setting` (`SongEdits`). `tests/tui/test_tui_shapes.py` tests them.
 - The `ProgressionEditor` has Name, Every and Chords, whose
-  Enter opens the `ChordsEditor` (`screens/chords_editor.py`), a `StepEditor` with the `StepGrid`
+  ENTER opens the `ChordsEditor` (`screens/chords_editor.py`), a `StepEditor` with the `StepGrid`
   drawing of the one-row editors (`screens/step_grid.py`) but rows of its own: a column a chord,
   a gauge of `MSG_GAUGE_BAR` up to the degree, the numeral and the name, then `#/b` and `Inv.`.
   The arrows move along the chords and between the three rows (`edited_row`); `[` and `]` step,
-  digits type a degree or an inversion, Space or Enter cycles the `#/b` and `Inv.` rows, `I` and
+  digits type a degree or an inversion, Space or ENTER cycles the `#/b` and `Inv.` rows, `I` and
   `D` insert and remove, and `H` (`PICK`) opens a `GridChoiceDialog` of the named progressions,
   filling the chords through `named_progression_in` (`Document.set_progression`).
 - The `VoiceLeadingEditor` has Name, Lowest octave and Highest octave
@@ -743,9 +743,9 @@ code.
   there) opens `pick_rhythm`, a `ChoiceDialog` of the named rhythms. `tests/tui/test_tui_euclid.py`
   tests them.
 - A Glide, Shorten, Rush or Drag opens its editor (each a `StepRowGeneratorEditor`, its steps on one line by `steps_text`: Name, Step, its amount,
-  Steps and Restart). Enter on Steps opens the kind's steps page (`GlideStepsEditor` and the rest),
+  Steps and Restart). ENTER on Steps opens the kind's steps page (`GlideStepsEditor` and the rest),
   each a `StepRowEditor` (`screens/step_row_editor.py`, a `StepEditor` with the `StepGrid`
-  drawing): Left and Right move, Space or Enter (Up and Down off the legend) turns a step on or
+  drawing): Left and Right move, Space or ENTER (Up and Down off the legend) turns a step on or
   off, `I` and `D` insert and remove. `tests/tui/test_tui_step_rows.py` tests them.
 - The `HocketEditor` has Name,
   Source track (a `ChoiceField` of `(none)` and the current song's tracks, sorted, the Hocket's own
@@ -761,7 +761,7 @@ code.
 - The arp and AutoRatchet editors have a Name field, and the chain editor's `N` renames.
 - The chain editor shows each step as the generator's name and then its kind, `sparse (Density)` (`steps_shown`), the user's choice over
   `density: sparse`, which read as a chain's name; a generator listed again is numbered on screen only, `sparse 2 (Density)`.
-- The chain editor's picker of generators (`ChainEditor.pick_generator`, for `A` and Enter) offers `(new generator)`
+- The chain editor's picker of generators (`ChainEditor.pick_generator`, for `A` and ENTER) offers `(new generator)`
   first, the user's ask, which asks for a kind (`new_generator`, in `GENERATOR_PAGES` order), makes one named after
   the kind (`arpeggiator 1`, numbered after the first), puts it in the chain where the step was being added or
   changed, and opens its editor with the chain's crumbs first (`ShowsNamedItem.opened_from`).
@@ -770,7 +770,7 @@ code.
 ## Grooves
 
 - The Grooves page (`V`, `GroovesPage`) lists the factory grooves first, marked `factory`, with
-  only `Enter` (view) and `C` (copy) on them, and the set's own with the usual list keys.
+  only `ENTER` (view) and `C` (copy) on them, and the set's own with the usual list keys.
 - `A` adds `groove 1` and so on (`MSG_NEW_GROOVE_NAME`) and opens the `GrooveEditor`.
 - The `GrooveEditor` is a one-row editor like the offsets editor ("The one-row editors" below),
   with `I`, `D`, `S` for the cell length (`GROOVE_CELL_LENGTH_CHOICES`) and `N` to rename, and
@@ -823,7 +823,7 @@ code.
 
 - There's no Tracks page. The Arrange page's row of track names is reachable by the cursor
   (`HEADER_ROW`), with a `+` after the last name.
-- On a track's name: `Enter` opens the track editor, `C` copies the track with its clips to its
+- On a track's name: `ENTER` opens the track editor, `C` copies the track with its clips to its
   right, `I` inserts a blank track before it, `M` picks it up for Move mode
   (`ArrangePage.MOVE_TRACK`, `start_moving`), Left and Right carrying it (`CARRY_TRACK`, `shift_track`), and `Bksp`
   deletes it after asking.
@@ -833,18 +833,18 @@ code.
 - Move mode, the user's design (`ArrangePage.moving`, `MOVING_SCENE`, `MOVING_TRACK`, `MOVING_CLIP`, `moving_keys`): `M` on
   a clip picks the clip up (`MOVE_CLIP`), and each arrow carries it to the nearest empty cell that way, passing over cells
   that hold clips (`carry_clip`, `CLIP_STEPS`, `Document.move_clip_slot`, which drops a grab as a paste does), the user's
-  rule that a clip moves only onto an empty cell; Enter, Esc or `M` drops what is carried (`DROP`); every carry after the
+  rule that a clip moves only onto an empty cell; ENTER, ESC or `M` drops what is carried (`DROP`); every carry after the
   first continues the edit, so one move is one undo step; the frame is green (`Style.DETAILS_LOCKED`) while it lasts.
   On a list page the same (`ListPage.MOVE`, `CARRY`, `DROP`, `start_moving`, `carry`), the carried row's name drawn
   between `MSG_MOVING_OPEN` and `MSG_MOVING_CLOSE` in place of the spaces beside it. The undo history and the unsaved
   mark compare data with the order of each section's items counted (`same_in_order`, `support/ordered_data.py`), since
   `==` on dictionaries ignores the order a move changes.
-- On an empty cell: `Enter` chooses an existing pattern and adds a clip, staying on Arrange, and `B`
+- On an empty cell: `ENTER` chooses an existing pattern and adds a clip, staying on Arrange, and `B`
   (`ArrangePage.BLANK_PATTERN`, `blank_pattern`) makes a blank pattern named after the track (`lead 1`, a drum pattern on a
   drum track), puts a clip of it there and opens it in the pattern editor, the user's design after Live's empty slot.
-- On a clip: `C` copies it for `V` to paste, `Enter` opens the clip page, and `P`
+- On a clip: `C` copies it for `V` to paste, `ENTER` opens the clip page, and `P`
   (`ArrangePage.OPEN_PATTERN`, `open_pattern`) opens the pattern editor on the clip's pattern,
-  the user's choice over Shift+Enter, which a stock terminal sends as Enter. `P`
+  the user's choice over Shift+ENTER, which a stock terminal sends as ENTER. `P`
   is bound on a clip alone, so elsewhere it does nothing. `C` means copy everywhere.
 - New tracks and scenes are numbered, `track 2` and `scene 2` (`MSG_NEW_TRACK_NAME`,
   `MSG_NEW_SCENE_NAME` in `strings/names.py`), and renamed on their own pages.
@@ -923,16 +923,16 @@ code.
   its own shows `stock` in red (`or_stock`, `MSG_DETAILS_STOCK`), in the details view too, and Tab still locks into it
   with nothing picked; an empty clip slot has no Tab. While locked (`locked`, `picked`, `picking`), the cell's box is
   green (`Style.DETAILS_LOCKED`, `Frame.styled`) and the page binds only Up and Down (`PICK_DETAIL`), which pick among
-  those lines and stop at either end, Enter (`OPEN_DETAIL`, `open_picked`), which opens the thing's page
+  those lines and stop at either end, ENTER (`OPEN_DETAIL`, `open_picked`), which opens the thing's page
   (`DETAIL_PAGES`, or a generator's `EDITOR` through `generator_page_of_kind` in `screens/generator_pages.py`), Tab again
   (`OUT_OF_DETAILS`, `stop_picking`), which leaves and in the usual view closes the cell, `D` (`CLOSE_DETAILS`,
-  `close_details`), which leaves and closes every detail, the details view too, and Enter on `+` (`ADD_CHAIN`, `add_chain_to_cell`), which asks for one of the set's chains and adds it to this cell alone,
+  `close_details`), which leaves and closes every detail, the details view too, and ENTER on `+` (`ADD_CHAIN`, `add_chain_to_cell`), which asks for one of the set's chains and adds it to this cell alone,
   `Bksp` on a `chain:` line (`REMOVE_CHAIN`, `remove_chain_from_cell`), which takes it out of this cell alone, the user's
-  design, Esc (`ESCAPE_CELL`), which
-  leaves the cell as Tab does, since Esc closes the topmost thing (the user's rule); Left and Right do nothing (the user's rules).
+  design, ESC (`ESCAPE_CELL`), which
+  leaves the cell as Tab does, since ESC closes the topmost thing (the user's rule); Left and Right do nothing (the user's rules).
   The picked line is drawn in brackets (`MSG_PICKED_OPEN`, `MSG_PICKED_CLOSE`), the user's choice over the triangle,
   which marks play. A page opened so shows Arrange's crumbs first and then the thing's word and name, `ARRANGE ›
-  chain: half` (`ShowsNamedItem.opened_from`, `MSG_OPENED_ITEM_CRUMB`), since Esc goes back to Arrange, where the
+  chain: half` (`ShowsNamedItem.opened_from`, `MSG_OPENED_ITEM_CRUMB`), since ESC goes back to Arrange, where the
   cell is still locked. A pick stays within the lines an edit leaves, and leaves when none are left. A scene's details
   are cut to `SCENE_DETAIL_ROOM` so that they never cross the scene column's divider.
 
@@ -943,7 +943,7 @@ code.
   holding a `SceneView` (`tui/components/scene_view.py`). While it shows the page binds only `P` (`CLOSE_INSET`), the
   arrows (`INSET_MOVE`), PgUp and PgDn (`INSET_BARS`, `jump_bar`), which jump the cursor to the next bar or back,
   `V` (`TO_PLAYED` or `TO_WRITTEN`), which switches the view, `-` and `=` (`INSET_ZOOM`), `[` and `]`
-  (`INSET_SCROLL`) and Esc (`ESCAPE_INSET`), which closes it as `P` does, the user's keys.
+  (`INSET_SCROLL`) and ESC (`ESCAPE_INSET`), which closes it as `P` does, the user's keys.
 - What it shows comes from `tui/scene_notes.py`: Played, the song's own render (`SongRenderer` with
   `looping_scenes_go_round`, the scene's rows laid end to end, each clip's notes through `timed_events`), after every
   generator, groove, strum, shape and register, one take of the random parts when the song has no seed; and Written,
@@ -977,7 +977,7 @@ code.
   visualizer over the clip area, the user's design (dev_notes/IDEAS.md, "The visualizer", holds
   the plan, built a stage at a time): `next_visualizer` steps through `MODES`
   (`visualizers/modes.py`) and after the last back to the clips. While it shows, the page binds
-  only `TO_CLIPS` (Esc, which brings the clips back and stays on the page) and `VISUALIZER`, and
+  only `TO_CLIPS` (ESC, which brings the clips back and stays on the page) and `VISUALIZER`, and
   `show_visualizer` runs a timer that draws a frame every `FRAME_SECONDS` (0.05) until
   `hide_visualizer` stops it, so it costs nothing while the clips show. With Real Time off the key
   isn't bound.
@@ -1223,7 +1223,7 @@ roll or the rows.
   steps and the typed digits are `StepEditor`'s ("The one-row editors" below), which the
   pattern editor inherits. `editor.row_for(name)` and
   `editor.row_name()` forward to the rows view, for the row components.
-- The editor's crumbs say where Esc goes back to. Opened from the Patterns page they are
+- The editor's crumbs say where ESC goes back to. Opened from the Patterns page they are
   `PATTERNS › tune`, the mixin's own. Opened from a clip with `P`, `PatternEditor(holder=,
   name=, opened_from=)` keeps the page that opened it and `crumb_trail` puts that page's crumbs
   first and `MSG_PATTERN_CRUMB` last: `ARRANGE › pattern: tune`, or `ARRANGE › clip: (scene 1,
@@ -1287,7 +1287,7 @@ roll or the rows.
   `+ Advanced` closed or `- Advanced` open (`MSG_SECTION_LABEL`, `MSG_SECTION_CLOSED_MARK`,
   `MSG_SECTION_OPEN_MARK`). The row has no cells, so the label is drawn in reverse video under
   the cursor (`marks_label`).
-- Space or Enter opens or closes a section (`toggle_section`), and PgUp and PgDn move between the
+- Space or ENTER opens or closes a section (`toggle_section`), and PgUp and PgDn move between the
   headings (`jump_section`). The open sections are kept on the app as `open_sections`,
   `OPEN_AT_START` (Basics and Timing) to begin with.
 - The label column is sized for every row, open or closed (`all_row_names`), so nothing moves
@@ -1323,14 +1323,14 @@ roll or the rows.
   `MORE`, `PatternRow.adjust_keys`, each calling the row's `nudge` with its direction), with
   `-`, `+` and `=` still working, the user's choice over one entry `[/]` adjust,
   which read as a slash key. On a `CycleRow` (Dot, #/b and the register rows) `nudge` goes
-  round the cycle, and Space or Enter (`CycleRow.NEXT`, `TOGGLE_KEYS`) goes to the next
-  choice. `ChordRow` is the one row where Enter can't cycle, since Enter opens the picker, so
+  round the cycle, and Space or ENTER (`CycleRow.NEXT`, `TOGGLE_KEYS`) goes to the next
+  choice. `ChordRow` is the one row where ENTER can't cycle, since ENTER opens the picker, so
   Space alone is its `NEXT`.
 - `RegisterRow`, the `+Note` and `+Vel` rows, is a `CycleRow` of three: add (`+`), subtract
   (`-`) and off (blank), on any step. A cycle starts from the row's blank, which
   `CycleRow.choices` takes from the description, since these rows' blank is 0 where Dot's is
   None.
-- Space and Enter are one legend entry on every toggle (`TOGGLE_KEYS`,
+- Space and ENTER are one legend entry on every toggle (`TOGGLE_KEYS`,
   `KeyName.SPACE_ENTER`): `ToggleRow`, a `FieldPage`'s `Toggle` fields and the offsets
   editor's silent step.
 - A row can be more than one line tall: `labels()` gives a label per line, `cell_lines(step=)` a
@@ -1358,15 +1358,15 @@ roll or the rows.
   (`tui/dialogs/chord_dialog.py`, `ChordDialog`, the user's design), shared with the roll and with a progression's chord
   editor: four lists in the user's order, quality, inversion (None for root position, then the inversions the page stores), tensions and the borrowed scale type, Tab or Left and Right from
   list to list, Space toggling a tension, the scale list holding the categories of `tui/scale_categories.py` (Common first,
-  then every scale type once), each opening a flyout, a box of the dialog's size stacked over it, with Space or Enter, where Enter picks and
-  goes on to the qualities and Esc or Left closes (a flyout is drawn by the dialog, never a second dialog, the user's rule), and under them what `ChordInWords` (`tui/chord_text.py`) says of the choice, its name in its scale, its
+  then every scale type once), each opening a flyout, a box of the dialog's size stacked over it, with Space or ENTER, where ENTER picks and
+  goes on to the qualities and ESC or Left closes (a flyout is drawn by the dialog, never a second dialog, the user's rule), and under them what `ChordInWords` (`tui/chord_text.py`) says of the choice, its name in its scale, its
   name in the clip's own scale when it borrows, and its notes. It answers a `ChordChoice`, stored on the step's Chord, Inversion, Tension
   and Scale rows together, one undo step. `TensionRow` and `ChordScaleRow` are `ChordRow`s with their own choices, in the
   Chord section (`RowSection.CHORD`, the user's design and order: Chord, Tension, Scale and Inversion together, closed at the start
   so that every heading still fits an 80 by 24 console, and left out of a drum pattern, which has none of its rows); the
   Scale row steps through `SCALE_TYPES_IN_ORDER`, every scale type in the categories' order. While the dialog is open the
   pattern editor shows the chord as the choice moves (the dialog's `moved`): the step is written without an undo step and
-  written back on Esc, so the whole is one step or none. The pencil on the step where a chord starts, at another pitch, moves the chord's root and keeps the rest of the step
+  written back on ESC, so the whole is one step or none. The pencil on the step where a chord starts, at another pitch, moves the chord's root and keeps the rest of the step
   (`Pattern.starts_chord`, `move_root`, the user's rule); erasing the note is what removes its chord. A note whose chord has an inversion is drawn hollow (`MSG_NOTE_HOLLOW`, `PianoRoll.root_is_lifted`, the user's design), since the
   root sounds an octave up and nothing sounds where the note is written. The roll's thin lines are green (`Style.CHORD_NOTE`) and include
   tensions and a borrowed scale's notes (`_tones_leaving_the_scale` in `composition/pattern_notes.py`); a Tension cell is blocked on a step with no chord. `Page.resting_status()` is what the status line says
@@ -1477,7 +1477,7 @@ an empty cell and isn't marked.
 
 - The arrows move by step and pitch, stopping at every edge (`cursor_moved`), and Home and End go
   to the ends. There is no octave jump and no bar jump.
-- `Space` or `Enter` (`keybindings.PianoRoll.PLACE`, `TOGGLE_KEYS`) draws a note of the entry
+- `Space` or `ENTER` (`keybindings.PianoRoll.PLACE`, `TOGGLE_KEYS`) draws a note of the entry
   size (`Document.place_note`, through `Pattern.draw_note`,
   which `Pattern.place_note` writes as a degree, an octave and ties, or a gate for an entry size
   shorter than a step, clearing each step it covers). On a note already at the cursor's pitch, from any of the note's cells, it erases the
@@ -1500,9 +1500,15 @@ an empty cell and isn't marked.
   step: CC values, Slide and every register row, `+Note` and `+Vel` among them, which the
   rows' descriptions say (`is_kept_by_a_rest`).
 - `G` marks the note to grab or unmarks it (`toggle_grab`).
+- The Chord dialog's keyboard: `pick_chord` gives the dialog `keyboard=`, `step_keyboard(editor=, step=, choice=)` in
+  `components/chord_row.py`, which answers None unless `document.scales_of_pattern` has exactly one scale and the step has a degree,
+  and otherwise the lines of a `Keyboard` (`components/keyboard.py`) given `chord=chord_keys(note_names=, inversion=)`, the chord's
+  keys from its root up, an inversion's lowest notes an octave higher; `Keyboard.rows()` gives each line as pieces with a `KeyKind`,
+  drawn in `KEY_STYLES`. `ChordDialog.sentences_and_keyboard` draws it one blank line under the last sentence when
+  `has_room_for_keyboard`, the dialog keeping its height. The progression editor's Chord dialog has none yet.
 - `H` (`keybindings.PianoRoll.CHORD`, `pick_chord`) opens the Chord dialog, with `(single note)`
-  at the top, on the note under the cursor from any of its cells. Enter drew nothing and picked
-  the chord until the user made Enter do what Space does, as everywhere else,
+  at the top, on the note under the cursor from any of its cells. ENTER drew nothing and picked
+  the chord until the user made ENTER do what Space does, as everywhere else,
   and the picker took the free letter. It refuses an empty cell
   (`ERR_NO_NOTE_HERE`), and takes a note that grabs like any other.
 - `E` (`keybindings.PianoRoll.ENTRY_SIZE`, `pick_entry_size`) opens a `ChoiceDialog` of the pattern's entry

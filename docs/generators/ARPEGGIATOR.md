@@ -8,12 +8,12 @@ An arpeggiator plays each chord one note at a time, and keeps going for as long 
 
 | Setting | What it does |
 | --- | --- |
-| Name | `Enter` renames the arpeggiator, and every chain using it follows. |
+| Name | `ENTER` renames the arpeggiator, and every chain using it follows. |
 | Step | How long each note of the chord plays: `(pattern)`, the step size of the pattern each clip plays, which a new arpeggiator starts with, or a time from the list every time setting shares. `Bksp` goes back to `(pattern)`. |
 | Order | `up` or `down` by pitch, `up_down`, `down_up`, or `random`. |
 | Octave range | Plays the chord again in up to 4 octaves, from 1, which is the chord alone. |
 | Octave jump | `after chord` plays the whole chord before moving up an octave, so C E G becomes C E G C E G; `after each note` plays each note in every octave first, so it becomes C C E E G G. |
-| Offsets | The arpeggiator's own steps, as on the Elektron Monomachine. `Enter` edits them, and `Bksp` removes them. |
+| Offsets | The arpeggiator's own steps, as on the Elektron Monomachine. `ENTER` edits them, and `Bksp` removes them. |
 | Seed | The seed for `random`. `Bksp` goes back to the song's seed. |
 | AX+= per note to DX+= per note | How much every note the arpeggiator plays adds to that register, or takes from it, within the register's Allowed Inc Max. `Bksp` sets none. See [Registers](../REGISTERS.md). |
 | Restart | When it starts over, as [Generators](../GENERATORS.md#restart) describes. |

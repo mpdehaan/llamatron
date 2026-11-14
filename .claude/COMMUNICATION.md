@@ -41,6 +41,12 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   decided and about what, on which page, the rule chosen, the alternative and a short example, never a one-line note.
 - **Restating.** When the user asks for something to be restated, the whole gist of the subject is restated, everything
   decided and proposed about it, in a short summary, and then the open questions.
+- **"Questions".** When the user says "questions", with no other comment or as the whole message, every open question is asked
+  again in full, rephrased, as "Standing alone, and asked again in full" says (the user's shorthand).
+- **"Discuss and wait".** When the user says to discuss and wait, Claude discusses what the user said, with every related
+  question, concern and idea of Claude's own, as one batch in one reply, and builds nothing of it until the user answers.
+- **"Mockup".** When the user's message includes the word mockup, Claude draws a picture of the screen, made from what the user
+  suggested together with Claude's own ideas and suggestions about it, and raises its questions about the picture for discussion.
 - **The list of what's open.** A reply that leaves questions open ends with them, each number on a line of its own with the
   kind of answer it takes: "77, yes or no." then "78, choose A or B."
 

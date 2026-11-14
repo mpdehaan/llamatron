@@ -48,7 +48,7 @@ recording through a loopback audio device, BlackHole unless --audio-device names
 DAW's output is also sent to. Without such a device the recorder stops and records nothing, so that a
 silent take is never made by accident. Before the take the recorder says which track plays on which
 MIDI channel of the port and what to set up in the DAW, the tracks' MIDI inputs, their Arm buttons
-and the audio output device, and waits for Enter after its last line, "Ready? Press Enter to Start - DO
+and the audio output device, and waits for ENTER after its last line, "Ready? Press ENTER to Start - DO
 NOT MOVE YOUR MOUSE CURSOR", unless --go says to start at once. A scene whose
 every clip loops is refused, since the song would wait there forever, and every take ends at
 --max-seconds, fifteen minutes unless told otherwise. The
@@ -171,10 +171,10 @@ SETUP_INTRO = 'Before the take, set the DAW up for what the tracker will play:'
 SETUP_TRACK = '  the track ({track}) on MIDI channel {channel} of ({port})'
 SETUP_DAW = ('In Live, give each of those a MIDI track whose MIDI From is ({port}) on that channel, arm it (the Arm button, so that it plays '
              'what the tracker sends) with Monitor set to In, and set the audio output device to ({device}), so that the sound comes back into the recording.')
-# The last line before a take, which nothing follows until Enter: a mouse moved during the take moves on the video.
-SETUP_GO = 'Ready? Press Enter to Start - DO NOT MOVE YOUR MOUSE CURSOR'
+# The last line before a take, which nothing follows until ENTER: a mouse moved during the take moves on the video.
+SETUP_GO = 'Ready? Press ENTER to Start - DO NOT MOVE YOUR MOUSE CURSOR'
 INTERACTIVE_TAKE = ('An interactive take: after the splash, Arrange waits with the cursor on the corner at the top left. Press Space there to start the song, '
-                    'perform as you like, and press Space on the corner again to stop and end the take, or Esc; the splash then shows again and the tracker quits. '
+                    'perform as you like, and press Space on the corner again to stop and end the take, or ESC; the splash then shows again and the tracker quits. '
                     'The take ends by itself after {seconds:.0f} s.')
 AUDIO_FOUND = 'sound is recorded from ({device})'
 TRACK_LINE = '  track ({track}) plays through ({instrument}) on channel {channel}'
@@ -345,7 +345,7 @@ def explain_setup(*, plays, port, device):
 
 
 def wait_for_go(*, go):
-    """Wait for Enter before the take, unless --go said to start at once. The prompt is the last thing printed before the take, by the user's wish, so whoever runs it reads it."""
+    """Wait for ENTER before the take, unless --go said to start at once. The prompt is the last thing printed before the take, by the user's wish, so whoever runs it reads it."""
     if not go:
         print(SETUP_GO)
         input()
@@ -572,14 +572,14 @@ def main(*, argv=None):
     assignment.add_argument('--track-assign', default=None, help='a channel for each track in the song\'s order, like 1,1,2, with - to keep a track\'s own instrument')
     parser.add_argument('--max-seconds', type=float, default=DEFAULT_MAX_SECONDS, help='the longest a take may run')
     parser.add_argument('--window-id', type=int, default=None, help='the id of the window to record, when the terminal program cannot be asked')
-    parser.add_argument('--go', action='store_true', help='start the take at once, without waiting for Enter after the setup is explained')
+    parser.add_argument('--go', action='store_true', help='start the take at once, without waiting for ENTER after the setup is explained')
     parser.add_argument('--sound', choices=SOUNDS, default=None, help='where the sound comes from: the DAW through a MIDI port (the default), or the set\'s own FluidSynth instruments, the same as --fluidsynth (sh user_scripts/record.sh)')
     parser.add_argument('--fluidsynth', action='store_true', help='play the set\'s own FluidSynth instruments into the recording, with no MIDI port and no DAW (sh user_scripts/record.sh --sound fluidsynth)')
     parser.add_argument('--fluidsynth-output', default=None, help='with --fluidsynth, the audio output FluidSynth plays to, such as a Multi-Output Device that reaches the recorded one too; the recorded device unless given')
     parser.add_argument('--no-alternate', action='store_true', help='in a staged take, show the visualizer alone in the frame, rather than the clips and the visualizer by turns every ten seconds')
     parser.add_argument('--plain', action='store_true', help='record a visualizer take in the older style, the visualizer over the clip area of Arrange, rather than the title, READY and the framed visualizer every take of a visualizer has by default')
     parser.add_argument('--batch', action='store_true', help='record a batch video: the title, READY, then the visualizer mode filling a frame, from the window\'s cells alone (sh user_scripts/record_all.sh records every example)')
-    parser.add_argument('--interactive', action='store_true', help='perform the take: nothing plays until you press Space on Arrange\'s corner, and stopping there, or Esc, ends it')
+    parser.add_argument('--interactive', action='store_true', help='perform the take: nothing plays until you press Space on Arrange\'s corner, and stopping there, or ESC, ends it')
     view = parser.add_mutually_exclusive_group()
     view.add_argument('--visualizer', choices=mode_options(), default=None, help='record this visualizer mode over the clip area instead of the clips')
     view.add_argument('--clips', action='store_true', help='record the clips on Arrange, without asking')

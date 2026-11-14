@@ -82,7 +82,7 @@ first shot. `docs/CONCEPTS.md` is the order to use the pages in, without screens
 tutorials would link to it rather than repeat it.
 
 How they're written: by what's selected and what's seen, never by counted presses. "Select Patterns
-from the main menu and press Enter", "on the Song page, select Tempo and type 124", not "go down three
+from the main menu and press ENTER", "on the Song page, select Tempo and type 124", not "go down three
 steps", because counts break the moment a row is added. Keystrokes are named where they help, in the
 words the legend uses, and every one of them has to be kept true as keys change: a check like
 `tests/rules/test_doc_paths.py`'s, reading the key names the tutorials quote against the pages' `keys()`, would

@@ -72,12 +72,27 @@ staying as today.
 
 For the set's list of patterns, the user's ask: where the console has the room, each row shows the tracks that play the
 pattern, in the space the row has left; when the names don't fit, they are cut with an ellipsis, and the number of uses is
-always shown, whatever the room. At the same time each row says whether the pattern is one the whole set shares widely or
-one that only some part plays, a single song or a single track (Claude's reading of the user's "global pattern against some
-pattern", to be confirmed before the drawings). What it would mean for the code: `uses_of` in `tui/uses.py` already knows
+always shown, whatever the room. With it comes the user's idea of global patterns: a pattern normally belongs to one song, and
+a pattern may instead belong to the set, where every song can use it. The main screen and the other top level screens stay as
+they are, but a count of patterns reads as the song's own, the set's and the total, like `3+2=5`. The list of patterns gets
+a column beside the tracks holding a star: a starred pattern is global and belongs to the set, and taking the star away asks,
+in a dialog, which song the pattern goes to, since it no longer belongs to the set. Today every pattern belongs to the set and
+every song shares it, so this changes the model and the file format; Claude is to discuss its concerns and ideas with the user,
+with a drawing of the list of patterns and of the main screen, before anything is built. What it would mean for the code: `uses_of` in `tui/uses.py` already knows
 every use, and the Patterns page's USED column the count; the row needs the track names of the uses, without repeats, fitted
 to the width the page is given, and the answer remembered until the set changes. This covers what was left of "Where a
 pattern is used" for the Patterns page.
+
+## (High priority) A view of a progression's chords as keyboards
+
+From the user: the progression editor could have a button that shows the progression's chords as drawings, each chord listed
+with the keyboard the Chord dialog draws, the chord's keys filled, so that the changes from chord to chord can be seen. The
+view scrolls down one drawing at a time and stops at the last, never going round. Only where it makes sense: whether it does,
+and when the button can be offered (a progression's chords are numbers in whatever scale a clip plays them under, so a scale
+has to be known), is to be discussed with the user first, on its own, with a drawing by Claude, once the other ideas of the
+current work are done. What it would mean for the code: `Keyboard` and `chord_keys` in `tui/components/keyboard.py` already draw
+one chord, `ChordsEditor.in_words` names each chord in the song's scale, and an Inset Window is the read-only window the
+tracker has for looking inside things.
 
 ## (High priority) The batch recorder reading each song's visualizer
 
@@ -351,7 +366,7 @@ plays; an export has no use for one. Arrange never opens on a visualizer, except
 recorder is asked to record one (below). One mode to begin with, the lava lamp, but the modes
 are a list, so more can follow, sharing pieces or not. From the earlier notes: a mode's name
 shows large in the middle for a moment as the key switches to it, as a television shows its
-channel, and Esc brings the clips back too.
+channel, and ESC brings the clips back too.
 
 **The recorder.** `sh user_scripts/record.sh` (`internal_tools/record_demo.py`, not the tutorial) gets a way to record a
 visualizer mode instead of the clips: it asks, after the set, whether to record the clips or a
@@ -436,20 +451,20 @@ the key changes mode, which waits for a second mode.
 From the user on 2026-11-10. On the Open page, a key on a set's row, `I` (Info) say, opens a
 dialog that says what the file holds before you decide to open it: the set's title, its
 description (the one line saying what it plays), its author, and for each song its name, its
-tempo and its length when played. Enter in the dialog opens the set and Esc cancels, back to the
+tempo and its length when played. ENTER in the dialog opens the set and ESC cancels, back to the
 list, so that a look costs one key and opening after the look costs one more.
 
 - **What it would mean for the code.** The dialog reads the file the way the Open page already
   reads nothing: `Setlist.read_file` gives the title, description, author and each song's
   tempo, and the length comes from the same estimate Arrange uses (`tui/lengths.py`,
   `measured(song)`), which needs a `Document` of the set, so the dialog builds one in memory
-  and throws it away unless Enter keeps it, in which case opening is already done. A file that
+  and throws it away unless ENTER keeps it, in which case opening is already done. A file that
   can't be read says so in the dialog instead, with the file's error, and a file that needs
   corrections says that it would open with corrections and how many. The dialog is a
-  `MessageDialog` with two answers rather than one, Enter open and Esc cancel, which is a
+  `MessageDialog` with two answers rather than one, ENTER open and ESC cancel, which is a
   `ConfirmDialog` whose buttons read Open and Cancel. The key goes in `keybindings.OpenPage`
   with a legend entry, and the Open page's help names it.
-- **Undecided.** Whether Enter on a row should show the info first and Enter again open, which
+- **Undecided.** Whether ENTER on a row should show the info first and ENTER again open, which
   would cost everyone a key on every open, or stay as it is with the info on its own key,
   which Claude would choose. Whether a set of several songs lists them all, or the first few
   with a count, since the dialog has to fit an 80 by 24 console.
@@ -509,7 +524,7 @@ outside the tracker's directory, so it needs to get there quickly: a full path t
 `~` for the home directory, and perhaps recent directories and recent files. The MIDI import
 starts in the home directory until this is designed. Undecided: which of those, and how a typed
 path is reached on a page whose `/` already searches, for which Claude offered a row at the top
-of the list, "type a path", that Enter opens a prompt on (a directory goes there, a file opens,
+of the list, "type a path", that ENTER opens a prompt on (a directory goes there, a file opens,
 a path that doesn't exist says so on the status line), a letter key, `G` (Go to path), opening
 the same prompt, or both, recommending the row, since nobody has to know a key to get around.
 
@@ -530,7 +545,7 @@ which is why timing came first.
 
 From the user on 2026-11-08: when the pattern editor knows the one scale a pattern plays under
 (the gauge's scale, `Document.pattern_scale`, known when the pattern's uses agree on one or when
-nothing uses it and the current song has one), the chord picker on the Chord row (`Enter`, the
+nothing uses it and the current song has one), the chord picker on the Chord row (`ENTER`, the
 `GridChoiceDialog` laid out by `CHORD_GROUPS`) puts a check mark beside each fixed chord whose
 notes all lie in that scale from the step's note, like `✓ M` on a major chord from the root of a
 major scale. The scale chords (`5`, `3`, `7` and so on) are built from the scale, so they always
@@ -761,10 +776,10 @@ from `composition/defaults.py` and the set's step size, which the Gate row's def
 
 ### A way home, now that pages can jump
 
-`P` (Pattern) was the first jump, and it settled what going back means: Esc goes back to the page
+`P` (Pattern) was the first jump, and it settled what going back means: ESC goes back to the page
 the jump came from, the crumbs show the path taken (`ARRANGE › clip: (scene 1, lead) › pattern:
 tune`), and a page that comes back redraws from the current set and follows renames. What's
-left to think about: getting to the main screen could take many presses of Esc once more jumps
+left to think about: getting to the main screen could take many presses of ESC once more jumps
 exist, so a key that goes straight there may be needed; and if a pattern could jump to the clips
 that use it, the stack could grow without end, so a jump to a page already on the stack might
 go back to it instead of opening it again.
@@ -1026,7 +1041,7 @@ user's design of 2026-11-07 and 2026-11-09 still has in it, to do one item at a 
 
 The File/Global page already has Save and Open rows that do what Ctrl+S and Ctrl+O do, so that the page
 can be worked with the arrow keys alone, and the user wants that idea finished and named: a
-"button" is a row on a page, drawn like the menu rows on the main screen, that Enter presses and
+"button" is a row on a page, drawn like the menu rows on the main screen, that ENTER presses and
 that shows the hotkey it stands for, so nothing is reachable only by a key. The File/Global page has
 Save and Open buttons below its settings, and the clip page Play and Stop; Save as is still `W`
 alone. Buttons are for places where a Ctrl+ or
@@ -1057,13 +1072,13 @@ button do the same.
 From the user on 2026-11-08, to confirm when it comes up. The track editor's CC 1 to CC 4 fields
 take a number from 0 to 127, typed or nudged, and the MIDI specification gives most of those
 numbers a standard purpose: 1 is the mod wheel, 7 volume, 10 pan, 11 expression, 64 the sustain
-pedal, 71 resonance, 74 brightness, which is the filter cutoff on most synths, and so on. Enter on
+pedal, 71 resonance, 74 brightness, which is the filter cutoff on most synths, and so on. ENTER on
 one of those fields would open a picker listing every number with its name beside it, like
 `74  brightness (filter cutoff)`, searchable as every picker is by typing, so that typing `filt`
 finds the number for a filter sweep without looking it up, and the unnamed numbers would be
 listed as numbers alone. The pattern editor's CC row labels, which say the lane's number, like
 `CC 1 (74)`, could add the name where the cell width allows. What it would mean for the code: a
-table of the standard names in `music/midi.py`, the CC fields' Enter opening a `ChoiceDialog`
+table of the standard names in `music/midi.py`, the CC fields' ENTER opening a `ChoiceDialog`
 built from it in place of the number prompt (`MSG_CC_PROMPT`), with `+` and `-` still stepping the
 number, and the names as `MSG_` constants since they're shown.
 
@@ -1457,14 +1472,14 @@ field.
 
 ## A gauge dialog for picking a number cell's value
 
-From the user on 2026-11-08, to sketch before anything is built: Enter on a cell that holds a
+From the user on 2026-11-08, to sketch before anything is built: ENTER on a cell that holds a
 number in the pattern editor, Velocity, Prob, a CC row, Octave or a register change like `AX +=`,
-would open a dialog with a gauge, the way Enter on the Chord row opens the chord picker, so that
+would open a dialog with a gauge, the way ENTER on the Chord row opens the chord picker, so that
 a value can be picked by sight, with the arrows moving along the gauge and digits still typing.
 The register note and velocity rows are toggles, so they'd have no such dialog. The user wants
 example sketches first, drawn the way the pattern editor sketches were, before deciding. What it
 would mean for the code: a dialog in `tui/dialogs/` drawn from the gauge pieces the Degree row
-and `SignedGauge` already have, and an Enter key on `NumberRow`, `ControlRow`, `CcRow` and
+and `SignedGauge` already have, and an ENTER key on `NumberRow`, `ControlRow`, `CcRow` and
 `OctaveRow`, which today only take digits and `+/-`.
 
 ## Arpeggiators that make chords
@@ -1516,10 +1531,10 @@ test that every page's help fits an 80 by 24 console (`tests/tui/test_tui_pages.
 so the dialog may need to scroll, or to put the headings in the columns' first rows, on the
 pattern editor.
 
-## Using the tracker with the basic keys alone: the arrows, Tab, Space, Enter and Esc
+## Using the tracker with the basic keys alone: the arrows, Tab, Space, ENTER and ESC
 
 From the user on 2026-11-08: audit every flow in the tracker to see that most of it can be used
-with the basic keys, the arrows, Tab, Space, Enter and Esc, typing only when a text or number dialog asks for it,
+with the basic keys, the arrows, Tab, Space, ENTER and ESC, typing only when a text or number dialog asks for it,
 so that the letter keys stay as shortcuts for people who know them and nobody needs them. There
 are many letters to remember now, and the point is to make the tracker intuitive, with less to
 remember, by giving every action a way to be reached without a letter. The user knows some keys
@@ -1527,13 +1542,13 @@ will stay; which, and how the pattern editor's views are reached, is for the aud
 
 What the audit would look at, page by page, with what's already there:
 
-- **The main screen and the list pages** are nearly there: Up and Down move, Enter opens, and
-  every list has a `+` row where Enter adds. Rename, copy, move, sort and delete are letters only
+- **The main screen and the list pages** are nearly there: Up and Down move, ENTER opens, and
+  every list has a `+` row where ENTER adds. Rename, copy, move, sort and delete are letters only
   (`N`, `C`, `U/D`, `S`, `Bksp`), so a row would need a way to reach them: a dialog of actions on
-  the selected row, perhaps on a second Enter or on Tab, or action buttons under the list the way
+  the selected row, perhaps on a second ENTER or on Tab, or action buttons under the list the way
   the settings pages have `Button`s.
-- **The settings pages** are there: Up and Down pick a field, Left and Right change it, Enter
-  types or chooses, Space or Enter toggles, and the action rows are `Button`s reached with the
+- **The settings pages** are there: Up and Down pick a field, Left and Right change it, ENTER
+  types or chooses, Space or ENTER toggles, and the action rows are `Button`s reached with the
   cursor.
 - **The pattern editor** is the furthest away: the rows' values are typed or nudged with `[`/`]`
   on every row that takes a number (Degree, Octave, Gate, Velocity, Prob, Ratchet, Ratchet
@@ -1541,7 +1556,7 @@ What the audit would look at, page by page, with what's already there:
   `PatternRow.adjust_keys`), and the whole-pattern actions sit behind `R`, `S`, `I` and `D`,
   which could join the Reconfigure dialog or a sidebar of buttons. No key needs Shift since
   2026-11-09 (`.claude/UX.md`), so the audit proposes no Shift or Ctrl with an arrow.
-- **Arrange** reaches every clip, scene and track with the arrows and opens them with Enter, but
+- **Arrange** reaches every clip, scene and track with the arrows and opens them with ENTER, but
   copying, pasting, inserting and deleting are letters; the same dialog of actions would serve.
 - **The dialogs that search** (the pickers and the list pages' `/`) should say so: a picker's
   search starts as soon as something is typed, which nothing announces, and a list page's search
@@ -1680,8 +1695,8 @@ value is then a cell, four columns by four rows, which reads at a glance and is 
 What it touches in the code: `RegistersPage` in `src/llamatron/tui/screens/registers_page.py` is a
 `FieldPage`, a column of `Field`s, so it would become a page that draws its own grid, with a
 cursor that moves in both directions like the pattern editor's, and the keys depending on the
-row under the cursor: digits, `+` and `-`, `Enter` and `Bksp` on the number rows, and `Space` or
-`Enter` on the wraps row. The grid drawing of the pattern editor (`screens/grid_drawing.py`) could be
+row under the cursor: digits, `+` and `-`, `ENTER` and `Bksp` on the number rows, and `Space` or
+`ENTER` on the wraps row. The grid drawing of the pattern editor (`screens/grid_drawing.py`) could be
 shared, since it's the same box characters and reverse-video cursor. `Document.set_register_setting` and the
 refusal messages stay as they are, and `test_tui_pages.TestRegistersPage` would change with the
 keys. The help text would need rewriting for the new keys.

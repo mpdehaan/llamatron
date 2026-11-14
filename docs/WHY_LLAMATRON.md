@@ -91,7 +91,7 @@ While a song plays, Arrange can show a visualizer over its clips, and a take can
 
 ## Text Interface
 
-The interface is a tracker's in spirit, a grid of steps edited from the keyboard, but it is meant to be found by looking rather than learned. Every key that works on a screen is shown on that screen or in its F1 help, so there are no shortcuts to remember, and the same few keys do the same things everywhere: Esc goes back, F1 explains the page, Enter chooses, and Space plays, stops and toggles.
+The interface is a tracker's in spirit, a grid of steps edited from the keyboard, but it is meant to be found by looking rather than learned. Every key that works on a screen is shown on that screen or in its F1 help, so there are no shortcuts to remember, and the same few keys do the same things everywhere: ESC goes back, F1 explains the page, ENTER chooses, and Space plays, stops and toggles.
 
 The Arrange page is where Live's influence is clearest. Scenes are rows and tracks are columns, as in Session View, so the whole song is visible as one grid rather than as a list of pattern changes. Hardware sequencers tend to arrange a song as a sequence of steps that change patterns; the grid was chosen because it shows the structure at a glance.
 

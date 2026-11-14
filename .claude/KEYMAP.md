@@ -18,328 +18,328 @@ settings page's fields. The keys that work everywhere are listed once:
 
 ## ArpEditor
 
-- **the Name field**: `Esc` back · `↑↓` select · `Enter` rename · `F2` rename
-- **the Step field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` clear · `F2` rename
-- **the Order field, the Octave jump field, the Restart field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `F2` rename
-- **the Octave range field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `F2` rename
-- **the Offsets field**: `Esc` back · `↑↓` select · `Enter` edit · `Bksp` remove · `F2` rename
-- **the Seed field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `Bksp` use the song seed · `F2` rename
-- **the AX+= per note field, the BX+= per note field, the CX+= per note field, the DX+= per note field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `Bksp` clear · `F2` rename
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `F2` rename
+- **the Step field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` clear · `F2` rename
+- **the Order field, the Octave jump field, the Restart field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `F2` rename
+- **the Octave range field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `F2` rename
+- **the Offsets field**: `ESC` back · `↑↓` select · `ENTER` edit · `Bksp` remove · `F2` rename
+- **the Seed field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` use the song seed · `F2` rename
+- **the AX+= per note field, the BX+= per note field, the CX+= per note field, the DX+= per note field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` clear · `F2` rename
 
 ## ArrangePage
 
-- **the corner**: `Esc` back · `←↑↓→` move · `Space` play song · `D` details · `Z` visualizer
-- **a track's name**: `Esc` back · `←↑↓→` move · `A` add track · `Enter` track settings · `C` copy track · `I` insert track · `M` move track · `Bksp` delete track · `D` details · `Tab` cell details · `Z` visualizer
-- **the + after the tracks**: `Esc` back · `←↑↓→` move · `A` add track · `Enter` add track · `D` details · `Z` visualizer
-- **a scene's name**: `Esc` back · `←↑↓→` move · `Space` play scene · `A` add scene · `Enter` scene settings · `P` scene view · `C` copy scene · `Bksp` delete scene · `I` insert scene · `M` move scene · `D` details · `Tab` cell details · `Z` visualizer
-- **a clip**: `Esc` back · `←↑↓→` move · `Space` play clip · `A` add scene · `Enter` edit clip · `J` jump to pattern · `M` move clip · `C` copy clip · `Bksp` delete clip · `V` paste clip · `I` insert scene · `D` details · `Tab` cell details · `Z` visualizer
-- **an empty cell**: `Esc` back · `←↑↓→` move · `A` add scene · `Enter` add clip · `B` blank pattern · `V` paste clip · `I` insert scene · `D` details · `Z` visualizer
-- **the + row**: `Esc` back · `←↑↓→` move · `A` add scene · `Enter` add scene · `D` details · `Z` visualizer
-- **the corner**: `Esc` back · `←↑↓→` move · `Space` play song · `D` hide details · `Z` visualizer
-- **a track's name**: `Esc` back · `←↑↓→` move · `A` add track · `Enter` track settings · `C` copy track · `I` insert track · `M` move track · `Bksp` delete track · `D` hide details · `Tab` cell details · `Z` visualizer
-- **the + after the tracks**: `Esc` back · `←↑↓→` move · `A` add track · `Enter` add track · `D` hide details · `Z` visualizer
-- **a scene's name**: `Esc` back · `←↑↓→` move · `Space` play scene · `A` add scene · `Enter` scene settings · `P` scene view · `C` copy scene · `Bksp` delete scene · `I` insert scene · `M` move scene · `D` hide details · `Tab` cell details · `Z` visualizer
-- **a clip**: `Esc` back · `←↑↓→` move · `Space` play clip · `A` add scene · `Enter` edit clip · `J` jump to pattern · `M` move clip · `C` copy clip · `Bksp` delete clip · `V` paste clip · `I` insert scene · `D` hide details · `Tab` cell details · `Z` visualizer
-- **an empty cell**: `Esc` back · `←↑↓→` move · `A` add scene · `Enter` add clip · `B` blank pattern · `V` paste clip · `I` insert scene · `D` hide details · `Z` visualizer
-- **the + row**: `Esc` back · `←↑↓→` move · `A` add scene · `Enter` add scene · `D` hide details · `Z` visualizer
-- **a locked cell**: `Esc` leave cell · `Tab` leave the cell · `↑↓` select · `Enter` open · `Bksp` remove chain · `D` close details
-- **Move mode**: `Enter/Esc/M` drop · `←→` carry
-- **Move mode**: `Enter/Esc/M` drop · `↑↓` carry
-- **Scene View**: `Esc` close · `P` close · `←↑↓→` move · `PgUp/PgDn` bar · `V` played · `-/=` zoom · `[/]` scroll tracks
-- **Move mode**: `Enter/Esc/M` drop · `←↑↓→` carry
+- **the corner**: `ESC` back · `←↑↓→` move · `Space` play song · `D` details · `Z` visualizer
+- **a track's name**: `ESC` back · `←↑↓→` move · `A` add track · `ENTER` track settings · `C` copy track · `I` insert track · `M` move track · `Bksp` delete track · `D` details · `Tab` cell details · `Z` visualizer
+- **the + after the tracks**: `ESC` back · `←↑↓→` move · `A` add track · `ENTER` add track · `D` details · `Z` visualizer
+- **a scene's name**: `ESC` back · `←↑↓→` move · `Space` play scene · `A` add scene · `ENTER` scene settings · `P` scene view · `C` copy scene · `Bksp` delete scene · `I` insert scene · `M` move scene · `D` details · `Tab` cell details · `Z` visualizer
+- **a clip**: `ESC` back · `←↑↓→` move · `Space` play clip · `A` add scene · `ENTER` edit clip · `J` jump to pattern · `M` move clip · `C` copy clip · `Bksp` delete clip · `V` paste clip · `I` insert scene · `D` details · `Tab` cell details · `Z` visualizer
+- **an empty cell**: `ESC` back · `←↑↓→` move · `A` add scene · `ENTER` add clip · `B` blank pattern · `V` paste clip · `I` insert scene · `D` details · `Z` visualizer
+- **the + row**: `ESC` back · `←↑↓→` move · `A` add scene · `ENTER` add scene · `D` details · `Z` visualizer
+- **the corner**: `ESC` back · `←↑↓→` move · `Space` play song · `D` hide details · `Z` visualizer
+- **a track's name**: `ESC` back · `←↑↓→` move · `A` add track · `ENTER` track settings · `C` copy track · `I` insert track · `M` move track · `Bksp` delete track · `D` hide details · `Tab` cell details · `Z` visualizer
+- **the + after the tracks**: `ESC` back · `←↑↓→` move · `A` add track · `ENTER` add track · `D` hide details · `Z` visualizer
+- **a scene's name**: `ESC` back · `←↑↓→` move · `Space` play scene · `A` add scene · `ENTER` scene settings · `P` scene view · `C` copy scene · `Bksp` delete scene · `I` insert scene · `M` move scene · `D` hide details · `Tab` cell details · `Z` visualizer
+- **a clip**: `ESC` back · `←↑↓→` move · `Space` play clip · `A` add scene · `ENTER` edit clip · `J` jump to pattern · `M` move clip · `C` copy clip · `Bksp` delete clip · `V` paste clip · `I` insert scene · `D` hide details · `Tab` cell details · `Z` visualizer
+- **an empty cell**: `ESC` back · `←↑↓→` move · `A` add scene · `ENTER` add clip · `B` blank pattern · `V` paste clip · `I` insert scene · `D` hide details · `Z` visualizer
+- **the + row**: `ESC` back · `←↑↓→` move · `A` add scene · `ENTER` add scene · `D` hide details · `Z` visualizer
+- **a locked cell**: `ESC` leave cell · `Tab` leave the cell · `↑↓` select · `ENTER` open · `Bksp` remove chain · `D` close details
+- **Move mode**: `ENTER/ESC/M` drop · `←→` carry
+- **Move mode**: `ENTER/ESC/M` drop · `↑↓` carry
+- **Scene View**: `ESC` close · `P` close · `←↑↓→` move · `PgUp/PgDn` bar · `V` played · `-/=` zoom · `[/]` scroll tracks
+- **Move mode**: `ENTER/ESC/M` drop · `←↑↓→` carry
 
 ## ArticulateEditor
 
-- **the Name field**: `Esc` back · `↑↓` select · `Enter` rename · `F2` rename
-- **the Start field, the End field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `Bksp` clear · `F2` rename
-- **the Over field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` clear · `F2` rename
-- **the Then field, the Restart field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `F2` rename
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `F2` rename
+- **the Start field, the End field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` clear · `F2` rename
+- **the Over field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` clear · `F2` rename
+- **the Then field, the Restart field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `F2` rename
 
 ## AutoRatchetEditor
 
-- **the Name field**: `Esc` back · `↑↓` select · `Enter` rename · `F2` rename
-- **the Counts field**: `Esc` back · `↑↓` select · `Enter` edit · `F2` rename
-- **the Restart field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `F2` rename
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `F2` rename
+- **the Counts field**: `ESC` back · `↑↓` select · `ENTER` edit · `F2` rename
+- **the Restart field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `F2` rename
 
 ## ChainEditor
 
-- **a row**: `Esc` back · `↑↓` select · `A` add · `Enter` change · `C` copy · `Bksp` remove · `M` move · `N/F2` rename · `/` search
-- **the + row**: `Esc` back · `Enter` add · `↑↓` select · `A` add · `N/F2` rename · `/` search
-- **while searching**: `Esc` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `Enter` keep
+- **a row**: `ESC` back · `↑↓` select · `A` add · `ENTER` change · `C` copy · `Bksp` remove · `M` move · `N/F2` rename · `/` search
+- **the + row**: `ESC` back · `ENTER` add · `↑↓` select · `A` add · `N/F2` rename · `/` search
+- **while searching**: `ESC` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
 
 ## ChainListPage
 
-- **a row**: `Esc` back · `↑↓` select · `A` add · `Bksp` remove · `M` move · `/` search
-- **the + row**: `Esc` back · `Enter` add · `↑↓` select · `A` add · `/` search
-- **while searching**: `Esc` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `Enter` keep
+- **a row**: `ESC` back · `↑↓` select · `A` add · `Bksp` remove · `M` move · `/` search
+- **the + row**: `ESC` back · `ENTER` add · `↑↓` select · `A` add · `/` search
+- **while searching**: `ESC` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
 
 ## ChainsPage
 
-- **a row**: `Esc` back · `↑↓` select · `A` add · `Enter` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `S` sort · `/` search
-- **the + row**: `Esc` back · `Enter` add · `↑↓` select · `A` add · `/` search
-- **while searching**: `Esc` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `Enter` keep
+- **a row**: `ESC` back · `↑↓` select · `A` add · `ENTER` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `S` sort · `/` search
+- **the + row**: `ESC` back · `ENTER` add · `↑↓` select · `A` add · `/` search
+- **while searching**: `ESC` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
 
 ## ChordsEditor
 
-- **anywhere**: `Esc` back · `←↑↓→` move · `[` dec · `]` inc · `0-9` type · `I` insert step · `D` remove step · `H` pick progression
-- **anywhere**: `Esc` back · `←↑↓→` move · `[` dec · `]` inc · `Space/Enter` next · `I` insert step · `D` remove step · `H` pick progression
-- **anywhere**: `Esc` back · `←↑↓→` move · `[` dec · `]` inc · `Enter` choose · `Space` next · `Bksp` clear · `I` insert step · `D` remove step · `H` pick progression
-- **anywhere**: `Esc` back · `←↑↓→` move · `[` dec · `]` inc · `0-9` type · `Space/Enter` next · `I` insert step · `D` remove step · `H` pick progression
+- **anywhere**: `ESC` back · `←↑↓→` move · `[` dec · `]` inc · `0-9` type · `I` insert step · `D` remove step · `H` pick progression
+- **anywhere**: `ESC` back · `←↑↓→` move · `[` dec · `]` inc · `Space/ENTER` next · `I` insert step · `D` remove step · `H` pick progression
+- **anywhere**: `ESC` back · `←↑↓→` move · `[` dec · `]` inc · `ENTER` choose · `Space` next · `Bksp` clear · `I` insert step · `D` remove step · `H` pick progression
+- **anywhere**: `ESC` back · `←↑↓→` move · `[` dec · `]` inc · `0-9` type · `Space/ENTER` next · `I` insert step · `D` remove step · `H` pick progression
 
 ## ClipPage
 
-- **the Name field**: `Esc` back · `↑↓` select · `Enter` rename · `Bksp` use pattern name · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
-- **the Pattern field**: `Esc` back · `↑↓` select · `Enter` choose · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
-- **the Scale field**: `Esc` back · `↑↓` select · `Enter` choose · `Bksp` use the scene scale · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
-- **the Chains field**: `Esc` back · `↑↓` select · `Enter` edit · `Bksp` no chain · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
-- **the Repeat field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
-- **the Loop field, the Strum heading, the Density heading, the Swell heading, the Articulate heading**: `Esc` back · `↑↓` select · `Space/Enter` toggle · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
-- **the Direction field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` use the pattern's · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
-- **the Grab track field**: `Esc` back · `↑↓` select · `Enter` choose · `Bksp` no grab · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
-- **the Advance field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
-- **the Play button**: `Esc` back · `↑↓` select · `←→` select · `Enter` listen · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
-- **the Stop button**: `Esc` back · `↑↓` select · `←→` select · `Enter` stop · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `Bksp` use pattern name · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
+- **the Pattern field**: `ESC` back · `↑↓` select · `ENTER` choose · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
+- **the Scale field**: `ESC` back · `↑↓` select · `ENTER` choose · `Bksp` use the scene scale · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
+- **the Chains field**: `ESC` back · `↑↓` select · `ENTER` edit · `Bksp` no chain · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
+- **the Repeat field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
+- **the Loop field, the Strum heading, the Density heading, the Swell heading, the Articulate heading**: `ESC` back · `↑↓` select · `Space/ENTER` toggle · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
+- **the Direction field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` use the pattern's · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
+- **the Grab track field**: `ESC` back · `↑↓` select · `ENTER` choose · `Bksp` no grab · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
+- **the Advance field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
+- **the Play button**: `ESC` back · `↑↓` select · `←→` select · `ENTER` listen · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
+- **the Stop button**: `ESC` back · `↑↓` select · `←→` select · `ENTER` stop · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
 
 ## DensityEditor
 
-- **the Name field**: `Esc` back · `↑↓` select · `Enter` rename · `F2` rename
-- **the Start field, the End field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `Bksp` clear · `F2` rename
-- **the Over field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` clear · `F2` rename
-- **the Then field, the Restart field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `F2` rename
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `F2` rename
+- **the Start field, the End field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` clear · `F2` rename
+- **the Over field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` clear · `F2` rename
+- **the Then field, the Restart field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `F2` rename
 
 ## DragEditor
 
-- **the Name field**: `Esc` back · `↑↓` select · `Enter` rename · `F2` rename
-- **the Step field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` clear · `F2` rename
-- **the Drag amount field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `Bksp` clear · `F2` rename
-- **the Steps field**: `Esc` back · `↑↓` select · `Enter` edit · `F2` rename
-- **the Restart field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `F2` rename
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `F2` rename
+- **the Step field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` clear · `F2` rename
+- **the Drag amount field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` clear · `F2` rename
+- **the Steps field**: `ESC` back · `↑↓` select · `ENTER` edit · `F2` rename
+- **the Restart field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `F2` rename
 
 ## DragStepsEditor
 
-- **anywhere**: `Esc` back · `←→` move · `Space/Enter` toggle · `I` insert step · `D` remove step
+- **anywhere**: `ESC` back · `←→` move · `Space/ENTER` toggle · `I` insert step · `D` remove step
 
 ## DriftEditor
 
-- **the Name field**: `Esc` back · `↑↓` select · `Enter` rename · `F2` rename
-- **the Every field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` clear · `F2` rename
-- **the Steps to B field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `F2` rename
-- **the Direction field, the Restart field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `F2` rename
-- **the Seed field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `Bksp` use the song seed · `F2` rename
-- **the AX+= field, the BX+= field, the CX+= field, the DX+= field, the Vel+= field, the Prob ± field, the Degree + field, the Degree random field, the Scale prob field, the Root prob field**: `Esc` back · `↑↓` select · `←→` A or B · `[` dec · `]` inc · `Enter` edit · `Bksp` clear · `F2` rename
-- **the Scale field, the Root field**: `Esc` back · `↑↓` select · `←→` A or B · `[` dec · `]` inc · `Enter` choose · `Bksp` clear · `F2` rename
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `F2` rename
+- **the Every field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` clear · `F2` rename
+- **the Steps to B field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `F2` rename
+- **the Direction field, the Restart field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `F2` rename
+- **the Seed field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` use the song seed · `F2` rename
+- **the AX+= field, the BX+= field, the CX+= field, the DX+= field, the Vel+= field, the Prob ± field, the Degree + field, the Degree random field, the Scale prob field, the Root prob field**: `ESC` back · `↑↓` select · `←→` A or B · `[` dec · `]` inc · `ENTER` edit · `Bksp` clear · `F2` rename
+- **the Scale field, the Root field**: `ESC` back · `↑↓` select · `←→` A or B · `[` dec · `]` inc · `ENTER` choose · `Bksp` clear · `F2` rename
 
 ## EuclidEditor
 
-- **the Name field**: `Esc` back · `↑↓` select · `Enter` rename · `F2` rename
-- **the Hits field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `Bksp` clear · `F2` rename · `H` pick rhythm
-- **the Steps field, the Rotate field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `Bksp` clear · `F2` rename
-- **the Step field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` clear · `F2` rename
-- **the Restart field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `F2` rename
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `F2` rename
+- **the Hits field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` clear · `F2` rename · `H` pick rhythm
+- **the Steps field, the Rotate field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` clear · `F2` rename
+- **the Step field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` clear · `F2` rename
+- **the Restart field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `F2` rename
 
 ## FilePage
 
-- **the Author field, the Description field, the Title field**: `Esc` back · `↑↓` select · `Enter` edit · `Bksp` clear · `PgUp/PgDn` next section · `N` new · `W` save as
-- **the Default follow action field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `PgUp/PgDn` next section · `N` new · `W` save as
-- **the Notes field**: `Esc` back · `↑↓` select · `Enter` edit · `PgUp/PgDn` next section · `N` new · `W` save as
-- **the Protected field, the Notes & Octaves heading, the Visualizers heading**: `Esc` back · `↑↓` select · `Space/Enter` toggle · `PgUp/PgDn` next section · `N` new · `W` save as
-- **the Save button**: `Esc` back · `↑↓` select · `←→` select · `Enter` SAVE · `PgUp/PgDn` next section · `N` new · `W` save as
-- **the Open button**: `Esc` back · `↑↓` select · `←→` select · `Enter` OPEN · `PgUp/PgDn` next section · `N` new · `W` save as
+- **the Author field, the Description field, the Title field**: `ESC` back · `↑↓` select · `ENTER` edit · `Bksp` clear · `PgUp/PgDn` next section · `N` new · `W` save as
+- **the Default follow action field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next section · `N` new · `W` save as
+- **the Notes field**: `ESC` back · `↑↓` select · `ENTER` edit · `PgUp/PgDn` next section · `N` new · `W` save as
+- **the Protected field, the Notes & Octaves heading, the Visualizers heading**: `ESC` back · `↑↓` select · `Space/ENTER` toggle · `PgUp/PgDn` next section · `N` new · `W` save as
+- **the Save button**: `ESC` back · `↑↓` select · `←→` select · `ENTER` SAVE · `PgUp/PgDn` next section · `N` new · `W` save as
+- **the Open button**: `ESC` back · `↑↓` select · `←→` select · `ENTER` OPEN · `PgUp/PgDn` next section · `N` new · `W` save as
 
 ## GeneratorsPage
 
-- **a row**: `Esc` back · `↑↓` select · `A` add · `Enter` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `/` search
-- **the + row**: `Esc` back · `Enter` add · `↑↓` select · `A` add · `/` search
-- **while searching**: `Esc` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `Enter` keep
+- **a row**: `ESC` back · `↑↓` select · `A` add · `ENTER` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `/` search
+- **the + row**: `ESC` back · `ENTER` add · `↑↓` select · `A` add · `/` search
+- **while searching**: `ESC` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
 
 ## GlideEditor
 
-- **the Name field**: `Esc` back · `↑↓` select · `Enter` rename · `F2` rename
-- **the Step field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` clear · `F2` rename
-- **the Glide amount field, the Restart field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `F2` rename
-- **the Steps field**: `Esc` back · `↑↓` select · `Enter` edit · `F2` rename
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `F2` rename
+- **the Step field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` clear · `F2` rename
+- **the Glide amount field, the Restart field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `F2` rename
+- **the Steps field**: `ESC` back · `↑↓` select · `ENTER` edit · `F2` rename
 
 ## GlideStepsEditor
 
-- **anywhere**: `Esc` back · `←→` move · `Space/Enter` toggle · `I` insert step · `D` remove step
+- **anywhere**: `ESC` back · `←→` move · `Space/ENTER` toggle · `I` insert step · `D` remove step
 
 ## GrooveEditor
 
-- **anywhere**: `Esc` back · `←→` move · `[` dec · `]` inc · `0-9` type · `I` insert cell · `D` remove cell · `S` cell length · `N/F2` rename
+- **anywhere**: `ESC` back · `←→` move · `[` dec · `]` inc · `0-9` type · `I` insert cell · `D` remove cell · `S` cell length · `N/F2` rename
 
 ## GroovesPage
 
-- **a row**: `Esc` back · `↑↓` select · `A` add · `Enter` view · `C` copy · `/` search
-- **a row**: `Esc` back · `↑↓` select · `A` add · `Enter` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `S` sort · `/` search
-- **the + row**: `Esc` back · `Enter` add · `↑↓` select · `A` add · `/` search
-- **while searching**: `Esc` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `Enter` keep
+- **a row**: `ESC` back · `↑↓` select · `A` add · `ENTER` view · `C` copy · `/` search
+- **a row**: `ESC` back · `↑↓` select · `A` add · `ENTER` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `S` sort · `/` search
+- **the + row**: `ESC` back · `ENTER` add · `↑↓` select · `A` add · `/` search
+- **while searching**: `ESC` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
 
 ## HocketEditor
 
-- **the Name field**: `Esc` back · `↑↓` select · `Enter` rename · `F2` rename
-- **the Source track field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` no source · `F2` rename
-- **the Restart field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `F2` rename
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `F2` rename
+- **the Source track field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` no source · `F2` rename
+- **the Restart field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `F2` rename
 
 ## InstrumentEditor
 
-- **the Name field**: `Esc` back · `↑↓` select · `Enter` rename · `F2` rename
-- **the Device field**: `Esc` back · `↑↓` select · `Enter` choose · `Bksp` no device · `F2` rename
-- **the Channel field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `F2` rename
-- **the GM sound field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` no sound · `F2` rename
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `F2` rename
+- **the Device field**: `ESC` back · `↑↓` select · `ENTER` choose · `Bksp` no device · `F2` rename
+- **the Channel field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `F2` rename
+- **the GM sound field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` no sound · `F2` rename
 
 ## InstrumentsPage
 
-- **a row**: `Esc` back · `↑↓` select · `A` add · `Enter` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `S` sort · `/` search
-- **the + row**: `Esc` back · `Enter` add · `↑↓` select · `A` add · `/` search
-- **while searching**: `Esc` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `Enter` keep
+- **a row**: `ESC` back · `↑↓` select · `A` add · `ENTER` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `S` sort · `/` search
+- **the + row**: `ESC` back · `ENTER` add · `↑↓` select · `A` add · `/` search
+- **while searching**: `ESC` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
 
 ## MainPage
 
-- **anywhere**: `F` File/Global · `S` Songs · `P` Patterns · `C` Chains · `G` Generators · `Z` Scales · `V` Grooves · `I` Instruments · `R` Registers · `A` Arrange · `T` Real Time · `O` OPEN · `X` EXPORT · `M` IMPORT MIDI · `Q` QUIT · `←↑↓→` select · `Enter` open
+- **anywhere**: `F` File/Global · `S` Songs · `P` Patterns · `C` Chains · `G` Generators · `Z` Scales · `V` Grooves · `I` Instruments · `R` Registers · `A` Arrange · `T` Real Time · `O` OPEN · `X` EXPORT · `M` IMPORT MIDI · `Q` QUIT · `←↑↓→` select · `ENTER` open
 
 ## NotesPage
 
-- **while typing**: `Esc` cancel · `←↑↓→` move · `Enter` new line · `Bksp` erase · `Tab` Save or Cancel
-- **anywhere**: `Esc` cancel · `←→` select · `Enter` choose · `Tab` back to the text
-- **anywhere**: `Esc` back · `↑↓` scroll · `E` edit · `Bksp` clear
+- **while typing**: `ESC` cancel · `←↑↓→` move · `ENTER` new line · `Bksp` erase · `Tab` Save or Cancel
+- **anywhere**: `ESC` cancel · `←→` select · `ENTER` choose · `Tab` back to the text
+- **anywhere**: `ESC` back · `↑↓` scroll · `E` edit · `Bksp` clear
 
 ## OffsetsEditor
 
-- **anywhere**: `Esc` back · `←→` move · `[` dec · `]` inc · `0-9` type · `Tab` next row · `Space/Enter` silent · `I` insert step · `D` remove step
+- **anywhere**: `ESC` back · `←→` move · `[` dec · `]` inc · `0-9` type · `Tab` next row · `Space/ENTER` silent · `I` insert step · `D` remove step
 
 ## OpenPage
 
-- **a row**: `Esc` back · `↑↓` select · `Enter` open · `/` search
-- **while searching**: `Esc` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `Enter` keep
+- **a row**: `ESC` back · `↑↓` select · `ENTER` open · `/` search
+- **while searching**: `ESC` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
 
 ## PatternEditor
 
-- **the piano roll**: `Esc` back · `←↑↓→` move · `Home/End` ends · `Tab` to editor · `S` size · `R` reconfigure · `L` listen · `F2` rename · `Space/Enter` note · `H` chord · `[` shrink · `]` stretch · `K` split · `.` #/b · `Bksp` erase · `G` grab · `E` entry size
-- **the degree row**: `Esc` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `1-7` degree · `[` dec · `]` inc · `Bksp` clear
-- **the degree row**: `Esc` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `1-7` degree · `[` dec · `]` inc
-- **the octave row**: `Esc` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `0-8` type octave · `[` dec · `]` inc · `Bksp` default
-- **the octave row, the accidental row, the velocity row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row**: `Esc` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename
-- **the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row**: `Esc` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `Space/Enter` close section
-- **the accidental row, the dot row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the ax_bx row, the ax_cx row, the ax_dx row**: `Esc` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `Space/Enter` next · `[` dec · `]` inc · `Bksp` clear
-- **the velocity row, the probability row, the ratchet row, the ratchet_offset row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row**: `Esc` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `0-9` type · `[` dec · `]` inc · `Enter` type · `Bksp` default
-- **the chord row, the chord_scale row**: `Esc` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `Enter` choose · `Space` next · `[` dec · `]` inc · `Bksp` clear
-- **the tie row, the glide row, the grab row, the slide row**: `Esc` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `Space/Enter` toggle · `Bksp` clear
-- **the gate row**: `Esc` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `[` dec · `]` inc · `Enter` type · `Bksp` one step
+- **the piano roll**: `ESC` back · `←↑↓→` move · `Home/End` ends · `Tab` to editor · `S` size · `R` reconfigure · `L` listen · `F2` rename · `Space/ENTER` note · `H` chord · `[` shrink · `]` stretch · `K` split · `.` #/b · `Bksp` erase · `G` grab · `E` entry size
+- **the degree row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `1-7` degree · `[` dec · `]` inc · `Bksp` clear
+- **the degree row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `1-7` degree · `[` dec · `]` inc
+- **the octave row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `0-8` type octave · `[` dec · `]` inc · `Bksp` default
+- **the octave row, the accidental row, the velocity row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename
+- **the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `Space/ENTER` close section
+- **the accidental row, the dot row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the ax_bx row, the ax_cx row, the ax_dx row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `Space/ENTER` next · `[` dec · `]` inc · `Bksp` clear
+- **the velocity row, the probability row, the ratchet row, the ratchet_offset row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `0-9` type · `[` dec · `]` inc · `ENTER` type · `Bksp` default
+- **the chord row, the chord_scale row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `ENTER` choose · `Space` next · `[` dec · `]` inc · `Bksp` clear
+- **the tie row, the glide row, the grab row, the slide row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `Space/ENTER` toggle · `Bksp` clear
+- **the gate row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `[` dec · `]` inc · `ENTER` type · `Bksp` one step
 
 ## PatternsPage
 
-- **a row**: `Esc` back · `↑↓` select · `A` add · `Enter` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `S` sort · `/` search · `L` listen
-- **the + row**: `Esc` back · `Enter` add · `↑↓` select · `A` add · `/` search
-- **while searching**: `Esc` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `Enter` keep
+- **a row**: `ESC` back · `↑↓` select · `A` add · `ENTER` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `S` sort · `/` search · `L` listen
+- **the + row**: `ESC` back · `ENTER` add · `↑↓` select · `A` add · `/` search
+- **while searching**: `ESC` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
 
 ## ProgressionEditor
 
-- **the Name field**: `Esc` back · `↑↓` select · `Enter` rename · `F2` rename
-- **the Every field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` clear · `F2` rename
-- **the Chords field**: `Esc` back · `↑↓` select · `Enter` edit · `F2` rename
-- **the Restart field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `F2` rename
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `F2` rename
+- **the Every field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` clear · `F2` rename
+- **the Chords field**: `ESC` back · `↑↓` select · `ENTER` edit · `F2` rename
+- **the Restart field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `F2` rename
 
 ## RegistersPage
 
-- **the AX allowed inc max field, the AX minimum field, the AX default field, the AX maximum field, the BX allowed inc max field, the BX minimum field, the BX default field, the BX maximum field, the CX allowed inc max field, the CX minimum field, the CX default field, the CX maximum field, the DX allowed inc max field, the DX minimum field, the DX default field, the DX maximum field**: `Esc` back · `←↑↓→` move · `[` dec · `]` inc · `Enter` type · `Bksp` default
-- **the AX at limit field, the BX at limit field, the CX at limit field, the DX at limit field**: `Esc` back · `←↑↓→` move · `[` dec · `]` inc · `Enter` choose
-- **the AX reset each scene field, the BX reset each scene field, the CX reset each scene field, the DX reset each scene field**: `Esc` back · `←↑↓→` move · `Space/Enter` toggle
+- **the AX allowed inc max field, the AX minimum field, the AX default field, the AX maximum field, the BX allowed inc max field, the BX minimum field, the BX default field, the BX maximum field, the CX allowed inc max field, the CX minimum field, the CX default field, the CX maximum field, the DX allowed inc max field, the DX minimum field, the DX default field, the DX maximum field**: `ESC` back · `←↑↓→` move · `[` dec · `]` inc · `ENTER` type · `Bksp` default
+- **the AX at limit field, the BX at limit field, the CX at limit field, the DX at limit field**: `ESC` back · `←↑↓→` move · `[` dec · `]` inc · `ENTER` choose
+- **the AX reset each scene field, the BX reset each scene field, the CX reset each scene field, the DX reset each scene field**: `ESC` back · `←↑↓→` move · `Space/ENTER` toggle
 
 ## RushEditor
 
-- **the Name field**: `Esc` back · `↑↓` select · `Enter` rename · `F2` rename
-- **the Step field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` clear · `F2` rename
-- **the Rush amount field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `Bksp` clear · `F2` rename
-- **the Steps field**: `Esc` back · `↑↓` select · `Enter` edit · `F2` rename
-- **the Restart field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `F2` rename
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `F2` rename
+- **the Step field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` clear · `F2` rename
+- **the Rush amount field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` clear · `F2` rename
+- **the Steps field**: `ESC` back · `↑↓` select · `ENTER` edit · `F2` rename
+- **the Restart field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `F2` rename
 
 ## RushStepsEditor
 
-- **anywhere**: `Esc` back · `←→` move · `Space/Enter` toggle · `I` insert step · `D` remove step
+- **anywhere**: `ESC` back · `←→` move · `Space/ENTER` toggle · `I` insert step · `D` remove step
 
 ## ScalePage
 
-- **the Name field**: `Esc` back · `↑↓` select · `Enter` rename · `F2` rename
-- **the Root field, the Kind field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `F2` rename
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `F2` rename
+- **the Root field, the Kind field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `F2` rename
 
 ## ScalesPage
 
-- **a row**: `Esc` back · `↑↓` select · `A` add · `Enter` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `S` sort · `/` search
-- **the + row**: `Esc` back · `Enter` add · `↑↓` select · `A` add · `/` search
-- **while searching**: `Esc` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `Enter` keep
+- **a row**: `ESC` back · `↑↓` select · `A` add · `ENTER` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `S` sort · `/` search
+- **the + row**: `ESC` back · `ENTER` add · `↑↓` select · `A` add · `/` search
+- **while searching**: `ESC` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
 
 ## ScenePage
 
-- **the Name field**: `Esc` back · `↑↓` select · `Enter` rename · `PgUp/PgDn` next section · `F2` rename
-- **the Scale field**: `Esc` back · `↑↓` select · `Enter` choose · `Bksp` use the song scale · `PgUp/PgDn` next section · `F2` rename
-- **the Groove field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` use the song groove · `PgUp/PgDn` next section · `F2` rename
-- **the Tempo field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `Bksp` use the song tempo · `PgUp/PgDn` next section · `F2` rename
-- **the Tempo ramps to field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `Bksp` no ramp · `PgUp/PgDn` next section · `F2` rename
-- **the Repeat field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `PgUp/PgDn` next section · `F2` rename
-- **the Reset AX field, the Reset BX field, the Reset CX field, the Reset DX field, the Launch together field, the Density heading, the Swell heading, the Articulate heading**: `Esc` back · `↑↓` select · `Space/Enter` toggle · `PgUp/PgDn` next section · `F2` rename
-- **the Chains field**: `Esc` back · `↑↓` select · `Enter` edit · `Bksp` no chain · `PgUp/PgDn` next section · `F2` rename
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `PgUp/PgDn` next section · `F2` rename
+- **the Scale field**: `ESC` back · `↑↓` select · `ENTER` choose · `Bksp` use the song scale · `PgUp/PgDn` next section · `F2` rename
+- **the Groove field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` use the song groove · `PgUp/PgDn` next section · `F2` rename
+- **the Tempo field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` use the song tempo · `PgUp/PgDn` next section · `F2` rename
+- **the Tempo ramps to field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` no ramp · `PgUp/PgDn` next section · `F2` rename
+- **the Repeat field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next section · `F2` rename
+- **the Reset AX field, the Reset BX field, the Reset CX field, the Reset DX field, the Launch together field, the Density heading, the Swell heading, the Articulate heading**: `ESC` back · `↑↓` select · `Space/ENTER` toggle · `PgUp/PgDn` next section · `F2` rename
+- **the Chains field**: `ESC` back · `↑↓` select · `ENTER` edit · `Bksp` no chain · `PgUp/PgDn` next section · `F2` rename
 
 ## ShortenEditor
 
-- **the Name field**: `Esc` back · `↑↓` select · `Enter` rename · `F2` rename
-- **the Step field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` clear · `F2` rename
-- **the Shorten amount field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `Bksp` clear · `F2` rename
-- **the Steps field**: `Esc` back · `↑↓` select · `Enter` edit · `F2` rename
-- **the Restart field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `F2` rename
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `F2` rename
+- **the Step field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` clear · `F2` rename
+- **the Shorten amount field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` clear · `F2` rename
+- **the Steps field**: `ESC` back · `↑↓` select · `ENTER` edit · `F2` rename
+- **the Restart field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `F2` rename
 
 ## ShortenStepsEditor
 
-- **anywhere**: `Esc` back · `←→` move · `Space/Enter` toggle · `I` insert step · `D` remove step
+- **anywhere**: `ESC` back · `←→` move · `Space/ENTER` toggle · `I` insert step · `D` remove step
 
 ## SongPage
 
-- **the Name field**: `Esc` back · `↑↓` select · `Enter` rename · `F2` rename
-- **the Tempo field, the Time signature field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `F2` rename
-- **the Entry size field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` one step · `F2` rename
-- **the Scale field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` no scale · `F2` rename
-- **the Seed field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `Bksp` no seed · `F2` rename
-- **the Groove field, the Live response field, the Visualizer field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `F2` rename
-- **the Genre field**: `Esc` back · `↑↓` select · `Enter` edit · `Bksp` clear · `F2` rename
-- **the Preview instrument field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` (General MIDI piano) · `F2` rename
-- **the Export button**: `Esc` back · `↑↓` select · `←→` select · `Enter` EXPORT · `F2` rename
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `F2` rename
+- **the Tempo field, the Time signature field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `F2` rename
+- **the Entry size field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` one step · `F2` rename
+- **the Scale field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` no scale · `F2` rename
+- **the Seed field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` no seed · `F2` rename
+- **the Groove field, the Live response field, the Visualizer field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `F2` rename
+- **the Genre field**: `ESC` back · `↑↓` select · `ENTER` edit · `Bksp` clear · `F2` rename
+- **the Preview instrument field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` (General MIDI piano) · `F2` rename
+- **the Export button**: `ESC` back · `↑↓` select · `←→` select · `ENTER` EXPORT · `F2` rename
 
 ## SongsPage
 
-- **a row**: `Esc` back · `↑↓` select · `A` add · `Space` make current · `Enter` settings · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `S` sort · `/` search
-- **the + row**: `Esc` back · `Enter` add · `↑↓` select · `A` add · `/` search
-- **while searching**: `Esc` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `Enter` keep
+- **a row**: `ESC` back · `↑↓` select · `A` add · `Space` make current · `ENTER` settings · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `S` sort · `/` search
+- **the + row**: `ESC` back · `ENTER` add · `↑↓` select · `A` add · `/` search
+- **while searching**: `ESC` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
 
 ## StrumEditor
 
-- **the Name field**: `Esc` back · `↑↓` select · `Enter` rename · `F2` rename
-- **the Direction field, the Spread field, the Upstroke strings field, the Restart field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `F2` rename
-- **the Fade field, the Loose timing field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `Bksp` clear · `F2` rename
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `F2` rename
+- **the Direction field, the Spread field, the Upstroke strings field, the Restart field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `F2` rename
+- **the Fade field, the Loose timing field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` clear · `F2` rename
 
 ## SwellEditor
 
-- **the Name field**: `Esc` back · `↑↓` select · `Enter` rename · `F2` rename
-- **the Start field, the End field, the Accent field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `Bksp` clear · `F2` rename
-- **the Over field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` clear · `F2` rename
-- **the Then field, the Restart field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `F2` rename
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `F2` rename
+- **the Start field, the End field, the Accent field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` clear · `F2` rename
+- **the Over field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` clear · `F2` rename
+- **the Then field, the Restart field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `F2` rename
 
 ## TrackEditor
 
-- **the Name field**: `Esc` back · `↑↓` select · `Enter` rename · `PgUp/PgDn` next section · `F2` rename
-- **the Drum field, the Mute field, the Euclid heading, the Strum heading**: `Esc` back · `↑↓` select · `Space/Enter` toggle · `PgUp/PgDn` next section · `F2` rename
-- **the Groove field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` use the scene or song groove · `PgUp/PgDn` next section · `F2` rename
-- **the Transpose field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `Bksp` no transpose · `PgUp/PgDn` next section · `F2` rename
-- **the Lowest octave field, the Highest octave field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `Bksp` whole range · `PgUp/PgDn` next section · `F2` rename
-- **the CC 1 field, the CC 2 field, the CC 3 field, the CC 4 field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `Bksp` none · `PgUp/PgDn` next section · `F2` rename
-- **the CC1 Reg field, the CC2 Reg field, the CC3 Reg field, the CC4 Reg field, the Vel Reg field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` unbind · `PgUp/PgDn` next section · `F2` rename
-- **the Chains field**: `Esc` back · `↑↓` select · `Enter` edit · `Bksp` no chain · `PgUp/PgDn` next section · `F2` rename
-- **the Instrument field**: `Esc` back · `↑↓` select · `Enter` choose · `Bksp` no instrument · `PgUp/PgDn` next section · `F2` rename
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `PgUp/PgDn` next section · `F2` rename
+- **the Drum field, the Mute field, the Euclid heading, the Strum heading**: `ESC` back · `↑↓` select · `Space/ENTER` toggle · `PgUp/PgDn` next section · `F2` rename
+- **the Groove field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` use the scene or song groove · `PgUp/PgDn` next section · `F2` rename
+- **the Transpose field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` no transpose · `PgUp/PgDn` next section · `F2` rename
+- **the Lowest octave field, the Highest octave field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` whole range · `PgUp/PgDn` next section · `F2` rename
+- **the CC 1 field, the CC 2 field, the CC 3 field, the CC 4 field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` none · `PgUp/PgDn` next section · `F2` rename
+- **the CC1 Reg field, the CC2 Reg field, the CC3 Reg field, the CC4 Reg field, the Vel Reg field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` unbind · `PgUp/PgDn` next section · `F2` rename
+- **the Chains field**: `ESC` back · `↑↓` select · `ENTER` edit · `Bksp` no chain · `PgUp/PgDn` next section · `F2` rename
+- **the Instrument field**: `ESC` back · `↑↓` select · `ENTER` choose · `Bksp` no instrument · `PgUp/PgDn` next section · `F2` rename
 
 ## VoiceLeadingEditor
 
-- **the Name field**: `Esc` back · `↑↓` select · `Enter` rename · `F2` rename
-- **the Lowest octave field, the Highest octave field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `Bksp` whole range · `F2` rename
-- **the Keep the root in the bass field**: `Esc` back · `↑↓` select · `Space/Enter` toggle · `F2` rename
-- **the Restart field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `F2` rename
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `F2` rename
+- **the Lowest octave field, the Highest octave field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` whole range · `F2` rename
+- **the Keep the root in the bass field**: `ESC` back · `↑↓` select · `Space/ENTER` toggle · `F2` rename
+- **the Restart field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `F2` rename
 
 # Each Key
 
@@ -588,7 +588,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - NotesPage: edit (anywhere)
 - PatternEditor: entry size (the piano roll)
 
-## `Enter`
+## `ENTER`
 
 - ArpEditor: rename (the Name field)
 - ArpEditor: choose (the Step field, the Order field, the Octave jump field, the Restart field)
@@ -703,11 +703,11 @@ settings page's fields. The keys that work everywhere are listed once:
 - VoiceLeadingEditor: edit (the Lowest octave field, the Highest octave field)
 - VoiceLeadingEditor: choose (the Restart field)
 
-## `Enter/Esc/M`
+## `ENTER/ESC/M`
 
 - ArrangePage: drop (Move mode)
 
-## `Esc`
+## `ESC`
 
 - ArpEditor: back (the Name field, the Step field, the Order field, the Octave jump field, the Restart field, the Octave range field, the Offsets field, the Seed field, the AX+= per note field, the BX+= per note field, the CX+= per note field, the DX+= per note field)
 - ArrangePage: back (the corner, a track's name, the + after the tracks, a scene's name, a clip, an empty cell, the + row)
@@ -920,7 +920,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - PatternEditor: next (the chord row, the chord_scale row)
 - SongsPage: make current (a row)
 
-## `Space/Enter`
+## `Space/ENTER`
 
 - ChordsEditor: next (anywhere)
 - ClipPage: toggle (the Loop field, the Strum heading, the Density heading, the Swell heading, the Articulate heading)

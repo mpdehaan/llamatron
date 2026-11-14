@@ -32,12 +32,12 @@ def register_labels(*, rows, label):
 
 # tui/dialogs/quit_dialog.py
 # The quit dialog's buttons, the user's words, in the order of QUIT_WITHOUT_SAVING, SAVE_THEN_QUIT and CANCEL: quitting without
-# saving comes first, and is what Enter does, because Quit is never pressed by accident; the dialog only appears when there are
+# saving comes first, and is what ENTER does, because Quit is never pressed by accident; the dialog only appears when there are
 # changes to lose.
 MSG_QUIT_BUTTONS = ('Quit without saving', 'Save, then Quit', 'Cancel')
 # A message's one button.
 MSG_OK_BUTTON = 'OK'
-# The confirm dialog's two buttons, in the order they're drawn and the arrows move: yes first, since Enter presses the selected one.
+# The confirm dialog's two buttons, in the order they're drawn and the arrows move: yes first, since ENTER presses the selected one.
 MSG_CONFIRM_BUTTONS = ('Yes', 'No')
 
 # tui/screens/arrange_page.py
@@ -267,7 +267,7 @@ MSG_PROTECTED_LABEL = 'Protected'
 # How each choice of octave labels is shown, saying where middle C, MIDI note 60, falls in it.
 MSG_OCTAVE_LABEL_NAMES = {OctaveLabels.LIVE: 'Live (middle C is C3)', OctaveLabels.LLAMATRON: 'llamatron (middle C is C5)'}
 # The Description field is one line saying what the set is, like the tune it plays, typed in a prompt. The Notes field shows
-# the notes' first line, or that there are none; Enter opens the Notes page editing.
+# the notes' first line, or that there are none; ENTER opens the Notes page editing.
 MSG_DESCRIPTION_LABEL = 'Description'
 MSG_NOTES_LABEL = 'Notes'
 MSG_EXPORT_CHOICES = ['Ableton Live set', 'MIDI (Stems)', 'MIDI (Single File)', 'MIDI (Clips)', 'MIDI (General MIDI)', 'WAV (FluidSynth)']

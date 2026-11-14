@@ -8,8 +8,8 @@ An AutoRatchet chops each note or chord into quick, equal repeats in the same ti
 
 | Setting | What it does |
 | --- | --- |
-| Name | `Enter` renames it, and every chain using it follows. |
-| Counts | Whole numbers of 1 or more, separated by spaces, typed after `Enter`. A new AutoRatchet starts with `2`. |
+| Name | `ENTER` renames it, and every chain using it follows. |
+| Counts | Whole numbers of 1 or more, separated by spaces, typed after `ENTER`. A new AutoRatchet starts with `2`. |
 | Restart | When it starts over, as [Generators](../GENERATORS.md#restart) describes; with "on new scene" or "whole song" it goes on through its counts from clip to clip. |
 
 ## Applying the Generator

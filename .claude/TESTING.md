@@ -92,7 +92,7 @@ pressed the plus character to add broke when add became `A`, and said nothing ab
 with `back_key(binding)` or `forward_key(binding)`, and a key that isn't the first, like the older
 `+` and `-`, with `key_of(binding=, key=)`, by the tests that check it still works. `first_key`,
 `every_key` and `key_name(binding)` give a binding's keys and its name on screen to a test that
-checks a legend. A key that types nothing, like Enter, Esc or an arrow, may still be pressed by
+checks a legend. A key that types nothing, like ENTER, ESC or an arrow, may still be pressed by
 its name in `Key`. `select_field(label)` on `UITest` reaches a
 settings field by its label rather than by counted presses. Any string the program defines, like a section (`Section.ARPS`), a root
 (`NoteName.C`), a scale type (`scale_type_name(ScaleType.MINOR)`), a row or a direction, is the
@@ -231,7 +231,7 @@ shared helpers are modules beside them:
   `tests/tools/test_play_demo.py` (the numbered list, `afplay` and the progress line).
 - **The title and the start screen.** `tests/tui/test_title_card.py`: the title on black at moments the test chooses (the
   letters' width and waves, the scanner's sweep and shading, the address, the prompt's pulse, the fade to black), and
-  the start screen shown only when asked on a plain launch, until Enter.
+  the start screen shown only when asked on a plain launch, until ENTER.
 - **A batch video's stage.** `tests/tui/test_batch_stage.py`: the READY box's room, the frame's cells from the edge in, the
   track's order, the pulse's tail and its turning and colour at a change of scene, the box growing, the fade to black and
   the opening cut to black; `tests/tui/test_tui_playback.py`'s `TestBatchVideoLaunch` the launch from title to quitting.

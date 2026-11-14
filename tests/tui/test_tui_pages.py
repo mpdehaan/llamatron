@@ -155,7 +155,7 @@ DATE_PATTERN = r'^\d{4}-\d{2}-\d{2}$'
 TIME_PATTERN = r'^\d{2}:\d{2}$'
 # The start of the Patterns page's help, which the F1 dialog's second panel shows and the first doesn't.
 HELP_PATTERNS_FIRST_WORDS = 'Every pattern in the set'
-# Typed into a prompt that Esc then cancels.
+# Typed into a prompt that ESC then cancels.
 ESCAPED_TITLE = 'never'
 SET_FILE = 'my_set.yml'
 # A set file name a test saves to when SET_FILE is taken already, and what its untitled song's Live set is then called.
@@ -907,7 +907,7 @@ class TestEveryKeyIsShownOnTheSongPagesOnAUsualConsole(TestEveryKeyIsShownOnTheS
         self.document.set_clip_slot_setting(index=0, track=DRUMS, setting=ClipSlotSetting.LOOP, value=None)
         self.document.set_clip_slot_setting(index=0, track=DRUMS, setting=ClipSlotSetting.PATTERN, value=OTHER)
         await self.press(keybindings.MainPage.ARRANGE, Key.RIGHT, Key.ENTER)
-        self.assertIn('« Esc »', self.text())
+        self.assertIn('« ESC »', self.text())
         self.assertEqual(self.text().count('\n'), 23)
 
 
@@ -1017,7 +1017,7 @@ class TestFilePage(UITest):
         self.assertIn(KEY_SHOWN.format(label=KeyName.SPACE_ENTER), self.text())
         await self.press(Key.ENTER)
         self.assertTrue(self.document.setlist().is_protected())
-        # Space toggles too, like Enter.
+        # Space toggles too, like ENTER.
         await self.press(Key.SPACE)
         self.assertFalse(self.document.setlist().is_protected())
         await self.press(Key.SPACE)
@@ -1132,7 +1132,7 @@ class TestSongPage(UITest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        # Enter on the Songs page opens the current song's settings, starting on Name.
+        # ENTER on the Songs page opens the current song's settings, starting on Name.
         await self.press(keybindings.MainPage.SONGS, Key.ENTER)
 
     async def test_it_holds_the_song_settings_and_names_the_song(self):
@@ -1156,7 +1156,7 @@ class TestSongPage(UITest):
         self.assertEqual(song.get_preview_instrument_name(), ORGAN_INSTRUMENT)
         await self.press(*[keybindings.SongPage.LESS] * 3)
         self.assertIsNone(song.get_preview_instrument_name())
-        # Enter picks from the list, where the pattern's own track comes first.
+        # ENTER picks from the list, where the pattern's own track comes first.
         await self.press(Key.ENTER)
         self.assertIn(MSG_PREVIEW_INSTRUMENT_UNSET, str(self.app.screen.query_one(DIALOG_VIEW_SELECTOR).render()))
         await self.press(Key.DOWN, Key.ENTER)
@@ -1559,7 +1559,7 @@ class TestNotesPage(UITest):
         await self.press(Key.ENTER)
 
     async def save(self):
-        """Press Save under the text: Tab reaches the buttons, Save is the first, and Enter presses it."""
+        """Press Save under the text: Tab reaches the buttons, Save is the first, and ENTER presses it."""
         await self.press(Key.TAB)
         self.assertTrue(self.app.screen.on_buttons)
         await self.press(Key.ENTER)
@@ -1590,7 +1590,7 @@ class TestNotesPage(UITest):
         await self.press(Key.TAB)
         self.assertFalse(self.app.screen.on_buttons)
         await self.type(ONE)
-        # The buttons remember that Cancel was chosen, so Tab and Enter press it.
+        # The buttons remember that Cancel was chosen, so Tab and ENTER press it.
         await self.press(Key.TAB)
         self.assertIn(SELECTED_MARK + KEY_SHOWN.format(label=MSG_NOTES_BUTTONS[1]), self.text())
         await self.press(Key.ENTER)
@@ -1767,7 +1767,7 @@ class TestOpenPage(UITest):
 
 
 class TestPlusRow(UITest):
-    """Every list has a + at the bottom, where Enter does the same as pressing +."""
+    """Every list has a + at the bottom, where ENTER does the same as pressing +."""
 
     async def test_every_list_has_one(self):
         for keys, page in [
@@ -2039,7 +2039,7 @@ class TestHelp(UITest):
         # The piano roll comes first, with the cursor's row and the description on screen.
         self.assertIn(MSG_NOTE_UNDER_CURSOR, text)
         self.assertIn('Step 1:', text)
-        self.assertIn('« Esc »', text)
+        self.assertIn('« ESC »', text)
         await self.press(keybindings.PatternEditor.TO_EDITOR)
         text = self.text()
         # The gauge, its number and the octave are pinned, and the first section's heading and at least one of its rows show under them.
@@ -2048,11 +2048,11 @@ class TestHelp(UITest):
         self.assertIn(Box.BAR + SPACE + MSG_SECTION_LABEL.format(mark=MSG_SECTION_OPEN_MARK, name=MSG_SECTION_NAMES[RowSection.BASICS]), text)
         self.assertIn('│ #/b', text)
         self.assertIn('Step 1:', text)
-        self.assertIn('« Esc »', text)
+        self.assertIn('« ESC »', text)
 
 
 class TestArrowsAndTheMark(UITest):
-    """The cursor shows itself as a triangle on every page with rows, and the arrows and Enter get around without a letter."""
+    """The cursor shows itself as a triangle on every page with rows, and the arrows and ENTER get around without a letter."""
 
     def marked_line(self):
         """Return the one line of the page with the mark on it."""
@@ -2198,8 +2198,8 @@ class TestHelpDialog(UITest):
         self.assertIn('« F3 »', lines[2])
         self.assertIn('« Ctrl+T »', lines[3])
         self.assertNotIn('« F1 »', text)
-        # The page's own keys start with Esc, the back key, and then the arrows.
-        self.assertIn('« Esc »', lines[4])
+        # The page's own keys start with ESC, the back key, and then the arrows.
+        self.assertIn('« ESC »', lines[4])
         self.assertIn('« ↑↓ »', lines[5])
         self.assertIn(f'« {KeyName.TAB_ARROWS} »', text)
         self.assertNotIn(HELP_PATTERNS_FIRST_WORDS, text)
@@ -2444,7 +2444,7 @@ class TestFunctionKeys(UITest):
 
 
 class TestPickerMark(UITest):
-    """A settings field whose Enter opens a list shows a dim mark after its value, the user's choice; a typed one shows none."""
+    """A settings field whose ENTER opens a list shows a dim mark after its value, the user's choice; a typed one shows none."""
 
     async def test_scale_shows_the_mark_and_tempo_does_not(self):
         await self.press(keybindings.MainPage.SONGS, Key.ENTER)

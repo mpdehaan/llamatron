@@ -29,22 +29,22 @@ a feature that already exists does what's being asked, that's pointed out first
   keeps its proper noun).
 - F1 opens a dialog of every key that works on the page: the everywhere keys at the top, a blank
   line, then the page's own keys, each group in two columns like the main menu's rows. Tab, Left
-  and Right turn to a second panel saying what the page is about, and back; Enter, Esc or F1
+  and Right turn to a second panel saying what the page is about, and back; ENTER, ESC or F1
   again closes it, and the dialog doesn't list F1 among the keys, so that Undo and Redo sit in
   one column, Ctrl+T taking the last place of the first. F3 opens About (F2 renames, as on Windows, the user's choice, beside `N`, since a stock Mac needs fn for F2): the cow, the version and build date, the links, a quote and the license.
   Neither works inside a dialog, which has its own keys.
 - The same action takes the same letter on every page that has it: `N` rename, `C` copy, `M`
-  move, `S` sort, `Bksp` delete, `A` add, `I` insert, `Enter` open or choose.
+  move, `S` sort, `Bksp` delete, `A` add, `I` insert, `ENTER` open or choose.
   Every page that lists named things has all of them. A name is renamed and anything more
-  complex is edited: Enter on a Name field reads `rename` on every page, and `edit` is for
+  complex is edited: ENTER on a Name field reads `rename` on every page, and `edit` is for
   what opens an editor.
 - No key needs Shift, since `+` and `*` need Shift on a US keyboard,
   not every terminal sends Shift with an arrow, and macOS keeps Ctrl with an arrow for itself. `[`
   means dec and `]` means inc wherever a value steps, the user's one adjust system and the
   user's two words: on every row of the pattern editor the legend lists `[` dec
   and `]` inc as two entries, a number down and up, a gate shorter and longer, and on the
-  Chord, #/b, Dot and register rows a cycle of choices back and forward, where Space or Enter
-  also goes to the next choice (Space alone on Chord, whose Enter opens the picker). On the
+  Chord, #/b, Dot and register rows a cycle of choices back and forward, where Space or ENTER
+  also goes to the next choice (Space alone on Chord, whose ENTER opens the picker). On the
   settings pages and in the offsets and groove editors they step the value under the cursor,
   with the same two legend entries, `[` dec and `]` inc, the user's choice over
   the legends `←` dec and `→` inc and `↑↓` adjust. On the piano roll `[` and `]` drag a note's
@@ -56,13 +56,13 @@ a feature that already exists does what's being asked, that's pointed out first
   a grid picker's pages, and nothing else takes it; Scene View jumps a bar with PgUp and PgDn instead. A settings page's
   buttons are reached with Down from its last field, never with Tab (the user's design).
 - Nobody has to know a key to get around: every page with rows has a cursor that Up and Down move
-  and Enter follows, and the selected row carries the triangle `▶` at its left, on the list
+  and ENTER follows, and the selected row carries the triangle `▶` at its left, on the list
   pages, the settings pages and the pickers alike, so that the arrows show themselves. The main
   screen is one grid of three columns, the user's design: Arrange in the first, three cells tall, a small monitor in green on dark
   green (the seventh allowance of colour) showing the song's scale, tempo, time signature, scenes and tracks, the clock while the song plays and a
   light for each track while Real Time is on; the Real Time switch under it; the pages in the two columns beside; and one bar under the grid
   with File/Global, Save, Open, Export, Import and Quit in two rows on the grid's columns. All four arrows move by the geometry drawn,
-  Right from Arrange going back to the cell the cursor came from, and Enter opens; the selected cell alone has the double-lined box, its
+  Right from Arrange going back to the cell the cursor came from, and ENTER opens; the selected cell alone has the double-lined box, its
   name bold, the bar's selected action in reverse video inside the bar's double-lined box; every key's label is bold and reversed; the status line, right above
   the legend, says what the selected cell is for; and each cell whose page is a list has a count. On a console of 28 lines or more
   the main screen takes the smart fit layout, the user's design: Arrange's cell at the left, as tall as the console and as wide as the
@@ -80,7 +80,7 @@ a feature that already exists does what's being asked, that's pointed out first
   joints, a note that an inversion plays an octave up drawn hollow (`░░░░░`, and `▒▒▒▒▒` under the cursor), and Arrange draws a
   double-lined box around the clip, scene, track or `+` under the cursor, because its cells hold
   bars that reverse video would hide. Every dialog's answers are boxed buttons, as a real window's (`tui/components/button_row.py`, the user's design): each
-  key reversed and then its name, the selected button double-lined, Left and Right moving between them and Enter pressing,
+  key reversed and then its name, the selected button double-lined, Left and Right moving between them and ENTER pressing,
   each button's key answering at once; a message has one OK, a Yes or No question Yes and No, and quitting with unsaved changes
   "Quit without saving", "Save, then Quit" and "Cancel" (`QuitDialog`), the user's words.
 - A cursor stops at every edge and never goes round: Left on the first step, Right on the last,
@@ -105,14 +105,14 @@ a feature that already exists does what's being asked, that's pointed out first
   (their class's `IN_LEGEND` in `tui/keybindings.py` leaves them out), so that the roll's legend keeps to drawing. A key that acts on a step is named in full, `insert step` and
   `remove step`, and on a groove's cells `insert cell` and `remove cell`. Every page's legend and
   help fit an 80 by 24 console.
-- A legend reads in one order on every page: Esc first, then the arrows, then the keys the page
+- A legend reads in one order on every page: ESC first, then the arrows, then the keys the page
   has in all of its modes, then the rest, so that the same key is found in the same place.
 - Space on Arrange plays and stops, read from where the cursor is, while the set's Real Time
-  switch is on, and Enter stays edit: on the corner over the scene names Space plays the song
+  switch is on, and ENTER stays edit: on the corner over the scene names Space plays the song
   from the top or stops everything, on a scene's name it plays from that scene or stops
   everything, and on a clip it plays that clip alone or stops its track. The mark under the
   cursor, `▶` or `■`, says which Space will do, and the legend names it. A song played from
-  Arrange plays on through every page, Esc to the main screen included, so that it can be edited
+  Arrange plays on through every page, ESC to the main screen included, so that it can be edited
   as it plays, and every edit is heard on what plays at the moment the song's Live response says;
   only a listening page's preview stops when its page is left, and Space on the corner or Ctrl+T
   stops the song. While it plays, a track or scene with clips can't be deleted, and anything can
@@ -121,7 +121,7 @@ a feature that already exists does what's being asked, that's pointed out first
   finished, and the loop stops where the scene below starts on its track, so Space on the
   corner plays every demo to its end, and only a scene whose every clip loops waits for the
   human. The user's design and rules.
-- Anything that's true or false answers to Space and Enter alike, as one legend entry, `Space/Enter`
+- Anything that's true or false answers to Space and ENTER alike, as one legend entry, `Space/ENTER`
   (`TOGGLE_KEYS`): the pattern editor's toggle rows, a settings page's toggles, which are the
   fields of the kind `Toggle`, and a silent step in the offsets editor, so that either
   habit works and no page has to be learnt on its own. The piano roll's pencil and the
@@ -129,32 +129,35 @@ a feature that already exists does what's being asked, that's pointed out first
   letter, `H` for the chord.
 - Move mode, the user's design: `M` picks up what the cursor is on, a row of a list page, or a scene, a track or a clip
   on Arrange; the arrows carry it, a clip only into an empty cell (the user's rule), passing over cells that hold clips;
-  and Enter, Esc or `M` again drops it where it is, every carry of one move making one undo step. A carried row's name is
+  and ENTER, ESC or `M` again drops it where it is, every carry of one move making one undo step. A carried row's name is
   drawn between `<` and `>`, which take the places of the spaces beside it so that nothing shifts, and on Arrange the box
   around what is carried is green. While it is carried, only those keys work.
 - Upper and lower case are the same key, and `Bksp` and `Delete` are the same key.
-- Esc closes the topmost thing, one layer at a time, and never quits, so that Esc gets you out of anything: a dialog
+- The Enter and Escape keys are written `ENTER` and `ESC`, in capitals, wherever a key binding is named (the user's rule): in every
+  legend, button, help text, message and narration of the tracker (`KeyName.ENTER` and `KeyName.ESCAPE` in `strings/legends.py`),
+  and in the documents, which use the names the tracker shows.
+- ESC closes the topmost thing, one layer at a time, and never quits, so that ESC gets you out of anything: a dialog
   it cancels, an Inset Window or a locked cell it closes, and a page it goes back from (the user's rule); the legends say so. Tab never goes back: it switches the pattern editor
   between the piano roll and the rows, it cycles a grid picker's pages, with Shift+Tab going the
   other way, it completes typed text in a picker or a list search, and it moves between the
   Notes page's text and its Save and Cancel buttons. Anything with more than one mode or
   page switches with Tab. PgUp and PgDn jump between the pattern editor's section headings.
-- Every list a page can add to has a `+` row at the bottom, where Enter does the same as `A`.
+- Every list a page can add to has a `+` row at the bottom, where ENTER does the same as `A`.
 - A settings page leaves a blank line above its first setting, another after a Name that starts it, and another above its first section, and its labels take
   the width of the longest of every field, shown or not, so that opening a section never moves the values (the user's rules).
 - A choice field whose value comes from above shows the value it takes and where from, in plain text, like `A Minor (from
   scene)`, `forward (from pattern)`, `down (from track)`, `With Scene (from set)`, and its picker's first entry takes it from
   above again (the user's design).
-- A settings field whose Enter opens a list of choices, its `enter_what` being `What.CHOOSE`, shows a dim `▾` after its
+- A settings field whose ENTER opens a list of choices, its `enter_what` being `What.CHOOSE`, shows a dim `▾` after its
   value (`MSG_PICKER_MARK`), the user's choice, so that it isn't taken for a field that's typed.
 - On a settings page, Up and Down pick a field, `[` and `]` make a value less and more, as the
   legend names them, `[` dec and `]` inc, with Left and Right doing the same off the legend,
-  Enter types or chooses, and `Bksp` clears. In a one-row editor, the offsets and groove
+  ENTER types or chooses, and `Bksp` clears. In a one-row editor, the offsets and groove
   editors, `[` and `]` make the cell's value less and more with the same two legend entries,
   and Up and Down do the same off the legend, since no row lies below the cursor. A value with a list of choices of its own, like the piano roll's entry size, opens a
   picker with a letter rather than stepping. A gate is stepped with `[` and `]` or typed with
-  Enter, with no keys to double or halve it. A settings page with many settings groups some into sections, as the rows view's accordion:
-  `+ Name` closed and `- Name` open, `Space` or `Enter` on the heading toggling it, `PgUp` and
+  ENTER, with no keys to double or halve it. A settings page with many settings groups some into sections, as the rows view's accordion:
+  `+ Name` closed and `- Name` open, `Space` or `ENTER` on the heading toggling it, `PgUp` and
   `PgDn` jumping between headings, closed until opened and remembered by name for the session,
   a closed heading saying `(set)` when anything inside holds a value (the user's design). Action rows are `Button`s, drawn below the settings after
   one blank line, the key's name in reverse video and then the button's name, so that what edits
@@ -174,22 +177,26 @@ a feature that already exists does what's being asked, that's pointed out first
   written in, and `S` sorts them for good. A picker never changes the file's order.
 - A flyout, the user's design and name, is a box a dialog draws over itself for a row drawn as a button, `[ Common ]`, since the row opens something, listing that row's
   choices (the row whose choice was made shows it after a `▸`, `[ Common ▸ Major ]`, and no other row carries the mark), as large as the dialog and two cells down and to the right of it, covering what lies under it, so that the two read
-  as a stack to attend to (`Dialog.flyout_lines`, `FLYOUT_SHIFT`): Space or Enter on the row opens it, Up and Down move, Enter picks and closes it, and Esc or Left closes it with
+  as a stack to attend to (`Dialog.flyout_lines`, `FLYOUT_SHIFT`): Space or ENTER on the row opens it, Up and Down move, ENTER picks and closes it, and ESC or Left closes it with
   nothing changed. It is how a dialog offers a second level without opening a dialog over a dialog, which is avoided (the
   user's rule). The Chord dialog's categories of scale types are the first.
+- The Chord dialog draws a keyboard under its sentences, one blank line down, the user's design: the scale's keys in an outline's
+  colour (`▒▒▒`, cyan), the chord's keys filled (`███`, green), the rest hatched and dim, the root's name in brackets, the chord
+  following the cursor through the lists. Only where the pattern's scale is known for certain, every use of the pattern playing it
+  under one scale, and only where the console has the lines; it takes no key and can't be selected. The eighth allowance of colour.
 - A picker opens on the current choice, and the thing being edited is left out where choosing it
   would mean nothing, like the pattern itself in Load over.
 - A picker searches as you type: the list shrinks to the names that contain the typed text,
   ignoring case, shown as `search: ba` above the list, Bksp erases, Tab completes as far as every
-  remaining name agrees from its start, Enter picks, and Esc cancels.
+  remaining name agrees from its start, ENTER picks, and ESC cancels.
 - A list page searches with `/`, since its letters are keys: the rows shrink to the ones
-  containing the typed text, the status line shows `/ba`, Bksp erases, Tab completes, Enter keeps
-  the cursor where the search put it and shows the whole list again, and Esc puts the cursor back
+  containing the typed text, the status line shows `/ba`, Bksp erases, Tab completes, ENTER keeps
+  the cursor where the search put it and shows the whole list again, and ESC puts the cursor back
   where it was. Every page's help mentions it.
 
 ## Dialogs and the status line
 
-- A dialog asks one thing. Enter answers, Esc cancels, and nothing changes until it's answered.
+- A dialog asks one thing. ENTER answers, ESC cancels, and nothing changes until it's answered.
 - Deleting anything still used is refused with up to five uses listed, and otherwise confirms.
   Deleting a scene, a track or a clip always confirms, and the last scene and the last track of a
   song are refused in a dialog.
@@ -260,7 +267,7 @@ a feature that already exists does what's being asked, that's pointed out first
   line to line, outlined in white one cell further out, its closing key's name in reverse video in the band's bottom
   corner, and inside the band, one cell in on every side, the title in reverse video and then the view
   (`tui/components/inset_window.py`).
-  The key that opened it closes it, and so does Esc, which closes the topmost thing on every page, so that a second Esc goes
+  The key that opened it closes it, and so does ESC, which closes the topmost thing on every page, so that a second ESC goes
   back from the page as ever; the page's legend lists the window's keys. Scene View is the first; the list
   previews are to come with `P`, the one key for looking inside things across the tracker (the user's rule). Where two lines cross or meet, the joint is the box character that joins them, a tee
   or a cross with the right single or double arms, in a style that breaks neither line: a bold
@@ -280,7 +287,7 @@ a feature that already exists does what's being asked, that's pointed out first
   file yet, `● unsaved changes` for a set changed since its file was written or read, and `○ saved` otherwise. The theme's stripe
   carries the page's caption, black on a light theme and white on a dark one: a list's name, like `PATTERNS`, or what an editor
   edits, like `EDITING PATTERN: tune`. The version is shown by F3 alone.
-- The crumbs say where Esc goes back to: every crumb but the last is a page on the way back, so
+- The crumbs say where ESC goes back to: every crumb but the last is a page on the way back, so
   a page reached two ways shows two trails. The pattern editor reads `PATTERNS › tune` from the
   Patterns page, `ARRANGE › pattern: tune` from a clip on Arrange and `ARRANGE › clip: (scene 1,
   lead) › pattern: tune` from the clip page, never `PATTERNS` where the Patterns page is not on

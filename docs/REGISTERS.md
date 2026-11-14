@@ -17,7 +17,7 @@ Press `R` on the main screen to open the Registers page, a grid with a row for e
 | Reset each scene | off | Whether the register goes back to Default as each scene first starts, though not on the scene's repeats. The Scene page's Reset field does the same for one scene. |
 | Allowed inc max | 20 | The most a single step may add to the register or take from it; the `+=` rows stop there. Lowering it brings every add in every pattern the song plays within the new limit, and `Ctrl+Z` undoes that. |
 
-Every number runs from -127 to 127, and Minimum can't be above Default, nor Default above Maximum; a change that would break that order is refused with the reason. The arrow keys move over the grid, stopping at every edge, and the line under it names the setting under the cursor in full. `[` and `]` change a number, `Enter` types one, and `Bksp` sets it back to its default. At limit steps through its choices with `[` and `]`, or `Enter` picks from a list, and `Space` or `Enter` turns Reset each scene on and off.
+Every number runs from -127 to 127, and Minimum can't be above Default, nor Default above Maximum; a change that would break that order is refused with the reason. The arrow keys move over the grid, stopping at every edge, and the line under it names the setting under the cursor in full. `[` and `]` change a number, `ENTER` types one, and `Bksp` sets it back to its default. At limit steps through its choices with `[` and `]`, or `ENTER` picks from a list, and `Space` or `ENTER` turns Reset each scene on and off.
 
 ## Overflow
 

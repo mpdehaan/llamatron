@@ -21,5 +21,4 @@ set -eu
 # Run from the top folder, the one above this script's, wherever it is started from.
 cd "$(dirname "$0")/.."
 
-cd test
-LLAMATRON_WRITE_KEY_MAP=1 exec ../.venv/bin/python -m unittest test_tui_help_keys.TestKeyMapIsCurrent
+LLAMATRON_WRITE_KEY_MAP=1 exec .venv/bin/python -m unittest tests.tui.test_tui_help_keys.TestKeyMapIsCurrent

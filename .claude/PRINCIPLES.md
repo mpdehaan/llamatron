@@ -7,7 +7,7 @@ says what llamatron is for; this file says how the user weighs one way of buildi
 - **Someone who never reads the manual still gets around.** Buttons and on-screen choices win over remembered keys; every key
   is shown where it works, on the legend, a button's face or the F1 menu; a field shows what kind of field it is (`▾` for a
   list) and what value it really has (`A Minor (from scene)`). The least surprising behaviour wins, judged musically and
-  against the apps people already know, such as Esc closing the topmost thing.
+  against the apps people already know, such as ESC closing the topmost thing.
 - **Consistency wins over novelty.** One key means one thing across the tracker, one way of moving, choosing and confirming
   works everywhere, and a new thing looks like the existing thing it's most like. Where a feature already does what's asked,
   that's said first.

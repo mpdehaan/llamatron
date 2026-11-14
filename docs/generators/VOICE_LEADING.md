@@ -8,9 +8,9 @@ Chords played in root position jump around: C, then G, then Am, each built up fr
 
 | Setting | What it does |
 | --- | --- |
-| Name | `Enter` renames it, and every chain using it follows. |
+| Name | `ENTER` renames it, and every chain using it follows. |
 | Lowest octave, Highest octave | The chords stay within these octaves, shown in the set's octave labels, so that they don't drift up or down over a long piece. A chord no voicing fits plays as written. |
-| Keep the root in the bass | Off by default. On, each chord's lowest written note stays where it is and only the notes above it are voiced, always above it, as a keyboard player plays beside a bass player. `Space` or `Enter` toggles it. |
+| Keep the root in the bass | Off by default. On, each chord's lowest written note stays where it is and only the notes above it are voiced, always above it, as a keyboard player plays beside a bass player. `Space` or `ENTER` toggles it. |
 | Restart | When it starts over, as [Generators](../GENERATORS.md#restart) describes; with "on new scene" or "whole song" a scene's first chord is voiced near the last chord before. |
 
 ## Applying the Generator

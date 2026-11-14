@@ -18,24 +18,24 @@ The keys depend on what is under the cursor:
 
 | Where | Key | What it does |
 | --- | --- | --- |
-| A track's name | `Enter` | Open the track editor, as [Tracks](TRACKS.md) describes |
+| A track's name | `ENTER` | Open the track editor, as [Tracks](TRACKS.md) describes |
 | A track's name | `I` | Insert a blank track before it |
 | A track's name | `C` | Copy the track and its clips to its right |
-| A track's name | `M` | Pick the track up: `←→` carry it, and `Enter` drops it |
+| A track's name | `M` | Pick the track up: `←→` carry it, and `ENTER` drops it |
 | A track's name | `Bksp` | Delete the track and its clips, after asking; the last track can't be deleted |
-| The `+` after the last track, or any track's name | `Enter` or `A` | Add a track at the end |
-| A scene's name | `Enter` | Open the Scene page, as [Scenes](SCENES.md) describes |
+| The `+` after the last track, or any track's name | `ENTER` or `A` | Add a track at the end |
+| A scene's name | `ENTER` | Open the Scene page, as [Scenes](SCENES.md) describes |
 | A scene's row | `I` | Insert a blank scene above it |
 | A scene's row | `C` | Copy the scene and all its clips below it |
-| A scene's name | `M` | Pick the scene up: `↑↓` carry it, and `Enter` drops it |
-| A clip | `M` | Pick the clip up: the arrows carry it to the nearest empty cell, and `Enter` drops it |
+| A scene's name | `M` | Pick the scene up: `↑↓` carry it, and `ENTER` drops it |
+| A clip | `M` | Pick the clip up: the arrows carry it to the nearest empty cell, and `ENTER` drops it |
 | A scene's name | `Bksp` | Delete the scene and its clips, after asking; the last scene can't be deleted |
 | A scene's row | `A` | Add a scene below it |
-| The `+` row at the bottom | `Enter` or `A` | Add a scene at the end |
-| An empty cell | `Enter` | Choose a pattern and add a clip; `Enter` on the clip again opens it |
+| The `+` row at the bottom | `ENTER` or `A` | Add a scene at the end |
+| An empty cell | `ENTER` | Choose a pattern and add a clip; `ENTER` on the clip again opens it |
 | An empty cell | `B` | Make a blank pattern named after the track, add a clip of it and open it in the pattern editor |
-| A clip | `Enter` | Open the clip page, as [Clips](CLIPS.md) describes |
-| A clip | `J` | Jump to the clip's pattern in the pattern editor; `Esc` comes back to the clip |
+| A clip | `ENTER` | Open the clip page, as [Clips](CLIPS.md) describes |
+| A clip | `J` | Jump to the clip's pattern in the pattern editor; `ESC` comes back to the clip |
 | A clip | `C` | Copy the clip |
 | A clip | `Bksp` | Delete the clip, after asking |
 | A cell, after copying a clip | `V` | Paste the copied clip here, replacing what's there |
@@ -65,7 +65,7 @@ Marks after a clip's pattern name show its settings:
 
 ![Arrange's details view of mainstreet_hoedown, showing each clip's chains](screenshots/arrange_details.svg)
 
-The details are also where a cell's chains are edited. With the cursor on a track's name, a scene's name or a clip, `Tab` locks into that cell's details. This works in the usual grid too, where it opens that one cell's details. The cell's box turns green and the first line that names something is picked, shown in brackets. `↑↓` choose a line. `Enter` on a chain, a scale, an instrument or a groove opens its page, and `Esc` comes back to the locked cell. `Enter` on `+` offers the set's chains and adds the one chosen to this cell alone. `Bksp` on a `chain:` line takes that chain out of this cell alone; the chain itself stays in the set and in every other cell that runs it. `Tab` again or `Esc` leaves the cell, and `D` leaves it and closes every detail.
+The details are also where a cell's chains are edited. With the cursor on a track's name, a scene's name or a clip, `Tab` locks into that cell's details. This works in the usual grid too, where it opens that one cell's details. The cell's box turns green and the first line that names something is picked, shown in brackets. `↑↓` choose a line. `ENTER` on a chain, a scale, an instrument or a groove opens its page, and `ESC` comes back to the locked cell. `ENTER` on `+` offers the set's chains and adds the one chosen to this cell alone. `Bksp` on a `chain:` line takes that chain out of this cell alone; the chain itself stays in the set and in every other cell that runs it. `Tab` again or `ESC` leaves the cell, and `D` leaves it and closes every detail.
 
 ![Locked into a clip's details, its chain picked](screenshots/arrange_details_locked.svg)
 
@@ -75,6 +75,6 @@ The details are also where a cell's chains are edited. With the cursor on a trac
 
 ![Scene View of the intro of edm_density, as written](screenshots/scene_view.svg)
 
-`V` switches to the notes as played, after every chain, groove, strum, shape and register, with a blue border, so that the two can be compared; a song without a seed shows one take of its random parts. The arrows move the cursor, and the line under the roll names the notes under it. `PgUp` and `PgDn` jump a bar, `-` and `=` make each step narrower or wider, and `[` and `]` scroll the tracks at the right. `P` or `Esc` closes it.
+`V` switches to the notes as played, after every chain, groove, strum, shape and register, with a blue border, so that the two can be compared; a song without a seed shows one take of its random parts. The arrows move the cursor, and the line under the roll names the notes under it. `PgUp` and `PgDn` jump a bar, `-` and `=` make each step narrower or wider, and `[` and `]` scroll the tracks at the right. `P` or `ESC` closes it.
 
 ![Scene View of the same scene, as played](screenshots/scene_view_played.svg)

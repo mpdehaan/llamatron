@@ -69,10 +69,10 @@ Press `G` on the main screen for the Generators page, which lists every generato
 | Key | What it does |
 | --- | --- |
 | `A` | Add one: choose its kind, and it is named after the kind and opened |
-| `Enter` | Edit its settings |
+| `ENTER` | Edit its settings |
 | `N` or `F2` | Rename it, which updates every chain |
 | `C` | Copy it, the copy coming straight after it |
-| `M` | Pick it up: `↑↓` carry it, and `Enter` drops it; the list keeps its order when the set is saved |
+| `M` | Pick it up: `↑↓` carry it, and `ENTER` drops it; the list keeps its order when the set is saved |
 | `Bksp` | Delete it, once no chain uses it |
 
 ## Time Settings
@@ -90,7 +90,7 @@ A generator that carries on keeps what it was doing: a progression runs on acros
 
 ## Rows of Steps
 
-[Glide](generators/GLIDE.md), [Shorten](generators/SHORTEN.md), [Rush](generators/RUSH.md) and [Drag](generators/DRAG.md) are each a row of 1 to 16 steps, each on (`●`) or off, running from each clip's start at its own Step, the clip's pattern's step size unless set; a note starting on a step that is on is changed. A row shorter than the pattern, 5 or 7 steps over 16, lands somewhere new each time round, so that slides, short notes and pushes move through a line that never changes. `Enter` on Steps opens the row: Left and Right move along it, `Space` or `Enter` turns the step under the cursor on or off, the line above the row saying what a step that is on does, and `I` and `D` insert and remove steps.
+[Glide](generators/GLIDE.md), [Shorten](generators/SHORTEN.md), [Rush](generators/RUSH.md) and [Drag](generators/DRAG.md) are each a row of 1 to 16 steps, each on (`●`) or off, running from each clip's start at its own Step, the clip's pattern's step size unless set; a note starting on a step that is on is changed. A row shorter than the pattern, 5 or 7 steps over 16, lands somewhere new each time round, so that slides, short notes and pushes move through a line that never changes. `ENTER` on Steps opens the row: Left and Right move along it, `Space` or `ENTER` turns the step under the cursor on or off, the line above the row saying what a step that is on does, and `I` and `D` insert and remove steps.
 
 ## Shapes
 

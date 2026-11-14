@@ -14,7 +14,7 @@ The source track plays its own pattern as ever, with nothing of the Hocket appli
 
 | Setting | What it does |
 | --- | --- |
-| Name | `Enter` renames it, and every chain using it follows. |
+| Name | `ENTER` renames it, and every chain using it follows. |
 | Source track | The track whose notes it shares, a track of the current song. Renaming the track renames this too, and a track the song doesn't have hands out nothing. |
 | Restart | "every clip", the default, starts the turns again with the first track at each clip the source plays; "on new scene" and "whole song" carry them on. |
 

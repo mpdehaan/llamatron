@@ -74,6 +74,14 @@ class ChordInWords:
             return self.name()
         return MSG_NOTES_SEPARATOR.join(self.spelled(kind=self._kind).notes)
 
+    def note_names(self):
+        """Return the names of the chord's notes from its root up, or of its one note, or none when no scale is known."""
+        if self._scale is None:
+            return []
+        if self.is_one_note():
+            return [self.name()]
+        return list(self.spelled(kind=self._kind).notes)
+
     def sentences(self):
         """Return what the Chord dialog says under its lists: the chord in its scale, the chord in the clip's own scale when it borrows another, and its notes."""
         if self._scale is None:
