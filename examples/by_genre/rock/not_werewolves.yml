@@ -10,10 +10,10 @@ notes: |
   and the tune is played on the honky-tonk piano in octaves (two tracks, the lower one transposed
   down seven degrees), with the right hand's chords pushed between its lines.
 
-  The verse goes Dm F, C F, Dm C, Bb F, twice, ending Bb, C and F; the chorus Dm and C, F, Bb, F,
-  its last time ending Bb, Dm, so that the song ends on D minor. Every part is written out note
+  The verse goes Em G, D G, Em D, C G, twice, ending C, D and G; the chorus Em and D, G, C, G,
+  its last time ending C, Em, so that the song ends on E minor. Every part is written out note
   for note in close voicings, rather than moved by Progression, which would leap a chord up from
-  F as far as a sixth.
+  G as far as a sixth.
 
   Run it with: llamatron examples/by_genre/rock/not_werewolves.yml
 
@@ -23,7 +23,7 @@ notes: |
   Scene 4, piano solo, 8 bars: ragtime runs and tremolos in octaves, on the ride.
   Scene 5, verse 2, 16 bars.
   Scene 6, ballad, 8 bars: the drums drop out, a rolling left hand and soft strings under the chorus's chords.
-  Scene 7, last chorus, 16 bars: the band and the strings, ending on D minor.
+  Scene 7, last chorus, 16 bars: the band and the strings, ending on E minor.
 
   When changing this demo:
   - Keep the piano the star: no flute, fiddle or other lead instrument.
