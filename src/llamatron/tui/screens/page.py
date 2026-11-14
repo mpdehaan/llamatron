@@ -218,6 +218,7 @@ class Page(BindsKeys, Screen):
         """Stop a listening page's preview, if one plays, as its page is left or another opened over it; a song played from Arrange plays on, the user's rule."""
         if self.app.transport.is_previewing():
             self.app.transport.stop_all()
+        self.app.pattern_preview().stop()
 
     def ask(self, *, dialog, then):
         """Show a dialog, and pass its answer to a function unless it was cancelled."""

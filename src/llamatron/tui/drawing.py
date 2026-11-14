@@ -54,6 +54,8 @@ class Style:
     SOUNDING = 'bold green'
     # The piano roll's thin lines of a chord's other notes, in green so that they stand apart from the notes written (the user's design).
     CHORD_NOTE = 'green'
+    # The piano roll's read head while the pattern plays, a thin light yellow line (the user's design).
+    READ_HEAD = 'khaki1'
     # Arrange's details view, the user's design: its dividers between the tracks in blue, so that the view shows itself, and
     # each line naming a thing in its kind's theme colour (themes.text_style), the colours the user allowed for it.
     # The status line's refusals and problems, in amber, and the title of a dialog that deletes, in red, the user's design.

@@ -171,7 +171,12 @@ class SongsPage(NamedListPage):
 
 
 class PatternsPage(NamedListPage):
-    """The Patterns page, with the list keys alone."""
+    """The Patterns page: the list keys, and L, which plays the selected pattern at once, again and again, until L stops it."""
+
+    LISTEN = (Key.L, KeyName.L, MSG_LISTEN_WHAT)
+    STOP_LISTENING = (Key.L, KeyName.L, MSG_STOP_LISTENING_WHAT)
+    IN_HELP = [*ListPage.IN_HELP, LISTEN, STOP_LISTENING]
+    IN_LEGEND = all_but(bindings=IN_HELP, hidden=[ListPage.SEARCH])
 
 
 class ChainsPage(NamedListPage):
@@ -599,7 +604,7 @@ class PatternEditor(StepEditor):
     TO_EDITOR = (Key.TAB, KeyName.TAB, MSG_TO_EDITOR_WHAT)
     RESIZE = (Key.S, KeyName.S, MSG_SIZE_WHAT)
     RECONFIGURE = (Key.R, KeyName.R, MSG_RECONFIGURE_WHAT)
-    # Real-time playback: L plays the pattern through a track, looping until L again stops it.
+    # Real-time playback: L plays the pattern at once through the pattern preview, looping until L again stops it.
     LISTEN = (Key.L, KeyName.L, MSG_LISTEN_WHAT)
     STOP_LISTENING = (Key.L, KeyName.L, MSG_STOP_LISTENING_WHAT)
     # F2 renames the pattern, as on Windows, the user's choice, beside rename in R's menu; off the legend.

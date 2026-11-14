@@ -36,8 +36,12 @@ from llamatron.composition.checks import fraction_text
 from llamatron.strings.marks import (
     MSG_CURSOR_BLOCK, MSG_ENTRY_SIZE_SHOWN, MSG_FROM_SONG_SHOWN, MSG_GHOST_LINE, MSG_GRAB_NOTE_MARK, MSG_NOTE_CELL, MSG_NOTE_CELL_WITH_MARK,
     MSG_NOTE_EDGE, MSG_NOTE_HOLLOW, MSG_NOTE_HOLLOW_UNDER_CURSOR, MSG_NOTE_UNDER_CURSOR, MSG_NOTE_UNDER_CURSOR_WITH_MARK, MSG_OUT_OF_RANGE_CELL,
+    MSG_READ_HEAD,
 )
 
+# The blocks of a note's bar, which the read head never draws over, and how wide the edge before each step is.
+NOTE_BLOCKS = (MSG_NOTE_EDGE, MSG_CURSOR_BLOCK, MSG_NOTE_HOLLOW, MSG_NOTE_HOLLOW_UNDER_CURSOR)
+EDGE_WIDTH = 1
 # What a solid bar's blocks become in a hollow one.
 HOLLOW = str.maketrans({MSG_NOTE_EDGE: MSG_NOTE_HOLLOW, MSG_CURSOR_BLOCK: MSG_NOTE_HOLLOW_UNDER_CURSOR})
 
@@ -286,7 +290,25 @@ class RollDrawing(GridDrawing):
             if roll.starts_an_octave(pitch) and pitch != pitches[-1]:
                 lines.append(self.inner_rule(first=first, last=last, boxed=self.boxed_beside(pitch, pitches[place + 1])))
         lines.append(self.bottom_rule(first=first, last=last, boxed=self.boxed_beside(pitches[-1])))
-        return lines
+        return self.with_read_head(lines=lines, first=first, last=last)
+
+    def with_read_head(self, *, lines, first, last):
+        """Return the roll's lines with the read head down them at the left edge of the step that sounds, while the pattern plays: a thin light yellow line, left
+        off wherever a note's bar runs through the edge (the user's design). The lines drawn are kept as they are, and the read head goes on copies."""
+        step = self._editor.playing_step()
+        if step is None or not first <= step < last:
+            return lines
+        column = EDGE_WIDTH + self.label_width() + (step - first) * (CELL_WIDTH + EDGE_WIDTH)
+        return [self.read_head_on(line=line, column=column) for line in lines]
+
+    def read_head_on(self, *, line, column):
+        """Return one line with the read head at a column, or the line itself where a note's bar stands there."""
+        if column >= len(line.plain) or line.plain[column] in NOTE_BLOCKS:
+            return line
+        marked = line[:column]
+        marked.append(MSG_READ_HEAD, style=Style.READ_HEAD)
+        marked.append_text(line[column + 1:])
+        return marked
 
     def body(self, *, width, height):
         self._editor.clamp()

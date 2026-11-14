@@ -22,6 +22,7 @@ from llamatron.composition.naming import unique_name
 from llamatron.tui.text import clock
 from llamatron.tui.drawing import Align
 from llamatron.strings.help import HELP_PATTERNS_PAGE
+from llamatron.tui.screens.listening import pattern_listen_keys
 from llamatron.tui.screens.named_list_page import NamedListPage
 from llamatron.tui.screens.pattern_editor import PatternEditor
 from llamatron.strings.errors import ERR_NAME_EMPTY_OR_IN_USE
@@ -53,6 +54,10 @@ class PatternsPage(NamedListPage):
     def row_of(self, *, name, pattern, document):
         kind = MSG_DRUM_KIND if pattern.is_drum() else MSG_NOTES_KIND
         return [name, kind, pattern.get_steps(), clock(document.lengths().pattern_seconds(name)), len(self.uses(name))]
+
+    def item_keys(self):
+        """Return the list's keys and Listen, which plays the selected pattern at once and stops it (the user's design)."""
+        return [*super().item_keys(), *pattern_listen_keys(page=self, pattern=self.current())]
 
     def open_item(self):
         self.show_page(PatternEditor(holder=self.holder, name=self.current()))
