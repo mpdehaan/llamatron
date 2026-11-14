@@ -1,29 +1,44 @@
-version: 1.0.228
-title: Not Star Trek
+version: 1.0.364
+title: Not star trek
 description: "a majestic symphonic space-opera theme in the manner of the original Battlestar Galactica (Stu Phillips), with a fanfare of its own"
 notes: |
-  Not Star Trek: a symphonic theme at 106 beats a minute in D major, in the manner of the original
-  Battlestar Galactica's late-seventies television theme: horns with a heroic fanfare, trumpets
-  taking it up, strings driving in triplets, a brass section's chords, low strings, timpani and a
-  march on the snare. The fanfare and the melodies are its own.
+  Not star trek: a majestic symphonic space-opera theme in the manner of the original Battlestar
+  Galactica (Stu Phillips), with a fanfare of its own. This is a homage to the original Battlestar
+  Galactica (Stu Phillips): its chords, form, sounds and drums follow that work as Claude knows it,
+  and every tune and rhythm here is new. Rebuild version 2.
 
-  The strings' triplets, the low strings and the brass chords are one bar each over chord I, moved
-  by Progression: the fanfare goes I IV I V, the second theme vi IV I V and the bridge vi iii IV V.
-  The opening and the bridge rise from quiet to full by the scenes' Swell.
+  A trumpet fanfare in dotted rhythms and leaps over brass chords, timpani and a marching snare,
+  turning through the borrowed chords bVI and bVII back to I; a lyrical second theme on the strings; a
+  bridge on the horns.
+
+  Subgenre: symphonic space-opera television music of the late seventies. Drums: a marching snare,
+  timpani, cymbals. Tempo 106, straight. Bass: contrabasses on the beats. Builds: orchestral, to a
+  finale. Sounds: a trumpet, brass chords, horns, strings. Melody manner: a fanfare in dotted rhythms
+  and leaps; a lyrical second theme. Form: fanfare, second theme, bridge, finale.
+
+  Band and song: the theme is known for its heroic brass and for cadences through borrowed major
+  chords.
+
+  Checklist: it is good and memorable because the fanfare leaps and lands on bright unexpected chords.
+  The hook is the trumpet fanfare; the emotion is heroic; the lift is the finale with horns doubling;
+  the contrast is the string theme; the sounds are trumpet, brass section, French horns, strings and
+  timpani.
 
   Run it with: llamatron examples/by_genre/soundtrack/not_star_trek.yml
 
-  Scene 1, opening, 8 bars: the strings and the timpani, swelling from quiet.
-  Scene 2, fanfare, 16 bars: the horns with the fanfare.
-  Scene 3, second theme, 16 bars: the trumpet with the second theme.
-  Scene 4, fanfare 2, 16 bars: the fanfare on horns and trumpet together.
-  Scene 5, bridge, 8 bars: a quieter bridge on the horns, swelling back.
-  Scene 6, finale, 16 bars: the fanfare to the end, everything playing.
+  Scene 1, opening, 4 bars.
+  Scene 2, fanfare, 16 bars.
+  Scene 3, second theme, 16 bars.
+  Scene 4, fanfare 2, 8 bars.
+  Scene 5, bridge, 8 bars.
+  Scene 6, second theme 2, 8 bars.
+  Scene 7, finale, 16 bars.
+  Scene 8, ending, 4 bars.
 
   When changing this demo:
-  - Keep the strings, low strings and brass one bar long over chord I.
-  - Keep the opening's and the bridge's swells.
-  - Keep the fanfare original.
+  - Keep the drums as the Subgenre paragraph describes them, the kick first.
+  - Keep what the Checklist paragraph calls the hook and the lift.
+  - Keep every tune original, and the demo out of the key of the work it follows.
 real_time: true
 protected: true
 
@@ -31,67 +46,94 @@ scales:
   D Major: { root: D, type: major }
 
 patterns:
-  snare:
+  march:
     steps: 16
     drum: true
     step_size: 1/16
     degree: [D, ~, ~, D, D, ~, D, ~, D, ~, ~, D, D, ~, D, D]
     octave: [3, ~, ~, 3, 3, ~, 3, ~, 3, ~, ~, 3, 3, ~, 3, 3]
-    velocity: [110, ~, ~, 70, 110, ~, 70, ~, 110, ~, ~, 70, 110, ~, 70, 70]
-  crash:
+    velocity: [70, ~, ~, 70, 70, ~, 70, ~, 70, ~, ~, 70, 70, ~, 70, 70]
+  cymbal:
     steps: 16
     drum: true
     step_size: 1/16
     degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [110, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-  strings:
-    steps: 12
-    step_size: 1/12
-    degree: [1, 5, 1, 5, 1, 5, 1, 5, 1, 5, 1, 5]
-    octave: [3, 3, 4, 3, 3, 3, 4, 3, 3, 3, 4, 3]
-  basses:
-    steps: 8
-    step_size: 1/8
-    degree: [1, ~, ~, ~, 5, ~, ~, ~]
-    octave: [3, ~, ~, ~, 2, ~, ~, ~]
-    tie: [false, true, true, true, false, true, true, true]
-  brass:
-    steps: 8
-    step_size: 1/8
-    degree: [1, ~, ~, ~, 1, ~, 1, ~]
-    octave: [4, ~, ~, ~, 4, ~, 4, ~]
-    chord: ["3", ~, ~, ~, "3", ~, "3", ~]
-    tie: [false, true, true, true, false, true, false, true]
+    velocity: [96, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  roll:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60]
   timpani:
     steps: 8
     step_size: 1/8
-    degree: [1, ~, ~, ~, 1, ~, 1, 1]
-    octave: [2, ~, ~, ~, 2, ~, 2, 2]
+    degree: [1, ~, ~, ~, 5, 5, 1, ~]
+    octave: [3, ~, ~, ~, 2, 2, 3, ~]
+    velocity: [106, ~, ~, ~, 100, 100, 100, ~]
+    tie: [false, true, false, false, false, false, false, true]
+  low:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, 1, ~, ~, ~]
+    octave: [2, ~, ~, ~, 2, ~, ~, ~]
+    velocity: [102, ~, ~, ~, 96, ~, ~, ~]
+    tie: [false, true, true, true, false, true, true, true]
+  chords:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, 1, 1, ~, ~, ~]
+    octave: [4, ~, ~, 4, 4, ~, ~, ~]
+    chord: ["3", ~, ~, "3", "3", ~, ~, ~]
+    velocity: [102, ~, ~, 96, 96, ~, ~, ~]
+    tie: [false, true, true, false, false, true, true, true]
+  held:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    velocity: [78, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  held low:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    velocity: [86, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
   fanfare:
-    steps: 32
+    steps: 64
     step_size: 1/8
-    degree: [5, ~, ~, 1, ~, ~, 3, ~, 2, ~, 1, ~, 6, ~, 4, ~, 5, ~, 3, ~, 1, ~, 5, ~, 7, ~, ~, ~, 2, ~, ~, ~]
-    octave: [5, ~, ~, 6, ~, ~, 6, ~, 6, ~, 6, ~, 5, ~, 5, ~, 5, ~, 5, ~, 6, ~, 5, ~, 5, ~, ~, ~, 6, ~, ~, ~]
-    tie: [false, true, true, false, true, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true]
-  b:
-    steps: 32
+    degree: [1, ~, ~, 1, 5, ~, ~, ~, 5, ~, ~, 5, 2, ~, ~, ~, 1, ~, ~, 6, 4, ~, 6, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, 6, 1, ~, ~, ~, 7, ~, ~, 7, 2, ~, ~, ~, 3, ~, ~, ~, ~, ~, 1, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, b, ~, ~, ~, ~, b, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, 5, 5, ~, ~, ~, 5, ~, ~, 5, 6, ~, ~, ~, 6, ~, ~, 5, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, 5, 6, ~, ~, ~, 5, ~, ~, 5, 6, ~, ~, ~, 6, ~, ~, ~, ~, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [116, ~, ~, 110, 110, ~, ~, ~, 116, ~, ~, 110, 110, ~, ~, ~, 116, ~, ~, 110, 110, ~, 110, ~, 116, ~, ~, ~, ~, ~, ~, ~, 116, ~, ~, 110, 110, ~, ~, ~, 116, ~, ~, 110, 110, ~, ~, ~, 116, ~, ~, ~, ~, ~, 110, ~, 116, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, false, false, true, true, true, false, true, true, false, false, true, true, true, false, true, true, false, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, false, false, true, true, true, false, true, true, false, false, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, false, false]
+  second:
+    steps: 64
     step_size: 1/8
-    degree: [3, ~, ~, 1, 6, ~, 3, ~, 1, ~, ~, 6, 4, ~, 1, ~, 5, ~, ~, 3, 1, ~, 5, ~, 2, ~, 4, ~, 5, ~, ~, ~]
-    octave: [6, ~, ~, 6, 5, ~, 6, ~, 6, ~, ~, 5, 5, ~, 6, ~, 6, ~, ~, 6, 6, ~, 5, ~, 6, ~, 6, ~, 6, ~, ~, ~]
-    tie: [false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, true, true]
+    degree: [3, ~, ~, ~, 5, ~, 1, ~, 7, ~, ~, ~, 5, ~, ~, ~, 6, ~, ~, ~, 1, ~, 6, ~, 5, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, 3, ~, 1, ~, 6, ~, ~, ~, 4, ~, ~, ~, 5, ~, ~, ~, 7, ~, 2, ~, 2, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, ~, 5, ~, 6, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 6, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, 6, ~, 6, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [102, ~, ~, ~, 96, ~, 96, ~, 102, ~, ~, ~, 96, ~, ~, ~, 102, ~, ~, ~, 96, ~, 96, ~, 102, ~, ~, ~, ~, ~, ~, ~, 102, ~, ~, ~, 96, ~, 96, ~, 102, ~, ~, ~, 96, ~, ~, ~, 102, ~, ~, ~, 96, ~, 96, ~, 102, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, true, true]
   bridge:
-    steps: 32
+    steps: 64
     step_size: 1/8
-    degree: [6, ~, ~, ~, 1, ~, ~, ~, 7, ~, ~, ~, 5, ~, ~, ~, 1, ~, ~, ~, 6, ~, ~, ~, 2, ~, ~, ~, 7, ~, ~, ~]
-    octave: [5, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~]
-    tie: [false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true]
+    degree: [6, ~, ~, ~, 1, ~, ~, ~, 7, ~, ~, ~, 2, ~, ~, ~, 5, ~, ~, ~, 7, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, 1, ~, ~, ~, 7, ~, ~, ~, 2, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, 7, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [106, ~, ~, ~, 100, ~, ~, ~, 106, ~, ~, ~, 100, ~, ~, ~, 106, ~, ~, ~, 100, ~, ~, ~, 106, ~, ~, ~, ~, ~, ~, ~, 106, ~, ~, ~, 100, ~, ~, ~, 106, ~, ~, ~, 100, ~, ~, ~, 106, ~, ~, ~, ~, ~, ~, ~, 106, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true]
 
 progressions:
-  fanfare: { chords: [1, 4, 1, 5] }
-  second: { chords: [6, 4, 1, 5] }
-  bridge: { chords: [6, 3, 4, 5] }
+  fanfare: { chords: [1, 5, 4, 1, 6, 7, 1, 1], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] }
+  second: { chords: [1, 3, 4, 1, 6, 2, 5, 5] }
+  bridge: { chords: [4, 5, 3, 6, 6, 7, 5, 5], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] }
 
 chains:
   fanfare:
@@ -102,11 +144,11 @@ chains:
     - progression: bridge
 
 instruments:
+  timpani: { device: "*FluidSynth", gm_sound: 48 }
   strings: { device: "*FluidSynth", gm_sound: 49 }
   contrabass: { device: "*FluidSynth", gm_sound: 44 }
-  brass: { device: "*FluidSynth", gm_sound: 62 }
-  timpani: { device: "*FluidSynth", gm_sound: 48 }
-  horns: { device: "*FluidSynth", gm_sound: 61 }
+  brass section: { device: "*FluidSynth", gm_sound: 62 }
+  french horn: { device: "*FluidSynth", gm_sound: 61 }
   trumpet: { device: "*FluidSynth", gm_sound: 57 }
   drum kit: { device: "*FluidSynth" }
 
@@ -118,64 +160,73 @@ songs:
 
     tracks:
       snare: { drum: true, instrument: drum kit }
-      crash: { drum: true, instrument: drum kit }
+      cymbal: { drum: true, instrument: drum kit }
       timpani: { instrument: timpani }
       strings: { instrument: strings }
       basses: { instrument: contrabass }
-      brass: { instrument: brass }
-      horns: { instrument: horns }
+      brass: { instrument: brass section }
+      horns: { instrument: french horn }
       trumpet: { instrument: trumpet }
 
     scenes:
       - name: opening
-        swell_start: 30
-        swell_end: 100
         tracks:
-          timpani: { pattern: timpani, repeat: 8 }
-          strings: { pattern: strings, chains: [fanfare], loop: true }
-          basses: { pattern: basses, chains: [fanfare], loop: true }
+          snare: { pattern: roll, repeat: 4 }
+          timpani: { pattern: timpani, chains: [fanfare], loop: true }
+          brass: { pattern: held low, chains: [fanfare], loop: true }
       - name: fanfare
         tracks:
-          snare: { pattern: snare, loop: true }
-          timpani: { pattern: timpani, loop: true }
-          strings: { pattern: strings, chains: [fanfare], loop: true }
-          basses: { pattern: basses, chains: [fanfare], loop: true }
-          brass: { pattern: brass, chains: [fanfare], loop: true }
-          horns: { pattern: fanfare, repeat: 4 }
+          strings: { pattern: held, chains: [fanfare], repeat: 16 }
+          basses: { pattern: low, chains: [fanfare], loop: true }
+          trumpet: { pattern: fanfare, loop: true }
+          brass: { pattern: chords, chains: [fanfare], loop: true }
+          timpani: { pattern: timpani, chains: [fanfare], loop: true }
+          snare: { pattern: march, loop: true }
+          cymbal: { pattern: cymbal, loop: true }
       - name: second theme
         tracks:
-          snare: { pattern: snare, loop: true }
-          timpani: { pattern: timpani, loop: true }
-          strings: { pattern: strings, chains: [second], loop: true }
-          basses: { pattern: basses, chains: [second], loop: true }
-          brass: { pattern: brass, chains: [second], loop: true }
-          trumpet: { pattern: b, repeat: 4 }
+          strings: { pattern: second, repeat: 2 }
+          basses: { pattern: low, chains: [second], loop: true }
+          horns: { pattern: held low, chains: [second], loop: true }
       - name: fanfare 2
         tracks:
-          snare: { pattern: snare, loop: true }
-          timpani: { pattern: timpani, loop: true }
-          crash: { pattern: crash, loop: true }
-          strings: { pattern: strings, chains: [fanfare], loop: true }
-          basses: { pattern: basses, chains: [fanfare], loop: true }
-          brass: { pattern: brass, chains: [fanfare], loop: true }
-          horns: { pattern: fanfare, repeat: 4 }
+          strings: { pattern: held, chains: [fanfare], repeat: 8 }
+          basses: { pattern: low, chains: [fanfare], loop: true }
           trumpet: { pattern: fanfare, loop: true }
+          brass: { pattern: chords, chains: [fanfare], loop: true }
+          timpani: { pattern: timpani, chains: [fanfare], loop: true }
+          snare: { pattern: march, loop: true }
+          horns: { pattern: fanfare, loop: true }
       - name: bridge
-        swell_start: 40
-        swell_end: 100
         tracks:
-          timpani: { pattern: timpani, loop: true }
-          strings: { pattern: strings, chains: [bridge], loop: true }
-          basses: { pattern: basses, chains: [bridge], loop: true }
-          brass: { pattern: brass, chains: [bridge], loop: true }
-          horns: { pattern: bridge, repeat: 2 }
+          strings: { pattern: held, chains: [bridge], repeat: 8 }
+          basses: { pattern: low, chains: [bridge], loop: true }
+          horns: { pattern: bridge, loop: true }
+          timpani: { pattern: timpani, chains: [bridge], loop: true }
+          snare: { pattern: march, loop: true }
+      - name: second theme 2
+        tracks:
+          strings: { pattern: held, chains: [second], repeat: 8 }
+          basses: { pattern: low, chains: [second], loop: true }
+          trumpet: { pattern: second, loop: true }
+          brass: { pattern: chords, chains: [second], loop: true }
+          timpani: { pattern: timpani, chains: [second], loop: true }
+          snare: { pattern: march, loop: true }
+          horns: { pattern: held low, chains: [second], loop: true }
       - name: finale
         tracks:
-          snare: { pattern: snare, loop: true }
-          timpani: { pattern: timpani, loop: true }
-          crash: { pattern: crash, loop: true }
-          strings: { pattern: strings, chains: [fanfare], loop: true }
-          basses: { pattern: basses, chains: [fanfare], loop: true }
-          brass: { pattern: brass, chains: [fanfare], loop: true }
-          horns: { pattern: fanfare, repeat: 4 }
+          strings: { pattern: held, chains: [fanfare], repeat: 16 }
+          basses: { pattern: low, chains: [fanfare], loop: true }
           trumpet: { pattern: fanfare, loop: true }
+          brass: { pattern: chords, chains: [fanfare], loop: true }
+          timpani: { pattern: timpani, chains: [fanfare], loop: true }
+          snare: { pattern: march, loop: true }
+          horns: { pattern: fanfare, loop: true }
+          cymbal: { pattern: cymbal, loop: true }
+      - name: ending
+        tracks:
+          snare: { pattern: roll, repeat: 4 }
+          timpani: { pattern: timpani, chains: [fanfare], loop: true }
+          brass: { pattern: held low, chains: [fanfare], loop: true }
+          strings: { pattern: held, chains: [fanfare], loop: true }
+          cymbal: { pattern: cymbal, loop: true }
