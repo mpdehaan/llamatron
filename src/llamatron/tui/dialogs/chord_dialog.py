@@ -23,7 +23,7 @@ chosen one way everywhere. Up and Down move in a list, Left, Right and Tab go fr
 under the cursor on or off, Enter answers with the three choices and Esc cancels, changing nothing.
 
 The scale list holds categories of scale types, not the fifty types (the user's design): Space or Enter on a category opens
-its flyout, a box beside it, over the two lists before it, with the category's scale types, where Up and Down move, Enter picks one and
+its flyout, drawn as a box of the dialog's size over it, a little down and to the right, so that the two read as a stack, with the category's scale types, where Up and Down move, Enter picks one and
 closes the flyout, and Esc or Left closes it with nothing changed. A flyout is not a dialog: nothing opens over the Chord
 dialog. After a pick the cursor goes on to the qualities, so that the next Enter takes the chord.
 """
@@ -36,7 +36,7 @@ from llamatron.strings.labels import Column
 from llamatron.strings.marks import MSG_FIELD_TOGGLE_OFF, MSG_FLYOUT_CHOSEN, MSG_FLYOUT_CLOSED, MSG_FLYOUT_TITLE, MSG_TOGGLE_ON
 from llamatron.strings.messages import MSG_SCALE_NOT_BORROWED
 from llamatron.tui.dialogs.dialog import Dialog
-from llamatron.tui.drawing import NOTHING, SPACE, Box, Style, cursor_mark, fit
+from llamatron.tui.drawing import NOTHING, SPACE, Style, cursor_mark, fit, legend
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import ARROWS_LEFT_RIGHT, Key
 from llamatron.tui import keybindings
@@ -51,9 +51,6 @@ LIST_WIDTHS = (24, 12, 26)
 LIST_GAP = 2
 # The room for the sentences under the lists, so that the dialog keeps its height as the choice moves.
 SENTENCE_LINES = 3
-# The flyout: where its left edge is, and how wide it is with its edges. It lies beside the scale list, which is the last, over the two lists before it, which it covers whole.
-FLYOUT_LEFT = 0
-FLYOUT_WIDTH = LIST_WIDTHS[QUALITY_LIST] + LIST_GAP + LIST_WIDTHS[TENSION_LIST]
 # The fewest cells worth showing of a category's name beside the scale type borrowed.
 SHORTEST_CATEGORY_NAME = 4
 # The row of the scale list that borrows no scale, above the categories.
@@ -107,6 +104,10 @@ class ChordDialog(Dialog):
                 self.bind(self.KEYS.MOVE, action=self.move_in_flyout, wants_key=True),
                 self.bind(self.KEYS.CHOOSE, action=self.pick_in_flyout),
             ]
+        return self.list_keys()
+
+    def list_keys(self):
+        """Return the keys of the three lists, which the dialog lists under them even while a flyout has the keys."""
         result = [
             self.bind(self.KEYS.CANCEL, action=self.cancel),
             self.bind(self.KEYS.MOVE, action=self.move, wants_key=True),
@@ -243,30 +244,25 @@ class ChordDialog(Dialog):
             lines.append(Text(text, style=Style.BOLD if place == cursor and part == self.part else NOTHING))
         return lines
 
-    def flyout_lines(self):
-        """Return the open flyout as lines of FLYOUT_WIDTH: its category's name in the top edge, a scale type a row with the cursor's marked, and the bottom edge."""
+    def flyout_lines(self, width):
+        """Return the open flyout's lines, or None: its category as the heading, a scale type a row with the cursor's marked, what the chord comes to, and its own keys."""
+        if self.flyout is None:
+            return None
         name, kinds = self.categories[self.flyout - 1]
-        inside = FLYOUT_WIDTH - 2
-        title = MSG_FLYOUT_TITLE.format(name=name)
-        lines = [Text(Box.TOP_LEFT + Box.RULE + title + Box.RULE * (inside - 1 - len(title)) + Box.TOP_RIGHT)]
+        lines = [Text(MSG_FLYOUT_TITLE.format(name=name), style=Style.BOLD), Text(NOTHING)]
         for place, kind in enumerate(kinds):
-            row = Text(Box.BAR)
-            row.append(fit(text=SPACE + cursor_mark(place == self.flyout_place) + words(kind).title(), width=inside), style=Style.BOLD if place == self.flyout_place else NOTHING)
-            row.append(Box.BAR)
-            lines.append(row)
-        return [*lines, Text(Box.BOTTOM_LEFT + Box.RULE * inside + Box.BOTTOM_RIGHT)]
+            lines.append(Text(cursor_mark(place == self.flyout_place) + words(kind).title(), style=Style.BOLD if place == self.flyout_place else NOTHING))
+        # The scale types take the room the lists take underneath, so that the sentences and the keys sit where the dialog's do.
+        lines += [Text(NOTHING)] * (self.SHOWN + 2 - len(kinds))
+        return [*lines, *self.sentences(width), Text(NOTHING), *legend(keys=self.keys(), width=width)]
 
-    def with_flyout(self, lines):
-        """Return the lists' lines with the open flyout drawn over them, from the heading's line down, beside the scale list."""
-        result = list(lines)
-        for row, drawn in enumerate(self.flyout_lines()):
-            under = result[row].copy()
-            under.truncate(FLYOUT_LEFT + FLYOUT_WIDTH, pad=True)
-            line = under[:FLYOUT_LEFT]
-            line.append_text(drawn)
-            line.append_text(result[row][FLYOUT_LEFT + FLYOUT_WIDTH:])
-            result[row] = line
-        return result
+    def legend_keys(self):
+        return self.list_keys()
+
+    def sentences(self, width):
+        """Return what is said of the choice, as SENTENCE_LINES lines."""
+        said = [fit(text=text, width=width).rstrip() for text in self.said(self.choice())][:SENTENCE_LINES]
+        return [*[Text(text) for text in said], *[Text(NOTHING) for _ in range(SENTENCE_LINES - len(said))]]
 
     def lines(self, width):
         headings = (Column.SELECT_QUALITY, Column.TENSIONS, Column.BORROW_SCALE)
@@ -283,7 +279,4 @@ class ChordDialog(Dialog):
                 line.append(SPACE * LIST_GAP if part < LISTS - 1 else NOTHING)
             result.append(line)
         result.append(Text(NOTHING))
-        if self.flyout is not None:
-            result = self.with_flyout(result)
-        said = [fit(text=text, width=width).rstrip() for text in self.said(self.choice())][:SENTENCE_LINES]
-        return [*result, *[Text(text) for text in said], *[Text(NOTHING) for _ in range(SENTENCE_LINES - len(said))]]
+        return [*result, *self.sentences(width)]

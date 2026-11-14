@@ -247,7 +247,7 @@ MSG_PICKER_MARK = '▾'
 # tui/dialogs/chord_dialog.py: after a row that opens a flyout, with the choice made inside it, and the flyout's title in its top edge.
 MSG_FLYOUT_CHOSEN = '{name} ▸ {chosen}'
 MSG_FLYOUT_CLOSED = '{name} ▸'
-MSG_FLYOUT_TITLE = ' {name} '
+MSG_FLYOUT_TITLE = 'Scale: {name}'
 # The marks either side of a row's name while Move mode carries it, in place of the spaces beside it so that nothing shifts, the user's design.
 MSG_MOVING_OPEN = '<'
 MSG_MOVING_CLOSE = '>'
