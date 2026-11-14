@@ -35,6 +35,8 @@ HALF_TIME = 4
 REGISTERS = '22_registers.yml'
 NOT_WEREWOLVES = 'not_werewolves.yml'
 G_MAJOR = 'G Major'
+# The demo's first scene with the whole verse, whose chords a Progression moves, so they are heard in the notes as played.
+VERSE = 0
 # A demo in a flat key, for how a chord is spelled, and the name of its scale.
 IN_A_FLAT_KEY = 'mysterious_spooky.yml'
 F_MAJOR = 'F Major'
@@ -119,7 +121,7 @@ class TestChords(unittest.TestCase):
 
     def test_the_verse_of_not_werewolves_hears_its_chords(self):
         song = example(NOT_WEREWOLVES).get_songs()[0]
-        names = [chord.name for chord in beat_chords(notes=scene_notes(song=song, index=1, written=True), scale=song.get_named_scale(G_MAJOR))]
+        names = [chord.name for chord in beat_chords(notes=scene_notes(song=song, index=VERSE, written=False), scale=song.get_named_scale(G_MAJOR))]
         for name in ('Em', 'G', 'D', 'C'):
             self.assertIn(name, names)
 
