@@ -66,6 +66,7 @@ pages current.
 | [Video Game](demos/VIDEO_GAME.md) | 1 |
 | [Video game](demos/VIDEO_GAME.md) | 1 |
 | [World](demos/WORLD.md) | 1 |
+| [World Mashup](demos/WORLD_MASHUP.md) | 1 |
 | [Other](demos/OTHER.md) | 1 |
 <!-- end of the generated table -->
 
