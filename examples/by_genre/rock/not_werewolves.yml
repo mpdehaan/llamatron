@@ -2,8 +2,8 @@ version: 1.0.227
 title: Not werewolves
 description: "an upbeat honky-tonk piano rock song of outlaws on the chords of Warren Zevon's Frank and Jesse James, opening like saloon music"
 notes: |
-  Not werewolves: an upbeat piano rock song in F major at 106 beats a minute, on the chords of
-  Warren Zevon's Frank and Jesse James, in its key, with a melody, a solo and parts of its own: a
+  Not werewolves: an upbeat piano rock song in G major at 106 beats a minute, on the chords of
+  Warren Zevon's Frank and Jesse James, a whole step above its key, with a melody, a solo and parts of its own: a
   vintage upright piano carries everything, ragtime like The Entertainer but rock, with a ballad
   in the middle. It opens like saloon music, the two hands alone: a stride left hand leaping from
   bass note to chord under a ragtime right hand. Then the band comes in, a bass and a rock beat,
@@ -28,12 +28,12 @@ notes: |
   When changing this demo:
   - Keep the piano the star: no flute, fiddle or other lead instrument.
   - Keep the opening like saloon music, the two hands alone, and the song upbeat.
-  - Keep the chords of Frank and Jesse James, in F major, and the melody original.
+  - Keep the chords of Frank and Jesse James, out of F major, that song's key, and the melody original.
 real_time: true
 protected: true
 
 scales:
-  F Major: { root: F, type: major }
+  G Major: { root: G, type: major }
 
 patterns:
   kit_kick:
@@ -257,7 +257,7 @@ instruments:
 songs:
   not_werewolves:
     tempo: 106
-    scale: F Major
+    scale: G Major
     genre: Rock
 
     tracks:
