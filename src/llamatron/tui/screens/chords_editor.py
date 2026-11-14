@@ -67,6 +67,8 @@ QUALITY_ROW = 2
 TENSION_ROW = 3
 SCALE_ROW = 4
 INVERSION_ROW = 5
+# The rows whose choices stop at the first and the last.
+STOPPING_ROWS = (QUALITY_ROW, TENSION_ROW, SCALE_ROW)
 EDITED_ROWS = 6
 # The rows the Chord dialog edits together, and the list it opens on from each.
 DIALOG_ROWS = {SCALE_ROW: SCALE_LIST, QUALITY_ROW: QUALITY_LIST, TENSION_ROW: TENSION_LIST}
@@ -175,7 +177,7 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
         self.changed_here(row=CHORD_ROW, value=value)
 
     def nudge(self, offset):
-        """Step the cursor's value on the row being edited: the degree from 1 to 7, stopping at both, or the next or last choice of a sharp or flat or an inversion."""
+        """Step the cursor's value on the row being edited: the degree from 1 to 7, stopping at both, or the next or last choice of the other rows."""
         if self.edited_row == CHORD_ROW:
             self.set_value(max(min(self.rows()[CHORD_ROW][self.step] + offset, MAX_PROGRESSION_DEGREE), MIN_PROGRESSION_DEGREE))
             return
@@ -184,7 +186,10 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
         if current not in cycle:
             # Several tensions at once are no step of the cycle, which starts again from none.
             current = None
-        self.changed_here(row=self.edited_row, value=cycle[(cycle.index(current) + offset) % len(cycle)])
+        place = cycle.index(current) + offset
+        # A chord's quality, tensions and scale stop at both ends and never go round (the user's rule); a sharp or flat and an inversion, a few choices each, go round.
+        place = max(min(place, len(cycle) - 1), 0) if self.edited_row in STOPPING_ROWS else place % len(cycle)
+        self.changed_here(row=self.edited_row, value=cycle[place])
 
     def type_digit(self, digit):
         """Type a degree on the Chord row, or an inversion, 0 for root position, on the Inv. row."""

@@ -26,7 +26,7 @@ The chord editor draws each chord as a column: a bar rising to its degree, then 
 | Key | What it does |
 | --- | --- |
 | Arrows | Left and Right move along the chords, Up and Down between the rows, stopping at the edges. |
-| `[`, `]` | On the Chord row, step the degree from 1 to 7; on the `#/b` and `Inv.` rows, step through the choices, as `Space` and `Enter` do. |
+| `[`, `]` | On the Chord row, step the degree from 1 to 7; on the `#/b` and `Inv.` rows, step through the choices, as `Space` and `Enter` do; on the Quality, Tens. and Scale rows, step through the choices and stop at the first and the last. |
 | `Enter` | On the Quality, Tens. and Scale rows, opens the [Chord Selector](../PATTERNS.md#chord-selector), the one the pattern editor opens, on that row's list; `Space` steps to the next choice and `Bksp` clears. |
 | Digits | Type a degree, or an inversion. |
 | `I`, `D` | Insert a chord I before the cursor's, or remove the cursor's, keeping 1 to 16 chords. |

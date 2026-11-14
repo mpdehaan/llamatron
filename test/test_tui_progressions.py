@@ -26,7 +26,7 @@ from llamatron.composition.progressions import named_progression
 from llamatron.strings.labels import MSG_CHORDS_LABEL, MSG_EVERY_LABEL, MSG_PROGRESSION_NAMES, MSG_RESTART_LABEL, MSG_RESTART_NAMES
 from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.chords_editor import ACCIDENTAL_ROW, CHORD_ROW, INVERSION_ROW, QUALITY_ROW, SCALE_ROW, TENSION_ROW, ChordsEditor
+from llamatron.tui.screens.chords_editor import ACCIDENTAL_ROW, CHORD_ROW, INVERSION_ROW, QUALITY_CYCLE, QUALITY_ROW, SCALE_ROW, TENSION_ROW, ChordsEditor
 from llamatron.tui.screens.progression_editor import ProgressionEditor
 from llamatron.tui import keybindings
 
@@ -136,6 +136,11 @@ class TestChordsEditor(UITest):
         self.assertIn(POP_NUMERALS.split()[SIXTH_CHORD].upper(), self.text())
         await self.press(keybindings.ChordsEditor.MORE, keybindings.ChordsEditor.LESS, keybindings.ChordsEditor.CLEAR)
         self.assertIsNone(self.progression().get_qualities()[SIXTH_CHORD])
+        # A quality stops at the first choice and at the last, never going round (the user's rule).
+        await self.press(keybindings.ChordsEditor.LESS)
+        self.assertIsNone(self.progression().get_qualities()[SIXTH_CHORD])
+        await self.press(*[keybindings.ChordsEditor.MORE] * (len(QUALITY_CYCLE) + 1))
+        self.assertEqual(self.progression().get_qualities()[SIXTH_CHORD], QUALITY_CYCLE[-1])
 
     async def test_a_scale_borrows_the_chord_and_the_status_line_says_both_names_and_the_notes(self):
         await self.go_to(row=SCALE_ROW, chord=SIXTH_CHORD)

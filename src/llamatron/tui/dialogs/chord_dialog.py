@@ -35,7 +35,7 @@ from llamatron.composition.naming import words
 from llamatron.strings.labels import Column
 from llamatron.strings.marks import MSG_FIELD_TOGGLE_OFF, MSG_FLYOUT_CHOSEN, MSG_FLYOUT_CLOSED, MSG_FLYOUT_TITLE, MSG_TOGGLE_ON
 from llamatron.strings.messages import MSG_SCALE_NOT_BORROWED
-from llamatron.tui.dialogs.dialog import Dialog
+from llamatron.tui.dialogs.dialog import DIALOG_MARGIN, Dialog
 from llamatron.tui.drawing import NOTHING, SPACE, Style, cursor_mark, fit, legend
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import ARROWS_LEFT_RIGHT, Key
@@ -51,6 +51,8 @@ LIST_WIDTHS = (24, 12, 26)
 LIST_GAP = 2
 # The room for the sentences under the lists, so that the dialog keeps its height as the choice moves.
 SENTENCE_LINES = 3
+# A width no legend reaches, for measuring one laid out on a single line.
+WIDEST = 1000
 # The fewest cells worth showing of a category's name beside the scale type borrowed.
 SHORTEST_CATEGORY_NAME = 4
 # The row of the scale list that borrows no scale, above the categories.
@@ -104,18 +106,18 @@ class ChordDialog(Dialog):
                 self.bind(self.KEYS.MOVE, action=self.move_in_flyout, wants_key=True),
                 self.bind(self.KEYS.CHOOSE, action=self.pick_in_flyout),
             ]
-        return self.list_keys()
+        return self.list_keys(self.part)
 
-    def list_keys(self):
-        """Return the keys of the three lists, which the dialog lists under them even while a flyout has the keys."""
+    def list_keys(self, part):
+        """Return the keys that work with the cursor in one of the three lists."""
         result = [
             self.bind(self.KEYS.CANCEL, action=self.cancel),
             self.bind(self.KEYS.MOVE, action=self.move, wants_key=True),
             self.bind(self.KEYS.NEXT_LIST, action=self.next_list),
         ]
-        if self.part == SCALE_LIST:
+        if part == SCALE_LIST:
             return [*result, self.bind(self.KEYS.OPEN, action=self.open_row)]
-        if self.part == TENSION_LIST:
+        if part == TENSION_LIST:
             result.append(self.bind(self.KEYS.FLIP, action=self.flip))
         return [*result, self.bind(self.KEYS.CHOOSE, action=lambda: self.dismiss(self.choice()))]
 
@@ -256,8 +258,15 @@ class ChordDialog(Dialog):
         lines += [Text(NOTHING)] * (self.SHOWN + 2 - len(kinds))
         return [*lines, *self.sentences(width), Text(NOTHING), *legend(keys=self.keys(), width=width)]
 
-    def legend_keys(self):
-        return self.list_keys()
+    def legend_lines(self, width):
+        """Return the keys of the cursor's list, in as many lines as the list with the most keys takes, so that the dialog keeps its height from list to list."""
+        most = max(len(legend(keys=self.list_keys(part), width=width)) for part in range(LISTS))
+        lines = legend(keys=self.list_keys(self.part), width=width)
+        return [*lines, *[Text(NOTHING)] * (most - len(lines))]
+
+    def wanted_width(self):
+        """Return the width at which every list's keys fit on one line, so that the dialog is one size on every list (the user's design)."""
+        return max(legend(keys=self.list_keys(part), width=WIDEST)[0].cell_len for part in range(LISTS)) + DIALOG_MARGIN
 
     def sentences(self, width):
         """Return what is said of the choice, as SENTENCE_LINES lines."""

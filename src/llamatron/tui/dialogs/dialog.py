@@ -30,6 +30,7 @@ from llamatron.tui import keybindings
 DIALOG_ID = 'dialog'
 DIALOG_VIEW_ID = 'dialog-view'
 DIALOG_VIEW_SELECTOR = SELECTOR.format(id=DIALOG_VIEW_ID)
+DIALOG_SELECTOR = SELECTOR.format(id=DIALOG_ID)
 # The widest a dialog is, and the margin around it.
 DIALOG_WIDTH = 70
 DIALOG_MARGIN = 4
@@ -72,27 +73,37 @@ class Dialog(BindsKeys, ModalScreen):
     def draw(self):
         if not self.is_attached or not self.query(DIALOG_VIEW_SELECTOR):
             return
-        width = min(self.app.size.width - DIALOG_MARGIN, DIALOG_WIDTH)
+        width = min(self.app.size.width - DIALOG_MARGIN, self.wanted_width())
         inner = width - DIALOG_MARGIN
         result = [self.heading(inner), Text(NOTHING)]
         result += self.lines(inner)
         if self.shows_legend:
-            result += [Text(NOTHING), *legend(keys=self.legend_keys(), width=inner)]
+            result += [Text(NOTHING), *self.legend_lines(inner)]
         boxed = self.boxed(lines=result, width=width)
         over = self.flyout_lines(inner)
-        view = self.query_one(DIALOG_VIEW_SELECTOR, Static)
+        size = self.app.size
+        across, down = 0, 0
         if over is not None:
-            # The flyout's box is as tall as the dialog's, whatever it holds.
-            over = [*over, *[Text(NOTHING)] * len(result)][:len(result)]
-            boxed = self.stacked(under=boxed, over=self.boxed(lines=over, width=width), width=width)
-        # The view is centred, so a view grown by the shift would move the dialog back half of it: the view is moved forward by as much, and the dialog stays where it was.
-        shift = FLYOUT_SHIFT // 2 if over is not None else 0
-        view.styles.offset = (shift, shift)
-        view.update(Text(LINE_BREAK).join(boxed))
+            # The flyout's box is as tall as the dialog's, whatever it holds, or shorter by what a short console has no room for.
+            closed_top = (size.height - len(boxed)) // 2
+            short_of = max(closed_top + FLYOUT_SHIFT + len(boxed) - size.height, 0)
+            over = [*over, *[Text(NOTHING)] * len(result)][:len(result) - short_of]
+            closed = len(boxed)
+            boxed = self.stacked(under=boxed, over=self.boxed(lines=over, width=width))
+            # The box is centred, so a box that has grown would move the dialog back: the box, with the view inside it, is moved forward by as much, and the dialog
+            # stays where it was. Moving the view alone would push its last column and line out of the box that holds it.
+            across = (size.width - width) // 2 - (size.width - width - FLYOUT_SHIFT) // 2
+            down = (size.height - closed) // 2 - (size.height - len(boxed)) // 2
+        self.query_one(DIALOG_SELECTOR, Container).styles.offset = (across, down)
+        self.query_one(DIALOG_VIEW_SELECTOR, Static).update(Text(LINE_BREAK).join(boxed))
 
-    def legend_keys(self):
-        """Return the keys listed under the dialog, which are its keys unless a flyout has taken them."""
-        return self.keys()
+    def wanted_width(self):
+        """Return how wide the dialog is where the console has the room."""
+        return DIALOG_WIDTH
+
+    def legend_lines(self, width):
+        """Return the lines listing the keys under the dialog."""
+        return legend(keys=self.keys(), width=width)
 
     def flyout_lines(self, width):
         """Return the lines of the flyout open over this dialog, or None: a flyout is drawn as a box of the dialog's size over it, a little down and to the right."""
@@ -111,15 +122,15 @@ class Dialog(BindsKeys, ModalScreen):
         boxed.append(Text(Box.HEAVY_BOTTOM_LEFT + Box.HEAVY_RULE * (width - 2) + Box.HEAVY_BOTTOM_RIGHT))
         return boxed
 
-    def stacked(self, *, under, over, width):
-        """Return one box drawn over another of the same size, FLYOUT_SHIFT down and to the right, covering what lies under it."""
+    def stacked(self, *, under, over):
+        """Return one box drawn over another of the same width, FLYOUT_SHIFT down and to the right, covering what lies under it."""
         result = []
-        for row in range(len(under) + FLYOUT_SHIFT):
-            line = under[row][:FLYOUT_SHIFT] if row < len(under) else Text(SPACE * FLYOUT_SHIFT)
+        for row in range(max(len(under), len(over) + FLYOUT_SHIFT)):
             if row < FLYOUT_SHIFT:
                 line = under[row].copy()
                 line.append(SPACE * FLYOUT_SHIFT)
             else:
+                line = under[row][:FLYOUT_SHIFT] if row < len(under) else Text(SPACE * FLYOUT_SHIFT)
                 line.append_text(over[row - FLYOUT_SHIFT])
             result.append(line)
         return result

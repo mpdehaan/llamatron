@@ -178,7 +178,7 @@ Glide does nothing before a rest or before the same pitch. Probability, on the A
 
 ### Chords
 
-The Chord section holds everything about a step's chord: the Chord row, the Tension row, the Scale row and the Inversion row. `Enter` on the Chord, Tension or Scale row opens the [Chord Selector](#chord-selector), and on each of the three rows `[`, `]` and `Space` step through the choices; the Scale row steps through every scale type in the Chord Selector's order. While the cursor rests on a step that holds a chord, the status line names the chord and its notes.
+The Chord section holds everything about a step's chord: the Chord row, the Tension row, the Scale row and the Inversion row. `Enter` on the Chord, Tension or Scale row opens the [Chord Selector](#chord-selector), and on each of the three rows `[`, `]` and `Space` step through the choices, stopping at the first and the last; the Scale row steps through every scale type in the Chord Selector's order. While the cursor rests on a step that holds a chord, the status line names the chord and its notes.
 
 A step whose Scale is set takes its degree and its scale chord from that scale type on the clip's root, which is how a chord is borrowed: in C major, degree 6 with the Scale "Minor" and the chord `3` plays A flat major. A tension is added above the chord's root, so `dom7` on degree 5 with `b9` and `13` plays G B D F A♭ E. A single note takes no tensions.
 
