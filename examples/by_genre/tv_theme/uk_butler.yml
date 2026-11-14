@@ -1,41 +1,48 @@
-version: 1.0.364
+version: 1.0.365
 title: UK butler
-description: "an old-time ragtime sitcom theme in the manner of the Mr. Belvedere theme (Judy Hart-Angelo and Gary Portnoy, as Leon Redbone sang it), with a tune of its own"
+description: "a saloon-piano ragtime sitcom theme in the manner of the Mr. Belvedere theme (Judy Hart-Angelo and Gary Portnoy, as Leon Redbone sang it), with a tune of its own"
 notes: |
-  UK butler: an old-time ragtime sitcom theme in the manner of the Mr. Belvedere theme (Judy Hart-
+  UK butler: a saloon-piano ragtime sitcom theme in the manner of the Mr. Belvedere theme (Judy Hart-
   Angelo and Gary Portnoy, as Leon Redbone sang it), with a tune of its own. This is a homage to the
   Mr. Belvedere theme (Judy Hart-Angelo and Gary Portnoy, as Leon Redbone sang it): its chords, form,
   sounds and drums follow that work as Claude knows it, and every tune and rhythm here is new. Rebuild
-  version 1.
+  version 2.
 
-  A two-beat on a tuba, a banjo and a stride piano on the offbeats, brushes; a lazy tune over ragtime
-  chords, a clarinet answering each phrase; a clarinet chorus and a scatted tag on a muted trumpet.
+  A honky-tonk piano opens alone with a rag figure over a low note and a chord by turns; a lazy tune
+  over ragtime chords, the piano filling each gap; the piano takes a chorus in octaves; a scatted tag
+  on a muted trumpet.
 
-  Subgenre: a ragtime and Dixieland revival, a crooner with an old-time band, used for a sitcom of the
-  eighties. Drums: brushes and a soft kick in two, nothing more. Tempo 120, swung. Bass: a tuba on one
-  and three. Builds: none. Sounds: a banjo and a stride piano on the offbeats, a clarinet weaving, a
-  muted trumpet, a lazy low voice. Melody manner: a relaxed croon that lags, with chromatic steps into
-  chord notes; a scatted ending. Form: A A B A, a clarinet chorus, a scat tag.
+  Subgenre: a ragtime pastiche of the mid eighties, written for television by songwriters of sitcom
+  themes: a saloon piano of the turn of the century under a crooner out of the twenties. Drums:
+  brushes and a soft kick in two, nothing more. Tempo 120, swung. Bass: the piano's left hand, a low
+  note on one and three, with a tuba under it. Builds: none, the piano only fills more. Sounds: an
+  out-of-tune upright piano doing everything, a low note and a chord by turns in the left hand and a
+  syncopated figure in the right, a lazy low voice, a clarinet, a muted trumpet for the scat. Melody
+  manner: a relaxed croon that lags, with chromatic steps into chord notes; a scatted ending. Form:
+  piano introduction, A A B A, a piano chorus, B A, a scat tag, a piano ending.
 
-  Band and song: the singer is known for a lazy baritone croon and scat out of an earlier age; the
-  theme for that voice over ragtime chords, I III7 VI7 II7 V7.
+  Band and song: the theme was written for a pilot that was never picked up and given to this series
+  afterwards; the singer who recorded it is known for a lazy baritone croon and a scat like a muted
+  horn, out of an earlier age; the theme is remembered for that voice over a barroom piano and ragtime
+  chords, I III7 VI7 II7 V7.
 
-  Checklist: it is good and memorable because it is cosy and funny, a voice from the twenties in a
-  modern living room. The hook is the lazy tune over the bounce; the emotion is amused warmth; the
-  lift is the scat tag on the muted trumpet with the clarinet above; the contrast is the bridge on IV;
-  the sounds are a low voice lead, a clarinet, a muted trumpet, a banjo, a piano and a tuba.
+  Checklist: it is good and memorable because it is cosy and funny, a saloon from another century in a
+  modern living room. The hook is the lazy tune over the piano's bounce; the emotion is amused warmth;
+  the lift is the piano's own chorus, the tune in octaves over the rag figure, and the scat tag on the
+  muted trumpet; the contrast is the bridge on IV; the sounds are a low voice lead, a honky-tonk piano
+  in three parts, a tuba, a clarinet and a muted trumpet.
 
   Run it with: llamatron examples/by_genre/tv_theme/uk_butler.yml
 
-  Scene 1, intro, 4 bars.
+  Scene 1, piano alone, 4 bars.
   Scene 2, A, 16 bars.
   Scene 3, B, 8 bars.
   Scene 4, A 2, 8 bars.
-  Scene 5, clarinet, 16 bars.
+  Scene 5, piano chorus, 16 bars.
   Scene 6, B 2, 8 bars.
   Scene 7, A 3, 16 bars.
   Scene 8, scat, 8 bars.
-  Scene 9, ending, 4 bars.
+  Scene 9, piano ending, 4 bars.
 
   When changing this demo:
   - Keep the drums as the Subgenre paragraph describes them, the kick first.
@@ -54,34 +61,47 @@ patterns:
     step_size: 1/16
     degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [80, ~, ~, ~, ~, ~, ~, ~, 80, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [76, ~, ~, ~, ~, ~, ~, ~, 76, ~, ~, ~, ~, ~, ~, ~]
   brush:
     steps: 16
     drum: true
     step_size: 1/16
     degree: [D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~]
     octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
-    velocity: [44, ~, 66, ~, 44, ~, 66, ~, 44, ~, 66, ~, 44, ~, 66, ~]
+    velocity: [42, ~, 64, ~, 42, ~, 64, ~, 42, ~, 64, ~, 42, ~, 64, ~]
   two beat:
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, 5, ~, ~, ~]
     octave: [3, ~, ~, ~, 2, ~, ~, ~]
-    velocity: [102, ~, ~, ~, 96, ~, ~, ~]
-  chick:
+    velocity: [90, ~, ~, ~, 84, ~, ~, ~]
+  oom:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, 5, ~, ~, ~]
+    octave: [4, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [104, ~, ~, ~, 98, ~, ~, ~]
+  pah:
     steps: 8
     step_size: 1/8
     degree: [~, ~, 1, ~, ~, ~, 1, ~]
     octave: [~, ~, 4, ~, ~, ~, 4, ~]
     chord: [~, ~, "3", ~, ~, ~, "3", ~]
-    velocity: [~, ~, 76, ~, ~, ~, 76, ~]
-  stride:
-    steps: 8
-    step_size: 1/8
-    degree: [~, ~, 1, ~, ~, ~, 1, ~]
-    octave: [~, ~, 5, ~, ~, ~, 5, ~]
-    chord: [~, ~, "3", ~, ~, ~, "3", ~]
-    velocity: [~, ~, 64, ~, ~, ~, 64, ~]
+    velocity: [~, ~, 88, ~, ~, ~, 88, ~]
+  rag:
+    steps: 16
+    step_size: 1/16
+    degree: [3, 5, 1, ~, 5, 1, ~, 5, 3, 5, 1, ~, 5, 1, ~, ~]
+    octave: [5, 5, 6, ~, 5, 6, ~, 5, 5, 5, 6, ~, 5, 6, ~, ~]
+    velocity: [106, 100, 100, ~, 100, 100, ~, 100, 100, 100, 100, ~, 100, 100, ~, ~]
+    tie: [false, false, false, true, false, false, true, false, false, false, false, true, false, false, false, false]
+  fill:
+    steps: 16
+    step_size: 1/16
+    degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, 6, 1, ~, 6, 5]
+    octave: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, 5, 6, ~, 5, 5]
+    velocity: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 90, 90, 90, ~, 90, 90]
+    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false]
   lick:
     steps: 8
     step_size: 1/8
@@ -94,7 +114,7 @@ patterns:
     degree: [5, ~, ~, 3, 5, ~, 6, ~, 5, ~, ~, 7, 5, ~, 3, ~, 6, ~, ~, 5, 3, ~, 1, ~, 3, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, 4, 6, ~, 1, ~, 7, ~, ~, 5, 4, ~, 2, ~, 3, ~, 5, ~, 1, ~, ~, ~, ~, ~, 2, ~, 7, ~, 5, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, 4, 4, ~, 4, ~, 4, ~, ~, 4, 4, ~, 4, ~, 4, ~, ~, 4, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, 4, 4, ~, 5, ~, 4, ~, ~, 4, 4, ~, 4, ~, 4, ~, 4, ~, 5, ~, ~, ~, ~, ~, 5, ~, 4, ~, 4, ~]
-    velocity: [106, ~, ~, 100, 100, ~, 100, ~, 106, ~, ~, 100, 100, ~, 100, ~, 106, ~, ~, 100, 100, ~, 100, ~, 106, ~, ~, ~, ~, ~, ~, ~, 106, ~, ~, 100, 100, ~, 100, ~, 106, ~, ~, 100, 100, ~, 100, ~, 106, ~, 100, ~, 100, ~, ~, ~, ~, ~, 100, ~, 100, ~, 100, ~]
+    velocity: [110, ~, ~, 104, 104, ~, 104, ~, 110, ~, ~, 104, 104, ~, 104, ~, 110, ~, ~, 104, 104, ~, 104, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, 104, 104, ~, 104, ~, 110, ~, ~, 104, 104, ~, 104, ~, 110, ~, 104, ~, 104, ~, ~, ~, ~, ~, 104, ~, 104, ~, 104, ~]
     tie: [false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, true, false, true, false, true]
   b:
     steps: 64
@@ -102,15 +122,23 @@ patterns:
     degree: [6, ~, ~, ~, 1, ~, 6, ~, 4, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 1, ~, 5, ~, 3, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, 6, ~, 4, ~, 2, ~, ~, ~, 6, ~, ~, ~, 7, ~, ~, ~, 5, ~, 7, ~, 2, ~, ~, ~, ~, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, 5, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, 5, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [106, ~, ~, ~, 100, ~, 100, ~, 106, ~, ~, ~, ~, ~, ~, ~, 106, ~, ~, ~, 100, ~, 100, ~, 106, ~, ~, ~, ~, ~, ~, ~, 106, ~, ~, ~, 100, ~, 100, ~, 106, ~, ~, ~, 100, ~, ~, ~, 106, ~, ~, ~, 100, ~, 100, ~, 106, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, 104, ~, 104, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, 104, ~, 104, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, 104, ~, 104, ~, 110, ~, ~, ~, 104, ~, ~, ~, 110, ~, ~, ~, 104, ~, 104, ~, 110, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false]
-  a clarinet:
+  a piano:
     steps: 64
     step_size: 1/8
     degree: [5, ~, ~, 3, 5, ~, 6, ~, 5, ~, ~, 7, 5, ~, 3, ~, 6, ~, ~, 5, 3, ~, 1, ~, 3, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, 4, 6, ~, 1, ~, 7, ~, ~, 5, 4, ~, 2, ~, 3, ~, 5, ~, 1, ~, ~, ~, ~, ~, 2, ~, 7, ~, 5, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [5, ~, ~, 5, 5, ~, 5, ~, 5, ~, ~, 5, 5, ~, 5, ~, 5, ~, ~, 5, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, 5, 5, ~, 6, ~, 5, ~, ~, 5, 5, ~, 5, ~, 5, ~, 5, ~, 6, ~, ~, ~, ~, ~, 6, ~, 5, ~, 5, ~]
-    velocity: [102, ~, ~, 96, 96, ~, 96, ~, 102, ~, ~, 96, 96, ~, 96, ~, 102, ~, ~, 96, 96, ~, 96, ~, 102, ~, ~, ~, ~, ~, ~, ~, 102, ~, ~, 96, 96, ~, 96, ~, 102, ~, ~, 96, 96, ~, 96, ~, 102, ~, 96, ~, 96, ~, ~, ~, ~, ~, 96, ~, 96, ~, 96, ~]
+    velocity: [112, ~, ~, 106, 106, ~, 106, ~, 112, ~, ~, 106, 106, ~, 106, ~, 112, ~, ~, 106, 106, ~, 106, ~, 112, ~, ~, ~, ~, ~, ~, ~, 112, ~, ~, 106, 106, ~, 106, ~, 112, ~, ~, 106, 106, ~, 106, ~, 112, ~, 106, ~, 106, ~, ~, ~, ~, ~, 106, ~, 106, ~, 106, ~]
+    tie: [false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, true, false, true, false, true]
+  a piano low:
+    steps: 64
+    step_size: 1/8
+    degree: [5, ~, ~, 3, 5, ~, 6, ~, 5, ~, ~, 7, 5, ~, 3, ~, 6, ~, ~, 5, 3, ~, 1, ~, 3, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, 4, 6, ~, 1, ~, 7, ~, ~, 5, 4, ~, 2, ~, 3, ~, 5, ~, 1, ~, ~, ~, ~, ~, 2, ~, 7, ~, 5, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, 4, 4, ~, 4, ~, 4, ~, ~, 4, 4, ~, 4, ~, 4, ~, ~, 4, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, 4, 4, ~, 5, ~, 4, ~, ~, 4, 4, ~, 4, ~, 4, ~, 4, ~, 5, ~, ~, ~, ~, ~, 5, ~, 4, ~, 4, ~]
+    velocity: [100, ~, ~, 94, 94, ~, 94, ~, 100, ~, ~, 94, 94, ~, 94, ~, 100, ~, ~, 94, 94, ~, 94, ~, 100, ~, ~, ~, ~, ~, ~, ~, 100, ~, ~, 94, 94, ~, 94, ~, 100, ~, ~, 94, 94, ~, 94, ~, 100, ~, 94, ~, 94, ~, ~, ~, ~, ~, 94, ~, 94, ~, 94, ~]
     tie: [false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, true, false, true, false, true]
   a scat:
     steps: 64
@@ -124,7 +152,7 @@ patterns:
     step_size: 1/8
     degree: [7, ~, ~, 5, 7, ~, 1, ~, 7, ~, ~, 2, 7, ~, 5, ~, 1, ~, ~, 7, 5, ~, 3, ~, 5, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, 6, 1, ~, 3, ~, 2, ~, ~, 7, 6, ~, 4, ~, 5, ~, 7, ~, 3, ~, ~, ~, ~, ~, 4, ~, 2, ~, 7, ~]
     octave: [5, ~, ~, 5, 5, ~, 6, ~, 5, ~, ~, 6, 5, ~, 5, ~, 6, ~, ~, 5, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, 5, 6, ~, 6, ~, 6, ~, ~, 5, 5, ~, 5, ~, 5, ~, 5, ~, 6, ~, ~, ~, ~, ~, 6, ~, 6, ~, 5, ~]
-    velocity: [88, ~, ~, 82, 82, ~, 82, ~, 88, ~, ~, 82, 82, ~, 82, ~, 88, ~, ~, 82, 82, ~, 82, ~, 88, ~, ~, ~, ~, ~, ~, ~, 88, ~, ~, 82, 82, ~, 82, ~, 88, ~, ~, 82, 82, ~, 82, ~, 88, ~, 82, ~, 82, ~, ~, ~, ~, ~, 82, ~, 82, ~, 82, ~]
+    velocity: [86, ~, ~, 80, 80, ~, 80, ~, 86, ~, ~, 80, 80, ~, 80, ~, 86, ~, ~, 80, 80, ~, 80, ~, 86, ~, ~, ~, ~, ~, ~, ~, 86, ~, ~, 80, 80, ~, 80, ~, 86, ~, ~, 80, 80, ~, 80, ~, 86, ~, 80, ~, 80, ~, ~, ~, ~, ~, 80, ~, 80, ~, 80, ~]
     tie: [false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, true, false, true, false, true]
 
 progressions:
@@ -139,8 +167,7 @@ chains:
 
 instruments:
   tuba: { device: "*FluidSynth", gm_sound: 59 }
-  banjo: { device: "*FluidSynth", gm_sound: 106 }
-  piano: { device: "*FluidSynth", gm_sound: 1 }
+  honky-tonk piano: { device: "*FluidSynth", gm_sound: 4 }
   clarinet: { device: "*FluidSynth", gm_sound: 72 }
   muted trumpet: { device: "*FluidSynth", gm_sound: 60 }
   voice lead: { device: "*FluidSynth", gm_sound: 86 }
@@ -157,88 +184,94 @@ songs:
       kick: { drum: true, instrument: drum kit }
       brush: { drum: true, instrument: drum kit }
       tuba: { instrument: tuba }
-      banjo: { instrument: banjo }
-      piano: { instrument: piano }
+      piano low: { instrument: honky-tonk piano }
+      piano: { instrument: honky-tonk piano }
+      piano high: { instrument: honky-tonk piano }
+      piano tune: { instrument: honky-tonk piano }
       clarinet: { instrument: clarinet }
       trumpet: { instrument: muted trumpet }
       lead: { instrument: voice lead }
 
     scenes:
-      - name: intro
+      - name: piano alone
         tracks:
           kick: { pattern: kick, repeat: 4 }
           brush: { pattern: brush, loop: true }
-          tuba: { pattern: two beat, chains: [a], loop: true }
-          banjo: { pattern: chick, chains: [a], loop: true }
-          piano: { pattern: stride, chains: [a], loop: true }
-          clarinet: { pattern: lick, chains: [a], loop: true }
+          piano low: { pattern: oom, chains: [a], loop: true }
+          piano: { pattern: pah, chains: [a], loop: true }
+          piano high: { pattern: rag, chains: [a], loop: true }
       - name: A
         tracks:
           kick: { pattern: kick, repeat: 16 }
           brush: { pattern: brush, loop: true }
+          piano low: { pattern: oom, chains: [a], loop: true }
+          piano: { pattern: pah, chains: [a], loop: true }
+          piano high: { pattern: fill, chains: [a], loop: true }
           tuba: { pattern: two beat, chains: [a], loop: true }
-          banjo: { pattern: chick, chains: [a], loop: true }
-          piano: { pattern: stride, chains: [a], loop: true }
-          clarinet: { pattern: lick, chains: [a], loop: true }
           lead: { pattern: a, loop: true }
       - name: B
         tracks:
           kick: { pattern: kick, repeat: 8 }
           brush: { pattern: brush, loop: true }
+          piano low: { pattern: oom, chains: [b], loop: true }
+          piano: { pattern: pah, chains: [b], loop: true }
+          piano high: { pattern: fill, chains: [b], loop: true }
           tuba: { pattern: two beat, chains: [b], loop: true }
-          banjo: { pattern: chick, chains: [b], loop: true }
-          piano: { pattern: stride, chains: [b], loop: true }
-          clarinet: { pattern: lick, chains: [b], loop: true }
           lead: { pattern: b, loop: true }
+          clarinet: { pattern: lick, chains: [b], loop: true }
       - name: A 2
         tracks:
           kick: { pattern: kick, repeat: 8 }
           brush: { pattern: brush, loop: true }
+          piano low: { pattern: oom, chains: [a], loop: true }
+          piano: { pattern: pah, chains: [a], loop: true }
+          piano high: { pattern: fill, chains: [a], loop: true }
           tuba: { pattern: two beat, chains: [a], loop: true }
-          banjo: { pattern: chick, chains: [a], loop: true }
-          piano: { pattern: stride, chains: [a], loop: true }
-          clarinet: { pattern: lick, chains: [a], loop: true }
           lead: { pattern: a, loop: true }
-      - name: clarinet
+      - name: piano chorus
         tracks:
           kick: { pattern: kick, repeat: 16 }
           brush: { pattern: brush, loop: true }
+          piano low: { pattern: oom, chains: [a], loop: true }
+          piano: { pattern: pah, chains: [a], loop: true }
+          piano high: { pattern: rag, chains: [a], loop: true }
           tuba: { pattern: two beat, chains: [a], loop: true }
-          banjo: { pattern: chick, chains: [a], loop: true }
-          piano: { pattern: stride, chains: [a], loop: true }
-          clarinet: { pattern: a clarinet, loop: true }
+          piano tune: { pattern: a piano, loop: true }
+          clarinet: { pattern: a piano low, loop: true }
       - name: B 2
         tracks:
           kick: { pattern: kick, repeat: 8 }
           brush: { pattern: brush, loop: true }
+          piano low: { pattern: oom, chains: [b], loop: true }
+          piano: { pattern: pah, chains: [b], loop: true }
+          piano high: { pattern: fill, chains: [b], loop: true }
           tuba: { pattern: two beat, chains: [b], loop: true }
-          banjo: { pattern: chick, chains: [b], loop: true }
-          piano: { pattern: stride, chains: [b], loop: true }
-          clarinet: { pattern: lick, chains: [b], loop: true }
           lead: { pattern: b, loop: true }
+          clarinet: { pattern: lick, chains: [b], loop: true }
       - name: A 3
         tracks:
           kick: { pattern: kick, repeat: 16 }
           brush: { pattern: brush, loop: true }
+          piano low: { pattern: oom, chains: [a], loop: true }
+          piano: { pattern: pah, chains: [a], loop: true }
+          piano high: { pattern: fill, chains: [a], loop: true }
           tuba: { pattern: two beat, chains: [a], loop: true }
-          banjo: { pattern: chick, chains: [a], loop: true }
-          piano: { pattern: stride, chains: [a], loop: true }
-          clarinet: { pattern: lick, chains: [a], loop: true }
           lead: { pattern: a, loop: true }
       - name: scat
         tracks:
           kick: { pattern: kick, repeat: 8 }
           brush: { pattern: brush, loop: true }
+          piano low: { pattern: oom, chains: [a], loop: true }
+          piano: { pattern: pah, chains: [a], loop: true }
+          piano high: { pattern: fill, chains: [a], loop: true }
           tuba: { pattern: two beat, chains: [a], loop: true }
-          banjo: { pattern: chick, chains: [a], loop: true }
-          piano: { pattern: stride, chains: [a], loop: true }
           trumpet: { pattern: a scat, loop: true }
           clarinet: { pattern: a above, loop: true }
-      - name: ending
+      - name: piano ending
         tracks:
           kick: { pattern: kick, repeat: 4 }
           brush: { pattern: brush, loop: true }
+          piano low: { pattern: oom, chains: [a], loop: true }
+          piano: { pattern: pah, chains: [a], loop: true }
+          piano high: { pattern: rag, chains: [a], loop: true }
           tuba: { pattern: two beat, chains: [a], loop: true }
-          banjo: { pattern: chick, chains: [a], loop: true }
-          piano: { pattern: stride, chains: [a], loop: true }
-          clarinet: { pattern: lick, chains: [a], loop: true }
