@@ -1,33 +1,35 @@
-version: 1.0.364
+version: 1.0.365
 title: Loud complaint
 description: "a fast British heavy metal song of the early eighties in the manner of Screaming for Vengeance (Judas Priest), with riffs and tunes of its own"
 notes: |
   Loud complaint: a fast British heavy metal song of the early eighties in the manner of Screaming for
   Vengeance (Judas Priest), with riffs and tunes of its own. This is a homage to Screaming for
   Vengeance (Judas Priest): its chords, form, sounds and drums follow that work as Claude knows it,
-  and every tune and rhythm here is new. Rebuild version 1.
+  and every tune and rhythm here is new. Rebuild version 2.
 
-  A riff for two guitars a third apart over a kick in constant eighths; a clipped verse on i VI VII; a
-  chorus of long high notes on i VI III VII; a twin-guitar tune, a solo from each guitar and a
-  breakdown.
+  A riff for two guitars a third apart over a plain, heavy beat; a clipped verse on i VI VII; a chorus
+  of long high notes on i VI III VII with the kick on every beat; a twin-guitar tune, a solo from each
+  guitar and a breakdown.
 
-  Subgenre: British heavy metal of the early eighties, fast and precise. Drums: the kick in constant
-  eighths like two bass drums, a hard snare on two and four, eighth hats, the ride and a crash in the
-  chorus. Tempo 184, straight. Bass: eighths locked to the kick. Builds: none; it starts at full
-  speed, and a breakdown of kick, bass and muted guitar comes before the last chorus. Sounds: two
-  distorted guitars, one riff in harmony a third apart, power chords under the voice, a singer in a
-  very high scream, two guitar solos traded. Melody manner: a clipped verse; a chorus of long high
-  notes held like screams; twin-guitar tunes in thirds. Form: riff, verse, chorus, twin guitars, two
-  solos, chorus.
+  Subgenre: British heavy metal of the early eighties, fast and precise. Drums: plain and hard, one
+  bass drum, never busy: the kick on one and three with a push before three, four to the bar under the
+  chorus; a big snare on two and four; hats in eighths, the ride and a crash in the chorus; a short
+  fill of snare and tom-toms closing every eight bars. Tempo 184, straight. Bass: eighths, steady.
+  Builds: none; it starts at full speed, and a breakdown of kick, bass and muted guitar comes before
+  the last chorus. Sounds: two distorted guitars, one riff in harmony a third apart, power chords
+  under the voice, a singer in a very high scream, two guitar solos traded. Melody manner: a clipped
+  verse; a chorus of long high notes held like screams; twin-guitar tunes in thirds. Form: riff,
+  verse, chorus, twin guitars, two solos, chorus.
 
-  Band and song: the band is known for two lead guitars in harmony and a singer with a piercing high
-  register; the song for speed, a relentless kick and a chorus screamed at the top of the voice.
+  Band and song: the band is known for two lead guitars in harmony, a singer with a piercing high
+  register, and a drummer who keeps a simple, heavy beat and leaves the speed to the guitars; the song
+  for its pace and a chorus screamed at the top of the voice.
 
-  Checklist: it is good and memorable because it is all attack: nothing lets up, and the voice goes
-  higher than seems possible. The hook is the twin-guitar riff, then the screamed chorus; the emotion
-  is fury; the lift is the chorus, long notes an octave above the verse over the ride and a crash; the
-  contrast is the breakdown; the sounds are two distortion guitars, an overdriven guitar on the
-  chords, a voice lead and a pick bass.
+  Checklist: it is good and memorable because it is all attack over a beat that never wavers, and the
+  voice goes higher than seems possible. The hook is the twin-guitar riff, then the screamed chorus;
+  the emotion is fury; the lift is the chorus, long notes an octave above the verse over a kick on
+  every beat, the ride and a crash; the contrast is the breakdown; the sounds are two distortion
+  guitars, an overdriven guitar on the chords, a voice lead and a pick bass.
 
   Run it with: llamatron examples/by_genre/metal/loud_complaint.yml
 
@@ -61,16 +63,37 @@ patterns:
     steps: 16
     drum: true
     step_size: 1/16
-    degree: [C, ~, C, ~, C, ~, C, ~, C, ~, C, ~, C, ~, C, ~]
-    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
-    velocity: [110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~]
-  snare:
+    degree: [C, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [114, ~, ~, ~, ~, ~, 114, ~, 114, ~, ~, ~, ~, ~, ~, ~]
+  kick four:
     steps: 16
     drum: true
     step_size: 1/16
-    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
-    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
-    velocity: [~, ~, ~, ~, 116, ~, ~, ~, ~, ~, ~, ~, 116, ~, ~, ~]
+    degree: [C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~]
+    octave: [3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [114, ~, ~, ~, 114, ~, ~, ~, 114, ~, ~, ~, 114, ~, ~, ~]
+  snare:
+    steps: 128
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, D, D, D, D, ~, ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, 3, 3, 3, 3, ~, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 122, ~, ~, ~, ~, ~, ~, ~, 122, ~, ~, ~, ~, ~, ~, ~, 122, ~, ~, ~, ~, ~, ~, ~, 122, ~, ~, ~, ~, ~, ~, ~, 122, ~, ~, ~, ~, ~, ~, ~, 122, ~, ~, ~, ~, ~, ~, ~, 122, ~, ~, ~, ~, ~, ~, ~, 122, ~, ~, ~, ~, ~, ~, ~, 122, ~, ~, ~, ~, ~, ~, ~, 122, ~, ~, ~, ~, ~, ~, ~, 122, ~, ~, ~, ~, ~, ~, ~, 122, ~, ~, ~, ~, ~, ~, ~, 122, ~, ~, ~, ~, ~, ~, ~, 122, ~, ~, ~, ~, ~, ~, ~, 122, ~, ~, ~, 122, 122, 122, 122, ~, ~, ~, ~]
+  tom high:
+    steps: 128
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, D, D, ~, ~]
+    octave: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 4, 4, ~, ~]
+    velocity: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 112, 112, ~, ~]
+  tom low:
+    steps: 128
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, A, A]
+    octave: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, 3]
+    velocity: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 114, 114]
   hat:
     steps: 16
     drum: true
@@ -78,7 +101,7 @@ patterns:
     degree: [F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~]
     accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
     octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
-    velocity: [72, ~, 72, ~, 72, ~, 72, ~, 72, ~, 72, ~, 72, ~, 72, ~]
+    velocity: [84, ~, 62, ~, 84, ~, 62, ~, 84, ~, 62, ~, 84, ~, 62, ~]
   ride:
     steps: 16
     drum: true
@@ -86,7 +109,15 @@ patterns:
     degree: [D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~]
     accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
     octave: [4, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~]
-    velocity: [80, ~, 80, ~, 80, ~, 80, ~, 80, ~, 80, ~, 80, ~, 80, ~]
+    velocity: [90, ~, 62, ~, 90, ~, 62, ~, 90, ~, 62, ~, 90, ~, 62, ~]
+  hat quarters:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [F, ~, ~, ~, F, ~, ~, ~, F, ~, ~, ~, F, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, "#", ~, ~, ~, "#", ~, ~, ~, "#", ~, ~, ~]
+    octave: [3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [80, ~, ~, ~, 80, ~, ~, ~, 80, ~, ~, ~, 80, ~, ~, ~]
   crash:
     steps: 64
     drum: true
@@ -211,6 +242,8 @@ songs:
       snare: { drum: true, instrument: drum kit }
       hat: { drum: true, instrument: drum kit }
       crash: { drum: true, instrument: drum kit }
+      toms: { drum: true, instrument: drum kit }
+      toms low: { drum: true, instrument: drum kit }
       guitar 1: { instrument: distortion guitar }
       guitar 2: { instrument: distortion guitar }
       rhythm: { instrument: overdriven guitar }
@@ -223,6 +256,9 @@ songs:
           kick: { pattern: kick, repeat: 8 }
           snare: { pattern: snare, loop: true }
           hat: { pattern: hat, loop: true }
+          toms: { pattern: tom high, loop: true }
+          toms low: { pattern: tom low, loop: true }
+          crash: { pattern: crash, loop: true }
           bass: { pattern: riff bass, loop: true }
           guitar 1: { pattern: riff, loop: true }
           guitar 2: { pattern: riff above, loop: true }
@@ -231,14 +267,18 @@ songs:
           kick: { pattern: kick, repeat: 16 }
           snare: { pattern: snare, loop: true }
           hat: { pattern: hat, loop: true }
+          toms: { pattern: tom high, loop: true }
+          toms low: { pattern: tom low, loop: true }
           bass: { pattern: bass, chains: [verse], loop: true }
           rhythm: { pattern: chords, chains: [verse], loop: true }
           lead: { pattern: verse tune, loop: true }
       - name: chorus
         tracks:
-          kick: { pattern: kick, repeat: 8 }
+          kick: { pattern: kick four, repeat: 8 }
           snare: { pattern: snare, loop: true }
           hat: { pattern: ride, loop: true }
+          toms: { pattern: tom high, loop: true }
+          toms low: { pattern: tom low, loop: true }
           bass: { pattern: bass, chains: [chorus], loop: true }
           rhythm: { pattern: chords, chains: [chorus], loop: true }
           crash: { pattern: crash, loop: true }
@@ -248,6 +288,9 @@ songs:
           kick: { pattern: kick, repeat: 4 }
           snare: { pattern: snare, loop: true }
           hat: { pattern: hat, loop: true }
+          toms: { pattern: tom high, loop: true }
+          toms low: { pattern: tom low, loop: true }
+          crash: { pattern: crash, loop: true }
           bass: { pattern: riff bass, loop: true }
           guitar 1: { pattern: riff, loop: true }
           guitar 2: { pattern: riff above, loop: true }
@@ -256,14 +299,18 @@ songs:
           kick: { pattern: kick, repeat: 8 }
           snare: { pattern: snare, loop: true }
           hat: { pattern: hat, loop: true }
+          toms: { pattern: tom high, loop: true }
+          toms low: { pattern: tom low, loop: true }
           bass: { pattern: bass, chains: [verse], loop: true }
           rhythm: { pattern: chords, chains: [verse], loop: true }
           lead: { pattern: verse tune, loop: true }
       - name: chorus 2
         tracks:
-          kick: { pattern: kick, repeat: 8 }
+          kick: { pattern: kick four, repeat: 8 }
           snare: { pattern: snare, loop: true }
           hat: { pattern: ride, loop: true }
+          toms: { pattern: tom high, loop: true }
+          toms low: { pattern: tom low, loop: true }
           bass: { pattern: bass, chains: [chorus], loop: true }
           rhythm: { pattern: chords, chains: [chorus], loop: true }
           crash: { pattern: crash, loop: true }
@@ -273,24 +320,30 @@ songs:
           kick: { pattern: kick, repeat: 16 }
           snare: { pattern: snare, loop: true }
           hat: { pattern: hat, loop: true }
+          toms: { pattern: tom high, loop: true }
+          toms low: { pattern: tom low, loop: true }
           bass: { pattern: bass, chains: [verse], loop: true }
           rhythm: { pattern: chords, chains: [verse], loop: true }
           guitar 1: { pattern: twin, loop: true }
           guitar 2: { pattern: twin above, loop: true }
       - name: "solo, first guitar"
         tracks:
-          kick: { pattern: kick, repeat: 8 }
+          kick: { pattern: kick four, repeat: 8 }
           snare: { pattern: snare, loop: true }
           hat: { pattern: ride, loop: true }
+          toms: { pattern: tom high, loop: true }
+          toms low: { pattern: tom low, loop: true }
           bass: { pattern: bass, chains: [solo], loop: true }
           rhythm: { pattern: chords, chains: [solo], loop: true }
           crash: { pattern: crash, loop: true }
           guitar 1: { pattern: solo 1, loop: true }
       - name: "solo, second guitar"
         tracks:
-          kick: { pattern: kick, repeat: 8 }
+          kick: { pattern: kick four, repeat: 8 }
           snare: { pattern: snare, loop: true }
           hat: { pattern: ride, loop: true }
+          toms: { pattern: tom high, loop: true }
+          toms low: { pattern: tom low, loop: true }
           bass: { pattern: bass, chains: [solo], loop: true }
           rhythm: { pattern: chords, chains: [solo], loop: true }
           crash: { pattern: crash, loop: true }
@@ -300,29 +353,39 @@ songs:
           kick: { pattern: kick, repeat: 8 }
           snare: { pattern: snare, loop: true }
           hat: { pattern: hat, loop: true }
+          toms: { pattern: tom high, loop: true }
+          toms low: { pattern: tom low, loop: true }
           bass: { pattern: bass, chains: [verse], loop: true }
           rhythm: { pattern: chords, chains: [verse], loop: true }
           guitar 1: { pattern: twin, loop: true }
           guitar 2: { pattern: twin above, loop: true }
       - name: chorus 3
         tracks:
-          kick: { pattern: kick, repeat: 16 }
+          kick: { pattern: kick four, repeat: 16 }
           snare: { pattern: snare, loop: true }
           hat: { pattern: ride, loop: true }
+          toms: { pattern: tom high, loop: true }
+          toms low: { pattern: tom low, loop: true }
           bass: { pattern: bass, chains: [chorus], loop: true }
           rhythm: { pattern: chords, chains: [chorus], loop: true }
           crash: { pattern: crash, loop: true }
           lead: { pattern: chorus tune, loop: true }
       - name: breakdown
         tracks:
-          kick: { pattern: kick, repeat: 8 }
+          kick: { pattern: kick four, repeat: 8 }
+          hat: { pattern: hat quarters, loop: true }
+          snare: { pattern: snare, loop: true }
+          toms: { pattern: tom high, loop: true }
+          toms low: { pattern: tom low, loop: true }
           bass: { pattern: bass, chains: [verse], loop: true }
           rhythm: { pattern: mute, chains: [verse], loop: true }
       - name: last chorus
         tracks:
-          kick: { pattern: kick, repeat: 16 }
+          kick: { pattern: kick four, repeat: 16 }
           snare: { pattern: snare, loop: true }
           hat: { pattern: ride, loop: true }
+          toms: { pattern: tom high, loop: true }
+          toms low: { pattern: tom low, loop: true }
           bass: { pattern: bass, chains: [chorus], loop: true }
           rhythm: { pattern: chords, chains: [chorus], loop: true }
           crash: { pattern: crash, loop: true }
@@ -333,6 +396,9 @@ songs:
           kick: { pattern: kick, repeat: 8 }
           snare: { pattern: snare, loop: true }
           hat: { pattern: hat, loop: true }
+          toms: { pattern: tom high, loop: true }
+          toms low: { pattern: tom low, loop: true }
+          crash: { pattern: crash, loop: true }
           bass: { pattern: riff bass, loop: true }
           guitar 1: { pattern: riff, loop: true }
           guitar 2: { pattern: riff above, loop: true }
