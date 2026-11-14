@@ -278,6 +278,14 @@ MSG_FACTORY_GROOVE_SHOWN = 'factory'
 # tui/screens/main_page.py and tui/screens/instruments_page.py
 MSG_REAL_TIME_ON_MARK = '●'
 MSG_REAL_TIME_OFF_MARK = '○'
+# tui/screens/main_page.py: what Arrange's cell says of the current song.
+MSG_MAIN_CLOCK = '▶ {at}'
+MSG_MAIN_TEMPO = '{tempo} bpm'
+MSG_MAIN_SCENES = '{count} scenes'
+MSG_MAIN_ONE_SCENE = '1 scene'
+MSG_MAIN_TRACKS = '{count} tracks'
+MSG_MAIN_ONE_TRACK = '1 track'
+MSG_MAIN_MORE_TRACKS = '+{count} more'
 
 # tui/screens/arrange_drawing.py: the lights of real-time playback, the one place the tracker draws in colour.
 # The play button before each scene's and clip's bar, and the corner's, which turns into the stop mark while it plays.

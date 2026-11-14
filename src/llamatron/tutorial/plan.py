@@ -310,7 +310,7 @@ class TutorialPlan:
         raise TutorialStuck(page_class.__name__)
 
     def select_cell(self, binding):
-        """Move the main screen's cursor onto a cell: Up and Down to its row, then Left and Right along it."""
+        """Move the main screen's cursor onto a cell: Left and Right to its column, then Up and Down to its row."""
         page = self.screen()
         self.expect(MainPage)
         row, column = cell_place(rows=page.rows(), binding=binding)
@@ -318,10 +318,11 @@ class TutorialPlan:
             now_row, now_column = page.row_and_column()
             if (now_row, now_column) == (row, column):
                 return
-            if now_row != row:
-                yield from self.press(Key.UP if row < now_row else Key.DOWN)
-            else:
+            # Along the row first: Arrange is three rows tall, so only its column says where the cursor is beside it.
+            if now_column != column:
                 yield from self.press(Key.LEFT if column < now_column else Key.RIGHT)
+            else:
+                yield from self.press(Key.UP if row < now_row else Key.DOWN)
         raise TutorialStuck(binding)
 
     def expect(self, screen_class):
