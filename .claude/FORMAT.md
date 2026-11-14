@@ -1326,6 +1326,10 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   riff or bass line, which Claude neither reads nor reproduces, even where it knows them. A homage's own melody moves the way
   melodies of the genre usually move and has the same kind of feel, written new. The rhythms of its parts are written new as well
   (Claude's reading, to keep each demo an original piece).
+- A homage that is written or rewritten uses the generators that fit (the user's rules): the Progression generator heavily, so
+  that a part is one written bar a Progression moves through the song's chords, section by section; Guitarify on guitar parts;
+  Voice leading on keyboard and pad chords; Strum on plucked parts that aren't guitars; a Hocket where two instruments trade a
+  line; Density, Swell and Articulate for builds. Keyswitches stay out while the demos play through FluidSynth.
 - Whether a new feature gets a demo is asked of the user every time (`.claude/COMMUNICATION.md`,
   "Discussing a feature").
 - A new example runs about three minutes, give or take ten seconds, unless the user asks for
