@@ -73,12 +73,15 @@ class Dialog(BindsKeys, ModalScreen):
     def draw(self):
         if not self.is_attached or not self.query(DIALOG_VIEW_SELECTOR):
             return
-        width = min(self.app.size.width - DIALOG_MARGIN, self.wanted_width())
+        widest = self.app.size.width - DIALOG_MARGIN
+        width = min(widest, self.wanted_width())
+        result = self.contents(width - DIALOG_MARGIN)
+        # A line that can't be cut to fit, a row of buttons, makes the box as wide as the line needs, so that nothing is drawn past the box's side.
+        needed = max(line.cell_len for line in result) + DIALOG_MARGIN
+        if needed > width:
+            width = min(widest, needed)
+            result = self.contents(width - DIALOG_MARGIN)
         inner = width - DIALOG_MARGIN
-        result = [self.heading(inner), Text(NOTHING)]
-        result += self.lines(inner)
-        if self.shows_legend:
-            result += [Text(NOTHING), *self.legend_lines(inner)]
         boxed = self.boxed(lines=result, width=width)
         over = self.flyout_lines(inner)
         size = self.app.size
@@ -96,6 +99,14 @@ class Dialog(BindsKeys, ModalScreen):
             down = (size.height - closed) // 2 - (size.height - len(boxed)) // 2
         self.query_one(DIALOG_SELECTOR, Container).styles.offset = (across, down)
         self.query_one(DIALOG_VIEW_SELECTOR, Static).update(Text(LINE_BREAK).join(boxed))
+
+    def contents(self, inner):
+        """Return the lines inside the box at a width: the heading, the dialog's own lines, and its keys."""
+        result = [self.heading(inner), Text(NOTHING)]
+        result += self.lines(inner)
+        if self.shows_legend:
+            result += [Text(NOTHING), *self.legend_lines(inner)]
+        return result
 
     def wanted_width(self):
         """Return how wide the dialog is where the console has the room."""
