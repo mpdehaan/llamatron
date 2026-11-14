@@ -58,7 +58,7 @@ from llamatron.tui.drawing import Style
 from llamatron.tui.pattern_preview import CHOSEN_PASSES, PIANO_PROGRAM, PREVIEW_CHANNEL_BYTE, passes_to_come_round
 from llamatron.tui.screens.pattern_editor import PatternEditor
 from llamatron.tui.batch_stage import GROW_SECONDS
-from llamatron.tui.launch import FINISHED_CHECK_SECONDS, Launch, recording_problem
+from llamatron.tui.launch import Launch, recording_problem
 from llamatron.tui.screens.arrange_page import ArrangePage
 from llamatron.tui.screens.splash import Splash
 from llamatron.tui.drawing import Box
@@ -82,7 +82,7 @@ NOTHING = ''
 A_MOMENT = 0.1
 # Enough real time for a timer of A_MOMENT to have fired, and a timer that never fires within a test.
 LEAD_IN_PASSED = 0.3
-# A lead-in long enough that starting the tracker can't use it up on a busy machine, for the test that checks nothing plays before it ends, and a wait past it.
+# A lead-in long enough that starting the tracker can't use it up on a busy machine, for the test that checks nothing plays before it ends.
 LONG_LEAD_IN = 1.0
 # The live editing tests: a slow tempo, the tune played three times, the seconds a pass lasts and its second note sounds, the pitches of degrees 3 and 5 in C major, and the clock's step.
 SLOW_TEMPO = 60
@@ -102,7 +102,6 @@ OTHER_SONG = 'other song'
 # For the take that checks the splash and then the playing, a splash a busy machine can't see the end of before the first check, and a lead-out that keeps the tracker from quitting while the test still reads it.
 RECORDING_SPLASH = 1.5
 LONG_LEAD_OUT = 60.0
-LONG_LEAD_IN_PASSED = 1.3
 A_LONG_TIME = 60.0
 # A splash long enough to be seen before the test looks, and waited out after.
 SPLASH_IN_TEST = 0.6
@@ -110,6 +109,13 @@ SPLASH_IN_TEST = 0.6
 TITLE_ON_A_BUSY_MACHINE = 2.0
 # The longest a test waits in real time for a launch's next stage before failing.
 LONGEST_WAIT_SECONDS = 10
+# What a launch test notes as it happens, so that a test checks the order of a launch's stages and never the clock, which a
+# machine busy with the rest of the suite runs late by more than a stage lasts (the user's choice): a screen shown, by its
+# class, the song found playing, and the tracker quitting.
+SHOWED = 'showed'
+PLAYED = 'played'
+QUIT = 'quit'
+MSG_OUT_OF_ORDER = 'expected {expected} in that order, among {events}'
 # READY long enough that the test sees Arrange before the song starts, however busy the machine.
 READY_ON_A_BUSY_MACHINE = 3.0
 SCENE_ONE_NUMBER = 1
@@ -1086,13 +1092,39 @@ class LaunchTest(PlaybackTest):
         app = super().make_app()
         app.launch = self.LAUNCH
         self.exited = False
+        self.events = []
         quit_for_real = app.exit
+        push_for_real = app.push_screen
 
         def exit_noted(*arguments, **named):
             self.exited = True
+            self.events.append((QUIT, None))
             quit_for_real(*arguments, **named)
+
+        def push_noted(screen, *arguments, **named):
+            self.events.append((SHOWED, type(screen)))
+            return push_for_real(screen, *arguments, **named)
         app.exit = exit_noted
+        app.push_screen = push_noted
         return app
+
+    def has_quit(self):
+        return self.exited
+
+    def shows(self, screen_class):
+        """Return a check of whether the screen on top is of a class, for wait_until."""
+        return lambda: isinstance(self.app.screen, screen_class)
+
+    async def wait_until_playing(self):
+        """Wait until the song plays, and note it among what happened."""
+        await self.wait_until(self.transport().is_playing)
+        self.events.append((PLAYED, None))
+
+    def check_order(self, *expected):
+        """Check that things happened in an order, whatever else happened between them and however long each took."""
+        events = iter(self.events)
+        for event in expected:
+            self.assertIn(event, events, MSG_OUT_OF_ORDER.format(expected=expected, events=self.events))
 
     async def wait_until(self, happened):
         """Let real time pass until something has happened, checking every moment, and fail if it hasn't within LONGEST_WAIT_SECONDS."""
@@ -1116,8 +1148,8 @@ class TestAutoplayLaunch(LaunchTest):
     async def test_it_opens_on_arrange_and_plays_after_the_lead_in(self):
         self.assertIsInstance(self.app.screen, ArrangePage)
         self.assertFalse(self.transport().is_playing())
-        await self.wait_a_moment(LONG_LEAD_IN_PASSED)
-        self.assertTrue(self.transport().is_playing())
+        await self.wait_until_playing()
+        self.check_order((SHOWED, ArrangePage), (PLAYED, None))
         self.assertTrue(self.app.autoplay_started())
         self.assertIn(MSG_SONG_BUTTON.format(mark=MSG_STOP_MARK), self.text())
         # The header keeps its save mark, unsaved for a test's song with no file: only a launch for recording leaves it off.
@@ -1132,13 +1164,13 @@ class TestAutoplayQuitLaunch(LaunchTest):
     DRUMS_LOOP = False
 
     async def test_it_quits_once_the_song_has_ended(self):
-        await self.wait_a_moment(LEAD_IN_PASSED)
-        self.assertTrue(self.transport().is_playing())
+        await self.wait_until_playing()
+        # Nothing ends the song but the test's own clock, so the tracker can't have quit yet, however late the machine runs.
         self.assertFalse(self.exited)
         await self.let_time_pass(SCENE_ONE_SECONDS + A_MOMENT)
         self.assertFalse(self.transport().is_playing())
-        await self.wait_a_moment(FINISHED_CHECK_SECONDS + LEAD_IN_PASSED)
-        self.assertTrue(self.exited)
+        await self.wait_until(self.has_quit)
+        self.check_order((PLAYED, None), (QUIT, None))
 
 
 class TestVisualizerLaunch(LaunchTest):
@@ -1150,8 +1182,7 @@ class TestVisualizerLaunch(LaunchTest):
         page = self.app.screen
         self.assertIsInstance(page, ArrangePage)
         self.assertIsInstance(page.visualizer, MODES[0])
-        await self.wait_a_moment(LEAD_IN_PASSED)
-        self.assertTrue(self.transport().is_playing())
+        await self.wait_until_playing()
 
 
 class TestRecordingLaunch(LaunchTest):
@@ -1164,10 +1195,9 @@ class TestRecordingLaunch(LaunchTest):
     async def test_the_splash_shows_the_title_then_arrange_plays_with_no_save_mark(self):
         self.assertIsInstance(self.app.screen, Splash)
         self.assertNotIn(MSG_UNSAVED_MARK, self.text())
-        await self.wait_a_moment(RECORDING_SPLASH)
-        self.assertIsInstance(self.app.screen, ArrangePage)
-        await self.wait_a_moment(LEAD_IN_PASSED)
-        self.assertTrue(self.transport().is_playing())
+        await self.wait_until(self.shows(ArrangePage))
+        await self.wait_until_playing()
+        self.check_order((SHOWED, Splash), (SHOWED, ArrangePage), (PLAYED, None))
         self.assertNotIn(MSG_SAVED_MARK, self.text())
         self.assertNotIn(MSG_UNSAVED_CHANGES_MARK, self.text())
 
@@ -1179,8 +1209,9 @@ class TestInteractiveRecordingLaunch(LaunchTest):
 
     async def wait_out_the_splash(self):
         self.assertIsInstance(self.app.screen, Splash)
-        await self.wait_a_moment(RECORDING_SPLASH)
-        self.assertIsInstance(self.app.screen, ArrangePage)
+        await self.wait_until(self.shows(ArrangePage))
+        # What happens from here on is what the test checks the order of.
+        self.events.clear()
 
     async def test_nothing_plays_until_space_on_the_corner_and_stopping_there_ends_the_take(self):
         await self.wait_out_the_splash()
@@ -1192,22 +1223,18 @@ class TestInteractiveRecordingLaunch(LaunchTest):
         # The take goes on while the song plays, however long the performance.
         await self.wait_a_moment(LEAD_IN_PASSED)
         self.assertIsInstance(self.app.screen, ArrangePage)
+        self.assertFalse(self.exited)
         await self.press(keybindings.ArrangePage.STOP_PLAYING)
         self.assertFalse(self.transport().is_playing())
-        await self.wait_a_moment(LEAD_IN_PASSED)
-        self.assertIsInstance(self.app.screen, Splash)
-        self.assertFalse(self.exited)
-        await self.wait_a_moment(RECORDING_SPLASH + LEAD_IN_PASSED)
-        self.assertTrue(self.exited)
+        await self.wait_until(self.has_quit)
+        self.check_order((SHOWED, Splash), (QUIT, None))
 
     async def test_esc_ends_the_take_on_the_splash_and_never_shows_the_main_screen(self):
         await self.wait_out_the_splash()
         await self.press(keybindings.Page.BACK)
-        self.assertIsInstance(self.app.screen, ArrangePage)
-        await self.wait_a_moment(LEAD_IN_PASSED)
-        self.assertIsInstance(self.app.screen, Splash)
-        await self.wait_a_moment(RECORDING_SPLASH + LEAD_IN_PASSED)
-        self.assertTrue(self.exited)
+        await self.wait_until(self.has_quit)
+        self.check_order((SHOWED, Splash), (QUIT, None))
+        self.assertNotIn((SHOWED, MainPage), self.events)
 
 
 class TestStoppingFromTheCornerOutsideATake(PlaybackTest):
@@ -1231,15 +1258,11 @@ class TestRecordingLaunchEnding(LaunchTest):
     DRUMS_LOOP = False
 
     async def test_the_splash_comes_back_after_the_song_and_then_the_tracker_quits(self):
-        await self.wait_a_moment(SPLASH_IN_TEST)
-        await self.wait_a_moment(LEAD_IN_PASSED)
-        self.assertTrue(self.transport().is_playing())
-        await self.let_time_pass(SCENE_ONE_SECONDS + A_MOMENT)
-        await self.wait_a_moment(FINISHED_CHECK_SECONDS + LEAD_IN_PASSED)
-        self.assertIsInstance(self.app.screen, Splash)
+        await self.wait_until_playing()
         self.assertFalse(self.exited)
-        await self.wait_a_moment(SPLASH_IN_TEST + A_MOMENT + LEAD_IN_PASSED)
-        self.assertTrue(self.exited)
+        await self.let_time_pass(SCENE_ONE_SECONDS + A_MOMENT)
+        await self.wait_until(self.has_quit)
+        self.check_order((SHOWED, Splash), (SHOWED, ArrangePage), (PLAYED, None), (SHOWED, Splash), (QUIT, None))
 
 
 class TestBatchVideoLaunch(LaunchTest):
@@ -1264,8 +1287,10 @@ class TestBatchVideoLaunch(LaunchTest):
         await self.wait_a_moment(GROW_SECONDS)
         self.assertNotIn(Box.DOUBLE_TOP_LEFT, self.text())
         await self.let_time_pass(SCENE_ONE_SECONDS + A_MOMENT)
-        await self.wait_a_moment(FINISHED_CHECK_SECONDS + A_MOMENT * 3 + LEAD_IN_PASSED)
-        self.assertTrue(self.exited)
+        await self.wait_until(self.has_quit)
+        self.check_order((SHOWED, Splash), (SHOWED, ArrangePage), (QUIT, None))
+        # A batch video ends on black, with no splash after the song.
+        self.assertEqual(self.events.count((SHOWED, Splash)), 1)
 
 
 class TestRecordingVisualizerLaunch(LaunchTest):
@@ -1279,13 +1304,11 @@ class TestRecordingVisualizerLaunch(LaunchTest):
     DRUMS_LOOP = False
 
     async def test_after_the_splash_arrange_shows_the_mode_and_plays(self):
-        self.assertIsInstance(self.app.screen, Splash)
-        await self.wait_a_moment(SPLASH_IN_TEST)
+        await self.wait_until(self.shows(ArrangePage))
         page = self.app.screen
-        self.assertIsInstance(page, ArrangePage)
         self.assertIsInstance(page.visualizer, MODES[-1])
-        await self.wait_a_moment(LEAD_IN_PASSED)
-        self.assertTrue(self.transport().is_playing())
+        await self.wait_until_playing()
+        self.check_order((SHOWED, Splash), (SHOWED, ArrangePage), (PLAYED, None))
 
 
 class TestRecordingLaunchTimeLimit(LaunchTest):
@@ -1294,8 +1317,9 @@ class TestRecordingLaunchTimeLimit(LaunchTest):
     LAUNCH = Launch(autoplay=True, max_seconds=A_MOMENT, lead_in_seconds=A_LONG_TIME)
 
     async def test_it_quits_at_the_limit(self):
-        await self.wait_a_moment(LEAD_IN_PASSED)
-        self.assertTrue(self.exited)
+        await self.wait_until(self.has_quit)
+        # The lead-in is far longer than the limit, so the song never started.
+        self.assertFalse(self.transport().is_playing())
 
 
 class TestRecordingProblem(unittest.TestCase):
