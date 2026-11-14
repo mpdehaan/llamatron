@@ -33,6 +33,7 @@ from llamatron.playback.shapes import reshaped
 from llamatron.generators.euclid import EuclidMask
 from llamatron.composition.checks import in_whole_notes
 from llamatron.grid.clip import Clip
+from llamatron.grid.keyswitch import SwitchNote
 from llamatron.strings.errors import ERR_CANT_PLAY, ERR_CLIP_SLOT_PLAYER_WHERE
 
 # The seeds for a clip slot's random choices: which steps play, by probability, and the order of steps
@@ -96,7 +97,7 @@ class ClipSlotPlayer:
         loop = clip_slot.loops()
         fill = self._renderer.get_scene_length(scene) if loop else None
         try:
-            clip = self._play_passes(player=player, grab=grab, scale=scale, where=where, fill=fill, registers=registers)
+            clip, switched = self._play_passes(player=player, grab=grab, scale=scale, where=where, fill=fill, registers=registers)
             controls = clip.get_controls()
             clip, chain_adds = self._through_chain(clip, counting=registers.is_counting())
             if not registers.is_counting():
@@ -114,7 +115,10 @@ class ClipSlotPlayer:
             # A clip is named after the pattern it plays unless it has a name of its own, while its scene keeps
             # the scene's name, and it carries the pattern's own time signature, if it has one, for the bars a DAW draws.
             signature = self._song.get_pattern(clip_slot.get_pattern_name()).get_time_signature()
-            return Clip(name=clip_slot.get_display_name(), sounds=sounds, scale=scale, loop=loop, controls=controls, time_signature=signature)
+            finished = Clip(name=clip_slot.get_display_name(), sounds=sounds, scale=scale, loop=loop, controls=controls, time_signature=signature)
+            if switched:
+                finished.set_keyswitches(self._switch_notes(switched=switched, end=end))
+            return finished
         except (ValueError, TypeError) as error:
             raise SongFileError(ERR_CANT_PLAY.format(where=where, problem=error)) from error
 
@@ -203,6 +207,23 @@ class ClipSlotPlayer:
         )
         return Clip(name=clip.get_name(), sounds=sounds, scale=clip.get_scale(), length=clip.get_length(), note_length=clip.get_note_length(), controls=clip.get_controls())
 
+    def _switch_notes(self, *, switched, end):
+        """Return the keyswitch notes the clip sends before it ends, SwitchNotes in time order: each slot's note in the track's instrument, cut at the clip's end.
+
+        A slot the instrument gives no note sends nothing until it has one, and a track with no
+        instrument, or one that plays through FluidSynth, which would sound each as a note, sends
+        none (the user's rules). The notes are the instrument's as written: no
+        scale, transposing or generator reaches them.
+        """
+        instrument = self._renderer.instrument_of(self._track)
+        if instrument is None or instrument.uses_fluidsynth():
+            return []
+        notes = instrument.get_keyswitch_notes()
+        return [
+            SwitchNote(slots.start, min(slots.end, end), notes[slot])
+            for slots in switched if slots.start < end for slot in slots.slots if slot in notes
+        ]
+
     def _sent_controls(self, *, controls, end):
         """Return the CC values the track sends before the clip ends, with each lane turned into its CC number.
 
@@ -227,6 +248,7 @@ class ClipSlotPlayer:
         repeat = self._clip_slot.get_repeat()
         sounds = []
         controls = []
+        switched = []
         total = Rational(0)
         place = 0
         while (place < repeat) if fill is None else (total < fill):
@@ -237,12 +259,16 @@ class ClipSlotPlayer:
             # Ties at the start of this pass hold the note the passes so far ended with.
             if played.tied_from_before > NO_LENGTH:
                 sounds = _tied_on(sounds=sounds, extra=Length.of(played.tied_from_before))
+                # A keyswitch still held where the pass before ended is held on with its note.
+                if switched and switched[-1].end == total:
+                    switched[-1] = switched[-1].ending(total + played.tied_from_before)
             sounds += played.clip.get_sounds()
             controls += _moved_later(controls=played.clip.get_controls(), time=total)
+            switched += [slots.moved_by(total) for slots in played.keyswitches]
             total += length
             place += 1
         clip = Clip(sounds=sounds, scale=scale, controls=controls)
-        return clip.section(start=NO_LENGTH, end=fill) if fill else clip
+        return (clip.section(start=NO_LENGTH, end=fill) if fill else clip), switched
 
     def _seed_for(self, template):
         """Return the seed for one of this clip's random choices, or None when the render has no seed."""

@@ -30,7 +30,7 @@ from llamatron.composition.checks import is_true_or_false, is_whole_number, list
 from llamatron.composition.corrections import NO_NEAREST_VALUE
 from llamatron.composition.defaults import DEFAULT_PROBABILITY, DEFAULT_RATCHET, DEFAULT_VELOCITY
 from llamatron.composition.file_format import (
-    ACCIDENTALS, CC_ROWS, CHORD_SYMBOLS, COMPARISONS, TENSIONS, CONDITION_ROWS, GATE_MODIFIERS, NOTE_LETTERS, PATTERN_ROWS, REGISTER_ADD_ROWS,
+    ACCIDENTALS, CC_ROWS, KEYSWITCH_SLOTS, CHORD_SYMBOLS, COMPARISONS, TENSIONS, CONDITION_ROWS, GATE_MODIFIERS, NOTE_LETTERS, PATTERN_ROWS, REGISTER_ADD_ROWS,
     REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_USES, REGISTER_VELOCITY_ROWS, RegisterUse, Row,
 )
 from llamatron.composition.invalid_value import InvalidValue
@@ -43,7 +43,7 @@ from llamatron.composition.named_scale import scale_type_names
 from llamatron.composition.setting import Length
 from llamatron.music.midi import MAX_CC_VALUE, MAX_VELOCITY, MIN_CC_VALUE, MIN_VELOCITY
 from llamatron.strings.errors import (
-    ERR_BAD_STEP_VALUE, ERR_CHECKS_BAD_OCTAVE, ERR_CHORD_ON_DRUMS, ERR_CHORD_SCALE_ON_DRUMS, ERR_NOT_CHORD_SCALE, ERR_NOT_TENSIONS, ERR_TENSION_ON_DRUMS, ERR_NOT_ACCIDENTAL, ERR_NOT_COMPARISON, ERR_NOT_CHORD, ERR_NOT_INVERSION, ERR_INVERSION_ON_DRUMS, ERR_NOT_DEGREE, ERR_NOT_GATE_MODIFIER,
+    ERR_BAD_STEP_VALUE, ERR_CHECKS_BAD_OCTAVE, ERR_CHORD_ON_DRUMS, ERR_CHORD_SCALE_ON_DRUMS, ERR_NOT_CHORD_SCALE, ERR_NOT_TENSIONS, ERR_NOT_KEYSWITCHES, ERR_TENSION_ON_DRUMS, ERR_NOT_ACCIDENTAL, ERR_NOT_COMPARISON, ERR_NOT_CHORD, ERR_NOT_INVERSION, ERR_INVERSION_ON_DRUMS, ERR_NOT_DEGREE, ERR_NOT_GATE_MODIFIER,
     ERR_NO_SUCH_ROW, ERR_NOT_IN_RANGE, ERR_NOT_NOTE_LETTER, ERR_NOT_REGISTER_USE, ERR_PATTERN_NOT_TRUE_OR_FALSE, ERR_REGISTER_NOTE_ON_DRUMS,
 )
 
@@ -313,6 +313,41 @@ class RowOfTensions(RowDescription):
         return None
 
 
+class RowOfKeyswitches(RowDescription):
+    """The Keyswitch row: which of its instrument's keyswitch slots a step's note is played with, each once. A pattern holds a
+    step's as a tuple, lowest first, which nothing can change, and a file writes a list. A pattern names slots and never notes,
+    since the notes are the instrument's, and a drum pattern's steps take them as any other's."""
+
+    __slots__ = ('_choices', '_problem')
+
+    def __init__(self, *, name, choices):
+        super().__init__(name=name)
+        self._choices = tuple(choices)
+        self._problem = ERR_NOT_KEYSWITCHES.format(choices=listed(self._choices))
+
+    def get_choices(self):
+        """Return the slots, in order."""
+        return list(self._choices)
+
+    def in_order(self, slots):
+        """Return some slots as a step holds them: a tuple, lowest first, or nothing when there are none."""
+        return tuple(slot for slot in self._choices if slot in slots) or None
+
+    def kept(self, value):
+        return self.in_order(value)
+
+    def written(self, values):
+        return [None if value is None else list(value) for value in values]
+
+    def read(self, values):
+        return [None if value is None else self.in_order(value) for value in values]
+
+    def problem_with(self, value, *, drum):
+        if not isinstance(value, (list, tuple)) or not value or len(set(value)) != len(value) or any(type(slot) is not int or slot not in self._choices for slot in value):
+            return self._problem
+        return None
+
+
 class RowOfChordScales(RowOfChoices):
     """The Scale row: the scale type a step's degree and chord are drawn from, on the clip's root, or blank for the clip's own scale. A drum pattern has no scale."""
 
@@ -446,6 +481,7 @@ ROW_DESCRIPTIONS = described_rows(
     RowOfNumbers(name=Row.RATCHET, lowest=MIN_RATCHET, highest=MAX_RATCHET, default=DEFAULT_RATCHET, quiet=True),
     RowOfNumbers(name=Row.RATCHET_OFFSET, lowest=-MAX_RATCHET_OFFSET, highest=MAX_RATCHET_OFFSET, default=NO_RATCHET_OFFSET, quiet=True),
     RowOfToggles(name=Row.GRAB),
+    RowOfKeyswitches(name=Row.KEYSWITCH, choices=KEYSWITCH_SLOTS),
     *[control_row(name) for name in CC_ROWS],
     RowOfToggles(name=Row.SLIDE, kept_by_a_rest=True),
     *[RowOfNoteMoves(name=name) for name in REGISTER_NOTE_ROWS.values()],

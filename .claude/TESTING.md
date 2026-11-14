@@ -176,6 +176,10 @@ shared helpers are modules beside them:
   position, inverted and voice-led.
 - **Chords.** `tests/composition/test_chords.py`: a step's tensions and borrowed scale type, what a file refuses of both, and a chord
   spelled in a scale; `tests/tui/test_tui_chords.py` the pattern editor's Scale and Tension rows and the Chord dialog.
+- **Keyswitches.** `tests/playback/test_keyswitches.py`: an instrument's map and lead and what a file refuses of both, a step's
+  slots played as the instrument's notes with ties, a groove and a lead, nothing touched by transpose or a generator, and which
+  exports and routes carry them; `tests/tui/test_tui_keyswitches.py` the Keyswitch Map and its note picker, the Keyswitch row
+  and its dialog, named or numbered, and the piano roll's key, refusal and lights.
 - **Inversions.** `tests/composition/test_inversions.py`: each inversion played, what a file refuses, and the
   roll's ghosts; `tests/tui/test_tui_inversions.py` the editor's row.
 - **Progression.** `tests/generators/test_progression.py`: each chord moving a figure, sharps and flats,

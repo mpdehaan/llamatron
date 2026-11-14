@@ -69,7 +69,7 @@ from llamatron.strings.legends import (
     MSG_DEGREES_WHAT, MSG_DIRECTION_WHAT, MSG_DRUM_OFF_WHAT, MSG_DRUM_ON_WHAT, MSG_LETTERS_WHAT, MSG_LOAD_OVER_WHAT, MSG_STEP_SIZE_WHAT,
     MSG_TIME_SIGNATURE_WHAT, What,
 )
-from llamatron.strings.messages import MSG_RESTING_STEP
+from llamatron.strings.messages import MSG_KEYSWITCH_NO_INSTRUMENT, MSG_KEYSWITCH_SEVERAL_INSTRUMENTS, MSG_RESTING_STEP
 from llamatron.strings.messages import (
     MSG_CHANGE_TYPE_EMPTY_QUESTION, MSG_CHANGE_TYPE_QUESTION, MSG_CHANGE_TYPE_TITLE, MSG_LOAD_OVER_CHOICE_TITLE, MSG_LOAD_OVER_QUESTION,
     MSG_LOAD_OVER_TITLE, MSG_PLAY_DIRECTION_TITLE, MSG_RENAME_PATTERN_PROMPT, MSG_RECONFIGURE_TITLE, MSG_SHORTEN_QUESTION,
@@ -118,8 +118,10 @@ class PatternEditor(ShowsNamedItem, StepEditor):
     CRUMBS_BEFORE = (Crumb.PATTERNS,)
     RENAME_PROMPT = MSG_RENAME_PATTERN_PROMPT
 
-    def __init__(self, *, holder, name, opened_from=None):
+    def __init__(self, *, holder, name, opened_from=None, track=None):
         super().__init__(holder)
+        # The track of the clip the editor was opened from, whose instrument names the keyswitches, or None when the Patterns page opened it.
+        self.opened_track = track
         # The page a clip opened the editor from, Arrange or the clip page, whose crumbs come first in the editor's, so that the crumbs
         # say where Esc goes back to (the user's choice of 2026-11-09). None when the Patterns page opened it, whose crumbs are the editor's own.
         self.opened_from = opened_from
@@ -201,6 +203,24 @@ class PatternEditor(ShowsNamedItem, StepEditor):
 
     def set_value(self, *, value, row=None, step=None):
         self.document().set_step_value(name=self.item, row=row or self.row_name(), step=self.step if step is None else step, value=value)
+
+    def keyswitch_instrument(self):
+        """Return the instrument whose keyswitches the pattern's steps are named by, and what the keyswitch dialog says over its slots: the instrument's name, or why none is named.
+
+        The instrument is known when a clip opened the editor, whose track plays it, or when
+        every track that plays the pattern has the one instrument; otherwise the slots go by
+        their numbers alone (the user's choice).
+        """
+        document = self.document()
+        song = document.song()
+        if self.opened_track is not None and song.has_track(self.opened_track):
+            names = [song.get_track(self.opened_track).get_instrument_name()]
+        else:
+            names = document.instruments_of_pattern(self.item)
+        known = [name for name in names if name is not None]
+        if len(names) == 1 and known:
+            return document.setlist().get_instrument(known[0]), known[0]
+        return None, MSG_KEYSWITCH_SEVERAL_INSTRUMENTS if len(names) > 1 else MSG_KEYSWITCH_NO_INSTRUMENT
 
     def known_scale(self):
         """Return the scale the pattern is known to play under, as a NamedScale: the first of its uses' scales, or the current song's when nothing uses it, or None when there is none or it is a drum pattern."""

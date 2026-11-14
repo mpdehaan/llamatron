@@ -255,6 +255,14 @@ class PatternEdits:
             names = [self.song().get_scale_name()]
         return list(dict.fromkeys(scale for scale in names if scale))
 
+    def instruments_of_pattern(self, name):
+        """Return the distinct instruments of the tracks that play a pattern, by name, in order, None among them for a track with none."""
+        return self.remembered(key=(PatternEdits.instruments_of_pattern.__name__, name), on=(self.outside_patterns(),), compute=lambda: self._instruments_of_pattern(name))
+
+    def _instruments_of_pattern(self, name):
+        uses = self._setlist.clip_slots_naming(section=Section.PATTERNS, name=name)
+        return list(dict.fromkeys(self._setlist.get_song(song).get_track(track).get_instrument_name() for song, _, _, track in uses))
+
     def pattern_scale(self, name):
         """Return the scale a pattern's notes can be named in, or None when its uses play it under more than one, or under none."""
         scales = self.scales_of_pattern(name)

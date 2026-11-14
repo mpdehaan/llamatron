@@ -185,6 +185,20 @@ MSG_DESCRIBE_EMPTY = 'Step {step}: empty'
 MSG_DESCRIBE_TIED = 'Step {step}: tie, holding the note before it'
 MSG_DESCRIBE_NOTE = 'Step {step}: {sound}, gate {gate}{chord}'
 MSG_DESCRIBE_CHORD = ', chord {chord}'
+MSG_DESCRIBE_KEYSWITCHES = ', keyswitches: {names}'
+# tui/dialogs/keyswitch_dialog.py and tui/components/keyswitch_row.py: the dialog that picks a step's keyswitches, in both views of the pattern editor.
+MSG_KEYSWITCH_DIALOG_TITLE = 'Keyswitches: step {step}'
+# tui/dialogs/keyswitch_map_dialog.py: an instrument's Keyswitch Map, the prompt for a slot's name, and the note picker drawn over the map.
+MSG_KEYSWITCH_MAP_TITLE = 'Keyswitch Map: {instrument}'
+MSG_KEYSWITCH_NAME_PROMPT = 'Name of slot {slot} (blank for none)'
+MSG_KEYSWITCH_NOTE_TITLE = 'Note of slot {slot}'
+MSG_KEYSWITCH_NOTE_NAMED_TITLE = 'Note of slot {slot}: {name}'
+MSG_KEYSWITCH_PICKED_NOTE = 'Note    {note}'
+MSG_KEYSWITCH_PICKED_OCTAVE = 'Octave  {octave}'
+MSG_KEYSWITCH_LEAD_PROMPT = 'Keyswitch lead in milliseconds ({lowest} to {highest})'
+MSG_KEYSWITCH_SEVERAL_INSTRUMENTS = 'This pattern plays on more than one instrument.'
+MSG_KEYSWITCH_NO_INSTRUMENT = 'No instrument plays this pattern.'
+# tui/screens/pattern/pattern_editor.py, its two drawings and the rows in tui/components/
 # What the description line calls the sound of a step marked to grab, whose note is whatever the other track played.
 MSG_GRABBED_SOUND = 'the grabbed note'
 MSG_DESCRIBE_GATE_OVERRIDDEN = ' (the ties after it override it)'

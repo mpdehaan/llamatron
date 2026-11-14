@@ -234,6 +234,8 @@ MSG_OUT_OF_RANGE_CELL = '·····'
 MSG_GHOST_LINE = '─'
 # The piano roll's read head, a thin line down the roll at the left edge of the step that sounds.
 MSG_READ_HEAD = '│'
+# The light on a step that has keyswitches, in the middle of the step's cell on the roll's top row, over a note's bar when one is there (the user's design).
+MSG_KEYSWITCH_LIGHT = '◆'
 MSG_DRUM_ON = '[x]'
 MSG_DRUM_OFF = '[ ]'
 # A toggle that's on shows a dot, from the few characters every terminal has, as the user asked.
@@ -326,6 +328,18 @@ MSG_CHORD_SUFFIXES = {
     ChordSymbol.DOMINANT13: '13', ChordSymbol.MAJOR13: 'M13', ChordSymbol.MINOR13: 'm13',
 }
 MSG_UNNAMED_CHORD_SUFFIX = '?'
+# tui/keyswitch_text.py, tui/components/keyswitch_row.py and tui/dialogs/keyswitch_dialog.py: a keyswitch's note with its MIDI number, a slot with no name,
+# a step's keyswitches joined in words, and a slot's row in the dialog that picks a step's: its number, its toggle, its name and its note.
+MSG_KEYSWITCH_NOTE = '{name} ({number})'
+MSG_KEYSWITCH_SLOT_NAMED = 'slot {slot}'
+MSG_KEYSWITCH_SEPARATOR = ', '
+MSG_KEYSWITCH_SLOT_ROW = '{slot:>2}   {toggle}   '
+# tui/dialogs/keyswitch_map_dialog.py: a slot's row in an instrument's Keyswitch Map, its number before its name and note.
+MSG_KEYSWITCH_MAP_ROW = '{slot:>2}   '
+# tui/screens/set/instrument_editor.py: how many of an instrument's keyswitch slots hold anything, and its keyswitch lead.
+MSG_KEYSWITCHES_SET = '{count} of {slots} set'
+MSG_KEYSWITCH_LEAD_SHOWN = '{milliseconds} ms'
+
 # tui/components/tension_row.py: a step's tensions in a cell, and how many when they don't fit.
 MSG_TENSIONS_IN_CELL_SEPARATOR = ' '
 MSG_TENSIONS_COUNTED = '{count} set'

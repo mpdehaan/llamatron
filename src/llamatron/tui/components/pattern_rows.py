@@ -46,6 +46,7 @@ from llamatron.tui.components.section_row import SectionRow
 from llamatron.tui.components.set_row import SetRow
 from llamatron.tui.components.slide_row import SlideRow
 from llamatron.tui.components.tension_row import TensionRow
+from llamatron.tui.components.keyswitch_row import KeyswitchRow
 from llamatron.tui.components.tie_row import TieRow
 from llamatron.tui.key_table import STEP_BACK, cursor_moved, BindsKeys
 from llamatron.tui.keys import Key, RowSection
@@ -55,7 +56,7 @@ from llamatron.tui import keybindings
 PINNED_ROWS = [Row.DEGREE, Row.OCTAVE]
 # The sections of rows under the pinned ones, in order, each headed by a row the cursor can rest on: the user's grouping of 2026-11-08.
 SECTIONS = {
-    RowSection.BASICS: [Row.ACCIDENTAL, Row.VELOCITY],
+    RowSection.BASICS: [Row.ACCIDENTAL, Row.VELOCITY, Row.KEYSWITCH],
     # Everything about a step's chord together, in the user's order, the same wherever a chord is chosen: the chord, its tensions, the scale it borrows and its inversion.
     RowSection.CHORD: [Row.CHORD, Row.TENSION, Row.CHORD_SCALE, Row.INVERSION],
     RowSection.TIMING: [Row.TIE, Row.GATE, Row.DOT, Row.GLIDE],
@@ -70,7 +71,7 @@ SECTIONS = {
 ROW_CLASSES = {
     Row.DEGREE: DegreeRow, Row.GATE: GateRow, Row.DOT: DotRow, Row.ACCIDENTAL: AccidentalRow, Row.OCTAVE: OctaveRow,
     Row.CHORD: ChordRow, Row.TENSION: TensionRow, Row.CHORD_SCALE: ChordScaleRow, Row.INVERSION: InversionRow, Row.VELOCITY: NumberRow, Row.PROBABILITY: NumberRow, Row.GLIDE: GlideRow, Row.TIE: TieRow,
-    Row.RATCHET: NumberRow, Row.RATCHET_OFFSET: NumberRow, Row.GRAB: GrabRow, Row.SLIDE: SlideRow,
+    Row.RATCHET: NumberRow, Row.RATCHET_OFFSET: NumberRow, Row.GRAB: GrabRow, Row.KEYSWITCH: KeyswitchRow, Row.SLIDE: SlideRow,
     **dict.fromkeys(CC_ROWS, CcRow),
     **dict.fromkeys(REGISTER_NOTE_ROWS.values(), RegisterRow),
     **dict.fromkeys(REGISTER_VELOCITY_ROWS.values(), RegisterRow),

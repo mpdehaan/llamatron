@@ -99,7 +99,7 @@ a feature that already exists does what's being asked, that's pointed out first
 - Each screen lists its keys once in `keys()`, which both handles and draws them, so no key can
   work without being shown in the legend or, for a key left off the legend to keep it short, in
   the F1 dialog, which lists every key: Home and End, and on the
-  piano roll `K` and `G` are the ones left off
+  piano roll `X` (Split, the knife) and `G` are the ones left off
   (their class's `IN_LEGEND` in `tui/keybindings.py` leaves them out), so that the roll's legend keeps to drawing. A key that acts on a step is named in full, `insert step` and
   `remove step`, and on a groove's cells `insert cell` and `remove cell`. Every page's legend and
   help fit an 80 by 24 console.
@@ -285,6 +285,8 @@ such name, and `tests/rules/test_naming.py` holds that nothing else numbers one)
   design, and is never drawn over a note's bar.
   The piano roll's thin lines of a chord's other notes are green (`Style.CHORD_NOTE`), the user's design, so that they stand
   apart from the notes written.
+  The piano roll's keyswitch light, `◆` in the top pitch row on screen in the column of a step whose note has keyswitches, is
+  magenta (`Style.KEYSWITCH_LIGHT`), the user's design and the ninth allowance of colour, drawn over a note's bar when one is there.
   Arrange's details view (`D`) is the third, the user's design, and only for what it lists:
   its dividers in blue (`Style.DETAILS_DIVIDER`), so that the view shows itself, each chain
   and generator in green (`Style.DETAILS_GENERATOR`), the box around a cell Tab has locked into in

@@ -174,8 +174,19 @@ class SongRenderer:
                     self._chord_counts[(scene.get_number(), name)] = _chords_in(clip)
                     clip.set_nudge(self.nudge_plan(scene=scene, track=name))
                     clip.set_handed(self.handed_notes(scene=scene, track=name))
+                    if clip.get_keyswitches():
+                        clip.set_keyswitch_lead(self.keyswitch_lead(track=name, tempo=self._song.get_tempo() if tempo is None else tempo))
                     grid.set_clip(row=grid_scene, column=tracks[name], clip=clip)
         return grid
+
+    def keyswitch_lead(self, *, track, tempo):
+        """Return how much earlier than its note a track's instrument wants each keyswitch, in whole notes at a tempo, or None for at the same moment."""
+        instrument = self.instrument_of(self._song.get_track(track))
+        if instrument is None or not instrument.get_keyswitch_lead():
+            return None
+        milliseconds = instrument.get_keyswitch_lead()
+        lead = Fraction(milliseconds) * Fraction(tempo).limit_denominator(TEMPO_DENOMINATOR) / MILLISECONDS_PER_WHOLE_NOTE_AT_ONE_BEAT_A_MINUTE
+        return Rational(lead.numerator, lead.denominator)
 
     def strum_plan(self, *, scene, track, tempo):
         """Return how a clip strums its chords at its scene's tempo, or None: the last Strum generator its chains name, else the clip's own strum, else its track's."""

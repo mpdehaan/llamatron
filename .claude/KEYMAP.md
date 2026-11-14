@@ -191,10 +191,11 @@ settings page's fields. The keys that work everywhere are listed once:
 
 ## InstrumentEditor
 
-- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `F2` rename
-- **the Device field**: `ESC` back · `↑↓` select · `ENTER` choose · `Bksp` no device · `F2` rename
-- **the Channel field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `F2` rename
-- **the GM sound field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` no sound · `F2` rename
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `F2` rename · `K` keyswitch map
+- **the Device field**: `ESC` back · `↑↓` select · `ENTER` choose · `Bksp` no device · `F2` rename · `K` keyswitch map
+- **the Channel field, the Keyswitch lead field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `F2` rename · `K` keyswitch map
+- **the GM sound field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` no sound · `F2` rename · `K` keyswitch map
+- **the Keyswitch Map button**: `ESC` back · `↑↓` select · `←→` select · `ENTER` keyswitch map · `F2` rename · `K` keyswitch map
 
 ## InstrumentsPage
 
@@ -223,14 +224,15 @@ settings page's fields. The keys that work everywhere are listed once:
 
 ## PatternEditor
 
-- **the piano roll**: `ESC` back · `←↑↓→` move · `Home/End` ends · `Tab` to editor · `S` size · `R` reconfigure · `L` listen · `F2` rename · `Space/ENTER` note · `H` chord · `[` shrink · `]` stretch · `K` split · `.` #/b · `Bksp` erase · `G` grab · `E` entry size
+- **the piano roll**: `ESC` back · `←↑↓→` move · `Home/End` ends · `Tab` to editor · `S` size · `R` reconfigure · `L` listen · `F2` rename · `Space/ENTER` note · `H` chord · `K` keyswitch · `[` shrink · `]` stretch · `X` split · `.` #/b · `Bksp` erase · `G` grab · `E` entry size
 - **the degree row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `1-7` degree · `[` dec · `]` inc · `Bksp` clear
 - **the degree row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `1-7` degree · `[` dec · `]` inc
 - **the octave row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `0-8` type octave · `[` dec · `]` inc · `Bksp` default
-- **the octave row, the accidental row, the velocity row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename
+- **the octave row, the accidental row, the velocity row, the keyswitch row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename
 - **the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `Space/ENTER` close section
 - **the accidental row, the dot row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the ax_bx row, the ax_cx row, the ax_dx row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `Space/ENTER` next · `[` dec · `]` inc · `Bksp` clear
 - **the velocity row, the probability row, the ratchet row, the ratchet_offset row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `0-9` type · `[` dec · `]` inc · `ENTER` type · `Bksp` default
+- **the keyswitch row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `ENTER` choose · `Bksp` clear
 - **the chord row, the chord_scale row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `ENTER` choose · `Space` next · `[` dec · `]` inc · `Bksp` clear
 - **the tie row, the glide row, the grab row, the slide row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `Space/ENTER` toggle · `Bksp` clear
 - **the gate row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `R` reconfigure · `L` listen · `F2` rename · `[` dec · `]` inc · `ENTER` type · `Bksp` one step
@@ -405,7 +407,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - GrooveEditor: dec (anywhere)
 - GuitarBarEditor: dec (anywhere)
 - HocketEditor: dec (the Source track field, the Restart field)
-- InstrumentEditor: dec (the Channel field, the GM sound field)
+- InstrumentEditor: dec (the Channel field, the Keyswitch lead field, the GM sound field)
 - OffsetsEditor: dec (anywhere)
 - PatternEditor: shrink (the piano roll)
 - PatternEditor: dec (the degree row, the octave row, the accidental row, the dot row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the ax_bx row, the ax_cx row, the ax_dx row, the velocity row, the probability row, the ratchet row, the ratchet_offset row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the chord row, the chord_scale row, the gate row)
@@ -441,7 +443,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - GrooveEditor: inc (anywhere)
 - GuitarBarEditor: inc (anywhere)
 - HocketEditor: inc (the Source track field, the Restart field)
-- InstrumentEditor: inc (the Channel field, the GM sound field)
+- InstrumentEditor: inc (the Channel field, the Keyswitch lead field, the GM sound field)
 - OffsetsEditor: inc (anywhere)
 - PatternEditor: stretch (the piano roll)
 - PatternEditor: inc (the degree row, the octave row, the accidental row, the dot row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the ax_bx row, the ax_cx row, the ax_dx row, the velocity row, the probability row, the ratchet row, the ratchet_offset row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the chord row, the chord_scale row, the gate row)
@@ -531,7 +533,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - NotesPage: clear (anywhere)
 - OpenPage: erase (while searching)
 - PatternEditor: erase (the piano roll)
-- PatternEditor: clear (the degree row, the accidental row, the dot row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the ax_bx row, the ax_cx row, the ax_dx row, the chord row, the chord_scale row, the tie row, the glide row, the grab row, the slide row)
+- PatternEditor: clear (the degree row, the accidental row, the dot row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the ax_bx row, the ax_cx row, the ax_dx row, the keyswitch row, the chord row, the chord_scale row, the tie row, the glide row, the grab row, the slide row)
 - PatternEditor: default (the octave row, the velocity row, the probability row, the ratchet row, the ratchet_offset row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row)
 - PatternEditor: one step (the gate row)
 - PatternsPage: delete (a row)
@@ -591,7 +593,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - GrooveEditor: remove cell (anywhere)
 - GuitarBarEditor: remove cell (anywhere)
 - OffsetsEditor: remove step (anywhere)
-- PatternEditor: remove step (the degree row, the octave row, the accidental row, the velocity row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
+- PatternEditor: remove step (the degree row, the octave row, the accidental row, the velocity row, the keyswitch row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
 - RushStepsEditor: remove step (anywhere)
 - ShortenStepsEditor: remove step (anywhere)
 
@@ -663,7 +665,8 @@ settings page's fields. The keys that work everywhere are listed once:
 - HocketEditor: choose (the Source track field, the Restart field)
 - InstrumentEditor: rename (the Name field)
 - InstrumentEditor: choose (the Device field, the GM sound field)
-- InstrumentEditor: edit (the Channel field)
+- InstrumentEditor: edit (the Channel field, the Keyswitch lead field)
+- InstrumentEditor: keyswitch map (the Keyswitch Map button)
 - InstrumentsPage: edit (a row)
 - InstrumentsPage: add (the + row)
 - InstrumentsPage: keep (while searching)
@@ -673,7 +676,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - OpenPage: open (a row)
 - OpenPage: keep (while searching)
 - PatternEditor: type (the velocity row, the probability row, the ratchet row, the ratchet_offset row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the gate row)
-- PatternEditor: choose (the chord row, the chord_scale row)
+- PatternEditor: choose (the keyswitch row, the chord row, the chord_scale row)
 - PatternsPage: edit (a row)
 - PatternsPage: add (the + row)
 - PatternsPage: keep (while searching)
@@ -752,7 +755,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - GuitarBarEditor: back (anywhere)
 - GuitarifyEditor: back (the Name field, the Shape heading, the Strokes heading)
 - HocketEditor: back (the Name field, the Source track field, the Restart field)
-- InstrumentEditor: back (the Name field, the Device field, the Channel field, the GM sound field)
+- InstrumentEditor: back (the Name field, the Device field, the Channel field, the Keyswitch lead field, the GM sound field, the Keyswitch Map button)
 - InstrumentsPage: back (a row, the + row)
 - InstrumentsPage: CANCEL (while searching)
 - NotesPage: CANCEL (while typing, anywhere)
@@ -760,7 +763,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - OffsetsEditor: back (anywhere)
 - OpenPage: back (a row)
 - OpenPage: CANCEL (while searching)
-- PatternEditor: back (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
+- PatternEditor: back (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the keyswitch row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
 - PatternsPage: back (a row, the + row)
 - PatternsPage: CANCEL (while searching)
 - ProgressionEditor: back (the Name field, the Every field, the Chords field, the Restart field)
@@ -798,8 +801,8 @@ settings page's fields. The keys that work everywhere are listed once:
 - GlideEditor: rename (the Name field, the Step field, the Glide amount field, the Restart field, the Steps field)
 - GuitarifyEditor: rename (the Name field, the Shape heading, the Strokes heading)
 - HocketEditor: rename (the Name field, the Source track field, the Restart field)
-- InstrumentEditor: rename (the Name field, the Device field, the Channel field, the GM sound field)
-- PatternEditor: rename (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
+- InstrumentEditor: rename (the Name field, the Device field, the Channel field, the Keyswitch lead field, the GM sound field, the Keyswitch Map button)
+- PatternEditor: rename (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the keyswitch row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
 - ProgressionEditor: rename (the Name field, the Every field, the Chords field, the Restart field)
 - RushEditor: rename (the Name field, the Step field, the Rush amount field, the Steps field, the Restart field)
 - ScalePage: rename (the Name field, the Root field, the Kind field)
@@ -824,7 +827,7 @@ settings page's fields. The keys that work everywhere are listed once:
 
 ## `Home/End`
 
-- PatternEditor: ends (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
+- PatternEditor: ends (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the keyswitch row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
 
 ## `I`
 
@@ -837,7 +840,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - GuitarBarEditor: insert cell (anywhere)
 - MainPage: Instruments (anywhere)
 - OffsetsEditor: insert step (anywhere)
-- PatternEditor: insert step (the degree row, the octave row, the accidental row, the velocity row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
+- PatternEditor: insert step (the degree row, the octave row, the accidental row, the velocity row, the keyswitch row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
 - RushStepsEditor: insert step (anywhere)
 - ShortenStepsEditor: insert step (anywhere)
 
@@ -848,12 +851,13 @@ settings page's fields. The keys that work everywhere are listed once:
 
 ## `K`
 
-- PatternEditor: split (the piano roll)
+- InstrumentEditor: keyswitch map (the Name field, the Device field, the Channel field, the Keyswitch lead field, the GM sound field, the Keyswitch Map button)
+- PatternEditor: keyswitch (the piano roll)
 
 ## `L`
 
 - ClipPage: listen (the Name field, the Pattern field, the Scale field, the Chains field, the Repeat field, the Loop field, the Strum heading, the Density heading, the Swell heading, the Articulate heading, the Direction field, the Grab track field, the Advance field, the Play button, the Stop button)
-- PatternEditor: listen (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
+- PatternEditor: listen (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the keyswitch row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
 - PatternsPage: listen (a row)
 
 ## `M`
@@ -904,7 +908,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - ClipPage: next section (the Name field, the Pattern field, the Scale field, the Chains field, the Repeat field, the Loop field, the Strum heading, the Density heading, the Swell heading, the Articulate heading, the Direction field, the Grab track field, the Advance field, the Play button, the Stop button)
 - FilePage: next section (the Author field, the Description field, the Title field, the Default follow action field, the Notes field, the Protected field, the Notes & Octaves heading, the Visualizers heading, the Save button, the Open button)
 - GuitarifyEditor: next section (the Name field, the Shape heading, the Strokes heading)
-- PatternEditor: next section (the degree row, the octave row, the accidental row, the velocity row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
+- PatternEditor: next section (the degree row, the octave row, the accidental row, the velocity row, the keyswitch row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
 - ScenePage: next section (the Name field, the Scale field, the Groove field, the Tempo field, the Tempo ramps to field, the Repeat field, the Reset AX field, the Reset BX field, the Reset CX field, the Reset DX field, the Launch together field, the Density heading, the Swell heading, the Articulate heading, the Chains field)
 - TrackEditor: next section (the Name field, the Drum field, the Mute field, the Euclid heading, the Strum heading, the Groove field, the Transpose field, the Lowest octave field, the Highest octave field, the CC 1 field, the CC 2 field, the CC 3 field, the CC 4 field, the CC1 Reg field, the CC2 Reg field, the CC3 Reg field, the CC4 Reg field, the Vel Reg field, the Chains field, the Instrument field)
 
@@ -916,7 +920,7 @@ settings page's fields. The keys that work everywhere are listed once:
 
 - GuitarBarEditor: ready-made (anywhere)
 - MainPage: Registers (anywhere)
-- PatternEditor: reconfigure (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
+- PatternEditor: reconfigure (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the keyswitch row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
 
 ## `S`
 
@@ -926,7 +930,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - GuitarBarEditor: cell length (anywhere)
 - InstrumentsPage: sort (a row)
 - MainPage: Songs (anywhere)
-- PatternEditor: size (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
+- PatternEditor: size (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the keyswitch row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
 - PatternsPage: sort (a row)
 - ScalesPage: sort (a row)
 - SongsPage: sort (a row)
@@ -980,7 +984,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - OffsetsEditor: next row (anywhere)
 - OpenPage: complete (while searching)
 - PatternEditor: to editor (the piano roll)
-- PatternEditor: to piano roll (the degree row, the octave row, the accidental row, the velocity row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
+- PatternEditor: to piano roll (the degree row, the octave row, the accidental row, the velocity row, the keyswitch row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
 - PatternsPage: complete (while searching)
 - ScalesPage: complete (while searching)
 - SongsPage: complete (while searching)
@@ -998,6 +1002,7 @@ settings page's fields. The keys that work everywhere are listed once:
 ## `X`
 
 - MainPage: EXPORT (anywhere)
+- PatternEditor: split (the piano roll)
 
 ## `Z`
 
@@ -1011,7 +1016,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - ChordsEditor: move (anywhere)
 - MainPage: select (anywhere)
 - NotesPage: move (while typing)
-- PatternEditor: move (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
+- PatternEditor: move (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the keyswitch row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
 - RegistersPage: move (the AX allowed inc max field, the AX minimum field, the AX default field, the AX maximum field, the BX allowed inc max field, the BX minimum field, the BX default field, the BX maximum field, the CX allowed inc max field, the CX minimum field, the CX default field, the CX maximum field, the DX allowed inc max field, the DX minimum field, the DX default field, the DX maximum field, the AX at limit field, the BX at limit field, the CX at limit field, the DX at limit field, the AX reset each scene field, the BX reset each scene field, the CX reset each scene field, the DX reset each scene field)
 
 ## `←→`
@@ -1024,6 +1029,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - GlideStepsEditor: move (anywhere)
 - GrooveEditor: move (anywhere)
 - GuitarBarEditor: move (anywhere)
+- InstrumentEditor: select (the Keyswitch Map button)
 - NotesPage: select (anywhere)
 - OffsetsEditor: move (anywhere)
 - RushStepsEditor: move (anywhere)
@@ -1051,7 +1057,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - GroovesPage: select (a row, the + row, while searching)
 - GuitarifyEditor: select (the Name field, the Shape heading, the Strokes heading)
 - HocketEditor: select (the Name field, the Source track field, the Restart field)
-- InstrumentEditor: select (the Name field, the Device field, the Channel field, the GM sound field)
+- InstrumentEditor: select (the Name field, the Device field, the Channel field, the Keyswitch lead field, the GM sound field, the Keyswitch Map button)
 - InstrumentsPage: select (a row, the + row, while searching)
 - NotesPage: scroll (anywhere)
 - OpenPage: select (a row, while searching)
@@ -1083,7 +1089,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - **GlideEditor**: Name, Step, Glide amount, Steps, Restart
 - **GuitarifyEditor**: Name, [Shape], Shape chords, Tuning, Position, Capo, Strings, Single notes, [Strokes], Play strokes, Bar, Let ring, Spread, Fade, Loose timing, Upstroke strings, Restart
 - **HocketEditor**: Name, Source track, Restart
-- **InstrumentEditor**: Name, Device, Channel, GM sound
+- **InstrumentEditor**: Name, Device, Channel, GM sound, Keyswitch lead, (Keyswitch Map)
 - **ProgressionEditor**: Name, Every, Chords, Restart
 - **RegistersPage**: AX allowed inc max, AX at limit, AX minimum, AX default, AX maximum, AX reset each scene, BX allowed inc max, BX at limit, BX minimum, BX default, BX maximum, BX reset each scene, CX allowed inc max, CX at limit, CX minimum, CX default, CX maximum, CX reset each scene, DX allowed inc max, DX at limit, DX minimum, DX default, DX maximum, DX reset each scene
 - **RushEditor**: Name, Step, Rush amount, Steps, Restart

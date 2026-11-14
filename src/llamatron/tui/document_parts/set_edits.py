@@ -263,6 +263,14 @@ class SetEdits:
         """Choose an instrument's General MIDI sound, 1 to 128, or None for none."""
         self._change(self._setlist.get_instrument(name).set_gm_sound, sound)
 
+    def set_instrument_keyswitches(self, *, name, keyswitches):
+        """Give an instrument its ten keyswitch slots, each a name and a note, as the Keyswitch Map dialog answers them."""
+        self._change(self._setlist.get_instrument(name).set_keyswitches, keyswitches)
+
+    def set_instrument_keyswitch_lead(self, *, name, milliseconds):
+        """Set how many milliseconds before its note an instrument's keyswitches are sent, or None for at the same moment."""
+        self._change(self._setlist.get_instrument(name).set_keyswitch_lead, milliseconds)
+
     def set_real_time(self, value):
         """Turn real-time playback on or off, the main screen's Real Time switch."""
         self._change(self._setlist.set_real_time, value)

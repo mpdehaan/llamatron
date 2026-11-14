@@ -205,10 +205,10 @@ class Transport:
             if not instrument.uses_fluidsynth():
                 routes[track] = Route(instrument.get_device(), instrument.get_channel() - CHANNEL_OFFSET)
             elif song.get_track(track).is_drum():
-                routes[track] = Route(FLUIDSYNTH_PORT, DRUM_CHANNEL_BYTE)
+                routes[track] = Route(FLUIDSYNTH_PORT, DRUM_CHANNEL_BYTE, None, keyswitches=False)
             elif not song.get_track(track).is_muted():
                 sound = instrument.get_gm_sound()
-                routes[track] = Route(FLUIDSYNTH_PORT, MELODIC_CHANNEL_BYTES[melodic % len(MELODIC_CHANNEL_BYTES)], None if sound is None else sound - MIN_GM_SOUND)
+                routes[track] = Route(FLUIDSYNTH_PORT, MELODIC_CHANNEL_BYTES[melodic % len(MELODIC_CHANNEL_BYTES)], None if sound is None else sound - MIN_GM_SOUND, keyswitches=False)
                 melodic += 1
         return routes
 

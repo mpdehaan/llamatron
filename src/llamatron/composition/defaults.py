@@ -41,6 +41,9 @@ DEFAULT_FOLLOW_ACTION = FollowAction.WITH_SCENE
 DEFAULT_LAUNCH_TOGETHER = True
 # An instrument's channel, as people number them.
 DEFAULT_CHANNEL = 1
+# A keyswitch is sent at the same moment as its note, before it, unless the instrument says earlier, and always at one velocity (the user's rules).
+DEFAULT_KEYSWITCH_LEAD = 0
+KEYSWITCH_VELOCITY = 100
 # Whether the set plays in real time, which the first instrument added turns on.
 DEFAULT_REAL_TIME = False
 # A set the user makes is theirs to save over; the sets shipped in examples/ turn this on.

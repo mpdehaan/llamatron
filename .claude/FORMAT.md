@@ -672,6 +672,27 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   an instrument on `*FluidSynth`, the melodic ones with a sound and the drum tracks sharing one
   called `drum kit`, and every track that plays only drum patterns is a drum track, which
   `tests/app/test_examples.py` holds them to. A new set has no instruments.
+- Keyswitches, the user's design: an instrument's `keyswitches` (`InstrumentSetting.KEYSWITCHES`) is its Keyswitch Map, a list
+  of `KEYSWITCH_SLOT_COUNT` (10) slots numbered 0 to 9, each nothing or a `name` and a `note` (`KeyswitchSetting`, a MIDI
+  number, either alone allowed; `Keyswitch`, `NO_KEYSWITCH`, `KEYSWITCH_SETTINGS`), written only when a slot holds something,
+  and its `keyswitch_lead` (`InstrumentSetting.KEYSWITCH_LEAD`, milliseconds from `MIN_KEYSWITCH_LEAD` 0 to
+  `MAX_KEYSWITCH_LEAD` 500, 0 unless written) is how long before its note a keyswitch is sent. A pattern's `keyswitch` row
+  (`Row.KEYSWITCH`, `RowOfKeyswitches`) holds for each step the slots that are on, a list of slot numbers lowest first or
+  nothing; a pattern stores slot numbers, never notes, so the pattern works with any instrument's map, and a rest doesn't
+  keep the row. The render gathers a step's slots whenever the step holds a note, whatever its probability or conditions
+  decide (Claude's choice, since a switch that is missed leaves the plugin in the wrong articulation), a tie lengthening
+  them with the note (`playback/pattern_player.py`, `SwitchedSlots` in `grid/keyswitch.py`), and the clip slot's player turns
+  slots into the notes of the track's instrument (`_switch_notes` in `playback/clip_slot_player.py`, `SwitchNote`): none for
+  a track with no instrument, an instrument on `*FluidSynth` or a slot with no note. They are kept on the clip apart from
+  its sounds (`Clip.get_keyswitches`, `get_keyswitch_lead`), so no generator, transpose, scale, strum, Grab, Hocket,
+  visualizer or Scene View sees them; only what moves the step's note in time moves them, a groove, a Rush and a Drag. Their
+  velocity is `KEYSWITCH_VELOCITY` (100). `exporters/timing.py`'s `keyswitch_events` gives their times, the lead taken off
+  (worked out from the tempo by `SongRenderer.keyswitch_lead`) and one cut where the same note starts again; at one moment a
+  keyswitch is sent before a note (`KEYSWITCH_ON` before `NOTE_ON` in `exporters/midi_messages.py`, and first in
+  `realtime/timeline.py`, whose `Playing.switch` marks them so that `realtime/score.py` counts none as a heard note). The
+  MIDI file, the stems, the MIDI clips and the Live set carry them (`_Arrangement.KEYSWITCHES`); the General MIDI file, the
+  WAV and every FluidSynth route leave them out (`MidiGeneralMidi.KEYSWITCHES`, `Route.keyswitches`). An import reads them
+  as ordinary notes. `tests/playback/test_keyswitches.py` holds all of this.
 - A track's `instrument` (`TrackSetting.INSTRUMENT`, in `Track.REFERENCES`) names one, or is
   blank for none, which leaves the track out of real-time playback. Renaming an instrument
   updates the tracks, and `tracks_naming` lists the uses.

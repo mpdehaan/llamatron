@@ -91,7 +91,7 @@ class Clip:
     and the exporters work on. get_notes() and get_sounds() give either clip either way.
     """
 
-    __slots__ = ('_id', '_name', '_notes', '_sounds', '_scale', '_length', '_note_length', '_loop', '_controls', '_time_signature', '_groove', '_strum', '_nudge', '_handed')
+    __slots__ = ('_id', '_name', '_notes', '_sounds', '_scale', '_length', '_note_length', '_loop', '_controls', '_time_signature', '_groove', '_strum', '_nudge', '_handed', '_keyswitches', '_keyswitch_lead')
 
     def __init__(self, *, name=None, notes=None, sounds=None, scale=None, length=None, note_length=None, loop=True, controls=None, time_signature=None):
         check_loop(loop)
@@ -112,6 +112,8 @@ class Clip:
         self._strum = None
         self._nudge = None
         self._handed = ()
+        self._keyswitches = ()
+        self._keyswitch_lead = None
 
     def get_id(self):
         return self._id
@@ -184,6 +186,22 @@ class Clip:
     def get_handed(self):
         """Return the notes a Hocket hands the clip, HandedNotes in time order, which the exporters' timing adds to the clip's own; none unless the renderer gave some."""
         return self._handed
+
+    def get_keyswitches(self):
+        """Return the keyswitch notes the clip sends, SwitchNotes in time order, which only the exporters' timing reads; none unless the renderer gave it some."""
+        return self._keyswitches
+
+    def set_keyswitches(self, notes):
+        """Give the clip its keyswitch notes, which the renderer does once the clip is finished, since nothing that changes notes may touch them."""
+        self._keyswitches = tuple(notes)
+
+    def get_keyswitch_lead(self):
+        """Return how much earlier than its note each keyswitch is sent, in whole notes, or None for at the same moment."""
+        return self._keyswitch_lead
+
+    def set_keyswitch_lead(self, lead):
+        """Say how much earlier than its note each keyswitch is sent, in whole notes, which the renderer works out from the instrument's milliseconds at the scene's tempo."""
+        self._keyswitch_lead = lead
 
     def set_handed(self, notes):
         """Give the clip the notes its Hocket hands it, which the renderer does once the clip is finished, as it gives its groove."""

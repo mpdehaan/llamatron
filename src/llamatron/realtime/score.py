@@ -203,6 +203,8 @@ class Score:
         notes = []
         open_notes = {}
         for event in events:
+            if event.switch:
+                continue
             key = (event.port, event.channel, event.number)
             if event.kind == NOTE_ON:
                 open_notes[key] = (event.seconds, event.value)
@@ -330,6 +332,8 @@ class Score:
         spans = []
         open_notes = {}
         for event in events:
+            if event.switch:
+                continue
             key = (event.port, event.channel, event.number)
             if event.kind == NOTE_ON:
                 open_notes[key] = event.seconds

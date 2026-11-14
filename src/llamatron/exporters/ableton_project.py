@@ -25,7 +25,7 @@ from pathlib import Path
 from llamatron.support.files import READ_BYTES, WRITE_BYTES
 from llamatron.support.rational import Rational
 from llamatron.exporters.exporter import Exporter, ExportKind, WritesOneFile
-from llamatron.exporters.timing import BEATS_PER_WHOLE_NOTE, control_points, timed_events
+from llamatron.exporters.timing import BEATS_PER_WHOLE_NOTE, control_points, keyswitch_events, timed_events
 from llamatron.strings.names import MSG_ABLETON_EXPORT_LABEL
 from llamatron.strings.errors import ERR_BAD_TEMPLATE, ERR_BAD_TEMPO, ERR_EMPTY_SONG, ERR_FILE_EXISTS, ERR_NO_CLIP, ERR_NO_MIDI_TRACK, ERR_NOT_LIVE_12
 
@@ -439,7 +439,8 @@ class AbletonProject(WritesOneFile, Exporter):
         signature = clip.get_time_signature() or self._grid.get_time_signature()
         _set_value(parent=element, path=ElementPath.CLIP_SIGNATURE_BEATS, value=signature.get_beats())
         _set_value(parent=element, path=ElementPath.CLIP_SIGNATURE_UNIT, value=signature.get_unit())
-        self._write_notes(element=element.find(ElementPath.NOTES), notes=notes)
+        # A plugin in Live needs the keyswitch notes in the clip, beside the notes they change.
+        self._write_notes(element=element.find(ElementPath.NOTES), notes=[*keyswitch_events(clip=clip, clip_length=length), *notes])
         self._write_envelopes(envelopes=element.find(ElementPath.CLIP_ENVELOPES), clip=clip, length=length, controllers=controllers)
         return element
 

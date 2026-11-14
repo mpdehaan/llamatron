@@ -43,7 +43,7 @@ from llamatron.strings.legends import (
     MSG_DELETE_SCENE_WHAT, MSG_DELETE_TRACK_WHAT, MSG_EDIT_CLIP_WHAT, MSG_IMPORT_WHAT, MSG_PRESS_WHAT, MSG_OPEN_PATTERN_WHAT, MSG_SHRINK_WHAT, MSG_STRETCH_WHAT, MSG_ENTRY_SIZE_WHAT, MSG_GRAB_WHAT, MSG_HELP_FOOTER_WHAT, MSG_INSERT_SCENE_WHAT,
     MSG_INSERT_TRACK_WHAT, MSG_MAKE_CURRENT_WHAT, MSG_ADD_CHAIN_WHAT, MSG_BLANK_PATTERN_WHAT, MSG_REMOVE_CHAIN_WHAT, MSG_MOVE_CLIP_WHAT, MSG_QUIT_WITHOUT_SAVING_WHAT, MSG_SAVE_THEN_QUIT_WHAT, MSG_MOVE_SCENE_WHAT, MSG_MOVE_TRACK_WHAT, MSG_NEW_LINE_WHAT, MSG_NEW_WHAT,
     MSG_NEXT_SECTION_WHAT, MSG_NOTE_WHAT, MSG_ONE_STEP_WHAT, MSG_OPEN_SECTION_WHAT, MSG_PASTE_CLIP_WHAT, MSG_PLACE_NOTE_WHAT, MSG_PLAY_WHAT, MSG_PLAY_CLIP_WHAT, MSG_PLAY_SCENE_WHAT, MSG_PLAY_SONG_WHAT, MSG_STOP_WHAT, MSG_STOP_CLIP_WHAT, MSG_LISTEN_WHAT, MSG_STOP_LISTENING_WHAT,
-    MSG_RECONFIGURE_WHAT, MSG_SAVE_AS_WHAT, MSG_SCENE_SETTINGS_WHAT, MSG_A_OR_B_WHAT, MSG_NEXT_ROW_WHAT, MSG_SILENT_WHAT, MSG_SIZE_WHAT, MSG_SPLIT_WHAT, MSG_TO_BUTTONS_WHAT,
+    MSG_RECONFIGURE_WHAT, MSG_SAVE_AS_WHAT, MSG_SCENE_SETTINGS_WHAT, MSG_A_OR_B_WHAT, MSG_NEXT_ROW_WHAT, MSG_SILENT_WHAT, MSG_SIZE_WHAT, MSG_SPLIT_WHAT, MSG_KEYSWITCH_WHAT, MSG_KEYSWITCH_MAP_WHAT, MSG_KEYSWITCH_NOTE_WHAT, MSG_KEYSWITCH_OCTAVE_WHAT, MSG_OK_WHAT, MSG_TO_BUTTONS_WHAT,
     MSG_TO_CLIPS_WHAT, MSG_TO_EDITOR_WHAT, MSG_TO_ROLL_WHAT, MSG_TO_TEXT_WHAT, MSG_TRACK_SETTINGS_WHAT, MSG_TYPE_OCTAVE_WHAT, MSG_VIEW_WHAT, MSG_VISUALIZER_WHAT, MSG_STEP_VISUALIZER_WHAT, MSG_SHOW_DETAILS_WHAT, MSG_HIDE_DETAILS_WHAT, MSG_INTO_DETAILS_WHAT, MSG_OUT_OF_DETAILS_WHAT, MSG_OPEN_DETAIL_WHAT, MSG_CLOSE_DETAILS_WHAT, MSG_LEAVE_CELL_WHAT, MSG_SCENE_VIEW_WHAT, MSG_CLOSE_INSET_WHAT, MSG_TO_PLAYED_WHAT, MSG_TO_WRITTEN_WHAT, MSG_CLOSE_INSET_ESC_WHAT, MSG_ZOOM_WHAT, MSG_SCROLL_SIDEBAR_WHAT, MSG_JUMP_BAR_WHAT,
 )
 from llamatron.tui.keys import (
@@ -312,7 +312,11 @@ class TrackEditor(FieldPage):
 
 
 class InstrumentEditor(FieldPage):
-    """The instrument editor, with the settings keys alone."""
+    """The instrument editor: the settings keys, and K, which opens the Keyswitch Map from any field, as its button does."""
+
+    KEYSWITCH_MAP = (Key.K, KeyName.K, MSG_KEYSWITCH_MAP_WHAT)
+    IN_HELP = [*FieldPage.IN_HELP, KEYSWITCH_MAP]
+    IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
 
 class ArpEditor(FieldPage):
@@ -649,7 +653,7 @@ class PatternRows:
 
 
 class PianoRoll:
-    """The piano roll: one pencil, where every key does one thing, and Space or Enter on a note takes the note out as Bksp does. Its legend keeps to drawing, so K and G are listed by F1 alone. It neither inserts nor removes a step, the user's rule, as Live's piano roll never did.
+    """The piano roll: one pencil, where every key does one thing, and Space or Enter on a note takes the note out as Bksp does. Its legend keeps to drawing, so X and G are listed by F1 alone. It neither inserts nor removes a step, the user's rule, as Live's piano roll never did.
 
     Enter draws as Space does, by the user's choice of 2026-11-09, since the two do the same everywhere else, so the chord picker took the free letter H.
     """
@@ -661,12 +665,14 @@ class PianoRoll:
     # [ and ] drag the note's end a step earlier and later, which the user calls shrink and stretch (2026-11-09), since a note is not a number.
     SHORTER = (Key.LEFT_BRACKET, KeyName.LEFT_BRACKET, MSG_SHRINK_WHAT)
     LONGER = (Key.RIGHT_BRACKET, KeyName.RIGHT_BRACKET, MSG_STRETCH_WHAT)
-    KNIFE = (Key.K, KeyName.K, MSG_SPLIT_WHAT)
+    # Keyswitch took the knife's letter, the user's choice, and the knife the letter people know for cutting.
+    KEYSWITCH = (Key.K, KeyName.K, MSG_KEYSWITCH_WHAT)
+    KNIFE = (Key.X, KeyName.X, MSG_SPLIT_WHAT)
     ACCIDENTAL = (Key.PERIOD, KeyName.PERIOD, MSG_ACCIDENTAL_WHAT)
     ERASE = (Key.BACKSPACE, KeyName.BACKSPACE, What.ERASE)
     GRAB = (Key.G, KeyName.G, MSG_GRAB_WHAT)
     ENTRY_SIZE = (Key.E, KeyName.E, MSG_ENTRY_SIZE_WHAT)
-    IN_HELP = [MOVE, ENDS, PLACE, CHORD, SHORTER, LONGER, KNIFE, ACCIDENTAL, ERASE, GRAB, ENTRY_SIZE]
+    IN_HELP = [MOVE, ENDS, PLACE, CHORD, KEYSWITCH, SHORTER, LONGER, KNIFE, ACCIDENTAL, ERASE, GRAB, ENTRY_SIZE]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[ENDS, KNIFE, GRAB])
 
 
@@ -765,6 +771,15 @@ class ChordRow(PatternRow):
     NEXT = (Key.SPACE, KeyName.SPACE, What.NEXT)
     CLEAR = (Key.BACKSPACE, KeyName.BACKSPACE, What.CLEAR)
     IN_HELP = [CHOOSE, NEXT, PatternRow.LESS, PatternRow.MORE, CLEAR]
+    IN_LEGEND = IN_HELP
+
+
+class KeyswitchRow(PatternRow):
+    """The Keyswitch row: Enter opens the dialog that picks the step's keyswitches, and Bksp clears them."""
+
+    CHOOSE = (Key.ENTER, KeyName.ENTER, What.CHOOSE)
+    CLEAR = (Key.BACKSPACE, KeyName.BACKSPACE, What.CLEAR)
+    IN_HELP = [CHOOSE, CLEAR]
     IN_LEGEND = IN_HELP
 
 
@@ -925,6 +940,35 @@ class PickManyDialog(Dialog):
     DONE = (Key.ENTER, KeyName.ENTER, What.DONE)
     IN_HELP = [Dialog.CANCEL, MOVE, FLIP, DONE]
     IN_LEGEND = IN_HELP
+
+
+class KeyswitchMapDialog(Dialog):
+    """An instrument's Keyswitch Map: Up and Down move through the ten slots and down to the buttons, N names the slot, Enter opens its note picker, Bksp empties it, O is OK and Esc is CANCEL.
+
+    On the buttons, Left and Right choose one and Enter presses it. In the note picker, drawn over the map, Left and Right move along the octave's keys, Up and Down change the octave, Enter takes the note and Esc closes the picker with nothing changed.
+    """
+
+    MOVE = (ARROWS_UP_DOWN, KeyName.UP_DOWN, What.MOVE)
+    RENAME = ((Key.N, Key.F2), KeyName.N_F2, What.RENAME)
+    NOTE = (Key.ENTER, KeyName.ENTER, MSG_KEYSWITCH_NOTE_WHAT)
+    CLEAR = (Key.BACKSPACE, KeyName.BACKSPACE, What.CLEAR)
+    OK = (Key.O, KeyName.O, MSG_OK_WHAT)
+    ALONG_BUTTONS = (ARROWS_LEFT_RIGHT, KeyName.LEFT_RIGHT, What.SELECT)
+    PRESS = (Key.ENTER, KeyName.ENTER, What.ANSWER)
+    PICK_NOTE = (ARROWS_LEFT_RIGHT, KeyName.LEFT_RIGHT, MSG_KEYSWITCH_NOTE_WHAT)
+    PICK_OCTAVE = (ARROWS_UP_DOWN, KeyName.UP_DOWN, MSG_KEYSWITCH_OCTAVE_WHAT)
+    TAKE_NOTE = (Key.ENTER, KeyName.ENTER, What.CHOOSE)
+    CLOSE_PICKER = (CANCEL_KEYS, KeyName.ESCAPE, What.CLOSE)
+    IN_HELP = [Dialog.CANCEL, MOVE, RENAME, NOTE, CLEAR, OK, ALONG_BUTTONS, PRESS, PICK_NOTE, PICK_OCTAVE, TAKE_NOTE, CLOSE_PICKER]
+    IN_LEGEND = all_but(bindings=IN_HELP, hidden=[Dialog.CANCEL, OK])
+
+
+class KeyswitchDialog(PickManyDialog):
+    """The dialog that picks a step's keyswitches: Up and Down move, Space turns the slot under the cursor on or off, a digit turns its slot on or off, Enter is OK and Esc is CANCEL, the two shown as buttons."""
+
+    TOGGLE_SLOT = (DIGITS, KeyName.DIGITS, What.TOGGLE)
+    IN_HELP = [Dialog.CANCEL, PickManyDialog.MOVE, PickManyDialog.FLIP, TOGGLE_SLOT, PickManyDialog.DONE]
+    IN_LEGEND = [PickManyDialog.MOVE, PickManyDialog.FLIP, TOGGLE_SLOT]
 
 
 class ChordDialog(Dialog):

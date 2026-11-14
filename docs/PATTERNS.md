@@ -51,14 +51,15 @@ A note drawn at another pitch inside a held note cuts the held note where the ne
 | `Space`, `ENTER` | Draw a note of the entry size at the cursor, or erase the note under the cursor. |
 | `H` | Picks the chord of the note under the cursor, from any of its cells, with `(none)` at the top to make it a single note again. On a step that holds no note, `H` draws a note at the cursor first, as Space would, and picks that note's chord. Where every clip that plays the pattern plays it under one scale, and the console has the room, the picker draws a keyboard under its lists, with the scale's keys outlined and the chord's keys filled. A chord's other notes are drawn as thin dim lines on their own rows, as long as the note, and follow the note rather than being edited on their own. |
 | `[` (shrink), `]` (stretch) | Drag the end of the note under the cursor a step earlier or later, from any of its cells. A note shorter than a step becomes a whole step first, and the drag stops at one step and at the next note on the row. On a note whose length is a gate, stretching adds a tie after the gate's reach. |
-| `K` | The knife: splits the held note under the cursor at the cursor's step, so the rest of the note is a note of its own at the same pitch. |
+| `K` | Picks the keyswitches of the note on the cursor's step, whichever row the cursor is on, in the dialog described under Keyswitches below. A step that no note covers takes none, and the status line says so. |
+| `X` | The knife: splits the held note under the cursor at the cursor's step, so the rest of the note is a note of its own at the same pitch. |
 | `.` | Cycles the note under the cursor through sharp, flat and natural. The note moves to the row that sounds it, a row of its own between two degrees, and the cursor follows. |
 | `Bksp` | Takes out the note under the cursor, with the steps it held. |
 | `G` | Marks the note under the cursor to grab its pitch from the clip's Grab track, or unmarks it. |
 | `E` | Picks the entry size from a list: the song's, or one of the step sizes from 1/64 to a whole note. The entry size is the pattern's own setting, and the Song page's Entry size is what a pattern starts with. |
 | `Tab` | Switches to the rows, and back. The pattern editor opens in the view you left it in. |
 
-The legend under the roll keeps to drawing, while `K` and `G` still work there; `F1` lists them. The keys that work on the whole pattern, `S` and `R`, described under Editor Keys below, work on the roll too. Steps are inserted and removed in the rows view.
+The legend under the roll keeps to drawing, while `X` and `G` still work there; `F1` lists them. The keys that work on the whole pattern, `S` and `R`, described under Editor Keys below, work on the roll too. Steps are inserted and removed in the rows view.
 
 Velocity, probability and the other values are set on the rows, as are dotted and triplet gates; the roll draws the bar of what sounds. A chord can be picked in either view: `H` on the roll's note and `ENTER` on the Chord row's cell open the same [Chord Selector](#chord-selector). The roll shows a named chord's other notes where they sound in the scale the pattern plays under, so C minor in C major shows its E♭ on a dim `D#3` row between D and E, and shows none of them when the pattern plays under more than one scale; a scale chord's notes are degrees and always show. A chord with an inversion plays its root an octave up, so the note is drawn hollow (`░░░░░`) where it is written, since nothing sounds there, with a thin line where the root does sound. Drum patterns have no roll, and open on their rows.
 
@@ -133,7 +134,7 @@ Degree and Octave stay at the top, and under them the rows come in sections that
 
 Basics and Timing start open, and the editor remembers which sections are open, for every pattern, for as long as it runs. When the open rows don't fit the screen, they scroll to keep the cursor's row in view. The sections, in the order a step works them out, are:
 
-- **Basics:** #/b, Velocity;
+- **Basics:** #/b, Velocity, Keyswitch;
 - **Chord:** Chord, Tension, Scale, Inversion;
 - **Timing:** Tie, Gate, Dot, Glide;
 - **Advanced:** Probability, Ratchet, Ratchet Offset, Grab;
@@ -157,6 +158,7 @@ Basics and Timing start open, and the editor remembers which sections are open, 
 | Inversion | Which of the chord's notes is at the bottom: blank for root position, `1` moves the chord's lowest note up an octave, `2` the lowest two and `3` the lowest three, which only a chord of four notes or more has, so a triad plays `3` as `2`. A step with no chord shows `/`, and the piano roll draws the chord's other notes where the inversion plays them. | `Space` or `ENTER` goes to the next one, `[` (dec) and `]` (inc) step back and forward, `Bksp` clears |
 | Velocity | 1 to 127, default 127 | Digits, `[` `]`, `ENTER` to type, `Bksp` sets the default |
 | Glide | `●` makes the note run slightly into the next one, which a synth with glide turned on slides across. A blank is off. | `Space` or `ENTER` toggles, `Bksp` turns it off |
+| Keyswitch | Which of the instrument's keyswitch slots the step's note is played with. A cell is blank for none and otherwise shows how many are on. See Keyswitches below. | `ENTER` to choose, `Bksp` clears |
 
 When the scale is known, the Degree gauge is as tall as the scale, five rows for a pentatonic scale and seven for a major one, and a degree can't go past it: `]` at the top and `[` at the bottom stay where they are, and the status line says `top of C_major: change the octave on the Octave row`, since the gauge and the Octave row together make the note. A file can hold a degree past the scale's top, such as 9 in a seven-note scale; the editor shows and plays it as degree 2 an octave higher, and writes it back within the scale when nudged. When the scale isn't known, the gauge has seven numbered rows, any degree up to the largest scale the pattern plays in can be typed, and a degree above the rows fills the gauge and marks its number with `▲`.
 
@@ -232,6 +234,22 @@ There are two kinds of chord.
 In C major, `3` on degree 2 is D minor, and `5` on degree 7 is B and F, a diminished fifth. A `13` uses every note of a seven-note scale. In pentatonic, blues and other scales without seven notes, every other note isn't a third, so scale chords sound less like their names. A plain number always means a scale chord, which is why the named dominant chords are `dom7` to `dom13`.
 
 Drum patterns have no Chord row.
+
+### Keyswitches
+
+A step can name keyswitches, the notes that change how a plugin plays, from the ten slots of its instrument's Keyswitch Map, which [Instruments](INSTRUMENTS.md) describes. `ENTER` on the Keyswitch row, or `K` on the piano roll, opens a dialog of the ten slots, numbered 0 to 9:
+
+| Key | What it does |
+| --- | --- |
+| Up, Down | Move through the slots. |
+| `Space` | Turns the slot under the cursor on or off. |
+| `0` to `9` | Turn that slot on or off, wherever the cursor is. |
+| `ENTER` | OK: the step takes the slots that are on. |
+| `ESC` | CANCEL: nothing changes. |
+
+The dialog shows each slot's name and note when the instrument is known for certain: when the pattern editor was opened from a clip, whose track plays the instrument, or when every track that plays the pattern uses the one instrument. Otherwise the dialog shows the slots by number alone and says why, since a pattern stores slot numbers and is shared by every clip that plays it. A slot with no note in the map can still be turned on, and plays nothing until the instrument gives the slot a note.
+
+On the piano roll, a step whose note has keyswitches shows a magenta light, `◆`, in the top row of the roll, in the step's column, drawn over a note's bar when a note is there. The line under the grid names the keyswitches of the cursor's step in both views.
 
 ## Advanced
 

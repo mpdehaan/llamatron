@@ -60,9 +60,12 @@ NO_NAME = ''
 
 
 class _Arrangement(Exporter):
-    """What the two arrangement exporters share: the events of each track laid end to end."""
+    """What the arrangement exporters share: the events of each track laid end to end."""
 
     __slots__ = ()
+
+    # Whether the files carry keyswitch notes, which a plugin needs and a General MIDI player would sound as notes.
+    KEYSWITCHES = True
 
     def end_tick(self):
         """Return the tick the song ends at, which every file ends at, so that they're all the same length."""
@@ -93,7 +96,7 @@ class _Arrangement(Exporter):
             clip = self._grid.get_clip(row=scene, column=track)
             if clip is not None:
                 notes, clip_length = timed_events(clip=clip, scale=self._grid.scale_at(row=scene, column=track))
-                events.extend(clip_events(clip=clip, notes=notes, clip_length=clip_length, start=ticks(start)))
+                events.extend(clip_events(clip=clip, notes=notes, clip_length=clip_length, start=ticks(start), keyswitches=self.KEYSWITCHES))
         return events
 
 class MidiSong(WritesOneFile, _Arrangement):
@@ -133,6 +136,7 @@ class MidiGeneralMidi(WritesOneFile, _Arrangement):
     __slots__ = ()
 
     KIND = ExportKind.GENERAL_MIDI
+    KEYSWITCHES = False
     LABEL = MSG_GENERAL_MIDI_EXPORT_LABEL
     FILE = GENERAL_MIDI_FILE
 

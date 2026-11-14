@@ -26,14 +26,14 @@ import unittest
 from llamatron.composition.corrections import NO_NEAREST_VALUE
 from llamatron.composition.defaults import DEFAULT_PROBABILITY, DEFAULT_RATCHET, DEFAULT_VELOCITY
 from llamatron.composition.file_format import (
-    ACCIDENTAL_CYCLE, CC_ROWS, CHORD_SYMBOLS, PATTERN_ROWS, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, Accidental,
+    ACCIDENTAL_CYCLE, CC_ROWS, CHORD_SYMBOLS, KEYSWITCH_SLOTS, PATTERN_ROWS, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, Accidental,
     ChordSymbol, GateModifier, PatternSetting, RegisterName, RegisterUse, Row, Section, Tension,
 )
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.limits import MAX_GATE, MAX_OCTAVE, MAX_RATCHET, MAX_RATCHET_OFFSET, MIN_DEGREE, MIN_OCTAVE, MIN_RATCHET
 from llamatron.composition.pattern import NOTE_ROWS, REST_ROWS
 from llamatron.composition.row_descriptions import (
-    ROW_DESCRIPTIONS, RowOfChoices, RowOfChords, RowOfDegrees, RowOfLengths, RowOfNoteMoves, RowOfNumbers, RowOfOctaves, RowOfRegisterUses, RowOfTensions,
+    ROW_DESCRIPTIONS, RowOfChoices, RowOfChords, RowOfDegrees, RowOfLengths, RowOfNoteMoves, RowOfNumbers, RowOfOctaves, RowOfRegisterUses, RowOfTensions, RowOfKeyswitches,
     RowOfToggles,
     is_note_letter, row_described, rows_where,
 )
@@ -94,6 +94,8 @@ def a_value_of(row, *, drum=False):
         return ChordSymbol.DOMINANT7
     if isinstance(described, RowOfTensions):
         return (Tension.NINTH,)
+    if isinstance(described, RowOfKeyswitches):
+        return (KEYSWITCH_SLOTS[-1],)
     if isinstance(described, RowOfChoices):
         return described.get_choices()[0]
     if isinstance(described, RowOfLengths):

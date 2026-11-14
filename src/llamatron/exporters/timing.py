@@ -18,6 +18,7 @@
 
 from typing import NamedTuple
 
+from llamatron.composition.defaults import KEYSWITCH_VELOCITY
 from llamatron.composition.file_format import StrumDirection
 from llamatron.support.length import ZERO, Length
 from llamatron.support.random_source import random_source
@@ -152,6 +153,44 @@ def _handed_events(*, notes, groove, nudge, clip_length):
         if end > start:
             events.append(NoteEvent(start, end, note.midi_number, note.velocity))
     return events
+
+
+def keyswitch_events(*, clip, clip_length):
+    """Return the keyswitch notes a clip sends as NoteEvents, in time order, for the exports and the playback that reach a plugin.
+
+    Each moves with the note it belongs to, by the clip's groove and its rushes and drags, keeps
+    its length, starts earlier by the clip's keyswitch lead where the instrument has one, never
+    before the clip, and is cut at the clip's end, or where the same keyswitch starts again. Its velocity is always the same (the user's
+    rules). They are kept apart from timed_events, so that nothing that reads a clip's music, a
+    grab, a Hocket, Scene View or a visualizer, ever meets one.
+    """
+    groove = clip.get_groove()
+    nudge = clip.get_nudge()
+    lead = clip.get_keyswitch_lead()
+    events = []
+    for note in clip.get_keyswitches():
+        onset = _grooved_time(time=note.start, groove=groove)
+        if nudge is not None:
+            onset = max(onset + nudge.moved(note.start), ZERO_DELAY)
+        end = min(onset + (note.end - note.start), clip_length)
+        start = min(onset if lead is None else max(onset - lead, ZERO_DELAY), clip_length)
+        if end > start:
+            events.append(NoteEvent(start, end, note.midi_number, KEYSWITCH_VELOCITY))
+    events.sort(key=_start_of)
+    return _without_overlaps(events)
+
+
+def _without_overlaps(events):
+    """Return keyswitch notes in time order with each cut where the same note starts again, as a lead can make it, so that the earlier one's end never silences the later."""
+    result = []
+    last = {}
+    for event in events:
+        before = last.get(event.midi_number)
+        if before is not None and result[before].end > event.start:
+            result[before] = result[before]._replace(end=event.start)
+        last[event.midi_number] = len(result)
+        result.append(event)
+    return [event for event in result if event.end > event.start]
 
 
 def _start_of(event):

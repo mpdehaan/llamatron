@@ -55,7 +55,7 @@ code.
 - Each class has two lists. `IN_HELP` is every binding of the class, in the order of the F1
   dialog, which is the order of the legend too. `IN_LEGEND` is the bindings the legend shows: one
   left out still works and is listed by F1 alone (Home and End, a list's `/`, and on the roll
-  `K` and `G`). `Page.EVERYWHERE` is the keys every page has.
+  `X` and `G`). `Page.EVERYWHERE` is the keys every page has.
 - Where one key means different things as the cursor moves, each meaning is a binding of its own
   and the page binds the one that applies: `ArrangePage.ADD_SCENE` and `ADD_TRACK`,
   `OffsetsEditor.SILENT` and `PLAY`, `SectionRow.OPEN` and `CLOSE`, `PatternEditor.TO_ROLL` and
@@ -1497,7 +1497,9 @@ an empty cell and isn't marked.
   a step a whole one first, and `shorten_note`, which stops at one step, `ERR_NOTE_IS_ONE_STEP`,
   and at the next note, `ERR_NO_ROOM_AFTER`). A key that could do nothing changes nothing, so it
   is no undo step and leaves the unsaved mark alone.
-- `K` is the knife (`Pattern.split_note`, giving the step the note's pitch, chord and velocity,
+- `K` (Keyswitch) opens the keyswitch dialog for the note on the cursor's step, whatever the cursor's row, and refuses a
+  step no note covers with `ERR_NO_NOTE_ON_STEP`, drawing nothing ("Keyswitches" below).
+- `X` (Split) is the knife, the user's choice of the letter people know for cutting (`Pattern.split_note`, giving the step the note's pitch, chord and velocity,
   `SPLIT_ROWS`, and clearing its tie).
 - `.` cycles the accidental (`ACCIDENTAL_CYCLE`), and the cursor follows the note to its new row.
 - `Bksp` erases the note with its ties (`clear_sound`), and leaves what a rest can hold on the
@@ -1519,7 +1521,35 @@ an empty cell and isn't marked.
   size: the song's first (`MSG_SONG_ENTRY_SIZE_CHOICE`) and then `STEP_SIZE_CHOICES`, opening on
   what the pattern has now (`Document.written_entry_size`).
 - The whole-pattern keys `S` and `R` stay. The roll neither inserts nor removes a step, the user's rule, as Live's
-  piano roll never did; the rows view does both. `K` and `G` are listed by F1 alone, so that the roll's legend keeps to drawing.
+  piano roll never did; the rows view does both. `X` and `G` are listed by F1 alone, so that the roll's legend keeps to drawing.
+
+## Keyswitches
+
+The user's design, mockup by mockup; `.claude/FORMAT.md`, "Instruments", says what is stored and how keyswitches play.
+
+- **The Keyswitch Map** (`tui/dialogs/keyswitch_map_dialog.py`, `KeyswitchMapDialog`), opened from the Instrument Editor by the
+  Keyswitch Map button or `K` (Keyswitch Map) from any field: ten rows, a slot's number, name and note, the note in the set's
+  octave labels with its MIDI number, `C0 (24)` (`tui/keyswitch_text.py`). `N` or F2 (Rename) prompts for the name, an empty one
+  leaving none; ENTER (Note) opens the note picker; `Bksp` (Clear) empties the slot. The dialog edits a copy: `O` (OK), or the
+  OK button reached with Down from the last slot, stores the ten slots as one undo step (`Document.set_instrument_keyswitches`),
+  and ESC or the CANCEL button changes nothing (Claude's choices, since ENTER was given to the note picker).
+- **The note picker** is a flyout over the map: one octave of keys (`one_octave_rows` in `tui/components/keyboard.py`), Left and
+  Right along the octave's keys, Up and Down an octave, every edge stopping, ENTER taking the note and ESC closing. It opens on
+  the slot's note, else a half step above the map's highest note, else the lowest C, MIDI 0 (`first_note_offered`).
+- **Keyswitch lead** is a number field of the Instrument Editor, in milliseconds.
+- **The Keyswitch row** (`tui/components/keyswitch_row.py`, `KeyswitchRow`) is in Basics under Velocity: a blank cell for none,
+  else how many slots are on, and the blocked slash on a step with no note. ENTER opens `KeyswitchDialog`
+  (`tui/dialogs/keyswitch_dialog.py`, a `PickManyDialog`): Up and Down, Space toggling the cursor's slot, a digit toggling its
+  slot and moving the cursor to it, one legend entry `0-9`, ENTER OK and ESC CANCEL as drawn buttons, one undo step. `Bksp`
+  on the row clears the step's.
+- **Names or numbers.** The dialog names the slots from one instrument when the editor was opened from a clip (Arrange and the
+  clip page pass `track=`, `PatternEditor.opened_track`) or when every track playing the pattern in any song has the one
+  instrument (`Document.instruments_of_pattern`, `PatternEditor.keyswitch_instrument`); otherwise the slots go by number with a
+  line saying why. A slot with no note can be switched on.
+- **The description line** under the grid ends with the cursor step's keyswitches, by name where known (`keyswitches_described`).
+- **The roll's light**: `with_keyswitch_lights` in `tui/screens/pattern/roll_drawing.py` writes `◆` over the top pitch line
+  (`TOP_PITCH_LINE`) in each such step's column, keeping the line's width.
+- `tests/tui/test_tui_keyswitches.py` tests all of these.
 
 ## The one-row editors
 
