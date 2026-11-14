@@ -1,0 +1,17 @@
+# llamatron: a music program
+# The libraries the corpus calibration of the genre library needs, for development only and never for the suite or for
+# people installing llamatron: .venv/bin/python -m pip install -r internal_tools/analysis_and_generation/requirements_corpus.txt
+music21==10.5.2
+# Verifies GitHub's certificates for internal_tools/analysis_and_generation/fetch_corpus.sh on a Python without its own certificate store.
+certifi==2026.10.23
+# The meta-analysis of the corpus (112 B): tables, statistics, clustering and mixture models, regression, graphs, the cached
+# tables' format, and reading MIDI datasets. Development only; the tracker and its generators need none of them.
+numpy==2.5.4
+pandas==3.1.1
+scipy==1.18.1
+scikit-learn==1.9.1
+statsmodels==0.15.0
+networkx==3.7
+pyarrow==26.0.1
+muspy==0.5.0
+pretty_midi==0.2.11.post0
