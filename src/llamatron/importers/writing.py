@@ -39,15 +39,13 @@ from llamatron.composition.file_format import (
     CC_ROWS, ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting,
 )
 from llamatron.composition.named_scale import NamedScale
-from llamatron.composition.naming import copy_name, default_scale_name, is_default_scale_name, unique_name
+from llamatron.composition.naming import copy_name, default_scale_name, is_default_scale_name, new_name, unique_name
 from llamatron.composition.pattern import Pattern
 from llamatron.composition.song import Song
 from llamatron.music.time_signature import TimeSignature
 from llamatron.strings.importing import MSG_SCENE_BAR, MSG_SCENE_BARS, MSG_WHERE_IMPORTED
-from llamatron.strings.names import MSG_NUMBERED_NAME
 from llamatron.importers.steps import TIED
 
-FIRST_PATTERN_NUMBER = 1
 FIRST_BAR_NUMBER = 1
 NO_REPEAT = 1
 MICROSECONDS_PER_MINUTE = 60000000
@@ -112,14 +110,6 @@ def control_rows(controls):
 def as_the_set_writes(data):
     """Return a pattern's data as the set would write the pattern, so that two patterns' data can be compared."""
     return Pattern.from_data(data=data, where=WHERE_IMPORTED).to_data()
-
-
-def numbered_name(*, base, taken):
-    """Return the base with the first number from 1 that makes a name nothing has, like up a 1."""
-    number = FIRST_PATTERN_NUMBER
-    while MSG_NUMBERED_NAME.format(base=base, number=number) in taken:
-        number += 1
-    return MSG_NUMBERED_NAME.format(base=base, number=number)
 
 
 def tempo_of(microseconds):
@@ -204,7 +194,7 @@ class SongWriter:
                 names[pattern] = same
                 shared += 1
                 continue
-            name = numbered_name(base=first_track[pattern], taken=taken)
+            name = new_name(word=first_track[pattern], taken=taken)
             taken.add(name)
             added[name] = data
             names[pattern] = name

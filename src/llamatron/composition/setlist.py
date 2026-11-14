@@ -117,7 +117,7 @@ ITEM_KINDS = {
 # The sections whose items are read knowing the set, where the others take the set in place of a song, to look names up in.
 READ_WITH_THE_SET = (Section.CHAINS, Section.SONGS)
 # The scale a new set starts with, which can be deleted.
-DEFAULT_SCALE = 'C Major'
+DEFAULT_SCALE = 'C_major'
 # The keys a file saved before SETLISTS_SINCE held at the top, which now belong to a song.
 ONE_SONG_KEYS = [
     SongSetting.TEMPO, SongSetting.TIME_SIGNATURE, SongSetting.ENTRY_SIZE, SongSetting.SCALE, SongSetting.SEED, SongSetting.GROOVE,

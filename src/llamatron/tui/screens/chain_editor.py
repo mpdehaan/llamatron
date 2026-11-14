@@ -23,12 +23,12 @@ from llamatron.tui.drawing import Align
 from llamatron.strings.help import HELP_CHAIN_EDITOR
 from llamatron.tui.screens.list_page import ListPage
 from llamatron.tui.screens.generator_pages import GENERATOR_PAGES, generator_page_of_kind
-from llamatron.composition.naming import unique_name
+from llamatron.composition.naming import new_name, suggested_word
 from llamatron.tui.screens.shared import list_keys, move_key
 from llamatron.strings.labels import Column, Crumb
 from llamatron.tui.screens.shows_named_item import ShowsNamedItem
 from llamatron.strings.marks import MSG_CHAIN_STEP_AGAIN, MSG_CHAIN_STEP_SHOWN
-from llamatron.strings.messages import MSG_NEW_GENERATOR_CHOICE, MSG_NEW_GENERATOR_KIND_TITLE, MSG_NEW_GENERATOR_NAMED, MSG_ADD_TO_CHAIN_TITLE, MSG_CHANGE_STEP_TITLE, MSG_RENAME_CHAIN_PROMPT
+from llamatron.strings.messages import MSG_NEW_GENERATOR_CHOICE, MSG_NEW_GENERATOR_KIND_TITLE, MSG_ADD_TO_CHAIN_TITLE, MSG_CHANGE_STEP_TITLE, MSG_RENAME_CHAIN_PROMPT
 from llamatron.tui import keybindings
 
 
@@ -107,7 +107,7 @@ class ChainEditor(ShowsNamedItem, ListPage):
 
         def chosen(place):
             listing = listings[place]
-            name = unique_name(base=MSG_NEW_GENERATOR_NAMED.format(kind=listing.label), taken=self.document().names_of(sections[place]))
+            name = new_name(word=suggested_word(listing.label), taken=self.document().names_of(sections[place]))
             self.document().add_generator(section=sections[place], name=name)
             then(kind=listing.kind, name=name)
             self.show_page(listing.EDITOR(holder=self.holder, name=name).opened_from(page=self, word=listing.label))

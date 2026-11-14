@@ -22,6 +22,7 @@ import unittest
 from unittest import mock
 
 from tests.support.ui_testing import TUNE, UITest, key_name
+from llamatron.composition.setlist import DEFAULT_SCALE
 from llamatron.composition.file_format import ChordSymbol, Row, ScaleKind, Tension
 from llamatron.composition.naming import words
 from llamatron.strings.labels import MSG_SCALE_CATEGORY_COMMON, Column
@@ -365,7 +366,7 @@ class TestPatternEditorChords(UITest):
         self.assertEqual([item.keys for item in dialog.keys()], keys_before)
 
     async def test_no_keyboard_where_the_patterns_uses_play_it_under_more_than_one_scale(self):
-        with mock.patch.object(type(self.document), SCALES_OF_PATTERN, return_value=[C_MAJOR, C_MINOR]):
+        with mock.patch.object(type(self.document), SCALES_OF_PATTERN, return_value=[DEFAULT_SCALE, C_MINOR]):
             await self.open_on_the_chord()
             self.assertEqual(self.keyboard_lines(), ([], None))
 

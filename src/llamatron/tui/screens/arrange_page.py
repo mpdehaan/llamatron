@@ -36,7 +36,7 @@ import time
 from llamatron.composition.file_format import ClipSlotSetting, Section
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.composition.naming import unique_name
+from llamatron.composition.naming import new_name
 from llamatron.tui.text import sorted_names
 from llamatron.strings.help import HELP_ARRANGE_PAGE
 from llamatron.tui.keys import Key
@@ -63,7 +63,6 @@ from llamatron.strings.errors import (
     ERR_ADD_A_PATTERN_FIRST, ERR_CANT_DELETE_TITLE, ERR_LAST_SCENE_SHOWN, ERR_LAST_TRACK_SHOWN, ERR_NO_PATTERNS_TITLE, ERR_SCENE_PLAYING_SHOWN, ERR_TRACK_PLAYING_SHOWN,
 )
 from llamatron.strings.labels import Crumb
-from llamatron.strings.names import MSG_TRACK_PATTERN_NAME
 from llamatron.strings.messages import MSG_ADD_CHAIN_TITLE, MSG_MOVING, MSG_MOVING_CLIP, MSG_MOVING_SCENE, MSG_MOVING_TRACK
 from llamatron.strings.messages import (
     MSG_ALSO_DELETES_CLIPS, MSG_COPIED_CLIP, MSG_DELETE_CLIP_QUESTION, MSG_DELETE_SCENE_QUESTION, MSG_DELETE_TITLE,
@@ -72,7 +71,7 @@ from llamatron.strings.messages import (
 )
 from llamatron.strings.marks import MSG_PLAYING_CLOCK, MSG_SCENE_VIEW_CLOSING, MSG_SCENE_VIEW_TITLE
 from llamatron.tui.text import clock
-from llamatron.strings.names import MSG_CHAIN_WORD, MSG_GROOVE_WORD, MSG_INSTRUMENT_WORD, MSG_NEW_SCENE_NAME, MSG_NEW_TRACK_NAME, MSG_SCALE_WORD
+from llamatron.strings.names import MSG_CHAIN_WORD, MSG_GROOVE_WORD, MSG_INSTRUMENT_WORD, MSG_NEW_SCENE_WORD, MSG_NEW_TRACK_WORD, MSG_SCALE_WORD
 from llamatron.tui import keybindings
 from llamatron.visualizers.modes import MODES, mode_called
 from llamatron.tui.drawing import NOTHING
@@ -88,7 +87,6 @@ SCENE_COLUMN = 0
 FIRST_SCENE_NUMBER = 1
 FIRST_TRACK_COLUMN = 1
 # The number a blank pattern named after its track starts from, as lead 1.
-FIRST_PATTERN_NUMBER = 1
 # What Move mode can carry, the user's design.
 MOVING_SCENE = 'scene'
 MOVING_TRACK = 'track'
@@ -607,7 +605,7 @@ class ArrangePage(Page):
 
     def new_scene_name(self):
         names = {scene.get_name() for scene in self.scenes()}
-        return unique_name(base=MSG_NEW_SCENE_NAME.format(number=len(self.scenes()) + 1), taken=names)
+        return new_name(word=MSG_NEW_SCENE_WORD, taken=[name for name in names if name is not None])
 
     def add_scene(self):
         index = len(self.scenes()) if self.on_plus_row() else self.row + 1
@@ -712,7 +710,7 @@ class ArrangePage(Page):
     def new_track_name(self):
         """Return the name for a new track, numbered like a new scene, which its settings page renames."""
         tracks = self.tracks()
-        return unique_name(base=MSG_NEW_TRACK_NAME.format(number=len(tracks) + 1), taken=tracks)
+        return new_name(word=MSG_NEW_TRACK_WORD, taken=tracks)
 
     def add_track(self):
         """Add a track after the last one, and move onto it."""
@@ -771,10 +769,7 @@ class ArrangePage(Page):
         """Make a blank pattern named after the cursor's track, a drum pattern on a drum track, put a clip of it in the empty cell and open it, the user's design."""
         track = self.track()
         taken = self.document().song().get_pattern_names()
-        number = FIRST_PATTERN_NUMBER
-        while MSG_TRACK_PATTERN_NAME.format(track=track, number=number) in taken:
-            number += 1
-        name = MSG_TRACK_PATTERN_NAME.format(track=track, number=number)
+        name = new_name(word=track, taken=taken)
         self.document().add_pattern(name=name)
         if self.document().song().get_track(track).is_drum():
             self.document().set_drum(name=name, drum=True)

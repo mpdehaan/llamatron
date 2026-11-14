@@ -6,7 +6,7 @@ Arrange is where a song is put together: scenes as rows, tracks as columns, and 
 
 ## Grid Layout
 
-Press `A` on the main screen to open the current song's arrangement. The track names run across the top, and the first column holds the scene names, each with its repeat count and length. Scenes play from top to bottom. A new song starts with `track 1` and `scene 1`, and new tracks and scenes are numbered the same way until they are renamed on their own pages.
+Press `A` on the main screen to open the current song's arrangement. The track names run across the top, and the first column holds the scene names, each with its repeat count and length. Scenes play from top to bottom. A new song starts with `track-1` and `scene-1`, and new tracks and scenes are numbered the same way until they are renamed on their own pages.
 
 A double-lined box marks whatever the cursor is on: a clip, a scene, a track name, or one of the `+` places, including the `+` after the last track. The arrows move the box around the grid. When there are more tracks or scenes than fit, the clips scroll while the track names and the scene column stay in place. An empty cell is blank until the cursor reaches it, when it shows `+` and `add`.
 

@@ -68,7 +68,8 @@ from llamatron.strings.messages import (
     MSG_BACK_FROM, MSG_CHANGED_IN_SONG, MSG_CHANGED_NAMED, MSG_CHANGED_WORDS, MSG_NOTHING_TO_REDO, MSG_NOTHING_TO_UNDO, MSG_RESTORED,
     MSG_UNDONE,
 )
-from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_GROOVE_NAME, MSG_NEW_INSTRUMENT_NAME, MSG_NEW_PATTERN_NAME
+from llamatron.composition.naming import new_name
+from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_GROOVE_WORD, MSG_NEW_INSTRUMENT_WORD, MSG_NEW_PATTERN_WORD, MSG_NUMBERED_NAME
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generator_pages import GENERATOR_PAGES
 from tests.support.ui_testing import SWAY, a_song, fixed_text, LEAD, leaf_pages, ROLLS, TUNE, UITest, UP_ARP, key_of
@@ -311,8 +312,8 @@ class TestSongPageUndo(UndoTest):
 class TestPatternsPageUndo(UndoTest):
 
     def next_pattern_name(self):
-        """Return the name the Patterns page offers for a new pattern: the first free number after the ones there."""
-        return MSG_NEW_PATTERN_NAME.format(number=len(self.document.song().get_pattern_names()) + 1)
+        """Return the name the Patterns page offers for a new pattern: one more than the highest number there."""
+        return new_name(word=MSG_NEW_PATTERN_WORD, taken=self.document.song().get_pattern_names())
 
     async def test_adding_a_pattern_is_one_step(self):
         before = self.data()
@@ -790,14 +791,14 @@ class TestGroovesPageUndo(UndoTest):
         await self.press(keybindings.MainPage.GROOVES, keybindings.GroovesPage.ADD)
         self.assertIsInstance(self.app.screen, GrooveEditor)
         await self.check_undo_goes_back_to(GroovesPage)
-        self.assertIn(MSG_UNDONE.format(what=self.named(section=Section.GROOVES, name=MSG_NEW_GROOVE_NAME.format(number=FIRST_NUMBER))), self.text())
+        self.assertIn(MSG_UNDONE.format(what=self.named(section=Section.GROOVES, name=MSG_NUMBERED_NAME.format(base=MSG_NEW_GROOVE_WORD, number=FIRST_NUMBER))), self.text())
 
 
 class TestGrooveEditorUndo(UndoTest):
 
     async def test_digits_typed_into_one_cell_are_one_step(self):
         await self.press(keybindings.MainPage.GROOVES, keybindings.GroovesPage.ADD)
-        name = MSG_NEW_GROOVE_NAME.format(number=FIRST_NUMBER)
+        name = MSG_NUMBERED_NAME.format(base=MSG_NEW_GROOVE_WORD, number=FIRST_NUMBER)
         before = self.data()
         await self.press(Key.RIGHT, *TWELVE)
         self.assertEqual(self.document.song().get_groove(name).get_cells()[1], int(''.join(TWELVE)))
@@ -818,14 +819,14 @@ class TestInstrumentsPageUndo(UndoTest):
         await self.press(keybindings.MainPage.INSTRUMENTS, keybindings.InstrumentsPage.ADD)
         self.assertIsInstance(self.app.screen, InstrumentEditor)
         await self.check_undo_goes_back_to(InstrumentsPage)
-        self.assertIn(MSG_UNDONE.format(what=self.named(section=Section.INSTRUMENTS, name=MSG_NEW_INSTRUMENT_NAME.format(number=FIRST_NUMBER))), self.text())
+        self.assertIn(MSG_UNDONE.format(what=self.named(section=Section.INSTRUMENTS, name=MSG_NUMBERED_NAME.format(base=MSG_NEW_INSTRUMENT_WORD, number=FIRST_NUMBER))), self.text())
 
 
 class TestInstrumentEditorUndo(UndoTest):
 
     async def test_stepping_the_channel_is_one_step(self):
         await self.press(keybindings.MainPage.INSTRUMENTS, keybindings.InstrumentsPage.ADD)
-        name = MSG_NEW_INSTRUMENT_NAME.format(number=FIRST_NUMBER)
+        name = MSG_NUMBERED_NAME.format(base=MSG_NEW_INSTRUMENT_WORD, number=FIRST_NUMBER)
         before = self.data()
         await self.select_field(MSG_CHANNEL_LABEL)
         await self.press(keybindings.FieldPage.MORE)
