@@ -230,6 +230,11 @@ KICK = 36
 LEAD_TRACK = 0
 DRUM_TRACK = 1
 HIGH_NOTE = 84
+# Two notes further apart than the roll's rows, a few seconds of frames, and a few rows of the roll, far less than the way between the notes.
+FAR_LOW_NOTE = 30
+FAR_HIGH_NOTE = 100
+FRAMES_OF_A_WHILE = 60
+A_FEW_ROWS = 3
 TRACK_NAMES = ('lead', 'drums')
 
 
@@ -293,12 +298,42 @@ class TestPianoRoll(unittest.TestCase):
         self.assertGreaterEqual(len(c_rows), 2)
         self.assertEqual(c_rows[1] - c_rows[0], OCTAVE)
 
-    def test_the_rows_follow_where_the_notes_are(self):
+    def test_the_first_notes_place_the_rows_at_once(self):
         roll = PianoRoll()
-        before = roll.centre()
-        self.played(roll=roll, frames=80, notes=[HeardNote(LEAD_TRACK, HIGH_NOTE, FULL_VELOCITY, True, False)])
-        self.assertGreater(roll.centre(), before)
-        self.assertLessEqual(roll.centre(), HIGH_NOTE)
+        self.played(roll=roll, frames=1, notes=[HeardNote(LEAD_TRACK, HIGH_NOTE, FULL_VELOCITY, True, False)])
+        self.assertEqual(roll.centre(), HIGH_NOTE)
+
+    def test_the_rows_stay_still_while_every_pitch_heard_fits(self):
+        roll = PianoRoll()
+        low = HeardNote(LEAD_TRACK, MIDDLE_C, FULL_VELOCITY, True, False)
+        high = HeardNote(LEAD_TRACK, MIDDLE_C + OCTAVE, FULL_VELOCITY, True, False)
+        _, now = self.played(roll=roll, frames=1, notes=[low, high])
+        settled = roll.centre()
+        self.assertEqual(settled, MIDDLE_C + OCTAVE / 2)
+        # The low note alone, then the high note alone, for a long while: the rows don't move, since both fit.
+        for note in (low, high, low, high):
+            _, now = self.played(roll=roll, frames=FRAMES_OF_A_WHILE, notes=[note], start=now)
+            self.assertEqual(roll.centre(), settled)
+
+    def test_the_rows_ease_slowly_toward_what_sounds_only_when_the_pitches_heard_do_not_fit(self):
+        roll = PianoRoll()
+        low = HeardNote(LEAD_TRACK, FAR_LOW_NOTE, FULL_VELOCITY, True, False)
+        high = HeardNote(LEAD_TRACK, FAR_HIGH_NOTE, FULL_VELOCITY, True, False)
+        _, now = self.played(roll=roll, frames=1, notes=[low])
+        self.assertEqual(roll.centre(), FAR_LOW_NOTE)
+        # The high note is further off than the rows reach, so the rows go toward it, a little each frame and never in a jump.
+        _, now = self.played(roll=roll, frames=1, notes=[high], start=now)
+        _, now = self.played(roll=roll, frames=1, notes=[high._replace(started=False)], start=now)
+        after_a_frame = roll.centre()
+        self.assertGreater(after_a_frame, FAR_LOW_NOTE)
+        self.assertLess(after_a_frame - FAR_LOW_NOTE, A_FEW_ROWS)
+        _, now = self.played(roll=roll, frames=FRAMES_OF_A_WHILE, notes=[high._replace(started=False)], start=now)
+        self.assertGreater(roll.centre(), after_a_frame)
+        self.assertLessEqual(roll.centre(), FAR_HIGH_NOTE)
+        # In silence the rows stay where they are.
+        resting = roll.centre()
+        self.played(roll=roll, frames=FRAMES_OF_A_WHILE, notes=[], start=now)
+        self.assertEqual(roll.centre(), resting)
 
     def test_the_legend_names_the_tracks_heard_in_their_colours_in_the_order_first_heard(self):
         roll = PianoRoll()

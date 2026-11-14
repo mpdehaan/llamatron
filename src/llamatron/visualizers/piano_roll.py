@@ -20,8 +20,8 @@ labelled at the left. A note comes in at the right edge as it starts and rolls o
 it sounds its bar keeps growing at the right, so a held note looks long, and each bar's first cell is
 brighter, with a gap after it on its row, so that notes one after another stay apart. Each track has a
 bold colour of its own, given in the order the tracks are first heard, so that the colours go round only
-when more tracks play than there are colours, and the legend across the top names the tracks heard. The rows follow the music: the middle eases
-toward where most of the notes have been lately. Drum tracks have lanes of their own at the bottom,
+when more tracks play than there are colours, and the legend across the top names the tracks heard. The rows stay still, the user's rule: they sit on the
+middle of every pitch heard so far while those pitches fit the rows, and only when they don't fit does the middle ease, slowly, toward the notes that sound now. Drum tracks have lanes of their own at the bottom,
 kick, snare, hats, toms, cymbal and the rest, where each hit is a short mark. The background is black.
 The amounts are named constants here, for the user to tune by eye.
 """
@@ -40,9 +40,8 @@ COLUMNS_PER_BEAT = 4
 LABEL_COLUMNS = 7
 LEGEND_ROWS = 1
 DRUM_ROWS = len(MSG_PIANO_ROLL_DRUM_LANES)
-# Where the rows centre: how long a note still counts toward the middle, how fast the middle eases toward where the notes are, as a share of the way a second, and where it starts.
-INTEREST_SECONDS = 8.0
-CENTRE_EASE_PER_SECOND = 0.6
+# Where the rows centre: how fast the middle eases toward where it is wanted, as a share of the way a second, slowly, and where it starts.
+CENTRE_EASE_PER_SECOND = 0.2
 START_CENTRE = 60
 LOWEST_PITCH = 0
 HIGHEST_PITCH = 127
@@ -111,7 +110,7 @@ class RolledNote:
 class PianoRoll(Visualizer):
     """The notes as bars rolling in from the right, every key a row, each track in its colour, the drums in lanes at the bottom."""
 
-    __slots__ = ('_cells', '_notes', '_centre', '_last', '_seconds_per_beat', '_names', '_heard_tracks')
+    __slots__ = ('_cells', '_notes', '_centre', '_last', '_seconds_per_beat', '_names', '_heard_tracks', '_lowest', '_highest', '_placed')
 
     NAME = MSG_PIANO_ROLL
     OPTION = 'piano_roll'
@@ -126,6 +125,10 @@ class PianoRoll(Visualizer):
         self._names = ()
         # The tracks heard so far, by their places in the song, in the order they were first heard, which gives each its colour.
         self._heard_tracks = []
+        # The lowest and highest pitch heard so far, drums apart, None until a note is heard, and whether the rows have been put on the first notes yet.
+        self._lowest = None
+        self._highest = None
+        self._placed = False
 
     def track_colour(self, track):
         """Return a track's colour, by the order it was first heard in."""
@@ -153,7 +156,7 @@ class PianoRoll(Visualizer):
         self._notes = [note for note in self._notes if note.end is None or note.end >= oldest]
         drums = any(note.drum for note in self._notes)
         pitch_rows = height - LEGEND_ROWS - (DRUM_ROWS if drums else 0)
-        self.follow(now=now, elapsed=elapsed)
+        self.follow(elapsed=elapsed, pitch_rows=pitch_rows)
         top = min(max(int(round(self._centre + pitch_rows / 2)), LOWEST_PITCH + pitch_rows - 1), HIGHEST_PITCH)
         characters = [[SPACE] * width for _ in range(height)]
         colours = [[None] * width for _ in range(height)]
@@ -187,21 +190,27 @@ class PianoRoll(Visualizer):
                 self._notes.append(RolledNote(track=note.track, pitch=note.pitch, drum=note.drum, start=now))
                 if note.track not in self._heard_tracks:
                     self._heard_tracks.append(note.track)
+                if not note.drum:
+                    self._lowest = note.pitch if self._lowest is None else min(self._lowest, note.pitch)
+                    self._highest = note.pitch if self._highest is None else max(self._highest, note.pitch)
 
-    def follow(self, *, now, elapsed):
-        """Ease the middle toward the mean pitch of the notes of the last INTEREST_SECONDS, each counted less the older it is."""
-        weights = 0.0
-        total = 0.0
-        for note in self._notes:
-            if note.drum:
-                continue
-            age = now - note.start
-            if age < INTEREST_SECONDS:
-                weight = 1.0 - age / INTEREST_SECONDS
-                weights += weight
-                total += weight * note.pitch
-        if weights:
-            self._centre += (total / weights - self._centre) * min(CENTRE_EASE_PER_SECOND * elapsed, 1.0)
+    def follow(self, *, elapsed, pitch_rows):
+        """Keep the rows still where they can be, the user's rule: on the middle of every pitch heard so far while those fit the rows, and otherwise
+        easing slowly toward the middle of the notes that sound now, staying put while none sounds. The first notes heard place the rows at once."""
+        if self._lowest is None:
+            return
+        if self._highest - self._lowest < pitch_rows:
+            wanted = (self._lowest + self._highest) / 2
+        else:
+            sounding = [note.pitch for note in self._notes if note.end is None and not note.drum]
+            if not sounding:
+                return
+            wanted = sum(sounding) / len(sounding)
+        if not self._placed:
+            self._placed = True
+            self._centre = wanted
+            return
+        self._centre += (wanted - self._centre) * min(CENTRE_EASE_PER_SECOND * elapsed, 1.0)
 
     @staticmethod
     def row_of(*, note, top, pitch_rows, drums):
