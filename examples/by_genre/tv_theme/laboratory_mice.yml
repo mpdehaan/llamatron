@@ -1,11 +1,11 @@
-version: 1.0.364
+version: 1.0.365
 title: Laboratory mice
 description: "a mock-sinister orchestral cartoon theme of the nineties in the manner of the theme of Pinky and the Brain (Richard Stone), with a tune of its own"
 notes: |
   Laboratory mice: a mock-sinister orchestral cartoon theme of the nineties in the manner of the theme
   of Pinky and the Brain (Richard Stone), with a tune of its own. This is a homage to the theme of
   Pinky and the Brain (Richard Stone): its chords, form, sounds and drums follow that work as Claude
-  knows it, and every tune and rhythm here is new. Rebuild version 1.
+  knows it, and every tune and rhythm here is new. Rebuild version 2.
 
   A tuba and plucked strings in a swung two-beat; a bassoon creeping through a minor tune on i, V7 and
   iv; a grand refrain in the relative major for choir and brass; a sneaking stretch for plucked
@@ -16,8 +16,7 @@ notes: |
   tuba on one and three. Builds: the quiet creeping tune gives way to a pompous refrain. Sounds: a
   bassoon with the tune, a tuba, plucked strings on the offbeats, a xylophone, a wavering whistle like
   a theremin, a choir and brass for the refrain. Melody manner: a creeping, bouncing minor tune that
-  leans on the raised seventh; a refrain in long notes, in the relative major. Form: tune, refrain,
-  tune, a sneaking stretch, refrain.
+  leans on the raised seventh; a refrain in long notes, in the relative major. Form: about a minute, as the theme ran on television, the tune first: refrain, tune, refrain 2, ending.
 
   Band and song: the theme is known for sounding sinister and silly at once, a mad-scientist march
   with a choir that sings as though the plan could work.
@@ -101,28 +100,6 @@ patterns:
     octave: [3, ~, 3, 3, ~, 3, 3, ~, 2, ~, 3, 3, ~, 3, 2, ~, 3, ~, 3, 3, ~, 3, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, 3, ~, 3, 3, ~, 3, ~, 3, 3, ~, 3, 3, ~, 3, ~, 2, ~, 3, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~]
     velocity: [110, ~, 104, 104, ~, 104, 104, ~, 110, ~, 104, 104, ~, 104, 104, ~, 110, ~, 104, 104, ~, 104, 104, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, 104, 104, ~, 104, 104, ~, 110, ~, 104, 104, ~, 104, 104, ~, 110, ~, 104, ~, 104, ~, 104, ~, 110, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, false, true, false, false, true, false, true, false, false, true, false, false, true, false, true, false, false, true, false, false, true, false, true, true, true, false, false, false, false, false, true, false, false, true, false, false, true, false, true, false, false, true, false, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
-  a high:
-    steps: 64
-    step_size: 1/8
-    degree: [1, ~, 2, 3, ~, 2, 1, ~, 7, ~, 2, 4, ~, 2, 7, ~, 1, ~, 3, 5, ~, 3, 1, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, 5, 4, ~, 3, 4, ~, 3, ~, 2, 1, ~, 2, 3, ~, 2, ~, 7, ~, 2, ~, 4, ~, 1, ~, ~, ~, ~, ~, ~, ~]
-    accidental: [~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    octave: [5, ~, 5, 5, ~, 5, 5, ~, 4, ~, 5, 5, ~, 5, 4, ~, 5, ~, 5, 5, ~, 5, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, 5, ~, 5, 5, ~, 5, ~, 5, 5, ~, 5, 5, ~, 5, ~, 4, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [98, ~, 92, 92, ~, 92, 92, ~, 98, ~, 92, 92, ~, 92, 92, ~, 98, ~, 92, 92, ~, 92, 92, ~, 98, ~, ~, ~, ~, ~, ~, ~, 98, ~, 92, 92, ~, 92, 92, ~, 98, ~, 92, 92, ~, 92, 92, ~, 98, ~, 92, ~, 92, ~, 92, ~, 98, ~, ~, ~, ~, ~, ~, ~]
-  a sneak:
-    steps: 64
-    step_size: 1/8
-    degree: [1, ~, 2, 3, ~, 2, 1, ~, 7, ~, 2, 4, ~, 2, 7, ~, 1, ~, 3, 5, ~, 3, 1, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, 5, 4, ~, 3, 4, ~, 3, ~, 2, 1, ~, 2, 3, ~, 2, ~, 7, ~, 2, ~, 4, ~, 1, ~, ~, ~, ~, ~, ~, ~]
-    accidental: [~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    octave: [4, ~, 4, 4, ~, 4, 4, ~, 3, ~, 4, 4, ~, 4, 3, ~, 4, ~, 4, 4, ~, 4, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, 4, ~, 4, 4, ~, 4, ~, 4, 4, ~, 4, 4, ~, 4, ~, 3, ~, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [72, ~, 66, 66, ~, 66, 66, ~, 72, ~, 66, 66, ~, 66, 66, ~, 72, ~, 66, 66, ~, 66, 66, ~, 72, ~, ~, ~, ~, ~, ~, ~, 72, ~, 66, 66, ~, 66, 66, ~, 72, ~, 66, 66, ~, 66, 66, ~, 72, ~, 66, ~, 66, ~, 66, ~, 72, ~, ~, ~, ~, ~, ~, ~]
-  a brass:
-    steps: 64
-    step_size: 1/8
-    degree: [1, ~, 2, 3, ~, 2, 1, ~, 7, ~, 2, 4, ~, 2, 7, ~, 1, ~, 3, 5, ~, 3, 1, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, 5, 4, ~, 3, 4, ~, 3, ~, 2, 1, ~, 2, 3, ~, 2, ~, 7, ~, 2, ~, 4, ~, 1, ~, ~, ~, ~, ~, ~, ~]
-    accidental: [~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    octave: [4, ~, 4, 4, ~, 4, 4, ~, 3, ~, 4, 4, ~, 4, 3, ~, 4, ~, 4, 4, ~, 4, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, 4, ~, 4, 4, ~, 4, ~, 4, 4, ~, 4, 4, ~, 4, ~, 3, ~, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [112, ~, 106, 106, ~, 106, 106, ~, 112, ~, 106, 106, ~, 106, 106, ~, 112, ~, 106, 106, ~, 106, 106, ~, 112, ~, ~, ~, ~, ~, ~, ~, 112, ~, 106, 106, ~, 106, 106, ~, 112, ~, 106, 106, ~, 106, 106, ~, 112, ~, 106, ~, 106, ~, 106, ~, 112, ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, true, false, false, true, false, false, true, false, true, false, false, true, false, false, true, false, true, false, false, true, false, false, true, false, true, true, true, false, false, false, false, false, true, false, false, true, false, false, true, false, true, false, false, true, false, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
   b:
     steps: 64
     step_size: 1/8
@@ -139,14 +116,6 @@ patterns:
     octave: [5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, 5, ~, 6, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~]
     velocity: [116, ~, ~, ~, 110, ~, 110, ~, 116, ~, ~, ~, ~, ~, ~, ~, 116, ~, ~, ~, 110, ~, 110, ~, 116, ~, ~, ~, ~, ~, ~, ~, 116, ~, ~, ~, 110, ~, 110, ~, 116, ~, ~, ~, 110, ~, ~, ~, 116, ~, 110, ~, 110, ~, 110, ~, 116, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
-  wail:
-    steps: 64
-    step_size: 1/8
-    degree: [5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~]
-    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    octave: [5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [76, ~, ~, ~, ~, ~, ~, ~, 76, ~, ~, ~, 70, ~, ~, ~, 76, ~, ~, ~, ~, ~, ~, ~, 76, ~, ~, ~, ~, ~, ~, ~, 76, ~, ~, ~, ~, ~, ~, ~, 76, ~, ~, ~, ~, ~, ~, ~, 76, ~, ~, ~, ~, ~, ~, ~, 76, ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, false, false]
 
 progressions:
   a: { chords: [1, 5, 1, 1, 4, 1, 5, 1], qualities: [~, dom7, ~, ~, ~, ~, dom7, ~] }
@@ -183,26 +152,11 @@ songs:
       bassoon: { instrument: bassoon }
       tuba: { instrument: tuba }
       strings: { instrument: pizzicato strings }
-      xylophone: { instrument: xylophone }
-      whistle: { instrument: whistle }
       choir: { instrument: choir }
       brass: { instrument: brass section }
       timpani: { instrument: timpani }
 
     scenes:
-      - name: intro
-        tracks:
-          kick: { pattern: kick, repeat: 4 }
-          brush: { pattern: brush, loop: true }
-          tuba: { pattern: oom, chains: [a], loop: true }
-          strings: { pattern: pah, chains: [a], loop: true }
-      - name: tune
-        tracks:
-          kick: { pattern: kick, repeat: 16 }
-          brush: { pattern: brush, loop: true }
-          tuba: { pattern: oom, chains: [a], loop: true }
-          strings: { pattern: pah, chains: [a], loop: true }
-          bassoon: { pattern: a, loop: true }
       - name: refrain
         tracks:
           kick: { pattern: kick, repeat: 8 }
@@ -213,19 +167,13 @@ songs:
           crash: { pattern: crash, loop: true }
           choir: { pattern: b, loop: true }
           brass: { pattern: b high, loop: true }
-      - name: tune 2
+      - name: tune
         tracks:
-          kick: { pattern: kick, repeat: 8 }
+          kick: { pattern: kick, repeat: 16 }
           brush: { pattern: brush, loop: true }
           tuba: { pattern: oom, chains: [a], loop: true }
           strings: { pattern: pah, chains: [a], loop: true }
           bassoon: { pattern: a, loop: true }
-          xylophone: { pattern: a high, loop: true }
-      - name: sneaking
-        tracks:
-          tuba: { pattern: oom, chains: [a], repeat: 8 }
-          strings: { pattern: a sneak, loop: true }
-          whistle: { pattern: wail, loop: true }
       - name: refrain 2
         tracks:
           kick: { pattern: kick, repeat: 8 }
@@ -236,35 +184,6 @@ songs:
           crash: { pattern: crash, loop: true }
           choir: { pattern: b, loop: true }
           brass: { pattern: b high, loop: true }
-      - name: tune 3
-        tracks:
-          kick: { pattern: kick, repeat: 16 }
-          brush: { pattern: brush, loop: true }
-          tuba: { pattern: oom, chains: [a], loop: true }
-          strings: { pattern: pah, chains: [a], loop: true }
-          brass: { pattern: a brass, loop: true }
-          bassoon: { pattern: a, loop: true }
-          xylophone: { pattern: a high, loop: true }
-      - name: last refrain
-        tracks:
-          kick: { pattern: kick, repeat: 16 }
-          brush: { pattern: brush, loop: true }
-          tuba: { pattern: oom, chains: [b], loop: true }
-          strings: { pattern: pah, chains: [b], loop: true }
-          timpani: { pattern: roll, chains: [b], loop: true }
-          crash: { pattern: crash, loop: true }
-          choir: { pattern: b, loop: true }
-          brass: { pattern: b high, loop: true }
-          xylophone: { pattern: b high, loop: true }
-          whistle: { pattern: wail, loop: true }
-      - name: tag
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          brush: { pattern: brush, loop: true }
-          tuba: { pattern: oom, chains: [a], loop: true }
-          strings: { pattern: pah, chains: [a], loop: true }
-          bassoon: { pattern: a, loop: true }
-          xylophone: { pattern: a high, loop: true }
       - name: ending
         tracks:
           kick: { pattern: kick, repeat: 4 }

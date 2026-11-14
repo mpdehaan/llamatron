@@ -1,10 +1,10 @@
-version: 1.0.364
+version: 1.0.365
 title: Forgot your name
 description: "a warm piano sitcom theme in the manner of Cheers (Gary Portnoy), with a melody of its own"
 notes: |
   Forgot your name: a warm piano sitcom theme in the manner of Cheers (Gary Portnoy), with a melody of
   its own. This is a homage to Cheers (Gary Portnoy): its chords, form, sounds and drums follow that
-  work as Claude knows it, and every tune and rhythm here is new. Rebuild version 3.
+  work as Claude knows it, and every tune and rhythm here is new. Rebuild version 4.
 
   A piano alone under a quiet verse on I and V, then the band, strings and a choir for a chorus that
   opens out on I bVII IV V; a bridge, and the piano alone to end.
@@ -13,7 +13,7 @@ notes: |
   none in the verse; a gentle rock beat with a full snare and a crash in the chorus. Tempo 92,
   straight. Bass: plain, on the roots. Builds: the chorus arrives with the whole band. Sounds: an
   acoustic piano, a voice, voices in harmony, strings. Melody manner: a quiet, narrow verse; a high,
-  held chorus. Form: verse, chorus, bridge, chorus, piano.
+  held chorus. Form: about a minute, as the theme ran on television, the tune first: piano, verse, chorus, piano ending.
 
   Band and song: the theme is known for a lonely verse at the piano and a chorus everyone joins.
 
@@ -52,13 +52,6 @@ patterns:
     degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~]
     velocity: [108, ~, ~, ~, ~, ~, ~, ~, 108, ~, 108, ~, ~, ~, ~, ~]
-  snare:
-    steps: 16
-    drum: true
-    step_size: 1/16
-    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
-    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
-    velocity: [~, ~, ~, ~, 96, ~, ~, ~, ~, ~, ~, ~, 96, ~, ~, ~]
   hat:
     steps: 16
     drum: true
@@ -150,13 +143,6 @@ patterns:
     degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
     octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
     velocity: [~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~]
-  bridge tune:
-    steps: 64
-    step_size: 1/8
-    degree: [6, ~, ~, ~, 1, ~, ~, ~, 7, ~, ~, ~, 5, ~, ~, ~, 6, ~, ~, ~, 4, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, 1, ~, ~, ~, 7, ~, ~, ~, 5, ~, ~, ~, 6, ~, 1, ~, 4, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~]
-    octave: [5, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 6, ~, 6, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [106, ~, ~, ~, 100, ~, ~, ~, 106, ~, ~, ~, 100, ~, ~, ~, 106, ~, ~, ~, 100, ~, ~, ~, 106, ~, ~, ~, ~, ~, ~, ~, 106, ~, ~, ~, 100, ~, ~, ~, 106, ~, ~, ~, 100, ~, ~, ~, 106, ~, 100, ~, 100, ~, ~, ~, 106, ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, true, true, true, true]
 
 progressions:
   verse: { chords: [1, 5, 1, 5, 1, 5, 6, 5] }
@@ -220,58 +206,9 @@ songs:
           piano: { pattern: figure, chains: [verse], repeat: 8 }
           left: { pattern: roots, chains: [verse], loop: true }
           lead: { pattern: verse tune, loop: true }
-      - name: verse again
-        tracks:
-          piano: { pattern: figure, chains: [verse], repeat: 8 }
-          left: { pattern: roots, chains: [verse], loop: true }
-          lead: { pattern: verse tune, loop: true }
-          bass: { pattern: bass, chains: [verse], loop: true }
       - name: chorus
         tracks:
           piano: { pattern: block, chains: [chorus keys], repeat: 8 }
-          left: { pattern: roots, chains: [chorus], loop: true }
-          lead: { pattern: chorus tune, loop: true }
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: big snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          crash: { pattern: crash, loop: true }
-          harmony: { pattern: chorus third, loop: true }
-          bass: { pattern: bass, chains: [chorus], loop: true }
-          strings: { pattern: held, chains: [chorus keys], loop: true }
-          choir: { pattern: held low, chains: [chorus keys], loop: true }
-      - name: verse 2
-        tracks:
-          piano: { pattern: figure, chains: [verse], repeat: 8 }
-          left: { pattern: roots, chains: [verse], loop: true }
-          lead: { pattern: verse tune, loop: true }
-          bass: { pattern: bass, chains: [verse], loop: true }
-          strings: { pattern: held, chains: [verse keys], loop: true }
-      - name: chorus 2
-        tracks:
-          piano: { pattern: block, chains: [chorus keys], repeat: 8 }
-          left: { pattern: roots, chains: [chorus], loop: true }
-          lead: { pattern: chorus tune, loop: true }
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: big snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          crash: { pattern: crash, loop: true }
-          harmony: { pattern: chorus third, loop: true }
-          bass: { pattern: bass, chains: [chorus], loop: true }
-          strings: { pattern: held, chains: [chorus keys], loop: true }
-          choir: { pattern: held low, chains: [chorus keys], loop: true }
-      - name: bridge
-        tracks:
-          piano: { pattern: block, chains: [bridge keys], repeat: 8 }
-          left: { pattern: roots, chains: [bridge], loop: true }
-          lead: { pattern: bridge tune, loop: true }
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [bridge], loop: true }
-          strings: { pattern: held, chains: [bridge keys], loop: true }
-      - name: last chorus
-        tracks:
-          piano: { pattern: block, chains: [chorus keys], repeat: 16 }
           left: { pattern: roots, chains: [chorus], loop: true }
           lead: { pattern: chorus tune, loop: true }
           kick: { pattern: kick, loop: true }

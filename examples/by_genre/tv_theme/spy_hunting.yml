@@ -1,10 +1,10 @@
-version: 1.0.364
+version: 1.0.365
 title: Spy hunting
 description: "a late fifties spy-jazz theme in the manner of Peter Gunn (Henry Mancini), with a riff and a tune of its own"
 notes: |
   Spy hunting: a late fifties spy-jazz theme in the manner of Peter Gunn (Henry Mancini), with a riff
   and a tune of its own. This is a homage to Peter Gunn (Henry Mancini): its chords, form, sounds and
-  drums follow that work as Claude knows it, and every tune and rhythm here is new. Rebuild version 2.
+  drums follow that work as Claude knows it, and every tune and rhythm here is new. Rebuild version 3.
 
   One bar of low eighths on a twangy guitar, a piano and a bass, on one chord, that never stops; brass
   chords that swell over it; a head in long blue notes and a wailing tenor sax solo; once, the riff
@@ -13,7 +13,7 @@ notes: |
   Subgenre: spy jazz of the late fifties. Drums: a straight rock beat with a ride. Tempo 120,
   straight. Bass: the riff itself, low eighths that never stop. Builds: brass grows over the riff.
   Sounds: a twangy guitar, piano and bass on the riff, a brass section, a tenor sax. Melody manner:
-  long blue notes over the riff. Form: riff, brass, head, solo, head.
+  long blue notes over the riff. Form: about a minute, as the theme ran on television, the tune first: riff, head, riff out.
 
   Band and song: the theme is known for one bar that repeats from start to end, and for brass that
   screams over it.
@@ -95,14 +95,6 @@ patterns:
     octave: [5, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 5, ~, 6, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     velocity: [114, ~, ~, ~, ~, ~, 108, ~, 114, ~, ~, ~, 108, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, 108, ~, 114, ~, ~, ~, 108, ~, ~, ~, 114, ~, ~, ~, ~, ~, 108, ~, 114, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false, false, true, true, true, true, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true]
-  sax:
-    steps: 64
-    step_size: 1/8
-    degree: [1, 7, 5, 4, 5, 4, 3, 1, 3, ~, 4, 5, 5, ~, 7, ~, 1, 3, 1, 7, 5, ~, 4, 3, 1, ~, ~, ~, ~, ~, ~, ~, 5, 7, 1, 3, 4, ~, 3, 1, 7, 5, 5, 4, 3, ~, 1, ~, 4, 5, 5, 7, 1, 7, 5, 4, 1, ~, ~, ~, ~, ~, ~, ~]
-    accidental: [~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    octave: [6, 5, 5, 5, 5, 5, 5, 5, 5, ~, 5, 5, 5, ~, 5, ~, 6, 6, 6, 5, 5, ~, 5, 5, 5, ~, ~, ~, ~, ~, ~, ~, 5, 5, 6, 6, 6, ~, 6, 6, 5, 5, 5, 5, 5, ~, 5, ~, 5, 5, 5, 5, 6, 5, 5, 5, 5, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [110, 104, 104, 104, 104, 104, 104, 104, 110, ~, 104, 104, 104, ~, 104, ~, 110, 104, 104, 104, 104, ~, 104, 104, 110, ~, ~, ~, ~, ~, ~, ~, 110, 104, 104, 104, 104, ~, 104, 104, 110, 104, 104, 104, 104, ~, 104, ~, 110, 104, 104, 104, 104, 104, 104, 104, 110, ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, false, false, false, false, false, false, false, false, true, false, false, false, true, false, true, false, false, false, false, false, true, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, true, true, true, true, true, false, false]
 
 progressions:
   move: { chords: [4, 4, 1, 1] }
@@ -135,30 +127,12 @@ songs:
       bass: { instrument: acoustic bass }
       brass: { instrument: brass section }
       lead: { instrument: trumpet }
-      sax: { instrument: tenor sax }
 
     scenes:
       - name: riff
         tracks:
           riff: { pattern: riff, repeat: 4 }
           bass: { pattern: riff low, loop: true }
-      - name: drums
-        tracks:
-          kick: { pattern: kick, repeat: 4 }
-          snare: { pattern: snare, loop: true }
-          ride: { pattern: ride, loop: true }
-          riff: { pattern: riff, loop: true }
-          piano: { pattern: riff low, loop: true }
-          bass: { pattern: riff low, loop: true }
-      - name: brass
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          ride: { pattern: ride, loop: true }
-          riff: { pattern: riff, loop: true }
-          piano: { pattern: riff low, loop: true }
-          bass: { pattern: riff low, loop: true }
-          brass: { pattern: swell, loop: true }
       - name: head
         tracks:
           kick: { pattern: kick, repeat: 16 }
@@ -169,45 +143,6 @@ songs:
           bass: { pattern: riff low, loop: true }
           brass: { pattern: swell, loop: true }
           lead: { pattern: head, loop: true }
-      - name: sax
-        tracks:
-          kick: { pattern: kick, repeat: 16 }
-          snare: { pattern: snare, loop: true }
-          ride: { pattern: ride, loop: true }
-          riff: { pattern: riff, loop: true }
-          piano: { pattern: riff low, loop: true }
-          bass: { pattern: riff low, loop: true }
-          sax: { pattern: sax, loop: true }
-      - name: to iv and back
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          ride: { pattern: ride, loop: true }
-          riff: { pattern: riff, chains: [move], loop: true }
-          piano: { pattern: riff low, chains: [move], loop: true }
-          bass: { pattern: riff low, chains: [move], loop: true }
-          brass: { pattern: swell, chains: [move], loop: true }
-      - name: head 2
-        tracks:
-          kick: { pattern: kick, repeat: 16 }
-          snare: { pattern: snare, loop: true }
-          ride: { pattern: ride, loop: true }
-          riff: { pattern: riff, loop: true }
-          piano: { pattern: riff low, loop: true }
-          bass: { pattern: riff low, loop: true }
-          brass: { pattern: swell, loop: true }
-          lead: { pattern: head, loop: true }
-      - name: shout
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          ride: { pattern: ride, loop: true }
-          riff: { pattern: riff, loop: true }
-          piano: { pattern: riff low, loop: true }
-          bass: { pattern: riff low, loop: true }
-          brass: { pattern: swell, loop: true }
-          lead: { pattern: head, loop: true }
-          sax: { pattern: sax, loop: true }
       - name: riff out
         tracks:
           kick: { pattern: kick, repeat: 8 }

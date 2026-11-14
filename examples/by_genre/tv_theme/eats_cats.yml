@@ -1,11 +1,11 @@
-version: 1.0.364
+version: 1.0.365
 title: Eats cats
 description: "a bouncing mid-eighties sitcom instrumental in the manner of the ALF theme (Alf Clausen), with a tune of its own"
 notes: |
   Eats cats: a bouncing mid-eighties sitcom instrumental in the manner of the ALF theme (Alf Clausen),
   with a tune of its own. This is a homage to the ALF theme (Alf Clausen): its chords, form, sounds
   and drums follow that work as Claude knows it, and every tune and rhythm here is new. Rebuild
-  version 1.
+  version 2.
 
   A slap bass alone, then a drum machine and an electric piano; a syncopated synth brass tune over I,
   vi and the flat seventh; a second strain and a sax chorus.
@@ -14,7 +14,7 @@ notes: |
   kick on one, the and of two and three, a gated snare on two and four, sixteenth hats, claps. Tempo
   128, straight. Bass: a slap bass riff in sixteenths that starts the piece alone. Builds: none.
   Sounds: a slap bass, a digital electric piano stabbing chords, a synth brass lead, a sax. Melody
-  manner: a playful, syncopated tune that starts off the beat. Form: bass, A, B, A, a sax chorus.
+  manner: a playful, syncopated tune that starts off the beat. Form: about a minute, as the theme ran on television, the tune first: A, B, A 4, ending.
 
   Band and song: the theme is known for its funky bass opening and its cheerful tune over chords that
   lean on the flat seventh.
@@ -163,17 +163,6 @@ songs:
       sax: { instrument: alto sax }
 
     scenes:
-      - name: bass
-        tracks:
-          bass: { pattern: slap, chains: [a], repeat: 8 }
-      - name: drums
-        tracks:
-          kick: { pattern: kick, repeat: 4 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          clap: { pattern: clap, loop: true }
-          bass: { pattern: slap, chains: [a], loop: true }
-          keys: { pattern: stab, chains: [a], loop: true }
       - name: A
         tracks:
           kick: { pattern: kick, repeat: 16 }
@@ -192,49 +181,6 @@ songs:
           bass: { pattern: slap bar, chains: [b], loop: true }
           keys: { pattern: stab bar, chains: [b], loop: true }
           lead: { pattern: b, loop: true }
-      - name: A 2
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          clap: { pattern: clap, loop: true }
-          bass: { pattern: slap, chains: [a], loop: true }
-          keys: { pattern: stab, chains: [a], loop: true }
-          lead: { pattern: a, loop: true }
-      - name: sax
-        tracks:
-          kick: { pattern: kick, repeat: 16 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          clap: { pattern: clap, loop: true }
-          bass: { pattern: slap, chains: [a], loop: true }
-          keys: { pattern: stab, chains: [a], loop: true }
-          sax: { pattern: a sax, loop: true }
-      - name: B 2
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          clap: { pattern: clap, loop: true }
-          bass: { pattern: slap bar, chains: [b], loop: true }
-          keys: { pattern: stab bar, chains: [b], loop: true }
-          lead: { pattern: b, loop: true }
-          sax: { pattern: b, loop: true }
-      - name: A 3
-        tracks:
-          kick: { pattern: kick, repeat: 16 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          clap: { pattern: clap, loop: true }
-          bass: { pattern: slap, chains: [a], loop: true }
-          keys: { pattern: stab, chains: [a], loop: true }
-          lead: { pattern: a, loop: true }
-          sax: { pattern: a sax, loop: true }
-      - name: bass again
-        tracks:
-          kick: { pattern: kick, repeat: 4 }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: slap, chains: [a], loop: true }
       - name: A 4
         tracks:
           kick: { pattern: kick, repeat: 8 }

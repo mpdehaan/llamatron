@@ -1,11 +1,11 @@
-version: 1.0.364
+version: 1.0.365
 title: Come on down
 description: "a bright seventies game-show theme in the manner of The Price Is Right theme (Edd Kalehoff), with a tune of its own"
 notes: |
   Come on down: a bright seventies game-show theme in the manner of The Price Is Right theme (Edd
   Kalehoff), with a tune of its own. This is a homage to The Price Is Right theme (Edd Kalehoff): its
   chords, form, sounds and drums follow that work as Claude knows it, and every tune and rhythm here
-  is new. Rebuild version 1.
+  is new. Rebuild version 3.
 
   A brass section and a synthesizer in unison on a leaping tune, a clavinet chopping sixteenths, funky
   bass octaves and a busy drum kit with a tambourine; a bridge, a flute chorus and a drum break.
@@ -15,7 +15,7 @@ notes: |
   hat before each bar, a tambourine. Tempo 126, straight. Bass: funky octaves in eighths. Builds:
   none; it is at full brightness throughout. Sounds: a brass section and an early synthesizer lead on
   the tune together, a clavinet chopping sixteenths, brass hits, a flute. Melody manner: a bouncing
-  tune of leaps upward with gaps for the band. Form: A A B A, a flute chorus, a drum break.
+  tune of leaps upward with gaps for the band. Form: about a minute, as the theme ran on television, the tune first: A, B, A 2, tag.
 
   Band and song: the theme is known for relentless cheer: brass and a synthesizer in unison on a
   leaping tune over a funky rhythm section, and dominant and suspended chords that never settle.
@@ -87,20 +87,6 @@ patterns:
     accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
     octave: [4, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~]
     velocity: [66, ~, 66, ~, 66, ~, 66, ~, 66, ~, 66, ~, 66, ~, 66, ~]
-  fill:
-    steps: 16
-    drum: true
-    step_size: 1/16
-    degree: [D, ~, D, D, ~, D, D, ~, D, ~, D, D, D, D, D, D]
-    octave: [3, ~, 3, 3, ~, 3, 3, ~, 3, ~, 3, 3, 3, 3, 3, 3]
-    velocity: [104, ~, 104, 104, ~, 104, 104, ~, 104, ~, 104, 104, 104, 104, 104, 104]
-  fill toms:
-    steps: 16
-    drum: true
-    step_size: 1/16
-    degree: [~, ~, A, ~, ~, A, ~, A, ~, A, ~, ~, ~, ~, ~, ~]
-    octave: [~, ~, 3, ~, ~, 3, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~]
-    velocity: [~, ~, 100, ~, ~, 100, ~, 100, ~, 100, ~, ~, ~, ~, ~, ~]
   funk:
     steps: 8
     step_size: 1/8
@@ -125,7 +111,7 @@ patterns:
     steps: 64
     step_size: 1/8
     degree: [5, ~, 1, ~, ~, 1, 2, 3, 2, ~, ~, ~, ~, ~, 5, ~, 5, ~, 3, ~, ~, 3, 2, 1, 6, ~, ~, ~, ~, ~, ~, ~, 5, ~, 1, ~, ~, 1, 2, 3, 5, ~, ~, ~, ~, ~, 3, ~, 4, ~, 3, ~, 1, ~, 6, ~, 2, ~, ~, ~, ~, ~, ~, ~]
-    octave: [5, ~, 6, ~, ~, 6, 6, 6, 6, ~, ~, ~, ~, ~, 5, ~, 5, ~, 6, ~, ~, 6, 6, 6, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, 6, ~, ~, 6, 6, 6, 6, ~, ~, ~, ~, ~, 6, ~, 6, ~, 6, ~, 6, ~, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, 5, ~, ~, 5, 5, 5, 5, ~, ~, ~, ~, ~, 4, ~, 4, ~, 5, ~, ~, 5, 5, 5, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 5, ~, ~, 5, 5, 5, 5, ~, ~, ~, ~, ~, 5, ~, 5, ~, 5, ~, 5, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     velocity: [114, ~, 108, ~, ~, 108, 108, 108, 114, ~, ~, ~, ~, ~, 108, ~, 114, ~, 108, ~, ~, 108, 108, 108, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, 108, ~, ~, 108, 108, 108, 114, ~, ~, ~, ~, ~, 108, ~, 114, ~, 108, ~, 108, ~, 108, ~, 114, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, false, false, true, false, false, false, false, false, true, true, true, false, false, false, true, false, false, false, true, false, false, false, false, false, true, true, true, false, false, false, false, false, false, false, true, false, false, false, false, false, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
   b:
@@ -133,16 +119,9 @@ patterns:
     step_size: 1/8
     degree: [7, ~, 5, ~, 3, ~, 5, ~, 6, ~, ~, ~, 4, ~, ~, ~, 5, ~, 7, ~, 2, ~, ~, ~, 1, ~, ~, ~, 6, ~, ~, ~, 4, ~, 6, ~, 2, ~, 6, ~, 4, ~, ~, ~, 2, ~, ~, ~, 5, ~, 7, ~, 2, ~, 4, ~, 2, ~, ~, ~, ~, ~, ~, ~]
     accidental: [b, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    octave: [5, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 6, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 6, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, 4, ~, 4, ~, 4, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, 4, ~, 5, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 4, ~, 4, ~, 5, ~, 4, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, 4, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     velocity: [108, ~, 102, ~, 102, ~, 102, ~, 108, ~, ~, ~, 102, ~, ~, ~, 108, ~, 102, ~, 102, ~, ~, ~, 108, ~, ~, ~, 102, ~, ~, ~, 108, ~, 102, ~, 102, ~, 102, ~, 108, ~, ~, ~, 102, ~, ~, ~, 108, ~, 102, ~, 102, ~, 102, ~, 108, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
-  a flute:
-    steps: 64
-    step_size: 1/8
-    degree: [5, ~, 1, ~, ~, 1, 2, 3, 2, ~, ~, ~, ~, ~, 5, ~, 5, ~, 3, ~, ~, 3, 2, 1, 6, ~, ~, ~, ~, ~, ~, ~, 5, ~, 1, ~, ~, 1, 2, 3, 5, ~, ~, ~, ~, ~, 3, ~, 4, ~, 3, ~, 1, ~, 6, ~, 2, ~, ~, ~, ~, ~, ~, ~]
-    octave: [6, ~, 7, ~, ~, 7, 7, 7, 7, ~, ~, ~, ~, ~, 6, ~, 6, ~, 7, ~, ~, 7, 7, 7, 6, ~, ~, ~, ~, ~, ~, ~, 6, ~, 7, ~, ~, 7, 7, 7, 7, ~, ~, ~, ~, ~, 7, ~, 7, ~, 7, ~, 7, ~, 6, ~, 7, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [98, ~, 92, ~, ~, 92, 92, 92, 98, ~, ~, ~, ~, ~, 92, ~, 98, ~, 92, ~, ~, 92, 92, 92, 98, ~, ~, ~, ~, ~, ~, ~, 98, ~, 92, ~, ~, 92, 92, 92, 98, ~, ~, ~, ~, ~, 92, ~, 98, ~, 92, ~, 92, ~, 92, ~, 98, ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, false, false, true, false, false, false, false, false, true, true, true, false, false, false, true, false, false, false, true, false, false, false, false, false, true, true, true, false, false, false, false, false, false, false, true, false, false, false, false, false, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
 
 progressions:
   a: { chords: [1, 5, 1, 4, 1, 5, 4, 5], qualities: [~, 7sus4, dom9, dom7, ~, 7sus4, dom7, 7sus4] }
@@ -174,25 +153,13 @@ songs:
       hat: { drum: true, instrument: drum kit }
       open: { drum: true, instrument: drum kit }
       tamb: { drum: true, instrument: drum kit }
-      toms: { drum: true, instrument: drum kit }
       brass: { instrument: brass section }
       synth: { instrument: square lead }
       clav: { instrument: clavinet }
       stabs: { instrument: brass section }
-      flute: { instrument: flute }
       bass: { instrument: electric bass }
 
     scenes:
-      - name: intro
-        tracks:
-          kick: { pattern: kick, repeat: 4 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          open: { pattern: open, loop: true }
-          tamb: { pattern: tamb, loop: true }
-          bass: { pattern: funk, chains: [a], loop: true }
-          clav: { pattern: chicks, chains: [a], loop: true }
-          stabs: { pattern: hits, chains: [a], loop: true }
       - name: A
         tracks:
           kick: { pattern: kick, repeat: 16 }
@@ -229,61 +196,6 @@ songs:
           stabs: { pattern: hits, chains: [a], loop: true }
           brass: { pattern: a, loop: true }
           synth: { pattern: a, loop: true }
-      - name: flute
-        tracks:
-          kick: { pattern: kick, repeat: 16 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          open: { pattern: open, loop: true }
-          tamb: { pattern: tamb, loop: true }
-          bass: { pattern: funk, chains: [a], loop: true }
-          clav: { pattern: chicks, chains: [a], loop: true }
-          stabs: { pattern: hits, chains: [a], loop: true }
-          flute: { pattern: a flute, loop: true }
-      - name: B 2
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          open: { pattern: open, loop: true }
-          tamb: { pattern: tamb, loop: true }
-          bass: { pattern: funk, chains: [b], loop: true }
-          clav: { pattern: chicks, chains: [b], loop: true }
-          stabs: { pattern: hits, chains: [b], loop: true }
-          brass: { pattern: b, loop: true }
-          synth: { pattern: b, loop: true }
-      - name: A 3
-        tracks:
-          kick: { pattern: kick, repeat: 16 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          open: { pattern: open, loop: true }
-          tamb: { pattern: tamb, loop: true }
-          bass: { pattern: funk, chains: [a], loop: true }
-          clav: { pattern: chicks, chains: [a], loop: true }
-          stabs: { pattern: hits, chains: [a], loop: true }
-          brass: { pattern: a, loop: true }
-          synth: { pattern: a, loop: true }
-          flute: { pattern: a flute, loop: true }
-      - name: drum break
-        tracks:
-          kick: { pattern: kick, repeat: 4 }
-          snare: { pattern: fill, loop: true }
-          toms: { pattern: fill toms, loop: true }
-          tamb: { pattern: tamb, loop: true }
-      - name: A 4
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          open: { pattern: open, loop: true }
-          tamb: { pattern: tamb, loop: true }
-          bass: { pattern: funk, chains: [a], loop: true }
-          clav: { pattern: chicks, chains: [a], loop: true }
-          stabs: { pattern: hits, chains: [a], loop: true }
-          brass: { pattern: a, loop: true }
-          synth: { pattern: a, loop: true }
-          flute: { pattern: a flute, loop: true }
       - name: tag
         tracks:
           kick: { pattern: kick, repeat: 4 }

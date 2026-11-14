@@ -1,7 +1,7 @@
-version: 1.0.362
+version: 1.0.365
 title: Phoenix Foundation
 description: "a mid-eighties action-show theme in the manner of MacGyver (Randy Edelman), with a melody of its own"
-notes: |
+notes: |-
   Phoenix Foundation: an action-show theme at 130 beats a minute in A major, in the manner of the
   mid eighties: a synth brass melody over a pulsing synth bass, keys broken into sixteenths, an
   overdriven guitar and a rock beat. This is a homage to the theme from MacGyver by Randy Edelman:
@@ -29,7 +29,7 @@ notes: |
   When changing this demo:
   - Keep the guitar, the bass and the keys one bar each, moved by a Progression.
   - Keep the melody its own: nothing of the theme's melody is used.
-  - Keep it out of G major, the theme's key.
+  - Keep it out of G major, the theme's key. Form: about a minute, as the theme ran on television, the tune first: theme, rise, outro.
 real_time: true
 protected: true
 
@@ -100,14 +100,14 @@ patterns:
     steps: 64
     step_size: 1/8
     degree: [1, ~, ~, 1, 5, ~, ~, ~, 4, ~, ~, 6, 1, ~, ~, ~, 2, ~, ~, 7, 5, ~, ~, ~, 6, ~, 4, ~, 1, ~, ~, ~, 1, ~, ~, 1, 5, ~, 1, ~, 1, ~, ~, 6, 4, ~, ~, ~, 7, ~, 2, ~, 7, ~, 5, ~, 4, ~, 6, ~, 1, ~, ~, ~]
-    octave: [5, ~, ~, 5, 5, ~, ~, ~, 5, ~, ~, 5, 6, ~, ~, ~, 6, ~, ~, 5, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, 5, 5, ~, 6, ~, 6, ~, ~, 5, 5, ~, ~, ~, 5, ~, 6, ~, 5, ~, 5, ~, 5, ~, 5, ~, 6, ~, ~, ~]
+    octave: [4, ~, ~, 4, 4, ~, ~, ~, 4, ~, ~, 4, 5, ~, ~, ~, 5, ~, ~, 4, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, 4, ~, ~, 4, 4, ~, 5, ~, 5, ~, ~, 4, 4, ~, ~, ~, 4, ~, 5, ~, 4, ~, 4, ~, 4, ~, 4, ~, 5, ~, ~, ~]
     velocity: [116, ~, ~, 106, 106, ~, ~, ~, 116, ~, ~, 106, 106, ~, ~, ~, 116, ~, ~, 106, 106, ~, ~, ~, 116, ~, 106, ~, 106, ~, ~, ~, 116, ~, ~, 106, 106, ~, 106, ~, 116, ~, ~, 106, 106, ~, ~, ~, 116, ~, 106, ~, 106, ~, 106, ~, 116, ~, 106, ~, 106, ~, ~, ~]
     tie: [false, true, true, false, false, true, true, true, false, true, true, false, false, true, true, true, false, true, true, false, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, true, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true]
   rise:
     steps: 64
     step_size: 1/8
     degree: [3, ~, ~, ~, 6, ~, ~, ~, 4, ~, ~, ~, 1, ~, ~, ~, 2, ~, ~, ~, 7, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, 3, ~, ~, ~, 1, ~, ~, ~, 6, ~, ~, ~, 7, ~, 2, ~, 5, ~, 7, ~, 2, ~, ~, ~, ~, ~, ~, ~]
-    octave: [5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 6, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 6, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, 5, ~, 6, ~, 5, ~, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 4, ~, 5, ~, 4, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     velocity: [110, ~, ~, ~, 100, ~, ~, ~, 110, ~, ~, ~, 100, ~, ~, ~, 110, ~, ~, ~, 100, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, 100, ~, ~, ~, 110, ~, ~, ~, 100, ~, ~, ~, 110, ~, 100, ~, 100, ~, 100, ~, 110, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, true, true]
 
@@ -172,13 +172,6 @@ songs:
       lead: { instrument: synth brass }
 
     scenes:
-      - name: intro
-        tracks:
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [a], repeat: 8 }
-          keys: { pattern: keys, chains: [a sparkle], loop: true }
       - name: theme
         tracks:
           kick: { pattern: kick, loop: true }
@@ -198,43 +191,6 @@ songs:
           guitar: { pattern: root, chains: [b all down], repeat: 8 }
           keys: { pattern: keys, chains: [b sparkle], loop: true }
           lead: { pattern: rise, loop: true }
-      - name: theme 2
-        tracks:
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [a], loop: true }
-          guitar: { pattern: chord, chains: [a backbeat], repeat: 16 }
-          keys: { pattern: keys, chains: [a sparkle], loop: true }
-          lead: { pattern: theme, loop: true }
-      - name: guitar
-        tracks:
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [a], loop: true }
-          guitar: { pattern: root, chains: [a chug], repeat: 16 }
-          keys: { pattern: keys, chains: [a sparkle], loop: true }
-      - name: rise 2
-        tracks:
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          crash: { pattern: crash, loop: true }
-          bass: { pattern: bass, chains: [b], loop: true }
-          guitar: { pattern: root, chains: [b all down], repeat: 8 }
-          keys: { pattern: keys, chains: [b sparkle], loop: true }
-          lead: { pattern: rise, loop: true }
-      - name: last theme
-        tracks:
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          crash: { pattern: crash, loop: true }
-          bass: { pattern: bass, chains: [a], loop: true }
-          guitar: { pattern: chord, chains: [a backbeat], repeat: 16 }
-          keys: { pattern: keys, chains: [a sparkle], loop: true }
-          lead: { pattern: theme, loop: true }
       - name: outro
         tracks:
           kick: { pattern: kick, loop: true }

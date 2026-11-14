@@ -1,11 +1,11 @@
-version: 1.0.364
+version: 1.0.365
 title: Uphill cops
 description: "a gentle piano theme in the manner of Hill Street Blues (Mike Post), its chords voice-led, with a melody of its own"
 notes: |
   Uphill cops: a gentle piano theme in the manner of Hill Street Blues (Mike Post), its chords voice-
   led, with a melody of its own. This is a homage to Hill Street Blues (Mike Post): its chords, form,
   sounds and drums follow that work as Claude knows it, and every tune and rhythm here is new. Rebuild
-  version 2.
+  version 3.
 
   An electric piano rolls each chord gently, I and IV in turn, under a plain piano tune of long notes;
   a soft rhythm section, a clean guitar that fills the gaps and strings join; a second strain climbs
@@ -14,7 +14,7 @@ notes: |
   Subgenre: gentle soft-rock television theme of the early eighties. Drums: very soft, a kick and a
   side stick. Tempo 76, straight. Bass: fretless, plain. Builds: instruments join gently. Sounds: an
   electric piano rolling chords, an acoustic piano with the tune, a clean guitar, strings. Melody
-  manner: long plain notes. Form: theme, second strain, theme.
+  manner: long plain notes. Form: about a minute, as the theme ran on television, the tune first: theme with the band, second strain, outro.
 
   Band and song: the theme is known for being tender where its show was hard, a few piano notes over
   two chords.
@@ -165,15 +165,6 @@ songs:
       guitar: { instrument: clean guitar }
 
     scenes:
-      - name: intro
-        tracks:
-          chords: { pattern: figure, chains: [theme], repeat: 4 }
-          pad: { pattern: held, chains: [theme keys], loop: true }
-      - name: theme
-        tracks:
-          chords: { pattern: figure, chains: [theme], repeat: 8 }
-          pad: { pattern: held, chains: [theme keys], loop: true }
-          lead: { pattern: theme, loop: true }
       - name: theme with the band
         tracks:
           chords: { pattern: figure, chains: [theme], repeat: 8 }
@@ -194,43 +185,6 @@ songs:
           bass: { pattern: bass, chains: [second], loop: true }
           strings: { pattern: held high, chains: [second keys], loop: true }
           lead: { pattern: second, loop: true }
-      - name: theme with strings
-        tracks:
-          chords: { pattern: figure, chains: [theme], repeat: 8 }
-          pad: { pattern: held, chains: [theme keys], loop: true }
-          kick: { pattern: kick, loop: true }
-          rim: { pattern: rim, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [theme], loop: true }
-          strings: { pattern: held high, chains: [theme keys], loop: true }
-          guitar: { pattern: fill, chains: [theme], loop: true }
-          lead: { pattern: theme, loop: true }
-      - name: quiet
-        tracks:
-          chords: { pattern: figure, chains: [theme], repeat: 4 }
-          pad: { pattern: held, chains: [theme keys], loop: true }
-      - name: second strain 2
-        tracks:
-          chords: { pattern: figure, chains: [second], repeat: 8 }
-          pad: { pattern: held, chains: [second keys], loop: true }
-          kick: { pattern: kick, loop: true }
-          rim: { pattern: rim, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [second], loop: true }
-          strings: { pattern: held high, chains: [second keys], loop: true }
-          guitar: { pattern: fill, chains: [second], loop: true }
-          lead: { pattern: second, loop: true }
-      - name: last theme
-        tracks:
-          chords: { pattern: figure, chains: [theme], repeat: 8 }
-          pad: { pattern: held, chains: [theme keys], loop: true }
-          kick: { pattern: kick, loop: true }
-          rim: { pattern: rim, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [theme], loop: true }
-          strings: { pattern: held high, chains: [theme keys], loop: true }
-          guitar: { pattern: fill, chains: [theme], loop: true }
-          lead: { pattern: theme, loop: true }
       - name: outro
         tracks:
           chords: { pattern: figure, chains: [theme], repeat: 4 }
