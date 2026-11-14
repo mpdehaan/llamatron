@@ -1,184 +1,375 @@
-version: 1.0.227
+version: 1.0.364
 title: Bless the rains
 description: "an early eighties soft-rock song in the manner of Africa (Toto), with a melody of its own"
 notes: |
-  Bless the rains: a soft-rock song at 96 beats a minute in A major, in the manner of the early
-  eighties: a marimba riff in sixteenths, congas, a shaker and a cowbell, a warm pad and a lead
-  that rises into the chorus. The melody and the riff are its own.
+  Bless the rains: an early eighties soft-rock song in the manner of Africa (Toto), with a melody of
+  its own. This is a homage to Africa (Toto): its chords, form, sounds and drums follow that work as
+  Claude knows it, and every tune and rhythm here is new. Rebuild version 4.
 
-  The marimba, the bass and the pad are one bar each over chord I, moved by Progression: the
-  verse goes I vi IV V and the chorus vi IV I V.
+  The verse is low and quiet and the chorus an anthem: the tune leaps up an octave and holds long high
+  notes in three-part harmony over big drums, a driving bass, brass and strings. The verse is in D
+  major on I iii vi and the chorus a whole step down, in C major, on vi IV I V, as the song changes
+  key; a brass riff on IV iii vi opens and returns; a marimba figure, congas and a flute solo.
+
+  Subgenre: soft rock of the early eighties, studio-polished. Drums: a steady, relaxed groove built
+  from a loop of congas and a shaker in sixteenths, a soft kick, a side stick on two and four in the
+  verses and a full snare, open hats and a crash in the choruses. Tempo about 93, straight. Bass:
+  fretless, following the kick. Builds: none; the lift is the chorus itself. Sounds: a marimba or
+  kalimba figure, a synth brass riff, electric piano, stacked voices. Melody manner: a low talking
+  verse, a high held chorus in harmony. Form: riff, verse, chorus, with a solo on a flute-like synth.
+
+  Band and song: the band is known for studio precision, a percussion loop and thick vocal harmonies;
+  the song for the contrast of its quiet verse and its anthem chorus, the key change between them, and
+  its brass riff.
+
+  Checklist: the hook is the chorus sung in harmony; the emotion is yearning that turns triumphant;
+  the lift is the chorus, an octave up, three voices, big drums, driving bass, brass and strings; the
+  contrast is the low verse on a side stick; the sounds are a voice lead with attack, a choir, synth
+  brass, marimba and electric piano.
 
   Run it with: llamatron examples/by_genre/pop/bless_the_rains.yml
 
-  Scene 1, intro, 4 bars: the marimba riff and the percussion.
-  Scene 2, verse, 16 bars: the verse.
-  Scene 3, chorus, 16 bars: the chorus.
-  Scene 4, verse 2, 16 bars: the second verse.
-  Scene 5, chorus 2, 16 bars: the chorus to the end.
-  Scene 6, outro, 4 bars: the riff alone again.
+  Scene 1, riff, 4 bars.
+  Scene 2, verse, 16 bars.
+  Scene 3, chorus, 8 bars.
+  Scene 4, verse 2, 8 bars.
+  Scene 5, chorus 2, 8 bars.
+  Scene 6, flute, 8 bars.
+  Scene 7, last chorus, 16 bars.
+  Scene 8, riff 3, 4 bars.
 
   When changing this demo:
-  - Keep the marimba, bass and pad one bar long over chord I.
-  - Keep the melody original.
+  - Keep the drums as the Subgenre paragraph describes them, the kick first.
+  - Keep what the Checklist paragraph calls the hook and the lift.
+  - Keep every tune original, and the demo out of the key of the work it follows.
 real_time: true
 protected: true
 
 scales:
-  A Major: { root: A, type: major }
+  D Major: { root: D, type: major }
+  C Major: { root: C, type: major }
 
 patterns:
-  kit_kick:
-    steps: 16
-    drum: true
-    step_size: 1/16
-    degree: [C, ~, ~, C, ~, ~, C, ~, C, ~, ~, C, ~, ~, C, ~]
-    octave: [3, ~, ~, 3, ~, ~, 3, ~, 3, ~, ~, 3, ~, ~, 3, ~]
-    velocity: [110, ~, ~, 110, ~, ~, 110, ~, 110, ~, ~, 110, ~, ~, 110, ~]
-  kit_conga:
-    steps: 16
-    drum: true
-    step_size: 1/16
-    degree: [~, ~, D, ~, D, ~, ~, ~, D, ~, D, ~, D, ~, D, ~]
-    octave: [~, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, 5, ~]
-    velocity: [~, ~, 110, ~, 110, ~, ~, ~, 110, ~, 110, ~, 110, ~, 110, ~]
-  kit_cowbell:
-    steps: 16
-    drum: true
-    step_size: 1/16
-    degree: [G, ~, G, ~, G, G, ~, G, ~, G, ~, G, G, ~, G, ~]
-    accidental: ["#", ~, "#", ~, "#", "#", ~, "#", ~, "#", ~, "#", "#", ~, "#", ~]
-    octave: [4, ~, 4, ~, 4, 4, ~, 4, ~, 4, ~, 4, 4, ~, 4, ~]
-    velocity: [110, ~, 110, ~, 110, 110, ~, 110, ~, 110, ~, 110, 110, ~, 110, ~]
-  kit_shaker:
-    steps: 16
-    drum: true
-    step_size: 1/16
-    degree: [A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A]
-    accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
-    octave: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
-    velocity: [110, 70, 110, 70, 110, 70, 110, 70, 110, 70, 110, 70, 110, 70, 110, 70]
   kick:
     steps: 16
     drum: true
     step_size: 1/16
-    degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~]
-    octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~]
-  marimba:
+    degree: [C, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~, C, ~]
+    octave: [3, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, 3, ~]
+    velocity: [104, ~, ~, ~, ~, ~, 104, ~, 104, ~, ~, ~, ~, ~, 104, ~]
+  rim:
     steps: 16
+    drum: true
     step_size: 1/16
-    degree: [1, ~, 5, ~, 3, ~, 5, ~, 1, ~, 5, ~, 3, 5, 1, ~]
-    octave: [4, ~, 4, ~, 5, ~, 4, ~, 5, ~, 4, ~, 5, 4, 5, ~]
+    degree: [~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~]
+    accidental: [~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 88, ~, ~, ~, ~, ~, ~, ~, 88, ~, ~, ~]
+  hat:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F]
+    accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [70, 52, 70, 52, 70, 52, 70, 52, 70, 52, 70, 52, 70, 52, 70, 52]
+  conga:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, D, ~, ~, D, ~, D, ~, ~, D, ~, D, ~, D, ~]
+    accidental: [~, ~, "#", ~, ~, "#", ~, "#", ~, ~, "#", ~, "#", ~, "#", ~]
+    octave: [~, ~, 5, ~, ~, 5, ~, 5, ~, ~, 5, ~, 5, ~, 5, ~]
+    velocity: [~, ~, 84, ~, ~, 84, ~, 66, ~, ~, 84, ~, 84, ~, 66, ~]
+  shaker:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [A, ~, A, ~, A, ~, A, ~, A, ~, A, ~, A, ~, A, ~]
+    accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
+    octave: [6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~]
+    velocity: [60, ~, 44, ~, 60, ~, 44, ~, 60, ~, 44, ~, 60, ~, 44, ~]
   bass:
     steps: 8
     step_size: 1/8
-    degree: [1, ~, ~, 1, ~, ~, 5, ~]
-    octave: [2, ~, ~, 2, ~, ~, 1, ~]
-  pad:
+    degree: [1, ~, ~, 1, ~, ~, 5, 1]
+    octave: [3, ~, ~, 3, ~, ~, 2, 3]
+    velocity: [106, ~, ~, 100, ~, ~, 100, 100]
+    tie: [false, true, true, false, false, false, false, false]
+  marimba:
+    steps: 16
+    step_size: 1/16
+    degree: [1, ~, 5, 1, ~, 5, 3, ~, 1, 5, ~, 1, 5, ~, 3, 5]
+    octave: [5, ~, 5, 6, ~, 5, 6, ~, 6, 5, ~, 6, 5, ~, 5, 5]
+    velocity: [86, ~, 80, 80, ~, 80, 80, ~, 80, 80, ~, 80, 80, ~, 80, 80]
+  keys:
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, ~, ~]
     chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    velocity: [90, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  verse:
-    steps: 32
+  brass:
+    steps: 8
     step_size: 1/8
-    degree: [3, 3, 3, 2, 1, ~, 5, ~, 6, 1, 3, 1, 6, ~, ~, ~, 4, 4, 6, 4, 1, ~, 6, ~, 5, ~, 7, ~, 2, 7, 5, ~]
-    octave: [5, 5, 5, 5, 5, ~, 4, ~, 4, 5, 5, 5, 4, ~, ~, ~, 5, 5, 5, 5, 6, ~, 5, ~, 5, ~, 5, ~, 6, 5, 5, ~]
-  chorus:
-    steps: 32
+    degree: [1, ~, ~, 1, ~, ~, 1, ~]
+    octave: [4, ~, ~, 4, ~, ~, 4, ~]
+    chord: ["3", ~, ~, "3", ~, ~, "3", ~]
+    velocity: [106, ~, ~, 100, ~, ~, 100, ~]
+    tie: [false, true, true, false, true, true, false, true]
+  verse tune:
+    steps: 64
     step_size: 1/8
-    degree: [6, ~, 1, 3, ~, 1, 6, ~, 4, ~, 6, 1, ~, 6, 4, ~, 1, ~, 3, 5, ~, 3, 1, ~, 7, ~, 5, 2, ~, ~, ~, ~]
-    octave: [5, ~, 6, 6, ~, 6, 5, ~, 5, ~, 5, 6, ~, 5, 5, ~, 6, ~, 6, 6, ~, 6, 6, ~, 5, ~, 5, 6, ~, ~, ~, ~]
-    tie: [false, true, false, false, true, false, false, false, false, true, false, false, true, false, false, false, false, true, false, false, true, false, false, false, false, true, false, false, true, true, false, false]
+    degree: [~, ~, 3, 3, 3, ~, 2, 1, 2, ~, 3, ~, 5, ~, ~, ~, ~, ~, 3, 3, 3, ~, 2, 1, 1, ~, 6, ~, 1, ~, ~, ~, ~, ~, 3, 3, 5, ~, 3, 2, 2, ~, 3, ~, 5, ~, ~, ~, 6, ~, 5, ~, 3, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [~, ~, 4, 4, 4, ~, 4, 4, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, 4, 4, 4, ~, 4, 4, 4, ~, 3, ~, 4, ~, ~, ~, ~, ~, 4, 4, 4, ~, 4, 4, 4, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [~, ~, 92, 92, 92, ~, 92, 92, 98, ~, 92, ~, 92, ~, ~, ~, ~, ~, 92, 92, 92, ~, 92, 92, 98, ~, 92, ~, 92, ~, ~, ~, ~, ~, 92, 92, 92, ~, 92, 92, 98, ~, 92, ~, 92, ~, ~, ~, 98, ~, 92, ~, 92, ~, 92, ~, 98, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, false, true, false, false, false, true, false, true, false, true, true, true, false, false, false, false, false, true, false, false, false, true, false, true, false, true, true, true, false, false, false, false, false, true, false, false, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+  chorus tune:
+    steps: 64
+    step_size: 1/8
+    degree: [~, ~, 1, ~, 1, ~, 2, ~, 3, ~, ~, ~, ~, ~, 2, ~, 1, ~, ~, ~, 1, ~, 2, ~, 2, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1, ~, 1, ~, 2, ~, 3, ~, ~, ~, 1, ~, ~, ~, 3, ~, 2, ~, 1, ~, 2, ~, 2, ~, ~, ~, ~, ~, ~, ~]
+    octave: [~, ~, 6, ~, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, 6, ~, 6, ~, ~, ~, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~, ~, ~, 6, ~, 6, ~, 6, ~, 6, ~, ~, ~, 6, ~, ~, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [~, ~, 118, ~, 118, ~, 118, ~, 124, ~, ~, ~, ~, ~, 118, ~, 124, ~, ~, ~, 118, ~, 118, ~, 124, ~, ~, ~, ~, ~, ~, ~, ~, ~, 118, ~, 118, ~, 118, ~, 124, ~, ~, ~, 118, ~, ~, ~, 124, ~, 118, ~, 118, ~, 118, ~, 124, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, true, false, true, false, true, false, true, true, true, true, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, false, false, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+  chorus third:
+    steps: 64
+    step_size: 1/8
+    degree: [~, ~, 6, ~, 6, ~, 7, ~, 1, ~, ~, ~, ~, ~, 7, ~, 6, ~, ~, ~, 6, ~, 7, ~, 7, ~, ~, ~, ~, ~, ~, ~, ~, ~, 6, ~, 6, ~, 7, ~, 1, ~, ~, ~, 6, ~, ~, ~, 1, ~, 7, ~, 6, ~, 7, ~, 7, ~, ~, ~, ~, ~, ~, ~]
+    octave: [~, ~, 5, ~, 5, ~, 5, ~, 6, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, ~, 5, ~, 6, ~, ~, ~, 5, ~, ~, ~, 6, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [~, ~, 110, ~, 110, ~, 110, ~, 116, ~, ~, ~, ~, ~, 110, ~, 116, ~, ~, ~, 110, ~, 110, ~, 116, ~, ~, ~, ~, ~, ~, ~, ~, ~, 110, ~, 110, ~, 110, ~, 116, ~, ~, ~, 110, ~, ~, ~, 116, ~, 110, ~, 110, ~, 110, ~, 116, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, true, false, true, false, true, false, true, true, true, true, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, false, false, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+  chorus sixth:
+    steps: 64
+    step_size: 1/8
+    degree: [~, ~, 3, ~, 3, ~, 4, ~, 5, ~, ~, ~, ~, ~, 4, ~, 3, ~, ~, ~, 3, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~, 4, ~, 5, ~, ~, ~, 4, ~, ~, ~, 5, ~, 4, ~, 3, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    octave: [~, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [~, ~, 106, ~, 106, ~, 106, ~, 112, ~, ~, ~, ~, ~, 106, ~, 112, ~, ~, ~, 106, ~, 106, ~, 112, ~, ~, ~, ~, ~, ~, ~, ~, ~, 106, ~, 106, ~, 106, ~, 112, ~, ~, ~, 106, ~, ~, ~, 112, ~, 106, ~, 106, ~, 106, ~, 112, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, true, false, true, false, true, false, true, true, true, true, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, false, false, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+  big kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, C, ~, C, ~, C, ~, ~, ~, C, ~, C, ~]
+    octave: [3, ~, ~, ~, 3, ~, 3, ~, 3, ~, ~, ~, 3, ~, 3, ~]
+    velocity: [118, ~, ~, ~, 118, ~, 118, ~, 118, ~, ~, ~, 118, ~, 118, ~]
+  big snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 124, ~, ~, ~, ~, ~, ~, ~, 124, ~, ~, ~]
+  open:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [A, ~, A, ~, A, ~, A, ~, A, ~, A, ~, A, ~, A, ~]
+    accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
+    velocity: [84, ~, 84, ~, 84, ~, 84, ~, 84, ~, 84, ~, 84, ~, 84, ~]
+  crash:
+    steps: 64
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [112, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  drive:
+    steps: 8
+    step_size: 1/8
+    degree: [1, 1, 1, 1, 1, 1, 5, 1]
+    octave: [3, 3, 3, 3, 3, 3, 2, 3]
+    velocity: [116, 110, 110, 110, 110, 110, 110, 110]
+  power:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, 1, ~, ~, ~, ~]
+    octave: [4, ~, ~, 4, ~, ~, ~, ~]
+    chord: ["3", ~, ~, "3", ~, ~, ~, ~]
+    velocity: [114, ~, ~, 108, ~, ~, ~, ~]
+    tie: [false, true, true, false, true, true, true, true]
+  held high:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    velocity: [78, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  flute tune:
+    steps: 64
+    step_size: 1/8
+    degree: [5, 6, 1, ~, 6, 5, 3, ~, 5, ~, 7, 2, 7, ~, 5, ~, 6, 1, 3, ~, 2, 1, 6, ~, 5, ~, 3, 5, 6, ~, ~, ~, 1, 2, 3, ~, 2, 1, 6, ~, 7, ~, 5, 7, 2, ~, ~, ~, 3, ~, 1, ~, 6, ~, 1, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, 5, 6, ~, 5, 5, 5, ~, 5, ~, 5, 6, 5, ~, 5, ~, 5, 6, 6, ~, 6, 6, 5, ~, 5, ~, 5, 5, 5, ~, ~, ~, 6, 6, 6, ~, 6, 6, 5, ~, 5, ~, 5, 5, 6, ~, ~, ~, 6, ~, 6, ~, 5, ~, 6, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [104, 98, 98, ~, 98, 98, 98, ~, 104, ~, 98, 98, 98, ~, 98, ~, 104, 98, 98, ~, 98, 98, 98, ~, 104, ~, 98, 98, 98, ~, ~, ~, 104, 98, 98, ~, 98, 98, 98, ~, 104, ~, 98, 98, 98, ~, ~, ~, 104, ~, 98, ~, 98, ~, 98, ~, 104, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, true, false, false, false, true, false, true, false, false, false, true, false, true, false, false, false, true, false, false, false, true, false, true, false, false, false, true, true, true, false, false, false, true, false, false, false, true, false, true, false, false, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
 
 progressions:
-  verse: { chords: [1, 6, 4, 5] }
+  verse: { chords: [1, 1, 3, 3, 6, 6, 1, 6], every: 1/2 }
   chorus: { chords: [6, 4, 1, 5] }
+  riff: { chords: [4, 3, 6, 6] }
+
+voice_leadings:
+  near: { lowest_octave: 4, highest_octave: 5 }
 
 chains:
   verse:
     - progression: verse
   chorus:
     - progression: chorus
+  riff:
+    - progression: riff
+  verse keys:
+    - progression: verse
+    - voice_leading: near
+  chorus keys:
+    - progression: chorus
+    - voice_leading: near
+  riff keys:
+    - progression: riff
+    - voice_leading: near
 
 instruments:
   marimba: { device: "*FluidSynth", gm_sound: 13 }
-  finger bass: { device: "*FluidSynth", gm_sound: 34 }
-  warm pad: { device: "*FluidSynth", gm_sound: 90 }
-  voice: { device: "*FluidSynth", gm_sound: 54 }
+  fretless bass: { device: "*FluidSynth", gm_sound: 36 }
+  electric piano: { device: "*FluidSynth", gm_sound: 5 }
+  synth brass: { device: "*FluidSynth", gm_sound: 63 }
+  voice: { device: "*FluidSynth", gm_sound: 86 }
+  choir: { device: "*FluidSynth", gm_sound: 53 }
+  flute: { device: "*FluidSynth", gm_sound: 74 }
+  strings: { device: "*FluidSynth", gm_sound: 49 }
   drum kit: { device: "*FluidSynth" }
 
 songs:
   bless_the_rains:
-    tempo: 96
-    scale: A Major
+    tempo: 93
+    scale: D Major
     genre: Pop
 
     tracks:
       kick: { drum: true, instrument: drum kit }
+      snare: { drum: true, instrument: drum kit }
+      rim: { drum: true, instrument: drum kit }
+      hat: { drum: true, instrument: drum kit }
       conga: { drum: true, instrument: drum kit }
-      cowbell: { drum: true, instrument: drum kit }
       shaker: { drum: true, instrument: drum kit }
+      open: { drum: true, instrument: drum kit }
+      crash: { drum: true, instrument: drum kit }
       marimba: { instrument: marimba }
-      bass: { instrument: finger bass }
-      pad: { instrument: warm pad }
+      bass: { instrument: fretless bass }
+      keys: { instrument: electric piano }
+      brass: { instrument: synth brass }
       lead: { instrument: voice }
+      harmony: { instrument: choir }
+      harmony low: { instrument: choir }
+      strings: { instrument: strings }
+      flute: { instrument: flute }
 
     scenes:
-      - name: intro
+      - name: riff
+        scale: C Major
         tracks:
           kick: { pattern: kick, repeat: 4 }
-          conga: { pattern: kit_conga, loop: true }
-          cowbell: { pattern: kit_cowbell, loop: true }
-          shaker: { pattern: kit_shaker, loop: true }
-          marimba: { pattern: marimba, chains: [verse], loop: true }
+          rim: { pattern: rim, loop: true }
+          hat: { pattern: hat, loop: true }
+          conga: { pattern: conga, loop: true }
+          shaker: { pattern: shaker, loop: true }
+          bass: { pattern: bass, chains: [riff], loop: true }
+          marimba: { pattern: marimba, chains: [riff], loop: true }
+          keys: { pattern: keys, chains: [riff keys], loop: true }
+          brass: { pattern: brass, chains: [riff], loop: true }
       - name: verse
         tracks:
-          kick: { pattern: kick, loop: true }
-          conga: { pattern: kit_conga, loop: true }
-          cowbell: { pattern: kit_cowbell, loop: true }
-          shaker: { pattern: kit_shaker, loop: true }
-          marimba: { pattern: marimba, chains: [verse], loop: true }
+          kick: { pattern: kick, repeat: 16 }
+          rim: { pattern: rim, loop: true }
+          hat: { pattern: hat, loop: true }
+          conga: { pattern: conga, loop: true }
+          shaker: { pattern: shaker, loop: true }
           bass: { pattern: bass, chains: [verse], loop: true }
-          pad: { pattern: pad, chains: [verse], loop: true }
-          lead: { pattern: verse, repeat: 4 }
+          marimba: { pattern: marimba, chains: [verse], loop: true }
+          keys: { pattern: keys, chains: [verse keys], loop: true }
+          lead: { pattern: verse tune, loop: true }
       - name: chorus
+        scale: C Major
         tracks:
-          kick: { pattern: kick, loop: true }
-          conga: { pattern: kit_conga, loop: true }
-          cowbell: { pattern: kit_cowbell, loop: true }
-          shaker: { pattern: kit_shaker, loop: true }
+          kick: { pattern: big kick, repeat: 8 }
+          snare: { pattern: big snare, loop: true }
+          open: { pattern: open, loop: true }
+          crash: { pattern: crash, loop: true }
+          conga: { pattern: conga, loop: true }
+          bass: { pattern: drive, chains: [chorus], loop: true }
           marimba: { pattern: marimba, chains: [chorus], loop: true }
-          bass: { pattern: bass, chains: [chorus], loop: true }
-          pad: { pattern: pad, chains: [chorus], loop: true }
-          lead: { pattern: chorus, repeat: 4 }
+          keys: { pattern: keys, chains: [chorus keys], loop: true }
+          brass: { pattern: power, chains: [chorus], loop: true }
+          strings: { pattern: held high, chains: [chorus keys], loop: true }
+          lead: { pattern: chorus tune, loop: true }
+          harmony: { pattern: chorus third, loop: true }
+          harmony low: { pattern: chorus sixth, loop: true }
       - name: verse 2
         tracks:
-          kick: { pattern: kick, loop: true }
-          conga: { pattern: kit_conga, loop: true }
-          cowbell: { pattern: kit_cowbell, loop: true }
-          shaker: { pattern: kit_shaker, loop: true }
-          marimba: { pattern: marimba, chains: [verse], loop: true }
+          kick: { pattern: kick, repeat: 8 }
+          rim: { pattern: rim, loop: true }
+          hat: { pattern: hat, loop: true }
+          conga: { pattern: conga, loop: true }
+          shaker: { pattern: shaker, loop: true }
           bass: { pattern: bass, chains: [verse], loop: true }
-          pad: { pattern: pad, chains: [verse], loop: true }
-          lead: { pattern: verse, repeat: 4 }
+          marimba: { pattern: marimba, chains: [verse], loop: true }
+          keys: { pattern: keys, chains: [verse keys], loop: true }
+          lead: { pattern: verse tune, loop: true }
       - name: chorus 2
+        scale: C Major
         tracks:
-          kick: { pattern: kick, loop: true }
-          conga: { pattern: kit_conga, loop: true }
-          cowbell: { pattern: kit_cowbell, loop: true }
-          shaker: { pattern: kit_shaker, loop: true }
+          kick: { pattern: big kick, repeat: 8 }
+          snare: { pattern: big snare, loop: true }
+          open: { pattern: open, loop: true }
+          crash: { pattern: crash, loop: true }
+          conga: { pattern: conga, loop: true }
+          bass: { pattern: drive, chains: [chorus], loop: true }
           marimba: { pattern: marimba, chains: [chorus], loop: true }
-          bass: { pattern: bass, chains: [chorus], loop: true }
-          pad: { pattern: pad, chains: [chorus], loop: true }
-          lead: { pattern: chorus, repeat: 4 }
-      - name: outro
+          keys: { pattern: keys, chains: [chorus keys], loop: true }
+          brass: { pattern: power, chains: [chorus], loop: true }
+          strings: { pattern: held high, chains: [chorus keys], loop: true }
+          lead: { pattern: chorus tune, loop: true }
+          harmony: { pattern: chorus third, loop: true }
+          harmony low: { pattern: chorus sixth, loop: true }
+      - name: flute
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          rim: { pattern: rim, loop: true }
+          hat: { pattern: hat, loop: true }
+          conga: { pattern: conga, loop: true }
+          shaker: { pattern: shaker, loop: true }
+          bass: { pattern: bass, chains: [verse], loop: true }
+          marimba: { pattern: marimba, chains: [verse], loop: true }
+          keys: { pattern: keys, chains: [verse keys], loop: true }
+          flute: { pattern: flute tune, loop: true }
+      - name: last chorus
+        scale: C Major
+        tracks:
+          kick: { pattern: big kick, repeat: 16 }
+          snare: { pattern: big snare, loop: true }
+          open: { pattern: open, loop: true }
+          crash: { pattern: crash, loop: true }
+          conga: { pattern: conga, loop: true }
+          bass: { pattern: drive, chains: [chorus], loop: true }
+          marimba: { pattern: marimba, chains: [chorus], loop: true }
+          keys: { pattern: keys, chains: [chorus keys], loop: true }
+          brass: { pattern: power, chains: [chorus], loop: true }
+          strings: { pattern: held high, chains: [chorus keys], loop: true }
+          lead: { pattern: chorus tune, loop: true }
+          harmony: { pattern: chorus third, loop: true }
+          harmony low: { pattern: chorus sixth, loop: true }
+      - name: riff 3
+        scale: C Major
         tracks:
           kick: { pattern: kick, repeat: 4 }
-          conga: { pattern: kit_conga, loop: true }
-          cowbell: { pattern: kit_cowbell, loop: true }
-          shaker: { pattern: kit_shaker, loop: true }
-          marimba: { pattern: marimba, chains: [verse], loop: true }
+          rim: { pattern: rim, loop: true }
+          hat: { pattern: hat, loop: true }
+          conga: { pattern: conga, loop: true }
+          shaker: { pattern: shaker, loop: true }
+          bass: { pattern: bass, chains: [riff], loop: true }
+          marimba: { pattern: marimba, chains: [riff], loop: true }
+          keys: { pattern: keys, chains: [riff keys], loop: true }
+          brass: { pattern: brass, chains: [riff], loop: true }
