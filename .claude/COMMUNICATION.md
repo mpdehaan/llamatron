@@ -48,7 +48,7 @@ The user's rules for a reply that puts anything to them, gathered here so that e
 
 - Commit directly to main when asked, as you go, with the full suite passing when the commit changes
   code (`internal_tools/check_before_commit.sh`, run by Claude, since there is no git hook, the user's
-  rule in `.claude/TESTING.md`), and never push unless asked in that conversation.
+  rule in `.claude/TESTING.md`), and never push unless asked in that conversation, and then with `internal_tools/push_all.sh`.
 - Every Markdown file outside `.claude/` (`GUIDE.md`, `README.md`, `INSTALL.md`, `docs/ARCHITECTURE.md`,
   `docs/WHY_LLAMATRON.md`, `docs/MIDI_SETUP.md`, `docs/RECORDING.md`, `docs/DEMOS.md` and the rest) is the
   user's own writing, whose phrasing the user very likely cares about, since the user edits them to
@@ -65,12 +65,14 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   so Claude keeps all of them consistent and correct as needed. For now, until the work reaches the video tutorial, the
   user has given Claude leave to edit the documents as it judges best and report what changed, rather than proposing each
   change first.
-- The documentation website is published whenever its sources change, without asking (the user's standing
-  permission): when a commit changes `GUIDE.md`, a page in `docs/`, a new page among them, or what builds the site
-  (`internal_tools/stage_docs_site.py`, `internal_tools/build_docs.sh`, the VitePress configuration), or retakes screenshots in
-  `docs/screenshots/` (which `README.md`, GitHub's front page, shows too), Claude runs
-  `internal_tools/build_docs.sh`, commits `web_docs/` and runs `internal_tools/publish_docs.sh`, which pushes the
-  `gh-pages` branch alone. That is the one push Claude makes unasked; `main` is still pushed only when asked.
+- The documentation website is rebuilt whenever its sources change, and published only together with the code (the user's
+  rule, so that the website never describes code nobody can get): when a commit changes `GUIDE.md`, a page in `docs/`, a new
+  page among them, or what builds the site (`internal_tools/stage_docs_site.py`, `internal_tools/build_docs.sh`, the VitePress
+  configuration), or retakes screenshots in `docs/screenshots/` (which `README.md`, GitHub's front page, shows too), Claude
+  runs `internal_tools/build_docs.sh` and commits `web_docs/`, and publishes nothing. Claude pushes nothing unasked. When the
+  user asks Claude to push, in any words, Claude runs `internal_tools/push_all.sh`, which pushes `main` and then publishes the
+  website with `internal_tools/publish_docs.sh`, in that order; `publish_docs.sh` refuses while `main` holds commits GitHub's
+  `main` doesn't. A reply that leaves commits waiting says how many wait for a push.
 - Claude commits only the files it changed, naming them, never `git add -A`, and checks
   `git status` first: a change it didn't make, like a hand edit of the user's in progress, stays
   out of its commit and is mentioned, so that the user's work is never swept into Claude's.
