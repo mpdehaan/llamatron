@@ -14,7 +14,8 @@ says what llamatron is for; this file says how the user weighs one way of buildi
 - **What people see is current.** Every visible change carries its docs, and the screenshots and the website are brought up to date
   before a push, when the code and the website go up together; GitHub's front page should never look stale, and the website never leads the code.
 - **Demos are music first.** They're starting points people enjoy and learn from, each a plain workout of its feature or a
-  piece that sounds good; one is rewritten only with the user's say-so, asked upfront, and new demo ideas wait at the bottom of
+  piece that sounds good; once patterns can belong to a song, a demo or homage with one song keeps its patterns global, the
+  set's, so that a person can add a new song built on the same patterns (the user's rule); one is rewritten only with the user's say-so, asked upfront, and new demo ideas wait at the bottom of
   the queue.
 - **Bugs are understood.** A bug the user finds is reproduced, fixed at its cause, explained, and held by a test.
 - **Progress with every reply.** Agreed work is built before the next questions are asked; each question offers lettered
