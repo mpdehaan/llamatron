@@ -51,9 +51,27 @@ WRITTEN_BEFORE_THE_LENGTH_RULE = {
     '12_sailor_arpeggiator.yml', '20_arrangement_shanty.yml', '17_complex_gifts_chain.yml', '10_mtn_king_direction.yml', 'entertainer.yml', '19_hocket_shanty.yml', '09_groove.yml', '01_hello_world.yml',
     '03_mary_keychange.yml', '02_pachelbel.yml', '11_ode_to_joy_ratchet.yml', '22_registers.yml', '04_scale.yml', '18_techno_morph.yml', '08_tie.yml',
 }
-# The examples the user asked to run another length, by name, with that length in seconds: the nine-minute video game piece, and the
-# guitar showpiece, which is short as the solo it follows is.
-OTHER_LENGTHS = {'incoming_message.yml': 526, 'volcano.yml': 89, 'meeting_the_eye.yml': 66}
+# The examples the user asked to run another length, by name, with that length in seconds: the nine-minute video game piece, the
+# guitar showpiece, which is short as the solo it follows is, and the TV themes, each about a minute as a theme runs.
+OTHER_LENGTHS = {
+    'incoming_message.yml': 526,
+    'volcano.yml': 89,
+    'meeting_the_eye.yml': 66,
+    'aunt_clara.yml': 63,
+    'come_on_down.yml': 69,
+    'eats_cats.yml': 68,
+    'forgot_your_name.yml': 63,
+    'laboratory_mice.yml': 69,
+    'mysterious_spooky.yml': 65,
+    'sax_reindeer.yml': 60,
+    'spy_hunting.yml': 56,
+    'three_hour_tour.yml': 73,
+    'tropical_51.yml': 64,
+    'uk_butler.yml': 72,
+    'uphill_cops.yml': 63,
+    'not_painless.yml': 64,
+    'phoenix_foundation.yml': 59,
+}
 # The songs that are meant to sound good, rather than to teach one feature.
 SONG_PATHS = [path for path in EXAMPLE_PATHS if not is_demo(path)]
 
