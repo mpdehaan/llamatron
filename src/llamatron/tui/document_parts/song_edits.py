@@ -64,6 +64,10 @@ class SongEdits:
     def set_live_responsiveness(self, value):
         self._change(self.song().set_live_responsiveness, value)
 
+    def set_preview_instrument_name(self, name):
+        """Choose the instrument Listen plays a pattern through in the current song, or None for the pattern's own track."""
+        self._change(self.song().set_preview_instrument_name, name)
+
     def set_song_visualizer(self, name):
         """Name the visualizer mode Arrange shows first for the current song, or None to take the set's."""
         self._change(self.song().set_visualizer, name)

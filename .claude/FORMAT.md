@@ -274,12 +274,13 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
 - The set owns the shared sections, `scales`, `patterns`, each generator kind, `chains` and
   `grooves` (`SETLIST_SECTIONS` in `composition/sections.py`), and `songs`.
 - Each song is a `Song` (`composition/song.py`) with its own `tempo`, `time_signature`, `scale`,
-  `seed`, `groove`, `genre`, `live_responsiveness`, `registers`, `tracks` and `scenes`
+  `seed`, `groove`, `genre`, `live_responsiveness`, `preview_instrument`, `registers`, `tracks` and `scenes`
   (`SONG_SECTIONS`), written in that order under `songs:` by `setlist_writer.py`. A song's
   `live_responsiveness` (`LiveResponsiveness`: next_bar, clip_restart or asap, next_bar by default and
   written only when set, `Song.get_live_responsiveness`), the user's design, is when an edit made while
   the song plays in real time is heard on what plays: at the next bar, at each playing clip's next
-  pass, or at once. A song's `genre` is text only for people, blank by
+  pass, or at once. A song's `preview_instrument` (`Song.get_preview_instrument_name`, the user's design) names the instrument of the set that
+  Listen plays a pattern through, None, the default, for the pattern's own track; a rename follows it and the song is a use of the instrument. A song's `genre` is text only for people, blank by
   default (`Song.get_genre`, `Setlist.get_genres`), the user's design, which the demo
   tables show; every example has the broad genre the user approved.
 - A song keeps a back-reference to its set and forwards lookups of shared things to it, so

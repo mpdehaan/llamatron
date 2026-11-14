@@ -29,14 +29,14 @@ from llamatron.tui.screens.shared import NO_SEED, ask_time_signature, stepped
 from llamatron.strings.errors import ERR_ADD_A_SCALE_FIRST
 from llamatron.strings.labels import MSG_CAPTION_WORDS, MSG_EDITING_CAPTION
 from llamatron.strings.labels import (
-    MSG_GENRE_LABEL, MSG_LIVE_RESPONSIVENESS_LABEL, MSG_LIVE_RESPONSIVENESS_NAMES, MSG_SETS_VISUALIZER_CHOICE,
+    MSG_GENRE_LABEL, MSG_LIVE_RESPONSIVENESS_LABEL, MSG_LIVE_RESPONSIVENESS_NAMES, MSG_PREVIEW_INSTRUMENT_LABEL, MSG_PREVIEW_INSTRUMENT_UNSET, MSG_SETS_VISUALIZER_CHOICE,
     MSG_ENTRY_SIZE_LABEL, Crumb, MSG_GROOVE_LABEL, MSG_SCALE_LABEL, MSG_SEED_LABEL, MSG_TEMPO_LABEL,
     MSG_TIME_SIGNATURE_LABEL, PageName,
 )
 from llamatron.strings.legends import MSG_ONE_STEP_WHAT, What
 from llamatron.strings.marks import MSG_ONE_STEP_SHOWN, MSG_NONE_SHOWN, MSG_TEMPO_SHOWN
 from llamatron.strings.messages import (
-    MSG_NO_SCALE, MSG_NO_SEED, MSG_RENAME_SONG_PROMPT, MSG_SONG_GROOVE_TITLE, MSG_SONG_SCALE_TITLE, MSG_SONG_TIME_SIGNATURE_PROMPT,
+    MSG_NO_SCALE, MSG_NO_SEED, MSG_PREVIEW_INSTRUMENT_TITLE, MSG_RENAME_SONG_PROMPT, MSG_SONG_GROOVE_TITLE, MSG_SONG_SCALE_TITLE, MSG_SONG_TIME_SIGNATURE_PROMPT,
 )
 from llamatron.tui import themes
 from llamatron.tui import keybindings
@@ -89,6 +89,8 @@ class SongPage(FieldPage):
                 names=[MSG_LIVE_RESPONSIVENESS_NAMES[choice] for choice in LIVE_RESPONSIVENESSES], shown=MSG_LIVE_RESPONSIVENESS_NAMES[song.get_live_responsiveness()],
                 set=document.set_live_responsiveness,
             ),
+            Field(label=MSG_PREVIEW_INSTRUMENT_LABEL, value=lambda: song.get_preview_instrument_name() or MSG_PREVIEW_INSTRUMENT_UNSET, adjust=self.step_preview_instrument,
+                  enter=self.pick_preview_instrument, enter_what=What.CHOOSE, clear=lambda: document.set_preview_instrument_name(None), clear_what=MSG_PREVIEW_INSTRUMENT_UNSET),
             visualizer_field(page=self, current=song.get_visualizer(), set_name=document.set_song_visualizer, first=MSG_SETS_VISUALIZER_CHOICE),
             self.button(binding=self.KEYS.EXPORT, label=PageName.EXPORT, action=lambda: export(self)),
         ]
@@ -137,6 +139,24 @@ class SongPage(FieldPage):
         names = [None, *sorted_names(self.song().get_scale_names())]
         place = names.index(self.song().get_scale_name())
         self.document().set_scale_name(names[max(min(place + offset, len(names) - 1), 0)])
+
+    def preview_instruments(self):
+        """Return what the Preview instrument field chooses among: none, which is the pattern's own track, then the set's instruments by name."""
+        return [None, *sorted_names(self.document().setlist().get_instrument_names())]
+
+    def step_preview_instrument(self, offset):
+        """Move to the next or previous instrument, stopping at both ends."""
+        names = self.preview_instruments()
+        place = names.index(self.song().get_preview_instrument_name())
+        self.document().set_preview_instrument_name(names[max(min(place + offset, len(names) - 1), 0)])
+
+    def pick_preview_instrument(self):
+        names = self.preview_instruments()
+        options = [MSG_PREVIEW_INSTRUMENT_UNSET, *names[1:]]
+        self.ask(
+            dialog=ChoiceDialog(title=MSG_PREVIEW_INSTRUMENT_TITLE, options=options, current=names.index(self.song().get_preview_instrument_name())),
+            then=lambda chosen: self.document().set_preview_instrument_name(names[chosen]),
+        )
 
     def step_groove(self, offset):
         """Move to the next or previous groove, in the order the picker shows them."""
