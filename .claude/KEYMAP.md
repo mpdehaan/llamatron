@@ -65,19 +65,19 @@ settings page's fields. The keys that work everywhere are listed once:
 
 - **a row**: `ESC` back · `↑↓` select · `A` add · `ENTER` change · `C` copy · `Bksp` remove · `M` move · `N/F2` rename · `/` search
 - **the + row**: `ESC` back · `ENTER` add · `↑↓` select · `A` add · `N/F2` rename · `/` search
-- **while searching**: `ESC` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
+- **while searching**: `ESC` CANCEL · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
 
 ## ChainListPage
 
 - **a row**: `ESC` back · `↑↓` select · `A` add · `Bksp` remove · `M` move · `/` search
 - **the + row**: `ESC` back · `ENTER` add · `↑↓` select · `A` add · `/` search
-- **while searching**: `ESC` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
+- **while searching**: `ESC` CANCEL · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
 
 ## ChainsPage
 
 - **a row**: `ESC` back · `↑↓` select · `A` add · `ENTER` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `S` sort · `/` search
 - **the + row**: `ESC` back · `ENTER` add · `↑↓` select · `A` add · `/` search
-- **while searching**: `ESC` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
+- **while searching**: `ESC` CANCEL · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
 
 ## ChordsEditor
 
@@ -150,7 +150,7 @@ settings page's fields. The keys that work everywhere are listed once:
 
 - **a row**: `ESC` back · `↑↓` select · `A` add · `ENTER` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `/` search
 - **the + row**: `ESC` back · `ENTER` add · `↑↓` select · `A` add · `/` search
-- **while searching**: `ESC` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
+- **while searching**: `ESC` CANCEL · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
 
 ## GlideEditor
 
@@ -172,7 +172,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - **a row**: `ESC` back · `↑↓` select · `A` add · `ENTER` view · `C` copy · `/` search
 - **a row**: `ESC` back · `↑↓` select · `A` add · `ENTER` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `S` sort · `/` search
 - **the + row**: `ESC` back · `ENTER` add · `↑↓` select · `A` add · `/` search
-- **while searching**: `ESC` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
+- **while searching**: `ESC` CANCEL · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
 
 ## HocketEditor
 
@@ -191,7 +191,7 @@ settings page's fields. The keys that work everywhere are listed once:
 
 - **a row**: `ESC` back · `↑↓` select · `A` add · `ENTER` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `S` sort · `/` search
 - **the + row**: `ESC` back · `ENTER` add · `↑↓` select · `A` add · `/` search
-- **while searching**: `ESC` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
+- **while searching**: `ESC` CANCEL · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
 
 ## MainPage
 
@@ -199,8 +199,8 @@ settings page's fields. The keys that work everywhere are listed once:
 
 ## NotesPage
 
-- **while typing**: `ESC` cancel · `←↑↓→` move · `ENTER` new line · `Bksp` erase · `Tab` Save or Cancel
-- **anywhere**: `ESC` cancel · `←→` select · `ENTER` choose · `Tab` back to the text
+- **while typing**: `ESC` CANCEL · `←↑↓→` move · `ENTER` new line · `Bksp` erase · `Tab` Save or CANCEL
+- **anywhere**: `ESC` CANCEL · `←→` select · `ENTER` choose · `Tab` back to the text
 - **anywhere**: `ESC` back · `↑↓` scroll · `E` edit · `Bksp` clear
 
 ## OffsetsEditor
@@ -210,7 +210,7 @@ settings page's fields. The keys that work everywhere are listed once:
 ## OpenPage
 
 - **a row**: `ESC` back · `↑↓` select · `ENTER` open · `/` search
-- **while searching**: `ESC` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
+- **while searching**: `ESC` CANCEL · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
 
 ## PatternEditor
 
@@ -230,7 +230,7 @@ settings page's fields. The keys that work everywhere are listed once:
 
 - **a row**: `ESC` back · `↑↓` select · `A` add · `ENTER` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `S` sort · `/` search · `L` listen
 - **the + row**: `ESC` back · `ENTER` add · `↑↓` select · `A` add · `/` search
-- **while searching**: `ESC` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
+- **while searching**: `ESC` CANCEL · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
 
 ## ProgressionEditor
 
@@ -266,7 +266,7 @@ settings page's fields. The keys that work everywhere are listed once:
 
 - **a row**: `ESC` back · `↑↓` select · `A` add · `ENTER` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `S` sort · `/` search
 - **the + row**: `ESC` back · `ENTER` add · `↑↓` select · `A` add · `/` search
-- **while searching**: `ESC` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
+- **while searching**: `ESC` CANCEL · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
 
 ## ScenePage
 
@@ -307,7 +307,7 @@ settings page's fields. The keys that work everywhere are listed once:
 
 - **a row**: `ESC` back · `↑↓` select · `A` add · `Space` make current · `ENTER` settings · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `S` sort · `/` search
 - **the + row**: `ESC` back · `ENTER` add · `↑↓` select · `A` add · `/` search
-- **while searching**: `ESC` cancel · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
+- **while searching**: `ESC` CANCEL · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
 
 ## StrumEditor
 
@@ -716,11 +716,11 @@ settings page's fields. The keys that work everywhere are listed once:
 - ArticulateEditor: back (the Name field, the Start field, the End field, the Over field, the Then field, the Restart field)
 - AutoRatchetEditor: back (the Name field, the Counts field, the Restart field)
 - ChainEditor: back (a row, the + row)
-- ChainEditor: cancel (while searching)
+- ChainEditor: CANCEL (while searching)
 - ChainListPage: back (a row, the + row)
-- ChainListPage: cancel (while searching)
+- ChainListPage: CANCEL (while searching)
 - ChainsPage: back (a row, the + row)
-- ChainsPage: cancel (while searching)
+- ChainsPage: CANCEL (while searching)
 - ChordsEditor: back (anywhere)
 - ClipPage: back (the Name field, the Pattern field, the Scale field, the Chains field, the Repeat field, the Loop field, the Strum heading, the Density heading, the Swell heading, the Articulate heading, the Direction field, the Grab track field, the Advance field, the Play button, the Stop button)
 - DensityEditor: back (the Name field, the Start field, the End field, the Over field, the Then field, the Restart field)
@@ -730,37 +730,37 @@ settings page's fields. The keys that work everywhere are listed once:
 - EuclidEditor: back (the Name field, the Hits field, the Steps field, the Rotate field, the Step field, the Restart field)
 - FilePage: back (the Author field, the Description field, the Title field, the Default follow action field, the Notes field, the Protected field, the Notes & Octaves heading, the Visualizers heading, the Save button, the Open button)
 - GeneratorsPage: back (a row, the + row)
-- GeneratorsPage: cancel (while searching)
+- GeneratorsPage: CANCEL (while searching)
 - GlideEditor: back (the Name field, the Step field, the Glide amount field, the Restart field, the Steps field)
 - GlideStepsEditor: back (anywhere)
 - GrooveEditor: back (anywhere)
 - GroovesPage: back (a row, the + row)
-- GroovesPage: cancel (while searching)
+- GroovesPage: CANCEL (while searching)
 - HocketEditor: back (the Name field, the Source track field, the Restart field)
 - InstrumentEditor: back (the Name field, the Device field, the Channel field, the GM sound field)
 - InstrumentsPage: back (a row, the + row)
-- InstrumentsPage: cancel (while searching)
-- NotesPage: cancel (while typing, anywhere)
+- InstrumentsPage: CANCEL (while searching)
+- NotesPage: CANCEL (while typing, anywhere)
 - NotesPage: back (anywhere)
 - OffsetsEditor: back (anywhere)
 - OpenPage: back (a row)
-- OpenPage: cancel (while searching)
+- OpenPage: CANCEL (while searching)
 - PatternEditor: back (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
 - PatternsPage: back (a row, the + row)
-- PatternsPage: cancel (while searching)
+- PatternsPage: CANCEL (while searching)
 - ProgressionEditor: back (the Name field, the Every field, the Chords field, the Restart field)
 - RegistersPage: back (the AX allowed inc max field, the AX minimum field, the AX default field, the AX maximum field, the BX allowed inc max field, the BX minimum field, the BX default field, the BX maximum field, the CX allowed inc max field, the CX minimum field, the CX default field, the CX maximum field, the DX allowed inc max field, the DX minimum field, the DX default field, the DX maximum field, the AX at limit field, the BX at limit field, the CX at limit field, the DX at limit field, the AX reset each scene field, the BX reset each scene field, the CX reset each scene field, the DX reset each scene field)
 - RushEditor: back (the Name field, the Step field, the Rush amount field, the Steps field, the Restart field)
 - RushStepsEditor: back (anywhere)
 - ScalePage: back (the Name field, the Root field, the Kind field)
 - ScalesPage: back (a row, the + row)
-- ScalesPage: cancel (while searching)
+- ScalesPage: CANCEL (while searching)
 - ScenePage: back (the Name field, the Scale field, the Groove field, the Tempo field, the Tempo ramps to field, the Repeat field, the Reset AX field, the Reset BX field, the Reset CX field, the Reset DX field, the Launch together field, the Density heading, the Swell heading, the Articulate heading, the Chains field)
 - ShortenEditor: back (the Name field, the Step field, the Shorten amount field, the Steps field, the Restart field)
 - ShortenStepsEditor: back (anywhere)
 - SongPage: back (the Name field, the Tempo field, the Time signature field, the Entry size field, the Scale field, the Seed field, the Groove field, the Live response field, the Visualizer field, the Genre field, the Preview instrument field, the Export button)
 - SongsPage: back (a row, the + row)
-- SongsPage: cancel (while searching)
+- SongsPage: CANCEL (while searching)
 - StrumEditor: back (the Name field, the Direction field, the Spread field, the Upstroke strings field, the Restart field, the Fade field, the Loose timing field)
 - SwellEditor: back (the Name field, the Start field, the End field, the Accent field, the Over field, the Then field, the Restart field)
 - TrackEditor: back (the Name field, the Drum field, the Mute field, the Euclid heading, the Strum heading, the Groove field, the Transpose field, the Lowest octave field, the Highest octave field, the CC 1 field, the CC 2 field, the CC 3 field, the CC 4 field, the CC1 Reg field, the CC2 Reg field, the CC3 Reg field, the CC4 Reg field, the Vel Reg field, the Chains field, the Instrument field)
@@ -953,7 +953,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - GeneratorsPage: complete (while searching)
 - GroovesPage: complete (while searching)
 - InstrumentsPage: complete (while searching)
-- NotesPage: Save or Cancel (while typing)
+- NotesPage: Save or CANCEL (while typing)
 - NotesPage: back to the text (anywhere)
 - OffsetsEditor: next row (anywhere)
 - OpenPage: complete (while searching)

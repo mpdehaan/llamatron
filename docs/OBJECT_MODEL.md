@@ -44,9 +44,9 @@ The Notes are as long as you like, for anyone reading or sharing the file: what 
 
 ### Notes Page
 
-`ENTER` on Notes opens the Notes page for editing. Typing adds text at the cursor, `ENTER` starts a new line, `Bksp` erases, and the arrows move the cursor; while editing, every letter is text, and only `Tab`, `ESC` and the arrows act as keys. Under the text are two buttons, Save and Cancel. `Tab` moves onto them, Left and Right choose one, `ENTER` presses it, and `Tab` again returns to the text.
+`ENTER` on Notes opens the Notes page for editing. Typing adds text at the cursor, `ENTER` starts a new line, `Bksp` erases, and the arrows move the cursor; while editing, every letter is text, and only `Tab`, `ESC` and the arrows act as keys. Under the text are two buttons, Save and CANCEL. `Tab` moves onto them, Left and Right choose one, `ENTER` presses it, and `Tab` again returns to the text.
 
-Save keeps the text in the set, to be saved with the set, as one change for undo. Cancel, or `ESC` anywhere on the page, throws away what was typed since editing began. Either one leaves the page reading, where Up and Down scroll, `E` starts editing again, `Bksp` clears all of the notes after asking, and `ESC` goes back to the File/Global page. A protected set's notes open for reading only, and `E` and `Bksp` aren't offered until Protected is turned off.
+Save keeps the text in the set, to be saved with the set, as one change for undo. CANCEL, or `ESC` anywhere on the page, throws away what was typed since editing began. Either one leaves the page reading, where Up and Down scroll, `E` starts editing again, `Bksp` clears all of the notes after asking, and `ESC` goes back to the File/Global page. A protected set's notes open for reading only, and `E` and `Bksp` aren't offered until Protected is turned off.
 
 ### Octave Numbering
 

@@ -19,7 +19,7 @@ A MIDI file, from a DAW, a website or anywhere else, can become a song of the se
 
 The dialog works the import out again whenever a setting changes, so the line under the settings always says how many tracks, patterns and scenes the import will make, and anything it has to change, such as notes moved to the nearest step. When many notes sit a little off the steps, as a swing, a groove or a live performance plays them, the warning says so; the import moves them to the nearest step and makes no groove.
 
-`I`, or `ENTER` on Import, imports, and `ESC` or Cancel leaves the set as it was. The new song becomes the current song, and a dialog says what it was imported as, what it holds, and every warning, or "Import complete with no warnings.", with one OK button. `Ctrl+Z` takes the whole import away again.
+`I`, or `ENTER` on Import, imports, and `ESC` or CANCEL leaves the set as it was. The new song becomes the current song, and a dialog says what it was imported as, what it holds, and every warning, or "Import complete with no warnings.", with one OK button. `Ctrl+Z` takes the whole import away again.
 
 ## What an Import Makes
 

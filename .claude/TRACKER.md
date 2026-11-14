@@ -598,7 +598,7 @@ code.
 - `ImportDialog` (`tui/dialogs/import_dialog.py`, `keybindings.ImportDialog`) is a dialog of
   fields, the user's design: the found line (`MidiImport.found`), Song name,
   Longest pattern, Use unique names, Chords, Import CCs and Step size, the line of what the import makes and
-  its warnings, and Import and Cancel side by side, each its key reversed and its name. The keys
+  its warnings, and Import and CANCEL side by side, each its key reversed and its name. The keys
   bound depend on the row: ENTER renames on Song name (a `PromptDialog` over the dialog), `[`
   and `]` step Longest pattern and Step size, Space or ENTER flips the toggles, and on the
   buttons Left and Right choose and ENTER presses; ESC and `I` work on every row. Each change
@@ -663,9 +663,9 @@ code.
   shows the notes' first line or `not set`, and ENTER on it opens `NotesPage` editing
   (`editing=True`). The page was the Description page until the user made the
   description one line and the long text the notes.
-- Editing types into a draft of the page's own until Tab reaches the Save and Cancel buttons
+- Editing types into a draft of the page's own until Tab reaches the Save and CANCEL buttons
   under the text (`MSG_NOTES_BUTTONS`, `on_buttons`, `button`; Left and Right choose, ENTER
-  presses, Tab comes back to the text). Save stores the draft as one edit. Cancel, or ESC
+  presses, Tab comes back to the text). Save stores the draft as one edit. CANCEL, or ESC
   anywhere, throws the draft away.
 - Reading, ESC goes back, Up and Down scroll (`scroll`), `E` edits and `Bksp` clears after
   asking.

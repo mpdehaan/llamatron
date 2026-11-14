@@ -81,8 +81,8 @@ a feature that already exists does what's being asked, that's pointed out first
   double-lined box around the clip, scene, track or `+` under the cursor, because its cells hold
   bars that reverse video would hide. Every dialog's answers are boxed buttons, as a real window's (`tui/components/button_row.py`, the user's design): each
   key reversed and then its name, the selected button double-lined, Left and Right moving between them and ENTER pressing,
-  each button's key answering at once; a message has one OK, a Yes or No question Yes and No, and quitting with unsaved changes
-  "Quit without saving", "Save, then Quit" and "Cancel" (`QuitDialog`), the user's words.
+  each button's key answering at once; a message has one OK, a yes or no question YES and NO, and quitting with unsaved changes
+  "Quit without saving", "Save, then Quit" and "CANCEL" (`QuitDialog`), the user's words.
 - A cursor stops at every edge and never goes round: Left on the first step, Right on the last,
   Up on the top row and Down on the bottom row stay where they are, on every page, dialog and
   picker alike (`cursor_moved` in `tui/key_table.py` is the one place that moves one), because an arrow held down should fly to the end and stay there, the way a
@@ -92,7 +92,7 @@ a feature that already exists does what's being asked, that's pointed out first
   and may go round, but a chord's quality, tensions and scale stop at the first and the last choice on every page that steps
   them (the user's rule, who dislikes going round in such widgets, so a new long list of choices stops too). Tab through the F1 dialog's panels, the Chord dialog's lists and a grid picker's pages may go round.
 - Reverse video is for things that act: the key labels in menus and legends, the Save, Open and
-  Export buttons, which are also reversed when selected, and the Yes and No buttons. A value or a
+  Export buttons, which are also reversed when selected, and the YES and NO buttons. A value or a
   row that's only being edited or chosen is never reversed, only marked with the triangle. The
   one exception is the video tutorial's caption strip, bold black on white at the foot of the
   screen, the page moved up to make room, which only the tutorial shows, so that a video's captions
@@ -133,6 +133,9 @@ a feature that already exists does what's being asked, that's pointed out first
   drawn between `<` and `>`, which take the places of the spaces beside it so that nothing shifts, and on Arrange the box
   around what is carried is green. While it is carried, only those keys work.
 - Upper and lower case are the same key, and `Bksp` and `Delete` are the same key.
+- OK, YES, NO and CANCEL are written in capitals everywhere (the user's rule): as buttons (`MSG_OK_BUTTON`, `MSG_CONFIRM_BUTTONS`,
+  the CANCEL of the quit, Notes and import buttons) and in every legend (`What.YES`, `What.NO`, `What.CANCEL`), with SAVE, OPEN and
+  HELP of the F1 dialog the other exceptions to lower-case legends.
 - The Enter and Escape keys are written `ENTER` and `ESC`, in capitals, wherever a key binding is named (the user's rule): in every
   legend, button, help text, message and narration of the tracker (`KeyName.ENTER` and `KeyName.ESCAPE` in `strings/legends.py`),
   and in the documents, which use the names the tracker shows.
@@ -140,7 +143,7 @@ a feature that already exists does what's being asked, that's pointed out first
   it cancels, an Inset Window or a locked cell it closes, and a page it goes back from (the user's rule); the legends say so. Tab never goes back: it switches the pattern editor
   between the piano roll and the rows, it cycles a grid picker's pages, with Shift+Tab going the
   other way, it completes typed text in a picker or a list search, and it moves between the
-  Notes page's text and its Save and Cancel buttons. Anything with more than one mode or
+  Notes page's text and its Save and CANCEL buttons. Anything with more than one mode or
   page switches with Tab. PgUp and PgDn jump between the pattern editor's section headings.
 - Every list a page can add to has a `+` row at the bottom, where ENTER does the same as `A`.
 - A settings page leaves a blank line above its first setting, another after a Name that starts it, and another above its first section, and its labels take
@@ -202,7 +205,7 @@ a feature that already exists does what's being asked, that's pointed out first
   song are refused in a dialog.
   Saving and quitting with unsaved changes ask first; nothing is saved or exported unless asked.
 - A set file is never changed by opening it. A file that holds values out of range opens only
-  after a dialog lists what each becomes, a few at a time and each cut to fit, and Yes opens the
+  after a dialog lists what each becomes, a few at a time and each cut to fit, and YES opens the
   set unsaved. The command line refuses to export such a file without `--force`.
 - The status line draws a refusal or problem in amber (`Page.refuse`, `Style.REFUSAL`) and every other note dim, and a
   question about deleting has its title in red (`Style.DELETE_TITLE`), the user's design and the sixth allowance of colour.
