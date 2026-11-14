@@ -64,7 +64,14 @@ a feature that already exists does what's being asked, that's pointed out first
   with File/Global, Save, Open, Export, Import and Quit in two rows on the grid's columns. All four arrows move by the geometry drawn,
   Right from Arrange going back to the cell the cursor came from, and Enter opens; the selected cell alone has the double-lined box, its
   name bold, the bar's selected action in reverse video inside the bar's double-lined box; every key's label is bold and reversed; the status line, right above
-  the legend, says what the selected cell is for; and each cell whose page is a list has a count. The letters are for people who know them, and the grids are the
+  the legend, says what the selected cell is for; and each cell whose page is a list has a count. On a console of 28 lines or more
+  the main screen takes the smart fit layout, the user's design: Arrange's cell at the left, as tall as the console and as wide as the
+  rest leaves, and at the right two columns as narrow as their names, the Real Time switch across both, the pages in pairs and the
+  file's six actions in one box, three rows of two. There, Arrange's cell shows a map of the song under the song's details: a line for
+  each track with its light and name, and a block for each scene where the track has a clip. A clip that plays glows in a brighter
+  colour, clip by clip, fading in and out slowly and never flashing; no scene is marked as playing. The clock, the play mark and the
+  time into the song, shows only while the song plays, and a track's light is a hollow circle while nothing sounds on it, and always
+  while Real Time is off, in both layouts. The letters are for people who know them, and the grids are the
   exception, with keys of their own: the pattern and groove editors mark the cursor's cell in
   reverse video, the offsets editor's gauge marks the cursor's column at both ends, `<<4>>`
   around the step number and `<+7▲>` around the offset, in reverse video too, the piano roll stands the cursor's cell between two bold double bars, shading the note under

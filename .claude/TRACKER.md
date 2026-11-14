@@ -144,14 +144,29 @@ code.
 - `MainPage` is one grid of three columns drawn on `Canvas` lines, the user's layout: `rows()` is the geometry, six rows of three,
   Arrange in the first column of the first three (with Songs and Patterns, Scales and Generators, Grooves and Chains beside it), then the
   Real Time switch, Instruments and Registers, then the bar's two rows, File/Global, Save and Open over Export, Import and Quit.
-  `menu_items()` is each cell once. `move_cursor` steps over `rows()` by `ARROW_STEPS` until the cell changes or an edge stops it, and
-  `arrange_row` keeps the row Arrange was reached from at its side, which Right goes back to. `column_widths(width)` gives each column a
+  That is `grid_rows()`, the layout of a console too short for the other, `smart_fit_rows()`, the user's smart fit layout, used when
+  `has_room_for_smart_fit(width=, height=)` says the body has `SMART_RIGHT_LINES` (20) lines under its blank line, a console of 28:
+  eight rows of three, Arrange in the first column of every row, as tall as the body and as wide as the right side leaves
+  (`smart_arrange_width`), and beside it the Real Time switch across both other columns, the pages in pairs, and the bar's three rows,
+  File/Global, Save and Open beside Export, Import and Quit, the two columns as narrow as their cells (`smart_right_widths`).
+  `body()` sets `smart_fit`, and `rows()` is the geometry of the layout last drawn. In the smart fit layout `draw_map` draws the map of
+  the song in Arrange's cell in place of the lights: a line a track, its light (`draw_light`), its name, and for each scene
+  `MSG_MAIN_MAP_CLIP` where the track has a clip and `MSG_MAIN_MAP_EMPTY` where none, the first tracks with `+N more` and the first
+  scenes with `MSG_MAIN_MAP_CUT` when the map is too large. A playing clip's block glows: `fade_glow(steps=)` moves each clip's level
+  in `glow` towards `GLOW_FULL` while `transport.is_clip_playing` and back towards none, a step each `GLOW_STEP_SECONDS`
+  (`glow_steps_due`), drawn in `GLOW_STYLES`, from the monitor's green to `GLOW_COLOR`; once nothing plays, the timer no longer redraws
+  and every glow is out. A light is a hollow circle while nothing sounds on its track, and always while Real Time is off, in both layouts.
+  `menu_items()` is each cell once. The cursor is `chosen`, its cell's binding, with `position`, the row and column inside a cell that
+  covers several. `moved(rows=, position=, key=)`, a function of the geometry alone, steps by `ARROW_STEPS` until the cell changes or
+  an edge stops it; a cell entered across the way it stretches keeps where, so that Right from Arrange goes back to the cell the cursor
+  came from and Down from the Real Time switch to the column it came up from. `arrows_between(rows=, position=, binding=)` finds the
+  fewest arrows to a cell, which the video tutorial's `select_cell` presses through `arrows_to(binding)`. `column_widths(width)` gives each column a
   third of the console's width (`MINIMUM_WIDTH` 80 at least), the first never narrower than Arrange's name and the clock need
   (`arrange_needed_width`, `clock_room`, wide enough for any time). `draw_arrange` draws the monitor (`Style.MONITOR` and its kin): the
   name, `clock_text()` while the song plays, `song_details()`, `song_counts()` and `track_lights()`, the tracks in their order in two
   columns or more, `+N more` in the last place when not all fit, lit by `transport.is_track_sounding`; the app's playback timer redraws
   it. `draw_bar` draws the bar, each column's keys ending at one place. `resting_status()` puts the selected cell's sentence on the
-  status line. With a set open the cursor starts on Arrange. Asked and open: a taller layout for a taller console.
+  status line. With a set open the cursor starts on Arrange.
 - A cell is named by `cell_name(item)`: the page its key opens, which is the binding's words (a
   `PageName` from `strings/labels.py`), or the action's name (`ACTION_NAMES`).
 - `draw_cell` draws the key bold and reversed, the name, and the count right-aligned, and a box around

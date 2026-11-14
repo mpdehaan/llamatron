@@ -62,6 +62,8 @@ from llamatron.tui.launch import FINISHED_CHECK_SECONDS, Launch, recording_probl
 from llamatron.tui.screens.arrange_page import ArrangePage
 from llamatron.tui.screens.splash import Splash
 from llamatron.tui.drawing import Box
+from llamatron.tui.screens.main_page import GLOW_COLOR, GLOW_FULL, GLOW_STYLES, MainPage, MONITOR_GREEN
+from llamatron.strings.marks import MSG_MAIN_CLOCK
 from llamatron.tui.keys import Key
 from llamatron.tui.transport import Transport
 from tests.support.ui_testing import a_song, BEAT, DRUMS, LEAD, OTHER, TUNE, UITest, fixed_text, key_name
@@ -112,6 +114,8 @@ LONGEST_WAIT_SECONDS = 10
 READY_ON_A_BUSY_MACHINE = 3.0
 SCENE_ONE_NUMBER = 1
 FIRST_INDEX = 0
+# The most any of red, green and blue may change between two steps of the main screen's glow, of 255.
+LARGEST_GLOW_STEP = 20
 SECOND_INDEX = 1
 CORNER_KEYS = (Key.UP, Key.LEFT)
 # The song's first scene lasts one second: the tune's four eighth notes, with the looping drums cut there.
@@ -356,6 +360,43 @@ class TestArrangePlayback(PlaybackTest):
         await self.pilot.pause()
         self.assertIsNotNone(self.transport().problem())
         self.assertEqual(self.transport().problem().lines, [ERR_REAL_TIME_OFF])
+
+    async def test_on_the_main_screen_a_playing_clip_glows_on_the_map_fading_in_and_out_and_the_clock_shows(self):
+        # The user's design: clip by clip, a playing clip's block goes slowly to a brighter colour and slowly back, never at once.
+        self.give_lead_an_instrument()
+        await self.press(*CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
+        await self.let_time_pass(A_MOMENT)
+        await self.press(Key.ESCAPE)
+        main = self.app.screen
+        self.assertIsInstance(main, MainPage)
+        self.assertTrue(main.smart_fit)
+        self.assertIn(MSG_MAIN_CLOCK.format(at=NOTHING).strip(), self.text())
+        main.glow = {}
+        main.fade_glow(steps=1)
+        self.assertEqual(main.glow_level(index=FIRST_INDEX, track=LEAD), 1)
+        self.assertEqual(main.glow_level(index=FIRST_INDEX + 1, track=LEAD), 0)
+        main.fade_glow(steps=GLOW_FULL - 2)
+        self.assertEqual(main.glow_level(index=FIRST_INDEX, track=LEAD), GLOW_FULL - 1)
+        main.fade_glow(steps=GLOW_FULL)
+        self.assertEqual(main.glow_level(index=FIRST_INDEX, track=LEAD), GLOW_FULL)
+        # A clip that stopped while the song plays on fades a step at a time.
+        main.glow[(FIRST_INDEX + 1, LEAD)] = GLOW_FULL
+        main.fade_glow(steps=1)
+        self.assertEqual(main.glow_level(index=FIRST_INDEX + 1, track=LEAD), GLOW_FULL - 1)
+        main.fade_glow(steps=GLOW_FULL)
+        self.assertEqual(main.glow_level(index=FIRST_INDEX + 1, track=LEAD), 0)
+        # Each step is a colour between the monitor's green and the glow's, so no step jumps.
+        colors = [style.color.triplet for style in GLOW_STYLES]
+        self.assertEqual(tuple(colors[0]), MONITOR_GREEN)
+        self.assertEqual(tuple(colors[GLOW_FULL]), GLOW_COLOR)
+        for before, after in zip(colors, colors[1:]):
+            self.assertLessEqual(max(abs(one - other) for one, other in zip(before, after)), LARGEST_GLOW_STEP)
+        # Once nothing plays, nothing glows and the clock is gone.
+        self.transport().stop_all()
+        main.draw()
+        await self.pilot.pause()
+        self.assertEqual(main.glow, {})
+        self.assertNotIn(MSG_MAIN_CLOCK.format(at=NOTHING).strip(), self.text())
 
     async def test_space_on_the_corner_plays_the_song_lights_the_page_and_stops_it_again(self):
         self.give_lead_an_instrument()

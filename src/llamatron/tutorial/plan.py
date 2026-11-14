@@ -133,15 +133,6 @@ def grid_place(*, dialog, place):
     raise TutorialStuck(place)
 
 
-def cell_place(*, rows, binding):
-    """Return the row and the place along it of the main screen's cell bound from a binding."""
-    for row, cells in enumerate(rows):
-        for column, item in enumerate(cells):
-            if item.binding == binding:
-                return row, column
-    raise TutorialStuck(binding)
-
-
 class TutorialStuck(Exception):
     """The plan pressed arrows towards a place the cursor never reached, or found a page it didn't expect."""
 
@@ -310,20 +301,13 @@ class TutorialPlan:
         raise TutorialStuck(page_class.__name__)
 
     def select_cell(self, binding):
-        """Move the main screen's cursor onto a cell: Left and Right to its column, then Up and Down to its row."""
-        page = self.screen()
+        """Move the main screen's cursor onto a cell, with the fewest arrows over the layout the screen draws."""
         self.expect(MainPage)
-        row, column = cell_place(rows=page.rows(), binding=binding)
-        for _ in range(MOST_MOVES):
-            now_row, now_column = page.row_and_column()
-            if (now_row, now_column) == (row, column):
-                return
-            # Along the row first: Arrange is three rows tall, so only its column says where the cursor is beside it.
-            if now_column != column:
-                yield from self.press(Key.LEFT if column < now_column else Key.RIGHT)
-            else:
-                yield from self.press(Key.UP if row < now_row else Key.DOWN)
-        raise TutorialStuck(binding)
+        arrows = self.screen().arrows_to(binding)
+        if arrows is None:
+            raise TutorialStuck(binding)
+        for arrow in arrows:
+            yield from self.press(arrow)
 
     def expect(self, screen_class):
         if not isinstance(self.screen(), screen_class):
