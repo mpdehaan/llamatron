@@ -51,7 +51,6 @@ A file holds a set of songs, like the songs of one concert. The patterns, scales
 | [Exercise](docs/demos/EXERCISE.md) | The exercise demo songs. |
 | [Folk](docs/demos/FOLK.md) | The folk demo songs. |
 | [Gospel](docs/demos/GOSPEL.md) | The gospel demo songs. |
-| [Mashup](docs/demos/MASHUP.md) | The mashup demo songs. |
 | [Pop](docs/demos/POP.md) | The pop demo songs. |
 | [Ragtime](docs/demos/RAGTIME.md) | The ragtime demo songs. |
 | [Rock](docs/demos/ROCK.md) | The rock demo songs. |
@@ -60,6 +59,13 @@ A file holds a set of songs, like the songs of one concert. The patterns, scales
 | [Video Game](docs/demos/VIDEO_GAME.md) | The video game demo songs. |
 | [World](docs/demos/WORLD.md) | The world demo songs. |
 | [Other](docs/demos/OTHER.md) | The demos in `examples/other/`, which fit no other folder. |
+
+## Mashups
+
+| Page | What it covers |
+| --- | --- |
+| [Funk Mashup](docs/demos/FUNK_MASHUP.md) | Another work's notes set on a funk band. |
+| [Metal Mashup](docs/demos/METAL_MASHUP.md) | Another work's notes set on a metal band. |
 
 ## Objects
 

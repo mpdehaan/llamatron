@@ -227,7 +227,7 @@ above the module docstring, opening with `# llamatron: a music program`. Where t
 
 **The guide is the way in.** `GUIDE.md` is the documentation's home page, and the website's: an
 introduction, the demo songs featured, and tables that link every page in `docs/`, under the headings
-Intro, Demo Songs, Objects, Generators, File Operations, MIDI & Performance and Advanced, which the website's
+Intro, Demo Songs, Mashups, Objects, Generators, File Operations, MIDI & Performance and Advanced, which the website's
 sidebar is built from, in that order, each a group that opens and closes (`GROUPED` in
 `internal_tools/stage_docs_site.py`), a `###` heading inside one making a group within it, or the page alone when it
 holds only the page of its name. Every page in `docs/` and its subfolders, such as `docs/generators/`, a page for each generator,

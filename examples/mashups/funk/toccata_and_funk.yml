@@ -31,7 +31,7 @@ notes: |
   bass alone at the pedal's solo entry; the sounds are a fuzz guitar for the subject, a clavinet for
   the countersubject, an organ for the toccata and the last chords.
 
-  Run it with: llamatron examples/mashups/toccata_and_funk.yml
+  Run it with: llamatron examples/mashups/funk/toccata_and_funk.yml
 
   Scene 1, toccata, 2 bars.
   Scene 2, count in, 1 bars.
@@ -1131,7 +1131,7 @@ songs:
   toccata_and_funk:
     tempo: 100
     scale: D Minor
-    genre: Mashup
+    genre: Funk Mashup
 
     tracks:
       kick: { drum: true, instrument: drum kit }
