@@ -34,6 +34,9 @@ DENSITY = 'edm_density.yml'
 HALF_TIME = 4
 REGISTERS = '22_registers.yml'
 NOT_WEREWOLVES = 'not_werewolves.yml'
+G_MAJOR = 'G Major'
+# A demo in a flat key, for how a chord is spelled, and the name of its scale.
+IN_A_FLAT_KEY = 'mysterious_spooky.yml'
 F_MAJOR = 'F Major'
 C = 0
 D = 2
@@ -109,15 +112,15 @@ class TestChords(unittest.TestCase):
         self.assertIsNone(chord_of(weights={C: LONG, C + 1: LONG, D: LONG, D + 1: LONG, E: LONG}, bass=C))
 
     def test_a_chord_is_spelled_and_numbered_as_the_scale_spells_and_numbers_it(self):
-        scale = example(NOT_WEREWOLVES).get_named_scale(F_MAJOR)
+        scale = example(IN_A_FLAT_KEY).get_named_scale(F_MAJOR)
         self.assertEqual(chord_texts(root=B_FLAT, symbol=ChordSymbol.MAJOR, scale=scale), ('Bb', 'IV'))
         self.assertEqual(chord_texts(root=D, symbol=ChordSymbol.MINOR, scale=scale), ('Dm', 'vi'))
         self.assertEqual(chord_texts(root=C, symbol=ChordSymbol.DOMINANT7, scale=scale), ('C7', 'V'))
 
     def test_the_verse_of_not_werewolves_hears_its_chords(self):
         song = example(NOT_WEREWOLVES).get_songs()[0]
-        names = [chord.name for chord in beat_chords(notes=scene_notes(song=song, index=1, written=True), scale=song.get_named_scale(F_MAJOR))]
-        for name in ('Dm', 'F', 'C', 'Bb'):
+        names = [chord.name for chord in beat_chords(notes=scene_notes(song=song, index=1, written=True), scale=song.get_named_scale(G_MAJOR))]
+        for name in ('Em', 'G', 'D', 'C'):
             self.assertIn(name, names)
 
 
