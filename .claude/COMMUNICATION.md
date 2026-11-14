@@ -54,6 +54,8 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   question, concern and idea of Claude's own, as one batch in one reply, and builds nothing of it until the user answers.
 - **"Mockup".** When the user's message includes the word mockup, Claude draws a picture of the screen, made from what the user
   suggested together with Claude's own ideas and suggestions about it, and raises its questions about the picture for discussion.
+  Each mockup is a conversation of its own: one reply shows one mockup with the questions that belong to it grouped together,
+  and Claude waits for the answers before showing the next (the user's rule).
 - **The list of what's open.** A reply that leaves questions open ends with them, each number on a line of its own with the
   kind of answer it takes: "77, yes or no." then "78, choose A or B."
 
