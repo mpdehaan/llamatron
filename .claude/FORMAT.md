@@ -224,7 +224,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   starter pattern, `pattern-1` (`MSG_NEW_PATTERN_NAME`, `starter_pattern()`: `STARTER_PATTERN_STEPS`
   sixteenths with `STARTER_DEGREE` every `STARTER_STEPS_PER_BEAT` steps and a blank gate), which
   the song's `track-1` plays in `scene-1`, so that a new set plays at once and shows what a
-  pattern is. Both can be deleted, like the `C_major` scale.
+  pattern is. Both can be deleted, like the scale, `scale-1` (`DEFAULT_SCALE`), C major.
 - `new_setlist()` and `new_song()` are their data. `Setlist.fill_in_defaults()` gives a loaded
   set every setting a new one has so that saving writes them all, which `Document` calls on every
   set it holds. `Document(setlist=..., path=...)` takes a `Setlist`, never data.

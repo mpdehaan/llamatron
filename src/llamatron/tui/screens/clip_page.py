@@ -18,6 +18,7 @@
 
 from rich.text import Text
 
+from llamatron.composition.limits import MAX_NAME_LENGTH
 from llamatron.composition.clip_slot import MORPH_STYLES
 from llamatron.composition.defaults import DEFAULT_REPEAT
 from llamatron.composition.file_format import SHAPES, shape_setting, strum_setting, FOLLOW_ACTION_CHOICES, ClipSlotSetting, DIRECTIONS, Section
@@ -289,7 +290,7 @@ class ClipPage(FieldPage):
 
     def rename(self):
         """Give the clip a name of its own; a blank goes back to its pattern's name."""
-        self.ask(dialog=PromptDialog(title=MSG_CLIP_NAME_PROMPT, value=self.clip_slot().get_name() or NOTHING), then=lambda text: self.set_value(setting=ClipSlotSetting.NAME, value=text.strip()))
+        self.ask(dialog=PromptDialog(title=MSG_CLIP_NAME_PROMPT, value=self.clip_slot().get_name() or NOTHING, max_length=MAX_NAME_LENGTH), then=lambda text: self.set_value(setting=ClipSlotSetting.NAME, value=text.strip()))
 
     def notes(self, width):
         document = self.document()

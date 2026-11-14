@@ -27,6 +27,10 @@ import inspect
 import os
 import unittest
 
+from llamatron.music.note import NoteName
+from llamatron.music.scale import ScaleType
+from llamatron.composition.named_scale import scale_type_name
+from llamatron.composition.naming import default_scale_name
 from llamatron.strings.labels import (
     MSG_CHORDS_LABEL, MSG_EVERY_LABEL, MSG_ROOT_IN_BASS_LABEL, MSG_DRAG_AMOUNT_LABEL, MSG_EUCLID_PART_LABELS, MSG_GLIDE_AMOUNT_LABEL, MSG_RUSH_AMOUNT_LABEL, MSG_SHAPE_PART_LABELS, MSG_SHORTEN_LABEL,
     MSG_STEPS_LABEL, MSG_STRUM_PART_LABELS, MSG_SOURCE_TRACK_LABEL,
@@ -765,6 +769,7 @@ class TestScalesPageUndo(UndoTest):
 class TestScalePageUndo(UndoTest):
 
     async def test_changing_the_root_is_one_step_and_the_crumb_follows(self):
+        self.document.rename_named(section=Section.SCALES, old=self.document.song().get_scale_names()[0], new=default_scale_name(root=NoteName.C, kind=scale_type_name(ScaleType.MAJOR)))
         await self.press(keybindings.MainPage.SCALES, Key.ENTER)
         self.assertIsInstance(self.app.screen, ScalePage)
         before = self.data()

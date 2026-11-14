@@ -18,6 +18,7 @@
 
 from rich.text import Text
 
+from llamatron.composition.limits import MAX_NAME_LENGTH
 from llamatron.tui.dialogs.choice_dialog import completed, places_matching
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.strings.marks import MSG_MOVING_CLOSE, MSG_MOVING_OPEN
@@ -50,6 +51,9 @@ class ListPage(Page):
     KEYS = keybindings.ListPage
 
     columns = ()
+    # The most room the column with no width of its own takes, the names: a name is at most this long, so the columns after it
+    # stay close to it however wide the console (the user's rule). None on a page whose first column isn't names, as files.
+    NAME_COLUMN_WIDTH = MAX_NAME_LENGTH
 
     def __init__(self, holder):
         super().__init__(holder)
@@ -211,6 +215,8 @@ class ListPage(Page):
         self.clamp()
         fixed = sum(size + 1 for _, size, _ in self.columns if size)
         flexible = max(width - fixed - 3, 8)
+        if self.NAME_COLUMN_WIDTH is not None and len(self.columns) > 1:
+            flexible = min(flexible, self.NAME_COLUMN_WIDTH)
         sizes = [size or flexible for _, size, _ in self.columns]
 
         def cells(*, values, style=Style.PLAIN, selected=False):

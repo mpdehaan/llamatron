@@ -25,6 +25,7 @@ is added to the set until Import, which dismisses the dialog with what the impor
 
 from rich.text import Text
 
+from llamatron.composition.limits import MAX_NAME_LENGTH
 from llamatron.composition.checks import fraction_text
 from llamatron.composition.naming import copy_name, default_scale_name
 from llamatron.importers.midi_import import LONGEST_PATTERN_CHOICES, ImportChoices
@@ -136,7 +137,7 @@ class ImportDialog(Dialog):
             if text and text.strip():
                 self.choices.song_name = text.strip()
                 self.draw()
-        self.app.push_screen(PromptDialog(title=MSG_IMPORT_SONG_PROMPT, value=self.choices.song_name), renamed)
+        self.app.push_screen(PromptDialog(title=MSG_IMPORT_SONG_PROMPT, value=self.choices.song_name, max_length=MAX_NAME_LENGTH), renamed)
 
     def press(self):
         if self.button == IMPORT_BUTTON:

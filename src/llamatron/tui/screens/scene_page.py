@@ -18,6 +18,7 @@
 
 from rich.text import Text
 
+from llamatron.composition.limits import MAX_NAME_LENGTH
 from llamatron.composition.file_format import SHAPES, shape_setting, REGISTER_NAMES, Section
 from llamatron.composition.limits import MAX_SCENE_REPEAT, MAX_TEMPO, MIN_REPEAT, MIN_TEMPO
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -90,7 +91,7 @@ class ScenePage(FieldPage):
                 self.document().set_scene_name(index=self.index, name=text)
                 self.shown_name = text
                 self.crumbs = (Crumb.ARRANGE, MSG_SCENE_CRUMB.format(name=text))
-        self.ask(dialog=PromptDialog(title=MSG_SCENE_NAME_PROMPT, value=self.scene().get_name() or NOTHING), then=named)
+        self.ask(dialog=PromptDialog(title=MSG_SCENE_NAME_PROMPT, value=self.scene().get_name() or NOTHING, max_length=MAX_NAME_LENGTH), then=named)
 
     def pick_scale(self):
         scales = sorted_names(self.document().song().get_scale_names())

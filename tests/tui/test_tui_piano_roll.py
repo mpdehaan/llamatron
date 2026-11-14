@@ -20,6 +20,7 @@ gate 1/4), an empty step with a gate, and an empty step, in octave 5, played by 
 alone under C Major, so the roll knows its scale and its track.
 """
 
+from llamatron.strings.marks import MSG_SCALE_SHOWN
 from llamatron.composition.defaults import DEFAULT_OCTAVE
 from llamatron.composition.file_format import Accidental, Direction, Row, STEP_SIZE_CHOICES
 from llamatron.composition.row_descriptions import ROW_DESCRIPTIONS
@@ -128,7 +129,7 @@ class RollTest(UITest):
         starts = self.header_cell_starts(first)
         self.assertEqual(len(starts), 3)
         self.assertEqual(self.header_cell_starts(second), starts[:2])
-        self.assertEqual(second[starts[0]:].split(MSG_HEADER_CELL_GAP)[0], MSG_SCALE_HEADER.format(scale=DEFAULT_SCALE))
+        self.assertEqual(second[starts[0]:].split(MSG_HEADER_CELL_GAP)[0], MSG_SCALE_HEADER.format(scale=MSG_SCALE_SHOWN.format(name=DEFAULT_SCALE, notes=self.document.scale_notes_text(DEFAULT_SCALE))))
         self.assertTrue(second[starts[1]:].startswith(MSG_ENTRY_SIZE_SHOWN.format(size=EIGHTH, whose=MSG_FROM_SONG_SHOWN)))
         self.assertTrue(first[starts[2]:].startswith(MSG_DIRECTION_HEADER.format(direction=words(Direction.FORWARD))))
 
@@ -613,7 +614,24 @@ class TestChordsOnTheRoll(RollTest):
         self.assertIsNone(self.value(row=Row.CHORD, step=E_STEP))
         self.assertIsInstance(self.app.screen, PatternEditor)
 
-    async def test_h_needs_a_note_under_the_cursor(self):
+    async def test_h_on_a_step_no_note_covers_draws_a_note_at_the_cursor_and_picks_its_chord(self):
+        # The user's design: the same as the pencil and then H.
+        await self.press(*[Key.RIGHT] * LAST_STEP)
+        self.assertIsNone(self.value(row=Row.DEGREE, step=LAST_STEP))
+        await self.press(keybindings.PianoRoll.CHORD)
+        self.assertIsInstance(self.app.screen, ChordDialog)
+        self.assertIsNotNone(self.value(row=Row.DEGREE, step=LAST_STEP))
+        self.pick_quality(ChordSymbol.MINOR7)
+        await self.press(Key.ENTER)
+        self.assertEqual(self.value(row=Row.CHORD, step=LAST_STEP), ChordSymbol.MINOR7)
+
+    async def test_h_on_a_step_no_note_covers_leaves_the_note_when_the_dialog_is_cancelled(self):
+        await self.press(*[Key.RIGHT] * LAST_STEP, keybindings.PianoRoll.CHORD, Key.ESCAPE)
+        self.assertIsInstance(self.app.screen, PatternEditor)
+        self.assertIsNotNone(self.value(row=Row.DEGREE, step=LAST_STEP))
+        self.assertIsNone(self.value(row=Row.CHORD, step=LAST_STEP))
+
+    async def test_h_under_a_note_at_another_pitch_is_refused(self):
         await self.press(Key.RIGHT, Key.RIGHT, keybindings.PianoRoll.CHORD)
         self.assertIsInstance(self.app.screen, PatternEditor)
         self.assertIn(ERR_NO_NOTE_HERE, self.text())

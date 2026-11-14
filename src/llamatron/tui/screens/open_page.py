@@ -53,6 +53,8 @@ class OpenPage(ListPage):
     crumbs = (Crumb.FILE, Crumb.OPEN)
     HELP = HELP_OPEN_PAGE
     columns = ((Column.SELECT_FILE, None, Align.LEFT),)
+    # Files' names are as long as they are.
+    NAME_COLUMN_WIDTH = None
 
     def __init__(self, *, holder, then, suffixes=SONG_SUFFIXES, folder=None, crumbs=None, chosen=None):
         super().__init__(holder)

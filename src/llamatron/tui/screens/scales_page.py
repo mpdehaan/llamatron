@@ -20,7 +20,8 @@ from llamatron.composition.file_format import Section
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from llamatron.composition.naming import default_scale_name, unique_name
+from llamatron.composition.naming import new_name
+from llamatron.strings.names import MSG_NEW_SCALE_WORD
 from llamatron.tui.drawing import Align, NOTHING
 from llamatron.strings.help import HELP_SCALES_PAGE
 from llamatron.tui.screens.named_list_page import NamedListPage
@@ -61,8 +62,9 @@ class ScalesPage(NamedListPage):
         self.show_page(ScalePage(holder=self.holder, name=self.current()))
 
     def add(self):
-        """Add a C major scale, named after what it is, and open its page to change it."""
-        name = unique_name(base=default_scale_name(root=NEW_SCALE_ROOT, kind=NEW_SCALE_KIND), taken=self.names())
+        """Add a C major scale, named by its number as every new thing is (the user's rule, since a name after its notes was
+        wrong once the notes changed), and open its page to change it."""
+        name = new_name(word=MSG_NEW_SCALE_WORD, taken=self.names())
         self.document().add_scale(name=name, root=NEW_SCALE_ROOT, kind=NEW_SCALE_KIND)
         self.put_cursor_on(name)
         self.show_page(ScalePage(holder=self.holder, name=name))

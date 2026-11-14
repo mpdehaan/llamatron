@@ -37,10 +37,13 @@ class PromptDialog(Dialog):
 
     KEYS = keybindings.PromptDialog
 
-    def __init__(self, *, title, value=NOTHING):
+    def __init__(self, *, title, value=NOTHING, max_length=None):
         super().__init__()
         self.title = title
         self.value = str(value)
+        # The most characters the text may hold, for a name, or None for any length. A longer text given to start with, an older
+        # file's name, stays until it is erased, and takes no more.
+        self.max_length = max_length
         self._cursor = len(self.value)
 
     def keys(self):
@@ -67,7 +70,9 @@ class PromptDialog(Dialog):
             self._cursor = cursor - ONE_CHARACTER
 
     def insert(self, character):
-        """Put a character where the cursor is, and move the cursor past it."""
+        """Put a character where the cursor is, and move the cursor past it, unless the text is as long as it may be."""
+        if self.max_length is not None and len(self.value) + len(character) > self.max_length:
+            return
         cursor = self.cursor()
         self.value = self.value[:cursor] + character + self.value[cursor:]
         self._cursor = cursor + len(character)

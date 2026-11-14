@@ -23,6 +23,7 @@ while a page's footer shows only its own keys, so that it stays short.
 """
 
 from rich.color import Color
+from llamatron.composition.limits import MAX_NAME_LENGTH
 from llamatron.composition.naming import is_taken
 from llamatron.tui.caption_strip import CAPTION_LINES
 from llamatron.tui.themes import luminance
@@ -250,7 +251,7 @@ class Page(BindsKeys, Screen):
                 self.refuse(ERR_NAME_IN_USE.format(name=text))
             elif text != value:
                 then(text)
-        self.ask(dialog=PromptDialog(title=title, value=value), then=named)
+        self.ask(dialog=PromptDialog(title=title, value=value, max_length=MAX_NAME_LENGTH), then=named)
 
     def tell(self, title, *lines):
         self.app.push_screen(MessageDialog(title=title, messages=list(lines)))

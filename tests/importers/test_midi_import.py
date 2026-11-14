@@ -417,7 +417,11 @@ class TestNames(unittest.TestCase):
         self.assertEqual(song.get_scenes()[0].get_clip_slot('lead').get_pattern_name(), 'lead-1')
 
     def test_a_scale_is_reused_only_while_it_is_named_after_its_root_and_kind(self):
+        # A new set's scale is named by its number, a name that says nothing of its notes, so the import adds its own.
         setlist = Setlist.new()
+        imported, _ = imported_into(setlist=setlist, midi=self.midi)
+        self.assertEqual(list(imported.song.scales), [C_MAJOR])
+        # The scale that import added is named after its notes, so the next import uses it, until a person renames it.
         imported, _ = imported_into(setlist=setlist, midi=self.midi)
         self.assertEqual(imported.song.scales, {})
         setlist.rename_item(section=Section.SCALES, old=C_MAJOR, new='main')

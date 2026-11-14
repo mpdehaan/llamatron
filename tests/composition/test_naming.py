@@ -18,6 +18,7 @@
 
 import unittest
 
+from llamatron.strings.names import MSG_NEW_SCALE_WORD
 from llamatron.composition.file_format import Section
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.naming import copy_name, default_scale_name, is_default_scale_name, is_taken, new_name, same_name, split_trailing_number, suggested_word, unique_name
@@ -142,8 +143,9 @@ class TestScaleNames(unittest.TestCase):
     def test_a_second_scale_of_the_same_notes_is_a_duplicate(self):
         self.assertEqual(unique_name(base=C_MAJOR, taken=[C_MAJOR]), C_MAJOR_2)
 
-    def test_a_new_set_starts_with_a_scale_named_by_the_rule(self):
-        self.assertEqual(Setlist.new().get_item_names(Section.SCALES), [C_MAJOR])
+    def test_a_new_set_starts_with_a_scale_named_by_its_number(self):
+        # The user's rule: a name after the notes was wrong once the notes changed, so a new scale is numbered as every new thing.
+        self.assertEqual(Setlist.new().get_item_names(Section.SCALES), [new_name(word=MSG_NEW_SCALE_WORD, taken=[])])
 
     def test_an_older_files_name_still_says_what_the_scale_is(self):
         self.assertTrue(is_default_scale_name(name=C_MAJOR, root=ROOT_C, kind=MAJOR))

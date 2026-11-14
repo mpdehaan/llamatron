@@ -682,7 +682,7 @@ code.
   (`tui/screens/scale_page.py`), and `A` adds a C major scale and opens it.
 - `ScalePage` has one scale's Name, Root and Kind on one page, laid out by `SCALE_PAGES` and
   `ROOT_KEYBOARD`. The scale picker shortens long names only on screen.
-- A scale still named after its root and kind, like `C_major`, is renamed as they change
+- A new scale is `scale-N` (`new_name`, `MSG_NEW_SCALE_WORD`), the user's rule, and keeps its name. A scale named after its root and kind, like `C_major`, as an import or an older file names one, is renamed as they change
   (`Document.set_scale_root` and `set_scale_kind` return the name, and `is_default_scale_name` in
   `composition/naming.py` decides). A name of the user's own stays.
 - Under the fields, `ScalePage.notes` draws a two-octave `Keyboard`

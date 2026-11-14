@@ -124,7 +124,7 @@ a feature that already exists does what's being asked, that's pointed out first
   fields of the kind `Toggle`, and a silent step in the offsets editor, so that either
   habit works and no page has to be learnt on its own. The piano roll's pencil and the
   register rows' three-way cycle answer to both the same way, so a picker on the roll takes a
-  letter, `H` for the chord.
+  letter, `H` for the chord, which on a step no note covers draws a note at the cursor first, as the pencil would (the user's design).
 - Move mode, the user's design: `M` picks up what the cursor is on, a row of a list page, or a scene, a track or a clip
   on Arrange; the arrows carry it, a clip only into an empty cell (the user's rule), passing over cells that hold clips;
   and ENTER, ESC or `M` again drops it where it is, every carry of one move making one undo step. A carried row's name is
@@ -174,6 +174,9 @@ a feature that already exists does what's being asked, that's pointed out first
 - A list's first column heading says what choosing a row picks, the user's design, never `NAME`: `SELECT PATTERN`,
   `SELECT CHAIN`, `SELECT ARPEGGIATOR` (the kind's name on a generator page), `SELECT GENERATOR TYPE`, `SELECT CHAIN LINKS
   (generators)` in the chain editor and `SELECT FILE` on the Open page (`Column.SELECT_...` in `strings/labels.py`).
+- A name is at most 30 characters (`MAX_NAME_LENGTH`): a prompt for a name takes no more, on every page that names a thing, and a
+  list keeps 30 cells for its names on every console, the columns after them starting right there, never at the far right. A longer
+  name from an older file stays in the file and is shown cut with the tracker's ellipsis (the user's rules).
 - A list page shows the set's items in the file's order, which is the order they play or are
   written in, and `S` sorts them for good. A picker never changes the file's order.
 - A flyout, the user's design and name, is a box a dialog draws over itself for a row drawn as a button, `[ Common ]`, since the row opens something, listing that row's
@@ -203,7 +206,8 @@ such name, and `tests/rules/test_naming.py` holds that nothing else numbers one)
 - A suggested name is lowercase, with an underscore where a space would be: `c_major` is not `C Major`. The one exception is a
   note's name in a scale's name, which keeps its capital and its mark: `C_major`, `F#_harmonic_minor`, `Bb_major`.
 - The counting part is joined with a dash: `bass-2`, `C_major-2`.
-- A new thing is its kind's word, a dash and a number: `pattern-1`, `arp-1`, `scene-1`, `track-1`, `groove-1`, `instrument-1`, and a
+- A new thing is its kind's word, a dash and a number: `pattern-1`, `arp-1`, `scene-1`, `track-1`, `groove-1`, `instrument-1`, `scale-1` (a
+  scale is never named after its notes by the tracker, since the name was wrong once the notes changed; only an import names one so), and a
   blank pattern made on Arrange takes its track's name as typed, `lead-1`. The number is one more than the highest in use, so a new
   thing never takes the name of one just deleted and the newest has the highest number.
 - A duplicate, a copy, a conflict or an import whose name is taken, counts: a name with no number gets `-2`, since the name the
