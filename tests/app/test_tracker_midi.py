@@ -43,7 +43,7 @@ from llamatron.exporters.exports import EXPORT_KINDS, ExportKind
 from llamatron.composition.setlist import Setlist, new_setlist
 from llamatron.strings.names import MSG_DEFAULT_SONG_NAME
 from llamatron.tui.document import Document
-from tests.tui.test_tui_pages import UITest
+from tests.support.ui_testing import UITest
 from llamatron.tui.keys import Key
 from llamatron.tui import keybindings
 

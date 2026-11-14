@@ -28,7 +28,7 @@ Run it from the top folder, usually through internal_tools/test.sh, with any nam
 tests whose module, class or method name contains one of them, as unittest's -k does:
 
     .venv/bin/python tests/support/parallel.py
-    .venv/bin/python tests/support/parallel.py test_tui_pages test_examples
+    .venv/bin/python tests/support/parallel.py test_tui_main_page test_examples
 """
 
 import json
