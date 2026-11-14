@@ -29,7 +29,7 @@ notes: |
   sounds are a voice lead, a choir, a steel-string guitar that a Guitarify picks and strums, a fiddle
   and an acoustic bass.
 
-  Run it with: llamatron examples/by_genre/folk/when_to_hold_em.yml
+  Run it with: llamatron examples/by_genre/country/when_to_hold_em.yml
 
   Scene 1, intro, 8 bars.
   Scene 2, verse 1, 16 bars.
@@ -149,7 +149,7 @@ songs:
   when_to_hold_em:
     tempo: 172
     scale: A Major
-    genre: Folk
+    genre: Country
 
     tracks:
       kick: { drum: true, instrument: drum kit }

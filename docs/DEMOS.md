@@ -46,9 +46,10 @@ pages current.
 | [Blues](demos/BLUES.md) | 3 |
 | [Children's](demos/CHILDRENS.md) | 1 |
 | [Classical](demos/CLASSICAL.md) | 3 |
+| [Country](demos/COUNTRY.md) | 1 |
 | [Electronic](demos/ELECTRONIC.md) | 15 |
 | [Exercise](demos/EXERCISE.md) | 3 |
-| [Folk](demos/FOLK.md) | 6 |
+| [Folk](demos/FOLK.md) | 5 |
 | [Gospel](demos/GOSPEL.md) | 1 |
 | [Pop](demos/POP.md) | 5 |
 | [Ragtime](demos/RAGTIME.md) | 1 |
