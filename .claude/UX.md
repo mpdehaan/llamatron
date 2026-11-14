@@ -255,6 +255,8 @@ such name, and `tests/rules/test_naming.py` holds that nothing else numbers one)
   really helps, as for fractions, write `such as 1/8`. A field with no value shows `(none)` while a
   sentence says `no scale`.
 - Documents for people use the names the tracker shows, never code names that differ.
+- A message, a prompt, a dialog's title and a legend's entry are as short as they can be while staying obvious, and the example
+  text of a mockup is held to the same: no caption that repeats the title, no sentence where a few words do (the user's rule).
 - These rules come from reading the modules of `src/llamatron/strings/` together, and a new message
   is checked against them before it's added.
 
