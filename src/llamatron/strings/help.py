@@ -109,9 +109,10 @@ One song's settings. Up and down select one. Left and right change it, and Enter
 Name: Enter renames the song, which N on the Songs page does too.
 Tempo: in quarter notes a minute, unless a scene sets its own. Time signature: only changes what's drawn, the beats in the pattern editor and the bars in Live.
 Scale: the set's scale its degrees play in, unless a scene sets its own; Bksp leaves it with none.
-Seed: with none, every export is a new take. Set one to export the same take every time.
-Groove: the swing or other timing feel every clip plays with, unless its scene or track chooses another. none is straight.
+Seed: none makes each export a new take; set one to repeat it.
+Groove: every clip's swing, unless a scene or track chooses.
 Live response: when an edit made while the song plays is heard: at the next bar, at each clip's next pass, or ASAP.
+Preview instrument: what Listen plays a pattern through.
 Visualizer: Arrange shows it first, over the Set File page's.
 The Export row does the same as Ctrl+X, which works on every page: it writes this song as a Live set or MIDI files.
 """
@@ -140,6 +141,7 @@ Every pattern in the set, which all of its songs share. Enter edits the selected
 A adds one, C copies it, N renames it, and renames update every clip.
 M moves it, and S sorts them by name.
 Bksp deletes it, but only once nothing uses it.
+L plays it at once, again and again, and stops it, through the song's Preview instrument.
 
 TIME is one play at the current song's tempo. USED counts the clips, in every song, and chains that use it.
 / searches the list as you type: Tab completes, Enter keeps your place, Esc goes back to the whole list.
@@ -363,7 +365,7 @@ Each column is a step, as long as the step size. Tab switches between the piano 
 Piano roll: Space or Enter draws a note of the entry size, which E picks; [ and ] drag its end, K splits it, . sharpens or flattens it, G grabs, Space, Enter or Bksp erases it, H picks its chord.
 Rows: Degree is a gauge: digits set it, [ and ] nudge it, as they adjust every number, Bksp empties the step. The rows under Octave come in sections headed by a row marked + (closed) or - (open): Space or Enter opens or closes it, PgUp/PgDn jump between them.
 Basics: #/b, Velocity. Chord: Chord, Tension, Scale (Enter picks), Inv. Timing: Tie (Space on empty steps after a note holds it), Gate ([ and ], or Enter to type one), Dot (d, t), Glide. Advanced: Probability, Ratchet, Ratchet Offset, Grab. CCs and Slide work on rests too. Reg. Apply uses the registers; Reg. Mod adds to them.
-S sizes the pattern, and on the rows I inserts a step and D removes one. R reconfigures it: munge, load over, step size, time signature, drum on or off, direction, rename. L plays it through a track, and stops it.
+S sizes the pattern, and on the rows I inserts a step and D removes one. R reconfigures it: munge, load over, step size, time signature, drum on or off, direction, rename. L plays it at once, again and again, and stops it.
 """
 
 # RegistersPage

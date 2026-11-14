@@ -45,7 +45,8 @@ from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT, FluidSynth, is_instal
 from llamatron.visualizers.heard import REFERENCE_SECONDS_PER_BEAT, SILENCE, Heard, HeardNote
 from llamatron.realtime.engine import MonotonicClock
 from llamatron.realtime.outputs import output_port_names
-from llamatron.realtime.player import Player
+from llamatron.playback.step_order import walk_order
+from llamatron.realtime.player import QUARTERS_PER_WHOLE, Player
 from llamatron.realtime.score import Score
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess
 from llamatron.realtime.timeline import Route
@@ -67,6 +68,20 @@ LIVE_SETTLE_SECONDS = 0.15
 SEED_RANGE = 2 ** 31
 
 
+def step_sounding(*, elapsed, quarter, step_size, steps, direction):
+    """Return the step that sounds a time into a clip's play, by the direction's order, or None for a direction that chooses its steps as it goes."""
+    order = walk_order(count=steps, direction=direction)
+    if order is None:
+        return None
+    step_seconds = float(step_size) * QUARTERS_PER_WHOLE * quarter
+    return order[int(elapsed / step_seconds) % len(order)]
+
+
+def fluidsynth_is_installed():
+    """Return whether FluidSynth is installed, asked each time, so that the tests can answer for a computer that has none."""
+    return is_installed()
+
+
 class Problem:
     """Why nothing can play: a dialog's title and its lines."""
 
@@ -84,11 +99,11 @@ class Transport:
                  '_fluidsynth', '_fluidsynth_installed', '_song', '_song_name', '_song_is_copy', '_instead', '_seed', '_seen_revision', '_changed_at',
                  '_scenes', '_tracks', '_previewing', '_live_message')
 
-    def __init__(self, *, document_holder, clock=None, make_sender=None, set_timer=None, fluidsynth=None, fluidsynth_installed=is_installed):
+    def __init__(self, *, document_holder, clock=None, make_sender=None, set_timer=None, fluidsynth=None, fluidsynth_installed=None):
         """document_holder answers get_document(). clock and make_sender(ports) are for the tests, which give a stepped clock and an engine; set_timer(seconds, callback) starts a repeating timer and returns something with stop(). fluidsynth and fluidsynth_installed() are for the tests too, which start no real FluidSynth."""
         self._document_holder = document_holder
         self._fluidsynth = FluidSynth() if fluidsynth is None else fluidsynth
-        self._fluidsynth_installed = fluidsynth_installed
+        self._fluidsynth_installed = fluidsynth_is_installed if fluidsynth_installed is None else fluidsynth_installed
         self._clock = MonotonicClock() if clock is None else clock
         self._make_sender = self._process_sender if make_sender is None else make_sender
         self._set_timer = set_timer
@@ -116,6 +131,17 @@ class Transport:
 
     def document(self):
         return self._document_holder.get_document()
+
+    def shared(self):
+        """Return what a second transport beside this one is made with, the pattern preview's: the same document, clock, timer, FluidSynth and way of making a sender."""
+        return dict(
+            document_holder=self._document_holder, clock=self._clock, make_sender=self._make_sender, set_timer=self._set_timer,
+            fluidsynth=self._fluidsynth, fluidsynth_installed=self._fluidsynth_installed,
+        )
+
+    def is_connected(self, device):
+        """Return whether this computer lists a MIDI port now."""
+        return device in set(output_port_names())
 
     # What stops anything from playing.
 
@@ -256,6 +282,10 @@ class Transport:
         self.stop_all()
         self._player = None
 
+    def may_play(self):
+        """Return whether anything may go on playing: the set's Real Time switch is on."""
+        return self.document().setlist().is_real_time()
+
     def is_previewing(self):
         """Return whether what plays is a listening page's preview, which stops when its page is left."""
         return self._previewing and self.is_playing()
@@ -272,7 +302,7 @@ class Transport:
             return
         # Real Time turned off while something plays, on the main screen or by deleting the last instrument, stops it, since the
         # pages then show no stop for it (a bug the user found).
-        if not self.document().setlist().is_real_time():
+        if not self.may_play():
             self.stop_all()
             return
         self._follow_edits()
@@ -328,6 +358,31 @@ class Transport:
         seconds_per_beat = self._player.seconds_per_quarter() or REFERENCE_SECONDS_PER_BEAT
         position = self._player.song_position() or 0.0
         return now, Heard(notes=tuple(notes), seconds_per_beat=seconds_per_beat, beats=position / seconds_per_beat, names=tuple(song.get_track_names()))
+
+    def playing_step(self, pattern):
+        """Return the step of a pattern that sounds now, for the piano roll's read head: the step of the first playing clip that plays the pattern, in the clip's
+        direction, or None when no playing clip plays the pattern or the direction chooses its steps as it goes. What a generator or a morph does to the clip is not followed."""
+        if not self.is_playing() or self._song is None or not self._song.has_pattern(pattern):
+            return None
+        song = self._song
+        played = song.get_pattern(pattern)
+        quarter = self._player.seconds_per_quarter()
+        scenes = song.get_scenes()
+        for index in self.playing_scenes():
+            if not quarter or index >= len(scenes):
+                continue
+            for track in song.get_track_names():
+                clip_slot = scenes[index].get_clip_slot(track)
+                if clip_slot is None or clip_slot.get_pattern_name() != pattern or not self.is_clip_playing(index=index, track=track):
+                    continue
+                elapsed = self.clip_elapsed(index=index, track=track)
+                if elapsed is None:
+                    continue
+                return step_sounding(
+                    elapsed=elapsed, quarter=quarter, step_size=song.get_pattern_step_size(played), steps=played.get_steps(),
+                    direction=clip_slot.get_direction() or played.get_direction(),
+                )
+        return None
 
     def player(self):
         """Return the player, for the tests."""

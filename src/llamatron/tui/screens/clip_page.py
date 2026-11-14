@@ -107,7 +107,8 @@ class ClipPage(FieldPage):
         return [self.bind(self.KEYS.OPEN_PATTERN, action=self.open_pattern), listening]
 
     def is_listening(self):
-        return self.app.transport.is_clip_playing(index=self.index, track=self.track)
+        """Return whether the clip plays on its own: through its track's instrument, or through General MIDI while Real Time is off."""
+        return self.app.transport.is_clip_playing(index=self.index, track=self.track) or self.app.pattern_preview().playing_clip() == (self.index, self.track)
 
     def listen(self):
         """Play the clip as its scene would, again and again, through its track's instrument or one picked for this listening."""

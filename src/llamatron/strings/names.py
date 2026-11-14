@@ -36,6 +36,8 @@ MSG_DEFAULT_SONG_NAME = 'untitled'
 # Arrange page names the ones it adds the same way, to be renamed on their own pages, as the user asked on 2026-11-07.
 MSG_NEW_SCENE_NAME = 'scene {number}'
 MSG_NEW_TRACK_NAME = 'track {number}'
+# The track a pattern's preview plays on, in the copy of the set the preview plays (tui/pattern_preview.py).
+MSG_PREVIEW_TRACK_NAME = '(preview)'
 MSG_NEW_PATTERN_NAME = 'pattern {number}'
 # A blank pattern made on an empty cell of Arrange is named after its track, the user's design (tui/screens/arrange_page.py).
 MSG_TRACK_PATTERN_NAME = '{track} {number}'
