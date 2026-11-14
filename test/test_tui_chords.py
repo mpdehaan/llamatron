@@ -273,6 +273,21 @@ class TestPatternEditorChords(UITest):
         await self.press(*[Key.UP] * len(dialog.qualities), keybindings.ChordDialog.CHOOSE)
         self.assertEqual((self.value(Row.CHORD), self.value(Row.INVERSION)), (None, None))
 
+    async def test_a_note_placed_on_a_chords_step_on_the_roll_moves_the_root_and_erasing_removes_the_chord(self):
+        self.set(row=Row.CHORD, value=ChordSymbol.MAJOR)
+        self.set(row=Row.INVERSION, value=INVERSIONS[0])
+        degree = self.value(Row.DEGREE)
+        await self.press(keybindings.PatternEditor.TO_ROLL)
+        # Two rows above the chord's note, on the chord's step, the pencil moves the root there and keeps the chord (the user's rule).
+        await self.press(Key.UP, Key.UP, keybindings.PianoRoll.PLACE)
+        self.assertEqual(self.value(Row.DEGREE), degree + 2)
+        self.assertEqual((self.value(Row.CHORD), self.value(Row.INVERSION)), (ChordSymbol.MAJOR, INVERSIONS[0]))
+        # On the note, the pencil erases it, the chord with it, and the next note drawn is a single note.
+        await self.press(keybindings.PianoRoll.PLACE)
+        self.assertEqual((self.value(Row.DEGREE), self.value(Row.CHORD)), (None, None))
+        await self.press(keybindings.PianoRoll.PLACE)
+        self.assertEqual((self.value(Row.DEGREE), self.value(Row.CHORD)), (degree + 2, None))
+
     async def test_the_roll_draws_a_chords_tensions_and_a_borrowed_scales_notes_as_thin_lines(self):
         roll = self.editor.roll
         self.set(row=Row.CHORD, value=ChordSymbol.MAJOR)

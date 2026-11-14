@@ -1331,7 +1331,8 @@ roll or the rows.
   so that every heading still fits an 80 by 24 console, and left out of a drum pattern, which has none of its rows); the
   Scale row steps through `SCALE_TYPES_IN_ORDER`, every scale type in the categories' order. While the dialog is open the
   pattern editor shows the chord as the choice moves (the dialog's `moved`): the step is written without an undo step and
-  written back on Esc, so the whole is one step or none. A note whose chord has an inversion is drawn hollow (`MSG_NOTE_HOLLOW`, `PianoRoll.root_is_lifted`, the user's design), since the
+  written back on Esc, so the whole is one step or none. The pencil on the step where a chord starts, at another pitch, moves the chord's root and keeps the rest of the step
+  (`Pattern.starts_chord`, `move_root`, the user's rule); erasing the note is what removes its chord. A note whose chord has an inversion is drawn hollow (`MSG_NOTE_HOLLOW`, `PianoRoll.root_is_lifted`, the user's design), since the
   root sounds an octave up and nothing sounds where the note is written. The roll's thin lines are green (`Style.CHORD_NOTE`) and include
   tensions and a borrowed scale's notes (`_tones_leaving_the_scale` in `composition/pattern_notes.py`); a Tension cell is blocked on a step with no chord. `Page.resting_status()` is what the status line says
   while nothing else is said: the pattern editor and the chord editor name the cursor's chord there, in the scale known

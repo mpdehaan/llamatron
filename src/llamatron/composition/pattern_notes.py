@@ -186,13 +186,30 @@ class PatternNotes:
     def draw_note(self, *, step, degree, octave, length, step_size, accidental=None):
         """Draw a note of a length on a step: in ties for each whole step it covers, or as a gate when it's shorter than a step, cutting the note it lands in.
 
-        The length is in whole notes, like the entry size the piano roll draws with.
+        The length is in whole notes, like the entry size the piano roll draws with. On the step of a
+        chord, the chord's root moves to the note and nothing else of the step changes (the user's
+        rule): the chord, its tensions, scale and inversion and the note's length are kept, and
+        erasing the note is what removes them.
         """
+        if self.starts_chord(step):
+            self.move_root(step=step, degree=degree, octave=octave, accidental=accidental)
+            return
         self.cut_gate_before(step=step, step_size=step_size)
         if length < step_size:
             self.place_note(step=step, degree=degree, octave=octave, accidental=accidental, covered=ONE_STEP, gate=fraction_text(length))
         else:
             self.place_note(step=step, degree=degree, octave=octave, accidental=accidental, covered=whole_steps_down(length=length, step_size=step_size))
+
+    def starts_chord(self, step):
+        """Return whether a step holds a note of its own with a chord on it."""
+        self._check_step(step)
+        return self.get_value(row=Row.DEGREE, step=step) is not None and self.get_value(row=Row.CHORD, step=step) is not None
+
+    def move_root(self, *, step, degree, octave, accidental=None):
+        """Move a step's note to another pitch, leaving everything else of the step as it is."""
+        self.set_value(row=Row.DEGREE, step=step, value=degree)
+        self.set_value(row=Row.OCTAVE, step=step, value=octave)
+        self.set_value(row=Row.ACCIDENTAL, step=step, value=accidental)
 
     def cut_gate_before(self, *, step, step_size):
         """Shorten the gate of the note reaching over a step so that it ends where the step starts, as a note drawn there cuts it, and return whether a gate was cut.
