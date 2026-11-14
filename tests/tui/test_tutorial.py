@@ -50,19 +50,19 @@ from llamatron.tui.app import LlamatronApp
 from llamatron.tui.drawing import NOTHING
 from llamatron.tui.document import Document
 from llamatron.tui.launch import Launch
-from llamatron.tui.screens.arrange_page import ArrangePage
+from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.screens.patterns_page import PatternsPage
-from llamatron.tui.screens.pattern_editor import PatternEditor
-from llamatron.tui.screens.songs_page import SongsPage
-from llamatron.tui.screens.track_editor import TrackEditor
+from llamatron.tui.screens.pattern.patterns_page import PatternsPage
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
+from llamatron.tui.screens.set.songs_page import SongsPage
+from llamatron.tui.screens.arrange.track_editor import TrackEditor
 from llamatron.tui.components.pattern_rows import PatternRows
 from llamatron.tui.components.piano_roll import PianoRoll
 from llamatron.tui.keys import Key, SPACE_CHARACTER
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import first_key, key_event
-from llamatron.tui.screens.main_page import MainPage
+from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tutorial.steps import Press
 from llamatron.tui.transport import Transport
 from llamatron.tutorial.plan import without_instrument, WORDS, TutorialPlan, TutorialStuck
@@ -85,7 +85,7 @@ NOT_BUILT = (
 ROLL_ROWS = (Row.DEGREE, Row.OCTAVE)
 PORT = 'Tutorial Port'
 PORT_NAMES = 'llamatron.tui.transport.output_port_names'
-EDITOR_PORT_NAMES = 'llamatron.tui.screens.instrument_editor.output_port_names'
+EDITOR_PORT_NAMES = 'llamatron.tui.screens.set.instrument_editor.output_port_names'
 SEED = 1
 EXPORT_CHANNEL = 1
 FIRST = 0

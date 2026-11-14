@@ -18,7 +18,7 @@
 Each constant starts with MSG_.
 """
 
-# tui/screens/page.py and tui/key_table.py: the key names, the labels and the words every page shares
+# tui/screens/shared/page.py and tui/key_table.py: the key names, the labels and the words every page shares
 # Shown at the bottom right of the main screen.
 MSG_SITE = 'home.laserllama.net'
 

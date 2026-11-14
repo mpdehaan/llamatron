@@ -18,9 +18,9 @@
 from tests.support.ui_testing import TUNE, UITest
 from llamatron.composition.file_format import Row
 from llamatron.strings.marks import MSG_BLOCKED_CELL, MSG_NOTE_HOLLOW, MSG_NOTE_HOLLOW_UNDER_CURSOR
-from llamatron.tui.screens.grid_drawing import CELL_WIDTH
+from llamatron.tui.screens.pattern.grid_drawing import CELL_WIDTH
 from llamatron.tui.keys import Key, RowSection
-from llamatron.tui.screens.pattern_editor import PatternEditor
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui import keybindings
 
 TRIAD = '3'

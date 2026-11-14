@@ -29,8 +29,8 @@ from llamatron.tui.document import Document
 from llamatron.tui.uses import LOOP_ERRORS_SHOWN
 from llamatron.strings.errors import ERR_AND_MORE, ERR_LOOP_SCENES_INTRO, ERR_LOOP_SCENES_TITLE
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.main_page import MainPage
-from llamatron.tui.screens.pattern_editor import PatternEditor
+from llamatron.tui.screens.set.main_page import MainPage
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.strings.labels import MSG_EXPORT_CHOICES
 from llamatron.strings.messages import MSG_EXPORTED, MSG_SAVE_BEFORE_EXPORT_TITLE
 from llamatron.strings.names import MSG_NUMBERED_NAME

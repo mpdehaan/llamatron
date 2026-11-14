@@ -32,8 +32,8 @@ from llamatron.tui.components.title_card import (
     title_lines, whole_title_seconds, words_width,
 )
 from llamatron.tui.launch import NO_SPLASH, NO_SPLASH_VARIABLE, Launch, start_screen_wanted
-from llamatron.tui.screens.main_page import MainPage
-from llamatron.tui.screens.start_screen import StartScreen
+from llamatron.tui.screens.set.main_page import MainPage
+from llamatron.tui.screens.set.start_screen import StartScreen
 from tests.support.ui_testing import UITest
 
 WIDE_SCREEN = (120, 30)

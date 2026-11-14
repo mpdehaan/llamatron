@@ -340,7 +340,7 @@ ERR_NOT_A_SCALE_TYPE = 'expected a ScaleType, got {value!r}'
 ERR_BAD_TIME_SIGNATURE = 'time signature must be beats over a note value such as 6/8, with {lowest} to {highest} beats over one of: {units}, got {value!r}'
 ERR_NOT_A_TIME_SIGNATURE = 'expected a TimeSignature, got {value!r}'
 
-# tui/screens/arrange_page.py
+# tui/screens/arrange/arrange_page.py
 # The mark beside a scene on the Arrange grid. The full explanation is the loop errors dialog.
 ERR_ADD_A_PATTERN_FIRST = 'Add a pattern first, on the Patterns page.'
 # Deleting the last scene or track is refused in a dialog, as the user asked.
@@ -353,7 +353,7 @@ ERR_NO_PATTERNS_TITLE = 'No patterns'
 ERR_NO_OTHER_TRACKS_TITLE = 'No other tracks'
 ERR_ADD_ANOTHER_TRACK = 'Add another track to grab notes from, on the Tracks page.'
 
-# tui/screens/main_page.py
+# tui/screens/set/main_page.py
 ERR_NO_INSTRUMENTS_TITLE = 'No instruments'
 ERR_ADD_INSTRUMENT_FIRST = 'Add an instrument first, on the Instruments page, and give a track it.'
 # tui/transport.py: why nothing plays.
@@ -384,9 +384,9 @@ ERR_LAST_SONG = 'the set needs at least one song'
 ERR_FILE_PROTECTED = '{path} is protected, so it cannot be written over'
 ERR_SAVE_BEFORE_EXPORT = 'the set has to be saved before it is exported, because the exports are named after its file and written beside it'
 
-# tui/screens/list_page.py
+# tui/screens/shared/list_page.py
 ERR_CANT_DELETE_TITLE = 'Cannot delete'
-# tui/screens/arrange_page.py: + under a cell's chains with no chain in the set to add.
+# tui/screens/arrange/arrange_page.py: + under a cell's chains with no chain in the set to add.
 ERR_NO_CHAINS_TO_ADD = 'the set has no chains to add: make one on the Chains page'
 ERR_STILL_USED = '{what} is still used, so change these first:'
 # After the first few lines of a list in a dialog, how many more there are.
@@ -398,7 +398,7 @@ ERR_TYPED_NOT_AN_INTEGER = '({text}) is not an integer'
 ERR_TYPED_NOT_A_TIME_SIGNATURE = '({text}) is not a time signature such as 6/8, with {lowest} to {highest} beats over one of: {units}'
 ERR_OUT_OF_RANGE = '{number} must be from {low} to {high}'
 
-# tui/screens/song_page.py, tui/screens/file_page.py and tui/screens/everywhere.py
+# tui/screens/set/song_page.py, tui/screens/set/file_page.py and tui/screens/shared/everywhere.py
 ERR_ADD_A_SCALE_FIRST = 'add a scale first, on the Scales page'
 ERR_CANT_SAVE_TITLE = 'Cannot save'
 ERR_CANT_SAVE = '{path}: {error}'
@@ -409,7 +409,7 @@ ERR_LAST_SONG_SHOWN = 'the set needs at least one song, so the last one cannot b
 ERR_NOTHING_TO_ADD_TITLE = 'Nothing to add'
 ERR_BAD_COUNTS = 'counts must be integers of 1 or more, separated by spaces'
 
-# tui/screens/pattern_editor.py and the rows in tui/components/
+# tui/screens/pattern/pattern_editor.py and the rows in tui/components/
 ERR_NOT_A_LENGTH = '({text}) is not an integer or a fraction such as 1/8'
 ERR_LENGTH_OUT_OF_RANGE = 'a length must be more than 0 and at most {most}'
 ERR_ROW_OUT_OF_RANGE = '{row} must be from {low} to {high}'
@@ -464,7 +464,7 @@ ERR_NO_SUCH_MIDI_PORT = 'no MIDI output port called ({name})'
 # importers/midi_import.py
 ERR_MIDI_NO_NOTES = 'the MIDI file plays no notes'
 
-# tui/screens/importing.py
+# tui/screens/set/importing.py
 ERR_CANT_IMPORT_TITLE = 'Cannot import'
 ERR_CANT_READ_MIDI = 'The file {file} cannot be read as MIDI: {problem}.'
 

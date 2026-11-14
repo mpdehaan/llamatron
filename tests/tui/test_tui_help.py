@@ -25,10 +25,10 @@ from llamatron.tui.dialogs.about_dialog import EIGHT_BALL_CHANCE, QUOTE_LINES
 from llamatron.tui.dialogs.dialog import DIALOG_MARGIN, DIALOG_WIDTH
 from llamatron.tui.dialogs.about_dialog import AboutDialog
 from llamatron.tui.dialogs.help_dialog import HelpDialog
-from llamatron.tui.screens.page import PROGRAM_NAME
+from llamatron.tui.screens.shared.page import PROGRAM_NAME
 from llamatron.tui.keys import Key, RowSection
-from llamatron.tui.screens.main_page import MainPage
-from llamatron.tui.screens.patterns_page import PatternsPage
+from llamatron.tui.screens.set.main_page import MainPage
+from llamatron.tui.screens.pattern.patterns_page import PatternsPage
 from llamatron.support.version import BUILD_DATE, BUILD_TIME, build_year, VERSION
 from llamatron.strings.about import MSG_ABOUT_BLOG, MSG_ABOUT_COPYRIGHT, MSG_ABOUT_LICENSE, MSG_ABOUT_MORE, MSG_ABOUT_POWERED, MSG_ABOUT_QUOTES, MSG_ABOUT_VERSION, MSG_ABOUT_WEB, MSG_COW, MSG_COW_BUBBLE_TEXT, MSG_EIGHT_BALL, MSG_EIGHT_BALL_ANSWERS, MSG_SITE
 from llamatron.strings.labels import MSG_SECTION_LABEL, MSG_SECTION_NAMES, MSG_HELP_PANELS

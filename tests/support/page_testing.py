@@ -17,7 +17,7 @@
 """Helpers the tests of the tracker's pages share: reading the main screen's selected cell from what is drawn."""
 
 from llamatron.tui.drawing import Box
-from llamatron.tui.screens.main_page import BAR_ROWS
+from llamatron.tui.screens.set.main_page import BAR_ROWS
 
 # The marks the screen's text puts around anything in reverse video, and what joins a cell's lines.
 REVERSED_STARTS = '«'

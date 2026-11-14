@@ -98,5 +98,5 @@ MSG_IMPORTED_NO_WARNINGS = 'Import complete with no warnings.'
 MSG_IMPORTED_WARNINGS = 'Import complete with these warnings:'
 MSG_IMPORTED_BUTTON = 'OK'
 
-# tui/screens/importing.py
+# tui/screens/set/importing.py
 MSG_IMPORTED = 'imported song ({name}): {tracks} tracks, {patterns} patterns, {scenes} scenes'

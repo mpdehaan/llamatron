@@ -23,7 +23,7 @@ from llamatron.composition.limits import MIN_DEGREE
 from llamatron.composition.file_format import ClipSlotSetting, Direction, Row
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key, RowSection
-from llamatron.tui.screens.pattern_editor import Reconfigure
+from llamatron.tui.screens.pattern.pattern_editor import Reconfigure
 from llamatron.strings.labels import MSG_ROW_LABELS, MSG_SECTION_HINTS
 from llamatron.strings.marks import MSG_TOGGLE_ON
 from llamatron.strings.messages import MSG_DESCRIBE_CHORD, MSG_GRABBED_SOUND

@@ -27,14 +27,14 @@ from llamatron.composition.defaults import DEFAULT_TIME_SIGNATURE
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
 from llamatron.tui.drawing import Align, Box, NOTHING, Style, fit
-from llamatron.tui.screens.grid_drawing import CELL_WIDTH
+from llamatron.tui.screens.pattern.grid_drawing import CELL_WIDTH
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.document import Document
 from llamatron.tui.keys import HOME_END, Key, OPEN_AT_START, RowSection, SHIFT_LEFT_RIGHT, SHIFT_UP_DOWN
 from llamatron.tui.components.chord_row import chord_value
 from llamatron.tui.components.pattern_rows import PINNED_ROWS, SECTIONS
-from llamatron.tui.screens.pattern_editor import PatternEditor, Reconfigure, reconfigure_choices
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor, Reconfigure, reconfigure_choices
 from llamatron.tui.components.degree_row import GAUGE_ROWS_WITHOUT_SCALE
 from llamatron.composition.setlist import DEFAULT_SCALE
 from llamatron.strings.errors import ERR_BOTTOM_OF_SCALE, ERR_TOP_OF_SCALE

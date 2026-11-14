@@ -40,7 +40,7 @@ from llamatron.composition.file_format import PATTERN_ROWS
 from llamatron.composition.row_descriptions import ROW_DESCRIPTIONS
 from llamatron.composition.setlist import as_setlist_data
 from llamatron.composition.setlist_writer import dump_setlist
-from llamatron.tui.screens.scale_page import SCALE_PAGES
+from llamatron.tui.screens.set.scale_page import SCALE_PAGES
 
 # The demos are written with durations, as they were first written, and gate_conversion, in the
 # tests' support folder, turns them into gates, so the top folder has to be on the path before this import.

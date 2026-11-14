@@ -441,7 +441,7 @@
   priority: 1
   text: |
     From the user on 2026-11-10. Every file picker is one: the Open page
-    (`screens/open_page.py`, which starts in `examples/`), the MIDI import's, and any later one, the
+    (`screens/set/open_page.py`, which starts in `examples/`), the MIDI import's, and any later one, the
     same page given what files it shows and where it starts. The files people want may be far
     outside the tracker's directory, so it needs to get there quickly: a full path typed in, with
     `~` for the home directory, and perhaps recent directories and recent files. The MIDI import
@@ -1180,7 +1180,7 @@
 
     The footer stays the key legend for the page's own keys, as "F1 as the hotkey dialog, and a
     shorter footer" below describes, so a button's key still shows there. What it would mean for the
-    code: `Button` in `screens/field.py` exists, made by
+    code: `Button` in `screens/shared/field.py` exists, made by
     `FieldPage.button` and drawn below the settings after a blank line with its key's name in front,
     as the main menu draws a row, so what's left is a Save as button on the File/Global page, a cursor
     position below the grid in the pattern editor, which is new for it, and a check in
@@ -1451,7 +1451,7 @@
     - **A groove override on a clip**, decided on 2026-11-07: a `groove` on a cell, a name or `false`
       like a scene's or a track's, with the highest priority of all, so that a clip's choice wins
       over its track's, then the scene's, then the song's, and `off` anywhere still plays straight.
-      It's one setting on `ClipSlot`, a Groove field on the clip page built by `screens/groove_choice.py`,
+      It's one setting on `ClipSlot`, a Groove field on the clip page built by `screens/arrange/groove_choice.py`,
       a fourth argument to `Song.groove_at`, and the rename and uses code that the other three have.
     - **Velocity in grooves**: see "Accents on beats: velocity in grooves".
     - **Random timing jitter** in a groove, which would use the song's seed like probability does.
@@ -1846,7 +1846,7 @@
     `FieldPage`, a column of `Field`s, so it would become a page that draws its own grid, with a
     cursor that moves in both directions like the pattern editor's, and the keys depending on the
     row under the cursor: digits, `+` and `-`, `ENTER` and `Bksp` on the number rows, and `Space` or
-    `ENTER` on the wraps row. The grid drawing of the pattern editor (`screens/grid_drawing.py`) could be
+    `ENTER` on the wraps row. The grid drawing of the pattern editor (`screens/pattern/grid_drawing.py`) could be
     shared, since it's the same box characters and reverse-video cursor. `Document.set_register_setting` and the
     refusal messages stay as they are, and `TestRegistersPage` would change with the
     keys. The help text would need rewriting for the new keys.

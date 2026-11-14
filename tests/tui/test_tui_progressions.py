@@ -27,8 +27,8 @@ from llamatron.composition.progressions import named_progression
 from llamatron.strings.labels import MSG_CHORDS_LABEL, MSG_EVERY_LABEL, MSG_PROGRESSION_NAMES, MSG_RESTART_LABEL, MSG_RESTART_NAMES
 from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.chords_editor import ACCIDENTAL_ROW, CHORD_ROW, INVERSION_ROW, QUALITY_CYCLE, QUALITY_ROW, SCALE_ROW, TENSION_ROW, ChordsEditor
-from llamatron.tui.screens.progression_editor import ProgressionEditor
+from llamatron.tui.screens.generators.chords_editor import ACCIDENTAL_ROW, CHORD_ROW, INVERSION_ROW, QUALITY_CYCLE, QUALITY_ROW, SCALE_ROW, TENSION_ROW, ChordsEditor
+from llamatron.tui.screens.generators.progression_editor import ProgressionEditor
 from llamatron.tui import keybindings
 
 # The test song's progression, pop, and what the chord editor shows for it in C major.

@@ -22,9 +22,9 @@ from llamatron.composition.limits import MAX_OCTAVE, MIN_OCTAVE
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.arrange_page import ArrangePage
-from llamatron.tui.screens.chain_list_page import ChainListPage
-from llamatron.tui.screens.track_editor import TrackEditor
+from llamatron.tui.screens.arrange.arrange_page import ArrangePage
+from llamatron.tui.screens.generators.chain_list_page import ChainListPage
+from llamatron.tui.screens.arrange.track_editor import TrackEditor
 from llamatron.strings.labels import MSG_CHAINS_LABEL, MSG_CC_REGISTER_LABEL, MSG_NAME_LABEL, MSG_TRACK_CRUMB, MSG_VELOCITY_REGISTER_LABEL
 from llamatron.strings.names import MSG_NEW_SCENE_NAME, MSG_NEW_TRACK_NAME
 from llamatron.tui import keybindings

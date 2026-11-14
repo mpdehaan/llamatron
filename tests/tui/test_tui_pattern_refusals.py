@@ -22,7 +22,7 @@ from llamatron.composition.limits import MAX_STEPS, MIN_STEPS
 from llamatron.tui.drawing import NOTHING
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.pattern_editor import Munge, PatternEditor, Reconfigure
+from llamatron.tui.screens.pattern.pattern_editor import Munge, PatternEditor, Reconfigure
 from llamatron.strings.errors import ERR_NOTHING_AFTER, ERR_NOTHING_BEFORE, ERR_NOTHING_TO_PIVOT, ERR_ONE_STEP, ERR_STEPS_OUT_OF_RANGE
 from llamatron.strings.labels import MSG_ROW_LABELS
 from llamatron.strings.marks import MSG_MORE_AFTER, MSG_STEPS_SHOWN

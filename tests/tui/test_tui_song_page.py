@@ -25,8 +25,8 @@ from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.strings.errors import ERR_NAME_IN_USE, ERR_TYPED_NOT_A_TIME_SIGNATURE
 from llamatron.music.time_signature import MAX_BEATS, MIN_BEATS, UNITS_LISTED
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.song_page import SongPage
-from llamatron.tui.screens.songs_page import SongsPage
+from llamatron.tui.screens.set.song_page import SongPage
+from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.composition.song import NO_GENRE
 from llamatron.strings.labels import MSG_VISUALIZER_LABEL
 from llamatron.strings.labels import MSG_GENRE_LABEL, MSG_LIVE_RESPONSIVENESS_LABEL, MSG_LIVE_RESPONSIVENESS_NAMES, MSG_PREVIEW_INSTRUMENT_LABEL, MSG_PREVIEW_INSTRUMENT_UNSET, Crumb, MSG_EXPORT_CHOICES, MSG_SONG_CRUMB, MSG_GROOVE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_SEED_LABEL, MSG_TIME_SIGNATURE_LABEL, MSG_ENTRY_SIZE_LABEL, PageName

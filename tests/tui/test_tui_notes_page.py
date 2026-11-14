@@ -21,8 +21,8 @@ from llamatron.tui.drawing import SELECTED_MARK
 from llamatron.tui.dialogs.help_dialog import HelpDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.notes_page import NotesPage
-from llamatron.tui.screens.file_page import FilePage
+from llamatron.tui.screens.set.notes_page import NotesPage
+from llamatron.tui.screens.set.file_page import FilePage
 from llamatron.strings.labels import MSG_NOTES_BUTTONS, MSG_NOTES_LABEL
 from llamatron.strings.marks import MSG_NOT_SET
 from llamatron.tui import keybindings

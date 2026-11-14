@@ -34,17 +34,17 @@ import inspect
 import re
 import unittest
 
-from llamatron.tui.screens.arrange_page import FIRST_TRACK_COLUMN, HEADER_ROW, SCENE_COLUMN
+from llamatron.tui.screens.arrange.arrange_page import FIRST_TRACK_COLUMN, HEADER_ROW, SCENE_COLUMN
 from tests.support.key_map import KeyMap, should_write, write_key_map, written_key_map
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.notes_page import NotesPage
-from llamatron.tui.screens.file_page import FilePage
-from llamatron.tui.screens.list_page import ListPage
-from llamatron.tui.screens.main_page import MainPage
+from llamatron.tui.screens.set.notes_page import NotesPage
+from llamatron.tui.screens.set.file_page import FilePage
+from llamatron.tui.screens.shared.list_page import ListPage
+from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.components.pattern_rows import SECTIONS
-from llamatron.tui.screens.pattern_editor import PatternEditor
-from llamatron.tui.screens.song_page import SongPage
-from llamatron.tui.screens.songs_page import SongsPage
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
+from llamatron.tui.screens.set.song_page import SongPage
+from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.strings.help import HELP_NONE
 from llamatron.strings.labels import MSG_CHORDS_LABEL, MSG_STEPS_LABEL, MSG_CHAINS_LABEL, MSG_NOTES_LABEL, MSG_OFFSETS_LABEL
 from llamatron.strings.legends import KeyName

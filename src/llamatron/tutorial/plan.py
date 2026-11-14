@@ -64,15 +64,15 @@ from llamatron.tui.key_table import first_key
 from llamatron.tui.keys import ARROWS, Key, SPACE_CHARACTER
 from llamatron.tui.components.pattern_rows import PatternRows
 from llamatron.tui.components.piano_roll import PianoRoll
-from llamatron.tui.screens.arrange_page import ArrangePage, FIRST_TRACK_COLUMN, HEADER_ROW, SCENE_COLUMN
+from llamatron.tui.screens.arrange.arrange_page import ArrangePage, FIRST_TRACK_COLUMN, HEADER_ROW, SCENE_COLUMN
 from llamatron.tui.dialogs.quit_dialog import QuitDialog
-from llamatron.tui.screens.instruments_page import InstrumentsPage
-from llamatron.tui.screens.main_page import cell_opened_by, MainPage
-from llamatron.tui.screens.pattern_editor import PatternEditor, Reconfigure
-from llamatron.tui.screens.patterns_page import PatternsPage
-from llamatron.tui.screens.scale_page import scale_label
-from llamatron.tui.screens.scales_page import ScalesPage
-from llamatron.tui.screens.songs_page import SongsPage
+from llamatron.tui.screens.set.instruments_page import InstrumentsPage
+from llamatron.tui.screens.set.main_page import cell_opened_by, MainPage
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor, Reconfigure
+from llamatron.tui.screens.pattern.patterns_page import PatternsPage
+from llamatron.tui.screens.set.scale_page import scale_label
+from llamatron.tui.screens.set.scales_page import ScalesPage
+from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.tutorial.steps import Gap, Press, Say, Wait
 
 # The song's settings the plan can set on the Song page, each by the label of its field, and whether its value is typed into a prompt (True) or chosen from a picker, which the plan tells apart by what Enter opens.

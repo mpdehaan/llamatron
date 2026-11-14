@@ -31,17 +31,17 @@ from llamatron.tui import keybindings
 from llamatron.tui import themes
 from llamatron.tui.drawing import Box
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.arrange_details import ADD_CHAIN, DETAIL_WIDTH, clip_details, detailed_clip_text, details_layout, scene_details, track_details
-from llamatron.tui.screens.arrange_drawing import CELL_WIDTH, SCENE_WIDTH
-from llamatron.tui.screens.arrange_page import ArrangePage
+from llamatron.tui.screens.arrange.arrange_details import ADD_CHAIN, DETAIL_WIDTH, clip_details, detailed_clip_text, details_layout, scene_details, track_details
+from llamatron.tui.screens.arrange.arrange_drawing import CELL_WIDTH, SCENE_WIDTH
+from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui.screens.chain_editor import ChainEditor
-from llamatron.tui.screens.clip_page import ClipPage
-from llamatron.tui.screens.scale_page import ScalePage
-from llamatron.tui.screens.groove_editor import GrooveEditor
-from llamatron.tui.screens.instrument_editor import InstrumentEditor
-from llamatron.tui.screens.generator_pages import generator_page_of_kind
-from llamatron.tui.screens.arrange_page import HEADER_ROW
+from llamatron.tui.screens.generators.chain_editor import ChainEditor
+from llamatron.tui.screens.arrange.clip_page import ClipPage
+from llamatron.tui.screens.set.scale_page import ScalePage
+from llamatron.tui.screens.set.groove_editor import GrooveEditor
+from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
+from llamatron.tui.screens.generators.generator_pages import generator_page_of_kind
+from llamatron.tui.screens.arrange.arrange_page import HEADER_ROW
 from llamatron.composition.file_format import GeneratorKind
 from llamatron.strings.labels import Crumb, MSG_OPENED_ITEM_CRUMB
 from llamatron.strings.marks import MSG_PICKED_CLOSE, MSG_PICKED_OPEN

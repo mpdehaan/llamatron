@@ -28,11 +28,11 @@ from llamatron.composition.defaults import DEFAULT_DRUM_OCTAVE, DEFAULT_OCTAVE
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.chains_page import ChainsPage
-from llamatron.tui.screens.patterns_page import PatternsPage
-from llamatron.tui.screens.grooves_page import GroovesPage
-from llamatron.tui.screens.instruments_page import InstrumentsPage
-from llamatron.tui.screens.scales_page import ScalesPage
+from llamatron.tui.screens.generators.chains_page import ChainsPage
+from llamatron.tui.screens.pattern.patterns_page import PatternsPage
+from llamatron.tui.screens.set.grooves_page import GroovesPage
+from llamatron.tui.screens.set.instruments_page import InstrumentsPage
+from llamatron.tui.screens.set.scales_page import ScalesPage
 from llamatron.strings.labels import MSG_OCTAVE_LABELS_LABEL, MSG_DEFAULT_FOLLOW_ACTION_LABEL, MSG_SCALE_LABEL
 from llamatron.strings.marks import MSG_PICKER_MARK
 from llamatron.tui import keybindings

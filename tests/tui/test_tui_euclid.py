@@ -21,9 +21,9 @@ from llamatron.composition.file_format import Section, EuclidPart, GeneratorKind
 from llamatron.strings.labels import MSG_EUCLID_FIELD_LABELS, MSG_EUCLID_LABEL, MSG_EUCLID_PART_LABELS
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.euclid_editor import EuclidEditor
-from llamatron.tui.screens.euclid_fields import drawn_rhythm
-from llamatron.tui.screens.track_editor import TrackEditor
+from llamatron.tui.screens.generators.euclid_editor import EuclidEditor
+from llamatron.tui.screens.generators.euclid_fields import drawn_rhythm
+from llamatron.tui.screens.arrange.track_editor import TrackEditor
 from llamatron.tui import keybindings
 
 NEW_ONE = 'bell'

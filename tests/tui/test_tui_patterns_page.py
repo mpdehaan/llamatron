@@ -17,11 +17,11 @@
 """The Patterns page."""
 
 from tests.support.ui_testing import UITest
-from llamatron.tui.screens.main_page import MainPage
+from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.pattern_editor import PatternEditor
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.strings.messages import MSG_SEARCH_STATUS
 from llamatron.tui import keybindings
 

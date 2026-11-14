@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""What draws the Arrange page (tui/screens/arrange_drawing.py): a clip's text with its marks, and the grid's lines.
+"""What draws the Arrange page (tui/screens/arrange/arrange_drawing.py): a clip's text with its marks, and the grid's lines.
 
 The page's own tests, in test_tui_arrange.py, check the grid as a person sees it. These check the
 drawing on its own: what a clip says on the grid, how many lines the grid takes, and that the page
@@ -31,8 +31,8 @@ from llamatron.tui import keybindings
 from llamatron.tui.drawing import ELLIPSIS
 from llamatron.tui.keys import Key
 from llamatron.tui.components.length_bar import TO_PLAY
-from llamatron.tui.screens.arrange_drawing import ArrangeDrawing, CELL_WIDTH, CLIP_BAR, FOOTER_LINES, HEADER_LINES, SCENE_LINES, clip_text
-from llamatron.tui.screens.arrange_page import ArrangePage
+from llamatron.tui.screens.arrange.arrange_drawing import ArrangeDrawing, CELL_WIDTH, CLIP_BAR, FOOTER_LINES, HEADER_LINES, SCENE_LINES, clip_text
+from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 
 FIRST_SCENE = 0
 SOME_REPEATS = 4

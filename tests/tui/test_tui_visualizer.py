@@ -21,8 +21,8 @@ import unittest
 from tests.support.ui_testing import UITest
 from llamatron.tui.keys import Key
 from llamatron.tui.drawing import Style
-from llamatron.tui.screens.arrange_drawing import CLIP_AREA_LEFT, HEADER_LINES, NAME_ROWS_UP
-from llamatron.tui.screens.arrange_page import NAME_SECONDS, ArrangePage
+from llamatron.tui.screens.arrange.arrange_drawing import CLIP_AREA_LEFT, HEADER_LINES, NAME_ROWS_UP
+from llamatron.tui.screens.arrange.arrange_page import NAME_SECONDS, ArrangePage
 from llamatron.visualizers.modes import MODES
 from llamatron.visualizers.pixels import FULL_BLOCK
 from llamatron.tui import keybindings

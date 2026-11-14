@@ -39,10 +39,10 @@ from llamatron.music.midi import HALF_STEPS_PER_OCTAVE
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
 from llamatron.tui.keys import Key, SHIFT_LEFT_RIGHT, SHIFT_UP_DOWN
-from llamatron.tui.screens.grid_drawing import CELL_WIDTH
-from llamatron.tui.screens.pattern_editor import PatternEditor
+from llamatron.tui.screens.pattern.grid_drawing import CELL_WIDTH
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.support.rational import Rational
-from llamatron.tui.screens.roll_drawing import MARK_COLUMN, filled_columns
+from llamatron.tui.screens.pattern.roll_drawing import MARK_COLUMN, filled_columns
 from llamatron.strings.labels import (
     MSG_ENTRY_SIZE_LABEL, MSG_SONG_ENTRY_SIZE_CHOICE, MSG_ROLL_ROW_LABEL, MSG_ROW_LABELS, MSG_SCALE_HEADER, MSG_SEVERAL_SCALES, MSG_STEP_HEADING,
 )

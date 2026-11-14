@@ -23,7 +23,7 @@ from llamatron.strings.marks import MSG_NONE_SHOWN
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.hocket_editor import HocketEditor
+from llamatron.tui.screens.generators.hocket_editor import HocketEditor
 
 NEW_ONE = 'swap'
 GONE = 'nobody'

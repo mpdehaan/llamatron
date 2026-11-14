@@ -20,21 +20,21 @@ from unittest import mock
 
 from tests.support.ui_testing import UITest, key_name
 from llamatron.tui.drawing import Box, NOTHING, SPACE
-from llamatron.tui.screens.main_page import arrows_between, cell_positions, COLUMNS, GRID_WIDTH, moved
+from llamatron.tui.screens.set.main_page import arrows_between, cell_positions, COLUMNS, GRID_WIDTH, moved
 from llamatron.composition.file_format import NAMED_GENERATORS
 from llamatron.tui.app import LlamatronApp
-from llamatron.tui.screens.arrange_page import ArrangePage
+from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.quit_dialog import QuitDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.chains_page import ChainsPage
-from llamatron.tui.screens.file_page import FilePage
-from llamatron.tui.screens.generators_page import GeneratorsPage
-from llamatron.tui.screens.main_page import MainPage
-from llamatron.tui.screens.patterns_page import PatternsPage
-from llamatron.tui.screens.scales_page import ScalesPage
-from llamatron.tui.screens.open_page import OpenPage
-from llamatron.tui.screens.songs_page import SongsPage
+from llamatron.tui.screens.generators.chains_page import ChainsPage
+from llamatron.tui.screens.set.file_page import FilePage
+from llamatron.tui.screens.generators.generators_page import GeneratorsPage
+from llamatron.tui.screens.set.main_page import MainPage
+from llamatron.tui.screens.pattern.patterns_page import PatternsPage
+from llamatron.tui.screens.set.scales_page import ScalesPage
+from llamatron.tui.screens.set.open_page import OpenPage
+from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.support.version import VERSION
 from llamatron.strings.labels import Crumb, MSG_SET_CRUMB, MSG_SONG_CRUMB, MSG_NO_FILE_CRUMB, MSG_QUIT_BUTTONS, MSG_TITLE_LABEL, PageName
 from llamatron.strings.legends import MSG_ABOUT_FOOTER_WHAT

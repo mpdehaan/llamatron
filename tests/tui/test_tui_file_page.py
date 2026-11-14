@@ -32,8 +32,8 @@ from llamatron.composition.setlist import DEFAULT_SCALE
 from llamatron.tui.document import Document
 from llamatron.strings.errors import ERR_ADD_A_SCALE_FIRST, ERR_CANT_SAVE_TITLE
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.open_page import OpenPage
-from llamatron.tui.screens.pattern_editor import PatternEditor
+from llamatron.tui.screens.set.open_page import OpenPage
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.support.version import VERSION
 from llamatron.strings.labels import MSG_DESCRIPTION_LABEL, MSG_NOTES_LABEL, MSG_DEFAULT_FOLLOW_ACTION_LABEL, MSG_PROTECTED_LABEL, MSG_SCALE_LABEL, PageName
 from llamatron.strings.legends import KeyName

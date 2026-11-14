@@ -29,7 +29,7 @@ A mode that stays well under its budget leaves the computer cool and the screen 
 import random
 import time
 
-from llamatron.tui.screens.arrange_page import FRAME_SECONDS
+from llamatron.tui.screens.arrange.arrange_page import FRAME_SECONDS
 from llamatron.visualizers.heard import Heard, HeardNote
 from llamatron.visualizers.modes import MODES
 

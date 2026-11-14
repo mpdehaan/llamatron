@@ -37,7 +37,7 @@ from llamatron.tui.dialogs.dialog import DIALOG_MARGIN, DIALOG_SELECTOR, FLYOUT_
 from llamatron.tui.drawing import Box, NOTHING, SPACE
 from llamatron.tui.scale_categories import COMMON_SCALE_TYPES, SCALE_CATEGORIES, SCALE_TYPES_IN_ORDER, SORTED_SCALE_CATEGORIES
 from llamatron.tui.keys import Key, RowSection
-from llamatron.tui.screens.pattern_editor import PatternEditor
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 
 MINOR = scale_type_name(ScaleType.MINOR)
 FIRST_STEP = 0

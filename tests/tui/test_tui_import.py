@@ -38,8 +38,8 @@ from llamatron.tui.dialogs.imported_dialog import ImportedDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.main_page import MainPage, cell_name, cell_opened_by
-from llamatron.tui.screens.open_page import OpenPage
+from llamatron.tui.screens.set.main_page import MainPage, cell_name, cell_opened_by
+from llamatron.tui.screens.set.open_page import OpenPage
 from llamatron.tui import keybindings
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -67,7 +67,7 @@ class TestImportDialog(UITest):
         await super().asyncSetUp()
         os.makedirs(HOME, exist_ok=True)
         shutil.copy(SAMPLE, HOME)
-        patcher = mock.patch('llamatron.tui.screens.importing.home_folder', return_value=os.path.abspath(HOME))
+        patcher = mock.patch('llamatron.tui.screens.set.importing.home_folder', return_value=os.path.abspath(HOME))
         patcher.start()
         self.addCleanup(patcher.stop)
 
