@@ -1,0 +1,141 @@
+version: 1.0.227
+title: Mysterious and spooky
+description: "a creepy, kooky harpsichord theme in the manner of The Addams Family (Vic Mizzy), with a tune of its own"
+notes: |
+  Mysterious and spooky: a playful theme at 132 beats a minute in F major, in the manner of the mid
+  sixties: a harpsichord with a chromatic, creeping tune, finger snaps (claves here) on two and
+  four, a tuba-like bass and a church organ. The tune is its own.
+
+  The bass and the harpsichord's chords are one bar each over chord I, moved by Progression
+  through ii V I I and then iii vi ii V; the tune creeps up in half steps with accidentals.
+
+  Run it with: llamatron examples/by_genre/tv_theme/mysterious_spooky.yml
+
+  Scene 1, snaps, 4 bars: the snaps alone.
+  Scene 2, theme, 16 bars: the harpsichord tune.
+  Scene 3, snaps and bass, 8 bars: the snaps and the bass.
+  Scene 4, theme 2, 16 bars: the tune again.
+  Scene 5, organ, 16 bars: the church organ takes the tune.
+  Scene 6, theme 3, 16 bars: the harpsichord and the organ together.
+  Scene 7, snaps 2, 8 bars: the snaps and the bass again.
+  Scene 8, last theme, 16 bars: the tune to the end.
+
+  When changing this demo:
+  - Keep the snaps on two and four.
+  - Keep the tune original.
+real_time: true
+protected: true
+
+scales:
+  F Major: { root: F, type: major }
+
+patterns:
+  snap:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
+    accidental: [~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~]
+    octave: [~, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~]
+  kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~]
+  bass:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, 5, ~, 1, ~, 5, ~]
+    octave: [3, ~, 2, ~, 3, ~, 2, ~]
+  harpsichord:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, 1, ~, ~, 1, ~]
+    octave: [4, ~, ~, 4, ~, ~, 4, ~]
+    chord: ["3", ~, ~, "3", ~, ~, "3", ~]
+  theme:
+    steps: 64
+    step_size: 1/8
+    degree: [2, 2, 3, ~, 4, ~, 6, ~, 5, 5, 6, ~, 7, ~, 2, ~, 1, ~, 5, ~, 3, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, 3, 4, ~, 5, ~, 1, ~, 6, 6, 7, ~, 1, ~, 3, ~, 2, ~, 7, ~, 5, ~, 2, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, 5, 5, ~, 5, ~, 5, ~, 5, 5, 5, ~, 5, ~, 6, ~, 6, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, 5, 5, ~, 5, ~, 6, ~, 5, 5, 5, ~, 6, ~, 6, ~, 6, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+
+progressions:
+  theme: { chords: [2, 5, 1, 1, 3, 6, 2, 5] }
+
+chains:
+  theme:
+    - progression: theme
+
+instruments:
+  tuba: { device: "*FluidSynth", gm_sound: 59 }
+  harpsichord: { device: "*FluidSynth", gm_sound: 7 }
+  church organ: { device: "*FluidSynth", gm_sound: 20 }
+  harpsichord lead: { device: "*FluidSynth", gm_sound: 7 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  mysterious_spooky:
+    tempo: 132
+    scale: F Major
+    genre: TV theme
+
+    tracks:
+      snap: { drum: true, instrument: drum kit }
+      kick: { drum: true, instrument: drum kit }
+      bass: { instrument: tuba }
+      harpsichord: { instrument: harpsichord }
+      lead: { instrument: harpsichord lead }
+      organ: { instrument: church organ }
+
+    scenes:
+      - name: snaps
+        tracks:
+          snap: { pattern: snap, repeat: 4 }
+      - name: theme
+        tracks:
+          snap: { pattern: snap, loop: true }
+          kick: { pattern: kick, loop: true }
+          bass: { pattern: bass, chains: [theme], loop: true }
+          harpsichord: { pattern: harpsichord, chains: [theme], loop: true }
+          lead: { pattern: theme, repeat: 2 }
+      - name: snaps and bass
+        tracks:
+          snap: { pattern: snap, repeat: 8 }
+          bass: { pattern: bass, chains: [theme], loop: true }
+      - name: theme 2
+        tracks:
+          snap: { pattern: snap, loop: true }
+          kick: { pattern: kick, loop: true }
+          bass: { pattern: bass, chains: [theme], loop: true }
+          harpsichord: { pattern: harpsichord, chains: [theme], loop: true }
+          lead: { pattern: theme, repeat: 2 }
+      - name: organ
+        tracks:
+          snap: { pattern: snap, loop: true }
+          kick: { pattern: kick, loop: true }
+          bass: { pattern: bass, chains: [theme], loop: true }
+          harpsichord: { pattern: harpsichord, chains: [theme], loop: true }
+          organ: { pattern: theme, repeat: 2 }
+      - name: theme 3
+        tracks:
+          snap: { pattern: snap, loop: true }
+          kick: { pattern: kick, loop: true }
+          bass: { pattern: bass, chains: [theme], loop: true }
+          harpsichord: { pattern: harpsichord, chains: [theme], loop: true }
+          lead: { pattern: theme, repeat: 2 }
+          organ: { pattern: theme, loop: true }
+      - name: snaps 2
+        tracks:
+          snap: { pattern: snap, repeat: 8 }
+          bass: { pattern: bass, chains: [theme], loop: true }
+      - name: last theme
+        tracks:
+          snap: { pattern: snap, loop: true }
+          kick: { pattern: kick, loop: true }
+          bass: { pattern: bass, chains: [theme], loop: true }
+          harpsichord: { pattern: harpsichord, chains: [theme], loop: true }
+          lead: { pattern: theme, repeat: 2 }

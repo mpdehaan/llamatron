@@ -1,0 +1,166 @@
+version: 1.0.206
+title: Groove demo
+description: a twelve-bar organ shuffle
+notes: |
+  Groove demo: a twelve-bar organ shuffle in G minor, swung, straightened and dragged by grooves.
+  Run it with: llamatron examples/learning/09_groove.yml --to ableton --replace
+
+  A groove is a row of timing amounts, chosen on the Grooves page, that moves notes off the
+  grid when the song is exported: swing, a shuffle, a push, or a lazy feel behind the beat.
+  The song chooses one, a scene or a track can choose another, and off anywhere plays
+  straight. The track's choice wins, then the scene's, then the song's.
+
+  The tune is llamatron's own, in the spirit of a sixties organ trio: a two-bar Hammond lick
+  over a minor blues, with the organ's pedals walking root and fifth underneath and seventh
+  chords bubbling through an arpeggiator on the pads. Try an organ on the lead and the pads, a
+  deep bass on the pedals, and a drum kit on the drums and hats: kick on C, snare on D and a
+  closed hat on F#.
+
+  The song's groove is the factory shuffle 8th swing 66, and the tracks choose like this:
+  the lead and the hats choose nothing, so they take the scene's or the song's; the pedals
+  always play the lighter 8th swing 58, so they sit a little tighter than the lead; the pads
+  always play swing 62 on 16ths, which swings the arpeggio; and the drums are off, which
+  changes nothing while they play on the beat but keeps the kick and snare on the grid when a
+  scene drags everything else late.
+
+  Scene 1, The shuffle: everything as above.
+  Scene 2, Straight: the scene's groove is off, so every track plays straight, the pedals and
+  pads included.
+  Scene 3, Behind the beat: the scene chooses behind the beat, a groove of the set's own that
+  plays on-beats 12% of an eighth late and off-beats 44% late. The lead and hats drag behind
+  the kick and snare, which stay on the grid because the drums are off, while the pedals and
+  pads keep their own grooves.
+  Scene 4, Hard shuffle: the scene chooses hard shuffle, another of the set's own, heavier
+  than the factory 8th swing 66.
+  Scene 5, Bubbling pads: back to the song's shuffle, with an AutoRatchet after the pads'
+  arpeggiator so that every arpeggiated note stutters.
+
+  When changing this demo:
+  Keep one scene that is straight (groove off on the scene), one where a scene's groove
+  reaches only the tracks that chose none, and tracks with their own grooves, so that the
+  priority can be heard. Keep the drums off and the kick and snare on the beat, so that the
+  dragged scene has something to drag behind. The grooves section should keep at least one
+  groove of the set's own in use. The tune is original, so it can change freely as long as it
+  stays a shuffle with off-beat eighths for the swing to move.
+default_octave: 5
+default_drum_octave: 3
+real_time: true
+protected: true
+
+scales:
+  G Minor: { root: G, type: minor }
+
+patterns:
+  kick_snare:
+    steps: 8
+    drum: true
+    step_size: 1/8
+    degree: [C, ~, D, ~, C, ~, D, ~]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~]
+    velocity: [120, ~, 110, ~, 112, ~, 110, ~]
+  hats:
+    steps: 8
+    drum: true
+    step_size: 1/8
+    degree: [F, F, F, F, F, F, F, F]
+    accidental: ["#", "#", "#", "#", "#", "#", "#", "#"]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [100, 72, 92, 72, 100, 72, 92, 72]
+  lick:
+    steps: 96
+    step_size: 1/8
+    degree: [1, ~, 3, 1, ~, 7, 1, ~, 1, ~, 3, 4, 3, 1, 7, ~, 1, ~, 3, 1, ~, 7, 1, ~, 1, ~, 3, 4, 3, 1, 7, ~, 4, ~, 6, 4, ~, 3, 4, ~, 4, ~, 6, 7, 6, 4, 3, ~, 1, ~, 3, 1, ~, 7, 1, ~, 1, ~, 3, 4, 3, 1, 7, ~, 5, ~, 7, 5, ~, 4, 5, ~, 4, ~, 6, 4, ~, 3, 4, ~, 1, ~, 3, 1, ~, 7, 1, ~, 1, ~, 3, 4, 3, 1, 7, ~]
+    gate: [~, ~, ~, ~, ~, ~, 1/4, ~, ~, ~, ~, ~, ~, ~, 1/4, ~, ~, ~, ~, ~, ~, ~, 1/4, ~, ~, ~, ~, ~, ~, ~, 1/4, ~, ~, ~, ~, ~, ~, ~, 1/4, ~, ~, ~, ~, ~, ~, ~, 1/4, ~, ~, ~, ~, ~, ~, ~, 1/4, ~, ~, ~, ~, ~, ~, ~, 1/4, ~, ~, ~, ~, ~, ~, ~, 1/4, ~, ~, ~, ~, ~, ~, ~, 1/4, ~, ~, ~, ~, ~, ~, ~, 1/4, ~, ~, ~, ~, ~, ~, ~, 1/4, ~]
+    octave: [5, ~, 5, 5, ~, 4, 5, ~, 5, ~, 5, 5, 5, 5, 4, ~, 5, ~, 5, 5, ~, 4, 5, ~, 5, ~, 5, 5, 5, 5, 4, ~, 5, ~, 5, 5, ~, 5, 5, ~, 5, ~, 5, 5, 5, 5, 5, ~, 5, ~, 5, 5, ~, 4, 5, ~, 5, ~, 5, 5, 5, 5, 4, ~, 5, ~, 5, 5, ~, 5, 5, ~, 5, ~, 5, 5, ~, 5, 5, ~, 5, ~, 5, 5, ~, 4, 5, ~, 5, ~, 5, 5, 5, 5, 4, ~]
+    velocity: [112, ~, 90, 96, ~, 90, 104, ~, 108, ~, 90, 96, 90, 96, 100, ~, 112, ~, 90, 96, ~, 90, 104, ~, 108, ~, 90, 96, 90, 96, 100, ~, 112, ~, 90, 96, ~, 90, 104, ~, 108, ~, 90, 96, 90, 96, 100, ~, 112, ~, 90, 96, ~, 90, 104, ~, 108, ~, 90, 96, 90, 96, 100, ~, 112, ~, 90, 96, ~, 90, 104, ~, 112, ~, 90, 96, ~, 90, 104, ~, 112, ~, 90, 96, ~, 90, 104, ~, 108, ~, 90, 96, 90, 96, 100, ~]
+  pedals:
+    steps: 96
+    step_size: 1/8
+    degree: [1, ~, 5, ~, 1, ~, 5, 7, 1, ~, 5, ~, 1, ~, 5, 7, 1, ~, 5, ~, 1, ~, 5, 7, 1, ~, 5, ~, 1, ~, 5, 3, 4, ~, 1, ~, 4, ~, 1, 3, 4, ~, 1, ~, 4, ~, 1, 7, 1, ~, 5, ~, 1, ~, 5, 7, 1, ~, 5, ~, 1, ~, 5, 4, 5, ~, 2, ~, 5, ~, 2, 3, 4, ~, 1, ~, 4, ~, 1, 7, 1, ~, 5, ~, 1, ~, 5, 7, 1, ~, 5, ~, 1, ~, 5, 7]
+    gate: [1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~]
+    octave: [3, ~, 2, ~, 3, ~, 2, 2, 3, ~, 2, ~, 3, ~, 2, 2, 3, ~, 2, ~, 3, ~, 2, 2, 3, ~, 2, ~, 3, ~, 2, 3, 3, ~, 3, ~, 3, ~, 3, 3, 3, ~, 3, ~, 3, ~, 3, 2, 3, ~, 2, ~, 3, ~, 2, 2, 3, ~, 2, ~, 3, ~, 2, 3, 3, ~, 3, ~, 3, ~, 3, 3, 3, ~, 3, ~, 3, ~, 3, 2, 3, ~, 2, ~, 3, ~, 2, 2, 3, ~, 2, ~, 3, ~, 2, 2]
+    velocity: [100, ~, 88, ~, 100, ~, 88, 88, 100, ~, 88, ~, 100, ~, 88, 88, 100, ~, 88, ~, 100, ~, 88, 88, 100, ~, 88, ~, 100, ~, 88, 88, 100, ~, 88, ~, 100, ~, 88, 88, 100, ~, 88, ~, 100, ~, 88, 88, 100, ~, 88, ~, 100, ~, 88, 88, 100, ~, 88, ~, 100, ~, 88, 88, 100, ~, 88, ~, 100, ~, 88, 88, 100, ~, 88, ~, 100, ~, 88, 88, 100, ~, 88, ~, 100, ~, 88, 88, 100, ~, 88, ~, 100, ~, 88, 88]
+  changes:
+    steps: 48
+    step_size: 1/4
+    degree: [1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~]
+    gate: [1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~]
+    octave: [4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~]
+    chord: [7, ~, ~, ~, 7, ~, ~, ~, 7, ~, ~, ~, 7, ~, ~, ~, 7, ~, ~, ~, 7, ~, ~, ~, 7, ~, ~, ~, 7, ~, ~, ~, dom7, ~, ~, ~, 7, ~, ~, ~, 7, ~, ~, ~, 7, ~, ~, ~]
+
+arps:
+  bubble: { step: 1/16, order: up, octave_range: 2 }
+
+auto_ratchets:
+  stutter: { counts: [2] }
+
+chains:
+  bubble:
+    - arp: bubble
+  bubble and stutter:
+    - arp: bubble
+    - auto_ratchet: stutter
+
+grooves:
+  behind the beat: { cells: [12, 44], cell_length: 1/8 }
+  hard shuffle: { cells: [0, 44], cell_length: 1/8 }
+
+instruments:
+  tenor sax: { device: "*FluidSynth", gm_sound: 67 }
+  acoustic bass: { device: "*FluidSynth", gm_sound: 33 }
+  drawbar organ: { device: "*FluidSynth", gm_sound: 17 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  groove:
+    tempo: 130
+    scale: G Minor
+    groove: 8th swing 66
+    genre: Blues
+
+    tracks:
+      lead: { instrument: tenor sax }
+      pedals: { groove: 8th swing 58, instrument: acoustic bass }
+      pads: { groove: swing 62, instrument: drawbar organ }
+      drums: { drum: true, groove: false, instrument: drum kit }
+      hats: { drum: true, instrument: drum kit }
+
+    scenes:
+      - name: The shuffle
+        tracks:
+          lead: { pattern: lick }
+          pedals: { pattern: pedals }
+          pads: { pattern: changes, chains: [bubble] }
+          drums: { pattern: kick_snare, loop: true }
+          hats: { pattern: hats, loop: true }
+      - name: Straight
+        groove: false
+        tracks:
+          lead: { pattern: lick }
+          pedals: { pattern: pedals }
+          pads: { pattern: changes, chains: [bubble] }
+          drums: { pattern: kick_snare, loop: true }
+          hats: { pattern: hats, loop: true }
+      - name: Behind the beat
+        groove: behind the beat
+        tracks:
+          lead: { pattern: lick }
+          pedals: { pattern: pedals }
+          pads: { pattern: changes, chains: [bubble] }
+          drums: { pattern: kick_snare, loop: true }
+          hats: { pattern: hats, loop: true }
+      - name: Hard shuffle
+        groove: hard shuffle
+        tracks:
+          lead: { pattern: lick }
+          pedals: { pattern: pedals }
+          pads: { pattern: changes, chains: [bubble] }
+          drums: { pattern: kick_snare, loop: true }
+          hats: { pattern: hats, loop: true }
+      - name: Bubbling pads
+        tracks:
+          lead: { pattern: lick }
+          pedals: { pattern: pedals }
+          pads: { pattern: changes, chains: [bubble and stutter] }
+          drums: { pattern: kick_snare, loop: true }
+          hats: { pattern: hats, loop: true }

@@ -1,0 +1,172 @@
+version: 1.0.206
+title: Chord progression generator
+description: three one-bar patterns played through five chord progressions
+notes: |
+  Chord progression generator: a pop song at 96 beats a minute in C major, made from three
+  patterns one bar long, an arpeggio, a bass figure and a chord pad, each written over chord I
+  and played through a Progression, a different one in every scene.
+  Run it with: llamatron examples/learning/06_chord_progression_generator.yml --to ableton --replace
+
+  A Progression moves a clip's notes to each of its chords in turn, a chord a bar here. A plain
+  degree moves the notes along the scale, so the scale decides whether the chord is major or
+  minor: the C major pad on degree 6 plays A minor. A degree with a sharp or a flat moves them by
+  exact half steps. Each progression is in a chain of the same name, which the clips name, and
+  the drums play no progression, since a progression leaves a drum pattern alone.
+
+  Scene 1: Pop, I-V-vi-IV (C, G, Am, F), sixteen bars.
+  Scene 2: Fifties, I-vi-IV-V (C, Am, F, G).
+  Scene 3: Andalusian, in A minor: the scene's scale is A minor, and the chord editor's H
+  matched i-bVII-bVI-V to the degrees 1, 7, 6, 5 (Am, G, F, Em).
+  Scene 4: Pachelbel, eight chords, I-V-vi-iii-IV-I-IV-V, eight bars.
+  Scene 5: Pop again, with the pad's chords inverted by the Inv. row (G with B at the bottom,
+  F with C at the bottom), so the chords move less, eight bars.
+  Scene 6: Pop once more, the pad through the Voice leading generator called smooth, which picks
+  each chord's inversion nearest the chord before by itself, eight bars.
+
+  When changing this demo:
+  - Keep the three patterns one bar long, written over chord I, so that every section comes from
+    a progression.
+  - Keep one progression a scene, each in a chain of its own name.
+real_time: true
+protected: true
+
+scales:
+  C Major: { root: C, type: major }
+  A Minor: { root: A, type: minor }
+
+patterns:
+  arpeggio:
+    steps: 8
+    step_size: 1/8
+    degree: [1, 3, 5, 1, 5, 3, 5, 3]
+    octave: [5, 5, 5, 6, 5, 5, 5, 5]
+    velocity: [96, 70, 80, 90, 70, 80, 70, 80]
+  bass:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, 1, ~, 5, ~, 1, 5]
+    octave: [3, ~, 3, ~, 3, ~, 3, 3]
+  pad:
+    steps: 4
+    step_size: 1/4
+    degree: [1, ~, ~, ~]
+    octave: [4, ~, ~, ~]
+    chord: [3, ~, ~, ~]
+    velocity: [70, ~, ~, ~]
+    tie: [false, true, true, true]
+  kick:
+    steps: 4
+    drum: true
+    step_size: 1/4
+    degree: [C, ~, C, ~]
+    octave: [3, ~, 3, ~]
+  snare:
+    steps: 4
+    drum: true
+    step_size: 1/4
+    degree: [~, D, ~, D]
+    octave: [~, 3, ~, 3]
+  hats:
+    steps: 8
+    drum: true
+    step_size: 1/8
+    degree: [F, F, F, F, F, F, F, F]
+    accidental: ["#", "#", "#", "#", "#", "#", "#", "#"]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [90, 60, 80, 60, 90, 60, 80, 60]
+
+progressions:
+  pop: { chords: [1, 5, 6, 4] }
+  fifties: { chords: [1, 6, 4, 5] }
+  andalusian: { chords: [1, 7, 6, 5] }
+  pachelbel: { chords: [1, 5, 6, 3, 4, 1, 4, 5] }
+  pop inverted: { chords: [1, 5, 6, 4], inversions: [~, 1, ~, 2] }
+
+voice_leadings:
+  smooth: {}
+
+chains:
+  pop:
+    - progression: pop
+  fifties:
+    - progression: fifties
+  andalusian:
+    - progression: andalusian
+  pachelbel:
+    - progression: pachelbel
+  pop inverted:
+    - progression: pop inverted
+  pop voice-led:
+    - progression: pop
+    - voice_leading: smooth
+
+instruments:
+  finger bass: { device: "*FluidSynth", gm_sound: 34 }
+  warm pad: { device: "*FluidSynth", gm_sound: 90 }
+  electric piano: { device: "*FluidSynth", gm_sound: 5 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  chord_progression_generator:
+    tempo: 96
+    scale: C Major
+    genre: Pop
+
+    tracks:
+      kick: { drum: true, instrument: drum kit }
+      snare: { drum: true, instrument: drum kit }
+      hats: { drum: true, instrument: drum kit }
+      bass: { instrument: finger bass }
+      pad: { instrument: warm pad }
+      arpeggio: { instrument: electric piano }
+
+    scenes:
+      - name: pop
+        tracks:
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+          bass: { pattern: bass, chains: [pop], repeat: 16 }
+          pad: { pattern: pad, chains: [pop], repeat: 16 }
+          arpeggio: { pattern: arpeggio, chains: [pop], repeat: 16 }
+      - name: fifties
+        tracks:
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+          bass: { pattern: bass, chains: [fifties], repeat: 16 }
+          pad: { pattern: pad, chains: [fifties], repeat: 16 }
+          arpeggio: { pattern: arpeggio, chains: [fifties], repeat: 16 }
+      - name: andalusian in A minor
+        scale: A Minor
+        tracks:
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+          bass: { pattern: bass, chains: [andalusian], repeat: 16 }
+          pad: { pattern: pad, chains: [andalusian], repeat: 16 }
+          arpeggio: { pattern: arpeggio, chains: [andalusian], repeat: 16 }
+      - name: pachelbel
+        tracks:
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+          bass: { pattern: bass, chains: [pachelbel], repeat: 8 }
+          pad: { pattern: pad, chains: [pachelbel], repeat: 8 }
+          arpeggio: { pattern: arpeggio, chains: [pachelbel], repeat: 8 }
+      - name: "pop, inverted"
+        tracks:
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+          bass: { pattern: bass, chains: [pop], repeat: 8 }
+          pad: { pattern: pad, chains: [pop inverted], repeat: 8 }
+          arpeggio: { pattern: arpeggio, chains: [pop], repeat: 8 }
+      - name: "pop, voice-led"
+        tracks:
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+          bass: { pattern: bass, chains: [pop], repeat: 8 }
+          pad: { pattern: pad, chains: [pop voice-led], repeat: 8 }
+          arpeggio: { pattern: arpeggio, chains: [pop], repeat: 8 }

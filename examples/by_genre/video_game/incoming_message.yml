@@ -1,0 +1,992 @@
+version: 1.0.227
+title: Incoming message
+description: "nine minutes after Mega Man 2's intro and boss themes (Takashi Tateishi): ten stages, each a theme of its own, ending on the intro"
+notes: |
+  Incoming message: nine minutes of stage themes at 150 beats a minute, after Mega Man 2's intro and boss
+  themes and the great Japanese game composers: ten stages, each in a key of its own, changing theme
+  exactly nine times, with a one-bar fill and a rising chip arpeggio between each, and the last a
+  reprise of the first. Every theme is its own.
+
+  Each stage's patterns are named after it, stage_0 to stage_9. Each stage is two scenes, the tune
+  and the tune doubled by a harmony two scale steps below, and every scene sets its stage's scale.
+  The chip track plays a held chord broken into thirty-second notes by the arpeggiator called chip,
+  the way the old sound chips played chords, and a Progression for each stage moves it and the bass.
+  The tune passes between instruments fit for the composers and the bands that play their music: a
+  square wave, a distortion guitar and a saw lead.
+
+  Run it with: llamatron examples/by_genre/video_game/incoming_message.yml
+
+  Scene 1, stage_0, dawn, 16 bars: dawn, in E minor, on the square.
+  Scene 2, stage_0, doubled, 16 bars: the tune again with a harmony two steps below.
+  Scene 3, to stage_1, 1 bars: a one-bar fill into stage_1.
+  Scene 4, stage_1, the first boss, 16 bars: the first boss, in A minor, on the guitar.
+  Scene 5, stage_1, doubled, 16 bars: the tune again with a harmony two steps below.
+  Scene 6, to stage_2, 1 bars: a one-bar fill into stage_2.
+  Scene 7, stage_2, the sky fortress, 16 bars: the sky fortress, in D major, on the square.
+  Scene 8, stage_2, doubled, 16 bars: the tune again with a harmony two steps below.
+  Scene 9, to stage_3, 1 bars: a one-bar fill into stage_3.
+  Scene 10, stage_3, the machine works, 16 bars: the machine works, in C minor, on the saw.
+  Scene 11, stage_3, doubled, 16 bars: the tune again with a harmony two steps below.
+  Scene 12, to stage_4, 1 bars: a one-bar fill into stage_4.
+  Scene 13, stage_4, the bubble lake, 16 bars: the bubble lake, in F major, on the square.
+  Scene 14, stage_4, doubled, 16 bars: the tune again with a harmony two steps below.
+  Scene 15, to stage_5, 1 bars: a one-bar fill into stage_5.
+  Scene 16, stage_5, the steel wall, 16 bars: the steel wall, in B minor, on the guitar.
+  Scene 17, stage_5, doubled, 16 bars: the tune again with a harmony two steps below.
+  Scene 18, to stage_6, 1 bars: a one-bar fill into stage_6.
+  Scene 19, stage_6, the clockwork garden, 16 bars: the clockwork garden, in G major, on the square.
+  Scene 20, stage_6, doubled, 16 bars: the tune again with a harmony two steps below.
+  Scene 21, to stage_7, 1 bars: a one-bar fill into stage_7.
+  Scene 22, stage_7, the long fall, 16 bars: the long fall, in D dorian, on the saw.
+  Scene 23, stage_7, doubled, 16 bars: the tune again with a harmony two steps below.
+  Scene 24, to stage_8, 1 bars: a one-bar fill into stage_8.
+  Scene 25, stage_8, the doctor's castle, 16 bars: the doctor's castle, in C# harmonic minor, on the guitar.
+  Scene 26, stage_8, doubled, 16 bars: the tune again with a harmony two steps below.
+  Scene 27, to stage_9, 1 bars: a one-bar fill into stage_9.
+  Scene 28, stage_9, dawn again, 16 bars: dawn again, in E minor, on the square.
+  Scene 29, stage_9, doubled, 16 bars: the tune again with a harmony two steps below.
+
+  When changing this demo:
+  - Keep the patterns named after their stage.
+  - Keep exactly nine changes of theme, with a one-bar fill between each.
+  - Keep the last stage a reprise of the first.
+  - Keep the themes original.
+real_time: true
+protected: true
+
+scales:
+  E Minor: { root: E, type: minor }
+  A Minor: { root: A, type: minor }
+  D Major: { root: D, type: major }
+  C Minor: { root: C, type: minor }
+  F Major: { root: F, type: major }
+  B Minor: { root: B, type: minor }
+  G Major: { root: G, type: major }
+  D Dorian: { root: D, type: dorian }
+  C# Harmonic Minor: { root: C#, type: harmonic_minor }
+
+patterns:
+  stage_0_lead:
+    steps: 32
+    step_size: 1/8
+    degree: [1, 5, 1, 3, 5, 3, 1, 5, 6, 1, 3, 6, 3, 1, 6, 3, 7, 2, 4, 7, 4, 2, 7, 5, 1, ~, 3, ~, 5, ~, ~, ~]
+    octave: [6, 5, 6, 6, 6, 6, 6, 5, 5, 6, 6, 6, 6, 6, 5, 5, 5, 6, 6, 6, 6, 6, 5, 5, 6, ~, 6, ~, 6, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, true, true, true]
+  stage_0_bass:
+    steps: 8
+    step_size: 1/8
+    degree: [1, 1, 1, 1, 1, 1, 1, 1]
+    octave: [2, 3, 2, 3, 2, 3, 2, 3]
+  stage_0_chords:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  stage_0_kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, 110, ~, 110, ~, ~, ~, ~, ~, ~, ~]
+  stage_0_snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, D, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~]
+    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, 110, ~]
+  stage_0_hat:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~]
+    accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
+    velocity: [110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~]
+  stage_1_lead:
+    steps: 32
+    step_size: 1/8
+    degree: [5, ~, 1, ~, 3, 2, 1, 7, 7, ~, 2, ~, 4, 2, 7, 5, 6, ~, 1, ~, 3, 1, 6, 3, 7, ~, 2, ~, 5, ~, 4, 2]
+    octave: [4, ~, 5, ~, 5, 5, 5, 4, 4, ~, 5, ~, 5, 5, 4, 4, 4, ~, 5, ~, 5, 5, 4, 4, 4, ~, 5, ~, 5, ~, 5, 5]
+    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, true, false, false]
+  stage_1_bass:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, 1, 1, 1, ~, 1, 1]
+    octave: [2, ~, 2, 2, 2, ~, 2, 2]
+  stage_1_chords:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  stage_1_kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, ~, ~, 110, ~, 110, ~, ~, ~, ~, ~]
+  stage_1_snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~]
+  stage_1_hat:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~]
+    accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
+    velocity: [110, ~, 70, ~, 110, ~, 70, ~, 110, ~, 70, ~, 110, ~, 70, ~]
+  stage_1_transition_snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [D, ~, D, ~, D, ~, D, ~, D, D, D, D, D, D, D, D]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [110, ~, 110, ~, 110, ~, 110, ~, 110, 110, 110, 110, 110, 110, 110, 110]
+  stage_1_transition_crash:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  stage_1_transition_rise:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 3, 5, 1, 3, 5, 1, 3, 5, 1, ~, ~, ~, ~, ~, ~]
+    octave: [3, 3, 3, 4, 4, 4, 5, 5, 5, 6, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true]
+  stage_2_lead:
+    steps: 32
+    step_size: 1/8
+    degree: [3, 3, 1, 5, 3, ~, 5, ~, 2, 2, 7, 5, 2, ~, 7, ~, 1, 1, 6, 3, 1, ~, 3, ~, 6, ~, 4, ~, 1, ~, ~, ~]
+    octave: [6, 6, 6, 5, 6, ~, 6, ~, 6, 6, 5, 5, 6, ~, 5, ~, 6, 6, 5, 5, 6, ~, 6, ~, 5, ~, 5, ~, 6, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, true, true, true]
+  stage_2_bass:
+    steps: 8
+    step_size: 1/8
+    degree: [1, 1, 1, 1, 1, 1, 1, 1]
+    octave: [2, 3, 2, 3, 2, 3, 2, 3]
+  stage_2_chords:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  stage_2_kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, 110, ~, 110, ~, ~, ~, ~, ~, ~, ~]
+  stage_2_snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, D, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~]
+    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, 110, ~]
+  stage_2_hat:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~]
+    accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
+    velocity: [110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~]
+  stage_2_transition_snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [D, ~, D, ~, D, ~, D, ~, D, D, D, D, D, D, D, D]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [110, ~, 110, ~, 110, ~, 110, ~, 110, 110, 110, 110, 110, 110, 110, 110]
+  stage_2_transition_crash:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  stage_2_transition_rise:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 3, 5, 1, 3, 5, 1, 3, 5, 1, ~, ~, ~, ~, ~, ~]
+    octave: [3, 3, 3, 4, 4, 4, 5, 5, 5, 6, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true]
+  stage_3_lead:
+    steps: 32
+    step_size: 1/8
+    degree: [1, ~, 7, 1, 3, ~, 1, ~, 6, ~, 5, 6, 1, ~, 3, ~, 5, ~, 3, 5, 7, ~, 5, ~, 7, 2, 4, 2, 7, ~, ~, ~]
+    octave: [5, ~, 4, 5, 5, ~, 5, ~, 4, ~, 4, 4, 5, ~, 5, ~, 4, ~, 4, 4, 4, ~, 4, ~, 4, 5, 5, 5, 4, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, false]
+  stage_3_bass:
+    steps: 8
+    step_size: 1/8
+    degree: [1, 1, 1, 1, 1, 1, 1, 1]
+    octave: [2, 2, 2, 2, 2, 2, 2, 2]
+  stage_3_chords:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  stage_3_kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~]
+    octave: [3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~]
+  stage_3_clap:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
+    accidental: [~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~]
+  stage_3_open:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, A, ~, ~, ~, A, ~, ~, ~, A, ~, ~, ~, A, ~]
+    accidental: [~, ~, "#", ~, ~, ~, "#", ~, ~, ~, "#", ~, ~, ~, "#", ~]
+    octave: [~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~]
+    velocity: [~, ~, 110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~, 110, ~]
+  stage_3_hat:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F]
+    accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [110, 70, 110, 70, 110, 70, 110, 70, 110, 70, 110, 70, 110, 70, 110, 70]
+  stage_3_transition_snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [D, ~, D, ~, D, ~, D, ~, D, D, D, D, D, D, D, D]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [110, ~, 110, ~, 110, ~, 110, ~, 110, 110, 110, 110, 110, 110, 110, 110]
+  stage_3_transition_crash:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  stage_3_transition_rise:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 3, 5, 1, 3, 5, 1, 3, 5, 1, ~, ~, ~, ~, ~, ~]
+    octave: [3, 3, 3, 4, 4, 4, 5, 5, 5, 6, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true]
+  stage_4_lead:
+    steps: 32
+    step_size: 1/8
+    degree: [6, 1, 4, 1, 6, 1, 4, 1, 7, 2, 5, 2, 7, 2, 5, 2, 1, 3, 5, 3, 1, ~, 5, ~, 3, ~, 1, ~, 5, ~, ~, ~]
+    octave: [5, 6, 6, 6, 5, 6, 6, 6, 5, 6, 6, 6, 5, 6, 6, 6, 6, 6, 6, 6, 6, ~, 5, ~, 6, ~, 6, ~, 5, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, true, false, true, false, true, true, true]
+  stage_4_bass:
+    steps: 8
+    step_size: 1/8
+    degree: [1, 1, 1, 1, 1, 1, 1, 1]
+    octave: [2, 3, 2, 3, 2, 3, 2, 3]
+  stage_4_chords:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  stage_4_kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, 110, ~, 110, ~, ~, ~, ~, ~, ~, ~]
+  stage_4_snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, D, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~]
+    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, 110, ~]
+  stage_4_hat:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~]
+    accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
+    velocity: [110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~]
+  stage_4_transition_snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [D, ~, D, ~, D, ~, D, ~, D, D, D, D, D, D, D, D]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [110, ~, 110, ~, 110, ~, 110, ~, 110, 110, 110, 110, 110, 110, 110, 110]
+  stage_4_transition_crash:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  stage_4_transition_rise:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 3, 5, 1, 3, 5, 1, 3, 5, 1, ~, ~, ~, ~, ~, ~]
+    octave: [3, 3, 3, 4, 4, 4, 5, 5, 5, 6, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true]
+  stage_5_lead:
+    steps: 32
+    step_size: 1/8
+    degree: [5, ~, 3, ~, 1, ~, 3, 5, 6, ~, 4, ~, 1, ~, 6, 4, 7, ~, 4, ~, 2, ~, 7, 4, 3, ~, 1, ~, 5, ~, 7, ~]
+    octave: [4, ~, 4, ~, 4, ~, 4, 4, 4, ~, 4, ~, 5, ~, 4, 4, 4, ~, 4, ~, 5, ~, 4, 4, 5, ~, 5, ~, 4, ~, 4, ~]
+    tie: [false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, true]
+  stage_5_bass:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, 1, 1, 1, ~, 1, 1]
+    octave: [2, ~, 2, 2, 2, ~, 2, 2]
+  stage_5_chords:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  stage_5_kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, C, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~]
+    octave: [3, ~, 3, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~]
+    velocity: [110, ~, 110, ~, ~, ~, ~, ~, 110, ~, 110, ~, ~, ~, ~, ~]
+  stage_5_snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~]
+  stage_5_hat:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~]
+    accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
+    velocity: [110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~]
+  stage_5_transition_snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [D, ~, D, ~, D, ~, D, ~, D, D, D, D, D, D, D, D]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [110, ~, 110, ~, 110, ~, 110, ~, 110, 110, 110, 110, 110, 110, 110, 110]
+  stage_5_transition_crash:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  stage_5_transition_rise:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 3, 5, 1, 3, 5, 1, 3, 5, 1, ~, ~, ~, ~, ~, ~]
+    octave: [3, 3, 3, 4, 4, 4, 5, 5, 5, 6, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true]
+  stage_6_lead:
+    steps: 32
+    step_size: 1/8
+    degree: [1, 1, 5, 5, 3, 3, 1, ~, 1, 1, 6, 6, 4, 4, 1, ~, 2, 2, 7, 7, 5, 5, 2, ~, 1, ~, ~, ~, 5, ~, 1, ~]
+    octave: [6, 6, 5, 5, 6, 6, 6, ~, 6, 6, 5, 5, 6, 6, 6, ~, 6, 6, 5, 5, 6, 6, 6, ~, 6, ~, ~, ~, 5, ~, 6, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, true, false, true]
+  stage_6_bass:
+    steps: 8
+    step_size: 1/8
+    degree: [1, 1, 1, 1, 1, 1, 1, 1]
+    octave: [2, 3, 2, 3, 2, 3, 2, 3]
+  stage_6_chords:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  stage_6_kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, 110, ~, 110, ~, ~, ~, ~, ~, ~, ~]
+  stage_6_snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, D, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~]
+    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, 110, ~]
+  stage_6_hat:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~]
+    accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
+    velocity: [110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~]
+  stage_6_transition_snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [D, ~, D, ~, D, ~, D, ~, D, D, D, D, D, D, D, D]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [110, ~, 110, ~, 110, ~, 110, ~, 110, 110, 110, 110, 110, 110, 110, 110]
+  stage_6_transition_crash:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  stage_6_transition_rise:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 3, 5, 1, 3, 5, 1, 3, 5, 1, ~, ~, ~, ~, ~, ~]
+    octave: [3, 3, 3, 4, 4, 4, 5, 5, 5, 6, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true]
+  stage_7_lead:
+    steps: 32
+    step_size: 1/8
+    degree: [1, ~, 3, 5, 4, ~, 3, 1, 7, ~, 2, 4, 2, ~, 7, 5, 6, ~, 1, 4, 1, ~, 6, 4, 1, ~, 5, ~, 3, ~, 1, ~]
+    octave: [5, ~, 5, 5, 5, ~, 5, 5, 4, ~, 5, 5, 5, ~, 4, 4, 4, ~, 5, 5, 5, ~, 4, 4, 5, ~, 4, ~, 4, ~, 4, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, true, false, true]
+  stage_7_bass:
+    steps: 8
+    step_size: 1/8
+    degree: [1, 1, 1, 1, 1, 1, 1, 1]
+    octave: [2, 2, 2, 2, 2, 2, 2, 2]
+  stage_7_chords:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  stage_7_kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~]
+    octave: [3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~]
+  stage_7_snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~]
+  stage_7_open:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, A, ~, ~, ~, A, ~, ~, ~, A, ~, ~, ~, A, ~]
+    accidental: [~, ~, "#", ~, ~, ~, "#", ~, ~, ~, "#", ~, ~, ~, "#", ~]
+    octave: [~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~]
+    velocity: [~, ~, 110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~, 110, ~]
+  stage_7_hat:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F]
+    accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110]
+  stage_7_transition_snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [D, ~, D, ~, D, ~, D, ~, D, D, D, D, D, D, D, D]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [110, ~, 110, ~, 110, ~, 110, ~, 110, 110, 110, 110, 110, 110, 110, 110]
+  stage_7_transition_crash:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  stage_7_transition_rise:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 3, 5, 1, 3, 5, 1, 3, 5, 1, ~, ~, ~, ~, ~, ~]
+    octave: [3, 3, 3, 4, 4, 4, 5, 5, 5, 6, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true]
+  stage_8_lead:
+    steps: 32
+    step_size: 1/8
+    degree: [1, 7, 1, 3, 5, 3, 1, 7, 1, 6, 1, 3, 6, 3, 1, 6, 1, 6, 4, 6, 1, 4, 1, 6, 7, 5, 7, 2, 5, 2, 7, ~]
+    octave: [5, 4, 5, 5, 5, 5, 5, 4, 5, 4, 5, 5, 5, 5, 5, 4, 5, 4, 4, 4, 5, 5, 5, 4, 4, 4, 4, 5, 5, 5, 4, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true]
+  stage_8_bass:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, 1, 1, 1, ~, 1, 1]
+    octave: [2, ~, 2, 2, 2, ~, 2, 2]
+  stage_8_chords:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  stage_8_kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, ~, ~, 110, ~, 110, ~, ~, ~, ~, ~]
+  stage_8_snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~]
+  stage_8_hat:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~]
+    accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
+    velocity: [110, ~, 70, ~, 110, ~, 70, ~, 110, ~, 70, ~, 110, ~, 70, ~]
+  stage_8_transition_snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [D, ~, D, ~, D, ~, D, ~, D, D, D, D, D, D, D, D]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [110, ~, 110, ~, 110, ~, 110, ~, 110, 110, 110, 110, 110, 110, 110, 110]
+  stage_8_transition_crash:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  stage_8_transition_rise:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 3, 5, 1, 3, 5, 1, 3, 5, 1, ~, ~, ~, ~, ~, ~]
+    octave: [3, 3, 3, 4, 4, 4, 5, 5, 5, 6, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true]
+  stage_9_lead:
+    steps: 32
+    step_size: 1/8
+    degree: [1, 5, 1, 3, 5, 3, 1, 5, 6, 1, 3, 6, 3, 1, 6, 3, 7, 2, 4, 7, 4, 2, 7, 5, 1, ~, 3, ~, 5, ~, ~, ~]
+    octave: [6, 5, 6, 6, 6, 6, 6, 5, 5, 6, 6, 6, 6, 6, 5, 5, 5, 6, 6, 6, 6, 6, 5, 5, 6, ~, 6, ~, 6, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, true, true, true]
+  stage_9_bass:
+    steps: 8
+    step_size: 1/8
+    degree: [1, 1, 1, 1, 1, 1, 1, 1]
+    octave: [2, 3, 2, 3, 2, 3, 2, 3]
+  stage_9_chords:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  stage_9_kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, 110, ~, 110, ~, ~, ~, ~, ~, ~, ~]
+  stage_9_snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, D, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~]
+    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, 110, ~]
+  stage_9_hat:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~]
+    accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
+    velocity: [110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~]
+  stage_9_transition_snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [D, ~, D, ~, D, ~, D, ~, D, D, D, D, D, D, D, D]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [110, ~, 110, ~, 110, ~, 110, ~, 110, 110, 110, 110, 110, 110, 110, 110]
+  stage_9_transition_crash:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  stage_9_transition_rise:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 3, 5, 1, 3, 5, 1, 3, 5, 1, ~, ~, ~, ~, ~, ~]
+    octave: [3, 3, 3, 4, 4, 4, 5, 5, 5, 6, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true]
+
+arps:
+  chip: { step: 1/32, order: up }
+
+progressions:
+  stage_0: { chords: [1, 6, 7, 1] }
+  stage_1: { chords: [1, 7, 6, 7] }
+  stage_2: { chords: [1, 5, 6, 4] }
+  stage_3: { chords: [1, 6, 3, 7] }
+  stage_4: { chords: [4, 5, 1, 1] }
+  stage_5: { chords: [1, 4, 7, 3] }
+  stage_6: { chords: [1, 4, 5, 1] }
+  stage_7: { chords: [1, 7, 4, 1] }
+  stage_8: { chords: [1, 6, 4, 5] }
+  stage_9: { chords: [1, 6, 7, 1] }
+
+chains:
+  stage_0:
+    - progression: stage_0
+  stage_1:
+    - progression: stage_1
+  stage_2:
+    - progression: stage_2
+  stage_3:
+    - progression: stage_3
+  stage_4:
+    - progression: stage_4
+  stage_5:
+    - progression: stage_5
+  stage_6:
+    - progression: stage_6
+  stage_7:
+    - progression: stage_7
+  stage_8:
+    - progression: stage_8
+  stage_9:
+    - progression: stage_9
+  chip:
+    - arp: chip
+
+instruments:
+  synth bass: { device: "*FluidSynth", gm_sound: 39 }
+  chip: { device: "*FluidSynth", gm_sound: 81 }
+  square lead: { device: "*FluidSynth", gm_sound: 81 }
+  distortion guitar: { device: "*FluidSynth", gm_sound: 31 }
+  saw lead: { device: "*FluidSynth", gm_sound: 82 }
+  harmony: { device: "*FluidSynth", gm_sound: 82 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  incoming_message:
+    tempo: 150
+    scale: E Minor
+    genre: Video game
+
+    tracks:
+      clap: { drum: true, instrument: drum kit }
+      crash: { drum: true, instrument: drum kit }
+      hat: { drum: true, instrument: drum kit }
+      kick: { drum: true, instrument: drum kit }
+      open: { drum: true, instrument: drum kit }
+      snare: { drum: true, instrument: drum kit }
+      bass: { instrument: synth bass }
+      chip: { instrument: chip }
+      lead: { instrument: square lead }
+      guitar: { instrument: distortion guitar }
+      saw: { instrument: saw lead }
+      harmony: { transpose: -2, instrument: harmony }
+
+    scenes:
+      - name: "stage_0, dawn"
+        scale: E Minor
+        tracks:
+          kick: { pattern: stage_0_kick, loop: true }
+          snare: { pattern: stage_0_snare, loop: true }
+          hat: { pattern: stage_0_hat, loop: true }
+          bass: { pattern: stage_0_bass, chains: [stage_0], loop: true }
+          chip: { pattern: stage_0_chords, chains: [stage_0, chip], loop: true }
+          lead: { pattern: stage_0_lead, repeat: 4 }
+      - name: "stage_0, doubled"
+        scale: E Minor
+        tracks:
+          kick: { pattern: stage_0_kick, loop: true }
+          snare: { pattern: stage_0_snare, loop: true }
+          hat: { pattern: stage_0_hat, loop: true }
+          bass: { pattern: stage_0_bass, chains: [stage_0], loop: true }
+          chip: { pattern: stage_0_chords, chains: [stage_0, chip], loop: true }
+          lead: { pattern: stage_0_lead, repeat: 4 }
+          harmony: { pattern: stage_0_lead, loop: true }
+      - name: to stage_1
+        scale: A Minor
+        tracks:
+          snare: { pattern: stage_1_transition_snare }
+          crash: { pattern: stage_1_transition_crash, loop: true }
+          chip: { pattern: stage_1_transition_rise, loop: true }
+      - name: "stage_1, the first boss"
+        scale: A Minor
+        tracks:
+          kick: { pattern: stage_1_kick, loop: true }
+          snare: { pattern: stage_1_snare, loop: true }
+          hat: { pattern: stage_1_hat, loop: true }
+          bass: { pattern: stage_1_bass, chains: [stage_1], loop: true }
+          chip: { pattern: stage_1_chords, chains: [stage_1, chip], loop: true }
+          guitar: { pattern: stage_1_lead, repeat: 4 }
+      - name: "stage_1, doubled"
+        scale: A Minor
+        tracks:
+          kick: { pattern: stage_1_kick, loop: true }
+          snare: { pattern: stage_1_snare, loop: true }
+          hat: { pattern: stage_1_hat, loop: true }
+          bass: { pattern: stage_1_bass, chains: [stage_1], loop: true }
+          chip: { pattern: stage_1_chords, chains: [stage_1, chip], loop: true }
+          guitar: { pattern: stage_1_lead, repeat: 4 }
+          harmony: { pattern: stage_1_lead, loop: true }
+      - name: to stage_2
+        scale: D Major
+        tracks:
+          snare: { pattern: stage_2_transition_snare }
+          crash: { pattern: stage_2_transition_crash, loop: true }
+          chip: { pattern: stage_2_transition_rise, loop: true }
+      - name: "stage_2, the sky fortress"
+        scale: D Major
+        tracks:
+          kick: { pattern: stage_2_kick, loop: true }
+          snare: { pattern: stage_2_snare, loop: true }
+          hat: { pattern: stage_2_hat, loop: true }
+          bass: { pattern: stage_2_bass, chains: [stage_2], loop: true }
+          chip: { pattern: stage_2_chords, chains: [stage_2, chip], loop: true }
+          lead: { pattern: stage_2_lead, repeat: 4 }
+      - name: "stage_2, doubled"
+        scale: D Major
+        tracks:
+          kick: { pattern: stage_2_kick, loop: true }
+          snare: { pattern: stage_2_snare, loop: true }
+          hat: { pattern: stage_2_hat, loop: true }
+          bass: { pattern: stage_2_bass, chains: [stage_2], loop: true }
+          chip: { pattern: stage_2_chords, chains: [stage_2, chip], loop: true }
+          lead: { pattern: stage_2_lead, repeat: 4 }
+          harmony: { pattern: stage_2_lead, loop: true }
+      - name: to stage_3
+        scale: C Minor
+        tracks:
+          snare: { pattern: stage_3_transition_snare }
+          crash: { pattern: stage_3_transition_crash, loop: true }
+          chip: { pattern: stage_3_transition_rise, loop: true }
+      - name: "stage_3, the machine works"
+        scale: C Minor
+        tracks:
+          kick: { pattern: stage_3_kick, loop: true }
+          clap: { pattern: stage_3_clap, loop: true }
+          open: { pattern: stage_3_open, loop: true }
+          hat: { pattern: stage_3_hat, loop: true }
+          bass: { pattern: stage_3_bass, chains: [stage_3], loop: true }
+          chip: { pattern: stage_3_chords, chains: [stage_3, chip], loop: true }
+          saw: { pattern: stage_3_lead, repeat: 4 }
+      - name: "stage_3, doubled"
+        scale: C Minor
+        tracks:
+          kick: { pattern: stage_3_kick, loop: true }
+          clap: { pattern: stage_3_clap, loop: true }
+          open: { pattern: stage_3_open, loop: true }
+          hat: { pattern: stage_3_hat, loop: true }
+          bass: { pattern: stage_3_bass, chains: [stage_3], loop: true }
+          chip: { pattern: stage_3_chords, chains: [stage_3, chip], loop: true }
+          saw: { pattern: stage_3_lead, repeat: 4 }
+          harmony: { pattern: stage_3_lead, loop: true }
+      - name: to stage_4
+        scale: F Major
+        tracks:
+          snare: { pattern: stage_4_transition_snare }
+          crash: { pattern: stage_4_transition_crash, loop: true }
+          chip: { pattern: stage_4_transition_rise, loop: true }
+      - name: "stage_4, the bubble lake"
+        scale: F Major
+        tracks:
+          kick: { pattern: stage_4_kick, loop: true }
+          snare: { pattern: stage_4_snare, loop: true }
+          hat: { pattern: stage_4_hat, loop: true }
+          bass: { pattern: stage_4_bass, chains: [stage_4], loop: true }
+          chip: { pattern: stage_4_chords, chains: [stage_4, chip], loop: true }
+          lead: { pattern: stage_4_lead, repeat: 4 }
+      - name: "stage_4, doubled"
+        scale: F Major
+        tracks:
+          kick: { pattern: stage_4_kick, loop: true }
+          snare: { pattern: stage_4_snare, loop: true }
+          hat: { pattern: stage_4_hat, loop: true }
+          bass: { pattern: stage_4_bass, chains: [stage_4], loop: true }
+          chip: { pattern: stage_4_chords, chains: [stage_4, chip], loop: true }
+          lead: { pattern: stage_4_lead, repeat: 4 }
+          harmony: { pattern: stage_4_lead, loop: true }
+      - name: to stage_5
+        scale: B Minor
+        tracks:
+          snare: { pattern: stage_5_transition_snare }
+          crash: { pattern: stage_5_transition_crash, loop: true }
+          chip: { pattern: stage_5_transition_rise, loop: true }
+      - name: "stage_5, the steel wall"
+        scale: B Minor
+        tracks:
+          kick: { pattern: stage_5_kick, loop: true }
+          snare: { pattern: stage_5_snare, loop: true }
+          hat: { pattern: stage_5_hat, loop: true }
+          bass: { pattern: stage_5_bass, chains: [stage_5], loop: true }
+          chip: { pattern: stage_5_chords, chains: [stage_5, chip], loop: true }
+          guitar: { pattern: stage_5_lead, repeat: 4 }
+      - name: "stage_5, doubled"
+        scale: B Minor
+        tracks:
+          kick: { pattern: stage_5_kick, loop: true }
+          snare: { pattern: stage_5_snare, loop: true }
+          hat: { pattern: stage_5_hat, loop: true }
+          bass: { pattern: stage_5_bass, chains: [stage_5], loop: true }
+          chip: { pattern: stage_5_chords, chains: [stage_5, chip], loop: true }
+          guitar: { pattern: stage_5_lead, repeat: 4 }
+          harmony: { pattern: stage_5_lead, loop: true }
+      - name: to stage_6
+        scale: G Major
+        tracks:
+          snare: { pattern: stage_6_transition_snare }
+          crash: { pattern: stage_6_transition_crash, loop: true }
+          chip: { pattern: stage_6_transition_rise, loop: true }
+      - name: "stage_6, the clockwork garden"
+        scale: G Major
+        tracks:
+          kick: { pattern: stage_6_kick, loop: true }
+          snare: { pattern: stage_6_snare, loop: true }
+          hat: { pattern: stage_6_hat, loop: true }
+          bass: { pattern: stage_6_bass, chains: [stage_6], loop: true }
+          chip: { pattern: stage_6_chords, chains: [stage_6, chip], loop: true }
+          lead: { pattern: stage_6_lead, repeat: 4 }
+      - name: "stage_6, doubled"
+        scale: G Major
+        tracks:
+          kick: { pattern: stage_6_kick, loop: true }
+          snare: { pattern: stage_6_snare, loop: true }
+          hat: { pattern: stage_6_hat, loop: true }
+          bass: { pattern: stage_6_bass, chains: [stage_6], loop: true }
+          chip: { pattern: stage_6_chords, chains: [stage_6, chip], loop: true }
+          lead: { pattern: stage_6_lead, repeat: 4 }
+          harmony: { pattern: stage_6_lead, loop: true }
+      - name: to stage_7
+        scale: D Dorian
+        tracks:
+          snare: { pattern: stage_7_transition_snare }
+          crash: { pattern: stage_7_transition_crash, loop: true }
+          chip: { pattern: stage_7_transition_rise, loop: true }
+      - name: "stage_7, the long fall"
+        scale: D Dorian
+        tracks:
+          kick: { pattern: stage_7_kick, loop: true }
+          snare: { pattern: stage_7_snare, loop: true }
+          open: { pattern: stage_7_open, loop: true }
+          hat: { pattern: stage_7_hat, loop: true }
+          bass: { pattern: stage_7_bass, chains: [stage_7], loop: true }
+          chip: { pattern: stage_7_chords, chains: [stage_7, chip], loop: true }
+          saw: { pattern: stage_7_lead, repeat: 4 }
+      - name: "stage_7, doubled"
+        scale: D Dorian
+        tracks:
+          kick: { pattern: stage_7_kick, loop: true }
+          snare: { pattern: stage_7_snare, loop: true }
+          open: { pattern: stage_7_open, loop: true }
+          hat: { pattern: stage_7_hat, loop: true }
+          bass: { pattern: stage_7_bass, chains: [stage_7], loop: true }
+          chip: { pattern: stage_7_chords, chains: [stage_7, chip], loop: true }
+          saw: { pattern: stage_7_lead, repeat: 4 }
+          harmony: { pattern: stage_7_lead, loop: true }
+      - name: to stage_8
+        scale: C# Harmonic Minor
+        tracks:
+          snare: { pattern: stage_8_transition_snare }
+          crash: { pattern: stage_8_transition_crash, loop: true }
+          chip: { pattern: stage_8_transition_rise, loop: true }
+      - name: "stage_8, the doctor's castle"
+        scale: C# Harmonic Minor
+        tracks:
+          kick: { pattern: stage_8_kick, loop: true }
+          snare: { pattern: stage_8_snare, loop: true }
+          hat: { pattern: stage_8_hat, loop: true }
+          bass: { pattern: stage_8_bass, chains: [stage_8], loop: true }
+          chip: { pattern: stage_8_chords, chains: [stage_8, chip], loop: true }
+          guitar: { pattern: stage_8_lead, repeat: 4 }
+      - name: "stage_8, doubled"
+        scale: C# Harmonic Minor
+        tracks:
+          kick: { pattern: stage_8_kick, loop: true }
+          snare: { pattern: stage_8_snare, loop: true }
+          hat: { pattern: stage_8_hat, loop: true }
+          bass: { pattern: stage_8_bass, chains: [stage_8], loop: true }
+          chip: { pattern: stage_8_chords, chains: [stage_8, chip], loop: true }
+          guitar: { pattern: stage_8_lead, repeat: 4 }
+          harmony: { pattern: stage_8_lead, loop: true }
+      - name: to stage_9
+        scale: E Minor
+        tracks:
+          snare: { pattern: stage_9_transition_snare }
+          crash: { pattern: stage_9_transition_crash, loop: true }
+          chip: { pattern: stage_9_transition_rise, loop: true }
+      - name: "stage_9, dawn again"
+        scale: E Minor
+        tracks:
+          kick: { pattern: stage_9_kick, loop: true }
+          snare: { pattern: stage_9_snare, loop: true }
+          hat: { pattern: stage_9_hat, loop: true }
+          bass: { pattern: stage_9_bass, chains: [stage_9], loop: true }
+          chip: { pattern: stage_9_chords, chains: [stage_9, chip], loop: true }
+          lead: { pattern: stage_9_lead, repeat: 4 }
+      - name: "stage_9, doubled"
+        scale: E Minor
+        tracks:
+          kick: { pattern: stage_9_kick, loop: true }
+          snare: { pattern: stage_9_snare, loop: true }
+          hat: { pattern: stage_9_hat, loop: true }
+          bass: { pattern: stage_9_bass, chains: [stage_9], loop: true }
+          chip: { pattern: stage_9_chords, chains: [stage_9, chip], loop: true }
+          lead: { pattern: stage_9_lead, repeat: 4 }
+          harmony: { pattern: stage_9_lead, loop: true }

@@ -1,0 +1,59 @@
+version: 1.0.206
+title: Hello world
+description: a C major scale
+notes: |
+  Hello world: the smallest set there is, to see and hear the tracker working. A C major scale
+  runs up in the first scene and down in the second, and in the third it runs up again while a
+  second track holds a C chord for a quarter note. Every note is a sixteenth.
+  Run it with: llamatron examples/learning/01_hello_world.yml --to ableton --replace
+
+  It is the set to record first (docs/RECORDING.md), and the set to open when something seems
+  wrong with playback, since there is nothing in it to wonder about: two tracks, three patterns,
+  three scenes.
+
+  When changing this demo:
+  - Keep it this small. Anything that needs explaining belongs in another demo.
+real_time: true
+protected: true
+
+scales:
+  C Major: { root: C, type: major }
+
+patterns:
+  up:
+    steps: 8
+    degree: [1, 2, 3, 4, 5, 6, 7, 8]
+  down:
+    steps: 8
+    degree: [8, 7, 6, 5, 4, 3, 2, 1]
+  chord:
+    steps: 8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    gate: [1/4, ~, ~, ~, ~, ~, ~, ~]
+    chord: [M, ~, ~, ~, ~, ~, ~, ~]
+
+instruments:
+  piano: { device: "*FluidSynth", gm_sound: 1 }
+  warm pad: { device: "*FluidSynth", gm_sound: 90 }
+
+songs:
+  hello_world:
+    tempo: 120
+    scale: C Major
+    genre: Exercise
+
+    tracks:
+      lead: { instrument: piano }
+      pad: { instrument: warm pad }
+
+    scenes:
+      - name: up
+        tracks:
+          lead: { pattern: up }
+      - name: down
+        tracks:
+          lead: { pattern: down }
+      - name: together
+        tracks:
+          lead: { pattern: up }
+          pad: { pattern: chord }

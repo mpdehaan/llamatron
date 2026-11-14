@@ -1,0 +1,158 @@
+version: 1.0.206
+title: Blues chords
+description: a twelve-bar shuffle blues in G from one-bar patterns
+notes: |
+  Blues chords: a shuffle blues at 96 beats a minute in G, six choruses of twelve bars, where
+  the walking bass, the comping chords and the riff are each one bar long, written over chord I
+  and played through a twelve-bar Progression.
+  Run it with: llamatron examples/learning/07_blues_chords.yml --to ableton --replace
+
+  A blues needs a dominant seventh on I, IV and V, which no scale's own chords give. The comp
+  writes its chord as dom7 on G, G B D F, and the F, which isn't in G major, keeps its distance
+  from the scale note below it as the progression moves it: on IV the chord plays C E G Bb, C7,
+  and on V D F# A C, D7. The riff's blue note, Bb, a flat third, moves the same way, to Eb over
+  C and F over D. The song shuffles with the factory groove 8th swing 66.
+
+  Scene 1: the drums, the bass and the comp, through the twelve-bar blues,
+  I I I I - IV IV I I - V IV I V.
+  Scene 2: the riff joins.
+  Scene 3: the quick-change blues, which goes to IV in the second bar: I IV I I - IV IV I I - V IV I V.
+  Scene 4: the riff an octave up, on a track transposed up seven scale steps.
+  Scene 5: the twelve-bar blues again, everything playing.
+  Scene 6: the last chorus, its progression ending on I instead of the turnaround's V.
+
+  When changing this demo:
+  - Keep the bass, the comp and the riff one bar long, written over chord I.
+  - Keep the comp's chord a dom7, so that every chord of the blues is a dominant seventh.
+real_time: true
+protected: true
+
+scales:
+  G Major: { root: G, type: major }
+
+patterns:
+  walk:
+    steps: 4
+    step_size: 1/4
+    degree: [1, 3, 5, 6]
+    octave: [2, 2, 2, 2]
+  comp:
+    steps: 8
+    step_size: 1/8
+    degree: [~, ~, 1, ~, ~, ~, 1, ~]
+    octave: [~, ~, 4, ~, ~, ~, 4, ~]
+    chord: [~, ~, dom7, ~, ~, ~, dom7, ~]
+    velocity: [~, ~, 90, ~, ~, ~, 80, ~]
+  riff:
+    steps: 8
+    step_size: 1/8
+    degree: [1, 3, 3, 5, 6, 5, 3, ~]
+    accidental: [~, b, ~, ~, ~, ~, b, ~]
+    octave: [5, 5, 5, 5, 5, 5, 5, ~]
+    velocity: [100, 80, 90, 80, 95, 80, 85, ~]
+  kick:
+    steps: 4
+    drum: true
+    step_size: 1/4
+    degree: [C, ~, C, ~]
+    octave: [3, ~, 3, ~]
+  snare:
+    steps: 4
+    drum: true
+    step_size: 1/4
+    degree: [~, D, ~, D]
+    octave: [~, 3, ~, 3]
+  hats:
+    steps: 8
+    drum: true
+    step_size: 1/8
+    degree: [F, F, F, F, F, F, F, F]
+    accidental: ["#", "#", "#", "#", "#", "#", "#", "#"]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [90, 60, 80, 60, 90, 60, 80, 60]
+
+progressions:
+  twelve bar: { chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] }
+  quick change: { chords: [1, 4, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] }
+  ending: { chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 1] }
+
+chains:
+  twelve bar:
+    - progression: twelve bar
+  quick change:
+    - progression: quick change
+  ending:
+    - progression: ending
+
+instruments:
+  finger bass: { device: "*FluidSynth", gm_sound: 34 }
+  electric piano: { device: "*FluidSynth", gm_sound: 5 }
+  clean guitar: { device: "*FluidSynth", gm_sound: 28 }
+  harmonica: { device: "*FluidSynth", gm_sound: 23 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  blues_chords:
+    tempo: 96
+    scale: G Major
+    groove: 8th swing 66
+    genre: Blues
+
+    tracks:
+      kick: { drum: true, instrument: drum kit }
+      snare: { drum: true, instrument: drum kit }
+      hats: { drum: true, instrument: drum kit }
+      bass: { instrument: finger bass }
+      comp: { instrument: electric piano }
+      riff: { instrument: clean guitar }
+      riff high: { transpose: 7, instrument: harmonica }
+
+    scenes:
+      - name: twelve bar
+        tracks:
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+          bass: { pattern: walk, chains: [twelve bar], repeat: 12 }
+          comp: { pattern: comp, chains: [twelve bar], repeat: 12 }
+      - name: the riff
+        tracks:
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+          bass: { pattern: walk, chains: [twelve bar], repeat: 12 }
+          comp: { pattern: comp, chains: [twelve bar], repeat: 12 }
+          riff: { pattern: riff, chains: [twelve bar], repeat: 12 }
+      - name: quick change
+        tracks:
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+          bass: { pattern: walk, chains: [quick change], repeat: 12 }
+          comp: { pattern: comp, chains: [quick change], repeat: 12 }
+          riff: { pattern: riff, chains: [quick change], repeat: 12 }
+      - name: riff up an octave
+        tracks:
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+          bass: { pattern: walk, chains: [twelve bar], repeat: 12 }
+          comp: { pattern: comp, chains: [twelve bar], repeat: 12 }
+          riff high: { pattern: riff, chains: [twelve bar], repeat: 12 }
+      - name: everything
+        tracks:
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+          bass: { pattern: walk, chains: [twelve bar], repeat: 12 }
+          comp: { pattern: comp, chains: [twelve bar], repeat: 12 }
+          riff: { pattern: riff, chains: [twelve bar], repeat: 12 }
+          riff high: { pattern: riff, chains: [twelve bar], repeat: 12 }
+      - name: last chorus
+        tracks:
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+          bass: { pattern: walk, chains: [ending], repeat: 12 }
+          comp: { pattern: comp, chains: [ending], repeat: 12 }
+          riff: { pattern: riff, chains: [ending], repeat: 12 }

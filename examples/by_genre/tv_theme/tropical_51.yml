@@ -1,0 +1,220 @@
+version: 1.0.227
+title: Tropical 51
+description: "a big-band police-show theme in the manner of Hawaii Five-0 (Morton Stevens), with a fanfare of its own"
+notes: |
+  Tropical 51: a big-band theme at 150 beats a minute in C minor, in the manner of the late sixties
+  police shows: pounding toms, timpani, strings racing in sixteenths, a brass section with the
+  fanfare and trombones answering. The fanfare is its own.
+
+  The strings, the bass and the timpani are one bar each over chord i, moved by Progression: the
+  A part goes i i VI VII and the B part iv iv i i VI VII i i.
+
+  Run it with: llamatron examples/by_genre/tv_theme/tropical_51.yml
+
+  Scene 1, intro, 8 bars: the toms and the strings.
+  Scene 2, fanfare, 16 bars: the brass fanfare.
+  Scene 3, answer, 16 bars: the second part, the trombones answering.
+  Scene 4, fanfare 2, 16 bars: the fanfare again.
+  Scene 5, answer 2, 16 bars: the second part again.
+  Scene 6, drums, 8 bars: the toms and the timpani alone.
+  Scene 7, fanfare 3, 16 bars: the fanfare.
+  Scene 8, last answer, 16 bars: the last answer.
+
+  When changing this demo:
+  - Keep the strings, bass and timpani one bar long over chord i.
+  - Keep the fanfare original.
+real_time: true
+protected: true
+
+scales:
+  C Minor: { root: C, type: minor }
+
+patterns:
+  kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, C, ~, ~, C, ~, C, ~, ~, C, ~, ~, C, ~]
+    octave: [3, ~, ~, 3, ~, ~, 3, ~, 3, ~, ~, 3, ~, ~, 3, ~]
+    velocity: [110, ~, ~, 110, ~, ~, 110, ~, 110, ~, ~, 110, ~, ~, 110, ~]
+  tom_lo:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [A, ~, ~, ~, A, ~, ~, ~, A, ~, ~, ~, A, ~, ~, ~]
+    octave: [3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~]
+  tom_hi:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, D, ~, ~, ~, D, ~, ~, ~, D, ~, ~, ~, D, ~]
+    octave: [~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~]
+    velocity: [~, ~, 110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~, 110, ~]
+  snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~]
+  crash:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  strings:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 3, 5, 3, 1, 5, 3, 5, 1, 3, 5, 3, 1, 5, 3, 5]
+    octave: [4, 4, 4, 4, 5, 4, 4, 4, 4, 4, 4, 4, 5, 4, 4, 4]
+  bass:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, 1, ~, 1, ~, 5, ~]
+    octave: [3, ~, 3, ~, 3, ~, 2, ~]
+  timpani:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, 1, ~, 1, ~]
+    octave: [2, ~, ~, ~, 2, ~, 2, ~]
+  a:
+    steps: 32
+    step_size: 1/8
+    degree: [1, ~, ~, 5, 1, ~, 3, ~, 5, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, 1, 6, ~, 1, ~, 2, ~, ~, 7, 5, ~, ~, ~]
+    octave: [6, ~, ~, 5, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, 6, 5, ~, 6, ~, 6, ~, ~, 5, 5, ~, ~, ~]
+    tie: [false, true, true, false, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, false]
+  b:
+    steps: 64
+    step_size: 1/8
+    degree: [4, ~, ~, 1, 6, ~, 1, ~, 4, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, 1, 5, ~, 1, ~, 5, ~, ~, ~, ~, ~, ~, ~, 3, ~, 1, ~, 6, ~, 1, ~, 2, ~, 7, ~, 5, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [6, ~, ~, 6, 5, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, 6, 5, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~, 6, ~, 6, ~, 5, ~, 6, ~, 6, ~, 5, ~, 5, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, false, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, false, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false]
+  counter:
+    steps: 32
+    step_size: 1/8
+    degree: [1, ~, ~, ~, 3, ~, ~, ~, 1, ~, ~, ~, 3, ~, ~, ~, 6, ~, ~, ~, 1, ~, ~, ~, 7, ~, ~, ~, 2, ~, ~, ~]
+    octave: [4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 3, ~, ~, ~, 4, ~, ~, ~, 3, ~, ~, ~, 4, ~, ~, ~]
+    tie: [false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true]
+
+progressions:
+  a: { chords: [1, 1, 6, 7] }
+  b: { chords: [4, 4, 1, 1, 6, 7, 1, 1] }
+
+chains:
+  a:
+    - progression: a
+  b:
+    - progression: b
+
+instruments:
+  strings: { device: "*FluidSynth", gm_sound: 49 }
+  acoustic bass: { device: "*FluidSynth", gm_sound: 33 }
+  timpani: { device: "*FluidSynth", gm_sound: 48 }
+  brass: { device: "*FluidSynth", gm_sound: 62 }
+  trombone: { device: "*FluidSynth", gm_sound: 58 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  tropical_51:
+    tempo: 150
+    scale: C Minor
+    genre: TV theme
+
+    tracks:
+      kick: { drum: true, instrument: drum kit }
+      tom_lo: { drum: true, instrument: drum kit }
+      tom_hi: { drum: true, instrument: drum kit }
+      snare: { drum: true, instrument: drum kit }
+      crash: { drum: true, instrument: drum kit }
+      strings: { instrument: strings }
+      bass: { instrument: acoustic bass }
+      timpani: { instrument: timpani }
+      lead: { instrument: brass }
+      trombone: { instrument: trombone }
+
+    scenes:
+      - name: intro
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          tom_lo: { pattern: tom_lo, loop: true }
+          tom_hi: { pattern: tom_hi, loop: true }
+          snare: { pattern: snare, loop: true }
+          strings: { pattern: strings, chains: [a], loop: true }
+      - name: fanfare
+        tracks:
+          kick: { pattern: kick, loop: true }
+          tom_lo: { pattern: tom_lo, loop: true }
+          tom_hi: { pattern: tom_hi, loop: true }
+          snare: { pattern: snare, loop: true }
+          crash: { pattern: crash, loop: true }
+          strings: { pattern: strings, chains: [a], loop: true }
+          bass: { pattern: bass, chains: [a], loop: true }
+          timpani: { pattern: timpani, chains: [a], loop: true }
+          lead: { pattern: a, repeat: 4 }
+      - name: answer
+        tracks:
+          kick: { pattern: kick, loop: true }
+          tom_lo: { pattern: tom_lo, loop: true }
+          tom_hi: { pattern: tom_hi, loop: true }
+          snare: { pattern: snare, loop: true }
+          strings: { pattern: strings, chains: [b], loop: true }
+          bass: { pattern: bass, chains: [b], loop: true }
+          timpani: { pattern: timpani, chains: [b], loop: true }
+          lead: { pattern: b, repeat: 2 }
+          trombone: { pattern: counter, loop: true }
+      - name: fanfare 2
+        tracks:
+          kick: { pattern: kick, loop: true }
+          tom_lo: { pattern: tom_lo, loop: true }
+          tom_hi: { pattern: tom_hi, loop: true }
+          snare: { pattern: snare, loop: true }
+          crash: { pattern: crash, loop: true }
+          strings: { pattern: strings, chains: [a], loop: true }
+          bass: { pattern: bass, chains: [a], loop: true }
+          timpani: { pattern: timpani, chains: [a], loop: true }
+          lead: { pattern: a, repeat: 4 }
+      - name: answer 2
+        tracks:
+          kick: { pattern: kick, loop: true }
+          tom_lo: { pattern: tom_lo, loop: true }
+          tom_hi: { pattern: tom_hi, loop: true }
+          snare: { pattern: snare, loop: true }
+          strings: { pattern: strings, chains: [b], loop: true }
+          bass: { pattern: bass, chains: [b], loop: true }
+          timpani: { pattern: timpani, chains: [b], loop: true }
+          lead: { pattern: b, repeat: 2 }
+          trombone: { pattern: counter, loop: true }
+      - name: drums
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          tom_lo: { pattern: tom_lo, loop: true }
+          tom_hi: { pattern: tom_hi, loop: true }
+          snare: { pattern: snare, loop: true }
+          timpani: { pattern: timpani, chains: [a], loop: true }
+      - name: fanfare 3
+        tracks:
+          kick: { pattern: kick, loop: true }
+          tom_lo: { pattern: tom_lo, loop: true }
+          tom_hi: { pattern: tom_hi, loop: true }
+          snare: { pattern: snare, loop: true }
+          crash: { pattern: crash, loop: true }
+          strings: { pattern: strings, chains: [a], loop: true }
+          bass: { pattern: bass, chains: [a], loop: true }
+          timpani: { pattern: timpani, chains: [a], loop: true }
+          lead: { pattern: a, repeat: 4 }
+      - name: last answer
+        tracks:
+          kick: { pattern: kick, loop: true }
+          tom_lo: { pattern: tom_lo, loop: true }
+          tom_hi: { pattern: tom_hi, loop: true }
+          snare: { pattern: snare, loop: true }
+          crash: { pattern: crash, loop: true }
+          strings: { pattern: strings, chains: [b], loop: true }
+          bass: { pattern: bass, chains: [b], loop: true }
+          timpani: { pattern: timpani, chains: [b], loop: true }
+          lead: { pattern: b, repeat: 2 }
+          trombone: { pattern: counter, loop: true }

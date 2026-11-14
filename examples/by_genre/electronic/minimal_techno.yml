@@ -1,0 +1,149 @@
+version: 1.0.206
+description: minimal techno
+real_time: true
+protected: true
+
+scales:
+  F Minor: { root: F, type: minor }
+  F Dorian: { root: F, type: dorian }
+
+patterns:
+  kick:
+    steps: 4
+    drum: true
+    degree: [C, ~, ~, ~]
+    octave: [3, ~, ~, ~]
+  hat:
+    steps: 2
+    drum: true
+    step_size: 1/8
+    degree: [~, F]
+    accidental: [~, "#"]
+    octave: [~, 3]
+  bass:
+    steps: 16
+    degree: [1, ~, ~, ~, 1, ~, ~, ~, 5, ~, ~, ~, 1, ~, ~, ~]
+    gate: [1/8, ~, ~, ~, 1/8, ~, ~, ~, 1/8, ~, ~, ~, 1/4, ~, ~, ~]
+    dot: [d, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, 3, ~, ~, ~, 2, ~, ~, ~, 3, ~, ~, ~]
+  stab:
+    steps: 16
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~]
+    chord: [3, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~]
+  a:
+    steps: 16
+    degree: [1, ~, ~, 3, ~, ~, 1, ~, ~, ~, 5, ~, 1, ~, ~, ~]
+    gate: [1/8, ~, ~, 1/8, ~, ~, 1/8, ~, ~, ~, 1/8, ~, 1/4, ~, ~, ~]
+    dot: [d, ~, ~, d, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, 5, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, ~, ~]
+  clap:
+    steps: 16
+    drum: true
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
+    accidental: [~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+  b:
+    steps: 16
+    degree: [1, ~, ~, 3, ~, ~, 1, ~, ~, ~, 6, ~, 1, ~, 7, ~]
+    gate: [1/8, ~, ~, 1/8, ~, ~, 1/8, ~, ~, ~, 1/8, ~, 1/8, ~, 1/8, ~]
+    dot: [d, ~, ~, d, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, 5, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 4, ~]
+  b_up:
+    steps: 16
+    degree: [3, ~, ~, 5, ~, ~, 3, ~, ~, ~, 1, ~, 3, ~, 2, ~]
+    gate: [1/8, ~, ~, 1/8, ~, ~, 1/8, ~, ~, ~, 1/8, ~, 1/8, ~, 1/8, ~]
+    dot: [d, ~, ~, d, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, 5, ~, ~, 5, ~, ~, ~, 6, ~, 5, ~, 5, ~]
+  hat_loose:
+    steps: 4
+    drum: true
+    step_size: 1/8
+    degree: [~, F, ~, F]
+    accidental: [~, "#", ~, "#"]
+    octave: [~, 3, ~, 3]
+    velocity: [~, 110, ~, 80]
+    probability: [~, 100, ~, 70]
+
+auto_ratchets:
+  tumble: { counts: [1, 1, 1, 1, 1, 1, 1, 4] }
+
+chains:
+  tumble:
+    - auto_ratchet: tumble
+
+instruments:
+  synth bass: { device: "*FluidSynth", gm_sound: 39 }
+  synth strings: { device: "*FluidSynth", gm_sound: 51 }
+  square lead: { device: "*FluidSynth", gm_sound: 81 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  minimal techno:
+    tempo: 126
+    scale: F Minor
+    genre: Electronic
+
+    tracks:
+      kick: { drum: true, instrument: drum kit }
+      hat: { drum: true, instrument: drum kit }
+      clap: { drum: true, instrument: drum kit }
+      bass: { instrument: synth bass }
+      stab: { instrument: synth strings }
+      lead: { instrument: square lead }
+
+    scenes:
+      - name: floor
+        tracks:
+          kick: { pattern: kick, repeat: 32 }
+      - name: ticks
+        tracks:
+          kick: { pattern: kick, repeat: 32 }
+          hat: { pattern: hat, loop: true }
+      - name: pulse
+        tracks:
+          kick: { pattern: kick, repeat: 32 }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, loop: true }
+      - name: drift
+        repeat: 3
+        tempo_start: 126
+        tempo_end: 127
+        tracks:
+          kick: { pattern: kick, repeat: 32 }
+          hat: { pattern: hat_loose, loop: true }
+          bass: { pattern: bass, loop: true }
+          stab: { pattern: stab, loop: true }
+          lead: { pattern: a, loop: true }
+      - name: turn
+        tempo: 128
+        tracks:
+          kick: { pattern: kick, repeat: 96 }
+          hat: { pattern: hat_loose, loop: true }
+          bass: { pattern: bass, loop: true }
+          stab: { pattern: stab, loop: true }
+          lead: { pattern: a, repeat: 24, morph_to: b, morph_style: left }
+      - name: lift
+        scale: F Dorian
+        tempo: 130
+        tracks:
+          kick: { pattern: kick, repeat: 32 }
+          hat: { pattern: hat_loose, loop: true }
+          clap: { pattern: clap, loop: true }
+          bass: { pattern: bass, loop: true }
+          stab: { pattern: stab, loop: true }
+          lead: { pattern: b_up, loop: true }
+      - name: tumble
+        tempo: 131
+        tracks:
+          kick: { pattern: kick, repeat: 32 }
+          hat: { pattern: hat_loose, loop: true }
+          clap: { pattern: clap, loop: true }
+          bass: { pattern: bass, loop: true }
+          lead: { pattern: b, chains: [tumble], loop: true }
+      - name: strip
+        tempo: 132
+        tracks:
+          kick: { pattern: kick, repeat: 32 }
+          lead: { pattern: b, loop: true }
