@@ -1,63 +1,63 @@
-version: 1.0.227
+version: 1.0.362
 title: Training montage
 description: "an early eighties arena-rock song in the manner of Eye of the Tiger (Survivor), for a training montage"
 notes: |
-  Training montage: an arena-rock song at 108 beats a minute in C minor, in the manner of the early
-  eighties film anthems: muted guitar chords hit in a syncopated rhythm with the kick, then a
-  driving rock beat, a synth pad, and a brass lead. The rhythm and the melody are its own.
+  Training montage: an arena-rock song at 108 beats a minute in D minor, in the manner of the early
+  eighties: muted guitar stabs locked to the kick, a finger bass, a pad, a rock beat and a brass
+  lead. This is a homage to Eye of the Tiger by Survivor: the chords of the verse and of the chorus
+  are that song's, in another key, and the stabs' rhythm, the build, the tunes and the bass lines
+  are its own.
 
-  The guitar's hits, the bass and the pad are one bar each over chord i, moved by Progression:
-  the verse goes i i VI VII, the build VI VII i i, and the chorus i VII VI VII.
+  The guitar's pattern is one held note a bar. A Progression moves the note, i VI VII i in the
+  verse, iv v VI VII in the build and iv III VII VI in the chorus, and a Guitarify after it in the
+  same chain makes each note a power chord and plays it: stabs between muted strokes in the verse,
+  eight down strokes a bar in the build and a muted chug in the chorus. The bass and the pad are
+  one bar each over chord i, moved by the same Progressions.
 
   Run it with: llamatron examples/by_genre/rock/training_montage.yml
 
-  Scene 1, intro, 8 bars: the hits and the kick together.
-  Scene 2, verse, 16 bars: the verse over the hits.
-  Scene 3, build, 8 bars: the build.
-  Scene 4, chorus, 16 bars: the chorus.
-  Scene 5, verse 2, 16 bars: the second verse.
+  Scene 1, intro, 4 bars: the stabs, the kick and a crash.
+  Scene 2, verse, 16 bars: the brass with the verse's tune over the stabs.
+  Scene 3, build, 8 bars: the whole kit, the guitar in down strokes, rising.
+  Scene 4, chorus, 16 bars: the chorus over the chugging guitar.
+  Scene 5, verse 2, 8 bars: the verse again, half as long.
   Scene 6, build 2, 8 bars: the build again.
-  Scene 7, last chorus, 8 bars: the last chorus.
+  Scene 7, last chorus, 16 bars: the chorus to the end.
+  Scene 8, ending, 4 bars: the stabs alone again.
 
   When changing this demo:
-  - Keep the hits, the bass and the pad one bar long over chord i.
-  - Keep the melody original.
+  - Keep the guitar one held note a bar, moved by a Progression and made power chords by a Guitarify.
+  - Keep the stabs' rhythm and the tunes its own: only the chords are the song's.
+  - Keep it out of C minor, the song's key.
 real_time: true
 protected: true
 
 scales:
-  C Minor: { root: C, type: minor }
+  D Minor: { root: D, type: minor }
 
 patterns:
-  kit_kick:
+  kick:
     steps: 16
     drum: true
     step_size: 1/16
     degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~]
-    velocity: [110, ~, ~, ~, ~, ~, ~, ~, 110, ~, 110, ~, ~, ~, ~, ~]
-  kit_snare:
+    velocity: [112, ~, ~, ~, ~, ~, ~, ~, 104, ~, 88, ~, ~, ~, ~, ~]
+  snare:
     steps: 16
     drum: true
     step_size: 1/16
     degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
     octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
-    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~]
-  kit_hat:
+    velocity: [~, ~, ~, ~, 112, ~, ~, ~, ~, ~, ~, ~, 112, ~, ~, ~]
+  hat:
     steps: 16
     drum: true
     step_size: 1/16
     degree: [F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~]
     accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
     octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
-    velocity: [110, ~, 70, ~, 110, ~, 70, ~, 110, ~, 70, ~, 110, ~, 70, ~]
-  hits_kick:
-    steps: 16
-    drum: true
-    step_size: 1/16
-    degree: [C, ~, ~, C, ~, ~, C, ~, C, ~, ~, ~, C, ~, C, ~]
-    octave: [3, ~, ~, 3, ~, ~, 3, ~, 3, ~, ~, ~, 3, ~, 3, ~]
-    velocity: [110, ~, ~, 110, ~, ~, 110, ~, 110, ~, ~, ~, 110, ~, 110, ~]
+    velocity: [96, ~, 68, ~, 96, ~, 68, ~, 96, ~, 68, ~, 96, ~, 68, ~]
   crash:
     steps: 16
     drum: true
@@ -65,48 +65,80 @@ patterns:
     degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [110, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [108, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  kick stabs:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, C, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [116, ~, ~, ~, ~, ~, 104, ~, ~, ~, ~, ~, 112, ~, ~, ~]
+  crash stabs:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [96, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
   hits:
-    steps: 16
-    step_size: 1/16
-    degree: [1, ~, ~, 1, ~, ~, 1, ~, 1, ~, ~, ~, 1, ~, 1, ~]
-    octave: [3, ~, ~, 3, ~, ~, 3, ~, 3, ~, ~, ~, 3, ~, 3, ~]
-    chord: ["5", ~, ~, "5", ~, ~, "5", ~, "5", ~, ~, ~, "5", ~, "5", ~]
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [112, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
   bass:
-    steps: 16
-    step_size: 1/16
-    degree: [1, ~, ~, 1, ~, ~, 1, ~, 1, ~, ~, ~, 1, ~, 1, ~]
-    octave: [2, ~, ~, 2, ~, ~, 2, ~, 2, ~, ~, ~, 2, ~, 2, ~]
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, 1, ~, ~, 1, ~]
+    octave: [2, ~, ~, 2, ~, ~, 2, ~]
+    velocity: [112, ~, ~, 100, ~, ~, 108, ~]
+  bass drive:
+    steps: 8
+    step_size: 1/8
+    degree: [1, 1, 1, 1, 1, 1, 1, 1]
+    octave: [2, 2, 2, 2, 2, 2, 2, 2]
+    velocity: [112, 88, 96, 88, 108, 88, 96, 92]
   pad:
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, ~, ~]
     chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    velocity: [60, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  verse:
-    steps: 32
+  verse tune:
+    steps: 64
     step_size: 1/8
-    degree: [5, 5, 5, 5, 3, ~, 1, ~, 5, 5, 5, 5, 3, ~, 1, ~, 6, 6, 6, 6, 1, ~, 3, ~, 7, ~, 5, ~, 2, ~, ~, ~]
-    octave: [5, 5, 5, 5, 5, ~, 5, ~, 5, 5, 5, 5, 5, ~, 5, ~, 5, 5, 5, 5, 6, ~, 6, ~, 5, ~, 5, ~, 6, ~, ~, ~]
-    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, true, true, false]
-  pre:
-    steps: 32
+    degree: [~, ~, 1, ~, 3, ~, 5, ~, 6, ~, ~, 3, 1, ~, ~, ~, 7, ~, 2, ~, 7, ~, 4, ~, 5, ~, ~, ~, 3, ~, ~, ~, ~, ~, 1, ~, 3, ~, 5, ~, 1, ~, ~, 6, 3, ~, ~, ~, 2, ~, 7, ~, 4, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [~, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, 5, 5, ~, ~, ~, 5, ~, 6, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, 5, ~, 5, ~, 5, ~, 6, ~, ~, 5, 5, ~, ~, ~, 6, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [~, ~, 100, ~, 100, ~, 100, ~, 110, ~, ~, 100, 100, ~, ~, ~, 110, ~, 100, ~, 100, ~, 100, ~, 110, ~, ~, ~, 100, ~, ~, ~, ~, ~, 100, ~, 100, ~, 100, ~, 110, ~, ~, 100, 100, ~, ~, ~, 110, ~, 100, ~, 100, ~, 100, ~, 110, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, true, false, true, false, true, false, true, true, false, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true, false, false, false, true, false, true, false, true, false, true, true, false, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+  build tune:
+    steps: 64
     step_size: 1/8
-    degree: [1, ~, 6, ~, 3, ~, 1, ~, 2, ~, 7, ~, 5, ~, 2, ~, 3, ~, 1, ~, 5, ~, 3, ~, 1, ~, ~, ~, ~, ~, ~, ~]
-    octave: [6, ~, 5, ~, 6, ~, 6, ~, 6, ~, 5, ~, 5, ~, 6, ~, 6, ~, 6, ~, 5, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, true, true, false, false, false, false]
-  chorus:
-    steps: 32
+    degree: [4, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~, 7, ~, ~, ~, 2, ~, ~, ~, 4, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, 7, ~, ~, ~, 6, ~, ~, ~, 1, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 6, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [106, ~, ~, ~, ~, ~, ~, ~, 106, ~, ~, ~, ~, ~, ~, ~, 106, ~, ~, ~, ~, ~, ~, ~, 106, ~, ~, ~, 96, ~, ~, ~, 106, ~, ~, ~, 96, ~, ~, ~, 106, ~, ~, ~, 96, ~, ~, ~, 106, ~, ~, ~, 96, ~, ~, ~, 106, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true]
+  chorus tune:
+    steps: 64
     step_size: 1/8
-    degree: [1, ~, 1, ~, 3, ~, 1, ~, 2, ~, 2, ~, 4, ~, 2, ~, 1, ~, 1, ~, 3, 1, 6, ~, 7, ~, 2, ~, 5, ~, ~, ~]
-    octave: [6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, 6, 5, ~, 5, ~, 6, ~, 6, ~, ~, ~]
-    tie: [false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, true, true, false]
+    degree: [1, ~, ~, ~, 6, ~, 4, ~, 7, ~, ~, ~, 5, ~, 3, ~, 2, ~, ~, ~, 7, ~, 4, ~, 1, ~, ~, ~, 6, ~, ~, ~, 4, ~, 6, ~, 1, ~, ~, ~, 3, ~, 5, ~, 7, ~, ~, ~, 7, ~, 2, ~, 4, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    octave: [6, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 6, ~, ~, ~, 5, ~, 5, ~, 6, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 6, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 6, ~, 6, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [120, ~, ~, ~, 110, ~, 110, ~, 120, ~, ~, ~, 110, ~, 110, ~, 120, ~, ~, ~, 110, ~, 110, ~, 120, ~, ~, ~, 110, ~, ~, ~, 120, ~, 110, ~, 110, ~, ~, ~, 120, ~, 110, ~, 110, ~, ~, ~, 120, ~, 110, ~, 110, ~, ~, ~, 120, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, true, true, false, false]
 
 progressions:
-  verse: { chords: [1, 1, 6, 7] }
-  build: { chords: [6, 7, 1, 1] }
-  chorus: { chords: [1, 7, 6, 7] }
+  verse: { chords: [1, 6, 7, 1] }
+  build: { chords: [4, 5, 6, 7] }
+  chorus: { chords: [4, 3, 7, 6] }
+
+guitarifies:
+  stabs: { bar: [down, nothing, nothing, mute, nothing, nothing, down, nothing, nothing, nothing, mute, nothing, down, nothing, mute, nothing], accents: [true, false, false, false, false, false, true, false, false, false, false, false, true, false, false, false], cell: 1/16, single_notes: power_chord, spread: 2, fade: 0 }
+  all down: { bar: [down, down, down, down, down, down, down, down], accents: [true, false, false, false, true, false, false, false], cell: 1/8, single_notes: power_chord, spread: 2, fade: 0 }
+  chug: { bar: [mute, mute, down, mute, mute, mute, down, mute], accents: [false, false, true, false, false, false, true, false], cell: 1/8, single_notes: power_chord, spread: 2, fade: 0 }
 
 chains:
   verse:
@@ -115,6 +147,15 @@ chains:
     - progression: build
   chorus:
     - progression: chorus
+  verse stabs:
+    - progression: verse
+    - guitarify: stabs
+  build all down:
+    - progression: build
+    - guitarify: all down
+  chorus chug:
+    - progression: chorus
+    - guitarify: chug
 
 instruments:
   distortion guitar: { device: "*FluidSynth", gm_sound: 31 }
@@ -126,7 +167,7 @@ instruments:
 songs:
   training_montage:
     tempo: 108
-    scale: C Minor
+    scale: D Minor
     genre: Rock
 
     tracks:
@@ -142,59 +183,67 @@ songs:
     scenes:
       - name: intro
         tracks:
-          kick: { pattern: hits_kick, repeat: 8 }
-          crash: { pattern: crash, loop: true }
-          hits: { pattern: hits, chains: [verse], loop: true }
+          kick: { pattern: kick stabs, loop: true }
+          crash: { pattern: crash stabs, loop: true }
+          hits: { pattern: hits, chains: [verse stabs], repeat: 4 }
           bass: { pattern: bass, chains: [verse], loop: true }
       - name: verse
         tracks:
-          kick: { pattern: hits_kick, loop: true }
-          crash: { pattern: crash, loop: true }
-          hits: { pattern: hits, chains: [verse], loop: true }
+          kick: { pattern: kick stabs, loop: true }
+          hat: { pattern: hat, loop: true }
+          hits: { pattern: hits, chains: [verse stabs], repeat: 16 }
           bass: { pattern: bass, chains: [verse], loop: true }
           pad: { pattern: pad, chains: [verse], loop: true }
-          lead: { pattern: verse, repeat: 4 }
+          lead: { pattern: verse tune, loop: true }
       - name: build
         tracks:
-          kick: { pattern: kit_kick, loop: true }
-          snare: { pattern: kit_snare, loop: true }
-          hat: { pattern: kit_hat, loop: true }
-          hits: { pattern: hits, chains: [build], loop: true }
-          bass: { pattern: bass, chains: [build], loop: true }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          hits: { pattern: hits, chains: [build all down], repeat: 8 }
+          bass: { pattern: bass drive, chains: [build], loop: true }
           pad: { pattern: pad, chains: [build], loop: true }
-          lead: { pattern: pre, repeat: 2 }
+          lead: { pattern: build tune, loop: true }
       - name: chorus
         tracks:
-          kick: { pattern: kit_kick, loop: true }
-          snare: { pattern: kit_snare, loop: true }
-          hat: { pattern: kit_hat, loop: true }
-          hits: { pattern: hits, chains: [chorus], loop: true }
-          bass: { pattern: bass, chains: [chorus], loop: true }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          crash: { pattern: crash, loop: true }
+          hits: { pattern: hits, chains: [chorus chug], repeat: 16 }
+          bass: { pattern: bass drive, chains: [chorus], loop: true }
           pad: { pattern: pad, chains: [chorus], loop: true }
-          lead: { pattern: chorus, repeat: 4 }
+          lead: { pattern: chorus tune, loop: true }
       - name: verse 2
         tracks:
-          kick: { pattern: hits_kick, loop: true }
-          crash: { pattern: crash, loop: true }
-          hits: { pattern: hits, chains: [verse], loop: true }
+          kick: { pattern: kick stabs, loop: true }
+          hat: { pattern: hat, loop: true }
+          hits: { pattern: hits, chains: [verse stabs], repeat: 8 }
           bass: { pattern: bass, chains: [verse], loop: true }
           pad: { pattern: pad, chains: [verse], loop: true }
-          lead: { pattern: verse, repeat: 4 }
+          lead: { pattern: verse tune, loop: true }
       - name: build 2
         tracks:
-          kick: { pattern: kit_kick, loop: true }
-          snare: { pattern: kit_snare, loop: true }
-          hat: { pattern: kit_hat, loop: true }
-          hits: { pattern: hits, chains: [build], loop: true }
-          bass: { pattern: bass, chains: [build], loop: true }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          hits: { pattern: hits, chains: [build all down], repeat: 8 }
+          bass: { pattern: bass drive, chains: [build], loop: true }
           pad: { pattern: pad, chains: [build], loop: true }
-          lead: { pattern: pre, repeat: 2 }
+          lead: { pattern: build tune, loop: true }
       - name: last chorus
         tracks:
-          kick: { pattern: kit_kick, loop: true }
-          snare: { pattern: kit_snare, loop: true }
-          hat: { pattern: kit_hat, loop: true }
-          hits: { pattern: hits, chains: [chorus], loop: true }
-          bass: { pattern: bass, chains: [chorus], loop: true }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          crash: { pattern: crash, loop: true }
+          hits: { pattern: hits, chains: [chorus chug], repeat: 16 }
+          bass: { pattern: bass drive, chains: [chorus], loop: true }
           pad: { pattern: pad, chains: [chorus], loop: true }
-          lead: { pattern: chorus, repeat: 2 }
+          lead: { pattern: chorus tune, loop: true }
+      - name: ending
+        tracks:
+          kick: { pattern: kick stabs, loop: true }
+          crash: { pattern: crash stabs, loop: true }
+          hits: { pattern: hits, chains: [verse stabs], repeat: 4 }
+          bass: { pattern: bass, chains: [verse], loop: true }
