@@ -23,6 +23,9 @@ import tempfile
 import unittest
 from unittest import mock
 
+from llamatron.music.scale import ScaleType
+from llamatron.composition.named_scale import scale_type_name
+from llamatron.composition.naming import default_scale_name
 from llamatron.composition.file_format import ClipSlotSetting, Row, Section, SetlistSetting, SongSetting
 from llamatron.composition.limits import MIN_REPEAT
 from llamatron.composition.named_items import NamedItems
@@ -239,7 +242,9 @@ class TestFindingRenames(unittest.TestCase):
         self.assertEqual(self.renames(), {Section.SCENES: {FIRST_SCENE: RENAMED}})
 
     def test_a_scale_named_after_its_root_is_the_same_scale_when_the_root_moves(self):
-        name = self.document.song().get_scale_names()[0]
+        name = default_scale_name(root=NoteName.C, kind=scale_type_name(ScaleType.MAJOR))
+        self.document.rename_named(section=Section.SCALES, old=self.document.song().get_scale_names()[0], new=name)
+        self.before = Snapshot(data=self.document.setlist().to_data(), song=self.document.current_song_name())
         renamed = self.document.set_scale_root(name=name, root=NoteName.D)
         self.assertNotEqual(renamed, name)
         self.assertEqual(self.renames(), {Section.SCALES: {name: renamed}})

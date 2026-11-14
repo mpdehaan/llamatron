@@ -16,6 +16,7 @@
 
 """The Patterns page."""
 
+from llamatron.composition.limits import MAX_NAME_LENGTH
 from llamatron.composition.file_format import Section
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.composition.naming import is_taken, new_name
@@ -74,4 +75,4 @@ class PatternsPage(NamedListPage):
             self.document().add_pattern(name=text)
             self.put_cursor_on(text)
             self.show_page(PatternEditor(holder=self.holder, name=text))
-        self.ask(dialog=PromptDialog(title=MSG_NEW_PATTERN_PROMPT, value=default), then=named)
+        self.ask(dialog=PromptDialog(title=MSG_NEW_PATTERN_PROMPT, value=default, max_length=MAX_NAME_LENGTH), then=named)

@@ -19,6 +19,7 @@
 from fractions import Fraction
 
 from tests.support.ui_testing import UITest
+from llamatron.composition.setlist import DEFAULT_SCALE
 from llamatron.strings.labels import MSG_TEMPO_LABEL
 from llamatron.strings.labels import MSG_DEFAULT_DRUM_OCTAVE_LABEL
 from llamatron.strings.labels import MSG_DEFAULT_OCTAVE_LABEL
@@ -38,7 +39,6 @@ from llamatron.tui import keybindings
 
 TEMPO = 'Tempo'
 STEP_SIZE = 'Step size'
-C_MAJOR = 'C_major'
 
 
 class TestPlusRow(UITest):
@@ -110,7 +110,7 @@ class TestSettingArrows(UITest):
         await self.press(Key.LEFT)
         self.assertIsNone(self.document.song().get_scale_name())
         await self.press(Key.RIGHT)
-        self.assertEqual(self.document.song().get_scale_name(), C_MAJOR)
+        self.assertEqual(self.document.song().get_scale_name(), DEFAULT_SCALE)
         await self.press(Key.DOWN, Key.RIGHT)
         self.assertEqual(self.document.song().get_seed(), 1)
 

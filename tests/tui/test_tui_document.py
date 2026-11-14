@@ -101,7 +101,7 @@ D_MINOR_NOTES = 'D minor'
 D_MAJOR = 'D_major'
 D_MINOR = 'D_minor'
 MAIN = 'main'
-C_MAJOR_COPY = 'C_major-2'
+C_MAJOR_NAME = 'C_major'
 C_MAJOR = 'C major'
 A_COPY = 'a-2'
 A_COPY_2 = 'a-3'
@@ -643,7 +643,8 @@ class TestRenaming(unittest.TestCase):
 
     def test_setting_a_scales_root_and_kind_changes_what_uses_it_and_renames_a_default_name(self):
         document = song_with_things()
-        self.assertEqual(document.set_scale_root(name=DEFAULT_SCALE, root=NoteName.D), D_MAJOR)
+        document.rename_named(section=Section.SCALES, old=DEFAULT_SCALE, new=C_MAJOR_NAME)
+        self.assertEqual(document.set_scale_root(name=C_MAJOR_NAME, root=NoteName.D), D_MAJOR)
         self.assertEqual(document.set_scale_kind(name=D_MAJOR, kind=scale_type_name(ScaleType.MINOR)), D_MINOR)
         self.assertEqual(document.song().get_scale_names(), [D_MINOR])
         self.assertEqual(document.song().get_scale_name(), D_MINOR)
@@ -676,8 +677,14 @@ class TestRenaming(unittest.TestCase):
 
     def test_a_scale_can_be_copied_with_the_same_notes(self):
         document = song_with_things()
-        self.assertEqual(document.copy_named(section=Section.SCALES, name=DEFAULT_SCALE), C_MAJOR_COPY)
-        self.assertEqual(document.scale_notes_text(C_MAJOR_COPY), C_MAJOR)
+        copy = copy_name(name=DEFAULT_SCALE, taken=[DEFAULT_SCALE])
+        self.assertEqual(document.copy_named(section=Section.SCALES, name=DEFAULT_SCALE), copy)
+        self.assertEqual(document.scale_notes_text(copy), C_MAJOR)
+
+    def test_a_scale_named_by_its_number_keeps_its_name_when_its_root_and_kind_change(self):
+        document = song_with_things()
+        self.assertEqual(document.set_scale_root(name=DEFAULT_SCALE, root=NoteName.D), DEFAULT_SCALE)
+        self.assertEqual(document.set_scale_kind(name=DEFAULT_SCALE, kind=scale_type_name(ScaleType.MINOR)), DEFAULT_SCALE)
 
 
 class TestLists(unittest.TestCase):

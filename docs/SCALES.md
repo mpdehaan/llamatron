@@ -6,7 +6,7 @@ Patterns hold scale degrees, and scales say which notes the degrees play. This p
 
 ## Named Scales
 
-A scale is a root note and a kind, such as C major, under a name of your choosing. Scales belong to the set, so every song can use them, and a new set has one scale, called `C_major`.
+A scale is a root note and a kind, such as C major, under a name of your choosing. Scales belong to the set, so every song can use them, and a new set has one scale, called `scale-1`, which is C major. A new scale is named by its number, `scale-2`, `scale-3`, as every new thing is, and keeps that name until you rename it.
 
 The name can be anything, and that freedom is the point: call a scale `main` and use it everywhere, and changing what `main` is later moves the whole song into the new key. The song chooses a scale, each scene can choose another, and each clip can choose its own. A clip plays in its own scale when it has one, otherwise in its scene's, and otherwise in the song's.
 
@@ -36,7 +36,7 @@ The Scale page holds one scale's name, root and kind, with the notes they make u
 | Root | The note the scale starts on. `[` and `]` step through the roots, and `ENTER` picks one on a keyboard. |
 | Kind | Major, minor, a mode or a world scale. `[` and `]` step through the kinds, and `ENTER` picks from two pages. |
 
-A scale still named after its root and kind, such as `C_major`, is renamed as its root and kind change, so that the name keeps saying what the scale plays. A name of your own, such as `main`, stays as it is, and so does a name of that default form when the new name is already taken.
+A scale named after its root and kind, such as `C_major`, as an import names its scales, is renamed as its root and kind change, so that the name keeps saying what the scale plays. A name of your own, such as `main`, stays as it is, and so does a name of that default form when the new name is already taken.
 
 ## Scale Keyboard
 

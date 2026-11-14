@@ -17,6 +17,7 @@
 """The Tracks, Scales, Generators and Chains pages and their editors."""
 
 from tests.support.ui_testing import SWAY, fixed_text, KEY_SHOWN, UITest, key_of, key_name
+from llamatron.strings.names import MSG_NEW_SCALE_WORD
 from llamatron.tui.drawing import NOTHING
 from llamatron.strings.marks import MSG_MOVING_CLOSE, MSG_MOVING_OPEN
 from llamatron.tui.screens.patterns_page import PatternsPage
@@ -84,7 +85,8 @@ BLACK_KEYS_ON_THE_KEYBOARD = 10
 D_DORIAN = 'D_dorian'
 D_MINOR = 'D_minor'
 D_HIRAJOSHI = 'D_hirajoshi'
-C_MAJOR_2 = 'C_major-2'
+# The second scale a set gets, by adding or by copying the first: named by its number.
+SCALE_2 = new_name(word=MSG_NEW_SCALE_WORD, taken=[DEFAULT_SCALE])
 OTHER_PAGE = 'other page'
 # The key that added on a list before A did, which adds nothing now.
 OLD_ADD_KEY = Key.PLUS
@@ -99,7 +101,6 @@ LYDIAN_AUGMENTED = 'lydian augmented'
 CHANGE = 'Change '
 C_MAJOR = 'C_major'
 A_VERY_LONG_SCALE_NAME = 'a very long scale name '
-C_MAJOR_COPY = 'C_major-2'
 AFTER_EACH_NOTE = 'after each note'
 UP = 'up'
 # How many levels the offsets gauge draws either side of its zero line on the tests' tall console, and on an 80 by 24 one, where the legend takes one line.
@@ -143,25 +144,25 @@ class TestScalesPage(UITest):
         """A adds on every list page, the user's choice of 2026-11-09, since + needs Shift; the + row at the bottom still adds with Enter."""
         await self.press(keybindings.MainPage.SCALES, OLD_ADD_KEY)
         self.assertIsInstance(self.app.screen, ScalesPage)
-        self.assertEqual(self.document.song().get_scale_names(), [C_MAJOR])
+        self.assertEqual(self.document.song().get_scale_names(), [DEFAULT_SCALE])
         self.assertIn(KEY_SHOWN.format(label=key_name(keybindings.ScalesPage.ADD)) + MSG_LEGEND_WHAT.format(what=What.ADD), self.text())
         await self.press(Key.DOWN, Key.ENTER)
         self.assertIsInstance(self.app.screen, ScalePage)
-        self.assertEqual(self.document.song().get_scale_names(), [C_MAJOR, C_MAJOR_2])
+        self.assertEqual(self.document.song().get_scale_names(), [DEFAULT_SCALE, SCALE_2])
 
-    async def test_adding_a_scale_makes_c_major_and_opens_its_page(self):
+    async def test_adding_a_scale_makes_c_major_named_by_its_number_and_opens_its_page(self):
         await self.press(keybindings.MainPage.SCALES, keybindings.ScalesPage.ADD)
         self.assertIsInstance(self.app.screen, ScalePage)
-        self.assertEqual(self.document.song().get_scale_names(), [C_MAJOR, C_MAJOR_2])
-        self.assertEqual(self.root_and_kind(C_MAJOR_2), (NoteName.C, scale_type_name(ScaleType.MAJOR)))
-        self.assertIn(C_MAJOR_2, self.crumbs_line())
+        self.assertEqual(self.document.song().get_scale_names(), [DEFAULT_SCALE, SCALE_2])
+        self.assertEqual(self.root_and_kind(SCALE_2), (NoteName.C, scale_type_name(ScaleType.MAJOR)))
+        self.assertIn(SCALE_2, self.crumbs_line())
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, ScalesPage)
-        self.assertEqual(self.app.screen.current(), C_MAJOR_2)
+        self.assertEqual(self.app.screen.current(), SCALE_2)
 
     async def test_two_scales_can_be_the_same_notes(self):
         await self.press(keybindings.MainPage.SCALES, keybindings.ScalesPage.COPY)
-        self.assertEqual(self.root_and_kind(C_MAJOR_COPY), (NoteName.C, scale_type_name(ScaleType.MAJOR)))
+        self.assertEqual(self.root_and_kind(SCALE_2), (NoteName.C, scale_type_name(ScaleType.MAJOR)))
 
     async def test_renaming_a_scale_updates_what_uses_it(self):
         self.document.set_scene_scale(index=0, name=DEFAULT_SCALE)
@@ -176,7 +177,20 @@ class TestScalesPage(UITest):
 class TestScalePage(UITest):
     """One scale's page, and the root and kind pickers on it."""
 
+    def name_the_scale_after_its_notes(self):
+        """Name the set's scale as an older file or an import would, after its root and kind, a name that follows them."""
+        self.document.rename_named(section=Section.SCALES, old=DEFAULT_SCALE, new=C_MAJOR)
+
+    async def test_a_scale_named_by_its_number_keeps_its_name_when_its_notes_change(self):
+        # The user's rule: a new scale is scale-1, and only a person renames it.
+        await self.press(keybindings.MainPage.SCALES, Key.ENTER)
+        await self.select_field(MSG_ROOT_LABEL)
+        await self.press(Key.RIGHT, Key.RIGHT)
+        self.assertEqual(self.root_and_kind(DEFAULT_SCALE), (NoteName.D, scale_type_name(ScaleType.MAJOR)))
+        self.assertEqual(self.document.song().get_scale_names(), [DEFAULT_SCALE])
+
     async def test_the_scale_page_steps_the_root_and_kind_and_shows_the_notes(self):
+        self.name_the_scale_after_its_notes()
         await self.press(keybindings.MainPage.SCALES, Key.ENTER)
         self.assertIsInstance(self.app.screen, ScalePage)
         await self.select_field(MSG_ROOT_LABEL)
@@ -230,13 +244,15 @@ class TestScalePage(UITest):
         render_song(self.document.song())
 
     async def open_root_keyboard(self):
+        self.name_the_scale_after_its_notes()
         await self.press(keybindings.MainPage.SCALES, Key.ENTER)
         await self.select_field(MSG_ROOT_LABEL)
         await self.press(Key.ENTER)
         return self.app.screen
 
     async def open_scale_kinds(self):
-        self.assertEqual(self.document.set_scale_root(name=DEFAULT_SCALE, root=NoteName.D), D_MAJOR)
+        self.name_the_scale_after_its_notes()
+        self.assertEqual(self.document.set_scale_root(name=C_MAJOR, root=NoteName.D), D_MAJOR)
         await self.press(keybindings.MainPage.SCALES, Key.ENTER)
         await self.select_field(MSG_KIND_LABEL)
         await self.press(Key.ENTER)

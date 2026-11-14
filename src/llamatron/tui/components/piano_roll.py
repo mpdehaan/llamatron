@@ -371,12 +371,26 @@ class PianoRoll(BindsKeys):
         if self.note_here() is not None:
             self.erase()
             return
+        self.place()
+
+    def place(self):
+        """Draw a note of the entry size at the cursor."""
         degree, octave, accidental = self.note_at(self.pitch)
         self.document().place_note(name=self.name(), step=self.editor.step, degree=degree, octave=octave, accidental=accidental)
 
-    @on_a_note
-    def pick_chord(self, start):
-        """Open the Chord dialog on the note under the cursor, a single note among the qualities, so that a note becomes a chord or a chord a note again."""
+    def pick_chord(self):
+        """Open the Chord dialog on the note under the cursor, a single note among the qualities, so that a note becomes a chord or a chord a note again.
+
+        On a step no note covers, at any pitch, a note is drawn at the cursor first, as the pencil would, and the dialog opens
+        on that note (the user's design): one key for a chord on an empty step. A step another pitch's note covers is refused
+        as ever, since the pencil there would cut that note.
+        """
+        if self.note_here() is None and self.editor.step not in self.covering():
+            self.place()
+        start = self.note_here()
+        if start is None:
+            self.editor.refuse(ERR_NO_NOTE_HERE)
+            return
         pick_chord(editor=self.editor, step=start)
 
     def split(self):
