@@ -90,7 +90,10 @@ pages keeping both. A file saved before the change opens with every pattern glob
 every demo and homage with one song keeps its patterns global (`.claude/PRINCIPLES.md`). The main screen's Patterns cell counts
 the current song's own patterns, the global ones and the total, like `3+2=5`. When either of the two is zero, the cell shows the one number alone. The dialog shown when a
 pattern stops being global is titled "Pattern Moving to Local, Select Songs" and is only the list of songs, each with how many
-clips of it play the pattern, like `in 8 clips`, with no OK button. The user wants generators and chains to work exactly as
+clips of it play the pattern, like `in 8 clips`, with no OK button. Settled since: several songs can be selected and each gets a
+copy of its own, so the dialog is titled "Copy Pattern to Songs"; it shows ten songs at most and scrolls, with a scroll bar drawn
+at the right of the list, since a set may hold fifty songs; and because each song then has names of its own, making a pattern
+global when another song has a pattern of that name asks for a rename first, in a dialog to be drawn for the user. The user wants generators and chains to work exactly as
 patterns do in all of this, a song's own or global, once Claude has shown it understands what that means; open there: a global
 chain that links a song's own generator, the order of the Generators page, and what the pages' columns show. What it would mean for the code: `uses_of` in `tui/uses.py` already knows
 every use, and the Patterns page's USED column the count; the row needs the track names of the uses, without repeats, fitted

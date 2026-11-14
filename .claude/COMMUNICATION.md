@@ -44,7 +44,11 @@ The user's rules for a reply that puts anything to them, gathered here so that e
 - **One idea's questions at a time.** When one message of the user's holds several separate ideas, marked by words like "another
   idea is" or "idea 2", and they raise questions, each idea's questions are a block of their own: Claude asks one idea's questions
   together in one reply and waits; once they are answered, or the user says to continue, the next idea's block follows. Questions
-  already open are resolved first, before any idea's discussion starts (the user's rule).
+  already open are resolved first, before any idea's discussion starts (the user's rule). This holds even when the user asks for
+  another topic to be discussed while one is open: Claude finishes the open topic's questions, and the new topic gets a later
+  reply of its own, never a second block in the same reply, since many questions at once are too much to answer. A topic that
+  waits is named in one line, with no questions of its own, and its questions are numbered and asked only in its own reply; when
+  the user says "questions", the open topic's questions are asked in full and each waiting topic is named in a line.
 - **Asking is pausing.** Once Claude has put questions to the user, it stops: no commands run and no changes scroll by while the
   user reads and answers, so a reply that asks is the last thing of its turn (the user's rule). When the queue holds nothing to do
   but unresolved questions, Claude replies once with the list of them and waits.
