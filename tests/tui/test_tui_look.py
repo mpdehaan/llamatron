@@ -26,7 +26,6 @@ from textual.screen import Screen
 from tests.support.ui_testing import BEAT, CHROMATIC_SCALE, UITest, key_name
 from llamatron.tui.drawing import Box, NOTHING, SELECTED_MARK, SPACE, Style
 from llamatron.tui.screens.main_page import BAR_ROWS, COLUMNS
-from llamatron.strings.marks import MSG_MAIN_MAP_CLIP, MSG_MAIN_TEMPO
 from llamatron.composition.file_format import ChordSymbol, PatternSetting, Row, Section
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.setlist import new_setlist
@@ -74,7 +73,6 @@ from llamatron.strings.labels import MSG_CAPTION_WORDS, MSG_EDITING_CAPTION
 from llamatron.strings.labels import Crumb, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TITLE_LABEL, PageName
 from llamatron.strings.marks import MSG_UNSAVED_MARK
 from llamatron.tui import keybindings
-from llamatron.tui.text import tempo_text
 from tests.support.rendering import render_song
 from tests.support.page_testing import boxed_line
 
@@ -102,6 +100,8 @@ BLACK = 'black'
 TOOLTIP = 'tooltip'
 FILE_ENCODING = 'utf-8'
 LINE_SEPARATOR = '\n'
+# What a title in block letters would be drawn with.
+BLOCK_LETTER = '█'
 # The places of a Yes or No dialog's buttons.
 YES_BUTTON = 0
 NO_BUTTON = 1
@@ -110,14 +110,13 @@ NO_BUTTON = 1
 class TestLookAndNewKeys(UITest):
 
     async def test_the_title_is_plain_text_and_nothing_sits_between_the_rule_and_the_cells(self):
-        # No set-and-song line: the crumbs say the first and the cells count the set's things. The song's tempo is in Arrange's cell, the user's later design.
+        # No set-and-song line: the crumbs say the first and the cells count the set's things.
         lines = self.text().splitlines()
         self.assertIn(SPACE + PROGRAM_NAME + SPACE, lines[0])
         self.assertNotIn(MSG_SITE, self.text())
-        # No title drawn in block letters over the cells; the blocks further down are the map of the song in Arrange's cell.
-        self.assertNotIn(MSG_MAIN_MAP_CLIP, LINE_SEPARATOR.join(lines[:lines.index(next(line for line in lines if PageName.ARRANGE in line))]))
-        self.assertIn(MSG_MAIN_TEMPO.format(tempo=tempo_text(self.document.song().get_tempo())), boxed_line(self.text()))
-        first_cell = next(number for number, line in enumerate(lines) if '┌' in line)
+        # No title drawn in block letters over the cells.
+        self.assertNotIn(BLOCK_LETTER, LINE_SEPARATOR.join(lines[:lines.index(next(line for line in lines if PageName.ARRANGE in line))]))
+        first_cell = next(number for number, line in enumerate(lines) if line.startswith((Box.TOP_LEFT, Box.DOUBLE_TOP_LEFT)))
         self.assertTrue(all(not line.strip() for line in lines[self.app.screen.header_lines():first_cell]))
 
 

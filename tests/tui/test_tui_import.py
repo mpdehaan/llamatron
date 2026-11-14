@@ -83,12 +83,13 @@ class TestImportDialog(UITest):
         self.app.screen.place = rows.index(file_name)
         await self.press(Key.ENTER)
 
-    def test_the_main_screen_has_an_import_cell_after_export(self):
+    def test_the_main_screen_has_an_import_cell(self):
         self.assertEqual(cell_opened_by(Key.M), PageName.IMPORT)
 
-    async def test_the_cell_sits_in_the_row_of_actions_after_export(self):
-        names = [cell_name(item) for item in self.app.screen.grid_rows()[-1]]
-        self.assertEqual(names[names.index(PageName.EXPORT) + 1], PageName.IMPORT)
+    async def test_the_cell_sits_in_the_bar_of_actions_above_export(self):
+        # The user's layout: Import over Export, the bar's second column.
+        above, below = [[cell_name(item) for item in row] for row in self.app.screen.rows()[-2:]]
+        self.assertEqual(below[above.index(PageName.IMPORT)], PageName.EXPORT)
         self.assertIn(PageName.IMPORT, self.text())
 
     async def test_m_opens_the_picker_in_the_home_directory_showing_midi_files(self):

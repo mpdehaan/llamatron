@@ -71,7 +71,7 @@ Up and down select. Left and right change. ENTER chooses. J jumps to the pattern
 # MainPage
 HELP_MAIN_PAGE = """
 This is the way into every page. Press a letter to open one, or move the box with the arrows and press ENTER.
-The number in a cell says how many of its things the set has: songs, patterns, chains, generators, scales and grooves of its own.
+The number on a button says how many of its things the set has: songs, patterns, chains, generators, scales and grooves of its own.
 
 A file is a set of songs. Patterns, scales, generators, chains and grooves belong to the set, and every song shares them. Each song has its own tracks, registers and scenes, and one song is current: Songs picks it, and Registers and Arrange work on it.
 

@@ -42,7 +42,7 @@ from llamatron.tui.key_table import pressed_key, BindsKeys, quits_at_once
 from llamatron.tui.screens.everywhere import everywhere_keys
 from llamatron.strings.errors import ERR_EMPTY_NAME, ERR_NAME_IN_USE
 from llamatron.strings.labels import MSG_NO_FILE_CRUMB, MSG_SET_CRUMB, MSG_SONG_CRUMB
-from llamatron.strings.marks import MSG_CRUMB_SEPARATOR, MSG_NONE_SHOWN, MSG_SAVED_MARK, MSG_UNSAVED_CHANGES_MARK, MSG_UNSAVED_MARK
+from llamatron.strings.marks import MSG_CRUMB_SEPARATOR, MSG_NONE_SHOWN, MSG_PLAYING_CLOCK, MSG_SAVED_MARK, MSG_UNSAVED_CHANGES_MARK, MSG_UNSAVED_MARK
 from llamatron.tui import keybindings
 
 
@@ -175,6 +175,14 @@ class Page(BindsKeys, Screen):
     def duration(self):
         """Return the seconds to show in the header, None if unknown, or False to show nothing."""
         return False
+
+    def playing_clock(self):
+        """Return where the song is and how long it is while it plays, like ▶ 0:22 / 3:00, or None while it doesn't."""
+        transport = self.app.transport
+        position = transport.song_position()
+        if position is None:
+            return None
+        return MSG_PLAYING_CLOCK.format(at=clock(position), total=clock(transport.song_seconds()))
 
     def time_text(self):
         """Return the text at the right of the crumbs: the duration as a clock, or nothing."""

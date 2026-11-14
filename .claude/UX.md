@@ -58,20 +58,18 @@ a feature that already exists does what's being asked, that's pointed out first
 - Nobody has to know a key to get around: every page with rows has a cursor that Up and Down move
   and ENTER follows, and the selected row carries the triangle `▶` at its left, on the list
   pages, the settings pages and the pickers alike, so that the arrows show themselves. The main
-  screen is one grid of three columns, the user's design: Arrange in the first, three cells tall, a small monitor in green on dark
-  green (the seventh allowance of colour) showing the song's scale, tempo, time signature, scenes and tracks, the clock while the song plays and a
-  light for each track while Real Time is on; the Real Time switch under it; the pages in the two columns beside; and one bar under the grid
-  with File/Global, Save, Open, Export, Import and Quit in two rows on the grid's columns. All four arrows move by the geometry drawn,
-  Right from Arrange going back to the cell the cursor came from, and ENTER opens; the selected cell alone has the double-lined box, its
-  name bold, the bar's selected action in reverse video inside the bar's double-lined box; every key's label is bold and reversed; the status line, right above
-  the legend, says what the selected cell is for; and each cell whose page is a list has a count. On a console of 28 lines or more
-  the main screen takes the smart fit layout, the user's design: Arrange's cell at the left, as tall as the console and as wide as the
-  rest leaves, and at the right two columns as narrow as their names, the Real Time switch across both, the pages in pairs and the
-  file's six actions in one box, three rows of two. There, Arrange's cell shows a map of the song under the song's details: a line for
-  each track with its light and name, and a block for each scene where the track has a clip. A clip that plays glows in a brighter
-  colour, clip by clip, fading in and out slowly and never flashing; no scene is marked as playing. The clock, the play mark and the
-  time into the song, shows only while the song plays, and a track's light is a hollow circle while nothing sounds on it, and always
-  while Real Time is off, in both layouts. The letters are for people who know them, and the grids are the
+  screen is one block of buttons, the user's design, the same size on every console and at the top left, never stretched to the
+  window: Arrange is a bar across the top, as wide as the three columns under it; then three rows of three in the order a song is
+  made, Songs, Patterns and Scales, Generators, Chains and Grooves, Instruments, Registers and the Real Time switch; then a blank
+  line and one bar as wide as the grid with the file's six actions in two rows on the grid's columns, Open over Save, Import over
+  Export and File/Global over Quit, each column's keys under the keys of the buttons above and its names starting at one place.
+  Every bar and row ends at the same place on the right. Arrange is a regular button with no details inside. All four arrows move
+  by the geometry drawn, Down from Arrange going back to the button the cursor came from, and ENTER opens; the selected button alone
+  has the double-lined box, its name bold, the bar's selected action in reverse video inside the bar's double-lined box; every key's
+  label is bold and reversed; each button whose page is a list has a count. The status line stays empty on the main screen but for a
+  refusal or a warning, with no description of the selected button; the theme's stripe carries no caption there, since the crumbs
+  already say MAIN SCREEN and the name shows once; and while the song plays, the header's second line shows the play mark and the
+  clock beside the song's length, `▶ 0:22 / 3:00`, the one thing there that says a song plays on. The letters are for people who know them, and the grids are the
   exception, with keys of their own: the pattern and groove editors mark the cursor's cell in
   reverse video, the offsets editor's gauge marks the cursor's column at both ends, `<<4>>`
   around the step number and `<+7▲>` around the offset, in reverse video too, the piano roll stands the cursor's cell between two bold double bars, shading the note under
