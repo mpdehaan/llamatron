@@ -1,0 +1,257 @@
+version: 1.0.364
+title: Aunt Clara
+description: "a twinkling light-jazz sitcom theme of the sixties in the manner of the Bewitched theme (Howard Greenfield and Jack Keller), with a tune of its own"
+notes: |
+  Aunt Clara: a twinkling light-jazz sitcom theme of the sixties in the manner of the Bewitched theme
+  (Howard Greenfield and Jack Keller), with a tune of its own. This is a homage to the Bewitched theme
+  (Howard Greenfield and Jack Keller): its chords, form, sounds and drums follow that work as Claude
+  knows it, and every tune and rhythm here is new. Rebuild version 1.
+
+  A swinging ride, a walking bass and plucked strings; a vibraphone with a skipping tune on I vi ii V,
+  a celesta sparkling after each phrase; a bridge through four dominant chords; choruses for a muted
+  trumpet and a flute.
+
+  Subgenre: light orchestral jazz for a sitcom of the sixties, cocktail swing. Drums: a ride cymbal
+  swinging, brushes, a feathered kick. Tempo 138, swung. Bass: an acoustic bass walking in four.
+  Builds: none. Sounds: vibraphone with the tune, a celesta that sparkles at the end of phrases,
+  plucked strings on the offbeats, a muted trumpet and a flute. Melody manner: a skipping tune in
+  short sequences that step down; a bridge on a chain of dominant chords. Form: A A B A with solo
+  choruses.
+
+  Band and song: the theme is known for its sparkle, the sound of a spell, over easy swing, and for a
+  tune that skips.
+
+  Checklist: it is good and memorable because the sparkle is the show's magic turned into sound. The
+  hook is the skipping tune with the sparkle after it; the emotion is charm and mischief; the lift is
+  the last chorus with the flute above the vibraphone; the contrast is the bridge of dominants; the
+  sounds are a vibraphone, a celesta, pizzicato strings, a muted trumpet, a flute and an acoustic
+  bass.
+
+  Run it with: llamatron examples/by_genre/tv_theme/aunt_clara.yml
+
+  Scene 1, intro, 4 bars.
+  Scene 2, A, 16 bars.
+  Scene 3, B, 8 bars.
+  Scene 4, A 2, 8 bars.
+  Scene 5, trumpet, 16 bars.
+  Scene 6, B 2, 8 bars.
+  Scene 7, vibraphone, 16 bars.
+  Scene 8, B 3, 8 bars.
+  Scene 9, last A, 16 bars.
+  Scene 10, ending, 4 bars.
+
+  When changing this demo:
+  - Keep the drums as the Subgenre paragraph describes them, the kick first.
+  - Keep what the Checklist paragraph calls the hook and the lift.
+  - Keep every tune original, and the demo out of the key of the work it follows.
+real_time: true
+protected: true
+
+scales:
+  Bb Major: { root: Bb, type: major }
+
+patterns:
+  ride:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [D, ~, ~, ~, D, ~, D, ~, D, ~, ~, ~, D, ~, D, ~]
+    accidental: ["#", ~, ~, ~, "#", ~, "#", ~, "#", ~, ~, ~, "#", ~, "#", ~]
+    octave: [4, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~]
+    velocity: [72, ~, ~, ~, 72, ~, 72, ~, 72, ~, ~, ~, 72, ~, 72, ~]
+  brush:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 52, ~, ~, ~, ~, ~, ~, ~, 52, ~, ~, ~]
+  kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [60, ~, ~, ~, ~, ~, ~, ~, 60, ~, ~, ~, ~, ~, ~, ~]
+  walk:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, 3, ~, 5, ~, 6, ~]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~]
+    velocity: [100, ~, 94, ~, 94, ~, 94, ~]
+    tie: [false, true, false, true, false, true, false, true]
+  pluck:
+    steps: 8
+    step_size: 1/8
+    degree: [~, ~, 1, ~, ~, ~, 1, ~]
+    octave: [~, ~, 4, ~, ~, ~, 4, ~]
+    chord: [~, ~, "7", ~, ~, ~, "7", ~]
+    velocity: [~, ~, 72, ~, ~, ~, 72, ~]
+  sparkle:
+    steps: 16
+    step_size: 1/8
+    degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, 3, 1, 5]
+    octave: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 6, 6, 6, 5]
+    velocity: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 80, 80, 80, 80]
+  a:
+    steps: 64
+    step_size: 1/8
+    degree: [5, ~, 3, 5, 1, ~, 5, ~, 6, ~, 3, 6, 1, ~, 6, ~, 6, ~, 4, 6, 2, ~, 6, ~, 7, ~, 5, ~, 4, ~, 2, ~, 5, ~, 3, 5, 1, ~, 3, ~, 3, ~, 1, 6, 3, ~, ~, ~, 4, ~, 6, ~, 1, ~, 4, ~, 2, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, 5, 5, 6, ~, 5, ~, 5, ~, 5, 5, 6, ~, 5, ~, 5, ~, 5, 5, 6, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, 5, 6, ~, 6, ~, 6, ~, 6, 5, 5, ~, ~, ~, 5, ~, 5, ~, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [106, ~, 100, 100, 100, ~, 100, ~, 106, ~, 100, 100, 100, ~, 100, ~, 106, ~, 100, 100, 100, ~, 100, ~, 106, ~, 100, ~, 100, ~, 100, ~, 106, ~, 100, 100, 100, ~, 100, ~, 106, ~, 100, 100, 100, ~, ~, ~, 106, ~, 100, ~, 100, ~, 100, ~, 106, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, false]
+  b:
+    steps: 64
+    step_size: 1/8
+    degree: [5, ~, ~, ~, 7, ~, 5, ~, 3, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, 3, ~, 1, ~, 6, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, 6, ~, 4, ~, 2, ~, ~, ~, ~, ~, ~, ~, 7, ~, 2, ~, 4, ~, 2, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, 6, ~, 6, ~, 6, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [106, ~, ~, ~, 100, ~, 100, ~, 106, ~, ~, ~, ~, ~, ~, ~, 106, ~, ~, ~, 100, ~, 100, ~, 106, ~, ~, ~, ~, ~, ~, ~, 106, ~, ~, ~, 100, ~, 100, ~, 106, ~, ~, ~, ~, ~, ~, ~, 106, ~, 100, ~, 100, ~, 100, ~, 106, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+  a trumpet:
+    steps: 64
+    step_size: 1/8
+    degree: [5, ~, 3, 5, 1, ~, 5, ~, 6, ~, 3, 6, 1, ~, 6, ~, 6, ~, 4, 6, 2, ~, 6, ~, 7, ~, 5, ~, 4, ~, 2, ~, 5, ~, 3, 5, 1, ~, 3, ~, 3, ~, 1, 6, 3, ~, ~, ~, 4, ~, 6, ~, 1, ~, 4, ~, 2, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, 5, 5, 6, ~, 5, ~, 5, ~, 5, 5, 6, ~, 5, ~, 5, ~, 5, 5, 6, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, 5, 6, ~, 6, ~, 6, ~, 6, 5, 5, ~, ~, ~, 5, ~, 5, ~, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [98, ~, 92, 92, 92, ~, 92, ~, 98, ~, 92, 92, 92, ~, 92, ~, 98, ~, 92, 92, 92, ~, 92, ~, 98, ~, 92, ~, 92, ~, 92, ~, 98, ~, 92, 92, 92, ~, 92, ~, 98, ~, 92, 92, 92, ~, ~, ~, 98, ~, 92, ~, 92, ~, 92, ~, 98, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, false]
+  a flute:
+    steps: 64
+    step_size: 1/8
+    degree: [7, ~, 5, 7, 3, ~, 7, ~, 1, ~, 5, 1, 3, ~, 1, ~, 1, ~, 6, 1, 4, ~, 1, ~, 2, ~, 7, ~, 6, ~, 4, ~, 7, ~, 5, 7, 3, ~, 5, ~, 5, ~, 3, 1, 5, ~, ~, ~, 6, ~, 1, ~, 3, ~, 6, ~, 4, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, 5, 5, 6, ~, 5, ~, 6, ~, 5, 6, 6, ~, 6, ~, 6, ~, 5, 6, 6, ~, 6, ~, 6, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, 5, 6, ~, 6, ~, 6, ~, 6, 6, 5, ~, ~, ~, 5, ~, 6, ~, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [90, ~, 84, 84, 84, ~, 84, ~, 90, ~, 84, 84, 84, ~, 84, ~, 90, ~, 84, 84, 84, ~, 84, ~, 90, ~, 84, ~, 84, ~, 84, ~, 90, ~, 84, 84, 84, ~, 84, ~, 90, ~, 84, 84, 84, ~, ~, ~, 90, ~, 84, ~, 84, ~, 84, ~, 90, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, false]
+  a low:
+    steps: 64
+    step_size: 1/8
+    degree: [5, ~, 3, 5, 1, ~, 5, ~, 6, ~, 3, 6, 1, ~, 6, ~, 6, ~, 4, 6, 2, ~, 6, ~, 7, ~, 5, ~, 4, ~, 2, ~, 5, ~, 3, 5, 1, ~, 3, ~, 3, ~, 1, 6, 3, ~, ~, ~, 4, ~, 6, ~, 1, ~, 4, ~, 2, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, 4, 4, 5, ~, 4, ~, 4, ~, 4, 4, 5, ~, 4, ~, 4, ~, 4, 4, 5, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, 4, 5, ~, 5, ~, 5, ~, 5, 4, 4, ~, ~, ~, 4, ~, 4, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [94, ~, 88, 88, 88, ~, 88, ~, 94, ~, 88, 88, 88, ~, 88, ~, 94, ~, 88, 88, 88, ~, 88, ~, 94, ~, 88, ~, 88, ~, 88, ~, 94, ~, 88, 88, 88, ~, 88, ~, 94, ~, 88, 88, 88, ~, ~, ~, 94, ~, 88, ~, 88, ~, 88, ~, 94, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, false]
+
+progressions:
+  a: { chords: [1, 6, 2, 5] }
+  b: { chords: [3, 3, 6, 6, 2, 2, 5, 5], qualities: [dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7] }
+
+chains:
+  a:
+    - progression: a
+  b:
+    - progression: b
+
+instruments:
+  vibraphone: { device: "*FluidSynth", gm_sound: 12 }
+  celesta: { device: "*FluidSynth", gm_sound: 9 }
+  pizzicato strings: { device: "*FluidSynth", gm_sound: 46 }
+  muted trumpet: { device: "*FluidSynth", gm_sound: 60 }
+  flute: { device: "*FluidSynth", gm_sound: 74 }
+  acoustic bass: { device: "*FluidSynth", gm_sound: 33 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  aunt_clara:
+    tempo: 138
+    scale: Bb Major
+    groove: 8th swing 66
+    genre: TV Theme
+
+    tracks:
+      ride: { drum: true, instrument: drum kit }
+      brush: { drum: true, instrument: drum kit }
+      kick: { drum: true, instrument: drum kit }
+      vibes: { instrument: vibraphone }
+      celesta: { instrument: celesta }
+      strings: { instrument: pizzicato strings }
+      trumpet: { instrument: muted trumpet }
+      flute: { instrument: flute }
+      bass: { instrument: acoustic bass }
+
+    scenes:
+      - name: intro
+        tracks:
+          ride: { pattern: ride, repeat: 4 }
+          brush: { pattern: brush, loop: true }
+          kick: { pattern: kick, loop: true }
+          bass: { pattern: walk, chains: [a], loop: true }
+          strings: { pattern: pluck, chains: [a], loop: true }
+          celesta: { pattern: sparkle, chains: [a], loop: true }
+      - name: A
+        tracks:
+          ride: { pattern: ride, repeat: 16 }
+          brush: { pattern: brush, loop: true }
+          kick: { pattern: kick, loop: true }
+          bass: { pattern: walk, chains: [a], loop: true }
+          strings: { pattern: pluck, chains: [a], loop: true }
+          celesta: { pattern: sparkle, chains: [a], loop: true }
+          vibes: { pattern: a, loop: true }
+      - name: B
+        tracks:
+          ride: { pattern: ride, repeat: 8 }
+          brush: { pattern: brush, loop: true }
+          kick: { pattern: kick, loop: true }
+          bass: { pattern: walk, chains: [b], loop: true }
+          strings: { pattern: pluck, chains: [b], loop: true }
+          vibes: { pattern: b, loop: true }
+      - name: A 2
+        tracks:
+          ride: { pattern: ride, repeat: 8 }
+          brush: { pattern: brush, loop: true }
+          kick: { pattern: kick, loop: true }
+          bass: { pattern: walk, chains: [a], loop: true }
+          strings: { pattern: pluck, chains: [a], loop: true }
+          celesta: { pattern: sparkle, chains: [a], loop: true }
+          vibes: { pattern: a, loop: true }
+      - name: trumpet
+        tracks:
+          ride: { pattern: ride, repeat: 16 }
+          brush: { pattern: brush, loop: true }
+          kick: { pattern: kick, loop: true }
+          bass: { pattern: walk, chains: [a], loop: true }
+          strings: { pattern: pluck, chains: [a], loop: true }
+          celesta: { pattern: sparkle, chains: [a], loop: true }
+          trumpet: { pattern: a trumpet, loop: true }
+      - name: B 2
+        tracks:
+          ride: { pattern: ride, repeat: 8 }
+          brush: { pattern: brush, loop: true }
+          kick: { pattern: kick, loop: true }
+          bass: { pattern: walk, chains: [b], loop: true }
+          strings: { pattern: pluck, chains: [b], loop: true }
+          flute: { pattern: b, loop: true }
+      - name: vibraphone
+        tracks:
+          ride: { pattern: ride, repeat: 16 }
+          brush: { pattern: brush, loop: true }
+          kick: { pattern: kick, loop: true }
+          bass: { pattern: walk, chains: [a], loop: true }
+          strings: { pattern: pluck, chains: [a], loop: true }
+          celesta: { pattern: sparkle, chains: [a], loop: true }
+          vibes: { pattern: a, loop: true }
+          trumpet: { pattern: a low, loop: true }
+      - name: B 3
+        tracks:
+          ride: { pattern: ride, repeat: 8 }
+          brush: { pattern: brush, loop: true }
+          kick: { pattern: kick, loop: true }
+          bass: { pattern: walk, chains: [b], loop: true }
+          strings: { pattern: pluck, chains: [b], loop: true }
+          vibes: { pattern: b, loop: true }
+      - name: last A
+        tracks:
+          ride: { pattern: ride, repeat: 16 }
+          brush: { pattern: brush, loop: true }
+          kick: { pattern: kick, loop: true }
+          bass: { pattern: walk, chains: [a], loop: true }
+          strings: { pattern: pluck, chains: [a], loop: true }
+          celesta: { pattern: sparkle, chains: [a], loop: true }
+          vibes: { pattern: a, loop: true }
+          flute: { pattern: a flute, loop: true }
+      - name: ending
+        tracks:
+          ride: { pattern: ride, repeat: 4 }
+          brush: { pattern: brush, loop: true }
+          kick: { pattern: kick, loop: true }
+          bass: { pattern: walk, chains: [a], loop: true }
+          strings: { pattern: pluck, chains: [a], loop: true }
+          celesta: { pattern: sparkle, chains: [a], loop: true }
