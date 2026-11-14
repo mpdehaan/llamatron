@@ -1,0 +1,275 @@
+version: 1.0.364
+title: Laboratory mice
+description: "a mock-sinister orchestral cartoon theme of the nineties in the manner of the theme of Pinky and the Brain (Richard Stone), with a tune of its own"
+notes: |
+  Laboratory mice: a mock-sinister orchestral cartoon theme of the nineties in the manner of the theme
+  of Pinky and the Brain (Richard Stone), with a tune of its own. This is a homage to the theme of
+  Pinky and the Brain (Richard Stone): its chords, form, sounds and drums follow that work as Claude
+  knows it, and every tune and rhythm here is new. Rebuild version 1.
+
+  A tuba and plucked strings in a swung two-beat; a bassoon creeping through a minor tune on i, V7 and
+  iv; a grand refrain in the relative major for choir and brass; a sneaking stretch for plucked
+  strings and a whistle.
+
+  Subgenre: orchestral cartoon music of the nineties, a mock-horror march with a bounce. Drums: almost
+  none, a soft kick and brushes, timpani and a cymbal where it turns grand. Tempo 126, swung. Bass: a
+  tuba on one and three. Builds: the quiet creeping tune gives way to a pompous refrain. Sounds: a
+  bassoon with the tune, a tuba, plucked strings on the offbeats, a xylophone, a wavering whistle like
+  a theremin, a choir and brass for the refrain. Melody manner: a creeping, bouncing minor tune that
+  leans on the raised seventh; a refrain in long notes, in the relative major. Form: tune, refrain,
+  tune, a sneaking stretch, refrain.
+
+  Band and song: the theme is known for sounding sinister and silly at once, a mad-scientist march
+  with a choir that sings as though the plan could work.
+
+  Checklist: it is good and memorable because it takes a ridiculous scheme entirely seriously. The
+  hook is the creeping bassoon tune; the emotion is comic menace; the lift is the refrain, choir and
+  brass in long notes over timpani; the contrast is the sneaking stretch, plucked and nearly silent
+  under the whistle; the sounds are a bassoon, a tuba, pizzicato strings, a xylophone, a whistle, a
+  choir, a brass section and timpani.
+
+  Run it with: llamatron examples/by_genre/tv_theme/laboratory_mice.yml
+
+  Scene 1, intro, 4 bars.
+  Scene 2, tune, 16 bars.
+  Scene 3, refrain, 8 bars.
+  Scene 4, tune 2, 8 bars.
+  Scene 5, sneaking, 8 bars.
+  Scene 6, refrain 2, 8 bars.
+  Scene 7, tune 3, 16 bars.
+  Scene 8, last refrain, 16 bars.
+  Scene 9, tag, 8 bars.
+  Scene 10, ending, 4 bars.
+
+  When changing this demo:
+  - Keep the drums as the Subgenre paragraph describes them, the kick first.
+  - Keep what the Checklist paragraph calls the hook and the lift.
+  - Keep every tune original, and the demo out of the key of the work it follows.
+real_time: true
+protected: true
+
+scales:
+  G Minor: { root: G, type: minor }
+
+patterns:
+  kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [70, ~, ~, ~, ~, ~, ~, ~, 70, ~, ~, ~, ~, ~, ~, ~]
+  brush:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, D, ~, ~, ~, ~, ~, D, ~, D, ~]
+    octave: [~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, 3, ~, 3, ~]
+    velocity: [~, ~, ~, ~, 48, ~, 48, ~, ~, ~, ~, ~, 48, ~, 48, ~]
+  crash:
+    steps: 64
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [108, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  oom:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, 5, ~, ~, ~]
+    octave: [2, ~, ~, ~, 1, ~, ~, ~]
+    velocity: [104, ~, ~, ~, 98, ~, ~, ~]
+  pah:
+    steps: 8
+    step_size: 1/8
+    degree: [~, ~, 1, ~, ~, ~, 1, ~]
+    octave: [~, ~, 4, ~, ~, ~, 4, ~]
+    chord: [~, ~, "3", ~, ~, ~, "3", ~]
+    velocity: [~, ~, 74, ~, ~, ~, 74, ~]
+  roll:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, 5, 5]
+    octave: [2, ~, ~, ~, ~, ~, 1, 1]
+    velocity: [102, ~, ~, ~, ~, ~, 96, 96]
+  a:
+    steps: 64
+    step_size: 1/8
+    degree: [1, ~, 2, 3, ~, 2, 1, ~, 7, ~, 2, 4, ~, 2, 7, ~, 1, ~, 3, 5, ~, 3, 1, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, 5, 4, ~, 3, 4, ~, 3, ~, 2, 1, ~, 2, 3, ~, 2, ~, 7, ~, 2, ~, 4, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, 3, 3, ~, 3, 3, ~, 2, ~, 3, 3, ~, 3, 2, ~, 3, ~, 3, 3, ~, 3, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, 3, ~, 3, 3, ~, 3, ~, 3, 3, ~, 3, 3, ~, 3, ~, 2, ~, 3, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, 104, 104, ~, 104, 104, ~, 110, ~, 104, 104, ~, 104, 104, ~, 110, ~, 104, 104, ~, 104, 104, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, 104, 104, ~, 104, 104, ~, 110, ~, 104, 104, ~, 104, 104, ~, 110, ~, 104, ~, 104, ~, 104, ~, 110, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, false, false, true, false, false, true, false, true, false, false, true, false, false, true, false, true, false, false, true, false, false, true, false, true, true, true, false, false, false, false, false, true, false, false, true, false, false, true, false, true, false, false, true, false, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+  a high:
+    steps: 64
+    step_size: 1/8
+    degree: [1, ~, 2, 3, ~, 2, 1, ~, 7, ~, 2, 4, ~, 2, 7, ~, 1, ~, 3, 5, ~, 3, 1, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, 5, 4, ~, 3, 4, ~, 3, ~, 2, 1, ~, 2, 3, ~, 2, ~, 7, ~, 2, ~, 4, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, 5, 5, ~, 5, 5, ~, 4, ~, 5, 5, ~, 5, 4, ~, 5, ~, 5, 5, ~, 5, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, 5, ~, 5, 5, ~, 5, ~, 5, 5, ~, 5, 5, ~, 5, ~, 4, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [98, ~, 92, 92, ~, 92, 92, ~, 98, ~, 92, 92, ~, 92, 92, ~, 98, ~, 92, 92, ~, 92, 92, ~, 98, ~, ~, ~, ~, ~, ~, ~, 98, ~, 92, 92, ~, 92, 92, ~, 98, ~, 92, 92, ~, 92, 92, ~, 98, ~, 92, ~, 92, ~, 92, ~, 98, ~, ~, ~, ~, ~, ~, ~]
+  a sneak:
+    steps: 64
+    step_size: 1/8
+    degree: [1, ~, 2, 3, ~, 2, 1, ~, 7, ~, 2, 4, ~, 2, 7, ~, 1, ~, 3, 5, ~, 3, 1, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, 5, 4, ~, 3, 4, ~, 3, ~, 2, 1, ~, 2, 3, ~, 2, ~, 7, ~, 2, ~, 4, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, 4, 4, ~, 4, 4, ~, 3, ~, 4, 4, ~, 4, 3, ~, 4, ~, 4, 4, ~, 4, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, 4, ~, 4, 4, ~, 4, ~, 4, 4, ~, 4, 4, ~, 4, ~, 3, ~, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [72, ~, 66, 66, ~, 66, 66, ~, 72, ~, 66, 66, ~, 66, 66, ~, 72, ~, 66, 66, ~, 66, 66, ~, 72, ~, ~, ~, ~, ~, ~, ~, 72, ~, 66, 66, ~, 66, 66, ~, 72, ~, 66, 66, ~, 66, 66, ~, 72, ~, 66, ~, 66, ~, 66, ~, 72, ~, ~, ~, ~, ~, ~, ~]
+  a brass:
+    steps: 64
+    step_size: 1/8
+    degree: [1, ~, 2, 3, ~, 2, 1, ~, 7, ~, 2, 4, ~, 2, 7, ~, 1, ~, 3, 5, ~, 3, 1, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, 5, 4, ~, 3, 4, ~, 3, ~, 2, 1, ~, 2, 3, ~, 2, ~, 7, ~, 2, ~, 4, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, 4, 4, ~, 4, 4, ~, 3, ~, 4, 4, ~, 4, 3, ~, 4, ~, 4, 4, ~, 4, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, 4, ~, 4, 4, ~, 4, ~, 4, 4, ~, 4, 4, ~, 4, ~, 3, ~, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [112, ~, 106, 106, ~, 106, 106, ~, 112, ~, 106, 106, ~, 106, 106, ~, 112, ~, 106, 106, ~, 106, 106, ~, 112, ~, ~, ~, ~, ~, ~, ~, 112, ~, 106, 106, ~, 106, 106, ~, 112, ~, 106, 106, ~, 106, 106, ~, 112, ~, 106, ~, 106, ~, 106, ~, 112, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, false, false, true, false, false, true, false, true, false, false, true, false, false, true, false, true, false, false, true, false, false, true, false, true, true, true, false, false, false, false, false, true, false, false, true, false, false, true, false, true, false, false, true, false, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+  b:
+    steps: 64
+    step_size: 1/8
+    degree: [3, ~, ~, ~, 5, ~, 3, ~, 2, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, 5, ~, 7, ~, 7, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, 6, ~, 1, ~, 6, ~, ~, ~, 4, ~, ~, ~, 5, ~, 7, ~, 2, ~, 4, ~, 2, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 4, ~, 5, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, 4, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, 104, ~, 104, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, 104, ~, 104, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, 104, ~, 104, ~, 110, ~, ~, ~, 104, ~, ~, ~, 110, ~, 104, ~, 104, ~, 104, ~, 110, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+  b high:
+    steps: 64
+    step_size: 1/8
+    degree: [3, ~, ~, ~, 5, ~, 3, ~, 2, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, 5, ~, 7, ~, 7, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, 6, ~, 1, ~, 6, ~, ~, ~, 4, ~, ~, ~, 5, ~, 7, ~, 2, ~, 4, ~, 2, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, 5, ~, 6, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [116, ~, ~, ~, 110, ~, 110, ~, 116, ~, ~, ~, ~, ~, ~, ~, 116, ~, ~, ~, 110, ~, 110, ~, 116, ~, ~, ~, ~, ~, ~, ~, 116, ~, ~, ~, 110, ~, 110, ~, 116, ~, ~, ~, 110, ~, ~, ~, 116, ~, 110, ~, 110, ~, 110, ~, 116, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+  wail:
+    steps: 64
+    step_size: 1/8
+    degree: [5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [76, ~, ~, ~, ~, ~, ~, ~, 76, ~, ~, ~, 70, ~, ~, ~, 76, ~, ~, ~, ~, ~, ~, ~, 76, ~, ~, ~, ~, ~, ~, ~, 76, ~, ~, ~, ~, ~, ~, ~, 76, ~, ~, ~, ~, ~, ~, ~, 76, ~, ~, ~, ~, ~, ~, ~, 76, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, false, false]
+
+progressions:
+  a: { chords: [1, 5, 1, 1, 4, 1, 5, 1], qualities: [~, dom7, ~, ~, ~, ~, dom7, ~] }
+  b: { chords: [3, 7, 3, 7, 6, 4, 5, 5], qualities: [~, ~, ~, ~, ~, ~, dom7, dom7] }
+
+chains:
+  a:
+    - progression: a
+  b:
+    - progression: b
+
+instruments:
+  bassoon: { device: "*FluidSynth", gm_sound: 71 }
+  tuba: { device: "*FluidSynth", gm_sound: 59 }
+  pizzicato strings: { device: "*FluidSynth", gm_sound: 46 }
+  xylophone: { device: "*FluidSynth", gm_sound: 14 }
+  whistle: { device: "*FluidSynth", gm_sound: 79 }
+  choir: { device: "*FluidSynth", gm_sound: 53 }
+  brass section: { device: "*FluidSynth", gm_sound: 62 }
+  timpani: { device: "*FluidSynth", gm_sound: 48 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  laboratory_mice:
+    tempo: 126
+    scale: G Minor
+    groove: 8th swing 66
+    genre: TV Theme
+
+    tracks:
+      kick: { drum: true, instrument: drum kit }
+      brush: { drum: true, instrument: drum kit }
+      crash: { drum: true, instrument: drum kit }
+      bassoon: { instrument: bassoon }
+      tuba: { instrument: tuba }
+      strings: { instrument: pizzicato strings }
+      xylophone: { instrument: xylophone }
+      whistle: { instrument: whistle }
+      choir: { instrument: choir }
+      brass: { instrument: brass section }
+      timpani: { instrument: timpani }
+
+    scenes:
+      - name: intro
+        tracks:
+          kick: { pattern: kick, repeat: 4 }
+          brush: { pattern: brush, loop: true }
+          tuba: { pattern: oom, chains: [a], loop: true }
+          strings: { pattern: pah, chains: [a], loop: true }
+      - name: tune
+        tracks:
+          kick: { pattern: kick, repeat: 16 }
+          brush: { pattern: brush, loop: true }
+          tuba: { pattern: oom, chains: [a], loop: true }
+          strings: { pattern: pah, chains: [a], loop: true }
+          bassoon: { pattern: a, loop: true }
+      - name: refrain
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          brush: { pattern: brush, loop: true }
+          tuba: { pattern: oom, chains: [b], loop: true }
+          strings: { pattern: pah, chains: [b], loop: true }
+          timpani: { pattern: roll, chains: [b], loop: true }
+          crash: { pattern: crash, loop: true }
+          choir: { pattern: b, loop: true }
+          brass: { pattern: b high, loop: true }
+      - name: tune 2
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          brush: { pattern: brush, loop: true }
+          tuba: { pattern: oom, chains: [a], loop: true }
+          strings: { pattern: pah, chains: [a], loop: true }
+          bassoon: { pattern: a, loop: true }
+          xylophone: { pattern: a high, loop: true }
+      - name: sneaking
+        tracks:
+          tuba: { pattern: oom, chains: [a], repeat: 8 }
+          strings: { pattern: a sneak, loop: true }
+          whistle: { pattern: wail, loop: true }
+      - name: refrain 2
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          brush: { pattern: brush, loop: true }
+          tuba: { pattern: oom, chains: [b], loop: true }
+          strings: { pattern: pah, chains: [b], loop: true }
+          timpani: { pattern: roll, chains: [b], loop: true }
+          crash: { pattern: crash, loop: true }
+          choir: { pattern: b, loop: true }
+          brass: { pattern: b high, loop: true }
+      - name: tune 3
+        tracks:
+          kick: { pattern: kick, repeat: 16 }
+          brush: { pattern: brush, loop: true }
+          tuba: { pattern: oom, chains: [a], loop: true }
+          strings: { pattern: pah, chains: [a], loop: true }
+          brass: { pattern: a brass, loop: true }
+          bassoon: { pattern: a, loop: true }
+          xylophone: { pattern: a high, loop: true }
+      - name: last refrain
+        tracks:
+          kick: { pattern: kick, repeat: 16 }
+          brush: { pattern: brush, loop: true }
+          tuba: { pattern: oom, chains: [b], loop: true }
+          strings: { pattern: pah, chains: [b], loop: true }
+          timpani: { pattern: roll, chains: [b], loop: true }
+          crash: { pattern: crash, loop: true }
+          choir: { pattern: b, loop: true }
+          brass: { pattern: b high, loop: true }
+          xylophone: { pattern: b high, loop: true }
+          whistle: { pattern: wail, loop: true }
+      - name: tag
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          brush: { pattern: brush, loop: true }
+          tuba: { pattern: oom, chains: [a], loop: true }
+          strings: { pattern: pah, chains: [a], loop: true }
+          bassoon: { pattern: a, loop: true }
+          xylophone: { pattern: a high, loop: true }
+      - name: ending
+        tracks:
+          kick: { pattern: kick, repeat: 4 }
+          brush: { pattern: brush, loop: true }
+          tuba: { pattern: oom, chains: [a], loop: true }
+          strings: { pattern: pah, chains: [a], loop: true }
+          timpani: { pattern: roll, chains: [a], loop: true }
+          crash: { pattern: crash, loop: true }
