@@ -65,6 +65,7 @@ A file holds a set of songs, like the songs of one concert. The patterns, scales
 
 | Page | What it covers |
 | --- | --- |
+| [Blues Mashup](docs/demos/BLUES_MASHUP.md) | Another work's notes set on a blues band. |
 | [Electronic Mashup](docs/demos/ELECTRONIC_MASHUP.md) | Another work's notes set on an electronic band. |
 | [Funk Mashup](docs/demos/FUNK_MASHUP.md) | Another work's notes set on a funk band. |
 | [Jazz Mashup](docs/demos/JAZZ_MASHUP.md) | Another work's notes set on a jazz band. |

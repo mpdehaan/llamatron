@@ -44,6 +44,7 @@ pages current.
 | --- | ---: |
 | [Tutorial Demos](demos/TUTORIAL.md) | 23 |
 | [Blues](demos/BLUES.md) | 3 |
+| [Blues Mashup](demos/BLUES_MASHUP.md) | 1 |
 | [Children's](demos/CHILDRENS.md) | 1 |
 | [Classical](demos/CLASSICAL.md) | 3 |
 | [Country](demos/COUNTRY.md) | 1 |
