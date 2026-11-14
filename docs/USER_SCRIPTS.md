@@ -132,7 +132,7 @@ Parameters:
 
 Every recording script needs the setup that [Recording](INSTALLING_RECORDING.md), under Installing, describes: BlackHole, Screen Recording permission for your terminal, and Xcode's command line tools. [Recording](RECORDING.md) describes the takes themselves.
 
-The visualizer modes a recording can show are `lava_lamp`, `spectrum`, `milkdrop`, `llamas`, `hypercube`, `fireworks`, `warpzone`, `pipes`, `plasma`, `maze`, `mystify`, `laser_llama`, `mandelbrot`, `life`, `digital_rain` and `cycle`.
+The visualizer modes a recording can show are `lava_lamp`, `piano_roll`, `spectrum`, `milkdrop`, `llamas`, `hypercube`, `fireworks`, `warpzone`, `pipes`, `plasma`, `maze`, `mystify`, `laser_llama`, `mandelbrot`, `life`, `digital_rain` and `cycle`.
 
 ### `record.sh`
 

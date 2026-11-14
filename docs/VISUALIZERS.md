@@ -22,6 +22,7 @@ A visualizer hears the notes as they are played, with their tracks, pitches and 
 | Mode | What it shows |
 | --- | --- |
 | Lava lamp | A blob of colour for each track, drifting on a path of its own; every note splashes a ripple into it, held notes keep pushing, and the whole picture turns and breathes with the beat. Dark in silence. |
+| Piano roll | Every note as a bar on a row for its pitch, coming in at the right as it starts and rolling off to the left, a held note growing long. Each track has a colour of its own, named in the legend across the top, and drums have lanes of their own at the bottom. |
 | Spectrum | A bar for each band of pitches, low at the left, lifted by each note's velocity, its neighbours a little, falling back steadily, with caps that hang and drop, green to yellow to red. |
 | MilkDrop | A feedback picture in the spirit of the classic: each frame the last one warped, zoomed, turned and swirled, with notes splashed in on a slowly turning circle. |
 | Llamas | An ASCII llama for each track that plays, strolling, turning at the edges, bobbing with the beat and hopping on its notes, growing and glowing as its track gets busier. |
@@ -56,7 +57,7 @@ A set can open straight onto a visualizer, playing, from the command line:
 llamatron examples/by_genre/electronic/edm_density.yml --visualizer lava_lamp
 ```
 
-The mode names on the command line are `lava_lamp`, `spectrum`, `milkdrop`, `llamas`, `hypercube`,
+The mode names on the command line are `lava_lamp`, `piano_roll`, `spectrum`, `milkdrop`, `llamas`, `hypercube`,
 `fireworks`, `warpzone`, `pipes`, `plasma`, `maze`, `mystify`, `laser_llama`, `mandelbrot`, `life`,
 `digital_rain` and `cycle`.
 
