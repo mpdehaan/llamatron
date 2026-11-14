@@ -48,7 +48,7 @@ pages current.
 | [Classical](demos/CLASSICAL.md) | 3 |
 | [Country](demos/COUNTRY.md) | 1 |
 | [Electronic](demos/ELECTRONIC.md) | 15 |
-| [Electronic Mashup](demos/ELECTRONIC_MASHUP.md) | 1 |
+| [Electronic Mashup](demos/ELECTRONIC_MASHUP.md) | 2 |
 | [Exercise](demos/EXERCISE.md) | 3 |
 | [Folk](demos/FOLK.md) | 5 |
 | [Funk Mashup](demos/FUNK_MASHUP.md) | 1 |
