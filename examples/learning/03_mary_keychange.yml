@@ -1,0 +1,78 @@
+version: 1.0.206
+title: Mary keychange
+description: Mary Had a Little Lamb in four keys
+notes: |
+  Mary keychange: Mary Had a Little Lamb, the same two patterns played in four keys, one a scene.
+  Run it with: llamatron examples/learning/03_mary_keychange.yml --to ableton --replace
+
+  The patterns hold scale degrees, not notes: degree 3 is the scale's third note, whatever the
+  scale is. Each scene chooses its own scale on the Scene page, and the degrees take their notes
+  from it only as the scene plays, so changing the key of a whole song, or of one part of it, is
+  one field, and no pattern changes.
+
+  Scene 1: C major, the song's own scale, as the tune is usually sung.
+  Scene 2: C minor, the same root with the minor's lowered third, so the tune turns sad.
+  Scene 3: E major, the same kind of scale on another root, so the tune moves up a third.
+  Scene 4: whole tone on F#, a scale of six even steps with no home note, so the tune sounds
+  like a dream sequence.
+
+  When changing this demo:
+  - Keep one pattern each for the tune and the bass, shared by every scene, since the point is
+    that only the scenes' scales change.
+  - Keep the first scene in the song's own scale, so that it plays the tune as everyone knows it.
+real_time: true
+protected: true
+
+scales:
+  C Major: { root: C, type: major }
+  C Minor: { root: C, type: minor }
+  E Major: { root: E, type: major }
+  F# Whole Tone: { root: F#, type: whole_tone }
+
+patterns:
+  mary:
+    steps: 32
+    step_size: 1/4
+    degree: [3, 2, 1, 2, 3, 3, 3, ~, 2, 2, 2, ~, 3, 5, 5, ~, 3, 2, 1, 2, 3, 3, 3, 3, 2, 2, 3, 2, 1, ~, ~, ~]
+    gate: [~, ~, ~, ~, ~, ~, 1/2, ~, ~, ~, 1/2, ~, ~, ~, 1/2, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~]
+  bass:
+    steps: 32
+    step_size: 1/4
+    degree: [1, ~, 5, ~, 1, ~, 5, ~, 5, ~, 2, ~, 1, ~, 5, ~, 1, ~, 5, ~, 1, ~, 5, ~, 5, ~, 5, ~, 1, ~, ~, ~]
+    gate: [1/2, ~, 1/2, ~, 1/2, ~, 1/2, ~, 1/2, ~, 1/2, ~, 1/2, ~, 1/2, ~, 1/2, ~, 1/2, ~, 1/2, ~, 1/2, ~, 1/2, ~, 1/2, ~, 1, ~, ~, ~]
+    octave: [3, ~, 2, ~, 3, ~, 2, ~, 2, ~, 3, ~, 3, ~, 2, ~, 3, ~, 2, ~, 3, ~, 2, ~, 2, ~, 2, ~, 3, ~, ~, ~]
+
+instruments:
+  music box: { device: "*FluidSynth", gm_sound: 11 }
+  acoustic bass: { device: "*FluidSynth", gm_sound: 33 }
+
+songs:
+  mary_keychange:
+    tempo: 112
+    scale: C Major
+    genre: "Children's"
+
+    tracks:
+      tune: { instrument: music box }
+      bass: { instrument: acoustic bass }
+
+    scenes:
+      - name: C major
+        tracks:
+          tune: { pattern: mary }
+          bass: { pattern: bass }
+      - name: C minor
+        scale: C Minor
+        tracks:
+          tune: { pattern: mary }
+          bass: { pattern: bass }
+      - name: E major
+        scale: E Major
+        tracks:
+          tune: { pattern: mary }
+          bass: { pattern: bass }
+      - name: whole tone on F#
+        scale: F# Whole Tone
+        tracks:
+          tune: { pattern: mary }
+          bass: { pattern: bass }

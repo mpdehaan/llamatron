@@ -1,0 +1,169 @@
+version: 1.0.227
+title: Sandworm
+description: "a late nineties trance anthem in the manner of Sandstorm (Darude), its builds made by Density"
+notes: |
+  Sandworm: a trance anthem at 136 beats a minute in B minor, in the manner of the late nineties: a
+  saw lead hammering a stuttering sixteenth-note rhythm, an off-beat bass, a pad for the
+  breakdown and a four-on-the-floor kick. The rhythm is its own.
+
+  The lead and the bass are one bar each over chord i, moved by Progression through i VI VII i.
+  The two builds are made by the scenes' Density, from 25% to 100%, which thins every clip to its
+  strongest beats and fills it back in, and in the last drop a second lead track, transposed up
+  seven scale steps, doubles the first an octave up.
+
+  Run it with: llamatron examples/by_genre/electronic/sandworm.yml
+
+  Scene 1, intro, 16 bars: the kick and the hats.
+  Scene 2, build, 8 bars: the bass and the full kit, Density rising from 25% to 100%.
+  Scene 3, drop, 16 bars: the lead.
+  Scene 4, breakdown, 16 bars: the pad and the bass, no drums.
+  Scene 5, build 2, 8 bars: the lead returns, Density rising again.
+  Scene 6, drop 2, 16 bars: the lead and the full kit.
+  Scene 7, last drop, 16 bars: the lead doubled an octave up.
+  Scene 8, outro, 8 bars: the kick and the hats.
+
+  When changing this demo:
+  - Keep the builds made by the scenes' Density.
+  - Keep the lead and the bass one bar long over chord i.
+real_time: true
+protected: true
+
+scales:
+  B Minor: { root: B, type: minor }
+
+patterns:
+  kit_kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~]
+    octave: [3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~]
+  kit_clap:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
+    accidental: [~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~]
+  kit_open:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, A, ~, ~, ~, A, ~, ~, ~, A, ~, ~, ~, A, ~]
+    accidental: [~, ~, "#", ~, ~, ~, "#", ~, ~, ~, "#", ~, ~, ~, "#", ~]
+    octave: [~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~]
+    velocity: [~, ~, 110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~, 110, ~]
+  kit_hat:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F]
+    accidental: [~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#"]
+    octave: [~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3]
+    velocity: [~, 70, ~, 70, ~, 70, ~, 70, ~, 70, ~, 70, ~, 70, ~, 70]
+  stab:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 1, 1, 1, 1, ~, 1, 1, 1, 1, 1, 1, 1, ~, 1, ~]
+    octave: [5, 5, 5, 5, 5, ~, 5, 5, 5, 5, 5, 5, 5, ~, 5, ~]
+  bass:
+    steps: 16
+    step_size: 1/16
+    degree: [~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~]
+    octave: [~, ~, 2, ~, ~, ~, 2, ~, ~, ~, 2, ~, ~, ~, 2, ~]
+  pad:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+
+progressions:
+  turn: { chords: [1, 6, 7, 1] }
+
+chains:
+  turn:
+    - progression: turn
+
+instruments:
+  saw lead: { device: "*FluidSynth", gm_sound: 82 }
+  synth bass: { device: "*FluidSynth", gm_sound: 39 }
+  halo pad: { device: "*FluidSynth", gm_sound: 95 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  sandworm:
+    tempo: 136
+    scale: B Minor
+    genre: Electronic
+
+    tracks:
+      kick: { drum: true, instrument: drum kit }
+      clap: { drum: true, instrument: drum kit }
+      open: { drum: true, instrument: drum kit }
+      hat: { drum: true, instrument: drum kit }
+      bass: { instrument: synth bass }
+      lead: { instrument: saw lead }
+      lead high: { transpose: 7, instrument: saw lead }
+      pad: { instrument: halo pad }
+
+    scenes:
+      - name: intro
+        tracks:
+          kick: { pattern: kit_kick, repeat: 16 }
+          hat: { pattern: kit_hat, loop: true }
+      - name: build
+        density_start: 25
+        density_end: 100
+        tracks:
+          kick: { pattern: kit_kick, repeat: 8 }
+          clap: { pattern: kit_clap, loop: true }
+          open: { pattern: kit_open, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [turn], loop: true }
+      - name: drop
+        tracks:
+          kick: { pattern: kit_kick, repeat: 16 }
+          clap: { pattern: kit_clap, loop: true }
+          open: { pattern: kit_open, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [turn], loop: true }
+          lead: { pattern: stab, chains: [turn], loop: true }
+      - name: breakdown
+        tracks:
+          bass: { pattern: bass, chains: [turn], repeat: 16 }
+          pad: { pattern: pad, chains: [turn], loop: true }
+      - name: build 2
+        density_start: 25
+        density_end: 100
+        tracks:
+          kick: { pattern: kit_kick, repeat: 8 }
+          clap: { pattern: kit_clap, loop: true }
+          open: { pattern: kit_open, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [turn], loop: true }
+          lead: { pattern: stab, chains: [turn], loop: true }
+      - name: drop 2
+        tracks:
+          kick: { pattern: kit_kick, repeat: 16 }
+          clap: { pattern: kit_clap, loop: true }
+          open: { pattern: kit_open, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [turn], loop: true }
+          lead: { pattern: stab, chains: [turn], loop: true }
+      - name: last drop
+        tracks:
+          kick: { pattern: kit_kick, repeat: 16 }
+          clap: { pattern: kit_clap, loop: true }
+          open: { pattern: kit_open, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [turn], loop: true }
+          lead: { pattern: stab, chains: [turn], loop: true }
+          lead high: { pattern: stab, chains: [turn], loop: true }
+      - name: outro
+        tracks:
+          kick: { pattern: kit_kick, repeat: 8 }
+          hat: { pattern: kit_hat, loop: true }
