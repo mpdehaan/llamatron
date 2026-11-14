@@ -43,7 +43,7 @@ pages current.
 | page | demos |
 | --- | ---: |
 | [Tutorial Demos](demos/TUTORIAL.md) | 23 |
-| [Blues](demos/BLUES.md) | 2 |
+| [Blues](demos/BLUES.md) | 3 |
 | [Children's](demos/CHILDRENS.md) | 1 |
 | [Classical](demos/CLASSICAL.md) | 3 |
 | [Electronic](demos/ELECTRONIC.md) | 15 |
