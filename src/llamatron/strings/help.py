@@ -83,7 +83,7 @@ Nothing is saved or exported until you ask.
 HELP_FILE_PAGE = """
 The set's own settings, and its file. Up and down select one. Left and right change it, and ENTER types or chooses.
 Title, Author, Description and Notes: only for people reading or sharing the file. Description is one line saying what the
-set is; Bksp clears the first three. ENTER on Notes opens them for editing, as long as you like; Tab reaches Save and Cancel. Step size: how long each step of a pattern is, unless the pattern sets its own. Default octaves: what a new note or drum hit gets.
+set is; Bksp clears the first three. ENTER on Notes opens them for editing, as long as you like; Tab reaches Save and CANCEL. Step size: how long each step of a pattern is, unless the pattern sets its own. Default octaves: what a new note or drum hit gets.
 Octave labels: as Live numbers octaves on screen (middle C is C3) or from 0 (middle C is C5).
 Default follow action: a clip's Advance unless it sets its own.
 Visualizer: Arrange shows it first. Hide Visualizers: not shown.
@@ -122,7 +122,7 @@ HELP_NOTES_PAGE = """
 Notes about the set, for anyone reading or sharing its file. They don't change how it plays.
 
 It opens editing from the File/Global page. Typing adds text where the cursor is, ENTER starts a new
-line, Bksp erases, and the arrows move the cursor. Tab reaches the Save and Cancel buttons under
+line, Bksp erases, and the arrows move the cursor. Tab reaches the Save and CANCEL buttons under
 the text, and Tab again comes back; ESC cancels, throwing the typing away. While reading, up and
 down scroll, E starts editing again, Bksp clears it all, after asking, and ESC goes back.
 A protected set's notes can only be read, so they open reading, with no E or Bksp.

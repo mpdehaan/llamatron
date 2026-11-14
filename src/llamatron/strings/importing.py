@@ -87,7 +87,7 @@ MSG_IMPORT_STEPS = '{count} steps'
 MSG_IMPORT_AS_CHORDS = 'as chords'
 MSG_IMPORT_AS_TRACKS = 'as extra tracks'
 MSG_IMPORT_AUTO_STEP = 'auto ({size})'
-MSG_IMPORT_BUTTONS = ('Import', 'Cancel')
+MSG_IMPORT_BUTTONS = ('Import', 'CANCEL')
 MSG_IMPORT_SONG_PROMPT = 'Song name'
 
 # tui/dialogs/imported_dialog.py: the dialog after an import, the user's design of 2026-11-10.

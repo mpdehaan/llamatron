@@ -148,7 +148,7 @@ MSG_RENAME_SONG_PROMPT = 'Rename song'
 
 # tui/screens/track_editor.py
 MSG_RENAME_TRACK_PROMPT = 'Rename track'
-MSG_EDITING = 'editing: Tab reaches Save and Cancel, ESC cancels'
+MSG_EDITING = 'editing: Tab reaches Save and CANCEL, ESC cancels'
 MSG_CLEAR_NOTES_TITLE = 'Clear the notes'
 MSG_CLEAR_NOTES_QUESTION = 'Delete all of the notes?'
 MSG_NO_NOTES_NOTE = '  No notes yet. Press E to write some.'

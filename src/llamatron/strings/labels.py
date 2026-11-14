@@ -34,11 +34,11 @@ def register_labels(*, rows, label):
 # The quit dialog's buttons, the user's words, in the order of QUIT_WITHOUT_SAVING, SAVE_THEN_QUIT and CANCEL: quitting without
 # saving comes first, and is what ENTER does, because Quit is never pressed by accident; the dialog only appears when there are
 # changes to lose.
-MSG_QUIT_BUTTONS = ('Quit without saving', 'Save, then Quit', 'Cancel')
+MSG_QUIT_BUTTONS = ('Quit without saving', 'Save, then Quit', 'CANCEL')
 # A message's one button.
 MSG_OK_BUTTON = 'OK'
 # The confirm dialog's two buttons, in the order they're drawn and the arrows move: yes first, since ENTER presses the selected one.
-MSG_CONFIRM_BUTTONS = ('Yes', 'No')
+MSG_CONFIRM_BUTTONS = ('YES', 'NO')
 
 # tui/screens/arrange_page.py
 # A scene's field for each register it can reset, like "Reset AX".
@@ -274,7 +274,7 @@ MSG_EXPORT_CHOICES = ['Ableton Live set', 'MIDI (Stems)', 'MIDI (Single File)', 
 
 # tui/screens/track_editor.py
 # The two buttons under the text while editing, which Tab reaches and Left and Right move between.
-MSG_NOTES_BUTTONS = ('Save', 'Cancel')
+MSG_NOTES_BUTTONS = ('Save', 'CANCEL')
 # The lists of named things.
 MSG_DRUM_KIND = 'drum'
 MSG_NOTES_KIND = 'notes'

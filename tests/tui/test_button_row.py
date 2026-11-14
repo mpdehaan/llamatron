@@ -26,7 +26,7 @@ from llamatron.tui.status_line import StatusLine
 
 SAID = 'cannot delete a track while the song plays'
 WIDTH = 60
-BUTTONS = [('Q', 'Quit without saving'), ('S', 'Save, then Quit'), ('ESC', 'Cancel')]
+BUTTONS = [('Q', 'Quit without saving'), ('S', 'Save, then Quit'), ('ESC', 'CANCEL')]
 
 
 class TestButtonRow(unittest.TestCase):
