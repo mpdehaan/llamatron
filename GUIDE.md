@@ -51,6 +51,7 @@ A file holds a set of songs, like the songs of one concert. The patterns, scales
 | [Exercise](docs/demos/EXERCISE.md) | The exercise demo songs. |
 | [Folk](docs/demos/FOLK.md) | The folk demo songs. |
 | [Gospel](docs/demos/GOSPEL.md) | The gospel demo songs. |
+| [Metal](docs/demos/METAL.md) | The metal demo songs. |
 | [Pop](docs/demos/POP.md) | The pop demo songs. |
 | [Ragtime](docs/demos/RAGTIME.md) | The ragtime demo songs. |
 | [Rock](docs/demos/ROCK.md) | The rock demo songs. |

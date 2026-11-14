@@ -29,7 +29,7 @@ notes: |
   contrast is the breakdown; the sounds are two distortion guitars, an overdriven guitar on the
   chords, a voice lead and a pick bass.
 
-  Run it with: llamatron examples/by_genre/rock/loud_complaint.yml
+  Run it with: llamatron examples/by_genre/metal/loud_complaint.yml
 
   Scene 1, riff, 8 bars.
   Scene 2, verse, 16 bars.
@@ -204,7 +204,7 @@ songs:
   loud_complaint:
     tempo: 184
     scale: D Minor
-    genre: Rock
+    genre: Metal
 
     tracks:
       kick: { drum: true, instrument: drum kit }
