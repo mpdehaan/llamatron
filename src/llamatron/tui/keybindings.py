@@ -943,7 +943,7 @@ class PickManyDialog(Dialog):
 
 
 class KeyswitchMapDialog(Dialog):
-    """An instrument's Keyswitch Map: Up and Down move through the ten slots and down to the buttons, Right moves to the slot's name, where Enter renames, and on to its note, N names the slot from anywhere, Enter opens its note picker, Bksp empties it, O is OK and Esc is CANCEL.
+    """An instrument's Keyswitch Map: Up and Down move through the ten slots and down to the buttons, Left and Right move between the slot's name, where Enter renames, and its note, N names the slot from either, Enter opens its note picker, Bksp empties it, O is OK and Esc is CANCEL.
 
     On the buttons, Left and Right choose one and Enter presses it. In the note picker, drawn over the map, Left and Right move along the octave's keys, Up and Down change the octave, Enter takes the note and Esc closes the picker with nothing changed.
     """
@@ -951,7 +951,7 @@ class KeyswitchMapDialog(Dialog):
     MOVE = (ARROWS_UP_DOWN, KeyName.UP_DOWN, What.MOVE)
     RENAME = ((Key.N, Key.F2), KeyName.N_F2, What.RENAME)
     NOTE = (Key.ENTER, KeyName.ENTER, MSG_KEYSWITCH_NOTE_WHAT)
-    # On a slot's name, reached with Right, Enter renames, the user's design.
+    # The cursor is on a slot's name or its note, the user's design: Enter renames on the name and opens the note picker on the note.
     ACROSS = (ARROWS_LEFT_RIGHT, KeyName.LEFT_RIGHT, What.SELECT)
     RENAME_HERE = (Key.ENTER, KeyName.ENTER, What.RENAME)
     CLEAR = (Key.BACKSPACE, KeyName.BACKSPACE, What.CLEAR)

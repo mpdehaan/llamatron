@@ -56,9 +56,9 @@ A keyswitch is a note that a plugin reads as an order to change how it plays, su
 | Key | What it does |
 | --- | --- |
 | Up, Down | Move through the ten slots, and down from the last slot to the OK and CANCEL buttons. |
-| Left, Right | Move along the slot's row: Right from the row goes to the slot's name, shown between `[` and `]`, and Right again to the slot's note. Up and Down keep that place, so one slot after another can be named. |
-| `N` or `F2` | Names the slot, from anywhere on the row. A blank name leaves the slot without one. |
-| `ENTER` | On a slot's name, names the slot. Anywhere else on a slot's row, opens the note picker. On a button, presses it. |
+| Left, Right | Move between the slot's name and the slot's note; the triangle stands before the one the cursor is on. Up and Down keep that place, so one slot after another can be named. |
+| `N` or `F2` | Names the slot, from the name or the note. A blank name leaves the slot without one. |
+| `ENTER` | On a slot's name, names the slot. On a slot's note, opens the note picker. On a button, presses it. |
 | `Bksp` | Empties the slot, its name and its note. |
 | `O` | OK: the ten slots go into the instrument together, as one undo step. |
 | `ESC` | CANCEL: nothing changes. |
