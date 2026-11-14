@@ -1,0 +1,268 @@
+version: 1.0.364
+title: Why say it again
+description: "a taut new wave song of the late seventies in the manner of Psycho Killer (Talking Heads), with a bass line and tunes of its own"
+notes: |
+  Why say it again: a taut new wave song of the late seventies in the manner of Psycho Killer (Talking
+  Heads), with a bass line and tunes of its own. This is a homage to Psycho Killer (Talking Heads):
+  its chords, form, sounds and drums follow that work as Claude knows it, and every tune and rhythm
+  here is new. Rebuild version 1.
+
+  A staccato bass alone, then a plain kit and two thin guitars; a clipped verse on a dominant I and a
+  flat VII; a stuttering chorus on flat VI, flat VII and a minor i; a bridge of long notes; a coda of
+  scratching guitar.
+
+  Subgenre: New York new wave and art-funk of the late seventies, dry and wiry. Drums: tight and plain
+  with no fills to speak of, a kick on every beat, a dry snare on two and four, closed eighth hats.
+  Tempo 122, straight. Bass: the centre of the song, a sparse staccato line that starts alone and
+  never loosens. Builds: instruments enter one at a time; a scratching guitar coda. Sounds: a bass,
+  two thin clean guitars, one chopping chords on the offbeats and one picking single notes, a nervous
+  voice. Melody manner: clipped, half-spoken verse phrases with long gaps; a chorus that stutters on
+  one note; a bridge of long notes, as if in another language. Form: bass, drums, guitar, verse,
+  chorus, bridge, a noisy coda.
+
+  Band and song: the band is known for nervous funk played without ornament, and a singer who sounds
+  wound tight; the song for a bass line that opens it alone, a stuttered chorus and a calm, strange
+  bridge.
+
+  Checklist: it is good and memorable because of tension that never breaks: little happens, exactly,
+  and the stutter sticks. The hook is the bass line, then the stuttered chorus; the emotion is anxiety
+  held still; the lift is the chorus, moving to borrowed major chords with the voice an octave up; the
+  contrast is the bridge of long notes; the sounds are a finger bass, two clean guitars, an overdriven
+  guitar for the coda and a voice lead.
+
+  Run it with: llamatron examples/by_genre/rock/why_say_it_again.yml
+
+  Scene 1, bass, 4 bars.
+  Scene 2, drums, 4 bars.
+  Scene 3, guitar, 4 bars.
+  Scene 4, verse, 16 bars.
+  Scene 5, chorus, 8 bars.
+  Scene 6, verse 2, 8 bars.
+  Scene 7, chorus 2, 8 bars.
+  Scene 8, bridge, 8 bars.
+  Scene 9, verse 3, 8 bars.
+  Scene 10, chorus 3, 8 bars.
+  Scene 11, coda, 12 bars.
+  Scene 12, bass again, 4 bars.
+
+  When changing this demo:
+  - Keep the drums as the Subgenre paragraph describes them, the kick first.
+  - Keep what the Checklist paragraph calls the hook and the lift.
+  - Keep every tune original, and the demo out of the key of the work it follows.
+real_time: true
+protected: true
+
+scales:
+  D Major: { root: D, type: major }
+
+patterns:
+  kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~]
+    octave: [3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [104, ~, ~, ~, 104, ~, ~, ~, 104, ~, ~, ~, 104, ~, ~, ~]
+  snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 106, ~, ~, ~, ~, ~, ~, ~, 106, ~, ~, ~]
+  hat:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~]
+    accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
+    velocity: [68, ~, 68, ~, 68, ~, 68, ~, 68, ~, 68, ~, 68, ~, 68, ~]
+  crash:
+    steps: 64
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [104, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  bass:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, 1, ~, ~, 5, 1]
+    octave: [2, ~, ~, 2, ~, ~, 1, 2]
+    velocity: [114, ~, ~, 108, ~, ~, 108, 108]
+  chop:
+    steps: 16
+    step_size: 1/16
+    degree: [~, ~, 1, ~, ~, ~, 1, 1, ~, ~, 1, ~, ~, ~, 1, ~]
+    octave: [~, ~, 4, ~, ~, ~, 4, 4, ~, ~, 4, ~, ~, ~, 4, ~]
+    chord: [~, ~, "3", ~, ~, ~, "3", "3", ~, ~, "3", ~, ~, ~, "3", ~]
+    velocity: [~, ~, 82, ~, ~, ~, 82, 82, ~, ~, 82, ~, ~, ~, 82, ~]
+  pick:
+    steps: 8
+    step_size: 1/8
+    degree: [~, 5, ~, 1, ~, 5, 3, ~]
+    octave: [~, 4, ~, 5, ~, 4, 4, ~]
+    velocity: [~, 80, ~, 80, ~, 80, 80, ~]
+  verse tune:
+    steps: 64
+    step_size: 1/8
+    degree: [~, ~, 3, 3, 3, ~, 2, 1, 3, ~, ~, ~, ~, ~, ~, ~, ~, ~, 2, 2, 4, ~, 2, 7, 2, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, 3, 5, ~, 3, 1, 5, ~, 6, ~, 5, ~, ~, ~, ~, ~, 4, 4, 4, ~, 2, 7, 2, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [~, ~, 4, 4, 4, ~, 4, 4, 4, ~, ~, ~, ~, ~, ~, ~, ~, ~, 4, 4, 4, ~, 4, 3, 4, ~, ~, ~, ~, ~, ~, ~, ~, ~, 4, 4, 4, ~, 4, 4, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, 4, 4, 4, ~, 4, 3, 4, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [~, ~, 102, 102, 102, ~, 102, 102, 108, ~, ~, ~, ~, ~, ~, ~, ~, ~, 102, 102, 102, ~, 102, 102, 108, ~, ~, ~, ~, ~, ~, ~, ~, ~, 102, 102, 102, ~, 102, 102, 108, ~, 102, ~, 102, ~, ~, ~, ~, ~, 102, 102, 102, ~, 102, 102, 108, ~, ~, ~, ~, ~, ~, ~]
+  chorus tune:
+    steps: 64
+    step_size: 1/8
+    degree: [6, ~, 6, 6, 1, ~, 6, ~, 7, ~, 7, 7, 2, ~, 7, ~, 1, 1, 1, ~, 1, 1, 1, ~, 3, 3, 3, ~, 1, ~, ~, ~, 6, ~, 6, 6, 3, ~, 1, ~, 7, ~, 7, 7, 4, ~, 2, ~, 1, 1, 1, ~, 5, 5, 5, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [b, ~, b, b, ~, ~, b, ~, b, ~, b, b, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, b, b, ~, ~, ~, ~, ~, b, ~, b, b, b, ~, ~, ~, b, ~, b, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, 4, 4, 5, ~, 4, ~, 4, ~, 4, 4, 5, ~, 4, ~, 5, 5, 5, ~, 5, 5, 5, ~, 5, 5, 5, ~, 5, ~, ~, ~, 4, ~, 4, 4, 5, ~, 5, ~, 4, ~, 4, 4, 5, ~, 5, ~, 5, 5, 5, ~, 4, 4, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [120, ~, 114, 114, 114, ~, 114, ~, 120, ~, 114, 114, 114, ~, 114, ~, 120, 114, 114, ~, 114, 114, 114, ~, 120, 114, 114, ~, 114, ~, ~, ~, 120, ~, 114, 114, 114, ~, 114, ~, 120, ~, 114, 114, 114, ~, 114, ~, 120, 114, 114, ~, 114, 114, 114, ~, 120, ~, ~, ~, ~, ~, ~, ~]
+  bridge tune:
+    steps: 64
+    step_size: 1/8
+    degree: [4, ~, ~, ~, ~, ~, 2, ~, 4, ~, ~, ~, 6, ~, ~, ~, 6, ~, ~, ~, ~, ~, 4, ~, 5, ~, ~, ~, 7, ~, ~, ~, 4, ~, ~, ~, ~, ~, 6, ~, 2, ~, ~, ~, 6, ~, ~, ~, 1, ~, ~, ~, 6, ~, 4, ~, 7, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, 4, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, ~, ~, 4, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, ~, ~, 4, ~, 5, ~, ~, ~, 4, ~, ~, ~, 5, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [102, ~, ~, ~, ~, ~, 96, ~, 102, ~, ~, ~, 96, ~, ~, ~, 102, ~, ~, ~, ~, ~, 96, ~, 102, ~, ~, ~, 96, ~, ~, ~, 102, ~, ~, ~, ~, ~, 96, ~, 102, ~, ~, ~, 96, ~, ~, ~, 102, ~, ~, ~, 96, ~, 96, ~, 102, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false]
+  scratch:
+    steps: 32
+    step_size: 1/8
+    degree: [1, 1, ~, 7, 1, ~, 3, 1, 1, 1, ~, 7, 5, ~, ~, ~, 2, 2, ~, 7, 2, ~, 4, 2, 2, 2, ~, 7, 4, ~, ~, ~]
+    accidental: [~, ~, ~, b, ~, ~, b, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~]
+    octave: [6, 6, ~, 5, 6, ~, 6, 6, 6, 6, ~, 5, 5, ~, ~, ~, 6, 6, ~, 5, 6, ~, 6, 6, 6, 6, ~, 5, 5, ~, ~, ~]
+    velocity: [110, 104, ~, 104, 104, ~, 104, 104, 110, 104, ~, 104, 104, ~, ~, ~, 110, 104, ~, 104, 104, ~, 104, 104, 110, 104, ~, 104, 104, ~, ~, ~]
+
+progressions:
+  verse: { chords: [1, 1, 7, 7], accidentals: [~, ~, b, b], qualities: [dom7, dom7, M, M] }
+  chorus: { chords: [6, 7, 1, 1], accidentals: [b, b, ~, ~], qualities: [M, M, m, m] }
+  bridge: { chords: [2, 2, 4, 5] }
+
+chains:
+  verse:
+    - progression: verse
+  chorus:
+    - progression: chorus
+  bridge:
+    - progression: bridge
+
+instruments:
+  finger bass: { device: "*FluidSynth", gm_sound: 34 }
+  clean guitar: { device: "*FluidSynth", gm_sound: 28 }
+  muted guitar: { device: "*FluidSynth", gm_sound: 29 }
+  overdriven guitar: { device: "*FluidSynth", gm_sound: 30 }
+  voice lead: { device: "*FluidSynth", gm_sound: 86 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  why_say_it_again:
+    tempo: 122
+    scale: D Major
+    genre: Rock
+
+    tracks:
+      kick: { drum: true, instrument: drum kit }
+      snare: { drum: true, instrument: drum kit }
+      hat: { drum: true, instrument: drum kit }
+      crash: { drum: true, instrument: drum kit }
+      bass: { instrument: finger bass }
+      guitar: { instrument: clean guitar }
+      second guitar: { instrument: muted guitar }
+      noise: { instrument: overdriven guitar }
+      lead: { instrument: voice lead }
+
+    scenes:
+      - name: bass
+        tracks:
+          bass: { pattern: bass, chains: [verse], repeat: 4 }
+      - name: drums
+        tracks:
+          kick: { pattern: kick, repeat: 4 }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [verse], loop: true }
+      - name: guitar
+        tracks:
+          kick: { pattern: kick, repeat: 4 }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [verse], loop: true }
+          guitar: { pattern: chop, chains: [verse], loop: true }
+      - name: verse
+        tracks:
+          kick: { pattern: kick, repeat: 16 }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [verse], loop: true }
+          guitar: { pattern: chop, chains: [verse], loop: true }
+          lead: { pattern: verse tune, loop: true }
+      - name: chorus
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [chorus], loop: true }
+          guitar: { pattern: chop, chains: [chorus], loop: true }
+          second guitar: { pattern: pick, chains: [chorus], loop: true }
+          lead: { pattern: chorus tune, loop: true }
+          crash: { pattern: crash, loop: true }
+      - name: verse 2
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [verse], loop: true }
+          guitar: { pattern: chop, chains: [verse], loop: true }
+          second guitar: { pattern: pick, chains: [verse], loop: true }
+          lead: { pattern: verse tune, loop: true }
+      - name: chorus 2
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [chorus], loop: true }
+          guitar: { pattern: chop, chains: [chorus], loop: true }
+          second guitar: { pattern: pick, chains: [chorus], loop: true }
+          lead: { pattern: chorus tune, loop: true }
+          crash: { pattern: crash, loop: true }
+      - name: bridge
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [bridge], loop: true }
+          second guitar: { pattern: pick, chains: [bridge], loop: true }
+          lead: { pattern: bridge tune, loop: true }
+      - name: verse 3
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [verse], loop: true }
+          guitar: { pattern: chop, chains: [verse], loop: true }
+          second guitar: { pattern: pick, chains: [verse], loop: true }
+          lead: { pattern: verse tune, loop: true }
+      - name: chorus 3
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [chorus], loop: true }
+          guitar: { pattern: chop, chains: [chorus], loop: true }
+          second guitar: { pattern: pick, chains: [chorus], loop: true }
+          lead: { pattern: chorus tune, loop: true }
+          crash: { pattern: crash, loop: true }
+      - name: coda
+        tracks:
+          kick: { pattern: kick, repeat: 12 }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [verse], loop: true }
+          guitar: { pattern: chop, chains: [verse], loop: true }
+          second guitar: { pattern: pick, chains: [verse], loop: true }
+          noise: { pattern: scratch, loop: true }
+      - name: bass again
+        tracks:
+          kick: { pattern: kick, repeat: 4 }
+          bass: { pattern: bass, chains: [verse], loop: true }
