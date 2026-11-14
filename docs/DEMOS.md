@@ -54,8 +54,8 @@ pages current.
 | [Ragtime](demos/RAGTIME.md) | 1 |
 | [Rock](demos/ROCK.md) | 8 |
 | [Soundtrack](demos/SOUNDTRACK.md) | 6 |
-| [TV Theme](demos/TV_THEME.md) | 3 |
-| [TV theme](demos/TV_THEME.md) | 5 |
+| [TV Theme](demos/TV_THEME.md) | 4 |
+| [TV theme](demos/TV_THEME.md) | 4 |
 | [Video game](demos/VIDEO_GAME.md) | 2 |
 | [World](demos/WORLD.md) | 1 |
 | [Other](demos/OTHER.md) | 1 |
