@@ -943,7 +943,7 @@ class PickManyDialog(Dialog):
 
 
 class KeyswitchMapDialog(Dialog):
-    """An instrument's Keyswitch Map: Up and Down move through the ten slots and down to the buttons, N names the slot, Enter opens its note picker, Bksp empties it, O is OK and Esc is CANCEL.
+    """An instrument's Keyswitch Map: Up and Down move through the ten slots and down to the buttons, Right moves to the slot's name, where Enter renames, and on to its note, N names the slot from anywhere, Enter opens its note picker, Bksp empties it, O is OK and Esc is CANCEL.
 
     On the buttons, Left and Right choose one and Enter presses it. In the note picker, drawn over the map, Left and Right move along the octave's keys, Up and Down change the octave, Enter takes the note and Esc closes the picker with nothing changed.
     """
@@ -951,6 +951,9 @@ class KeyswitchMapDialog(Dialog):
     MOVE = (ARROWS_UP_DOWN, KeyName.UP_DOWN, What.MOVE)
     RENAME = ((Key.N, Key.F2), KeyName.N_F2, What.RENAME)
     NOTE = (Key.ENTER, KeyName.ENTER, MSG_KEYSWITCH_NOTE_WHAT)
+    # On a slot's name, reached with Right, Enter renames, the user's design.
+    ACROSS = (ARROWS_LEFT_RIGHT, KeyName.LEFT_RIGHT, What.SELECT)
+    RENAME_HERE = (Key.ENTER, KeyName.ENTER, What.RENAME)
     CLEAR = (Key.BACKSPACE, KeyName.BACKSPACE, What.CLEAR)
     OK = (Key.O, KeyName.O, MSG_OK_WHAT)
     ALONG_BUTTONS = (ARROWS_LEFT_RIGHT, KeyName.LEFT_RIGHT, What.SELECT)
@@ -959,7 +962,7 @@ class KeyswitchMapDialog(Dialog):
     PICK_OCTAVE = (ARROWS_UP_DOWN, KeyName.UP_DOWN, MSG_KEYSWITCH_OCTAVE_WHAT)
     TAKE_NOTE = (Key.ENTER, KeyName.ENTER, What.CHOOSE)
     CLOSE_PICKER = (CANCEL_KEYS, KeyName.ESCAPE, What.CLOSE)
-    IN_HELP = [Dialog.CANCEL, MOVE, RENAME, NOTE, CLEAR, OK, ALONG_BUTTONS, PRESS, PICK_NOTE, PICK_OCTAVE, TAKE_NOTE, CLOSE_PICKER]
+    IN_HELP = [Dialog.CANCEL, MOVE, ACROSS, RENAME, RENAME_HERE, NOTE, CLEAR, OK, ALONG_BUTTONS, PRESS, PICK_NOTE, PICK_OCTAVE, TAKE_NOTE, CLOSE_PICKER]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[Dialog.CANCEL, OK])
 
 
