@@ -28,6 +28,7 @@ from llamatron.composition.checks import listed
 from llamatron.composition.file_format import FLUIDSYNTH_DEVICE, ClipSlotSetting
 from llamatron.realtime.fluidsynth import AUDIO_DEVICE_VARIABLE
 from llamatron.composition.instrument import MAX_CHANNEL, MIN_CHANNEL
+from llamatron.strings.about import MSG_DEMO_SCROLL
 from llamatron.strings.errors import ERR_RECORDING_SONG_LOOPS
 from llamatron.tui.launch import LEAD_IN_SECONDS, LEAD_OUT_SECONDS, SPLASH_SECONDS
 from llamatron.tui.uses import looping_scenes
@@ -37,6 +38,8 @@ from llamatron.visualizers.modes import MODES
 SCRIPT = pathlib.Path(__file__).resolve().parent.parent.parent / 'internal_tools' / 'record_demo.py'
 MODULE_NAME = 'record_demo'
 PORT = 'IAC Driver Bus 1'
+AN_EXAMPLE = 'examples/learning/19_hocket_shanty.yml'
+AN_EXAMPLE_NAME = 'HocketShanty'
 OTHER_PORT = 'Some Synth'
 PORTS = [OTHER_PORT, PORT]
 OWN = 'own'
@@ -190,8 +193,10 @@ class TestRecordDemo(unittest.TestCase):
         with mock.patch('builtins.input', return_value=NO_SUCH), contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
             self.assertIs(self.tool.ask_for_view(), False)
 
-    def visualizer_take(self, *, staged):
+    def visualizer_take(self, *, staged, path=SET_PATH):
         """Record a take of the last visualizer mode, chosen when asked, with everything it runs replaced, and return what the tracker was launched with."""
+        # A take gives the set's tracks instruments, so each take is of a set no take has touched.
+        self.document = a_song()
         devices = [(DEVICE_ID, self.tool.DEFAULT_AUDIO_DEVICE)]
         region = mock.Mock()
         region.argument.return_value = REGION_ARGUMENT
@@ -202,9 +207,22 @@ class TestRecordDemo(unittest.TestCase):
                 mock.patch.object(self.tool, 'LlamatronApp') as app, \
                 mock.patch('builtins.input', return_value=str(len(MODES) + 1)), contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
             trim.side_effect = lambda command, **named: pathlib.Path(command[command.index(self.tool.OUTPUT_FLAG) + 1]).write_bytes(TRIMMED_BYTES)
-            self.tool.record(path=SET_PATH, driver=PORT, audio_device=self.tool.DEFAULT_AUDIO_DEVICE, assignment=None, max_seconds=SMALL_LIMIT, window_id=None,
+            self.tool.record(path=path, driver=PORT, audio_device=self.tool.DEFAULT_AUDIO_DEVICE, assignment=None, max_seconds=SMALL_LIMIT, window_id=None,
                              go=True, ask_view=True, staged=staged, recording=StandInRecording)
         return app.call_args.kwargs['launch']
+
+    def test_a_take_of_an_example_scrolls_the_demos_name_after_the_title_and_any_other_set_scrolls_nothing(self):
+        # The user's design: DEMO: and the file's name in camel case, for the sets in examples/ alone.
+        self.assertEqual(self.tool.scroll_text_of(AN_EXAMPLE), MSG_DEMO_SCROLL.format(name=AN_EXAMPLE_NAME))
+        self.assertEqual(self.tool.scroll_text_of(os.path.abspath(AN_EXAMPLE)), MSG_DEMO_SCROLL.format(name=AN_EXAMPLE_NAME))
+        self.assertIsNone(self.tool.scroll_text_of(SET_PATH))
+        self.assertIsNone(self.visualizer_take(staged=True).scroll_text)
+        self.assertIsNone(self.visualizer_take(staged=False).scroll_text)
+
+    def test_the_demos_name_goes_to_a_batch_take_and_a_plain_take(self):
+        for staged in (True, False):
+            with self.subTest(staged=staged):
+                self.assertEqual(self.visualizer_take(staged=staged, path=AN_EXAMPLE).scroll_text, MSG_DEMO_SCROLL.format(name=AN_EXAMPLE_NAME))
 
     def test_a_take_of_a_visualizer_mode_is_a_batch_video_of_that_mode_by_default(self):
         launch = self.visualizer_take(staged=True)

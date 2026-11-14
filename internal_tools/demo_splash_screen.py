@@ -18,11 +18,14 @@
 
     .venv/bin/python internal_tools/demo_splash_screen.py [--seconds 5]
     .venv/bin/python internal_tools/demo_splash_screen.py --batch [examples/by_genre/ragtime/entertainer.yml] [--visualizer spectrum]
+    .venv/bin/python internal_tools/demo_splash_screen.py --scroll-text [examples/learning/19_hocket_shanty.yml]
 
 internal_tools/demo_splash_screen.sh runs it. --seconds is how long the finished title holds, with its
 prompt pulsing, after the letters, the scanner and the address have come in. With --batch it opens the
 set named, the Entertainer unless told, as a batch video would (tui/batch_stage.py), and quits once READY
-has shown. Nothing is played, recorded or saved.
+has shown. With --scroll-text the title is followed by what a recording of an example shows next, the
+demo's name crossing the screen, DEMO: and the file's name in camel case, for the set named, the
+Entertainer unless told; the set is not opened, only its name is read. Nothing is played, recorded or saved.
 """
 
 import argparse
@@ -30,6 +33,7 @@ import sys
 
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.document import Document
+from llamatron.tui.components.scroll_text import scroll_text_for
 from llamatron.tui.components.title_card import scan_end
 from llamatron.tui.launch import Launch
 
@@ -40,9 +44,9 @@ OPTIONAL = '?'
 NO_LEAD_IN = 0.0
 
 
-def launch_for(*, hold_seconds):
-    """Return the launch that shows the start screen until it has come in and held for hold_seconds, then quits."""
-    return Launch(test_splash=True, splash_seconds=scan_end() + hold_seconds, lead_in_seconds=NO_LEAD_IN)
+def launch_for(*, hold_seconds, scroll_text=None):
+    """Return the launch that shows the start screen until it has come in and held for hold_seconds, then the words that scroll when there are any, and quits."""
+    return Launch(test_splash=True, splash_seconds=scan_end() + hold_seconds, lead_in_seconds=NO_LEAD_IN, scroll_text=scroll_text)
 
 
 def opening_launch(*, visualizer):
@@ -55,9 +59,11 @@ def main(*, argv=None):
     parser.add_argument('--seconds', type=float, default=DEFAULT_HOLD_SECONDS, help='how long the finished title holds before it fades out')
     parser.add_argument('--batch', nargs=OPTIONAL, const=DEFAULT_SET, default=None, help="a batch video's opening on this set, the Entertainer unless named")
     parser.add_argument('--visualizer', default=DEFAULT_VISUALIZER, help='the mode the batch video would show')
+    parser.add_argument('--scroll-text', nargs=OPTIONAL, const=DEFAULT_SET, default=None, help="after the title, the demo's name crossing the screen as a recording of this set shows it, the Entertainer unless named")
     arguments = parser.parse_args(argv)
     if arguments.batch is None:
-        LlamatronApp(launch=launch_for(hold_seconds=arguments.seconds)).run()
+        scroll_text = None if arguments.scroll_text is None else scroll_text_for(arguments.scroll_text)
+        LlamatronApp(launch=launch_for(hold_seconds=arguments.seconds, scroll_text=scroll_text)).run()
         return 0
     document, _ = Document.load_or_correct(arguments.batch)
     LlamatronApp(document=document, launch=opening_launch(visualizer=arguments.visualizer)).run()
