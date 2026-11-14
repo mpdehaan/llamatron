@@ -50,6 +50,8 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   but unresolved questions, Claude replies once with the list of them and waits.
 - **"Questions".** When the user says "questions", with no other comment or as the whole message, every open question is asked
   again in full, rephrased, as "Standing alone, and asked again in full" says (the user's shorthand).
+- **"Ask again".** When the user says "ask again", Claude works what the user has just said into the questions still open, which
+  may have changed with the answers, and asks those again in full (the user's shorthand).
 - **"Discuss and wait".** When the user says to discuss and wait, Claude discusses what the user said, with every related
   question, concern and idea of Claude's own, as one batch in one reply, and builds nothing of it until the user answers.
 - **"Mockup".** When the user's message includes the word mockup, Claude draws a picture of the screen, made from what the user

@@ -78,7 +78,12 @@ they are, but a count of patterns reads as the song's own, the set's and the tot
 a column beside the tracks holding a star: a starred pattern is global and belongs to the set, and taking the star away asks,
 in a dialog, which song the pattern goes to, since it no longer belongs to the set. Today every pattern belongs to the set and
 every song shares it, so this changes the model and the file format; Claude is to discuss its concerns and ideas with the user,
-with a drawing of the list of patterns and of the main screen, before anything is built. What it would mean for the code: `uses_of` in `tui/uses.py` already knows
+with a drawing of the list of patterns and of the main screen, before anything is built. Settled so far for the Patterns page:
+it lists the global patterns and the current song's own, in alphabetical order, narrowed by the search where one is typed; a
+blank line separates the caption from the column headings; the column for global patterns is headed GLOBAL and holds a solid
+circle where the pattern is global; TYPE becomes DRUM, a solid circle for a drum pattern and nothing otherwise; USED counts the
+clips that play the pattern; and TRACKS, where there is room, reads as the number of tracks and then their names in
+parentheses, like `(2 lead, pad)`, cut with an ellipsis when the names don't fit. What it would mean for the code: `uses_of` in `tui/uses.py` already knows
 every use, and the Patterns page's USED column the count; the row needs the track names of the uses, without repeats, fitted
 to the width the page is given, and the answer remembered until the set changes. This covers what was left of "Where a
 pattern is used" for the Patterns page.
