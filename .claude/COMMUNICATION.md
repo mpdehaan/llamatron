@@ -45,6 +45,9 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   idea is" or "idea 2", and they raise questions, each idea's questions are a block of their own: Claude asks one idea's questions
   together in one reply and waits; once they are answered, or the user says to continue, the next idea's block follows. Questions
   already open are resolved first, before any idea's discussion starts (the user's rule).
+- **Asking is pausing.** Once Claude has put questions to the user, it stops: no commands run and no changes scroll by while the
+  user reads and answers, so a reply that asks is the last thing of its turn (the user's rule). When the queue holds nothing to do
+  but unresolved questions, Claude replies once with the list of them and waits.
 - **"Questions".** When the user says "questions", with no other comment or as the whole message, every open question is asked
   again in full, rephrased, as "Standing alone, and asked again in full" says (the user's shorthand).
 - **"Discuss and wait".** When the user says to discuss and wait, Claude discusses what the user said, with every related

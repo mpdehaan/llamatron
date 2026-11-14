@@ -252,7 +252,10 @@ shared helpers are modules beside them:
   every exporter shares, with two small kinds of export made for the test, and holds the rule
   that every exporter class is listed in `exporters/exports.py`.
 - **The tracker.** The `tests/tui/test_tui_*.py` modules run the real program with no terminal and press
-  keys, through `UITest` in `tests/support/ui_testing.py`: `a_song()` builds a document to work on,
+  keys, each page and component in a module of its own (`tests/tui/test_tui_main_page.py`, `tests/tui/test_tui_file_page.py`,
+  `tests/tui/test_tui_pattern_sections.py` and the like; no rule on a file's size, the aim is that a page's tests are found by its
+  name), a helper or base class that several of them share in `tests/support/` (`tests/support/page_testing.py`,
+  `tests/support/pattern_editor_testing.py`), through `UITest` in `tests/support/ui_testing.py`: `a_song()` builds a document to work on,
   `press(*keys)` presses keys by their names, letting the tracker handle each with
   `settle()` (`pilot.pause(0)`) rather than `pilot.pause()`, whose wait for the computer to go idle
   cost a fiftieth of a second a key and far more with the suite's classes side by side; `UITest`
@@ -302,7 +305,7 @@ shared helpers are modules beside them:
   `tests/tui/test_tui_help_keys.py` (every key a page's help names is bound on that page, every bound
   key is one of its own class's bindings and no key reaches two bindings in one place, found by
   touring every page and walking its cursor to every place, whose `TestKeyMapIsCurrent` holds `.claude/KEYMAP.md` to what the tour finds, rewritten by `internal_tools/key_map.sh`), `tests/tools/test_bump_version.py` and the
-  rule tests in `tests/tui/test_tui_pages.py` and `tests/tui/test_tui_undo.py`. `tests/tui/test_key_table.py`
+  rule tests in `tests/tui/test_tui_keys_shown.py`, `tests/tui/test_tui_help.py`, `tests/tui/test_tui_look.py` and `tests/tui/test_tui_undo.py`. `tests/tui/test_key_table.py`
   tests how keys are bound, and `tests/tools/test_show_keys.py` the tool that prints them.
 
 ## One test class per page

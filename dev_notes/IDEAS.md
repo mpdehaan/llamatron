@@ -1064,7 +1064,7 @@ code: `Button` in `screens/field.py` exists, made by
 `FieldPage.button` and drawn below the settings after a blank line with its key's name in front,
 as the main menu draws a row, so what's left is a Save as button on the File/Global page, a cursor
 position below the grid in the pattern editor, which is new for it, and a check in
-`tests/tui/test_tui_pages.py` that every button's key is still in `keys()`, so pressing the key and the
+`tests/tui/test_tui_keys_shown.py` that every button's key is still in `keys()`, so pressing the key and the
 button do the same.
 
 ## Naming the CC numbers in the track editor's picker
@@ -1527,7 +1527,7 @@ What it would mean for the code: a binding in `tui/keybindings.py` would take a 
 small class of group names in `strings/legends.py`, and `HelpDialog.key_columns` would lay out one
 block per group in the order the groups are declared, falling back to one block for a page that
 names no groups, so that the pages can be grouped one at a time. The legend wouldn't change. The
-test that every page's help fits an 80 by 24 console (`tests/tui/test_tui_pages.py`) keeps its hold,
+test that every page's help fits an 80 by 24 console (`tests/tui/test_tui_help.py`) keeps its hold,
 so the dialog may need to scroll, or to put the headings in the columns' first rows, on the
 pattern editor.
 
@@ -1655,7 +1655,7 @@ the rules and still need refactoring:
   like a row label, a key's name, a page's title or a message, it imports the program's constant
   for it (`ROW_LABELS[Row.DEGREE]`, `ERR_SCENE_NO_SUCH_SCALE`) instead of writing the words out
   again, so that renaming something in the program changes the tests with it. Every shown string
-  is a `MSG_`, `ERR_` or `HELP_` constant now, so the tests, mostly `test_tui_pages.py` and
+  is a `MSG_`, `ERR_` or `HELP_` constant now, so the tests, mostly the tracker's page tests in `tests/tui/` and
   `test_tui_document.py`, can swap their literals over, along with the drawing they wrap them in,
   like the `│` before a row label, which can be a helper in the test file.
 - **Demo tests read from the YAML.** A test of a demo checks values it reads from the demo's
@@ -1698,7 +1698,7 @@ cursor that moves in both directions like the pattern editor's, and the keys dep
 row under the cursor: digits, `+` and `-`, `ENTER` and `Bksp` on the number rows, and `Space` or
 `ENTER` on the wraps row. The grid drawing of the pattern editor (`screens/grid_drawing.py`) could be
 shared, since it's the same box characters and reverse-video cursor. `Document.set_register_setting` and the
-refusal messages stay as they are, and `test_tui_pages.TestRegistersPage` would change with the
+refusal messages stay as they are, and `TestRegistersPage` would change with the
 keys. The help text would need rewriting for the new keys.
 
 ## Melodic figures for melody generators

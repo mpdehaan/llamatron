@@ -129,7 +129,7 @@ code.
   columns downwards over four lines, Silence last in the first column, with Undo still above
   Redo in the second, the user's choice.
 - Each page names its `HELP_` constant from `strings/help.py` as `HELP`. `tests/tui/test_tui_help_keys.py`
-  checks that every key a help text names is bound on that page, and `tests/tui/test_tui_pages.py`
+  checks that every key a help text names is bound on that page, and `tests/tui/test_tui_help.py`
   that the help fits an 80 by 24 console.
 - `AboutDialog` (`tui/dialogs/about_dialog.py`, `Page.show_about`) draws the cowsay cow in code
   (`cow_saying`), `VERSION`, `BUILD_DATE` and `BUILD_TIME` from `support/version.py`, the links, a

@@ -15,8 +15,8 @@ kept by reading.
 | Every string the program shows or raises is a constant: in the `src/llamatron/strings/` package and nowhere else, `ERR_` in `errors.py`, `HELP_` in `help.py`, `REPR_` in `reprs.py` and `MSG_` in the others. Each group comment names a module that exists, and the package's modules import only names. | `tests/rules/test_message_constants.py` |
 | A commit that changes Python under `src/` carries a version bump, made by `internal_tools/bump.sh`. | `internal_tools/check_before_commit.sh`, which Claude runs before committing code, through `internal_tools/bump_version.py --check`, tested by `tests/tools/test_bump_version.py` |
 | No unused import, undefined name or name defined twice, in `src/`, `tests/` or `internal_tools/`. | `tests/rules/test_pyflakes.py` |
-| Each screen lists its keys once, in `keys()`, so no key works without being shown in the legend or the F1 dialog, and every page's help fits an 80 by 24 console. | `tests/tui/test_tui_pages.py` |
-| A screen's method is never named after one Textual has, like `render` or `remove`. | `tests/tui/test_tui_pages.py` |
+| Each screen lists its keys once, in `keys()`, so no key works without being shown in the legend or the F1 dialog, and every page's help fits an 80 by 24 console. | `tests/tui/test_tui_keys_shown.py`, `tests/tui/test_tui_help.py` |
+| A screen's method is never named after one Textual has, like `render` or `remove`. | `tests/tui/test_tui_look.py` |
 | Every key a page's help names is bound on that page, so help can't go on naming a key that moved. | `tests/tui/test_tui_help_keys.py` |
 | No test presses a key written as a letter, or as a letter or mark of `Key`: keys go by the bindings of `tui/keybindings.py`, which say what they do, like `keybindings.ListPage.ADD`. | `tests/rules/test_pressed_keys.py` |
 | Every page, dialog and component that binds keys has a class of its own name in `tui/keybindings.py`, inheriting the same way. Every binding there is listed for the F1 dialog and bound somewhere, and no `Key` or `KeyName` is left unused. | `tests/rules/test_keybindings.py` |
