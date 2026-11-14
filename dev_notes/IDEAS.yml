@@ -506,6 +506,17 @@
     `.claude/GENRES.md` then says the library is for, and what an explanation looks like to a person: a report, a page of the
     tracker, or both.
 
+- title: "Sheet music and chord sheets as PDF"
+  priority: 8
+  text: |
+    The user's idea: export a song as printed music, sheet music and chord sheets, as PDF files. Nothing of it is
+    designed. What it would touch: a new kind of export beside the MIDI ones (exporters/exports.py), reading the rendered
+    grid for the notes and the patterns' Chord rows and the Progression generator for the chord names, which
+    tui/chord_text.py already puts in words. Undecided: whether sheet music means a staff for every track or a lead sheet
+    of one track with chord symbols over it; whether a chord sheet is bars of chord names alone, by scene; what draws the
+    PDF, since nothing in requirements.txt does and a new dependency is the user's to approve; how notes off the grid, a
+    groove, a strum, ratchets, are written; and how repeats and scenes become bars, repeat signs and section names.
+
 - title: "Ocean, a visualizer of ripples on water"
   priority: 25
   text: |
