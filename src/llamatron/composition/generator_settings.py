@@ -657,7 +657,7 @@ def _check_guitar_accents(values):
 
 
 def _guitar_flag(name):
-    return Flag(name=name, error=ERR_GUITARIFY_NOT_TRUE_OR_FALSE.format(name=name, value='{value!r}'))
+    return Flag(name=name, error=ERR_GUITARIFY_NOT_TRUE_OR_FALSE.format(name=name))
 
 
 class GuitarifySettings(GeneratorSettings):
