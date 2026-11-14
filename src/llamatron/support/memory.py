@@ -64,7 +64,7 @@ class Memory:
 
     @classmethod
     def check_every_answer(cls, *, checks=True):
-        """Make every memory made from now on check its answers, for the tests: test/ui_testing.py and test/rendering.py call this.
+        """Make every memory made from now on check its answers, for the tests: tests/support/ui_testing.py and tests/support/rendering.py call this.
 
         A test of what happens without the checks turns them off for the memories it makes, and on again after.
         """

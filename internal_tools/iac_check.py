@@ -27,7 +27,7 @@ This is the one tool that touches real MIDI hardware, by the user's leave of 202
 opens a port whose name holds "IAC": the macOS IAC driver, a bus from one program to another on the same
 computer, which no instrument hangs off. Every track goes down channel 1. The suite never runs it, and it
 is not part of setting real-time playback up: it is for hearing, in whatever listens on the bus, and for
-proving on a real port what test/test_realtime.py proves on recording outputs. With no set named it builds
+proving on a real port what tests/realtime/test_realtime.py proves on recording outputs. With no set named it builds
 one in memory, a new set whose starter pattern is made a scale run, so that what should be heard is plain.
 As each message's time comes the tool prints it, the device, the channel as people number it and the note,
 so that what the listener should be hearing at that moment is on the screen. An IAC bus hands back what is

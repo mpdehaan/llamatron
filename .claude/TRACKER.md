@@ -7,7 +7,7 @@ can be found and read on its own. `.claude/UX.md` holds the rules for how the tr
 `.claude/FORMAT.md` covers what the pages edit. Why each thing is the way it is, with the choices
 that were tried and dropped and their dates, is in `.claude/DECISIONS.md`, which isn't loaded into
 a session: read it before proposing to change something a section here says the user chose.
-`test/test_doc_paths.py` checks that every source path named here exists, so paths move with the
+`tests/rules/test_doc_paths.py` checks that every source path named here exists, so paths move with the
 code.
 
 ## Where things are
@@ -92,10 +92,10 @@ code.
   `type(text)` asks first.
 - Legends keep one order: Esc first, then the arrows, then the keys the page has in all of its
   modes, then the rest, which is the order of each class's `IN_HELP`.
-- The rules are kept by `test/test_keybindings.py` (every class that binds keys has the bindings
+- The rules are kept by `tests/rules/test_keybindings.py` (every class that binds keys has the bindings
   class of its name, inheriting the same way; every binding is keys, a name and words, is listed
   and is bound somewhere; every `Key` is bound or in the test's `NEVER_BOUND`; every `KeyName`
-  names a binding) and by the tour in `test/test_tui_help_keys.py` (every bound key is one of its
+  names a binding) and by the tour in `tests/tui/test_tui_help_keys.py` (every bound key is one of its
   own class's bindings, and no key reaches two bindings in one place). `internal_tools/show_keys.py`
   (`internal_tools/keys.sh`) prints every class's bindings, one class's, or every binding that has a key.
 
@@ -128,8 +128,8 @@ code.
   `Page.show_help` leaves F1 out of the everywhere keys it lists, so that the seven left fill two
   columns downwards over four lines, Silence last in the first column, with Undo still above
   Redo in the second, the user's choice.
-- Each page names its `HELP_` constant from `strings/help.py` as `HELP`. `test/test_tui_help_keys.py`
-  checks that every key a help text names is bound on that page, and `test/test_tui_pages.py`
+- Each page names its `HELP_` constant from `strings/help.py` as `HELP`. `tests/tui/test_tui_help_keys.py`
+  checks that every key a help text names is bound on that page, and `tests/tui/test_tui_pages.py`
   that the help fits an 80 by 24 console.
 - `AboutDialog` (`tui/dialogs/about_dialog.py`, `Page.show_about`) draws the cowsay cow in code
   (`cow_saying`), `VERSION`, `BUILD_DATE` and `BUILD_TIME` from `support/version.py`, the links, a
@@ -203,7 +203,7 @@ code.
   (`item_keys`), and the generator pages word their prompt and question with their label.
   Adding stays with each page. `C` says `copied to` and the copy's name on the status line and
   puts the cursor on the copy, and `S` keeps the cursor on the thing it was on, on every one.
-  `test/test_tui_named_lists.py` runs the same checks on each page.
+  `tests/tui/test_tui_named_lists.py` runs the same checks on each page.
 - The pages that show one named thing, the pattern, chain, groove, arpeggiator, AutoRatchet and
   offsets editors, the Scale page and the track editor, each inherit the mixin `ShowsNamedItem`
   (`screens/shows_named_item.py`) beside their `Page`, `ListPage` or `FieldPage`. The mixin
@@ -213,7 +213,7 @@ code.
   The offsets editor shows an arpeggiator and renames nothing, and its thing is gone when the
   arpeggiator has no offsets. `Document.names_of(section)` and `has_named(section=, name=)`
   answer which names a section has, the factory grooves among the grooves.
-  `test/test_tui_named_item_pages.py` runs the same checks on each page.
+  `tests/tui/test_tui_named_item_pages.py` runs the same checks on each page.
 
 ## Settings pages
 
@@ -251,7 +251,7 @@ code.
   `Space` or `Enter` toggles it (`is_toggle`), and `PgUp`/`PgDn` (`FieldPage.SECTION`, bound
   only on a page with headings) jump between headings (`jump_section`). The open sections are
   kept by label on the app as `open_field_sections`, closed to begin with, for the session.
-- `test/test_tui_fields.py` tests each kind, and tours every settings page for the ends of its
+- `tests/tui/test_tui_fields.py` tests each kind, and tours every settings page for the ends of its
   numbers and the keys of its toggles.
 
 ## Opening, saving and exporting
@@ -412,7 +412,7 @@ code.
   by place and `ClipPage` follows its track.
 - The screen stack is Textual's, reached only through `app.pages()`, `go_back_to` and `is_open`,
   so that another toolkit could take its place.
-- `test/test_tui_history.py` tests the history and the document, and `test/test_tui_undo.py` has
+- `tests/tui/test_tui_history.py` tests the history and the document, and `tests/tui/test_tui_undo.py` has
   an undo test class for every page (`.claude/TESTING.md`, "One test class per page"). Questions
   about what undo should do come to the user before anything is built.
 
@@ -471,7 +471,7 @@ code.
   it away. Only the command line asks for it (`LlamatronApp(start_screen=)`, `start_screen_wanted` in
   `tui/launch.py`), unless `LLAMATRON_NO_SPLASH=1`, and only on a plain launch; it goes over the main screen and any
   dialog the opening raised, so the tests and the tools that make the app never see it.
-- `test/test_tui_playback.py` tests the launches on the playback test's stepped clock, with
+- `tests/tui/test_tui_playback.py` tests the launches on the playback test's stepped clock, with
   short timings, and the splash's picture at moments of a clock of its own.
 
 ## The video tutorial
@@ -493,7 +493,7 @@ code.
   Time" for the switch), and
   pressing Enter, never with the page's letter, so that a viewer sees where it is going
   (`open_page`, the user's wish, which reversed the letters of earlier that day),
-  which `test/test_tutorial.py` holds it to. A page that is open already, under what is on top,
+  which `tests/tui/test_tutorial.py` holds it to. A page that is open already, under what is on top,
   is gone back to with Esc instead and nothing is said (`CELL_PAGES`, `go_back_to`), so that no
   page is opened twice in a row.
 - The build goes the song's settings, the scales, then one track at a time, each track's clips
@@ -541,8 +541,8 @@ code.
   strip's lines (`CaptionStrip.lines`): the caption bold black on white and centred, then a white line, which keeps the
   words clear of a video player's controls. Without a tutorial the app has no strip and draws as ever. The recorder writes
   the captions as a SubRip file beside the video (`tutorial/subtitles.py`, `recordings/<set>_tutorial.srt`), for YouTube,
-  which can't turn captions on for every viewer. `test/test_tui_caption_strip.py` tests it.
-- Nothing is saved, unless `--save-set-yaml` names a file. `test/test_tutorial.py` tests it.
+  which can't turn captions on for every viewer. `tests/tui/test_tui_caption_strip.py` tests it.
+- Nothing is saved, unless `--save-set-yaml` names a file. `tests/tui/test_tutorial.py` tests it.
 - The tool records the tutorial as a video, `recordings/<set>_tutorial.mov`, unless `--no-video`:
   the terminal window through `screencapture`, as `internal_tools/record_demo.py` records, with the
   loopback audio device's sound when it plays and none under `--no-play`, the tracker launched
@@ -553,7 +553,7 @@ code.
   neither prompts nor stops for a character, which hung the first real take; `--max-seconds` (an
   hour) quits the tracker instead (`Launch(max_seconds=)`), and a `screencapture` that still
   doesn't stop is ended after `STOP_TIMEOUT_SECONDS` and reported, leaving no file.
-  `test/test_make_video_tutorial.py` tests the recording with a stand-in for `screencapture`.
+  `tests/tools/test_make_video_tutorial.py` tests the recording with a stand-in for `screencapture`.
 
 ## Instruments that cannot sound here
 
@@ -565,7 +565,7 @@ code.
   (`silent_instrument_lines`). Nothing changes in the set. A launch that plays on its own
   (`Launch.is_plain()` false) shows nothing, since a dialog would stop it. `UITest` answers that
   FluidSynth is installed, so opening an example warns of nothing, and
-  `test/test_tui_silent_instruments.py` tests the warning.
+  `tests/tui/test_tui_silent_instruments.py` tests the warning.
 
 ## Importing a MIDI file
 
@@ -589,7 +589,7 @@ code.
   back to the main screen, says `MSG_IMPORTED` and shows an `ImportedDialog`
   (`tui/dialogs/imported_dialog.py`), the user's design: "Song imported as
   (name).", what it holds, and every warning, or "Import complete with no warnings.", with one
-  OK button that Enter or Esc presses and no key list (`Dialog.shows_legend`). `test/test_tui_import.py` tests it, with the
+  OK button that Enter or Esc presses and no key list (`Dialog.shows_legend`). `tests/tui/test_tui_import.py` tests it, with the
   home directory pointed at a folder of the test's own.
 
 ## The status line
@@ -701,7 +701,7 @@ code.
   `screens/shape_fields.py` (Start, End, Over, Then), and on the swell editor Accent. The Scene
   page and the clip page end with a section for each shape (`shape_section`, the same fields
   with the shape's name in front of each label), through `set_scene_shape_setting` and
-  `set_clip_shape_setting` (`SongEdits`). `test/test_tui_shapes.py` tests them.
+  `set_clip_shape_setting` (`SongEdits`). `tests/tui/test_tui_shapes.py` tests them.
 - The `ProgressionEditor` has Name, Every and Chords, whose
   Enter opens the `ChordsEditor` (`screens/chords_editor.py`), a `StepEditor` with the `StepGrid`
   drawing of the one-row editors (`screens/step_grid.py`) but rows of its own: a column a chord,
@@ -712,24 +712,24 @@ code.
   filling the chords through `named_progression_in` (`Document.set_progression`).
 - The `VoiceLeadingEditor` has Name, Lowest octave and Highest octave
   (`octave_field`, `screens/octave_field.py`, which the track editor's range shares) and the toggle
-  Keep the root in the bass. `test/test_tui_voice_leading.py` tests them.
+  Keep the root in the bass. `tests/tui/test_tui_voice_leading.py` tests them.
 - The `StrumEditor`, and the `+ Strum` sections at the end of the
   track editor and the clip page, share `strum_fields` (`screens/strum_fields.py`): Direction, with
   `(none)` first on a track and `(track)` on a clip, Spread named with its milliseconds, Fade, Loose
-  timing and Upstroke strings, prefixed Strum in a section. `test/test_tui_strum.py` tests them.
+  timing and Upstroke strings, prefixed Strum in a section. `tests/tui/test_tui_strum.py` tests them.
 - The `EuclidEditor`, and the track
   editor's `+ Euclid` section, share `euclid_fields` (`screens/euclid_fields.py`): Hits, Steps,
   Rotate and Step; on the Hits field, `H` (`PICK_RHYTHM`, bound by the page's `page_keys` only
-  there) opens `pick_rhythm`, a `ChoiceDialog` of the named rhythms. `test/test_tui_euclid.py`
+  there) opens `pick_rhythm`, a `ChoiceDialog` of the named rhythms. `tests/tui/test_tui_euclid.py`
   tests them.
 - A Glide, Shorten, Rush or Drag opens its editor (each a `StepRowGeneratorEditor`, its steps on one line by `steps_text`: Name, Step, its amount,
   Steps and Restart). Enter on Steps opens the kind's steps page (`GlideStepsEditor` and the rest),
   each a `StepRowEditor` (`screens/step_row_editor.py`, a `StepEditor` with the `StepGrid`
   drawing): Left and Right move, Space or Enter (Up and Down off the legend) turns a step on or
-  off, `I` and `D` insert and remove. `test/test_tui_step_rows.py` tests them.
+  off, `I` and `D` insert and remove. `tests/tui/test_tui_step_rows.py` tests them.
 - The `HocketEditor` has Name,
   Source track (a `ChoiceField` of `(none)` and the current song's tracks, sorted, the Hocket's own
-  source kept among them when the song lacks it) and Restart. `test/test_tui_hocket.py` tests them.
+  source kept among them when the song lacks it) and Restart. `tests/tui/test_tui_hocket.py` tests them.
 - Every generator's editor ends its own settings with `restart_field(page)`
   (`screens/restart_field.py`), a `ChoiceField` of `RESTARTS` named by `MSG_RESTART_NAMES`, found by
   the page's `SECTION` and `item`.
@@ -842,7 +842,7 @@ code.
   has scrolled (`top`, `left`), the keys and what each key does to the song, builds the drawing
   once as `page.drawing`, and `ArrangePage.body` asks the drawing for the lines. `clip_text(clip_slot)`
   there is what a clip says in its cell, the name and a mark for each setting beyond the
-  pattern. `test/test_tui_arrange_drawing.py` tests the drawing on its own.
+  pattern. `tests/tui/test_tui_arrange_drawing.py` tests the drawing on its own.
 - The grid is laid out on `Canvas` lines (`tui/drawing.py`, a line written in overlapping pieces
   with styles) and drawn by `draw_header`, `draw_scene`, `draw_footer` and then the frame.
 - Three header lines (`HEADER_LINES`): room for a frame's top, the bold track names with the `+`
@@ -892,7 +892,7 @@ code.
   `visible_wide_tracks` and `visible_tall_scenes` scroll by the widths and heights.
 - The scene column's divider is a double bar and a bar runs between every two tracks, in blue
   (`draw_dividers`, `draw_rule`), and the first track's cell starts on the double bar, so that every column lies
-  the same way between its dividers. `test/test_tui_arrange_details.py` tests it.
+  the same way between its dividers. `tests/tui/test_tui_arrange_details.py` tests it.
 - Tab, the user's design, in the usual view and the details view alike, on a track's name, a scene's name or a clip
   (`ArrangePage.INTO_DETAILS`, `cursor_cell`, `start_picking`), opens that cell's details if they aren't showing
   (`opened_cell`, the one cell the usual view shows details for, its row and column growing to fit, with no blue
@@ -949,7 +949,7 @@ code.
   the right of each track that plays, its name and number in its colour and then its clip's details in the scene and its
   own, as the details view shows them, `stock` for none (`sidebar_lines`), which `[` and `]` scroll (`INSET_SCROLL`);
   and the notes under the cursor, `strings (track #2): C3 for 1/4` (`under_cursor`). Velocity isn't shown, the user's
-  choice. `test/test_tui_scene_view.py` tests it.
+  choice. `tests/tui/test_tui_scene_view.py` tests it.
 
 ## The visualizer
 
@@ -1025,7 +1025,7 @@ code.
   sunset over a perspective grid with a haze, after the user's own video backgrounds, the llama
   firing beams on notes). `visualizers/cells.py` draws half blocks, Braille and coloured cells for
   them, each line made in one go from its runs and each style looked up by a packed colour, since
-  appending piece by piece was most of a frame's cost. `test/test_visualizer_modes.py` tests what
+  appending piece by piece was most of a frame's cost. `tests/visualizers/test_visualizer_modes.py` tests what
   each alone promises. After the user watched them: WarpZone is slow and calm in fine Braille
   rings, at most one a track every `RING_GAP_SECONDS`; plasma's palette goes round the tracks'
   hues at full saturation, brighter at the edges; fireworks are crisp points (no blur, each spark one fine
@@ -1070,9 +1070,9 @@ code.
 - `--visualizer NAME` (`Launch(visualizer=)`) opens Arrange with that mode showing and plays, the
   one way Arrange opens on a visualizer; the demo recorder asks clips or a visualizer after its
   checks, or takes `--visualizer` or `--clips`, and `internal_tools/preview_visualizer.py` (`make
-  preview-visualizer`) plays a set the same way with no video. `test/test_visualizers.py` tests
-  the modes, the drawing and that the lava lamp never flashes, `test/test_tui_visualizer.py` the
-  page, and `test/test_tui_playback.py`'s `TestHeard` what the transport hears.
+  preview-visualizer`) plays a set the same way with no video. `tests/visualizers/test_visualizers.py` tests
+  the modes, the drawing and that the lava lamp never flashes, `tests/tui/test_tui_visualizer.py` the
+  page, and `tests/tui/test_tui_playback.py`'s `TestHeard` what the transport hears.
 
 ## Track editor and clip page
 
@@ -1169,7 +1169,7 @@ code.
 - Ctrl+T (`everywhere.silence`) says what `Transport.silence_everything()` did: note offs, CC
   123 and CC 120 on every (device, channel) the instruments use among the connected devices
   (`channels_in_use`), `MSG_SILENCED` or `MSG_NOTHING_TO_SILENCE`.
-- `test/test_tui_playback.py` tests all of it, with a `Transport` on a `SteppedClock` and a
+- `tests/tui/test_tui_playback.py` tests all of it, with a `Transport` on a `SteppedClock` and a
   `PlaybackEngine` of `RecordingOutput`s in place of the process, and
   `llamatron.tui.transport.output_port_names` patched to two ports of the test's own.
 
@@ -1381,7 +1381,7 @@ roll or the rows.
 ## The piano roll
 
 `PianoRoll` holds the cursor's pitch and the roll's keys and knows nothing of Textual, and
-`RollDrawing` draws it. `test/test_tui_piano_roll.py` tests it.
+`RollDrawing` draws it. `tests/tui/test_tui_piano_roll.py` tests it.
 
 ### Pitches and rows
 
@@ -1509,7 +1509,7 @@ an empty cell and isn't marked.
   `can_edit()` for a row that is only shown and `more_keys()` for keys beyond the row's own.
   `keybindings.OneRowEditor` holds Left and Right, Up and Down and the digits. A new one-row
   editor is those few answers and a `body`.
-- `test/test_tui_step_editors.py` runs one set of checks on both one-row editors.
+- `tests/tui/test_tui_step_editors.py` runs one set of checks on both one-row editors.
 
 ## The offsets editor
 

@@ -4,7 +4,7 @@ Reference notes for Claude on what a set file holds, how it's played into clips 
 written out, one short section per topic. `.claude/STYLE.md` holds the rules; this is the detail.
 `GUIDE.md` says the same things for people using the tracker, and `docs/ARCHITECTURE.md` for people
 reading the code. What a choice here replaced is in `.claude/DECISIONS.md`. When a module moves
-or is renamed, the paths in this file move with it: `test/test_doc_paths.py` checks that every
+or is renamed, the paths in this file move with it: `tests/rules/test_doc_paths.py` checks that every
 source path named in the documents exists.
 
 ## Packages
@@ -121,7 +121,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   A clip of sounds asked for `get_notes()` makes the objects once and keeps the objects from
   then on, so that the list is the clip's own and can be appended to. `total_length()`,
   `section(start=, end=)` and `repeated(times)` take and give `Rational`s either way.
-  `test/test_clip_sounds.py` runs every method both ways, on clips written by hand and on every
+  `tests/grid/test_clip_sounds.py` runs every method both ways, on clips written by hand and on every
   clip of every example.
 - `Clip.trim(n)` keeps the first `n` positions in place and returns the clip.
 - `Clip.length` uses whole-note units. `None` ends the clip after its last position, and any
@@ -167,7 +167,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   `check_held(data)` raises with a `Correction` of the data when there is one ("Corrections"
   below). A check
   that spans two settings, like a track's lowest octave not above its highest or a morph
-  needing two repeats, stays written out in the class. `test/test_setting.py` tests the kinds
+  needing two repeats, stays written out in the class. `tests/composition/test_setting.py` tests the kinds
   and holds the rule that every name in a class of setting names has one description.
 - Objects refer to each other by name, and the song looks names up.
 - Every check raises `InvalidValue` (`composition/invalid_value.py`), a subclass of
@@ -184,7 +184,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   carries a revision from one clock, which no other object has, and which moves with every
   change, because the constructor calls `note_change()` and every method that changes the object
   is written under `@notes_change`. A copy is a new object with a revision of its own.
-  `test/test_revisions.py` checks the rule.
+  `tests/rules/test_revisions.py` checks the rule.
 - `kept_data()` is what `to_data()` returns, built once and kept until the object changes, for
   whoever only reads it: the undo history, and the comparisons behind the unsaved mark. It is
   shared and never changed. An object that holds others (a `Scene`, a `Song`, the `Setlist`, a
@@ -193,9 +193,9 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   `composition/llama_data.py` are the two ways a holder takes a part's data). `own_copy` copies
   the lists a setting holds, so that data and objects share nothing.
 - `Setlist.restore(data)` makes the set what data it kept earlier says, through the same reading
-  as `from_data`, keeping every item whose kept data equals the data. `test/test_kept_data.py`
+  as `from_data`, keeping every item whose kept data equals the data. `tests/composition/test_kept_data.py`
   tests it, with every example restored to another example's data.
-- `test/test_composition.py` tests each class, and `test/test_llama_data.py` checks every
+- `tests/composition/test_composition.py` tests each class, and `tests/support_code/test_llama_data.py` checks every
   subclass defines both methods.
 
 ## Named sections
@@ -233,7 +233,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   a file can never run code.
 - `yaml.load` with any other loader, `full_load`, `unsafe_load` and custom loaders are never
   used, and `safe_yaml.py` is the only module allowed to name a loader, which
-  `test/test_yaml_safety.py` checks.
+  `tests/rules/test_yaml_safety.py` checks.
 - PyYAML reads about ten times faster with libyaml (`yaml.__with_libyaml__`). INSTALL.md says
   how to get it, and everything works without it.
 
@@ -262,8 +262,8 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   is applied before reading again, up to `MOST_CORRECTIONS`. A problem with no correction raises
   `SongFileError` as ever. Only a file that a strict read refused is read this way, and neither
   the data given nor the file is changed.
-- `test/test_corrections.py` tests every setting and row that has a correction, what is still
-  refused, and the two sets in `test/sample_sets/`.
+- `tests/composition/test_corrections.py` tests every setting and row that has a correction, what is still
+  refused, and the two sets in `tests/data/sample_sets/`.
 
 ## The format's rules
 
@@ -288,7 +288,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
 - Songs are a `NamedItems` section like any other (`Section.SONGS`).
 - A file whose `version` is older than `SETLISTS_SINCE` (1.0.39) held one song.
   `holds_one_song(data)` and `as_setlist_data(data=, song_name=)` turn it into a set of one song
-  named after the file's stem, and `test/demo_sources/make_demos.py` writes sets the same way.
+  named after the file's stem, and `tests/data/demo_sources/make_demos.py` writes sets the same way.
 - Error places name the song first, like `song (verse), scene entry 2, track (bass): ...`, and a
   song setting reads `song (verse): scale: ...`.
 - Each demo is its own file with one song, a new set has one song called `untitled`, and the
@@ -316,7 +316,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   saves the first time.
 - `Document.save_as`, which the tracker's Save as uses, turns a copy's protection off, because a
   copy the user makes is theirs. Plain `save(path=)` keeps it, so tests can re-save the examples.
-- Every set in `examples/` is protected, and `test/demo_sources/make_demos.py` writes them that
+- Every set in `examples/` is protected, and `tests/data/demo_sources/make_demos.py` writes them that
   way. A new set isn't.
 
 ### Defaults for everything
@@ -350,7 +350,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   rest keeps the value when a note is cleared (the CC rows, Slide and every register row), and
   what the row does in a drum pattern.
   Reading a file, `Pattern.set_value` and the pattern editor's rows all ask it, and playback
-  still reads the plain lists. `test/test_row_descriptions.py` tests it.
+  still reads the plain lists. `tests/composition/test_row_descriptions.py` tests it.
 - The on or off rows, `glide`, `tie`, `grab` and `slide` (`is_on_or_off()`), always hold `true`
   or `false` and never null, and the text UI shows them as a mark or a blank.
 - The registers' note and velocity rows (`RowOfRegisterUses`, `RowOfNoteMoves`) hold `1` to add
@@ -407,7 +407,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   `NamedScale`. Nothing there needs the tracker, so a wizard or a pattern generator can use it.
 - `fraction_text` in `composition/checks.py` writes an exact length the way a file holds it,
   which `written_length` reads back.
-- `test/test_pattern_notes.py` tests it on `Pattern` alone, at several step sizes.
+- `tests/composition/test_pattern_notes.py` tests it on `Pattern` alone, at several step sizes.
 
 ### Steps and gates
 
@@ -471,8 +471,8 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   tensions), it becomes the chord's moved root plus those half steps; a chord of the figure has its tensions added on top.
   A progression none of whose chords sets any of the three moves its notes the short way, as before (`_plain`).
 - `spelled_chord` says what a chord comes to in a `NamedScale`: its short name, like `A7(b9)`, its long name and its notes,
-  spelled on the letters a chord stacks. `test/test_chords.py` and `test/test_progression.py` (`TestLeavingTheScale`) test
-  these, `test/test_tui_chords.py` the pattern editor's rows and the dialog.
+  spelled on the letters a chord stacks. `tests/composition/test_chords.py` and `tests/generators/test_progression.py` (`TestLeavingTheScale`) test
+  these, `tests/tui/test_tui_chords.py` the pattern editor's rows and the dialog.
 
 ### Probability and seeds
 
@@ -489,7 +489,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
 - A note that probability drops is silence in its place, however long its gate: a gate that
   reached over the next note holds nothing, the steps up to the next note are rests, and the
   next note plays as normal. Until 1.0.136 such a take stopped the export, since a rest can't
-  be held. `test/test_song_patterns.py` tests the take that keeps the note and the take that
+  be held. `tests/composition/test_song_patterns.py` tests the take that keeps the note and the take that
   drops it.
 - It deliberately doesn't use Live's per-note probability.
 
@@ -501,8 +501,8 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   (`Sound.inverted`, which `PatternPlayer` applies to every slice, a grab's chord too, and the
   Progression generator to its chords). A drum pattern refuses one. `Pattern.chord_tones` gives
   the roll's ghosts where the inversion plays them, the root among them an octave up. The editor's
-  `InversionRow` is blocked on a step with no chord. `test/test_inversions.py` and
-  `test/test_tui_inversions.py` test it.
+  `InversionRow` is blocked on a step with no chord. `tests/composition/test_inversions.py` and
+  `tests/tui/test_tui_inversions.py` test it.
 
 ### Ratchet and glide
 
@@ -621,7 +621,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
 - Renaming a groove updates the song, scenes and tracks, and `uses_of` in `tui/uses.py` lists
   what uses one ("Renames" below). A song that sets no groove names the default one, `none`,
   which `Song.names_item` says, so the factory groove `none` counts that song as a use.
-- `test/test_grooves.py` and `test/test_tui_grooves.py` test it.
+- `tests/playback/test_grooves.py` and `tests/tui/test_tui_grooves.py` test it.
 
 ### Follow action and Launch together
 
@@ -671,7 +671,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   sent. Every example plays this way as it comes: its `real_time` is on, every unmuted track has
   an instrument on `*FluidSynth`, the melodic ones with a sound and the drum tracks sharing one
   called `drum kit`, and every track that plays only drum patterns is a drum track, which
-  `test/test_examples.py` holds them to. A new set has no instruments.
+  `tests/app/test_examples.py` holds them to. A new set has no instruments.
 - A track's `instrument` (`TrackSetting.INSTRUMENT`, in `Track.REFERENCES`) names one, or is
   blank for none, which leaves the track out of real-time playback. Renaming an instrument
   updates the tracks, and `tracks_naming` lists the uses.
@@ -679,7 +679,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   `SongSetting.VISUALIZER`, a mode's name or left out) name the mode Arrange's visualizer key shows first, the song's over
   the set's (`Setlist.visualizer_for`); the set's `hidden_visualizers` (`SetlistSetting.HIDDEN_VISUALIZERS`, a list of modes'
   names, written only when it holds one) are the modes the key, `[` and `]` and Cycle leave out. The names are
-  `VISUALIZER_NAMES` in `composition/file_format.py`, held to the modes by `test/test_visualizer_choices.py`, so that a set is
+  `VISUALIZER_NAMES` in `composition/file_format.py`, held to the modes by `tests/visualizers/test_visualizer_choices.py`, so that a set is
   read without the visualizers. A visualizer setting is never refused, the user's rule, since modes come and go: anything
   that isn't a mode's name is made sensible as it's read and set (`sensible_visualizer`, `sensible_hidden_visualizers`), an
   unknown default becoming none and an unknown hidden mode dropped, with no correction asked about. A new visualizer setting
@@ -688,7 +688,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   every generator in, each entry `{kind: name}`, written only when set; it's never refused (`sensible_generator_order`, an
   entry that isn't a generator's kind and a name is dropped), `Setlist.ordered_generators` leaves out entries for generators
   gone and adds any it doesn't name after the rest, kind by kind, a rename keeps a generator's place and a copy comes straight
-  after its original (`copy_item`). Nothing in the render reads it. `test/test_generator_order.py` tests it.
+  after its original (`copy_item`). Nothing in the render reads it. `tests/generators/test_generator_order.py` tests it.
 - The set's `real_time` (`SetlistSetting.REAL_TIME`, default `DEFAULT_REAL_TIME`, false) is the
   main screen's Real Time switch. `Document.add_instrument` turns it on with the first
   instrument, and `delete_named` turns it off with the last.
@@ -709,7 +709,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
 - It takes a chord's root, the note the chord was built on, which is the chord's first note
   however it's inverted or voice-led (`GrabSource`, `playback/grab_source.py`, reading the clip's
   sounds rather than its timed notes), the user's rule; it took the lowest note
-  until inversions came. `test/test_grab_roots.py` tests it.
+  until inversions came. `tests/playback/test_grab_roots.py` tests it.
 - A grab step with a symbol on its `chord` row plays that chord with the grabbed note as its
   bottom note (`PatternPlayer._chord_on`): a named symbol like `m7` adds notes exact half steps
   above the grabbed note, and a scale chord like `7` adds notes of the grabbing clip's scale
@@ -810,7 +810,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   `tracks_naming`, `songs_naming` and `chains_naming` on the `Setlist`, the first three on a
   `Song`, and `clip_slots_naming` on a `Scene`, each taking `section=` and `name=`. A new setting that
   names something is one entry in its class's `REFERENCES`, and the rename and the uses follow.
-- `test/test_renames.py` checks that every kind of rename keeps the song loading and playing the
+- `tests/composition/test_renames.py` checks that every kind of rename keeps the song loading and playing the
   same, that every declared reference is a real setting, and that in every example what uses an
   item is what its rename changes.
 - Names are what the file uses to refer to objects, and they have to be unique within a section,
@@ -824,7 +824,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
 
 - `SongRenderer(song).render()` (`src/llamatron/playback/`) plays a song into a `ClipGrid`, with
   a `ClipSlotPlayer` for each clip slot and a `PatternPlayer` for each pass through a pattern. Tests use
-  the helpers in `test/rendering.py`.
+  the helpers in `tests/support/rendering.py`.
 - `src/llamatron/cli.py` is the command line, installed as `llamatron`. There's deliberately no
   separate command for the tracker, and `python -m llamatron` is the same as the command.
 - Without `--to` it opens the tracker, on a set if one is named. `--autoplay`,
@@ -843,7 +843,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
 
 ## Exporters
 
-- Exporters live in `src/llamatron/exporters`, with their tests directly in `test/`.
+- Exporters live in `src/llamatron/exporters`, with their tests in `tests/exporters/`.
 - Every kind of export is one class, a subclass of `Exporter` (`exporters/exporter.py`), which
   holds the directory, the grid and the name, checks for files in the way (`can_write`) and
   writes with `export()`. The class says what `--to` calls the kind (`KIND`, one of `ExportKind`)
@@ -855,7 +855,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   lists them), with `EXPORT_KINDS` for the tracker's order, and its `make_exporter`,
   `shown_export_path`, `earlier_export` and `remove_earlier_export` ask the kind's class, so the command line
   and the tracker share them. Live is the main one and the default. A new kind, for another DAW
-  say, is one class and its place in those two lists, and `test/test_exporter.py` fails if an
+  say, is one class and its place in those two lists, and `tests/exporters/test_exporter.py` fails if an
   exporter class is left out.
 - Every exporter takes a `directory` and a `name` (the directory's own name when none is given).
   Only the Live set is built from a template, which `for_song` passes on and the other kinds
@@ -872,7 +872,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
 - Neither the Live writer nor the clip writer uses temporary files. Any future temporary files
   must use `tempfile`, be documented, and be removed when they're finished with.
 - Note timing for every writer comes from `src/llamatron/exporters/timing.py`.
-- `test/test_matrix.py` is an end-to-end example of the classes underneath the tracker.
+- `tests/app/test_matrix.py` is an end-to-end example of the classes underneath the tracker.
 
 ### The MIDI kinds
 
@@ -889,7 +889,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   melodic track's instrument's `gm_sound`, which the grid's `ClipColumn` carries with whether the
   track is a drum track (`SongRenderer.gm_sound_of`). A track whose instrument has no sound sends
   none. `midi_track(channel=, program=)` writes either. `internal_tools/preview_midi.py` writes it, and
-  `test/test_general_midi.py` tests it.
+  `tests/exporters/test_general_midi.py` tests it.
 - `WaveFluidSynth` (`exporters/wave_fluidsynth.py`, `--to wav`, `<name>.wav`), the user's design, is the
   WAV export for anyone with no DAW: the General MIDI file of only the unmuted tracks whose instrument
   plays through FluidSynth (`ClipColumn.plays_through_fluidsynth`, set by
@@ -897,7 +897,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   by FluidSynth faster than real time with the SoundFont, then normalized to a peak 1 dB below full scale
   (`exporters/wave_level.py`, which `internal_tools/normalize_wave.py` shares). It refuses with
   `ERR_WAV_NEEDS_FLUIDSYNTH` or `ERR_NO_FLUIDSYNTH_TRACKS` before writing anything. The tests that export
-  every kind leave it out, and `test/test_wave_fluidsynth.py` tests it with a stand-in for FluidSynth.
+  every kind leave it out, and `tests/exporters/test_wave_fluidsynth.py` tests it with a stand-in for FluidSynth.
 - Everything the MIDI writers share, the tick rate, `MidiEvent`, message building and
   `midi_track`, is in `exporters/midi_messages.py`.
 - `ClipTree` (`src/llamatron/exporters/clip_tree.py`) takes a directory, a `ClipGrid` and a name,
@@ -999,7 +999,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   and never on `Note`s ("Sounds and lengths in a render"). `generate(clip)` then returns a new `Clip` with the same name and scale,
   leaving the original unchanged, so generators can be chained.
 - A generator's list of values must only step through notes and chords, so rests never use up a
-  value (`test/test_generator_list_steps.py` checks this, so add new list generators there).
+  value (`tests/generators/test_generator_list_steps.py` checks this, so add new list generators there).
 - Chain generators work on finished clips rather than patterns, so a chain follows scale changes.
   Pattern generators that write steps are a separate idea in `dev_notes/IDEAS.md`.
 
@@ -1030,7 +1030,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   `timed_events` adds their moves together to each slot's grooved start, never before the clip's
   start, so a step on in both moves by the difference. A grab reads notes without them. All four
   follow Restart by their offset.
-- `test/test_step_rows.py` tests them; `14_acid_glide.yml` is the Glide and Shorten demo and
+- `tests/playback/test_step_rows.py` tests them; `14_acid_glide.yml` is the Glide and Shorten demo and
   its drop has the Rush and the Drags.
 
 ### Hocket
@@ -1052,7 +1052,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   muted source still hands out notes, and a source the song lacks hands out nothing.
 - Renaming a track renames a Hocket's source (`Song.rename_item` passes a track's rename to the
   set's hockets, whose `REFERENCES` name `Section.TRACKS`), the user's rule.
-- `test/test_hocket.py` tests it; `19_hocket_shanty.yml`, which replaced `grab.yml`, is its demo.
+- `tests/generators/test_hocket.py` tests it; `19_hocket_shanty.yml`, which replaced `grab.yml`, is its demo.
 
 ### Restart
 
@@ -1074,7 +1074,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   render loop counted) carry on. Each track keeps its own copy (the user's answer).
 - A drift's clock starts at its run's start (`SongRenderer.drift_origin`, `DriftPlay.effects`
   and `trigger_times` taking origins).
-- `test/test_restart.py` tests it.
+- `tests/playback/test_restart.py` tests it.
 
 ### Musical answers first
 
@@ -1154,7 +1154,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   named progressions (`NAMED_PROGRESSIONS`, keyed by `NamedProgression`, written in numerals
   against a major key), matched to a scale by `matched_to`: a chord on a scale note is that plain
   degree, any other the degree above with a flat, or the one below with a sharp.
-- `test/test_progression.py` tests it; `06_chord_progression_generator.yml` and `07_blues_chords.yml`
+- `tests/generators/test_progression.py` tests it; `06_chord_progression_generator.yml` and `07_blues_chords.yml`
   are its demos.
 
 ### Voice leading
@@ -1169,7 +1169,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   otherwise each to the nearest), the smaller octave move on a tie. With `root_in_bass`, the
   lowest written note stays and only the notes above it are voiced, above it, against the notes
   above the bass before. A chord no voicing fits stays as written, and single notes are left
-  alone. `test/test_voice_leading.py` tests it; `05_voice_leading.yml` is its demo.
+  alone. `tests/generators/test_voice_leading.py` tests it; `05_voice_leading.yml` is its demo.
 
 ### Strum
 
@@ -1188,7 +1188,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   seed fixed for the render. `timed_events` in `exporters/timing.py` plays it (`_strummed`): the
   notes that start together sound low to high or high to low, each a gap after the last, varied by
   the loose timing, the last faded by the fade, an upstroke keeping only its top strings, each note
-  ending as written. Grabs read the notes unstrummed. `test/test_strum.py` tests it; `13_classic_strum.yml`
+  ending as written. Grabs read the notes unstrummed. `tests/generators/test_strum.py` tests it; `13_classic_strum.yml`
   is its demo.
 
 ### The Euclidean mask
@@ -1203,7 +1203,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
 - `EuclidMask` (`generators/euclid.py`) turns every note that doesn't start on a hit into a rest
   of its length, the rhythm counted from the clip's start. A generator runs in its chain like any
   other; the track's mask runs after the clip's chains (`ClipSlotPlayer._masked`), before the
-  shapes. Masks stack because each silences what it misses. `test/test_euclid.py` tests it;
+  shapes. Masks stack because each silences what it misses. `tests/generators/test_euclid.py` tests it;
   `euclidean.yml` is its demo.
 
 ### Time settings
@@ -1218,7 +1218,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   bar=)` turns it into a length with the song's bar, which the render passes on (an arp through
   `make_generator(bar=)`, a drift through `DriftPlay.every`, a shape through
   `ClipSlotPlayer._shaped`). Any positive length is still read, so an older file's `every: 2`
-  plays as before. `test/test_time_settings.py` tests it.
+  plays as before. `tests/composition/test_time_settings.py` tests it.
 
 ### Density, Swell and Articulate
 
@@ -1246,7 +1246,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   velocity (a blank velocity counting as 127), held from 1 to 127, the accent adding its share
   on a beat and stronger. Articulate scales the written length, a longer note held over the
   rests after it but never past the track's next note or the clip's end.
-- `test/test_shapes.py` tests them; `edm_density.yml`, `16_bolero_swell.yml` and
+- `tests/playback/test_shapes.py` tests them; `edm_density.yml`, `16_bolero_swell.yml` and
   `15_acid_articulate.yml` are their demos.
 
 ### AutoRatchet and Blend
@@ -1260,12 +1260,12 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
 
 - `examples/` is for people interested in music, who may not be technical and may never develop
   the program: every set there is musically interesting to them. A set that exists only to test
-  the program, such as one with wrong values, never lives there; test data lives under `test/`.
+  the program, such as one with wrong values, never lives there; test data lives under `tests/`.
 - `examples/` is in folders by purpose, the user's layout, which `support/example_sets.py` names and lists
   (`example_sets()`, which every test and tool asks):
-  `examples/learning/` the demos in the order a newcomer learns, each file numbered in that order, zero-padded so that the files sort, like `01_hello_world.yml` (the user's rule: a demo moved into or out of `examples/learning/`, or put in another place in the order, means renumbering the learning demos after it, with every reference to their files; a demo's song and its sections and anchors in the documents go by the name after the number; the Entertainer, with too many patterns to teach, is in `examples/by_genre/ragtime/`), `examples/other/` the demos that fit no other folder (the Euclidean mask so far), `examples/by_genre/` every other song, the pieces and the songs in the manner of others alike, each in a folder of its genre, the genre in lower case with spaces and hyphens made underscores, like `examples/by_genre/tv_theme/` (`genre_folder`, the user's layout, since one folder held too many to explore; a homage whose genre changes moves with it, which `test/test_examples.py` holds), and
-  `examples/midi/` the MIDI files to import. `test/demo_sources/make_demos.py` writes each demo into its folder.
-- `examples/` holds two kinds of set. The pieces, `minimal_techno.yml` and `mainstreet_hoedown.yml`, are meant to sound good and last about three minutes (`PIECES` in `test/rendering.py` lists them). Every other set
+  `examples/learning/` the demos in the order a newcomer learns, each file numbered in that order, zero-padded so that the files sort, like `01_hello_world.yml` (the user's rule: a demo moved into or out of `examples/learning/`, or put in another place in the order, means renumbering the learning demos after it, with every reference to their files; a demo's song and its sections and anchors in the documents go by the name after the number; the Entertainer, with too many patterns to teach, is in `examples/by_genre/ragtime/`), `examples/other/` the demos that fit no other folder (the Euclidean mask so far), `examples/by_genre/` every other song, the pieces and the songs in the manner of others alike, each in a folder of its genre, the genre in lower case with spaces and hyphens made underscores, like `examples/by_genre/tv_theme/` (`genre_folder`, the user's layout, since one folder held too many to explore; a homage whose genre changes moves with it, which `tests/app/test_examples.py` holds), and
+  `examples/midi/` the MIDI files to import. `tests/data/demo_sources/make_demos.py` writes each demo into its folder.
+- `examples/` holds two kinds of set. The pieces, `minimal_techno.yml` and `mainstreet_hoedown.yml`, are meant to sound good and last about three minutes (`PIECES` in `tests/support/rendering.py` lists them). Every other set
   there is a demo, which teaches one feature a scene at a time, described for people in
   `docs/DEMOS.md`, whose index is generated, and on a page for each genre in `docs/demos/`, where each demo has a section of its own, a heading and a description written by hand and a summary generated between markers (`internal_tools/demo_table.sh`), which a new demo needs before the tests pass, and in each set's `description`, whose "When changing this demo" part says
   what to keep true when editing one.
@@ -1275,12 +1275,12 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   "Discussing a feature").
 - A new example runs about three minutes, give or take ten seconds, unless the user asks for
   another length, as for `weather.yml`'s ten minutes (the user's rule). The demos
-  written before the rule keep their lengths. `test/test_examples.py` holds every example to it
+  written before the rule keep their lengths. `tests/app/test_examples.py` holds every example to it
   but those listed in `WRITTEN_BEFORE_THE_LENGTH_RULE` and, with their own lengths, `OTHER_LENGTHS`.
-- `test/test_demos.py` loads, renders and saves every demo without checking what it plays, so
+- `tests/app/test_demos.py` loads, renders and saves every demo without checking what it plays, so
   they can be edited freely.
-- `test/demo_sources/make_demos.py` wrote the first versions of all but the hand-written ones
-  (`HAND_WRITTEN` in `test/test_demos.py`), from tune data written into it, plus the Mutopia
+- `tests/data/demo_sources/make_demos.py` wrote the first versions of all but the hand-written ones
+  (`HAND_WRITTEN` in `tests/app/test_demos.py`), from tune data written into it, plus the Mutopia
   Project's public domain `examples/midi/entertainer.mid`, kept with its LilyPond source among
   the MIDI files people can import.
 - Run directly, it overwrites the demos, hand edits included, so it's only for starting over. The
@@ -1296,7 +1296,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   done after each edit are both watched.
 - Lengths and times are exact `Rational`s (`src/llamatron/support/rational.py`), never floats.
   `Rational` does only what the program needs and is about twice as fast per operation as the
-  standard library's `Fraction`. `test/test_rational.py` checks it against `Fraction` for every
+  standard library's `Fraction`. `tests/music/test_rational.py` checks it against `Fraction` for every
   operation, and `Fraction` is still accepted wherever a length or amount comes from outside.
 - The aim is fewer operations rather than a different number type: build each note once
   (`Note.with_length` and friends, not `dataclasses.replace`), keep pattern steps as per-row
@@ -1310,14 +1310,14 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   `with_velocity`, `with_glide`, `half_step`) checks only what the copy changes and takes the
   rest as it is (`Note._at_this_pitch`, through `note_of_checked_values`, the one place a note is made without its constructor, which `internal_tools/time_renders.py` counts), since the name, octave and MIDI number were checked
   when the note was made: checking them again for every copy was most of what a note cost.
-  `test/test_note.py` holds each copy to the constructor's note and the constructor's refusals.
+  `tests/music/test_note.py` holds each copy to the constructor's note and the constructor's refusals.
 - What a pattern holds is gathered once for each clip that plays it (`PlayedPattern`, kept by
   the `PatternPlayer`): every step's values (`Pattern.get_every_step_values`, which fills only
   the rows that hold anything, where asking all thirty rows about every step was an eighth of a
   render), and whether any step sends a CC value (`Pattern.sends_controls`), adds to a register
   (`adds_to_registers`) or uses one (`uses_registers`). A pattern with none of those skips that
-  work on every step, and `test/test_registers.py`, `test/test_tracks_and_controls.py` and
-  `test/test_composition.py` test both sides of each. A pass takes all its steps from the
+  work on every step, and `tests/playback/test_registers.py`, `tests/composition/test_tracks_and_controls.py` and
+  `tests/composition/test_composition.py` test both sides of each. A pass takes all its steps from the
   `StepOrder` at once (`next_steps`).
 - A clip's list keeps a note, chord or rest as it is and reads only shorthand, a section stops
   once it is past its end and keeps a position that lies wholly inside it, and `Rational`'s add,
@@ -1328,7 +1328,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   estimates. Integer ticks in place of `Rational` were rejected, and are open to revisiting if
   profiling asks.
 - Profiling is done with `cProfile` over the examples, and `internal_tools/compare_exports.py` proves a
-  speedup changed nothing. `test/test_clip_lengths.py` checks the arithmetic lengths against a
+  speedup changed nothing. `tests/grid/test_clip_lengths.py` checks the arithmetic lengths against a
   full play of every example.
 
 ## Sounds and lengths in a render
@@ -1360,7 +1360,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
 - `grid/positions.py` cuts sounds and takes pieces out of them, `exporters/timing.py` reads a
   clip's sounds and still gives `NoteEvent`s and `ControlPoint`s with `Rational` times, so no
   exporter changed, and CC values, register times and a `Pass`'s length stay `Rational`s.
-- `test/test_length.py` holds every `Length` method to `Fraction`. `test/test_sound.py` holds
+- `tests/music/test_length.py` holds every `Length` method to `Fraction`. `tests/music/test_sound.py` holds
   every way a sound is made or copied to the class that says the same, `Scale.sound_at` to
   `Scale.note_at` on both sides of the MIDI range, and the rule that no module of `playback/`
   or `generators/`, nor `grid/positions.py` or `exporters/timing.py`, imports one of the
@@ -1384,7 +1384,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   kind and bytes, and a `Tag` of scene place and track name, so that one clip's events can be
   dropped or stopped. A track with no route, which is a track with no instrument, and a muted
   track are left out. Note offs sort before note ons at one instant.
-  `test/test_realtime.py` holds every example's timeline to its MIDI export, tick for tick.
+  `tests/realtime/test_realtime.py` holds every example's timeline to its MIDI export, tick for tick.
 - `PlaybackEngine` (`realtime/engine.py`) holds the events still to send in a heap, sends each
   when its time comes (`send_due`), remembers which notes are sounding, and silences on
   `stop_tag` (that tag's sounding notes) and `stop_all` (every sounding note, then CC 123 and
@@ -1411,7 +1411,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   sent late while the process starts, and raises `SenderNotStarted`
   (`ERR_SENDER_DID_NOT_START`) when the process ends without it, which it does quietly when a
   port can't be opened. `close()` returns at once on a process that never ran.
-  `test/sender_under_capture.py`, run by `test/test_realtime.py` in an interpreter of its own
+  `tests/support/sender_under_capture.py`, run by `tests/realtime/test_realtime.py` in an interpreter of its own
   since the tracker starts once per interpreter, holds the spawn under a capture like Textual's.
 - `internal_tools/iac_check.py` (`internal_tools/iac_check.sh`) is the one tool that touches real MIDI hardware, by
   the user's leave, and opens only a port with `IAC` in its name, the macOS bus
@@ -1426,7 +1426,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   neither order nor lateness. `docs/MIDI_SETUP.md` is the document for people about it. Measured at a mean of
   0.16 ms and a worst of 0.9 ms over ten seconds of the Entertainer, receive thread included.
   The suite never runs it.
-- `test/sample_sets/heavy_chain.yml`, a chain of twenty generators with grabs and chords, is
+- `tests/data/sample_sets/heavy_chain.yml`, a chain of twenty generators with grabs and chords, is
   the report's stress case for the stage before the process.
 - `Score(song=, routes=, seed=)` (`realtime/score.py`) is a song rendered for launching: it
   renders with `SongRenderer`, groups the grid's rows by the scene they were written from
@@ -1447,7 +1447,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   `LOOKAHEAD_SECONDS` (2) into queued events, in time order, from a heap of `Moment`s; and
   `is_playing`, `playing_scenes`, `is_clip_playing`, `is_track_sounding`, `scene_elapsed`,
   `repeats_left` and `song_position` answer the lights. The rules, which the module's
-  docstring states and `test/test_realtime.py` holds it to, with every example played from the
+  docstring states and `tests/realtime/test_realtime.py` holds it to, with every example played from the
   top against its timeline event for event to the end: a scene launched by hand plays every clip of it; a scene is done when every clip
   launched in it has finished, every play ending at its launch plus the scene's seconds, and
   then each clip whose follow action isn't "Off" sends a start to the clip directly below,
@@ -1487,8 +1487,8 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   A track through FluidSynth gets the channel the General MIDI export gives it, 10 for a drum
   track and the rest in turn among the unmuted tracks through FluidSynth (`Transport.routes`),
   and its `Route` carries the program, which `clip_timeline` sends at each clip's start
-  (`PROGRAM_CHANGE`, sorted before the note ons at its instant). `test/test_fluidsynth.py` and
-  `test/test_tui_playback.py`'s `TestFluidSynthPlayback` test it.
+  (`PROGRAM_CHANGE`, sorted before the note ons at its instant). `tests/realtime/test_fluidsynth.py` and
+  `tests/tui/test_tui_playback.py`'s `TestFluidSynthPlayback` test it.
 - Live editing, the user's design (`Player.update_score`): a score rendered again after an edit is
   taken by each play from the moment the song's `live_responsiveness` says (`_switch_time`: at once,
   `LIVE_LATENCY_SECONDS` from now; the next bar of what plays, worked out by the old score; or the
@@ -1512,5 +1512,5 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
 ## Tests of the model
 
 The tests of the model, playback and the exporters, the helpers they share in
-`test/song_testing.py` and `test/rendering.py`, and the rules every test follows are in
+`tests/support/song_testing.py` and `tests/support/rendering.py`, and the rules every test follows are in
 `.claude/TESTING.md`.

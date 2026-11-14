@@ -85,7 +85,7 @@ How they're written: by what's selected and what's seen, never by counted presse
 from the main menu and press Enter", "on the Song page, select Tempo and type 124", not "go down three
 steps", because counts break the moment a row is added. Keystrokes are named where they help, in the
 words the legend uses, and every one of them has to be kept true as keys change: a check like
-`test/test_doc_paths.py`'s, reading the key names the tutorials quote against the pages' `keys()`, would
+`tests/rules/test_doc_paths.py`'s, reading the key names the tutorials quote against the pages' `keys()`, would
 keep them honest, and `internal_tools/make_screenshots.py` already regenerates the screenshots from the
 real tracker, so the tutorials' shots join its list and are retaken the same way. The song the
 tutorials build should be a set in `examples/`, so that each step's screenshot comes from a real file

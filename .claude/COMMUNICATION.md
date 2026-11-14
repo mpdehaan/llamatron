@@ -257,7 +257,7 @@ row says which, and a reply says which too.
 | a picker | a dialog with a list of choices | `ChoiceDialog`, `GridChoiceDialog` |
 | a settings page, a list page | a page of fields, and a page of rows with a `+` row at the bottom | `FieldPage` with `Field` and `Button`, and `ListPage` |
 | protected | the Protected toggle on the Set File page | `protected`, `file_is_protected` |
-| the demos, the examples | the sets in `examples/` | every set there but the pieces, and the pieces, `PIECES` in `test/rendering.py` |
+| the demos, the examples | the sets in `examples/` | every set there but the pieces, and the pieces, `PIECES` in `tests/support/rendering.py` |
 | the ideas file | `dev_notes/IDEAS.md`, and `dev_notes/DOCS_IDEAS.md` for the documentation's ideas | |
 | the support folder | nothing on screen: `internal_tools/`, the folder of development tools and scripts (the user's word, since there is no other support folder at the top) | `internal_tools/` |
 | follow action, advance | Follow action on the clip page, "With Scene" or "Off", and Default follow action on the Set File page | `FollowAction`, `ClipSlotSetting.FOLLOW_ACTION`, `follow_action_of` |

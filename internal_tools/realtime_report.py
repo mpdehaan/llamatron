@@ -26,9 +26,9 @@ Run from the top folder:
 The report has two parts. The first plays the song's timeline through the real Realtime Sender Process into
 recording outputs, which write down the clock as each message is handed over, and compares each event's scheduled
 second with the second it went out: the mean, the 99th percentile and the worst, and how many events were more than
-half a millisecond, one and five off. test/test_realtime.py proves the timeline holds the MIDI export's events tick
+half a millisecond, one and five off. tests/realtime/test_realtime.py proves the timeline holds the MIDI export's events tick
 for tick, so this is the skew between real time and the export. It takes as long as the song, so it is not part of
-the suite. The second part times the stage before the process on test/sample_sets/heavy_chain.yml, a chain of twenty
+the suite. The second part times the stage before the process on tests/data/sample_sets/heavy_chain.yml, a chain of twenty
 generators with grabs and chords: how long rendering and building the timeline take against the length of one pass,
 since an edit while playing has to be rendered before the passes already queued run out.
 """
@@ -44,7 +44,7 @@ from llamatron.realtime.sender_process import RealtimeMIDISenderProcess
 from llamatron.realtime.timeline import Route, seconds_per_whole, song_timeline
 
 DEFAULT_SONG = 'examples/by_genre/ragtime/entertainer.yml'
-HEAVY_SET = 'test/sample_sets/heavy_chain.yml'
+HEAVY_SET = 'tests/data/sample_sets/heavy_chain.yml'
 PORT = 'report'
 SEED = 1
 SETTLE_SECONDS = 0.5

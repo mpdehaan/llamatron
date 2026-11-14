@@ -61,6 +61,16 @@ Built in this order, each trimmed out as it lands:
    chapters), a test failing when a link is missing or points nowhere. The examples are in examples/learning, examples/other and
    examples/by_genre (the user's choice), where the new demos go by purpose.
 
+## (High priority) A main screen that uses the room the console has
+
+The user wants to consider new designs for the main screen that take advantage of a console larger than 80 by 24, scaling
+down to what fits when the console is small. The user's first thought is larger buttons. Designs put to the user, none
+chosen: cells that grow with the console, each showing a little of what it opens (the first names of its list, a small
+picture of Arrange's grid in the Arrange cell); a panel for the current song (title, key, tempo, length, the lights while it
+plays); the sets opened lately; a small visualizer in a corner while a song plays. What it would mean for the code:
+`MainPage` (`src/llamatron/tui/screens/main_page.py`) lays its cells out for the size it is given, in steps, each step
+tested at its size, 80 by 24 staying as today; the screenshots and `docs/GETTING_STARTED.md` follow.
+
 ## (High priority) The batch recorder reading each song's visualizer
 
 A song now names the visualizer mode Arrange shows first (`SongSetting.VISUALIZER`), and the set one too, the song's over the
@@ -596,7 +606,7 @@ Open question from 2026-11-08: probability rolls and random directions are seede
 song's seed, the scene and the **track's name** (`ClipSlotPlayer`), so renaming a track changes
 what a song with probability plays, though nothing breaks. Renames are meant to change nothing.
 Seeding from the track's place instead would make renames safe but reordering tracks unsafe,
-and either change alters existing renders once. `test/test_renames.py` keeps track names in the
+and either change alters existing renders once. `tests/composition/test_renames.py` keeps track names in the
 examples until this is decided.
 
 ### Other design decisions to revisit
@@ -773,7 +783,7 @@ Many of the text UI tests reach a setting by pressing a counted number of keys, 
 enter, which breaks whenever a page gains or reorders a field, and has to be worked out again by
 hand each time. The tests should instead ask each page where things are and navigate there, using
 the same ordered lists that the page draws from: its fields, its rows and its keys.
-`select_field(label)` on `UITest` in `test/ui_testing.py` is a start, for settings pages: it finds a
+`select_field(label)` on `UITest` in `tests/support/ui_testing.py` is a start, for settings pages: it finds a
 field by its label in the page's own `fields()` and presses up or down as far as needed. The
 same idea could cover list rows, pattern editor rows and dialog options, and then the existing
 tests could be changed over to it. The aim is tests that a person can read, and change,
@@ -874,7 +884,7 @@ and a very big research project:
   find and tweak them afterwards, and scales are named after the parts of the song they belong
   to, so that people can edit or rename a part's scale easily.
 - **Renames must be safe** for this to work: renaming any object updates everything that refers
-  to it (a rule in CLAUDE.md, checked by `test/test_renames.py`).
+  to it (a rule in CLAUDE.md, checked by `tests/composition/test_renames.py`).
 
 ## Import MIDI, what's left
 
@@ -968,7 +978,7 @@ user's design of 2026-11-07 and 2026-11-09 still has in it, to do one item at a 
   plays keeps its events. The design: each playing clip is a queue of passes of its pattern, an
   edit re-renders and replaces the passes not yet started, and the clip takes the change when
   its pattern comes round. `PlaybackEngine.drop(tag=, after=)` is there for it. The lag report
-  (`internal_tools/realtime_report.sh`) times the render of `test/sample_sets/heavy_chain.yml` against a
+  (`internal_tools/realtime_report.sh`) times the render of `tests/data/sample_sets/heavy_chain.yml` against a
   pass for this reason, since an edit has to be rendered before the old passes run out.
 - **On the Patterns page, a pattern that's playing has a green dot beside it.** Today only
   Arrange, the clip page and the pattern editor show what plays.
@@ -994,7 +1004,7 @@ user's design of 2026-11-07 and 2026-11-09 still has in it, to do one item at a 
   event with its time, so that what the tracker sends over a real port is compared with the MIDI
   export, every example and demo through it, the timing errors reported to the user with
   Claude's opinion of whether they would sound tight. Today the suite holds the player to the
-  export inside the process (`test/test_realtime.py`) and the report measures the Realtime
+  export inside the process (`tests/realtime/test_realtime.py`) and the report measures the Realtime
   Sender Process on recording outputs, which open no port.
 - **MIDI clock**, so that other gear follows, from the same sender.
 - **The timestamped and compiled senders**, kept in reserve from Claude's proposals of
@@ -1031,7 +1041,7 @@ code: `Button` in `screens/field.py` exists, made by
 `FieldPage.button` and drawn below the settings after a blank line with its key's name in front,
 as the main menu draws a row, so what's left is a Save as button on the Set File page, a cursor
 position below the grid in the pattern editor, which is new for it, and a check in
-`test/test_tui_pages.py` that every button's key is still in `keys()`, so pressing the key and the
+`tests/tui/test_tui_pages.py` that every button's key is still in `keys()`, so pressing the key and the
 button do the same.
 
 ## Naming the CC numbers in the track editor's picker
@@ -1410,7 +1420,7 @@ ids today. Making this a rule means:
 ## Small demo tasks, to do in one batch
 
 Gathered on 2026-11-07 so that they can all be done at once, since each touches `examples/`,
-`docs/DEMOS.md` and `test/test_demos.py` together:
+`docs/DEMOS.md` and `tests/app/test_demos.py` together:
 
 - **The grab demo doesn't make a good song.** It should take the original melody and not have
   different voices come in at different times: four voices alternate singing notes, so voice 1
@@ -1494,7 +1504,7 @@ What it would mean for the code: a binding in `tui/keybindings.py` would take a 
 small class of group names in `strings/legends.py`, and `HelpDialog.key_columns` would lay out one
 block per group in the order the groups are declared, falling back to one block for a page that
 names no groups, so that the pages can be grouped one at a time. The legend wouldn't change. The
-test that every page's help fits an 80 by 24 console (`test/test_tui_pages.py`) keeps its hold,
+test that every page's help fits an 80 by 24 console (`tests/tui/test_tui_pages.py`) keeps its hold,
 so the dialog may need to scroll, or to put the headings in the columns' first rows, on the
 pattern editor.
 
@@ -1569,8 +1579,8 @@ a pattern playing in more than one song, perhaps at another tempo, scale or time
 with each song adding patterns of its own. It should use plenty of the other features too, chosen
 because the music wants them, like the other demos do. Nothing in `examples/` plays in 3/4 or
 6/8 yet, so at least one song should. It gets an entry in `docs/DEMOS.md`, a description that
-says what to keep when changing it, and a place in `HAND_WRITTEN` in `test/test_demos.py` unless
-it's written through `test/demo_sources/make_demos.py`. The genre and the tunes are to be decided
+says what to keep when changing it, and a place in `HAND_WRITTEN` in `tests/app/test_demos.py` unless
+it's written through `tests/data/demo_sources/make_demos.py`. The genre and the tunes are to be decided
 with the user first.
 
 ## Risers, horns and filter sweeps, with smooth automation
@@ -1617,7 +1627,7 @@ the rules and still need refactoring:
 - **Limits and meaningful numbers named.** Literals like `128` for "just past the top" should
   come from the program's constants (`MAX_REGISTER_VALUE + 1`), and a number that means
   something, like a register's maximum, should be a named variable, so that two 3s that mean
-  different things can't be confused. `test/test_registers.py` is an example of the style.
+  different things can't be confused. `tests/playback/test_registers.py` is an example of the style.
 - **Shown text through the program's constants.** When a test checks text the program shows,
   like a row label, a key's name, a page's title or a message, it imports the program's constant
   for it (`ROW_LABELS[Row.DEGREE]`, `ERR_SCENE_NO_SUCH_SCALE`) instead of writing the words out
@@ -1640,12 +1650,12 @@ on making the tests less hard-coded.
 On 2026-11-07 the user asked for the remaining kinds of report to be noted here, to investigate
 whether they matter and, if nothing changes, to add them to the ignore list:
 
-- **An import below module-level code (E402).** All five are in `test/demo_sources/make_demos.py`:
+- **An import below module-level code (E402).** All five are in `tests/data/demo_sources/make_demos.py`:
   it puts the test folder on `sys.path` before importing `gate_conversion` from there, which is
   marked `noqa`, and the four llamatron imports after that line could simply move above it. One
   cause, and a two-minute change if it's wanted; otherwise ignore E402.
 - **A lambda assigned to a name (E731).** The list pages' are gone, each now a method named
-  `open_item`. What is left is in `test/demo_sources/make_demos.py`. The project's own rule for
+  `open_item`. What is left is in `tests/data/demo_sources/make_demos.py`. The project's own rule for
   unclear lines would favour a named function, so pycodestyle and the style agree here, but each
   is one short line.
 - **Continuation line indentation (E128) and three blank lines (E303).** Cosmetic, under thirty

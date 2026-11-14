@@ -30,7 +30,7 @@ its scene says, and a clip stopped by hand, or cut by another clip launched on i
 finished, so it sends no start. A looping clip never finishes on its own: it loops until something
 is launched on its track or everything stops, so it doesn't hold its scene, and a scene whose every
 clip loops is never done, so the song waits there for the human. So with the defaults every example
-played from the top sends exactly what its export holds, which test/test_realtime.py holds the
+played from the top sends exactly what its export holds, which tests/realtime/test_realtime.py holds the
 player to. Until 2026-11-10 one looping clip held its scene, and the user changed that when the
 registers demo never left its first scene.
 
