@@ -1319,6 +1319,13 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   what to keep true when editing one.
 - A demo with a video on YouTube shows it at the end of its section on its genre's page, under the generated summary, as a linked thumbnail like the guide's (`[![The Density demo, edm_density.yml, on YouTube](https://img.youtube.com/vi/ID/hqdefault.jpg)](https://www.youtube.com/watch?v=ID)`), the same way for every demo, the user's rule; a demo without one shows none, and the user adds them now and then. A video isn't redone when its demo changes: the disclaimer on Listening to the Demos says a video may be out of date. The Density demo's is also on the guide's front page and in `README.md`, under the visualizers' video.
 - A demo's title, description, heading and notes never call it a homage, the user's rule, except in a sentence that says "This is a homage to" a work: a heading names the style, like "Synth-Pop", and a description says "in the manner of" the work.
+- A homage keeps its inspiration written in its description and notes, the work and who made it, when it is rewritten too (the
+  user's rule): a demo's own file and its section on its genre's page are where an artist and a work may be named, so that a later
+  improvement knows what to study. What may be taken from the work, the user's rules: its chord progression and the order of its
+  sections, since a progression is nobody's property, looked up from chord charts and never from memory alone; never its melody,
+  riff or bass line, which Claude neither reads nor reproduces, even where it knows them. A homage's own melody moves the way
+  melodies of the genre usually move and has the same kind of feel, written new. The rhythms of its parts are written new as well
+  (Claude's reading, to keep each demo an original piece).
 - Whether a new feature gets a demo is asked of the user every time (`.claude/COMMUNICATION.md`,
   "Discussing a feature").
 - A new example runs about three minutes, give or take ten seconds, unless the user asks for
