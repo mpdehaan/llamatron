@@ -1,27 +1,44 @@
-version: 1.0.227
+version: 1.0.364
 title: Uphill cops
 description: "a gentle piano theme in the manner of Hill Street Blues (Mike Post), its chords voice-led, with a melody of its own"
 notes: |
-  Uphill cops: a gentle theme at 76 beats a minute in D major, in the manner of the early eighties
-  police dramas: a solo piano with the tune, an electric piano with the chords, a fretless bass,
-  strings and soft drums. The melody is its own.
+  Uphill cops: a gentle piano theme in the manner of Hill Street Blues (Mike Post), its chords voice-
+  led, with a melody of its own. This is a homage to Hill Street Blues (Mike Post): its chords, form,
+  sounds and drums follow that work as Claude knows it, and every tune and rhythm here is new. Rebuild
+  version 2.
 
-  The electric piano and the strings hold one chord a bar, which a Progression moves through
-  I iii IV V vi IV ii V, and a Voice leading generator called smooth, after the progression in
-  the chains, voices each chord nearest the one before, between octaves 4 and 5, so the chords
-  glide rather than jump.
+  An electric piano rolls each chord gently, I and IV in turn, under a plain piano tune of long notes;
+  a soft rhythm section, a clean guitar that fills the gaps and strings join; a second strain climbs
+  through IV V iii vi.
+
+  Subgenre: gentle soft-rock television theme of the early eighties. Drums: very soft, a kick and a
+  side stick. Tempo 76, straight. Bass: fretless, plain. Builds: instruments join gently. Sounds: an
+  electric piano rolling chords, an acoustic piano with the tune, a clean guitar, strings. Melody
+  manner: long plain notes. Form: theme, second strain, theme.
+
+  Band and song: the theme is known for being tender where its show was hard, a few piano notes over
+  two chords.
+
+  Checklist: it is good and memorable because it is calm and unhurried. The hook is the piano tune
+  over I and IV; the emotion is tenderness; the lift is the strings; the contrast is the quiet middle;
+  the sounds are an electric piano, a piano, a clean guitar and strings.
 
   Run it with: llamatron examples/by_genre/tv_theme/uphill_cops.yml
 
-  Scene 1, intro, 8 bars: the chords and the bass.
-  Scene 2, theme, 16 bars: the piano with the tune, soft drums.
-  Scene 3, strings, 16 bars: the strings join.
-  Scene 4, quiet, 8 bars: the tune over the chords alone.
-  Scene 5, outro, 8 bars: the chords and the strings.
+  Scene 1, intro, 4 bars.
+  Scene 2, theme, 8 bars.
+  Scene 3, theme with the band, 8 bars.
+  Scene 4, second strain, 8 bars.
+  Scene 5, theme with strings, 8 bars.
+  Scene 6, quiet, 4 bars.
+  Scene 7, second strain 2, 8 bars.
+  Scene 8, last theme, 8 bars.
+  Scene 9, outro, 4 bars.
 
   When changing this demo:
-  - Keep the chords voice-led by smooth after the progression.
-  - Keep the melody original.
+  - Keep the drums as the Subgenre paragraph describes them, the kick first.
+  - Keep what the Checklist paragraph calls the hook and the lift.
+  - Keep every tune original, and the demo out of the key of the work it follows.
 real_time: true
 protected: true
 
@@ -35,111 +52,186 @@ patterns:
     step_size: 1/16
     degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~]
-    velocity: [110, ~, ~, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, ~, ~]
-  stick:
+    velocity: [84, ~, ~, ~, ~, ~, ~, ~, ~, ~, 84, ~, ~, ~, ~, ~]
+  rim:
     steps: 16
     drum: true
     step_size: 1/16
     degree: [~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~]
     accidental: [~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~]
     octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
-    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 74, ~, ~, ~, ~, ~, ~, ~, 74, ~, ~, ~]
   hat:
     steps: 16
     drum: true
     step_size: 1/16
-    degree: [G, ~, ~, ~, G, ~, ~, ~, G, ~, ~, ~, G, ~, ~, ~]
-    accidental: ["#", ~, ~, ~, "#", ~, ~, ~, "#", ~, ~, ~, "#", ~, ~, ~]
-    octave: [3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~]
-    velocity: [110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~]
-  chords:
+    degree: [F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~]
+    accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
+    velocity: [52, ~, 52, ~, 52, ~, 52, ~, 52, ~, 52, ~, 52, ~, 52, ~]
+  figure:
+    steps: 8
+    step_size: 1/8
+    degree: [1, 5, 1, 3, 5, 1, 3, 1]
+    octave: [4, 4, 5, 5, 4, 5, 5, 5]
+    velocity: [82, 76, 76, 76, 76, 76, 76, 76]
+  held:
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, ~, ~]
     chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    velocity: [86, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  held high:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    velocity: [78, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
   bass:
     steps: 8
     step_size: 1/8
-    degree: [1, ~, ~, ~, 5, ~, ~, ~]
-    octave: [3, ~, ~, ~, 2, ~, ~, ~]
-    tie: [false, true, true, true, false, true, true, true]
-  strings:
+    degree: [1, ~, ~, 1, 5, ~, 1, ~]
+    octave: [3, ~, ~, 3, 3, ~, 3, ~]
+    velocity: [94, ~, ~, 88, 88, ~, 88, ~]
+    tie: [false, true, true, false, false, true, false, true]
+  fill:
     steps: 8
     step_size: 1/8
-    degree: [1, ~, ~, ~, ~, ~, ~, ~]
-    octave: [4, ~, ~, ~, ~, ~, ~, ~]
-    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, true, true, true, true, true, true, true]
-  melody:
+    degree: [~, ~, ~, ~, ~, 5, 6, 1]
+    octave: [~, ~, ~, ~, ~, 5, 5, 6]
+    velocity: [~, ~, ~, ~, ~, 72, 72, 72]
+  theme:
     steps: 64
     step_size: 1/8
-    degree: [3, ~, ~, 2, 1, ~, 5, ~, 7, ~, ~, 5, 3, ~, ~, ~, 6, ~, 1, ~, 4, ~, 3, ~, 2, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, 7, 6, ~, 3, ~, 4, ~, 6, ~, 1, ~, 6, ~, 2, ~, 1, ~, 6, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~]
-    octave: [6, ~, ~, 6, 6, ~, 5, ~, 5, ~, ~, 5, 5, ~, ~, ~, 5, ~, 6, ~, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, 5, 5, ~, 5, ~, 5, ~, 5, ~, 6, ~, 5, ~, 6, ~, 6, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, true, true, false, false, true, false, true, false, true, true, false, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+    degree: [3, ~, ~, ~, ~, ~, 5, ~, 6, ~, ~, ~, 4, ~, ~, ~, 3, ~, ~, ~, ~, ~, 5, ~, 1, ~, ~, ~, 6, ~, ~, ~, 1, ~, ~, ~, 3, ~, 1, ~, 6, ~, ~, ~, 4, ~, 6, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 6, ~, 7, ~]
+    octave: [5, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, 5, ~, 6, ~, ~, ~, 5, ~, ~, ~, 6, ~, ~, ~, 6, ~, 6, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, ~, 5, ~]
+    velocity: [102, ~, ~, ~, ~, ~, 96, ~, 102, ~, ~, ~, 96, ~, ~, ~, 102, ~, ~, ~, ~, ~, 96, ~, 102, ~, ~, ~, 96, ~, ~, ~, 102, ~, ~, ~, 96, ~, 96, ~, 102, ~, ~, ~, 96, ~, 96, ~, 102, ~, ~, ~, ~, ~, ~, ~, ~, ~, 96, ~, 96, ~, 96, ~]
+    tie: [false, true, true, true, true, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, true, true, false, false, false, true, false, true, false, true]
+  second:
+    steps: 64
+    step_size: 1/8
+    degree: [1, ~, ~, ~, 6, ~, ~, ~, 7, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 7, ~, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, 7, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [6, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [102, ~, ~, ~, 96, ~, ~, ~, 102, ~, ~, ~, 96, ~, ~, ~, 102, ~, ~, ~, 96, ~, 96, ~, 102, ~, ~, ~, ~, ~, ~, ~, 102, ~, ~, ~, 96, ~, ~, ~, 102, ~, ~, ~, 96, ~, ~, ~, 102, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false]
 
 progressions:
-  theme: { chords: [1, 3, 4, 5, 6, 4, 2, 5] }
+  theme: { chords: [1, 4, 1, 4, 6, 2, 5, 5] }
+  second: { chords: [4, 5, 3, 6, 2, 5, 1, 1] }
 
 voice_leadings:
-  smooth: { lowest_octave: 4, highest_octave: 5 }
+  near: { lowest_octave: 4, highest_octave: 5 }
 
 chains:
   theme:
     - progression: theme
-    - voice_leading: smooth
+  second:
+    - progression: second
+  theme keys:
+    - progression: theme
+    - voice_leading: near
+  second keys:
+    - progression: second
+    - voice_leading: near
 
 instruments:
   electric piano: { device: "*FluidSynth", gm_sound: 5 }
   fretless bass: { device: "*FluidSynth", gm_sound: 36 }
   strings: { device: "*FluidSynth", gm_sound: 49 }
   piano: { device: "*FluidSynth", gm_sound: 1 }
+  clean guitar: { device: "*FluidSynth", gm_sound: 28 }
+  warm pad: { device: "*FluidSynth", gm_sound: 90 }
   drum kit: { device: "*FluidSynth" }
 
 songs:
   uphill_cops:
     tempo: 76
     scale: D Major
-    genre: TV theme
+    genre: TV Theme
 
     tracks:
       kick: { drum: true, instrument: drum kit }
-      stick: { drum: true, instrument: drum kit }
+      rim: { drum: true, instrument: drum kit }
       hat: { drum: true, instrument: drum kit }
       chords: { instrument: electric piano }
+      pad: { instrument: warm pad }
       bass: { instrument: fretless bass }
       strings: { instrument: strings }
       lead: { instrument: piano }
+      guitar: { instrument: clean guitar }
 
     scenes:
       - name: intro
         tracks:
-          chords: { pattern: chords, chains: [theme], repeat: 8 }
-          bass: { pattern: bass, chains: [theme], loop: true }
+          chords: { pattern: figure, chains: [theme], repeat: 4 }
+          pad: { pattern: held, chains: [theme keys], loop: true }
       - name: theme
         tracks:
-          kick: { pattern: kick, loop: true }
-          stick: { pattern: stick, loop: true }
-          hat: { pattern: hat, loop: true }
-          chords: { pattern: chords, chains: [theme], loop: true }
-          bass: { pattern: bass, chains: [theme], loop: true }
-          lead: { pattern: melody, repeat: 2 }
-      - name: strings
+          chords: { pattern: figure, chains: [theme], repeat: 8 }
+          pad: { pattern: held, chains: [theme keys], loop: true }
+          lead: { pattern: theme, loop: true }
+      - name: theme with the band
         tracks:
+          chords: { pattern: figure, chains: [theme], repeat: 8 }
+          pad: { pattern: held, chains: [theme keys], loop: true }
           kick: { pattern: kick, loop: true }
-          stick: { pattern: stick, loop: true }
+          rim: { pattern: rim, loop: true }
           hat: { pattern: hat, loop: true }
-          chords: { pattern: chords, chains: [theme], loop: true }
           bass: { pattern: bass, chains: [theme], loop: true }
-          lead: { pattern: melody, repeat: 2 }
-          strings: { pattern: strings, chains: [theme], loop: true }
+          guitar: { pattern: fill, chains: [theme], loop: true }
+          lead: { pattern: theme, loop: true }
+      - name: second strain
+        tracks:
+          chords: { pattern: figure, chains: [second], repeat: 8 }
+          pad: { pattern: held, chains: [second keys], loop: true }
+          kick: { pattern: kick, loop: true }
+          rim: { pattern: rim, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [second], loop: true }
+          strings: { pattern: held high, chains: [second keys], loop: true }
+          lead: { pattern: second, loop: true }
+      - name: theme with strings
+        tracks:
+          chords: { pattern: figure, chains: [theme], repeat: 8 }
+          pad: { pattern: held, chains: [theme keys], loop: true }
+          kick: { pattern: kick, loop: true }
+          rim: { pattern: rim, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [theme], loop: true }
+          strings: { pattern: held high, chains: [theme keys], loop: true }
+          guitar: { pattern: fill, chains: [theme], loop: true }
+          lead: { pattern: theme, loop: true }
       - name: quiet
         tracks:
-          chords: { pattern: chords, chains: [theme], loop: true }
-          lead: { pattern: melody }
+          chords: { pattern: figure, chains: [theme], repeat: 4 }
+          pad: { pattern: held, chains: [theme keys], loop: true }
+      - name: second strain 2
+        tracks:
+          chords: { pattern: figure, chains: [second], repeat: 8 }
+          pad: { pattern: held, chains: [second keys], loop: true }
+          kick: { pattern: kick, loop: true }
+          rim: { pattern: rim, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [second], loop: true }
+          strings: { pattern: held high, chains: [second keys], loop: true }
+          guitar: { pattern: fill, chains: [second], loop: true }
+          lead: { pattern: second, loop: true }
+      - name: last theme
+        tracks:
+          chords: { pattern: figure, chains: [theme], repeat: 8 }
+          pad: { pattern: held, chains: [theme keys], loop: true }
+          kick: { pattern: kick, loop: true }
+          rim: { pattern: rim, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [theme], loop: true }
+          strings: { pattern: held high, chains: [theme keys], loop: true }
+          guitar: { pattern: fill, chains: [theme], loop: true }
+          lead: { pattern: theme, loop: true }
       - name: outro
         tracks:
-          chords: { pattern: chords, chains: [theme], repeat: 8 }
-          bass: { pattern: bass, chains: [theme], loop: true }
-          strings: { pattern: strings, chains: [theme], loop: true }
+          chords: { pattern: figure, chains: [theme], repeat: 4 }
+          pad: { pattern: held, chains: [theme keys], loop: true }
