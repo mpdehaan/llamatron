@@ -19,7 +19,7 @@
 examples/learning holds the demos in the order a newcomer learns the features, examples/other the demos that fit no
 other folder, the Euclidean mask so far, and examples/by_genre every other song, the pieces and the songs in the manner of
 others alike, in a folder for each genre, named by genre_folder, since one folder of them was too many to explore, the
-user's layout.
+user's layout. examples/mashups holds the mashups, each one work's notes set in another's style.
 examples/midi holds MIDI files to import, which are not sets. Everything that lists the example
 sets, the tests, the tools and the demo tables, asks example_sets() here, so that a folder can be
 added in one place.
@@ -32,8 +32,9 @@ EXAMPLES_FOLDER = 'examples'
 LEARNING = 'learning'
 OTHER = 'other'
 BY_GENRE = 'by_genre'
+MASHUPS = 'mashups'
 # The folders of sets, in the order they are listed.
-SET_FOLDERS = (LEARNING, OTHER, BY_GENRE)
+SET_FOLDERS = (LEARNING, OTHER, BY_GENRE, MASHUPS)
 SET_FILES = '*.yml'
 # The folders within a folder of sets, as by_genre's genres are, at any depth.
 ANY_FOLDERS = '**'
