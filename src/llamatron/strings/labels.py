@@ -20,7 +20,7 @@ Each constant starts with MSG_, and the classes Crumb and Column group the words
 
 from llamatron.composition.file_format import (
     CONDITION_ROWS, AtLimit, DriftValue, FollowAction, LiveResponsiveness, NamedProgression, Shape, ShapePart, EuclidPart, NamedRhythm, Restart, Section, StrumDirection, StrumPart, UpstrokeStrings, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, ChordSymbol, Direction, GateModifier, OctaveLabels, RegisterSetting, Row,
-    ScaleKind,
+    ScaleKind, ReadyBar, SingleNotes, Stroke, Tuning,
 )
 from llamatron.tui.keys import RowSection
 
@@ -85,7 +85,7 @@ MSG_CAPTION_WORDS = {
     Section.INSTRUMENTS: 'instrument', Section.TRACKS: 'track', Section.ARPS: 'arpeggiator', Section.AUTO_RATCHETS: 'AutoRatchet',
     Section.DRIFTS: 'drift', Section.PROGRESSIONS: 'progression', Section.VOICE_LEADINGS: 'voice leading', Section.STRUMS: 'strum',
     Section.EUCLIDS: 'Euclid', Section.DENSITIES: 'density', Section.SWELLS: 'swell', Section.ARTICULATES: 'articulate',
-    Section.GLIDES: 'glide', Section.SHORTENS: 'shorten', Section.RUSHES: 'rush', Section.DRAGS: 'drag', Section.HOCKETS: 'hocket',
+    Section.GLIDES: 'glide', Section.SHORTENS: 'shorten', Section.RUSHES: 'rush', Section.DRAGS: 'drag', Section.HOCKETS: 'hocket', Section.GUITARIFIES: 'guitarify',
 }
 MSG_SCENE_CAPTION_WORD = 'scene'
 MSG_CLIP_CAPTION_WORD = 'clip'
@@ -153,6 +153,7 @@ class Crumb:
     CHORDS = 'CHORDS'
     VOICE_LEADING = 'VOICE LEADING'
     STEPS = 'STEPS'
+    STROKES = 'STROKES'
     OFFSETS = 'OFFSETS'
     SCALES = 'SCALES'
     GROOVES = 'GROOVES'
@@ -285,6 +286,39 @@ MSG_PROGRESSION_LABEL = 'Progression'
 # tui/screens/generators/voice_leading_editor.py: a voice leading's name in a prompt, and its toggle.
 MSG_VOICE_LEADING_LABEL = 'Voice leading'
 MSG_HOCKET_LABEL = 'Hocket'
+# tui/screens/generators/guitarify_editor.py, tui/screens/generators/guitar_bar_editor.py: a Guitarify's name, its two sections, their fields, and what its choices are called.
+MSG_GUITARIFY_LABEL = 'Guitarify'
+MSG_GUITAR_SHAPE_SECTION = 'Shape'
+MSG_GUITAR_STROKES_SECTION = 'Strokes'
+MSG_GUITAR_SHAPE_LABEL = 'Shape chords'
+MSG_GUITAR_TUNING_LABEL = 'Tuning'
+MSG_GUITAR_POSITION_LABEL = 'Position'
+MSG_GUITAR_CAPO_LABEL = 'Capo'
+MSG_GUITAR_STRINGS_LABEL = 'Strings'
+MSG_GUITAR_SINGLE_NOTES_LABEL = 'Single notes'
+MSG_GUITAR_STROKES_LABEL = 'Play strokes'
+MSG_GUITAR_BAR_LABEL = 'Bar'
+MSG_GUITAR_LET_RING_LABEL = 'Let ring'
+MSG_GUITAR_SPREAD_LABEL = 'Spread'
+MSG_GUITAR_FADE_LABEL = 'Fade'
+MSG_GUITAR_LOOSE_TIMING_LABEL = 'Loose timing'
+MSG_GUITAR_UPSTROKE_LABEL = 'Upstroke strings'
+MSG_GUITAR_TUNING_NAMES = {Tuning.STANDARD: 'standard', Tuning.DROP_D: 'drop D', Tuning.OPEN_G: 'open G', Tuning.OPEN_D: 'open D', Tuning.DADGAD: 'DADGAD'}
+MSG_GUITAR_SINGLE_NOTES_NAMES = {SingleNotes.LEAVE: 'leave', SingleNotes.POWER_CHORD: 'power chord', SingleNotes.SCALE_CHORD: 'scale chord'}
+MSG_GUITAR_STROKE_NAMES = {
+    Stroke.NOTHING: 'nothing', Stroke.DOWN: 'down', Stroke.UP: 'up', Stroke.MUTE: 'mute', Stroke.BASS: 'bass', Stroke.ALT_BASS: 'alt bass',
+    Stroke.STRING_1: 'string 1', Stroke.STRING_2: 'string 2', Stroke.STRING_3: 'string 3', Stroke.STRING_4: 'string 4',
+}
+MSG_READY_BAR_NAMES = {
+    ReadyBar.FOLK_STRUM: 'folk strum', ReadyBar.BOOM_CHICK: 'boom-chick', ReadyBar.TRAVIS_PICK: 'travis pick', ReadyBar.CROSSPICK: 'crosspick',
+    ReadyBar.FOUR_TO_THE_BAR: 'four to the bar', ReadyBar.BACKBEAT: 'backbeat', ReadyBar.BOOGIE: 'boogie', ReadyBar.SCRATCH: 'scratch',
+    ReadyBar.ALL_DOWN: 'all down', ReadyBar.CHUG: 'chug', ReadyBar.GALLOP: 'gallop', ReadyBar.THRASH: 'thrash', ReadyBar.TREMOLO: 'tremolo',
+    ReadyBar.CHIME: 'chime', ReadyBar.ROLL_UP: 'roll up', ReadyBar.ROLL_DOWN: 'roll down', ReadyBar.HELD: 'held',
+}
+MSG_OWN_BAR = 'custom'
+MSG_STROKE_ROW_LABEL = 'Stroke'
+MSG_ACCENT_ROW_LABEL = 'Accent'
+MSG_READY_BARS_TITLE = 'Ready-made bar'
 MSG_SOURCE_TRACK_LABEL = 'Source track'
 MSG_ROOT_IN_BASS_LABEL = 'Keep the root in the bass'
 # tui/screens/generators/strum_fields.py: a strum's section and its fields, Strum in front where the strum is one section among others, and what its choices are called.

@@ -33,11 +33,11 @@ from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.naming import default_scale_name
 from llamatron.strings.labels import (
     MSG_CHORDS_LABEL, MSG_EVERY_LABEL, MSG_ROOT_IN_BASS_LABEL, MSG_DRAG_AMOUNT_LABEL, MSG_EUCLID_PART_LABELS, MSG_GLIDE_AMOUNT_LABEL, MSG_RUSH_AMOUNT_LABEL, MSG_SHAPE_PART_LABELS, MSG_SHORTEN_LABEL,
-    MSG_STEPS_LABEL, MSG_STRUM_PART_LABELS, MSG_SOURCE_TRACK_LABEL,
+    MSG_STEPS_LABEL, MSG_STRUM_PART_LABELS, MSG_SOURCE_TRACK_LABEL, MSG_GUITAR_BAR_LABEL, MSG_GUITAR_LET_RING_LABEL, MSG_READY_BAR_NAMES,
 )
-from llamatron.composition.file_format import EuclidPart, ShapePart, StrumPart
+from llamatron.composition.file_format import EuclidPart, ReadyBar, ShapePart, StrumPart
 from llamatron.composition.generator_settings import DEFAULT_DRAG, DEFAULT_RUSH, DEFAULT_SHORTEN
-from tests.support.ui_testing import TRADE, CLIPS, LAZY, PUSH, SLIDES, CLAVE, CLIPPED, FOLK, POP, SMOOTH, FADE, THIN
+from tests.support.ui_testing import PICKED, TRADE, CLIPS, LAZY, PUSH, SLIDES, CLAVE, CLIPPED, FOLK, POP, SMOOTH, FADE, THIN
 from llamatron.composition.defaults import DEFAULT_CHANNEL, FIRST_NUMBER
 from llamatron.composition.file_format import DriftValue, DriftVersion, GeneratorKind, RegisterName, RegisterSetting, Row, Section, SongSetting
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -578,6 +578,40 @@ class TestVoiceLeadingEditorUndo(UndoTest):
         await self.select_field(MSG_ROOT_IN_BASS_LABEL)
         await self.press(keybindings.VoiceLeadingEditor.TOGGLE)
         self.assertTrue(self.document.song().get_generator_settings(kind=GeneratorKind.VOICE_LEADING, name=SMOOTH).keeps_root_in_bass())
+        await self.check_undo_and_redo(before=before, after=self.data())
+
+
+class TestGuitarifyEditorUndo(UndoTest):
+
+    async def test_switching_let_ring_on_is_one_step(self):
+        await self.open_generator(section=Section.GUITARIFIES)
+        before = self.data()
+        await self.select_field(MSG_GUITAR_LET_RING_LABEL)
+        await self.press(keybindings.GuitarifyEditor.TOGGLE)
+        self.assertTrue(self.document.song().get_generator_settings(kind=GeneratorKind.GUITARIFY, name=PICKED).lets_ring())
+        await self.check_undo_and_redo(before=before, after=self.data())
+
+
+class TestGuitarBarEditorUndo(UndoTest):
+
+    async def open_bar(self):
+        await self.open_generator(section=Section.GUITARIFIES)
+        await self.select_field(MSG_GUITAR_BAR_LABEL)
+        await self.press(Key.ENTER)
+
+    async def test_changing_a_stroke_is_one_step(self):
+        await self.open_bar()
+        before = self.data()
+        await self.press(keybindings.GuitarBarEditor.MORE)
+        self.assertNotEqual(self.data(), before)
+        await self.check_undo_and_redo(before=before, after=self.data())
+
+    async def test_a_ready_made_bar_is_one_step(self):
+        await self.open_bar()
+        before = self.data()
+        await self.press(keybindings.GuitarBarEditor.READY_BARS)
+        await self.pick(MSG_READY_BAR_NAMES[ReadyBar.CHUG])
+        self.assertNotEqual(self.data(), before)
         await self.check_undo_and_redo(before=before, after=self.data())
 
 

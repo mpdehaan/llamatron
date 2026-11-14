@@ -103,6 +103,7 @@ A generator changes how a clip's notes are played, without changing its pattern.
 | What it does | Page |
 | --- | --- |
 | A chord played one note at a time | [Arpeggiator](docs/generators/ARPEGGIATOR.md) |
+| Chords and notes played as a guitar plays them | [Guitarify](docs/generators/GUITARIFY.md) |
 | A figure moved through chords | [Progression](docs/generators/PROGRESSION.md) |
 | Chords spread in time like a pick | [Strum](docs/generators/STRUM.md) |
 | Chords voiced nearest the chord before | [Voice Leading](docs/generators/VOICE_LEADING.md) |

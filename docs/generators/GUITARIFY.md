@@ -1,0 +1,57 @@
+# Guitarify
+
+A keyboard plays a chord as a stack of notes struck together and held. A guitar plays the same chord across six strings, one note a string, and a hand strikes those strings in a rhythm: a strum down, a strum up, a muted strum, the bass string, one string picked alone. Guitarify plays a clip's chords and notes that way, on any instrument, so a pattern that is only a row of chords becomes a strummed or picked part.
+
+Guitarify has two sections, and each can be switched off. Shape is the fretting hand, which decides the notes of each chord. Strokes is the other hand, which decides when each string sounds.
+
+## Shape
+
+Shape holds each chord as a hand can hold it: at most one note on each string, every note within four frets of the hand's position, and the chord's lowest written note in the bass wherever a string can reach it. C, E and G written close together become C, E, G, C and E across five strings, the open C chord. A hand with too few strings for a chord leaves the fifth out first and the root out last.
+
+| Setting | What it does |
+| --- | --- |
+| Shape chords | Switches the section on or off. Off leaves every chord as written. |
+| Tuning | The open strings: standard, drop D, open G, open D or DADGAD. |
+| Position | Where the hand is: "open", which uses the open strings and the first three frets, or a fret from 1 to 12, which uses that fret and the three above. |
+| Capo | The fret a capo clamps, which raises every string. |
+| Strings | How many strings are played, from 3 to 6, counted from the highest, so 4 leaves out the two lowest. |
+| Single notes | What becomes of a step that holds one note: "leave" keeps the note; "power chord" plays the root, the fifth above and the octave on the low strings; "scale chord" plays the chord the note's place in the scale builds. |
+
+## Strokes
+
+Strokes plays a bar of strokes, one stroke a cell, on whatever chord or note sounds at that moment. The bar follows the song's bars and goes round for as long as the clip plays. A single note is played by every stroke.
+
+| Setting | What it does |
+| --- | --- |
+| Play strokes | Switches the section on or off. Off leaves each chord struck once, where the pattern wrote the chord. |
+| Bar | The bar of strokes, shown by the name of the ready-made bar the cells match, or as "custom". ENTER opens the bar's editor. |
+| Let ring | A struck string sounds until a later stroke strikes the same string or the chord ends, as picked chords do. Off stops every string at the next stroke. |
+| Spread | The time between one string of a strum and the next, in milliseconds whatever the tempo. |
+| Fade | How much quieter the last string of a strum is than the first, up to 50%. |
+| Loose timing | How much each gap between strings varies, up to 50%, drawn from the song's seed. |
+| Upstroke strings | How many of the top strings an upstroke catches, or "all". |
+| Restart | When the bar starts over, as [Generators](../GENERATORS.md#restart) describes. |
+
+Guitarify's Spread, Fade, Loose timing and Upstroke strings are Guitarify's own. The [Strum](STRUM.md) generator and the Strum sections of a track and a clip are separate and unchanged.
+
+## Bar Editor
+
+The bar's editor shows one cell a column, with the stroke above and the accent below. Left and Right move along the cells, `[` and `]` change the stroke under the cursor, Space or ENTER accents the cell, `I` inserts a cell, `D` removes one, `S` steps the cell length and `R` picks a ready-made bar. A bar holds up to 32 cells.
+
+| Stroke | Drawn | What plays |
+| --- | :---: | --- |
+| nothing | `—` | Nothing new: what was struck before sounds on. |
+| down | `↓` | Every string, low to high. |
+| up | `↑` | The top strings, high to low. |
+| mute | `x` | Every string, short and quiet, as a palm-muted or scratched strum. |
+| bass | `B` | The lowest string. |
+| alt bass | `A` | The fifth of the chord where a string plays one, and otherwise the second lowest string. |
+| string 1 to string 4 | `1` to `4` | One string, counted from the highest. A string the chord lacks plays the nearest string the chord has. |
+
+Where a bar has any accented cell, the strokes without an accent play a little softer.
+
+The ready-made bars are folk strum, boom-chick, travis pick, crosspick, four to the bar, backbeat, boogie, scratch, all down, chug, gallop, thrash, tremolo, chime, roll up, roll down and held. Picking one replaces the strokes, the accents and the cell length together, and the bar can be edited from there. A rolled chord is the roll up or the roll down bar with Let ring on.
+
+## Applying the Generator
+
+Add a Guitarify to a chain, as `guitarify: name`, and give clips that chain. A Progression before the Guitarify in the same chain moves one written chord through a song's chords, and the Guitarify then plays each. `examples/learning/23_guitarify.yml` plays twenty short scenes, each a way a guitar is played, from one pattern of chords a scene.

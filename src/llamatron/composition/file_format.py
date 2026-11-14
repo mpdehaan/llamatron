@@ -51,6 +51,7 @@ class Section:
     RUSHES = 'rushes'
     DRAGS = 'drags'
     HOCKETS = 'hockets'
+    GUITARIFIES = 'guitarifies'
     CHAINS = 'chains'
     GROOVES = 'grooves'
     INSTRUMENTS = 'instruments'
@@ -411,6 +412,7 @@ class GeneratorKind:
     RUSH = 'rush'
     DRAG = 'drag'
     HOCKET = 'hocket'
+    GUITARIFY = 'guitarify'
 
 
 # The step sizes the editor offers, shortest first. Any other length can be typed.
@@ -644,7 +646,7 @@ NAMED_GENERATORS = {
     GeneratorKind.STRUM: Section.STRUMS, GeneratorKind.EUCLID: Section.EUCLIDS,
     GeneratorKind.DENSITY: Section.DENSITIES, GeneratorKind.SWELL: Section.SWELLS, GeneratorKind.ARTICULATE: Section.ARTICULATES,
     GeneratorKind.GLIDE: Section.GLIDES, GeneratorKind.SHORTEN: Section.SHORTENS, GeneratorKind.RUSH: Section.RUSHES, GeneratorKind.DRAG: Section.DRAGS,
-    GeneratorKind.HOCKET: Section.HOCKETS,
+    GeneratorKind.HOCKET: Section.HOCKETS, GeneratorKind.GUITARIFY: Section.GUITARIFIES,
 }
 
 
@@ -768,6 +770,71 @@ def euclid_setting(part):
     return EUCLID_SETTING.format(part=part)
 
 
+class Tuning:
+    """The tunings a Guitarify knows, as a file names them."""
+
+    STANDARD = 'standard'
+    DROP_D = 'drop_d'
+    OPEN_G = 'open_g'
+    OPEN_D = 'open_d'
+    DADGAD = 'dadgad'
+
+
+TUNINGS = (Tuning.STANDARD, Tuning.DROP_D, Tuning.OPEN_G, Tuning.OPEN_D, Tuning.DADGAD)
+
+
+class SingleNotes:
+    """What Shape does with a single note."""
+
+    LEAVE = 'leave'
+    POWER_CHORD = 'power_chord'
+    SCALE_CHORD = 'scale_chord'
+
+
+SINGLE_NOTES = (SingleNotes.LEAVE, SingleNotes.POWER_CHORD, SingleNotes.SCALE_CHORD)
+
+
+class Stroke:
+    """What one cell of the bar of strokes plays."""
+
+    NOTHING = 'nothing'
+    DOWN = 'down'
+    UP = 'up'
+    MUTE = 'mute'
+    BASS = 'bass'
+    ALT_BASS = 'alt_bass'
+    STRING_1 = 'string_1'
+    STRING_2 = 'string_2'
+    STRING_3 = 'string_3'
+    STRING_4 = 'string_4'
+
+
+# The strokes in the order the editor steps through them.
+STROKES = (Stroke.NOTHING, Stroke.DOWN, Stroke.UP, Stroke.MUTE, Stroke.BASS, Stroke.ALT_BASS, Stroke.STRING_1, Stroke.STRING_2, Stroke.STRING_3, Stroke.STRING_4)
+
+
+class ReadyBar:
+    """A Guitarify's ready-made bars of strokes, as the picker names them."""
+
+    FOLK_STRUM = 'folk_strum'
+    BOOM_CHICK = 'boom_chick'
+    TRAVIS_PICK = 'travis_pick'
+    CROSSPICK = 'crosspick'
+    FOUR_TO_THE_BAR = 'four_to_the_bar'
+    BACKBEAT = 'backbeat'
+    BOOGIE = 'boogie'
+    SCRATCH = 'scratch'
+    ALL_DOWN = 'all_down'
+    CHUG = 'chug'
+    GALLOP = 'gallop'
+    THRASH = 'thrash'
+    TREMOLO = 'tremolo'
+    CHIME = 'chime'
+    ROLL_UP = 'roll_up'
+    ROLL_DOWN = 'roll_down'
+    HELD = 'held'
+
+
 class NamedRhythm:
     """The named Euclidean rhythms the Hits field's H offers, each a key the tracker's words name."""
 
@@ -792,6 +859,28 @@ class Restart:
 RESTARTS = [Restart.EVERY_CLIP, Restart.ON_NEW_SCENE, Restart.WHOLE_SONG]
 # Every generator's setting of when it starts over.
 GENERATOR_RESTART = 'restart'
+
+
+class GuitarifySetting:
+    """A Guitarify's settings, as a file names them: Shape's, then the strokes'."""
+
+    RESTART = GENERATOR_RESTART
+
+    SHAPE = 'shape'
+    TUNING = 'tuning'
+    POSITION = 'position'
+    CAPO = 'capo'
+    STRINGS = 'strings'
+    SINGLE_NOTES = 'single_notes'
+    STROKES = 'strokes'
+    BAR = 'bar'
+    ACCENTS = 'accents'
+    CELL = 'cell'
+    LET_RING = 'let_ring'
+    SPREAD = 'spread'
+    FADE = 'fade'
+    LOOSE_TIMING = 'loose_timing'
+    UPSTROKE = 'upstroke'
 
 
 class Quality:

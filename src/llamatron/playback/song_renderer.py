@@ -574,7 +574,7 @@ class SongRenderer:
         continuation = None if key is None else self.continuation(settings=settings, scene=scene, track=track, key=key, counting=counting)
         return settings.make_generator(
             where=ERR_WHERE_CHAIN.format(chain=chain, kind=step.kind), default_seed=seed, default_step=pattern_step, bar=self._song.get_time_signature().bar_length(),
-            continuation=continuation,
+            continuation=continuation, tempo=self._song.get_tempo() if scene.get_tempo() is None else scene.get_tempo(),
         )
 
 

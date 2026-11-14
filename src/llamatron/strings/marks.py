@@ -18,7 +18,7 @@
 Each constant starts with MSG_.
 """
 
-from llamatron.composition.file_format import Accidental, ChordSymbol, Direction, Quality, Shape
+from llamatron.composition.file_format import Accidental, ChordSymbol, Direction, Quality, Shape, Stroke
 
 # Shared by several pages: a field with no value, and a song or scene with no scale in a sentence.
 MSG_NONE_SHOWN = '(none)'
@@ -342,3 +342,15 @@ MSG_PRESET_NUMERALS_SEPARATOR = '–'
 
 # tui/screens/generators/generators_page.py: a generator's kind beside its name on the Generators page, the user's design.
 MSG_GENERATOR_KIND_SHOWN = '({kind})'
+
+# tui/screens/generators/guitarify_editor.py, tui/screens/generators/guitar_bar_editor.py: a Guitarify's values, and what each stroke is drawn as in its cell.
+MSG_GUITAR_OPEN_POSITION = 'open'
+MSG_GUITAR_FRET = 'fret {fret}'
+MSG_GUITAR_NO_CAPO = '(none)'
+MSG_GUITAR_MILLISECONDS = '{milliseconds} ms'
+MSG_GUITAR_EVERY_STRING = 'all'
+MSG_GUITAR_BAR_SHOWN = '{name}, {count} cells of {cell}'
+MSG_STROKE_MARKS = {
+    Stroke.NOTHING: '—', Stroke.DOWN: '↓', Stroke.UP: '↑', Stroke.MUTE: 'x', Stroke.BASS: 'B', Stroke.ALT_BASS: 'A',
+    Stroke.STRING_1: '1', Stroke.STRING_2: '2', Stroke.STRING_3: '3', Stroke.STRING_4: '4',
+}

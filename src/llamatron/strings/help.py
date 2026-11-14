@@ -261,6 +261,22 @@ song carry them on.
 Each track still plays its own pattern's notes besides those it is handed.
 """
 
+# GuitarifyEditor
+HELP_GUITARIFY_EDITOR = """
+Plays a clip's chords and notes as a guitar does. Each half can be switched off.
+Shape: a chord is held as a hand holds it, one note a string, in the tuning, within four frets of the position, above the capo.
+Single notes: leave, power chord (root, fifth and octave on the low strings) or scale chord (the chord the note's degree builds).
+Strokes: the bar of strokes is played on whatever sounds. ENTER on Bar edits it. Let ring: a string sounds until struck again.
+Spread, Fade and Loose timing: the time between a strum's strings, how much quieter each is, and how uneven the gaps are.
+"""
+
+# GuitarBarEditor
+HELP_GUITAR_BAR_EDITOR = """
+A bar of strokes, one a cell, following the song's bars. Left and Right move; [ and ] change the cursor's stroke.
+Strokes: nothing, down, up (the top strings), mute (short and quiet), bass, alt bass (the fifth), and string 1 to 4 from the highest.
+Space or ENTER accents a cell. I inserts a cell and D removes one. S steps the cell length. R picks a ready-made bar.
+"""
+
 # StrumEditor
 HELP_STRUM_EDITOR = """
 Direction: by the beat strums down on the beats and up between them; down is low to high, up high to low; down up alternates; off strums nothing.
