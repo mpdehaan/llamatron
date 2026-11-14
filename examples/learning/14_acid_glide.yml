@@ -1,0 +1,165 @@
+version: 1.0.206
+title: Acid glide
+description: "one acid line whose slides and short notes move with rows of 5, 7 and 3 steps"
+notes: |
+  Acid glide: fluid acid techno at 128 beats a minute in A minor, one sixteen-note acid line from
+  start to finish, and Glide and Shorten generators putting its slides and its short notes
+  somewhere new each time round. Play it on a synth with glide, or portamento, turned on: a gliding note runs into
+  the next one, and the synth slides between the two.
+  Run it with: llamatron examples/learning/14_acid_glide.yml --to ableton --replace
+
+  A Glide is a row of steps, each on or off, running from each clip's start at its own step: a
+  note starting on a step that's on glides into the next. A Shorten is the same, a note starting
+  on a step that's on playing short. Each chain here pairs a Glide with a Shorten of the same
+  length. A row shorter than the line, 5 or 7 or 3 steps over 16, lands somewhere new every bar,
+  so the slides move through the line though the line never changes.
+
+  Scene 1: the kick and the line, no glide.
+  Scene 2: hats, and rows of 5 steps, gliding on the first and fourth, short on the fifth.
+  Scene 3: claps, and rows of 7 steps, gliding on the first and fourth, short on the second and
+  seventh.
+  Scene 4: rows of 3 steps, gliding on the first, short on the third, the tightest cycle.
+  Scene 5: breakdown: the 5-step rows with a long glide of a 32nd, slow slides.
+  Scene 6: build: the 7-step rows running in eighth notes, half as fast.
+  Scene 7: drop: everything, the 7-step rows again, and the drums loosened: a Rush pulls some hats
+  early and Drags lay other hats and the claps back, the step-row generators that move notes in time
+  rather than change them.
+  Scene 8: outro: the 3-step rows over the kick.
+
+  When changing this demo:
+  - Keep the one acid line, its notes as written, so that every slide is a Glide's and every short
+    note a Shorten's.
+  - Keep the rows of 5, 7 and 3 steps, which never line up with the line's 16.
+  - Keep the Rush and the Drags on the drums in the drop, the demo of those two.
+real_time: true
+protected: true
+
+scales:
+  A Minor: { root: A, type: minor }
+
+patterns:
+  acid:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 1, 1, 1, 3, 1, 5, 1, 1, 7, 1, 4, 1, 3, 1, 5]
+    octave: [2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2]
+    velocity: [110, 85, 85, 85, 110, 85, 85, 85, 110, 85, 85, 85, 110, 85, 85, 85]
+  kick:
+    steps: 4
+    drum: true
+    step_size: 1/4
+    degree: [C, C, C, C]
+    octave: [3, 3, 3, 3]
+  hats:
+    steps: 4
+    drum: true
+    step_size: 1/8
+    degree: [~, F, ~, F]
+    accidental: [~, "#", ~, "#"]
+    octave: [~, 3, ~, 3]
+  clap:
+    steps: 4
+    drum: true
+    step_size: 1/4
+    degree: [~, D, ~, D]
+    accidental: [~, "#", ~, "#"]
+    octave: [~, 3, ~, 3]
+
+glides:
+  five: { steps: [true, false, false, true, false] }
+  seven: { steps: [true, false, false, true, false, false, false] }
+  three: { steps: [true, false, false] }
+  long five: { steps: [true, false, false, true, false], glide_amount: 1/32 }
+  slow seven: { steps: [true, false, false, true, false, false, false], step: 1/8 }
+
+shortens:
+  five: { steps: [false, false, false, false, true] }
+  seven: { steps: [false, true, false, false, false, false, true] }
+  three: { steps: [false, false, true] }
+  slow seven: { steps: [false, true, false, false, false, false, true], step: 1/8 }
+
+rushes:
+  hat lean: { steps: [true, false, false, false, false], step: 1/8 }
+
+drags:
+  hat lay back: { steps: [false, false, true, false, true], step: 1/8 }
+  clap lay back: { steps: [false, true, true], step: 1/4, amount: 25 }
+
+chains:
+  hats loose:
+    - rush: hat lean
+    - drag: hat lay back
+  clap lay back:
+    - drag: clap lay back
+  five:
+    - glide: five
+    - shorten: five
+  seven:
+    - glide: seven
+    - shorten: seven
+  three:
+    - glide: three
+    - shorten: three
+  long five:
+    - glide: long five
+    - shorten: five
+  slow seven:
+    - glide: slow seven
+    - shorten: slow seven
+
+instruments:
+  synth bass: { device: "*FluidSynth", gm_sound: 39 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  acid_glide:
+    tempo: 128
+    scale: A Minor
+    genre: Electronic
+
+    tracks:
+      kick: { drum: true, instrument: drum kit }
+      hats: { drum: true, instrument: drum kit }
+      clap: { drum: true, instrument: drum kit }
+      acid: { instrument: synth bass }
+
+    scenes:
+      - name: no glide
+        tracks:
+          kick: { pattern: kick, loop: true }
+          acid: { pattern: acid, repeat: 12 }
+      - name: five steps
+        tracks:
+          kick: { pattern: kick, loop: true }
+          hats: { pattern: hats, loop: true }
+          acid: { pattern: acid, chains: [five], repeat: 12 }
+      - name: seven steps
+        tracks:
+          kick: { pattern: kick, loop: true }
+          hats: { pattern: hats, loop: true }
+          clap: { pattern: clap, loop: true }
+          acid: { pattern: acid, chains: [seven], repeat: 12 }
+      - name: three steps
+        tracks:
+          kick: { pattern: kick, loop: true }
+          hats: { pattern: hats, loop: true }
+          clap: { pattern: clap, loop: true }
+          acid: { pattern: acid, chains: [three], repeat: 12 }
+      - name: "breakdown, long slides"
+        tracks:
+          acid: { pattern: acid, chains: [long five], repeat: 12 }
+      - name: "build, eighth notes"
+        tracks:
+          kick: { pattern: kick, loop: true }
+          hats: { pattern: hats, loop: true }
+          acid: { pattern: acid, chains: [slow seven], repeat: 12 }
+      - name: drop
+        tracks:
+          kick: { pattern: kick, loop: true }
+          hats: { pattern: hats, loop: true, chains: [hats loose] }
+          clap: { pattern: clap, loop: true, chains: [clap lay back] }
+          acid: { pattern: acid, chains: [seven], repeat: 12 }
+      - name: outro
+        tracks:
+          kick: { pattern: kick, loop: true }
+          acid: { pattern: acid, chains: [three], repeat: 12 }

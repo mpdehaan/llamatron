@@ -1,0 +1,179 @@
+version: 1.0.206
+title: Acid articulate
+description: "an acid house line from blips to slurs, shaped by Articulate"
+notes: |
+  Acid articulate: an acid house track at 120 beats a minute in A minor, one squelching bass
+  line played the whole way through, whose notes lengthen from short blips into long, gliding,
+  joined notes over each scene while its filter opens, with no gate in the pattern changed.
+  Run it with: llamatron examples/learning/15_acid_articulate.yml --to ableton --replace
+
+  Articulate scales how long each note sounds, as a percentage of what the pattern writes, from
+  10% to 200%. Shorter leaves a gap before the next note; longer holds a note over the rests
+  after it, but a note never runs past where the next one starts, so 200% joins the notes end
+  to end, and a synth with glide turned on slides between them. It is set three ways, and this
+  demo uses all three: on the Scene page for every clip of the scene, on the clip page for the
+  line alone, and as an Articulate generator in a chain, which wins over both.
+
+  The filter: the line's first step adds 24 to the register AX each time round, AX goes back to
+  4 as each scene starts (the Registers page's Reset each scene), and the acid track's CC1 Reg
+  binds AX to CC 74, the usual filter cutoff, so the filter opens across every scene as the notes
+  lengthen. Map CC 74 to the synth's cutoff to hear it.
+
+  Scene 1, blips: the kick and the line, the scene's Articulate from 15% to 100%.
+  Scene 2, hats: the line's own Articulate, from 20% to 200%.
+  Scene 3, groove: claps join; the scene's Articulate from 25% to 150%.
+  Scene 4, squelch: the line runs through an Articulate generator called squelch, bouncing
+  between 20% and 180% every bar.
+  Scene 5, breakdown: no drums; a pad, and the line from 50% to 200%.
+  Scene 6, build: stabs join; the scene's Articulate from 10% to 200%.
+  Scene 7, drop: everything, the line through squelch again.
+  Scene 8, peak: the line from 100% to 200%.
+  Scene 9, outro: the scene's Articulate from 200% back down to 10%.
+
+  When changing this demo:
+  - Keep one acid pattern throughout, its gates as written, so that every change of length is
+    an Articulate.
+  - Keep the three places an Articulate is set: the scenes', the line's own, and the generator.
+  - Keep the filter opening with the lengths: the register's add, its reset and the binding.
+real_time: true
+protected: true
+
+scales:
+  A Minor: { root: A, type: minor }
+
+patterns:
+  kick:
+    steps: 4
+    drum: true
+    step_size: 1/4
+    degree: [C, C, C, C]
+    octave: [3, 3, 3, 3]
+  hat:
+    steps: 4
+    drum: true
+    step_size: 1/8
+    degree: [~, F, ~, F]
+    accidental: [~, "#", ~, "#"]
+    octave: [~, 3, ~, 3]
+  clap:
+    steps: 4
+    drum: true
+    step_size: 1/4
+    degree: [~, D, ~, D]
+    accidental: [~, "#", ~, "#"]
+    octave: [~, 3, ~, 3]
+  acid:
+    steps: 32
+    step_size: 1/16
+    degree: [1, ~, 1, 1, ~, 3, 1, ~, 5, ~, 7, 1, ~, 4, ~, 5, 1, ~, 1, 1, ~, 3, 1, ~, 6, ~, 5, ~, 4, 3, ~, 7]
+    octave: [2, ~, 2, 3, ~, 2, 2, ~, 2, ~, 2, 2, ~, 2, ~, 2, 2, ~, 2, 3, ~, 2, 2, ~, 2, ~, 2, ~, 2, 2, ~, 1]
+    velocity: [120, ~, 85, 85, ~, 85, 120, ~, 120, ~, 85, 85, ~, 85, ~, 85, 120, ~, 85, 85, ~, 85, 120, ~, 120, ~, 85, ~, 120, 85, ~, 85]
+    glide: [false, false, false, true, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, true, false, false]
+    ax_add: [24, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  stab:
+    steps: 32
+    step_size: 1/16
+    degree: [~, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, ~]
+    gate: [~, ~, 1/8, ~, ~, ~, ~, ~, ~, ~, ~, 1/8, ~, ~, ~, ~, ~, ~, 1/8, ~, ~, ~, ~, ~, ~, ~, ~, 1/8, ~, ~, ~, ~]
+    octave: [~, ~, 4, ~, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~]
+    chord: [~, ~, 7, ~, ~, ~, ~, ~, ~, ~, ~, 7, ~, ~, ~, ~, ~, ~, 7, ~, ~, ~, ~, ~, ~, ~, ~, 7, ~, ~, ~, ~]
+  pad:
+    steps: 8
+    step_size: 1/4
+    degree: [1, ~, ~, ~, 6, ~, ~, ~]
+    octave: [4, ~, ~, ~, 4, ~, ~, ~]
+    chord: [7, ~, ~, ~, 7, ~, ~, ~]
+    velocity: [70, ~, ~, ~, 70, ~, ~, ~]
+    tie: [false, true, true, true, false, true, true, true]
+
+articulates:
+  squelch: { start: 20, end: 180, over: 1, then: bounce }
+
+chains:
+  squelch:
+    - articulate: squelch
+
+instruments:
+  synth bass: { device: "*FluidSynth", gm_sound: 39 }
+  synth strings: { device: "*FluidSynth", gm_sound: 51 }
+  warm pad: { device: "*FluidSynth", gm_sound: 90 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  acid_articulate:
+    tempo: 120
+    scale: A Minor
+    genre: Electronic
+
+    registers:
+      AX: { default: 4, maximum: 127, reset_each_scene: true, allowed_inc_max: 24 }
+
+    tracks:
+      kick: { drum: true, instrument: drum kit }
+      hat: { drum: true, instrument: drum kit }
+      clap: { drum: true, instrument: drum kit }
+      acid: { cc: [74, ~, ~, ~], instrument: synth bass, cc1_register: AX }
+      stab: { instrument: synth strings }
+      pad: { instrument: warm pad }
+
+    scenes:
+      - name: blips
+        articulate_start: 15
+        articulate_end: 100
+        tracks:
+          kick: { pattern: kick, loop: true }
+          acid: { pattern: acid, repeat: 5 }
+      - name: hats
+        tracks:
+          kick: { pattern: kick, loop: true }
+          hat: { pattern: hat, loop: true }
+          acid: { pattern: acid, repeat: 5, articulate_start: 20, articulate_end: 200 }
+      - name: groove
+        articulate_start: 25
+        articulate_end: 150
+        tracks:
+          kick: { pattern: kick, loop: true }
+          hat: { pattern: hat, loop: true }
+          clap: { pattern: clap, loop: true }
+          acid: { pattern: acid, repeat: 5 }
+      - name: squelch
+        tracks:
+          kick: { pattern: kick, loop: true }
+          hat: { pattern: hat, loop: true }
+          clap: { pattern: clap, loop: true }
+          acid: { pattern: acid, chains: [squelch], repeat: 5 }
+      - name: breakdown
+        tracks:
+          acid: { pattern: acid, repeat: 5, articulate_start: 50, articulate_end: 200 }
+          pad: { pattern: pad, loop: true }
+      - name: build
+        articulate_start: 10
+        articulate_end: 200
+        tracks:
+          kick: { pattern: kick, loop: true }
+          hat: { pattern: hat, loop: true }
+          acid: { pattern: acid, repeat: 5 }
+          stab: { pattern: stab, loop: true }
+      - name: drop
+        tracks:
+          kick: { pattern: kick, loop: true }
+          hat: { pattern: hat, loop: true }
+          clap: { pattern: clap, loop: true }
+          acid: { pattern: acid, chains: [squelch], repeat: 5 }
+          stab: { pattern: stab, loop: true }
+          pad: { pattern: pad, loop: true }
+      - name: peak
+        tracks:
+          kick: { pattern: kick, loop: true }
+          hat: { pattern: hat, loop: true }
+          clap: { pattern: clap, loop: true }
+          acid: { pattern: acid, repeat: 5, articulate_start: 100, articulate_end: 200 }
+          stab: { pattern: stab, loop: true }
+      - name: outro
+        articulate_start: 200
+        articulate_end: 10
+        tracks:
+          kick: { pattern: kick, loop: true }
+          hat: { pattern: hat, loop: true }
+          acid: { pattern: acid, repeat: 5 }
+          pad: { pattern: pad, loop: true }

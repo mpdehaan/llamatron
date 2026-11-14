@@ -1,0 +1,120 @@
+version: 1.0.206
+title: Chain demo
+description: Simple Gifts
+notes: |
+  Chain demo: Simple Gifts on one track, turned from a plain tune into ornaments and arpeggiated triads by chains.
+  Run it with: llamatron examples/learning/17_complex_gifts_chain.yml --to ableton --replace
+
+  The tune is the first strain of Simple Gifts, the Shaker song by Joseph Brackett from 1848,
+  in A major at 120 BPM as the flutetunes.com transcription has it, with its two-note pickup
+  moved to the front so that the pattern loops. Everything plays on a single track, so a
+  scene changes only the pattern and the chain.
+
+  There are only two patterns: the tune, and the tune in triads. The first scenes paint the
+  tune with one generator each; the triad scenes arpeggiate its chords; the last scene plays
+  the tune once more as it is written, so that every change can be heard against it.
+
+  A chain runs its steps in order, and each step works on what the one before made. So
+  "arp then stutter" ratchets the arpeggio's notes: the arpeggiator first turns each chord
+  into a run of single notes, and the AutoRatchet then repeats some of them.
+
+  When changing this demo:
+  Keep it to one track, with chains doing the work, a plain workout of the feature rather
+  than a song that leaves the tune. Morphing and directions have their own demos, so they
+  don't belong here.
+step_size: 1/16
+default_octave: 5
+default_drum_octave: 3
+octave_labels: live
+real_time: true
+protected: false
+
+scales:
+  A Major: { root: A, type: major }
+
+patterns:
+  tune:
+    steps: 64
+    step_size: 1/8
+    degree: [5, 5, 1, ~, 1, 2, 3, 1, 3, 4, 5, ~, 5, 4, 3, ~, 2, 1, 2, ~, 2, ~, 2, ~, 1, ~, 2, 3, 2, 7, 5, ~, 5, ~, 1, ~, 1, 2, 3, 1, 3, 4, 5, ~, 5, 4, 3, ~, 2, 1, 2, ~, 2, ~, 3, ~, 3, 2, 1, ~, 1, 2, 1, ~]
+    gate: [~, ~, 1/4, ~, ~, ~, ~, ~, ~, ~, 1/4, ~, ~, ~, 1/4, ~, ~, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, ~, ~, ~, ~, 1/4, ~, 1/4, ~, 1/4, ~, ~, ~, ~, ~, ~, ~, 1/4, ~, ~, ~, 1/4, ~, ~, ~, 1/4, ~, 1/4, ~, 1/4, ~, ~, ~, 1/4, ~, ~, ~, 1/4, ~]
+    octave: [4, 4, 5, ~, 5, 5, 5, 5, 5, 5, 5, ~, 5, 5, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, ~, 5, 5, 5, 4, 4, ~, 4, ~, 5, ~, 5, 5, 5, 5, 5, 5, 5, ~, 5, 5, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, 5, 5, ~, 5, 5, 5, ~]
+  tune_in_triads:
+    steps: 64
+    step_size: 1/8
+    degree: [5, 5, 1, ~, 1, 2, 3, 1, 3, 4, 5, ~, 5, 4, 3, ~, 2, 1, 2, ~, 2, ~, 2, ~, 1, ~, 2, 3, 2, 7, 5, ~, 5, ~, 1, ~, 1, 2, 3, 1, 3, 4, 5, ~, 5, 4, 3, ~, 2, 1, 2, ~, 2, ~, 3, ~, 3, 2, 1, ~, 1, 2, 1, ~]
+    gate: [~, ~, 1/4, ~, ~, ~, ~, ~, ~, ~, 1/4, ~, ~, ~, 1/4, ~, ~, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, ~, ~, ~, ~, 1/4, ~, 1/4, ~, 1/4, ~, ~, ~, ~, ~, ~, ~, 1/4, ~, ~, ~, 1/4, ~, ~, ~, 1/4, ~, 1/4, ~, 1/4, ~, ~, ~, 1/4, ~, ~, ~, 1/4, ~]
+    octave: [4, 4, 5, ~, 5, 5, 5, 5, 5, 5, 5, ~, 5, 5, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, ~, 5, 5, 5, 4, 4, ~, 4, ~, 5, ~, 5, 5, 5, 5, 5, 5, 5, ~, 5, 5, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, 5, 5, ~, 5, 5, 5, ~]
+    chord: [3, 3, 3, ~, 3, 3, 3, 3, 3, 3, 3, ~, 3, 3, 3, ~, 3, 3, 3, ~, 3, ~, 3, ~, 3, ~, 3, 3, 3, 3, 3, ~, 3, ~, 3, ~, 3, 3, 3, 3, 3, 3, 3, ~, 3, 3, 3, ~, 3, 3, 3, ~, 3, ~, 3, ~, 3, 3, 3, ~, 3, 3, 3, ~]
+
+arps:
+  octave_sparkle: { step: 1/16, order: up, octave_range: 2 }
+  trill_in_thirds: { step: 1/16, order: up, offsets: [0, 2] }
+  triad_up: { step: 1/16, order: up }
+  triad_wide: { step: 1/16, order: up_down, octave_range: 2 }
+  shred_up: { step: 1/32, order: up, offsets: [0, 2, 4, 7] }
+
+auto_ratchets:
+  double: { counts: [2] }
+  stutter: { counts: [1, 1, 1, 1, 1, 1, 1, 3] }
+
+chains:
+  octave_sparkle:
+    - arp: octave_sparkle
+  trill_in_thirds:
+    - arp: trill_in_thirds
+  double:
+    - auto_ratchet: double
+  shred:
+    - arp: shred_up
+  triad_up:
+    - arp: triad_up
+  triad_wide:
+    - arp: triad_wide
+  triad_up_then_stutter:
+    - arp: triad_up
+    - auto_ratchet: stutter
+
+instruments:
+  flute: { device: "*FluidSynth", gm_sound: 74 }
+
+songs:
+  complex_gifts_chain:
+    tempo: 120
+    scale: A Major
+    genre: Folk
+
+    tracks:
+      gifts: { instrument: flute }
+
+    scenes:
+      - name: Tune
+        tracks:
+          gifts: { pattern: tune }
+      - name: "Tune: octave sparkle"
+        tracks:
+          gifts: { pattern: tune, chains: [octave_sparkle] }
+      - name: "Tune: trill in thirds"
+        tracks:
+          gifts: { pattern: tune, chains: [trill_in_thirds] }
+      - name: "Tune: doubled"
+        tracks:
+          gifts: { pattern: tune, chains: [double] }
+      - name: "Tune: shred up"
+        tracks:
+          gifts: { pattern: tune, chains: [shred] }
+      - name: "Triads: tune in triads"
+        tracks:
+          gifts: { pattern: tune_in_triads }
+      - name: "Triads: arpeggiated"
+        tracks:
+          gifts: { pattern: tune_in_triads, chains: [triad_up] }
+      - name: "Triads: two octaves"
+        tracks:
+          gifts: { pattern: tune_in_triads, chains: [triad_wide] }
+      - name: "Triads: arp then stutter"
+        tracks:
+          gifts: { pattern: tune_in_triads, chains: [triad_up_then_stutter] }
+      - name: "Tune: reprise"
+        tracks:
+          gifts: { pattern: tune }

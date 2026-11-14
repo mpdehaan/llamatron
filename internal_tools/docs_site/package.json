@@ -1,0 +1,11 @@
+{
+  "name": "llamatron-docs-site",
+  "private": true,
+  "description": "Builds llamatron's documentation website from docs/ with VitePress: internal_tools/build_docs.sh runs it.",
+  "type": "module",
+  "devDependencies": {
+    "mermaid": "11.4.1",
+    "vitepress": "1.6.3",
+    "vitepress-plugin-mermaid": "2.0.17"
+  }
+}

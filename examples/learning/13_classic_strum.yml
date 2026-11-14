@@ -1,0 +1,116 @@
+version: 1.0.206
+title: Strum
+description: "an acoustic folk song whose guitar is strummed, then strummed tighter, looser and rolled"
+notes: |
+  Strum: an original acoustic folk song at 92 beats a minute in G major, a guitar and a bass,
+  where the guitar's chords are strummed the way a hand crosses the strings rather than struck
+  all at once like a keyboard.
+  Run it with: llamatron examples/learning/13_classic_strum.yml --to ableton --replace
+
+  The guitar plays the folk strumming pattern, down, down-up, up-down-up, written once as eighth
+  notes of one chord, and a Progression moves it through the verse's I-V-vi-IV and the chorus's
+  IV-I-V. Strum is set on the guitar track, by the beat with the normal spread: down on the
+  beats, low string to high, and up between them, 8 milliseconds from one string to the next.
+  The clips' own Strum sections change it scene by scene, so you can hear the difference.
+
+  Scene 1: the verse with Strum off, every chord struck at once, like a keyboard.
+  Scenes 2 and 3: the verse and the chorus with the tight spread, 2 milliseconds, a hard pick.
+  Scenes 4 and 5: the track's own strum, the normal spread.
+  Scenes 6 and 7: the full acoustic setting: the normal spread, each later string 10% quieter,
+  the gaps varying by up to 20%, and the upstrokes catching only the top four strings.
+  Scene 8: the verse rolled like a harp, 70 milliseconds a string, each note heard, through a
+  Strum generator called harp roll in the clip's chains, which wins over the track's strum.
+  Scene 9: the last verse, the track's strum again.
+
+  When changing this demo:
+  - Keep the guitar's pattern one chord, so that every chord is the Progression's and every
+    strum the Strum settings'.
+  - Keep the first scene with Strum off, to hear what the strum adds.
+  - Keep all three places a strum is set: the track's, the clips' own, and the generator.
+real_time: true
+protected: true
+
+scales:
+  G Major: { root: G, type: major }
+
+patterns:
+  strumming:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, 1, 1, ~, 1, 1, 1]
+    octave: [4, ~, 4, 4, ~, 4, 4, 4]
+    chord: [3, ~, 3, 3, ~, 3, 3, 3]
+    velocity: [96, ~, 88, 70, ~, 72, 90, 70]
+  bass:
+    steps: 4
+    step_size: 1/4
+    degree: [1, ~, 5, ~]
+    octave: [2, ~, 2, ~]
+    tie: [false, true, false, true]
+
+progressions:
+  verse: { chords: [1, 5, 6, 4] }
+  chorus: { chords: [4, 1, 5] }
+
+strums:
+  harp roll: { direction: by_the_beat, spread: harp }
+
+chains:
+  verse:
+    - progression: verse
+  harp roll:
+    - strum: harp roll
+  chorus:
+    - progression: chorus
+
+instruments:
+  steel guitar: { device: "*FluidSynth", gm_sound: 26 }
+  acoustic bass: { device: "*FluidSynth", gm_sound: 33 }
+
+songs:
+  classic_strum:
+    tempo: 92
+    scale: G Major
+    genre: Folk
+
+    tracks:
+      guitar: { instrument: steel guitar, strum_direction: by_the_beat, strum_spread: normal }
+      bass: { instrument: acoustic bass }
+
+    scenes:
+      - name: "verse, strum off"
+        tracks:
+          guitar: { pattern: strumming, chains: [verse], repeat: 8, strum_direction: "off" }
+          bass: { pattern: bass, chains: [verse], repeat: 8 }
+      - name: "verse, tight"
+        tracks:
+          guitar: { pattern: strumming, chains: [verse], repeat: 8, strum_direction: by_the_beat, strum_spread: tight }
+          bass: { pattern: bass, chains: [verse], repeat: 8 }
+      - name: "chorus, tight"
+        tracks:
+          guitar: { pattern: strumming, chains: [chorus], repeat: 6, strum_direction: by_the_beat, strum_spread: tight }
+          bass: { pattern: bass, chains: [chorus], repeat: 6 }
+      - name: "verse, normal"
+        tracks:
+          guitar: { pattern: strumming, chains: [verse], repeat: 8 }
+          bass: { pattern: bass, chains: [verse], repeat: 8 }
+      - name: "chorus, normal"
+        tracks:
+          guitar: { pattern: strumming, chains: [chorus], repeat: 6 }
+          bass: { pattern: bass, chains: [chorus], repeat: 6 }
+      - name: "verse, full acoustic"
+        tracks:
+          guitar: { pattern: strumming, chains: [verse], repeat: 8, strum_direction: by_the_beat, strum_fade: 10, strum_loose_timing: 20, strum_upstroke_strings: top_4 }
+          bass: { pattern: bass, chains: [verse], repeat: 8 }
+      - name: "chorus, full acoustic"
+        tracks:
+          guitar: { pattern: strumming, chains: [chorus], repeat: 6, strum_direction: by_the_beat, strum_fade: 10, strum_loose_timing: 20, strum_upstroke_strings: top_4 }
+          bass: { pattern: bass, chains: [chorus], repeat: 6 }
+      - name: "verse, harp"
+        tracks:
+          guitar: { pattern: strumming, chains: [verse, harp roll], repeat: 8 }
+          bass: { pattern: bass, chains: [verse], repeat: 8 }
+      - name: last verse
+        tracks:
+          guitar: { pattern: strumming, chains: [verse], repeat: 8 }
+          bass: { pattern: bass, chains: [verse], repeat: 8 }

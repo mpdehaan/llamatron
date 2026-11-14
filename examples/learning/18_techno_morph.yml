@@ -1,0 +1,131 @@
+version: 1.0.206
+title: Morph demo
+description: "a minimal techno groove, morphing"
+notes: |
+  Morph demo: a 16-step minimal techno groove whose parts slowly turn into other patterns.
+  Run it with: llamatron examples/learning/18_techno_morph.yml --to ableton --replace
+
+  A clip with a repeat above 1 and a morph_to plays its pattern on the first repeat and the
+  morph_to pattern on the last, moving step by step from one to the other in between. The
+  morph_style says where the change starts: left sweeps in from the first step, right from
+  the last, and middle from the center outwards. Each pattern here is 16 sixteenth notes,
+  one bar at 126 BPM, so a morph over 8 repeats takes 8 bars.
+
+  The lead morphs from a sparse blip into the opening of Beethoven's Für Elise (1810), and
+  the bass between a one-note pulse and a walking line. CC 1 on both is sent to CC 74,
+  usually the filter cutoff, and a morph uses the target's CC values where the target plays,
+  so the filter opens as the morph arrives. The last scene morphs both parts over 16 bars.
+
+  When changing this demo:
+  Every pattern is 16 sixteenth notes, so that any two can morph. It should sound like
+  slowly evolving minimal techno.
+real_time: true
+protected: true
+
+scales:
+  A Minor: { root: A, type: minor }
+
+patterns:
+  kick:
+    steps: 4
+    drum: true
+    step_size: 1/4
+    degree: [C, C, C, C]
+    octave: [3, 3, 3, 3]
+  hat:
+    steps: 4
+    drum: true
+    step_size: 1/8
+    degree: [~, F, ~, F]
+    accidental: [~, "#", ~, "#"]
+    octave: [~, 3, ~, 3]
+  bass_pulse:
+    steps: 16
+    degree: [1, ~, 1, 1, ~, 1, ~, 1, 1, ~, 1, 1, ~, 1, ~, 1]
+    octave: [3, ~, 3, 3, ~, 3, ~, 3, 3, ~, 3, 3, ~, 3, ~, 3]
+    velocity: [120, 60, 90, 70, 120, 60, 90, 70, 120, 60, 90, 70, 120, 60, 90, 70]
+    cc1: [30, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  bass_walk:
+    steps: 16
+    degree: [1, ~, 1, 3, ~, 5, ~, 1, 7, ~, 7, 2, ~, 4, 5, ~]
+    octave: [3, ~, 3, 3, ~, 3, ~, 3, 2, ~, 2, 3, ~, 3, 3, ~]
+    velocity: [120, 60, 100, 80, 120, 60, 100, 80, 120, 60, 100, 80, 120, 60, 100, 80]
+    cc1: [90, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  lead_blip:
+    steps: 16
+    degree: [5, ~, ~, 5, ~, ~, 5, ~, ~, 5, ~, ~, 5, ~, 5, ~]
+    octave: [4, ~, ~, 4, ~, ~, 4, ~, ~, 4, ~, ~, 4, ~, 5, ~]
+    velocity: [90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90]
+    cc1: [20, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  lead_elise:
+    steps: 16
+    degree: [5, 4, 5, 4, 5, 2, 4, 3, 1, ~, 3, 5, 1, 2, ~, 5]
+    accidental: [~, "#", ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, 5, 5, 5, 5, 5, 5, 5, 5, ~, 4, 4, 5, 5, ~, 4]
+    velocity: [110, 80, 100, 80, 110, 80, 100, 80, 110, 80, 100, 80, 110, 80, 100, 80]
+    cc1: [110, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+
+instruments:
+  synth bass: { device: "*FluidSynth", gm_sound: 39 }
+  sawtooth lead: { device: "*FluidSynth", gm_sound: 82 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  techno_morph:
+    tempo: 126
+    scale: A Minor
+    genre: Electronic
+
+    tracks:
+      kick: { drum: true, instrument: drum kit }
+      hat: { drum: true, instrument: drum kit }
+      bass: { cc: [74, ~, ~, ~], instrument: synth bass }
+      lead: { cc: [74, ~, ~, ~], instrument: sawtooth lead }
+
+    scenes:
+      - name: "Groove: bass pulse"
+        tracks:
+          kick: { pattern: kick, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass_pulse, repeat: 8 }
+      - name: Bass pulse morphs right into walk
+        tracks:
+          kick: { pattern: kick, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass_pulse, repeat: 8, morph_to: bass_walk, morph_style: right }
+      - name: "Bass walk, lead blip"
+        tracks:
+          kick: { pattern: kick, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass_walk, loop: true }
+          lead: { pattern: lead_blip, repeat: 8 }
+      - name: Lead blip morphs left into Elise
+        tracks:
+          kick: { pattern: kick, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass_walk, loop: true }
+          lead: { pattern: lead_blip, repeat: 8, morph_to: lead_elise, morph_style: left }
+      - name: Lead blip morphs middle into Elise
+        tracks:
+          kick: { pattern: kick, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass_walk, loop: true }
+          lead: { pattern: lead_blip, repeat: 8, morph_to: lead_elise, morph_style: middle }
+      - name: Elise morphs right back to blip
+        tracks:
+          kick: { pattern: kick, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass_walk, loop: true }
+          lead: { pattern: lead_elise, repeat: 8, morph_to: lead_blip, morph_style: right }
+      - name: "Both morph slowly, 16 repeats"
+        tracks:
+          kick: { pattern: kick, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass_walk, repeat: 16, morph_to: bass_pulse, morph_style: middle }
+          lead: { pattern: lead_blip, repeat: 16, morph_to: lead_elise, morph_style: right }
+      - name: "Elise and walk, settled"
+        tracks:
+          kick: { pattern: kick, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass_walk, loop: true }
+          lead: { pattern: lead_elise, repeat: 8 }

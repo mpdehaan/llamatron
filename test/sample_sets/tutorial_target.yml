@@ -1,0 +1,57 @@
+title: Tutorial target
+description: a set made to test the video tutorial's plan
+notes: |
+  A set made to test internal_tools/make_video_tutorial.py (tutorial/plan.py): it holds what the hello world
+  demo doesn't, so that every way the plan sets a thing is tried. A scale with a name of its own and
+  one named after its kind, a song with a tempo and a time signature of its own, a track that
+  transposes and a muted drum track, a scene with a repeat, a clip that repeats and one that loops, a
+  pattern with every kind of row set, a sharp, a gate and a chord, a negative number and a drum
+  pattern written as letters. It is test data, not music.
+scales:
+  low: { root: D, type: minor }
+  G Major: { root: G, type: major }
+patterns:
+  riff:
+    steps: 8
+    degree: [1, 3, ~, 5, 1, ~, 7, 2]
+    gate: [1/4, ~, ~, ~, ~, ~, ~, 1/8]
+    dot: [~, d, ~, ~, ~, ~, t, ~]
+    accidental: [~, ~, ~, "#", ~, ~, ~, b]
+    octave: [5, 5, ~, 5, 4, ~, 5, 6]
+    chord: [m7, ~, ~, 5, ~, ~, ~, ~]
+    velocity: [100, ~, ~, 64, ~, ~, 9, ~]
+    probability: [~, 50, ~, ~, ~, ~, ~, ~]
+    glide: [false, true, false, false, false, false, false, false]
+    tie: [false, false, true, false, false, true, false, false]
+    ratchet: [~, ~, ~, 3, ~, ~, ~, ~]
+    ratchet_offset: [~, ~, ~, -3, ~, ~, ~, ~]
+    grab: [false, false, false, false, true, false, false, false]
+    cc1: [64, ~, 0, ~, ~, ~, ~, 127]
+    slide: [true, false, false, false, false, false, false, false]
+    ax_note: [1, ~, ~, ~, -1, ~, ~, ~]
+    bx_velocity: [~, -1, ~, ~, ~, ~, ~, ~]
+    ax_add: [2, ~, ~, ~, ~, ~, ~, -1]
+  kick:
+    steps: 4
+    drum: true
+    degree: [C, ~, D, F]
+    accidental: [~, ~, "#", ~]
+    octave: [3, ~, 1, 4]
+    velocity: [127, ~, 80, ~]
+songs:
+  tut:
+    tempo: 100
+    time_signature: 3/4
+    scale: low
+    tracks:
+      lead: { transpose: 2 }
+      drums: { drum: true, mute: true }
+    scenes:
+      - name: intro
+        repeat: 2
+        tracks:
+          lead: { pattern: riff, repeat: 2 }
+          drums: { pattern: kick, loop: true }
+      - name: verse
+        tracks:
+          lead: { pattern: riff }

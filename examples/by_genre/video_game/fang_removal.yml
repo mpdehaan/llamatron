@@ -1,0 +1,172 @@
+version: 1.0.227
+title: Fang removal
+description: "a gothic eight-bit stage theme in the manner of Castlevania's Vampire Killer (Kinuyo Yamashita and Satoe Terashima), with a melody of its own"
+notes: |
+  Fang removal: a gothic stage theme at 150 beats a minute in D harmonic minor, in the manner of the
+  eight-bit castle games: a square-wave lead, a second square a third below it, a driving octave
+  bass and a busy kit. The melody is its own.
+
+  The harmonic minor scale makes the fifth chord major, with its sharp seventh, which gives the
+  style its gothic pull. The bass is one bar over chord i, moved by Progression: the A part goes
+  i VI iv V and the B part iv i V i. The harmony track plays the lead's pattern transposed two
+  scale steps down.
+
+  Run it with: llamatron examples/by_genre/video_game/fang_removal.yml
+
+  Scene 1, intro, 8 bars: the bass and the drums.
+  Scene 2, A, 16 bars: the lead.
+  Scene 3, B, 8 bars: the second part.
+  Scene 4, A harmony, 16 bars: the lead with its harmony.
+  Scene 5, bridge, 8 bars: the harmony alone.
+  Scene 6, A 2, 16 bars: the lead again.
+  Scene 7, B 2, 8 bars: the second part with harmony.
+  Scene 8, A 3, 16 bars: the lead with harmony.
+  Scene 9, last A, 16 bars: the lead to the end.
+
+  When changing this demo:
+  - Keep the harmonic minor scale.
+  - Keep the harmony track a transposed copy of the lead.
+  - Keep the melody original.
+real_time: true
+protected: true
+
+scales:
+  D Harmonic Minor: { root: D, type: harmonic_minor }
+
+patterns:
+  kit_kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, 110, ~, 110, ~, ~, ~, ~, ~, ~, ~]
+  kit_snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, D, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~]
+    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, 110, ~]
+  kit_hat:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~]
+    accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
+    velocity: [110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~]
+  bass:
+    steps: 8
+    step_size: 1/8
+    degree: [1, 1, 1, 1, 1, 1, 1, 1]
+    octave: [2, 3, 2, 3, 2, 3, 2, 3]
+  a:
+    steps: 32
+    step_size: 1/8
+    degree: [1, 5, 1, 3, 2, 1, 7, 5, 6, 1, 3, 1, 6, 3, 6, 1, 4, 6, 1, 4, 3, 1, 6, 4, 5, 7, 2, 4, 2, 7, 5, 7]
+    octave: [6, 5, 6, 6, 6, 6, 5, 5, 5, 6, 6, 6, 5, 5, 5, 6, 5, 5, 6, 6, 6, 6, 5, 5, 5, 5, 6, 6, 6, 5, 5, 5]
+  b:
+    steps: 32
+    step_size: 1/8
+    degree: [4, ~, 3, ~, 1, ~, 6, ~, 3, ~, 1, ~, 5, ~, 3, ~, 2, ~, 7, ~, 5, ~, 7, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [6, ~, 6, ~, 6, ~, 5, ~, 6, ~, 6, ~, 5, ~, 5, ~, 6, ~, 5, ~, 5, ~, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, false]
+
+progressions:
+  a: { chords: [1, 6, 4, 5] }
+  b: { chords: [4, 1, 5, 1] }
+
+chains:
+  a:
+    - progression: a
+  b:
+    - progression: b
+
+instruments:
+  synth bass: { device: "*FluidSynth", gm_sound: 39 }
+  square lead: { device: "*FluidSynth", gm_sound: 81 }
+  square harmony: { device: "*FluidSynth", gm_sound: 81 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  fang_removal:
+    tempo: 150
+    scale: D Harmonic Minor
+    genre: Video game
+
+    tracks:
+      kick: { drum: true, instrument: drum kit }
+      snare: { drum: true, instrument: drum kit }
+      hat: { drum: true, instrument: drum kit }
+      bass: { instrument: synth bass }
+      lead: { instrument: square lead }
+      harmony: { transpose: -2, instrument: square harmony }
+
+    scenes:
+      - name: intro
+        tracks:
+          kick: { pattern: kit_kick, repeat: 8 }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [a], loop: true }
+      - name: A
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [a], loop: true }
+          lead: { pattern: a, repeat: 4 }
+      - name: B
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [b], loop: true }
+          lead: { pattern: b, repeat: 2 }
+      - name: A harmony
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [a], loop: true }
+          lead: { pattern: a, repeat: 4 }
+          harmony: { pattern: a, loop: true }
+      - name: bridge
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [b], loop: true }
+          harmony: { pattern: b, repeat: 2 }
+      - name: A 2
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [a], loop: true }
+          lead: { pattern: a, repeat: 4 }
+      - name: B 2
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [b], loop: true }
+          lead: { pattern: b, repeat: 2 }
+          harmony: { pattern: b, loop: true }
+      - name: A 3
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [a], loop: true }
+          lead: { pattern: a, repeat: 4 }
+          harmony: { pattern: a, loop: true }
+      - name: last A
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [a], loop: true }
+          lead: { pattern: a, repeat: 4 }
+          harmony: { pattern: a, loop: true }

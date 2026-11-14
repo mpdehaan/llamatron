@@ -1,0 +1,166 @@
+version: 1.0.227
+title: Very large mammals
+description: "a lumbering boogie-woogie film tune in the manner of Baby Elephant Walk (Henry Mancini), with a tune of its own"
+notes: |
+  Very large mammals: a boogie-woogie tune at 112 beats a minute in F major, shuffled by the factory
+  groove 8th swing 66, in the manner of the early sixties film scores: a walking boogie bass, an
+  organ on the off-beats, horn stabs and a calliope with a playful tune of its own.
+
+  The boogie bass, the organ and the horns are one bar each over chord I, moved through the
+  twelve-bar blues, I IV I I IV IV I I V IV I V, by a Progression, so every scene is a chorus of
+  twelve bars. The horns play a dom7, which stays a dominant seventh on every chord.
+
+  Run it with: llamatron examples/by_genre/soundtrack/very_large_mammals.yml
+
+  Scene 1, boogie, 12 bars: the bass, the organ and the drums.
+  Scene 2, tune, 12 bars: the calliope tune.
+  Scene 3, horns, 12 bars: the tune with the horns.
+  Scene 4, walk, 12 bars: the horns and the band, no tune.
+  Scene 5, tune 2, 12 bars: the tune again.
+  Scene 6, stomp, 12 bars: the bass and the drums alone.
+  Scene 7, last tune, 12 bars: the tune with everything.
+
+  When changing this demo:
+  - Keep every scene a twelve-bar chorus.
+  - Keep the horns' chord a dom7.
+  - Keep the tune original.
+real_time: true
+protected: true
+
+scales:
+  F Major: { root: F, type: major }
+
+patterns:
+  kit_kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~]
+  kit_snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~]
+  kit_ride:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [D, ~, ~, D, D, ~, ~, D, D, ~, ~, D, D, ~, ~, D]
+    accidental: ["#", ~, ~, "#", "#", ~, ~, "#", "#", ~, ~, "#", "#", ~, ~, "#"]
+    octave: [4, ~, ~, 4, 4, ~, ~, 4, 4, ~, ~, 4, 4, ~, ~, 4]
+    velocity: [110, ~, ~, 70, 110, ~, ~, 70, 110, ~, ~, 70, 110, ~, ~, 70]
+  bass:
+    steps: 8
+    step_size: 1/8
+    degree: [1, 3, 5, 6, 7, 6, 5, 3]
+    accidental: [~, ~, ~, ~, b, ~, ~, ~]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3]
+  organ:
+    steps: 8
+    step_size: 1/8
+    degree: [~, 1, ~, 1, ~, 1, ~, 1]
+    octave: [~, 4, ~, 4, ~, 4, ~, 4]
+    chord: [~, "3", ~, "3", ~, "3", ~, "3"]
+  horns:
+    steps: 8
+    step_size: 1/8
+    degree: [~, ~, ~, ~, 1, ~, ~, ~]
+    octave: [~, ~, ~, ~, 4, ~, ~, ~]
+    chord: [~, ~, ~, ~, dom7, ~, ~, ~]
+  tune:
+    steps: 96
+    step_size: 1/8
+    degree: [1, ~, 1, 2, 3, ~, 1, ~, 6, ~, 6, 1, 4, ~, 1, ~, 5, ~, 5, 6, 1, ~, 3, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, 6, 1, 4, ~, 1, ~, 6, ~, 6, 1, 4, ~, 6, ~, 5, ~, 5, 6, 1, ~, 3, ~, 1, ~, ~, ~, ~, ~, ~, ~, 7, ~, 7, 2, 5, ~, 2, ~, 6, ~, 6, 1, 4, ~, 1, ~, 5, ~, 3, ~, 1, ~, 5, ~, 7, ~, ~, ~, 2, ~, ~, ~]
+    octave: [6, ~, 6, 6, 6, ~, 6, ~, 5, ~, 5, 6, 6, ~, 6, ~, 5, ~, 5, 5, 6, ~, 6, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, 6, 6, ~, 6, ~, 5, ~, 5, 6, 6, ~, 5, ~, 5, ~, 5, 5, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, 6, 6, ~, 6, ~, 5, ~, 5, 6, 6, ~, 6, ~, 5, ~, 6, ~, 6, ~, 5, ~, 5, ~, ~, ~, 6, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, true, true, false]
+
+progressions:
+  blues: { chords: [1, 4, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] }
+
+chains:
+  blues:
+    - progression: blues
+
+instruments:
+  acoustic bass: { device: "*FluidSynth", gm_sound: 33 }
+  organ: { device: "*FluidSynth", gm_sound: 17 }
+  brass: { device: "*FluidSynth", gm_sound: 62 }
+  calliope: { device: "*FluidSynth", gm_sound: 83 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  very_large_mammals:
+    tempo: 112
+    scale: F Major
+    groove: 8th swing 66
+    genre: Soundtrack
+
+    tracks:
+      kick: { drum: true, instrument: drum kit }
+      snare: { drum: true, instrument: drum kit }
+      ride: { drum: true, instrument: drum kit }
+      bass: { instrument: acoustic bass }
+      organ: { instrument: organ }
+      horns: { instrument: brass }
+      lead: { instrument: calliope }
+
+    scenes:
+      - name: boogie
+        tracks:
+          kick: { pattern: kit_kick, repeat: 12 }
+          snare: { pattern: kit_snare, loop: true }
+          ride: { pattern: kit_ride, loop: true }
+          bass: { pattern: bass, chains: [blues], loop: true }
+          organ: { pattern: organ, chains: [blues], loop: true }
+      - name: tune
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          ride: { pattern: kit_ride, loop: true }
+          bass: { pattern: bass, chains: [blues], loop: true }
+          organ: { pattern: organ, chains: [blues], loop: true }
+          lead: { pattern: tune }
+      - name: horns
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          ride: { pattern: kit_ride, loop: true }
+          bass: { pattern: bass, chains: [blues], loop: true }
+          organ: { pattern: organ, chains: [blues], loop: true }
+          lead: { pattern: tune }
+          horns: { pattern: horns, chains: [blues], loop: true }
+      - name: walk
+        tracks:
+          kick: { pattern: kit_kick, repeat: 12 }
+          snare: { pattern: kit_snare, loop: true }
+          ride: { pattern: kit_ride, loop: true }
+          bass: { pattern: bass, chains: [blues], loop: true }
+          organ: { pattern: organ, chains: [blues], loop: true }
+          horns: { pattern: horns, chains: [blues], loop: true }
+      - name: tune 2
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          ride: { pattern: kit_ride, loop: true }
+          bass: { pattern: bass, chains: [blues], loop: true }
+          organ: { pattern: organ, chains: [blues], loop: true }
+          lead: { pattern: tune }
+      - name: stomp
+        tracks:
+          kick: { pattern: kit_kick, repeat: 12 }
+          snare: { pattern: kit_snare, loop: true }
+          ride: { pattern: kit_ride, loop: true }
+          bass: { pattern: bass, chains: [blues], loop: true }
+      - name: last tune
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          ride: { pattern: kit_ride, loop: true }
+          bass: { pattern: bass, chains: [blues], loop: true }
+          organ: { pattern: organ, chains: [blues], loop: true }
+          lead: { pattern: tune }
+          horns: { pattern: horns, chains: [blues], loop: true }

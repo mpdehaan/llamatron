@@ -1,0 +1,206 @@
+version: 1.0.227
+title: Phoenix Foundation
+description: "a mid-eighties action-show theme in the manner of MacGyver (Randy Edelman), with a melody of its own"
+notes: |
+  Phoenix Foundation: an action-show theme at 130 beats a minute in G major, in the manner of the
+  mid-eighties: a synth brass melody, rock guitar chords, a pulsing synth bass in sixteenths and
+  sparkling keys. The melody is its own.
+
+  The keys play a held chord, and an arpeggiator called sparkle, in the keys' chains, breaks it
+  into sixteenths over two octaves. The bass, the guitar and the keys are one bar each over
+  chord I, moved by Progression: the A part goes I IV V IV and the B part vi IV I V.
+
+  Run it with: llamatron examples/by_genre/tv_theme/phoenix_foundation.yml
+
+  Scene 1, intro, 8 bars: the bass, the keys and the drums.
+  Scene 2, theme, 16 bars: the theme.
+  Scene 3, rise, 8 bars: the second part.
+  Scene 4, theme 2, 16 bars: the theme again.
+  Scene 5, guitar, 16 bars: the band without the melody.
+  Scene 6, rise 2, 8 bars: the second part again.
+  Scene 7, last theme, 16 bars: the theme to the end.
+  Scene 8, outro, 8 bars: the band plays out.
+
+  When changing this demo:
+  - Keep the keys a held chord broken up by the sparkle arpeggiator.
+  - Keep the bass, guitar and keys one bar long over chord I.
+  - Keep the melody original.
+real_time: true
+protected: true
+
+scales:
+  G Major: { root: G, type: major }
+
+patterns:
+  kit_kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, ~, ~, 110, ~, 110, ~, ~, ~, ~, ~]
+  kit_snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~]
+  kit_hat:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~]
+    accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
+    velocity: [110, ~, 70, ~, 110, ~, 70, ~, 110, ~, 70, ~, 110, ~, 70, ~]
+  crash:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  bass:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    octave: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+  guitar:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, 1, ~, ~, 1, ~, ~]
+    octave: [3, ~, 3, ~, ~, 3, ~, ~]
+    chord: ["5", ~, "5", ~, ~, "5", ~, ~]
+    tie: [false, true, false, true, false, false, true, false]
+  keys:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  a:
+    steps: 32
+    step_size: 1/8
+    degree: [1, ~, 5, ~, 1, 2, 3, ~, 1, ~, 6, ~, 4, ~, 1, ~, 2, ~, 7, ~, 5, ~, 2, ~, 1, ~, 6, ~, 4, ~, ~, ~]
+    octave: [6, ~, 5, ~, 6, 6, 6, ~, 6, ~, 5, ~, 6, ~, 6, ~, 6, ~, 5, ~, 6, ~, 6, ~, 6, ~, 5, ~, 5, ~, ~, ~]
+    tie: [false, true, false, true, false, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, false, false, true, false, true, false, true, true, false]
+  b:
+    steps: 32
+    step_size: 1/8
+    degree: [3, ~, ~, 1, 6, ~, 3, ~, 1, ~, ~, 6, 4, ~, 1, ~, 5, ~, ~, 3, 1, ~, 5, ~, 2, ~, 4, ~, 5, ~, ~, ~]
+    octave: [6, ~, ~, 6, 5, ~, 6, ~, 6, ~, ~, 5, 5, ~, 6, ~, 6, ~, ~, 6, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, ~, ~]
+    tie: [false, true, true, false, false, true, false, false, false, true, true, false, false, true, false, false, false, true, true, false, false, true, false, false, false, true, false, true, false, true, true, false]
+
+arps:
+  sparkle: { step: 1/16, order: up, octave_range: 2 }
+
+progressions:
+  a: { chords: [1, 4, 5, 4] }
+  b: { chords: [6, 4, 1, 5] }
+
+chains:
+  sparkle:
+    - arp: sparkle
+  a:
+    - progression: a
+  b:
+    - progression: b
+
+instruments:
+  synth bass: { device: "*FluidSynth", gm_sound: 39 }
+  overdriven guitar: { device: "*FluidSynth", gm_sound: 30 }
+  polysynth: { device: "*FluidSynth", gm_sound: 91 }
+  synth brass: { device: "*FluidSynth", gm_sound: 63 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  phoenix_foundation:
+    tempo: 130
+    scale: G Major
+    genre: TV theme
+
+    tracks:
+      kick: { drum: true, instrument: drum kit }
+      snare: { drum: true, instrument: drum kit }
+      hat: { drum: true, instrument: drum kit }
+      crash: { drum: true, instrument: drum kit }
+      bass: { instrument: synth bass }
+      guitar: { instrument: overdriven guitar }
+      keys: { instrument: polysynth }
+      lead: { instrument: synth brass }
+
+    scenes:
+      - name: intro
+        tracks:
+          kick: { pattern: kit_kick, repeat: 8 }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [a, sparkle], loop: true }
+          keys: { pattern: keys, chains: [a, sparkle], loop: true }
+      - name: theme
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [a, sparkle], loop: true }
+          guitar: { pattern: guitar, chains: [a, sparkle], loop: true }
+          keys: { pattern: keys, chains: [a, sparkle], loop: true }
+          lead: { pattern: a, repeat: 4 }
+      - name: rise
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          crash: { pattern: crash, loop: true }
+          bass: { pattern: bass, chains: [b, sparkle], loop: true }
+          guitar: { pattern: guitar, chains: [b, sparkle], loop: true }
+          keys: { pattern: keys, chains: [b, sparkle], loop: true }
+          lead: { pattern: b, repeat: 2 }
+      - name: theme 2
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [a, sparkle], loop: true }
+          guitar: { pattern: guitar, chains: [a, sparkle], loop: true }
+          keys: { pattern: keys, chains: [a, sparkle], loop: true }
+          lead: { pattern: a, repeat: 4 }
+      - name: guitar
+        tracks:
+          kick: { pattern: kit_kick, repeat: 16 }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [a, sparkle], loop: true }
+          guitar: { pattern: guitar, chains: [a, sparkle], loop: true }
+          keys: { pattern: keys, chains: [a, sparkle], loop: true }
+      - name: rise 2
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          crash: { pattern: crash, loop: true }
+          bass: { pattern: bass, chains: [b, sparkle], loop: true }
+          guitar: { pattern: guitar, chains: [b, sparkle], loop: true }
+          keys: { pattern: keys, chains: [b, sparkle], loop: true }
+          lead: { pattern: b, repeat: 2 }
+      - name: last theme
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          crash: { pattern: crash, loop: true }
+          bass: { pattern: bass, chains: [a, sparkle], loop: true }
+          guitar: { pattern: guitar, chains: [a, sparkle], loop: true }
+          keys: { pattern: keys, chains: [a, sparkle], loop: true }
+          lead: { pattern: a, repeat: 4 }
+      - name: outro
+        tracks:
+          kick: { pattern: kit_kick, repeat: 8 }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [a, sparkle], loop: true }
+          guitar: { pattern: guitar, chains: [a, sparkle], loop: true }
+          keys: { pattern: keys, chains: [a, sparkle], loop: true }

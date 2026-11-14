@@ -1,0 +1,165 @@
+version: 1.0.227
+title: "Get the traps, Egon"
+description: "a mid-eighties spooky funk-pop film theme in the manner of Ghostbusters (Ray Parker Jr.), with a riff of its own"
+notes: |
+  Get the traps, Egon: a funk-pop film theme at 116 beats a minute in G mixolydian, in the manner of
+  the mid-eighties comedy hits: a two-bar synth bass riff, chord stabs, a funk beat, a synth brass
+  hook and a sci-fi wail for the ghosts. The riff and the hook are its own.
+
+  The mixolydian scale gives the bass its flat seventh. The riff and the stabs are two bars long
+  and play as written, and in the middle part a Progression moves them to IV IV I I.
+
+  Run it with: llamatron examples/by_genre/soundtrack/get_the_traps_egon.yml
+
+  Scene 1, intro, 8 bars: the bass riff and the drums.
+  Scene 2, riff, 16 bars: the stabs join.
+  Scene 3, hook, 16 bars: the brass hook.
+  Scene 4, middle, 8 bars: the middle part, moved to IV and I.
+  Scene 5, hook 2, 16 bars: the hook again.
+  Scene 6, ghosts, 8 bars: the drums and the ghostly wail.
+  Scene 7, last hook, 16 bars: the hook with the wail.
+
+  When changing this demo:
+  - Keep the riff and the stabs two bars long.
+  - Keep the riff and the hook original.
+real_time: true
+protected: true
+
+scales:
+  G Mixolydian: { root: G, type: mixolydian }
+
+patterns:
+  kit_kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, C, ~, ~, ~, C, ~, ~, C, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, 3, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, 110, ~, ~]
+  kit_snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, D, ~, D, ~, ~, D, ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, 3, ~, 3, ~, ~, 3, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 110, ~, ~, 70, ~, 70, ~, ~, 110, ~, ~, ~]
+  kit_hat:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F]
+    accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [110, 70, 110, 70, 110, 70, 110, 70, 110, 70, 110, 70, 110, 70, 110, 70]
+  bass:
+    steps: 16
+    step_size: 1/8
+    degree: [1, ~, 1, 3, 4, ~, 5, 7, 1, ~, 7, 5, 4, ~, 3, ~]
+    octave: [2, ~, 2, 2, 2, ~, 2, 1, 3, ~, 2, 2, 2, ~, 2, ~]
+  stabs:
+    steps: 16
+    step_size: 1/8
+    degree: [~, 1, ~, ~, 1, ~, ~, ~, ~, 4, ~, ~, 1, ~, ~, ~]
+    octave: [~, 4, ~, ~, 4, ~, ~, ~, ~, 4, ~, ~, 4, ~, ~, ~]
+    chord: [~, "3", ~, ~, "3", ~, ~, ~, ~, "3", ~, ~, "3", ~, ~, ~]
+  hook:
+    steps: 32
+    step_size: 1/8
+    degree: [5, 5, 5, ~, 7, ~, 5, ~, 4, ~, 3, ~, 1, ~, ~, ~, 5, 5, 5, ~, 1, ~, 7, ~, 5, ~, 4, ~, 3, ~, ~, ~]
+    octave: [5, 5, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, 5, 5, ~, 6, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, false]
+  b:
+    steps: 32
+    step_size: 1/8
+    degree: [4, ~, 3, 1, 6, ~, ~, ~, 4, ~, 3, 1, 6, ~, ~, ~, 1, ~, 7, 5, 3, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [6, ~, 6, 6, 5, ~, ~, ~, 6, ~, 6, 6, 5, ~, ~, ~, 6, ~, 5, 5, 5, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, true, true, false, false, false, false]
+  wail:
+    steps: 16
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~, 7, ~, ~, ~, ~, ~, ~, ~]
+    octave: [6, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true]
+
+progressions:
+  middle: { chords: [4, 4, 1, 1] }
+
+chains:
+  middle:
+    - progression: middle
+
+instruments:
+  synth bass: { device: "*FluidSynth", gm_sound: 39 }
+  polysynth: { device: "*FluidSynth", gm_sound: 91 }
+  synth brass: { device: "*FluidSynth", gm_sound: 63 }
+  sci-fi: { device: "*FluidSynth", gm_sound: 104 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  get_the_traps_egon:
+    tempo: 116
+    scale: G Mixolydian
+    genre: Soundtrack
+
+    tracks:
+      kick: { drum: true, instrument: drum kit }
+      snare: { drum: true, instrument: drum kit }
+      hat: { drum: true, instrument: drum kit }
+      bass: { instrument: synth bass }
+      stabs: { instrument: polysynth }
+      lead: { instrument: synth brass }
+      ghost: { instrument: sci-fi }
+
+    scenes:
+      - name: intro
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, repeat: 4 }
+      - name: riff
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, repeat: 8 }
+          stabs: { pattern: stabs, loop: true }
+      - name: hook
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, loop: true }
+          stabs: { pattern: stabs, loop: true }
+          lead: { pattern: hook, repeat: 4 }
+      - name: middle
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [middle], loop: true }
+          stabs: { pattern: stabs, chains: [middle], loop: true }
+          lead: { pattern: b, repeat: 2 }
+      - name: hook 2
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, loop: true }
+          stabs: { pattern: stabs, loop: true }
+          lead: { pattern: hook, repeat: 4 }
+      - name: ghosts
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          ghost: { pattern: wail, repeat: 4 }
+      - name: last hook
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, loop: true }
+          stabs: { pattern: stabs, loop: true }
+          lead: { pattern: hook, repeat: 4 }
+          ghost: { pattern: wail, loop: true }

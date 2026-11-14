@@ -1,0 +1,131 @@
+version: 1.0.206
+title: Voice leading
+description: "block chords on the piano in root position, inverted by hand and voice-led"
+notes: |
+  Voice leading: an original piece for piano at 96 beats a minute in D major, block chords over
+  a bass, where three progressions are each played three ways, back to back, so that you hear
+  what voicing does: in root position, every chord jumping up from its root; with the chord
+  editor's Inv. row set by hand; and through the Voice leading generator, which plays each chord
+  in the inversion and octave nearest the chord before.
+  Run it with: llamatron examples/learning/05_voice_leading.yml --to ableton --replace
+
+  The chords are one pattern, a triad on degree 1 twice a bar, moved by a Progression; the bass
+  plays the roots, which voice leading leaves alone, since one note has no inversion. The chains
+  named "smooth" add the voice leading called smooth after the progression.
+
+  Scenes 1 to 3: Pop, I-V-vi-IV, in root position, by hand (V and IV inverted), and voice-led.
+  Scenes 4 to 6: Pachelbel's eight chords, the same three ways.
+  Scenes 7 to 9: the circle, vi-ii-V-I, the same three ways, the last voice-led with the root
+  kept in the bass, so that the right hand moves above the bass's roots.
+
+  When changing this demo:
+  - Keep one chord pattern for every scene, so that only the voicing changes.
+  - Keep each progression's three scenes together, in root position, by hand and voice-led.
+real_time: true
+protected: true
+
+scales:
+  D Major: { root: D, type: major }
+
+patterns:
+  chords:
+    steps: 4
+    step_size: 1/4
+    degree: [1, ~, 1, ~]
+    octave: [4, ~, 4, ~]
+    chord: [3, ~, 3, ~]
+    velocity: [80, ~, 70, ~]
+    tie: [false, true, false, true]
+  bass:
+    steps: 4
+    step_size: 1/4
+    degree: [1, ~, ~, ~]
+    octave: [3, ~, ~, ~]
+    velocity: [90, ~, ~, ~]
+    tie: [false, true, true, true]
+
+progressions:
+  pop: { chords: [1, 5, 6, 4] }
+  pop by hand: { chords: [1, 5, 6, 4], inversions: [~, 1, ~, 2] }
+  pachelbel: { chords: [1, 5, 6, 3, 4, 1, 4, 5] }
+  pachelbel by hand: { chords: [1, 5, 6, 3, 4, 1, 4, 5], inversions: [~, 1, ~, 1, 2, ~, 2, 1] }
+  circle: { chords: [6, 2, 5, 1] }
+  circle by hand: { chords: [6, 2, 5, 1], inversions: [~, 2, 1, ~] }
+
+voice_leadings:
+  smooth: {}
+  over the bass: { root_in_bass: true }
+
+chains:
+  pop:
+    - progression: pop
+  pop by hand:
+    - progression: pop by hand
+  pop smooth:
+    - progression: pop
+    - voice_leading: smooth
+  pachelbel:
+    - progression: pachelbel
+  pachelbel by hand:
+    - progression: pachelbel by hand
+  pachelbel smooth:
+    - progression: pachelbel
+    - voice_leading: smooth
+  circle:
+    - progression: circle
+  circle by hand:
+    - progression: circle by hand
+  circle over the bass:
+    - progression: circle
+    - voice_leading: over the bass
+
+instruments:
+  piano: { device: "*FluidSynth", gm_sound: 1 }
+
+songs:
+  voice_leading:
+    tempo: 96
+    scale: D Major
+    genre: Classical
+
+    tracks:
+      right hand: { instrument: piano }
+      left hand: { instrument: piano }
+
+    scenes:
+      - name: "pop, root position"
+        tracks:
+          right hand: { pattern: chords, chains: [pop], repeat: 8 }
+          left hand: { pattern: bass, chains: [pop], repeat: 8 }
+      - name: "pop, by hand"
+        tracks:
+          right hand: { pattern: chords, chains: [pop by hand], repeat: 8 }
+          left hand: { pattern: bass, chains: [pop], repeat: 8 }
+      - name: "pop, voice-led"
+        tracks:
+          right hand: { pattern: chords, chains: [pop smooth], repeat: 8 }
+          left hand: { pattern: bass, chains: [pop], repeat: 8 }
+      - name: "pachelbel, root position"
+        tracks:
+          right hand: { pattern: chords, chains: [pachelbel], repeat: 8 }
+          left hand: { pattern: bass, chains: [pachelbel], repeat: 8 }
+      - name: "pachelbel, by hand"
+        tracks:
+          right hand: { pattern: chords, chains: [pachelbel by hand], repeat: 8 }
+          left hand: { pattern: bass, chains: [pachelbel], repeat: 8 }
+      - name: "pachelbel, voice-led"
+        tracks:
+          right hand: { pattern: chords, chains: [pachelbel smooth], repeat: 8 }
+          left hand: { pattern: bass, chains: [pachelbel], repeat: 8 }
+      - name: "circle, root position"
+        tracks:
+          right hand: { pattern: chords, chains: [circle], repeat: 8 }
+          left hand: { pattern: bass, chains: [circle], repeat: 8 }
+      - name: "circle, by hand"
+        tracks:
+          right hand: { pattern: chords, chains: [circle by hand], repeat: 8 }
+          left hand: { pattern: bass, chains: [circle], repeat: 8 }
+      - name: "circle, over the bass"
+        tracks:
+          right hand: { pattern: chords, chains: [circle over the bass], repeat: 8 }
+          left hand: { pattern: bass, chains: [circle], repeat: 8 }

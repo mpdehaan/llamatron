@@ -1,0 +1,144 @@
+version: 1.0.227
+title: Not painless
+description: "a gentle, wistful guitar theme in the manner of M*A*S*H (Johnny Mandel), with a melody of its own"
+notes: |
+  Not painless: a gentle theme at 90 beats a minute in G minor, in the manner of the early seventies:
+  a nylon guitar picking its chords, a bass, a side stick and a shaker, a choir in the second
+  half and a flute with the tune. The melody is its own.
+
+  The guitar holds one chord a bar, which an arpeggiator called picking, in the guitar's chains,
+  plays in eighths up and down. The chords go round the circle of fifths in minor,
+  i iv VII III VI ii v i, from a Progression.
+
+  Run it with: llamatron examples/by_genre/tv_theme/not_painless.yml
+
+  Scene 1, intro, 4 bars: the guitar alone.
+  Scene 2, theme, 16 bars: the flute with the tune.
+  Scene 3, choir, 16 bars: the choir joins.
+  Scene 4, interlude, 8 bars: the guitar and the choir.
+  Scene 5, theme 2, 16 bars: the tune again.
+  Scene 6, outro, 8 bars: the guitar alone.
+
+  When changing this demo:
+  - Keep the guitar a held chord picked by the arpeggiator.
+  - Keep the melody original.
+real_time: true
+protected: true
+
+scales:
+  G Minor: { root: G, type: minor }
+
+patterns:
+  stick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~]
+  hat:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [A, ~, A, ~, A, ~, A, ~, A, ~, A, ~, A, ~, A, ~]
+    accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
+    octave: [5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~]
+    velocity: [110, ~, 70, ~, 110, ~, 70, ~, 110, ~, 70, ~, 110, ~, 70, ~]
+  guitar:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  bass:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, 5, 1, ~, ~, ~]
+    octave: [3, ~, ~, 2, 3, ~, ~, ~]
+    tie: [false, true, true, false, false, true, true, true]
+  choir:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  melody:
+    steps: 64
+    step_size: 1/8
+    degree: [5, ~, ~, 3, 1, ~, 5, ~, 6, ~, ~, 4, 1, ~, 6, ~, 7, ~, ~, 5, 2, ~, 7, ~, 5, ~, ~, 3, 7, ~, 3, ~, 6, ~, ~, 1, 3, ~, 1, ~, 2, ~, ~, 6, 4, ~, 2, ~, 5, ~, 7, ~, 2, ~, 7, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, 5, 5, ~, 5, ~, 5, ~, ~, 5, 6, ~, 5, ~, 5, ~, ~, 5, 6, ~, 5, ~, 5, ~, ~, 5, 4, ~, 5, ~, 5, ~, ~, 6, 6, ~, 6, ~, 6, ~, ~, 5, 5, ~, 5, ~, 5, ~, 5, ~, 6, ~, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+
+arps:
+  picking: { step: 1/8, order: up_down }
+
+progressions:
+  circle: { chords: [1, 4, 7, 3, 6, 2, 5, 1] }
+
+chains:
+  picking:
+    - arp: picking
+  circle:
+    - progression: circle
+
+instruments:
+  nylon guitar: { device: "*FluidSynth", gm_sound: 25 }
+  acoustic bass: { device: "*FluidSynth", gm_sound: 33 }
+  choir: { device: "*FluidSynth", gm_sound: 53 }
+  flute: { device: "*FluidSynth", gm_sound: 74 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  not_painless:
+    tempo: 90
+    scale: G Minor
+    genre: TV theme
+
+    tracks:
+      stick: { drum: true, instrument: drum kit }
+      hat: { drum: true, instrument: drum kit }
+      guitar: { instrument: nylon guitar }
+      bass: { instrument: acoustic bass }
+      choir: { instrument: choir }
+      lead: { instrument: flute }
+
+    scenes:
+      - name: intro
+        tracks:
+          guitar: { pattern: guitar, chains: [circle, picking], repeat: 4 }
+      - name: theme
+        tracks:
+          stick: { pattern: stick, loop: true }
+          hat: { pattern: hat, loop: true }
+          guitar: { pattern: guitar, chains: [circle, picking], loop: true }
+          bass: { pattern: bass, chains: [circle], loop: true }
+          lead: { pattern: melody, repeat: 2 }
+      - name: choir
+        tracks:
+          stick: { pattern: stick, loop: true }
+          hat: { pattern: hat, loop: true }
+          guitar: { pattern: guitar, chains: [circle, picking], loop: true }
+          bass: { pattern: bass, chains: [circle], loop: true }
+          lead: { pattern: melody, repeat: 2 }
+          choir: { pattern: choir, chains: [circle], loop: true }
+      - name: interlude
+        tracks:
+          stick: { pattern: stick, repeat: 8 }
+          hat: { pattern: hat, loop: true }
+          guitar: { pattern: guitar, chains: [circle, picking], loop: true }
+          bass: { pattern: bass, chains: [circle], loop: true }
+          choir: { pattern: choir, chains: [circle], loop: true }
+      - name: theme 2
+        tracks:
+          stick: { pattern: stick, loop: true }
+          hat: { pattern: hat, loop: true }
+          guitar: { pattern: guitar, chains: [circle, picking], loop: true }
+          bass: { pattern: bass, chains: [circle], loop: true }
+          lead: { pattern: melody, repeat: 2 }
+      - name: outro
+        tracks:
+          guitar: { pattern: guitar, chains: [circle, picking], repeat: 8 }
+          bass: { pattern: bass, chains: [circle], loop: true }

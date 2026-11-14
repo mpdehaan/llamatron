@@ -1,0 +1,179 @@
+version: 1.0.227
+title: Microwave snacks
+description: "an early-seventies Moog novelty tune in the manner of Popcorn (Hot Butter), with a tune of its own"
+notes: |
+  Microwave snacks: a synthesizer novelty tune at 130 beats a minute in A minor, in the manner of the
+  early seventies: a staccato square lead whose tune bounces off a high repeated note, a synth bass
+  on the eighths, a disco beat and claves blipping where a Euclidean rhythm says. The tune is its own.
+
+  The lead plays every other sixteenth on its high note, the trick of the style, and the tune in
+  between. The bass is one bar over chord i, moved by Progression: the A part goes i iv and the B
+  part VI v. The claves' track keeps 5 of every 8 steps by its Euclidean mask.
+
+  Run it with: llamatron examples/by_genre/electronic/microwave_snacks.yml
+
+  Scene 1, intro, 8 bars: the bass and the drums.
+  Scene 2, A, 16 bars: the bouncing tune.
+  Scene 3, B, 8 bars: the second tune.
+  Scene 4, A 2, 16 bars: the tune with the claves.
+  Scene 5, alone, 8 bars: the lead alone.
+  Scene 6, A 3, 16 bars: the tune again.
+  Scene 7, B 2, 8 bars: the second tune again.
+  Scene 8, last A, 16 bars: the tune to the end.
+
+  When changing this demo:
+  - Keep the high repeated note between the tune's notes.
+  - Keep the tune original.
+real_time: true
+protected: true
+
+scales:
+  A Minor: { root: A, type: minor }
+
+patterns:
+  kit_kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~]
+    octave: [3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~]
+  kit_snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~]
+  kit_open:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, A, ~, ~, ~, A, ~, ~, ~, A, ~, ~, ~, A, ~]
+    accidental: [~, ~, "#", ~, ~, ~, "#", ~, ~, ~, "#", ~, ~, ~, "#", ~]
+    octave: [~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~]
+    velocity: [~, ~, 110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~, 110, ~]
+  kit_hat:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~]
+    accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
+    velocity: [110, ~, 70, ~, 110, ~, 70, ~, 110, ~, 70, ~, 110, ~, 70, ~]
+  bass:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, 1, ~, 1, ~, 1, ~]
+    octave: [2, ~, 2, ~, 2, ~, 2, ~]
+  a:
+    steps: 32
+    step_size: 1/16
+    degree: [1, 5, 1, 3, 1, 5, ~, ~, 1, 5, 1, 3, 1, 5, ~, ~, 1, 6, 1, 4, 1, 6, ~, ~, 7, 5, 7, 3, 7, 5, ~, ~]
+    octave: [6, 5, 6, 5, 6, 5, ~, ~, 6, 5, 6, 5, 6, 5, ~, ~, 6, 5, 6, 5, 6, 5, ~, ~, 5, 5, 5, 5, 5, 5, ~, ~]
+  b:
+    steps: 32
+    step_size: 1/16
+    degree: [3, 1, 3, 6, 3, 1, ~, ~, 3, 1, 3, 6, 3, 1, ~, ~, 2, 7, 2, 5, 2, 7, ~, ~, 2, 7, 2, 5, 2, 7, ~, ~]
+    octave: [6, 6, 6, 5, 6, 6, ~, ~, 6, 6, 6, 5, 6, 6, ~, ~, 6, 5, 6, 5, 6, 5, ~, ~, 6, 5, 6, 5, 6, 5, ~, ~]
+  blips:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~]
+    accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
+    octave: [6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~]
+    velocity: [110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~]
+
+progressions:
+  a: { chords: [1, 4] }
+  b: { chords: [6, 5] }
+
+chains:
+  a:
+    - progression: a
+  b:
+    - progression: b
+
+instruments:
+  synth bass: { device: "*FluidSynth", gm_sound: 39 }
+  square lead: { device: "*FluidSynth", gm_sound: 81 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  microwave_snacks:
+    tempo: 130
+    scale: A Minor
+    genre: Electronic
+
+    tracks:
+      kick: { drum: true, instrument: drum kit }
+      snare: { drum: true, instrument: drum kit }
+      open: { drum: true, instrument: drum kit }
+      hat: { drum: true, instrument: drum kit }
+      blips: { drum: true, instrument: drum kit, euclid_hits: 5, euclid_steps: 8 }
+      bass: { instrument: synth bass }
+      lead: { instrument: square lead }
+
+    scenes:
+      - name: intro
+        tracks:
+          kick: { pattern: kit_kick, repeat: 8 }
+          snare: { pattern: kit_snare, loop: true }
+          open: { pattern: kit_open, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [a], loop: true }
+      - name: A
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          open: { pattern: kit_open, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [a], loop: true }
+          lead: { pattern: a, repeat: 8 }
+      - name: B
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          open: { pattern: kit_open, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [b], loop: true }
+          lead: { pattern: b, repeat: 4 }
+      - name: A 2
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          open: { pattern: kit_open, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [a], loop: true }
+          lead: { pattern: a, repeat: 8 }
+          blips: { pattern: blips, loop: true }
+      - name: alone
+        tracks:
+          lead: { pattern: a, repeat: 4 }
+      - name: A 3
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          open: { pattern: kit_open, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [a], loop: true }
+          lead: { pattern: a, repeat: 8 }
+          blips: { pattern: blips, loop: true }
+      - name: B 2
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          open: { pattern: kit_open, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [b], loop: true }
+          lead: { pattern: b, repeat: 4 }
+          blips: { pattern: blips, loop: true }
+      - name: last A
+        tracks:
+          kick: { pattern: kit_kick, loop: true }
+          snare: { pattern: kit_snare, loop: true }
+          open: { pattern: kit_open, loop: true }
+          hat: { pattern: kit_hat, loop: true }
+          bass: { pattern: bass, chains: [a], loop: true }
+          lead: { pattern: a, repeat: 8 }

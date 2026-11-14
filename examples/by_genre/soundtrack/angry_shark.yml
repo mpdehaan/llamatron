@@ -1,0 +1,152 @@
+version: 1.0.227
+title: Angry shark
+description: "a menacing orchestral film score in the manner of Jaws (John Williams), two low notes speeding up as the shark comes"
+notes: |
+  Angry shark: an orchestral score in E minor, in the manner of the mid-seventies thrillers: two low
+  notes a half step apart in the double basses, slow at first and faster as the danger comes,
+  cellos, a tuba, timpani, low toms and horns with a call of their own.
+
+  The scenes ramp the tempo: the approach speeds up from 70 to 140 beats a minute across its
+  bars, the attack and the chase stay at 150, the retreat slows from 150 back to 70, and the last
+  scene lurks at 70 again.
+
+  Run it with: llamatron examples/by_genre/soundtrack/angry_shark.yml
+
+  Scene 1, lurking, 8 bars: the basses alone, slowly.
+  Scene 2, approach, 16 bars: the cellos join, speeding up from 70 to 140.
+  Scene 3, attack, 16 bars: the basses in sixteenths, the tuba, timpani and toms.
+  Scene 4, chase, 16 bars: the horns call.
+  Scene 5, chase 2, 8 bars: the call again.
+  Scene 6, retreat, 8 bars: slowing from 150 to 70.
+  Scene 7, lurking again, 8 bars: the basses alone.
+
+  When changing this demo:
+  - Keep the tempo ramps on the approach and the retreat.
+  - Keep the horn call original.
+real_time: true
+protected: true
+
+scales:
+  E Minor: { root: E, type: minor }
+
+patterns:
+  lurk:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, 2, ~, ~, ~]
+    accidental: [~, ~, ~, ~, b, ~, ~, ~]
+    octave: [2, ~, ~, ~, 2, ~, ~, ~]
+    tie: [false, true, true, true, false, true, true, true]
+  approach:
+    steps: 8
+    step_size: 1/8
+    degree: [1, 2, 1, 2, 1, 2, 1, 2]
+    accidental: [~, b, ~, b, ~, b, ~, b]
+    octave: [2, 2, 2, 2, 2, 2, 2, 2]
+  attack:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2]
+    accidental: [~, b, ~, b, ~, b, ~, b, ~, b, ~, b, ~, b, ~, b]
+    octave: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+  cellos:
+    steps: 8
+    step_size: 1/8
+    degree: [1, 2, 1, 2, 1, 2, 1, 2]
+    accidental: [~, b, ~, b, ~, b, ~, b]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3]
+  timpani:
+    steps: 16
+    step_size: 1/16
+    degree: [1, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, 1, ~, 1, ~]
+    octave: [2, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, 2, ~, 2, ~]
+  horns:
+    steps: 32
+    step_size: 1/8
+    degree: [1, ~, ~, 7, 6, ~, 5, ~, 1, ~, ~, 7, 6, ~, 3, ~, 2, ~, ~, 1, 7, ~, 6, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    octave: [6, ~, ~, 5, 5, ~, 5, ~, 6, ~, ~, 5, 5, ~, 6, ~, 6, ~, ~, 6, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, true, true, true, true, true]
+  tuba:
+    steps: 16
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~]
+    octave: [2, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true]
+  hits:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [A, ~, ~, ~, ~, ~, ~, ~, A, ~, ~, ~, A, ~, A, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, 3, ~, 3, ~]
+    velocity: [110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, 110, ~, 110, ~]
+
+instruments:
+  contrabass: { device: "*FluidSynth", gm_sound: 44 }
+  cello: { device: "*FluidSynth", gm_sound: 43 }
+  tuba: { device: "*FluidSynth", gm_sound: 59 }
+  timpani: { device: "*FluidSynth", gm_sound: 48 }
+  horns: { device: "*FluidSynth", gm_sound: 61 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  angry_shark:
+    tempo: 140
+    scale: E Minor
+    genre: Soundtrack
+
+    tracks:
+      basses: { instrument: contrabass }
+      cellos: { instrument: cello }
+      tuba: { instrument: tuba }
+      timpani: { instrument: timpani }
+      hits: { drum: true, instrument: drum kit }
+      horns: { instrument: horns }
+
+    scenes:
+      - name: lurking
+        tempo: 70
+        tracks:
+          basses: { pattern: lurk, repeat: 8 }
+      - name: approach
+        tempo_start: 70
+        tempo_end: 140
+        tracks:
+          basses: { pattern: approach, repeat: 16 }
+          cellos: { pattern: cellos, loop: true }
+      - name: attack
+        tempo: 150
+        tracks:
+          basses: { pattern: attack, loop: true }
+          cellos: { pattern: cellos, loop: true }
+          tuba: { pattern: tuba, repeat: 8 }
+          timpani: { pattern: timpani, loop: true }
+          hits: { pattern: hits, loop: true }
+      - name: chase
+        tempo: 150
+        tracks:
+          basses: { pattern: attack, loop: true }
+          cellos: { pattern: cellos, loop: true }
+          tuba: { pattern: tuba, loop: true }
+          timpani: { pattern: timpani, loop: true }
+          hits: { pattern: hits, loop: true }
+          horns: { pattern: horns, repeat: 4 }
+      - name: chase 2
+        tempo: 150
+        tracks:
+          basses: { pattern: attack, loop: true }
+          cellos: { pattern: cellos, loop: true }
+          tuba: { pattern: tuba, loop: true }
+          timpani: { pattern: timpani, loop: true }
+          hits: { pattern: hits, loop: true }
+          horns: { pattern: horns, repeat: 2 }
+      - name: retreat
+        tempo_start: 150
+        tempo_end: 70
+        tracks:
+          basses: { pattern: approach, repeat: 8 }
+          cellos: { pattern: cellos, loop: true }
+      - name: lurking again
+        tempo: 70
+        tracks:
+          basses: { pattern: lurk, repeat: 8 }

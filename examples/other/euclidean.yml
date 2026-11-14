@@ -1,0 +1,208 @@
+version: 1.0.206
+title: Euclidean
+description: an Afro-Latin percussion piece carved from full patterns by Euclidean rhythms
+notes: |
+  Euclidean: an original Afro-Latin percussion piece at 110 beats a minute in D dorian, six parts
+  each playing a note on every sixteenth, and Euclidean rhythms carving the music out of them.
+  Run it with: llamatron examples/other/euclidean.yml --to ableton --replace
+
+  A Euclidean rhythm spreads so many hits as evenly as it can over so many steps, and it turns out
+  to give the traditional rhythms of the world. A mask keeps only the notes that start on a hit.
+  The shaker's mask is its track's own, in the track editor's Euclid section, eleven hits over
+  sixteen; the others are Euclid generators painted on clips through their chains, so one rhythm
+  edited in one place changes every clip it's painted on. Masks stack: a note plays only where
+  every mask has a hit.
+
+  The rhythms: the tresillo of Cuba (3 over 8), the cinquillo of Cuba (5 over 8), the samba of
+  Brazil (7 over 16), the bossa nova of Brazil (5 over 16), the Venda rhythm of South Africa
+  (5 over 12), the bembe bell of West Africa (7 over 12) and the aksak of Turkey (4 over 9).
+
+  Scene 1: the clave plays the tresillo.
+  Scene 2: the bell joins with the cinquillo.
+  Scene 3: the congas join with the samba.
+  Scene 4: the shaker joins with its track's mask, and the bass with the bossa nova.
+  Scene 5: the lead joins with the tresillo on eighth notes, a rhythm across two bars.
+  Scene 6: the clave's and the congas' rhythms rotated, starting later, the same hits shifted.
+  Scene 7: the bell's and the bass's rhythms rotated.
+  Scene 8: polyrhythm: the bell plays the bembe and the lead the Venda rhythm, twelve steps against
+  the bar's sixteen, lining up again only every three bars.
+  Scene 9: more polyrhythm: the congas play the aksak's nine steps and the clave the Venda rhythm.
+  Scene 10: all six together, in their first rhythms.
+
+  When changing this demo:
+  - Keep every pattern a note on every step, so that every rhythm comes from a mask.
+  - Keep the shaker's mask on its track and every other rhythm a generator painted on clips.
+real_time: true
+protected: true
+
+scales:
+  D Dorian: { root: D, type: dorian }
+
+patterns:
+  bass:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 1, 5, 1, 3, 1, 5, 4, 1, 1, 5, 1, 7, 1, 5, 3]
+    octave: [2, 3, 2, 3, 2, 3, 2, 2, 2, 3, 2, 3, 2, 3, 2, 2]
+  bell:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [G, G, G, G, G, G, G, G, G, G, G, G, G, G, G, G]
+    accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
+    octave: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+  clave:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D]
+    accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
+    octave: [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
+  congas:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [D, E, D, E, D, E, D, E, D, E, D, E, D, E, D, E]
+    octave: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+    velocity: [100, 80, 100, 80, 100, 80, 100, 80, 100, 80, 100, 80, 100, 80, 100, 80]
+  shaker:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A]
+    accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
+    octave: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+    velocity: [90, 50, 70, 50, 90, 50, 70, 50, 90, 50, 70, 50, 90, 50, 70, 50]
+  lead:
+    steps: 16
+    step_size: 1/16
+    degree: [5, 4, 3, 1, 3, 4, 5, 6, 5, 3, 1, 2, 3, 5, 4, 2]
+    octave: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+
+euclids:
+  tresillo: { hits: 3, steps: 8 }
+  cinquillo: { hits: 5, steps: 8 }
+  samba: { hits: 7, steps: 16 }
+  bossa nova: { hits: 5, steps: 16 }
+  tresillo in eighths: { hits: 3, steps: 8, step: 1/8 }
+  tresillo late: { hits: 3, steps: 8, rotate: 2 }
+  samba late: { hits: 7, steps: 16, rotate: 3 }
+  cinquillo late: { hits: 5, steps: 8, rotate: 1 }
+  bossa nova late: { hits: 5, steps: 16, rotate: 4 }
+  bembe: { hits: 7, steps: 12 }
+  venda: { hits: 5, steps: 12 }
+  aksak: { hits: 4, steps: 9 }
+
+chains:
+  tresillo:
+    - euclid: tresillo
+  cinquillo:
+    - euclid: cinquillo
+  samba:
+    - euclid: samba
+  bossa nova:
+    - euclid: bossa nova
+  tresillo in eighths:
+    - euclid: tresillo in eighths
+  tresillo late:
+    - euclid: tresillo late
+  samba late:
+    - euclid: samba late
+  cinquillo late:
+    - euclid: cinquillo late
+  bossa nova late:
+    - euclid: bossa nova late
+  bembe:
+    - euclid: bembe
+  venda:
+    - euclid: venda
+  aksak:
+    - euclid: aksak
+
+instruments:
+  acoustic bass: { device: "*FluidSynth", gm_sound: 33 }
+  pan flute: { device: "*FluidSynth", gm_sound: 76 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  euclidean:
+    tempo: 110
+    scale: D Dorian
+    genre: World
+
+    tracks:
+      bass: { instrument: acoustic bass }
+      bell: { drum: true, instrument: drum kit }
+      clave: { drum: true, instrument: drum kit }
+      congas: { drum: true, instrument: drum kit }
+      shaker: { drum: true, instrument: drum kit, euclid_hits: 11, euclid_steps: 16 }
+      lead: { instrument: pan flute }
+
+    scenes:
+      - name: the tresillo
+        tracks:
+          clave: { pattern: clave, chains: [tresillo], repeat: 8 }
+      - name: the cinquillo
+        tracks:
+          bell: { pattern: bell, chains: [cinquillo], repeat: 8 }
+          clave: { pattern: clave, chains: [tresillo], repeat: 8 }
+      - name: the samba
+        tracks:
+          bell: { pattern: bell, chains: [cinquillo], repeat: 8 }
+          clave: { pattern: clave, chains: [tresillo], repeat: 8 }
+          congas: { pattern: congas, chains: [samba], repeat: 8 }
+      - name: the shaker and the bossa nova
+        tracks:
+          bass: { pattern: bass, chains: [bossa nova], repeat: 8 }
+          bell: { pattern: bell, chains: [cinquillo], repeat: 8 }
+          clave: { pattern: clave, chains: [tresillo], repeat: 8 }
+          congas: { pattern: congas, chains: [samba], repeat: 8 }
+          shaker: { pattern: shaker, repeat: 8 }
+      - name: the lead
+        tracks:
+          bass: { pattern: bass, chains: [bossa nova], repeat: 8 }
+          bell: { pattern: bell, chains: [cinquillo], repeat: 8 }
+          clave: { pattern: clave, chains: [tresillo], repeat: 8 }
+          congas: { pattern: congas, chains: [samba], repeat: 8 }
+          shaker: { pattern: shaker, repeat: 8 }
+          lead: { pattern: lead, chains: [tresillo in eighths], repeat: 8 }
+      - name: rotated
+        tracks:
+          bass: { pattern: bass, chains: [bossa nova], repeat: 8 }
+          bell: { pattern: bell, chains: [cinquillo], repeat: 8 }
+          clave: { pattern: clave, chains: [tresillo late], repeat: 8 }
+          congas: { pattern: congas, chains: [samba late], repeat: 8 }
+          shaker: { pattern: shaker, repeat: 8 }
+          lead: { pattern: lead, chains: [tresillo in eighths], repeat: 8 }
+      - name: rotated more
+        tracks:
+          bass: { pattern: bass, chains: [bossa nova late], repeat: 8 }
+          bell: { pattern: bell, chains: [cinquillo late], repeat: 8 }
+          clave: { pattern: clave, chains: [tresillo late], repeat: 8 }
+          congas: { pattern: congas, chains: [samba late], repeat: 8 }
+          shaker: { pattern: shaker, repeat: 8 }
+          lead: { pattern: lead, chains: [tresillo in eighths], repeat: 8 }
+      - name: twelve against sixteen
+        tracks:
+          bass: { pattern: bass, chains: [bossa nova], repeat: 8 }
+          bell: { pattern: bell, chains: [bembe], repeat: 8 }
+          clave: { pattern: clave, chains: [tresillo], repeat: 8 }
+          congas: { pattern: congas, chains: [samba], repeat: 8 }
+          shaker: { pattern: shaker, repeat: 8 }
+          lead: { pattern: lead, chains: [venda], repeat: 8 }
+      - name: nine against sixteen
+        tracks:
+          bass: { pattern: bass, chains: [bossa nova], repeat: 8 }
+          bell: { pattern: bell, chains: [bembe], repeat: 8 }
+          clave: { pattern: clave, chains: [venda], repeat: 8 }
+          congas: { pattern: congas, chains: [aksak], repeat: 8 }
+          shaker: { pattern: shaker, repeat: 8 }
+          lead: { pattern: lead, chains: [venda], repeat: 8 }
+      - name: all six
+        tracks:
+          bass: { pattern: bass, chains: [bossa nova], repeat: 8 }
+          bell: { pattern: bell, chains: [cinquillo], repeat: 8 }
+          clave: { pattern: clave, chains: [tresillo], repeat: 8 }
+          congas: { pattern: congas, chains: [samba], repeat: 8 }
+          shaker: { pattern: shaker, repeat: 8 }
+          lead: { pattern: lead, chains: [tresillo in eighths], repeat: 8 }

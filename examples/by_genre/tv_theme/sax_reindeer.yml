@@ -1,0 +1,182 @@
+version: 1.0.227
+title: Sax reindeer
+description: "a breakneck novelty saxophone romp in the manner of Yakety Sax (Boots Randolph), with runs of its own"
+notes: |
+  Sax reindeer: a novelty romp at 144 beats a minute in B flat major, in the manner of Yakety Sax and
+  the chases it scored: a tenor saxophone running in sixteenths, a honky-tonk piano on the
+  off-beats, an oom-pah bass and a two-beat kit. Every run is its own.
+
+  The bass and the piano are one bar each over chord I, moved by Progression: the A part goes
+  I I IV I and the B part V IV I V. In the middle the piano takes the tune.
+
+  Run it with: llamatron examples/by_genre/tv_theme/sax_reindeer.yml
+
+  Scene 1, intro, 4 bars: the band.
+  Scene 2, A, 16 bars: the saxophone runs.
+  Scene 3, B, 8 bars: the second part.
+  Scene 4, A 2, 16 bars: the runs again.
+  Scene 5, piano, 8 bars: the piano takes the tune.
+  Scene 6, A 3, 16 bars: the saxophone again.
+  Scene 7, B 2, 8 bars: the second part again.
+  Scene 8, A 4, 16 bars: the runs once more.
+  Scene 9, tag, 16 bars: the saxophone and the piano together.
+
+  When changing this demo:
+  - Keep the bass and the piano one bar long over chord I.
+  - Keep the runs original.
+real_time: true
+protected: true
+
+scales:
+  Bb Major: { root: Bb, type: major }
+
+patterns:
+  kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~]
+  snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~]
+  hat:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~]
+    accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
+    velocity: [110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~]
+  bass:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, 5, ~, 1, ~, 5, ~]
+    octave: [3, ~, 2, ~, 3, ~, 2, ~]
+  piano:
+    steps: 8
+    step_size: 1/8
+    degree: [~, 1, ~, 1, ~, 1, ~, 1]
+    octave: [~, 4, ~, 4, ~, 4, ~, 4]
+    chord: [~, "3", ~, "3", ~, "3", ~, "3"]
+  a:
+    steps: 64
+    step_size: 1/16
+    degree: [1, 2, 3, 5, 6, 5, 3, 2, 1, ~, 5, ~, 1, ~, ~, ~, 3, 4, 5, 6, 1, 6, 5, 3, 5, ~, 1, ~, 5, ~, ~, ~, 4, 5, 6, 1, 2, 1, 6, 5, 4, ~, 1, ~, 6, ~, ~, ~, 5, 6, 1, 2, 3, 2, 1, 6, 5, ~, 3, ~, 1, ~, ~, ~]
+    octave: [5, 5, 5, 5, 5, 5, 5, 5, 5, ~, 4, ~, 5, ~, ~, ~, 5, 5, 5, 5, 6, 5, 5, 5, 5, ~, 6, ~, 5, ~, ~, ~, 5, 5, 5, 6, 6, 6, 5, 5, 5, ~, 6, ~, 5, ~, ~, ~, 5, 5, 6, 6, 6, 6, 6, 5, 5, ~, 5, ~, 5, ~, ~, ~]
+  b:
+    steps: 64
+    step_size: 1/16
+    degree: [5, 6, 7, 2, 4, 2, 7, 6, 5, ~, 2, ~, 7, ~, ~, ~, 4, 5, 6, 1, 2, 1, 6, 5, 4, ~, 6, ~, 1, ~, ~, ~, 3, 5, 1, 3, 5, 3, 1, 5, 3, ~, 1, ~, 5, ~, ~, ~, 2, 4, 5, 7, 2, ~, 5, ~, 7, ~, 2, ~, 5, ~, ~, ~]
+    octave: [5, 5, 5, 6, 6, 6, 5, 5, 5, ~, 6, ~, 5, ~, ~, ~, 5, 5, 5, 6, 6, 6, 5, 5, 5, ~, 5, ~, 6, ~, ~, ~, 5, 5, 6, 6, 6, 6, 6, 5, 5, ~, 6, ~, 5, ~, ~, ~, 5, 5, 5, 5, 6, ~, 5, ~, 5, ~, 6, ~, 6, ~, ~, ~]
+
+progressions:
+  a: { chords: [1, 1, 4, 1] }
+  b: { chords: [5, 4, 1, 5] }
+
+chains:
+  a:
+    - progression: a
+  b:
+    - progression: b
+
+instruments:
+  acoustic bass: { device: "*FluidSynth", gm_sound: 33 }
+  honky-tonk piano: { device: "*FluidSynth", gm_sound: 4 }
+  tenor sax: { device: "*FluidSynth", gm_sound: 67 }
+  piano lead: { device: "*FluidSynth", gm_sound: 4 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  sax_reindeer:
+    tempo: 144
+    scale: Bb Major
+    genre: TV theme
+
+    tracks:
+      kick: { drum: true, instrument: drum kit }
+      snare: { drum: true, instrument: drum kit }
+      hat: { drum: true, instrument: drum kit }
+      bass: { instrument: acoustic bass }
+      piano: { instrument: honky-tonk piano }
+      sax: { instrument: tenor sax }
+      piano solo: { instrument: piano lead }
+
+    scenes:
+      - name: intro
+        tracks:
+          kick: { pattern: kick, repeat: 4 }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [a], loop: true }
+          piano: { pattern: piano, chains: [a], loop: true }
+      - name: A
+        tracks:
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [a], loop: true }
+          piano: { pattern: piano, chains: [a], loop: true }
+          sax: { pattern: a, repeat: 4 }
+      - name: B
+        tracks:
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [b], loop: true }
+          piano: { pattern: piano, chains: [b], loop: true }
+          sax: { pattern: b, repeat: 2 }
+      - name: A 2
+        tracks:
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [a], loop: true }
+          piano: { pattern: piano, chains: [a], loop: true }
+          sax: { pattern: a, repeat: 4 }
+      - name: piano
+        tracks:
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [a], loop: true }
+          piano: { pattern: piano, chains: [a], loop: true }
+          piano solo: { pattern: a, repeat: 2 }
+      - name: A 3
+        tracks:
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [a], loop: true }
+          piano: { pattern: piano, chains: [a], loop: true }
+          sax: { pattern: a, repeat: 4 }
+      - name: B 2
+        tracks:
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [b], loop: true }
+          piano: { pattern: piano, chains: [b], loop: true }
+          sax: { pattern: b, repeat: 2 }
+      - name: A 4
+        tracks:
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [a], loop: true }
+          piano: { pattern: piano, chains: [a], loop: true }
+          sax: { pattern: a, repeat: 4 }
+      - name: tag
+        tracks:
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [a], loop: true }
+          piano: { pattern: piano, chains: [a], loop: true }
+          sax: { pattern: a, repeat: 4 }
+          piano solo: { pattern: a, loop: true }

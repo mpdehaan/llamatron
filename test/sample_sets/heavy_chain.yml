@@ -1,0 +1,82 @@
+version: 1.0.155
+title: Heavy chain
+description: a chain of twenty generators
+notes: |
+  A set made to load the render, for the real-time timing report (internal_tools/realtime_report.py): a chain of
+  twenty generators, chords on every step, and two tracks that grab from the chord track. It exists to
+  measure how long rendering and building the timeline take against the length of a pass, since an edit
+  while playing has to be rendered before the passes already queued run out. It is test data, not music.
+scales:
+  C Minor: { root: C, type: minor }
+patterns:
+  chords:
+    steps: 16
+    degree: [1, ~, ~, ~, 4, ~, ~, ~, 5, ~, ~, ~, 6, ~, ~, ~]
+    chord: [7, ~, ~, ~, 7, ~, ~, ~, 9, ~, ~, ~, 7, ~, ~, ~]
+    gate: [1/4, ~, ~, ~, 1/4, ~, ~, ~, 1/4, ~, ~, ~, 1/4, ~, ~, ~]
+  stabs:
+    steps: 16
+    degree: [1, ~, 3, ~, 5, ~, 3, ~, 1, ~, 3, ~, 5, ~, 3, ~]
+    chord: [5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~]
+  grabber:
+    steps: 16
+    degree: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    grab: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true]
+    chord: [5, ~, 7, ~, 5, ~, 7, ~, 5, ~, 7, ~, 5, ~, 7, ~]
+arps:
+  up: { step: 1/16, order: up }
+  down: { step: 1/16, order: down }
+  wide: { step: 1/32, order: up_down, octave_range: 2 }
+  sparkle: { step: 1/32, order: up, octave_range: 3, octave_jump: after_each_note }
+  thirds: { step: 1/16, order: up, offsets: [0, 2, 4, 2] }
+auto_ratchets:
+  double: { counts: [2] }
+  triple: { counts: [3, 1] }
+  stutter: { counts: [1, 1, 4, 1] }
+chains:
+  twenty:
+    - arp: up
+    - auto_ratchet: double
+    - arp: thirds
+    - auto_ratchet: triple
+    - arp: wide
+    - auto_ratchet: stutter
+    - arp: down
+    - auto_ratchet: double
+    - arp: sparkle
+    - auto_ratchet: triple
+    - arp: up
+    - auto_ratchet: stutter
+    - arp: thirds
+    - auto_ratchet: double
+    - arp: wide
+    - auto_ratchet: triple
+    - arp: down
+    - auto_ratchet: stutter
+    - arp: sparkle
+    - auto_ratchet: double
+  short:
+    - arp: up
+    - auto_ratchet: double
+songs:
+  heavy:
+    tempo: 128
+    scale: C Minor
+    tracks:
+      pad: {}
+      lead: {}
+      bass: {}
+      keys: {}
+    scenes:
+      - name: one
+        tracks:
+          pad: { pattern: chords, repeat: 4 }
+          lead: { pattern: stabs, chains: [twenty], repeat: 4 }
+          bass: { pattern: grabber, grab_track: pad, repeat: 4 }
+          keys: { pattern: grabber, grab_track: lead, chains: [short], repeat: 4 }
+      - name: two
+        tracks:
+          pad: { pattern: chords, repeat: 4 }
+          lead: { pattern: stabs, chains: [twenty], repeat: 4 }
+          bass: { pattern: grabber, grab_track: lead, repeat: 4 }
+          keys: { pattern: grabber, grab_track: pad, chains: [twenty], repeat: 4 }

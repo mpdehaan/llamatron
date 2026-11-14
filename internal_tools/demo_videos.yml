@@ -1,0 +1,3 @@
+# The videos of the examples on YouTube, by the set's file stem, which internal_tools/demo_summary.py --write-docs puts in the
+# video column of docs/DEMOS.md's list of the examples. Add a line when a video of a demo is uploaded.
+entertainer: https://www.youtube.com/watch?v=zcIWxtHWwtQ

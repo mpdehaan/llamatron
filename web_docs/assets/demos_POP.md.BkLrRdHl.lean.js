@@ -1,0 +1,1 @@
+import{_ as t,o as a,c as r,a2 as o}from"./chunks/framework.hw3Av5Vn.js";const g=JSON.parse('{"title":"Pop","description":"","frontmatter":{},"headers":[],"relativePath":"demos/POP.md","filePath":"demos/POP.md"}'),n={name:"demos/POP.md"};function s(l,e,i,d,h,c){return a(),r("div",null,[...e[0]||(e[0]=[o("",28)])])}const y=t(n,[["render",s]]);export{g as __pageData,y as default};

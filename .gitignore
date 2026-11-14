@@ -1,0 +1,25 @@
+songs/
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+output/
+examples/**/*.als
+examples/**/*.mid
+*.mid
+.DS_Store
+build/
+dist/
+*.egg-info/
+# The public domain MIDI files to import, which the demo generator and the tests read too, kept so nothing is downloaded again.
+!examples/midi/*.mid
+.compare_exports/
+previews/
+recordings/
+# How long each test class took, which test/parallel.py starts the slowest first by.
+.test_times.json
+# Where internal_tools/build_docs.sh installs VitePress and stages the pages; the site itself is web_docs/.
+.docs_site/
+examples/**/*.wav
+# The public-domain scores internal_tools/analysis_and_generation/fetch_corpus.sh fetches for the corpus study, kept out of the repository.
+.corpus/

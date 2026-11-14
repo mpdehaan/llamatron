@@ -1,0 +1,37 @@
+# A set made to test what opening does with values that cannot be used. It is not music.
+# Every wrong value here has an allowed value near it, so the set opens once each is corrected:
+# test/test_corrections.py says which values those are and what each becomes.
+version: 1.0.121
+title: out of range
+step_size: 8
+default_octave: -3
+octave_labels: roman
+scales:
+  C Major: { root: C, type: major }
+patterns:
+  tune:
+    steps: 16
+    direction: sideways
+    degree: [1, 2, 3, ~, 5, 4, 3, ~, 1, 2, 3, ~, 5, 4, 3, ~]
+    velocity: [200, 200, 200, ~, 200, 200, 200, ~, 200, 200, 200, ~, 200, 200, 200, ~]
+    gate: [1/4, ~, ~, ~, 9, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    cc1: [0, 64, 127, 300, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+arps:
+  up: { step: 1/8, octave_range: 9, order: sideways }
+chains:
+  rise: [{ arp: up }]
+grooves:
+  shuffle: { cells: [0, 80, 0, -90], cell_length: 2 }
+songs:
+  verse:
+    tempo: 120
+    scale: C Major
+    registers:
+      AX: { maximum: 500 }
+    tracks:
+      lead: { transpose: 99, highest_octave: 40 }
+    scenes:
+      - name: one
+        repeat: 0
+        tracks:
+          lead: { pattern: tune, chains: [rise], repeat: -3, direction: up }
