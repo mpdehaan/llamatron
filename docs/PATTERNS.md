@@ -40,7 +40,7 @@ The two lines over the grid show the pattern's settings in aligned columns: Step
 
 The roll is one pencil. `Space`, or `Enter`, draws a note of the entry size at the cursor, writing the note on its step and a tie on each further step it covers, so the rows show exactly what was painted; only an entry size shorter than a step writes a gate. `Space` on a note at the cursor's pitch erases that note with every step it holds, from any of the note's cells, exactly as `Bksp` does, so `Space` turns a note on and off. A note drawn again is a new note of the entry size, and `Ctrl+Z` brings back an erased note.
 
-A note drawn at another pitch inside a held note cuts the held note where the new one starts, and the rest of the old note carries on after the new one as a note of its own, so drawing never silences anything to the right. A note whose gate reached over the new note's step is cut to end where the new note starts, and a note running past the end of the pattern is cut there.
+A note drawn at another pitch inside a held note cuts the held note where the new one starts, and the rest of the old note carries on after the new one as a note of its own, so drawing never silences anything to the right. A note whose gate reached over the new note's step is cut to end where the new note starts, and a note running past the end of the pattern is cut there. A note drawn on the step where a chord starts moves the chord's root to that pitch and keeps the chord, its tensions, scale, inversion and length; erasing the note removes the chord with it.
 
 ### Piano Roll Keys
 
