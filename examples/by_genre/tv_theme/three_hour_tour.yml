@@ -1,0 +1,235 @@
+version: 1.0.364
+title: Three hour tour
+description: "a sea-shanty sitcom theme of the sixties in the manner of The Ballad of Gilligan's Isle (Sherwood Schwartz and George Wyle), with a tune of its own"
+notes: |
+  Three hour tour: a sea-shanty sitcom theme of the sixties in the manner of The Ballad of Gilligan's
+  Isle (Sherwood Schwartz and George Wyle), with a tune of its own. This is a homage to The Ballad of
+  Gilligan's Isle (Sherwood Schwartz and George Wyle): its chords, form, sounds and drums follow that
+  work as Claude knows it, and every tune and rhythm here is new. Rebuild version 1.
+
+  A shanty in minor on i and VII, strummed by a Guitarify on an acoustic guitar with an accordion and
+  men's voices; each verse a half step higher, from D minor to F minor.
+
+  Subgenre: a sea shanty sung as a folk ballad, for a sitcom of the sixties. Drums: brushes and a soft
+  kick in two, a tambourine. Tempo 132, straight with a lilt. Bass: an acoustic bass on one and three.
+  Builds: every verse is a half step higher than the one before. Sounds: a strummed acoustic guitar,
+  an accordion, a group of men singing, a ship's bell. Melody manner: a stomping, stepwise shanty in
+  dotted rhythm that tells a story. Form: verse after verse, each a key higher.
+
+  Band and song: the theme is known for telling the whole story of its show in verses, for its shanty
+  swagger, and for climbing a key with every verse.
+
+  Checklist: it is good and memorable because it is a story you can sing after one hearing, and it
+  keeps climbing. The hook is the shanty tune; the emotion is jaunty, with trouble coming; the lift is
+  each key change, and the men's voices joining; the contrast is the first verse with the guitar
+  alone; the sounds are a voice lead, a choir of men, an accordion, a steel guitar that a Guitarify
+  strums, an acoustic bass and a bell.
+
+  Run it with: llamatron examples/by_genre/tv_theme/three_hour_tour.yml
+
+  Scene 1, bell, 4 bars.
+  Scene 2, verse 1, 16 bars.
+  Scene 3, verse 2, 16 bars.
+  Scene 4, verse 3, 16 bars.
+  Scene 5, accordion, 8 bars.
+  Scene 6, verse 4, 16 bars.
+  Scene 7, verse 5, 16 bars.
+  Scene 8, ending, 8 bars.
+
+  When changing this demo:
+  - Keep the drums as the Subgenre paragraph describes them, the kick first.
+  - Keep what the Checklist paragraph calls the hook and the lift.
+  - Keep every tune original, and the demo out of the key of the work it follows.
+real_time: true
+protected: true
+
+scales:
+  D Minor: { root: D, type: minor }
+  Eb Minor: { root: Eb, type: minor }
+  E Minor: { root: E, type: minor }
+  F Minor: { root: F, type: minor }
+
+patterns:
+  kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [84, ~, ~, ~, ~, ~, ~, ~, 84, ~, ~, ~, ~, ~, ~, ~]
+  brush:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, D, ~, ~, ~, ~, ~, D, ~, D, ~]
+    octave: [~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, 3, ~, 3, ~]
+    velocity: [~, ~, ~, ~, 70, ~, 50, ~, ~, ~, ~, ~, 70, ~, 50, ~]
+  tamb:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, F, ~, ~, ~, ~, ~, ~, ~, F, ~, ~, ~]
+    accidental: [~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~]
+    octave: [~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 64, ~, ~, ~, ~, ~, ~, ~, 64, ~, ~, ~]
+  bell:
+    steps: 32
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [86, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 86, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false]
+  two beat:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, 5, ~, ~, ~]
+    octave: [3, ~, ~, ~, 2, ~, ~, ~]
+    velocity: [100, ~, ~, ~, 94, ~, ~, ~]
+  chord:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    velocity: [90, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  held:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    velocity: [84, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  shanty:
+    steps: 64
+    step_size: 1/8
+    degree: [1, ~, ~, 1, 3, ~, 5, ~, 4, ~, ~, 4, 2, ~, 7, ~, 1, ~, ~, 1, 3, ~, 5, ~, 7, ~, 5, ~, 4, ~, ~, ~, 5, ~, ~, 5, 7, ~, 5, ~, 4, ~, ~, 4, 2, ~, 4, ~, 5, ~, 2, ~, 7, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, 5, 5, ~, 5, ~, 5, ~, ~, 5, 5, ~, 4, ~, 5, ~, ~, 5, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, 5, 5, ~, 5, ~, 5, ~, ~, 5, 5, ~, 5, ~, 5, ~, 5, ~, 4, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [108, ~, ~, 102, 102, ~, 102, ~, 108, ~, ~, 102, 102, ~, 102, ~, 108, ~, ~, 102, 102, ~, 102, ~, 108, ~, 102, ~, 102, ~, ~, ~, 108, ~, ~, 102, 102, ~, 102, ~, 108, ~, ~, 102, 102, ~, 102, ~, 108, ~, 102, ~, 102, ~, 102, ~, 108, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+  shanty low:
+    steps: 64
+    step_size: 1/8
+    degree: [1, ~, ~, 1, 3, ~, 5, ~, 4, ~, ~, 4, 2, ~, 7, ~, 1, ~, ~, 1, 3, ~, 5, ~, 7, ~, 5, ~, 4, ~, ~, ~, 5, ~, ~, 5, 7, ~, 5, ~, 4, ~, ~, 4, 2, ~, 4, ~, 5, ~, 2, ~, 7, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, 4, 4, ~, 4, ~, 4, ~, ~, 4, 4, ~, 3, ~, 4, ~, ~, 4, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, ~, ~, 4, ~, ~, 4, 4, ~, 4, ~, 4, ~, ~, 4, 4, ~, 4, ~, 4, ~, 4, ~, 3, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [98, ~, ~, 92, 92, ~, 92, ~, 98, ~, ~, 92, 92, ~, 92, ~, 98, ~, ~, 92, 92, ~, 92, ~, 98, ~, 92, ~, 92, ~, ~, ~, 98, ~, ~, 92, 92, ~, 92, ~, 98, ~, ~, 92, 92, ~, 92, ~, 98, ~, 92, ~, 92, ~, 92, ~, 98, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+  shanty high:
+    steps: 64
+    step_size: 1/8
+    degree: [3, ~, ~, 3, 5, ~, 7, ~, 6, ~, ~, 6, 4, ~, 2, ~, 3, ~, ~, 3, 5, ~, 7, ~, 2, ~, 7, ~, 6, ~, ~, ~, 7, ~, ~, 7, 2, ~, 7, ~, 6, ~, ~, 6, 4, ~, 6, ~, 7, ~, 4, ~, 2, ~, 4, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, 5, 5, ~, 5, ~, 5, ~, ~, 5, 5, ~, 5, ~, 5, ~, ~, 5, 5, ~, 5, ~, 6, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, 5, 6, ~, 5, ~, 5, ~, ~, 5, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [90, ~, ~, 84, 84, ~, 84, ~, 90, ~, ~, 84, 84, ~, 84, ~, 90, ~, ~, 84, 84, ~, 84, ~, 90, ~, 84, ~, 84, ~, ~, ~, 90, ~, ~, 84, 84, ~, 84, ~, 90, ~, ~, 84, 84, ~, 84, ~, 90, ~, 84, ~, 84, ~, 84, ~, 90, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+
+progressions:
+  shanty: { chords: [1, 7, 1, 7, 3, 7, 5, 1], qualities: [~, ~, ~, ~, ~, ~, M, ~] }
+
+guitarifies:
+  boom: { bar: [bass, nothing, down, up, alt_bass, nothing, down, up], accents: [false, false, false, false, false, false, false, false], cell: 1/8, spread: 14 }
+
+chains:
+  shanty:
+    - progression: shanty
+  shanty strum:
+    - progression: shanty
+    - guitarify: boom
+
+instruments:
+  steel guitar: { device: "*FluidSynth", gm_sound: 26 }
+  accordion: { device: "*FluidSynth", gm_sound: 22 }
+  acoustic bass: { device: "*FluidSynth", gm_sound: 33 }
+  voice lead: { device: "*FluidSynth", gm_sound: 86 }
+  choir: { device: "*FluidSynth", gm_sound: 53 }
+  bells: { device: "*FluidSynth", gm_sound: 15 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  three_hour_tour:
+    tempo: 132
+    scale: D Minor
+    genre: TV Theme
+
+    tracks:
+      kick: { drum: true, instrument: drum kit }
+      brush: { drum: true, instrument: drum kit }
+      tamb: { drum: true, instrument: drum kit }
+      guitar: { instrument: steel guitar }
+      accordion: { instrument: accordion }
+      bass: { instrument: acoustic bass }
+      lead: { instrument: voice lead }
+      voices: { instrument: choir }
+      bell: { instrument: bells }
+
+    scenes:
+      - name: bell
+        tracks:
+          bell: { pattern: bell, repeat: 1 }
+          guitar: { pattern: chord, chains: [shanty strum], loop: true }
+      - name: verse 1
+        tracks:
+          guitar: { pattern: chord, chains: [shanty strum], repeat: 16 }
+          lead: { pattern: shanty, loop: true }
+      - name: verse 2
+        tracks:
+          guitar: { pattern: chord, chains: [shanty strum], repeat: 16 }
+          lead: { pattern: shanty, loop: true }
+          kick: { pattern: kick, loop: true }
+          brush: { pattern: brush, loop: true }
+          tamb: { pattern: tamb, loop: true }
+          bass: { pattern: two beat, chains: [shanty], loop: true }
+          accordion: { pattern: held, chains: [shanty], loop: true }
+      - name: verse 3
+        scale: Eb Minor
+        tracks:
+          guitar: { pattern: chord, chains: [shanty strum], repeat: 16 }
+          lead: { pattern: shanty, loop: true }
+          kick: { pattern: kick, loop: true }
+          brush: { pattern: brush, loop: true }
+          tamb: { pattern: tamb, loop: true }
+          bass: { pattern: two beat, chains: [shanty], loop: true }
+          accordion: { pattern: held, chains: [shanty], loop: true }
+          voices: { pattern: shanty low, loop: true }
+      - name: accordion
+        scale: E Minor
+        tracks:
+          guitar: { pattern: chord, chains: [shanty strum], repeat: 8 }
+          lead: { pattern: shanty high, loop: true }
+          kick: { pattern: kick, loop: true }
+          brush: { pattern: brush, loop: true }
+          tamb: { pattern: tamb, loop: true }
+          bass: { pattern: two beat, chains: [shanty], loop: true }
+          accordion: { pattern: held, chains: [shanty], loop: true }
+      - name: verse 4
+        scale: E Minor
+        tracks:
+          guitar: { pattern: chord, chains: [shanty strum], repeat: 16 }
+          lead: { pattern: shanty, loop: true }
+          kick: { pattern: kick, loop: true }
+          brush: { pattern: brush, loop: true }
+          tamb: { pattern: tamb, loop: true }
+          bass: { pattern: two beat, chains: [shanty], loop: true }
+          accordion: { pattern: held, chains: [shanty], loop: true }
+          voices: { pattern: shanty low, loop: true }
+      - name: verse 5
+        scale: F Minor
+        tracks:
+          guitar: { pattern: chord, chains: [shanty strum], repeat: 16 }
+          lead: { pattern: shanty, loop: true }
+          kick: { pattern: kick, loop: true }
+          brush: { pattern: brush, loop: true }
+          tamb: { pattern: tamb, loop: true }
+          bass: { pattern: two beat, chains: [shanty], loop: true }
+          accordion: { pattern: shanty high, loop: true }
+          voices: { pattern: shanty low, loop: true }
+      - name: ending
+        scale: F Minor
+        tracks:
+          guitar: { pattern: chord, chains: [shanty strum], repeat: 8 }
+          lead: { pattern: shanty, loop: true }
+          accordion: { pattern: held, chains: [shanty], loop: true }
+          voices: { pattern: shanty low, loop: true }
+          bell: { pattern: bell, loop: true }
