@@ -213,6 +213,7 @@ ERR_BAD_DEFAULT_FOLLOW_ACTION = 'default_follow_action must be one of: {choices}
 ERR_SCALES_NOT_NAMED = 'scales: expected scales by name, each with a root and a type'
 ERR_SONG_NO_SUCH_SCALE = 'scale: no scale called ({scale})'
 ERR_SONG_NO_SUCH_GROOVE = 'groove: no groove called ({name})'
+ERR_SONG_NO_SUCH_PREVIEW_INSTRUMENT = 'preview_instrument: no instrument called ({name})'
 ERR_TRACKS_NOT_NAMED = 'tracks: expected tracks by name, each with its settings'
 ERR_GENERATORS_NOT_NAMED = '{section}: expected settings by name'
 ERR_SCENES_NOT_A_LIST = 'scenes: expected a list of scenes'

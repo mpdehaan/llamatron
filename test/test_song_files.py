@@ -24,12 +24,12 @@ from llamatron.composition.named_scale import scale_type_name
 from llamatron.generators.arp import ChordOrder
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from rendering import dump_song_data, render_data, render_file, setlist_from_data, song_from_data
+from rendering import as_setlist, dump_song_data, render_data, render_file, setlist_from_data, song_from_data
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, NOTES_SINCE, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
 from llamatron.composition.generator_settings import ArpSetting, written_name
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.composition.sections import SECTION_LABELS
-from llamatron.strings.errors import ERR_PROTECTED_NOT_TRUE_OR_FALSE, ERR_WHERE_NAMED
+from llamatron.strings.errors import ERR_PROTECTED_NOT_TRUE_OR_FALSE, ERR_SONG_NO_SUCH_PREVIEW_INSTRUMENT, ERR_WHERE_NAMED
 from song_testing import LEAD, X, pat, with_parts
 
 QUARTER = '1/4'
@@ -67,6 +67,18 @@ class TestErrors(unittest.TestCase):
         with self.assertRaises(SongFileError) as caught:
             render_data(with_parts(**parts))
         self.assertIn(expected, str(caught.exception))
+
+    def test_a_preview_instrument_the_set_does_not_have_is_refused(self):
+        # The setting belongs to a song of the set, so the data is a set's, the song's part given the setting.
+        data = as_setlist(with_parts())
+        song = next(iter(data[Section.SONGS].values()))
+        song[SongSetting.PREVIEW_INSTRUMENT] = NOPE
+        with self.assertRaises(SongFileError) as caught:
+            setlist_from_data(data)
+        self.assertIn(ERR_SONG_NO_SUCH_PREVIEW_INSTRUMENT.format(name=NOPE), str(caught.exception))
+        # None is no preview instrument, and is read.
+        song[SongSetting.PREVIEW_INSTRUMENT] = None
+        self.assertIsNone(song_from_data(data).get_preview_instrument_name())
 
     def test_unknown_top_level_setting(self):
         self.assert_error('unknown setting (themes)', themes={})

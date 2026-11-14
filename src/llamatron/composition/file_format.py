@@ -97,6 +97,8 @@ class SongSetting:
     LIVE_RESPONSIVENESS = 'live_responsiveness'
     # The visualizer mode Arrange's visualizer key shows first for this song, over the set's (the user's design).
     VISUALIZER = 'visualizer'
+    # The instrument of the set that Listen plays a pattern through, over the pattern's own track (the user's design).
+    PREVIEW_INSTRUMENT = 'preview_instrument'
 
 
 class LiveResponsiveness:

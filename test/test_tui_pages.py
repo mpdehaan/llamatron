@@ -115,7 +115,7 @@ from llamatron.strings.about import (
 from llamatron.composition.song import NO_GENRE
 from llamatron.strings.labels import MSG_VISUALIZER_LABEL, MSG_CAPTION_WORDS, MSG_EDITING_CAPTION
 from llamatron.strings.labels import (
-    MSG_GENRE_LABEL, MSG_LIVE_RESPONSIVENESS_LABEL, MSG_LIVE_RESPONSIVENESS_NAMES,
+    MSG_GENRE_LABEL, MSG_LIVE_RESPONSIVENESS_LABEL, MSG_LIVE_RESPONSIVENESS_NAMES, MSG_PREVIEW_INSTRUMENT_LABEL, MSG_PREVIEW_INSTRUMENT_UNSET,
     MSG_SECTION_LABEL, MSG_SECTION_NAMES, Crumb, MSG_ABOUT, MSG_NOTES_BUTTONS, MSG_DESCRIPTION_LABEL, MSG_NOTES_LABEL,
     MSG_EXPORT_CHOICES, MSG_SET_CRUMB, MSG_SONG_CRUMB, MSG_GROOVE_LABEL, MSG_HELP_PANELS, MSG_NAME_LABEL, MSG_NO_FILE_CRUMB, MSG_OCTAVE_LABELS_LABEL, MSG_DEFAULT_FOLLOW_ACTION_LABEL,
     MSG_PROTECTED_LABEL, MSG_QUIT_BUTTONS, MSG_SCALE_LABEL, MSG_SEED_LABEL, MSG_TIME_SIGNATURE_LABEL, MSG_ENTRY_SIZE_LABEL, MSG_TITLE_LABEL,
@@ -143,6 +143,10 @@ from rendering import render_song
 # A quote wider than one line of the About dialog, made of one word repeated.
 LONG_QUOTE_WORD = 'rhubarb'
 A_GENRE = 'Lounge'
+# Two instruments a test adds, in the order a picker lists them, and what the first is renamed to.
+KEYS_INSTRUMENT = 'keys'
+ORGAN_INSTRUMENT = 'organ'
+RENAMED_INSTRUMENT = 'piano'
 LONG_QUOTE = (LONG_QUOTE_WORD + ' ') * 12
 DATE_PATTERN = r'^\d{4}-\d{2}-\d{2}$'
 TIME_PATTERN = r'^\d{2}:\d{2}$'
@@ -948,9 +952,35 @@ class TestSongPage(UITest):
     async def test_it_holds_the_song_settings_and_names_the_song(self):
         self.assertIsInstance(self.app.screen, SongPage)
         labels = [field.label for field in self.app.screen.fields()]
-        self.assertEqual(labels, [MSG_NAME_LABEL, TEMPO, MSG_TIME_SIGNATURE_LABEL, MSG_ENTRY_SIZE_LABEL, MSG_SCALE_LABEL, MSG_SEED_LABEL, MSG_GROOVE_LABEL, MSG_GENRE_LABEL, MSG_LIVE_RESPONSIVENESS_LABEL, MSG_VISUALIZER_LABEL, PageName.EXPORT])
+        self.assertEqual(labels, [MSG_NAME_LABEL, TEMPO, MSG_TIME_SIGNATURE_LABEL, MSG_ENTRY_SIZE_LABEL, MSG_SCALE_LABEL, MSG_SEED_LABEL, MSG_GROOVE_LABEL, MSG_GENRE_LABEL, MSG_LIVE_RESPONSIVENESS_LABEL, MSG_PREVIEW_INSTRUMENT_LABEL, MSG_VISUALIZER_LABEL, PageName.EXPORT])
         self.assertIn(MSG_DEFAULT_SONG_NAME, self.text())
         self.assert_buttons_come_last_after_a_blank_line()
+
+    async def test_the_preview_instrument_is_one_of_the_sets_and_follows_a_rename_and_bksp_clears_it(self):
+        song = self.document.song()
+        self.assertIsNone(song.get_preview_instrument_name())
+        self.assertIn(MSG_PREVIEW_INSTRUMENT_UNSET, self.text())
+        self.document.add_instrument(ORGAN_INSTRUMENT)
+        self.document.add_instrument(KEYS_INSTRUMENT)
+        await self.select_field(MSG_PREVIEW_INSTRUMENT_LABEL)
+        # ] steps through the instruments by name and stops at the last, and [ goes back to none and stops there.
+        await self.press(keybindings.SongPage.MORE)
+        self.assertEqual(song.get_preview_instrument_name(), KEYS_INSTRUMENT)
+        await self.press(keybindings.SongPage.MORE, keybindings.SongPage.MORE)
+        self.assertEqual(song.get_preview_instrument_name(), ORGAN_INSTRUMENT)
+        await self.press(*[keybindings.SongPage.LESS] * 3)
+        self.assertIsNone(song.get_preview_instrument_name())
+        # Enter picks from the list, where the pattern's own track comes first.
+        await self.press(Key.ENTER)
+        self.assertIn(MSG_PREVIEW_INSTRUMENT_UNSET, str(self.app.screen.query_one(DIALOG_VIEW_SELECTOR).render()))
+        await self.press(Key.DOWN, Key.ENTER)
+        self.assertEqual(song.get_preview_instrument_name(), KEYS_INSTRUMENT)
+        # The song is a use of the instrument, and a rename is followed.
+        self.assertTrue(self.document.uses(section=Section.INSTRUMENTS, name=KEYS_INSTRUMENT))
+        self.document.rename_named(section=Section.INSTRUMENTS, old=KEYS_INSTRUMENT, new=RENAMED_INSTRUMENT)
+        self.assertEqual(song.get_preview_instrument_name(), RENAMED_INSTRUMENT)
+        await self.press(keybindings.FieldPage.CLEAR)
+        self.assertIsNone(song.get_preview_instrument_name())
 
     async def test_the_genre_is_typed_and_bksp_clears_it(self):
         await self.select_field(MSG_GENRE_LABEL)
