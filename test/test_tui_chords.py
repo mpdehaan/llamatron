@@ -20,16 +20,17 @@ status line naming the chord under the cursor, and the whole choice as one step 
 
 import unittest
 
-from ui_testing import TUNE, UITest
+from ui_testing import TUNE, UITest, key_name
 from llamatron.composition.file_format import ChordSymbol, Row, ScaleKind, Tension
 from llamatron.composition.naming import words
-from llamatron.strings.labels import MSG_SCALE_CATEGORY_COMMON
+from llamatron.strings.labels import MSG_SCALE_CATEGORY_COMMON, Column
 from llamatron.composition.named_scale import scale_type_name, scale_type_names
 from llamatron.music.scale import ScaleType
 from llamatron.strings.marks import MSG_BLOCKED_CELL, MSG_FLYOUT_CHOSEN, MSG_FLYOUT_TITLE, MSG_TENSIONS_COUNTED
 from llamatron.strings.messages import MSG_CHORD_DIALOG_TITLE, MSG_CHORD_OF_STEP, MSG_NOTE_SENTENCE, MSG_RESTING_STEP
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.chord_dialog import NOT_BORROWED_ROW, QUALITY_LIST, SCALE_LIST, TENSION_LIST, ChordDialog
+from llamatron.tui.dialogs.dialog import DIALOG_VIEW_SELECTOR, FLYOUT_SHIFT
 from llamatron.tui.scale_categories import COMMON_SCALE_TYPES, SCALE_CATEGORIES, SCALE_TYPES_IN_ORDER, SORTED_SCALE_CATEGORIES
 from llamatron.tui.keys import Key, RowSection
 from llamatron.tui.screens.pattern_editor import PatternEditor
@@ -39,6 +40,9 @@ FIRST_STEP = 0
 ALTERED = (Tension.FLAT_NINTH, Tension.THIRTEENTH)
 THREE_TENSIONS = (Tension.FLAT_NINTH, Tension.SHARP_ELEVENTH, Tension.THIRTEENTH)
 SCALE_CELL = 'Minor'
+# The smallest console everything must fit.
+CONSOLE_WIDTH = 80
+CONSOLE_LINES = 24
 C_MAJOR = 'C Major'
 C_MINOR = 'C Minor'
 
@@ -180,14 +184,35 @@ class TestPatternEditorChords(UITest):
         await self.press(keybindings.ChordDialog.CLOSE_FLYOUT, *[Key.UP] * len(dialog.categories), keybindings.ChordDialog.OPEN)
         self.assertEqual((dialog.kind, dialog.part), (None, QUALITY_LIST))
 
+    async def test_a_flyout_is_a_box_of_the_dialogs_size_stacked_over_it_and_the_dialog_stays_where_it_was(self):
+        dialog = await self.open_on_scales()
+        closed = self.dialog_text().splitlines()
+        view = dialog.query_one(DIALOG_VIEW_SELECTOR)
+        await self.settle()
+        corner = (view.region.x, view.region.y)
+        await self.press(Key.DOWN, keybindings.ChordDialog.OPEN)
+        stacked = self.dialog_text().splitlines()
+        await self.settle()
+        # The stack is the dialog and a box as large, FLYOUT_SHIFT down and to the right, and the dialog's corner has not moved.
+        self.assertEqual(len(stacked), len(closed) + FLYOUT_SHIFT)
+        self.assertEqual(max(len(line) for line in stacked), len(closed[0]) + FLYOUT_SHIFT)
+        self.assertEqual(stacked[0].rstrip(), closed[0])
+        self.assertEqual(stacked[FLYOUT_SHIFT][FLYOUT_SHIFT:], closed[0])
+        self.assertEqual(stacked[-1].strip(), closed[-1])
+        self.assertEqual((view.region.x, view.region.y), corner)
+        # The dialog's lists are covered, and the flyout says what the chord comes to and lists its own keys.
+        self.assertNotIn(Column.BORROW_SCALE, self.dialog_text())
+        self.assertIn(C_MINOR, self.dialog_text())
+        self.assertIn(key_name(keybindings.ChordDialog.CLOSE_FLYOUT), self.dialog_text())
+
     async def test_every_flyout_fits_the_dialog_and_the_console(self):
         dialog = await self.open_on_scales()
         for row in range(1, len(dialog.categories) + 1):
             dialog.places[SCALE_LIST] = row
             dialog.open_row()
             lines = self.dialog_text().splitlines()
-            self.assertLessEqual(len(lines), 22, row)
-            self.assertLessEqual(max(len(line) for line in lines), 76, row)
+            self.assertLessEqual(len(lines), CONSOLE_LINES, row)
+            self.assertLessEqual(max(len(line) for line in lines), CONSOLE_WIDTH, row)
             for kind in dialog.kinds_of_row(row):
                 self.assertIn(words(kind).title(), self.dialog_text(), kind)
             dialog.close_flyout()

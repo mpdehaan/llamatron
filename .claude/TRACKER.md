@@ -1323,7 +1323,7 @@ roll or the rows.
   (`tui/dialogs/chord_dialog.py`, `ChordDialog`, the user's design), shared with the roll and with a progression's chord
   editor: three lists in the user's order, the same wherever a chord is chosen, quality, tensions and the borrowed scale type, Tab or Left and Right from
   list to list, Space toggling a tension, the scale list holding the categories of `tui/scale_categories.py` (Common first,
-  then every scale type once), each opening a flyout beside it, over the two lists before it, with Space or Enter, where Enter picks and
+  then every scale type once), each opening a flyout, a box of the dialog's size stacked over it, with Space or Enter, where Enter picks and
   goes on to the qualities and Esc or Left closes (a flyout is drawn by the dialog, never a second dialog, the user's rule), and under them what `ChordInWords` (`tui/chord_text.py`) says of the choice, its name in its scale, its
   name in the clip's own scale when it borrows, and its notes. It answers a `ChordChoice`, stored on the step's Chord, Tension
   and Scale rows together, one undo step. `TensionRow` and `ChordScaleRow` are `ChordRow`s with their own choices, in the
