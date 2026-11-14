@@ -52,10 +52,11 @@ pages current.
 | [Folk](demos/FOLK.md) | 5 |
 | [Funk Mashup](demos/FUNK_MASHUP.md) | 1 |
 | [Gospel](demos/GOSPEL.md) | 1 |
+| [Metal](demos/METAL.md) | 2 |
 | [Metal Mashup](demos/METAL_MASHUP.md) | 2 |
 | [Pop](demos/POP.md) | 5 |
 | [Ragtime](demos/RAGTIME.md) | 1 |
-| [Rock](demos/ROCK.md) | 12 |
+| [Rock](demos/ROCK.md) | 10 |
 | [Soundtrack](demos/SOUNDTRACK.md) | 7 |
 | [TV Theme](demos/TV_THEME.md) | 13 |
 | [TV theme](demos/TV_THEME.md) | 2 |

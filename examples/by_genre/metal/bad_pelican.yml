@@ -31,7 +31,7 @@ notes: |
   middle, a bass, a clean guitar and a pad at half the speed; the sounds are a pick bass, two
   distortion guitars, an overdriven guitar, a voice lead, a clean guitar and a warm pad.
 
-  Run it with: llamatron examples/by_genre/rock/bad_pelican.yml
+  Run it with: llamatron examples/by_genre/metal/bad_pelican.yml
 
   Scene 1, gallop, 4 bars.
   Scene 2, verse, 16 bars.
@@ -235,7 +235,7 @@ songs:
   bad_pelican:
     tempo: 152
     scale: B Minor
-    genre: Rock
+    genre: Metal
 
     tracks:
       kick: { drum: true, instrument: drum kit }
