@@ -34,6 +34,8 @@ from llamatron.tui.screens.arrange_page import ArrangePage
 from llamatron.tui.screens.everywhere import offer_corrected
 from llamatron.tui.screens.main_page import MainPage
 from llamatron.tui.screens.page import Page
+from llamatron.tui.components.scroll_text import scroll_seconds
+from llamatron.tui.screens.demo_scroll import DemoScroll
 from llamatron.tui.screens.splash import Splash
 from llamatron.tui.screens.start_screen import StartScreen
 from llamatron.tui.keys import OPEN_AT_START
@@ -199,15 +201,27 @@ class LlamatronApp(App, inherit_bindings=False):
         if self.launch.test_splash:
             # The start screen alone, to see it, and then the tracker quits (internal_tools/demo_splash_screen.py).
             self.push_screen(StartScreen(seconds=self.launch.splash_seconds))
-            self.set_timer(self.launch.splash_seconds + self.launch.lead_in_seconds, self.exit)
+            self.set_timer(self.launch.splash_seconds + self.launch.lead_in_seconds, lambda: self._after_title(self.exit))
         elif self.launch.for_recording:
             seconds = self.launch.title_seconds if self.launch.batch_video else self.launch.splash_seconds
             self.push_screen(Splash(seconds=seconds))
-            self.set_timer(seconds, lambda: self._after_splash(page))
+            self.set_timer(seconds, lambda: self._after_title(lambda: self._after_splash(page)))
         elif self.launch.driven_by is not None:
             self._begin_driving()
         elif self.launch.autoplay:
             self._open_arrange(page)
+
+    def _after_title(self, then):
+        """Go on from the opening title: straight on, or with the launch's words crossing the screen first, in the title's place."""
+        if self.launch.scroll_text is None:
+            then()
+            return
+        seconds = self.launch.scroll_seconds
+        if seconds is None:
+            seconds = scroll_seconds(text=self.launch.scroll_text, width=self.size.width)
+        self.pop_screen()
+        self.push_screen(DemoScroll(text=self.launch.scroll_text, seconds=None))
+        self.set_timer(seconds, then)
 
     def _after_splash(self, page):
         self.pop_screen()

@@ -381,17 +381,14 @@ class PianoRoll(BindsKeys):
     def pick_chord(self):
         """Open the Chord dialog on the note under the cursor, a single note among the qualities, so that a note becomes a chord or a chord a note again.
 
-        On a step no note covers, at any pitch, a note is drawn at the cursor first, as the pencil would, and the dialog opens
-        on that note (the user's design): one key for a chord on an empty step. A step another pitch's note covers is refused
-        as ever, since the pencil there would cut that note.
+        The key goes by the step, whichever row the cursor is on (the user's design): on a step no note covers, a note is
+        drawn at the cursor first, as the pencil would, and the dialog opens on that note; on a step a note covers, at the
+        cursor's pitch, at another or on one of its chord's thin lines, the dialog opens on that note, so the key never
+        replaces a note and always does something.
         """
-        if self.note_here() is None and self.editor.step not in self.covering():
+        if self.editor.step not in self.covering():
             self.place()
-        start = self.note_here()
-        if start is None:
-            self.editor.refuse(ERR_NO_NOTE_HERE)
-            return
-        pick_chord(editor=self.editor, step=start)
+        pick_chord(editor=self.editor, step=self.covering()[self.editor.step])
 
     def split(self):
         """Split the note under the cursor at the cursor's step, which has to be one of the steps it holds, not its first."""

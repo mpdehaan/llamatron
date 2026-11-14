@@ -447,6 +447,13 @@ code.
   timings are arguments of `Launch` so that the tests needn't wait. `Launch(test_splash=True)` shows
   the start screen alone for `splash_seconds` and quits (`internal_tools/demo_splash_screen.py`,
   `internal_tools/demo_splash_screen.sh`). A launch other than that needs a set, and none works with `--to`.
+- `Launch(scroll_text=)`, the user's design: after the opening title, `LlamatronApp._after_title` shows `DemoScroll`
+  (`tui/screens/demo_scroll.py`, a `Splash` that draws `scroll_lines` of `tui/components/scroll_text.py`) for as long as the
+  words take to cross (`scroll_seconds(text=, width=)`, or `Launch(scroll_seconds=)` in a test), then goes on as ever. The words
+  are `scroll_text_for(path)`: `MSG_DEMO_SCROLL` with `demo_name(path)`, the file's name with no folder, ending or leading number,
+  in camel case. `banner(text)` draws a capital, a digit and the colon at twice a small letter's size from `MSG_BLOCK_LETTERS`,
+  which holds the whole alphabet. `internal_tools/record_demo.py` passes the words for a set in `examples/` (`scroll_text_of`),
+  on a plain, an interactive and a batch take, and `internal_tools/demo_splash_screen.sh --scroll-text SET` shows them.
 - A batch video (`Launch(batch_video=True)`, `--batch-video`, which needs `--visualizer`), the user's design: the
   title for its whole length (`Launch.title_seconds`, `whole_title_seconds`), then Arrange with its cursor on the corner
   and a `BatchStage` (`tui/batch_stage.py`) on the page, which `Page.staged_screen` lets draw the whole screen

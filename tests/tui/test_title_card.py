@@ -16,12 +16,17 @@
 
 """Tests the title on black (tui/components/title_card.py) on its own, on moments the test chooses, and the start screen in the tracker."""
 
+import string
 import unittest
+
+from rich.color import Color
 
 from llamatron.strings.about import MSG_BLOCK, MSG_SPLASH_ADDRESS, MSG_SPLASH_WORD, MSG_START_PROMPT
 from llamatron.tui import keybindings
 from llamatron.tui.app import LlamatronApp
-from llamatron.tui.components import title_card
+from llamatron.tui.components import scroll_text, title_card
+from llamatron.tui.components.scroll_text import BANNER_ROWS, COLUMNS_PER_SECOND, banner, camel_case, demo_name, scroll_lines, scroll_seconds, scroll_text_for
+from llamatron.strings.about import MSG_BLOCK_LETTERS, MSG_DEMO_SCROLL
 from llamatron.tui.components.title_card import (
     ADDRESS_ROW, BLACK, LETTER_ROWS, NARROW, PROMPT_ROW, SCANNER_ROW, WIDE, Entrance, prompt_level, scan_end, scan_start, scanner_level,
     title_lines, whole_title_seconds, words_width,
@@ -62,6 +67,21 @@ def colours_of(line):
     """Return each run's text colour and background colour, as triplets."""
     return [(span.style.color.get_truecolor(), span.style.bgcolor.get_truecolor()) for span in line.spans]
 
+
+A_LEARNING_DEMO = 'examples/learning/19_hocket_shanty.yml'
+A_LEARNING_DEMO_NAME = 'HocketShanty'
+A_GENRE_DEMO = 'examples/by_genre/ragtime/entertainer.yml'
+A_GENRE_DEMO_NAME = 'Entertainer'
+WORDS_WITH_A_NUMBER = 'take-5 blues'
+WORDS_WITH_A_NUMBER_AS_CAMEL = 'Take5Blues'
+ONLY_A_NUMBER = 'sets/1999.yml'
+ONLY_A_NUMBER_NAME = '1999'
+COLON_AND_SPACE = ': '
+A_CAPITAL = 'H'
+NO_SUCH_LETTER = '~'
+SPACE = ' '
+A_FEW_COLUMNS = 6
+MANY_COLUMNS = 150
 
 class TestTitleCard(unittest.TestCase):
 
@@ -124,6 +144,63 @@ class TestTitleCard(unittest.TestCase):
         for line in lines_at(elapsed=seconds, seconds=seconds):
             self.assertTrue(all(tuple(colour) == BLACK for colour, _ in colours_of(line)))
         self.assertTrue(any(tuple(colour) != BLACK for line in lines_at(elapsed=DURING_SCAN, seconds=seconds) for colour, _ in colours_of(line)))
+
+
+class TestScrollText(unittest.TestCase):
+    """The demo's name crossing the screen after the title when an example is recorded, the user's design: DEMO: and the file's name in camel case, in the title's blue."""
+
+    def test_a_files_name_loses_its_folder_ending_and_number_and_is_camel_case(self):
+        self.assertEqual(demo_name(A_LEARNING_DEMO), A_LEARNING_DEMO_NAME)
+        self.assertEqual(demo_name(A_GENRE_DEMO), A_GENRE_DEMO_NAME)
+        self.assertEqual(camel_case(WORDS_WITH_A_NUMBER), WORDS_WITH_A_NUMBER_AS_CAMEL)
+        self.assertEqual(scroll_text_for(A_LEARNING_DEMO), MSG_DEMO_SCROLL.format(name=A_LEARNING_DEMO_NAME))
+
+    def test_a_name_that_is_only_a_number_keeps_it(self):
+        self.assertEqual(demo_name(ONLY_A_NUMBER), ONLY_A_NUMBER_NAME)
+
+    def test_every_letter_and_digit_has_a_shape_of_five_rows_of_five(self):
+        for character in string.ascii_uppercase + string.digits + COLON_AND_SPACE:
+            with self.subTest(character=character):
+                self.assertEqual([len(row) for row in MSG_BLOCK_LETTERS[character]], [scroll_text.LETTER_ROWS] * scroll_text.LETTER_ROWS)
+
+    def test_a_capital_is_twice_a_small_letters_size_and_a_small_letter_stands_on_the_bottom_row(self):
+        large = banner(A_CAPITAL)
+        small = banner(A_CAPITAL.lower())
+        self.assertEqual(len(large), BANNER_ROWS)
+        self.assertEqual(len(small), BANNER_ROWS)
+        self.assertEqual(len(large[0]), len(small[0]) * scroll_text.LARGE_TIMES)
+        self.assertTrue(all(not row.strip() for row in small[:BANNER_ROWS // scroll_text.LARGE_TIMES]))
+        self.assertIn(MSG_BLOCK, small[-1])
+        self.assertIn(MSG_BLOCK, large[0])
+
+    def test_a_character_with_no_shape_is_a_space(self):
+        self.assertEqual(banner(NO_SUCH_LETTER), banner(SPACE))
+
+    def test_the_words_come_in_at_the_right_cross_and_leave_at_the_left_on_black(self):
+        rows = banner(scroll_text_for(A_LEARNING_DEMO))
+        seconds = scroll_seconds(text=scroll_text_for(A_LEARNING_DEMO), width=WIDE_SCREEN[0])
+        self.assertEqual(self.blocks_at(rows=rows, elapsed=0.0), [])
+        early = self.blocks_at(rows=rows, elapsed=A_FEW_COLUMNS / COLUMNS_PER_SECOND)
+        self.assertTrue(early)
+        self.assertGreaterEqual(min(early), WIDE_SCREEN[0] - A_FEW_COLUMNS)
+        later = self.blocks_at(rows=rows, elapsed=MANY_COLUMNS / COLUMNS_PER_SECOND)
+        self.assertLess(min(later), min(early))
+        self.assertEqual(self.blocks_at(rows=rows, elapsed=seconds), [])
+
+    def test_every_line_is_as_wide_as_the_screen_and_the_words_are_in_the_titles_blue_alone(self):
+        width, height = WIDE_SCREEN
+        lines = scroll_lines(rows=banner(scroll_text_for(A_LEARNING_DEMO)), width=width, height=height, elapsed=MANY_COLUMNS / COLUMNS_PER_SECOND)
+        self.assertEqual(len(lines), height)
+        self.assertEqual({len(line.plain) for line in lines}, {width})
+        colours = {span.style.color.triplet for line in lines for span in line.spans if line.plain[span.start] == MSG_BLOCK}
+        self.assertEqual(colours, {Color.from_rgb(*title_card.TITLE_BLUE).triplet})
+        self.assertTrue(all(span.style.bgcolor.triplet == Color.from_rgb(*title_card.BLACK).triplet for line in lines for span in line.spans))
+
+    def blocks_at(self, *, rows, elapsed):
+        """Return the columns that hold a block at a moment, on a wide screen."""
+        width, height = WIDE_SCREEN
+        lines = scroll_lines(rows=rows, width=width, height=height, elapsed=elapsed)
+        return sorted({column for line in lines for column, character in enumerate(line.plain) if character == MSG_BLOCK})
 
 
 class TestStartScreenWanted(unittest.TestCase):

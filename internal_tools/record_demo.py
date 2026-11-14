@@ -73,6 +73,7 @@ from llamatron.realtime.outputs import output_port_names
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.document import Document
 from llamatron.tui.batch_stage import GROW_SECONDS, READY_SECONDS
+from llamatron.tui.components.scroll_text import scroll_text_for
 from llamatron.tui.components.title_card import whole_title_seconds
 from llamatron.tui.launch import Launch, LEAD_IN_SECONDS, LEAD_OUT_SECONDS, recording_problem, SPLASH_SECONDS
 from llamatron.visualizers.modes import MODES, mode_options
@@ -112,6 +113,8 @@ TRIMMING_SUFFIX = '.trimming.mov'
 SUCCESS = 0
 FAILURE = 1
 # The video tutorial's screen recording, which runs with no time limit and stops when a key is typed into its own terminal, for a take whose length nobody knows.
+# The folder of the demos: a recording of a set in it scrolls the demo's name after the title, the user's design.
+EXAMPLES = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'examples')
 TUTORIAL_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'make_video_tutorial.py')
 TUTORIAL_MODULE = 'make_video_tutorial'
 REGION_SCRIPT = 'window_region.py'
@@ -422,9 +425,16 @@ def screen_recording():
     return module.ScreenRecording
 
 
-def record_performance(*, document, video, window, device, max_seconds, visualizer, recording=None):
+def scroll_text_of(path):
+    """Return the words a take of the set at path scrolls after the title, DEMO: and its name, when the set is one of the examples, or None."""
+    if os.path.abspath(path).startswith(EXAMPLES + os.sep):
+        return scroll_text_for(path)
+    return None
+
+
+def record_performance(*, document, video, window, device, max_seconds, visualizer, recording=None, scroll_text=None):
     """Record an interactive take: the screen until the tracker quits, which the person recording decides, then the video's end trimmed as a take's is. Return the exit code."""
-    launch = Launch(for_recording=True, interactive=True, max_seconds=max_seconds, visualizer=visualizer, hold_seconds=HOLD_SECONDS)
+    launch = Launch(for_recording=True, interactive=True, max_seconds=max_seconds, visualizer=visualizer, hold_seconds=HOLD_SECONDS, scroll_text=scroll_text)
     return recorded_until_quit(document=document, video=video, window=window, device=device, launch=launch, region=None, recording=recording)
 
 
@@ -521,12 +531,13 @@ def record(*, path, driver, audio_device, assignment, max_seconds, window_id, go
     video = batch_video_path(path=path, mode=visualizer) if batch else os.path.join(RECORDINGS, file_stem(path) + VIDEO_SUFFIX)
     if os.path.exists(video):
         os.unlink(video)
+    scroll_text = scroll_text_of(path)
     if interactive:
-        return record_performance(document=document, video=video, window=window, device=device, max_seconds=max_seconds, visualizer=visualizer, recording=recording)
+        return record_performance(document=document, video=video, window=window, device=device, max_seconds=max_seconds, visualizer=visualizer, recording=recording, scroll_text=scroll_text)
     if batch:
-        launch = Launch(batch_video=True, max_seconds=max_seconds, visualizer=visualizer, hold_seconds=HOLD_SECONDS, alternate=alternate)
+        launch = Launch(batch_video=True, max_seconds=max_seconds, visualizer=visualizer, hold_seconds=HOLD_SECONDS, alternate=alternate, scroll_text=scroll_text)
     else:
-        launch = Launch(quit_when_finished=True, for_recording=True, max_seconds=max_seconds, visualizer=visualizer, hold_seconds=HOLD_SECONDS)
+        launch = Launch(quit_when_finished=True, for_recording=True, max_seconds=max_seconds, visualizer=visualizer, hold_seconds=HOLD_SECONDS, scroll_text=scroll_text)
     return recorded_until_quit(document=document, video=video, window=window, device=device, launch=launch, region=region_argument, recording=recording)
 
 

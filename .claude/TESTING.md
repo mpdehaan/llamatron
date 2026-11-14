@@ -231,7 +231,7 @@ shared helpers are modules beside them:
   `tests/tools/test_play_demo.py` (the numbered list, `afplay` and the progress line).
 - **The title and the start screen.** `tests/tui/test_title_card.py`: the title on black at moments the test chooses (the
   letters' width and waves, the scanner's sweep and shading, the address, the prompt's pulse, the fade to black), and
-  the start screen shown only when asked on a plain launch, until ENTER.
+  the start screen shown only when asked on a plain launch, until ENTER, and the demo's name that scrolls after the title (its camel case, its letters' sizes and its crossing); `tests/tools/test_demo_splash_screen.py` tests the tool's `--scroll-text`.
 - **A batch video's stage.** `tests/tui/test_batch_stage.py`: the READY box's room, the frame's cells from the edge in, the
   track's order, the pulse's tail and its turning and colour at a change of scene, the box growing, the fade to black and
   the opening cut to black; `tests/tui/test_tui_playback.py`'s `TestBatchVideoLaunch` the launch from title to quitting.

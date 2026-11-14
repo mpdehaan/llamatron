@@ -73,6 +73,7 @@ D_PITCH = C_PITCH + 2
 D_SHARP_PITCH = C_PITCH + 3
 C_SHARP_PITCH = C_PITCH + 1
 D_DEGREE = 2
+E_DEGREE = 3
 # The tune's steps.
 C_STEP = 0
 E_STEP = 1
@@ -631,10 +632,14 @@ class TestChordsOnTheRoll(RollTest):
         self.assertIsNotNone(self.value(row=Row.DEGREE, step=LAST_STEP))
         self.assertIsNone(self.value(row=Row.CHORD, step=LAST_STEP))
 
-    async def test_h_under_a_note_at_another_pitch_is_refused(self):
+    async def test_h_under_a_note_at_another_pitch_picks_that_notes_chord_and_replaces_nothing(self):
+        # The user's design: the key goes by the step. The E holds this step, rows above the cursor, which is on the C's row.
         await self.press(Key.RIGHT, Key.RIGHT, keybindings.PianoRoll.CHORD)
-        self.assertIsInstance(self.app.screen, PatternEditor)
-        self.assertIn(ERR_NO_NOTE_HERE, self.text())
+        self.assertIsInstance(self.app.screen, ChordDialog)
+        self.pick_quality(ChordSymbol.MINOR7)
+        await self.press(Key.ENTER)
+        self.assertEqual(self.value(row=Row.CHORD, step=E_STEP), ChordSymbol.MINOR7)
+        self.assertEqual(self.value(row=Row.DEGREE, step=E_STEP), E_DEGREE)
 
     async def test_a_note_that_grabs_takes_a_chord_and_shows_its_g_alone_with_no_thin_lines(self):
         # The user asked on 2026-11-09: a grab step holds a chord, built on whatever note the grab takes, which the roll can't know, so the G is all the roll shows.

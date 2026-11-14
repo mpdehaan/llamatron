@@ -60,7 +60,9 @@ from llamatron.tui.screens.pattern_editor import PatternEditor
 from llamatron.tui.batch_stage import GROW_SECONDS
 from llamatron.tui.launch import Launch, recording_problem
 from llamatron.tui.screens.arrange_page import ArrangePage
+from llamatron.tui.screens.demo_scroll import DemoScroll
 from llamatron.tui.screens.splash import Splash
+from llamatron.strings.about import MSG_BLOCK
 from llamatron.tui.drawing import Box
 from llamatron.tui.screens.main_page import MainPage
 from llamatron.strings.marks import MSG_PLAYING_CLOCK
@@ -108,6 +110,7 @@ A_LONG_TIME = 60.0
 SPLASH_IN_TEST = 0.6
 # A batch video's title long enough that starting the tracker under the suite's load can't use it up before the test looks.
 TITLE_ON_A_BUSY_MACHINE = 2.0
+SCROLLED_WORDS = 'DEMO: Tune'
 # The longest a test waits in real time for a launch's next stage before failing.
 LONGEST_WAIT_SECONDS = 10
 # What a launch test notes as it happens, so that a test checks the order of a launch's stages and never the clock, which a
@@ -1274,6 +1277,28 @@ class TestBatchVideoLaunch(LaunchTest):
         self.check_order((SHOWED, Splash), (SHOWED, ArrangePage), (QUIT, None))
         # A batch video ends on black, with no splash after the song.
         self.assertEqual(self.events.count((SHOWED, Splash)), 1)
+
+
+class TestDemoNameScrollsAfterTheTitle(LaunchTest):
+    """A recording of an example: the title, then the demo's name crossing the screen in the title's place, then Arrange and the song as ever."""
+
+    LAUNCH = Launch(
+        batch_video=True, visualizer=MODES[0].OPTION, title_seconds=A_MOMENT, ready_seconds=A_MOMENT, alternate=False, lead_out_seconds=A_MOMENT,
+        hold_seconds=A_MOMENT, scroll_text=SCROLLED_WORDS, scroll_seconds=TITLE_ON_A_BUSY_MACHINE,
+    )
+
+    DRUMS_LOOP = False
+
+    async def test_the_words_cross_between_the_title_and_arrange(self):
+        self.assertIsInstance(self.app.screen, Splash)
+        await self.wait_until(self.shows(DemoScroll))
+        self.assertFalse(self.transport().is_playing())
+        await self.wait_a_moment(A_MOMENT)
+        self.assertIn(MSG_BLOCK, self.text())
+        await self.wait_until(self.shows(ArrangePage))
+        await self.wait_until_playing()
+        self.check_order((SHOWED, Splash), (SHOWED, DemoScroll), (SHOWED, ArrangePage), (PLAYED, None))
+        self.assertEqual(self.events.count((SHOWED, DemoScroll)), 1)
 
 
 class TestRecordingVisualizerLaunch(LaunchTest):

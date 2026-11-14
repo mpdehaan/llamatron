@@ -38,23 +38,53 @@ MSG_ABOUT_VERSION = 'version {version}, built {date} ({time})'
 
 # tui/components/title_card.py: the title on black, in block letters, with the scanner and the address under it, which the start screen, the
 # recordings' splash and the batch videos show, and the start screen's prompt; and the READY box of the batch videos. Each block letter is
-# five rows of five columns, drawn twice as wide where the screen has room.
+# five rows of five columns, drawn twice as wide where the screen has room. The whole alphabet, the digits and the colon are here for
+# the demo's name, which a recording scrolls across the screen after the title (tui/components/scroll_text.py).
 MSG_SPLASH_WORD = 'LLAMATRON'
 MSG_SPLASH_ADDRESS = 'github.com/mpdehaan/llamatron.git'
 MSG_START_PROMPT = 'Press ENTER to Start'
 MSG_READY_WORD = 'READY'
+MSG_DEMO_SCROLL = 'DEMO: {name}'
 MSG_BLOCK = '█'
 MSG_BLOCK_LETTERS = {
     'A': (' ███ ', '█   █', '█████', '█   █', '█   █'),
+    'B': ('████ ', '█   █', '████ ', '█   █', '████ '),
+    'C': (' ████', '█    ', '█    ', '█    ', ' ████'),
     'D': ('████ ', '█   █', '█   █', '█   █', '████ '),
     'E': ('█████', '█    ', '████ ', '█    ', '█████'),
+    'F': ('█████', '█    ', '████ ', '█    ', '█    '),
+    'G': (' ████', '█    ', '█  ██', '█   █', ' ████'),
+    'H': ('█   █', '█   █', '█████', '█   █', '█   █'),
+    'I': ('█████', '  █  ', '  █  ', '  █  ', '█████'),
+    'J': ('  ███', '    █', '    █', '█   █', ' ███ '),
+    'K': ('█   █', '█  █ ', '███  ', '█  █ ', '█   █'),
     'L': ('█    ', '█    ', '█    ', '█    ', '█████'),
     'M': ('█   █', '██ ██', '█ █ █', '█   █', '█   █'),
     'N': ('█   █', '██  █', '█ █ █', '█  ██', '█   █'),
     'O': (' ███ ', '█   █', '█   █', '█   █', ' ███ '),
+    'P': ('████ ', '█   █', '████ ', '█    ', '█    '),
+    'Q': (' ███ ', '█   █', '█ █ █', '█  █ ', ' ██ █'),
     'R': ('████ ', '█   █', '████ ', '█  █ ', '█   █'),
+    'S': (' ████', '█    ', ' ███ ', '    █', '████ '),
     'T': ('█████', '  █  ', '  █  ', '  █  ', '  █  '),
+    'U': ('█   █', '█   █', '█   █', '█   █', ' ███ '),
+    'V': ('█   █', '█   █', '█   █', ' █ █ ', '  █  '),
+    'W': ('█   █', '█   █', '█ █ █', '██ ██', '█   █'),
+    'X': ('█   █', ' █ █ ', '  █  ', ' █ █ ', '█   █'),
     'Y': ('█   █', ' █ █ ', '  █  ', '  █  ', '  █  '),
+    'Z': ('█████', '   █ ', '  █  ', ' █   ', '█████'),
+    '0': (' ███ ', '█  ██', '█ █ █', '██  █', ' ███ '),
+    '1': ('  █  ', ' ██  ', '  █  ', '  █  ', ' ███ '),
+    '2': (' ███ ', '█   █', '  ██ ', ' █   ', '█████'),
+    '3': ('████ ', '    █', ' ███ ', '    █', '████ '),
+    '4': ('█   █', '█   █', '█████', '    █', '    █'),
+    '5': ('█████', '█    ', '████ ', '    █', '████ '),
+    '6': (' ███ ', '█    ', '████ ', '█   █', ' ███ '),
+    '7': ('█████', '    █', '   █ ', '  █  ', '  █  '),
+    '8': (' ███ ', '█   █', ' ███ ', '█   █', ' ███ '),
+    '9': (' ███ ', '█   █', ' ████', '    █', ' ███ '),
+    ':': ('     ', '  █  ', '     ', '  █  ', '     '),
+    ' ': ('     ', '     ', '     ', '     ', '     '),
 }
 MSG_ABOUT_WEB = 'web: https://github.com/mpdehaan/llamatron.git'
 MSG_ABOUT_BLOG = 'blog: https://laserllama.substack.com'
