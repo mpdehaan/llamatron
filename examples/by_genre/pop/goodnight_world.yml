@@ -2,7 +2,7 @@ version: 1.0.227
 title: Goodnight world
 description: "an early eighties synth-pop song in the manner of Sweet Dreams (Eurythmics), with a melody of its own"
 notes: |
-  Goodnight world: a synth-pop song at 126 beats a minute in C minor, in the manner of the early
+  Goodnight world: a synth-pop song at 126 beats a minute in D minor, in the manner of the early
   eighties: a sixteenth-note synth bass that leaps an octave, a cold string pad, a drum machine
   and a saw lead. The melody and the bass line are its own.
 
@@ -19,13 +19,14 @@ notes: |
   Scene 7, outro, 16 bars: the band plays out.
 
   When changing this demo:
+  - Keep it out of C minor, the key of the song it follows.
   - Keep the bass and the pad one bar long over chord i.
   - Keep the melody original.
 real_time: true
 protected: true
 
 scales:
-  C Minor: { root: C, type: minor }
+  D Minor: { root: D, type: minor }
 
 patterns:
   kit_kick:
@@ -100,7 +101,7 @@ instruments:
 songs:
   goodnight_world:
     tempo: 126
-    scale: C Minor
+    scale: D Minor
     genre: Pop
 
     tracks:
