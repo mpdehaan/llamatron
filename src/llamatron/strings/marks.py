@@ -244,9 +244,11 @@ MSG_CC_LANE_VARIES = '?'
 MSG_TOGGLE_OFF = ' '
 # After the value of a settings field whose Enter opens a list of choices, the user's choice (tui/screens/field_page.py).
 MSG_PICKER_MARK = '▾'
-# tui/dialogs/chord_dialog.py: after a row that opens a flyout, with the choice made inside it, and the flyout's title in its top edge.
-MSG_FLYOUT_CHOSEN = '{name} ▸ {chosen}'
-MSG_FLYOUT_CLOSED = '{name} ▸'
+# tui/dialogs/chord_dialog.py: a row that opens a flyout, drawn as a button, alone and with the choice made inside it, with and without room for its own name, and the
+# flyout's heading.
+MSG_FLYOUT_CHOSEN = '[ {name} ▸ {chosen} ]'
+MSG_FLYOUT_CHOSEN_ALONE = '[ ▸ {chosen} ]'
+MSG_FLYOUT_CLOSED = '[ {name} ]'
 MSG_FLYOUT_TITLE = 'Scale: {name}'
 # The marks either side of a row's name while Move mode carries it, in place of the spaces beside it so that nothing shifts, the user's design.
 MSG_MOVING_OPEN = '<'

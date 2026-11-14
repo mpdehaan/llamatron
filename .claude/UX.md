@@ -162,8 +162,8 @@ a feature that already exists does what's being asked, that's pointed out first
   (generators)` in the chain editor and `SELECT FILE` on the Open page (`Column.SELECT_...` in `strings/labels.py`).
 - A list page shows the set's items in the file's order, which is the order they play or are
   written in, and `S` sorts them for good. A picker never changes the file's order.
-- A flyout, the user's design and name, is a box a dialog draws over itself for a row marked `▸`, listing that row's
-  choices, as large as the dialog and two cells down and to the right of it, covering what lies under it, so that the two read
+- A flyout, the user's design and name, is a box a dialog draws over itself for a row drawn as a button, `[ Common ]`, since the row opens something, listing that row's
+  choices (the row whose choice was made shows it after a `▸`, `[ Common ▸ Major ]`, and no other row carries the mark), as large as the dialog and two cells down and to the right of it, covering what lies under it, so that the two read
   as a stack to attend to (`Dialog.flyout_lines`, `FLYOUT_SHIFT`): Space or Enter on the row opens it, Up and Down move, Enter picks and closes it, and Esc or Left closes it with
   nothing changed. It is how a dialog offers a second level without opening a dialog over a dialog, which is avoided (the
   user's rule). The Chord dialog's categories of scale types are the first.

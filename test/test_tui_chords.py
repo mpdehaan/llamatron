@@ -26,7 +26,7 @@ from llamatron.composition.naming import words
 from llamatron.strings.labels import MSG_SCALE_CATEGORY_COMMON, Column
 from llamatron.composition.named_scale import scale_type_name, scale_type_names
 from llamatron.music.scale import ScaleType
-from llamatron.strings.marks import MSG_BLOCKED_CELL, MSG_FLYOUT_CHOSEN, MSG_FLYOUT_TITLE, MSG_TENSIONS_COUNTED
+from llamatron.strings.marks import MSG_BLOCKED_CELL, MSG_FLYOUT_CHOSEN, MSG_FLYOUT_CLOSED, MSG_FLYOUT_TITLE, MSG_TENSIONS_COUNTED
 from llamatron.strings.messages import MSG_CHORD_DIALOG_TITLE, MSG_CHORD_OF_STEP, MSG_NOTE_SENTENCE, MSG_RESTING_STEP
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.chord_dialog import LISTS, NOT_BORROWED_ROW, QUALITY_LIST, SCALE_LIST, TENSION_LIST, ChordDialog
@@ -41,6 +41,8 @@ FIRST_STEP = 0
 ALTERED = (Tension.FLAT_NINTH, Tension.THIRTEENTH)
 THREE_TENSIONS = (Tension.FLAT_NINTH, Tension.SHARP_ELEVENTH, Tension.THIRTEENTH)
 SCALE_CELL = 'Minor'
+# The mark between a category and the scale type picked in it.
+FLYOUT_MARK = '▸'
 # The smallest console everything must fit.
 CONSOLE_WIDTH = 80
 CONSOLE_LINES = 24
@@ -160,6 +162,11 @@ class TestPatternEditorChords(UITest):
         self.assertIsNone(dialog.flyout)
         self.assertEqual((dialog.kind, dialog.part), (COMMON_SCALE_TYPES[0], QUALITY_LIST))
         self.assertIn(MSG_FLYOUT_CHOSEN.format(name=MSG_SCALE_CATEGORY_COMMON, chosen=SCALE_CELL), self.dialog_text())
+        # Every category is drawn as a button, and only the one whose scale type was picked carries the mark (the user's design).
+        for name, _ in dialog.categories:
+            if name != MSG_SCALE_CATEGORY_COMMON:
+                self.assertIn(MSG_FLYOUT_CLOSED.format(name=name), self.dialog_text(), name)
+        self.assertEqual(self.dialog_text().count(FLYOUT_MARK), 1)
         await self.press(keybindings.ChordDialog.CHOOSE)
         self.assertIsInstance(self.app.screen, PatternEditor)
         self.assertEqual(self.value(Row.CHORD_SCALE), MINOR)
