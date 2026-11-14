@@ -21,13 +21,13 @@ The chords are degrees of the scale. A plain degree moves every note that many s
 
 ![The chords of a progression, as numerals and names in the song's scale](../screenshots/chords_editor.svg)
 
-The chord editor draws each chord as a column: a bar rising to its degree, then its Roman numeral (upper case for major, lower case for minor, ° for diminished) and its name in the song's scale, such as `Am`, then a `#/b` row, the Scale, Quality and Tens. rows, and an `Inv.` row. The status line names the chord under the cursor and its notes. A new progression has one chord, I, which changes nothing until edited.
+The chord editor draws each chord as a column: a bar rising to its degree, then its Roman numeral (upper case for major, lower case for minor, ° for diminished) and its name in the song's scale, such as `Am`, then a `#/b` row, the Quality, Tens. and Scale rows, and an `Inv.` row. The status line names the chord under the cursor and its notes. A new progression has one chord, I, which changes nothing until edited.
 
 | Key | What it does |
 | --- | --- |
 | Arrows | Left and Right move along the chords, Up and Down between the rows, stopping at the edges. |
 | `[`, `]` | On the Chord row, step the degree from 1 to 7; on the `#/b` and `Inv.` rows, step through the choices, as `Space` and `Enter` do. |
-| `Enter` | On the Scale, Quality and Tens. rows, opens the Chord dialog, the one the [pattern editor](../PATTERNS.md#chords) opens, on that row's list; `Space` steps to the next choice and `Bksp` clears. |
+| `Enter` | On the Quality, Tens. and Scale rows, opens the [Chord Selector](../PATTERNS.md#chord-selector), the one the pattern editor opens, on that row's list; `Space` steps to the next choice and `Bksp` clears. |
 | Digits | Type a degree, or an inversion. |
 | `I`, `D` | Insert a chord I before the cursor's, or remove the cursor's, keeping 1 to 16 chords. |
 | `H` | Opens a picker of 24 named progressions, from Pop to Andalusian, and fills the chords with the one chosen, matched to the song's scale. |

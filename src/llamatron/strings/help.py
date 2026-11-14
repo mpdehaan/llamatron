@@ -239,7 +239,7 @@ Chords: Enter opens the chord editor. A new progression has one chord, on the fi
 HELP_CHORDS_EDITOR = """
 Each column is a chord: its bar rises to its degree, with its numeral and its name in the song's scale beneath.
 A plain degree moves the clip along the scale, so the scale decides major or minor. A sharp or flat moves it by exact half steps, keeping its sound.
-Up and Down move between the Chord, #/b, Scale, Quality, Tens. and Inv. rows. [ and ] change the value, digits type a degree, Space or Enter cycles #/b and Inv.
+Up and Down move between the Chord, #/b, Quality, Tens., Scale and Inv. rows. [ and ] change the value, digits type a degree, Space or Enter cycles #/b and Inv.
 Scale borrows the chord from another scale type on the same root, Quality names the chord outright, and Tens. adds notes on top: Enter on those rows opens the Chord dialog.
 I inserts a chord and D removes one. H fills the chords with a named progression, matched to the song's scale.
 """
@@ -362,7 +362,7 @@ HELP_PATTERN_EDITOR = """
 Each column is a step, as long as the step size. Tab switches between the piano roll and the rows. Home/End jump to the ends.
 Piano roll: Space or Enter draws a note of the entry size, which E picks; [ and ] drag its end, K splits it, . sharpens or flattens it, G grabs, Space, Enter or Bksp erases it, H picks its chord.
 Rows: Degree is a gauge: digits set it, [ and ] nudge it, as they adjust every number, Bksp empties the step. The rows under Octave come in sections headed by a row marked + (closed) or - (open): Space or Enter opens or closes it, PgUp/PgDn jump between them.
-Basics: #/b, Velocity. Chord: Chord, Scale, Tension (Enter picks), Inv. Timing: Tie (Space on empty steps after a note holds it), Gate ([ and ], or Enter to type one), Dot (d, t), Glide. Advanced: Probability, Ratchet, Ratchet Offset, Grab. CCs and Slide work on rests too. Reg. Apply uses the registers; Reg. Mod adds to them.
+Basics: #/b, Velocity. Chord: Chord, Tension, Scale (Enter picks), Inv. Timing: Tie (Space on empty steps after a note holds it), Gate ([ and ], or Enter to type one), Dot (d, t), Glide. Advanced: Probability, Ratchet, Ratchet Offset, Grab. CCs and Slide work on rests too. Reg. Apply uses the registers; Reg. Mod adds to them.
 S sizes the pattern, and on the rows I inserts a step and D removes one. R reconfigures it: munge, load over, step size, time signature, drum on or off, direction, rename. L plays it through a track, and stops it.
 """
 

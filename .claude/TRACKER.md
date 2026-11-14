@@ -1321,13 +1321,13 @@ roll or the rows.
 - Velocity and Probability stay numbers.
 - `]` on the Chord row follows `CHORD_SYMBOLS`. `pick_chord` in `components/chord_row.py` opens the Chord dialog
   (`tui/dialogs/chord_dialog.py`, `ChordDialog`, the user's design), shared with the roll and with a progression's chord
-  editor: three lists in the order a chord is worked out, the borrowed scale type, quality and tensions, Tab or Left and Right from
+  editor: three lists in the user's order, the same wherever a chord is chosen, quality, tensions and the borrowed scale type, Tab or Left and Right from
   list to list, Space toggling a tension, the scale list holding the categories of `tui/scale_categories.py` (Common first,
-  then every scale type once), each opening a flyout over the lists to its right with Space or Enter, where Enter picks and
+  then every scale type once), each opening a flyout beside it, over the two lists before it, with Space or Enter, where Enter picks and
   goes on to the qualities and Esc or Left closes (a flyout is drawn by the dialog, never a second dialog, the user's rule), and under them what `ChordInWords` (`tui/chord_text.py`) says of the choice, its name in its scale, its
   name in the clip's own scale when it borrows, and its notes. It answers a `ChordChoice`, stored on the step's Chord, Tension
   and Scale rows together, one undo step. `TensionRow` and `ChordScaleRow` are `ChordRow`s with their own choices, in the
-  Chord section (`RowSection.CHORD`, the user's design: Chord, Scale, Tension and Inversion together, closed at the start
+  Chord section (`RowSection.CHORD`, the user's design and order: Chord, Tension, Scale and Inversion together, closed at the start
   so that every heading still fits an 80 by 24 console, and left out of a drum pattern, which has none of its rows); the
   Scale row steps through `SCALE_TYPES_IN_ORDER`, every scale type in the categories' order. While the dialog is open the
   pattern editor shows the chord as the choice moves (the dialog's `moved`): the step is written without an undo step and
@@ -1335,7 +1335,7 @@ roll or the rows.
   tensions and a borrowed scale's notes (`_tones_leaving_the_scale` in `composition/pattern_notes.py`); a Tension cell is blocked on a step with no chord. `Page.resting_status()` is what the status line says
   while nothing else is said: the pattern editor and the chord editor name the cursor's chord there, in the scale known
   (`PatternEditor.known_scale`, the first of the pattern's uses' scales).
-- The chord editor (`ChordsEditor`) has six rows, in the order a chord is worked out: Chord, `#/b`, Scale, Quality, Tens.
+- The chord editor (`ChordsEditor`) has six rows, in the user's order: Chord with its root's `#/b`, then Quality, Tens., Scale
   and Inv. Its Degree gauge is drawn two degrees a line with a half block, so that the page still fits 24 lines.
 - Drum patterns keep note letters and no gauge. Both `D` and `F` are note letters on a drum
   pattern's Note row.

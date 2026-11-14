@@ -14,8 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The Chord dialog (the user's design): one chord's borrowed scale, quality and tensions as three lists side by side, in the
-order a chord is worked out, with what the chord comes to said under them as the choice moves, its name in the scale it is
+"""The Chord dialog (the user's design): one chord's quality, tensions and borrowed scale as three lists side by side, in the
+user's order, with what the chord comes to said under them as the choice moves, its name in the scale it is
 drawn from and its exact notes.
 
 The pattern editor's Chord, Tension and Scale rows, the piano roll and a progression's chord editor all open it, so a chord is
@@ -23,7 +23,7 @@ chosen one way everywhere. Up and Down move in a list, Left, Right and Tab go fr
 under the cursor on or off, Enter answers with the three choices and Esc cancels, changing nothing.
 
 The scale list holds categories of scale types, not the fifty types (the user's design): Space or Enter on a category opens
-its flyout, a box over the lists to its right with the category's scale types, where Up and Down move, Enter picks one and
+its flyout, a box beside it, over the two lists before it, with the category's scale types, where Up and Down move, Enter picks one and
 closes the flyout, and Esc or Left closes it with nothing changed. A flyout is not a dialog: nothing opens over the Chord
 dialog. After a pick the cursor goes on to the qualities, so that the next Enter takes the chord.
 """
@@ -41,19 +41,19 @@ from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import ARROWS_LEFT_RIGHT, Key
 from llamatron.tui import keybindings
 
-# The three lists, left to right, in the order a chord is worked out.
-SCALE_LIST = 0
-QUALITY_LIST = 1
-TENSION_LIST = 2
+# The three lists, left to right, in the user's order, the same wherever a chord is chosen: quality, tensions, scale.
+QUALITY_LIST = 0
+TENSION_LIST = 1
+SCALE_LIST = 2
 LISTS = 3
 # How wide each list is drawn, and the gap between two.
-LIST_WIDTHS = (26, 24, 12)
+LIST_WIDTHS = (24, 12, 26)
 LIST_GAP = 2
 # The room for the sentences under the lists, so that the dialog keeps its height as the choice moves.
 SENTENCE_LINES = 3
-# The flyout: where its left edge is, just right of the scale list, and how wide it is with its edges, which is the rest of the lists' width, so that it covers them whole.
-FLYOUT_LEFT = LIST_WIDTHS[SCALE_LIST] + LIST_GAP
-FLYOUT_WIDTH = sum(LIST_WIDTHS) + LIST_GAP * (LISTS - 1) - FLYOUT_LEFT
+# The flyout: where its left edge is, and how wide it is with its edges. It lies beside the scale list, which is the last, over the two lists before it, which it covers whole.
+FLYOUT_LEFT = 0
+FLYOUT_WIDTH = LIST_WIDTHS[QUALITY_LIST] + LIST_GAP + LIST_WIDTHS[TENSION_LIST]
 # The fewest cells worth showing of a category's name beside the scale type borrowed.
 SHORTEST_CATEGORY_NAME = 4
 # The row of the scale list that borrows no scale, above the categories.
@@ -95,7 +95,7 @@ class ChordDialog(Dialog):
         self.picked = set(current.tensions or ())
         self.kind = current.kind
         self.part = opens_on
-        self.places = [self.row_of_kind(current.kind), self.qualities.index(current.quality), 0]
+        self.places = [self.qualities.index(current.quality), 0, self.row_of_kind(current.kind)]
         # The category whose flyout is open, or None, and the cursor's place in it.
         self.flyout = None
         self.flyout_place = 0
@@ -138,7 +138,7 @@ class ChordDialog(Dialog):
             self.moved(choice)
 
     def counts(self):
-        return (len(self.categories) + 1, len(self.qualities), len(TENSIONS))
+        return (len(self.qualities), len(TENSIONS), len(self.categories) + 1)
 
     def move(self, name):
         """Move within the cursor's list with Up and Down and from list to list with Left and Right, stopping at every edge."""
@@ -257,7 +257,7 @@ class ChordDialog(Dialog):
         return [*lines, Text(Box.BOTTOM_LEFT + Box.RULE * inside + Box.BOTTOM_RIGHT)]
 
     def with_flyout(self, lines):
-        """Return the lists' lines with the open flyout drawn over them, from the heading's line down, just right of the scale list."""
+        """Return the lists' lines with the open flyout drawn over them, from the heading's line down, beside the scale list."""
         result = list(lines)
         for row, drawn in enumerate(self.flyout_lines()):
             under = result[row].copy()
@@ -269,7 +269,7 @@ class ChordDialog(Dialog):
         return result
 
     def lines(self, width):
-        headings = (Column.BORROW_SCALE, Column.SELECT_QUALITY, Column.TENSIONS)
+        headings = (Column.SELECT_QUALITY, Column.TENSIONS, Column.BORROW_SCALE)
         heading = Text(NOTHING)
         for part, name in enumerate(headings):
             heading.append(fit(text=SPACE * len(cursor_mark(False)) + name, width=LIST_WIDTHS[part]), style=Style.BOLD if part == self.part else Style.DIM)

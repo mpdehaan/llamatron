@@ -56,8 +56,8 @@ PINNED_ROWS = [Row.DEGREE, Row.OCTAVE]
 # The sections of rows under the pinned ones, in order, each headed by a row the cursor can rest on: the user's grouping of 2026-11-08.
 SECTIONS = {
     RowSection.BASICS: [Row.ACCIDENTAL, Row.VELOCITY],
-    # Everything about a step's chord together, the user's design: the chord, then the scale it borrows, its tensions and its inversion.
-    RowSection.CHORD: [Row.CHORD, Row.CHORD_SCALE, Row.TENSION, Row.INVERSION],
+    # Everything about a step's chord together, in the user's order, the same wherever a chord is chosen: the chord, its tensions, the scale it borrows and its inversion.
+    RowSection.CHORD: [Row.CHORD, Row.TENSION, Row.CHORD_SCALE, Row.INVERSION],
     RowSection.TIMING: [Row.TIE, Row.GATE, Row.DOT, Row.GLIDE],
     RowSection.ADVANCED: [Row.PROBABILITY, Row.RATCHET, Row.RATCHET_OFFSET, Row.GRAB],
     RowSection.CC: [*CC_ROWS, Row.SLIDE],

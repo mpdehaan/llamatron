@@ -169,10 +169,12 @@ class TestChordsEditor(UITest):
         await self.press(keybindings.ChordDialog.NEXT_LIST)
         self.assertEqual(dialog.part, QUALITY_LIST)
         dialog.places[QUALITY_LIST] = dialog.qualities.index(ChordSymbol.DOMINANT7)
-        # Left reaches the scales, the first list, and Right goes back and stops at the tensions, the last.
-        await self.press(Key.LEFT)
-        self.assertEqual(dialog.part, SCALE_LIST)
+        # Right stops at the scales, the last list, and Left goes back and stops at the qualities, the first.
         await self.press(Key.RIGHT, Key.RIGHT, Key.RIGHT)
+        self.assertEqual(dialog.part, SCALE_LIST)
+        await self.press(Key.LEFT, Key.LEFT, Key.LEFT)
+        self.assertEqual(dialog.part, QUALITY_LIST)
+        await self.press(Key.RIGHT)
         self.assertEqual(dialog.part, TENSION_LIST)
         await self.press(Key.ENTER)
         self.assertEqual(self.progression().get_tensions()[1], (Tension.FLAT_NINTH,))
