@@ -61,7 +61,8 @@ from llamatron.strings.messages import MSG_ROOT_TITLE, MSG_SCALE_USES_NOTE
 from llamatron.tui import keybindings
 from llamatron.tui.screens.chain_editor import step_shown
 from llamatron.strings.marks import MSG_CHAIN_STEP_AGAIN, MSG_CHAIN_STEP_SHOWN
-from llamatron.strings.messages import MSG_NEW_GENERATOR_CHOICE, MSG_NEW_GENERATOR_NAMED
+from llamatron.composition.naming import new_name, suggested_word
+from llamatron.strings.messages import MSG_NEW_GENERATOR_CHOICE
 from llamatron.strings.labels import MSG_ARP_LABEL, MSG_OPENED_ITEM_CRUMB
 from tests.support.rendering import render_song
 
@@ -76,14 +77,14 @@ WHOLE_HALF_DIM = 'whole half dim'
 IONIAN = 'ionian'
 DIMINISHED = 'diminished'
 D_DORIAN_NOTES = 'D dorian: D E F G A B C'
-D_MAJOR = 'D Major'
+D_MAJOR = 'D_major'
 # The two-octave keyboard under a scale's fields.
 WHITE_KEYS_ON_THE_KEYBOARD = 14
 BLACK_KEYS_ON_THE_KEYBOARD = 10
-D_DORIAN = 'D Dorian'
-D_MINOR = 'D Minor'
-D_HIRAJOSHI = 'D Hirajoshi'
-C_MAJOR_2 = 'C Major 2'
+D_DORIAN = 'D_dorian'
+D_MINOR = 'D_minor'
+D_HIRAJOSHI = 'D_hirajoshi'
+C_MAJOR_2 = 'C_major-2'
 OTHER_PAGE = 'other page'
 # The key that added on a list before A did, which adds nothing now.
 OLD_ADD_KEY = Key.PLUS
@@ -96,9 +97,9 @@ MIXOLYDIAN_FLAT6 = 'mixolydian flat6'
 NATURAL_MINOR = 'natural minor'
 LYDIAN_AUGMENTED = 'lydian augmented'
 CHANGE = 'Change '
-C_MAJOR = 'C Major'
+C_MAJOR = 'C_major'
 A_VERY_LONG_SCALE_NAME = 'a very long scale name '
-C_MAJOR_COPY = 'C Major 2'
+C_MAJOR_COPY = 'C_major-2'
 AFTER_EACH_NOTE = 'after each note'
 UP = 'up'
 # How many levels the offsets gauge draws either side of its zero line on the tests' tall console, and on an 80 by 24 one, where the legend takes one line.
@@ -116,13 +117,13 @@ GENERATORS = 'Generators'
 FAST = 'fast'
 RISE = 'rise'
 CLIMB = 'climb'
-ROLLS_COPY = 'rolls 2'
+ROLLS_COPY = 'rolls-2'
 NAMED = 'named'
 AFTER_CHORD = 'after chord'
 BRIGHT = 'bright'
 TRACK_LEAD = 'track lead'
 LIFT = 'lift'
-RISE_COPY = 'rise 2'
+RISE_COPY = 'rise-2'
 NOTHING_TO_ADD = 'Nothing to add'
 
 
@@ -817,7 +818,7 @@ class TestChainEditorAdding(UITest):
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         self.assertEqual(self.app.screen.options[0], MSG_ARP_LABEL)
         await self.press(Key.ENTER)
-        name = MSG_NEW_GENERATOR_NAMED.format(kind=MSG_ARP_LABEL)
+        name = new_name(word=suggested_word(MSG_ARP_LABEL), taken=())
         self.assertEqual(self.chain_steps(EMPTY), [(GeneratorKind.ARP, name)])
         self.assertIsInstance(self.app.screen, ArpEditor)
         self.assertEqual(self.app.screen.crumb_trail()[-1], MSG_OPENED_ITEM_CRUMB.format(word=MSG_ARP_LABEL, name=name))

@@ -27,7 +27,7 @@ The song plays every note the file plays, for as long as the file plays it.
 
 - **Scenes** start only where no note is held across, and at each change of key or tempo in the file, with the scene's Scale set to the key, so a theme that returns in another key uses the same pattern. Scenes are named after the bars they play, such as `bars 1-4`.
 - **Tracks** come from the file's tracks: drums become a track for each sound, named such as `kick` and `closed hat`; a track that plays both hands splits into its treble and bass; and overlapping notes within a track spread over tracks lettered `a`, `b` and so on.
-- **Patterns** are reused: a phrase that returns uses its pattern again, and a bar played several times becomes one pattern with the clip's Repeat set. Patterns are named after their track and numbered, such as `lead 1`.
+- **Patterns** are reused: a phrase that returns uses its pattern again, and a bar played several times becomes one pattern with the clip's Repeat set. Patterns are named after their track and numbered, such as `lead-1`.
 - **CC values** land on the step at which they are sent. When a recorded sweep's values fall between steps, the patterns take steps short enough to stay within a few values of the file, and the dialog says how many messages fell between steps.
 
 The files in `examples/midi/` are public domain tunes to try the import on.

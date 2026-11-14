@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The Grooves page: the factory grooves every set has, then the set's own, which songs, scenes and tracks choose by name."""
 
-from llamatron.composition.defaults import FIRST_NUMBER
 from llamatron.composition.file_format import Section
 from llamatron.composition.groove import FACTORY_GROOVE_NAMES, is_factory_groove
 from llamatron.tui.drawing import Align
@@ -27,7 +26,8 @@ from llamatron.strings.labels import Column, Crumb
 from llamatron.strings.legends import MSG_GROOVE_WHAT
 from llamatron.strings.marks import MSG_FACTORY_GROOVE_SHOWN, MSG_OWN_GROOVE_SHOWN
 from llamatron.strings.messages import MSG_RENAME_GROOVE_PROMPT
-from llamatron.strings.names import MSG_NEW_GROOVE_NAME
+from llamatron.strings.names import MSG_NEW_GROOVE_WORD
+from llamatron.composition.naming import new_name
 from llamatron.tui import keybindings
 
 
@@ -69,10 +69,7 @@ class GroovesPage(NamedListPage):
     def add(self):
         """Add a straight groove, numbered like new tracks and scenes, and open it."""
         taken = self.names()
-        number = FIRST_NUMBER
-        while MSG_NEW_GROOVE_NAME.format(number=number) in taken:
-            number += 1
-        name = MSG_NEW_GROOVE_NAME.format(number=number)
+        name = new_name(word=MSG_NEW_GROOVE_WORD, taken=taken)
         self.document().add_groove(name)
         self.put_cursor_on(name)
         self.show_page(GrooveEditor(holder=self.holder, name=name))

@@ -20,7 +20,7 @@ Press `V` on the main screen to open the Grooves page. The list shows each groov
 
 | Key | What it does |
 | --- | --- |
-| `A` | Adds a straight groove of your own, named `groove 1` and so on, and opens it. |
+| `A` | Adds a straight groove of your own, named `groove-1` and so on, and opens it. |
 | `ENTER` | Opens the groove: one of yours to edit, or a factory groove to look at. |
 | `C` | Copies the groove, factory or yours, to the end of your own grooves. Copying is how to get a factory groove you can change. |
 | `N` | Renames one of your grooves, updating every song, scene and track that chose it. |

@@ -17,6 +17,7 @@
 
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import data_as_kept, data_built_anew
+from llamatron.composition.naming import is_taken, same_name
 from llamatron.strings.errors import ERR_NAME_TAKEN, ERR_NO_SUCH_ITEM, ERR_SONG_NAME_NOT_TEXT
 from llamatron.support.revised import notes_change, Revised
 
@@ -144,7 +145,7 @@ class NamedItems(Revised):
     def rename(self, *, old, new):
         """Rename an item, keeping its place."""
         self._check(old)
-        if new != old:
+        if not same_name(one=new, other=old):
             self._check_new_name(new)
         self._items = {(new if name == old else name): item for name, item in self._items.items()}
 
@@ -172,5 +173,6 @@ class NamedItems(Revised):
     def _check_new_name(self, name):
         if not isinstance(name, str):
             raise InvalidValue(ERR_SONG_NAME_NOT_TEXT.format(name=name))
-        if self.has(name):
+        # Names are compared without regard to capitals (the user's rule), though a file that holds two such names still loads.
+        if is_taken(name=name, taken=self.names()):
             raise InvalidValue(ERR_NAME_TAKEN.format(label=self._label, name=name))

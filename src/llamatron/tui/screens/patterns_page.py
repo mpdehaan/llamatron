@@ -18,7 +18,7 @@
 
 from llamatron.composition.file_format import Section
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.composition.naming import unique_name
+from llamatron.composition.naming import is_taken, new_name
 from llamatron.tui.text import clock
 from llamatron.tui.drawing import Align
 from llamatron.strings.help import HELP_PATTERNS_PAGE
@@ -29,7 +29,7 @@ from llamatron.strings.errors import ERR_NAME_EMPTY_OR_IN_USE
 from llamatron.strings.labels import Column, Crumb, MSG_DRUM_KIND, MSG_NOTES_KIND
 from llamatron.strings.legends import MSG_PATTERN_WHAT
 from llamatron.strings.messages import MSG_NEW_PATTERN_PROMPT, MSG_RENAME_PATTERN_PROMPT
-from llamatron.strings.names import MSG_NEW_PATTERN_NAME
+from llamatron.strings.names import MSG_NEW_PATTERN_WORD
 from llamatron.tui import keybindings
 
 
@@ -64,11 +64,11 @@ class PatternsPage(NamedListPage):
 
     def add(self):
         patterns = self.names()
-        default = unique_name(base=MSG_NEW_PATTERN_NAME.format(number=len(patterns) + 1), taken=patterns)
+        default = new_name(word=MSG_NEW_PATTERN_WORD, taken=patterns)
 
         def named(text):
             text = text.strip()
-            if not text or text in patterns:
+            if not text or is_taken(name=text, taken=patterns):
                 self.refuse(ERR_NAME_EMPTY_OR_IN_USE)
                 return
             self.document().add_pattern(name=text)

@@ -35,12 +35,11 @@ from tests.support.rendering import render_song
 LEAD = 'lead'
 DRUMS = 'drums'
 TRACK_1 = MSG_NEW_TRACK_NAME.format(number=1)
-TRACK_3 = MSG_NEW_TRACK_NAME.format(number=3)
-TRACK_4 = MSG_NEW_TRACK_NAME.format(number=4)
+TRACK_2 = MSG_NEW_TRACK_NAME.format(number=2)
 SCENE_1 = MSG_NEW_SCENE_NAME.format(number=1)
 SECOND_SONG = 'second'
 LOW = 'low'
-LEAD_COPY = 'lead 2'
+LEAD_COPY = 'lead-2'
 MUTE = 'Mute'
 TRANSPOSE = 'Transpose'
 LOWEST_OCTAVE = 'Lowest octave'
@@ -76,15 +75,15 @@ class TestArrangeTracks(UITest):
         await self.press(Key.RIGHT, Key.RIGHT)
         self.assertTrue(self.page.on_track_plus())
         await self.press(Key.ENTER)
-        self.assertEqual(self.tracks(), [LEAD, DRUMS, TRACK_3])
-        self.assertEqual(self.page.track(), TRACK_3)
+        self.assertEqual(self.tracks(), [LEAD, DRUMS, TRACK_1])
+        self.assertEqual(self.page.track(), TRACK_1)
 
     async def test_a_adds_a_track_from_any_track_name_and_names_it_by_number(self):
         await self.press(keybindings.ArrangePage.ADD_TRACK)
-        self.assertEqual(self.tracks(), [LEAD, DRUMS, TRACK_3])
+        self.assertEqual(self.tracks(), [LEAD, DRUMS, TRACK_1])
         await self.press(keybindings.ArrangePage.ADD_TRACK)
-        self.assertEqual(self.tracks(), [LEAD, DRUMS, TRACK_3, TRACK_4])
-        self.assertEqual(self.page.track(), TRACK_4)
+        self.assertEqual(self.tracks(), [LEAD, DRUMS, TRACK_1, TRACK_2])
+        self.assertEqual(self.page.track(), TRACK_2)
 
     async def test_right_stops_at_the_plus(self):
         await self.press(Key.RIGHT, Key.RIGHT, Key.RIGHT, Key.RIGHT)
@@ -103,9 +102,9 @@ class TestArrangeTracks(UITest):
 
     async def test_insert_puts_a_blank_track_before_this_one(self):
         await self.press(Key.RIGHT, keybindings.ArrangePage.INSERT_TRACK)
-        self.assertEqual(self.tracks(), [LEAD, TRACK_3, DRUMS])
-        self.assertIsNone(self.document.clip_slot(index=0, track=TRACK_3))
-        self.assertEqual(self.page.track(), TRACK_3)
+        self.assertEqual(self.tracks(), [LEAD, TRACK_1, DRUMS])
+        self.assertIsNone(self.document.clip_slot(index=0, track=TRACK_1))
+        self.assertEqual(self.page.track(), TRACK_1)
 
     async def test_move_mode_carries_the_track_and_the_cursor_follows(self):
         await self.press(keybindings.ArrangePage.MOVE_TRACK, forward_key(keybindings.ArrangePage.CARRY_TRACK))

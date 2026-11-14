@@ -35,6 +35,7 @@ kept by reading.
 | Every setting a file can hold is described once, in its class's `SETTINGS`, and reading a file and calling the setter refuse a value in the same words. | `tests/composition/test_setting.py` |
 | Every row of a pattern is described once, in `ROW_DESCRIPTIONS`, and a file, the pattern's setter and the pattern editor's rows hold a step's value to the same limits. | `tests/composition/test_row_descriptions.py` |
 | No remembered answer outlives a change to what it was worked out from. | every memory checks itself in the tracker's tests, `tests/support_code/test_memory.py` |
+| Every name the tracker makes up is made by `composition/naming.py`: nothing else numbers a name (`.claude/UX.md`, "Names the tracker makes"). | `tests/rules/test_naming.py`, with the rule itself tested by `tests/composition/test_naming.py` |
 | YAML is read only through `safe_yaml.load_safely`, and no other module names a loader. | `tests/rules/test_yaml_safety.py` |
 | Only `composition/setlist.py`, `composition/setlist_writer.py` and `support/safe_yaml.py` import `yaml`: in memory the set is objects, and YAML is touched only at the file. | `tests/rules/test_yaml_safety.py` |
 | No module that renders (`playback/`, `generators/`, `grid/positions.py`, `exporters/timing.py`) imports `Note`, `Rest`, `Chord`, `Degree` or `Held`: a render makes sounds, the tuples of `music/sound.py`. | `tests/music/test_sound.py` |

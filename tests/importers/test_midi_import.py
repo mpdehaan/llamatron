@@ -395,18 +395,18 @@ class TestNames(unittest.TestCase):
     def setUp(self):
         self.midi = midi_of(tracks=[('lead', 0, melody(pitches=C_MAJOR_SCALE[:4]))])
 
-    def test_a_pattern_is_named_after_its_track_with_the_first_number_free(self):
+    def test_a_pattern_is_named_after_its_track_with_the_next_number(self):
         setlist = Setlist.new()
-        setlist.copy_item(section=Section.PATTERNS, name=setlist.get_item_names(Section.PATTERNS)[0], new='lead 1')
+        setlist.copy_item(section=Section.PATTERNS, name=setlist.get_item_names(Section.PATTERNS)[0], new='lead-1')
         imported, _ = imported_into(setlist=setlist, midi=self.midi)
-        self.assertEqual(list(imported.song.patterns), ['lead 2'])
+        self.assertEqual(list(imported.song.patterns), ['lead-2'])
 
     def test_a_second_import_is_a_second_song_with_names_of_its_own(self):
         setlist = Setlist.new()
         imported_into(setlist=setlist, midi=self.midi)
         imported, _ = imported_into(setlist=setlist, midi=self.midi)
-        self.assertEqual(imported.song.name, 'tune 2')
-        self.assertEqual(list(imported.song.patterns), ['lead 2'])
+        self.assertEqual(imported.song.name, 'tune-2')
+        self.assertEqual(list(imported.song.patterns), ['lead-2'])
 
     def test_without_unique_names_a_pattern_the_set_has_exactly_is_shared(self):
         setlist = Setlist.new()
@@ -414,7 +414,7 @@ class TestNames(unittest.TestCase):
         imported, song = imported_into(setlist=setlist, midi=self.midi, unique_names=False)
         self.assertEqual(imported.song.patterns, {})
         self.assertEqual(imported.song.shared, 1)
-        self.assertEqual(song.get_scenes()[0].get_clip_slot('lead').get_pattern_name(), 'lead 1')
+        self.assertEqual(song.get_scenes()[0].get_clip_slot('lead').get_pattern_name(), 'lead-1')
 
     def test_a_scale_is_reused_only_while_it_is_named_after_its_root_and_kind(self):
         setlist = Setlist.new()

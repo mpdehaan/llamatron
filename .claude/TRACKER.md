@@ -20,7 +20,7 @@ code.
 - `tui/document.py` and `tui/document_parts/`: the set being edited ("The document" below).
 - `tui/history.py`: the undo history. `tui/lengths.py`: how long things last. `tui/uses.py`: what
   uses what, in the words a page shows. `tui/text.py`: text helpers pages share (`clock`, `sorted_names`),
-  and `composition/naming.py` how a new thing is named (`words`, `unique_name`, `copy_name`,
+  and `composition/naming.py` how a new thing is named (`words`, `new_name`, `unique_name`, `copy_name`, the one rule of `.claude/UX.md`, "Names the tracker makes",
   `is_default_scale_name`), which the MIDI import shares.
 - `tui/keys.py`: every physical key's name. `tui/keybindings.py`: every key binding, one class
   for each page, dialog and component. `tui/key_table.py`: `KeyBinding`, `BindsKeys`, `bound()`,
@@ -520,7 +520,7 @@ code.
   scene by scene from the top, each pattern drawn on the piano roll when a track first needs it
   and its other rows set in the rows view, then the clip put on Arrange. Each thing made is
   announced, "And now we are making a pattern called (riff).", and each thing the new set
-  already has, its song, `track 1`, `scene 1` and the starter pattern, "There is already a track,
+  already has, its song, `track-1`, `scene-1` and the starter pattern, "There is already a track,
   so we are going to rename it." (`MSG_NARRATE_MAKING`, `MSG_NARRATE_RENAMING`), said once the
   list of that kind of thing shows: the Songs page, Arrange or the Patterns page. Then it shows
   the finished song on Arrange, "Now the song is complete, we can export it now."
@@ -684,7 +684,7 @@ code.
   `LIVE_RESPONSIVENESSES`, named by `MSG_LIVE_RESPONSIVENESS_NAMES`) and an Export button.
 - Registers and Arrange edit the current song.
 - A brand-new song (`Song.started`, `started_song`, `Setlist.add_started_song`, which
-  `new_setlist()` and the Songs page's `A` use) starts with `track 1` and `scene 1`. A file that
+  `new_setlist()` and the Songs page's `A` use) starts with `track-1` and `scene-1`. A file that
   leaves tracks or scenes out stays empty (`new_song`, `Song.new`, `add_new_song`).
 - Only a new set gets the starter pattern and the clip that plays it (`new_setlist`,
   `.claude/FORMAT.md`), since a song added to a set already has the set's patterns.
@@ -695,7 +695,7 @@ code.
   (`tui/screens/scale_page.py`), and `A` adds a C major scale and opens it.
 - `ScalePage` has one scale's Name, Root and Kind on one page, laid out by `SCALE_PAGES` and
   `ROOT_KEYBOARD`. The scale picker shortens long names only on screen.
-- A scale still named after its root and kind, like `C Major`, is renamed as they change
+- A scale still named after its root and kind, like `C_major`, is renamed as they change
   (`Document.set_scale_root` and `set_scale_kind` return the name, and `is_default_scale_name` in
   `composition/naming.py` decides). A name of the user's own stays.
 - Under the fields, `ScalePage.notes` draws a two-octave `Keyboard`
@@ -771,7 +771,7 @@ code.
 
 - The Grooves page (`V`, `GroovesPage`) lists the factory grooves first, marked `factory`, with
   only `ENTER` (view) and `C` (copy) on them, and the set's own with the usual list keys.
-- `A` adds `groove 1` and so on (`MSG_NEW_GROOVE_NAME`) and opens the `GrooveEditor`.
+- `A` adds `groove-1` and so on (`new_name` in `composition/naming.py`) and opens the `GrooveEditor`.
 - The `GrooveEditor` is a one-row editor like the offsets editor ("The one-row editors" below),
   with `I`, `D`, `S` for the cell length (`GROOVE_CELL_LENGTH_CHOICES`) and `N` to rename, and
   the name shown above the cells. A groove wider than the screen scrolls sideways, with
@@ -786,8 +786,8 @@ code.
 ## Instruments and the Real Time switch
 
 - The Instruments page (`I`, `InstrumentsPage`, a `NamedListPage`) lists the set's instruments
-  with each one's device, channel and uses. `A` adds `instrument 1` and so on
-  (`MSG_NEW_INSTRUMENT_NAME`) with no device, and opens the `InstrumentEditor`, a `FieldPage`
+  with each one's device, channel and uses. `A` adds `instrument-1` and so on
+  (`new_name`) with no device, and opens the `InstrumentEditor`, a `FieldPage`
   with Name, Device and Channel. Device opens a `ChoiceDialog` of `(none)` and the computer's
   ports (`output_port_names()` in `realtime/outputs.py`, sorted), the instrument's own device
   among them even when it has gone, so that a set opens without it and keeps it. Channel is a
@@ -840,14 +840,14 @@ code.
   mark compare data with the order of each section's items counted (`same_in_order`, `support/ordered_data.py`), since
   `==` on dictionaries ignores the order a move changes.
 - On an empty cell: `ENTER` chooses an existing pattern and adds a clip, staying on Arrange, and `B`
-  (`ArrangePage.BLANK_PATTERN`, `blank_pattern`) makes a blank pattern named after the track (`lead 1`, a drum pattern on a
+  (`ArrangePage.BLANK_PATTERN`, `blank_pattern`) makes a blank pattern named after the track (`lead-1`, a drum pattern on a
   drum track), puts a clip of it there and opens it in the pattern editor, the user's design after Live's empty slot.
 - On a clip: `C` copies it for `V` to paste, `ENTER` opens the clip page, and `P`
   (`ArrangePage.OPEN_PATTERN`, `open_pattern`) opens the pattern editor on the clip's pattern,
   the user's choice over Shift+ENTER, which a stock terminal sends as ENTER. `P`
   is bound on a clip alone, so elsewhere it does nothing. `C` means copy everywhere.
-- New tracks and scenes are numbered, `track 2` and `scene 2` (`MSG_NEW_TRACK_NAME`,
-  `MSG_NEW_SCENE_NAME` in `strings/names.py`), and renamed on their own pages.
+- New tracks and scenes are numbered, `track-2` and `scene-2` (`new_name` with `MSG_NEW_TRACK_WORD` and
+  `MSG_NEW_SCENE_WORD` of `strings/names.py`), one more than the highest number in use, and renamed on their own pages.
 - Deleting a scene, track or clip confirms in a dialog, and the last scene or track is refused in
   a message dialog (`ERR_LAST_SCENE_SHOWN`, `ERR_LAST_TRACK_SHOWN`).
 - The page has no details line under the grid.
@@ -1195,7 +1195,7 @@ code.
 
 ## Patterns
 
-- The Patterns page's `A` offers `pattern 2`, `pattern 3` and so on (`MSG_NEW_PATTERN_NAME`), the way
+- The Patterns page's `A` offers `pattern-2`, `pattern-3` and so on (`new_name`), the way
   new tracks and scenes are numbered.
 
 ## The pattern editor

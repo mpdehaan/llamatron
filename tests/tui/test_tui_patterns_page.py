@@ -35,7 +35,7 @@ NEW = 'new'
 BEAT = 'beat'
 MELODY = 'melody'
 TUNE = 'tune'
-TUNE_COPY = 'tune 2'
+TUNE_COPY = 'tune-2'
 OTHER = 'other'
 ALREADY_IN_USE = 'already in use'
 LEAD = 'lead'
@@ -104,6 +104,20 @@ class TestPatternsPage(UITest):
         await self.press(Key.ENTER)
         self.assertIn(TUNE, self.names())
         self.assertIn(ALREADY_IN_USE, self.text())
+
+    async def test_a_name_another_pattern_has_in_other_capitals_is_refused(self):
+        await self.press(keybindings.PatternsPage.RENAME)
+        self.app.screen.value = BEAT.upper()
+        await self.press(Key.ENTER)
+        self.assertIn(TUNE, self.names())
+        self.assertIn(ALREADY_IN_USE, self.text())
+
+    async def test_a_pattern_can_change_the_capitals_of_its_own_name(self):
+        await self.press(keybindings.PatternsPage.RENAME)
+        self.app.screen.value = TUNE.upper()
+        await self.press(Key.ENTER)
+        self.assertIn(TUNE.upper(), self.names())
+        self.assertNotIn(TUNE, self.names())
 
     async def test_renaming_updates_clips(self):
         await self.press(keybindings.PatternsPage.RENAME)

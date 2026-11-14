@@ -38,7 +38,7 @@ from llamatron.tui import keybindings
 
 TEMPO = 'Tempo'
 STEP_SIZE = 'Step size'
-C_MAJOR = 'C Major'
+C_MAJOR = 'C_major'
 
 
 class TestPlusRow(UITest):

@@ -64,7 +64,7 @@ Press `S` on the main screen to open the Songs page. The set's songs are listed 
 | `ENTER` | Make it current and open its settings |
 | `A` | Add a song, asking for its name |
 | `N` | Rename it. The song's name and the set's are independent. |
-| `C` | Copy it, with its tracks, scenes and registers, named with the next free number: a copy of `verse` is `verse 2`, and a copy of `verse 2` is `verse 3`. Every copy on every page is named this way. |
+| `C` | Copy it, with its tracks, scenes and registers, named with the next free number: a copy of `verse` is `verse-2`, and a copy of `verse-2` is `verse-3`. Every copy on every page is named this way. |
 | `M` | Pick it up: `↑↓` carry it, and `ENTER` drops it |
 | `S` | Sort the list by name |
 | `Bksp` | Delete it, after asking. The set always keeps at least one song. |

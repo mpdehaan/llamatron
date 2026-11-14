@@ -165,7 +165,6 @@ MSG_TRANSPOSE_NOTE = '  Transpose counts notes of the scale, so 7 is an octave i
 # The first choice of the chain editor's picker, which makes a new generator, the dialog of its kinds, and what a new one is called, numbered after the first.
 MSG_NEW_GENERATOR_CHOICE = '(new generator)'
 MSG_NEW_GENERATOR_KIND_TITLE = 'New generator: which kind?'
-MSG_NEW_GENERATOR_NAMED = '{kind} 1'
 MSG_ADD_TO_CHAIN_TITLE = 'Add to chain'
 MSG_ADD_CHAIN_TITLE = 'Add a chain'
 MSG_CHANGE_STEP_TITLE = 'Change step'

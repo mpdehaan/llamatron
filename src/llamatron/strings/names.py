@@ -19,9 +19,12 @@ Each constant starts with MSG_.
 """
 
 # composition/naming.py
-# How a copy or a new thing is numbered, like bass 2, and a new scale's name, like F Harmonic Minor.
-MSG_NUMBERED_NAME = '{base} {number}'
-MSG_DEFAULT_SCALE_NAME = '{root} {kind}'
+# How a copy or a new thing is numbered, like bass-2, what joins the number, and a new scale's name, like F_harmonic_minor,
+# with the name older files gave one, like F Harmonic Minor.
+MSG_NUMBER_JOINT = '-'
+MSG_NUMBERED_NAME = '{base}-{number}'
+MSG_DEFAULT_SCALE_NAME = '{root}_{kind}'
+MSG_LEGACY_SCALE_NAME = '{root} {kind}'
 
 # tui/document.py
 # How a scene with no name is described.
@@ -34,15 +37,18 @@ MSG_SCENE_WITHOUT_A_NAME = 'scene'
 MSG_DEFAULT_SONG_NAME = 'untitled'
 # What a new scene or track is called, by its number from 1: a new song starts with one of each, and the
 # Arrange page names the ones it adds the same way, to be renamed on their own pages, as the user asked on 2026-11-07.
-MSG_NEW_SCENE_NAME = 'scene {number}'
-MSG_NEW_TRACK_NAME = 'track {number}'
+MSG_NEW_SCENE_NAME = 'scene-{number}'
+MSG_NEW_TRACK_NAME = 'track-{number}'
 # The track a pattern's preview plays on, in the copy of the set the preview plays (tui/pattern_preview.py).
 MSG_PREVIEW_TRACK_NAME = '(preview)'
-MSG_NEW_PATTERN_NAME = 'pattern {number}'
-# A blank pattern made on an empty cell of Arrange is named after its track, the user's design (tui/screens/arrange_page.py).
-MSG_TRACK_PATTERN_NAME = '{track} {number}'
-MSG_NEW_GROOVE_NAME = 'groove {number}'
-MSG_NEW_INSTRUMENT_NAME = 'instrument {number}'
+MSG_NEW_PATTERN_NAME = 'pattern-{number}'
+# The word each kind of new thing is named with, before its dash and number (composition/naming.py's new_name); a blank pattern
+# made on an empty cell of Arrange takes its track's name for its word, the user's design.
+MSG_NEW_PATTERN_WORD = 'pattern'
+MSG_NEW_SCENE_WORD = 'scene'
+MSG_NEW_TRACK_WORD = 'track'
+MSG_NEW_GROOVE_WORD = 'groove'
+MSG_NEW_INSTRUMENT_WORD = 'instrument'
 
 # composition/sections.py
 # How error messages name the file as a whole, and one object in each section of named objects.

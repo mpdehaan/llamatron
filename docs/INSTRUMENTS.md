@@ -26,7 +26,7 @@ Press `I` on the main screen to open the Instruments page. The list shows each i
 
 | Key | What it does |
 | --- | --- |
-| `A` | Adds an instrument with no device yet, named `instrument 1` and so on, and opens it. |
+| `A` | Adds an instrument with no device yet, named `instrument-1` and so on, and opens it. |
 | `ENTER` | Opens the instrument. |
 | `C` | Copies the instrument to the end of the list. |
 | `N` | Renames the instrument, updating every track that chose it. |

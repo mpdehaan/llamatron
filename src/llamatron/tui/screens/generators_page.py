@@ -19,12 +19,12 @@ beside its name, the user's design. Enter edits one, A adds one of a kind asked 
 nothing uses it, and M moves it, the order kept in the set (Setlist.ordered_generators)."""
 
 from llamatron.composition.file_format import NAMED_GENERATORS
-from llamatron.composition.naming import unique_name
+from llamatron.composition.naming import new_name, suggested_word
 from llamatron.strings.help import HELP_GENERATORS_PAGE
 from llamatron.strings.labels import Column, Crumb
 from llamatron.strings.legends import MSG_GENERATOR_WHAT
 from llamatron.strings.marks import MSG_GENERATOR_KIND_SHOWN
-from llamatron.strings.messages import MSG_COPIED_TO, MSG_NEW_GENERATOR_KIND_TITLE, MSG_NEW_GENERATOR_NAMED, MSG_RENAME_GENERATOR_PROMPT
+from llamatron.strings.messages import MSG_COPIED_TO, MSG_NEW_GENERATOR_KIND_TITLE, MSG_RENAME_GENERATOR_PROMPT
 from llamatron.tui import keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Align
@@ -78,7 +78,7 @@ class GeneratorsPage(ListPage):
 
         def chosen(place):
             listing = listings[place]
-            name = unique_name(base=MSG_NEW_GENERATOR_NAMED.format(kind=listing.label), taken=self.document().names_of(listing.section))
+            name = new_name(word=suggested_word(listing.label), taken=self.document().names_of(listing.section))
             self.document().add_generator(section=listing.section, name=name)
             self.put_cursor_on(kind=listing.kind, name=name)
             self.show_page(listing.EDITOR(holder=self.holder, name=name))

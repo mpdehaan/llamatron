@@ -23,6 +23,7 @@ while a page's footer shows only its own keys, so that it stays short.
 """
 
 from rich.color import Color
+from llamatron.composition.naming import is_taken
 from llamatron.tui.caption_strip import CAPTION_LINES
 from llamatron.tui.themes import luminance
 from rich.style import Style as RichStyle
@@ -237,7 +238,7 @@ class Page(BindsKeys, Screen):
             text = text.strip()
             if not text:
                 self.refuse(ERR_EMPTY_NAME)
-            elif text != value and text in taken:
+            elif text != value and is_taken(name=text, taken=[name for name in taken if name != value]):
                 self.refuse(ERR_NAME_IN_USE.format(name=text))
             elif text != value:
                 then(text)

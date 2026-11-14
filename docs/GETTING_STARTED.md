@@ -153,7 +153,7 @@ This section builds a short song with a melody and a kick drum. A clip needs its
 
 ### 1. Check Song Settings
 
-Start `llamatron` with no file. llamatron opens a new set with one song, `untitled`, which already plays: its one track, `track 1`, plays `pattern 1`, a bar of sixteenths with the scale's root on each beat, in its one scene, `scene 1`. Press `S` for Songs, which lists the set's songs and marks the current one with `●`:
+Start `llamatron` with no file. llamatron opens a new set with one song, `untitled`, which already plays: its one track, `track-1`, plays `pattern-1`, a bar of sixteenths with the scale's root on each beat, in its one scene, `scene-1`. Press `S` for Songs, which lists the set's songs and marks the current one with `●`:
 
 ![The Songs page](screenshots/songs.svg)
 
@@ -165,13 +165,13 @@ Press `ENTER` on the song to open its settings:
 
 ### 2. Melody
 
-Press `P` for Patterns, then `A`, and name the pattern `lead` in place of the `pattern 2` it offers. The pattern editor opens on its piano roll with one bar of empty steps, 16 in 4/4, each a sixteenth note. Each row is a note of the scale, labelled down the left, such as `E3   3` for the E in octave 3, the scale's third degree. The cursor starts on the root, `C3`, at step 1.
+Press `P` for Patterns, then `A`, and name the pattern `lead` in place of the `pattern-2` it offers. The pattern editor opens on its piano roll with one bar of empty steps, 16 in 4/4, each a sixteenth note. Each row is a note of the scale, labelled down the left, such as `E3   3` for the E in octave 3, the scale's third degree. The cursor starts on the root, `C3`, at step 1.
 
 1. Press Up twice, to `E3`, and press `Space`. Press Right, then Down once to `D3` and `Space`; Right, Down to `C3` and `Space`; Right, Up to `D3` and `Space`.
 2. `Space` places a note one step long, drawn as a bar, and never moves the cursor, so you press Right yourself. A step with no note is a rest.
 3. `Bksp` on a note takes it out again.
 
-To make a note longer, press `]` on it to drag its end through one more step, and `[` to take a step back off, or choose how long placed notes are first with `E`. The line under the grid describes the note under the cursor, such as `Step 1: E3 in C Major, gate 1/16`. `Tab` shows the same notes as rows of values, where the Gate row sets lengths finer than whole steps. [Patterns](PATTERNS.md) describes the editor in full. Press `ESC` to go back to the list.
+To make a note longer, press `]` on it to drag its end through one more step, and `[` to take a step back off, or choose how long placed notes are first with `E`. The line under the grid describes the note under the cursor, such as `Step 1: E3 in C_major, gate 1/16`. `Tab` shows the same notes as rows of values, where the Gate row sets lengths finer than whole steps. [Patterns](PATTERNS.md) describes the editor in full. Press `ESC` to go back to the list.
 
 ### 3. Drum Pattern
 
@@ -179,13 +179,13 @@ Press `A` again and name this one `kick`. Press `R` and choose `drum on` to make
 
 ### 4. Tracks
 
-Press `A` for Arrange. A new song starts with one track, `track 1`, across the top and one scene, `scene 1`, down the side. Press Up onto the track's name, then `ENTER`, and rename it `lead` on the Name field. Press `ESC`, then move to the `+` after the last track's name and press `ENTER` to add `track 2`, and rename it `drums` the same way.
+Press `A` for Arrange. A new song starts with one track, `track-1`, across the top and one scene, `scene-1`, down the side. Press Up onto the track's name, then `ENTER`, and rename it `lead` on the Name field. Press `ESC`, then move to the `+` after the last track's name and press `ENTER` to add `track-2`, and rename it `drums` the same way.
 
 ### 5. Scene Arrangement
 
 Scenes are rows and tracks are columns, and a `+` is an empty cell where a clip can go.
 
-1. Move onto `scene 1`'s `lead` cell and press `ENTER`. Choose `lead`; the clip page opens.
+1. Move onto `scene-1`'s `lead` cell and press `ENTER`. Choose `lead`; the clip page opens.
 2. Set Repeat to 4 with `]`, so the melody plays four times, and press `ESC`.
 3. Move onto the `drums` cell, press `ENTER` and choose `kick`. Select Loop and press `Space` to turn it on, so the kick plays for as long as the melody does. Press `ESC`.
 

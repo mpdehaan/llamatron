@@ -197,6 +197,26 @@ a feature that already exists does what's being asked, that's pointed out first
   the cursor where the search put it and shows the whole list again, and ESC puts the cursor back
   where it was. Every page's help mentions it.
 
+## Names the tracker makes
+
+The user's rules for every name the tracker makes up itself, one rule for the whole tracker (`composition/naming.py` makes every
+such name, and `tests/rules/test_naming.py` holds that nothing else numbers one):
+
+- A suggested name is lowercase, with an underscore where a space would be: `c_major` is not `C Major`. The one exception is a
+  note's name in a scale's name, which keeps its capital and its mark: `C_major`, `F#_harmonic_minor`, `Bb_major`.
+- The counting part is joined with a dash: `bass-2`, `C_major-2`.
+- A new thing is its kind's word, a dash and a number: `pattern-1`, `arp-1`, `scene-1`, `track-1`, `groove-1`, `instrument-1`, and a
+  blank pattern made on Arrange takes its track's name as typed, `lead-1`. The number is one more than the highest in use, so a new
+  thing never takes the name of one just deleted and the newest has the highest number.
+- A duplicate, a copy, a conflict or an import whose name is taken, counts: a name with no number gets `-2`, since the name the
+  user picked is the first and is never renamed, `foo` giving `foo-2`, never `foo-1`; a name that already ends in a number counts up
+  and keeps whatever joined the number to it, `bass-2` giving `bass-3`, `name1` giving `name2`, `bass 2` giving `bass 3`; the number
+  goes on until the name is free, and no number is ever added after a number.
+- Names are compared without regard to capitals, and kept as typed: `Bass` and `bass` are one name for anything new, so a rename to
+  the other is refused and a made-up name steps past both; a file that holds both still opens.
+- What counts as taken is every name the new thing could be confused with.
+- A name already in a file stays as written; only names made from now on follow these rules.
+
 ## Dialogs and the status line
 
 - A dialog asks one thing. ENTER answers, ESC cancels, and nothing changes until it's answered.

@@ -58,7 +58,7 @@ from llamatron.strings.marks import MSG_CHAIN_JOIN, MSG_CRUMB_SEPARATOR
 from llamatron.tui.screens.pattern_editor import PatternEditor
 from llamatron.strings.legends import MSG_LEGEND_WHAT, MSG_MOVE_SCENE_WHAT, MSG_MOVE_TRACK_WHAT, MSG_OPEN_PATTERN_WHAT, What, KeyName
 from llamatron.strings.messages import MSG_MOVING, MSG_MOVING_SCENE
-from llamatron.strings.names import MSG_TRACK_PATTERN_NAME
+from llamatron.strings.names import MSG_NUMBERED_NAME
 from llamatron.strings.marks import MSG_FROM_SET_SHOWN
 from llamatron.strings.labels import MSG_REGISTER_COLUMNS
 from llamatron.tui.screens.arrange_page import MOVING_CLIP, MOVING_SCENE
@@ -75,8 +75,8 @@ LEAD = 'lead'
 T19 = 't19'
 TWO = 'two'
 ONE = 'one'
-ONE_COPY = 'one 2'
-SCENE_3 = 'scene 3'
+ONE_COPY = 'one-2'
+NEW_SCENE = 'scene-1'
 BEAT = 'beat'
 TUNE = 'tune'
 # An add past a narrow Allowed Inc Max, and that narrow limit.
@@ -329,7 +329,7 @@ class TestArrangePage(UITest):
 
     async def test_insert_puts_a_blank_scene_above_from_anywhere_on_the_row(self):
         await self.press(Key.RIGHT, Key.DOWN, keybindings.ArrangePage.INSERT_SCENE)
-        self.assertEqual(self.scenes(), [ONE, SCENE_3, TWO])
+        self.assertEqual(self.scenes(), [ONE, NEW_SCENE, TWO])
         self.assertEqual(self.page.row, 1)
         self.assertEqual(self.document.song().get_scenes()[1].get_track_names(), [])
 
@@ -359,7 +359,7 @@ class TestArrangePage(UITest):
         await self.press(Key.RIGHT, Key.DOWN)
         self.assertIsNone(self.document.clip_slot(index=1, track=LEAD))
         await self.press(keybindings.ArrangePage.BLANK_PATTERN)
-        name = MSG_TRACK_PATTERN_NAME.format(track=LEAD, number=1)
+        name = MSG_NUMBERED_NAME.format(base=LEAD, number=1)
         self.assertIsInstance(self.app.screen, PatternEditor)
         self.assertEqual(self.app.screen.item, name)
         self.assertEqual(self.document.clip_slot(index=1, track=LEAD).get_pattern_name(), name)
@@ -368,7 +368,7 @@ class TestArrangePage(UITest):
         await self.press(Key.ESCAPE)
         self.assertIs(self.app.screen, self.page)
         await self.press(keybindings.ArrangePage.DELETE_CLIP, keybindings.ConfirmDialog.YES, keybindings.ArrangePage.BLANK_PATTERN)
-        self.assertEqual(self.app.screen.item, MSG_TRACK_PATTERN_NAME.format(track=LEAD, number=2))
+        self.assertEqual(self.app.screen.item, MSG_NUMBERED_NAME.format(base=LEAD, number=2))
 
     async def test_no_patterns_is_explained(self):
         # The clips go first, since a pattern a clip plays can't be deleted.

@@ -25,7 +25,7 @@ from llamatron.strings.errors import ERR_NO_INSTRUMENTS_TITLE
 from llamatron.strings.labels import MSG_CHANNEL_LABEL, MSG_DEVICE_LABEL, MSG_GM_SOUND_LABEL, MSG_INSTRUMENT_LABEL, PageName
 from llamatron.strings.marks import MSG_AUTO_CHANNEL_SHOWN, MSG_NO_DEVICE_SHOWN, MSG_NONE_SHOWN, MSG_REAL_TIME_OFF_MARK, MSG_REAL_TIME_ON_MARK
 from llamatron.strings.messages import MSG_REAL_TIME_OFF, MSG_REAL_TIME_ON
-from llamatron.strings.names import MSG_NEW_INSTRUMENT_NAME
+from llamatron.strings.names import MSG_NEW_INSTRUMENT_WORD, MSG_NUMBERED_NAME
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
@@ -39,8 +39,8 @@ from llamatron.tui.screens.instruments_page import InstrumentsPage
 from llamatron.tui.screens.main_page import MainPage
 from tests.support.rendering import render_song
 
-INSTRUMENT_1 = MSG_NEW_INSTRUMENT_NAME.format(number=1)
-INSTRUMENT_2 = MSG_NEW_INSTRUMENT_NAME.format(number=2)
+INSTRUMENT_1 = MSG_NUMBERED_NAME.format(base=MSG_NEW_INSTRUMENT_WORD, number=1)
+INSTRUMENT_2 = MSG_NUMBERED_NAME.format(base=MSG_NEW_INSTRUMENT_WORD, number=2)
 SYNTH = 'synth'
 # The ports a computer might have, as python-rtmidi lists them, which the tests pretend are there.
 PORTS = ['IAC Driver Bus 1', 'Analog Four']

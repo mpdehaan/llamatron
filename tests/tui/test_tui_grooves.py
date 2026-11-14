@@ -34,13 +34,13 @@ from llamatron.strings.marks import (
     MSG_SONG_GROOVE_SHOWN,
 )
 from llamatron.strings.messages import MSG_COPIED_TO, MSG_FACTORY_GROOVE_NOTE, MSG_USE_SONG_TRACK
-from llamatron.strings.names import MSG_NEW_GROOVE_NAME
+from llamatron.strings.names import MSG_NEW_GROOVE_WORD, MSG_NUMBERED_NAME
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import first_key
 from tests.support.rendering import render_song
 
-GROOVE_1 = MSG_NEW_GROOVE_NAME.format(number=1)
-GROOVE_2 = MSG_NEW_GROOVE_NAME.format(number=2)
+GROOVE_1 = MSG_NUMBERED_NAME.format(base=MSG_NEW_GROOVE_WORD, number=1)
+GROOVE_2 = MSG_NUMBERED_NAME.format(base=MSG_NEW_GROOVE_WORD, number=2)
 SHUFFLE = 'shuffle'
 # A copy counts up from the number a name ends in, so a copy of the factory groove swing 58 is swing 59.
 SWING_58_COPY = 'swing 59'
