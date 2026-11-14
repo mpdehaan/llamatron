@@ -226,6 +226,24 @@ timing is in ticks, milliseconds or a share of a step, whether it stays inside a
 that notes keep their order, and whether a drum track wants different defaults from a melody.
 `mainstreet_hoedown.yml` is the first song it would suit.
 
+## (High priority) ChordRoller, a generator for rolled chords
+
+A generator that plays a chord rolled, as a pianist or a harpist spreads one: the chord's lowest note sounds where the chord
+is written, each other note starts a little later than the one below, and the notes end at different times too, so that the
+chord opens and closes like a fan and never as a block. It is close to nudging each note by hand, but worked out for the whole
+chord from a few settings.
+
+How it sits beside what exists: Strum already starts a chord's notes one after another, by a spread in milliseconds, in either
+direction, with a fade and loose timing, and every note of a strummed chord still ends where the chord ends. ChordRoller
+differs in two ways: the lowest note always comes first, on the beat, and the ends are staggered as well as the starts. So the
+question to settle with the user before building is whether it is a generator of its own, as asked, or a setting of Strum that
+staggers the ends, which would give one place for everything about a chord's spread; a generator of its own is the plainer
+thing to find by name. What it needs: a settings class and an editor like the other generators, an example set that uses it,
+a page in `docs/generators/`, and a place in the render beside Strum's, since Strum moves starts after the render as a groove
+does. Undecided: whether the spread is in milliseconds, as Strum's is, or a share of the note's length; how the ends are
+staggered (the same order as the starts, the reverse, or a random order from the seed); whether a note may end after the next
+chord starts; and what a single note does, which is presumably nothing.
+
 ## (High priority) BlackHole Record: the song as a WAV from Live, with no export
 
 From the user on 2026-11-10. An export kind under the Ableton Live set in the Ctrl+X dialog,
