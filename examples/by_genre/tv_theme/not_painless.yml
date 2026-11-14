@@ -1,27 +1,32 @@
-version: 1.0.227
+version: 1.0.362
 title: Not painless
 description: "a gentle, wistful guitar theme in the manner of M*A*S*H (Johnny Mandel), with a melody of its own"
 notes: |
   Not painless: a gentle theme at 90 beats a minute in G minor, in the manner of the early seventies:
-  a nylon guitar picking its chords, a bass, a side stick and a shaker, a choir in the second
-  half and a flute with the tune. The melody is its own.
+  two acoustic guitars, a bass, a side stick, a shaker and a soft kick, a choir in the second half
+  and a flute with the tune. This is a homage to Suicide Is Painless, the theme from M*A*S*H, by
+  Johnny Mandel: the mood, the tempo and the instruments are after that theme, and the chords and
+  the melody are its own.
 
-  The guitar holds one chord a bar, which an arpeggiator called picking, in the guitar's chains,
-  plays in eighths up and down. The chords go round the circle of fifths in minor,
-  i iv VII III VI ii v i, from a Progression.
+  The guitar's pattern is one held chord a bar. A Progression moves that chord round the circle of
+  fifths in minor, i iv VII III VI ii v i, and a Guitarify after it in the same chain plays the
+  chord as a guitarist would: rolled from the bass string up in the intro and the outro, picked
+  with the thumb and fingers under the tune, and strummed softly under the choir. A second, steel
+  guitar plays the same chord four strings wide, high up the neck, string by string.
 
   Run it with: llamatron examples/by_genre/tv_theme/not_painless.yml
 
-  Scene 1, intro, 4 bars: the guitar alone.
-  Scene 2, theme, 16 bars: the flute with the tune.
-  Scene 3, choir, 16 bars: the choir joins.
-  Scene 4, interlude, 8 bars: the guitar and the choir.
-  Scene 5, theme 2, 16 bars: the tune again.
-  Scene 6, outro, 8 bars: the guitar alone.
+  Scene 1, intro, 4 bars: the guitar alone, rolling each chord.
+  Scene 2, theme, 16 bars: the flute with the tune over the picked guitar.
+  Scene 3, choir, 16 bars: the choir joins, the guitar strums and the second guitar chimes.
+  Scene 4, interlude, 8 bars: the two guitars and the choir.
+  Scene 5, theme 2, 16 bars: the tune again, with everything.
+  Scene 6, outro, 8 bars: the guitar and the bass.
 
   When changing this demo:
-  - Keep the guitar a held chord picked by the arpeggiator.
-  - Keep the melody original.
+  - Keep the guitars one held chord a bar, moved by the Progression and played by a Guitarify.
+  - Keep the melody its own: nothing of the theme's melody is used.
+  - Keep it gentle: no snare, no loud strum.
 real_time: true
 protected: true
 
@@ -33,59 +38,110 @@ patterns:
     steps: 16
     drum: true
     step_size: 1/16
-    degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~]
-    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~]
-    octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~]
-  hat:
+    degree: [~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~]
+    accidental: [~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 96, ~, ~, ~, ~, ~, ~, ~, 104, ~, ~, ~]
+  shaker:
     steps: 16
     drum: true
     step_size: 1/16
     degree: [A, ~, A, ~, A, ~, A, ~, A, ~, A, ~, A, ~, A, ~]
     accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
     octave: [5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~]
-    velocity: [110, ~, 70, ~, 110, ~, 70, ~, 110, ~, 70, ~, 110, ~, 70, ~]
+    velocity: [96, ~, 60, ~, 84, ~, 60, ~, 96, ~, 60, ~, 84, ~, 68, ~]
+  kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~]
+    velocity: [84, ~, ~, ~, ~, ~, ~, ~, ~, ~, 64, ~, ~, ~, ~, ~]
   guitar:
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, ~, ~, ~, ~]
     chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    velocity: [108, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  guitar high:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    velocity: [78, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
   bass:
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, 5, 1, ~, ~, ~]
     octave: [3, ~, ~, 2, 3, ~, ~, ~]
+    velocity: [104, ~, ~, 84, 96, ~, ~, ~]
     tie: [false, true, true, false, false, true, true, true]
+  bass walk:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, 5, 1, ~, 3, 5]
+    octave: [3, ~, ~, 2, 3, ~, 3, 2]
+    velocity: [104, ~, ~, 84, 96, ~, 80, 84]
+    tie: [false, true, true, false, false, true, false, false]
   choir:
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, ~, ~]
     chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    velocity: [64, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  melody:
-    steps: 64
+  tune:
+    steps: 128
     step_size: 1/8
-    degree: [5, ~, ~, 3, 1, ~, 5, ~, 6, ~, ~, 4, 1, ~, 6, ~, 7, ~, ~, 5, 2, ~, 7, ~, 5, ~, ~, 3, 7, ~, 3, ~, 6, ~, ~, 1, 3, ~, 1, ~, 2, ~, ~, 6, 4, ~, 2, ~, 5, ~, 7, ~, 2, ~, 7, ~, 1, ~, ~, ~, ~, ~, ~, ~]
-    octave: [5, ~, ~, 5, 5, ~, 5, ~, 5, ~, ~, 5, 6, ~, 5, ~, 5, ~, ~, 5, 6, ~, 5, ~, 5, ~, ~, 5, 4, ~, 5, ~, 5, ~, ~, 6, 6, ~, 6, ~, 6, ~, ~, 5, 5, ~, 5, ~, 5, ~, 5, ~, 6, ~, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
-
-arps:
-  picking: { step: 1/8, order: up_down }
+    degree: [5, ~, ~, 1, 3, ~, ~, ~, 4, ~, ~, 3, 1, ~, 6, ~, 7, ~, ~, 2, 4, ~, ~, ~, 3, ~, 2, ~, 7, ~, 5, ~, 6, ~, ~, 1, 3, ~, ~, ~, 4, ~, 2, ~, 6, ~, 2, ~, 5, ~, ~, 4, 2, ~, 7, ~, 1, ~, ~, ~, ~, ~, ~, ~, 3, ~, 5, ~, 1, ~, ~, ~, 6, ~, ~, 5, 4, ~, 3, ~, 4, ~, ~, 2, 7, ~, 2, ~, 3, ~, ~, ~, 5, ~, 3, ~, 6, ~, 5, ~, 3, ~, 1, ~, 2, ~, ~, 4, 6, ~, ~, ~, 5, ~, 4, ~, 2, ~, 7, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, 5, 5, ~, ~, ~, 5, ~, ~, 5, 5, ~, 4, ~, 4, ~, ~, 5, 5, ~, ~, ~, 5, ~, 5, ~, 4, ~, 4, ~, 4, ~, ~, 5, 5, ~, ~, ~, 5, ~, 5, ~, 4, ~, 5, ~, 5, ~, ~, 5, 5, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, ~, 6, ~, ~, ~, 5, ~, ~, 5, 5, ~, 5, ~, 5, ~, ~, 5, 4, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, 5, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [108, ~, ~, 100, 100, ~, ~, ~, 108, ~, ~, 100, 100, ~, 100, ~, 108, ~, ~, 100, 100, ~, ~, ~, 108, ~, 100, ~, 100, ~, 100, ~, 108, ~, ~, 100, 100, ~, ~, ~, 108, ~, 100, ~, 100, ~, 100, ~, 108, ~, ~, 100, 100, ~, 100, ~, 108, ~, ~, ~, ~, ~, ~, ~, 108, ~, 100, ~, 100, ~, ~, ~, 108, ~, ~, 100, 100, ~, 100, ~, 108, ~, ~, 100, 100, ~, 100, ~, 108, ~, ~, ~, 100, ~, 100, ~, 108, ~, 100, ~, 100, ~, 100, ~, 108, ~, ~, 100, 100, ~, ~, ~, 108, ~, 100, ~, 100, ~, 100, ~, 108, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, false, false, true, true, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, false, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, true, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, false, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, true, true]
+  air:
+    steps: 128
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, 7, ~, 6, ~, ~, ~, ~, ~, 5, ~, 4, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, ~, ~, 4, ~, 4, ~, ~, ~, 2, ~, ~, ~, 2, ~, ~, ~, ~, ~, 7, ~, 1, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, 5, ~, ~, ~, 6, ~, ~, ~, 4, ~, ~, ~, 7, ~, ~, ~, ~, ~, 6, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, 3, ~, ~, ~, 4, ~, ~, ~, ~, ~, 2, ~, 2, ~, ~, ~, 7, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [6, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, 4, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [100, ~, ~, ~, ~, ~, 92, ~, 100, ~, ~, ~, ~, ~, 92, ~, 100, ~, ~, ~, ~, ~, 92, ~, 100, ~, ~, ~, 92, ~, ~, ~, 100, ~, ~, ~, ~, ~, 92, ~, 100, ~, ~, ~, 92, ~, ~, ~, 100, ~, ~, ~, ~, ~, 92, ~, 100, ~, ~, ~, ~, ~, ~, ~, 100, ~, ~, ~, 92, ~, ~, ~, 100, ~, ~, ~, 92, ~, ~, ~, 100, ~, ~, ~, ~, ~, 92, ~, 100, ~, ~, ~, ~, ~, ~, ~, 100, ~, ~, ~, 92, ~, ~, ~, 100, ~, ~, ~, ~, ~, 92, ~, 100, ~, ~, ~, 92, ~, ~, ~, 100, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, false, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true]
 
 progressions:
   circle: { chords: [1, 4, 7, 3, 6, 2, 5, 1] }
 
+guitarifies:
+  roll: { bar: [bass, string_4, string_3, string_2, string_1, nothing, nothing, nothing], accents: [false, false, false, false, false, false, false, false], cell: 1/8, let_ring: true }
+  travis: { bar: [bass, string_2, alt_bass, string_1, bass, string_3, alt_bass, string_2], accents: [true, false, false, false, true, false, false, false], cell: 1/8, let_ring: true }
+  soft strum: { bar: [down, nothing, down, up, nothing, up, down, up], accents: [true, false, false, false, false, false, true, false], cell: 1/8, let_ring: true, spread: 18, fade: 30 }
+  high chime: { bar: [string_4, string_2, string_1, string_3, string_2, string_1, string_3, string_2], accents: [false, false, false, false, false, false, false, false], cell: 1/8, let_ring: true, position: 7, strings: 4 }
+  high crosspick: { bar: [string_3, string_2, string_1, string_3, string_2, string_1, string_3, string_2], accents: [true, false, false, true, false, false, true, false], cell: 1/8, let_ring: true, position: 5, strings: 4 }
+
 chains:
-  picking:
-    - arp: picking
   circle:
     - progression: circle
+  roll:
+    - progression: circle
+    - guitarify: roll
+  travis:
+    - progression: circle
+    - guitarify: travis
+  soft strum:
+    - progression: circle
+    - guitarify: soft strum
+  high chime:
+    - progression: circle
+    - guitarify: high chime
+  high crosspick:
+    - progression: circle
+    - guitarify: high crosspick
 
 instruments:
   nylon guitar: { device: "*FluidSynth", gm_sound: 25 }
+  steel guitar: { device: "*FluidSynth", gm_sound: 26 }
   acoustic bass: { device: "*FluidSynth", gm_sound: 33 }
   choir: { device: "*FluidSynth", gm_sound: 53 }
   flute: { device: "*FluidSynth", gm_sound: 74 }
@@ -99,8 +155,10 @@ songs:
 
     tracks:
       stick: { drum: true, instrument: drum kit }
-      hat: { drum: true, instrument: drum kit }
+      shaker: { drum: true, instrument: drum kit }
+      kick: { drum: true, instrument: drum kit }
       guitar: { instrument: nylon guitar }
+      guitar 2: { instrument: steel guitar }
       bass: { instrument: acoustic bass }
       choir: { instrument: choir }
       lead: { instrument: flute }
@@ -108,37 +166,42 @@ songs:
     scenes:
       - name: intro
         tracks:
-          guitar: { pattern: guitar, chains: [circle, picking], repeat: 4 }
+          guitar: { pattern: guitar, chains: [roll], repeat: 4 }
       - name: theme
         tracks:
           stick: { pattern: stick, loop: true }
-          hat: { pattern: hat, loop: true }
-          guitar: { pattern: guitar, chains: [circle, picking], loop: true }
+          shaker: { pattern: shaker, loop: true }
+          guitar: { pattern: guitar, chains: [travis], repeat: 16 }
           bass: { pattern: bass, chains: [circle], loop: true }
-          lead: { pattern: melody, repeat: 2 }
+          lead: { pattern: tune, loop: true }
       - name: choir
         tracks:
           stick: { pattern: stick, loop: true }
-          hat: { pattern: hat, loop: true }
-          guitar: { pattern: guitar, chains: [circle, picking], loop: true }
-          bass: { pattern: bass, chains: [circle], loop: true }
-          lead: { pattern: melody, repeat: 2 }
+          shaker: { pattern: shaker, loop: true }
+          kick: { pattern: kick, loop: true }
+          guitar: { pattern: guitar, chains: [soft strum], repeat: 16 }
+          guitar 2: { pattern: guitar high, chains: [high chime], loop: true }
+          bass: { pattern: bass walk, chains: [circle], loop: true }
           choir: { pattern: choir, chains: [circle], loop: true }
+          lead: { pattern: air, loop: true }
       - name: interlude
         tracks:
-          stick: { pattern: stick, repeat: 8 }
-          hat: { pattern: hat, loop: true }
-          guitar: { pattern: guitar, chains: [circle, picking], loop: true }
+          shaker: { pattern: shaker, loop: true }
+          guitar: { pattern: guitar, chains: [travis], repeat: 8 }
+          guitar 2: { pattern: guitar high, chains: [high crosspick], loop: true }
           bass: { pattern: bass, chains: [circle], loop: true }
           choir: { pattern: choir, chains: [circle], loop: true }
       - name: theme 2
         tracks:
           stick: { pattern: stick, loop: true }
-          hat: { pattern: hat, loop: true }
-          guitar: { pattern: guitar, chains: [circle, picking], loop: true }
-          bass: { pattern: bass, chains: [circle], loop: true }
-          lead: { pattern: melody, repeat: 2 }
+          shaker: { pattern: shaker, loop: true }
+          kick: { pattern: kick, loop: true }
+          guitar: { pattern: guitar, chains: [travis], repeat: 16 }
+          guitar 2: { pattern: guitar high, chains: [high chime], loop: true }
+          bass: { pattern: bass walk, chains: [circle], loop: true }
+          choir: { pattern: choir, chains: [circle], loop: true }
+          lead: { pattern: tune, loop: true }
       - name: outro
         tracks:
-          guitar: { pattern: guitar, chains: [circle, picking], repeat: 8 }
+          guitar: { pattern: guitar, chains: [roll], repeat: 8 }
           bass: { pattern: bass, chains: [circle], loop: true }
