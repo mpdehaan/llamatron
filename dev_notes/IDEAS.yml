@@ -490,6 +490,22 @@
     (see "Pattern generators on the Patterns page", which already has notes for pattern builders, and
     the Metrics Wizard's "Transforms") and which want a key of their own is the thing to decide.
 
+- title: "Ocean, a visualizer of ripples on water"
+  priority: 25
+  text: |
+    A visualizer mode called "ocean": water seen from straight above, nearly all in blues. Each note that starts drops into the
+    water and sends out a ring of ripples. Every strike aims at one common place, which drifts slowly around the picture, and
+    each track strikes at a place of its own near that common place, so that more tracks give more places and more kinds of
+    ripple. The rings cross and somewhat interfere, adding where two crests meet and cancelling where a crest meets a trough.
+
+    What it would mean: a module in `src/llamatron/visualizers/` beside the lava lamp, registered in `modes.py`, a pairing in
+    `internal_tools/visualizer_pairings.yml` where a demo suits it, a place in `docs/VISUALIZERS.md`, tests in
+    `tests/visualizers/test_visualizers.py` and a timing in `internal_tools/time_visualizer.sh` with 8 and 64 tracks. The
+    visualizer's rule holds: nothing strobes or flashes, brightness rises and falls gently and a limiter holds the picture
+    down as more plays. Undecided: whether a louder note makes a taller or a wider ring; whether pitch changes anything, such
+    as the ring's speed or its shade of blue; how far a track's place is from the common place and whether the places drift
+    too; how long a ring lasts; and whether the water is still or gently moving when nothing plays.
+
 - title: "Importing patterns from another llamatron set"
   priority: 99
   text: |
