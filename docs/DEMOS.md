@@ -52,7 +52,7 @@ pages current.
 | [Gospel](demos/GOSPEL.md) | 1 |
 | [Pop](demos/POP.md) | 5 |
 | [Ragtime](demos/RAGTIME.md) | 1 |
-| [Rock](demos/ROCK.md) | 9 |
+| [Rock](demos/ROCK.md) | 10 |
 | [Soundtrack](demos/SOUNDTRACK.md) | 7 |
 | [TV Theme](demos/TV_THEME.md) | 13 |
 | [TV theme](demos/TV_THEME.md) | 2 |
