@@ -78,8 +78,9 @@ a feature that already exists does what's being asked, that's pointed out first
   picker alike (`cursor_moved` in `tui/key_table.py` is the one place that moves one), because an arrow held down should fly to the end and stay there, the way a
   pointer flies to the edge of a screen, and going round breaks that. Nothing may wrap a cursor
   from one edge to the opposite one without asking the user first. Stepping a value through a
-  fixed cycle of choices, like the Chord row's `]` or a field's Left and Right, is not a cursor
-  and may go round, and so may Tab through the F1 dialog's panels and a grid picker's pages.
+  fixed cycle of a few choices, like the #/b row's `]` or a field's Left and Right, is not a cursor
+  and may go round, but a chord's quality, tensions and scale stop at the first and the last choice on every page that steps
+  them (the user's rule, who dislikes going round in such widgets, so a new long list of choices stops too). Tab through the F1 dialog's panels, the Chord dialog's lists and a grid picker's pages may go round.
 - Reverse video is for things that act: the key labels in menus and legends, the Save, Open and
   Export buttons, which are also reversed when selected, and the Yes and No buttons. A value or a
   row that's only being edited or chosen is never reversed, only marked with the triangle. The

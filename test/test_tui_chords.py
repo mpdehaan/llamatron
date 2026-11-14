@@ -29,8 +29,9 @@ from llamatron.music.scale import ScaleType
 from llamatron.strings.marks import MSG_BLOCKED_CELL, MSG_FLYOUT_CHOSEN, MSG_FLYOUT_TITLE, MSG_TENSIONS_COUNTED
 from llamatron.strings.messages import MSG_CHORD_DIALOG_TITLE, MSG_CHORD_OF_STEP, MSG_NOTE_SENTENCE, MSG_RESTING_STEP
 from llamatron.tui import keybindings
-from llamatron.tui.dialogs.chord_dialog import NOT_BORROWED_ROW, QUALITY_LIST, SCALE_LIST, TENSION_LIST, ChordDialog
-from llamatron.tui.dialogs.dialog import DIALOG_VIEW_SELECTOR, FLYOUT_SHIFT
+from llamatron.tui.dialogs.chord_dialog import LISTS, NOT_BORROWED_ROW, QUALITY_LIST, SCALE_LIST, TENSION_LIST, ChordDialog
+from llamatron.tui.dialogs.dialog import DIALOG_MARGIN, DIALOG_SELECTOR, FLYOUT_SHIFT
+from llamatron.tui.drawing import Box
 from llamatron.tui.scale_categories import COMMON_SCALE_TYPES, SCALE_CATEGORIES, SCALE_TYPES_IN_ORDER, SORTED_SCALE_CATEGORIES
 from llamatron.tui.keys import Key, RowSection
 from llamatron.tui.screens.pattern_editor import PatternEditor
@@ -82,6 +83,12 @@ class TestPatternEditorChords(UITest):
         self.assertEqual(self.value(Row.CHORD_SCALE), SCALE_TYPES_IN_ORDER[0])
         await self.press(keybindings.ChordScaleRow.MORE, keybindings.ChordScaleRow.LESS, keybindings.ChordScaleRow.LESS)
         self.assertIsNone(self.value(Row.CHORD_SCALE))
+        # The scale types stop at the last and never go round to none (the user's rule), and [ goes back from the last.
+        self.set(row=Row.CHORD_SCALE, value=SCALE_TYPES_IN_ORDER[-1])
+        await self.press(keybindings.ChordScaleRow.MORE, keybindings.ChordScaleRow.NEXT)
+        self.assertEqual(self.value(Row.CHORD_SCALE), SCALE_TYPES_IN_ORDER[-1])
+        await self.press(keybindings.ChordScaleRow.LESS)
+        self.assertEqual(self.value(Row.CHORD_SCALE), SCALE_TYPES_IN_ORDER[-2])
         self.set(row=Row.CHORD_SCALE, value=MINOR)
         self.assertEqual(self.editor.row_for(Row.CHORD_SCALE).cell_text(step=FIRST_STEP), SCALE_CELL)
         await self.press(keybindings.ChordScaleRow.CLEAR)
@@ -187,7 +194,7 @@ class TestPatternEditorChords(UITest):
     async def test_a_flyout_is_a_box_of_the_dialogs_size_stacked_over_it_and_the_dialog_stays_where_it_was(self):
         dialog = await self.open_on_scales()
         closed = self.dialog_text().splitlines()
-        view = dialog.query_one(DIALOG_VIEW_SELECTOR)
+        view = dialog.query_one(DIALOG_SELECTOR)
         await self.settle()
         corner = (view.region.x, view.region.y)
         await self.press(Key.DOWN, keybindings.ChordDialog.OPEN)
@@ -205,17 +212,18 @@ class TestPatternEditorChords(UITest):
         self.assertIn(C_MINOR, self.dialog_text())
         self.assertIn(key_name(keybindings.ChordDialog.CLOSE_FLYOUT), self.dialog_text())
 
-    async def test_every_flyout_fits_the_dialog_and_the_console(self):
+    async def test_the_dialog_is_one_size_on_every_list_wide_enough_for_the_most_keys_on_one_line(self):
         dialog = await self.open_on_scales()
-        for row in range(1, len(dialog.categories) + 1):
-            dialog.places[SCALE_LIST] = row
-            dialog.open_row()
+        sizes = set()
+        for _ in range(LISTS):
             lines = self.dialog_text().splitlines()
-            self.assertLessEqual(len(lines), CONSOLE_LINES, row)
-            self.assertLessEqual(max(len(line) for line in lines), CONSOLE_WIDTH, row)
-            for kind in dialog.kinds_of_row(row):
-                self.assertIn(words(kind).title(), self.dialog_text(), kind)
-            dialog.close_flyout()
+            sizes.add((len(lines), len(lines[0])))
+            await self.press(keybindings.ChordDialog.NEXT_LIST)
+        self.assertEqual(len(sizes), 1)
+        # With the room this console has, the tension list's keys, the most, are on one line.
+        dialog.part = TENSION_LIST
+        self.assertEqual(len(dialog.legend_lines(dialog.wanted_width() - DIALOG_MARGIN)), 1)
+        self.assertEqual(len(self.dialog_text().splitlines()[0]), dialog.wanted_width())
 
     async def test_the_pattern_shows_the_chord_as_the_choice_moves_and_escape_puts_it_back_with_no_undo_step(self):
         self.set(row=Row.CHORD, value=ChordSymbol.MAJOR)
@@ -271,6 +279,41 @@ class TestPatternEditorChords(UITest):
         self.assertNotEqual(self.document.song().get_pattern(TUNE).to_data(), before)
         await self.press(keybindings.Page.UNDO)
         self.assertEqual(self.document.song().get_pattern(TUNE).to_data(), before)
+
+
+class TestChordDialogOnASmallConsole(TestPatternEditorChords):
+    """The Chord dialog and every flyout on the smallest console, 80 by 24, where the keys take two lines."""
+
+    SIZE = (CONSOLE_WIDTH, CONSOLE_LINES)
+    # Two tests of the class above are about a console with room to spare, and the test below says the same of this one.
+    test_a_flyout_is_a_box_of_the_dialogs_size_stacked_over_it_and_the_dialog_stays_where_it_was = None
+    test_the_dialog_is_one_size_on_every_list_wide_enough_for_the_most_keys_on_one_line = None
+
+    async def test_the_dialog_is_one_size_on_every_list_and_every_flyout_is_whole_on_the_console(self):
+        dialog = await self.open_on_scales()
+        sizes = set()
+        for _ in range(LISTS):
+            lines = self.dialog_text().splitlines()
+            sizes.add((len(lines), len(lines[0])))
+            await self.press(keybindings.ChordDialog.NEXT_LIST)
+        self.assertEqual(len(sizes), 1)
+        box = dialog.query_one(DIALOG_SELECTOR)
+        corner = (box.region.x, box.region.y)
+        for row in range(1, len(dialog.categories) + 1):
+            dialog.places[SCALE_LIST] = row
+            dialog.open_row()
+            text = self.dialog_text()
+            await self.settle()
+            # The dialog's corner has not moved, and the stack's last column and line are on the console.
+            self.assertEqual((box.region.x, box.region.y), corner, row)
+            self.assertLessEqual(box.region.x + box.region.width, CONSOLE_WIDTH, row)
+            self.assertLessEqual(box.region.y + box.region.height, CONSOLE_LINES, row)
+            self.assertEqual((box.region.width, box.region.height), (max(len(line) for line in text.splitlines()), len(text.splitlines())), row)
+            self.assertEqual(text.splitlines()[-1].strip()[-1], Box.HEAVY_BOTTOM_RIGHT, row)
+            for kind in dialog.kinds_of_row(row):
+                self.assertIn(words(kind).title(), text, kind)
+            self.assertIn(key_name(keybindings.ChordDialog.CLOSE_FLYOUT), text, row)
+            dialog.close_flyout()
 
 
 class TestScaleCategories(unittest.TestCase):

@@ -1724,8 +1724,9 @@ class TestLookAndNewKeys(UITest):
         await self.go_to_row(Row.CHORD)
         await self.press(Key.ENTER)
         text = self.dialog_text()
-        self.assertLessEqual(len(text.splitlines()), 22)
-        self.assertLessEqual(max(len(line) for line in text.splitlines()), 76)
+        # On this console; the smallest console is held by TestChordDialogOnASmallConsole.
+        self.assertLessEqual(len(text.splitlines()), self.app.size.height)
+        self.assertLessEqual(max(len(line) for line in text.splitlines()), self.app.size.width)
 
     async def test_typing_numbers_into_ratchet(self):
         await self.go_to_row(Row.RATCHET)

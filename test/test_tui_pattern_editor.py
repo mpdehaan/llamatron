@@ -25,6 +25,7 @@ from llamatron.composition.naming import words
 from llamatron.composition.limits import MIN_DEGREE
 from llamatron.composition.row_descriptions import ROW_DESCRIPTIONS, RowOfNumbers
 from llamatron.composition.file_format import (
+    CHORD_SYMBOLS,
     Accidental,
     ClipSlotSetting,
     ChordSymbol,
@@ -56,6 +57,7 @@ from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.document import Document
 from llamatron.tui.keys import HOME_END, Key, OPEN_AT_START, RowSection, SHIFT_LEFT_RIGHT, SHIFT_UP_DOWN
+from llamatron.tui.components.chord_row import chord_value
 from llamatron.tui.components.pattern_rows import PINNED_ROWS, SECTIONS
 from llamatron.tui.screens.pattern_editor import Munge, PatternEditor, Reconfigure, reconfigure_choices
 from llamatron.tui.components.degree_row import GAUGE_ROWS_WITHOUT_SCALE
@@ -703,22 +705,25 @@ class TestPatternEditorLengthsAndPitches(PatternEditorTest):
         self.assertEqual(self.value(row=Row.OCTAVE), MAX_OCTAVE)
         self.assertIn(str(MAX_OCTAVE), self.app.screen.cell_text(name=Row.OCTAVE, step=self.editor.step))
 
-    async def test_chord_cycles_through_the_symbols(self):
+    async def test_chord_steps_through_the_symbols_and_stops_at_the_first_and_the_last(self):
         await self.go_to_row(Row.CHORD)
         seen = []
         for _ in range(4):
             await self.press(keybindings.ChordRow.MORE)
             seen.append(self.value(row=Row.CHORD))
         self.assertEqual(seen, ['M', 'm', ChordSymbol.DIMINISHED, ChordSymbol.AUGMENTED])
-        await self.press(keybindings.ChordRow.LESS, keybindings.ChordRow.LESS, keybindings.ChordRow.LESS, keybindings.ChordRow.LESS, keybindings.ChordRow.LESS)
-        self.assertEqual(self.value(row=Row.CHORD), 13)
-        # The brackets step the same way: ] on from 13 comes round to none and then the first symbol, and [ goes back.
-        await self.press(keybindings.ChordRow.MORE, keybindings.ChordRow.MORE)
+        # [ goes back to none, the first choice, and stops there, never round to the last (the user's rule).
+        await self.press(*[keybindings.ChordRow.LESS] * 5)
+        self.assertIsNone(self.value(row=Row.CHORD))
+        await self.press(keybindings.ChordRow.MORE)
         self.assertEqual(self.value(row=Row.CHORD), 'M')
-        await self.press(keybindings.ChordRow.LESS, keybindings.ChordRow.LESS)
-        self.assertEqual(self.value(row=Row.CHORD), 13)
+        # ] stops at the last symbol, and [ goes back from the last.
+        last = chord_value(CHORD_SYMBOLS[-1])
+        before_last = chord_value(CHORD_SYMBOLS[-2])
+        await self.press(*[keybindings.ChordRow.MORE] * (len(CHORD_SYMBOLS) + 1))
+        self.assertEqual(self.value(row=Row.CHORD), last)
         await self.press(keybindings.ChordRow.LESS)
-        self.assertEqual(self.value(row=Row.CHORD), 11)
+        self.assertEqual(self.value(row=Row.CHORD), before_last)
 
 
 class TestPatternEditorOtherRowsAndSize(PatternEditorTest):

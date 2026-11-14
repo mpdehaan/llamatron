@@ -88,7 +88,7 @@ def pick_chord(*, editor, step, opens_on=QUALITY_LIST):
 
 
 class ChordRow(PatternRow):
-    """Enter opens the Chord dialog, Space or ] and [ cycle through the symbols, and Bksp clears."""
+    """Enter opens the Chord dialog, Space or ] and [ step through the symbols, stopping at the first and the last, and Bksp clears."""
 
     KEYS = keybindings.ChordRow
 
@@ -118,4 +118,5 @@ class ChordRow(PatternRow):
         value = self.value()
         shown = [chord_text(option) for option in options]
         place = shown.index(chord_text(value)) if chord_text(value) in shown else 0
-        self.set_value(options[(place + offset) % len(options)])
+        # The choices stop at both ends and never go round (the user's rule for a chord's quality, tensions and scale).
+        self.set_value(options[max(min(place + offset, len(options) - 1), 0)])
