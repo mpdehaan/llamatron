@@ -46,6 +46,7 @@ A file holds a set of songs, like the songs of one concert. The patterns, scales
 | [Blues](docs/demos/BLUES.md) | The blues demo songs. |
 | [Children's](docs/demos/CHILDRENS.md) | The children's demo songs. |
 | [Classical](docs/demos/CLASSICAL.md) | The classical demo songs. |
+| [Country](docs/demos/COUNTRY.md) | The country demo songs. |
 | [Electronic](docs/demos/ELECTRONIC.md) | The electronic demo songs. |
 | [Exercise](docs/demos/EXERCISE.md) | The exercise demo songs. |
 | [Folk](docs/demos/FOLK.md) | The folk demo songs. |
