@@ -70,6 +70,15 @@ mean for the code: `ListPage` laying its rows out in columns for the size it is 
 all four arrows and stopping at every edge, the search, Move mode and the `+` row keeping their behaviour, 80 by 24
 staying as today.
 
+For the set's list of patterns, the user's ask: where the console has the room, each row shows the tracks that play the
+pattern, in the space the row has left; when the names don't fit, they are cut with an ellipsis, and the number of uses is
+always shown, whatever the room. At the same time each row says whether the pattern is one the whole set shares widely or
+one that only some part plays, a single song or a single track (Claude's reading of the user's "global pattern against some
+pattern", to be confirmed before the drawings). What it would mean for the code: `uses_of` in `tui/uses.py` already knows
+every use, and the Patterns page's USED column the count; the row needs the track names of the uses, without repeats, fitted
+to the width the page is given, and the answer remembered until the set changes. This covers what was left of "Where a
+pattern is used" for the Patterns page.
+
 ## (High priority) The batch recorder reading each song's visualizer
 
 A song now names the visualizer mode Arrange shows first (`SongSetting.VISUALIZER`), and the set one too, the song's over the
