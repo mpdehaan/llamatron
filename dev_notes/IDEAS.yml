@@ -510,6 +510,21 @@
     (see "Pattern generators on the Patterns page", which already has notes for pattern builders, and
     the Metrics Wizard's "Transforms") and which want a key of their own is the thing to decide.
 
+- title: "To discuss: the genre library keeps explaining songs and drops improving and generating them"
+  priority: 3
+  text: |
+    The user wants to end the parts of the genre project that improve a song or generate one from the genre data, and to keep
+    the parts that use the corpus to explain: what the library believes is true of songs, how a song is unusual or like others,
+    and whatever is known about what makes one better, said as an explanation and not acted on. This is to be discussed before
+    anything is removed.
+
+    For the discussion: which of what exists is on each side (the analyzer, the measures, the comparing and `describe_style.sh`
+    explain; the cells, the wizards and anything that writes notes generate or improve), what the plan in
+    `dev_notes/GENRE_PLAN.md` and the genre items of `dev_notes/QUEUE.md` become, whether the training tools under
+    `internal_tools/analysis_and_generation/` that only feed generation stay as tools for the explanations or go, what
+    `.claude/GENRES.md` then says the library is for, and what an explanation looks like to a person: a report, a page of the
+    tracker, or both.
+
 - title: "Ocean, a visualizer of ripples on water"
   priority: 25
   text: |
