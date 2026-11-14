@@ -1342,7 +1342,8 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
 - Before a note of a homage is written, three blocks are written into its notes, from what Claude knows, and every part is then
   checked against them (the user's rules). **Subgenre:** its name, and its drums, tempo and feel, bass, builds, sounds, melody
   manner and form; the subgenre is named exactly, since two styles filed under one genre share little. **Band and song:** what
-  the band is known for and what the song is known for. **The checklist:** the hook and the instrument that carries it; the
+  the band is known for and what the song is known for. **The checklist:** first, why the work is good and why it is remembered, in a sentence, which every later choice serves
+  (the user's rule, for every song); then the hook and the instrument that carries it; the
   emotion; the lift, where the biggest moment is and what changes there in register, loudness, voices and drums; the contrast
   between quiet and loud sections; the sounds of the lead, the chords and the bass, each a General MIDI sound with the right
   attack, a sung lead never on a soft sound alone; and each section's tune, its register, note lengths and shape, the chorus
