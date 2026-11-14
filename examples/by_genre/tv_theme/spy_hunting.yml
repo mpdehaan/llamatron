@@ -1,158 +1,218 @@
-version: 1.0.227
+version: 1.0.364
 title: Spy hunting
 description: "a late fifties spy-jazz theme in the manner of Peter Gunn (Henry Mancini), with a riff and a tune of its own"
 notes: |
-  Spy hunting: a spy theme at 112 beats a minute in E minor, in the manner of the late fifties
-  detective shows: a low guitar riff in eighths, doubled by the bass, a surf beat on the ride,
-  stabbing brass and a tenor saxophone with the tune. The riff and the tune are its own.
+  Spy hunting: a late fifties spy-jazz theme in the manner of Peter Gunn (Henry Mancini), with a riff
+  and a tune of its own. This is a homage to Peter Gunn (Henry Mancini): its chords, form, sounds and
+  drums follow that work as Claude knows it, and every tune and rhythm here is new. Rebuild version 2.
 
-  The riff and the brass are one bar each over chord i, moved through a minor twelve-bar blues
-  by a Progression, i i i i iv iv i i v iv i i, so every scene is one chorus of twelve bars.
+  One bar of low eighths on a twangy guitar, a piano and a bass, on one chord, that never stops; brass
+  chords that swell over it; a head in long blue notes and a wailing tenor sax solo; once, the riff
+  moves to iv and back.
+
+  Subgenre: spy jazz of the late fifties. Drums: a straight rock beat with a ride. Tempo 120,
+  straight. Bass: the riff itself, low eighths that never stop. Builds: brass grows over the riff.
+  Sounds: a twangy guitar, piano and bass on the riff, a brass section, a tenor sax. Melody manner:
+  long blue notes over the riff. Form: riff, brass, head, solo, head.
+
+  Band and song: the theme is known for one bar that repeats from start to end, and for brass that
+  screams over it.
+
+  Checklist: it is good and memorable because the riff is menace on a loop. The hook is the riff; the
+  emotion is cool danger; the lift is the brass swelling in; the contrast is the riff alone; the
+  sounds are an electric guitar, a piano, a brass section, a trumpet and a tenor sax.
 
   Run it with: llamatron examples/by_genre/tv_theme/spy_hunting.yml
 
-  Scene 1, riff, 12 bars: the guitar riff alone.
-  Scene 2, drums, 12 bars: the bass doubles the riff and the drums come in.
-  Scene 3, brass, 12 bars: the brass stabs join.
-  Scene 4, head, 12 bars: the saxophone plays the tune.
-  Scene 5, head 2, 12 bars: the tune again.
-  Scene 6, break, 12 bars: the brass and the riff, no saxophone.
-  Scene 7, last head, 12 bars: the tune to the end.
+  Scene 1, riff, 4 bars.
+  Scene 2, drums, 4 bars.
+  Scene 3, brass, 8 bars.
+  Scene 4, head, 16 bars.
+  Scene 5, sax, 16 bars.
+  Scene 6, to iv and back, 8 bars.
+  Scene 7, head 2, 16 bars.
+  Scene 8, shout, 8 bars.
+  Scene 9, riff out, 8 bars.
 
   When changing this demo:
-  - Keep the riff and the stabs one bar long over chord i.
-  - Keep every scene a twelve-bar chorus.
-  - Keep the riff and the tune original.
+  - Keep the drums as the Subgenre paragraph describes them, the kick first.
+  - Keep what the Checklist paragraph calls the hook and the lift.
+  - Keep every tune original, and the demo out of the key of the work it follows.
 real_time: true
 protected: true
 
 scales:
-  E Minor: { root: E, type: minor }
+  G Minor: { root: G, type: minor }
 
 patterns:
-  kit_kick:
+  kick:
     steps: 16
     drum: true
     step_size: 1/16
-    degree: [C, ~, C, ~, ~, ~, C, ~, C, ~, C, ~, ~, ~, C, ~]
-    octave: [3, ~, 3, ~, ~, ~, 3, ~, 3, ~, 3, ~, ~, ~, 3, ~]
-    velocity: [110, ~, 110, ~, ~, ~, 110, ~, 110, ~, 110, ~, ~, ~, 110, ~]
-  kit_snare:
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [108, ~, ~, ~, ~, ~, ~, ~, 108, ~, ~, ~, ~, ~, ~, ~]
+  snare:
     steps: 16
     drum: true
     step_size: 1/16
-    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, D]
-    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, 3]
-    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, 70]
-  kit_ride:
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 108, ~, ~, ~, ~, ~, ~, ~, 108, ~, ~, ~]
+  ride:
     steps: 16
     drum: true
     step_size: 1/16
     degree: [D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~]
     accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
     octave: [4, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~]
-    velocity: [110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~, 110, ~]
+    velocity: [72, ~, 72, ~, 72, ~, 72, ~, 72, ~, 72, ~, 72, ~, 72, ~]
   riff:
     steps: 8
     step_size: 1/8
-    degree: [1, 1, 3, 1, 4, 4, 5, 3]
-    accidental: [~, ~, ~, ~, ~, "#", ~, ~]
-    octave: [3, 3, 3, 3, 3, 3, 3, 3]
-  stabs:
+    degree: [1, 1, 5, 7, 1, 3, 4, 3]
+    octave: [3, 3, 2, 2, 3, 3, 3, 3]
+    velocity: [112, 106, 106, 106, 106, 106, 106, 106]
+  riff low:
     steps: 8
     step_size: 1/8
-    degree: [~, ~, ~, ~, ~, ~, 1, ~]
-    octave: [~, ~, ~, ~, ~, ~, 4, ~]
-    chord: [~, ~, ~, ~, ~, ~, "3", ~]
-    tie: [false, false, false, false, false, false, false, true]
-  head:
-    steps: 96
+    degree: [1, 1, 5, 7, 1, 3, 4, 3]
+    octave: [2, 2, 1, 1, 2, 2, 2, 2]
+    velocity: [106, 100, 100, 100, 100, 100, 100, 100]
+  swell:
+    steps: 16
     step_size: 1/8
-    degree: [5, ~, ~, 3, 5, ~, 7, ~, 1, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, 3, 4, 4, 5, ~, 3, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, 6, 1, ~, 3, ~, 4, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, 3, 4, 4, 5, ~, 1, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, 7, 2, ~, 4, ~, 1, ~, ~, 6, 4, ~, 1, ~, 5, ~, 3, ~, 1, ~, 5, ~, 1, ~, ~, ~, ~, ~, ~, ~]
-    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    octave: [5, ~, ~, 5, 5, ~, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, 5, 5, 5, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, 5, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, 5, 5, 5, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, 5, 6, ~, 6, ~, 6, ~, ~, 5, 5, ~, 6, ~, 5, ~, 5, ~, 5, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, true, true, false, false, true, false, true, false, true, true, true, false, false, false, false, false, true, true, false, false, false, false, true, false, true, true, true, false, false, false, false, false, true, true, false, false, true, false, true, false, true, true, true, false, false, false, false, false, true, true, false, false, false, false, true, false, true, true, true, false, false, false, false, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, false]
+    degree: [~, ~, ~, ~, ~, ~, 1, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [~, ~, ~, ~, ~, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~]
+    chord: [~, ~, ~, ~, ~, ~, "7", ~, "7", ~, ~, ~, ~, ~, ~, ~]
+    velocity: [~, ~, ~, ~, ~, ~, 104, ~, 110, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, true, false, true, true, true, true, true, false, false]
+  head:
+    steps: 64
+    step_size: 1/8
+    degree: [5, ~, ~, ~, ~, ~, 5, ~, 4, ~, ~, ~, 3, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 7, ~, 1, ~, ~, ~, 7, ~, ~, ~, 5, ~, ~, ~, ~, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 5, ~, 6, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [114, ~, ~, ~, ~, ~, 108, ~, 114, ~, ~, ~, 108, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, 108, ~, 114, ~, ~, ~, 108, ~, ~, ~, 114, ~, ~, ~, ~, ~, 108, ~, 114, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false, false, true, true, true, true, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true]
+  sax:
+    steps: 64
+    step_size: 1/8
+    degree: [1, 7, 5, 4, 5, 4, 3, 1, 3, ~, 4, 5, 5, ~, 7, ~, 1, 3, 1, 7, 5, ~, 4, 3, 1, ~, ~, ~, ~, ~, ~, ~, 5, 7, 1, 3, 4, ~, 3, 1, 7, 5, 5, 4, 3, ~, 1, ~, 4, 5, 5, 7, 1, 7, 5, 4, 1, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [6, 5, 5, 5, 5, 5, 5, 5, 5, ~, 5, 5, 5, ~, 5, ~, 6, 6, 6, 5, 5, ~, 5, 5, 5, ~, ~, ~, ~, ~, ~, ~, 5, 5, 6, 6, 6, ~, 6, 6, 5, 5, 5, 5, 5, ~, 5, ~, 5, 5, 5, 5, 6, 5, 5, 5, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, 104, 104, 104, 104, 104, 104, 104, 110, ~, 104, 104, 104, ~, 104, ~, 110, 104, 104, 104, 104, ~, 104, 104, 110, ~, ~, ~, ~, ~, ~, ~, 110, 104, 104, 104, 104, ~, 104, 104, 110, 104, 104, 104, 104, ~, 104, ~, 110, 104, 104, 104, 104, 104, 104, 104, 110, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, false, false, true, false, false, false, true, false, true, false, false, false, false, false, true, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, true, true, true, true, true, false, false]
 
 progressions:
-  blues: { chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 1] }
+  move: { chords: [4, 4, 1, 1] }
 
 chains:
-  blues:
-    - progression: blues
+  move:
+    - progression: move
 
 instruments:
-  clean guitar: { device: "*FluidSynth", gm_sound: 28 }
-  pick bass: { device: "*FluidSynth", gm_sound: 35 }
-  brass: { device: "*FluidSynth", gm_sound: 62 }
+  electric guitar: { device: "*FluidSynth", gm_sound: 28 }
+  piano: { device: "*FluidSynth", gm_sound: 1 }
+  acoustic bass: { device: "*FluidSynth", gm_sound: 33 }
+  brass section: { device: "*FluidSynth", gm_sound: 62 }
+  trumpet: { device: "*FluidSynth", gm_sound: 57 }
   tenor sax: { device: "*FluidSynth", gm_sound: 67 }
   drum kit: { device: "*FluidSynth" }
 
 songs:
   spy_hunting:
-    tempo: 112
-    scale: E Minor
-    genre: TV theme
+    tempo: 120
+    scale: G Minor
+    genre: TV Theme
 
     tracks:
       kick: { drum: true, instrument: drum kit }
       snare: { drum: true, instrument: drum kit }
       ride: { drum: true, instrument: drum kit }
-      riff: { instrument: clean guitar }
-      bass: { instrument: pick bass }
-      stabs: { instrument: brass }
-      lead: { instrument: tenor sax }
+      riff: { instrument: electric guitar }
+      piano: { instrument: piano }
+      bass: { instrument: acoustic bass }
+      brass: { instrument: brass section }
+      lead: { instrument: trumpet }
+      sax: { instrument: tenor sax }
 
     scenes:
       - name: riff
         tracks:
-          riff: { pattern: riff, chains: [blues], repeat: 12 }
+          riff: { pattern: riff, repeat: 4 }
+          bass: { pattern: riff low, loop: true }
       - name: drums
         tracks:
-          kick: { pattern: kit_kick, repeat: 12 }
-          snare: { pattern: kit_snare, loop: true }
-          ride: { pattern: kit_ride, loop: true }
-          riff: { pattern: riff, chains: [blues], loop: true }
-          bass: { pattern: riff, chains: [blues], loop: true }
+          kick: { pattern: kick, repeat: 4 }
+          snare: { pattern: snare, loop: true }
+          ride: { pattern: ride, loop: true }
+          riff: { pattern: riff, loop: true }
+          piano: { pattern: riff low, loop: true }
+          bass: { pattern: riff low, loop: true }
       - name: brass
         tracks:
-          kick: { pattern: kit_kick, repeat: 12 }
-          snare: { pattern: kit_snare, loop: true }
-          ride: { pattern: kit_ride, loop: true }
-          riff: { pattern: riff, chains: [blues], loop: true }
-          bass: { pattern: riff, chains: [blues], loop: true }
-          stabs: { pattern: stabs, chains: [blues], loop: true }
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: snare, loop: true }
+          ride: { pattern: ride, loop: true }
+          riff: { pattern: riff, loop: true }
+          piano: { pattern: riff low, loop: true }
+          bass: { pattern: riff low, loop: true }
+          brass: { pattern: swell, loop: true }
       - name: head
         tracks:
-          kick: { pattern: kit_kick, loop: true }
-          snare: { pattern: kit_snare, loop: true }
-          ride: { pattern: kit_ride, loop: true }
-          riff: { pattern: riff, chains: [blues], loop: true }
-          lead: { pattern: head }
-          bass: { pattern: riff, chains: [blues], loop: true }
-          stabs: { pattern: stabs, chains: [blues], loop: true }
+          kick: { pattern: kick, repeat: 16 }
+          snare: { pattern: snare, loop: true }
+          ride: { pattern: ride, loop: true }
+          riff: { pattern: riff, loop: true }
+          piano: { pattern: riff low, loop: true }
+          bass: { pattern: riff low, loop: true }
+          brass: { pattern: swell, loop: true }
+          lead: { pattern: head, loop: true }
+      - name: sax
+        tracks:
+          kick: { pattern: kick, repeat: 16 }
+          snare: { pattern: snare, loop: true }
+          ride: { pattern: ride, loop: true }
+          riff: { pattern: riff, loop: true }
+          piano: { pattern: riff low, loop: true }
+          bass: { pattern: riff low, loop: true }
+          sax: { pattern: sax, loop: true }
+      - name: to iv and back
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: snare, loop: true }
+          ride: { pattern: ride, loop: true }
+          riff: { pattern: riff, chains: [move], loop: true }
+          piano: { pattern: riff low, chains: [move], loop: true }
+          bass: { pattern: riff low, chains: [move], loop: true }
+          brass: { pattern: swell, chains: [move], loop: true }
       - name: head 2
         tracks:
-          kick: { pattern: kit_kick, loop: true }
-          snare: { pattern: kit_snare, loop: true }
-          ride: { pattern: kit_ride, loop: true }
-          riff: { pattern: riff, chains: [blues], loop: true }
-          lead: { pattern: head }
-          bass: { pattern: riff, chains: [blues], loop: true }
-          stabs: { pattern: stabs, chains: [blues], loop: true }
-      - name: break
+          kick: { pattern: kick, repeat: 16 }
+          snare: { pattern: snare, loop: true }
+          ride: { pattern: ride, loop: true }
+          riff: { pattern: riff, loop: true }
+          piano: { pattern: riff low, loop: true }
+          bass: { pattern: riff low, loop: true }
+          brass: { pattern: swell, loop: true }
+          lead: { pattern: head, loop: true }
+      - name: shout
         tracks:
-          kick: { pattern: kit_kick, repeat: 12 }
-          snare: { pattern: kit_snare, loop: true }
-          ride: { pattern: kit_ride, loop: true }
-          riff: { pattern: riff, chains: [blues], loop: true }
-          bass: { pattern: riff, chains: [blues], loop: true }
-          stabs: { pattern: stabs, chains: [blues], loop: true }
-      - name: last head
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: snare, loop: true }
+          ride: { pattern: ride, loop: true }
+          riff: { pattern: riff, loop: true }
+          piano: { pattern: riff low, loop: true }
+          bass: { pattern: riff low, loop: true }
+          brass: { pattern: swell, loop: true }
+          lead: { pattern: head, loop: true }
+          sax: { pattern: sax, loop: true }
+      - name: riff out
         tracks:
-          kick: { pattern: kit_kick, loop: true }
-          snare: { pattern: kit_snare, loop: true }
-          ride: { pattern: kit_ride, loop: true }
-          riff: { pattern: riff, chains: [blues], loop: true }
-          lead: { pattern: head }
-          bass: { pattern: riff, chains: [blues], loop: true }
-          stabs: { pattern: stabs, chains: [blues], loop: true }
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: snare, loop: true }
+          ride: { pattern: ride, loop: true }
+          riff: { pattern: riff, loop: true }
+          piano: { pattern: riff low, loop: true }
+          bass: { pattern: riff low, loop: true }
