@@ -13,7 +13,7 @@ A clip sits where a scene's row and a track's column meet on Arrange, so the cli
 | Setting | What it does |
 | --- | --- |
 | Name | A name of the clip's own, shown on the grid and used for the clip in Live and in the clip tree's file names. Without one, the clip goes by its pattern's name. `Bksp` clears it. |
-| Pattern | The pattern the clip plays. `P` opens the pattern in the pattern editor from any row of the page, and `Esc` comes back. |
+| Pattern | The pattern the clip plays. `J` jumps to the pattern in the pattern editor from any row of the page, and `Esc` comes back. |
 | Scale | A scale of the clip's own, which wins over the scene's and the song's, so that one track can play in another key or mode. `Enter` picks one, and `Bksp` goes back to the scene's, shown with where it comes from, such as `A Minor (from scene)`. |
 | Chains | The chains of generators the clip runs, in order. `Enter` opens the list, where `A` adds a chain, `M` moves one and `Bksp` takes one out; `Bksp` on the field clears them all. A clip runs its own chains first, then its scene's, then its track's. See [Chains](CHAINS.md). |
 | Repeat | How many times the clip plays, from 1 to 9999, before staying silent while the scene's other clips finish. |

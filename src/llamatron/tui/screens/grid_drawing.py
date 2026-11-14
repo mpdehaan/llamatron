@@ -209,14 +209,16 @@ class GridDrawing:
         else:
             line.append(single, style=Style.DIM)
 
-    def step_line(self, *, first, last):
+    def step_line(self, *, first, last, sounding=None):
+        """Return the line of step numbers, with the number of the step that sounds, if one is given, in the read head's light yellow (the user's choice for the rows view)."""
         head = Text(no_wrap=True)
         head.append(Box.BAR, style=Style.DIM)
         head.append(fit(text=MSG_STEP_HEADING, width=self.label_width()), style=Style.BOLD)
         beats = self.beat_steps()
         for step in range(first, last):
             self.append_edge(line=head, step=step, beats=beats, single=Box.BAR, double=Box.DOUBLE_BAR)
-            head.append(fit(text=str(step + 1), width=CELL_WIDTH, align=Align.CENTER), style=Style.BOLD if step in beats else Style.PLAIN)
+            style = Style.READ_HEAD if step == sounding else (Style.BOLD if step in beats else Style.PLAIN)
+            head.append(fit(text=str(step + 1), width=CELL_WIDTH, align=Align.CENTER), style=style)
         head.append(Box.BAR, style=Style.DIM)
         return head
 

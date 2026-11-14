@@ -35,7 +35,7 @@ The keys depend on what is under the cursor:
 | An empty cell | `Enter` | Choose a pattern and add a clip; `Enter` on the clip again opens it |
 | An empty cell | `B` | Make a blank pattern named after the track, add a clip of it and open it in the pattern editor |
 | A clip | `Enter` | Open the clip page, as [Clips](CLIPS.md) describes |
-| A clip | `P` | Open the clip's pattern in the pattern editor; `Esc` comes back to the clip |
+| A clip | `J` | Jump to the clip's pattern in the pattern editor; `Esc` comes back to the clip |
 | A clip | `C` | Copy the clip |
 | A clip | `Bksp` | Delete the clip, after asking |
 | A cell, after copying a clip | `V` | Paste the copied clip here, replacing what's there |

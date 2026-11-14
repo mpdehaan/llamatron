@@ -76,6 +76,10 @@ def listen_to_pattern(*, page, pattern):
     if refusal is not None:
         page.refuse(refusal)
         return
+    # A song with so many tracks through FluidSynth that one of them has the preview's channel is stopped first, so that the preview's sound never
+    # changes a track that plays; the song sends each track's sound again when it next plays (the user's rule).
+    if preview.shares_a_channel_with(pattern=pattern, routes=page.app.transport.routes()) and page.app.transport.is_playing():
+        page.app.transport.stop_all()
     try:
         preview.play(pattern)
     except (SongFileError, SenderNotStarted) as error:

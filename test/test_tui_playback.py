@@ -35,7 +35,7 @@ from llamatron.exporters.midi_arrangement import DRUM_CHANNEL_BYTE, MELODIC_CHAN
 from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT
 from llamatron.realtime.engine import PlaybackEngine, SteppedClock
 from llamatron.realtime.outputs import RecordingOutput
-from llamatron.realtime.timeline import NOTE_ON, PROGRAM_CHANGE
+from llamatron.realtime.timeline import NOTE_ON, PROGRAM_CHANGE, Route
 from llamatron.composition.checks import listed
 from llamatron.tui.uses import looping_scenes
 from llamatron.strings.errors import (
@@ -913,6 +913,43 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         self.assertEqual(drawing.read_head_on(line=Text(MSG_NOTE_EDGE), column=FIRST_INDEX).plain, MSG_NOTE_EDGE)
         self.assertEqual(drawing.read_head_on(line=Text(SPACE), column=FIRST_INDEX).plain, MSG_READ_HEAD)
 
+    async def test_the_rows_view_shows_the_number_of_the_step_that_sounds_in_the_read_heads_colour(self):
+        self.name_a_preview_instrument()
+        await self.open_pattern(TUNE)
+        await self.press(keybindings.PatternEditor.TO_EDITOR)
+        self.assertEqual(self.sounding_step_numbers(), [])
+        await self.press(keybindings.PatternEditor.LISTEN)
+        await self.let_the_preview_play(PAST_THE_SECOND_NOTE)
+        self.assertEqual(self.sounding_step_numbers(), [str(SECOND_INDEX + 1)])
+
+    def sounding_step_numbers(self):
+        """Return the step numbers the rows view's header draws in the read head's style."""
+        line = self.page.drawing.step_line(first=FIRST_INDEX, last=LAST_TUNE_STEP + 1, sounding=self.page.playing_step())
+        return [line.plain[span.start:span.end].strip() for span in line.spans if span.style == Style.READ_HEAD]
+
+    async def test_a_song_whose_track_has_the_previews_channel_is_stopped_before_the_preview_plays(self):
+        self.document.add_instrument(FLUID)
+        self.document.set_instrument_device(name=FLUID, device=FLUIDSYNTH_DEVICE)
+        self.document.set_track_instrument(name=LEAD, instrument=FLUID)
+        preview = self.preview()
+        # The lead plays on FluidSynth's first channel, not the preview's, so nothing is shared.
+        self.assertFalse(preview.shares_a_channel_with(pattern=TUNE, routes=self.transport().routes()))
+        shared = {LEAD: Route(FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE)}
+        self.assertTrue(preview.shares_a_channel_with(pattern=TUNE, routes=shared))
+        # A drum pattern chooses no sound, and a Preview instrument on a device of its own uses no FluidSynth channel.
+        self.assertFalse(preview.shares_a_channel_with(pattern=BEAT, routes=shared))
+        self.name_a_preview_instrument()
+        self.assertFalse(preview.shares_a_channel_with(pattern=TUNE, routes=shared))
+        self.document.set_preview_instrument_name(None)
+        await self.press(keybindings.MainPage.ARRANGE, *CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
+        await self.let_time_pass(BRIEFLY)
+        await self.press(Key.ESCAPE)
+        await self.open_pattern(OTHER)
+        with mock.patch.object(Transport, Transport.routes.__name__, return_value=shared):
+            await self.press(keybindings.PatternEditor.LISTEN)
+        self.assertFalse(self.transport().is_playing())
+        self.assertEqual(self.preview().playing_pattern(), OTHER)
+
     def read_head_cells(self):
         """Return how many cells of the roll, as drawn now, are in the read head's style."""
         drawing = self.page.roll_drawing
@@ -959,7 +996,10 @@ class TestDirectionsComeRound(unittest.TestCase):
         self.assertEqual(passes_to_come_round(steps=LAST_TUNE_STEP + 1, direction=Direction.ALTERNATE), 2)
         # Four steps as a pendulum are six long, 0 1 2 3 2 1, which comes round after three passes of four.
         self.assertEqual(passes_to_come_round(steps=LAST_TUNE_STEP + 1, direction=Direction.PENDULUM), 3)
-        self.assertEqual(passes_to_come_round(steps=LAST_TUNE_STEP + 1, direction=Direction.RANDOM), CHOSEN_PASSES)
+        # A direction that chooses as it goes plays as many choices as the pattern has steps, one pass.
+        for direction in (Direction.RANDOM, Direction.BROWNIAN, Direction.EITHERWAY):
+            self.assertEqual(passes_to_come_round(steps=LAST_TUNE_STEP + 1, direction=direction), 1)
+        self.assertEqual(CHOSEN_PASSES, 1)
 
 
 class TestHeard(PlaybackTest):

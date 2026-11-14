@@ -1155,7 +1155,7 @@ code.
   and plays whatever the Real Time switch says (`may_play`). It plays a copy of the set (`PreviewSet`,
   made again when the set's revision moves, so an edit is heard at the next pass) whose current song
   holds one scene, the pattern's clip on a track of its own, in the pattern's direction for as many
-  passes as the direction takes to come round (`passes_to_come_round`), in the first of
+  passes as the direction takes to come round (`passes_to_come_round`), one pass for a direction that chooses as it goes, in the first of
   `scales_of_pattern`. Its one route is the song's Preview instrument, or General MIDI's piano on
   `PREVIEW_CHANNEL_BYTE` of FluidSynth, and the drum channel for a drum pattern always. `L` is not bound
   when nothing could sound (`can_sound`); a Preview instrument that cannot sound is refused on the status
@@ -1164,7 +1164,8 @@ code.
   elapsed time and its direction's order (`step_sounding`), None for a direction that chooses as it goes;
   `PatternEditor.playing_step` asks the preview and then the song's transport, and
   `RollDrawing.with_read_head` draws a thin line in `Style.READ_HEAD` at the step's left edge on copies
-  of the kept lines, never over a note's bar. The rows view shows none yet.
+  of the kept lines, never over a note's bar. The rows view draws the sounding step's number in the same colour (`GridDrawing.step_line(sounding=)`). A song
+  with a track on the preview's FluidSynth channel is stopped before a preview plays (`shares_a_channel_with`), the user's rule.
 - Ctrl+T (`everywhere.silence`) says what `Transport.silence_everything()` did: note offs, CC
   123 and CC 120 on every (device, channel) the instruments use among the connected devices
   (`channels_in_use`), `MSG_SILENCED` or `MSG_NOTHING_TO_SILENCE`.

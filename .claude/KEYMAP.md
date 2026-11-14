@@ -32,14 +32,14 @@ settings page's fields. The keys that work everywhere are listed once:
 - **a track's name**: `Esc` back · `←↑↓→` move · `A` add track · `Enter` track settings · `C` copy track · `I` insert track · `M` move track · `Bksp` delete track · `D` details · `Tab` cell details · `Z` visualizer
 - **the + after the tracks**: `Esc` back · `←↑↓→` move · `A` add track · `Enter` add track · `D` details · `Z` visualizer
 - **a scene's name**: `Esc` back · `←↑↓→` move · `Space` play scene · `A` add scene · `Enter` scene settings · `P` scene view · `C` copy scene · `Bksp` delete scene · `I` insert scene · `M` move scene · `D` details · `Tab` cell details · `Z` visualizer
-- **a clip**: `Esc` back · `←↑↓→` move · `Space` play clip · `A` add scene · `Enter` edit clip · `P` pattern · `M` move clip · `C` copy clip · `Bksp` delete clip · `V` paste clip · `I` insert scene · `D` details · `Tab` cell details · `Z` visualizer
+- **a clip**: `Esc` back · `←↑↓→` move · `Space` play clip · `A` add scene · `Enter` edit clip · `J` jump to pattern · `M` move clip · `C` copy clip · `Bksp` delete clip · `V` paste clip · `I` insert scene · `D` details · `Tab` cell details · `Z` visualizer
 - **an empty cell**: `Esc` back · `←↑↓→` move · `A` add scene · `Enter` add clip · `B` blank pattern · `V` paste clip · `I` insert scene · `D` details · `Z` visualizer
 - **the + row**: `Esc` back · `←↑↓→` move · `A` add scene · `Enter` add scene · `D` details · `Z` visualizer
 - **the corner**: `Esc` back · `←↑↓→` move · `Space` play song · `D` hide details · `Z` visualizer
 - **a track's name**: `Esc` back · `←↑↓→` move · `A` add track · `Enter` track settings · `C` copy track · `I` insert track · `M` move track · `Bksp` delete track · `D` hide details · `Tab` cell details · `Z` visualizer
 - **the + after the tracks**: `Esc` back · `←↑↓→` move · `A` add track · `Enter` add track · `D` hide details · `Z` visualizer
 - **a scene's name**: `Esc` back · `←↑↓→` move · `Space` play scene · `A` add scene · `Enter` scene settings · `P` scene view · `C` copy scene · `Bksp` delete scene · `I` insert scene · `M` move scene · `D` hide details · `Tab` cell details · `Z` visualizer
-- **a clip**: `Esc` back · `←↑↓→` move · `Space` play clip · `A` add scene · `Enter` edit clip · `P` pattern · `M` move clip · `C` copy clip · `Bksp` delete clip · `V` paste clip · `I` insert scene · `D` hide details · `Tab` cell details · `Z` visualizer
+- **a clip**: `Esc` back · `←↑↓→` move · `Space` play clip · `A` add scene · `Enter` edit clip · `J` jump to pattern · `M` move clip · `C` copy clip · `Bksp` delete clip · `V` paste clip · `I` insert scene · `D` hide details · `Tab` cell details · `Z` visualizer
 - **an empty cell**: `Esc` back · `←↑↓→` move · `A` add scene · `Enter` add clip · `B` blank pattern · `V` paste clip · `I` insert scene · `D` hide details · `Z` visualizer
 - **the + row**: `Esc` back · `←↑↓→` move · `A` add scene · `Enter` add scene · `D` hide details · `Z` visualizer
 - **a locked cell**: `Esc` leave cell · `Tab` leave the cell · `↑↓` select · `Enter` open · `Bksp` remove chain · `D` close details
@@ -88,17 +88,17 @@ settings page's fields. The keys that work everywhere are listed once:
 
 ## ClipPage
 
-- **the Name field**: `Esc` back · `↑↓` select · `Enter` rename · `Bksp` use pattern name · `PgUp/PgDn` next section · `F2` rename · `P` pattern · `L` listen
-- **the Pattern field**: `Esc` back · `↑↓` select · `Enter` choose · `PgUp/PgDn` next section · `F2` rename · `P` pattern · `L` listen
-- **the Scale field**: `Esc` back · `↑↓` select · `Enter` choose · `Bksp` use the scene scale · `PgUp/PgDn` next section · `F2` rename · `P` pattern · `L` listen
-- **the Chains field**: `Esc` back · `↑↓` select · `Enter` edit · `Bksp` no chain · `PgUp/PgDn` next section · `F2` rename · `P` pattern · `L` listen
-- **the Repeat field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `PgUp/PgDn` next section · `F2` rename · `P` pattern · `L` listen
-- **the Loop field, the Strum heading, the Density heading, the Swell heading, the Articulate heading**: `Esc` back · `↑↓` select · `Space/Enter` toggle · `PgUp/PgDn` next section · `F2` rename · `P` pattern · `L` listen
-- **the Direction field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` use the pattern's · `PgUp/PgDn` next section · `F2` rename · `P` pattern · `L` listen
-- **the Grab track field**: `Esc` back · `↑↓` select · `Enter` choose · `Bksp` no grab · `PgUp/PgDn` next section · `F2` rename · `P` pattern · `L` listen
-- **the Advance field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `PgUp/PgDn` next section · `F2` rename · `P` pattern · `L` listen
-- **the Play button**: `Esc` back · `↑↓` select · `←→` select · `Enter` listen · `PgUp/PgDn` next section · `F2` rename · `P` pattern · `L` listen
-- **the Stop button**: `Esc` back · `↑↓` select · `←→` select · `Enter` stop · `PgUp/PgDn` next section · `F2` rename · `P` pattern · `L` listen
+- **the Name field**: `Esc` back · `↑↓` select · `Enter` rename · `Bksp` use pattern name · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
+- **the Pattern field**: `Esc` back · `↑↓` select · `Enter` choose · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
+- **the Scale field**: `Esc` back · `↑↓` select · `Enter` choose · `Bksp` use the scene scale · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
+- **the Chains field**: `Esc` back · `↑↓` select · `Enter` edit · `Bksp` no chain · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
+- **the Repeat field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` edit · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
+- **the Loop field, the Strum heading, the Density heading, the Swell heading, the Articulate heading**: `Esc` back · `↑↓` select · `Space/Enter` toggle · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
+- **the Direction field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `Bksp` use the pattern's · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
+- **the Grab track field**: `Esc` back · `↑↓` select · `Enter` choose · `Bksp` no grab · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
+- **the Advance field**: `Esc` back · `↑↓` select · `[` dec · `]` inc · `Enter` choose · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
+- **the Play button**: `Esc` back · `↑↓` select · `←→` select · `Enter` listen · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
+- **the Stop button**: `Esc` back · `↑↓` select · `←→` select · `Enter` stop · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
 
 ## DensityEditor
 
@@ -824,6 +824,11 @@ settings page's fields. The keys that work everywhere are listed once:
 - RushStepsEditor: insert step (anywhere)
 - ShortenStepsEditor: insert step (anywhere)
 
+## `J`
+
+- ArrangePage: jump to pattern (a clip)
+- ClipPage: jump to pattern (the Name field, the Pattern field, the Scale field, the Chains field, the Repeat field, the Loop field, the Strum heading, the Density heading, the Swell heading, the Articulate heading, the Direction field, the Grab track field, the Advance field, the Play button, the Stop button)
+
 ## `K`
 
 - PatternEditor: split (the piano roll)
@@ -873,9 +878,7 @@ settings page's fields. The keys that work everywhere are listed once:
 ## `P`
 
 - ArrangePage: scene view (a scene's name)
-- ArrangePage: pattern (a clip)
 - ArrangePage: close (Scene View)
-- ClipPage: pattern (the Name field, the Pattern field, the Scale field, the Chains field, the Repeat field, the Loop field, the Strum heading, the Density heading, the Swell heading, the Articulate heading, the Direction field, the Grab track field, the Advance field, the Play button, the Stop button)
 - MainPage: Patterns (anywhere)
 
 ## `PgUp/PgDn`
