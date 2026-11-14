@@ -121,7 +121,7 @@ from llamatron.strings.labels import (
     MSG_PROTECTED_LABEL, MSG_QUIT_BUTTONS, MSG_SCALE_LABEL, MSG_SEED_LABEL, MSG_TIME_SIGNATURE_LABEL, MSG_ENTRY_SIZE_LABEL, MSG_TITLE_LABEL,
     PageName,
 )
-from llamatron.strings.legends import MSG_LEGEND_WHAT, What, MSG_ABOUT_FOOTER_WHAT, KeyName
+from llamatron.strings.legends import MSG_LEGEND_WHAT, MSG_QUIT_WITHOUT_SAVING_WHAT, What, MSG_ABOUT_FOOTER_WHAT, KeyName
 from llamatron.strings.marks import MSG_PICKER_MARK
 from llamatron.strings.marks import (
     MSG_FOLDER_ROW, MSG_PARENT_ROW,
@@ -2145,6 +2145,9 @@ class TestQuitting(UITest):
         for label in MSG_QUIT_BUTTONS:
             self.assertTrue(any(label in line for line in lines), label)
         self.assertLessEqual(len(lines[0]), self.app.size.width)
+        # The console has the room, so the keys under the buttons are on one line: the first key and the last share it.
+        first = MSG_QUIT_WITHOUT_SAVING_WHAT
+        self.assertTrue(any(key_name(keybindings.QuitDialog.CANCEL) in line and first in line and key_name(keybindings.QuitDialog.SELECT) in line for line in lines[-3:]))
 
 
 def tracker_sources():

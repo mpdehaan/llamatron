@@ -22,11 +22,14 @@ from rich.text import Text
 
 from llamatron.strings.labels import MSG_QUIT_BUTTONS
 from llamatron.tui.components.button_row import button_row
+from llamatron.tui.dialogs.dialog import DIALOG_MARGIN
 from llamatron.tui.dialogs.message_dialog import MessageDialog
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui.drawing import NOTHING, legend
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui import keybindings
 
+# A width no legend reaches, to measure the keys on one line.
+UNLIMITED_WIDTH = 1000
 # The buttons' places, in the order of MSG_QUIT_BUTTONS.
 QUIT_WITHOUT_SAVING = 0
 SAVE_THEN_QUIT = 1
@@ -50,6 +53,11 @@ class QuitDialog(MessageDialog):
             self.bind(self.KEYS.QUIT, action=lambda: self.dismiss(QUIT_WITHOUT_SAVING)),
             self.bind(self.KEYS.SAVE, action=lambda: self.dismiss(SAVE_THEN_QUIT)),
         ]
+
+    def wanted_width(self):
+        """Return a width that holds the dialog's keys on one line, where the console has the room, since they are too many for the usual width (the user's ask)."""
+        keys_on_one_line = max(line.cell_len for line in legend(keys=self.keys(), width=UNLIMITED_WIDTH))
+        return max(super().wanted_width(), keys_on_one_line + DIALOG_MARGIN)
 
     def move(self, name):
         self.choice = cursor_moved(place=self.choice, name=name, count=len(MSG_QUIT_BUTTONS))
