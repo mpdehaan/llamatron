@@ -109,7 +109,10 @@ OUTPUT_FLAG = '--output'
 PRESET_FLAG = '--preset'
 DURATION_FLAG = '--duration'
 REPLACE_FLAG = '--replace'
-TRIMMING_SUFFIX = '.trimming.mov'
+# The trimmed copy is made in a hidden folder beside the videos and takes the video's place when it is whole, so that only finished videos are ever seen there.
+TRIMMING_FOLDER = '.trimming'
+# What the trimmed copies were once called, beside the videos, where a take that was stopped left them: found and removed before each trim.
+OLD_TRIMMING_MARK = '.trimming.mov'
 SUCCESS = 0
 FAILURE = 1
 # The video tutorial's screen recording, which runs with no time limit and stops when a key is typed into its own terminal, for a take whose length nobody knows.
@@ -399,19 +402,36 @@ def take_seconds(*, song_seconds, max_seconds):
     return min(SPLASH_SECONDS + LEAD_IN_SECONDS + song_seconds + LEAD_OUT_SECONDS + SPLASH_SECONDS + HOLD_SECONDS + MARGIN_SECONDS, max_seconds)
 
 
+def remove_trim_leftovers(folder):
+    """Remove what a trim that was stopped left in a folder of videos: the hidden folder of trimmed copies, and the copies once made beside the videos."""
+    shutil.rmtree(os.path.join(folder, TRIMMING_FOLDER), ignore_errors=True)
+    for name in os.listdir(folder):
+        if OLD_TRIMMING_MARK in name:
+            os.unlink(os.path.join(folder, name))
+
+
 def trim_end(*, video, recorded_seconds):
-    """Cut CUT_FROM_START seconds off the start of a video recorded for recorded_seconds and TRIMMED_SECONDS off its end, in place, so that it opens on black and ends while the tracker still shows. Return None, or why it couldn't, leaving the video as it was."""
-    trimming = video + TRIMMING_SUFFIX
+    """Cut CUT_FROM_START seconds off the start of a video recorded for recorded_seconds and TRIMMED_SECONDS off its end, in place, so that it opens on black and ends while the tracker still shows. Return None, or why it couldn't.
+
+    Only the trimmed video is kept, the user's rule: the trimmed copy is made in a hidden
+    folder and takes the video's place once it is whole, and the folder is removed however the
+    trim ends, a stopped take included.
+    """
+    folder = os.path.dirname(os.path.abspath(video))
+    remove_trim_leftovers(folder)
+    hidden = os.path.join(folder, TRIMMING_FOLDER)
+    os.makedirs(hidden)
+    trimming = os.path.join(hidden, os.path.basename(video))
     kept = recorded_seconds - CUT_FROM_START - TRIMMED_SECONDS
     try:
         subprocess.run([AVCONVERT, SOURCE_FLAG, video, OUTPUT_FLAG, trimming, PRESET_FLAG, TRIM_PRESET, START_FLAG, str(CUT_FROM_START),
                         DURATION_FLAG, str(kept), REPLACE_FLAG],
                        check=True, capture_output=True)
+        os.replace(trimming, video)
     except (OSError, subprocess.CalledProcessError) as error:
-        if os.path.exists(trimming):
-            os.unlink(trimming)
         return str(error)
-    os.replace(trimming, video)
+    finally:
+        shutil.rmtree(hidden, ignore_errors=True)
     return None
 
 
