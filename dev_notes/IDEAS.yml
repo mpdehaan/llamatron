@@ -11,6 +11,26 @@
 # A title that starts "In progress:" is work started but not finished, which is named first when the user asks what
 # to do next. Keys are described by what they do, not by their letters, since the letters change.
 
+- title: "Keyswitches, designed around Orchestral Tools' SINE player"
+  priority: 1
+  text: |
+    The user wants this soon. An instrument can say how its plugin changes articulation, so that llamatron sends the change
+    before the notes that need it: a guitar's open, muted and dead notes, a string section's long, short, pizzicato and
+    tremolo. The design is to fit Orchestral Tools' SINE player as well as it can, and other plugins after; the user uses no
+    plugin with keyswitches yet, so every generator must also sound right on a plain MIDI instrument with none.
+
+    To read before designing, from SINE's own documentation and not from memory: every way SINE lets an articulation be
+    chosen (a keyswitch note, a controller's value, a MIDI channel, a program change), whether several articulations can
+    sound at once or be layered, where the keyswitch notes sit by default, whether a switch must come before the note or may
+    come with it, and how SINE treats polyphonic and legato patches.
+
+    What it would mean: an articulation map on the instrument (a name for each articulation and what is sent for it), set on
+    the instrument's page; a way for a pattern's step to name an articulation, likely a row of the pattern editor, and a way
+    for a generator to name one, as the guitar generators' muted strokes would; the render sending the change just before the
+    note, in every exporter and in real-time playback, without the switch notes showing as notes on the piano roll or in an
+    import; and the Live set export, where the switch notes go into the clip. Undecided: all of the above, and whether a
+    ready-made map ships for any plugin, which depends on what may be said about a product's layout.
+
 - title: "In progress: the designs agreed with the user on 2026-11-11, to build in this order"
   priority: 1
   text: |
