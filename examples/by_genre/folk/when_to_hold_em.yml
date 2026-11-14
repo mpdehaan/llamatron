@@ -1,0 +1,239 @@
+version: 1.0.364
+title: "When to hold 'em"
+description: "a country story song of the late seventies in the manner of The Gambler (Don Schlitz, as Kenny Rogers recorded it), with a tune of its own"
+notes: |
+  When to hold 'em: a country story song of the late seventies in the manner of The Gambler (Don
+  Schlitz, as Kenny Rogers recorded it), with a tune of its own. This is a homage to The Gambler (Don
+  Schlitz, as Kenny Rogers recorded it): its chords, form, sounds and drums follow that work as Claude
+  knows it, and every tune and rhythm here is new. Rebuild version 1.
+
+  A Guitarify picks a bass note and strums each chord of I, IV and V; a talky verse and a higher
+  chorus; the third verse and all after a half step up; one chorus over hand claps and a kick alone.
+
+  Subgenre: a country story ballad of the late seventies, a tale told in verses with a chorus of
+  advice. Drums: a soft kick on one and three and brushes on two and four, nothing else, and hand
+  claps where the band drops out. Tempo 172 counted in two, straight. Bass: root and fifth, one and
+  three. Builds: the key rises a half step for the third verse, and one chorus is sung over claps
+  alone. Sounds: an acoustic guitar picking a bass note and strumming, a warm low voice, a fiddle,
+  voices joining the chorus. Melody manner: a talky verse of repeated notes in short phrases; a chorus
+  that sits higher and longer, easy to join. Form: verse, verse, chorus, verse a half step up, chorus,
+  chorus over claps, chorus.
+
+  Band and song: the singer is known for a warm, grainy voice that tells a story plainly; the song for
+  its tale of a stranger's advice, its three chords, its half-step lift and the chorus the band leaves
+  to the voices.
+
+  Checklist: it is good and memorable because the chorus is advice anyone can sing, and the band
+  stepping away makes the room sing. The hook is the chorus; the emotion is weary wisdom; the lift is
+  the half step up, then the chorus with voices; the contrast is the chorus over claps alone; the
+  sounds are a voice lead, a choir, a steel-string guitar that a Guitarify picks and strums, a fiddle
+  and an acoustic bass.
+
+  Run it with: llamatron examples/by_genre/folk/when_to_hold_em.yml
+
+  Scene 1, intro, 8 bars.
+  Scene 2, verse 1, 16 bars.
+  Scene 3, verse 2, 16 bars.
+  Scene 4, chorus, 16 bars.
+  Scene 5, verse 3, 16 bars.
+  Scene 6, chorus 2, 16 bars.
+  Scene 7, chorus over claps, 16 bars.
+  Scene 8, last chorus, 16 bars.
+  Scene 9, ending, 8 bars.
+
+  When changing this demo:
+  - Keep the drums as the Subgenre paragraph describes them, the kick first.
+  - Keep what the Checklist paragraph calls the hook and the lift.
+  - Keep every tune original, and the demo out of the key of the work it follows.
+real_time: true
+protected: true
+
+scales:
+  A Major: { root: A, type: major }
+  Bb Major: { root: Bb, type: major }
+
+patterns:
+  kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [82, ~, ~, ~, ~, ~, ~, ~, 82, ~, ~, ~, ~, ~, ~, ~]
+  brush:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, D, ~, ~, ~, ~, ~, D, ~, D, ~]
+    octave: [~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, 3, ~, 3, ~]
+    velocity: [~, ~, ~, ~, 66, ~, 46, ~, ~, ~, ~, ~, 66, ~, 46, ~]
+  clap:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
+    accidental: [~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 96, ~, ~, ~, ~, ~, ~, ~, 96, ~, ~, ~]
+  two beat:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, 5, ~, ~, ~]
+    octave: [2, ~, ~, ~, 1, ~, ~, ~]
+    velocity: [102, ~, ~, ~, 96, ~, ~, ~]
+  chord:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    velocity: [90, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  fill:
+    steps: 32
+    step_size: 1/8
+    degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, 5, 6, ~, 5, ~]
+    octave: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, 5, 5, ~, 5, ~]
+    velocity: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 84, 84, 84, ~, 84, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true]
+  verse:
+    steps: 128
+    step_size: 1/8
+    degree: [3, ~, 3, ~, 3, ~, 2, 1, 3, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, ~, 6, ~, 4, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~, 5, ~, 3, ~, 1, ~, ~, ~, ~, ~, ~, ~, 2, ~, 2, ~, 4, ~, 2, ~, 2, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~, 3, ~, 2, 1, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, 6, ~, 1, ~, 6, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, 4, ~, 1, ~, 4, ~, 3, ~, ~, ~, 1, ~, ~, ~, 2, ~, 2, ~, 7, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, 4, ~, 4, ~, 4, 4, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, ~, 4, ~, 4, 4, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, ~, 5, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, 4, ~, 3, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [108, ~, 102, ~, 102, ~, 102, 102, 108, ~, ~, ~, ~, ~, ~, ~, 108, ~, 102, ~, 102, ~, 102, ~, 108, ~, ~, ~, ~, ~, ~, ~, 108, ~, 102, ~, 102, ~, 102, ~, 108, ~, ~, ~, ~, ~, ~, ~, 108, ~, 102, ~, 102, ~, 102, ~, 108, ~, ~, ~, ~, ~, ~, ~, 108, ~, 102, ~, 102, ~, 102, 102, 108, ~, ~, ~, ~, ~, ~, ~, 108, ~, 102, ~, 102, ~, 102, ~, 108, ~, ~, ~, ~, ~, ~, ~, 108, ~, 102, ~, 102, ~, 102, ~, 108, ~, ~, ~, 102, ~, ~, ~, 108, ~, 102, ~, 102, ~, 102, ~, 108, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, false, true, false, true, false, false, false, true, true, true, false, false, false, false, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, false, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, false, false, true, true, true, false, false, false, false, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+  chorus:
+    steps: 128
+    step_size: 1/8
+    degree: [5, ~, ~, ~, 5, ~, 3, ~, 5, ~, ~, ~, 1, ~, ~, ~, 6, ~, ~, ~, 6, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, 6, ~, 1, ~, 6, ~, 5, ~, ~, ~, 3, ~, ~, ~, 2, ~, 2, ~, 5, ~, 7, ~, 2, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 5, ~, 3, ~, 5, ~, ~, ~, 1, ~, ~, ~, 6, ~, ~, ~, 1, ~, 4, ~, 3, ~, ~, ~, ~, ~, ~, ~, 4, ~, 1, ~, 6, ~, 1, ~, 3, ~, ~, ~, 1, ~, ~, ~, 2, ~, 2, ~, 7, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, ~, 5, ~, 4, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, ~, 4, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 4, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [118, ~, ~, ~, 112, ~, 112, ~, 118, ~, ~, ~, 112, ~, ~, ~, 118, ~, ~, ~, 112, ~, 112, ~, 118, ~, ~, ~, ~, ~, ~, ~, 118, ~, 112, ~, 112, ~, 112, ~, 118, ~, ~, ~, 112, ~, ~, ~, 118, ~, 112, ~, 112, ~, 112, ~, 118, ~, ~, ~, ~, ~, ~, ~, 118, ~, ~, ~, 112, ~, 112, ~, 118, ~, ~, ~, 112, ~, ~, ~, 118, ~, ~, ~, 112, ~, 112, ~, 118, ~, ~, ~, ~, ~, ~, ~, 118, ~, 112, ~, 112, ~, 112, ~, 118, ~, ~, ~, 112, ~, ~, ~, 118, ~, 112, ~, 112, ~, 112, ~, 118, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+  chorus low:
+    steps: 128
+    step_size: 1/8
+    degree: [7, ~, ~, ~, 7, ~, 5, ~, 7, ~, ~, ~, 3, ~, ~, ~, 1, ~, ~, ~, 1, ~, 6, ~, 7, ~, ~, ~, ~, ~, ~, ~, 1, ~, 1, ~, 3, ~, 1, ~, 7, ~, ~, ~, 5, ~, ~, ~, 4, ~, 4, ~, 7, ~, 2, ~, 4, ~, ~, ~, ~, ~, ~, ~, 7, ~, ~, ~, 7, ~, 5, ~, 7, ~, ~, ~, 3, ~, ~, ~, 1, ~, ~, ~, 3, ~, 6, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, 3, ~, 1, ~, 3, ~, 5, ~, ~, ~, 3, ~, ~, ~, 4, ~, 4, ~, 2, ~, 4, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, ~, 5, ~, 5, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [98, ~, ~, ~, 92, ~, 92, ~, 98, ~, ~, ~, 92, ~, ~, ~, 98, ~, ~, ~, 92, ~, 92, ~, 98, ~, ~, ~, ~, ~, ~, ~, 98, ~, 92, ~, 92, ~, 92, ~, 98, ~, ~, ~, 92, ~, ~, ~, 98, ~, 92, ~, 92, ~, 92, ~, 98, ~, ~, ~, ~, ~, ~, ~, 98, ~, ~, ~, 92, ~, 92, ~, 98, ~, ~, ~, 92, ~, ~, ~, 98, ~, ~, ~, 92, ~, 92, ~, 98, ~, ~, ~, ~, ~, ~, ~, 98, ~, 92, ~, 92, ~, 92, ~, 98, ~, ~, ~, 92, ~, ~, ~, 98, ~, 92, ~, 92, ~, 92, ~, 98, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+
+progressions:
+  verse: { chords: [1, 1, 4, 1, 1, 1, 5, 5, 1, 1, 4, 1, 4, 1, 5, 1] }
+  chorus: { chords: [1, 1, 4, 1, 4, 1, 5, 5, 1, 1, 4, 1, 4, 1, 5, 1] }
+
+guitarifies:
+  boom: { bar: [bass, nothing, down, up, alt_bass, nothing, down, up], accents: [false, false, false, false, false, false, false, false], cell: 1/8, spread: 14 }
+
+chains:
+  verse:
+    - progression: verse
+  chorus:
+    - progression: chorus
+  verse strum:
+    - progression: verse
+    - guitarify: boom
+  chorus strum:
+    - progression: chorus
+    - guitarify: boom
+
+instruments:
+  steel guitar: { device: "*FluidSynth", gm_sound: 26 }
+  acoustic bass: { device: "*FluidSynth", gm_sound: 33 }
+  voice lead: { device: "*FluidSynth", gm_sound: 86 }
+  choir: { device: "*FluidSynth", gm_sound: 53 }
+  fiddle: { device: "*FluidSynth", gm_sound: 111 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  when_to_hold_em:
+    tempo: 172
+    scale: A Major
+    genre: Folk
+
+    tracks:
+      kick: { drum: true, instrument: drum kit }
+      brush: { drum: true, instrument: drum kit }
+      clap: { drum: true, instrument: drum kit }
+      guitar: { instrument: steel guitar }
+      bass: { instrument: acoustic bass }
+      lead: { instrument: voice lead }
+      voices: { instrument: choir }
+      fiddle: { instrument: fiddle }
+
+    scenes:
+      - name: intro
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          brush: { pattern: brush, loop: true }
+          guitar: { pattern: chord, chains: [verse strum], loop: true }
+          bass: { pattern: two beat, chains: [verse], loop: true }
+          fiddle: { pattern: fill, chains: [verse], loop: true }
+      - name: verse 1
+        tracks:
+          kick: { pattern: kick, repeat: 16 }
+          brush: { pattern: brush, loop: true }
+          guitar: { pattern: chord, chains: [verse strum], loop: true }
+          bass: { pattern: two beat, chains: [verse], loop: true }
+          lead: { pattern: verse, loop: true }
+      - name: verse 2
+        tracks:
+          kick: { pattern: kick, repeat: 16 }
+          brush: { pattern: brush, loop: true }
+          guitar: { pattern: chord, chains: [verse strum], loop: true }
+          bass: { pattern: two beat, chains: [verse], loop: true }
+          fiddle: { pattern: fill, chains: [verse], loop: true }
+          lead: { pattern: verse, loop: true }
+      - name: chorus
+        tracks:
+          kick: { pattern: kick, repeat: 16 }
+          brush: { pattern: brush, loop: true }
+          guitar: { pattern: chord, chains: [chorus strum], loop: true }
+          bass: { pattern: two beat, chains: [chorus], loop: true }
+          voices: { pattern: chorus low, loop: true }
+          lead: { pattern: chorus, loop: true }
+      - name: verse 3
+        scale: Bb Major
+        tracks:
+          kick: { pattern: kick, repeat: 16 }
+          brush: { pattern: brush, loop: true }
+          guitar: { pattern: chord, chains: [verse strum], loop: true }
+          bass: { pattern: two beat, chains: [verse], loop: true }
+          fiddle: { pattern: fill, chains: [verse], loop: true }
+          lead: { pattern: verse, loop: true }
+      - name: chorus 2
+        scale: Bb Major
+        tracks:
+          kick: { pattern: kick, repeat: 16 }
+          brush: { pattern: brush, loop: true }
+          guitar: { pattern: chord, chains: [chorus strum], loop: true }
+          bass: { pattern: two beat, chains: [chorus], loop: true }
+          fiddle: { pattern: fill, chains: [chorus], loop: true }
+          voices: { pattern: chorus low, loop: true }
+          lead: { pattern: chorus, loop: true }
+      - name: chorus over claps
+        scale: Bb Major
+        tracks:
+          kick: { pattern: kick, repeat: 16 }
+          clap: { pattern: clap, loop: true }
+          voices: { pattern: chorus low, loop: true }
+          lead: { pattern: chorus, loop: true }
+      - name: last chorus
+        scale: Bb Major
+        tracks:
+          kick: { pattern: kick, repeat: 16 }
+          brush: { pattern: brush, loop: true }
+          guitar: { pattern: chord, chains: [chorus strum], loop: true }
+          bass: { pattern: two beat, chains: [chorus], loop: true }
+          clap: { pattern: clap, loop: true }
+          fiddle: { pattern: fill, chains: [chorus], loop: true }
+          voices: { pattern: chorus low, loop: true }
+          lead: { pattern: chorus, loop: true }
+      - name: ending
+        scale: Bb Major
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          brush: { pattern: brush, loop: true }
+          guitar: { pattern: chord, chains: [verse strum], loop: true }
+          bass: { pattern: two beat, chains: [verse], loop: true }
+          fiddle: { pattern: fill, chains: [verse], loop: true }

@@ -48,7 +48,7 @@ pages current.
 | [Classical](demos/CLASSICAL.md) | 3 |
 | [Electronic](demos/ELECTRONIC.md) | 15 |
 | [Exercise](demos/EXERCISE.md) | 3 |
-| [Folk](demos/FOLK.md) | 5 |
+| [Folk](demos/FOLK.md) | 6 |
 | [Gospel](demos/GOSPEL.md) | 1 |
 | [Pop](demos/POP.md) | 5 |
 | [Ragtime](demos/RAGTIME.md) | 1 |
