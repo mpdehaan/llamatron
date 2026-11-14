@@ -203,7 +203,7 @@ class TestPatternEditorChords(UITest):
         self.assertNotEqual(moved_to, ChordSymbol.MAJOR)
         self.assertEqual(self.value(Row.CHORD), moved_to)
         # The flyout's cursor is shown too, before anything is picked.
-        await self.press(Key.LEFT, *[Key.UP] * len(dialog.categories), Key.DOWN, keybindings.ChordDialog.OPEN)
+        await self.press(Key.RIGHT, Key.RIGHT, *[Key.UP] * len(dialog.categories), Key.DOWN, keybindings.ChordDialog.OPEN)
         self.assertEqual(self.value(Row.CHORD_SCALE), COMMON_SCALE_TYPES[0])
         await self.press(keybindings.ChordDialog.CLOSE_FLYOUT)
         self.assertIsNone(self.value(Row.CHORD_SCALE))
