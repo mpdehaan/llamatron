@@ -17,7 +17,7 @@
 """The demo's name scrolling across the screen: what a recording shows after the title, the user's design.
 
 The words are DEMO: and the set's file name as words, like DEMO: HOCKET SHANTY, or whatever the
-recorder was told to show instead, in the title's blue on black and in the title's block letters,
+recorder was told to show instead, in light orange on black (the user's choice, where the title is blue) and in the title's block letters,
 which are capitals, drawn large. The words come in at the right edge, cross at one speed and
 leave at the left.
 """
@@ -28,9 +28,11 @@ import re
 from rich.text import Text
 
 from llamatron.strings.about import MSG_BLOCK, MSG_BLOCK_LETTERS, MSG_DEMO_SCROLL
-from llamatron.tui.components.title_card import BLACK_STYLE, TITLE_BLUE, blank_line, shaded
+from llamatron.tui.components.title_card import BLACK_STYLE, blank_line, shaded
 from llamatron.tui.drawing import NOTHING, SPACE
 
+# The words' colour, a light orange.
+SCROLL_ORANGE = (255, 180, 100)
 # How many columns and rows one block of a letter takes, a square on most consoles and twice the size of the title's.
 BLOCK_COLUMNS = 4
 BLOCK_ROWS = 2
@@ -88,7 +90,7 @@ def scroll_lines(*, rows, width, height, elapsed):
     """Return the screen's lines at a moment: the banner's rows in the middle, moved left by the time gone, on black."""
     shift = max(int(elapsed * COLUMNS_PER_SECOND), 0)
     top = max((height - len(rows)) // 2, 0)
-    style = shaded(colour=TITLE_BLUE, level=FULL)
+    style = shaded(colour=SCROLL_ORANGE, level=FULL)
     lines = [blank_line(width) for _ in range(height)]
     for place, row in enumerate(rows):
         if top + place >= height:
