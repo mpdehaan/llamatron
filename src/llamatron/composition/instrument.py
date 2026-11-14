@@ -17,7 +17,7 @@
 """An instrument: a MIDI device and channel that real-time playback sends a track to.
 
 Instruments are a named section of the set, like patterns, and each track chooses one or none,
-the user's design of 2026-11-09 (dev_notes/IDEAS.md, "Previewing with real-time MIDI"). A track with no
+the user's design of 2026-11-09 (dev_notes/IDEAS.yml, "Previewing with real-time MIDI"). A track with no
 instrument is left out of real-time playback and gets no play keys. The device is the name of a
 MIDI output port of the computer, as the port lists itself, or blank until one is chosen, and the
 channel is numbered 1 to 16 as people and devices number them, so the byte sent is one less. Two

@@ -273,7 +273,7 @@ such name, and `tests/rules/test_naming.py` holds that nothing else numbers one)
   on black that the start screen, the recordings' splash and the batch videos show
   (`tui/components/title_card.py`) is all in blue, block letters, scanner, address and prompt, the
   user's design after a classic video game's start page; the user wants the questions of a colour
-  mode for the rest explored as the demos are built (`dev_notes/IDEAS.md`). The
+  mode for the rest explored as the demos are built (`dev_notes/IDEAS.yml`). The
   visualizer (`visualizers/`), shown over Arrange's clip area while a song plays in real time, is
   the other place colour is allowed, the user's design, and it never strobes and
   never flashes brightly, since some people are sensitive to that: brightness rises and falls

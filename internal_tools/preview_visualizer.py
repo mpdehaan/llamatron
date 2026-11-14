@@ -28,7 +28,7 @@ opens the tracker straight on Arrange, with no splash, the visualizer mode showi
 the one --visualizer names, and it asks which once there are several), plays the song from the
 top and quits two seconds after it ends. The DAW plays what arrives on those channels through the
 speakers as ever: no audio device is needed, since nothing is recorded. The user's design of
-2026-11-10 (dev_notes/IDEAS.md, "The visualizer").
+2026-11-10 (dev_notes/IDEAS.yml, "The visualizer").
 """
 
 import argparse

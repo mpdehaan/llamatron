@@ -288,12 +288,12 @@ when what the tracker draws changed, or when the user asks (`.claude/COMMUNICATI
 good (the user's choice to leave the history alone and not rewrite it; when the packed repository, `git count-objects -vH`,
 passes about 100 MB, Claude proposes no longer committing `web_docs/`, which repeats every screenshot). `internal_tools/make_docs.sh` runs both, and the third generated pieces are the index of the demos in `docs/DEMOS.md` and each demo's summary, its facts (the file linked to the file on GitHub, its starting key, tempo and length) and a table of only the features it uses, on its genre's page in `docs/demos/`, between `internal_tools/demo_summary.py`'s markers, which `internal_tools/demo_table.sh` rewrites and `tests/tools/test_demo_summary.py` checks; the same run keeps each genre page's sections sorted by the demo's name without its learning number, writes a linked index of them at the top of every page of demos, and writes `docs/demos/TUTORIAL.md`, the Tutorial Demos page, from the learning demos' sections in their numbered order, and `docs/demos/OTHER.md` from `examples/other/`'s by name (the user's design), so run it after adding or changing an example. GitHub draws Mermaid and shows SVG, so
 the documents need no other tool. A change to the model or the tracker updates `.claude/FORMAT.md`
-or `.claude/TRACKER.md`, and a change to a rule updates this file. An idea in `dev_notes/IDEAS.md` is removed
+or `.claude/TRACKER.md`, and a change to a rule updates this file. An idea in `dev_notes/IDEAS.yml` is removed
 as soon as it's built, without being asked, and the finished parts are trimmed out of an idea
 that's partly built; check it whenever a feature lands, since a change often finishes an idea
 noted under another heading, and add to it only when the user asks. When a module moves or is
 renamed, every path that names it in `CLAUDE.md`, `.claude/`, `docs/ARCHITECTURE.md`, `GUIDE.md`,
-`README.md` and `dev_notes/IDEAS.md` moves with it, which `tests/rules/test_doc_paths.py` checks. The rules carry no dates; `.claude/DECISIONS.md`, the history, keeps them. A change to Python under `src/`
+`README.md` and `dev_notes/IDEAS.yml` moves with it, which `tests/rules/test_doc_paths.py` checks. The rules carry no dates; `.claude/DECISIONS.md`, the history, keeps them. A change to Python under `src/`
 bumps the last number of `VERSION`; commits that only change docs, notes, tests or examples don't.
 
 **Working with the user** is covered by `.claude/COMMUNICATION.md`: committing, asking before
@@ -305,6 +305,6 @@ The suite runs pyflakes, which finds mistakes, and not pycodestyle, which enforc
 `internal_tools/pep8.sh` runs pycodestyle for a look, and `setup.cfg` lists what it leaves out: long lines
 (E501), because a line runs as long as it needs to read as one thought and about a thousand are
 over 120 characters without one being wrong; the blank-line counts around definitions (E302,
-E305); and a blank line at the end of a file (W391). What's left is worth a look, and `dev_notes/IDEAS.md`
+E305); and a blank line at the end of a file (W391). What's left is worth a look, and `dev_notes/IDEAS.yml`
 notes the ones under consideration, but nothing pycodestyle reports is a rule unless it's on this
 page.

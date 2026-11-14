@@ -25,7 +25,7 @@ Run from the top folder, in the terminal window the video should show:
     .venv/bin/python internal_tools/make_video_tutorial.py my_set.yml --no-video             # runs in the terminal without recording
     internal_tools/tutorial.sh examples/learning/01_hello_world.yml                                # the same as the second
 
-The tutorial is the user's design of 2026-11-10 (dev_notes/IDEAS.md, "A story demo"): nothing is scripted by
+The tutorial is the user's design of 2026-11-10 (dev_notes/IDEAS.yml, "A story demo"): nothing is scripted by
 hand. The set named is read, and the plan (tutorial/plan.py) works out the keys that build it in the
 tracker from the state of the screen as it goes, so that any demo becomes a tutorial. The tracker is
 launched with the tutorial (tui/launch.py) on a new set, presses one key every --pace seconds, says a

@@ -593,7 +593,7 @@ code.
   calls `import_midi` (`screens/importing.py`), which shows the Open page given
   `suffixes=MIDI_SUFFIXES`, `folder=home_folder()`, the crumbs `IMPORT MIDI` and `chosen`, what
   ENTER on a file does in place of opening a set, until the file picker is designed for the
-  whole tracker (dev_notes/IDEAS.md). `offer_import` reads the file with `MidiImport`, telling a file that
+  whole tracker (dev_notes/IDEAS.yml). `offer_import` reads the file with `MidiImport`, telling a file that
   can't be read in a `MessageDialog`, and asks with an `ImportDialog`.
 - `ImportDialog` (`tui/dialogs/import_dialog.py`, `keybindings.ImportDialog`) is a dialog of
   fields, the user's design: the found line (`MidiImport.found`), Song name,
@@ -919,7 +919,7 @@ code.
   dividers, which belong to the details view) and locks onto its first line naming something with a page of its own
   (`pickable`, each `DetailLine` carrying a `Target`): a chain, the `+`, or a line naming a scale, an instrument or
   a groove, the user's choice over chains and generators alone. On a track's or a scene's name it opens only that
-  name's own details, the user's choice over the whole column or row (`dev_notes/IDEAS.md`). A cell with no details of
+  name's own details, the user's choice over the whole column or row (`dev_notes/IDEAS.yml`). A cell with no details of
   its own shows `stock` in red (`or_stock`, `MSG_DETAILS_STOCK`), in the details view too, and Tab still locks into it
   with nothing picked; an empty clip slot has no Tab. While locked (`locked`, `picked`, `picking`), the cell's box is
   green (`Style.DETAILS_LOCKED`, `Frame.styled`) and the page binds only Up and Down (`PICK_DETAIL`), which pick among
@@ -974,7 +974,7 @@ code.
 ## The visualizer
 
 - On Arrange, with the set's Real Time switch on, `Z` (`ArrangePage.VISUALIZER`) shows the
-  visualizer over the clip area, the user's design (dev_notes/IDEAS.md, "The visualizer", holds
+  visualizer over the clip area, the user's design (dev_notes/IDEAS.yml, "The visualizer", holds
   the plan, built a stage at a time): `next_visualizer` steps through `MODES`
   (`visualizers/modes.py`) and after the last back to the clips. While it shows, the page binds
   only `TO_CLIPS` (ESC, which brings the clips back and stays on the page) and `VISUALIZER`, and

@@ -818,7 +818,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   would be allowed if a need appeared, as long as renames stay safe.
 - The one known exception is that probability rolls and random directions are seeded from the
   track's name, so renaming a track changes what they roll. That's an open question in
-  `dev_notes/IDEAS.md`.
+  `dev_notes/IDEAS.yml`.
 
 ## Playback and the command line
 
@@ -1001,7 +1001,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
 - A generator's list of values must only step through notes and chords, so rests never use up a
   value (`tests/generators/test_generator_list_steps.py` checks this, so add new list generators there).
 - Chain generators work on finished clips rather than patterns, so a chain follows scale changes.
-  Pattern generators that write steps are a separate idea in `dev_notes/IDEAS.md`.
+  Pattern generators that write steps are a separate idea in `dev_notes/IDEAS.yml`.
 
 ### Generators as paint
 
@@ -1373,7 +1373,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
 ## Real-time playback
 
 - `src/llamatron/realtime/` plays a rendered song out of the computer's MIDI ports, the user's
-  design. What is left of it is in `dev_notes/IDEAS.md` under "Real-time
+  design. What is left of it is in `dev_notes/IDEAS.yml` under "Real-time
   MIDI, what's left". How the tracker drives it is in `.claude/TRACKER.md`, "Real-time
   playback".
 - Render first, then only schedule: `song_timeline(grid=, routes=)` in `realtime/timeline.py`
