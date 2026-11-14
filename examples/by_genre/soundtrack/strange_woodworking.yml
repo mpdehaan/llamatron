@@ -1,31 +1,41 @@
-version: 1.0.227
+version: 1.0.364
 title: Strange woodworking
 description: "a dark analog-synth score in the manner of Survive and John Carpenter, built on an arpeggiated sequence"
 notes: |
-  Strange woodworking: a dark synth score at 100 beats a minute in E minor, in the manner of Survive's
-  music for Stranger Things and John Carpenter's films: a sequencer pulsing in sixteenths, a deep
-  bass, a cold halo pad, a slow square-wave lead and a machine kick, with a hat that only plays
-  where a Euclidean rhythm says.
+  Strange woodworking: a dark analog-synth score in the manner of Survive and John Carpenter, built on
+  an arpeggiated sequence. This is a homage to the scores of Survive and John Carpenter: its chords,
+  form, sounds and drums follow that work as Claude knows it, and every tune and rhythm here is new.
+  Rebuild version 2.
 
-  The sequence is a held chord broken into sixteenths over two octaves by an arpeggiator called
-  sequence. The sequence, the bass and the pad are one bar each over chord i, moved by
-  Progression: the main part goes i VI i VI and the rise iv VI VII v. The hat track's own
-  Euclidean mask keeps 7 of every 16 sixteenths.
+  One chord arpeggiated in sixteenths runs through everything, barely changing; a pulsing bass on one
+  note, a slow pad, a heartbeat kick and a plain theme in long notes on i VI iv v.
+
+  Subgenre: analog synth film and television scores, the late seventies style revived. Drums: a
+  heartbeat kick, a few toms. Tempo 84, straight. Bass: one pulsing note. Builds: a slow opening of
+  the sound. Sounds: an arpeggiated saw, a sweep pad, a square lead. Melody manner: long plain notes.
+  Form: sequence, theme, rise, theme.
+
+  Band and song: these scores are known for one arpeggiated chord that pulses for minutes, and for
+  dread made from very little.
+
+  Checklist: it is good and memorable because the sequence hypnotizes and barely changes. The hook is
+  the arpeggio; the emotion is unease and wonder; the lift is the rise; the contrast is the pad alone;
+  the sounds are a saw lead, a synth bass, a sweep pad.
 
   Run it with: llamatron examples/by_genre/soundtrack/strange_woodworking.yml
 
-  Scene 1, sequence, 8 bars: the sequence alone.
-  Scene 2, gathering, 8 bars: the bass and the pad join.
-  Scene 3, theme, 16 bars: the kick, the hat and the lead.
-  Scene 4, rise, 16 bars: the second part.
-  Scene 5, alone, 8 bars: the sequence alone again.
-  Scene 6, theme 2, 16 bars: the theme again.
-  Scene 7, ending, 4 bars: the pad fades with the sequence.
+  Scene 1, sequence, 8 bars.
+  Scene 2, gathering, 8 bars.
+  Scene 3, theme, 16 bars.
+  Scene 4, rise, 8 bars.
+  Scene 5, alone, 4 bars.
+  Scene 6, theme 2, 16 bars.
+  Scene 7, ending, 4 bars.
 
   When changing this demo:
-  - Keep the sequence a held chord broken up by the arpeggiator.
-  - Keep the hat's Euclidean mask on its track.
-  - Keep the melody original.
+  - Keep the drums as the Subgenre paragraph describes them, the kick first.
+  - Keep what the Checklist paragraph calls the hook and the lift.
+  - Keep every tune original, and the demo out of the key of the work it follows.
 real_time: true
 protected: true
 
@@ -37,123 +47,135 @@ patterns:
     steps: 16
     drum: true
     step_size: 1/16
-    degree: [C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~]
-    octave: [3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~]
-    velocity: [110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~]
-  hat:
+    degree: [C, ~, ~, C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [100, ~, ~, 100, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  tom:
     steps: 16
     drum: true
     step_size: 1/16
-    degree: [F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F]
-    accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
-    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
-    velocity: [110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110]
-  sequence:
+    degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, A, ~, A, ~]
+    octave: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~]
+    velocity: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 80, ~, 80, ~]
+  chord:
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
-    octave: [3, ~, ~, ~, ~, ~, ~, ~]
-    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~]
+    chord: [m7, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [94, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  bass:
-    steps: 8
-    step_size: 1/8
-    degree: [1, ~, ~, ~, ~, ~, ~, ~]
-    octave: [2, ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, true, true, true, true, true, true, true]
-  pad:
+  triad:
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, ~, ~]
     chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    velocity: [94, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  a:
-    steps: 32
-    step_size: 1/4
-    degree: [5, ~, ~, ~, 3, ~, ~, ~, 1, ~, ~, ~, 7, ~, ~, ~, 6, ~, ~, ~, 1, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~]
-    octave: [5, ~, ~, ~, 5, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true]
-  b:
-    steps: 32
-    step_size: 1/4
-    degree: [4, ~, 6, ~, 1, ~, ~, ~, 3, ~, 1, ~, 7, ~, ~, ~, 2, ~, 7, ~, 5, ~, ~, ~, 7, ~, ~, ~, ~, ~, ~, ~]
-    octave: [5, ~, 5, ~, 6, ~, ~, ~, 6, ~, 6, ~, 5, ~, ~, ~, 6, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, true, true, true, true]
+  pulse:
+    steps: 8
+    step_size: 1/8
+    degree: [1, 1, 1, 1, 1, 1, 1, 1]
+    octave: [2, 2, 2, 2, 2, 2, 2, 2]
+    velocity: [106, 100, 100, 100, 100, 100, 100, 100]
+  held:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    velocity: [78, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  theme:
+    steps: 64
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, 3, ~, ~, ~, 6, ~, ~, ~, ~, ~, 5, ~, 4, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [102, ~, ~, ~, ~, ~, ~, ~, 102, ~, ~, ~, ~, ~, 96, ~, 102, ~, ~, ~, ~, ~, ~, ~, 102, ~, ~, ~, ~, ~, ~, ~, 102, ~, ~, ~, 96, ~, ~, ~, 102, ~, ~, ~, ~, ~, 96, ~, 102, ~, ~, ~, 96, ~, ~, ~, 102, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true]
 
 arps:
   sequence: { step: 1/16, order: up, octave_range: 2 }
 
 progressions:
-  dark: { chords: [1, 6, 1, 6] }
-  rise: { chords: [4, 6, 7, 5] }
+  drone: { chords: [1, 1, 1, 1, 6, 6, 1, 1] }
+  theme: { chords: [1, 6, 4, 5] }
+
+swells:
+  rise: { start: 60, end: 120, accent: 0 }
 
 chains:
-  sequence:
+  drone:
+    - progression: drone
+  theme:
+    - progression: theme
+  drone arp:
+    - progression: drone
     - arp: sequence
-  dark:
-    - progression: dark
-  rise:
-    - progression: rise
+  theme arp:
+    - progression: theme
+    - arp: sequence
+  rising arp:
+    - progression: drone
+    - arp: sequence
+    - swell: rise
 
 instruments:
+  saw lead: { device: "*FluidSynth", gm_sound: 82 }
   synth bass: { device: "*FluidSynth", gm_sound: 39 }
-  halo pad: { device: "*FluidSynth", gm_sound: 95 }
+  sweep pad: { device: "*FluidSynth", gm_sound: 96 }
   square lead: { device: "*FluidSynth", gm_sound: 81 }
-  sequencer: { device: "*FluidSynth", gm_sound: 82 }
   drum kit: { device: "*FluidSynth" }
 
 songs:
   strange_woodworking:
-    tempo: 100
+    tempo: 84
     scale: E Minor
     genre: Soundtrack
 
     tracks:
       kick: { drum: true, instrument: drum kit }
-      hat: { drum: true, instrument: drum kit, euclid_hits: 7, euclid_steps: 16 }
-      sequence: { instrument: sequencer }
+      tom: { drum: true, instrument: drum kit }
+      sequence: { instrument: saw lead }
       bass: { instrument: synth bass }
-      pad: { instrument: halo pad }
+      pad: { instrument: sweep pad }
       lead: { instrument: square lead }
 
     scenes:
       - name: sequence
         tracks:
-          sequence: { pattern: sequence, chains: [dark, sequence], repeat: 8 }
+          sequence: { pattern: chord, chains: [drone arp], repeat: 8 }
       - name: gathering
         tracks:
-          sequence: { pattern: sequence, chains: [dark, sequence], repeat: 8 }
-          bass: { pattern: bass, chains: [dark, sequence], loop: true }
-          pad: { pattern: pad, chains: [dark, sequence], loop: true }
+          sequence: { pattern: chord, chains: [drone arp], repeat: 8 }
+          bass: { pattern: pulse, chains: [drone], loop: true }
+          kick: { pattern: kick, loop: true }
       - name: theme
         tracks:
+          sequence: { pattern: triad, chains: [theme arp], repeat: 16 }
+          bass: { pattern: pulse, chains: [theme], loop: true }
+          pad: { pattern: held, chains: [theme], loop: true }
           kick: { pattern: kick, loop: true }
-          hat: { pattern: hat, loop: true }
-          sequence: { pattern: sequence, chains: [dark, sequence], loop: true }
-          bass: { pattern: bass, chains: [dark, sequence], loop: true }
-          pad: { pattern: pad, chains: [dark, sequence], loop: true }
-          lead: { pattern: a, repeat: 2 }
+          lead: { pattern: theme, loop: true }
       - name: rise
         tracks:
+          sequence: { pattern: chord, chains: [rising arp], repeat: 8 }
+          bass: { pattern: pulse, chains: [drone], loop: true }
+          pad: { pattern: held, chains: [drone], loop: true }
           kick: { pattern: kick, loop: true }
-          hat: { pattern: hat, loop: true }
-          sequence: { pattern: sequence, chains: [rise, sequence], loop: true }
-          bass: { pattern: bass, chains: [rise, sequence], loop: true }
-          pad: { pattern: pad, chains: [rise, sequence], loop: true }
-          lead: { pattern: b, repeat: 2 }
+          tom: { pattern: tom, loop: true }
       - name: alone
         tracks:
-          sequence: { pattern: sequence, chains: [rise, sequence], repeat: 8 }
+          pad: { pattern: held, chains: [drone], repeat: 4 }
       - name: theme 2
         tracks:
+          sequence: { pattern: triad, chains: [theme arp], repeat: 16 }
+          bass: { pattern: pulse, chains: [theme], loop: true }
+          pad: { pattern: held, chains: [theme], loop: true }
           kick: { pattern: kick, loop: true }
-          hat: { pattern: hat, loop: true }
-          sequence: { pattern: sequence, chains: [dark, sequence], loop: true }
-          bass: { pattern: bass, chains: [dark, sequence], loop: true }
-          pad: { pattern: pad, chains: [dark, sequence], loop: true }
-          lead: { pattern: a, repeat: 2 }
+          tom: { pattern: tom, loop: true }
+          lead: { pattern: theme, loop: true }
       - name: ending
         tracks:
-          sequence: { pattern: sequence, chains: [dark, sequence], repeat: 4 }
-          pad: { pattern: pad, chains: [dark, sequence], loop: true }
+          sequence: { pattern: chord, chains: [drone arp], repeat: 4 }
