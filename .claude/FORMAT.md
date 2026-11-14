@@ -1347,7 +1347,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   between quiet and loud sections; the sounds of the lead, the chords and the bass, each a General MIDI sound with the right
   attack, a sung lead never on a soft sound alone; and each section's tune, its register, note lengths and shape, the chorus
   above the verse where the song lifts. The drums come first: a homage with the wrong drum style has failed whatever else is
-  right, and the bass's rhythm is next.
+  right, the kick drum's rhythm and weight above all, and the bass's rhythm is next.
 - A homage's notes carry a line saying which rebuild the file is, like "Rebuild version 2.", counted from 1 for the first
   version checked in, so that a later rebuild knows which one it follows (the user's ask).
 - A homage that is written or rewritten uses the generators that fit (the user's rules): the Progression generator heavily, so
