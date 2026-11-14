@@ -23,7 +23,7 @@ so the caller passes the step size, and the tests here ask the same pattern at s
 
 import unittest
 
-from llamatron.composition.file_format import Accidental, ChordSymbol, GateModifier, PatternSetting, Row
+from llamatron.composition.file_format import Accidental, ChordSymbol, GateModifier, PatternSetting, Row, Tension
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.pattern import Pattern
 from llamatron.composition.pattern_notes import SPLIT_ROWS, whole_steps_down, whole_steps_up
@@ -53,6 +53,7 @@ WRITTEN_WHOLE = 1
 STEPS = 8
 OCTAVE = 4
 A_VELOCITY = 90
+MINOR = scale_type_name(ScaleType.MINOR)
 
 
 def pattern_of(*, steps=STEPS, **rows):
@@ -199,6 +200,22 @@ class TestDrawingNotes(unittest.TestCase):
         pattern.draw_note(step=0, degree=1, octave=OCTAVE, length=THREE_THIRTY_SECONDS, step_size=SIXTEENTH)
         self.assertIsNone(pattern.get_value(row=Row.GATE, step=0))
         self.assertIsNone(pattern.get_row(Row.TIE))
+
+    def test_a_note_drawn_on_a_chords_step_moves_the_root_and_keeps_the_chord_and_its_length(self):
+        pattern = pattern_of(
+            degree=[1], chord=[ChordSymbol.DOMINANT7], tension=[(Tension.FLAT_NINTH,)], inversion=[1], chord_scale=[MINOR], velocity=[A_VELOCITY],
+            tie=ties(1, 2), accidental=[Accidental.SHARP],
+        )
+        pattern.draw_note(step=0, degree=3, octave=OCTAVE + 1, length=SIXTEENTH, step_size=SIXTEENTH)
+        self.assertEqual([pattern.get_value(row=row, step=0) for row in (Row.DEGREE, Row.OCTAVE, Row.ACCIDENTAL)], [3, OCTAVE + 1, None])
+        kept = (Row.CHORD, Row.TENSION, Row.INVERSION, Row.CHORD_SCALE, Row.VELOCITY)
+        self.assertEqual([pattern.get_value(row=row, step=0) for row in kept], [ChordSymbol.DOMINANT7, (Tension.FLAT_NINTH,), 1, MINOR, A_VELOCITY])
+        # The note is as long as it was: its two ties still hold it.
+        self.assertEqual([bool(pattern.get_value(row=Row.TIE, step=step)) for step in (1, 2)], [True, True])
+        # A note with no chord is replaced by the note drawn, as ever, and so is a chord's note once it is erased.
+        pattern.clear_sound(0)
+        pattern.draw_note(step=0, degree=5, octave=OCTAVE, length=SIXTEENTH, step_size=SIXTEENTH)
+        self.assertEqual((pattern.get_value(row=Row.DEGREE, step=0), pattern.get_value(row=Row.CHORD, step=0)), (5, None))
 
     def test_a_note_drawn_near_the_end_stops_at_the_end(self):
         pattern = pattern_of()
