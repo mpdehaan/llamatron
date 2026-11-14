@@ -38,7 +38,7 @@ from llamatron.composition.scene import Scene
 from llamatron.composition.sections import SECTION_LABELS, SONG_SECTIONS
 from llamatron.composition.track import Track
 from llamatron.strings.errors import (
-    ERR_BAD_LIVE_RESPONSIVENESS, ERR_NOT_TEXT, ERR_NO_SUCH_REGISTER, ERR_NO_SUCH_SCENE, ERR_NOT_A_SONG, ERR_REGISTERS_NOT_NAMED, ERR_SONG_NO_SUCH_GROOVE,
+    ERR_BAD_LIVE_RESPONSIVENESS, ERR_NOT_TEXT, ERR_NO_SUCH_REGISTER, ERR_NO_SUCH_SCENE, ERR_NOT_A_SONG, ERR_REGISTERS_NOT_NAMED, ERR_SONG_NO_SUCH_GROOVE, ERR_SONG_NO_SUCH_PREVIEW_INSTRUMENT,
     ERR_SCENES_NOT_A_LIST, ERR_SONG_BAD_SEED, ERR_SONG_NO_SUCH_SCALE, ERR_TRACKS_NOT_NAMED, ERR_WHERE_NAMED, ERR_WHERE_SCENE_ENTRY,
     ERR_WHERE_WITHIN,
 )
@@ -57,6 +57,12 @@ def _check_groove_name(*, value, song):
     """Refuse a groove that is neither a factory groove nor one of the set's."""
     if not isinstance(value, str) or not song.has_groove(value):
         raise InvalidValue(ERR_SONG_NO_SUCH_GROOVE.format(name=value))
+
+
+def _check_preview_instrument(*, value, song):
+    """Refuse an instrument the set doesn't have. None is none."""
+    if value is not None and not (isinstance(value, str) and song.has_instrument(value)):
+        raise InvalidValue(ERR_SONG_NO_SUCH_PREVIEW_INSTRUMENT.format(name=value))
 
 
 def seed_number(value):
@@ -81,9 +87,10 @@ SETTINGS = described(
     Text(name=SongSetting.GENRE, error=ERR_NOT_TEXT),
     Choice(name=SongSetting.LIVE_RESPONSIVENESS, choices=LIVE_RESPONSIVENESSES, default=LEFT_OUT, error=ERR_BAD_LIVE_RESPONSIVENESS),
     Checked(name=SongSetting.VISUALIZER, check=_never_refused),
+    Checked(name=SongSetting.PREVIEW_INSTRUMENT, check=_check_preview_instrument, needs_song=True),
 )
 # The settings whose message names the setting itself, so that a file's problem with one is placed at the song alone, like "song (verse): scale: ...".
-NAMED_BY_THEIR_MESSAGE = (SongSetting.SCALE, SongSetting.GROOVE)
+NAMED_BY_THEIR_MESSAGE = (SongSetting.SCALE, SongSetting.GROOVE, SongSetting.PREVIEW_INSTRUMENT)
 # Scenes are counted from 1 in messages, as they're shown.
 FIRST_SCENE_NUMBER = 1
 # What a song that says nothing of its genre gives.
@@ -125,8 +132,8 @@ class Song(LlamaData):
 
     __slots__ = ('_setlist', '_settings', '_sections', '_scenes')
 
-    # A song names its own scale and groove. Its scenes and tracks name things too, and are its referring parts.
-    REFERENCES = {Section.SCALES: (SongSetting.SCALE,), Section.GROOVES: (SongSetting.GROOVE,)}
+    # A song names its own scale, groove and preview instrument. Its scenes and tracks name things too, and are its referring parts.
+    REFERENCES = {Section.SCALES: (SongSetting.SCALE,), Section.GROOVES: (SongSetting.GROOVE,), Section.INSTRUMENTS: (SongSetting.PREVIEW_INSTRUMENT,)}
 
     def __init__(self, *, setlist):
         self.note_change()
@@ -295,6 +302,16 @@ class Song(LlamaData):
     def get_scale_name(self):
         """Return the name of the song's scale, or None if it has none."""
         return self._settings[SongSetting.SCALE]
+
+    def get_preview_instrument_name(self):
+        """Return the name of the instrument Listen plays a pattern through, or None to play through the pattern's own track."""
+        return self._settings[SongSetting.PREVIEW_INSTRUMENT]
+
+    @notes_change
+    def set_preview_instrument_name(self, name):
+        """Choose the instrument of the set that Listen plays a pattern through, or None for the pattern's own track."""
+        SETTINGS[SongSetting.PREVIEW_INSTRUMENT].check(name, song=self)
+        self._settings[SongSetting.PREVIEW_INSTRUMENT] = name
 
     def get_live_responsiveness(self):
         """Return when an edit made while the song plays is heard: next_bar unless the song says."""

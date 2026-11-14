@@ -269,6 +269,7 @@ MSG_FACTORY_GROOVE_NOTE = '  A factory groove, which cannot be changed. C on the
 
 # tui/screens/groove_choice.py: the Groove field on the Song, Scene and Track pages
 MSG_SONG_GROOVE_TITLE = 'Song groove'
+MSG_PREVIEW_INSTRUMENT_TITLE = 'Preview instrument'
 MSG_SCENE_GROOVE_TITLE = 'Scene groove'
 MSG_TRACK_GROOVE_TITLE = 'Track groove'
 
