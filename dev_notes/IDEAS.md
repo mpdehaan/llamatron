@@ -61,13 +61,6 @@ Built in this order, each trimmed out as it lands:
    chapters), a test failing when a link is missing or points nowhere. The examples are in examples/learning, examples/other and
    examples/by_genre (the user's choice), where the new demos go by purpose.
 
-## (High priority) A taller main screen for a taller console
-
-The main screen's three-column grid is built and fits 80 by 24. The user wants a second layout where the console has more
-lines: the cells of the set's parts in one line down a column, and Arrange's cell taller, showing much more. Put to the
-user with a drawing; not yet agreed. `MainPage` (`src/llamatron/tui/screens/main_page.py`) would choose the layout by the
-height it is given, `rows()` staying the geometry the arrows move by.
-
 ## (High priority) List pages that use the room the console has
 
 After the main screen's redesign, the user wants the pages that list things made more compelling and useful on a console
