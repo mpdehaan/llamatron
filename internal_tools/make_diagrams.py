@@ -27,7 +27,7 @@ comes from the imports between llamatron's packages, with each package described
 line of its __init__.py docstring. The screens diagram comes from which of the tracker's screens
 open which others, labelled with the key that opens each where the screen binds it with bind().
 A screen that tui/screens/everywhere.py opens from every page is drawn from the main screen.
-test/test_diagrams.py runs the check, so a change to the code that moves a diagram fails the
+tests/rules/test_diagrams.py runs the check, so a change to the code that moves a diagram fails the
 tests until this is run again.
 """
 

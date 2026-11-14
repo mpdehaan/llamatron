@@ -39,7 +39,7 @@ if ! .venv/bin/python -c 'import llamatron' 2>/dev/null; then
 fi
 
 if [ "$1" = "--serial" ]; then
-    exec .venv/bin/python -m unittest discover -s test
+    exec .venv/bin/python -m unittest discover -s tests -t .
 fi
 # Any names given narrow the run to the tests whose names contain one of them, as unittest's -k does, still in parallel.
-exec .venv/bin/python test/parallel.py "$@"
+exec .venv/bin/python tests/support/parallel.py "$@"

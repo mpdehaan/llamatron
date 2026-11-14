@@ -111,7 +111,7 @@ class LiveResponsiveness:
 
 LIVE_RESPONSIVENESSES = [LiveResponsiveness.NEXT_BAR, LiveResponsiveness.CLIP_RESTART, LiveResponsiveness.ASAP]
 # The visualizer modes a set or a song can name, by their names on the command line, in the order the visualizer key steps through them,
-# kept here so that a set file is read without the visualizers; test/test_visualizers.py holds them to the modes.
+# kept here so that a set file is read without the visualizers; tests/visualizers/test_visualizers.py holds them to the modes.
 VISUALIZER_NAMES = [
     'lava_lamp', 'piano_roll', 'spectrum', 'milkdrop', 'llamas', 'hypercube', 'fireworks', 'warpzone', 'pipes', 'plasma', 'maze', 'mystify',
     'laser_llama', 'mandelbrot', 'life', 'digital_rain', 'cycle',

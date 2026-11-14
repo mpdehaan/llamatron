@@ -33,7 +33,7 @@ internal_tools/demo_features.py, which knows how to tell each one from a set's d
 heading and the names of one or more of that tool's features; add a column by adding a line to
 FEATURE_COLUMNS. internal_tools/demo_features.py is the long form, every feature by every set. The Markdown
 table sits between a pair of marker comments in docs/DEMOS.md, where --write-docs replaces it
-and test/test_demo_summary.py checks it is current, so that readers see what each demo shows.
+and tests/tools/test_demo_summary.py checks it is current, so that readers see what each demo shows.
 """
 
 import argparse

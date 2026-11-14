@@ -16,7 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # What it does: writes .claude/KEYMAP.md, what every key does on every page and at each place of its cursor, from the
-# key tour of test/test_tui_help_keys.py, so that a question about a key is one lookup. Run it after changing a key.
+# key tour of tests/tui/test_tui_help_keys.py, so that a question about a key is one lookup. Run it after changing a key.
 set -eu
 # Run from the top folder, the one above this script's, wherever it is started from.
 cd "$(dirname "$0")/.."

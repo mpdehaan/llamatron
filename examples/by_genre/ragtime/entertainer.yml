@@ -30,7 +30,7 @@ notes: |
   When changing this demo:
   This is the long piece, for getting a feel of a full composition, so keep every bar and
   the eight-bar phrases that line up with the sheet music. The patterns were cut from
-  examples/midi/entertainer.mid by test/demo_sources/make_demos.py, which overwrites
+  examples/midi/entertainer.mid by tests/data/demo_sources/make_demos.py, which overwrites
   changes made by hand.
 real_time: true
 protected: true

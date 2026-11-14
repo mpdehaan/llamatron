@@ -16,7 +16,7 @@ dist/
 .compare_exports/
 previews/
 recordings/
-# How long each test class took, which test/parallel.py starts the slowest first by.
+# How long each test class took, which tests/support/parallel.py starts the slowest first by.
 .test_times.json
 # Where internal_tools/build_docs.sh installs VitePress and stages the pages; the site itself is web_docs/.
 .docs_site/

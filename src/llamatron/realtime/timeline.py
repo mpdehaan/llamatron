@@ -19,7 +19,7 @@
 Real-time playback renders a song the way the exporters do and then only schedules: everything that makes
 the music, probability, directions, arps, registers, grabs, morphs, ties, glides and grooves, has happened
 in the grid, so the timeline is read from the same note timing the MIDI export writes (exporters/timing.py),
-and test/test_realtime.py holds it to the export, tick for tick. Each event carries the whole-note time it
+and tests/realtime/test_realtime.py holds it to the export, tick for tick. Each event carries the whole-note time it
 came from, for that comparison, the seconds it plays at, the port and channel of its track's route, and a
 tag naming the scene and track it belongs to, so that one clip's events can be dropped or stopped.
 """

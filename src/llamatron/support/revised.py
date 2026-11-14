@@ -58,7 +58,7 @@ class Revised:
     """Something that changes and says so.
 
     A subclass calls note_change() in its constructor and writes every method that changes it
-    under @notes_change, which test/test_revisions.py checks, so that revision() is different
+    under @notes_change, which tests/rules/test_revisions.py checks, so that revision() is different
     after every change.
     """
 
@@ -77,7 +77,7 @@ def notes_change(method):
     """Mark a method as one that changes its object, whose revision moves each time the method is called.
 
     Every method of a Revised class that changes the object is written under @notes_change, which
-    says so where the method is defined and which test/test_revisions.py checks. The revision
+    says so where the method is defined and which tests/rules/test_revisions.py checks. The revision
     moves before the method runs, so a method that refuses its value has moved it for nothing,
     which costs only an answer worked out again.
     """
