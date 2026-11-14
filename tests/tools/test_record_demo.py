@@ -64,6 +64,13 @@ SET_PATH = 'a set.yml'
 # What the stand-ins for screencapture and avconvert write, to tell the trimmed video from the one recorded.
 VIDEO_BYTES = b'recorded'
 TRIMMED_BYTES = b'trimmed'
+RECORDED_BYTES = b'recorded'
+PART_BYTES = b'part'
+A_VIDEO = 'take.mov'
+OTHER_VIDEO = 'other.mov'
+A_TEMPORARY_ENDING = '.sb-1234'
+A_FAILURE = 'no room'
+RECORDED_SECONDS = 60
 # screencapture's flag for how many seconds it records.
 SUCCEEDED = 0
 FLUID = 'fluid'
@@ -276,6 +283,58 @@ class TestRecordDemo(unittest.TestCase):
         self.assertEqual(float(command[command.index(self.tool.START_FLAG) + 1]), self.tool.CUT_FROM_START)
         self.assertEqual(float(command[command.index(self.tool.DURATION_FLAG) + 1]), STOPPED - STARTED - self.tool.CUT_FROM_START - self.tool.TRIMMED_SECONDS)
         self.slept.assert_any_call(self.tool.SETTLE_SECONDS)
+
+    def trimmed(self, *, folder, side_effect):
+        """Trim a video in a folder with a stand-in for avconvert, and return the video's path and what the trim answered or raised."""
+        video = os.path.join(folder, A_VIDEO)
+        pathlib.Path(video).write_bytes(RECORDED_BYTES)
+        with mock.patch.object(self.tool.subprocess, 'run', side_effect=side_effect):
+            try:
+                return video, self.tool.trim_end(video=video, recorded_seconds=RECORDED_SECONDS)
+            except KeyboardInterrupt as stopped:
+                return video, stopped
+
+    def write_trimmed(self, command, **named):
+        pathlib.Path(command[command.index(self.tool.OUTPUT_FLAG) + 1]).write_bytes(TRIMMED_BYTES)
+
+    def write_part_and_stop(self, command, **named):
+        pathlib.Path(command[command.index(self.tool.OUTPUT_FLAG) + 1]).write_bytes(PART_BYTES)
+        raise KeyboardInterrupt
+
+    def write_part_and_fail(self, command, **named):
+        pathlib.Path(command[command.index(self.tool.OUTPUT_FLAG) + 1]).write_bytes(PART_BYTES)
+        raise OSError(A_FAILURE)
+
+    def test_a_trim_keeps_only_the_trimmed_video(self):
+        with tempfile.TemporaryDirectory() as folder:
+            video, answer = self.trimmed(folder=folder, side_effect=self.write_trimmed)
+            self.assertIsNone(answer)
+            self.assertEqual(os.listdir(folder), [A_VIDEO])
+            self.assertEqual(pathlib.Path(video).read_bytes(), TRIMMED_BYTES)
+
+    def test_a_trim_that_is_stopped_leaves_nothing_but_the_video_recorded(self):
+        with tempfile.TemporaryDirectory() as folder:
+            video, answer = self.trimmed(folder=folder, side_effect=self.write_part_and_stop)
+            self.assertIsInstance(answer, KeyboardInterrupt)
+            self.assertEqual(os.listdir(folder), [A_VIDEO])
+            self.assertEqual(pathlib.Path(video).read_bytes(), RECORDED_BYTES)
+
+    def test_a_trim_that_fails_says_why_and_leaves_nothing_but_the_video_recorded(self):
+        with tempfile.TemporaryDirectory() as folder:
+            video, answer = self.trimmed(folder=folder, side_effect=self.write_part_and_fail)
+            self.assertIn(A_FAILURE, answer)
+            self.assertEqual(os.listdir(folder), [A_VIDEO])
+            self.assertEqual(pathlib.Path(video).read_bytes(), RECORDED_BYTES)
+
+    def test_a_trim_removes_what_stopped_trims_left_before(self):
+        with tempfile.TemporaryDirectory() as folder:
+            for name in (OTHER_VIDEO + self.tool.OLD_TRIMMING_MARK, OTHER_VIDEO + self.tool.OLD_TRIMMING_MARK + A_TEMPORARY_ENDING):
+                pathlib.Path(folder, name).write_bytes(PART_BYTES)
+            pathlib.Path(folder, OTHER_VIDEO).write_bytes(RECORDED_BYTES)
+            os.makedirs(os.path.join(folder, self.tool.TRIMMING_FOLDER))
+            pathlib.Path(folder, self.tool.TRIMMING_FOLDER, OTHER_VIDEO).write_bytes(PART_BYTES)
+            self.trimmed(folder=folder, side_effect=self.write_trimmed)
+            self.assertEqual(sorted(os.listdir(folder)), sorted([A_VIDEO, OTHER_VIDEO]))
 
     def record_with_fluidsynth(self, *, installed=True, output=None, outputs=()):
         """Record a take with --fluidsynth, every program it runs replaced, and return the exit code, what the tracker was launched with, what was printed and the device FluidSynth was sent to."""
