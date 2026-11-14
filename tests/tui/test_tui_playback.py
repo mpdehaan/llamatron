@@ -1301,6 +1301,20 @@ class TestPlayingKeepsTheCursorsBoxOutsideARecording(LaunchTest):
         self.assertNotIn(fixed_text(MSG_SCENE_ANNOUNCED), self.text())
 
 
+class TestRecordingWithDetails(LaunchTest):
+    """--detail: Arrange opens with its details view showing, as D shows it."""
+
+    LAUNCH = Launch(quit_when_finished=True, for_recording=True, splash_seconds=RECORDING_SPLASH, lead_in_seconds=A_MOMENT, lead_out_seconds=LONG_LEAD_OUT, details=True)
+
+    async def test_arrange_shows_its_details_from_the_start(self):
+        await self.wait_until(self.shows(ArrangePage))
+        self.assertTrue(self.app.screen.shows_details())
+
+    async def test_details_are_closed_unless_asked(self):
+        self.assertFalse(Launch().details)
+        self.assertFalse(Launch(for_recording=True).details)
+
+
 class TestRecordingAnnouncesScenes(LaunchTest):
     """--announce: each scene's name shows as the scene starts, where a visualizer mode's name shows, and no mode's name then."""
 

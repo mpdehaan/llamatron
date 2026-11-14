@@ -450,14 +450,14 @@ def scroll_text_of(*, path, scroll=True, scroll_text=None):
     return scroll_text or scroll_text_for(path)
 
 
-def record_performance(*, document, video, window, device, max_seconds, visualizer, recording=None, scroll_text=None, announce=False):
+def record_performance(*, document, video, window, device, max_seconds, visualizer, recording=None, scroll_text=None, announce=False, detail=False):
     """Record an interactive take: the screen until the tracker quits, which the person recording decides, then the video's end trimmed as a take's is. Return the exit code."""
-    launch = Launch(for_recording=True, interactive=True, max_seconds=max_seconds, visualizer=visualizer, hold_seconds=HOLD_SECONDS, scroll_text=scroll_text, announce=announce)
+    launch = Launch(for_recording=True, interactive=True, max_seconds=max_seconds, visualizer=visualizer, hold_seconds=HOLD_SECONDS, scroll_text=scroll_text, announce=announce, details=detail)
     return recorded_until_quit(document=document, video=video, window=window, device=device, launch=launch, region=None, recording=recording)
 
 
 def record(*, path, driver, audio_device, assignment, max_seconds, window_id, go=False, visualizer=None, ask_view=False, fluidsynth=False, fluidsynth_output=None,
-           interactive=False, recording=None, batch=False, region=None, staged=True, alternate=True, scroll=True, scroll_text=None, announce=False):
+           interactive=False, recording=None, batch=False, region=None, staged=True, alternate=True, scroll=True, scroll_text=None, announce=False, detail=False):
     """Set the take up, start the screen recording, run the tracker launched for recording, and report the video. Return the exit code.
 
     With ask_view, it asks whether the take shows the clips or a visualizer mode, once the port,
@@ -551,11 +551,11 @@ def record(*, path, driver, audio_device, assignment, max_seconds, window_id, go
         os.unlink(video)
     scroll_text = scroll_text_of(path=path, scroll=scroll, scroll_text=scroll_text)
     if interactive:
-        return record_performance(document=document, video=video, window=window, device=device, max_seconds=max_seconds, visualizer=visualizer, recording=recording, scroll_text=scroll_text, announce=announce)
+        return record_performance(document=document, video=video, window=window, device=device, max_seconds=max_seconds, visualizer=visualizer, recording=recording, scroll_text=scroll_text, announce=announce, detail=detail)
     if batch:
         launch = Launch(batch_video=True, max_seconds=max_seconds, visualizer=visualizer, hold_seconds=HOLD_SECONDS, alternate=alternate, scroll_text=scroll_text, announce=announce)
     else:
-        launch = Launch(quit_when_finished=True, for_recording=True, max_seconds=max_seconds, visualizer=visualizer, hold_seconds=HOLD_SECONDS, scroll_text=scroll_text, announce=announce)
+        launch = Launch(quit_when_finished=True, for_recording=True, max_seconds=max_seconds, visualizer=visualizer, hold_seconds=HOLD_SECONDS, scroll_text=scroll_text, announce=announce, details=detail)
     return recorded_until_quit(document=document, video=video, window=window, device=device, launch=launch, region=region_argument, recording=recording)
 
 
@@ -616,14 +616,15 @@ def main(*, argv=None):
     view = parser.add_mutually_exclusive_group()
     view.add_argument('--visualizer', choices=mode_options(), default=None, help='record this visualizer mode over the clip area instead of the clips')
     view.add_argument('--clips', action='store_true', help='record the clips on Arrange, without asking')
+    view.add_argument('--detail', action='store_true', help='record the clips on Arrange with the details view open, as D shows it: each clip\'s chains, generators and settings, without asking')
     arguments = parser.parse_args(argv)
     path = arguments.path
     try:
         return record(path=path, driver=arguments.use_driver, audio_device=arguments.audio_device, assignment=arguments.track_assign,
                       max_seconds=arguments.max_seconds, window_id=arguments.window_id, go=arguments.go, visualizer=arguments.visualizer,
-                      ask_view=arguments.visualizer is None and not arguments.clips, fluidsynth=arguments.fluidsynth or arguments.sound == SOUND_FLUIDSYNTH, fluidsynth_output=arguments.fluidsynth_output, interactive=arguments.interactive,
+                      ask_view=arguments.visualizer is None and not arguments.clips and not arguments.detail, fluidsynth=arguments.fluidsynth or arguments.sound == SOUND_FLUIDSYNTH, fluidsynth_output=arguments.fluidsynth_output, interactive=arguments.interactive,
                       batch=arguments.batch, staged=not arguments.plain, alternate=not arguments.no_alternate, scroll=not arguments.no_scroll,
-                      scroll_text=arguments.scroll_text, announce=arguments.announce)
+                      scroll_text=arguments.scroll_text, announce=arguments.announce, detail=arguments.detail)
     except ValueError as error:
         print(error, file=sys.stderr)
         return FAILURE

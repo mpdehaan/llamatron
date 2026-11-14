@@ -45,6 +45,10 @@ OTHER_WORDS = 'live at the barn'
 SCROLL_TEXT_OPTION = '--scroll-text'
 ANNOUNCE_OPTION = '--announce'
 ANNOUNCE = 'announce'
+DETAIL_OPTION = '--detail'
+DETAIL = 'detail'
+ASK_VIEW = 'ask_view'
+VISUALIZER_OPTION = '--visualizer'
 NO_SCROLL_OPTION = '--no-scroll'
 SUCCESS = 0
 OTHER_PORT = 'Some Synth'
@@ -249,6 +253,18 @@ class TestRecordDemo(unittest.TestCase):
             self.assertTrue(record.call_args.kwargs[ANNOUNCE])
             self.tool.main(argv=[SET_PATH])
             self.assertFalse(record.call_args.kwargs[ANNOUNCE])
+
+    def test_detail_records_the_clips_without_asking_and_is_off_unless_asked(self):
+        with mock.patch.object(self.tool, 'record', return_value=SUCCESS) as record:
+            self.tool.main(argv=[SET_PATH, DETAIL_OPTION])
+            self.assertTrue(record.call_args.kwargs[DETAIL])
+            self.assertFalse(record.call_args.kwargs[ASK_VIEW])
+            self.assertIsNone(record.call_args.kwargs['visualizer'])
+            self.tool.main(argv=[SET_PATH])
+            self.assertFalse(record.call_args.kwargs[DETAIL])
+            # The details show on the clips, so a visualizer mode cannot be asked for with them.
+            with self.assertRaises(SystemExit), contextlib.redirect_stderr(io.StringIO()):
+                self.tool.main(argv=[SET_PATH, DETAIL_OPTION, VISUALIZER_OPTION, MODES[0].OPTION])
 
     def test_the_command_line_passes_the_words_or_none_and_refuses_both(self):
         with mock.patch.object(self.tool, 'record', return_value=SUCCESS) as record:

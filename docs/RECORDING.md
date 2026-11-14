@@ -80,7 +80,7 @@ The interactive scripts take the set, ask for the view, and set up the sound as 
 - **`--window-id N`** names the window to record when the recorder can't ask the terminal program
   for it. The recorder asks Terminal and iTerm2 itself.
 - **`--visualizer NAME`** records that visualizer mode over the clip area instead of the clips,
-  and **`--clips`** records the clips, either one without asking.
+  and **`--clips`** records the clips, either one without asking. **`--detail`** records the clips with Arrange's [Details View](ARRANGE.md#details-view) open, as `D` shows it.
 - **`--plain`** records a visualizer take in the older style, as Visualizer Takes below describes.
 - **`--batch`** records a batch video, as Batch Recording below describes.
 

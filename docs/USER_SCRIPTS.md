@@ -153,6 +153,7 @@ Parameters:
 - `--interactive`: perform the take yourself.
 - `--visualizer MODE`: record this visualizer mode rather than the clips.
 - `--clips`: record the clips on Arrange, without asking.
+- `--detail`: record the clips on Arrange with the Details View open, as `D` shows it, without asking; it cannot be combined with `--visualizer`.
 - `--plain`: with `--visualizer`, show the visualizer over Arrange's clip area, the older style, rather than the title, READY and the framed visualizer.
 - `--no-alternate`: show the visualizer alone in the frame, rather than the clips and the visualizer by turns every ten seconds.
 - `--batch`: record the take as one of a batch video's, from the window's cells alone.

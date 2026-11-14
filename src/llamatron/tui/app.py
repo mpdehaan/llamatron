@@ -92,6 +92,9 @@ class LlamatronApp(App, inherit_bindings=False):
         self.on_roll = True
         # Whether Arrange shows its details view (R), the user's design, kept for the session like the choice of the roll.
         self.shows_arrange_details = False
+        # The directory each kind of file picker last showed, by the endings of its files, kept for the session, the user's ask, so that the
+        # Open page and the import's picker each come back to where they were left.
+        self.last_folders = {}
         # The Live sets the user has agreed to write over, so that exporting asks only the first time.
         self._confirmed_overwrites = set()
         # Real-time playback, which ticks on a timer of the app's while anything plays and redraws the page on top for its lights.
@@ -196,6 +199,8 @@ class LlamatronApp(App, inherit_bindings=False):
 
     def _begin_launch(self, page):
         """Do what the launch says: the splash first when launched for recording, then Arrange and play, and the clock that ends the take."""
+        if self.launch.details:
+            self.shows_arrange_details = True
         if self.launch.max_seconds is not None:
             self.set_timer(self.launch.max_seconds, self.exit)
         if self.launch.test_splash:

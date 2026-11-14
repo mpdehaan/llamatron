@@ -263,6 +263,11 @@ code.
 
 ## Opening, saving and exporting
 
+- A file picker comes back to the directory it last showed, for the session and never saved, the user's ask: `OpenPage` keeps the
+  directory in `app.last_folders` by the endings of the files it lists, so the Open page and the import's picker each have their own,
+  whenever it goes into a directory or a file is picked, and forgets one that is gone.
+- `--detail` on the recorder (`Launch.details`, the user's ask) starts Arrange with its details view showing, for a recording of the
+  clips; it is one of the recorder's views, so it can't be asked for with `--visualizer`.
 - Opening goes through `open_file(page=, path=, then=)` in `screens/shared/everywhere.py`, which the
   Open page calls. `Document.load_or_correct(path)` returns the document and the corrections the
   file needed (`.claude/FORMAT.md`, "Corrections"): none for a file that reads strictly, and
