@@ -1330,7 +1330,15 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   lookup reports only traits, section by section, such as the range and where it sits above the tonic, how simple or busy the
   line is, how many beats a note lasts, the share of steps, leaps and repeated notes, the share of chord tones, and how
   syncopated it is; no note, rhythm or tab in order reaches Claude, and nothing of them is stored. Claude writes the tune new
-  from those traits and the chords.
+  from those traits and the chords. The traits come from what Claude knows of the work or from the user; Claude fetches no
+  page of a site whose terms forbid copying or automated reading, the chord-analysis site first used among them.
+- What Claude knows of a work is used freely in a homage (the user's rule): its chords and how long each lasts, its form, its
+  arrangement and instruments, its groove and tempo, its devices such as a key change or a stop, and the general traits of its
+  melody. No run of notes of its melody, riff or bass line is written from memory, and every tune is new.
+- A tune is composed, never random (the user's rule): phrases rise and fall with a shape, a motif comes back varied, a leap is
+  answered by steps the other way, note lengths make a rhythm that repeats, a phrase ends on a longer note of the chord, and the
+  manner is the genre's own. An effect is used only where the style has it: a piece in an old style stays old, so no modern
+  club build, Density or Swell, goes on a baroque or novelty synthesizer tune.
 - A homage's notes carry a line saying which rebuild the file is, like "Rebuild version 2.", counted from 1 for the first
   version checked in, so that a later rebuild knows which one it follows (the user's ask).
 - A homage that is written or rewritten uses the generators that fit (the user's rules): the Progression generator heavily, so
