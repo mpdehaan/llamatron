@@ -1,141 +1,241 @@
-version: 1.0.227
-title: Mysterious and spooky
+version: 1.0.364
+title: Mysterious spooky
 description: "a creepy, kooky harpsichord theme in the manner of The Addams Family (Vic Mizzy), with a tune of its own"
 notes: |
-  Mysterious and spooky: a playful theme at 132 beats a minute in F major, in the manner of the mid
-  sixties: a harpsichord with a chromatic, creeping tune, finger snaps (claves here) on two and
-  four, a tuba-like bass and a church organ. The tune is its own.
+  Mysterious spooky: a creepy, kooky harpsichord theme in the manner of The Addams Family (Vic Mizzy),
+  with a tune of its own. This is a homage to The Addams Family (Vic Mizzy): its chords, form, sounds
+  and drums follow that work as Claude knows it, and every tune and rhythm here is new. Rebuild
+  version 2.
 
-  The bass and the harpsichord's chords are one bar each over chord I, moved by Progression
-  through ii V I I and then iii vi ii V; the tune creeps up in half steps with accidentals.
+  A short harpsichord figure answered by two clicks, played on one chord and then a step higher; a
+  bouncing tune over a tuba, with a dominant chord on II; a reed organ takes the tune in the middle.
+
+  Subgenre: comic television theme of the sixties. Drums: almost none, a soft kick, brushes and
+  clicks. Tempo 132, straight. Bass: a tuba on one and three. Builds: none. Sounds: a harpsichord,
+  clicks, a reed organ. Melody manner: a short figure and two clicks; a bouncing dotted tune. Form:
+  figure, tune, middle, tune.
+
+  Band and song: the theme is known for its harpsichord, for the two clicks everyone joins in, and for
+  being creepy and funny at once.
+
+  Checklist: it is good and memorable because the listener plays the clicks. The hook is the figure
+  and its two clicks; the emotion is macabre fun; the lift is the last theme with organ and clarinet;
+  the contrast is the organ alone with the tune; the sounds are a harpsichord, a tuba, claves and a
+  reed organ.
 
   Run it with: llamatron examples/by_genre/tv_theme/mysterious_spooky.yml
 
-  Scene 1, snaps, 4 bars: the snaps alone.
-  Scene 2, theme, 16 bars: the harpsichord tune.
-  Scene 3, snaps and bass, 8 bars: the snaps and the bass.
-  Scene 4, theme 2, 16 bars: the tune again.
-  Scene 5, organ, 16 bars: the church organ takes the tune.
-  Scene 6, theme 3, 16 bars: the harpsichord and the organ together.
-  Scene 7, snaps 2, 8 bars: the snaps and the bass again.
-  Scene 8, last theme, 16 bars: the tune to the end.
+  Scene 1, clicks, 8 bars.
+  Scene 2, theme, 16 bars.
+  Scene 3, clicks 2, 4 bars.
+  Scene 4, middle, 8 bars.
+  Scene 5, theme 2, 8 bars.
+  Scene 6, organ, 16 bars.
+  Scene 7, clicks 3, 4 bars.
+  Scene 8, middle 2, 8 bars.
+  Scene 9, theme 3, 16 bars.
+  Scene 10, clicks 4, 8 bars.
+  Scene 11, ending, 4 bars.
 
   When changing this demo:
-  - Keep the snaps on two and four.
-  - Keep the tune original.
+  - Keep the drums as the Subgenre paragraph describes them, the kick first.
+  - Keep what the Checklist paragraph calls the hook and the lift.
+  - Keep every tune original, and the demo out of the key of the work it follows.
 real_time: true
 protected: true
 
 scales:
-  F Major: { root: F, type: major }
+  G Major: { root: G, type: major }
 
 patterns:
-  snap:
-    steps: 16
-    drum: true
-    step_size: 1/16
-    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
-    accidental: [~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~]
-    octave: [~, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~]
-    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~]
   kick:
     steps: 16
     drum: true
     step_size: 1/16
     degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~]
-  bass:
+    velocity: [90, ~, ~, ~, ~, ~, ~, ~, 90, ~, ~, ~, ~, ~, ~, ~]
+  brush:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 64, ~, ~, ~, ~, ~, ~, ~, 64, ~, ~, ~]
+  clicks:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, D, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, "#", ~, ~, ~]
+    octave: [~, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, 6, ~, ~, ~]
+    velocity: [~, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~]
+  motif:
     steps: 8
     step_size: 1/8
-    degree: [1, ~, 5, ~, 1, ~, 5, ~]
-    octave: [3, ~, 2, ~, 3, ~, 2, ~]
-  harpsichord:
+    degree: [5, 3, 2, 1, ~, ~, ~, ~]
+    octave: [5, 5, 5, 5, ~, ~, ~, ~]
+    velocity: [106, 100, 100, 100, ~, ~, ~, ~]
+  tuba short:
     steps: 8
     step_size: 1/8
-    degree: [1, ~, ~, 1, ~, ~, 1, ~]
-    octave: [4, ~, ~, 4, ~, ~, 4, ~]
-    chord: ["3", ~, ~, "3", ~, ~, "3", ~]
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [102, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, false, false, false, false, false, false]
+  tuba:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, 5, ~, ~, ~]
+    octave: [3, ~, ~, ~, 2, ~, ~, ~]
+    velocity: [104, ~, ~, ~, 98, ~, ~, ~]
+  offbeat:
+    steps: 8
+    step_size: 1/8
+    degree: [~, ~, 1, ~, ~, ~, 1, ~]
+    octave: [~, ~, 4, ~, ~, ~, 4, ~]
+    chord: [~, ~, "3", ~, ~, ~, "3", ~]
+    velocity: [~, ~, 80, ~, ~, ~, 80, ~]
+  held:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    velocity: [86, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
   theme:
     steps: 64
     step_size: 1/8
-    degree: [2, 2, 3, ~, 4, ~, 6, ~, 5, 5, 6, ~, 7, ~, 2, ~, 1, ~, 5, ~, 3, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, 3, 4, ~, 5, ~, 1, ~, 6, 6, 7, ~, 1, ~, 3, ~, 2, ~, 7, ~, 5, ~, 2, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    accidental: [~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    octave: [5, 5, 5, ~, 5, ~, 5, ~, 5, 5, 5, ~, 5, ~, 6, ~, 6, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, 5, 5, ~, 5, ~, 6, ~, 5, 5, 5, ~, 6, ~, 6, ~, 6, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    degree: [1, ~, ~, 3, 5, ~, 3, ~, 1, ~, ~, 3, 5, ~, ~, ~, 2, ~, ~, 4, 6, ~, 4, ~, 2, ~, ~, 4, 6, ~, ~, ~, 7, ~, ~, 2, 4, ~, 2, ~, 5, ~, 4, ~, 2, ~, ~, ~, 1, ~, 3, ~, 5, ~, 1, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, "#", ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, 5, 5, ~, 5, ~, 5, ~, ~, 5, 5, ~, ~, ~, 5, ~, ~, 5, 5, ~, 5, ~, 5, ~, ~, 5, 5, ~, ~, ~, 4, ~, ~, 5, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [108, ~, ~, 102, 102, ~, 102, ~, 108, ~, ~, 102, 102, ~, ~, ~, 108, ~, ~, 102, 102, ~, 102, ~, 108, ~, ~, 102, 102, ~, ~, ~, 108, ~, ~, 102, 102, ~, 102, ~, 108, ~, 102, ~, 102, ~, ~, ~, 108, ~, 102, ~, 102, ~, 102, ~, 108, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, false, false, true, false, true, false, true, true, false, false, true, true, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, true, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, false]
+  theme low:
+    steps: 64
+    step_size: 1/8
+    degree: [1, ~, ~, 3, 5, ~, 3, ~, 1, ~, ~, 3, 5, ~, ~, ~, 2, ~, ~, 4, 6, ~, 4, ~, 2, ~, ~, 4, 6, ~, ~, ~, 7, ~, ~, 2, 4, ~, 2, ~, 5, ~, 4, ~, 2, ~, ~, ~, 1, ~, 3, ~, 5, ~, 1, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, "#", ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, 4, 4, ~, 4, ~, 4, ~, ~, 4, 4, ~, ~, ~, 4, ~, ~, 4, 4, ~, 4, ~, 4, ~, ~, 4, 4, ~, ~, ~, 3, ~, ~, 4, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [98, ~, ~, 92, 92, ~, 92, ~, 98, ~, ~, 92, 92, ~, ~, ~, 98, ~, ~, 92, 92, ~, 92, ~, 98, ~, ~, 92, 92, ~, ~, ~, 98, ~, ~, 92, 92, ~, 92, ~, 98, ~, 92, ~, 92, ~, ~, ~, 98, ~, 92, ~, 92, ~, 92, ~, 98, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, false, false, true, false, true, false, true, true, false, false, true, true, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, true, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, false]
+  middle:
+    steps: 64
+    step_size: 1/8
+    degree: [6, ~, 4, ~, 1, ~, ~, ~, 6, ~, 4, ~, 6, ~, ~, ~, 5, ~, 3, ~, 1, ~, ~, ~, 5, ~, 3, ~, 5, ~, ~, ~, 4, ~, 2, ~, 6, ~, ~, ~, 4, ~, 6, ~, 1, ~, ~, ~, 7, ~, 5, ~, 2, ~, 7, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, 5, ~, 6, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 6, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 6, ~, ~, ~, 5, ~, 5, ~, 6, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [106, ~, 100, ~, 100, ~, ~, ~, 106, ~, 100, ~, 100, ~, ~, ~, 106, ~, 100, ~, 100, ~, ~, ~, 106, ~, 100, ~, 100, ~, ~, ~, 106, ~, 100, ~, 100, ~, ~, ~, 106, ~, 100, ~, 100, ~, ~, ~, 106, ~, 100, ~, 100, ~, 100, ~, 106, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, false]
 
 progressions:
-  theme: { chords: [2, 5, 1, 1, 3, 6, 2, 5] }
+  motif: { chords: [1, 2, 1, 5] }
+  theme: { chords: [1, 1, 2, 2, 5, 5, 1, 1], qualities: [~, ~, dom7, dom7, dom7, dom7, ~, ~] }
+  middle: { chords: [4, 4, 1, 1, 2, 2, 5, 5], qualities: [~, ~, ~, ~, dom7, dom7, dom7, dom7] }
 
 chains:
+  motif:
+    - progression: motif
   theme:
     - progression: theme
+  middle:
+    - progression: middle
 
 instruments:
   tuba: { device: "*FluidSynth", gm_sound: 59 }
   harpsichord: { device: "*FluidSynth", gm_sound: 7 }
-  church organ: { device: "*FluidSynth", gm_sound: 20 }
-  harpsichord lead: { device: "*FluidSynth", gm_sound: 7 }
+  reed organ: { device: "*FluidSynth", gm_sound: 21 }
+  bass clarinet: { device: "*FluidSynth", gm_sound: 72 }
   drum kit: { device: "*FluidSynth" }
 
 songs:
   mysterious_spooky:
     tempo: 132
-    scale: F Major
-    genre: TV theme
+    scale: G Major
+    genre: TV Theme
 
     tracks:
-      snap: { drum: true, instrument: drum kit }
       kick: { drum: true, instrument: drum kit }
+      snare: { drum: true, instrument: drum kit }
+      clicks: { drum: true, instrument: drum kit }
       bass: { instrument: tuba }
       harpsichord: { instrument: harpsichord }
-      lead: { instrument: harpsichord lead }
-      organ: { instrument: church organ }
+      lead: { instrument: harpsichord }
+      organ: { instrument: reed organ }
+      clarinet: { instrument: bass clarinet }
 
     scenes:
-      - name: snaps
+      - name: clicks
         tracks:
-          snap: { pattern: snap, repeat: 4 }
+          harpsichord: { pattern: motif, chains: [motif], repeat: 8 }
+          clicks: { pattern: clicks, loop: true }
+          bass: { pattern: tuba short, chains: [motif], loop: true }
       - name: theme
         tracks:
-          snap: { pattern: snap, loop: true }
-          kick: { pattern: kick, loop: true }
-          bass: { pattern: bass, chains: [theme], loop: true }
-          harpsichord: { pattern: harpsichord, chains: [theme], loop: true }
-          lead: { pattern: theme, repeat: 2 }
-      - name: snaps and bass
+          kick: { pattern: kick, repeat: 16 }
+          snare: { pattern: brush, loop: true }
+          bass: { pattern: tuba, chains: [theme], loop: true }
+          harpsichord: { pattern: offbeat, chains: [theme], loop: true }
+          lead: { pattern: theme, loop: true }
+      - name: clicks 2
         tracks:
-          snap: { pattern: snap, repeat: 8 }
-          bass: { pattern: bass, chains: [theme], loop: true }
+          harpsichord: { pattern: motif, chains: [motif], repeat: 4 }
+          clicks: { pattern: clicks, loop: true }
+          bass: { pattern: tuba short, chains: [motif], loop: true }
+      - name: middle
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: brush, loop: true }
+          bass: { pattern: tuba, chains: [middle], loop: true }
+          harpsichord: { pattern: offbeat, chains: [middle], loop: true }
+          lead: { pattern: middle, loop: true }
       - name: theme 2
         tracks:
-          snap: { pattern: snap, loop: true }
-          kick: { pattern: kick, loop: true }
-          bass: { pattern: bass, chains: [theme], loop: true }
-          harpsichord: { pattern: harpsichord, chains: [theme], loop: true }
-          lead: { pattern: theme, repeat: 2 }
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: brush, loop: true }
+          bass: { pattern: tuba, chains: [theme], loop: true }
+          harpsichord: { pattern: offbeat, chains: [theme], loop: true }
+          lead: { pattern: theme, loop: true }
+          clarinet: { pattern: theme low, loop: true }
       - name: organ
         tracks:
-          snap: { pattern: snap, loop: true }
-          kick: { pattern: kick, loop: true }
-          bass: { pattern: bass, chains: [theme], loop: true }
-          harpsichord: { pattern: harpsichord, chains: [theme], loop: true }
-          organ: { pattern: theme, repeat: 2 }
+          kick: { pattern: kick, repeat: 16 }
+          snare: { pattern: brush, loop: true }
+          bass: { pattern: tuba, chains: [theme], loop: true }
+          harpsichord: { pattern: offbeat, chains: [theme], loop: true }
+          organ: { pattern: theme low, loop: true }
+      - name: clicks 3
+        tracks:
+          harpsichord: { pattern: motif, chains: [motif], repeat: 4 }
+          clicks: { pattern: clicks, loop: true }
+          bass: { pattern: tuba short, chains: [motif], loop: true }
+      - name: middle 2
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: brush, loop: true }
+          bass: { pattern: tuba, chains: [middle], loop: true }
+          harpsichord: { pattern: offbeat, chains: [middle], loop: true }
+          lead: { pattern: middle, loop: true }
+          organ: { pattern: held, chains: [middle], loop: true }
       - name: theme 3
         tracks:
-          snap: { pattern: snap, loop: true }
-          kick: { pattern: kick, loop: true }
-          bass: { pattern: bass, chains: [theme], loop: true }
-          harpsichord: { pattern: harpsichord, chains: [theme], loop: true }
-          lead: { pattern: theme, repeat: 2 }
-          organ: { pattern: theme, loop: true }
-      - name: snaps 2
+          kick: { pattern: kick, repeat: 16 }
+          snare: { pattern: brush, loop: true }
+          bass: { pattern: tuba, chains: [theme], loop: true }
+          harpsichord: { pattern: offbeat, chains: [theme], loop: true }
+          organ: { pattern: held, chains: [theme], loop: true }
+          lead: { pattern: theme, loop: true }
+          clarinet: { pattern: theme low, loop: true }
+      - name: clicks 4
         tracks:
-          snap: { pattern: snap, repeat: 8 }
-          bass: { pattern: bass, chains: [theme], loop: true }
-      - name: last theme
+          harpsichord: { pattern: motif, chains: [motif], repeat: 8 }
+          clicks: { pattern: clicks, loop: true }
+          bass: { pattern: tuba short, chains: [motif], loop: true }
+      - name: ending
         tracks:
-          snap: { pattern: snap, loop: true }
-          kick: { pattern: kick, loop: true }
-          bass: { pattern: bass, chains: [theme], loop: true }
-          harpsichord: { pattern: harpsichord, chains: [theme], loop: true }
-          lead: { pattern: theme, repeat: 2 }
+          kick: { pattern: kick, repeat: 4 }
+          snare: { pattern: brush, loop: true }
+          bass: { pattern: tuba, chains: [theme], loop: true }
+          harpsichord: { pattern: offbeat, chains: [theme], loop: true }
+          organ: { pattern: held, chains: [theme], loop: true }

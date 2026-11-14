@@ -38,7 +38,7 @@ G_MAJOR = 'G Major'
 # The demo's first scene with the whole verse, whose chords a Progression moves, so they are heard in the notes as played.
 VERSE = 0
 # A demo in a flat key, for how a chord is spelled, and the name of its scale.
-IN_A_FLAT_KEY = 'mysterious_spooky.yml'
+IN_A_FLAT_KEY = 'entertainer.yml'
 F_MAJOR = 'F Major'
 C = 0
 D = 2
