@@ -983,7 +983,7 @@ class TestPickerLayouts(unittest.TestCase):
 
     def test_scale_pages_hold_every_kind_once_except_melodic_minor(self):
         from llamatron.composition.named_scale import SCALE_TYPE_NAMES
-        from llamatron.tui.screens.scale_page import SCALE_PAGES
+        from llamatron.tui.screens.set.scale_page import SCALE_PAGES
         flat = [kind for _, columns in SCALE_PAGES for groups in columns for _, kinds in groups for kind in kinds]
         flat.remove(scale_type_name(ScaleType.MELODIC_MINOR))
         self.assertEqual(sorted(flat), sorted(SCALE_TYPE_NAMES))
@@ -997,12 +997,12 @@ class TestPickerLayouts(unittest.TestCase):
 
     def test_the_keyboard_holds_every_root_once(self):
         from llamatron.music.note import ROOT_NAMES
-        from llamatron.tui.screens.scale_page import ROOT_KEYBOARD
+        from llamatron.tui.screens.set.scale_page import ROOT_KEYBOARD
         flat = [name for row in ROOT_KEYBOARD for name in row if name]
         self.assertEqual(sorted(flat), sorted(ROOT_NAMES))
 
     def test_scale_notes(self):
-        from llamatron.tui.screens.scale_page import scale_label, scale_notes
+        from llamatron.tui.screens.set.scale_page import scale_label, scale_notes
         self.assertEqual(scale_notes(root=NoteName.D, kind=scale_type_name(ScaleType.DORIAN)), D_E_F_G_A_B_C)
         self.assertEqual(scale_notes(root=NoteName.A, kind=scale_type_name(ScaleType.MINOR_PENTATONIC)), A_C_D_E_G)
         self.assertEqual(scale_label(scale_type_name(ScaleType.WHOLE_HALF_DIMINISHED)), WHOLE_HALF_DIM)

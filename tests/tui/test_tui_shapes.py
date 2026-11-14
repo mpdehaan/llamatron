@@ -21,12 +21,12 @@ from llamatron.composition.limits import MAX_ACCENT, MIN_ARTICULATE
 from llamatron.strings.labels import MSG_ACCENT_LABEL, MSG_SHAPE_FIELD_LABELS, MSG_SHAPE_NAMES, MSG_SHAPE_PART_LABELS, MSG_SECTION_LABEL
 from llamatron.strings.marks import MSG_SECTION_CLOSED_MARK, MSG_SECTION_OPEN_MARK, MSG_SECTION_SET
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.articulate_editor import ArticulateEditor
-from llamatron.tui.screens.clip_page import ClipPage
-from llamatron.tui.screens.density_editor import DensityEditor
-from llamatron.tui.screens.field import Heading
-from llamatron.tui.screens.scene_page import ScenePage
-from llamatron.tui.screens.swell_editor import SwellEditor
+from llamatron.tui.screens.generators.articulate_editor import ArticulateEditor
+from llamatron.tui.screens.arrange.clip_page import ClipPage
+from llamatron.tui.screens.generators.density_editor import DensityEditor
+from llamatron.tui.screens.shared.field import Heading
+from llamatron.tui.screens.arrange.scene_page import ScenePage
+from llamatron.tui.screens.generators.swell_editor import SwellEditor
 from llamatron.tui import keybindings
 
 # What a test names the generator it adds.

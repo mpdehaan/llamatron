@@ -30,14 +30,14 @@ from llamatron.tui.batch_stage import BatchStage
 from llamatron.tui.document import Document
 from llamatron.tui.launch import FINISHED_CHECK_SECONDS, Launch, recording_problem
 from llamatron.visualizers.modes import mode_called
-from llamatron.tui.screens.arrange_page import ArrangePage
-from llamatron.tui.screens.everywhere import offer_corrected
-from llamatron.tui.screens.main_page import MainPage
-from llamatron.tui.screens.page import Page
+from llamatron.tui.screens.arrange.arrange_page import ArrangePage
+from llamatron.tui.screens.shared.everywhere import offer_corrected
+from llamatron.tui.screens.set.main_page import MainPage
+from llamatron.tui.screens.shared.page import Page
 from llamatron.tui.components.scroll_text import scroll_seconds
-from llamatron.tui.screens.demo_scroll import DemoScroll
-from llamatron.tui.screens.splash import Splash
-from llamatron.tui.screens.start_screen import StartScreen
+from llamatron.tui.screens.set.demo_scroll import DemoScroll
+from llamatron.tui.screens.set.splash import Splash
+from llamatron.tui.screens.set.start_screen import StartScreen
 from llamatron.tui.keys import OPEN_AT_START
 from llamatron.tui.status_line import StatusLine
 from llamatron.tui.pattern_preview import PatternPreview

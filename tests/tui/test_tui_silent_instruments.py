@@ -25,7 +25,7 @@ from llamatron.tui.app import LlamatronApp
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.launch import Launch
-from llamatron.tui.screens.main_page import MainPage
+from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.silent_instruments import silent_instrument_lines
 from tests.support.ui_testing import DRUMS, LEAD, UITest, a_song
 

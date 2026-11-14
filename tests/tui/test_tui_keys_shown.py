@@ -21,7 +21,7 @@ from llamatron.tui.dialogs.help_dialog import HelpDialog
 from llamatron.composition.file_format import ClipSlotSetting, Direction, GeneratorKind, Section, SetlistSetting
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.main_page import MainPage
+from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.strings.labels import MSG_NOTES_LABEL
 from llamatron.tui import keybindings
 

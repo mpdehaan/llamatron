@@ -29,7 +29,7 @@ MSG_NO_SEED = 'no seed'
 MSG_QUIT_UNSAVED_NOTE = 'unsaved changes'
 MSG_QUIT_UNSAVED_QUESTION = 'The set has unsaved changes.'
 
-# tui/screens/arrange_page.py
+# tui/screens/arrange/arrange_page.py
 # Dialogs and messages.
 MSG_DELETE_SCENE_QUESTION = 'Delete scene {name}?'
 MSG_DELETE_TRACK_QUESTION = 'Delete track {name}?'
@@ -52,7 +52,7 @@ MSG_LOOP_NOTE = '  Plays until the other clips are done. One clip in a scene mus
 MSG_MORPH_HINT_NOTE = '  Set Repeat above 1 to choose a pattern to morph to.'
 MSG_GRAB_HINT_NOTE = '  Grab track only changes Grab steps, and this pattern has none yet.'
 
-# tui/screens/page.py and tui/key_table.py: the key names, the labels and the words every page shares
+# tui/screens/shared/page.py and tui/key_table.py: the key names, the labels and the words every page shares
 MSG_SEARCH_STATUS = '/{text}'
 # The current song, at the right of every header.
 MSG_HELP_TITLE = 'Help: {where}, {panel}'
@@ -66,14 +66,14 @@ MSG_USE_CHAIN = 'chain {name}'
 MSG_USE_SONG = 'song {name}'
 MSG_USE_SONG_TRACK = 'song {song}, track {track}'
 
-# tui/screens/list_page.py and tui/screens/field_page.py
+# tui/screens/shared/list_page.py and tui/screens/shared/field_page.py
 MSG_DELETE_TITLE = 'Delete'
-# tui/screens/arrange_page.py: the picker of chains to add to a cell from its details.
+# tui/screens/arrange/arrange_page.py: the picker of chains to add to a cell from its details.
 MSG_ADD_CHAIN_TITLE = 'Add a chain'
 MSG_DELETE_QUESTION = 'Delete {what}?'
 MSG_ALSO_DELETES_CLIPS = 'This also deletes its {count} clip(s).'
 
-# tui/screens/main_page.py, tui/screens/file_page.py and tui/screens/everywhere.py
+# tui/screens/set/main_page.py, tui/screens/set/file_page.py and tui/screens/shared/everywhere.py
 MSG_QUIT_TITLE = PageName.QUIT
 MSG_SONG_SCALE_TITLE = 'Song scale'
 # The notes under the File/Global page's fields.
@@ -146,7 +146,7 @@ MSG_CHANGED_WORDS = {
 MSG_NEW_SONG_PROMPT = 'New song name'
 MSG_RENAME_SONG_PROMPT = 'Rename song'
 
-# tui/screens/track_editor.py
+# tui/screens/arrange/track_editor.py
 MSG_RENAME_TRACK_PROMPT = 'Rename track'
 MSG_EDITING = 'editing: Tab reaches Save and CANCEL, ESC cancels'
 MSG_CLEAR_NOTES_TITLE = 'Clear the notes'
@@ -171,13 +171,13 @@ MSG_CHANGE_STEP_TITLE = 'Change step'
 MSG_OFFSETS_NOTE = '  Steps start again with each chord. A blank step is silent. Tab: next row'
 MSG_RENAME_SCALE_PROMPT = 'Rename scale'
 
-# tui/screens/scale_page.py
+# tui/screens/set/scale_page.py
 MSG_ROOT_TITLE = 'Root note'
 MSG_KIND_TITLE = 'Kind of {root} scale'
 MSG_SCALE_USES_NOTE = '  Used by {count} song(s) and scene(s).'
 MSG_SCALE_NOTES_DETAIL = '{root} {kind}: {notes}'
 
-# tui/screens/pattern_editor.py, its two drawings and the rows in tui/components/
+# tui/screens/pattern/pattern_editor.py, its two drawings and the rows in tui/components/
 MSG_GATE_PROMPT = 'Gate'
 MSG_STEP_SIZE_PROMPT = "Step size (blank for the song's)"
 MSG_TIME_SIGNATURE_PROMPT = "Time signature (blank for the song's)"
@@ -225,19 +225,19 @@ MSG_CHORD_RESTING_OWN = '; in {scale} it is {name}'
 MSG_RESTING_STEP = 'step {step}'
 MSG_RESTING_CHORD = 'chord {chord}'
 
-# tui/screens/registers_page.py
+# tui/screens/set/registers_page.py
 MSG_REGISTER_PROMPT = '{label} ({lowest} to {highest})'
 
-# tui/screens/grooves_page.py
+# tui/screens/set/grooves_page.py
 MSG_RENAME_GROOVE_PROMPT = 'Rename groove'
 
-# tui/screens/instruments_page.py and tui/screens/instrument_editor.py
+# tui/screens/set/instruments_page.py and tui/screens/set/instrument_editor.py
 MSG_RENAME_INSTRUMENT_PROMPT = 'Rename instrument'
 MSG_DEVICE_TITLE = 'MIDI device'
 MSG_GM_SOUND_TITLE = 'General MIDI sound'
 MSG_CHANNEL_PROMPT = 'Channel ({lowest} to {highest})'
 
-# tui/screens/main_page.py
+# tui/screens/set/main_page.py
 MSG_REAL_TIME_ON = 'real time on: tracks with an instrument play through it'
 MSG_REAL_TIME_OFF = 'real time off'
 MSG_REAL_TIME_OFF_STOPPED = 'real time off: stopped what was playing'
@@ -248,7 +248,7 @@ MSG_CLIP_ON_TRACK = 'clip ({name}) on track ({track})'
 MSG_PLAYING_FROM = 'playing from {scene}'
 MSG_PLAYING_CLIP = 'playing {clip} on its own'
 MSG_LISTENING = 'listening to ({name}) through track ({track})'
-# tui/screens/listening.py: a pattern's preview, with its scale, and a drum pattern's, which has none.
+# tui/screens/shared/listening.py: a pattern's preview, with its scale, and a drum pattern's, which has none.
 MSG_LISTENING_IN_SCALE = 'listening to ({name}) in {scale}'
 MSG_LISTENING_TO_PATTERN = 'listening to ({name})'
 # A clip listened to while Real Time is off.
@@ -265,25 +265,25 @@ MSG_SILENCED = 'silenced {channels} channels on {devices} devices'
 MSG_NOTHING_TO_SILENCE = 'no instrument has a connected device to silence'
 MSG_LISTEN_INSTRUMENT_TITLE = 'Listen through which instrument?'
 
-# tui/screens/groove_editor.py
+# tui/screens/set/groove_editor.py
 MSG_GROOVE_NOTE = '  Each cell is {length} of a whole note. An amount is a percentage of a cell: + plays late, - plays early.'
 MSG_GROOVE_REPEATS_NOTE = '  The row repeats from the start of each scene, and a note takes the amount of the cell its time falls in.'
 MSG_FACTORY_GROOVE_NOTE = '  A factory groove, which cannot be changed. C on the Grooves page copies it to one you can edit.'
 
-# tui/screens/groove_choice.py: the Groove field on the Song, Scene and Track pages
+# tui/screens/arrange/groove_choice.py: the Groove field on the Song, Scene and Track pages
 MSG_SONG_GROOVE_TITLE = 'Song groove'
 MSG_PREVIEW_INSTRUMENT_TITLE = 'Preview instrument'
 MSG_SCENE_GROOVE_TITLE = 'Scene groove'
 MSG_TRACK_GROOVE_TITLE = 'Track groove'
 
-# tui/screens/chords_editor.py: the line above a progression's chords, and the title of the picker of named progressions.
+# tui/screens/generators/chords_editor.py: the line above a progression's chords, and the title of the picker of named progressions.
 MSG_CHORDS_NOTE = 'each chord moves the clip from chord I, in the song\'s scale'
 MSG_PROGRESSION_PICKER_TITLE = 'Progressions'
 
-# tui/screens/euclid_fields.py: the title of the picker of named rhythms.
+# tui/screens/generators/euclid_fields.py: the title of the picker of named rhythms.
 MSG_RHYTHM_PICKER_TITLE = 'Rhythms'
 
-# tui/screens/step_row_editor.py: the line above a row of steps, saying what a step that's on does.
+# tui/screens/generators/step_row_editor.py: the line above a row of steps, saying what a step that's on does.
 MSG_STEP_ROW_NOTES = {
     Section.GLIDES: 'a note starting on a step that is on glides into the next note',
     Section.SHORTENS: 'a note starting on a step that is on plays short',
@@ -291,7 +291,7 @@ MSG_STEP_ROW_NOTES = {
     Section.DRAGS: 'a note starting on a step that is on plays late',
 }
 
-# tui/screens/list_page.py and tui/screens/arrange_page.py: Move mode, the user's design.
+# tui/screens/shared/list_page.py and tui/screens/arrange/arrange_page.py: Move mode, the user's design.
 MSG_MOVING = 'moving {what}: the arrows carry it, ENTER drops it'
 MSG_MOVING_SCENE = 'scene ({name})'
 MSG_MOVING_TRACK = 'track ({name})'

@@ -303,6 +303,6 @@ row says which, and a reply says which too.
 | the player | nothing on screen: what launches scenes and clips and follows the follow actions | `Player`, on a `Score` |
 | the transport | nothing on screen: the tracker's side of real-time playback, which every page asks what plays | `Transport`, `app.transport` |
 | play, stop, the corner | Space on Arrange, the `▶ song` and `■ song` cell over the scene names, the `▶` and `■` beside each clip | `ArrangePage.play_song`, `play_scene`, `play_clip`, `stop_playing_all`, `stop_clip`, `on_corner` |
-| listen, preview | `L` (Listen) on the clip page and in the pattern editor, and the clip page's Play and Stop buttons | `listen`, `listen_to_pattern` in `tui/screens/listening.py` |
+| listen, preview | `L` (Listen) on the clip page and in the pattern editor, and the clip page's Play and Stop buttons | `listen`, `listen_to_pattern` in `tui/screens/shared/listening.py` |
 | the lights | the red `■`, the green `●` after a track's name, the scene bar and each playing clip's bar filling as read heads, the clock `▶ 0:22 / 3:00` | `Style.PLAYING`, `Style.SOUNDING`, `LengthBar.draw(played=)`, `MSG_PLAYING_CLOCK` |
 | silence, the emergency stop, Ctrl+T | Ctrl+T on every page, `SILENCE` in the F1 dialog | `Page.SILENCE`, `Transport.silence_everything`, `PlaybackEngine.silence` |

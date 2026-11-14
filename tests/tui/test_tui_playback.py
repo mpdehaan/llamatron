@@ -30,7 +30,7 @@ from rich.text import Text
 from llamatron.composition.file_format import FLUIDSYNTH_DEVICE, ClipSlotSetting, Direction, LiveResponsiveness, Row, Section
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
-from llamatron.tui.screens.arrange_page import SCENE_COLUMN
+from llamatron.tui.screens.arrange.arrange_page import SCENE_COLUMN
 from llamatron.exporters.midi_arrangement import DRUM_CHANNEL_BYTE, MELODIC_CHANNEL_BYTES
 from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT
 from llamatron.realtime.engine import PlaybackEngine, SteppedClock
@@ -56,15 +56,15 @@ from llamatron.tui import keybindings
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.drawing import Style
 from llamatron.tui.pattern_preview import CHOSEN_PASSES, PIANO_PROGRAM, PREVIEW_CHANNEL_BYTE, passes_to_come_round
-from llamatron.tui.screens.pattern_editor import PatternEditor
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.batch_stage import GROW_SECONDS
 from llamatron.tui.launch import Launch, recording_problem
-from llamatron.tui.screens.arrange_page import ArrangePage
-from llamatron.tui.screens.demo_scroll import DemoScroll
-from llamatron.tui.screens.splash import Splash
+from llamatron.tui.screens.arrange.arrange_page import ArrangePage
+from llamatron.tui.screens.set.demo_scroll import DemoScroll
+from llamatron.tui.screens.set.splash import Splash
 from llamatron.strings.about import MSG_BLOCK
 from llamatron.tui.drawing import Box
-from llamatron.tui.screens.main_page import MainPage
+from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.strings.marks import MSG_PLAYING_CLOCK
 from llamatron.tui.text import clock
 from llamatron.tui.keys import Key

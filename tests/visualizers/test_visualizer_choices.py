@@ -26,7 +26,7 @@ from llamatron.strings.labels import MSG_HIDE_VISUALIZERS_LABEL
 from llamatron.strings.messages import MSG_EVERY_VISUALIZER_HIDDEN
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.file_page import FilePage
+from llamatron.tui.screens.set.file_page import FilePage
 from llamatron.visualizers.cycle import Cycle
 from llamatron.visualizers.modes import MODES, mode_called, mode_options
 

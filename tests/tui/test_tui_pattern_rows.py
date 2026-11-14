@@ -23,7 +23,7 @@ from llamatron.music.note import NoteName
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.document import Document
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.pattern_editor import Reconfigure
+from llamatron.tui.screens.pattern.pattern_editor import Reconfigure
 from llamatron.strings.errors import ERR_AT_ALLOWED_INC_MAX
 from llamatron.strings.labels import MSG_ROW_LABELS
 from llamatron.strings.legends import KeyName

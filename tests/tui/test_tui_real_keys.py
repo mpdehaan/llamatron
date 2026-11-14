@@ -24,9 +24,9 @@ from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.dialogs.quit_dialog import QuitDialog
 from llamatron.tui.keys import Key, RowSection
-from llamatron.tui.screens.main_page import MainPage
-from llamatron.tui.screens.patterns_page import PatternsPage
-from llamatron.tui.screens.pattern_editor import PatternEditor
+from llamatron.tui.screens.set.main_page import MainPage
+from llamatron.tui.screens.pattern.patterns_page import PatternsPage
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.strings.labels import MSG_EXPORT_CHOICES
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import first_key

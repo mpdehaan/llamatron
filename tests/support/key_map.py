@@ -20,11 +20,11 @@ internal_tools/key_map.sh rewrites. It's for Claude, so that a question about a 
 
 import os
 
-from llamatron.tui.screens.arrange_page import ArrangePage
-from llamatron.tui.screens.field import Button, Heading
-from llamatron.tui.screens.field_page import FieldPage
-from llamatron.tui.screens.list_page import ListPage
-from llamatron.tui.screens.pattern_editor import PatternEditor
+from llamatron.tui.screens.arrange.arrange_page import ArrangePage
+from llamatron.tui.screens.shared.field import Button, Heading
+from llamatron.tui.screens.shared.field_page import FieldPage
+from llamatron.tui.screens.shared.list_page import ListPage
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui import keybindings
 
 

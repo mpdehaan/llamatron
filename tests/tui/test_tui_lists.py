@@ -20,7 +20,7 @@ from tests.support.ui_testing import SWAY, fixed_text, KEY_SHOWN, UITest, key_of
 from llamatron.strings.names import MSG_NEW_SCALE_WORD
 from llamatron.tui.drawing import NOTHING
 from llamatron.strings.marks import MSG_MOVING_CLOSE, MSG_MOVING_OPEN
-from llamatron.tui.screens.patterns_page import PatternsPage
+from llamatron.tui.screens.pattern.patterns_page import PatternsPage
 from llamatron.composition.file_format import (
     TIME_CHOICES,
     DRIFT_DIRECTIONS, NAMED_GENERATORS, REGISTER_NAMES, ClipSlotSetting, Direction, DriftValue, DriftVersion, GeneratorKind, Section,
@@ -37,16 +37,16 @@ from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.composition.setlist import DEFAULT_SCALE, Setlist
 from llamatron.strings.marks import MSG_GENERATOR_KIND_SHOWN
-from llamatron.tui.screens.generator_pages import generator_page_of_kind
+from llamatron.tui.screens.generators.generator_pages import generator_page_of_kind
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.arp_editor import ArpEditor
-from llamatron.tui.screens.drift_editor import DriftEditor
-from llamatron.tui.screens.auto_ratchet_editor import AutoRatchetEditor
-from llamatron.tui.screens.chain_editor import ChainEditor
-from llamatron.tui.screens.chains_page import ChainsPage
-from llamatron.tui.screens.offsets_editor import OffsetsEditor
-from llamatron.tui.screens.scale_page import ScalePage
-from llamatron.tui.screens.scales_page import ScalesPage
+from llamatron.tui.screens.generators.arp_editor import ArpEditor
+from llamatron.tui.screens.generators.drift_editor import DriftEditor
+from llamatron.tui.screens.generators.auto_ratchet_editor import AutoRatchetEditor
+from llamatron.tui.screens.generators.chain_editor import ChainEditor
+from llamatron.tui.screens.generators.chains_page import ChainsPage
+from llamatron.tui.screens.generators.offsets_editor import OffsetsEditor
+from llamatron.tui.screens.set.scale_page import ScalePage
+from llamatron.tui.screens.set.scales_page import ScalesPage
 from llamatron.strings.labels import (
     MSG_DRIFT_DIRECTION_LABEL, MSG_DRIFT_VALUE_LABELS, MSG_EVERY_LABEL, MSG_ARP_NOTE_ADD_LABEL, MSG_STEP_ADD_ROW_LABEL,
     MSG_COUNTS_LABEL, MSG_KIND_LABEL, MSG_NAME_LABEL, MSG_OCTAVE_JUMP_LABEL, MSG_OCTAVE_RANGE_LABEL, MSG_OFFSETS_LABEL, MSG_ORDER_LABEL,
@@ -60,7 +60,7 @@ from llamatron.strings.marks import (
 )
 from llamatron.strings.messages import MSG_ROOT_TITLE, MSG_SCALE_USES_NOTE
 from llamatron.tui import keybindings
-from llamatron.tui.screens.chain_editor import step_shown
+from llamatron.tui.screens.generators.chain_editor import step_shown
 from llamatron.strings.marks import MSG_CHAIN_STEP_AGAIN, MSG_CHAIN_STEP_SHOWN
 from llamatron.composition.naming import new_name, suggested_word
 from llamatron.strings.messages import MSG_NEW_GENERATOR_CHOICE

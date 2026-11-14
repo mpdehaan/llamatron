@@ -20,7 +20,7 @@ from llamatron.composition.file_format import Section, GeneratorKind
 from llamatron.composition.generator_settings import DEFAULT_VOICING_HIGHEST_OCTAVE, DEFAULT_VOICING_LOWEST_OCTAVE
 from llamatron.strings.labels import MSG_HIGHEST_OCTAVE_LABEL, MSG_LOWEST_OCTAVE_LABEL, MSG_ROOT_IN_BASS_LABEL
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.voice_leading_editor import VoiceLeadingEditor
+from llamatron.tui.screens.generators.voice_leading_editor import VoiceLeadingEditor
 from llamatron.tui import keybindings
 
 NEW_ONE = 'close'

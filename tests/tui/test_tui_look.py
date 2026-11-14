@@ -25,7 +25,7 @@ from textual.app import App
 from textual.screen import Screen
 from tests.support.ui_testing import BEAT, CHROMATIC_SCALE, UITest, key_name
 from llamatron.tui.drawing import Box, NOTHING, SELECTED_MARK, SPACE, Style
-from llamatron.tui.screens.main_page import BAR_ROWS, COLUMNS
+from llamatron.tui.screens.set.main_page import BAR_ROWS, COLUMNS
 from llamatron.composition.file_format import ChordSymbol, PatternSetting, Row, Section
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.setlist import new_setlist
@@ -34,40 +34,40 @@ from llamatron.music.scale import ScaleType
 from llamatron.tui import app as tui_app
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui import themes
-from llamatron.tui.screens.page import ROOM_FOR_THE_GAP
-from llamatron.tui.screens.arrange_page import ArrangePage
-from llamatron.tui.screens.clip_page import ClipPage
-from llamatron.tui.screens.scene_page import ScenePage
+from llamatron.tui.screens.shared.page import ROOM_FOR_THE_GAP
+from llamatron.tui.screens.arrange.arrange_page import ArrangePage
+from llamatron.tui.screens.arrange.clip_page import ClipPage
+from llamatron.tui.screens.arrange.scene_page import ScenePage
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.dialogs.chord_dialog import QUALITY_LIST, ChordDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.screens.page import Page, PROGRAM_NAME
+from llamatron.tui.screens.shared.page import Page, PROGRAM_NAME
 from llamatron.tui.document import Document
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.field_page import FieldPage
-from llamatron.tui.screens.list_page import ListPage
-from llamatron.tui.screens.arp_editor import ArpEditor
-from llamatron.tui.screens.auto_ratchet_editor import AutoRatchetEditor
-from llamatron.tui.screens.chain_editor import ChainEditor
-from llamatron.tui.screens.chains_page import ChainsPage
-from llamatron.tui.screens.file_page import FilePage
-from llamatron.tui.screens.generators_page import GeneratorsPage
-from llamatron.tui.screens.main_page import MainPage
-from llamatron.tui.screens.patterns_page import PatternsPage
-from llamatron.tui.screens.scale_page import ScalePage
-from llamatron.tui.screens.grooves_page import GroovesPage
-from llamatron.tui.screens.groove_editor import GrooveEditor
-from llamatron.tui.screens.instrument_editor import InstrumentEditor
-from llamatron.tui.screens.instruments_page import InstrumentsPage
-from llamatron.tui.screens.scales_page import ScalesPage
-from llamatron.tui.screens.open_page import OpenPage
-from llamatron.tui.screens.song_page import SongPage
-from llamatron.tui.screens.songs_page import SongsPage
-from llamatron.tui.screens.track_editor import TrackEditor
-from llamatron.tui.screens.pattern_editor import PatternEditor, Reconfigure
+from llamatron.tui.screens.shared.field_page import FieldPage
+from llamatron.tui.screens.shared.list_page import ListPage
+from llamatron.tui.screens.generators.arp_editor import ArpEditor
+from llamatron.tui.screens.generators.auto_ratchet_editor import AutoRatchetEditor
+from llamatron.tui.screens.generators.chain_editor import ChainEditor
+from llamatron.tui.screens.generators.chains_page import ChainsPage
+from llamatron.tui.screens.set.file_page import FilePage
+from llamatron.tui.screens.generators.generators_page import GeneratorsPage
+from llamatron.tui.screens.set.main_page import MainPage
+from llamatron.tui.screens.pattern.patterns_page import PatternsPage
+from llamatron.tui.screens.set.scale_page import ScalePage
+from llamatron.tui.screens.set.grooves_page import GroovesPage
+from llamatron.tui.screens.set.groove_editor import GrooveEditor
+from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
+from llamatron.tui.screens.set.instruments_page import InstrumentsPage
+from llamatron.tui.screens.set.scales_page import ScalesPage
+from llamatron.tui.screens.set.open_page import OpenPage
+from llamatron.tui.screens.set.song_page import SongPage
+from llamatron.tui.screens.set.songs_page import SongsPage
+from llamatron.tui.screens.arrange.track_editor import TrackEditor
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor, Reconfigure
 from llamatron.strings.about import MSG_SITE
 from llamatron.strings.labels import MSG_CAPTION_WORDS, MSG_EDITING_CAPTION
 from llamatron.strings.labels import Crumb, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TITLE_LABEL, PageName

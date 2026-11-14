@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The pages that list named things all rename, copy, delete, move and sort the same way (tui/screens/named_list_page.py).
+"""The pages that list named things all rename, copy, delete, move and sort the same way (tui/screens/shared/named_list_page.py).
 
 The same checks run on each of them: the Patterns, Scales, Chains, Grooves, Songs, Arpeggiators
 and AutoRatchets pages. What a page alone does, like adding, is tested with the page.
@@ -21,7 +21,7 @@ and AutoRatchets pages. What a page alone does, like adding, is tested with the 
 
 from tests.support.ui_testing import LEAD, NAMED, TUNE, UITest, leaf_pages
 from llamatron.composition.file_format import NAMED_GENERATORS, ClipSlotSetting, Section
-from llamatron.tui.screens.generator_pages import GENERATOR_PAGES
+from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES
 from llamatron.composition.groove import FACTORY_GROOVE_NAMES, FactoryGroove
 from llamatron.composition.limits import MAX_NAME_LENGTH
 from llamatron.composition.setlist import DEFAULT_SCALE
@@ -35,13 +35,13 @@ from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.chains_page import ChainsPage
-from llamatron.tui.screens.grooves_page import GroovesPage
-from llamatron.tui.screens.instruments_page import InstrumentsPage
-from llamatron.tui.screens.named_list_page import NamedListPage
-from llamatron.tui.screens.patterns_page import PatternsPage
-from llamatron.tui.screens.scales_page import ScalesPage
-from llamatron.tui.screens.songs_page import SongsPage
+from llamatron.tui.screens.generators.chains_page import ChainsPage
+from llamatron.tui.screens.set.grooves_page import GroovesPage
+from llamatron.tui.screens.set.instruments_page import InstrumentsPage
+from llamatron.tui.screens.shared.named_list_page import NamedListPage
+from llamatron.tui.screens.pattern.patterns_page import PatternsPage
+from llamatron.tui.screens.set.scales_page import ScalesPage
+from llamatron.tui.screens.set.songs_page import SongsPage
 import unittest
 
 RENAMED = 'renamed'

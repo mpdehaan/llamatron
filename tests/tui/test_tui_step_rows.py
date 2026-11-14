@@ -21,14 +21,14 @@ from llamatron.composition.generator_settings import DEFAULT_DRAG, DEFAULT_RUSH,
 from llamatron.composition.limits import MAX_RUSH_OR_DRAG, MAX_STEP_ROW
 from llamatron.strings.labels import MSG_DRAG_AMOUNT_LABEL, MSG_GLIDE_AMOUNT_LABEL, MSG_RUSH_AMOUNT_LABEL, MSG_SHORTEN_LABEL, MSG_STEPS_LABEL
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.drag_editor import DragEditor
-from llamatron.tui.screens.glide_editor import DEFAULT_GLIDE_AMOUNT_WRITTEN, GLIDE_AMOUNTS, GlideEditor
-from llamatron.tui.screens.glide_steps_editor import GlideStepsEditor
-from llamatron.tui.screens.rush_editor import RushEditor
-from llamatron.tui.screens.shorten_editor import ShortenEditor
-from llamatron.tui.screens.shorten_steps_editor import ShortenStepsEditor
-from llamatron.tui.screens.rush_steps_editor import RushStepsEditor
-from llamatron.tui.screens.drag_steps_editor import DragStepsEditor
+from llamatron.tui.screens.generators.drag_editor import DragEditor
+from llamatron.tui.screens.generators.glide_editor import DEFAULT_GLIDE_AMOUNT_WRITTEN, GLIDE_AMOUNTS, GlideEditor
+from llamatron.tui.screens.generators.glide_steps_editor import GlideStepsEditor
+from llamatron.tui.screens.generators.rush_editor import RushEditor
+from llamatron.tui.screens.generators.shorten_editor import ShortenEditor
+from llamatron.tui.screens.generators.shorten_steps_editor import ShortenStepsEditor
+from llamatron.tui.screens.generators.rush_steps_editor import RushStepsEditor
+from llamatron.tui.screens.generators.drag_steps_editor import DragStepsEditor
 from llamatron.tui import keybindings
 
 NEW_ONE = 'squelch'

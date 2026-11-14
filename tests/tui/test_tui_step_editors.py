@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The editors of steps (tui/screens/step_editor.py) and of one row of numbers (tui/screens/one_row_editor.py).
+"""The editors of steps (tui/screens/shared/step_editor.py) and of one row of numbers (tui/screens/shared/one_row_editor.py).
 
 The offsets editor and the groove editor are each a OneRowEditor, so one set of checks runs on
 both: the cursor stops at both ends, digits type a number as one edit and keep the sign, Up and
@@ -33,16 +33,16 @@ from llamatron.strings.marks import MSG_CELLS_SHOWN, MSG_MORE_AFTER, MSG_MORE_BE
 from llamatron.tui import keybindings
 from llamatron.tui.drawing import Box, NOTHING
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.chords_editor import ChordsEditor
-from llamatron.tui.screens.glide_steps_editor import GlideStepsEditor
-from llamatron.tui.screens.shorten_steps_editor import ShortenStepsEditor
-from llamatron.tui.screens.rush_steps_editor import RushStepsEditor
-from llamatron.tui.screens.drag_steps_editor import DragStepsEditor
-from llamatron.tui.screens.groove_editor import GrooveEditor
-from llamatron.tui.screens.offsets_editor import OffsetsEditor
-from llamatron.tui.screens.one_row_editor import OneRowEditor
-from llamatron.tui.screens.pattern_editor import PatternEditor
-from llamatron.tui.screens.step_editor import StepEditor
+from llamatron.tui.screens.generators.chords_editor import ChordsEditor
+from llamatron.tui.screens.generators.glide_steps_editor import GlideStepsEditor
+from llamatron.tui.screens.generators.shorten_steps_editor import ShortenStepsEditor
+from llamatron.tui.screens.generators.rush_steps_editor import RushStepsEditor
+from llamatron.tui.screens.generators.drag_steps_editor import DragStepsEditor
+from llamatron.tui.screens.set.groove_editor import GrooveEditor
+from llamatron.tui.screens.generators.offsets_editor import OffsetsEditor
+from llamatron.tui.screens.shared.one_row_editor import OneRowEditor
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
+from llamatron.tui.screens.shared.step_editor import StepEditor
 
 A_GROOVE = 'shuffle'
 SOME_OFFSETS = [0, 0, 0, 0]

@@ -45,7 +45,7 @@ from llamatron.tui.components.title_card import TITLE_BLUE
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
 from llamatron.tui.scene_notes import beat_chords, effective_values, scene_notes
-from llamatron.tui.screens.arrange_details import ADD_CHAIN, clip_details, or_stock, track_details
+from llamatron.tui.screens.arrange.arrange_details import ADD_CHAIN, clip_details, or_stock, track_details
 from llamatron.visualizers.cells import CellPainter
 from llamatron.visualizers.piano_roll import DRUM_ROWS, drum_lane
 

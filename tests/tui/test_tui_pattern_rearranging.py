@@ -23,7 +23,7 @@ from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import HOME_END, Key
-from llamatron.tui.screens.pattern_editor import Munge, Reconfigure
+from llamatron.tui.screens.pattern.pattern_editor import Munge, Reconfigure
 from llamatron.strings.errors import ERR_NOTHING_AFTER
 from llamatron.strings.legends import MSG_TO_EDITOR_WHAT, MSG_TO_ROLL_WHAT, What
 from llamatron.tui import keybindings

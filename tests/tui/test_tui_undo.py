@@ -42,27 +42,27 @@ from llamatron.composition.defaults import DEFAULT_CHANNEL, FIRST_NUMBER
 from llamatron.composition.file_format import DriftValue, DriftVersion, GeneratorKind, RegisterName, RegisterSetting, Row, Section, SongSetting
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.arrange_page import ArrangePage
-from llamatron.tui.screens.chains_page import ChainsPage
-from llamatron.tui.screens.clip_page import ClipPage
-from llamatron.tui.screens.grooves_page import GroovesPage
-from llamatron.tui.screens.instruments_page import InstrumentsPage
-from llamatron.tui.screens.main_page import MainPage
-from llamatron.tui.screens.offsets_editor import OffsetsEditor
-from llamatron.tui.screens.pattern_editor import Munge, PatternEditor, Reconfigure
-from llamatron.tui.screens.patterns_page import PatternsPage
-from llamatron.tui.screens.scale_page import ScalePage
-from llamatron.tui.screens.scales_page import ScalesPage
-from llamatron.tui.screens.scene_page import ScenePage
-from llamatron.tui.screens.track_editor import TrackEditor
-from llamatron.tui.screens.groove_editor import GrooveEditor
-from llamatron.tui.screens.instrument_editor import InstrumentEditor
-from llamatron.tui.screens.arp_editor import ArpEditor
-from llamatron.tui.screens.chords_editor import QUALITY_ROW
-from llamatron.tui.screens.chain_editor import ChainEditor
-from llamatron.tui.screens.notes_page import NotesPage
-from llamatron.tui.screens.generators_page import GeneratorsPage
-from llamatron.tui.screens.song_page import SongPage
+from llamatron.tui.screens.arrange.arrange_page import ArrangePage
+from llamatron.tui.screens.generators.chains_page import ChainsPage
+from llamatron.tui.screens.arrange.clip_page import ClipPage
+from llamatron.tui.screens.set.grooves_page import GroovesPage
+from llamatron.tui.screens.set.instruments_page import InstrumentsPage
+from llamatron.tui.screens.set.main_page import MainPage
+from llamatron.tui.screens.generators.offsets_editor import OffsetsEditor
+from llamatron.tui.screens.pattern.pattern_editor import Munge, PatternEditor, Reconfigure
+from llamatron.tui.screens.pattern.patterns_page import PatternsPage
+from llamatron.tui.screens.set.scale_page import ScalePage
+from llamatron.tui.screens.set.scales_page import ScalesPage
+from llamatron.tui.screens.arrange.scene_page import ScenePage
+from llamatron.tui.screens.arrange.track_editor import TrackEditor
+from llamatron.tui.screens.set.groove_editor import GrooveEditor
+from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
+from llamatron.tui.screens.generators.arp_editor import ArpEditor
+from llamatron.tui.screens.generators.chords_editor import QUALITY_ROW
+from llamatron.tui.screens.generators.chain_editor import ChainEditor
+from llamatron.tui.screens.set.notes_page import NotesPage
+from llamatron.tui.screens.generators.generators_page import GeneratorsPage
+from llamatron.tui.screens.set.song_page import SongPage
 from llamatron.strings.labels import (
     MSG_CHAINS_LABEL, MSG_DRIFT_VALUE_LABELS,
     MSG_CHANNEL_LABEL, MSG_COUNTS_LABEL, MSG_NOTES_LABEL, MSG_NAME_LABEL, MSG_OCTAVE_RANGE_LABEL, MSG_OFFSETS_LABEL, MSG_PROTECTED_LABEL,
@@ -75,7 +75,7 @@ from llamatron.strings.messages import (
 from llamatron.composition.naming import new_name
 from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_GROOVE_WORD, MSG_NEW_INSTRUMENT_WORD, MSG_NEW_PATTERN_WORD, MSG_NUMBERED_NAME
 from llamatron.tui import keybindings
-from llamatron.tui.screens.generator_pages import GENERATOR_PAGES
+from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES
 from tests.support.ui_testing import SWAY, a_song, fixed_text, LEAD, leaf_pages, ROLLS, TUNE, UITest, UP_ARP, key_of
 
 # Names the tests give to what they add, and what they type.

@@ -26,7 +26,7 @@ MSG_NONE_SHOWN = '(none)'
 # tui/app.py
 MSG_CONFIRM_BUTTON_GAP = '    '
 
-# tui/screens/arrange_page.py
+# tui/screens/arrange/arrange_page.py
 # A scene's row: its number from 1, then its name.
 MSG_SCENE_ROW = '{number:>2} {name}'
 # The marks after a clip's pattern on the grid, for anything beyond the pattern itself.
@@ -39,7 +39,7 @@ MSG_LAUNCH_APART_MARK = '┆'
 MSG_REPEAT_MARK = '×{repeat}'
 MSG_CLIP_WITH_MARKS = '{name} {marks}'
 
-# tui/screens/arrange_details.py: what Arrange shows in its details view (R), the user's design: the lines of details under
+# tui/screens/arrange/arrange_details.py: what Arrange shows in its details view (R), the user's design: the lines of details under
 # each bar, each a word and a colon, a chain's name in parentheses with its generators under it, and a clip's morph and
 # direction spelled out, the user's choice over marks.
 MSG_DETAILS_MORPH = 'morph: {pattern}'
@@ -112,7 +112,7 @@ MSG_ONE_STEP_SHOWN = '(one step)'
 MSG_CLIP_NAMED_FOR_PATTERN = '(pattern: {pattern})'
 MSG_PATTERN_DIRECTION_SHOWN = '{direction} (from pattern)'
 
-# tui/screens/page.py and tui/key_table.py: the key names, the labels and the words every page shares
+# tui/screens/shared/page.py and tui/key_table.py: the key names, the labels and the words every page shares
 # What a picker shows while something is typed into it, and what a list page's status line shows.
 MSG_SEARCH_SHOWN = 'search: {text}'
 # The header's first line: the program's name, then the open set and its song, with the save mark at the right.
@@ -137,14 +137,14 @@ MSG_SCALE_NOTES_TEXT = '{root} {kind}'
 MSG_NO_TIME = '--:--'
 MSG_CLOCK = '{minutes}:{seconds:02}'
 
-# tui/screens/main_page.py, tui/screens/file_page.py and tui/screens/everywhere.py
+# tui/screens/set/main_page.py, tui/screens/set/file_page.py and tui/screens/shared/everywhere.py
 # The main screen: the set's name and the current song, and the song's summary; the song's length is in the header, and the counts are on the cells.
 MSG_NOT_SAVED_YET = '(not saved yet)'
 MSG_EXPORTS_BESIDE = '{prefix}.als and the MIDI files beside it'
 MSG_EXPORTS_AFTER_SAVING = '(save the set first)'
 MSG_NOT_SET = 'not set'
 
-# tui/screens/track_editor.py
+# tui/screens/arrange/track_editor.py
 MSG_CURRENT_SONG_MARK = '●'
 MSG_PARENT_ROW = '../'
 MSG_FOLDER_ROW = '{name}/'
@@ -182,7 +182,7 @@ MSG_CURSOR_VALUE_MARKS = '<{text}>'
 # The scales page.
 MSG_SONG_SCALE_MARK = ' (song)'
 
-# tui/screens/scale_page.py
+# tui/screens/set/scale_page.py
 # The keyboard under the scale's fields (tui/components/keyboard.py): a key in the scale, one outside it, and the root's name.
 MSG_KEY_IN_SCALE = '███'
 MSG_KEY_OUT_OF_SCALE = '░░░'
@@ -190,7 +190,7 @@ MSG_KEY_OF_SCALE_OUTLINED = '▒▒▒'
 MSG_KEY_IN_CHORD = '███'
 MSG_ROOT_KEY_NAME = '[{name}]'
 
-# tui/screens/pattern_editor.py, its two drawings and the rows in tui/components/
+# tui/screens/pattern/pattern_editor.py, its two drawings and the rows in tui/components/
 MSG_SECTION_CLOSED_MARK = '+'
 MSG_SECTION_OPEN_MARK = '-'
 # What a settings page's section heading says when a field inside it holds a value, so that a closed one never hides it.
@@ -240,7 +240,7 @@ MSG_DRUM_OFF = '[ ]'
 MSG_TOGGLE_ON = '●'
 # The Degree gauge: the bar in each step's column, and the mark after a number the gauge is too short to reach.
 MSG_GAUGE_BAR = '███'
-# tui/screens/chords_editor.py: the lower half of a gauge's cell, for the odd degree of a line that holds two, and a numeral's marks.
+# tui/screens/generators/chords_editor.py: the lower half of a gauge's cell, for the odd degree of a line that holds two, and a numeral's marks.
 MSG_GAUGE_HALF_BAR = '▄▄▄'
 MSG_DIMINISHED_NUMERAL_MARK = '°'
 MSG_AUGMENTED_NUMERAL_MARK = '+'
@@ -250,7 +250,7 @@ MSG_OVER_THE_TOP_MARK = '▲'
 MSG_CC_LANE_OFF = 'off'
 MSG_CC_LANE_VARIES = '?'
 MSG_TOGGLE_OFF = ' '
-# After the value of a settings field whose ENTER opens a list of choices, the user's choice (tui/screens/field_page.py).
+# After the value of a settings field whose ENTER opens a list of choices, the user's choice (tui/screens/shared/field_page.py).
 MSG_PICKER_MARK = '▾'
 # tui/dialogs/chord_dialog.py: a row that opens a flyout, drawn as a button, alone and with the choice made inside it, with and without room for its own name, and the
 # flyout's heading.
@@ -274,14 +274,14 @@ MSG_DRUM_LETTER_ROW = 'Note'
 MSG_STEP_SIZE_SHOWN = 'Step size {size}{whose}'
 MSG_FROM_SONG_SHOWN = " (song's)"
 
-# tui/screens/grooves_page.py
+# tui/screens/set/grooves_page.py
 MSG_FACTORY_GROOVE_SHOWN = 'factory'
 
-# tui/screens/main_page.py and tui/screens/instruments_page.py
+# tui/screens/set/main_page.py and tui/screens/set/instruments_page.py
 MSG_REAL_TIME_ON_MARK = '●'
 MSG_REAL_TIME_OFF_MARK = '○'
 
-# tui/screens/arrange_drawing.py: the lights of real-time playback, the one place the tracker draws in colour.
+# tui/screens/arrange/arrange_drawing.py: the lights of real-time playback, the one place the tracker draws in colour.
 # The play button before each scene's and clip's bar, and the corner's, which turns into the stop mark while it plays.
 MSG_PLAY_MARK = '▶'
 MSG_STOP_MARK = '■'
@@ -296,17 +296,17 @@ MSG_NO_DEVICE_SHOWN = '(none)'
 MSG_AUTO_CHANNEL_SHOWN = '(auto)'
 MSG_OWN_GROOVE_SHOWN = 'yours'
 
-# tui/screens/groove_editor.py
+# tui/screens/set/groove_editor.py
 MSG_GROOVE_NAME_SHOWN = '  {label}: {name}'
 
-# tui/screens/groove_choice.py: the Groove field on the Song, Scene and Track pages
+# tui/screens/arrange/groove_choice.py: the Groove field on the Song, Scene and Track pages
 MSG_GROOVE_OFF_SHOWN = 'off'
 MSG_SONG_GROOVE_SHOWN = '{groove} (from song)'
 MSG_FROM_TRACK_SHOWN = '{value} (from track)'
 MSG_FROM_SET_SHOWN = '{value} (from set)'
 MSG_SCENE_OR_SONG_GROOVE_SHOWN = '(scene or song)'
 
-# tui/screens/list_page.py and tui/screens/arrange_page.py
+# tui/screens/shared/list_page.py and tui/screens/arrange/arrange_page.py
 # The row at the bottom of a list that adds to it, and the cell on Arrange that adds a scene or a track.
 MSG_ADD_ROW_MARK = '+'
 
@@ -340,5 +340,5 @@ MSG_FLAT_SPELLED = 'b'
 MSG_NUMERALS_SEPARATOR = ' '
 MSG_PRESET_NUMERALS_SEPARATOR = '–'
 
-# tui/screens/generators_page.py: a generator's kind beside its name on the Generators page, the user's design.
+# tui/screens/generators/generators_page.py: a generator's kind beside its name on the Generators page, the user's design.
 MSG_GENERATOR_KIND_SHOWN = '({kind})'

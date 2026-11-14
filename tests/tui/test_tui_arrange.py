@@ -32,12 +32,12 @@ from llamatron.composition.file_format import (
     Section,
 )
 from llamatron.generators.blend import BlendMode
-from llamatron.tui.screens.arrange_drawing import CELL_WIDTH, CLIP_BAR, SCENE_BAR, SCENE_BAR_COLUMN, SCENE_WIDTH
-from llamatron.tui.screens.arrange_page import ArrangePage
+from llamatron.tui.screens.arrange.arrange_drawing import CELL_WIDTH, CLIP_BAR, SCENE_BAR, SCENE_BAR_COLUMN, SCENE_WIDTH
+from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.drawing import Box, NOTHING, SPACE, Style
-from llamatron.tui.screens.chain_list_page import ChainListPage
-from llamatron.tui.screens.clip_page import ClipPage
-from llamatron.tui.screens.scene_page import ScenePage
+from llamatron.tui.screens.generators.chain_list_page import ChainListPage
+from llamatron.tui.screens.arrange.clip_page import ClipPage
+from llamatron.tui.screens.arrange.scene_page import ScenePage
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
@@ -45,8 +45,8 @@ from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.composition.setlist import DEFAULT_SCALE
 from llamatron.tui.document import Document
 from llamatron.tui.keys import Key, SHIFT_LEFT_RIGHT, SHIFT_UP_DOWN
-from llamatron.tui.screens.main_page import MainPage
-from llamatron.tui.screens.registers_page import RegistersPage
+from llamatron.tui.screens.set.main_page import MainPage
+from llamatron.tui.screens.set.registers_page import RegistersPage
 from llamatron.strings.errors import ERR_LAST_SCENE_SHOWN, ERR_LAST_TRACK_SHOWN, ERR_LOOP_SCENES_INTRO, ERR_OUT_OF_ORDER
 from llamatron.strings.labels import MSG_SCALE_LABEL as CLIP_SCALE_LABEL
 from llamatron.strings.labels import (
@@ -55,16 +55,16 @@ from llamatron.strings.labels import (
     MSG_REGISTER_AT_LIMIT_FIELD, MSG_REGISTER_RESET_EACH_SCENE_FIELD, MSG_REGISTER_ALLOWED_INC_MAX_FIELD, MSG_AT_LIMIT_NAMES, Crumb, MSG_PATTERN_CRUMB, MSG_PATTERN_LABEL, MSG_REPEAT_LABEL,
 )
 from llamatron.strings.marks import MSG_CHAIN_JOIN, MSG_CRUMB_SEPARATOR
-from llamatron.tui.screens.pattern_editor import PatternEditor
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.strings.legends import MSG_LEGEND_WHAT, MSG_MOVE_SCENE_WHAT, MSG_MOVE_TRACK_WHAT, MSG_OPEN_PATTERN_WHAT, What, KeyName
 from llamatron.strings.messages import MSG_MOVING, MSG_MOVING_SCENE
 from llamatron.strings.names import MSG_NUMBERED_NAME
 from llamatron.strings.marks import MSG_FROM_SET_SHOWN
 from llamatron.strings.labels import MSG_REGISTER_COLUMNS
-from llamatron.tui.screens.arrange_page import MOVING_CLIP, MOVING_SCENE
+from llamatron.tui.screens.arrange.arrange_page import MOVING_CLIP, MOVING_SCENE
 from llamatron.strings.marks import MSG_CLIP_NAMED_FOR_PATTERN, MSG_ADD_ROW_MARK
 from llamatron.tui import keybindings
-from llamatron.tui.screens.field import Heading
+from llamatron.tui.screens.shared.field import Heading
 from tests.support.rendering import render_song
 
 # Names the tests give to their own things, and other values they use.

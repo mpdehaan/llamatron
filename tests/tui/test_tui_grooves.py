@@ -25,8 +25,8 @@ from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.groove_editor import GrooveEditor
-from llamatron.tui.screens.grooves_page import GroovesPage
+from llamatron.tui.screens.set.groove_editor import GrooveEditor
+from llamatron.tui.screens.set.grooves_page import GroovesPage
 from llamatron.strings.labels import MSG_GROOVE_LABEL, MSG_NAME_LABEL
 from llamatron.strings.legends import MSG_LEGEND_WHAT, What, KeyName
 from llamatron.strings.marks import (

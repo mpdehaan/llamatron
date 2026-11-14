@@ -91,7 +91,7 @@ class KeyName:
     NOTE_LETTERS = 'A-G'
 
 
-# tui/screens/arrange_page.py
+# tui/screens/arrange/arrange_page.py
 # What the Arrange page's keys do, on a scene, a track or a clip. C copies everywhere, as the user chose on
 # 2026-11-07: a scene or track in place, and a clip to be pasted with V.
 MSG_ADD_SCENE_WHAT = 'add scene'
@@ -203,9 +203,9 @@ class What:
     QUIT_NOW = 'QUIT NOW'
 
 
-# tui/screens/list_page.py and tui/screens/field_page.py
+# tui/screens/shared/list_page.py and tui/screens/shared/field_page.py
 
-# tui/screens/main_page.py, tui/screens/file_page.py and tui/screens/everywhere.py
+# tui/screens/set/main_page.py, tui/screens/set/file_page.py and tui/screens/shared/everywhere.py
 # The main screen's footer says help and about in lower case like the rest of a legend, where the F1 dialog's capitals would shout.
 MSG_HELP_FOOTER_WHAT = 'help'
 MSG_ABOUT_FOOTER_WHAT = 'about'
@@ -217,7 +217,7 @@ MSG_SAVE_AS_WHAT = 'save as'
 MSG_IMPORT_WHAT = 'import'
 MSG_PRESS_WHAT = 'press'
 
-# tui/screens/arrange_page.py: the visualizer key, and ESC while it shows, which brings the clips back.
+# tui/screens/arrange/arrange_page.py: the visualizer key, and ESC while it shows, which brings the clips back.
 MSG_VISUALIZER_WHAT = 'visualizer'
 MSG_STEP_VISUALIZER_WHAT = 'mode'
 MSG_SHOW_DETAILS_WHAT = 'details'
@@ -237,7 +237,7 @@ MSG_SCROLL_SIDEBAR_WHAT = 'scroll tracks'
 MSG_LEAVE_CELL_WHAT = 'leave cell'
 MSG_TO_CLIPS_WHAT = 'to clips'
 
-# tui/screens/track_editor.py
+# tui/screens/arrange/track_editor.py
 MSG_SONG_WHAT = 'song {name}'
 MSG_MAKE_CURRENT_WHAT = 'make current'
 # The notes page.
@@ -260,7 +260,7 @@ MSG_A_OR_B_WHAT = 'A or B'
 MSG_SILENT_WHAT = 'silent'
 MSG_PLAY_WHAT = 'play'
 
-# tui/screens/arrange_page.py, tui/screens/clip_page.py and tui/screens/pattern_editor.py: real-time playback.
+# tui/screens/arrange/arrange_page.py, tui/screens/arrange/clip_page.py and tui/screens/pattern/pattern_editor.py: real-time playback.
 MSG_PLAY_SONG_WHAT = 'play song'
 MSG_PLAY_SCENE_WHAT = 'play scene'
 MSG_PLAY_CLIP_WHAT = 'play clip'
@@ -270,7 +270,7 @@ MSG_LISTEN_WHAT = 'listen'
 # Padded to the width of listen, so that the legend's keys stay where they are while a clip plays.
 MSG_STOP_LISTENING_WHAT = 'stop'.ljust(len(MSG_LISTEN_WHAT))
 
-# tui/screens/pattern_editor.py, its two drawings and the rows in tui/components/
+# tui/screens/pattern/pattern_editor.py, its two drawings and the rows in tui/components/
 # What a section's row does with Space or ENTER, and what Tab does.
 MSG_OPEN_SECTION_WHAT = 'open section'
 MSG_CLOSE_SECTION_WHAT = 'close section'
@@ -305,11 +305,11 @@ MSG_PATTERN_DIRECTION_WHAT = "use each pattern's direction"
 MSG_LETTERS_WHAT = 'letters'
 MSG_DEGREES_WHAT = 'scale degrees'
 
-# tui/screens/registers_page.py
+# tui/screens/set/registers_page.py
 MSG_REGISTER_ENTER_WHAT = 'type'
 MSG_REGISTER_CLEAR_WHAT = 'default'
 
-# tui/screens/grooves_page.py
+# tui/screens/set/grooves_page.py
 MSG_GROOVE_WHAT = 'groove {name}'
 MSG_INSTRUMENT_WHAT = 'instrument {name}'
 MSG_NO_INSTRUMENT_WHAT = 'no instrument'
@@ -318,10 +318,10 @@ MSG_NO_GM_SOUND_WHAT = 'no sound'
 MSG_NO_SOURCE_WHAT = 'no source'
 MSG_VIEW_WHAT = 'view'
 
-# tui/screens/groove_editor.py
+# tui/screens/set/groove_editor.py
 MSG_CELL_LENGTH_WHAT = 'cell length'
 
-# tui/screens/groove_choice.py: the Groove field on the Song, Scene and Track pages
+# tui/screens/arrange/groove_choice.py: the Groove field on the Song, Scene and Track pages
 MSG_USE_SONG_GROOVE_WHAT = 'use the song groove'
 MSG_USE_SCENE_GROOVE_WHAT = 'use the scene or song groove'
 

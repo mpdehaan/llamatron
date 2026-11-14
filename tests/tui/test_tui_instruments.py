@@ -30,13 +30,13 @@ from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.field import Heading
-from llamatron.tui.screens.instrument_editor import FAMILIES_A_PAGE, InstrumentEditor, sound_text
+from llamatron.tui.screens.shared.field import Heading
+from llamatron.tui.screens.set.instrument_editor import FAMILIES_A_PAGE, InstrumentEditor, sound_text
 from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog
 from llamatron.composition.limits import GM_FAMILY_SIZE, MIN_GM_SOUND
 from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT
-from llamatron.tui.screens.instruments_page import InstrumentsPage
-from llamatron.tui.screens.main_page import MainPage
+from llamatron.tui.screens.set.instruments_page import InstrumentsPage
+from llamatron.tui.screens.set.main_page import MainPage
 from tests.support.rendering import render_song
 
 INSTRUMENT_1 = MSG_NUMBERED_NAME.format(base=MSG_NEW_INSTRUMENT_WORD, number=1)
@@ -46,7 +46,7 @@ SYNTH = 'synth'
 PORTS = ['IAC Driver Bus 1', 'Analog Four']
 GONE_PORT = 'Old Synth'
 # Where the editor asks for the ports.
-PORT_NAMES = 'llamatron.tui.screens.instrument_editor.output_port_names'
+PORT_NAMES = 'llamatron.tui.screens.set.instrument_editor.output_port_names'
 SEED = 1
 
 

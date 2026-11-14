@@ -40,7 +40,7 @@ MSG_OK_BUTTON = 'OK'
 # The confirm dialog's two buttons, in the order they're drawn and the arrows move: yes first, since ENTER presses the selected one.
 MSG_CONFIRM_BUTTONS = ('YES', 'NO')
 
-# tui/screens/arrange_page.py
+# tui/screens/arrange/arrange_page.py
 # A scene's field for each register it can reset, like "Reset AX".
 MSG_RESET_LABEL = 'Reset {name}'
 MSG_SONG_OPTION = '(song)'
@@ -61,7 +61,7 @@ MSG_MORPH_TO_LABEL = 'Morph to'
 MSG_MORPH_DIRECTION_LABEL = 'Morph direction'
 MSG_GRAB_TRACK_LABEL = 'Grab track'
 
-# tui/screens/instrument_editor.py and tui/screens/track_editor.py
+# tui/screens/set/instrument_editor.py and tui/screens/arrange/track_editor.py
 MSG_DEVICE_LABEL = 'Device'
 MSG_CHANNEL_LABEL = 'Channel'
 MSG_INSTRUMENT_LABEL = 'Instrument'
@@ -74,7 +74,7 @@ MSG_DEFAULT_FOLLOW_ACTION_LABEL = 'Default follow action'
 MSG_FOLLOW_ACTION_NAMES = {FollowAction.WITH_SCENE: 'With Scene', FollowAction.NEXT: 'Next', FollowAction.OFF: 'Off'}
 MSG_LAUNCH_TOGETHER_LABEL = 'Launch together'
 
-# tui/screens/page.py and tui/key_table.py: the key names, the labels and the words every page shares
+# tui/screens/shared/page.py and tui/key_table.py: the key names, the labels and the words every page shares
 # The file crumb, right after the title on every page: the file's name, or this before the set is saved.
 MSG_NO_FILE_CRUMB = '(unsaved)'
 # The file crumb carries the current song too, as the user asked: minimal_techno.yml, song: minimal techno.
@@ -221,7 +221,7 @@ class Column:
     # A generator page's first column, with the kind's name, like SELECT ARPEGGIATOR.
 
 
-# tui/screens/file_page.py and tui/screens/song_page.py
+# tui/screens/set/file_page.py and tui/screens/set/song_page.py
 # The File and Song pages' fields, and how they show what has no value.
 MSG_GENRE_LABEL = 'Genre'
 # When an edit made while the song plays is heard, the Song page's field and its choices.
@@ -237,7 +237,7 @@ MSG_STEP_SIZE_LABEL = 'Step size'
 MSG_DEFAULT_OCTAVE_LABEL = 'Default octave'
 MSG_DEFAULT_DRUM_OCTAVE_LABEL = 'Default drum octave'
 MSG_OCTAVE_LABELS_LABEL = 'Octave labels'
-# tui/screens/visualizer_fields.py: the visualizer mode Arrange shows first, what none of a song's own is called, and the section that hides modes.
+# tui/screens/set/visualizer_fields.py: the visualizer mode Arrange shows first, what none of a song's own is called, and the section that hides modes.
 MSG_VISUALIZER_LABEL = 'Visualizer'
 MSG_SETS_VISUALIZER_CHOICE = "(set's)"
 # The File/Global page's sections, the user's design.
@@ -253,7 +253,7 @@ MSG_DESCRIPTION_LABEL = 'Description'
 MSG_NOTES_LABEL = 'Notes'
 MSG_EXPORT_CHOICES = ['Ableton Live set', 'MIDI (Stems)', 'MIDI (Single File)', 'MIDI (Clips)', 'MIDI (General MIDI)', 'WAV (FluidSynth)']
 
-# tui/screens/track_editor.py
+# tui/screens/arrange/track_editor.py
 # The two buttons under the text while editing, which Tab reaches and Left and Right move between.
 MSG_NOTES_BUTTONS = ('Save', 'CANCEL')
 # The lists of named things.
@@ -262,7 +262,7 @@ MSG_NOTES_KIND = 'notes'
 MSG_ARP_LABEL = 'arpeggiator'
 MSG_AUTO_RATCHET_LABEL = 'AutoRatchet'
 MSG_DRIFT_LABEL = 'Drift'
-# tui/screens/drift_editor.py: its own fields, then each version's values, shown as A and B side by side.
+# tui/screens/generators/drift_editor.py: its own fields, then each version's values, shown as A and B side by side.
 MSG_EVERY_LABEL = 'Every'
 MSG_STEPS_TO_B_LABEL = 'Steps to B'
 MSG_DRIFT_DIRECTION_LABEL = 'Direction'
@@ -275,19 +275,19 @@ MSG_DRIFT_VALUE_LABELS = {
 MSG_DRIFT_PAIR = '{a:<10}{b}'
 MSG_DRIFT_PICKED = '<{value}>'
 MSG_ONE_BAR = '1 bar'
-# tui/screens/shape_fields.py: each shape's name, which heads its section, and its parts' labels, the shape's name in front on the Scene and clip pages.
+# tui/screens/generators/shape_fields.py: each shape's name, which heads its section, and its parts' labels, the shape's name in front on the Scene and clip pages.
 MSG_SHAPE_NAMES = {Shape.DENSITY: 'Density', Shape.SWELL: 'Swell', Shape.ARTICULATE: 'Articulate'}
 MSG_SHAPE_FIELD_LABELS = {ShapePart.START: '{shape} start', ShapePart.END: '{shape} end', ShapePart.OVER: '{shape} over', ShapePart.THEN: '{shape} then'}
 MSG_SHAPE_PART_LABELS = {ShapePart.START: 'Start', ShapePart.END: 'End', ShapePart.OVER: 'Over', ShapePart.THEN: 'Then'}
 MSG_WHOLE_SPAN = '(whole)'
-# tui/screens/chords_editor.py: a progression's fields, and the chord editor's rows, which the progression editor shares.
+# tui/screens/generators/chords_editor.py: a progression's fields, and the chord editor's rows, which the progression editor shares.
 MSG_PROGRESSION_LABEL = 'Progression'
-# tui/screens/voice_leading_editor.py: a voice leading's name in a prompt, and its toggle.
+# tui/screens/generators/voice_leading_editor.py: a voice leading's name in a prompt, and its toggle.
 MSG_VOICE_LEADING_LABEL = 'Voice leading'
 MSG_HOCKET_LABEL = 'Hocket'
 MSG_SOURCE_TRACK_LABEL = 'Source track'
 MSG_ROOT_IN_BASS_LABEL = 'Keep the root in the bass'
-# tui/screens/strum_fields.py: a strum's section and its fields, Strum in front where the strum is one section among others, and what its choices are called.
+# tui/screens/generators/strum_fields.py: a strum's section and its fields, Strum in front where the strum is one section among others, and what its choices are called.
 MSG_STRUM_LABEL = 'Strum'
 MSG_STRUM_FIELD_LABELS = {
     StrumPart.DIRECTION: 'Strum direction', StrumPart.SPREAD: 'Strum spread', StrumPart.FADE: 'Strum fade', StrumPart.LOOSE_TIMING: 'Strum loose timing',
@@ -301,9 +301,9 @@ MSG_STRUM_WORDS = {
     StrumDirection.BY_THE_BEAT: 'by the beat', StrumDirection.DOWN_UP: 'down up', UpstrokeStrings.TOP_3: 'top 3', UpstrokeStrings.TOP_4: 'top 4',
 }
 MSG_TRACK_STRUM_CHOICE = '(track)'
-# tui/screens/restart_field.py: when a generator starts over, as its editor names the choices.
+# tui/screens/generators/restart_field.py: when a generator starts over, as its editor names the choices.
 MSG_RESTART_LABEL = 'Restart'
-# tui/screens/step_row_editor.py: a Glide's, a Shorten's, a Rush's and a Drag's names, fields and the row's labels.
+# tui/screens/generators/step_row_editor.py: a Glide's, a Shorten's, a Rush's and a Drag's names, fields and the row's labels.
 MSG_GLIDE_LABEL = 'Glide'
 MSG_SHORTEN_LABEL_NAME = 'Shorten'
 MSG_RUSH_LABEL = 'Rush'
@@ -316,7 +316,7 @@ MSG_STEPS_LABEL = 'Steps'
 MSG_STEP_ROW_LABEL = 'Step'
 MSG_STEP_ROW_NAMES = {Section.GLIDES: 'Glide', Section.SHORTENS: 'Shorten', Section.RUSHES: 'Rush', Section.DRAGS: 'Drag'}
 MSG_RESTART_NAMES = {Restart.EVERY_CLIP: 'every clip', Restart.ON_NEW_SCENE: 'on new scene', Restart.WHOLE_SONG: 'whole song'}
-# tui/screens/euclid_fields.py: a mask's section and fields, Euclid in front in a section, and the named rhythms the Hits field's H offers.
+# tui/screens/generators/euclid_fields.py: a mask's section and fields, Euclid in front in a section, and the named rhythms the Hits field's H offers.
 MSG_EUCLID_LABEL = 'Euclid'
 MSG_EUCLID_FIELD_LABELS = {EuclidPart.HITS: 'Euclid hits', EuclidPart.STEPS: 'Euclid steps', EuclidPart.ROTATE: 'Euclid rotate', EuclidPart.STEP: 'Euclid step'}
 MSG_EUCLID_PART_LABELS = {EuclidPart.HITS: 'Hits', EuclidPart.STEPS: 'Steps', EuclidPart.ROTATE: 'Rotate', EuclidPart.STEP: 'Step'}
@@ -344,7 +344,7 @@ MSG_PROGRESSION_NAMES = {
     NamedProgression.LONG_TURNAROUND: 'Long turnaround', NamedProgression.CIRCLE_OF_FIFTHS: 'Circle of fifths', NamedProgression.RHYTHM_CHANGES: 'Rhythm changes',
     NamedProgression.FOLK: 'Folk, country', NamedProgression.GOSPEL: 'Gospel', NamedProgression.PACHELBEL: 'Pachelbel', NamedProgression.ANDALUSIAN: 'Andalusian', NamedProgression.MINOR: 'Minor',
 }
-# tui/screens/time_field.py: what the list of times calls a dotted or triplet length, where its written fraction says nothing to a musician.
+# tui/screens/generators/time_field.py: what the list of times calls a dotted or triplet length, where its written fraction says nothing to a musician.
 MSG_TIME_NAMES = {
     '1/24': '1/16 triplet', '3/32': 'dotted 1/16', '1/12': '1/8 triplet', '3/16': 'dotted 1/8', '1/6': '1/4 triplet',
 }
@@ -372,7 +372,7 @@ MSG_OFFSET_ROW_LABEL = ' Offset'
 MSG_STEP_ADD_ROW_LABEL = ' {name}+='
 MSG_ARP_NOTE_ADD_LABEL = '{name}+= per note'
 
-# tui/screens/scale_page.py
+# tui/screens/set/scale_page.py
 MSG_ROOT_LABEL = 'Root'
 MSG_KIND_LABEL = 'Kind'
 # Names to show where the full ones are too long to fit.
@@ -381,7 +381,7 @@ MSG_SHORT_SCALE_NAMES = {
     ScaleKind.LYDIAN_DOMINANT: 'lydian dom', ScaleKind.BEBOP_DOMINANT: 'bebop dom', ScaleKind.PHRYGIAN_DOMINANT: 'phrygian dom',
 }
 
-# tui/screens/pattern_editor.py, its two drawings and the rows in tui/components/
+# tui/screens/pattern/pattern_editor.py, its two drawings and the rows in tui/components/
 # How each register's rows are labelled: AX+Note moves the note by AX, AX+Vel adds AX to the
 # velocity, and AX+= adds to AX.
 MSG_REGISTER_NOTE_LABEL = '{name}+Note'
@@ -449,7 +449,7 @@ MSG_CHORD_NAMES = {
     ChordSymbol.SCALE_ELEVENTH: 'eleventh from the scale', ChordSymbol.SCALE_THIRTEENTH: 'thirteenth from the scale',
 }
 
-# tui/screens/registers_page.py
+# tui/screens/set/registers_page.py
 # Each register's settings on the page, labelled like "AX minimum", in the order they're shown.
 # The Registers page's columns, in the grid's order, the user's design.
 MSG_REGISTER_COLUMNS = ('Inc max', 'At limit', 'Minimum', 'Default', 'Maximum', 'Reset')
@@ -464,15 +464,15 @@ MSG_AT_LIMIT_NAMES = {
     AtLimit.OVERFLOW_LEFT: 'overflow left', AtLimit.PICK_RANDOM: 'pick random',
 }
 
-# tui/screens/groove_editor.py
+# tui/screens/set/groove_editor.py
 MSG_CELL_ROW_LABEL = ' Cell'
 MSG_AMOUNT_ROW_LABEL = ' Amount'
 
-# tui/screens/groove_choice.py: the Groove field on the Song, Scene and Track pages
+# tui/screens/arrange/groove_choice.py: the Groove field on the Song, Scene and Track pages
 MSG_GROOVE_LABEL = 'Groove'
 MSG_GROOVE_OFF_OPTION = '(off: no groove here, whatever else chooses one)'
 
-# tui/screens/scale_page.py: the scale picker's two pages, and the headings of the groups of scales on them
+# tui/screens/set/scale_page.py: the scale picker's two pages, and the headings of the groups of scales on them
 # tui/scale_categories.py: the categories of scale type the Chord dialog lists, each opening a flyout.
 MSG_SCALE_CATEGORY_COMMON = 'Common'
 MSG_SCALE_CATEGORY_MODES = 'Modes'
@@ -495,7 +495,7 @@ MSG_SCALE_GROUP_MIDDLE_EAST_AND_EUROPE = 'MIDDLE EAST & EUROPE'
 MSG_SCALE_GROUP_EAST_ASIA = 'EAST ASIA'
 MSG_SCALE_GROUP_INDIA = 'INDIA'
 
-# tui/screens/instrument_editor.py: General MIDI's 128 sounds, numbered from 1 in this order, and its 16 families of eight.
+# tui/screens/set/instrument_editor.py: General MIDI's 128 sounds, numbered from 1 in this order, and its 16 families of eight.
 MSG_GM_SOUNDS = [
     'Acoustic Grand Piano',
     'Bright Acoustic Piano',

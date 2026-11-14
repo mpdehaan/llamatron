@@ -30,7 +30,7 @@ from llamatron.support.rational import Rational
 from tests.generators.test_drift import drifting
 from tests.playback.test_shapes import notes, one_scene
 from tests.support.rendering import setlist_from_data, song_from_data
-from llamatron.tui.screens.time_field import time_field
+from llamatron.tui.screens.generators.time_field import time_field
 from tests.playback.test_registers import LEAD, X, pattern, song
 
 TWO_BARS = '2 bars'

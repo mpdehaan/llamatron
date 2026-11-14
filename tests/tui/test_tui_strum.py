@@ -20,10 +20,10 @@ from llamatron.composition.file_format import Section, GeneratorKind, StrumDirec
 from llamatron.strings.labels import MSG_STRUM_FIELD_LABELS, MSG_STRUM_LABEL, MSG_STRUM_PART_LABELS, MSG_STRUM_WORDS
 from llamatron.strings.marks import MSG_FROM_TRACK_SHOWN
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.clip_page import ClipPage
-from llamatron.tui.screens.strum_editor import StrumEditor
-from llamatron.tui.screens.strum_fields import spread_name
-from llamatron.tui.screens.track_editor import TrackEditor
+from llamatron.tui.screens.arrange.clip_page import ClipPage
+from llamatron.tui.screens.generators.strum_editor import StrumEditor
+from llamatron.tui.screens.generators.strum_fields import spread_name
+from llamatron.tui.screens.arrange.track_editor import TrackEditor
 from llamatron.tui import keybindings
 
 NEW_ONE = 'ukulele'

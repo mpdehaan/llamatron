@@ -53,8 +53,8 @@ from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.document import Document
 from llamatron.tui.drawing import ELLIPSIS, Box, fit
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.main_page import MainPage
-from llamatron.tui.screens.open_page import OpenPage
+from llamatron.tui.screens.set.main_page import MainPage
+from llamatron.tui.screens.set.open_page import OpenPage
 
 # The two sets made for these tests, and the names their copies go by in a test's own folder.
 SAMPLE_SETS = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, 'data', 'sample_sets')

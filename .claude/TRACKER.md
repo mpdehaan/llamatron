@@ -29,11 +29,11 @@ code.
 - `tui/drawing.py`: the styles, the box characters, the selected row's mark (`SELECTED_MARK`,
   `cursor_mark(selected)`), `Canvas` and the text-fitting helpers.
 - `tui/status_line.py`: `StatusLine`.
-- `tui/screens/`: every page, each a `Page` (`screens/page.py`), a `ListPage`
-  (`screens/list_page.py`) or a `FieldPage` (`screens/field_page.py`), with the helpers only one
-  page uses beside it, what several share in `screens/shared.py`, and the keys every page has in
-  `screens/everywhere.py`. `screens/grid_drawing.py`, `screens/pattern_drawing.py` and
-  `screens/roll_drawing.py` draw the pattern editor, and `screens/arrange_drawing.py` draws
+- `tui/screens/`: every page, each a `Page` (`screens/shared/page.py`), a `ListPage`
+  (`screens/shared/list_page.py`) or a `FieldPage` (`screens/shared/field_page.py`), with the helpers only one
+  page uses beside it, what several share in `screens/shared/shared.py`, and the keys every page has in
+  `screens/shared/everywhere.py`. `screens/pattern/grid_drawing.py`, `screens/pattern/pattern_drawing.py` and
+  `screens/pattern/roll_drawing.py` draw the pattern editor, and `screens/arrange/arrange_drawing.py` draws
   Arrange.
 - `tui/components/`: what pages are drawn from. One class per row of the pattern editor, the
   editor's two views (`PatternRows`, `PianoRoll`), `Frame`, `LengthBar`, `Keyboard` and
@@ -101,7 +101,7 @@ code.
 
 ## The keys that work everywhere
 
-- `everywhere_keys(page)` in `tui/screens/everywhere.py` returns Ctrl+S (save), Ctrl+O (open,
+- `everywhere_keys(page)` in `tui/screens/shared/everywhere.py` returns Ctrl+S (save), Ctrl+O (open,
   which shows `OpenPage` and comes back to the page it was pressed on), Ctrl+X (export), Ctrl+T
   (silence, `Page.SILENCE`, the emergency stop of real-time playback, "Real-time playback"
   below), Ctrl+Z, Ctrl+Y, F1 (help) and F3 (about), in that order (`Page.EVERYWHERE` in
@@ -198,7 +198,7 @@ code.
   `MORE_KEYS` doing the same off the legend.
 - Deleting anything still used is refused with up to five uses listed, and otherwise confirms.
 - The pages that list the named things of one section, Patterns, Scales, Chains, Grooves, Songs
-  and the two generator pages, are each a `NamedListPage` (`screens/named_list_page.py`), which
+  and the two generator pages, are each a `NamedListPage` (`screens/shared/named_list_page.py`), which
   holds `rename`, `copy`, `delete`, `shift` and `sort` once, each calling the document's edit
   that takes the section (`rename_named` and the rest). A page names its `LISTED_SECTION`, its
   `RENAME_PROMPT` and its `WHAT` (the words for one thing in a question), and says what ENTER
@@ -213,7 +213,7 @@ code.
   `tests/tui/test_tui_named_lists.py` runs the same checks on each page.
 - The pages that show one named thing, the pattern, chain, groove, arpeggiator, AutoRatchet and
   offsets editors, the Scale page and the track editor, each inherit the mixin `ShowsNamedItem`
-  (`screens/shows_named_item.py`) beside their `Page`, `ListPage` or `FieldPage`. The mixin
+  (`screens/shared/shows_named_item.py`) beside their `Page`, `ListPage` or `FieldPage`. The mixin
   holds `show_item(name)`, `still_exists()`, `follow_renames(renames)` and `rename()` once. A
   page names its `SECTION`, its `CRUMBS_BEFORE` and `CRUMBS_AFTER` the name, its `ITEM_CRUMB`
   where the name reads another way (the track editor's `track: lead`) and its `RENAME_PROMPT`.
@@ -224,7 +224,7 @@ code.
 
 ## Settings pages
 
-- A `FieldPage`'s widgets (`screens/field.py`) are `Field`s, one setting each, and `Button`s,
+- A `FieldPage`'s widgets (`screens/shared/field.py`) are `Field`s, one setting each, and `Button`s,
   rows that act on ENTER (`FieldPage.button` makes one from a main screen action).
 - A `Button` is drawn as the main menu draws a row: the key's name in reverse video and then the
   button's name, with no explanation beside it.
@@ -235,7 +235,7 @@ code.
   (`move_cursor`, `first_button_place`), the user's design.
 - A `Field` is a label, the text of its value and what Left and Right, ENTER and Bksp do, each
   a function, so any setting can be one. Most settings are one of four kinds, each a class in
-  `screens/field.py` that is given what the setting is and works those functions out: `Toggle`
+  `screens/shared/field.py` that is given what the setting is and works those functions out: `Toggle`
   (`on=`, `set=`, `●` on and `○` off (`MSG_FIELD_TOGGLE_OFF`, the user's design) unless given words of its own), `NameField` (`value=`,
   `rename=`), `NumberField` (`number=`, `set=`, `lowest=` and `highest=`, with `start=` for a
   setting that has no number yet, `shown=` and `typed=` for text that isn't the number, and
@@ -251,7 +251,7 @@ code.
 - A `Toggle` answers to Space and ENTER alike (`TOGGLE_KEYS`, `KeyName.SPACE_ENTER`):
   `FieldPage.keys` asks the field `is_toggle()`, never what the field's words are.
 - A settings page groups fields into sections with `FieldPage.heading(label=, is_set=)`, a
-  `Heading` field (`screens/field.py`): the fields after it, up to the next heading, show only
+  `Heading` field (`screens/shared/field.py`): the fields after it, up to the next heading, show only
   while it is open (`shown_fields`, which the cursor, the drawing and the tests' `select_field`
   go by, a page's buttons always showing). A heading is drawn as the rows view's are,
   `MSG_SECTION_LABEL` with `+` or `-`, bold, and `MSG_SECTION_SET` (`(set)`) when `is_set()`;
@@ -263,7 +263,7 @@ code.
 
 ## Opening, saving and exporting
 
-- Opening goes through `open_file(page=, path=, then=)` in `screens/everywhere.py`, which the
+- Opening goes through `open_file(page=, path=, then=)` in `screens/shared/everywhere.py`, which the
   Open page calls. `Document.load_or_correct(path)` returns the document and the corrections the
   file needed (`.claude/FORMAT.md`, "Corrections"): none for a file that reads strictly, and
   otherwise a document that is unsaved and has no saved state for an undo to go back to
@@ -448,7 +448,7 @@ code.
   the start screen alone for `splash_seconds` and quits (`internal_tools/demo_splash_screen.py`,
   `internal_tools/demo_splash_screen.sh`). A launch other than that needs a set, and none works with `--to`.
 - `Launch(scroll_text=)`, the user's design: after the opening title, `LlamatronApp._after_title` shows `DemoScroll`
-  (`tui/screens/demo_scroll.py`, a `Splash` that draws `scroll_lines` of `tui/components/scroll_text.py`) for as long as the
+  (`tui/screens/set/demo_scroll.py`, a `Splash` that draws `scroll_lines` of `tui/components/scroll_text.py`) for as long as the
   words take to cross (`scroll_seconds(text=, width=)`, or `Launch(scroll_seconds=)` in a test), then goes on as ever. The words
   are `scroll_text_for(path)`: `MSG_DEMO_SCROLL` with `demo_name(path)`, the file's name with no folder, ending or leading number,
   as words. `banner(text)` draws every character as its capital from `MSG_BLOCK_LETTERS`, which holds the whole alphabet, at
@@ -477,11 +477,11 @@ code.
   `SCANNER_SHARE` of the title wide each side shaded through tones of the blue, sweeping right and back left on the
   second line under the word and gone (`scanner_level`), then the address two lines under it. A title shown for a set
   time fades to black over its last `FADE_OUT_SECONDS` (`fade_level`); `whole_title_seconds` is the whole of it.
-- The splash (`Splash`, `tui/screens/splash.py`), a Textual `Screen` binding no keys, draws the title for its
+- The splash (`Splash`, `tui/screens/set/splash.py`), a Textual `Screen` binding no keys, draws the title for its
   seconds when the tracker is launched for recording; it replaced the word that waved letter by letter, after the end
   credits of Monty Python and the Holy Grail, keeping the waves as the entrance. It draws every `FRAME_SECONDS` on its
   own timer, and takes a clock for the tests.
-- The start screen (`StartScreen`, `tui/screens/start_screen.py`, `keybindings.StartScreen`) is the splash with
+- The start screen (`StartScreen`, `tui/screens/set/start_screen.py`, `keybindings.StartScreen`) is the splash with
   `MSG_START_PROMPT` six lines under the address, pulsing between dim and bright (`prompt_level`), until ENTER takes
   it away. Only the command line asks for it (`LlamatronApp(start_screen=)`, `start_screen_wanted` in
   `tui/launch.py`), unless `LLAMATRON_NO_SPLASH=1`, and only on a plain launch; it goes over the main screen and any
@@ -585,7 +585,7 @@ code.
 ## Importing a MIDI file
 
 - `M` on the main screen (`keybindings.MainPage.IMPORT_HERE`), the Import cell after Export,
-  calls `import_midi` (`screens/importing.py`), which shows the Open page given
+  calls `import_midi` (`screens/set/importing.py`), which shows the Open page given
   `suffixes=MIDI_SUFFIXES`, `folder=home_folder()`, the crumbs `IMPORT MIDI` and `chosen`, what
   ENTER on a file does in place of opening a set, until the file picker is designed for the
   whole tracker (dev_notes/IDEAS.yml). `offer_import` reads the file with `MidiImport`, telling a file that
@@ -643,7 +643,7 @@ code.
   `clock`) at the right: the user's choice over one line of title and crumbs,
   where the deep pages' names were cut short on an 80-column console. The F1 dialog's title
   names the same crumbs.
-- `Page.header_lines()` counts the header's lines, which `screens/pattern_drawing.py` reads, so a third
+- `Page.header_lines()` counts the header's lines, which `screens/pattern/pattern_drawing.py` reads, so a third
   header line would change it.
 
 ## File and Notes
@@ -687,7 +687,7 @@ code.
 ## Scales and Scale
 
 - The Scales page (`Z`) lists the set's scales. `ENTER` opens `ScalePage`
-  (`tui/screens/scale_page.py`), and `A` adds a C major scale and opens it.
+  (`tui/screens/set/scale_page.py`), and `A` adds a C major scale and opens it.
 - `ScalePage` has one scale's Name, Root and Kind on one page, laid out by `SCALE_PAGES` and
   `ROOT_KEYBOARD`. The scale picker shortens long names only on screen.
 - A new scale is `scale-N` (`new_name`, `MSG_NEW_SCALE_WORD`), the user's rule, and keeps its name. A scale named after its root and kind, like `C_major`, as an import or an older file names one, is renamed as they change
@@ -701,55 +701,55 @@ code.
 
 ## Generators and chains
 
-- The Generators page (`G`, `screens/generators_page.py`, the user's design) lists every generator of the set on one
+- The Generators page (`G`, `screens/generators/generators_page.py`, the user's design) lists every generator of the set on one
   list, its kind in parentheses beside its name (`MSG_GENERATOR_KIND_SHOWN`), in the order `Setlist.ordered_generators`
   gives: the set's `generator_order` (`.claude/FORMAT.md`), then any it leaves out, kind by kind. ENTER opens the editor
-  (`GENERATOR_PAGES` in `screens/generator_pages.py`, a `GeneratorListing` of kind, section, label and `EDITOR` for each kind);
+  (`GENERATOR_PAGES` in `screens/generators/generator_pages.py`, a `GeneratorListing` of kind, section, label and `EDITOR` for each kind);
   `A` asks for a kind, names one after it and opens it; `N`/F2, `C` (the copy straight after), `Bksp` (refused while a chain
   uses it) and `/` as on every list; Move mode keeps the order in the set (`Document.move_generator`). There's no sort, and no
   page of one kind: the fifteen were taken out, and each editor's crumbs read `GENERATORS › name`.
-- The drift editor (`screens/drift_editor.py`, a `FieldPage`) lists the drift's own settings, then
+- The drift editor (`screens/generators/drift_editor.py`, a `FieldPage`) lists the drift's own settings, then
   one row per value with A's and B's side by side, the picked one in `MSG_DRIFT_PICKED`; on such a
   row Left and Right pick the version (`DriftEditor.VERSION`), so only `[` and `]` change a value,
   and the page scrolls as settings pages do.
-- A Density, Swell or Articulate opens a `ShapeEditor` (`screens/shape_editor.py`): Name, then `shape_fields` from
-  `screens/shape_fields.py` (Start, End, Over, Then), and on the swell editor Accent. The Scene
+- A Density, Swell or Articulate opens a `ShapeEditor` (`screens/generators/shape_editor.py`): Name, then `shape_fields` from
+  `screens/generators/shape_fields.py` (Start, End, Over, Then), and on the swell editor Accent. The Scene
   page and the clip page end with a section for each shape (`shape_section`, the same fields
   with the shape's name in front of each label), through `set_scene_shape_setting` and
   `set_clip_shape_setting` (`SongEdits`). `tests/tui/test_tui_shapes.py` tests them.
 - The `ProgressionEditor` has Name, Every and Chords, whose
-  ENTER opens the `ChordsEditor` (`screens/chords_editor.py`), a `StepEditor` with the `StepGrid`
-  drawing of the one-row editors (`screens/step_grid.py`) but rows of its own: a column a chord,
+  ENTER opens the `ChordsEditor` (`screens/generators/chords_editor.py`), a `StepEditor` with the `StepGrid`
+  drawing of the one-row editors (`screens/shared/step_grid.py`) but rows of its own: a column a chord,
   a gauge of `MSG_GAUGE_BAR` up to the degree, the numeral and the name, then `#/b` and `Inv.`.
   The arrows move along the chords and between the three rows (`edited_row`); `[` and `]` step,
   digits type a degree or an inversion, Space or ENTER cycles the `#/b` and `Inv.` rows, `I` and
   `D` insert and remove, and `H` (`PICK`) opens a `GridChoiceDialog` of the named progressions,
   filling the chords through `named_progression_in` (`Document.set_progression`).
 - The `VoiceLeadingEditor` has Name, Lowest octave and Highest octave
-  (`octave_field`, `screens/octave_field.py`, which the track editor's range shares) and the toggle
+  (`octave_field`, `screens/shared/octave_field.py`, which the track editor's range shares) and the toggle
   Keep the root in the bass. `tests/tui/test_tui_voice_leading.py` tests them.
 - The `StrumEditor`, and the `+ Strum` sections at the end of the
-  track editor and the clip page, share `strum_fields` (`screens/strum_fields.py`): Direction, with
+  track editor and the clip page, share `strum_fields` (`screens/generators/strum_fields.py`): Direction, with
   `(none)` first on a track and `(track)` on a clip, Spread named with its milliseconds, Fade, Loose
   timing and Upstroke strings, prefixed Strum in a section. `tests/tui/test_tui_strum.py` tests them.
 - The `EuclidEditor`, and the track
-  editor's `+ Euclid` section, share `euclid_fields` (`screens/euclid_fields.py`): Hits, Steps,
+  editor's `+ Euclid` section, share `euclid_fields` (`screens/generators/euclid_fields.py`): Hits, Steps,
   Rotate and Step; on the Hits field, `H` (`PICK_RHYTHM`, bound by the page's `page_keys` only
   there) opens `pick_rhythm`, a `ChoiceDialog` of the named rhythms. `tests/tui/test_tui_euclid.py`
   tests them.
 - A Glide, Shorten, Rush or Drag opens its editor (each a `StepRowGeneratorEditor`, its steps on one line by `steps_text`: Name, Step, its amount,
   Steps and Restart). ENTER on Steps opens the kind's steps page (`GlideStepsEditor` and the rest),
-  each a `StepRowEditor` (`screens/step_row_editor.py`, a `StepEditor` with the `StepGrid`
+  each a `StepRowEditor` (`screens/generators/step_row_editor.py`, a `StepEditor` with the `StepGrid`
   drawing): Left and Right move, Space or ENTER (Up and Down off the legend) turns a step on or
   off, `I` and `D` insert and remove. `tests/tui/test_tui_step_rows.py` tests them.
 - The `HocketEditor` has Name,
   Source track (a `ChoiceField` of `(none)` and the current song's tracks, sorted, the Hocket's own
   source kept among them when the song lacks it) and Restart. `tests/tui/test_tui_hocket.py` tests them.
 - Every generator's editor ends its own settings with `restart_field(page)`
-  (`screens/restart_field.py`), a `ChoiceField` of `RESTARTS` named by `MSG_RESTART_NAMES`, found by
+  (`screens/generators/restart_field.py`), a `ChoiceField` of `RESTARTS` named by `MSG_RESTART_NAMES`, found by
   the page's `SECTION` and `item`.
 - Every time setting's field is `time_field(page=, label=, written=, first=, store=)`
-  (`screens/time_field.py`): its first choice, standing for blank, then `TIME_CHOICES`, named by
+  (`screens/generators/time_field.py`): its first choice, standing for blank, then `TIME_CHOICES`, named by
   `MSG_TIME_NAMES` where a dotted or triplet fraction says nothing, and a value the list lacks
   offered last so nothing is lost. The arp editor's Step, the drift editor's Every and the
   shapes' Over use it.
@@ -776,7 +776,7 @@ code.
   (`OneRowEditor.LESS` and `MORE`, `[` dec and `]` inc), with Up and Down doing the same off
   the legend (`NUDGE_LESS_KEYS`, `NUDGE_MORE_KEYS`), since no row lies below the cursor.
 - The Song, Scene and Track pages have a Groove field. The last two are built by
-  `screens/groove_choice.py`, stepping through take-from-above, `off` and the names.
+  `screens/arrange/groove_choice.py`, stepping through take-from-above, `off` and the names.
 
 ## Instruments and the Real Time switch
 
@@ -852,7 +852,7 @@ code.
 
 ### How Arrange is drawn
 
-- `ArrangeDrawing` (`screens/arrange_drawing.py`) draws the grid, as the pattern editor's
+- `ArrangeDrawing` (`screens/arrange/arrange_drawing.py`) draws the grid, as the pattern editor's
   drawings draw the editor: `ArrangePage` keeps the cursor (`row`, `column`), how far the grid
   has scrolled (`top`, `left`), the keys and what each key does to the song, builds the drawing
   once as `page.drawing`, and `ArrangePage.body` asks the drawing for the lines. `clip_text(clip_slot)`
@@ -890,7 +890,7 @@ code.
   details view, the user's design, and `D` again the usual view; the choice is kept on the app for the session
   (`shows_arrange_details`), and the visualizer and a batch video's stage show the usual view whatever it is
   (`ArrangePage.shows_details`). Every key works in it as in the usual view.
-- `tui/screens/arrange_details.py` says what it shows, each only when it isn't the default: under a clip's bar,
+- `tui/screens/arrange/arrange_details.py` says what it shows, each only when it isn't the default: under a clip's bar,
   under a scene's and under each track's name in the header, each chain the cell runs, `chain: name`
   (`MSG_DETAILS_CHAIN`), in the order they run, in the chains' theme colour, then `+` (`MSG_DETAILS_ADD_CHAIN`, a `Target` of
   `ADD_CHAIN`), the user's design, since a cell holds chains and a chain's generators show on the chain's own page; then a word
@@ -919,7 +919,7 @@ code.
   with nothing picked; an empty clip slot has no Tab. While locked (`locked`, `picked`, `picking`), the cell's box is
   green (`Style.DETAILS_LOCKED`, `Frame.styled`) and the page binds only Up and Down (`PICK_DETAIL`), which pick among
   those lines and stop at either end, ENTER (`OPEN_DETAIL`, `open_picked`), which opens the thing's page
-  (`DETAIL_PAGES`, or a generator's `EDITOR` through `generator_page_of_kind` in `screens/generator_pages.py`), Tab again
+  (`DETAIL_PAGES`, or a generator's `EDITOR` through `generator_page_of_kind` in `screens/generators/generator_pages.py`), Tab again
   (`OUT_OF_DETAILS`, `stop_picking`), which leaves and in the usual view closes the cell, `D` (`CLOSE_DETAILS`,
   `close_details`), which leaves and closes every detail, the details view too, and ENTER on `+` (`ADD_CHAIN`, `add_chain_to_cell`), which asks for one of the set's chains and adds it to this cell alone,
   `Bksp` on a `chain:` line (`REMOVE_CHAIN`, `remove_chain_from_cell`), which takes it out of this cell alone, the user's
@@ -1076,7 +1076,7 @@ code.
   (`ArrangePage.STEP_VISUALIZER`, `step_visualizer`) step to the mode before or after, going round, and with every mode
   hidden the key says `MSG_EVERY_VISUALIZER_HIDDEN`. A mode is made with `made_for(hidden=)`, which Cycle heeds by leaving
   the hidden modes out of its turns. The File/Global page's Visualizer field and its Hide Visualizers section, a toggle per
-  mode, and the Song page's Visualizer field are `screens/visualizer_fields.py`.
+  mode, and the Song page's Visualizer field are `screens/set/visualizer_fields.py`.
 - When the name a mode shows changes (`Visualizer.shown_name`), by the key or by Cycle moving on,
   `ArrangePage.name_to_show` returns it for `NAME_SECONDS` (8), and `ArrangeDrawing.with_name`
   lays it in reverse video, centred over the clip area, `NAME_ROWS_UP` lines from its bottom,
@@ -1096,7 +1096,7 @@ code.
 - The track editor's Name field renames. Its Lowest octave and Highest octave fields, in the
   set's octave labels, are the range the piano roll marks (`TrackEditor.octave_field`).
 - The clip page, the Scene page and the track editor each have a Chains field
-  (`screens/chains_field.py`), which opens a `ChainListPage` (`screens/chain_list_page.py`) on
+  (`screens/arrange/chains_field.py`), which opens a `ChainListPage` (`screens/generators/chain_list_page.py`) on
   the list the opener hands it: `A` adds a chain from a picker, `M` moves, `Bksp` takes one
   out, and the crumbs are the opener's with `CHAINS` after.
 - The clip page's Scale field, under Pattern, picks a scale of the clip's own or `(scene)` (`ClipPage.pick_scale`,
@@ -1132,7 +1132,7 @@ code.
   ports, another when new ports are needed. `app.playback_timer` ticks it every `TICK_SECONDS`
   (0.1) while anything plays and redraws the page on top, and the timer stops with the last
   clip. `LlamatronApp.exit` closes it, and `set_document` forgets the song.
-- `play_through(page=, play=, said=)` in `screens/shared.py` tells the transport's problem in a
+- `play_through(page=, play=, said=)` in `screens/shared/shared.py` tells the transport's problem in a
   dialog, or plays and says `said` on the status line, telling a `SongFileError` from the render
   as `ERR_CANT_PLAY_TITLE`.
 - On Arrange, with Real Time on, Space is bound by where the cursor is: `PLAY_SONG` on the
@@ -1157,7 +1157,7 @@ code.
   Live response. Another song made current stops what plays at once. An edit that can't be rendered,
   or that needs a MIDI port the sender hasn't opened, leaves what plays as it was, and the status line
   says why (`take_live_message`, `MSG_LIVE_EDIT_NOT_HEARD`, `MSG_LIVE_EDIT_NEEDS_A_DEVICE`).
-- Listening (`screens/listening.py`): `listen(page=, index=, track=, song=, name=)` plays one
+- Listening (`screens/shared/listening.py`): `listen(page=, index=, track=, song=, name=)` plays one
   clip on its own and again and again (`forever=True`), asking with a `ChoiceDialog` of the
   set's instruments (`MSG_LISTEN_INSTRUMENT_TITLE`) when the track's instrument has no device,
   and says `MSG_LISTENING`. The clip page's `L` and buttons call it; while Real Time is off
@@ -1195,7 +1195,7 @@ code.
 
 ## The pattern editor
 
-`PatternEditor` (`tui/screens/pattern_editor.py`) shows one of two views of a pattern, the piano
+`PatternEditor` (`tui/screens/pattern/pattern_editor.py`) shows one of two views of a pattern, the piano
 roll or the rows.
 
 - Each view is a component with its own cursor, its own keys and its drawing: `PianoRoll`
@@ -1239,8 +1239,8 @@ roll or the rows.
 
 ### What both views draw
 
-- `GridDrawing` (`screens/grid_drawing.py`) is shared by `PatternDrawing`
-  (`screens/pattern_drawing.py`) and `RollDrawing` (`screens/roll_drawing.py`): the header, the
+- `GridDrawing` (`screens/pattern/grid_drawing.py`) is shared by `PatternDrawing`
+  (`screens/pattern/pattern_drawing.py`) and `RollDrawing` (`screens/pattern/roll_drawing.py`): the header, the
   window of steps that scrolls sideways, the rules, the Step row and the description of the step
   under the cursor. Each drawing is built once by the editor and asked for its body.
 - Both views share one label column, `PatternEditor.label_width`, the wider of the two drawings'
@@ -1249,7 +1249,7 @@ roll or the rows.
   note that exists), so that the step columns stay put when Tab switches views (the user's
   choice).
 - The header's two lines are cells in aligned columns (`header_cells` in
-  `screens/grid_drawing.py`): Steps, Step size, Drum and Direction on the first, and on the
+  `screens/pattern/grid_drawing.py`): Steps, Step size, Drum and Direction on the first, and on the
   second Time and then what the view adds (`header_extra`, a list of cells: the scale and the
   entry size on the roll, the section's hint or the scale on the rows). Each column is as wide
   as its wider cell, and a line's last cell runs on, so the long hint widens nothing. The
@@ -1514,13 +1514,13 @@ an empty cell and isn't marked.
 
 ## The one-row editors
 
-- `StepEditor` (`screens/step_editor.py`) is what every editor of steps shares, the pattern
+- `StepEditor` (`screens/shared/step_editor.py`) is what every editor of steps shares, the pattern
   editor among them: the cursor's `step`, the window's `first_step`, the digits `typed` into
   the cursor's cell with `typed_number(digit=, low=, high=)`, which continues the edit so that
   two digits are one undo step, `keep_step()`, `window_of_steps(shown)`, which scrolls the
   window to the cursor, and `steps_shown_text(first=, last=)`. A page says how many steps
   there are with `steps()`.
-- `OneRowEditor` (`screens/one_row_editor.py`), a `StepEditor`, is the offsets editor and the
+- `OneRowEditor` (`screens/shared/one_row_editor.py`), a `StepEditor`, is the offsets editor and the
   groove editor: one row of numbers either side of zero. `OneRowEditor` holds `keys()`, `move`,
   `type_digit`, which keeps the sign, `nudge`, `insert`, `remove_step`, and the drawing both
   share (`steps_shown`, `scroll_to_cursor`, `grid_rule`, `grid_line`, `with_steps_shown`). A
@@ -1534,7 +1534,7 @@ an empty cell and isn't marked.
 
 ## The offsets editor
 
-- An arp's offsets have their own editor (`screens/offsets_editor.py`): a vertical offsets gauge
+- An arp's offsets have their own editor (`screens/generators/offsets_editor.py`): a vertical offsets gauge
   of bars either side of a zero line, drawn from `SignedGauge` in
   `tui/components/signed_gauge.py`.
 - `gauge_levels` gives as many levels as the screen has room for, up to `MAX_GAUGE_LEVELS` (7),

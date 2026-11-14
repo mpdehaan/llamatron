@@ -37,7 +37,7 @@ from llamatron.tui.keys import Key
 from llamatron.support.version import VERSION
 from llamatron.tui.key_table import first_key
 from llamatron.tui import keybindings
-from llamatron.tui.screens.generator_pages import GENERATOR_PAGES
+from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES
 from llamatron.composition.file_format import Section
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

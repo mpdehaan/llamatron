@@ -19,7 +19,7 @@
 from tests.support.ui_testing import UITest
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.pattern_editor import Reconfigure
+from llamatron.tui.screens.pattern.pattern_editor import Reconfigure
 from llamatron.strings.labels import MSG_MUNGE_CHOICES
 from llamatron.tui import keybindings
 

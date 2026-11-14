@@ -38,21 +38,21 @@ from llamatron.music.note import NoteName
 from llamatron.tui.app import LlamatronApp
 from llamatron.composition.setlist import Setlist, new_setlist
 from llamatron.strings.names import MSG_DEFAULT_SONG_NAME
-from llamatron.tui.screens.page import PROGRAM_NAME
+from llamatron.tui.screens.shared.page import PROGRAM_NAME
 from llamatron.support.memory import Memory
 from llamatron.tui.document import Document
 from llamatron.tui.drawing import NOTHING
 import llamatron.tui.screens
-from llamatron.tui.screens.field import Button, Heading
-from llamatron.tui.screens.field_page import FieldPage
-from llamatron.tui.screens.list_page import ListPage
-from llamatron.tui.screens.page import Page, VIEW_SELECTOR
+from llamatron.tui.screens.shared.field import Button, Heading
+from llamatron.tui.screens.shared.field_page import FieldPage
+from llamatron.tui.screens.shared.list_page import ListPage
+from llamatron.tui.screens.shared.page import Page, VIEW_SELECTOR
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.key_table import every_key, first_key, key_event
 from llamatron.tui.keys import Key, Steps
 from llamatron.tui import keybindings
 from llamatron.composition.file_format import REGISTER_NAMES
-from llamatron.tui.screens.generator_pages import GENERATOR_PAGES
+from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES
 
 # Every document a test makes checks what it remembers: an answer kept after what it came from changed fails the test (support/memory.py).
 Memory.check_every_answer()
@@ -164,13 +164,16 @@ def a_song(*, path=None):
 
 # The page classes that exist to be subclassed, which no one opens.
 BASE_PAGES = (Page, ListPage, FieldPage)
+PACKAGE_DOT = '.'
 
 
 def leaf_pages():
     """Return every page class in tui/screens that isn't there to be subclassed, which the rules about every page go through."""
     found = []
-    for module_info in pkgutil.iter_modules(llamatron.tui.screens.__path__):
-        module = importlib.import_module(f'{llamatron.tui.screens.__name__}.{module_info.name}')
+    for module_info in pkgutil.walk_packages(llamatron.tui.screens.__path__, prefix=llamatron.tui.screens.__name__ + PACKAGE_DOT):
+        if module_info.ispkg:
+            continue
+        module = importlib.import_module(module_info.name)
         for _, member in inspect.getmembers(module, inspect.isclass):
             if issubclass(member, Page) and member.__module__ == module.__name__ and member not in found:
                 found.append(member)

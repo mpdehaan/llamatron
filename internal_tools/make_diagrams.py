@@ -26,7 +26,7 @@ them is replaced, so the words around a diagram can be edited by hand. The packa
 comes from the imports between llamatron's packages, with each package described by the first
 line of its __init__.py docstring. The screens diagram comes from which of the tracker's screens
 open which others, labelled with the key that opens each where the screen binds it with bind().
-A screen that tui/screens/everywhere.py opens from every page is drawn from the main screen.
+A screen that tui/screens/shared/everywhere.py opens from every page is drawn from the main screen.
 tests/rules/test_diagrams.py runs the check, so a change to the code that moves a diagram fails the
 tests until this is run again.
 """
@@ -121,7 +121,7 @@ SUCCESS = 0
 
 
 def module_name(path):
-    """Return a source file's dotted module name, like llamatron.tui.screens.song_page."""
+    """Return a source file's dotted module name, like llamatron.tui.screens.set.song_page."""
     parts = path.relative_to(SOURCE.parent).with_suffix(NO_DESCRIPTION).parts
     if parts[-1] == PACKAGE_FILE[:-len(PYTHON_SUFFIX)]:
         parts = parts[:-1]
@@ -231,7 +231,7 @@ def screen_label(class_name):
 def screen_modules():
     """Return (module name, parsed file) for every screen of the tracker."""
     folder = SOURCE.joinpath(*SCREENS_PACKAGE.split(DOT))
-    return [(module_name(path), parsed(path)) for path in sorted(folder.glob(PYTHON_FILES))]
+    return [(module_name(path), parsed(path)) for path in sorted(folder.rglob(PYTHON_FILES))]
 
 
 def base_names(class_node):

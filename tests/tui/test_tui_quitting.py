@@ -23,7 +23,7 @@ from llamatron.tui.drawing import Box
 from llamatron.tui.dialogs.dialog import DIALOG_VIEW_SELECTOR
 from llamatron.tui.dialogs.quit_dialog import QuitDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.main_page import MainPage
+from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.strings.labels import MSG_NOTES_LABEL, MSG_QUIT_BUTTONS
 from llamatron.strings.legends import MSG_QUIT_WITHOUT_SAVING_WHAT
 from llamatron.tui import keybindings

@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The pages that show one named thing all keep its name, follow its rename and notice when it is gone the same way (tui/screens/shows_named_item.py).
+"""The pages that show one named thing all keep its name, follow its rename and notice when it is gone the same way (tui/screens/shared/shows_named_item.py).
 
 The same checks run on each of them: the pattern, chain, groove, arpeggiator, AutoRatchet and
 offsets editors, the Scale page and the track editor. The key that renames from each page is
@@ -32,34 +32,34 @@ from llamatron.strings.marks import MSG_CRUMB_SEPARATOR
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.drawing import NOTHING
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.arp_editor import ArpEditor
-from llamatron.tui.screens.auto_ratchet_editor import AutoRatchetEditor
-from llamatron.tui.screens.drift_editor import DriftEditor
-from llamatron.tui.screens.density_editor import DensityEditor
-from llamatron.tui.screens.progression_editor import ProgressionEditor
-from llamatron.tui.screens.chords_editor import ChordsEditor
-from llamatron.tui.screens.voice_leading_editor import VoiceLeadingEditor
-from llamatron.tui.screens.hocket_editor import HocketEditor
-from llamatron.tui.screens.strum_editor import StrumEditor
-from llamatron.tui.screens.euclid_editor import EuclidEditor
-from llamatron.tui.screens.glide_editor import GlideEditor
-from llamatron.tui.screens.shorten_editor import ShortenEditor
-from llamatron.tui.screens.shorten_steps_editor import ShortenStepsEditor
-from llamatron.tui.screens.rush_editor import RushEditor
-from llamatron.tui.screens.rush_steps_editor import RushStepsEditor
-from llamatron.tui.screens.drag_editor import DragEditor
-from llamatron.tui.screens.drag_steps_editor import DragStepsEditor
-from llamatron.tui.screens.glide_steps_editor import GlideStepsEditor
-from llamatron.tui.screens.swell_editor import SwellEditor
-from llamatron.tui.screens.articulate_editor import ArticulateEditor
-from llamatron.tui.screens.chain_editor import ChainEditor
-from llamatron.tui.screens.groove_editor import GrooveEditor
-from llamatron.tui.screens.instrument_editor import InstrumentEditor
-from llamatron.tui.screens.offsets_editor import OffsetsEditor
-from llamatron.tui.screens.pattern_editor import PatternEditor
-from llamatron.tui.screens.scale_page import ScalePage
-from llamatron.tui.screens.shows_named_item import ShowsNamedItem
-from llamatron.tui.screens.track_editor import TrackEditor
+from llamatron.tui.screens.generators.arp_editor import ArpEditor
+from llamatron.tui.screens.generators.auto_ratchet_editor import AutoRatchetEditor
+from llamatron.tui.screens.generators.drift_editor import DriftEditor
+from llamatron.tui.screens.generators.density_editor import DensityEditor
+from llamatron.tui.screens.generators.progression_editor import ProgressionEditor
+from llamatron.tui.screens.generators.chords_editor import ChordsEditor
+from llamatron.tui.screens.generators.voice_leading_editor import VoiceLeadingEditor
+from llamatron.tui.screens.generators.hocket_editor import HocketEditor
+from llamatron.tui.screens.generators.strum_editor import StrumEditor
+from llamatron.tui.screens.generators.euclid_editor import EuclidEditor
+from llamatron.tui.screens.generators.glide_editor import GlideEditor
+from llamatron.tui.screens.generators.shorten_editor import ShortenEditor
+from llamatron.tui.screens.generators.shorten_steps_editor import ShortenStepsEditor
+from llamatron.tui.screens.generators.rush_editor import RushEditor
+from llamatron.tui.screens.generators.rush_steps_editor import RushStepsEditor
+from llamatron.tui.screens.generators.drag_editor import DragEditor
+from llamatron.tui.screens.generators.drag_steps_editor import DragStepsEditor
+from llamatron.tui.screens.generators.glide_steps_editor import GlideStepsEditor
+from llamatron.tui.screens.generators.swell_editor import SwellEditor
+from llamatron.tui.screens.generators.articulate_editor import ArticulateEditor
+from llamatron.tui.screens.generators.chain_editor import ChainEditor
+from llamatron.tui.screens.set.groove_editor import GrooveEditor
+from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
+from llamatron.tui.screens.generators.offsets_editor import OffsetsEditor
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
+from llamatron.tui.screens.set.scale_page import ScalePage
+from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
+from llamatron.tui.screens.arrange.track_editor import TrackEditor
 
 RENAMED = 'renamed'
 A_GROOVE = 'shuffle'

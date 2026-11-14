@@ -21,9 +21,9 @@ import os
 from tests.support.ui_testing import UITest, a_song
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.file_page import FilePage
-from llamatron.tui.screens.open_page import OpenPage
-from llamatron.tui.screens.pattern_editor import PatternEditor
+from llamatron.tui.screens.set.file_page import FilePage
+from llamatron.tui.screens.set.open_page import OpenPage
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.strings.labels import MSG_SET_CRUMB, MSG_SONG_CRUMB
 from llamatron.strings.marks import MSG_FOLDER_ROW, MSG_PARENT_ROW
 from llamatron.strings.names import MSG_DEFAULT_SONG_NAME
