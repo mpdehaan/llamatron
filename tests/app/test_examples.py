@@ -53,7 +53,7 @@ WRITTEN_BEFORE_THE_LENGTH_RULE = {
 }
 # The examples the user asked to run another length, by name, with that length in seconds: the nine-minute video game piece, and the
 # guitar showpiece, which is short as the solo it follows is.
-OTHER_LENGTHS = {'incoming_message.yml': 526, 'volcano.yml': 89}
+OTHER_LENGTHS = {'incoming_message.yml': 526, 'volcano.yml': 89, 'meeting_the_eye.yml': 66}
 # The songs that are meant to sound good, rather than to teach one feature.
 SONG_PATHS = [path for path in EXAMPLE_PATHS if not is_demo(path)]
 
