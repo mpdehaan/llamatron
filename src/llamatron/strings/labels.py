@@ -221,26 +221,7 @@ class Column:
     # A generator page's first column, with the kind's name, like SELECT ARPEGGIATOR.
 
 
-# tui/screens/main_page.py, tui/screens/file_page.py and tui/screens/everywhere.py
-# What each cell of the main screen is for, shown for the selected cell alone.
-MSG_ABOUT = {
-        PageName.FILE: 'The set: its title, author, description, notes and file',
-        PageName.SONGS: 'The songs in the set, and which one is current',
-        PageName.PATTERNS: 'The notes, in a grid of steps, shared by every song',
-        PageName.CHAINS: 'Lists of generators used by clips',
-        PageName.GENERATORS: 'Arpeggiators and AutoRatchets',
-        PageName.SCALES: 'The scales songs and scenes can use',
-        PageName.GROOVES: 'Swing and other timing feels, for songs, scenes and tracks',
-        PageName.INSTRUMENTS: 'The MIDI devices and channels that tracks play through in real time',
-        PageName.REAL_TIME: 'Play the set through its instruments as you work, or not',
-        PageName.REGISTERS: 'AX to DX, numbers that steps change and use',
-        PageName.ARRANGE: 'The scenes, tracks and clips of the current song, in play order',
-        PageName.SAVE: 'Saves the set, asking for a file the first time',
-        PageName.OPEN: 'Opens a set file, asking first if there are unsaved changes',
-        PageName.EXPORT: 'Writes the current song as a Live set or MIDI files',
-        PageName.IMPORT: 'Makes a MIDI file a new song of the set, with its own tracks, scenes and patterns',
-        PageName.QUIT: 'Asks first only when there are unsaved changes',
-}
+# tui/screens/file_page.py and tui/screens/song_page.py
 # The File and Song pages' fields, and how they show what has no value.
 MSG_GENRE_LABEL = 'Genre'
 # When an edit made while the song plays is heard, the Song page's field and its choices.

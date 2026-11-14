@@ -14,40 +14,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The Main page: the cells of every page and the file's actions, the user's design, with a double-lined box around what the cursor is on.
+"""The Main page: a button for every page and the file's actions, the user's design, with a double-lined box around what the cursor is on.
 
-It has two layouts, chosen by the room the console has. On a console too short for the second, the grid of three columns
-described below. On a console tall enough, the smart fit layout: Arrange's cell at the left, as tall as the console and as wide
-as the rest leaves, and at the right two columns as narrow as their names: the Real Time switch across both, the pages in pairs,
-and the file's actions in one box, three rows of two. In it, Arrange's cell shows a small map of the song under the song's
-details, a line for each track with its light and a block for each scene where the track has a clip, and a clip that plays
-glows in a brighter colour, fading in and out slowly, never flashing.
-
-The grid of three columns:
-
-Arrange, where most of the work happens, has the first column and is three cells tall, drawn as a
-small monitor, green on dark green: its name, the clock while the song plays, the current song's
-scale, tempo and time signature, how many scenes and tracks it has, and while the set's Real Time
-switch is on, a light for each track, green while a note sounds on it. Under it is the Real Time
-switch, and beside both, two columns of the pages a song is made from. Under the grid one bar, as
-wide as the grid, holds the file's six actions in two rows on the grid's own columns, with no lines
-between them. The first column is as wide as Arrange's name and the clock need, the other two share
-the rest of the console's width. Each page's cell is boxed in its page's theme colour
-(tui/themes.py), toned to one brightness, and the rest in a dim box; the selected cell's box is
-double-lined and bright, and in the bar the selected action is in reverse video inside the bar's
-double-lined box. A cell says how many of its things the set has where that means something, and the
-status line, right above the legend, says what the selected cell is for. The arrows move by the geometry drawn and
-stop at every edge. Undo and Redo have no cell, since they're Ctrl+Z and Ctrl+Y everywhere, and F1
-and F3 are in the footer, so that this screen is the one place that reminds of them.
+One block of buttons, the same size on every console and at the top left, never stretched to the window (the user's rule):
+Arrange, where most of the work happens, is a bar across the top, as wide as the three columns under it. Under it, three rows
+of three, in the order a song is made: Songs, Patterns and Scales; Generators, Chains and Grooves; Instruments, Registers and
+the Real Time switch. Then a blank line, and one bar as wide as the grid with the file's six actions in two rows on the grid's
+own columns, with no lines between them: Open over Save, Import over Export, File/Global over Quit, each column's keys under
+the keys of the buttons above and its names starting at one place. Each page's button is boxed in its page's theme colour
+(tui/themes.py), toned to one brightness, and the rest in a dim box; the selected button's box is double-lined and bright,
+and in the bar the selected action is in reverse video inside the bar's double-lined box. A button says how many of its
+things the set has where that means something. The status line stays empty here but for a refusal or a warning, and the
+theme's stripe carries no caption, since the crumbs already name the screen. While the song plays, the header's second line
+shows the play mark and the clock beside the song's length. The arrows move by the geometry drawn and stop at every edge.
+Undo and Redo have no button, since they're Ctrl+Z and Ctrl+Y everywhere, and F1 and F3 are in the footer, so that this
+screen is the one place that reminds of them.
 """
 
 from collections import deque
-from time import monotonic
 
 from rich.text import Text
 
 from llamatron.composition.sections import GENERATOR_KINDS, Section
-from llamatron.tui.drawing import Align, Box, Canvas, fit, NOTHING, padded, SPACE, Style
+from llamatron.tui.drawing import Box, Canvas, NOTHING, padded, SPACE, Style
 from llamatron.strings.help import HELP_MAIN_PAGE
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange_page import ArrangePage
@@ -64,23 +53,18 @@ from llamatron.tui.screens.registers_page import RegistersPage
 from llamatron.tui.screens.scales_page import ScalesPage
 from llamatron.tui.screens.songs_page import SongsPage
 from llamatron.strings.errors import ERR_ADD_INSTRUMENT_FIRST, ERR_NO_INSTRUMENTS_TITLE
-from llamatron.strings.labels import Crumb, MSG_ABOUT, PageName
-from llamatron.tui.text import clock, tempo_text
-from llamatron.strings.marks import (
-    MSG_MAIN_CLOCK, MSG_MAIN_MAP_CLIP, MSG_MAIN_MAP_CUT, MSG_MAIN_MAP_EMPTY, MSG_MAIN_MORE_TRACKS, MSG_MAIN_ONE_SCENE, MSG_MAIN_ONE_TRACK,
-    MSG_MAIN_SCENES, MSG_MAIN_TEMPO, MSG_MAIN_TRACKS,
-    MSG_REAL_TIME_OFF_MARK, MSG_REAL_TIME_ON_MARK,
-)
-from llamatron.strings.messages import MSG_NO_SCALE, MSG_REAL_TIME_OFF, MSG_REAL_TIME_OFF_STOPPED, MSG_REAL_TIME_ON
+from llamatron.strings.labels import Crumb, PageName
+from llamatron.strings.marks import MSG_REAL_TIME_OFF_MARK, MSG_REAL_TIME_ON_MARK
+from llamatron.strings.messages import MSG_REAL_TIME_OFF, MSG_REAL_TIME_OFF_STOPPED, MSG_REAL_TIME_ON
 from llamatron.tui import keybindings
 from llamatron.tui import themes
 from rich.color import Color
 from rich.style import Style as RichStyle
 
 
-# The grid: three columns, a space between them, on a console at least this wide; a wider console widens every column.
+# The grid: three columns, a space between them, this wide in all on every console, never widened to the window (the user's rule).
 COLUMNS = 3
-MINIMUM_WIDTH = 80
+GRID_WIDTH = 80
 CELL_GAP = 1
 # Between the box's left edge and the key, and between the key and the name, and the borders either side.
 EDGE_GAP = SPACE
@@ -88,45 +72,15 @@ NAME_GAP = SPACE
 BORDERS = 2
 # A cell's three lines: its top edge, its key and name, and its bottom edge.
 CELL_LINES = 3
-# Arrange's cell is this many cells tall, and the grid this many; the bar under it holds this many rows of actions.
-ARRANGE_ROWS = 3
-GRID_ROWS = 4
+# The rows of the geometry: Arrange's bar, three rows of buttons, and the two rows of actions in the bar under them.
+ARRANGE_ROW = 0
+BUTTON_ROWS = 3
 BAR_ROWS = 2
-# The row of the grid the cursor is taken to be on when it reaches Arrange from above or below, or by starting there: its top.
-ARRANGE_TOP = 0
-# Blank lines over the grid.
+# Blank lines over the buttons, and between the buttons and the bar of the file's actions.
 LINES_ABOVE_GRID = 1
-# Inside Arrange's cell, which line holds what: the name and the clock, the song's scale, tempo and time signature, its scenes
-# and tracks, and the first line of the track lights, each group after a blank line (the user's design).
-NAME_LINE = 0
-DETAILS_LINE = 2
-COUNTS_LINE = 3
-LIGHTS_LINE = 5
-# Between two details on a line, and between the name and the clock.
-DETAIL_GAP = SPACE * 2
-# The track lights go in columns at least this wide, two columns at least, a wider cell holding more (the user's design).
-LIGHT_COLUMN_WIDTH = 13
-FEWEST_LIGHT_COLUMNS = 2
+LINES_ABOVE_BAR = 1
 # How far each arrow moves the cursor over the grid, in rows and columns.
 ARROW_STEPS = {Key.UP: (-1, 0), Key.DOWN: (1, 0), Key.LEFT: (0, -1), Key.RIGHT: (0, 1)}
-# The smart fit layout, the user's design. Its right side is the Real Time switch, four rows of two pages, and the bar of the
-# file's actions, three rows in one box: this many lines, which the console must have under the blank line for the layout to be used.
-PAGE_PAIRS = 4
-SMART_BAR_ROWS = 3
-SMART_RIGHT_COLUMNS = 2
-SMART_RIGHT_LINES = CELL_LINES + PAGE_PAIRS * CELL_LINES + SMART_BAR_ROWS + BORDERS
-# In its Arrange cell, the map of the song starts on the line the lights start on in the grid. A track's name takes this many
-# columns at most, after its light and a space, and the scenes' blocks start after a gap.
-MAP_LINE = LIGHTS_LINE
-MAP_NAME_WIDTH = 10
-LIGHT_WIDTH = 2
-# A playing clip's block glows: over this many steps, each this long, from the monitor's green to the glow's colour and back, so
-# that the light fades in and out slowly and never flashes (the user's rule). The colours are red, green and blue.
-GLOW_FULL = 12
-GLOW_STEP_SECONDS = 0.125
-MONITOR_GREEN = (60, 220, 90)
-MONITOR_BACKGROUND = (0, 48, 16)
-GLOW_COLOR = (255, 236, 140)
 # The colour each page's cell is boxed in, its page's theme toned to the edges' one brightness; a cell with none is boxed dim.
 CELL_THEMES = {
     PageName.SONGS: themes.SONGS, PageName.PATTERNS: themes.PATTERNS, PageName.CHAINS: themes.CHAINS, PageName.GENERATORS: themes.GENERATORS,
@@ -166,9 +120,9 @@ def cell_positions(*, rows, binding):
 def moved(*, rows, position, key):
     """Return the row and column an arrow takes the cursor to from a row and column of the geometry, or None where the arrow stops at
     an edge. The arrow passes over the rest of the cell the cursor is on, which may cover several rows or columns. A cell entered
-    across the way it stretches remembers where, so that the arrow back returns to the cell the cursor came from: Arrange, several
-    rows tall, entered from its side. Entered along the way it stretches, as Arrange from below, it forgets, and the cursor is at
-    its first row and column."""
+    across the way it stretches remembers where, so that the arrow back returns to the cell the cursor came from: Arrange, three
+    columns wide, entered from below. Entered along the way it stretches it forgets, and the cursor is at its first row and
+    column."""
     row, column = position
     here = rows[row][column]
     row_step, column_step = ARROW_STEPS[key]
@@ -205,16 +159,6 @@ def arrows_between(*, rows, position, binding):
     return None
 
 
-def glow_style(level):
-    """Return the style of a clip's block on the map at a level of glow, from none, the monitor's green, to full, the glow's colour."""
-    mixed = [round(green + (glow - green) * level / GLOW_FULL) for green, glow in zip(MONITOR_GREEN, GLOW_COLOR)]
-    return RichStyle(color=Color.from_rgb(*mixed), bgcolor=Color.from_rgb(*MONITOR_BACKGROUND))
-
-
-# The style of each level of glow, worked out once.
-GLOW_STYLES = [glow_style(level) for level in range(GLOW_FULL + 1)]
-
-
 class MainPage(Page):
     """The menu: a grid of cells, the pages and then the actions, with a cursor the arrows move and Enter follows, beside the letters."""
 
@@ -224,20 +168,14 @@ class MainPage(Page):
     # The header's second line is the crumbs, and the main screen is the start of every trail, so the line says so rather than standing blank.
     crumbs = (Crumb.MAIN_SCREEN,)
     HELP = HELP_MAIN_PAGE
-    ABOUT = MSG_ABOUT
 
     def __init__(self, holder):
         super().__init__(holder)
         # The binding of the cell the cursor is on, which stays put while a page is open over this one and when the layout changes.
         self.chosen = self.KEYS.ARRANGE
-        # The row and column of the geometry the cursor is at inside its cell, where the cell covers several: for Arrange, the row
-        # it was reached from at its side, which Right goes back to. None is the cell's first row and column.
+        # The row and column of the geometry the cursor is at inside its cell, where the cell covers several: for Arrange, the
+        # column it was reached from below, which Down goes back to. None is the cell's first row and column.
         self.position = None
-        # Whether the last draw had the room for the smart fit layout, which the arrows then move over.
-        self.smart_fit = False
-        # How far each playing clip's block on the map glows, by its scene's number and its track, and when the glows last stepped.
-        self.glow = {}
-        self.glow_time = monotonic()
 
     def keys(self):
         return [
@@ -296,43 +234,20 @@ class MainPage(Page):
         ]
 
     def rows(self):
-        """Return the cells by the geometry drawn, of the layout the last draw had room for."""
-        return self.smart_fit_rows() if self.smart_fit else self.grid_rows()
-
-    def grid_rows(self):
-        """Return the grid layout's geometry, six rows of three, the user's layout: Arrange in the first column of the first
-        three rows, with Songs and Patterns, Scales and Generators, and Grooves and Chains beside it; the Real Time switch with
-        Instruments and Registers; then the bar's two rows, File/Global, Save and Open over Export, Import and Quit."""
+        """Return the cells by the geometry drawn, six rows of three, the user's layout: Arrange across the first row; Songs,
+        Patterns and Scales; Generators, Chains and Grooves; Instruments, Registers and the Real Time switch; then the bar's two
+        rows, Open, Import and File/Global over Save, Export and Quit."""
         pages = {item.binding: item for item in self.keys()}
         keys = self.KEYS
         save, open_set, export, import_midi_here, quit_here = self.actions()
         arrange = pages[keys.ARRANGE]
         return [
-            [arrange, pages[keys.SONGS], pages[keys.PATTERNS]],
-            [arrange, pages[keys.SCALES], pages[keys.GENERATORS]],
-            [arrange, pages[keys.GROOVES], pages[keys.CHAINS]],
-            [pages[keys.REAL_TIME], pages[keys.INSTRUMENTS], pages[keys.REGISTERS]],
-            [pages[keys.FILE], save, open_set],
-            [export, import_midi_here, quit_here],
-        ]
-
-    def smart_fit_rows(self):
-        """Return the smart fit layout's geometry, eight rows of three, the user's layout: Arrange in the first column of every row;
-        beside it the Real Time switch across both of the other columns, then Songs and Patterns, Scales and Generators, Grooves and
-        Chains, Instruments and Registers, then the bar's three rows, File/Global, Save and Open beside Export, Import and Quit."""
-        pages = {item.binding: item for item in self.keys()}
-        keys = self.KEYS
-        save, open_set, export, import_midi_here, quit_here = self.actions()
-        arrange = pages[keys.ARRANGE]
-        return [
-            [arrange, pages[keys.REAL_TIME], pages[keys.REAL_TIME]],
-            [arrange, pages[keys.SONGS], pages[keys.PATTERNS]],
-            [arrange, pages[keys.SCALES], pages[keys.GENERATORS]],
-            [arrange, pages[keys.GROOVES], pages[keys.CHAINS]],
-            [arrange, pages[keys.INSTRUMENTS], pages[keys.REGISTERS]],
-            [arrange, pages[keys.FILE], export],
-            [arrange, save, import_midi_here],
-            [arrange, open_set, quit_here],
+            [arrange, arrange, arrange],
+            [pages[keys.SONGS], pages[keys.PATTERNS], pages[keys.SCALES]],
+            [pages[keys.GENERATORS], pages[keys.CHAINS], pages[keys.GROOVES]],
+            [pages[keys.INSTRUMENTS], pages[keys.REGISTERS], pages[keys.REAL_TIME]],
+            [open_set, import_midi_here, pages[keys.FILE]],
+            [save, export, quit_here],
         ]
 
     def menu_items(self):
@@ -371,8 +286,8 @@ class MainPage(Page):
 
     def move_cursor(self, name):
         """Move by the geometry drawn, the user's rule: an arrow goes to the cell beside, above or below, and none goes past an edge.
-        Arrange is several rows tall, so Up and Down pass through all of it, and Right from it goes back to the cell the cursor came
-        from, or to the top one."""
+        Arrange is three columns wide, so Left and Right stay on it, and Down from it goes back to the button the cursor came
+        from, or to the first one."""
         rows = self.rows()
         there = moved(rows=rows, position=self.row_and_column(), key=name)
         if there is None:
@@ -391,6 +306,15 @@ class MainPage(Page):
     def duration(self):
         return self.document().lengths().song_seconds()
 
+    def time_text(self):
+        """Return the time at the right of the header: where the song is while it plays, and how long it is, or its length alone,
+        the one thing here that says a song plays on (the user's choice)."""
+        return self.playing_clock() or super().time_text()
+
+    def caption(self):
+        """The theme's stripe carries no words here: the crumbs already name the main screen, and the user wants the name once."""
+        return NOTHING
+
     def count(self, item):
         """Return what a cell shows at its right: how many of its things a page has, the Real Time switch's mark, or None where a count means nothing: File, Registers, Arrange and the actions."""
         setlist = self.document().setlist()
@@ -406,35 +330,10 @@ class MainPage(Page):
             return len(setlist.get_item_names(COUNTED_SECTIONS[name]))
         return None
 
-    def needed_width(self, item):
-        """Return how wide a cell must be to hold its key, its name and its count inside its box."""
-        count = self.count(item)
-        return BORDERS + len(EDGE_GAP) + len(padded(item.shown_label())) + len(NAME_GAP) + len(self.shown_name(item)) + (len(NAME_GAP) + len(str(count)) if count is not None else 0) + len(EDGE_GAP)
-
-    def clock_text(self):
-        """Return where the song is while it plays, for Arrange's cell, or None while it doesn't."""
-        position = self.app.transport.song_position()
-        return None if position is None else MSG_MAIN_CLOCK.format(at=clock(position))
-
-    def clock_room(self):
-        """Return the room Arrange's cell keeps for the clock, the longer of where the song is and how long it is, so that the cell
-        is wide enough for any time and doesn't change width as the song plays (the user's rule)."""
-        shown = [MSG_MAIN_CLOCK.format(at=clock(self.duration()))]
-        if self.clock_text() is not None:
-            shown.append(self.clock_text())
-        return max(len(text) for text in shown)
-
-    def arrange_needed_width(self, item):
-        """Return how wide Arrange's cell must be: its key and name, a gap, the clock and a space before the edge."""
-        return BORDERS + len(EDGE_GAP) + len(padded(item.shown_label())) + len(NAME_GAP) + len(self.shown_name(item)) + len(DETAIL_GAP) + self.clock_room() + len(EDGE_GAP)
-
-    def column_widths(self, width):
-        """Return the three columns' widths: a third of the room each, the first never narrower than Arrange's name and clock or the
-        Real Time switch need, the other two sharing what the first leaves."""
-        rows = self.grid_rows()
-        room = max(width, MINIMUM_WIDTH) - CELL_GAP * (COLUMNS - 1)
-        first = max(room // COLUMNS, self.arrange_needed_width(rows[ARRANGE_TOP][0]), *[self.needed_width(row[0]) for row in rows[ARRANGE_ROWS:]])
-        other = (room - first) // (COLUMNS - 1)
+    def column_widths(self):
+        """Return the three columns' widths, which share the grid's width, the first taking what a division leaves over."""
+        room = GRID_WIDTH - CELL_GAP * (COLUMNS - 1)
+        other = room // COLUMNS
         return [room - other * (COLUMNS - 1), other, other]
 
     def column_lefts(self, widths):
@@ -491,167 +390,10 @@ class MainPage(Page):
             name_end = start + len(label) + len(NAME_GAP) + len(name)
             middle.write(column=max(right - 1 - len(str(count)), min(name_end + len(NAME_GAP), right - len(str(count)))), text=str(count))
 
-    def song_details(self):
-        """Return the current song's scale, tempo and time signature, as Arrange's cell says them on one line."""
-        song = self.document().song()
-        signature = song.get_time_signature()
-        return DETAIL_GAP.join([
-            song.get_scale_name() or MSG_NO_SCALE,
-            MSG_MAIN_TEMPO.format(tempo=tempo_text(song.get_tempo())),
-            signature.to_text(),
-        ])
-
-    def song_counts(self):
-        """Return how many scenes and tracks the current song has, as Arrange's cell says them."""
-        song = self.document().song()
-        scenes = len(song.get_scenes())
-        tracks = len(song.get_track_names())
-        return DETAIL_GAP.join([
-            MSG_MAIN_ONE_SCENE if scenes == 1 else MSG_MAIN_SCENES.format(count=scenes),
-            MSG_MAIN_ONE_TRACK if tracks == 1 else MSG_MAIN_TRACKS.format(count=tracks),
-        ])
-
-    def track_lights(self, *, lines, width):
-        """Return the track lights of Arrange's cell as lines of (track or None, text): the tracks in their order, never moving, in as
-        many columns as fit, two at least, and when not every track fits, how many more there are in the last place (the user's design)."""
-        tracks = self.document().song().get_track_names()
-        columns = max(width // LIGHT_COLUMN_WIDTH, FEWEST_LIGHT_COLUMNS)
-        places = lines * columns
-        shown = [(track, track) for track in tracks]
-        if len(tracks) > places:
-            shown = [*shown[:places - 1], (None, MSG_MAIN_MORE_TRACKS.format(count=len(tracks) - places + 1))]
-        return [shown[start:start + columns] for start in range(0, len(shown), columns)], width // columns
-
-    def bar_needed_width(self, items):
-        """Return how wide a column of the bar's actions must be: the longest key, the longest name with the space that follows the
-        selected one in reverse video, and the room at either side."""
-        key_room = max(len(padded(item.shown_label())) for item in items)
-        name_room = max(len(self.shown_name(item)) for item in items)
-        return BORDERS + len(EDGE_GAP) + key_room + len(NAME_GAP) + name_room + len(EDGE_GAP)
-
-    def smart_right_widths(self):
-        """Return the widths of the smart fit layout's two columns at the right, each as narrow as its longest cell, name and count,
-        or its actions in the bar, the second widened where the Real Time switch across both needs more."""
-        rows = self.smart_fit_rows()
-        pairs = rows[1:1 + PAGE_PAIRS]
-        bar = rows[1 + PAGE_PAIRS:]
-        widths = []
-        for column in range(1, 1 + SMART_RIGHT_COLUMNS):
-            widths.append(max(*[self.needed_width(row[column]) for row in pairs], self.bar_needed_width([row[column] for row in bar])))
-        short = self.needed_width(rows[0][1]) - sum(widths) - CELL_GAP
-        widths[-1] += max(short, 0)
-        return widths
-
-    def smart_arrange_width(self, width):
-        """Return the width Arrange's cell has in the smart fit layout: all that the two columns at the right leave."""
-        return max(width, MINIMUM_WIDTH) - sum(self.smart_right_widths()) - CELL_GAP * SMART_RIGHT_COLUMNS
-
-    def has_room_for_smart_fit(self, *, width, height):
-        """Return whether the console has the lines for the smart fit layout's right side and the width for Arrange's name and clock."""
-        if height < LINES_ABOVE_GRID + SMART_RIGHT_LINES:
-            return False
-        return self.smart_arrange_width(width) >= self.arrange_needed_width(self.smart_fit_rows()[0][0])
-
-    def draw_arrange(self, *, canvases, left, item, selected, width, with_map):
-        """Draw Arrange's cell as a small monitor, green on dark green (the user's design): its key and name with the clock at the right
-        while the song plays, the song's details and counts, and then the map of the song, in the smart fit layout, or a light for
-        each track."""
-        self.draw_box(canvases=canvases, left=left, width=width, selected=selected, style=Style.MONITOR_BRIGHT if selected else Style.MONITOR, fill=Style.MONITOR)
-        inside = canvases[1:-1]
-        start = left + 1 + len(EDGE_GAP)
-        room = width - BORDERS - len(EDGE_GAP) * 2
-        label = padded(item.shown_label())
-        inside[NAME_LINE].write(column=start, text=label, style=Style.MONITOR_KEY)
-        inside[NAME_LINE].write(column=start + len(label), text=NAME_GAP + self.shown_name(item), style=Style.MONITOR_BRIGHT)
-        shown_clock = self.clock_text()
-        if shown_clock is not None:
-            inside[NAME_LINE].write(column=left + width - 1 - len(EDGE_GAP) - len(shown_clock), text=shown_clock, style=Style.MONITOR_BRIGHT)
-        # The details start under the name, past the key.
-        inside[DETAILS_LINE].write(column=start, text=fit(text=self.song_details(), width=room), style=Style.MONITOR)
-        inside[COUNTS_LINE].write(column=start, text=fit(text=self.song_counts(), width=room), style=Style.MONITOR)
-        if with_map:
-            self.draw_map(canvases=inside[MAP_LINE:], start=start, room=room)
-        else:
-            self.draw_lights(canvases=inside[LIGHTS_LINE:], start=start, room=room)
-
-    def draw_light(self, *, canvas, column, track):
-        """Draw a track's light: a bright dot while a note sounds on the track, and otherwise a hollow circle, which is all a light
-        is while the set's Real Time switch is off (the user's design)."""
-        sounding = self.app.transport.is_track_sounding(track)
-        canvas.write(column=column, text=MSG_REAL_TIME_ON_MARK if sounding else MSG_REAL_TIME_OFF_MARK, style=Style.MONITOR_BRIGHT if sounding else Style.MONITOR_DIM)
-
-    def draw_lights(self, *, canvases, start, room):
-        """Draw the grid layout's light and name for each track, in columns."""
-        lights, light_width = self.track_lights(lines=len(canvases), width=room)
-        for line, row in zip(canvases, lights):
-            for place, (track, text) in enumerate(row):
-                column = start + place * light_width
-                if track is None:
-                    line.write(column=column, text=fit(text=text, width=light_width), style=Style.MONITOR_DIM)
-                    continue
-                self.draw_light(canvas=line, column=column, track=track)
-                line.write(column=column + 1, text=fit(text=NAME_GAP + text, width=light_width - LIGHT_WIDTH), style=Style.MONITOR)
-
-    def glow_steps_due(self):
-        """Return how many steps the glows should move since they last did, by the clock."""
-        steps = int((monotonic() - self.glow_time) / GLOW_STEP_SECONDS)
-        self.glow_time += steps * GLOW_STEP_SECONDS
-        return steps
-
-    def fade_glow(self, *, steps):
-        """Move every clip's glow some steps towards full while the clip plays and towards none while it doesn't, so that a clip lights
-        up and goes out slowly (the user's rule). Once nothing plays, the screen is no longer drawn again and again, so every glow is out."""
-        transport = self.app.transport
-        if not transport.is_playing():
-            self.glow = {}
-            return
-        document = self.document()
-        song = document.song()
-        glow = {}
-        for index in range(len(song.get_scenes())):
-            for track in song.get_track_names():
-                level = self.glow.get((index, track), 0)
-                playing = transport.is_clip_playing(index=index, track=track)
-                level = min(level + steps, GLOW_FULL) if playing else max(level - steps, 0)
-                if level:
-                    glow[(index, track)] = level
-        self.glow = glow
-
-    def glow_level(self, *, index, track):
-        """Return how far the block of a track's clip in a scene glows, from 0 to GLOW_FULL."""
-        return self.glow.get((index, track), 0)
-
-    def draw_map(self, *, canvases, start, room):
-        """Draw the map of the song, the user's design: a line for each track, its light and its name, then a block for each scene
-        where the track has a clip and a dot where it has none, a playing clip's block glowing. A map too large shows what fits:
-        the first tracks and how many more there are, and the first scenes with a mark that the line was cut."""
-        self.fade_glow(steps=self.glow_steps_due())
-        document = self.document()
-        song = document.song()
-        tracks = song.get_track_names()
-        scenes = len(song.get_scenes())
-        shown_tracks = tracks if len(tracks) <= len(canvases) else tracks[:len(canvases) - 1]
-        name_width = min(max([len(track) for track in tracks], default=0), MAP_NAME_WIDTH)
-        blocks_start = start + LIGHT_WIDTH + name_width + len(DETAIL_GAP)
-        blocks_room = max(start + room - blocks_start, 0)
-        shown_scenes = scenes if scenes <= blocks_room else max(blocks_room - 1, 0)
-        for canvas, track in zip(canvases, shown_tracks):
-            self.draw_light(canvas=canvas, column=start, track=track)
-            canvas.write(column=start + LIGHT_WIDTH, text=fit(text=track, width=name_width), style=Style.MONITOR)
-            for index in range(shown_scenes):
-                if document.clip_slot(index=index, track=track) is None:
-                    canvas.write(column=blocks_start + index, text=MSG_MAIN_MAP_EMPTY, style=Style.MONITOR_DIM)
-                else:
-                    canvas.write(column=blocks_start + index, text=MSG_MAIN_MAP_CLIP, style=GLOW_STYLES[self.glow_level(index=index, track=track)])
-            if shown_scenes < scenes and blocks_room:
-                canvas.write(column=blocks_start + shown_scenes, text=MSG_MAIN_MAP_CUT, style=Style.MONITOR_DIM)
-        if len(shown_tracks) < len(tracks) and canvases:
-            canvases[len(shown_tracks)].write(column=start, text=fit(text=MSG_MAIN_MORE_TRACKS.format(count=len(tracks) - len(shown_tracks)), width=room), style=Style.MONITOR_DIM)
-
     def draw_bar(self, *, canvases, rows, lefts, left, width):
-        """Draw the bar of the file's actions: one box, double-lined while the cursor is in it, its actions in rows on the layout's
-        columns with no lines between them, each column's keys ending at one place so that no key runs into a name below, and the
-        selected action's name in reverse video (the user's design)."""
+        """Draw the bar of the file's actions: one box, double-lined while the cursor is in it, its actions in rows on the grid's
+        columns with no lines between them, each column's keys starting under the keys of the buttons above and its names starting
+        at one place, past the column's longest key, and the selected action's name in reverse video (the user's design)."""
         selected = self.selected()
         self.draw_box(canvases=canvases, left=left, width=width, selected=self.in_bar(), style=Style.BOLD if self.in_bar() else Style.DIM)
         for column, column_left in enumerate(lefts):
@@ -660,60 +402,24 @@ class MainPage(Page):
             start = column_left + 1 + len(EDGE_GAP)
             for canvas, row, label in zip(canvases[1:-1], rows, labels):
                 item = row[column]
-                canvas.write(column=start, text=fit(text=label, width=key_room, align=Align.RIGHT)[:key_room - len(label)])
-                canvas.write(column=start + key_room - len(label), text=label, style=Style.KEY)
+                canvas.write(column=start, text=label, style=Style.KEY)
                 chosen = item.binding is selected.binding
                 canvas.write(column=start + key_room, text=NAME_GAP + self.shown_name(item) + (SPACE if chosen else NOTHING), style=Style.REVERSE if chosen else Style.PLAIN)
 
-    def grid_lines(self, width):
-        """Return the lines of the grid layout and the bar under it."""
-        rows = self.grid_rows()
-        widths = self.column_widths(width)
+    def body(self, *, width, height):
+        """Return the block of buttons, the same on every console: Arrange's bar, the three rows of buttons, a blank line and the bar of the file's actions."""
+        rows = self.rows()
+        widths = self.column_widths()
         lefts = self.column_lefts(widths)
         total = lefts[-1] + widths[-1]
         selected = self.selected()
-        grid = [Canvas(total) for _ in range(GRID_ROWS * CELL_LINES)]
-        self.draw_arrange(canvases=grid[:ARRANGE_ROWS * CELL_LINES], left=lefts[0], item=rows[ARRANGE_TOP][0], selected=self.on_arrange(), width=widths[0], with_map=False)
-        for number, row in enumerate(rows[:GRID_ROWS]):
+        grid = [Canvas(total) for _ in range((1 + BUTTON_ROWS) * CELL_LINES)]
+        self.draw_cell(canvases=grid[:CELL_LINES], left=0, item=rows[ARRANGE_ROW][0], selected=self.on_arrange(), width=total)
+        for number, row in enumerate(rows[1:1 + BUTTON_ROWS], start=1):
+            lines = grid[number * CELL_LINES:(number + 1) * CELL_LINES]
             for column, item in enumerate(row):
-                if item.binding is self.KEYS.ARRANGE:
-                    continue
-                lines = grid[number * CELL_LINES:(number + 1) * CELL_LINES]
                 self.draw_cell(canvases=lines, left=lefts[column], item=item, selected=item.binding is selected.binding, width=widths[column])
         bar = [Canvas(total) for _ in range(BAR_ROWS + BORDERS)]
-        self.draw_bar(canvases=bar, rows=rows[GRID_ROWS:], lefts=lefts, left=0, width=total)
-        return [canvas.text() for canvas in [*grid, *bar]]
-
-    def smart_fit_lines(self, *, width, height):
-        """Return the lines of the smart fit layout: Arrange's cell down all the height at the left, and at the right the Real Time
-        switch across both columns, the pages in pairs, and the bar of the file's actions."""
-        rows = self.smart_fit_rows()
-        right = self.smart_right_widths()
-        widths = [self.smart_arrange_width(width), *right]
-        lefts = self.column_lefts(widths)
-        total = lefts[-1] + widths[-1]
-        selected = self.selected()
-        canvases = [Canvas(total) for _ in range(max(height, SMART_RIGHT_LINES))]
-        self.draw_arrange(canvases=canvases, left=lefts[0], item=rows[0][0], selected=self.on_arrange(), width=widths[0], with_map=True)
-        switch = rows[0][1]
-        self.draw_cell(canvases=canvases[:CELL_LINES], left=lefts[1], item=switch, selected=switch.binding is selected.binding, width=sum(right) + CELL_GAP)
-        for number, row in enumerate(rows[1:1 + PAGE_PAIRS], start=1):
-            lines = canvases[number * CELL_LINES:(number + 1) * CELL_LINES]
-            for column in range(1, 1 + SMART_RIGHT_COLUMNS):
-                self.draw_cell(canvases=lines, left=lefts[column], item=row[column], selected=row[column].binding is selected.binding, width=widths[column])
-        bar_top = (1 + PAGE_PAIRS) * CELL_LINES
-        bar_rows = [row[1:] for row in rows[1 + PAGE_PAIRS:]]
-        self.draw_bar(canvases=canvases[bar_top:bar_top + SMART_BAR_ROWS + BORDERS], rows=bar_rows, lefts=lefts[1:], left=lefts[1], width=sum(right) + CELL_GAP)
-        return [canvas.text() for canvas in canvases]
-
-    def body(self, *, width, height):
-        # Nothing above the cells: the crumbs name the set and the song, and the cells count what the set holds.
-        lines = [Text(NOTHING) for _ in range(LINES_ABOVE_GRID)]
-        self.smart_fit = self.has_room_for_smart_fit(width=width, height=height)
-        if self.smart_fit:
-            return lines + self.smart_fit_lines(width=width, height=height - LINES_ABOVE_GRID)
-        return lines + self.grid_lines(width)
-
-    def resting_status(self):
-        """The status line, right above the legend as on every page, says what the selected cell is for while nothing else is said (the user's design)."""
-        return self.ABOUT[cell_name(self.selected())]
+        self.draw_bar(canvases=bar, rows=rows[1 + BUTTON_ROWS:], lefts=lefts, left=0, width=total)
+        blank = [Text(NOTHING)]
+        return blank * LINES_ABOVE_GRID + [canvas.text() for canvas in grid] + blank * LINES_ABOVE_BAR + [canvas.text() for canvas in bar]

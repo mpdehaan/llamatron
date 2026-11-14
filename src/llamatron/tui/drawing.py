@@ -70,12 +70,6 @@ class Style:
     DETAILS_STOCK = 'red'
     # A key's label on the main screen's cells, bold as well as reversed (the user's choice).
     KEY = 'bold reverse'
-    # The main screen's Arrange cell, a small monitor, green on dark green, the user's design after an old computer's screen:
-    # its text, what is lit (the name, the clock, a sounding track's light and the selected cell's box), what is dim, and its key.
-    MONITOR = 'rgb(60,220,90) on rgb(0,48,16)'
-    MONITOR_BRIGHT = 'bold rgb(140,255,150) on rgb(0,48,16)'
-    MONITOR_DIM = 'rgb(40,130,60) on rgb(0,48,16)'
-    MONITOR_KEY = 'bold reverse rgb(140,255,150) on rgb(0,48,16)'
 
 
 class Align:

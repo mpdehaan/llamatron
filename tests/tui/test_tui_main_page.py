@@ -14,14 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The main screen: its two layouts, its cells and counts, the arrows over them, the file's actions and the header."""
+"""The main screen: its one block of buttons, their counts, the arrows over them, the file's actions and the header."""
 
 from unittest import mock
 
 from tests.support.ui_testing import UITest, key_name
 from llamatron.tui.drawing import Box, NOTHING, SPACE
-from llamatron.tui.screens.main_page import arrows_between, cell_positions, COLUMNS, moved
-from llamatron.strings.marks import MSG_MAIN_CLOCK, MSG_MAIN_MAP_CLIP, MSG_MAIN_MAP_CUT, MSG_MAIN_MAP_EMPTY, MSG_MAIN_MORE_TRACKS, MSG_REAL_TIME_OFF_MARK
+from llamatron.tui.screens.main_page import arrows_between, cell_positions, COLUMNS, GRID_WIDTH, moved
 from llamatron.composition.file_format import NAMED_GENERATORS
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.screens.arrange_page import ArrangePage
@@ -37,7 +36,7 @@ from llamatron.tui.screens.scales_page import ScalesPage
 from llamatron.tui.screens.open_page import OpenPage
 from llamatron.tui.screens.songs_page import SongsPage
 from llamatron.support.version import VERSION
-from llamatron.strings.labels import Crumb, MSG_ABOUT, MSG_SET_CRUMB, MSG_SONG_CRUMB, MSG_NO_FILE_CRUMB, MSG_QUIT_BUTTONS, MSG_TITLE_LABEL, PageName
+from llamatron.strings.labels import Crumb, MSG_SET_CRUMB, MSG_SONG_CRUMB, MSG_NO_FILE_CRUMB, MSG_QUIT_BUTTONS, MSG_TITLE_LABEL, PageName
 from llamatron.strings.legends import MSG_ABOUT_FOOTER_WHAT
 from llamatron.strings.marks import MSG_CRUMB_SEPARATOR, MSG_UNSAVED_MARK, MSG_UNSAVED_CHANGES_MARK, MSG_SAVED_MARK
 from llamatron.strings.messages import MSG_QUIT_UNSAVED_NOTE, MSG_SAVE_BEFORE_EXPORT_TITLE
@@ -49,9 +48,8 @@ from tests.support.page_testing import boxed_line
 
 # Typed into a prompt that ESC then cancels.
 ESCAPED_TITLE = 'never'
-# Tracks and scenes added to outgrow the main screen's map of the song.
-EXTRA_TRACK = 'extra {number}'
-EXTRA_SCENE = 'more {number}'
+# The arrows, in the order the tests list where each takes the cursor.
+ARROWS = (Key.UP, Key.DOWN, Key.LEFT, Key.RIGHT)
 # Letters the tests press on purpose that aren't keys: two letters no page binds, and a letter typed as
 # text into the description. Textual's own name for the Ctrl+Q the tracker no longer binds.
 CTRL_Q = 'ctrl+q'
@@ -107,7 +105,9 @@ class TestMainPage(UITest):
     async def test_o_opens_and_x_exports_on_the_main_screen_without_ctrl_and_the_cells_show_the_letters(self):
         # The user's choice of 2026-11-09, to save a keystroke: the main screen's letters are its own. Ctrl+O and Ctrl+X still work.
         text = self.text()
-        self.assertIn(f'« {key_name(keybindings.MainPage.OPEN_SET_HERE)} » {PageName.OPEN}', text)
+        # In the bar a column's names start at one place, so Open stands clear of its key by the room Save's longer key takes.
+        open_line = next(line for line in text.splitlines() if PageName.OPEN in line)
+        self.assertIn(f'« {key_name(keybindings.MainPage.OPEN_SET_HERE)} »', open_line)
         self.assertIn(f'« {key_name(keybindings.MainPage.EXPORT_HERE)} » {PageName.EXPORT}', text)
         self.assertIn(f'« {key_name(keybindings.MainPage.SAVE)} » {PageName.SAVE}', text)
         self.assertNotIn(f'« {key_name(keybindings.MainPage.OPEN_SET)} »', text)
@@ -194,144 +194,52 @@ class TestMainPage(UITest):
         self.assertFalse(self.document.setlist().get_title())
         self.assertFalse(self.document.is_dirty())
 
-    async def test_a_tall_console_has_the_smart_fit_layout_arrange_at_the_left_and_two_narrow_columns_at_the_right(self):
-        # The user's design: Arrange down all the height at the left; at the right the Real Time switch across both columns, the
-        # pages in pairs, and the file's actions in one box, three rows of two.
-        page = self.app.screen
-        self.assertTrue(page.smart_fit)
-        lines = self.text().splitlines()
-        line_of = {key_name(item.binding): next(number for number, line in enumerate(lines) if f'« {item.shown_label()} »' in line) for item in page.menu_items()}
-        keys = keybindings.MainPage
-        self.assertEqual(line_of[key_name(keys.ARRANGE)], line_of[key_name(keys.REAL_TIME)])
-        for left, right in ((keys.SONGS, keys.PATTERNS), (keys.SCALES, keys.GENERATORS), (keys.GROOVES, keys.CHAINS), (keys.INSTRUMENTS, keys.REGISTERS), (keys.FILE, keys.EXPORT_HERE), (keys.SAVE, keys.IMPORT_HERE), (keys.OPEN_SET_HERE, keys.QUIT)):
-            with self.subTest(left=left):
-                self.assertEqual(line_of[key_name(left)], line_of[key_name(right)])
-                self.assertGreater(line_of[key_name(left)], line_of[key_name(keys.REAL_TIME)])
-        self.assertEqual(line_of[key_name(keys.SAVE)], line_of[key_name(keys.FILE)] + 1)
-        self.assertEqual(line_of[key_name(keys.OPEN_SET_HERE)], line_of[key_name(keys.SAVE)] + 1)
-        # Arrange's box runs down to the line above the status line, and every line is as wide as the console.
-        bottoms = [number for number, line in enumerate(lines) if line.startswith(Box.DOUBLE_BOTTOM_LEFT)]
-        self.assertEqual(bottoms, [len(lines) - 4])
-        self.assertLessEqual(max(len(line.replace(REVERSED_STARTS, NOTHING).replace(REVERSED_ENDS, NOTHING).rstrip()) for line in lines), self.SIZE[0])
-        # The two columns at the right are as narrow as their cells, so Arrange has more than a third of the width.
-        self.assertGreater(page.smart_arrange_width(self.SIZE[0]), self.SIZE[0] // COLUMNS)
+    async def test_a_large_console_shows_the_same_block_of_buttons_at_the_top_left_never_stretched(self):
+        # The user's rule: the buttons are the size they are on an 80 by 24 console, however large the window.
+        lines = [line.replace(REVERSED_STARTS + SPACE, NOTHING).replace(SPACE + REVERSED_ENDS, NOTHING).rstrip() for line in self.text().splitlines()]
+        boxed = [line for line in lines if line.startswith((Box.TOP_LEFT, Box.DOUBLE_TOP_LEFT, Box.BOTTOM_LEFT, Box.DOUBLE_BOTTOM_LEFT))]
+        self.assertTrue(boxed)
+        self.assertEqual({len(line) for line in boxed}, {GRID_WIDTH})
+        self.assertLess(GRID_WIDTH, self.SIZE[0])
+        self.assertEqual(sum(self.app.screen.column_widths()) + COLUMNS - 1, GRID_WIDTH)
 
-    async def test_in_the_smart_fit_layout_every_arrow_moves_by_the_geometry_drawn_and_stops_at_every_edge(self):
-        keys = keybindings.MainPage
-        moves = {
-            keys.ARRANGE: (keys.ARRANGE, keys.ARRANGE, keys.ARRANGE, keys.REAL_TIME),
-            keys.REAL_TIME: (keys.REAL_TIME, keys.SONGS, keys.ARRANGE, keys.REAL_TIME),
-            keys.SONGS: (keys.REAL_TIME, keys.SCALES, keys.ARRANGE, keys.PATTERNS),
-            keys.SCALES: (keys.SONGS, keys.GROOVES, keys.ARRANGE, keys.GENERATORS),
-            keys.GROOVES: (keys.SCALES, keys.INSTRUMENTS, keys.ARRANGE, keys.CHAINS),
-            keys.INSTRUMENTS: (keys.GROOVES, keys.FILE, keys.ARRANGE, keys.REGISTERS),
-            keys.PATTERNS: (keys.REAL_TIME, keys.GENERATORS, keys.SONGS, keys.PATTERNS),
-            keys.GENERATORS: (keys.PATTERNS, keys.CHAINS, keys.SCALES, keys.GENERATORS),
-            keys.CHAINS: (keys.GENERATORS, keys.REGISTERS, keys.GROOVES, keys.CHAINS),
-            keys.REGISTERS: (keys.CHAINS, keys.EXPORT_HERE, keys.INSTRUMENTS, keys.REGISTERS),
-            keys.FILE: (keys.INSTRUMENTS, keys.SAVE, keys.ARRANGE, keys.EXPORT_HERE),
-            keys.SAVE: (keys.FILE, keys.OPEN_SET_HERE, keys.ARRANGE, keys.IMPORT_HERE),
-            keys.OPEN_SET_HERE: (keys.SAVE, keys.OPEN_SET_HERE, keys.ARRANGE, keys.QUIT),
-            keys.EXPORT_HERE: (keys.REGISTERS, keys.IMPORT_HERE, keys.FILE, keys.EXPORT_HERE),
-            keys.IMPORT_HERE: (keys.EXPORT_HERE, keys.QUIT, keys.SAVE, keys.IMPORT_HERE),
-            keys.QUIT: (keys.IMPORT_HERE, keys.QUIT, keys.OPEN_SET_HERE, keys.QUIT),
-        }
+    async def test_the_fewest_arrows_reach_every_cell_from_every_cell(self):
+        # What the video tutorial walks by: the arrows found are pressed and reach the cell.
         page = self.app.screen
-        self.assertEqual(len(moves), len(page.menu_items()))
-        for start, ends in moves.items():
-            for arrow, end in zip((Key.UP, Key.DOWN, Key.LEFT, Key.RIGHT), ends):
-                with self.subTest(start=start, arrow=arrow):
-                    page.select(start)
-                    await self.press(arrow)
-                    self.assertIs(page.selected().binding, end)
-
-    async def test_in_the_smart_fit_layout_an_arrow_back_returns_to_the_cell_the_cursor_came_from(self):
-        keys = keybindings.MainPage
-        page = self.app.screen
-        # Right from Arrange goes back to the cell at the right the cursor came from.
-        for beside in (keys.SONGS, keys.GROOVES, keys.FILE, keys.OPEN_SET_HERE):
-            with self.subTest(beside=beside):
-                page.select(beside)
-                await self.press(Key.LEFT)
-                self.assertIs(page.selected().binding, keys.ARRANGE)
-                await self.press(Key.RIGHT)
-                self.assertIs(page.selected().binding, beside)
-        # The Real Time switch is across both columns: Down from it goes back to the column the cursor came up from.
-        page.select(keys.PATTERNS)
-        await self.press(Key.UP)
-        self.assertIs(page.selected().binding, keys.REAL_TIME)
-        await self.press(Key.DOWN)
-        self.assertIs(page.selected().binding, keys.PATTERNS)
-        # The cursor stays on its cell while a page is open over the main screen, and the selected action is reversed in the bar.
-        page.select(keys.CHAINS)
-        await self.press(Key.ENTER)
-        self.assertIsInstance(self.app.screen, ChainsPage)
-        await self.press(Key.ESCAPE)
-        self.assertIs(page.selected().binding, keys.CHAINS)
-        page.select(keys.QUIT)
-        await self.press(Key.UP)
-        self.assertIn(f'{PageName.IMPORT} {REVERSED_ENDS}', self.text())
-
-    async def test_the_fewest_arrows_reach_every_cell_from_every_cell_in_both_layouts(self):
-        # What the video tutorial walks by: the arrows found are pressed, one layout after the other, and reach the cell.
-        page = self.app.screen
-        for rows in (page.grid_rows(), page.smart_fit_rows()):
-            cells = list({id(item.binding): item.binding for row in rows for item in row}.values())
-            for start in cells:
-                for end in cells:
-                    position = cell_positions(rows=rows, binding=start)[0]
-                    arrows = arrows_between(rows=rows, position=position, binding=end)
-                    self.assertIsNotNone(arrows, (start, end))
-                    self.assertLess(len(arrows), len(rows) + COLUMNS)
-                    for arrow in arrows:
-                        position = moved(rows=rows, position=position, key=arrow)
-                    self.assertIs(rows[position[0]][position[1]].binding, end)
+        rows = page.rows()
+        cells = list({id(item.binding): item.binding for row in rows for item in row}.values())
+        for start in cells:
+            for end in cells:
+                position = cell_positions(rows=rows, binding=start)[0]
+                arrows = arrows_between(rows=rows, position=position, binding=end)
+                self.assertIsNotNone(arrows, (start, end))
+                self.assertLess(len(arrows), len(rows) + COLUMNS)
+                for arrow in arrows:
+                    position = moved(rows=rows, position=position, key=arrow)
+                self.assertIs(rows[position[0]][position[1]].binding, end)
         # On the screen, the arrows to a cell are the ones a person would press.
-        self.assertEqual(page.arrows_to(keybindings.MainPage.PATTERNS), [Key.RIGHT, Key.DOWN, Key.RIGHT])
+        self.assertEqual(page.arrows_to(keybindings.MainPage.PATTERNS), [Key.DOWN, Key.RIGHT])
         self.assertEqual(page.arrows_to(keybindings.MainPage.ARRANGE), [])
-
-    async def test_the_map_of_the_song_has_a_line_for_each_track_and_a_block_for_each_scene_with_a_clip(self):
-        # The user's design: a track's light, hollow while nothing sounds and always while Real Time is off, its name, then a
-        # block where the track has a clip in a scene and a dot where it has none.
-        song = self.document.song()
-        scenes = range(len(song.get_scenes()))
-        for track in song.get_track_names():
-            blocks = NOTHING.join(MSG_MAIN_MAP_EMPTY if self.document.clip_slot(index=index, track=track) is None else MSG_MAIN_MAP_CLIP for index in scenes)
-            line = next(line for line in self.text().splitlines() if f'{MSG_REAL_TIME_OFF_MARK} {track}' in line)
-            self.assertIn(blocks, line)
-        self.assertIn(MSG_MAIN_MAP_CLIP, self.text())
-        self.assertNotIn(MSG_MAIN_CLOCK.format(at=NOTHING).strip(), boxed_line(self.text()))
-        # More tracks than the cell has lines: the first ones, and how many more there are.
-        page = self.app.screen
-        for number in range(self.SIZE[1]):
-            self.document.add_track(EXTRA_TRACK.format(number=number))
-        page.draw()
-        await self.pilot.pause()
-        shown = sum(1 for line in boxed_line(self.text()).splitlines() if MSG_REAL_TIME_OFF_MARK in line)
-        tracks = len(self.document.song().get_track_names())
-        self.assertLess(shown, tracks)
-        self.assertIn(MSG_MAIN_MORE_TRACKS.format(count=tracks - shown), boxed_line(self.text()))
-        # More scenes than the line has room for: the first ones, and a mark that the line was cut.
-        self.assertNotIn(MSG_MAIN_MAP_CUT, boxed_line(self.text()))
-        for number in range(self.SIZE[0]):
-            self.document.add_scene(index=len(self.document.song().get_scenes()), name=EXTRA_SCENE.format(number=number))
-        page.draw()
-        await self.pilot.pause()
-        self.assertIn(MSG_MAIN_MAP_CUT, boxed_line(self.text()))
-        self.assertLessEqual(max(len(line) for line in boxed_line(self.text()).splitlines()), self.SIZE[0])
 
 
 class TestMainPageOnAUsualConsole(UITest):
-    """The main screen on a console of 80 by 24, too short for the smart fit layout: the grid of three columns."""
+    """The main screen on a console of 80 by 24, which the block of buttons fills from edge to edge."""
 
     SIZE = (80, 24)
 
-    async def test_a_usual_console_keeps_the_grid_of_three_columns(self):
-        self.assertFalse(self.app.screen.smart_fit)
-        # With the Real Time switch off, every track has a light, a hollow circle (the user's design).
-        for track in self.document.song().get_track_names():
-            self.assertIn(f'{MSG_REAL_TIME_OFF_MARK} {track}', boxed_line(self.text()))
-        self.assertNotIn(MSG_MAIN_MAP_CLIP, self.text())
+    async def test_the_screen_is_named_once_and_the_stripe_carries_no_caption(self):
+        # The user's rule: the crumbs name the main screen, so the theme's stripe under the header says nothing.
+        self.assertEqual(self.text().count(Crumb.MAIN_SCREEN), 1)
+        self.assertEqual(self.app.screen.caption(), NOTHING)
+
+    async def test_the_status_line_stays_empty_until_something_is_refused_or_said(self):
+        # No description of the selected button: the line is for refusals and warnings here (the user's rule).
+        page = self.app.screen
+        self.assertEqual(page.resting_status(), NOTHING)
+        lines = self.text().splitlines()
+        self.assertFalse(lines[-3].strip())
+        await self.press(Key.DOWN, Key.RIGHT)
+        self.assertFalse(self.text().splitlines()[-3].strip())
 
     async def test_opens_on_the_main_screen_with_a_cell_for_every_page_and_the_file_actions_and_help_in_the_footer(self):
         self.assertIsInstance(self.app.screen, MainPage)
@@ -344,13 +252,30 @@ class TestMainPageOnAUsualConsole(UITest):
         # Undo and Redo have no cell, since they're Ctrl+Z and Ctrl+Y on every page, and F1 lists them.
         self.assertNotIn('« Ctrl+Z »', text)
         self.assertNotIn(PageName.UNDO, text)
-        # Arrange first, with a column of pages beside it, three cells to a line, then the bar: File/Global with Save and Open, over Export, Import and Quit.
+        # Arrange alone on a bar across the top, then three buttons to a line, a blank line, and the bar: Open, Import and
+        # File/Global over Save, Export and Quit.
         lines = text.splitlines()
-        self.assertEqual(next(number for number, line in enumerate(lines) if '« A »' in line), next(number for number, line in enumerate(lines) if '« P »' in line))
+        arrange = next(number for number, line in enumerate(lines) if '« A »' in line)
+        self.assertEqual(lines[arrange].count('«'), 1)
+        self.assertLess(arrange, next(number for number, line in enumerate(lines) if '« S »' in line))
         self.assertEqual(sum(1 for line in lines if '« F »' in line), 1)
-        self.assertEqual(next(line for line in lines if '« P »' in line).count('«'), COLUMNS)
-        self.assertIn('« O »', next(line for line in lines if '« F »' in line))
-        self.assertIn('« Q »', next(line for line in lines if '« X »' in line))
+        for row in ('« S »', '« G »', '« I »'):
+            self.assertEqual(next(line for line in lines if row in line).count('«'), COLUMNS)
+        self.assertIn('« P »', next(line for line in lines if '« S »' in line))
+        self.assertIn('« Z »', next(line for line in lines if '« S »' in line))
+        self.assertIn('« C »', next(line for line in lines if '« G »' in line))
+        self.assertIn('« V »', next(line for line in lines if '« G »' in line))
+        self.assertIn('« R »', next(line for line in lines if '« I »' in line))
+        self.assertIn('« T »', next(line for line in lines if '« I »' in line))
+        opens = next(number for number, line in enumerate(lines) if '« O »' in line)
+        self.assertIn('« M »', lines[opens])
+        self.assertIn('« F »', lines[opens])
+        self.assertIn('« Ctrl+S »', lines[opens + 1])
+        self.assertIn('« Q »', lines[opens + 1])
+        self.assertIn('« X »', lines[opens + 1])
+        # One blank line between the buttons and the bar of the file's actions.
+        self.assertFalse(lines[opens - 2].strip())
+        self.assertTrue(lines[opens - 3].startswith(Box.BOTTOM_LEFT))
         self.assertIn(PageName.FILE, text)
         self.assertIn('« F1 »', lines[-1])
         self.assertTrue(lines[-1].rstrip().endswith(MSG_ABOUT_FOOTER_WHAT))
@@ -369,19 +294,19 @@ class TestMainPageOnAUsualConsole(UITest):
         for binding in (keybindings.MainPage.FILE, keybindings.MainPage.REGISTERS, keybindings.MainPage.ARRANGE, keybindings.MainPage.SAVE, keybindings.MainPage.OPEN_SET_HERE, keybindings.MainPage.EXPORT_HERE, keybindings.MainPage.QUIT):
             self.assertIsNone(counts[first_key(binding)], binding)
         # The count sits one space in from the box's edge, on the selected cell as on the others.
-        await self.press(Key.RIGHT)
+        await self.press(Key.DOWN)
         self.assertIn(f'{counts[first_key(keybindings.MainPage.SONGS)]} {Box.DOUBLE_BAR}', boxed_line(self.text()))
         await self.press(keybindings.MainPage.GROOVES, keybindings.GroovesPage.ADD, Key.ESCAPE, Key.ESCAPE)
         self.assertEqual(page.count(next(item for item in page.menu_items() if item.binding is keybindings.MainPage.GROOVES)), 1)
 
     async def test_the_arrows_move_the_box_over_the_grid_and_it_stays_while_a_page_is_open(self):
-        # The cursor starts on Arrange, and Right from it goes to the top cell beside it, Songs.
+        # The cursor starts on Arrange, and Down from it goes to the first button under it, Songs.
         self.assertIn(PageName.ARRANGE, boxed_line(self.text()))
-        await self.press(Key.RIGHT)
+        await self.press(Key.DOWN)
         self.assertIn(PageName.SONGS, boxed_line(self.text()))
         await self.press(Key.RIGHT)
         self.assertIn(PageName.PATTERNS, boxed_line(self.text()))
-        await self.press(Key.DOWN, Key.DOWN)
+        await self.press(Key.DOWN)
         self.assertIn(PageName.CHAINS, boxed_line(self.text()))
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChainsPage)
@@ -392,64 +317,64 @@ class TestMainPageOnAUsualConsole(UITest):
         # The user's layout and rule: from each cell, where Up, Down, Left and Right go, the cell itself where the arrow stops at an edge.
         keys = keybindings.MainPage
         moves = {
-            keys.ARRANGE: (keys.ARRANGE, keys.REAL_TIME, keys.ARRANGE, keys.SONGS),
-            keys.REAL_TIME: (keys.ARRANGE, keys.FILE, keys.REAL_TIME, keys.INSTRUMENTS),
-            keys.SONGS: (keys.SONGS, keys.SCALES, keys.ARRANGE, keys.PATTERNS),
-            keys.SCALES: (keys.SONGS, keys.GROOVES, keys.ARRANGE, keys.GENERATORS),
-            keys.GROOVES: (keys.SCALES, keys.INSTRUMENTS, keys.ARRANGE, keys.CHAINS),
-            keys.INSTRUMENTS: (keys.GROOVES, keys.SAVE, keys.REAL_TIME, keys.REGISTERS),
-            keys.PATTERNS: (keys.PATTERNS, keys.GENERATORS, keys.SONGS, keys.PATTERNS),
-            keys.GENERATORS: (keys.PATTERNS, keys.CHAINS, keys.SCALES, keys.GENERATORS),
-            keys.CHAINS: (keys.GENERATORS, keys.REGISTERS, keys.GROOVES, keys.CHAINS),
-            keys.REGISTERS: (keys.CHAINS, keys.OPEN_SET_HERE, keys.INSTRUMENTS, keys.REGISTERS),
-            keys.FILE: (keys.REAL_TIME, keys.EXPORT_HERE, keys.FILE, keys.SAVE),
-            keys.SAVE: (keys.INSTRUMENTS, keys.IMPORT_HERE, keys.FILE, keys.OPEN_SET_HERE),
-            keys.OPEN_SET_HERE: (keys.REGISTERS, keys.QUIT, keys.SAVE, keys.OPEN_SET_HERE),
-            keys.EXPORT_HERE: (keys.FILE, keys.EXPORT_HERE, keys.EXPORT_HERE, keys.IMPORT_HERE),
-            keys.IMPORT_HERE: (keys.SAVE, keys.IMPORT_HERE, keys.EXPORT_HERE, keys.QUIT),
-            keys.QUIT: (keys.OPEN_SET_HERE, keys.QUIT, keys.IMPORT_HERE, keys.QUIT),
+            keys.ARRANGE: (keys.ARRANGE, keys.SONGS, keys.ARRANGE, keys.ARRANGE),
+            keys.SONGS: (keys.ARRANGE, keys.GENERATORS, keys.SONGS, keys.PATTERNS),
+            keys.PATTERNS: (keys.ARRANGE, keys.CHAINS, keys.SONGS, keys.SCALES),
+            keys.SCALES: (keys.ARRANGE, keys.GROOVES, keys.PATTERNS, keys.SCALES),
+            keys.GENERATORS: (keys.SONGS, keys.INSTRUMENTS, keys.GENERATORS, keys.CHAINS),
+            keys.CHAINS: (keys.PATTERNS, keys.REGISTERS, keys.GENERATORS, keys.GROOVES),
+            keys.GROOVES: (keys.SCALES, keys.REAL_TIME, keys.CHAINS, keys.GROOVES),
+            keys.INSTRUMENTS: (keys.GENERATORS, keys.OPEN_SET_HERE, keys.INSTRUMENTS, keys.REGISTERS),
+            keys.REGISTERS: (keys.CHAINS, keys.IMPORT_HERE, keys.INSTRUMENTS, keys.REAL_TIME),
+            keys.REAL_TIME: (keys.GROOVES, keys.FILE, keys.REGISTERS, keys.REAL_TIME),
+            keys.OPEN_SET_HERE: (keys.INSTRUMENTS, keys.SAVE, keys.OPEN_SET_HERE, keys.IMPORT_HERE),
+            keys.IMPORT_HERE: (keys.REGISTERS, keys.EXPORT_HERE, keys.OPEN_SET_HERE, keys.FILE),
+            keys.FILE: (keys.REAL_TIME, keys.QUIT, keys.IMPORT_HERE, keys.FILE),
+            keys.SAVE: (keys.OPEN_SET_HERE, keys.SAVE, keys.SAVE, keys.EXPORT_HERE),
+            keys.EXPORT_HERE: (keys.IMPORT_HERE, keys.EXPORT_HERE, keys.SAVE, keys.QUIT),
+            keys.QUIT: (keys.FILE, keys.QUIT, keys.EXPORT_HERE, keys.QUIT),
         }
         page = self.app.screen
         self.assertEqual(len(moves), len(page.menu_items()))
         for start, ends in moves.items():
-            for arrow, end in zip((Key.UP, Key.DOWN, Key.LEFT, Key.RIGHT), ends):
+            for arrow, end in zip(ARROWS, ends):
                 with self.subTest(start=start, arrow=arrow):
                     page.select(start)
                     await self.press(arrow)
                     self.assertIs(page.selected().binding, end)
 
-    async def test_right_from_arrange_goes_back_to_the_cell_the_cursor_came_from(self):
+    async def test_down_from_arrange_goes_back_to_the_button_the_cursor_came_from(self):
         keys = keybindings.MainPage
         page = self.app.screen
-        for beside in (keys.SONGS, keys.SCALES, keys.GROOVES):
-            with self.subTest(beside=beside):
-                page.select(beside)
-                await self.press(Key.LEFT)
+        for under in (keys.SONGS, keys.PATTERNS, keys.SCALES):
+            with self.subTest(under=under):
+                page.select(under)
+                await self.press(Key.UP)
                 self.assertIs(page.selected().binding, keys.ARRANGE)
-                await self.press(Key.RIGHT)
-                self.assertIs(page.selected().binding, beside)
-        # Reached from below, Arrange forgets the side: Right goes to the top cell.
-        page.select(keys.GROOVES)
-        await self.press(Key.LEFT, Key.DOWN, Key.UP, Key.RIGHT)
-        self.assertIs(page.selected().binding, keys.SONGS)
+                await self.press(Key.DOWN)
+                self.assertIs(page.selected().binding, under)
+        # Arrange is one button across the three columns: Left and Right stay on it, and the column it was reached from is kept.
+        page.select(keys.SCALES)
+        await self.press(Key.UP, Key.LEFT, Key.RIGHT, Key.DOWN)
+        self.assertIs(page.selected().binding, keys.SCALES)
 
     async def test_the_selected_action_of_the_bar_is_reversed_in_the_bars_double_lined_box(self):
         page = self.app.screen
-        page.select(keybindings.MainPage.OPEN_SET_HERE)
+        page.select(keybindings.MainPage.FILE)
         await self.press(Key.DOWN)
         self.assertIn(PageName.QUIT, boxed_line(self.text()))
+        self.assertIn(f'{PageName.QUIT} {REVERSED_ENDS}', self.text())
         self.assertEqual(self.text().count(Box.DOUBLE_TOP_LEFT), 1)
-        # A column's keys end at one place, so that Import is in line with Save under the longer key.
+
+    async def test_in_the_bar_a_columns_keys_sit_under_the_buttons_keys_and_its_names_start_at_one_place(self):
+        # The user's design: Open is directly above Save though Save's key is longer, and both keys start where Songs' key does.
         lines = self.text().splitlines()
         save = next(line for line in lines if PageName.SAVE in line)
-        imported = next(line for line in lines if PageName.IMPORT in line)
-        self.assertEqual(save.index(PageName.SAVE), imported.index(PageName.IMPORT))
-
-    async def test_descriptions_start_with_a_capital_letter_and_only_the_selected_cells_is_shown(self):
-        for about in MainPage.ABOUT.values():
-            self.assertTrue(about[0].isupper(), about)
-        self.assertIn(MSG_ABOUT[PageName.ARRANGE], self.text())
-        self.assertNotIn(MSG_ABOUT[PageName.SCALES], self.text())
-        await self.press(Key.RIGHT, Key.DOWN)
-        self.assertIn(MSG_ABOUT[PageName.SCALES], self.text())
-        self.assertNotIn(MSG_ABOUT[PageName.ARRANGE], self.text())
+        opened = next(line for line in lines if PageName.OPEN in line)
+        songs = next(line for line in lines if PageName.SONGS in line)
+        self.assertEqual(save.index(REVERSED_STARTS), opened.index(REVERSED_STARTS))
+        self.assertEqual(save.index(REVERSED_STARTS), songs.index(REVERSED_STARTS))
+        plain = [line.replace(REVERSED_STARTS + SPACE, NOTHING).replace(SPACE + REVERSED_ENDS, NOTHING) for line in (save, opened)]
+        self.assertEqual(plain[0].index(PageName.SAVE), plain[1].index(PageName.OPEN))
+        self.assertEqual(plain[0].index(PageName.EXPORT), plain[1].index(PageName.IMPORT))
+        self.assertEqual(plain[0].index(PageName.QUIT), plain[1].index(PageName.FILE))

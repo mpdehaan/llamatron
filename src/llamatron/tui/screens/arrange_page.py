@@ -69,8 +69,7 @@ from llamatron.strings.messages import (
     MSG_CLIP_ON_TRACK, MSG_DELETE_TRACK_QUESTION, MSG_GRABBERS_STOP, MSG_PASTED_WITHOUT_GRAB, MSG_PATTERN_FOR_CLIP_TITLE, MSG_PLAYING_CLIP, MSG_PLAYING_FROM,
     MSG_EVERY_VISUALIZER_HIDDEN, MSG_SCENE_NUMBER, MSG_STOPPED, MSG_STOPPED_TRACK,
 )
-from llamatron.strings.marks import MSG_PLAYING_CLOCK, MSG_SCENE_VIEW_CLOSING, MSG_SCENE_VIEW_TITLE
-from llamatron.tui.text import clock
+from llamatron.strings.marks import MSG_SCENE_VIEW_CLOSING, MSG_SCENE_VIEW_TITLE
 from llamatron.strings.names import MSG_CHAIN_WORD, MSG_GROOVE_WORD, MSG_INSTRUMENT_WORD, MSG_NEW_SCENE_WORD, MSG_NEW_TRACK_WORD, MSG_SCALE_WORD
 from llamatron.tui import keybindings
 from llamatron.visualizers.modes import MODES, mode_called
@@ -143,10 +142,7 @@ class ArrangePage(Page):
 
     def time_text(self):
         """Return the time at the right of the crumbs: where the song is while it plays, and how long it is, or its length alone."""
-        position = self.transport().song_position()
-        if position is None:
-            return super().time_text()
-        return MSG_PLAYING_CLOCK.format(at=clock(position), total=clock(self.transport().song_seconds()))
+        return self.playing_clock() or super().time_text()
 
     def transport(self):
         return self.app.transport
