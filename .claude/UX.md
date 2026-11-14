@@ -58,10 +58,13 @@ a feature that already exists does what's being asked, that's pointed out first
 - Nobody has to know a key to get around: every page with rows has a cursor that Up and Down move
   and Enter follows, and the selected row carries the triangle `▶` at its left, on the list
   pages, the settings pages and the pickers alike, so that the arrows show themselves. The main
-  screen is a grid of cells, the pages four to a row and then Save, Open, Export, Import and Quit, which
-  all four arrows move over and Enter opens, with the selected cell alone drawn in a box, its
-  name bold, the one sentence shown being the selected cell's, and a count on each cell
-  whose page is a list. The letters are for people who know them, and the grids are the
+  screen is one grid of three columns, the user's design: Arrange in the first, three cells tall, a small monitor in green on dark
+  green (the seventh allowance of colour) showing the song's scale, tempo, time signature, scenes and tracks, the clock while the song plays and a
+  light for each track while Real Time is on; the Real Time switch under it; the pages in the two columns beside; and one bar under the grid
+  with File/Global, Save, Open, Export, Import and Quit in two rows on the grid's columns. All four arrows move by the geometry drawn,
+  Right from Arrange going back to the cell the cursor came from, and Enter opens; the selected cell alone has the double-lined box, its
+  name bold, the bar's selected action in reverse video inside the bar's double-lined box; every key's label is bold and reversed; the status line, right above
+  the legend, says what the selected cell is for; and each cell whose page is a list has a count. The letters are for people who know them, and the grids are the
   exception, with keys of their own: the pattern and groove editors mark the cursor's cell in
   reverse video, the offsets editor's gauge marks the cursor's column at both ends, `<<4>>`
   around the step number and `<+7▲>` around the offset, in reverse video too, the piano roll stands the cursor's cell between two bold double bars, shading the note under

@@ -61,15 +61,21 @@ Built in this order, each trimmed out as it lands:
    chapters), a test failing when a link is missing or points nowhere. The examples are in examples/learning, examples/other and
    examples/by_genre (the user's choice), where the new demos go by purpose.
 
-## (High priority) A main screen that uses the room the console has
+## (High priority) A taller main screen for a taller console
 
-The user wants to consider new designs for the main screen that take advantage of a console larger than 80 by 24, scaling
-down to what fits when the console is small. The user's first thought is larger buttons. Designs put to the user, none
-chosen: cells that grow with the console, each showing a little of what it opens (the first names of its list, a small
-picture of Arrange's grid in the Arrange cell); a panel for the current song (title, key, tempo, length, the lights while it
-plays); the sets opened lately; a small visualizer in a corner while a song plays. What it would mean for the code:
-`MainPage` (`src/llamatron/tui/screens/main_page.py`) lays its cells out for the size it is given, in steps, each step
-tested at its size, 80 by 24 staying as today; the screenshots and `docs/GETTING_STARTED.md` follow.
+The main screen's three-column grid is built and fits 80 by 24. The user wants a second layout where the console has more
+lines: the cells of the set's parts in one line down a column, and Arrange's cell taller, showing much more. Put to the
+user with a drawing; not yet agreed. `MainPage` (`src/llamatron/tui/screens/main_page.py`) would choose the layout by the
+height it is given, `rows()` staying the geometry the arrows move by.
+
+## (High priority) List pages that use the room the console has
+
+After the main screen's redesign, the user wants the pages that list things made more compelling and useful on a console
+larger than 80 by 24: the set's list of patterns among them, and whether some lists should be shown in several columns, a
+grid to pick from, so that more names are in view. To be designed with drawings before anything is built. What it would
+mean for the code: `ListPage` laying its rows out in columns for the size it is given, the cursor moving over them with
+all four arrows and stopping at every edge, the search, Move mode and the `+` row keeping their behaviour, 80 by 24
+staying as today.
 
 ## (High priority) The batch recorder reading each song's visualizer
 

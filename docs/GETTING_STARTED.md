@@ -62,7 +62,7 @@ These hold on every page:
 
 ![The main screen, showing minimal_techno](screenshots/main.svg)
 
-The main screen is a grid of cells: the pages, four to a row, and below them a row of actions, Save, Open, Export, Import and Quit. Press a cell's letter, or move the box with the arrows and press `Enter`. A cell whose page is a list counts what the set holds there. One line under the grid says what the selected cell is for, and the box stays where it was when you come back with `Esc`.
+The main screen is a grid of cells in three columns. Arrange has the first column, drawn as a small green monitor that shows the current song's scale, tempo and time signature, how many scenes and tracks the song has, and, while the Real Time switch is on, a light for each track that turns bright while the track sounds, with a clock while the song plays. The Real Time switch is under Arrange, and the pages are in the two columns beside them. A bar under the grid holds File/Global, Save, Open, Export, Import and Quit. Press a cell's letter, or move the box with the arrows and press `Enter`; the arrows move to the cell beside, above or below. A cell whose page is a list counts what the set holds there. The line above the keys at the bottom says what the selected cell is for, and the box stays where it was when you come back with `Esc`.
 
 | Key | Page | What it is for |
 | --- | --- | --- |

@@ -14,25 +14,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The Main page: a grid of cells, one per page and one per action, each boxed in its page's colour, with a double-lined box around the cell the cursor is on.
+"""The Main page: one grid of three columns, the user's design, with a double-lined box around what the cursor is on.
 
-The user's design. Arrange, where most of the work happens, has the first row to itself, with the
-Real Time switch beside it; a blank line, then the pages of the things a song is made from and the
-song's settings, two rows of four; a blank line, then the Set File page and the actions, Save, Open,
-Export, Import and Quit. Each page's cell is boxed in its page's theme colour (tui/themes.py), every
-colour toned to one brightness so that none looks stronger than another, and the rest in a dim box;
-the selected cell's box is double-lined and bright. A cell says how many of its things the set has
-where that means something, and the one sentence shown is the selected cell's, under the grid. Undo
-and Redo have no cell, since they're Ctrl+Z and Ctrl+Y everywhere, and F1 and F2 are in the footer,
-so that this screen is the one place that reminds of them.
+Arrange, where most of the work happens, has the first column and is three cells tall, drawn as a
+small monitor, green on dark green: its name, the clock while the song plays, the current song's
+scale, tempo and time signature, how many scenes and tracks it has, and while the set's Real Time
+switch is on, a light for each track, green while a note sounds on it. Under it is the Real Time
+switch, and beside both, two columns of the pages a song is made from. Under the grid one bar, as
+wide as the grid, holds the file's six actions in two rows on the grid's own columns, with no lines
+between them. The first column is as wide as Arrange's name and the clock need, the other two share
+the rest of the console's width. Each page's cell is boxed in its page's theme colour
+(tui/themes.py), toned to one brightness, and the rest in a dim box; the selected cell's box is
+double-lined and bright, and in the bar the selected action is in reverse video inside the bar's
+double-lined box. A cell says how many of its things the set has where that means something, and the
+status line, right above the legend, says what the selected cell is for. The arrows move by the geometry drawn and
+stop at every edge. Undo and Redo have no cell, since they're Ctrl+Z and Ctrl+Y everywhere, and F1
+and F3 are in the footer, so that this screen is the one place that reminds of them.
 """
 
 from rich.text import Text
 
 from llamatron.composition.sections import GENERATOR_KINDS, Section
-from llamatron.tui.drawing import Box, Canvas, INDENT, NOTHING, padded, SPACE, Style
+from llamatron.tui.drawing import Align, Box, Canvas, fit, NOTHING, padded, SPACE, Style
 from llamatron.strings.help import HELP_MAIN_PAGE
-from llamatron.tui.keys import ARROWS_LEFT_RIGHT, Key
+from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange_page import ArrangePage
 from llamatron.tui.screens.everywhere import everywhere_actions, everywhere_key, quit_key
 from llamatron.tui.screens.file_page import FilePage
@@ -48,30 +53,49 @@ from llamatron.tui.screens.scales_page import ScalesPage
 from llamatron.tui.screens.songs_page import SongsPage
 from llamatron.strings.errors import ERR_ADD_INSTRUMENT_FIRST, ERR_NO_INSTRUMENTS_TITLE
 from llamatron.strings.labels import Crumb, MSG_ABOUT, PageName
-from llamatron.strings.marks import MSG_REAL_TIME_OFF_MARK, MSG_REAL_TIME_ON_MARK
-from llamatron.strings.messages import MSG_REAL_TIME_OFF, MSG_REAL_TIME_OFF_STOPPED, MSG_REAL_TIME_ON
+from llamatron.tui.text import clock, tempo_text
+from llamatron.strings.marks import (
+    MSG_MAIN_CLOCK, MSG_MAIN_MORE_TRACKS, MSG_MAIN_ONE_SCENE, MSG_MAIN_ONE_TRACK, MSG_MAIN_SCENES, MSG_MAIN_TEMPO, MSG_MAIN_TRACKS,
+    MSG_REAL_TIME_OFF_MARK, MSG_REAL_TIME_ON_MARK,
+)
+from llamatron.strings.messages import MSG_NO_SCALE, MSG_REAL_TIME_OFF, MSG_REAL_TIME_OFF_STOPPED, MSG_REAL_TIME_ON
 from llamatron.tui import keybindings
 from llamatron.tui import themes
 from rich.color import Color
 from rich.style import Style as RichStyle
 
 
-# The grid's width, four cells of CELL_WIDTH across an 80-column console; a row's cells share it, each at least as wide as it needs,
-# the spare columns spread evenly, and Arrange's cell taking all its row leaves beside the Real Time switch.
-CELL_COLUMNS = 4
-CELL_WIDTH = 20
-GRID_WIDTH = CELL_COLUMNS * CELL_WIDTH
-CELL_GAP = 0
+# The grid: three columns, a space between them, on a console at least this wide; a wider console widens every column.
+COLUMNS = 3
+MINIMUM_WIDTH = 80
+CELL_GAP = 1
 # Between the box's left edge and the key, and between the key and the name, and the borders either side.
 EDGE_GAP = SPACE
 NAME_GAP = SPACE
 BORDERS = 2
 # A cell's three lines: its top edge, its key and name, and its bottom edge.
 CELL_LINES = 3
-# Blank lines over Arrange's row, between it and the pages, and between the pages and the file's row, so that the three groups read apart.
-LINES_ABOVE_ARRANGE = 1
-LINES_ABOVE_PAGES = 1
-LINES_ABOVE_FILE = 1
+# Arrange's cell is this many cells tall, and the grid this many; the bar under it holds this many rows of actions.
+ARRANGE_ROWS = 3
+GRID_ROWS = 4
+BAR_ROWS = 2
+# The row of the grid the cursor is taken to be on when it reaches Arrange from above or below, or by starting there: its top.
+ARRANGE_TOP = 0
+# Blank lines over the grid.
+LINES_ABOVE_GRID = 1
+# Inside Arrange's cell, which line holds what: the name and the clock, the song's scale, tempo and time signature, its scenes
+# and tracks, and the first line of the track lights, each group after a blank line (the user's design).
+NAME_LINE = 0
+DETAILS_LINE = 2
+COUNTS_LINE = 3
+LIGHTS_LINE = 5
+# Between two details on a line, and between the name and the clock.
+DETAIL_GAP = SPACE * 2
+# The track lights go in columns at least this wide, two columns at least, a wider cell holding more (the user's design).
+LIGHT_COLUMN_WIDTH = 13
+FEWEST_LIGHT_COLUMNS = 2
+# How far each arrow moves the cursor over the grid, in rows and columns.
+ARROW_STEPS = {Key.UP: (-1, 0), Key.DOWN: (1, 0), Key.LEFT: (0, -1), Key.RIGHT: (0, 1)}
 # The colour each page's cell is boxed in, its page's theme toned to the edges' one brightness; a cell with none is boxed dim.
 CELL_THEMES = {
     PageName.SONGS: themes.SONGS, PageName.PATTERNS: themes.PATTERNS, PageName.CHAINS: themes.CHAINS, PageName.GENERATORS: themes.GENERATORS,
@@ -118,6 +142,8 @@ class MainPage(Page):
         super().__init__(holder)
         # The cell the cursor is on, counted along the rows, which stays put while a page is open over this one.
         self.place = 0
+        # The row of the grid Arrange was reached from at its side, which Right goes back to.
+        self.arrange_row = ARRANGE_TOP
 
     def keys(self):
         return [
@@ -176,46 +202,79 @@ class MainPage(Page):
         ]
 
     def rows(self):
-        """Return the grid's rows of cells, the user's order: Arrange with the Real Time switch; Songs, Scales, Patterns and Grooves;
-        Generators, Chains, Instruments and Registers; then the Set File page and the actions."""
+        """Return the cells by the geometry drawn, six rows of three, the user's layout: Arrange in the first column of the first
+        three rows, with Songs and Patterns, Scales and Generators, and Grooves and Chains beside it; the Real Time switch with
+        Instruments and Registers; then the bar's two rows, File/Global, Save and Open over Export, Import and Quit."""
         pages = {item.binding: item for item in self.keys()}
         keys = self.KEYS
+        save, open_set, export, import_midi_here, quit_here = self.actions()
+        arrange = pages[keys.ARRANGE]
         return [
-            [pages[keys.ARRANGE], pages[keys.REAL_TIME]],
-            [pages[keys.SONGS], pages[keys.SCALES], pages[keys.PATTERNS], pages[keys.GROOVES]],
-            [pages[keys.GENERATORS], pages[keys.CHAINS], pages[keys.INSTRUMENTS], pages[keys.REGISTERS]],
-            [pages[keys.FILE], *self.actions()],
+            [arrange, pages[keys.SONGS], pages[keys.PATTERNS]],
+            [arrange, pages[keys.SCALES], pages[keys.GENERATORS]],
+            [arrange, pages[keys.GROOVES], pages[keys.CHAINS]],
+            [pages[keys.REAL_TIME], pages[keys.INSTRUMENTS], pages[keys.REGISTERS]],
+            [pages[keys.FILE], save, open_set],
+            [export, import_midi_here, quit_here],
         ]
 
     def menu_items(self):
-        """Return every cell the cursor can be on, along the rows."""
-        return [item for row in self.rows() for item in row]
+        """Return every cell the cursor can be on, each once, along the rows."""
+        items = []
+        for row in self.rows():
+            for item in row:
+                if all(item.binding is not other.binding for other in items):
+                    items.append(item)
+        return items
 
     def selected(self):
         return self.menu_items()[self.place]
 
+    def select(self, binding):
+        """Put the cursor on the cell of a binding."""
+        self.place = next(place for place, item in enumerate(self.menu_items()) if item.binding is binding)
+
     def select_open(self):
         """Put the cursor on the Open cell, as the tracker started with no set named does, the user's ask."""
-        self.place = next(place for place, item in enumerate(self.menu_items()) if item.binding is self.KEYS.OPEN_SET_HERE)
+        self.select(self.KEYS.OPEN_SET_HERE)
 
     def row_and_column(self):
-        """Return which row of the grid the cursor is on, and which cell along it."""
-        place = self.place
+        """Return the first row of the geometry that holds the cursor's cell, and its column."""
+        selected = self.selected()
         for number, row in enumerate(self.rows()):
-            if place < len(row):
-                return number, place
-            place -= len(row)
+            for column, item in enumerate(row):
+                if item.binding is selected.binding:
+                    return number, column
         return 0, 0
 
+    def on_arrange(self):
+        return self.selected().binding is self.KEYS.ARRANGE
+
+    def in_bar(self):
+        """Return whether the cursor is on one of the bar's actions."""
+        return self.row_and_column()[0] >= GRID_ROWS
+
     def move_cursor(self, name):
-        """Left and Right step along the cells, row to row, and Up and Down move between rows, staying in the column where the row has one; none of them goes past an edge, the user's choice of 2026-11-08 over going round."""
+        """Move by the geometry drawn, the user's rule: an arrow goes to the cell beside, above or below, and none goes past an edge.
+        Arrange is three rows tall, so Up and Down pass through all of it, and Right from it goes back to the cell the cursor came
+        from, or to the top one."""
         rows = self.rows()
-        if name in ARROWS_LEFT_RIGHT:
-            self.place = max(min(self.place + (1 if name == Key.RIGHT else -1), len(self.menu_items()) - 1), 0)
-            return
+        here = self.selected()
         row, column = self.row_and_column()
-        row = max(min(row + (1 if name == Key.DOWN else -1), len(rows) - 1), 0)
-        self.place = sum(len(earlier) for earlier in rows[:row]) + min(column, len(rows[row]) - 1)
+        if self.on_arrange():
+            row = self.arrange_row
+        row_step, column_step = ARROW_STEPS[name]
+        while True:
+            row += row_step
+            column += column_step
+            if not (0 <= row < len(rows) and 0 <= column < COLUMNS):
+                return
+            there = rows[row][column]
+            if there.binding is not here.binding:
+                break
+        # Reached from the side, Arrange remembers the row, so that Right goes back; reached any other way, it forgets.
+        self.arrange_row = row if there.binding is self.KEYS.ARRANGE and column_step else ARRANGE_TOP
+        self.select(there.binding)
 
     def open_selected(self):
         """Do what the selected cell's key does."""
@@ -244,27 +303,48 @@ class MainPage(Page):
         count = self.count(item)
         return BORDERS + len(EDGE_GAP) + len(padded(item.shown_label())) + len(NAME_GAP) + len(self.shown_name(item)) + (len(NAME_GAP) + len(str(count)) if count is not None else 0) + len(EDGE_GAP)
 
-    def cell_widths(self, row):
-        """Return each cell's width in a row: what each needs, the spare columns spread evenly, or all of them to Arrange's cell on its row."""
-        needs = [self.needed_width(item) for item in row]
-        # A row too wide gives up the space before the right edge of each cell with no count, the file's row on an 80-column console.
-        for place, item in enumerate(row):
-            if sum(needs) <= GRID_WIDTH:
-                break
-            if self.count(item) is None:
-                needs[place] -= len(EDGE_GAP)
-        spare = max(GRID_WIDTH - sum(needs), 0)
-        if row and row[0].binding is self.KEYS.ARRANGE:
-            return [needs[0] + spare, *needs[1:]]
-        widths = [need + spare // len(row) for need in needs]
-        widths[-1] += GRID_WIDTH - sum(widths) if sum(widths) < GRID_WIDTH else 0
-        return widths
+    def clock_text(self):
+        """Return where the song is while it plays, for Arrange's cell, or None while it doesn't."""
+        position = self.app.transport.song_position()
+        return None if position is None else MSG_MAIN_CLOCK.format(at=clock(position))
+
+    def clock_room(self):
+        """Return the room Arrange's cell keeps for the clock, the longer of where the song is and how long it is, so that the cell
+        is wide enough for any time and doesn't change width as the song plays (the user's rule)."""
+        shown = [MSG_MAIN_CLOCK.format(at=clock(self.duration()))]
+        if self.clock_text() is not None:
+            shown.append(self.clock_text())
+        return max(len(text) for text in shown)
+
+    def arrange_needed_width(self, item):
+        """Return how wide Arrange's cell must be: its key and name, a gap, the clock and a space before the edge."""
+        return BORDERS + len(EDGE_GAP) + len(padded(item.shown_label())) + len(NAME_GAP) + len(self.shown_name(item)) + len(DETAIL_GAP) + self.clock_room() + len(EDGE_GAP)
+
+    def column_widths(self, width):
+        """Return the three columns' widths: a third of the room each, the first never narrower than Arrange's name and clock or the
+        Real Time switch need, the other two sharing what the first leaves."""
+        rows = self.rows()
+        room = max(width, MINIMUM_WIDTH) - CELL_GAP * (COLUMNS - 1)
+        first = max(room // COLUMNS, self.arrange_needed_width(rows[ARRANGE_TOP][0]), *[self.needed_width(row[0]) for row in rows[ARRANGE_ROWS:]])
+        other = (room - first) // (COLUMNS - 1)
+        return [room - other * (COLUMNS - 1), other, other]
+
+    def column_lefts(self, widths):
+        """Return the column each of the grid's columns starts at."""
+        lefts = []
+        left = 0
+        for width in widths:
+            lefts.append(left)
+            left += width + CELL_GAP
+        return lefts
 
     def shown_name(self, item):
         """Return the name drawn on a cell: its own, but Arrange/Play on the Arrange cell while the set's Real Time switch is on,
-        the user's design, so that the cell says where a song is played."""
+        so that the cell says where a song is played, and File/Global on the Set File page's (the user's design)."""
         if item.binding is self.KEYS.ARRANGE and self.document().setlist().is_real_time():
             return PageName.ARRANGE_PLAY
+        if item.binding is self.KEYS.FILE:
+            return PageName.FILE_GLOBAL
         return cell_name(item)
 
     def edge_style(self, item):
@@ -274,28 +354,30 @@ class MainPage(Page):
             return Style.DIM
         return RichStyle(color=Color.from_rgb(*themes.balanced(theme)))
 
-    def draw_cell(self, *, canvases, left, item, selected, width):
-        """Draw one cell, width wide, onto a row's three lines: its box, double-lined and bright when selected and otherwise in its colour, the key reversed, the name, bold when selected, and the count; Arrange's key and name centred."""
-        right = left + width - 1
-        inner = width - 2
-        top, middle, bottom = canvases
+    def draw_box(self, *, canvases, left, width, selected, style, fill=None):
+        """Draw a box over some lines, double-lined when selected, its inside filled in a style where one is given."""
         if selected:
-            corners = (Box.DOUBLE_TOP_LEFT, Box.DOUBLE_RULE, Box.DOUBLE_TOP_RIGHT, Box.DOUBLE_BOTTOM_LEFT, Box.DOUBLE_BOTTOM_RIGHT, Box.DOUBLE_BAR)
-            style = Style.BOLD
+            top_left, rule, top_right, bottom_left, bottom_right, bar = (Box.DOUBLE_TOP_LEFT, Box.DOUBLE_RULE, Box.DOUBLE_TOP_RIGHT, Box.DOUBLE_BOTTOM_LEFT, Box.DOUBLE_BOTTOM_RIGHT, Box.DOUBLE_BAR)
         else:
-            corners = (Box.TOP_LEFT, Box.RULE, Box.TOP_RIGHT, Box.BOTTOM_LEFT, Box.BOTTOM_RIGHT, Box.BAR)
-            style = self.edge_style(item)
-        top_left, rule, top_right, bottom_left, bottom_right, bar = corners
-        top.write(column=left, text=top_left + rule * inner + top_right, style=style)
-        bottom.write(column=left, text=bottom_left + rule * inner + bottom_right, style=style)
-        middle.write(column=left, text=bar, style=style)
-        middle.write(column=right, text=bar, style=style)
+            top_left, rule, top_right, bottom_left, bottom_right, bar = (Box.TOP_LEFT, Box.RULE, Box.TOP_RIGHT, Box.BOTTOM_LEFT, Box.BOTTOM_RIGHT, Box.BAR)
+        inner = width - BORDERS
+        canvases[0].write(column=left, text=top_left + rule * inner + top_right, style=style)
+        canvases[-1].write(column=left, text=bottom_left + rule * inner + bottom_right, style=style)
+        for canvas in canvases[1:-1]:
+            canvas.write(column=left, text=bar, style=style)
+            if fill is not None:
+                canvas.write(column=left + 1, text=SPACE * inner, style=fill)
+            canvas.write(column=left + width - 1, text=bar, style=style)
+
+    def draw_cell(self, *, canvases, left, item, selected, width):
+        """Draw one cell, width wide, onto its three lines: its box, double-lined and bright when selected and otherwise in its colour, the key bold and reversed, the name, bold when selected, and the count."""
+        self.draw_box(canvases=canvases, left=left, width=width, selected=selected, style=Style.BOLD if selected else self.edge_style(item))
+        middle = canvases[1]
+        right = left + width - 1
         label = padded(item.shown_label())
         name = self.shown_name(item)
         start = left + 1 + len(EDGE_GAP)
-        if item.binding is self.KEYS.ARRANGE:
-            start = left + max((width - len(label) - len(NAME_GAP) - len(name)) // 2, 1)
-        middle.write(column=start, text=label, style=Style.REVERSE)
+        middle.write(column=start, text=label, style=Style.KEY)
         middle.write(column=start + len(label), text=NAME_GAP + name, style=Style.BOLD if selected else Style.PLAIN)
         count = self.count(item)
         if count is not None:
@@ -303,25 +385,109 @@ class MainPage(Page):
             name_end = start + len(label) + len(NAME_GAP) + len(name)
             middle.write(column=max(right - 1 - len(str(count)), min(name_end + len(NAME_GAP), right - len(str(count)))), text=str(count))
 
-    def row_lines(self, *, row, width):
-        """Return the three lines of one row of cells."""
-        canvases = [Canvas(width) for _ in range(CELL_LINES)]
+    def song_details(self):
+        """Return the current song's scale, tempo and time signature, as Arrange's cell says them on one line."""
+        song = self.document().song()
+        signature = song.get_time_signature()
+        return DETAIL_GAP.join([
+            song.get_scale_name() or MSG_NO_SCALE,
+            MSG_MAIN_TEMPO.format(tempo=tempo_text(song.get_tempo())),
+            signature.to_text(),
+        ])
+
+    def song_counts(self):
+        """Return how many scenes and tracks the current song has, as Arrange's cell says them."""
+        song = self.document().song()
+        scenes = len(song.get_scenes())
+        tracks = len(song.get_track_names())
+        return DETAIL_GAP.join([
+            MSG_MAIN_ONE_SCENE if scenes == 1 else MSG_MAIN_SCENES.format(count=scenes),
+            MSG_MAIN_ONE_TRACK if tracks == 1 else MSG_MAIN_TRACKS.format(count=tracks),
+        ])
+
+    def track_lights(self, *, lines, width):
+        """Return the track lights of Arrange's cell as lines of (track or None, text): the tracks in their order, never moving, in as
+        many columns as fit, two at least, and when not every track fits, how many more there are in the last place (the user's design)."""
+        tracks = self.document().song().get_track_names()
+        columns = max(width // LIGHT_COLUMN_WIDTH, FEWEST_LIGHT_COLUMNS)
+        places = lines * columns
+        shown = [(track, track) for track in tracks]
+        if len(tracks) > places:
+            shown = [*shown[:places - 1], (None, MSG_MAIN_MORE_TRACKS.format(count=len(tracks) - places + 1))]
+        return [shown[start:start + columns] for start in range(0, len(shown), columns)], width // columns
+
+    def draw_arrange(self, *, canvases, left, item, selected, width):
+        """Draw Arrange's cell as a small monitor, green on dark green (the user's design): its key and name with the clock at the right
+        while the song plays, the song's details and counts, and a light for each track while the Real Time switch is on."""
+        self.draw_box(canvases=canvases, left=left, width=width, selected=selected, style=Style.MONITOR_BRIGHT if selected else Style.MONITOR, fill=Style.MONITOR)
+        inside = canvases[1:-1]
+        start = left + 1 + len(EDGE_GAP)
+        room = width - BORDERS - len(EDGE_GAP) * 2
+        label = padded(item.shown_label())
+        inside[NAME_LINE].write(column=start, text=label, style=Style.MONITOR_KEY)
+        inside[NAME_LINE].write(column=start + len(label), text=NAME_GAP + self.shown_name(item), style=Style.MONITOR_BRIGHT)
+        shown_clock = self.clock_text()
+        if shown_clock is not None:
+            inside[NAME_LINE].write(column=left + width - 1 - len(EDGE_GAP) - len(shown_clock), text=shown_clock, style=Style.MONITOR_BRIGHT)
+        # The details start under the name, past the key.
+        inside[DETAILS_LINE].write(column=start, text=fit(text=self.song_details(), width=room), style=Style.MONITOR)
+        inside[COUNTS_LINE].write(column=start, text=fit(text=self.song_counts(), width=room), style=Style.MONITOR)
+        if not self.document().setlist().is_real_time():
+            return
+        lights, light_width = self.track_lights(lines=len(inside) - LIGHTS_LINE, width=room)
+        transport = self.app.transport
+        for line, row in zip(inside[LIGHTS_LINE:], lights):
+            for place, (track, text) in enumerate(row):
+                column = start + place * light_width
+                if track is None:
+                    line.write(column=column, text=fit(text=text, width=light_width), style=Style.MONITOR_DIM)
+                    continue
+                sounding = transport.is_track_sounding(track)
+                line.write(column=column, text=MSG_REAL_TIME_ON_MARK if sounding else MSG_REAL_TIME_OFF_MARK, style=Style.MONITOR_BRIGHT if sounding else Style.MONITOR_DIM)
+                line.write(column=column + 1, text=fit(text=NAME_GAP + text, width=light_width - 2), style=Style.MONITOR)
+
+    def draw_bar(self, *, canvases, rows, lefts, width):
+        """Draw the bar of the file's actions: one box as wide as the grid, double-lined while the cursor is in it, its actions in rows on
+        the grid's columns with no lines between them, each column's keys ending at one place so that no key runs into a name below,
+        and the selected action's name in reverse video (the user's design)."""
         selected = self.selected()
-        left = CELL_GAP
-        for item, cell_width in zip(row, self.cell_widths(row)):
-            self.draw_cell(canvases=canvases, left=left, item=item, selected=item.keys == selected.keys, width=cell_width)
-            left += cell_width + CELL_GAP
-        return [canvas.text() for canvas in canvases]
+        self.draw_box(canvases=canvases, left=0, width=width, selected=self.in_bar(), style=Style.BOLD if self.in_bar() else Style.DIM)
+        for column in range(COLUMNS):
+            labels = [padded(row[column].shown_label()) for row in rows]
+            key_room = max(len(label) for label in labels)
+            start = lefts[column] + 1 + len(EDGE_GAP)
+            for canvas, row, label in zip(canvases[1:-1], rows, labels):
+                item = row[column]
+                canvas.write(column=start, text=fit(text=label, width=key_room, align=Align.RIGHT)[:key_room - len(label)])
+                canvas.write(column=start + key_room - len(label), text=label, style=Style.KEY)
+                chosen = item.binding is selected.binding
+                canvas.write(column=start + key_room, text=NAME_GAP + self.shown_name(item) + (SPACE if chosen else NOTHING), style=Style.REVERSE if chosen else Style.PLAIN)
+
+    def grid_lines(self, width):
+        """Return the lines of the grid and the bar under it."""
+        rows = self.rows()
+        widths = self.column_widths(width)
+        lefts = self.column_lefts(widths)
+        total = lefts[-1] + widths[-1]
+        selected = self.selected()
+        grid = [Canvas(total) for _ in range(GRID_ROWS * CELL_LINES)]
+        self.draw_arrange(canvases=grid[:ARRANGE_ROWS * CELL_LINES], left=lefts[0], item=rows[ARRANGE_TOP][0], selected=self.on_arrange(), width=widths[0])
+        for number, row in enumerate(rows[:GRID_ROWS]):
+            for column, item in enumerate(row):
+                if item.binding is self.KEYS.ARRANGE:
+                    continue
+                lines = grid[number * CELL_LINES:(number + 1) * CELL_LINES]
+                self.draw_cell(canvases=lines, left=lefts[column], item=item, selected=item.binding is selected.binding, width=widths[column])
+        bar = [Canvas(total) for _ in range(BAR_ROWS + BORDERS)]
+        self.draw_bar(canvases=bar, rows=rows[GRID_ROWS:], lefts=lefts, width=total)
+        return [canvas.text() for canvas in [*grid, *bar]]
 
     def body(self, *, width, height):
         # Nothing above the cells: the crumbs name the set and the song, and the cells count what the set holds.
-        lines = []
-        rows = self.rows()
-        gaps = {0: LINES_ABOVE_ARRANGE, 1: LINES_ABOVE_PAGES, len(rows) - 1: LINES_ABOVE_FILE}
-        for number, row in enumerate(rows):
-            # Room above Arrange, again above the pages and again above the file's row, so that the three groups read apart.
-            lines += [Text(NOTHING) for _ in range(gaps.get(number, 0))]
-            lines += self.row_lines(row=row, width=width)
-        # The one sentence shown: what the selected cell is for.
-        lines.append(Text(INDENT + self.ABOUT[cell_name(self.selected())], style=Style.DIM))
+        lines = [Text(NOTHING) for _ in range(LINES_ABOVE_GRID)]
+        lines += self.grid_lines(width)
         return lines
+
+    def resting_status(self):
+        """The status line, right above the legend as on every page, says what the selected cell is for while nothing else is said (the user's design)."""
+        return self.ABOUT[cell_name(self.selected())]

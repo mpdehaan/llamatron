@@ -125,6 +125,8 @@ class PageName:
     ARRANGE = 'Arrange'
     # What the main screen's Arrange cell is called while the set's Real Time switch is on, since Arrange then plays the song too.
     ARRANGE_PLAY = 'Arrange/Play'
+    # What the Set File page's cell is called on the main screen (the user's words).
+    FILE_GLOBAL = 'File/Global'
     # The main screen's switch for real-time playback, beside the pages: a cell with a mark in place of a count.
     REAL_TIME = 'Real Time'
     SAVE = 'Save'

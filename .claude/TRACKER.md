@@ -141,15 +141,20 @@ code.
 
 ## The main screen
 
-- `MainPage` is a grid of cells drawn on `Canvas` lines, the user's layout: `rows()` is Arrange and the Real Time switch, then
-  Songs, Scales, Patterns and Grooves, then Generators, Chains, Instruments and Registers (the user's order), then the Set File page and `actions()`
-  (Save, Open, Export, Import, Quit), with `LINES_ABOVE_ARRANGE`, `LINES_ABOVE_PAGES` and `LINES_ABOVE_FILE` blank lines over the
-  groups. A row's cells share `GRID_WIDTH` (80), each as wide as it needs (`needed_width`), the spare columns spread evenly and
-  Arrange's cell taking all its row leaves (`cell_widths`); a row too wide gives up the space before the right edge of each cell
-  with no count, as the file's row does at 80 columns. With a set open the cursor starts on Arrange.
+- `MainPage` is one grid of three columns drawn on `Canvas` lines, the user's layout: `rows()` is the geometry, six rows of three,
+  Arrange in the first column of the first three (with Songs and Patterns, Scales and Generators, Grooves and Chains beside it), then the
+  Real Time switch, Instruments and Registers, then the bar's two rows, File/Global, Save and Open over Export, Import and Quit.
+  `menu_items()` is each cell once. `move_cursor` steps over `rows()` by `ARROW_STEPS` until the cell changes or an edge stops it, and
+  `arrange_row` keeps the row Arrange was reached from at its side, which Right goes back to. `column_widths(width)` gives each column a
+  third of the console's width (`MINIMUM_WIDTH` 80 at least), the first never narrower than Arrange's name and the clock need
+  (`arrange_needed_width`, `clock_room`, wide enough for any time). `draw_arrange` draws the monitor (`Style.MONITOR` and its kin): the
+  name, `clock_text()` while the song plays, `song_details()`, `song_counts()` and `track_lights()`, the tracks in their order in two
+  columns or more, `+N more` in the last place when not all fit, lit by `transport.is_track_sounding`; the app's playback timer redraws
+  it. `draw_bar` draws the bar, each column's keys ending at one place. `resting_status()` puts the selected cell's sentence on the
+  status line. With a set open the cursor starts on Arrange. Asked and open: a taller layout for a taller console.
 - A cell is named by `cell_name(item)`: the page its key opens, which is the binding's words (a
   `PageName` from `strings/labels.py`), or the action's name (`ACTION_NAMES`).
-- `draw_cell` draws the key reversed, the name, and the count right-aligned, Arrange's key and name centred, and a box around
+- `draw_cell` draws the key bold and reversed, the name, and the count right-aligned, and a box around
   every cell: its page's theme colour toned to one brightness (`themes.balanced`, `EDGE_LUMINANCE`, `edge_style`, the user's ask
   that no colour look stronger than another), dim for a cell with no theme, and double-lined and bold around the selected cell.
 - `count(item)` is the set's songs, patterns, chains, generators (both kinds), scales or own
