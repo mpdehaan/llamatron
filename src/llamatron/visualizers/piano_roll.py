@@ -20,7 +20,7 @@ labelled at the left. A note comes in at the right edge as it starts and rolls o
 it sounds its bar keeps growing at the right, so a held note looks long, and each bar's first cell is
 brighter, with a gap after it on its row, so that notes one after another stay apart. Each track has a
 bold colour of its own, given in the order the tracks are first heard, so that the colours go round only
-when more tracks play than there are colours, and the legend across the top names the tracks heard. The rows stay still, the user's rule: they sit on the
+when more tracks play than there are colours, and the legend across the top names the tracks with a note on the roll now, in the order of the song's tracks. The rows stay still, the user's rule: they sit on the
 middle of every pitch heard so far while those pitches fit the rows, and only when they don't fit does the middle ease, slowly, toward the notes that sound now. Drum tracks have lanes of their own at the bottom,
 kick, snare, hats, toms, cymbal and the rest, where each hit is a short mark. The background is black.
 The amounts are named constants here, for the user to tune by eye.
@@ -240,9 +240,9 @@ class PianoRoll(Visualizer):
                     colours[row][column] = LABEL_COLOUR
 
     def draw_legend(self, *, characters, colours, width):
-        """Draw the name of each track heard in its colour across the top, in the order they were first heard, as far as they fit."""
+        """Draw the name of each track with a note on the roll now, in its colour, across the top, in the order of the song's tracks, as far as they fit (the user's rule)."""
         column = LABEL_COLUMNS
-        for track in self._heard_tracks:
+        for track in sorted({note.track for note in self._notes}):
             if track >= len(self._names):
                 continue
             text = MSG_PIANO_ROLL_LEGEND_MARK + self._names[track]

@@ -235,6 +235,8 @@ FAR_LOW_NOTE = 30
 FAR_HIGH_NOTE = 100
 FRAMES_OF_A_WHILE = 60
 A_FEW_ROWS = 3
+# Frames enough for a note to roll the whole width of the roll and off its left edge.
+FRAMES_TO_ROLL_OFF = 400
 TRACK_NAMES = ('lead', 'drums')
 
 
@@ -335,12 +337,19 @@ class TestPianoRoll(unittest.TestCase):
         self.played(roll=roll, frames=FRAMES_OF_A_WHILE, notes=[], start=now)
         self.assertEqual(roll.centre(), resting)
 
-    def test_the_legend_names_the_tracks_heard_in_their_colours_in_the_order_first_heard(self):
+    def test_the_legend_names_the_tracks_on_the_roll_in_track_order_and_a_track_keeps_the_colour_it_was_first_heard_with(self):
         roll = PianoRoll()
         lines, now = self.played(roll=roll, frames=1, notes=[HeardNote(DRUM_TRACK, KICK, FULL_VELOCITY, True, True)])
         self.assertIn(MSG_PIANO_ROLL_LEGEND_MARK + TRACK_NAMES[DRUM_TRACK], lines[0].plain)
         self.assertNotIn(TRACK_NAMES[LEAD_TRACK], lines[0].plain)
-        self.played(roll=roll, frames=1, notes=[HeardNote(LEAD_TRACK, MIDDLE_C, FULL_VELOCITY, True, False)], start=now)
+        lines, now = self.played(roll=roll, frames=1, notes=[HeardNote(LEAD_TRACK, MIDDLE_C, FULL_VELOCITY, True, False)], start=now)
+        # The lead was heard second but is the song's first track, so its name comes first.
+        legend = lines[0].plain
+        self.assertLess(legend.index(TRACK_NAMES[LEAD_TRACK]), legend.index(TRACK_NAMES[DRUM_TRACK]))
+        # Once the drum's hit has rolled off the left edge and the lead still sounds, only the lead is named.
+        lines, _ = self.played(roll=roll, frames=FRAMES_TO_ROLL_OFF, notes=[HeardNote(LEAD_TRACK, MIDDLE_C, FULL_VELOCITY, False, False)], start=now)
+        self.assertIn(TRACK_NAMES[LEAD_TRACK], lines[0].plain)
+        self.assertNotIn(TRACK_NAMES[DRUM_TRACK], lines[0].plain)
         self.assertEqual(roll.track_colour(DRUM_TRACK), nth_colour(0))
         self.assertEqual(roll.track_colour(LEAD_TRACK), nth_colour(1))
         self.assertEqual(nth_colour(len(TRACK_COLOURS)), nth_colour(0))
