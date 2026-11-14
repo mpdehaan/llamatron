@@ -16,6 +16,7 @@
 """The Chord row: a chord symbol on a note, picked from a grid or cycled through."""
 
 from llamatron.composition.file_format import CHORD_SYMBOLS, Row
+from llamatron.composition.limits import INVERSIONS
 
 from llamatron.tui.components.pattern_row import PatternRow
 from llamatron.tui.key_table import STEP_FORWARD
@@ -59,17 +60,18 @@ def step_chord_in_words(*, editor, step, choice=None):
 def step_choice(*, editor, step):
     """Return a step's quality, tensions and scale type as a ChordChoice."""
     return ChordChoice(
-        quality=chord_text(editor.value(row=Row.CHORD, step=step)), tensions=editor.value(row=Row.TENSION, step=step), kind=editor.value(row=Row.CHORD_SCALE, step=step),
+        quality=chord_text(editor.value(row=Row.CHORD, step=step)), inversion=editor.value(row=Row.INVERSION, step=step), tensions=editor.value(row=Row.TENSION, step=step), kind=editor.value(row=Row.CHORD_SCALE, step=step),
     )
 
 
 def pick_chord(*, editor, step, opens_on=QUALITY_LIST):
     """Open the Chord dialog on a step of the pattern editor and store what it answers on the step's Chord, Tension and Scale rows:
-    the Chord, Tension and Scale rows' Enter, and the roll's chord key. A single note takes no tensions. The editor underneath
+    the Chord, Tension and Scale rows' Enter, and the roll's chord key. A single note takes no tensions and no inversion, and the Inversion row is stored with them. The editor underneath
     shows the chord as the choice moves (the user's design), the roll its thin lines and the rows their cells."""
     def chosen(choice):
         editor.set_value(value=chord_value(choice.quality), row=Row.CHORD, step=step)
         editor.set_value(value=None if choice.quality is None else choice.tensions, row=Row.TENSION, step=step)
+        editor.set_value(value=None if choice.quality is None else choice.inversion, row=Row.INVERSION, step=step)
         editor.set_value(value=choice.kind, row=Row.CHORD_SCALE, step=step)
 
     def moved(choice):
@@ -80,7 +82,7 @@ def pick_chord(*, editor, step, opens_on=QUALITY_LIST):
 
     dialog = ChordDialog(
         title=MSG_CHORD_DIALOG_TITLE.format(where=MSG_CHORD_OF_STEP.format(step=step + 1, pattern=editor.item)),
-        qualities=[None, *CHORD_SYMBOLS], quality_names=[MSG_QUALITY_SINGLE_NOTE, *quality_names(CHORD_SYMBOLS)], categories=SCALE_CATEGORIES,
+        qualities=[None, *CHORD_SYMBOLS], quality_names=[MSG_QUALITY_SINGLE_NOTE, *quality_names(CHORD_SYMBOLS)], inversions=[None, *INVERSIONS], categories=SCALE_CATEGORIES,
         current=step_choice(editor=editor, step=step), opens_on=opens_on, moved=moved,
         said=lambda choice: step_chord_in_words(editor=editor, step=step, choice=choice).sentences(),
     )

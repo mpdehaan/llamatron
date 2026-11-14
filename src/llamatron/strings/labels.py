@@ -176,8 +176,9 @@ class Column:
 
     NAME = 'NAME'
     TYPE = 'TYPE'
-    # tui/dialogs/chord_dialog.py: the Chord dialog's three lists.
+    # tui/dialogs/chord_dialog.py: the Chord dialog's four lists.
     SELECT_QUALITY = 'SELECT QUALITY'
+    INVERSION = 'INV.'
     TENSIONS = 'TENSIONS'
     BORROW_SCALE = 'BORROW FROM SCALE'
     STEPS = 'STEPS'

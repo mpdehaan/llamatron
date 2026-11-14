@@ -1321,11 +1321,11 @@ roll or the rows.
 - Velocity and Probability stay numbers.
 - `]` on the Chord row follows `CHORD_SYMBOLS`. `pick_chord` in `components/chord_row.py` opens the Chord dialog
   (`tui/dialogs/chord_dialog.py`, `ChordDialog`, the user's design), shared with the roll and with a progression's chord
-  editor: three lists in the user's order, the same wherever a chord is chosen, quality, tensions and the borrowed scale type, Tab or Left and Right from
+  editor: four lists in the user's order, quality, inversion (None for root position, then the inversions the page stores), tensions and the borrowed scale type, Tab or Left and Right from
   list to list, Space toggling a tension, the scale list holding the categories of `tui/scale_categories.py` (Common first,
   then every scale type once), each opening a flyout, a box of the dialog's size stacked over it, with Space or Enter, where Enter picks and
   goes on to the qualities and Esc or Left closes (a flyout is drawn by the dialog, never a second dialog, the user's rule), and under them what `ChordInWords` (`tui/chord_text.py`) says of the choice, its name in its scale, its
-  name in the clip's own scale when it borrows, and its notes. It answers a `ChordChoice`, stored on the step's Chord, Tension
+  name in the clip's own scale when it borrows, and its notes. It answers a `ChordChoice`, stored on the step's Chord, Inversion, Tension
   and Scale rows together, one undo step. `TensionRow` and `ChordScaleRow` are `ChordRow`s with their own choices, in the
   Chord section (`RowSection.CHORD`, the user's design and order: Chord, Tension, Scale and Inversion together, closed at the start
   so that every heading still fits an 80 by 24 console, and left out of a drum pattern, which has none of its rows); the

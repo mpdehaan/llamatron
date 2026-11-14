@@ -29,7 +29,8 @@ from llamatron.music.scale import ScaleType
 from llamatron.strings.marks import MSG_BLOCKED_CELL, MSG_FLYOUT_CHOSEN, MSG_FLYOUT_CLOSED, MSG_FLYOUT_TITLE, MSG_TENSIONS_COUNTED
 from llamatron.strings.messages import MSG_CHORD_DIALOG_TITLE, MSG_CHORD_OF_STEP, MSG_NOTE_SENTENCE, MSG_RESTING_STEP
 from llamatron.tui import keybindings
-from llamatron.tui.dialogs.chord_dialog import LISTS, NOT_BORROWED_ROW, QUALITY_LIST, SCALE_LIST, TENSION_LIST, ChordDialog
+from llamatron.composition.limits import INVERSIONS
+from llamatron.tui.dialogs.chord_dialog import INVERSION_LIST, LISTS, NOT_BORROWED_ROW, QUALITY_LIST, SCALE_LIST, TENSION_LIST, ChordDialog
 from llamatron.tui.dialogs.dialog import DIALOG_MARGIN, DIALOG_SELECTOR, FLYOUT_SHIFT
 from llamatron.tui.drawing import Box
 from llamatron.tui.scale_categories import COMMON_SCALE_TYPES, SCALE_CATEGORIES, SCALE_TYPES_IN_ORDER, SORTED_SCALE_CATEGORIES
@@ -243,7 +244,7 @@ class TestPatternEditorChords(UITest):
         self.assertNotEqual(moved_to, ChordSymbol.MAJOR)
         self.assertEqual(self.value(Row.CHORD), moved_to)
         # The flyout's cursor is shown too, before anything is picked.
-        await self.press(Key.RIGHT, Key.RIGHT, *[Key.UP] * len(dialog.categories), Key.DOWN, keybindings.ChordDialog.OPEN)
+        await self.press(*[Key.RIGHT] * LISTS, *[Key.UP] * len(dialog.categories), Key.DOWN, keybindings.ChordDialog.OPEN)
         self.assertEqual(self.value(Row.CHORD_SCALE), COMMON_SCALE_TYPES[0])
         await self.press(keybindings.ChordDialog.CLOSE_FLYOUT)
         self.assertIsNone(self.value(Row.CHORD_SCALE))
@@ -251,6 +252,26 @@ class TestPatternEditorChords(UITest):
         self.assertIsInstance(self.app.screen, PatternEditor)
         self.assertEqual((self.value(Row.CHORD), self.value(Row.CHORD_SCALE)), (ChordSymbol.MAJOR, None))
         self.assertFalse(self.document.can_undo())
+
+    async def test_an_inversion_is_chosen_in_the_dialog_with_the_chord_and_a_single_note_takes_none(self):
+        self.set(row=Row.CHORD, value=ChordSymbol.MAJOR)
+        await self.go_to_row(Row.CHORD)
+        await self.press(keybindings.ChordRow.CHOOSE)
+        dialog = self.app.screen
+        self.assertEqual(dialog.inversions, [None, *INVERSIONS])
+        # Right reaches the inversions, where the cursor's row is the choice, shown in the pattern underneath as it moves.
+        await self.press(Key.RIGHT, Key.DOWN, Key.DOWN)
+        self.assertEqual((dialog.part, dialog.choice().inversion), (INVERSION_LIST, INVERSIONS[1]))
+        self.assertEqual(self.value(Row.INVERSION), INVERSIONS[1])
+        await self.press(keybindings.ChordDialog.CHOOSE)
+        self.assertIsInstance(self.app.screen, PatternEditor)
+        self.assertEqual((self.value(Row.CHORD), self.value(Row.INVERSION)), (ChordSymbol.MAJOR, INVERSIONS[1]))
+        # The dialog opens on the step's inversion, and a single note keeps none.
+        await self.press(keybindings.ChordRow.CHOOSE)
+        dialog = self.app.screen
+        self.assertEqual(dialog.places[INVERSION_LIST], dialog.inversions.index(INVERSIONS[1]))
+        await self.press(*[Key.UP] * len(dialog.qualities), keybindings.ChordDialog.CHOOSE)
+        self.assertEqual((self.value(Row.CHORD), self.value(Row.INVERSION)), (None, None))
 
     async def test_the_roll_draws_a_chords_tensions_and_a_borrowed_scales_notes_as_thin_lines(self):
         roll = self.editor.roll

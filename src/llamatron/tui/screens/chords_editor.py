@@ -214,7 +214,7 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
     def choice_at(self, place):
         """Return a chord's quality, tensions and scale type as a ChordChoice."""
         rows = self.rows()
-        return ChordChoice(quality=rows[QUALITY_ROW][place], tensions=rows[TENSION_ROW][place], kind=rows[SCALE_ROW][place])
+        return ChordChoice(quality=rows[QUALITY_ROW][place], inversion=rows[INVERSION_ROW][place], tensions=rows[TENSION_ROW][place], kind=rows[SCALE_ROW][place])
 
     def in_words(self, *, place, choice=None):
         """Return a chord in words, in the song's scale, with a ChordChoice in place of its own when one is given."""
@@ -235,11 +235,12 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
             rows[QUALITY_ROW][place] = choice.quality
             rows[TENSION_ROW][place] = choice.tensions
             rows[SCALE_ROW][place] = choice.kind
+            rows[INVERSION_ROW][place] = choice.inversion
             self.store(rows)
 
         dialog = ChordDialog(
             title=MSG_CHORD_DIALOG_TITLE.format(where=MSG_CHORD_OF_PROGRESSION.format(chord=place + 1, progression=self.item)),
-            qualities=QUALITY_CYCLE, quality_names=[MSG_QUALITY_FROM_SCALE, *quality_names(FIXED_CHORDS)], categories=SCALE_CATEGORIES,
+            qualities=QUALITY_CYCLE, quality_names=[MSG_QUALITY_FROM_SCALE, *quality_names(FIXED_CHORDS)], inversions=INVERSION_CYCLE, categories=SCALE_CATEGORIES,
             current=self.choice_at(place), opens_on=DIALOG_ROWS[self.edited_row], said=lambda choice: self.in_words(place=place, choice=choice).sentences(),
         )
         self.ask(dialog=dialog, then=chosen)
