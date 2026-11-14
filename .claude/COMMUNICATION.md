@@ -41,6 +41,10 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   decided and about what, on which page, the rule chosen, the alternative and a short example, never a one-line note.
 - **Restating.** When the user asks for something to be restated, the whole gist of the subject is restated, everything
   decided and proposed about it, in a short summary, and then the open questions.
+- **One idea's questions at a time.** When one message of the user's holds several separate ideas, marked by words like "another
+  idea is" or "idea 2", and they raise questions, each idea's questions are a block of their own: Claude asks one idea's questions
+  together in one reply and waits; once they are answered, or the user says to continue, the next idea's block follows. Questions
+  already open are resolved first, before any idea's discussion starts (the user's rule).
 - **"Questions".** When the user says "questions", with no other comment or as the whole message, every open question is asked
   again in full, rephrased, as "Standing alone, and asked again in full" says (the user's shorthand).
 - **"Discuss and wait".** When the user says to discuss and wait, Claude discusses what the user said, with every related
