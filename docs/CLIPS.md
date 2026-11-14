@@ -47,7 +47,7 @@ Advance is Live's follow action: what a clip does in real-time playback when it 
 - "Next" starts the clip directly below as soon as this clip's own repeats end, whatever the rest of the scene is doing.
 - "Off" starts nothing, so the track falls silent until something launches it.
 
-A scene is done when every clip in it that doesn't loop has finished its repeats. A looping clip loops on until the scene below starts, so a scene whose every clip loops plays until you start something else. When the scene below has Launch together on, a start reaching any of its clips launches the whole scene and stops everything still playing in the scene above. A clip that sets nothing shows the Set File page's Default follow action as its own.
+A scene is done when every clip in it that doesn't loop has finished its repeats. A looping clip loops on until the scene below starts, so a scene whose every clip loops plays until you start something else. When the scene below has Launch together on, a start reaching any of its clips launches the whole scene and stops everything still playing in the scene above. A clip that sets nothing shows the File/Global page's Default follow action as its own.
 
 ## Clip Strum and Chains
 

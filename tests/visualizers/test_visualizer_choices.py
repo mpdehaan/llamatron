@@ -128,7 +128,7 @@ class TestArrangeVisualizerChoices(UITest):
 
 
 class TestHideVisualizersSection(UITest):
-    """The Set File page's Hide Visualizers field opens a list where each mode can be picked, the user's design."""
+    """The File/Global page's Hide Visualizers field opens a list where each mode can be picked, the user's design."""
 
     async def test_picking_modes_hides_them_and_esc_changes_nothing(self):
         await self.press(keybindings.MainPage.FILE)

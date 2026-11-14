@@ -1,12 +1,12 @@
 # Object Model
 
-A file is a set of songs, which share its patterns, scales, generators, chains and grooves. This page covers the Set File page, the Songs page and each song's settings.
+A file is a set of songs, which share its patterns, scales, generators, chains and grooves. This page covers the File/Global page, the Songs page and each song's settings.
 
-## Set File Page
+## File/Global Page
 
-![The Set File page](screenshots/file.svg)
+![The File/Global page](screenshots/file.svg)
 
-Press `F` on the main screen to open the Set File page, which holds the set itself: what the file says about the set, the defaults every song starts from, and the keys that start a new set or save under a new name.
+Press `F` on the main screen to open the File/Global page, which holds the set itself: what the file says about the set, the defaults every song starts from, and the keys that start a new set or save under a new name.
 
 The loose settings come first, in alphabetical order, then two sections, closed until opened with `Space` or `Enter`: Notes & Octaves, the defaults every pattern starts from, and Visualizers.
 
@@ -40,13 +40,13 @@ Below the settings, two buttons save and open without remembering a key: `↓` f
 
 The Description is one line saying what the set is, such as the tune it plays: `The Wellerman`, or `a C major scale`. `Enter` types it and `Bksp` clears it, as for the title. [About Demos](DEMOS.md) shows each example's description.
 
-The Notes are as long as you like, for anyone reading or sharing the file: what each song or scene is for, or what to try. The notes don't change how anything plays. The Set File page shows their first line, or `not set`, and the notes are saved at the top of the file, where they read as plain text.
+The Notes are as long as you like, for anyone reading or sharing the file: what each song or scene is for, or what to try. The notes don't change how anything plays. The File/Global page shows their first line, or `not set`, and the notes are saved at the top of the file, where they read as plain text.
 
 ### Notes Page
 
 `Enter` on Notes opens the Notes page for editing. Typing adds text at the cursor, `Enter` starts a new line, `Bksp` erases, and the arrows move the cursor; while editing, every letter is text, and only `Tab`, `Esc` and the arrows act as keys. Under the text are two buttons, Save and Cancel. `Tab` moves onto them, Left and Right choose one, `Enter` presses it, and `Tab` again returns to the text.
 
-Save keeps the text in the set, to be saved with the set, as one change for undo. Cancel, or `Esc` anywhere on the page, throws away what was typed since editing began. Either one leaves the page reading, where Up and Down scroll, `E` starts editing again, `Bksp` clears all of the notes after asking, and `Esc` goes back to the Set File page. A protected set's notes open for reading only, and `E` and `Bksp` aren't offered until Protected is turned off.
+Save keeps the text in the set, to be saved with the set, as one change for undo. Cancel, or `Esc` anywhere on the page, throws away what was typed since editing began. Either one leaves the page reading, where Up and Down scroll, `E` starts editing again, `Bksp` clears all of the notes after asking, and `Esc` goes back to the File/Global page. A protected set's notes open for reading only, and `E` and `Bksp` aren't offered until Protected is turned off.
 
 ### Octave Numbering
 
@@ -89,7 +89,7 @@ Press `S` on the main screen to open the Songs page. The set's songs are listed 
 | Preview instrument | The instrument that Listen plays a pattern through. `(General MIDI piano)`, which a new song starts with, plays a pattern on General MIDI's piano through FluidSynth. `[` and `]` step through the set's instruments, `Enter` picks one, and `Bksp` clears. |
 | Export | `Enter` here exports this song, the same as `Ctrl+X` anywhere, asking which kind of output first. |
 
-## Set Files
+## File/Globals
 
 Sets are saved as YAML, and each file records the version of llamatron that saved it, which the About dialog also shows. The format is mainly for llamatron to read, but it stays readable so that sets can be compared in version control, and the files in `examples/` show every part of it.
 

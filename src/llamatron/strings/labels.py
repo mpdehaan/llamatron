@@ -113,7 +113,7 @@ MSG_OPENED_ITEM_CRUMB = '{word}: {name}'
 class PageName:
     """What the main screen calls each page and each action, beside its key, which a page's crumbs and buttons use too."""
 
-    FILE = 'Set File'
+    FILE = 'File/Global'
     SONGS = 'Songs'
     PATTERNS = 'Patterns'
     CHAINS = 'Chains'
@@ -125,8 +125,6 @@ class PageName:
     ARRANGE = 'Arrange'
     # What the main screen's Arrange cell is called while the set's Real Time switch is on, since Arrange then plays the song too.
     ARRANGE_PLAY = 'Arrange/Play'
-    # What the Set File page's cell is called on the main screen (the user's words).
-    FILE_GLOBAL = 'File/Global'
     # The main screen's switch for real-time playback, beside the pages: a cell with a mark in place of a count.
     REAL_TIME = 'Real Time'
     SAVE = 'Save'
@@ -144,7 +142,7 @@ class Crumb:
     """The pages' names in the header, which say where a page was reached from."""
 
     MAIN_SCREEN = 'MAIN SCREEN'
-    FILE = 'SET FILE'
+    FILE = 'FILE/GLOBAL'
     SONGS = 'SONGS'
     NOTES = 'NOTES'
     OPEN = 'OPEN'
@@ -261,7 +259,7 @@ MSG_OCTAVE_LABELS_LABEL = 'Octave labels'
 # tui/screens/visualizer_fields.py: the visualizer mode Arrange shows first, what none of a song's own is called, and the section that hides modes.
 MSG_VISUALIZER_LABEL = 'Visualizer'
 MSG_SETS_VISUALIZER_CHOICE = "(set's)"
-# The Set File page's sections, the user's design.
+# The File/Global page's sections, the user's design.
 MSG_NOTES_AND_OCTAVES_SECTION = 'Notes & Octaves'
 MSG_VISUALIZERS_SECTION = 'Visualizers'
 MSG_HIDE_VISUALIZERS_LABEL = 'Hide Visualizers'

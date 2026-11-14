@@ -77,7 +77,7 @@ SCREEN_LABELS = {
     MAIN_SCREEN_ID: 'Main screen',
     'ArpEditor': 'Arpeggiator editor',
     'AutoRatchetEditor': 'AutoRatchet editor',
-    'FilePage': 'Set File',
+    'FilePage': 'File/Global',
 }
 PAGE_SUFFIX = 'Page'
 EDITOR_SUFFIX = 'Editor'

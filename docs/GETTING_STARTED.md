@@ -66,7 +66,7 @@ The main screen is a grid of cells in three columns. Arrange has the first colum
 
 | Key | Page | What it is for |
 | --- | --- | --- |
-| `F` | Set File | The set's title, author, description, notes and defaults, with New and Save As |
+| `F` | File/Global | The set's title, author, description, notes and defaults, with New and Save As |
 | `S` | Songs | The songs in the set, and which one is current |
 | `P` | Patterns | The notes, in a grid of steps, shared by every song |
 | `C` | Chains | Lists of generators that clips, scenes and tracks run |
@@ -92,7 +92,7 @@ flowchart TD
     MainPage["Main screen"]
     ArrangePage["Arrange"]
     ChainsPage["Chains"]
-    FilePage["Set File"]
+    FilePage["File/Global"]
     GeneratorsPage["Generators"]
     GroovesPage["Grooves"]
     InstrumentsPage["Instruments"]
@@ -139,10 +139,10 @@ flowchart TD
 
 ## Opening and Saving
 
-- **`Ctrl+S` saves** the set. The first time, it asks for a file name, starting from `songs/untitled.yml`, and adds `.yml` if you leave it off; folders are made as needed. A protected set, such as a demo, is never written over: a dialog offers to save a copy under another name, which isn't protected. The Set File page's Protected setting turns the protection off. Saving writes nothing when the file already holds exactly what it would save, and asks before writing over a file something else has changed since it was opened.
-- **`W` saves as** a new name, on the Set File page, asking before replacing another file.
+- **`Ctrl+S` saves** the set. The first time, it asks for a file name, starting from `songs/untitled.yml`, and adds `.yml` if you leave it off; folders are made as needed. A protected set, such as a demo, is never written over: a dialog offers to save a copy under another name, which isn't protected. The File/Global page's Protected setting turns the protection off. Saving writes nothing when the file already holds exactly what it would save, and asks before writing over a file something else has changed since it was opened.
+- **`W` saves as** a new name, on the File/Global page, asking before replacing another file.
 - **`Ctrl+O` opens** a set file. The Open page starts in `examples/`, where folders show with a trailing slash, such as `learning/`: `Enter` opens a file or goes into a folder, and `../` goes up. A file that holds values llamatron can't use, such as a velocity of 200 typed in by hand, opens only after a dialog lists each with the value that takes its place: the nearest number allowed, the longest length allowed, or the default. `Yes` opens the set with those changes, marked unsaved, and the file stays as it is until you save; `No` opens nothing. Anything else wrong with a file, such as a clip that names a missing pattern, is refused with a message saying where.
-- **`N` starts** a new set, on the Set File page, with one song called `untitled` whose first track plays a starter pattern.
+- **`N` starts** a new set, on the File/Global page, with one song called `untitled` whose first track plays a starter pattern.
 - **`Ctrl+X` exports** the current song, as [Exporting](EXPORTING.md) describes, and **`M` imports** a MIDI file as a new song, as [Importing](IMPORTING.md) describes.
 
 Opening, starting a new set and quitting ask first when there are unsaved changes.
