@@ -1,103 +1,160 @@
-version: 1.0.227
+version: 1.0.364
 title: Sandworm
 description: "a late nineties trance anthem in the manner of Sandstorm (Darude), its builds made by Density"
 notes: |
-  Sandworm: a trance anthem at 136 beats a minute in B minor, in the manner of the late nineties: a
-  saw lead hammering a stuttering sixteenth-note rhythm, an off-beat bass, a pad for the
-  breakdown and a four-on-the-floor kick. The rhythm is its own.
+  Sandworm: a late nineties trance anthem in the manner of Sandstorm (Darude), its builds made by
+  Density. This is a homage to Sandstorm (Darude): its chords, form, sounds and drums follow that work
+  as Claude knows it, and every tune and rhythm here is new. Rebuild version 3.
 
-  The lead and the bass are one bar each over chord i, moved by Progression through i VI VII i.
-  The two builds are made by the scenes' Density, from 25% to 100%, which thins every clip to its
-  strongest beats and fills it back in, and in the last drop a second lead track, transposed up
-  seven scale steps, doubles the first an octave up.
+  A saw lead hammers one note in sixteenths, the riff moved through i, iv, III and VII by a
+  Progression; a kick on every beat and a bass galloping on the offbeats; a snare roll and the riff
+  thickened by Density before each drop; a long breakdown on the pad.
+
+  Subgenre: trance of the late nineties, the hard, fast kind. Drums: a heavy kick on every beat, the
+  whole track rides on it; a clap on two and four; an open hat on every offbeat; closed hats in
+  sixteenths; a snare roll that grows into each drop. Tempo 136, straight. Bass: short notes on the
+  offbeats, galloping into the next kick. Builds: a long breakdown with no kick, then the roll, then
+  the drop with a crash. Sounds: a gritty saw lead doubled for thickness, a sweep pad. Melody manner:
+  one note hammered in sixteenths with gaps, the same riff moved to another pitch every few bars; no
+  sung tune. Form: beat, riff, build, drop, breakdown, build, drop.
+
+  Band and song: the piece is known for its machine-gun lead riff on one note, its relentless kick,
+  and its simple climbs from one pitch level to the next.
+
+  Checklist: the hook is the hammered riff; the emotion is relentless energy; the lift is each drop,
+  where the kick, the bass, the crash and both leads return at once after silence under them; the
+  contrast is the breakdown, the riff alone and quiet over a pad; the sounds are two saw leads an
+  octave apart, a synth bass and a sweep pad; the riff sits mid register and its double an octave
+  above.
 
   Run it with: llamatron examples/by_genre/electronic/sandworm.yml
 
-  Scene 1, intro, 16 bars: the kick and the hats.
-  Scene 2, build, 8 bars: the bass and the full kit, Density rising from 25% to 100%.
-  Scene 3, drop, 16 bars: the lead.
-  Scene 4, breakdown, 16 bars: the pad and the bass, no drums.
-  Scene 5, build 2, 8 bars: the lead returns, Density rising again.
-  Scene 6, drop 2, 16 bars: the lead and the full kit.
-  Scene 7, last drop, 16 bars: the lead doubled an octave up.
-  Scene 8, outro, 8 bars: the kick and the hats.
+  Scene 1, beat, 4 bars.
+  Scene 2, riff, 8 bars.
+  Scene 3, build, 8 bars.
+  Scene 4, drop, 16 bars.
+  Scene 5, breakdown, 16 bars.
+  Scene 6, build 2, 8 bars.
+  Scene 7, drop 2, 16 bars.
+  Scene 8, kick and bass, 8 bars.
+  Scene 9, last drop, 16 bars.
+  Scene 10, outro, 4 bars.
 
   When changing this demo:
-  - Keep the builds made by the scenes' Density.
-  - Keep the lead and the bass one bar long over chord i.
+  - Keep the drums as the Subgenre paragraph describes them, the kick first.
+  - Keep what the Checklist paragraph calls the hook and the lift.
+  - Keep every tune original, and the demo out of the key of the work it follows.
 real_time: true
 protected: true
 
 scales:
-  B Minor: { root: B, type: minor }
+  G Minor: { root: G, type: minor }
 
 patterns:
-  kit_kick:
+  kick:
     steps: 16
     drum: true
     step_size: 1/16
     degree: [C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~]
     octave: [3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~]
-    velocity: [110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~]
-  kit_clap:
+    velocity: [127, ~, ~, ~, 127, ~, ~, ~, 127, ~, ~, ~, 127, ~, ~, ~]
+  clap:
     steps: 16
     drum: true
     step_size: 1/16
     degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
     accidental: [~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~]
     octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
-    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~]
-  kit_open:
+    velocity: [~, ~, ~, ~, 112, ~, ~, ~, ~, ~, ~, ~, 112, ~, ~, ~]
+  open:
     steps: 16
     drum: true
     step_size: 1/16
     degree: [~, ~, A, ~, ~, ~, A, ~, ~, ~, A, ~, ~, ~, A, ~]
     accidental: [~, ~, "#", ~, ~, ~, "#", ~, ~, ~, "#", ~, ~, ~, "#", ~]
     octave: [~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~]
-    velocity: [~, ~, 110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~, 110, ~]
-  kit_hat:
+    velocity: [~, ~, 96, ~, ~, ~, 96, ~, ~, ~, 96, ~, ~, ~, 96, ~]
+  hat:
     steps: 16
     drum: true
     step_size: 1/16
-    degree: [~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F]
-    accidental: [~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#"]
-    octave: [~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3]
-    velocity: [~, 70, ~, 70, ~, 70, ~, 70, ~, 70, ~, 70, ~, 70, ~, 70]
-  stab:
-    steps: 16
+    degree: [F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F]
+    accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [70, 52, 70, 52, 70, 52, 70, 52, 70, 52, 70, 52, 70, 52, 70, 52]
+  crash:
+    steps: 128
+    drum: true
     step_size: 1/16
-    degree: [1, 1, 1, 1, 1, ~, 1, 1, 1, 1, 1, 1, 1, ~, 1, ~]
-    octave: [5, 5, 5, 5, 5, ~, 5, 5, 5, 5, 5, 5, 5, ~, 5, ~]
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [118, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  roll:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [104, 104, 104, 104, 104, 104, 104, 104, 104, 104, 104, 104, 104, 104, 104, 104]
   bass:
     steps: 16
     step_size: 1/16
-    degree: [~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~]
-    octave: [~, ~, 2, ~, ~, ~, 2, ~, ~, ~, 2, ~, ~, ~, 2, ~]
-  pad:
+    degree: [~, ~, 1, 1, ~, ~, 1, 1, ~, ~, 1, 1, ~, ~, 1, 1]
+    octave: [~, ~, 2, 2, ~, ~, 2, 2, ~, ~, 2, 2, ~, ~, 2, 2]
+    velocity: [~, ~, 112, 112, ~, ~, 112, 112, ~, ~, 112, 112, ~, ~, 112, 112]
+  riff:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 1, ~, 1, 1, ~, 1, 1, ~, 1, 1, ~, 1, 1, 7, 5]
+    octave: [4, 4, ~, 4, 4, ~, 4, 4, ~, 4, 4, ~, 4, 5, 4, 4]
+    velocity: [114, 108, ~, 108, 108, ~, 108, 108, ~, 108, 108, ~, 108, 108, 108, 108]
+  riff quiet:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 1, ~, 1, 1, ~, 1, 1, ~, 1, 1, ~, 1, 1, 7, 5]
+    octave: [4, 4, ~, 4, 4, ~, 4, 4, ~, 4, 4, ~, 4, 5, 4, 4]
+    velocity: [76, 70, ~, 70, 70, ~, 70, 70, ~, 70, 70, ~, 70, 70, 70, 70]
+  riff high:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 1, ~, 1, 1, ~, 1, 1, ~, 1, 1, ~, 1, 1, 7, 5]
+    octave: [5, 5, ~, 5, 5, ~, 5, 5, ~, 5, 5, ~, 5, 6, 5, 5]
+    velocity: [98, 92, ~, 92, 92, ~, 92, 92, ~, 92, 92, ~, 92, 92, 92, 92]
+  held:
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
-    octave: [4, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, ~, ~, ~, ~, ~]
     chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    velocity: [78, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
 
 progressions:
-  turn: { chords: [1, 6, 7, 1] }
+  loop: { chords: [1, 1, 1, 1, 4, 4, 3, 7] }
+
+densities:
+  rise: { start: 0, end: 100 }
 
 chains:
-  turn:
-    - progression: turn
+  loop:
+    - progression: loop
+  rise:
+    - density: rise
+  riff rise:
+    - progression: loop
+    - density: rise
 
 instruments:
-  saw lead: { device: "*FluidSynth", gm_sound: 82 }
   synth bass: { device: "*FluidSynth", gm_sound: 39 }
-  halo pad: { device: "*FluidSynth", gm_sound: 95 }
+  saw lead: { device: "*FluidSynth", gm_sound: 82 }
+  sweep pad: { device: "*FluidSynth", gm_sound: 96 }
   drum kit: { device: "*FluidSynth" }
 
 songs:
   sandworm:
     tempo: 136
-    scale: B Minor
+    scale: G Minor
     genre: Electronic
 
     tracks:
@@ -105,65 +162,83 @@ songs:
       clap: { drum: true, instrument: drum kit }
       open: { drum: true, instrument: drum kit }
       hat: { drum: true, instrument: drum kit }
+      crash: { drum: true, instrument: drum kit }
+      roll: { drum: true, instrument: drum kit }
       bass: { instrument: synth bass }
       lead: { instrument: saw lead }
-      lead high: { transpose: 7, instrument: saw lead }
-      pad: { instrument: halo pad }
+      lead high: { instrument: saw lead }
+      pad: { instrument: sweep pad }
 
     scenes:
-      - name: intro
+      - name: beat
         tracks:
-          kick: { pattern: kit_kick, repeat: 16 }
-          hat: { pattern: kit_hat, loop: true }
+          kick: { pattern: kick, repeat: 4 }
+          hat: { pattern: hat, loop: true }
+          open: { pattern: open, loop: true }
+      - name: riff
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          clap: { pattern: clap, loop: true }
+          open: { pattern: open, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [loop], loop: true }
+          lead: { pattern: riff quiet, chains: [loop], loop: true }
       - name: build
-        density_start: 25
-        density_end: 100
         tracks:
-          kick: { pattern: kit_kick, repeat: 8 }
-          clap: { pattern: kit_clap, loop: true }
-          open: { pattern: kit_open, loop: true }
-          hat: { pattern: kit_hat, loop: true }
-          bass: { pattern: bass, chains: [turn], loop: true }
+          lead: { pattern: riff, chains: [riff rise], repeat: 8 }
+          roll: { pattern: roll, chains: [rise], loop: true }
+          pad: { pattern: held, chains: [loop], loop: true }
       - name: drop
         tracks:
-          kick: { pattern: kit_kick, repeat: 16 }
-          clap: { pattern: kit_clap, loop: true }
-          open: { pattern: kit_open, loop: true }
-          hat: { pattern: kit_hat, loop: true }
-          bass: { pattern: bass, chains: [turn], loop: true }
-          lead: { pattern: stab, chains: [turn], loop: true }
+          kick: { pattern: kick, repeat: 16 }
+          clap: { pattern: clap, loop: true }
+          open: { pattern: open, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [loop], loop: true }
+          lead: { pattern: riff, chains: [loop], loop: true }
+          lead high: { pattern: riff high, chains: [loop], loop: true }
+          crash: { pattern: crash, loop: true }
       - name: breakdown
         tracks:
-          bass: { pattern: bass, chains: [turn], repeat: 16 }
-          pad: { pattern: pad, chains: [turn], loop: true }
+          pad: { pattern: held, chains: [loop], repeat: 16 }
+          lead: { pattern: riff quiet, chains: [loop], loop: true }
       - name: build 2
-        density_start: 25
-        density_end: 100
         tracks:
-          kick: { pattern: kit_kick, repeat: 8 }
-          clap: { pattern: kit_clap, loop: true }
-          open: { pattern: kit_open, loop: true }
-          hat: { pattern: kit_hat, loop: true }
-          bass: { pattern: bass, chains: [turn], loop: true }
-          lead: { pattern: stab, chains: [turn], loop: true }
+          lead: { pattern: riff, chains: [riff rise], repeat: 8 }
+          lead high: { pattern: riff high, chains: [riff rise], loop: true }
+          roll: { pattern: roll, chains: [rise], loop: true }
+          pad: { pattern: held, chains: [loop], loop: true }
       - name: drop 2
         tracks:
-          kick: { pattern: kit_kick, repeat: 16 }
-          clap: { pattern: kit_clap, loop: true }
-          open: { pattern: kit_open, loop: true }
-          hat: { pattern: kit_hat, loop: true }
-          bass: { pattern: bass, chains: [turn], loop: true }
-          lead: { pattern: stab, chains: [turn], loop: true }
+          kick: { pattern: kick, repeat: 16 }
+          clap: { pattern: clap, loop: true }
+          open: { pattern: open, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [loop], loop: true }
+          lead: { pattern: riff, chains: [loop], loop: true }
+          lead high: { pattern: riff high, chains: [loop], loop: true }
+          pad: { pattern: held, chains: [loop], loop: true }
+          crash: { pattern: crash, loop: true }
+      - name: kick and bass
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          clap: { pattern: clap, loop: true }
+          open: { pattern: open, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [loop], loop: true }
       - name: last drop
         tracks:
-          kick: { pattern: kit_kick, repeat: 16 }
-          clap: { pattern: kit_clap, loop: true }
-          open: { pattern: kit_open, loop: true }
-          hat: { pattern: kit_hat, loop: true }
-          bass: { pattern: bass, chains: [turn], loop: true }
-          lead: { pattern: stab, chains: [turn], loop: true }
-          lead high: { pattern: stab, chains: [turn], loop: true }
+          kick: { pattern: kick, repeat: 16 }
+          clap: { pattern: clap, loop: true }
+          open: { pattern: open, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [loop], loop: true }
+          lead: { pattern: riff, chains: [loop], loop: true }
+          lead high: { pattern: riff high, chains: [loop], loop: true }
+          pad: { pattern: held, chains: [loop], loop: true }
+          crash: { pattern: crash, loop: true }
       - name: outro
         tracks:
-          kick: { pattern: kit_kick, repeat: 8 }
-          hat: { pattern: kit_hat, loop: true }
+          kick: { pattern: kick, repeat: 4 }
+          hat: { pattern: hat, loop: true }
+          open: { pattern: open, loop: true }
