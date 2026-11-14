@@ -274,7 +274,7 @@ class TestRealTimeSwitch(UITest):
     async def test_the_cell_is_named_and_enter_on_it_presses_the_switch(self):
         self.document.add_instrument(SYNTH)
         page = self.app.screen
-        page.place = page.menu_items().index(self.cell())
+        page.select(self.cell().binding)
         self.assertIn(PageName.REAL_TIME, self.text())
         await self.press(Key.ENTER)
         self.assertFalse(self.document.setlist().is_real_time())

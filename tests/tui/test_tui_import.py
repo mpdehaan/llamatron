@@ -87,7 +87,7 @@ class TestImportDialog(UITest):
         self.assertEqual(cell_opened_by(Key.M), PageName.IMPORT)
 
     async def test_the_cell_sits_in_the_row_of_actions_after_export(self):
-        names = [cell_name(item) for item in self.app.screen.rows()[-1]]
+        names = [cell_name(item) for item in self.app.screen.grid_rows()[-1]]
         self.assertEqual(names[names.index(PageName.EXPORT) + 1], PageName.IMPORT)
         self.assertIn(PageName.IMPORT, self.text())
 
