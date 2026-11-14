@@ -427,11 +427,28 @@ class ArrangeDrawing:
                 self.draw_scene(lines[start:start + SCENE_LINES], index=index, first=first, last=last, clips=False)
         for line in lines[HEADER_LINES:]:
             line.write(column=SCENE_WIDTH, text=Box.BAR, style=Style.DIM)
+        if self._page.boxes_playing_scene():
+            self.box_playing_scene(lines=lines, tops={index: HEADER_LINES + number * SCENE_LINES for number, index in enumerate(shown)}, inside=SCENE_LINES - 1)
         texts = [line.text() for line in lines]
         frame = mode.frame(width=max(width - CLIP_AREA_LEFT, 0), height=len(lines) - HEADER_LINES, now=now, heard=heard)
         for row, piece in enumerate(frame):
             texts[HEADER_LINES + row] = laid_over(line=texts[HEADER_LINES + row], start=CLIP_AREA_LEFT, piece=piece)
         return texts
+
+    def box_playing_scene(self, *, lines, tops, inside):
+        """Draw a blue box around the playing scene's name, where tops is the line each shown scene starts on and inside how many lines the box holds, a scene's own lines but the spacer when None; nothing when no scene plays, the scene is off screen or the box has no room."""
+        index = self._page.playing_scene()
+        if index is None or index not in tops:
+            return
+        top = tops[index]
+        held = self.scene_lines(index) - 1 if inside is None else inside
+        if top + 1 + held >= len(lines):
+            return
+        frame = Frame(left=0, right=SCENE_WIDTH - 1, style=Style.PLAYING_SCENE)
+        frame.top(lines[top])
+        for line in lines[top + 1:top + 1 + held]:
+            frame.sides(line)
+        frame.bottom(lines[top + 1 + held])
 
     @staticmethod
     def with_name(*, lines, name):
@@ -458,6 +475,15 @@ class ArrangeDrawing:
             self.draw_scene(lines[start:start + self.scene_lines(index)], index=index, first=first, last=last)
             start += self.scene_lines(index)
         self.draw_footer(lines[-FOOTER_LINES:], at_end=shown.stop == len(self._page.scenes()), first=first, last=last)
+        if self._page.boxes_playing_scene():
+            # A recording nobody performs has no cursor to show: the playing scene is boxed instead, the user's design.
+            tops = {}
+            top = header
+            for index in shown:
+                tops[index] = top
+                top += self.scene_lines(index)
+            self.box_playing_scene(lines=lines, tops=tops, inside=None)
+            return [line.text() for line in lines]
         placed = self.frame_place(shown=shown, first=first, last=last)
         if placed is not None:
             # The frame's inside is as tall as what it holds: a scene's or a clip's lines but the spacer, a name's, or the + row's one.

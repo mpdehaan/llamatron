@@ -45,7 +45,7 @@ from llamatron.strings.errors import (
 )
 from llamatron.strings.labels import MSG_PLAY_LABEL, MSG_STOP_LABEL
 from llamatron.strings.legends import MSG_LISTEN_WHAT, MSG_PLAY_CLIP_WHAT, MSG_PLAY_SONG_WHAT, MSG_STOP_CLIP_WHAT, MSG_STOP_WHAT
-from llamatron.strings.marks import MSG_NOTE_EDGE, MSG_READ_HEAD, MSG_PLAY_MARK, MSG_SAVED_MARK, MSG_SONG_BUTTON, MSG_SOUNDING_MARK, MSG_STOP_MARK, MSG_UNSAVED_CHANGES_MARK, MSG_UNSAVED_MARK
+from llamatron.strings.marks import MSG_NOTE_EDGE, MSG_READ_HEAD, MSG_PLAY_MARK, MSG_SAVED_MARK, MSG_SCENE_ANNOUNCED, MSG_SONG_BUTTON, MSG_SOUNDING_MARK, MSG_STOP_MARK, MSG_UNSAVED_CHANGES_MARK, MSG_UNSAVED_MARK
 from llamatron.strings.messages import MSG_REAL_TIME_OFF_STOPPED
 from llamatron.strings.messages import (
     MSG_LIVE_EDIT_NOT_HEARD,
@@ -59,7 +59,9 @@ from llamatron.tui.pattern_preview import CHOSEN_PASSES, PIANO_PROGRAM, PREVIEW_
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.batch_stage import GROW_SECONDS
 from llamatron.tui.launch import Launch, recording_problem
-from llamatron.tui.screens.arrange.arrange_page import ArrangePage
+from llamatron.tui.screens.arrange.arrange_page import ANNOUNCED_ROWS_UP, NAME_SECONDS, ArrangePage, announced
+from llamatron.tui.components.stage_drawing import Rect
+from llamatron.tui.screens.shared.shared import scene_name
 from llamatron.tui.screens.set.demo_scroll import DemoScroll
 from llamatron.tui.screens.set.splash import Splash
 from llamatron.strings.about import MSG_BLOCK
@@ -81,6 +83,7 @@ CONNECTED_PORTS = [SYNTH_PORT, DRUM_PORT]
 PORT_NAMES = 'llamatron.tui.transport.output_port_names'
 KIND_MASK = 0xF0
 SPACE = ' '
+NEW_LINE = '\n'
 NOTHING = ''
 A_MOMENT = 0.1
 # Enough real time for a timer of A_MOMENT to have fired, and a timer that never fires within a test.
@@ -1232,6 +1235,114 @@ class TestStoppingFromTheCornerOutsideATake(PlaybackTest):
         await asyncio.sleep(LEAD_IN_PASSED)
         await self.pilot.pause()
         self.assertIsInstance(self.app.screen, ArrangePage)
+
+
+def styles_at(*, line, column):
+    """Return the styles a drawn line has on one of its cells."""
+    return [str(span.style) for span in line.spans if span.start <= column < span.end]
+
+
+def double_corners(lines):
+    """Return the drawn lines that hold the top left corner of a double-lined box."""
+    return [line for line in lines if Box.DOUBLE_TOP_LEFT in line.plain]
+
+
+class TestRecordingBoxesThePlayingScene(LaunchTest):
+    """A recording nobody performs: a blue box around the playing scene's name and no box around the cursor, the user's design."""
+
+    LAUNCH = Launch(quit_when_finished=True, for_recording=True, splash_seconds=RECORDING_SPLASH, lead_in_seconds=A_MOMENT, lead_out_seconds=LONG_LEAD_OUT)
+
+    def body(self):
+        size = self.app.size
+        return self.app.screen.body(width=size.width, height=size.height)
+
+    async def test_the_playing_scene_alone_is_boxed_in_blue_over_the_clips_and_under_a_visualizer(self):
+        await self.wait_until(self.shows(ArrangePage))
+        await self.wait_until_playing()
+        page = self.app.screen
+        self.assertEqual(page.playing_scene(), FIRST_INDEX)
+        for mode in (None, MODES[0]()):
+            with self.subTest(mode=mode):
+                if mode is not None:
+                    page.show_visualizer(mode)
+                corners = double_corners(self.body())
+                self.assertEqual(len(corners), 1)
+                self.assertEqual(corners[0].plain.index(Box.DOUBLE_TOP_LEFT), 0)
+                self.assertIn(Style.PLAYING_SCENE, styles_at(line=corners[0], column=0))
+
+    async def test_nothing_is_boxed_when_nothing_plays(self):
+        await self.wait_until(self.shows(ArrangePage))
+        await self.wait_until_playing()
+        self.transport().stop_all()
+        self.assertIsNone(self.app.screen.playing_scene())
+        self.assertEqual(double_corners(self.body()), [])
+        self.assertIsNone(self.app.screen.scene_to_announce(A_MOMENT))
+
+    async def test_only_a_recording_nobody_performs_boxes_the_playing_scene(self):
+        self.assertTrue(self.LAUNCH.boxes_playing_scene())
+        self.assertTrue(Launch(batch_video=True, visualizer=MODES[0].OPTION).boxes_playing_scene())
+        self.assertFalse(Launch(for_recording=True, interactive=True).boxes_playing_scene())
+        self.assertFalse(Launch(autoplay=True).boxes_playing_scene())
+        self.assertFalse(Launch().announce)
+
+
+class TestPlayingKeepsTheCursorsBoxOutsideARecording(LaunchTest):
+    """Played in the tracker, Arrange keeps the box around its cursor and draws nothing in the recording's blue, and announces no scene."""
+
+    LAUNCH = Launch(autoplay=True, lead_in_seconds=A_MOMENT)
+
+    async def test_the_cursors_box_stays_and_no_scene_is_announced(self):
+        await self.wait_until_playing()
+        size = self.app.size
+        lines = self.app.screen.body(width=size.width, height=size.height)
+        corners = double_corners(lines)
+        self.assertEqual(len(corners), 1)
+        self.assertNotIn(Style.PLAYING_SCENE, styles_at(line=corners[0], column=corners[0].plain.index(Box.DOUBLE_TOP_LEFT)))
+        self.assertNotIn(fixed_text(MSG_SCENE_ANNOUNCED), self.text())
+
+
+class TestRecordingAnnouncesScenes(LaunchTest):
+    """--announce: each scene's name shows as the scene starts, where a visualizer mode's name shows, and no mode's name then."""
+
+    LAUNCH = Launch(quit_when_finished=True, for_recording=True, splash_seconds=RECORDING_SPLASH, lead_in_seconds=A_MOMENT, lead_out_seconds=LONG_LEAD_OUT, announce=True)
+
+    def announcement(self, index):
+        return MSG_SCENE_ANNOUNCED.format(name=scene_name(scene=self.document.song().get_scenes()[index], index=index))
+
+    async def test_the_scene_is_announced_over_the_clips_for_a_while_and_not_when_it_plays_on(self):
+        await self.wait_until(self.shows(ArrangePage))
+        await self.wait_until_playing()
+        page = self.app.screen
+        size = self.app.size
+        self.assertIn(self.announcement(FIRST_INDEX), NEW_LINE.join(line.plain for line in page.body(width=size.width, height=size.height)))
+        began = page._scene_since
+        self.assertEqual(page.scene_to_announce(began + NAME_SECONDS - A_MOMENT), self.announcement(FIRST_INDEX))
+        self.assertIsNone(page.scene_to_announce(began + NAME_SECONDS))
+        # The same scene playing on is not announced again, however long after.
+        self.assertIsNone(page.scene_to_announce(began + NAME_SECONDS + NAME_SECONDS))
+
+    async def test_a_visualizers_name_gives_way_to_the_scenes(self):
+        await self.wait_until(self.shows(ArrangePage))
+        await self.wait_until_playing()
+        page = self.app.screen
+        page.show_visualizer(MODES[0]())
+        size = self.app.size
+        drawn = NEW_LINE.join(line.plain for line in page.body(width=size.width, height=size.height))
+        self.assertIn(self.announcement(FIRST_INDEX), drawn)
+        self.assertNotIn(SPACE + page.visualizer.shown_name() + SPACE, drawn)
+
+    async def test_a_batch_videos_announcement_is_centred_near_the_bottom_of_the_frame_in_reverse_video(self):
+        inside = Rect(top=2, bottom=12, left=4, right=43)
+        lines = [Text(SPACE * 50) for _ in range(15)]
+        words = self.announcement(FIRST_INDEX)
+        shown = announced(lines=lines, text=words, inside=inside)
+        row = inside.bottom - ANNOUNCED_ROWS_UP
+        column = shown[row].plain.index(words)
+        self.assertIn(Style.REVERSE, styles_at(line=shown[row], column=column))
+        self.assertLessEqual(abs((column - inside.left) - (inside.right - (column + len(words)) + 1)), 1)
+        self.assertEqual([line.plain for number, line in enumerate(shown) if number != row], [line.plain for number, line in enumerate(lines) if number != row])
+        self.assertIs(announced(lines=lines, text=None, inside=inside), lines)
+        self.assertIs(announced(lines=lines, text=words, inside=Rect(top=2, bottom=3, left=4, right=43)), lines)
 
 
 class TestRecordingLaunchEnding(LaunchTest):
