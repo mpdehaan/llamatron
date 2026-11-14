@@ -1530,7 +1530,9 @@ The user's design, mockup by mockup; `.claude/FORMAT.md`, "Instruments", says wh
 - **The Keyswitch Map** (`tui/dialogs/keyswitch_map_dialog.py`, `KeyswitchMapDialog`), opened from the Instrument Editor by the
   Keyswitch Map button or `K` (Keyswitch Map) from any field: ten rows, a slot's number, name and note, the note in the set's
   octave labels with its MIDI number, `C0 (24)` (`tui/keyswitch_text.py`). `N` or F2 (Rename) prompts for the name, an empty one
-  leaving none; ENTER (Note) opens the note picker; `Bksp` (Clear) empties the slot. The dialog edits a copy: `O` (OK), or the
+  leaving none; the cursor starts on the whole row, Right moves to the slot's name, drawn between `[` and `]`, where ENTER
+  renames (`RENAME_HERE`), and on to its note, Up and Down keeping the cell (`WHOLE_ROW`, `NAME_CELL`, `NOTE_CELL`, the user's
+  ask); anywhere but the name ENTER (Note) opens the note picker; `Bksp` (Clear) empties the slot. The dialog edits a copy: `O` (OK), or the
   OK button reached with Down from the last slot, stores the ten slots as one undo step (`Document.set_instrument_keyswitches`),
   and ESC or the CANCEL button changes nothing (Claude's choices, since ENTER was given to the note picker).
 - **The note picker** is a flyout over the map: one octave of keys (`one_octave_rows` in `tui/components/keyboard.py`), Left and

@@ -30,7 +30,7 @@ from llamatron.composition.instrument import NO_KEYSWITCH, Keyswitch
 from llamatron.composition.limits import MAX_NAME_LENGTH
 from llamatron.music.midi import HALF_STEPS_PER_OCTAVE, MAX_MIDI_NUMBER, MIN_MIDI_NUMBER
 from llamatron.strings.labels import MSG_OK_CANCEL_BUTTONS
-from llamatron.strings.marks import MSG_KEYSWITCH_MAP_ROW
+from llamatron.strings.marks import MSG_KEYSWITCH_CELL_CLOSE, MSG_KEYSWITCH_CELL_OPEN, MSG_KEYSWITCH_MAP_ROW
 from llamatron.strings.messages import (
     MSG_KEYSWITCH_NAME_PROMPT, MSG_KEYSWITCH_NOTE_NAMED_TITLE, MSG_KEYSWITCH_NOTE_TITLE, MSG_KEYSWITCH_PICKED_NOTE, MSG_KEYSWITCH_PICKED_OCTAVE,
 )
@@ -52,6 +52,12 @@ BUTTON_BINDINGS = (keybindings.KeyswitchMapDialog.OK, keybindings.KeyswitchMapDi
 # The styles of the picker's keys: the key picked filled in the Chord dialog's green, the rest dim.
 KEY_STYLES = {KeyKind.CHORD: Style.CHORD_KEY, KeyKind.OUTSIDE: Style.DIM}
 ONE_HALF_STEP = 1
+# Where the cursor is along a slot's row, the user's design: on the whole row, where Enter opens the note picker, then with Right on the name, where Enter renames, then on the note.
+WHOLE_ROW = 0
+NAME_CELL = 1
+NOTE_CELL = 2
+CELL_COUNT = 3
+SPACE = ' '
 
 
 def first_note_offered(keyswitches):
@@ -72,6 +78,7 @@ class KeyswitchMapDialog(Dialog):
         # The set, whose octave labels the notes are written in.
         self.setlist = setlist
         self.place = 0
+        self.cell = WHOLE_ROW
         self.button = OK
         # The note the picker is on while it is open, and None while it is closed.
         self.picking = None
@@ -94,10 +101,12 @@ class KeyswitchMapDialog(Dialog):
         ]
         if self.on_buttons():
             return [*shared, self.bind(self.KEYS.ALONG_BUTTONS, action=self.along_buttons, wants_key=True), self.bind(self.KEYS.PRESS, action=self.press_button)]
+        enter = self.bind(self.KEYS.RENAME_HERE, action=self.rename) if self.cell == NAME_CELL else self.bind(self.KEYS.NOTE, action=self.open_picker)
         return [
             *shared,
+            self.bind(self.KEYS.ACROSS, action=self.across, wants_key=True),
             self.bind(self.KEYS.RENAME, action=self.rename),
-            self.bind(self.KEYS.NOTE, action=self.open_picker),
+            enter,
             self.bind(self.KEYS.CLEAR, action=self.clear),
         ]
 
@@ -106,6 +115,10 @@ class KeyswitchMapDialog(Dialog):
 
     def move(self, name):
         self.place = cursor_moved(place=self.place, name=name, count=BUTTONS_PLACE + 1)
+
+    def across(self, name):
+        """Move along a slot's row, from the whole row to its name and on to its note, stopping at both ends; Up and Down keep the place."""
+        self.cell = cursor_moved(place=self.cell, name=name, count=CELL_COUNT)
 
     def along_buttons(self, name):
         self.button = cursor_moved(place=self.button, name=name, count=len(MSG_OK_CANCEL_BUTTONS))
@@ -162,8 +175,19 @@ class KeyswitchMapDialog(Dialog):
         keyswitch = self.keyswitches[slot]
         start = cursor_mark(slot == self.place) + MSG_KEYSWITCH_MAP_ROW.format(slot=slot)
         line = Text(start, no_wrap=True)
-        line.append(fit(text=shown_name(keyswitch), width=max(width - len(start) - KEYSWITCH_NOTE_WIDTH, 0)), style=Style.DIM if keyswitch.name is None else Style.PLAIN)
-        line.append(fit(text=self.note_text(keyswitch.note), width=KEYSWITCH_NOTE_WIDTH))
+        on_name = slot == self.place and self.cell == NAME_CELL
+        on_note = slot == self.place and self.cell == NOTE_CELL
+        # Each cell keeps a place before and after its text, a space or a bracket, so that nothing shifts as the cursor moves.
+        room = max(width - len(start) - KEYSWITCH_NOTE_WIDTH - 2, 0)
+        name = fit(text=shown_name(keyswitch), width=room).rstrip()
+        line.append(MSG_KEYSWITCH_CELL_OPEN if on_name else SPACE, style=Style.BOLD)
+        line.append(name, style=Style.DIM if keyswitch.name is None else Style.PLAIN)
+        line.append(MSG_KEYSWITCH_CELL_CLOSE if on_name else SPACE, style=Style.BOLD)
+        line.append(SPACE * (room - len(name)))
+        note = fit(text=self.note_text(keyswitch.note), width=KEYSWITCH_NOTE_WIDTH - 2).rstrip()
+        line.append(MSG_KEYSWITCH_CELL_OPEN if on_note else SPACE, style=Style.BOLD)
+        line.append(note)
+        line.append(MSG_KEYSWITCH_CELL_CLOSE if on_note else SPACE, style=Style.BOLD)
         return line
 
     def lines(self, width):

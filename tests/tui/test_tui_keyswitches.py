@@ -23,12 +23,12 @@ from llamatron.composition.limits import MAX_KEYSWITCH_LEAD
 from llamatron.music.midi import HALF_STEPS_PER_OCTAVE, MAX_MIDI_NUMBER, MIN_MIDI_NUMBER
 from llamatron.strings.errors import ERR_NO_NOTE_ON_STEP
 from llamatron.strings.labels import MSG_KEYSWITCH_LEAD_LABEL, MSG_ROW_LABELS
-from llamatron.strings.marks import MSG_BLOCKED_CELL, MSG_KEYSWITCH_LIGHT, MSG_KEYSWITCH_SLOT_NAMED, MSG_NONE_SHOWN
+from llamatron.strings.marks import MSG_BLOCKED_CELL, MSG_KEYSWITCH_CELL_CLOSE, MSG_KEYSWITCH_CELL_OPEN, MSG_KEYSWITCH_LIGHT, MSG_KEYSWITCH_SLOT_NAMED, MSG_NONE_SHOWN
 from llamatron.strings.messages import (
     MSG_DESCRIBE_KEYSWITCHES, MSG_KEYSWITCH_DIALOG_TITLE, MSG_KEYSWITCH_MAP_TITLE, MSG_KEYSWITCH_NO_INSTRUMENT, MSG_KEYSWITCH_SEVERAL_INSTRUMENTS,
 )
 from llamatron.tui.dialogs.keyswitch_dialog import KeyswitchDialog
-from llamatron.tui.dialogs.keyswitch_map_dialog import BUTTONS_PLACE, KeyswitchMapDialog, first_note_offered
+from llamatron.tui.dialogs.keyswitch_map_dialog import BUTTONS_PLACE, NAME_CELL, NOTE_CELL, WHOLE_ROW, KeyswitchMapDialog, first_note_offered
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.drawing import NOTHING, Style
 from llamatron.tui.keys import DIGITS, Key
@@ -107,6 +107,38 @@ class TestKeyswitchMap(UITest):
         self.assertEqual(self.slots(), [NO_KEYSWITCH] * KEYSWITCH_SLOT_COUNT)
         await self.press(keybindings.Page.REDO)
         self.assertEqual(self.slots()[SUSTAIN_SLOT], Keyswitch(SUSTAIN, MIN_MIDI_NUMBER + 1))
+
+    async def test_right_reaches_the_name_where_enter_renames_and_then_the_note_where_enter_picks(self):
+        dialog = await self.open_map()
+        self.assertEqual(dialog.cell, WHOLE_ROW)
+        await self.press(Key.LEFT)
+        self.assertEqual(dialog.cell, WHOLE_ROW)
+        await self.press(Key.RIGHT)
+        self.assertEqual(dialog.cell, NAME_CELL)
+        self.assertIn(MSG_KEYSWITCH_CELL_OPEN + MSG_NONE_SHOWN + MSG_KEYSWITCH_CELL_CLOSE, self.text())
+        await self.press(MAP.RENAME_HERE)
+        self.assertIsInstance(self.app.screen, PromptDialog)
+        await self.type(SUSTAIN)
+        await self.press(Key.ENTER)
+        self.assertEqual(dialog.keyswitches[SUSTAIN_SLOT], Keyswitch(SUSTAIN, None))
+        self.assertIn(MSG_KEYSWITCH_CELL_OPEN + SUSTAIN + MSG_KEYSWITCH_CELL_CLOSE, self.text())
+        # Down keeps the cursor on the names, so that one slot after another is named.
+        await self.press(Key.DOWN)
+        self.assertEqual((dialog.place, dialog.cell), (STACCATO_SLOT, NAME_CELL))
+        await self.press(Key.RIGHT, Key.RIGHT)
+        self.assertEqual(dialog.cell, NOTE_CELL)
+        await self.press(MAP.NOTE)
+        self.assertIsNotNone(dialog.picking)
+        await self.press(MAP.TAKE_NOTE)
+        self.assertIn(MSG_KEYSWITCH_CELL_OPEN + keyswitch_note_text(setlist=self.document.setlist(), note=MIN_MIDI_NUMBER) + MSG_KEYSWITCH_CELL_CLOSE, self.text())
+
+    async def test_the_legend_says_what_enter_does_where_the_cursor_is(self):
+        dialog = await self.open_map()
+        self.assertIn(MAP.NOTE, [item.binding for item in dialog.keys()])
+        await self.press(Key.RIGHT)
+        bound = [item.binding for item in dialog.keys()]
+        self.assertIn(MAP.RENAME_HERE, bound)
+        self.assertNotIn(MAP.NOTE, bound)
 
     async def test_cancel_changes_nothing_by_its_key_or_its_button(self):
         for presses in ([Key.ESCAPE], [*[Key.DOWN] * BUTTONS_PLACE, Key.RIGHT, MAP.PRESS]):
