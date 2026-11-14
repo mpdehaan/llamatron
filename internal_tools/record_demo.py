@@ -113,8 +113,6 @@ TRIMMING_SUFFIX = '.trimming.mov'
 SUCCESS = 0
 FAILURE = 1
 # The video tutorial's screen recording, which runs with no time limit and stops when a key is typed into its own terminal, for a take whose length nobody knows.
-# The folder of the demos: a recording of a set in it scrolls the demo's name after the title, the user's design.
-EXAMPLES = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'examples')
 TUTORIAL_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'make_video_tutorial.py')
 TUTORIAL_MODULE = 'make_video_tutorial'
 REGION_SCRIPT = 'window_region.py'
@@ -425,11 +423,11 @@ def screen_recording():
     return module.ScreenRecording
 
 
-def scroll_text_of(path):
-    """Return the words a take of the set at path scrolls after the title, DEMO: and its name, when the set is one of the examples, or None."""
-    if os.path.abspath(path).startswith(EXAMPLES + os.sep):
-        return scroll_text_for(path)
-    return None
+def scroll_text_of(*, path, scroll=True, scroll_text=None):
+    """Return the words a take of the set at path scrolls after the title: the words given, or DEMO: and the set's name from its file, or None when the take scrolls nothing (the user's rules)."""
+    if not scroll:
+        return None
+    return scroll_text or scroll_text_for(path)
 
 
 def record_performance(*, document, video, window, device, max_seconds, visualizer, recording=None, scroll_text=None):
@@ -439,7 +437,7 @@ def record_performance(*, document, video, window, device, max_seconds, visualiz
 
 
 def record(*, path, driver, audio_device, assignment, max_seconds, window_id, go=False, visualizer=None, ask_view=False, fluidsynth=False, fluidsynth_output=None,
-           interactive=False, recording=None, batch=False, region=None, staged=True, alternate=True):
+           interactive=False, recording=None, batch=False, region=None, staged=True, alternate=True, scroll=True, scroll_text=None):
     """Set the take up, start the screen recording, run the tracker launched for recording, and report the video. Return the exit code.
 
     With ask_view, it asks whether the take shows the clips or a visualizer mode, once the port,
@@ -531,7 +529,7 @@ def record(*, path, driver, audio_device, assignment, max_seconds, window_id, go
     video = batch_video_path(path=path, mode=visualizer) if batch else os.path.join(RECORDINGS, file_stem(path) + VIDEO_SUFFIX)
     if os.path.exists(video):
         os.unlink(video)
-    scroll_text = scroll_text_of(path)
+    scroll_text = scroll_text_of(path=path, scroll=scroll, scroll_text=scroll_text)
     if interactive:
         return record_performance(document=document, video=video, window=window, device=device, max_seconds=max_seconds, visualizer=visualizer, recording=recording, scroll_text=scroll_text)
     if batch:
@@ -591,6 +589,9 @@ def main(*, argv=None):
     parser.add_argument('--plain', action='store_true', help='record a visualizer take in the older style, the visualizer over the clip area of Arrange, rather than the title, READY and the framed visualizer every take of a visualizer has by default')
     parser.add_argument('--batch', action='store_true', help='record a batch video: the title, READY, then the visualizer mode filling a frame, from the window\'s cells alone (sh user_scripts/record_all.sh records every example)')
     parser.add_argument('--interactive', action='store_true', help='perform the take: nothing plays until you press Space on Arrange\'s corner, and stopping there, or ESC, ends it')
+    words = parser.add_mutually_exclusive_group()
+    words.add_argument('--scroll-text', default=None, help='the words that cross the screen after the opening title, in place of DEMO: and the set\'s name from its file')
+    words.add_argument('--no-scroll', action='store_true', help='show no words crossing the screen after the opening title')
     view = parser.add_mutually_exclusive_group()
     view.add_argument('--visualizer', choices=mode_options(), default=None, help='record this visualizer mode over the clip area instead of the clips')
     view.add_argument('--clips', action='store_true', help='record the clips on Arrange, without asking')
@@ -600,7 +601,8 @@ def main(*, argv=None):
         return record(path=path, driver=arguments.use_driver, audio_device=arguments.audio_device, assignment=arguments.track_assign,
                       max_seconds=arguments.max_seconds, window_id=arguments.window_id, go=arguments.go, visualizer=arguments.visualizer,
                       ask_view=arguments.visualizer is None and not arguments.clips, fluidsynth=arguments.fluidsynth or arguments.sound == SOUND_FLUIDSYNTH, fluidsynth_output=arguments.fluidsynth_output, interactive=arguments.interactive,
-                      batch=arguments.batch, staged=not arguments.plain, alternate=not arguments.no_alternate)
+                      batch=arguments.batch, staged=not arguments.plain, alternate=not arguments.no_alternate, scroll=not arguments.no_scroll,
+                      scroll_text=arguments.scroll_text)
     except ValueError as error:
         print(error, file=sys.stderr)
         return FAILURE

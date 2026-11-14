@@ -103,6 +103,18 @@ class TestPlan(unittest.TestCase):
 
 class TestRecordAll(unittest.TestCase):
 
+    def test_each_take_scrolls_its_demos_name_unless_told_not_to(self):
+        for scroll in (True, False):
+            with self.subTest(scroll=scroll):
+                asked = []
+
+                def record(**named):
+                    asked.append(named)
+                    return SUCCESS
+                with contextlib.redirect_stdout(io.StringIO()):
+                    record_all(takes=[(SHORT, PAIRED_MODE, 3.0)], record=record, driver=None, max_seconds=None, audio_device=None, fluidsynth_output=None, window_id=None, scroll=scroll)
+                self.assertIs(asked[0]['scroll'], scroll)
+
     def test_each_take_is_a_batch_video_through_fluidsynth_and_the_first_failure_stops_the_rest(self):
         asked = []
 
