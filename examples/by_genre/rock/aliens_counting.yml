@@ -1,57 +1,63 @@
-version: 1.0.227
+version: 1.0.362
 title: Aliens counting
 description: "a mid-eighties synth-rock anthem in the manner of The Final Countdown (Europe), with a fanfare of its own"
 notes: |
-  Aliens counting: a synth-rock anthem at 118 beats a minute in F sharp minor, in the manner of the mid
+  Aliens counting: a synth-rock anthem at 118 beats a minute in E minor, in the manner of the mid
   eighties: a synth brass fanfare in sixteenths, power chords, a pick bass, a pad and a rock beat
-  with crashes. The fanfare and the verse are its own.
+  with crashes. This is a homage to The Final Countdown by Europe: the chords of the fanfare and of
+  the verse are that song's, in another key, and the fanfare, the verse's tune, the solo and every
+  rhythm are its own.
 
-  The guitar, the bass and the pad are one bar each over chord i, moved by Progression: the
-  fanfare goes i VI iv v and the verse i i VI VII.
+  The guitar's pattern is one held note a bar, the bass and the pad one bar each over chord i. A
+  Progression moves them, i VI iv VII under the fanfare and i i iv iv in the verse, and a Guitarify
+  after it in the guitar's chain makes each note a power chord and plays it: three ringing down
+  strokes a bar under the fanfare, a muted gallop in sixteenths in the verse and the solo, and one
+  held chord a bar at the end.
 
   Run it with: llamatron examples/by_genre/rock/aliens_counting.yml
 
   Scene 1, intro, 8 bars: the pad alone.
-  Scene 2, fanfare, 8 bars: the brass fanfare.
-  Scene 3, verse, 16 bars: the verse.
+  Scene 2, fanfare, 8 bars: the brass fanfare over ringing power chords.
+  Scene 3, verse, 16 bars: the voice over the galloping guitar.
   Scene 4, fanfare 2, 8 bars: the fanfare again.
   Scene 5, verse 2, 16 bars: the second verse.
-  Scene 6, fanfare 3, 8 bars: the fanfare.
-  Scene 7, solo, 8 bars: the fanfare an octave down on the voice.
-  Scene 8, last fanfare, 16 bars: the fanfare to the end.
+  Scene 6, solo, 16 bars: the voice's solo over the gallop and the fanfare's chords.
+  Scene 7, last fanfare, 16 bars: the fanfare and the solo together.
+  Scene 8, ending, 2 bars: a held chord and a crash.
 
   When changing this demo:
-  - Keep the guitar, bass and pad one bar long over chord i.
-  - Keep the fanfare original.
+  - Keep the guitar one held note a bar, moved by a Progression and made power chords by a Guitarify.
+  - Keep the fanfare, the tunes and the rhythms its own: only the chords are the song's.
+  - Keep it out of F sharp minor, the song's key.
 real_time: true
 protected: true
 
 scales:
-  F# Minor: { root: F#, type: minor }
+  E Minor: { root: E, type: minor }
 
 patterns:
-  kit_kick:
+  kick:
     steps: 16
     drum: true
     step_size: 1/16
     degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~]
-    velocity: [110, ~, ~, ~, ~, ~, ~, ~, 110, ~, 110, ~, ~, ~, ~, ~]
-  kit_snare:
+    velocity: [112, ~, ~, ~, ~, ~, ~, ~, 104, ~, 88, ~, ~, ~, ~, ~]
+  snare:
     steps: 16
     drum: true
     step_size: 1/16
     degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
     octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
-    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~]
-  kit_hat:
+    velocity: [~, ~, ~, ~, 112, ~, ~, ~, ~, ~, ~, ~, 112, ~, ~, ~]
+  hat:
     steps: 16
     drum: true
     step_size: 1/16
     degree: [F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~]
     accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
     octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
-    velocity: [110, ~, 70, ~, 110, ~, 70, ~, 110, ~, 70, ~, 110, ~, 70, ~]
+    velocity: [96, ~, 68, ~, 96, ~, 68, ~, 96, ~, 68, ~, 96, ~, 68, ~]
   crash:
     steps: 16
     drum: true
@@ -59,48 +65,76 @@ patterns:
     degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [110, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-  guitar:
+    velocity: [108, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  root:
     steps: 8
     step_size: 1/8
-    degree: [1, ~, 1, ~, 1, ~, 1, ~]
-    octave: [3, ~, 3, ~, 3, ~, 3, ~]
-    chord: ["5", ~, "5", ~, "5", ~, "5", ~]
-    tie: [false, true, false, true, false, true, false, true]
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [112, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
   bass:
     steps: 8
     step_size: 1/8
     degree: [1, 1, 1, 1, 1, 1, 1, 1]
     octave: [2, 2, 2, 2, 2, 2, 2, 2]
+    velocity: [112, 88, 96, 88, 108, 88, 96, 92]
   pad:
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, ~, ~]
     chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    velocity: [62, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  riff:
+  fanfare:
     steps: 64
     step_size: 1/16
-    degree: [1, 7, 1, ~, 5, ~, ~, ~, 3, 2, 3, ~, 1, ~, ~, ~, 6, 5, 6, ~, 3, ~, ~, ~, 1, 7, 1, ~, 6, ~, ~, ~, 4, 3, 4, ~, 1, ~, ~, ~, 6, 5, 6, ~, 4, ~, ~, ~, 5, 4, 5, ~, 2, ~, ~, ~, 7, 6, 7, ~, 2, ~, ~, ~]
-    octave: [6, 5, 6, ~, 5, ~, ~, ~, 6, 6, 6, ~, 6, ~, ~, ~, 5, 5, 5, ~, 5, ~, ~, ~, 6, 5, 6, ~, 5, ~, ~, ~, 5, 5, 5, ~, 5, ~, ~, ~, 5, 5, 5, ~, 5, ~, ~, ~, 5, 5, 5, ~, 5, ~, ~, ~, 5, 5, 5, ~, 6, ~, ~, ~]
-    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true]
-  verse:
-    steps: 32
+    degree: [1, ~, 3, ~, 5, ~, 1, ~, 5, ~, ~, ~, 3, ~, ~, ~, 6, ~, 1, ~, 3, ~, 6, ~, 3, ~, ~, ~, 1, ~, ~, ~, 4, ~, 6, ~, 1, ~, 4, ~, 1, ~, ~, ~, 6, ~, ~, ~, 7, ~, 2, ~, 4, ~, 7, ~, 4, ~, ~, 2, 7, ~, ~, ~]
+    octave: [5, ~, 5, ~, 5, ~, 6, ~, 5, ~, ~, ~, 5, ~, ~, ~, 4, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 6, ~, 6, ~, 6, ~, ~, ~, 5, ~, ~, ~, 4, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, 5, 4, ~, ~, ~]
+    velocity: [118, ~, 108, ~, 108, ~, 108, ~, 108, ~, ~, ~, 108, ~, ~, ~, 118, ~, 108, ~, 108, ~, 108, ~, 108, ~, ~, ~, 108, ~, ~, ~, 118, ~, 108, ~, 108, ~, 108, ~, 108, ~, ~, ~, 108, ~, ~, ~, 118, ~, 108, ~, 108, ~, 108, ~, 108, ~, ~, 108, 108, ~, ~, ~]
+    tie: [false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, false, false, true, true, true]
+  verse tune:
+    steps: 64
     step_size: 1/8
-    degree: [5, 5, 5, 3, 5, ~, 1, ~, 5, 5, 5, 3, 5, ~, 3, ~, 6, 6, 6, 1, 3, ~, 1, ~, 7, ~, 5, ~, 2, ~, ~, ~]
-    octave: [5, 5, 5, 5, 5, ~, 6, ~, 5, 5, 5, 5, 5, ~, 5, ~, 5, 5, 5, 6, 6, ~, 6, ~, 5, ~, 5, ~, 6, ~, ~, ~]
-    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, true, true, false]
+    degree: [1, ~, ~, 3, 5, ~, ~, ~, 5, ~, 3, ~, 1, ~, ~, ~, 4, ~, ~, 6, 1, ~, ~, ~, 6, ~, 4, ~, 6, ~, ~, ~, 5, ~, ~, 3, 1, ~, 3, ~, 5, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, 6, 4, ~, ~, ~, 4, ~, 6, ~, 4, ~, ~, ~]
+    octave: [5, ~, ~, 5, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, 5, 6, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, 5, 5, ~, 5, ~, 5, ~, ~, ~, 6, ~, ~, ~, 6, ~, ~, 5, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~]
+    velocity: [110, ~, ~, 100, 100, ~, ~, ~, 110, ~, 100, ~, 100, ~, ~, ~, 110, ~, ~, 100, 100, ~, ~, ~, 110, ~, 100, ~, 100, ~, ~, ~, 110, ~, ~, 100, 100, ~, 100, ~, 110, ~, ~, ~, 100, ~, ~, ~, 110, ~, ~, 100, 100, ~, ~, ~, 110, ~, 100, ~, 100, ~, ~, ~]
+    tie: [false, true, true, false, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, false, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, false, false, true, false, true, false, true, true, true, false, true, true, true, false, true, true, false, false, true, true, true, false, true, false, true, false, true, true, true]
+  solo:
+    steps: 64
+    step_size: 1/16
+    degree: [1, ~, 3, ~, 5, ~, 1, ~, 5, ~, ~, ~, 3, ~, ~, ~, 6, ~, 1, ~, 3, ~, 6, ~, 3, ~, ~, ~, 1, ~, ~, ~, 4, ~, 6, ~, 1, ~, 4, ~, 1, ~, ~, ~, 6, ~, ~, ~, 7, ~, 2, ~, 4, ~, 7, ~, 4, ~, ~, 2, 7, ~, ~, ~]
+    octave: [4, ~, 4, ~, 4, ~, 5, ~, 4, ~, ~, ~, 4, ~, ~, ~, 3, ~, 4, ~, 4, ~, 4, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, 4, ~, 5, ~, 5, ~, 5, ~, ~, ~, 4, ~, ~, ~, 3, ~, 4, ~, 4, ~, 4, ~, 4, ~, ~, 4, 3, ~, ~, ~]
+    velocity: [114, ~, 104, ~, 104, ~, 104, ~, 104, ~, ~, ~, 104, ~, ~, ~, 114, ~, 104, ~, 104, ~, 104, ~, 104, ~, ~, ~, 104, ~, ~, ~, 114, ~, 104, ~, 104, ~, 104, ~, 104, ~, ~, ~, 104, ~, ~, ~, 114, ~, 104, ~, 104, ~, 104, ~, 104, ~, ~, 104, 104, ~, ~, ~]
+    tie: [false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, false, false, true, true, true]
 
 progressions:
-  fanfare: { chords: [1, 6, 4, 5] }
-  verse: { chords: [1, 1, 6, 7] }
+  fanfare: { chords: [1, 6, 4, 7] }
+  verse: { chords: [1, 1, 4, 4] }
+
+guitarifies:
+  arena: { bar: [down, nothing, nothing, down, nothing, down, nothing, nothing], accents: [true, false, false, false, false, false, false, false], cell: 1/8, let_ring: true, single_notes: power_chord, spread: 2, fade: 0 }
+  gallop: { bar: [mute, nothing, mute, mute, mute, nothing, mute, mute, mute, nothing, mute, mute, down, nothing, mute, mute], accents: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false], cell: 1/16, single_notes: power_chord, spread: 2, fade: 0 }
+  held: { bar: [down, nothing, nothing, nothing], accents: [false, false, false, false], cell: 1/4, let_ring: true, single_notes: power_chord, spread: 2, fade: 0 }
 
 chains:
   fanfare:
     - progression: fanfare
   verse:
     - progression: verse
+  fanfare arena:
+    - progression: fanfare
+    - guitarify: arena
+  fanfare gallop:
+    - progression: fanfare
+    - guitarify: gallop
+  fanfare held:
+    - progression: fanfare
+    - guitarify: held
+  verse gallop:
+    - progression: verse
+    - guitarify: gallop
 
 instruments:
   distortion guitar: { device: "*FluidSynth", gm_sound: 31 }
@@ -113,7 +147,7 @@ instruments:
 songs:
   aliens_counting:
     tempo: 118
-    scale: F# Minor
+    scale: E Minor
     genre: Rock
 
     tracks:
@@ -133,68 +167,63 @@ songs:
           pad: { pattern: pad, chains: [fanfare], repeat: 8 }
       - name: fanfare
         tracks:
-          kick: { pattern: kit_kick, loop: true }
-          snare: { pattern: kit_snare, loop: true }
-          hat: { pattern: kit_hat, loop: true }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
           crash: { pattern: crash, loop: true }
-          guitar: { pattern: guitar, chains: [fanfare], loop: true }
+          guitar: { pattern: root, chains: [fanfare arena], repeat: 8 }
           bass: { pattern: bass, chains: [fanfare], loop: true }
           pad: { pattern: pad, chains: [fanfare], loop: true }
-          brass: { pattern: riff, repeat: 2 }
+          brass: { pattern: fanfare, loop: true }
       - name: verse
         tracks:
-          kick: { pattern: kit_kick, loop: true }
-          snare: { pattern: kit_snare, loop: true }
-          hat: { pattern: kit_hat, loop: true }
-          guitar: { pattern: guitar, chains: [verse], loop: true }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          guitar: { pattern: root, chains: [verse gallop], repeat: 16 }
           bass: { pattern: bass, chains: [verse], loop: true }
           pad: { pattern: pad, chains: [verse], loop: true }
-          lead: { pattern: verse, repeat: 4 }
+          lead: { pattern: verse tune, loop: true }
       - name: fanfare 2
         tracks:
-          kick: { pattern: kit_kick, loop: true }
-          snare: { pattern: kit_snare, loop: true }
-          hat: { pattern: kit_hat, loop: true }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
           crash: { pattern: crash, loop: true }
-          guitar: { pattern: guitar, chains: [fanfare], loop: true }
+          guitar: { pattern: root, chains: [fanfare arena], repeat: 8 }
           bass: { pattern: bass, chains: [fanfare], loop: true }
           pad: { pattern: pad, chains: [fanfare], loop: true }
-          brass: { pattern: riff, repeat: 2 }
+          brass: { pattern: fanfare, loop: true }
       - name: verse 2
         tracks:
-          kick: { pattern: kit_kick, loop: true }
-          snare: { pattern: kit_snare, loop: true }
-          hat: { pattern: kit_hat, loop: true }
-          guitar: { pattern: guitar, chains: [verse], loop: true }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          guitar: { pattern: root, chains: [verse gallop], repeat: 16 }
           bass: { pattern: bass, chains: [verse], loop: true }
           pad: { pattern: pad, chains: [verse], loop: true }
-          lead: { pattern: verse, repeat: 4 }
-      - name: fanfare 3
-        tracks:
-          kick: { pattern: kit_kick, loop: true }
-          snare: { pattern: kit_snare, loop: true }
-          hat: { pattern: kit_hat, loop: true }
-          crash: { pattern: crash, loop: true }
-          guitar: { pattern: guitar, chains: [fanfare], loop: true }
-          bass: { pattern: bass, chains: [fanfare], loop: true }
-          pad: { pattern: pad, chains: [fanfare], loop: true }
-          brass: { pattern: riff, repeat: 2 }
+          lead: { pattern: verse tune, loop: true }
       - name: solo
         tracks:
-          kick: { pattern: kit_kick, loop: true }
-          snare: { pattern: kit_snare, loop: true }
-          hat: { pattern: kit_hat, loop: true }
-          guitar: { pattern: guitar, chains: [fanfare], loop: true }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          guitar: { pattern: root, chains: [fanfare gallop], repeat: 16 }
           bass: { pattern: bass, chains: [fanfare], loop: true }
-          pad: { pattern: pad, chains: [fanfare], loop: true }
-          lead: { pattern: riff, repeat: 2 }
+          lead: { pattern: solo, loop: true }
       - name: last fanfare
         tracks:
-          kick: { pattern: kit_kick, loop: true }
-          snare: { pattern: kit_snare, loop: true }
-          hat: { pattern: kit_hat, loop: true }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
           crash: { pattern: crash, loop: true }
-          guitar: { pattern: guitar, chains: [fanfare], loop: true }
+          guitar: { pattern: root, chains: [fanfare arena], repeat: 16 }
           bass: { pattern: bass, chains: [fanfare], loop: true }
           pad: { pattern: pad, chains: [fanfare], loop: true }
-          brass: { pattern: riff, repeat: 4 }
+          brass: { pattern: fanfare, loop: true }
+          lead: { pattern: solo, loop: true }
+      - name: ending
+        tracks:
+          guitar: { pattern: root, chains: [fanfare held], repeat: 2 }
+          pad: { pattern: pad, chains: [fanfare], loop: true }
+          crash: { pattern: crash, loop: true }
