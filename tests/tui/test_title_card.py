@@ -147,7 +147,7 @@ class TestTitleCard(unittest.TestCase):
 
 
 class TestScrollText(unittest.TestCase):
-    """The demo's name crossing the screen after the title when an example is recorded, the user's design: DEMO: and the file's name in camel case, in the title's blue."""
+    """The demo's name crossing the screen after the title when an example is recorded, the user's design: DEMO: and the file's name as words, in light orange."""
 
     def test_a_files_name_loses_its_folder_ending_and_number_and_is_words(self):
         self.assertEqual(demo_name(A_LEARNING_DEMO), A_LEARNING_DEMO_NAME)
@@ -184,13 +184,13 @@ class TestScrollText(unittest.TestCase):
         self.assertLess(min(later), min(early))
         self.assertEqual(self.blocks_at(rows=rows, elapsed=seconds), [])
 
-    def test_every_line_is_as_wide_as_the_screen_and_the_words_are_in_the_titles_blue_alone(self):
+    def test_every_line_is_as_wide_as_the_screen_and_the_words_are_light_orange_alone(self):
         width, height = WIDE_SCREEN
         lines = scroll_lines(rows=banner(scroll_text_for(A_LEARNING_DEMO)), width=width, height=height, elapsed=MANY_COLUMNS / COLUMNS_PER_SECOND)
         self.assertEqual(len(lines), height)
         self.assertEqual({len(line.plain) for line in lines}, {width})
         colours = {span.style.color.triplet for line in lines for span in line.spans if line.plain[span.start] == MSG_BLOCK}
-        self.assertEqual(colours, {Color.from_rgb(*title_card.TITLE_BLUE).triplet})
+        self.assertEqual(colours, {Color.from_rgb(*scroll_text.SCROLL_ORANGE).triplet})
         self.assertTrue(all(span.style.bgcolor.triplet == Color.from_rgb(*title_card.BLACK).triplet for line in lines for span in line.spans))
 
     def blocks_at(self, *, rows, elapsed):

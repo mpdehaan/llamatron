@@ -130,7 +130,7 @@ The recorder runs the tracker with options of the `llamatron` command that make 
 - **`--visualizer NAME`** opens on Arrange with that visualizer mode over the clip area and plays the song from the top, as `--autoplay` does. [Visualizers](VISUALIZERS.md) lists the modes' names.
 - **`--batch-video`**, with `--visualizer`, plays the batch video that Batch Recording describes.
 
-A recording shows the set's name after the opening splash: `DEMO:` and the file's name as words, such as `DEMO: HOCKET SHANTY` for `19_hocket_shanty.yml`, in large blue capitals that cross the screen from right to left. `--scroll-text WORDS` on `user_scripts/record.sh` shows other words, and `--no-scroll` shows none.
+A recording shows the set's name after the opening splash: `DEMO:` and the file's name as words, such as `DEMO: HOCKET SHANTY` for `19_hocket_shanty.yml`, in large light orange capitals that cross the screen from right to left. `--scroll-text WORDS` on `user_scripts/record.sh` shows other words, and `--no-scroll` shows none.
 
 `internal_tools/demo_splash_screen.sh` shows the splash alone, to look at it, and `internal_tools/demo_splash_screen.sh --scroll-text 'DEMO: Hocket Shanty'` shows the splash and then those words crossing the screen.
 
