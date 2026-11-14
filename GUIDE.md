@@ -68,6 +68,7 @@ A file holds a set of songs, like the songs of one concert. The patterns, scales
 | [Electronic Mashup](docs/demos/ELECTRONIC_MASHUP.md) | Another work's notes set on an electronic band. |
 | [Funk Mashup](docs/demos/FUNK_MASHUP.md) | Another work's notes set on a funk band. |
 | [Metal Mashup](docs/demos/METAL_MASHUP.md) | Another work's notes set on a metal band. |
+| [Rock Mashup](docs/demos/ROCK_MASHUP.md) | Another work's notes set on a rock band. |
 
 ## Objects
 
