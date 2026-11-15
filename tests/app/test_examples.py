@@ -71,6 +71,7 @@ OTHER_LENGTHS = {
     'uphill_cops.yml': 63,
     'not_painless.yml': 64,
     'phoenix_foundation.yml': 59,
+    'step_ladder.yml': 302,
     'roll_d20.yml': 305,
     'go_where.yml': 298,
 }
