@@ -5,7 +5,7 @@ notes: |
   Three hour tour: a sea-shanty sitcom theme of the sixties in the manner of The Ballad of Gilligan's
   Isle (Sherwood Schwartz and George Wyle), with tunes of its own. This is a homage to The Ballad of
   Gilligan's Isle (Sherwood Schwartz and George Wyle): its chords, form, sounds and drums follow that
-  work as Claude knows it, and every tune and rhythm here is new. Rebuild version 3.
+  work as Claude knows it, and every tune and rhythm here is new. Rebuild version 4.
 
   A shanty in minor on i and VII, strummed by a Guitarify on an acoustic guitar; a refrain in which a
   line from the singer is answered by the men; a turn of four bars on VI, III, iv and V; each verse a
@@ -26,6 +26,14 @@ notes: |
   jaunty, with trouble coming; the lift is each key change and the crew's answers; the contrast is the
   turn in the story, slower notes over the relative major's chords; the sounds are a voice lead, a
   choir of men, an accordion, a steel guitar that a Guitarify strums, an acoustic bass and a bell.
+
+  Phrasing: the verse is a ballad stanza of four two-bar lines, the second to the fourth begun by one
+  soft pickup note after a beat of breath; the refrain stays a call and its answer.
+
+  Dynamics: every part keeps a full default velocity and moves a little from it by its rhythm: every
+  part leans on the first beat of the bar and a little on the middle one, and the notes between the
+  beats are lighter; a note pushed ahead of the beat and held over it is accented. The kick, snare and
+  crashes are as the drummer plays them.
 
   Run it with: llamatron examples/by_genre/tv_theme/three_hour_tour.yml
 
@@ -62,7 +70,7 @@ patterns:
     step_size: 1/16
     degree: [~, ~, ~, ~, D, ~, D, ~, ~, ~, ~, ~, D, ~, D, ~]
     octave: [~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, 3, ~, 3, ~]
-    velocity: [~, ~, ~, ~, 70, ~, 50, ~, ~, ~, ~, ~, 70, ~, 50, ~]
+    velocity: [~, ~, ~, ~, 70, ~, 46, ~, ~, ~, ~, ~, 70, ~, 46, ~]
   tamb:
     steps: 16
     drum: true
@@ -83,7 +91,7 @@ patterns:
     step_size: 1/8
     degree: [1, ~, ~, ~, 5, ~, ~, ~]
     octave: [3, ~, ~, ~, 2, ~, ~, ~]
-    velocity: [100, ~, ~, ~, 94, ~, ~, ~]
+    velocity: [106, ~, ~, ~, 97, ~, ~, ~]
   chord:
     steps: 8
     step_size: 1/8
@@ -103,33 +111,33 @@ patterns:
   shanty:
     steps: 64
     step_size: 1/8
-    degree: [1, ~, ~, 1, 3, ~, 5, ~, 4, ~, ~, 4, 2, ~, 7, ~, 1, ~, ~, 1, 3, ~, 5, ~, 7, ~, 5, ~, 4, ~, ~, ~, 5, ~, ~, 5, 7, ~, 5, ~, 4, ~, ~, 4, 2, ~, 4, ~, 5, ~, 2, ~, 7, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    degree: [1, ~, ~, 1, 3, ~, 5, ~, 4, ~, ~, 4, 2, ~, ~, 7, 1, ~, ~, 1, 3, ~, 5, ~, 7, ~, 5, ~, 4, ~, ~, 5, 5, ~, ~, 5, 7, ~, 5, ~, 4, ~, ~, 4, 2, ~, ~, 4, 5, ~, 2, ~, 7, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    octave: [4, ~, ~, 4, 4, ~, 4, ~, 4, ~, ~, 4, 4, ~, 3, ~, 4, ~, ~, 4, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, ~, ~, 4, ~, ~, 4, 4, ~, 4, ~, 4, ~, ~, 4, 4, ~, 4, ~, 4, ~, 4, ~, 3, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [110, ~, ~, 104, 104, ~, 104, ~, 110, ~, ~, 104, 104, ~, 104, ~, 110, ~, ~, 104, 104, ~, 104, ~, 110, ~, 104, ~, 104, ~, ~, ~, 110, ~, ~, 104, 104, ~, 104, ~, 110, ~, ~, 104, 104, ~, 104, ~, 110, ~, 104, ~, 104, ~, 104, ~, 110, ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+    octave: [4, ~, ~, 4, 4, ~, 4, ~, 4, ~, ~, 4, 4, ~, ~, 3, 4, ~, ~, 4, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, ~, 4, 4, ~, ~, 4, 4, ~, 4, ~, 4, ~, ~, 4, 4, ~, ~, 4, 4, ~, 4, ~, 3, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [114, ~, ~, 106, 106, ~, 106, ~, 106, ~, ~, 106, 102, ~, ~, 98, 114, ~, ~, 106, 106, ~, 106, ~, 118, ~, 106, ~, 102, ~, ~, 98, 114, ~, ~, 106, 106, ~, 106, ~, 106, ~, ~, 106, 102, ~, ~, 98, 114, ~, 106, ~, 106, ~, 106, ~, 102, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, false, false, true, false, true, false, true, true, false, false, false, false, false, false, true, true, false, false, true, false, true, false, true, false, true, false, false, false, false, false, true, true, false, false, true, false, true, false, true, true, false, false, false, false, false, false, true, false, true, false, true, false, true, false, true, true, true, true, false, false, false]
   shanty men:
     steps: 64
     step_size: 1/8
-    degree: [1, ~, ~, 1, 3, ~, 5, ~, 4, ~, ~, 4, 2, ~, 7, ~, 1, ~, ~, 1, 3, ~, 5, ~, 7, ~, 5, ~, 4, ~, ~, ~, 5, ~, ~, 5, 7, ~, 5, ~, 4, ~, ~, 4, 2, ~, 4, ~, 5, ~, 2, ~, 7, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    degree: [1, ~, ~, 1, 3, ~, 5, ~, 4, ~, ~, 4, 2, ~, ~, 7, 1, ~, ~, 1, 3, ~, 5, ~, 7, ~, 5, ~, 4, ~, ~, 5, 5, ~, ~, 5, 7, ~, 5, ~, 4, ~, ~, 4, 2, ~, ~, 4, 5, ~, 2, ~, 7, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    octave: [3, ~, ~, 3, 3, ~, 3, ~, 3, ~, ~, 3, 3, ~, 2, ~, 3, ~, ~, 3, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, 3, ~, 3, ~, ~, 3, 3, ~, 3, ~, 3, ~, 3, ~, 2, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [98, ~, ~, 92, 92, ~, 92, ~, 98, ~, ~, 92, 92, ~, 92, ~, 98, ~, ~, 92, 92, ~, 92, ~, 98, ~, 92, ~, 92, ~, ~, ~, 98, ~, ~, 92, 92, ~, 92, ~, 98, ~, ~, 92, 92, ~, 92, ~, 98, ~, 92, ~, 92, ~, 92, ~, 98, ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+    octave: [3, ~, ~, 3, 3, ~, 3, ~, 3, ~, ~, 3, 3, ~, ~, 2, 3, ~, ~, 3, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, ~, 3, 3, ~, ~, 3, 3, ~, 3, ~, 3, ~, ~, 3, 3, ~, ~, 3, 3, ~, 3, ~, 2, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [104, ~, ~, 96, 96, ~, 96, ~, 96, ~, ~, 96, 92, ~, ~, 90, 104, ~, ~, 96, 96, ~, 96, ~, 108, ~, 96, ~, 92, ~, ~, 90, 104, ~, ~, 96, 96, ~, 96, ~, 96, ~, ~, 96, 92, ~, ~, 90, 104, ~, 96, ~, 96, ~, 96, ~, 92, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, false, false, true, false, true, false, true, true, false, false, false, false, false, false, true, true, false, false, true, false, true, false, true, false, true, false, false, false, false, false, true, true, false, false, true, false, true, false, true, true, false, false, false, false, false, false, true, false, true, false, true, false, true, false, true, true, true, true, false, false, false]
   call:
     steps: 32
     step_size: 1/8
     degree: [5, ~, 5, 5, 7, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, 5, 2, ~, 7, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, 4, 4, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, 4, 5, ~, 4, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [112, ~, 106, 106, 106, ~, 106, ~, ~, ~, ~, ~, ~, ~, ~, ~, 112, ~, 106, 106, 106, ~, 106, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [114, ~, 106, 106, 118, ~, 102, ~, ~, ~, ~, ~, ~, ~, ~, ~, 114, ~, 106, 106, 118, ~, 102, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, true, false, false, false, true, false, true, false, false, false, false, false, false, false, false]
   answer:
     steps: 32
     step_size: 1/8
     degree: [~, ~, ~, ~, ~, ~, ~, ~, 2, 2, 4, ~, 2, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1, 7, 5, ~, 1, ~, ~, ~]
     octave: [~, ~, ~, ~, ~, ~, ~, ~, 3, 3, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 4, 3, 3, ~, 3, ~, ~, ~]
-    velocity: [~, ~, ~, ~, ~, ~, ~, ~, 106, 100, 100, ~, 100, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 106, 100, 100, ~, 100, ~, ~, ~]
+    velocity: [~, ~, ~, ~, ~, ~, ~, ~, 112, 96, 100, ~, 103, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 112, 96, 100, ~, 103, ~, ~, ~]
     tie: [false, false, false, false, false, false, false, false, false, false, false, true, false, true, true, true, false, false, false, false, false, false, false, false, false, false, false, true, false, true, true, true]
   turn:
     steps: 32
@@ -137,8 +145,8 @@ patterns:
     degree: [6, ~, ~, ~, 1, ~, 6, ~, 5, ~, ~, ~, 7, ~, 5, ~, 4, ~, ~, 4, 6, ~, 1, ~, 2, ~, 7, ~, 5, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, 5, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, 4, 4, ~, 5, ~, 5, ~, 4, ~, 4, ~, ~, ~]
-    velocity: [106, ~, ~, ~, 100, ~, 100, ~, 106, ~, ~, ~, 100, ~, 100, ~, 106, ~, ~, 100, 100, ~, 100, ~, 106, ~, 100, ~, 100, ~, ~, ~]
-    tie: [false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, true, true]
+    velocity: [114, ~, ~, ~, 118, ~, 102, ~, 106, ~, ~, ~, 106, ~, 106, ~, 114, ~, ~, 106, 106, ~, 102, ~, 118, ~, 106, ~, 102, ~, ~, ~]
+    tie: [false, true, true, true, false, true, false, false, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, false, false, true, false, true, false, true, true, false]
 
 progressions:
   shanty: { chords: [1, 7, 1, 7, 3, 7, 5, 1], qualities: [~, ~, ~, ~, ~, ~, M, ~] }
