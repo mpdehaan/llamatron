@@ -4,7 +4,7 @@ description: "a breakneck novelty saxophone romp in the manner of Yakety Sax (Bo
 notes: |
   Sax reindeer: a breakneck novelty saxophone romp in the manner of Yakety Sax (Boots Randolph), with
   runs of its own. This is a homage to Yakety Sax (Boots Randolph): its chords, form, sounds and drums
-  follow that work as Claude knows it, and every tune and rhythm here is new. Rebuild version 4.
+  follow that work as Claude knows it, and every tune and rhythm here is new. Rebuild version 5.
 
   A tenor sax running in sixteenths over a country two-beat, bass on one and three and the piano and
   guitar on the offbeats, a train beat on the snare; a second part that wails on long notes over IV, I
@@ -20,6 +20,11 @@ notes: |
   Checklist: it is good and memorable because it never stops for breath and grins the whole time. The
   hook is the running sax; the emotion is silly speed; the lift is the last time a step higher; the
   contrast is the wailing second part; the sounds are a tenor sax and a honky-tonk piano.
+
+  Dynamics: every part keeps a full default velocity and moves a little from it by its rhythm: every
+  part leans on the first beat of the bar and a little on the middle one, and the notes between the
+  beats are lighter; a note pushed ahead of the beat and held over it is accented. The kick, snare and
+  crashes are as the drummer plays them.
 
   Run it with: llamatron examples/by_genre/tv_theme/sax_reindeer.yml
 
@@ -65,7 +70,7 @@ patterns:
     step_size: 1/8
     degree: [1, ~, ~, ~, 5, ~, ~, ~]
     octave: [3, ~, ~, ~, 2, ~, ~, ~]
-    velocity: [106, ~, ~, ~, 100, ~, ~, ~]
+    velocity: [112, ~, ~, ~, 103, ~, ~, ~]
   chick:
     steps: 8
     step_size: 1/8
@@ -85,7 +90,7 @@ patterns:
     step_size: 1/16
     degree: [1, 2, 3, 5, 6, 5, 3, 5, 1, 6, 5, 3, 5, ~, ~, ~, 1, 2, 3, 5, 6, 1, 6, 5, 3, ~, 1, ~, ~, ~, ~, ~, 4, 5, 6, 1, 2, 1, 6, 1, 4, 2, 1, 6, 1, ~, ~, ~, 4, 5, 6, 1, 6, 5, 4, 6, 4, ~, ~, ~, 5, 6, 7, 1, 2, 1, 7, 5, 7, 2, 4, 2, 7, 5, 7, 2, 5, ~, ~, ~, 5, 7, 2, 4, 5, 4, 2, 7, 2, ~, 7, ~, 5, ~, ~, ~, 1, 5, 3, 5, 1, 3, 1, 5, 6, 5, 3, 1, 3, ~, 5, ~, 1, ~, ~, ~, 1, 1, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, 4, 4, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, ~, ~, ~, 4, 4, 4, 4, 4, 5, 4, 4, 4, ~, 4, ~, ~, ~, ~, ~, 4, 4, 4, 5, 5, 5, 4, 5, 5, 5, 5, 4, 5, ~, ~, ~, 4, 4, 4, 5, 4, 4, 4, 4, 4, ~, ~, ~, 4, 4, 4, 5, 5, 5, 4, 4, 4, 5, 5, 5, 4, 4, 4, 5, 4, ~, ~, ~, 4, 4, 5, 5, 5, 5, 5, 4, 5, ~, 4, ~, 4, ~, ~, ~, 5, 4, 4, 4, 5, 5, 5, 4, 4, 4, 4, 4, 4, ~, 4, ~, 5, ~, ~, ~, 5, 5, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [110, 104, 104, 104, 104, 104, 104, 104, 104, 104, 104, 104, 104, ~, ~, ~, 110, 104, 104, 104, 104, 104, 104, 104, 104, ~, 104, ~, ~, ~, ~, ~, 110, 104, 104, 104, 104, 104, 104, 104, 104, 104, 104, 104, 104, ~, ~, ~, 110, 104, 104, 104, 104, 104, 104, 104, 104, ~, ~, ~, 104, 104, 104, 104, 110, 104, 104, 104, 104, 104, 104, 104, 104, 104, 104, 104, 104, ~, ~, ~, 110, 104, 104, 104, 104, 104, 104, 104, 104, ~, 104, ~, 104, ~, ~, ~, 110, 104, 104, 104, 104, 104, 104, 104, 104, 104, 104, 104, 104, ~, 104, ~, 110, ~, ~, ~, 104, 104, ~, ~, 104, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [116, 97, 100, 97, 104, 97, 100, 97, 107, 97, 100, 97, 104, ~, ~, ~, 116, 97, 100, 97, 104, 97, 100, 97, 107, ~, 109, ~, ~, ~, ~, ~, 116, 97, 100, 97, 104, 97, 100, 97, 107, 97, 100, 97, 104, ~, ~, ~, 116, 97, 100, 97, 104, 97, 100, 97, 107, ~, ~, ~, 104, 97, 100, 97, 116, 97, 100, 97, 104, 97, 100, 97, 107, 97, 100, 97, 104, ~, ~, ~, 116, 97, 100, 97, 104, 97, 100, 97, 107, ~, 100, ~, 104, ~, ~, ~, 116, 97, 100, 97, 104, 97, 100, 97, 107, 97, 100, 97, 104, ~, 100, ~, 116, ~, ~, ~, 104, 97, ~, ~, 107, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, true, false, false, false, false, false, false, false, true, true, true, false, false, false, false]
   b:
     steps: 128
@@ -93,7 +98,7 @@ patterns:
     degree: [6, ~, ~, ~, ~, ~, 1, ~, 4, ~, ~, ~, 2, ~, 1, ~, 6, 1, 4, 1, 6, 4, 6, 1, 6, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 1, ~, 3, ~, ~, ~, 1, ~, 5, ~, 3, 5, 1, 5, 3, 1, 3, 5, 3, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, 2, ~, 4, ~, ~, ~, 2, ~, 6, ~, 4, 6, 2, 6, 4, 2, 4, 6, 2, ~, ~, ~, ~, ~, ~, ~, 5, ~, 7, ~, 2, ~, 4, ~, 5, ~, ~, ~, 4, ~, 2, ~, 7, 2, 7, 5, 4, 2, 4, 5, 7, ~, 5, ~, ~, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, "#", ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 4, 5, 5, 5, 4, 4, 4, 5, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, 5, ~, 4, ~, 4, 4, 5, 4, 4, 4, 4, 4, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, 5, ~, 4, ~, 4, 4, 5, 4, 4, 4, 4, 4, 5, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 4, 5, 4, 4, 4, 4, 4, 4, 4, ~, 4, ~, ~, ~, ~, ~]
-    velocity: [110, ~, ~, ~, ~, ~, 104, ~, 104, ~, ~, ~, 104, ~, 104, ~, 110, 104, 104, 104, 104, 104, 104, 104, 104, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, ~, ~, 104, ~, 104, ~, ~, ~, 104, ~, 104, ~, 110, 104, 104, 104, 104, 104, 104, 104, 104, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, ~, ~, 104, ~, 104, ~, ~, ~, 104, ~, 104, ~, 110, 104, 104, 104, 104, 104, 104, 104, 104, ~, ~, ~, ~, ~, ~, ~, 110, ~, 104, ~, 104, ~, 104, ~, 104, ~, ~, ~, 104, ~, 104, ~, 110, 104, 104, 104, 104, 104, 104, 104, 104, ~, 104, ~, ~, ~, ~, ~]
+    velocity: [116, ~, ~, ~, ~, ~, 100, ~, 107, ~, ~, ~, 104, ~, 100, ~, 116, 97, 100, 97, 104, 97, 100, 97, 107, ~, ~, ~, ~, ~, ~, ~, 116, ~, ~, ~, ~, ~, 100, ~, 107, ~, ~, ~, 104, ~, 100, ~, 116, 97, 100, 97, 104, 97, 100, 97, 107, ~, ~, ~, ~, ~, ~, ~, 116, ~, ~, ~, ~, ~, 100, ~, 107, ~, ~, ~, 104, ~, 100, ~, 116, 97, 100, 97, 104, 97, 100, 97, 107, ~, ~, ~, ~, ~, ~, ~, 116, ~, 100, ~, 104, ~, 100, ~, 107, ~, ~, ~, 104, ~, 100, ~, 116, 97, 100, 97, 104, 97, 100, 97, 107, ~, 109, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, false, true, false, true, true, true, false, true, false, true, false, false, false, false, false, false, false, false, false, true, true, true, false, false, false, false, false, true, true, true, true, true, false, true, false, true, true, true, false, true, false, true, false, false, false, false, false, false, false, false, false, true, true, true, false, false, false, false, false, true, true, true, true, true, false, true, false, true, true, true, false, true, false, true, false, false, false, false, false, false, false, false, false, true, true, true, false, false, false, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, false, true, false, false, false, false, false, false, false, false, false, true, false, true, false, false, false, false]
 
 progressions:
