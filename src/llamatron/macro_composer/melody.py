@@ -25,7 +25,7 @@ notes by step, landing its long notes on the notes of the chord under them. The 
 import random
 
 from llamatron.macro_composer.operations import backwards, moved, rotated, upside_down
-from llamatron.macro_composer.notation import ACCIDENTAL, ARRIVAL, DEGREE, ENDING, FLAT, OCTAVE, REST, SHARP, STEPS, STRESS
+from llamatron.macro_composer.notation import ACCIDENTAL, ARRIVAL, DEGREE, ENDING, FLAT, LOUDER, OCTAVE, REST, SHARP, STEPS, STRESS
 
 # The fields of a style's melody habits.
 GRID = 'grid'
@@ -56,6 +56,15 @@ ROW = 'row'
 LENGTHS = 'lengths'
 CHROMATIC = 'chromatic'
 LEAPS = 'leaps'
+ROTATIONS = 'rotations'
+# A voice's rows of loudness, each an amount louder or softer than the voice, and of articulation, each how many parts in four of a
+# note's length sound.
+LOUDNESS = 'loudness'
+ARTICULATION = 'articulation'
+PARTS_OF_A_LENGTH = 4
+# How many notes of the row sound together as a chord, and which of them a voice takes.
+TOGETHER = 'together'
+TAKES = 'takes'
 DEFAULT_LENGTHS = (1, 1, 2, 2, 3, 4, 1)
 ALL_DEGREES = ({DEGREE: 1}, {DEGREE: 2}, {DEGREE: 3}, {DEGREE: 4}, {DEGREE: 5}, {DEGREE: 6}, {DEGREE: 7})
 # A form begins one place above or below the note the form before it ended on.
@@ -242,9 +251,12 @@ class Serial(StepWalk):
     the row and its forms: backwards, upside down, upside down and backwards, each moved to start beside the note the last form
     ended on. No note returns until the others have sounded. The lengths of the notes are a row of their own, read forwards and
     then backwards. Every voice of a song shares the row and reads it its own way. A varied line is the line's notes backwards
-    in its own rhythm. With the habit chromatic the row is all twelve notes; with leaps each note may take any octave in range."""
+    in its own rhythm. With the habit chromatic the row is all twelve notes; with leaps each note may take any octave in range.
+    A form may begin anywhere in the row and go round (rotations, usual). A voice may have a row of loudness and a row of
+    articulation, read as the lengths are. Voices with one name that each take one of so many notes together play chords of
+    neighbouring notes of the row."""
 
-    __slots__ = ('_row', '_form', '_at', '_lengths', '_length_at', '_place', '_stream')
+    __slots__ = ('_row', '_form', '_at', '_lengths', '_length_at', '_place', '_stream', '_sounded')
 
     def __init__(self, *, habits, chords, scale_type, seed, answers, voice=None):
         super().__init__(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice)
@@ -256,6 +268,7 @@ class Serial(StepWalk):
         self._lengths = list(habits.get(LENGTHS, DEFAULT_LENGTHS))
         self._stream.shuffle(self._lengths)
         self._length_at = 0
+        self._sounded = 0
         self._place = self._home
 
     def notes(self):
@@ -271,6 +284,8 @@ class Serial(StepWalk):
         """The next note of the form being read, placed in an octave; when a form ends, another begins beside its last note."""
         if self._at == len(self._form):
             form = self._stream.choice(FORMS)(row=self._row, size=len(self._row))
+            if self._habits.get(ROTATIONS, True):
+                form = rotated(row=form, by=self._stream.randrange(len(form)))
             beside = (self._form[-1] + self._stream.choice(BESIDE)) % len(self._row)
             self._form = moved(row=form, by=beside - form[0], size=len(self._row))
             self._at = 0
@@ -284,18 +299,33 @@ class Serial(StepWalk):
 
     def next_length(self):
         """The next length of the row of lengths, which is read forwards and then backwards."""
-        count = len(self._lengths)
-        turn, place = divmod(self._length_at, count)
         self._length_at += 1
-        return self._lengths[place if turn % 2 == 0 else count - 1 - place]
+        return there_and_back(values=self._lengths, at=self._length_at - 1)
+
+    def next_sound(self):
+        """The next note this voice plays: the next of the row, or, where so many notes sound together as a chord, the one
+        of them this voice takes; every voice of the chord reads the same notes, so that together they are the chord."""
+        together = [self.next_note() for _ in range(self._habits.get(TOGETHER, 1))]
+        return together[self._habits.get(TAKES, 0)]
 
     def new_line(self, *, entry, under, dice):
+        """Notes of the row in the row of lengths, each as loud as the row of loudness says, where there is one, and sounding
+        for as much of its length as the row of articulation says, the rest of the length silent."""
         whole = self._grid * self._habits[LINE_BARS]
         notes = []
         at = 0
         while at < whole:
             length = min(self.next_length(), whole - at)
-            notes.append({**self.next_note(), STEPS: length})
+            note = self.next_sound()
+            if self._habits.get(LOUDNESS):
+                note[LOUDER] = there_and_back(values=self._habits[LOUDNESS], at=self._sounded)
+            sounds = length
+            if self._habits.get(ARTICULATION):
+                sounds = max(1, length * there_and_back(values=self._habits[ARTICULATION], at=self._sounded) // PARTS_OF_A_LENGTH)
+            self._sounded += 1
+            notes.append({**note, STEPS: sounds})
+            if sounds < length:
+                notes.append({REST: length - sounds})
             at += length
         return notes
 
@@ -307,6 +337,12 @@ class Serial(StepWalk):
                 note.pop(field, None)
             note.update(pitch)
         return line
+
+
+def there_and_back(*, values, at):
+    """A row of values read forwards and then backwards, over and over: the value at a count."""
+    turn, place = divmod(at, len(values))
+    return values[place if turn % 2 == 0 else len(values) - 1 - place]
 
 
 class Evolving(StepWalk):

@@ -53,6 +53,8 @@ LINES = 'lines'
 STEP = 'step'
 REST = 'rest'
 STRESS = 'stress'
+# How much louder or softer than its part a note is, where an engine says.
+LOUDER = 'louder'
 SHARP = 'sharp'
 FLAT = 'flat'
 ACCIDENTAL_MARKS = {SHARP: '#', FLAT: 'b'}
@@ -108,7 +110,7 @@ def tune_rows(*, lines, octave, velocity, step_size):
             rest = REST in note
             length = note[REST] if rest else note[STEPS]
             held = [None] * (length - 1)
-            loud = None if rest else note.get(VELOCITY, clamped(velocity + STRESSES.get(note.get(STRESS), 0)))
+            loud = None if rest else note.get(VELOCITY, clamped(velocity + STRESSES.get(note.get(STRESS), 0) + note.get(LOUDER, 0)))
             rows[DEGREE] += [None if rest else note[DEGREE]] + held
             rows[ACCIDENTAL] += [ACCIDENTAL_MARKS.get(note.get(ACCIDENTAL))] + held
             rows[OCTAVE] += [None if rest else octave + note.get(OCTAVE, 0)] + held
