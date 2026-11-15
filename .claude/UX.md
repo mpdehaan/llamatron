@@ -2,7 +2,7 @@
 
 The user's rules for what every page, dialog and message of the text UI does, kept apart from the
 rules for the code (`.claude/STYLE.md`) and the notes on how each page is built
-(`.claude/TRACKER.md`) so that they can be reviewed on their own. `CLAUDE.md` imports this file,
+(`.claude/tracker/`) so that they can be reviewed on their own. `CLAUDE.md` imports this file,
 so it's in force in every session. What each rule replaced, and when, is in `.claude/DECISIONS.md`. `docs/GETTING_STARTED.md` tells people the same rules in its own words, under
 "Keyboard Control", and a change here changes it too. Consistency and usability matter
 more to the user than novelty: a new thing looks like the existing thing it's most like, and where
@@ -315,7 +315,7 @@ such name, and `tests/rules/test_naming.py` holds that nothing else numbers one)
   `*`, and a cell that can't take a value, which the render would ignore, is a light `/`; the
   register rows are never such a cell, since no register setting is locked out for want of a note.
 - Every page but Arrange has a theme colour by its kind, the main screen's white, the user's design, a solid stripe in place of the
-  header's rule (`.claude/TRACKER.md`, "The header and the crumbs"); the stripes are the fifth allowance of colour.
+  header's rule (`.claude/tracker/SHARED.md`, "The header and the crumbs"); the stripes are the fifth allowance of colour.
 - The header is two lines over the rule or the theme's stripe, the user's design of keeping what matters in the corners: the
   first line has the crumbs, the page's own path, which change with every page, in its left corner, llamatron centred, and the
   open set and the save mark at the right; the second has the current song and the length at the right. The set and the song

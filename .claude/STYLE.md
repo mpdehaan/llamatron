@@ -173,7 +173,7 @@ come with, how tests are written and where each kind lives are in `.claude/TESTI
 loading and saving should be quick, and real-time MIDI playback may come later. Lengths and times
 are exact, never floats: `Rational`s everywhere but inside a render, where a length is a pair of
 whole numbers handled by `Length` and a note is a tuple handled by `Sound`
-(`.claude/FORMAT.md`, "Sounds and lengths in a render"). A pair is never compared with `<`,
+(`.claude/format/PLAYBACK.md`, "Sounds and lengths in a render"). A pair is never compared with `<`,
 `min`, `max` or `sorted`, only through `Length`, and a sound is read by its named places
 (`sound[LENGTH]`), never by a bare number. The aim is fewer operations rather than a different
 number type: build each note once, keep pattern steps as per-row arrays with no Step objects, work out
@@ -287,8 +287,8 @@ Rich's hashed style id so that a bump alone changes none of them, and that `GUID
 when what the tracker draws changed, or when the user asks (`.claude/COMMUNICATION.md`), and only the shots whose drawing changed are committed, since each round adds to git's history for
 good (the user's choice to leave the history alone and not rewrite it; when the packed repository, `git count-objects -vH`,
 passes about 100 MB, Claude proposes no longer committing `web_docs/`, which repeats every screenshot). `internal_tools/make_docs.sh` runs both, and the third generated pieces are the index of the demos in `docs/DEMOS.md` and each demo's summary, its facts (the file linked to the file on GitHub, its starting key, tempo and length) and a table of only the features it uses, on its genre's page in `docs/demos/`, between `internal_tools/demo_summary.py`'s markers, which `internal_tools/demo_table.sh` rewrites and `tests/tools/test_demo_summary.py` checks; the same run keeps each genre page's sections sorted by the demo's name without its learning number, writes a linked index of them at the top of every page of demos, and writes `docs/demos/TUTORIAL.md`, the Tutorial Demos page, from the learning demos' sections in their numbered order, and `docs/demos/OTHER.md` from `examples/other/`'s by name (the user's design), so run it after adding or changing an example. GitHub draws Mermaid and shows SVG, so
-the documents need no other tool. A change to the model or the tracker updates `.claude/FORMAT.md`
-or `.claude/TRACKER.md`, and a change to a rule updates this file. An idea in `dev_notes/IDEAS.yml` is removed
+the documents need no other tool. A change to the model or the tracker updates `.claude/format/`
+or `.claude/tracker/`, and a change to a rule updates this file. An idea in `dev_notes/IDEAS.yml` is removed
 as soon as it's built, without being asked, and the finished parts are trimmed out of an idea
 that's partly built; check it whenever a feature lands, since a change often finishes an idea
 noted under another heading, and add to it only when the user asks. When a module moves or is

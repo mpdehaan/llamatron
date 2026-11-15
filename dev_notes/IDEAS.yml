@@ -14,7 +14,7 @@
 - title: "Keyswitches: what the first build left out"
   priority: 1
   text: |
-    An instrument's Keyswitch Map, a pattern's Keyswitch row and their playing are built (.claude/FORMAT.md, "Instruments").
+    An instrument's Keyswitch Map, a pattern's Keyswitch row and their playing are built (.claude/format/FILE_RULES.md, "Instruments").
     Left for later, none of it designed: a slot that switches by a controller's value, a program change or a MIDI channel
     rather than a note, to be read from a plugin's own documentation and not from memory; a generator naming a slot, as the
     guitar generators' muted strokes would; whether a ready-made map ships for any plugin, which depends on what may be said
@@ -267,7 +267,7 @@
 - title: "The visualizer: a lava lamp of rippling colour over the clip area"
   priority: 1
   text: |
-    **In progress.** Stages 1 to 5 are built (`.claude/TRACKER.md`, "The visualizer"): `Z` on
+    **In progress.** Stages 1 to 5 are built (`.claude/tracker/VISUALIZER.md`, "The visualizer"): `Z` on
     Arrange with Real Time on, `--visualizer`, the recorder's question, `internal_tools/preview_visualizer.sh`, the
     notes heard from the transport, and the lava lamp's water, colour and rotozoom on shared pieces,
     held under a limiter so that it never flashes; `internal_tools/time_visualizer.sh` times it at about 1 to 3%
@@ -1049,7 +1049,7 @@
     described as a simpler pattern with a generator (an arpeggiator, a strum, a ratchet, a Euclidean rhythm) than as raw notes.
 
     From the user on 2026-11-10. The import is built, underneath the tracker and from the main
-    screen's Import cell (`.claude/FORMAT.md`, "The MIDI import", and `.claude/TRACKER.md`,
+    screen's Import cell (`.claude/format/EXPORTERS.md`, "The MIDI import", and `.claude/tracker/SHARED.md`,
     "Importing a MIDI file"). What is left:
 
     - **Ratchets.** An AutoRatchet's or an arp's slices of a step come in as notes on a finer step,
@@ -1131,7 +1131,7 @@
     Real-time playback is built: the Instruments section and the main screen's Real Time switch, the
     Realtime Sender Process, Space on Arrange with every start by hand at the next bar, `L`
     (Listen) on the clip page and in the pattern editor, the lights, the clock and Ctrl+T
-    (`.claude/FORMAT.md`, "Real-time playback"; `.claude/TRACKER.md`, "Real-time playback"). The exports stay exactly as they were. What the
+    (`.claude/format/PLAYBACK.md`, "Real-time playback"; `.claude/tracker/ARRANGE.md`, "Real-time playback"). The exports stay exactly as they were. What the
     user's design of 2026-11-07 and 2026-11-09 still has in it, to do one item at a time:
 
     - **Edits while playing never stop playback.** Today an edit is heard at the next launch: the

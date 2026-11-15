@@ -143,7 +143,7 @@ The user's rules for a reply that puts anything to them, gathered here so that e
 - The rules carry no dates: a choice is marked as the user's design or rule, never dated (the user's
   rule). `.claude/DECISIONS.md`, the history of the choices, is where dates belong.
 - Questions about undo, redo and what they should do to a page come to the user before anything is
-  built, since the behaviour was agreed in detail (`.claude/TRACKER.md`, "Undo and redo").
+  built, since the behaviour was agreed in detail (`.claude/tracker/SHARED.md`, "Undo and redo").
 - Claude records what it understands of what the user said, never the user's literal words: a rule, a decision or a note
   is written in Claude's own plain statement of what is wanted, which Claude may edit as its understanding improves, and no
   file quotes a reply of the user's (the user's rule).
@@ -151,7 +151,7 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   then written into the repository's rules rather than into Claude's memory, which a reset can
   lose: into the `.claude/` file whose topic it belongs to (this file for how Claude and the user
   work together, `STYLE.md` for the code, `TESTING.md` for the tests, `UX.md` for how the text UI
-  behaves, `FORMAT.md` for the model, `TRACKER.md` for how each page is built), and into
+  behaves, the file of `.claude/format/` for the part of the model, the file of `.claude/tracker/` for the page, `MACRO_COMPOSER.md` for the MacroComposer), and into
   `CLAUDE.md` only when it's about the project as a whole.
   `CLAUDE.md` stays short and orderly, and each other file stays on its topic.
 
@@ -166,7 +166,7 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   can answer "1 is wrong". The user dislikes assumptions being made at all, so fewer, asked
   earlier, is the rule.
 - A recommendation weighs the least surprising musical result heavily, which usually wins over
-  what is simplest to build (`.claude/FORMAT.md`, "Musical answers first").
+  what is simplest to build (`.claude/format/GENERATORS.md`, "Musical answers first").
 - Rewriting an example set, moving a feature's demonstration into it or changing what it plays, is always confirmed by
   the user, and asked about upfront, before it's done, when Claude thinks it a good idea (the user's rule).
 - For every new feature, Claude asks whether a demo for it is appropriate, a set of its own or a

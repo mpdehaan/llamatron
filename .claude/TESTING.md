@@ -70,7 +70,7 @@ sets), or shows which songs changed.
   that it conforms to new code and passes: work out what it was protecting, make an intelligent
   choice, and where the choice is the user's, ask them.
 - **Tests and scripts never fetch anything from the internet.**
-- **Test data never lives in `examples/`**, which is for musicians (`.claude/FORMAT.md`, "Examples
+- **Test data never lives in `examples/`**, which is for musicians (`.claude/format/EXAMPLES.md`, "Examples
   and demos"): a set made to test the program is a data file under `tests/`.
 
 ## How tests are written
@@ -155,7 +155,7 @@ shared helpers are modules beside them:
   again after any change and fails the test with `StaleAnswer` if the answer kept was wrong
   (`tests/support_code/test_memory.py` tests the memory itself, checking and not). The same switch makes a
   document check what it shares: the data its objects keep, the snapshots in its undo history,
-  and that every undo leaves what loading the snapshot would (`.claude/TRACKER.md`, "Undo and
+  and that every undo leaves what loading the snapshot would (`.claude/tracker/SHARED.md`, "Undo and
   redo"). `tests/composition/test_kept_data.py` tests the kept data and `Setlist.restore`, and holds the rule
   that data and objects share no list or dictionary. A test of what happens without the checks
   turns them off with `Memory.check_every_answer(checks=False)` and on again when it ends.
@@ -339,4 +339,4 @@ missing, so that a new page can't arrive without them:
 Undo tests may use a shorter history through `History(depth=)` when filling the ring would be
 slow; the tracker's own depth is `HISTORY_DEPTH` and nothing shows or sets it. Any question about
 what undo or redo should do on a page comes to the user before anything is built, since the
-behaviour was agreed in detail (`.claude/TRACKER.md`, "Undo and redo").
+behaviour was agreed in detail (`.claude/tracker/SHARED.md`, "Undo and redo").

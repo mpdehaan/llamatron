@@ -33,7 +33,7 @@ DOCUMENTS = [
     ROOT / 'README.md',
     *sorted((ROOT / 'dev_notes').glob('*.md')),
     *sorted((ROOT / 'docs').rglob('*.md')),
-    *sorted((ROOT / '.claude').glob('*.md')),
+    *sorted((ROOT / '.claude').rglob('*.md')),
 ]
 # The guide, whose table of guides links every chapter in docs/, the user's rule.
 GUIDE = ROOT / 'GUIDE.md'

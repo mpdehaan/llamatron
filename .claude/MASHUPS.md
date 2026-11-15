@@ -3,7 +3,7 @@
 Claude's notes on making a mashup the user is happy with, and on bringing a classical work's notes in for one, written down at the
 user's ask once the method worked. A mashup sets one public-domain work's notes on a band of another genre; it lives in
 `examples/mashups/`, in the folder of the band's genre. The rule that a mashup never puts the borrowed tune on the lead alone over a
-beat is in `.claude/FORMAT.md`, "Examples and demos"; this file says how that rule is met. It isn't imported: read it before making or
+beat is in `.claude/format/EXAMPLES.md`, "Examples and demos"; this file says how that rule is met. It isn't imported: read it before making or
 changing a mashup.
 
 ## What the User Judges a Mashup By
