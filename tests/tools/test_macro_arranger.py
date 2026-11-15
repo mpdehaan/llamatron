@@ -65,6 +65,13 @@ STABS = 'guitar stabs on the upbeats'
 GUITARIFIES = 'guitarifies'
 GUITARIFY = 'guitarify'
 ROCK = 'rock'
+ELECTRONIC = 'electronic'
+TRANCE = 'trance'
+HOUSE = 'house'
+AMBIENT = 'ambient'
+BEAT = 'beat'
+PADS = 'pads'
+NO_SUCH_FORM = 'no such form'
 VERSE = 'verse'
 CYMBAL = 'cymbal'
 ROCK_KIND = 'beat group'
@@ -143,7 +150,79 @@ class TestStyleTemplates(unittest.TestCase):
                 song = {**a_song(template=template), arranger.STYLE: style[arranger.NAME], arranger.FORM: list(style[arranger.SECTIONS])}
                 with self.subTest(path=path, template=template):
                     made = Setlist.from_data(data=composer.composed(given=arranger.arranged(style=style, song=song), version=VERSION))
-                    self.assertEqual(len(made.get_songs()[0].get_scenes()), len(style[arranger.SECTIONS]))
+                    scenes = len(made.get_songs()[0].get_scenes())
+                    self.assertGreater(scenes, 0)
+                    self.assertLessEqual(scenes, len(style[arranger.SECTIONS]))
+
+    def test_every_form_a_style_suggests_names_sections_the_style_has_and_its_shares_add_to_a_hundred(self):
+        for path in style_files():
+            style = read(path)
+            for kind, forms in style.get(arranger.FORMS, {}).items():
+                with self.subTest(path=path, kind=kind):
+                    self.assertTrue(kind == arranger.USUAL or kind in style[arranger.TEMPLATES])
+                    self.assertEqual(sum(form[arranger.SHARE] for form in forms), WHOLE)
+                    self.assertEqual(len({form[arranger.NAME] for form in forms}), len(forms))
+                    for form in forms:
+                        self.assertTrue(set(form[arranger.SECTIONS]) <= set(style[arranger.SECTIONS]))
+
+    def test_every_suggested_form_of_every_kind_makes_a_song_that_loads(self):
+        for path in style_files():
+            style = read(path)
+            for template in style[arranger.TEMPLATES] if arranger.FORMS in style else []:
+                for form in arranger.forms_of(style=style, song={arranger.TEMPLATE: template}):
+                    song = {**a_song(template=template), arranger.STYLE: style[arranger.NAME], arranger.FORM: form[arranger.NAME]}
+                    with self.subTest(path=path, template=template, form=form[arranger.NAME]):
+                        made = Setlist.from_data(data=composer.composed(given=arranger.arranged(style=style, song=song), version=VERSION))
+                        self.assertGreater(len(made.get_songs()[0].get_scenes()), 0)
+
+
+class TestForms(unittest.TestCase):
+    """A song's form: listed, named, the nearest to a length, or the commonest."""
+
+    def setUp(self):
+        self.style = read(os.path.join(STYLE_TEMPLATES, ELECTRONIC + YAML))
+        self.forms = self.style[arranger.FORMS][TRANCE]
+
+    def song(self, **more):
+        song = {**a_song(template=TRANCE), arranger.STYLE: ELECTRONIC, **more}
+        del song[arranger.FORM]
+        return {**song, **more}
+
+    def sections(self, song):
+        picks = arranger.picked(style=self.style, song=song)
+        return arranger.form_of(style=self.style, song=song, meter=arranger.COMMON_TIME, tempo=arranger.tempo_of(style=self.style, song=song, picks=picks))
+
+    def seconds(self, form):
+        song = self.song()
+        picks = arranger.picked(style=self.style, song=song)
+        return arranger.seconds_of(sections=form[arranger.SECTIONS], style=self.style, song=song, meter=arranger.COMMON_TIME,
+                                   tempo=arranger.tempo_of(style=self.style, song=song, picks=picks))
+
+    def test_a_song_that_says_nothing_takes_the_commonest_form_of_its_kind(self):
+        commonest = max(self.forms, key=arranger.share_of)
+        self.assertEqual(self.sections(self.song()), commonest[arranger.SECTIONS])
+
+    def test_a_song_names_a_form_or_lists_its_sections(self):
+        named = self.forms[0]
+        self.assertEqual(self.sections(self.song(**{arranger.FORM: named[arranger.NAME]})), named[arranger.SECTIONS])
+        self.assertEqual(self.sections(self.song(**{arranger.FORM: [INTRO]})), [INTRO])
+        with self.assertRaises(ValueError):
+            self.sections(self.song(**{arranger.FORM: NO_SUCH_FORM}))
+
+    def test_a_song_that_says_how_long_takes_the_nearest_form_and_a_longer_form_has_more_kinds_of_section(self):
+        by_length = sorted(self.forms, key=self.seconds)
+        for form in by_length:
+            self.assertEqual(self.sections(self.song(**{arranger.LENGTH: self.seconds(form)})), form[arranger.SECTIONS])
+        self.assertEqual(self.sections(self.song(**{arranger.LENGTH: 0})), by_length[0][arranger.SECTIONS])
+        self.assertGreater(len(set(by_length[-1][arranger.SECTIONS])), len(set(by_length[0][arranger.SECTIONS])))
+
+    def test_a_kind_with_no_forms_of_its_own_takes_the_styles_usual_ones(self):
+        self.assertEqual(arranger.forms_of(style=self.style, song={arranger.TEMPLATE: HOUSE}), self.style[arranger.FORMS][arranger.USUAL])
+
+    def test_a_section_in_which_nothing_of_the_songs_picks_plays_is_left_out(self):
+        song = {**a_song(template=AMBIENT), arranger.STYLE: ELECTRONIC, arranger.FORM: [BEAT, PADS]}
+        made = arranger.arranged(style=self.style, song=song)
+        self.assertEqual([scene[composer.SCENE] for scene in made[composer.FORM]], [PADS])
 
 
 class TestPicks(unittest.TestCase):

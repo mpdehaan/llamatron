@@ -135,6 +135,10 @@ FILL_EVERY = 'fill_every'
 ALLOWS = 'intensity'
 CRASH_START = 'crash'
 ENDS = 'ends'
+FORMS = 'forms'
+LENGTH = 'length'
+SECONDS_IN_A_MINUTE = 60
+BEATS_IN_A_WHOLE = 4
 MSG_LEVEL_PART = '{} at {}'
 MSG_START = '{} start'
 BUSY = 'busy'
@@ -168,6 +172,8 @@ MSG_REPEATED_SCENE = '{} {}'
 ERR_NO_TEMPLATE = 'the style ({}) has no template called ({}); it has: {}'
 ERR_NO_VALUE = 'the trait ({}) has no value called ({}); it has: {}'
 ERR_NEEDS = 'the pick {} = {} needs {} = {}, and the song picks {}'
+ERR_NO_FORM = 'the style ({}) has no form called ({}) for the kind ({})'
+ERR_NO_FORMS = 'the song gives no form and the style ({}) suggests none'
 ERR_NO_SECTION = 'the form names the section ({}), which neither the song nor the style describes'
 
 
@@ -421,10 +427,51 @@ def section_of(*, name, style, song):
     return {**style[SECTIONS].get(kind, {}), **of_song, KIND: kind}
 
 
+def tempo_of(*, style, song, picks):
+    return song.get(TEMPO, picks.get(TEMPO, style[TRAITS][TEMPO][USUAL]))
+
+
+def forms_of(*, style, song):
+    """The forms a style suggests for the song's kind, each with how common it is, or the style's usual ones."""
+    forms = style.get(FORMS, {})
+    return forms.get(song[TEMPLATE]) or forms.get(USUAL, [])
+
+
+def seconds_of(*, sections, style, song, meter, tempo):
+    """How long a form lasts: its sections' bars at the song's tempo."""
+    bars = 0
+    for name in sections:
+        section = section_of(name=name, style=style, song=song)
+        bars += 1 if section.get(HELD) else section[BARS]
+    return float(bars * bar_length(meter) * BEATS_IN_A_WHOLE * SECONDS_IN_A_MINUTE / tempo)
+
+
+def form_of(*, style, song, meter, tempo):
+    """The sections a song plays, in order. A song may list them; or name one of the forms its style suggests for its kind;
+    or say how long it should last, in seconds, and take the suggested form that comes nearest, a longer form being one written
+    with more themes and changes and never the same form repeated; or say nothing and take the commonest."""
+    given = song.get(FORM)
+    if isinstance(given, list):
+        return given
+    forms = forms_of(style=style, song=song)
+    if given is not None:
+        named = [form for form in forms if form[NAME] == given]
+        if not named:
+            raise ValueError(ERR_NO_FORM.format(style[NAME], given, song[TEMPLATE]))
+        return named[0][SECTIONS]
+    if not forms:
+        raise ValueError(ERR_NO_FORMS.format(style[NAME]))
+    if LENGTH in song:
+        return min(forms, key=lambda form: abs(seconds_of(sections=form[SECTIONS], style=style, song=song, meter=meter, tempo=tempo) - song[LENGTH]))[SECTIONS]
+    return max(forms, key=share_of)[SECTIONS]
+
+
 def arranged(*, style, song):
     """A song's picks as a MacroComposer input."""
     picks = picked(style=style, song=song)
     meter = str(picks.get(METER, COMMON_TIME))
+    tempo = tempo_of(style=style, song=song, picks=picks)
+    form_names = form_of(style=style, song=song, meter=meter, tempo=tempo)
     lift = 1 if song[KEY][ROOT] in LOW_ROOTS else 0
     roles = [{**role, OCTAVE: role[OCTAVE] + lift} if OCTAVE in role else role for role in style[ROLES]]
     phrase_bars = style.get(PHRASE_BARS, DEFAULT_PHRASE_BARS)
@@ -440,7 +487,7 @@ def arranged(*, style, song):
     parts = {}
     drum_sets = {}
     drums_of = {}
-    for name in song[FORM]:
+    for name in form_names:
         section = section_of(name=name, style=style, song=song)
         if section.get(HELD) or DRUMS not in section[PLAYS] or name in drums_of:
             continue
@@ -496,7 +543,7 @@ def arranged(*, style, song):
     form = []
     notes = []
     met = {}
-    for count, name in enumerate(song[FORM], start=1):
+    for count, name in enumerate(form_names, start=1):
         section = section_of(name=name, style=style, song=song)
         met[name] = met.get(name, 0) + 1
         scene_name = name if met[name] == 1 else MSG_REPEATED_SCENE.format(name, met[name])
@@ -556,6 +603,10 @@ def arranged(*, style, song):
                     shaped.append(part)
                 if part in parts:
                     play[role[ROLE]] = {PART: part, ONCE: True, CHAINS: [MSG_TIMING_CHAIN.format(role[ROLE])]}
+        if not play:
+            # Nothing of the song's picks plays in this section, as pads alone where the song has no chord part: it is left out.
+            met[name] -= 1
+            continue
         form.append({SCENE: scene_name, BARS: bars, PLAY: play})
         notes.append(MSG_SCENE.format(count, scene_name, bars))
     generators = {PROGRESSIONS: progressions, **extra}
@@ -565,7 +616,7 @@ def arranged(*, style, song):
     given = {
         NAME: song[NAME], TITLE: song[TITLE], DESCRIPTION: song.get(DESCRIPTION, song[TITLE]), GENRE: style[GENRE],
         NOTES: MSG_NOTES.format(title=song[TITLE], style=style[TITLE], template=song[TEMPLATE], picks=said, form='\n'.join(notes)),
-        SCALES: {scale: {ROOT: song[KEY][ROOT], TYPE: scale_type}}, SCALE: scale, TEMPO: song.get(TEMPO, picks.get(TEMPO, style[TRAITS][TEMPO][USUAL])),
+        SCALES: {scale: {ROOT: song[KEY][ROOT], TYPE: scale_type}}, SCALE: scale, TEMPO: tempo,
         FEEL: style[FEEL], SHAPED: shaped, INSTRUMENTS: instruments, TRACKS: tracks, DRUM_TRACKS: drum_tracks, GENERATORS: generators, CHAINS: chains,
         PARTS: parts, FORM: form,
     }

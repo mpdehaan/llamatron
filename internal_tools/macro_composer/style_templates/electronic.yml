@@ -17,6 +17,7 @@
 #             rush or a drag, in hundredths of a step), how uneven the hits are, a strum's width, a lead's range.
 #             A player of a figure, such as the bass, varies bars of each four-bar phrase by ending them with notes
 #             of their own (ends), written on a grid of so many steps to the bar and left out where the figure's grid differs.
+# forms       the layouts a song of each kind may take (see the note above them).
 # melody      the habits a tune is sketched by when a song gives none: the notes used, rhythm cells, how far it ranges.
 # Sixteen steps to a bar, sixteenths. A song here is layers that enter and leave: the sections say which play.
 # No act, label or work is named or followed.
@@ -38,30 +39,39 @@ templates:
   trance:        {tempo: 138, kick: every beat, backbeat: clap, hat: open on the offbeats, percussion: none, bass: offbeat, chords: held pad, arp: gated chord, lead: synth line, harmony: minor four chord}
   drum and bass: {tempo: 172, kick: one and the and of three, backbeat: snare, hat: eighths, percussion: shaker, bass: long low notes, chords: held pad, arp: none, lead: none, harmony: minor two chord}
   big beat:      {tempo: 104, kick: breakbeat, backbeat: snare with quiet notes, hat: eighths, percussion: shaker, fills: toms, bass: gritty riff, chords: held pad, arp: sixteenths up, lead: voice hook, harmony: one chord}
+  minimal techno: {tempo: 126, kick: every beat, backbeat: none, hat: offbeats, percussion: rim late, fills: the kick drops out, bass: two notes with gaps, chords: one stab off the beat, arp: none, lead: none, harmony: one chord}
+  dubstep:       {tempo: 140, kick: half time, backbeat: snare on three, hat: eighths, percussion: none, bass: wobble, chords: held pad, arp: none, lead: none, harmony: minor two chord}
+  ambient:       {tempo: 80, kick: none, backbeat: none, hat: none, percussion: none, fills: none, bass: long low notes, chords: held pad, arp: eighths up and down, lead: synth line, harmony: minor four chord}
+  downtempo:     {tempo: 90, kick: breakbeat, backbeat: snare with quiet notes, hat: eighths, percussion: shaker, fills: none, bass: long low notes, chords: held pad, arp: eighths up and down, lead: synth line, harmony: minor two chord}
   chiptune:      {tempo: 150, kick: one and three, backbeat: snare, hat: eighths, percussion: none, bass: octaves in eighths, chords: none, arp: fast chord arpeggio, lead: square line, harmony: four chord}
 
 traits:
-  tempo: {lowest: 100, usual: 126, highest: 175}
+  tempo: {lowest: 70, usual: 126, highest: 175}
   kick:
-    - {value: every beat, share: 58, bar: {kick: [loud, none, none, none, loud, none, none, none, loud, none, none, none, loud, none, none, none]}}
+    - {value: every beat, share: 52, bar: {kick: [loud, none, none, none, loud, none, none, none, loud, none, none, none, loud, none, none, none]}}
     - {value: one and three, share: 12, bar: {kick: [loud, none, none, none, none, none, none, none, loud, none, none, none, none, none, none, none]}}
     - {value: broken, share: 12, bar: {kick: [loud, none, none, loud, none, none, loud, none, none, none, loud, none, none, none, none, none]}}
     - {value: one and the and of three, share: 8, bar: {kick: [loud, none, none, none, none, none, none, none, none, none, loud, none, none, none, none, none]}}
     - {value: threes, share: 6, bar: {kick: [loud, none, none, loud, none, none, loud, none, loud, none, none, loud, none, none, loud, none]}}
     - {value: breakbeat, share: 4, bar: {kick: [loud, none, none, none, none, none, none, loud, none, none, loud, none, none, none, none, none]}}
+    - {value: half time, share: 4, bar: {kick: [loud, none, none, none, none, none, none, none, none, none, none, loud, none, none, none, none]}}
+    - {value: none, share: 2}
   backbeat:
-    - {value: clap, share: 42, bar: {clap: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, none, none, none]}}
+    - {value: clap, share: 38, bar: {clap: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, none, none, none]}}
     - {value: snare, share: 36, bar: {snare: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, none, none, none]}}
     - {value: clap and snare, share: 8, bar: {clap: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, none, none, none], snare: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, none, none, none]}}
+    - {value: snare on three, share: 4, bar: {snare: [none, none, none, none, none, none, none, none, loud, none, none, none, none, none, none, none]}}
     - {value: snare with quiet notes, share: 4, bar: {snare: [none, none, none, none, loud, none, none, none, none, soft, none, none, loud, none, none, soft]}}
     - {value: none, share: 10}
   hat:
     - {value: offbeats, share: 22, bar: {hat: [none, none, loud, none, none, none, loud, none, none, none, loud, none, none, none, loud, none]}}
     - {value: open on the offbeats, share: 28, bar: {hat: [soft, soft, none, soft, soft, soft, none, soft, soft, soft, none, soft, soft, soft, none, soft], open: [none, none, loud, none, none, none, loud, none, none, none, loud, none, none, none, loud, none]}}
-    - {value: sixteenths, share: 28, bar: {hat: [loud, soft, loud, soft, loud, soft, loud, soft, loud, soft, loud, soft, loud, soft, loud, soft]}}
+    - {value: none, share: 2}
+    - {value: sixteenths, share: 26, bar: {hat: [loud, soft, loud, soft, loud, soft, loud, soft, loud, soft, loud, soft, loud, soft, loud, soft]}}
     - {value: eighths, share: 22, bar: {hat: [loud, none, loud, none, loud, none, loud, none, loud, none, loud, none, loud, none, loud, none]}}
   percussion:
-    - {value: none, share: 46}
+    - {value: none, share: 42}
+    - {value: rim late, share: 4, bar: {rim: [none, none, none, none, none, none, soft, none, none, none, none, none, none, none, none, loud]}}
     - {value: shaker, share: 22, bar: {shaker: [soft, soft, loud, soft, soft, soft, loud, soft, soft, soft, loud, soft, soft, soft, loud, soft]}}
     - {value: rim in threes, share: 14, bar: {rim: [none, none, none, loud, none, none, loud, none, none, loud, none, none, loud, none, none, none]}}
     - {value: cowbell, share: 8, bar: {cowbell: [loud, none, none, none, none, none, loud, none, none, none, loud, none, none, none, none, none]}}
@@ -73,12 +83,12 @@ traits:
     - {value: none, share: 10}
   bass:
     - value: offbeat
-      share: 18
+      share: 16
       sound: synth bass
       figure:
         - [{rest: 2}, {degree: 1, steps: 2}, {rest: 2}, {degree: 1, steps: 2}, {rest: 2}, {degree: 1, steps: 2}, {rest: 2}, {degree: 1, steps: 2}]
     - value: octaves in sixteenths
-      share: 14
+      share: 10
       sound: synth bass
       figure:
         - [{degree: 1, steps: 1}, {rest: 1}, {degree: 1, octave: 1, steps: 1}, {degree: 1, steps: 1}, {rest: 1}, {degree: 1, steps: 1}, {degree: 1, octave: 1, steps: 1}, {rest: 1},
@@ -95,7 +105,7 @@ traits:
         - [{degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, octave: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1},
            {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, octave: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 5, steps: 1}, {degree: 1, steps: 1}]
     - value: syncopated
-      share: 16
+      share: 13
       sound: synth bass
       figure:
         - [{degree: 1, steps: 3}, {degree: 1, steps: 3}, {degree: 1, steps: 2}, {rest: 2}, {degree: 5, steps: 2}, {degree: 7, steps: 2}, {degree: 1, octave: 1, steps: 2}]
@@ -105,6 +115,17 @@ traits:
       figure:
         - [{degree: 1, steps: 3}, {degree: 1, steps: 1}, {rest: 2}, {degree: 7, steps: 2}, {degree: 1, steps: 2}, {rest: 2}, {degree: 3, steps: 2}, {degree: 1, steps: 2}]
         - [{degree: 1, steps: 3}, {degree: 1, steps: 1}, {rest: 2}, {degree: 7, steps: 2}, {degree: 1, steps: 2}, {degree: 4, steps: 2}, {degree: 3, steps: 2}, {degree: 1, steps: 2}]
+    - value: two notes with gaps
+      share: 4
+      sound: sub bass
+      figure:
+        - [{degree: 1, steps: 2}, {rest: 5}, {degree: 1, steps: 1}, {rest: 2}, {degree: 1, steps: 2}, {rest: 4}]
+    - value: wobble
+      share: 5
+      sound: acid bass
+      figure:
+        - [{degree: 1, steps: 4}, {degree: 1, steps: 2}, {degree: 1, steps: 2}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 4}]
+        - [{degree: 1, steps: 2}, {degree: 1, steps: 2}, {degree: 1, steps: 2}, {degree: 1, steps: 2}, {degree: 7, steps: 4}, {rest: 2}, {degree: 1, octave: 1, steps: 2}]
     - value: long low notes
       share: 14
       sound: sub bass
@@ -172,10 +193,10 @@ traits:
         - arp: {step: 1/32, order: up}
   harmony:
     - {value: one chord, share: 14, scale_type: minor, pattern: [1]}
-    - {value: two chord vamp, share: 18, pattern: [1, 1, 4, 4], by_section: {breakdown: [2, 2, 5, 5]}}
-    - {value: minor two chord, share: 18, scale_type: minor, pattern: [1, 1, 7, 7], by_section: {breakdown: [6, 6, 7, 7]}}
-    - {value: four chord, share: 24, pattern: [1, 5, 6, 4], by_section: {breakdown: [6, 4, 1, 5]}}
-    - {value: minor four chord, share: 26, scale_type: minor, pattern: [1, 6, 3, 7], by_section: {breakdown: [6, 7, 1, 1]}}
+    - {value: two chord vamp, share: 18, pattern: [1, 1, 4, 4], by_section: {breakdown: [2, 2, 5, 5], second: [6, 6, 5, 5], other: [6, 6, 5, 5]}}
+    - {value: minor two chord, share: 18, scale_type: minor, pattern: [1, 1, 7, 7], by_section: {breakdown: [6, 6, 7, 7], second: [4, 4, 1, 1], other: [4, 4, 1, 1]}}
+    - {value: four chord, share: 24, pattern: [1, 5, 6, 4], by_section: {breakdown: [6, 4, 1, 5], second: [4, 5, 6, 6], other: [4, 5, 6, 6]}}
+    - {value: minor four chord, share: 26, scale_type: minor, pattern: [1, 6, 3, 7], by_section: {breakdown: [6, 7, 1, 1], second: [4, 6, 1, 7], other: [4, 6, 1, 7]}}
   lead:
     - {value: none, share: 25}
     - {value: synth line, share: 32, sound: lead}
@@ -285,6 +306,62 @@ sections:
     plays: [drums, bass, chords]
     plan: []
   ending: {held: true, plays: [bass, chords]}
+  beat: {bars: 8, plays: [drums], plan: [], intensity: {drums: 2}}
+  bassline: {bars: 8, plays: [drums, bass], plan: [], intensity: {drums: 3, bass: 2}, crash: true}
+  strip: {bars: 8, plays: [drums, bass, arp], plan: [], intensity: {drums: 3}}
+  second:
+    crash: true
+    bars: 16
+    plays: [drums, bass, chords, arp, lead]
+    plan: [{line: other}, {line: other, higher: true}, {line: other, varied: true}, {line: close}, {line: other}, {line: other, higher: true}, {line: other, varied: true}, {line: close, varied: true}]
+  pads: {bars: 8, plays: [chords], plan: []}
+  drift: {bars: 8, plays: [chords, arp, bass], plan: []}
+  thin: {bars: 8, plays: [arp, bass], plan: []}
+  theme:
+    bars: 16
+    plays: [chords, arp, bass, lead]
+    plan: [{line: hook}, {line: hook, varied: true}, {line: hook}, {line: turn, higher: true}, {line: hook}, {line: hook, varied: true}, {line: hook}, {line: turn, higher: true, varied: true}]
+  other:
+    bars: 16
+    plays: [chords, arp, bass, lead]
+    plan: [{line: other}, {line: other, higher: true}, {line: other, varied: true}, {line: close}, {line: other}, {line: other, higher: true}, {line: other, varied: true}, {line: close, varied: true}]
+
+# forms       the layouts a song of each kind may take, each with how common it is; usual serves a kind that lists none. A song
+#             names one, or says how long it should last and takes the nearest, or takes the commonest. A longer form is written
+#             with more themes and changes (a second theme over other chords, a strip-down, another breakdown), never repeats alone.
+forms:
+  usual:
+    - {name: one breakdown, share: 40, sections: [intro, groove, breakdown, build, groove, outro, ending]}
+    - {name: two breakdowns, share: 35, sections: [intro, groove, breakdown, build, groove, breakdown, build, groove, outro, ending]}
+    - {name: with a second theme, share: 25, sections: [intro, bassline, groove, breakdown, build, second, strip, groove, breakdown, build, groove, outro, ending]}
+  techno:
+    - {name: layers in and out, share: 40, sections: [beat, bassline, groove, strip, groove, outro, ending]}
+    - {name: one breakdown, share: 35, sections: [beat, bassline, groove, breakdown, build, groove, strip, groove, outro, ending]}
+    - {name: long with a second theme, share: 25, sections: [beat, bassline, groove, strip, second, breakdown, build, groove, strip, second, groove, outro, ending]}
+  minimal techno:
+    - {name: slow build, share: 40, sections: [beat, bassline, strip, groove, strip, groove, outro, ending]}
+    - {name: thinning out and back, share: 35, sections: [beat, bassline, strip, groove, thin, bassline, second, strip, groove, outro, ending]}
+    - {name: long and patient, share: 25, sections: [beat, bassline, strip, groove, thin, bassline, second, strip, groove, breakdown, bassline, second, groove, outro, ending]}
+  trance:
+    - {name: short, share: 25, sections: [intro, groove, breakdown, build, groove, outro, ending]}
+    - {name: long breakdown, share: 45, sections: [beat, bassline, groove, strip, breakdown, pads, build, second, groove, outro, ending]}
+    - {name: two climaxes, share: 30, sections: [beat, bassline, groove, strip, breakdown, pads, build, second, groove, breakdown, build, second, strip, outro, ending]}
+  drum and bass:
+    - {name: one drop, share: 30, sections: [pads, build, groove, strip, groove, outro, ending]}
+    - {name: two drops, share: 45, sections: [pads, drift, build, groove, strip, breakdown, build, second, groove, outro, ending]}
+    - {name: long with a switch, share: 25, sections: [pads, drift, build, groove, strip, second, breakdown, pads, build, groove, strip, second, groove, outro, ending]}
+  dubstep:
+    - {name: two drops, share: 50, sections: [pads, drift, build, groove, breakdown, build, groove, outro, ending]}
+    - {name: second drop switched, share: 30, sections: [pads, drift, build, groove, strip, breakdown, build, second, groove, outro, ending]}
+    - {name: long, share: 20, sections: [pads, drift, build, groove, strip, breakdown, pads, build, second, strip, breakdown, build, groove, outro, ending]}
+  ambient:
+    - {name: one theme, share: 30, sections: [pads, drift, theme, pads, ending]}
+    - {name: theme and return, share: 45, sections: [pads, drift, theme, thin, theme, pads, ending]}
+    - {name: two themes, share: 25, sections: [pads, drift, theme, thin, other, drift, theme, pads, ending]}
+  downtempo:
+    - {name: short, share: 25, sections: [beat, groove, breakdown, groove, ending]}
+    - {name: one breakdown, share: 45, sections: [pads, beat, groove, breakdown, groove, outro, ending]}
+    - {name: two themes, share: 30, sections: [pads, beat, bassline, groove, thin, second, breakdown, groove, outro, ending]}
 
 melody:
   grid: 8

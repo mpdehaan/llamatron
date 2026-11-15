@@ -67,6 +67,9 @@ A YAML file whose comments at its top explain each field. In short:
 - `sounds`: General MIDI numbers.
 - `sections`: each kind of section's bars, what plays, the plan of its tune, its chords, whether it is held, and its
   `intensity`, `crash` and `picks` (below).
+- `forms`: the layouts a song of each kind may take, each with a name, a share and its sections; `usual` serves a kind that
+  lists none. Electronic has them so far; its kinds include house, techno, minimal techno, trance, drum and bass, dubstep,
+  ambient, downtempo and big beat.
 - `melody`: the sketcher's habits: grid, line length, span, home, ladder and rhythms, which may be keyed by meter.
 
 A step is a bar's length divided by the grid, so a shuffle has twelve steps to the bar.
@@ -75,7 +78,14 @@ A step is a bar's length divided by the grid, so a shuffle has twelve steps to t
 
 `name`, `title`, `description`, `style`, `template` (the kind), `picks` (traits changed from the kind's), `players` (a
 complexity for each instrument), `key` (root and type), `tempo`, `seed`, `sections` (the song's own, or changes to the
-style's) and `form`, the sections in order. A song's pick wins over the kind's.
+style's) and `form`. A song's pick wins over the kind's.
+
+A song's `form` is the sections in order, or the name of one of the forms its style suggests for its kind; a song with no
+`form` may give a `length` in seconds and takes the suggested form that comes nearest, or gives neither and takes the
+commonest (`form_of` in `arranger.py`). The user's rule for length: a longer song is never the same form repeated, but more
+themes and changes, so each kind's longer forms are written with a second theme over other chords, a strip-down or another
+breakdown. Key changes for a longer song, and asking the person about them, are wanted and not built. A section in which
+nothing of the song's picks plays, such as pads alone in a song with no chord part, is left out.
 
 ## Players
 
