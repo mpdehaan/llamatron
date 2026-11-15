@@ -63,8 +63,8 @@ pages current.
 | [Rock Mashup](demos/ROCK_MASHUP.md) | 6 |
 | [Soul Mashup](demos/SOUL_MASHUP.md) | 1 |
 | [Soundtrack](demos/SOUNDTRACK.md) | 7 |
-| [TV Theme](demos/TV_THEME.md) | 13 |
-| [TV theme](demos/TV_THEME.md) | 2 |
+| [TV Theme](demos/TV_THEME.md) | 14 |
+| [TV theme](demos/TV_THEME.md) | 1 |
 | [Video Game](demos/VIDEO_GAME.md) | 1 |
 | [Video game](demos/VIDEO_GAME.md) | 1 |
 | [World](demos/WORLD.md) | 1 |
