@@ -1,0 +1,208 @@
+# A style template: blues. The MacroComposer's arranger reads it (internal_tools/macro_composer/arranger.py).
+#
+# templates   the kinds of blues: each a set of picks to start from, any of which a song may change.
+# traits      what a song picks. Each trait lists its values; share is roughly how many songs in a hundred use the value, so
+#             the commonest is the one recommended; needs says what another trait must be for the value to fit.
+#             A drum value holds its bar, each drum's hits: loud, soft or none. A value a player plays holds its sound and
+#             its figure, bars of notes written over chord one, which a Progression moves through the song's chords.
+# roles       the band in track order: which trait each plays, how high and how loud.
+# sections    what plays in each kind of section, and the plan of its tune: which line returns and who plays each.
+# melody      the habits a tune is sketched by when a song gives none: the notes used, rhythm cells, how far it ranges.
+# Twelve steps to a bar throughout: three to a beat, which is the shuffle. No band, artist or work is named or followed.
+
+name: blues
+title: Blues
+genre: Blues
+feel: swing
+phrase_bars: 4
+loudness: {drums: 104, kick: 110, snare: 108, hat: 76, ride: 80, hat by foot: 70, crash: 100, tom high: 100, tom low: 102}
+
+templates:
+  shuffle:          {meter: 4/4, feel: shuffle, tempo: 120, drums: plain shuffle, bass: boogie, chords: twelve bar quick change, comping: guitar boogie, lead: voice, answers: harmonica}
+  texas shuffle:    {meter: 4/4, feel: shuffle, tempo: 128, drums: both hands shuffle, bass: boogie, chords: twelve bar quick change, comping: guitar stabs on the upbeats, lead: guitar, answers: none}
+  driving shuffle:  {meter: 4/4, feel: shuffle, tempo: 150, drums: driving shuffle, bass: roots, chords: twelve bar, comping: guitar boogie, lead: voice, answers: guitar}
+  slow blues:       {meter: 12/8, feel: triplets, tempo: 60, drums: slow twelve-eight, bass: slow walk, chords: twelve bar slow change, comping: piano triplets, lead: voice, answers: guitar}
+  minor blues:      {meter: 12/8, feel: triplets, tempo: 66, drums: slow twelve-eight, bass: slow walk, chords: minor twelve bar, comping: organ held, lead: guitar, answers: none}
+  jump blues:       {meter: 4/4, feel: swing, tempo: 170, drums: swing ride, bass: walking, chords: twelve bar with two five, comping: horn riffs, lead: voice, answers: saxophone}
+
+traits:
+  meter:
+    - {value: 4/4, share: 70}
+    - {value: 12/8, share: 30}
+  feel:
+    - {value: shuffle, share: 55, needs: {meter: 4/4}}
+    - {value: triplets, share: 30, needs: {meter: 12/8}}
+    - {value: swing, share: 15, needs: {meter: 4/4}}
+  tempo: {lowest: 50, usual: 110, highest: 180}
+  drums:
+    - value: plain shuffle
+      share: 32
+      needs: {meter: 4/4}
+      bar:
+        kick: [loud, none, none, loud, none, none, loud, none, none, loud, none, none]
+        snare: [none, none, none, loud, none, none, none, none, none, loud, none, none]
+        hat: [loud, none, soft, loud, none, soft, loud, none, soft, loud, none, soft]
+    - value: both hands shuffle
+      share: 16
+      needs: {meter: 4/4}
+      bar:
+        kick: [loud, none, none, loud, none, none, loud, none, none, loud, none, none]
+        snare: [soft, none, soft, loud, none, soft, soft, none, soft, loud, none, soft]
+        ride: [loud, none, soft, loud, none, soft, loud, none, soft, loud, none, soft]
+        hat by foot: [none, none, none, loud, none, none, none, none, none, loud, none, none]
+    - value: driving shuffle
+      share: 14
+      needs: {meter: 4/4}
+      bar:
+        kick: [loud, none, soft, loud, none, soft, loud, none, soft, loud, none, soft]
+        snare: [none, none, none, loud, none, none, none, none, none, loud, none, none]
+        hat: [loud, none, soft, loud, none, soft, loud, none, soft, loud, none, soft]
+    - value: snare on the upbeats
+      share: 5
+      needs: {meter: 4/4}
+      bar:
+        kick: [loud, none, none, loud, none, none, loud, none, none, loud, none, none]
+        snare: [none, none, soft, none, none, soft, none, none, soft, none, none, soft]
+        hat: [loud, none, none, loud, none, none, loud, none, none, loud, none, none]
+    - value: swing ride
+      share: 8
+      needs: {meter: 4/4}
+      bar:
+        kick: [soft, none, none, soft, none, none, soft, none, none, soft, none, none]
+        ride: [loud, none, none, loud, none, soft, loud, none, none, loud, none, soft]
+        hat by foot: [none, none, none, loud, none, none, none, none, none, loud, none, none]
+    - value: slow twelve-eight
+      share: 25
+      needs: {meter: 12/8}
+      bar:
+        kick: [loud, none, none, none, none, none, loud, none, none, none, none, soft]
+        snare: [none, none, none, loud, none, none, none, none, none, loud, none, none]
+        hat: [loud, soft, soft, loud, soft, soft, loud, soft, soft, loud, soft, soft]
+  fills:
+    - value: snare into toms
+      share: 60
+      fill:
+        snare: [none, none, none, loud, none, none, loud, soft, loud, none, none, none]
+        tom high: [none, none, none, none, none, none, none, none, none, loud, loud, none]
+        tom low: [none, none, none, none, none, none, none, none, none, none, none, loud]
+    - value: snare triplet on four
+      share: 30
+      fill:
+        snare: [none, none, none, loud, none, none, none, none, none, loud, loud, loud]
+    - {value: none, share: 10}
+  bass:
+    - value: boogie
+      share: 42
+      sound: bass
+      figure:
+        - [{degree: 1, steps: 3}, {degree: 3, steps: 3}, {degree: 5, steps: 3}, {degree: 6, steps: 3}]
+        - [{degree: 7, accidental: flat, steps: 3}, {degree: 6, steps: 3}, {degree: 5, steps: 3}, {degree: 3, steps: 3}]
+    - value: walking
+      share: 22
+      sound: upright bass
+      figure:
+        - [{degree: 1, steps: 3}, {degree: 3, steps: 3}, {degree: 5, steps: 3}, {degree: 6, steps: 3}]
+        - [{degree: 1, octave: 1, steps: 3}, {degree: 7, accidental: flat, steps: 3}, {degree: 6, steps: 3}, {degree: 5, steps: 3}]
+    - value: slow walk
+      share: 22
+      sound: bass
+      figure:
+        - [{degree: 1, steps: 5}, {degree: 1, steps: 1}, {degree: 5, steps: 3}, {degree: 6, steps: 2}, {degree: 5, steps: 1}]
+    - value: roots
+      share: 14
+      sound: bass
+      figure:
+        - [{degree: 1, steps: 2}, {degree: 1, steps: 1}, {degree: 1, steps: 2}, {degree: 1, steps: 1}, {degree: 1, steps: 2}, {degree: 1, steps: 1}, {degree: 1, steps: 2}, {degree: 1, steps: 1}]
+  chords:
+    - {value: twelve bar, share: 25, pattern: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 1]}
+    - {value: twelve bar quick change, share: 38, pattern: [1, 4, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5]}
+    - {value: twelve bar slow change, share: 12, pattern: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5]}
+    - {value: twelve bar with two five, share: 12, pattern: [1, 4, 1, 1, 4, 4, 1, 6, 2, 5, 1, 5]}
+    - {value: minor twelve bar, share: 13, scale_type: minor, pattern: [1, 1, 1, 1, 4, 4, 1, 1, 6, 5, 1, 5]}
+  comping:
+    - value: guitar boogie
+      share: 32
+      sound: guitar
+      figure:
+        - [{degree: 1, chord: pow, steps: 2}, {degree: 1, chord: pow, steps: 1}, {degree: 1, chord: M6, steps: 2}, {degree: 1, chord: M6, steps: 1},
+           {degree: 1, chord: pow, steps: 2}, {degree: 1, chord: pow, steps: 1}, {degree: 1, chord: M6, steps: 2}, {degree: 1, chord: M6, steps: 1}]
+    - value: guitar stabs on the upbeats
+      share: 18
+      sound: guitar
+      figure:
+        - [{degree: 1, chord: dom7, steps: 12}]
+      generators:
+        - guitarify: {bar: [nothing, nothing, up, nothing, nothing, up, nothing, nothing, up, nothing, nothing, up], cell: 1/12}
+    - value: piano triplets
+      share: 16
+      sound: piano
+      needs: {meter: 12/8}
+      figure:
+        - [{degree: 1, chord: dom7, steps: 1}, {degree: 1, chord: dom7, steps: 1}, {degree: 1, chord: dom7, steps: 1}, {degree: 1, chord: dom7, steps: 1},
+           {degree: 1, chord: dom7, steps: 1}, {degree: 1, chord: dom7, steps: 1}, {degree: 1, chord: dom7, steps: 1}, {degree: 1, chord: dom7, steps: 1},
+           {degree: 1, chord: dom7, steps: 1}, {degree: 1, chord: dom7, steps: 1}, {degree: 1, chord: dom7, steps: 1}, {degree: 1, chord: dom7, steps: 1}]
+    - value: organ held
+      share: 18
+      sound: organ
+      figure:
+        - [{degree: 1, chord: dom7, steps: 12}]
+    - value: horn riffs
+      share: 16
+      sound: horns
+      figure:
+        - [{rest: 2}, {degree: 1, chord: dom7, steps: 1}, {degree: 1, chord: dom7, steps: 3}, {rest: 6}]
+        - [{rest: 2}, {degree: 1, chord: dom7, steps: 1}, {rest: 9}]
+  lead:
+    - {value: voice, share: 65, sound: voice}
+    - {value: guitar, share: 25, sound: lead guitar}
+    - {value: harmonica, share: 6, sound: harmonica}
+    - {value: saxophone, share: 4, sound: saxophone}
+  answers:
+    - {value: guitar, share: 40, sound: lead guitar}
+    - {value: harmonica, share: 22, sound: harmonica}
+    - {value: piano, share: 14, sound: piano}
+    - {value: saxophone, share: 12, sound: saxophone}
+    - {value: none, share: 12}
+
+roles:
+  - {role: drums, drums: [drums]}
+  - {role: bass, trait: bass, octave: 2, velocity: 104}
+  - {role: comping, trait: comping, octave: 4, velocity: 84, voice_leading: false}
+  - {role: lead, trait: lead, octave: 4, velocity: 106}
+  - {role: answers, trait: answers, octave: 4, velocity: 96, answers: true}
+
+sounds: {bass: 34, upright bass: 33, guitar: 28, lead guitar: 30, harmonica: 23, piano: 1, organ: 17, horns: 62, saxophone: 67, voice: 54}
+
+sections:
+  intro:
+    bars: 4
+    chords: [5, 4, 1, 5]
+    plays: [drums, bass, comping, answers]
+    plan: [{line: intro, answer: true}, {line: intro, answer: true, varied: true}]
+  chorus:
+    bars: 12
+    plays: [drums, bass, comping, lead, answers]
+    plan: [{line: a}, {line: reply, answer: true}, {line: a}, {line: reply, answer: true, varied: true}, {line: b, higher: true}, {line: close, answer: true}]
+  solo:
+    bars: 12
+    plays: [drums, bass, comping, answers]
+    plan: [{line: s1, answer: true}, {line: s2, answer: true, higher: true}, {line: s1, answer: true, varied: true}, {line: s3, answer: true, higher: true},
+           {line: s4, answer: true, higher: true}, {line: s5, answer: true}]
+  ending: {held: true, plays: [bass, comping]}
+
+melody:
+  grid: 12
+  line_bars: 2
+  span: 4
+  home: {degree: 5}
+  ladder: [{degree: 1}, {degree: 3, accidental: flat}, {degree: 4}, {degree: 5}, {degree: 7, accidental: flat}]
+  rhythms:
+    - [{rest: 2}, {steps: 1}, {steps: 2}, {steps: 1}, {steps: 2}, {steps: 1}, {steps: 3}, {steps: 2}, {steps: 1}, {steps: 6}, {rest: 3}]
+    - [{rest: 3}, {steps: 2}, {steps: 1}, {steps: 2}, {steps: 1}, {steps: 3}, {steps: 3}, {steps: 6}, {rest: 3}]
+    - [{steps: 3}, {steps: 2}, {steps: 1}, {steps: 3}, {steps: 2}, {steps: 1}, {steps: 2}, {steps: 1}, {steps: 6}, {rest: 3}]
+    - [{rest: 5}, {steps: 1}, {steps: 3}, {steps: 2}, {steps: 1}, {steps: 3}, {steps: 6}, {rest: 3}]
+  answer_rhythms:
+    - [{rest: 3}, {steps: 1}, {steps: 2}, {steps: 1}, {steps: 2}, {steps: 3}, {steps: 6}, {rest: 6}]
+    - [{rest: 6}, {steps: 2}, {steps: 1}, {steps: 3}, {steps: 2}, {steps: 1}, {steps: 6}, {rest: 3}]
+    - [{rest: 2}, {steps: 1}, {steps: 1}, {steps: 1}, {steps: 1}, {steps: 3}, {steps: 3}, {steps: 3}, {steps: 6}, {rest: 3}]
+    - [{rest: 3}, {steps: 3}, {steps: 2}, {steps: 1}, {steps: 3}, {steps: 2}, {steps: 1}, {steps: 6}, {rest: 3}]

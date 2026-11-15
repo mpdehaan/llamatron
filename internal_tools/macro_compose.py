@@ -19,6 +19,7 @@
     .venv/bin/python internal_tools/macro_compose.py INPUT --out SET          # compose the input into a set file
     .venv/bin/python internal_tools/macro_compose.py --decompose SET --out INPUT   # write an existing set as an input
     .venv/bin/python internal_tools/macro_compose.py INPUT --same-as SET      # say whether the input composes to the set's music, and fail if not
+    .venv/bin/python internal_tools/macro_compose.py --arrange PICKS --out SET     # a whole song from a song's picks and its style's template (--keep-input INPUT)
 
 It reads its input file and nothing else: it fetches nothing and looks nothing up.
 """
@@ -32,6 +33,7 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / 'internal_tools' / 'macro_composer'))
 
+from arranger import STYLE, arranged  # noqa: E402
 from composer import composed  # noqa: E402
 from decomposer import decomposed, same_music  # noqa: E402
 from llamatron.composition.setlist import Setlist  # noqa: E402
@@ -53,6 +55,9 @@ LEGEND = '''# A MacroComposer input: what a song plays, as data. Compose it with
 # form      the scenes in order: bars is how long a scene lasts, play is each track's part, by name or as a mapping
 #           with its chains; a part loops for the scene unless it says repeat or once.
 '''
+STYLE_TEMPLATES = ROOT / 'internal_tools' / 'macro_composer' / 'style_templates'
+STYLE_FILE = '{}.yml'
+MSG_ARRANGED = 'arranged {} in the style ({}) into {}'
 MSG_COMPOSED = 'composed {} into {}'
 MSG_DECOMPOSED = 'wrote {} as the input {}'
 MSG_SAME = '{} composes to the music of {}'
@@ -67,6 +72,17 @@ def read(path):
 def compose_file(*, source, out):
     Setlist.from_data(data=composed(given=read(source), version=VERSION)).write_file(str(out))
     print(MSG_COMPOSED.format(source, out))
+
+
+def arrange_file(*, source, out, keep_input):
+    """A song's picks made into a set through its style's template, the input kept beside it when asked."""
+    song = read(source)
+    given = arranged(style=read(STYLE_TEMPLATES / STYLE_FILE.format(song[STYLE])), song=song)
+    if keep_input:
+        with open(keep_input, WRITE_TEXT, encoding=FILE_ENCODING) as file:
+            file.write(LEGEND + yaml.safe_dump(given, sort_keys=False, width=LINE_WIDTH, default_flow_style=None, allow_unicode=True))
+    Setlist.from_data(data=composed(given=given, version=VERSION)).write_file(str(out))
+    print(MSG_ARRANGED.format(source, song[STYLE], out))
 
 
 def decompose_file(*, source, out):
@@ -90,7 +106,12 @@ def main(*, argv=None):
     parser.add_argument('--out')
     parser.add_argument('--decompose')
     parser.add_argument('--same-as')
+    parser.add_argument('--arrange')
+    parser.add_argument('--keep-input')
     arguments = parser.parse_args(argv)
+    if arguments.arrange:
+        arrange_file(source=arguments.arrange, out=arguments.out, keep_input=arguments.keep_input)
+        return 0
     if arguments.decompose:
         decompose_file(source=arguments.decompose, out=arguments.out)
         return 0
