@@ -65,8 +65,7 @@ pages current.
 | [Soundtrack](demos/SOUNDTRACK.md) | 7 |
 | [TV Theme](demos/TV_THEME.md) | 14 |
 | [TV theme](demos/TV_THEME.md) | 1 |
-| [Video Game](demos/VIDEO_GAME.md) | 1 |
-| [Video game](demos/VIDEO_GAME.md) | 1 |
+| [Video Game](demos/VIDEO_GAME.md) | 2 |
 | [World](demos/WORLD.md) | 1 |
 | [World Mashup](demos/WORLD_MASHUP.md) | 1 |
 | [Other](demos/OTHER.md) | 1 |
