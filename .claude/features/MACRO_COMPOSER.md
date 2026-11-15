@@ -39,8 +39,9 @@ library's rules and `.claude/format/EXAMPLES.md` the rules for the sets in `exam
   variance; where a song changes partway, the defaults carry a hook into the new part, in that part's rhythm and sound; and the
   design supports hooks well, several of them where wanted. None of this is enforced on a person: the wizard never warns,
   notes or refuses when a person's choices make a hook rare or leave a song without one, since a bad choice in music is the
-  person's to make. A song with several hooks needs no field saying which is the hook: a theme may be marked a hook, and what
-  other parts quote is the hook theme most recently played (the user's choice, to be tried and changed if it confuses).
+  person's to make. In a song with several hooks, a theme may be marked a hook, and what other parts quote is the hook theme
+  most recently played, with nobody saying so; a section's changes also hold a Main hook field in a closed Advanced section,
+  for a person who wants another hook quoted on purpose (the user's choice).
 
 ## The Parts
 
