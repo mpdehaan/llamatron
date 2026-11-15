@@ -56,7 +56,7 @@ pages current.
 | [Gospel](demos/GOSPEL.md) | 1 |
 | [Jazz Mashup](demos/JAZZ_MASHUP.md) | 1 |
 | [Metal](demos/METAL.md) | 2 |
-| [Metal Mashup](demos/METAL_MASHUP.md) | 3 |
+| [Metal Mashup](demos/METAL_MASHUP.md) | 4 |
 | [Pop](demos/POP.md) | 5 |
 | [Ragtime](demos/RAGTIME.md) | 1 |
 | [Rock](demos/ROCK.md) | 10 |
