@@ -56,12 +56,11 @@ pages current.
 | [Gospel](demos/GOSPEL.md) | 1 |
 | [Jazz Mashup](demos/JAZZ_MASHUP.md) | 2 |
 | [Metal](demos/METAL.md) | 2 |
-| [Metal Mashup](demos/METAL_MASHUP.md) | 4 |
+| [Metal Mashup](demos/METAL_MASHUP.md) | 3 |
 | [Pop](demos/POP.md) | 5 |
 | [Ragtime](demos/RAGTIME.md) | 1 |
 | [Rock](demos/ROCK.md) | 10 |
 | [Rock Mashup](demos/ROCK_MASHUP.md) | 6 |
-| [Soul Mashup](demos/SOUL_MASHUP.md) | 1 |
 | [Soundtrack](demos/SOUNDTRACK.md) | 7 |
 | [TV Theme](demos/TV_THEME.md) | 13 |
 | [Video Game](demos/VIDEO_GAME.md) | 4 |
