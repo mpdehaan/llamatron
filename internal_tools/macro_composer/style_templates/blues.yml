@@ -217,18 +217,23 @@ players:
       timing: {snare: {drag: 12}}
       uneven: 5
     3:
-      says: 'A larger kit. Quiet snare notes on the upbeats, the kick shuffling in every other bar, and the toms answering at each turn.'
+      says: 'A larger kit. Quiet snare notes on the upbeats, a soft extra kick in the second bar and the third, and the toms answering at each turn.'
       fill_every: 4
       adds: [{bar: {snare: {steps: 12, soft: [2, 8]}}}]
-      varies: [{bars: [2, 4], choices: [{bar: {kick: {steps: 12, soft: [5, 11]}}}]}]
+      varies:
+        - {bars: [2], choices: [{bar: {kick: {steps: 12, soft: [11]}}}]}
+        - {bars: [3], choices: [{bar: {kick: {steps: 12, soft: [5]}}}]}
       fill: [{bar: {snare: {steps: 12, loud: [3, 6, 8], soft: [7]}, tom high: {steps: 12, loud: [9, 10]}, tom low: {steps: 12, loud: [11]}}}]
       timing: {snare: {drag: 8}}
       uneven: 7
     4:
-      says: 'A large kit. The snare whispers on every upbeat, the kick never plays the same bar twice, and a fill of triplets runs the whole last bar, far behind the beat.'
+      says: 'A large kit. Quiet snare notes on the upbeats, a small change to the kick, the snare or the hat in the second, third and fourth bars, and a fill of triplets through the whole last bar, far behind the beat. Holds back until the song opens up.'
       fill_every: 4
-      adds: [{bar: {snare: {steps: 12, soft: [2, 5, 8, 11]}}}]
-      varies: [{bars: [2, 4], choices: [{bar: {kick: {steps: 12, soft: [2, 8], loud: [11]}, open: {steps: 12, loud: [11]}}}]}]
+      adds: [{bar: {snare: {steps: 12, soft: [2, 8]}}}]
+      varies:
+        - {bars: [2], choices: [{bar: {kick: {steps: 12, loud: [11]}, snare: {steps: 12, soft: [5]}}}]}
+        - {bars: [3], choices: [{bar: {kick: {steps: 12, soft: [8]}, snare: {steps: 12, soft: [11]}}}]}
+        - {bars: [4], choices: [{bar: {open: {steps: 12, loud: [5]}}}]}
       fill: [{silences: [hat, ride, hat by foot], bar: {kick: {steps: 12, loud: [0, 6]}, snare: {steps: 12, loud: [0, 1, 2], soft: [3]}, tom high: {steps: 12, loud: [4, 5, 6]}, tom mid: {steps: 12, loud: [7, 8]}, tom low: {steps: 12, loud: [9, 10, 11]}}}]
       timing: {snare: {drag: 16}, ride: {drag: 6}, hat: {drag: 6}}
       uneven: 9
