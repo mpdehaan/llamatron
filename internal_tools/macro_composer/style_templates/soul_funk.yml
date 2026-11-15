@@ -252,18 +252,23 @@ players:
       timing: {snare: {drag: 12}}
       uneven: 5
     3:
-      says: 'A kit with two toms. Quiet snare notes between the loud ones, an open hat in every other bar, and the toms at each turn.'
+      says: 'A kit with two toms. Quiet snare notes between the loud ones, an open hat in the second bar, a kick added in the third, and the toms at each turn.'
       fill_every: 4
       adds: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, soft: [3, 9]}}}]
-      varies: [{bars: [2, 4], choices: [{needs: {meter: 4/4}, bar: {open: {steps: 16, loud: [14]}, kick: {steps: 16, loud: [11]}}}]}]
+      varies:
+        - {bars: [2], choices: [{needs: {meter: 4/4}, bar: {open: {steps: 16, loud: [14]}}}]}
+        - {bars: [3], choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 16, loud: [11]}}}]}
       fill: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, loud: [4], soft: [7]}, tom high: {steps: 16, loud: [8, 9, 11]}, tom low: {steps: 16, loud: [12, 13, 15]}}}]
       timing: {snare: {drag: 8}}
       uneven: 8
     4:
-      says: 'A kit with congas beside it. Quiet snare notes all through the bar, a kick that never plays the same bar twice, an open hat off the beat, and fills that run a whole bar.'
+      says: 'A kit with congas beside it. Quiet snare notes and soft congas in every bar, a small change to the kick or the hat in the second, third and fourth bars, and fills that run a whole bar. Holds back until the song opens up.'
       fill_every: 4
-      adds: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, soft: [1, 3, 7, 9, 15]}, conga high: {steps: 16, soft: [2, 10]}, conga low: {steps: 16, soft: [6, 14]}}}]
-      varies: [{bars: [2, 4], choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 16, loud: [7, 13]}, open: {steps: 16, loud: [10]}}}]}]
+      adds: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, soft: [3, 9]}, conga high: {steps: 16, soft: [2, 10]}, conga low: {steps: 16, soft: [6, 14]}}}]
+      varies:
+        - {bars: [2], choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 16, loud: [13]}, open: {steps: 16, loud: [14]}}}]}
+        - {bars: [3], choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 16, loud: [7]}, snare: {steps: 16, soft: [15]}}}]}
+        - {bars: [4], choices: [{needs: {meter: 4/4}, bar: {open: {steps: 16, loud: [6]}}}]}
       fill: [{needs: {meter: 4/4}, silences: [hat, open], bar: {kick: {steps: 16, loud: [0, 10]}, snare: {steps: 16, loud: [0, 3, 4, 6], soft: [1, 5]}, tom high: {steps: 16, loud: [8, 9]}, tom mid: {steps: 16, loud: [11, 12]}, tom low: {steps: 16, loud: [13, 14, 15]}}}]
       timing: {snare: {drag: 14}, hat: {drag: 4}}
       uneven: 10

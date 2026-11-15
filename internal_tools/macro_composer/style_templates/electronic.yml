@@ -193,18 +193,23 @@ players:
       timing: {clap: {drag: 8}, snare: {drag: 8}}
       uneven: 3
     3:
-      says: 'A drum machine. A soft extra clap, a kick pickup in every other bar, and a snare roll that speeds up before every eighth bar.'
+      says: 'A drum machine. A soft extra clap, an open hat in the second bar, a kick pickup in the fourth, and a snare roll that speeds up before every eighth bar.'
       fill_every: 8
       adds: [{bar: {clap: {steps: 16, soft: [15]}}}]
-      varies: [{bars: [2, 4], choices: [{bar: {kick: {steps: 16, loud: [14]}}}]}]
+      varies:
+        - {bars: [2], choices: [{bar: {open: {steps: 16, loud: [14]}}}]}
+        - {bars: [4], choices: [{bar: {kick: {steps: 16, loud: [14]}}}]}
       fill: [{bar: {snare: {steps: 16, loud: [0, 4, 8, 10, 12, 13, 14, 15]}}}]
       timing: {hat: {rush: 4}}
       uneven: 5
     4:
-      says: 'A drum machine programmed bar by bar. A rim in threes across the beat, a kick that breaks pattern, a cowbell, and toms into every fourth bar.'
+      says: 'A drum machine programmed bar by bar. A soft rim in every bar, a different small change in the second, third and fourth bars, and toms into every fourth bar. Holds back until the track opens up.'
       fill_every: 4
-      adds: [{bar: {rim: {steps: 16, loud: [3, 6, 9, 12]}}}]
-      varies: [{bars: [2, 4], choices: [{bar: {kick: {steps: 16, loud: [7, 10]}, cowbell: {steps: 16, loud: [2, 10]}}}]}]
+      adds: [{bar: {rim: {steps: 16, soft: [3, 9]}}}]
+      varies:
+        - {bars: [2], choices: [{bar: {kick: {steps: 16, loud: [14]}, rim: {steps: 16, soft: [6, 12]}}}]}
+        - {bars: [3], choices: [{bar: {cowbell: {steps: 16, loud: [2, 10]}}}]}
+        - {bars: [4], choices: [{bar: {kick: {steps: 16, loud: [7]}, open: {steps: 16, loud: [14]}}}]}
       fill: [{bar: {tom high: {steps: 16, loud: [8, 9, 11]}, tom mid: {steps: 16, loud: [12]}, tom low: {steps: 16, loud: [13, 14, 15]}, snare: {steps: 16, loud: [4], soft: [6, 7]}}}]
       timing: {clap: {drag: 12}, snare: {drag: 12}}
       uneven: 7
