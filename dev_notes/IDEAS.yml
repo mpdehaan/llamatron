@@ -492,7 +492,7 @@
     explain; the cells, the wizards and anything that writes notes generate or improve), what the plan in
     `dev_notes/GENRE_PLAN.md` and the genre items of `dev_notes/QUEUE.md` become, whether the training tools under
     `internal_tools/analysis_and_generation/` that only feed generation stay as tools for the explanations or go, what
-    `.claude/GENRES.md` then says the library is for, and what an explanation looks like to a person: a report, a page of the
+    `.claude/features/GENRES.md` then says the library is for, and what an explanation looks like to a person: a report, a page of the
     tracker, or both.
 
 - title: "Velocity Assist: a few named velocity levels in place of numbers"
@@ -1881,7 +1881,7 @@
 
     What it touches in the code: a table of figures per style measured from the public-domain corpus alone, a new module in
     `src/llamatron/genres/hearing/` to cut a lead into figures, and a generator in `src/llamatron/generators/` that reads the table.
-    No melody of a copyrighted work is ever read (`.claude/GENRES.md`, "Only What Can Be Acted On").
+    No melody of a copyrighted work is ever read (`.claude/features/GENRES.md`, "Only What Can Be Acted On").
 
 - title: "Code Examples"
   priority: 99

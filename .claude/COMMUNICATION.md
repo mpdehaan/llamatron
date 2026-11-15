@@ -151,7 +151,7 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   then written into the repository's rules rather than into Claude's memory, which a reset can
   lose: into the `.claude/` file whose topic it belongs to (this file for how Claude and the user
   work together, `STYLE.md` for the code, `TESTING.md` for the tests, `UX.md` for how the text UI
-  behaves, the file of `.claude/format/` for the part of the model, the file of `.claude/tracker/` for the page, `MACRO_COMPOSER.md` for the MacroComposer), and into
+  behaves, the file of `.claude/format/` for the part of the model, the file of `.claude/tracker/` for the page, the file of `.claude/features/` for a feature that has one, like the MacroComposer), and into
   `CLAUDE.md` only when it's about the project as a whole.
   `CLAUDE.md` stays short and orderly, and each other file stays on its topic.
 
