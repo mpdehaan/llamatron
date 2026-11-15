@@ -37,20 +37,23 @@ templates:
   italo:         {tempo: 120, kick: every beat, backbeat: snare, hat: sixteenths, percussion: none, bass: octaves in eighths, chords: held pad, arp: sixteenths up and down, lead: synth line, harmony: minor four chord}
   trance:        {tempo: 138, kick: every beat, backbeat: clap, hat: open on the offbeats, percussion: none, bass: offbeat, chords: held pad, arp: gated chord, lead: synth line, harmony: minor four chord}
   drum and bass: {tempo: 172, kick: one and the and of three, backbeat: snare, hat: eighths, percussion: shaker, bass: long low notes, chords: held pad, arp: none, lead: none, harmony: minor two chord}
+  big beat:      {tempo: 104, kick: breakbeat, backbeat: snare with quiet notes, hat: eighths, percussion: shaker, fills: toms, bass: gritty riff, chords: held pad, arp: sixteenths up, lead: voice hook, harmony: one chord}
   chiptune:      {tempo: 150, kick: one and three, backbeat: snare, hat: eighths, percussion: none, bass: octaves in eighths, chords: none, arp: fast chord arpeggio, lead: square line, harmony: four chord}
 
 traits:
   tempo: {lowest: 100, usual: 126, highest: 175}
   kick:
-    - {value: every beat, share: 62, bar: {kick: [loud, none, none, none, loud, none, none, none, loud, none, none, none, loud, none, none, none]}}
+    - {value: every beat, share: 58, bar: {kick: [loud, none, none, none, loud, none, none, none, loud, none, none, none, loud, none, none, none]}}
     - {value: one and three, share: 12, bar: {kick: [loud, none, none, none, none, none, none, none, loud, none, none, none, none, none, none, none]}}
     - {value: broken, share: 12, bar: {kick: [loud, none, none, loud, none, none, loud, none, none, none, loud, none, none, none, none, none]}}
     - {value: one and the and of three, share: 8, bar: {kick: [loud, none, none, none, none, none, none, none, none, none, loud, none, none, none, none, none]}}
     - {value: threes, share: 6, bar: {kick: [loud, none, none, loud, none, none, loud, none, loud, none, none, loud, none, none, loud, none]}}
+    - {value: breakbeat, share: 4, bar: {kick: [loud, none, none, none, none, none, none, loud, none, none, loud, none, none, none, none, none]}}
   backbeat:
-    - {value: clap, share: 46, bar: {clap: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, none, none, none]}}
+    - {value: clap, share: 42, bar: {clap: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, none, none, none]}}
     - {value: snare, share: 36, bar: {snare: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, none, none, none]}}
     - {value: clap and snare, share: 8, bar: {clap: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, none, none, none], snare: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, none, none, none]}}
+    - {value: snare with quiet notes, share: 4, bar: {snare: [none, none, none, none, loud, none, none, none, none, soft, none, none, loud, none, none, soft]}}
     - {value: none, share: 10}
   hat:
     - {value: offbeats, share: 22, bar: {hat: [none, none, loud, none, none, none, loud, none, none, none, loud, none, none, none, loud, none]}}
@@ -70,7 +73,7 @@ traits:
     - {value: none, share: 10}
   bass:
     - value: offbeat
-      share: 24
+      share: 18
       sound: synth bass
       figure:
         - [{rest: 2}, {degree: 1, steps: 2}, {rest: 2}, {degree: 1, steps: 2}, {rest: 2}, {degree: 1, steps: 2}, {rest: 2}, {degree: 1, steps: 2}]
@@ -96,6 +99,12 @@ traits:
       sound: synth bass
       figure:
         - [{degree: 1, steps: 3}, {degree: 1, steps: 3}, {degree: 1, steps: 2}, {rest: 2}, {degree: 5, steps: 2}, {degree: 7, steps: 2}, {degree: 1, octave: 1, steps: 2}]
+    - value: gritty riff
+      share: 6
+      sound: grit bass
+      figure:
+        - [{degree: 1, steps: 3}, {degree: 1, steps: 1}, {rest: 2}, {degree: 7, steps: 2}, {degree: 1, steps: 2}, {rest: 2}, {degree: 3, steps: 2}, {degree: 1, steps: 2}]
+        - [{degree: 1, steps: 3}, {degree: 1, steps: 1}, {rest: 2}, {degree: 7, steps: 2}, {degree: 1, steps: 2}, {degree: 4, steps: 2}, {degree: 3, steps: 2}, {degree: 1, steps: 2}]
     - value: long low notes
       share: 14
       sound: sub bass
@@ -248,7 +257,7 @@ players:
     3: {says: 'Plays the part pushing ahead of the beat.'}
     4: {says: 'Plays the part leaning far back.'}
 
-sounds: {synth bass: 39, acid bass: 40, sub bass: 39, pad: 90, piano: 2, organ: 18, arp: 82, soft arp: 6, square: 81, lead: 82, voice: 86}
+sounds: {grit bass: 31, synth bass: 39, acid bass: 40, sub bass: 39, pad: 90, piano: 2, organ: 18, arp: 82, soft arp: 6, square: 81, lead: 82, voice: 86}
 
 sections:
   intro:
