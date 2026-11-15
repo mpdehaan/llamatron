@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The MacroComposer: a set composed from a song's input, structured data that says what to play (internal_tools/macro_composer/).
+"""The MacroComposer: a set composed from a song's input, structured data that says what to play (src/llamatron/macro_composer/).
 
     .venv/bin/python internal_tools/macro_compose.py INPUT --out SET          # compose the input into a set file
     .venv/bin/python internal_tools/macro_compose.py --decompose SET --out INPUT   # write an existing set as an input
@@ -30,15 +30,12 @@ from pathlib import Path
 
 import yaml
 
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / 'internal_tools' / 'macro_composer'))
-
-from arranger import STYLE, arranged  # noqa: E402
-from composer import composed  # noqa: E402
-from decomposer import decomposed, same_music  # noqa: E402
-from llamatron.composition.setlist import Setlist  # noqa: E402
-from llamatron.support.safe_yaml import load_safely  # noqa: E402
-from llamatron.support.version import VERSION  # noqa: E402
+from llamatron.composition.setlist import Setlist
+from llamatron.macro_composer.arranger import STYLE, arranged, style_named
+from llamatron.macro_composer.composer import composed
+from llamatron.macro_composer.decomposer import decomposed, same_music
+from llamatron.support.safe_yaml import load_safely
+from llamatron.support.version import VERSION
 
 FILE_ENCODING = 'utf-8'
 WRITE_TEXT = 'w'
@@ -55,8 +52,6 @@ LEGEND = '''# A MacroComposer input: what a song plays, as data. Compose it with
 # form      the scenes in order: bars is how long a scene lasts, play is each track's part, by name or as a mapping
 #           with its chains; a part loops for the scene unless it says repeat or once.
 '''
-STYLE_TEMPLATES = ROOT / 'internal_tools' / 'macro_composer' / 'style_templates'
-STYLE_FILE = '{}.yml'
 MSG_ARRANGED = 'arranged {} in the style ({}) into {}'
 MSG_COMPOSED = 'composed {} into {}'
 MSG_DECOMPOSED = 'wrote {} as the input {}'
@@ -77,7 +72,7 @@ def compose_file(*, source, out):
 def arrange_file(*, source, out, keep_input):
     """A song's picks made into a set through its style's template, the input kept beside it when asked."""
     song = read(source)
-    given = arranged(style=read(STYLE_TEMPLATES / STYLE_FILE.format(song[STYLE])), song=song)
+    given = arranged(style=style_named(song[STYLE]), song=song)
     if keep_input:
         with open(keep_input, WRITE_TEXT, encoding=FILE_ENCODING) as file:
             file.write(LEGEND + yaml.safe_dump(given, sort_keys=False, width=LINE_WIDTH, default_flow_style=None, allow_unicode=True))

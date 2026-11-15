@@ -480,3 +480,21 @@ ERR_CANT_READ_MIDI = 'The file {file} cannot be read as MIDI: {problem}.'
 
 # genres/measures/registry.py
 ERR_NO_SUCH_MEASURE = 'no measure called ({name})'
+
+# macro_composer/arranger.py
+ERR_NO_STYLE_KIND = 'the style ({}) has no template called ({}); it has: {}'
+ERR_NO_TRAIT_VALUE = 'the trait ({}) has no value called ({}); it has: {}'
+ERR_PICK_NEEDS = 'the pick {} = {} needs {} = {}, and the song picks {}'
+ERR_NO_STYLE_FORM = 'the style ({}) has no form called ({}) for the kind ({})'
+ERR_NO_STYLE_FORMS = 'the song gives no form and the style ({}) suggests none'
+ERR_NO_SUCH_SECTION = 'the form names the section ({}), which neither the song nor the style describes'
+
+# macro_composer/composer.py
+ERR_NO_CLIP_FITS = 'scene ({}) lasts {} bars, which no part it plays divides evenly'
+
+# macro_composer/decomposer.py
+ERR_ONE_SONG = 'a MacroComposer input holds one song, and the set holds {}'
+
+# macro_composer/notation.py
+ERR_NOT_A_TUNE = 'the pattern cannot be written as a tune'
+ERR_NOT_A_BAR = 'the pattern cannot be written as a drum bar'

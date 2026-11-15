@@ -129,6 +129,7 @@ flowchart LR
     exporters["exporters"]
     genres["genres"]
     importers["importers"]
+    macro_composer["macro_composer"]
     realtime["realtime"]
     tutorial["tutorial"]
     visualizers["visualizers"]
@@ -184,6 +185,7 @@ flowchart LR
 | `exporters` | The exporters of a played song: a Live set, one MIDI file, a file per track, a file per clip, a General MIDI file, or a WAV file played through FluidSynth. |
 | `genres` | What makes a style of music, as rules in code, the user's design: genres and subgenres as genomes of traits, each subgenre |
 | `importers` | The importers: a file from outside llamatron made into what a set holds, so far a MIDI file made into a song. |
+| `macro_composer` | The MacroComposer, the user's name for it: a set made from structured data that says what to play. composer.py turns a |
 | `realtime` | Real-time playback: the timeline of MIDI events a rendered grid becomes, the score of a song with each clip's events from its scene's start, the player that launches scenes and clips as the follow actions say, the engine that sends the events on time, the ports they go out of, the Realtime Sender Process, which runs the engine apart from the tracker, and FluidSynth, which the tracker starts when something plays through it. |
 | `tutorial` | The video tutorial: a plan that rebuilds a set from nothing in the running tracker, key by key, and the runner that presses its keys at a human pace, saying a sentence at each part worth one (internal_tools/make_video_tutorial.py). |
 | `visualizers` | The visualizers: what Arrange's clip area can show in place of the clips while a song plays in real time, the user's design of 2026-11-10. |

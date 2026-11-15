@@ -18,24 +18,16 @@
 made into a whole song, the picks checked against what each needs, and a tune sketched by rule when the song gives none."""
 
 import os
-import sys
 import unittest
 
 from llamatron.composition.setlist import Setlist
+from llamatron.macro_composer import arranger, composer, melody, notation, players
+from llamatron.strings.macro_composer import MSG_PART_OF_SECTION, MSG_TIMING_CHAIN
 from llamatron.support.safe_yaml import load_safely
 from llamatron.support.version import VERSION
 
-TOOLS = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, os.pardir, 'internal_tools', 'macro_composer')
-sys.path.insert(0, TOOLS)
-
-import arranger  # noqa: E402
-import composer  # noqa: E402
-import melody  # noqa: E402
-import notation  # noqa: E402
-import players  # noqa: E402
-
 FILE_ENCODING = 'utf-8'
-STYLE_TEMPLATES = os.path.join(TOOLS, 'style_templates')
+STYLE_TEMPLATES = arranger.STYLE_TEMPLATES
 YAML = '.yml'
 BLUES = 'blues'
 SHUFFLE = 'shuffle'
@@ -272,7 +264,7 @@ class TestArranged(unittest.TestCase):
 
     def test_a_sections_own_chords_replace_the_styles(self):
         given = arranger.arranged(style=self.style, song=a_song(sections={SOLO: {arranger.CHORDS: OWN_CHORDS}}))
-        self.assertEqual(given[composer.GENERATORS][arranger.PROGRESSIONS][arranger.MSG_SECTION_PART.format(SOLO, arranger.CHORDS)][arranger.CHORDS], OWN_CHORDS)
+        self.assertEqual(given[composer.GENERATORS][arranger.PROGRESSIONS][MSG_PART_OF_SECTION.format(SOLO, arranger.CHORDS)][arranger.CHORDS], OWN_CHORDS)
 
     def test_a_strummed_guitar_brings_its_guitarify(self):
         given = arranger.arranged(style=self.style, song=a_song(picks={COMPING: STABS}))
@@ -306,7 +298,7 @@ class TestArranged(unittest.TestCase):
     def test_a_tune_the_song_gives_is_kept_and_none_is_sketched_in_its_place(self):
         lines = [OWN_LINE, SILENT_LINE] * 3
         given = arranger.arranged(style=self.style, song=a_song(sections={CHORUS: {arranger.LINES_GIVEN: {LEAD: lines}}}))
-        self.assertEqual(given[composer.PARTS][arranger.MSG_SECTION_PART.format(CHORUS, LEAD)][notation.LINES], lines)
+        self.assertEqual(given[composer.PARTS][MSG_PART_OF_SECTION.format(CHORUS, LEAD)][notation.LINES], lines)
 
 
 class TestPlayers(unittest.TestCase):
@@ -458,7 +450,7 @@ class TestPlayers(unittest.TestCase):
         for track in given[composer.TRACKS]:
             if track in generators[arranger.RUSHES]:
                 self.assertEqual(generators[arranger.RUSHES][track], {arranger.GENERATOR_STEPS: [False]})
-                self.assertEqual(given[composer.CHAINS][arranger.MSG_TIMING_CHAIN.format(track)], [{arranger.RUSH: track}, {arranger.DRAG: track}])
+                self.assertEqual(given[composer.CHAINS][MSG_TIMING_CHAIN.format(track)], [{arranger.RUSH: track}, {arranger.DRAG: track}])
         self.assertIn(SNARE, generators[arranger.DRAGS])
         late = arranger.arranged(style=self.style, song=self.song(levels={players.DRUMS: players.TASTEFUL}))
         drag = self.style[arranger.PLAYERS][players.DRUMS][players.TASTEFUL][arranger.TIMING][SNARE][arranger.DRAG]

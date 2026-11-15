@@ -24,7 +24,7 @@ notes by step, landing its long notes on the notes of the chord under them. The 
 
 import random
 
-from notation import ACCIDENTAL, ARRIVAL, DEGREE, ENDING, FLAT, OCTAVE, REST, SHARP, STEPS, STRESS
+from llamatron.macro_composer.notation import ACCIDENTAL, ARRIVAL, DEGREE, ENDING, FLAT, OCTAVE, REST, SHARP, STEPS, STRESS
 
 # The fields of a style's melody habits.
 GRID = 'grid'
@@ -38,6 +38,8 @@ SPAN = 'span'
 LINE = 'line'
 VARIED = 'varied'
 ANSWER = 'answer'
+# What a line's notes are seeded by: the song's seed, whether it answers, the line's letter, and its place when it is varied.
+LINE_SEED = '{} {} {} {}'
 HIGHER = 'higher'
 # The half steps of each scale type's notes above its root.
 MAJOR = 'major'
@@ -160,7 +162,7 @@ def sketched(*, habits, plan, chords, scale_type, seed, answers):
             lines.append(silent_line(grid=grid, bars=habits[LINE_BARS]))
             continue
         letter = entry.get(LINE, str(count))
-        dice = random.Random('{} {} {} {}'.format(seed, answers, letter, len(lines) if entry.get(VARIED) else ''))
+        dice = random.Random(LINE_SEED.format(seed, answers, letter, len(lines) if entry.get(VARIED) else ''))
         if letter in known and not entry.get(VARIED):
             lines.append([dict(note) for note in known[letter]])
             continue

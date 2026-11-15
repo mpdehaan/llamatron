@@ -24,7 +24,7 @@ beat is a push, and is accented.
 
 from fractions import Fraction
 
-from notation import DEGREE, DRUM, CHORD, DEFAULT_STEP_SIZE, STEP_SIZE, VELOCITY
+from llamatron.macro_composer.notation import DEGREE, DRUM, CHORD, DEFAULT_STEP_SIZE, STEP_SIZE, VELOCITY
 
 REACH = 8
 PUSH = 5

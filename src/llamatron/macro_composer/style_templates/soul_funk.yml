@@ -1,4 +1,4 @@
-# A style template: soul and funk. The MacroComposer's arranger reads it (internal_tools/macro_composer/arranger.py).
+# A style template: soul and funk. The MacroComposer's arranger reads it (src/llamatron/macro_composer/arranger.py).
 #
 # templates   the kinds of blues: each a set of picks to start from, any of which a song may change.
 # traits      what a song picks. Each trait lists its values; share is roughly how many songs in a hundred use the value, so
