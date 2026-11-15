@@ -219,6 +219,9 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   that is the same in both is shared; the rest is added through `restore`, so nothing of this set is rebuilt; and each song
   taken in is filled in like a loaded one, so that an undo and a redo leave the same data. A song keeps what the wizard was
   told in its `wizard` setting (`Song.get_wizard_choices`, `set_wizard_choices`), a mapping kept as data of the song's own.
+  `Setlist.replace_song(name=, other=)` replaces a song entirely in its place: the old song goes with whatever only it used
+  (what nothing used before stays), and the other set's song is taken in under the old name. `remove_unused()` takes out
+  everything nothing names, which a set made for one song does before it is taken in.
 
 ## Reading and writing a set
 

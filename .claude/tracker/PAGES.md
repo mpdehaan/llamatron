@@ -196,8 +196,15 @@ The user's design, agreed in detail in `dev_notes/QUEUE.md` (S16 to S39), of whi
   top branches. Built so far: `GenreBranch` (Genre and Subgenre, each starting on `(choose)`, then Key, Scale and Tempo once
   a subgenre is chosen, and the song's Name), `FormBranch` (the Form picker, the sections listed under the fields, and a
   `SectionBranch` for each section, to read) and `CreateBranch` (a summary and the Create button, refused with `(genre?)`
-  until a genre and a subgenre are chosen). Band, Themes and Playing are to come, as are the first panel of four choices
-  and replacing a song.
+  until a genre and a subgenre are chosen). Band, Themes and Playing are to come.
+- When the current song was made by the wizard, the tree starts with `StartBranch` (`start_branch.py`, the ways in
+  `starts.py`): four rows, none selected at first, ENTER selecting one and the dot `●` marking it: a new song or the current
+  song replaced, each from the settings the current song kept or from scratch. Every other branch refuses until one is
+  chosen (`WizardPage.refusal_of`, `Branch.waits_for_start`). Replacing keeps the song's name, which the Genre branch then
+  only shows, and its place (`Document.replace_with_made_song`, `Setlist.replace_song`), as one undo step. A run from the
+  last settings keeps the song's seed, so the same choices make the same song, unless the Create branch's Take field,
+  shown only then, is set to "a new take"; a run from scratch always draws a seed. The four names are Claude's shortening
+  of the user's, to fit the fields' width.
 - Nothing in the set changes until Create, so undo and redo do nothing in the wizard and say why (`Page.steps_history`,
   `why_no_history`). Create is `Document.add_made_song`: `Setlist.take_in` of the set `WizardChoices.made_setlist` made
   (`.claude/features/MACRO_COMPOSER.md`, "The Wizard's Choices"), one change and so one undo step, after which

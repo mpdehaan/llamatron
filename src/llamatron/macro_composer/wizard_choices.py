@@ -229,6 +229,10 @@ class WizardChoices:
             raise ValueError(ERR_WIZARD_SEED.format(value=seed))
         self._seed = seed
 
+    def forget_seed(self):
+        """Leave the seed to be drawn when the song is made."""
+        self._seed = None
+
     def draw_seed(self, *, dice=None):
         """Draw a new seed at random, for a song from scratch or a new take."""
         self._seed = (dice or random.Random()).randint(FIRST_SEED, LAST_SEED)
@@ -251,4 +255,6 @@ class WizardChoices:
         given = arranged(style=style_of(self._genre), song=self.song_picks(name))
         made = Setlist.from_data(data=composed(given=given, version=version))
         made.get_item(section=Section.SONGS, name=name).set_wizard_choices(self.to_data())
+        # A part written for a section that leaves the part out is played by nothing, and would be left behind in the open set.
+        made.remove_unused()
         return made

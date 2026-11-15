@@ -664,6 +664,46 @@ class Setlist(LlamaData):
             self.get_song(name).fill_in_defaults()
         return songs
 
+    def replace_song(self, *, name, other):
+        """Replace a song entirely, in its place, with the one song of another set and all that song uses, which the song wizard does.
+
+        Whatever the replaced song used that nothing else uses goes with it, its patterns, generators
+        and chains, so that a song replaced again and again leaves nothing behind. What another song
+        still uses stays, and so does whatever nothing used before.
+        """
+        place = self.get_song_names().index(name)
+        used = [(section, item) for section, item in self.named_by_songs() if self._is_named(section=section, name=item)]
+        self.remove_item(section=Section.SONGS, name=name)
+        self._remove_unnamed(used)
+        other.rename_item(section=Section.SONGS, old=other.get_song_names()[0], new=name)
+        self.take_in(other)
+        last = len(self.get_song_names()) - 1
+        if place != last:
+            self.move_item(section=Section.SONGS, place=last, offset=place - last)
+
+    def named_by_songs(self):
+        """Return every item a song could bring with it, as (section, name): the scales, patterns, generators, chains, grooves and instruments."""
+        return [(section, item) for section in SECTIONS_TAKEN_IN if section != Section.SONGS for item in self.get_item_names(section)]
+
+    def remove_unused(self):
+        """Take out everything nothing in the set names, so that a set made for one song holds only what the song uses."""
+        self._remove_unnamed(self.named_by_songs())
+
+    def _remove_unnamed(self, items):
+        """Take out those of some items, each (section, name), that nothing names. A chain goes first and the generators
+        only it ran after, so the search goes round until nothing more is left unnamed."""
+        while True:
+            unnamed = [(section, item) for section, item in items if self.has_item(section=section, name=item) and not self._is_named(section=section, name=item)]
+            if not unnamed:
+                return
+            for section, item in unnamed:
+                self.remove_item(section=section, name=item)
+
+    def _is_named(self, *, section, name):
+        """Return whether anything in the set names an item of a section: a song, a scene, a track, a clip or a chain."""
+        namers = (self.songs_naming, self.scenes_naming, self.tracks_naming, self.clip_slots_naming, self.chains_naming)
+        return any(naming(section=section, name=name) for naming in namers)
+
     def _same(self, *, section, name, other):
         """Return whether this set and another hold the very same thing under a name."""
         return self.get_item(section=section, name=name).to_data() == other.get_item(section=section, name=name).to_data()

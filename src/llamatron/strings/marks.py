@@ -374,6 +374,7 @@ MSG_STROKE_MARKS = {
 # tui/screens/wizard/wizard_page.py and the branches beside it
 MSG_WIZARD_CHOOSE = '(choose)'
 MSG_WIZARD_NEEDS_GENRE = '(genre?)'
+MSG_WIZARD_NEEDS_START = '(choose)'
 MSG_WIZARD_BRANCH_OPEN = '▾'
 MSG_WIZARD_BRANCH_CLOSED = '▸'
 MSG_WIZARD_EDITED_BRANCH = '◀'

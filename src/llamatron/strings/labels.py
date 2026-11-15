@@ -689,6 +689,17 @@ MSG_GM_PAGE_NAME = 'page {number}'
 
 # tui/screens/wizard/wizard_page.py and the branches beside it
 MSG_WIZARD_CAPTION = 'NEW SONG WIZARD: {name}'
+MSG_WIZARD_REPLACE_CAPTION = 'SONG WIZARD, REPLACING: {name}'
+MSG_WIZARD_START_BRANCH = 'Start'
+# The four ways a run starts when the current song was made by the wizard, by the constants of tui/screens/wizard/starts.py.
+MSG_WIZARD_START_NAMES = {
+    'new from last': 'New song, from last settings',
+    'new from scratch': 'New song, from scratch',
+    'replace from last': 'Replace song, from last settings',
+    'replace from scratch': 'Replace song, from scratch',
+}
+MSG_WIZARD_TAKE_LABEL = 'Take'
+MSG_WIZARD_TAKE_NAMES = ['the same', 'a new take']
 MSG_WIZARD_GENRE_BRANCH = 'Genre'
 MSG_WIZARD_FORM_BRANCH = 'Form'
 MSG_WIZARD_CREATE_BRANCH = 'Create'

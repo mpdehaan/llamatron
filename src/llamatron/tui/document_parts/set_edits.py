@@ -112,6 +112,13 @@ class SetEdits:
         self.select_song(name)
         return name
 
+    def replace_with_made_song(self, made):
+        """Replace the current song, in its place and under its name, with the one song of a set the song wizard made, as one change."""
+        name = self._current
+        self._change(self._setlist.replace_song, name=name, other=made)
+        self.select_song(name)
+        return name
+
     # Scales.
 
     def _scale(self, name):
