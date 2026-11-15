@@ -22,12 +22,12 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
 - `playback/`: what plays them into a grid.
 - `grid/`: that grid of finished clips.
 - `exporters/`: the exporters of Live sets and MIDI files, each an `Exporter`.
-- `importers/`: the MIDI import, a MIDI file made into a song of the set ("The MIDI import" below).
+- `importers/`: the MIDI import, a MIDI file made into a song of the set (`.claude/format/EXPORTERS.md`, "The MIDI import").
 - `generators/`: the clip generators.
-- `realtime/`: real-time playback below the tracker ("Real-time playback" below).
+- `realtime/`: real-time playback below the tracker (`.claude/features/REALTIME_PLAYBACK.md`).
 - `tui/`: the tracker (`.claude/tracker/`).
-- `visualizers/`: the visualizer's modes, which Arrange's clip area shows while a song plays in real time (`.claude/tracker/VISUALIZER.md`, "The visualizer").
-- `tutorial/`: the video tutorial, which drives the tracker from outside its pages (`.claude/tracker/RECORDING.md`, "The video tutorial").
+- `visualizers/`: the visualizer's modes, which Arrange's clip area shows while a song plays in real time (`.claude/features/VISUALIZER.md`, "The visualizer").
+- `tutorial/`: the video tutorial, which drives the tracker from outside its pages (`.claude/features/RECORDING.md`, "The video tutorial").
 - `strings/`: every piece of text the program shows or raises, one module for each way the text
   is used (`.claude/STYLE.md`).
 - The top level keeps only the entry points (`cli.py`, `__main__.py`).
@@ -77,7 +77,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   `Scale.note_at(degree=, scale_notes=, half_steps=, length=, velocity=, glide=)` is the note a
   degree plays, which `Degree.to_note` asks for and which playing a pattern asks for directly, so
   that the note is made once. `Scale.sound_at`, with the same settings, is the same note as a
-  sound, the tuple a render makes ("Sounds and lengths in a render" below), worked out from the
+  sound, the tuple a render makes (`.claude/format/PLAYBACK.md`, "Sounds and lengths in a render"), worked out from the
   root's MIDI number without making a note. `ScaleType` values are one octave of half steps
   including the root (`0`).
 - Scale types with identical values are Python enum aliases, so `ScaleType.AEOLIAN is
@@ -117,7 +117,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   a `Degree`, and each dash is a quarter note of rest, whatever the `note_length`.
 - A clip holds its positions one of two ways. `Clip(notes=...)` keeps the objects it was given,
   which is how a test or a tool builds one. `Clip(sounds=...)` keeps the tuples a render makes
-  ("Sounds and lengths in a render" below), which is what playback, the generators and the
+  (`.claude/format/PLAYBACK.md`, "Sounds and lengths in a render"), which is what playback, the generators and the
   exporters' timing work on. `get_sounds()`, `resolved_sounds()` and `played_sounds()` give
   either clip as sounds, and `get_notes()`, `resolved_notes()` and `played_notes()` as objects.
   A clip of sounds asked for `get_notes()` makes the objects once and keeps the objects from

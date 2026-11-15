@@ -125,14 +125,14 @@ Reference notes for Claude, one part of `.claude/tracker/`: File and Notes, Song
   first, the user's ask, which asks for a kind (`new_generator`, in `GENERATOR_PAGES` order), makes one named after
   the kind (`arpeggiator 1`, numbered after the first), puts it in the chain where the step was being added or
   changed, and opens its editor with the chain's crumbs first (`ShowsNamedItem.opened_from`).
-- An arp's offsets have their own editor ("The offsets editor" below).
+- An arp's offsets have their own editor (`.claude/tracker/PATTERN_EDITOR.md`, "The offsets editor").
 
 ## Grooves
 
 - The Grooves page (`V`, `GroovesPage`) lists the factory grooves first, marked `factory`, with
   only `ENTER` (view) and `C` (copy) on them, and the set's own with the usual list keys.
 - `A` adds `groove-1` and so on (`new_name` in `composition/naming.py`) and opens the `GrooveEditor`.
-- The `GrooveEditor` is a one-row editor like the offsets editor ("The one-row editors" below),
+- The `GrooveEditor` is a one-row editor like the offsets editor (`.claude/tracker/PATTERN_EDITOR.md`, "The one-row editors"),
   with `I`, `D`, `S` for the cell length (`GROOVE_CELL_LENGTH_CHOICES`) and `N` to rename, and
   the name shown above the cells. A groove wider than the screen scrolls sideways, with
   `cells 1-11 ›` (`MSG_CELLS_SHOWN`) at the right of the name, where the cells used to wrap onto

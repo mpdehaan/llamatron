@@ -267,7 +267,7 @@
 - title: "The visualizer: a lava lamp of rippling colour over the clip area"
   priority: 1
   text: |
-    **In progress.** Stages 1 to 5 are built (`.claude/tracker/VISUALIZER.md`, "The visualizer"): `Z` on
+    **In progress.** Stages 1 to 5 are built (`.claude/features/VISUALIZER.md`, "The visualizer"): `Z` on
     Arrange with Real Time on, `--visualizer`, the recorder's question, `internal_tools/preview_visualizer.sh`, the
     notes heard from the transport, and the lava lamp's water, colour and rotozoom on shared pieces,
     held under a limiter so that it never flashes; `internal_tools/time_visualizer.sh` times it at about 1 to 3%
@@ -1131,7 +1131,7 @@
     Real-time playback is built: the Instruments section and the main screen's Real Time switch, the
     Realtime Sender Process, Space on Arrange with every start by hand at the next bar, `L`
     (Listen) on the clip page and in the pattern editor, the lights, the clock and Ctrl+T
-    (`.claude/format/PLAYBACK.md`, "Real-time playback"; `.claude/tracker/ARRANGE.md`, "Real-time playback"). The exports stay exactly as they were. What the
+    (`.claude/features/REALTIME_PLAYBACK.md`, "Real-time playback"; `.claude/features/REALTIME_PLAYBACK.md`, "Real-time playback"). The exports stay exactly as they were. What the
     user's design of 2026-11-07 and 2026-11-09 still has in it, to do one item at a time:
 
     - **Edits while playing never stop playback.** Today an edit is heard at the next launch: the

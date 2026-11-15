@@ -111,7 +111,7 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   because patterns are shared by every song of the set and late binding is the rule.
 - A time signature is graphical in llamatron: nothing in the render reads it, no note moves
   and no length changes. Its one use in playback is real time, where a launch by hand waits
-  for the next bar of the song's time signature ("Real-time playback" below).
+  for the next bar of the song's time signature (`.claude/features/REALTIME_PLAYBACK.md`).
 - The pattern editor marks the steps that start a beat and shows the signature on the header's
   second line.
 - The exporters write it as metadata: one meta event at the start of the MIDI file, each stem and
@@ -356,7 +356,7 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   (the clip's end still cuts), `control_points` moves each CC value with its step, and
   `grab_source.py` reads with `grooved=False`.
 - Renaming a groove updates the song, scenes and tracks, and `uses_of` in `tui/uses.py` lists
-  what uses one ("Renames" below). A song that sets no groove names the default one, `none`,
+  what uses one (`.claude/format/MODEL.md`, "Renames"). A song that sets no groove names the default one, `none`,
   which `Song.names_item` says, so the factory groove `none` counts that song as a use.
 - `tests/playback/test_grooves.py` and `tests/tui/test_tui_grooves.py` test it.
 
@@ -403,7 +403,7 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   user's design, is the sound the General MIDI export gives its tracks, and no
   other export reads an instrument. A `device` of `*FluidSynth` (`FLUIDSYNTH_DEVICE` in
   `composition/file_format.py`, `Instrument.uses_fluidsynth`), the user's design,
-  plays through FluidSynth, which the tracker starts ("Real-time playback" below): its `channel`
+  plays through FluidSynth, which the tracker starts (`.claude/features/REALTIME_PLAYBACK.md`): its `channel`
   is ignored and its `gm_sound` is sent as a program change, which no MIDI port's instrument is
   sent. Every example plays this way as it comes: its `real_time` is on, every unmuted track has
   an instrument on `*FluidSynth`, the melodic ones with a sound and the drum tracks sharing one

@@ -1,6 +1,6 @@
 # Launching, Recording and the Video Tutorial
 
-Reference notes for Claude, one part of `.claude/tracker/`: the tracker launched to play on its own, for the recordings, and the video tutorial. `CLAUDE.md` says which part to read for which work.
+Reference notes for Claude, one of `.claude/features/`: the tracker launched to play on its own, for the recordings, and the video tutorial. `CLAUDE.md` says which part to read for which work.
 
 ## Launching to play on its own
 

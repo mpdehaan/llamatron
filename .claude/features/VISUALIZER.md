@@ -1,6 +1,6 @@
 # The Visualizer
 
-Reference notes for Claude, one part of `.claude/tracker/`: the visualizer and its modes. `CLAUDE.md` says which part to read for which work.
+Reference notes for Claude, one of `.claude/features/`: the visualizer and its modes. `CLAUDE.md` says which part to read for which work.
 
 ## The visualizer
 

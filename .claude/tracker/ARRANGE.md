@@ -1,6 +1,6 @@
 # Arrange
 
-Reference notes for Claude, one part of `.claude/tracker/`: Arrange, its details view, Scene View, the track editor and clip page, and real-time playback on the pages. `CLAUDE.md` says which part to read for which work.
+Reference notes for Claude, one part of `.claude/tracker/`: Arrange, its details view, Scene View, and the track editor and clip page; playing from the pages is in `.claude/features/REALTIME_PLAYBACK.md`. `CLAUDE.md` says which part to read for which work.
 
 ## Arrange
 
@@ -36,7 +36,7 @@ Reference notes for Claude, one part of `.claude/tracker/`: Arrange, its details
 - The page has no details line under the grid.
 - While the set's Real Time switch is on, the corner over the scene names is a place of its own
   (`on_corner`, the header row at `SCENE_COLUMN`, which `clamp` lets the cursor reach then and
-  not otherwise), and Space plays and stops ("Real-time playback" below).
+  not otherwise), and Space plays and stops (`.claude/features/REALTIME_PLAYBACK.md`).
 
 ### How Arrange is drawn
 
@@ -172,84 +172,5 @@ Reference notes for Claude, one part of `.claude/tracker/`: Arrange, its details
 - The clip page refuses a grab that would go round in a circle, and pasting a clip drops one,
   using `Document.grab_circle`.
 - The clip page's `L` (`ClipPage.LISTEN`, or `STOP_LISTENING` while the clip plays) and its
-  Play and Stop buttons, after the Advance field, listen to the clip ("Real-time
-  playback" below).
-
-## Real-time playback
-
-- `Transport` (`tui/transport.py`, `app.transport`) is the tracker's side of real-time playback,
-  between the pages and the player (`.claude/format/PLAYBACK.md`, "Real-time playback"). It answers
-  `problem(track=)` before anything is rendered (with `ERR_FLUIDSYNTH_NOT_INSTALLED` when a track
-  plays through FluidSynth and `fluidsynth_installed()` says no, the tests giving a `FakeFluidSynth`
-  and their own answer): `ERR_REAL_TIME_OFF` when the set's switch is
-  off, `ERR_ADD_INSTRUMENT_FIRST` when the set has no instrument, `ERR_NO_TRACK_HAS_AN_INSTRUMENT`
-  when no track has one and `ERR_NO_TRACK_HAS_A_DEVICE` when no track's instrument has a device
-  (`has_a_device`; an example's instruments carry only a General MIDI sound), unless a `track` is
-  given, which a listening page picks an instrument for, `ERR_DEVICE_NOT_CONNECTED` for each instrument whose device `output_port_names()`
-  doesn't list, and the loop errors. `routes(instead=)` is each track's `Route` from its
-  instrument's device and channel, `instead` mapping a track to an instrument for one listening.
-  `play_song`, `play_scene(index=)`, `play_clip(index=, track=, song=, instead=, forever=)`,
-  `stop_clip`, `stop_all` and `silence_everything` are what the pages call, and `is_playing`,
-  `playing_scenes`, `is_clip_playing`, `is_track_sounding`, `scene_elapsed`, `repeats_left`,
-  `song_position` and `song_seconds` are the lights' questions. `_ready` renders a `Score` when
-  something is launched after the document's revision or the routes changed, so an edit is
-  heard at the next launch, and `_sender_for` starts the Realtime Sender Process on the routes'
-  ports, another when new ports are needed. `app.playback_timer` ticks it every `TICK_SECONDS`
-  (0.1) while anything plays and redraws the page on top, and the timer stops with the last
-  clip. `LlamatronApp.exit` closes it, and `set_document` forgets the song.
-- `play_through(page=, play=, said=)` in `screens/shared/shared.py` tells the transport's problem in a
-  dialog, or plays and says `said` on the status line, telling a `SongFileError` from the render
-  as `ERR_CANT_PLAY_TITLE`.
-- On Arrange, with Real Time on, Space is bound by where the cursor is: `PLAY_SONG` on the
-  corner, `PLAY_SCENE` on a scene's name, `PLAY_CLIP` on a clip, and `STOP_PLAYING` or
-  `STOP_CLIP` in their place while that plays (`play_scene_keys`, `play_clip_keys`, the header's
-  keys on the corner). The status line says `playing from scene 1`, `playing clip (tune) on
-  track (lead) on its own`, or `scene 2 starts at the next bar` when something was playing
-  (`MSG_STARTS_AT_NEXT_BAR`, since `Transport.play_scene` and `play_clip` return whether the
-  launch waits), `stopped` or `stopped track (lead)`. `time_text` reads `MSG_PLAYING_CLOCK`
-  (`▶ 0:22 / 3:00`) while the song plays.
-- `Page.go_back` and `show_page` call `stop_playing()`, which stops only a listening page's
-  preview (`Transport.is_previewing`, a clip played `forever`), the user's rule: a song played from
-  Arrange plays on through every page. A preview started while the song plays stops the song first.
-  While anything plays, Arrange refuses to delete a track or scene with clips
-  (`ERR_TRACK_PLAYING_SHOWN`, `ERR_SCENE_PLAYING_SHOWN`); inserting is allowed.
-- Live editing, the user's design: every edit made while something plays is heard on it.
-  `Transport.tick` calls `_follow_edits`, which waits until the document's revision has stayed the
-  same for `LIVE_SETTLE_SECONDS` (0.15), so that typed digits are heard once, renders the song again
-  with the seed this play drew (`_seed`, one for the whole play, so an edit re-rolls no random part),
-  finds each scene and track again after the edit (`_places_after_the_edit`: by the objects, else by
-  place or name after an undo read the song again), and calls `Player.update_score` with the song's
-  Live response. Another song made current stops what plays at once. An edit that can't be rendered,
-  or that needs a MIDI port the sender hasn't opened, leaves what plays as it was, and the status line
-  says why (`take_live_message`, `MSG_LIVE_EDIT_NOT_HEARD`, `MSG_LIVE_EDIT_NEEDS_A_DEVICE`).
-- Listening (`screens/shared/listening.py`): `listen(page=, index=, track=, song=, name=)` plays one
-  clip on its own and again and again (`forever=True`), asking with a `ChoiceDialog` of the
-  set's instruments (`MSG_LISTEN_INSTRUMENT_TITLE`) when the track's instrument has no device,
-  and says `MSG_LISTENING`. The clip page's `L` and buttons call it; while Real Time is off
-  and FluidSynth is installed, the clip plays through General MIDI in the pattern preview
-  (`PatternPreview.play_clip_of_song`), the user's rule. `L` again, or the Stop button, is `stop_listening`.
-- The pattern preview (`tui/pattern_preview.py`, `app.pattern_preview()`), the user's design: `L` in the
-  pattern editor and on the Patterns page (`pattern_listen_keys`, `listen_to_pattern`) plays the pattern
-  at once with nothing asked, and `L` stops it. `PatternPreview` is a second `Transport` beside the
-  song's (`Transport.shared()`), with a player and a sender of its own, so that it never stops the song
-  and plays whatever the Real Time switch says (`may_play`). It plays a copy of the set (`PreviewSet`,
-  made again when the set's revision moves, so an edit is heard at the next pass) whose current song
-  holds one scene, the pattern's clip on a track of its own, in the pattern's direction for as many
-  passes as the direction takes to come round (`passes_to_come_round`), one pass for a direction that chooses as it goes, in the first of
-  `scales_of_pattern`. Its one route is the song's Preview instrument, or General MIDI's piano on
-  `PREVIEW_CHANNEL_BYTE` of FluidSynth, and the drum channel for a drum pattern always. `L` is not bound
-  when nothing could sound (`can_sound`); a Preview instrument that cannot sound is refused on the status
-  line (`refusal`). Leaving the page, Ctrl+T, quitting and a rename or delete of the pattern stop it.
-- The read head: `Transport.playing_step(pattern)` gives the step that sounds, from a playing clip's
-  elapsed time and its direction's order (`step_sounding`), None for a direction that chooses as it goes;
-  `PatternEditor.playing_step` asks the preview and then the song's transport, and
-  `RollDrawing.with_read_head` draws a thin line in `Style.READ_HEAD` at the step's left edge on copies
-  of the kept lines, never over a note's bar. The rows view draws the sounding step's number in the same colour (`GridDrawing.step_line(sounding=)`). A song
-  with a track on the preview's FluidSynth channel is stopped before a preview plays (`shares_a_channel_with`), the user's rule.
-- Ctrl+T (`everywhere.silence`) says what `Transport.silence_everything()` did: note offs, CC
-  123 and CC 120 on every (device, channel) the instruments use among the connected devices
-  (`channels_in_use`), `MSG_SILENCED` or `MSG_NOTHING_TO_SILENCE`.
-- `tests/tui/test_tui_playback.py` tests all of it, with a `Transport` on a `SteppedClock` and a
-  `PlaybackEngine` of `RecordingOutput`s in place of the process, and
-  `llamatron.tui.transport.output_port_names` patched to two ports of the test's own.
+  Play and Stop buttons, after the Advance field, listen to the clip (`.claude/features/REALTIME_PLAYBACK.md`).
 
