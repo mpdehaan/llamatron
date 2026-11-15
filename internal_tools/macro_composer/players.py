@@ -40,11 +40,11 @@ LEAD = 'lead'
 KEYS = 'keys'
 SESSION = 'session'
 FIRST_NAMES = {
-    DRUMS: {PLAIN: 'Larry', TASTEFUL: 'Lucy', WILD: 'Thomas', ADVANCED: 'Sark'},
-    BASS: {PLAIN: 'Michael', TASTEFUL: 'Sammy', WILD: 'Peter', ADVANCED: 'Chester'},
-    RHYTHM: {PLAIN: 'Eric', TASTEFUL: 'Jane', WILD: 'Graham', ADVANCED: 'Grover'},
+    DRUMS: {PLAIN: 'Larry', TASTEFUL: 'Lucy', WILD: 'Thomas', ADVANCED: 'Animal'},
+    BASS: {PLAIN: 'Michael', TASTEFUL: 'Sam', WILD: 'Peter', ADVANCED: 'Chester'},
+    RHYTHM: {PLAIN: 'Eric', TASTEFUL: 'Jane', WILD: 'Graham', ADVANCED: 'Sark'},
     LEAD: {PLAIN: 'George', TASTEFUL: 'Edmund', WILD: 'Dave', ADVANCED: 'Ed'},
-    KEYS: {PLAIN: 'Susan', TASTEFUL: 'Sam', WILD: 'Ralph', ADVANCED: 'Eleanor'},
+    KEYS: {PLAIN: 'Susan', TASTEFUL: 'Egon', WILD: 'Ralph', ADVANCED: 'Eleanor'},
     SESSION: {PLAIN: 'Session', TASTEFUL: 'Session', WILD: 'Session', ADVANCED: 'Session'},
 }
 INSTRUMENTS = tuple(FIRST_NAMES)
