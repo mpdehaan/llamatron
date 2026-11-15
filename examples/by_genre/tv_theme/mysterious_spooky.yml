@@ -22,6 +22,11 @@ notes: |
   the contrast is the organ alone with the tune; the sounds are a harpsichord, a tuba, claves and a
   reed organ.
 
+  Dynamics: every part keeps a full default velocity and moves a little from it by its rhythm: every
+  part leans on the first beat of the bar and a little on the middle one, and the notes between the
+  beats are lighter; a note pushed ahead of the beat and held over it is accented. The kick, snare and
+  crashes are as the drummer plays them.
+
   Run it with: llamatron examples/by_genre/tv_theme/mysterious_spooky.yml
 
   Scene 1, snaps, 8 bars.
@@ -68,13 +73,13 @@ patterns:
     degree: [~, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, D, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, "#", ~, ~, ~]
     octave: [~, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~]
-    velocity: [~, ~, ~, ~, ~, ~, ~, ~, 104, ~, ~, ~, 104, ~, ~, ~]
+    velocity: [~, ~, ~, ~, ~, ~, ~, ~, 107, ~, ~, ~, 104, ~, ~, ~]
   motif:
     steps: 8
     step_size: 1/8
     degree: [5, 3, 2, 1, ~, ~, ~, ~]
     octave: [3, 3, 3, 3, ~, ~, ~, ~]
-    velocity: [114, 108, 108, 108, ~, ~, ~, ~]
+    velocity: [120, 104, 108, 113, ~, ~, ~, ~]
   tuba short:
     steps: 8
     step_size: 1/8
@@ -87,7 +92,7 @@ patterns:
     step_size: 1/8
     degree: [1, ~, ~, ~, 5, ~, ~, ~]
     octave: [3, ~, ~, ~, 2, ~, ~, ~]
-    velocity: [104, ~, ~, ~, 98, ~, ~, ~]
+    velocity: [110, ~, ~, ~, 101, ~, ~, ~]
   offbeat:
     steps: 8
     step_size: 1/8
@@ -109,7 +114,7 @@ patterns:
     degree: [1, ~, ~, 3, 5, ~, 3, ~, 1, ~, ~, 3, 5, ~, ~, ~, 2, ~, ~, 4, 6, ~, 4, ~, 2, ~, ~, 4, 6, ~, ~, ~, 7, ~, ~, 2, 4, ~, 2, ~, 5, ~, 4, ~, 2, ~, ~, ~, 1, ~, 3, ~, 5, ~, 1, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, "#", ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, 4, 4, ~, 4, ~, 4, ~, ~, 4, 4, ~, ~, ~, 4, ~, ~, 4, 4, ~, 4, ~, 4, ~, ~, 4, 4, ~, ~, ~, 3, ~, ~, 4, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [110, ~, ~, 104, 104, ~, 104, ~, 110, ~, ~, 104, 104, ~, ~, ~, 110, ~, ~, 104, 104, ~, 104, ~, 110, ~, ~, 104, 104, ~, ~, ~, 110, ~, ~, 104, 104, ~, 104, ~, 110, ~, 104, ~, 104, ~, ~, ~, 110, ~, 104, ~, 104, ~, 104, ~, 110, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [116, ~, ~, 100, 107, ~, 104, ~, 116, ~, ~, 100, 107, ~, ~, ~, 116, ~, ~, 100, 107, ~, 104, ~, 116, ~, ~, 100, 107, ~, ~, ~, 116, ~, ~, 100, 107, ~, 104, ~, 116, ~, 104, ~, 107, ~, ~, ~, 116, ~, 104, ~, 107, ~, 104, ~, 116, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, false, false, true, false, true, false, true, true, false, false, true, true, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, true, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, false]
   middle:
     steps: 64
@@ -117,7 +122,7 @@ patterns:
     degree: [6, ~, 4, ~, 1, ~, ~, ~, 6, ~, 4, ~, 6, ~, ~, ~, 5, ~, 3, ~, 1, ~, ~, ~, 5, ~, 3, ~, 5, ~, ~, ~, 4, ~, 2, ~, 6, ~, ~, ~, 4, ~, 6, ~, 1, ~, ~, ~, 7, ~, 5, ~, 2, ~, 7, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, 4, ~, 5, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, 5, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, 5, ~, ~, ~, 4, ~, 4, ~, 5, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [108, ~, 102, ~, 102, ~, ~, ~, 108, ~, 102, ~, 102, ~, ~, ~, 108, ~, 102, ~, 102, ~, ~, ~, 108, ~, 102, ~, 102, ~, ~, ~, 108, ~, 102, ~, 102, ~, ~, ~, 108, ~, 102, ~, 102, ~, ~, ~, 108, ~, 102, ~, 102, ~, 102, ~, 108, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [114, ~, 102, ~, 105, ~, ~, ~, 114, ~, 102, ~, 105, ~, ~, ~, 114, ~, 102, ~, 105, ~, ~, ~, 114, ~, 102, ~, 105, ~, ~, ~, 114, ~, 102, ~, 105, ~, ~, ~, 114, ~, 102, ~, 105, ~, ~, ~, 114, ~, 102, ~, 105, ~, 102, ~, 114, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, false]
 
 progressions:
