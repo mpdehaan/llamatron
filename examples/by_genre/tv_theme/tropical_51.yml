@@ -4,7 +4,7 @@ description: "a big-band police-show theme in the manner of Hawaii Five-0 (Morto
 notes: |
   Tropical 51: a big-band police-show theme in the manner of Hawaii Five-0 (Morton Stevens), with a
   fanfare of its own. This is a homage to Hawaii Five-0 (Morton Stevens): its chords, form, sounds and
-  drums follow that work as Claude knows it, and every tune and rhythm here is new. Rebuild version 4.
+  drums follow that work as Claude knows it, and every tune and rhythm here is new. Rebuild version 5.
 
   Tom-toms and timpani open, then a trumpet fanfare in bold leaps over a driving bass, tambourine and
   brass on the offbeats, the chords falling i VII VI to a major V; trombones answer; and the whole
@@ -21,6 +21,11 @@ notes: |
   Checklist: it is good and memorable because it surges: drums, brass, then higher. The hook is the
   fanfare; the emotion is excitement; the lift is each key change; the contrast is the drums alone;
   the sounds are a trumpet, a trombone, a brass section and strings.
+
+  Dynamics: every part keeps a full default velocity and moves a little from it by its rhythm: the
+  hats and shakers lean on the beats, the bass on the first beat of the bar, the chords on two and
+  four, and a tune on its downbeats; a note pushed ahead of the beat and held over it is accented. The
+  kick, snare and crashes are as the drummer plays them.
 
   Run it with: llamatron examples/by_genre/tv_theme/tropical_51.yml
 
@@ -72,7 +77,7 @@ patterns:
     degree: [F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F]
     accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
     octave: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
-    velocity: [76, 54, 76, 54, 76, 54, 76, 54, 76, 54, 76, 54, 76, 54, 76, 54]
+    velocity: [80, 47, 74, 47, 80, 47, 74, 47, 80, 47, 74, 47, 80, 47, 74, 47]
   ride:
     steps: 16
     drum: true
@@ -80,7 +85,7 @@ patterns:
     degree: [D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~]
     accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
     octave: [4, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~]
-    velocity: [64, ~, 64, ~, 64, ~, 64, ~, 64, ~, 64, ~, 64, ~, 64, ~]
+    velocity: [68, ~, 62, ~, 68, ~, 62, ~, 68, ~, 62, ~, 68, ~, 62, ~]
   toms:
     steps: 16
     drum: true
@@ -100,14 +105,14 @@ patterns:
     step_size: 1/8
     degree: [1, ~, ~, ~, 1, 1, 5, ~]
     octave: [3, ~, ~, ~, 3, 3, 2, ~]
-    velocity: [110, ~, ~, ~, 104, 104, 104, ~]
+    velocity: [115, ~, ~, ~, 106, 101, 104, ~]
     tie: [false, true, false, false, false, false, false, true]
   drive:
     steps: 8
     step_size: 1/8
     degree: [1, 1, 1, 1, 1, 1, 5, 1]
     octave: [3, 3, 3, 3, 3, 3, 2, 3]
-    velocity: [110, 104, 104, 104, 104, 104, 104, 104]
+    velocity: [116, 102, 105, 102, 107, 102, 105, 102]
   held:
     steps: 8
     step_size: 1/8
@@ -122,14 +127,14 @@ patterns:
     degree: [~, 1, ~, ~, 1, ~, 1, ~]
     octave: [~, 4, ~, ~, 4, ~, 4, ~]
     chord: [~, "3", ~, ~, "3", ~, "3", ~]
-    velocity: [~, 96, ~, ~, 96, ~, 96, ~]
+    velocity: [~, 101, ~, ~, 98, ~, 101, ~]
   fanfare:
     steps: 64
     step_size: 1/8
     degree: [1, ~, 3, ~, 5, ~, ~, ~, 5, ~, 3, ~, 1, ~, ~, ~, 7, ~, 2, ~, 4, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, 6, ~, 1, ~, 3, ~, ~, ~, 1, ~, ~, ~, ~, ~, 6, ~, 5, ~, 7, ~, 2, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, 5, ~, ~, ~, 4, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 4, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, 4, ~, 4, ~, 4, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [118, ~, 112, ~, 112, ~, ~, ~, 118, ~, 112, ~, 112, ~, ~, ~, 118, ~, 112, ~, 112, ~, ~, ~, 118, ~, ~, ~, ~, ~, ~, ~, 118, ~, 112, ~, 112, ~, ~, ~, 118, ~, ~, ~, ~, ~, 112, ~, 118, ~, 112, ~, 112, ~, ~, ~, 118, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [123, ~, 112, ~, 114, ~, ~, ~, 123, ~, 112, ~, 114, ~, ~, ~, 123, ~, 112, ~, 114, ~, ~, ~, 123, ~, ~, ~, ~, ~, ~, ~, 123, ~, 112, ~, 114, ~, ~, ~, 123, ~, ~, ~, ~, ~, 112, ~, 123, ~, 112, ~, 114, ~, ~, ~, 123, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true, true, true, false, false]
   answer:
     steps: 64
@@ -137,7 +142,7 @@ patterns:
     degree: [4, ~, 6, ~, 1, ~, 6, ~, 4, ~, ~, ~, ~, ~, ~, ~, 3, ~, 5, ~, 1, ~, 5, ~, 3, ~, ~, ~, ~, ~, ~, ~, 4, ~, 6, ~, 1, ~, 4, ~, 1, ~, ~, ~, ~, ~, ~, ~, 2, ~, 7, ~, 5, ~, 7, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, 4, ~, 5, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, ~, 5, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, 4, ~, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [112, ~, 106, ~, 106, ~, 106, ~, 112, ~, ~, ~, ~, ~, ~, ~, 112, ~, 106, ~, 106, ~, 106, ~, 112, ~, ~, ~, ~, ~, ~, ~, 112, ~, 106, ~, 106, ~, 106, ~, 112, ~, ~, ~, ~, ~, ~, ~, 112, ~, 106, ~, 106, ~, 106, ~, 112, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [117, ~, 106, ~, 108, ~, 106, ~, 117, ~, ~, ~, ~, ~, ~, ~, 117, ~, 106, ~, 108, ~, 106, ~, 117, ~, ~, ~, ~, ~, ~, ~, 117, ~, 106, ~, 108, ~, 106, ~, 117, ~, ~, ~, ~, ~, ~, ~, 117, ~, 106, ~, 108, ~, 106, ~, 117, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
 
 progressions:
