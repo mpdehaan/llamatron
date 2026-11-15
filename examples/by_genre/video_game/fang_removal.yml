@@ -1,11 +1,11 @@
-version: 1.0.364
+version: 1.0.365
 title: Fang removal
 description: "a gothic eight-bit stage theme in the manner of Castlevania's Vampire Killer (Kinuyo Yamashita and Satoe Terashima), with a melody of its own"
 notes: |
   Fang removal: a gothic eight-bit stage theme in the manner of Castlevania's Vampire Killer (Kinuyo
   Yamashita and Satoe Terashima), with a melody of its own. This is a homage to Castlevania's Vampire
   Killer (Kinuyo Yamashita and Satoe Terashima): its chords, form, sounds and drums follow that work
-  as Claude knows it, and every tune and rhythm here is new. Rebuild version 2.
+  as Claude knows it, and every tune and rhythm here is new. Rebuild version 3.
 
   Three voices and noise, as the old console had: a square lead with a jumping, syncopated tune, a
   bass in octaves in sixteenths, and a second square that plays each chord as a fast arpeggio; the
@@ -20,6 +20,11 @@ notes: |
   Checklist: it is good and memorable because three voices sound like a band. The hook is the lead
   over the bass; the emotion is gothic drive; the lift is the B strain; the contrast is the bridge
   without the lead; the sounds are square leads and a synth bass.
+
+  Dynamics: every part keeps a full default velocity and moves a little from it by its rhythm: every
+  part leans on the first beat of the bar and a little on the middle one, and the notes between the
+  beats are lighter; a note pushed ahead of the beat and held over it is accented. The kick, snare and
+  crashes are as the drummer plays them.
 
   Run it with: llamatron examples/by_genre/video_game/fang_removal.yml
 
@@ -67,13 +72,13 @@ patterns:
     degree: [F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~]
     accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
     octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
-    velocity: [60, ~, 60, ~, 60, ~, 60, ~, 60, ~, 60, ~, 60, ~, 60, ~]
+    velocity: [66, ~, 56, ~, 60, ~, 56, ~, 63, ~, 56, ~, 60, ~, 56, ~]
   octaves:
     steps: 16
     step_size: 1/16
     degree: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     octave: [2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3]
-    velocity: [106, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
+    velocity: [112, 93, 96, 93, 100, 93, 96, 93, 103, 93, 96, 93, 100, 93, 96, 93]
   chord:
     steps: 8
     step_size: 1/8
@@ -88,7 +93,7 @@ patterns:
     degree: [1, ~, 1, 7, ~, 5, ~, 3, 2, ~, 2, 4, ~, 7, ~, 2, 1, ~, 1, 6, ~, 3, ~, 6, 5, 7, 2, 7, 5, ~, ~, ~, 3, ~, 3, 1, ~, 5, ~, 1, 2, ~, 2, 7, ~, 4, ~, 7, 6, 1, 3, 1, 6, 3, 6, 1, 7, ~, 2, ~, 5, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~]
     octave: [6, ~, 6, 5, ~, 5, ~, 5, 5, ~, 5, 5, ~, 5, ~, 6, 6, ~, 6, 5, ~, 5, ~, 5, 5, 5, 6, 5, 5, ~, ~, ~, 6, ~, 6, 6, ~, 5, ~, 6, 6, ~, 6, 5, ~, 5, ~, 5, 5, 6, 6, 6, 5, 5, 5, 6, 5, ~, 6, ~, 6, ~, ~, ~]
-    velocity: [110, ~, 104, 104, ~, 104, ~, 104, 110, ~, 104, 104, ~, 104, ~, 104, 110, ~, 104, 104, ~, 104, ~, 104, 110, 104, 104, 104, 104, ~, ~, ~, 110, ~, 104, 104, ~, 104, ~, 104, 110, ~, 104, 104, ~, 104, ~, 104, 110, 104, 104, 104, 104, 104, 104, 104, 110, ~, 104, ~, 104, ~, ~, ~]
+    velocity: [116, ~, 104, 109, ~, 109, ~, 100, 116, ~, 104, 109, ~, 109, ~, 100, 116, ~, 104, 109, ~, 109, ~, 100, 116, 100, 104, 100, 107, ~, ~, ~, 116, ~, 104, 109, ~, 109, ~, 100, 116, ~, 104, 109, ~, 109, ~, 100, 116, 100, 104, 100, 107, 100, 104, 100, 116, ~, 104, ~, 107, ~, ~, ~]
     tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, true, true, true]
   b:
     steps: 64
@@ -96,7 +101,7 @@ patterns:
     degree: [4, ~, 6, ~, 1, ~, 6, ~, 7, ~, 2, ~, 4, ~, ~, ~, 5, ~, 7, ~, 3, ~, 7, ~, 6, ~, 1, ~, 3, ~, ~, ~, 4, 6, 1, 6, 4, 6, 1, 4, 4, ~, 1, ~, 6, ~, ~, ~, 5, 7, 2, 7, 5, 7, 2, 5, 5, ~, ~, ~, 7, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, "#", ~, "#", ~, ~, ~, ~, ~, ~, "#", ~, ~, ~]
     octave: [5, ~, 5, ~, 6, ~, 5, ~, 5, ~, 6, ~, 6, ~, ~, ~, 5, ~, 5, ~, 6, ~, 5, ~, 5, ~, 6, ~, 6, ~, ~, ~, 5, 5, 6, 5, 5, 5, 6, 6, 6, ~, 6, ~, 5, ~, ~, ~, 5, 5, 6, 5, 5, 5, 6, 6, 6, ~, ~, ~, 5, ~, ~, ~]
-    velocity: [110, ~, 104, ~, 104, ~, 104, ~, 110, ~, 104, ~, 104, ~, ~, ~, 110, ~, 104, ~, 104, ~, 104, ~, 110, ~, 104, ~, 104, ~, ~, ~, 110, 104, 104, 104, 104, 104, 104, 104, 110, ~, 104, ~, 104, ~, ~, ~, 110, 104, 104, 104, 104, 104, 104, 104, 110, ~, ~, ~, 104, ~, ~, ~]
+    velocity: [116, ~, 104, ~, 107, ~, 104, ~, 116, ~, 104, ~, 107, ~, ~, ~, 116, ~, 104, ~, 107, ~, 104, ~, 116, ~, 104, ~, 107, ~, ~, ~, 116, 100, 104, 100, 107, 100, 104, 100, 116, ~, 104, ~, 107, ~, ~, ~, 116, 100, 104, 100, 107, 100, 104, 100, 116, ~, ~, ~, 107, ~, ~, ~]
     tie: [false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, false, false, false, false, false, false, true, false, true, false, true, true, true, false, false, false, false, false, false, false, false, false, true, true, true, false, true, true, true]
 
 arps:
