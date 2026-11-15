@@ -9,8 +9,9 @@
 #             trait each plays, how high and how loud.
 # sections    what plays in each kind of section, and the plan of its tune: which line returns and who plays each.
 # players     who each instrument's player is in this style, by complexity from 1 (plain) to 4 (the most advanced): what the
-#             player says of themselves for people, the picks the player makes, how the player keeps time (a rush or a
-#             drag, in hundredths of a step), how uneven the drum hits are, and a lead's range and busyness.
+#             player says for people, and how the player decorates the kind's own parts, never replacing them: a drummer's
+#             hits added to every bar (adds) or to every few bars (varies), the fill and how often it comes, timing (a
+#             rush or a drag, in hundredths of a step), how uneven the hits are, a strum's width, a lead's range.
 # melody      the habits a tune is sketched by when a song gives none: the notes used, rhythm cells, how far it ranges.
 
 # Eight steps to a bar in 4/4, eighths; six in 6/8. No band, artist or work is named or followed.
@@ -198,30 +199,54 @@ roles:
 
 players:
   drums:
-    1: {says: 'Kick, snare, hats and one crash. Plays the plain beat hard and almost never fills.', picks: {kick: one and three, cymbal: hat quarters, fills: none, percussion: none}, uneven: 2}
-    2: {says: 'A small kit with two toms. Sits a little behind the beat, with short fills that suit the song.', picks: {kick: one and the and of two, cymbal: hat eighths, fills: toms on four}, timing: {snare: {drag: 10}}, uneven: 5}
-    3: {says: 'A large kit. Hits hard, adds kick notes and comes down the toms at every turn.', picks: {kick: one and the ands of two and four, cymbal: hat half open, fills: snare and toms}, timing: {kick: {drag: 6}, snare: {drag: 14}}, uneven: 6}
-    4: {says: 'A very large kit with a cowbell. A busy kick, long fills, and hats that push ahead.', picks: {kick: one and the ands of two three and four, cymbal: hat eighths with an open on the last, fills: snare on every eighth of the last half, percussion: cowbell}, timing: {hat: {rush: 8}, snare: {rush: 4}}, uneven: 8}
+    1:
+      says: 'Kick, snare, hats and one crash. Plays the beat by the book, the same every bar, with one extra snare before every eighth bar.'
+      fill_every: 8
+      fill: [{needs: {meter: 4/4}, bar: {snare: {steps: 8, loud: [2, 6, 7]}}}]
+      uneven: 2
+    2:
+      says: 'A small kit with two toms. A little behind the beat, a kick added before every fourth bar, and two toms into each turn.'
+      fill_every: 4
+      varies: {every: 4, choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 8, loud: [7]}}}]}
+      fill: [{needs: {meter: 4/4}, bar: {snare: {steps: 8, loud: [2]}, tom high: {steps: 8, loud: [6]}, tom low: {steps: 8, loud: [7]}}}]
+      timing: {snare: {drag: 10}}
+      uneven: 5
+    3:
+      says: 'A large kit with three toms. Quiet snare notes between the loud ones, an open hat in every other bar, and a whole bar down the toms at each turn.'
+      fill_every: 4
+      adds: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, soft: [7, 9]}}}]
+      varies: {every: 2, choices: [{needs: {meter: 4/4}, bar: {open: {steps: 8, loud: [7]}, kick: {steps: 16, loud: [11]}}}]}
+      fill: [{needs: {meter: 4/4}, silences: [hat, open, ride], bar: {kick: {steps: 16, loud: [0, 8]}, snare: {steps: 16, loud: [0, 2, 3]}, tom high: {steps: 16, loud: [4, 6, 7]}, tom mid: {steps: 16, loud: [8, 10, 11]}, tom low: {steps: 16, loud: [12, 13, 14, 15]}}}]
+      timing: {kick: {drag: 6}, snare: {drag: 14}}
+      uneven: 6
+    4:
+      says: 'A very large kit with a cowbell and extra cymbals. The beat changes from bar to bar, accents fall in threes across the bar, and the fills run a whole bar.'
+      fill_every: 4
+      adds: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, soft: [3, 7, 9, 15]}, kick: {steps: 16, loud: [10]}}}]
+      varies: {every: 2, choices: [{needs: {meter: 4/4}, bar: {cowbell: {steps: 16, loud: [0, 3, 6, 9, 12, 14]}, kick: {steps: 16, loud: [3, 7]}, open: {steps: 8, loud: [3, 7]}}}]}
+      fill: [{needs: {meter: 4/4}, silences: [hat, open, ride, cowbell], bar: {kick: {steps: 16, loud: [0, 6, 12]}, snare: {steps: 16, loud: [0, 1, 2, 3], soft: [4]}, tom high: {steps: 16, loud: [5, 7, 8]}, tom mid: {steps: 16, loud: [9, 10, 11]}, tom low: {steps: 16, loud: [13, 14, 15]}, splash: {steps: 16, loud: [4]}}}]
+      timing: {hat: {rush: 6}, snare: {rush: 3}}
+      uneven: 8
   bass:
-    1: {says: 'A finger bass. Roots in eighths, right with the kick.', picks: {bass: roots in eighths}}
-    2: {says: 'A finger bass. Roots and fifths, leaning back a little.', picks: {bass: roots and fifths}, timing: {drag: 6}}
-    3: {says: 'A picked bass. Pushes the roots ahead of the beat.', picks: {bass: pushing roots}, timing: {rush: 8}}
-    4: {says: 'A finger bass. Walks through every chord.', picks: {bass: walking boogie}}
+    1: {says: 'Plays the bass part exactly as written, on the beat.'}
+    2: {says: 'Plays the bass part as written, leaning back a little.', timing: {drag: 6}}
+    3: {says: 'Plays the bass part pushing ahead of the beat.', timing: {rush: 8}}
+    4: {says: 'Plays the bass part far behind the beat.'}
   rhythm:
-    1: {says: 'An overdriven guitar. Downstrokes on every eighth, tight.', picks: {guitar: downstrokes}, guitarify: {spread: 4}}
-    2: {says: 'A steel-string guitar. Full, even strumming.', picks: {guitar: strummed}, guitarify: {spread: 14, loose_timing: 6}}
-    3: {says: 'A clean guitar. Clipped upstrokes off the beat, loose.', picks: {guitar: clipped offbeats}, guitarify: {spread: 10, loose_timing: 14}}
-    4: {says: 'A clean guitar. Picks the chords apart note by note.', picks: {guitar: chiming arpeggio}}
+    1: {says: 'Plays the part exactly as written, tight and even.', guitarify: {spread: 4}}
+    2: {says: 'Plays the part with a wider, slightly loose stroke.', guitarify: {spread: 14, loose_timing: 6}}
+    3: {says: 'Plays the part loosely, each stroke spread across the strings.', guitarify: {spread: 10, loose_timing: 14}}
+    4: {says: 'Plays the part with the widest and loosest stroke.'}
   lead:
     1: {says: 'Few notes, close together, each one sung.', span: 2}
     2: {says: 'Phrases that leave room, a little behind the beat.', span: 3, timing: {drag: 8}}
     3: {says: 'Busy lines over a wide range.', span: 4, busy: true}
     4: {says: 'The widest range and the most notes, ahead of the beat.', span: 5, busy: true, timing: {rush: 6}}
   keys:
-    1: {says: 'An organ. Holds the chords.', picks: {keys: organ held}}
-    2: {says: 'A piano. Chords in steady eighths.', picks: {keys: piano eighths}}
-    3: {says: 'A piano. Eighths that push ahead.', picks: {keys: piano eighths}, timing: {rush: 8}}
-    4: {says: 'A piano. Eighths that lean far back.', picks: {keys: piano eighths}, timing: {drag: 14}}
+    1: {says: 'Plays the part exactly as written.'}
+    2: {says: 'Plays the part as written.'}
+    3: {says: 'Plays the part pushing ahead of the beat.', timing: {rush: 8}}
+    4: {says: 'Plays the part leaning far back.', timing: {drag: 14}}
 
 sounds: {bass: 34, picked bass: 35, guitar: 26, clean guitar: 28, overdriven guitar: 30, distortion guitar: 31, lead guitar: 31, piano: 1, organ: 19, saxophone: 67, voice: 54, voices: 53}
 

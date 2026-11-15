@@ -9,8 +9,9 @@
 #             trait each plays, how high and how loud.
 # sections    what plays in each kind of section, and the plan of its tune: which line returns and who plays each.
 # players     who each instrument's player is in this style, by complexity from 1 (plain) to 4 (the most advanced): what the
-#             player says of themselves for people, the picks the player makes, how the player keeps time (a rush or a
-#             drag, in hundredths of a step), how uneven the drum hits are, and a lead's range and busyness.
+#             player says for people, and how the player decorates the kind's own parts, never replacing them: a drummer's
+#             hits added to every bar (adds) or to every few bars (varies), the fill and how often it comes, timing (a
+#             rush or a drag, in hundredths of a step), how uneven the hits are, a strum's width, a lead's range.
 # melody      the habits a tune is sketched by when a song gives none: the notes used, rhythm cells, how far it ranges.
 # Eight steps to a bar in 4/4, eighths; six in 3/4. No band, label, artist or work is named or followed.
 
@@ -206,30 +207,52 @@ roles:
 
 players:
   drums:
-    1: {says: 'A small kit, played quietly with a stick across the snare rim.', picks: {drums: restrained, fills: none}, uneven: 2}
-    2: {says: 'A small kit. A light, bouncing beat a little behind, with two snares before each turn.', picks: {drums: light and bouncing, fills: two snares before the bar}, timing: {snare: {drag: 10}}, uneven: 5}
-    3: {says: 'Driving eighths on the hats and a tom fill at every turn.', picks: {drums: beat group, fills: snare and toms}, uneven: 6}
-    4: {says: 'The snare on every beat with the kick answering between, and fills at every turn.', picks: {drums: snare on every beat, fills: snare and toms}, timing: {hat: {rush: 6}}, uneven: 8}
+    1:
+      says: 'A small kit. The beat by the book, the same every bar, with one fill before every eighth bar.'
+      fill_every: 8
+      uneven: 2
+    2:
+      says: 'A small kit. A little behind the beat, a kick added before every fourth bar, and two snares into each turn.'
+      fill_every: 4
+      varies: {every: 4, choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 8, loud: [7]}}}]}
+      fill: [{needs: {meter: 4/4}, bar: {snare: {steps: 8, loud: [2, 6, 7]}}}]
+      timing: {snare: {drag: 10}}
+      uneven: 5
+    3:
+      says: 'A kit with two toms. A quiet snare note before the third beat, an open hat in every other bar, and the toms at each turn.'
+      fill_every: 4
+      adds: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, soft: [7]}}}]
+      varies: {every: 2, choices: [{needs: {meter: 4/4}, bar: {open: {steps: 8, loud: [7]}}}]}
+      fill: [{needs: {meter: 4/4}, bar: {snare: {steps: 8, loud: [2, 4, 5]}, tom high: {steps: 8, loud: [6]}, tom low: {steps: 8, loud: [7]}}}]
+      uneven: 6
+    4:
+      says: 'A kit with three toms. Quiet snare notes all through the bar, a kick that changes every other bar, and a whole bar down the toms at each turn, pushing ahead.'
+      fill_every: 4
+      adds: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, soft: [3, 7, 11]}}}]
+      varies: {every: 2, choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 16, loud: [7, 10]}, open: {steps: 8, loud: [7]}}}]}
+      fill: [{needs: {meter: 4/4}, silences: [hat, ride], bar: {kick: {steps: 16, loud: [0, 8]}, snare: {steps: 16, loud: [0, 2, 3, 4]}, tom high: {steps: 16, loud: [6, 7, 8]}, tom mid: {steps: 16, loud: [10, 11]}, tom low: {steps: 16, loud: [12, 14, 15]}}}]
+      timing: {hat: {rush: 6}}
+      uneven: 8
   bass:
-    1: {says: 'A picked bass. Roots in eighths.', picks: {bass: roots in eighths}}
-    2: {says: 'A finger bass. Roots and fifths.', picks: {bass: roots and fifths}}
-    3: {says: 'A finger bass. Walks down the scale under each chord.', picks: {bass: walking down}}
-    4: {says: 'A finger bass. A tune of its own, seldom resting.', picks: {bass: melodic and busy}, timing: {rush: 4}}
+    1: {says: 'Plays the bass part exactly as written, on the beat.'}
+    2: {says: 'Plays the bass part as written, leaning back a little.'}
+    3: {says: 'Plays the bass part pushing ahead of the beat.'}
+    4: {says: 'Plays the bass part far behind the beat.', timing: {rush: 4}}
   rhythm:
-    1: {says: 'A clean guitar. A chop on two and four.', picks: {guitar: chops on two and four}, guitarify: {spread: 4}}
-    2: {says: 'A steel-string guitar. Even strumming.', picks: {guitar: strummed}, guitarify: {spread: 12, loose_timing: 6}}
-    3: {says: 'A steel-string guitar. Loose, wide strumming.', picks: {guitar: strummed}, guitarify: {spread: 24, loose_timing: 16}}
-    4: {says: 'A clean guitar. Picks the chords apart note by note.', picks: {guitar: chiming arpeggio}}
+    1: {says: 'Plays the part exactly as written, tight and even.', guitarify: {spread: 4}}
+    2: {says: 'Plays the part with a wider, slightly loose stroke.', guitarify: {spread: 12, loose_timing: 6}}
+    3: {says: 'Plays the part loosely, each stroke spread across the strings.', guitarify: {spread: 24, loose_timing: 16}}
+    4: {says: 'Plays the part with the widest and loosest stroke.'}
   lead:
     1: {says: 'Few notes, close together.', span: 2}
     2: {says: 'A tune that leaves room, a little behind the beat.', span: 4, timing: {drag: 6}}
     3: {says: 'A tune over a wide range.', span: 4}
     4: {says: 'The widest range and the most notes.', span: 5, busy: true}
   keys:
-    1: {says: 'An organ. Holds the chords.', picks: {keys: organ held}}
-    2: {says: 'A piano. Chords in steady eighths.', picks: {keys: piano eighths}}
-    3: {says: 'An organ. Stabs off the beat.', picks: {keys: organ stabs}}
-    4: {says: 'A harpsichord. Broken chords.', picks: {keys: harpsichord broken}}
+    1: {says: 'Plays the part exactly as written.'}
+    2: {says: 'Plays the part as written.'}
+    3: {says: 'Plays the part pushing ahead of the beat.'}
+    4: {says: 'Plays the part leaning far back.'}
 
 sounds: {bass: 34, picked bass: 35, guitar: 26, clean guitar: 28, solo guitar: 28, organ: 19, solo organ: 17, piano: 1, harpsichord: 7, strings: 49, horns: 62, flute: 74, solo flute: 75, oboe: 69, harmonica: 23, saxophone: 67, voice: 54, voices: 53}
 
