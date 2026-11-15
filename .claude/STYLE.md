@@ -49,11 +49,13 @@ the program, the tests and `internal_tools/` alike.
 
 **Packages say what each part is for.** `music/` values, `support/` plumbing, `composition/` the
 objects a set file stores, `playback/` what plays them into a grid, `grid/` the finished clips,
-`exporters/`, `importers/`, `generators/`, `tui/`, `visualizers/`, `tutorial/` the video tutorial that drives it, `genres/` the genre library (the analyzer that measures a song and the traits it fills; `.claude/features/GENRES.md`). New modules go in the package that says what they're for, and
+`exporters/`, `importers/`, `generators/`, `tui/`, `visualizers/`, `tutorial/` the video tutorial that drives it, `macro_composer/` the MacroComposer, a set made from data that says what to play (`.claude/features/MACRO_COMPOSER.md`), `genres/` the genre library (the analyzer that measures a song and the traits it fills; `.claude/features/GENRES.md`). New modules go in the package that says what they're for, and
 a new group of them gets a package of its own. One class per file in `tui/screens/`, whose files are in folders by what they edit (`pattern/`, `arrange/`, `generators/`, `set/`, and `shared/` for what the screens have in common), and
 `tui/dialogs/`; elsewhere a module can hold the classes that belong together, like the file-format
 checks and the object they build. Files that grow past several screens are split where behaviour
-groups logically, as a matter of cohesion rather than line counts. Scripts worth running again live
+groups logically, as a matter of cohesion rather than line counts. Code that would be part of the Python package, anything a person using llamatron runs through the program, lives in
+`src/llamatron/`, never in `internal_tools/`, which holds only scripts that launch things and the tools for builds and code analysis
+(the user's rule). Scripts worth running again live
 in `internal_tools/`, the tools for developing llamatron, or in `user_scripts/`, the scripts for anyone
 using it, each with a docstring or comment saying what for and how, never in a temporary folder.
 

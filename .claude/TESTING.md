@@ -125,7 +125,7 @@ they're touched (`dev_notes/IDEAS.yml`, "Refactoring the tests to the program's 
 The tests are the package `tests/` (never `test`, which would clash with Python's standard library `test` package), in
 folders that mirror `src/llamatron/` (the user's layout): `tests/composition/`, `tests/playback/`, `tests/grid/`,
 `tests/generators/`, `tests/exporters/`, `tests/importers/`, `tests/realtime/`, `tests/music/`, `tests/visualizers/`,
-`tests/genres/`, `tests/tui/` (the tracker), `tests/support_code/` (the tests of `support/`), `tests/app/` (the program as a
+`tests/genres/`, `tests/macro_composer/`, `tests/tui/` (the tracker), `tests/support_code/` (the tests of `support/`), `tests/app/` (the program as a
 whole: the command line, every example, the demos), `tests/rules/` (the rules about the code's shape) and `tests/tools/` (the
 tools of `internal_tools/` and `user_scripts/`). Every folder has an `__init__.py`, and a new test goes in the folder of the
 package it tests. `tests/support/` holds the helpers the tests share and the parallel runner, imported as

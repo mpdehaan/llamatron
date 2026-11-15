@@ -1,7 +1,7 @@
 # The MacroComposer
 
 Reference notes for Claude on the MacroComposer, the user's name for the tool that makes a set from structured data that says
-what to play. It isn't imported: read it before working on `internal_tools/macro_composer/` or `internal_tools/macro_compose.py`.
+what to play. It isn't imported: read it before working on `src/llamatron/macro_composer/` or `internal_tools/macro_compose.py`.
 What is agreed and not yet built is in `dev_notes/QUEUE.md`, under the arranger's heading. `.claude/features/GENRES.md` holds the genre
 library's rules and `.claude/format/EXAMPLES.md` the rules for the sets in `examples/`.
 
@@ -35,13 +35,13 @@ library's rules and `.claude/format/EXAMPLES.md` the rules for the sets in `exam
 
 ## The Parts
 
-All in `internal_tools/macro_composer/`, run by `internal_tools/macro_compose.sh` (`internal_tools/macro_compose.py`):
+All in the package `src/llamatron/macro_composer/`, since code that would ship with the program lives in `src/llamatron/` and `internal_tools/` holds only the scripts that launch things and the tools for builds and analysis (the user's rule). `internal_tools/macro_compose.sh` (`internal_tools/macro_compose.py`) runs it; its messages are in `src/llamatron/strings/macro_composer.py` and `src/llamatron/strings/errors.py`:
 
 - `composer.py`: an input made into a set's data. Its docstring lists an input's fields: what the song is called, its scales,
   tempo and feel, instruments, tracks, generators, chains, parts (a tune's lines, a drum's hits or a pattern as written), bands
   and the form, the scenes in order.
 - `decomposer.py`: an existing set written as an input (`--decompose`), and `--same-as` compares an input with a set.
-  `internal_tools/macro_composer/inputs/` holds three demos written as inputs, made again when their demos change.
+  `tests/data/macro_composer_inputs/` holds three demos written as inputs, made again when their demos change.
 - `notation.py`: how a tune's lines and a drum's hits become a pattern's rows, and the drum kit's names.
 - `shaping.py`: the velocity of the parts an input lists, shaped by the song's feel.
 - `arranger.py`: a song's picks and a style template made into an input (`--arrange PICKS --out SET`, `--keep-input INPUT`).
@@ -49,7 +49,7 @@ All in `internal_tools/macro_composer/`, run by `internal_tools/macro_compose.sh
 - `players.py`: the complexities and the names people see for them.
 - `style_templates/`: blues, rock, sixties pop, electronic, and soul and funk.
 
-`tests/tools/test_macro_composer.py` and `tests/tools/test_macro_arranger.py` test them.
+`tests/macro_composer/test_composer.py` and `tests/macro_composer/test_arranger.py` test them.
 
 ## A Style Template
 

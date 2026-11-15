@@ -32,6 +32,7 @@ A drum's bar is a list with one of loud, soft and none for every step.
 """
 
 from collections import Counter
+from llamatron.strings.errors import ERR_NOT_A_BAR, ERR_NOT_A_TUNE
 
 # The rows of a pattern, as a set file names them.
 STEPS = 'steps'
@@ -84,8 +85,6 @@ KIT = {
 }
 NAME_OF_DRUM = {number: name for name, number in KIT.items()}
 
-ERR_NOT_A_TUNE = 'the pattern cannot be written as a tune'
-ERR_NOT_A_BAR = 'the pattern cannot be written as a drum bar'
 
 
 class NotWritable(ValueError):

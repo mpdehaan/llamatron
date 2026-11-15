@@ -17,21 +17,12 @@
 """The MacroComposer (internal_tools/macro_composer/): a tune's lines and a drum's hits as patterns and back, velocity shaped by
 rhythm, a form laid out as scenes, and existing demos written as inputs that compose back to the same music."""
 
-import os
-import sys
 import unittest
 
 from llamatron.composition.setlist import Setlist
+from llamatron.macro_composer import composer, decomposer, notation, shaping
 from llamatron.support.safe_yaml import load_safely
 from llamatron.support.version import VERSION
-
-TOOLS = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, os.pardir, 'internal_tools', 'macro_composer')
-sys.path.insert(0, TOOLS)
-
-import composer  # noqa: E402
-import decomposer  # noqa: E402
-import notation  # noqa: E402
-import shaping  # noqa: E402
 
 FILE_ENCODING = 'utf-8'
 # Demos of three feels: dance music with a sung lead, a shanty in a minor key, and swung jazz.

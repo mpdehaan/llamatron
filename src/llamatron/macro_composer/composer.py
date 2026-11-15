@@ -32,8 +32,9 @@ parts the input lists by the song's feel, lays the form out as scenes and writes
 
 from fractions import Fraction
 
-from notation import DEFAULT_STEP_SIZE, HITS, LINES, LOUD, OCTAVE, SOFT, STEP, STEPS, STEP_SIZE, VELOCITY, DRUM, drum_rows, tune_rows
-from shaping import is_compound, role_of, shaped
+from llamatron.macro_composer.notation import DEFAULT_STEP_SIZE, HITS, LINES, LOUD, OCTAVE, SOFT, STEP, STEPS, STEP_SIZE, VELOCITY, DRUM, drum_rows, tune_rows
+from llamatron.macro_composer.shaping import is_compound, role_of, shaped
+from llamatron.strings.errors import ERR_NO_CLIP_FITS
 
 # The fields of an input.
 NAME = 'name'
@@ -82,7 +83,6 @@ GM_SOUND = 'gm_sound'
 FLUIDSYNTH = '*FluidSynth'
 WHOLE_BAR = '1'
 
-ERR_NO_CLIP_FITS = 'scene ({}) lasts {} bars, which no part it plays divides evenly'
 
 
 def signature_of(given):

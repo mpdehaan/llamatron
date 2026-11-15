@@ -24,12 +24,13 @@ the rhythm, the part is written plain and listed under shaped with the song's fe
 from collections import Counter
 from fractions import Fraction
 
-from composer import (AUTHOR, BANDS, BARS, CHAINS, DESCRIPTION, DEVICE, DRUM_TRACKS, FEEL, FLUIDSYNTH, FORM, GENERATORS, GENRE, GM_SOUND, GROOVE,
+from llamatron.macro_composer.composer import (AUTHOR, BANDS, BARS, CHAINS, DESCRIPTION, DEVICE, DRUM_TRACKS, FEEL, FLUIDSYNTH, FORM, GENERATORS, GENRE, GM_SOUND, GROOVE,
                       INSTRUMENT, INSTRUMENTS, LOOP, NAME, NOTES, ONCE, PART, PARTS, PATTERN, PATTERNS, PLAY, PROTECTED, RAW, REAL_TIME, REPEAT, SCALE,
                       SCALES, SCENE, SCENES, SETTINGS, SHAPED, SONGS, TEMPO, TIME_SIGNATURE, TITLE, TRACKS, VERSION, WITH, bars_of, pattern_of,
                       players_of, scene_of, signature_of)
-from notation import DEFAULT_STEP_SIZE, DRUM, HITS, LINES, LOUD, NotWritable, OCTAVE, SOFT, STEP, STEP_SIZE, VELOCITY, drum_hits, kept_rows, tune_lines
-from shaping import FEELS, is_compound, role_of, shaped, unshaped
+from llamatron.macro_composer.notation import DEFAULT_STEP_SIZE, DRUM, HITS, LINES, LOUD, NotWritable, OCTAVE, SOFT, STEP, STEP_SIZE, VELOCITY, drum_hits, kept_rows, tune_lines
+from llamatron.macro_composer.shaping import FEELS, is_compound, role_of, shaped, unshaped
+from llamatron.strings.errors import ERR_ONE_SONG
 
 SONG_SETTINGS = (TEMPO, SCALE, GENRE, GROOVE, TIME_SIGNATURE, TRACKS, SCENES)
 SET_SETTINGS = (VERSION, TITLE, DESCRIPTION, AUTHOR, NOTES, REAL_TIME, PROTECTED, SCALES, PATTERNS, CHAINS, INSTRUMENTS, SONGS)
@@ -39,7 +40,6 @@ BAND = 'band'
 BAND_SHARE = Fraction(1, 2)
 SMALLEST_BAND = 2
 
-ERR_ONE_SONG = 'a MacroComposer input holds one song, and the set holds {}'
 
 
 def normal(pattern):
