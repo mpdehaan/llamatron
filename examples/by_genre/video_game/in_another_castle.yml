@@ -1,0 +1,442 @@
+version: 1.0.365
+title: In another castle
+description: "a platform game's four worlds and a victory, each with sounds of its own, in the manner of the themes of Super Mario Bros. (Koji Kondo), with tunes of its own"
+notes: |
+  In another castle: a platform game's four worlds and a victory, each with sounds of its own, in the
+  manner of the themes of Super Mario Bros. (Koji Kondo), with tunes of its own. This is a homage to
+  the themes of Super Mario Bros. (Koji Kondo): its chords, form, sounds and drums follow that work as
+  Claude knows it, and every tune and rhythm here is new. Rebuild version 1.
+
+  World one, the bouncing tune and its middle; a pipe down; world two, the underground riff, then with
+  a creeping answer; a pipe; world three, the waltz twice, the second time with harp and strings; a
+  pipe; the castle; the victory fanfare and a last chord.
+
+  Subgenre: the music of a mid-eighties platform game, written for two square voices, a triangle bass
+  and noise, here given different sounds for each world as the request for this demo asked. Drums:
+  above ground a light kit, a kick, a snare on the backbeat and a ticking hat; underground only a
+  click; under water none; in the castle timpani; a crash for the victory. Tempo: 100 above and below
+  ground, 120 for the waltz, 132 for the castle, 120 for the fanfare. Bass: bouncing root and fifth
+  above ground; the underground riff is its own bass; oom-pah-pah under water; a held organ pedal in
+  the castle. Sounds: square leads above ground; a slap bass and a marimba underground; a music box, a
+  harp and strings under water; an organ, a harpsichord and low brass in the castle; brass and bells
+  for the victory. Melody manner: above ground a syncopated, bouncing tune that never lands on the
+  beat twice running; underground a riff of octave jumps and silences that slides down by half steps;
+  under water a sweet waltz of long notes; in the castle a fast figure coiling round the key note and
+  its flat second, climbing by minor thirds; then rising arpeggios on I, the flat VI, the flat VII and
+  I.
+
+  Band and song: the game's music is known for a first tune as cheerful as a tune can be, a second of
+  almost nothing that is slightly worrying, a waltz for swimming, a castle theme that will not sit
+  still, and a few bars of fanfare that mean it is over, for now.
+
+  Checklist: it is good and memorable because each world is a different band and a different feeling,
+  joined by one falling figure, the pipe. The hook is the first world's bouncing tune; the emotion
+  goes from happy to uneasy to dreamy to tense to triumphant; the lift is the victory after the
+  castle; the contrast is every change of world; the sounds change with each.
+
+  Run it with: llamatron examples/by_genre/video_game/in_another_castle.yml
+
+  Scene 1, start, 1 bars.
+  Scene 2, world one, 8 bars.
+  Scene 3, world one, middle, 4 bars.
+  Scene 4, world one again, 8 bars.
+  Scene 5, pipe, 1 bars.
+  Scene 6, world two, underground, 8 bars.
+  Scene 7, world two, something follows, 8 bars.
+  Scene 8, pipe again, 1 bars.
+  Scene 9, world three, under water, 12 bars.
+  Scene 10, world three, deeper, 12 bars.
+  Scene 11, last pipe, 1 bars.
+  Scene 12, the castle, 8 bars.
+  Scene 13, the castle, the bridge, 8 bars.
+  Scene 14, victory, 4 bars.
+  Scene 15, the last chord, 2 bars.
+
+  When changing this demo:
+  - Keep the drums as the Subgenre paragraph describes them, the kick first.
+  - Keep what the Checklist paragraph calls the hook and the lift.
+  - Keep every tune original, and the demo out of the key of the work it follows.
+real_time: true
+protected: true
+
+scales:
+  G Major: { root: G, type: major }
+  E Minor: { root: E, type: minor }
+  D Major: { root: D, type: major }
+  A Minor: { root: A, type: minor }
+
+patterns:
+  kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [92, ~, ~, ~, ~, ~, ~, ~, 92, ~, ~, ~, ~, ~, ~, ~]
+  snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 84, ~, ~, ~, ~, ~, ~, ~, 84, ~, ~, ~]
+  hat:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [F, ~, F, F, F, ~, F, F, F, ~, F, F, F, ~, F, F]
+    accidental: ["#", ~, "#", "#", "#", ~, "#", "#", "#", ~, "#", "#", "#", ~, "#", "#"]
+    octave: [3, ~, 3, 3, 3, ~, 3, 3, 3, ~, 3, 3, 3, ~, 3, 3]
+    velocity: [56, ~, 56, 56, 56, ~, 56, 56, 56, ~, 56, 56, 56, ~, 56, 56]
+  click:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~, C, ~, C, ~]
+    accidental: [~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, "#", ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~]
+    velocity: [~, ~, ~, ~, 58, ~, ~, ~, ~, ~, ~, ~, 58, ~, 58, ~]
+  timpani:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [A, ~, ~, A, ~, ~, A, ~, A, ~, ~, A, ~, ~, A, A]
+    octave: [3, ~, ~, 3, ~, ~, 3, ~, 3, ~, ~, 3, ~, ~, 3, 3]
+    velocity: [96, ~, ~, 96, ~, ~, 96, ~, 96, ~, ~, 96, ~, ~, 96, 96]
+  crash:
+    steps: 64
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [100, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  bounce:
+    steps: 16
+    step_size: 1/16
+    degree: [1, ~, ~, ~, 5, ~, ~, ~, 1, ~, ~, ~, 5, ~, 3, ~]
+    octave: [3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, 3, ~]
+    velocity: [102, ~, ~, ~, 96, ~, ~, ~, 96, ~, ~, ~, 96, ~, 96, ~]
+  world one:
+    steps: 128
+    step_size: 1/16
+    degree: [5, ~, ~, 5, ~, 3, 5, ~, ~, ~, 1, ~, ~, ~, 5, ~, ~, ~, 3, ~, ~, 5, ~, 6, ~, 5, 3, ~, ~, ~, ~, ~, 6, ~, ~, 6, ~, 4, 6, ~, ~, ~, 1, ~, ~, ~, 6, ~, ~, ~, 4, ~, ~, 6, ~, 1, ~, 6, 4, ~, ~, ~, ~, ~, 7, ~, ~, 7, ~, 5, 7, ~, ~, ~, 2, ~, ~, ~, 4, ~, 3, ~, 2, ~, 7, ~, 5, ~, ~, ~, 5, 6, 7, ~, ~, ~, 1, ~, ~, 5, ~, 3, 5, ~, 1, ~, ~, ~, 3, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, 5, ~, 5, 5, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, 5, ~, 5, ~, 5, 5, ~, ~, ~, ~, ~, 5, ~, ~, 5, ~, 5, 5, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, 5, ~, 6, ~, 5, 5, ~, ~, ~, ~, ~, 5, ~, ~, 5, ~, 5, 5, ~, ~, ~, 6, ~, ~, ~, 6, ~, 6, ~, 6, ~, 5, ~, 5, ~, ~, ~, 5, 5, 5, ~, ~, ~, 6, ~, ~, 5, ~, 5, 5, ~, 6, ~, ~, ~, 6, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, 104, ~, 104, 104, ~, ~, ~, 104, ~, ~, ~, 104, ~, ~, ~, 104, ~, ~, 104, ~, 104, ~, 104, 104, ~, ~, ~, ~, ~, 110, ~, ~, 104, ~, 104, 104, ~, ~, ~, 104, ~, ~, ~, 104, ~, ~, ~, 104, ~, ~, 104, ~, 104, ~, 104, 104, ~, ~, ~, ~, ~, 110, ~, ~, 104, ~, 104, 104, ~, ~, ~, 104, ~, ~, ~, 104, ~, 110, ~, 104, ~, 104, ~, 104, ~, ~, ~, 104, 104, 104, ~, ~, ~, 110, ~, ~, 104, ~, 104, 104, ~, 104, ~, ~, ~, 104, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  world one harmony:
+    steps: 128
+    step_size: 1/16
+    degree: [3, ~, ~, 3, ~, 1, 3, ~, ~, ~, 6, ~, ~, ~, 3, ~, ~, ~, 1, ~, ~, 3, ~, 4, ~, 3, 1, ~, ~, ~, ~, ~, 4, ~, ~, 4, ~, 2, 4, ~, ~, ~, 6, ~, ~, ~, 4, ~, ~, ~, 2, ~, ~, 4, ~, 6, ~, 4, 2, ~, ~, ~, ~, ~, 5, ~, ~, 5, ~, 3, 5, ~, ~, ~, 7, ~, ~, ~, 2, ~, 1, ~, 7, ~, 5, ~, 3, ~, ~, ~, 3, 4, 5, ~, ~, ~, 6, ~, ~, 3, ~, 1, 3, ~, 6, ~, ~, ~, 1, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, 5, ~, 5, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, 5, ~, 5, ~, 5, 5, ~, ~, ~, ~, ~, 5, ~, ~, 5, ~, 5, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, 5, ~, 5, ~, 5, 5, ~, ~, ~, ~, ~, 5, ~, ~, 5, ~, 5, 5, ~, ~, ~, 5, ~, ~, ~, 6, ~, 6, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, 5, 5, ~, ~, ~, 5, ~, ~, 5, ~, 5, 5, ~, 5, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [82, ~, ~, 76, ~, 76, 76, ~, ~, ~, 76, ~, ~, ~, 76, ~, ~, ~, 76, ~, ~, 76, ~, 76, ~, 76, 76, ~, ~, ~, ~, ~, 82, ~, ~, 76, ~, 76, 76, ~, ~, ~, 76, ~, ~, ~, 76, ~, ~, ~, 76, ~, ~, 76, ~, 76, ~, 76, 76, ~, ~, ~, ~, ~, 82, ~, ~, 76, ~, 76, 76, ~, ~, ~, 76, ~, ~, ~, 76, ~, 82, ~, 76, ~, 76, ~, 76, ~, ~, ~, 76, 76, 76, ~, ~, ~, 82, ~, ~, 76, ~, 76, 76, ~, 76, ~, ~, ~, 76, ~, ~, ~, 82, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  middle:
+    steps: 64
+    step_size: 1/16
+    degree: [~, ~, 1, ~, 1, ~, 6, ~, ~, ~, 4, ~, 6, ~, ~, ~, ~, ~, 1, ~, 1, ~, 5, ~, ~, ~, 3, ~, 5, ~, ~, ~, ~, ~, 1, ~, 1, ~, 6, ~, ~, ~, 1, ~, 4, ~, ~, ~, 2, ~, ~, 2, ~, 7, 5, ~, ~, ~, 7, ~, 2, ~, ~, ~]
+    octave: [~, ~, 6, ~, 6, ~, 5, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, 6, ~, 6, ~, 5, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, 6, ~, 6, ~, 5, ~, ~, ~, 6, ~, 6, ~, ~, ~, 6, ~, ~, 6, ~, 5, 5, ~, ~, ~, 5, ~, 6, ~, ~, ~]
+    velocity: [~, ~, 104, ~, 104, ~, 104, ~, ~, ~, 104, ~, 104, ~, ~, ~, ~, ~, 104, ~, 104, ~, 104, ~, ~, ~, 104, ~, 104, ~, ~, ~, ~, ~, 104, ~, 104, ~, 104, ~, ~, ~, 104, ~, 104, ~, ~, ~, 110, ~, ~, 104, ~, 104, 104, ~, ~, ~, 104, ~, 104, ~, ~, ~]
+  middle harmony:
+    steps: 64
+    step_size: 1/16
+    degree: [~, ~, 6, ~, 6, ~, 4, ~, ~, ~, 2, ~, 4, ~, ~, ~, ~, ~, 6, ~, 6, ~, 3, ~, ~, ~, 1, ~, 3, ~, ~, ~, ~, ~, 6, ~, 6, ~, 4, ~, ~, ~, 6, ~, 2, ~, ~, ~, 7, ~, ~, 7, ~, 5, 3, ~, ~, ~, 5, ~, 7, ~, ~, ~]
+    octave: [~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 6, ~, ~, ~, 5, ~, ~, 5, ~, 5, 5, ~, ~, ~, 5, ~, 5, ~, ~, ~]
+    velocity: [~, ~, 76, ~, 76, ~, 76, ~, ~, ~, 76, ~, 76, ~, ~, ~, ~, ~, 76, ~, 76, ~, 76, ~, ~, ~, 76, ~, 76, ~, ~, ~, ~, ~, 76, ~, 76, ~, 76, ~, ~, ~, 76, ~, 76, ~, ~, ~, 82, ~, ~, 76, ~, 76, 76, ~, ~, ~, 76, ~, 76, ~, ~, ~]
+  pipe:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 5, 1, 5, 7, 4, 7, 4, 6, 3, 6, 3, 1, ~, ~, ~]
+    accidental: [~, ~, ~, ~, b, ~, b, ~, b, b, b, b, ~, ~, ~, ~]
+    octave: [5, 4, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, ~, ~, ~]
+    velocity: [98, 92, 92, 92, 92, 92, 92, 92, 92, 92, 92, 92, 92, ~, ~, ~]
+  under:
+    steps: 64
+    step_size: 1/16
+    degree: [1, ~, 1, ~, 5, ~, ~, ~, 5, ~, 4, ~, ~, ~, ~, ~, 1, ~, 1, ~, 5, ~, ~, ~, 2, ~, 1, ~, ~, ~, ~, ~, 3, ~, 3, ~, 7, ~, ~, ~, 7, ~, 6, ~, ~, ~, ~, ~, 5, 5, 4, 3, 3, 2, 2, 1, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, b, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, 4, ~, 3, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, 3, ~, 4, ~, 3, ~, ~, ~, 4, ~, 4, ~, ~, ~, ~, ~, 3, ~, 4, ~, 3, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, 3, 3, 3, 3, 3, 3, 3, 3, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, 104, ~, 104, ~, ~, ~, 104, ~, 104, ~, ~, ~, ~, ~, 110, ~, 104, ~, 104, ~, ~, ~, 104, ~, 104, ~, ~, ~, ~, ~, 110, ~, 104, ~, 104, ~, ~, ~, 104, ~, 104, ~, ~, ~, ~, ~, 110, 104, 104, 104, 104, 104, 104, 104, ~, ~, ~, ~, ~, ~, ~, ~]
+  under high:
+    steps: 64
+    step_size: 1/16
+    degree: [1, ~, 1, ~, 5, ~, ~, ~, 5, ~, 4, ~, ~, ~, ~, ~, 1, ~, 1, ~, 5, ~, ~, ~, 2, ~, 1, ~, ~, ~, ~, ~, 3, ~, 3, ~, 7, ~, ~, ~, 7, ~, 6, ~, ~, ~, ~, ~, 5, 5, 4, 3, 3, 2, 2, 1, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, b, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, 5, ~, 4, ~, ~, ~, 4, ~, 4, ~, ~, ~, ~, ~, 4, ~, 5, ~, 4, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, 4, ~, 5, ~, 4, ~, ~, ~, 4, ~, 4, ~, ~, ~, ~, ~, 4, 4, 4, 4, 4, 4, 4, 4, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [90, ~, 84, ~, 84, ~, ~, ~, 84, ~, 84, ~, ~, ~, ~, ~, 90, ~, 84, ~, 84, ~, ~, ~, 84, ~, 84, ~, ~, ~, ~, ~, 90, ~, 84, ~, 84, ~, ~, ~, 84, ~, 84, ~, ~, ~, ~, ~, 90, 84, 84, 84, 84, 84, 84, 84, ~, ~, ~, ~, ~, ~, ~, ~]
+  creep:
+    steps: 64
+    step_size: 1/16
+    degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1, ~, 7, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 7, ~, 7, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 6, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 76, ~, 76, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 76, ~, 76, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 76, ~, 76, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  waltz:
+    steps: 96
+    step_size: 1/8
+    degree: [3, ~, ~, ~, 5, ~, 1, ~, ~, ~, ~, ~, 7, ~, ~, ~, 5, ~, 6, ~, ~, ~, ~, ~, 4, ~, ~, ~, 6, ~, 2, ~, ~, ~, ~, ~, 1, ~, ~, ~, 6, ~, 5, ~, ~, ~, ~, ~, 3, ~, ~, ~, 5, ~, 1, ~, ~, ~, 3, ~, 2, ~, ~, ~, 7, ~, 6, ~, ~, ~, ~, ~, 4, ~, 6, ~, 1, ~, 7, ~, 5, ~, 2, ~, 1, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, ~, 5, ~, 6, ~, ~, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, 5, ~, ~, ~, 5, ~, 6, ~, ~, ~, ~, ~, 6, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, 5, ~, ~, ~, 5, ~, 6, ~, ~, ~, 6, ~, 6, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, 5, ~, 5, ~, 6, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~]
+    velocity: [96, ~, ~, ~, 90, ~, 96, ~, ~, ~, ~, ~, 96, ~, ~, ~, 90, ~, 96, ~, ~, ~, ~, ~, 96, ~, ~, ~, 90, ~, 96, ~, ~, ~, ~, ~, 96, ~, ~, ~, 90, ~, 96, ~, ~, ~, ~, ~, 96, ~, ~, ~, 90, ~, 96, ~, ~, ~, 90, ~, 96, ~, ~, ~, 90, ~, 96, ~, ~, ~, ~, ~, 96, ~, 90, ~, 90, ~, 96, ~, 90, ~, 90, ~, 96, ~, ~, ~, ~, ~, 96, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, false, true, false, true, true, true, true, true, false, true, true, true, false, true, false, true, true, true, true, true, false, true, true, true, false, true, false, true, true, true, true, true, false, true, true, true, false, true, false, true, true, true, true, true, false, true, true, true, false, true, false, true, true, true, false, true, false, true, true, true, false, true, false, true, true, true, true, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, true, true, true, false, false]
+  waltz high:
+    steps: 96
+    step_size: 1/8
+    degree: [3, ~, ~, ~, 5, ~, 1, ~, ~, ~, ~, ~, 7, ~, ~, ~, 5, ~, 6, ~, ~, ~, ~, ~, 4, ~, ~, ~, 6, ~, 2, ~, ~, ~, ~, ~, 1, ~, ~, ~, 6, ~, 5, ~, ~, ~, ~, ~, 3, ~, ~, ~, 5, ~, 1, ~, ~, ~, 3, ~, 2, ~, ~, ~, 7, ~, 6, ~, ~, ~, ~, ~, 4, ~, 6, ~, 1, ~, 7, ~, 5, ~, 2, ~, 1, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~]
+    octave: [6, ~, ~, ~, 6, ~, 7, ~, ~, ~, ~, ~, 6, ~, ~, ~, 6, ~, 6, ~, ~, ~, ~, ~, 6, ~, ~, ~, 6, ~, 7, ~, ~, ~, ~, ~, 7, ~, ~, ~, 6, ~, 6, ~, ~, ~, ~, ~, 6, ~, ~, ~, 6, ~, 7, ~, ~, ~, 7, ~, 7, ~, ~, ~, 6, ~, 6, ~, ~, ~, ~, ~, 6, ~, 6, ~, 7, ~, 6, ~, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~]
+    velocity: [64, ~, ~, ~, 58, ~, 64, ~, ~, ~, ~, ~, 64, ~, ~, ~, 58, ~, 64, ~, ~, ~, ~, ~, 64, ~, ~, ~, 58, ~, 64, ~, ~, ~, ~, ~, 64, ~, ~, ~, 58, ~, 64, ~, ~, ~, ~, ~, 64, ~, ~, ~, 58, ~, 64, ~, ~, ~, 58, ~, 64, ~, ~, ~, 58, ~, 64, ~, ~, ~, ~, ~, 64, ~, 58, ~, 58, ~, 64, ~, 58, ~, 58, ~, 64, ~, ~, ~, ~, ~, 64, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, false, true, false, true, true, true, true, true, false, true, true, true, false, true, false, true, true, true, true, true, false, true, true, true, false, true, false, true, true, true, true, true, false, true, true, true, false, true, false, true, true, true, true, true, false, true, true, true, false, true, false, true, true, true, false, true, false, true, true, true, false, true, false, true, true, true, true, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, true, true, true, false, false]
+  oom:
+    steps: 96
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~]
+    velocity: [86, ~, ~, ~, ~, ~, 86, ~, ~, ~, ~, ~, 86, ~, ~, ~, ~, ~, 86, ~, ~, ~, ~, ~, 86, ~, ~, ~, ~, ~, 86, ~, ~, ~, ~, ~, 86, ~, ~, ~, ~, ~, 86, ~, ~, ~, ~, ~, 86, ~, ~, ~, ~, ~, 86, ~, ~, ~, ~, ~, 86, ~, ~, ~, ~, ~, 86, ~, ~, ~, ~, ~, 86, ~, ~, ~, ~, ~, 86, ~, ~, ~, ~, ~, 86, ~, ~, ~, ~, ~, 86, ~, ~, ~, ~, ~]
+  pah:
+    steps: 96
+    step_size: 1/8
+    degree: [~, ~, 1, ~, 1, ~, ~, ~, 1, ~, 1, ~, ~, ~, 5, ~, 5, ~, ~, ~, 6, ~, 6, ~, ~, ~, 4, ~, 4, ~, ~, ~, 2, ~, 2, ~, ~, ~, 1, ~, 1, ~, ~, ~, 5, ~, 5, ~, ~, ~, 1, ~, 1, ~, ~, ~, 1, ~, 1, ~, ~, ~, 5, ~, 5, ~, ~, ~, 6, ~, 6, ~, ~, ~, 4, ~, 4, ~, ~, ~, 5, ~, 5, ~, ~, ~, 1, ~, 1, ~, ~, ~, 1, ~, 1, ~]
+    octave: [~, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~]
+    chord: [~, ~, "3", ~, "3", ~, ~, ~, "3", ~, "3", ~, ~, ~, "3", ~, "3", ~, ~, ~, "3", ~, "3", ~, ~, ~, "3", ~, "3", ~, ~, ~, "3", ~, "3", ~, ~, ~, "3", ~, "3", ~, ~, ~, "3", ~, "3", ~, ~, ~, "3", ~, "3", ~, ~, ~, "3", ~, "3", ~, ~, ~, "3", ~, "3", ~, ~, ~, "3", ~, "3", ~, ~, ~, "3", ~, "3", ~, ~, ~, "3", ~, "3", ~, ~, ~, "3", ~, "3", ~, ~, ~, "3", ~, "3", ~]
+    velocity: [~, ~, 60, ~, 60, ~, ~, ~, 60, ~, 60, ~, ~, ~, 60, ~, 60, ~, ~, ~, 60, ~, 60, ~, ~, ~, 60, ~, 60, ~, ~, ~, 60, ~, 60, ~, ~, ~, 60, ~, 60, ~, ~, ~, 60, ~, 60, ~, ~, ~, 60, ~, 60, ~, ~, ~, 60, ~, 60, ~, ~, ~, 60, ~, 60, ~, ~, ~, 60, ~, 60, ~, ~, ~, 60, ~, 60, ~, ~, ~, 60, ~, 60, ~, ~, ~, 60, ~, 60, ~, ~, ~, 60, ~, 60, ~]
+  harp:
+    steps: 96
+    step_size: 1/8
+    degree: [1, 3, 5, 1, 5, 3, 1, 3, 5, 1, 5, 3, 5, 7, 2, 5, 2, 7, 6, 1, 3, 6, 3, 1, 4, 6, 1, 4, 1, 6, 2, 4, 6, 2, 6, 4, 1, 3, 5, 1, 5, 3, 5, 7, 2, 5, 2, 7, 1, 3, 5, 1, 5, 3, 1, 3, 5, 1, 5, 3, 5, 7, 2, 5, 2, 7, 6, 1, 3, 6, 3, 1, 4, 6, 1, 4, 1, 6, 5, 7, 2, 5, 2, 7, 1, 3, 5, 1, 5, 3, 1, 3, 5, 1, 5, 3]
+    octave: [4, 4, 4, 5, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4, 5, 4, 4]
+    velocity: [68, 62, 62, 62, 62, 62, 68, 62, 62, 62, 62, 62, 68, 62, 62, 62, 62, 62, 68, 62, 62, 62, 62, 62, 68, 62, 62, 62, 62, 62, 68, 62, 62, 62, 62, 62, 68, 62, 62, 62, 62, 62, 68, 62, 62, 62, 62, 62, 68, 62, 62, 62, 62, 62, 68, 62, 62, 62, 62, 62, 68, 62, 62, 62, 62, 62, 68, 62, 62, 62, 62, 62, 68, 62, 62, 62, 62, 62, 68, 62, 62, 62, 62, 62, 68, 62, 62, 62, 62, 62, 68, 62, 62, 62, 62, 62]
+  strings:
+    steps: 96
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, "3", ~, ~, ~, ~, ~, "3", ~, ~, ~, ~, ~, "3", ~, ~, ~, ~, ~, "3", ~, ~, ~, ~, ~, "3", ~, ~, ~, ~, ~, "3", ~, ~, ~, ~, ~, "3", ~, ~, ~, ~, ~, "3", ~, ~, ~, ~, ~, "3", ~, ~, ~, ~, ~, "3", ~, ~, ~, ~, ~, "3", ~, ~, ~, ~, ~, "3", ~, ~, ~, ~, ~, "3", ~, ~, ~, ~, ~, "3", ~, ~, ~, ~, ~, "3", ~, ~, ~, ~, ~]
+    velocity: [60, ~, ~, ~, ~, ~, 60, ~, ~, ~, ~, ~, 60, ~, ~, ~, ~, ~, 60, ~, ~, ~, ~, ~, 60, ~, ~, ~, ~, ~, 60, ~, ~, ~, ~, ~, 60, ~, ~, ~, ~, ~, 60, ~, ~, ~, ~, ~, 60, ~, ~, ~, ~, ~, 60, ~, ~, ~, ~, ~, 60, ~, ~, ~, ~, ~, 60, ~, ~, ~, ~, ~, 60, ~, ~, ~, ~, ~, 60, ~, ~, ~, ~, ~, 60, ~, ~, ~, ~, ~, 60, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true]
+  coil:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 2, 1, 7, 1, 2, 3, 2, 1, 2, 1, 7, 5, 7, 1, 2]
+    accidental: [~, b, ~, ~, ~, b, ~, b, ~, b, ~, ~, ~, ~, ~, b]
+    octave: [4, 4, 4, 3, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 4, 4]
+    velocity: [104, 98, 98, 98, 98, 98, 98, 98, 98, 98, 98, 98, 98, 98, 98, 98]
+  coil high:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 2, 1, 7, 1, 2, 3, 2, 1, 2, 1, 7, 5, 7, 1, 2]
+    accidental: [~, b, ~, ~, ~, b, ~, b, ~, b, ~, ~, ~, ~, ~, b]
+    octave: [5, 5, 5, 4, 5, 5, 5, 5, 5, 5, 5, 4, 4, 4, 5, 5]
+    velocity: [80, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74]
+  menace:
+    steps: 64
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, 2, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, 104, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, 104, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true]
+  pedal:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [2, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [94, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  win:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 3, 5, 1, 3, 5, 3, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, 4, 4, 5, 5, 5, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [112, 106, 106, 106, 106, 106, 106, ~, 106, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, true, false, true, true, true, false, false, false, false]
+  win high:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 3, 5, 1, 3, 5, 3, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, 5, 5, 6, 6, 6, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [90, 84, 84, 84, 84, 84, 84, ~, 84, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, true, false, true, true, true, false, false, false, false]
+  win bass:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [2, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [106, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  last:
+    steps: 16
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~, "3", ~, ~, ~, ~, ~, ~, ~]
+    velocity: [112, ~, ~, ~, ~, ~, ~, ~, 112, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true]
+  last bass:
+    steps: 16
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [2, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [106, ~, ~, ~, ~, ~, ~, ~, 106, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true]
+
+progressions:
+  one: { chords: [1, 1, 4, 4, 5, 5, 1, 1] }
+  middle: { chords: [4, 1, 4, 5] }
+  castle: { chords: [1, 1, 3, 3, 5, 5, 7, 7], accidentals: [~, ~, ~, ~, b, b, b, b] }
+  win: { chords: [1, 6, 7, 1], accidentals: [~, b, b, ~] }
+
+chains:
+  one:
+    - progression: one
+  middle:
+    - progression: middle
+  castle:
+    - progression: castle
+  win:
+    - progression: win
+
+instruments:
+  square lead: { device: "*FluidSynth", gm_sound: 81 }
+  second square: { device: "*FluidSynth", gm_sound: 81 }
+  synth bass: { device: "*FluidSynth", gm_sound: 39 }
+  slap bass: { device: "*FluidSynth", gm_sound: 37 }
+  marimba: { device: "*FluidSynth", gm_sound: 13 }
+  clavinet: { device: "*FluidSynth", gm_sound: 8 }
+  music box: { device: "*FluidSynth", gm_sound: 11 }
+  harp: { device: "*FluidSynth", gm_sound: 47 }
+  strings: { device: "*FluidSynth", gm_sound: 49 }
+  acoustic bass: { device: "*FluidSynth", gm_sound: 33 }
+  church organ: { device: "*FluidSynth", gm_sound: 20 }
+  harpsichord: { device: "*FluidSynth", gm_sound: 7 }
+  low brass: { device: "*FluidSynth", gm_sound: 58 }
+  brass: { device: "*FluidSynth", gm_sound: 62 }
+  bells: { device: "*FluidSynth", gm_sound: 15 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  in_another_castle:
+    tempo: 100
+    scale: G Major
+    genre: Video Game
+
+    tracks:
+      kick: { drum: true, instrument: drum kit }
+      snare: { drum: true, instrument: drum kit }
+      hat: { drum: true, instrument: drum kit }
+      click: { drum: true, instrument: drum kit }
+      timpani: { drum: true, instrument: drum kit }
+      crash: { drum: true, instrument: drum kit }
+      lead: { instrument: square lead }
+      harmony: { instrument: second square }
+      bass: { instrument: synth bass }
+      riff: { instrument: slap bass }
+      riff high: { instrument: marimba }
+      creep: { instrument: clavinet }
+      box: { instrument: music box }
+      harp: { instrument: harp }
+      strings: { instrument: strings }
+      waltz bass: { instrument: acoustic bass }
+      organ: { instrument: church organ }
+      harpsichord: { instrument: harpsichord }
+      menace: { instrument: low brass }
+      brass: { instrument: brass }
+      bells: { instrument: bells }
+
+    scenes:
+      - name: start
+        tracks:
+          hat: { pattern: hat, repeat: 1 }
+          bass: { pattern: bounce, loop: true }
+      - name: world one
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bounce, chains: [one], loop: true }
+          lead: { pattern: world one, loop: true }
+      - name: "world one, middle"
+        tracks:
+          kick: { pattern: kick, repeat: 4 }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bounce, chains: [middle], loop: true }
+          lead: { pattern: middle, loop: true }
+          harmony: { pattern: middle harmony, loop: true }
+      - name: world one again
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bounce, chains: [one], loop: true }
+          lead: { pattern: world one, loop: true }
+          harmony: { pattern: world one harmony, loop: true }
+      - name: pipe
+        tracks:
+          lead: { pattern: pipe, repeat: 1 }
+      - name: "world two, underground"
+        scale: E Minor
+        tracks:
+          riff: { pattern: under, repeat: 2 }
+          riff high: { pattern: under high, loop: true }
+      - name: "world two, something follows"
+        scale: E Minor
+        tracks:
+          riff: { pattern: under, repeat: 2 }
+          riff high: { pattern: under high, loop: true }
+          creep: { pattern: creep, loop: true }
+          click: { pattern: click, loop: true }
+      - name: pipe again
+        scale: E Minor
+        tracks:
+          riff high: { pattern: pipe, repeat: 1 }
+      - name: "world three, under water"
+        scale: D Major
+        tempo: 120
+        tracks:
+          box: { pattern: waltz, repeat: 1 }
+          waltz bass: { pattern: oom, loop: true }
+          harp: { pattern: pah, loop: true }
+      - name: "world three, deeper"
+        scale: D Major
+        tempo: 120
+        tracks:
+          box: { pattern: waltz, repeat: 1 }
+          bells: { pattern: waltz high, loop: true }
+          waltz bass: { pattern: oom, loop: true }
+          harp: { pattern: harp, loop: true }
+          strings: { pattern: strings, loop: true }
+      - name: last pipe
+        scale: A Minor
+        tempo: 132
+        tracks:
+          box: { pattern: pipe, repeat: 1 }
+      - name: the castle
+        scale: A Minor
+        tempo: 132
+        tracks:
+          harpsichord: { pattern: coil, chains: [castle], repeat: 8 }
+          organ: { pattern: pedal, chains: [castle], loop: true }
+          timpani: { pattern: timpani, loop: true }
+      - name: "the castle, the bridge"
+        scale: A Minor
+        tempo: 132
+        tracks:
+          harpsichord: { pattern: coil, chains: [castle], repeat: 8 }
+          creep: { pattern: coil high, chains: [castle], loop: true }
+          organ: { pattern: pedal, chains: [castle], loop: true }
+          menace: { pattern: menace, loop: true }
+          timpani: { pattern: timpani, loop: true }
+          crash: { pattern: crash, loop: true }
+      - name: victory
+        tempo: 120
+        tracks:
+          brass: { pattern: win, chains: [win], repeat: 4 }
+          bells: { pattern: win high, chains: [win], loop: true }
+          bass: { pattern: win bass, chains: [win], loop: true }
+          crash: { pattern: crash, loop: true }
+          snare: { pattern: snare, loop: true }
+      - name: the last chord
+        tempo: 120
+        tracks:
+          brass: { pattern: last, repeat: 1 }
+          bells: { pattern: last, loop: true }
+          bass: { pattern: last bass, loop: true }
+          crash: { pattern: crash, loop: true }
+          kick: { pattern: kick, loop: true }
