@@ -4,7 +4,7 @@ description: "a late fifties spy-jazz theme in the manner of Peter Gunn (Henry M
 notes: |
   Spy hunting: a late fifties spy-jazz theme in the manner of Peter Gunn (Henry Mancini), with a riff
   and a tune of its own. This is a homage to Peter Gunn (Henry Mancini): its chords, form, sounds and
-  drums follow that work as Claude knows it, and every tune and rhythm here is new. Rebuild version 3.
+  drums follow that work as Claude knows it, and every tune and rhythm here is new. Rebuild version 4.
 
   One bar of low eighths on a twangy guitar, a piano and a bass, on one chord, that never stops; brass
   chords that swell over it; a head in long blue notes and a wailing tenor sax solo; once, the riff
@@ -21,6 +21,11 @@ notes: |
   Checklist: it is good and memorable because the riff is menace on a loop. The hook is the riff; the
   emotion is cool danger; the lift is the brass swelling in; the contrast is the riff alone; the
   sounds are an electric guitar, a piano, a brass section, a trumpet and a tenor sax.
+
+  Dynamics: every part keeps a full default velocity and moves a little from it by its rhythm: the
+  hats and shakers lean on the beats, the bass on the first beat of the bar, the chords on two and
+  four, and a tune on its downbeats; a note pushed ahead of the beat and held over it is accented. The
+  kick, snare and crashes are as the drummer plays them.
 
   Run it with: llamatron examples/by_genre/tv_theme/spy_hunting.yml
 
@@ -66,26 +71,26 @@ patterns:
     degree: [D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~]
     accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
     octave: [4, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~]
-    velocity: [72, ~, 72, ~, 72, ~, 72, ~, 72, ~, 72, ~, 72, ~, 72, ~]
+    velocity: [76, ~, 70, ~, 76, ~, 70, ~, 76, ~, 70, ~, 76, ~, 70, ~]
   riff:
     steps: 8
     step_size: 1/8
     degree: [1, 1, 5, 7, 1, 3, 4, 3]
     octave: [3, 3, 2, 2, 3, 3, 3, 3]
-    velocity: [112, 106, 106, 106, 106, 106, 106, 106]
+    velocity: [117, 103, 106, 103, 108, 103, 106, 103]
   riff low:
     steps: 8
     step_size: 1/8
     degree: [1, 1, 5, 7, 1, 3, 4, 3]
     octave: [2, 2, 1, 1, 2, 2, 2, 2]
-    velocity: [106, 100, 100, 100, 100, 100, 100, 100]
+    velocity: [112, 98, 101, 98, 103, 98, 101, 98]
   swell:
     steps: 16
     step_size: 1/8
     degree: [~, ~, ~, ~, ~, ~, 1, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     octave: [~, ~, ~, ~, ~, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~]
     chord: [~, ~, ~, ~, ~, ~, "7", ~, "7", ~, ~, ~, ~, ~, ~, ~]
-    velocity: [~, ~, ~, ~, ~, ~, 104, ~, 110, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [~, ~, ~, ~, ~, ~, 109, ~, 112, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, false, false, false, false, false, false, true, false, true, true, true, true, true, false, false]
   head:
     steps: 64
@@ -93,7 +98,7 @@ patterns:
     degree: [5, ~, ~, ~, ~, ~, 5, ~, 4, ~, ~, ~, 3, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 7, ~, 1, ~, ~, ~, 7, ~, ~, ~, 5, ~, ~, ~, ~, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [5, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 5, ~, 6, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [114, ~, ~, ~, ~, ~, 108, ~, 114, ~, ~, ~, 108, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, 108, ~, 114, ~, ~, ~, 108, ~, ~, ~, 114, ~, ~, ~, ~, ~, 108, ~, 114, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [119, ~, ~, ~, ~, ~, 108, ~, 119, ~, ~, ~, 110, ~, ~, ~, 119, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 119, ~, ~, ~, ~, ~, 108, ~, 119, ~, ~, ~, 110, ~, ~, ~, 119, ~, ~, ~, ~, ~, 108, ~, 119, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false, false, true, true, true, true, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true]
 
 progressions:
