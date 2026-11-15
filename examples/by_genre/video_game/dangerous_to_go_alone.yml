@@ -1,0 +1,363 @@
+version: 1.0.365
+title: Dangerous to go alone
+description: "an adventure game's two themes run end to end, a heroic overworld march and an eerie dungeon, in the manner of The Legend of Zelda's overworld and dungeon themes (Koji Kondo), with tunes of its own"
+notes: |
+  Dangerous to go alone: an adventure game's two themes run end to end, a heroic overworld march and
+  an eerie dungeon, in the manner of The Legend of Zelda's overworld and dungeon themes (Koji Kondo),
+  with tunes of its own. This is a homage to The Legend of Zelda's overworld and dungeon themes (Koji
+  Kondo): its chords, form, sounds and drums follow that work as Claude knows it, and every tune and
+  rhythm here is new. Rebuild version 1.
+
+  A fanfare on I, VII, VI and V; the march, its second strain and the march again; a fall down the
+  stairs; the dungeon's figure on i VII VI V, then with its slow tune; a climb back; the march once
+  more with everything.
+
+  Subgenre: the music of a mid-eighties adventure game for a console with two square voices, a
+  triangle bass and a noise channel. Drums: the noise channel as a marching snare, a long note and two
+  short over and over, with a soft kick; none in the dungeon but a slow heartbeat on a low drum. Tempo
+  140 for the overworld, 120 for the dungeon. Bass: a gallop on the root above ground, long low notes
+  below. Sounds: a square lead, a second square a third below, a chip arpeggio, a triangle bass; in
+  the dungeon a thinner pulse with the figure and a hollow lead. Melody manner: above ground a march
+  in a major key that borrows the chords a whole step and two whole steps below the key note, bold
+  dotted rhythms and leaps; below ground a figure of sixteenths that sinks a step with each chord,
+  under a slow tune with a flat second.
+
+  Band and song: the game's music is known for an overworld theme that sounds like setting out, heroic
+  and a little wistful because of its borrowed chords, and a dungeon theme of nothing but a looping,
+  sinking figure that makes every room feel the same and worse.
+
+  Checklist: it is good and memorable because the two halves are the same adventure, daylight and then
+  the dark, and the march comes back at the end as relief. The hook is the march's first two bars; the
+  emotion is courage, then dread, then courage again; the lift is the march's second strain on IV, and
+  the harmony joining; the contrast is the dungeon, slower, with no drums; the sounds are two square
+  leads, a chip, a synth bass and a noise snare.
+
+  Run it with: llamatron examples/by_genre/video_game/dangerous_to_go_alone.yml
+
+  Scene 1, fanfare, 4 bars.
+  Scene 2, overworld, 8 bars.
+  Scene 3, overworld, two voices, 8 bars.
+  Scene 4, second strain, 8 bars.
+  Scene 5, overworld again, 8 bars.
+  Scene 6, down the stairs, 1 bars.
+  Scene 7, dungeon, 8 bars.
+  Scene 8, dungeon, deeper, 8 bars.
+  Scene 9, dungeon, deepest, 16 bars.
+  Scene 10, up the stairs, 1 bars.
+  Scene 11, daylight, 8 bars.
+  Scene 12, second strain again, 8 bars.
+  Scene 13, last march, 8 bars.
+  Scene 14, ending, 2 bars.
+
+  When changing this demo:
+  - Keep the drums as the Subgenre paragraph describes them, the kick first.
+  - Keep what the Checklist paragraph calls the hook and the lift.
+  - Keep every tune original, and the demo out of the key of the work it follows.
+real_time: true
+protected: true
+
+scales:
+  D Major: { root: D, type: major }
+  D Minor: { root: D, type: minor }
+
+patterns:
+  kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [92, ~, ~, ~, ~, ~, ~, ~, 92, ~, ~, ~, ~, ~, ~, ~]
+  march:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [D, ~, D, D, D, ~, D, D, D, ~, D, D, D, ~, D, D]
+    octave: [3, ~, 3, 3, 3, ~, 3, 3, 3, ~, 3, 3, 3, ~, 3, 3]
+    velocity: [64, ~, 64, 64, 64, ~, 64, 64, 64, ~, 64, 64, 64, ~, 64, 64]
+  crash:
+    steps: 128
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [92, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  heart:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [A, ~, ~, A, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [80, ~, ~, 80, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  gallop:
+    steps: 16
+    step_size: 1/16
+    degree: [1, ~, 1, 1, 1, ~, 1, 1, 1, ~, 1, 1, 1, ~, 1, 1]
+    octave: [2, ~, 2, 2, 2, ~, 2, 2, 2, ~, 2, 2, 2, ~, 2, 2]
+    velocity: [106, ~, 100, 100, 100, ~, 100, 100, 100, ~, 100, 100, 100, ~, 100, 100]
+  chip:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 3, 5, 1, 1, 3, 5, 1, 1, 3, 5, 1, 1, 3, 5, 1]
+    octave: [5, 5, 5, 6, 5, 5, 5, 6, 5, 5, 5, 6, 5, 5, 5, 6]
+    velocity: [64, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58]
+  low:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [2, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [98, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  fanfare:
+    steps: 32
+    step_size: 1/8
+    degree: [5, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, 5, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~]
+    velocity: [110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, 104, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true]
+  fanfare low:
+    steps: 32
+    step_size: 1/8
+    degree: [5, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, 5, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~]
+    velocity: [94, ~, ~, ~, ~, ~, ~, ~, 94, ~, ~, ~, ~, ~, ~, ~, 94, ~, ~, ~, ~, ~, ~, ~, 94, ~, ~, ~, 88, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true]
+  march a:
+    steps: 64
+    step_size: 1/8
+    degree: [5, ~, ~, 5, 1, ~, 7, ~, 5, ~, ~, 3, 5, ~, ~, ~, 4, ~, ~, 4, 7, ~, 2, ~, 1, ~, ~, 7, 4, ~, ~, ~, 3, ~, ~, 3, 6, ~, 1, ~, 7, ~, 6, ~, 3, ~, ~, ~, 2, ~, 5, ~, 7, ~, 2, ~, 2, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, b, ~, ~, b, b, ~, ~, ~, b, ~, b, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, 5, 6, ~, 5, ~, 5, ~, ~, 5, 5, ~, ~, ~, 5, ~, ~, 5, 5, ~, 6, ~, 6, ~, ~, 5, 5, ~, ~, ~, 5, ~, ~, 5, 5, ~, 6, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [112, ~, ~, 106, 106, ~, 106, ~, 112, ~, ~, 106, 106, ~, ~, ~, 112, ~, ~, 106, 106, ~, 106, ~, 112, ~, ~, 106, 106, ~, ~, ~, 112, ~, ~, 106, 106, ~, 106, ~, 112, ~, 106, ~, 106, ~, ~, ~, 112, ~, 106, ~, 106, ~, 106, ~, 112, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, false, false, true, false, true, false, true, true, false, false, true, true, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, true, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+  march a harmony:
+    steps: 64
+    step_size: 1/8
+    degree: [3, ~, ~, 3, 6, ~, 5, ~, 3, ~, ~, 1, 3, ~, ~, ~, 2, ~, ~, 2, 5, ~, 7, ~, 6, ~, ~, 5, 2, ~, ~, ~, 1, ~, ~, 1, 4, ~, 6, ~, 5, ~, 4, ~, 1, ~, ~, ~, 7, ~, 3, ~, 5, ~, 7, ~, 7, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, 5, 5, ~, 5, ~, 5, ~, ~, 5, 5, ~, ~, ~, 5, ~, ~, 5, 5, ~, 5, ~, 5, ~, ~, 5, 5, ~, ~, ~, 5, ~, ~, 5, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, 4, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [86, ~, ~, 80, 80, ~, 80, ~, 86, ~, ~, 80, 80, ~, ~, ~, 86, ~, ~, 80, 80, ~, 80, ~, 86, ~, ~, 80, 80, ~, ~, ~, 86, ~, ~, 80, 80, ~, 80, ~, 86, ~, 80, ~, 80, ~, ~, ~, 86, ~, 80, ~, 80, ~, 80, ~, 86, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, false, false, true, false, true, false, true, true, false, false, true, true, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, true, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+  march b:
+    steps: 64
+    step_size: 1/8
+    degree: [6, ~, 1, ~, 4, ~, ~, 1, 6, ~, 4, ~, 6, ~, ~, ~, 5, ~, 1, ~, 3, ~, ~, 1, 5, ~, 3, ~, 5, ~, ~, ~, 6, ~, 1, ~, 4, ~, 6, ~, 5, ~, ~, 4, 1, ~, ~, ~, 2, ~, 7, ~, 5, ~, 7, ~, 2, ~, ~, ~, 5, ~, ~, ~]
+    octave: [5, ~, 6, ~, 6, ~, ~, 6, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 6, ~, 6, ~, ~, 6, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 6, ~, 6, ~, 6, ~, 6, ~, ~, 6, 6, ~, ~, ~, 6, ~, 5, ~, 5, ~, 5, ~, 6, ~, ~, ~, 6, ~, ~, ~]
+    velocity: [112, ~, 106, ~, 106, ~, ~, 106, 112, ~, 106, ~, 106, ~, ~, ~, 112, ~, 106, ~, 106, ~, ~, 106, 112, ~, 106, ~, 106, ~, ~, ~, 112, ~, 106, ~, 106, ~, 106, ~, 112, ~, ~, 106, 106, ~, ~, ~, 112, ~, 106, ~, 106, ~, 106, ~, 112, ~, ~, ~, 106, ~, ~, ~]
+    tie: [false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, false, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true]
+  march b harmony:
+    steps: 64
+    step_size: 1/8
+    degree: [4, ~, 6, ~, 2, ~, ~, 6, 4, ~, 2, ~, 4, ~, ~, ~, 3, ~, 6, ~, 1, ~, ~, 6, 3, ~, 1, ~, 3, ~, ~, ~, 4, ~, 6, ~, 2, ~, 4, ~, 3, ~, ~, 2, 6, ~, ~, ~, 7, ~, 5, ~, 3, ~, 5, ~, 7, ~, ~, ~, 3, ~, ~, ~]
+    octave: [5, ~, 5, ~, 6, ~, ~, 5, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 6, ~, ~, 5, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 6, ~, 6, ~, 6, ~, ~, 6, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, 6, ~, ~, ~]
+    velocity: [86, ~, 80, ~, 80, ~, ~, 80, 86, ~, 80, ~, 80, ~, ~, ~, 86, ~, 80, ~, 80, ~, ~, 80, 86, ~, 80, ~, 80, ~, ~, ~, 86, ~, 80, ~, 80, ~, 80, ~, 86, ~, ~, 80, 80, ~, ~, ~, 86, ~, 80, ~, 80, ~, 80, ~, 86, ~, ~, ~, 80, ~, ~, ~]
+    tie: [false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, false, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true]
+  figure:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 5, 3, 1, 5, 3, 5, 1, 3, 5, 1, 3, 1, 5, 3, 5]
+    octave: [4, 4, 4, 5, 4, 4, 4, 4, 4, 4, 5, 5, 5, 4, 4, 4]
+    velocity: [84, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78]
+  figure high:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 5, 3, 1, 5, 3, 5, 1, 3, 5, 1, 3, 1, 5, 3, 5]
+    octave: [5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 6, 6, 6, 5, 5, 5]
+    velocity: [58, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52]
+  deep:
+    steps: 64
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, 2, ~, 7, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, 7, ~, 7, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 2, ~, 2, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, ~, ~, ~, 5, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [100, ~, ~, ~, ~, ~, 94, ~, 100, ~, ~, ~, ~, ~, ~, ~, 100, ~, ~, ~, ~, ~, 94, ~, 100, ~, ~, ~, ~, ~, ~, ~, 100, ~, ~, ~, ~, ~, 94, ~, 100, ~, ~, ~, ~, ~, ~, ~, 100, ~, ~, ~, 94, ~, ~, ~, 100, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true]
+  deep high:
+    steps: 64
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, 2, ~, 7, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, 7, ~, 7, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 2, ~, 2, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [6, ~, ~, ~, ~, ~, 6, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [76, ~, ~, ~, ~, ~, 70, ~, 76, ~, ~, ~, ~, ~, ~, ~, 76, ~, ~, ~, ~, ~, 70, ~, 76, ~, ~, ~, ~, ~, ~, ~, 76, ~, ~, ~, ~, ~, 70, ~, 76, ~, ~, ~, ~, ~, ~, ~, 76, ~, ~, ~, 70, ~, ~, ~, 76, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true]
+  stairs:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 7, 6, 4, 3, 2, 1, 7, 6, 4, 3, 2, 1, ~, ~, ~]
+    accidental: [~, b, b, "#", ~, ~, ~, b, b, "#", ~, ~, ~, ~, ~, ~]
+    octave: [6, 5, 5, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, ~, ~, ~]
+    velocity: [102, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, ~, ~, ~]
+  climb:
+    steps: 16
+    step_size: 1/16
+    degree: [1, 2, 3, 4, 6, 7, 1, 2, 3, 4, 6, 7, 1, ~, ~, ~]
+    accidental: [~, ~, ~, "#", b, b, ~, ~, ~, "#", b, b, ~, ~, ~, ~]
+    octave: [4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6, ~, ~, ~]
+    velocity: [102, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, ~, ~, ~]
+  last:
+    steps: 16
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~, "3", ~, ~, ~, ~, ~, ~, ~]
+    velocity: [106, ~, ~, ~, ~, ~, ~, ~, 106, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true]
+  last bass:
+    steps: 16
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [2, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [106, ~, ~, ~, ~, ~, ~, ~, 106, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true]
+
+progressions:
+  a: { chords: [1, 1, 7, 7, 6, 6, 5, 5], accidentals: [~, ~, b, b, b, b, ~, ~] }
+  b: { chords: [4, 4, 1, 1, 4, 4, 5, 5] }
+  fanfare: { chords: [1, 7, 6, 5], accidentals: [~, b, b, ~] }
+  deep: { chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] }
+
+chains:
+  a:
+    - progression: a
+  b:
+    - progression: b
+  fanfare:
+    - progression: fanfare
+  deep:
+    - progression: deep
+
+instruments:
+  square lead: { device: "*FluidSynth", gm_sound: 81 }
+  second square: { device: "*FluidSynth", gm_sound: 81 }
+  chip: { device: "*FluidSynth", gm_sound: 81 }
+  synth bass: { device: "*FluidSynth", gm_sound: 39 }
+  hollow lead: { device: "*FluidSynth", gm_sound: 80 }
+  pulse: { device: "*FluidSynth", gm_sound: 82 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  dangerous_to_go_alone:
+    tempo: 140
+    scale: D Major
+    genre: Video Game
+
+    tracks:
+      kick: { drum: true, instrument: drum kit }
+      noise: { drum: true, instrument: drum kit }
+      crash: { drum: true, instrument: drum kit }
+      heart: { drum: true, instrument: drum kit }
+      lead: { instrument: square lead }
+      harmony: { instrument: second square }
+      chip: { instrument: chip }
+      bass: { instrument: synth bass }
+      hollow: { instrument: hollow lead }
+      pulse: { instrument: pulse }
+
+    scenes:
+      - name: fanfare
+        tracks:
+          lead: { pattern: fanfare, repeat: 1 }
+          harmony: { pattern: fanfare low, loop: true }
+          chip: { pattern: chip, chains: [fanfare], loop: true }
+          bass: { pattern: low, chains: [fanfare], loop: true }
+          crash: { pattern: crash, loop: true }
+      - name: overworld
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          noise: { pattern: march, loop: true }
+          bass: { pattern: gallop, chains: [a], loop: true }
+          lead: { pattern: march a, loop: true }
+          crash: { pattern: crash, loop: true }
+      - name: "overworld, two voices"
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          noise: { pattern: march, loop: true }
+          bass: { pattern: gallop, chains: [a], loop: true }
+          lead: { pattern: march a, loop: true }
+          harmony: { pattern: march a harmony, loop: true }
+          chip: { pattern: chip, chains: [a], loop: true }
+          crash: { pattern: crash, loop: true }
+      - name: second strain
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          noise: { pattern: march, loop: true }
+          bass: { pattern: gallop, chains: [b], loop: true }
+          lead: { pattern: march b, loop: true }
+          harmony: { pattern: march b harmony, loop: true }
+          crash: { pattern: crash, loop: true }
+      - name: overworld again
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          noise: { pattern: march, loop: true }
+          bass: { pattern: gallop, chains: [a], loop: true }
+          lead: { pattern: march a, loop: true }
+          harmony: { pattern: march a harmony, loop: true }
+          chip: { pattern: chip, chains: [a], loop: true }
+          crash: { pattern: crash, loop: true }
+      - name: down the stairs
+        scale: D Minor
+        tracks:
+          lead: { pattern: stairs, repeat: 1 }
+      - name: dungeon
+        scale: D Minor
+        tempo: 120
+        tracks:
+          pulse: { pattern: figure, chains: [deep], repeat: 8 }
+          bass: { pattern: low, chains: [deep], loop: true }
+      - name: "dungeon, deeper"
+        scale: D Minor
+        tempo: 120
+        tracks:
+          pulse: { pattern: figure, chains: [deep], repeat: 8 }
+          bass: { pattern: low, chains: [deep], loop: true }
+          hollow: { pattern: deep, loop: true }
+          heart: { pattern: heart, loop: true }
+      - name: "dungeon, deepest"
+        scale: D Minor
+        tempo: 120
+        tracks:
+          pulse: { pattern: figure, chains: [deep], repeat: 16 }
+          chip: { pattern: figure high, chains: [deep], loop: true }
+          bass: { pattern: low, chains: [deep], loop: true }
+          hollow: { pattern: deep, loop: true }
+          harmony: { pattern: deep high, loop: true }
+          heart: { pattern: heart, loop: true }
+      - name: up the stairs
+        tempo: 120
+        tracks:
+          lead: { pattern: climb, repeat: 1 }
+      - name: daylight
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          noise: { pattern: march, loop: true }
+          bass: { pattern: gallop, chains: [a], loop: true }
+          lead: { pattern: march a, loop: true }
+          harmony: { pattern: march a harmony, loop: true }
+          chip: { pattern: chip, chains: [a], loop: true }
+          crash: { pattern: crash, loop: true }
+      - name: second strain again
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          noise: { pattern: march, loop: true }
+          bass: { pattern: gallop, chains: [b], loop: true }
+          lead: { pattern: march b, loop: true }
+          harmony: { pattern: march b harmony, loop: true }
+          chip: { pattern: chip, chains: [b], loop: true }
+          crash: { pattern: crash, loop: true }
+      - name: last march
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          noise: { pattern: march, loop: true }
+          bass: { pattern: gallop, chains: [a], loop: true }
+          lead: { pattern: march a, loop: true }
+          harmony: { pattern: march a harmony, loop: true }
+          chip: { pattern: chip, chains: [a], loop: true }
+          crash: { pattern: crash, loop: true }
+      - name: ending
+        tracks:
+          lead: { pattern: last, repeat: 1 }
+          bass: { pattern: last bass, loop: true }
+          crash: { pattern: crash, loop: true }
+          kick: { pattern: kick, loop: true }
