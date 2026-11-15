@@ -1,11 +1,11 @@
-version: 1.0.364
+version: 1.0.365
 title: Why say it again
 description: "a taut new wave song of the late seventies in the manner of Psycho Killer (Talking Heads), with a bass line and tunes of its own"
 notes: |
   Why say it again: a taut new wave song of the late seventies in the manner of Psycho Killer (Talking
   Heads), with a bass line and tunes of its own. This is a homage to Psycho Killer (Talking Heads):
   its chords, form, sounds and drums follow that work as Claude knows it, and every tune and rhythm
-  here is new. Rebuild version 1.
+  here is new. Rebuild version 2.
 
   A staccato bass alone, then a plain kit and two thin guitars; a clipped verse on a dominant I and a
   flat VII; a stuttering chorus on flat VI, flat VII and a minor i; a bridge of long notes; a coda of
@@ -29,6 +29,15 @@ notes: |
   held still; the lift is the chorus, moving to borrowed major chords with the voice an octave up; the
   contrast is the bridge of long notes; the sounds are a finger bass, two clean guitars, an overdriven
   guitar for the coda and a voice lead.
+
+  Phrasing: the verse and chorus keep their clipped, nervous lines with long silences between; the
+  stutters are accented on their first note and their highest; the bridge's long lines now take a
+  breath in each bar.
+
+  Dynamics: every part keeps a full default velocity and moves a little from it by its rhythm: the
+  hats and shakers lean on the beats, the bass on the first beat of the bar, the chords on two and
+  four, and a tune on its downbeats; a note pushed ahead of the beat and held over it is accented. The
+  kick, snare and crashes are as the drummer plays them.
 
   Run it with: llamatron examples/by_genre/rock/why_say_it_again.yml
 
@@ -77,7 +86,7 @@ patterns:
     degree: [F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~]
     accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
     octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
-    velocity: [68, ~, 68, ~, 68, ~, 68, ~, 68, ~, 68, ~, 68, ~, 68, ~]
+    velocity: [72, ~, 66, ~, 72, ~, 66, ~, 72, ~, 66, ~, 72, ~, 66, ~]
   crash:
     steps: 64
     drum: true
@@ -91,48 +100,48 @@ patterns:
     step_size: 1/8
     degree: [1, ~, ~, 1, ~, ~, 5, 1]
     octave: [2, ~, ~, 2, ~, ~, 1, 2]
-    velocity: [114, ~, ~, 108, ~, ~, 108, 108]
+    velocity: [120, ~, ~, 113, ~, ~, 109, 106]
   chop:
     steps: 16
     step_size: 1/16
     degree: [~, ~, 1, ~, ~, ~, 1, 1, ~, ~, 1, ~, ~, ~, 1, ~]
     octave: [~, ~, 4, ~, ~, ~, 4, 4, ~, ~, 4, ~, ~, ~, 4, ~]
     chord: [~, ~, "3", ~, ~, ~, "3", "3", ~, ~, "3", ~, ~, ~, "3", ~]
-    velocity: [~, ~, 82, ~, ~, ~, 82, 82, ~, ~, 82, ~, ~, ~, 82, ~]
+    velocity: [~, ~, 87, ~, ~, ~, 79, 87, ~, ~, 87, ~, ~, ~, 79, ~]
   pick:
     steps: 8
     step_size: 1/8
     degree: [~, 5, ~, 1, ~, 5, 3, ~]
     octave: [~, 4, ~, 5, ~, 4, 4, ~]
-    velocity: [~, 80, ~, 80, ~, 80, 80, ~]
+    velocity: [~, 85, ~, 85, ~, 77, 80, ~]
   verse tune:
     steps: 64
     step_size: 1/8
     degree: [~, ~, 3, 3, 3, ~, 2, 1, 3, ~, ~, ~, ~, ~, ~, ~, ~, ~, 2, 2, 4, ~, 2, 7, 2, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, 3, 5, ~, 3, 1, 5, ~, 6, ~, 5, ~, ~, ~, ~, ~, 4, 4, 4, ~, 2, 7, 2, ~, ~, ~, ~, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [~, ~, 4, 4, 4, ~, 4, 4, 4, ~, ~, ~, ~, ~, ~, ~, ~, ~, 4, 4, 4, ~, 4, 3, 4, ~, ~, ~, ~, ~, ~, ~, ~, ~, 4, 4, 4, ~, 4, 4, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, 4, 4, 4, ~, 4, 3, 4, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [~, ~, 102, 102, 102, ~, 102, 102, 108, ~, ~, ~, ~, ~, ~, ~, ~, ~, 102, 102, 102, ~, 102, 102, 108, ~, ~, ~, ~, ~, ~, ~, ~, ~, 102, 102, 102, ~, 102, 102, 108, ~, 102, ~, 102, ~, ~, ~, ~, ~, 102, 102, 102, ~, 102, 102, 108, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [~, ~, 98, 106, 114, ~, 106, 106, 102, ~, ~, ~, ~, ~, ~, ~, ~, ~, 98, 106, 114, ~, 106, 106, 102, ~, ~, ~, ~, ~, ~, ~, ~, ~, 98, 106, 118, ~, 106, 106, 114, ~, 106, ~, 102, ~, ~, ~, ~, ~, 98, 106, 114, ~, 106, 106, 102, ~, ~, ~, ~, ~, ~, ~]
   chorus tune:
     steps: 64
     step_size: 1/8
     degree: [6, ~, 6, 6, 1, ~, 6, ~, 7, ~, 7, 7, 2, ~, 7, ~, 1, 1, 1, ~, 1, 1, 1, ~, 3, 3, 3, ~, 1, ~, ~, ~, 6, ~, 6, 6, 3, ~, 1, ~, 7, ~, 7, 7, 4, ~, 2, ~, 1, 1, 1, ~, 5, 5, 5, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     accidental: [b, ~, b, b, ~, ~, b, ~, b, ~, b, b, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, b, b, ~, ~, ~, ~, ~, b, ~, b, b, b, ~, ~, ~, b, ~, b, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, 4, 4, 5, ~, 4, ~, 4, ~, 4, 4, 5, ~, 4, ~, 5, 5, 5, ~, 5, 5, 5, ~, 5, 5, 5, ~, 5, ~, ~, ~, 4, ~, 4, 4, 5, ~, 5, ~, 4, ~, 4, 4, 5, ~, 5, ~, 5, 5, 5, ~, 4, 4, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [120, ~, 114, 114, 114, ~, 114, ~, 120, ~, 114, 114, 114, ~, 114, ~, 120, 114, 114, ~, 114, 114, 114, ~, 120, 114, 114, ~, 114, ~, ~, ~, 120, ~, 114, 114, 114, ~, 114, ~, 120, ~, 114, 114, 114, ~, 114, ~, 120, 114, 114, ~, 114, 114, 114, ~, 120, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [114, ~, 106, 106, 118, ~, 102, ~, 114, ~, 106, 106, 118, ~, 102, ~, 114, 106, 106, ~, 114, 106, 106, ~, 118, 106, 106, ~, 102, ~, ~, ~, 114, ~, 106, 106, 118, ~, 102, ~, 114, ~, 106, 106, 118, ~, 102, ~, 114, 106, 106, ~, 114, 106, 106, ~, 102, ~, ~, ~, ~, ~, ~, ~]
   bridge tune:
     steps: 64
     step_size: 1/8
     degree: [4, ~, ~, ~, ~, ~, 2, ~, 4, ~, ~, ~, 6, ~, ~, ~, 6, ~, ~, ~, ~, ~, 4, ~, 5, ~, ~, ~, 7, ~, ~, ~, 4, ~, ~, ~, ~, ~, 6, ~, 2, ~, ~, ~, 6, ~, ~, ~, 1, ~, ~, ~, 6, ~, 4, ~, 7, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, 4, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, ~, ~, 4, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, ~, ~, 4, ~, 5, ~, ~, ~, 4, ~, ~, ~, 5, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [102, ~, ~, ~, ~, ~, 96, ~, 102, ~, ~, ~, 96, ~, ~, ~, 102, ~, ~, ~, ~, ~, 96, ~, 102, ~, ~, ~, 96, ~, ~, ~, 102, ~, ~, ~, ~, ~, 96, ~, 102, ~, ~, ~, 96, ~, ~, ~, 102, ~, ~, ~, 96, ~, 96, ~, 102, ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, true, true, true, true, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false]
+    velocity: [114, ~, ~, ~, ~, ~, 106, ~, 106, ~, ~, ~, 106, ~, ~, ~, 114, ~, ~, ~, ~, ~, 106, ~, 106, ~, ~, ~, 106, ~, ~, ~, 114, ~, ~, ~, ~, ~, 106, ~, 118, ~, ~, ~, 106, ~, ~, ~, 114, ~, ~, ~, 106, ~, 106, ~, 102, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, false, false, true, false, true, true, false, false, true, true, true, false, true, true, true, true, false, false, true, false, true, true, false, false, true, true, true, false, true, true, true, true, false, false, true, false, true, true, false, false, true, true, true, false, true, true, false, false, true, false, true, false, true, true, true, true, true, false, false]
   scratch:
     steps: 32
     step_size: 1/8
     degree: [1, 1, ~, 7, 1, ~, 3, 1, 1, 1, ~, 7, 5, ~, ~, ~, 2, 2, ~, 7, 2, ~, 4, 2, 2, 2, ~, 7, 4, ~, ~, ~]
     accidental: [~, ~, ~, b, ~, ~, b, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~]
     octave: [6, 6, ~, 5, 6, ~, 6, 6, 6, 6, ~, 5, 5, ~, ~, ~, 6, 6, ~, 5, 6, ~, 6, 6, 6, 6, ~, 5, 5, ~, ~, ~]
-    velocity: [110, 104, ~, 104, 104, ~, 104, 104, 110, 104, ~, 104, 104, ~, ~, ~, 110, 104, ~, 104, 104, ~, 104, 104, 110, 104, ~, 104, 104, ~, ~, ~]
+    velocity: [115, 109, ~, 101, 106, ~, 104, 101, 115, 109, ~, 101, 106, ~, ~, ~, 115, 109, ~, 101, 106, ~, 104, 101, 115, 109, ~, 101, 106, ~, ~, ~]
 
 progressions:
   verse: { chords: [1, 1, 7, 7], accidentals: [~, ~, b, b], qualities: [dom7, dom7, M, M] }
