@@ -9,8 +9,9 @@
 #             trait each plays, how high and how loud.
 # sections    what plays in each kind of section, and the plan of its tune: which line returns and who plays each.
 # players     who each instrument's player is in this style, by complexity from 1 (plain) to 4 (the most advanced): what the
-#             player says of themselves for people, the picks the player makes, how the player keeps time (a rush or a
-#             drag, in hundredths of a step), how uneven the drum hits are, and a lead's range and busyness.
+#             player says for people, and how the player decorates the kind's own parts, never replacing them: a drummer's
+#             hits added to every bar (adds) or to every few bars (varies), the fill and how often it comes, timing (a
+#             rush or a drag, in hundredths of a step), how uneven the hits are, a strum's width, a lead's range.
 # melody      the habits a tune is sketched by when a song gives none: the notes used, rhythm cells, how far it ranges.
 # Sixteen steps to a bar, sixteenths. A song here is layers that enter and leave: the sections say which play.
 # No act, label or work is named or followed.
@@ -178,30 +179,52 @@ chord_trait: harmony
 
 players:
   drums:
-    1: {says: 'A drum machine: a kick on every beat and hats between, nothing else, dead on the grid.', picks: {kick: every beat, hat: offbeats, percussion: none, fills: none}}
-    2: {says: 'A drum machine with open hats and a shaker, the clap a touch late.', picks: {hat: open on the offbeats, percussion: shaker, fills: the kick drops out}, timing: {clap: {drag: 8}, snare: {drag: 8}}, uneven: 3}
-    3: {says: 'A drum machine with rolls into every turn and a rim in threes across the beat.', picks: {hat: sixteenths, percussion: rim in threes, fills: snare roll getting faster}, timing: {hat: {rush: 4}}, uneven: 5}
-    4: {says: 'A drum machine with a broken kick, a cowbell and tom fills.', picks: {kick: broken, hat: sixteenths, percussion: cowbell, fills: toms}, timing: {clap: {drag: 12}, snare: {drag: 12}}, uneven: 7}
+    1:
+      says: 'A drum machine running one bar, dead on the grid, with no fills.'
+      fill_every: 0
+    2:
+      says: 'A drum machine. An open hat added before every fourth bar, the clap a touch late, and the kick dropping out before every eighth bar.'
+      fill_every: 8
+      varies: {every: 4, choices: [{bar: {open: {steps: 16, loud: [14]}}}]}
+      fill: [{bar: {kick: {steps: 16, loud: [0, 4]}}}]
+      timing: {clap: {drag: 8}, snare: {drag: 8}}
+      uneven: 3
+    3:
+      says: 'A drum machine. A soft extra clap, a kick pickup in every other bar, and a snare roll that speeds up before every eighth bar.'
+      fill_every: 8
+      adds: [{bar: {clap: {steps: 16, soft: [15]}}}]
+      varies: {every: 2, choices: [{bar: {kick: {steps: 16, loud: [14]}}}]}
+      fill: [{bar: {snare: {steps: 16, loud: [0, 4, 8, 10, 12, 13, 14, 15]}}}]
+      timing: {hat: {rush: 4}}
+      uneven: 5
+    4:
+      says: 'A drum machine programmed bar by bar. A rim in threes across the beat, a kick that breaks pattern, a cowbell, and toms into every fourth bar.'
+      fill_every: 4
+      adds: [{bar: {rim: {steps: 16, loud: [3, 6, 9, 12]}}}]
+      varies: {every: 2, choices: [{bar: {kick: {steps: 16, loud: [7, 10]}, cowbell: {steps: 16, loud: [2, 10]}}}]}
+      fill: [{bar: {tom high: {steps: 16, loud: [8, 9, 11]}, tom mid: {steps: 16, loud: [12]}, tom low: {steps: 16, loud: [13, 14, 15]}, snare: {steps: 16, loud: [4], soft: [6, 7]}}}]
+      timing: {clap: {drag: 12}, snare: {drag: 12}}
+      uneven: 7
   bass:
-    1: {says: 'A synth bass. One note between the kicks.', picks: {bass: offbeat}}
-    2: {says: 'A synth bass. Octaves in eighths.', picks: {bass: octaves in eighths}}
-    3: {says: 'A synth bass. Octaves in sixteenths.', picks: {bass: octaves in sixteenths}}
-    4: {says: 'A synth bass. A syncopated line of its own.', picks: {bass: syncopated}}
+    1: {says: 'Plays the bass part exactly as written, on the beat.'}
+    2: {says: 'Plays the bass part as written, leaning back a little.'}
+    3: {says: 'Plays the bass part pushing ahead of the beat.'}
+    4: {says: 'Plays the bass part far behind the beat.'}
   rhythm:
-    1: {says: 'No arpeggio.', picks: {arp: none}}
-    2: {says: 'An arpeggio in eighths, up and down.', picks: {arp: eighths up and down}}
-    3: {says: 'An arpeggio in sixteenths over two octaves.', picks: {arp: sixteenths up}}
-    4: {says: 'An arpeggio in sixteenths, up and down over two octaves.', picks: {arp: sixteenths up and down}}
+    1: {says: 'Plays the part exactly as written, tight and even.'}
+    2: {says: 'Plays the part with a wider, slightly loose stroke.'}
+    3: {says: 'Plays the part loosely, each stroke spread across the strings.'}
+    4: {says: 'Plays the part with the widest and loosest stroke.'}
   lead:
     1: {says: 'Few notes, close together.', span: 2}
     2: {says: 'A hook that leaves room.', span: 3}
     3: {says: 'A line over a wider range.', span: 4}
     4: {says: 'The widest range.', span: 4}
   keys:
-    1: {says: 'A pad. Holds the chords.', picks: {chords: held pad}}
-    2: {says: 'A pad. One stab off the beat.', picks: {chords: one stab off the beat}}
-    3: {says: 'An organ. Stabs off the beat.', picks: {chords: organ stabs}}
-    4: {says: 'A piano. A syncopated figure of two bars.', picks: {chords: piano stabs}}
+    1: {says: 'Plays the part exactly as written.'}
+    2: {says: 'Plays the part as written.'}
+    3: {says: 'Plays the part pushing ahead of the beat.'}
+    4: {says: 'Plays the part leaning far back.'}
 
 sounds: {synth bass: 39, acid bass: 40, sub bass: 39, pad: 90, piano: 2, organ: 18, arp: 82, soft arp: 6, square: 81, lead: 82, voice: 86}
 

@@ -258,19 +258,56 @@ class TestPlayers(unittest.TestCase):
                         for trait, value in player.get(arranger.PICKS, {}).items():
                             self.assertIn(value, arranger.values_of(style=style, trait=trait))
 
-    def test_a_player_makes_the_players_picks_and_the_songs_own_pick_still_wins(self):
-        plain = arranger.picked(style=self.style, song=self.song(levels={players.DRUMS: players.PLAIN}))
-        wild = arranger.picked(style=self.style, song=self.song(levels={players.DRUMS: players.ADVANCED}))
-        own = self.style[arranger.TEMPLATES][ROCK_KIND][KICK]
-        kept = arranger.picked(style=self.style, song=self.song(levels={players.DRUMS: players.ADVANCED}, picks={KICK: own}))
-        self.assertEqual(plain[KICK], self.style[arranger.PLAYERS][players.DRUMS][players.PLAIN][arranger.PICKS][KICK])
-        self.assertNotEqual(plain[KICK], wild[KICK])
-        self.assertEqual(kept[KICK], own)
+    def hits(self, *, song, drum):
+        """A drum's hits in a made song, loud, soft or none for each step, whether its part is written as hits or as a pattern."""
+        part = arranger.arranged(style=self.style, song=song)[composer.PARTS][drum]
+        if arranger.RAW not in part:
+            return part[notation.HITS]
+        loud = self.style[arranger.LOUDNESS][drum]
+        near = [None if velocity is None else abs(velocity - loud) <= self.uneven(song) for velocity in part[arranger.RAW][notation.VELOCITY]]
+        return [notation.NONE if hit is None else notation.LOUD if hit else notation.SOFT for hit in near]
 
-    def test_a_players_pick_that_does_not_fit_the_meter_is_passed_over(self):
-        picks = arranger.picked(style=self.style, song=self.song(levels={players.DRUMS: players.PLAIN}, template=BALLAD))
-        self.assertEqual(picks[METER], SIX_EIGHT)
-        self.assertEqual(picks[KICK], self.style[arranger.TEMPLATES][BALLAD][KICK])
+    def uneven(self, song):
+        return self.style[arranger.PLAYERS][players.DRUMS][song[arranger.PLAYERS][players.DRUMS]].get(arranger.UNEVEN, 0)
+
+    def kinds_kick(self):
+        kick = self.style[arranger.TEMPLATES][ROCK_KIND][KICK]
+        return arranger.values_of(style=self.style, trait=KICK)[kick][arranger.BAR][KICK]
+
+    def test_a_player_never_changes_the_songs_picks(self):
+        for complexity in players.COMPLEXITIES:
+            self.assertEqual(arranger.picked(style=self.style, song=self.song(levels={players.DRUMS: complexity, players.BASS: complexity})),
+                             arranger.picked(style=self.style, song=self.song()))
+
+    def test_the_plain_drummer_plays_the_kinds_bar_the_same_in_every_bar(self):
+        bar = self.kinds_kick()
+        hits = self.hits(song=self.song(levels={players.DRUMS: players.PLAIN}), drum=KICK)
+        every = self.style[arranger.PLAYERS][players.DRUMS][players.PLAIN][arranger.FILL_EVERY]
+        self.assertEqual(hits, bar * every)
+
+    def test_every_drummer_keeps_every_hit_of_the_kinds_bar_and_a_busier_one_adds_to_it(self):
+        bar = self.kinds_kick()
+        counts = []
+        for complexity in players.COMPLEXITIES:
+            hits = self.hits(song=self.song(levels={players.DRUMS: complexity}), drum=KICK)
+            every = self.style[arranger.PLAYERS][players.DRUMS][complexity][arranger.FILL_EVERY]
+            finer = len(hits) // every // len(bar)
+            for count in range(every - 1):
+                for place, hit in enumerate(bar):
+                    if hit != notation.NONE:
+                        with self.subTest(complexity=complexity, bar=count, place=place):
+                            self.assertEqual(hits[(count * len(bar) + place) * finer], hit)
+            counts.append(sum(hit != notation.NONE for hit in hits) / every)
+        self.assertEqual(counts, sorted(counts))
+        self.assertGreater(counts[-1], counts[0])
+
+    def test_a_decoration_that_does_not_fit_the_meter_leaves_the_kinds_bar_alone(self):
+        song = self.song(levels={players.DRUMS: players.WILD}, template=BALLAD)
+        kick = self.style[arranger.TEMPLATES][BALLAD][KICK]
+        bar = arranger.values_of(style=self.style, trait=KICK)[kick][arranger.BAR][KICK]
+        every = self.style[arranger.PLAYERS][players.DRUMS][players.WILD][arranger.FILL_EVERY]
+        self.assertEqual(arranger.picked(style=self.style, song=song)[METER], SIX_EIGHT)
+        self.assertEqual(self.hits(song=song, drum=KICK), bar * every)
 
     def test_every_track_has_a_rush_and_a_drag_that_do_nothing_until_a_player_moves_them(self):
         given = arranger.arranged(style=self.style, song=self.song())
@@ -293,7 +330,8 @@ class TestPlayers(unittest.TestCase):
         heard = [velocity for velocity in one[composer.PARTS][SNARE][arranger.RAW][notation.VELOCITY] if velocity is not None]
         self.assertEqual(one[composer.PARTS][SNARE], again[composer.PARTS][SNARE])
         self.assertGreater(len(set(heard)), 1)
-        self.assertTrue(all(abs(velocity - loud) <= by for velocity in heard))
+        soft = int(loud * arranger.SOFT_SHARE)
+        self.assertTrue(all(abs(velocity - loud) <= by or abs(velocity - soft) <= by for velocity in heard))
 
     def test_a_guitarist_changes_the_guitarify_and_the_notes_name_the_band(self):
         level = players.TASTEFUL

@@ -9,8 +9,9 @@
 #             trait each plays, how high and how loud.
 # sections    what plays in each kind of section, and the plan of its tune: which line returns and who plays each.
 # players     who each instrument's player is in this style, by complexity from 1 (plain) to 4 (the most advanced): what the
-#             player says of themselves for people, the picks the player makes, how the player keeps time (a rush or a
-#             drag, in hundredths of a step), how uneven the drum hits are, and a lead's range and busyness.
+#             player says for people, and how the player decorates the kind's own parts, never replacing them: a drummer's
+#             hits added to every bar (adds) or to every few bars (varies), the fill and how often it comes, timing (a
+#             rush or a drag, in hundredths of a step), how uneven the hits are, a strum's width, a lead's range.
 # melody      the habits a tune is sketched by when a song gives none: the notes used, rhythm cells, how far it ranges.
 # Twelve steps to a bar throughout: three to a beat, which is the shuffle. No band, artist or work is named or followed.
 
@@ -201,20 +202,43 @@ roles:
 
 players:
   drums:
-    1: {says: 'Kick, snare and hats. The plain shuffle and nothing more.', picks: {drums: plain shuffle, fills: none}, uneven: 2}
-    2: {says: 'A small kit. The shuffle a little behind the beat, with a snare triplet into each turn.', picks: {drums: plain shuffle, fills: snare triplet on four}, timing: {snare: {drag: 12}}, uneven: 5}
-    3: {says: 'A larger kit. The kick shuffles too, and the toms answer at every turn.', picks: {drums: driving shuffle, fills: snare into toms}, timing: {snare: {drag: 8}}, uneven: 7}
-    4: {says: 'Ride and snare shuffle together with the hat on the foot. Busy and far behind the beat.', picks: {drums: both hands shuffle, fills: snare into toms}, timing: {snare: {drag: 16}, ride: {drag: 6}}, uneven: 9}
+    1:
+      says: 'Kick, snare and hats. The shuffle by the book, the same every bar, with one fill at the end of each chorus.'
+      fill_every: 12
+      uneven: 2
+    2:
+      says: 'A small kit. The shuffle a little behind the beat, a soft kick before every fourth bar, and a snare triplet into each turn.'
+      fill_every: 4
+      varies: {every: 4, choices: [{bar: {kick: {steps: 12, soft: [11]}}}]}
+      fill: [{bar: {snare: {steps: 12, loud: [3, 9, 10, 11]}}}]
+      timing: {snare: {drag: 12}}
+      uneven: 5
+    3:
+      says: 'A larger kit. Quiet snare notes on the upbeats, the kick shuffling in every other bar, and the toms answering at each turn.'
+      fill_every: 4
+      adds: [{bar: {snare: {steps: 12, soft: [2, 8]}}}]
+      varies: {every: 2, choices: [{bar: {kick: {steps: 12, soft: [5, 11]}}}]}
+      fill: [{bar: {snare: {steps: 12, loud: [3, 6, 8], soft: [7]}, tom high: {steps: 12, loud: [9, 10]}, tom low: {steps: 12, loud: [11]}}}]
+      timing: {snare: {drag: 8}}
+      uneven: 7
+    4:
+      says: 'A large kit. The snare whispers on every upbeat, the kick never plays the same bar twice, and a fill of triplets runs the whole last bar, far behind the beat.'
+      fill_every: 4
+      adds: [{bar: {snare: {steps: 12, soft: [2, 5, 8, 11]}}}]
+      varies: {every: 2, choices: [{bar: {kick: {steps: 12, soft: [2, 8], loud: [11]}, open: {steps: 12, loud: [11]}}}]}
+      fill: [{silences: [hat, ride, hat by foot], bar: {kick: {steps: 12, loud: [0, 6]}, snare: {steps: 12, loud: [0, 1, 2], soft: [3]}, tom high: {steps: 12, loud: [4, 5, 6]}, tom mid: {steps: 12, loud: [7, 8]}, tom low: {steps: 12, loud: [9, 10, 11]}}}]
+      timing: {snare: {drag: 16}, ride: {drag: 6}, hat: {drag: 6}}
+      uneven: 9
   bass:
-    1: {says: 'A finger bass. Roots, shuffled.', picks: {bass: roots}}
-    2: {says: 'A finger bass. The boogie line up and back.', picks: {bass: boogie}, timing: {drag: 6}}
-    3: {says: 'An upright bass. Walks a note to every beat.', picks: {bass: walking}}
-    4: {says: 'An upright bass. Walks far behind the beat.', picks: {bass: walking}, timing: {drag: 14}}
+    1: {says: 'Plays the bass part exactly as written, on the beat.'}
+    2: {says: 'Plays the bass part as written, leaning back a little.', timing: {drag: 6}}
+    3: {says: 'Plays the bass part pushing ahead of the beat.'}
+    4: {says: 'Plays the bass part far behind the beat.', timing: {drag: 14}}
   rhythm:
-    1: {says: 'A clean guitar. A chord on two and four.', picks: {comping: guitar on the backbeats}}
-    2: {says: 'A clean guitar. The boogie pattern on the low strings.', picks: {comping: guitar boogie}}
-    3: {says: 'A clean guitar. Stabs on the upbeats, loose.', picks: {comping: guitar stabs on the upbeats}, guitarify: {spread: 12, loose_timing: 12}}
-    4: {says: 'A horn section in place of the guitar. Riffs of two bars.', picks: {comping: horn riffs}}
+    1: {says: 'Plays the part exactly as written, tight and even.'}
+    2: {says: 'Plays the part with a wider, slightly loose stroke.'}
+    3: {says: 'Plays the part loosely, each stroke spread across the strings.', guitarify: {spread: 12, loose_timing: 12}}
+    4: {says: 'Plays the part with the widest and loosest stroke.'}
   lead:
     1: {says: 'Few notes, close together, each one sung.', span: 2}
     2: {says: 'Phrases that leave room, behind the beat.', span: 3, timing: {drag: 10}}
