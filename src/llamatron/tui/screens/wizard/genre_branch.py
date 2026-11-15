@@ -57,6 +57,9 @@ class GenreBranch(Branch):
                 NumberField(page=page, label=MSG_TEMPO_LABEL, number=choices.get_tempo(), shown=MSG_WIZARD_TEMPO_SHOWN.format(tempo=choices.get_tempo(), low=lowest, high=highest),
                             lowest=MIN_TEMPO, highest=MAX_TEMPO, set=page.choosing(choices.set_tempo)),
             ]
+        if page.replaces():
+            # A replaced song keeps its name, so the name is only shown.
+            return [*fields, Field(label=MSG_NAME_LABEL, value=page.song_name)]
         return [*fields, Field(label=MSG_NAME_LABEL, value=page.song_name, enter=page.ask_song_name, enter_what=What.RENAME)]
 
     def subgenre_field(self):

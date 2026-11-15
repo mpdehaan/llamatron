@@ -71,6 +71,13 @@ class TestTakingIn(unittest.TestCase):
         self.assertEqual([column.get_name() for column in together.get_columns()], [column.get_name() for column in alone.get_columns()])
         self.assertEqual(len(together.get_rows()), len(alone.get_rows()))
 
+    def test_a_made_set_holds_only_what_its_song_uses(self):
+        for place in range(len(genre_names())):
+            other = made(name=FIRST, genre=place)
+            before = other.to_data()
+            other.remove_unused()
+            self.assertEqual(other.to_data(), before)
+
     def test_a_song_whose_name_is_in_use_gets_a_name_of_its_own(self):
         setlist = a_new_set()
         setlist.take_in(made(name=FIRST))
@@ -109,6 +116,48 @@ class TestTakingIn(unittest.TestCase):
         self.assertEqual(again.to_data(), setlist.to_data())
         for name in again.get_song_names():
             render_song(again.get_song(name), seed=A_SEED)
+
+
+class TestReplacingASong(unittest.TestCase):
+    """A song replaced entirely, in its place, as the song wizard replaces one."""
+
+    def a_set_of_two(self):
+        setlist = a_new_set()
+        setlist.take_in(made(name=FIRST))
+        setlist.take_in(made(name=SECOND, genre=1))
+        return setlist
+
+    def unused_patterns(self, setlist):
+        return [name for name in setlist.get_pattern_names() if not setlist.clip_slots_naming(section=Section.PATTERNS, name=name)]
+
+    def test_the_new_song_takes_the_name_and_the_place_and_what_only_the_old_song_used_goes(self):
+        setlist = a_new_set()
+        setlist.take_in(made(name=FIRST))
+        setlist.take_in(made(name=SECOND, seed=ANOTHER_SEED))
+        unused = self.unused_patterns(setlist)
+        patterns = len(setlist.get_pattern_names())
+        second = setlist.get_item(section=Section.SONGS, name=SECOND).to_data()
+        setlist.replace_song(name=FIRST, other=made(name=A_FILE, genre=1))
+        self.assertEqual(setlist.get_song_names(), [MSG_DEFAULT_SONG_NAME, FIRST, SECOND])
+        self.assertEqual(setlist.get_item(section=Section.SONGS, name=SECOND).to_data(), second)
+        # Nothing the old song alone used is left: every pattern unused now was unused before.
+        self.assertEqual(self.unused_patterns(setlist), unused)
+        self.assertNotEqual(len(setlist.get_pattern_names()), patterns)
+        render_song(setlist.get_song(FIRST), seed=A_SEED)
+        render_song(setlist.get_song(SECOND), seed=A_SEED)
+
+    def test_replacing_a_song_with_the_same_song_changes_nothing(self):
+        setlist = self.a_set_of_two()
+        before = setlist.to_data()
+        setlist.replace_song(name=FIRST, other=made(name=FIRST))
+        self.assertEqual(setlist.to_data(), before)
+
+    def test_what_nothing_used_before_is_left_alone(self):
+        setlist = self.a_set_of_two()
+        unused = self.unused_patterns(setlist)
+        setlist.replace_song(name=SECOND, other=made(name=SECOND, seed=ANOTHER_SEED))
+        for name in unused:
+            self.assertTrue(setlist.has_pattern(name))
 
 
 class TestWizardChoicesKept(unittest.TestCase):
