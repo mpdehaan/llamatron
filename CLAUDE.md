@@ -80,22 +80,23 @@ internal_tools/macro_compose.sh                                 # the MacroCompo
 
 ## The references, read when needed
 
-The references aren't imported, to keep every session light, and each is a file for one component, so that work on one thing reads only its part (the user's choice). A note about a component goes in that component's file, and a feature that stands on its own, like the MacroComposer, the genre library or the mashups, gets a file of its own in `.claude/features/` (the user's layout). Read, before working on:
+The references aren't imported, to keep every session light, and each is a file for one component, so that work on one thing reads only its part (the user's choice). A note about a component goes in that component's file, and a feature that stands on its own, like the MacroComposer, the genre library, the mashups, the visualizer, the recordings or real-time playback, gets a file of its own in `.claude/features/` (the user's layout). Read, before working on:
 
 | The work | Read |
 | --- | --- |
 | The packages, the music values, the composition objects, reading and writing a set, corrections, renames | `.claude/format/MODEL.md` |
 | A setting of the file, or what a file refuses | `.claude/format/FILE_RULES.md` |
-| Playing a song into clips, the command line, performance, real-time playback | `.claude/format/PLAYBACK.md` |
+| Playing a song into clips, the command line, performance | `.claude/format/PLAYBACK.md` |
+| Real-time playback: the engine, the Realtime Sender Process, playing from the pages | `.claude/features/REALTIME_PLAYBACK.md` |
 | An exporter or the MIDI import | `.claude/format/EXPORTERS.md` |
 | A generator | `.claude/format/GENERATORS.md` |
 | An example, a demo or a homage | `.claude/format/EXAMPLES.md`, and `.claude/features/MASHUPS.md` for a mashup |
 | Keys, help, the main screen, dialogs, settings pages, files, the document, undo and redo, the status line, the header | `.claude/tracker/SHARED.md` |
 | The File, Songs, Scales, Generators, Chains, Grooves, Instruments and Registers pages | `.claude/tracker/PAGES.md` |
-| Arrange, the details view, Scene View, the track editor, the clip page, playing from the pages | `.claude/tracker/ARRANGE.md` |
+| Arrange, the details view, Scene View, the track editor, the clip page | `.claude/tracker/ARRANGE.md` |
 | The pattern editor, the piano roll, keyswitches, the offsets and groove editors | `.claude/tracker/PATTERN_EDITOR.md` |
-| The visualizer | `.claude/tracker/VISUALIZER.md` |
-| A recording, the batch videos, the video tutorial | `.claude/tracker/RECORDING.md` |
+| The visualizer | `.claude/features/VISUALIZER.md` |
+| A recording, the batch videos, the video tutorial | `.claude/features/RECORDING.md` |
 | Any page's keys | `.claude/KEYMAP.md` |
 | A script or a tool | `.claude/COMMANDS.md` |
 | The MacroComposer | `.claude/features/MACRO_COMPOSER.md` |
