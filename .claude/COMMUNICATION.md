@@ -115,6 +115,8 @@ The user's rules for a reply that puts anything to them, gathered here so that e
 - The agreed work not yet built is kept in order in `dev_notes/QUEUE.md`, Claude's file: an item leaves it once built, and a
   request that comes in while Claude works goes where the user says, the bottom unless told otherwise, and Claude says where
   it went (the user's rule).
+- A set Claude points the user to, to open or to listen to, is given as the whole command that opens it, one command a set, like
+  `sh llamatron.sh previews/some_folder/song.yml`, never the file's name alone (the user's ask).
 - When the user says they'll test something, Claude stops there and never reminds them to test (the user's rule).
 - When working through an agreed list of steps, Claude goes on from one step to the next without
   stopping to report, committing each as it lands, and stops only for a question the designs
