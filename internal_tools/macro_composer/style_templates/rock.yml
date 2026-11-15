@@ -1,0 +1,250 @@
+# A style template: rock. The MacroComposer's arranger reads it (internal_tools/macro_composer/arranger.py).
+#
+# templates   the kinds of blues: each a set of picks to start from, any of which a song may change.
+# traits      what a song picks. Each trait lists its values; share is roughly how many songs in a hundred use the value, so
+#             the commonest is the one recommended; needs says what another trait must be for the value to fit.
+#             A drum value holds its bar, each drum's hits: loud, soft or none. A value a player plays holds its sound and
+#             its figure, bars of notes written over chord one, which a Progression moves through the song's chords.
+# roles       the band in track order, the chords first, then the lead and the backing, the bass, and the drums last: which
+#             trait each plays, how high and how loud.
+# sections    what plays in each kind of section, and the plan of its tune: which line returns and who plays each.
+# melody      the habits a tune is sketched by when a song gives none: the notes used, rhythm cells, how far it ranges.
+
+# Eight steps to a bar in 4/4, eighths; six in 6/8. No band, artist or work is named or followed.
+
+name: rock
+title: Rock
+genre: Rock
+feel: backbeat
+phrase_bars: 4
+loudness: {drums: 104, kick: 112, snare: 110, hat: 78, open: 84, ride: 82, crash: 102, tom high: 102, tom low: 104, tamb: 70, clap: 88, cowbell: 80}
+
+templates:
+  rock and roll: {meter: 4/4, tempo: 164, kick: every beat, snare: two and four, cymbal: ride eighths, percussion: none, bass: walking boogie, guitar: boogie, keys: piano eighths, voices: none, chords: three chord, lead: voice, solo: saxophone}
+  beat group:    {meter: 4/4, tempo: 138, kick: one and the and of two, snare: two and four, cymbal: hat eighths, percussion: tambourine, bass: roots and fifths, guitar: strummed, keys: none, voices: harmony, chords: four chord, lead: voice, solo: guitar}
+  folk rock:     {meter: 4/4, tempo: 120, kick: one and the and of two, snare: two and four, cymbal: hat eighths, percussion: tambourine, bass: roots and fifths, guitar: chiming arpeggio, keys: none, voices: harmony, chords: borrowed flat seven, lead: voice, solo: guitar}
+  hard rock:     {meter: 4/4, tempo: 126, kick: one and the ands of two and four, snare: two and four, cymbal: hat half open, percussion: none, bass: roots in eighths, guitar: held power chords, keys: none, voices: none, chords: minor power, lead: voice, solo: guitar}
+  arena rock:    {meter: 4/4, tempo: 120, kick: one three and the and of three, snare: two and four, cymbal: hat eighths, percussion: none, bass: roots in eighths, guitar: downstrokes, keys: organ held, voices: harmony, chords: four chord, lead: voice, solo: guitar}
+  punk:          {meter: 4/4, tempo: 184, kick: one and three, snare: two and four, cymbal: hat eighths, percussion: none, bass: roots in eighths, guitar: downstrokes, keys: none, voices: none, chords: three chord, lead: voice, solo: none}
+  new wave:      {meter: 4/4, tempo: 144, kick: every beat, snare: two and four, cymbal: hat eighths, percussion: handclaps, bass: roots in eighths, guitar: clipped offbeats, keys: organ held, voices: none, chords: four chord, lead: voice, solo: organ}
+  rock ballad:   {meter: 6/8, tempo: 62, kick: one in six, snare: four in six, cymbal: hat in six, percussion: none, bass: roots in six, guitar: arpeggio in six, keys: organ held, voices: harmony, chords: four chord, lead: voice, solo: guitar}
+
+traits:
+  meter:
+    - {value: 4/4, share: 92}
+    - {value: 6/8, share: 8}
+  tempo: {lowest: 60, usual: 126, highest: 190}
+  kick:
+    - {value: one and three, share: 20, needs: {meter: 4/4}, bar: {kick: [loud, none, none, none, loud, none, none, none]}}
+    - {value: one and the and of two, share: 14, needs: {meter: 4/4}, bar: {kick: [loud, none, none, loud, none, none, none, none]}}
+    - {value: one three and the and of three, share: 14, needs: {meter: 4/4}, bar: {kick: [loud, none, none, none, loud, loud, none, none]}}
+    - {value: one and the and of one and three, share: 9, needs: {meter: 4/4}, bar: {kick: [loud, loud, none, none, loud, none, none, none]}}
+    - {value: one and the and of three, share: 7, needs: {meter: 4/4}, bar: {kick: [loud, none, none, none, none, loud, none, none]}}
+    - {value: one and the ands of two and four, share: 9, needs: {meter: 4/4}, bar: {kick: [loud, none, none, loud, none, none, none, loud]}}
+    - {value: one and the ands of three and four, share: 5, needs: {meter: 4/4}, bar: {kick: [loud, none, none, none, none, loud, none, loud]}}
+    - {value: one and the ands of two three and four, share: 4, needs: {meter: 4/4}, bar: {kick: [loud, none, none, loud, none, loud, none, loud]}}
+    - {value: every beat, share: 12, needs: {meter: 4/4}, bar: {kick: [loud, none, loud, none, loud, none, loud, none]}}
+    - {value: one in six, share: 6, needs: {meter: 6/8}, bar: {kick: [loud, none, none, none, none, soft]}}
+  snare:
+    - {value: two and four, share: 86, needs: {meter: 4/4}, bar: {snare: [none, none, loud, none, none, none, loud, none]}}
+    - {value: every beat, share: 5, needs: {meter: 4/4}, bar: {snare: [soft, none, loud, none, soft, none, loud, none]}}
+    - {value: eighths with two and four, share: 3, needs: {meter: 4/4}, bar: {snare: [soft, soft, loud, soft, soft, soft, loud, soft]}}
+    - {value: four in six, share: 6, needs: {meter: 6/8}, bar: {snare: [none, none, none, loud, none, none]}}
+  cymbal:
+    - {value: hat eighths, share: 48, needs: {meter: 4/4}, bar: {hat: [loud, soft, loud, soft, loud, soft, loud, soft]}}
+    - {value: hat half open, share: 12, needs: {meter: 4/4}, bar: {open: [loud, soft, loud, soft, loud, soft, loud, soft]}}
+    - {value: ride eighths, share: 12, needs: {meter: 4/4}, bar: {ride: [loud, soft, loud, soft, loud, soft, loud, soft]}}
+    - {value: hat quarters, share: 12, needs: {meter: 4/4}, bar: {hat: [loud, none, loud, none, loud, none, loud, none]}}
+    - {value: hat eighths with an open on the last, share: 10, needs: {meter: 4/4}, bar: {hat: [loud, soft, loud, soft, loud, soft, loud, none], open: [none, none, none, none, none, none, none, loud]}}
+    - {value: hat in six, share: 6, needs: {meter: 6/8}, bar: {hat: [loud, soft, soft, loud, soft, soft]}}
+  fills:
+    - {value: snare and toms, share: 55, needs: {meter: 4/4}, fill: {snare: [none, none, loud, none, loud, loud, none, none], tom high: [none, none, none, none, none, none, loud, none], tom low: [none, none, none, none, none, none, none, loud]}}
+    - {value: toms on four, share: 20, needs: {meter: 4/4}, fill: {tom high: [none, none, none, none, none, none, loud, none], tom low: [none, none, none, none, none, none, none, loud]}}
+    - {value: snare on every eighth of the last half, share: 15, needs: {meter: 4/4}, fill: {snare: [none, none, loud, none, loud, loud, loud, loud]}}
+    - {value: none, share: 10}
+  percussion:
+    - {value: none, share: 68}
+    - {value: tambourine, share: 20, needs: {meter: 4/4}, bar: {tamb: [none, none, loud, none, none, none, loud, none]}}
+    - {value: handclaps, share: 9, needs: {meter: 4/4}, bar: {clap: [none, none, loud, none, none, none, loud, none]}}
+    - {value: cowbell, share: 3, needs: {meter: 4/4}, bar: {cowbell: [loud, none, loud, none, loud, none, loud, none]}}
+  bass:
+    - value: roots in eighths
+      share: 36
+      sound: bass
+      figure:
+        - [{degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}]
+    - value: roots and fifths
+      share: 24
+      sound: bass
+      figure:
+        - [{degree: 1, steps: 3}, {degree: 1, steps: 1}, {degree: 5, steps: 3}, {degree: 5, steps: 1}]
+    - value: walking boogie
+      share: 12
+      sound: bass
+      figure:
+        - [{degree: 1, steps: 2}, {degree: 3, steps: 2}, {degree: 5, steps: 2}, {degree: 6, steps: 2}]
+        - [{degree: 1, octave: 1, steps: 2}, {degree: 6, steps: 2}, {degree: 5, steps: 2}, {degree: 3, steps: 2}]
+    - value: roots held
+      share: 10
+      sound: bass
+      figure:
+        - [{degree: 1, steps: 6}, {degree: 1, steps: 2}]
+    - value: pushing roots
+      share: 12
+      sound: picked bass
+      figure:
+        - [{degree: 1, steps: 3}, {degree: 1, steps: 2}, {degree: 1, steps: 1}, {degree: 1, steps: 2}]
+    - value: roots in six
+      share: 6
+      sound: bass
+      needs: {meter: 6/8}
+      figure:
+        - [{degree: 1, steps: 3}, {degree: 1, steps: 2}, {degree: 5, steps: 1}]
+  guitar:
+    - value: strummed
+      share: 24
+      sound: guitar
+      figure:
+        - [{degree: 1, chord: '3', steps: 8}]
+      generators:
+        - guitarify: {bar: [down, nothing, down, up, nothing, up, down, up], cell: 1/8}
+    - value: downstrokes
+      share: 18
+      sound: overdriven guitar
+      figure:
+        - [{degree: 1, chord: pow, steps: 8}]
+      generators:
+        - guitarify: {bar: [down, down, down, down, down, down, down, down], cell: 1/8}
+    - value: held power chords
+      share: 16
+      sound: distortion guitar
+      figure:
+        - [{degree: 1, chord: pow, steps: 3}, {degree: 1, chord: pow, steps: 5}]
+    - value: boogie
+      share: 10
+      sound: overdriven guitar
+      figure:
+        - [{degree: 1, chord: pow, steps: 1}, {degree: 1, chord: pow, steps: 1}, {degree: 1, chord: M6, steps: 1}, {degree: 1, chord: pow, steps: 1},
+           {degree: 1, chord: pow, steps: 1}, {degree: 1, chord: pow, steps: 1}, {degree: 1, chord: M6, steps: 1}, {degree: 1, chord: pow, steps: 1}]
+    - value: chiming arpeggio
+      share: 12
+      sound: clean guitar
+      figure:
+        - [{degree: 1, chord: '3', steps: 8}]
+      generators:
+        - arp: {step: 1/8, order: up_down}
+    - value: clipped offbeats
+      share: 14
+      sound: clean guitar
+      figure:
+        - [{degree: 1, chord: '3', steps: 8}]
+      generators:
+        - guitarify: {bar: [nothing, up, nothing, up, nothing, up, nothing, up], cell: 1/8}
+    - value: arpeggio in six
+      share: 6
+      sound: clean guitar
+      needs: {meter: 6/8}
+      figure:
+        - [{degree: 1, chord: '3', steps: 6}]
+      generators:
+        - arp: {step: 1/8, order: up}
+  keys:
+    - {value: none, share: 62}
+    - value: organ held
+      share: 20
+      sound: organ
+      figure:
+        - [{degree: 1, chord: '3', steps: 8}]
+    - value: piano eighths
+      share: 18
+      sound: piano
+      needs: {meter: 4/4}
+      figure:
+        - [{degree: 1, chord: '3', steps: 1}, {degree: 1, chord: '3', steps: 1}, {degree: 1, chord: '3', steps: 1}, {degree: 1, chord: '3', steps: 1},
+           {degree: 1, chord: '3', steps: 1}, {degree: 1, chord: '3', steps: 1}, {degree: 1, chord: '3', steps: 1}, {degree: 1, chord: '3', steps: 1}]
+  voices:
+    - {value: none, share: 55}
+    - value: harmony
+      share: 45
+      sound: voices
+      figure:
+        - [{degree: 1, chord: '3', steps: 8}]
+  chords:
+    - {value: three chord, share: 26, pattern: [1, 4, 1, 5], by_section: {chorus: [4, 5, 1, 1], bridge: [4, 4, 5, 5]}}
+    - {value: four chord, share: 28, pattern: [1, 6, 4, 5], by_section: {chorus: [1, 5, 6, 4], bridge: [4, 4, 5, 5]}}
+    - {value: borrowed flat seven, share: 20, pattern: [1, {degree: 7, accidental: flat}, 4, 1], by_section: {chorus: [4, 1, 5, 1], bridge: [{degree: 7, accidental: flat}, 4, {degree: 7, accidental: flat}, 5]}}
+    - {value: twelve bar, share: 8, pattern: [1, 1, 1, 1, 4, 4, 1, 1], by_section: {chorus: [5, 4, 1, 1, 5, 4, 1, 5], bridge: [4, 4, 1, 1, 4, 4, 5, 5]}}
+    - {value: minor power, share: 18, scale_type: minor, pattern: [1, 1, 6, 7], by_section: {chorus: [1, 6, 3, 7], bridge: [4, 4, 5, 5]}}
+  lead:
+    - {value: voice, share: 86, sound: voice}
+    - {value: guitar, share: 14, sound: lead guitar}
+  solo:
+    - {value: guitar, share: 56, sound: lead guitar}
+    - {value: none, share: 28}
+    - {value: organ, share: 8, sound: organ}
+    - {value: saxophone, share: 8, sound: saxophone}
+
+roles:
+  - {role: guitar, trait: guitar, octave: 3, velocity: 92}
+  - {role: keys, trait: keys, octave: 4, velocity: 78}
+  - {role: lead, trait: lead, octave: 4, velocity: 106}
+  - {role: voices, trait: voices, octave: 4, velocity: 80}
+  - {role: solo, trait: solo, octave: 4, velocity: 100, answers: true}
+  - {role: bass, trait: bass, octave: 2, velocity: 106}
+  - {role: drums, drums: [kick, snare, cymbal, percussion]}
+
+sounds: {bass: 34, picked bass: 35, guitar: 26, clean guitar: 28, overdriven guitar: 30, distortion guitar: 31, lead guitar: 31, piano: 1, organ: 19, saxophone: 67, voice: 54, voices: 53}
+
+sections:
+  intro:
+    bars: 4
+    plays: [drums, bass, guitar]
+    plan: []
+  verse:
+    bars: 8
+    plays: [drums, bass, guitar, lead]
+    plan: [{line: a}, {line: b}, {line: a, varied: true}, {line: c}]
+  chorus:
+    bars: 8
+    plays: [drums, bass, guitar, keys, voices, lead]
+    plan: [{line: hook, higher: true}, {line: hook, higher: true, varied: true}, {line: hook, higher: true}, {line: close}]
+  bridge:
+    bars: 8
+    plays: [drums, bass, guitar, keys, lead]
+    plan: [{line: m}, {line: m, varied: true}, {line: n, higher: true}, {line: n, higher: true, varied: true}]
+  solo:
+    bars: 8
+    plays: [drums, bass, guitar, keys, solo]
+    plan: [{line: s1, answer: true}, {line: s2, answer: true, higher: true}, {line: s1, answer: true, varied: true}, {line: s3, answer: true, higher: true}]
+  ending: {held: true, plays: [bass, guitar, keys]}
+
+melody:
+  4/4:
+    grid: 8
+    line_bars: 2
+    span: 4
+    home: {degree: 3}
+    ladder: [{degree: 1}, {degree: 2}, {degree: 3}, {degree: 5}, {degree: 6}]
+    rhythms:
+      - [{rest: 1}, {steps: 1}, {steps: 1}, {steps: 1}, {steps: 2}, {steps: 2}, {steps: 2}, {steps: 2}, {steps: 3}, {rest: 1}]
+      - [{steps: 2}, {steps: 1}, {steps: 1}, {steps: 2}, {steps: 2}, {steps: 1}, {steps: 1}, {steps: 2}, {steps: 3}, {rest: 1}]
+      - [{rest: 2}, {steps: 2}, {steps: 1}, {steps: 1}, {steps: 2}, {steps: 4}, {steps: 2}, {rest: 2}]
+      - [{steps: 1}, {steps: 1}, {steps: 2}, {steps: 1}, {steps: 1}, {steps: 2}, {steps: 2}, {steps: 4}, {rest: 2}]
+      - [{steps: 3}, {steps: 1}, {steps: 2}, {steps: 2}, {steps: 3}, {steps: 3}, {rest: 2}]
+    answer_rhythms:
+      - [{steps: 1}, {steps: 1}, {steps: 1}, {steps: 1}, {steps: 2}, {steps: 1}, {steps: 1}, {steps: 1}, {steps: 1}, {steps: 2}, {steps: 3}, {rest: 1}]
+      - [{rest: 1}, {steps: 1}, {steps: 2}, {steps: 1}, {steps: 1}, {steps: 2}, {steps: 2}, {steps: 1}, {steps: 1}, {steps: 4}]
+      - [{steps: 2}, {steps: 1}, {steps: 1}, {steps: 1}, {steps: 1}, {steps: 2}, {steps: 4}, {steps: 2}, {rest: 2}]
+  6/8:
+    grid: 6
+    line_bars: 2
+    span: 4
+    home: {degree: 3}
+    ladder: [{degree: 1}, {degree: 2}, {degree: 3}, {degree: 5}, {degree: 6}]
+    rhythms:
+      - [{steps: 2}, {steps: 1}, {steps: 3}, {steps: 3}, {steps: 2}, {rest: 1}]
+      - [{rest: 1}, {steps: 1}, {steps: 1}, {steps: 3}, {steps: 2}, {steps: 1}, {steps: 2}, {rest: 1}]
+      - [{steps: 3}, {steps: 2}, {steps: 1}, {steps: 5}, {rest: 1}]
+    answer_rhythms:
+      - [{steps: 1}, {steps: 1}, {steps: 1}, {steps: 2}, {steps: 1}, {steps: 1}, {steps: 1}, {steps: 1}, {steps: 3}]
+      - [{steps: 2}, {steps: 1}, {steps: 2}, {steps: 1}, {steps: 3}, {steps: 2}, {rest: 1}]

@@ -1309,6 +1309,9 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
 - `examples/` is for people interested in music, who may not be technical and may never develop
   the program: every set there is musically interesting to them. A set that exists only to test
   the program, such as one with wrong values, never lives there; test data lives under `tests/`.
+- A song made from now on, by Claude or by the MacroComposer, orders its tracks with the chord tracks first, then the lead and
+  the backing tracks, then the bass, and the drums last (the user's rule; the bass's place is Claude's choice). Existing examples
+  keep the order they have.
 - `examples/` is in folders by purpose, the user's layout, which `support/example_sets.py` names and lists
   (`example_sets()`, which every test and tool asks):
   `examples/learning/` the demos in the order a newcomer learns, each file numbered in that order, zero-padded so that the files sort, like `01_hello_world.yml` (the user's rule: a demo moved into or out of `examples/learning/`, or put in another place in the order, means renumbering the learning demos after it, with every reference to their files; a demo's song and its sections and anchors in the documents go by the name after the number; the Entertainer, with too many patterns to teach, is in `examples/by_genre/ragtime/`), `examples/other/` the demos that fit no other folder (the Euclidean mask so far), `examples/by_genre/` every other song, the pieces and the songs in the manner of others alike, each in a folder of its genre, the genre in lower case with spaces and hyphens made underscores, like `examples/by_genre/tv_theme/` (`genre_folder`, the user's layout, since one folder held too many to explore; a homage whose genre changes moves with it, which `tests/app/test_examples.py` holds), and

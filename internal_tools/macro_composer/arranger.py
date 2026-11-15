@@ -82,6 +82,7 @@ DESCRIPTION = 'description'
 # The traits the arranger reads by name.
 METER = 'meter'
 CHORD_TRAIT = 'chords'
+CHORD_TRAIT_FIELD = 'chord_trait'
 FILLS = 'fills'
 PHRASE_BARS = 'phrase_bars'
 USUAL = 'usual'
@@ -118,8 +119,11 @@ KIND = 'kind'
 # The set's section that holds each kind of generator a value may bring.
 SECTION_OF_KIND = {'guitarify': 'guitarifies', 'arp': 'arps', 'strum': 'strums'}
 VOICE_LEADING_KIND = 'voice_leading'
-HELD_STEPS = 2
-HELD_CHORD = 'M'
+HELD_CHORD = '3'
+MAJOR = 'major'
+BY_SECTION = 'by_section'
+# The keys whose home note is the lowest of an octave: a band written for the middle of its range plays an octave up in them.
+LOW_ROOTS = ('C', 'C#', 'Db', 'D', 'D#', 'Eb')
 SOFT_SHARE = Fraction(2, 3)
 
 MSG_NOTES = '{title}: a {style} song, {template}, made by the MacroComposer from the style template and the song\'s picks.\n\n{picks}\n\n{form}\n'
@@ -230,10 +234,10 @@ def figure_part(*, entry, role, meter):
 
 def held_part(*, role, meter, chord):
     """One bar of the home note or chord, held."""
-    note = {DEGREE: 1, STEPS: HELD_STEPS}
+    note = {DEGREE: 1, STEPS: int(bar_length(meter) * EIGHTHS_IN_WHOLE)}
     if chord:
         note[CHORD] = HELD_CHORD
-    return {STEP: step_of(meter=meter, grid=HELD_STEPS), OCTAVE: role[OCTAVE], VELOCITY: role[VELOCITY], LINES: [[note]]}
+    return {STEP: EIGHTH, OCTAVE: role[OCTAVE], VELOCITY: role[VELOCITY], LINES: [[note]]}
 
 
 def tune_part(*, lines, role, meter, grid):
@@ -246,21 +250,25 @@ def section_of(*, name, style, song):
     kind = of_song.get(KIND, name)
     if kind not in style[SECTIONS] and not of_song:
         raise ValueError(ERR_NO_SECTION.format(name))
-    return {**style[SECTIONS].get(kind, {}), **of_song}
+    return {**style[SECTIONS].get(kind, {}), **of_song, KIND: kind}
 
 
 def arranged(*, style, song):
     """A song's picks as a MacroComposer input."""
     picks = picked(style=style, song=song)
-    meter = picks.get(METER, COMMON_TIME)
-    roles = style[ROLES]
+    meter = str(picks.get(METER, COMMON_TIME))
+    lift = 1 if song[KEY][ROOT] in LOW_ROOTS else 0
+    roles = [{**role, OCTAVE: role[OCTAVE] + lift} if OCTAVE in role else role for role in style[ROLES]]
     phrase_bars = style.get(PHRASE_BARS, DEFAULT_PHRASE_BARS)
-    scale_type = song[KEY][TYPE]
+    chord_trait = style.get(CHORD_TRAIT_FIELD, CHORD_TRAIT)
+    chord_entry = values_of(style=style, trait=chord_trait)[picks[chord_trait]]
+    scale_type = song[KEY].get(TYPE, chord_entry.get(SCALE_TYPE, MAJOR))
     scale = '{} {}'.format(song[KEY][ROOT], scale_type.capitalize())
-    habits = style[MELODY]
+    habits = style[MELODY] if GRID in style[MELODY] else style[MELODY][meter]
     parts = drum_parts(style=style, picks=picks, roles=roles, meter=meter, phrase_bars=phrase_bars)
     drum_tracks = list(parts)
-    tracks = {piece: DRUM_KIT for piece in drum_tracks}
+    # The user's rule for a song that is made: the chords first, then the lead and the backing, the bass, and the drums last.
+    tracks = {}
     instruments = {DRUM_KIT: None}
     progressions = {}
     chains = {}
@@ -279,10 +287,11 @@ def arranged(*, style, song):
         if FIGURE in entry:
             parts[role[ROLE]] = figure_part(entry=entry, role=role, meter=meter)
             shaped.append(role[ROLE])
-        parts[MSG_SECTION_PART.format(role[ROLE], HELD)] = held_part(role=role, meter=meter, chord=bool(role.get(VOICE_LEADING)))
+        parts[MSG_SECTION_PART.format(role[ROLE], HELD)] = held_part(role=role, meter=meter, chord=any(CHORD in note for bar in entry.get(FIGURE, []) for note in bar))
         for generator in entry.get(GENERATORS, []):
             for kind, settings in generator.items():
                 extra.setdefault(SECTION_OF_KIND[kind], {})[role[ROLE]] = settings
+    tracks.update({piece: DRUM_KIT for piece in drum_tracks})
     form = []
     notes = []
     met = {}
@@ -293,8 +302,7 @@ def arranged(*, style, song):
         bars = 1 if section.get(HELD) else section[BARS]
         if not section.get(HELD) and bars % phrase_bars:
             raise ValueError(ERR_BARS.format(name, bars, phrase_bars))
-        chord_entry = values_of(style=style, trait=CHORD_TRAIT)[picks[CHORD_TRAIT]]
-        chords = [chord_of(chord) for chord in section.get(CHORDS, chord_entry[PATTERN])]
+        chords = [chord_of(chord) for chord in section.get(CHORDS) or chord_entry.get(BY_SECTION, {}).get(section[KIND]) or chord_entry[PATTERN]]
         play = {}
         if section.get(HELD):
             held = MSG_SECTION_PART.format(CRASH, HELD)

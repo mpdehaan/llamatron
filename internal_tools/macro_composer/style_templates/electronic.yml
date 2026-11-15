@@ -1,0 +1,213 @@
+# A style template: electronic dance music. The MacroComposer's arranger reads it (internal_tools/macro_composer/arranger.py).
+#
+# templates   the kinds of blues: each a set of picks to start from, any of which a song may change.
+# traits      what a song picks. Each trait lists its values; share is roughly how many songs in a hundred use the value, so
+#             the commonest is the one recommended; needs says what another trait must be for the value to fit.
+#             A drum value holds its bar, each drum's hits: loud, soft or none. A value a player plays holds its sound and
+#             its figure, bars of notes written over chord one, which a Progression moves through the song's chords.
+# roles       the band in track order, the chords first, then the lead and the backing, the bass, and the drums last: which
+#             trait each plays, how high and how loud.
+# sections    what plays in each kind of section, and the plan of its tune: which line returns and who plays each.
+# melody      the habits a tune is sketched by when a song gives none: the notes used, rhythm cells, how far it ranges.
+# Sixteen steps to a bar, sixteenths. A song here is layers that enter and leave: the sections say which play.
+# No act, label or work is named or followed.
+
+name: electronic
+title: Electronic
+genre: Electronic
+feel: four
+phrase_bars: 4
+loudness: {drums: 100, kick: 116, snare: 106, clap: 100, hat: 70, open: 82, ride: 72, crash: 98, tom high: 96, tom low: 98, shaker: 60, rim: 80, cowbell: 76}
+
+templates:
+  house:         {tempo: 124, kick: every beat, backbeat: clap, hat: open on the offbeats, percussion: shaker, bass: offbeat, chords: piano stabs, arp: none, lead: voice hook, harmony: two chord vamp}
+  techno:        {tempo: 132, kick: every beat, backbeat: none, hat: sixteenths, percussion: rim in threes, bass: one note in sixteenths, chords: one stab off the beat, arp: none, lead: none, harmony: one chord}
+  electro:       {tempo: 118, kick: broken, backbeat: snare, hat: sixteenths, percussion: cowbell, bass: syncopated, chords: none, arp: sixteenths up, lead: synth line, harmony: minor two chord}
+  synth-pop:     {tempo: 120, kick: one and three, backbeat: snare, hat: eighths, percussion: none, bass: octaves in eighths, chords: held pad, arp: eighths up and down, lead: synth line, harmony: four chord}
+  hi-nrg:        {tempo: 127, kick: every beat, backbeat: clap, hat: offbeats, percussion: none, bass: octaves in sixteenths, chords: held pad, arp: sixteenths up, lead: synth line, harmony: four chord}
+  italo:         {tempo: 120, kick: every beat, backbeat: snare, hat: sixteenths, percussion: none, bass: octaves in eighths, chords: held pad, arp: sixteenths up and down, lead: synth line, harmony: minor four chord}
+  trance:        {tempo: 138, kick: every beat, backbeat: clap, hat: open on the offbeats, percussion: none, bass: offbeat, chords: held pad, arp: gated chord, lead: synth line, harmony: minor four chord}
+  drum and bass: {tempo: 172, kick: one and the and of three, backbeat: snare, hat: eighths, percussion: shaker, bass: long low notes, chords: held pad, arp: none, lead: none, harmony: minor two chord}
+  chiptune:      {tempo: 150, kick: one and three, backbeat: snare, hat: eighths, percussion: none, bass: octaves in eighths, chords: none, arp: fast chord arpeggio, lead: square line, harmony: four chord}
+
+traits:
+  tempo: {lowest: 100, usual: 126, highest: 175}
+  kick:
+    - {value: every beat, share: 62, bar: {kick: [loud, none, none, none, loud, none, none, none, loud, none, none, none, loud, none, none, none]}}
+    - {value: one and three, share: 12, bar: {kick: [loud, none, none, none, none, none, none, none, loud, none, none, none, none, none, none, none]}}
+    - {value: broken, share: 12, bar: {kick: [loud, none, none, loud, none, none, loud, none, none, none, loud, none, none, none, none, none]}}
+    - {value: one and the and of three, share: 8, bar: {kick: [loud, none, none, none, none, none, none, none, none, none, loud, none, none, none, none, none]}}
+    - {value: threes, share: 6, bar: {kick: [loud, none, none, loud, none, none, loud, none, loud, none, none, loud, none, none, loud, none]}}
+  backbeat:
+    - {value: clap, share: 46, bar: {clap: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, none, none, none]}}
+    - {value: snare, share: 36, bar: {snare: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, none, none, none]}}
+    - {value: clap and snare, share: 8, bar: {clap: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, none, none, none], snare: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, none, none, none]}}
+    - {value: none, share: 10}
+  hat:
+    - {value: offbeats, share: 22, bar: {hat: [none, none, loud, none, none, none, loud, none, none, none, loud, none, none, none, loud, none]}}
+    - {value: open on the offbeats, share: 28, bar: {hat: [soft, soft, none, soft, soft, soft, none, soft, soft, soft, none, soft, soft, soft, none, soft], open: [none, none, loud, none, none, none, loud, none, none, none, loud, none, none, none, loud, none]}}
+    - {value: sixteenths, share: 28, bar: {hat: [loud, soft, loud, soft, loud, soft, loud, soft, loud, soft, loud, soft, loud, soft, loud, soft]}}
+    - {value: eighths, share: 22, bar: {hat: [loud, none, loud, none, loud, none, loud, none, loud, none, loud, none, loud, none, loud, none]}}
+  percussion:
+    - {value: none, share: 46}
+    - {value: shaker, share: 22, bar: {shaker: [soft, soft, loud, soft, soft, soft, loud, soft, soft, soft, loud, soft, soft, soft, loud, soft]}}
+    - {value: rim in threes, share: 14, bar: {rim: [none, none, none, loud, none, none, loud, none, none, loud, none, none, loud, none, none, none]}}
+    - {value: cowbell, share: 8, bar: {cowbell: [loud, none, none, none, none, none, loud, none, none, none, loud, none, none, none, none, none]}}
+    - {value: ride on the beat, share: 10, bar: {ride: [loud, none, none, none, loud, none, none, none, loud, none, none, none, loud, none, none, none]}}
+  fills:
+    - {value: snare roll getting faster, share: 45, fill: {snare: [loud, none, none, none, loud, none, none, none, loud, none, loud, none, loud, loud, loud, loud]}}
+    - {value: the kick drops out, share: 30, fill: {kick: [loud, none, none, none, loud, none, none, none, none, none, none, none, none, none, none, none]}}
+    - {value: toms, share: 15, fill: {tom high: [none, none, none, none, none, none, none, none, loud, none, loud, none, none, none, none, none], tom low: [none, none, none, none, none, none, none, none, none, none, none, none, loud, none, loud, loud]}}
+    - {value: none, share: 10}
+  bass:
+    - value: offbeat
+      share: 24
+      sound: synth bass
+      figure:
+        - [{rest: 2}, {degree: 1, steps: 2}, {rest: 2}, {degree: 1, steps: 2}, {rest: 2}, {degree: 1, steps: 2}, {rest: 2}, {degree: 1, steps: 2}]
+    - value: octaves in sixteenths
+      share: 14
+      sound: synth bass
+      figure:
+        - [{degree: 1, steps: 1}, {rest: 1}, {degree: 1, octave: 1, steps: 1}, {degree: 1, steps: 1}, {rest: 1}, {degree: 1, steps: 1}, {degree: 1, octave: 1, steps: 1}, {rest: 1},
+           {degree: 1, steps: 1}, {rest: 1}, {degree: 1, octave: 1, steps: 1}, {degree: 1, steps: 1}, {rest: 1}, {degree: 1, steps: 1}, {degree: 1, octave: 1, steps: 1}, {rest: 1}]
+    - value: octaves in eighths
+      share: 18
+      sound: synth bass
+      figure:
+        - [{degree: 1, steps: 2}, {degree: 1, octave: 1, steps: 2}, {degree: 1, steps: 2}, {degree: 1, octave: 1, steps: 2}, {degree: 1, steps: 2}, {degree: 1, octave: 1, steps: 2}, {degree: 1, steps: 2}, {degree: 1, octave: 1, steps: 2}]
+    - value: one note in sixteenths
+      share: 14
+      sound: acid bass
+      figure:
+        - [{degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, octave: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1},
+           {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, octave: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 5, steps: 1}, {degree: 1, steps: 1}]
+    - value: syncopated
+      share: 16
+      sound: synth bass
+      figure:
+        - [{degree: 1, steps: 3}, {degree: 1, steps: 3}, {degree: 1, steps: 2}, {rest: 2}, {degree: 5, steps: 2}, {degree: 7, steps: 2}, {degree: 1, octave: 1, steps: 2}]
+    - value: long low notes
+      share: 14
+      sound: sub bass
+      figure:
+        - [{degree: 1, steps: 10}, {degree: 1, steps: 6}]
+        - [{degree: 1, steps: 6}, {degree: 5, steps: 4}, {degree: 7, steps: 6}]
+  chords:
+    - value: held pad
+      share: 36
+      sound: pad
+      figure:
+        - [{degree: 1, chord: '3', steps: 16}]
+    - value: piano stabs
+      share: 16
+      sound: piano
+      figure:
+        - [{degree: 1, chord: '3', steps: 3}, {degree: 1, chord: '3', steps: 3}, {rest: 2}, {degree: 1, chord: '3', steps: 2}, {rest: 1}, {degree: 1, chord: '3', steps: 3}, {rest: 2}]
+        - [{rest: 2}, {degree: 1, chord: '3', steps: 2}, {rest: 2}, {degree: 1, chord: '3', steps: 3}, {degree: 1, chord: '3', steps: 3}, {rest: 4}]
+    - value: organ stabs
+      share: 8
+      sound: organ
+      figure:
+        - [{rest: 2}, {degree: 1, chord: '3', steps: 1}, {rest: 3}, {degree: 1, chord: '3', steps: 1}, {rest: 3}, {degree: 1, chord: '3', steps: 2}, {rest: 2}, {degree: 1, chord: '3', steps: 1}, {rest: 1}]
+    - value: one stab off the beat
+      share: 12
+      sound: pad
+      figure:
+        - [{rest: 6}, {degree: 1, chord: '3', steps: 2}, {rest: 8}]
+    - {value: none, share: 28}
+  arp:
+    - {value: none, share: 40}
+    - value: sixteenths up
+      share: 16
+      sound: arp
+      figure:
+        - [{degree: 1, chord: '3', steps: 16}]
+      generators:
+        - arp: {step: 1/16, order: up, octave_range: 2}
+    - value: sixteenths up and down
+      share: 14
+      sound: arp
+      figure:
+        - [{degree: 1, chord: '3', steps: 16}]
+      generators:
+        - arp: {step: 1/16, order: up_down, octave_range: 2}
+    - value: eighths up and down
+      share: 10
+      sound: soft arp
+      figure:
+        - [{degree: 1, chord: '3', steps: 16}]
+      generators:
+        - arp: {step: 1/8, order: up_down}
+    - value: gated chord
+      share: 10
+      sound: arp
+      figure:
+        - [{degree: 1, chord: '3', steps: 1}, {rest: 1}, {degree: 1, chord: '3', steps: 1}, {degree: 1, chord: '3', steps: 1}, {rest: 1}, {degree: 1, chord: '3', steps: 1}, {degree: 1, chord: '3', steps: 1}, {rest: 1},
+           {degree: 1, chord: '3', steps: 1}, {rest: 1}, {degree: 1, chord: '3', steps: 1}, {degree: 1, chord: '3', steps: 1}, {rest: 1}, {degree: 1, chord: '3', steps: 1}, {degree: 1, chord: '3', steps: 1}, {rest: 1}]
+    - value: fast chord arpeggio
+      share: 10
+      sound: square
+      figure:
+        - [{degree: 1, chord: '3', steps: 16}]
+      generators:
+        - arp: {step: 1/32, order: up}
+  harmony:
+    - {value: one chord, share: 14, scale_type: minor, pattern: [1]}
+    - {value: two chord vamp, share: 18, pattern: [1, 1, 4, 4], by_section: {breakdown: [2, 2, 5, 5]}}
+    - {value: minor two chord, share: 18, scale_type: minor, pattern: [1, 1, 7, 7], by_section: {breakdown: [6, 6, 7, 7]}}
+    - {value: four chord, share: 24, pattern: [1, 5, 6, 4], by_section: {breakdown: [6, 4, 1, 5]}}
+    - {value: minor four chord, share: 26, scale_type: minor, pattern: [1, 6, 3, 7], by_section: {breakdown: [6, 7, 1, 1]}}
+  lead:
+    - {value: none, share: 25}
+    - {value: synth line, share: 32, sound: lead}
+    - {value: square line, share: 8, sound: square}
+    - {value: voice hook, share: 35, sound: voice}
+
+roles:
+  - {role: chords, trait: chords, octave: 4, velocity: 80}
+  - {role: arp, trait: arp, octave: 4, velocity: 84}
+  - {role: lead, trait: lead, octave: 4, velocity: 102}
+  - {role: bass, trait: bass, octave: 2, velocity: 108}
+  - {role: drums, drums: [kick, backbeat, hat, percussion]}
+
+chord_trait: harmony
+
+sounds: {synth bass: 39, acid bass: 40, sub bass: 39, pad: 90, piano: 2, organ: 18, arp: 82, soft arp: 6, square: 81, lead: 82, voice: 86}
+
+sections:
+  intro:
+    bars: 8
+    plays: [drums, chords]
+    plan: []
+  groove:
+    bars: 16
+    plays: [drums, bass, chords, arp, lead]
+    plan: [{line: hook}, {line: hook, varied: true}, {line: hook}, {line: turn, higher: true}, {line: hook}, {line: hook, varied: true}, {line: hook}, {line: turn, higher: true, varied: true}]
+  breakdown:
+    bars: 8
+    plays: [chords, arp, lead]
+    plan: [{line: calm}, {line: calm, varied: true}, {line: calm}, {line: rise, higher: true}]
+  build:
+    bars: 4
+    plays: [drums, chords, arp]
+    plan: []
+  outro:
+    bars: 8
+    plays: [drums, bass, chords]
+    plan: []
+  ending: {held: true, plays: [bass, chords]}
+
+melody:
+  grid: 8
+  line_bars: 2
+  span: 3
+  home: {degree: 5}
+  ladder: [{degree: 1}, {degree: 2}, {degree: 3}, {degree: 5}, {degree: 7}]
+  rhythms:
+    - [{steps: 3}, {steps: 3}, {steps: 2}, {steps: 3}, {steps: 3}, {rest: 2}]
+    - [{rest: 2}, {steps: 1}, {steps: 1}, {steps: 2}, {steps: 2}, {steps: 6}, {rest: 2}]
+    - [{steps: 2}, {steps: 1}, {steps: 3}, {steps: 2}, {steps: 3}, {steps: 3}, {rest: 2}]
+    - [{steps: 4}, {steps: 2}, {steps: 2}, {steps: 6}, {rest: 2}]
+  answer_rhythms:
+    - [{steps: 3}, {steps: 3}, {steps: 2}, {steps: 3}, {steps: 3}, {rest: 2}]
