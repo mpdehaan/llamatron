@@ -44,6 +44,10 @@ HABITS = {
 PLAN = [{melody.LINE: 'a'}, {melody.LINE: 'b'}, {melody.LINE: 'c'}, {melody.LINE: 'a'}, {melody.LINE: 'a', melody.VARIED: True}]
 NEW_LINES = 3
 HIGH = 'high'
+PENTATONIC = [{notation.DEGREE: degree} for degree in (1, 2, 3, 5, 6)]
+# A line of two bars: a rest, six notes and a long last one.
+RHYTHM = [{notation.REST: 2}, {notation.STEPS: 2}, {notation.STEPS: 2}, {notation.STEPS: 1}, {notation.STEPS: 1}, {notation.STEPS: 2}, {notation.STEPS: 2}, {notation.STEPS: 4}]
+FAR = 5
 LOW = 'low'
 ROCK = 'rock'
 EXPERIMENTAL = 'experimental'
@@ -57,6 +61,11 @@ SERIAL_TRIO = 'serial trio'
 def pitch_of(note):
     """A note without its octave or its length: which note of the row it is."""
     return (note[notation.DEGREE], note.get(notation.ACCIDENTAL))
+
+
+def rhythm_of(line):
+    """A line's rests and lengths, without its notes."""
+    return [(notation.REST in note, note.get(notation.STEPS, note.get(notation.REST))) for note in line]
 
 
 def serial(*, seed=SEED, voice=None, **habits):
@@ -143,6 +152,49 @@ class TestSerial(unittest.TestCase):
         thrown = self.sounds(serial(**{melody.LEAPS: True}).sketched(PLAN[:NEW_LINES]))
         self.assertEqual([pitch_of(note) for note in near][:NOTES_IN_SCALE], [pitch_of(note) for note in thrown][:NOTES_IN_SCALE])
         self.assertNotEqual([note.get(notation.OCTAVE, 0) for note in near], [note.get(notation.OCTAVE, 0) for note in thrown])
+
+
+class TestEvolving(unittest.TestCase):
+    """Repeats that evolve: one phrase, and a running amount added with every new line."""
+
+    def engine(self, **evolve):
+        habits = {**HABITS, melody.LADDER: PENTATONIC, melody.RHYTHMS: [RHYTHM], melody.ANSWER_RHYTHMS: [RHYTHM], melody.EVOLVE: evolve}
+        return melody.Evolving(habits=habits, chords=CHORDS, scale_type=MINOR, seed=SEED, answers=False)
+
+    def places(self, *, engine, line):
+        return [engine.place_of(note) for note in line if notation.REST not in note]
+
+    def test_every_new_line_is_the_first_phrase_moved_one_more_place_in_the_same_rhythm(self):
+        engine = self.engine(**{melody.MOVE: 1})
+        lines = engine.sketched(PLAN[:NEW_LINES])
+        first = self.places(engine=engine, line=lines[0])
+        for count, line in enumerate(lines):
+            self.assertEqual(rhythm_of(line), rhythm_of(lines[0]))
+            self.assertEqual(self.places(engine=engine, line=line), [engine.round_the_range(place + count) for place in first])
+
+    def test_a_note_moved_past_the_top_of_the_range_comes_round_to_the_bottom(self):
+        engine = self.engine(**{melody.MOVE: FAR})
+        lines = engine.sketched(PLAN[:NEW_LINES])
+        first = self.places(engine=engine, line=lines[0])
+        reach = max(HABITS[melody.SPAN] * 2, max(first) - min(first))
+        for line in lines:
+            places = self.places(engine=engine, line=line)
+            self.assertLessEqual(max(places) - min(places), reach + 1)
+            self.assertEqual(places, [engine.round_the_range(place) for place in places])
+        self.assertTrue(any(later < earlier for earlier, later in zip(first, self.places(engine=engine, line=lines[1]))))
+
+    def test_a_phrase_begun_later_keeps_its_notes_and_its_rhythm(self):
+        engine = self.engine(**{melody.MOVE: 0, melody.ROTATE: 1})
+        lines = engine.sketched(PLAN[:NEW_LINES])
+        first = self.places(engine=engine, line=lines[0])
+        self.assertEqual(self.places(engine=engine, line=lines[1]), operations.rotated(row=first, by=1))
+        self.assertEqual(self.places(engine=engine, line=lines[2]), operations.rotated(row=first, by=2))
+
+    def test_a_line_named_again_returns_and_a_varied_line_begins_one_note_later(self):
+        engine = self.engine(**{melody.MOVE: 1})
+        lines = engine.sketched(PLAN)
+        self.assertEqual(lines[3], lines[0])
+        self.assertEqual(self.places(engine=engine, line=lines[4]), operations.rotated(row=self.places(engine=engine, line=lines[0]), by=1))
 
 
 class TestEngineChosen(unittest.TestCase):
