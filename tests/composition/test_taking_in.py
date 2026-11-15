@@ -1,0 +1,145 @@
+# llamatron: a music program
+# Copyright (C) 2026  Michael DeHaan
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""A set taking in another set's songs with all they use, which the song wizard does with the set it made, and a song keeping the wizard's choices."""
+
+import os
+import tempfile
+import unittest
+
+from llamatron.composition.file_format import Section
+from llamatron.composition.setlist import SECTIONS_TAKEN_IN, Setlist
+from llamatron.macro_composer.wizard_choices import WizardChoices, genre_names
+from llamatron.strings.names import MSG_DEFAULT_SONG_NAME
+from llamatron.support.version import VERSION
+from tests.support.rendering import render_song
+
+# Names the tests give songs, a seed for each, and a file's name.
+FIRST = 'first'
+SECOND = 'second'
+A_SEED = 7
+ANOTHER_SEED = 8
+A_FILE = 'taken.yml'
+# What a song is given to keep, and a change made to the data handed over.
+KEY = 'key'
+ROOT = 'root'
+SOME_CHOICES = {'genre': 'rock', KEY: {ROOT: 'E'}}
+A_ROOT = 'A'
+SECOND_COPY = '{}-2'
+
+
+def made(*, name, genre=0, subgenre=0, seed=A_SEED):
+    """Return a set of one song the wizard's choices make, by the places of a genre and one of its subgenres."""
+    choices = WizardChoices()
+    choices.set_genre(genre_names()[genre])
+    choices.set_subgenre(choices.subgenres()[subgenre])
+    choices.set_seed(seed)
+    return choices.made_setlist(name=name, version=VERSION)
+
+
+def a_new_set():
+    setlist = Setlist.new()
+    setlist.fill_in_defaults()
+    return setlist
+
+
+class TestTakingIn(unittest.TestCase):
+
+    def test_a_song_is_taken_in_with_everything_it_uses_and_plays_as_it_did(self):
+        other = made(name=FIRST)
+        alone = render_song(other.get_song(FIRST), seed=A_SEED)
+        setlist = a_new_set()
+        before = setlist.to_data()
+        self.assertEqual(setlist.take_in(made(name=FIRST)), [FIRST])
+        self.assertEqual(setlist.get_song_names(), [MSG_DEFAULT_SONG_NAME, FIRST])
+        for section in SECTIONS_TAKEN_IN:
+            for name, item in (before.get(section) or {}).items():
+                self.assertEqual(setlist.get_item(section=section, name=name).to_data(), item)
+        together = render_song(setlist.get_song(FIRST), seed=A_SEED)
+        self.assertEqual([column.get_name() for column in together.get_columns()], [column.get_name() for column in alone.get_columns()])
+        self.assertEqual(len(together.get_rows()), len(alone.get_rows()))
+
+    def test_a_song_whose_name_is_in_use_gets_a_name_of_its_own(self):
+        setlist = a_new_set()
+        setlist.take_in(made(name=FIRST))
+        self.assertEqual(setlist.take_in(made(name=FIRST, seed=ANOTHER_SEED)), [SECOND_COPY.format(FIRST)])
+
+    def test_what_is_the_same_in_both_is_shared_and_what_differs_is_renamed_and_still_named_by_the_song(self):
+        setlist = a_new_set()
+        setlist.take_in(made(name=FIRST))
+        first = setlist.get_item(section=Section.SONGS, name=FIRST).to_data()
+        patterns = setlist.get_pattern_names()
+        instruments = setlist.get_instrument_names()
+        setlist.take_in(made(name=SECOND, seed=ANOTHER_SEED))
+        # The same band's instruments are the same things, so none is added twice, while the tunes differ and are added under names of their own.
+        self.assertEqual(setlist.get_instrument_names(), instruments)
+        self.assertGreater(len(setlist.get_pattern_names()), len(patterns))
+        self.assertEqual(setlist.get_pattern_names()[:len(patterns)], patterns)
+        self.assertEqual(setlist.get_item(section=Section.SONGS, name=FIRST).to_data(), first)
+        second = setlist.get_song(SECOND)
+        for scene in second.get_scenes():
+            for track in second.get_track_names():
+                slot = scene.get_clip_slot(track)
+                if slot is not None:
+                    self.assertTrue(setlist.has_pattern(slot.get_pattern_name()))
+
+    def test_songs_of_different_genres_live_together_and_the_set_saves_and_loads(self):
+        setlist = a_new_set()
+        for place, genre in enumerate(genre_names()):
+            setlist.take_in(made(name=FIRST, genre=place))
+        self.assertEqual(len(setlist.get_song_names()), len(genre_names()) + 1)
+        with tempfile.TemporaryDirectory() as folder:
+            path = os.path.join(folder, A_FILE)
+            setlist.write_file(path)
+            again = Setlist.read_file(path)
+        # A set that is read fills in what its file left out, as the tracker does on opening one.
+        again.fill_in_defaults()
+        self.assertEqual(again.to_data(), setlist.to_data())
+        for name in again.get_song_names():
+            render_song(again.get_song(name), seed=A_SEED)
+
+
+class TestWizardChoicesKept(unittest.TestCase):
+    """A song keeps what the song wizard was told, as data of its own."""
+
+    def test_a_song_the_wizard_did_not_make_keeps_none(self):
+        self.assertIsNone(a_new_set().get_song(MSG_DEFAULT_SONG_NAME).get_wizard_choices())
+
+    def test_the_choices_are_kept_written_and_read_and_share_nothing_with_what_was_given(self):
+        setlist = a_new_set()
+        song = setlist.get_song(MSG_DEFAULT_SONG_NAME)
+        given = {key: (dict(value) if isinstance(value, dict) else value) for key, value in SOME_CHOICES.items()}
+        song.set_wizard_choices(given)
+        given[KEY][ROOT] = A_ROOT
+        self.assertEqual(song.get_wizard_choices(), SOME_CHOICES)
+        song.get_wizard_choices()[KEY][ROOT] = A_ROOT
+        self.assertEqual(song.get_wizard_choices(), SOME_CHOICES)
+        with tempfile.TemporaryDirectory() as folder:
+            path = os.path.join(folder, A_FILE)
+            setlist.write_file(path)
+            self.assertEqual(Setlist.read_file(path).get_song(MSG_DEFAULT_SONG_NAME).get_wizard_choices(), SOME_CHOICES)
+        song.set_wizard_choices(None)
+        self.assertIsNone(song.get_wizard_choices())
+
+    def test_a_songs_preview_instrument_is_written_to_the_file(self):
+        # The writer once left the preview instrument out, so a saved set forgot it.
+        setlist = a_new_set()
+        setlist.take_in(made(name=FIRST))
+        instrument = setlist.get_instrument_names()[0]
+        setlist.get_song(FIRST).set_preview_instrument_name(instrument)
+        with tempfile.TemporaryDirectory() as folder:
+            path = os.path.join(folder, A_FILE)
+            setlist.write_file(path)
+            self.assertEqual(Setlist.read_file(path).get_song(FIRST).get_preview_instrument_name(), instrument)

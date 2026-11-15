@@ -106,6 +106,12 @@ class SetEdits:
         self.changed()
         self.select_song(imported.name)
 
+    def add_made_song(self, made):
+        """Take in the one song of a set the song wizard made, with all the song uses, as one change, make the song current and return its name here."""
+        name = self._change(self._setlist.take_in, made)[0]
+        self.select_song(name)
+        return name
+
     # Scales.
 
     def _scale(self, name):

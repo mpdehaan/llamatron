@@ -33,6 +33,8 @@ SET_FILE = (128, 128, 128)
 # The main screen's, the user's choice, white and no other page's.
 MAIN_SCREEN = (255, 255, 255)
 FROM_ARRANGE = (0, 200, 230)
+# The song wizard's, bright cyan, the user's choice.
+WIZARD = (0, 255, 255)
 # The colour of each section's pages, every generator section's the generators' one.
 SECTION_THEMES = {
     Section.SONGS: SONGS, Section.PATTERNS: PATTERNS, Section.CHAINS: CHAINS, Section.SCALES: SCALES, Section.GROOVES: GROOVES,

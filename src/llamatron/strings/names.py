@@ -50,6 +50,7 @@ MSG_NEW_TRACK_WORD = 'track'
 MSG_NEW_GROOVE_WORD = 'groove'
 MSG_NEW_INSTRUMENT_WORD = 'instrument'
 MSG_NEW_SCALE_WORD = 'scale'
+MSG_NEW_SONG_WORD = 'song'
 
 # composition/sections.py
 # How error messages name the file as a whole, and one object in each section of named objects.

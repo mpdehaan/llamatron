@@ -296,6 +296,13 @@ sections:
            {line: s4, answer: true, higher: true}, {line: s5, answer: true}]
   ending: {held: true, plays: [bass, comping]}
 
+# The forms a song may take when it gives none, each with how common it is; a longer form has more choruses and solos.
+forms:
+  usual:
+    - {name: one solo, share: 40, sections: [intro, chorus, chorus, solo, chorus, ending]}
+    - {name: two solos apart, share: 35, sections: [intro, chorus, chorus, solo, chorus, solo, chorus, ending]}
+    - {name: two solos together, share: 25, sections: [intro, chorus, chorus, solo, solo, chorus, chorus, ending]}
+
 melody:
   grid: 12
   line_bars: 2

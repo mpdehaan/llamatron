@@ -58,7 +58,7 @@ def everywhere_actions(page):
     return {
         page.KEYS.SAVE: lambda: save(page), page.KEYS.OPEN_SET: lambda: open_set(page), page.KEYS.EXPORT: lambda: export(page),
         page.KEYS.UNDO: lambda: undo(page), page.KEYS.REDO: lambda: redo(page), page.KEYS.HELP: page.show_help, page.KEYS.ABOUT: page.show_about,
-        page.KEYS.SILENCE: lambda: silence(page), page.KEYS.QUIT_NOW: page.app.exit,
+        page.KEYS.SILENCE: lambda: silence(page), page.KEYS.QUIT_NOW: page.app.exit, page.KEYS.WIZARD: lambda: page.holder.show_wizard(page),
     }
 
 
@@ -105,6 +105,9 @@ def step_history(page, *, step, done, nothing):
     adding was undone, can't be shown, so the tracker goes back to the page it was opened from,
     and the status line says so.
     """
+    if not page.steps_history():
+        page.say(page.why_no_history())
+        return
     app = page.holder
     pages = app.pages()
     places = [open_page.remember_place() for open_page in pages]

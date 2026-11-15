@@ -50,7 +50,7 @@ from llamatron.strings.labels import MSG_GUITAR_BAR_LABEL, MSG_CHORDS_LABEL, MSG
 from llamatron.strings.legends import KeyName
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import first_key
-from tests.support.ui_testing import leaf_pages, UITest
+from tests.support.ui_testing import key_of, leaf_pages, UITest
 from llamatron.composition.file_format import Section
 
 # The words help uses for the keys whose names on screen are arrows or that the legend has no name of their own for.
@@ -351,6 +351,19 @@ class KeyTour(UITest):
         await self.press(Key.ENTER)
         await self.press(Key.ESCAPE)
         await self.walk()
+        # The song wizard: its tree, then the fields of its Genre branch with a genre and a subgenre chosen, so that every field shows,
+        # then the tree again, where the Form branch now opens, and the fields of the Create branch, whose button is not pressed.
+        await self.press(keybindings.Page.WIZARD)
+        await self.walk()
+        more = key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)
+        # The walk left the tree's cursor on its last branch, so it goes back up to Genre first.
+        await self.press(*[Key.UP] * len(self.app.screen.rows()), keybindings.WizardPage.INTO_FIELDS, more, Key.DOWN, more)
+        await self.walk()
+        await self.press(keybindings.WizardPage.TO_TREE)
+        await self.walk()
+        await self.press(*[Key.DOWN] * len(self.app.screen.rows()), keybindings.WizardPage.INTO_FIELDS)
+        await self.walk()
+        await self.press(keybindings.WizardPage.TO_TREE, keybindings.WizardPage.CLOSE, keybindings.ConfirmDialog.YES)
 
 
 class TestBoundKeysAreTheirClassesAndDistinct(KeyTour):

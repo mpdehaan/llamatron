@@ -100,6 +100,8 @@ class SongSetting:
     VISUALIZER = 'visualizer'
     # The instrument of the set that Listen plays a pattern through, over the pattern's own track (the user's design).
     PREVIEW_INSTRUMENT = 'preview_instrument'
+    # What the song wizard was told when it made the song, kept so that the wizard can start from it again (the user's design).
+    WIZARD = 'wizard'
 
 
 class LiveResponsiveness:

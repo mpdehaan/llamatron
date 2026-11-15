@@ -384,6 +384,7 @@ class TestReadingAndSettingAgree(unittest.TestCase):
             (SongSetting.SCALE, NOT_A_NAME, lambda: self.song.set_scale_name(NOT_A_NAME)),
             (SongSetting.SEED, NOT_A_NUMBER, lambda: self.song.set_seed(NOT_A_NUMBER)),
             (SongSetting.GROOVE, NOT_A_NAME, lambda: self.song.set_groove_name(NOT_A_NAME)),
+            (SongSetting.WIZARD, NOT_A_NAME, lambda: self.song.set_wizard_choices(NOT_A_NAME)),
         ]:
             with self.subTest(name=name):
                 data = {Section.SONGS: {A_SONG: {name: value}}}

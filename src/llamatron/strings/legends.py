@@ -41,6 +41,7 @@ class KeyName:
     F1 = 'F1'
     F2 = 'F2'
     F3 = 'F3'
+    F9 = 'F9'
     N_F2 = 'N/F2'
     # A letter is shown in upper case, though no key needs Shift.
     A = 'A'
@@ -201,6 +202,8 @@ class What:
     # Ctrl+T, the emergency stop: note offs, all notes off and all sound off on every channel the instruments use.
     SILENCE = 'SILENCE'
     QUIT_NOW = 'QUIT NOW'
+    # F9, the song wizard, which makes a whole song from a few choices.
+    WIZARD = 'WIZARD'
 
 
 # tui/screens/shared/list_page.py and tui/screens/shared/field_page.py
@@ -337,3 +340,8 @@ MSG_PICK_PROGRESSION_WHAT = 'pick progression'
 
 # tui/keybindings.py, on a mask's Hits field: H fills the hits and steps with a named rhythm.
 MSG_PICK_RHYTHM_WHAT = 'pick rhythm'
+
+# tui/screens/wizard/wizard_page.py
+MSG_WIZARD_FOLD_WHAT = 'fold'
+MSG_WIZARD_TO_TREE_WHAT = 'to tree'
+MSG_WIZARD_CREATE_WHAT = 'create'

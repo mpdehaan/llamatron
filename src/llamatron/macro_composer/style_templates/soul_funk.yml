@@ -340,6 +340,14 @@ sections:
     plan: [{line: s1, answer: true}, {line: s2, answer: true, higher: true}, {line: s1, answer: true, varied: true}, {line: s3, answer: true, higher: true}]
   ending: {held: true, plays: [bass, guitar, keys, horns]}
 
+# The forms a song may take when it gives none, each with how common it is; a longer form has more sections, never the same form twice over.
+forms:
+  usual:
+    - {name: with a bridge and a solo, share: 45, sections: [intro, verse, verse, chorus, verse, chorus, bridge, solo, chorus, chorus, ending]}
+    - {name: with a solo, share: 30, sections: [intro, verse, verse, chorus, verse, chorus, solo, chorus, ending]}
+    - {name: short, share: 15, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, chorus, ending]}
+    - {name: long with two solos, share: 10, sections: [intro, verse, verse, chorus, verse, chorus, solo, solo, bridge, chorus, chorus, ending]}
+
 melody:
   4/4:
     grid: 16

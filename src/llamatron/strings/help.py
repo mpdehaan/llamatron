@@ -444,3 +444,14 @@ A groove with more cells than fit across the screen scrolls sideways as you move
 
 A factory groove can only be looked at: copy it on the Grooves page to get one you can edit.
 """
+
+HELP_WIZARD_PAGE = """
+The song wizard makes a whole song from a few choices. Nothing in the set changes until Create.
+
+The tree at the left lists the wizard's parts. Up and down move through the tree, left and right close and open a part, and the settings of the part under the cursor show at the right.
+ENTER or Tab moves into the settings, and ESC or Tab moves back to the tree.
+Genre: choose a genre and a subgenre first. The key, the scale, the tempo and the form then take what the subgenre usually has, and each can be changed.
+Form: the sections the song plays, in order.
+Create: ENTER on the Create button makes the song and shows Arrange. Undo then takes the whole song away again.
+ESC in the tree closes the wizard, and asks first when anything was chosen.
+"""

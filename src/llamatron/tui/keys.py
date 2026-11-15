@@ -51,6 +51,7 @@ class Key:
     F2 = 'f2'
     F3 = 'f3'
     F5 = 'f5'
+    F9 = 'f9'
     CTRL_O = 'ctrl+o'
     CTRL_S = 'ctrl+s'
     CTRL_X = 'ctrl+x'

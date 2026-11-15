@@ -38,12 +38,14 @@ from llamatron.tui.components.scroll_text import scroll_seconds
 from llamatron.tui.screens.set.demo_scroll import DemoScroll
 from llamatron.tui.screens.set.splash import Splash
 from llamatron.tui.screens.set.start_screen import StartScreen
+from llamatron.tui.screens.wizard.wizard_page import WizardPage
 from llamatron.tui.keys import OPEN_AT_START
 from llamatron.tui.status_line import StatusLine
 from llamatron.tui.pattern_preview import PatternPreview
 from llamatron.tui.transport import Transport
 from llamatron.tui.silent_instruments import warn_of_silent_instruments
 from llamatron.strings.errors import ERR_PRINTED
+from llamatron.strings.messages import MSG_WIZARD_ALREADY_OPEN
 
 
 # inherit_bindings=False drops Textual's own Ctrl+Q, since Quit is Q on the main screen alone.
@@ -164,6 +166,19 @@ class LlamatronApp(App, inherit_bindings=False):
         """Close every screen above a page, so that it's the one shown."""
         while self.screen is not page:
             self.pop_screen()
+
+    def show_wizard(self, page):
+        """Open the song wizard over a page, which F9 does from anywhere, unless the page is the wizard itself."""
+        if isinstance(page, WizardPage):
+            page.say(MSG_WIZARD_ALREADY_OPEN)
+        else:
+            page.show_page(WizardPage(self))
+
+    def show_arrange_on_new_song(self):
+        """Close every page down to the main screen and open Arrange, which shows the current song: where the song wizard leaves a person once it has made one."""
+        first = self.pages()[0]
+        self.go_back_to(first)
+        first.show_page(ArrangePage(self))
 
     def has_confirmed_overwrite(self, path):
         return path in self._confirmed_overwrites

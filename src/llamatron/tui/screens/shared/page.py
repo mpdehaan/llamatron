@@ -109,6 +109,10 @@ class Page(BindsKeys, Screen):
 
     # What an undo or redo asks of a page, since it may take away what the page shows or move what it shows.
 
+    def steps_history(self):
+        """Return whether undo and redo work on this page, which they do on every page but one that changes nothing until it is done, as the song wizard; such a page says why instead (why_no_history)."""
+        return True
+
     def still_exists(self):
         """Return whether what this page shows is still in the set, which an undo or redo can take away."""
         return True

@@ -155,6 +155,7 @@ flowchart LR
     llamatron --> playback
     llamatron --> tui
     llamatron --> visualizers
+    macro_composer --> composition
     playback --> composition
     playback --> exporters
     playback --> generators
@@ -166,6 +167,7 @@ flowchart LR
     tui --> exporters
     tui --> generators
     tui --> importers
+    tui --> macro_composer
     tui --> playback
     tui --> realtime
     tui --> visualizers

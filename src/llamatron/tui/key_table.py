@@ -28,7 +28,7 @@ from llamatron.tui.keys import Key, SPACE_CHARACTER, Steps
 _NAMED_KEYS = {
     Key.TAB, Key.SHIFT_TAB, Key.ENTER, Key.BACKSPACE, Key.UP, Key.DOWN, Key.LEFT, Key.RIGHT,
     Key.SHIFT_UP, Key.SHIFT_DOWN, Key.SHIFT_LEFT, Key.SHIFT_RIGHT, Key.HOME, Key.END, Key.PAGE_UP, Key.PAGE_DOWN,
-    Key.CTRL_C, Key.CTRL_O, Key.CTRL_S, Key.CTRL_T, Key.CTRL_X, Key.CTRL_Y, Key.CTRL_Z, Key.ESCAPE, Key.F1, Key.F2, Key.F3, Key.F5,
+    Key.CTRL_C, Key.CTRL_O, Key.CTRL_S, Key.CTRL_T, Key.CTRL_X, Key.CTRL_Y, Key.CTRL_Z, Key.ESCAPE, Key.F1, Key.F2, Key.F3, Key.F5, Key.F9,
 }
 # The two directions a stepping key passes to its action: back towards the first, the lower or the shorter, and forward.
 STEP_BACK = -1
@@ -174,7 +174,7 @@ TEXTUAL_NAMES = {Key.PLUS: 'plus', Key.MINUS: 'minus', Key.SLASH: 'slash'}
 KEY_CHARACTERS = {
     Key.SPACE: SPACE_CHARACTER, Key.PLUS: Key.PLUS, Key.MINUS: Key.MINUS, Key.SLASH: Key.SLASH,
     Key.ENTER: '\r', Key.BACKSPACE: '\x7f', Key.ESCAPE: '\x1b', Key.UP: None, Key.DOWN: None,
-    Key.LEFT: None, Key.RIGHT: None, Key.TAB: '\t', Key.SHIFT_TAB: None, Key.F1: None, Key.F2: None, Key.F3: None, Key.F5: None,
+    Key.LEFT: None, Key.RIGHT: None, Key.TAB: '\t', Key.SHIFT_TAB: None, Key.F1: None, Key.F2: None, Key.F3: None, Key.F5: None, Key.F9: None,
     Key.HOME: None, Key.END: None, Key.PAGE_UP: None, Key.PAGE_DOWN: None,
     Key.CTRL_C: '\x03', Key.CTRL_O: '\x0f', Key.CTRL_S: '\x13', Key.CTRL_T: '\x14', Key.CTRL_X: '\x18', Key.CTRL_Y: '\x19', Key.CTRL_Z: '\x1a',
 }

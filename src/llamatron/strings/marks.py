@@ -370,3 +370,16 @@ MSG_STROKE_MARKS = {
     Stroke.NOTHING: '—', Stroke.DOWN: '↓', Stroke.UP: '↑', Stroke.MUTE: 'x', Stroke.BASS: 'B', Stroke.ALT_BASS: 'A',
     Stroke.STRING_1: '1', Stroke.STRING_2: '2', Stroke.STRING_3: '3', Stroke.STRING_4: '4',
 }
+
+# tui/screens/wizard/wizard_page.py and the branches beside it
+MSG_WIZARD_CHOOSE = '(choose)'
+MSG_WIZARD_NEEDS_GENRE = '(genre?)'
+MSG_WIZARD_BRANCH_OPEN = '▾'
+MSG_WIZARD_BRANCH_CLOSED = '▸'
+MSG_WIZARD_EDITED_BRANCH = '◀'
+MSG_WIZARD_TEMPO_SHOWN = '{tempo}  (usual {low} to {high})'
+MSG_WIZARD_KEY_SHOWN = '{root} {scale}'
+MSG_WIZARD_GENRE_SHOWN = '{genre}, {subgenre}'
+MSG_WIZARD_FORM_SHOWN = '{form}: {count} sections'
+MSG_WIZARD_SECTION_LINE = '{number:>2}  {name:<{width}}  {bars:>3} bars'
+MSG_WIZARD_PLAYERS_JOIN = ', '

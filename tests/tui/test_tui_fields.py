@@ -22,6 +22,8 @@ to Space and Enter alike.
 
 import unittest
 
+from llamatron.macro_composer.wizard_choices import genre_names
+from llamatron.tui.screens.wizard.wizard_page import WizardPage
 from tests.support.ui_testing import PICKED, TRADE, CLIPS, LAZY, PUSH, SLIDES, CLAVE, CLIPPED, FADE, FOLK, POP, SMOOTH, SWAY, LEAD, ROLLS, THIN, UITest, UP_ARP, leaf_pages
 from llamatron.composition.limits import MAX_CLIP_REPEAT, MAX_SCENE_REPEAT, MAX_TEMPO, MIN_REPEAT, MIN_TEMPO
 from llamatron.composition.setlist import DEFAULT_SCALE
@@ -265,8 +267,17 @@ class TestFieldsOnThePages(UITest):
             ProgressionEditor(holder=holder, name=POP), VoiceLeadingEditor(holder=holder, name=SMOOTH), HocketEditor(holder=holder, name=TRADE), GuitarifyEditor(holder=holder, name=PICKED), StrumEditor(holder=holder, name=FOLK), EuclidEditor(holder=holder, name=CLAVE), GlideEditor(holder=holder, name=SLIDES), ShortenEditor(holder=holder, name=CLIPS),
             RushEditor(holder=holder, name=PUSH), DragEditor(holder=holder, name=LAZY),
             DensityEditor(holder=holder, name=THIN), SwellEditor(holder=holder, name=FADE), ArticulateEditor(holder=holder, name=CLIPPED),
-            ScalePage(holder=holder, name=DEFAULT_SCALE), InstrumentEditor(holder=holder, name=AN_INSTRUMENT),
+            ScalePage(holder=holder, name=DEFAULT_SCALE), InstrumentEditor(holder=holder, name=AN_INSTRUMENT), self.a_wizard(holder),
         ]
+
+    def a_wizard(self, holder):
+        """Return the song wizard with a genre and a subgenre chosen, so that its Genre branch shows every field, the tempo among them."""
+        wizard = WizardPage(holder)
+        choices = wizard.choices()
+        choices.set_genre(genre_names()[0])
+        choices.set_subgenre(choices.subgenres()[0])
+        wizard.in_fields = True
+        return wizard
 
     async def show(self, page):
         self.app.screen.show_page(page)
