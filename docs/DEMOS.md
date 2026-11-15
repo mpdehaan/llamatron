@@ -48,7 +48,7 @@ pages current.
 | [Children's](demos/CHILDRENS.md) | 1 |
 | [Classical](demos/CLASSICAL.md) | 3 |
 | [Country](demos/COUNTRY.md) | 1 |
-| [Electronic](demos/ELECTRONIC.md) | 20 |
+| [Electronic](demos/ELECTRONIC.md) | 16 |
 | [Electronic Mashup](demos/ELECTRONIC_MASHUP.md) | 7 |
 | [Exercise](demos/EXERCISE.md) | 3 |
 | [Folk](demos/FOLK.md) | 5 |
@@ -62,9 +62,8 @@ pages current.
 | [Rock](demos/ROCK.md) | 10 |
 | [Rock Mashup](demos/ROCK_MASHUP.md) | 6 |
 | [Soul Mashup](demos/SOUL_MASHUP.md) | 1 |
-| [Soundtrack](demos/SOUNDTRACK.md) | 8 |
-| [TV Theme](demos/TV_THEME.md) | 14 |
-| [TV theme](demos/TV_THEME.md) | 1 |
+| [Soundtrack](demos/SOUNDTRACK.md) | 7 |
+| [TV Theme](demos/TV_THEME.md) | 13 |
 | [Video Game](demos/VIDEO_GAME.md) | 4 |
 | [World](demos/WORLD.md) | 1 |
 | [World Mashup](demos/WORLD_MASHUP.md) | 1 |

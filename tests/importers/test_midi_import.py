@@ -53,6 +53,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 SAMPLE_MIDI_FILES = os.path.join(ROOT, 'examples', 'midi', '*.mid')
 # The longest example, nine minutes of stage themes, whose round trip alone takes about a minute.
 LONGEST_EXAMPLE = 'incoming_message.yml'
+# How many classes share the round trip of the homages, which one class no longer finishes within the suite's time for a class.
+CLASSES_OF_HOMAGES = 3
 CC_SWEEPS = os.path.join(ROOT, 'tests', 'data', 'sample_sets', 'cc_sweeps.yml')
 EXPRESSION = 11
 REVERB = 91
@@ -179,10 +181,31 @@ class TestRoundTripOfTheAdvancedDemos(unittest.TestCase):
         check_round_trips(test=self, paths=examples_in(OTHER))
 
 
+def homages_in_turn(*, turn):
+    """Return every third homage, starting at the turn given: the homages are too many for one class's time, so three classes share them."""
+    return examples_in(BY_GENRE)[turn::CLASSES_OF_HOMAGES]
+
+
 class TestRoundTripOfTheHomages(unittest.TestCase):
 
-    def test_every_homage_plays_back_the_same_or_the_import_says_why(self):
-        check_round_trips(test=self, paths=examples_in(BY_GENRE))
+    def test_every_third_homage_plays_back_the_same_or_the_import_says_why(self):
+        check_round_trips(test=self, paths=homages_in_turn(turn=0))
+
+    def test_the_three_classes_hold_every_homage_once(self):
+        shared = [path for turn in range(CLASSES_OF_HOMAGES) for path in homages_in_turn(turn=turn)]
+        self.assertEqual(sorted(shared), sorted(examples_in(BY_GENRE)))
+
+
+class TestRoundTripOfTheHomagesSecondTurn(unittest.TestCase):
+
+    def test_every_third_homage_from_the_second_plays_back_the_same_or_the_import_says_why(self):
+        check_round_trips(test=self, paths=homages_in_turn(turn=1))
+
+
+class TestRoundTripOfTheHomagesThirdTurn(unittest.TestCase):
+
+    def test_every_third_homage_from_the_third_plays_back_the_same_or_the_import_says_why(self):
+        check_round_trips(test=self, paths=homages_in_turn(turn=2))
 
 
 class TestRoundTripOfTheLongestExample(unittest.TestCase):
