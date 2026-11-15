@@ -1934,3 +1934,9 @@
   priority: 99
   text: |
     The user's ask: a style template for hip hop, with its subgenres, from clean research, with nobody named. It would lean on drum breaks and loops (the queue's talk about breaks comes first) and on a voice part that is rhythm more than tune, which the melody engines do not make yet.
+
+- title: "More ways of composing for the Experimental genre"
+  priority: 99
+  text: |
+    Beyond the five agreed first (serialism, phasing, additive process, unequal loops, chance), five more ways of composing a whole piece, each a subgenre of Experimental with a wizard step of its own: stochastic (clouds of notes whose density, height and loudness follow drawn curves, which can be very dense), markov (each note chosen by what tends to follow the note before, from a table), cellular (a grid evolving by a simple rule decides who plays when), grammar (a short seed rewritten by rules into a long self-similar line) and change ringing (a set of notes run through every order by swapping neighbours). Stochastic and cellular want trial songs before they are promised. Ways of Claude's and the user's own invention may join them.
+
