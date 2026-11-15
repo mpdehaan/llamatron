@@ -1,42 +1,53 @@
-version: 1.0.364
+version: 1.0.365
 title: Volcano
-description: "a solo guitar showpiece in the manner of Van Halen's Eruption: picked runs, a dive, a fast study and tapped arpeggios, none of which comes back"
+description: "a solo guitar showpiece in the manner of Van Halen's Eruption: picked runs, bends, a dive, a fast study and tapped arpeggios, with the opening run coming back at the end"
 notes: |
-  Volcano: a solo guitar showpiece of a minute and a half in E minor. This is a homage to Eruption
-  by Van Halen: like that solo it is short, the band hits one chord and leaves the guitar alone, and
-  the guitar goes through episodes that never come back, each at its own tempo, ending in tapped
-  arpeggios and a dive. Every note is its own, and it stays out of that solo's key.
+  Volcano: a solo guitar showpiece in the manner of Van Halen's Eruption: picked runs, bends, a dive,
+  a fast study and tapped arpeggios, with the opening run coming back at the end. This is a homage to
+  Van Halen's Eruption: picked runs: its chords, form, sounds and drums follow that work as Claude
+  knows it, and every tune and rhythm here is new. Rebuild version 3.
 
-  The picked runs, the wide held notes, the two dives and the trill are written out, note by note.
-  The rest is made by generators. The tremolo is two bars of eighth notes: an AutoRatchet chops
-  each into four, and a Drift called climb moves the notes up the scale a little at random every
-  half bar. The study is four figures of half a bar, which a Progression takes round the circle of
-  fifths in minor, a chord every half bar. The tapping is a triad held twice a bar: a Progression
-  of sixteen chords moves it, a Voice leading keeps each chord near the last, and an arpeggiator
-  breaks it into sixteenth-note triplets from the top note down. The higher tapping has no
-  Progression: a Drift called restless moves the triad every half bar, climbing, and an arpeggiator
-  runs it up and down two octaves. The song has a seed, so the Drifts choose the same notes on
-  every play.
+  The band hits one chord and leaves; picked runs, bends, a dive, tremolo picking, a study on a circle
+  of chords that a Progression moves, tremolo picking that an AutoRatchet chops into four and a Drift
+  pushes upward, arpeggios tapped in sextuplets by an Arpeggiator on i VI VII V and again wider on i
+  VI iv V, the opening run once more, a last dive and a last chord. It stays out of that solo's key.
+
+  Subgenre: the unaccompanied guitar solo of late seventies hard rock, a minute and a half of one
+  player showing everything the instrument can do. Drums: one hit with the band at the start and one
+  at the end, nothing between. Tempo: each episode at its own, from 80 to 144. Bass: with the band's
+  two hits only. Sounds: one distortion guitar, a rhythm guitar and a bass for the hits. Melody
+  manner: episodes rather than a tune, picked runs that climb in threes, wide bends held long, a dive
+  on the bar, tremolo picking, a study that could be a violin exercise, and arpeggios tapped with both
+  hands.
+
+  Band and song: the solo is known for arriving on a record with no warning, for the tapping that
+  every guitarist then had to learn, and for sounding improvised though every episode has a shape.
+
+  Checklist: it is good and memorable because each episode is a new trick and none overstays. The hook
+  is the tapped arpeggios, the trick everyone remembers, and the opening run, which returns before the
+  end; the emotion is exuberance, a player showing off and enjoying it; the lift is each rise in
+  speed, to the tapping an octave higher; the contrast is the slow bends between the fast parts; the
+  sounds are a distortion guitar, and a rhythm guitar, a pick bass, a kick and a crash for the two
+  hits.
 
   Run it with: llamatron examples/by_genre/rock/volcano.yml
 
-  Scene 1, hit, 2 bars at 100: the band hits a chord a bar.
-  Scene 2, picking, 4 bars at 126: fast picked runs in sextuplets, low to high.
-  Scene 3, bends, 4 bars at 96: wide held notes.
-  Scene 4, dive, 1 bar at 96: a chromatic fall of nearly three octaves.
-  Scene 5, tremolo, 6 bars at 138: tremolo picking that climbs.
-  Scene 6, study, 8 bars at 144: a fast study in a classical manner.
-  Scene 7, shake, 2 bars at 90: a trill, a held note and a silence.
-  Scene 8, tapping, 8 bars at 150: tapped arpeggios, the chords moving by small steps.
-  Scene 9, tapping higher, 8 bars at 168: wider arpeggios, climbing.
-  Scene 10, last dive, 2 bars at 96: a fall of three octaves to the low string.
-  Scene 11, last chord, 2 bars at 80: the band comes back for one chord.
+  Scene 1, hit, 1 bars.
+  Scene 2, picking, 4 bars.
+  Scene 3, bends, 4 bars.
+  Scene 4, dive, 2 bars.
+  Scene 5, tremolo, 4 bars.
+  Scene 6, study, 8 bars.
+  Scene 7, tapping, 8 bars.
+  Scene 8, tapping higher, 8 bars.
+  Scene 9, picking again, 4 bars.
+  Scene 10, last dive, 2 bars.
+  Scene 11, last chord, 2 bars.
 
   When changing this demo:
-  - Keep the guitar alone between the band's first chord and its last.
-  - Keep every episode different: nothing comes back, and nothing repeats by the bar.
-  - Keep it about a minute and a half, an exception to the three minutes of the other demos.
-  - Keep every note its own: nothing of the solo is used.
+  - Keep the drums as the Subgenre paragraph describes them, the kick first.
+  - Keep what the Checklist paragraph calls the hook and the lift.
+  - Keep every tune original, and the demo out of the key of the work it follows.
 real_time: true
 protected: true
 
@@ -44,109 +55,88 @@ scales:
   E Minor: { root: E, type: minor }
 
 patterns:
-  kick:
-    steps: 4
+  hit kick:
+    steps: 16
     drum: true
-    step_size: 1/4
-    degree: [C, ~, ~, ~]
-    octave: [3, ~, ~, ~]
-    velocity: [118, ~, ~, ~]
-  crash:
-    steps: 4
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [118, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  hit crash:
+    steps: 16
     drum: true
-    step_size: 1/4
-    degree: [C, ~, ~, ~]
-    accidental: ["#", ~, ~, ~]
-    octave: [4, ~, ~, ~]
-    velocity: [112, ~, ~, ~]
-  hit:
-    steps: 4
-    step_size: 1/4
-    degree: [1, ~, ~, ~]
-    octave: [3, ~, ~, ~]
-    chord: [pow, ~, ~, ~]
-    velocity: [118, ~, ~, ~]
-    tie: [false, true, true, true]
-  bass:
-    steps: 4
-    step_size: 1/4
-    degree: [1, ~, ~, ~]
-    octave: [2, ~, ~, ~]
-    velocity: [112, ~, ~, ~]
-    tie: [false, true, true, true]
-  picking:
-    steps: 96
-    step_size: 1/24
-    degree: [1, 7, 5, 7, 5, 4, 5, 4, 3, 4, 3, 1, 3, 1, 7, 1, 7, 5, 7, 1, 3, 4, 5, 5, 1, 3, 4, 3, 4, 5, 4, 5, 7, 5, 7, 1, 7, 1, 3, 1, 3, 4, 3, 4, 5, 5, ~, ~, 5, 4, 3, 5, 4, 3, 4, 3, 1, 4, 3, 1, 3, 1, 7, 3, 1, 7, 1, 7, 5, 7, 5, 4, 3, ~, ~, ~, ~, ~, 1, 3, 4, 5, 5, 7, 1, 3, 4, 5, 5, 7, 1, ~, ~, ~, ~, ~]
-    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~]
-    octave: [6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 5, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, ~, ~, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 5, 6, 6, 5, 6, 5, 5, 5, 5, 5, 5, ~, ~, ~, ~, ~, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 7, ~, ~, ~, ~, ~]
-    velocity: [118, 104, 104, 104, 104, 104, 118, 104, 104, 104, 104, 104, 118, 104, 104, 104, 104, 104, 118, 104, 104, 104, 104, 104, 118, 104, 104, 104, 104, 104, 118, 104, 104, 104, 104, 104, 118, 104, 104, 104, 104, 104, 118, 104, 104, 104, ~, ~, 118, 104, 104, 104, 104, 104, 118, 104, 104, 104, 104, 104, 118, 104, 104, 104, 104, 104, 118, 104, 104, 104, 104, 104, 118, ~, ~, ~, ~, ~, 118, 104, 104, 104, 104, 104, 118, 104, 104, 104, 104, 104, 118, ~, ~, ~, ~, ~]
-    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, true]
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [112, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  hit chord:
+    steps: 16
+    step_size: 1/16
+    degree: [1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    chord: [pow, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [116, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true]
+  hit bass:
+    steps: 16
+    step_size: 1/16
+    degree: [1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [2, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [116, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true]
+  run:
+    steps: 64
+    step_size: 1/16
+    degree: [1, 2, 3, 1, 2, 3, 4, 2, 3, 4, 5, 3, 4, 5, 6, 4, 5, 6, 7, 5, 6, 7, 1, 6, 7, 1, 2, 7, 1, 2, 3, 1, 5, 4, 3, 2, 3, 2, 1, 7, 1, 7, 6, 5, 6, 5, 4, 3, 5, ~, 5, ~, 4, ~, 3, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 4, 4, 5, 5, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 5, 4, 4, 4, 4, 4, 4, 4, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [112, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 112, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 112, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 112, ~, 106, ~, 106, ~, 106, ~, 106, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, true, false, true, false, true, true, true, true, true, true, true]
   bends:
     steps: 64
     step_size: 1/16
-    degree: [4, 5, ~, ~, ~, ~, ~, ~, 7, ~, ~, ~, ~, ~, ~, ~, 5, 7, ~, ~, 5, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, 7, 1, ~, ~, 7, ~, ~, ~, 5, ~, ~, ~, 3, ~, ~, ~, 4, 5, 5, ~, ~, ~, ~, ~, 3, ~, 4, ~, 5, ~, ~, ~]
-    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    octave: [6, 6, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~, 6, 6, ~, ~, 6, ~, ~, ~, 7, ~, ~, ~, ~, ~, ~, ~, 6, 7, ~, ~, 6, ~, ~, ~, 6, ~, ~, ~, 6, ~, ~, ~, 6, 6, 6, ~, ~, ~, ~, ~, 6, ~, 6, ~, 6, ~, ~, ~]
-    velocity: [112, 112, ~, ~, ~, ~, ~, ~, 112, ~, ~, ~, ~, ~, ~, ~, 112, 112, ~, ~, 112, ~, ~, ~, 112, ~, ~, ~, ~, ~, ~, ~, 112, 112, ~, ~, 112, ~, ~, ~, 112, ~, ~, ~, 112, ~, ~, ~, 112, 112, 112, ~, ~, ~, ~, ~, 112, ~, 112, ~, 112, ~, ~, ~]
-    tie: [false, false, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, false, true, true, false, true, true, true, false, true, true, true, true, true, true, true, false, false, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, false, false, true, true, true, true, true, false, true, false, true, false, true, true, true]
+    degree: [3, ~, ~, ~, ~, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 3, ~, ~, ~, 7, ~, ~, ~, ~, ~, 1, ~, 3, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [116, ~, ~, ~, ~, ~, 110, ~, 110, ~, ~, ~, ~, ~, ~, ~, 116, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~, 110, ~, ~, ~, 116, ~, ~, ~, ~, ~, 110, ~, 110, ~, ~, ~, ~, ~, ~, ~, 116, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, true, true, true, true, false, false, false, false]
   dive:
     steps: 32
-    step_size: 1/32
-    degree: [1, 7, 7, 6, 6, 5, 5, 4, 3, 3, 2, 2, 1, 7, 7, 6, 6, 5, 5, 4, 3, 3, 2, 2, 1, 7, 7, 6, 6, 5, 5, 4]
-    accidental: [~, "#", ~, "#", ~, ~, b, ~, "#", ~, ~, b, ~, "#", ~, "#", ~, ~, b, ~, "#", ~, ~, b, ~, "#", ~, "#", ~, ~, b, ~]
-    octave: [7, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4]
-    velocity: [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
+    step_size: 1/16
+    degree: [1, ~, 7, ~, 6, ~, 5, ~, 5, ~, 4, ~, 3, ~, 2, ~, 2, ~, 1, ~, 7, ~, 6, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 2, ~, 2, ~, 2, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [114, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 114, ~, 108, ~, 108, ~, 108, ~, 108, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, true, true]
   tremolo:
     steps: 16
     step_size: 1/8
     degree: [1, 3, 2, 4, 3, 5, 4, 6, 5, 7, 6, 1, 7, 2, 1, 3]
     octave: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 5, 6, 6, 6]
-    velocity: [108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108]
-  etude:
-    steps: 128
+    velocity: [112, 106, 106, 106, 106, 106, 106, 106, 112, 106, 106, 106, 106, 106, 106, 106]
+  tap chord:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, ~, ~, ~, ~, ~]
+    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
+    velocity: [106, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true]
+  study:
+    steps: 16
     step_size: 1/16
-    degree: [3, 1, 5, 1, 3, 1, 5, 1, 3, 1, 5, 1, 3, 1, 5, 1, 3, 1, 5, 1, 3, 1, 5, 1, 3, 1, 5, 1, 3, 1, 5, 1, 1, 2, 3, 4, 5, 4, 3, 2, 1, 2, 3, 4, 5, 4, 3, 2, 1, 2, 3, 4, 5, 4, 3, 2, 1, 2, 3, 4, 5, 4, 3, 2, 1, 3, 5, 3, 1, 5, 3, 5, 1, 3, 5, 3, 1, 5, 3, 5, 1, 3, 5, 3, 1, 5, 3, 5, 1, 3, 5, 3, 1, 5, 3, 5, 5, 4, 3, 2, 1, 2, 3, 1, 5, 4, 3, 2, 1, 2, 3, 1, 5, 4, 3, 2, 1, 2, 3, 1, 5, 4, 3, 2, 1, 7, 5, 1]
-    octave: [6, 6, 5, 6, 6, 6, 5, 6, 6, 6, 5, 6, 6, 6, 5, 6, 6, 6, 5, 6, 6, 6, 5, 6, 6, 6, 5, 6, 6, 6, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 5, 5, 5, 6, 6, 6, 6, 6, 5, 5, 5, 6, 6, 6, 6, 6, 5, 5, 5, 6, 6, 6, 6, 6, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 5, 5, 6]
-    velocity: [116, 102, 102, 102, 102, 102, 102, 102, 116, 102, 102, 102, 102, 102, 102, 102, 116, 102, 102, 102, 102, 102, 102, 102, 116, 102, 102, 102, 102, 102, 102, 102, 116, 102, 102, 102, 102, 102, 102, 102, 116, 102, 102, 102, 102, 102, 102, 102, 116, 102, 102, 102, 102, 102, 102, 102, 116, 102, 102, 102, 102, 102, 102, 102, 116, 102, 102, 102, 102, 102, 102, 102, 116, 102, 102, 102, 102, 102, 102, 102, 116, 102, 102, 102, 102, 102, 102, 102, 116, 102, 102, 102, 102, 102, 102, 102, 116, 102, 102, 102, 102, 102, 102, 102, 116, 102, 102, 102, 102, 102, 102, 102, 116, 102, 102, 102, 102, 102, 102, 102, 116, 102, 102, 102, 102, 102, 102, 102]
-  shake:
-    steps: 64
-    step_size: 1/32
-    degree: [5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    octave: [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false]
-  tap:
-    steps: 4
-    step_size: 1/4
-    degree: [1, ~, 1, ~]
-    octave: [5, ~, 5, ~]
-    chord: ["3", ~, "3", ~]
-    velocity: [106, ~, 100, ~]
-    tie: [false, true, false, true]
-  tap high:
-    steps: 4
-    step_size: 1/4
-    degree: [1, ~, 1, ~]
-    octave: [5, ~, 5, ~]
-    chord: ["3", ~, "3", ~]
-    velocity: [110, ~, 104, ~]
-    tie: [false, true, false, true]
-  last dive:
-    steps: 64
-    step_size: 1/32
-    degree: [1, 7, 7, 6, 6, 5, 5, 4, 3, 3, 2, 2, 1, 7, 7, 6, 6, 5, 5, 4, 3, 3, 2, 2, 1, 7, 7, 6, 6, 5, 5, 4, 3, 3, 2, 2, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    accidental: [~, "#", ~, "#", ~, ~, b, ~, "#", ~, ~, b, ~, "#", ~, "#", ~, ~, b, ~, "#", ~, ~, b, ~, "#", ~, "#", ~, ~, b, ~, "#", ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    octave: [7, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false]
-  last note:
-    steps: 4
-    step_size: 1/4
-    degree: [1, ~, ~, ~]
-    octave: [6, ~, ~, ~]
-    velocity: [112, ~, ~, ~]
-    tie: [false, true, true, true]
+    degree: [1, 3, 5, 1, 5, 3, 5, 3, 1, 3, 5, 1, 3, 1, 5, 3]
+    octave: [4, 4, 4, 5, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 4, 4]
+    velocity: [106, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
+  last:
+    steps: 32
+    step_size: 1/16
+    degree: [1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    chord: [pow, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, pow, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [118, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 118, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true]
 
 arps:
   tapping: { step: 1/24, order: down }
@@ -157,40 +147,35 @@ auto_ratchets:
 
 drifts:
   climb: { every: 1/2, steps_to_b: 12, direction: forward, seed: 7, restart: on_new_scene, a_degree: 0, b_degree: 4, a_degree_random: 1, b_degree_random: 2 }
-  restless: { every: 1/2, steps_to_b: 16, direction: forward, seed: 11, restart: on_new_scene, a_degree: -2, b_degree: 5, a_degree_random: 2, b_degree_random: 3 }
 
 progressions:
-  circle: { chords: [1, 4, 7, 3, 6, 2, 5, 1], every: 1/2 }
-  steps: { chords: [1, 6, 4, 5, 1, 7, 3, 6, 4, 2, 7, 3, 6, 4, 5, 1], every: 1/2 }
-
-voice_leadings:
-  near: { lowest_octave: 5, highest_octave: 6 }
+  study: { chords: [1, 4, 7, 3, 6, 2, 5, 1], qualities: [~, ~, ~, ~, ~, ~, M, ~] }
+  tap: { chords: [1, 6, 7, 5], qualities: [~, ~, ~, M] }
+  tap high: { chords: [1, 6, 4, 5], qualities: [~, ~, ~, M] }
 
 chains:
+  study:
+    - progression: study
+  tap:
+    - progression: tap
+    - arp: tapping
+  tap high:
+    - progression: tap high
+    - arp: tapping wide
   tremolo:
     - drift: climb
     - auto_ratchet: tremolo
-  etude:
-    - progression: circle
-  tap:
-    - progression: steps
-    - voice_leading: near
-    - arp: tapping
-  tap high:
-    - drift: restless
-    - arp: tapping wide
 
 instruments:
-  distortion guitar: { device: "*FluidSynth", gm_sound: 31 }
-  rhythm guitar: { device: "*FluidSynth", gm_sound: 31 }
+  rhythm guitar: { device: "*FluidSynth", gm_sound: 30 }
   pick bass: { device: "*FluidSynth", gm_sound: 35 }
+  distortion guitar: { device: "*FluidSynth", gm_sound: 31 }
   drum kit: { device: "*FluidSynth" }
 
 songs:
   volcano:
     tempo: 100
     scale: E Minor
-    seed: 5
     genre: Rock
 
     tracks:
@@ -202,53 +187,50 @@ songs:
 
     scenes:
       - name: hit
-        tempo: 100
         tracks:
-          kick: { pattern: kick, repeat: 2 }
-          crash: { pattern: crash, repeat: 2 }
-          rhythm: { pattern: hit, repeat: 2 }
-          bass: { pattern: bass, repeat: 2 }
+          kick: { pattern: hit kick, repeat: 1 }
+          crash: { pattern: hit crash, loop: true }
+          rhythm: { pattern: hit chord, loop: true }
+          bass: { pattern: hit bass, loop: true }
       - name: picking
-        tempo: 126
+        tempo: 132
         tracks:
-          guitar: { pattern: picking, repeat: 1 }
+          guitar: { pattern: run, repeat: 1 }
       - name: bends
-        tempo: 96
+        tempo: 80
         tracks:
           guitar: { pattern: bends, repeat: 1 }
       - name: dive
-        tempo: 96
         tracks:
           guitar: { pattern: dive, repeat: 1 }
       - name: tremolo
         tempo: 138
         tracks:
-          guitar: { pattern: tremolo, chains: [tremolo], repeat: 3 }
+          guitar: { pattern: tremolo, chains: [tremolo], repeat: 2 }
       - name: study
-        tempo: 144
+        tempo: 126
         tracks:
-          guitar: { pattern: etude, chains: [etude], repeat: 1 }
-      - name: shake
-        tempo: 90
-        tracks:
-          guitar: { pattern: shake, repeat: 1 }
+          guitar: { pattern: study, chains: [study], repeat: 8 }
       - name: tapping
-        tempo: 150
+        tempo: 126
         tracks:
-          guitar: { pattern: tap, chains: [tap], repeat: 8 }
+          guitar: { pattern: tap chord, chains: [tap], repeat: 8 }
       - name: tapping higher
-        tempo: 168
+        tempo: 132
         tracks:
-          guitar: { pattern: tap high, chains: [tap high], repeat: 8 }
+          guitar: { pattern: tap chord, chains: [tap high], repeat: 8 }
+      - name: picking again
+        tempo: 138
+        tracks:
+          guitar: { pattern: run, repeat: 1 }
       - name: last dive
-        tempo: 96
         tracks:
-          guitar: { pattern: last dive, repeat: 1 }
+          guitar: { pattern: dive, repeat: 1 }
       - name: last chord
         tempo: 80
         tracks:
-          kick: { pattern: kick, repeat: 2 }
-          crash: { pattern: crash, repeat: 2 }
-          rhythm: { pattern: hit, repeat: 2 }
-          bass: { pattern: bass, repeat: 2 }
-          guitar: { pattern: last note, repeat: 2 }
+          kick: { pattern: hit kick, repeat: 2 }
+          crash: { pattern: hit crash, loop: true }
+          rhythm: { pattern: last, loop: true }
+          bass: { pattern: hit bass, loop: true }
+          guitar: { pattern: last, loop: true }
