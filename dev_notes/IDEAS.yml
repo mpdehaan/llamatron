@@ -1929,3 +1929,8 @@
   priority: 99
   text: |
     The serial engine has the row's four forms, forms moved and begun anywhere, rows of lengths, loudness and articulation, and chords of the row's neighbours. What is left matters inside a track more than across a song's structure, so it waits: the row multiplied, each of its intervals made five or seven times as wide; a row built from one small cell of three or four notes and the cell's own forms; two halves of a row paired so that two voices together sound every note before either repeats one; the row of lengths upside down or scaled, not only backwards; and chords that never reach from one form into the next. Each would be a habit of the engine in src/llamatron/macro_composer/melody.py with operations beside the ones in operations.py.
+
+- title: "A Hip Hop genre for the MacroComposer"
+  priority: 99
+  text: |
+    The user's ask: a style template for hip hop, with its subgenres, from clean research, with nobody named. It would lean on drum breaks and loops (the queue's talk about breaks comes first) and on a voice part that is rhythm more than tune, which the melody engines do not make yet.
