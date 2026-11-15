@@ -79,7 +79,7 @@ SHARPS = [None, SHARP_MARK, None, SHARP_MARK, None, None, SHARP_MARK, None, SHAR
 NOTES_IN_OCTAVE = 12
 # The General MIDI drums a bar may name.
 KIT = {
-    'kick': 36, 'rim': 37, 'snare': 38, 'clap': 39, 'hat': 42, 'tom low': 45, 'open': 46, 'crash': 49, 'tom high': 50, 'ride': 51, 'bell': 53, 'tamb': 54,
+    'kick': 36, 'rim': 37, 'snare': 38, 'clap': 39, 'hat': 42, 'hat by foot': 44, 'tom low': 45, 'open': 46, 'crash': 49, 'tom high': 50, 'ride': 51, 'bell': 53, 'tamb': 54,
     'cowbell': 56, 'conga high': 63, 'conga low': 64, 'timbale': 65, 'maracas': 70, 'claves': 75, 'woodblock': 76, 'shaker': 82,
 }
 NAME_OF_DRUM = {number: name for name, number in KIT.items()}
