@@ -8,6 +8,9 @@
 # roles       the band in track order, the chords first, then the lead and the backing, the bass, and the drums last: which
 #             trait each plays, how high and how loud.
 # sections    what plays in each kind of section, and the plan of its tune: which line returns and who plays each.
+# players     who each instrument's player is in this style, by complexity from 1 (plain) to 4 (the most advanced): what the
+#             player says of themselves for people, the picks the player makes, how the player keeps time (a rush or a
+#             drag, in hundredths of a step), how uneven the drum hits are, and a lead's range and busyness.
 # melody      the habits a tune is sketched by when a song gives none: the notes used, rhythm cells, how far it ranges.
 
 # Eight steps to a bar in 4/4, eighths; six in 6/8. No band, artist or work is named or followed.
@@ -185,13 +188,40 @@ traits:
     - {value: saxophone, share: 8, sound: saxophone}
 
 roles:
-  - {role: guitar, trait: guitar, octave: 3, velocity: 92}
-  - {role: keys, trait: keys, octave: 4, velocity: 78}
-  - {role: lead, trait: lead, octave: 4, velocity: 106}
-  - {role: voices, trait: voices, octave: 4, velocity: 80}
-  - {role: solo, trait: solo, octave: 4, velocity: 100, answers: true}
-  - {role: bass, trait: bass, octave: 2, velocity: 106}
-  - {role: drums, drums: [kick, snare, cymbal, percussion]}
+  - {role: guitar, player: rhythm, trait: guitar, octave: 3, velocity: 92}
+  - {role: keys, player: keys, trait: keys, octave: 4, velocity: 78}
+  - {role: lead, player: lead, trait: lead, octave: 4, velocity: 106}
+  - {role: voices, player: session, trait: voices, octave: 4, velocity: 80}
+  - {role: solo, player: lead, trait: solo, octave: 4, velocity: 100, answers: true}
+  - {role: bass, player: bass, trait: bass, octave: 2, velocity: 106}
+  - {role: drums, player: drums, drums: [kick, snare, cymbal, percussion]}
+
+players:
+  drums:
+    1: {says: 'Kick, snare, hats and one crash. Plays the plain beat hard and almost never fills.', picks: {kick: one and three, cymbal: hat quarters, fills: none, percussion: none}, uneven: 2}
+    2: {says: 'A small kit with two toms. Sits a little behind the beat, with short fills that suit the song.', picks: {kick: one and the and of two, cymbal: hat eighths, fills: toms on four}, timing: {snare: {drag: 10}}, uneven: 5}
+    3: {says: 'A large kit. Hits hard, adds kick notes and comes down the toms at every turn.', picks: {kick: one and the ands of two and four, cymbal: hat half open, fills: snare and toms}, timing: {kick: {drag: 6}, snare: {drag: 14}}, uneven: 6}
+    4: {says: 'A very large kit with a cowbell. A busy kick, long fills, and hats that push ahead.', picks: {kick: one and the ands of two three and four, cymbal: hat eighths with an open on the last, fills: snare on every eighth of the last half, percussion: cowbell}, timing: {hat: {rush: 8}, snare: {rush: 4}}, uneven: 8}
+  bass:
+    1: {says: 'A finger bass. Roots in eighths, right with the kick.', picks: {bass: roots in eighths}}
+    2: {says: 'A finger bass. Roots and fifths, leaning back a little.', picks: {bass: roots and fifths}, timing: {drag: 6}}
+    3: {says: 'A picked bass. Pushes the roots ahead of the beat.', picks: {bass: pushing roots}, timing: {rush: 8}}
+    4: {says: 'A finger bass. Walks through every chord.', picks: {bass: walking boogie}}
+  rhythm:
+    1: {says: 'An overdriven guitar. Downstrokes on every eighth, tight.', picks: {guitar: downstrokes}, guitarify: {spread: 4}}
+    2: {says: 'A steel-string guitar. Full, even strumming.', picks: {guitar: strummed}, guitarify: {spread: 14, loose_timing: 6}}
+    3: {says: 'A clean guitar. Clipped upstrokes off the beat, loose.', picks: {guitar: clipped offbeats}, guitarify: {spread: 10, loose_timing: 14}}
+    4: {says: 'A clean guitar. Picks the chords apart note by note.', picks: {guitar: chiming arpeggio}}
+  lead:
+    1: {says: 'Few notes, close together, each one sung.', span: 2}
+    2: {says: 'Phrases that leave room, a little behind the beat.', span: 3, timing: {drag: 8}}
+    3: {says: 'Busy lines over a wide range.', span: 4, busy: true}
+    4: {says: 'The widest range and the most notes, ahead of the beat.', span: 5, busy: true, timing: {rush: 6}}
+  keys:
+    1: {says: 'An organ. Holds the chords.', picks: {keys: organ held}}
+    2: {says: 'A piano. Chords in steady eighths.', picks: {keys: piano eighths}}
+    3: {says: 'A piano. Eighths that push ahead.', picks: {keys: piano eighths}, timing: {rush: 8}}
+    4: {says: 'A piano. Eighths that lean far back.', picks: {keys: piano eighths}, timing: {drag: 14}}
 
 sounds: {bass: 34, picked bass: 35, guitar: 26, clean guitar: 28, overdriven guitar: 30, distortion guitar: 31, lead guitar: 31, piano: 1, organ: 19, saxophone: 67, voice: 54, voices: 53}
 

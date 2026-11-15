@@ -8,6 +8,9 @@
 # roles       the band in track order, the chords first, then the lead and the backing, the bass, and the drums last: which
 #             trait each plays, how high and how loud.
 # sections    what plays in each kind of section, and the plan of its tune: which line returns and who plays each.
+# players     who each instrument's player is in this style, by complexity from 1 (plain) to 4 (the most advanced): what the
+#             player says of themselves for people, the picks the player makes, how the player keeps time (a rush or a
+#             drag, in hundredths of a step), how uneven the drum hits are, and a lead's range and busyness.
 # melody      the habits a tune is sketched by when a song gives none: the notes used, rhythm cells, how far it ranges.
 # Sixteen steps to a bar, sixteenths. A song here is layers that enter and leave: the sections say which play.
 # No act, label or work is named or followed.
@@ -165,13 +168,40 @@ traits:
     - {value: voice hook, share: 35, sound: voice}
 
 roles:
-  - {role: chords, trait: chords, octave: 4, velocity: 80}
-  - {role: arp, trait: arp, octave: 4, velocity: 84}
-  - {role: lead, trait: lead, octave: 4, velocity: 102}
-  - {role: bass, trait: bass, octave: 2, velocity: 108}
-  - {role: drums, drums: [kick, backbeat, hat, percussion]}
+  - {role: chords, player: keys, trait: chords, octave: 4, velocity: 80}
+  - {role: arp, player: rhythm, trait: arp, octave: 4, velocity: 84}
+  - {role: lead, player: lead, trait: lead, octave: 4, velocity: 102}
+  - {role: bass, player: bass, trait: bass, octave: 2, velocity: 108}
+  - {role: drums, player: drums, drums: [kick, backbeat, hat, percussion]}
 
 chord_trait: harmony
+
+players:
+  drums:
+    1: {says: 'A drum machine: a kick on every beat and hats between, nothing else, dead on the grid.', picks: {kick: every beat, hat: offbeats, percussion: none, fills: none}}
+    2: {says: 'A drum machine with open hats and a shaker, the clap a touch late.', picks: {hat: open on the offbeats, percussion: shaker, fills: the kick drops out}, timing: {clap: {drag: 8}, snare: {drag: 8}}, uneven: 3}
+    3: {says: 'A drum machine with rolls into every turn and a rim in threes across the beat.', picks: {hat: sixteenths, percussion: rim in threes, fills: snare roll getting faster}, timing: {hat: {rush: 4}}, uneven: 5}
+    4: {says: 'A drum machine with a broken kick, a cowbell and tom fills.', picks: {kick: broken, hat: sixteenths, percussion: cowbell, fills: toms}, timing: {clap: {drag: 12}, snare: {drag: 12}}, uneven: 7}
+  bass:
+    1: {says: 'A synth bass. One note between the kicks.', picks: {bass: offbeat}}
+    2: {says: 'A synth bass. Octaves in eighths.', picks: {bass: octaves in eighths}}
+    3: {says: 'A synth bass. Octaves in sixteenths.', picks: {bass: octaves in sixteenths}}
+    4: {says: 'A synth bass. A syncopated line of its own.', picks: {bass: syncopated}}
+  rhythm:
+    1: {says: 'No arpeggio.', picks: {arp: none}}
+    2: {says: 'An arpeggio in eighths, up and down.', picks: {arp: eighths up and down}}
+    3: {says: 'An arpeggio in sixteenths over two octaves.', picks: {arp: sixteenths up}}
+    4: {says: 'An arpeggio in sixteenths, up and down over two octaves.', picks: {arp: sixteenths up and down}}
+  lead:
+    1: {says: 'Few notes, close together.', span: 2}
+    2: {says: 'A hook that leaves room.', span: 3}
+    3: {says: 'A line over a wider range.', span: 4}
+    4: {says: 'The widest range.', span: 4}
+  keys:
+    1: {says: 'A pad. Holds the chords.', picks: {chords: held pad}}
+    2: {says: 'A pad. One stab off the beat.', picks: {chords: one stab off the beat}}
+    3: {says: 'An organ. Stabs off the beat.', picks: {chords: organ stabs}}
+    4: {says: 'A piano. A syncopated figure of two bars.', picks: {chords: piano stabs}}
 
 sounds: {synth bass: 39, acid bass: 40, sub bass: 39, pad: 90, piano: 2, organ: 18, arp: 82, soft arp: 6, square: 81, lead: 82, voice: 86}
 
