@@ -1,35 +1,43 @@
 version: 1.0.365
 title: Phoenix Foundation
 description: "a mid-eighties action-show theme in the manner of MacGyver (Randy Edelman), with a melody of its own"
-notes: |-
-  Phoenix Foundation: an action-show theme at 130 beats a minute in A major, in the manner of the
-  mid eighties: a synth brass melody over a pulsing synth bass, keys broken into sixteenths, an
-  overdriven guitar and a rock beat. This is a homage to the theme from MacGyver by Randy Edelman:
-  like that theme it is built on chords I, IV and V in a major key, and the melody, the order of
-  the chords and every rhythm are its own.
+notes: |
+  Phoenix Foundation: a mid-eighties action-show theme in the manner of MacGyver (Randy Edelman), with
+  a melody of its own. This is a homage to MacGyver (Randy Edelman): its chords, form, sounds and
+  drums follow that work as Claude knows it, and every tune and rhythm here is new. Rebuild version 2.
 
-  The guitar, the bass and the keys are one bar each over chord I. A Progression moves them,
-  I IV V IV under the theme and vi IV V V in the rise. A Guitarify after it in the guitar's chain
-  plays the chord: up strokes on the backbeat, four strings wide, under the theme, eight down
-  strokes a bar of power chords in the rise, a muted chug in the guitar's own scene and one held
-  chord a bar at the end. An arpeggiator called sparkle, after the Progression in the keys' chain,
-  breaks the keys' chord into sixteenths over two octaves.
+  Four bars of pulse and hits, the tune on I, IV and V, the tune again with a second brass answering,
+  a climbing middle part and the tune's first half to close, in about a minute.
+
+  Subgenre: an action-adventure television theme of the middle eighties, a synthesizer band playing a
+  hero's tune. Drums: a rock beat, a kick on one and three with a push, a snare on two and four, hats
+  in eighths, tom-toms into each section. Tempo 130. Bass: a synth bass pulsing eighths on the root.
+  Sounds: synth brass with the tune, keys broken into sixteenths, an overdriven guitar holding chords,
+  a second brass answering at the ends of phrases. Melody manner: a dotted call that leaps up and
+  lands on a long note, as a fanfare for someone resourceful rather than strong; then a middle part
+  that climbs by steps.
+
+  Band and song: the theme is known for sounding optimistic and busy at once, a bright major tune over
+  a motor of eighths, and for getting from its opening pulse to its tune within seconds.
+
+  Checklist: it is good and memorable because the tune is a fanfare anyone can whistle, and the pulse
+  under it never rests. The hook is the first two bars of the tune, heard after four bars of pulse;
+  the emotion is bright confidence; the lift is the middle part on IV and V, climbing; the contrast is
+  the pulse alone at the opening; the sounds are synth brass, a polysynth, a synth bass and an
+  overdriven guitar.
 
   Run it with: llamatron examples/by_genre/tv_theme/phoenix_foundation.yml
 
-  Scene 1, intro, 8 bars: the bass, the keys and the beat.
-  Scene 2, theme, 16 bars: the brass with the theme, the guitar on the backbeat.
-  Scene 3, rise, 8 bars: the rise over power chords.
-  Scene 4, theme 2, 16 bars: the theme again.
-  Scene 5, guitar, 16 bars: the guitar chugging, with no melody.
-  Scene 6, rise 2, 8 bars: the rise again.
-  Scene 7, last theme, 16 bars: the theme with crashes.
-  Scene 8, outro, 8 bars: held chords over the bass and the keys.
+  Scene 1, pulse, 4 bars.
+  Scene 2, theme, 8 bars.
+  Scene 3, theme, answered, 8 bars.
+  Scene 4, rise, 8 bars.
+  Scene 5, outro, 4 bars.
 
   When changing this demo:
-  - Keep the guitar, the bass and the keys one bar each, moved by a Progression.
-  - Keep the melody its own: nothing of the theme's melody is used.
-  - Keep it out of G major, the theme's key. Form: about a minute, as the theme ran on television, the tune first: theme, rise, outro.
+  - Keep the drums as the Subgenre paragraph describes them, the kick first.
+  - Keep what the Checklist paragraph calls the hook and the lift.
+  - Keep every tune original, and the demo out of the key of the work it follows.
 real_time: true
 protected: true
 
@@ -41,16 +49,16 @@ patterns:
     steps: 16
     drum: true
     step_size: 1/16
-    degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~]
-    octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~]
-    velocity: [112, ~, ~, ~, ~, ~, ~, ~, 104, ~, 88, ~, ~, ~, ~, ~]
+    degree: [C, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [108, ~, ~, ~, ~, ~, 108, ~, 108, ~, ~, ~, ~, ~, ~, ~]
   snare:
-    steps: 16
+    steps: 64
     drum: true
     step_size: 1/16
-    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
-    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
-    velocity: [~, ~, ~, ~, 112, ~, ~, ~, ~, ~, ~, ~, 112, ~, ~, ~]
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, D, D]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, 3]
+    velocity: [~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, 114, 114]
   hat:
     steps: 16
     drum: true
@@ -58,143 +66,157 @@ patterns:
     degree: [F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~]
     accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
     octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
-    velocity: [96, ~, 68, ~, 96, ~, 68, ~, 96, ~, 68, ~, 96, ~, 68, ~]
-  crash:
-    steps: 16
+    velocity: [76, ~, 56, ~, 76, ~, 56, ~, 76, ~, 56, ~, 76, ~, 56, ~]
+  toms:
+    steps: 64
     drum: true
     step_size: 1/16
-    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [108, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-  root:
-    steps: 8
-    step_size: 1/8
-    degree: [1, ~, ~, ~, ~, ~, ~, ~]
-    octave: [3, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [112, ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, true, true, true, true, true, true, true]
-  chord:
-    steps: 8
-    step_size: 1/8
-    degree: [1, ~, ~, ~, ~, ~, ~, ~]
-    octave: [3, ~, ~, ~, ~, ~, ~, ~]
-    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
-    velocity: [96, ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, true, true, true, true, true, true, true]
+    degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, A, ~, A, ~, A, A, A, A]
+    octave: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~, 3, 3, 3, 3]
+    velocity: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 104, ~, 104, ~, 104, 104, 104, 104]
+  crash:
+    steps: 64
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [104, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
   bass:
+    steps: 8
+    step_size: 1/8
+    degree: [1, 1, 1, 1, 1, 1, 1, 1]
+    octave: [2, 2, 2, 2, 2, 2, 2, 2]
+    velocity: [108, 102, 102, 102, 102, 102, 102, 102]
+  broken:
     steps: 16
     step_size: 1/16
-    degree: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-    octave: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
-    velocity: [108, 76, 84, 76, 108, 76, 84, 76, 108, 76, 84, 76, 108, 76, 84, 76]
-  keys:
+    degree: [1, 3, 5, 1, 1, 3, 5, 1, 1, 3, 5, 1, 1, 3, 5, 1]
+    octave: [4, 4, 4, 5, 4, 4, 4, 5, 4, 4, 4, 5, 4, 4, 4, 5]
+    velocity: [80, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74]
+  chords:
     steps: 8
     step_size: 1/8
-    degree: [1, ~, ~, ~, ~, ~, ~, ~]
-    octave: [4, ~, ~, ~, ~, ~, ~, ~]
-    chord: ["3", ~, ~, ~, ~, ~, ~, ~]
-    velocity: [70, ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, true, true, true, true, true, true, true]
-  theme:
+    degree: [1, ~, ~, 1, ~, ~, 1, ~]
+    octave: [3, ~, ~, 3, ~, ~, 3, ~]
+    chord: [pow, ~, ~, pow, ~, ~, pow, ~]
+    velocity: [98, ~, ~, 92, ~, ~, 92, ~]
+    tie: [false, true, true, false, true, true, false, true]
+  tune:
     steps: 64
     step_size: 1/8
-    degree: [1, ~, ~, 1, 5, ~, ~, ~, 4, ~, ~, 6, 1, ~, ~, ~, 2, ~, ~, 7, 5, ~, ~, ~, 6, ~, 4, ~, 1, ~, ~, ~, 1, ~, ~, 1, 5, ~, 1, ~, 1, ~, ~, 6, 4, ~, ~, ~, 7, ~, 2, ~, 7, ~, 5, ~, 4, ~, 6, ~, 1, ~, ~, ~]
-    octave: [4, ~, ~, 4, 4, ~, ~, ~, 4, ~, ~, 4, 5, ~, ~, ~, 5, ~, ~, 4, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, 4, ~, ~, 4, 4, ~, 5, ~, 5, ~, ~, 4, 4, ~, ~, ~, 4, ~, 5, ~, 4, ~, 4, ~, 4, ~, 4, ~, 5, ~, ~, ~]
-    velocity: [116, ~, ~, 106, 106, ~, ~, ~, 116, ~, ~, 106, 106, ~, ~, ~, 116, ~, ~, 106, 106, ~, ~, ~, 116, ~, 106, ~, 106, ~, ~, ~, 116, ~, ~, 106, 106, ~, 106, ~, 116, ~, ~, 106, 106, ~, ~, ~, 116, ~, 106, ~, 106, ~, 106, ~, 116, ~, 106, ~, 106, ~, ~, ~]
-    tie: [false, true, true, false, false, true, true, true, false, true, true, false, false, true, true, true, false, true, true, false, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, true, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true]
-  rise:
+    degree: [5, ~, ~, 5, 1, ~, 2, ~, 3, ~, ~, ~, 1, ~, 5, ~, 6, ~, ~, 6, 1, ~, 6, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, 5, 1, ~, 2, ~, 3, ~, ~, ~, 2, ~, 1, ~, 2, ~, ~, 1, 7, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, 4, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 4, ~, 4, ~, ~, 4, 5, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, 4, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, 5, 4, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [116, ~, ~, 110, 110, ~, 110, ~, 116, ~, ~, ~, 110, ~, 110, ~, 116, ~, ~, 110, 110, ~, 110, ~, 116, ~, ~, ~, ~, ~, ~, ~, 116, ~, ~, 110, 110, ~, 110, ~, 116, ~, ~, ~, 110, ~, 110, ~, 116, ~, ~, 110, 110, ~, 110, ~, 116, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, false, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, false, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, true, true, true, false, false]
+  middle:
     steps: 64
     step_size: 1/8
-    degree: [3, ~, ~, ~, 6, ~, ~, ~, 4, ~, ~, ~, 1, ~, ~, ~, 2, ~, ~, ~, 7, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, 3, ~, ~, ~, 1, ~, ~, ~, 6, ~, ~, ~, 7, ~, 2, ~, 5, ~, 7, ~, 2, ~, ~, ~, ~, ~, ~, ~]
-    octave: [4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 4, ~, 5, ~, 4, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~]
-    velocity: [110, ~, ~, ~, 100, ~, ~, ~, 110, ~, ~, ~, 100, ~, ~, ~, 110, ~, ~, ~, 100, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, 100, ~, ~, ~, 110, ~, ~, ~, 100, ~, ~, ~, 110, ~, 100, ~, 100, ~, 100, ~, 110, ~, ~, ~, ~, ~, ~, ~]
-    tie: [false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, true, true]
-
-arps:
-  sparkle: { step: 1/16, order: up, octave_range: 2 }
+    degree: [6, ~, 1, ~, 4, ~, 6, ~, 1, ~, ~, ~, ~, ~, ~, ~, 5, ~, 7, ~, 2, ~, 7, ~, 3, ~, ~, ~, ~, ~, ~, ~, 6, ~, 1, ~, 2, ~, 3, ~, 2, ~, ~, ~, 1, ~, ~, ~, 7, ~, 1, ~, 2, ~, 3, ~, 2, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, 5, ~, 4, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, ~, 5, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~, 4, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, 4, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [116, ~, 110, ~, 110, ~, 110, ~, 116, ~, ~, ~, ~, ~, ~, ~, 116, ~, 110, ~, 110, ~, 110, ~, 116, ~, ~, ~, ~, ~, ~, ~, 116, ~, 110, ~, 110, ~, 110, ~, 116, ~, ~, ~, 110, ~, ~, ~, 116, ~, 110, ~, 110, ~, 110, ~, 116, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
+  horns:
+    steps: 64
+    step_size: 1/8
+    degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, 5, 1, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1, 1, 3, ~, 1, ~]
+    octave: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, 3, 4, ~, 3, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 4, 4, 4, ~, 4, ~]
+    velocity: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 100, 100, 100, ~, 100, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 100, 100, 100, ~, 100, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true]
+  half tune:
+    steps: 32
+    step_size: 1/8
+    degree: [5, ~, ~, 5, 1, ~, 2, ~, 3, ~, ~, ~, 2, ~, 1, ~, 2, ~, ~, 1, 7, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, ~, 4, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, 5, 4, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [118, ~, ~, 112, 112, ~, 112, ~, 118, ~, ~, ~, 112, ~, 112, ~, 118, ~, ~, 112, 112, ~, 112, ~, 118, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, true, false, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, true, true, true, true, true]
 
 progressions:
-  a: { chords: [1, 4, 5, 4] }
-  b: { chords: [6, 4, 5, 5] }
-
-guitarifies:
-  backbeat: { bar: [nothing, nothing, up, mute, nothing, nothing, up, mute], accents: [false, false, true, false, false, false, true, false], cell: 1/8, position: 4, strings: 4, spread: 3 }
-  all down: { bar: [down, down, down, down, down, down, down, down], accents: [true, false, false, false, true, false, false, false], cell: 1/8, single_notes: power_chord, spread: 2, fade: 0 }
-  chug: { bar: [mute, mute, down, mute, mute, mute, down, mute], accents: [false, false, true, false, false, false, true, false], cell: 1/8, single_notes: power_chord, spread: 2, fade: 0 }
-  held: { bar: [down, nothing, nothing, nothing], accents: [false, false, false, false], cell: 1/4, let_ring: true, single_notes: power_chord, spread: 2, fade: 0 }
+  tune: { chords: [1, 1, 4, 1, 1, 1, 5, 1] }
+  middle: { chords: [4, 4, 5, 1, 4, 4, 5, 5] }
+  close: { chords: [1, 1, 5, 1] }
 
 chains:
-  a:
-    - progression: a
-  b:
-    - progression: b
-  a backbeat:
-    - progression: a
-    - guitarify: backbeat
-  a chug:
-    - progression: a
-    - guitarify: chug
-  a held:
-    - progression: a
-    - guitarify: held
-  b all down:
-    - progression: b
-    - guitarify: all down
-  a sparkle:
-    - progression: a
-    - arp: sparkle
-  b sparkle:
-    - progression: b
-    - arp: sparkle
+  tune:
+    - progression: tune
+  middle:
+    - progression: middle
+  close:
+    - progression: close
 
 instruments:
   synth bass: { device: "*FluidSynth", gm_sound: 39 }
   overdriven guitar: { device: "*FluidSynth", gm_sound: 30 }
   polysynth: { device: "*FluidSynth", gm_sound: 91 }
   synth brass: { device: "*FluidSynth", gm_sound: 63 }
+  brass: { device: "*FluidSynth", gm_sound: 62 }
   drum kit: { device: "*FluidSynth" }
 
 songs:
   phoenix_foundation:
     tempo: 130
     scale: A Major
-    genre: TV theme
+    genre: TV Theme
 
     tracks:
       kick: { drum: true, instrument: drum kit }
       snare: { drum: true, instrument: drum kit }
       hat: { drum: true, instrument: drum kit }
+      toms: { drum: true, instrument: drum kit }
       crash: { drum: true, instrument: drum kit }
       bass: { instrument: synth bass }
       guitar: { instrument: overdriven guitar }
       keys: { instrument: polysynth }
       lead: { instrument: synth brass }
+      horns: { instrument: brass }
 
     scenes:
+      - name: pulse
+        tracks:
+          hat: { pattern: hat, repeat: 4 }
+          toms: { pattern: toms, loop: true }
+          bass: { pattern: bass, chains: [close], loop: true }
+          keys: { pattern: broken, chains: [close], loop: true }
       - name: theme
         tracks:
-          kick: { pattern: kick, loop: true }
+          kick: { pattern: kick, repeat: 8 }
           snare: { pattern: snare, loop: true }
           hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [a], loop: true }
-          guitar: { pattern: chord, chains: [a backbeat], repeat: 16 }
-          keys: { pattern: keys, chains: [a sparkle], loop: true }
-          lead: { pattern: theme, loop: true }
+          bass: { pattern: bass, chains: [tune], loop: true }
+          keys: { pattern: broken, chains: [tune], loop: true }
+          guitar: { pattern: chords, chains: [tune], loop: true }
+          lead: { pattern: tune, loop: true }
+          crash: { pattern: crash, loop: true }
+      - name: "theme, answered"
+        tracks:
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: snare, loop: true }
+          hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [tune], loop: true }
+          keys: { pattern: broken, chains: [tune], loop: true }
+          guitar: { pattern: chords, chains: [tune], loop: true }
+          lead: { pattern: tune, loop: true }
+          horns: { pattern: horns, loop: true }
+          toms: { pattern: toms, loop: true }
       - name: rise
         tracks:
-          kick: { pattern: kick, loop: true }
+          kick: { pattern: kick, repeat: 8 }
           snare: { pattern: snare, loop: true }
           hat: { pattern: hat, loop: true }
+          bass: { pattern: bass, chains: [middle], loop: true }
+          keys: { pattern: broken, chains: [middle], loop: true }
+          guitar: { pattern: chords, chains: [middle], loop: true }
+          lead: { pattern: middle, loop: true }
           crash: { pattern: crash, loop: true }
-          bass: { pattern: bass, chains: [b], loop: true }
-          guitar: { pattern: root, chains: [b all down], repeat: 8 }
-          keys: { pattern: keys, chains: [b sparkle], loop: true }
-          lead: { pattern: rise, loop: true }
+          toms: { pattern: toms, loop: true }
       - name: outro
         tracks:
-          kick: { pattern: kick, loop: true }
+          kick: { pattern: kick, repeat: 4 }
+          snare: { pattern: snare, loop: true }
           hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [a], loop: true }
-          guitar: { pattern: root, chains: [a held], repeat: 8 }
-          keys: { pattern: keys, chains: [a sparkle], loop: true }
+          bass: { pattern: bass, chains: [close], loop: true }
+          keys: { pattern: broken, chains: [close], loop: true }
+          guitar: { pattern: chords, chains: [close], loop: true }
+          lead: { pattern: half tune, loop: true }
+          horns: { pattern: half tune, loop: true }
+          crash: { pattern: crash, loop: true }
