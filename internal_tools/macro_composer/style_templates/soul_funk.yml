@@ -8,9 +8,12 @@
 # roles       the band in track order, the chords first, then the lead and the backing, the bass, and the drums last: which
 #             trait each plays, how high and how loud.
 # sections    what plays in each kind of section, and the plan of its tune: which line returns and who plays each.
+#             intensity is the most each instrument's player may open up there, 1 to 4, so that a player starts plainly and
+#             saves the most for a chorus or a solo; crash is a crash on the section's first beat; picks are picks the
+#             section changes, such as the cymbal the drummer rides.
 # players     who each instrument's player is in this style, by complexity from 1 (plain) to 4 (the most advanced): what the
 #             player says for people, and how the player decorates the kind's own parts, never replacing them: a drummer's
-#             hits added to every bar (adds) or to every few bars (varies), the fill and how often it comes, timing (a
+#             hits added to every bar (adds) or to some bars of each four-bar phrase (varies), the fill and how often it comes, timing (a
 #             rush or a drag, in hundredths of a step), how uneven the hits are, a strum's width, a lead's range.
 # melody      the habits a tune is sketched by when a song gives none: the notes used, rhythm cells, how far it ranges.
 # Sixteen steps to a bar, sixteenths; twelve in 12/8. No band, label, artist or work is named or followed.
@@ -244,7 +247,7 @@ players:
     2:
       says: 'A small kit. A little behind the beat, a soft kick before every fourth bar, and a short snare roll into each turn.'
       fill_every: 4
-      varies: {every: 4, choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 16, soft: [15]}}}]}
+      varies: [{bars: [4], choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 16, soft: [15]}}}]}]
       fill: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, loud: [4, 12, 14, 15]}}}]
       timing: {snare: {drag: 12}}
       uneven: 5
@@ -252,7 +255,7 @@ players:
       says: 'A kit with two toms. Quiet snare notes between the loud ones, an open hat in every other bar, and the toms at each turn.'
       fill_every: 4
       adds: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, soft: [3, 9]}}}]
-      varies: {every: 2, choices: [{needs: {meter: 4/4}, bar: {open: {steps: 16, loud: [14]}, kick: {steps: 16, loud: [11]}}}]}
+      varies: [{bars: [2, 4], choices: [{needs: {meter: 4/4}, bar: {open: {steps: 16, loud: [14]}, kick: {steps: 16, loud: [11]}}}]}]
       fill: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, loud: [4], soft: [7]}, tom high: {steps: 16, loud: [8, 9, 11]}, tom low: {steps: 16, loud: [12, 13, 15]}}}]
       timing: {snare: {drag: 8}}
       uneven: 8
@@ -260,7 +263,7 @@ players:
       says: 'A kit with congas beside it. Quiet snare notes all through the bar, a kick that never plays the same bar twice, an open hat off the beat, and fills that run a whole bar.'
       fill_every: 4
       adds: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, soft: [1, 3, 7, 9, 15]}, conga high: {steps: 16, soft: [2, 10]}, conga low: {steps: 16, soft: [6, 14]}}}]
-      varies: {every: 2, choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 16, loud: [7, 13]}, open: {steps: 16, loud: [10]}}}]}
+      varies: [{bars: [2, 4], choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 16, loud: [7, 13]}, open: {steps: 16, loud: [10]}}}]}]
       fill: [{needs: {meter: 4/4}, silences: [hat, open], bar: {kick: {steps: 16, loud: [0, 10]}, snare: {steps: 16, loud: [0, 3, 4, 6], soft: [1, 5]}, tom high: {steps: 16, loud: [8, 9]}, tom mid: {steps: 16, loud: [11, 12]}, tom low: {steps: 16, loud: [13, 14, 15]}}}]
       timing: {snare: {drag: 14}, hat: {drag: 4}}
       uneven: 10
@@ -289,22 +292,29 @@ sounds: {bass: 34, guitar: 28, muted guitar: 29, piano: 1, organ: 17, solo organ
 
 sections:
   intro:
+    intensity: {drums: 1, bass: 2, rhythm: 2, keys: 2}
     bars: 4
     plays: [drums, bass, guitar, keys]
     plan: []
   verse:
+    intensity: {drums: 2, bass: 3, rhythm: 3, keys: 2, lead: 3}
     bars: 8
     plays: [drums, bass, guitar, keys, lead]
     plan: [{line: a}, {line: a, varied: true}, {line: a}, {line: b, higher: true}]
   chorus:
+    intensity: {drums: 3, bass: 3, rhythm: 3, keys: 3, lead: 4}
+    crash: true
     bars: 8
     plays: [drums, bass, guitar, keys, horns, voices, lead]
     plan: [{line: hook, higher: true}, {line: hook, higher: true}, {line: hook, higher: true, varied: true}, {line: close}]
   bridge:
+    intensity: {drums: 3, bass: 4, rhythm: 3, keys: 3, lead: 3}
+    crash: true
     bars: 8
     plays: [drums, bass, guitar, keys, horns, lead]
     plan: [{line: m}, {line: m, varied: true}, {line: n, higher: true}, {line: n, higher: true, varied: true}]
   solo:
+    crash: true
     bars: 8
     plays: [drums, bass, guitar, keys, solo]
     plan: [{line: s1, answer: true}, {line: s2, answer: true, higher: true}, {line: s1, answer: true, varied: true}, {line: s3, answer: true, higher: true}]

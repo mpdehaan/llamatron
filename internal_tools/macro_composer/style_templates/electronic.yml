@@ -8,9 +8,12 @@
 # roles       the band in track order, the chords first, then the lead and the backing, the bass, and the drums last: which
 #             trait each plays, how high and how loud.
 # sections    what plays in each kind of section, and the plan of its tune: which line returns and who plays each.
+#             intensity is the most each instrument's player may open up there, 1 to 4, so that a player starts plainly and
+#             saves the most for a chorus or a solo; crash is a crash on the section's first beat; picks are picks the
+#             section changes, such as the cymbal the drummer rides.
 # players     who each instrument's player is in this style, by complexity from 1 (plain) to 4 (the most advanced): what the
 #             player says for people, and how the player decorates the kind's own parts, never replacing them: a drummer's
-#             hits added to every bar (adds) or to every few bars (varies), the fill and how often it comes, timing (a
+#             hits added to every bar (adds) or to some bars of each four-bar phrase (varies), the fill and how often it comes, timing (a
 #             rush or a drag, in hundredths of a step), how uneven the hits are, a strum's width, a lead's range.
 # melody      the habits a tune is sketched by when a song gives none: the notes used, rhythm cells, how far it ranges.
 # Sixteen steps to a bar, sixteenths. A song here is layers that enter and leave: the sections say which play.
@@ -185,7 +188,7 @@ players:
     2:
       says: 'A drum machine. An open hat added before every fourth bar, the clap a touch late, and the kick dropping out before every eighth bar.'
       fill_every: 8
-      varies: {every: 4, choices: [{bar: {open: {steps: 16, loud: [14]}}}]}
+      varies: [{bars: [4], choices: [{bar: {open: {steps: 16, loud: [14]}}}]}]
       fill: [{bar: {kick: {steps: 16, loud: [0, 4]}}}]
       timing: {clap: {drag: 8}, snare: {drag: 8}}
       uneven: 3
@@ -193,7 +196,7 @@ players:
       says: 'A drum machine. A soft extra clap, a kick pickup in every other bar, and a snare roll that speeds up before every eighth bar.'
       fill_every: 8
       adds: [{bar: {clap: {steps: 16, soft: [15]}}}]
-      varies: {every: 2, choices: [{bar: {kick: {steps: 16, loud: [14]}}}]}
+      varies: [{bars: [2, 4], choices: [{bar: {kick: {steps: 16, loud: [14]}}}]}]
       fill: [{bar: {snare: {steps: 16, loud: [0, 4, 8, 10, 12, 13, 14, 15]}}}]
       timing: {hat: {rush: 4}}
       uneven: 5
@@ -201,7 +204,7 @@ players:
       says: 'A drum machine programmed bar by bar. A rim in threes across the beat, a kick that breaks pattern, a cowbell, and toms into every fourth bar.'
       fill_every: 4
       adds: [{bar: {rim: {steps: 16, loud: [3, 6, 9, 12]}}}]
-      varies: {every: 2, choices: [{bar: {kick: {steps: 16, loud: [7, 10]}, cowbell: {steps: 16, loud: [2, 10]}}}]}
+      varies: [{bars: [2, 4], choices: [{bar: {kick: {steps: 16, loud: [7, 10]}, cowbell: {steps: 16, loud: [2, 10]}}}]}]
       fill: [{bar: {tom high: {steps: 16, loud: [8, 9, 11]}, tom mid: {steps: 16, loud: [12]}, tom low: {steps: 16, loud: [13, 14, 15]}, snare: {steps: 16, loud: [4], soft: [6, 7]}}}]
       timing: {clap: {drag: 12}, snare: {drag: 12}}
       uneven: 7
@@ -230,10 +233,12 @@ sounds: {synth bass: 39, acid bass: 40, sub bass: 39, pad: 90, piano: 2, organ: 
 
 sections:
   intro:
+    intensity: {drums: 1, keys: 2}
     bars: 8
     plays: [drums, chords]
     plan: []
   groove:
+    crash: true
     bars: 16
     plays: [drums, bass, chords, arp, lead]
     plan: [{line: hook}, {line: hook, varied: true}, {line: hook}, {line: turn, higher: true}, {line: hook}, {line: hook, varied: true}, {line: hook}, {line: turn, higher: true, varied: true}]
@@ -242,10 +247,12 @@ sections:
     plays: [chords, arp, lead]
     plan: [{line: calm}, {line: calm, varied: true}, {line: calm}, {line: rise, higher: true}]
   build:
+    intensity: {drums: 3}
     bars: 4
     plays: [drums, chords, arp]
     plan: []
   outro:
+    intensity: {drums: 2, bass: 2, keys: 2}
     bars: 8
     plays: [drums, bass, chords]
     plan: []

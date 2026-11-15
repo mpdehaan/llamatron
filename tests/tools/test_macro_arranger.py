@@ -65,6 +65,8 @@ STABS = 'guitar stabs on the upbeats'
 GUITARIFIES = 'guitarifies'
 GUITARIFY = 'guitarify'
 ROCK = 'rock'
+VERSE = 'verse'
+CYMBAL = 'cymbal'
 ROCK_KIND = 'beat group'
 KICK = 'kick'
 SNARE = 'snare'
@@ -260,7 +262,8 @@ class TestPlayers(unittest.TestCase):
 
     def hits(self, *, song, drum):
         """A drum's hits in a made song, loud, soft or none for each step, whether its part is written as hits or as a pattern."""
-        part = arranger.arranged(style=self.style, song=song)[composer.PARTS][drum]
+        given = arranger.arranged(style=self.style, song={**song, arranger.FORM: [SOLO]})
+        part = given[composer.PARTS][given[composer.FORM][0][composer.PLAY][drum][composer.PART]]
         if arranger.RAW not in part:
             return part[notation.HITS]
         loud = self.style[arranger.LOUDNESS][drum]
@@ -309,6 +312,28 @@ class TestPlayers(unittest.TestCase):
         self.assertEqual(arranger.picked(style=self.style, song=song)[METER], SIX_EIGHT)
         self.assertEqual(self.hits(song=song, drum=KICK), bar * every)
 
+    def drums_of(self, *, given, scene):
+        """The drum parts a scene of a made song plays, by drum."""
+        play = next(entry[composer.PLAY] for entry in given[composer.FORM] if entry[composer.SCENE] == scene)
+        return {drum: given[composer.PARTS][played[composer.PART]] for drum, played in play.items() if drum in given[composer.DRUM_TRACKS]}
+
+    def test_a_section_holds_a_player_to_the_intensity_it_allows_so_the_busiest_drummer_starts_plainly(self):
+        allowed = self.style[arranger.SECTIONS][INTRO][arranger.ALLOWS][players.DRUMS]
+        busiest = arranger.arranged(style=self.style, song=self.song(levels={players.DRUMS: players.ADVANCED}))
+        held = arranger.arranged(style=self.style, song=self.song(levels={players.DRUMS: allowed}))
+        self.assertLess(allowed, players.ADVANCED)
+        self.assertEqual(self.drums_of(given=busiest, scene=INTRO), self.drums_of(given=held, scene=INTRO))
+        self.assertNotEqual(self.drums_of(given=busiest, scene=CHORUS), self.drums_of(given=busiest, scene=INTRO))
+
+    def test_a_section_changes_a_pick_and_starts_on_a_crash_whoever_plays(self):
+        given = arranger.arranged(style=self.style, song=self.song())
+        cymbal = self.style[arranger.SECTIONS][CHORUS][arranger.PICKS][CYMBAL]
+        ridden = list(arranger.values_of(style=self.style, trait=CYMBAL)[cymbal][arranger.BAR])
+        self.assertTrue(set(ridden) <= set(self.drums_of(given=given, scene=CHORUS)))
+        self.assertFalse(set(ridden) & set(self.drums_of(given=given, scene=VERSE)))
+        self.assertIn(arranger.CRASH, self.drums_of(given=given, scene=CHORUS))
+        self.assertNotIn(arranger.CRASH, self.drums_of(given=given, scene=VERSE))
+
     def test_every_track_has_a_rush_and_a_drag_that_do_nothing_until_a_player_moves_them(self):
         given = arranger.arranged(style=self.style, song=self.song())
         generators = given[composer.GENERATORS]
@@ -324,11 +349,13 @@ class TestPlayers(unittest.TestCase):
     def test_a_players_drum_hits_are_uneven_by_no_more_than_the_player_says_and_the_same_for_a_seed(self):
         level = players.WILD
         by = self.style[arranger.PLAYERS][players.DRUMS][level][arranger.UNEVEN]
-        one = arranger.arranged(style=self.style, song=self.song(levels={players.DRUMS: level}))
-        again = arranger.arranged(style=self.style, song=self.song(levels={players.DRUMS: level}))
+        song = {**self.song(levels={players.DRUMS: level}), arranger.FORM: [SOLO]}
+        one = arranger.arranged(style=self.style, song=song)
+        again = arranger.arranged(style=self.style, song=song)
         loud = self.style[arranger.LOUDNESS][SNARE]
-        heard = [velocity for velocity in one[composer.PARTS][SNARE][arranger.RAW][notation.VELOCITY] if velocity is not None]
-        self.assertEqual(one[composer.PARTS][SNARE], again[composer.PARTS][SNARE])
+        snare = one[composer.FORM][0][composer.PLAY][SNARE][composer.PART]
+        heard = [velocity for velocity in one[composer.PARTS][snare][arranger.RAW][notation.VELOCITY] if velocity is not None]
+        self.assertEqual(one[composer.PARTS][snare], again[composer.PARTS][snare])
         self.assertGreater(len(set(heard)), 1)
         soft = int(loud * arranger.SOFT_SHARE)
         self.assertTrue(all(abs(velocity - loud) <= by or abs(velocity - soft) <= by for velocity in heard))
