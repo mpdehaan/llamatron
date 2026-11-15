@@ -184,6 +184,9 @@ a feature that already exists does what's being asked, that's pointed out first
   as a stack to attend to (`Dialog.flyout_lines`, `FLYOUT_SHIFT`): Space or ENTER on the row opens it, Up and Down move, ENTER picks and closes it, and ESC or Left closes it with
   nothing changed. It is how a dialog offers a second level without opening a dialog over a dialog, which is avoided (the
   user's rule). The Chord dialog's categories of scale types are the first.
+- Windows stacked several deep cascade (the user's rule): each window opened over another is drawn a step down and to the right
+  of the window under it, as a flyout is over its dialog, so that a deep stack reads as a diagonal run toward the lower right
+  with every window's title still showing. The wizard's pickers and windows stack this way.
 - The Chord dialog draws a keyboard under its sentences, one blank line down, the user's design: the scale's keys in an outline's
   colour (`▒▒▒`, cyan), the chord's keys filled (`███`, green), the rest hatched and dim, the root's name in brackets, the chord
   following the cursor through the lists. Only where the pattern's scale is known for certain, every use of the pattern playing it
