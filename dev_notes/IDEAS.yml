@@ -495,6 +495,28 @@
     `.claude/GENRES.md` then says the library is for, and what an explanation looks like to a person: a report, a page of the
     tracker, or both.
 
+- title: "Velocity Assist: a few named velocity levels in place of numbers"
+  priority: 5
+  text: |
+    An easy way to enter velocity: the song defines a few important levels, say soft, normal and accent, each with its number, and a
+    step's velocity is picked by switching between those levels, where today a number from 0 to 127 is typed or stepped. The levels
+    live on a tab or section of the Song page called Velocity Assist, or a name like it.
+
+    Which way a song works is the song's own setting. A song whose file says nothing about it has complex velocity, every number
+    allowed, so that every file written before the feature opens and plays as it does now. A new song made in the tracker stores
+    simple velocity by default, and the setting can be switched either way. Switching a song from complex velocity back to simple
+    warns first, since numbers will be lost, and asks how many levels to use; the song's velocities are then fitted to that many
+    levels.
+
+    Touches: a new setting on Song with its levels (composition/, the file format, defaults for a new set), the Song page, the
+    pattern editor's Velocity row (stepping and ENTER pick a level in simple mode), the piano roll if velocity is entered there,
+    and undo for the switch. Playback and the exporters need no change, since a level is stored or resolved as its number.
+
+    Undecided: whether a step stores the level's name, so that changing a level's number changes every step that uses it, or the
+    number alone; how the numbers of a complex song are fitted to the levels (nearest level, or levels chosen from the numbers the
+    song uses); what the default levels and their numbers are; whether generators that change velocity, such as Swell, are allowed
+    to leave the levels; what the Velocity row draws for a level; and what an import from MIDI chooses.
+
 - title: "Sheet music and chord sheets as PDF"
   priority: 8
   text: |
