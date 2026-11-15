@@ -133,7 +133,10 @@ def scene_of(*, entry, bands, patterns, signature):
                 clip[REPEAT] = int(repeats)
                 break
         else:
-            raise ValueError(ERR_NO_CLIP_FITS.format(entry[SCENE], entry[BARS]))
+            # A scene whose every clip plays once needs none to time it, where one of them lasts as long as the scene.
+            lasting = [clip for clip in clips.values() if LOOP not in clip and bars_of(pattern=patterns[clip[PATTERN]], signature=signature) == entry[BARS]]
+            if not lasting:
+                raise ValueError(ERR_NO_CLIP_FITS.format(entry[SCENE], entry[BARS]))
     return {NAME: entry[SCENE], **entry.get(SETTINGS, {}), TRACKS: clips}
 
 

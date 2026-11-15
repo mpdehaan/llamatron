@@ -29,7 +29,7 @@ import os
 import random
 from fractions import Fraction
 
-from llamatron.macro_composer.melody import GRID, sketched
+from llamatron.macro_composer.melody import ENGINE, GRID, sketched
 from llamatron.macro_composer.melody import ANSWER_RHYTHMS, RHYTHMS, SPAN
 from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, DRUM, FLAT, HITS, LINES, LOUD, NONE, OCTAVE, REST, SHARP, SOFT, STEP, STEPS, VELOCITY, CHORD, clamped, drum_rows
 from llamatron.macro_composer.players import player_name
@@ -139,6 +139,10 @@ FILL_EVERY = 'fill_every'
 ALLOWS = 'intensity'
 CRASH_START = 'crash'
 ENDS = 'ends'
+# A song's pick of the engine its tunes are made by, and a role's own voice and habits for it.
+MELODY_ENGINE = 'melody_engine'
+VOICE = 'voice'
+HABITS = 'habits'
 STYLE_TEMPLATES = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'style_templates')
 STYLE_SUFFIX = '.yml'
 # A scale's name from its root and type, and what a drum's uneven hits are seeded by: the song's seed, the drum and the section.
@@ -601,7 +605,8 @@ def arranged(*, style, song):
                 part = MSG_PART_OF_SECTION.format(name, role[ROLE])
                 if part not in parts:
                     given = section.get(LINES_GIVEN, {}).get(role[ROLE])
-                    lines = given or sketched(habits=habits_of(habits=habits, player=here[role[ROLE]]), plan=section[PLAN], chords=chords, scale_type=scale_type, seed=song.get(SEED, 0), answers=bool(role.get(ANSWERS)))
+                    lines = given or sketched(habits={**habits_of(habits=habits, player=here[role[ROLE]]), **role.get(HABITS, {}), **song.get(MELODY, {})}, plan=section[PLAN], chords=chords, scale_type=scale_type, seed=song.get(SEED, 0), answers=bool(role.get(ANSWERS)),
+                                               engine=song.get(MELODY_ENGINE, role.get(ENGINE)), voice=role.get(VOICE))
                     if all(all(REST in note for note in line) for line in lines):
                         continue
                     parts[part] = tune_part(lines=lines, role=role, meter=meter, grid=habits[GRID])
