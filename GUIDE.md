@@ -71,6 +71,7 @@ A file holds a set of songs, like the songs of one concert. The patterns, scales
 | [Jazz Mashup](docs/demos/JAZZ_MASHUP.md) | Another work's notes set on a jazz band. |
 | [Metal Mashup](docs/demos/METAL_MASHUP.md) | Another work's notes set on a metal band. |
 | [Rock Mashup](docs/demos/ROCK_MASHUP.md) | Another work's notes set on a rock band. |
+| [Soul Mashup](docs/demos/SOUL_MASHUP.md) | Another work's notes set on a soul band. |
 | [World Mashup](docs/demos/WORLD_MASHUP.md) | Another work's notes set on a world band. |
 
 ## Objects

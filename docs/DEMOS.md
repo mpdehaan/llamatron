@@ -61,6 +61,7 @@ pages current.
 | [Ragtime](demos/RAGTIME.md) | 1 |
 | [Rock](demos/ROCK.md) | 10 |
 | [Rock Mashup](demos/ROCK_MASHUP.md) | 6 |
+| [Soul Mashup](demos/SOUL_MASHUP.md) | 1 |
 | [Soundtrack](demos/SOUNDTRACK.md) | 7 |
 | [TV Theme](demos/TV_THEME.md) | 12 |
 | [TV theme](demos/TV_THEME.md) | 3 |
