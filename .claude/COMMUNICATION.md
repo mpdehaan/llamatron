@@ -74,6 +74,10 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   suggested together with Claude's own ideas and suggestions about it, and raises its questions about the picture for discussion.
   Each mockup is a conversation of its own: one reply shows one mockup with the questions that belong to it grouped together,
   and Claude waits for the answers before showing the next (the user's rule).
+- **A mockup shows its values.** For every field, column or part a mockup draws, the reply shows what kind of thing it is, typed,
+  stepped or chosen from a list, with an example value, the range where there is one, and the list of choices drawn as the picker
+  would show it, since the user judges a design from pictures and examples and should not have to assemble one from prose (the
+  user's rule).
 - **The list of what's open.** A reply that leaves questions open ends with them, each number on a line of its own with the
   kind of answer it takes: "77, yes or no." then "78, choose A or B."
 
