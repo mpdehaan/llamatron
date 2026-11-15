@@ -8,6 +8,9 @@
 # roles       the band in track order, the chords first, then the lead and the backing, the bass, and the drums last: which
 #             trait each plays, how high and how loud.
 # sections    what plays in each kind of section, and the plan of its tune: which line returns and who plays each.
+# players     who each instrument's player is in this style, by complexity from 1 (plain) to 4 (the most advanced): what the
+#             player says of themselves for people, the picks the player makes, how the player keeps time (a rush or a
+#             drag, in hundredths of a step), how uneven the drum hits are, and a lead's range and busyness.
 # melody      the habits a tune is sketched by when a song gives none: the notes used, rhythm cells, how far it ranges.
 # Twelve steps to a bar throughout: three to a beat, which is the shuffle. No band, artist or work is named or followed.
 
@@ -190,11 +193,38 @@ traits:
     - {value: none, share: 12}
 
 roles:
-  - {role: comping, trait: comping, octave: 4, velocity: 84}
-  - {role: lead, trait: lead, octave: 4, velocity: 106}
-  - {role: answers, trait: answers, octave: 4, velocity: 96, answers: true}
-  - {role: bass, trait: bass, octave: 2, velocity: 104}
-  - {role: drums, drums: [drums]}
+  - {role: comping, player: rhythm, trait: comping, octave: 4, velocity: 84}
+  - {role: lead, player: lead, trait: lead, octave: 4, velocity: 106}
+  - {role: answers, player: session, trait: answers, octave: 4, velocity: 96, answers: true}
+  - {role: bass, player: bass, trait: bass, octave: 2, velocity: 104}
+  - {role: drums, player: drums, drums: [drums]}
+
+players:
+  drums:
+    1: {says: 'Kick, snare and hats. The plain shuffle and nothing more.', picks: {drums: plain shuffle, fills: none}, uneven: 2}
+    2: {says: 'A small kit. The shuffle a little behind the beat, with a snare triplet into each turn.', picks: {drums: plain shuffle, fills: snare triplet on four}, timing: {snare: {drag: 12}}, uneven: 5}
+    3: {says: 'A larger kit. The kick shuffles too, and the toms answer at every turn.', picks: {drums: driving shuffle, fills: snare into toms}, timing: {snare: {drag: 8}}, uneven: 7}
+    4: {says: 'Ride and snare shuffle together with the hat on the foot. Busy and far behind the beat.', picks: {drums: both hands shuffle, fills: snare into toms}, timing: {snare: {drag: 16}, ride: {drag: 6}}, uneven: 9}
+  bass:
+    1: {says: 'A finger bass. Roots, shuffled.', picks: {bass: roots}}
+    2: {says: 'A finger bass. The boogie line up and back.', picks: {bass: boogie}, timing: {drag: 6}}
+    3: {says: 'An upright bass. Walks a note to every beat.', picks: {bass: walking}}
+    4: {says: 'An upright bass. Walks far behind the beat.', picks: {bass: walking}, timing: {drag: 14}}
+  rhythm:
+    1: {says: 'A clean guitar. A chord on two and four.', picks: {comping: guitar on the backbeats}}
+    2: {says: 'A clean guitar. The boogie pattern on the low strings.', picks: {comping: guitar boogie}}
+    3: {says: 'A clean guitar. Stabs on the upbeats, loose.', picks: {comping: guitar stabs on the upbeats}, guitarify: {spread: 12, loose_timing: 12}}
+    4: {says: 'A horn section in place of the guitar. Riffs of two bars.', picks: {comping: horn riffs}}
+  lead:
+    1: {says: 'Few notes, close together, each one sung.', span: 2}
+    2: {says: 'Phrases that leave room, behind the beat.', span: 3, timing: {drag: 10}}
+    3: {says: 'Busy lines over a wide range.', span: 4, busy: true, timing: {drag: 6}}
+    4: {says: 'The widest range and the most notes.', span: 5, busy: true}
+  session:
+    1: {says: 'Answers in few notes.', span: 2}
+    2: {says: 'Answers that leave room.', span: 3, timing: {drag: 8}}
+    3: {says: 'Busy answers.', span: 4}
+    4: {says: 'Answers over the widest range.', span: 5}
 
 sounds: {bass: 34, upright bass: 33, guitar: 28, lead guitar: 30, harmonica: 23, piano: 1, organ: 17, horns: 62, saxophone: 67, voice: 54}
 

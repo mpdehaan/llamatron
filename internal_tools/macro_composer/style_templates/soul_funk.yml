@@ -8,6 +8,9 @@
 # roles       the band in track order, the chords first, then the lead and the backing, the bass, and the drums last: which
 #             trait each plays, how high and how loud.
 # sections    what plays in each kind of section, and the plan of its tune: which line returns and who plays each.
+# players     who each instrument's player is in this style, by complexity from 1 (plain) to 4 (the most advanced): what the
+#             player says of themselves for people, the picks the player makes, how the player keeps time (a rush or a
+#             drag, in hundredths of a step), how uneven the drum hits are, and a lead's range and busyness.
 # melody      the habits a tune is sketched by when a song gives none: the notes used, rhythm cells, how far it ranges.
 # Sixteen steps to a bar, sixteenths; twelve in 12/8. No band, label, artist or work is named or followed.
 
@@ -222,14 +225,41 @@ traits:
     - {value: none, share: 30}
 
 roles:
-  - {role: guitar, trait: guitar, octave: 4, velocity: 82}
-  - {role: keys, trait: keys, octave: 4, velocity: 78}
-  - {role: horns, trait: horns, octave: 4, velocity: 92}
-  - {role: lead, trait: lead, octave: 4, velocity: 106}
-  - {role: voices, trait: voices, octave: 4, velocity: 82}
-  - {role: solo, trait: solo, octave: 4, velocity: 100, answers: true}
-  - {role: bass, trait: bass, octave: 2, velocity: 108}
-  - {role: drums, drums: [drums, percussion]}
+  - {role: guitar, player: rhythm, trait: guitar, octave: 4, velocity: 82}
+  - {role: keys, player: keys, trait: keys, octave: 4, velocity: 78}
+  - {role: horns, player: session, trait: horns, octave: 4, velocity: 92}
+  - {role: lead, player: lead, trait: lead, octave: 4, velocity: 106}
+  - {role: voices, player: session, trait: voices, octave: 4, velocity: 82}
+  - {role: solo, player: session, trait: solo, octave: 4, velocity: 100, answers: true}
+  - {role: bass, player: bass, trait: bass, octave: 2, velocity: 108}
+  - {role: drums, player: drums, drums: [drums, percussion]}
+
+players:
+  drums:
+    1: {says: 'A small kit. A plain backbeat with a kick that pushes, and no fills.', picks: {drums: backbeat with a pushing kick, fills: none}, uneven: 2}
+    2: {says: 'A small kit. The snare on every beat, a little behind, with a short roll into each turn.', picks: {drums: snare on every beat, fills: snare sixteenths on four}, timing: {snare: {drag: 12}}, uneven: 5}
+    3: {says: 'Quiet snare notes between the loud ones, an open hat, and the toms at every turn.', picks: {drums: funk with ghost notes, fills: toms down}, timing: {snare: {drag: 8}}, uneven: 8}
+    4: {says: 'A marching snare over a syncopated kick, with congas beside the kit.', picks: {drums: second line, fills: snare sixteenths on four, percussion: congas}, timing: {snare: {drag: 14}}, uneven: 10}
+  bass:
+    1: {says: 'A finger bass. Few notes, the root pushed.', picks: {bass: sparse and syncopated}}
+    2: {says: 'A finger bass. Octaves, bouncing.', picks: {bass: octaves on the offbeats}}
+    3: {says: 'A finger bass. A tune of its own.', picks: {bass: melodic and busy}}
+    4: {says: 'A finger bass. Hard on the one, then off the beat, behind.', picks: {bass: on the one then syncopated}, timing: {drag: 8}}
+  rhythm:
+    1: {says: 'A clean guitar. A chop on two and four.', picks: {guitar: chops on two and four}, guitarify: {spread: 4}}
+    2: {says: 'A clean guitar. A looser chop on two and four.', picks: {guitar: chops on two and four}, guitarify: {spread: 12, loose_timing: 8}}
+    3: {says: 'A muted guitar. Scratched sixteenths.', picks: {guitar: scratch sixteenths}, guitarify: {spread: 6}}
+    4: {says: 'A muted guitar. Scratched sixteenths, loose.', picks: {guitar: scratch sixteenths}, guitarify: {spread: 10, loose_timing: 14}}
+  lead:
+    1: {says: 'Few notes, close together.', span: 2}
+    2: {says: 'Phrases that leave room, behind the beat.', span: 3, timing: {drag: 10}}
+    3: {says: 'Busy lines over a wide range.', span: 4, busy: true}
+    4: {says: 'The widest range and the most notes.', span: 5, busy: true, timing: {drag: 6}}
+  keys:
+    1: {says: 'An organ. Holds the chords.', picks: {keys: organ held}}
+    2: {says: 'A piano. Chords in steady eighths.', picks: {keys: piano eighths}}
+    3: {says: 'An electric piano. Syncopated chords.', picks: {keys: electric piano chords}}
+    4: {says: 'A clavinet. A riff of single notes.', picks: {keys: clavinet riff}}
 
 sounds: {bass: 34, guitar: 28, muted guitar: 29, piano: 1, organ: 17, solo organ: 19, electric piano: 5, clavinet: 8, horns: 62, saxophone: 67, voice: 54, voices: 53}
 

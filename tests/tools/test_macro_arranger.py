@@ -32,6 +32,7 @@ import arranger  # noqa: E402
 import composer  # noqa: E402
 import melody  # noqa: E402
 import notation  # noqa: E402
+import players  # noqa: E402
 
 FILE_ENCODING = 'utf-8'
 STYLE_TEMPLATES = os.path.join(TOOLS, 'style_templates')
@@ -63,6 +64,14 @@ SLOW_DRUMS = 'slow twelve-eight'
 STABS = 'guitar stabs on the upbeats'
 GUITARIFIES = 'guitarifies'
 GUITARIFY = 'guitarify'
+ROCK = 'rock'
+ROCK_KIND = 'beat group'
+KICK = 'kick'
+SNARE = 'snare'
+GUITAR = 'guitar'
+METER = 'meter'
+SIX_EIGHT = '6/8'
+BALLAD = 'rock ballad'
 OWN_CHORDS = [1, 1, 4, 4]
 WHOLE = 100
 A_SIXTH_BAR = 6
@@ -217,6 +226,83 @@ class TestArranged(unittest.TestCase):
         lines = [OWN_LINE, SILENT_LINE] * 3
         given = arranger.arranged(style=self.style, song=a_song(sections={CHORUS: {arranger.LINES_GIVEN: {LEAD: lines}}}))
         self.assertEqual(given[composer.PARTS][arranger.MSG_SECTION_PART.format(CHORUS, LEAD)][notation.LINES], lines)
+
+
+class TestPlayers(unittest.TestCase):
+    """The imaginary players: a file gives a complexity, people see a name, and each style says who the player is."""
+
+    def setUp(self):
+        self.style = read(os.path.join(STYLE_TEMPLATES, ROCK + YAML))
+
+    def song(self, *, levels=None, picks=None, template=ROCK_KIND):
+        song = {**a_song(template=template, picks=picks), arranger.STYLE: ROCK, arranger.FORM: ['intro', 'verse', 'chorus', 'ending']}
+        if levels:
+            song[arranger.PLAYERS] = levels
+        return song
+
+    def test_every_instrument_has_a_player_of_its_own_name_at_every_complexity(self):
+        names = [players.player_name(instrument=instrument, complexity=complexity) for instrument in players.INSTRUMENTS
+                 if instrument != players.SESSION for complexity in players.COMPLEXITIES]
+        self.assertEqual(len(names), len(set(names)))
+        for complexity in players.COMPLEXITIES:
+            self.assertTrue(players.player_name(instrument=players.SESSION, complexity=complexity).endswith(players.FAMILIES[complexity]))
+
+    def test_every_style_says_who_a_player_is_only_for_complexities_and_values_there_are(self):
+        for path in style_files():
+            style = read(path)
+            for instrument, levels in style.get(arranger.PLAYERS, {}).items():
+                self.assertIn(instrument, players.INSTRUMENTS)
+                for complexity, player in levels.items():
+                    with self.subTest(path=path, instrument=instrument, complexity=complexity):
+                        self.assertIn(complexity, players.COMPLEXITIES)
+                        for trait, value in player.get(arranger.PICKS, {}).items():
+                            self.assertIn(value, arranger.values_of(style=style, trait=trait))
+
+    def test_a_player_makes_the_players_picks_and_the_songs_own_pick_still_wins(self):
+        plain = arranger.picked(style=self.style, song=self.song(levels={players.DRUMS: players.PLAIN}))
+        wild = arranger.picked(style=self.style, song=self.song(levels={players.DRUMS: players.ADVANCED}))
+        own = self.style[arranger.TEMPLATES][ROCK_KIND][KICK]
+        kept = arranger.picked(style=self.style, song=self.song(levels={players.DRUMS: players.ADVANCED}, picks={KICK: own}))
+        self.assertEqual(plain[KICK], self.style[arranger.PLAYERS][players.DRUMS][players.PLAIN][arranger.PICKS][KICK])
+        self.assertNotEqual(plain[KICK], wild[KICK])
+        self.assertEqual(kept[KICK], own)
+
+    def test_a_players_pick_that_does_not_fit_the_meter_is_passed_over(self):
+        picks = arranger.picked(style=self.style, song=self.song(levels={players.DRUMS: players.PLAIN}, template=BALLAD))
+        self.assertEqual(picks[METER], SIX_EIGHT)
+        self.assertEqual(picks[KICK], self.style[arranger.TEMPLATES][BALLAD][KICK])
+
+    def test_every_track_has_a_rush_and_a_drag_that_do_nothing_until_a_player_moves_them(self):
+        given = arranger.arranged(style=self.style, song=self.song())
+        generators = given[composer.GENERATORS]
+        for track in given[composer.TRACKS]:
+            if track in generators[arranger.RUSHES]:
+                self.assertEqual(generators[arranger.RUSHES][track], {arranger.GENERATOR_STEPS: [False]})
+                self.assertEqual(given[composer.CHAINS][arranger.MSG_TIMING_CHAIN.format(track)], [{arranger.RUSH: track}, {arranger.DRAG: track}])
+        self.assertIn(SNARE, generators[arranger.DRAGS])
+        late = arranger.arranged(style=self.style, song=self.song(levels={players.DRUMS: players.TASTEFUL}))
+        drag = self.style[arranger.PLAYERS][players.DRUMS][players.TASTEFUL][arranger.TIMING][SNARE][arranger.DRAG]
+        self.assertEqual(late[composer.GENERATORS][arranger.DRAGS][SNARE], {arranger.GENERATOR_STEPS: [True], arranger.AMOUNT: drag})
+
+    def test_a_players_drum_hits_are_uneven_by_no_more_than_the_player_says_and_the_same_for_a_seed(self):
+        level = players.WILD
+        by = self.style[arranger.PLAYERS][players.DRUMS][level][arranger.UNEVEN]
+        one = arranger.arranged(style=self.style, song=self.song(levels={players.DRUMS: level}))
+        again = arranger.arranged(style=self.style, song=self.song(levels={players.DRUMS: level}))
+        loud = self.style[arranger.LOUDNESS][SNARE]
+        heard = [velocity for velocity in one[composer.PARTS][SNARE][arranger.RAW][notation.VELOCITY] if velocity is not None]
+        self.assertEqual(one[composer.PARTS][SNARE], again[composer.PARTS][SNARE])
+        self.assertGreater(len(set(heard)), 1)
+        self.assertTrue(all(abs(velocity - loud) <= by for velocity in heard))
+
+    def test_a_guitarist_changes_the_guitarify_and_the_notes_name_the_band(self):
+        level = players.TASTEFUL
+        given = arranger.arranged(style=self.style, song=self.song(levels={players.RHYTHM: level, players.DRUMS: players.ADVANCED}))
+        wanted = self.style[arranger.PLAYERS][players.RHYTHM][level][arranger.GUITARIFY_OF_PLAYER]
+        for setting, value in wanted.items():
+            self.assertEqual(given[composer.GENERATORS][arranger.GUITARIFIES][GUITAR][setting], value)
+        self.assertIn(players.player_name(instrument=players.DRUMS, complexity=players.ADVANCED), given[composer.NOTES])
+        self.assertIn(players.player_name(instrument=players.RHYTHM, complexity=level), given[composer.NOTES])
 
 
 class TestSketchedTune(unittest.TestCase):

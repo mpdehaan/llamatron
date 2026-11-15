@@ -24,10 +24,13 @@ it then sketches one by rule from the style's melody habits and the song's seed 
 MacroComposer composes, so every choice can be read and changed there.
 """
 
+import random
 from fractions import Fraction
 
 from melody import GRID, sketched
-from notation import ACCIDENTAL, DEGREE, DRUM, FLAT, HITS, LINES, LOUD, NONE, OCTAVE, REST, SHARP, SOFT, STEP, STEPS, VELOCITY, CHORD
+from melody import ANSWER_RHYTHMS, RHYTHMS, SPAN
+from notation import ACCIDENTAL, DEGREE, DRUM, FLAT, HITS, LINES, LOUD, NONE, OCTAVE, REST, SHARP, SOFT, STEP, STEPS, VELOCITY, CHORD, clamped, drum_rows
+from players import player_name
 
 # The fields of a style template.
 NAME = 'name'
@@ -116,6 +119,25 @@ DEFAULT_PHRASE_BARS = 4
 EIGHTH = '1/8'
 EIGHTHS_IN_WHOLE = 8
 KIND = 'kind'
+# The fields of a player: a role says which instrument's player plays it, a song gives each instrument's complexity, and a
+# style says, for each instrument and complexity, what that player picks and how the player keeps time.
+PLAYER = 'player'
+PLAYERS = 'players'
+SAYS = 'says'
+TIMING = 'timing'
+UNEVEN = 'uneven'
+BUSY = 'busy'
+GUITARIFY_OF_PLAYER = 'guitarify'
+RUSH = 'rush'
+DRAG = 'drag'
+RUSHES = 'rushes'
+DRAGS = 'drags'
+RAW = 'raw'
+AMOUNT = 'amount'
+GENERATOR_STEPS = 'steps'
+GUITARIFIES = 'guitarifies'
+MSG_TIMING_CHAIN = '{} timing'
+MSG_PLAYED_BY = '{}: {}. {}'
 # The set's section that holds each kind of generator a value may bring.
 SECTION_OF_KIND = {'guitarify': 'guitarifies', 'arp': 'arps', 'strum': 'strums'}
 VOICE_LEADING_KIND = 'voice_leading'
@@ -156,7 +178,12 @@ def picked(*, style, song):
     templates = style[TEMPLATES]
     if song[TEMPLATE] not in templates:
         raise ValueError(ERR_NO_TEMPLATE.format(style[NAME], song[TEMPLATE], listed(templates)))
-    picks = {**templates[song[TEMPLATE]], **song.get(PICKS, {})}
+    picks = {**templates[song[TEMPLATE]]}
+    for instrument, complexity in song.get(PLAYERS, {}).items():
+        for trait, value in player_of(style=style, instrument=instrument, complexity=complexity).get(PICKS, {}).items():
+            if fits(entry=values_of(style=style, trait=trait)[value], picks=picks):
+                picks[trait] = value
+    picks.update(song.get(PICKS, {}))
     for trait in style[TRAITS]:
         values = values_of(style=style, trait=trait)
         if not values:
@@ -171,6 +198,23 @@ def picked(*, style, song):
             if picks.get(needed) != wanted:
                 raise ValueError(ERR_NEEDS.format(trait, value, needed, wanted, picks.get(needed)))
     return picks
+
+
+def player_of(*, style, instrument, complexity):
+    """What a style says of an instrument's player at a complexity, or nothing."""
+    return style.get(PLAYERS, {}).get(instrument, {}).get(complexity, {})
+
+
+def timing_generators(*, move):
+    """A track's Rush and Drag: every step moved by the amount the player gives, or neither doing anything, there to be changed."""
+    return {kind: ({GENERATOR_STEPS: [True], AMOUNT: move[kind]} if kind in move else {GENERATOR_STEPS: [False]}) for kind in (RUSH, DRAG)}
+
+
+def uneven_drum(*, part, by, dice):
+    """A drum's part as a pattern whose hits each differ a little in loudness, as a person's do."""
+    pattern = drum_rows(drum=part[DRUM], hits=part[HITS], loud=part[LOUD], soft=part[SOFT], step_size=part[STEP])
+    pattern[VELOCITY] = [None if loud is None else clamped(loud + dice.randint(-by, by)) for loud in pattern[VELOCITY]]
+    return {RAW: pattern}
 
 
 def share_of(entry):
@@ -244,6 +288,24 @@ def tune_part(*, lines, role, meter, grid):
     return {STEP: step_of(meter=meter, grid=grid), OCTAVE: role[OCTAVE], VELOCITY: role[VELOCITY], LINES: lines}
 
 
+def habits_of(*, habits, player):
+    """A style's melody habits as a player keeps them: a wider or narrower range, and the busier rhythms for a busy player."""
+    kept = {**habits, **({SPAN: player[SPAN]} if SPAN in player else {})}
+    if player.get(BUSY):
+        kept[RHYTHMS] = habits[ANSWER_RHYTHMS]
+    return kept
+
+
+def band_said(*, style, song, roles):
+    """Who plays, for the notes: each instrument's player by name, with what the style says of the player."""
+    said = []
+    for instrument, complexity in song.get(PLAYERS, {}).items():
+        if any(role.get(PLAYER) == instrument for role in roles):
+            player = player_of(style=style, instrument=instrument, complexity=complexity)
+            said.append(MSG_PLAYED_BY.format(instrument, player_name(instrument=instrument, complexity=complexity), player.get(SAYS, '')).strip())
+    return said
+
+
 def section_of(*, name, style, song):
     """A section as the song describes it over what the style says of a section of its name."""
     of_song = song.get(SECTIONS, {}).get(name, {})
@@ -265,8 +327,15 @@ def arranged(*, style, song):
     scale_type = song[KEY].get(TYPE, chord_entry.get(SCALE_TYPE, MAJOR))
     scale = '{} {}'.format(song[KEY][ROOT], scale_type.capitalize())
     habits = style[MELODY] if GRID in style[MELODY] else style[MELODY][meter]
+    levels = song.get(PLAYERS, {})
+    playing = {role[ROLE]: player_of(style=style, instrument=role.get(PLAYER), complexity=levels.get(role.get(PLAYER))) for role in roles}
     parts = drum_parts(style=style, picks=picks, roles=roles, meter=meter, phrase_bars=phrase_bars)
     drum_tracks = list(parts)
+    drummer = next((playing[role[ROLE]] for role in roles if role.get(DRUMS)), {})
+    if drummer.get(UNEVEN):
+        for piece in drum_tracks:
+            parts[piece] = uneven_drum(part=parts[piece], by=drummer[UNEVEN], dice=random.Random('{} {}'.format(song.get(SEED, 0), piece)))
+    timing = {piece: timing_generators(move=drummer.get(TIMING, {}).get(piece, {})) for piece in drum_tracks}
     # The user's rule for a song that is made: the chords first, then the lead and the backing, the bass, and the drums last.
     tracks = {}
     instruments = {DRUM_KIT: None}
@@ -288,9 +357,16 @@ def arranged(*, style, song):
             parts[role[ROLE]] = figure_part(entry=entry, role=role, meter=meter)
             shaped.append(role[ROLE])
         parts[MSG_SECTION_PART.format(role[ROLE], HELD)] = held_part(role=role, meter=meter, chord=any(CHORD in note for bar in entry.get(FIGURE, []) for note in bar))
+        timing[role[ROLE]] = timing_generators(move=playing[role[ROLE]].get(TIMING, {}))
         for generator in entry.get(GENERATORS, []):
             for kind, settings in generator.items():
-                extra.setdefault(SECTION_OF_KIND[kind], {})[role[ROLE]] = settings
+                extra.setdefault(SECTION_OF_KIND[kind], {})[role[ROLE]] = dict(settings)
+        if role[ROLE] in extra.get(GUITARIFIES, {}):
+            extra[GUITARIFIES][role[ROLE]].update(playing[role[ROLE]].get(GUITARIFY_OF_PLAYER, {}))
+    for track, moves in timing.items():
+        chains[MSG_TIMING_CHAIN.format(track)] = [{RUSH: track}, {DRAG: track}]
+        extra.setdefault(RUSHES, {})[track] = moves[RUSH]
+        extra.setdefault(DRAGS, {})[track] = moves[DRAG]
     tracks.update({piece: DRUM_KIT for piece in drum_tracks})
     form = []
     notes = []
@@ -321,7 +397,7 @@ def arranged(*, style, song):
             if DRUMS in section[PLAYS]:
                 for piece in drum_tracks:
                     if piece in parts:
-                        play[piece] = piece
+                        play[piece] = {PART: piece, CHAINS: [MSG_TIMING_CHAIN.format(piece)]}
             progression = MSG_SECTION_PART.format(name, CHORDS)
             progressions[progression] = progression_of(chords=chords, every=section.get(EVERY, chord_entry.get(EVERY)))
             for role, entry in pitched:
@@ -332,24 +408,25 @@ def arranged(*, style, song):
                     chains[chain] = [{PROGRESSION: progression}] + [{kind: role[ROLE]} for generator in entry.get(GENERATORS, []) for kind in generator]
                     if role.get(VOICE_LEADING):
                         chains[chain].append({VOICE_LEADING_KIND: NEAR})
+                    chains[chain] += [{RUSH: role[ROLE]}, {DRAG: role[ROLE]}]
                     play[role[ROLE]] = {PART: role[ROLE], CHAINS: [chain]}
                     continue
                 part = MSG_SECTION_PART.format(name, role[ROLE])
                 if part not in parts:
                     given = section.get(LINES_GIVEN, {}).get(role[ROLE])
-                    lines = given or sketched(habits=habits, plan=section[PLAN], chords=chords, scale_type=scale_type, seed=song.get(SEED, 0), answers=bool(role.get(ANSWERS)))
+                    lines = given or sketched(habits=habits_of(habits=habits, player=playing[role[ROLE]]), plan=section[PLAN], chords=chords, scale_type=scale_type, seed=song.get(SEED, 0), answers=bool(role.get(ANSWERS)))
                     if all(all(REST in note for note in line) for line in lines):
                         continue
                     parts[part] = tune_part(lines=lines, role=role, meter=meter, grid=habits[GRID])
                     shaped.append(part)
                 if part in parts:
-                    play[role[ROLE]] = {PART: part, ONCE: True}
+                    play[role[ROLE]] = {PART: part, ONCE: True, CHAINS: [MSG_TIMING_CHAIN.format(role[ROLE])]}
         form.append({SCENE: scene_name, BARS: bars, PLAY: play})
         notes.append(MSG_SCENE.format(count, scene_name, bars))
     generators = {PROGRESSIONS: progressions, **extra}
     if any(role.get(VOICE_LEADING) for role, _ in pitched):
         generators[VOICE_LEADINGS] = {NEAR: dict(NEAR_VOICES)}
-    said = '\n'.join(MSG_PICK.format(trait, value) for trait, value in picks.items())
+    said = '\n'.join(band_said(style=style, song=song, roles=roles) + [MSG_PICK.format(trait, value) for trait, value in picks.items()])
     given = {
         NAME: song[NAME], TITLE: song[TITLE], DESCRIPTION: song.get(DESCRIPTION, song[TITLE]), GENRE: style[GENRE],
         NOTES: MSG_NOTES.format(title=song[TITLE], style=style[TITLE], template=song[TEMPLATE], picks=said, form='\n'.join(notes)),
