@@ -57,7 +57,7 @@ The user's rules for a reply that puts anything to them, gathered here so that e
 - **"Macros".** When the user says "macros" as the whole message, or "show macros", Claude lists every short command of the
   user's that does something special, each with what it does: "push" (retake the screenshots if needed, then
   `internal_tools/push_all.sh`), "questions", "ask again", "discuss and wait", "mockup", "continue" (go on to the next idea's
-  questions), "features days=2" and the like, "understand?" and "ok?", "update", and "macros" itself. A new shorthand is added to this list when the user gives one.
+  questions), "features days=2" and the like, "understand?" and "ok?", "update", "separate discussion", and "macros" itself. A new shorthand is added to this list when the user gives one.
 - **"Features".** A macro with a parameter: when a message is one sentence with the word features and a span of time, like
   "features days=2" or "features since last night", Claude reports the features that matter from git's history over that span,
   one line a feature, leaving out bug fixes, refactoring and notes. The macro list shows it by those short examples.
@@ -70,6 +70,12 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   may have changed with the answers, and asks those again in full (the user's shorthand).
 - **"Discuss and wait".** When the user says to discuss and wait, Claude discusses what the user said, with every related
   question, concern and idea of Claude's own, as one batch in one reply, and builds nothing of it until the user answers.
+- **"Separate discussion".** When the user says separate discussion about a thing, that thing gets a reply of its own: Claude
+  explains or discusses just that thing, at more length and for a reader who is confused by it, with pictures and examples,
+  and then pauses. Several things marked so are taken one reply at a time, in the order the user named them.
+- **A new topic leaves the open questions alone.** While a new topic is being discussed, Claude does not ask the questions
+  already open again, in full or in short: they are named in one line as waiting and asked again once the new topic is done or
+  when the user says so (the user's rule).
 - **"Mockup".** When the user's message includes the word mockup, Claude draws a picture of the screen, made from what the user
   suggested together with Claude's own ideas and suggestions about it, and raises its questions about the picture for discussion.
   Each mockup is a conversation of its own: one reply shows one mockup with the questions that belong to it grouped together,
