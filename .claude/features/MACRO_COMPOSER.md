@@ -15,6 +15,10 @@ library's rules and `.claude/format/EXAMPLES.md` the rules for the sets in `exam
 - **A style template comes from clean research alone**, Claude's own understanding of the style, never from memory of the
   homages and never from the user's books, of which nothing goes into the tree. A template names no band, artist or work.
 - **The players are always imaginary**, and no real player is cited.
+- **A homage's or a mashup's players are picked by how its inspiration's players play**, once the engine is good enough to make
+  one: Claude uses what it knows of how skilled or showy each instrument's player was to choose each instrument's complexity,
+  so a band with a plain drummer and a virtuoso bassist is made with those numbers. Only the numbers are written; no real
+  player is named, as ever.
 - **The existing examples and homages are not rewritten** by it, and nothing it makes is promoted to `examples/` until the user
   says. Trial songs live in `previews/macro_composer_design/`, ignored by git.
 - **The MacroComposer decides nothing.** A song's picks decide every trait; the song's own material is kept apart from the
