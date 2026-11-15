@@ -2,7 +2,7 @@
 
 What Claude understands is wanted of the genre library, what exists, what was measured, and what Claude will build next, in
 order. Claude's file, in Claude's words: it records Claude's understanding and never the user's replies, and it names no band,
-artist or composer. The standing rules are in `.claude/GENRES.md`.
+artist or composer. The standing rules are in `.claude/features/GENRES.md`.
 
 ## What Is Wanted
 
