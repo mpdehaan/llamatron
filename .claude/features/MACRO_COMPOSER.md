@@ -32,6 +32,12 @@ library's rules and `.claude/format/EXAMPLES.md` the rules for the sets in `exam
   only (`.claude/format/EXAMPLES.md`).
 - **A wizard in the tracker is to use it later.** Files hold numbers and plain names; the names people see, such as a player's,
   are made for people where they are shown.
+- **The hook is vital** (the user's rule): a song has a hook, a short phrase a listener remembers, and the song keeps bringing
+  the listener back to the hook. Every melody engine, form, modifier and amount of variance is held to that: the hook comes
+  early, returns often, and returns recognisably after anything that departs from it, a solo, a bridge, a change of key, a
+  section of high variance. Where a song's style morphs through stages, the hook is carried into every stage, played in that
+  stage's rhythm and sound, and nothing a person can switch on in the wizard may leave a song without one, short of asking
+  for none outright. A change that would make the hook rarer or harder to recognise is asked about first.
 
 ## The Parts
 
