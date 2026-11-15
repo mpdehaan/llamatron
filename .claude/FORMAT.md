@@ -1378,6 +1378,25 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   test code.
 - Muted tracks in the demos have SILENT in their names, which a test checks.
 
+**A sung lead is phrased as its lyric is sung** (the user's rule). Before a homage of a sung work is written or reworked, Claude sets
+out how the work's lines are sung: how many lines a stanza has, how long each is, which start with a pickup before the bar, where
+the singer breathes, and what answers in the gaps. No lyric is written into any file. The lead then follows that plan with pitches
+of its own. These are what a lead generally does, and a song may have a reason to do otherwise:
+
+- The lead generally sounds for no more than about three quarters of a verse or chorus, and a phrase generally runs no longer than
+  four bars without a rest of at least half a beat.
+- A line generally starts with a pickup wherever the work's line does, and lands on the downbeat.
+- A stanza generally mixes its line lengths as the work does: short clauses, then a longer last line.
+- An instrument or a second voice generally answers in the rests wherever the work has an answer.
+- A learning example and a homage of an instrumental are exempt.
+
+**Velocity is a full default with accents** (the user's rule). A lead keeps one default velocity, about 104, and moves from it by
+accents only: generally up to 14 above and no more than 12 below, never under 90. The accents come from the phrase and the rhythm:
+a pickup is softer, the stressed note a line lands on is accented, a line's highest note takes the strongest accent, a note sung
+ahead of the beat is accented, and a line's last note eases a little. A section is never made quieter by lowering all of its
+notes; a quieter section has fewer instruments. No section's loudest note falls under 100. Velocity is used sparingly: a song
+that is too quiet is worse than one that is plain.
+
 ## Performance
 
 - The tracker re-renders or re-estimates the song as people edit it, loading and saving should be
