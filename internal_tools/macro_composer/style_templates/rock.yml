@@ -15,6 +15,8 @@
 #             player says for people, and how the player decorates the kind's own parts, never replacing them: a drummer's
 #             hits added to every bar (adds) or to some bars of each four-bar phrase (varies), the fill and how often it comes, timing (a
 #             rush or a drag, in hundredths of a step), how uneven the hits are, a strum's width, a lead's range.
+#             A player of a figure, such as the bass, varies bars of each four-bar phrase by ending them with notes
+#             of their own (ends), written on a grid of so many steps to the bar and left out where the figure's grid differs.
 # melody      the habits a tune is sketched by when a song gives none: the notes used, rhythm cells, how far it ranges.
 
 # Eight steps to a bar in 4/4, eighths; six in 6/8. No band, artist or work is named or followed.
@@ -239,9 +241,23 @@ players:
       uneven: 8
   bass:
     1: {says: 'Plays the bass part exactly as written, on the beat.'}
-    2: {says: 'Plays the bass part as written, leaning back a little.', timing: {drag: 6}}
-    3: {says: 'Plays the bass part pushing ahead of the beat.', timing: {rush: 8}}
-    4: {says: 'Plays the bass part far behind the beat.'}
+    2:
+      says: 'Plays the bass part leaning back a little, with two notes walking up into each turn.'
+      timing: {drag: 6}
+      varies:
+        - {bars: [4], grid: 8, ends: [{degree: 5, steps: 1}, {degree: 6, steps: 1}]}
+    3:
+      says: 'Pushes ahead of the beat, jumps an octave at the end of the second bar, and walks three notes up into each turn.'
+      timing: {rush: 8}
+      varies:
+        - {bars: [2], grid: 8, ends: [{degree: 1, octave: 1, steps: 1}]}
+        - {bars: [4], grid: 8, ends: [{degree: 3, steps: 1}, {degree: 5, steps: 1}, {degree: 6, steps: 1}]}
+    4:
+      says: 'Ends the second and third bars with notes of their own, and runs down from the octave through half of the fourth.'
+      varies:
+        - {bars: [2], grid: 8, ends: [{degree: 1, octave: 1, steps: 1}, {degree: 5, steps: 1}]}
+        - {bars: [3], grid: 8, ends: [{degree: 6, steps: 1}]}
+        - {bars: [4], grid: 8, ends: [{degree: 1, octave: 1, steps: 1}, {degree: 6, steps: 1}, {degree: 5, steps: 1}, {degree: 3, steps: 1}]}
   rhythm:
     1: {says: 'Plays the part exactly as written, tight and even.', guitarify: {spread: 4}}
     2: {says: 'Plays the part with a wider, slightly loose stroke.', guitarify: {spread: 14, loose_timing: 6}}

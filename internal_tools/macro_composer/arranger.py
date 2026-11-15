@@ -134,6 +134,8 @@ SILENCES = 'silences'
 FILL_EVERY = 'fill_every'
 ALLOWS = 'intensity'
 CRASH_START = 'crash'
+ENDS = 'ends'
+MSG_LEVEL_PART = '{} at {}'
 MSG_START = '{} start'
 BUSY = 'busy'
 GUITARIFY_OF_PLAYER = 'guitarify'
@@ -211,10 +213,14 @@ def player_of(*, style, instrument, complexity):
 
 def players_in(*, style, roles, levels, section):
     """Each role's player in a section: the song's, held to the complexity the section allows the instrument."""
-    allowed = section.get(ALLOWS, {})
-    return {role[ROLE]: player_of(style=style, instrument=role.get(PLAYER),
-                                  complexity=min(levels[role[PLAYER]], allowed.get(role[PLAYER], levels[role[PLAYER]])) if role.get(PLAYER) in levels else None)
-            for role in roles}
+    return {role[ROLE]: player_of(style=style, instrument=role.get(PLAYER), complexity=level_in(levels=levels, role=role, section=section)) for role in roles}
+
+
+def level_in(*, levels, role, section):
+    """The complexity a role's player plays at in a section, or nothing where the song names no player for the role."""
+    if role.get(PLAYER) not in levels:
+        return None
+    return min(levels[role[PLAYER]], section.get(ALLOWS, {}).get(role[PLAYER], levels[role[PLAYER]]))
 
 
 def timing_generators(*, move):
@@ -334,11 +340,46 @@ def one_hit(*, style, meter, drum):
     return {DRUM: drum, STEP: EIGHTH, LOUD: loud, SOFT: loud, HITS: [LOUD] + [NONE] * (int(bar_length(meter) * EIGHTHS_IN_WHOLE) - 1)}
 
 
-def figure_part(*, entry, role, meter):
-    """A value's figure as a tune's part; the figure's bars are its lines."""
+def lasts(note):
+    """How many steps a note or a rest of a figure lasts."""
+    return note.get(REST, note.get(STEPS, 0))
+
+
+def with_ending(*, bar, ends):
+    """A figure's bar whose last steps are a decoration's notes: what the bar played before them stays, a note they cut into shortened."""
+    room = sum(lasts(note) for note in bar) - sum(lasts(note) for note in ends)
+    kept = []
+    for note in bar:
+        if room <= 0:
+            break
+        length = min(lasts(note), room)
+        kept.append({**note, (REST if REST in note else STEPS): length})
+        room -= length
+    return kept + [dict(note) for note in ends]
+
+
+def decorated_figure(*, bars, player, phrase_bars):
+    """A figure as a player plays it: a phrase of its bars, the bars the player varies ending in the player's own notes. A player
+    who varies nothing plays the figure as written, and a variation written on a grid the figure's does not divide by is left out."""
+    grid = sum(lasts(note) for note in bars[0])
+    fitting = [variation for variation in player.get(VARIES, []) if ENDS in variation and grid % variation[GRID] == 0]
+    if not fitting or phrase_bars % len(bars):
+        return [[dict(note) for note in bar] for bar in bars]
+    phrase = [[dict(note) for note in bars[count % len(bars)]] for count in range(phrase_bars)]
+    for variation in fitting:
+        finer = grid // variation[GRID]
+        ends = [{**note, (REST if REST in note else STEPS): lasts(note) * finer} for note in variation[ENDS]]
+        for bar in variation[BARS]:
+            phrase[bar - 1] = with_ending(bar=phrase[bar - 1], ends=ends)
+    return phrase
+
+
+def figure_part(*, entry, role, meter, player, phrase_bars):
+    """A value's figure as a tune's part, as a player plays it; the figure's bars are its lines."""
     bars = entry[FIGURE]
-    grid = sum(note.get(REST, note.get(STEPS, 0)) for note in bars[0])
-    return {STEP: step_of(meter=meter, grid=grid), OCTAVE: role[OCTAVE], VELOCITY: role[VELOCITY], LINES: [[dict(note) for note in bar] for bar in bars]}
+    grid = sum(lasts(note) for note in bars[0])
+    return {STEP: step_of(meter=meter, grid=grid), OCTAVE: role[OCTAVE], VELOCITY: role[VELOCITY],
+            LINES: decorated_figure(bars=bars, player=player, phrase_bars=phrase_bars)}
 
 
 def held_part(*, role, meter, chord):
@@ -438,7 +479,7 @@ def arranged(*, style, song):
         tracks[role[ROLE]] = entry[SOUND]
         pitched.append((role, entry))
         if FIGURE in entry:
-            parts[role[ROLE]] = figure_part(entry=entry, role=role, meter=meter)
+            parts[role[ROLE]] = figure_part(entry=entry, role=role, meter=meter, player=playing[role[ROLE]], phrase_bars=phrase_bars)
             shaped.append(role[ROLE])
         parts[MSG_SECTION_PART.format(role[ROLE], HELD)] = held_part(role=role, meter=meter, chord=any(CHORD in note for bar in entry.get(FIGURE, []) for note in bar))
         timing[role[ROLE]] = timing_generators(move=playing[role[ROLE]].get(TIMING, {}))
@@ -497,7 +538,13 @@ def arranged(*, style, song):
                     if role.get(VOICE_LEADING):
                         chains[chain].append({VOICE_LEADING_KIND: NEAR})
                     chains[chain] += [{RUSH: role[ROLE]}, {DRAG: role[ROLE]}]
-                    play[role[ROLE]] = {PART: role[ROLE], CHAINS: [chain]}
+                    figure = role[ROLE]
+                    if here[role[ROLE]] != playing[role[ROLE]]:
+                        figure = MSG_LEVEL_PART.format(role[ROLE], level_in(levels=levels, role=role, section=section))
+                        if figure not in parts:
+                            parts[figure] = figure_part(entry=entry, role=role, meter=meter, player=here[role[ROLE]], phrase_bars=phrase_bars)
+                            shaped.append(figure)
+                    play[role[ROLE]] = {PART: figure, CHAINS: [chain]}
                     continue
                 part = MSG_SECTION_PART.format(name, role[ROLE])
                 if part not in parts:

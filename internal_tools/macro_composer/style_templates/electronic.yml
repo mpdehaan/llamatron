@@ -15,6 +15,8 @@
 #             player says for people, and how the player decorates the kind's own parts, never replacing them: a drummer's
 #             hits added to every bar (adds) or to some bars of each four-bar phrase (varies), the fill and how often it comes, timing (a
 #             rush or a drag, in hundredths of a step), how uneven the hits are, a strum's width, a lead's range.
+#             A player of a figure, such as the bass, varies bars of each four-bar phrase by ending them with notes
+#             of their own (ends), written on a grid of so many steps to the bar and left out where the figure's grid differs.
 # melody      the habits a tune is sketched by when a song gives none: the notes used, rhythm cells, how far it ranges.
 # Sixteen steps to a bar, sixteenths. A song here is layers that enter and leave: the sections say which play.
 # No act, label or work is named or followed.
@@ -214,10 +216,22 @@ players:
       timing: {clap: {drag: 12}, snare: {drag: 12}}
       uneven: 7
   bass:
-    1: {says: 'Plays the bass part exactly as written, on the beat.'}
-    2: {says: 'Plays the bass part as written, leaning back a little.'}
-    3: {says: 'Plays the bass part pushing ahead of the beat.'}
-    4: {says: 'Plays the bass part far behind the beat.'}
+    1: {says: 'A sequenced bass, the same in every bar.'}
+    2:
+      says: 'A sequenced bass with one note an octave up at the end of every fourth bar.'
+      varies:
+        - {bars: [4], grid: 16, ends: [{degree: 1, octave: 1, steps: 2}]}
+    3:
+      says: 'A sequenced bass that jumps an octave at the end of the second bar and twice at the end of the fourth.'
+      varies:
+        - {bars: [2], grid: 16, ends: [{degree: 1, octave: 1, steps: 1}, {degree: 1, steps: 1}]}
+        - {bars: [4], grid: 16, ends: [{degree: 1, octave: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, octave: 1, steps: 1}, {degree: 1, steps: 1}]}
+    4:
+      says: 'A sequenced bass programmed bar by bar: the second and third bars end with notes of their own, and the fourth climbs to the octave.'
+      varies:
+        - {bars: [2], grid: 16, ends: [{degree: 1, octave: 1, steps: 1}, {degree: 5, steps: 1}]}
+        - {bars: [3], grid: 16, ends: [{degree: 5, steps: 2}]}
+        - {bars: [4], grid: 16, ends: [{degree: 1, steps: 1}, {degree: 3, steps: 1}, {degree: 5, steps: 1}, {degree: 1, octave: 1, steps: 1}]}
   rhythm:
     1: {says: 'Plays the part exactly as written, tight and even.'}
     2: {says: 'Plays the part with a wider, slightly loose stroke.'}

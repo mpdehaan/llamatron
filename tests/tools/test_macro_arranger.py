@@ -334,6 +334,45 @@ class TestPlayers(unittest.TestCase):
         self.assertIn(arranger.CRASH, self.drums_of(given=given, scene=CHORUS))
         self.assertNotIn(arranger.CRASH, self.drums_of(given=given, scene=VERSE))
 
+    def bass_figure(self, *, template=ROCK_KIND):
+        return arranger.values_of(style=self.style, trait=BASS)[self.style[arranger.TEMPLATES][template][BASS]][arranger.FIGURE]
+
+    def bass_lines(self, *, song, scene):
+        given = arranger.arranged(style=self.style, song=song)
+        play = next(entry[composer.PLAY] for entry in given[composer.FORM] if entry[composer.SCENE] == scene)
+        return given[composer.PARTS][play[BASS][composer.PART]][notation.LINES]
+
+    def test_the_plain_bass_player_plays_the_kinds_figure_as_written(self):
+        self.assertEqual(self.bass_lines(song=self.song(levels={players.BASS: players.PLAIN}), scene=CHORUS), self.bass_figure())
+
+    def test_a_busier_bass_player_ends_the_bars_the_player_varies_and_leaves_the_others_as_written(self):
+        figure = self.bass_figure()
+        for complexity in players.COMPLEXITIES[1:]:
+            varied = {bar for variation in self.style[arranger.PLAYERS][players.BASS][complexity][arranger.VARIES] for bar in variation[arranger.BARS]}
+            lines = self.bass_lines(song={**self.song(levels={players.BASS: complexity}), arranger.FORM: [SOLO]}, scene=SOLO)
+            for count, line in enumerate(lines, start=1):
+                written = figure[(count - 1) % len(figure)]
+                with self.subTest(complexity=complexity, bar=count):
+                    self.assertEqual(sum(arranger.lasts(note) for note in line), sum(arranger.lasts(note) for note in written))
+                    self.assertEqual(line[0][notation.DEGREE], written[0][notation.DEGREE])
+                    self.assertEqual(line != written, count in varied)
+
+    def test_a_bars_ending_shortens_the_note_it_cuts_into(self):
+        bar = [{notation.DEGREE: 1, notation.STEPS: 6}, {notation.REST: 2}]
+        ends = [{notation.DEGREE: 5, notation.STEPS: 3}]
+        self.assertEqual(arranger.with_ending(bar=bar, ends=ends), [{notation.DEGREE: 1, notation.STEPS: 5}, {notation.DEGREE: 5, notation.STEPS: 3}])
+
+    def test_a_section_holds_the_bass_player_back_too(self):
+        song = self.song(levels={players.BASS: players.ADVANCED})
+        allowed = self.style[arranger.SECTIONS][INTRO][arranger.ALLOWS][players.BASS]
+        held = self.song(levels={players.BASS: allowed})
+        self.assertEqual(self.bass_lines(song=song, scene=INTRO), self.bass_lines(song=held, scene=INTRO))
+        self.assertNotEqual(self.bass_lines(song=song, scene=INTRO), self.bass_lines(song=song, scene=CHORUS))
+
+    def test_a_bass_players_ending_on_a_grid_the_figure_does_not_divide_by_is_left_out(self):
+        song = self.song(levels={players.BASS: players.ADVANCED}, template=BALLAD)
+        self.assertEqual(self.bass_lines(song=song, scene=CHORUS), self.bass_figure(template=BALLAD))
+
     def test_every_track_has_a_rush_and_a_drag_that_do_nothing_until_a_player_moves_them(self):
         given = arranger.arranged(style=self.style, song=self.song())
         generators = given[composer.GENERATORS]
