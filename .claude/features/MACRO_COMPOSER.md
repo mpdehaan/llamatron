@@ -46,7 +46,7 @@ All in the package `src/llamatron/macro_composer/`, since code that would ship w
 - `shaping.py`: the velocity of the parts an input lists, shaped by the song's feel.
 - `arranger.py`: a song's picks and a style template made into an input (`--arrange PICKS --out SET`, `--keep-input INPUT`).
 - `melody.py`: the melody engines, each a class that makes a section's tune from a style's habits where the song gives none:
-  `StepWalk`, the singable first one, and `Serial`, its subclass. `operations.py` holds the moves on a row that the serial
+  `StepWalk`, the singable first one, and `Serial` and `Evolving`, its subclasses. `operations.py` holds the moves on a row that the serial
   engine makes and that turn a phrase so that repeats evolve: backwards, upside down, moved, rotated.
 - `players.py`: the complexities and the names people see for them.
 - `style_templates/`: blues, rock, sixties pop, electronic, and soul and funk.
@@ -104,8 +104,12 @@ its own; a song's `melody` adds habits too.
   rhythm. With `leaps` a note may take any octave in range. The experimental style template is built on it: three voices, no
   chords, no drums.
 
-Agreed and to come, each optional (`dev_notes/QUEUE.md`): phrase operations with a running amount, the principle of registers
-written out as patterns with no registers set up; phase and build-up; cells in order; a cellular automaton; chance tables;
+- **Evolving** (`Evolving`, the user's choice of what came after serial): repeats that evolve, the principle of registers
+  written out as plain patterns with no register set up. The first line is a step walk's, and each new line is that phrase
+  with a running amount added: moved so many places up the ladder, going round at the top of the range, and begun so many
+  notes later (the habit `evolve: {move, rotate}`, usually one place and none). A varied line begins one note later.
+
+Agreed and to come, each optional (`dev_notes/QUEUE.md`): phase and build-up; cells in order; a cellular automaton; chance tables;
 clouds; generate and test, with motif development and counterpoint last.
 
 ## Players

@@ -24,7 +24,7 @@ notes by step, landing its long notes on the notes of the chord under them. The 
 
 import random
 
-from llamatron.macro_composer.operations import backwards, moved, upside_down
+from llamatron.macro_composer.operations import backwards, moved, rotated, upside_down
 from llamatron.macro_composer.notation import ACCIDENTAL, ARRIVAL, DEGREE, ENDING, FLAT, OCTAVE, REST, SHARP, STEPS, STRESS
 
 # The fields of a style's melody habits.
@@ -46,6 +46,12 @@ HIGHER = 'higher'
 ENGINE = 'engine'
 STEP_WALK = 'step walk'
 SERIAL = 'serial'
+EVOLVING = 'evolving'
+# What each new line of the evolving engine adds to the running amount: places moved up the ladder, and notes begun later.
+EVOLVE = 'evolve'
+MOVE = 'move'
+ROTATE = 'rotate'
+DEFAULT_EVOLVE = {MOVE: 1, ROTATE: 0}
 ROW = 'row'
 LENGTHS = 'lengths'
 CHROMATIC = 'chromatic'
@@ -303,6 +309,57 @@ class Serial(StepWalk):
         return line
 
 
+class Evolving(StepWalk):
+    """The engine of repeats that evolve, after the principle of registers, written out as plain patterns with no register set
+    up: the first line is a step walk's, and every new line after it is that same phrase with a running amount added, which
+    grows with each line: its notes moved so many places up the ladder, going round at the top of the range, and the phrase
+    begun so many notes later. A varied line is the line begun one note later. The habit evolve says how much each line adds."""
+
+    __slots__ = ('_phrase', '_made')
+
+    def __init__(self, *, habits, chords, scale_type, seed, answers, voice=None):
+        super().__init__(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice)
+        self._phrase = None
+        self._made = 0
+
+    def place_of(self, note):
+        """Where on the ladder a note is."""
+        for place, (_, rung) in enumerate(self._ladder):
+            if same_note(one=rung, other=note) and rung.get(OCTAVE, 0) == note.get(OCTAVE, 0):
+                return place
+        return self._home
+
+    def round_the_range(self, place):
+        return self._low + (place - self._low) % (self._high - self._low + 1)
+
+    def new_line(self, *, entry, under, dice):
+        if self._phrase is None:
+            self._phrase = super().new_line(entry=entry, under=under, dice=dice)
+            # A long note that landed on the chord may lie a place outside the range, which then reaches as far as the phrase does.
+            places = [self.place_of(note) for note in self._phrase if REST not in note]
+            self._low = min([self._low] + places)
+            self._high = max([self._high] + places)
+            return [dict(note) for note in self._phrase]
+        self._made += 1
+        adds = {**DEFAULT_EVOLVE, **self._habits.get(EVOLVE, {})}
+        sounds = [note for note in self._phrase if REST not in note]
+        places = [self.round_the_range(self.place_of(note) + self._made * adds[MOVE]) for note in sounds]
+        places = rotated(row=places, by=self._made * adds[ROTATE])
+        return self.with_places(line=self._phrase, places=places)
+
+    def with_places(self, *, line, places):
+        """A line's rhythm with the notes at the places given, one for each of its sounds."""
+        made = []
+        left = list(places)
+        for note in line:
+            made.append(dict(note) if REST in note else {**self._ladder[left.pop(0)][1], STEPS: note[STEPS]})
+        return made
+
+    def varied_line(self, *, line, dice):
+        places = [self.place_of(note) for note in line if REST not in note]
+        return self.with_places(line=line, places=rotated(row=places, by=1))
+
+
 def same_note(*, one, other):
     return one[DEGREE] == other[DEGREE] and one.get(ACCIDENTAL) == other.get(ACCIDENTAL)
 
@@ -341,7 +398,7 @@ def row_as_written(*, row, size):
 
 # The four forms of a row.
 FORMS = (row_as_written, row_backwards, row_upside_down, row_upside_down_and_backwards)
-ENGINES = {STEP_WALK: StepWalk, SERIAL: Serial}
+ENGINES = {STEP_WALK: StepWalk, SERIAL: Serial, EVOLVING: Evolving}
 
 
 def sketched(*, habits, plan, chords, scale_type, seed, answers, engine=None, voice=None):
