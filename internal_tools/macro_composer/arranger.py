@@ -132,6 +132,9 @@ VARIES = 'varies'
 CHOICES = 'choices'
 SILENCES = 'silences'
 FILL_EVERY = 'fill_every'
+ALLOWS = 'intensity'
+CRASH_START = 'crash'
+MSG_START = '{} start'
 BUSY = 'busy'
 GUITARIFY_OF_PLAYER = 'guitarify'
 RUSH = 'rush'
@@ -206,6 +209,14 @@ def player_of(*, style, instrument, complexity):
     return style.get(PLAYERS, {}).get(instrument, {}).get(complexity, {})
 
 
+def players_in(*, style, roles, levels, section):
+    """Each role's player in a section: the song's, held to the complexity the section allows the instrument."""
+    allowed = section.get(ALLOWS, {})
+    return {role[ROLE]: player_of(style=style, instrument=role.get(PLAYER),
+                                  complexity=min(levels[role[PLAYER]], allowed.get(role[PLAYER], levels[role[PLAYER]])) if role.get(PLAYER) in levels else None)
+            for role in roles}
+
+
 def timing_generators(*, move):
     """A track's Rush and Drag: every step moved by the amount the player gives, or neither doing anything, there to be changed."""
     return {kind: ({GENERATOR_STEPS: [True], AMOUNT: move[kind]} if kind in move else {GENERATOR_STEPS: [False]}) for kind in (RUSH, DRAG)}
@@ -271,27 +282,31 @@ def laid_over(*, bar, more):
     return [added if hit == NONE else hit for hit, added in zip(bar, more)]
 
 
-def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer):
+def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars):
     """Each drum the picks play, as a part some bars long: the kind's own bar, decorated as the drummer decorates it, a bar of
-    it varied as often as the drummer varies one, and its last bar the fill. A drummer who says nothing plays the kind's bar
+    the bars of each phrase that the drummer varies each a little different, and its last bar the fill. A drummer who says nothing plays the kind's bar
     and the song's fill at the end of every phrase."""
     bars = {}
     for role in roles:
         if role.get(DRUMS):
             for trait in role[DRUMS]:
                 bars.update(values_of(style=style, trait=trait)[picks[trait]].get(BAR, {}))
-    length = drummer.get(FILL_EVERY, phrase_bars) or phrase_bars
+    # A section always ends on the fill, so that it hands over to the next: the part is no longer than divides the section.
+    length = math.gcd(drummer.get(FILL_EVERY, phrase_bars) or phrase_bars, section_bars)
     fill, silences = choice_that_fits(choices=drummer.get(FILL), picks=picks)
     if not fill:
         fill = values_of(style=style, trait=FILLS).get(picks.get(FILLS), {}).get(FILL, {})
     if drummer.get(FILL_EVERY) == 0:
         fill, silences = {}, []
     adds, _ = choice_that_fits(choices=drummer.get(ADDS), picks=picks)
-    varies, _ = choice_that_fits(choices=drummer.get(VARIES, {}).get(CHOICES), picks=picks)
-    varied_every = drummer.get(VARIES, {}).get(EVERY, length)
+    varied = []
+    for variation in drummer.get(VARIES, []):
+        more, _ = choice_that_fits(choices=variation[CHOICES], picks=picks)
+        varied.append((variation[BARS], more))
     parts = {}
-    for piece in list(dict.fromkeys(list(bars) + list(adds) + list(varies) + list(fill))):
-        layers = [layer[piece] for layer in (bars, adds, varies, fill) if piece in layer]
+    every = [bars, adds, fill] + [more for _, more in varied]
+    for piece in list(dict.fromkeys(piece for layer in every for piece in layer)):
+        layers = [layer[piece] for layer in every if piece in layer]
         grid = math.lcm(*(len(layer) for layer in layers))
         plain = widened(hits=bars.get(piece, [NONE]), to=grid)
         if piece in adds:
@@ -302,10 +317,12 @@ def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer):
                 hits += widened(hits=fill[piece], to=grid)
             elif bar == length and piece in silences:
                 hits += [NONE] * grid
-            elif piece in varies and bar % varied_every == 0:
-                hits += laid_over(bar=plain, more=widened(hits=varies[piece], to=grid))
             else:
-                hits += plain
+                played = plain
+                for which, more in varied:
+                    if piece in more and (bar - 1) % phrase_bars + 1 in which:
+                        played = laid_over(bar=played, more=widened(hits=more[piece], to=grid))
+                hits += played
         loud = style[LOUDNESS].get(piece, style[LOUDNESS][DRUMS])
         parts[piece] = {DRUM: piece, STEP: step_of(meter=meter, grid=grid), LOUD: loud, SOFT: int(loud * SOFT_SHARE), HITS: hits}
     return parts
@@ -376,13 +393,32 @@ def arranged(*, style, song):
     scale = '{} {}'.format(song[KEY][ROOT], scale_type.capitalize())
     habits = style[MELODY] if GRID in style[MELODY] else style[MELODY][meter]
     levels = song.get(PLAYERS, {})
-    playing = {role[ROLE]: player_of(style=style, instrument=role.get(PLAYER), complexity=levels.get(role.get(PLAYER))) for role in roles}
+    playing = players_in(style=style, roles=roles, levels=levels, section={})
     drummer = next((playing[role[ROLE]] for role in roles if role.get(DRUMS)), {})
-    parts = drum_parts(style=style, picks=picks, roles=roles, meter=meter, phrase_bars=phrase_bars, drummer=drummer)
-    drum_tracks = list(parts)
-    if drummer.get(UNEVEN):
-        for piece in drum_tracks:
-            parts[piece] = uneven_drum(part=parts[piece], by=drummer[UNEVEN], dice=random.Random('{} {}'.format(song.get(SEED, 0), piece)))
+    drum_traits = [trait for role in roles for trait in role.get(DRUMS, [])] + [FILLS]
+    parts = {}
+    drum_sets = {}
+    drums_of = {}
+    for name in song[FORM]:
+        section = section_of(name=name, style=style, song=song)
+        if section.get(HELD) or DRUMS not in section[PLAYS] or name in drums_of:
+            continue
+        level = min(levels[DRUMS], section.get(ALLOWS, {}).get(DRUMS, levels[DRUMS])) if DRUMS in levels else None
+        changed = {trait: value for trait, value in section.get(PICKS, {}).items()
+                   if trait in drum_traits and fits(entry=values_of(style=style, trait=trait)[value], picks=picks)}
+        plays = player_of(style=style, instrument=DRUMS, complexity=level)
+        key = (level, tuple(sorted(changed.items())), math.gcd(plays.get(FILL_EVERY, phrase_bars) or phrase_bars, section[BARS]))
+        if key not in drum_sets:
+            made = drum_parts(style=style, picks={**picks, **changed}, roles=roles, meter=meter, phrase_bars=phrase_bars, drummer=plays, section_bars=section[BARS])
+            drum_sets[key] = {}
+            for piece, part in made.items():
+                if plays.get(UNEVEN):
+                    part = uneven_drum(part=part, by=plays[UNEVEN], dice=random.Random('{} {} {}'.format(song.get(SEED, 0), piece, section[KIND])))
+                named = piece if key[:2] == (levels.get(DRUMS), ()) and piece not in parts else MSG_SECTION_PART.format(piece, section[KIND])
+                parts[named] = part
+                drum_sets[key][piece] = named
+        drums_of[name] = drum_sets[key]
+    drum_tracks = list(dict.fromkeys(piece for pieces in drums_of.values() for piece in pieces))
     timing = {piece: timing_generators(move=drummer.get(TIMING, {}).get(piece, {})) for piece in drum_tracks}
     # The user's rule for a song that is made: the chords first, then the lead and the backing, the bass, and the drums last.
     tracks = {}
@@ -440,10 +476,16 @@ def arranged(*, style, song):
                 if FIGURE in entry and role[ROLE] in section.get(PLAYS, [role[ROLE]]):
                     play[role[ROLE]] = {PART: MSG_SECTION_PART.format(role[ROLE], HELD), ONCE: True}
         else:
-            if DRUMS in section[PLAYS]:
-                for piece in drum_tracks:
-                    if piece in parts:
-                        play[piece] = {PART: piece, CHAINS: [MSG_TIMING_CHAIN.format(piece)]}
+            for piece, part in drums_of.get(name, {}).items():
+                play[piece] = {PART: part, CHAINS: [MSG_TIMING_CHAIN.format(piece)]}
+            if section.get(CRASH_START) and name in drums_of:
+                start = MSG_START.format(CRASH)
+                parts[start] = one_hit(style=style, meter=meter, drum=CRASH)
+                if CRASH not in tracks:
+                    tracks[CRASH] = DRUM_KIT
+                    drum_tracks.append(CRASH)
+                play.setdefault(CRASH, {PART: start, ONCE: True})
+            here = players_in(style=style, roles=roles, levels=levels, section=section)
             progression = MSG_SECTION_PART.format(name, CHORDS)
             progressions[progression] = progression_of(chords=chords, every=section.get(EVERY, chord_entry.get(EVERY)))
             for role, entry in pitched:
@@ -460,7 +502,7 @@ def arranged(*, style, song):
                 part = MSG_SECTION_PART.format(name, role[ROLE])
                 if part not in parts:
                     given = section.get(LINES_GIVEN, {}).get(role[ROLE])
-                    lines = given or sketched(habits=habits_of(habits=habits, player=playing[role[ROLE]]), plan=section[PLAN], chords=chords, scale_type=scale_type, seed=song.get(SEED, 0), answers=bool(role.get(ANSWERS)))
+                    lines = given or sketched(habits=habits_of(habits=habits, player=here[role[ROLE]]), plan=section[PLAN], chords=chords, scale_type=scale_type, seed=song.get(SEED, 0), answers=bool(role.get(ANSWERS)))
                     if all(all(REST in note for note in line) for line in lines):
                         continue
                     parts[part] = tune_part(lines=lines, role=role, meter=meter, grid=habits[GRID])

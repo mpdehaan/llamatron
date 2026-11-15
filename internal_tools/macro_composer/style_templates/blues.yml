@@ -8,9 +8,12 @@
 # roles       the band in track order, the chords first, then the lead and the backing, the bass, and the drums last: which
 #             trait each plays, how high and how loud.
 # sections    what plays in each kind of section, and the plan of its tune: which line returns and who plays each.
+#             intensity is the most each instrument's player may open up there, 1 to 4, so that a player starts plainly and
+#             saves the most for a chorus or a solo; crash is a crash on the section's first beat; picks are picks the
+#             section changes, such as the cymbal the drummer rides.
 # players     who each instrument's player is in this style, by complexity from 1 (plain) to 4 (the most advanced): what the
 #             player says for people, and how the player decorates the kind's own parts, never replacing them: a drummer's
-#             hits added to every bar (adds) or to every few bars (varies), the fill and how often it comes, timing (a
+#             hits added to every bar (adds) or to some bars of each four-bar phrase (varies), the fill and how often it comes, timing (a
 #             rush or a drag, in hundredths of a step), how uneven the hits are, a strum's width, a lead's range.
 # melody      the habits a tune is sketched by when a song gives none: the notes used, rhythm cells, how far it ranges.
 # Twelve steps to a bar throughout: three to a beat, which is the shuffle. No band, artist or work is named or followed.
@@ -209,7 +212,7 @@ players:
     2:
       says: 'A small kit. The shuffle a little behind the beat, a soft kick before every fourth bar, and a snare triplet into each turn.'
       fill_every: 4
-      varies: {every: 4, choices: [{bar: {kick: {steps: 12, soft: [11]}}}]}
+      varies: [{bars: [4], choices: [{bar: {kick: {steps: 12, soft: [11]}}}]}]
       fill: [{bar: {snare: {steps: 12, loud: [3, 9, 10, 11]}}}]
       timing: {snare: {drag: 12}}
       uneven: 5
@@ -217,7 +220,7 @@ players:
       says: 'A larger kit. Quiet snare notes on the upbeats, the kick shuffling in every other bar, and the toms answering at each turn.'
       fill_every: 4
       adds: [{bar: {snare: {steps: 12, soft: [2, 8]}}}]
-      varies: {every: 2, choices: [{bar: {kick: {steps: 12, soft: [5, 11]}}}]}
+      varies: [{bars: [2, 4], choices: [{bar: {kick: {steps: 12, soft: [5, 11]}}}]}]
       fill: [{bar: {snare: {steps: 12, loud: [3, 6, 8], soft: [7]}, tom high: {steps: 12, loud: [9, 10]}, tom low: {steps: 12, loud: [11]}}}]
       timing: {snare: {drag: 8}}
       uneven: 7
@@ -225,7 +228,7 @@ players:
       says: 'A large kit. The snare whispers on every upbeat, the kick never plays the same bar twice, and a fill of triplets runs the whole last bar, far behind the beat.'
       fill_every: 4
       adds: [{bar: {snare: {steps: 12, soft: [2, 5, 8, 11]}}}]
-      varies: {every: 2, choices: [{bar: {kick: {steps: 12, soft: [2, 8], loud: [11]}, open: {steps: 12, loud: [11]}}}]}
+      varies: [{bars: [2, 4], choices: [{bar: {kick: {steps: 12, soft: [2, 8], loud: [11]}, open: {steps: 12, loud: [11]}}}]}]
       fill: [{silences: [hat, ride, hat by foot], bar: {kick: {steps: 12, loud: [0, 6]}, snare: {steps: 12, loud: [0, 1, 2], soft: [3]}, tom high: {steps: 12, loud: [4, 5, 6]}, tom mid: {steps: 12, loud: [7, 8]}, tom low: {steps: 12, loud: [9, 10, 11]}}}]
       timing: {snare: {drag: 16}, ride: {drag: 6}, hat: {drag: 6}}
       uneven: 9
@@ -254,15 +257,18 @@ sounds: {bass: 34, upright bass: 33, guitar: 28, lead guitar: 30, harmonica: 23,
 
 sections:
   intro:
+    intensity: {drums: 1, bass: 2, rhythm: 2, lead: 2, session: 2}
     bars: 4
     chords: [5, 4, 1, 5]
     plays: [drums, bass, comping, answers]
     plan: [{line: intro, answer: true}, {line: intro, answer: true, varied: true}]
   chorus:
+    intensity: {drums: 3, bass: 3, rhythm: 3, lead: 3, session: 3}
     bars: 12
     plays: [drums, bass, comping, lead, answers]
     plan: [{line: a}, {line: reply, answer: true}, {line: a}, {line: reply, answer: true, varied: true}, {line: b, higher: true}, {line: close, answer: true}]
   solo:
+    crash: true
     bars: 12
     plays: [drums, bass, comping, answers]
     plan: [{line: s1, answer: true}, {line: s2, answer: true, higher: true}, {line: s1, answer: true, varied: true}, {line: s3, answer: true, higher: true},
