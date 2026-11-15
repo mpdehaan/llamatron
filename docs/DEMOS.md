@@ -54,7 +54,7 @@ pages current.
 | [Folk](demos/FOLK.md) | 5 |
 | [Funk Mashup](demos/FUNK_MASHUP.md) | 1 |
 | [Gospel](demos/GOSPEL.md) | 1 |
-| [Jazz Mashup](demos/JAZZ_MASHUP.md) | 1 |
+| [Jazz Mashup](demos/JAZZ_MASHUP.md) | 2 |
 | [Metal](demos/METAL.md) | 2 |
 | [Metal Mashup](demos/METAL_MASHUP.md) | 4 |
 | [Pop](demos/POP.md) | 5 |
