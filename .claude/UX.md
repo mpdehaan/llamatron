@@ -13,7 +13,7 @@ a feature that already exists does what's being asked, that's pointed out first
 
 - Anything that works on every page is a Ctrl+ key or a function key, never a plain letter, so
   that a page's letters stay its own: Ctrl+S save, Ctrl+O open, Ctrl+X export, Ctrl+T silence
-  (the emergency stop for real-time playback), Ctrl+Z undo, Ctrl+Y redo, F1 help, F3 about and Ctrl+C,
+  (the emergency stop for real-time playback), Ctrl+Z undo, Ctrl+Y redo, F1 help, F3 about, F9 the song wizard and Ctrl+C,
   which quits at once from any page or dialog, even while typing, with no question about unsaved changes, closing
   FluidSynth and the Realtime Sender Process as quitting does (the user's ask; `quits_at_once` in `tui/key_table.py`). Quit is the plain `Q`, on the main screen alone, because
   Ctrl+Q was awkward to type and nobody needs to quit from inside a page; Textual's own Ctrl+Q is
@@ -31,7 +31,7 @@ a feature that already exists does what's being asked, that's pointed out first
   line, then the page's own keys, each group in two columns like the main menu's rows. Tab, Left
   and Right turn to a second panel saying what the page is about, and back; ENTER, ESC or F1
   again closes it, and the dialog doesn't list F1 among the keys, so that Undo and Redo sit in
-  one column, Ctrl+T taking the last place of the first. F3 opens About (F2 renames, as on Windows, the user's choice, beside `N`, since a stock Mac needs fn for F2): the cow, the version and build date, the links, a quote and the license.
+  one column, Ctrl+T and then F9 taking the last places of the first. F3 opens About (F2 renames, as on Windows, the user's choice, beside `N`, since a stock Mac needs fn for F2): the cow, the version and build date, the links, a quote and the license.
   Neither works inside a dialog, which has its own keys.
 - The same action takes the same letter on every page that has it: `N` rename, `C` copy, `M`
   move, `S` sort, `Bksp` delete, `A` add, `I` insert, `ENTER` open or choose.

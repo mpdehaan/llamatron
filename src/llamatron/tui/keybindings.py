@@ -38,7 +38,7 @@ from llamatron.strings.labels import PageName
 from llamatron.strings.legends import (
     MSG_PICK_PROGRESSION_WHAT,
     MSG_PICK_RHYTHM_WHAT,
-    KeyName, What, MSG_ABOUT_FOOTER_WHAT, MSG_ACCIDENTAL_WHAT, MSG_ADD_CLIP_WHAT, MSG_ADD_SCENE_WHAT, MSG_ADD_TRACK_WHAT, MSG_ACCENT_WHAT, MSG_CELL_LENGTH_WHAT, MSG_READY_BARS_WHAT,
+    KeyName, What, MSG_WIZARD_FOLD_WHAT, MSG_WIZARD_TO_TREE_WHAT, MSG_ABOUT_FOOTER_WHAT, MSG_ACCIDENTAL_WHAT, MSG_ADD_CLIP_WHAT, MSG_ADD_SCENE_WHAT, MSG_ADD_TRACK_WHAT, MSG_ACCENT_WHAT, MSG_CELL_LENGTH_WHAT, MSG_READY_BARS_WHAT,
     MSG_CHORD_WHAT, MSG_NEXT_LIST_WHAT, MSG_CLOSE_SECTION_WHAT, MSG_COPY_CLIP_WHAT, MSG_COPY_SCENE_WHAT, MSG_COPY_TRACK_WHAT, MSG_DEGREE_WHAT, MSG_DELETE_CLIP_WHAT,
     MSG_DELETE_SCENE_WHAT, MSG_DELETE_TRACK_WHAT, MSG_EDIT_CLIP_WHAT, MSG_IMPORT_WHAT, MSG_PRESS_WHAT, MSG_OPEN_PATTERN_WHAT, MSG_SHRINK_WHAT, MSG_STRETCH_WHAT, MSG_ENTRY_SIZE_WHAT, MSG_GRAB_WHAT, MSG_HELP_FOOTER_WHAT, MSG_INSERT_SCENE_WHAT,
     MSG_INSERT_TRACK_WHAT, MSG_MAKE_CURRENT_WHAT, MSG_ADD_CHAIN_WHAT, MSG_BLANK_PATTERN_WHAT, MSG_REMOVE_CHAIN_WHAT, MSG_MOVE_CLIP_WHAT, MSG_QUIT_WITHOUT_SAVING_WHAT, MSG_SAVE_THEN_QUIT_WHAT, MSG_MOVE_SCENE_WHAT, MSG_MOVE_TRACK_WHAT, MSG_NEW_LINE_WHAT, MSG_NEW_WHAT,
@@ -74,6 +74,8 @@ class Page:
     HELP = (Key.F1, KeyName.F1, What.HELP)
     # About is F3, so that F2 renames as on Windows, the user's choice.
     ABOUT = (Key.F3, KeyName.F3, What.ABOUT)
+    # The song wizard is F9, set apart from F1 and F3, which only inform, the user's choice.
+    WIZARD = (Key.F9, KeyName.F9, What.WIZARD)
     BACK = (Key.ESCAPE, KeyName.ESCAPE, What.BACK)
     # The keys every page has, in the order the F1 dialog lists them. Ctrl+S is Save because a plain
     # letter would be typed into names, and Cmd+S never reaches a terminal program. Open is Ctrl+O,
@@ -86,7 +88,8 @@ class Page:
     # pushed the step's description off the screen; the F1 dialog shows them all. On a Mac, F1 and
     # F2 need Fn unless the function keys are set to standard keys.
     # Silence sits before Undo, so that the F1 dialog's two columns of the keys besides F1 keep Undo above Redo.
-    EVERYWHERE = [SAVE, OPEN_SET, EXPORT, SILENCE, UNDO, REDO, HELP, ABOUT, QUIT_NOW]
+    # The wizard sits after Silence, so that Undo still starts the second column, above Redo.
+    EVERYWHERE = [SAVE, OPEN_SET, EXPORT, SILENCE, WIZARD, UNDO, REDO, HELP, ABOUT, QUIT_NOW]
     IN_HELP = [BACK]
     IN_LEGEND = [BACK]
 
@@ -258,6 +261,20 @@ class FieldPage(Page):
     ALONG_BUTTONS = (ARROWS_LEFT_RIGHT, KeyName.LEFT_RIGHT, What.SELECT)
     IN_HELP = [Page.BACK, SELECT, ALONG_BUTTONS, LESS, MORE, TOGGLE, ENTER, CLEAR, SECTION, RENAME]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[RENAME])
+
+
+class WizardPage(FieldPage):
+    """The song wizard, the user's design: a tree of its parts at the left and the settings of the part under the cursor at the right.
+    In the tree, Up and Down move, Left and Right close and open a part, and ENTER or Tab moves into the settings; there the
+    settings' own keys work, and ESC or Tab moves back to the tree. ESC in the tree closes the wizard."""
+
+    TREE = (ARROWS_UP_DOWN, KeyName.UP_DOWN, What.MOVE)
+    FOLD = (ARROWS_LEFT_RIGHT, KeyName.LEFT_RIGHT, MSG_WIZARD_FOLD_WHAT)
+    INTO_FIELDS = ((Key.ENTER, Key.TAB), KeyName.ENTER, What.EDIT)
+    TO_TREE = ((Key.ESCAPE, Key.TAB), KeyName.ESCAPE, MSG_WIZARD_TO_TREE_WHAT)
+    CLOSE = (Key.ESCAPE, KeyName.ESCAPE, What.CLOSE)
+    IN_HELP = [CLOSE, TO_TREE, TREE, FOLD, INTO_FIELDS, *FieldPage.IN_HELP[1:]]
+    IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
 
 class FilePage(FieldPage):

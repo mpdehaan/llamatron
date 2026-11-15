@@ -316,3 +316,12 @@ MSG_MOVING_ROW = '({name})'
 MSG_GUITAR_BAR_NOTE = 'one stroke a cell of {cell}, played on whatever sounds, following the song\'s bars'
 MSG_GUITAR_CELL_NOTE = 'cell {number}: {stroke}'
 MSG_GUITAR_CELL_ACCENTED_NOTE = 'cell {number}: {stroke}, accented'
+
+# tui/screens/wizard/wizard_page.py and the branches beside it
+MSG_WIZARD_CLOSE_TITLE = 'Close the wizard'
+MSG_WIZARD_CLOSE_QUESTION = 'Close the wizard and lose these choices?'
+MSG_WIZARD_CREATED = 'created song ({name})'
+MSG_WIZARD_NOTHING_TO_UNDO = 'nothing changes until Create, so the wizard has nothing to undo'
+MSG_WIZARD_ALREADY_OPEN = 'the wizard is open'
+MSG_WIZARD_SONG_NAME_PROMPT = 'Name of the new song'
+MSG_WIZARD_CHOOSE_FIRST = 'Choose a genre and a subgenre first.'

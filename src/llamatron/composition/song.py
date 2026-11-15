@@ -31,7 +31,7 @@ from llamatron.composition.defaults import DEFAULT_GROOVE, DEFAULT_LIVE_RESPONSI
 from llamatron.composition.corrections import LEFT_OUT
 from llamatron.composition.setting import Checked, Choice, Length, described, settings_held, Text
 from llamatron.composition.file_format import LIVE_RESPONSIVENESSES, REGISTER_NAMES, sensible_visualizer, GeneratorKind, SceneSetting, Section, SongSetting
-from llamatron.composition.llama_data import LlamaData, data_as_kept, data_built_anew, or_default, written_settings
+from llamatron.composition.llama_data import LlamaData, data_as_kept, data_built_anew, or_default, own_copy, written_settings
 from llamatron.composition.named_items import NamedItems, moved_in_list
 from llamatron.composition.register import Register
 from llamatron.composition.scene import Scene
@@ -39,7 +39,7 @@ from llamatron.composition.sections import SECTION_LABELS, SONG_SECTIONS
 from llamatron.composition.track import Track
 from llamatron.strings.errors import (
     ERR_BAD_LIVE_RESPONSIVENESS, ERR_NOT_TEXT, ERR_NO_SUCH_REGISTER, ERR_NO_SUCH_SCENE, ERR_NOT_A_SONG, ERR_REGISTERS_NOT_NAMED, ERR_SONG_NO_SUCH_GROOVE, ERR_SONG_NO_SUCH_PREVIEW_INSTRUMENT,
-    ERR_SCENES_NOT_A_LIST, ERR_SONG_BAD_SEED, ERR_SONG_NO_SUCH_SCALE, ERR_TRACKS_NOT_NAMED, ERR_WHERE_NAMED, ERR_WHERE_SCENE_ENTRY,
+    ERR_SCENES_NOT_A_LIST, ERR_SONG_BAD_SEED, ERR_SONG_BAD_WIZARD, ERR_SONG_NO_SUCH_SCALE, ERR_TRACKS_NOT_NAMED, ERR_WHERE_NAMED, ERR_WHERE_SCENE_ENTRY,
     ERR_WHERE_WITHIN,
 )
 from llamatron.strings.names import MSG_NEW_SCENE_NAME, MSG_NEW_TRACK_NAME, MSG_REGISTER_WORD, MSG_THE_FILE, MSG_TRACK_WORD
@@ -72,6 +72,12 @@ def seed_number(value):
     return value
 
 
+def _check_wizard_choices(value):
+    """Refuse what isn't a mapping: the song wizard's choices are kept as the wizard wrote them, and the wizard reads them with care."""
+    if value is not None and not isinstance(value, dict):
+        raise InvalidValue(ERR_SONG_BAD_WIZARD.format(value=value))
+
+
 # The song's own settings, each described once, in the order they're written to a file.
 def _never_refused(value):
     """Refuse nothing: a visualizer setting that makes no sense is made sensible as it's read (sensible_visualizer), the user's rule."""
@@ -88,6 +94,7 @@ SETTINGS = described(
     Choice(name=SongSetting.LIVE_RESPONSIVENESS, choices=LIVE_RESPONSIVENESSES, default=LEFT_OUT, error=ERR_BAD_LIVE_RESPONSIVENESS),
     Checked(name=SongSetting.VISUALIZER, check=_never_refused),
     Checked(name=SongSetting.PREVIEW_INSTRUMENT, check=_check_preview_instrument, needs_song=True),
+    Checked(name=SongSetting.WIZARD, check=_check_wizard_choices),
 )
 # The settings whose message names the setting itself, so that a file's problem with one is placed at the song alone, like "song (verse): scale: ...".
 NAMED_BY_THEIR_MESSAGE = (SongSetting.SCALE, SongSetting.GROOVE, SongSetting.PREVIEW_INSTRUMENT)
@@ -173,7 +180,7 @@ class Song(LlamaData):
             name = setting.get_name()
             with reading(where if name in NAMED_BY_THEIR_MESSAGE else ERR_WHERE_WITHIN.format(where=where, part=name)):
                 setting.check_held(data, song=self)
-        self._settings = {name: data.get(name) for name in SETTINGS}
+        self._settings = {name: own_copy(data.get(name)) for name in SETTINGS}
         self._settings[SongSetting.VISUALIZER] = sensible_visualizer(self._settings[SongSetting.VISUALIZER])
 
     def _read_registers(self, *, data, where):
@@ -389,6 +396,16 @@ class Song(LlamaData):
         text = text.strip()
         SETTINGS[SongSetting.GENRE].check(text)
         self._settings[SongSetting.GENRE] = text or None
+
+    def get_wizard_choices(self):
+        """Return what the song wizard was told when it made the song, as data of the song's own, or None for a song the wizard didn't make."""
+        return own_copy(self._settings[SongSetting.WIZARD])
+
+    @notes_change
+    def set_wizard_choices(self, choices):
+        """Keep what the song wizard was told when it made the song, or None to keep nothing."""
+        SETTINGS[SongSetting.WIZARD].check(choices)
+        self._settings[SongSetting.WIZARD] = own_copy(choices)
 
     # Changing the tracks and registers, the same way the set changes its sections.
 

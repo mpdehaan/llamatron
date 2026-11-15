@@ -230,6 +230,7 @@ ERR_NAME_TAKEN = 'a {label} called ({name}) already exists'
 ERR_NO_SUCH_ITEM = 'no {label} called ({name})'
 ERR_NO_SUCH_SCENE = 'no scene at place {index} in {count} scenes'
 ERR_SONG_BAD_SEED = 'seed must be an integer or none, got {value!r}'
+ERR_SONG_BAD_WIZARD = 'wizard must be a mapping of settings, got {value!r}'
 
 # composition/track.py
 ERR_TRACK_EXPECTED_SETTINGS = 'expected track settings, got {data!r}'
@@ -498,3 +499,17 @@ ERR_ONE_SONG = 'a MacroComposer input holds one song, and the set holds {}'
 # macro_composer/notation.py
 ERR_NOT_A_TUNE = 'the pattern cannot be written as a tune'
 ERR_NOT_A_BAR = 'the pattern cannot be written as a drum bar'
+
+# The song wizard's choices (macro_composer/wizard_choices.py).
+ERR_WIZARD_NO_SUCH_GENRE = 'genre must be one of the genres, got {value!r}'
+ERR_WIZARD_NO_SUCH_SUBGENRE = 'subgenre must be one of the genre, got {value!r}'
+ERR_WIZARD_NO_SUCH_ROOT = 'key must be a note name, got {value!r}'
+ERR_WIZARD_NO_SUCH_SCALE_TYPE = 'scale type must be one the wizard offers, got {value!r}'
+ERR_WIZARD_TEMPO = 'tempo must be an integer from {low} to {high}, got {value!r}'
+ERR_WIZARD_NO_SUCH_FORM = 'form must be one the subgenre suggests, got {value!r}'
+ERR_WIZARD_NOT_READY = 'the wizard needs a genre and a subgenre first'
+ERR_WIZARD_SEED = 'seed must be an integer, got {value!r}'
+
+# tui/screens/wizard/wizard_page.py and the branches beside it
+ERR_WIZARD_CHOOSE_GENRE = 'choose a genre first'
+ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE = 'choose a genre and a subgenre first'

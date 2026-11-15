@@ -9,6 +9,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - `Ctrl+O` OPEN
 - `Ctrl+X` EXPORT
 - `Ctrl+T` SILENCE
+- `F9` WIZARD
 - `Ctrl+Z` UNDO
 - `Ctrl+Y` REDO
 - `F1` HELP
@@ -352,6 +353,17 @@ settings page's fields. The keys that work everywhere are listed once:
 - **the Keep the root in the bass field**: `ESC` back · `↑↓` select · `Space/ENTER` toggle · `F2` rename
 - **the Restart field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `F2` rename
 
+## WizardPage
+
+- **the Genre field, the Song field, the Name field, the Create button**: `ESC` close · `↑↓` move · `ENTER` edit
+- **anywhere**: `ESC` close · `↑↓` move
+- **the Genre field, the Subgenre field, the Key field, the Scale field**: `ESC` to tree · `↑↓` select · `[` dec · `]` inc · `ENTER` choose
+- **the Tempo field**: `ESC` to tree · `↑↓` select · `[` dec · `]` inc · `ENTER` edit
+- **the Name field**: `ESC` to tree · `↑↓` select · `ENTER` rename
+- **the Form field**: `ESC` close · `↑↓` move · `←→` fold · `ENTER` edit
+- **the Song field, the Genre field, the Key field, the Tempo field, the Form field**: `ESC` to tree · `↑↓` select
+- **the Create button**: `ESC` to tree · `↑↓` select · `←→` select · `ENTER` create
+
 # Each Key
 
 
@@ -422,6 +434,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - SwellEditor: dec (the Start field, the End field, the Accent field, the Over field, the Then field, the Restart field)
 - TrackEditor: dec (the Groove field, the Transpose field, the Lowest octave field, the Highest octave field, the CC 1 field, the CC 2 field, the CC 3 field, the CC 4 field, the CC1 Reg field, the CC2 Reg field, the CC3 Reg field, the CC4 Reg field, the Vel Reg field)
 - VoiceLeadingEditor: dec (the Lowest octave field, the Highest octave field, the Restart field)
+- WizardPage: dec (the Genre field, the Subgenre field, the Key field, the Scale field, the Tempo field)
 
 ## `[/]`
 
@@ -458,6 +471,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - SwellEditor: inc (the Start field, the End field, the Accent field, the Over field, the Then field, the Restart field)
 - TrackEditor: inc (the Groove field, the Transpose field, the Lowest octave field, the Highest octave field, the CC 1 field, the CC 2 field, the CC 3 field, the CC 4 field, the CC1 Reg field, the CC2 Reg field, the CC3 Reg field, the CC4 Reg field, the Vel Reg field)
 - VoiceLeadingEditor: inc (the Lowest octave field, the Highest octave field, the Restart field)
+- WizardPage: inc (the Genre field, the Subgenre field, the Key field, the Scale field, the Tempo field)
 
 ## `A`
 
@@ -718,6 +732,10 @@ settings page's fields. The keys that work everywhere are listed once:
 - VoiceLeadingEditor: rename (the Name field)
 - VoiceLeadingEditor: edit (the Lowest octave field, the Highest octave field)
 - VoiceLeadingEditor: choose (the Restart field)
+- WizardPage: edit (the Genre field, the Song field, the Name field, the Create button, the Tempo field, the Form field)
+- WizardPage: choose (the Genre field, the Subgenre field, the Key field, the Scale field)
+- WizardPage: rename (the Name field)
+- WizardPage: create (the Create button)
 
 ## `ENTER/ESC/M`
 
@@ -783,6 +801,8 @@ settings page's fields. The keys that work everywhere are listed once:
 - SwellEditor: back (the Name field, the Start field, the End field, the Accent field, the Over field, the Then field, the Restart field)
 - TrackEditor: back (the Name field, the Drum field, the Mute field, the Euclid heading, the Strum heading, the Groove field, the Transpose field, the Lowest octave field, the Highest octave field, the CC 1 field, the CC 2 field, the CC 3 field, the CC 4 field, the CC1 Reg field, the CC2 Reg field, the CC3 Reg field, the CC4 Reg field, the Vel Reg field, the Chains field, the Instrument field)
 - VoiceLeadingEditor: back (the Name field, the Lowest octave field, the Highest octave field, the Keep the root in the bass field, the Restart field)
+- WizardPage: close (the Genre field, the Song field, the Name field, the Create button, anywhere, the Form field)
+- WizardPage: to tree (the Genre field, the Subgenre field, the Key field, the Scale field, the Tempo field, the Name field, the Song field, the Form field, the Create button)
 
 ## `F`
 
@@ -1035,6 +1055,8 @@ settings page's fields. The keys that work everywhere are listed once:
 - RushStepsEditor: move (anywhere)
 - ShortenStepsEditor: move (anywhere)
 - SongPage: select (the Export button)
+- WizardPage: fold (the Form field)
+- WizardPage: select (the Create button)
 
 ## `↑↓`
 
@@ -1074,6 +1096,8 @@ settings page's fields. The keys that work everywhere are listed once:
 - SwellEditor: select (the Name field, the Start field, the End field, the Accent field, the Over field, the Then field, the Restart field)
 - TrackEditor: select (the Name field, the Drum field, the Mute field, the Euclid heading, the Strum heading, the Groove field, the Transpose field, the Lowest octave field, the Highest octave field, the CC 1 field, the CC 2 field, the CC 3 field, the CC 4 field, the CC1 Reg field, the CC2 Reg field, the CC3 Reg field, the CC4 Reg field, the Vel Reg field, the Chains field, the Instrument field)
 - VoiceLeadingEditor: select (the Name field, the Lowest octave field, the Highest octave field, the Keep the root in the bass field, the Restart field)
+- WizardPage: move (the Genre field, the Song field, the Name field, the Create button, anywhere, the Form field)
+- WizardPage: select (the Genre field, the Subgenre field, the Key field, the Scale field, the Tempo field, the Name field, the Song field, the Form field, the Create button)
 
 # Settings Pages
 
@@ -1101,3 +1125,4 @@ settings page's fields. The keys that work everywhere are listed once:
 - **SwellEditor**: Name, Start, End, Over, Then, Accent, Restart
 - **TrackEditor**: Name, Drum, Mute, Groove, Transpose, Lowest octave, Highest octave, CC 1, CC 2, CC 3, CC 4, CC1 Reg, CC2 Reg, CC3 Reg, CC4 Reg, Vel Reg, Chains, Instrument, [Euclid], Euclid hits, Euclid steps, Euclid rotate, Euclid step, [Strum], Strum direction, Strum spread, Strum fade, Strum loose timing, Strum upstrokes
 - **VoiceLeadingEditor**: Name, Lowest octave, Highest octave, Keep the root in the bass, Restart
+- **WizardPage**: Genre, Subgenre, Name

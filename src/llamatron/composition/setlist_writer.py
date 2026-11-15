@@ -41,7 +41,7 @@ _SETTINGS = [
 ]
 _BEFORE_NOTES = (SetlistSetting.VERSION, SetlistSetting.TITLE, SetlistSetting.AUTHOR, SetlistSetting.DESCRIPTION)
 # A song's settings, in the order they're written at the top of its entry.
-_SONG_SETTINGS = [SongSetting.TEMPO, SongSetting.TIME_SIGNATURE, SongSetting.ENTRY_SIZE, SongSetting.SCALE, SongSetting.SEED, SongSetting.GROOVE, SongSetting.GENRE, SongSetting.LIVE_RESPONSIVENESS, SongSetting.VISUALIZER]
+_SONG_SETTINGS = [SongSetting.TEMPO, SongSetting.TIME_SIGNATURE, SongSetting.ENTRY_SIZE, SongSetting.SCALE, SongSetting.SEED, SongSetting.GROOVE, SongSetting.GENRE, SongSetting.LIVE_RESPONSIVENESS, SongSetting.VISUALIZER, SongSetting.PREVIEW_INSTRUMENT, SongSetting.WIZARD]
 _GENERATOR_SECTIONS = [Section.ARPS, Section.AUTO_RATCHETS, Section.DRIFTS, Section.PROGRESSIONS, Section.VOICE_LEADINGS, Section.STRUMS, Section.GUITARIFIES, Section.EUCLIDS, Section.DENSITIES, Section.SWELLS, Section.ARTICULATES, Section.GLIDES, Section.SHORTENS, Section.RUSHES, Section.DRAGS, Section.HOCKETS]
 _PATTERN_SETTINGS = [PatternSetting.STEP_SIZE, PatternSetting.TIME_SIGNATURE, PatternSetting.ENTRY_SIZE, PatternSetting.DIRECTION]
 

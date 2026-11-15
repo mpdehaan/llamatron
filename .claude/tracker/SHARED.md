@@ -105,7 +105,7 @@ code.
 
 - `everywhere_keys(page)` in `tui/screens/shared/everywhere.py` returns Ctrl+S (save), Ctrl+O (open,
   which shows `OpenPage` and comes back to the page it was pressed on), Ctrl+X (export), Ctrl+T
-  (silence, `Page.SILENCE`, the emergency stop of real-time playback, `.claude/features/REALTIME_PLAYBACK.md`), Ctrl+Z, Ctrl+Y, F1 (help) and F3 (about), in that order (`Page.EVERYWHERE` in
+  (silence, `Page.SILENCE`, the emergency stop of real-time playback, `.claude/features/REALTIME_PLAYBACK.md`), F9 (the song wizard, `LlamatronApp.show_wizard`), Ctrl+Z, Ctrl+Y, F1 (help) and F3 (about), in that order (`Page.EVERYWHERE` in
   `tui/keybindings.py`).
 - The footer draws only `Page.shown_keys()`, the page's own keys. The main screen has cells for
   Save, Open and Export, the last two bound to `O` and `X` there (`MainPage.OPEN_SET_HERE`,

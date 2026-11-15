@@ -154,3 +154,25 @@ clouds; generate and test, with motif development and counterpoint last.
 - Every section ends on its fill: a drum part is no longer than divides the section. Drum parts are made once for each
   different combination and named after the section's kind.
 - A held section is one bar: a crash, a kick and each figure's held chord.
+
+## The Wizard's Choices
+
+- `WizardChoices` (`src/llamatron/macro_composer/wizard_choices.py`) holds one run of the song wizard: the genre, a style
+  template by its file's name and shown by its title; the subgenre, one of the template's kinds; the key's root and scale
+  type; the tempo; the form, one of the forms the template suggests for the kind; and the seed. Each setter refuses what it
+  cannot hold, and the tracker's page (`.claude/tracker/PAGES.md`, "The song wizard") changes the choices only through them.
+- Nothing is chosen at first, the user's rule. Choosing a subgenre fills in its usual tempo, the scale type its chords are
+  in, the root that scale type starts on (C for major, E for minor, Claude's choice) and the commonest form, so that a song
+  can be made from a genre and a subgenre alone; choosing another genre leaves the subgenre to be chosen again. Any tempo
+  the tracker plays is allowed, the template's usual range being advice.
+- The seed is never shown: `made_setlist` draws one when the run has none, and the song keeps it with the other choices
+  (`Song.get_wizard_choices`, the song's `wizard` setting), so that the same choices make the same song. `from_data` reads
+  kept choices with care, leaving out what no longer fits.
+- `made_setlist(name=, version=)` arranges and composes the song into a set of its own, and `Setlist.take_in` adds that
+  set's song to the open set with all the song uses: a thing whose name the open set uses for something different is
+  renamed as a duplicate is, everything that names it following; a thing that is the same in both, such as an instrument,
+  is shared; nothing of the open set is touched.
+- Every style template suggests forms now (`forms`, under `usual` or a kind's name), which rock, blues, sixties pop and
+  soul and funk lacked: the forms the trial songs used, so that a song needs no form of its own.
+- `tests/macro_composer/test_wizard_choices.py` and `tests/composition/test_taking_in.py` test them, every subgenre of
+  every genre among the cases.

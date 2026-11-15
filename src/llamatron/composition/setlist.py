@@ -49,6 +49,7 @@ from llamatron.composition.limits import MAX_OCTAVE, MAX_STEP_SIZE, MIN_OCTAVE
 from llamatron.composition.generator_settings import GENERATOR_SETTINGS
 from llamatron.composition.llama_data import LlamaData, data_as_kept, data_built_anew, or_default, own_copy, written_settings
 from llamatron.composition.named_items import NamedItems
+from llamatron.composition.naming import copy_name, is_taken
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.pattern import Pattern, held_add
 from llamatron.composition.sections import SECTION_LABELS, SETLIST_SECTIONS
@@ -114,6 +115,8 @@ ITEM_KINDS = {
     Section.INSTRUMENTS: Instrument,
     Section.SONGS: Song,
 }
+# The sections taken in from another set, in the order a set is read, so that each can name what the ones before it hold.
+SECTIONS_TAKEN_IN = [Section.SCALES, Section.PATTERNS, *NAMED_GENERATORS.values(), Section.CHAINS, Section.GROOVES, Section.INSTRUMENTS, Section.SONGS]
 # The sections whose items are read knowing the set, where the others take the set in place of a song, to look names up in.
 READ_WITH_THE_SET = (Section.CHAINS, Section.SONGS)
 # The scale a new set starts with, which can be deleted.
@@ -629,6 +632,41 @@ class Setlist(LlamaData):
     def sort_items(self, section):
         """Put a section's items in alphabetical order, ignoring case."""
         self._section(section).sort()
+
+    # Another set's songs taken in, which the song wizard does with the set it made.
+
+    def take_in(self, other):
+        """Take in every song of another set with all the songs use, and return the songs' names here, in order.
+
+        The other set is changed to fit first and is of no use after: a thing of its whose name
+        this set uses for something different is renamed there as a duplicate is, and everything
+        that names it follows, so that nothing of this set is touched or replaced. A thing that
+        is the same in both, such as an instrument both play, is shared and not added twice. A
+        song always gets a name of its own.
+        """
+        for section in SECTIONS_TAKEN_IN:
+            for name in other.get_item_names(section):
+                if section != Section.SONGS and self.has_item(section=section, name=name) and self._same(section=section, name=name, other=other):
+                    continue
+                taken = self.get_item_names(section)
+                if is_taken(name=name, taken=taken):
+                    other.rename_item(section=section, old=name, new=copy_name(name=name, taken=[*taken, *other.get_item_names(section)]))
+        songs = other.get_song_names()
+        added = other.to_data()
+        data = dict(self.kept_data())
+        for section in SECTIONS_TAKEN_IN:
+            new = {name: item for name, item in (added.get(section) or {}).items() if not self.has_item(section=section, name=name)}
+            if new:
+                data[section] = {**(data.get(section) or {}), **new}
+        self.restore(data)
+        for name in songs:
+            # Filled in like a loaded song, so that a song taken in saves every setting too, and an undo and a redo leave the same data.
+            self.get_song(name).fill_in_defaults()
+        return songs
+
+    def _same(self, *, section, name, other):
+        """Return whether this set and another hold the very same thing under a name."""
+        return self.get_item(section=section, name=name).to_data() == other.get_item(section=section, name=name).to_data()
 
     # The songs.
 

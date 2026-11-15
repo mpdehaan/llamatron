@@ -213,6 +213,13 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
 - The per-kind getters (`get_pattern`, `get_track_names`) are one-line forwarders kept because
   they read well.
 
+- **A set takes another set's songs in** with `Setlist.take_in(other)`, which the song wizard does with the set it made
+  (`.claude/features/MACRO_COMPOSER.md`, "The Wizard's Choices"): a thing of the other set whose name this set uses for
+  something different is renamed there as a duplicate is (`naming.copy_name`), everything that names it following; a thing
+  that is the same in both is shared; the rest is added through `restore`, so nothing of this set is rebuilt; and each song
+  taken in is filled in like a loaded one, so that an undo and a redo leave the same data. A song keeps what the wizard was
+  told in its `wizard` setting (`Song.get_wizard_choices`, `set_wizard_choices`), a mapping kept as data of the song's own.
+
 ## Reading and writing a set
 
 - `Setlist.read_file(path)` reads a set file with `safe_yaml.load_safely`, and

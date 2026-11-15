@@ -179,3 +179,27 @@ Reference notes for Claude, one part of `.claude/tracker/`: File and Notes, Song
 - A `FieldPage` taller than the screen scrolls to keep the cursor's field in view (`window_of_lines`).
 - The scene page has a Reset field for each.
 
+## The song wizard
+
+The user's design, agreed in detail in `dev_notes/QUEUE.md` (S16 to S39), of which this is the part built.
+
+- F9 opens `WizardPage` (`tui/screens/wizard/wizard_page.py`) from any page; F9 inside the wizard says the wizard is open.
+  The page is a `FieldPage`: a tree of branches at the left, 24 cells wide, and at the right the fields of the branch under
+  the tree's cursor, drawn by `FieldPage.body`, dim while the cursor is in the tree. Its stripe is bright cyan.
+- The cursor is in the tree or in the fields (`in_fields`). In the tree Up and Down move, Left and Right close and open a
+  branch that has branches under it, Left on a branch inside another going to the one that holds it, and ENTER or Tab moves
+  into the fields, onto the first field that does something; a branch only to be read takes no cursor. In the fields the
+  keys are a settings page's, and ESC or Tab moves back. ESC in the tree closes the wizard, asking first once anything was
+  chosen (`choosing` wraps every setter and notes it).
+- The page knows nothing of any one branch, the user's ask, who expects to revise the organization: a `Branch`
+  (`branch.py`) says its `name`, `note`, `children`, `fields`, `notes` and `refusal`, and `WizardPage.roots()` lists the
+  top branches. Built so far: `GenreBranch` (Genre and Subgenre, each starting on `(choose)`, then Key, Scale and Tempo once
+  a subgenre is chosen, and the song's Name), `FormBranch` (the Form picker, the sections listed under the fields, and a
+  `SectionBranch` for each section, to read) and `CreateBranch` (a summary and the Create button, refused with `(genre?)`
+  until a genre and a subgenre are chosen). Band, Themes and Playing are to come, as are the first panel of four choices
+  and replacing a song.
+- Nothing in the set changes until Create, so undo and redo do nothing in the wizard and say why (`Page.steps_history`,
+  `why_no_history`). Create is `Document.add_made_song`: `Setlist.take_in` of the set `WizardChoices.made_setlist` made
+  (`.claude/features/MACRO_COMPOSER.md`, "The Wizard's Choices"), one change and so one undo step, after which
+  `LlamatronApp.show_arrange_on_new_song` closes down to the main screen and opens Arrange on the song.
+- `tests/tui/test_tui_wizard.py` tests the page and undo, and the key tour and the fields tour both visit it.
