@@ -48,7 +48,7 @@ pages current.
 | [Children's](demos/CHILDRENS.md) | 1 |
 | [Classical](demos/CLASSICAL.md) | 3 |
 | [Country](demos/COUNTRY.md) | 1 |
-| [Electronic](demos/ELECTRONIC.md) | 18 |
+| [Electronic](demos/ELECTRONIC.md) | 19 |
 | [Electronic Mashup](demos/ELECTRONIC_MASHUP.md) | 7 |
 | [Exercise](demos/EXERCISE.md) | 3 |
 | [Folk](demos/FOLK.md) | 5 |
