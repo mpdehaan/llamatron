@@ -45,7 +45,9 @@ All in the package `src/llamatron/macro_composer/`, since code that would ship w
 - `notation.py`: how a tune's lines and a drum's hits become a pattern's rows, and the drum kit's names.
 - `shaping.py`: the velocity of the parts an input lists, shaped by the song's feel.
 - `arranger.py`: a song's picks and a style template made into an input (`--arrange PICKS --out SET`, `--keep-input INPUT`).
-- `melody.py`: a tune sketched by rule from a style's habits, where the song gives none.
+- `melody.py`: the melody engines, each a class that makes a section's tune from a style's habits where the song gives none:
+  `StepWalk`, the singable first one, and `Serial`, its subclass. `operations.py` holds the moves on a row that the serial
+  engine makes and that turn a phrase so that repeats evolve: backwards, upside down, moved, rotated.
 - `players.py`: the complexities and the names people see for them.
 - `style_templates/`: blues, rock, sixties pop, electronic, and soul and funk.
 
@@ -86,6 +88,25 @@ commonest (`form_of` in `arranger.py`). The user's rule for length: a longer son
 themes and changes, so each kind's longer forms are written with a second theme over other chords, a strip-down or another
 breakdown. Key changes for a longer song, and asking the person about them, are wanted and not built. A section in which
 nothing of the song's picks plays, such as pads alone in a song with no chord part, is left out.
+
+## Melody Engines
+
+A song picks the engine its tunes are made by (`melody_engine`), else a role names one (`engine`), else the style's melody
+habits do, else the step walk. A role may name its `voice`, so that several voices of one song differ, and give `habits` of
+its own; a song's `melody` adds habits too.
+
+- **Step walk**: a rhythm cell of the style for a line, the style's ladder walked by step, long notes landing on the chord.
+- **Serial** (the user's design): the row is every note of the song's scale once, in an order the seed draws, so it works in
+  whatever scale is set; with the habit `chromatic` it is all twelve notes. Every line is the row and its forms, backwards,
+  upside down (mirrored by places in the scale around its first note, so it stays in the scale) and both, each form moved to
+  begin beside the note the last ended on; no note returns until the others have sounded. The lengths are a row of their
+  own, read forwards and then backwards. Every voice shares the row. A varied line is the line's notes backwards in its own
+  rhythm. With `leaps` a note may take any octave in range. The experimental style template is built on it: three voices, no
+  chords, no drums.
+
+Agreed and to come, each optional (`dev_notes/QUEUE.md`): phrase operations with a running amount, the principle of registers
+written out as patterns with no registers set up; phase and build-up; cells in order; a cellular automaton; chance tables;
+clouds; generate and test, with motif development and counterpoint last.
 
 ## Players
 
