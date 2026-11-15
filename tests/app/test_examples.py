@@ -69,6 +69,7 @@ OTHER_LENGTHS = {
     'uk_butler.yml': 72,
     'not_painless.yml': 64,
     'phoenix_foundation.yml': 59,
+    'percussion_fish.yml': 298,
     'roll_d20.yml': 305,
 }
 # The songs that are meant to sound good, rather than to teach one feature.
