@@ -32,12 +32,15 @@ library's rules and `.claude/format/EXAMPLES.md` the rules for the sets in `exam
   only (`.claude/format/EXAMPLES.md`).
 - **A wizard in the tracker is to use it later.** Files hold numbers and plain names; the names people see, such as a player's,
   are made for people where they are shown.
-- **The hook is vital** (the user's rule): a song has a hook, a short phrase a listener remembers, and the song keeps bringing
-  the listener back to the hook. Every melody engine, form, modifier and amount of variance is held to that: the hook comes
-  early, returns often, and returns recognisably after anything that departs from it, a solo, a bridge, a change of key, a
-  section of high variance. Where a song's style morphs through stages, the hook is carried into every stage, played in that
-  stage's rhythm and sound, and nothing a person can switch on in the wizard may leave a song without one, short of asking
-  for none outright. A change that would make the hook rarer or harder to recognise is asked about first.
+- **The hook is vital** (the user's rule, about how Claude designs and never about what a person is told): a song has a hook,
+  a short phrase a listener remembers, and the song keeps bringing the listener back to the hook. Every default is built around
+  that: every ready-made form, melody engine, modifier and amount of variance, as it arrives, puts the hook early, returns to
+  the hook often, and returns recognisably after anything that departs, a solo, a bridge, a change of key, a section of high
+  variance; where a song changes partway, the defaults carry a hook into the new part, in that part's rhythm and sound; and the
+  design supports hooks well, several of them where wanted. None of this is enforced on a person: the wizard never warns,
+  notes or refuses when a person's choices make a hook rare or leave a song without one, since a bad choice in music is the
+  person's to make. A song with several hooks needs no field saying which is the hook: a theme may be marked a hook, and what
+  other parts quote is the hook theme most recently played (the user's choice, to be tried and changed if it confuses).
 
 ## The Parts
 
