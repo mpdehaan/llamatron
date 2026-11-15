@@ -61,19 +61,15 @@ OTHER_LENGTHS = {
     'come_on_down.yml': 69,
     'eats_cats.yml': 68,
     'forgot_your_name.yml': 63,
-    'laboratory_mice.yml': 69,
     'mysterious_spooky.yml': 65,
     'sax_reindeer.yml': 60,
     'spy_hunting.yml': 56,
     'three_hour_tour.yml': 73,
     'tropical_51.yml': 64,
     'uk_butler.yml': 72,
-    'uphill_cops.yml': 63,
     'not_painless.yml': 64,
     'phoenix_foundation.yml': 59,
-    'step_ladder.yml': 302,
     'roll_d20.yml': 305,
-    'go_where.yml': 298,
 }
 # The songs that are meant to sound good, rather than to teach one feature.
 SONG_PATHS = [path for path in EXAMPLE_PATHS if not is_demo(path)]
