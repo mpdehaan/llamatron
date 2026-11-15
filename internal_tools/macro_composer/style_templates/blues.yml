@@ -5,7 +5,8 @@
 #             the commonest is the one recommended; needs says what another trait must be for the value to fit.
 #             A drum value holds its bar, each drum's hits: loud, soft or none. A value a player plays holds its sound and
 #             its figure, bars of notes written over chord one, which a Progression moves through the song's chords.
-# roles       the band in track order: which trait each plays, how high and how loud.
+# roles       the band in track order, the chords first, then the lead and the backing, the bass, and the drums last: which
+#             trait each plays, how high and how loud.
 # sections    what plays in each kind of section, and the plan of its tune: which line returns and who plays each.
 # melody      the habits a tune is sketched by when a song gives none: the notes used, rhythm cells, how far it ranges.
 # Twelve steps to a bar throughout: three to a beat, which is the shuffle. No band, artist or work is named or followed.
@@ -15,7 +16,7 @@ title: Blues
 genre: Blues
 feel: swing
 phrase_bars: 4
-loudness: {drums: 104, kick: 110, snare: 108, hat: 76, ride: 80, hat by foot: 70, crash: 100, tom high: 100, tom low: 102}
+loudness: {drums: 104, rim: 92, kick: 110, snare: 108, hat: 76, ride: 80, hat by foot: 70, crash: 100, tom high: 100, tom low: 102}
 
 templates:
   shuffle:          {meter: 4/4, feel: shuffle, tempo: 120, drums: plain shuffle, bass: boogie, chords: twelve bar quick change, comping: guitar boogie, lead: voice, answers: harmonica}
@@ -71,8 +72,22 @@ traits:
         kick: [soft, none, none, soft, none, none, soft, none, none, soft, none, none]
         ride: [loud, none, none, loud, none, soft, loud, none, none, loud, none, soft]
         hat by foot: [none, none, none, loud, none, none, none, none, none, loud, none, none]
+    - value: slow with ride and rim
+      share: 8
+      needs: {meter: 12/8}
+      bar:
+        kick: [loud, none, none, none, none, soft, loud, none, none, none, none, none]
+        rim: [none, none, none, loud, none, none, none, none, none, loud, none, none]
+        ride: [loud, soft, soft, loud, soft, soft, loud, soft, soft, loud, soft, soft]
+    - value: slow and sparse
+      share: 4
+      needs: {meter: 12/8}
+      bar:
+        kick: [loud, none, none, none, none, none, loud, none, none, none, none, none]
+        snare: [none, none, none, loud, none, none, none, none, none, loud, none, none]
+        hat: [loud, none, none, loud, none, none, loud, none, none, loud, none, soft]
     - value: slow twelve-eight
-      share: 25
+      share: 13
       needs: {meter: 12/8}
       bar:
         kick: [loud, none, none, none, none, none, loud, none, none, none, none, soft]
@@ -103,8 +118,13 @@ traits:
       figure:
         - [{degree: 1, steps: 3}, {degree: 3, steps: 3}, {degree: 5, steps: 3}, {degree: 6, steps: 3}]
         - [{degree: 1, octave: 1, steps: 3}, {degree: 7, accidental: flat, steps: 3}, {degree: 6, steps: 3}, {degree: 5, steps: 3}]
+    - value: slow root and fifth
+      share: 10
+      sound: upright bass
+      figure:
+        - [{degree: 1, steps: 6}, {degree: 5, steps: 5}, {degree: 5, steps: 1}]
     - value: slow walk
-      share: 22
+      share: 12
       sound: bass
       figure:
         - [{degree: 1, steps: 5}, {degree: 1, steps: 1}, {degree: 5, steps: 3}, {degree: 6, steps: 2}, {degree: 5, steps: 1}]
@@ -120,8 +140,13 @@ traits:
     - {value: twelve bar with two five, share: 12, pattern: [1, 4, 1, 1, 4, 4, 1, 6, 2, 5, 1, 5]}
     - {value: minor twelve bar, share: 13, scale_type: minor, pattern: [1, 1, 1, 1, 4, 4, 1, 1, 6, 5, 1, 5]}
   comping:
+    - value: guitar on the backbeats
+      share: 8
+      sound: guitar
+      figure:
+        - [{rest: 3}, {degree: 1, chord: dom7, steps: 2}, {rest: 4}, {degree: 1, chord: dom7, steps: 2}, {rest: 1}]
     - value: guitar boogie
-      share: 32
+      share: 24
       sound: guitar
       figure:
         - [{degree: 1, chord: pow, steps: 2}, {degree: 1, chord: pow, steps: 1}, {degree: 1, chord: M6, steps: 2}, {degree: 1, chord: M6, steps: 1},
@@ -165,11 +190,11 @@ traits:
     - {value: none, share: 12}
 
 roles:
-  - {role: drums, drums: [drums]}
-  - {role: bass, trait: bass, octave: 2, velocity: 104}
-  - {role: comping, trait: comping, octave: 4, velocity: 84, voice_leading: false}
+  - {role: comping, trait: comping, octave: 4, velocity: 84}
   - {role: lead, trait: lead, octave: 4, velocity: 106}
   - {role: answers, trait: answers, octave: 4, velocity: 96, answers: true}
+  - {role: bass, trait: bass, octave: 2, velocity: 104}
+  - {role: drums, drums: [drums]}
 
 sounds: {bass: 34, upright bass: 33, guitar: 28, lead guitar: 30, harmonica: 23, piano: 1, organ: 17, horns: 62, saxophone: 67, voice: 54}
 

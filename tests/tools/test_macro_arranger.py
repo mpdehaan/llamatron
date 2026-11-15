@@ -43,6 +43,7 @@ NO_SUCH = 'polka'
 SONG_NAME = 'a_song'
 SONG_TITLE = 'A song'
 KEY_ROOT = 'A'
+LOW_ROOT = 'D'
 MAJOR = 'major'
 SEED = 5
 OTHER_SEED = 6
@@ -194,6 +195,19 @@ class TestArranged(unittest.TestCase):
         fill = arranger.values_of(style=self.style, trait=arranger.FILLS)[arranger.picked(style=self.style, song=a_song())[arranger.FILLS]][arranger.FILL]
         for drum, hits in fill.items():
             self.assertEqual(given[composer.PARTS][drum][notation.HITS][-len(hits):], hits)
+
+    def test_the_chords_come_first_and_the_drums_last(self):
+        given = arranger.arranged(style=self.style, song=a_song())
+        tracks = list(given[composer.TRACKS])
+        drums = given[composer.DRUM_TRACKS]
+        self.assertEqual(tracks[0], COMPING)
+        self.assertEqual(tracks[-len(drums):], drums)
+        self.assertLess(tracks.index(LEAD), tracks.index(BASS))
+
+    def test_a_key_low_in_the_octave_lifts_the_band_an_octave(self):
+        low = {**a_song(), arranger.KEY: {arranger.ROOT: LOW_ROOT, arranger.TYPE: MAJOR}}
+        self.assertEqual(arranger.arranged(style=self.style, song=low)[composer.PARTS][BASS][notation.OCTAVE],
+                         arranger.arranged(style=self.style, song=a_song())[composer.PARTS][BASS][notation.OCTAVE] + 1)
 
     def test_a_song_in_twelve_eight_says_its_time_signature(self):
         self.assertEqual(arranger.arranged(style=self.style, song=a_song(template=SLOW_BLUES))[composer.TIME_SIGNATURE], TWELVE_EIGHT)
