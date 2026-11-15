@@ -4,7 +4,7 @@ description: "an early-seventies Moog novelty tune in the manner of Popcorn (Hot
 notes: |
   Microwave snacks: an early-seventies Moog novelty tune in the manner of Popcorn (Hot Butter), with a
   tune of its own. This is a homage to Popcorn (Hot Butter): its chords, form, sounds and drums follow
-  that work as Claude knows it, and every tune and rhythm here is new. Rebuild version 3.
+  that work as Claude knows it, and every tune and rhythm here is new. Rebuild version 4.
 
   A popping lead of short notes that bounces through each chord, a bass on root and fifth, a second
   part in the relative major with held strings, and a last time a step higher. Plain and dry, as the
@@ -22,6 +22,11 @@ notes: |
   bounces. The hook is the popping lead; the emotion is playful; the lift is the last time a step
   higher with strings; the contrast is the lead alone with a woodblock; the sounds are a square lead,
   a kalimba below it and synth strings.
+
+  Dynamics: every part keeps a full default velocity and moves a little from it by its rhythm: the
+  hats and shakers lean on the beats, the bass on the first beat of the bar, the chords on two and
+  four, and a tune on its downbeats; a note pushed ahead of the beat and held over it is accented. The
+  kick, snare and crashes are as the drummer plays them.
 
   Run it with: llamatron examples/by_genre/electronic/microwave_snacks.yml
 
@@ -69,20 +74,20 @@ patterns:
     degree: [F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F]
     accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
     octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
-    velocity: [64, 46, 64, 46, 64, 46, 64, 46, 64, 46, 64, 46, 64, 46, 64, 46]
+    velocity: [68, 39, 62, 39, 68, 39, 62, 39, 68, 39, 62, 39, 68, 39, 62, 39]
   block:
     steps: 16
     drum: true
     step_size: 1/16
     degree: [E, ~, ~, E, ~, ~, E, ~, E, ~, ~, E, ~, ~, E, ~]
     octave: [6, ~, ~, 6, ~, ~, 6, ~, 6, ~, ~, 6, ~, ~, 6, ~]
-    velocity: [72, ~, ~, 72, ~, ~, 72, ~, 72, ~, ~, 72, ~, ~, 72, ~]
+    velocity: [76, ~, ~, 65, ~, ~, 70, ~, 76, ~, ~, 65, ~, ~, 70, ~]
   bass:
     steps: 8
     step_size: 1/8
     degree: [1, ~, 5, ~, 1, ~, 5, 1]
     octave: [3, ~, 2, ~, 3, ~, 2, 3]
-    velocity: [106, ~, 100, ~, 100, ~, 100, 100]
+    velocity: [112, ~, 101, ~, 103, ~, 101, 98]
   held:
     steps: 8
     step_size: 1/8
@@ -96,20 +101,20 @@ patterns:
     step_size: 1/8
     degree: [1, 3, 5, 3, 1, 5, 3, 5, 4, 5, 4, 2, 3, ~, ~, ~, 1, 3, 5, 3, 1, 5, 3, 5, 7, 1, 7, 5, 1, ~, ~, ~, 6, 1, 3, 1, 6, 1, 3, 1, 4, 3, 1, 6, 1, ~, ~, ~, 7, 2, 4, 2, 7, 5, 2, 7, 1, 5, 3, 5, 1, ~, ~, ~]
     octave: [4, 4, 4, 4, 5, 4, 4, 4, 4, 4, 4, 4, 4, ~, ~, ~, 4, 4, 4, 4, 5, 4, 4, 4, 4, 5, 4, 4, 5, ~, ~, ~, 4, 5, 5, 5, 4, 5, 5, 5, 5, 5, 5, 4, 5, ~, ~, ~, 4, 5, 5, 5, 4, 4, 5, 4, 5, 4, 4, 4, 4, ~, ~, ~]
-    velocity: [110, 104, 104, 104, 104, 104, 104, 104, 110, 104, 104, 104, 104, ~, ~, ~, 110, 104, 104, 104, 104, 104, 104, 104, 110, 104, 104, 104, 104, ~, ~, ~, 110, 104, 104, 104, 104, 104, 104, 104, 110, 104, 104, 104, 104, ~, ~, ~, 110, 104, 104, 104, 104, 104, 104, 104, 110, 104, 104, 104, 104, ~, ~, ~]
+    velocity: [115, 101, 104, 101, 106, 101, 104, 101, 115, 101, 104, 101, 106, ~, ~, ~, 115, 101, 104, 101, 106, 101, 104, 101, 115, 101, 104, 101, 106, ~, ~, ~, 115, 101, 104, 101, 106, 101, 104, 101, 115, 101, 104, 101, 106, ~, ~, ~, 115, 101, 104, 101, 106, 101, 104, 101, 115, 101, 104, 101, 106, ~, ~, ~]
   a low:
     steps: 64
     step_size: 1/8
     degree: [1, 3, 5, 3, 1, 5, 3, 5, 4, 5, 4, 2, 3, ~, ~, ~, 1, 3, 5, 3, 1, 5, 3, 5, 7, 1, 7, 5, 1, ~, ~, ~, 6, 1, 3, 1, 6, 1, 3, 1, 4, 3, 1, 6, 1, ~, ~, ~, 7, 2, 4, 2, 7, 5, 2, 7, 1, 5, 3, 5, 1, ~, ~, ~]
     octave: [4, 4, 4, 4, 5, 4, 4, 4, 4, 4, 4, 4, 4, ~, ~, ~, 4, 4, 4, 4, 5, 4, 4, 4, 4, 5, 4, 4, 5, ~, ~, ~, 4, 5, 5, 5, 4, 5, 5, 5, 5, 5, 5, 4, 5, ~, ~, ~, 4, 5, 5, 5, 4, 4, 5, 4, 5, 4, 4, 4, 4, ~, ~, ~]
-    velocity: [86, 80, 80, 80, 80, 80, 80, 80, 86, 80, 80, 80, 80, ~, ~, ~, 86, 80, 80, 80, 80, 80, 80, 80, 86, 80, 80, 80, 80, ~, ~, ~, 86, 80, 80, 80, 80, 80, 80, 80, 86, 80, 80, 80, 80, ~, ~, ~, 86, 80, 80, 80, 80, 80, 80, 80, 86, 80, 80, 80, 80, ~, ~, ~]
+    velocity: [91, 77, 80, 77, 82, 77, 80, 77, 91, 77, 80, 77, 82, ~, ~, ~, 91, 77, 80, 77, 82, 77, 80, 77, 91, 77, 80, 77, 82, ~, ~, ~, 91, 77, 80, 77, 82, 77, 80, 77, 91, 77, 80, 77, 82, ~, ~, ~, 91, 77, 80, 77, 82, 77, 80, 77, 91, 77, 80, 77, 82, ~, ~, ~]
   b:
     steps: 32
     step_size: 1/8
     degree: [5, ~, 3, 5, 1, ~, 5, ~, 7, ~, 5, 7, 2, ~, 7, ~, 6, ~, 3, 6, 1, ~, 6, ~, 5, 7, 2, 7, 5, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, "#", ~, ~, ~, ~]
     octave: [4, ~, 4, 4, 5, ~, 4, ~, 4, ~, 4, 4, 5, ~, 4, ~, 4, ~, 4, 4, 5, ~, 4, ~, 4, 4, 5, 4, 4, ~, ~, ~]
-    velocity: [106, ~, 100, 100, 100, ~, 100, ~, 106, ~, 100, 100, 100, ~, 100, ~, 106, ~, 100, 100, 100, ~, 100, ~, 106, 100, 100, 100, 100, ~, ~, ~]
+    velocity: [111, ~, 100, 97, 102, ~, 100, ~, 111, ~, 100, 97, 102, ~, 100, ~, 111, ~, 100, 97, 102, ~, 100, ~, 111, 97, 100, 97, 102, ~, ~, ~]
 
 progressions:
   a: { chords: [1, 1, 1, 1, 6, 6, 7, 1] }
