@@ -1917,9 +1917,15 @@
     It means: TiMidity found, started, waited for and ended as FluidSynth is; an instrument's device able to name either; the
     question at startup and the variable that answers it; the WAV export and the scripts that make and record the demos choosing
     the same way; an install script that offers it; and the pages on FluidSynth saying so.
+
 - title: "The MacroComposer's drummers refined"
   priority: 99
   text: |
     The players work and the user is happy with them from a sample of the trial songs. Later, the drummers may be refined:
     what each complexity adds in each style, how a drummer opens up from section to section, the fills and where they come.
     The decorations are in each style template's `players` block (`.claude/features/MACRO_COMPOSER.md`).
+
+- title: "The rest of serialism in the serial melody engine"
+  priority: 99
+  text: |
+    The serial engine has the row's four forms, forms moved and begun anywhere, rows of lengths, loudness and articulation, and chords of the row's neighbours. What is left matters inside a track more than across a song's structure, so it waits: the row multiplied, each of its intervals made five or seven times as wide; a row built from one small cell of three or four notes and the cell's own forms; two halves of a row paired so that two voices together sound every note before either repeats one; the row of lengths upside down or scaled, not only backwards; and chords that never reach from one form into the next. Each would be a habit of the engine in src/llamatron/macro_composer/melody.py with operations beside the ones in operations.py.

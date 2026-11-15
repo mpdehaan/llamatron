@@ -101,7 +101,12 @@ its own; a song's `melody` adds habits too.
   upside down (mirrored by places in the scale around its first note, so it stays in the scale) and both, each form moved to
   begin beside the note the last ended on; no note returns until the others have sounded. The lengths are a row of their
   own, read forwards and then backwards. Every voice shares the row. A varied line is the line's notes backwards in its own
-  rhythm. With `leaps` a note may take any octave in range. The experimental style template is built on it: three voices, no
+  rhythm. With `leaps` a note may take any octave in range. A form may begin anywhere in the row and go round (`rotations`,
+  usual). A voice may have a row of `loudness`, how much louder or softer than the voice each note is, and of `articulation`,
+  how many parts in four of each note's length sound, both read as the lengths are. Roles of one `voice` with `together: 3`
+  and `takes: 0`, `1` and `2` play chords of three neighbouring notes of the row, a track each (a chord that reaches from
+  one form into the next may hold a note twice). The rest of serialism waits in the ideas file, since the user wants melody
+  across a song's structure first. The experimental style template is built on it: three voices, no
   chords, no drums.
 
 - **Evolving** (`Evolving`, the user's choice of what came after serial): repeats that evolve, the principle of registers

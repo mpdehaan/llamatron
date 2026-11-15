@@ -48,6 +48,12 @@ PENTATONIC = [{notation.DEGREE: degree} for degree in (1, 2, 3, 5, 6)]
 # A line of two bars: a rest, six notes and a long last one.
 RHYTHM = [{notation.REST: 2}, {notation.STEPS: 2}, {notation.STEPS: 2}, {notation.STEPS: 1}, {notation.STEPS: 1}, {notation.STEPS: 2}, {notation.STEPS: 2}, {notation.STEPS: 4}]
 FAR = 5
+LOUDNESS = [-12, 0, 8, -4, 16]
+# Parts in four of each note's length that sound.
+ARTICULATION = [4, 2, 1, 3]
+VELOCITY = 80
+CHORDS_VOICE = 'chords'
+TOGETHER = 3
 LOW = 'low'
 ROCK = 'rock'
 EXPERIMENTAL = 'experimental'
@@ -66,6 +72,17 @@ def pitch_of(note):
 def rhythm_of(line):
     """A line's rests and lengths, without its notes."""
     return [(notation.REST in note, note.get(notation.STEPS, note.get(notation.REST))) for note in line]
+
+
+def starts_of(line):
+    """The steps at which a line's notes begin."""
+    starts = []
+    at = 0
+    for note in line:
+        if notation.REST not in note:
+            starts.append(at)
+        at += note.get(notation.STEPS, note.get(notation.REST))
+    return starts
 
 
 def serial(*, seed=SEED, voice=None, **habits):
@@ -154,6 +171,56 @@ class TestSerial(unittest.TestCase):
         self.assertNotEqual([note.get(notation.OCTAVE, 0) for note in near], [note.get(notation.OCTAVE, 0) for note in thrown])
 
 
+class TestSerialRows(unittest.TestCase):
+    """What the serial engine does with a row besides its four forms: rotation, loudness, articulation and chords."""
+
+    def sounds(self, lines):
+        return [note for line in lines for note in line if notation.REST not in note]
+
+    def test_a_form_may_begin_anywhere_in_the_row_and_without_rotations_begins_at_an_end(self):
+        row = serial(**{melody.ROTATIONS: False}).row()
+        forms = {tuple(form(row=row, size=NOTES_IN_SCALE)) for form in melody.FORMS}
+        for rotations, every_form_is_one_of_the_four in ((False, True), (True, False)):
+            heard = self.sounds(serial(**{melody.ROTATIONS: rotations}).sketched(PLAN[:NEW_LINES]))
+            notes = serial().notes()
+            places = [next(place for place, note in enumerate(notes) if pitch_of(note) == pitch_of(sound)) for sound in heard]
+            groups = [places[start:start + NOTES_IN_SCALE] for start in range(0, len(places) - NOTES_IN_SCALE + 1, NOTES_IN_SCALE)]
+            unmoved = [tuple(operations.moved(row=group, by=by, size=NOTES_IN_SCALE)) for group in groups for by in range(NOTES_IN_SCALE)]
+            found = [any(candidate in forms for candidate in unmoved[count * NOTES_IN_SCALE:(count + 1) * NOTES_IN_SCALE]) for count in range(len(groups))]
+            with self.subTest(rotations=rotations):
+                self.assertEqual(all(found), every_form_is_one_of_the_four)
+
+    def test_a_row_of_loudness_is_read_forwards_and_then_backwards_and_changes_how_loud_each_note_is(self):
+        heard = self.sounds(serial(**{melody.LOUDNESS: LOUDNESS}).sketched(PLAN[:NEW_LINES]))
+        count = len(LOUDNESS)
+        self.assertEqual([note[notation.LOUDER] for note in heard[:count * 2]], LOUDNESS + list(reversed(LOUDNESS)))
+        self.assertNotIn(notation.LOUDER, self.sounds(serial().sketched(PLAN[:NEW_LINES]))[0])
+        rows = notation.tune_rows(lines=[[{notation.DEGREE: 1, notation.STEPS: 1, notation.LOUDER: LOUDNESS[0]}, {notation.DEGREE: 2, notation.STEPS: 1}]],
+                                  octave=4, velocity=VELOCITY, step_size=notation.DEFAULT_STEP_SIZE)
+        self.assertEqual(rows[notation.VELOCITY], [VELOCITY + LOUDNESS[0], VELOCITY])
+
+    def test_a_row_of_articulation_cuts_notes_short_and_leaves_every_note_where_it_was(self):
+        plain = serial().sketched(PLAN[:NEW_LINES])
+        cut = serial(**{melody.ARTICULATION: ARTICULATION}).sketched(PLAN[:NEW_LINES])
+        self.assertEqual([pitch_of(note) for note in self.sounds(cut)], [pitch_of(note) for note in self.sounds(plain)])
+        for whole, short in zip(plain, cut):
+            self.assertEqual(starts_of(short), starts_of(whole))
+            self.assertEqual(sum(note.get(notation.STEPS, note.get(notation.REST)) for note in short), GRID * LINE_BARS)
+        self.assertTrue(any(notation.REST in note for line in cut for note in line))
+        self.assertTrue(all(note[notation.STEPS] >= 1 for note in self.sounds(cut)))
+
+    def test_voices_of_one_name_that_each_take_one_of_three_notes_play_chords_of_the_rows_neighbours(self):
+        parts = [self.sounds(serial(voice=CHORDS_VOICE, **{melody.TOGETHER: TOGETHER, melody.TAKES: takes}).sketched(PLAN[:NEW_LINES])) for takes in range(TOGETHER)]
+        alone = self.sounds(serial(voice=CHORDS_VOICE).sketched(PLAN[:NEW_LINES]))
+        self.assertEqual([note[notation.STEPS] for note in parts[0]], [note[notation.STEPS] for note in parts[1]])
+        self.assertEqual(len({pitch_of(note) for note in next(zip(*parts))}), TOGETHER)
+        for count, chord in enumerate(zip(*parts)):
+            # A chord that reaches from the end of one form into the next may hold one note twice.
+            self.assertGreaterEqual(len({pitch_of(note) for note in chord}), TOGETHER - 1)
+            if (count + 1) * TOGETHER <= len(alone):
+                self.assertEqual([pitch_of(note) for note in chord], [pitch_of(note) for note in alone[count * TOGETHER:(count + 1) * TOGETHER]])
+
+
 class TestEvolving(unittest.TestCase):
     """Repeats that evolve: one phrase, and a running amount added with every new line."""
 
@@ -218,8 +285,8 @@ class TestEngineChosen(unittest.TestCase):
         made = arranger.arranged(style=style, song=song)
         self.assertEqual(style[arranger.MELODY][melody.ENGINE], melody.SERIAL)
         voices = [part for name, part in made[composer.PARTS].items() if name.startswith(THREE)]
-        self.assertEqual(len(voices), len(style[arranger.ROLES]))
+        self.assertEqual(len(voices), len(style[arranger.SECTIONS][THREE][arranger.PLAYS]))
         for voice in voices:
-            heard = [pitch_of(note) for line in voice[notation.LINES] for note in line][:NOTES_IN_SCALE]
+            heard = [pitch_of(note) for line in voice[notation.LINES] for note in line if notation.REST not in note][:NOTES_IN_SCALE]
             self.assertEqual(len(set(heard)), NOTES_IN_SCALE)
 

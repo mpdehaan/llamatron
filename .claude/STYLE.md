@@ -115,7 +115,10 @@ must take apart again and a person must count the characters of: a kick's bar is
 questions of data that has to be parsed first is miserable, and a long string is no easier to edit than an array. This holds for
 data files and generated modules as for objects in memory; data the program ships is a Python module of named constants that is
 imported, never a text file that is parsed. A string drawn for reading, in a report or on the screen, is made from the array
-where it is shown (the user's rule).
+where it is shown (the user's rule). The one exception is the MacroComposer's style templates, YAML files in
+`src/llamatron/macro_composer/style_templates/`, which stay YAML so that a musician can read and edit one; a style gets a small
+Python class, a subclass of the one that reads any template, only where the style behaves differently, such as what a knob of
+its own does (the user's choice).
 
 **Every piece of text the program shows or raises is a constant**, written as a template and
 filled in with `.format()` where it's used, so that wording can be edited in one place and kept
