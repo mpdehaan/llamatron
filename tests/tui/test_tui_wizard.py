@@ -96,7 +96,7 @@ class WizardTest(UITest):
 
 class TestWizardPage(WizardTest):
 
-    async def test_f9_opens_the_wizard_from_any_page_with_the_cursor_in_the_tree_on_genre(self):
+    async def test_f5_opens_the_wizard_from_any_page_with_the_cursor_in_the_tree_on_genre(self):
         self.assertIsInstance(self.wizard(), WizardPage)
         self.assertFalse(self.wizard().in_fields)
         self.assertEqual(self.wizard().branch().name(), MSG_WIZARD_GENRE_BRANCH)
@@ -105,7 +105,7 @@ class TestWizardPage(WizardTest):
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, SongsPage)
 
-    async def test_f9_in_the_wizard_says_the_wizard_is_open(self):
+    async def test_f5_in_the_wizard_says_the_wizard_is_open(self):
         await self.press(keybindings.Page.WIZARD)
         self.assertIsInstance(self.wizard(), WizardPage)
         self.assertEqual(len(self.app.pages()), 2)

@@ -9,7 +9,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - `Ctrl+O` OPEN
 - `Ctrl+X` EXPORT
 - `Ctrl+T` SILENCE
-- `F9` WIZARD
+- `F5` WIZARD
 - `Ctrl+Z` UNDO
 - `Ctrl+Y` REDO
 - `F1` HELP

@@ -53,8 +53,8 @@ BOUND_THROUGH_KEYS = r'\bKEYS\.{name}\b'
 BOUND_BY_CLASS = r'\bkeybindings\.\w+\.{name}\b'
 # How the bindings module names a key's name.
 NAMED = r'\bKeyName\.{name}\b'
-# The keys no binding has, and why: Delete is read as Backspace, Shift with an arrow is never bound, which tests check, and F5 is a key that does nothing, which a test presses.
-NEVER_BOUND = (Key.DELETE, *SHIFT_UP_DOWN, *SHIFT_LEFT_RIGHT, Key.F5)
+# The keys no binding has, and why: Delete is read as Backspace, Shift with an arrow is never bound, which tests check, and F4 is a key that does nothing, which a test presses.
+NEVER_BOUND = (Key.DELETE, *SHIFT_UP_DOWN, *SHIFT_LEFT_RIGHT, Key.F4)
 
 
 def every_module():

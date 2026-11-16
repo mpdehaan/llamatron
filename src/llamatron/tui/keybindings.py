@@ -74,8 +74,8 @@ class Page:
     HELP = (Key.F1, KeyName.F1, What.HELP)
     # About is F3, so that F2 renames as on Windows, the user's choice.
     ABOUT = (Key.F3, KeyName.F3, What.ABOUT)
-    # The song wizard is F9, set apart from F1 and F3, which only inform, the user's choice.
-    WIZARD = (Key.F9, KeyName.F9, What.WIZARD)
+    # The song wizard is F5, set apart from F1 and F3, which only inform, the user's choice: F9 and the keys above it are the Mac's own.
+    WIZARD = (Key.F5, KeyName.F5, What.WIZARD)
     BACK = (Key.ESCAPE, KeyName.ESCAPE, What.BACK)
     # The keys every page has, in the order the F1 dialog lists them. Ctrl+S is Save because a plain
     # letter would be typed into names, and Cmd+S never reaches a terminal program. Open is Ctrl+O,
