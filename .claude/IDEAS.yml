@@ -1599,6 +1599,19 @@
   text: |
     The Band's Guitarists field offers 1 or 2 today. More is a common band and would mean something to the music, not only a number: a third guitarist can double the chords an octave apart or in another voicing, play an acoustic guitar under electric ones, or join the lead in a tune harmonized in thirds, two leads at once. Each of those is a way of playing to write for the genres that have it, and the solo could then pass between two lead players. Undecided: whether the count alone is chosen and the genre decides what the extra player does, or the person picks the extra player's job.
 
+- title: "Stepping to the previous and next pattern of the group, in the pattern editor"
+  priority: 99
+  text: |
+    The user's idea: in the pattern editor, a pair of keys steps to the previous and the next pattern of the pattern group the
+    open pattern is in, in the order the Patterns page lists them. The pattern shown changes in the view that is open, the
+    piano roll or the rows, and nothing else of the navigation changes: the crumbs keep their trail with the new pattern's
+    name, and ESC goes back to where the editor was opened from. Which keys is to be decided from suggestions of Claude's.
+    To settle with it: whether the step stops at the group's first and last pattern, as a cursor does, what happens for a
+    pattern in no group (the ungrouped patterns as one list is the likely answer), whether the cursor keeps its step and row,
+    what a preview that is playing does, and whether an editor opened from a clip on Arrange may step at all, since the clip
+    would still play the pattern it names. What it would mean for the code: `PatternEditor` swapping the pattern it edits
+    in place, with `Setlist.patterns_in_group` for the order, the undo history treating the step as navigation.
+
 - title: "Keyswitches: what the first build left out"
   priority: 100
   text: |
