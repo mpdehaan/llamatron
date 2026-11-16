@@ -24,7 +24,7 @@ Run from the top folder:
 
 `internal_tools/bump.sh` runs the first, and internal_tools/check_before_commit.sh runs the second before the tests. The bump
 goes through this script, never a hand edit or a text replacement, because a replacement that
-matches nothing changes nothing and says nothing: on 2026-11-09 two commits went in without their
+matches nothing changes nothing and says nothing: two commits once went in without their
 bump that way. Each line this script rewrites has to be found exactly once, or it stops.
 """
 

@@ -20,7 +20,7 @@ The grid's size comes from the pattern's step count, and typing never changes it
 cursor. Every step lasts the pattern's step size. A step with a note sounds for its gate, which
 can run on past later steps, up to the end of the pattern, and a step with no note is a rest. A
 pattern wider than the screen scrolls sideways as the cursor moves, rather than wrapping onto more
-blocks, as the user chose, so that a bar is always one row of columns.
+blocks, so that a bar is always one row of columns.
 
 The editor shows one of two views, each a component with its own cursor, keys and drawing:
 PatternRows (tui/components/pattern_rows.py), the rows, and PianoRoll. The editor keeps what
@@ -28,7 +28,7 @@ they share: the cursor's step, the keys that work in both, and the edits to the 
 Each row of the grid is an object from tui/components, built once per row name, which says what
 its cells show and what its keys do when the cursor is on it. The Degree row is a gauge, and
 the pinned rows (the gauge with its number, and the octave under it) stay at the top while the
-rows beneath scroll. Those rows come in sections, the user's design of 2026-11-08 in place of sets
+rows beneath scroll. Those rows come in sections, in place of sets
 of rows that Tab cycled through: each section is headed by a row of the grid (SectionRow) that
 Space or Enter opens or closes, PgUp and PgDn jump between the headings, and which sections
 are open is kept on the app for the session.
@@ -94,7 +94,7 @@ class Munge:
 
 
 class Reconfigure:
-    """The Reconfigure dialog's choices, in the order reconfigure_choices lists them: the whole-pattern actions that R gathers, as the user asked on 2026-11-08, so that the legend stays short."""
+    """The Reconfigure dialog's choices, in the order reconfigure_choices lists them: the whole-pattern actions that R gathers, so that the legend stays short."""
 
     MUNGE = 0
     LOAD_OVER = 1
@@ -123,7 +123,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         # The track of the clip the editor was opened from, whose instrument names the keyswitches, or None when the Patterns page opened it.
         self.opened_track = track
         # The page a clip opened the editor from, Arrange or the clip page, whose crumbs come first in the editor's, so that the crumbs
-        # say where Esc goes back to (the user's choice of 2026-11-09). None when the Patterns page opened it, whose crumbs are the editor's own.
+        # say where Esc goes back to. None when the Patterns page opened it, whose crumbs are the editor's own.
         self.opened_from = opened_from
         self.show_item(name)
         # The cursor's step and the window of steps, which StepEditor keeps, are shared by the two views.
@@ -209,7 +209,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
 
         The instrument is known when a clip opened the editor, whose track plays it, or when
         every track that plays the pattern has the one instrument; otherwise the slots go by
-        their numbers alone (the user's choice).
+        their numbers alone.
         """
         document = self.document()
         song = document.song()
@@ -230,7 +230,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         return self.document().song().get_named_scale(names[0]) if names else None
 
     def resting_status(self):
-        """Say the chord under the cursor, in the scale the pattern is known to play under, while the cursor rests on a step that holds one (the user's design)."""
+        """Say the chord under the cursor, in the scale the pattern is known to play under, while the cursor rests on a step that holds one."""
         self.clamp()
         if self.is_drum() or not self.is_note() or not isinstance(self.value(row=Row.DEGREE), int):
             return NOTHING
@@ -410,7 +410,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         self.ask(dialog=PromptDialog(title=MSG_STEPS_PROMPT, value=self.steps()), then=answered)
 
     def toggle_drum(self):
-        """Switch between drum and note patterns, always asking first, as the user chose, since the rows change and any notes go."""
+        """Switch between drum and note patterns, always asking first, since the rows change and any notes go."""
         drum = not self.is_drum()
 
         def change(_):

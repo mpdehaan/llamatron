@@ -62,7 +62,7 @@ THREE_EIGHT = '3/8'
 CUT_TIME = '2/2'
 FIVE_SIXTEENTHS = '5/16'
 HALF = '1/2'
-# The keys that doubled and halved a gate before 2026-11-09, which now do nothing on the Gate row.
+# The keys that doubled and halved a gate once, which now do nothing on the Gate row.
 GATE_KEYS_REMOVED = ('*', '/')
 # A pattern too wide for the screen, and a step about halfway along it.
 LONG = 64
@@ -108,7 +108,7 @@ class TestPatternEditor(PatternEditorTest):
         self.assertEqual(self.document.song().get_pattern(TUNE).to_data(), before)
 
     async def test_the_brackets_are_two_legend_entries_on_the_number_rows_less_and_more(self):
-        # The user asked on 2026-11-09 for [ and ] each named with what it does, where the legend read [/] adjust.
+        # [ and ] are each named with what it does, where the legend once read [/] adjust.
         while self.editor.row_name() != Row.VELOCITY:
             await self.press(Key.DOWN)
         less = KEY_SHOWN.format(label=KeyName.LEFT_BRACKET) + MSG_LEGEND_WHAT.format(what=What.LESS)
@@ -160,7 +160,7 @@ class TestPatternEditor(PatternEditorTest):
         self.assertEqual(self.value(row=Row.GATE), EIGHTH)
 
     async def test_the_gauge_stops_at_the_scales_top_and_bottom_and_says_where_the_octave_is_changed(self):
-        # In a five-note scale, 6 can't be typed, and + from the top stays on 5 and says so, as the user chose over carrying into the next octave.
+        # In a five-note scale, 6 can't be typed, and + from the top stays on 5 and says so, rather than carrying into the next octave.
         self.document.add_scale(name=SMALL_SCALE, root=NoteName.C, kind=scale_type_name(ScaleType.MAJOR_PENTATONIC))
         self.document.set_scale_name(SMALL_SCALE)
         self.document.set_scene_scale(index=0, name=None)
@@ -313,7 +313,7 @@ class TestPatternEditorLengthsAndPitches(PatternEditorTest):
         self.assertEqual(self.value(row=Row.GATE), EIGHTH)
 
     async def test_a_gate_has_no_keys_to_double_or_halve_it(self):
-        """A gate is stepped with the brackets or typed with Enter, the user's choice of 2026-11-09, which keeps the legend and the help short."""
+        """A gate is stepped with the brackets or typed with Enter, which keeps the legend and the help short."""
         await self.go_to_row(Row.GATE)
         before = self.value(row=Row.GATE)
         await self.press(*GATE_KEYS_REMOVED)
@@ -372,7 +372,7 @@ class TestPatternEditorLengthsAndPitches(PatternEditorTest):
         self.assertEqual(self.value(row=Row.ACCIDENTAL), Accidental.FLAT)
 
     async def test_the_brackets_cycle_sharp_and_flat_and_the_legend_names_space_or_enter_and_the_brackets(self):
-        # The one adjust system, the user's words of 2026-11-09: [ dec and ] inc on every row, with Space or Enter going to the next choice.
+        # The one adjust system: [ dec and ] inc on every row, with Space or Enter going to the next choice.
         await self.go_to_row(Row.ACCIDENTAL)
         await self.press(keybindings.AccidentalRow.MORE)
         self.assertEqual(self.value(row=Row.ACCIDENTAL), Accidental.SHARP)
@@ -417,7 +417,7 @@ class TestPatternEditorLengthsAndPitches(PatternEditorTest):
             await self.press(keybindings.ChordRow.MORE)
             seen.append(self.value(row=Row.CHORD))
         self.assertEqual(seen, ['M', 'm', ChordSymbol.DIMINISHED, ChordSymbol.AUGMENTED])
-        # [ goes back to none, the first choice, and stops there, never round to the last (the user's rule).
+        # [ goes back to none, the first choice, and stops there, never round to the last.
         await self.press(*[keybindings.ChordRow.LESS] * 5)
         self.assertIsNone(self.value(row=Row.CHORD))
         await self.press(keybindings.ChordRow.MORE)
@@ -452,7 +452,7 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
         self.assertNotIn(KEY_SHOWN.format(label=Key.PLUS), self.text())
 
     async def test_nothing_on_the_rows_takes_shift_with_an_arrow(self):
-        """The rows' keys are plain ones, the user's choice of 2026-11-09: the bar jump and the Shift+Up and Shift+Down nudge went."""
+        """The rows' keys are plain ones: the bar jump and the Shift+Up and Shift+Down nudge went."""
         every = [name for item in self.editor.key_table() for name in item.keys]
         for name in (*SHIFT_UP_DOWN, *SHIFT_LEFT_RIGHT):
             self.assertNotIn(name, every)
@@ -573,7 +573,7 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
         self.assertIn(FROM_1_TO_127, self.text())
 
     async def test_glide_toggles_with_space_and_shows_the_dot_like_tie(self):
-        # The user chose the dot over a bar into the next step on 2026-11-09.
+        # The dot was chosen over a bar into the next step.
         await self.go_to_row(Row.GLIDE)
         glide = self.editor.row_for(Row.GLIDE)
         self.assertEqual(glide.cell_text(step=0), MSG_TOGGLE_OFF)

@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Choosing the imported song's step size, where its scenes split, and which pattern each clip repeats, the user's design of 2026-11-10.
+"""Choosing the imported song's step size, where its scenes split, and which pattern each clip repeats.
 
 The rules, in the order they give way:
 

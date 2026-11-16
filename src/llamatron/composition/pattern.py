@@ -313,8 +313,8 @@ class Pattern(PatternNotes, LlamaData):
         """Empty a step of its note, keeping only what a rest can hold: CC values, slides and every register row.
 
         The ties on the steps right after it go too, since they held this note and would be left
-        hanging onto an earlier one, as the user decided on 2026-11-08. A register's +Note and
-        +Vel rows stay with its += row, as the user decided: erasing takes the note and the ties
+        hanging onto an earlier one. A register's +Note and
+        +Vel rows stay with its += row: erasing takes the note and the ties
         that drew it, and nothing a rest can hold.
         """
         self._check_step(step)

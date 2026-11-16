@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""What a chord is, said once for a pattern's step and a progression's chord (the user's design): a degree of a scale, a sharp
+"""What a chord is, said once for a pattern's step and a progression's chord: a degree of a scale, a sharp
 or flat, the scale type it borrows its notes from, a chord symbol, and the tensions added on top.
 
 A chord's parts are worked out in one order. The scale type, when one is set, takes the place of the clip's scale on the same

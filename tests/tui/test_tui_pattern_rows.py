@@ -51,7 +51,7 @@ class TestTheRowsLimitsAreTheFiles(PatternEditorTest):
 
     async def test_every_row_of_numbers_stops_at_the_limits_a_file_is_checked_against(self):
         for name, described in ROW_DESCRIPTIONS.items():
-            # The register rows that change a register step through a shorter line than a file allows, by the user's design: TestRegisterChangeRows holds them to it.
+            # The register rows that change a register step through a shorter line than a file allows, by design: TestRegisterChangeRows holds them to it.
             if type(described) is not RowOfNumbers or name in NARROWER_ROWS:
                 continue
             with self.subTest(row=name):

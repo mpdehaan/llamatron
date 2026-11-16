@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The Scale row of the pattern editor: the scale type a step's degree and chord are drawn from, on the clip's root, which is how a chord is borrowed (the user's design)."""
+"""The Scale row of the pattern editor: the scale type a step's degree and chord are drawn from, on the clip's root, which is how a chord is borrowed."""
 
 from llamatron.composition.naming import words
 from llamatron.strings.marks import MSG_UNSET_MARK

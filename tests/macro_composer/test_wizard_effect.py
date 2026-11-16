@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The song wizard's choices: what a subgenre fills in, what each setter refuses, the choices kept and read back, and the song made."""
 
-"""Every choice the song wizard offers changes the song that is made, the user's rule: a choice that changes nothing is a field
+"""Every choice the song wizard offers changes the song that is made: a choice that changes nothing is a field
 that lies. Each choice of each subgenre is made alone on fresh choices and the song arranged from it is held against the song
 arranged without it. The choices known to change nothing are counted, by genre and kind, in KNOWN_TO_CHANGE_NOTHING with the
 reason; a count that moves either way fails, so that a new dead choice is caught and a fixed one is taken off the list."""

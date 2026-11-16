@@ -117,7 +117,7 @@ class TrackEditor(ShowsNamedItem, FieldPage):
         self.document().set_track_instrument(name=self.item, instrument=instrument)
 
     def register_field(self, *, label, current, bind):
-        """Return a field binding a CC lane or the velocity to a register, (none) first and then AX to DX, the user's design of 2026-11-11."""
+        """Return a field binding a CC lane or the velocity to a register, (none) first and then AX to DX."""
         choices = [MSG_NONE_SHOWN, *REGISTER_NAMES]
         return ChoiceField(
             page=self, label=label, choices=choices, current=current or MSG_NONE_SHOWN,

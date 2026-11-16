@@ -76,7 +76,7 @@ class TestOpenPage(UITest):
         await self.press(Key.ENTER)
 
     async def test_it_comes_back_to_the_directory_it_last_showed(self):
-        # The user's ask: kept for the session, whether a file was opened there or the page was left with ESC.
+        # Kept for the session, whether a file was opened there or the page was left with ESC.
         os.makedirs(os.path.join(FOLDER_OF_SETS, INNER_FOLDER))
         a_song().save(path=os.path.join(FOLDER_OF_SETS, 'kept song.yml'))
         await self.press(Key.CTRL_O)

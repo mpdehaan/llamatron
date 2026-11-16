@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Maze, a visualizer mode in homage to the Windows 3D Maze, seen from above: a maze in box characters, with a walker for each track threading its corridors as its notes play, the user's choice of 2026-11-10.
+"""Maze, a visualizer mode in homage to the Windows 3D Maze, seen from above: a maze in box characters, with a walker for each track threading its corridors as its notes play.
 
 The maze is made afresh for the area by a random depth-first carving, its walls drawn dim in the
 light box characters that join properly at every corner and tee. Each track that has played is a

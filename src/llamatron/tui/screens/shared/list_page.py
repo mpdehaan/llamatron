@@ -52,7 +52,7 @@ class ListPage(Page):
 
     columns = ()
     # The most room the column with no width of its own takes, the names: a name is at most this long, so the columns after it
-    # stay close to it however wide the console (the user's rule). None on a page whose first column isn't names, as files.
+    # stay close to it however wide the console. None on a page whose first column isn't names, as files.
     NAME_COLUMN_WIDTH = MAX_NAME_LENGTH
 
     def __init__(self, holder):
@@ -61,7 +61,7 @@ class ListPage(Page):
         self.searching = False
         self.typed = NOTHING
         self.place_before_search = 0
-        # Move mode, the user's design: whether M has picked up the cursor's row, and whether it has been carried yet, so that one move is one undo step.
+        # Move mode: whether M has picked up the cursor's row, and whether it has been carried yet, so that one move is one undo step.
         self.moving = False
         self.carried = False
 
@@ -95,7 +95,7 @@ class ListPage(Page):
         table = super().page_key_table()
         if self.can_add() and self.current() is None:
             table.insert(1, self.bind(self.KEYS.ADD_HERE, action=self.add))
-        # The search key works everywhere on a list but stays off the legend, where F1 lists it, as the user asked on 2026-11-08.
+        # The search key works everywhere on a list but stays off the legend, where F1 lists it.
         table.append(self.bind(self.KEYS.SEARCH, action=self.start_search))
         return self.in_order(table)
 
@@ -191,7 +191,7 @@ class ListPage(Page):
             self.place = rows.index(place)
         self.clamp()
 
-    # Move mode, the user's design: M picks up the cursor's row, Up and Down carry it, and Enter, Esc or M drops it where it is.
+    # Move mode: M picks up the cursor's row, Up and Down carry it, and Enter, Esc or M drops it where it is.
 
     def start_moving(self):
         self.moving = True

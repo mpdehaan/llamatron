@@ -62,7 +62,7 @@ class RegistersPage(FieldPage):
 
     def register_fields(self, name):
         """Return one register's settings as fields, in the grid's order of columns: Allowed inc max, At limit, Minimum, Default,
-        Maximum and Reset each scene, the user's order."""
+        Maximum and Reset each scene."""
         register = self.document().register(name)
         values = {
             RegisterSetting.DEFAULT: register.get_default(), RegisterSetting.MINIMUM: register.get_minimum(),
@@ -89,7 +89,7 @@ class RegistersPage(FieldPage):
         result += [numbers[RegisterSetting.MINIMUM], numbers[RegisterSetting.DEFAULT], numbers[RegisterSetting.MAXIMUM], reset]
         return result
 
-    # The grid, the user's design: a row for each register and a column for each setting.
+    # The grid: a row for each register and a column for each setting.
 
     def keys(self):
         field = self.field()

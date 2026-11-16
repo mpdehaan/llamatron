@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """One scale's page: its name, root and kind on one page, with its notes underneath.
 
-It replaced the Scales page's two pickers in a row on 2026-11-07, as the user asked: left and right
+It replaced the Scales page's two pickers in a row: left and right
 step the root and the kind, and Enter opens the root keyboard or the pages of kinds.
 """
 

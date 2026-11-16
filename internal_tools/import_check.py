@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Import every sample MIDI file into a new set and report what it made and whether it plays back the same, the proof the user asked for on 2026-11-10.
+"""Import every sample MIDI file into a new set and report what it made and whether it plays back the same.
 
     .venv/bin/python internal_tools/import_check.py                     # the MIDI files in examples/midi/, then every example set
     .venv/bin/python internal_tools/import_check.py some.mid other.mid  # only the MIDI files named

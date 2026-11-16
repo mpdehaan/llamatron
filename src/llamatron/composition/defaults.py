@@ -41,7 +41,7 @@ DEFAULT_FOLLOW_ACTION = FollowAction.WITH_SCENE
 DEFAULT_LAUNCH_TOGETHER = True
 # An instrument's channel, as people number them.
 DEFAULT_CHANNEL = 1
-# A keyswitch is sent at the same moment as its note, before it, unless the instrument says earlier, and always at one velocity (the user's rules).
+# A keyswitch is sent at the same moment as its note, before it, unless the instrument says earlier, and always at one velocity.
 DEFAULT_KEYSWITCH_LEAD = 0
 KEYSWITCH_VELOCITY = 100
 # Whether the set plays in real time, which the first instrument added turns on.
@@ -62,7 +62,7 @@ DEFAULT_REGISTER_MAXIMUM = 10
 DEFAULT_REGISTER_VALUE = 0
 DEFAULT_AT_LIMIT = AtLimit.STOP
 DEFAULT_RESET_EACH_SCENE = False
-# The most a step may add to a register or take from it, unless the register says otherwise: enough for every example written before the limit came (the user's choice of 2026-11-11).
+# The most a step may add to a register or take from it, unless the register says otherwise: enough for every example written before the limit came.
 DEFAULT_ALLOWED_INC_MAX = 20
 DEFAULT_GROOVE_CELL_LENGTH = '1/16'
 # The factory groove that moves nothing, FactoryGroove.NONE, which groove.py checks matches.

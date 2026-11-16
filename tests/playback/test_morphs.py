@@ -143,7 +143,7 @@ class TestClipMorph(unittest.TestCase):
                 song_from_data(with_parts(scenes=[{Section.TRACKS: {LEAD: clip_slot}}]))
 
     def test_a_clip_slot_names_only_a_scale_the_set_has(self):
-        # A clip can set its own scale since 2026-11-11, the user's design, but only one of the set's.
+        # A clip can set its own scale, but only one of the set's.
         with self.assertRaises(SongFileError):
             song_from_data(with_parts(scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.SCALE: NOPE}}}]))
 

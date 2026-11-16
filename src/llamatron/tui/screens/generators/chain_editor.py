@@ -87,7 +87,7 @@ class ChainEditor(ShowsNamedItem, ListPage):
         ], always=[self.bind(self.KEYS.RENAME, action=self.rename)])
 
     def pick_generator(self, *, title, then):
-        """Ask for a generator: a new one first, the user's ask, then every one the set has, each with its kind; then(kind=, name=) takes the one chosen."""
+        """Ask for a generator: a new one first, then every one the set has, each with its kind; then(kind=, name=) takes the one chosen."""
         song = self.document().song()
         options = [(kind, name) for kind in NAMED_GENERATORS for name in sorted_names(song.get_generator_names(kind))]
         labels = [MSG_NEW_GENERATOR_CHOICE, *[step_shown(kind=kind, name=name) for kind, name in options]]

@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The Scales page: the set's named scales, each opened on its own page since 2026-11-07."""
+"""The Scales page: the set's named scales, each opened on its own page."""
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.named_scale import scale_type_name
@@ -62,7 +62,7 @@ class ScalesPage(NamedListPage):
         self.show_page(ScalePage(holder=self.holder, name=self.current()))
 
     def add(self):
-        """Add a C major scale, named by its number as every new thing is (the user's rule, since a name after its notes was
+        """Add a C major scale, named by its number as every new thing is (since a name after its notes was
         wrong once the notes changed), and open its page to change it."""
         name = new_name(word=MSG_NEW_SCALE_WORD, taken=self.names())
         self.document().add_scale(name=name, root=NEW_SCALE_ROOT, kind=NEW_SCALE_KIND)

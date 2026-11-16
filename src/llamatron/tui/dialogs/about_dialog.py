@@ -48,7 +48,7 @@ def cow_saying(text):
     ]
 
 
-# How often the magic eight ball answers in place of a quote, as the user chose.
+# How often the magic eight ball answers in place of a quote.
 EIGHT_BALL_CHANCE = 1 / 3
 # How many lines a quote may wrap onto; up to three keep the dialog on an 80 by 24 console.
 QUOTE_LINES = 4
@@ -64,7 +64,7 @@ def random_quote():
 class AboutDialog(Dialog):
     """The cow saying the program's name, the version and when it was built, the links, a quote chosen as it opens, and the license.
 
-    The lines are laid out as the user asked on 2026-11-09: the cow with its caption and the version
+    The lines are laid out in this order: the cow with its caption and the version
     straight under it, the links, and the quote set off by a blank line above and below, which is
     all that fits an 80 by 24 console.
     """
@@ -83,7 +83,7 @@ class AboutDialog(Dialog):
         return [self.bind(self.KEYS.CLOSE, action=lambda: self.dismiss(None))]
 
     def quote_lines(self, width):
-        """Return the quote wrapped to the dialog's width, on up to QUOTE_LINES lines, as the user asked."""
+        """Return the quote wrapped to the dialog's width, on up to QUOTE_LINES lines."""
         return [line.plain for line in wrapped(text=self.quote, width=width)[:QUOTE_LINES]]
 
     def lines(self, width):

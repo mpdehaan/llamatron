@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The Voice leading generator, the user's design of 2026-11-11: each chord voiced nearest the chord before, within a range, the root kept in the bass when asked.
+"""The Voice leading generator: each chord voiced nearest the chord before, within a range, the root kept in the bass when asked.
 
 The tests play a C major triad, written in root position, through the progression I V vi IV, a
 chord a bar, and voice it.

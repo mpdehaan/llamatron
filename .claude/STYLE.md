@@ -153,6 +153,11 @@ or module they import from, and the names one line imports are in alphabetical o
 has to stand elsewhere to avoid a circular import (the user's rule). New and changed modules follow it; the modules written
 before it are brought over as agreed with the user.
 
+**A comment gives its reason, never whose choice it was.** A comment or a docstring in the code says what a thing is for and why, for a
+person maintaining the code: never that a choice was the user's, that the user asked for it, or the date it was made. Whose a choice
+was is kept in the notes of `.claude/`, which mark the user's rules and designs so that Claude asks before changing one, and the
+dates are in `.claude/DECISIONS.md` (the user's rule).
+
 **A line whose purpose isn't obvious gets a name.** A regular expression or a long expression is
 given a function or method whose name says what it means, such as `is_root_note(text)`. That
 includes list and dictionary comprehensions: anything more than a plain copy or filter goes in a

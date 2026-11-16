@@ -34,7 +34,7 @@ class StatusLine:
         self._refusal = False
 
     def say(self, text, *, refusal=False):
-        """Show a message, a refusal or problem drawn in amber and anything else dim, the user's design."""
+        """Show a message, a refusal or problem drawn in amber and anything else dim."""
         self._text = text
         self._refusal = refusal
 

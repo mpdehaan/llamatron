@@ -53,7 +53,7 @@ class PlayerBranch(Branch):
             fields.append(self.fills_field())
             if choices.has_quiet_notes() or not choices.plays_quiet_notes():
                 fields.append(Toggle(label=MSG_WIZARD_QUIET_NOTES_LABEL, on=choices.plays_quiet_notes(), set=self.page().choosing(choices.set_quiet_notes)))
-            # The drums: a toggle for each piece of the kit the song plays, the user's design.
+            # The drums: a toggle for each piece of the kit the song plays.
             fields += [Toggle(label=MSG_WIZARD_KIT_PIECE.format(piece=piece), on=choices.piece_is_on(piece), set=self.piece_setter(piece)) for piece in choices.pieces()]
         return fields
 
@@ -87,7 +87,7 @@ class PlayerBranch(Branch):
 
     def fills_field(self):
         """Return the field for how often a fill comes: a number stepped or typed, drawn as a horizontal gauge that is empty at
-        never, the user's design, beside the words for the position."""
+        never, beside the words for the position."""
         choices = self.choices()
         position = choices.get_fills()
         gauge = MSG_WIZARD_GAUGE_FULL * (position - FEWEST_FILLS) + MSG_WIZARD_GAUGE_EMPTY * (MOST_FILLS - position)

@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The Shorten generator: a row of on-or-off steps that makes the notes starting on the steps that are on play short, a share of their length with a rest after, the user's design of 2026-11-11."""
+"""The Shorten generator: a row of on-or-off steps that makes the notes starting on the steps that are on play short, a share of their length with a rest after."""
 
 from llamatron.generators.glide import StepRow
 from llamatron.music.sound import LENGTH, Sound

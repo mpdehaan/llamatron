@@ -21,7 +21,7 @@ held, and lets it fall at a steady rate when it ends. Each bar is drawn at the c
 resolution, its top an eighth block (`▁` to `█`), so that it rises smoothly in eight steps a row,
 coloured up its height from green through yellow to red as WinAmp's were, held under a ceiling so
 that it never glares. A cap above each bar marks its highest recent level, hangs a moment and
-drops slowly. The amounts are named constants here, for the user to tune by eye.
+drops slowly. The amounts are named constants here, to tune by eye.
 """
 
 import numpy

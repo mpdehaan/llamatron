@@ -73,7 +73,7 @@ class EveryKeyIsShownTests:
             self.assertIsInstance(self.app.screen, HelpDialog, where)
             text = self.text()
             for item in page.key_table():
-                # F1 is the one key its own dialog doesn't list, by the user's choice of 2026-11-09: whoever reads the dialog pressed it.
+                # F1 is the one key its own dialog doesn't list: whoever reads the dialog pressed it.
                 if item.binding is keybindings.Page.HELP:
                     continue
                 with self.subTest(where=where, label=item.shown_label()):

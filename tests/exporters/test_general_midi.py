@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The General MIDI export, the user's design of 2026-11-11: one MIDI file with drums on channel 10, every other track on a channel of its own, and each track's instrument's General MIDI sound sent first as a program change."""
+"""The General MIDI export: one MIDI file with drums on channel 10, every other track on a channel of its own, and each track's instrument's General MIDI sound sent first as a program change."""
 
 import unittest
 

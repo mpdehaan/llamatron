@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """Register binding, the = rows and the conditions: what a step sets a register to, when a note is silenced, and what a bound CC lane and a bound velocity send.
 
-The user's design of 2026-11-11. A step's sets come before its adds, a set is held to the
+A step's sets come before its adds, a set is held to the
 register's range, a condition never stops a change, the conditions on a step must all hold, a
 bound velocity stands in for a blank Velocity, and a bound CC lane sends its register's value at
 the clip's start and whenever it changes, with the clip's own value winning at the same moment.

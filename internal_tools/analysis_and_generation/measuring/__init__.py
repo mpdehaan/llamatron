@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Measuring a song's style from the notes it plays: a tool for research, not a part of the program (the user's choice). It
+"""Measuring a song's style from the notes it plays: a tool for research, not a part of the program. It
 was the program's genre library, moved here once nothing a person runs used it; the corpus tables are made with it.
 
 Two packages: measures/ (what is measured, each trait a value that compares field by field, and how values compare) and

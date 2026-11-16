@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Restart, on every generator, the user's design of 2026-11-11: every clip, on new scene or whole song.
+"""Restart, on every generator: every clip, on new scene or whole song.
 
 Each test plays a one-bar figure of four quarter notes, C, E, G and A in C major, in scenes of
 two bars, so that where a generator's run carries on shows in the second scene.

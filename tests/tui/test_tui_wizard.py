@@ -352,7 +352,7 @@ class TestWizardBand(WizardTest):
         await self.open_the_band()
         choices = self.choices()
         self.assertEqual([field.label for field in self.wizard().fields()], [MSG_WIZARD_SOUNDS_LABEL, *(choices.role_title(role) for role in choices.roles() if choices.role_can_play(role))])
-        # The Band starts open, the user's ask: Left closes it and Right opens it to a branch for each player who is in.
+        # The Band starts open: Left closes it and Right opens it to a branch for each player who is in.
         rows = len(self.wizard().rows())
         await self.press(Key.LEFT)
         self.assertEqual(len(self.wizard().rows()), rows - len(choices.roles_in()))
@@ -494,7 +494,7 @@ class TestWizardGuitarists(WizardTest):
         rows = len(self.wizard().rows())
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(MSG_WIZARD_GUITARISTS_LABEL)
-        # The count is shown as a number, the user's rule, and [ (dec) steps from 2 to 1.
+        # The count is shown as a number, and [ (dec) steps from 2 to 1.
         self.assertEqual(str(self.wizard().field().value()), str(TWO_GUITARISTS))
         await self.press(key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET), keybindings.WizardPage.TO_TREE)
         self.assertEqual(choices.get_guitarists(), ONE_GUITARIST_COUNT)
@@ -942,7 +942,7 @@ class TestWizardStart(WizardTest):
 
 
 class TestWizardFillsAnUntouchedSong(WizardTest):
-    """On a song nothing was done to, as a new set's, Create fills the song in place of adding one beside it, the user's design."""
+    """On a song nothing was done to, as a new set's, Create fills the song in place of adding one beside it."""
 
     def make_app(self):
         self.document = Document()
@@ -972,7 +972,7 @@ class TestWizardFillsAnUntouchedSong(WizardTest):
 
 
 class TestWizardPageUndo(WizardTest):
-    """Undo and the wizard, the user's design: nothing to undo while it is open, and Create is one step."""
+    """Undo and the wizard: nothing to undo while it is open, and Create is one step."""
 
     async def test_undo_and_redo_do_nothing_in_the_wizard_and_say_why(self):
         await self.choose_genre_and_subgenre()

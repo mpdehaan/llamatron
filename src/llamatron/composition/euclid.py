@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Euclidean rhythms: so many hits spread as evenly as can be over so many steps, which mask a clip so that only the notes starting on a hit play, the user's design of 2026-11-11.
+"""Euclidean rhythms: so many hits spread as evenly as can be over so many steps, which mask a clip so that only the notes starting on a hit play.
 
 A track's mask holds for every clip on it, and a Euclid generator in a clip's chains masks on top
 of it: masks stack, so a note plays only where every mask has a hit. A mask is in force once its

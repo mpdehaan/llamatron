@@ -80,7 +80,7 @@ def _check_wizard_choices(value):
 
 # The song's own settings, each described once, in the order they're written to a file.
 def _never_refused(value):
-    """Refuse nothing: a visualizer setting that makes no sense is made sensible as it's read (sensible_visualizer), the user's rule."""
+    """Refuse nothing: a visualizer setting that makes no sense is made sensible as it's read (sensible_visualizer)."""
 
 
 SETTINGS = described(
@@ -280,7 +280,7 @@ class Song(LlamaData):
         """Return how many steps of the set's step size make one bar of this song's time signature, or None if a bar isn't whole steps.
 
         A new pattern is this long, so that a pattern in 3/4 starts as 12 sixteenths rather than
-        16, as the user asked on 2026-11-07. 7/8 at a 1/4 step is three and a half steps, so None.
+        16. 7/8 at a 1/4 step is three and a half steps, so None.
         """
         steps = self.get_time_signature().bar_length() / self._setlist.get_step_size()
         return steps.numerator if steps.denominator == WHOLE_STEPS else None
@@ -442,7 +442,7 @@ class Song(LlamaData):
         """Rename an item, keeping its place, and update everything in the song that names it."""
         self._section(section).rename(old=old, new=new)
         self.rename_references(section=section, old=old, new=new)
-        # A Hocket belongs to the set but names a track of the song as its source, so a track's rename reaches the set's hockets too (the user's rule of 2026-11-11).
+        # A Hocket belongs to the set but names a track of the song as its source, so a track's rename reaches the set's hockets too.
         if section == Section.TRACKS and self._setlist is not None:
             for name in self._setlist.get_generator_names(GeneratorKind.HOCKET):
                 self._setlist.get_generator_settings(kind=GeneratorKind.HOCKET, name=name).rename_references(section=section, old=old, new=new)

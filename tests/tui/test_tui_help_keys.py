@@ -16,7 +16,7 @@
 
 """Every key a page's help names is bound on that page, so that help can't go on naming a key that moved.
 
-On 2026-11-09 the keys that add, move and adjust changed, and the help of several pages still named
+The keys that add, move and adjust once changed, and the help of several pages still named
 the old ones until each was read by hand. This reads every page's help for the keys it names and
 tours the tracker, noting which keys each page binds wherever its cursor can go.
 
@@ -402,7 +402,7 @@ class TestHelpNamesOnlyBoundKeys(KeyTour):
 
 
 class TestKeyMapIsCurrent(KeyTour):
-    """.claude/KEYMAP.md says what the tour finds, the user's ask, so that a question about a key is one lookup; internal_tools/key_map.sh rewrites it."""
+    """.claude/KEYMAP.md says what the tour finds, so that a question about a key is one lookup; internal_tools/key_map.sh rewrites it."""
 
     async def test_the_key_map_says_what_the_tour_finds(self):
         await self.tour()

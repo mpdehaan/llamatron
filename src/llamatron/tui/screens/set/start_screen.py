@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The start screen: the title on black with "Press ENTER to Start" under it, which the tracker opens on, the user's design after a classic video game's start page.
+"""The start screen: the title on black with "Press ENTER to Start" under it, which the tracker opens on, after a classic video game's start page.
 
 Shown over the main screen when the tracker is started from the command line to be used, unless
 LLAMATRON_NO_SPLASH=1 (tui/launch.py); a launch that plays on its own never shows it. Enter takes it

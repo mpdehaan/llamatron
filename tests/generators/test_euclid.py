@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The Euclidean mask, the user's design of 2026-11-11: only the notes starting on a hit of a Euclidean rhythm play, a track's mask and Euclid generators stacking.
+"""The Euclidean mask: only the notes starting on a hit of a Euclidean rhythm play, a track's mask and Euclid generators stacking.
 
 Each test plays a bar of sixteen sixteenth notes, so that every step of a 16-step rhythm has a note.
 """

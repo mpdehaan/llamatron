@@ -16,7 +16,7 @@
 """Whether two MIDI files play the same music: the same notes at the same times, as long, as loud, at the same tempos.
 
 This is how an import is proved: a MIDI file, imported, played and exported again, plays the
-same notes as the file, the user's rule of 2026-11-10. Times are compared to the tick of
+same notes as the file. Times are compared to the tick of
 llamatron's own MIDI files, since two files can count ticks differently, and which track or
 channel a note is on, the order of messages and the names in a file don't matter to how it
 sounds, so they aren't compared.

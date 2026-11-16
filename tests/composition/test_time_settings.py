@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The one list of times every time setting chooses from, the user's rule of 2026-11-11: an arp's Step, a drift's Every and a shape's Over, each a length in whole notes or a count of bars that the song's time signature measures."""
+"""The one list of times every time setting chooses from: an arp's Step, a drift's Every and a shape's Over, each a length in whole notes or a count of bars that the song's time signature measures."""
 
 import unittest
 

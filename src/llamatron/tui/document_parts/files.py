@@ -106,7 +106,7 @@ class DocumentFiles:
         return comparable(self._setlist.kept_data())
 
     def save_as(self, path):
-        """Save the set under a name the user chose: a copy of a protected set is theirs, so the copy isn't protected."""
+        """Save the set under a new name: a copy of a protected set is theirs, so the copy isn't protected."""
         if self._setlist.is_protected() and self._path is not None and path != self._path:
             self._setlist.set_protected(False)
         self.save(path=path)

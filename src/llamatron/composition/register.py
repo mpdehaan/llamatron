@@ -147,7 +147,7 @@ class Register(LlamaData):
         return highest if jumps else lowest
 
     def held(self, value):
-        """Return a value a step sets the register to, kept between the minimum and maximum: a set is an exact value, so it stops at an end and never wraps (the user's choice of 2026-11-11)."""
+        """Return a value a step sets the register to, kept between the minimum and maximum: a set is an exact value, so it stops at an end and never wraps."""
         return max(min(value, self.get_maximum()), self.get_minimum())
 
     def _setting(self, name):

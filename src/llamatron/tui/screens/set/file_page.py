@@ -65,7 +65,7 @@ class FilePage(FieldPage):
             names=[MSG_FOLLOW_ACTION_NAMES[choice] for choice in FOLLOW_ACTION_CHOICES], shown=MSG_FOLLOW_ACTION_NAMES[setlist.get_default_follow_action()],
             set=document.set_default_follow_action,
         )
-        # The settings in the order the user chose: the loose ones alphabetically, then the sections, each alphabetical inside.
+        # The settings in their order: the loose ones alphabetically, then the sections, each alphabetical inside.
         return [
             self.text_field(label=MSG_AUTHOR_LABEL, current=setlist.get_author, set_text=document.set_author),
             # What a clip sends down in real-time playback when its scene is done, unless the clip says otherwise. No export reads it.

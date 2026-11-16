@@ -114,7 +114,7 @@ class TestErrors(unittest.TestCase):
         self.assert_error(NEEDS_COUNTS, auto_ratchets={R: {}}, chains={X: [{GeneratorKind.AUTO_RATCHET: R}]}, scenes=scenes)
 
     def test_an_arp_with_no_step_plays_at_the_step_of_the_pattern_its_clip_plays(self):
-        # A step left out is "(pattern)" since 2026-11-11, the user's rule, where it was refused before.
+        # A step left out is "(pattern)", where it was refused before.
         scenes = [{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAIN: X}}}]
         data = with_parts(arps={R: {ArpSetting.ORDER: written_name(ChordOrder.UP)}}, chains={X: [{GeneratorKind.ARP: R}]}, scenes=scenes)
         render_data(data)

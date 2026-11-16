@@ -72,7 +72,7 @@ NO_OFFSET = 0
 NEW_AUTO_RATCHET_COUNTS = [2]
 
 
-# Every generator's Restart: when it starts over, every clip unless set (the user's design of 2026-11-11).
+# Every generator's Restart: when it starts over, every clip unless set.
 RESTART_SETTING = Choice(name=GENERATOR_RESTART, choices=RESTARTS, default=LEFT_OUT, error=ERR_NOT_A_CHOICE)
 
 
@@ -87,7 +87,7 @@ class ArpSetting:
     OCTAVE_RANGE = 'octave_range'
     OCTAVE_JUMP = 'octave_jump'
     OFFSETS = 'offsets'
-    # How much each note the arp plays adds to each register, and what each step of the offsets adds, the user's design of 2026-11-11.
+    # How much each note the arp plays adds to each register, and what each step of the offsets adds.
     AX_ADD = 'ax_add'
     BX_ADD = 'bx_add'
     CX_ADD = 'cx_add'
@@ -332,7 +332,7 @@ class ArpSettings(GeneratorSettings):
         *[Checked(name=name, check=_check_step_adds) for name in ARP_STEP_ADDS.values()],
         RESTART_SETTING,
     )
-    # A step left out is "(pattern)": the step size of the pattern the clip plays (the user's rule of 2026-11-11).
+    # A step left out is "(pattern)": the step size of the pattern the clip plays.
     REQUIRED = []
     TAKEN_AS = {ArpSetting.STEP: time_length, ArpSetting.ORDER: _order, ArpSetting.OCTAVE_JUMP: _octave_jump}
 
@@ -462,7 +462,7 @@ class ProgressionSetting:
     CHORDS = 'chords'
     ACCIDENTALS = 'accidentals'
     INVERSIONS = 'inversions'
-    # The user's design: the scale type each chord borrows, its named quality, and the tensions on top, each beside the chords.
+    # The scale type each chord borrows, its named quality, and the tensions on top, each beside the chords.
     SCALES = 'scales'
     QUALITIES = 'qualities'
     TENSIONS = 'tensions'
@@ -495,7 +495,7 @@ def _tensions_row(values):
 # What a progression's sharp-or-flat and inversion rows may hold beside nothing.
 PROGRESSION_ACCIDENTALS = [Accidental.SHARP, Accidental.FLAT]
 PROGRESSION_INVERSIONS = list(range(1, MAX_PROGRESSION_INVERSION + 1))
-# A new progression's one chord, I, which moves nothing until it's edited (the user's choice of 2026-11-11).
+# A new progression's one chord, I, which moves nothing until it's edited.
 NEW_PROGRESSION_CHORDS = [1]
 # The rows beside a progression's chords, each as long as the chords.
 PROGRESSION_ROWS = (
@@ -1110,7 +1110,7 @@ class HocketSetting:
 
 
 class HocketSettings(GeneratorSettings):
-    """A Hocket's settings: the source track whose notes the hocketing tracks take turns at, the user's design of 2026-11-11, and its Restart.
+    """A Hocket's settings: the source track whose notes the hocketing tracks take turns at, and its Restart.
 
     Like a drift, it runs on no clip's notes itself: the renderer works out each scene's turns
     once from the source track's clip, and hands each hocketing clip its notes, which the

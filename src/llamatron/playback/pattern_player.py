@@ -151,8 +151,8 @@ class PatternPlayer:
         the pattern's direction unless direction overrides it. A step that plays sounds for its
         gate, which can run past later steps but not past the end of the pass. A tied step plays
         nothing and keeps the note that played just before it, in time, sounding to the end of
-        the tied step, whatever its gate: ties win over the gate, as the user decided on
-        2026-11-08, so that the bar the editor draws is the length that plays. A tie after an empty step is silence, and
+        the tied step, whatever its gate: ties win over the gate,
+        so that the bar the editor draws is the length that plays. A tie after an empty step is silence, and
         ties at the start of the pass are left for the caller to join to the pass before. The
         pattern's grab steps play what grab, a GrabSource, gives for the time they start, if it's
         given, and a grab step with no degree of its own plays only that, or nothing. rolls is the random generator probability uses, and order the StepOrder.
@@ -516,7 +516,7 @@ def _register_sets(values):
 
 
 def _conditions_hold(*, values, current):
-    """Return whether every condition a step has holds, comparing AX with each other register a condition row names: all of them, as people read several conditions (the user's rule of 2026-11-11)."""
+    """Return whether every condition a step has holds, comparing AX with each other register a condition row names: all of them, as people read several conditions."""
     return all(
         COMPARED[values[row]](current[TESTED_REGISTER], current[name]) for name, row in CONDITION_ROWS.items() if values[row] is not None
     )

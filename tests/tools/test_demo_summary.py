@@ -138,7 +138,7 @@ class TestDemoSummary(unittest.TestCase):
         text = self.tool.DEMOS_DOCUMENT.read_text()
         self.assertLess(text.index(self.tool.MARKER_START), text.index(self.tool.MARKER_END))
         overview = text[text.index(self.tool.MARKER_START):text.index(self.tool.MARKER_END)]
-        # The page lists no demo, the user's design: it links the Tutorial Demos page and each genre's page, and each demo's summary, on its genre's page, holds its key, its tempo and the marks of the features it uses.
+        # The page lists no demo: it links the Tutorial Demos page and each genre's page, and each demo's summary, on its genre's page, holds its key, its tempo and the marks of the features it uses.
         self.assertNotIn(Document.load(HELLO_WORLD).setlist().get_description(), overview)
         self.assertNotIn(self.tool.USED, overview)
         self.assertIn(self.tool.DEMO_PAGE_LINK.format(page=self.tool.TUTORIAL_PAGE), overview)

@@ -1,4 +1,4 @@
-"""The Patterns page, which lists the patterns by group (the user's design)."""
+"""The Patterns page, which lists the patterns by group."""
 
 from typing import NamedTuple
 
@@ -124,7 +124,7 @@ class PatternsPage(NamedListPage):
         return [INDENT + name, kind, pattern.get_steps(), clock(document.lengths().pattern_seconds(name)), len(self.uses(name))]
 
     def row_style(self, what):
-        """Return a heading in bold and a button in the page's theme colour, the user's design, so that neither is taken for the other."""
+        """Return a heading in bold and a button in the page's theme colour, so that neither is taken for the other."""
         if what.kind == HEADING:
             return Style.BOLD
         if what.kind in (NEW_PATTERN, NEW_GROUP):

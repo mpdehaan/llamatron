@@ -13,11 +13,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""An Inset Window, the user's design and name: a window over the page, INSET cells in from every edge, inside a solid band of colour outlined in white, for looking inside something without leaving the page.
+"""An Inset Window: a window over the page, INSET cells in from every edge, inside a solid band of colour outlined in white, for looking inside something without leaving the page.
 
 It is read-only. Inside the band, one cell in on every side, comes its title in reverse video and
 then the view's lines. The page keeps its keys and says which close it, the key that opened it and
-no other (the user's rule), and the band's bottom edge names that key in its corner. The band's
+no other, and the band's bottom edge names that key in its corner. The band's
 colour is the view's to choose, as Scene View's says which of its views shows. The band is made of
 spaces on a coloured background, which joins from line to line where full blocks leave gaps.
 """

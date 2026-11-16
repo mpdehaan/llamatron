@@ -15,13 +15,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The Arrange page: the current song's scenes as rows, its tracks as columns, and a clip where they meet.
 
-Everything about a song's structure happens here, as in Live's Session View, as the user decided
-on 2026-11-07: the track names across the top can be moved onto, so tracks are added, copied,
+Everything about a song's structure happens here, as in Live's Session View:
+the track names across the top can be moved onto, so tracks are added, copied,
 inserted, moved and deleted on this page, like scenes, and Enter on a track, a scene or a clip
-opens its own page. C copies everywhere, as the user asked: a scene or track is copied in place,
+opens its own page. C copies everywhere: a scene or track is copied in place,
 and a clip is copied to be pasted with V.
 
-The grid was redrawn on 2026-11-08 as the user sketched it: the track names and the scene column
+The grid: the track names and the scene column
 stay in place while the clips scroll, the corner is blank since the crumbs say where you are, a
 double-lined frame marks the clip, scene or track under the cursor in place of reverse video, an
 empty clip slot shows + and add only under the cursor, and a bar under each scene shows its length
@@ -78,7 +78,7 @@ from rich.text import Text
 from llamatron.tui.drawing import NOTHING, Style, laid_over, padded
 
 
-# How often the visualizer draws a frame while it shows, in seconds, and how long a mode's name shows when it changes, the user's choice of 2026-11-10.
+# How often the visualizer draws a frame while it shows, in seconds, and how long a mode's name shows when it changes.
 FRAME_SECONDS = 0.05
 NAME_SECONDS = 8.0
 # How many lines above the bottom of a batch video's frame a scene's announcement is drawn.
@@ -90,7 +90,7 @@ SCENE_COLUMN = 0
 FIRST_SCENE_NUMBER = 1
 FIRST_TRACK_COLUMN = 1
 # The number a blank pattern named after its track starts from, as lead 1.
-# What Move mode can carry, the user's design.
+# What Move mode can carry.
 MOVING_SCENE = 'scene'
 MOVING_TRACK = 'track'
 MOVING_CLIP = 'clip'
@@ -149,7 +149,7 @@ class ArrangePage(Page):
         self.opened_cell = None
         # Scene View, an Inset Window over the page (tui/components/scene_view.py), or None.
         self.inset = None
-        # Move mode, the user's design: what M picked up, MOVING_SCENE, MOVING_TRACK or MOVING_CLIP, or None, and whether it has been
+        # Move mode: what M picked up, MOVING_SCENE, MOVING_TRACK or MOVING_CLIP, or None, and whether it has been
         # carried yet, so that one move is one undo step.
         self.moving = None
         self.carried = False
@@ -261,7 +261,7 @@ class ArrangePage(Page):
             result.append(self.bind(self.KEYS.VISUALIZER, action=self.next_visualizer))
         return result
 
-    # The details view, the user's design: D shows under every bar the chains, the generators and the settings that aren't their
+    # The details view: D shows under every bar the chains, the generators and the settings that aren't their
     # defaults, and D again hides them. Every key works in it as in the usual view, and the choice is kept for the session.
 
     def shows_details(self):
@@ -275,7 +275,7 @@ class ArrangePage(Page):
         self.top = 0
         self.left = 0
 
-    # Scene View, an Inset Window over the page, the user's design: P opens it on a scene's name, and P or Esc closes it.
+    # Scene View, an Inset Window over the page: P opens it on a scene's name, and P or Esc closes it.
 
     def open_scene_view(self):
         self.inset = SceneView(document=self.document(), index=self.row)
@@ -375,7 +375,7 @@ class ArrangePage(Page):
             self.document().set_clip_slot_setting(index=cell[1], track=cell[2], setting=ClipSlotSetting.CHAINS, value=names)
 
     def add_chain_to_cell(self):
-        """Ask for one of the set's chains and add it to the cursor's cell alone, after the chains it runs, the user's design."""
+        """Ask for one of the set's chains and add it to the cursor's cell alone, after the chains it runs."""
         chains = sorted_names(self.document().song().get_chain_names())
         if not chains:
             self.refuse(ERR_NO_CHAINS_TO_ADD)
@@ -387,7 +387,7 @@ class ArrangePage(Page):
         self.ask(dialog=ChoiceDialog(title=MSG_ADD_CHAIN_TITLE, options=chains), then=chosen)
 
     def remove_chain_from_cell(self):
-        """Take the picked chain out of the cursor's cell alone, the chain staying in the set, the user's design."""
+        """Take the picked chain out of the cursor's cell alone, the chain staying in the set."""
         names = self.cell_chain_names()
         del names[self.picked_target().place]
         self.set_cell_chain_names(names)
@@ -680,8 +680,8 @@ class ArrangePage(Page):
             message.append(MSG_ALSO_DELETES_CLIPS.format(count=count))
         self.ask(dialog=ConfirmDialog(title=MSG_DELETE_TITLE, messages=message), then=lambda _: self.document().delete_scene(self.row))
 
-    # Move mode, the user's design: M on a scene's name, a track's name or a clip picks it up, the arrows carry it, a clip only into an
-    # empty cell (the user's rule), and Enter, Esc or M drops it where it is. The box around it is green while it's carried.
+    # Move mode: M on a scene's name, a track's name or a clip picks it up, the arrows carry it, a clip only into an
+    # empty cell, and Enter, Esc or M drops it where it is. The box around it is green while it's carried.
 
     def start_moving(self, what):
         self.moving = what
@@ -804,17 +804,17 @@ class ArrangePage(Page):
         row = self.row
         track = self.track()
 
-        # The clip is added and Arrange stays, the user's rule: Enter on the clip again opens it.
+        # The clip is added and Arrange stays: Enter on the clip again opens it.
         def chosen(place):
             self.document().add_clip_slot(index=row, track=track, pattern=patterns[place])
         self.ask(dialog=ChoiceDialog(title=MSG_PATTERN_FOR_CLIP_TITLE, options=patterns), then=chosen)
 
     def blank_pattern(self):
-        """Make a blank pattern named after the cursor's track, a drum pattern on a drum track, put a clip of it in the empty cell and open it, the user's design."""
+        """Make a blank pattern named after the cursor's track, a drum pattern on a drum track, put a clip of it in the empty cell and open it."""
         track = self.track()
         taken = self.document().song().get_pattern_names()
         name = new_name(word=track, taken=taken)
-        # A pattern made on a clip goes in the group named after the clip's track, the user's design.
+        # A pattern made on a clip goes in the group named after the clip's track.
         self.document().add_pattern(name=name, group=track)
         if self.document().song().get_track(track).is_drum():
             self.document().set_drum(name=name, drum=True)

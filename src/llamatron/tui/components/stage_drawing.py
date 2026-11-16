@@ -16,7 +16,7 @@
 
 """The batch video's stage, drawn over the whole screen: Arrange in grey on black, the READY box, the box growing into the scene frame, the frame's pulse and the visualizer inside it.
 
-The user's design. The READY box has a double border in blue, a track one cell inside it where a
+The READY box has a double border in blue, a track one cell inside it where a
 glow, the pulse, goes round, and a black gap around READY in red block letters, two rows and four
 columns, since a cell is about twice as tall as it is wide (the track down the sides is two columns
 wide for the same reason). As the song starts the box grows out until its border lies in the

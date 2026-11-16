@@ -189,7 +189,7 @@ class TestTheEditorsTwoViews(UITest):
         self.assertEqual(editor.rows_view.other_view_what(), MSG_TO_ROLL_WHAT)
         self.assertFalse(editor.roll.lists_step_keys())
         self.assertTrue(editor.rows_view.lists_step_keys())
-        # The roll neither inserts nor removes a step, the user's rule, as Live's piano roll never did; the rows view does both, in its legend.
+        # The roll neither inserts nor removes a step, as Live's piano roll never did; the rows view does both, in its legend.
         self.assertEqual(editor.roll.step_keys(can_remove=True), [])
         on_roll = {name for item in editor.keys() for name in item.keys}
         self.assertNotIn(first_key(keybindings.PatternRows.INSERT_STEP), on_roll)

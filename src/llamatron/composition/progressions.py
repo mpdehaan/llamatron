@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """What a progression's chords are in a scale, with no tracker needed: each chord's quality, Roman numeral and name, and the named progressions matched to a scale.
 
-The user's design of 2026-11-11. A chord on a plain degree is the triad the scale builds there,
+A chord on a plain degree is the triad the scale builds there,
 so the scale decides whether it's major or minor; a chord with a sharp or a flat keeps the sound
 of the figure written on degree 1, moved by exact half steps. The named progressions are written
 against a major key, and are matched to a scale when picked: a chord whose root is a note of the

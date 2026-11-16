@@ -276,7 +276,7 @@ def is_pentatonic(line):
 
 def sung_steps(*, line, melody):
     """Return the share of moves a singer hears as steps: two half steps or fewer, or in a pentatonic line, where a minor third is
-    a step of the scale, three or fewer, so that a pentatonic tune isn't heard as a leaping one (the user's many lenses)."""
+    a step of the scale, three or fewer, so that a pentatonic tune isn't heard as a leaping one."""
     if not is_pentatonic(line):
         return melody.steps
     moves = [abs(later.pitch - earlier.pitch) for earlier, later in zip(line, line[1:]) if later.pitch != earlier.pitch]

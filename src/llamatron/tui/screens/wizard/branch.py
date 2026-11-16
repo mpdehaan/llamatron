@@ -17,7 +17,7 @@
 
 The wizard's page knows nothing of any one branch. It asks each branch for its name, the
 branches under it and its fields, and draws the tree and the fields from the answers, so that a
-branch is added, moved or split by changing the branches alone (the user's ask, who expects to
+branch is added, moved or split by changing the branches alone (who expects to
 revise how the wizard is organized).
 """
 

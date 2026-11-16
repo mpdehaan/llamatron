@@ -147,7 +147,7 @@ class TestTitleCard(unittest.TestCase):
 
 
 class TestScrollText(unittest.TestCase):
-    """The demo's name crossing the screen after the title when an example is recorded, the user's design: DEMO: and the file's name as words, in light orange."""
+    """The demo's name crossing the screen after the title when an example is recorded: DEMO: and the file's name as words, in light orange."""
 
     def test_a_files_name_loses_its_folder_ending_and_number_and_is_words(self):
         self.assertEqual(demo_name(A_LEARNING_DEMO), A_LEARNING_DEMO_NAME)
@@ -164,7 +164,7 @@ class TestScrollText(unittest.TestCase):
                 self.assertEqual([len(row) for row in MSG_BLOCK_LETTERS[character]], [scroll_text.LETTER_ROWS] * scroll_text.LETTER_ROWS)
 
     def test_every_letter_is_a_capital_of_one_size(self):
-        # The user's choice: the block letters have no lower case, so the words are capitals.
+        # The block letters have no lower case, so the words are capitals.
         self.assertEqual(banner(A_CAPITAL), banner(A_CAPITAL.lower()))
         self.assertEqual(len(banner(A_CAPITAL)), BANNER_ROWS)
         self.assertEqual(len(banner(A_CAPITAL)[0]), scroll_text.LETTER_ROWS * scroll_text.BLOCK_COLUMNS)

@@ -188,7 +188,7 @@ class NamedListChecks:
 
 
 class TestNamesAreHeldToTheirLength(UITest):
-    """The user's rule: a name is at most MAX_NAME_LENGTH characters as typed, and a list keeps that room for names, so that the columns after them stay close on a wide console."""
+    """A name is at most MAX_NAME_LENGTH characters as typed, and a list keeps that room for names, so that the columns after them stay close on a wide console."""
 
     async def test_a_name_typed_stops_at_the_longest_a_name_may_be(self):
         await self.press(keybindings.MainPage.PATTERNS, keybindings.PatternsPage.RENAME)
@@ -312,7 +312,7 @@ class TestSongsPageAsANamedList(NamedListChecks, UITest):
 CHECKED = [
     TestPatternsPageAsANamedList, TestScalesPageAsANamedList, TestChainsPageAsANamedList, TestGroovesPageAsANamedList, TestInstrumentsPageAsANamedList, TestSongsPageAsANamedList,
 ]
-# Every generator section is listed by the Generators page, every kind on one list, the user's design.
+# Every generator section is listed by the Generators page, every kind on one list.
 EVERY_NAMED_SECTION_OF_THE_SET = [Section.PATTERNS, Section.SCALES, Section.CHAINS, Section.GROOVES, Section.INSTRUMENTS, Section.SONGS]
 
 

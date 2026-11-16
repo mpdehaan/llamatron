@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Tests Scene View, the user's design: a scene's notes as written and as played, the chord on each beat, what the scene plays with in the end, and the Inset Window on Arrange that only P closes."""
+"""Tests Scene View: a scene's notes as written and as played, the chord on each beat, what the scene plays with in the end, and the Inset Window on Arrange that only P closes."""
 
 import unittest
 
@@ -181,7 +181,7 @@ class TestSceneViewOnArrange(UITest):
         self.assertIn(MSG_SCENE_VIEW_WRITTEN, self.text())
 
     async def test_esc_or_p_closes_it_and_esc_again_leaves_arrange(self):
-        # Esc closes the topmost thing, the user's rule, so the first Esc closes Scene View and the second goes back from Arrange.
+        # Esc closes the topmost thing, so the first Esc closes Scene View and the second goes back from Arrange.
         await self.press(keybindings.ArrangePage.SCENE_VIEW, Key.ESCAPE)
         self.assertIs(self.app.screen, self.page)
         self.assertIsNone(self.page.inset)

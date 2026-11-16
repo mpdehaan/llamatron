@@ -13,17 +13,17 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The piano roll, a visualizer mode, the user's design: the notes as bars rolling in from the right, to give a feel for what the song is doing.
+"""The piano roll, a visualizer mode: the notes as bars rolling in from the right, to give a feel for what the song is doing.
 
 Every key of the piano has a row, one half step each, not only the scale's, with a line along each C,
 labelled at the left. A note comes in at the right edge as it starts and rolls off to the left; while
 it sounds its bar keeps growing at the right, so a held note looks long, and each bar's first cell is
 brighter, with a gap after it on its row, so that notes one after another stay apart. Each track has a
 bold colour of its own, given in the order the tracks are first heard, so that the colours go round only
-when more tracks play than there are colours, and the legend across the top names the tracks with a note on the roll now, in the order of the song's tracks. The rows stay still, the user's rule: they sit on the
+when more tracks play than there are colours, and the legend across the top names the tracks with a note on the roll now, in the order of the song's tracks. The rows stay still: they sit on the
 middle of every pitch heard so far while those pitches fit the rows, and only when they don't fit does the middle ease, slowly, toward the notes that sound now. Drum tracks have lanes of their own at the bottom,
 kick, snare, hats, toms, cymbal and the rest, where each hit is a short mark. The background is black.
-The amounts are named constants here, for the user to tune by eye.
+The amounts are named constants here, to tune by eye.
 """
 
 from llamatron.composition.file_format import LIVE_OCTAVE_OFFSET
@@ -195,7 +195,7 @@ class PianoRoll(Visualizer):
                     self._highest = note.pitch if self._highest is None else max(self._highest, note.pitch)
 
     def follow(self, *, elapsed, pitch_rows):
-        """Keep the rows still where they can be, the user's rule: on the middle of every pitch heard so far while those fit the rows, and otherwise
+        """Keep the rows still where they can be: on the middle of every pitch heard so far while those fit the rows, and otherwise
         easing slowly toward the middle of the notes that sound now, staying put while none sounds. The first notes heard place the rows at once."""
         if self._lowest is None:
             return
@@ -240,7 +240,7 @@ class PianoRoll(Visualizer):
                     colours[row][column] = LABEL_COLOUR
 
     def draw_legend(self, *, characters, colours, width):
-        """Draw the name of each track with a note on the roll now, in its colour, across the top, in the order of the song's tracks, as far as they fit (the user's rule)."""
+        """Draw the name of each track with a note on the roll now, in its colour, across the top, in the order of the song's tracks, as far as they fit."""
         column = LABEL_COLUMNS
         for track in sorted({note.track for note in self._notes}):
             if track >= len(self._names):

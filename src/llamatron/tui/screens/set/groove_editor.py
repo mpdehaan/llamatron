@@ -16,7 +16,7 @@
 """The groove editor: one groove's cells in a row, like the arp offsets editor, each a percentage of its cell late or early.
 
 A row wider than the screen scrolls sideways, as the offsets editor and the pattern editor do,
-where the cells used to wrap onto more blocks: the user allowed the groove editor to scroll so
+where the cells used to wrap onto more blocks: the groove editor scrolls so
 that the one-row editors could share OneRowEditor (one_row_editor.py).
 """
 

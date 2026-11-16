@@ -31,7 +31,7 @@ def register_labels(*, rows, label):
 
 
 # tui/dialogs/quit_dialog.py
-# The quit dialog's buttons, the user's words, in the order of QUIT_WITHOUT_SAVING, SAVE_THEN_QUIT and CANCEL: quitting without
+# The quit dialog's buttons, in the order of QUIT_WITHOUT_SAVING, SAVE_THEN_QUIT and CANCEL: quitting without
 # saving comes first, and is what ENTER does, because Quit is never pressed by accident; the dialog only appears when there are
 # changes to lose.
 MSG_QUIT_BUTTONS = ('Quit without saving', 'Save, then Quit', 'CANCEL')
@@ -79,8 +79,8 @@ MSG_LAUNCH_TOGETHER_LABEL = 'Launch together'
 # tui/screens/shared/page.py and tui/key_table.py: the key names, the labels and the words every page shares
 # The file crumb, right after the title on every page: the file's name, or this before the set is saved.
 MSG_NO_FILE_CRUMB = '(unsaved)'
-# The file crumb carries the current song too, as the user asked: minimal_techno.yml, song: minimal techno.
-# The theme's stripe on a page that edits one thing: what it edits and its name, the user's design.
+# The file crumb carries the current song too: minimal_techno.yml, song: minimal techno.
+# The theme's stripe on a page that edits one thing: what it edits and its name.
 MSG_EDITING_CAPTION = 'EDITING {what}: {name}'
 MSG_CAPTION_WORDS = {
     Section.SONGS: 'song', Section.PATTERNS: 'pattern', Section.CHAINS: 'chain', Section.SCALES: 'scale', Section.GROOVES: 'groove',
@@ -211,7 +211,7 @@ class Column:
     FROM = 'FROM'
     DEVICE = 'DEVICE'
     CHANNEL = 'CH'
-    # Each list's first column says what choosing a row picks, the user's design, where every list said NAME.
+    # Each list's first column says what choosing a row picks, where every list said NAME.
     SELECT_PATTERN = 'SELECT PATTERN'
     SELECT_SONG = 'SELECT SONG'
     SELECT_SCALE = 'SELECT SCALE'
@@ -244,7 +244,7 @@ MSG_OCTAVE_LABELS_LABEL = 'Octave labels'
 # tui/screens/set/visualizer_fields.py: the visualizer mode Arrange shows first, what none of a song's own is called, and the section that hides modes.
 MSG_VISUALIZER_LABEL = 'Visualizer'
 MSG_SETS_VISUALIZER_CHOICE = "(set's)"
-# The File/Global page's sections, the user's design.
+# The File/Global page's sections.
 MSG_NOTES_AND_OCTAVES_SECTION = 'Notes & Octaves'
 MSG_VISUALIZERS_SECTION = 'Visualizers'
 MSG_HIDE_VISUALIZERS_LABEL = 'Hide Visualizers'
@@ -263,7 +263,7 @@ MSG_NOTES_BUTTONS = ('Save', 'CANCEL')
 # The lists of named things.
 MSG_DRUM_KIND = 'drum'
 # tui/screens/pattern/patterns_page.py: a group's heading, the heading of the patterns in no group, the two buttons that add, and
-# the entry of the Group picker that makes a group. A button has no +, so that + and - mean only closed and open (the user's design).
+# the entry of the Group picker that makes a group. A button has no +, so that + and - mean only closed and open.
 MSG_GROUP_HEADING = '{mark} {name} ({count})'
 MSG_UNGROUPED = 'Ungrouped'
 MSG_NEW_PATTERN_BUTTON = '[ New Pattern ]'
@@ -400,7 +400,7 @@ MSG_TRANSPOSE_LABEL = 'Transpose'
 MSG_LOWEST_OCTAVE_LABEL = 'Lowest octave'
 MSG_HIGHEST_OCTAVE_LABEL = 'Highest octave'
 MSG_CC_LABEL = 'CC {number}'
-# The track editor's register bindings, the user's names of 2026-11-11: a CC lane's register, and the velocity's.
+# The track editor's register bindings: a CC lane's register, and the velocity's.
 MSG_CC_REGISTER_LABEL = 'CC{number} Reg'
 MSG_VELOCITY_REGISTER_LABEL = 'Vel Reg'
 MSG_STEP_LABEL = 'Step'
@@ -446,7 +446,7 @@ MSG_ROW_LABELS = {
     **register_labels(rows=REGISTER_SET_ROWS, label=MSG_REGISTER_SET_LABEL),
     **register_labels(rows=CONDITION_ROWS, label=MSG_CONDITION_LABEL),
 }
-# The sections of rows under Octave, each a row of the grid: its name after a mark saying whether it's closed (+) or open (-), the user's choice of 2026-11-08 over triangles, which were hard to tell apart at a distance.
+# The sections of rows under Octave, each a row of the grid: its name after a mark saying whether it's closed (+) or open (-), chosen over triangles, which were hard to tell apart at a distance.
 MSG_SECTION_NAMES = {
     RowSection.BASICS: 'Basics', RowSection.CHORD: 'Chord', RowSection.TIMING: 'Timing', RowSection.ADVANCED: 'Advanced', RowSection.CC: 'CCs',
     RowSection.REGISTER_MOD: 'Reg. Mod', RowSection.REGISTER_APPLY: 'Reg. Apply', RowSection.REGISTER_COND: 'Reg. Cond',
@@ -468,7 +468,7 @@ MSG_SONG_ENTRY_SIZE_CHOICE = "(the song's)"
 # The piano roll's row labels: the note's name with its octave and the degree, or the octave alone when the scale isn't known.
 MSG_ROLL_ROW_LABEL = '{note:<4} {degree}'
 MSG_STEP_HEADING = ' Step'
-# A CC row's label says the CC number the tracks playing the pattern send on that lane, off for a lane that sends nothing, or ? when the tracks differ, as the user asked on 2026-11-08.
+# A CC row's label says the CC number the tracks playing the pattern send on that lane, off for a lane that sends nothing, or ? when the tracks differ.
 MSG_CC_ROW_LABEL = '{label} ({number})'
 MSG_DOT_NAMES = {GateModifier.DOTTED: ' dotted', GateModifier.TRIPLET: ' triplet'}
 MSG_MUNGE_CHOICES = ['reverse after step', 'reverse before step', 'reverse', 'pivot around step', 'randomize']
@@ -494,7 +494,7 @@ MSG_CHORD_NAMES = {
 
 # tui/screens/set/registers_page.py
 # Each register's settings on the page, labelled like "AX minimum", in the order they're shown.
-# The Registers page's columns, in the grid's order, the user's design.
+# The Registers page's columns, in the grid's order.
 MSG_REGISTER_COLUMNS = ('Inc max', 'At limit', 'Minimum', 'Default', 'Maximum', 'Reset')
 MSG_REGISTER_FIELD_LABEL = '{name} {what}'
 MSG_REGISTER_NUMBER_FIELDS = [(RegisterSetting.DEFAULT, 'default'), (RegisterSetting.MINIMUM, 'minimum'), (RegisterSetting.MAXIMUM, 'maximum')]

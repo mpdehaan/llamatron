@@ -113,7 +113,7 @@ class RealtimeMIDISenderProcess:
 
 @contextlib.contextmanager
 def real_standard_error():
-    """Put the interpreter's own standard error back while a process is spawned, since spawn's resource tracker passes sys.stderr's file descriptor to its child and Textual's capture, in place while the tracker runs, answers -1 for it, which failed the spawn with "bad value(s) in fds_to_keep" on 2026-11-10."""
+    """Put the interpreter's own standard error back while a process is spawned, since spawn's resource tracker passes sys.stderr's file descriptor to its child and Textual's capture, in place while the tracker runs, answers -1 for it, which failed the spawn with "bad value(s) in fds_to_keep"."""
     captured = sys.stderr
     sys.stderr = sys.__stderr__
     try:

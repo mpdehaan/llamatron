@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """The genre library's words: the names the corpus's pieces are labelled with, every measure's name in plain words, and what
-the analyzer says was doubtful in a file, kept here apart from the code, the user's choice.
+the analyzer says was doubtful in a file, kept here apart from the code.
 
 Each constant starts with MSG_; the classes group the names, which are shown as they are.
 """

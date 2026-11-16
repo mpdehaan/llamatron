@@ -14,14 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The dialog that picks a step's keyswitches, the user's design: the instrument's ten slots, numbered from 0, each on or off.
+"""The dialog that picks a step's keyswitches: the instrument's ten slots, numbered from 0, each on or off.
 
 Up and Down move, Space turns the slot under the cursor on or off, and a digit turns its own slot
 on or off wherever the cursor is. Enter is OK, answering with the slots picked, and Esc is CANCEL,
 changing nothing; the two are drawn as buttons. Each slot shows the name and the note its
 instrument gives it, where the instrument is known for certain, and a line above the slots names
 the instrument or says why none is named. A slot with no note can still be picked: it plays
-nothing until the instrument gives it one (the user's rule)."""
+nothing until the instrument gives it one."""
 
 from rich.text import Text
 

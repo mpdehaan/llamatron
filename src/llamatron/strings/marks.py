@@ -27,7 +27,7 @@ MSG_NONE_SHOWN = '(none)'
 MSG_CONFIRM_BUTTON_GAP = '    '
 
 # tui/screens/arrange/arrange_page.py
-# A scene's name as a recording announces the scene when it starts, the user's wording.
+# A scene's name as a recording announces the scene when it starts.
 MSG_SCENE_ANNOUNCED = 'SCENE: {name}'
 # A scene's row: its number from 1, then its name.
 MSG_SCENE_ROW = '{number:>2} {name}'
@@ -41,9 +41,9 @@ MSG_LAUNCH_APART_MARK = '┆'
 MSG_REPEAT_MARK = '×{repeat}'
 MSG_CLIP_WITH_MARKS = '{name} {marks}'
 
-# tui/screens/arrange/arrange_details.py: what Arrange shows in its details view (R), the user's design: the lines of details under
+# tui/screens/arrange/arrange_details.py: what Arrange shows in its details view (R): the lines of details under
 # each bar, each a word and a colon, a chain's name in parentheses with its generators under it, and a clip's morph and
-# direction spelled out, the user's choice over marks.
+# direction spelled out, chosen over marks.
 MSG_DETAILS_MORPH = 'morph: {pattern}'
 MSG_DETAILS_DIRECTION = 'direction: {direction}'
 MSG_DETAILS_DIRECTION_NAMES = {
@@ -52,7 +52,7 @@ MSG_DETAILS_DIRECTION_NAMES = {
 }
 MSG_DETAILS_MARKS_SEPARATOR = ' '
 MSG_DETAILS_CHAIN = 'chain: {name}'
-# The line under a cell's chains that adds one, the user's design.
+# The line under a cell's chains that adds one.
 MSG_DETAILS_ADD_CHAIN = '+'
 MSG_DETAILS_SCALE = 'scale: {name}'
 MSG_DETAILS_TEMPO = 'tempo: {tempo}'
@@ -70,10 +70,10 @@ MSG_DETAILS_TRANSPOSE = 'transpose: {amount:+d}'
 MSG_DETAILS_EUCLID = 'euclid: {hits}/{steps}'
 MSG_DETAILS_MUTED = 'muted'
 MSG_DETAILS_LIST_SEPARATOR = ', '
-# Around the line of details Tab picked, which ENTER opens, the user's choice over the triangle, which marks play.
+# Around the line of details Tab picked, which ENTER opens, chosen over the triangle, which marks play.
 MSG_DETAILS_STOCK = 'stock'
 
-# tui/components/scene_view.py and tui/scene_notes.py: Scene View, the user's design, an inset window over Arrange showing
+# tui/components/scene_view.py and tui/scene_notes.py: Scene View, an inset window over Arrange showing
 # every track's notes in a scene laid over each other, its caption saying which view shows, as written or as played.
 MSG_SCENE_VIEW_TITLE = ' SCENE VIEW FOR SCENE: {scene} '
 MSG_SCENE_VIEW_CLOSING = ' {key} {what} '
@@ -102,7 +102,7 @@ MSG_SCENE_VIEW_PLACE = 'bar {bar} beat {beat}'
 MSG_SCENE_VIEW_CANT_SHOW = 'This scene cannot be shown: {problem}'
 MSG_PICKED_OPEN = '['
 MSG_PICKED_CLOSE = ']'
-# A value a field takes from above, shown with where it comes from, the user's design.
+# A value a field takes from above, shown with where it comes from.
 MSG_SONG_SCALE_SHOWN = '{scale} (from song)'
 MSG_SCENE_SCALE_SHOWN = '{scale} (from scene)'
 MSG_SONG_TEMPO_SHOWN = '{tempo} BPM (from song)'
@@ -165,7 +165,7 @@ MSG_NO_NUMBER_MARK = '-'
 MSG_DRUM_TRACK_SHOWN = '(drum track)'
 MSG_SIGNED_NUMBER = '{number:+d}'
 # The chain editor.
-# A step of a chain, the generator's name and then its kind, the user's choice, and a generator listed again in one chain numbered on screen only.
+# A step of a chain, the generator's name and then its kind, and a generator listed again in one chain numbered on screen only.
 MSG_CHAIN_STEP_SHOWN = '{name} ({kind})'
 MSG_CHAIN_STEP_AGAIN = '{name} {number} ({kind})'
 # The arp pages: how they show settings a file leaves out, and what they start from.
@@ -217,7 +217,7 @@ MSG_SCALE_SHOWN = '{name}: {notes}'
 MSG_ENTRY_SIZE_SHOWN = 'Entry {size}{whose}'
 MSG_ROLL_OCTAVE_ONLY = 'oct{octave}'
 # The piano roll's cells: a note fills its cell and runs through the dividers it crosses, with a mark inside on its first step,
-# its sharp or flat or G for a step that grabs, drawn in reverse video so that it reads against the bar, as the user asked on 2026-11-08;
+# its sharp or flat or G for a step that grabs, drawn in reverse video so that it reads against the bar;
 # the cursor is shaded on a note, since reverse video on a solid block is blank; a row outside the track's range is marked off.
 # A note whose gate ends inside a step fills only part of its last cell, built from the single blocks, so the bar ends where the sound does.
 MSG_NOTE_CELL = '█████'
@@ -227,20 +227,20 @@ MSG_NOTE_UNDER_CURSOR = '▓▓▓▓▓'
 MSG_NOTE_UNDER_CURSOR_WITH_MARK = '▓▓{mark}▓▓'
 MSG_CURSOR_BLOCK = '▓'
 MSG_GRAB_NOTE_MARK = 'G'
-# A note whose chord's inversion lifts its root an octave doesn't sound where it is written, so its bar is drawn hollow (the user's design): light where a note's bar is
+# A note whose chord's inversion lifts its root an octave doesn't sound where it is written, so its bar is drawn hollow: light where a note's bar is
 # solid, and medium under the cursor.
 MSG_NOTE_HOLLOW = '░'
 MSG_NOTE_HOLLOW_UNDER_CURSOR = '▒'
 MSG_OUT_OF_RANGE_CELL = '·····'
-# A chord's other notes on the piano roll: thin dim lines, the user's choice of 2026-11-08 over hollow boxes, which can't be edited on their own.
+# A chord's other notes on the piano roll: thin dim lines, chosen over hollow boxes, which can't be edited on their own.
 MSG_GHOST_LINE = '─'
 # The piano roll's read head, a thin line down the roll at the left edge of the step that sounds.
 MSG_READ_HEAD = '│'
-# The light on a step that has keyswitches, in the middle of the step's cell on the roll's top row, over a note's bar when one is there (the user's design).
+# The light on a step that has keyswitches, in the middle of the step's cell on the roll's top row, over a note's bar when one is there.
 MSG_KEYSWITCH_LIGHT = '◆'
 MSG_DRUM_ON = '[x]'
 MSG_DRUM_OFF = '[ ]'
-# A toggle that's on shows a dot, from the few characters every terminal has, as the user asked.
+# A toggle that's on shows a dot, from the few characters every terminal has.
 MSG_TOGGLE_ON = '●'
 # The Degree gauge: the bar in each step's column, and the mark after a number the gauge is too short to reach.
 MSG_GAUGE_BAR = '███'
@@ -254,7 +254,7 @@ MSG_OVER_THE_TOP_MARK = '▲'
 MSG_CC_LANE_OFF = 'off'
 MSG_CC_LANE_VARIES = '?'
 MSG_TOGGLE_OFF = ' '
-# After the value of a settings field whose ENTER opens a list of choices, the user's choice (tui/screens/shared/field_page.py).
+# After the value of a settings field whose ENTER opens a list of choices (tui/screens/shared/field_page.py).
 MSG_PICKER_MARK = '▾'
 # tui/dialogs/chord_dialog.py: a row that opens a flyout, drawn as a button, alone and with the choice made inside it, with and without room for its own name, and the
 # flyout's heading.
@@ -262,17 +262,17 @@ MSG_FLYOUT_CHOSEN = '[ {name} ▸ {chosen} ]'
 MSG_FLYOUT_CHOSEN_ALONE = '[ ▸ {chosen} ]'
 MSG_FLYOUT_CLOSED = '[ {name} ]'
 MSG_FLYOUT_TITLE = 'Scale: {name}'
-# The marks either side of a row's name while Move mode carries it, in place of the spaces beside it so that nothing shifts, the user's design.
+# The marks either side of a row's name while Move mode carries it, in place of the spaces beside it so that nothing shifts.
 MSG_MOVING_OPEN = '<'
 MSG_MOVING_CLOSE = '>'
-# A settings page's toggle that is off, an empty circle, the user's design, so that a toggle shows itself either way.
+# A settings page's toggle that is off, an empty circle, so that a toggle shows itself either way.
 MSG_FIELD_TOGGLE_OFF = '○'
 # What a register's +Note or +Vel cell shows when the step adds the register or subtracts it (RegisterRow).
 MSG_REGISTER_ADDS = '+'
 MSG_REGISTER_SUBTRACTS = '-'
 # A number row with nothing set shows a dot where its default means nothing happens.
 MSG_UNSET_MARK = '.'
-# A cell that can't take a value, which the render ignores, like Velocity on an empty step or Tie on a note's own step, drawn dim; the user's choice of 2026-11-08, a light slash in place of the (X) tried first.
+# A cell that can't take a value, which the render ignores, like Velocity on an empty step or Tie on a note's own step, drawn dim; A light slash in place of the (X) tried first.
 MSG_BLOCKED_CELL = '/'
 MSG_DRUM_LETTER_ROW = 'Note'
 MSG_STEP_SIZE_SHOWN = 'Step size {size}{whose}'
@@ -354,7 +354,7 @@ MSG_FLAT_SPELLED = 'b'
 MSG_NUMERALS_SEPARATOR = ' '
 MSG_PRESET_NUMERALS_SEPARATOR = '–'
 
-# tui/screens/generators/generators_page.py: a generator's kind beside its name on the Generators page, the user's design.
+# tui/screens/generators/generators_page.py: a generator's kind beside its name on the Generators page.
 MSG_GENERATOR_KIND_SHOWN = '({kind})'
 
 # tui/screens/generators/guitarify_editor.py, tui/screens/generators/guitar_bar_editor.py: a Guitarify's values, and what each stroke is drawn as in its cell.

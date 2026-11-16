@@ -353,10 +353,10 @@ ERR_NOT_A_TIME_SIGNATURE = 'expected a TimeSignature, got {value!r}'
 # tui/screens/arrange/arrange_page.py
 # The mark beside a scene on the Arrange grid. The full explanation is the loop errors dialog.
 ERR_ADD_A_PATTERN_FIRST = 'Add a pattern first, on the Patterns page.'
-# Deleting the last scene or track is refused in a dialog, as the user asked.
+# Deleting the last scene or track is refused in a dialog.
 ERR_LAST_SCENE_SHOWN = 'A song needs at least one scene, so the last one cannot be deleted.'
 ERR_LAST_TRACK_SHOWN = 'A song needs at least one track, so the last one cannot be deleted.'
-# A scene or track with clips, which can't be deleted while the song plays, since its clips may be playing (the user's rule).
+# A scene or track with clips, which can't be deleted while the song plays, since its clips may be playing.
 ERR_SCENE_PLAYING_SHOWN = 'A scene with clips cannot be deleted while the song plays. Stop it first, with Space on the corner or Ctrl+T.'
 ERR_TRACK_PLAYING_SHOWN = 'A track with clips cannot be deleted while the song plays. Stop it first, with Space on the corner or Ctrl+T.'
 ERR_NO_PATTERNS_TITLE = 'No patterns'
@@ -432,7 +432,7 @@ ERR_NOTHING_BEFORE = 'there are no steps before this one to reverse'
 ERR_NOTHING_TO_PIVOT = 'there are no other steps to pivot around this one'
 ERR_ONE_STEP = 'a pattern of one step cannot be rearranged'
 ERR_NO_OTHER_PATTERNS = 'there are no other patterns to load'
-# The Degree gauge stops at the scale's ends, as the user chose on 2026-11-08, and says where the octave is changed.
+# The Degree gauge stops at the scale's ends, and says where the octave is changed.
 ERR_TOP_OF_SCALE = 'top of {scale}: change the octave on the Octave row'
 ERR_BOTTOM_OF_SCALE = 'bottom of {scale}: change the octave on the Octave row'
 # The piano roll.

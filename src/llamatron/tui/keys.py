@@ -130,7 +130,7 @@ CANCEL_KEYS = (Key.ESCAPE,)
 HOME_END = (Key.HOME, Key.END)
 # Anything that's true or false answers to Space and Enter alike, so that either habit works.
 TOGGLE_KEYS = (Key.SPACE, Key.ENTER)
-# The keys that end Move mode, leaving what was carried where it is, the user's design.
+# The keys that end Move mode, leaving what was carried where it is.
 MOVE_DROP_KEYS = (Key.ENTER, Key.ESCAPE, Key.M)
 LETTERS = (
     Key.A, Key.B, Key.C, Key.D, Key.E, Key.F, Key.G, Key.H, Key.I, Key.J, Key.K, Key.L, Key.M,

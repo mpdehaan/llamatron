@@ -303,7 +303,7 @@ class TestArrowsAndTheMark(UITest):
         self.document.changed()
         await self.press(keybindings.MainPage.FILE, keybindings.FilePage.NEW)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        # The buttons are boxed, the selected one double-lined, the user's design: its box's side comes just before its key.
+        # The buttons are boxed, the selected one double-lined: its box's side comes just before its key.
         self.assertEqual(self.app.screen.choice, YES_BUTTON)
         self.assertIn(Box.DOUBLE_BAR, self.text())
         await self.press(Key.RIGHT)
@@ -388,7 +388,7 @@ class TestDesign(unittest.TestCase):
 
 
 class TestTitleInTheMiddle(UITest):
-    """The header's first line keeps the set and its song in the left corner and the save mark in the right, the program's name centred between, the user's design."""
+    """The header's first line keeps the set and its song in the left corner and the save mark in the right, the program's name centred between."""
 
     async def test_the_name_is_centred_and_gives_way_to_a_long_set_and_song(self):
         self.assert_title(set_crumb=self.app.screen.set_crumb())
@@ -397,7 +397,7 @@ class TestTitleInTheMiddle(UITest):
         line = page.header_line(width=page.size.width, left=long_crumb, names=NOTHING, names_start=page.size.width - 1, mark=MSG_UNSAVED_MARK, centre=PROGRAM_NAME).plain
         self.assertNotIn(PROGRAM_NAME, line)
         self.assertTrue(line.rstrip().endswith(MSG_UNSAVED_MARK))
-    """Each kind of page has a theme colour, the user's design, drawn as a stripe under the header in place of its rule; the main screen and Arrange keep the rule."""
+    """Each kind of page has a theme colour, drawn as a stripe under the header in place of its rule; the main screen and Arrange keep the rule."""
 
     async def test_a_page_and_its_list_share_a_colour_the_main_screen_is_white_and_arrange_has_none(self):
         self.assertEqual(self.app.screen.theme(), themes.MAIN_SCREEN)
@@ -419,7 +419,7 @@ class TestTitleInTheMiddle(UITest):
 
 
 class TestCaptionsAndNames(UITest):
-    """The theme's stripe carries the page's caption, and a page that starts with Name leaves a blank line under it, the user's design."""
+    """The theme's stripe carries the page's caption, and a page that starts with Name leaves a blank line under it."""
 
     async def test_a_list_says_its_name_and_an_editor_says_what_it_edits(self):
         await self.press(keybindings.MainPage.PATTERNS)

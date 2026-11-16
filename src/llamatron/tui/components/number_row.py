@@ -25,7 +25,7 @@ from llamatron.strings.messages import MSG_NUMBER_PROMPT
 from llamatron.tui import keybindings
 
 # Where a nudge or Enter starts from on a row whose blank step plays as no number at all, which is a CC row: 0, since the
-# CC most often used is the mod wheel, which the user wants to start from nothing (2026-11-09).
+# CC most often used is the mod wheel, which should start from nothing.
 START_WITHOUT_A_DEFAULT = 0
 
 

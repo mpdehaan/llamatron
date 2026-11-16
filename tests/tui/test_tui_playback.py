@@ -119,7 +119,7 @@ SCROLLED_WORDS = 'DEMO: Tune'
 # The longest a test waits in real time for a launch's next stage before failing.
 LONGEST_WAIT_SECONDS = 10
 # What a launch test notes as it happens, so that a test checks the order of a launch's stages and never the clock, which a
-# machine busy with the rest of the suite runs late by more than a stage lasts (the user's choice): a screen shown, by its
+# machine busy with the rest of the suite runs late by more than a stage lasts: a screen shown, by its
 # class, the song found playing, and the tracker quitting.
 SHOWED = 'showed'
 PLAYED = 'played'
@@ -315,7 +315,7 @@ class TestArrangePlayback(PlaybackTest):
         await self.pilot.pause()
 
     async def test_turning_real_time_off_while_the_song_plays_stops_it(self):
-        # A bug the user found: with Real Time off Arrange shows no stop, so the song went on with only Ctrl+T to stop it.
+        # Once a bug: with Real Time off Arrange shows no stop, so the song went on with only Ctrl+T to stop it.
         self.give_lead_an_instrument()
         await self.press(*CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
         await self.let_time_pass(BRIEFLY)
@@ -377,7 +377,7 @@ class TestArrangePlayback(PlaybackTest):
         self.assertEqual(self.transport().problem().lines, [ERR_REAL_TIME_OFF])
 
     async def test_on_the_main_screen_the_header_shows_the_play_mark_and_the_clock_while_the_song_plays(self):
-        # The user's choice: the one thing on the main screen that says a song plays on, beside the song's length.
+        # The one thing on the main screen that says a song plays on, beside the song's length.
         self.give_lead_an_instrument()
         length = clock(self.document.lengths().song_seconds())
         await self.press(*CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
@@ -434,7 +434,7 @@ class TestArrangePlayback(PlaybackTest):
         self.assertFalse(self.transport().is_playing())
 
     async def test_a_looping_clip_beside_one_that_finishes_is_cut_where_the_scene_below_starts(self):
-        # The drums loop in the first scene and the lead's tune doesn't, so the scene is done with the tune and the empty scene below takes over, cutting the drums (the user's rule of 2026-11-10).
+        # The drums loop in the first scene and the lead's tune doesn't, so the scene is done with the tune and the empty scene below takes over, cutting the drums.
         self.give_lead_an_instrument()
         await self.press(*CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
         await self.let_time_pass(SCENE_ONE_SECONDS + A_MOMENT)
@@ -484,7 +484,7 @@ class TestArrangePlayback(PlaybackTest):
         self.assertTrue(self.transport().is_clip_playing(index=FIRST_INDEX, track=DRUMS))
 
     async def test_the_song_plays_on_when_esc_leaves_arrange_and_when_a_page_opens_over_it(self):
-        # The user's rule: a song played from Arrange plays on through every page, so that it can be edited as it plays.
+        # A song played from Arrange plays on through every page, so that it can be edited as it plays.
         self.give_lead_an_instrument()
         await self.press(*CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
         self.assertTrue(self.transport().is_playing())
@@ -533,7 +533,7 @@ class TestArrangePlayback(PlaybackTest):
 
 
 class TestLiveEditing(PlaybackTest):
-    """An edit made while the song plays is heard on what plays, at the moment the song's Live response says, the user's design.
+    """An edit made while the song plays is heard on what plays, at the moment the song's Live response says.
 
     The song plays at 60 beats a minute, so the lead's tune, four eighths with notes on the first two, lasts two seconds a pass and
     plays three passes, its second note half a second into each; a bar of 4/4 is four seconds. The edit moves that second note from
@@ -1262,7 +1262,7 @@ def double_corners(lines):
 
 
 class TestRecordingBoxesThePlayingScene(LaunchTest):
-    """A recording nobody performs: a blue box around the playing scene's name and no box around the cursor, the user's design."""
+    """A recording nobody performs: a blue box around the playing scene's name and no box around the cursor."""
 
     LAUNCH = Launch(quit_when_finished=True, for_recording=True, splash_seconds=RECORDING_SPLASH, lead_in_seconds=A_MOMENT, lead_out_seconds=LONG_LEAD_OUT)
 

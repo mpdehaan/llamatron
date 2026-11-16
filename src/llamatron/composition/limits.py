@@ -21,7 +21,7 @@
 # A step's probability is a percentage.
 MIN_PROBABILITY = 0
 MAX_PROBABILITY = 100
-# The longest name the tracker lets a person type for anything named, and the room a list keeps for a name, the user's rule; a
+# The longest name the tracker lets a person type for anything named, and the room a list keeps for a name; a
 # longer name in an older file still loads, and is shown cut.
 MAX_NAME_LENGTH = 30
 

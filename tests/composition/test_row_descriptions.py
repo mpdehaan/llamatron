@@ -192,7 +192,7 @@ class TestRowsOfToggles(unittest.TestCase):
 
 
 class TestRowsOfRegisterUses(unittest.TestCase):
-    """The +Note and +Vel rows: 1 adds the register, -1 subtracts it and 0 does neither, the user's design of 2026-11-09, where the rows were toggles."""
+    """The +Note and +Vel rows: 1 adds the register, -1 subtracts it and 0 does neither, where the rows were toggles."""
 
     def test_the_rows_that_use_a_register(self):
         uses = {*REGISTER_NOTE_ROWS.values(), *REGISTER_VELOCITY_ROWS.values()}

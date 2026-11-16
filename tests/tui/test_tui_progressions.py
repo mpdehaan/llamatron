@@ -137,7 +137,7 @@ class TestChordsEditor(UITest):
         self.assertIn(POP_NUMERALS.split()[SIXTH_CHORD].upper(), self.text())
         await self.press(keybindings.ChordsEditor.MORE, keybindings.ChordsEditor.LESS, keybindings.ChordsEditor.CLEAR)
         self.assertIsNone(self.progression().get_qualities()[SIXTH_CHORD])
-        # A quality stops at the first choice and at the last, never going round (the user's rule).
+        # A quality stops at the first choice and at the last, never going round.
         await self.press(keybindings.ChordsEditor.LESS)
         self.assertIsNone(self.progression().get_qualities()[SIXTH_CHORD])
         await self.press(*[keybindings.ChordsEditor.MORE] * (len(QUALITY_CYCLE) + 1))

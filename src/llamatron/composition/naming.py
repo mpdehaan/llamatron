@@ -46,12 +46,12 @@ def words(name):
 
 
 def suggested_word(text):
-    """Return text as the tracker writes a name it makes up itself, the user's rule: lowercase, an underscore where a space would be."""
+    """Return text as the tracker writes a name it makes up itself: lowercase, an underscore where a space would be."""
     return str(text).strip().lower().replace(WORD_GAP, MEMBER_WORD_GAP)
 
 
 def same_name(*, one, other):
-    """Return whether two names are one name: names are compared without regard to capitals, and kept as typed (the user's rule)."""
+    """Return whether two names are one name: names are compared without regard to capitals, and kept as typed."""
     return str(one).casefold() == str(other).casefold()
 
 
@@ -62,7 +62,7 @@ def is_taken(*, name, taken):
 
 def default_scale_name(*, root, kind):
     """Return the name a scale gets from its root and kind, like C_major or F#_harmonic_minor: lowercase with underscores, as every
-    name the tracker makes, but for the note's name, which keeps its capital (the user's exception)."""
+    name the tracker makes, but for the note's name, which keeps its capital, the one exception."""
     return MSG_DEFAULT_SCALE_NAME.format(root=root, kind=suggested_word(words(kind)))
 
 
@@ -84,7 +84,7 @@ def unique_name(*, base, taken):
 
 
 def copy_name(*, name, taken):
-    """Return the name for a duplicate of something, the user's rule: a name with no number gets a dash and 2, like bass-2, since the
+    """Return the name for a duplicate of something: a name with no number gets a dash and 2, like bass-2, since the
     name the user picked is the first; a name that already ends in a number counts up from it and keeps whatever joins the number
     to it, so bass-2 gives bass-3, name1 gives name2 and bass 2 gives bass 3, never a number after a number. The number goes on
     until the name is free."""
@@ -99,7 +99,7 @@ def copy_name(*, name, taken):
 
 
 def new_name(*, word, taken):
-    """Return the name for a new thing of a kind, the user's rule: its word, a dash and a number, like pattern-1, the number one more
+    """Return the name for a new thing of a kind: its word, a dash and a number, like pattern-1, the number one more
     than the highest any name of that word ends in, so that a new thing never takes the name of one just deleted and the newest
     has the highest number."""
     highest = FIRST_NEW_NUMBER - 1
@@ -119,7 +119,7 @@ def split_trailing_number(name):
 
 
 def name_order(name):
-    """Return what names are sorted by, everywhere the tracker sorts them, the user's rule: the words ignoring capitals, then
+    """Return what names are sorted by, everywhere the tracker sorts them: the words ignoring capitals, then
     the number a name ends in read as a number, so that verse-2 comes before verse-10, a name with no number before both."""
     base, _, number = split_trailing_number(str(name))
     if number is None:
@@ -128,7 +128,7 @@ def name_order(name):
 
 
 def name_in_copied_group(*, name, old, new):
-    """Return a pattern's name for its copy in a copied group, the user's rule: the new group's name at the front, in place of
+    """Return a pattern's name for its copy in a copied group: the new group's name at the front, in place of
     the old group's name where that was at the front, and joined with an underscore otherwise; nothing else of the name changes."""
     if old and name.lower().startswith(old.lower()):
         return new + name[len(old):]

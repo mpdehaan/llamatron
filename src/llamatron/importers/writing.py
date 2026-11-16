@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """Writing a cut song as a set file holds it: its patterns, its scales and the song itself, named to sit among what the set has.
 
-Names follow the user's rules of 2026-11-10:
+Names follow these rules:
 
 - The song is named after the file, numbered when the set has a song of that name already, as a
   copied song is.
@@ -281,7 +281,7 @@ def add_imported(*, setlist, imported):
     song = Song.from_data(data=imported.song, where=WHERE_IMPORTED, setlist=setlist)
     song.fill_in_defaults()
     setlist.add_item(section=Section.SONGS, name=imported.name, item=song)
-    # Each imported pattern goes in the group named after the track that plays it, the user's design.
+    # Each imported pattern goes in the group named after the track that plays it.
     setlist.group_patterns_by_track(song)
     return song
 

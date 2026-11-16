@@ -15,13 +15,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """Fetch the public-domain scores the genre library's corpus study reads beyond music21's own (internal_tools/analysis_and_generation/fetch_corpus.sh):
-the Humdrum collections KernScores serves, from their maintainers' repositories on GitHub (the user's choice when KernScores was
-down), and the research datasets the user allowed (109 A): the Weimar Jazz Database of transcribed solos, the McGill Billboard
+the Humdrum collections KernScores serves, from their maintainers' repositories on GitHub (chosen when KernScores was
+down), and the research datasets allowed: the Weimar Jazz Database of transcribed solos, the McGill Billboard
 chord annotations, de Clercq and Temperley's rock corpus and Google Magenta's Groove MIDI drums; and the popular-music and folk
 sources of 113 A: Lakh MIDI's clean subset, the open part of the Enhanced Wikifonia lead sheets, the Public Domain Song
 Anthology and the Session's and Nottingham's folk tunes; all into .corpus/, which git ignores, for analysis only: nothing fetched
 is committed or passed on, and only measurements leave .corpus/ (the use the EU's text-and-data-mining exceptions and American
-fair use cover; each source's terms are noted beside it). Only the files a collection needs are kept, sparing the connection (the user's rule): an archive comes in one download
+fair use cover; each source's terms are noted beside it). Only the files a collection needs are kept, sparing the connection: an archive comes in one download
 with its other files dropped, the smaller Humdrum collections a file at a time with a pause between, a database as one file. A
 file already fetched isn't fetched again, a download past the size allowed is refused, and no archive member may land outside its
 folder. Nothing in the test suite runs this; development only.
@@ -45,7 +45,7 @@ import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent / '.corpus'
 SCORE_SUFFIX = '.krn'
-# The most one download may come to, in bytes, within the user's allowance.
+# The most one download may come to, in bytes.
 ALLOWED_BYTES = 50 * 1000 * 1000
 PAUSE_SECONDS = 0.2
 TIMEOUT_SECONDS = 60

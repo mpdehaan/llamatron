@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Mandelbrot, a visualizer mode: the Mandelbrot set, turning slowly about a point on its edge and zooming gently in and out, its colours changing with the tracks that play, the user's design of 2026-11-10.
+"""Mandelbrot, a visualizer mode: the Mandelbrot set, turning slowly about a point on its edge and zooming gently in and out, its colours changing with the tracks that play.
 
 Each fine pixel is a point of the plane, seen through a view that turns slowly and breathes between
 the whole set and a close look at the seahorse valley on its edge; the point is iterated until it
@@ -21,7 +21,7 @@ escapes or MOST_ITERATIONS pass, only the points still in the running being work
 and its escape, smoothed, picks a colour from a palette going round the hues of the tracks heard,
 vivid like the plasma's, which drifts round with time and turns a little with each note. The set
 itself is dark. It is worked out at SUPERSAMPLE times the big pixels each way and averaged down,
-and held under the limiter. The amounts are named constants here, for the user to tune by eye.
+and held under the limiter. The amounts are named constants here, to tune by eye.
 """
 
 import math

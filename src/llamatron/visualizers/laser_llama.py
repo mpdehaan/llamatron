@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Laser Llama, a visualizer mode after the synthwave and chillwave backgrounds of the user's own videos: a neon sunset over a purple grid floor, and a llama with a laser cannon on its back firing lasers to punctuate the music, the user's design of 2026-11-10.
+"""Laser Llama, a visualizer mode after the synthwave and chillwave backgrounds of music videos: a neon sunset over a purple grid floor, and a llama with a laser cannon on its back firing lasers to punctuate the music.
 
 The scene is drawn finely in half blocks, two pixels a cell: a sky from deep purple to magenta with
 a few still stars, a striped sun from yellow to pink setting on the horizon, its stripes sliding
@@ -22,7 +22,7 @@ toward the viewer at the tempo, dimmer in the distance. In front, the llama, dra
 roams the floor and turns at the edges, its cannon firing a beam in a track's colour each time a
 note of that track starts, up into the sky at an angle set by the pitch, which fades in a moment.
 Everything is held under the limiter, so the beams never flash. The amounts are named constants
-here, for the user to tune by eye.
+here, to tune by eye.
 """
 
 import math

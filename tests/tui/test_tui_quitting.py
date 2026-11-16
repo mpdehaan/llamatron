@@ -32,7 +32,7 @@ EXIT = 'exit'
 
 
 class TestQuitNow(UITest):
-    """Ctrl+C quits at once from any page or dialog, the user's ask, through the app's exit, which closes FluidSynth and the MIDI sender."""
+    """Ctrl+C quits at once from any page or dialog, through the app's exit, which closes FluidSynth and the MIDI sender."""
 
     async def quitting_after(self, *keys):
         with mock.patch.object(self.app, 'exit') as exited:

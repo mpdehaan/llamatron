@@ -16,10 +16,10 @@
 
 """The Tie row: a toggle on the empty steps after a note, each tied step marked like any toggle that's on.
 
-A tie is stored only on an empty step, which holds the note before it to the step's end. The user
-chose the plain toggle mark on 2026-11-08 over a bar running through the dividers, which read
+A tie is stored only on an empty step, which holds the note before it to the step's end. The
+plain toggle mark was chosen over a bar running through the dividers, which read
 badly and broke the beat lines. A note's own step can't take a tie, so its cell is blocked
-like any cell that can't take a value: the user decided on 2026-11-08 that a note never draws a tie
+like any cell that can't take a value: a note never draws a tie
 of its own, since ties are optional and only ever added on the steps after a note, in place of a
 longer gate.
 """

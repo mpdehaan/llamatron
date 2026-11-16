@@ -96,7 +96,7 @@ class FieldPage(Page):
 
     def move_cursor(self, name):
         """Move between the fields with Up and Down, Down from the last field reaching the row of buttons and Up from any button
-        going back to the last field, the user's design; Down on the buttons stays."""
+        going back to the last field; Down on the buttons stays."""
         fields = self.shown_fields()
         if not fields:
             return
@@ -156,7 +156,7 @@ class FieldPage(Page):
         """Return the settings after a blank line, the first section after another, then the page's buttons after one blank line, then its notes after another.
 
         The labels take the width of the longest of every field, shown or not, so that opening a
-        section never moves the values beside them (the user's rule).
+        section never moves the values beside them.
         """
         fields = self.shown_fields()
         self.field()
@@ -183,15 +183,15 @@ class FieldPage(Page):
                 continue
             line.append(field.label.ljust(label_width), style=Style.BOLD if place == self.place else Style.PLAIN)
             line.append(padded(field.value()))
-            # A field whose Enter opens a list of choices shows a dim mark after its value, the user's choice, so that it isn't taken for one that's typed.
+            # A field whose Enter opens a list of choices shows a dim mark after its value, so that it isn't taken for one that's typed.
             if field.enter_what == What.CHOOSE:
                 line.append(MSG_PICKER_MARK, style=Style.DIM)
             lines.append(line)
-            # A page that starts with its thing's Name leaves a blank line before its other settings, the user's rule.
+            # A page that starts with its thing's Name leaves a blank line before its other settings.
             if place == 0 and field.label == MSG_NAME_LABEL and len(fields) > 1 and not isinstance(fields[1], Button):
                 lines.append(Text(NOTHING))
         if buttons:
-            # The buttons sit in one row under the settings after a blank line, boxed as the dialogs' are, the user's design.
+            # The buttons sit in one row under the settings after a blank line, boxed as the dialogs' are.
             first_button = self.first_button_place()
             lines.append(Text(NOTHING))
             if self.place >= first_button:
@@ -211,7 +211,7 @@ class FieldPage(Page):
         return field.label
 
     def window_of_lines(self, *, lines, selected, height):
-        """Return the lines that fit the height, scrolled so that the selected line shows, the user's settings pages being taller than a console at times."""
+        """Return the lines that fit the height, scrolled so that the selected line shows, a settings page being taller than a console at times."""
         if height is None or len(lines) <= height:
             self.first_line = 0
             return lines

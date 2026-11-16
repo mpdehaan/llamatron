@@ -102,7 +102,7 @@ class NamedEdits:
             self._delete_song(name)
         else:
             self._change(self._owner_of(section).remove_item, section=section, name=name)
-        # The last instrument leaves nothing to play through, so deleting it turns real-time playback off (the user's design of 2026-11-09).
+        # The last instrument leaves nothing to play through, so deleting it turns real-time playback off.
         if section == Section.INSTRUMENTS and not self._setlist.get_instrument_names() and self._setlist.is_real_time():
             self._change(self._setlist.set_real_time, False)
 

@@ -16,7 +16,7 @@
 
 """The key map: what every key does on every page, with the cursor at each kind of place, gathered by the key tour of
 tests/tui/test_tui_help_keys.py and written into .claude/KEYMAP.md, which TestKeyMapIsCurrent keeps current and
-internal_tools/key_map.sh rewrites. It's for Claude, so that a question about a key is one lookup, the user's ask."""
+internal_tools/key_map.sh rewrites. It's for Claude, so that a question about a key is one lookup."""
 
 import os
 

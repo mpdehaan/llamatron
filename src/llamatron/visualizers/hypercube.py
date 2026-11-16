@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The hypercube, a visualizer mode: a tesseract turning in four dimensions, seen through a derezzed view, bright rather than dark, its edges shared out among the tracks, the user's design of 2026-11-10.
+"""The hypercube, a visualizer mode: a tesseract turning in four dimensions, seen through a derezzed view, bright rather than dark, its edges shared out among the tracks.
 
 Its sixteen corners are every combination of plus and minus one in four dimensions, and its
 thirty-two edges join the corners that differ in one. Each frame it turns in two planes at once,
@@ -25,7 +25,7 @@ colour of its last note, brighter as it plays. The edges are drawn as points alo
 SUPERSAMPLE times the big pixels each way, blurred into a glow and drawn sharp again over it, so
 that they bloom across their neighbours when averaged down, over a wash of the playing colours that
 keeps the picture from going dark, and the limiter keeps it from ever flashing. The amounts are
-named constants here, for the user to tune by eye.
+named constants here, to tune by eye.
 """
 
 import itertools
@@ -69,7 +69,7 @@ ENERGY_PER_NOTE = 0.4
 ENERGY_RISE_PER_SECOND = 2.5
 ENERGY_KEPT_PER_SECOND = 0.3
 FULL_VELOCITY = 127
-# The limiter: brighter than the other modes, as the user asked, and still never flashing.
+# The limiter: brighter than the other modes, and still never flashing.
 MEAN_LEVEL = 105.0
 CEILING = 230
 MEAN_RISE_PER_SECOND = 50.0
@@ -97,7 +97,7 @@ class Hypercube(Visualizer):
 
     NAME = MSG_HYPERCUBE
     OPTION = 'hypercube'
-    # Its quiet edges glow even before a track has played, since the user wants it bright rather than dark.
+    # Its quiet edges glow even before a track has played, so that it is bright rather than dark.
     DARK_IN_SILENCE = False
 
     def __init__(self):

@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The Glide generator: a row of on-or-off steps that makes the notes starting on the steps that are on glide into the next note, running at its own step from the clip's start, the user's design of 2026-11-11."""
+"""The Glide generator: a row of on-or-off steps that makes the notes starting on the steps that are on glide into the next note, running at its own step from the clip's start."""
 
 import math
 

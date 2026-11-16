@@ -230,7 +230,7 @@ class TestRecordDemo(unittest.TestCase):
         return app.call_args.kwargs['launch']
 
     def test_a_take_scrolls_the_sets_name_from_its_file_unless_told_other_words_or_none(self):
-        # The user's rules: DEMO: and the file's name as words, for every set; --scroll-text gives other words and --no-scroll none.
+        # DEMO: and the file's name as words, for every set; --scroll-text gives other words and --no-scroll none.
         self.assertEqual(self.tool.scroll_text_of(path=AN_EXAMPLE), MSG_DEMO_SCROLL.format(name=AN_EXAMPLE_NAME))
         self.assertEqual(self.tool.scroll_text_of(path=SET_PATH), MSG_DEMO_SCROLL.format(name=SET_NAME))
         self.assertEqual(self.tool.scroll_text_of(path=AN_EXAMPLE, scroll_text=OTHER_WORDS), OTHER_WORDS)

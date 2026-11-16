@@ -24,7 +24,7 @@ REGISTER_OF_ROW = {row: name for name, row in REGISTER_SET_ROWS.items()}
 
 
 class SetRow(ControlRow):
-    """The number line runs from blank up through the current song's register, the user's design of 2026-11-11.
+    """The number line runs from blank up through the current song's register.
 
     Blank, which sets nothing, sits just below the register's minimum: ] on a blank step gives the
     minimum, [ on the minimum gives blank again, and ] stops at the maximum. Digits type a value,

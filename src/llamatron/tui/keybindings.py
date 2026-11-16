@@ -68,20 +68,20 @@ class Page:
     EXPORT = (Key.CTRL_X, KeyName.CTRL_X, What.EXPORT)
     UNDO = (Key.CTRL_Z, KeyName.CTRL_Z, What.UNDO)
     REDO = (Key.CTRL_Y, KeyName.CTRL_Y, What.REDO)
-    # The emergency stop, the user's design of 2026-11-09: note offs, all notes off and all sound off on every channel the instruments use, whatever is known to be playing.
+    # The emergency stop: note offs, all notes off and all sound off on every channel the instruments use, whatever is known to be playing.
     SILENCE = (Key.CTRL_T, KeyName.CTRL_T, What.SILENCE)
-    # Quits at once, from any page, closing FluidSynth and the MIDI sender as quitting does, the user's ask, as Ctrl+C stops a program in a terminal.
+    # Quits at once, from any page, closing FluidSynth and the MIDI sender as quitting does, as Ctrl+C stops a program in a terminal.
     QUIT_NOW = (Key.CTRL_C, KeyName.CTRL_C, What.QUIT_NOW)
     HELP = (Key.F1, KeyName.F1, What.HELP)
-    # About is F3, so that F2 renames as on Windows, the user's choice.
+    # About is F3, so that F2 renames as on Windows.
     ABOUT = (Key.F3, KeyName.F3, What.ABOUT)
-    # The song wizard is F5, set apart from F1 and F3, which only inform, the user's choice: F9 and the keys above it are the Mac's own.
+    # The song wizard is F5, set apart from F1 and F3, which only inform: F9 and the keys above it are the Mac's own.
     WIZARD = (Key.F5, KeyName.F5, What.WIZARD)
     BACK = (Key.ESCAPE, KeyName.ESCAPE, What.BACK)
     # The keys every page has, in the order the F1 dialog lists them. Ctrl+S is Save because a plain
     # letter would be typed into names, and Cmd+S never reaches a terminal program. Open is Ctrl+O,
-    # Export is Ctrl+X, Help is F1 and About is F2 for the same reason, as the user decided on
-    # 2026-11-07: everything global has a key that no page could want for itself, so that a page's
+    # Export is Ctrl+X, Help is F1 and About is F2 for the same reason:
+    # everything global has a key that no page could want for itself, so that a page's
     # plain letters are its own and free to change. Undo is Ctrl+Z and redo Ctrl+Y, the pair most
     # people's hands already know, which Textual delivers as keys rather than letting the terminal
     # suspend the program. None of them is in a page's legend, which shows only the page's own
@@ -108,13 +108,13 @@ class MainPage(Page):
     INSTRUMENTS = (Key.I, KeyName.I, PageName.INSTRUMENTS)
     REGISTERS = (Key.R, KeyName.R, PageName.REGISTERS)
     ARRANGE = (Key.A, KeyName.A, PageName.ARRANGE)
-    # The Real Time switch, a cell among the pages that turns real-time playback on and off (the user's design of 2026-11-09).
+    # The Real Time switch, a cell among the pages that turns real-time playback on and off.
     REAL_TIME = (Key.T, KeyName.T, PageName.REAL_TIME)
     # The Open and Export cells take a plain letter here, to save a keystroke, since the main screen's letters are its own
-    # (the user's choice of 2026-11-09). Ctrl+O and Ctrl+X still work, here as everywhere. Save stays Ctrl+S, since S is Songs.
+    #. Ctrl+O and Ctrl+X still work, here as everywhere. Save stays Ctrl+S, since S is Songs.
     OPEN_SET_HERE = (Key.O, KeyName.O, What.OPEN_SET)
     EXPORT_HERE = (Key.X, KeyName.X, What.EXPORT)
-    # Import MIDI, in the row of actions after Export (the user's design of 2026-11-10).
+    # Import MIDI, in the row of actions after Export.
     IMPORT_HERE = (Key.M, KeyName.M, What.IMPORT_MIDI)
     QUIT = (Key.Q, KeyName.Q, What.QUIT)
     SELECT = (ARROWS, KeyName.ARROWS, What.SELECT)
@@ -136,11 +136,11 @@ class ListPage(Page):
     # Enter on the + row adds, as A does on any row.
     ADD_HERE = (Key.ENTER, KeyName.ENTER, What.ADD)
     EDIT = (Key.ENTER, KeyName.ENTER, What.EDIT)
-    # F2 renames too, as on Windows, the user's choice; N stays, since a stock Mac needs fn for F2.
+    # F2 renames too, as on Windows; N stays, since a stock Mac needs fn for F2.
     RENAME = ((Key.N, Key.F2), KeyName.N_F2, What.RENAME)
     COPY = (Key.C, KeyName.C, What.COPY)
     DELETE = (Key.BACKSPACE, KeyName.BACKSPACE, What.DELETE)
-    # Move mode, the user's design: M picks up the row, Up and Down carry it, and Enter, Esc or M drops it where it is.
+    # Move mode: M picks up the row, Up and Down carry it, and Enter, Esc or M drops it where it is.
     MOVE = (Key.M, KeyName.M, What.MOVE)
     CARRY = (Steps(back=(Key.UP,), forward=(Key.DOWN,)), KeyName.UP_DOWN, What.CARRY)
     DROP = (MOVE_DROP_KEYS, KeyName.ENTER_ESC_M, What.DROP)
@@ -175,7 +175,7 @@ class SongsPage(NamedListPage):
 
 
 class PatternsPage(NamedListPage):
-    """The Patterns page, which lists the patterns by group, always sorted, so it neither moves nor sorts (the user's design): the
+    """The Patterns page, which lists the patterns by group, always sorted, so it neither moves nor sorts: the
     list keys, G, which moves the selected pattern to another group, the keys of a group's heading and of the two buttons that
     add, and L, which plays the selected pattern at once, again and again, until L stops it."""
 
@@ -205,7 +205,7 @@ class ScalesPage(NamedListPage):
 
 
 class GeneratorsPage(ListPage):
-    """The Generators page, every generator on one list, the user's design: Enter edits one, A adds one of a kind asked for, and the
+    """The Generators page, every generator on one list: Enter edits one, A adds one of a kind asked for, and the
     usual keys rename, copy, delete and move one; there's no sort, since the order is the user's own."""
 
     IN_HELP = [binding for binding in ListPage.IN_HELP if binding is not ListPage.SORT]
@@ -259,7 +259,7 @@ class FieldPage(Page):
     """A page of settings: Up and Down pick a field, Left and Right change its value, and what Enter and Bksp do is said by the field."""
 
     SELECT = (ARROWS_UP_DOWN, KeyName.UP_DOWN, What.SELECT)
-    # [ dec and ] inc, the user's one adjust system, named the same way everywhere (2026-11-09); Left and Right do the same, off the legend.
+    # [ dec and ] inc, the one adjust system, named the same way everywhere; Left and Right do the same, off the legend.
     LESS = ((Key.LEFT, *LESS_KEYS), KeyName.LEFT_BRACKET, What.LESS)
     MORE = ((Key.RIGHT, *MORE_KEYS), KeyName.RIGHT_BRACKET, What.MORE)
     # A field that's true or false answers to Space and Enter alike.
@@ -269,16 +269,16 @@ class FieldPage(Page):
     CLEAR = (Key.BACKSPACE, KeyName.BACKSPACE, What.CLEAR)
     # On a page with sections, PgUp and PgDn jump between their headings, as in the pattern editor's rows.
     SECTION = (Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), KeyName.PAGE_UP_DOWN, MSG_NEXT_SECTION_WHAT)
-    # F2 renames from any field of a page that has a Name, as on Windows, the user's choice; off the legend, where Enter on Name says rename.
+    # F2 renames from any field of a page that has a Name, as on Windows; off the legend, where Enter on Name says rename.
     RENAME = (Key.F2, KeyName.F2, What.RENAME)
-    # On the row of buttons under the settings, Left and Right move along it, the user's design.
+    # On the row of buttons under the settings, Left and Right move along it.
     ALONG_BUTTONS = (ARROWS_LEFT_RIGHT, KeyName.LEFT_RIGHT, What.SELECT)
     IN_HELP = [Page.BACK, SELECT, ALONG_BUTTONS, LESS, MORE, TOGGLE, ENTER, CLEAR, SECTION, RENAME]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[RENAME])
 
 
 class WizardPage(FieldPage):
-    """The song wizard, the user's design: a tree of its parts at the left and the settings of the part under the cursor at the right.
+    """The song wizard: a tree of its parts at the left and the settings of the part under the cursor at the right.
     In the tree, Up and Down move, Left and Right close and open a part, and ENTER or Tab moves into the settings; there the
     settings' own keys work, and ESC or Tab moves back to the tree. ESC in the tree closes the wizard."""
 
@@ -317,7 +317,7 @@ class ScalePage(FieldPage):
 
 
 class RegistersPage(FieldPage):
-    """The Registers page, a grid of the four registers by their settings, the user's design: the arrows move over it, stopping at
+    """The Registers page, a grid of the four registers by their settings: the arrows move over it, stopping at
     every edge, [ and ] make the value under the cursor less and more, and Enter, Space and Bksp act on it as on a settings page."""
 
     MOVE = (ARROWS, KeyName.ARROWS, What.MOVE)
@@ -468,7 +468,7 @@ class OneRowEditor(StepEditor):
     """An editor of one row of numbers: Left and Right move along the row, and Up and Down change the number, since no row lies below the cursor."""
 
     MOVE = (ARROWS_LEFT_RIGHT, KeyName.LEFT_RIGHT, What.MOVE)
-    # [ dec and ] inc as everywhere (2026-11-09); Up and Down do the same, off the legend, since no row lies below the cursor.
+    # [ dec and ] inc as everywhere; Up and Down do the same, off the legend, since no row lies below the cursor.
     LESS = (NUDGE_LESS_KEYS, KeyName.LEFT_BRACKET, What.LESS)
     MORE = (NUDGE_MORE_KEYS, KeyName.RIGHT_BRACKET, What.MORE)
     TYPE = (DIGITS, KeyName.DIGITS, What.TYPE)
@@ -560,7 +560,7 @@ class GrooveEditor(OneRowEditor):
     INSERT_CELL = (Key.I, KeyName.I, What.INSERT_CELL)
     REMOVE_CELL = (Key.D, KeyName.D, What.REMOVE_CELL)
     CELL_LENGTH = (Key.S, KeyName.S, MSG_CELL_LENGTH_WHAT)
-    # F2 renames too, as on Windows, the user's choice; N stays, since a stock Mac needs fn for F2.
+    # F2 renames too, as on Windows; N stays, since a stock Mac needs fn for F2.
     RENAME = ((Key.N, Key.F2), KeyName.N_F2, What.RENAME)
     IN_HELP = [*OneRowEditor.IN_HELP, INSERT_CELL, REMOVE_CELL, CELL_LENGTH, RENAME]
     IN_LEGEND = IN_HELP
@@ -592,8 +592,8 @@ class ArrangePage(Page):
     DELETE_SCENE = (Key.BACKSPACE, KeyName.BACKSPACE, MSG_DELETE_SCENE_WHAT)
     INSERT_SCENE = (Key.I, KeyName.I, MSG_INSERT_SCENE_WHAT)
     MOVE_SCENE = (Key.M, KeyName.M, MSG_MOVE_SCENE_WHAT)
-    # Move mode on Arrange, the user's design: M on a scene's name, a track's name or a clip picks it up, the arrows carry it (a clip only
-    # into an empty cell, the user's rule), and Enter, Esc or M drops it where it is.
+    # Move mode on Arrange: M on a scene's name, a track's name or a clip picks it up, the arrows carry it (a clip only
+    # into an empty cell), and Enter, Esc or M drops it where it is.
     MOVE_CLIP = (Key.M, KeyName.M, MSG_MOVE_CLIP_WHAT)
     CARRY_SCENE = (Steps(back=(Key.UP,), forward=(Key.DOWN,)), KeyName.UP_DOWN, What.CARRY)
     CARRY_TRACK = (Steps(back=(Key.LEFT,), forward=(Key.RIGHT,)), KeyName.LEFT_RIGHT, What.CARRY)
@@ -601,42 +601,42 @@ class ArrangePage(Page):
     DROP = (MOVE_DROP_KEYS, KeyName.ENTER_ESC_M, What.DROP)
     # On a clip, or the empty cell where one would be.
     ADD_CLIP = (Key.ENTER, KeyName.ENTER, MSG_ADD_CLIP_WHAT)
-    # B on an empty cell makes a blank pattern named after the track, puts a clip of it there and opens it, the user's design, as Live makes a new clip in an empty slot.
+    # B on an empty cell makes a blank pattern named after the track, puts a clip of it there and opens it, as Live makes a new clip in an empty slot.
     BLANK_PATTERN = (Key.B, KeyName.B, MSG_BLANK_PATTERN_WHAT)
     EDIT_CLIP = (Key.ENTER, KeyName.ENTER, MSG_EDIT_CLIP_WHAT)
-    # P opens the clip's pattern in the pattern editor, the user's choice of 2026-11-09 over Shift+Enter, which a stock terminal sends as Enter.
+    # P opens the clip's pattern in the pattern editor, chosen over Shift+Enter, which a stock terminal sends as Enter.
     OPEN_PATTERN = (Key.J, KeyName.J, MSG_OPEN_PATTERN_WHAT)
     COPY_CLIP = (Key.C, KeyName.C, MSG_COPY_CLIP_WHAT)
     DELETE_CLIP = (Key.BACKSPACE, KeyName.BACKSPACE, MSG_DELETE_CLIP_WHAT)
     PASTE_CLIP = (Key.V, KeyName.V, MSG_PASTE_CLIP_WHAT)
     # A clip's track moves with the same keys as on the track's name, listed last on a clip, after the scene's keys.
-    # With Real Time on, the visualizer over the clip area, the user's design of 2026-11-10: the key steps through its modes and back to
+    # With Real Time on, the visualizer over the clip area: the key steps through its modes and back to
     # the clips, from anywhere on the page, and while it shows, Esc brings the clips back rather than leaving the page.
     VISUALIZER = (Key.Z, KeyName.Z, MSG_VISUALIZER_WHAT)
-    # While the visualizer shows, [ and ] step to the mode before or after, going round, the user's ask.
+    # While the visualizer shows, [ and ] step to the mode before or after, going round.
     STEP_VISUALIZER = (Steps(back=(Key.LEFT_BRACKET,), forward=(Key.RIGHT_BRACKET,)), KeyName.BRACKETS, MSG_STEP_VISUALIZER_WHAT)
-    # The details view, the user's design: D shows, under every bar, the chains and generators and the settings that aren't
+    # The details view: D shows, under every bar, the chains and generators and the settings that aren't
     # their defaults, widening the columns to fit, with coloured dividers between the tracks, and D again hides them.
     SHOW_DETAILS = (Key.D, KeyName.D, MSG_SHOW_DETAILS_WHAT)
     HIDE_DETAILS = (Key.D, KeyName.D, MSG_HIDE_DETAILS_WHAT)
-    # Tab on a track's name, a scene's name or a clip, the user's design, opens that cell's details if they aren't showing and locks into it:
+    # Tab on a track's name, a scene's name or a clip, opens that cell's details if they aren't showing and locks into it:
     # Up and Down pick a chain, a generator, or a line naming a scale, an instrument or a groove, shown in brackets, Enter opens its page,
     # and Tab again or Esc leaves, closing the cell's details in the usual view, Esc closing the topmost thing as everywhere.
     INTO_DETAILS = (Key.TAB, KeyName.TAB, MSG_INTO_DETAILS_WHAT)
     OUT_OF_DETAILS = (Key.TAB, KeyName.TAB, MSG_OUT_OF_DETAILS_WHAT)
     PICK_DETAIL = (ARROWS_UP_DOWN, KeyName.UP_DOWN, What.SELECT)
     OPEN_DETAIL = (Key.ENTER, KeyName.ENTER, MSG_OPEN_DETAIL_WHAT)
-    # On the + under a cell's chains Enter adds a chain to the cell, and on a chain's line Bksp takes it out of the cell, the user's design.
+    # On the + under a cell's chains Enter adds a chain to the cell, and on a chain's line Bksp takes it out of the cell.
     ADD_CHAIN = (Key.ENTER, KeyName.ENTER, MSG_ADD_CHAIN_WHAT)
     REMOVE_CHAIN = (Key.BACKSPACE, KeyName.BACKSPACE, MSG_REMOVE_CHAIN_WHAT)
-    # While locked into a cell, D closes every detail and leaves the cell, and Esc leaves the cell, the user's asks.
+    # While locked into a cell, D closes every detail and leaves the cell, and Esc leaves the cell.
     CLOSE_DETAILS = (Key.D, KeyName.D, MSG_CLOSE_DETAILS_WHAT)
-    # P on a scene's name opens Scene View, the user's design, an Inset Window of every track's notes in the scene; inside it only P closes
+    # P on a scene's name opens Scene View, an Inset Window of every track's notes in the scene; inside it only P closes
     # it, Tab switches between as written and as played, the arrows move its cursor, and Esc closes it as P does.
     SCENE_VIEW = (Key.P, KeyName.P, MSG_SCENE_VIEW_WHAT)
     CLOSE_INSET = (Key.P, KeyName.P, MSG_CLOSE_INSET_WHAT)
-    # V switches between as written and as played, PgUp and PgDn jump its cursor a bar, and [ and ] scroll the sidebar, the user's
-    # choice, so that Tab keeps its one meaning of the next part of a page.
+    # V switches between as written and as played, PgUp and PgDn jump its cursor a bar, and [ and ] scroll the sidebar,
+    # so that Tab keeps its one meaning of the next part of a page.
     TO_PLAYED = (Key.V, KeyName.V, MSG_TO_PLAYED_WHAT)
     TO_WRITTEN = (Key.V, KeyName.V, MSG_TO_WRITTEN_WHAT)
     INSET_BARS = (Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), KeyName.PAGE_UP_DOWN, MSG_JUMP_BAR_WHAT)
@@ -670,7 +670,7 @@ class PatternEditor(StepEditor):
     # Real-time playback: L plays the pattern at once through the pattern preview, looping until L again stops it.
     LISTEN = (Key.L, KeyName.L, MSG_LISTEN_WHAT)
     STOP_LISTENING = (Key.L, KeyName.L, MSG_STOP_LISTENING_WHAT)
-    # F2 renames the pattern, as on Windows, the user's choice, beside rename in R's menu; off the legend.
+    # F2 renames the pattern, as on Windows, beside rename in R's menu; off the legend.
     RENAME = (Key.F2, KeyName.F2, What.RENAME)
     IN_HELP = [Page.BACK, TO_ROLL, TO_EDITOR, RESIZE, RECONFIGURE, LISTEN, STOP_LISTENING, RENAME]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[RENAME])
@@ -692,19 +692,19 @@ class PatternRows:
 
 
 class PianoRoll:
-    """The piano roll: one pencil, where every key does one thing, and Space or Enter on a note takes the note out as Bksp does. Its legend keeps to drawing, so X and G are listed by F1 alone. It neither inserts nor removes a step, the user's rule, as Live's piano roll never did.
+    """The piano roll: one pencil, where every key does one thing, and Space or Enter on a note takes the note out as Bksp does. Its legend keeps to drawing, so X and G are listed by F1 alone. It neither inserts nor removes a step, as Live's piano roll never did.
 
-    Enter draws as Space does, by the user's choice of 2026-11-09, since the two do the same everywhere else, so the chord picker took the free letter H.
+    Enter draws as Space does, since the two do the same everywhere else, so the chord picker took the free letter H.
     """
 
     MOVE = (ARROWS, KeyName.ARROWS, What.MOVE)
     ENDS = (Steps(back=(Key.HOME,), forward=(Key.END,)), KeyName.HOME_END, What.ENDS)
     PLACE = (TOGGLE_KEYS, KeyName.SPACE_ENTER, MSG_PLACE_NOTE_WHAT)
     CHORD = (Key.H, KeyName.H, MSG_CHORD_WHAT)
-    # [ and ] drag the note's end a step earlier and later, which the user calls shrink and stretch (2026-11-09), since a note is not a number.
+    # [ and ] drag the note's end a step earlier and later, called shrink and stretch, since a note is not a number.
     SHORTER = (Key.LEFT_BRACKET, KeyName.LEFT_BRACKET, MSG_SHRINK_WHAT)
     LONGER = (Key.RIGHT_BRACKET, KeyName.RIGHT_BRACKET, MSG_STRETCH_WHAT)
-    # Keyswitch took the knife's letter, the user's choice, and the knife the letter people know for cutting.
+    # Keyswitch took the knife's letter, and the knife the letter people know for cutting.
     KEYSWITCH = (Key.K, KeyName.K, MSG_KEYSWITCH_WHAT)
     KNIFE = (Key.X, KeyName.X, MSG_SPLIT_WHAT)
     ACCIDENTAL = (Key.PERIOD, KeyName.PERIOD, MSG_ACCIDENTAL_WHAT)
@@ -718,7 +718,7 @@ class PianoRoll:
 # The rows of the pattern editor's rows view, whose keys work while the cursor is on the row.
 
 class PatternRow:
-    """What the rows share: [ and ] step the value under the cursor, with -, + and = working too, as two legend entries, less and more, by the user's choice of 2026-11-09."""
+    """What the rows share: [ and ] step the value under the cursor, with -, + and = working too, as two legend entries, less and more."""
 
     LESS = (LESS_KEYS, KeyName.LEFT_BRACKET, What.LESS)
     MORE = (MORE_KEYS, KeyName.RIGHT_BRACKET, What.MORE)
@@ -783,7 +783,7 @@ class SetRow(ControlRow):
 
 
 class CycleRow(PatternRow):
-    """A row with a cycle of choices, like Dot: Space or Enter goes to the next, and [ and ] step back and forward as on every row, the user's one adjust system (2026-11-09)."""
+    """A row with a cycle of choices, like Dot: Space or Enter goes to the next, and [ and ] step back and forward as on every row, the one adjust system."""
 
     NEXT = (TOGGLE_KEYS, KeyName.SPACE_ENTER, What.NEXT)
     CLEAR = (Key.BACKSPACE, KeyName.BACKSPACE, What.CLEAR)
@@ -856,7 +856,7 @@ class TieRow(ToggleRow):
 
 
 class RegisterRow(CycleRow):
-    """A register's +Note or +Vel row: Space or Enter cycles add, subtract and off, and [ and ] step back and forward, the user's design of 2026-11-09."""
+    """A register's +Note or +Vel row: Space or Enter cycles add, subtract and off, and [ and ] step back and forward."""
 
 
 class ConditionRow(CycleRow):
@@ -990,7 +990,7 @@ class KeyswitchMapDialog(Dialog):
     MOVE = (ARROWS_UP_DOWN, KeyName.UP_DOWN, What.MOVE)
     RENAME = ((Key.N, Key.F2), KeyName.N_F2, What.RENAME)
     NOTE = (Key.ENTER, KeyName.ENTER, MSG_KEYSWITCH_NOTE_WHAT)
-    # The cursor is on a slot's name or its note, the user's design: Enter renames on the name and opens the note picker on the note.
+    # The cursor is on a slot's name or its note: Enter renames on the name and opens the note picker on the note.
     ACROSS = (ARROWS_LEFT_RIGHT, KeyName.LEFT_RIGHT, What.SELECT)
     RENAME_HERE = (Key.ENTER, KeyName.ENTER, What.RENAME)
     CLEAR = (Key.BACKSPACE, KeyName.BACKSPACE, What.CLEAR)

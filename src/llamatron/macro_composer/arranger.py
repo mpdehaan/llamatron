@@ -547,7 +547,7 @@ def arranged(*, style, song):
             made = drum_parts(style=style, picks={**picks, **changed}, roles=roles, meter=meter, phrase_bars=phrase_bars, drummer=plays, section_bars=section[BARS], own_fill=FILLS in song.get(PICKS, {}))
             drum_sets[key] = {}
             for piece, part in made.items():
-                # A piece of the kit switched off is left out, the user's rule: its strokes are never moved to another piece.
+                # A piece of the kit switched off is left out: its strokes are never moved to another piece.
                 if piece in pieces_off:
                     continue
                 if piece == SNARE and not song.get(QUIET_NOTES, True):
@@ -561,7 +561,7 @@ def arranged(*, style, song):
         drums_of[name] = drum_sets[key]
     drum_tracks = list(dict.fromkeys(piece for pieces in drums_of.values() for piece in pieces))
     timing = {piece: timing_generators(move=drummer.get(TIMING, {}).get(piece, {})) for piece in drum_tracks}
-    # The user's rule for a song that is made: the chords first, then the lead and the backing, the bass, and the drums last.
+    # The order of a made song's tracks: the chords first, then the lead and the backing, the bass, and the drums last.
     tracks = {}
     instruments = {DRUM_KIT: None}
     progressions = {}

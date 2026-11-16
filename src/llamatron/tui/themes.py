@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The theme colours, the user's design: each kind of page has a colour of its own, drawn as a stripe under the header in place of its rule, so that you can tell what kind of page you're on at a glance.
+"""The theme colours: each kind of page has a colour of its own, drawn as a stripe under the header in place of its rule, so that you can tell what kind of page you're on at a glance.
 
 A page takes the colour of the section it shows or lists (an editor and its list share one), or
 the one it names; the main screen's is white, and Arrange has none and keeps the rule.
@@ -30,10 +30,10 @@ GROOVES = (255, 128, 0)
 INSTRUMENTS = (230, 200, 0)
 REGISTERS = (220, 0, 0)
 SET_FILE = (128, 128, 128)
-# The main screen's, the user's choice, white and no other page's.
+# The main screen's, white and no other page's.
 MAIN_SCREEN = (255, 255, 255)
 FROM_ARRANGE = (0, 200, 230)
-# The song wizard's, bright cyan, the user's choice.
+# The song wizard's, bright cyan.
 WIZARD = (0, 255, 255)
 # The colour of each section's pages, every generator section's the generators' one.
 SECTION_THEMES = {
@@ -43,7 +43,7 @@ SECTION_THEMES = {
 
 
 def target_theme(kind):
-    """Return the colour of what a line of Arrange's details names, a section or a generator's kind, the user's rule that a kind of thing has one colour everywhere, or None."""
+    """Return the colour of what a line of Arrange's details names, a section or a generator's kind, since a kind of thing has one colour everywhere, or None."""
     if kind in NAMED_GENERATORS:
         return GENERATORS
     return SECTION_THEMES.get(kind)
@@ -54,7 +54,7 @@ def theme_of(section):
     return SECTION_THEMES.get(section)
 
 
-# How bright a theme's edge colour is, as relative luminance from 0 to 1, the same for every theme, the user's ask that no colour look
+# How bright a theme's edge colour is, as relative luminance from 0 to 1, the same for every theme, so that no colour looks
 # stronger than another, and the steps a search for it takes.
 EDGE_LUMINANCE = 0.22
 BALANCE_STEPS = 24

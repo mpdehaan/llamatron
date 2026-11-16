@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The Progression generator and what its chords are in a scale, the user's design of 2026-11-11.
+"""The Progression generator and what its chords are in a scale.
 
 Most tests play a one-bar figure of four quarter notes, C, E, G and A in C major, through a
 progression a chord a bar, so that each bar shows where one chord moved the figure.
@@ -110,7 +110,7 @@ class TestMoving(unittest.TestCase):
 
 
 class TestLeavingTheScale(unittest.TestCase):
-    """A chord's scale, quality and tensions (the user's design): the figure is 1 3 5 7 of C major, C E G B."""
+    """A chord's scale, quality and tensions: the figure is 1 3 5 7 of C major, C E G B."""
 
     SEVENTH_FIGURE = {Row.DEGREE: [1, 3, 5, 7]}
     SCALE_FIGURE = {Row.DEGREE: [1, 2, 4, 6]}

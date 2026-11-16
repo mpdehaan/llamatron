@@ -140,7 +140,7 @@ class Scene(LlamaData):
         return DEFAULT_REPEAT if repeat is None else repeat
 
     def launches_together(self):
-        """Return whether a start reaching any clip of the scene launches the whole scene in real-time playback, which no export reads (the user's design of 2026-11-09)."""
+        """Return whether a start reaching any clip of the scene launches the whole scene in real-time playback, which no export reads."""
         launch = self._settings[SceneSetting.LAUNCH_TOGETHER]
         return DEFAULT_LAUNCH_TOGETHER if launch is None else launch
 

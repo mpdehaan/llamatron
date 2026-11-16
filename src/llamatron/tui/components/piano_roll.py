@@ -15,15 +15,15 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The piano roll, the pattern editor's first page: one row per note of the scale across the octaves, with notes as bars.
 
-The user's design of 2026-11-08: the roll is the interface music people expect, and everything it
+The roll is the interface music people expect, and everything it
 does maps onto the pattern's rows, so the rows under P show exactly what was painted. A pitch
 is a row, counted from the bottom as octave times the scale's size plus the degree's place, so a
 sharpened or flattened note stays on its degree's row with the symbol drawn inside its bar. A note
 of the entry size is written as a degree on its step and a tie on each step it covers after it,
 never a gate, except an entry size shorter than a step, the one case that writes a gate. There is
-one mode, the user's decision of 2026-11-08 after a join method was tried: Space is the pencil,
-which draws on an empty cell, takes out a note already at the cursor's pitch as Bksp does (the
-user's choice of 2026-11-09, so that Space on a note turns the note off) and cuts a note at another
+one mode, decided after a join method was tried: Space is the pencil,
+which draws on an empty cell, takes out a note already at the cursor's pitch as Bksp does (so
+that Space on a note turns the note off) and cuts a note at another
 pitch, whose rest carries on after; Shift+Left and Shift+Right drag a note's end; K is the knife and Bksp the
 eraser. The roll holds the cursor's pitch and the keys; RollDrawing draws it. It knows nothing of
 Textual.
@@ -189,8 +189,8 @@ class PianoRoll(BindsKeys):
     def rows(self):
         """Return every row the roll has, highest first: a row per degree of every octave, and a row between two degrees wherever a note or a chord's note of this pattern is sharp or flat.
 
-        Rows for sharps and flats exist only while something is on them, the user's choice of
-        2026-11-08, so that a pattern that stays in its scale looks like a scale and the cursor can
+        Rows for sharps and flats exist only while something is on them,
+        so that a pattern that stays in its scale looks like a scale and the cursor can
         only reach a pitch outside the scale that a note already has.
         """
         return self.remembered(key=PianoRoll.rows.__name__, compute=self._rows)
@@ -262,7 +262,7 @@ class PianoRoll(BindsKeys):
         """Return the rows of the notes a step's chord adds above its own note, for the thin lines the roll draws them as.
 
         A step that grabs has none: its chord is built on whatever note the grab takes, which
-        the roll can't know, so the note's G is all the roll shows, as the user chose.
+        the roll can't know, so the note's G is all the roll shows.
         """
         ghosts = set()
         if self.grabs(step):
@@ -317,7 +317,7 @@ class PianoRoll(BindsKeys):
         return what
 
     def step_keys(self, *, can_remove):
-        """Return no keys: the roll neither inserts nor removes a step, the user's rule, as Live's piano roll never did; the rows view does both."""
+        """Return no keys: the roll neither inserts nor removes a step, as Live's piano roll never did; the rows view does both."""
         return []
 
     def lists_step_keys(self):
@@ -383,7 +383,7 @@ class PianoRoll(BindsKeys):
     def pick_chord(self):
         """Open the Chord dialog on the note under the cursor, a single note among the qualities, so that a note becomes a chord or a chord a note again.
 
-        The key goes by the step, whichever row the cursor is on (the user's design): on a step no note covers, a note is
+        The key goes by the step, whichever row the cursor is on: on a step no note covers, a note is
         drawn at the cursor first, as the pencil would, and the dialog opens on that note; on a step a note covers, at the
         cursor's pitch, at another or on one of its chord's thin lines, the dialog opens on that note, so the key never
         replaces a note and always does something.
@@ -393,7 +393,7 @@ class PianoRoll(BindsKeys):
         pick_chord(editor=self.editor, step=self.covering()[self.editor.step])
 
     def pick_keyswitches(self):
-        """Open the dialog that picks the keyswitches of the note that covers the cursor's step, whichever row the cursor is on, as the chord key goes by the step. A step no note covers takes none, and says so (the user's choice)."""
+        """Open the dialog that picks the keyswitches of the note that covers the cursor's step, whichever row the cursor is on, as the chord key goes by the step. A step no note covers takes none, and says so."""
         if self.editor.step not in self.covering():
             self.editor.refuse(ERR_NO_NOTE_ON_STEP)
             return

@@ -63,7 +63,7 @@ FOLDER = ROOT / 'docs' / 'screenshots'
 SUFFIX = '.svg'
 FILE_ENCODING = 'utf-8'
 # The terminal the screenshots show: wider than the 80 by 24 every page fits, so that the Arrange grid shows more tracks.
-# Wide enough for a 16-step pattern in one block, which the user asked for after seeing them wrap.
+# Wide enough for a 16-step pattern in one block, since a narrower shot wrapped them.
 COLUMNS = 112
 ROWS = 32
 # The name in the picture's title bar.
@@ -120,7 +120,7 @@ SHOTS = [
     Shot(name='groove_editor', keys=[keybindings.MainPage.GROOVES, Key.DOWN, Key.DOWN, Key.ENTER]),
     Shot(name='registers', keys=[keybindings.MainPage.REGISTERS]),
     Shot(name='arrange', keys=[keybindings.MainPage.ARRANGE]),
-    # The details view on the hoedown, whose clips run chains, and Tab locked into the first clip's details, the user's ask for Arrange's page.
+    # The details view on the hoedown, whose clips run chains, and Tab locked into the first clip's details, for Arrange's page.
     Shot(name='arrange_details', keys=[keybindings.MainPage.ARRANGE, keybindings.ArrangePage.SHOW_DETAILS], song=DRIFT_SONG),
     Shot(name='arrange_details_locked', keys=[keybindings.MainPage.ARRANGE, keybindings.ArrangePage.SHOW_DETAILS, Key.RIGHT, Key.DOWN, keybindings.ArrangePage.INTO_DETAILS],
          song=DRIFT_SONG),

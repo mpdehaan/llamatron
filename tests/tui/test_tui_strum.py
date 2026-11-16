@@ -75,7 +75,7 @@ class TestStrumSections(UITest):
         self.assertEqual(self.document.song().get_track(LEAD).get_strum().direction, StrumDirection.BY_THE_BEAT)
         self.app.screen.show_page(ClipPage(holder=self.app.screen.holder, index=0, track=LEAD))
         await self.pilot.pause()
-        # The clip shows the track's direction it takes, and where it comes from, the user's design.
+        # The clip shows the track's direction it takes, and where it comes from.
         self.assertIn(MSG_FROM_TRACK_SHOWN.format(value=MSG_STRUM_WORDS[StrumDirection.BY_THE_BEAT]), self.text())
         await self.select_field(MSG_STRUM_FIELD_LABELS[StrumPart.DIRECTION])
         await self.press(*[keybindings.FieldPage.MORE] * 2)

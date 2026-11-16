@@ -241,7 +241,7 @@ class TestPatternsPage(PatternsPageTest):
 
 
 class TestPatternGroups(PatternsPageTest):
-    """The groups: what the page lists, a heading's keys, the two buttons and the group a pattern is in (the user's design)."""
+    """The groups: what the page lists, a heading's keys, the two buttons and the group a pattern is in."""
 
     async def test_the_rows_are_each_group_sorted_then_the_ungrouped_then_the_button(self):
         self.assertEqual(self.rows(), [

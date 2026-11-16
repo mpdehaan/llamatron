@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Importing a MIDI file from the main screen: the file picker in the home directory, the import dialog, and the song added, the user's design of 2026-11-10.
+"""Importing a MIDI file from the main screen: the file picker in the home directory, the import dialog, and the song added.
 
 M on the main screen, or Enter on its Import cell, opens the Open page showing MIDI files,
 starting in the home directory, since a MIDI file may be anywhere on the computer. Enter on a

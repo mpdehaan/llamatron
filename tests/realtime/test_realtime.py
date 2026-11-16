@@ -263,7 +263,7 @@ class TestRealtimeSenderProcess(unittest.TestCase):
     """The real process on the real clock, sending a few seconds of a song into recording outputs."""
 
     def test_it_starts_while_textual_has_replaced_standard_error(self):
-        """In a fresh interpreter, whose resource tracker hasn't started, the process starts with a stderr like Textual's capture in place, which failed on 2026-11-10."""
+        """In a fresh interpreter, whose resource tracker hasn't started, the process starts with a stderr like Textual's capture in place, which once failed."""
         result = subprocess.run([sys.executable, UNDER_CAPTURE], capture_output=True, text=True, timeout=SUBPROCESS_TIMEOUT_SECONDS, check=False)
         self.assertEqual(result.returncode, SUCCESS, result.stderr)
         self.assertEqual(result.stdout.strip(), STARTED)
@@ -431,7 +431,7 @@ class TestScore(unittest.TestCase):
 class TestPlayerFollowsTheExport(PlayerTest):
 
     def test_every_example_played_from_the_top_sends_what_its_timeline_holds_and_ends(self):
-        """Every song plays to its end as the export has it, looping clips included, since a scene is done when its clips that don't loop have finished (the user's rule of 2026-11-10)."""
+        """Every song plays to its end as the export has it, looping clips included, since a scene is done when its clips that don't loop have finished."""
         songs_that_loop = 0
         for path in EXAMPLES:
             setlist = Setlist.read_file(path)

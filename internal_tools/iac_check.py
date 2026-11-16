@@ -23,7 +23,7 @@ Run from the top folder, on a Mac with an IAC bus turned on in Audio MIDI Setup:
     .venv/bin/python internal_tools/iac_check.py examples/by_genre/electronic/minimal_techno.yml --seconds 20   # the first seconds of a set instead
     internal_tools/iac_check.sh                                                        # the same as the first
 
-This is the one tool that touches real MIDI hardware, by the user's leave of 2026-11-10, and it only ever
+This is the one tool that touches real MIDI hardware, and it only ever
 opens a port whose name holds "IAC": the macOS IAC driver, a bus from one program to another on the same
 computer, which no instrument hangs off. Every track goes down channel 1. The suite never runs it, and it
 is not part of setting real-time playback up: it is for hearing, in whatever listens on the bus, and for

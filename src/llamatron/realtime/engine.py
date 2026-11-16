@@ -28,7 +28,7 @@ import time
 from llamatron.music.midi import MAX_MIDI_NUMBER, MIN_MIDI_NUMBER
 from llamatron.realtime.timeline import CONTROL_CHANGE, NOTE_OFF, NOTE_ON, NO_VELOCITY, sort_key
 
-# The two controls that silence a channel, sent in this order when anything stops: all notes off, then all sound off, since the user has hardware that gets stuck.
+# The two controls that silence a channel, sent in this order when anything stops: all notes off, then all sound off, since some hardware gets stuck.
 ALL_NOTES_OFF = 123
 ALL_SOUND_OFF = 120
 SILENCING_CONTROLS = (ALL_NOTES_OFF, ALL_SOUND_OFF)

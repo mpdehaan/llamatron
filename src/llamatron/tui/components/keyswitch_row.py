@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The Keyswitch row of the pattern editor: which of its instrument's keyswitches a step's note is played with (the user's design).
+"""The Keyswitch row of the pattern editor: which of its instrument's keyswitches a step's note is played with.
 
 A cell is blank for none and otherwise says how many are on. Enter opens the dialog that picks
 them, the same one the piano roll opens, and Bksp clears them. A step with no note takes none.

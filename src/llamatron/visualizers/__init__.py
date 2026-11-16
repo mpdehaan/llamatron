@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The visualizers: what Arrange's clip area can show in place of the clips while a song plays in real time, the user's design of 2026-11-10.
+"""The visualizers: what Arrange's clip area can show in place of the clips while a song plays in real time.
 
 Each mode is a Visualizer (visualizer.py), listed in order in modes.py, which draws the frame for
 an area of a given size at a moment as lines of coloured text, from whole-number arithmetic on

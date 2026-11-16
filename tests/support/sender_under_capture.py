@@ -19,7 +19,7 @@
 
 tests/realtime/test_realtime.py runs this in an interpreter of its own, because spawn's resource tracker is started
 once per interpreter, with sys.stderr's file descriptor passed to it, and only the first start in an
-interpreter can fail the way the tracker's did on 2026-11-10: Textual's capture answers -1 for its
+interpreter can fail the way the tracker's once did: Textual's capture answers -1 for its
 file descriptor, and the spawn failed with "bad value(s) in fds_to_keep".
 """
 

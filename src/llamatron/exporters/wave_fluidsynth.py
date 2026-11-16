@@ -16,7 +16,7 @@
 
 """Writes a song as a WAV file, the sound of its tracks that play through FluidSynth, for anyone with no DAW.
 
-The user's design: the song is written as the General MIDI export writes it, but with only the tracks whose
+The song is written as the General MIDI export writes it, but with only the tracks whose
 instrument's Device is *FluidSynth, into a MIDI file in a folder of its own that is always removed, and
 FluidSynth plays that file into <directory>/<name>.wav with the SoundFont, faster than real time. The file is
 then normalized, its loudest moment 1 dB below full scale, as the demos' WAV files are (exporters/wave_level.py),

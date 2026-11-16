@@ -52,27 +52,27 @@ class Style:
     # The one use of colour, for the lights of real-time playback, whose shapes change too, so that the state shows without it.
     PLAYING = 'bold red'
     SOUNDING = 'bold green'
-    # The piano roll's thin lines of a chord's other notes, in green so that they stand apart from the notes written (the user's design).
+    # The piano roll's thin lines of a chord's other notes, in green so that they stand apart from the notes written.
     CHORD_NOTE = 'green'
-    # The Chord dialog's keyboard: a key of the chord filled, a key of the scale in an outline's colour, the rest dim (the user's design).
+    # The Chord dialog's keyboard: a key of the chord filled, a key of the scale in an outline's colour, the rest dim.
     CHORD_KEY = 'bold green'
     SCALE_KEY = 'cyan'
-    # The piano roll's read head while the pattern plays, a thin light yellow line (the user's design).
+    # The piano roll's read head while the pattern plays, a thin light yellow line.
     READ_HEAD = 'khaki1'
-    # The light on a piano roll's step that has keyswitches, the user's choice of magenta, which nothing else in the pattern editor uses.
+    # The light on a piano roll's step that has keyswitches: magenta, which nothing else in the pattern editor uses.
     KEYSWITCH_LIGHT = 'bold magenta'
-    # Arrange's details view, the user's design: its dividers between the tracks in blue, so that the view shows itself, and
-    # each line naming a thing in its kind's theme colour (themes.text_style), the colours the user allowed for it.
-    # The status line's refusals and problems, in amber, and the title of a dialog that deletes, in red, the user's design.
+    # Arrange's details view: its dividers between the tracks in blue, so that the view shows itself, and
+    # each line naming a thing in its kind's theme colour (themes.text_style), the colours allowed for it.
+    # The status line's refusals and problems, in amber, and the title of a dialog that deletes, in red.
     REFUSAL = 'rgb(255,176,0)'
     DELETE_TITLE = 'bold red'
     DETAILS_DIVIDER = 'blue'
-    # The box around the playing scene's name on Arrange in a recording nobody performs, the user's design.
+    # The box around the playing scene's name on Arrange in a recording nobody performs.
     PLAYING_SCENE = 'bold blue'
     # The box around a cell Tab has locked into, so that the lock shows, and the word for a cell with no details of its own.
     DETAILS_LOCKED = 'bold green'
     DETAILS_STOCK = 'red'
-    # A key's label on the main screen's cells, bold as well as reversed (the user's choice).
+    # A key's label on the main screen's cells, bold as well as reversed.
     KEY = 'bold reverse'
 
 

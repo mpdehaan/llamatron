@@ -14,12 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Where the example sets live: examples/, in a folder for each purpose, the user's layout.
+"""Where the example sets live: examples/, in a folder for each purpose.
 
 examples/learning holds the demos in the order a newcomer learns the features, examples/other the demos that fit no
 other folder, the Euclidean mask so far, and examples/by_genre every other song, the pieces and the songs in the manner of
-others alike, in a folder for each genre, named by genre_folder, since one folder of them was too many to explore, the
-user's layout. examples/mashups holds the mashups, each one work's notes set in another's style.
+others alike, in a folder for each genre, named by genre_folder, since one folder of them was too many to explore.
+examples/mashups holds the mashups, each one work's notes set in another's style.
 examples/midi holds MIDI files to import, which are not sets. Everything that lists the example
 sets, the tests, the tools and the demo tables, asks example_sets() here, so that a folder can be
 added in one place.

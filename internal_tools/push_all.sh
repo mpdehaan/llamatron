@@ -17,7 +17,7 @@
 
 # What it does: rebuild the documentation website and commit web_docs/ if the build changed it, push main to GitHub
 # and then publish the website, in that order, so that the website is rebuilt only at a push and never describes code
-# nobody can get (the user's rules). It stops if the push fails, never pushes with --force, and
+# nobody can get. It stops if the push fails, never pushes with --force, and
 # runs only on main. It is the one command that sends anything to GitHub: Claude runs it when asked to push.
 
 set -eu

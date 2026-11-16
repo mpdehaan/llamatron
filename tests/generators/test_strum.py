@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Strum: a chord's notes sounding one after another, the user's design of 2026-11-11.
+"""Strum: a chord's notes sounding one after another.
 
 Each test plays C major triads, four quarter notes, a bar at 120 beats a minute, where a whole
 note lasts two seconds, so 8 milliseconds between strings is 1/250 of a whole note.

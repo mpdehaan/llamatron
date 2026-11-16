@@ -173,6 +173,6 @@ class NamedItems(Revised):
     def _check_new_name(self, name):
         if not isinstance(name, str):
             raise InvalidValue(ERR_SONG_NAME_NOT_TEXT.format(name=name))
-        # Names are compared without regard to capitals (the user's rule), though a file that holds two such names still loads.
+        # Names are compared without regard to capitals, though a file that holds two such names still loads.
         if is_taken(name=name, taken=self.names()):
             raise InvalidValue(ERR_NAME_TAKEN.format(label=self._label, name=name))

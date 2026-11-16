@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The names the tracker makes up itself: one rule for the whole tracker, the user's (.claude/UX.md, "Names the tracker makes")."""
+"""The names the tracker makes up itself: one rule for the whole tracker (.claude/UX.md, "Names the tracker makes")."""
 
 import unittest
 
@@ -159,7 +159,7 @@ class TestScaleNames(unittest.TestCase):
         self.assertEqual(unique_name(base=C_MAJOR, taken=[C_MAJOR]), C_MAJOR_2)
 
     def test_a_new_set_starts_with_a_scale_named_by_its_number(self):
-        # The user's rule: a name after the notes was wrong once the notes changed, so a new scale is numbered as every new thing.
+        # A name after the notes was wrong once the notes changed, so a new scale is numbered as every new thing.
         self.assertEqual(Setlist.new().get_item_names(Section.SCALES), [new_name(word=MSG_NEW_SCALE_WORD, taken=[])])
 
     def test_an_older_files_name_still_says_what_the_scale_is(self):

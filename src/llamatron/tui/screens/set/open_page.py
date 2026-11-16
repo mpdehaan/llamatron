@@ -72,7 +72,7 @@ class OpenPage(ListPage):
         return folder if folder is not None and os.path.isdir(folder) else None
 
     def remember_folder(self):
-        """Keep the directory shown, for the session, so that the next picker of these files starts in it (the user's ask)."""
+        """Keep the directory shown, for the session, so that the next picker of these files starts in it."""
         self.holder.last_folders[self.suffixes] = self.folder
 
     def duration(self):

@@ -16,7 +16,7 @@
 
 """The title on black: LLAMATRON in block letters, a scanner sweeping under it, and the address, all in blue and centred.
 
-The user's design, after the start page of a classic video game. The letters come in by ENTRANCE,
+After the start page of a classic video game. The letters come in by ENTRANCE,
 riding sine waves and settling into the word, or fading in; then a wide glow, the scanner, sweeps
 right and back left under them, shaded through many tones of the blue, entering and leaving at the
 title's edges, and is gone; the address shows two lines under the word. The start screen adds its
@@ -45,7 +45,7 @@ class Entrance:
     FADE = 'fade'
 
 
-# How the letters come in, a constant so that another entrance can be tried (the user's ask).
+# How the letters come in, a constant so that another entrance can be tried.
 ENTRANCE = Entrance.SINE_WAVES
 # The colours, on black: the word, the address, the scanner's brightest, and the prompt at its dimmest and brightest.
 BLACK = (0, 0, 0)

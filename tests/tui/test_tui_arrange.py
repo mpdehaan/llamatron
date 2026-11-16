@@ -131,7 +131,7 @@ class TestArrangePage(UITest):
         self.assertIn(MSG_SCENE_CRUMB.format(name=scene), self.crumbs_line())
 
     async def test_p_on_a_clip_opens_its_pattern_with_arrange_before_the_pattern_in_the_crumbs_and_esc_comes_back_to_the_clip(self):
-        # The user's choice of 2026-11-09: P jumps from a clip to its pattern, and the crumbs say the way back, which is this page, not the Patterns page.
+        # P jumps from a clip to its pattern, and the crumbs say the way back, which is this page, not the Patterns page.
         await self.press(Key.RIGHT)
         place = (self.page.row, self.page.column)
         self.assertTrue(self.page.on_clip_slot())
@@ -265,7 +265,7 @@ class TestArrangePage(UITest):
         self.assertEqual(self.page.row, 1)
 
     async def test_move_mode_carries_a_scene_in_render_order_and_one_move_is_one_undo_step(self):
-        # Move mode, the user's design: M on a scene's name picks it up, Up and Down carry it, and Enter, Esc or M drops it.
+        # Move mode: M on a scene's name picks it up, Up and Down carry it, and Enter, Esc or M drops it.
         await self.press(keybindings.ArrangePage.MOVE_SCENE)
         self.assertEqual(self.page.moving, MOVING_SCENE)
         self.assertIn(MSG_MOVING.format(what=MSG_MOVING_SCENE.format(name=ONE)), self.text())
@@ -298,7 +298,7 @@ class TestArrangePage(UITest):
         self.assertIsNone(self.page.moving)
 
     async def test_a_clip_moves_only_into_an_empty_cell_passing_over_full_ones(self):
-        # The user's rule: a clip is carried to the nearest empty cell the arrow points to, and stays when there is none.
+        # A clip is carried to the nearest empty cell the arrow points to, and stays when there is none.
         await self.press(Key.RIGHT)
         moved = self.document.clip_slot(index=0, track=self.page.track())
         track = self.page.track()
@@ -316,7 +316,7 @@ class TestArrangePage(UITest):
         self.assertIsNone(self.page.moving)
 
     async def test_nothing_on_arrange_takes_shift_with_an_arrow_and_the_legend_names_the_move_keys(self):
-        """Scenes and tracks move in Move mode, M, the user's design, since a terminal may not send Shift with an arrow."""
+        """Scenes and tracks move in Move mode, M, since a terminal may not send Shift with an arrow."""
         every = [name for item in self.page.key_table() for name in item.keys]
         for name in (*SHIFT_UP_DOWN, *SHIFT_LEFT_RIGHT):
             self.assertNotIn(name, every)
@@ -345,7 +345,7 @@ class TestArrangePage(UITest):
         self.assertEqual(self.scenes(), [ONE, TWO])
 
     async def test_enter_on_a_blank_clip_picks_a_pattern_and_stays_on_arrange_until_enter_again(self):
-        # The user's rule: adding a clip doesn't open it; Enter on the clip again does.
+        # Adding a clip doesn't open it; Enter on the clip again does.
         await self.press(Key.RIGHT, Key.DOWN, Key.ENTER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         await self.pick(BEAT)
@@ -355,7 +355,7 @@ class TestArrangePage(UITest):
         self.assertIsInstance(self.app.screen, ClipPage)
 
     async def test_b_on_an_empty_cell_makes_a_blank_pattern_named_after_the_track_and_opens_it(self):
-        # The user's design, as Live makes a new clip in an empty slot: a blank pattern, a clip of it, and the pattern editor on it.
+        # As Live makes a new clip in an empty slot: a blank pattern, a clip of it, and the pattern editor on it.
         await self.press(Key.RIGHT, Key.DOWN)
         self.assertIsNone(self.document.clip_slot(index=1, track=LEAD))
         await self.press(keybindings.ArrangePage.BLANK_PATTERN)
@@ -480,7 +480,7 @@ class TestClipPage(UITest):
         self.assertIsNone(self.clip_slot().get_scale_name())
 
     async def test_advance_shows_the_sets_default_until_the_clip_sets_its_own_and_is_chosen_from_the_three_values(self):
-        # No (default) choice; a clip that sets nothing shows the File page's Default follow action, saying it comes from the set, the user's design.
+        # No (default) choice; a clip that sets nothing shows the File page's Default follow action, saying it comes from the set.
         self.assertIsNone(self.clip_slot().get_written_follow_action())
         self.assertEqual(self.follow_action_text(), MSG_FROM_SET_SHOWN.format(value=MSG_FOLLOW_ACTION_NAMES[FollowAction.WITH_SCENE]))
         self.document.set_default_follow_action(FollowAction.OFF)
@@ -505,7 +505,7 @@ class TestClipPage(UITest):
         self.assertTrue(render_song(self.document.song(), seed=1).get_rows())
 
     async def test_p_opens_the_pattern_from_any_field_with_this_pages_crumbs_before_the_pattern_and_esc_comes_back_to_the_field(self):
-        # The user's choice of 2026-11-09 (B): the page has one pattern, so P works wherever the triangle is, and the crumbs say the way back.
+        # The page has one pattern, so P works wherever the triangle is, and the crumbs say the way back.
         scene = self.document.song().get_scenes()[0].get_name()
         for label in (MSG_PATTERN_LABEL, MSG_REPEAT_LABEL):
             with self.subTest(label=label):
@@ -869,7 +869,7 @@ class TestRegistersPage(UITest):
                 self.assertIn(self.label(name=name, what=what), labels)
 
     async def test_it_is_a_grid_the_arrows_move_over_stopping_at_every_edge(self):
-        # The user's design: a row for each register and a column for each setting, the cursor stopping at every edge.
+        # A row for each register and a column for each setting, the cursor stopping at every edge.
         columns = len(self.page.fields()) // len(REGISTER_NAMES)
         await self.press(Key.UP, Key.LEFT)
         self.assertEqual(self.page.place, 0)

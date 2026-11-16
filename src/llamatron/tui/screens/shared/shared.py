@@ -68,7 +68,7 @@ def list_keys(*, page, extra, always=()):
 
 
 def move_key(page):
-    """Return M, which picks up the selected row for Move mode, the user's design."""
+    """Return M, which picks up the selected row for Move mode."""
     return page.bind(page.KEYS.MOVE, action=page.start_moving)
 
 

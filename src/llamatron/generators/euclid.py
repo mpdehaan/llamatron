@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The Euclidean mask: a clip's notes kept only where they start on a hit of a Euclidean rhythm, the rest becoming rests of their length, the user's design of 2026-11-11."""
+"""The Euclidean mask: a clip's notes kept only where they start on a hit of a Euclidean rhythm, the rest becoming rests of their length."""
 
 import math
 

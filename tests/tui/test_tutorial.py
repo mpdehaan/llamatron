@@ -213,13 +213,13 @@ class TestHelloWorldTutorial(TutorialTest):
         self.assertEqual(self.app.driven.plan.left_out, [])
         said = self.said()
         self.assertEqual(said[0], MSG_NARRATE_START.format(title=self.target.get_title()))
-        # Without a port to play through, the tutorial shows the finished song, says how it would export, and quits without saving, the user's design of 2026-11-10.
+        # Without a port to play through, the tutorial shows the finished song, says how it would export, and quits without saving.
         self.assertEqual(said[-4:], [MSG_NARRATE_COMPLETE, MSG_NARRATE_WOULD_EXPORT, MSG_NARRATE_TUTORIAL_COMPLETE, MSG_NARRATE_QUITTING])
         self.assertTrue(self.exited)
         self.assertNotIn(MSG_NARRATE_PLAY_LIVE, said)
         self.assertNotIn(MSG_NARRATE_DONE.format(title=self.target.get_title()), said)
         self.assertIn(MSG_NARRATE_OPENING.format(cell=PageName.ARRANGE), said)
-        # Each rename is said once the list of its kind of thing shows, the user's wish of 2026-11-10.
+        # Each rename is said once the list of its kind of thing shows.
         self.assertEqual(opened_before(said=said, text=MSG_NARRATE_RENAMING.format(kind=MSG_A_SONG)), MSG_NARRATE_OPENING.format(cell=PageName.SONGS))
         self.assertEqual(opened_before(said=said, text=MSG_NARRATE_RENAMING.format(kind=MSG_A_PATTERN)), MSG_NARRATE_OPENING.format(cell=PageName.PATTERNS))
         for kind in (MSG_A_TRACK, MSG_A_SCENE):
@@ -252,7 +252,7 @@ class TestEveryKindOfSettingTutorial(TutorialTest):
         self.assertEqual(comparable_data(built), comparable_data(self.target))
         self.assertEqual(comparable_music(built), comparable_music(self.target))
         self.assertEqual(self.app.driven.plan.left_out, [])
-        # On the main screen the tutorial opens each page by moving the cursor's box onto its cell and pressing Enter, never with a letter, the user's wish of 2026-11-10.
+        # On the main screen the tutorial opens each page by moving the cursor's box onto its cell and pressing Enter, never with a letter.
         on_main_screen = [key for screen, key in self.pressed_on if screen is MainPage]
         self.assertIn(Key.ENTER, on_main_screen)
         self.assertEqual([key for key in on_main_screen if key not in (Key.UP, Key.DOWN, Key.LEFT, Key.RIGHT, Key.ENTER)], [])
@@ -336,7 +336,7 @@ def page_of(page_class):
 
 
 class TestTutorialPace(unittest.TestCase):
-    """Typing into a dialog goes twice as fast as every other key, the user's choice of 2026-11-10, and typing into a pattern's cells doesn't."""
+    """Typing into a dialog goes twice as fast as every other key, and typing into a pattern's cells doesn't."""
 
     def test_the_letters_typed_into_a_prompt_go_at_the_dialog_pace_uncalled_and_its_enter_at_the_pace(self):
         plan = TutorialPlan(app=ScreenShown(mock.Mock(spec=PromptDialog, value=OLD_NAME)), target=Setlist.new())
@@ -363,7 +363,7 @@ def pattern_editor_on(view_class):
 
 
 class TestTutorialCallsKeys(unittest.TestCase):
-    """What the tutorial says as it presses keys, the user's design of 2026-11-10: a letter once on each kind of page with its legend's words; the arrows explained once on the piano roll and once in the rows view, Enter once, and Space once on each kind of page; and nothing else."""
+    """What the tutorial says as it presses keys: a letter once on each kind of page with its legend's words; the arrows explained once on the piano roll and once in the rows view, Enter once, and Space once on each kind of page; and nothing else."""
 
     def setUp(self):
         self.app = ScreenShown(page_of(MainPage))
@@ -462,7 +462,7 @@ class TestTutorialRunnerPauses(unittest.IsolatedAsyncioTestCase):
         with mock.patch.object(TutorialRunner, PAUSE_METHOD, paused):
             await runner.start()
         self.assertIsNone(runner.problem)
-        # Every caption shows long enough to read, and a second more, the user's choice of 2026-11-10.
+        # Every caption shows long enough to read, and a second more.
         say_pause = max(HUMAN_PACE * SAY_PAUSES, len(MSG_NARRATE_START) / READING_CHARACTERS_PER_SECOND) + LINE_SECONDS
         called_pause = len(called) / READING_CHARACTERS_PER_SECOND + LINE_SECONDS
         self.assertEqual(happened, [MSG_NARRATE_START, say_pause, Key.S, HUMAN_PACE, called, called_pause, Key.A, HUMAN_PACE, Key.B, HUMAN_PACE])

@@ -16,7 +16,7 @@
 
 """The splash: the title on black (tui/components/title_card.py), shown for a few seconds when the tracker is launched for recording, fading to black at its end.
 
-The user's design: the title replaced the word that waved letter by letter, keeping its sine waves
+The title replaced the word that waved letter by letter, keeping its sine waves
 as the way the block letters come in. The start screen (start_screen.py) is the same title with its
 prompt, waiting for Enter.
 """

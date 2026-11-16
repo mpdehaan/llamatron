@@ -115,7 +115,7 @@ class TestRealKeys(UITest):
 
 
 class TestFunctionKeys(UITest):
-    """F2 renames, as on Windows, and F3 opens About, the user's choice; N still renames, since a stock Mac needs fn for F2."""
+    """F2 renames, as on Windows, and F3 opens About; N still renames, since a stock Mac needs fn for F2."""
 
     async def test_f2_renames_on_a_list_and_on_a_page_with_a_name_and_f3_opens_about(self):
         await self.press(keybindings.MainPage.PATTERNS)

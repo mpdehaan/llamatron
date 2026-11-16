@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Plasma, a visualizer mode after the demo scene's: smooth fields of sine waves drifting in colour, coloured by the tracks that play, the user's choice of 2026-11-10.
+"""Plasma, a visualizer mode after the demo scene's: smooth fields of sine waves drifting in colour, coloured by the tracks that play.
 
 The classic plasma adds four sine waves over the area, one across, one down, one on the diagonal
 and one in rings about a point that wanders, each moving with time, and turns the sum into a colour
@@ -22,7 +22,7 @@ cycle, so the plasma takes the song's colours; time runs faster for a faster son
 little as the tracks play; each note starting nudges the waves' frequencies, and the brightness
 rises gently with the playing. It is worked out at SUPERSAMPLE times the big pixels each way and
 averaged down, and held under the limiter so that it never flashes. In silence it glows dimly in
-the colours of the tracks heard last. The amounts are named constants here, for the user to tune.
+the colours of the tracks heard last. The amounts are named constants here, to tune.
 """
 
 import colorsys
@@ -65,10 +65,10 @@ ENERGY_KEPT_PER_SECOND = 0.35
 PALETTE_SIZE = 256
 SATURATION = 1.0
 WHOLE = 255
-# The edges are brighter than the middle, by this share at the corners, the user's ask so that it doesn't look like the lava lamp.
+# The edges are brighter than the middle, by this share at the corners, so that it doesn't look like the lava lamp.
 EDGE_BOOST = 0.6
 QUIET_COLOURS = (TRACK_COLOURS[1], TRACK_COLOURS[4], TRACK_COLOURS[5])
-# The limiter: bright, as the user asked, and still never flashing.
+# The limiter: bright, and still never flashing.
 MEAN_LEVEL = 130.0
 CEILING = 235
 MEAN_RISE_PER_SECOND = 40.0

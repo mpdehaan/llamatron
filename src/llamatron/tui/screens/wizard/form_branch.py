@@ -52,7 +52,7 @@ class FormBranch(Branch):
         choices = self.choices()
         if not choices.is_ready():
             return []
-        # The form is only shown here, the user's design: a suggested form is taken through a button and a dialog, never by
+        # The form is only shown here: a suggested form is taken through a button and a dialog, never by
         # stepping a field, which could replace the sections a person changed with one stray key.
         return [Field(label=MSG_WIZARD_FORM_LABEL, value=lambda: MSG_WIZARD_OWN_FORM if choices.has_own_form() else choices.get_form()),
                 Button(label=MSG_WIZARD_SUGGESTED_FORM_BUTTON, key_name=KeyName.ENTER, enter=self.page().pick_suggested_form, enter_what=MSG_WIZARD_SUGGESTED_FORM_WHAT)]

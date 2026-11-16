@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The Voice leading generator: each chord of a clip voiced as near as it can be to the chord before, the user's design of 2026-11-11.
+"""The Voice leading generator: each chord of a clip voiced as near as it can be to the chord before.
 
 The first chord plays as written. Each chord after takes the inversion and the octave whose notes
 move least from the chord before, counting how far every note moves, and only voicings whose notes

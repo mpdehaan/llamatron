@@ -13,14 +13,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""A two-octave keyboard drawn in text, showing which keys a scale uses, approved by the user on 2026-11-08.
+"""A two-octave keyboard drawn in text, showing which keys a scale uses.
 
 The black keys sit on a row above the white keys, each between the two it belongs to, the scale's
 keys are filled and the rest hatched, and the row of names beneath brackets the root, so that a
 glance shows where a scale's half steps fall. It returns plain strings and knows nothing of any
 toolkit, so the Scale page draws it under its fields.
 
-The Chord dialog draws the same keyboard with a chord on it (the user's design): rows() gives each
+The Chord dialog draws the same keyboard with a chord on it: rows() gives each
 line as pieces, each a text and the kind of key it is, a key of the chord, a key of the scale or a
 key outside it, so that the dialog draws the chord's keys filled and the scale's in an outline's
 colour. chord_keys() says which keys a chord's notes are, from its root up.
@@ -157,7 +157,7 @@ class Keyboard:
 
     def rows(self):
         """Return the keyboard's three lines as pieces, each a text and a KeyKind, or None for what is no key: the black keys, the
-        white keys, and the names, with the chord's keys told apart from the scale's (the user's design for the Chord dialog)."""
+        white keys, and the names, with the chord's keys told apart from the scale's, for the Chord dialog."""
         black = [(SPACE * (WHITE_ROW_INDENT + BLACK_KEY_SHIFT), None)]
         white = [(SPACE * WHITE_ROW_INDENT, None)]
         for octave in range(OCTAVES):
@@ -172,7 +172,7 @@ class Keyboard:
 
 
 def one_octave_rows(pitch_class):
-    """Return the three lines of one octave of keys as pieces, each a text and a KeyKind, with one key filled and its name bracketed: the keyswitch note picker's keys (the user's design)."""
+    """Return the three lines of one octave of keys as pieces, each a text and a KeyKind, with one key filled and its name bracketed: the keyswitch note picker's keys."""
     black, white, names = Keyboard(root=SHARP_NAMES[pitch_class], half_steps=(), chord={pitch_class}).rows()
     pieces = 1 + len(WHITE_KEYS) * 2
     width = WHITE_ROW_INDENT + len(WHITE_KEYS) * KEY_STRIDE

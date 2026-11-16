@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The Hocket, the user's design of 2026-11-11: the tracks whose clips name it take turns at its source track's notes, one note each, left to right, the source playing its own pattern as ever."""
+"""The Hocket: the tracks whose clips name it take turns at its source track's notes, one note each, left to right, the source playing its own pattern as ever."""
 
 import unittest
 

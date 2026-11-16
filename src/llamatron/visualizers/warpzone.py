@@ -13,16 +13,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""WarpZone, a visualizer mode: a ball for each track bouncing around the box at a speed set by the tempo, sending out rings as its notes play, the user's design of 2026-11-10.
+"""WarpZone, a visualizer mode: a ball for each track bouncing around the box at a speed set by the tempo, sending out rings as its notes play.
 
 Each track that has played is a ball moving at one speed, the tempo's, with no momentum: a ball
 that meets a wall or another ball bounces off and goes on at that speed. A note starting sends a
 ring out from where its ball is, as strong as its velocity, at most one a track every RING_GAP_SECONDS,
 which spreads slowly and fades where it was sent. Everything is drawn in Braille, eight dots a cell,
 the rings as single lines of dots, so that they read as fine circles, finer than the other modes,
-the user's ask after the first WarpZone was too thick, too fast and too pulsing. The balls glow in
+asked for after the first WarpZone was too thick, too fast and too pulsing. The balls glow in
 their tracks' colours, brighter as they play, and nothing ever flashes. The amounts are named
-constants here, for the user to tune by eye.
+constants here, to tune by eye.
 """
 
 import math

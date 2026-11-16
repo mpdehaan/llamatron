@@ -95,9 +95,9 @@ class LlamatronApp(App, inherit_bindings=False):
         # The settings pages' sections open now, by name, closed until opened and remembered for the session.
         self.open_field_sections = set()
         self.on_roll = True
-        # Whether Arrange shows its details view (R), the user's design, kept for the session like the choice of the roll.
+        # Whether Arrange shows its details view (R), kept for the session like the choice of the roll.
         self.shows_arrange_details = False
-        # The directory each kind of file picker last showed, by the endings of its files, kept for the session, the user's ask, so that the
+        # The directory each kind of file picker last showed, by the endings of its files, kept for the session, so that the
         # Open page and the import's picker each come back to where they were left.
         self.last_folders = {}
         # The Live sets the user has agreed to write over, so that exporting asks only the first time.
@@ -177,8 +177,8 @@ class LlamatronApp(App, inherit_bindings=False):
         elif page.document().song().get_wizard_choices() is None:
             page.show_page(WizardPage(self))
         else:
-            # On a song the wizard made, a dialog asks how to start first, the user's design; ESC opens no wizard.
-            # The last row is CANCEL, the user's ask, which opens no wizard, as ESC does.
+            # On a song the wizard made, a dialog asks how to start first; ESC opens no wizard.
+            # The last row is CANCEL, which opens no wizard, as ESC does.
             names = [*(MSG_WIZARD_START_NAMES[start] for start in STARTS), MSG_WIZARD_START_CANCEL]
 
             def answered(place):
