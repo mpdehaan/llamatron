@@ -21,131 +21,37 @@
     the size they are drawn, before anything changes; whatever is chosen changes every settings page, the mockup rules of
     `.claude/UX.md` and the screenshots.
 
-- title: "Playing lights on the list pages"
-  priority: 1
-  text: |
-    While a song plays in real time, the Patterns page lights a playing mark beside each pattern that a playing clip is
-    playing at that moment, and the Generators and Chains pages do the same for each generator and chain that is active
-    in a clip that is playing. It would use the lights Arrange already has, so that the same mark means playing everywhere.
-    On the Patterns page a group's heading lights too, while any pattern of the group is playing, so that a closed group
-    still shows that something inside plays.
-    To work out: the transport already knows which clips play, so each list asks it which patterns, chains and generators
-    those clips use, a chain counting its generators; whether a pattern reached only through a generator lights; and where
-    the mark goes in a row beside the count columns.
-
-- title: "Looping a whole scene, to tweak patterns live"
-  priority: 1
-  text: |
-    A way to loop one whole scene in real-time playback, for changing patterns by ear as they play. While the loop is set,
-    no clip's follow action runs, so the scene plays round until the loop is taken off. A scene set to loop blocks export,
-    which needs a song that ends, and never blocks real-time playback. To work out: whether the loop is a setting kept in
-    the set's file or a state of the tracker only; what sets it and takes it off, and how Arrange shows it; and how export
-    says which scene blocks it.
-
-- title: "Keyswitches: what the first build left out"
-  priority: 1
-  text: |
-    An instrument's Keyswitch Map, a pattern's Keyswitch row and their playing are built (.claude/format/FILE_RULES.md, "Instruments").
-    Left for later, none of it designed: a slot that switches by a controller's value, a program change or a MIDI channel
-    rather than a note, to be read from a plugin's own documentation and not from memory; a generator naming a slot, as the
-    guitar generators' muted strokes would; whether a ready-made map ships for any plugin, which depends on what may be said
-    about a product's layout; and a demo, which waits for the user's word.
-
 - title: "In progress: the designs agreed with the user on 2026-11-11, to build in this order"
   priority: 1
   text: |
-    Everything below was settled question by question with the user; it is recorded here so that it
-    survives, and each part is trimmed out as it is built. Register binding, the = rows, the
-    conditions, At limit, Reset each scene, Allowed inc max, the clip's Scale and the arpeggiator's
-    register adds, with its editor's fields and Step's "(pattern)", Drift, chains on clips, scenes and tracks, the settings pages' sections, and Density, Swell and Articulate are already built, the one list of time settings below, which Step, Every and Over choose from, Progression with its demos, the Inversion row and Voice leading with theirs, Strum with `13_classic_strum.yml`, the Euclidean mask with `euclidean.yml`, Restart on every generator, Glide, Shorten, Rush and Drag with `14_acid_glide.yml` and `llama_boom.yml`, the Hocket with `19_hocket_shanty.yml`, and Genre on every song (examples still to come take the genres the user approved: Electronic for filter_sweep, idm_chaos1 to 3 and drift_berlin; Classical for drift_canon, drift_pastoral, chamber_music, brass_doorknob, adagio and harmonizer; Children's for row_your_boat; New age for newish_age and gorge; Rock for van_llama and whipping_llama; Musical theatre for retro_musical; Jazz for piano_trio, bigband, llama_supreme and weather; Easy listening for the_mall; Metal for black_midi).
-
-    **Time settings, everywhere.** Every time setting is one of: Step (how long one step of a
-    generator's own row is, default "(pattern)", the step size of the pattern the clip plays), Every
-    (how often it moves to its next thing, default "1 bar"), Over (how long one ramp lasts, default
-    "(whole)"), or the Harmonizer's Delay (default "(none)"). All choose from one list: "(pattern)"
-    or "(whole)" where it applies, 1/64 to 1/2 with dotted and triplet values, then 1 to 16 bars.
+    What is left of the designs settled question by question with the user; each part is trimmed out
+    as it is built. Examples still to come take the genres the user approved: Electronic for
+    filter_sweep, idm_chaos1 to 3 and drift_berlin; Classical for drift_canon, drift_pastoral,
+    chamber_music, brass_doorknob, adagio and harmonizer; Children's for row_your_boat; New age for
+    newish_age and gorge; Rock for van_llama and whipping_llama; Musical theatre for retro_musical;
+    Jazz for piano_trio, bigband, llama_supreme and weather; Easy listening for the_mall; Metal for
+    black_midi.
 
     11. **The Harmonizer**. Each harmonizer is one voice: in the scale, exact half steps, voice-led,
-        or later chord tones; Delay makes a canon or a round; "Follow the melody's rhythm" (default)
-        or "Keep this track's rhythm". The design had a Lead track field on the Scene page, overridable
-        on the clip page; the Hocket, built since, names its source track on the generator instead, at
-        the user's choice, so the Harmonizer might well do the same, to be asked when it's built.
+        or later chord tones; Delay, one of the time settings with "(none)" as its default, makes a
+        canon or a round; "Follow the melody's rhythm" (default) or "Keep this track's rhythm". The
+        design had a Lead track field on the Scene page, overridable on the clip page; the Hocket,
+        built since, names its source track on the generator instead, at the user's choice, so the
+        Harmonizer might well do the same, to be asked when it's built.
     12. **General MIDI previews in git**: the user's goal is to check `sh user_scripts/demos_to_midi.sh`'s files, with
         `previews/DEMOS.md` describing every demo, into git, so that people without a synth can hear the
         demos (not yet).
-    **Demos, each about three minutes unless noted**: filter_sweep, idm_chaos1 to idm_chaos3,
-    drift_canon, drift_pastoral (classical: a pastoral for strings, winds and horn in F major, after
-    Beethoven, Vaughan Williams and Grieg, Drift shaping dynamics and ornaments and borrowing Lydian),
-    drift_berlin, chord_progression_generator, blues_chords,
-    voice_leading, row_your_boat, edm_density, bolero_swell, acid_articulate, acid_glide, strum,
-    euclidean, harmonizer; the pieces van_llama, whipping_llama (with Strum on its rhythm guitar, as van_llama), retro_musical, piano_trio (a jazz
-    piano trio at a medium swing: ii–V–I changes from Progression, a walking bass, brushes), bigband, chamber_music, gorge,
-    the_mall, newish_age, brass_doorknob, llama_supreme, black_midi and adagio (with Drift), and
-    weather (ten minutes). Each is original music in the style asked, never a copy of a song.
+    **Demos not yet written, each about three minutes unless noted**: filter_sweep, idm_chaos1 to
+    idm_chaos3, drift_canon, drift_pastoral (classical: a pastoral for strings, winds and horn in F
+    major, Drift shaping dynamics and ornaments and borrowing Lydian), drift_berlin, row_your_boat,
+    harmonizer; the pieces van_llama, whipping_llama (with Strum on its rhythm guitar, as van_llama),
+    retro_musical, piano_trio (a jazz piano trio at a medium swing: ii–V–I changes from Progression,
+    a walking bass, brushes), bigband, chamber_music, gorge, the_mall, newish_age, brass_doorknob,
+    llama_supreme, black_midi and adagio (with Drift), and weather (ten minutes). Each is original
+    music in the style asked, never a copy of a song.
 
     **After all this**: look at Numerology and Renoise online for ideas; suggest clearer names for the
     demos whose names don't say their style.
-
-- title: "In progress: the batch videos, new visualizers and new demos agreed with the user"
-  priority: 1
-  text: |
-    Built in this order, each trimmed out as it lands:
-    1. The Julia mode (neon contour lines, its number travelling round the Mandelbrot set's edge a step a bar) and the
-       Newton mode (its roots the held notes, placed by pitch class, the regions in the tracks' colours).
-    2. The demos as a course (the user's choice): the featured songs first (edm_density, minimal_techno,
-       mainstreet_hoedown and new ones), then a learning path from hello_world and the Entertainer, which uses no
-       features, through each feature simplest first, the order kept in one data file that docs/DEMOS.md's tables and the
-       descriptions come from; each demo's entry in docs/DEMOS.md and its set's Notes get generated "Read about it" links to
-       the chapter and heading of every feature it uses (from internal_tools/demo_features.py and a map of features to
-       chapters), a test failing when a link is missing or points nowhere. The examples are in examples/learning, examples/other and
-       examples/by_genre (the user's choice), where the new demos go by purpose.
-
-- title: "List pages that use the room the console has"
-  priority: 1
-  text: |
-    After the main screen's redesign, the user wants the pages that list things made more compelling and useful on a console
-    larger than 80 by 24: the set's list of patterns among them, and whether some lists should be shown in several columns, a
-    grid to pick from, so that more names are in view. To be designed with drawings before anything is built. What it would
-    mean for the code: `ListPage` laying its rows out in columns for the size it is given, the cursor moving over them with
-    all four arrows and stopping at every edge, the search, Move mode and the `+` row keeping their behaviour, 80 by 24
-    staying as today.
-
-    For the set's list of patterns, the user's ask: where the console has the room, each row shows the tracks that play the
-    pattern, in the space the row has left; when the names don't fit, they are cut with an ellipsis, and the number of uses is
-    always shown, whatever the room. With it comes the user's idea of global patterns: a pattern normally belongs to one song, and
-    a pattern may instead belong to the set, where every song can use it. The main screen and the other top level screens stay as
-    they are, but a count of patterns reads as the song's own, the set's and the total, like `3+2=5`. The list of patterns gets
-    a column beside the tracks holding a star: a starred pattern is global and belongs to the set, and taking the star away asks,
-    in a dialog, which song the pattern goes to, since it no longer belongs to the set. Today every pattern belongs to the set and
-    every song shares it, so this changes the model and the file format; Claude is to discuss its concerns and ideas with the user,
-    with a drawing of the list of patterns and of the main screen, before anything is built. Settled so far for the Patterns page:
-    it lists the global patterns and the current song's own, in alphabetical order, narrowed by the search where one is typed; a
-    blank line separates the caption from the column headings; the column for global patterns is headed GLOBAL and holds a solid
-    circle where the pattern is global; TYPE becomes DRUM, a solid circle for a drum pattern and nothing otherwise; USED counts the
-    clips that play the pattern; and TRACKS, where there is room, reads as the number of tracks and then their names in
-    parentheses, like `(2 lead, pad)`, cut with an ellipsis when the names don't fit; every column, heading and value, is
-    left-justified; the key that makes a pattern global or a song's own again is named for Global; a new pattern is the current
-    song's own; and the keys that move and sort rows leave the Patterns page alone, since its order is alphabetical, the other list
-    pages keeping both. A file saved before the change opens with every pattern global, so nothing changes in what it means, and
-    every demo and homage with one song keeps its patterns global (`.claude/PRINCIPLES.md`). The main screen's Patterns cell counts
-    the current song's own patterns, the global ones and the total, like `3+2=5`. When either of the two is zero, the cell shows the one number alone. The dialog shown when a
-    pattern stops being global is titled "Pattern Moving to Local, Select Songs" and is only the list of songs, each with how many
-    clips of it play the pattern, like `in 8 clips`, with no OK button. Settled since: several songs can be selected and each gets a
-    copy of its own, so the dialog is titled "Copy Pattern to Songs"; it shows ten songs at most and scrolls, with a scroll bar drawn
-    at the right of the list, since a set may hold fifty songs; and because each song then has names of its own, making a pattern
-    global when another song has a pattern of that name asks for a rename first, in a dialog to be drawn for the user. Once the
-    copies are made the global pattern is removed, and ENTER is refused while no song is marked. Names: each song has names of its
-    own, so two songs may each have a pattern of one name, but a global pattern's name and any song's own pattern's name never
-    match; a copy made into a song keeps the global pattern's name, which can't clash. Making a pattern global, or renaming one,
-    where that rule would break opens a dialog titled "New name required, conflict in N song(s)", holding only the tracker's
-    standard text field, opened on a free numbered name, and its keys, ENTER reading "rename/promote"; only a name free everywhere
-    the pattern would be seen is accepted. How numbered names are made, here and everywhere in the tracker, is to be one rule,
-    being discussed with the user. The user wants generators and chains to work exactly as
-    patterns do in all of this, a song's own or global, once Claude has shown it understands what that means; open there: a global
-    chain that links a song's own generator, the order of the Generators page, and what the pages' columns show. What it would mean for the code: `uses_of` in `tui/uses.py` already knows
-    every use, and the Patterns page's USED column the count; the row needs the track names of the uses, without repeats, fitted
-    to the width the page is given, and the answer remembered until the set changes. This covers what was left of "Where a
-    pattern is used" for the Patterns page.
 
 - title: "A view of a progression's chords as keyboards"
   priority: 1
@@ -158,14 +64,6 @@
     current work are done. What it would mean for the code: `Keyboard` and `chord_keys` in `tui/components/keyboard.py` already draw
     one chord, `ChordsEditor.in_words` names each chord in the song's scale, and an Inset Window is the read-only window the
     tracker has for looking inside things.
-
-- title: "The batch recorder reading each song's visualizer"
-  priority: 1
-  text: |
-    A song now names the visualizer mode Arrange shows first (`SongSetting.VISUALIZER`), and the set one too, the song's over the
-    set's (`Setlist.visualizer_for`). What's left of the user's ask: each example's pairing in `internal_tools/visualizer_pairings.yml`
-    becomes its song's `visualizer`, the batch recorder (`internal_tools/record_batch.py`) reads the mode from the set, and the separate
-    file goes, so that the set itself says which mode suits it and a new demo carries its own.
 
 - title: "Mono instruments, to be discussed"
   priority: 1
@@ -226,43 +124,6 @@
     that notes keep their order, and whether a drum track wants different defaults from a melody.
     `mainstreet_hoedown.yml` is the first song it would suit.
 
-- title: "BlackHole Record: the song as a WAV from Live, with no export"
-  priority: 1
-  text: |
-    From the user on 2026-11-10. An export kind under the Ableton Live set in the Ctrl+X dialog,
-    called BlackHole Record, that records the sound of the song as Live plays it, through the
-    recorder's machinery (`internal_tools/record_demo.py`, `docs/RECORDING.md`): the tracker plays the song
-    in real time into Live over the IAC driver, with Live's MIDI inputs enabled, and the sound comes
-    back through BlackHole, the loopback device the recorder uses,
-    into an audio file beside the set, `<set>_<song>.wav`, or AIFF, whichever is the smarter choice
-    for audio, with no export from Live and no bouncing by hand. The recording is the highest quality
-    the machine can make, since the goal is a file to upload to SoundCloud: lossless, at the device's
-    full sample rate and bit depth (SoundCloud takes WAV, AIFF and FLAC up to 4 GB, and plays them
-    back transcoded, so the upload should be the lossless master, never an MP3). The whole thing is in the GUI: the
-    dialog asks whatever it reasonably needs, the MIDI port, the audio device, the file's kind, and
-    confirms before writing over a file, as the Live set export does. While it records, the tracker
-    hops to a copy of the Arrange page so that the song is seen playing, with the top left corner
-    reading `EXPORTING` in place of the crumbs, and goes back to the main screen when the take is
-    done, saying where the file went on the status line.
-
-    - **What it would mean for the code.** An `Exporter` subclass in `exporters/` that renders
-      nothing itself but drives the transport (`tui/transport.py`) and an audio capture: the
-      recorder's `screencapture` records a window with sound, where this wants sound alone, so the
-      capture is a small program reading the loopback device, `sox` or `ffmpeg` if present, or a
-      Swift script like the recorder's device listing, writing WAV or AIFF; the take's length is the
-      song's seconds from `Lengths.song_seconds()` plus a lead-out, as `take_seconds` works it out;
-      the tracks need instruments on the driver, made in memory as the recorder's `assign_tracks`
-      makes them, so the set isn't changed. The Arrange page gets an exporting mode, `crumb_trail`
-      reading `MSG_EXPORTING_CRUMB`, with Space and the edits off. The export list in
-      `exporters/exports.py` grows a kind, and the command line's `--to` could take it too.
-    - **The guide.** With this the user wants `GUIDE.md` to become the top-level guide, broken into
-      reasonable subsections, with an Export section that holds the Live set, the MIDI kinds and
-      BlackHole Record together. Claude proposes the subsections when this is started, and the
-      user and Claude settle them before anything moves.
-    - **Undecided.** The questions of the dialog, what happens when Live isn't running or its MIDI
-      inputs aren't enabled (a message saying what to turn on, since the tracker can't tell what
-      Live heard), and whether the recording tool and this share one capture program.
-
 - title: "Showing where playback is, inside the patterns, and lighting the roll"
   priority: 1
   text: |
@@ -295,109 +156,6 @@
       `STOP_PLAYING`, `PLAY_CLIP` and `STOP_CLIP`. The F1 dialog would list the one that applies
       now, or one line with both words.
 
-- title: "The visualizer: a lava lamp of rippling colour over the clip area"
-  priority: 1
-  text: |
-    **In progress.** Stages 1 to 5 are built (`.claude/features/VISUALIZER.md`, "The visualizer"): `Z` on
-    Arrange with Real Time on, `--visualizer`, the recorder's question, `internal_tools/preview_visualizer.sh`, the
-    notes heard from the transport, and the lava lamp's water, colour and rotozoom on shared pieces,
-    held under a limiter so that it never flashes; `internal_tools/time_visualizer.sh` times it at about 1 to 3%
-    of a frame's budget on an 80 by 24 console with 8 to 64 tracks. What is left is stage 6, tuning it
-    with the user. The spectrum analyser, MilkDrop, the llamas, the hypercube, fireworks, WarpZone, pipes, plasma,
-    the maze, Mystify, Laser Llama, Mandelbrot and Life are built too,
-    with Cycle, which shows each in turn every 15 seconds, and each mode's name shown for eight seconds
-    when it changes. What the user said on 2026-11-10 comes first, and the earlier notes fill
-    in where they don't conflict. The plan is kept here so that it survives a closed session.
-
-    **What it is.** On Arrange, while the set's Real Time switch is on, a key steps the clip area
-    through the visualizer's modes and, after the last, back to the clips. The clip area is
-    everything inside the scene names on the left and the track names along the top, down to just
-    above the footer, which the visualizer never covers, so the scene names, the track names, the
-    legend and the status line stay. With Real Time off there is no visualizer, since nothing
-    plays; an export has no use for one. Arrange never opens on a visualizer, except when the demo
-    recorder is asked to record one (below). One mode to begin with, the lava lamp, but the modes
-    are a list, so more can follow, sharing pieces or not. From the earlier notes: a mode's name
-    shows large in the middle for a moment as the key switches to it, as a television shows its
-    channel, and ESC brings the clips back too.
-
-    **The recorder.** `sh user_scripts/record.sh` (`internal_tools/record_demo.py`, not the tutorial) gets a way to record a
-    visualizer mode instead of the clips: it asks, after the set, whether to record the clips or a
-    visualizer and which mode, and a flag says the same so a script needn't answer
-    (`--visualizer <name>`); the launch (`tui/launch.py`) carries the choice, so the tracker shows the
-    splash as ever and then opens Arrange with that mode showing before the song plays.
-    `docs/RECORDING.md` documents it, the one guide for recording, kept apart from `GUIDE.md`, which
-    links to it.
-
-    **The first mode, the lava lamp, in the user's words.** The clip area is a grid of big blocky
-    pixels, low resolution, like a rotozoomer drawn small, blown back up and lightly anti-aliased,
-    the pixels still very large. Mostly primary-coloured blobs drift around, one for each track,
-    each a source that sends ripples out as its track's notes fire: thicker ripples for longer
-    notes, the colour shifting with the pitch. The view rotozooms gently, turning and zooming with
-    the beat it can hear, and where waves from different sources meet they splash and bounce off
-    each other like ripples in water. Vaguely a lava lamp, in the spirit of the early WinAmp
-    visualizers, never muddy, never overwhelming the music. It suits the song by how it is coded,
-    not by analysing it, and it stays honest: it knows only notes that have started, never what is
-    coming. The user will speak of it in poetic terms and change it as it is tuned, so its
-    parameters are named constants in its module, grouped by what they shape, and parts may change
-    or go. A song can have as many as 64 tracks, so performance matters a great deal.
-
-    **Claude's proposal for how it works**, to discuss:
-
-    - **Two resolutions.** The visible grid is big pixels, each two terminal columns by one row, so
-      that it is square, sized to the clip area and worked out again when the terminal is resized.
-      Behind it is a simulation at twice that in each direction, and each big pixel is the average
-      of its four simulation cells, which is the derez and the light anti-aliasing. On an 80 by 24
-      console that is about 30 by 15 big pixels over a 60 by 30 simulation; a large terminal is a
-      few thousand big pixels. Everything is worked out for that region alone.
-    - **Water.** One height field of whole numbers, the classic demo-scene ripple: each cell becomes
-      the sum of its four neighbours halved, less its value the frame before, then damped by a
-      shift. Waves spread, interfere and bounce off the edges with no physics beyond that, which is
-      the splashing the user describes.
-    - **Sources.** A track is a blob that drifts on a slow Lissajous path of its own, drawn as a soft
-      disc of its colour. A note starting pushes a ring into the water at the blob, as strong as its
-      velocity, and a note that is still held keeps pushing a little every frame, so a long note makes
-      a thicker, longer train of waves without the visualizer knowing its length in advance. A drum
-      track's hits are short sharp rings of white rather than colour.
-    - **Colour.** Each track takes a base hue from a fixed cycle of primaries (or the instrument's
-      Colour setting, from the earlier notes, once there is one), the note's pitch moves the hue a
-      little within that colour and its octave the brightness. A colour field of three channels is
-      painted where each source's waves are strong and blends with its neighbours every frame, so
-      colours meet and mix at the wave fronts. The background stays dark, and an overall limiter
-      keeps the brightness down as more tracks play, so 64 tracks never wash out to white.
-    - **Rotozoom.** The big pixels sample the simulation through a slight rotation and zoom: a slow
-      spin, and a zoom that pulses on the song's beats at its tempo (the tempo is the song's own
-      setting, so knowing it isn't seeing the future) and swells with how many notes just started.
-    - **The beat and the theme, by how it's coded.** Faster tempos move everything faster, busy
-      passages make more waves, low notes darker and high notes brighter, drums flash and melodies
-      colour, so minimal techno and The Entertainer look different without any analysis.
-    - **Drawing.** Each terminal cell is a full block in one colour, or a shade block mixing two,
-      which gives the anti-aliasing many more tones; runs of the same style are drawn as one piece of
-      text. Colour is the second place it's allowed, after the playback lights (`.claude/UX.md`,
-      "Drawing"), and how many colours a terminal shows is to be decided.
-    - **Performance.** The MIDI goes out from the Realtime Sender Process, so drawing can never delay a
-      note; what drawing costs is the tracker's own time, and the screen answering keys. The
-      simulation is whole-number arithmetic on arrays, with no image library: a frame's budget is a
-      few milliseconds on an 80 by 24 console, measured with a song of 64 tracks, and a frame that runs
-      late is skipped rather than queued. It runs on its own timer only while it shows, and costs
-      nothing when the clips are shown. The notes come from the transport, which already knows what
-      sounds on each track (`Score.is_sounding`, `sounding_across`), giving each note's number and
-      velocity as it starts and while it is held, so no MIDI is read back.
-
-    **Stages**, each tested and shown to the user before the next:
-
-    6. Tuning with the user on `minimal_techno.yml` and `entertainer.yml`, and a timing tool
-       that draws frames of a 64-track song and reports the cost of a frame.
-
-    **Decided with the user on 2026-11-10.** numpy holds the arrays. The colours are full colour where
-    the terminal shows it, falling back to 256 and then 16, chosen for clean transitions and smooth
-    gradients with big derezzed pixels. A process of its own for the visualizer, with what it draws
-    sent back, is fine if measuring says it's needed, since the Mac has cores to spare. `make
-    preview-visualizer` plays a set with the visualizer and no video, so each stage can be seen and
-    commented on as it's built; the recorder asks clips or visualizer.
-
-    **Undecided.** Everything about the look, which is tuned by eye, and the name flashing large as
-    the key changes mode, which waits for a second mode.
-
 - title: "Info about a set on the Open page, before opening it"
   priority: 1
   text: |
@@ -421,22 +179,6 @@
       would cost everyone a key on every open, or stay as it is with the info on its own key,
       which Claude would choose. Whether a set of several songs lists them all, or the first few
       with a count, since the dialog has to fit an 80 by 24 console.
-
-- title: "Arrange scrolls with what plays, when launched for recording"
-  priority: 1
-  text: |
-    From the user on 2026-11-10, for the demo recorder (docs/RECORDING.md, being built). A long song
-    has more scenes than fit on an 80 by 24 console, and a video of the Arrange page that stays on the
-    first scenes shows nothing of the rest. The user suggests that Arrange scrolls down to keep the
-    playing scene in view, and only when the tracker is launched with a flag, say
-    `--launch-for-recording`, which may set other properties for a take too, rather than always, since
-    in ordinary use the cursor decides what Arrange shows and the page shouldn't move under it. What it
-    needs: Arrange's `top`, the first scene shown, is set by `visible_scenes` to keep the cursor's row
-    on screen; launched for recording, the playback timer's redraw would move `top` so that the lowest
-    playing scene (`Transport.playing_scenes`) is shown, and leave the cursor where it is. What else the
-    flag sets is open: the user mentioned other properties without naming them. The recorder's own
-    flags, `--autoplay` and `--autoplay-quit-when-finished`, are separate, so a take can be played
-    without the page scrolling.
 
 - title: "The file picker, shared and better"
   priority: 1
@@ -554,8 +296,106 @@
     PDF, since nothing in requirements.txt does and a new dependency is the user's to approve; how notes off the grid, a
     groove, a strum, ratchets, are written; and how repeats and scenes become bars, repeat signs and section names.
 
+- title: "In progress: the batch videos, new visualizers and new demos agreed with the user"
+  priority: 10
+  text: |
+    Built in this order, each trimmed out as it lands:
+    1. The Julia mode (neon contour lines, its number travelling round the Mandelbrot set's edge a step a bar) and the
+       Newton mode (its roots the held notes, placed by pitch class, the regions in the tracks' colours).
+    2. The demos as a course (the user's choice): the featured songs first (edm_density, minimal_techno,
+       mainstreet_hoedown and new ones), then a learning path from hello_world and the Entertainer, which uses no
+       features, through each feature simplest first, the order kept in one data file that docs/DEMOS.md's tables and the
+       descriptions come from; each demo's entry in docs/DEMOS.md and its set's Notes get generated "Read about it" links to
+       the chapter and heading of every feature it uses (from internal_tools/demo_features.py and a map of features to
+       chapters), a test failing when a link is missing or points nowhere. The examples are in examples/learning, examples/other and
+       examples/by_genre (the user's choice), where the new demos go by purpose.
+
+- title: "Playing lights on the list pages"
+  priority: 20
+  text: |
+    While a song plays in real time, the Patterns page lights a playing mark beside each pattern that a playing clip is
+    playing at that moment, and the Generators and Chains pages do the same for each generator and chain that is active
+    in a clip that is playing. It would use the lights Arrange already has, so that the same mark means playing everywhere.
+    On the Patterns page a group's heading lights too, while any pattern of the group is playing, so that a closed group
+    still shows that something inside plays.
+    To work out: the transport already knows which clips play, so each list asks it which patterns, chains and generators
+    those clips use, a chain counting its generators; whether a pattern reached only through a generator lights; and where
+    the mark goes in a row beside the count columns.
+
+- title: "Looping a whole scene, to tweak patterns live"
+  priority: 21
+  text: |
+    A way to loop one whole scene in real-time playback, for changing patterns by ear as they play. While the loop is set,
+    no clip's follow action runs, so the scene plays round until the loop is taken off. A scene set to loop blocks export,
+    which needs a song that ends, and never blocks real-time playback. To work out: whether the loop is a setting kept in
+    the set's file or a state of the tracker only; what sets it and takes it off, and how Arrange shows it; and how export
+    says which scene blocks it.
+
+- title: "List pages that use the room the console has"
+  priority: 50
+  text: |
+    After the main screen's redesign, the user wants the pages that list things made more compelling and useful on a console
+    larger than 80 by 24: the set's list of patterns among them, and whether some lists should be shown in several columns, a
+    grid to pick from, so that more names are in view. To be designed with drawings before anything is built. What it would
+    mean for the code: `ListPage` laying its rows out in columns for the size it is given, the cursor moving over them with
+    all four arrows and stopping at every edge, the search, Move mode and the `+` row keeping their behaviour, 80 by 24
+    staying as today.
+
+    For the set's list of patterns, the user's ask: where the console has the room, each row shows the tracks that play the
+    pattern, in the space the row has left; when the names don't fit, they are cut with an ellipsis, and the number of uses is
+    always shown, whatever the room. With it comes the user's idea of global patterns: a pattern normally belongs to one song, and
+    a pattern may instead belong to the set, where every song can use it. The main screen and the other top level screens stay as
+    they are, but a count of patterns reads as the song's own, the set's and the total, like `3+2=5`. The list of patterns gets
+    a column beside the tracks holding a star: a starred pattern is global and belongs to the set, and taking the star away asks,
+    in a dialog, which song the pattern goes to, since it no longer belongs to the set. Today every pattern belongs to the set and
+    every song shares it, so this changes the model and the file format; Claude is to discuss its concerns and ideas with the user,
+    with a drawing of the list of patterns and of the main screen, before anything is built. Settled so far for the Patterns page:
+    it lists the global patterns and the current song's own, in alphabetical order, narrowed by the search where one is typed; a
+    blank line separates the caption from the column headings; the column for global patterns is headed GLOBAL and holds a solid
+    circle where the pattern is global; TYPE becomes DRUM, a solid circle for a drum pattern and nothing otherwise; USED counts the
+    clips that play the pattern; and TRACKS, where there is room, reads as the number of tracks and then their names in
+    parentheses, like `(2 lead, pad)`, cut with an ellipsis when the names don't fit; every column, heading and value, is
+    left-justified; the key that makes a pattern global or a song's own again is named for Global; a new pattern is the current
+    song's own; and the keys that move and sort rows leave the Patterns page alone, since its order is alphabetical, the other list
+    pages keeping both. A file saved before the change opens with every pattern global, so nothing changes in what it means, and
+    every demo and homage with one song keeps its patterns global (`.claude/PRINCIPLES.md`). The main screen's Patterns cell counts
+    the current song's own patterns, the global ones and the total, like `3+2=5`. When either of the two is zero, the cell shows the one number alone. The dialog shown when a
+    pattern stops being global is titled "Pattern Moving to Local, Select Songs" and is only the list of songs, each with how many
+    clips of it play the pattern, like `in 8 clips`, with no OK button. Settled since: several songs can be selected and each gets a
+    copy of its own, so the dialog is titled "Copy Pattern to Songs"; it shows ten songs at most and scrolls, with a scroll bar drawn
+    at the right of the list, since a set may hold fifty songs; and because each song then has names of its own, making a pattern
+    global when another song has a pattern of that name asks for a rename first, in a dialog to be drawn for the user. Once the
+    copies are made the global pattern is removed, and ENTER is refused while no song is marked. Names: each song has names of its
+    own, so two songs may each have a pattern of one name, but a global pattern's name and any song's own pattern's name never
+    match; a copy made into a song keeps the global pattern's name, which can't clash. Making a pattern global, or renaming one,
+    where that rule would break opens a dialog titled "New name required, conflict in N song(s)", holding only the tracker's
+    standard text field, opened on a free numbered name, and its keys, ENTER reading "rename/promote"; only a name free everywhere
+    the pattern would be seen is accepted. How numbered names are made, here and everywhere in the tracker, is to be one rule,
+    being discussed with the user. The user wants generators and chains to work exactly as
+    patterns do in all of this, a song's own or global, once Claude has shown it understands what that means; open there: a global
+    chain that links a song's own generator, the order of the Generators page, and what the pages' columns show. What it would mean for the code: `uses_of` in `tui/uses.py` already knows
+    every use, and the Patterns page's USED column the count; the row needs the track names of the uses, without repeats, fitted
+    to the width the page is given, and the answer remembered until the set changes. This covers what was left of "Where a
+    pattern is used" for the Patterns page.
+
+- title: "Arrange scrolls with what plays, when launched for recording"
+  priority: 50
+  text: |
+    From the user on 2026-11-10, for the demo recorder (docs/RECORDING.md, being built). A long song
+    has more scenes than fit on an 80 by 24 console, and a video of the Arrange page that stays on the
+    first scenes shows nothing of the rest. The user suggests that Arrange scrolls down to keep the
+    playing scene in view, and only when the tracker is launched with a flag, say
+    `--launch-for-recording`, which may set other properties for a take too, rather than always, since
+    in ordinary use the cursor decides what Arrange shows and the page shouldn't move under it. What it
+    needs: Arrange's `top`, the first scene shown, is set by `visible_scenes` to keep the cursor's row
+    on screen; launched for recording, the playback timer's redraw would move `top` so that the lowest
+    playing scene (`Transport.playing_scenes`) is shown, and leave the cursor where it is. What else the
+    flag sets is open: the user mentioned other properties without naming them. The recorder's own
+    flags, `--autoplay` and `--autoplay-quit-when-finished`, are separate, so a take can be played
+    without the page scrolling.
+
 - title: "Ocean, a visualizer of ripples on water"
-  priority: 25
+  priority: 99
   text: |
     A visualizer mode called "ocean": water seen from straight above, nearly all in blues. Each note that starts drops into the
     water and sends out a ring of ripples. Every strike aims at one common place, which drifts slowly around the picture, and
@@ -602,56 +442,24 @@
     per column and per row. Whether the blue dividers show while only some cells are open, and how this sits beside `R`, are
     to be discussed.
 
-- title: "Uniquify, a wizard after importing a MIDI file, to be discussed"
+- title: "Generators for composing in sections: Canon, and the ones set aside"
   priority: 99
   text: |
-    After a MIDI file is imported (the main screen's Import, `ImportDialog`, `finish_import`), a next step, a wizard of
-    dialogs called Uniquify, would offer to make the imported song the user's own: it looks over the song and keeps its
-    major details and its scales (the scale objects the import made), and, each as an option, changes up the chords and
-    changes up the melodies while keeping the overall feel. It might also put generators to work on the result, which is
-    to be discussed with the user, perhaps as an option of its own. For the code: it would run on the song the import
-    added, as one change that one undo takes back, like the import itself (`Document.import_song`), reading the patterns
-    as the import wrote them (degrees in the found key, chords, grids from `importers/steps.py`); changing chords could
-    reuse what Progression and `composition/progressions.py` know about a scale's chords, and changing melodies would
-    need rules of its own, such as keeping rhythm and contour while moving degrees within the chord. What "the overall
-    feel" keeps, how much changes, and which generators, are the questions to settle first.
+    What is left of the chain generators that work on phrases and sections, each to be discussed in
+    detail before it's built and shown in a demo of its own; Progression, Voice leading, Density,
+    Swell, Strum and the Euclidean mask are built.
 
-- title: "Generators for composing in sections, approved by the user, each with a demo"
-  priority: 99
-  text: |
-    From the user on 2026-11-11: chain generators that work at the level of phrases and sections
-    rather than single notes, each to be discussed in detail before it's built, and each shown in a
-    demo of its own. Several work best keeping state across repeats and scenes, as Drift will, and
-    would be built on its song-wide machinery.
-
-    - **Progression**, to build first, with `06_chord_progression_generator.yml`: a one-bar figure played
-      through a chord progression, moved along the scale bar by bar, so that "1 6 4 5" plays it on
-      I, vi, IV and V and a riff becomes a section.
-    - **Voice leading**, after a discussion of chord inversions, which come first: each chord takes
-      the inversion nearest the chord before it, within a range, so chords move smoothly. It covers
-      "Inversions" under Chords below.
     - **Canon**, with `row_your_boat.yml`, Row, Row, Row Your Boat as a round: the clip repeated a
       number of steps later, moved along the scale and quieter, so one line becomes a round or a
-      canon. The demo is to show how a round is edited in the tracker.
-    - **Density**, with `edm_density.yml`, an EDM piece to show it off: thins a clip by the strength
-      of each note's place in the bar, downbeats kept longest, from 0% to 100% of the notes, for
-      builds, breakdowns and drops from one full pattern, driven by a scene, Drift or a register.
-    - **Swell**, with `swell.yml`, its genre to choose: velocity shaped across a phrase or across
-      repeats, crescendo, decrescendo or accents on strong beats.
-    - **Strum**, with `13_classic_strum.yml`, a simple acoustic guitar piece: a chord's notes spread in time,
-      down or up like a guitar, or rolled like a harp.
-    - **Euclidean mask**, with `euclidean.yml`: plays only the notes that land on a Euclidean rhythm
-      of so many hits in so many steps, with a length of its own, for West African, Latin and IDM
-      rhythms and polyrhythm from one pattern.
+      canon. The demo is to show how a round is edited in the tracker. The Harmonizer's Delay, in
+      the designs of 2026-11-11, makes a canon too, so the two may be one generator.
 
     Set aside for now, by the user: Develop (motif transformations across repeats), Ornament (trills,
     mordents, turns and grace notes as one setting) and Register fold (notes kept inside an octave
     range).
 
     Declined, by the user: generators that change a bass line (walking bass, approach notes, pedal
-    point, anticipation, ghost notes, octaves, root-fifth, boom-chuck, acid). Bass lines and other
-    parts may instead come later from templates or styles that create patterns and scenes, as the
-    wizards and pattern generators below describe, but not now.
+    point, anticipation, ghost notes, octaves, root-fifth, boom-chuck, acid).
 
 - title: "Chordify"
   priority: 99
@@ -1056,8 +864,6 @@
       demo, as the user asked.
     - **Scene names.** Named after their bars for now; the user would like smarter names if a way
       is found.
-    - **The main screen's row of actions.** Five narrower cells, the Import cell called Import
-      since `Import MIDI` didn't fit 16 columns; the user will comment on the arrangement.
 
 - title: "Live launching scenes in line with llamatron's"
   priority: 99
@@ -1127,15 +933,6 @@
     (`.claude/features/REALTIME_PLAYBACK.md`, "Real-time playback"; `.claude/features/REALTIME_PLAYBACK.md`, "Real-time playback"). The exports stay exactly as they were. What the
     user's design of 2026-11-07 and 2026-11-09 still has in it, to do one item at a time:
 
-    - **Edits while playing never stop playback.** Today an edit is heard at the next launch: the
-      transport renders the song again when something is launched after the set changed, and what
-      plays keeps its events. The design: each playing clip is a queue of passes of its pattern, an
-      edit re-renders and replaces the passes not yet started, and the clip takes the change when
-      its pattern comes round. `PlaybackEngine.drop(tag=, after=)` is there for it. The lag report
-      (`internal_tools/realtime_report.sh`) times the render of `tests/data/sample_sets/heavy_chain.yml` against a
-      pass for this reason, since an edit has to be rendered before the old passes run out.
-    - **On the Patterns page, a pattern that's playing has a green dot beside it.** Today only
-      Arrange, the clip page and the pattern editor show what plays.
     - **More follow actions, like Live's.** From the user on 2026-11-10, with the Advance field's
       "With Scene", "Next" and "Off": Live's "Previous", "First" and "Last" could follow, each a
       value of `FollowAction` that `Player._send_starts` turns into a scene other than the one
@@ -1726,17 +1523,6 @@
     group each page's keys in the F1 dialog, once the queued work is done. It belongs with the hotkey review and the grouped F1
     dialog above, since all three are about there being less to remember.
 
-- title: "Euclidean sequencing"
-  priority: 99
-  text: |
-    Evaluate whether llamatron can already do Euclidean rhythms, which spread a number of hits as
-    evenly as possible across a number of steps (like 3 hits in 8 steps, which gives the tresillo), or
-    whether it needs a feature. Today a Euclidean rhythm can be typed by hand into a pattern, since
-    steps are now all the same length, and a pattern's play direction and repeats work on it as on
-    any other. What's missing is a way to make one without working it out: perhaps a pattern
-    generator on the Patterns page (see "Pattern generators on the Patterns page") that fills a row
-    from hits, steps and a rotation, or a chain generator that does it at render time. To be decided.
-
 - title: "Features the demos underuse"
   priority: 99
   text: |
@@ -1952,3 +1738,12 @@
   priority: 99
   text: |
     The Band's Guitarists field offers 1 or 2 today. More is a common band and would mean something to the music, not only a number: a third guitarist can double the chords an octave apart or in another voicing, play an acoustic guitar under electric ones, or join the lead in a tune harmonized in thirds, two leads at once. Each of those is a way of playing to write for the genres that have it, and the solo could then pass between two lead players. Undecided: whether the count alone is chosen and the genre decides what the extra player does, or the person picks the extra player's job.
+
+- title: "Keyswitches: what the first build left out"
+  priority: 100
+  text: |
+    An instrument's Keyswitch Map, a pattern's Keyswitch row and their playing are built (.claude/format/FILE_RULES.md, "Instruments").
+    Left for later, none of it designed: a slot that switches by a controller's value, a program change or a MIDI channel
+    rather than a note, to be read from a plugin's own documentation and not from memory; a generator naming a slot, as the
+    guitar generators' muted strokes would; whether a ready-made map ships for any plugin, which depends on what may be said
+    about a product's layout; and a demo, which waits for the user's word.
