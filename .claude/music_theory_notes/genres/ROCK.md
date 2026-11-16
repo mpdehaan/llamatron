@@ -32,3 +32,10 @@ Each is a set of habits that could become a subgenre or settings of one. (practi
 - **Southern and twin lead**: two lead guitars playing the tune together a third or a sixth apart, moving through the scale so
   the interval is sometimes major and sometimes minor; major and minor pentatonic mixed; two drummers playing different,
   interlocking parts so the rhythm section is a lead voice; long instrumentals; an organ.
+- **The southern epic**: a slow ballad, organ or piano and slide guitar, verses and choruses complete in four or five minutes;
+  then the tempo jumps to nearly double and the band plays a long outro over a short repeating loop of three chords, guitars
+  soloing in turn and then together in harmony, rising to the end. The fast part began as a way to end the song and grew. A
+  related shape keeps one tempo: song, long themed solo, song, longer solo as a call and response between two guitars panned
+  left and right, building to the fastest playing at the end.
+- **The guitar army**: three guitars, two trading and harmonizing leads while one holds rhythm, with three- and four-part vocal
+  harmonies from country rock and fast, clean, country and bluegrass picking in the leads.

@@ -36,3 +36,13 @@ Instruments are named as products; no player is. (practice throughout, from less
   interlocking patterns, the timbales leading; the whole band states the vamp, drops back, and the guitar sings a slow tune over
   it with long sustained notes, then solos at length. Organ fills answer the guitar.
 - Organ and guitar trade the answering role by section, and double a riff for weight.
+
+## The Organ as the Song
+
+- **The descending bass under an organ tune**: a bass line walking down the scale one step at a bar or half bar, slow, with a
+  free, singing organ melody above it, borrowed from baroque ground basses. Organ and piano together, the piano playing the
+  chords and the organ the tune, with a plain slow drum beat. The organ's tune is the hook, stated before the voice and between
+  verses. A slow tempo, a major key, a hymn's dignity.
+- **In classic rock and jam music** the organ is the backdrop for the lead guitar: pads and rhythmic comping under the solo,
+  swelling as the solo rises, the speaker switched to fast at the peak, then a solo of its own. With two guitars the organ takes
+  the middle and leaves the low and high registers to them.
