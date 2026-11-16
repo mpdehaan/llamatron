@@ -94,6 +94,8 @@ DATASETS = (
      'public domain or Creative Commons, piece by piece; MIDI made from the engraved scores'),
     ('maestro', ZIP, 'https://storage.googleapis.com/magentadata/datasets/maestro/v3.0.0/maestro-v3.0.0-midi.zip', ('.mid', '.midi', '.csv', '.json'), 70,
      'CC BY-NC-SA 4.0, non-commercial; piano competition performances'),
+    ('chordonomicon', SINGLE, 'https://huggingface.co/datasets/ailsntua/Chordonomicon/resolve/main/chordonomicon_v2.csv', ('.csv',), 270,
+     'MIT; the chords of songs from chord pages people made, uneven in quality, with no melodies and no words'),
 )
 # The composers sampled from the Mutopia Project, by its codes, across the periods from the Renaissance to early American music,
 # and how many pieces of each (120 B): a diverse classical sample of MIDI made from engraved scores.
@@ -118,6 +120,7 @@ CATEGORIES = (
     ('Research annotations', 'experts\' transcriptions and labels: jazz solos, chart songs\' chords, rock harmony, drummers',
      ('weimar-jazz', 'billboard', 'rock-corpus', 'groove-midi')),
     ('Recorded piano performances', 'competition performances as MIDI, for non-commercial use', ('maestro',)),
+    ('Chords of popular songs', 'the chords and sections of a great many songs with a genre and a decade for each, measured only', ('chordonomicon',)),
     ('Popular songs', 'MIDI transcriptions of copyrighted songs, analysed only and never passed on; much the largest download',
      ('lakh-clean',)),
 )
