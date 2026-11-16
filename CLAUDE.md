@@ -23,6 +23,7 @@ llamatron is a text UI that helps people compose electronic music in MIDI, for A
 - `.claude/features/GENRES.md`: the genre library's standing rules: what it is, what may be read, how imperfect data is weighed, and licenses. It isn't imported: read it before working on `internal_tools/analysis_and_generation/`, a demo or a generator. Nothing of the genre library goes on the website until the user says so (the user's rule).
 - `.claude/features/MASHUPS.md`: how a mashup is made so that its genre is half the piece, and how a classical work's notes are brought in for one. It isn't imported: read it before making or changing a mashup.
 
+- `.claude/music_theory_notes/`: what Claude knows of song structure, hooks, melody, harmony, drumming, drum machines, band interplay and each genre, kept by Claude and ahead of the code (the user's idea); `README.md` there has its rules: no band, artist or work named, no melody written down, principles only. It isn't imported: read a subject's file before building in its area, and add to it as the work teaches.
 - `.claude/DECISIONS.md`: the history of the choices behind the tracker and the format, with their dates, for when a choice is questioned. It isn't imported, so read it when a note in the other files says a thing was decided and the reason matters.
 - `src/llamatron/strings/`: every piece of text the program shows or raises, one module for each
   way the text is used.
@@ -101,4 +102,5 @@ The references aren't imported, to keep every session light, and each is a file 
 | A script or a tool | `.claude/COMMANDS.md` |
 | The MacroComposer | `.claude/features/MACRO_COMPOSER.md` |
 | The genre library | `.claude/features/GENRES.md` |
+| What the MacroComposer or a style template should make music do: structure, hooks, melody, harmony, drums, interplay, a genre | the subject's file in `.claude/music_theory_notes/` (its `README.md` has the notes' rules) |
 | A choice that is questioned | `.claude/DECISIONS.md` |
