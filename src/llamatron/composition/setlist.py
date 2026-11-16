@@ -664,22 +664,40 @@ class Setlist(LlamaData):
             self.get_song(name).fill_in_defaults()
         return songs
 
-    def replace_song(self, *, name, other):
+    def song_is_untouched(self, name):
+        """Return whether a song is as a new set's song or a newly added song is, with nothing done to it, so that the song
+        wizard may fill it in place of adding a song beside it (the user's design)."""
+        song = self.get_song(name).to_data()
+        new = Setlist.new()
+        new.fill_in_defaults()
+        first = new.first_song_name()
+        if song == new.get_song(first).to_data():
+            # A new set's song plays the starter pattern, which must be as it started too.
+            patterns = new.get_pattern_names()
+            return all(self.has_pattern(pattern) and self.get_item(section=Section.PATTERNS, name=pattern).to_data() == new.get_item(section=Section.PATTERNS, name=pattern).to_data() for pattern in patterns)
+        added = copy_name(name=name, taken=new.get_song_names())
+        new.add_new_song(added)
+        new.get_song(added).fill_in_defaults()
+        return song == new.get_song(added).to_data()
+
+    def replace_song(self, *, name, other, new=None):
         """Replace a song entirely, in its place, with the one song of another set and all that song uses, which the song wizard does.
 
         Whatever the replaced song used that nothing else uses goes with it, its patterns, generators
         and chains, so that a song replaced again and again leaves nothing behind. What another song
-        still uses stays, and so does whatever nothing used before.
+        still uses stays, and so does whatever nothing used before. The new song takes the old
+        song's name, or a new name when one is given, and its name here is returned.
         """
         place = self.get_song_names().index(name)
         used = [(section, item) for section, item in self.named_by_songs() if self._is_named(section=section, name=item)]
         self.remove_item(section=Section.SONGS, name=name)
         self._remove_unnamed(used)
-        other.rename_item(section=Section.SONGS, old=other.get_song_names()[0], new=name)
-        self.take_in(other)
+        other.rename_item(section=Section.SONGS, old=other.get_song_names()[0], new=new or name)
+        taken = self.take_in(other)
         last = len(self.get_song_names()) - 1
         if place != last:
             self.move_item(section=Section.SONGS, place=last, offset=place - last)
+        return taken[0]
 
     def named_by_songs(self):
         """Return every item a song could bring with it, as (section, name): the scales, patterns, generators, chains, grooves and instruments."""

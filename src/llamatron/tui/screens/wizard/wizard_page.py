@@ -255,7 +255,13 @@ class WizardPage(FieldPage):
         made = self._choices.made_setlist(name=self._song_name, version=VERSION)
         document = self.document()
         replaces = self.replaces()
-        name = document.replace_with_made_song(made) if replaces else document.add_made_song(made)
+        if replaces:
+            name = document.replace_with_made_song(made)
+        elif document.current_song_is_untouched():
+            # A song nothing was done to, as a new set's, is filled in place of a song added beside it, the user's design.
+            name = document.replace_with_made_song(made, new=self._song_name)
+        else:
+            name = document.add_made_song(made)
         self.holder.show_arrange_on_new_song()
         self.say((MSG_WIZARD_REPLACED if replaces else MSG_WIZARD_CREATED).format(name=name))
 

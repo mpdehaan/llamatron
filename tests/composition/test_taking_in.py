@@ -160,6 +160,33 @@ class TestReplacingASong(unittest.TestCase):
             self.assertTrue(setlist.has_pattern(name))
 
 
+class TestUntouchedSongs(unittest.TestCase):
+    """Whether a song is as it started, which the song wizard fills in place."""
+
+    def test_a_new_sets_song_is_untouched_until_the_song_or_its_starter_pattern_changes(self):
+        setlist = a_new_set()
+        self.assertTrue(setlist.song_is_untouched(MSG_DEFAULT_SONG_NAME))
+        song = setlist.get_song(MSG_DEFAULT_SONG_NAME)
+        song.set_tempo(song.get_tempo() + 1)
+        self.assertFalse(setlist.song_is_untouched(MSG_DEFAULT_SONG_NAME))
+        other = a_new_set()
+        other.remove_item(section=Section.PATTERNS, name=other.get_pattern_names()[0])
+        self.assertFalse(other.song_is_untouched(MSG_DEFAULT_SONG_NAME))
+
+    def test_a_song_just_added_is_untouched_and_a_made_song_is_not(self):
+        setlist = a_new_set()
+        setlist.add_new_song(SECOND)
+        setlist.get_song(SECOND).fill_in_defaults()
+        self.assertTrue(setlist.song_is_untouched(SECOND))
+        setlist.take_in(made(name=FIRST))
+        self.assertFalse(setlist.song_is_untouched(FIRST))
+
+    def test_a_song_is_replaced_under_a_new_name_when_one_is_given(self):
+        setlist = a_new_set()
+        self.assertEqual(setlist.replace_song(name=MSG_DEFAULT_SONG_NAME, other=made(name=FIRST), new=SECOND), SECOND)
+        self.assertEqual(setlist.get_song_names(), [SECOND])
+
+
 class TestWizardChoicesKept(unittest.TestCase):
     """A song keeps what the song wizard was told, as data of its own."""
 

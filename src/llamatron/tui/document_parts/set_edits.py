@@ -112,12 +112,15 @@ class SetEdits:
         self.select_song(name)
         return name
 
-    def replace_with_made_song(self, made):
-        """Replace the current song, in its place and under its name, with the one song of a set the song wizard made, as one change."""
-        name = self._current
-        self._change(self._setlist.replace_song, name=name, other=made)
+    def replace_with_made_song(self, made, *, new=None):
+        """Replace the current song, in its place, with the one song of a set the song wizard made, as one change, and return its name:
+        the replaced song's, or a new name when one is given, as when an untouched song is filled."""
+        name = self._change(self._setlist.replace_song, name=self._current, other=made, new=new)
         self.select_song(name)
         return name
+
+    def current_song_is_untouched(self):
+        return self._setlist.song_is_untouched(self._current)
 
     # Scales.
 
