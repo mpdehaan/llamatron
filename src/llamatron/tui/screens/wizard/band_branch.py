@@ -18,8 +18,8 @@
 
 from llamatron.strings.errors import ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE, ERR_WIZARD_LAST_PLAYER
 from llamatron.macro_composer.wizard_choices import BAND_SOUNDS, GUITARIST_COUNTS
-from llamatron.strings.labels import MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_GUITARISTS_LABEL, MSG_WIZARD_SOUNDS_LABEL
-from llamatron.tui.screens.shared.field import ChoiceField, Toggle
+from llamatron.strings.labels import MSG_WIZARD_ANSWERED_BY_LABEL, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_GUITARISTS_LABEL, MSG_WIZARD_NOBODY, MSG_WIZARD_SOUNDS_LABEL, MSG_WIZARD_TUNE_LABEL
+from llamatron.tui.screens.shared.field import ChoiceField, Field, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.player_branch import PlayerBranch
 
@@ -47,6 +47,15 @@ class BandBranch(Branch):
         if choices.offers_one_guitarist() or choices.has_one_guitarist():
             # One guitarist plays the chords and takes the solo, and is then one player on the screen.
             fields.append(ChoiceField(page=self.page(), label=MSG_WIZARD_GUITARISTS_LABEL, choices=list(GUITARIST_COUNTS), names=[str(count) for count in GUITARIST_COUNTS], current=choices.get_guitarists(), set=self.page().choosing(choices.set_guitarists)))
+        if choices.answerers():
+            # Who has the tune, which is only shown, and who answers that player: one of the players who can, or nobody.
+            answerers = choices.answerers()
+            names = [choices.role_title(role) for role in answerers]
+            by = choices.answered_by()
+            fields += [Field(label=MSG_WIZARD_TUNE_LABEL, value=lambda: choices.role_title(choices.tune_player()) if choices.tune_player() else MSG_WIZARD_NOBODY),
+                       ChoiceField(page=self.page(), label=MSG_WIZARD_ANSWERED_BY_LABEL, choices=[MSG_WIZARD_NOBODY, *answerers], names=[MSG_WIZARD_NOBODY, *names],
+                                   current=by or MSG_WIZARD_NOBODY, shown=choices.role_title(by) if by else MSG_WIZARD_NOBODY,
+                                   set=self.page().choosing(lambda role: choices.set_answered_by(None if role == MSG_WIZARD_NOBODY else role)))]
         return [*fields, *(Toggle(label=choices.role_title(role), on=choices.role_is_in(role), set=self.setter_of(role)) for role in choices.roles_shown() if choices.role_can_play(role))]
 
     def setter_of(self, role):

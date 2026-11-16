@@ -28,11 +28,13 @@ import random
 from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_TEMPO, MIN_TEMPO
 from llamatron.composition.setlist import Setlist
+from llamatron.macro_composer.interplay import LEAST_BUSY as LEAST_BUSY_BESIDE, MOST_BUSY as MOST_BUSY_BESIDE, USUAL_BUSY as USUAL_BUSY_BESIDE, WAITS, WAYS as WAYS_BESIDE
 from llamatron.macro_composer.characters import GAUGES as PLAYER_GAUGES, HIGHEST as HIGHEST_PLACE, LOWEST as LOWEST_PLACE, PRESET_PLACE, gauges_of, preset
 from llamatron.macro_composer.arranger import (
     COMMON_TIME, DEFAULT_PHRASE_BARS, DRUMS, DRUM_TRACKS, EACH_SECTION, FILLS_COME, FILL_EVERY, KIND, PARTS, PHRASE_BARS, QUIET_NOTES, MELODY_ENGINE, METER, PICKS, ROLE_SOUNDS, ROLE_TITLE, ROLE_TITLES, SOUNDS, WITHOUT_PIECES, PLAYER, PLAYERS, ROLE, ROLES, SOUND, TRAIT, VALUE, WITHOUT, bar_length, fits,
     BARS, CHORD_TRAIT, CHORD_TRAIT_FIELD, FORM, HELD, PLAYS, GENRE, KEY, NAME, ROOT, SCALE_TYPE, SECTIONS, SEED, STYLE, TEMPLATE, TEMPLATES, TEMPO, TITLE, TRAITS, TYPE, USUAL,
     BREAK, BREAK_CUT, HIGHEST_NOTE, KEPT_BESIDE_A_BREAK, LOWEST_NOTE, MELODY, NO_BREAK, PIECE_SOUNDS, PLAYED_DRUM, PLAYED_NOTE, PLAYED_SOUND,
+    ANSWERS, BESIDE, BESIDE_BUSY, BESIDE_WAYS, FIGURE,
     arranged, forms_of, picked, player_of, section_of, share_of, style_named, style_names, values_of,
 )
 from llamatron.macro_composer.composer import composed
@@ -46,7 +48,7 @@ from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MIN_GM_SO
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.marks import MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SECTION_VARIANT
 from llamatron.support.version import VERSION as A_VERSION
-from llamatron.strings.errors import ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
+from llamatron.strings.errors import ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'
@@ -101,6 +103,15 @@ GAUGES_KEPT = 'melody_gauges'
 # What pieces of the kit sound as, kept as the song's picks hold them, and the note a piece first plays in a General MIDI sound.
 PIECE_SOUNDS_KEPT = 'piece_sounds'
 PLAYER_GAUGES_KEPT = 'player_gauges'
+# What is kept of the player beside the tune: who answers, the one thing done in every section or None for the genre's plan, and how busy; and a section's own choice.
+BESIDE_KEPT = 'beside'
+BY = 'by'
+WAY = 'way'
+BUSY_BESIDE = 'busy'
+# What a genre says of playing beside the tune.
+INTERPLAY = 'interplay'
+PLAN = 'plan'
+BY_SUBGENRE = 'by_subgenre'
 USUAL_PIECE_NOTE = 48
 # The key a song keeps the kit's pieces that are switched off under.
 PIECES_OFF_KEPT = 'pieces_off'
@@ -230,7 +241,7 @@ SECONDS_IN_MINUTE = 60
 class WizardChoices:
     """The choices of one run of the song wizard."""
 
-    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_own_gauges', '_without', '_sections', '_melody', '_sounds', '_band_sounds', '_guitarists', '_pieces_off', '_break', '_break_cut', '_gauges', '_piece_sounds', '_fills', '_quiet_notes')
+    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_own_gauges', '_beside', '_without', '_sections', '_melody', '_sounds', '_band_sounds', '_guitarists', '_pieces_off', '_break', '_break_cut', '_gauges', '_piece_sounds', '_fills', '_quiet_notes')
 
     def __init__(self):
         self._genre = None
@@ -244,6 +255,7 @@ class WizardChoices:
         self._ways = {}
         self._levels = {}
         self._own_gauges = {}
+        self._beside = None
         self._without = []
         # The form's sections once a person has changed them, each its kind and what it changes of the kind; None while a suggested form is followed.
         self._sections = None
@@ -286,6 +298,8 @@ class WizardChoices:
         band could be chosen names no levels, and is read as having none, so that the same choices still make the same song."""
         self._levels = {}
         self._own_gauges = {}
+        # A song kept before answering could be chosen keeps to what was made then.
+        self._beside = None
         kept = [(self.set_way, [dict(trait=trait, value=value) for trait, value in (data.get(PICKS) or {}).items()]),
                 (self._set_level, [dict(player=player, level=level) for player, level in (data.get(PLAYERS) or {}).items()]),
                 (self._set_kept_player_gauge, [dict(player=player, gauge=gauge, place=place) for player, places in (data.get(PLAYER_GAUGES_KEPT) or {}).items() for gauge, place in places.items()]),
@@ -299,6 +313,7 @@ class WizardChoices:
                 (self._set_kept_guitarists, [dict(count=data[GUITARISTS_KEPT])] if data.get(GUITARISTS_KEPT) else []),
                 (self._set_kept_band_sounds, [dict(sounds=data[BAND_SOUNDS_KEPT])] if data.get(BAND_SOUNDS_KEPT) else []),
                 (self.set_sound, [dict(role=role, sound=sound) for role, sound in (data.get(SOUNDS_KEPT) or {}).items()]),
+                (self._set_kept_beside, [dict(kept=data[BESIDE_KEPT])] if isinstance(data.get(BESIDE_KEPT), dict) else []),
                 (self.set_own_sections, [dict(sections=data[OWN_SECTIONS])] if data.get(OWN_SECTIONS) else []),
                 (self._set_kept_melody, [dict(style=data[MELODY_STYLE])] if data.get(MELODY_STYLE) else []),
                 (self.set_gauge, [dict(name=name, position=position) for name, position in (data.get(GAUGES_KEPT) or {}).items()])]
@@ -314,6 +329,7 @@ class WizardChoices:
         held = {GENRE: self._genre, SUBGENRE: self._subgenre, ROOT: self._root, TYPE: self._scale_type, TEMPO: self._tempo, FORM: self._form, SEED: self._seed,
                 PICKS: dict(self._ways) or None, PLAYERS: dict(self._levels) or None, WITHOUT: list(self._without) or None,
                 PLAYER_GAUGES_KEPT: {player: dict(places) for player, places in self._own_gauges.items() if places} or None,
+                BESIDE_KEPT: dict(self._beside) if self._beside is not None else None,
                 OWN_SECTIONS: [own_copy_of(entry) for entry in self._sections] if self._sections is not None else None,
                 MELODY_STYLE: self._melody, SOUNDS_KEPT: dict(self._sounds) or None,
                 BAND_SOUNDS_KEPT: self._band_sounds if self._band_sounds != USUAL_SOUNDS else None,
@@ -362,6 +378,7 @@ class WizardChoices:
             self._melody = None
             self._levels = {player: USUAL_BUSY for player in style_of(self._genre).get(PLAYERS, {})}
             self._own_gauges = {}
+            self._beside = self._usual_beside()
 
     def is_ready(self):
         """Return whether a song can be made: a genre and a subgenre are chosen, and the rest has its usual values."""
@@ -611,6 +628,11 @@ class WizardChoices:
                 for role in self.roles():
                     if PLAYS in entry and role not in entry[PLAYS] and role in self.section_plays(place):
                         self.set_section_plays(place=place, role=role, on=False)
+                if BESIDE_KEPT in entry:
+                    # What the answering player does in the section is kept as chosen, and is used wherever somebody answers there.
+                    if entry[BESIDE_KEPT] not in WAYS_BESIDE:
+                        raise ValueError(ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=entry[BESIDE_KEPT]))
+                    self._sections[place][BESIDE_KEPT] = entry[BESIDE_KEPT]
             if not self._sections:
                 raise ValueError(ERR_WIZARD_LAST_SECTION)
         except (KeyError, TypeError, ValueError):
@@ -623,6 +645,7 @@ class WizardChoices:
         self._ways = {}
         self._levels = {}
         self._own_gauges = {}
+        self._beside = None
         self._without = []
         self._sounds = {}
         self._band_sounds = USUAL_SOUNDS
@@ -1113,6 +1136,135 @@ class WizardChoices:
         # A preset chosen puts every gauge of the player back where the preset has it.
         self._own_gauges.pop(player, None)
 
+    # The player beside the tune: who answers the player who has the tune, and what the answering player does in each section.
+
+    def _interplay(self):
+        """Return what the genre says of playing beside the tune: a plan of what is done in each kind of section, with a plan of its own for some subgenres, and how busy."""
+        return style_of(self._genre).get(INTERPLAY, {}) if self.is_ready() else {}
+
+    def _usual_answerer(self):
+        """Return the player the genre has answer the tune, where the player can play in the subgenre, or None."""
+        role = next((entry[ROLE] for entry in style_of(self._genre)[ROLES] if entry.get(ANSWERS)), None) if self.is_ready() else None
+        return role if role is not None and role in self.roles_shown() and self.role_can_play(role) else None
+
+    def tune_player(self):
+        """Return the player who has the tune: the first player of lines who answers nobody and is in the band, or None."""
+        return next((role for role in self.roles_in() if self.has_sound(role) and not self._role(role).get(ANSWERS) and self._plays_lines(role)), None)
+
+    def _plays_lines(self, role):
+        entry = self._role(role)
+        return FIGURE not in values_of(style=style_of(self._genre), trait=entry[TRAIT])[self.get_way(entry[TRAIT])]
+
+    def answerers(self):
+        """Return the players who may answer the tune, by name: the genre's answering player while in the band, and none where the song keeps to
+        what was made before answering could be chosen."""
+        usual = self._usual_answerer()
+        return [] if self._beside is None or usual is None or not self.role_is_in(usual) else [usual]
+
+    def answered_by(self):
+        """Return the player who answers the tune, or None where nobody does."""
+        return self._beside[BY] if self._beside is not None and self._beside[BY] in self.answerers() and self.role_is_in(self._beside[BY]) else None
+
+    def set_answered_by(self, role):
+        """Choose who answers the tune, or nobody with None."""
+        if role is not None and role not in self.answerers():
+            raise ValueError(ERR_WIZARD_NO_SUCH_ANSWERER.format(value=role))
+        if self._beside is None:
+            raise ValueError(ERR_WIZARD_NO_SUCH_ANSWERER.format(value=role))
+        self._beside[BY] = role
+
+    def ways_beside(self):
+        """Return what a player beside the tune may do in a section, in order."""
+        return list(WAYS_BESIDE)
+
+    def get_role_plan(self):
+        """Return the one thing the answering player does in every section, or None where the player goes by the genre's plan, section by section."""
+        return self._beside[WAY] if self._beside is not None else None
+
+    def set_role_plan(self, way):
+        """Have the answering player do one thing in every section, or go by the genre's plan with None. Either drops what single sections were given."""
+        if self.answered_by() is None or (way is not None and way not in WAYS_BESIDE):
+            raise ValueError(ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=way))
+        self._beside[WAY] = way
+        if self._sections is not None:
+            for entry in self._sections:
+                entry.pop(BESIDE_KEPT, None)
+
+    def section_has_role(self, place):
+        """Return whether the answering player has something to choose in a section: somebody answers, and the tune's player plays in the section."""
+        return self.answered_by() is not None and not self.section_is_held(place) and self.tune_player() in self.section_plays(place)
+
+    def planned_role(self, place):
+        """Return what the plan has the answering player do in a section: the one thing chosen for every section, or what the genre's plan
+        says of the section's kind, the subgenre's own plan first, and waiting where the plan says nothing."""
+        if self._beside[WAY] is not None:
+            return self._beside[WAY]
+        interplay = self._interplay()
+        kind = self._entry(place)[KIND]
+        plan = {**interplay.get(PLAN, {}), **interplay.get(BY_SUBGENRE, {}).get(self._subgenre, {})}
+        return plan.get(kind, WAITS)
+
+    def section_role_is_own(self, place):
+        """Return whether a section was given a role of its own, apart from the plan."""
+        return BESIDE_KEPT in self._entry(place)
+
+    def section_role(self, place):
+        """Return what the answering player does in a section: the section's own choice, or the plan's."""
+        if not self.section_has_role(place):
+            raise ValueError(ERR_WIZARD_SECTION_HAS_NO_ROLE.format(value=place))
+        return self._entry(place).get(BESIDE_KEPT, self.planned_role(place))
+
+    def set_section_role(self, *, place, way):
+        """Choose what the answering player does in one section, or give the section back to the plan with None."""
+        if not self.section_has_role(place):
+            raise ValueError(ERR_WIZARD_SECTION_HAS_NO_ROLE.format(value=place))
+        if way is not None and way not in WAYS_BESIDE:
+            raise ValueError(ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=way))
+        if way is None and not self.section_role_is_own(place):
+            return
+        entry = self._own_entries()[place]
+        entry.pop(BESIDE_KEPT, None)
+        if way is not None:
+            entry[BESIDE_KEPT] = way
+
+    def has_fills_busy(self):
+        """Return whether how busy the answering player is can be chosen: somebody answers."""
+        return self.answered_by() is not None
+
+    def get_fills_busy(self):
+        return self._beside[BUSY_BESIDE]
+
+    def set_fills_busy(self, busy):
+        if not self.has_fills_busy() or isinstance(busy, bool) or not isinstance(busy, int) or not LEAST_BUSY_BESIDE <= busy <= MOST_BUSY_BESIDE:
+            raise ValueError(ERR_WIZARD_FILLS_BUSY.format(low=LEAST_BUSY_BESIDE, high=MOST_BUSY_BESIDE, value=busy))
+        self._beside[BUSY_BESIDE] = busy
+
+    def _usual_beside(self):
+        """Return how a new song starts: answered by the genre's answering player, going by the genre's plan, as busy as the genre says."""
+        return {BY: self._usual_answerer(), WAY: None, BUSY_BESIDE: self._interplay().get(BUSY_BESIDE, USUAL_BUSY_BESIDE)}
+
+    def _song_beside(self):
+        """Return the song's player beside the tune, with what the player does in each section of the form in order, or nothing for a song that
+        keeps to what was made before answering could be chosen, and for a genre nobody answers in."""
+        usual = self._usual_answerer()
+        if self._beside is None or usual is None or not self.role_is_in(usual):
+            return {}
+        answered = self.answered_by() is not None
+        ways = [self.section_role(place) if answered and self.section_has_role(place) else WAITS for place in range(len(self._entries()))]
+        return {BESIDE: {ROLE: usual, BESIDE_BUSY: self._beside[BUSY_BESIDE], BESIDE_WAYS: ways}}
+
+    def _set_kept_beside(self, *, kept):
+        usual = self._usual_beside()
+        by = kept.get(BY)
+        way = kept.get(WAY)
+        busy = kept.get(BUSY_BESIDE, usual[BUSY_BESIDE])
+        # Who answers is kept as chosen even where the player cannot answer now, as the solo's player hidden by one guitarist, and answers again once the player can.
+        if (by is not None and by not in self.roles()) or (way is not None and way not in WAYS_BESIDE):
+            raise ValueError(ERR_WIZARD_NO_SUCH_ANSWERER.format(value=by))
+        if isinstance(busy, bool) or not isinstance(busy, int) or not LEAST_BUSY_BESIDE <= busy <= MOST_BUSY_BESIDE:
+            raise ValueError(ERR_WIZARD_FILLS_BUSY.format(low=LEAST_BUSY_BESIDE, high=MOST_BUSY_BESIDE, value=busy))
+        self._beside = {BY: by, WAY: way, BUSY_BESIDE: busy}
+
     # A player's gauges: where each stands, the preset's place until moved.
 
     def _character(self, player):
@@ -1249,7 +1401,7 @@ class WizardChoices:
 
     def _song_picks(self, name):
         return {NAME: name, TITLE: name, STYLE: self._genre, TEMPLATE: self._subgenre, KEY: {ROOT: self._root, TYPE: self._scale_type}, TEMPO: self._tempo, FORM: self.form_sections() if self.has_own_form() else self.get_form(), SEED: self._seed,
-                PICKS: {**self._ways, **self._break_picks()}, PLAYERS: self._players(), WITHOUT: self._song_without(),
+                PICKS: {**self._ways, **self._break_picks()}, PLAYERS: self._players(), WITHOUT: self._song_without(), **self._song_beside(),
                 **({SECTIONS: self._sections_of_song()} if self._sections_of_song() else {}),
                 **({MELODY_ENGINE: self._melody} if self._melody is not None else {}),
                 **({MELODY: {SMART: {**{name: self.get_gauge(name) for name in DEFAULT_GAUGES}, **self._gauges}}} if self._melody == SMART and self._gauges else {}),

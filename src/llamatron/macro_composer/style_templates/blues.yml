@@ -313,6 +313,12 @@ sections:
   ending: {held: true, plays: [bass, comping]}
 
 # The forms a song may take when it gives none, each with how common it is; a longer form has more choruses and solos.
+# What the player beside the tune does in each kind of section, with a plan of its own for some subgenres, and how busy, from 0 to 20; a kind
+# the plan leaves out is waited through.
+interplay:
+  busy: 10
+  plan: {chorus: answers every line}
+
 forms:
   usual:
     - {name: one solo, share: 40, sections: [intro, chorus, chorus, solo, chorus, ending]}

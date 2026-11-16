@@ -223,6 +223,14 @@ class StepWalk:
     def within(self, place):
         return max(self._low, min(self._high, place))
 
+    def ladder(self):
+        """The notes the engine walks, lowest first, each with its half steps above the root."""
+        return self._ladder
+
+    def home(self):
+        """The place on the ladder a tune sits around."""
+        return self._home
+
     def new_line(self, *, entry, under, dice):
         """A line nobody has heard yet."""
         rhythms = self._habits[ANSWER_RHYTHMS] if self._answers else self._habits[RHYTHMS]

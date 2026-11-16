@@ -366,6 +366,12 @@ sections:
   ending: {held: true, plays: [bass, guitar, keys, colour, voices]}
 
 # The forms a song may take when it gives none, each with how common it is; a longer form has more sections, never the same form twice over.
+# What the player beside the tune does in each kind of section, with a plan of its own for some subgenres, and how busy, from 0 to 20; a kind
+# the plan leaves out is waited through.
+interplay:
+  busy: 6
+  plan: {verse: fills between lines, chorus: plays the hook with the tune, bridge: answers every line}
+
 forms:
   usual:
     - {name: with a bridge and a solo, share: 45, sections: [intro, verse, verse, chorus, verse, chorus, bridge, solo, chorus, chorus, ending]}

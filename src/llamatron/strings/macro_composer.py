@@ -22,6 +22,7 @@ Each constant starts with MSG_.
 
 # macro_composer/arranger.py
 MSG_PART_AT_LEVEL = '{} at {}'
+MSG_PART_BESIDE = '{} {}: {}'
 MSG_SECTION_START_PART = '{} start'
 MSG_TIMING_CHAIN = '{} timing'
 MSG_PLAYED_BY = '{}: {}. {}'

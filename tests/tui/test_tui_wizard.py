@@ -21,10 +21,10 @@ from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
 from llamatron.macro_composer.melody import DEFAULT_GAUGES, GAUGE_MOVES, HIGHEST_GAUGE, SMART
 from llamatron.macro_composer.wizard_choices import USUAL_PIECE_NOTE, FEWEST_FILLS, MOST_FILLS, ONE_GUITARIST_COUNT, TWO_GUITARISTS, ACOUSTIC, BAND_SOUNDS, FILLS_TRAITS, PROGRESSION_TRAITS, MOST_BUSY, USUAL_BUSY, MINOR, SEED, genre_names, genre_title
 from llamatron.strings.errors import ERR_WIZARD_LAST_PIECE, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_CHOOSE_GENRE, ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
-from llamatron.strings.labels import MSG_GM_SOUNDS, MSG_WIZARD_KIT_DRUMS, MSG_GM_FAMILIES, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_GAUGE_ENDS, MSG_WIZARD_GAUGE_LABELS, MSG_WIZARD_NO_BREAK, MSG_WIZARD_ANY_PROGRESSION, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_GUITARISTS_LABEL, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_SOUND_LABEL, MSG_WIZARD_SOUNDS_LABEL, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PLAYING_BRANCH, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_THEMES_BRANCH, MSG_WIZARD_USUAL_MELODY, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_SUGGESTED_FORM_BUTTON, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_START_CANCEL
+from llamatron.strings.labels import MSG_WIZARD_ANSWERED_BY_LABEL, MSG_WIZARD_BY_SECTION, MSG_WIZARD_FILLS_BUSY_LABEL, MSG_WIZARD_NOBODY, MSG_WIZARD_ROLE_LABEL, MSG_WIZARD_SECTION_ROLE_LABEL, MSG_WIZARD_TUNE_LABEL, MSG_GM_SOUNDS, MSG_WIZARD_KIT_DRUMS, MSG_GM_FAMILIES, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_GAUGE_ENDS, MSG_WIZARD_GAUGE_LABELS, MSG_WIZARD_NO_BREAK, MSG_WIZARD_ANY_PROGRESSION, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_GUITARISTS_LABEL, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_SOUND_LABEL, MSG_WIZARD_SOUNDS_LABEL, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PLAYING_BRANCH, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_THEMES_BRANCH, MSG_WIZARD_USUAL_MELODY, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_SUGGESTED_FORM_BUTTON, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_START_CANCEL
 from llamatron.strings.legends import What
 from llamatron.strings.macro_composer import MSG_PIECE_INSTRUMENT
-from llamatron.strings.marks import MSG_SOUND_NOTE_ROW, MSG_TOGGLE_ON, MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_SOUND_ON_NOTE, MSG_WIZARD_MELODY_GAUGE_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_OWN_FORM, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
+from llamatron.strings.marks import MSG_WIZARD_ROLE_FROM_PLAN, MSG_SOUND_NOTE_ROW, MSG_TOGGLE_ON, MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_SOUND_ON_NOTE, MSG_WIZARD_MELODY_GAUGE_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_OWN_FORM, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
 from llamatron.strings.messages import MSG_WIZARD_NOTHING_TO_CHOOSE, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_SECTIONS_HINT, MSG_UNDONE, MSG_RESTORED, MSG_WIZARD_ALREADY_OPEN, MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CREATED, MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_REPLACED, MSG_WIZARD_NOTHING_TO_UNDO
 from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_SONG_WORD
 from llamatron.composition.naming import new_name
@@ -360,7 +360,9 @@ class TestWizardBand(WizardTest):
     async def test_the_band_lists_every_player_and_opens_to_a_branch_for_each_who_is_in(self):
         await self.open_the_band()
         choices = self.choices()
-        self.assertEqual([field.label for field in self.wizard().fields()], [MSG_WIZARD_SOUNDS_LABEL, *(choices.role_title(role) for role in choices.roles() if choices.role_can_play(role))])
+        self.assertTrue(choices.answerers())
+        self.assertEqual([field.label for field in self.wizard().fields()],
+                         [MSG_WIZARD_SOUNDS_LABEL, MSG_WIZARD_TUNE_LABEL, MSG_WIZARD_ANSWERED_BY_LABEL, *(choices.role_title(role) for role in choices.roles() if choices.role_can_play(role))])
         # The Band starts open: Left closes it and Right opens it to a branch for each player who is in.
         rows = len(self.wizard().rows())
         await self.press(Key.LEFT)
@@ -854,6 +856,87 @@ class TestWizardForm(WizardTest):
         await self.start_with(NEW_FROM_LAST)
         self.assertEqual(self.sections(), sections)
         self.assertTrue(self.choices().has_own_form())
+
+
+class TestWizardInterplay(WizardTest):
+    """Who answers the tune, on the Band branch; the answering player's Role and Fills busy; and each section's own role."""
+
+    async def open_rock(self):
+        choices = self.choices()
+        choices.set_genre(A_GENRE_WITH_RHYTHMS)
+        choices.set_subgenre(choices.subgenres()[0])
+        await self.press(Key.DOWN, Key.UP)
+        self.assertIsNotNone(choices.answered_by())
+
+    async def test_the_band_shows_who_has_the_tune_and_nobody_can_be_made_to_answer(self):
+        await self.open_rock()
+        choices = self.choices()
+        answering = choices.answered_by()
+        await self.go_to_named_branch(MSG_WIZARD_BAND_BRANCH)
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(MSG_WIZARD_TUNE_LABEL)
+        self.assertEqual(self.wizard().field().value(), choices.role_title(choices.tune_player()))
+        await self.select_field(MSG_WIZARD_ANSWERED_BY_LABEL)
+        self.assertEqual(self.wizard().field().value(), choices.role_title(answering))
+        await self.press(key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET))
+        self.assertIsNone(choices.answered_by())
+        self.assertEqual(self.wizard().field().value(), MSG_WIZARD_NOBODY)
+        await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
+        self.assertEqual(choices.answered_by(), answering)
+
+    async def open_the_answering_player(self):
+        await self.open_rock()
+        choices = self.choices()
+        await self.go_to_named_branch(MSG_WIZARD_BAND_BRANCH)
+        shown = [role for role in choices.roles_in() if role in choices.roles_shown()]
+        await self.press(Key.RIGHT, *[Key.DOWN] * (shown.index(choices.answered_by()) + 1), keybindings.WizardPage.INTO_FIELDS)
+
+    async def test_the_answering_player_has_a_role_by_section_or_one_for_every_section_and_fills_busy(self):
+        await self.open_the_answering_player()
+        choices = self.choices()
+        await self.select_field(MSG_WIZARD_ROLE_LABEL)
+        self.assertEqual(self.wizard().field().value(), MSG_WIZARD_BY_SECTION)
+        await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
+        self.assertEqual(choices.get_role_plan(), choices.ways_beside()[0])
+        await self.press(key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET))
+        self.assertIsNone(choices.get_role_plan())
+        await self.select_field(MSG_WIZARD_FILLS_BUSY_LABEL)
+        busy = choices.get_fills_busy()
+        await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
+        self.assertEqual(choices.get_fills_busy(), busy + 1)
+        self.assertIn(str(busy + 1), self.wizard().field().value())
+
+    async def test_a_player_who_answers_nobody_has_neither_field(self):
+        await self.open_the_answering_player()
+        self.choices().set_answered_by(None)
+        await self.press(keybindings.WizardPage.TO_TREE, keybindings.WizardPage.INTO_FIELDS)
+        labels = [field.label for field in self.wizard().fields()]
+        self.assertNotIn(MSG_WIZARD_ROLE_LABEL, labels)
+        self.assertNotIn(MSG_WIZARD_FILLS_BUSY_LABEL, labels)
+
+    async def test_a_section_shows_the_plans_role_takes_its_own_and_bksp_gives_it_back_to_the_plan(self):
+        await self.open_rock()
+        choices = self.choices()
+        place = next(place for place in range(len(choices.section_labels())) if choices.section_has_role(place))
+        label = MSG_WIZARD_SECTION_ROLE_LABEL.format(player=choices.role_title(choices.answered_by()))
+        planned = choices.section_role(place)
+        await self.go_to_named_branch(MSG_WIZARD_FORM_BRANCH)
+        await self.press(Key.RIGHT, *[Key.DOWN] * (place + 1), keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(label)
+        self.assertEqual(self.wizard().field().value(), MSG_WIZARD_ROLE_FROM_PLAN.format(way=planned))
+        await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
+        self.assertTrue(choices.section_role_is_own(place))
+        self.assertEqual(choices.section_role(place), choices.ways_beside()[0])
+        self.assertEqual(self.wizard().field().value(), choices.ways_beside()[0])
+        await self.press(keybindings.WizardPage.CLEAR)
+        self.assertFalse(choices.section_role_is_own(place))
+        self.assertEqual(self.wizard().field().value(), MSG_WIZARD_ROLE_FROM_PLAN.format(way=planned))
+        # A section nobody has the tune in has no such field.
+        without = next(place for place in range(len(choices.section_labels())) if not choices.section_has_role(place))
+        await self.press(keybindings.WizardPage.TO_TREE)
+        await self.go_to_named_branch(MSG_WIZARD_FORM_BRANCH)
+        await self.press(*[Key.DOWN] * (without + 1), keybindings.WizardPage.INTO_FIELDS)
+        self.assertNotIn(label, [field.label for field in self.wizard().fields()])
 
 
 class TestWizardThemesAndPlaying(WizardTest):

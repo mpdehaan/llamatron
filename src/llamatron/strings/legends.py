@@ -272,6 +272,7 @@ MSG_STOP_WHAT = 'stop'
 MSG_STOP_CLIP_WHAT = 'stop clip'
 MSG_LISTEN_WHAT = 'listen'
 MSG_OWN_DRUM_WHAT = 'own drum'
+MSG_FROM_PLAN_WHAT = 'from plan'
 MSG_TYPE_NOTE_WHAT = 'type a note'
 # tui/keybindings.py: the Patterns page's groups.
 MSG_GROUP_WHAT = 'group'
