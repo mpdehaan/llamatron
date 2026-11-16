@@ -31,6 +31,8 @@ ANSWERS = 'answers every line'
 DOUBLES = 'plays the hook with the tune'
 RIFF = 'plays a riff under the tune'
 WAYS = (WAITS, FILLS, ANSWERS, DOUBLES, RIFF)
+# The ways drawn anew each time a section returns, so that a second verse's fills are not the first's.
+DRAWN_ANEW = (FILLS, ANSWERS)
 # How busy the fills, the answers and the riff are.
 LEAST_BUSY = 0
 MOST_BUSY = 20

@@ -23,7 +23,7 @@ from llamatron.macro_composer.melody import GRID
 from llamatron.macro_composer.notation import LINES, REST, STEPS
 from llamatron.macro_composer.wizard_choices import BESIDE_KEPT, BY, WizardChoices
 from llamatron.strings.errors import ERR_NO_SUCH_WAY_BESIDE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE
-from llamatron.strings.macro_composer import MSG_PART_BESIDE
+from llamatron.strings.macro_composer import MSG_PART_BESIDE, MSG_REPEATED_SCENE
 from llamatron.support.version import VERSION
 
 ROCK = 'rock'
@@ -176,6 +176,14 @@ class TestArrangedBesideTheTune(unittest.TestCase):
         self.assertNotIn(interplay.FILLS, parts[SOLO])
         # Playing the hook with the tune is the singer's own line, on the player's own track.
         self.assertEqual(song[arranger.PARTS][parts[CHORUS]][LINES], song[arranger.PARTS][arranger.MSG_PART_OF_SECTION.format(CHORUS, 'lead')][LINES])
+
+    def test_fills_are_drawn_anew_each_time_a_section_returns_and_the_hook_is_the_same_every_time(self):
+        choices = wizard()
+        parts, song = self.parts_of(choices=choices, way=None)
+        second = MSG_REPEATED_SCENE.format(VERSE, 2)
+        self.assertEqual(parts[second], MSG_PART_BESIDE.format(second, SOLO, interplay.FILLS))
+        self.assertNotEqual(song[arranger.PARTS][parts[VERSE]][LINES], song[arranger.PARTS][parts[second]][LINES])
+        self.assertEqual(parts[MSG_REPEATED_SCENE.format(CHORUS, 2)], parts[CHORUS])
 
     def test_a_player_who_waits_everywhere_makes_the_song_made_before_answering_could_be_chosen(self):
         choices = wizard()
