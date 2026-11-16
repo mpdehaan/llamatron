@@ -28,7 +28,7 @@ from llamatron.visualizers.cells import BRAILLE_COLUMNS, BRAILLE_ROWS
 from llamatron.visualizers.digital_rain import DigitalRain
 from llamatron.visualizers.fireworks import MOST_SPARKS, ROCKET_COLOURS, SUPERSAMPLE, Fireworks, brightest_of_blocks
 from llamatron.visualizers.heard import Heard, HeardNote
-from llamatron.visualizers.laser_llama import LaserLlama
+from llamatron.visualizers.laser_llama import LaserLlama, mirrored_drawing
 from llamatron.visualizers.life import CELL_COLUMNS, CELL_ROWS, Life, stepped
 from llamatron.visualizers.mandelbrot import escape_times
 from llamatron.visualizers.maze import Maze, carved, inside
@@ -175,7 +175,16 @@ class TestMystify(unittest.TestCase):
         self.assertEqual(mystify.corners_of(0), FEWEST_CORNERS)
 
 
+# A drawing of two lines that lean, and the same drawing facing the other way.
+LEANING = ('(/ ', ' \\)')
+LEANING_TURNED = (' \\)', '(/ ')
+
+
 class TestLaserLlama(unittest.TestCase):
+
+    def test_a_drawing_turned_round_leans_the_other_way_and_turned_twice_is_itself(self):
+        self.assertEqual(mirrored_drawing(LEANING), LEANING_TURNED)
+        self.assertEqual(mirrored_drawing(mirrored_drawing(LEANING)), LEANING)
 
     def test_each_note_that_starts_fires_a_beam_which_fades_away(self):
         llama = LaserLlama()

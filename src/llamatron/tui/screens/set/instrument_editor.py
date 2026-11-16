@@ -16,7 +16,7 @@
 
 """The instrument editor: one instrument's name, MIDI device or FluidSynth, channel and General MIDI sound."""
 
-from llamatron.composition.file_format import FLUIDSYNTH_DEVICE, KEYSWITCH_SLOT_COUNT, Section
+from llamatron.composition.file_format import FLUIDSYNTH_DEVICE, Section
 from llamatron.music.midi import MAX_CHANNEL, MIN_CHANNEL
 from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT_PREFIX
 from llamatron.realtime.outputs import output_port_names
@@ -24,7 +24,7 @@ from llamatron.strings.help import HELP_INSTRUMENT_EDITOR
 from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MAX_KEYSWITCH_LEAD, MIN_GM_SOUND, MIN_KEYSWITCH_LEAD
 from llamatron.strings.labels import Crumb, MSG_KEYSWITCH_LEAD_LABEL, MSG_KEYSWITCH_MAP_LABEL, MSG_CHANNEL_LABEL, MSG_DEVICE_LABEL, MSG_GM_FAMILIES, MSG_GM_PAGE_NAME, MSG_GM_SOUND_LABEL, MSG_GM_SOUND_SHOWN, MSG_GM_SOUNDS
 from llamatron.strings.legends import MSG_NO_DEVICE_WHAT, MSG_NO_GM_SOUND_WHAT, What
-from llamatron.strings.marks import MSG_KEYSWITCH_LEAD_SHOWN, MSG_KEYSWITCHES_SET, MSG_AUTO_CHANNEL_SHOWN, MSG_NO_DEVICE_SHOWN, MSG_NONE_SHOWN
+from llamatron.strings.marks import MSG_KEYSWITCH_LEAD_SHOWN, MSG_AUTO_CHANNEL_SHOWN, MSG_NO_DEVICE_SHOWN, MSG_NONE_SHOWN
 from llamatron.strings.messages import MSG_KEYSWITCH_LEAD_PROMPT, MSG_KEYSWITCH_MAP_TITLE, MSG_CHANNEL_PROMPT, MSG_DEVICE_TITLE, MSG_GM_SOUND_TITLE, MSG_RENAME_INSTRUMENT_PROMPT
 from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog, grouped_grid
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -116,11 +116,6 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
         dialog = KeyswitchMapDialog(title=MSG_KEYSWITCH_MAP_TITLE.format(instrument=self.item), keyswitches=self.instrument().get_keyswitches(), setlist=self.document().setlist())
         self.ask(dialog=dialog, then=lambda keyswitches: self.document().set_instrument_keyswitches(name=self.item, keyswitches=keyswitches))
 
-    def keyswitches_shown(self):
-        """Return how many of the instrument's slots hold a name or a note, or (none)."""
-        count = len([keyswitch for keyswitch in self.instrument().get_keyswitches() if not keyswitch.is_empty()])
-        return MSG_KEYSWITCHES_SET.format(count=count, slots=KEYSWITCH_SLOT_COUNT) if count else MSG_NONE_SHOWN
-
     def lead_field(self):
         """Return the Keyswitch lead field: how many milliseconds before its note a keyswitch is sent, for a plugin that needs it early, nothing unless set."""
         instrument = self.instrument()
@@ -152,5 +147,5 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
             Field(label=MSG_GM_SOUND_LABEL, value=lambda: sound_text(instrument.get_gm_sound()), adjust=self.step_gm_sound, enter=self.pick_gm_sound, enter_what=What.CHOOSE,
                   clear=lambda: self.set_gm_sound(None), clear_what=MSG_NO_GM_SOUND_WHAT),
             self.lead_field(),
-            Button(label=MSG_KEYSWITCH_MAP_LABEL, key_name=self.KEYS.KEYSWITCH_MAP[1], value=self.keyswitches_shown, enter=self.open_keyswitch_map, enter_what=self.KEYS.KEYSWITCH_MAP[2]),
+            Button(label=MSG_KEYSWITCH_MAP_LABEL, key_name=self.KEYS.KEYSWITCH_MAP[1], enter=self.open_keyswitch_map, enter_what=self.KEYS.KEYSWITCH_MAP[2]),
         ]
