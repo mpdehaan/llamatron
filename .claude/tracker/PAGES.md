@@ -194,7 +194,7 @@ The user's design. `PatternsPage` (`tui/screens/pattern/patterns_page.py`) lists
   notes and no sound of its own (the user's design); where neither can sound, the dialog says what to do in amber under its rows until
   the next key (`sound_refusal`, `ERR_NOTHING_TO_TRY_A_SOUND_WITH`); stopped by `L` again, a move of the cursor
   or closing
-  , and `[` and `]` step it by number (`step_gm_sound`).
+  , and `[` and `]` step it by number (`step_gm_sound`). An asker whose sound plays on one note passes `note=`, and the dialog keeps a Note row in view under its list: `[` and `]` step the note, a name such as C3 or f#2 typed and ENTER sets it (`tui/note_names.py`), ENTER with nothing typed takes the sound the dialog opened on, and the answer is the sound and the note.
 - The track editor's last field, Instrument, picks one of the set's instruments or `(none)`.
 - The main screen's Arrange cell reads Arrange/Play while the set's Real Time switch is on (`MainPage.shown_name`, `PageName.ARRANGE_PLAY`), the user's design; its theme, sentence and crumbs keep the name Arrange.
 - The main screen's Real Time cell (`T`, `MainPage.toggle_real_time`) sits among the pages,

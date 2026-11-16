@@ -54,6 +54,9 @@ def within(*, number, lowest, highest):
 NOTHING_SET = ''
 
 
+# What stands between two cells of a row of cells.
+CELL_GAP = '  '
+
 @dataclass(slots=True, kw_only=True)
 class Field:
     """One setting on a page. A missing function means that key does nothing there."""
@@ -187,6 +190,23 @@ class ChoiceField(Field):
         place = self.choices.index(opens_on) if opens_on in self.choices else FIRST_CHOICE
         dialog = ChoiceDialog(title=self.label, options=self.names or self.choices, current=place)
         self.page.ask(dialog=dialog, then=lambda chosen: self.set(self.choices[chosen]))
+
+
+@dataclass(slots=True, kw_only=True)
+class Cells(Field):
+    """A row of settings side by side under one label, as a piece of the kit's on or off and its sound: Left and Right move
+    between the cells, and each cell answers Space, Enter and Bksp as the field it is would. A cell is never stepped, since
+    Left and Right move here."""
+
+    cells: list
+    value: Callable = None
+
+    def __post_init__(self):
+        self.value = self.shown
+
+    def shown(self):
+        """Return every cell's value, in order, as the row reads."""
+        return CELL_GAP.join(str(cell.value()) for cell in self.cells)
 
 
 @dataclass(slots=True, kw_only=True)

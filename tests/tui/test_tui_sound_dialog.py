@@ -23,16 +23,18 @@ from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MIN_GM_SO
 from llamatron.exporters.midi_arrangement import DRUM_CHANNEL_BYTE
 from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT
 from llamatron.realtime.timeline import NOTE_ON, PROGRAM_CHANGE
-from llamatron.strings.errors import ERR_NOTHING_TO_TRY_A_SOUND_WITH, ERR_PREVIEW_DEVICE_NOT_CONNECTED, ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED, ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE
+from llamatron.music.note import NoteName
+from llamatron.strings.errors import ERR_NOT_A_NOTE_NAME, ERR_NOTHING_TO_TRY_A_SOUND_WITH, ERR_PREVIEW_DEVICE_NOT_CONNECTED, ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED, ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE
 from llamatron.strings.labels import MSG_GM_FAMILIES, MSG_GM_SOUND_LABEL, MSG_GM_SOUNDS
 from llamatron.strings.legends import MSG_LISTEN_WHAT
-from llamatron.strings.marks import MSG_FLYOUT_CHOSEN, MSG_FLYOUT_CLOSED, MSG_NONE_SHOWN, MSG_SEARCH_SHOWN, MSG_SOUND_FOUND
+from llamatron.strings.marks import MSG_FLYOUT_CHOSEN, MSG_FLYOUT_CLOSED, MSG_NONE_SHOWN, MSG_NOTE_NAME_SHOWN, MSG_SEARCH_SHOWN, MSG_SOUND_FOUND, MSG_SOUND_NOTE_ROW, MSG_SOUND_NOTE_TYPED
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.sound_dialog import SoundDialog
 from llamatron.tui.keys import Key
+from llamatron.tui.note_names import HIGHEST_NOTE, LOWEST_NOTE, note_shown, note_typed
 from llamatron.tui.pattern_preview import PREVIEW_CHANNEL_BYTE, TRIAL_VELOCITY, trial_pattern
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor, sound_families, sound_text
-from llamatron.tui.screens.shared.sound_trial import HITS, HITS_STEP, MAJOR_STEPS, NOTES_IN_OCTAVE, USUAL_OCTAVE, hits_of, run_of
+from llamatron.tui.screens.shared.sound_trial import HITS, HITS_STEP, MAJOR_STEPS, NOTES_IN_OCTAVE, USUAL_OCTAVE, SoundTrial, hits_of, run_of
 from llamatron.tui.drawing import Box, SPACE
 from tests.tui.test_tui_playback import KIND_MASK, SYNTH_PORT, PatternPreviewTest
 
@@ -50,6 +52,12 @@ A_DRUM = 38
 MIDDLE_C = 48
 C_SHARP = 49
 SHARP = '#'
+A_TITLE = 'Sound of a piece'
+D_FLAT_TYPED = 'db4'
+B_TYPED = 'b3'
+B_FLAT_TYPED = 'bb3'
+# Text that is no note: no octave, no letter of a note, an octave past the highest note, two marks, and nothing.
+NOT_NOTES = ('c', 'h3', 'c11', 'c##3', '3', '')
 # A trial is played through a moment at a time, for no longer than a while.
 A_MOMENT = 0.05
 MOMENTS_IN_A_WHILE = 600
@@ -268,3 +276,110 @@ class TestSoundDialog(PatternPreviewTest):
         self.play_through()
         self.assertEqual([list(data[:2]) for data in self.note_ons(FLUIDSYNTH_PORT)], [[NOTE_ON | DRUM_CHANNEL_BYTE, A_DRUM]] * HITS)
         self.assertNotIn(PROGRAM_CHANGE | DRUM_CHANNEL_BYTE, [data[0] for _, data in self.outputs[FLUIDSYNTH_PORT].sent])
+
+
+class TestNoteNames(unittest.TestCase):
+    """A MIDI note shown by name and octave, and a typed name read back."""
+
+    def test_a_note_is_shown_by_its_name_and_octave_a_black_key_as_a_sharp(self):
+        self.assertEqual(note_shown(MIDDLE_C), MSG_NOTE_NAME_SHOWN.format(name=NoteName.C, octave=MIDDLE_C // NOTES_IN_OCTAVE))
+        self.assertEqual(note_shown(C_SHARP), MSG_NOTE_NAME_SHOWN.format(name=NoteName.C_SHARP, octave=C_SHARP // NOTES_IN_OCTAVE))
+
+    def test_every_note_typed_as_shown_is_that_note_in_capitals_or_not(self):
+        for note in range(LOWEST_NOTE, HIGHEST_NOTE + 1):
+            self.assertEqual(note_typed(note_shown(note)), note)
+            self.assertEqual(note_typed(note_shown(note).lower()), note)
+
+    def test_a_flat_is_the_note_below_and_b_alone_is_the_note_b(self):
+        self.assertEqual(note_typed(D_FLAT_TYPED), C_SHARP)
+        self.assertEqual(note_typed(B_TYPED), MIDDLE_C - 1)
+        self.assertEqual(note_typed(B_FLAT_TYPED), MIDDLE_C - 2)
+
+    def test_what_is_no_note_there_is_reads_as_none(self):
+        for text in NOT_NOTES:
+            self.assertIsNone(note_typed(text), text)
+
+
+class TestSoundDialogNoteRow(PatternPreviewTest):
+    """The Note row of a Sound dialog whose asker's sounds play on one note."""
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        self.answers = []
+        self.dialog = None
+
+    async def open(self, *, note, current=None):
+        self.dialog = SoundDialog(title=A_TITLE, groups=sound_families(), top=[(MSG_NONE_SHOWN, None)], current=current, note=note,
+                                  trial=SoundTrial(page=self.app.screen, played=lambda sound: None if sound is None else (hits_of(self.dialog.note), HITS_STEP, sound)))
+        self.app.push_screen(self.dialog, self.answers.append)
+        await self.settle()
+
+    async def to_note_row(self):
+        await self.press(*[Key.DOWN] * (len(MSG_GM_FAMILIES) + 1))
+
+    async def test_the_note_row_stays_in_view_under_the_list_and_a_dialog_given_no_note_has_none(self):
+        await self.open(note=MIDDLE_C)
+        self.assertIn(MSG_SOUND_NOTE_ROW.format(note=note_shown(MIDDLE_C)), self.text())
+        self.assertNotIn(MSG_GM_FAMILIES[-1], self.text())
+        await self.to_note_row()
+        self.assertIn(MSG_GM_FAMILIES[-1], self.text())
+        self.assertIn(MSG_SOUND_NOTE_ROW.format(note=note_shown(MIDDLE_C)), self.text())
+        self.assertTrue(self.dialog.on_note_row())
+        await self.press(Key.ESCAPE)
+        self.assertEqual(self.answers, [None])
+        await self.open(note=None)
+        self.assertNotIn(MSG_SOUND_NOTE_ROW.format(note=note_shown(MIDDLE_C)), self.text())
+        await self.to_note_row()
+        self.assertFalse(self.dialog.on_note_row())
+        self.assertFalse(self.dialog.takes_text())
+
+    async def test_the_note_is_stepped_between_the_lowest_and_the_highest_and_a_sound_taken_answers_with_it(self):
+        await self.open(note=HIGHEST_NOTE - 1)
+        await self.to_note_row()
+        await self.press(*[keybindings.SoundDialog.NOTE_MORE] * 3)
+        self.assertEqual(self.dialog.note, HIGHEST_NOTE)
+        await self.press(Key.ESCAPE)
+        await self.open(note=LOWEST_NOTE + 1)
+        await self.to_note_row()
+        await self.press(*[keybindings.SoundDialog.NOTE_LESS] * 3)
+        self.assertEqual(self.dialog.note, LOWEST_NOTE)
+        await self.press(Key.UP, keybindings.SoundDialog.OPEN, keybindings.SoundDialog.CHOOSE)
+        self.assertEqual(self.answers[-1], (MAX_GM_SOUND - GM_FAMILY_SIZE + 1, LOWEST_NOTE))
+
+    async def test_a_note_is_typed_by_name_and_set_with_enter_and_enter_again_takes_the_sound_the_dialog_opened_on(self):
+        await self.open(note=MIDDLE_C, current=A_SOUND)
+        await self.to_note_row()
+        await self.type(D_FLAT_TYPED)
+        self.assertIn(MSG_SOUND_NOTE_TYPED.format(text=D_FLAT_TYPED), self.text())
+        await self.press(keybindings.SoundDialog.ERASE)
+        self.assertIn(MSG_SOUND_NOTE_TYPED.format(text=D_FLAT_TYPED[:-1]), self.text())
+        await self.type(D_FLAT_TYPED[-1])
+        await self.press(keybindings.SoundDialog.TAKE_NOTE)
+        self.assertEqual(self.dialog.note, C_SHARP)
+        self.assertEqual(self.answers, [])
+        await self.press(keybindings.SoundDialog.TAKE_NOTE)
+        self.assertEqual(self.answers, [(A_SOUND, C_SHARP)])
+
+    async def test_what_is_typed_and_is_no_note_is_refused_and_moving_away_drops_what_was_typed(self):
+        await self.open(note=MIDDLE_C)
+        await self.to_note_row()
+        await self.type(NOT_NOTES[0])
+        await self.press(keybindings.SoundDialog.TAKE_NOTE)
+        self.assertEqual(self.dialog.note, MIDDLE_C)
+        self.assertIn(ERR_NOT_A_NOTE_NAME.format(text=NOT_NOTES[0]), SPACE.join(self.text().replace(Box.HEAVY_BAR, SPACE).split()))
+        await self.type(D_FLAT_TYPED)
+        await self.press(Key.UP, Key.DOWN)
+        self.assertIn(MSG_SOUND_NOTE_ROW.format(note=note_shown(MIDDLE_C)), self.text())
+
+    async def test_l_tries_a_sound_on_the_note_the_row_shows(self):
+        await self.open(note=MIDDLE_C)
+        await self.to_note_row()
+        await self.press(keybindings.SoundDialog.NOTE_MORE, *[Key.UP] * len(MSG_GM_FAMILIES), keybindings.SoundDialog.OPEN, keybindings.SoundDialog.LISTEN)
+        self.assertEqual(self.preview().playing_sound(), MIN_GM_SOUND)
+        for _ in range(MOMENTS_IN_A_WHILE):
+            self.clock.advance(A_MOMENT)
+            self.preview().tick()
+            if self.preview().player() is None:
+                break
+            self.preview().player().sender().send_due()
+        self.assertEqual([data[1] for data in self.note_ons(FLUIDSYNTH_PORT)], hits_of(C_SHARP))

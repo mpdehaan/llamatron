@@ -227,6 +227,10 @@ code.
 
 - A `FieldPage`'s widgets (`screens/shared/field.py`) are `Field`s, one setting each, and `Button`s,
   rows that act on ENTER (`FieldPage.button` makes one from a main screen action).
+- `Cells` is a row of settings side by side under one label, as a kit piece's on or off and its sound in the wizard (the user's
+  design): Left and Right move between the cells (`FieldPage.cell`, `cell_field`, `ALONG_CELLS`) and step nothing there, each
+  cell answers Space, ENTER and Bksp as the field it is, the cursor's cell is in reverse video, as a grid's, and a row is come
+  to at its first cell.
 - A `Button` is drawn as the main menu draws a row: the key's name in reverse video and then the
   button's name, with no explanation beside it.
 - Buttons always come after the settings in `fields()`, and `FieldPage.body` draws them as one row of boxes

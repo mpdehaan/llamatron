@@ -378,6 +378,7 @@ ERR_FLUIDSYNTH_WILL_NOT_SOUND = 'Since FluidSynth is not installed, instruments 
 ERR_DEVICE_WILL_NOT_SOUND = 'The device of instrument ({instrument}), ({device}), is not connected, so it will not sound. The set keeps it, and the Instruments page can choose another.'
 ERR_FLUIDSYNTH_NOT_INSTALLED = 'Some tracks play through FluidSynth, which is not installed. Run sh user_scripts/install_fluidsynth.sh in the llamatron folder to install it.'
 # tui/pattern_preview.py: why Listen cannot play a pattern through the song's Preview instrument, on the status line.
+ERR_NOT_A_NOTE_NAME = 'note must be a letter from A to G, # or b where wanted, and an octave, such as C3, got {text}'
 ERR_NOTHING_TO_TRY_A_SOUND_WITH = 'to listen, install FluidSynth or set the Preview instrument on the Song page'
 ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE = 'preview instrument ({name}) has no device, so nothing plays'
 ERR_PREVIEW_DEVICE_NOT_CONNECTED = 'the device of preview instrument ({name}), ({device}), is not connected, so nothing plays'

@@ -727,8 +727,6 @@ MSG_WIZARD_GAUGE_ENDS = {'moves': ('steps', 'leaps'), 'steps': ('fall', 'rise'),
                          'leaning': ('resolved', 'left hanging'), 'notes': ('long', 'short'), 'surprise': ('expected', 'surprising')}
 MSG_WIZARD_BREAK_LABEL = 'Break'
 # A kit piece's own sound and the note it plays in a General MIDI sound, and the group of the kit's drums in the picker.
-MSG_WIZARD_PIECE_SOUND_LABEL = '{piece} sound'
-MSG_WIZARD_PIECE_NOTE_LABEL = '{piece} note'
 MSG_WIZARD_PIECE_SOUND_TITLE = 'Sound of {piece}'
 MSG_WIZARD_KIT_DRUMS = 'Kit drums'
 MSG_WIZARD_NO_BREAK = '(none)'

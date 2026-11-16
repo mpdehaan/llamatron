@@ -34,7 +34,7 @@ from llamatron.strings.help import HELP_WIZARD_PAGE
 from llamatron.macro_composer.notation import KIT
 from llamatron.macro_composer.wizard_choices import USUAL_PIECE_NOTE
 from llamatron.strings.labels import MSG_WIZARD_KIT_DRUMS, MSG_WIZARD_PIECE_SOUND_TITLE, Crumb, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_MORE_SOUNDS_TITLE, MSG_WIZARD_SOUND_TITLE, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_REPLACE_SECTIONS_TITLE, MSG_WIZARD_SUGGESTED_FORM_TITLE, MSG_WIZARD_CAPTION, MSG_WIZARD_REPLACE_CAPTION
-from llamatron.strings.marks import MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_EDITED_BRANCH
+from llamatron.strings.marks import MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_EDITED_BRANCH
 from llamatron.strings.messages import MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CLOSE_TITLE, MSG_WIZARD_CREATED, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_NOTHING_TO_UNDO, MSG_WIZARD_REPLACED, MSG_WIZARD_SONG_NAME_PROMPT
 from llamatron.strings.names import MSG_NEW_SONG_WORD
 from llamatron.support.version import VERSION
@@ -283,19 +283,28 @@ class WizardPage(FieldPage):
         self.ask(dialog=dialog, then=chosen)
 
     def pick_piece_sound(self, piece):
-        """Choose what a piece of the kit sounds as: its own drum first, then the kit's drums, then every General MIDI sound by family. A drum is
-        tried as four hits of the kit, and a General MIDI sound as four notes, on the note the piece plays."""
+        """Choose what a piece of the kit sounds as: its own drum first, then the kit's drums, then every General MIDI sound by family, and
+        on the Note row under them the note a General MIDI sound plays. A drum is tried as four hits of the kit, and a General MIDI sound
+        as four notes, on the note the row shows."""
         choices = self._choices
-        drums = [(drum, drum) for drum in choices.kit_drums() if drum != piece]
-        note = choices.piece_note(piece) or USUAL_PIECE_NOTE
+        drums = [(MSG_WIZARD_KIT_DRUM_SHOWN.format(drum=drum), drum) for drum in choices.kit_drums() if drum != piece]
 
         def played(sound):
             if isinstance(sound, str):
                 return hits_of(KIT[piece if sound == OWN_DRUM else sound]), HITS_STEP, None
-            return hits_of(note), HITS_STEP, sound
+            return hits_of(dialog.note), HITS_STEP, sound
+
+        def chosen(answer):
+            sound, note = answer
+            if isinstance(sound, str):
+                choices.set_piece_sound(piece=piece, sound=None if sound == OWN_DRUM else sound)
+            else:
+                choices.set_piece_sound(piece=piece, sound=sound)
+                choices.set_piece_note(piece=piece, note=note)
         dialog = SoundDialog(title=MSG_WIZARD_PIECE_SOUND_TITLE.format(piece=piece), top=[(MSG_WIZARD_OWN_DRUM_SHOWN.format(piece=piece), OWN_DRUM)],
-                             groups=[(MSG_WIZARD_KIT_DRUMS, drums), *sound_families()], current=choices.piece_sound(piece) or OWN_DRUM, trial=SoundTrial(page=self, played=played))
-        self.ask(dialog=dialog, then=lambda sound: self.choosing(lambda picked: choices.set_piece_sound(piece=piece, sound=picked))(None if sound == OWN_DRUM else sound))
+                             groups=[(MSG_WIZARD_KIT_DRUMS, drums), *sound_families()], current=choices.piece_sound(piece) or OWN_DRUM, trial=SoundTrial(page=self, played=played),
+                             note=choices.piece_note(piece) or USUAL_PIECE_NOTE)
+        self.ask(dialog=dialog, then=self.choosing(chosen))
 
     def pick_suggested_form(self):
         """Offer the forms the subgenre suggests in a dialog, each with its sections and its length at the tempo chosen, and

@@ -159,10 +159,12 @@ clouds; generate and test, with motif development and counterpoint last.
   drum of the kit, or `{sound: General MIDI number, note: MIDI note}`, a sound on one note, so that a kit can be abstract.
   The arranger (`pieces_played`) writes the piece's hits as that drum or note; a piece in a General MIDI sound gets an
   instrument of its own, named after the piece, and is no drum track, since the drum channel plays only the kit. In the
-  wizard each piece that is on has a Sound field under its toggle, opening the Sound dialog on the piece's own drum above
-  the kit's drums and General MIDI's families, where the Listen key plays four hits; a General MIDI sound brings a Note
-  field, shown by name (`WizardChoices.piece_sound`, `set_piece_sound`, `piece_note`, `set_piece_note`,
-  `PlayerBranch.piece_sound_fields`, `WizardPage.pick_piece_sound`). `TestKitPieceSounds` in `tests/macro_composer/test_breaks.py`.
+  wizard each piece is one row of two cells (the user's design): whether the piece plays, switched with Space, and, a Right
+  away, what the piece sounds as, `kick`, `cowbell (kit)` or `Flute  C3`, where ENTER opens the Sound dialog on the piece's
+  own drum above the kit's drums and General MIDI's families and Bksp gives the piece its own drum back. The dialog's Note
+  row, under the list, holds the note a General MIDI sound plays, C4 until changed, stepped or typed by name, and the Listen
+  key plays four hits on that note (`WizardChoices.piece_sound`, `set_piece_sound`, `piece_note`, `set_piece_note`,
+  `PlayerBranch.piece_row`, `WizardPage.pick_piece_sound`). `TestKitPieceSounds` in `tests/macro_composer/test_breaks.py`.
 - A song gives each instrument's player a complexity from 1 to 4, which people see as an imaginary player's name
   (`player_name` in `players.py`). The instruments and names are the same in every style; what each player does is the style's.
 - **A player only decorates the kind's own parts and never replaces them** (the user's choice). Complexity 1 goes by the book
