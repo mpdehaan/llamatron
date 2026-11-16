@@ -46,7 +46,7 @@ from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.set.song_page import SongPage
 from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.strings.help import HELP_NONE
-from llamatron.strings.labels import MSG_GUITAR_BAR_LABEL, MSG_CHORDS_LABEL, MSG_STEPS_LABEL, MSG_CHAINS_LABEL, MSG_NOTES_LABEL, MSG_OFFSETS_LABEL
+from llamatron.strings.labels import MSG_WIZARD_FORM_BRANCH, MSG_GUITAR_BAR_LABEL, MSG_CHORDS_LABEL, MSG_STEPS_LABEL, MSG_CHAINS_LABEL, MSG_NOTES_LABEL, MSG_OFFSETS_LABEL
 from llamatron.strings.legends import KeyName
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import first_key
@@ -136,8 +136,6 @@ def vars_of(kind):
     """Return everything a class of tui/keybindings.py holds, its own and what it inherits."""
     return [value for _, value in inspect.getmembers(kind)]
 
-# Where the Form branch is in the song wizard's tree while the branches above it are closed.
-WIZARD_FORM_PLACE = 3
 
 class TestKeysNamedInHelp(unittest.TestCase):
     """How a help text is read for its keys."""
@@ -365,7 +363,8 @@ class KeyTour(UITest):
         await self.walk()
         # The Form branch opened and its first section under the cursor, which has a list's keys; then the section picked up, and
         # its settings. No walk here, since a walk's Left closes the branch it is in.
-        await self.press(*[Key.UP] * len(self.app.screen.rows()), *[Key.DOWN] * WIZARD_FORM_PLACE, Key.RIGHT, Key.DOWN)
+        form = [branch.name() for _, branch in self.app.screen.rows()].index(MSG_WIZARD_FORM_BRANCH)
+        await self.press(*[Key.UP] * len(self.app.screen.rows()), *[Key.DOWN] * form, Key.RIGHT, Key.DOWN)
         self.note()
         await self.press(keybindings.WizardPage.MOVE)
         self.note()

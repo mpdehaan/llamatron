@@ -206,7 +206,7 @@ The user's design, agreed in detail in `dev_notes/QUEUE.md` (S16 to S39), of whi
   the whole song goes, shown only where the subgenre has more than one way, the branch saying so where none is): Themes
   has Progression and Melody, "usual" or a melody style the subgenre can use; Playing has Feel and Fills. Built so far: `GenreBranch` (Genre and Subgenre, each starting on `(choose)`, then Key, Scale and Tempo once
   a subgenre is chosen, with Meter, the subgenre's and only shown, and Length, the song's length with the form's name,
-  whose `[` and `]` choose the next shorter and longer form, since the length follows the sections, and the song's Name), `FormBranch` (which starts open in the tree, the user's ask, so that the sections and their keys show themselves; the
+  whose `[` and `]` choose the next shorter and longer form, since the length follows the sections, and the song's Name), `BandBranch` and `FormBranch` both start open in the tree, the user's ask, since a closed branch hid its pages twice. `FormBranch` (which starts open in the tree, the user's ask, so that the sections and their keys show themselves; the
   form's name, only shown, reading "your own" once a section was changed; the "Use a suggested form" button, the user's
   design, which opens a dialog of the subgenre's forms, each with its sections and length, and asks first where it would
   replace sections a person changed, since no stepped field may replace a person's work with one stray key; the sections
