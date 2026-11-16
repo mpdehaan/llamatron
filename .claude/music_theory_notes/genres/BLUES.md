@@ -19,3 +19,7 @@ the last four bars of the twelve, and ends on a turnaround walked down to a held
   chorus. A solo builds over several choruses from low and sparse to high and dense. (practice)
 - Heavier descendants add a riff under the verse in place of the shuffle, slower tempos and more weight, and open the middle
   for improvising. (practice)
+- In the classic trio the bass is a second lead: it plays tunes against the guitar's, moves through its whole range, and under a
+  solo its line is nearly a song of its own, while staying tied to the drums. The drummer comes from jazz: toms and cymbals as
+  melody, patterns that answer the soloist, power throughout. Live, one song opens into fifteen minutes of three-way
+  improvising. With no chord instrument, the bass's fullness is what keeps a guitar solo from sounding empty. (practice)

@@ -30,6 +30,7 @@ of it written for people.
 - `HARMONY.md`: progressions, borrowed chords, chords across sections.
 - `RHYTHM_AND_GROOVE.md`: drumming above all: the groove, fills, ghost notes, feel, the kit by section.
 - `ARPEGGIOS.md`: arpeggiators and sequenced lines, the arpeggio as a theme, the ostinato score.
+- `KEYBOARDS.md`: the organs of rock, what an organist plays, keyboard bass, organ with guitar.
 - `DRUM_MACHINES.md`: the machines, what each gave its genres, electronic percussion by style. Machines are named, as products.
 - `BAND_INTERPLAY.md`: who answers whom, layering, making room, intensity through a song.
 - `TECHNIQUES.md`: things read about and not yet used.
