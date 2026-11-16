@@ -110,3 +110,18 @@ class TestEveryUserScriptIsDescribed(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+# Whether the song wizard is released: until the user says so, no document for people names it (the user's rule).
+WIZARD_IS_RELEASED = False
+WIZARD_WORD = 'wizard'
+DOCUMENTS_FOR_PEOPLE = [ROOT / 'GUIDE.md', ROOT / 'INSTALL.md', ROOT / 'README.md', *sorted((ROOT / 'docs').rglob('*.md')), *sorted((ROOT / 'docs').rglob('*.svg'))]
+
+
+class TestTheWizardStaysOutOfTheDocuments(unittest.TestCase):
+
+    def test_no_document_for_people_names_the_wizard_until_it_is_released(self):
+        if WIZARD_IS_RELEASED:
+            return
+        naming = [str(document.relative_to(ROOT)) for document in DOCUMENTS_FOR_PEOPLE if WIZARD_WORD in document.read_text(encoding=ENCODING).lower()]
+        self.assertEqual(naming, [])

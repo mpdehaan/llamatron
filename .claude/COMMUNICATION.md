@@ -118,6 +118,11 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   commits `web_docs/` if the build changed it, pushes `main` and then publishes the website with `internal_tools/publish_docs.sh`,
   in that order, so that the website never describes code nobody can get; `publish_docs.sh` refuses while `main` holds commits
   GitHub's `main` doesn't. Claude pushes nothing unasked. A reply that leaves commits waiting says how many wait for a push.
+- The song wizard is kept out of the documents for people, `GUIDE.md`, `README.md`, every page of `docs/` and so the website, until
+  the user says the wizard is ready to release (the user's rule): no chapter, row, key or screenshot of it. When the wizard's
+  items in `dev_notes/QUEUE.md` are all built, Claude asks the user whether the wizard is ready, and only on a yes do its
+  documents go in, with the F5 row of `docs/GETTING_STARTED.md` put back. `tests/rules/test_doc_paths.py` holds that no such
+  document names the wizard while `WIZARD_IS_RELEASED` there is false.
 - Claude commits only the files it changed, naming them, never `git add -A`, and checks
   `git status` first: a change it didn't make, like a hand edit of the user's in progress, stays
   out of its commit and is mentioned, so that the user's work is never swept into Claude's.
