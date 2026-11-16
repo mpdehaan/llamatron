@@ -1613,6 +1613,11 @@
     would still play the pattern it names. What it would mean for the code: `PatternEditor` swapping the pattern it edits
     in place, with `Setlist.patterns_in_group` for the order, the undo history treating the step as navigation.
 
+- title: "A MachineDrummer generator"
+  priority: 99
+  text: |
+    The user wants to think about a generator that plays a drum pattern the way a drum machine would: exact on the grid, a few loudnesses with accents on chosen steps, swing as a percentage, A and B variations with a fill for each, and perhaps steps by chance and a setting's own value on single steps. It may turn out to have no place: the wizard's drummer is to get a "machine" choice, and Euclid, AutoRatchet and the grooves already cover parts of it. Undecided: whether it is a generator at all, what it would do that those do not, and whether it belongs to a clip, a track or the drums as a whole. See .claude/music_theory_notes/DRUM_MACHINES.md.
+
 - title: "Keyswitches: what the first build left out"
   priority: 100
   text: |

@@ -33,8 +33,8 @@ templates:
   baroque:      {meter: 4/4, tempo: 100, drums: restrained, percussion: none, bass: roots and fifths, guitar: none, keys: harpsichord broken, colour: strings, voices: block harmony, chords: falling bass, lead: voice, solo: oboe}
   soul pop:     {meter: 4/4, tempo: 122, drums: snare on every beat, percussion: tambourine on two and four, bass: melodic and busy, guitar: chops on two and four, keys: piano eighths, colour: horns, voices: answering, chords: doo-wop, lead: voice, solo: saxophone}
   big studio:   {meter: 4/4, tempo: 112, drums: baion, percussion: tambourine in eighths, bass: roots and fifths, guitar: strummed, keys: piano eighths, colour: strings, voices: block harmony, chords: doo-wop, lead: voice, solo: saxophone}
-  bubblegum:    {meter: 4/4, tempo: 132, drums: beat group, percussion: handclaps, bass: roots in eighths, guitar: strummed, keys: organ stabs, colour: none, voices: answering, chords: three chord, lead: voice, solo: organ}
-  folk pop:     {meter: 4/4, tempo: 118, drums: beat group, percussion: tambourine in eighths, bass: roots and fifths, guitar: chiming arpeggio, keys: none, colour: none, voices: block harmony, chords: modal, lead: voice, solo: harmonica}
+  bubblegum:    {meter: 4/4, tempo: 132, drums: british invasion, percussion: handclaps, bass: roots in eighths, guitar: strummed, keys: organ stabs, colour: none, voices: answering, chords: three chord, lead: voice, solo: organ}
+  folk pop:     {meter: 4/4, tempo: 118, drums: british invasion, percussion: tambourine in eighths, bass: roots and fifths, guitar: chiming arpeggio, keys: none, colour: none, voices: block harmony, chords: modal, lead: voice, solo: harmonica}
   waltz ballad: {meter: 3/4, tempo: 96, drums: waltz, percussion: none, bass: root then rest, guitar: none, keys: harpsichord in three, colour: strings, voices: block harmony, chords: falling bass, lead: voice, solo: oboe}
 
 traits:
@@ -44,7 +44,7 @@ traits:
   tempo: {lowest: 80, usual: 124, highest: 145}
   drums:
     - {value: light and bouncing, share: 22, needs: {meter: 4/4}, bar: {kick: [loud, none, none, soft, loud, none, none, none], snare: [none, none, loud, none, none, none, loud, none], hat: [loud, soft, loud, soft, loud, soft, loud, soft]}}
-    - {value: beat group, share: 28, needs: {meter: 4/4}, bar: {kick: [loud, none, none, none, loud, loud, none, none], snare: [none, none, loud, none, none, none, loud, none], hat: [loud, loud, loud, loud, loud, loud, loud, loud]}}
+    - {value: british invasion, share: 28, needs: {meter: 4/4}, bar: {kick: [loud, none, none, none, loud, loud, none, none], snare: [none, none, loud, none, none, none, loud, none], hat: [loud, loud, loud, loud, loud, loud, loud, loud]}}
     - {value: snare on every beat, share: 16, needs: {meter: 4/4}, bar: {kick: [loud, none, none, loud, none, loud, none, loud], snare: [soft, none, loud, none, soft, none, loud, none], hat: [loud, soft, loud, soft, loud, soft, loud, soft]}}
     - {value: baion, share: 12, needs: {meter: 4/4}, bar: {kick: [loud, none, none, loud, loud, none, none, none], snare: [none, none, none, none, none, none, loud, none], hat: [loud, none, loud, none, loud, none, loud, none]}}
     - {value: restrained, share: 14, needs: {meter: 4/4}, bar: {kick: [soft, none, none, none, soft, none, none, none], rim: [none, none, loud, none, none, none, loud, none]}}
