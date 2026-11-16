@@ -316,7 +316,7 @@ sections:
     crash: true
     bars: 16
     plays: [drums, bass, chords, arp, lead]
-    plan: [{line: hook}, {line: hook, varied: true}, {line: hook}, {line: turn, higher: true}, {line: hook}, {line: hook, varied: true}, {line: hook}, {line: turn, higher: true, varied: true}]
+    plan: [{line: hook, hook: true}, {line: hook, hook: true, varied: true}, {line: hook, hook: true}, {line: turn, higher: true}, {line: hook, hook: true}, {line: hook, hook: true, varied: true}, {line: hook, hook: true}, {line: turn, higher: true, varied: true}]
   breakdown:
     bars: 8
     plays: [chords, arp, lead]
@@ -346,7 +346,7 @@ sections:
   theme:
     bars: 16
     plays: [chords, arp, bass, lead]
-    plan: [{line: hook}, {line: hook, varied: true}, {line: hook}, {line: turn, higher: true}, {line: hook}, {line: hook, varied: true}, {line: hook}, {line: turn, higher: true, varied: true}]
+    plan: [{line: hook, hook: true}, {line: hook, hook: true, varied: true}, {line: hook, hook: true}, {line: turn, higher: true}, {line: hook, hook: true}, {line: hook, hook: true, varied: true}, {line: hook, hook: true}, {line: turn, higher: true, varied: true}]
   other:
     bars: 16
     plays: [chords, arp, bass, lead]

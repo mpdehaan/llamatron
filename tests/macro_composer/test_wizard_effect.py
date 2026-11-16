@@ -30,9 +30,9 @@ import unittest
 from llamatron.composition.file_format import Section
 from llamatron.macro_composer import interplay
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT
-from llamatron.macro_composer.melody import HIGHEST_GAUGE, LOWEST_GAUGE, SMART
+from llamatron.macro_composer.melody import HIGHEST_GAUGE, LOWEST_GAUGE
 from llamatron.support.version import VERSION
-from llamatron.macro_composer.wizard_choices import (USUAL_PIECE_NOTE, BAND_SOUNDS, FEWEST_FILLS, FILLS_TRAITS, LEAST_BUSY, MOST_BUSY, MOST_FILLS, ONE_GUITARIST_COUNT,
+from llamatron.macro_composer.wizard_choices import (USUAL_PIECE_NOTE, BAND_SOUNDS, GAUGED_STYLES, FEWEST_FILLS, FILLS_TRAITS, LEAST_BUSY, MOST_BUSY, MOST_FILLS, ONE_GUITARIST_COUNT,
                                                      USUAL_SOUNDS, WizardChoices, genre_names)
 
 A_NAME = 'a_song'
@@ -201,13 +201,15 @@ def every_choice(choices):
                 yield FILLS_BUSY, busy, lambda made, busy=busy: made.set_fills_busy(busy), [answering, filling]
     for style in choices.melody_styles():
         yield MELODY, style, lambda made, style=style: made.set_melody(style), [nothing_first]
-    if SMART in choices.melody_styles():
-        # The smart melody style's gauges show once the style is chosen, and each position of each is held against the genre's own.
-        chosen = fresh_smart(choices)
+    for style in GAUGED_STYLES:
+        if style not in choices.melody_styles():
+            continue
+        # A gauged melody style's gauges show once the style is chosen, and each position of each is held against the genre's own.
+        chosen = fresh_with_melody(choices=choices, style=style)
         for name in chosen.gauges():
             for position in range(LOWEST_GAUGE, HIGHEST_GAUGE + 1):
                 if position != chosen.get_gauge(name):
-                    yield MELODY_GAUGE, (name, position), lambda made, name=name, position=position: made.set_gauge(name=name, position=position), [choose_smart]
+                    yield MELODY_GAUGE, (style, name, position), lambda made, name=name, position=position: made.set_gauge(name=name, position=position), [lambda made, style=style: made.set_melody(style)]
     if choices.offers_one_guitarist():
         yield GUITARISTS, ONE_GUITARIST_COUNT, lambda made: made.set_guitarists(ONE_GUITARIST_COUNT), [nothing_first]
     yield SEED, ANOTHER_SEED, lambda made: made.set_seed(ANOTHER_SEED), [nothing_first]
@@ -231,14 +233,10 @@ def both(*, first, then):
     return done
 
 
-def choose_smart(made):
-    made.set_melody(SMART)
-
-
-def fresh_smart(choices):
-    """Return choices like some others with the smart melody style chosen, to read its gauges from."""
+def fresh_with_melody(*, choices, style):
+    """Return choices like some others with a melody style chosen, to read its gauges from."""
     chosen = WizardChoices.from_data(choices.to_data())
-    chosen.set_melody(SMART)
+    chosen.set_melody(style)
     return chosen
 
 

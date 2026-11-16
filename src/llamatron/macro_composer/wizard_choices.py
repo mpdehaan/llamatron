@@ -41,7 +41,7 @@ from llamatron.macro_composer.composer import composed
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
 from llamatron.macro_composer.notation import KIT, OCTAVE
-from llamatron.macro_composer.melody import HALF_STEPS, NOTES_IN_OCTAVE, DEFAULT_GAUGES, EVOLVING, GRID, HIGHEST_GAUGE, LOWEST_GAUGE, SERIAL, SMART, STEP_WALK
+from llamatron.macro_composer.melody import HALF_STEPS, NOTES_IN_OCTAVE, DEFAULT_GAUGES, EVOLVING, GRID, HIGHEST_GAUGE, HOOKS, LOWEST_GAUGE, SERIAL, SMART, STEP_WALK
 from llamatron.music.note import ROOT_NAMES, SEMITONES_ABOVE_C
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MIN_GM_SOUND
@@ -167,7 +167,9 @@ def family_of(sound):
 
 
 # The melody styles, and the key a song keeps the one chosen under.
-MELODY_STYLES = (SMART, STEP_WALK, SERIAL, EVOLVING)
+MELODY_STYLES = (HOOKS, SMART, STEP_WALK, SERIAL, EVOLVING)
+# The melody styles the seven gauges steer.
+GAUGED_STYLES = (HOOKS, SMART)
 MELODY_STYLE = 'melody_style'
 # The traits of the whole song the wizard offers: the chords, under either name a genre gives them, the feel and the drum fills.
 PROGRESSION_TRAITS = ('chords', 'harmony')
@@ -837,8 +839,8 @@ class WizardChoices:
     # The smart melody style's gauges, shown while the song's tunes are sketched by it.
 
     def gauges(self):
-        """Return the names of the smart melody style's gauges while the song's tunes are sketched by it, and none otherwise."""
-        return list(DEFAULT_GAUGES) if self._melody == SMART else []
+        """Return the names of the smart melody style's gauges while the song's tunes are sketched by it or by the hooks style, and none otherwise."""
+        return list(DEFAULT_GAUGES) if self._melody in GAUGED_STYLES else []
 
     def get_gauge(self, name):
         """Return where a gauge stands, from LOWEST_GAUGE to HIGHEST_GAUGE: where it was moved to, else where the genre sets it."""
@@ -1410,7 +1412,7 @@ class WizardChoices:
                 PICKS: {**self._ways, **self._break_picks()}, PLAYERS: self._players(), WITHOUT: self._song_without(), **self._song_beside(),
                 **({SECTIONS: self._sections_of_song()} if self._sections_of_song() else {}),
                 **({MELODY_ENGINE: self._melody} if self._melody is not None else {}),
-                **({MELODY: {SMART: {**{name: self.get_gauge(name) for name in DEFAULT_GAUGES}, **self._gauges}}} if self._melody == SMART and self._gauges else {}),
+                **({MELODY: {SMART: {**{name: self.get_gauge(name) for name in DEFAULT_GAUGES}, **self._gauges}}} if self._melody in GAUGED_STYLES and self._gauges else {}),
                 **({ROLE_SOUNDS: self._song_sounds()} if self._song_sounds() else {}),
                 **({WITHOUT_PIECES: list(self._pieces_off)} if self._pieces_off else {}),
                 **({PIECE_SOUNDS: {piece: dict(sounds_as) for piece, sounds_as in self._piece_sounds.items()}} if self._piece_sounds else {}),

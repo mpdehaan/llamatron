@@ -372,7 +372,7 @@ sections:
     crash: true
     bars: 8
     plays: [drums, bass, guitar, keys, horns, voices, lead]
-    plan: [{line: hook, higher: true}, {line: hook, higher: true}, {line: hook, higher: true, varied: true}, {line: close}]
+    plan: [{line: hook, hook: true, higher: true}, {line: hook, hook: true, higher: true}, {line: hook, hook: true, higher: true, varied: true}, {line: close}]
   bridge:
     intensity: {drums: 3, bass: 4, rhythm: 3, keys: 3, lead: 3}
     crash: true

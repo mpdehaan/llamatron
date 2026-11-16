@@ -71,6 +71,11 @@ HALF = 0.5
 SMART_CHORDS = [{notation.DEGREE: 1}, {notation.DEGREE: 4}, {notation.DEGREE: 5}, {notation.DEGREE: 1}]
 LETTERS = 'abcd'
 SONG_PLAN = [{melody.LINE: 'a'}, {melody.LINE: 'b'}, {melody.LINE: 'a', melody.VARIED: True}, {melody.LINE: 'c'}]
+CHORUS_PLAN = [{melody.LINE: 'hook', melody.HOOK: True, melody.HIGHER: True}, {melody.LINE: 'hook', melody.HOOK: True, melody.HIGHER: True, melody.VARIED: True},
+               {melody.LINE: 'hook', melody.HOOK: True, melody.HIGHER: True}, {melody.LINE: 'close'}]
+FIRST_HOOK_SEED = 1
+MOST_PITCHES_IN_A_FIGURE = 4
+HEAD_UNITS = 4
 HOOK_PLAN = [{melody.LINE: 'hook', melody.HIGHER: True}, {melody.LINE: 'hook', melody.HIGHER: True, melody.VARIED: True}, {melody.LINE: 'hook', melody.HIGHER: True}]
 
 
@@ -303,6 +308,74 @@ def moves_of(*, lines, habits):
 
 def share(*, of, among):
     return len(of) / max(1, len(among))
+
+
+def hooks_song(seed):
+    """A verse and a chorus of one song by the hooks engine, and the habits they were made by."""
+    habits = smart_habits()
+    letters = [entry[melody.LINE] for entry in SONG_PLAN + CHORUS_PLAN]
+    made = [melody.sketched(habits=habits, plan=plan, chords=SMART_CHORDS, scale_type=melody.MAJOR, seed=seed, answers=False, engine=melody.HOOKS, letters=letters) for plan in (SONG_PLAN, CHORUS_PLAN)]
+    return made[0], made[1], habits
+
+
+def first_bar(*, line, grid):
+    """The notes of a line that fill its first bar."""
+    notes = []
+    for note in line:
+        if sum(length for _, length in rhythm_of(notes)) == grid:
+            break
+        notes.append(note)
+    return notes
+
+
+class TestHooks(unittest.TestCase):
+    """What makes a hook, held on every seed: a figure of one bar that returns the same, whose long last note is the top of the song."""
+
+    def test_a_hook_is_a_bar_of_few_short_notes_and_one_long_note_and_returns_the_same(self):
+        for seed in SEEDS:
+            _, chorus, habits = hooks_song(seed)
+            grid = habits[melody.GRID]
+            figure = first_bar(line=chorus[0], grid=grid)
+            self.assertLessEqual(len(figure), melody.MOST_SHORT_NOTES + 1)
+            self.assertGreaterEqual(figure[-1][notation.STEPS] * 2, grid)
+            self.assertEqual(chorus[0], chorus[2])
+            self.assertEqual(first_bar(line=chorus[1], grid=grid), figure)
+
+    def test_the_hooks_long_note_is_the_top_of_the_song_and_on_the_chord(self):
+        for seed in SEEDS:
+            verse, chorus, habits = hooks_song(seed)
+            grid = habits[melody.GRID]
+            figure = places_of(line=first_bar(line=chorus[0], grid=grid), habits=habits)
+            peak = figure[-1]
+            self.assertEqual(peak, max(place for line in chorus[:1] for place in places_of(line=line, habits=habits)))
+            self.assertLess(max(place for line in verse for place in places_of(line=line, habits=habits)), peak)
+            ladder = melody.ladder_of(notes=habits[melody.LADDER], scale_type=melody.MAJOR)
+            self.assertIn(ladder[peak][0] % melody.NOTES_IN_OCTAVE, melody.chord_notes(chord=SMART_CHORDS[0], scale_type=melody.MAJOR))
+
+    def test_a_varied_hook_changes_only_its_last_note_which_ends_no_lower_than_the_peak(self):
+        for seed in SEEDS:
+            _, chorus, habits = hooks_song(seed)
+            self.assertEqual(rhythm_of(chorus[1]), rhythm_of(chorus[0]))
+            first = places_of(line=chorus[0], habits=habits)
+            varied = places_of(line=chorus[1], habits=habits)
+            self.assertEqual(varied[:-1], first[:-1])
+            self.assertGreaterEqual(varied[-1], max(first))
+
+    def test_a_hooks_figure_has_few_pitches(self):
+        for seed in SEEDS:
+            _, chorus, habits = hooks_song(seed)
+            figure = first_bar(line=chorus[0], grid=habits[melody.GRID])
+            self.assertLessEqual(len(set(places_of(line=figure, habits=habits))), MOST_PITCHES_IN_A_FIGURE)
+
+    def test_the_same_seed_makes_the_same_hook_and_another_seed_another(self):
+        self.assertEqual(hooks_song(FIRST_HOOK_SEED)[1], hooks_song(FIRST_HOOK_SEED)[1])
+        self.assertGreater(len({str(hooks_song(seed)[1][0]) for seed in SEEDS}), len(SEEDS) // 2)
+
+    def test_the_figures_of_short_notes_fill_their_units_with_two_to_four_notes(self):
+        figures = melody.short_note_figures(HEAD_UNITS)
+        self.assertIn((1, 1, 2), figures)
+        self.assertTrue(all(sum(figure) == HEAD_UNITS and melody.FEWEST_SHORT_NOTES <= len(figure) <= melody.MOST_SHORT_NOTES for figure in figures))
+        self.assertEqual(len(figures), len(set(figures)))
 
 
 class TestSmart(unittest.TestCase):
