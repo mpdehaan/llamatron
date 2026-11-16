@@ -63,6 +63,11 @@ SOUND = 'sound'
 ROLE_SOUNDS = 'role_sounds'
 # The pieces of the drum kit a song switches off.
 WITHOUT_PIECES = 'without_pieces'
+# How often a song has a fill come: 0 for never, each section, or every so many bars; and whether the snare's quiet notes are played.
+FILLS_COME = 'fills_come'
+EACH_SECTION = 'each section'
+QUIET_NOTES = 'quiet_notes'
+SNARE = 'snare'
 ROLE_TITLE = 'title'
 ROLE_TITLES = 'titles'
 GENERATORS = 'generators'
@@ -529,6 +534,9 @@ def arranged(*, style, song):
         changed = {trait: value for trait, value in section.get(PICKS, {}).items()
                    if trait in drum_traits and fits(entry=values_of(style=style, trait=trait)[value], picks=picks)}
         plays = player_of(style=style, instrument=DRUMS, complexity=level)
+        if FILLS_COME in song:
+            # The song says how often a fill comes, whatever the drummer would do: never, at the end of each section, or every so many bars.
+            plays = {**plays, FILL_EVERY: section[BARS] if song[FILLS_COME] == EACH_SECTION else song[FILLS_COME]}
         key = (level, tuple(sorted(changed.items())), math.gcd(plays.get(FILL_EVERY, phrase_bars) or phrase_bars, section[BARS]))
         if key not in drum_sets:
             made = drum_parts(style=style, picks={**picks, **changed}, roles=roles, meter=meter, phrase_bars=phrase_bars, drummer=plays, section_bars=section[BARS])
@@ -537,6 +545,9 @@ def arranged(*, style, song):
                 # A piece of the kit switched off is left out, the user's rule: its strokes are never moved to another piece.
                 if piece in pieces_off:
                     continue
+                if piece == SNARE and not song.get(QUIET_NOTES, True):
+                    # The quiet notes switched off: the snare's soft strokes between the main ones are left out.
+                    part = {**part, HITS: [NONE if hit == SOFT else hit for hit in part[HITS]]}
                 if plays.get(UNEVEN):
                     part = uneven_drum(part=part, by=plays[UNEVEN], dice=random.Random(DRUM_SEED.format(song.get(SEED, 0), piece, section[KIND])))
                 named = piece if key[:2] == (levels.get(DRUMS), ()) and piece not in parts else MSG_PART_OF_SECTION.format(piece, section[KIND])

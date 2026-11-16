@@ -21,7 +21,7 @@ from fractions import Fraction
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_TEMPO, MIN_TEMPO
-from llamatron.macro_composer.wizard_choices import LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, PIECES_OFF_KEPT, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, LAST_SOUND_OF_NOTES, USUAL_SOUNDS, FEEL_TRAITS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
+from llamatron.macro_composer.wizard_choices import LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, FEWEST_FILLS, FILLS_KEPT, MOST_FILLS, QUIET_NOTES_KEPT, PIECES_OFF_KEPT, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, LAST_SOUND_OF_NOTES, USUAL_SOUNDS, FEEL_TRAITS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
 from llamatron.macro_composer.arranger import DRUMS, GENRE, PLAYERS, ROLE_TITLE, TYPE, WITHOUT, style_named, style_names
 from llamatron.music.note import NoteName
 from llamatron.strings.errors import ERR_WIZARD_LAST_PIECE, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER
@@ -690,6 +690,90 @@ class TestWizardKit(unittest.TestCase):
         self.assertEqual(again.to_data(), choices.to_data())
         again.set_subgenre(again.subgenres()[1])
         self.assertTrue(all(again.piece_is_on(name) for name in again.pieces()))
+
+
+class TestWizardFillsAndQuietNotes(unittest.TestCase):
+    """How often the drummer plays a fill, and the snare's quiet notes."""
+
+    def rock(self):
+        choices = chosen(genre=genre_names().index(A_GENRE_WITH_TUNES))
+        choices.set_seed(A_SEED)
+        return choices
+
+    def patterns(self, choices):
+        return choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+
+    def with_quiet_notes(self):
+        """Choices whose snare has quiet notes: the first groove of any genre that has them."""
+        for place in range(len(genre_names())):
+            choices = chosen(genre=place)
+            choices.set_seed(A_SEED)
+            for role in choices.roles():
+                if not choices.has_sound(role):
+                    for trait in choices.role_traits(role):
+                        for way in choices.ways(role=role, trait=trait):
+                            choices.set_way(trait=trait, value=way)
+                            if choices.has_quiet_notes():
+                                return choices
+        raise AssertionError('no groove has quiet notes')
+
+    def test_the_drummer_decides_how_often_until_a_position_is_chosen_and_the_song_is_then_the_same(self):
+        choices = self.rock()
+        self.assertFalse(choices.has_own_fills())
+        self.assertIn(choices.get_fills(), range(FEWEST_FILLS, MOST_FILLS + 1))
+        self.assertNotIn(FILLS_KEPT, choices.to_data())
+
+    def test_every_position_makes_a_song_that_plays_in_every_subgenre_and_the_positions_differ(self):
+        for place in range(len(genre_names())):
+            for subgenre in range(len(chosen(genre=place).subgenres())):
+                choices = chosen(genre=place, subgenre=subgenre)
+                choices.set_seed(A_SEED)
+                for position in range(FEWEST_FILLS, MOST_FILLS + 1):
+                    choices.set_fills(position)
+                    with self.subTest(subgenre=choices.get_subgenre(), position=position):
+                        SongRenderer(choices.made_setlist(name=A_NAME, version=VERSION).get_song(A_NAME)).render()
+        choices = self.rock()
+        made = []
+        for position in range(FEWEST_FILLS, MOST_FILLS + 1):
+            choices.set_fills(position)
+            made.append(self.patterns(choices))
+        self.assertNotEqual(made[0], made[-1])
+        self.assertNotEqual(made[1], made[-1])
+
+    def test_a_position_that_is_not_one_is_refused(self):
+        for refused in (FEWEST_FILLS - 1, MOST_FILLS + 1, True, NOT_A_NUMBER):
+            with self.assertRaises(ValueError):
+                self.rock().set_fills(refused)
+        with self.assertRaises(ValueError):
+            self.rock().set_quiet_notes(NOT_A_NUMBER)
+
+    def test_quiet_notes_switched_off_change_the_song_and_switched_on_again_give_it_back(self):
+        choices = self.with_quiet_notes()
+        before = self.patterns(choices)
+        choices.set_quiet_notes(False)
+        after = self.patterns(choices)
+        self.assertNotEqual(after, before)
+        # The groove still has them to switch on again.
+        self.assertTrue(choices.has_quiet_notes())
+        choices.set_quiet_notes(True)
+        self.assertEqual(self.patterns(choices), before)
+
+    def test_a_groove_with_no_quiet_notes_has_none_to_switch_off(self):
+        self.assertTrue(any(not chosen(genre=place).has_quiet_notes() for place in range(len(genre_names()))))
+        self.assertFalse(WizardChoices().has_quiet_notes())
+
+    def test_both_are_kept_with_the_choices_and_another_subgenre_starts_afresh(self):
+        choices = self.with_quiet_notes()
+        self.assertNotIn(QUIET_NOTES_KEPT, choices.to_data())
+        choices.set_quiet_notes(False)
+        choices.set_fills(MOST_FILLS)
+        again = WizardChoices.from_data(choices.to_data())
+        self.assertEqual(again.to_data(), choices.to_data())
+        self.assertFalse(again.plays_quiet_notes())
+        self.assertEqual(again.get_fills(), MOST_FILLS)
+        again.set_subgenre([name for name in again.subgenres() if name != again.get_subgenre()][0])
+        self.assertTrue(again.plays_quiet_notes())
+        self.assertFalse(again.has_own_fills())
 
 
 class TestWizardBand(unittest.TestCase):
