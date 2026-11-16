@@ -89,9 +89,8 @@ class TestWizardChoices(unittest.TestCase):
                     self.assertLessEqual(lowest, highest)
                     self.assertEqual(choices.get_form(), choices.forms()[0])
                     self.assertTrue(choices.form_sections())
-                    for section in choices.form_sections():
-                        bars, _ = choices.section_facts(section)
-                        self.assertGreater(bars, 0)
+                    for section in range(len(choices.form_sections())):
+                        self.assertGreater(choices.section_bars(section), 0)
                     setlist = choices.made_setlist(name=A_NAME, version=VERSION)
                     self.assertEqual(setlist.get_song_names(), [A_NAME])
                     song = setlist.get_song(A_NAME)
@@ -180,7 +179,7 @@ class TestWizardChoices(unittest.TestCase):
 
     def test_a_forms_length_is_its_bars_at_the_tempo_and_the_meter(self):
         choices = chosen()
-        bars = sum(choices.section_facts(name)[0] for name in choices.form_sections())
+        bars = sum(choices.section_bars(place) for place in range(len(choices.form_sections())))
         seconds = choices.form_seconds()
         self.assertAlmostEqual(seconds, bars * float(Fraction(choices.meter())) * QUARTERS_IN_WHOLE * SECONDS_IN_MINUTE / choices.get_tempo())
         choices.set_tempo(choices.get_tempo() * 2)
@@ -731,7 +730,6 @@ class TestWizardFillsAndQuietNotes(unittest.TestCase):
 
     def test_the_drummer_decides_how_often_until_a_position_is_chosen_and_the_song_is_then_the_same(self):
         choices = self.rock()
-        self.assertFalse(choices.has_own_fills())
         self.assertIn(choices.get_fills(), range(FEWEST_FILLS, MOST_FILLS + 1))
         self.assertNotIn(FILLS_KEPT, choices.to_data())
 
@@ -785,7 +783,6 @@ class TestWizardFillsAndQuietNotes(unittest.TestCase):
         self.assertEqual(again.get_fills(), MOST_FILLS)
         again.set_subgenre([name for name in again.subgenres() if name != again.get_subgenre()][0])
         self.assertTrue(again.plays_quiet_notes())
-        self.assertFalse(again.has_own_fills())
 
 
 class TestWizardMinorTunes(unittest.TestCase):

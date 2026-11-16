@@ -24,15 +24,12 @@ it with a sharp, and plain degrees then follow later edits of the scale, as a pa
 """
 
 from llamatron.composition.file_format import ACCIDENTALS, Accidental, NamedProgression, Quality
-from llamatron.composition.named_scale import note_names
-from llamatron.music.note import FLAT_NAMES, SEMITONES_ABOVE_C, SHARP_NAMES
 from llamatron.music.scale import ScaleType
-from llamatron.strings.marks import MSG_ACCIDENTAL_MARKS, MSG_CHORD_NAME_MARKS, MSG_PRESET_NUMERALS_SEPARATOR, MSG_QUALITY_MARKS
+from llamatron.strings.marks import MSG_ACCIDENTAL_MARKS, MSG_PRESET_NUMERALS_SEPARATOR, MSG_QUALITY_MARKS
 
 HALF_STEPS_PER_OCTAVE = 12
 # The half steps without a scale: the major scale's, as a song with no scale places degrees.
 SHAPE_WITHOUT_A_SCALE = ScaleType.MAJOR.value
-NAMES_WITHOUT_A_SCALE_ROOT = 'C'
 
 
 # Each triad's third and fifth above its root, and the quality they make.
@@ -71,19 +68,6 @@ def roman_numeral(*, scale, degree, accidental=None):
     numeral = ROMAN_NUMERALS[(degree - 1) % len(ROMAN_NUMERALS)]
     numeral = numeral if quality in UPPER_CASE_QUALITIES else numeral.lower()
     return MSG_ACCIDENTAL_MARKS.get(accidental, '') + numeral + MSG_QUALITY_MARKS[quality]
-
-
-def chord_name(*, scale, degree, accidental=None):
-    """Return a chord's name in the scale, like Am or Bb: its root note's name and a mark for its quality."""
-    root = NAMES_WITHOUT_A_SCALE_ROOT if scale is None else scale.get_root()
-    half_steps = half_steps_to(scale=scale, degree=degree, accidental=accidental) % HALF_STEPS_PER_OCTAVE
-    if accidental is None:
-        name = note_names(root=root, half_steps=[half_steps])[0]
-    else:
-        # A chord with a flat is spelled with flats, and one with a sharp with sharps, as a musician writes bVII as B flat.
-        names = FLAT_NAMES if accidental == Accidental.FLAT else SHARP_NAMES
-        name = names[(SEMITONES_ABOVE_C[root] + half_steps) % HALF_STEPS_PER_OCTAVE]
-    return name + MSG_CHORD_NAME_MARKS[quality_of(scale=scale, degree=degree, accidental=accidental)]
 
 
 def matched_to(*, scale, chords):

@@ -634,13 +634,6 @@ class TestRenaming(unittest.TestCase):
         document.rename_named(section=Section.AUTO_RATCHETS, old=ROLLS, new=NEW)
         self.assertEqual(document.song().get_chain(NAMED).get_steps(), [(GeneratorKind.ARP, UP), (GeneratorKind.AUTO_RATCHET, NEW)])
 
-    def test_changing_a_scale_keeps_its_name(self):
-        document = song_with_things()
-        document.change_scale(name=DEFAULT_SCALE, root=NoteName.D, kind=scale_type_name(ScaleType.MINOR))
-        self.assertEqual(document.song().get_scale_name(), DEFAULT_SCALE)
-        self.assertEqual(document.scale_notes_text(DEFAULT_SCALE), D_MINOR_NOTES)
-        render_song(document.song())
-
     def test_setting_a_scales_root_and_kind_changes_what_uses_it_and_renames_a_default_name(self):
         document = song_with_things()
         document.rename_named(section=Section.SCALES, old=DEFAULT_SCALE, new=C_MAJOR_NAME)

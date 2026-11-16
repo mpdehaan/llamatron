@@ -501,11 +501,6 @@ class WizardChoices:
         """Return who plays in a section, by the names the genre gives its players."""
         return list(self._section(place).get(PLAYS, []))
 
-    def section_facts(self, name):
-        """Return how many bars a section of the form lasts and who plays in it, by the section's name."""
-        place = self.form_sections().index(name)
-        return self.section_bars(place), self.section_plays(place)
-
     def add_section(self, *, place, kind):
         """Put a new section of a kind before a place in the form, as the genre describes the kind."""
         if kind not in self.section_kinds():
@@ -688,9 +683,6 @@ class WizardChoices:
         if every == 0:
             return FEWEST_FILLS
         return next((position for position, bars in FILLS_EVERY.items() if isinstance(bars, int) and 0 < every <= bars), EACH_SECTION_FILLS)
-
-    def has_own_fills(self):
-        return self._fills is not None
 
     def set_fills(self, position):
         if isinstance(position, bool) or not isinstance(position, int) or not FEWEST_FILLS <= position <= MOST_FILLS:

@@ -32,7 +32,6 @@ from llamatron.macro_composer.notation import DEFAULT_STEP_SIZE, DRUM, HITS, LIN
 from llamatron.macro_composer.shaping import FEELS, is_compound, role_of, shaped, unshaped
 from llamatron.strings.errors import ERR_ONE_SONG
 
-SONG_SETTINGS = (TEMPO, SCALE, GENRE, GROOVE, TIME_SIGNATURE, TRACKS, SCENES)
 SET_SETTINGS = (VERSION, TITLE, DESCRIPTION, AUTHOR, NOTES, REAL_TIME, PROTECTED, SCALES, PATTERNS, CHAINS, INSTRUMENTS, SONGS)
 CLIP_SETTINGS = (PATTERN, REPEAT, LOOP, CHAINS)
 BAND = 'band'

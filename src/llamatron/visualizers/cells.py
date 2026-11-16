@@ -92,20 +92,6 @@ class CellPainter:
             lines.append(self.line(characters=[character if style else SPACE for character, style in zip(row, styles)], styles=styles))
         return lines
 
-    def half_blocks(self, *, pixels, width):
-        """Return lines drawing a picture twice as tall as the lines, rows by columns by three, as upper half blocks, top pixel on bottom pixel."""
-        rows = pixels.shape[0] // HALF_ROWS
-        lines = []
-        listed = packed(pixels).tolist()
-        for row in range(rows):
-            top = listed[HALF_ROWS * row]
-            bottom = listed[HALF_ROWS * row + 1]
-            styles = [self.packed_style(number=upper, background=lower) for upper, lower in zip(top, bottom)]
-            text = self.line(characters=[UPPER_HALF] * len(styles), styles=styles)
-            text.pad_right(max(width - text.cell_len, 0))
-            lines.append(text)
-        return lines
-
     def braille(self, *, dots, colours, width):
         """Return lines drawing a grid of dots, four rows and two columns of them a cell, each cell in its colour, rows by columns by three."""
         rows = dots.shape[0] // BRAILLE_ROWS

@@ -315,10 +315,9 @@ MSG_SCENE_OR_SONG_GROOVE_SHOWN = '(scene or song)'
 MSG_ADD_ROW_MARK = '+'
 
 
-# composition/progressions.py: the marks of a chord's Roman numeral and name: a sharp or flat in front, and after it what its quality adds.
+# composition/progressions.py: the marks of a chord's Roman numeral: a sharp or flat in front, and after it what its quality adds.
 MSG_ACCIDENTAL_MARKS = {Accidental.SHARP: '♯', Accidental.FLAT: '♭'}
 MSG_QUALITY_MARKS = {Quality.MAJOR: '', Quality.MINOR: '', Quality.DIMINISHED: '°', Quality.AUGMENTED: '+'}
-MSG_CHORD_NAME_MARKS = {Quality.MAJOR: '', Quality.MINOR: 'm', Quality.DIMINISHED: '°', Quality.AUGMENTED: '+'}
 # composition/chords.py: what follows a chord's root in its short name, by its symbol, and how its tensions are shown after that.
 MSG_CHORD_SUFFIXES = {
     ChordSymbol.MAJOR: '', ChordSymbol.MINOR: 'm', ChordSymbol.DIMINISHED: '°', ChordSymbol.AUGMENTED: '+', ChordSymbol.SUS2: 'sus2',

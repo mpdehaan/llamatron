@@ -189,7 +189,7 @@ Reference notes for Claude, one part of `.claude/format/`: every generator and w
   note that would leave the MIDI range staying as it was. `ClipSlotPlayer._through_chain` skips
   it on a drum pattern, still counting it for the seeds.
 - `composition/progressions.py` says what the chords are in a `NamedScale`, needing no tracker:
-  `quality_of`, `roman_numeral` and `chord_name` (a flat chord spelled with flats), and the
+  `quality_of` and `roman_numeral`, and the
   named progressions (`NAMED_PROGRESSIONS`, keyed by `NamedProgression`, written in numerals
   against a major key), matched to a scale by `matched_to`: a chord on a scale note is that plain
   degree, any other the degree above with a flat, or the one below with a sharp.

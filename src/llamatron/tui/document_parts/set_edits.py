@@ -166,10 +166,6 @@ class SetEdits:
     def add_scale(self, *, name, root, kind):
         self._change(self._setlist.add_item, section=Section.SCALES, name=name, item=NamedScale(root=root, kind=kind))
 
-    def change_scale(self, *, name, root, kind):
-        """Change what a named scale is, which changes everything that uses it."""
-        self._change(self._setlist.replace_item, section=Section.SCALES, name=name, item=NamedScale(root=root, kind=kind))
-
     def set_scale_root(self, *, name, root):
         """Change a named scale's root, which moves everything that uses it, and return the scale's name, which may have followed."""
         scale = self._scale(name)

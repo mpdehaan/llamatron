@@ -82,7 +82,6 @@ TRAIT = 'trait'
 DRUMS = 'drums'
 TUNE = 'tune'
 ANSWERS = 'answers'
-FOLLOWS_CHORDS = 'follows_chords'
 VOICE_LEADING = 'voice_leading'
 # The fields of a section.
 BARS = 'bars'
