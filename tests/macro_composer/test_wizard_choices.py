@@ -373,6 +373,18 @@ class TestWizardForm(unittest.TestCase):
         self.assertEqual(choices.section_bars(THE_INTRO), usual)
         choices.made_setlist(name=A_NAME, version=VERSION)
 
+    def test_an_answer_found_by_making_the_song_is_kept_until_a_choice_changes(self):
+        """The lengths offered are remembered, since a page asks at every key, and are worked out again after any change."""
+        choices = self.hard_rock()
+        first = choices.bars_offered(THE_INTRO)
+        first.clear()
+        self.assertTrue(choices.bars_offered(THE_INTRO))
+        whole_band = choices.bars_offered(THE_INTRO)
+        self.sit_out_all_but(choices=choices, role=GUITAR_ROLE)
+        self.assertNotEqual(choices.bars_offered(THE_INTRO), whole_band)
+        again = WizardChoices.from_data(choices.to_data())
+        self.assertEqual(again.bars_offered(THE_INTRO), choices.bars_offered(THE_INTRO))
+
     def hard_rock(self):
         choices = self.rock()
         choices.set_subgenre(HARD_ROCK)

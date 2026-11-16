@@ -105,6 +105,10 @@ HOOK_KEPT = 'hook'
 # What pieces of the kit sound as, kept as the song's picks hold them, and the note a piece first plays in a General MIDI sound.
 PIECE_SOUNDS_KEPT = 'piece_sounds'
 PLAYER_GAUGES_KEPT = 'player_gauges'
+# The answers remembered until a choice changes.
+PIECES_ANSWER = 'pieces'
+QUIET_NOTES_ANSWER = 'quiet notes'
+BARS_ANSWER = 'bars offered'
 # What is kept of the player beside the tune: who answers, the one thing done in every section or None for the genre's plan, and how busy; and a section's own choice.
 BESIDE_KEPT = 'beside'
 BY = 'by'
@@ -259,9 +263,12 @@ SECONDS_IN_MINUTE = 60
 class WizardChoices:
     """The choices of one run of the song wizard."""
 
-    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_own_gauges', '_beside', '_without', '_sections', '_melody', '_hook', '_sounds', '_band_sounds', '_guitarists', '_pieces_off', '_break', '_break_cut', '_gauges', '_piece_sounds', '_fills', '_quiet_notes')
+    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_own_gauges', '_beside', '_without', '_sections', '_melody', '_hook', '_sounds', '_band_sounds', '_guitarists', '_pieces_off', '_break', '_break_cut', '_gauges', '_piece_sounds', '_fills', '_quiet_notes', '_answers', '_answers_of')
 
     def __init__(self):
+        # Answers found by making the song, each kept until a choice changes.
+        self._answers = {}
+        self._answers_of = None
         self._genre = None
         self._subgenre = None
         self._root = None
@@ -611,6 +618,9 @@ class WizardChoices:
     def bars_offered(self, place):
         """Return the lengths a section may have, in bars: half its kind's usual length, the usual and twice that, leaving out
         any the genre's parts cannot fill, and nothing for a held section."""
+        return list(self._remembered(key=(BARS_ANSWER, place), compute=lambda: self._bars_offered(place)))
+
+    def _bars_offered(self, place):
         if self.section_is_held(place):
             return []
         usual = self._usual(place)[BARS]
@@ -623,6 +633,7 @@ class WizardChoices:
         if not bars_work(genre=self._genre, subgenre=self._subgenre, kind=self._entry(place)[KIND], bars=bars, plays=tuple(self.section_plays(place))):
             return False
         trial = copy.deepcopy(self)
+        trial._answers = {}
         trial._own_entries()[place][BARS] = bars
         try:
             trial.made_setlist(name=self._entry(place)[KIND], version=A_VERSION)
@@ -742,8 +753,23 @@ class WizardChoices:
     # The drum kit's pieces, each switched on or off: a stroke on a piece that is off is left out, never
     # moved to another piece.
 
+    def _remembered(self, *, key, compute):
+        """Return an answer that is found by making the song, worked out once for the choices as they stand: a page asks the
+        same thing at every key, and making a song each time made the keys slow. Everything a song keeps of the choices says
+        whether they changed."""
+        state = repr(self.to_data())
+        if state != self._answers_of:
+            self._answers = {}
+            self._answers_of = state
+        if key not in self._answers:
+            self._answers[key] = compute()
+        return self._answers[key]
+
     def pieces(self):
         """Return the pieces of the kit the drums play in the song as chosen, in the order the song has them, on or off."""
+        return list(self._remembered(key=PIECES_ANSWER, compute=self._pieces))
+
+    def _pieces(self):
         if not self.is_ready():
             return []
         song = {**self.song_picks(self._subgenre), WITHOUT_PIECES: [], PIECE_SOUNDS: {}}
@@ -897,6 +923,9 @@ class WizardChoices:
 
     def has_quiet_notes(self):
         """Return whether the snare of the song as chosen has quiet notes, soft strokes between the main ones, to switch off."""
+        return self._remembered(key=QUIET_NOTES_ANSWER, compute=self._has_quiet_notes)
+
+    def _has_quiet_notes(self):
         if not self.is_ready():
             return False
         song = {name: value for name, value in self.song_picks(self._subgenre).items() if name != QUIET_NOTES}
