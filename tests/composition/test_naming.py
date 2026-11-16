@@ -21,7 +21,7 @@ import unittest
 from llamatron.strings.names import MSG_NEW_SCALE_WORD
 from llamatron.composition.file_format import Section
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.naming import copy_name, default_scale_name, is_default_scale_name, is_taken, new_name, same_name, split_trailing_number, suggested_word, unique_name
+from llamatron.composition.naming import copy_name, default_scale_name, is_default_scale_name, is_taken, name_order, new_name, same_name, split_trailing_number, suggested_word, unique_name
 from llamatron.composition.setlist import Setlist
 from llamatron.strings.names import MSG_NEW_PATTERN_WORD
 
@@ -69,6 +69,11 @@ F_SHARP_HARMONIC_MINOR = 'F#_harmonic_minor'
 B_FLAT_MAJOR = 'Bb_major'
 LABEL = 'Voice Leading'
 LABEL_AS_A_NAME = 'voice_leading'
+# Names as a sort by letters alone leaves them, and as the tracker orders them.
+OUT_OF_ORDER = ['verse-10', 'verse-2', 'verse', 'chorus2', 'chorus10', 'verse_b', 'bass 3']
+IN_ORDER = ['bass 3', 'chorus2', 'chorus10', 'verse', 'verse-2', 'verse-10', 'verse_b']
+CAPITALS_OUT_OF_ORDER = ['beta', 'Alpha-2', 'alpha-1', 'Gamma']
+CAPITALS_IN_ORDER = ['alpha-1', 'Alpha-2', 'beta', 'Gamma']
 
 
 class TestDuplicateNames(unittest.TestCase):
@@ -130,6 +135,16 @@ class TestTrailingNumbers(unittest.TestCase):
     def test_a_name_with_no_number_or_nothing_but_one_has_none(self):
         self.assertEqual(split_trailing_number(BASS), (BASS, None, None))
         self.assertEqual(split_trailing_number(ONLY_A_NUMBER), (ONLY_A_NUMBER, None, None))
+
+
+class TestTheOrderOfNames(unittest.TestCase):
+    """Names are sorted by their words, ignoring capitals, and then by the number they end in, read as a number."""
+
+    def test_a_number_at_the_end_counts_as_a_number_and_a_name_without_one_comes_first(self):
+        self.assertEqual(sorted(OUT_OF_ORDER, key=name_order), IN_ORDER)
+
+    def test_capitals_make_no_difference(self):
+        self.assertEqual(sorted(CAPITALS_OUT_OF_ORDER, key=name_order), CAPITALS_IN_ORDER)
 
 
 class TestScaleNames(unittest.TestCase):
