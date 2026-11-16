@@ -29,17 +29,18 @@ from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_TEMPO, MIN_TEMPO
 from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer.arranger import (
-    COMMON_TIME, DRUMS, KIND, METER, PICKS, PLAYER, PLAYERS, ROLE, ROLES, SOUND, TRAIT, VALUE, WITHOUT, bar_length, fits,
+    COMMON_TIME, DRUMS, KIND, MELODY_ENGINE, METER, PICKS, PLAYER, PLAYERS, ROLE, ROLES, SOUND, TRAIT, VALUE, WITHOUT, bar_length, fits,
     BARS, CHORD_TRAIT, CHORD_TRAIT_FIELD, FORM, HELD, PLAYS, GENRE, KEY, NAME, ROOT, SCALE_TYPE, SECTIONS, SEED, STYLE, TEMPLATE, TEMPLATES, TEMPO, TITLE, TRAITS, TYPE, USUAL,
     arranged, forms_of, picked, section_of, share_of, style_named, style_names, values_of,
 )
 from llamatron.macro_composer.composer import composed
 from llamatron.composition.song_file_error import SongFileError
+from llamatron.macro_composer.melody import EVOLVING, SERIAL, STEP_WALK
 from llamatron.music.note import ROOT_NAMES
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.strings.marks import MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SECTION_VARIANT
 from llamatron.support.version import VERSION as A_VERSION
-from llamatron.strings.errors import ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
+from llamatron.strings.errors import ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'
@@ -74,6 +75,13 @@ def genre_title(genre):
     return style_of(genre)[TITLE]
 
 
+# The melody styles, and the key a song keeps the one chosen under.
+MELODY_STYLES = (STEP_WALK, SERIAL, EVOLVING)
+MELODY_STYLE = 'melody_style'
+# The traits of the whole song the wizard offers: the chords, under either name a genre gives them, the feel and the drum fills.
+PROGRESSION_TRAITS = ('chords', 'harmony')
+FEEL_TRAITS = ('feel',)
+FILLS_TRAITS = ('fills',)
 # The key a song keeps its own sections under, and the letter the first section that differs from its kind's first is named with.
 OWN_SECTIONS = 'own_sections'
 FIRST_VARIANT_LETTER = 'a'
@@ -88,6 +96,21 @@ USUAL_BUSY = 2
 def own_copy_of(entry):
     """Return a section's entry sharing no list with the entry given."""
     return {field: (list(value) if isinstance(value, list) else value) for field, value in entry.items()}
+
+
+@functools.cache
+def melody_works(*, genre, subgenre, style):
+    """Return whether a subgenre's tunes can be sketched by a melody style, found by making a song, once: a genre whose tunes
+    are written as rows, with no rhythms to walk, takes only the style it was written for."""
+    choices = WizardChoices()
+    choices.set_genre(genre)
+    choices.set_subgenre(subgenre)
+    choices.set_seed(FIRST_SEED)
+    try:
+        Setlist.from_data(data=composed(given=arranged(style=style_of(genre), song={**choices.song_picks(subgenre), MELODY_ENGINE: style}), version=A_VERSION))
+    except (ValueError, IndexError, KeyError, SongFileError):
+        return False
+    return True
 
 
 @functools.cache
@@ -116,7 +139,7 @@ SECONDS_IN_MINUTE = 60
 class WizardChoices:
     """The choices of one run of the song wizard."""
 
-    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_without', '_sections')
+    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_without', '_sections', '_melody')
 
     def __init__(self):
         self._genre = None
@@ -132,6 +155,8 @@ class WizardChoices:
         self._without = []
         # The form's sections once a person has changed them, each its kind and what it changes of the kind; None while a suggested form is followed.
         self._sections = None
+        # The melody style chosen for the song's tunes, or None for the one the genre gives each player.
+        self._melody = None
 
     # Reading and keeping the choices.
 
@@ -157,7 +182,8 @@ class WizardChoices:
         kept = [(self.set_way, [dict(trait=trait, value=value) for trait, value in (data.get(PICKS) or {}).items()]),
                 (self._set_level, [dict(player=player, level=level) for player, level in (data.get(PLAYERS) or {}).items()]),
                 (self.set_role_in, [dict(role=role, on=False) for role in data.get(WITHOUT) or []]),
-                (self.set_own_sections, [dict(sections=data[OWN_SECTIONS])] if data.get(OWN_SECTIONS) else [])]
+                (self.set_own_sections, [dict(sections=data[OWN_SECTIONS])] if data.get(OWN_SECTIONS) else []),
+                (self._set_kept_melody, [dict(style=data[MELODY_STYLE])] if data.get(MELODY_STYLE) else [])]
         for setter, every in kept:
             for named in every:
                 try:
@@ -169,7 +195,8 @@ class WizardChoices:
         """Return the choices made, as plain data a song keeps."""
         held = {GENRE: self._genre, SUBGENRE: self._subgenre, ROOT: self._root, TYPE: self._scale_type, TEMPO: self._tempo, FORM: self._form, SEED: self._seed,
                 PICKS: dict(self._ways) or None, PLAYERS: dict(self._levels) or None, WITHOUT: list(self._without) or None,
-                OWN_SECTIONS: [own_copy_of(entry) for entry in self._sections] if self._sections is not None else None}
+                OWN_SECTIONS: [own_copy_of(entry) for entry in self._sections] if self._sections is not None else None,
+                MELODY_STYLE: self._melody}
         return {field: value for field, value in held.items() if value is not None}
 
     # The genre and the subgenre, which everything else follows.
@@ -186,6 +213,7 @@ class WizardChoices:
             self._subgenre = None
             self._form = None
             self._sections = None
+            self._melody = None
             self._forget_band()
 
     def subgenres(self):
@@ -207,6 +235,7 @@ class WizardChoices:
             self._root = USUAL_ROOTS[self._scale_type]
             self._form = None
             self._sections = None
+            self._melody = None
             self._levels = {player: USUAL_BUSY for player in style_of(self._genre).get(PLAYERS, {})}
 
     def is_ready(self):
@@ -542,6 +571,40 @@ class WizardChoices:
         entries = [entry for entry in sorted(values_of(style=style, trait=trait).values(), key=share_of, reverse=True) if (drums or SOUND in entry) and fits(entry=entry, picks=picks)]
         return [entry[VALUE] for entry in entries if self._works(trait=trait, value=entry[VALUE])]
 
+    # What the whole song has a way of: its chords, its feel and its drum fills, each a trait of the genre no one player owns.
+
+    def song_trait(self, traits):
+        """Return the first of some traits the genre has that no player owns, as chords under either name a genre gives them, or None."""
+        if not self.is_ready():
+            return None
+        of_players = {trait for role in self.roles() for trait in self.role_traits(role)}
+        return next((trait for trait in traits if trait not in of_players and isinstance(style_of(self._genre)[TRAITS].get(trait), list)), None)
+
+    def song_ways(self, trait):
+        """Return the ways a trait of the whole song may go beside the other picks, the commonest first."""
+        entries = sorted(values_of(style=style_of(self._genre), trait=trait).values(), key=share_of, reverse=True)
+        return [entry[VALUE] for entry in entries if self._works(trait=trait, value=entry[VALUE])]
+
+    # The melody style, which every tune of the song is sketched by.
+
+    def melody_styles(self):
+        """Return the melody styles the subgenre's tunes can be sketched by, leaving out any that makes no song of it."""
+        if not self.is_ready():
+            return []
+        return [style for style in MELODY_STYLES if melody_works(genre=self._genre, subgenre=self._subgenre, style=style)]
+
+    def get_melody(self):
+        """Return the melody style chosen, or None while each player's tunes are sketched as the genre says."""
+        return self._melody
+
+    def set_melody(self, style):
+        if style is not None and style not in self.melody_styles():
+            raise ValueError(ERR_WIZARD_NO_SUCH_MELODY.format(value=style))
+        self._melody = style
+
+    def _set_kept_melody(self, *, style):
+        self.set_melody(style)
+
     def get_way(self, trait):
         return self._picks()[trait]
 
@@ -621,7 +684,8 @@ class WizardChoices:
         """Return the choices as a song's picks, which the arranger makes a song of."""
         return {NAME: name, TITLE: name, STYLE: self._genre, TEMPLATE: self._subgenre, KEY: {ROOT: self._root, TYPE: self._scale_type}, TEMPO: self._tempo, FORM: self.form_sections() if self.has_own_form() else self.get_form(), SEED: self._seed,
                 PICKS: dict(self._ways), PLAYERS: dict(self._levels), WITHOUT: list(self._without),
-                **({SECTIONS: self._song_sections()} if self.has_own_form() else {})}
+                **({SECTIONS: self._song_sections()} if self.has_own_form() else {}),
+                **({MELODY_ENGINE: self._melody} if self._melody is not None else {})}
 
     def made_setlist(self, *, name, version):
         """Return a set holding the one song these choices make, under a name, with all the song uses, the song keeping the choices.

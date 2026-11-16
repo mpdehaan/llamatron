@@ -169,6 +169,10 @@ clouds; generate and test, with motif development and counterpoint last.
   length, the usual and twice that, each only where a section made at that length really lasts that long (`bars_work`,
   measured once and remembered): a part written over several bars keeps its own length whatever is asked. Choosing a
   suggested form, a genre or a subgenre drops the song's own sections.
+- The whole song's ways are picks like a player's: `song_trait` finds the trait no player owns, the chords under either
+  name a genre gives them, the feel or the fills, and `song_ways` lists its ways that fit. `set_melody` chooses the melody
+  style every tune is sketched by, or None for each player's own, kept under `melody_style`; `melody_styles()` leaves out
+  a style that makes no song of the subgenre (`melody_works`).
 - Nothing is chosen at first, the user's rule. Choosing a subgenre fills in its usual tempo, the scale type its chords are
   in, the root that scale type starts on (C for major, E for minor, Claude's choice) and the commonest form, so that a song
   can be made from a genre and a subgenre alone; choosing another genre leaves the subgenre to be chosen again. Any tempo

@@ -17,11 +17,11 @@
 
 from llamatron.composition.file_format import Section
 from llamatron.macro_composer.arranger import BARS, WITHOUT
-from llamatron.macro_composer.wizard_choices import MOST_BUSY, USUAL_BUSY, MINOR, SEED, genre_names, genre_title
+from llamatron.macro_composer.wizard_choices import FEEL_TRAITS, FILLS_TRAITS, PROGRESSION_TRAITS, MOST_BUSY, USUAL_BUSY, MINOR, SEED, genre_names, genre_title
 from llamatron.strings.errors import ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_CHOOSE_GENRE, ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
-from llamatron.strings.labels import MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_SUGGESTED_FORM_BUTTON, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_START_CANCEL
+from llamatron.strings.labels import MSG_WIZARD_FEEL_LABEL, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PLAYING_BRANCH, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_THEMES_BRANCH, MSG_WIZARD_USUAL_MELODY, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_SUGGESTED_FORM_BUTTON, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_START_CANCEL
 from llamatron.strings.marks import MSG_WIZARD_CARRIED, MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_OWN_FORM, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
-from llamatron.strings.messages import MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_SECTIONS_HINT, MSG_UNDONE, MSG_RESTORED, MSG_WIZARD_ALREADY_OPEN, MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CREATED, MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_REPLACED, MSG_WIZARD_NOTHING_TO_UNDO
+from llamatron.strings.messages import MSG_WIZARD_NOTHING_TO_CHOOSE, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_SECTIONS_HINT, MSG_UNDONE, MSG_RESTORED, MSG_WIZARD_ALREADY_OPEN, MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CREATED, MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_REPLACED, MSG_WIZARD_NOTHING_TO_UNDO
 from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_SONG_WORD
 from llamatron.composition.naming import new_name
 from llamatron.tui import keybindings
@@ -40,8 +40,8 @@ from tests.support.ui_testing import UITest, back_key, fixed_text, forward_key, 
 
 # The tree's branches by their places from the top, while none is open.
 GENRE_PLACE = 0
-FORM_PLACE = 2
-CREATE_PLACE = 3
+FORM_PLACE = 3
+CREATE_PLACE = 5
 # A name the test gives the song.
 A_SONG_NAME = 'anthem'
 
@@ -559,6 +559,89 @@ class TestWizardForm(WizardTest):
         await self.start_with(NEW_FROM_LAST)
         self.assertEqual(self.sections(), sections)
         self.assertTrue(self.choices().has_own_form())
+
+
+class TestWizardThemesAndPlaying(WizardTest):
+    """The Themes branch, the song's Progression and Melody, and the Playing branch, its Feel and Fills."""
+
+    async def choose(self, *, genre):
+        """Choose a genre by its name and its first subgenre through the choices, and draw the page again."""
+        choices = self.choices()
+        choices.set_genre(genre)
+        choices.set_subgenre(choices.subgenres()[0])
+        await self.press(Key.DOWN, Key.UP)
+
+    def a_genre_with(self, traits):
+        """A genre that has one of some song traits with several ways."""
+        for genre in genre_names():
+            choices = self.choices().__class__()
+            choices.set_genre(genre)
+            choices.set_subgenre(choices.subgenres()[0])
+            trait = choices.song_trait(traits)
+            if trait is not None and len(choices.song_ways(trait)) > 1:
+                return genre
+        raise AssertionError(traits)
+
+    async def step(self, label):
+        """Move into the fields, onto a field by its label, and press ] (inc)."""
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(label)
+        await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET), keybindings.WizardPage.TO_TREE)
+
+    async def test_both_branches_wait_for_a_genre_and_a_subgenre(self):
+        for name in (MSG_WIZARD_THEMES_BRANCH, MSG_WIZARD_PLAYING_BRANCH):
+            await self.go_to_named_branch(name)
+            await self.press(keybindings.WizardPage.INTO_FIELDS)
+            self.assertFalse(self.wizard().in_fields)
+            self.assertIn(ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE, self.text())
+
+    async def test_the_progression_is_chosen_on_the_themes_branch(self):
+        await self.choose(genre=self.a_genre_with(PROGRESSION_TRAITS))
+        choices = self.choices()
+        trait = choices.song_trait(PROGRESSION_TRAITS)
+        ways = choices.song_ways(trait)
+        choices.set_way(trait=trait, value=ways[0])
+        await self.go_to_named_branch(MSG_WIZARD_THEMES_BRANCH)
+        self.assertIn(ways[0], self.text())
+        await self.step(MSG_WIZARD_PROGRESSION_LABEL)
+        self.assertEqual(choices.get_way(trait), ways[1])
+
+    async def test_the_melody_starts_on_usual_and_another_style_is_chosen_and_made(self):
+        await self.choose(genre=self.a_genre_with(PROGRESSION_TRAITS))
+        choices = self.choices()
+        await self.go_to_named_branch(MSG_WIZARD_THEMES_BRANCH)
+        self.assertIn(MSG_WIZARD_USUAL_MELODY, self.text())
+        self.assertIsNone(choices.get_melody())
+        await self.step(MSG_WIZARD_MELODY_LABEL)
+        self.assertEqual(choices.get_melody(), choices.melody_styles()[0])
+        await self.create()
+        self.assertIsInstance(self.app.screen, ArrangePage)
+
+    async def test_the_feel_and_the_fills_are_chosen_on_the_playing_branch(self):
+        for label, traits in ((MSG_WIZARD_FEEL_LABEL, FEEL_TRAITS), (MSG_WIZARD_FILLS_LABEL, FILLS_TRAITS)):
+            await self.choose(genre=self.a_genre_with(traits))
+            choices = self.choices()
+            trait = choices.song_trait(traits)
+            ways = choices.song_ways(trait)
+            choices.set_way(trait=trait, value=ways[0])
+            await self.go_to_named_branch(MSG_WIZARD_PLAYING_BRANCH)
+            await self.step(label)
+            self.assertEqual(choices.get_way(trait), ways[1])
+
+    async def test_a_field_with_one_way_is_not_shown_and_a_branch_with_none_says_so(self):
+        empty = [genre for genre in genre_names() if not self.fields_of(genre=genre, traits=(FEEL_TRAITS, FILLS_TRAITS))]
+        self.assertTrue(empty)
+        await self.choose(genre=empty[0])
+        await self.go_to_named_branch(MSG_WIZARD_PLAYING_BRANCH)
+        self.assertIn(MSG_WIZARD_NOTHING_TO_CHOOSE, self.text())
+        self.assertNotIn(MSG_WIZARD_FEEL_LABEL, self.text())
+
+    def fields_of(self, *, genre, traits):
+        choices = self.choices().__class__()
+        choices.set_genre(genre)
+        choices.set_subgenre(choices.subgenres()[0])
+        found = [choices.song_trait(group) for group in traits]
+        return [trait for trait in found if trait is not None and len(choices.song_ways(trait)) > 1]
 
 
 class TestWizardStart(WizardTest):
