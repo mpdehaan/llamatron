@@ -195,6 +195,20 @@ clouds; generate and test, with motif development and counterpoint last.
   span and busyness. `tests/macro_composer/test_wizard_effect.py` holds every position of every Busy gauge to a song of its own.
 - What a player says for people is written in the same block as what the player does, and must say only that.
 
+## Interplay
+
+- `macro_composer/interplay.py` writes what the player beside the tune plays against the tune's lines: `UnderLead.lines(way=, tune=,
+  chords=, section=)` gives lines as long as the tune's. A fill or an answer starts once the tune's last note of a line has landed, a
+  fill at the end of every second line and no longer than half a bar, an answer after every line in all the room there is; playing
+  the hook is the tune's own lines; a riff is one bar under every bar, moved to each chord. How busy, 0 to 20, is part of every seed,
+  so that each place is heard.
+- A style template's `interplay` holds `busy`, a `plan` of the way by kind of section, and `by_subgenre` plans laid over it; a kind
+  left out is waited through. A song's `beside` names the player (`role`), `busy`, and `ways`, one for each section of the form in
+  order, which the wizard works out from the plan, the one role chosen and each section's own. The arranger (`way_beside`) acts only
+  on that player, only in a section somebody has the tune in; "waits" keeps the player silent even where the section lists the
+  player, and a section whose own plan writes the answers is played as written under "answers every line".
+- A song kept before answering could be chosen has no `beside` and is made as before.
+
 ## Sections
 
 - A section's `intensity` is the most each instrument's player may open up there, 1 to 4: the song's player is held to it, so a

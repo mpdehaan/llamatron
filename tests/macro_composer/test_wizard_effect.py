@@ -28,6 +28,7 @@ import json
 import unittest
 
 from llamatron.composition.file_format import Section
+from llamatron.macro_composer import interplay
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT
 from llamatron.macro_composer.melody import HIGHEST_GAUGE, LOWEST_GAUGE, SMART
 from llamatron.support.version import VERSION
@@ -58,6 +59,10 @@ QUIET_NOTES = 'quiet notes'
 BREAK = 'break'
 PIECE_SOUND = 'kit piece sound'
 PIECE_NOTE = 'kit piece note'
+ANSWERED_BY = 'answered by'
+ROLE_PLAN = 'role'
+SECTION_ROLE = "a section's role"
+FILLS_BUSY = 'fills busy'
 # Two drums of the kit, the second for the piece that is the first, and a note that is not the usual one.
 ANOTHER_DRUM = ('cowbell', 'claves')
 ANOTHER_NOTE = USUAL_PIECE_NOTE + 7
@@ -170,6 +175,30 @@ def every_choice(choices):
         for way in (choices.song_ways(trait) if trait is not None else []):
             if way != choices.get_way(trait):
                 yield kind, way, lambda made, trait=trait, way=way: made.set_way(trait=trait, value=way), firsts
+    if choices.answered_by() is not None:
+        # Who answers the tune, the one thing the answering player does in every section, each section's own, and how busy the fills are.
+        yield ANSWERED_BY, None, lambda made: made.set_answered_by(None), [nothing_first]
+        for way in choices.ways_beside():
+            another = interplay.FILLS if way == interplay.WAITS else interplay.WAITS
+            yield ROLE_PLAN, way, lambda made, way=way: made.set_role_plan(way), [lambda made, another=another: made.set_role_plan(another)]
+        kinds_seen = set()
+        for place, label in enumerate(choices.section_labels()):
+            kind = choices.section_kind(place)
+            if not choices.section_has_role(place) or kind in kinds_seen:
+                continue
+            kinds_seen.add(kind)
+            for way in choices.ways_beside():
+                if way != choices.section_role(place):
+                    yield SECTION_ROLE, (label, way), lambda made, place=place, way=way: made.set_section_role(place=place, way=way), [nothing_first]
+        def answering(made):
+            made.set_role_plan(interplay.ANSWERS)
+
+        def filling(made):
+            # A genre whose own plan writes the answers plays them as written, so how busy is heard in the fills there.
+            made.set_role_plan(interplay.FILLS)
+        for busy in range(interplay.LEAST_BUSY, interplay.MOST_BUSY + 1):
+            if busy != choices.get_fills_busy():
+                yield FILLS_BUSY, busy, lambda made, busy=busy: made.set_fills_busy(busy), [answering, filling]
     for style in choices.melody_styles():
         yield MELODY, style, lambda made, style=style: made.set_melody(style), [nothing_first]
     if SMART in choices.melody_styles():

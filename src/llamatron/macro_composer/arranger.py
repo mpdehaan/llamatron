@@ -32,14 +32,15 @@ from fractions import Fraction
 from llamatron.macro_composer.breaks import BREAKS, LEAST_CUT, MOST_CUT, cut_up
 from llamatron.macro_composer.characters import ADDS, BUSY, FILL, FILL_EVERY, GUITARIFY_OF_PLAYER, SAYS, TIMING, UNEVEN, VARIES, character_of, held_to, label_of, level_of
 from llamatron.macro_composer import characters
+from llamatron.macro_composer.interplay import ANSWERS as ANSWERS_EVERY_LINE, USUAL_BUSY as USUAL_BESIDE_BUSY, WAITS, WAYS as WAYS_BESIDE, UnderLead
 from llamatron.macro_composer.melody import ANSWER, ANSWER_RHYTHMS, ENGINE, GRID, LINE, RHYTHMS, SPAN, sketched
 from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, DRUM, FLAT, HITS, KIT, LINES, LOUD, NONE, OCTAVE, REST, SHARP, SOFT, STEP, STEPS, VELOCITY, CHORD, clamped, drum_rows
 from llamatron.macro_composer.players import player_name
 from llamatron.support.safe_yaml import load_safely
 from llamatron.composition.limits import MAX_GM_SOUND, MIN_GM_SOUND
 from llamatron.strings.labels import MSG_GM_SOUNDS
-from llamatron.strings.errors import ERR_PIECE_SOUND, ERR_BREAK_CUT, ERR_NO_STYLE_FORM, ERR_NO_SUCH_BREAK, ERR_NO_STYLE_FORMS, ERR_NO_STYLE_KIND, ERR_NO_SUCH_SECTION, ERR_NO_TRAIT_VALUE, ERR_PICK_NEEDS
-from llamatron.strings.macro_composer import MSG_PIECE_INSTRUMENT, MSG_MADE_PICK, MSG_MADE_SCENE, MSG_MADE_SONG_NOTES, MSG_PART_AT_LEVEL, MSG_PART_OF_SECTION, MSG_PLAYED_BY, MSG_PLAYED_BY_OWN, MSG_REPEATED_SCENE, MSG_SECTION_START_PART, MSG_TIMING_CHAIN
+from llamatron.strings.errors import ERR_NO_SUCH_WAY_BESIDE, ERR_PIECE_SOUND, ERR_BREAK_CUT, ERR_NO_STYLE_FORM, ERR_NO_SUCH_BREAK, ERR_NO_STYLE_FORMS, ERR_NO_STYLE_KIND, ERR_NO_SUCH_SECTION, ERR_NO_TRAIT_VALUE, ERR_PICK_NEEDS
+from llamatron.strings.macro_composer import MSG_PIECE_INSTRUMENT, MSG_MADE_PICK, MSG_MADE_SCENE, MSG_MADE_SONG_NOTES, MSG_PART_AT_LEVEL, MSG_PART_BESIDE, MSG_PART_OF_SECTION, MSG_PLAYED_BY, MSG_PLAYED_BY_OWN, MSG_REPEATED_SCENE, MSG_SECTION_START_PART, MSG_TIMING_CHAIN
 
 # The fields of a style template.
 NAME = 'name'
@@ -67,6 +68,10 @@ WITHOUT_PIECES = 'without_pieces'
 # What a song has pieces of the kit sound as, by piece: another drum of the kit (played_drum), or a General MIDI sound on one
 # note (sound and note), which makes the piece a track with an instrument of its own, since the drum channel plays only the kit.
 PIECE_SOUNDS = 'piece_sounds'
+# The player beside the tune: who, how busy, and what the player does in each section of the form, in the form's order.
+BESIDE = 'beside'
+BESIDE_BUSY = 'busy'
+BESIDE_WAYS = 'ways'
 PLAYED_DRUM = 'drum'
 PLAYED_SOUND = 'sound'
 PLAYED_NOTE = 'note'
@@ -507,6 +512,19 @@ def habits_of(*, habits, player):
     return kept
 
 
+def way_beside(*, beside, role, place, tune, section):
+    """What the player beside the tune does in the section at a place of the form, or None for any other player, for a section nobody has
+    the tune in, and for a section whose own plan already has the player answer every line, which is played as the plan writes it."""
+    if role[ROLE] != beside.get(ROLE) or tune is None or tune is role:
+        return None
+    way = beside[BESIDE_WAYS][place]
+    if way not in WAYS_BESIDE:
+        raise ValueError(ERR_NO_SUCH_WAY_BESIDE.format(way))
+    if way == ANSWERS_EVERY_LINE and role[ROLE] in section[PLAYS] and any(entry.get(ANSWER) for entry in section.get(PLAN, [])):
+        return None
+    return way
+
+
 def line_letters(*, plans, answers):
     """The letters of the lines a lead plays through a song, or of those an answering instrument plays, each once, in the
     order the song first plays them."""
@@ -690,6 +708,8 @@ def arranged(*, style, song):
     notes = []
     met = {}
     plans = [section_of(name=name, style=style, song=song).get(PLAN, []) for name in form_names]
+    beside = song.get(BESIDE, {})
+    under = UnderLead(busy=beside.get(BESIDE_BUSY, USUAL_BESIDE_BUSY), habits=habits, grid=habits[GRID], scale_type=scale_type, seed=song.get(SEED, 0))
     for count, name in enumerate(form_names, start=1):
         section = section_of(name=name, style=style, song=song)
         met[name] = met.get(name, 0) + 1
@@ -726,8 +746,27 @@ def arranged(*, style, song):
             here = players_in(style=style, roles=roles, levels=levels, section=section)
             progression = MSG_PART_OF_SECTION.format(name, CHORDS)
             progressions[progression] = progression_of(chords=chords, every=section.get(EVERY, chord_entry.get(EVERY)))
+
+            def lines_of(role, *, section=section, chords=chords, here=here):
+                """The lines a player of a tune plays in the section: those the section gives, or those sketched for the player."""
+                given = section.get(LINES_GIVEN, {}).get(role[ROLE])
+                return given or sketched(habits={**habits_of(habits=habits, player=here[role[ROLE]]), **role.get(HABITS, {}), **song.get(MELODY, {})}, plan=section[PLAN], chords=chords, scale_type=scale_type, seed=song.get(SEED, 0),
+                                         answers=bool(role.get(ANSWERS)), engine=song.get(MELODY_ENGINE, role.get(ENGINE)), voice=role.get(VOICE), letters=line_letters(plans=plans, answers=bool(role.get(ANSWERS))))
+            # The player who has the tune in the section, if any: a player of lines who answers nobody.
+            tune_role = next((other for other, other_entry in pitched if FIGURE not in other_entry and not other.get(ANSWERS) and other[ROLE] in section[PLAYS]), None)
             for role, entry in pitched:
-                if role[ROLE] not in section[PLAYS]:
+                way = way_beside(beside=beside, role=role, place=count - 1, tune=tune_role, section=section)
+                if way == WAITS or (way is None and role[ROLE] not in section[PLAYS]):
+                    continue
+                if way is not None:
+                    part = MSG_PART_BESIDE.format(name, role[ROLE], way)
+                    if part not in parts:
+                        lines = under.lines(way=way, tune=lines_of(tune_role), chords=chords, section=name)
+                        if not all(all(REST in note for note in line) for line in lines):
+                            parts[part] = tune_part(lines=lines, role=role, meter=meter, grid=habits[GRID])
+                            shaped.append(part)
+                    if part in parts:
+                        play[role[ROLE]] = {PART: part, ONCE: True, CHAINS: [MSG_TIMING_CHAIN.format(role[ROLE])]}
                     continue
                 if FIGURE in entry:
                     chain = MSG_PART_OF_SECTION.format(name, role[ROLE])
@@ -748,10 +787,7 @@ def arranged(*, style, song):
                     continue
                 part = MSG_PART_OF_SECTION.format(name, role[ROLE])
                 if part not in parts:
-                    given = section.get(LINES_GIVEN, {}).get(role[ROLE])
-                    lines = given or sketched(habits={**habits_of(habits=habits, player=here[role[ROLE]]), **role.get(HABITS, {}), **song.get(MELODY, {})}, plan=section[PLAN], chords=chords, scale_type=scale_type, seed=song.get(SEED, 0), answers=bool(role.get(ANSWERS)),
-                                               engine=song.get(MELODY_ENGINE, role.get(ENGINE)), voice=role.get(VOICE),
-                                               letters=line_letters(plans=plans, answers=bool(role.get(ANSWERS))))
+                    lines = lines_of(role)
                     if all(all(REST in note for note in line) for line in lines):
                         continue
                     parts[part] = tune_part(lines=lines, role=role, meter=meter, grid=habits[GRID])

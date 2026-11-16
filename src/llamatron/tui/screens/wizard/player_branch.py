@@ -18,8 +18,9 @@
 
 from llamatron.composition.limits import MIN_GM_SOUND
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT
+from llamatron.macro_composer.interplay import LEAST_BUSY as LEAST_BUSY_BESIDE, MOST_BUSY as MOST_BUSY_BESIDE
 from llamatron.macro_composer.wizard_choices import FEWEST_FILLS, LEAST_BUSY, MOST_BUSY, MOST_FILLS
-from llamatron.strings.labels import MSG_GM_SOUNDS, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_NO_BREAK, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_WIZARD_SOUND_LABEL
+from llamatron.strings.labels import MSG_WIZARD_BY_SECTION, MSG_WIZARD_FILLS_BUSY_LABEL, MSG_WIZARD_ROLE_LABEL, MSG_GM_SOUNDS, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_NO_BREAK, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_WIZARD_SOUND_LABEL
 from llamatron.strings.legends import MSG_OWN_DRUM_WHAT, What
 from llamatron.strings.marks import MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_SOUND_ON_NOTE, MSG_WIZARD_FILLS_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_BUSY_SHOWN, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL
 from llamatron.tui.note_names import note_shown
@@ -52,6 +53,8 @@ class PlayerBranch(Branch):
             fields.append(self.sound_field())
         if choices.has_busy(self._role) and choices.get_busy(self._role) is not None:
             fields.append(self.busy_field())
+        if choices.answered_by() == self._role:
+            fields += self.beside_fields()
         if not choices.has_sound(self._role):
             # The drums' break comes first, since it takes the place of the kick's, the snare's and the cymbal's own ways.
             fields = [*self.break_fields(), *fields]
@@ -89,6 +92,19 @@ class PlayerBranch(Branch):
             name = choices.sound_name(choices.get_sound(role))
             return name if choices.has_own_sound(role) else MSG_WIZARD_BAND_SOUND_SHOWN.format(sound=name)
         return Field(label=MSG_WIZARD_SOUND_LABEL, value=shown, enter=lambda: self.page().pick_sound(role), enter_what=What.CHOOSE)
+
+    def beside_fields(self):
+        """Return the fields of the player who answers the tune: Role, the genre's plan section by section or one thing in every section, and
+        how busy the fills are, a number stepped or typed, drawn as a horizontal gauge."""
+        choices = self.choices()
+        page = self.page()
+        ways = choices.ways_beside()
+        busy = choices.get_fills_busy()
+        gauge = MSG_WIZARD_GAUGE_FULL * busy + MSG_WIZARD_GAUGE_EMPTY * (MOST_BUSY_BESIDE - busy)
+        return [ChoiceField(page=page, label=MSG_WIZARD_ROLE_LABEL, choices=[MSG_WIZARD_BY_SECTION, *ways], current=choices.get_role_plan() or MSG_WIZARD_BY_SECTION,
+                            set=page.choosing(lambda way: choices.set_role_plan(None if way == MSG_WIZARD_BY_SECTION else way))),
+                NumberField(page=page, label=MSG_WIZARD_FILLS_BUSY_LABEL, number=busy, shown=MSG_WIZARD_BUSY_SHOWN.format(gauge=gauge, level=busy, most=MOST_BUSY_BESIDE),
+                            lowest=LEAST_BUSY_BESIDE, highest=MOST_BUSY_BESIDE, set=page.choosing(choices.set_fills_busy))]
 
     def piece_row(self, piece):
         """Return the row of a piece of the kit, two cells side by side: whether the piece plays, switched with Space, and what

@@ -16,7 +16,9 @@
 
 """A section of the wizard's form: its kind, how long it lasts and who plays in it; it can be copied, removed and moved."""
 
-from llamatron.strings.labels import MSG_WIZARD_BARS_LABEL, MSG_WIZARD_KIND_LABEL
+from llamatron.strings.labels import MSG_WIZARD_BARS_LABEL, MSG_WIZARD_FROM_PLAN, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_SECTION_ROLE_LABEL
+from llamatron.strings.legends import MSG_FROM_PLAN_WHAT
+from llamatron.strings.marks import MSG_WIZARD_ROLE_FROM_PLAN
 from llamatron.tui.screens.shared.field import ChoiceField, Field, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
 
@@ -55,8 +57,27 @@ class SectionBranch(Branch):
         else:
             # A held section, or one whose parts fill only its usual length, shows its bars and takes no key.
             fields.append(Field(label=MSG_WIZARD_BARS_LABEL, value=lambda: choices.section_bars(place)))
+        if choices.section_has_role(place):
+            fields.append(self.role_field())
         plays = choices.section_plays(place)
         return [*fields, *(Toggle(label=choices.role_title(role), on=role in plays, set=self.plays_setter(role)) for role in choices.roles_in() if role in choices.roles_shown())]
+
+    def role_field(self):
+        """Return the field of what the answering player does in the section: the plan's, marked as the plan's, until the section is given
+        its own from a list, and Bksp gives the section back to the plan."""
+        choices = self.choices()
+        page = self.page()
+        place = self._place
+        ways = choices.ways_beside()
+        way = choices.section_role(place)
+        own = choices.section_role_is_own(place)
+        chosen = page.choosing(lambda picked: choices.set_section_role(place=place, way=None if picked == MSG_WIZARD_FROM_PLAN else picked))
+
+        def to_plan():
+            chosen(MSG_WIZARD_FROM_PLAN)
+        return ChoiceField(page=page, label=MSG_WIZARD_SECTION_ROLE_LABEL.format(player=choices.role_title(choices.answered_by())), choices=[MSG_WIZARD_FROM_PLAN, *ways],
+                           current=way if own else MSG_WIZARD_FROM_PLAN, shown=way if own else MSG_WIZARD_ROLE_FROM_PLAN.format(way=way), set=chosen,
+                           clear=to_plan if own else None, clear_what=MSG_FROM_PLAN_WHAT)
 
     def plays_setter(self, role):
         """Return what has a player play in the section or sit it out, refusing to leave the section with nobody."""
