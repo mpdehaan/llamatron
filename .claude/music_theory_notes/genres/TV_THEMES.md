@@ -23,6 +23,22 @@ read about them is fan writing, so most of this is practice and judgment, and th
 - **The other kinds of the decade**, for contrast: the funk and jazz instrumental with slap bass and saxophone; the solo piano
   and voice that opens small and swells; the ironic use of an old standard. (practice)
 
+## How the Family Comedy Themes Were Made
+
+- **Written by pop songwriters, not score composers**: a tunesmith and a lyricist as a pair, often with radio hits of their own,
+  so the theme is a real pop single cut short; several were released as singles and charted. Session players of jazz fusion and
+  soft rock wrote and played others, which is where the electric piano, the clean guitar and the saxophone come from. (practice)
+- **The hook first**: the title line and its tune were written before anything else, often by the lyricist, from one sentence
+  about what the show is about; the rest of the song was built to arrive at that line. (practice)
+- **Written fast, from the pilot**: one idea, one mood, no second thoughts. A theme has one job and one hook. (practice)
+- **One team, many shows**: a pair who wrote for one production company gave that company's shows a house sound: the same
+  tempo band, the same climbing chorus, the same singer. A wizard's style may be this narrow on purpose. (judgment)
+- **Versions**: the same song was sung by a new singer, as a solo and then as a duet, re-recorded with newer instruments, or cut
+  from a minute to twenty seconds as seasons passed. Some shows played the tune without words at the top and sang it at the
+  end. So a theme has a long cut, a short cut and an instrumental cut of one tune. (practice)
+- **Borrowed songs**: some themes were pop songs written years earlier, chosen because their title said the show's idea. (practice)
+- **A full-length version** of a minute-long theme adds a second verse and a bridge that the broadcast never played. (practice)
+
 ## The Adventure Series Theme
 
 See `SOUNDTRACK.md`, "The Adventure Score": the television theme is that score in 60 to 90 seconds. To research when reached:
