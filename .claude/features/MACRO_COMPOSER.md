@@ -138,7 +138,7 @@ clouds; generate and test, with motif development and counterpoint last.
   walks. A varied hook changes only its last note (`varied_hook`). `Hooked` wraps the writer, any engine of `ENGINES`: hook
   lines go to the maker, and every other line of every section is the writer's, held under `hook_floor()` unless marked
   `higher` (`held_under`), so the hook's top is the song's. The wizard's Hook switch (`WizardChoices.has_hook`, `set_hook`,
-  `can_have_hook`, which is false where the form marks no hook or nobody carries a tune there) is on the Themes branch for now.
+  `can_have_hook`, which is false where the form marks no hook or nobody carries a tune there) is on the Hooks branch, under Composition, for now.
   `TestHooks` holds each property on forty seeds.
 - **The smart engine** (`Smart` in `melody.py`, the user's design after discussion): a tune that follows what a listener expects.
   Most moves are steps, steps mostly fall and leaps mostly rise, a step tends to carry on, a leap is followed by a move back,
@@ -151,8 +151,8 @@ clouds; generate and test, with motif development and counterpoint last.
   has a rhythm no line of the verse has; a varied line keeps the first half of its notes and its rhythm, so a hook is known
   when it returns. The wizard's Melody picker offers it, and no subgenre takes it unasked yet: that waits for the user's say
   once trial songs are heard. `TestSmart` in `tests/macro_composer/test_melody_engines.py` measures each tendency and each
-  gauge over forty seeds. The gauges are fields of the wizard's Themes branch, under the Melody field while it reads smart
-  (`ThemesBranch.gauge_field`), kept by the song as `melody_gauges`. A line's notes are drawn by the seed and where the gauges
+  gauge over forty seeds. The gauges are fields of the wizard's Melody branch, under Composition, under the Melody field while it reads smart
+  (`MelodyBranch.gauge_field`), kept by the song as `melody_gauges`. A line's notes are drawn by the seed and where the gauges
   stand together, so a gauge moved one position always redraws the notes, while each line's rhythm and shape, which go by
   the seed alone, stay (Claude's choice, to hold the rule that every choice changes the song: the chances alone often
   turned no draw).
@@ -274,7 +274,7 @@ clouds; generate and test, with motif development and counterpoint last.
   player's way, since General MIDI's voice is a hum that sounded weak. Rock's singer stays the singer with one way, `voice`,
   and plays a guitar or a synth lead by subgenre; `usual_sound` returns the stand-in, the band's Sounds and the player's own
   Sound still apply over it, and the picker offers every stand-in of the style.
-- The progression left to chance, the user's ask: while no progression is chosen (`has_any_progression`, the Themes branch's
+- The progression left to chance, the user's ask: while no progression is chosen (`has_any_progression`, the Chords branch's
   first choice, "any", which a song starts on), `progressions_by_chance` draws one by the seed from the ways that work,
   likelier the commoner, the subgenre's usual one counted twice, and only from those written for the song's scale type
   where the style has any; `made_setlist` takes the next drawn when one makes no song. With no seed the usual one plays.

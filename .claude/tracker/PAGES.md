@@ -232,7 +232,7 @@ The user's design, agreed in detail in `.claude/features/WIZARD_DESIGNS.md` (S16
   chosen (`choosing` wraps every setter and notes it).
 - The page knows nothing of any one branch, the user's ask, who expects to revise the organization: a `Branch`
   (`branch.py`) says its `name`, `note`, `children`, `fields`, `notes` and `refusal`, and `WizardPage.roots()` lists the
-  top branches (the Themes branch's Progression starts on "any", each run then drawing one of the subgenre's; rock's singer has no Plays field, the Sound field alone choosing what stands in for the voice; the drums' branch has Fills come, a gauge of four positions, "never", "each section", "every 4 bars" and
+  top branches (the Chords branch's Progression, under Composition, starts on "any", each run then drawing one of the subgenre's; rock's singer has no Plays field, the Sound field alone choosing what stands in for the voice; the drums' branch has Fills come, a gauge of four positions, "never", "each section", "every 4 bars" and
   "every 2 bars", drawn empty at "never", the user's design, and a Quiet notes toggle where the snare of the groove chosen has
   soft strokes; the drums' branch has a toggle for each piece of the kit the song plays, `kit: kick`, the user's design, the
   last piece staying on; the Band's Guitarists field, "2" or "1", the user's choice, shows where the genre's template says who its
@@ -242,8 +242,8 @@ The user's design, agreed in detail in `.claude/features/WIZARD_DESIGNS.md` (S16
   Sound field shows the band's sound as `(from band)` or the player's own, an override, the user's design, picked from the
   band's again, the genre's sounds for the player, or "More sounds", every General MIDI sound by family in the same `SoundDialog`, tried as a run of the song's scale from its root in the player's octave), in the order Genre, Band, Themes, Form, Playing, Apply. `ThemesBranch` and `PlayingBranch` are built in a
   first working form, the user's ask that every page work before any is deepened (`SongWaysBranch`, a field for each way
-  the whole song goes, shown only where the subgenre has more than one way, the branch saying so where none is): Themes
-  has Progression and Melody, "usual" or a melody style the subgenre can use; Playing has Fills, a fill chosen there being played whatever the drummer's Busy level would play (Feel is gone until a feel changes what is played: a style's feels were written into its drums and the field chose nothing; a melody style that sketches as "usual" does is not offered). Built so far: `GenreBranch` (Genre and Subgenre, each starting on `(choose)`, then Key, Scale and Tempo once
+  the whole song goes, shown only where the subgenre has more than one way, the branch saying so where none is): Composition
+  (`CompositionBranch`) holds no fields of its own: its branches are Chords (`ChordsBranch`, Progression), Melody (`MelodyBranch`, "usual" or a melody style the subgenre can use, and the smart style's gauges) and Hooks (`HooksBranch`, the Hook switch where a hook changes the song), each a `SongWaysBranch`, and Composition lists what each is set to, leaving out one with nothing to choose; Playing has Fills, a fill chosen there being played whatever the drummer's Busy level would play (Feel is gone until a feel changes what is played: a style's feels were written into its drums and the field chose nothing; a melody style that sketches as "usual" does is not offered). Built so far: `GenreBranch` (Genre and Subgenre, each starting on `(choose)`, then Key, Scale and Tempo once
   a subgenre is chosen, with Meter, the subgenre's and only shown, and Length, the song's length with the form's name,
   whose `[` and `]` choose the next shorter and longer form, since the length follows the sections, and the song's Name), `BandBranch` and `FormBranch` both start open in the tree, the user's ask, since a closed branch hid its pages twice. `FormBranch` (which starts open in the tree, the user's ask, so that the sections and their keys show themselves; the
   form's name, only shown, reading "your own" once a section was changed; the "Use a suggested form" button, the user's
@@ -260,7 +260,7 @@ The user's design, agreed in detail in `.claude/features/WIZARD_DESIGNS.md` (S16
   until a genre and a subgenre are chosen), and `BandBranch`, a toggle for each player the genre's band may have, with a
   `PlayerBranch` under it for each player who is in: Plays, the way the player plays, or a field for each part of the
   drums, and Busy, 1 to 4, drawn as a horizontal Busy gauge. The last player cannot be left out. A player's Sound, the
-  Sounds field, the kit's pieces and the Interplay section are to come, as are Themes and Playing.
+  Sounds field, the kit's pieces and the Interplay section are to come, as is Playing.
 - When the current song was made by the wizard, F5 first asks how to start in a picker titled Song Wizard, the user's
   design after a Start branch in the tree proved poor (`LlamatronApp.show_wizard`, the ways in `starts.py`): a new song or
   the current song replaced, each from the settings the current song kept or from scratch. ESC opens no wizard. Replacing
