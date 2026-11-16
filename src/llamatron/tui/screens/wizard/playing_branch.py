@@ -14,15 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The wizard's Playing branch: how the whole song is played, its feel and its drum fills."""
+"""The wizard's Playing branch: how the whole song is played, for now its drum fills."""
 
-from llamatron.macro_composer.wizard_choices import FEEL_TRAITS, FILLS_TRAITS
-from llamatron.strings.labels import MSG_WIZARD_FEEL_LABEL, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_PLAYING_BRANCH
+from llamatron.macro_composer.wizard_choices import FILLS_TRAITS
+from llamatron.strings.labels import MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_PLAYING_BRANCH
 from llamatron.tui.screens.wizard.song_ways_branch import SongWaysBranch
 
 
 class PlayingBranch(SongWaysBranch):
-    """The song's Feel and Fills; the mood gauges and the modifiers are to come."""
+    """The song's Fills; the mood gauges and the modifiers are to come. A feel is not offered: a style's feels are written into
+    its drums and differ in nothing else, so the field chose nothing."""
 
     __slots__ = ()
 
@@ -30,4 +31,4 @@ class PlayingBranch(SongWaysBranch):
         return MSG_WIZARD_PLAYING_BRANCH
 
     def traits(self):
-        return [(MSG_WIZARD_FEEL_LABEL, FEEL_TRAITS), (MSG_WIZARD_FILLS_LABEL, FILLS_TRAITS)]
+        return [(MSG_WIZARD_FILLS_LABEL, FILLS_TRAITS)]

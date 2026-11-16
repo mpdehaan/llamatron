@@ -21,7 +21,7 @@ from fractions import Fraction
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_TEMPO, MIN_TEMPO
-from llamatron.macro_composer.wizard_choices import style_of, STAND_INS, LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, FEWEST_FILLS, FILLS_KEPT, MOST_FILLS, QUIET_NOTES_KEPT, PIECES_OFF_KEPT, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, LAST_SOUND_OF_NOTES, USUAL_SOUNDS, FEEL_TRAITS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
+from llamatron.macro_composer.wizard_choices import style_of, STAND_INS, LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, FEWEST_FILLS, FILLS_KEPT, MOST_FILLS, QUIET_NOTES_KEPT, PIECES_OFF_KEPT, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, LAST_SOUND_OF_NOTES, USUAL_SOUNDS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
 from llamatron.macro_composer.melody import HOME, LADDER
 from llamatron.strings.macro_composer import MSG_PART_OF_SECTION
 from llamatron.macro_composer.notation import DEGREE, LINES
@@ -402,7 +402,7 @@ class TestWizardSongWays(unittest.TestCase):
         for place in range(len(genre_names())):
             choices = chosen(genre=place)
             owned = {trait for role in choices.roles() for trait in choices.role_traits(role)}
-            for traits in (PROGRESSION_TRAITS, FEEL_TRAITS, FILLS_TRAITS):
+            for traits in (PROGRESSION_TRAITS, FILLS_TRAITS):
                 self.assertNotIn(choices.song_trait(traits), owned)
 
     def test_every_way_of_every_song_trait_of_every_subgenre_makes_a_song_that_plays(self):
@@ -410,7 +410,7 @@ class TestWizardSongWays(unittest.TestCase):
             for subgenre in range(len(chosen(genre=place).subgenres())):
                 choices = chosen(genre=place, subgenre=subgenre)
                 choices.set_seed(A_SEED)
-                for traits in (PROGRESSION_TRAITS, FEEL_TRAITS, FILLS_TRAITS):
+                for traits in (PROGRESSION_TRAITS, FILLS_TRAITS):
                     trait = choices.song_trait(traits)
                     for way in (choices.song_ways(trait) if trait else []):
                         with self.subTest(subgenre=choices.get_subgenre(), trait=trait, way=way):

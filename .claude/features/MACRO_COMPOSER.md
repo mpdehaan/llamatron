@@ -204,6 +204,10 @@ clouds; generate and test, with motif development and counterpoint last.
   likelier the commoner, the subgenre's usual one counted twice, and only from those written for the song's scale type
   where the style has any; `made_setlist` takes the next drawn when one makes no song. With no seed the usual one plays.
   Rock gained three minor progressions so that a minor subgenre has several.
+- Every choice is effective, the user's rule: `tests/macro_composer/test_wizard_effect.py` makes each choice of each subgenre
+  alone and fails when the song made is the same, but for the counts in its `KNOWN_TO_CHANGE_NOTHING`, each with its reason,
+  which may only shrink. A choice found dead is made to work or is no longer offered: a fill the song picks (`fills` among
+  its picks) wins over the drummer's own; `melody_is_usual` leaves out a melody style that sketches as the genre does unasked.
 - Nothing is chosen at first, the user's rule. Choosing a subgenre fills in its usual tempo, the scale type its chords are
   in, the root that scale type starts on (C for major, E for minor, Claude's choice) and the commonest form, so that a song
   can be made from a genre and a subgenre alone; choosing another genre leaves the subgenre to be chosen again. Any tempo
