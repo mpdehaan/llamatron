@@ -499,6 +499,16 @@
     (see "Pattern generators on the Patterns page", which already has notes for pattern builders, and
     the Metrics Wizard's "Transforms") and which want a key of their own is the thing to decide.
 
+- title: "Listening to a scene on the Scene page, and progress bars on every listen"
+  priority: 2
+  text: |
+    The Scene page gains a way to listen to its scene, as the clip page and the pattern editor listen to theirs. Listening
+    may need everything else stopped first. With it, a question to talk through with the user before anything is built:
+    whether a listen shows a progress bar as it plays, and on which pages that makes sense (the clip page, the pattern
+    editor, the Scene page, a picker's preview). To work out: what a scene's listen does while a song plays from Arrange,
+    stop the song, refuse, or wait for the bar; whether looping clips are cut at the scene's length; and one drawing of the
+    bar shared by every page that listens, the length bars' read heads on Arrange being the nearest thing there is.
+
 - title: "To discuss: the genre library keeps explaining songs and drops improving and generating them"
   priority: 3
   text: |
