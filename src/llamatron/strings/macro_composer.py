@@ -29,6 +29,8 @@ MSG_MADE_SONG_NOTES = '{title}: a {style} song, {template}, made by the MacroCom
 MSG_MADE_PICK = '{}: {}.'
 MSG_MADE_SCENE = 'Scene {}, {}, {} bars.'
 MSG_PART_OF_SECTION = '{} {}'
+# The instrument made for a piece of the kit that sounds as a General MIDI sound.
+MSG_PIECE_INSTRUMENT = '{} sound'
 MSG_REPEATED_SCENE = '{} {}'
 
 # macro_composer/players.py

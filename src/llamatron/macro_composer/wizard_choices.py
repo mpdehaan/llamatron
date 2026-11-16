@@ -31,13 +31,13 @@ from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer.arranger import (
     COMMON_TIME, DEFAULT_PHRASE_BARS, DRUMS, DRUM_TRACKS, EACH_SECTION, FILLS_COME, FILL_EVERY, KIND, PARTS, PHRASE_BARS, QUIET_NOTES, MELODY_ENGINE, METER, PICKS, ROLE_SOUNDS, ROLE_TITLE, ROLE_TITLES, SOUNDS, WITHOUT_PIECES, PLAYER, PLAYERS, ROLE, ROLES, SOUND, TRAIT, VALUE, WITHOUT, bar_length, fits,
     BARS, CHORD_TRAIT, CHORD_TRAIT_FIELD, FORM, HELD, PLAYS, GENRE, KEY, NAME, ROOT, SCALE_TYPE, SECTIONS, SEED, STYLE, TEMPLATE, TEMPLATES, TEMPO, TITLE, TRAITS, TYPE, USUAL,
-    BREAK, BREAK_CUT, KEPT_BESIDE_A_BREAK, MELODY, NO_BREAK,
+    BREAK, BREAK_CUT, HIGHEST_NOTE, KEPT_BESIDE_A_BREAK, LOWEST_NOTE, MELODY, NO_BREAK, PIECE_SOUNDS, PLAYED_DRUM, PLAYED_NOTE, PLAYED_SOUND,
     arranged, forms_of, picked, player_of, section_of, share_of, style_named, style_names, values_of,
 )
 from llamatron.macro_composer.composer import composed
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
-from llamatron.macro_composer.notation import OCTAVE
+from llamatron.macro_composer.notation import KIT, OCTAVE
 from llamatron.macro_composer.melody import HALF_STEPS, NOTES_IN_OCTAVE, DEFAULT_GAUGES, EVOLVING, GRID, HIGHEST_GAUGE, LOWEST_GAUGE, SERIAL, SMART, STEP_WALK
 from llamatron.music.note import ROOT_NAMES, SEMITONES_ABOVE_C
 from llamatron.playback.song_renderer import SongRenderer
@@ -45,7 +45,7 @@ from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MIN_GM_SO
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.marks import MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SECTION_VARIANT
 from llamatron.support.version import VERSION as A_VERSION
-from llamatron.strings.errors import ERR_WIZARD_BREAK_CUT, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
+from llamatron.strings.errors import ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'
@@ -97,6 +97,9 @@ QUIET_NOTES_KEPT = 'quiet_notes'
 BREAK_KEPT = 'break'
 BREAK_CUT_KEPT = 'break_cut'
 GAUGES_KEPT = 'melody_gauges'
+# What pieces of the kit sound as, kept as the song's picks hold them, and the note a piece first plays in a General MIDI sound.
+PIECE_SOUNDS_KEPT = 'piece_sounds'
+USUAL_PIECE_NOTE = 48
 # The key a song keeps the kit's pieces that are switched off under.
 PIECES_OFF_KEPT = 'pieces_off'
 # One guitarist or two, and the key a template describes its one guitarist under, with the players and the way it names.
@@ -225,7 +228,7 @@ SECONDS_IN_MINUTE = 60
 class WizardChoices:
     """The choices of one run of the song wizard."""
 
-    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_without', '_sections', '_melody', '_sounds', '_band_sounds', '_guitarists', '_pieces_off', '_break', '_break_cut', '_gauges', '_fills', '_quiet_notes')
+    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_without', '_sections', '_melody', '_sounds', '_band_sounds', '_guitarists', '_pieces_off', '_break', '_break_cut', '_gauges', '_piece_sounds', '_fills', '_quiet_notes')
 
     def __init__(self):
         self._genre = None
@@ -256,6 +259,7 @@ class WizardChoices:
         self._break = None
         self._break_cut = None
         self._gauges = {}
+        self._piece_sounds = {}
 
     # Reading and keeping the choices.
 
@@ -285,6 +289,7 @@ class WizardChoices:
                 (self._set_kept_fills, [dict(position=data[FILLS_KEPT])] if data.get(FILLS_KEPT) is not None else []),
                 (self._set_kept_quiet_notes, [dict(on=False)] if data.get(QUIET_NOTES_KEPT) is False else []),
                 (self._set_kept_break, [dict(name=data[BREAK_KEPT])] if data.get(BREAK_KEPT) else []),
+                (self._set_kept_piece_sound, [dict(piece=piece, sounds_as=sounds_as) for piece, sounds_as in (data.get(PIECE_SOUNDS_KEPT) or {}).items()]),
                 (self._set_kept_break_cut, [dict(position=data[BREAK_CUT_KEPT])] if data.get(BREAK_CUT_KEPT) is not None else []),
                 (self._set_kept_guitarists, [dict(count=data[GUITARISTS_KEPT])] if data.get(GUITARISTS_KEPT) else []),
                 (self._set_kept_band_sounds, [dict(sounds=data[BAND_SOUNDS_KEPT])] if data.get(BAND_SOUNDS_KEPT) else []),
@@ -308,7 +313,8 @@ class WizardChoices:
                 BAND_SOUNDS_KEPT: self._band_sounds if self._band_sounds != USUAL_SOUNDS else None,
                 GUITARISTS_KEPT: self._guitarists if self._guitarists != TWO_GUITARISTS else None,
                 PIECES_OFF_KEPT: list(self._pieces_off) or None, FILLS_KEPT: self._fills, QUIET_NOTES_KEPT: None if self._quiet_notes else False,
-                BREAK_KEPT: self._break, BREAK_CUT_KEPT: self._break_cut, GAUGES_KEPT: dict(self._gauges) or None}
+                BREAK_KEPT: self._break, BREAK_CUT_KEPT: self._break_cut, GAUGES_KEPT: dict(self._gauges) or None,
+                PIECE_SOUNDS_KEPT: {piece: dict(sounds_as) for piece, sounds_as in self._piece_sounds.items()} or None}
         return {field: value for field, value in held.items() if value is not None}
 
     # The genre and the subgenre, which everything else follows.
@@ -619,6 +625,7 @@ class WizardChoices:
         self._break = None
         self._break_cut = None
         self._gauges = {}
+        self._piece_sounds = {}
 
     def _role(self, role):
         found = next((entry for entry in style_of(self._genre)[ROLES] if entry[ROLE] == role), None) if self.is_ready() else None
@@ -669,7 +676,7 @@ class WizardChoices:
         """Return the pieces of the kit the drums play in the song as chosen, in the order the song has them, on or off."""
         if not self.is_ready():
             return []
-        song = {**self.song_picks(self._subgenre), WITHOUT_PIECES: []}
+        song = {**self.song_picks(self._subgenre), WITHOUT_PIECES: [], PIECE_SOUNDS: {}}
         return list(arranged(style=style_of(self._genre), song=song)[DRUM_TRACKS])
 
     def piece_is_on(self, piece):
@@ -712,6 +719,48 @@ class WizardChoices:
 
     def _set_kept_fills(self, *, position):
         self.set_fills(position)
+
+    # What a piece of the kit sounds as: its own drum, another drum of the kit, or a General MIDI sound on one note.
+
+    def kit_drums(self):
+        """Return the drums of the kit a piece may sound as."""
+        return list(KIT)
+
+    def piece_sound(self, piece):
+        """Return what a piece of the kit sounds as: None for its own drum, the name of another drum of the kit, or a General MIDI sound's number."""
+        sounds_as = self._piece_sounds.get(piece, {})
+        return sounds_as.get(PLAYED_DRUM, sounds_as.get(PLAYED_SOUND))
+
+    def piece_note(self, piece):
+        """Return the MIDI note a piece plays in its General MIDI sound, or None for a piece that sounds as a drum."""
+        return self._piece_sounds.get(piece, {}).get(PLAYED_NOTE)
+
+    def set_piece_sound(self, *, piece, sound):
+        """Have a piece of the kit sound as another drum of the kit, by name, or as a General MIDI sound, by number, on the note the
+        piece had or the usual one; or None, as its own drum again."""
+        if piece not in self.pieces():
+            raise ValueError(ERR_WIZARD_NO_SUCH_PIECE.format(value=piece))
+        if sound is None or sound == piece:
+            self._piece_sounds.pop(piece, None)
+        elif isinstance(sound, str) and sound in KIT:
+            self._piece_sounds[piece] = {PLAYED_DRUM: sound}
+        elif not isinstance(sound, (bool, str)) and isinstance(sound, int) and MIN_GM_SOUND <= sound <= MAX_GM_SOUND:
+            self._piece_sounds[piece] = {PLAYED_SOUND: sound, PLAYED_NOTE: self.piece_note(piece) or USUAL_PIECE_NOTE}
+        else:
+            raise ValueError(ERR_WIZARD_PIECE_SOUND.format(value=sound))
+
+    def set_piece_note(self, *, piece, note):
+        """Choose the note a piece plays in its General MIDI sound."""
+        if self.piece_note(piece) is None:
+            raise ValueError(ERR_WIZARD_PIECE_HAS_NO_NOTE.format(value=piece))
+        if isinstance(note, bool) or not isinstance(note, int) or not LOWEST_NOTE <= note <= HIGHEST_NOTE:
+            raise ValueError(ERR_WIZARD_PIECE_NOTE.format(low=LOWEST_NOTE, high=HIGHEST_NOTE, value=note))
+        self._piece_sounds[piece][PLAYED_NOTE] = note
+
+    def _set_kept_piece_sound(self, *, piece, sounds_as):
+        self.set_piece_sound(piece=piece, sound=sounds_as.get(PLAYED_DRUM, sounds_as.get(PLAYED_SOUND)))
+        if PLAYED_NOTE in sounds_as:
+            self.set_piece_note(piece=piece, note=sounds_as[PLAYED_NOTE])
 
     # The drum break: a bar of drums played as one thing, in place of the kick's, the snare's and the cymbal's own ways.
 
@@ -1152,6 +1201,7 @@ class WizardChoices:
                 **({MELODY: {SMART: {**{name: self.get_gauge(name) for name in DEFAULT_GAUGES}, **self._gauges}}} if self._melody == SMART and self._gauges else {}),
                 **({ROLE_SOUNDS: self._song_sounds()} if self._song_sounds() else {}),
                 **({WITHOUT_PIECES: list(self._pieces_off)} if self._pieces_off else {}),
+                **({PIECE_SOUNDS: {piece: dict(sounds_as) for piece, sounds_as in self._piece_sounds.items()}} if self._piece_sounds else {}),
                 **({FILLS_COME: FILLS_EVERY[self._fills]} if self._fills is not None else {}),
                 **({} if self._quiet_notes else {QUIET_NOTES: False})}
 

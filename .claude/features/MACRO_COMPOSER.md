@@ -155,6 +155,14 @@ clouds; generate and test, with motif development and counterpoint last.
   of the electronic style). In the wizard the drums' branch starts with a Break field, (none) first, and under a chosen
   break a Cut up gauge; a break hides the kick's, the snare's and the cymbal's own fields (`WizardChoices.breaks`,
   `get_break`, `set_break`, `get_break_cut`, `set_break_cut`, `role_traits`). `tests/macro_composer/test_breaks.py`.
+- **A kit piece's own sound** (the user's design): a song's `piece_sounds` names, by piece of the kit, `{drum: name}`, another
+  drum of the kit, or `{sound: General MIDI number, note: MIDI note}`, a sound on one note, so that a kit can be abstract.
+  The arranger (`pieces_played`) writes the piece's hits as that drum or note; a piece in a General MIDI sound gets an
+  instrument of its own, named after the piece, and is no drum track, since the drum channel plays only the kit. In the
+  wizard each piece that is on has a Sound field under its toggle, opening the Sound dialog on the piece's own drum above
+  the kit's drums and General MIDI's families, where the Listen key plays four hits; a General MIDI sound brings a Note
+  field, shown by name (`WizardChoices.piece_sound`, `set_piece_sound`, `piece_note`, `set_piece_note`,
+  `PlayerBranch.piece_sound_fields`, `WizardPage.pick_piece_sound`). `TestKitPieceSounds` in `tests/macro_composer/test_breaks.py`.
 - A song gives each instrument's player a complexity from 1 to 4, which people see as an imaginary player's name
   (`player_name` in `players.py`). The instruments and names are the same in every style; what each player does is the style's.
 - **A player only decorates the kind's own parts and never replaces them** (the user's choice). Complexity 1 goes by the book
