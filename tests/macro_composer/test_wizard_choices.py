@@ -20,8 +20,8 @@ import unittest
 from fractions import Fraction
 
 from llamatron.composition.file_format import Section
-from llamatron.composition.limits import MAX_TEMPO, MIN_TEMPO
-from llamatron.macro_composer.wizard_choices import style_of, STAND_INS, LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, FEWEST_FILLS, FILLS_KEPT, MOST_FILLS, QUIET_NOTES_KEPT, PIECES_OFF_KEPT, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, LAST_SOUND_OF_NOTES, USUAL_SOUNDS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
+from llamatron.composition.limits import MAX_GM_SOUND, MAX_TEMPO, MIN_TEMPO
+from llamatron.macro_composer.wizard_choices import style_of, STAND_INS, LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, FEWEST_FILLS, FILLS_KEPT, MOST_FILLS, QUIET_NOTES_KEPT, PIECES_OFF_KEPT, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, USUAL_SOUNDS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
 from llamatron.macro_composer.melody import DEFAULT_GAUGES, HIGHEST_GAUGE, HOME, LADDER, LOWEST_GAUGE, SMART
 from llamatron.strings.macro_composer import MSG_PART_OF_SECTION
 from llamatron.macro_composer.notation import DEGREE, LINES
@@ -526,18 +526,18 @@ class TestWizardSounds(unittest.TestCase):
         choices = self.rock()
         choices.set_band_sounds(BAND_SOUNDS[1])
         band = choices.get_sound(A_BASS)
-        choices.set_sound(role=A_BASS, sound=LAST_SOUND_OF_NOTES)
+        choices.set_sound(role=A_BASS, sound=MAX_GM_SOUND)
         self.assertTrue(choices.has_own_sound(A_BASS))
-        self.assertEqual(self.sound_made(choices=choices, role=A_BASS), LAST_SOUND_OF_NOTES)
+        self.assertEqual(self.sound_made(choices=choices, role=A_BASS), MAX_GM_SOUND)
         choices.set_band_sounds(BAND_SOUNDS[2])
-        self.assertEqual(choices.get_sound(A_BASS), LAST_SOUND_OF_NOTES)
+        self.assertEqual(choices.get_sound(A_BASS), MAX_GM_SOUND)
         choices.set_band_sounds(BAND_SOUNDS[1])
         choices.set_sound(role=A_BASS, sound=None)
         self.assertEqual(choices.get_sound(A_BASS), band)
 
     def test_a_sound_that_plays_no_notes_or_is_no_sound_is_refused(self):
         choices = self.rock()
-        for refused in (0, LAST_SOUND_OF_NOTES + 1, True, NOT_A_NUMBER):
+        for refused in (0, MAX_GM_SOUND + 1, True, NOT_A_NUMBER):
             with self.assertRaises(ValueError):
                 choices.set_sound(role=A_BASS, sound=refused)
         with self.assertRaises(ValueError):
@@ -552,10 +552,10 @@ class TestWizardSounds(unittest.TestCase):
         choices = self.rock()
         self.assertNotIn(SOUNDS_KEPT, choices.to_data())
         choices.set_band_sounds(BAND_SOUNDS[-1])
-        choices.set_sound(role=A_BASS, sound=LAST_SOUND_OF_NOTES)
+        choices.set_sound(role=A_BASS, sound=MAX_GM_SOUND)
         again = WizardChoices.from_data(choices.to_data())
         self.assertEqual(again.to_data(), choices.to_data())
-        self.assertEqual(again.get_sound(A_BASS), LAST_SOUND_OF_NOTES)
+        self.assertEqual(again.get_sound(A_BASS), MAX_GM_SOUND)
         again.set_subgenre(again.subgenres()[1])
         self.assertEqual(again.get_band_sounds(), USUAL_SOUNDS)
         self.assertFalse(again.has_own_sound(A_BASS))

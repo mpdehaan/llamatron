@@ -41,6 +41,7 @@ MSG_NEW_SCENE_NAME = 'scene-{number}'
 MSG_NEW_TRACK_NAME = 'track-{number}'
 # The track a pattern's preview plays on, in the copy of the set the preview plays (tui/pattern_preview.py).
 MSG_PREVIEW_TRACK_NAME = '(preview)'
+MSG_PREVIEW_PATTERN_NAME = '(sound)'
 MSG_NEW_PATTERN_NAME = 'pattern-{number}'
 # The word each kind of new thing is named with, before its dash and number (composition/naming.py's new_name); a blank pattern
 # made on an empty cell of Arrange takes its track's name for its word.

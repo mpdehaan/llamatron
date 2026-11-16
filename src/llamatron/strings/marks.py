@@ -261,6 +261,8 @@ MSG_PICKER_MARK = '▾'
 MSG_FLYOUT_CHOSEN = '[ {name} ▸ {chosen} ]'
 MSG_FLYOUT_CHOSEN_ALONE = '[ ▸ {chosen} ]'
 MSG_FLYOUT_CLOSED = '[ {name} ]'
+# A sound a search found, with the group that holds it.
+MSG_SOUND_FOUND = '{sound}  ({group})'
 MSG_FLYOUT_TITLE = 'Scale: {name}'
 # The marks either side of a row's name while Move mode carries it, in place of the spaces beside it so that nothing shifts.
 MSG_MOVING_OPEN = '<'

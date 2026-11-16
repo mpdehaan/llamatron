@@ -691,7 +691,6 @@ MSG_GM_SOUND_LABEL = 'GM sound'
 MSG_KEYSWITCH_MAP_LABEL = 'Keyswitch Map'
 MSG_KEYSWITCH_LEAD_LABEL = 'Keyswitch lead'
 MSG_GM_SOUND_SHOWN = '{number} {name}'
-MSG_GM_PAGE_NAME = 'page {number}'
 
 # tui/screens/wizard/wizard_page.py and the branches beside it
 MSG_WIZARD_CAPTION = 'NEW SONG WIZARD: {name}'

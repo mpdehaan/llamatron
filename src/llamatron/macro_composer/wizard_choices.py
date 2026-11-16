@@ -37,10 +37,11 @@ from llamatron.macro_composer.arranger import (
 from llamatron.macro_composer.composer import composed
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
-from llamatron.macro_composer.melody import DEFAULT_GAUGES, EVOLVING, GRID, HIGHEST_GAUGE, LOWEST_GAUGE, SERIAL, SMART, STEP_WALK
-from llamatron.music.note import ROOT_NAMES
+from llamatron.macro_composer.notation import OCTAVE
+from llamatron.macro_composer.melody import HALF_STEPS, NOTES_IN_OCTAVE, DEFAULT_GAUGES, EVOLVING, GRID, HIGHEST_GAUGE, LOWEST_GAUGE, SERIAL, SMART, STEP_WALK
+from llamatron.music.note import ROOT_NAMES, SEMITONES_ABOVE_C
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.composition.limits import GM_FAMILY_SIZE, MIN_GM_SOUND
+from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MIN_GM_SOUND
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.marks import MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SECTION_VARIANT
 from llamatron.support.version import VERSION as A_VERSION
@@ -53,6 +54,8 @@ LOWEST = 'lowest'
 HIGHEST = 'highest'
 # The scale types a song may be made in, the plainest first, and the root each starts on until one is chosen.
 MAJOR = 'major'
+# The octave of a player whose style names none.
+USUAL_OCTAVE = 4
 MINOR = 'minor'
 SCALE_TYPES = [MAJOR, MINOR]
 USUAL_ROOTS = {MAJOR: 'C', MINOR: 'E'}
@@ -127,8 +130,6 @@ REEDS = 8
 PIPES = 9
 SYNTH_LEADS = 10
 SYNTH_PADS = 11
-FAMILIES_OF_NOTES = 14
-LAST_SOUND_OF_NOTES = FAMILIES_OF_NOTES * GM_FAMILY_SIZE
 # The nearest sound of each kind for a sound of a family, by General MIDI number: an acoustic band's guitar is a steel-string
 # guitar, its bass an upright, its keyboard a piano; an electric band's keyboard is an electric piano; a synth band's guitar a saw lead.
 NEAREST = {
@@ -907,15 +908,29 @@ class WizardChoices:
         return self._sounds.get(role, self.band_sound(role)) if role in self._sounds else self.band_sound(role)
 
     def set_sound(self, *, role, sound):
-        """Give a player a sound of its own, any General MIDI sound that plays notes; or None, to follow the band's again."""
+        """Give a player a sound of its own, any General MIDI sound; or None, to follow the band's again."""
         if not self.has_sound(role):
             raise ValueError(ERR_WIZARD_NO_SUCH_PLAYER.format(value=role))
         if sound is None:
             self._sounds.pop(role, None)
             return
-        if isinstance(sound, bool) or not isinstance(sound, int) or not MIN_GM_SOUND <= sound <= LAST_SOUND_OF_NOTES:
-            raise ValueError(ERR_WIZARD_SOUND.format(value=sound))
+        if isinstance(sound, bool) or not isinstance(sound, int) or not MIN_GM_SOUND <= sound <= MAX_GM_SOUND:
+            raise ValueError(ERR_WIZARD_SOUND.format(low=MIN_GM_SOUND, high=MAX_GM_SOUND, value=sound))
         self._sounds[role] = sound
+
+    # What a sound is tried with: a run of the song's scale from its root, in the player's octave.
+
+    def root_half_steps(self):
+        """Return the song's root as half steps above C, within an octave."""
+        return SEMITONES_ABOVE_C[self._root] % NOTES_IN_OCTAVE
+
+    def scale_half_steps(self):
+        """Return the notes of the song's scale as half steps above its root, the major scale's where the melody engines know none for the scale type."""
+        return HALF_STEPS.get(self._scale_type, HALF_STEPS[MAJOR])
+
+    def role_octave(self, role):
+        """Return the octave a player plays in."""
+        return self._role(role).get(OCTAVE, USUAL_OCTAVE)
 
     def genre_sounds(self, role):
         """Return the genre's own sounds that suit a player, each a General MIDI number: the sounds of the ways the player can play."""

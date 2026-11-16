@@ -971,6 +971,27 @@ class ChoiceDialog(Dialog):
     IN_LEGEND = IN_HELP
 
 
+class SoundDialog(Dialog):
+    """The Sound dialog: Up and Down move, Space or Enter opens a group's flyout, where Enter takes a sound and Esc or Left closes it; / searches every
+    sound, where Enter goes to the sound found; L tries the sound under the cursor."""
+
+    MOVE = (ARROWS_UP_DOWN, KeyName.UP_DOWN, What.MOVE)
+    MOVE_IN_FLYOUT = (ARROWS, KeyName.ARROWS, What.MOVE)
+    OPEN = (TOGGLE_KEYS, KeyName.SPACE_ENTER, What.OPEN)
+    CHOOSE = (Key.ENTER, KeyName.ENTER, What.CHOOSE)
+    # While a flyout or the search is open, Esc closes it alone, the topmost thing.
+    CLOSE = (CANCEL_KEYS, KeyName.ESCAPE, What.CLOSE)
+    SEARCH = (Key.SLASH, KeyName.SLASH, What.SEARCH)
+    TYPE = (SEARCH_CHARACTERS, KeyName.SEARCH_CHARACTERS, What.SEARCH)
+    FIND = (Key.ENTER, KeyName.ENTER, What.OPEN)
+    ERASE = (Key.BACKSPACE, KeyName.BACKSPACE, What.ERASE)
+    COMPLETE = (Key.TAB, KeyName.TAB, What.COMPLETE)
+    LISTEN = (Key.L, KeyName.L, MSG_LISTEN_WHAT)
+    STOP_LISTENING = (Key.L, KeyName.L, MSG_STOP_LISTENING_WHAT)
+    IN_HELP = [Dialog.CANCEL, CLOSE, MOVE, MOVE_IN_FLYOUT, OPEN, CHOOSE, SEARCH, TYPE, FIND, ERASE, COMPLETE, LISTEN, STOP_LISTENING]
+    IN_LEGEND = IN_HELP
+
+
 class PickManyDialog(Dialog):
     """A list where several choices can be picked: Up and Down move, Space turns one on or off, Enter finishes and Esc cancels."""
 
