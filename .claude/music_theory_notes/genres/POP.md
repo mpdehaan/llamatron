@@ -80,3 +80,37 @@ Habits of the professional songwriters, girl groups and vocal duos before the be
   breaks the riff.
 - **Rock and soul duo**: soul singing over a sparse eighties rhythm track, the piano playing parts and not chords, room left
   round the snare.
+
+## Eighties Pop, More
+
+- **The sound**: a drum machine or sampled drums, the snare with a short reverb cut off sharply; a keyboard bass, often octaves in
+  eighths or a line too busy for a bass guitar; bright bell-like electric piano tones and brassy synth stabs; suspended chords on
+  keys and guitar; one programmed beat held the whole song. (practice)
+- **The crafted dance-pop record**: built from the bass line up; a synth bass doubled by a bass guitar; several different bass
+  figures across one song; percussion in layers by a hand percussionist; the arrangement thickening section by section over a
+  groove that never changes; horns arranged as punctuation.
+- **The reggae-rock trio**: space is the style. The hi-hat and rim play the off-beat figure a reggae guitar would; the kick avoids
+  beat one or lands on three; the guitar plays open voicings with an added ninth or a suspended second, arpeggiated or as off-beat
+  stabs with echo, never power chords; the bass is the tune under the voice and leaves rests.
+- **Synth-pop**: minor keys; chords made minor where the key expects major, for a darker turn; a sequenced bass in eighths or
+  sixteenths; a counter-tune on a second synth as the hook; drum machine with claps; a cool, plain voice.
+- **The Minneapolis kind**: a drum machine, dry, with its own slight swing; synths in place of a horn section, used as short
+  accents and not pads; a clean, dry rhythm guitar; a lean bass, or none; faster and less syncopated than older funk; a showy rock
+  guitar solo over it.
+- **The session-player band**: a half-time shuffle (backbeat on three, ghosted snare triplets between, the hi-hat shuffling);
+  keyboards in layers; every part exact. See Yacht Rock in `ROCK.md`.
+- **Power pop of the nineties and after**: sixties chord craft with loud guitars: a catchy chorus, harmonies, wry story words; or
+  a piano trio with a fuzz bass in the guitar's place, the piano hammered.
+
+## Oldies: The Fifties and Early Sixties
+
+- **Rock and roll**: the piano moved to the front with hammered triplets in the right hand; a faster straight beat replacing the
+  shuffle; the guitar taking the saxophone's place as the solo instrument, with two-note licks and a boogie figure on the low
+  strings; the New Orleans kind rolling and relaxed over triplets. The hand-drum beat of three hits then two, played by the whole
+  band on one chord.
+- **Doo-wop**: a high tenor or falsetto lead; a bass voice singing the bass line in syllables; middle voices on vowels standing in
+  for instruments; I vi IV V; little accompaniment; the high voice soaring over the lead in the bridge and the last chorus.
+- **Surf instrumentals**: the guitar is the singer: fast tremolo picking on one string, picked near the bridge, heavy spring
+  reverb, the vibrato arm; minor keys with harmonic-minor color; straight 4/4, medium to fast; bass and drums as near equals.
+- **Garage and bubblegum** (later sixties): two or three chords and an organ or fuzz riff, played roughly; its bouncy younger
+  kind with sing-along choruses, handclaps and a dance beat.
