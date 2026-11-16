@@ -26,6 +26,8 @@ title: Sixties Pop
 genre: Pop
 feel: backbeat
 phrase_bars: 4
+# A song has a hook unless it says otherwise: the lines its sections mark as a hook are made as one.
+hook: true
 loudness: {drums: 98, kick: 104, snare: 102, hat: 70, ride: 74, crash: 96, tom high: 96, tom low: 98, tamb: 74, clap: 86, rim: 84, bell: 70}
 
 templates:

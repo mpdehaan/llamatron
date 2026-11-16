@@ -21,7 +21,7 @@ from fractions import Fraction
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_GM_SOUND, MAX_TEMPO, MIN_TEMPO
-from llamatron.macro_composer.wizard_choices import style_of, STAND_INS, LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, FEWEST_FILLS, FILLS_KEPT, MOST_FILLS, QUIET_NOTES_KEPT, PIECES_OFF_KEPT, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, USUAL_SOUNDS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
+from llamatron.macro_composer.wizard_choices import style_of, STAND_INS, LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, FEWEST_FILLS, FILLS_KEPT, MOST_FILLS, QUIET_NOTES_KEPT, PIECES_OFF_KEPT, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, USUAL_SOUNDS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, HOOK_KEPT, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
 from llamatron.macro_composer.melody import DEFAULT_GAUGES, HIGHEST_GAUGE, HOME, LADDER, LOWEST_GAUGE, SMART
 from llamatron.strings.macro_composer import MSG_PART_OF_SECTION
 from llamatron.macro_composer.notation import DEGREE, LINES
@@ -42,6 +42,8 @@ A_SECOND = 1
 A_GENRE_WITH_TUNES = 'rock'
 NO_SUCH_GAUGE = 'wobble'
 A_GAUGE_IN_WORDS = 'high'
+# The genres whose songs have a hook unless a person switches the hook off.
+GENRES_WITH_A_HOOK = ('rock', 'sixties_pop', 'soul_funk')
 # A player that genre always has.
 A_BASS = 'bass'
 
@@ -800,6 +802,31 @@ class TestWizardMelodyGauges(unittest.TestCase):
 
     def patterns(self, choices):
         return choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+
+    def test_a_song_has_a_hook_where_the_genre_says_until_switched_and_the_switch_is_kept(self):
+        choices = self.rock()
+        self.assertTrue(choices.can_have_hook())
+        self.assertTrue(choices.usual_hook())
+        self.assertTrue(choices.has_hook())
+        with_hook = self.patterns(choices)
+        choices.set_hook(False)
+        self.assertFalse(choices.has_hook())
+        self.assertNotEqual(self.patterns(choices), with_hook)
+        again = WizardChoices.from_data(choices.to_data())
+        self.assertFalse(again.has_hook())
+        self.assertEqual(self.patterns(again), self.patterns(choices))
+        choices.set_hook(True)
+        self.assertEqual(self.patterns(choices), with_hook)
+        self.assertNotIn(HOOK_KEPT, choices.to_data())
+
+    def test_a_genre_whose_sections_mark_a_hook_has_none_until_asked_and_a_genre_with_none_refuses(self):
+        for genre in genre_names():
+            choices = chosen(genre=genre_names().index(genre))
+            if not choices.can_have_hook():
+                self.assertFalse(choices.has_hook(), genre)
+                with self.assertRaises(ValueError):
+                    choices.set_hook(True)
+            self.assertEqual(choices.usual_hook(), genre in GENRES_WITH_A_HOOK, genre)
 
     def test_the_gauges_show_only_while_the_melody_style_is_smart(self):
         choices = self.rock()

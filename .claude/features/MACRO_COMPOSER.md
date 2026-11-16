@@ -129,13 +129,17 @@ clouds; generate and test, with motif development and counterpoint last.
 
 ## Players
 
-- **The hooks engine** (`Hooks` in `melody.py`, a subclass of `Smart`): a plan's line marked `hook: true` is a figure of one bar,
-  2 to 4 short notes (`short_note_figures`, the Notes gauge choosing how few) reaching a long note, the peak: a note of the chord
-  at or above `hook_floor()`, half the span over home. The figure fills the line's first bar and each second bar after; the bars
-  between are an answer (`answer_bar`), walked under the peak. A varied hook changes only its last note, which rises to the peak
-  or above. Every line neither a hook nor `higher` is walked under `hook_floor()`, so the hook's top is the song's
-  (`under_the_hook`). The wizard offers it as the Melody "hooks", with the smart gauges (`GAUGED_STYLES`); it is no subgenre's
-  default until the user says. `TestHooks` holds each property on forty seeds.
+- **The hook** (`Hooks` and `Hooked` in `melody.py`; the user's design: a thing of the song, apart from the melody style that
+  writes the other lines). A song has a hook where its picks say `hook: true`, else where its style template does (rock, sixties
+  pop, and soul and funk do), and a section of its form marks a line `hook: true`. `Hooks`, the maker, a subclass of `Smart`,
+  makes such a line: a figure of one bar, 2 to 4 short notes (`short_note_figures`, the Notes gauge choosing how few) reaching a
+  long note, the peak: a note of the chord at or above `hook_floor()`, half the span over home. The figure fills the line's first
+  bar and each second bar after; the bars between are an answer (`answer_bar`), walked under the peak as the smart engine
+  walks. A varied hook changes only its last note (`varied_hook`). `Hooked` wraps the writer, any engine of `ENGINES`: hook
+  lines go to the maker, and every other line of every section is the writer's, held under `hook_floor()` unless marked
+  `higher` (`held_under`), so the hook's top is the song's. The wizard's Hook switch (`WizardChoices.has_hook`, `set_hook`,
+  `can_have_hook`, which is false where the form marks no hook or nobody carries a tune there) is on the Themes branch for now.
+  `TestHooks` holds each property on forty seeds.
 - **The smart engine** (`Smart` in `melody.py`, the user's design after discussion): a tune that follows what a listener expects.
   Most moves are steps, steps mostly fall and leaps mostly rise, a step tends to carry on, a leap is followed by a move back,
   each line has a shape (an arch, a climb, a tumble or a dip), a note off the chord leans toward the chord's note beside it,

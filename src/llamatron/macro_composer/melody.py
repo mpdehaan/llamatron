@@ -52,7 +52,6 @@ STEP_WALK = 'step walk'
 SERIAL = 'serial'
 EVOLVING = 'evolving'
 SMART = 'smart'
-HOOKS = 'hooks'
 # The smart engine's seven gauges, each from 1 to 8, and where each stands until a style or a song says: how often a tune leaps,
 # whether its steps fall or rise, whether the note after a leap comes back or carries on, how strongly a phrase arches, whether
 # a note that leans is resolved or left hanging, how long its notes are, and how often it breaks its own tendencies.
@@ -233,6 +232,19 @@ class StepWalk:
     def home(self):
         """The place on the ladder a tune sits around."""
         return self._home
+
+    def seed(self):
+        """What the engine draws each line's dice from."""
+        return self._seed
+
+    def held_under(self, *, highest, made):
+        """What makes a line, run with the engine's top place lowered to the one given."""
+        kept = self._high
+        self._high = max(self._low, min(kept, highest))
+        try:
+            return made()
+        finally:
+            self._high = kept
 
     def new_line(self, *, entry, under, dice):
         """A line nobody has heard yet."""
@@ -681,10 +693,10 @@ def short_note_figures(units):
 
 
 class Hooks(Smart):
-    """The smart engine with a hook: a line the plan marks as its section's hook is a figure of one bar, a few short notes
-    reaching one long note that is the top of the song, said in the first bar of the line and each second bar after, the bars
-    between answering it lower. Its rhythm could be clapped, it has few pitches, and it comes back the same. A varied hook keeps all
-    of it but its last note, which rises. Every other line is the smart engine's, kept under the hook's top unless marked higher."""
+    """What makes a song's hook: a figure of one bar, a few short notes reaching one long note that is the top of the song, said
+    in the first bar of a line and each second bar after, the bars between answering it lower, walked as the smart engine
+    walks. Its rhythm could be clapped, it has few pitches, and it comes back the same. A varied hook keeps all of it but its
+    last note, which rises."""
 
     __slots__ = ()
 
@@ -747,26 +759,8 @@ class Hooks(Smart):
             notes.append({**self._ladder[ending][1], STEPS: long})
         return notes
 
-    def new_line(self, *, entry, under, dice):
-        if entry.get(HOOK):
-            return self.hook_line(under=under, dice=dice)
-        return self.under_the_hook(entry=entry, made=lambda: Smart.new_line(self, entry=entry, under=under, dice=dice))
-
-    def under_the_hook(self, *, entry, made):
-        """What makes a line, run with the line held under the lowest place a hook's peak may sit, unless the line is marked higher."""
-        if entry.get(HIGHER):
-            return made()
-        highest = self._high
-        self._high = max(self._low, self.hook_floor() - 1)
-        try:
-            return made()
-        finally:
-            self._high = highest
-
-    def varied_line(self, *, line, dice, entry=None, under=None):
-        """A hook heard before with its last note risen to a note of the chord at or above its peak; any other line as the smart engine varies one."""
-        if not (entry or {}).get(HOOK):
-            return self.under_the_hook(entry=entry or {}, made=lambda: Smart.varied_line(self, line=line, dice=dice))
+    def varied_hook(self, *, line, under):
+        """A hook heard before with its last note risen to a note of the chord at or above its peak."""
         sounds = [note for note in line if REST not in note]
         peak = max(self.place_of(note) for note in sounds)
         ending = self.chord_place(chord=under[-1], lowest=peak, highest=self._high, toward=peak + 1)
@@ -774,6 +768,36 @@ class Hooks(Smart):
             sounds[-1].pop(field, None)
         sounds[-1].update(self._ladder[ending][1])
         return line
+
+
+class Hooked(StepWalk):
+    """A writer with a hook: a line the plan marks as its section's hook is the hook maker's, and every other line is the
+    writer's, any engine's, held under the lowest place the hook's top may sit unless the line is marked higher, so that the
+    hook's long note is the top of the song."""
+
+    __slots__ = ('_writer', '_hooks')
+
+    def __init__(self, *, writer, habits, chords, scale_type, seed, answers, voice=None, letters=()):
+        super().__init__(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
+        self._writer = writer(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
+        self._hooks = Hooks(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
+        # Each line's dice are drawn as the writer draws them, so that a line the writer makes is the line the writer would make alone, lowered.
+        self._seed = self._writer.seed()
+
+    def under_the_hook(self, *, entry, made):
+        if entry.get(HIGHER):
+            return made()
+        return self._writer.held_under(highest=self._hooks.hook_floor() - 1, made=made)
+
+    def new_line(self, *, entry, under, dice):
+        if entry.get(HOOK):
+            return self._hooks.hook_line(under=under, dice=dice)
+        return self.under_the_hook(entry=entry, made=lambda: self._writer.new_line(entry=entry, under=under, dice=dice))
+
+    def varied_line(self, *, line, dice, entry=None, under=None):
+        if (entry or {}).get(HOOK):
+            return self._hooks.varied_hook(line=line, under=under)
+        return self.under_the_hook(entry=entry or {}, made=lambda: self._writer.varied_line(line=line, dice=dice, entry=entry, under=under))
 
 
 def same_note(*, one, other):
@@ -814,11 +838,19 @@ def row_as_written(*, row, size):
 
 # The four forms of a row.
 FORMS = (row_as_written, row_backwards, row_upside_down, row_upside_down_and_backwards)
-ENGINES = {STEP_WALK: StepWalk, SERIAL: Serial, EVOLVING: Evolving, SMART: Smart, HOOKS: Hooks}
+ENGINES = {STEP_WALK: StepWalk, SERIAL: Serial, EVOLVING: Evolving, SMART: Smart}
 
 
-def sketched(*, habits, plan, chords, scale_type, seed, answers, engine=None, voice=None, letters=()):
-    """A section's tune as lines, made by the engine named, else the one the habits name, else the step walk. The letters are
-    those of every line of the song the player plays, for an engine that tells a song's lines apart."""
-    made_by = ENGINES[engine or habits.get(ENGINE, STEP_WALK)]
-    return made_by(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters).sketched(plan)
+def sketched(*, habits, plan, chords, scale_type, seed, answers, engine=None, voice=None, letters=(), hook=False):
+    """A section's tune as lines, written by the engine named, else the one the habits name, else the step walk; in a song
+    with a hook, the lines a plan marks as a hook are the hook maker's and the writer keeps under them in every section. The
+    letters are those of every line of the song the player plays, for an engine that tells a song's lines apart."""
+    writer = ENGINES[engine or habits.get(ENGINE, STEP_WALK)]
+    given = dict(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
+    made_by = Hooked(writer=writer, **given) if hook else writer(**given)
+    return made_by.sketched(plan)
+
+
+def has_hook(plan):
+    """Whether any line of a section's plan is marked as the section's hook."""
+    return any(entry.get(HOOK) for entry in plan)

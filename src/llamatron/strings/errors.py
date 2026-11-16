@@ -533,6 +533,7 @@ ERR_WIZARD_GUITARISTS = 'guitarists must be 2, or 1 where the band can have one,
 ERR_WIZARD_BAND_SOUNDS = 'sounds must be one of: usual, acoustic, electric, synth, got {value!r}'
 ERR_WIZARD_SOUND = 'sound must be a General MIDI sound, an integer from {low} to {high}, got {value!r}'
 ERR_WIZARD_NO_SUCH_MELODY = 'melody must be a melody style the subgenre can use, got {value!r}'
+ERR_WIZARD_NO_HOOK = 'no section of the genre has a hook'
 ERR_WIZARD_NO_SUCH_BREAK = 'break must be a drum break the subgenre can play, got {value!r}'
 ERR_WIZARD_BREAK_CUT = 'cut up must be an integer from {low} to {high}, got {value!r}'
 ERR_WIZARD_PIECE_SOUND = 'a kit piece sounds as a drum of the kit or a General MIDI sound, got {value!r}'

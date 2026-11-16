@@ -27,6 +27,8 @@ title: Rock
 genre: Rock
 feel: backbeat
 phrase_bars: 4
+# A song has a hook unless it says otherwise: the lines its sections mark as a hook are made as one.
+hook: true
 loudness: {drums: 104, kick: 112, snare: 110, hat: 78, open: 84, ride: 82, crash: 102, tom high: 102, tom low: 104, tamb: 70, clap: 88, cowbell: 80}
 
 templates:

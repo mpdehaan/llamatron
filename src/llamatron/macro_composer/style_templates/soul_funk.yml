@@ -26,6 +26,8 @@ title: Soul and Funk
 genre: Funk
 feel: backbeat
 phrase_bars: 4
+# A song has a hook unless it says otherwise: the lines its sections mark as a hook are made as one.
+hook: true
 loudness: {drums: 100, kick: 110, snare: 108, hat: 74, open: 84, ride: 76, crash: 98, tom high: 98, tom low: 100, tamb: 72, cowbell: 78, conga high: 78, conga low: 80, rim: 86}
 
 templates:
