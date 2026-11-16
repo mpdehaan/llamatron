@@ -155,3 +155,27 @@ Three styles a decade apart that share power chords and differ in almost everyth
   sixteenth-note chords and one playing pentatonic blues leads, wider harmony and anthem choruses, a busier bass.
 - The later radio rock that followed grunge keeps the quiet and loud but moves to the sixth-degree family: minor in nearly half,
   vi in half of major songs, a bridge in six in ten, and the fixed verse, chorus, verse, chorus, bridge, chorus shape.
+
+## Nu Metal and Shoegaze
+
+Two styles that are textures first and chord progressions second. Measures are from the chord dataset. (measured, practice)
+
+- **Nu metal** (late nineties): riff and rhythm, no display. Guitars tuned very low, often with a seventh string, playing syncopated
+  one- or two-note riffs with rests in them, locked to the kick, borrowed from groove metal and from hip hop's drum patterns.
+  Drums play a hip hop or funk backbeat, heavy and dry, with ghost notes; the bass is funk-influenced, sometimes slapped or
+  five-string. A turntable or sampler adds scratches, loops and electronic beds. Verses are rapped or half-spoken over a sparse
+  riff, a clean guitar figure or a loop; the chorus is sung, loud and melodic, with full guitars. Minor in over half the songs
+  (two in three in the rap wing): i bVI, i bVI bIII bVII, i bVII, the flat sixth everywhere. Pop's shape exactly: verse, chorus,
+  verse, chorus, bridge, chorus; a bridge in over half the songs, often a breakdown to whispers or electronics and a build
+  back; a solo in one song in six or fewer. The polished wing is nearer electronic pop: keyboards, programmed beats under the
+  drums, two singers, one rapping and one singing.
+- **Shoegaze** (around 1990): pop songs under a wall of guitar. Simple chords, mostly major (minor in a quarter to three in ten):
+  I IV and I V lead more strongly than in any other modern style, with I vi; major sevenths, added and suspended notes from open
+  strings ringing through chord changes (sevenths and added notes on an eighth of chords, the most of any guitar style after
+  yacht rock). Guitars strummed constantly in eighths or sixteenths with heavy distortion and reverb, layered until no single
+  part is heard; whole chords bent slightly flat and back with the vibrato arm while strumming; reverb that swells before the
+  note; volume swells; feedback held as a pad. Voices soft, breathy, mixed low, a tune of few long notes, often two voices in
+  unison or thirds. Drums plain and steady at 90 to 130, sometimes a dance beat; bass on roots in eighths, the one clear line.
+  A chorus in three songs in four only: many songs are a verse and a wordless instrumental refrain. Instrumental sections in a
+  quarter of songs, a solo in one in ten, and an outro in over half, the most of any rock style: the song dissolves into noise.
+  Its dreamier neighbor has cleaner guitars with chorus and delay and keyboards in the wall's place.
