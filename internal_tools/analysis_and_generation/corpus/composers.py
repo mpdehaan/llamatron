@@ -20,7 +20,7 @@ style yet) or no person style is a gap the coverage report names, not an error."
 
 import re
 
-from llamatron.strings.genres import StyleName
+from measuring.strings import StyleName
 
 N = StyleName
 SURNAME_OF_CODE = re.compile(r'([A-Z][a-z]+)')

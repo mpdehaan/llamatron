@@ -12,7 +12,6 @@ Each script also says what it does in its own `# What it does:` line. The script
 | Take the demos elsewhere | `demos_to_midi.sh`, `demos_to_live_sets.sh` |
 | See what the demos hold | `demo_report.sh` |
 | Record a video | `record.sh`, `record_all.sh` |
-| Ask the genre library | `describe_style.sh` |
 
 ## Setting Up
 
@@ -135,19 +134,4 @@ recorded.
 ```
 sh user_scripts/record_all.sh
 LLAMATRON_BATCH_RECORD_MAX=2 sh user_scripts/record_all.sh     # only the two shortest, to try it
-```
-
-## Asking the Genre Library
-
-These read the genre library as it ships. They need no corpus and no training run.
-
-### `describe_style.sh`
-
-Prints the style of a song as JSON: its tempo, meter, feel, bass, harmony, melody's shape, texture, energy and the rest, each
-a trait with its fields. Everything in it is measured from the song's notes by the Python code; no genre, artist or composer is
-consulted, and no note of the song is written, so it says what kind of music the song is, not which music. Unstable: the fields change as the analyzer does.
-
-```
-sh user_scripts/describe_style.sh some_song.mid
-sh user_scripts/describe_style.sh my_set.yml --song "second song" > style.json
 ```

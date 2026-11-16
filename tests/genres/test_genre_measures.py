@@ -22,12 +22,12 @@ import os
 import unittest
 
 from llamatron.composition.setlist import Setlist
-from llamatron.genres.hearing.performance import performance_of
-from llamatron.genres.hearing.profile import HEARERS, Listening, profile_of_performance
-from llamatron.genres.measures.comparing import UNIT_BOUNDS, Unit
-from llamatron.genres.measures.registry import MEASURES, MEASURES_BY_NAME, SPACING, NoSuchMeasure, measure
-from llamatron.genres.measures.traits import TRAIT_KINDS, TRAITS, Spacing, Trait
-from llamatron.strings.genres import MSG_MEASURE_LABELS
+from measuring.hearing.performance import performance_of
+from measuring.hearing.profile import HEARERS, Listening, profile_of_performance
+from measuring.measures.comparing import UNIT_BOUNDS, Unit
+from measuring.measures.registry import MEASURES, MEASURES_BY_NAME, SPACING, NoSuchMeasure, measure
+from measuring.measures.traits import TRAIT_KINDS, TRAITS, Spacing, Trait
+from measuring.strings import MSG_MEASURE_LABELS
 
 DEMO = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, os.pardir, 'examples', 'by_genre', 'rock', 'green_men.yml')
 SEED = 1

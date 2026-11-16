@@ -49,7 +49,7 @@ the program, the tests and `internal_tools/` alike.
 
 **Packages say what each part is for.** `music/` values, `support/` plumbing, `composition/` the
 objects a set file stores, `playback/` what plays them into a grid, `grid/` the finished clips,
-`exporters/`, `importers/`, `generators/`, `tui/`, `visualizers/`, `tutorial/` the video tutorial that drives it, `macro_composer/` the MacroComposer, a set made from data that says what to play (`.claude/features/MACRO_COMPOSER.md`), `genres/` the genre library (the analyzer that measures a song and the traits it fills; `.claude/features/GENRES.md`). New modules go in the package that says what they're for, and
+`exporters/`, `importers/`, `generators/`, `tui/`, `visualizers/`, `tutorial/` the video tutorial that drives it, `macro_composer/` the MacroComposer, a set made from data that says what to play (`.claude/features/MACRO_COMPOSER.md`). New modules go in the package that says what they're for, and
 a new group of them gets a package of its own. One class per file in `tui/screens/`, whose files are in folders by what they edit (`pattern/`, `arrange/`, `generators/`, `set/`, and `shared/` for what the screens have in common), and
 `tui/dialogs/`; elsewhere a module can hold the classes that belong together, like the file-format
 checks and the object they build. Files that grow past several screens are split where behaviour

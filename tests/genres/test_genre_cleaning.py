@@ -24,12 +24,12 @@ from pathlib import Path
 
 import mido
 
-from llamatron.genres.hearing.cleaning import (
+from measuring.hearing.cleaning import (
     COWBELL, DRUM_HIT_BEATS, EFFECT_PROGRAMS, ENOUGH_HITS, JUNK_NOTES, KICK, PERCUSSION_PROGRAMS, SNARE, STUCK_BARS, WORTH_SAYING, drum_named, is_percussion, tidied,
 )
-from llamatron.genres.hearing.midi_file import performance_of_midi, seconds_at
-from llamatron.genres.hearing.performance import PlayedNote, PlayedTrack
-from llamatron.strings.genres import MSG_DOUBT_NO_KICK, MSG_DOUBT_ONE_DRUM, MSG_DOUBT_STUCK
+from measuring.hearing.midi_file import performance_of_midi, seconds_at
+from measuring.hearing.performance import PlayedNote, PlayedTrack
+from measuring.strings import MSG_DOUBT_NO_KICK, MSG_DOUBT_ONE_DRUM, MSG_DOUBT_STUCK
 
 BEATS_PER_BAR = 4
 BARS = 16

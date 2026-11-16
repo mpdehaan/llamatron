@@ -1,11 +1,13 @@
 # The Genre Library: the Generator and What It Learns From
 
-The standing rules for the genre library (`src/llamatron/genres/`), each stated once, in Claude's words. Not imported: read it
+The standing rules for the genre library, each stated once, in Claude's words. The library is no longer part of the program (the
+user's choice): what is left of its code measures a song's style for research, in `internal_tools/analysis_and_generation/measuring/`,
+beside the corpus tools that use it; the script that explained a song's style, the cell tools and the dataset study are gone. Not imported: read it
 before working on the library, a demo or a generator. The file names no band, artist or composer, and does not quote the user.
 
 ## What It Is
 
-- Python that a person can read, and not an AI model. Its words live in `src/llamatron/strings/genres.py`.
+- Python that a person can read, and not an AI model. Its words live in `internal_tools/analysis_and_generation/measuring/strings.py`.
 - What ships is something a person can read, diff and search: Python, with data as modules of named constants. Numbers may be
   generated from the corpus by the development tools, each recording the sources it stands on. No binary or trained model
   ships, since nobody can tell what one knows inside. Learning libraries are instruments for development only, never in

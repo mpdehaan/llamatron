@@ -509,20 +509,6 @@
     stop the song, refuse, or wait for the bar; whether looping clips are cut at the scene's length; and one drawing of the
     bar shared by every page that listens, the length bars' read heads on Arrange being the nearest thing there is.
 
-- title: "To discuss: the genre library keeps explaining songs and drops improving and generating them"
-  priority: 3
-  text: |
-    The user wants to end the parts of the genre project that improve a song or generate one from the genre data, and to keep
-    the parts that use the corpus to explain: what the library believes is true of songs, how a song is unusual or like others,
-    and whatever is known about what makes one better, said as an explanation and not acted on. This is to be discussed before
-    anything is removed.
-
-    For the discussion: which of what exists is on each side (the analyzer, the measures, the comparing and `describe_style.sh`
-    explain; the cells, the wizards and anything that writes notes generate or improve), what the genre items of `.claude/DESIGNS.md` become, whether the training tools under
-    `internal_tools/analysis_and_generation/` that only feed generation stay as tools for the explanations or go, what
-    `.claude/features/GENRES.md` then says the library is for, and what an explanation looks like to a person: a report, a page of the
-    tracker, or both.
-
 - title: "Velocity Assist: a few named velocity levels in place of numbers"
   priority: 5
   text: |
@@ -1875,7 +1861,7 @@
     figures and its ways of varying one.
 
     What it touches in the code: a table of figures per style measured from the public-domain corpus alone, a new module in
-    `src/llamatron/genres/hearing/` to cut a lead into figures, and a generator in `src/llamatron/generators/` that reads the table.
+    `internal_tools/analysis_and_generation/measuring/hearing/` to cut a lead into figures, and a generator in `src/llamatron/generators/` that reads the table.
     No melody of a copyrighted work is ever read (`.claude/features/GENRES.md`, "Only What Can Be Acted On").
 
 - title: "Code Examples"

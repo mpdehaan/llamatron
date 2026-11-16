@@ -46,9 +46,6 @@ ENCODING = 'utf-8'
 KEPT_OUT_OF_GIT = ('.claude/QUEUE.md',)
 USER_SCRIPTS = ROOT / 'user_scripts'
 USER_SCRIPTS_GUIDE = ROOT / 'docs' / 'USER_SCRIPTS.md'
-# The genre library's user scripts, kept off the website and out of docs/USER_SCRIPTS.md until the user decides (115 B); they will
-# have a documentation page of their own then.
-GATED_GENRE_SCRIPTS = ('describe_style.sh',)
 SCRIPT_FILES = '*.sh'
 SCRIPT_HEADING = '### `{name}`'
 WHAT_IT_DOES = '# What it does:'
@@ -97,18 +94,11 @@ class TestEveryUserScriptIsDescribed(unittest.TestCase):
 
     def test_every_script_has_a_section_in_user_scripts_md(self):
         text = USER_SCRIPTS_GUIDE.read_text(encoding=ENCODING)
-        scripts = sorted(path.name for path in USER_SCRIPTS.glob(SCRIPT_FILES) if path.name not in GATED_GENRE_SCRIPTS)
+        scripts = sorted(path.name for path in USER_SCRIPTS.glob(SCRIPT_FILES))
         self.assertTrue(scripts)
         for name in scripts:
             with self.subTest(script=name):
                 self.assertIn(SCRIPT_HEADING.format(name=name), text)
-
-    def test_the_gated_genre_scripts_exist_and_stay_off_the_website_for_now(self):
-        text = USER_SCRIPTS_GUIDE.read_text(encoding=ENCODING)
-        for name in GATED_GENRE_SCRIPTS:
-            with self.subTest(script=name):
-                self.assertTrue((USER_SCRIPTS / name).is_file())
-                self.assertNotIn(SCRIPT_HEADING.format(name=name), text)
 
     def test_every_script_says_what_it_does(self):
         for path in sorted(USER_SCRIPTS.glob(SCRIPT_FILES)):

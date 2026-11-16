@@ -14,4 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The genre library."""
+"""The tests of the research tools in internal_tools/analysis_and_generation/: the measuring of a song's style and the corpus
+layer. The tools import one another by their own folder, so the folder goes on the path before any test module is read."""
+
+import os
+import sys
+
+TOOLS = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, os.pardir, 'internal_tools', 'analysis_and_generation')
+if TOOLS not in sys.path:
+    sys.path.insert(0, TOOLS)
