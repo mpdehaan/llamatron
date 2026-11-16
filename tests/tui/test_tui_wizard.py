@@ -23,10 +23,12 @@ from llamatron.macro_composer.wizard_choices import USUAL_PIECE_NOTE, FEWEST_FIL
 from llamatron.strings.errors import ERR_WIZARD_LAST_PIECE, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_CHOOSE_GENRE, ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
 from llamatron.strings.labels import MSG_GM_SOUNDS, MSG_WIZARD_KIT_DRUMS, MSG_GM_FAMILIES, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_GAUGE_ENDS, MSG_WIZARD_GAUGE_LABELS, MSG_WIZARD_NO_BREAK, MSG_WIZARD_ANY_PROGRESSION, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_GUITARISTS_LABEL, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_SOUND_LABEL, MSG_WIZARD_SOUNDS_LABEL, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PLAYING_BRANCH, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_THEMES_BRANCH, MSG_WIZARD_USUAL_MELODY, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_SUGGESTED_FORM_BUTTON, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_START_CANCEL
 from llamatron.strings.legends import What
+from llamatron.strings.macro_composer import MSG_PIECE_INSTRUMENT
 from llamatron.strings.marks import MSG_SOUND_NOTE_ROW, MSG_TOGGLE_ON, MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_SOUND_ON_NOTE, MSG_WIZARD_MELODY_GAUGE_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_OWN_FORM, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
 from llamatron.strings.messages import MSG_WIZARD_NOTHING_TO_CHOOSE, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_SECTIONS_HINT, MSG_UNDONE, MSG_RESTORED, MSG_WIZARD_ALREADY_OPEN, MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CREATED, MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_REPLACED, MSG_WIZARD_NOTHING_TO_UNDO
 from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_SONG_WORD
 from llamatron.composition.naming import new_name
+from llamatron.support.version import VERSION
 from llamatron.tui import keybindings
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.document import Document
@@ -629,6 +631,30 @@ class TestWizardKit(WizardTest):
         await self.press(keybindings.WizardPage.CLEAR)
         self.assertIsNone(choices.piece_sound(piece))
         self.assertIsNone(wizard.cell_field().clear)
+
+    async def test_a_piece_given_a_kit_drum_again_drops_its_note_from_the_row_and_from_the_song(self):
+        await self.open_the_drums()
+        choices = self.choices()
+        piece = choices.pieces()[0]
+        choices.set_piece_sound(piece=piece, sound=MIN_GM_SOUND)
+        choices.set_piece_note(piece=piece, note=note_typed(A_NOTE_TYPED))
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(MSG_WIZARD_KIT_PIECE.format(piece=piece))
+        await self.press(Key.RIGHT)
+        self.assertIn(note_shown(note_typed(A_NOTE_TYPED)), self.wizard().cell_field().value())
+        # A drum of the kit taken with a note on the Note row: the note is not used, and the row shows the drum alone.
+        await self.press(Key.ENTER, *[Key.UP] * (len(MSG_GM_FAMILIES) + 2), Key.DOWN, Key.ENTER, Key.ENTER)
+        drum = choices.piece_sound(piece)
+        self.assertIn(drum, choices.kit_drums())
+        self.assertIsNone(choices.piece_note(piece))
+        self.assertEqual(self.wizard().cell_field().value(), MSG_WIZARD_KIT_DRUM_SHOWN.format(drum=drum))
+        self.assertNotIn(MSG_PIECE_INSTRUMENT.format(piece), choices.made_setlist(name=A_SONG_NAME, version=VERSION).to_data()[Section.INSTRUMENTS])
+        # ENTER on the Note row then keeps the drum, and so does the piece's own drum.
+        await self.press(Key.ENTER, *[Key.DOWN] * (len(MSG_GM_FAMILIES) + 2), Key.ENTER)
+        self.assertEqual((choices.piece_sound(piece), choices.piece_note(piece)), (drum, None))
+        await self.press(Key.ENTER, *[Key.UP] * (len(MSG_GM_FAMILIES) + 2), Key.ENTER)
+        self.assertEqual((choices.piece_sound(piece), choices.piece_note(piece)), (None, None))
+        self.assertEqual(self.wizard().cell_field().value(), MSG_WIZARD_OWN_DRUM_SHOWN.format(piece=piece))
 
     async def test_how_often_fills_come_is_a_gauge_that_is_empty_at_never(self):
         await self.open_the_drums()
