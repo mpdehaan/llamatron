@@ -165,6 +165,8 @@ clouds; generate and test, with motif development and counterpoint last.
   in, the root that scale type starts on (C for major, E for minor, Claude's choice) and the commonest form, so that a song
   can be made from a genre and a subgenre alone; choosing another genre leaves the subgenre to be chosen again. Any tempo
   the tracker plays is allowed, the template's usual range being advice.
+- `meter()` is the subgenre's; `form_seconds()` is a form's length at the tempo chosen, held by a test to the length of
+  the song made for every form of every subgenre; `step_length` chooses the next longer or shorter form.
 - The seed is never shown: `made_setlist` draws one when the run has none, and the song keeps it with the other choices
   (`Song.get_wizard_choices`, the song's `wizard` setting), so that the same choices make the same song. `from_data` reads
   kept choices with care, leaving out what no longer fits.

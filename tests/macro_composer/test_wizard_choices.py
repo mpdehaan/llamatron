@@ -17,12 +17,14 @@
 
 import random
 import unittest
+from fractions import Fraction
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_TEMPO, MIN_TEMPO
-from llamatron.macro_composer.wizard_choices import FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, USUAL_ROOTS, WizardChoices, genre_names, genre_title
+from llamatron.macro_composer.wizard_choices import QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, USUAL_ROOTS, WizardChoices, genre_names, genre_title
 from llamatron.macro_composer.arranger import GENRE, TYPE, style_names
 from llamatron.music.note import NoteName
+from llamatron.playback.song_renderer import SongRenderer
 from llamatron.support.version import VERSION
 
 A_NAME = 'made'
@@ -30,6 +32,8 @@ NOT_A_CHOICE = 'polka of the spheres'
 A_SEED = 11
 ANOTHER_SEED = 12
 NOT_A_NUMBER = 'fast'
+# How near the length said must be to the length made.
+A_SECOND = 1
 # A genre whose songs have tunes sketched from the seed, so that another seed is heard.
 A_GENRE_WITH_TUNES = 'rock'
 
@@ -167,3 +171,44 @@ class TestWizardChoices(unittest.TestCase):
             setlist = choices.made_setlist(name=A_NAME, version=VERSION)
             scale = setlist.get_named_scale(setlist.get_song(A_NAME).get_scale_name())
             self.assertEqual(scale.to_data()[TYPE], kind)
+
+    def test_a_forms_length_is_its_bars_at_the_tempo_and_the_meter(self):
+        choices = chosen()
+        bars = sum(choices.section_facts(name)[0] for name in choices.form_sections())
+        seconds = choices.form_seconds()
+        self.assertAlmostEqual(seconds, bars * float(Fraction(choices.meter())) * QUARTERS_IN_WHOLE * SECONDS_IN_MINUTE / choices.get_tempo())
+        choices.set_tempo(choices.get_tempo() * 2)
+        self.assertAlmostEqual(choices.form_seconds(), seconds / 2)
+
+    def test_every_subgenre_has_a_meter_and_its_forms_from_the_shortest_to_the_longest(self):
+        for place in range(len(genre_names())):
+            for subgenre in range(len(chosen(genre=place).subgenres())):
+                choices = chosen(genre=place, subgenre=subgenre)
+                self.assertGreater(Fraction(choices.meter()), 0)
+                lengths = [choices.form_seconds(form=form) for form in choices.forms_by_length()]
+                self.assertEqual(lengths, sorted(lengths))
+                self.assertEqual(sorted(choices.forms_by_length()), sorted(choices.forms()))
+
+    def test_stepping_the_length_chooses_the_next_longer_or_shorter_form_and_stops_at_both_ends(self):
+        choices = chosen(genre=genre_names().index(A_GENRE_WITH_TUNES))
+        forms = choices.forms_by_length()
+        self.assertGreater(len(forms), 2)
+        for _ in forms:
+            choices.step_length(-1)
+        self.assertEqual(choices.get_form(), forms[0])
+        choices.step_length(1)
+        self.assertEqual(choices.get_form(), forms[1])
+        for _ in forms:
+            choices.step_length(1)
+        self.assertEqual(choices.get_form(), forms[-1])
+
+    def test_the_length_said_is_the_length_of_the_song_made_for_every_form_of_every_subgenre(self):
+        for place in range(len(genre_names())):
+            for subgenre in range(len(chosen(genre=place).subgenres())):
+                choices = chosen(genre=place, subgenre=subgenre)
+                choices.set_seed(A_SEED)
+                for form in choices.forms():
+                    choices.set_form(form)
+                    song = choices.made_setlist(name=A_NAME, version=VERSION).get_song(A_NAME)
+                    made = sum(float(scene.seconds) for scene in SongRenderer(song).estimate())
+                    self.assertAlmostEqual(choices.form_seconds(), made, delta=A_SECOND, msg=(choices.get_subgenre(), form))

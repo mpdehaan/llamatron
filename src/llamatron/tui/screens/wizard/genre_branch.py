@@ -20,10 +20,11 @@ from llamatron.macro_composer.wizard_choices import SCALE_TYPES, genre_names, ge
 from llamatron.music.note import ROOT_NAMES
 from llamatron.strings.errors import ERR_WIZARD_CHOOSE_GENRE
 from llamatron.strings.labels import (
-    MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_SUBGENRE_LABEL,
+    MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_SUBGENRE_LABEL,
 )
 from llamatron.strings.legends import What
-from llamatron.strings.marks import MSG_WIZARD_CHOOSE, MSG_WIZARD_TEMPO_SHOWN
+from llamatron.strings.marks import MSG_WIZARD_CHOOSE, MSG_WIZARD_LENGTH_SHOWN, MSG_WIZARD_TEMPO_SHOWN
+from llamatron.tui.text import clock
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NumberField
 from llamatron.tui.screens.wizard.branch import Branch
@@ -56,6 +57,9 @@ class GenreBranch(Branch):
                             shown=MSG_WIZARD_SCALE_TYPE_NAMES[choices.get_scale_type()], set=page.choosing(choices.set_scale_type)),
                 NumberField(page=page, label=MSG_TEMPO_LABEL, number=choices.get_tempo(), shown=MSG_WIZARD_TEMPO_SHOWN.format(tempo=choices.get_tempo(), low=lowest, high=highest),
                             lowest=MIN_TEMPO, highest=MAX_TEMPO, set=page.choosing(choices.set_tempo)),
+                # The meter is the subgenre's, so it is only shown; the length follows the sections, so stepping it chooses a longer or a shorter form.
+                Field(label=MSG_WIZARD_METER_LABEL, value=choices.meter),
+                Field(label=MSG_WIZARD_LENGTH_LABEL, value=lambda: MSG_WIZARD_LENGTH_SHOWN.format(length=clock(choices.form_seconds()), form=choices.get_form()), adjust=page.choosing(choices.step_length)),
             ]
         if page.replaces():
             # A replaced song keeps its name, so the name is only shown.

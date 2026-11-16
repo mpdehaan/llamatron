@@ -29,6 +29,7 @@ from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_TEMPO, MIN_TEMPO
 from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer.arranger import (
+    COMMON_TIME, METER, bar_length,
     BARS, CHORD_TRAIT, CHORD_TRAIT_FIELD, FORM, HELD, PLAYS, GENRE, KEY, NAME, ROOT, SCALE_TYPE, SECTIONS, SEED, STYLE, TEMPLATE, TEMPLATES, TEMPO, TITLE, TRAITS, TYPE, USUAL,
     arranged, forms_of, picked, section_of, share_of, style_named, style_names, values_of,
 )
@@ -67,6 +68,11 @@ def genre_names():
 def genre_title(genre):
     """Return a genre's name as people read it."""
     return style_of(genre)[TITLE]
+
+
+# A tempo counts quarter notes a minute.
+QUARTERS_IN_WHOLE = 4
+SECONDS_IN_MINUTE = 60
 
 
 class WizardChoices:
@@ -218,6 +224,30 @@ class WizardChoices:
         """Return how many bars a section of the form lasts and who plays in it, by the names the genre gives its players."""
         section = section_of(name=name, style=style_of(self._genre), song={})
         return (HELD_BARS if section.get(HELD) else section[BARS]), list(section.get(PLAYS, []))
+
+    # The meter and the length, which follow from the subgenre, the tempo and the form.
+
+    def meter(self):
+        """Return the meter the subgenre is played in."""
+        return str(self._picks().get(METER, COMMON_TIME))
+
+    def form_seconds(self, *, form=None):
+        """Return how long a form of the subgenre lasts at the tempo chosen, in seconds: the chosen form's, unless another is named."""
+        sections = next((form_[SECTIONS] for form_ in self._forms() if form_[NAME] == (form or self.get_form())), [])
+        bars = sum(self.section_facts(name)[0] for name in sections)
+        return float(bars * bar_length(self.meter()) * QUARTERS_IN_WHOLE * SECONDS_IN_MINUTE / self._tempo)
+
+    def forms_by_length(self):
+        """Return the forms' names from the shortest to the longest, forms of one length in the order they are suggested."""
+        return sorted(self.forms(), key=lambda form: self.form_seconds(form=form))
+
+    def step_length(self, offset):
+        """Choose the next longer form, or the next shorter, stopping at the longest and the shortest: the song's length
+        follows its sections, so a length is chosen by choosing a form (the user's design)."""
+        forms = self.forms_by_length()
+        place = forms.index(self.get_form()) + offset
+        if 0 <= place < len(forms):
+            self.set_form(forms[place])
 
     # The seed, which fixes every roll of the dice and is never shown.
 
