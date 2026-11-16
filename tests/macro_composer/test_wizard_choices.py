@@ -21,7 +21,7 @@ from fractions import Fraction
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_TEMPO, MIN_TEMPO
-from llamatron.macro_composer.wizard_choices import LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
+from llamatron.macro_composer.wizard_choices import LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, FEEL_TRAITS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
 from llamatron.macro_composer.arranger import DRUMS, GENRE, PLAYERS, TYPE, WITHOUT, style_names
 from llamatron.music.note import NoteName
 from llamatron.strings.errors import ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER
@@ -377,6 +377,83 @@ class TestWizardForm(unittest.TestCase):
                         choices.set_section_bars(place=place, bars=bars)
                         with self.subTest(genre=genre, subgenre=subgenre, kind=kinds[place - first], bars=bars):
                             self.assertEqual(self.scene_bars(choices)[place], bars)
+
+
+class TestWizardSongWays(unittest.TestCase):
+    """What the whole song has a way of: its progression, its feel and its fills, and the melody style of its tunes."""
+
+    def rock(self):
+        choices = chosen(genre=genre_names().index(A_GENRE_WITH_TUNES))
+        choices.set_seed(A_SEED)
+        return choices
+
+    def patterns(self, choices):
+        return choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+
+    def test_nothing_of_the_song_is_offered_before_a_subgenre_is_chosen(self):
+        choices = WizardChoices()
+        self.assertIsNone(choices.song_trait(PROGRESSION_TRAITS))
+        self.assertEqual(choices.melody_styles(), [])
+
+    def test_a_trait_a_player_owns_is_not_the_songs(self):
+        for place in range(len(genre_names())):
+            choices = chosen(genre=place)
+            owned = {trait for role in choices.roles() for trait in choices.role_traits(role)}
+            for traits in (PROGRESSION_TRAITS, FEEL_TRAITS, FILLS_TRAITS):
+                self.assertNotIn(choices.song_trait(traits), owned)
+
+    def test_every_way_of_every_song_trait_of_every_subgenre_makes_a_song_that_plays(self):
+        for place in range(len(genre_names())):
+            for subgenre in range(len(chosen(genre=place).subgenres())):
+                choices = chosen(genre=place, subgenre=subgenre)
+                choices.set_seed(A_SEED)
+                for traits in (PROGRESSION_TRAITS, FEEL_TRAITS, FILLS_TRAITS):
+                    trait = choices.song_trait(traits)
+                    for way in (choices.song_ways(trait) if trait else []):
+                        with self.subTest(subgenre=choices.get_subgenre(), trait=trait, way=way):
+                            choices.set_way(trait=trait, value=way)
+                            self.assertEqual(choices.get_way(trait), way)
+                            SongRenderer(choices.made_setlist(name=A_NAME, version=VERSION).get_song(A_NAME)).render()
+
+    def test_another_progression_changes_the_song(self):
+        choices = self.rock()
+        trait = choices.song_trait(PROGRESSION_TRAITS)
+        before = choices.made_setlist(name=A_NAME, version=VERSION).to_data()
+        choices.set_way(trait=trait, value=[way for way in choices.song_ways(trait) if way != choices.get_way(trait)][0])
+        self.assertNotEqual(choices.made_setlist(name=A_NAME, version=VERSION).to_data(), before)
+
+    def test_every_melody_style_offered_makes_a_song_and_another_style_changes_the_tunes(self):
+        for place in range(len(genre_names())):
+            choices = chosen(genre=place)
+            choices.set_seed(A_SEED)
+            usual = self.patterns(choices)
+            made = []
+            for style in choices.melody_styles():
+                choices.set_melody(style)
+                made.append(self.patterns(choices))
+            if len(made) > 1:
+                self.assertTrue(any(patterns != usual for patterns in made), genre_names()[place])
+
+    def test_a_style_the_subgenre_cannot_use_is_not_offered_and_is_refused(self):
+        refused = [(place, style) for place in range(len(genre_names())) for style in MELODY_STYLES if style not in chosen(genre=place).melody_styles()]
+        self.assertTrue(refused)
+        place, style = refused[0]
+        with self.assertRaises(ValueError):
+            chosen(genre=place).set_melody(style)
+        with self.assertRaises(ValueError):
+            self.rock().set_melody(NOT_A_CHOICE)
+
+    def test_the_melody_style_is_kept_with_the_choices_and_another_subgenre_goes_back_to_the_usual(self):
+        choices = self.rock()
+        self.assertNotIn(MELODY_STYLE, choices.to_data())
+        choices.set_melody(choices.melody_styles()[-1])
+        again = WizardChoices.from_data(choices.to_data())
+        self.assertEqual(again.get_melody(), choices.get_melody())
+        self.assertEqual(self.patterns(again), self.patterns(choices))
+        choices.set_melody(None)
+        self.assertIsNone(choices.get_melody())
+        again.set_subgenre(again.subgenres()[1])
+        self.assertIsNone(again.get_melody())
 
 
 class TestWizardBand(unittest.TestCase):

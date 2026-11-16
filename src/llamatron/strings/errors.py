@@ -514,6 +514,7 @@ ERR_WIZARD_NO_SUCH_WAY = '{trait} must be a way of playing that fits the other c
 ERR_WIZARD_NO_WAY = 'no way of playing fits the other choices for ({value})'
 ERR_WIZARD_BUSY = 'busy must be an integer from {low} to {high}, got {value!r}'
 ERR_WIZARD_LAST_PLAYER = 'a band needs one player'
+ERR_WIZARD_NO_SUCH_MELODY = 'melody must be a melody style the subgenre can use, got {value!r}'
 ERR_WIZARD_NO_SUCH_SECTION = 'section must be a place in the form, got {value!r}'
 ERR_WIZARD_NO_SUCH_SECTION_KIND = 'section must be a kind the genre has, got {value!r}'
 ERR_WIZARD_LAST_SECTION = 'a form needs one section'

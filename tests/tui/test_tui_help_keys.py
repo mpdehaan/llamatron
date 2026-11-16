@@ -137,7 +137,7 @@ def vars_of(kind):
     return [value for _, value in inspect.getmembers(kind)]
 
 # Where the Form branch is in the song wizard's tree while the branches above it are closed.
-WIZARD_FORM_PLACE = 2
+WIZARD_FORM_PLACE = 3
 
 class TestKeysNamedInHelp(unittest.TestCase):
     """How a help text is read for its keys."""
