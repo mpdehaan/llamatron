@@ -72,3 +72,18 @@ Measures are from the chord dataset. (measured, practice)
   strings and horns answering each vocal line. Its ballads are slow soul with electric piano and the same harmony stack.
 - **Nearby kinds**: the Philadelphia kind before it (strings, vibraphone, iii and ii chords, the hi-hat pattern's origin); the
   fast electronic kind after it (sequenced octave bass, minor keys, an instrumental section in a quarter to half of songs).
+
+## Funk, More
+
+- **The puzzle**: every player has a short, simple part that repeats exactly and leaves most of the bar empty; the parts fit
+  into each other's holes, and the groove is their sum. Nobody plays the whole rhythm. All hit the first beat of the bar hard,
+  then scatter. One chord for the whole song, with one move to a second chord for the bridge, entered on a shouted cue. The
+  space left is where the singer goes. Horn lines can be borrowed from modal jazz: two notes, answered.
+- **The New Orleans quartet**: the drummer plays parade rhythms on the kit, the accents falling on a clave-like pattern of
+  three hits then two, snare and hi-hat syncopated against each other so the beat feels pulled apart and put back; guitar and
+  organ play clipped riffs in unison or in answer; the bass doubles the riff; everything sparse, mid tempo, mostly instrumental.
+  When one player steps forward, the drummer drops back to the plain groove.
+- **Horn sections**: unison or octaves nine times in ten; chords saved for the hits; close voicings for stabs, open ones for
+  swells and falls. The trumpet-led kind is bright and high; the kind with a baritone saxophone adds low spat notes in
+  counterpoint under the stabs, and interlocking horn rhythms under a verse. Sixteenth-note bass lines played with the fingers,
+  every note short, lock under them.

@@ -28,3 +28,15 @@ the last four bars of the twelve, and ends on a turnaround walked down to a held
   stock of licks played with great force is enough: feeling over vocabulary. (practice)
 - **Sacred steel**: a pedal steel guitar as the lead voice, from gospel, sliding and crying like a singer, over seventies
   funk grooves; long dance jams that climb and climb; family-band call and response. (practice)
+
+## Kinds of Blues, and Three Lead Styles
+
+- **Delta**: one player, acoustic, slide or fingers, the guitar answering the voice; bars added or dropped at will.
+- **Chicago**: the Delta song amplified with a band: drums, bass, piano, a harmonica through an amplifier playing like a horn,
+  slide guitar; riffs under the verse, stop-time verses (see `SONG_STRUCTURE.md`); loud and rough.
+- **Texas**: the guitar is the star, single-string leads with jazz and swing in them, horns behind, a swinging shuffle.
+- **The one-chord boogie**: no changes at all; a foot-stomped pulse and a low riff under half-spoken lines; the guitar rarely
+  plays while the voice sounds; lines as long as the words need.
+- **Three lead styles**: the melodic one (few notes, a singing vibrato from the wrist, each phrase an answer to the voice, from
+  gospel, never playing while singing); the bending one (a guitar tuned low and strung backwards, huge slow bends of a tone and
+  more, few notes, great weight, horns behind); the driving one (fast runs, hard attack, instrumentals with hooks, nearest rock).
