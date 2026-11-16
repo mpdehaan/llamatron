@@ -43,6 +43,8 @@ TABLE_ROW = '|'
 # A path in backticks that starts in one of the repository's folders and ends in a file suffix.
 PATH_IN_BACKTICKS = re.compile(r'`((?:src|test|internal_tools|user_scripts|examples|docs|dev_notes)/[A-Za-z0-9_./-]+\.(?:py|yml|svg|sh|md|mid|als|ly))`')
 ENCODING = 'utf-8'
+# Files the documents name that git ignores, so a new clone has none: Claude's own queue, kept on one computer (the user's choice).
+KEPT_OUT_OF_GIT = ('dev_notes/QUEUE.md',)
 USER_SCRIPTS = ROOT / 'user_scripts'
 USER_SCRIPTS_GUIDE = ROOT / 'docs' / 'USER_SCRIPTS.md'
 # The genre library's user scripts, kept off the website and out of docs/USER_SCRIPTS.md until the user decides (115 B); they will
@@ -64,8 +66,15 @@ class TestDocumentPaths(unittest.TestCase):
     def test_every_path_the_documents_name_exists(self):
         for document in DOCUMENTS:
             for path in paths_named_in(document):
+                if path in KEPT_OUT_OF_GIT:
+                    continue
                 with self.subTest(document=document.relative_to(ROOT), path=path):
                     self.assertTrue((ROOT / path).is_file(), path)
+
+    def test_the_queue_is_ignored_by_git(self):
+        ignored = (ROOT / '.gitignore').read_text(encoding=ENCODING).splitlines()
+        for path in KEPT_OUT_OF_GIT:
+            self.assertIn(path, ignored)
 
     def test_the_documents_name_some_paths(self):
         # If the pattern stopped matching, the test above would pass by checking nothing.

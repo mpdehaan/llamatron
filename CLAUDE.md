@@ -9,7 +9,8 @@ llamatron is a text UI that helps people compose electronic music in MIDI, for A
 ## Where everything is
 
 - `.claude/PRINCIPLES.md`: the goals the user judges the work by, which decide a close call the rules don't settle.
-- `dev_notes/QUEUE.md`: the agreed work not yet built, in order, kept by Claude.
+- `.claude/DESIGNS.md` and `.claude/features/WIZARD_DESIGNS.md`: the designs agreed with the user and not yet built, the second the arranger's and the song wizard's. Neither is imported: read the part at hand before building it.
+- `dev_notes/QUEUE.md`: the order the agreed work is built in, Claude's own list, kept on this computer only and ignored by git (the user's choice).
 - `.claude/STYLE.md`: every rule for the code and the documents, with its reason and the test that enforces it.
 - `.claude/TESTING.md`: how the tests are run, what a change must come with, how tests are written and where each kind lives.
 - `.claude/COMMUNICATION.md`: how Claude works with the user: committing, asking, numbering questions and explaining changes.

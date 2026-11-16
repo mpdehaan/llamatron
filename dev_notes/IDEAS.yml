@@ -519,7 +519,7 @@
 
     For the discussion: which of what exists is on each side (the analyzer, the measures, the comparing and `describe_style.sh`
     explain; the cells, the wizards and anything that writes notes generate or improve), what the plan in
-    `dev_notes/GENRE_PLAN.md` and the genre items of `dev_notes/QUEUE.md` become, whether the training tools under
+    `dev_notes/GENRE_PLAN.md` and the genre items of `.claude/DESIGNS.md` become, whether the training tools under
     `internal_tools/analysis_and_generation/` that only feed generation stay as tools for the explanations or go, what
     `.claude/features/GENRES.md` then says the library is for, and what an explanation looks like to a person: a report, a page of the
     tracker, or both.
@@ -622,7 +622,7 @@
 - title: "A composing tool, to be discussed"
   priority: 99
   text: |
-    The user calls it critical that llamatron learns to compose well in a style: the homage review in `dev_notes/QUEUE.md`
+    The user calls it critical that llamatron learns to compose well in a style: the homage review in `.claude/DESIGNS.md`
     writes its method down as "demo generation intelligence", which this tool and the wizards that generate songs should build on.
     Its core is a codified library of genre and subgenre, each a genome of traits after the idea of the Music Genome Project, and
     the rules of expectation in David Huron's "Sweet Anticipation" as they vary by genre (see the review in the queue).
