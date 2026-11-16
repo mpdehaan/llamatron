@@ -275,12 +275,13 @@ class WizardPage(FieldPage):
     CLOSE = (Key.ESCAPE, KeyName.ESCAPE, What.CLOSE)
     # A part that is one of a list, as a section of the form, takes the keys every list has; A also adds from the part that holds the list.
     ADD = (Key.A, KeyName.A, What.ADD)
+    INSERT = (Key.I, KeyName.I, What.INSERT)
     COPY = (Key.C, KeyName.C, What.COPY)
     DELETE = (Key.BACKSPACE, KeyName.BACKSPACE, What.DELETE)
     MOVE = (Key.M, KeyName.M, What.MOVE)
     CARRY = (Steps(back=(Key.UP,), forward=(Key.DOWN,)), KeyName.UP_DOWN, What.CARRY)
     DROP = (MOVE_DROP_KEYS, KeyName.ENTER_ESC_M, What.DROP)
-    IN_HELP = [CLOSE, TO_TREE, DROP, TREE, CARRY, FOLD, INTO_FIELDS, ADD, COPY, DELETE, MOVE, *FieldPage.IN_HELP[1:]]
+    IN_HELP = [CLOSE, TO_TREE, DROP, TREE, CARRY, FOLD, INTO_FIELDS, INSERT, ADD, COPY, DELETE, MOVE, *FieldPage.IN_HELP[1:]]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
 

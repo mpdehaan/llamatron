@@ -31,7 +31,7 @@ from llamatron.composition.naming import new_name
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings.help import HELP_WIZARD_PAGE
-from llamatron.strings.labels import Crumb, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_REPLACE_SECTIONS_TITLE, MSG_WIZARD_SUGGESTED_FORM_TITLE, MSG_WIZARD_CAPTION, MSG_WIZARD_REPLACE_CAPTION
+from llamatron.strings.labels import Crumb, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_REPLACE_SECTIONS_TITLE, MSG_WIZARD_SUGGESTED_FORM_TITLE, MSG_WIZARD_CAPTION, MSG_WIZARD_REPLACE_CAPTION
 from llamatron.strings.marks import MSG_WIZARD_CARRIED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_EDITED_BRANCH
 from llamatron.strings.messages import MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CLOSE_TITLE, MSG_WIZARD_CREATED, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_NOTHING_TO_UNDO, MSG_WIZARD_REPLACED, MSG_WIZARD_SONG_NAME_PROMPT
 from llamatron.strings.names import MSG_NEW_SONG_WORD
@@ -218,6 +218,8 @@ class WizardPage(FieldPage):
             result.append(self.bind(self.KEYS.FOLD, action=self.fold, wants_key=True))
         if self.refusal_of(branch) or branch.can_be_edited():
             result.append(self.bind(self.KEYS.INTO_FIELDS, action=self.into_fields))
+        if branch.is_listed():
+            result.append(self.bind(self.KEYS.INSERT, action=self.insert_in_list))
         if branch.adds():
             result.append(self.bind(self.KEYS.ADD, action=self.add_to_list))
         if branch.is_listed():
@@ -227,18 +229,22 @@ class WizardPage(FieldPage):
     # A branch that is one of a list: added to, copied, removed and moved with the keys every list of the tracker has.
 
     def add_to_list(self):
-        """Ask which kind of thing to add, and add one: after the branch under the cursor where that is one of a list, the
-        cursor going to the new one, or at the end of the list the branch holds, which opens to show it."""
+        """Ask which kind of thing to add and add one at the end of the list, as A does on every list: the cursor stays, and the
+        branch that holds the list opens to show it."""
         branch = self.branch()
         kinds = branch.kinds_to_add()
 
         def chosen(place):
             self.choosing(branch.add)(kinds[place])
-            if branch.is_listed():
-                self.tree_place += 1
-            else:
+            if not branch.is_listed():
                 self._open.add(branch.key())
         self.ask(dialog=ChoiceDialog(title=MSG_WIZARD_ADD_SECTION_TITLE, options=kinds), then=chosen)
+
+    def insert_in_list(self):
+        """Ask which kind of thing to insert and put one before the branch under the cursor, the cursor staying on the new one, as on Arrange."""
+        branch = self.branch()
+        kinds = branch.kinds_to_add()
+        self.ask(dialog=ChoiceDialog(title=MSG_WIZARD_INSERT_SECTION_TITLE, options=kinds), then=lambda place: self.choosing(branch.insert)(kinds[place]))
 
     def pick_suggested_form(self):
         """Offer the forms the subgenre suggests in a dialog, each with its sections and its length at the tempo chosen, and

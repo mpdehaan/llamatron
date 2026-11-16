@@ -77,8 +77,12 @@ class SectionBranch(Branch):
         return True
 
     def add(self, kind):
-        """Put a new section of a kind straight after this one."""
-        self.choices().add_section(place=self._place + 1, kind=kind)
+        """Put a new section of a kind at the end of the form, as A does on any row of a list."""
+        self.choices().add_section(place=len(self.choices().form_sections()), kind=kind)
+
+    def insert(self, kind):
+        """Put a new section of a kind before this one, as insert does on Arrange."""
+        self.choices().add_section(place=self._place, kind=kind)
 
     def kinds_to_add(self):
         return self.choices().section_kinds()
