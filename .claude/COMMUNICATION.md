@@ -264,7 +264,8 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   the setting the example is about, like `fill` ("Off"). The table marks the cursor and the key
   pressed, with `▶ Space here` or `◀ cursor`, and the sentence after it says the same in words,
   naming the page, the field or cell and the key.
-- **Spelling and words.** Spelling is American, as the program's messages are: "forever", not "for
+- **Spelling and words.** The program is called llamatron when Claude speaks of it, rather than "the tracker" (the user's
+  preference). Spelling is American, as the program's messages are: "forever", not "for
   ever". When the user says accumulators, read it as registers, the program's word, which is the
   one written everywhere. The glossary below has the rest of the user's words.
 

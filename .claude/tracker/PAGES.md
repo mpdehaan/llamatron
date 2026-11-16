@@ -190,7 +190,9 @@ The user's design. `PatternsPage` (`tui/screens/pattern/patterns_page.py`) lists
   families (`MSG_GM_FAMILIES`, `MSG_GM_SOUNDS`, `sound_families`), each a row that opens a flyout of its eight sounds; `/` searches every
   sound and ENTER there opens the flyout of the sound found, since letters are keys in this dialog; `L` tries the sound under the cursor
   through a `SoundTrial` (`tui/screens/shared/sound_trial.py`), which has the pattern preview play a run once through General MIDI in
-  FluidSynth (`PatternPreview.play_sound`), offered only where FluidSynth is installed, and stopped by `L` again, a move of the cursor
+  FluidSynth (`PatternPreview.play_sound`), or, where FluidSynth is not installed, on the song's Preview instrument, which is sent the
+  notes and no sound of its own (the user's design); where neither can sound, the dialog says what to do in amber under its rows until
+  the next key (`sound_refusal`, `ERR_NOTHING_TO_TRY_A_SOUND_WITH`); stopped by `L` again, a move of the cursor
   or closing
   , and `[` and `]` step it by number (`step_gm_sound`).
 - The track editor's last field, Instrument, picks one of the set's instruments or `(none)`.

@@ -47,7 +47,7 @@ from llamatron.music.note import SHARP_NAMES
 from llamatron.playback.step_order import walk_order
 from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT
 from llamatron.realtime.timeline import Route
-from llamatron.strings.errors import ERR_PREVIEW_DEVICE_NOT_CONNECTED, ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED, ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE
+from llamatron.strings.errors import ERR_NOTHING_TO_TRY_A_SOUND_WITH, ERR_PREVIEW_DEVICE_NOT_CONNECTED, ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED, ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE
 from llamatron.strings.names import MSG_PREVIEW_PATTERN_NAME, MSG_PREVIEW_TRACK_NAME
 from llamatron.tui.transport import CHANNEL_OFFSET, Transport
 
@@ -266,6 +266,10 @@ class PatternPreview(Transport):
         real = self.real()
         if self._trial is not None:
             program, _ = self._trial
+            if not self._fluidsynth_installed():
+                # Without FluidSynth a sound is tried on the song's Preview instrument, which plays the notes in whatever sound the device has.
+                instrument = real.setlist().get_instrument(real.song().get_preview_instrument_name())
+                return Route(instrument.get_device(), instrument.get_channel() - CHANNEL_OFFSET)
             return Route(FLUIDSYNTH_PORT, DRUM_CHANNEL_BYTE, None, keyswitches=False) if program is None else Route(FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, program, keyswitches=False)
         if self._clip is not None:
             return Route(FLUIDSYNTH_PORT, DRUM_CHANNEL_BYTE, None, keyswitches=False) if self._clip_is_drums() else Route(FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, PIANO_PROGRAM, keyswitches=False)
@@ -308,9 +312,28 @@ class PatternPreview(Transport):
             self.stop()
             raise
 
+    def sound_refusal(self):
+        """Return why a sound cannot be tried, for a picker to say, or None when it can: FluidSynth plays it, or else the song's Preview instrument
+        does, where it is an instrument on a device of its own that is connected."""
+        if self._fluidsynth_installed():
+            return None
+        real = self.real()
+        name = real.song().get_preview_instrument_name()
+        if name is None:
+            return ERR_NOTHING_TO_TRY_A_SOUND_WITH
+        instrument = real.setlist().get_instrument(name)
+        if not instrument.has_device():
+            return ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE.format(name=name)
+        if instrument.uses_fluidsynth():
+            return ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED.format(name=name)
+        if not self.is_connected(instrument.get_device()):
+            return ERR_PREVIEW_DEVICE_NOT_CONNECTED.format(name=name, device=instrument.get_device())
+        return None
+
     def play_sound(self, *, numbers, step_size, sound, key):
         """Try a sound: play some MIDI notes once, a step each, through General MIDI in FluidSynth, in a General MIDI sound, or on
-        the drum kit where sound is None. key is whatever the asker tells one trial from another by, answered by playing_sound()."""
+        the drum kit where sound is None; without FluidSynth, on the song's Preview instrument, in the device's own sound. key is
+        whatever the asker tells one trial from another by, answered by playing_sound()."""
         self.stop()
         self._trial = (None if sound is None else sound - MIN_GM_SOUND, key)
         self._set = PreviewSet(holder=self._document_holder, trial=trial_pattern(numbers=numbers, step_size=step_size))

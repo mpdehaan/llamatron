@@ -61,6 +61,8 @@ class SoundDialog(Dialog):
         # What was typed into the search, or None while nothing is searched for, and the cursor's place among what it found.
         self.typed = None
         self.found_place = 0
+        # Why the sound last tried did not play, shown until the next key.
+        self.said = NOTHING
 
     # Where things are.
 
@@ -128,7 +130,11 @@ class SoundDialog(Dialog):
             return []
         if self.trial.playing() == value:
             return [self.bind(self.KEYS.STOP_LISTENING, action=self.trial.stop)]
-        return [self.bind(self.KEYS.LISTEN, action=lambda: self.trial.start(value))]
+        return [self.bind(self.KEYS.LISTEN, action=lambda: self.listen(value))]
+
+    def listen(self, value):
+        """Try the sound under the cursor, and keep what the trial says where nothing plays."""
+        self.said = self.trial.start(value) or NOTHING
 
     def hush(self):
         """Stop a sound being tried, as moving the cursor and closing do."""
@@ -225,8 +231,14 @@ class SoundDialog(Dialog):
         start = max(min(at - SHOWN // 2, len(rows) - SHOWN), 0)
         return list(enumerate(rows))[start:start + SHOWN]
 
-    def padded(self, lines):
-        return [*lines, *[Text(NOTHING)] * (SHOWN - len(lines))]
+    def padded(self, lines, *, rows=SHOWN):
+        """Return lines made up to so many rows with blank ones, and under them the line that says why a sound did not play, blank while there is nothing to say."""
+        return [*lines, *[Text(NOTHING)] * (rows - len(lines)), Text(self.said, style=Style.REFUSAL)]
+
+    def on_key(self, event):
+        """Clear what was said at the next key, as the status line is cleared."""
+        self.said = NOTHING
+        super().on_key(event)
 
     def lines(self, width):
         if self.typed is not None:
@@ -234,7 +246,7 @@ class SoundDialog(Dialog):
             at = min(self.found_place, max(len(found) - 1, 0))
             rows = [MSG_SOUND_FOUND.format(sound=label, group=self.groups[group][0]) for group, _, label in found]
             shown = [Text(fit(text=cursor_mark(place == at) + row, width=width), style=Style.BOLD if place == at else NOTHING) for place, row in self.windowed(rows=rows, at=at)]
-            return [Text(fit(text=SPACE + MSG_SEARCH_SHOWN.format(text=self.typed), width=width), style=Style.DIM), *self.padded(shown)[:SHOWN - 1]]
+            return [Text(fit(text=SPACE + MSG_SEARCH_SHOWN.format(text=self.typed), width=width), style=Style.DIM), *self.padded(shown[:SHOWN - 1], rows=SHOWN - 1)]
         rows = [self.row_text(row) for row in range(len(self.top) + len(self.groups))]
         return self.padded([Text(fit(text=cursor_mark(place == self.place) + row, width=width), style=Style.BOLD if place == self.place else NOTHING)
                             for place, row in self.windowed(rows=rows, at=self.place)])
