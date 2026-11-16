@@ -699,6 +699,8 @@ MSG_WIZARD_START_NAMES = {
     'replace from scratch': 'Replace song, from scratch',
 }
 MSG_WIZARD_TAKE_LABEL = 'Take'
+MSG_WIZARD_METER_LABEL = 'Meter'
+MSG_WIZARD_LENGTH_LABEL = 'Length'
 MSG_WIZARD_TAKE_NAMES = ['the same', 'a new take']
 MSG_WIZARD_GENRE_BRANCH = 'Genre'
 MSG_WIZARD_FORM_BRANCH = 'Form'

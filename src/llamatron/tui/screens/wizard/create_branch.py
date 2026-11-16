@@ -17,10 +17,11 @@
 
 from llamatron.macro_composer.wizard_choices import genre_title
 from llamatron.strings.errors import ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
-from llamatron.strings.labels import MSG_GENRE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_SONG_LABEL, MSG_WIZARD_TAKE_LABEL, MSG_WIZARD_TAKE_NAMES
+from llamatron.strings.labels import MSG_GENRE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_SONG_LABEL, MSG_WIZARD_TAKE_LABEL, MSG_WIZARD_TAKE_NAMES
 from llamatron.strings.legends import KeyName, MSG_WIZARD_CREATE_WHAT
 from llamatron.strings.marks import MSG_WIZARD_FORM_SHOWN, MSG_WIZARD_GENRE_SHOWN, MSG_WIZARD_KEY_SHOWN, MSG_WIZARD_NEEDS_GENRE
 from llamatron.tui.drawing import NOTHING
+from llamatron.tui.text import clock
 from llamatron.tui.screens.shared.field import Button, ChoiceField, Field
 from llamatron.tui.screens.wizard.branch import Branch
 
@@ -49,6 +50,7 @@ class CreateBranch(Branch):
                 Field(label=MSG_WIZARD_KEY_LABEL, value=lambda: MSG_WIZARD_KEY_SHOWN.format(root=choices.get_root(), scale=MSG_WIZARD_SCALE_TYPE_NAMES[choices.get_scale_type()])),
                 Field(label=MSG_TEMPO_LABEL, value=choices.get_tempo),
                 Field(label=MSG_WIZARD_FORM_LABEL, value=lambda: MSG_WIZARD_FORM_SHOWN.format(form=choices.get_form(), count=len(choices.form_sections()))),
+                Field(label=MSG_WIZARD_LENGTH_LABEL, value=lambda: clock(choices.form_seconds())),
             ]
         if choices.is_ready() and page.starts_from_last():
             # A run from the last settings makes the same song where nothing was changed, unless a new take is asked for, the user's design.

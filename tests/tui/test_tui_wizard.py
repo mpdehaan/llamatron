@@ -18,7 +18,7 @@
 from llamatron.composition.file_format import Section
 from llamatron.macro_composer.wizard_choices import MINOR, SEED, genre_names, genre_title
 from llamatron.strings.errors import ERR_WIZARD_CHOOSE_GENRE, ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE, ERR_WIZARD_CHOOSE_START
-from llamatron.strings.labels import MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_BRANCH, MSG_WIZARD_START_NAMES, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_TAKE_LABEL
+from llamatron.strings.labels import MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_BRANCH, MSG_WIZARD_START_NAMES, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_TAKE_LABEL
 from llamatron.strings.marks import MSG_TOGGLE_ON, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
 from llamatron.strings.messages import MSG_UNDONE, MSG_RESTORED, MSG_WIZARD_ALREADY_OPEN, MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CREATED, MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_REPLACED, MSG_WIZARD_NOTHING_TO_UNDO
 from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_SONG_WORD
@@ -29,6 +29,7 @@ from llamatron.tui.document import Document
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import NOTHING
 from llamatron.tui.keys import Key
+from llamatron.tui.text import clock
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.set.songs_page import SongsPage
@@ -171,6 +172,26 @@ class TestWizardPage(WizardTest):
         await self.press(Key.ENTER, Key.DOWN, Key.ENTER)
         self.assertEqual(choices.get_scale_type(), MINOR)
         self.assertIn(MSG_WIZARD_SCALE_TYPE_NAMES[MINOR], self.text())
+
+    async def test_the_meter_is_shown_and_stepping_the_length_chooses_a_longer_or_a_shorter_form(self):
+        await self.choose_genre_and_subgenre()
+        choices = self.choices()
+        self.assertIn(choices.meter(), self.text())
+        self.assertIn(clock(choices.form_seconds()), self.text())
+        forms = choices.forms_by_length()
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(MSG_WIZARD_LENGTH_LABEL)
+        back = key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET)
+        await self.press(*[back] * len(forms))
+        self.assertEqual(choices.get_form(), forms[0])
+        await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
+        self.assertEqual(choices.get_form(), forms[1])
+        self.assertIn(clock(choices.form_seconds()), self.text())
+        # The meter is the subgenre's, so its field does nothing.
+        await self.select_field(MSG_WIZARD_METER_LABEL)
+        before = choices.to_data()
+        await self.press(Key.ENTER, back)
+        self.assertEqual(choices.to_data(), before)
 
     async def test_choosing_another_genre_leaves_the_subgenre_to_be_chosen_again(self):
         await self.choose_genre_and_subgenre()
