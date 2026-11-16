@@ -20,6 +20,7 @@ is made by."""
 import unittest
 
 from llamatron.macro_composer import arranger, composer, melody, notation, operations
+from llamatron.strings.errors import ERR_MELODY_NEEDS_RHYTHMS
 
 MINOR = 'minor'
 SEED = 9
@@ -62,6 +63,15 @@ THREE = 'three'
 VERSE = 'verse'
 BEAT_GROUP = 'beat group'
 SERIAL_TRIO = 'serial trio'
+CHORUS = 'chorus'
+COMMON_TIME = '4/4'
+# What the smart engine is measured over: a tendency is a matter of many tunes, never of one.
+SEEDS = range(1, 41)
+HALF = 0.5
+SMART_CHORDS = [{notation.DEGREE: 1}, {notation.DEGREE: 4}, {notation.DEGREE: 5}, {notation.DEGREE: 1}]
+LETTERS = 'abcd'
+SONG_PLAN = [{melody.LINE: 'a'}, {melody.LINE: 'b'}, {melody.LINE: 'a', melody.VARIED: True}, {melody.LINE: 'c'}]
+HOOK_PLAN = [{melody.LINE: 'hook', melody.HIGHER: True}, {melody.LINE: 'hook', melody.HIGHER: True, melody.VARIED: True}, {melody.LINE: 'hook', melody.HIGHER: True}]
 
 
 def pitch_of(note):
@@ -262,6 +272,171 @@ class TestEvolving(unittest.TestCase):
         lines = engine.sketched(PLAN)
         self.assertEqual(lines[3], lines[0])
         self.assertEqual(self.places(engine=engine, line=lines[4]), operations.rotated(row=self.places(engine=engine, line=lines[0]), by=1))
+
+
+def smart_habits(**gauges):
+    """A real style's habits with the smart engine's gauges set, the others where they stand until a style says."""
+    style = arranger.style_named(ROCK)
+    return {**style[arranger.MELODY][COMMON_TIME], melody.SMART: {**melody.DEFAULT_GAUGES, **gauges}}
+
+
+def smart_lines(*, seed, habits=None, plan=None, letters=()):
+    return melody.sketched(habits=habits or smart_habits(), plan=plan or SONG_PLAN, chords=SMART_CHORDS, scale_type=melody.MAJOR, seed=seed, answers=False,
+                           engine=melody.SMART, letters=letters)
+
+
+def places_of(*, line, habits):
+    """The places on the ladder of a line's notes."""
+    ladder = melody.ladder_of(notes=habits[melody.LADDER], scale_type=melody.MAJOR)
+    rungs = [rung for _, rung in ladder]
+    return [rungs.index({field: note[field] for field in melody.PITCH_FIELDS if field in note}) for note in line if notation.REST not in note]
+
+
+def moves_of(*, lines, habits):
+    """Every move from one note to the next inside each line."""
+    moves = []
+    for line in lines:
+        places = places_of(line=line, habits=habits)
+        moves += [after - before for before, after in zip(places, places[1:])]
+    return moves
+
+
+def share(*, of, among):
+    return len(of) / max(1, len(among))
+
+
+class TestSmart(unittest.TestCase):
+    """The smart engine's tendencies and gauges, each measured over many seeds, since one tune proves nothing of a tendency."""
+
+    def moves(self, **gauges):
+        habits = smart_habits(**gauges)
+        return [move for seed in SEEDS for move in moves_of(lines=smart_lines(seed=seed, habits=habits), habits=habits)]
+
+    def test_most_moves_are_steps_and_steps_mostly_fall_and_leaps_mostly_rise(self):
+        moves = self.moves()
+        steps = [move for move in moves if abs(move) == melody.STEP_SIZE]
+        leaps = [move for move in moves if abs(move) > melody.STEP_SIZE]
+        self.assertGreater(len(steps), len(moves) / 2)
+        self.assertGreater(len(steps), 2 * len(leaps))
+        self.assertGreater(share(of=[move for move in steps if move < 0], among=steps), HALF)
+        self.assertGreater(share(of=[move for move in leaps if move > 0], among=leaps), HALF)
+
+    def test_the_moves_gauge_brings_leaps(self):
+        few = self.moves(**{melody.GAUGE_MOVES: melody.LOWEST_GAUGE})
+        many = self.moves(**{melody.GAUGE_MOVES: melody.HIGHEST_GAUGE})
+        leaps = lambda moves: share(of=[move for move in moves if abs(move) > melody.STEP_SIZE], among=moves)
+        self.assertGreater(leaps(many), 2 * leaps(few))
+
+    def test_the_steps_gauge_turns_steps_from_falling_to_rising(self):
+        rising = lambda moves: share(of=[move for move in moves if move == melody.STEP_SIZE], among=[move for move in moves if abs(move) == melody.STEP_SIZE])
+        self.assertLess(rising(self.moves(**{melody.GAUGE_STEPS: melody.LOWEST_GAUGE})), HALF)
+        self.assertGreater(rising(self.moves(**{melody.GAUGE_STEPS: melody.HIGHEST_GAUGE})), HALF)
+
+    def after_leaps(self, position):
+        """The share of moves after a leap that come back the other way."""
+        habits = smart_habits(**{melody.GAUGE_AFTER_LEAP: position, melody.GAUGE_MOVES: melody.HIGHEST_GAUGE, melody.GAUGE_PHRASE: melody.LOWEST_GAUGE})
+        back = []
+        for seed in SEEDS:
+            for line in smart_lines(seed=seed, habits=habits):
+                places = places_of(line=line, habits=habits)
+                moves = [after - before for before, after in zip(places, places[1:])]
+                back += [(after > 0) != (before > 0) for before, after in zip(moves, moves[1:]) if abs(before) > melody.STEP_SIZE and after]
+        return share(of=[came for came in back if came], among=back)
+
+    def test_the_after_leap_gauge_says_whether_a_leap_is_followed_back(self):
+        self.assertGreater(self.after_leaps(melody.LOWEST_GAUGE), self.after_leaps(melody.HIGHEST_GAUGE))
+        self.assertGreater(self.after_leaps(melody.LOWEST_GAUGE), HALF)
+
+    def reach(self, position):
+        """How far, on average, a line's highest note stands above its first and last."""
+        habits = smart_habits(**{melody.GAUGE_PHRASE: position})
+        heights = []
+        for seed in SEEDS:
+            for line in smart_lines(seed=seed, habits=habits, plan=[{melody.LINE: letter} for letter in LETTERS]):
+                places = places_of(line=line, habits=habits)
+                heights.append(max(places) - (places[0] + places[-1]) / 2)
+        return sum(heights) / len(heights)
+
+    def test_the_phrase_gauge_arches_a_line(self):
+        self.assertGreater(self.reach(melody.HIGHEST_GAUGE), self.reach(melody.LOWEST_GAUGE))
+
+    def off_the_chord(self, position):
+        """The share of lines that end on a note the chord under them does not hold."""
+        habits = smart_habits(**{melody.GAUGE_LEANING: position})
+        wanted = melody.chord_notes(chord=SMART_CHORDS[0], scale_type=melody.MAJOR)
+        ends = []
+        for seed in SEEDS:
+            for line in smart_lines(seed=seed, habits=habits):
+                last = [note for note in line if notation.REST not in note][-1]
+                ends.append(melody.half_steps_of(note=last, scale_type=melody.MAJOR) % NOTES_IN_OCTAVE not in wanted)
+        return share(of=[hangs for hangs in ends if hangs], among=ends)
+
+    def test_the_leaning_gauge_leaves_a_lines_last_note_hanging(self):
+        self.assertGreater(self.off_the_chord(melody.HIGHEST_GAUGE), self.off_the_chord(melody.LOWEST_GAUGE))
+
+    def notes_in_a_line(self, position):
+        habits = smart_habits(**{melody.GAUGE_NOTES: position})
+        counts = [len(places_of(line=line, habits=habits)) for seed in SEEDS for line in smart_lines(seed=seed, habits=habits)]
+        return sum(counts) / len(counts)
+
+    def test_the_notes_gauge_goes_from_long_notes_to_short(self):
+        self.assertGreater(self.notes_in_a_line(melody.HIGHEST_GAUGE), self.notes_in_a_line(melody.LOWEST_GAUGE))
+
+    def test_the_surprise_gauge_breaks_the_tendencies(self):
+        expected = self.moves(**{melody.GAUGE_SURPRISE: melody.LOWEST_GAUGE})
+        surprising = self.moves(**{melody.GAUGE_SURPRISE: melody.HIGHEST_GAUGE})
+        leaps = lambda moves: share(of=[move for move in moves if abs(move) > melody.STEP_SIZE], among=moves)
+        self.assertGreater(leaps(surprising), leaps(expected))
+
+    def test_a_chorus_is_unlike_its_verse_in_rhythm_and_higher_in_every_style_with_both(self):
+        for name in arranger.style_names():
+            style = arranger.style_named(name)
+            sections = style[arranger.SECTIONS]
+            if not sections.get(VERSE, {}).get(arranger.PLAN) or not sections.get(CHORUS, {}).get(arranger.PLAN):
+                continue
+            habits = style[arranger.MELODY] if melody.GRID in style[arranger.MELODY] else style[arranger.MELODY][COMMON_TIME]
+            if not habits[melody.RHYTHMS]:
+                continue
+            letters = arranger.line_letters(plans=[sections[VERSE][arranger.PLAN], sections[CHORUS][arranger.PLAN]], answers=False)
+            higher = any(entry.get(melody.HIGHER) for entry in sections[CHORUS][arranger.PLAN])
+            verse_heights = []
+            chorus_heights = []
+            for seed in SEEDS:
+                verse = smart_lines(seed=seed, habits=habits, plan=sections[VERSE][arranger.PLAN], letters=letters)
+                chorus = smart_lines(seed=seed, habits=habits, plan=sections[CHORUS][arranger.PLAN], letters=letters)
+                with self.subTest(style=name, seed=seed):
+                    self.assertNotIn(rhythm_of(chorus[0]), [rhythm_of(line) for line in verse])
+                verse_heights += [place for line in verse for place in places_of(line=line, habits=habits)]
+                chorus_heights += [place for line in chorus for place in places_of(line=line, habits=habits)]
+            if higher:
+                with self.subTest(style=name):
+                    self.assertGreater(sum(chorus_heights) / len(chorus_heights), sum(verse_heights) / len(verse_heights))
+
+    def test_a_hook_returns_note_for_note_and_varied_keeps_its_head_and_its_rhythm(self):
+        habits = smart_habits()
+        for seed in SEEDS:
+            hook, varied, again = smart_lines(seed=seed, habits=habits, plan=HOOK_PLAN)
+            head = len(places_of(line=hook, habits=habits)) // 2
+            self.assertEqual(again, hook)
+            self.assertEqual(rhythm_of(varied), rhythm_of(hook))
+            self.assertEqual(places_of(line=varied, habits=habits)[:head], places_of(line=hook, habits=habits)[:head])
+
+    def test_every_line_fills_its_bars_and_stays_in_range_and_the_same_seed_gives_the_same_tune(self):
+        habits = smart_habits()
+        home = melody.home_place(ladder=melody.ladder_of(notes=habits[melody.LADDER], scale_type=melody.MAJOR), home=habits[melody.HOME])
+        for seed in SEEDS:
+            lines = smart_lines(seed=seed, habits=habits)
+            self.assertEqual(lines, smart_lines(seed=seed, habits=habits))
+            for line in lines:
+                self.assertEqual(sum(note.get(notation.REST, note.get(notation.STEPS)) for note in line), habits[melody.GRID] * habits[melody.LINE_BARS])
+                for place in places_of(line=line, habits=habits):
+                    self.assertLessEqual(abs(place - home), habits[melody.SPAN])
+        self.assertNotEqual(smart_lines(seed=SEED), smart_lines(seed=OTHER_SEED))
+
+    def test_a_style_with_no_rhythms_is_refused(self):
+        with self.assertRaises(ValueError) as refused:
+            melody.sketched(habits=HABITS, plan=PLAN, chords=CHORDS, scale_type=melody.MAJOR, seed=SEED, answers=False, engine=melody.SMART)
+        self.assertEqual(str(refused.exception), ERR_MELODY_NEEDS_RHYTHMS)
 
 
 class TestEngineChosen(unittest.TestCase):

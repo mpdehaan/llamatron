@@ -35,7 +35,7 @@ from llamatron.macro_composer.arranger import (
 )
 from llamatron.macro_composer.composer import composed
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.macro_composer.melody import EVOLVING, SERIAL, STEP_WALK
+from llamatron.macro_composer.melody import EVOLVING, SERIAL, SMART, STEP_WALK
 from llamatron.music.note import ROOT_NAMES
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.composition.limits import GM_FAMILY_SIZE, MIN_GM_SOUND
@@ -143,7 +143,7 @@ def family_of(sound):
 
 
 # The melody styles, and the key a song keeps the one chosen under.
-MELODY_STYLES = (STEP_WALK, SERIAL, EVOLVING)
+MELODY_STYLES = (SMART, STEP_WALK, SERIAL, EVOLVING)
 MELODY_STYLE = 'melody_style'
 # The traits of the whole song the wizard offers: the chords, under either name a genre gives them, the feel and the drum fills.
 PROGRESSION_TRAITS = ('chords', 'harmony')

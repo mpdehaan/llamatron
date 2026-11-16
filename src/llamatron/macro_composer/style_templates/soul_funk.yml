@@ -18,6 +18,7 @@
 #             A player of a figure, such as the bass, varies bars of each four-bar phrase by ending them with notes
 #             of their own (ends), written on a grid of so many steps to the bar and left out where the figure's grid differs.
 # melody      the habits a tune is sketched by when a song gives none: the notes used, rhythm cells, how far it ranges.
+#             smart holds the smart melody style's seven gauges, each from 1 to 8.
 # Sixteen steps to a bar, sixteenths; twelve in 12/8. No band, label, artist or work is named or followed.
 
 name: soul_funk
@@ -398,6 +399,7 @@ melody:
     grid: 16
     line_bars: 2
     span: 4
+    smart: {moves: 2, steps: 3, after_leap: 2, phrase: 5, leaning: 3, notes: 3, surprise: 3}
     home: {degree: 5}
     ladder: [{degree: 1}, {degree: 2}, {degree: 3}, {degree: 5}, {degree: 6}]
     by_scale_type: {minor: {home: {degree: 1}, ladder: [{degree: 1}, {degree: 3}, {degree: 4}, {degree: 5}, {degree: 7}]}}
@@ -413,6 +415,7 @@ melody:
     grid: 12
     line_bars: 2
     span: 4
+    smart: {moves: 2, steps: 3, after_leap: 2, phrase: 5, leaning: 3, notes: 3, surprise: 3}
     home: {degree: 5}
     ladder: [{degree: 1}, {degree: 2}, {degree: 3}, {degree: 5}, {degree: 6}]
     by_scale_type: {minor: {home: {degree: 1}, ladder: [{degree: 1}, {degree: 3}, {degree: 4}, {degree: 5}, {degree: 7}]}}

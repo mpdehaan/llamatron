@@ -29,8 +29,7 @@ import os
 import random
 from fractions import Fraction
 
-from llamatron.macro_composer.melody import ENGINE, GRID, sketched
-from llamatron.macro_composer.melody import ANSWER_RHYTHMS, RHYTHMS, SPAN
+from llamatron.macro_composer.melody import ANSWER, ANSWER_RHYTHMS, ENGINE, GRID, LINE, RHYTHMS, SPAN, sketched
 from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, DRUM, FLAT, HITS, LINES, LOUD, NONE, OCTAVE, REST, SHARP, SOFT, STEP, STEPS, VELOCITY, CHORD, clamped, drum_rows
 from llamatron.macro_composer.players import player_name
 from llamatron.support.safe_yaml import load_safely
@@ -448,6 +447,17 @@ def habits_of(*, habits, player):
     return kept
 
 
+def line_letters(*, plans, answers):
+    """The letters of the lines a lead plays through a song, or of those an answering instrument plays, each once, in the
+    order the song first plays them."""
+    letters = []
+    for plan in plans:
+        for entry in plan:
+            if bool(entry.get(ANSWER)) == answers and LINE in entry and entry[LINE] not in letters:
+                letters.append(entry[LINE])
+    return letters
+
+
 def band_said(*, style, song, roles):
     """Who plays, for the notes: each instrument's player by name, with what the style says of the player."""
     said = []
@@ -611,6 +621,7 @@ def arranged(*, style, song):
     form = []
     notes = []
     met = {}
+    plans = [section_of(name=name, style=style, song=song).get(PLAN, []) for name in form_names]
     for count, name in enumerate(form_names, start=1):
         section = section_of(name=name, style=style, song=song)
         met[name] = met.get(name, 0) + 1
@@ -671,7 +682,8 @@ def arranged(*, style, song):
                 if part not in parts:
                     given = section.get(LINES_GIVEN, {}).get(role[ROLE])
                     lines = given or sketched(habits={**habits_of(habits=habits, player=here[role[ROLE]]), **role.get(HABITS, {}), **song.get(MELODY, {})}, plan=section[PLAN], chords=chords, scale_type=scale_type, seed=song.get(SEED, 0), answers=bool(role.get(ANSWERS)),
-                                               engine=song.get(MELODY_ENGINE, role.get(ENGINE)), voice=role.get(VOICE))
+                                               engine=song.get(MELODY_ENGINE, role.get(ENGINE)), voice=role.get(VOICE),
+                                               letters=line_letters(plans=plans, answers=bool(role.get(ANSWERS))))
                     if all(all(REST in note for note in line) for line in lines):
                         continue
                     parts[part] = tune_part(lines=lines, role=role, meter=meter, grid=habits[GRID])

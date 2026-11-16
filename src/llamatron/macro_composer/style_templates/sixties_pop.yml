@@ -18,6 +18,7 @@
 #             A player of a figure, such as the bass, varies bars of each four-bar phrase by ending them with notes
 #             of their own (ends), written on a grid of so many steps to the bar and left out where the figure's grid differs.
 # melody      the habits a tune is sketched by when a song gives none: the notes used, rhythm cells, how far it ranges.
+#             smart holds the smart melody style's seven gauges, each from 1 to 8.
 # Eight steps to a bar in 4/4, eighths; six in 3/4. No band, label, artist or work is named or followed.
 
 name: sixties_pop
@@ -377,6 +378,7 @@ melody:
     grid: 8
     line_bars: 2
     span: 5
+    smart: {moves: 2, steps: 3, after_leap: 2, phrase: 7, leaning: 2, notes: 4, surprise: 2}
     home: {degree: 3}
     ladder: [{degree: 1}, {degree: 2}, {degree: 3}, {degree: 4}, {degree: 5}, {degree: 6}, {degree: 7}]
     rhythms:
@@ -392,6 +394,7 @@ melody:
     grid: 6
     line_bars: 2
     span: 5
+    smart: {moves: 2, steps: 3, after_leap: 2, phrase: 7, leaning: 2, notes: 4, surprise: 2}
     home: {degree: 3}
     ladder: [{degree: 1}, {degree: 2}, {degree: 3}, {degree: 4}, {degree: 5}, {degree: 6}, {degree: 7}]
     rhythms:

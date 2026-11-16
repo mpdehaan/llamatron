@@ -22,10 +22,12 @@ the lead or the answering instrument plays it. A line takes one of the style's r
 notes by step, landing its long notes on the notes of the chord under them. The same seed gives the same tune.
 """
 
+import math
 import random
 
-from llamatron.macro_composer.operations import backwards, moved, rotated, upside_down
 from llamatron.macro_composer.notation import ACCIDENTAL, ARRIVAL, DEGREE, ENDING, FLAT, LOUDER, OCTAVE, REST, SHARP, STEPS, STRESS
+from llamatron.macro_composer.operations import backwards, moved, rotated, upside_down
+from llamatron.strings.errors import ERR_MELODY_NEEDS_RHYTHMS
 
 # The fields of a style's melody habits.
 GRID = 'grid'
@@ -47,6 +49,20 @@ ENGINE = 'engine'
 STEP_WALK = 'step walk'
 SERIAL = 'serial'
 EVOLVING = 'evolving'
+SMART = 'smart'
+# The smart engine's seven gauges, each from 1 to 8, and where each stands until a style or a song says: how often a tune leaps,
+# whether its steps fall or rise, whether the note after a leap comes back or carries on, how strongly a phrase arches, whether
+# a note that leans is resolved or left hanging, how long its notes are, and how often it breaks its own tendencies.
+GAUGE_MOVES = 'moves'
+GAUGE_STEPS = 'steps'
+GAUGE_AFTER_LEAP = 'after_leap'
+GAUGE_PHRASE = 'phrase'
+GAUGE_LEANING = 'leaning'
+GAUGE_NOTES = 'notes'
+GAUGE_SURPRISE = 'surprise'
+LOWEST_GAUGE = 1
+HIGHEST_GAUGE = 8
+DEFAULT_GAUGES = {GAUGE_MOVES: 2, GAUGE_STEPS: 3, GAUGE_AFTER_LEAP: 2, GAUGE_PHRASE: 6, GAUGE_LEANING: 3, GAUGE_NOTES: 4, GAUGE_SURPRISE: 3}
 # What each new line of the evolving engine adds to the running amount: places moved up the ladder, and notes begun later.
 EVOLVE = 'evolve'
 MOVE = 'move'
@@ -184,14 +200,16 @@ class StepWalk:
 
     Another engine is a subclass that makes a new line, and varies a line it has made, its own way."""
 
-    __slots__ = ('_habits', '_chords', '_scale_type', '_seed', '_answers', '_grid', '_ladder', '_home', '_low', '_high')
+    __slots__ = ('_habits', '_chords', '_scale_type', '_seed', '_answers', '_grid', '_ladder', '_home', '_low', '_high', '_letters')
 
-    def __init__(self, *, habits, chords, scale_type, seed, answers, voice=None):
+    def __init__(self, *, habits, chords, scale_type, seed, answers, voice=None, letters=()):
         self._habits = habits
         self._chords = chords
         self._scale_type = scale_type
         self._seed = seed if voice is None else VOICE_SEED.format(seed, voice)
         self._answers = answers
+        # The letters of every line of the song this engine's player plays, in the order the song first plays them.
+        self._letters = list(letters)
         self._grid = habits[GRID]
         self._ladder = ladder_of(notes=self.notes(), scale_type=scale_type)
         self._home = home_place(ladder=self._ladder, home=habits[HOME])
@@ -258,8 +276,8 @@ class Serial(StepWalk):
 
     __slots__ = ('_row', '_form', '_at', '_lengths', '_length_at', '_place', '_stream', '_sounded')
 
-    def __init__(self, *, habits, chords, scale_type, seed, answers, voice=None):
-        super().__init__(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice)
+    def __init__(self, *, habits, chords, scale_type, seed, answers, voice=None, letters=()):
+        super().__init__(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
         self._row = list(range(len(self.notes())))
         random.Random(ROW_SEED.format(seed)).shuffle(self._row)
         self._stream = random.Random(STREAM_SEED.format(self._seed, answers))
@@ -353,8 +371,8 @@ class Evolving(StepWalk):
 
     __slots__ = ('_phrase', '_made')
 
-    def __init__(self, *, habits, chords, scale_type, seed, answers, voice=None):
-        super().__init__(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice)
+    def __init__(self, *, habits, chords, scale_type, seed, answers, voice=None, letters=()):
+        super().__init__(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
         self._phrase = None
         self._made = 0
 
@@ -396,6 +414,214 @@ class Evolving(StepWalk):
         return self.with_places(line=line, places=rotated(row=places, by=1))
 
 
+# What the smart engine weighs a move by. A move is so many places along the ladder: none repeats the note, one is a step, two
+# a skip, three a leap. A step is the norm, and the others are weighed against it.
+SMART_MOVES = (-3, -2, -1, 0, 1, 2, 3)
+STEP_SIZE = 1
+REPEAT_WEIGHT = 0.45
+SKIP_SHARE = 0.9
+LEAP_SHARE = 0.45
+# A leap is likelier upward, a step that follows a step the same way is likelier still, and a move after a leap that comes back
+# is likelier than one that carries on, by as much as the gauge says.
+LEAP_UP_FAVOUR = 1.5
+STEP_ON_FAVOUR = 1.4
+RETURN_FAVOUR = 4.0
+# How hard a phrase's shape pulls a note toward it: the places away a note may be before its weight falls to a third or so, at
+# the gauge's lowest and highest.
+LOOSEST_PULL = 6.0
+TIGHTEST_PULL = 0.9
+# The shapes a line may take, each the height it aims at through the line, from 0 at its start to 1 at its end, as a share of
+# the line's reach: an arch, a climb, a tumble down from the top, and a dip.
+SHAPE_ARCH = 'arch'
+SHAPE_CLIMB = 'climb'
+SHAPE_TUMBLE = 'tumble'
+SHAPE_DIP = 'dip'
+# How much of the range a line's shape reaches over, the share of the tendencies broken at the highest Surprise, the share by
+# which a landing note's wish for the chord is weakened at the highest Leaning, and how much more a note off the chord wants the chord's note beside it.
+REACH_SHARE = 0.75
+MOST_SURPRISE = 0.25
+MOST_HANGING = 0.6
+RESOLVE_FAVOUR = 3.0
+# How much more a note that lands wants a note of the chord, at the lowest Leaning.
+CHORD_FAVOUR = 6.0
+# A line marked higher sits this share of the range above the others.
+HIGHER_SHARE = 0.5
+# The fewest rhythms the lines of a song are dealt from, where a style has as many.
+SMALLEST_DECK = 3
+# A varied line keeps this share of its notes, its head, so that it is known again.
+HEAD_SHARE = 0.5
+RHYTHM_SEED = 'rhythms {} {}'
+# What every shape and every move weighs at the least, so that none is ever impossible, and how much more an arch weighs
+# at the highest Phrase.
+LEAST_SHAPE = 0.2
+DIP_WEIGHT = 0.1
+ARCH_FAVOUR = 2
+LEAST_STEP = 0.25
+LEAST_LEAP = 0.03
+# A leap's weight at the highest Moves, and how slowly it grows from the lowest, so that low positions keep leaps rare.
+MOST_LEAP = 2
+LEAP_CURVE = 1.5
+# How much of a move's weight is lost when it carries on after a leap, at the lowest After leap.
+CARRY_ON_LOSS = 0.8
+SKIP_SIZE = 2
+SHAPE_SEED = 'shape {} {} {}'
+
+
+def share_of_gauge(position):
+    """A gauge's position as a share from 0, its lowest, to 1, its highest."""
+    return (position - LOWEST_GAUGE) / (HIGHEST_GAUGE - LOWEST_GAUGE)
+
+
+def sounds_in(rhythm):
+    return sum(1 for cell in rhythm if REST not in cell)
+
+
+def shape_height(*, shape, through):
+    """The height a shape aims at so far through a line, from -1 to 1 of the line's reach."""
+    if shape == SHAPE_ARCH:
+        return math.sin(math.pi * through)
+    if shape == SHAPE_CLIMB:
+        return 2 * through - 1
+    if shape == SHAPE_TUMBLE:
+        return 1 - 2 * through
+    return -math.sin(math.pi * through)
+
+
+class Smart(StepWalk):
+    """The smart engine: a tune that follows what a listener expects. Most moves are steps, steps mostly fall and leaps mostly
+    rise, a step tends to carry on, a leap is followed by a move back, each line has a shape, a note off the chord leans toward
+    the chord's note beside it, and long notes land on the chord. Seven gauges say how strongly, set by the style and changed
+    by a song. A line marked higher, as a chorus's, sits higher, and each line of a song is dealt a rhythm of its own while
+    the style's last, so that a chorus is unlike its verse; a varied line keeps its head, so that a hook is known when it returns."""
+
+    __slots__ = ('_gauges',)
+
+    def __init__(self, *, habits, chords, scale_type, seed, answers, voice=None, letters=()):
+        super().__init__(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
+        self._gauges = {**DEFAULT_GAUGES, **habits.get(SMART, {})}
+
+    def gauge(self, name):
+        return share_of_gauge(self._gauges[name])
+
+    def rhythm_for(self, *, entry, dice):
+        """A line's rhythm, dealt from the style's so that the song's lines differ: the rhythms nearest the length of note the
+        Notes gauge asks for are the deck, shuffled once for the song, and each line takes the next by its place among the
+        song's lines, so a chorus's hook has a rhythm no line of the verse before it has while the deck lasts. A line the
+        song's list does not name draws one."""
+        rhythms = sorted(self._habits[ANSWER_RHYTHMS] if self._answers else self._habits[RHYTHMS], key=sounds_in)
+        if not rhythms:
+            raise ValueError(ERR_MELODY_NEEDS_RHYTHMS)
+        wanted = self.gauge(GAUGE_NOTES) * (len(rhythms) - 1)
+        nearest = sorted(range(len(rhythms)), key=lambda place: (abs(place - wanted), place))
+        deck = [rhythms[place] for place in nearest[:max(SMALLEST_DECK, len(rhythms) - 1)]]
+        random.Random(RHYTHM_SEED.format(self._seed, self._answers)).shuffle(deck)
+        letter = entry.get(LINE)
+        if letter not in self._letters:
+            return dice.choice(deck)
+        return deck[self._letters.index(letter) % len(deck)]
+
+    def shape_for(self, *, entry, dice):
+        """A line's shape: an arch as often as the Phrase gauge says, else a climb or a tumble as the Steps gauge leans, or a dip."""
+        arch = self.gauge(GAUGE_PHRASE)
+        rise = self.gauge(GAUGE_STEPS)
+        weights = {SHAPE_ARCH: LEAST_SHAPE + ARCH_FAVOUR * arch, SHAPE_CLIMB: LEAST_SHAPE + rise * (1 - arch), SHAPE_TUMBLE: LEAST_SHAPE + (1 - rise) * (1 - arch), SHAPE_DIP: DIP_WEIGHT}
+        return dice.choices(list(weights), weights=list(weights.values()))[0]
+
+    def centre(self, entry):
+        """The place a line's shape turns about: the home note, or higher by a share of the range for a line marked higher."""
+        return self.within(self._home + (round(self._habits[SPAN] * HIGHER_SHARE) if entry.get(HIGHER) else 0))
+
+    def in_chord(self, *, place, chord):
+        return self._ladder[place][0] % NOTES_IN_OCTAVE in chord_notes(chord=chord, scale_type=self._scale_type)
+
+    def weight(self, *, move, place, before, aim, chord, lands):
+        """How likely a move is from a place, after the move before it, toward the height the line's shape aims at; a note
+        that lands, a long one or a line's last, wants a note of the chord, the less so the more the Leaning gauge leaves hanging."""
+        to = place + move
+        if not self._low <= to <= self._high:
+            return 0
+        size = abs(move)
+        leaps = self.gauge(GAUGE_MOVES)
+        rise = self.gauge(GAUGE_STEPS)
+        if size == 0:
+            weight = REPEAT_WEIGHT
+        elif size == STEP_SIZE:
+            weight = (LEAST_STEP + rise) if move > 0 else (LEAST_STEP + 1 - rise)
+            if before == move:
+                weight *= STEP_ON_FAVOUR
+        else:
+            weight = (LEAST_LEAP + MOST_LEAP * leaps ** LEAP_CURVE) * (SKIP_SHARE if size == SKIP_SIZE else LEAP_SHARE) * (LEAP_UP_FAVOUR if move > 0 else 1)
+        if before is not None and abs(before) > STEP_SIZE and move:
+            carries_on = (move > 0) == (before > 0)
+            back = 1 - self.gauge(GAUGE_AFTER_LEAP)
+            weight *= (1 - back * CARRY_ON_LOSS) if carries_on else (1 + back * (RETURN_FAVOUR - 1))
+        if not self.in_chord(place=place, chord=chord) and size == STEP_SIZE and self.in_chord(place=to, chord=chord):
+            weight *= 1 + (1 - self.gauge(GAUGE_LEANING)) * (RESOLVE_FAVOUR - 1)
+        if lands and self.in_chord(place=to, chord=chord):
+            weight *= 1 + (1 - self.gauge(GAUGE_LEANING) * MOST_HANGING) * (CHORD_FAVOUR - 1)
+        pull = LOOSEST_PULL + self.gauge(GAUGE_PHRASE) * (TIGHTEST_PULL - LOOSEST_PULL)
+        return weight * math.exp(-abs(to - aim) / pull)
+
+    def next_place(self, *, place, before, aim, chord, lands, dice):
+        """The place of a line's next note, and the move that reached it."""
+        allowed = [move for move in SMART_MOVES if self._low <= place + move <= self._high]
+        if dice.random() < self.gauge(GAUGE_SURPRISE) * MOST_SURPRISE:
+            move = dice.choice(allowed)
+        else:
+            weights = [self.weight(move=move, place=place, before=before, aim=aim, chord=chord, lands=lands) for move in allowed]
+            move = dice.choices(allowed, weights=weights)[0]
+        return place + move, move
+
+    def walked(self, *, rhythm, centre, shape, under, dice, kept=()):
+        """A line on a rhythm: the notes kept from a line heard before, then a note for each sound left, chosen by the tendencies."""
+        reach = max(1, round(self._habits[SPAN] * REACH_SHARE))
+        sounds = sounds_in(rhythm)
+        notes = []
+        place = None
+        before = None
+        at = 0
+        heard = 0
+        for cell in rhythm:
+            if REST in cell:
+                notes.append({REST: cell[REST]})
+                at += cell[REST]
+                continue
+            chord = under[(at // self._grid) % len(under)]
+            through = heard / max(1, sounds - 1)
+            aim = centre + reach * shape_height(shape=shape, through=through)
+            lands = cell[STEPS] * LONG_SHARE >= self._grid or heard == sounds - 1
+            if heard < len(kept):
+                place = kept[heard]
+            elif place is None:
+                place = self.within(nearest_chord_rung(ladder=self._ladder, place=self.within(round(aim)), wanted=chord_notes(chord=chord, scale_type=self._scale_type)))
+            else:
+                place, before = self.next_place(place=place, before=before, aim=aim, chord=chord, lands=lands, dice=dice)
+            notes.append({**self._ladder[place][1], STEPS: cell[STEPS]})
+            at += cell[STEPS]
+            heard += 1
+        return notes
+
+    def new_line(self, *, entry, under, dice):
+        shapes = random.Random(SHAPE_SEED.format(self._seed, self._answers, entry.get(LINE, '')))
+        return self.walked(rhythm=self.rhythm_for(entry=entry, dice=dice), centre=self.centre(entry), shape=self.shape_for(entry=entry, dice=shapes), under=under, dice=dice)
+
+    def place_of(self, note):
+        """Where on the ladder a note of a line is."""
+        for place, (_, rung) in enumerate(self._ladder):
+            if all(rung.get(field) == note.get(field) for field in PITCH_FIELDS):
+                return place
+        return self._home
+
+    def varied_line(self, *, line, dice):
+        """A line heard before, changed: its head kept note for note, on its own rhythm, and its tail walked anew about the
+        line's own middle, falling to its close."""
+        rhythm = [{REST: note[REST]} if REST in note else {STEPS: note[STEPS]} for note in line]
+        places = [self.place_of(note) for note in line if REST not in note]
+        kept = places[:max(1, round(len(places) * HEAD_SHARE))]
+        centre = self.within(round(sum(places) / len(places))) if places else self._home
+        return self.walked(rhythm=rhythm, centre=centre, shape=SHAPE_TUMBLE, under=self._chords, dice=dice, kept=kept)
+
+
 def same_note(*, one, other):
     return one[DEGREE] == other[DEGREE] and one.get(ACCIDENTAL) == other.get(ACCIDENTAL)
 
@@ -434,10 +660,11 @@ def row_as_written(*, row, size):
 
 # The four forms of a row.
 FORMS = (row_as_written, row_backwards, row_upside_down, row_upside_down_and_backwards)
-ENGINES = {STEP_WALK: StepWalk, SERIAL: Serial, EVOLVING: Evolving}
+ENGINES = {STEP_WALK: StepWalk, SERIAL: Serial, EVOLVING: Evolving, SMART: Smart}
 
 
-def sketched(*, habits, plan, chords, scale_type, seed, answers, engine=None, voice=None):
-    """A section's tune as lines, made by the engine named, else the one the habits name, else the step walk."""
+def sketched(*, habits, plan, chords, scale_type, seed, answers, engine=None, voice=None, letters=()):
+    """A section's tune as lines, made by the engine named, else the one the habits name, else the step walk. The letters are
+    those of every line of the song the player plays, for an engine that tells a song's lines apart."""
     made_by = ENGINES[engine or habits.get(ENGINE, STEP_WALK)]
-    return made_by(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice).sketched(plan)
+    return made_by(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters).sketched(plan)
