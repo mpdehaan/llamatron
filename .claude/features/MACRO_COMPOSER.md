@@ -199,6 +199,11 @@ clouds; generate and test, with motif development and counterpoint last.
   player's way, since General MIDI's voice is a hum that sounded weak. Rock's singer stays the singer with one way, `voice`,
   and plays a guitar or a synth lead by subgenre; `usual_sound` returns the stand-in, the band's Sounds and the player's own
   Sound still apply over it, and the picker offers every stand-in of the style.
+- The progression left to chance, the user's ask: while no progression is chosen (`has_any_progression`, the Themes branch's
+  first choice, "any", which a song starts on), `progressions_by_chance` draws one by the seed from the ways that work,
+  likelier the commoner, the subgenre's usual one counted twice, and only from those written for the song's scale type
+  where the style has any; `made_setlist` takes the next drawn when one makes no song. With no seed the usual one plays.
+  Rock gained three minor progressions so that a minor subgenre has several.
 - Nothing is chosen at first, the user's rule. Choosing a subgenre fills in its usual tempo, the scale type its chords are
   in, the root that scale type starts on (C for major, E for minor, Claude's choice) and the commonest form, so that a song
   can be made from a genre and a subgenre alone; choosing another genre leaves the subgenre to be chosen again. Any tempo
