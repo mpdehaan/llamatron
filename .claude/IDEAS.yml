@@ -38,6 +38,9 @@
         design had a Lead track field on the Scene page, overridable on the clip page; the Hocket,
         built since, names its source track on the generator instead, at the user's choice, so the
         Harmonizer might well do the same, to be asked when it's built.
+        Canon, once a generator of its own, is this Delay: the clip repeated a number of steps later, moved along the scale
+        and quieter, so one line becomes a round or a canon; its demo, `row_your_boat.yml`, Row, Row, Row Your Boat as a
+        round, is to show how a round is edited in the tracker.
     12. **General MIDI previews in git**: the user's goal is to check `sh user_scripts/demos_to_midi.sh`'s files, with
         `previews/DEMOS.md` describing every demo, into git, so that people without a synth can hear the
         demos (not yet).
@@ -251,7 +254,7 @@
     by dropping every other note or by a probability, swap two halves, and copy one row's values from
     another pattern. Which of them belong in the munge dialog, which are really pattern generators
     (see "Pattern generators on the Patterns page", which already has notes for pattern builders, and
-    the Metrics Wizard's "Transforms") and which want a key of their own is the thing to decide.
+    "Transforms that enrich a melody") and which want a key of their own is the thing to decide.
 
 - title: "Listening to a scene on the Scene page, and progress bars on every listen"
   priority: 2
@@ -262,6 +265,8 @@
     editor, the Scene page, a picker's preview). To work out: what a scene's listen does while a song plays from Arrange,
     stop the song, refuse, or wait for the bar; whether looping clips are cut at the scene's length; and one drawing of the
     bar shared by every page that listens, the length bars' read heads on Arrange being the nearest thing there is.
+
+    The way in would be Play and Stop buttons on the Scene page, as the clip page has.
 
 - title: "Velocity Assist: a few named velocity levels in place of numbers"
   priority: 5
@@ -296,13 +301,11 @@
     PDF, since nothing in requirements.txt does and a new dependency is the user's to approve; how notes off the grid, a
     groove, a strum, ratchets, are written; and how repeats and scenes become bars, repeat signs and section names.
 
-- title: "In progress: the batch videos, new visualizers and new demos agreed with the user"
+- title: "In progress: the demos as a course, agreed with the user"
   priority: 10
   text: |
-    Built in this order, each trimmed out as it lands:
-    1. The Julia mode (neon contour lines, its number travelling round the Mandelbrot set's edge a step a bar) and the
-       Newton mode (its roots the held notes, placed by pitch class, the regions in the tracks' colours).
-    2. The demos as a course (the user's choice): the featured songs first (edm_density, minimal_techno,
+    What is left:
+    - The demos as a course (the user's choice): the featured songs first (edm_density, minimal_techno,
        mainstreet_hoedown and new ones), then a learning path from hello_world and the Entertainer, which uses no
        features, through each feature simplest first, the order kept in one data file that docs/DEMOS.md's tables and the
        descriptions come from; each demo's entry in docs/DEMOS.md and its set's Notes get generated "Read about it" links to
@@ -331,6 +334,42 @@
     the set's file or a state of the tracker only; what sets it and takes it off, and how Arrange shows it; and how export
     says which scene blocks it.
 
+    Asked before, on 2026-11-09, as a scene that loops until another is launched, where a scene's Repeat is a fixed count. To
+    decide with it: whether an export ignores the loop and plays the scene's Repeat as it does now, or warns in the export
+    dialog and on the command line, where this idea says the loop blocks export. For the code it would be read only by
+    real-time playback and never by `SongRenderer` or the exporters. How it sits with a looping clip needs settling first,
+    since a scene whose every clip loops already plays until the human starts something else, which stops an export today.
+
+- title: "Global patterns: a song's own or the set's"
+  priority: 50
+  text: |
+    The user's idea: a pattern normally belongs to one song, and a pattern may instead belong to the set, where every song can
+    use it. Today every pattern belongs to the set and every song shares it, so this changes the model and the file format;
+    Claude is to discuss its concerns and ideas with the user, with a drawing of the list of patterns and of the main screen,
+    before anything is built. It has to be fitted to pattern groups, built since, which the Patterns page now lists by.
+
+    Settled so far for the Patterns page: it lists the global patterns and the current song's own, narrowed by the search where
+    one is typed; a column for global patterns is headed GLOBAL and holds a solid circle where the pattern is global; the key that
+    makes a pattern global or a song's own again is named for Global; a new pattern is the current song's own. A file saved before
+    the change opens with every pattern global, so nothing changes in what it means, and every demo and homage with one song
+    keeps its patterns global (`.claude/PRINCIPLES.md`). The main screen's Patterns cell counts the current song's own patterns,
+    the global ones and the total, like `3+2=5`; when either of the two is zero, the cell shows the one number alone.
+
+    A pattern that stops being global: a dialog titled "Copy Pattern to Songs" lists the songs, each with how many clips of it
+    play the pattern, like `in 8 clips`, with no OK button; several songs can be selected and each gets a copy of its own; it
+    shows ten songs at most and scrolls, with a scroll bar drawn at the right of the list, since a set may hold fifty songs.
+    Once the copies are made the global pattern is removed, and ENTER is refused while no song is marked.
+
+    Names: each song has names of its own, so two songs may each have a pattern of one name, but a global pattern's name and
+    any song's own pattern's name never match; a copy made into a song keeps the global pattern's name, which can't clash.
+    Making a pattern global, or renaming one, where that rule would break opens a dialog titled "New name required, conflict in N
+    song(s)", holding only the tracker's standard text field, opened on a free numbered name, and its keys, ENTER reading
+    "rename/promote"; only a name free everywhere the pattern would be seen is accepted.
+
+    The user wants generators and chains to work exactly as patterns do in all of this, a song's own or global, once Claude has
+    shown it understands what that means; open there: a global chain that links a song's own generator, the order of the
+    Generators page, and what the pages' columns show.
+
 - title: "List pages that use the room the console has"
   priority: 50
   text: |
@@ -341,42 +380,17 @@
     all four arrows and stopping at every edge, the search, Move mode and the `+` row keeping their behaviour, 80 by 24
     staying as today.
 
-    For the set's list of patterns, the user's ask: where the console has the room, each row shows the tracks that play the
-    pattern, in the space the row has left; when the names don't fit, they are cut with an ellipsis, and the number of uses is
-    always shown, whatever the room. With it comes the user's idea of global patterns: a pattern normally belongs to one song, and
-    a pattern may instead belong to the set, where every song can use it. The main screen and the other top level screens stay as
-    they are, but a count of patterns reads as the song's own, the set's and the total, like `3+2=5`. The list of patterns gets
-    a column beside the tracks holding a star: a starred pattern is global and belongs to the set, and taking the star away asks,
-    in a dialog, which song the pattern goes to, since it no longer belongs to the set. Today every pattern belongs to the set and
-    every song shares it, so this changes the model and the file format; Claude is to discuss its concerns and ideas with the user,
-    with a drawing of the list of patterns and of the main screen, before anything is built. Settled so far for the Patterns page:
-    it lists the global patterns and the current song's own, in alphabetical order, narrowed by the search where one is typed; a
-    blank line separates the caption from the column headings; the column for global patterns is headed GLOBAL and holds a solid
-    circle where the pattern is global; TYPE becomes DRUM, a solid circle for a drum pattern and nothing otherwise; USED counts the
-    clips that play the pattern; and TRACKS, where there is room, reads as the number of tracks and then their names in
-    parentheses, like `(2 lead, pad)`, cut with an ellipsis when the names don't fit; every column, heading and value, is
-    left-justified; the key that makes a pattern global or a song's own again is named for Global; a new pattern is the current
-    song's own; and the keys that move and sort rows leave the Patterns page alone, since its order is alphabetical, the other list
-    pages keeping both. A file saved before the change opens with every pattern global, so nothing changes in what it means, and
-    every demo and homage with one song keeps its patterns global (`.claude/PRINCIPLES.md`). The main screen's Patterns cell counts
-    the current song's own patterns, the global ones and the total, like `3+2=5`. When either of the two is zero, the cell shows the one number alone. The dialog shown when a
-    pattern stops being global is titled "Pattern Moving to Local, Select Songs" and is only the list of songs, each with how many
-    clips of it play the pattern, like `in 8 clips`, with no OK button. Settled since: several songs can be selected and each gets a
-    copy of its own, so the dialog is titled "Copy Pattern to Songs"; it shows ten songs at most and scrolls, with a scroll bar drawn
-    at the right of the list, since a set may hold fifty songs; and because each song then has names of its own, making a pattern
-    global when another song has a pattern of that name asks for a rename first, in a dialog to be drawn for the user. Once the
-    copies are made the global pattern is removed, and ENTER is refused while no song is marked. Names: each song has names of its
-    own, so two songs may each have a pattern of one name, but a global pattern's name and any song's own pattern's name never
-    match; a copy made into a song keeps the global pattern's name, which can't clash. Making a pattern global, or renaming one,
-    where that rule would break opens a dialog titled "New name required, conflict in N song(s)", holding only the tracker's
-    standard text field, opened on a free numbered name, and its keys, ENTER reading "rename/promote"; only a name free everywhere
-    the pattern would be seen is accepted. How numbered names are made, here and everywhere in the tracker, is to be one rule,
-    being discussed with the user. The user wants generators and chains to work exactly as
-    patterns do in all of this, a song's own or global, once Claude has shown it understands what that means; open there: a global
-    chain that links a song's own generator, the order of the Generators page, and what the pages' columns show. What it would mean for the code: `uses_of` in `tui/uses.py` already knows
-    every use, and the Patterns page's USED column the count; the row needs the track names of the uses, without repeats, fitted
-    to the width the page is given, and the answer remembered until the set changes. This covers what was left of "Where a
-    pattern is used" for the Patterns page.
+    For the Patterns page, the user's ask: where the console has the room, each row shows the tracks that play the pattern, in
+    the space the row has left, as a column TRACKS that reads as the number of tracks and then their names in parentheses, like
+    `(2 lead, pad)`, cut with an ellipsis when the names don't fit; the number of uses is always shown, whatever the room. Also
+    settled: a blank line separates the caption from the column headings; TYPE becomes DRUM, a solid circle for a drum pattern
+    and nothing otherwise; every column, heading and value, is left-justified. What it would mean for the code: `uses_of` in
+    `tui/uses.py` already knows every use, and the Patterns page's USED column the count; the row needs the track names of the
+    uses, without repeats, fitted to the width the page is given, and the answer remembered until the set changes.
+
+    A way to see every use of one pattern, as a list of song, scene and track, like the list shown when deleting a used pattern
+    is refused, from the Patterns page or the pattern editor, belongs with this: `uses_of` already puts the uses into words, so
+    a key that shows them in a `MessageDialog` is most of it.
 
 - title: "Arrange scrolls with what plays, when launched for recording"
   priority: 50
@@ -442,17 +456,12 @@
     per column and per row. Whether the blue dividers show while only some cells are open, and how this sits beside `R`, are
     to be discussed.
 
-- title: "Generators for composing in sections: Canon, and the ones set aside"
+- title: "Generators for composing in sections: the ones set aside and declined"
   priority: 99
   text: |
-    What is left of the chain generators that work on phrases and sections, each to be discussed in
-    detail before it's built and shown in a demo of its own; Progression, Voice leading, Density,
-    Swell, Strum and the Euclidean mask are built.
-
-    - **Canon**, with `row_your_boat.yml`, Row, Row, Row Your Boat as a round: the clip repeated a
-      number of steps later, moved along the scale and quieter, so one line becomes a round or a
-      canon. The demo is to show how a round is edited in the tracker. The Harmonizer's Delay, in
-      the designs of 2026-11-11, makes a canon too, so the two may be one generator.
+    What is left of the chain generators that work on phrases and sections. Progression, Voice leading,
+    Density, Swell, Strum and the Euclidean mask are built, and Canon is the Harmonizer's Delay, in the
+    designs of 2026-11-11.
 
     Set aside for now, by the user: Develop (motif transformations across repeats), Ornament (trills,
     mordents, turns and grace notes as one setting) and Register fold (notes kept inside an octave
@@ -471,6 +480,10 @@
     kind of its own or part of the arpeggiator, how the steps and the chord are chosen (a chord
     symbol, as the Chord row's, or the scale's triad), and whether a note already a chord is left
     alone.
+
+    An earlier ask of the same kind, from 2026-11-07: as a setting of the arpeggiator, a row like the offsets row but holding
+    chord symbols, which puts a chord type on a step of the arp's cycle, so that an arp over a line can play, say, the third
+    note of each cycle as a triad and the rest as single notes.
 
 - title: "The video tutorial, a long one with chapters (unfinished, set aside by the user)"
   priority: 99
@@ -670,11 +683,6 @@
     patterns on six tracks over 20 scenes, and had 107 over 38 when its phrases were four bars. That's a realistic size for a full composition, and it
     shows where a plain list of patterns starts to strain:
 
-    - **Seeing what belongs together.** Names like `A 1-4 treble 1` group themselves by section and
-      by track only by convention. The list could group or sort by a name's prefix, or by the track
-      a pattern is used on, or show only the patterns one track or one scene uses.
-    - **Knowing where a pattern is used.** The Patterns page counts each pattern's uses in USED,
-      and `/` searches every list; listing the uses is "Where a pattern is used" below.
     - **Going straight from a clip to its morph target or its chain.** `P` (Pattern) opens a
       clip's pattern from Arrange and the clip page; the same could work for its `morph_to`
       pattern and for its chain.
@@ -775,72 +783,17 @@
       the scale, as everything else does. A bassline or melody could also take its chords from
       another pattern, the way a grab takes notes from a track.
 
-- title: "Wizards for large changes"
+- title: "Utility wizards for large changes"
   priority: 99
   text: |
-    Bigger tools, possibly opened with `W`, for changes too large to make by hand comfortably:
-    starting a song from a template (a set of tracks, scales and empty scenes for a style), or
-    utility work like renaming a set of patterns, copying a section to a new key, or splitting a
-    long pattern into phrases. W already saves under a new name on the File/Global page, so the key
-    would need some thought.
+    Bigger tools for changes too large to make by hand comfortably: utility work like renaming a set
+    of patterns, copying a section to a new key, or splitting a long pattern into phrases. The key
+    that opens them needs thought.
 
     llamatron must not become an AI music generator, so a wizard never decides the music for you.
     Every wizard asks plenty of questions and does only what the answers say, and what it makes is
-    ordinary patterns, tracks and scenes that can be edited afterwards. To be explored later.
-
-    ### (Medium priority) Style wizards for starter songs
-
-    Very interesting to the user. Wizards that make a starter song in a
-    style, which the user then edits like any other: every pattern, track and scene stays ordinary
-    and editable. Styles the user mentioned:
-
-    - country rock, with options named in the spirit of artists without copying them, like "Neil"
-      and "LargeBirds"
-    - classic metal, and the new wave of British heavy metal
-    - classical composers' styles
-    - jazz, in its various modes
-    - blues, especially 12-bar blues and its variations
-
-    The rules:
-
-    - It's a fun starting point, not an AI generator. Each wizard asks key questions every time, so
-      the user has to make the human choices: how long the song is, which scale to use from a list
-      the style suggests, and so on.
-    - Styles, not songs: nothing copies a real piece's melody or arrangement, so there's no copyright
-      problem. A style is things like its chord progressions, rhythms, tempos, scales and form.
-    - Songs consider key changes where the style has them, such as a modulation up for a last
-      chorus, which scenes' own scales can already do.
-    - Each style needs research before it's written, and styles can be added and improved over time.
-    - It needs its own package, perhaps `src/llamatron/wizards/`, with one module per style, to keep
-      the code clean.
-
-    What it touches in the code: wizards would build songs through the composition objects, which
-    is how every change is made now. It likely
-    shares code with the pattern generators above, and blues and jazz progressions would want the
-    scale chords and per-scene scales that already exist. The wizard key is still to be decided (see
-    above, and the hotkey review).
-
-    ### A construction wizard: genre first, then questions
-
-    The user's idea from 2026-11-08, growing the style wizards above into a bigger, smarter one,
-    and a very big research project:
-
-    - **Genre, then subgenre.** The wizard first asks for a genre, like rock, country, blues,
-      classical, rap or electronic, and then a subgenre. Electronic must include at least minimal
-      techno and acid, and each style has its own minor variations worth modelling.
-    - **Questions, not decisions.** It asks about the keys to use, whether to include key changes
-      and how many, how many tracks, how many of them are rhythm tracks, and whether percussion is
-      one combined track or several. Desired song length and feeling are asked too.
-    - **Drum maps.** A combined percussion track should follow Live's drum rack MIDI note maps, as
-      discussed on the internet, as far as that can be found out (see "Named drum maps").
-    - **Research.** Every genre needs research into its styles and composition rules, so that the
-      wizard is smart, and the code object-oriented: a style is an object with its rules, which
-      subgenres refine.
-    - **Names people can work with.** Patterns are named very deliberately, so that it's easy to
-      find and tweak them afterwards, and scales are named after the parts of the song they belong
-      to, so that people can edit or rename a part's scale easily.
-    - **Renames must be safe** for this to work: renaming any object updates everything that refers
-      to it (a rule in CLAUDE.md, checked by `tests/composition/test_renames.py`).
+    ordinary patterns, tracks and scenes that can be edited afterwards. To be explored later. The
+    wizard that makes a starter song in a style is the song wizard (`.claude/features/WIZARD_DESIGNS.md`).
 
 - title: "Import MIDI, what's left"
   priority: 99
@@ -897,6 +850,16 @@
     designing Progression: it could flag things that don't make sense, like a progression on a drum
     track (which does nothing), recommend features, and perhaps refactor a song.
 
+    It also reports on a song and suggests things to look at, without changing anything (once the idea of a Metrics Wizard):
+
+    - how long each scene and the song are, and how often each pattern is used, including unused
+      patterns;
+    - each track's range of notes, and notes that fall outside a typical instrument's range;
+    - how busy each scene is, in notes per bar for each track;
+    - notes outside the scale, and tracks that clash, such as a half step apart on a strong beat;
+    - velocities that never change, or clips much shorter than their scene;
+    - how much repeats exactly, which hints at where an Optimizer Wizard could help.
+
 - title: "Smoothing a bound CC lane"
   priority: 99
   text: |
@@ -939,16 +902,6 @@
       below, with the same Launch together rule when the start arrives. "Any" and "Other", Live's
       random ones, would take the song's seed. Nothing in the format changes but the list of
       choices.
-    - **Looping a scene, to consider.** The user asked on 2026-11-09 whether a scene that loops makes
-      sense once playback is in real time: the scene plays again and again until another is
-      launched, where a scene's Repeat is a fixed count (the Scene page stops Repeat at 999, which
-      the user thinks is more than anyone needs). An export has to end, so a looping scene would
-      have to be ignored when exporting, playing its Repeat as it does now, or warned about, in the
-      export dialog and on the command line. Which of the two is to decide. For the code it would be
-      a scene setting that is off by default, so no file needs migrating, read only by real-time
-      playback and never by `SongRenderer` or the exporters. How it sits with a looping clip needs
-      settling first, since a scene whose every clip loops already plays until the human starts
-      something else, which stops an export today.
     - **Testing over the wire with a receiver**, from the user on 2026-11-07: a small program the
       tests spin up, which makes itself visible as a MIDI device (a virtual port through
       python-rtmidi's `open_virtual_port` on a Mac or Linux, or the IAC driver) and records every
@@ -979,8 +932,6 @@
 
     - **The pattern editor**: a Munge button right after the step grid, which opens the munge dialog
       and shows `M`, so that munging moves out of the footer and the footer gets shorter.
-    - **Real-time MIDI**: Play and Stop buttons on the Scene page, as the clip page has. The pattern
-      editor keeps to the `L` key alone, since the page is full, by the user's choice of 2026-11-09.
     - **Claude's other candidates, to weigh**: an Export button on the Song page already exists as a
       row, which is the same idea; a Rename button on the editors that rename with `N`; Load over on
       the pattern editor beside Munge; New set and Save as on the File/Global page; Add at the bottom of
@@ -1039,54 +990,28 @@
     itself is a `FieldPage` that writes the dotfile back. Tests set a dotfile path explicitly so that
     they never read the developer's own.
 
-- title: "Colour, switched on in the song"
+- title: "Colour: a light terminal's palette, and switching itself off"
   priority: 99
   text: |
-    From the user on 2026-11-08: a `colour` setting on the Song page, off by default, that lets the
-    tracker draw in colour; today it draws with bold, dim, reverse video and box characters only,
-    because terminal backgrounds differ (`.claude/UX.md`, "Drawing"). To discuss before anything is
-    built: how colour is best used, which things would carry it (the beat lines, the selected row,
-    the gauge, the tie bars, the status line) and whether the terminal's theme can be detected, which
-    Textual tries through the terminal's reported background and which not every terminal answers.
-    If it can't be, two palettes, one for dark terminals and one for light, chosen in the same
-    setting, each checked on a real terminal of its kind. A later idea: once a Settings page exists
-    ("A Settings page, from a YAML dotfile" below), the setting moves there, since colour is the
-    user's preference rather than the song's, and the dotfile in the home directory is where it
-    belongs. What it would mean for the code: `Style` in `tui/drawing.py` is the one place styles are
-    named, so a palette is a mapping from each of its names to a Rich style, picked when the app
-    starts and whenever the setting changes, and `screen_text` in the tests reads only reverse video,
-    so colours need a test of their own that checks the palette is applied and nothing else changes.
+    Colour has arrived allowance by allowance (`.claude/UX.md`, "Drawing"), the themes' stripes among them, in place of the one
+    switch first imagined. Two things are left. The colours were chosen on a dark terminal, so each wants checking on a light
+    one, with a second palette if any reads badly: `Style` in `tui/drawing.py` is the one place styles are named, so a palette
+    is a mapping from each of its names to a Rich style, picked when the app starts. And colour should switch itself off where
+    a terminal cannot show it, with no setting: what to look up is Textual's `theme`, `available_themes` and `register_theme`
+    (the app runs with `ansi_color=True` today, which keeps the terminal's own sixteen colours), whether it asks the terminal
+    for its background colour and exposes the answer, Rich's `Console.color_system` for the colour depth, and the `COLORTERM`
+    and `NO_COLOR` environment variables, which a terminal sets and a person can set to switch colour off. Also asked for and
+    not built: the piano roll's cursor box in a colour of its own.
 
-    Added by the user on 2026-11-08: once there's colour, each kind of page gets a stripe of its own
-    colour down the left edge of the screen, drawn with block characters from under the header to the
-    legend, so that a glance says which page is open, because some pages start to feel the same: the
-    list pages, the settings pages and the editors each read alike. One colour per kind of page, or
-    per page, is to be decided with the palette. What it would mean for the code: a `STRIPE` colour
-    name on each `Page` class, or one per base class, drawn by `Page.draw` as the first column of
-    every body line when colour is on, with the body a column narrower, so no page lays it out itself.
-    The user added on 2026-11-08 that the main screen's cells take the same colours as the stripes of
-    the pages they open, so the grid is a key to the stripes.
-
-    Added by the user on 2026-11-09: the piano roll's cursor box, the bold double bars either side of
-    the cursor's cell and the double rule that boxes it against an octave divider, takes a colour of
-    its own once there's colour. And rather than a setting, colour should switch itself on: look up
-    whether Textual can tell that the terminal supports colour and engage it automatically, ignoring
-    the idea that colour needs a user preference, choosing colours that look good first on a dark
-    terminal and are still not bad on a light one. If Textual can switch to its dark theme on its own,
-    that's the ideal. What to look up: Textual's `theme`, `available_themes` and `register_theme` (the
-    app runs with `ansi_color=True` today, which keeps the terminal's own sixteen colours), whether it
-    asks the terminal for its background colour and exposes the answer, Rich's `Console.color_system`
-    for the colour depth, and the `COLORTERM` and `NO_COLOR` environment variables, which a terminal
-    sets and a person can set to switch colour off.
-
-- title: "Ctrl+ keys for the rest of what's global, to discuss"
+- title: "Keys for the rest of what's global, to discuss"
   priority: 99
   text: |
-    Save is Ctrl+S, Open is Ctrl+O, Export is Ctrl+X, Help is F1 and About is F2, so that the
-    plain letters are always local to the screen in question and free to change, as the user decided
-    on 2026-11-07; Quit became the plain Q on the main screen alone on 2026-11-08, because Ctrl+Q was awkward to type. New and Save As are still plain letters on the File/Global page, and whether they count
-    as global and should move to Ctrl+ keys too is to discuss. Ctrl+C, Ctrl+Z and a few others are taken by the
-    terminal, and on a Mac F1 needs Fn unless the function keys are set to standard keys.
+    What works on every page is a Ctrl+ key or a function key, so that the plain letters are always a page's own
+    (`.claude/UX.md`, "Keys and legends"). Two things are left to discuss. New and Save As are still plain letters on the
+    File/Global page, and whether they count as global and should take Ctrl+ keys too. And whether the things that matter most,
+    Save, Export and Open, could take function keys as well, since one key is easier to type than Ctrl and a letter; F1, F2, F3
+    and F5 are taken, macOS keeps F9 and above for its windows, and on a Mac the function keys need Fn unless they're set to
+    standard keys, which weighs against it. Ctrl+C, Ctrl+Z and a few others are taken already.
 
 - title: "uv instead of venv and pip, to discuss"
   priority: 99
@@ -1137,23 +1062,9 @@
     can never change the music. Like every wizard, it would ask before each kind of change, and
     show what it would do.
 
-- title: "A Metrics Wizard, and transforms that enrich a melody"
+- title: "Transforms that enrich a melody"
   priority: 99
   text: |
-    ### Metrics
-
-    A wizard that reports on a song and suggests things to look at, without changing anything:
-
-    - how long each scene and the song are, and how often each pattern is used, including unused
-      patterns;
-    - each track's range of notes, and notes that fall outside a typical instrument's range;
-    - how busy each scene is, in notes per bar for each track;
-    - notes outside the scale, and tracks that clash, such as a half step apart on a strong beat;
-    - velocities that never change, or clips much shorter than their scene;
-    - how much repeats exactly, which hints at where an Optimizer Wizard could help.
-
-    ### Transforms
-
     Ways to make a basic melody or part richer, each one a choice the user makes, and repeatable
     with a seed:
 
@@ -1188,22 +1099,6 @@
     drawing. The tests would step the timer by hand rather than wait, and check that a save starts a
     run the other way.
 
-- title: "Explaining the row under the cursor"
-  priority: 99
-  text: |
-    Asked for by the user on 2026-11-08. The main screen does it already: the dim line under the grid
-    says what the selected cell is for (`MSG_ABOUT`). What is left: the list and settings pages could
-    explain their rows the same way, like a field's meaning on the Song page.
-
-- title: "Where a pattern is used"
-  priority: 99
-  text: |
-    A pattern shows where it's played: the Patterns page counts its uses in USED, and the next step
-    is a way to see them, as a list of song, scene and track, like the list shown when deleting a
-    used pattern is refused, from the Patterns page or the editor. What it would mean for the code:
-    `uses_of` in `tui/uses.py` already puts the uses into words, so a key on the Patterns page
-    or the editor that shows them in a `MessageDialog`, or a column, is most of it.
-
 - title: "Tidying away unused patterns"
   priority: 99
   text: |
@@ -1214,14 +1109,6 @@
     Patterns page's USED count already know which patterns are unused, so it's a question after the
     Songs page's delete and a key on the Patterns page, each one undo step. Undecided: the key's
     letter, and whether the question lists the patterns or only counts them.
-
-- title: "Function keys for the most important things"
-  priority: 99
-  text: |
-    Some things that matter most could take the other function keys, F3 and up, since one key is
-    easier to type than Ctrl and a letter: candidates are Save, Export and Open. On a Mac the
-    function keys need Fn unless they're set to standard keys, which weighs against it. To discuss
-    with "Ctrl+ keys for the rest of what's global" below, since both are about what's global.
 
 - title: "More ideas from Claude, noted for later"
   priority: 99
@@ -1386,24 +1273,6 @@
       which exist only because names could repeat, could perhaps go, and the clip tree's file names,
       which use ids, could use names instead.
 
-- title: "Small demo tasks, to do in one batch"
-  priority: 99
-  text: |
-    Gathered on 2026-11-07 so that they can all be done at once, since each touches `examples/`,
-    `docs/DEMOS.md` and `tests/app/test_demos.py` together:
-
-    - **The grab demo doesn't make a good song.** It should take the original melody and not have
-      different voices come in at different times: four voices alternate singing notes, so voice 1
-      sings note 1, voice 2 note 2, and so on. The full grab-track voice should be silent, but the
-      music should start immediately with all voices active for the full track.
-    - **The arpeggiator demo** is good in the first section and then halfway into the synthwave
-      section; the rest should be dropped. A lot of the other demos are EXCELLENT.
-    - **Redundancy.** The minimal techno example seems unneeded now that there's a morph demo,
-      `18_techno_morph.yml`. (acid_techno was replaced by `22_registers.yml`, and retro_chill was rewritten
-      on 2026-11-07 as an original piece and renamed `08_tie.yml`.)
-    - **The tie demo** could be replaced by a public domain song, as the other demos are, written with
-      ties instead of gate lengths, since the original piece doesn't sound great.
-
 - title: "Gauges for the generators: the auto ratchet counts, a stutter and the groove editor"
   priority: 99
   text: |
@@ -1430,14 +1299,6 @@
     would mean for the code: a dialog in `tui/dialogs/` drawn from the gauge pieces the Degree row
     and `SignedGauge` already have, and an ENTER key on `NumberRow`, `ControlRow`, `CcRow` and
     `OctaveRow`, which today only take digits and `+/-`.
-
-- title: "Arpeggiators that make chords"
-  priority: 99
-  text: |
-    Asked for on 2026-11-07, to design later: an arpeggiator setting that turns a step into a chord
-    by putting a chord type on that step, so that an arp over a line can play, say, the third note
-    of each cycle as a triad and the rest as single notes. Today an arp only splits chords into
-    notes; this would let it build them too, like the offsets row but holding chord symbols.
 
 - title: "Reviewing every hotkey in the text UI"
   priority: 99
@@ -1527,13 +1388,12 @@
   priority: 99
   text: |
     `internal_tools/demo_features.py` (`internal_tools/demo_features.sh`) prints which features each set in `examples/`
-    uses, and which none or only one does. Each demo teaches one feature (see `docs/DEMOS.md`),
-    so a feature without one is a candidate for a new demo or for a scene in an existing one. When
-    it was first run, no demo used: clip names, a song seed, a time signature other than 4/4, a
-    pattern's own time signature, or a set of several songs. Only the tie demo used ties and slides,
-    only the ratchet demo used ratchet offsets, only the registers demo used register note rows and
-    resets, and only the direction demo set a pattern's direction. The existing demos stay as they
-    are; the gaps are for the new demo below.
+    uses, and which none or only one does, so a feature without a demo is a candidate for a new demo or for a scene in an
+    existing one. Run on 2026-11-16, no set used: conditions, a pattern's own time signature, a scene's chains, a track's
+    chains, clip names, a clip's scale, a song seed, or several songs. One set alone used each of: slides, register sets,
+    register binding, a pattern's direction, a clip's shapes, register resets, a scene's groove, muted tracks, a track's groove,
+    drifts, inversions, the Euclidean mask and glides, with a few more the tool lists. The existing demos stay as they are;
+    the gaps are for the new demo below.
 
     ### A demo of several songs in one set
 
