@@ -73,6 +73,14 @@ GUITAR = 'guitar'
 METER = 'meter'
 SIX_EIGHT = '6/8'
 BALLAD = 'rock ballad'
+# A figure's bar of so many steps, the meters an ending is written for, the bars of a phrase and the last of them.
+TWO_STEPS = 2
+SIX_STEPS = 6
+EIGHT_STEPS = 8
+COMMON = '4/4'
+WALTZ = '3/4'
+PHRASE = 4
+LAST_BAR = 4
 OWN_CHORDS = [1, 1, 4, 4]
 WHOLE = 100
 A_SIXTH_BAR = 6
@@ -440,9 +448,39 @@ class TestPlayers(unittest.TestCase):
         self.assertEqual(self.bass_lines(song=song, scene=INTRO), self.bass_lines(song=held, scene=INTRO))
         self.assertNotEqual(self.bass_lines(song=song, scene=INTRO), self.bass_lines(song=song, scene=CHORUS))
 
-    def test_a_bass_players_ending_on_a_grid_the_figure_does_not_divide_by_is_left_out(self):
-        song = self.song(levels={players.BASS: players.ADVANCED}, template=BALLAD)
-        self.assertEqual(self.bass_lines(song=song, scene=CHORUS), self.bass_figure(template=BALLAD))
+    def test_an_ending_on_a_grid_that_neither_divides_the_figures_nor_is_divided_by_it_is_left_out(self):
+        figure = [[{notation.DEGREE: 1, notation.STEPS: SIX_STEPS}]]
+        player = {arranger.VARIES: [{arranger.BARS: [LAST_BAR], arranger.GRID: EIGHT_STEPS, arranger.ENDS: [{notation.DEGREE: 5, notation.STEPS: 1}]}]}
+        self.assertEqual(arranger.decorated_figure(bars=figure, player=player, phrase_bars=PHRASE, meter=COMMON), figure)
+
+    def test_an_ending_written_for_another_meter_is_left_out(self):
+        figure = [[{notation.DEGREE: 1, notation.STEPS: EIGHT_STEPS}]]
+        ending = {arranger.BARS: [LAST_BAR], arranger.GRID: EIGHT_STEPS, arranger.ENDS: [{notation.DEGREE: 5, notation.STEPS: 1}]}
+        other = {arranger.VARIES: [{**ending, arranger.NEEDS: {arranger.METER: WALTZ}}]}
+        ours = {arranger.VARIES: [{**ending, arranger.NEEDS: {arranger.METER: COMMON}}]}
+        self.assertEqual(arranger.decorated_figure(bars=figure, player=other, phrase_bars=PHRASE, meter=COMMON), figure)
+        played = arranger.decorated_figure(bars=figure, player=ours, phrase_bars=PHRASE, meter=COMMON)
+        self.assertEqual(played[LAST_BAR - 1], [{notation.DEGREE: 1, notation.STEPS: EIGHT_STEPS - 1}, {notation.DEGREE: 5, notation.STEPS: 1}])
+
+    def test_an_ending_finer_than_the_figure_writes_the_figure_on_the_endings_grid(self):
+        figure = [[{notation.DEGREE: 1, notation.STEPS: TWO_STEPS}]]
+        player = {arranger.VARIES: [{arranger.BARS: [LAST_BAR], arranger.GRID: EIGHT_STEPS, arranger.ENDS: [{notation.DEGREE: 5, notation.STEPS: 1}]}]}
+        played = arranger.decorated_figure(bars=figure, player=player, phrase_bars=PHRASE, meter=COMMON)
+        self.assertEqual(played[0], [{notation.DEGREE: 1, notation.STEPS: EIGHT_STEPS}])
+        self.assertEqual(played[LAST_BAR - 1], [{notation.DEGREE: 1, notation.STEPS: EIGHT_STEPS - 1}, {notation.DEGREE: 5, notation.STEPS: 1}])
+
+    def test_a_keys_player_and_a_rhythm_guitarist_end_bars_with_notes_of_their_own_in_every_style(self):
+        for name in arranger.style_names():
+            style = arranger.style_named(name)
+            for instrument in (players.KEYS, players.RHYTHM):
+                levels = style.get(arranger.PLAYERS, {}).get(instrument)
+                if levels is None or not any(role.get(arranger.PLAYER) == instrument for role in style[arranger.ROLES]):
+                    continue
+                with self.subTest(style=name, instrument=instrument):
+                    self.assertNotIn(arranger.VARIES, levels[players.PLAIN])
+                    counts = [len(levels[level].get(arranger.VARIES, [])) for level in sorted(levels)]
+                    self.assertEqual(counts, sorted(counts))
+                    self.assertGreater(counts[1], 0)
 
     def test_every_track_has_a_rush_and_a_drag_that_do_nothing_until_a_player_moves_them(self):
         given = arranger.arranged(style=self.style, song=self.song())

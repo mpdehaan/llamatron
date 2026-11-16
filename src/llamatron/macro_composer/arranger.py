@@ -390,17 +390,32 @@ def with_ending(*, bar, ends):
     return kept + [dict(note) for note in ends]
 
 
-def decorated_figure(*, bars, player, phrase_bars):
-    """A figure as a player plays it: a phrase of its bars, the bars the player varies ending in the player's own notes. A player
-    who varies nothing plays the figure as written, and a variation written on a grid the figure's does not divide by is left out."""
+def ending_fits(*, variation, grid, meter):
+    """Whether a player's ending can be laid on a figure: it is written for the meter, or for any, and one of the two grids
+    divides the other, so that the finer holds both."""
+    if ENDS not in variation or variation.get(NEEDS, {}).get(METER, meter) != meter:
+        return False
+    return grid % variation[GRID] == 0 or variation[GRID] % grid == 0
+
+
+def stretched(*, notes, by):
+    """Notes written again on a grid so many times finer."""
+    return [{**note, (REST if REST in note else STEPS): lasts(note) * by} for note in notes]
+
+
+def decorated_figure(*, bars, player, phrase_bars, meter):
+    """A figure as a player plays it: a phrase of its bars, the bars the player varies ending in the player's own notes, on
+    the finest grid of the figure's and the endings'. A player who varies nothing plays the figure as written, and an ending
+    written for another meter, or on a grid that neither divides the figure's nor is divided by it, is left out."""
     grid = sum(lasts(note) for note in bars[0])
-    fitting = [variation for variation in player.get(VARIES, []) if ENDS in variation and grid % variation[GRID] == 0]
+    fitting = [variation for variation in player.get(VARIES, []) if ending_fits(variation=variation, grid=grid, meter=meter)]
     if not fitting or phrase_bars % len(bars):
         return [[dict(note) for note in bar] for bar in bars]
-    phrase = [[dict(note) for note in bars[count % len(bars)]] for count in range(phrase_bars)]
+    finest = max([grid] + [variation[GRID] for variation in fitting])
+    fitting = [variation for variation in fitting if finest % variation[GRID] == 0]
+    phrase = [stretched(notes=bars[count % len(bars)], by=finest // grid) for count in range(phrase_bars)]
     for variation in fitting:
-        finer = grid // variation[GRID]
-        ends = [{**note, (REST if REST in note else STEPS): lasts(note) * finer} for note in variation[ENDS]]
+        ends = stretched(notes=variation[ENDS], by=finest // variation[GRID])
         for bar in variation[BARS]:
             phrase[bar - 1] = with_ending(bar=phrase[bar - 1], ends=ends)
     return phrase
@@ -408,10 +423,9 @@ def decorated_figure(*, bars, player, phrase_bars):
 
 def figure_part(*, entry, role, meter, player, phrase_bars):
     """A value's figure as a tune's part, as a player plays it; the figure's bars are its lines."""
-    bars = entry[FIGURE]
-    grid = sum(lasts(note) for note in bars[0])
-    return {STEP: step_of(meter=meter, grid=grid), OCTAVE: role[OCTAVE], VELOCITY: role[VELOCITY],
-            LINES: decorated_figure(bars=bars, player=player, phrase_bars=phrase_bars)}
+    lines = decorated_figure(bars=entry[FIGURE], player=player, phrase_bars=phrase_bars, meter=meter)
+    grid = sum(lasts(note) for note in lines[0])
+    return {STEP: step_of(meter=meter, grid=grid), OCTAVE: role[OCTAVE], VELOCITY: role[VELOCITY], LINES: lines}
 
 
 def held_part(*, role, meter, chord):
