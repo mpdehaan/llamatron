@@ -19,7 +19,7 @@ from llamatron.macro_composer.wizard_choices import genre_title
 from llamatron.strings.errors import ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
 from llamatron.strings.labels import MSG_GENRE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_SONG_LABEL
 from llamatron.strings.legends import KeyName, MSG_WIZARD_CREATE_WHAT
-from llamatron.strings.marks import MSG_WIZARD_FORM_SHOWN, MSG_WIZARD_GENRE_SHOWN, MSG_WIZARD_KEY_SHOWN, MSG_WIZARD_NEEDS_GENRE
+from llamatron.strings.marks import MSG_WIZARD_OWN_FORM, MSG_WIZARD_FORM_SHOWN, MSG_WIZARD_GENRE_SHOWN, MSG_WIZARD_KEY_SHOWN, MSG_WIZARD_NEEDS_GENRE
 from llamatron.tui.drawing import NOTHING
 from llamatron.tui.text import clock
 from llamatron.tui.screens.shared.field import Button, Field
@@ -49,7 +49,7 @@ class CreateBranch(Branch):
                 Field(label=MSG_GENRE_LABEL, value=lambda: MSG_WIZARD_GENRE_SHOWN.format(genre=genre_title(choices.get_genre()), subgenre=choices.get_subgenre())),
                 Field(label=MSG_WIZARD_KEY_LABEL, value=lambda: MSG_WIZARD_KEY_SHOWN.format(root=choices.get_root(), scale=MSG_WIZARD_SCALE_TYPE_NAMES[choices.get_scale_type()])),
                 Field(label=MSG_TEMPO_LABEL, value=choices.get_tempo),
-                Field(label=MSG_WIZARD_FORM_LABEL, value=lambda: MSG_WIZARD_FORM_SHOWN.format(form=choices.get_form(), count=len(choices.form_sections()))),
+                Field(label=MSG_WIZARD_FORM_LABEL, value=lambda: MSG_WIZARD_FORM_SHOWN.format(form=MSG_WIZARD_OWN_FORM if choices.has_own_form() else choices.get_form(), count=len(choices.form_sections()))),
                 Field(label=MSG_WIZARD_LENGTH_LABEL, value=lambda: clock(choices.form_seconds())),
             ]
         return [*fields, Button(label=MSG_WIZARD_CREATE_BUTTON, key_name=KeyName.ENTER, enter=page.create, enter_what=MSG_WIZARD_CREATE_WHAT)]

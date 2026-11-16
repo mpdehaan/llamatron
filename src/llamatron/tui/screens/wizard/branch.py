@@ -72,6 +72,34 @@ class Branch:
         """Return why the cursor cannot move into the branch's fields yet, or None when it can."""
         return None
 
+    # A branch that holds a list, or is one of a list, as the form and its sections: the page gives such a branch the tracker's keys for a list.
+
+    def adds(self):
+        """Return whether a new thing can be added from this branch."""
+        return False
+
+    def kinds_to_add(self):
+        """Return the kinds of thing that can be added from here, which a picker offers."""
+        return []
+
+    def add(self, kind):
+        """Add a new thing of a kind: after this branch where the branch is one of a list, or at the list's end."""
+        raise NotImplementedError
+
+    def is_listed(self):
+        """Return whether the branch is one of a list, so that it can be copied, removed and moved."""
+        return False
+
+    def copy(self):
+        raise NotImplementedError
+
+    def remove(self):
+        raise NotImplementedError
+
+    def move(self, offset):
+        """Move the branch earlier or later in its list, and return whether it moved."""
+        raise NotImplementedError
+
     def can_be_edited(self):
         """Return whether any field of the branch does something, so that a branch only to be read takes no cursor."""
         return any(field.enter or field.adjust for field in self.fields())

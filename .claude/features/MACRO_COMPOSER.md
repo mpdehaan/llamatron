@@ -161,6 +161,14 @@ clouds; generate and test, with motif development and counterpoint last.
   template by its file's name and shown by its title; the subgenre, one of the template's kinds; the key's root and scale
   type; the tempo; the form, one of the forms the template suggests for the kind; and the seed. Each setter refuses what it
   cannot hold, and the tracker's page (`.claude/tracker/PAGES.md`, "The song wizard") changes the choices only through them.
+- The form follows the suggested form chosen until a section changes; the form is then the song's own (`has_own_form`), a
+  list of sections each its kind and what it changes of the kind, its bars and who plays, kept with the song under
+  `own_sections` and handed to the arranger as the song's own form and sections. Sections of one name are one section
+  played again, so a section that differs from its kind as the genre describes it gets a letter after the name, `verse b`.
+  `section_kinds()` leaves out a kind the subgenre cannot play, and `bars_offered(place)` offers half the kind's usual
+  length, the usual and twice that, each only where a section made at that length really lasts that long (`bars_work`,
+  measured once and remembered): a part written over several bars keeps its own length whatever is asked. Choosing a
+  suggested form, a genre or a subgenre drops the song's own sections.
 - Nothing is chosen at first, the user's rule. Choosing a subgenre fills in its usual tempo, the scale type its chords are
   in, the root that scale type starts on (C for major, E for minor, Claude's choice) and the commonest form, so that a song
   can be made from a genre and a subgenre alone; choosing another genre leaves the subgenre to be chosen again. Any tempo

@@ -21,9 +21,10 @@ from fractions import Fraction
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_TEMPO, MIN_TEMPO
-from llamatron.macro_composer.wizard_choices import LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, USUAL_ROOTS, WizardChoices, genre_names, genre_title
+from llamatron.macro_composer.wizard_choices import LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
 from llamatron.macro_composer.arranger import DRUMS, GENRE, PLAYERS, TYPE, WITHOUT, style_names
 from llamatron.music.note import NoteName
+from llamatron.strings.errors import ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.support.version import VERSION
 
@@ -214,6 +215,168 @@ class TestWizardChoices(unittest.TestCase):
                     song = choices.made_setlist(name=A_NAME, version=VERSION).get_song(A_NAME)
                     made = sum(float(scene.seconds) for scene in SongRenderer(song).estimate())
                     self.assertAlmostEqual(choices.form_seconds(), made, delta=A_SECOND, msg=(choices.get_subgenre(), form))
+
+
+class TestWizardForm(unittest.TestCase):
+    """A form of the song's own: sections added, copied, removed, moved and changed."""
+
+    def rock(self):
+        choices = chosen(genre=genre_names().index(A_GENRE_WITH_TUNES))
+        choices.set_seed(A_SEED)
+        return choices
+
+    def scene_bars(self, choices):
+        """How long each scene of the song made lasts, in bars."""
+        song = choices.made_setlist(name=A_NAME, version=VERSION).get_song(A_NAME)
+        seconds_in_a_bar = float(Fraction(choices.meter()) * QUARTERS_IN_WHOLE * SECONDS_IN_MINUTE / choices.get_tempo())
+        return [round(float(scene.seconds) / seconds_in_a_bar) for scene in SongRenderer(song).estimate()]
+
+    def test_a_suggested_form_is_followed_until_a_section_changes_and_then_the_form_is_the_songs_own(self):
+        choices = self.rock()
+        suggested = choices.form_sections()
+        self.assertFalse(choices.has_own_form())
+        self.assertNotIn(OWN_SECTIONS, choices.to_data())
+        choices.copy_section(0)
+        self.assertTrue(choices.has_own_form())
+        self.assertEqual(choices.form_sections(), [suggested[0], *suggested])
+
+    def test_choosing_a_suggested_form_again_puts_its_sections_back(self):
+        choices = self.rock()
+        suggested = choices.form_sections()
+        choices.remove_section(0)
+        choices.set_form(choices.get_form())
+        self.assertFalse(choices.has_own_form())
+        self.assertEqual(choices.form_sections(), suggested)
+
+    def test_a_section_is_added_at_a_place_copied_after_itself_removed_and_moved(self):
+        choices = self.rock()
+        kinds = choices.section_kinds()
+        before = choices.form_sections()
+        choices.add_section(place=1, kind=kinds[-1])
+        self.assertEqual(choices.form_sections(), [before[0], kinds[-1], *before[1:]])
+        choices.copy_section(1)
+        self.assertEqual(choices.form_sections(), [before[0], kinds[-1], kinds[-1], *before[1:]])
+        choices.remove_section(1)
+        choices.remove_section(1)
+        self.assertEqual(choices.form_sections(), before)
+        self.assertTrue(choices.move_section(place=0, offset=1))
+        self.assertEqual(choices.form_sections(), [before[1], before[0], *before[2:]])
+
+    def test_a_section_stops_at_both_ends_of_the_form(self):
+        choices = self.rock()
+        before = choices.form_sections()
+        self.assertFalse(choices.move_section(place=0, offset=-1))
+        self.assertFalse(choices.move_section(place=len(before) - 1, offset=1))
+        self.assertEqual(choices.form_sections(), before)
+        self.assertFalse(choices.has_own_form())
+
+    def test_the_last_section_stays_and_a_place_or_a_kind_that_is_not_the_forms_is_refused(self):
+        choices = self.rock()
+        while len(choices.form_sections()) > 1:
+            choices.remove_section(0)
+        with self.assertRaisesRegex(ValueError, ERR_WIZARD_LAST_SECTION):
+            choices.remove_section(0)
+        for refused in (lambda: choices.remove_section(1), lambda: choices.copy_section(-1), lambda: choices.add_section(place=5, kind=choices.section_kinds()[0]),
+                        lambda: choices.add_section(place=0, kind=NOT_A_CHOICE), lambda: choices.set_section_kind(place=0, kind=NOT_A_CHOICE),
+                        lambda: choices.set_section_bars(place=0, bars=NOT_A_NUMBER), lambda: choices.set_section_bars(place=0, bars=True)):
+            with self.assertRaises(ValueError):
+                refused()
+
+    def test_a_section_made_longer_or_shorter_is_a_section_of_its_own_and_lasts_that_long_in_the_song(self):
+        choices = self.rock()
+        sections = choices.form_sections()
+        place = 1
+        usual = choices.section_bars(place)
+        offered = choices.bars_offered(place)
+        # A length is offered only where the genre's parts fill it: half the usual, the usual and twice that, at most.
+        self.assertIn(usual, offered)
+        self.assertGreater(len(offered), 1)
+        self.assertLessEqual(set(offered), {usual // 2, usual, usual * 2})
+        before = choices.form_seconds()
+        choices.set_section_bars(place=place, bars=offered[-1])
+        self.assertNotEqual(choices.form_sections()[place], sections[place])
+        self.assertEqual([name for at, name in enumerate(choices.form_sections()) if at != place], [name for at, name in enumerate(sections) if at != place])
+        self.assertGreater(choices.form_seconds(), before)
+        self.assertEqual(self.scene_bars(choices)[place], offered[-1])
+        choices.set_section_bars(place=place, bars=usual)
+        self.assertEqual(choices.form_sections(), sections)
+
+    def test_a_player_sits_a_section_out_or_joins_it_and_a_section_keeps_one_player(self):
+        choices = self.rock()
+        place = 1
+        players = choices.section_plays(place)
+        choices.set_section_plays(place=place, role=A_BASS, on=False)
+        self.assertEqual(choices.section_plays(place), [role for role in choices.roles() if role in players and role != A_BASS])
+        song = choices.made_setlist(name=A_NAME, version=VERSION).get_song(A_NAME)
+        scene = song.get_scenes()[place]
+        self.assertNotIn(A_BASS, [track for track in song.get_track_names() if scene.get_clip_slot(track) is not None])
+        choices.set_section_plays(place=place, role=A_BASS, on=True)
+        self.assertEqual(sorted(choices.section_plays(place)), sorted(players))
+        for role in choices.section_plays(place)[1:]:
+            choices.set_section_plays(place=place, role=role, on=False)
+        with self.assertRaisesRegex(ValueError, ERR_WIZARD_SECTION_NEEDS_PLAYER):
+            choices.set_section_plays(place=place, role=choices.section_plays(place)[0], on=False)
+
+    def test_another_kind_starts_the_section_as_the_genre_describes_that_kind(self):
+        choices = self.rock()
+        place = 1
+        kind = [kind for kind in choices.section_kinds() if kind != choices.section_kind(place)][0]
+        choices.set_section_plays(place=place, role=A_BASS, on=False)
+        choices.set_section_kind(place=place, kind=kind)
+        self.assertEqual(choices.section_kind(place), kind)
+        self.assertEqual(choices.form_sections()[place], kind)
+
+    def test_a_held_section_offers_no_lengths(self):
+        choices = self.rock()
+        held = [place for place in range(len(choices.form_sections())) if choices.section_is_held(place)]
+        self.assertTrue(held)
+        self.assertEqual(choices.bars_offered(held[0]), [])
+
+    def test_the_songs_own_form_is_kept_with_the_choices_and_makes_the_same_song(self):
+        choices = self.rock()
+        choices.add_section(place=1, kind=choices.section_kinds()[-2])
+        choices.set_section_bars(place=2, bars=choices.bars_offered(2)[0])
+        choices.set_section_plays(place=3, role=A_BASS, on=False)
+        again = WizardChoices.from_data(choices.to_data())
+        self.assertEqual(again.to_data(), choices.to_data())
+        self.assertEqual(again.form_sections(), choices.form_sections())
+        self.assertEqual(again.made_setlist(name=A_NAME, version=VERSION).to_data(), choices.made_setlist(name=A_NAME, version=VERSION).to_data())
+
+    def test_another_subgenre_goes_back_to_a_suggested_form(self):
+        choices = self.rock()
+        choices.copy_section(0)
+        choices.set_subgenre(choices.subgenres()[1])
+        self.assertFalse(choices.has_own_form())
+
+    def test_kept_sections_that_no_longer_fit_are_dropped_and_the_rest_of_the_choices_kept(self):
+        choices = self.rock()
+        data = {**choices.to_data(), OWN_SECTIONS: [{}]}
+        again = WizardChoices.from_data(data)
+        self.assertFalse(again.has_own_form())
+        self.assertEqual(again.get_subgenre(), choices.get_subgenre())
+
+    def test_every_kind_of_section_of_every_subgenre_plays_at_every_length_offered(self):
+        for genre in genre_names():
+            choices = WizardChoices()
+            choices.set_genre(genre)
+            for subgenre in choices.subgenres():
+                choices.set_subgenre(subgenre)
+                choices.set_seed(A_SEED)
+                kinds = choices.section_kinds()
+                wanted = []
+                for kind in kinds:
+                    choices.add_section(place=len(choices.form_sections()), kind=kind)
+                    place = len(choices.form_sections()) - 1
+                    wanted.append(choices.section_bars(place))
+                # Every kind once at its usual length, then each at every other length offered, one song a length.
+                with self.subTest(genre=genre, subgenre=subgenre):
+                    self.assertEqual(self.scene_bars(choices)[-len(kinds):], wanted)
+                first = len(choices.form_sections()) - len(kinds)
+                for place in range(first, first + len(kinds)):
+                    for bars in choices.bars_offered(place):
+                        choices.set_section_bars(place=place, bars=bars)
+                        with self.subTest(genre=genre, subgenre=subgenre, kind=kinds[place - first], bars=bars):
+                            self.assertEqual(self.scene_bars(choices)[place], bars)
 
 
 class TestWizardBand(unittest.TestCase):

@@ -195,8 +195,15 @@ The user's design, agreed in detail in `dev_notes/QUEUE.md` (S16 to S39), of whi
   (`branch.py`) says its `name`, `note`, `children`, `fields`, `notes` and `refusal`, and `WizardPage.roots()` lists the
   top branches. Built so far: `GenreBranch` (Genre and Subgenre, each starting on `(choose)`, then Key, Scale and Tempo once
   a subgenre is chosen, with Meter, the subgenre's and only shown, and Length, the song's length with the form's name,
-  whose `[` and `]` choose the next shorter and longer form, since the length follows the sections, and the song's Name), `FormBranch` (the Form picker, the sections listed under the fields, and a
-  `SectionBranch` for each section, to read) and `CreateBranch` (a summary and the Create button, refused with `(genre?)`
+  whose `[` and `]` choose the next shorter and longer form, since the length follows the sections, and the song's Name), `FormBranch` (the Form picker, which reads "your own" once a section was changed and whose choice puts a suggested form's
+  sections back, the sections listed under the fields, and a `SectionBranch` for each section by its place: Kind, Bars, offered
+  only at the lengths the subgenre's parts fill, and a toggle for each player of the band, a section keeping one. A section is
+  one of a list and takes a list's keys in the tree, the user's ask for an editable form: `A` (add) asks the kind in a picker
+  and puts the new section after the cursor's, or at the form's end from the Form branch; `C` (copy), `Bksp` (delete), with no
+  question since nothing is in the set yet, the last section staying; and `M` (move), the tracker's move mode, the carried
+  section's name between `<` and `>`. A `Branch` says `adds()`, `is_listed()`, `kinds_to_add()`, `add`, `copy`, `remove` and
+  `move`, so another list in the tree gets the same keys. Once the form is the song's own, the Genre branch's Length is only
+  shown) and `CreateBranch` (a summary and the Create button, refused with `(genre?)`
   until a genre and a subgenre are chosen), and `BandBranch`, a toggle for each player the genre's band may have, with a
   `PlayerBranch` under it for each player who is in: Plays, the way the player plays, or a field for each part of the
   drums, and Busy, 1 to 4, drawn as a horizontal Busy gauge. The last player cannot be left out. A player's Sound, the

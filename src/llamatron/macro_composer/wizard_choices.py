@@ -29,13 +29,17 @@ from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_TEMPO, MIN_TEMPO
 from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer.arranger import (
-    COMMON_TIME, DRUMS, METER, PICKS, PLAYER, PLAYERS, ROLE, ROLES, SOUND, TRAIT, VALUE, WITHOUT, bar_length, fits,
+    COMMON_TIME, DRUMS, KIND, METER, PICKS, PLAYER, PLAYERS, ROLE, ROLES, SOUND, TRAIT, VALUE, WITHOUT, bar_length, fits,
     BARS, CHORD_TRAIT, CHORD_TRAIT_FIELD, FORM, HELD, PLAYS, GENRE, KEY, NAME, ROOT, SCALE_TYPE, SECTIONS, SEED, STYLE, TEMPLATE, TEMPLATES, TEMPO, TITLE, TRAITS, TYPE, USUAL,
     arranged, forms_of, picked, section_of, share_of, style_named, style_names, values_of,
 )
 from llamatron.macro_composer.composer import composed
+from llamatron.composition.song_file_error import SongFileError
 from llamatron.music.note import ROOT_NAMES
-from llamatron.strings.errors import ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
+from llamatron.playback.song_renderer import SongRenderer
+from llamatron.strings.marks import MSG_WIZARD_SECTION_VARIANT
+from llamatron.support.version import VERSION as A_VERSION
+from llamatron.strings.errors import ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'
@@ -70,10 +74,40 @@ def genre_title(genre):
     return style_of(genre)[TITLE]
 
 
+# The key a song keeps its own sections under, and the letter the first section that differs from its kind's first is named with.
+OWN_SECTIONS = 'own_sections'
+FIRST_VARIANT_LETTER = 'a'
+# How near a made section's length must be to the length asked, in seconds: far less than any bar lasts.
+PART_OF_A_BAR = 0.01
+# A section may be half or twice its kind's usual length.
+HALF = 2
 # How busy a player may be, and how busy each is until chosen: a little past the plainest, so that a song has turns and fills.
 LEAST_BUSY = 1
 MOST_BUSY = 4
 USUAL_BUSY = 2
+def own_copy_of(entry):
+    """Return a section's entry sharing no list with the entry given."""
+    return {field: (list(value) if isinstance(value, list) else value) for field, value in entry.items()}
+
+
+@functools.cache
+def bars_work(*, genre, subgenre, kind, bars):
+    """Return whether a subgenre's parts can fill a section of a kind at a length, found by making one and measuring it, once:
+    some parts are written over several bars and divide only some lengths, and some, as a chorus of twelve bars, last as long
+    as they are written whatever is asked."""
+    style = style_of(genre)
+    song = {NAME: kind, TITLE: kind, STYLE: genre, TEMPLATE: subgenre, KEY: {ROOT: USUAL_ROOTS[MAJOR], TYPE: MAJOR}, SEED: FIRST_SEED,
+            FORM: [kind], SECTIONS: {kind: {KIND: kind, BARS: bars}}}
+    try:
+        given = arranged(style=style, song=song)
+        made = Setlist.from_data(data=composed(given=given, version=A_VERSION)).get_song(kind)
+        seconds = sum(float(scene.seconds) for scene in SongRenderer(made).estimate())
+    except (ValueError, SongFileError):
+        return False
+    wanted = float(bars * bar_length(str(picked(style=style, song=song).get(METER, COMMON_TIME))) * QUARTERS_IN_WHOLE * SECONDS_IN_MINUTE / made.get_tempo())
+    return abs(seconds - wanted) < PART_OF_A_BAR
+
+
 # A tempo counts quarter notes a minute.
 QUARTERS_IN_WHOLE = 4
 SECONDS_IN_MINUTE = 60
@@ -82,7 +116,7 @@ SECONDS_IN_MINUTE = 60
 class WizardChoices:
     """The choices of one run of the song wizard."""
 
-    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_without')
+    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_without', '_sections')
 
     def __init__(self):
         self._genre = None
@@ -96,6 +130,8 @@ class WizardChoices:
         self._ways = {}
         self._levels = {}
         self._without = []
+        # The form's sections once a person has changed them, each its kind and what it changes of the kind; None while a suggested form is followed.
+        self._sections = None
 
     # Reading and keeping the choices.
 
@@ -120,7 +156,8 @@ class WizardChoices:
         self._levels = {}
         kept = [(self.set_way, [dict(trait=trait, value=value) for trait, value in (data.get(PICKS) or {}).items()]),
                 (self._set_level, [dict(player=player, level=level) for player, level in (data.get(PLAYERS) or {}).items()]),
-                (self.set_role_in, [dict(role=role, on=False) for role in data.get(WITHOUT) or []])]
+                (self.set_role_in, [dict(role=role, on=False) for role in data.get(WITHOUT) or []]),
+                (self.set_own_sections, [dict(sections=data[OWN_SECTIONS])] if data.get(OWN_SECTIONS) else [])]
         for setter, every in kept:
             for named in every:
                 try:
@@ -131,7 +168,8 @@ class WizardChoices:
     def to_data(self):
         """Return the choices made, as plain data a song keeps."""
         held = {GENRE: self._genre, SUBGENRE: self._subgenre, ROOT: self._root, TYPE: self._scale_type, TEMPO: self._tempo, FORM: self._form, SEED: self._seed,
-                PICKS: dict(self._ways) or None, PLAYERS: dict(self._levels) or None, WITHOUT: list(self._without) or None}
+                PICKS: dict(self._ways) or None, PLAYERS: dict(self._levels) or None, WITHOUT: list(self._without) or None,
+                OWN_SECTIONS: [own_copy_of(entry) for entry in self._sections] if self._sections is not None else None}
         return {field: value for field, value in held.items() if value is not None}
 
     # The genre and the subgenre, which everything else follows.
@@ -147,6 +185,7 @@ class WizardChoices:
             self._genre = genre
             self._subgenre = None
             self._form = None
+            self._sections = None
             self._forget_band()
 
     def subgenres(self):
@@ -167,6 +206,7 @@ class WizardChoices:
             self._scale_type = self.usual_scale_type()
             self._root = USUAL_ROOTS[self._scale_type]
             self._form = None
+            self._sections = None
             self._levels = {player: USUAL_BUSY for player in style_of(self._genre).get(PLAYERS, {})}
 
     def is_ready(self):
@@ -240,19 +280,178 @@ class WizardChoices:
         return forms[0] if forms else None
 
     def set_form(self, form):
+        """Choose one of the forms the subgenre suggests, which puts its sections in place of any a person changed."""
         if form not in self.forms():
             raise ValueError(ERR_WIZARD_NO_SUCH_FORM.format(value=form))
         self._form = form
+        self._sections = None
+
+    # The form's sections, which follow the form chosen until a person changes one; the form is then the song's own.
+
+    def has_own_form(self):
+        """Return whether a person has changed the form's sections, so that the form is no longer one the subgenre suggests."""
+        return self._sections is not None
+
+    def _entries(self):
+        """Return the sections in order, each its kind and what it changes of the kind: the song's own, or the chosen form's."""
+        if self._sections is not None:
+            return self._sections
+        chosen = self.get_form()
+        return [{KIND: kind} for kind in next((form[SECTIONS] for form in self._forms() if form[NAME] == chosen), [])]
+
+    def _own_entries(self):
+        """Return the song's own sections to change, starting them from the chosen form the first time."""
+        if self._sections is None:
+            self._sections = [dict(entry) for entry in self._entries()]
+        return self._sections
+
+    def _entry(self, place):
+        entries = self._entries()
+        if isinstance(place, bool) or not isinstance(place, int) or not 0 <= place < len(entries):
+            raise ValueError(ERR_WIZARD_NO_SUCH_SECTION.format(value=place))
+        return entries[place]
 
     def form_sections(self):
-        """Return the sections of the form in the order they play, by name."""
-        chosen = self.get_form()
-        return next((list(form[SECTIONS]) for form in self._forms() if form[NAME] == chosen), [])
+        """Return the sections of the form in the order they play, by name. A section is named after its kind, and one that
+        differs from the first of its kind, in its bars or its players, gets a letter after the name, since sections of one
+        name are the same section played again."""
+        names = []
+        seen = {}
+        for entry in self._entries():
+            own = (entry.get(BARS), tuple(entry[PLAYS]) if PLAYS in entry else None)
+            # The kind as the genre describes it comes first, so that an unchanged section keeps the kind's plain name.
+            variants = seen.setdefault(entry[KIND], [(None, None)])
+            if own not in variants:
+                variants.append(own)
+            place = variants.index(own)
+            names.append(entry[KIND] if not place else MSG_WIZARD_SECTION_VARIANT.format(kind=entry[KIND], letter=chr(ord(FIRST_VARIANT_LETTER) + place)))
+        return names
+
+    def _song_sections(self):
+        """Return the song's own sections as the arranger reads them, by name: each its kind and what it changes."""
+        return {name: dict(entry) for name, entry in zip(self.form_sections(), self._entries())}
+
+    def _section(self, place):
+        """Return a section as it will be played: its kind as the genre describes it, with what the section changes."""
+        entry = self._entry(place)
+        return section_of(name=entry[KIND], style=style_of(self._genre), song={SECTIONS: {entry[KIND]: entry}})
+
+    def section_kinds(self):
+        """Return the kinds of section the subgenre can play, in the genre's order: a kind nobody of the subgenre's band plays
+        in, which would make no section at all, is left out, as is one whose parts do not fill its own length."""
+        if not self.is_ready():
+            return []
+        sections = style_of(self._genre)[SECTIONS]
+        return [kind for kind, section in sections.items()
+                if bars_work(genre=self._genre, subgenre=self._subgenre, kind=kind, bars=HELD_BARS if section.get(HELD) else section[BARS])]
+
+    def section_kind(self, place):
+        return self._entry(place)[KIND]
+
+    def section_is_held(self, place):
+        """Return whether a section is one held chord, which lasts a bar whatever is said."""
+        return bool(self._section(place).get(HELD))
+
+    def section_bars(self, place):
+        section = self._section(place)
+        return HELD_BARS if section.get(HELD) else section[BARS]
+
+    def section_plays(self, place):
+        """Return who plays in a section, by the names the genre gives its players."""
+        return list(self._section(place).get(PLAYS, []))
 
     def section_facts(self, name):
-        """Return how many bars a section of the form lasts and who plays in it, by the names the genre gives its players."""
-        section = section_of(name=name, style=style_of(self._genre), song={})
-        return (HELD_BARS if section.get(HELD) else section[BARS]), list(section.get(PLAYS, []))
+        """Return how many bars a section of the form lasts and who plays in it, by the section's name."""
+        place = self.form_sections().index(name)
+        return self.section_bars(place), self.section_plays(place)
+
+    def add_section(self, *, place, kind):
+        """Put a new section of a kind before a place in the form, as the genre describes the kind."""
+        if kind not in self.section_kinds():
+            raise ValueError(ERR_WIZARD_NO_SUCH_SECTION_KIND.format(value=kind))
+        if isinstance(place, bool) or not isinstance(place, int) or not 0 <= place <= len(self._entries()):
+            raise ValueError(ERR_WIZARD_NO_SUCH_SECTION.format(value=place))
+        self._own_entries().insert(place, {KIND: kind})
+
+    def copy_section(self, place):
+        """Put a copy of a section straight after it."""
+        entry = own_copy_of(self._entry(place))
+        self._own_entries().insert(place + 1, entry)
+
+    def remove_section(self, place):
+        self._entry(place)
+        if len(self._entries()) == 1:
+            raise ValueError(ERR_WIZARD_LAST_SECTION)
+        del self._own_entries()[place]
+
+    def move_section(self, *, place, offset):
+        """Move a section earlier or later in the form, and return whether it moved, which it cannot past either end."""
+        self._entry(place)
+        moved = place + offset
+        if not 0 <= moved < len(self._entries()):
+            return False
+        entries = self._own_entries()
+        entries.insert(moved, entries.pop(place))
+        return True
+
+    def set_section_kind(self, *, place, kind):
+        """Make a section another kind, as the genre describes that kind: what the section changed of its old kind is dropped."""
+        self._entry(place)
+        if kind not in self.section_kinds():
+            raise ValueError(ERR_WIZARD_NO_SUCH_SECTION_KIND.format(value=kind))
+        self._own_entries()[place] = {KIND: kind}
+
+    def _usual(self, place):
+        return style_of(self._genre)[SECTIONS][self._entry(place)[KIND]]
+
+    def bars_offered(self, place):
+        """Return the lengths a section may have, in bars: half its kind's usual length, the usual and twice that, leaving out
+        any the genre's parts cannot fill, and nothing for a held section."""
+        if self.section_is_held(place):
+            return []
+        usual = self._usual(place)[BARS]
+        lengths = sorted({usual // HALF, usual, usual * HALF, self.section_bars(place)} - {0})
+        return [bars for bars in lengths if bars == usual or bars_work(genre=self._genre, subgenre=self._subgenre, kind=self._entry(place)[KIND], bars=bars)]
+
+    def set_section_bars(self, *, place, bars):
+        if isinstance(bars, bool) or not isinstance(bars, int) or bars not in self.bars_offered(place):
+            raise ValueError(ERR_WIZARD_SECTION_BARS.format(value=bars))
+        entry = self._own_entries()[place]
+        entry.pop(BARS, None)
+        if bars != self._usual(place)[BARS]:
+            entry[BARS] = bars
+
+    def set_section_plays(self, *, place, role, on):
+        """Have a player play in a section or sit it out. A section keeps one player."""
+        self._role(role)
+        plays = [name for name in self.roles() if (name in self.section_plays(place) or (on and name == role)) and (on or name != role)]
+        if not plays:
+            raise ValueError(ERR_WIZARD_SECTION_NEEDS_PLAYER)
+        entry = self._own_entries()[place]
+        entry.pop(PLAYS, None)
+        if sorted(plays) != sorted(self._usual(place).get(PLAYS, [])):
+            entry[PLAYS] = plays
+
+    def set_own_sections(self, *, sections):
+        """Take a form's sections a song kept, each through the setters, or none of them where one no longer fits."""
+        kept = self._sections
+        self._sections = []
+        try:
+            for place, entry in enumerate(sections):
+                self.add_section(place=place, kind=entry[KIND])
+                if BARS in entry:
+                    self.set_section_bars(place=place, bars=entry[BARS])
+                for role in self.roles():
+                    if PLAYS in entry and (role in entry[PLAYS]) != (role in self.section_plays(place)) and role in entry[PLAYS]:
+                        self.set_section_plays(place=place, role=role, on=True)
+                for role in self.roles():
+                    if PLAYS in entry and role not in entry[PLAYS] and role in self.section_plays(place):
+                        self.set_section_plays(place=place, role=role, on=False)
+            if not self._sections:
+                raise ValueError(ERR_WIZARD_LAST_SECTION)
+        except (KeyError, TypeError, ValueError):
+            self._sections = kept
+            raise ValueError(ERR_WIZARD_BAD_SECTIONS.format(value=sections)) from None
 
     # The band: who plays, how each plays and how busy each is.
 
@@ -362,9 +561,13 @@ class WizardChoices:
         return str(self._picks().get(METER, COMMON_TIME))
 
     def form_seconds(self, *, form=None):
-        """Return how long a form of the subgenre lasts at the tempo chosen, in seconds: the chosen form's, unless another is named."""
-        sections = next((form_[SECTIONS] for form_ in self._forms() if form_[NAME] == (form or self.get_form())), [])
-        bars = sum(self.section_facts(name)[0] for name in sections)
+        """Return how long the song lasts at the tempo chosen, in seconds; or how long a suggested form would, when one is named."""
+        if form is None:
+            bars = sum(self.section_bars(place) for place in range(len(self._entries())))
+        else:
+            style = style_of(self._genre)
+            kinds = next((form_[SECTIONS] for form_ in self._forms() if form_[NAME] == form), [])
+            bars = sum(HELD_BARS if style[SECTIONS][kind].get(HELD) else style[SECTIONS][kind][BARS] for kind in kinds)
         return float(bars * bar_length(self.meter()) * QUARTERS_IN_WHOLE * SECONDS_IN_MINUTE / self._tempo)
 
     def forms_by_length(self):
@@ -401,8 +604,9 @@ class WizardChoices:
 
     def song_picks(self, name):
         """Return the choices as a song's picks, which the arranger makes a song of."""
-        return {NAME: name, TITLE: name, STYLE: self._genre, TEMPLATE: self._subgenre, KEY: {ROOT: self._root, TYPE: self._scale_type}, TEMPO: self._tempo, FORM: self.get_form(), SEED: self._seed,
-                PICKS: dict(self._ways), PLAYERS: dict(self._levels), WITHOUT: list(self._without)}
+        return {NAME: name, TITLE: name, STYLE: self._genre, TEMPLATE: self._subgenre, KEY: {ROOT: self._root, TYPE: self._scale_type}, TEMPO: self._tempo, FORM: self.form_sections() if self.has_own_form() else self.get_form(), SEED: self._seed,
+                PICKS: dict(self._ways), PLAYERS: dict(self._levels), WITHOUT: list(self._without),
+                **({SECTIONS: self._song_sections()} if self.has_own_form() else {})}
 
     def made_setlist(self, *, name, version):
         """Return a set holding the one song these choices make, under a name, with all the song uses, the song keeping the choices.
