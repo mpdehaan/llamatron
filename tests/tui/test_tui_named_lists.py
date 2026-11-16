@@ -39,7 +39,7 @@ from llamatron.tui.screens.generators.chains_page import ChainsPage
 from llamatron.tui.screens.set.grooves_page import GroovesPage
 from llamatron.tui.screens.set.instruments_page import InstrumentsPage
 from llamatron.tui.screens.shared.named_list_page import NamedListPage
-from llamatron.tui.screens.pattern.patterns_page import PatternsPage
+from llamatron.tui.screens.pattern.patterns_page import INDENT, PatternsPage
 from llamatron.tui.screens.set.scales_page import ScalesPage
 from llamatron.tui.screens.set.songs_page import SongsPage
 import unittest
@@ -53,6 +53,7 @@ MORE_THAN_A_NAME_HOLDS = MAX_NAME_LENGTH + 5
 # A name an older file could hold, longer than the tracker now lets a person type.
 A_LONG_NAME = 'a_very_long_pattern_name_from_an_older_file'
 NOTHING_USES_A_SONG = 'nothing in a set names a song, so a song is never in use'
+NOTHING_MOVES_ON_A_SORTED_PAGE = 'the page is always sorted, so nothing on it moves or sorts'
 
 
 class NamedListChecks:
@@ -67,6 +68,8 @@ class NamedListChecks:
     PAGE = None
     OPENING = ()
     FIRST = None
+    # Whether the page keeps its rows in an order of its own, so that nothing on it moves or sorts, as the Patterns page does.
+    ALWAYS_SORTED = False
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -150,6 +153,8 @@ class NamedListChecks:
         return next(page for page in reversed(self.app.pages()) if isinstance(page, self.PAGE))
 
     async def test_moving_takes_the_cursor_with_the_thing_and_stops_at_the_ends(self):
+        if self.ALWAYS_SORTED:
+            self.skipTest(NOTHING_MOVES_ON_A_SORTED_PAGE)
         new = await self.copy_the_first()
         before = self.own_names()
         await self.press(self.PAGE.KEYS.MOVE, Key.DOWN, Key.ENTER)
@@ -162,6 +167,8 @@ class NamedListChecks:
         self.assertEqual(self.page().current(), new)
 
     async def test_sorting_puts_the_names_in_order_and_keeps_the_cursor_on_its_thing(self):
+        if self.ALWAYS_SORTED:
+            self.skipTest(NOTHING_MOVES_ON_A_SORTED_PAGE)
         new = await self.copy_the_first()
         while self.own_names()[0] != new:
             await self.press(self.PAGE.KEYS.MOVE, Key.UP, Key.ENTER)
@@ -217,12 +224,12 @@ class TestNamesAreHeldToTheirLength(UITest):
     async def test_the_columns_after_the_names_start_right_after_the_room_a_name_has(self):
         await self.press(keybindings.MainPage.PATTERNS)
         heading = next(line for line in self.text().splitlines() if Column.SELECT_PATTERN in line and Column.TYPE in line)
-        self.assertEqual(heading.index(Column.TYPE), heading.index(Column.SELECT_PATTERN) + MAX_NAME_LENGTH + len(SPACE))
+        self.assertEqual(heading.index(Column.TYPE), heading.index(Column.SELECT_PATTERN) + MAX_NAME_LENGTH + len(INDENT) + len(SPACE))
 
     async def test_an_older_files_longer_name_is_shown_cut_in_the_list(self):
         self.document.rename_named(section=Section.PATTERNS, old=TUNE, new=A_LONG_NAME)
         await self.press(keybindings.MainPage.PATTERNS)
-        self.assertIn(fit(text=A_LONG_NAME, width=MAX_NAME_LENGTH), self.text())
+        self.assertIn(fit(text=INDENT + A_LONG_NAME, width=MAX_NAME_LENGTH + len(INDENT)), self.text())
         self.assertNotIn(A_LONG_NAME, self.text().split(Column.SELECT_PATTERN)[-1])
         self.assertIn(A_LONG_NAME, self.document.setlist().get_item_names(Section.PATTERNS))
 
@@ -232,6 +239,7 @@ class TestPatternsPageAsANamedList(NamedListChecks, UITest):
     PAGE = PatternsPage
     OPENING = (keybindings.MainPage.PATTERNS,)
     FIRST = TUNE
+    ALWAYS_SORTED = True
 
 
 class TestScalesPageAsANamedList(NamedListChecks, UITest):

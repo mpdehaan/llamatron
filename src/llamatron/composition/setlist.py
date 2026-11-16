@@ -42,14 +42,14 @@ from llamatron.composition.defaults import (
     DEFAULT_FOLLOW_ACTION, DEFAULT_DRUM_OCTAVE, DEFAULT_REAL_TIME, DEFAULT_OCTAVE, DEFAULT_OCTAVE_LABELS, DEFAULT_PROTECTED, DEFAULT_STEP_SIZE, FIRST_NUMBER,
 )
 from llamatron.composition.file_format import (
-    FOLLOW_ACTION_CHOICES, LIVE_OCTAVE_OFFSET, REGISTER_ADD_ROWS, LLAMATRON_OCTAVES_SINCE, NAMED_GENERATORS, NOTES_SINCE, OCTAVE_LABEL_CHOICES, OCTAVE_LABEL_OFFSETS, SETLISTS_SINCE,
+    CLOSED_PATTERN_GROUPS, FOLLOW_ACTION_CHOICES, LIVE_OCTAVE_OFFSET, REGISTER_ADD_ROWS, LLAMATRON_OCTAVES_SINCE, NAMED_GENERATORS, NOTES_SINCE, OCTAVE_LABEL_CHOICES, OCTAVE_LABEL_OFFSETS, SETLISTS_SINCE,
     VISUALIZER_NAMES, ClipSlotSetting, sensible_generator_order, sensible_hidden_visualizers, sensible_visualizer, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting,
 )
-from llamatron.composition.limits import MAX_OCTAVE, MAX_STEP_SIZE, MIN_OCTAVE
+from llamatron.composition.limits import MAX_NAME_LENGTH, MAX_OCTAVE, MAX_STEP_SIZE, MIN_OCTAVE
 from llamatron.composition.generator_settings import GENERATOR_SETTINGS
 from llamatron.composition.llama_data import LlamaData, data_as_kept, data_built_anew, or_default, own_copy, written_settings
 from llamatron.composition.named_items import NamedItems
-from llamatron.composition.naming import copy_name, is_taken
+from llamatron.composition.naming import copy_name, is_taken, name_in_copied_group, name_order, unique_name
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.pattern import Pattern, held_add
 from llamatron.composition.sections import SECTION_LABELS, SETLIST_SECTIONS
@@ -62,7 +62,7 @@ from llamatron.music.note import ROOT_NAMES
 from llamatron.music.scale import ScaleType
 from llamatron.support.version import VERSION, is_version, version_numbers
 from llamatron.strings.errors import (
-    ERR_ADD_PAST_ALLOWED,
+    ERR_ADD_PAST_ALLOWED, ERR_GROUP_COPY_NAME_TOO_LONG,
     ERR_CANT_READ, ERR_CHECKS_BAD_OCTAVE, ERR_GENERATORS_NOT_NAMED, ERR_NOT_A_SETLIST, ERR_NOT_TEXT, ERR_PROTECTED_NOT_TRUE_OR_FALSE, ERR_NOT_YAML,
     ERR_BAD_DEFAULT_FOLLOW_ACTION, ERR_GROOVES_NOT_NAMED, ERR_INSTRUMENTS_NOT_NAMED, ERR_REAL_TIME_NOT_TRUE_OR_FALSE, ERR_SCALES_NOT_NAMED, ERR_SONG_BAD_OCTAVE_LABELS, ERR_SONG_BAD_VERSION, ERR_SONGS_NOT_NAMED, ERR_WHERE_NAMED,
 )
@@ -143,16 +143,17 @@ def starter_pattern():
 
 
 def new_setlist():
-    """Return the data of a new set: a C major scale and a starter pattern, both deletable, and one song called untitled whose first track plays the pattern in its first scene."""
+    """Return the data of a new set: a C major scale and a starter pattern, both deletable, and one song called untitled whose first track plays the pattern in its first scene, the pattern in the group named after that track."""
     first_pattern = MSG_NEW_PATTERN_NAME.format(number=FIRST_NUMBER)
+    first_track = MSG_NEW_TRACK_NAME.format(number=FIRST_NUMBER)
     song = started_song(scale=DEFAULT_SCALE)
-    song[Section.SCENES][0][SceneSetting.TRACKS] = {MSG_NEW_TRACK_NAME.format(number=FIRST_NUMBER): {ClipSlotSetting.PATTERN: first_pattern}}
+    song[Section.SCENES][0][SceneSetting.TRACKS] = {first_track: {ClipSlotSetting.PATTERN: first_pattern}}
     return {
         Section.SCALES: {DEFAULT_SCALE: {ScaleSetting.ROOT: ROOT_NAMES[0], ScaleSetting.TYPE: scale_type_name(ScaleType.MAJOR)}},
         SetlistSetting.STEP_SIZE: DEFAULT_STEP_SIZE,
         SetlistSetting.DEFAULT_OCTAVE: DEFAULT_OCTAVE, SetlistSetting.DEFAULT_DRUM_OCTAVE: DEFAULT_DRUM_OCTAVE,
         SetlistSetting.OCTAVE_LABELS: DEFAULT_OCTAVE_LABELS,
-        Section.PATTERNS: {first_pattern: starter_pattern()}, Section.ARPS: {}, Section.AUTO_RATCHETS: {}, Section.DRIFTS: {}, Section.PROGRESSIONS: {}, Section.VOICE_LEADINGS: {}, Section.STRUMS: {}, Section.GUITARIFIES: {}, Section.EUCLIDS: {}, Section.DENSITIES: {}, Section.SWELLS: {}, Section.ARTICULATES: {}, Section.GLIDES: {}, Section.SHORTENS: {}, Section.RUSHES: {}, Section.DRAGS: {}, Section.HOCKETS: {}, Section.CHAINS: {},
+        Section.PATTERNS: {first_pattern: {**starter_pattern(), PatternSetting.GROUP: first_track}}, Section.ARPS: {}, Section.AUTO_RATCHETS: {}, Section.DRIFTS: {}, Section.PROGRESSIONS: {}, Section.VOICE_LEADINGS: {}, Section.STRUMS: {}, Section.GUITARIFIES: {}, Section.EUCLIDS: {}, Section.DENSITIES: {}, Section.SWELLS: {}, Section.ARTICULATES: {}, Section.GLIDES: {}, Section.SHORTENS: {}, Section.RUSHES: {}, Section.DRAGS: {}, Section.HOCKETS: {}, Section.CHAINS: {},
         Section.SONGS: {MSG_DEFAULT_SONG_NAME: song},
     }
 
@@ -169,10 +170,12 @@ class Setlist(LlamaData):
     name, and the set looks the names up; each song does the same for what it shares.
     """
 
-    __slots__ = ('_settings', '_sections')
+    __slots__ = ('_settings', '_sections', '_closed_groups')
 
     def __init__(self):
         self.note_change()
+        # The pattern groups shown closed: no part of the set's data, so no undo or restore touches it (file_format.CLOSED_PATTERN_GROUPS).
+        self._closed_groups = []
         self._settings = {name: None for name in SETTINGS}
         self._sections = {name: NamedItems(label=SECTION_LABELS[name]) for name in SETLIST_SECTIONS}
 
@@ -203,7 +206,15 @@ class Setlist(LlamaData):
         if directory:
             os.makedirs(directory, exist_ok=True)
         with open(path, WRITE_TEXT, encoding=FILE_ENCODING) as file:
-            file.write(dump_setlist(self.to_data()))
+            file.write(dump_setlist(self._file_data()))
+
+    def _file_data(self):
+        """Return what a file holds: the set's data, and the pattern groups shown closed, where any are."""
+        data = self.to_data()
+        closed = self.get_closed_pattern_groups()
+        if closed:
+            data[CLOSED_PATTERN_GROUPS] = closed
+        return data
 
     @classmethod
     def new(cls):
@@ -229,7 +240,9 @@ class Setlist(LlamaData):
         set holding that song under one_song_name.
         """
         setlist = cls()
-        setlist._read(_as_a_set_is_written(data=data, where=where, one_song_name=one_song_name))
+        written = _as_a_set_is_written(data=data, where=where, one_song_name=one_song_name)
+        setlist._read(written)
+        setlist._closed_groups = closed_groups_held(written)
         return setlist
 
     @classmethod
@@ -855,6 +868,85 @@ class Setlist(LlamaData):
         """Return the names of the patterns, in the set's order."""
         return self._section(Section.PATTERNS).names()
 
+    def get_pattern_groups(self):
+        """Return the names of the groups the patterns are in, sorted as names are, each once."""
+        groups = {self.get_pattern(name).get_group() for name in self.get_pattern_names()}
+        return sorted((group for group in groups if group is not None), key=name_order)
+
+    def patterns_in_group(self, group):
+        """Return the names of a group's patterns, sorted as names are; None is the patterns in no group."""
+        return sorted((name for name in self.get_pattern_names() if self.get_pattern(name).get_group() == group), key=name_order)
+
+    def get_closed_pattern_groups(self):
+        """Return the groups the Patterns page shows closed, leaving out any that no pattern is in any more."""
+        groups = self.get_pattern_groups()
+        return [group for group in groups if group in self._closed_groups]
+
+    @notes_change
+    def rename_pattern_group(self, *, old, new):
+        """Give a group another name, for every pattern in it, shown closed or open as it was."""
+        for name in self.patterns_in_group(old):
+            self.get_pattern(name).set_group(new)
+        if old in self._closed_groups:
+            self._closed_groups = [new if group == old else group for group in self._closed_groups]
+
+    @notes_change
+    def ungroup_patterns(self, group):
+        """Take every pattern out of a group, deleting none."""
+        for name in self.patterns_in_group(group):
+            self.get_pattern(name).set_group(None)
+
+    def names_in_copied_group(self, *, group, new):
+        """Return the name each pattern of a group takes in a copy of the group under a new name, by the pattern copied, a taken name counting up."""
+        taken = list(self.get_pattern_names())
+        names = {}
+        for name in self.patterns_in_group(group):
+            names[name] = unique_name(base=name_in_copied_group(name=name, old=group, new=new), taken=taken)
+            taken.append(names[name])
+        return names
+
+    @notes_change
+    def copy_pattern_group(self, *, group, new):
+        """Copy every pattern of a group into a new group, and return the copies' names. A name that would be longer than a name may be refuses the whole copy."""
+        names = self.names_in_copied_group(group=group, new=new)
+        too_long = [copied for copied in names.values() if len(copied) > MAX_NAME_LENGTH]
+        if too_long:
+            raise ValueError(ERR_GROUP_COPY_NAME_TOO_LONG.format(name=too_long[0], most=MAX_NAME_LENGTH))
+        for name, copied in names.items():
+            self.copy_item(section=Section.PATTERNS, name=name, new=copied).set_group(new)
+        return list(names.values())
+
+    @notes_change
+    def group_patterns_by_track(self, song):
+        """Put every pattern of no group that a song plays in the group named after the first track that plays it, as the song wizard and an import do."""
+        for scene in song.get_scenes():
+            for track in song.get_track_names():
+                if not scene.has_clip_slot(track):
+                    continue
+                pattern = self.get_pattern(scene.get_clip_slot(track).get_pattern_name())
+                if pattern.get_group() is None:
+                    pattern.set_group(track)
+
+    def first_track_playing(self, pattern):
+        """Return the name of the first track, in any song, with a clip that plays a pattern, or nothing when no clip plays it."""
+        for song in self.get_song_names():
+            song = self.get_song(song)
+            for scene in song.get_scenes():
+                for track in song.get_track_names():
+                    if scene.has_clip_slot(track) and scene.get_clip_slot(track).get_pattern_name() == pattern:
+                        return track
+        return None
+
+    def is_pattern_group_closed(self, group):
+        return group in self._closed_groups
+
+    @notes_change
+    def show_pattern_group(self, *, group, closed):
+        """Show a group closed or open on the Patterns page. This changes nothing of the set's data: it is neither undone nor an unsaved change."""
+        self._closed_groups = [name for name in self._closed_groups if name != group]
+        if closed:
+            self._closed_groups.append(group)
+
     def has_generator(self, *, kind, name):
         """Return whether there's a generator of a kind, like arp, with this name."""
         return self._section(NAMED_GENERATORS[kind]).has(name)
@@ -938,6 +1030,14 @@ def _file_data(path):
         raise SongFileError(ERR_NOT_YAML.format(path=path, problem=error)) from error
 
 
+def closed_groups_held(data):
+    """Return the pattern groups a file's data shows closed: its list's names, and none where the file holds anything else, since a view's state is never worth refusing a file for."""
+    held = data.get(CLOSED_PATTERN_GROUPS)
+    if not isinstance(held, list):
+        return []
+    return [name for name in held if isinstance(name, str)]
+
+
 def _as_a_set_is_written(*, data, where, one_song_name):
     """Return a file's data in the layout a set is written in now, or raise SongFileError if it isn't a set at all.
 
@@ -951,7 +1051,7 @@ def _as_a_set_is_written(*, data, where, one_song_name):
     if holds_one_song(data):
         data = as_setlist_data(data=data, song_name=one_song_name)
     with reading(where):
-        check_keys(data=data, allowed={*SETTINGS, *SETLIST_SECTIONS})
+        check_keys(data=data, allowed={*SETTINGS, *SETLIST_SECTIONS, CLOSED_PATTERN_GROUPS})
     if _saved_before(data=data, version=LLAMATRON_OCTAVES_SINCE):
         data = _with_live_octaves_moved_up(data)
     if _saved_before(data=data, version=NOTES_SINCE) and SetlistSetting.DESCRIPTION in data:

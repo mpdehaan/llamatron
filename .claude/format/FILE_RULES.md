@@ -74,6 +74,9 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
 
 ### Patterns
 
+- A pattern may say its `group`, text, the heading the Patterns page lists the pattern under; a pattern that says none is in no
+  group, as every pattern of an older file is. The set's `closed_pattern_groups`, a list of group names, says which groups that
+  page shows closed; a name no pattern is in, or anything that is not a list of text, is ignored and never refuses a file.
 - A pattern holds `steps` and one list per row, mirroring the pattern editor: `degree`, `gate`,
   `dot`, `accidental`, `octave`, `chord`, `inversion`, `velocity`, `probability`, `glide`, `ratchet`,
   `ratchet_offset`, `grab`, `cc1` to `cc4`, `slide`, and for the registers `ax_note` to

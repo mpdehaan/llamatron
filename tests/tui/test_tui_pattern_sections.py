@@ -221,7 +221,9 @@ class TestSections(UITest):
         self.document.set_track_cc_number(name=SECOND_TRACK, lane=0, number=BRIGHTNESS)
         self.assertEqual(row.label(), MSG_CC_ROW_LABEL.format(label=cc_1, number=str(BRIGHTNESS)))
         # A pattern no track plays keeps the plain label.
-        await self.press(Key.ESCAPE, Key.DOWN, Key.DOWN, Key.ENTER, keybindings.PatternEditor.TO_ROLL)
+        await self.press(Key.ESCAPE, Key.ESCAPE)
+        await self.open_patterns_on(OTHER)
+        await self.press(Key.ENTER, keybindings.PatternEditor.TO_ROLL)
         self.assertEqual(self.app.screen.item, OTHER)
         self.assertEqual(self.app.screen.row_for(Row.CC1).label(), cc_1)
 
@@ -297,7 +299,9 @@ class TestSections(UITest):
 
     async def test_a_drum_pattern_has_no_rows_that_move_notes(self):
         await open_section(test=self, section=RowSection.REGISTER_APPLY)
-        await self.press(Key.ESCAPE, Key.DOWN, Key.ENTER)
+        await self.press(Key.ESCAPE, Key.ESCAPE)
+        await self.open_patterns_on(BEAT)
+        await self.press(Key.ENTER)
         rows = [row.name for row in self.app.screen.rows_view.reachable()]
         for name in REGISTER_NOTE_ROWS.values():
             self.assertNotIn(name, rows)
@@ -305,7 +309,9 @@ class TestSections(UITest):
             self.assertIn(name, rows)
 
     async def test_on_a_drum_note_row_a_and_f_are_notes(self):
-        await self.press(Key.ESCAPE, Key.DOWN, Key.ENTER)
+        await self.press(Key.ESCAPE, Key.ESCAPE)
+        await self.open_patterns_on(BEAT)
+        await self.press(Key.ENTER)
         editor = self.app.screen
         await self.press(Key.RIGHT, NoteName.A.lower())
         self.assertEqual(self.document.step_value(name=BEAT, row=Row.DEGREE, step=1), NoteName.A)
@@ -315,7 +321,9 @@ class TestSections(UITest):
         self.assertNotIn(NoteName.F, labels)
 
     async def test_on_other_drum_rows_d_removes_a_step(self):
-        await self.press(Key.ESCAPE, Key.DOWN, Key.ENTER)
+        await self.press(Key.ESCAPE, Key.ESCAPE)
+        await self.open_patterns_on(BEAT)
+        await self.press(Key.ENTER)
         labels = [item.shown_label() for item in self.app.screen.key_table()]
         self.assertNotIn(NoteName.D, labels)
         await self.press(Key.DOWN)

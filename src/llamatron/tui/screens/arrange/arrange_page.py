@@ -814,7 +814,8 @@ class ArrangePage(Page):
         track = self.track()
         taken = self.document().song().get_pattern_names()
         name = new_name(word=track, taken=taken)
-        self.document().add_pattern(name=name)
+        # A pattern made on a clip goes in the group named after the clip's track, the user's design.
+        self.document().add_pattern(name=name, group=track)
         if self.document().song().get_track(track).is_drum():
             self.document().set_drum(name=name, drum=True)
         self.document().add_clip_slot(index=self.row, track=track, pattern=name)

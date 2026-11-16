@@ -37,9 +37,11 @@ class PromptDialog(Dialog):
 
     KEYS = keybindings.PromptDialog
 
-    def __init__(self, *, title, value=NOTHING, max_length=None):
+    def __init__(self, *, title, value=NOTHING, max_length=None, label=NOTHING):
         super().__init__()
         self.title = title
+        # What the text is, written before it, for a prompt whose title says something else, as a confirmation's does.
+        self.label = label
         self.value = str(value)
         # The most characters the text may hold, for a name, or None for any length. A longer text given to start with, an older
         # file's name, stays until it is erased, and takes no more.
@@ -80,12 +82,12 @@ class PromptDialog(Dialog):
     def lines(self, width):
         # The text scrolls so that the cursor always shows, with the cursor drawn in reverse video
         # over the character it's before, or over a space when it's at the end.
-        shown = width - len(MSG_PROMPT_MARK) - 1
+        shown = width - len(MSG_PROMPT_MARK) - len(self.label) - 1
         cursor = self.cursor()
         start = max(cursor - shown + 1, 0)
         text = self.value[start:start + shown]
         at = cursor - start
-        line = Text(MSG_PROMPT_MARK + text[:at])
+        line = Text(MSG_PROMPT_MARK + self.label + text[:at])
         line.append(text[at:at + 1] or SPACE, style=Style.REVERSE)
         line.append(text[at + 1:])
         return [line]

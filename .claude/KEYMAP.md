@@ -240,8 +240,12 @@ settings page's fields. The keys that work everywhere are listed once:
 
 ## PatternsPage
 
-- **a row**: `ESC` back · `↑↓` select · `A` add · `ENTER` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `S` sort · `/` search · `L` listen
-- **the + row**: `ESC` back · `ENTER` add · `↑↓` select · `A` add · `/` search
+- **a group's heading**: `ESC` back · `↑↓` select · `Space/ENTER` toggle · `A` add · `N/F2` rename · `C` copy · `Bksp` ungroup · `PgUp/PgDn` next group · `/` search
+- **a pattern**: `ESC` back · `↑↓` select · `ENTER` edit · `G` group · `A` add · `N/F2` rename · `C` copy · `Bksp` delete · `L` listen · `PgUp/PgDn` next group · `/` search
+- **the New Pattern button**: `ESC` back · `↑↓` select · `ENTER` new pattern · `PgUp/PgDn` next group · `/` search
+- **the Ungrouped heading**: `ESC` back · `↑↓` select · `Space/ENTER` toggle · `PgUp/PgDn` next group · `/` search
+- **a pattern in no group**: `ESC` back · `↑↓` select · `ENTER` edit · `G` group · `N/F2` rename · `C` copy · `Bksp` delete · `L` listen · `PgUp/PgDn` next group · `/` search
+- **the New Pattern Group button**: `ESC` back · `↑↓` select · `ENTER` new group · `PgUp/PgDn` next group · `/` search
 - **while searching**: `ESC` CANCEL · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
 
 ## ProgressionEditor
@@ -387,7 +391,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - GroovesPage: search (a row, the + row)
 - InstrumentsPage: search (a row, the + row)
 - OpenPage: search (a row)
-- PatternsPage: search (a row, the + row)
+- PatternsPage: search (a group's heading, a pattern, the New Pattern button, the Ungrouped heading, a pattern in no group, the New Pattern Group button)
 - ScalesPage: search (a row, the + row)
 - SongsPage: search (a row, the + row)
 
@@ -487,7 +491,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - GroovesPage: add (a row, the + row)
 - InstrumentsPage: add (a row, the + row)
 - MainPage: Arrange (anywhere)
-- PatternsPage: add (a row, the + row)
+- PatternsPage: add (a group's heading, a pattern)
 - ScalesPage: add (a row, the + row)
 - SongsPage: add (a row, the + row)
 - WizardPage: add (the Use a suggested form button, the drums field)
@@ -554,7 +558,8 @@ settings page's fields. The keys that work everywhere are listed once:
 - PatternEditor: clear (the degree row, the accidental row, the dot row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the ax_bx row, the ax_cx row, the ax_dx row, the keyswitch row, the chord row, the chord_scale row, the tie row, the glide row, the grab row, the slide row)
 - PatternEditor: default (the octave row, the velocity row, the probability row, the ratchet row, the ratchet_offset row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row)
 - PatternEditor: one step (the gate row)
-- PatternsPage: delete (a row)
+- PatternsPage: ungroup (a group's heading)
+- PatternsPage: delete (a pattern, a pattern in no group)
 - PatternsPage: erase (while searching)
 - ProgressionEditor: clear (the Every field)
 - RegistersPage: default (the AX allowed inc max field, the AX minimum field, the AX default field, the AX maximum field, the BX allowed inc max field, the BX minimum field, the BX default field, the BX maximum field, the CX allowed inc max field, the CX minimum field, the CX default field, the CX maximum field, the DX allowed inc max field, the DX minimum field, the DX default field, the DX maximum field)
@@ -597,7 +602,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - GroovesPage: copy (a row)
 - InstrumentsPage: copy (a row)
 - MainPage: Chains (anywhere)
-- PatternsPage: copy (a row)
+- PatternsPage: copy (a group's heading, a pattern, a pattern in no group)
 - ScalesPage: copy (a row)
 - SongsPage: copy (a row)
 - WizardPage: copy (the drums field)
@@ -697,8 +702,9 @@ settings page's fields. The keys that work everywhere are listed once:
 - OpenPage: keep (while searching)
 - PatternEditor: type (the velocity row, the probability row, the ratchet row, the ratchet_offset row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the gate row)
 - PatternEditor: choose (the keyswitch row, the chord row, the chord_scale row)
-- PatternsPage: edit (a row)
-- PatternsPage: add (the + row)
+- PatternsPage: edit (a pattern, a pattern in no group)
+- PatternsPage: new pattern (the New Pattern button)
+- PatternsPage: new group (the New Pattern Group button)
 - PatternsPage: keep (while searching)
 - ProgressionEditor: rename (the Name field)
 - ProgressionEditor: choose (the Every field, the Restart field)
@@ -789,7 +795,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - OpenPage: back (a row)
 - OpenPage: CANCEL (while searching)
 - PatternEditor: back (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the keyswitch row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
-- PatternsPage: back (a row, the + row)
+- PatternsPage: back (a group's heading, a pattern, the New Pattern button, the Ungrouped heading, a pattern in no group, the New Pattern Group button)
 - PatternsPage: CANCEL (while searching)
 - ProgressionEditor: back (the Name field, the Every field, the Chords field, the Restart field)
 - RegistersPage: back (the AX allowed inc max field, the AX minimum field, the AX default field, the AX maximum field, the BX allowed inc max field, the BX minimum field, the BX default field, the BX maximum field, the CX allowed inc max field, the CX minimum field, the CX default field, the CX maximum field, the DX allowed inc max field, the DX minimum field, the DX default field, the DX maximum field, the AX at limit field, the BX at limit field, the CX at limit field, the DX at limit field, the AX reset each scene field, the BX reset each scene field, the CX reset each scene field, the DX reset each scene field)
@@ -845,6 +851,7 @@ settings page's fields. The keys that work everywhere are listed once:
 
 - MainPage: Generators (anywhere)
 - PatternEditor: grab (the piano roll)
+- PatternsPage: group (a pattern, a pattern in no group)
 
 ## `H`
 
@@ -886,7 +893,7 @@ settings page's fields. The keys that work everywhere are listed once:
 
 - ClipPage: listen (the Name field, the Pattern field, the Scale field, the Chains field, the Repeat field, the Loop field, the Strum heading, the Density heading, the Swell heading, the Articulate heading, the Direction field, the Grab track field, the Advance field, the Play button, the Stop button)
 - PatternEditor: listen (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the keyswitch row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
-- PatternsPage: listen (a row)
+- PatternsPage: listen (a pattern, a pattern in no group)
 
 ## `M`
 
@@ -900,7 +907,6 @@ settings page's fields. The keys that work everywhere are listed once:
 - GroovesPage: move (a row)
 - InstrumentsPage: move (a row)
 - MainPage: IMPORT MIDI (anywhere)
-- PatternsPage: move (a row)
 - ScalesPage: move (a row)
 - SongsPage: move (a row)
 - WizardPage: move (the drums field)
@@ -917,7 +923,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - GrooveEditor: rename (anywhere)
 - GroovesPage: rename (a row)
 - InstrumentsPage: rename (a row)
-- PatternsPage: rename (a row)
+- PatternsPage: rename (a group's heading, a pattern, a pattern in no group)
 - ScalesPage: rename (a row)
 - SongsPage: rename (a row)
 
@@ -938,6 +944,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - FilePage: next section (the Author field, the Description field, the Title field, the Default follow action field, the Notes field, the Protected field, the Notes & Octaves heading, the Visualizers heading, the Save button, the Open button)
 - GuitarifyEditor: next section (the Name field, the Shape heading, the Strokes heading)
 - PatternEditor: next section (the degree row, the octave row, the accidental row, the velocity row, the keyswitch row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
+- PatternsPage: next group (a group's heading, a pattern, the New Pattern button, the Ungrouped heading, a pattern in no group, the New Pattern Group button)
 - ScenePage: next section (the Name field, the Scale field, the Groove field, the Tempo field, the Tempo ramps to field, the Repeat field, the Reset AX field, the Reset BX field, the Reset CX field, the Reset DX field, the Launch together field, the Density heading, the Swell heading, the Articulate heading, the Chains field)
 - TrackEditor: next section (the Name field, the Drum field, the Mute field, the Euclid heading, the Strum heading, the Groove field, the Transpose field, the Lowest octave field, the Highest octave field, the CC 1 field, the CC 2 field, the CC 3 field, the CC 4 field, the CC1 Reg field, the CC2 Reg field, the CC3 Reg field, the CC4 Reg field, the Vel Reg field, the Chains field, the Instrument field)
 
@@ -960,7 +967,6 @@ settings page's fields. The keys that work everywhere are listed once:
 - InstrumentsPage: sort (a row)
 - MainPage: Songs (anywhere)
 - PatternEditor: size (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the keyswitch row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
-- PatternsPage: sort (a row)
 - ScalesPage: sort (a row)
 - SongsPage: sort (a row)
 
@@ -987,6 +993,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - PatternEditor: close section (the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row)
 - PatternEditor: next (the accidental row, the dot row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the ax_bx row, the ax_cx row, the ax_dx row)
 - PatternEditor: toggle (the tie row, the glide row, the grab row, the slide row)
+- PatternsPage: toggle (a group's heading, the Ungrouped heading)
 - RegistersPage: toggle (the AX reset each scene field, the BX reset each scene field, the CX reset each scene field, the DX reset each scene field)
 - RushStepsEditor: toggle (anywhere)
 - ScenePage: toggle (the Reset AX field, the Reset BX field, the Reset CX field, the Reset DX field, the Launch together field, the Density heading, the Swell heading, the Articulate heading)
@@ -1092,7 +1099,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - InstrumentsPage: select (a row, the + row, while searching)
 - NotesPage: scroll (anywhere)
 - OpenPage: select (a row, while searching)
-- PatternsPage: select (a row, the + row, while searching)
+- PatternsPage: select (a group's heading, a pattern, the New Pattern button, the Ungrouped heading, a pattern in no group, the New Pattern Group button, while searching)
 - ProgressionEditor: select (the Name field, the Every field, the Chords field, the Restart field)
 - RushEditor: select (the Name field, the Step field, the Rush amount field, the Steps field, the Restart field)
 - ScalePage: select (the Name field, the Root field, the Kind field)

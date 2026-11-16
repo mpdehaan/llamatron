@@ -262,6 +262,13 @@ MSG_EXPORT_CHOICES = ['Ableton Live set', 'MIDI (Stems)', 'MIDI (Single File)', 
 MSG_NOTES_BUTTONS = ('Save', 'CANCEL')
 # The lists of named things.
 MSG_DRUM_KIND = 'drum'
+# tui/screens/pattern/patterns_page.py: a group's heading, the heading of the patterns in no group, the two buttons that add, and
+# the entry of the Group picker that makes a group. A button has no +, so that + and - mean only closed and open (the user's design).
+MSG_GROUP_HEADING = '{mark} {name} ({count})'
+MSG_UNGROUPED = 'Ungrouped'
+MSG_NEW_PATTERN_BUTTON = '[ New Pattern ]'
+MSG_NEW_GROUP_BUTTON = '[ New Pattern Group ]'
+MSG_NEW_GROUP_NAME_LABEL = 'New Group Name: '
 MSG_NOTES_KIND = 'notes'
 MSG_ARP_LABEL = 'arpeggiator'
 MSG_AUTO_RATCHET_LABEL = 'AutoRatchet'

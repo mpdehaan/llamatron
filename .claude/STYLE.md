@@ -147,6 +147,12 @@ for people, like key names, file modes, the format's names and the exporters' ta
 descriptive names in their own modules. Text only for people, like docstrings and comments, stays
 where it is.
 
+**Imports are sorted, in two groups.** A module's imports come as two groups with one blank line between them: first the system
+libraries, then everything from this project, together. In each group the import lines are in alphabetical order by the package
+or module they import from, and the names one line imports are in alphabetical order too. The one exception is an import that
+has to stand elsewhere to avoid a circular import (the user's rule). New and changed modules follow it; the modules written
+before it are brought over as agreed with the user.
+
 **A line whose purpose isn't obvious gets a name.** A regular expression or a long expression is
 given a function or method whose name says what it means, such as `is_root_note(text)`. That
 includes list and dictionary comprehensions: anything more than a plain copy or filter goes in a

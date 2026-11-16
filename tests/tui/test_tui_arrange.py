@@ -364,6 +364,8 @@ class TestArrangePage(UITest):
         self.assertEqual(self.app.screen.item, name)
         self.assertEqual(self.document.clip_slot(index=1, track=LEAD).get_pattern_name(), name)
         self.assertFalse(self.document.has_notes(name))
+        # A pattern made here goes in the group named after its track.
+        self.assertEqual(self.document.pattern_group(name), LEAD)
         # Esc comes back to the cell, and the next blank pattern on the track takes the next number.
         await self.press(Key.ESCAPE)
         self.assertIs(self.app.screen, self.page)
@@ -681,7 +683,9 @@ class TestRhythmAndNotesFromOnAClip(UITest):
     async def test_a_pattern_in_use_this_way_cannot_be_deleted(self):
         self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.REPEAT, value=2)
         self.document.set_clip_slot_morph_target(index=0, track=LEAD, pattern=OTHER)
-        await self.press(Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.PATTERNS, Key.DOWN, Key.DOWN, Key.BACKSPACE)
+        await self.press(Key.ESCAPE, Key.ESCAPE)
+        await self.open_patterns_on(OTHER)
+        await self.press(Key.BACKSPACE)
         self.assertIsInstance(self.app.screen, MessageDialog)
         self.assertIn('scene 1 (one), track lead', self.text())
 

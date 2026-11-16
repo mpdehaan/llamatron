@@ -32,7 +32,9 @@ import os
 import unittest
 from unittest import mock
 
-from llamatron.composition.file_format import Row, SetlistSetting, Section
+from llamatron.composition.file_format import PatternSetting, Row, SetlistSetting, Section
+from llamatron.composition.naming import new_name
+from llamatron.strings.names import MSG_NEW_GROUP_WORD
 from llamatron.composition.setlist import Setlist
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime.engine import PlaybackEngine, SteppedClock
@@ -114,6 +116,9 @@ def comparable_data(setlist):
     for song in data.get(Section.SONGS, {}).values():
         song[Section.TRACKS] = {name: without_instrument(track) for name, track in song.get(Section.TRACKS, {}).items()}
     data[Section.PATTERNS] = {name: {row: values for row, values in pattern.items() if row not in ROLL_ROWS} for name, pattern in data.get(Section.PATTERNS, {}).items()}
+    for name, pattern in data[Section.PATTERNS].items():
+        # A pattern is always built in a group, so one the set leaves in no group is held to the group the tutorial builds it in.
+        pattern.setdefault(PatternSetting.GROUP, setlist.first_track_playing(name) or new_name(word=MSG_NEW_GROUP_WORD, taken=[]))
     return data
 
 

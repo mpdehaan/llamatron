@@ -40,6 +40,39 @@ Reference notes for Claude, one part of `.claude/tracker/`: File and Notes, Song
 - Only a new set gets the starter pattern and the clip that plays it (`new_setlist`,
   `.claude/format/FILE_RULES.md`), since a song added to a set already has the set's patterns.
 
+## Patterns, by group
+
+The user's design. `PatternsPage` (`tui/screens/pattern/patterns_page.py`) lists the patterns by group and is always sorted, so
+`S` (Sort) and `M` (Move) are not on it; every other list page keeps both.
+
+- **A group is only text.** Every pattern has a text setting, `group` (`PatternSetting.GROUP`), and a group exists while a
+  pattern names it; nothing else stores one. A group made on the page that holds no pattern yet is the page's own
+  (`new_groups`) until a pattern is made in it, and is not in the set.
+- **The rows.** Each row is a `Listed(kind, name)`: a group's heading, `- name (count)` open and `+ name (count)` closed, bold;
+  the group's patterns, indented, sorted by `name_order`; and, ending each open group, the button `[ New Pattern ]`. The page
+  ends with the button `[ New Pattern Group ]`. Both buttons are in the Patterns theme colour (`ListPage.row_style`) and carry no
+  `+`. The patterns in no group, an older file's, come last under `Ungrouped`, shown only while any exist; nothing can be added
+  there, and its heading only opens and closes.
+- **The cursor** opens on the first pattern showing, so that ENTER edits at once. `current()` is the pattern's name, or nothing
+  on a heading or a button, as a list answers on its `+` row; `listed()` says what the row is.
+- **Closed groups** are saved with the set under `closed_pattern_groups` and are no part of the set's data
+  (`Setlist._closed_groups`, outside `to_data`): opening or closing one is neither an unsaved change nor an undo step. A group
+  no pattern is in is forgotten.
+- **Keys.** On a pattern: ENTER edits, `G` (Group) opens a sorted picker of the groups ending with the new group entry, `A`
+  adds to the pattern's group, `N`, `C`, `Bksp` and `L` as before; a copy stays in its source's group. On a heading: Space or
+  ENTER opens and closes, `A` adds a pattern, `N` renames the group, `C` copies the group and `Bksp` asks and then takes every
+  pattern out of the group, deleting none. PgUp and PgDn jump between headings.
+- **Copying a group** opens a prompt titled "Confirm copying the entire pattern group" with the field "New Group Name:", opened
+  on the group's name counted up. Each copy's name takes the new group's name at the front, in place of the old group's name
+  where the name began with it and joined with an underscore otherwise (`name_in_copied_group`); a taken name counts up; a name
+  over 30 characters refuses the whole copy with the reason; the copy is one undo step.
+- **Search** looks at the patterns alone, inside closed groups too, and ENTER opens the found pattern's group. Pickers of
+  patterns elsewhere stay flat.
+- **A pattern made elsewhere** takes the group named after its track: the starter pattern of a new set, a blank pattern made on
+  Arrange, the MIDI import and the song wizard (`Setlist.group_patterns_by_track`).
+- The video tutorial builds each pattern in its target's group, or the group named after the first track that plays it, making
+  the group first (`tutorial/plan.py`, `add_to_group`).
+
 ## Scales and Scale
 
 - The Scales page (`Z`) lists the set's scales. `ENTER` opens `ScalePage`

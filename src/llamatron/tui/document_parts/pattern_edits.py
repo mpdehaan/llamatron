@@ -42,11 +42,33 @@ class PatternEdits:
     def _pattern(self, name):
         return self._setlist.get_pattern(name)
 
-    def add_pattern(self, *, name, steps=None):
+    def add_pattern(self, *, name, steps=None, group=None):
         """Add a pattern of empty steps: one bar of the current song's time signature unless a count is given, or 16 when a bar isn't whole steps."""
         if steps is None:
             steps = self.song().steps_in_a_bar() or NEW_PATTERN_STEPS
-        self._change(self._setlist.add_item, section=Section.PATTERNS, name=name, item=Pattern(steps=steps, rows={}))
+        self._change(self._setlist.add_item, section=Section.PATTERNS, name=name, item=Pattern(steps=steps, rows={}, group=group))
+
+    # Pattern groups, which the Patterns page lists the patterns under (the user's design).
+
+    def pattern_group(self, name):
+        return self._pattern(name).get_group()
+
+    def set_pattern_group(self, *, name, group):
+        self._change(self._pattern(name).set_group, group)
+
+    def rename_pattern_group(self, *, old, new):
+        self._change(self._setlist.rename_pattern_group, old=old, new=new)
+
+    def ungroup_patterns(self, group):
+        self._change(self._setlist.ungroup_patterns, group)
+
+    def copy_pattern_group(self, *, group, new):
+        """Copy a whole group under a new name and return the copies' names, or raise ValueError when a copy's name would be too long."""
+        return self._change(self._setlist.copy_pattern_group, group=group, new=new)
+
+    def show_pattern_group(self, *, group, closed):
+        """Show a group closed or open on the Patterns page, which is no change to the set: nothing to undo and nothing to save."""
+        self._setlist.show_pattern_group(group=group, closed=closed)
 
     def step_value(self, *, name, row, step):
         return self._pattern(name).get_value(row=row, step=step)

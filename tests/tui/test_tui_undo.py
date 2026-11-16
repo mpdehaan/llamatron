@@ -76,7 +76,7 @@ from llamatron.composition.naming import new_name
 from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_GROOVE_WORD, MSG_NEW_INSTRUMENT_WORD, MSG_NEW_PATTERN_WORD, MSG_NUMBERED_NAME
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES
-from tests.support.ui_testing import SWAY, a_song, fixed_text, LEAD, leaf_pages, ROLLS, TUNE, UITest, UP_ARP, key_of
+from tests.support.ui_testing import SWAY, a_song, fixed_text, LEAD, leaf_pages, RHYTHMS, ROLLS, TUNE, UITest, UP_ARP, key_of
 
 # Names the tests give to what they add, and what they type.
 SECOND_SONG = 'second'
@@ -325,6 +325,14 @@ class TestPatternsPageUndo(UndoTest):
         await self.press(keybindings.MainPage.PATTERNS, keybindings.PatternsPage.ADD, Key.ENTER, Key.ESCAPE)
         self.assertIsInstance(self.app.screen, PatternsPage)
         self.assertIn(added, self.document.song().get_pattern_names())
+        # The page has no + row for the cursor to fall to when the pattern goes, so the cursor waits on a pattern that stays.
+        self.app.screen.put_cursor_on(TUNE)
+        await self.check_undo_and_redo(before=before, after=self.data())
+
+    async def test_moving_a_pattern_to_another_group_is_one_step(self):
+        before = self.data()
+        await self.press(keybindings.MainPage.PATTERNS, keybindings.PatternsPage.GROUP, Key.DOWN, Key.ENTER)
+        self.assertEqual(self.document.pattern_group(TUNE), RHYTHMS)
         await self.check_undo_and_redo(before=before, after=self.data())
 
     async def test_undoing_the_add_while_its_editor_is_open_goes_back_to_the_list(self):

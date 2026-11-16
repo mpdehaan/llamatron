@@ -35,7 +35,8 @@ a feature that already exists does what's being asked, that's pointed out first
   Neither works inside a dialog, which has its own keys.
 - The same action takes the same letter on every page that has it: `N` rename, `C` copy, `M`
   move, `S` sort, `Bksp` delete, `A` add, `I` insert, `ENTER` open or choose.
-  Every page that lists named things has all of them. A name is renamed and anything more
+  Every page that lists named things has all of them, but the Patterns page, which lists its patterns by group and always sorted
+  and so has no move and no sort (the user's design). A name is renamed and anything more
   complex is edited: ENTER on a Name field reads `rename` on every page, and `edit` is for
   what opens an editor.
 - No key needs Shift, since `+` and `*` need Shift on a US keyboard,
@@ -290,6 +291,8 @@ such name, and `tests/rules/test_naming.py` holds that nothing else numbers one)
   the other place colour is allowed, the user's design, and it never strobes and
   never flashes brightly, since some people are sensitive to that: brightness rises and falls
   gently, a limiter holds the whole picture down as more plays, and nothing jumps to white.
+  The Patterns page's two buttons, `[ New Pattern ]` and `[ New Pattern Group ]`, are in the Patterns theme colour, the user's design
+  and the eleventh allowance of colour, and a group's heading is bold.
   The piano roll's read head, a thin line on the step that sounds while the pattern plays, is light yellow (`Style.READ_HEAD`), the user's
   design, and is never drawn over a note's bar.
   The piano roll's thin lines of a chord's other notes are green (`Style.CHORD_NOTE`), the user's design, so that they stand
