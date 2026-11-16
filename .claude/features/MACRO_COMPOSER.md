@@ -165,6 +165,15 @@ clouds; generate and test, with motif development and counterpoint last.
   row, under the list, holds the note a General MIDI sound plays, C4 until changed, stepped or typed by name, and the Listen
   key plays four hits on that note (`WizardChoices.piece_sound`, `set_piece_sound`, `piece_note`, `set_piece_note`,
   `PlayerBranch.piece_row`, `WizardPage.pick_piece_sound`). `TestKitPieceSounds` in `tests/macro_composer/test_breaks.py`.
+- **A player's character** (the user's design, `macro_composer/characters.py`): a song's `players` gives an instrument a level, 1
+  to 4, or the places of gauges, each 0 to 20 (`notes`, `variety`, `touch`, `timing`, `fills`, `strumming`, `range`). Each field
+  of a template's level belongs to one gauge (`GAUGE_OF_FIELD`), and the player is put together field by field from the level
+  whose band the gauge's place is in; `uneven`, `timing` and `span` are numbers and are blended between the levels, so every
+  place differs. A level is a preset, every gauge at the level's place (`PRESET_PLACE`), and gives the level exactly as written,
+  so the four imaginary players stay. A section that allows an instrument only so high a level holds each higher gauge to that
+  level's place. The wizard keeps each moved gauge (`WizardChoices.player_gauges`, `get_player_gauge`, `set_player_gauge`,
+  `player_preset`); the gauges are not on the wizard's page yet, since outside timing and touch a gauge has only four places that
+  differ until rock's levels are rewritten as gauges. `tests/macro_composer/test_characters.py`.
 - A song gives each instrument's player a complexity from 1 to 4, which people see as an imaginary player's name
   (`player_name` in `players.py`). The instruments and names are the same in every style; what each player does is the style's.
 - **A player only decorates the kind's own parts and never replaces them** (the user's choice). Complexity 1 goes by the book
