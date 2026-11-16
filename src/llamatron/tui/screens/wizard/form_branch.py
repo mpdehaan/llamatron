@@ -63,7 +63,7 @@ class FormBranch(Branch):
         if not choices.is_ready():
             return [Text(INDENT + MSG_WIZARD_CHOOSE_FIRST, style=Style.DIM)]
         hint = [Text(INDENT + MSG_WIZARD_SECTIONS_HINT, style=Style.DIM), Text()]
-        sections = self.sections()
+        sections = choices.section_labels()
         longest = max((len(name) for name in sections), default=0)
         return hint + [Text(INDENT + MSG_WIZARD_SECTION_LINE.format(number=place + FIRST_SECTION_NUMBER, name=name, width=longest, bars=choices.section_bars(place)))
                 for place, name in enumerate(sections)]

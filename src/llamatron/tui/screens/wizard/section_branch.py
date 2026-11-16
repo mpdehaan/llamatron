@@ -39,7 +39,7 @@ class SectionBranch(Branch):
         return SECTION_KEY.format(number=self._place + FIRST_SECTION_NUMBER, name=self.name())
 
     def name(self):
-        return self.choices().form_sections()[self._place]
+        return self.choices().section_labels()[self._place]
 
     def fields(self):
         choices = self.choices()
