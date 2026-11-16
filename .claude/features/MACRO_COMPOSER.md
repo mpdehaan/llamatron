@@ -2,7 +2,7 @@
 
 Reference notes for Claude on the MacroComposer, the user's name for the tool that makes a set from structured data that says
 what to play. It isn't imported: read it before working on `src/llamatron/macro_composer/` or `internal_tools/macro_compose.py`.
-What is agreed and not yet built is in `dev_notes/QUEUE.md`, under the arranger's heading. `.claude/features/GENRES.md` holds the genre
+What is agreed and not yet built is in `.claude/features/WIZARD_DESIGNS.md`. `.claude/features/GENRES.md` holds the genre
 library's rules and `.claude/format/EXAMPLES.md` the rules for the sets in `examples/`.
 
 ## The User's Rules
@@ -124,7 +124,7 @@ its own; a song's `melody` adds habits too.
   with a running amount added: moved so many places up the ladder, going round at the top of the range, and begun so many
   notes later (the habit `evolve: {move, rotate}`, usually one place and none). A varied line begins one note later.
 
-Agreed and to come, each optional (`dev_notes/QUEUE.md`): phase and build-up; cells in order; a cellular automaton; chance tables;
+Agreed and to come, each optional (`.claude/features/WIZARD_DESIGNS.md`): phase and build-up; cells in order; a cellular automaton; chance tables;
 clouds; generate and test, with motif development and counterpoint last.
 
 ## Players

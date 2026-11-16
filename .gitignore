@@ -23,3 +23,5 @@ recordings/
 examples/**/*.wav
 # The public-domain scores internal_tools/analysis_and_generation/fetch_corpus.sh fetches for the corpus study, kept out of the repository.
 .corpus/
+# Claude's own list of what is built next, kept on this computer only (the user's choice).
+dev_notes/QUEUE.md

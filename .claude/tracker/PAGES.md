@@ -181,7 +181,7 @@ Reference notes for Claude, one part of `.claude/tracker/`: File and Notes, Song
 
 ## The song wizard
 
-The user's design, agreed in detail in `dev_notes/QUEUE.md` (S16 to S39), of which this is the part built.
+The user's design, agreed in detail in `.claude/features/WIZARD_DESIGNS.md` (S16 to S39), of which this is the part built.
 
 - F5 opens `WizardPage` (`tui/screens/wizard/wizard_page.py`) from any page; F5 inside the wizard says the wizard is open.
   The page is a `FieldPage`: a tree of branches at the left, 24 cells wide, and at the right the fields of the branch under

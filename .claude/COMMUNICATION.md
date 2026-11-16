@@ -120,7 +120,7 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   GitHub's `main` doesn't. Claude pushes nothing unasked. A reply that leaves commits waiting says how many wait for a push.
 - The song wizard is kept out of the documents for people, `GUIDE.md`, `README.md`, every page of `docs/` and so the website, until
   the user says the wizard is ready to release (the user's rule): no chapter, row, key or screenshot of it. When the wizard's
-  items in `dev_notes/QUEUE.md` are all built, Claude asks the user whether the wizard is ready, and only on a yes do its
+  items in `.claude/features/WIZARD_DESIGNS.md` are all built, Claude asks the user whether the wizard is ready, and only on a yes do its
   documents go in, with the F5 row of `docs/GETTING_STARTED.md` put back. `tests/rules/test_doc_paths.py` holds that no such
   document names the wizard while `WIZARD_IS_RELEASED` there is false.
 - Claude commits only the files it changed, naming them, never `git add -A`, and checks
@@ -129,7 +129,10 @@ The user's rules for a reply that puts anything to them, gathered here so that e
 - Agreed work is built before the next questions are asked, so that a reply carries progress as well as questions, and
   the user's answers are acted on without asking them to be confirmed. A message that asks a question ends the turn: what
   depends on the answer waits for it.
-- The agreed work not yet built is kept in order in `dev_notes/QUEUE.md`, Claude's file: an item leaves it once built, and a
+- What is agreed and not yet built is written, design by design, in `.claude/DESIGNS.md` and, for the arranger and the song wizard,
+  `.claude/features/WIZARD_DESIGNS.md`, which are in the repository; the order the work is built in is `dev_notes/QUEUE.md`, Claude's
+  own short list, which git ignores and which is never committed (the user's choice, for privacy and a quieter history). An item
+  leaves the designs once built, and a
   request that comes in while Claude works goes where the user says, the bottom unless told otherwise, and Claude says where
   it went (the user's rule).
 - A set Claude points the user to, to open or to listen to, is given as the whole command that opens it, one command a set, like
