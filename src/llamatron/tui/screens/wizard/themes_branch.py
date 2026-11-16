@@ -16,8 +16,7 @@
 
 """The wizard's Themes branch: the chord progression the song is built on and the melody style its tunes are sketched by."""
 
-from llamatron.macro_composer.wizard_choices import PROGRESSION_TRAITS
-from llamatron.strings.labels import MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_THEMES_BRANCH, MSG_WIZARD_USUAL_MELODY
+from llamatron.strings.labels import MSG_WIZARD_ANY_PROGRESSION, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_THEMES_BRANCH, MSG_WIZARD_USUAL_MELODY
 from llamatron.tui.screens.shared.field import ChoiceField
 from llamatron.tui.screens.wizard.song_ways_branch import A_CHOICE, SongWaysBranch
 
@@ -31,13 +30,25 @@ class ThemesBranch(SongWaysBranch):
         return MSG_WIZARD_THEMES_BRANCH
 
     def traits(self):
-        return [(MSG_WIZARD_PROGRESSION_LABEL, PROGRESSION_TRAITS)]
+        return []
+
+    def set_progression(self, progression):
+        choices = self.choices()
+        if progression == MSG_WIZARD_ANY_PROGRESSION:
+            choices.set_any_progression()
+        else:
+            choices.set_way(trait=choices.progression_trait(), value=progression)
 
     def fields(self):
         choices = self.choices()
         if not choices.is_ready():
             return []
-        fields = self.way_fields()
+        fields = []
+        trait = choices.progression_trait()
+        if trait is not None and len(choices.song_ways(trait)) >= A_CHOICE:
+            # The first choice, the one a song starts with, leaves the progression to chance: each run takes one of the subgenre's.
+            fields.append(ChoiceField(page=self.page(), label=MSG_WIZARD_PROGRESSION_LABEL, choices=[MSG_WIZARD_ANY_PROGRESSION, *choices.song_ways(trait)],
+                                      current=MSG_WIZARD_ANY_PROGRESSION if choices.has_any_progression() else choices.get_way(trait), set=self.page().choosing(self.set_progression)))
         styles = choices.melody_styles()
         if len(styles) >= A_CHOICE:
             # The first choice leaves each player's tunes to the style the genre gives the player.

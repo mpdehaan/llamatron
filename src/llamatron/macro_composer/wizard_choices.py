@@ -57,6 +57,9 @@ USUAL_ROOTS = {MAJOR: 'C', MINOR: 'E'}
 # How long a section that is one held chord lasts, in bars.
 HELD_BARS = 1
 # The seeds a run draws from: large enough that two runs seldom share one, small enough to read in a file.
+# What a progression left to chance is drawn by, and how many times the subgenre's usual one counts.
+PROGRESSION_SEED = 'progression {}'
+USUAL_COUNTS = 2
 FIRST_SEED = 1
 LAST_SEED = 999999
 
@@ -1000,8 +1003,49 @@ class WizardChoices:
 
     # The song.
 
-    def song_picks(self, name):
-        """Return the choices as a song's picks, which the arranger makes a song of."""
+    # The progression left to chance, the user's ask: a song whose progression nobody chose takes one of the subgenre's by the
+    # seed, so that two runs differ in more than their tunes.
+
+    def progression_trait(self):
+        return self.song_trait(PROGRESSION_TRAITS)
+
+    def has_any_progression(self):
+        """Return whether the progression is left to chance: no progression was chosen."""
+        return self.progression_trait() is not None and self.progression_trait() not in self._ways
+
+    def set_any_progression(self):
+        """Leave the progression to chance again."""
+        self._ways.pop(self.progression_trait(), None)
+
+    def progressions_by_chance(self):
+        """Return the progressions the song may take, in the order the seed draws them: a commoner one likelier to come first, the
+        subgenre's usual one counted twice. With no seed, or a progression chosen, there is nothing to draw."""
+        trait = self.progression_trait()
+        if not self.has_any_progression() or self._seed is None:
+            return []
+        usual = self._picks()[trait]
+        entries = values_of(style=style_of(self._genre), trait=trait)
+        left = self.song_ways(trait)
+        # A progression written for the other of major and minor is left to be chosen by hand: its chords were not meant for the song's scale.
+        suited = [way for way in left if entries[way].get(SCALE_TYPE, MAJOR) == self._scale_type]
+        left = suited or left
+        dice = random.Random(PROGRESSION_SEED.format(self._seed))
+        drawn = []
+        while left:
+            weights = [share_of(entries[way]) * (USUAL_COUNTS if way == usual else 1) or 1 for way in left]
+            drawn.append(dice.choices(left, weights=weights)[0])
+            left.remove(drawn[-1])
+        return drawn
+
+    def song_picks(self, name, *, progression=None):
+        """Return the choices as a song's picks, which the arranger makes a song of: with a progression left to chance, the one
+        given, or the first the seed draws."""
+        drawn = [progression] if progression else self.progressions_by_chance()[:1]
+        if drawn:
+            return {**self._song_picks(name), PICKS: {**self._ways, self.progression_trait(): drawn[0]}}
+        return self._song_picks(name)
+
+    def _song_picks(self, name):
         return {NAME: name, TITLE: name, STYLE: self._genre, TEMPLATE: self._subgenre, KEY: {ROOT: self._root, TYPE: self._scale_type}, TEMPO: self._tempo, FORM: self.form_sections() if self.has_own_form() else self.get_form(), SEED: self._seed,
                 PICKS: dict(self._ways), PLAYERS: dict(self._levels), WITHOUT: self._song_without(),
                 **({SECTIONS: self._sections_of_song()} if self._sections_of_song() else {}),
@@ -1020,8 +1064,18 @@ class WizardChoices:
             raise ValueError(ERR_WIZARD_NOT_READY)
         if self._seed is None:
             self.draw_seed()
-        given = arranged(style=style_of(self._genre), song=self.song_picks(name))
-        made = Setlist.from_data(data=composed(given=given, version=version))
+        made = None
+        # A progression drawn by chance that makes no song of these choices, as one too long for a section's bars, gives way to the next drawn.
+        for progression in self.progressions_by_chance()[:-1]:
+            try:
+                made = Setlist.from_data(data=composed(given=arranged(style=style_of(self._genre), song=self.song_picks(name, progression=progression)), version=version))
+                break
+            except (ValueError, IndexError, KeyError, SongFileError):
+                made = None
+        if made is None:
+            last = self.progressions_by_chance()[-1:]
+            given = arranged(style=style_of(self._genre), song=self.song_picks(name, progression=last[0] if last else None))
+            made = Setlist.from_data(data=composed(given=given, version=version))
         made.get_item(section=Section.SONGS, name=name).set_wizard_choices(self.to_data())
         # A part written for a section that leaves the part out is played by nothing, and would be left behind in the open set.
         made.remove_unused()

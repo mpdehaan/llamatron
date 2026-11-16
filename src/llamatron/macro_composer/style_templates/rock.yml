@@ -179,11 +179,14 @@ traits:
       figure:
         - [{degree: 1, chord: '3', steps: 8}]
   chords:
-    - {value: three chord, share: 26, pattern: [1, 4, 1, 5], by_section: {chorus: [4, 5, 1, 1], bridge: [4, 4, 5, 5]}}
-    - {value: four chord, share: 28, pattern: [1, 6, 4, 5], by_section: {chorus: [1, 5, 6, 4], bridge: [4, 4, 5, 5]}}
-    - {value: borrowed flat seven, share: 20, pattern: [1, {degree: 7, accidental: flat}, 4, 1], by_section: {chorus: [4, 1, 5, 1], bridge: [{degree: 7, accidental: flat}, 4, {degree: 7, accidental: flat}, 5]}}
+    - {value: three chord, share: 24, pattern: [1, 4, 1, 5], by_section: {chorus: [4, 5, 1, 1], bridge: [4, 4, 5, 5]}}
+    - {value: four chord, share: 26, pattern: [1, 6, 4, 5], by_section: {chorus: [1, 5, 6, 4], bridge: [4, 4, 5, 5]}}
+    - {value: borrowed flat seven, share: 18, pattern: [1, {degree: 7, accidental: flat}, 4, 1], by_section: {chorus: [4, 1, 5, 1], bridge: [{degree: 7, accidental: flat}, 4, {degree: 7, accidental: flat}, 5]}}
     - {value: twelve bar, share: 8, pattern: [1, 1, 1, 1, 4, 4, 1, 1], by_section: {chorus: [5, 4, 1, 1, 5, 4, 1, 5], bridge: [4, 4, 1, 1, 4, 4, 5, 5]}}
-    - {value: minor power, share: 18, scale_type: minor, pattern: [1, 1, 6, 7], by_section: {chorus: [1, 6, 3, 7], bridge: [4, 4, 5, 5]}}
+    - {value: minor power, share: 10, scale_type: minor, pattern: [1, 1, 6, 7], by_section: {chorus: [1, 6, 3, 7], bridge: [4, 4, 5, 5]}}
+    - {value: minor fall, share: 7, scale_type: minor, pattern: [1, 7, 6, 7], by_section: {chorus: [6, 7, 1, 1], bridge: [4, 4, 6, 7]}}
+    - {value: minor anthem, share: 5, scale_type: minor, pattern: [1, 6, 3, 7], by_section: {chorus: [6, 3, 7, 1], bridge: [4, 6, 7, 7]}}
+    - {value: minor drive, share: 2, scale_type: minor, pattern: [1, 1, 4, 1], by_section: {chorus: [6, 6, 7, 1], bridge: [4, 4, 5, 5]}}
   lead:
     - {value: voice, share: 100, sound: voice}
   solo:

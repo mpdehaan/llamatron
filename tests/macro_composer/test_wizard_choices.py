@@ -25,7 +25,7 @@ from llamatron.macro_composer.wizard_choices import style_of, STAND_INS, LEAST_B
 from llamatron.macro_composer.melody import HOME, LADDER
 from llamatron.strings.macro_composer import MSG_PART_OF_SECTION
 from llamatron.macro_composer.notation import DEGREE, LINES
-from llamatron.macro_composer.arranger import SOUNDS, BY_SCALE_TYPE, GRID, MELODY, PARTS, arranged, DRUMS, GENRE, PLAYERS, ROLE_TITLE, TYPE, WITHOUT, style_named, style_names
+from llamatron.macro_composer.arranger import PICKS, SCALE_TYPE, values_of, SOUNDS, BY_SCALE_TYPE, GRID, MELODY, PARTS, arranged, DRUMS, GENRE, PLAYERS, ROLE_TITLE, TYPE, WITHOUT, style_named, style_names
 from llamatron.music.note import NoteName
 from llamatron.strings.errors import ERR_WIZARD_LAST_PIECE, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER
 from llamatron.playback.song_renderer import SongRenderer
@@ -632,6 +632,8 @@ class TestWizardGuitarists(unittest.TestCase):
 
 
 FIRST_DEGREE = 1
+MANY_RUNS = 30
+A_FEW_RUNS = 4
 GM_SOUND_KEY = 'gm_sound'
 A_SOUND_OF_NO_STYLE = 110
 EMPTY = ''
@@ -859,32 +861,82 @@ class TestWizardStandIns(unittest.TestCase):
         return {instrument.get(GM_SOUND_KEY) for instrument in instruments.values()}
 
 
-class TestWizardBand(unittest.TestCase):
-    """The band of the wizard's choices: who is in, how each plays and how busy each is."""
+class TestWizardProgressionByChance(unittest.TestCase):
+    """A progression nobody chose is drawn by the seed from the subgenre's, so that two runs differ in their chords."""
 
     def rock(self):
-        choices = chosen(genre=genre_names().index(A_GENRE_WITH_TUNES))
-        choices.set_seed(A_SEED)
-        return choices
+        return chosen(genre=genre_names().index(A_GENRE_WITH_TUNES))
 
-    def tracks_of(self, choices):
-        setlist = choices.made_setlist(name=A_NAME, version=VERSION)
-        return setlist.get_song(A_NAME).get_track_names()
+    def drawn(self, choices):
+        return choices.song_picks(A_NAME)[PICKS][choices.progression_trait()]
 
-    def test_no_band_is_known_before_a_subgenre_is_chosen(self):
-        choices = WizardChoices()
-        self.assertEqual(choices.roles(), [])
-        with self.assertRaises(ValueError):
-            choices.set_role_in(role=NOT_A_CHOICE, on=True)
+    def test_a_song_starts_with_its_progression_left_to_chance_and_runs_draw_different_ones(self):
+        choices = self.rock()
+        self.assertTrue(choices.has_any_progression())
+        drawn = set()
+        for seed in range(A_SEED, A_SEED + MANY_RUNS):
+            choices.set_seed(seed)
+            drawn.add(self.drawn(choices))
+            self.assertEqual(self.drawn(choices), self.drawn(choices))
+        self.assertGreater(len(drawn), 1)
+        self.assertLessEqual(drawn, set(choices.song_ways(choices.progression_trait())))
 
-    def test_every_player_of_every_subgenre_can_be_put_in_or_left_out_played_each_way_and_made_busier(self):
+    def test_with_no_seed_nothing_is_drawn_and_the_subgenres_usual_one_is_played(self):
+        choices = self.rock()
+        self.assertEqual(choices.progressions_by_chance(), [])
+        self.assertNotIn(choices.progression_trait(), choices.song_picks(A_NAME)[PICKS])
+
+    def test_a_progression_chosen_is_played_on_every_run_until_it_is_left_to_chance_again(self):
+        choices = self.rock()
+        trait = choices.progression_trait()
+        wanted = choices.song_ways(trait)[-1]
+        choices.set_way(trait=trait, value=wanted)
+        self.assertFalse(choices.has_any_progression())
+        for seed in range(A_SEED, A_SEED + MANY_RUNS):
+            choices.set_seed(seed)
+            self.assertEqual(self.drawn(choices), wanted)
+        self.assertFalse(WizardChoices.from_data(choices.to_data()).has_any_progression())
+        choices.set_any_progression()
+        self.assertTrue(choices.has_any_progression())
+
+    def test_only_progressions_written_for_the_songs_scale_type_are_drawn_where_the_style_has_one(self):
+        for place, genre in enumerate(genre_names()):
+            for subgenre in range(len(chosen(genre=place).subgenres())):
+                choices = chosen(genre=place, subgenre=subgenre)
+                trait = choices.progression_trait()
+                if trait is None:
+                    continue
+                entries = values_of(style=style_of(genre), trait=trait)
+                suited = {way for way in choices.song_ways(trait) if entries[way].get(SCALE_TYPE, MAJOR) == choices.get_scale_type()}
+                for seed in range(A_SEED, A_SEED + MANY_RUNS):
+                    choices.set_seed(seed)
+                    with self.subTest(subgenre=choices.get_subgenre(), seed=seed):
+                        self.assertEqual(sorted(choices.progressions_by_chance()), sorted(suited or choices.song_ways(trait)))
+
+    def test_every_draw_of_every_subgenre_makes_a_song_that_plays(self):
         for place in range(len(genre_names())):
             for subgenre in range(len(chosen(genre=place).subgenres())):
                 choices = chosen(genre=place, subgenre=subgenre)
-                choices.set_seed(A_SEED)
-                for role in choices.roles():
-                    with self.subTest(subgenre=choices.get_subgenre(), role=role):
-                        self.try_a_player(choices=choices, role=role)
+                for seed in range(A_SEED, A_SEED + A_FEW_RUNS):
+                    choices.set_seed(seed)
+                    with self.subTest(subgenre=choices.get_subgenre(), seed=seed):
+                        SongRenderer(choices.made_setlist(name=A_NAME, version=VERSION).get_song(A_NAME)).render()
+
+
+class EveryPlayerOfAGenre:
+    """Every player of every subgenre of one genre, put in, left out, played each way and made busier: a class for each genre,
+    since the whole takes long and the classes run side by side."""
+
+    GENRE = None
+
+    def test_every_player_of_every_subgenre_can_be_put_in_or_left_out_played_each_way_and_made_busier(self):
+        place = genre_names().index(self.GENRE)
+        for subgenre in range(len(chosen(genre=place).subgenres())):
+            choices = chosen(genre=place, subgenre=subgenre)
+            choices.set_seed(A_SEED)
+            for role in choices.roles():
+                with self.subTest(subgenre=choices.get_subgenre(), role=role):
+                    self.try_a_player(choices=choices, role=role)
 
     def try_a_player(self, *, choices, role):
         was_in = choices.role_is_in(role)
@@ -907,6 +959,56 @@ class TestWizardBand(unittest.TestCase):
             self.assertFalse(choices.role_is_in(role))
             choices.made_setlist(name=A_NAME, version=VERSION)
         choices.set_role_in(role=role, on=was_in or len(choices.roles_in()) < 1)
+
+
+class TestEveryPlayerOfBlues(EveryPlayerOfAGenre, unittest.TestCase):
+    GENRE = 'blues'
+
+
+class TestEveryPlayerOfElectronic(EveryPlayerOfAGenre, unittest.TestCase):
+    GENRE = 'electronic'
+
+
+class TestEveryPlayerOfExperimental(EveryPlayerOfAGenre, unittest.TestCase):
+    GENRE = 'experimental'
+
+
+class TestEveryPlayerOfRock(EveryPlayerOfAGenre, unittest.TestCase):
+    GENRE = 'rock'
+
+
+class TestEveryPlayerOfSixtiesPop(EveryPlayerOfAGenre, unittest.TestCase):
+    GENRE = 'sixties_pop'
+
+
+class TestEveryPlayerOfSoulFunk(EveryPlayerOfAGenre, unittest.TestCase):
+    GENRE = 'soul_funk'
+
+
+class TestEveryGenreHasItsPlayersTested(unittest.TestCase):
+
+    def test_every_genre_has_a_class_that_tries_its_players(self):
+        tried = sorted(tests.GENRE for tests in EveryPlayerOfAGenre.__subclasses__())
+        self.assertEqual(tried, sorted(genre_names()))
+
+
+class TestWizardBand(unittest.TestCase):
+    """The band of the wizard's choices: who is in, how each plays and how busy each is."""
+
+    def rock(self):
+        choices = chosen(genre=genre_names().index(A_GENRE_WITH_TUNES))
+        choices.set_seed(A_SEED)
+        return choices
+
+    def tracks_of(self, choices):
+        setlist = choices.made_setlist(name=A_NAME, version=VERSION)
+        return setlist.get_song(A_NAME).get_track_names()
+
+    def test_no_band_is_known_before_a_subgenre_is_chosen(self):
+        choices = WizardChoices()
+        self.assertEqual(choices.roles(), [])
+        with self.assertRaises(ValueError):
+            choices.set_role_in(role=NOT_A_CHOICE, on=True)
 
     def test_a_player_left_out_has_no_track_and_the_drums_left_out_leave_no_drum_track(self):
         choices = self.rock()
