@@ -109,6 +109,7 @@ class SetEdits:
     def add_made_song(self, made):
         """Take in the one song of a set the song wizard made, with all the song uses, as one change, make the song current and return its name here."""
         name = self._change(self._setlist.take_in, made)[0]
+        self._play_made_song_in_real_time()
         self.select_song(name)
         return name
 
@@ -116,8 +117,14 @@ class SetEdits:
         """Replace the current song, in its place, with the one song of a set the song wizard made, as one change, and return its name:
         the replaced song's, or a new name when one is given, as when an untouched song is filled."""
         name = self._change(self._setlist.replace_song, name=self._current, other=made, new=new)
+        self._play_made_song_in_real_time()
         self.select_song(name)
         return name
+
+    def _play_made_song_in_real_time(self):
+        """Turn real-time playback on, as the first instrument added does, since a made song brings instruments and is there to be heard (the user's ask)."""
+        if self._setlist.get_instrument_names() and not self._setlist.is_real_time():
+            self._change(self._setlist.set_real_time, True)
 
     def current_song_is_untouched(self):
         return self._setlist.song_is_untouched(self._current)

@@ -201,15 +201,16 @@ The user's design, agreed in detail in `dev_notes/QUEUE.md` (S16 to S39), of whi
   `PlayerBranch` under it for each player who is in: Plays, the way the player plays, or a field for each part of the
   drums, and Busy, 1 to 4, drawn as a horizontal Busy gauge. The last player cannot be left out. A player's Sound, the
   Sounds field, the kit's pieces and the Interplay section are to come, as are Themes and Playing.
-- When the current song was made by the wizard, the tree starts with `StartBranch` (`start_branch.py`, the ways in
-  `starts.py`): four rows, none selected at first, ENTER selecting one and the dot `●` marking it: a new song or the current
-  song replaced, each from the settings the current song kept or from scratch. Every other branch refuses until one is
-  chosen (`WizardPage.refusal_of`, `Branch.waits_for_start`). Replacing keeps the song's name, which the Genre branch then
-  only shows, and its place (`Document.replace_with_made_song`, `Setlist.replace_song`), as one undo step. A run from the
-  last settings keeps the song's seed, so the same choices make the same song, unless the Create branch's Take field,
-  shown only then, is set to "a new take"; a run from scratch always draws a seed. The four names are Claude's shortening
-  of the user's, to fit the fields' width, which the user accepted. A current song nothing was done to, as a new set's
-  (`Setlist.song_is_untouched`), is filled in place under the wizard's name, where otherwise a song is added.
+- When the current song was made by the wizard, F5 first asks how to start in a picker titled Song Wizard, the user's
+  design after a Start branch in the tree proved poor (`LlamatronApp.show_wizard`, the ways in `starts.py`): a new song or
+  the current song replaced, each from the settings the current song kept or from scratch. ESC opens no wizard. Replacing
+  keeps the song's name, which the Genre branch then only shows, and its place (`Document.replace_with_made_song`,
+  `Setlist.replace_song`), as one undo step. A run from the last settings keeps the song's seed, so the same choices make
+  the same song, unless the Create branch's Take field, shown only then, is set to "a new take"; a run from scratch always
+  draws a seed. The four names are Claude's shortening of the user's, which the user accepted. A current song nothing was
+  done to, as a new set's (`Setlist.song_is_untouched`), is filled in place under the wizard's name, where otherwise a song
+  is added. Create turns the set's Real Time switch on, in the same undo step, the user's ask, so that the song can be
+  played at once.
 - Nothing in the set changes until Create, so undo and redo do nothing in the wizard and say why (`Page.steps_history`,
   `why_no_history`). Create is `Document.add_made_song`: `Setlist.take_in` of the set `WizardChoices.made_setlist` made
   (`.claude/features/MACRO_COMPOSER.md`, "The Wizard's Choices"), one change and so one undo step, after which

@@ -72,10 +72,6 @@ class Branch:
         """Return why the cursor cannot move into the branch's fields yet, or None when it can."""
         return None
 
-    def waits_for_start(self):
-        """Return whether the branch waits until a way of starting is chosen, where the wizard asks for one."""
-        return True
-
     def can_be_edited(self):
         """Return whether any field of the branch does something, so that a branch only to be read takes no cursor."""
         return any(field.enter or field.adjust for field in self.fields())

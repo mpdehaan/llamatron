@@ -18,17 +18,17 @@
 from llamatron.composition.file_format import Section
 from llamatron.macro_composer.arranger import WITHOUT
 from llamatron.macro_composer.wizard_choices import MOST_BUSY, USUAL_BUSY, MINOR, SEED, genre_names, genre_title
-from llamatron.strings.errors import ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_CHOOSE_GENRE, ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE, ERR_WIZARD_CHOOSE_START
-from llamatron.strings.labels import MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_BRANCH, MSG_WIZARD_START_NAMES, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_TAKE_LABEL
-from llamatron.strings.marks import MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_TOGGLE_ON, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
+from llamatron.strings.errors import ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_CHOOSE_GENRE, ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
+from llamatron.strings.labels import MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_TAKE_LABEL
+from llamatron.strings.marks import MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
 from llamatron.strings.messages import MSG_UNDONE, MSG_RESTORED, MSG_WIZARD_ALREADY_OPEN, MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CREATED, MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_REPLACED, MSG_WIZARD_NOTHING_TO_UNDO
 from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_SONG_WORD
 from llamatron.composition.naming import new_name
 from llamatron.tui import keybindings
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.document import Document
+from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui.drawing import NOTHING
 from llamatron.tui.keys import Key
 from llamatron.tui.text import clock
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
@@ -79,12 +79,12 @@ class WizardTest(UITest):
         await self.press(keybindings.WizardPage.INTO_FIELDS, *[Key.DOWN] * len(self.wizard().fields()), Key.ENTER)
 
     async def start_with(self, start):
-        """Choose one of the four ways to start on the Start branch, and go back to the tree."""
-        await self.go_to_named_branch(MSG_WIZARD_START_BRANCH)
-        await self.press(keybindings.WizardPage.INTO_FIELDS, *[Key.DOWN] * STARTS.index(start), Key.ENTER, keybindings.WizardPage.TO_TREE)
+        """Choose one of the four ways to start in the dialog that F5 opens on a song the wizard made, which then opens the wizard."""
+        self.assertIsInstance(self.app.screen, ChoiceDialog)
+        await self.press(*[Key.DOWN] * STARTS.index(start), Key.ENTER)
 
     async def make_a_song_and_open_the_wizard_on_it(self):
-        """Make a song with the wizard, which becomes current, and open the wizard again; return the song's name."""
+        """Make a song with the wizard, which becomes current, and press F5 again, which asks how to start; return the song's name."""
         await self.choose_genre_and_subgenre()
         await self.create()
         await self.press(keybindings.Page.WIZARD)
@@ -273,6 +273,14 @@ class TestWizardPage(WizardTest):
         self.assertEqual({field: value for field, value in song.get_wizard_choices().items() if field in kept}, kept)
         self.assertTrue(self.document.is_dirty())
 
+    async def test_create_turns_real_time_on_so_that_the_song_can_be_played_and_undo_turns_it_off_again(self):
+        self.assertFalse(self.document.setlist().is_real_time())
+        await self.choose_genre_and_subgenre()
+        await self.create()
+        self.assertTrue(self.document.setlist().is_real_time())
+        await self.press(keybindings.Page.UNDO)
+        self.assertFalse(self.document.setlist().is_real_time())
+
     async def test_a_second_song_of_the_same_choices_gets_a_name_of_its_own_and_touches_nothing_of_the_first(self):
         await self.choose_genre_and_subgenre()
         await self.create()
@@ -391,23 +399,23 @@ class TestWizardStart(WizardTest):
     """The four ways a run starts when the current song was made by the wizard, replacing a song, and the Take field."""
 
     async def test_no_way_of_starting_is_asked_for_on_a_song_the_wizard_did_not_make(self):
-        self.assertNotIn(MSG_WIZARD_START_BRANCH, [branch.name() for _, branch in self.wizard().rows()])
+        self.assertIsInstance(self.app.screen, WizardPage)
+        self.assertIsNone(self.wizard().start())
 
-    async def test_a_song_the_wizard_made_asks_how_to_start_with_nothing_chosen_and_every_other_branch_waits(self):
+    async def test_a_song_the_wizard_made_asks_how_to_start_in_a_dialog_and_esc_opens_no_wizard(self):
         await self.make_a_song_and_open_the_wizard_on_it()
-        wizard = self.wizard()
-        self.assertEqual(wizard.branch().name(), MSG_WIZARD_START_BRANCH)
-        self.assertIsNone(wizard.start())
+        self.assertIsInstance(self.app.screen, ChoiceDialog)
         text = self.text()
+        self.assertIn(MSG_WIZARD_START_TITLE, text)
         for start in STARTS:
             self.assertIn(MSG_WIZARD_START_NAMES[start], text)
-        self.assertEqual([field.value() for field in wizard.fields()], [NOTHING] * len(STARTS))
-        for name in (MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_CREATE_BRANCH):
-            await self.go_to_named_branch(name)
-            await self.press(keybindings.WizardPage.INTO_FIELDS)
-            self.assertFalse(wizard.in_fields, name)
-            self.assertIn(ERR_WIZARD_CHOOSE_START, self.text())
-        # Nothing was chosen, so the wizard closes without asking.
+        await self.press(Key.ESCAPE)
+        self.assertIsInstance(self.app.screen, ArrangePage)
+
+    async def test_the_wizard_closes_without_asking_until_something_is_changed_after_the_start(self):
+        await self.make_a_song_and_open_the_wizard_on_it()
+        await self.start_with(NEW_FROM_LAST)
+        self.assertIsInstance(self.app.screen, WizardPage)
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, ArrangePage)
 
@@ -415,8 +423,7 @@ class TestWizardStart(WizardTest):
         first = await self.make_a_song_and_open_the_wizard_on_it()
         kept = self.document.song().get_wizard_choices()
         await self.start_with(NEW_FROM_LAST)
-        await self.go_to_named_branch(MSG_WIZARD_START_BRANCH)
-        self.assertEqual([field.value() for field in self.wizard().fields()].index(MSG_TOGGLE_ON), STARTS.index(NEW_FROM_LAST))
+        self.assertEqual(self.wizard().start(), NEW_FROM_LAST)
         self.assertEqual(self.choices().to_data(), kept)
         self.assertNotEqual(self.wizard().song_name(), first)
         self.assertFalse(self.wizard().replaces())
@@ -431,14 +438,6 @@ class TestWizardStart(WizardTest):
         await self.go_to_named_branch(MSG_WIZARD_CREATE_BRANCH)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         self.assertIn(ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE, self.text())
-
-    async def test_another_way_of_starting_can_be_chosen_after_the_first(self):
-        first = await self.make_a_song_and_open_the_wizard_on_it()
-        await self.start_with(REPLACE_FROM_LAST)
-        self.assertEqual(self.wizard().song_name(), first)
-        await self.start_with(NEW_FROM_SCRATCH)
-        self.assertNotEqual(self.wizard().song_name(), first)
-        self.assertEqual(self.choices().to_data(), {})
 
     async def test_replacing_from_the_last_settings_with_the_same_take_makes_the_same_song_in_its_place(self):
         first = await self.make_a_song_and_open_the_wizard_on_it()
