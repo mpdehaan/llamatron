@@ -1953,3 +1953,8 @@
   priority: 99
   text: |
     The wizard could make any number of takes of one set of choices, at most 10, each a new song of the set, so that a person listens through them and keeps the one liked. Today each press of Create rolls the dice once. Measured: a new roll changes only the tunes (the lead, the solo and the answering lines: their notes, octaves, ties and loudness) and the small unevenness of each drum stroke's loudness; the chords, the bass, the rhythm parts, the drum grooves and fills and the form stay the same, since those come from the choices. So takes differ in melody alone until the dice reach more of the song, and ten takes would add ten songs' tune patterns to the set while the parts that are the same are shared. Undecided: how takes are named, whether the takes not kept are removed in one step, and whether a take is a song or only a set of tune patterns to audition inside one song.
+
+- title: "The song wizard's band has more than two guitarists"
+  priority: 99
+  text: |
+    The Band's Guitarists field offers 1 or 2 today. More is a common band and would mean something to the music, not only a number: a third guitarist can double the chords an octave apart or in another voicing, play an acoustic guitar under electric ones, or join the lead in a tune harmonized in thirds, two leads at once. Each of those is a way of playing to write for the genres that have it, and the solo could then pass between two lead players. Undecided: whether the count alone is chosen and the genre decides what the extra player does, or the person picks the extra player's job.
