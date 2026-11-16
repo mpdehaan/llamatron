@@ -46,6 +46,13 @@ A_GAUGE_IN_WORDS = 'high'
 GENRES_WITH_A_HOOK = ('rock', 'sixties_pop', 'soul_funk')
 # A player that genre always has.
 A_BASS = 'bass'
+HARD_ROCK = 'hard rock'
+DRUMS_ROLE = 'drums'
+GUITAR_ROLE = 'guitar'
+# The player left alone in an intro, and how many intros the song has, where the shortest intro cannot be made.
+SHORT_INTRO_REFUSED = ((GUITAR_ROLE, 1), (DRUMS_ROLE, 2))
+THE_INTRO = 0
+A_SEED_OF_SHORT_DRUMS = 21
 
 
 def chosen(*, genre=0, subgenre=0):
@@ -340,6 +347,42 @@ class TestWizardForm(unittest.TestCase):
         held = [place for place in range(len(choices.form_sections())) if choices.section_is_held(place)]
         self.assertTrue(held)
         self.assertEqual(choices.bars_offered(held[0]), [])
+
+    def test_a_section_offers_only_the_lengths_its_own_players_fill(self):
+        """A guitar alone cannot time a short intro of hard rock, and drums alone cannot beside a second intro."""
+        for role, intros in ((GUITAR_ROLE, 1), (DRUMS_ROLE, 2), (DRUMS_ROLE, 1), (A_BASS, 2)):
+            choices = self.hard_rock()
+            whole_band = choices.bars_offered(THE_INTRO)
+            for another in range(intros - 1):
+                choices.add_section(place=THE_INTRO + 1, kind=choices.section_kind(THE_INTRO))
+            self.sit_out_all_but(choices=choices, role=role)
+            alone = choices.bars_offered(THE_INTRO)
+            self.assertLessEqual(set(alone), set(whole_band))
+            if (role, intros) in SHORT_INTRO_REFUSED:
+                self.assertNotIn(min(whole_band), alone)
+            for bars in alone:
+                choices.set_section_bars(place=THE_INTRO, bars=bars)
+                choices.made_setlist(name=A_NAME, version=VERSION)
+
+    def test_a_length_the_players_left_cannot_fill_gives_way_to_the_usual_length(self):
+        choices = self.hard_rock()
+        usual = choices.section_bars(THE_INTRO)
+        choices.set_section_bars(place=THE_INTRO, bars=min(choices.bars_offered(THE_INTRO)))
+        self.assertLess(choices.section_bars(THE_INTRO), usual)
+        self.sit_out_all_but(choices=choices, role=GUITAR_ROLE)
+        self.assertEqual(choices.section_bars(THE_INTRO), usual)
+        choices.made_setlist(name=A_NAME, version=VERSION)
+
+    def hard_rock(self):
+        choices = self.rock()
+        choices.set_subgenre(HARD_ROCK)
+        choices.set_seed(A_SEED_OF_SHORT_DRUMS)
+        return choices
+
+    def sit_out_all_but(self, *, choices, role):
+        for other in choices.section_plays(THE_INTRO):
+            if other != role:
+                choices.set_section_plays(place=THE_INTRO, role=other, on=False)
 
     def test_the_songs_own_form_is_kept_with_the_choices_and_makes_the_same_song(self):
         choices = self.rock()
