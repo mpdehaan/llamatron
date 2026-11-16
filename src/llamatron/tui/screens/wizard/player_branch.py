@@ -16,10 +16,10 @@
 
 """A player of the wizard's band: how the player plays, and how busy the player is."""
 
-from llamatron.macro_composer.wizard_choices import LEAST_BUSY, MOST_BUSY
-from llamatron.strings.labels import MSG_WIZARD_KIT_PIECE, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_WIZARD_SOUND_LABEL
+from llamatron.macro_composer.wizard_choices import FEWEST_FILLS, LEAST_BUSY, MOST_BUSY, MOST_FILLS
+from llamatron.strings.labels import MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_WIZARD_SOUND_LABEL
 from llamatron.strings.legends import What
-from llamatron.strings.marks import MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_BUSY_SHOWN, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL
+from llamatron.strings.marks import MSG_WIZARD_FILLS_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_BUSY_SHOWN, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NumberField, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
 
@@ -50,6 +50,9 @@ class PlayerBranch(Branch):
         if choices.has_busy(self._role) and choices.get_busy(self._role) is not None:
             fields.append(self.busy_field())
         if not choices.has_sound(self._role):
+            fields.append(self.fills_field())
+            if choices.has_quiet_notes() or not choices.plays_quiet_notes():
+                fields.append(Toggle(label=MSG_WIZARD_QUIET_NOTES_LABEL, on=choices.plays_quiet_notes(), set=self.page().choosing(choices.set_quiet_notes)))
             # The drums: a toggle for each piece of the kit the song plays, the user's design.
             fields += [Toggle(label=MSG_WIZARD_KIT_PIECE.format(piece=piece), on=choices.piece_is_on(piece), set=self.piece_setter(piece)) for piece in choices.pieces()]
         return fields
@@ -81,6 +84,15 @@ class PlayerBranch(Branch):
             name = choices.sound_name(choices.get_sound(role))
             return name if choices.has_own_sound(role) else MSG_WIZARD_BAND_SOUND_SHOWN.format(sound=name)
         return Field(label=MSG_WIZARD_SOUND_LABEL, value=shown, enter=lambda: self.page().pick_sound(role), enter_what=What.CHOOSE)
+
+    def fills_field(self):
+        """Return the field for how often a fill comes: a number stepped or typed, drawn as a horizontal gauge that is empty at
+        never, the user's design, beside the words for the position."""
+        choices = self.choices()
+        position = choices.get_fills()
+        gauge = MSG_WIZARD_GAUGE_FULL * (position - FEWEST_FILLS) + MSG_WIZARD_GAUGE_EMPTY * (MOST_FILLS - position)
+        return NumberField(page=self.page(), label=MSG_WIZARD_DRUM_FILLS_LABEL, number=position, shown=MSG_WIZARD_FILLS_SHOWN.format(gauge=gauge, often=MSG_WIZARD_FILLS_COME[position - FEWEST_FILLS]),
+                           lowest=FEWEST_FILLS, highest=MOST_FILLS, set=self.page().choosing(choices.set_fills))
 
     def busy_field(self):
         """Return the Busy field: a number stepped or typed, drawn as a horizontal Busy gauge beside the number."""

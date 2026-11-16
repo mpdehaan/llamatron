@@ -17,9 +17,9 @@
 
 from llamatron.composition.file_format import Section
 from llamatron.macro_composer.arranger import BARS, WITHOUT
-from llamatron.macro_composer.wizard_choices import ONE_GUITARIST_COUNT, TWO_GUITARISTS, ACOUSTIC, BAND_SOUNDS, FEEL_TRAITS, FILLS_TRAITS, PROGRESSION_TRAITS, MOST_BUSY, USUAL_BUSY, MINOR, SEED, genre_names, genre_title
+from llamatron.macro_composer.wizard_choices import FEWEST_FILLS, MOST_FILLS, ONE_GUITARIST_COUNT, TWO_GUITARISTS, ACOUSTIC, BAND_SOUNDS, FEEL_TRAITS, FILLS_TRAITS, PROGRESSION_TRAITS, MOST_BUSY, USUAL_BUSY, MINOR, SEED, genre_names, genre_title
 from llamatron.strings.errors import ERR_WIZARD_LAST_PIECE, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_CHOOSE_GENRE, ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
-from llamatron.strings.labels import MSG_WIZARD_KIT_PIECE, MSG_WIZARD_GUITARISTS_LABEL, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_SOUND_LABEL, MSG_WIZARD_SOUNDS_LABEL, MSG_WIZARD_FEEL_LABEL, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PLAYING_BRANCH, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_THEMES_BRANCH, MSG_WIZARD_USUAL_MELODY, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_SUGGESTED_FORM_BUTTON, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_START_CANCEL
+from llamatron.strings.labels import MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_GUITARISTS_LABEL, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_SOUND_LABEL, MSG_WIZARD_SOUNDS_LABEL, MSG_WIZARD_FEEL_LABEL, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PLAYING_BRANCH, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_THEMES_BRANCH, MSG_WIZARD_USUAL_MELODY, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_SUGGESTED_FORM_BUTTON, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_START_CANCEL
 from llamatron.strings.marks import MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_OWN_FORM, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
 from llamatron.strings.messages import MSG_WIZARD_NOTHING_TO_CHOOSE, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_SECTIONS_HINT, MSG_UNDONE, MSG_RESTORED, MSG_WIZARD_ALREADY_OPEN, MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CREATED, MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_REPLACED, MSG_WIZARD_NOTHING_TO_UNDO
 from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_SONG_WORD
@@ -531,6 +531,46 @@ class TestWizardKit(WizardTest):
             await self.press(Key.SPACE)
         self.assertTrue(choices.piece_is_on(pieces[-1]))
         self.assertIn(ERR_WIZARD_LAST_PIECE, self.text())
+
+    async def test_how_often_fills_come_is_a_gauge_that_is_empty_at_never(self):
+        await self.open_the_drums()
+        choices = self.choices()
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(MSG_WIZARD_DRUM_FILLS_LABEL)
+        await self.press(*[key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET)] * MOST_FILLS)
+        self.assertEqual(choices.get_fills(), FEWEST_FILLS)
+        shown = self.wizard().field().value()
+        self.assertIn(MSG_WIZARD_FILLS_COME[0], shown)
+        self.assertNotIn(MSG_WIZARD_GAUGE_FULL, shown)
+        await self.press(*[key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)] * MOST_FILLS)
+        self.assertEqual(choices.get_fills(), MOST_FILLS)
+        shown = self.wizard().field().value()
+        self.assertIn(MSG_WIZARD_FILLS_COME[-1], shown)
+        self.assertNotIn(MSG_WIZARD_GAUGE_EMPTY, shown)
+
+    async def test_quiet_notes_show_only_for_a_groove_that_has_them_and_are_switched_off(self):
+        await self.open_the_drums()
+        choices = self.choices()
+        drums = choices.roles_in()[-1]
+        with_them = [(trait, way) for trait in choices.role_traits(drums) for way in choices.ways(role=drums, trait=trait) if self.has_quiet_notes_with(trait=trait, way=way)]
+        without = [(trait, way) for trait in choices.role_traits(drums) for way in choices.ways(role=drums, trait=trait) if not self.has_quiet_notes_with(trait=trait, way=way)]
+        if without:
+            choices.set_way(trait=without[0][0], value=without[0][1])
+        if not choices.has_quiet_notes():
+            await self.press(Key.UP, Key.DOWN)
+            self.assertNotIn(MSG_WIZARD_QUIET_NOTES_LABEL, self.text())
+        choices.set_way(trait=with_them[0][0], value=with_them[0][1])
+        await self.press(Key.UP, Key.DOWN, keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(MSG_WIZARD_QUIET_NOTES_LABEL)
+        await self.press(Key.SPACE)
+        self.assertFalse(choices.plays_quiet_notes())
+        # The toggle stays while the quiet notes are off, so that they can be switched on again.
+        self.assertIn(MSG_WIZARD_QUIET_NOTES_LABEL, self.text())
+
+    def has_quiet_notes_with(self, *, trait, way):
+        choices = self.choices().__class__.from_data(self.choices().to_data())
+        choices.set_way(trait=trait, value=way)
+        return choices.has_quiet_notes()
 
     async def test_the_song_made_has_no_track_for_a_piece_switched_off(self):
         await self.open_the_drums()

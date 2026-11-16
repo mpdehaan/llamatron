@@ -29,9 +29,9 @@ from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_TEMPO, MIN_TEMPO
 from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer.arranger import (
-    COMMON_TIME, DRUMS, DRUM_TRACKS, KIND, MELODY_ENGINE, METER, PICKS, ROLE_SOUNDS, ROLE_TITLE, ROLE_TITLES, SOUNDS, WITHOUT_PIECES, PLAYER, PLAYERS, ROLE, ROLES, SOUND, TRAIT, VALUE, WITHOUT, bar_length, fits,
+    COMMON_TIME, DEFAULT_PHRASE_BARS, DRUMS, DRUM_TRACKS, EACH_SECTION, FILLS_COME, FILL_EVERY, KIND, PARTS, PHRASE_BARS, QUIET_NOTES, MELODY_ENGINE, METER, PICKS, ROLE_SOUNDS, ROLE_TITLE, ROLE_TITLES, SOUNDS, WITHOUT_PIECES, PLAYER, PLAYERS, ROLE, ROLES, SOUND, TRAIT, VALUE, WITHOUT, bar_length, fits,
     BARS, CHORD_TRAIT, CHORD_TRAIT_FIELD, FORM, HELD, PLAYS, GENRE, KEY, NAME, ROOT, SCALE_TYPE, SECTIONS, SEED, STYLE, TEMPLATE, TEMPLATES, TEMPO, TITLE, TRAITS, TYPE, USUAL,
-    arranged, forms_of, picked, section_of, share_of, style_named, style_names, values_of,
+    arranged, forms_of, picked, player_of, section_of, share_of, style_named, style_names, values_of,
 )
 from llamatron.macro_composer.composer import composed
 from llamatron.composition.song_file_error import SongFileError
@@ -42,7 +42,7 @@ from llamatron.composition.limits import GM_FAMILY_SIZE, MIN_GM_SOUND
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.marks import MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SECTION_VARIANT
 from llamatron.support.version import VERSION as A_VERSION
-from llamatron.strings.errors import ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
+from llamatron.strings.errors import ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'
@@ -77,6 +77,13 @@ def genre_title(genre):
     return style_of(genre)[TITLE]
 
 
+# How often a fill comes, by position: never, at the end of each section, every four bars, every two.
+FEWEST_FILLS = 1
+EACH_SECTION_FILLS = 2
+MOST_FILLS = 4
+FILLS_EVERY = {1: 0, 4: 2, 3: 4, 2: EACH_SECTION}
+FILLS_KEPT = 'fills'
+QUIET_NOTES_KEPT = 'quiet_notes'
 # The key a song keeps the kit's pieces that are switched off under.
 PIECES_OFF_KEPT = 'pieces_off'
 # One guitarist or two, and the key a template describes its one guitarist under, with the players and the way it names.
@@ -194,7 +201,7 @@ SECONDS_IN_MINUTE = 60
 class WizardChoices:
     """The choices of one run of the song wizard."""
 
-    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_without', '_sections', '_melody', '_sounds', '_band_sounds', '_guitarists', '_pieces_off')
+    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_without', '_sections', '_melody', '_sounds', '_band_sounds', '_guitarists', '_pieces_off', '_fills', '_quiet_notes')
 
     def __init__(self):
         self._genre = None
@@ -219,6 +226,9 @@ class WizardChoices:
         self._guitarists = TWO_GUITARISTS
         # The pieces of the drum kit switched off.
         self._pieces_off = []
+        # How often a fill comes, a position from FEWEST_FILLS to MOST_FILLS, or None while the drummer decides; and whether the snare's quiet notes are played.
+        self._fills = None
+        self._quiet_notes = True
 
     # Reading and keeping the choices.
 
@@ -245,6 +255,8 @@ class WizardChoices:
                 (self._set_level, [dict(player=player, level=level) for player, level in (data.get(PLAYERS) or {}).items()]),
                 (self.set_role_in, [dict(role=role, on=False) for role in data.get(WITHOUT) or []]),
                 (self.set_piece_on, [dict(piece=piece, on=False) for piece in data.get(PIECES_OFF_KEPT) or []]),
+                (self._set_kept_fills, [dict(position=data[FILLS_KEPT])] if data.get(FILLS_KEPT) is not None else []),
+                (self._set_kept_quiet_notes, [dict(on=False)] if data.get(QUIET_NOTES_KEPT) is False else []),
                 (self._set_kept_guitarists, [dict(count=data[GUITARISTS_KEPT])] if data.get(GUITARISTS_KEPT) else []),
                 (self._set_kept_band_sounds, [dict(sounds=data[BAND_SOUNDS_KEPT])] if data.get(BAND_SOUNDS_KEPT) else []),
                 (self.set_sound, [dict(role=role, sound=sound) for role, sound in (data.get(SOUNDS_KEPT) or {}).items()]),
@@ -265,7 +277,7 @@ class WizardChoices:
                 MELODY_STYLE: self._melody, SOUNDS_KEPT: dict(self._sounds) or None,
                 BAND_SOUNDS_KEPT: self._band_sounds if self._band_sounds != USUAL_SOUNDS else None,
                 GUITARISTS_KEPT: self._guitarists if self._guitarists != TWO_GUITARISTS else None,
-                PIECES_OFF_KEPT: list(self._pieces_off) or None}
+                PIECES_OFF_KEPT: list(self._pieces_off) or None, FILLS_KEPT: self._fills, QUIET_NOTES_KEPT: None if self._quiet_notes else False}
         return {field: value for field, value in held.items() if value is not None}
 
     # The genre and the subgenre, which everything else follows.
@@ -576,6 +588,8 @@ class WizardChoices:
         self._band_sounds = USUAL_SOUNDS
         self._guitarists = TWO_GUITARISTS
         self._pieces_off = []
+        self._fills = None
+        self._quiet_notes = True
 
     def _role(self, role):
         found = next((entry for entry in style_of(self._genre)[ROLES] if entry[ROLE] == role), None) if self.is_ready() else None
@@ -641,6 +655,54 @@ class WizardChoices:
             raise ValueError(ERR_WIZARD_LAST_PIECE)
         if piece not in self._pieces_off:
             self._pieces_off.append(piece)
+
+    # How often the drummer plays a fill, and the snare's quiet notes.
+
+    def _drummer(self):
+        """Return what the genre says of its drummer at the level the drums are busy."""
+        drums = next((role for role in self.roles() if not self.has_sound(role)), None)
+        return player_of(style=style_of(self._genre), instrument=DRUMS, complexity=self.get_busy(drums)) if drums else {}
+
+    def get_fills(self):
+        """Return how often a fill comes, from FEWEST_FILLS, never, to MOST_FILLS: the position chosen, or the one nearest to
+        what the drummer does at the level the drums are busy."""
+        if self._fills is not None:
+            return self._fills
+        every = self._drummer().get(FILL_EVERY, style_of(self._genre).get(PHRASE_BARS, DEFAULT_PHRASE_BARS))
+        if every == 0:
+            return FEWEST_FILLS
+        return next((position for position, bars in FILLS_EVERY.items() if isinstance(bars, int) and 0 < every <= bars), EACH_SECTION_FILLS)
+
+    def has_own_fills(self):
+        return self._fills is not None
+
+    def set_fills(self, position):
+        if isinstance(position, bool) or not isinstance(position, int) or not FEWEST_FILLS <= position <= MOST_FILLS:
+            raise ValueError(ERR_WIZARD_FILLS.format(value=position))
+        self._fills = position
+
+    def _set_kept_fills(self, *, position):
+        self.set_fills(position)
+
+    def _set_kept_quiet_notes(self, *, on):
+        self.set_quiet_notes(on)
+
+    def has_quiet_notes(self):
+        """Return whether the snare of the song as chosen has quiet notes, soft strokes between the main ones, to switch off."""
+        if not self.is_ready():
+            return False
+        song = {name: value for name, value in self.song_picks(self._subgenre).items() if name != QUIET_NOTES}
+        style = style_of(self._genre)
+        # Found by arranging the song both ways, since a drummer's unevenness has made numbers of the strokes by then.
+        return arranged(style=style, song=song)[PARTS] != arranged(style=style, song={**song, QUIET_NOTES: False})[PARTS]
+
+    def plays_quiet_notes(self):
+        return self._quiet_notes
+
+    def set_quiet_notes(self, on):
+        if not isinstance(on, bool):
+            raise ValueError(ERR_WIZARD_QUIET_NOTES.format(value=on))
+        self._quiet_notes = on
 
     # One guitarist or two, the user's design: a band whose one guitarist plays the chords and takes the solo, the chords
     # stopping where the solo plays, shown as one player.
@@ -933,7 +995,9 @@ class WizardChoices:
                 **({SECTIONS: self._sections_of_song()} if self._sections_of_song() else {}),
                 **({MELODY_ENGINE: self._melody} if self._melody is not None else {}),
                 **({ROLE_SOUNDS: self._song_sounds()} if self._song_sounds() else {}),
-                **({WITHOUT_PIECES: list(self._pieces_off)} if self._pieces_off else {})}
+                **({WITHOUT_PIECES: list(self._pieces_off)} if self._pieces_off else {}),
+                **({FILLS_COME: FILLS_EVERY[self._fills]} if self._fills is not None else {}),
+                **({} if self._quiet_notes else {QUIET_NOTES: False})}
 
     def made_setlist(self, *, name, version):
         """Return a set holding the one song these choices make, under a name, with all the song uses, the song keeping the choices.

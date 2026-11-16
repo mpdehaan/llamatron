@@ -187,6 +187,11 @@ clouds; generate and test, with motif development and counterpoint last.
   `pieces_off` and handed to the arranger as `without_pieces`: a part for a piece that is off is not made, so its strokes
   are left out and never moved to another piece, the user's rule. Extra pieces that are off until switched on, with busy
   parts written for them, are not written yet.
+- Fills and quiet notes: `set_fills` chooses how often a fill comes, a position kept under `fills` and handed to the
+  arranger as `fills_come` (0, each section, or a number of bars), which then decides in place of the drummer's level;
+  until one is chosen the drummer decides and `get_fills` shows the nearest position. `set_quiet_notes(False)` leaves
+  the snare's soft strokes out (`quiet_notes`), and `has_quiet_notes` says whether the groove has any, found by arranging
+  the song both ways. Adding quiet notes to a groove that has none is not written yet.
 - Nothing is chosen at first, the user's rule. Choosing a subgenre fills in its usual tempo, the scale type its chords are
   in, the root that scale type starts on (C for major, E for minor, Claude's choice) and the commonest form, so that a song
   can be made from a genre and a subgenre alone; choosing another genre leaves the subgenre to be chosen again. Any tempo
