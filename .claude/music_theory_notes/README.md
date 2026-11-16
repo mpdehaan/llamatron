@@ -35,3 +35,12 @@ of it written for people.
 - `BAND_INTERPLAY.md`: who answers whom, layering, making room, intensity through a song.
 - `TECHNIQUES.md`: things read about and not yet used.
 - `genres/`: a file for each genre, with what each subgenre usually does, and for kinds of music not yet a genre of the wizard (`SOUNDTRACK.md`, `JAM.md`, `JAZZ.md`, `COUNTRY.md`).
+
+## Measuring, and Weighting
+
+- A statement marked (measured) comes from counting chords and sections in the transcriptions of `.corpus/`, never from melodies,
+  and names no song. Measures correct a template's settings: lengths, shares, what a decade or a style really does.
+- Averaging many styles together makes mud. A style is a range of habits with shares, and where two habits fight, the style is
+  split rather than blended.
+- The user weights habits up and down. Weighted up so far: craft in the tune (melody first, a bright tune over a sad story, a hook
+  every few bars), and a lead instrument that sings like a voice over a funk groove. Recorded as habits, never as names.

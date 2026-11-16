@@ -48,3 +48,19 @@
   blues **turnaround** walked down to a held chord. (practice)
 - An ending mirrors a start: layers in, layers out; riff first, riff last. An ending that stops needs its tension resolved before
   the last note, or the silence sounds like a cut. (practice)
+
+## Measured: Chart Songs by Decade
+
+From the chord and section transcriptions of about 740 chart singles, 1958 to 1991, kept on this computer only; all genres of the
+chart together, so a tendency of popular song, not of one style. (measured)
+
+- **Intros**: nine songs in ten have one. Median 4 bars in the 1960s, 5 in the 1970s, 8 in the 1980s. The usual lengths are 4 and
+  8, then 2; 16-bar intros appear in the 1970s and are common in the 1980s. No intro at all: about one song in ten.
+- **Verse before chorus** in more than eight songs in ten; a chorus first in about 19% (1960s) falling to 8% (1980s).
+- **Bars before the first chorus**: median 16 (1960s), 20 (1970s), 24 (1980s). Songs take longer to arrive as decades pass.
+- **Lengths**: a verse's median is 12 bars in every decade (8, 12 and 16 all common); a chorus 8; a bridge 8; a solo 8 to 9.
+- **What a song has**: a chorus in 70% (1960s), 85% (1970s), 94% (1980s); a bridge in 30 to 45%; an instrumental solo in 28%
+  (1960s), 35% (1970s), 45% (1980s); a pre-chorus in 7%, 12%, 23%; an interlude in 21%, 28%, 37%.
+- **Endings**: a fade in more than half of all songs, 56% (1960s) to 69% (1980s). An outro section in about four in ten, its
+  median 8 bars (1960s), 12 (1970s), 16 (1980s). Ending cold on a chorus or verse is the minority, commonest early.
+- **Size**: median 80 bars and 8 sections (1960s), 94 and 9 (1970s), 112 and 11 (1980s).

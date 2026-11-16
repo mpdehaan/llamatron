@@ -23,3 +23,23 @@
   first beat and walks or leaps to the next root. An inversion, another chord note in the bass, smooths a bass line. (practice)
 - Rules are habits of a style. Using a progression against its genre's habit is a way to sound fresh, and the notes of each genre
   say what its habits are so that bending one is a choice. (judgment)
+
+## Measured: Chord Loops in Chart Songs by Decade
+
+Same corpus as the measures in `SONG_STRUCTURE.md`; each section reduced to its shortest repeating run of chords. (measured)
+
+- **Two chords are the commonest verse**: I IV leads every decade from the 1960s on (14%, 6%, 6% of verses), with I V and, from
+  the 1970s, I bVII beside it. A verse of two chords under a moving tune is normal, not lazy.
+- **The 1950s and early 1960s** are I IV I V, I V and the I vi IV V loop; three distinct chords in a section.
+- **From the 1960s** a section has a median of four distinct chords, and no loop has more than a seventh of the songs: variety
+  is the rule, so shares should be spread, with a long tail.
+- **The flat seven arrives in the 1970s** (I bVII IV, I bVII) and is the second commonest verse by the 1980s. Minor loops with
+  bVI and bVII (i bVI bVII, i bVII) are a 1980s chorus sound.
+- **I V vi IV is rare before the 1990s** in chart songs (about 2% of 1980s choruses): it belongs to later styles.
+- **Choruses** favor I IV, I IV V and the IV V I arrival; a chorus that starts on IV is common.
+- **Bridges start away from I**: on IV most of all (IV I IV V, IV V, IV I), then II V and III in the 1960s, and bVI bVII in the
+  1980s. A bridge that begins on the home chord is unusual.
+- From a published corpus study of rock: IV is the commonest chord after I and the commonest before it; bVII goes to I, IV or
+  bVI and seldom to ii, V or vi. In country about four chords in five are I, IV or V. Funk sits on one dominant ninth chord and
+  changes in the bridge. Jazz is ii V I, the I VI ii V turnaround, the twelve-bar blues with ii V added, and 32 bars as AABA.
+  Bluegrass is I IV V with a minor chord in perhaps one song in twenty: kickoff, verse, chorus, break over the verse, and a tag.
