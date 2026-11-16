@@ -19,10 +19,10 @@
 from llamatron.composition.limits import MIN_GM_SOUND
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT
 from llamatron.macro_composer.interplay import LEAST_BUSY as LEAST_BUSY_BESIDE, MOST_BUSY as MOST_BUSY_BESIDE
-from llamatron.macro_composer.wizard_choices import FEWEST_FILLS, LEAST_BUSY, MOST_BUSY, MOST_FILLS
-from llamatron.strings.labels import MSG_WIZARD_BY_SECTION, MSG_WIZARD_FILLS_BUSY_LABEL, MSG_WIZARD_ROLE_LABEL, MSG_GM_SOUNDS, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_NO_BREAK, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_WIZARD_SOUND_LABEL
+from llamatron.macro_composer.wizard_choices import FEWEST_FILLS, HIGHEST_PLACE, LEAST_BUSY, LOWEST_PLACE, MOST_BUSY, MOST_FILLS
+from llamatron.strings.labels import MSG_WIZARD_BY_SECTION, MSG_WIZARD_FILLS_BUSY_LABEL, MSG_WIZARD_ROLE_LABEL, MSG_GM_SOUNDS, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_NO_BREAK, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYER_GAUGE_LABELS, MSG_WIZARD_PLAYS_LABEL, MSG_WIZARD_SOUND_LABEL
 from llamatron.strings.legends import MSG_OWN_DRUM_WHAT, What
-from llamatron.strings.marks import MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_SOUND_ON_NOTE, MSG_WIZARD_FILLS_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_BUSY_SHOWN, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL
+from llamatron.strings.marks import MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_SOUND_ON_NOTE, MSG_WIZARD_FILLS_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_BUSY_CUSTOM_SHOWN, MSG_WIZARD_BUSY_SHOWN, MSG_WIZARD_PLAYER_GAUGE_SHOWN, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL
 from llamatron.tui.note_names import note_shown
 from llamatron.tui.screens.shared.field import Cells, ChoiceField, Field, NumberField, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
@@ -53,6 +53,8 @@ class PlayerBranch(Branch):
             fields.append(self.sound_field())
         if choices.has_busy(self._role) and choices.get_busy(self._role) is not None:
             fields.append(self.busy_field())
+            # The player's own gauges, which the Busy field fills in and which each move alone.
+            fields += [self.player_gauge_field(gauge) for gauge in choices.player_gauges(self._role)]
         if choices.answered_by() == self._role:
             fields += self.beside_fields()
         if not choices.has_sound(self._role):
@@ -161,5 +163,16 @@ class PlayerBranch(Branch):
         page = self.page()
         level = choices.get_busy(self._role)
         gauge = MSG_WIZARD_GAUGE_FULL * level + MSG_WIZARD_GAUGE_EMPTY * (MOST_BUSY - level)
-        return NumberField(page=page, label=MSG_WIZARD_BUSY_LABEL, number=level, shown=MSG_WIZARD_BUSY_SHOWN.format(gauge=gauge, level=level, most=MOST_BUSY),
+        # A player whose gauges were moved is no longer the preset, and the field says so until a level is chosen again.
+        shown = MSG_WIZARD_BUSY_SHOWN if choices.player_preset(self._role) is not None else MSG_WIZARD_BUSY_CUSTOM_SHOWN
+        return NumberField(page=page, label=MSG_WIZARD_BUSY_LABEL, number=level, shown=shown.format(gauge=gauge, level=level, most=MOST_BUSY),
                            lowest=LEAST_BUSY, highest=MOST_BUSY, set=page.choosing(lambda value: choices.set_busy(role=self._role, level=value)))
+
+    def player_gauge_field(self, gauge):
+        """Return the field of one of the player's own gauges: a number stepped or typed, drawn as a horizontal gauge beside the number."""
+        choices = self.choices()
+        page = self.page()
+        place = choices.get_player_gauge(role=self._role, gauge=gauge)
+        drawn = MSG_WIZARD_GAUGE_FULL * (place - LOWEST_PLACE) + MSG_WIZARD_GAUGE_EMPTY * (HIGHEST_PLACE - place)
+        return NumberField(page=page, label=MSG_WIZARD_PLAYER_GAUGE_LABELS[gauge], number=place, shown=MSG_WIZARD_PLAYER_GAUGE_SHOWN.format(gauge=drawn, place=place),
+                           lowest=LOWEST_PLACE, highest=HIGHEST_PLACE, set=page.choosing(lambda value: choices.set_player_gauge(role=self._role, gauge=gauge, place=value)))
