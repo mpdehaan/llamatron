@@ -326,7 +326,7 @@ class TestWizardBand(WizardTest):
     async def test_the_band_lists_every_player_and_opens_to_a_branch_for_each_who_is_in(self):
         await self.open_the_band()
         choices = self.choices()
-        self.assertEqual([field.label for field in self.wizard().fields()], choices.roles())
+        self.assertEqual([field.label for field in self.wizard().fields()], [role for role in choices.roles() if choices.role_can_play(role)])
         rows = len(self.wizard().rows())
         await self.press(Key.RIGHT)
         self.assertEqual(len(self.wizard().rows()), rows + len(choices.roles_in()))
