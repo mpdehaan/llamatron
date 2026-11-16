@@ -83,7 +83,9 @@ Reference notes for Claude, one part of `.claude/format/`: every generator and w
   milliseconds, `fade` and `loose_timing` in percent, `upstroke`, how many top strings, 0 for all): the bar goes round under
   the clip, following the song's bars from the generator's Restart (`continuation.offset`), and each cell's stroke strikes
   whatever note or chord sounds there. A `stab` (every string) and a `muted_bass` (the lowest string) stop at `SHORT_LENGTH` of
-  their cell whatever Let ring says, and a muted bass without an accent plays at `MUTED_BASS_VELOCITY`, never softened twice. Struck strings are held sounds (`HELD`) staggered by the spread, which is turned into
+  their cell whatever Let ring says, and a muted bass without an accent plays at `MUTED_BASS_VELOCITY`, never softened twice. A `squeal` is one note `SQUEAL_ABOVE` the lowest, short, never softened. `single_notes` also offers
+  `octave`, `third_above` (the scale's) and `double_stop`, none voiced; `color` (`CHORD_COLORS`) adds a ninth or moves or drops the third before a chord
+  is voiced; `approach` (`APPROACHES`) plays a chord that differs from the one before a fret away for `APPROACH_LENGTH` first, never the clip's first. Struck strings are held sounds (`HELD`) staggered by the spread, which is turned into
   time by the scene's tempo, the one generator handed it (`GeneratorSettings._with_tempo`, `SongRenderer.make_generator`);
   a strum takes at most half the time to the next stroke, and every delay is put on a grid of `STRUM_TICKS` to a whole note so
   that lengths stay exact fractions under `FINEST_LENGTH`. A string stops at the next stroke, or with Let ring when the same

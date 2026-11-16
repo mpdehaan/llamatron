@@ -23,7 +23,7 @@ seconds, so 8 milliseconds between strings is 1/250 of a whole note.
 import unittest
 
 from llamatron.composition.file_format import (
-    ClipSlotSetting, GeneratorKind, GuitarifySetting, PatternSetting, ReadyBar, Restart, Row, SceneSetting, Section, SingleNotes, SongSetting, Stroke, Tuning, GENERATOR_RESTART,
+    Approach, ChordColor, ClipSlotSetting, GeneratorKind, GuitarifySetting, PatternSetting, ReadyBar, Restart, Row, SceneSetting, Section, SingleNotes, SongSetting, Stroke, Tuning, GENERATOR_RESTART,
     STROKES,
 )
 from llamatron.composition.generator_settings import (
@@ -32,7 +32,7 @@ from llamatron.composition.generator_settings import (
 from llamatron.composition.guitar_bars import DEFAULT_BAR, READY_BARS, ready_bar_matching
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
-from llamatron.generators.guitarify import MUTE_LENGTH, MUTE_VELOCITY, MUTED_BASS_VELOCITY, OPEN_STRINGS, REACH, SHORT_LENGTH, STRUM_TICKS, UNACCENTED_VELOCITY
+from llamatron.generators.guitarify import APPROACH_LENGTH, FOURTH_BELOW, SQUEAL_ABOVE, MUTE_LENGTH, MUTE_VELOCITY, MUTED_BASS_VELOCITY, OPEN_STRINGS, REACH, SHORT_LENGTH, STRUM_TICKS, UNACCENTED_VELOCITY
 from llamatron.music.midi import HALF_STEPS_PER_OCTAVE
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.support.rational import Rational
@@ -46,6 +46,13 @@ VELOCITY = 100
 PLAYED = 'played'
 WHOLE = '1'
 HALF = '1/2'
+NO_SUCH_CHOICE = 'blue'
+HALF_NOTE = Rational(1, 2)
+D = 62
+C_CLASS = 0
+D_CLASS = 2
+F_CLASS = 5
+G_CLASS = 7
 QUARTER = '1/4'
 QUARTER_NOTE = Rational(1, 4)
 WHOLE_NOTE = Rational(1)
@@ -231,6 +238,11 @@ class TestStrokes(unittest.TestCase):
         played = events(guitar(settings=bar([Stroke.MUTED_BASS, Stroke.MUTED_BASS], accents=[True, False], cell=HALF)))
         self.assertEqual([event.velocity for event in played], [VELOCITY, round(VELOCITY * MUTED_BASS_VELOCITY)])
 
+    def test_a_squeal_is_one_high_note_short_and_never_softened(self):
+        played = events(guitar(settings=bar([Stroke.DOWN, Stroke.SQUEAL], accents=[True, False], cell=HALF, **{GuitarifySetting.SPREAD: NO_SPREAD})))
+        squeal = played[-1]
+        self.assertEqual((squeal.midi_number, squeal.end - squeal.start, squeal.velocity), (C + SQUEAL_ABOVE, HALF_NOTE * SHORT_LENGTH, VELOCITY))
+
     def test_the_bass_the_alternate_bass_and_single_strings(self):
         data = guitar(settings=bar([Stroke.BASS, Stroke.ALT_BASS, Stroke.STRING_1, Stroke.STRING_2]))
         self.assertEqual([(event.start, event.midi_number) for event in events(data)], [(Rational(0), C), (QUARTER_NOTE, G), (Rational(1, 2), G), (Rational(3, 4), E)])
@@ -329,6 +341,52 @@ class TestTheBarFollowsTheSongsBars(unittest.TestCase):
 
     def test_whole_song_carries_the_bar_on_from_the_clip_before(self):
         self.assertEqual(self.second_clip(self.data(Restart.WHOLE_SONG)), [G, C, G])
+
+
+class TestSingleNoteChoices(unittest.TestCase):
+
+    def single(self, choice):
+        settings = {GuitarifySetting.STROKES: False, GuitarifySetting.SINGLE_NOTES: choice}
+        return pitches(guitar(settings=settings, rows={Row.CHORD: [None]}))
+
+    def test_an_octave_a_third_above_and_a_double_stop(self):
+        self.assertEqual(self.single(SingleNotes.OCTAVE), [C, C + HALF_STEPS_PER_OCTAVE])
+        self.assertEqual(self.single(SingleNotes.THIRD_ABOVE), [C, E])
+        self.assertEqual(self.single(SingleNotes.DOUBLE_STOP), [C - FOURTH_BELOW, C])
+
+
+class TestChordColor(unittest.TestCase):
+
+    def classes(self, color):
+        return {pitch % HALF_STEPS_PER_OCTAVE for pitch in pitches(guitar(settings={GuitarifySetting.STROKES: False, GuitarifySetting.COLOR: color}))}
+
+    def test_each_color_of_a_c_major_chord(self):
+        self.assertEqual(self.classes(ChordColor.AS_WRITTEN), C_MAJOR)
+        self.assertEqual(self.classes(ChordColor.ADD_9), C_MAJOR | {D_CLASS})
+        self.assertEqual(self.classes(ChordColor.SUS_2), {C_CLASS, D_CLASS, G_CLASS})
+        self.assertEqual(self.classes(ChordColor.SUS_4), {C_CLASS, F_CLASS, G_CLASS})
+        self.assertEqual(self.classes(ChordColor.NO_THIRD), {C_CLASS, G_CLASS})
+
+    def test_a_color_is_one_of_the_colors(self):
+        with self.assertRaises(SongFileError):
+            setlist_from_data(guitar(settings={GuitarifySetting.COLOR: NO_SUCH_CHOICE}))
+
+
+class TestApproach(unittest.TestCase):
+
+    def played(self, approach):
+        settings = bar([Stroke.DOWN], cell=WHOLE, **{GuitarifySetting.SPREAD: NO_SPREAD, GuitarifySetting.APPROACH: approach})
+        data = guitar(settings=settings, rows={Row.CHORD: [None, None], Row.DEGREE: [1, 2]}, steps=2)
+        return [(event.start, event.midi_number, event.end - event.start) for event in events(data)]
+
+    def test_off_plays_each_note_where_it_is_written(self):
+        self.assertEqual(self.played(Approach.OFF), [(Rational(0), C, WHOLE_NOTE), (WHOLE_NOTE, D, WHOLE_NOTE)])
+
+    def test_a_new_note_is_reached_from_a_fret_below_and_the_first_is_not(self):
+        self.assertEqual(self.played(Approach.FROM_BELOW), [(Rational(0), C, WHOLE_NOTE), (WHOLE_NOTE, D - 1, APPROACH_LENGTH), (WHOLE_NOTE + APPROACH_LENGTH, D, WHOLE_NOTE - APPROACH_LENGTH)])
+
+    def test_from_above(self):
+        self.assertEqual(self.played(Approach.FROM_ABOVE)[1], (WHOLE_NOTE, D + 1, APPROACH_LENGTH))
 
 
 class TestReadyMadeBars(unittest.TestCase):

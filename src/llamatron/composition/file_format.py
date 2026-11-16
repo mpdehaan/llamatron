@@ -815,9 +815,36 @@ class SingleNotes:
     LEAVE = 'leave'
     POWER_CHORD = 'power_chord'
     SCALE_CHORD = 'scale_chord'
+    OCTAVE = 'octave'
+    THIRD_ABOVE = 'third_above'
+    DOUBLE_STOP = 'double_stop'
 
 
-SINGLE_NOTES = (SingleNotes.LEAVE, SingleNotes.POWER_CHORD, SingleNotes.SCALE_CHORD)
+SINGLE_NOTES = (SingleNotes.LEAVE, SingleNotes.POWER_CHORD, SingleNotes.SCALE_CHORD, SingleNotes.OCTAVE, SingleNotes.THIRD_ABOVE, SingleNotes.DOUBLE_STOP)
+
+
+class ChordColor:
+    """How a Guitarify's Shape voices every chord: as written, or with a note added, the third moved or the third left out."""
+
+    AS_WRITTEN = 'as_written'
+    ADD_9 = 'add_9'
+    SUS_2 = 'sus_2'
+    SUS_4 = 'sus_4'
+    NO_THIRD = 'no_third'
+
+
+CHORD_COLORS = (ChordColor.AS_WRITTEN, ChordColor.ADD_9, ChordColor.SUS_2, ChordColor.SUS_4, ChordColor.NO_THIRD)
+
+
+class Approach:
+    """How a Guitarify's strokes reach a new chord: straight onto it, or from a fret below or above."""
+
+    OFF = 'off'
+    FROM_BELOW = 'from_below'
+    FROM_ABOVE = 'from_above'
+
+
+APPROACHES = (Approach.OFF, Approach.FROM_BELOW, Approach.FROM_ABOVE)
 
 
 class Stroke:
@@ -830,6 +857,7 @@ class Stroke:
     STAB = 'stab'
     BASS = 'bass'
     MUTED_BASS = 'muted_bass'
+    SQUEAL = 'squeal'
     ALT_BASS = 'alt_bass'
     STRING_1 = 'string_1'
     STRING_2 = 'string_2'
@@ -838,7 +866,7 @@ class Stroke:
 
 
 # The strokes in the order the editor steps through them.
-STROKES = (Stroke.NOTHING, Stroke.DOWN, Stroke.UP, Stroke.MUTE, Stroke.STAB, Stroke.BASS, Stroke.MUTED_BASS, Stroke.ALT_BASS, Stroke.STRING_1, Stroke.STRING_2, Stroke.STRING_3, Stroke.STRING_4)
+STROKES = (Stroke.NOTHING, Stroke.DOWN, Stroke.UP, Stroke.MUTE, Stroke.STAB, Stroke.BASS, Stroke.MUTED_BASS, Stroke.ALT_BASS, Stroke.SQUEAL, Stroke.STRING_1, Stroke.STRING_2, Stroke.STRING_3, Stroke.STRING_4)
 
 
 class ReadyBar:
@@ -867,6 +895,10 @@ class ReadyBar:
     DISCO = 'disco'
     PEDAL_RIFF = 'pedal_riff'
     POWER_GROOVE = 'power_groove'
+    FIVE_BEAT = 'five_beat'
+    STRUM_AND_CLICK = 'strum_and_click'
+    SLOW_PICK = 'slow_pick'
+    FOUR_STOMPS = 'four_stomps'
 
 
 class NamedRhythm:
@@ -906,6 +938,7 @@ class GuitarifySetting:
     CAPO = 'capo'
     STRINGS = 'strings'
     SINGLE_NOTES = 'single_notes'
+    COLOR = 'color'
     STROKES = 'strokes'
     BAR = 'bar'
     ACCENTS = 'accents'
@@ -915,6 +948,7 @@ class GuitarifySetting:
     FADE = 'fade'
     LOOSE_TIMING = 'loose_timing'
     UPSTROKE = 'upstroke'
+    APPROACH = 'approach'
 
 
 class Quality:

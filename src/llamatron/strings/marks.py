@@ -367,7 +367,7 @@ MSG_GUITAR_MILLISECONDS = '{milliseconds} ms'
 MSG_GUITAR_EVERY_STRING = 'all'
 MSG_GUITAR_BAR_SHOWN = '{name}, {count} cells of {cell}'
 MSG_STROKE_MARKS = {
-    Stroke.NOTHING: '—', Stroke.DOWN: '↓', Stroke.UP: '↑', Stroke.MUTE: 'x', Stroke.STAB: '!', Stroke.BASS: 'B', Stroke.MUTED_BASS: 'b', Stroke.ALT_BASS: 'A',
+    Stroke.NOTHING: '—', Stroke.DOWN: '↓', Stroke.UP: '↑', Stroke.MUTE: 'x', Stroke.STAB: '!', Stroke.BASS: 'B', Stroke.MUTED_BASS: 'b', Stroke.ALT_BASS: 'A', Stroke.SQUEAL: '^',
     Stroke.STRING_1: '1', Stroke.STRING_2: '2', Stroke.STRING_3: '3', Stroke.STRING_4: '4',
 }
 

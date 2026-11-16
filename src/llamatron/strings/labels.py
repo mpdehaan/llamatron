@@ -20,7 +20,7 @@ Each constant starts with MSG_, and the classes Crumb and Column group the words
 
 from llamatron.composition.file_format import (
     CONDITION_ROWS, AtLimit, DriftValue, FollowAction, LiveResponsiveness, NamedProgression, Shape, ShapePart, EuclidPart, NamedRhythm, Restart, Section, StrumDirection, StrumPart, UpstrokeStrings, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, ChordSymbol, Direction, GateModifier, OctaveLabels, RegisterSetting, Row,
-    ScaleKind, ReadyBar, SingleNotes, Stroke, Tuning,
+    Approach, ChordColor, ScaleKind, ReadyBar, SingleNotes, Stroke, Tuning,
 )
 from llamatron.tui.keys import RowSection
 
@@ -313,10 +313,17 @@ MSG_GUITAR_FADE_LABEL = 'Fade'
 MSG_GUITAR_LOOSE_TIMING_LABEL = 'Loose timing'
 MSG_GUITAR_UPSTROKE_LABEL = 'Upstroke strings'
 MSG_GUITAR_TUNING_NAMES = {Tuning.STANDARD: 'standard', Tuning.DROP_D: 'drop D', Tuning.OPEN_G: 'open G', Tuning.OPEN_D: 'open D', Tuning.DADGAD: 'DADGAD'}
-MSG_GUITAR_SINGLE_NOTES_NAMES = {SingleNotes.LEAVE: 'leave', SingleNotes.POWER_CHORD: 'power chord', SingleNotes.SCALE_CHORD: 'scale chord'}
+MSG_GUITAR_SINGLE_NOTES_NAMES = {
+    SingleNotes.LEAVE: 'leave', SingleNotes.POWER_CHORD: 'power chord', SingleNotes.SCALE_CHORD: 'scale chord', SingleNotes.OCTAVE: 'octave',
+    SingleNotes.THIRD_ABOVE: 'third above', SingleNotes.DOUBLE_STOP: 'double stop',
+}
+MSG_GUITAR_COLOR_LABEL = 'Color'
+MSG_GUITAR_COLOR_NAMES = {ChordColor.AS_WRITTEN: 'as written', ChordColor.ADD_9: 'add 9', ChordColor.SUS_2: 'sus 2', ChordColor.SUS_4: 'sus 4', ChordColor.NO_THIRD: 'no third'}
+MSG_GUITAR_APPROACH_LABEL = 'Approach'
+MSG_GUITAR_APPROACH_NAMES = {Approach.OFF: 'off', Approach.FROM_BELOW: 'from below', Approach.FROM_ABOVE: 'from above'}
 MSG_GUITAR_STROKE_NAMES = {
     Stroke.NOTHING: 'nothing', Stroke.DOWN: 'down', Stroke.UP: 'up', Stroke.MUTE: 'mute', Stroke.STAB: 'stab', Stroke.BASS: 'bass', Stroke.MUTED_BASS: 'muted bass',
-    Stroke.ALT_BASS: 'alt bass',
+    Stroke.ALT_BASS: 'alt bass', Stroke.SQUEAL: 'squeal',
     Stroke.STRING_1: 'string 1', Stroke.STRING_2: 'string 2', Stroke.STRING_3: 'string 3', Stroke.STRING_4: 'string 4',
 }
 MSG_READY_BAR_NAMES = {
@@ -325,6 +332,7 @@ MSG_READY_BAR_NAMES = {
     ReadyBar.ALL_DOWN: 'all down', ReadyBar.ARENA: 'arena', ReadyBar.CHUG: 'chug', ReadyBar.GALLOP: 'gallop', ReadyBar.THRASH: 'thrash', ReadyBar.TREMOLO: 'tremolo',
     ReadyBar.CHIME: 'chime', ReadyBar.ROLL_UP: 'roll up', ReadyBar.ROLL_DOWN: 'roll down', ReadyBar.HELD: 'held',
     ReadyBar.SKANK: 'skank', ReadyBar.DISCO: 'disco', ReadyBar.PEDAL_RIFF: 'pedal riff', ReadyBar.POWER_GROOVE: 'power groove',
+    ReadyBar.FIVE_BEAT: 'five beat', ReadyBar.STRUM_AND_CLICK: 'strum and click', ReadyBar.SLOW_PICK: 'slow pick', ReadyBar.FOUR_STOMPS: 'four stomps',
 }
 MSG_OWN_BAR = 'custom'
 MSG_STROKE_ROW_LABEL = 'Stroke'

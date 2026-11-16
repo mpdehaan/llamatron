@@ -16,7 +16,7 @@
 
 """The Guitarify editor: Shape, the fretting hand, and Strokes, the other hand, each a section with a switch of its own."""
 
-from llamatron.composition.file_format import GeneratorKind, GuitarifySetting, Section, SINGLE_NOTES, TUNINGS, SingleNotes, Tuning
+from llamatron.composition.file_format import APPROACHES, CHORD_COLORS, Approach, ChordColor, GeneratorKind, GuitarifySetting, Section, SINGLE_NOTES, TUNINGS, SingleNotes, Tuning
 from llamatron.composition.generator_settings import (
     DEFAULT_GUITAR_CAPO, DEFAULT_GUITAR_FADE, DEFAULT_GUITAR_LOOSE_TIMING, DEFAULT_GUITAR_POSITION, DEFAULT_GUITAR_SPREAD, DEFAULT_GUITAR_STRINGS, DEFAULT_GUITAR_UPSTROKE,
     EVERY_STRING, MAX_GUITAR_FRET, MAX_GUITAR_PERCENT, MAX_GUITAR_SPREAD, MAX_GUITAR_STRINGS, MIN_GUITAR_STRINGS,
@@ -24,7 +24,7 @@ from llamatron.composition.generator_settings import (
 from llamatron.composition.guitar_bars import ready_bar_matching
 from llamatron.strings.help import HELP_GUITARIFY_EDITOR
 from llamatron.strings.labels import (
-    Crumb, MSG_GUITAR_BAR_LABEL, MSG_GUITAR_CAPO_LABEL, MSG_GUITAR_FADE_LABEL, MSG_GUITAR_LET_RING_LABEL, MSG_GUITAR_LOOSE_TIMING_LABEL, MSG_GUITAR_POSITION_LABEL,
+    Crumb, MSG_GUITAR_APPROACH_LABEL, MSG_GUITAR_APPROACH_NAMES, MSG_GUITAR_BAR_LABEL, MSG_GUITAR_CAPO_LABEL, MSG_GUITAR_COLOR_LABEL, MSG_GUITAR_COLOR_NAMES, MSG_GUITAR_FADE_LABEL, MSG_GUITAR_LET_RING_LABEL, MSG_GUITAR_LOOSE_TIMING_LABEL, MSG_GUITAR_POSITION_LABEL,
     MSG_GUITAR_SHAPE_LABEL, MSG_GUITAR_SHAPE_SECTION, MSG_GUITAR_SINGLE_NOTES_LABEL, MSG_GUITAR_SINGLE_NOTES_NAMES, MSG_GUITAR_SPREAD_LABEL, MSG_GUITAR_STRINGS_LABEL,
     MSG_GUITAR_STROKES_LABEL, MSG_GUITAR_STROKES_SECTION, MSG_GUITAR_TUNING_LABEL, MSG_GUITAR_TUNING_NAMES, MSG_GUITAR_UPSTROKE_LABEL, MSG_GUITARIFY_LABEL, MSG_OWN_BAR,
     MSG_READY_BAR_NAMES,
@@ -39,10 +39,10 @@ from llamatron.tui.screens.shared.field import ChoiceField, Field, NameField, Nu
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 
-SHAPE_SETTINGS = (GuitarifySetting.SHAPE, GuitarifySetting.TUNING, GuitarifySetting.POSITION, GuitarifySetting.CAPO, GuitarifySetting.STRINGS, GuitarifySetting.SINGLE_NOTES)
+SHAPE_SETTINGS = (GuitarifySetting.SHAPE, GuitarifySetting.TUNING, GuitarifySetting.POSITION, GuitarifySetting.CAPO, GuitarifySetting.STRINGS, GuitarifySetting.SINGLE_NOTES, GuitarifySetting.COLOR)
 STROKE_SETTINGS = (
     GuitarifySetting.STROKES, GuitarifySetting.BAR, GuitarifySetting.ACCENTS, GuitarifySetting.CELL, GuitarifySetting.LET_RING, GuitarifySetting.SPREAD, GuitarifySetting.FADE,
-    GuitarifySetting.LOOSE_TIMING, GuitarifySetting.UPSTROKE,
+    GuitarifySetting.LOOSE_TIMING, GuitarifySetting.UPSTROKE, GuitarifySetting.APPROACH,
 )
 NO_FRET = 0
 
@@ -117,6 +117,7 @@ class GuitarifyEditor(ShowsNamedItem, FieldPage):
                 label=MSG_GUITAR_SINGLE_NOTES_LABEL, setting=GuitarifySetting.SINGLE_NOTES, current=guitar.get_single_notes(), default=SingleNotes.LEAVE, choices=SINGLE_NOTES,
                 names=MSG_GUITAR_SINGLE_NOTES_NAMES,
             ),
+            self.choice(label=MSG_GUITAR_COLOR_LABEL, setting=GuitarifySetting.COLOR, current=guitar.get_color(), default=ChordColor.AS_WRITTEN, choices=CHORD_COLORS, names=MSG_GUITAR_COLOR_NAMES),
             self.heading(label=MSG_GUITAR_STROKES_SECTION, is_set=lambda: self.any_written(STROKE_SETTINGS)),
             self.switch(label=MSG_GUITAR_STROKES_LABEL, setting=GuitarifySetting.STROKES, on=guitar.strikes(), default=True),
             Field(label=MSG_GUITAR_BAR_LABEL, value=lambda: bar_shown(self.guitar()), enter=lambda: self.show_page(GuitarBarEditor(holder=self.holder, name=self.item)), enter_what=What.EDIT),
@@ -131,5 +132,6 @@ class GuitarifyEditor(ShowsNamedItem, FieldPage):
                 label=MSG_GUITAR_UPSTROKE_LABEL, setting=GuitarifySetting.UPSTROKE, current=upstroke, default=DEFAULT_GUITAR_UPSTROKE, lowest=EVERY_STRING, highest=MAX_GUITAR_STRINGS,
                 shown=MSG_GUITAR_EVERY_STRING if upstroke == EVERY_STRING else None,
             ),
+            self.choice(label=MSG_GUITAR_APPROACH_LABEL, setting=GuitarifySetting.APPROACH, current=guitar.get_approach(), default=Approach.OFF, choices=APPROACHES, names=MSG_GUITAR_APPROACH_NAMES),
             restart_field(self),
         ]

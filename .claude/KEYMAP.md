@@ -1128,7 +1128,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - **EuclidEditor**: Name, Hits, Steps, Rotate, Step, Restart
 - **FilePage**: Author, Default follow action, Description, Notes, Protected, Title, [Notes & Octaves], Default drum octave, Default octave, Octave labels, Step size, [Visualizers], Visualizer, Hide Visualizers, (Save), (Open)
 - **GlideEditor**: Name, Step, Glide amount, Steps, Restart
-- **GuitarifyEditor**: Name, [Shape], Shape chords, Tuning, Position, Capo, Strings, Single notes, [Strokes], Play strokes, Bar, Let ring, Spread, Fade, Loose timing, Upstroke strings, Restart
+- **GuitarifyEditor**: Name, [Shape], Shape chords, Tuning, Position, Capo, Strings, Single notes, Color, [Strokes], Play strokes, Bar, Let ring, Spread, Fade, Loose timing, Upstroke strings, Approach, Restart
 - **HocketEditor**: Name, Source track, Restart
 - **InstrumentEditor**: Name, Device, Channel, GM sound, Keyswitch lead, (Keyswitch Map)
 - **ProgressionEditor**: Name, Every, Chords, Restart

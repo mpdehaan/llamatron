@@ -15,7 +15,8 @@ Shape holds each chord as a hand can hold it: at most one note on each string, e
 | Position | Where the hand is: "open", which uses the open strings and the first three frets, or a fret from 1 to 12, which uses that fret and the three above. |
 | Capo | The fret a capo clamps, which raises every string. |
 | Strings | How many strings are played, from 3 to 6, counted from the highest, so 4 leaves out the two lowest. |
-| Single notes | What becomes of a step that holds one note: "leave" keeps the note; "power chord" plays the root, the fifth above and the octave on the low strings; "scale chord" plays the chord the note's place in the scale builds. |
+| Single notes | What becomes of a step that holds one note: "leave" keeps the note; "power chord" plays the root, the fifth above and the octave on the low strings; "scale chord" plays the chord the note's place in the scale builds; "octave" adds the same note an octave up; "third above" adds the scale's third above the note, as two guitars play one tune in harmony; "double stop" adds the note a fourth below. |
+| Color | How every chord is voiced: "as written"; "add 9", which adds the ninth; "sus 2" and "sus 4", which move the third down or up to the neighboring note; "no third", which leaves the third out. |
 
 ## Strokes
 
@@ -30,6 +31,7 @@ Strokes plays a bar of strokes, one stroke a cell, on whatever chord or note sou
 | Fade | How much quieter the last string of a strum is than the first, up to 50%. |
 | Loose timing | How much each gap between strings varies, up to 50%, drawn from the song's seed. |
 | Upstroke strings | How many of the top strings an upstroke catches, or "all". |
+| Approach | How a new chord is reached: "off" plays the chord where the pattern wrote the chord; "from below" and "from above" first play the chord one fret lower or higher for a sixteenth. The first chord of a clip is never approached. |
 | Restart | When the bar starts over, as [Generators](../GENERATORS.md#restart) describes. |
 
 Guitarify's Spread, Fade, Loose timing and Upstroke strings are Guitarify's own. The [Strum](STRUM.md) generator and the Strum sections of a track and a clip are separate and unchanged.
@@ -48,11 +50,12 @@ The bar's editor shows one cell a column, with the stroke above and the accent b
 | bass | `B` | The lowest string. |
 | muted bass | `b` | The lowest string, stopped halfway through the cell and a little soft unless accented, as a palm-muted low note. |
 | alt bass | `A` | The fifth of the chord where a string plays one, and otherwise the second lowest string. |
+| squeal | `^` | One note two octaves above the chord's lowest, short and at full loudness, as a pinched harmonic. |
 | string 1 to string 4 | `1` to `4` | One string, counted from the highest. A string the chord lacks plays the nearest string the chord has. |
 
 Where a bar has any accented cell, the strokes without an accent play a little softer.
 
-The ready-made bars are folk strum, boom-chick, travis pick, crosspick, four to the bar, backbeat, boogie, shuffle, scratch, all down, arena, chug, gallop, thrash, tremolo, chime, roll up, roll down, held, skank, disco, pedal riff and power groove. Picking one replaces the strokes, the accents and the cell length together, and the bar can be edited from there. A rolled chord is the roll up or the roll down bar with Let ring on.
+The ready-made bars are folk strum, boom-chick, travis pick, crosspick, four to the bar, backbeat, boogie, shuffle, scratch, all down, arena, chug, gallop, thrash, tremolo, chime, roll up, roll down, held, skank, disco, pedal riff, five beat, strum and click, slow pick, four stomps and power groove. Picking one replaces the strokes, the accents and the cell length together, and the bar can be edited from there. A rolled chord is the roll up or the roll down bar with Let ring on.
 
 ## Applying the Generator
 
