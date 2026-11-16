@@ -236,7 +236,7 @@ roles:
   - {role: horns, player: session, trait: horns, octave: 4, velocity: 92}
   - {role: lead, title: singer, player: lead, trait: lead, octave: 4, velocity: 106}
   - {role: voices, title: backup singers, player: session, trait: voices, octave: 4, velocity: 82}
-  - {role: solo, title: soloist, player: session, trait: solo, octave: 4, velocity: 100, answers: true}
+  - {role: solo, title: saxophone, titles: {organ: organ}, player: session, trait: solo, octave: 4, velocity: 100, answers: true}
   - {role: bass, player: bass, trait: bass, octave: 2, velocity: 108}
   - {role: drums, player: drums, drums: [drums, percussion]}
 

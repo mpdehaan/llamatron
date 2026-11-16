@@ -179,6 +179,10 @@ clouds; generate and test, with motif development and counterpoint last.
   sound to choose, since the grooves are written for the kit. A song carries the sounds that differ as `role_sounds`,
   which the arranger's `sound_of` turns into the track's instrument. A role's `title` and `titles` in a template are what
   the wizard calls the player; tracks keep the role's name.
+- One guitarist: a template's `one_guitarist` names the player of the chords, the player of the solo, the way the solo is
+  then played and what the one player is called. `set_guitarists` chooses it; the solo is then a guitar's, the chords are
+  left out of every section the solo plays in (`_sections_of_song`), and leaving the guitarist out leaves the solo out.
+  Fills between the sung lines by the one guitarist are not written yet.
 - Nothing is chosen at first, the user's rule. Choosing a subgenre fills in its usual tempo, the scale type its chords are
   in, the root that scale type starts on (C for major, E for minor, Claude's choice) and the commonest form, so that a song
   can be made from a genre and a subgenre alone; choosing another genre leaves the subgenre to be chosen again. Any tempo

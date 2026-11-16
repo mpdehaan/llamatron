@@ -214,9 +214,13 @@ roles:
   - {role: colour, title: orchestra, player: session, trait: colour, octave: 5, velocity: 78}
   - {role: lead, title: singer, player: lead, trait: lead, octave: 4, velocity: 106}
   - {role: voices, title: backup singers, player: session, trait: voices, octave: 4, velocity: 82}
-  - {role: solo, title: soloist, player: session, trait: solo, octave: 5, velocity: 100, answers: true}
+  - {role: solo, title: lead guitar, titles: {flute: flute, harmonica: harmonica, oboe: oboe, organ: organ, saxophone: saxophone}, player: session, trait: solo, octave: 5, velocity: 100, answers: true}
   - {role: bass, player: bass, trait: bass, octave: 2, velocity: 102}
   - {role: drums, player: drums, drums: [drums, percussion]}
+
+# A band with one guitarist, who plays the chords and takes the solo: the player of the chords, the player of the solo and the
+# way the solo is then played. The chords stop where the solo plays.
+one_guitarist: {chords: guitar, solo: solo, way: guitar, title: guitar}
 
 players:
   drums:
