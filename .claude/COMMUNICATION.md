@@ -34,8 +34,8 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   learnt since worked in and nothing of the old context dropped, never a number with a few words after it. A confirmation
   holds the whole of what's confirmed: the values, the rule and a short example, never "as above" or "the table above".
 - **Choices, always with a recommendation.** Wherever a question can offer options, it does: each a capital letter, A, B,
-  C, starting again at A under each number, each named in full. After the options, a sentence of its own says which Claude
-  recommends and why. The user values the recommendation, so a question offers options and a recommendation whenever it can,
+  C, starting again at A under each number, each named in full. The option Claude recommends is listed first, and so is
+  always A (the user's rule). After the options, a sentence of its own says that Claude recommends A and why. The user values the recommendation, so a question offers options and a recommendation whenever it can,
   and even a yes or no question says what Claude recommends (the user's rule).
 - **Decisions to confirm.** A decision Claude made and lists for the user to confirm is written as a full question: what was
   decided and about what, on which page, the rule chosen, the alternative and a short example, never a one-line note.
