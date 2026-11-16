@@ -44,13 +44,15 @@ The bar's editor shows one cell a column, with the stroke above and the accent b
 | down | `↓` | Every string, low to high. |
 | up | `↑` | The top strings, high to low. |
 | mute | `x` | Every string, short and quiet, as a palm-muted or scratched strum. |
+| stab | `!` | Every string, low to high, at full loudness and stopped halfway through the cell, whatever Let ring says. |
 | bass | `B` | The lowest string. |
+| muted bass | `b` | The lowest string, stopped halfway through the cell and a little soft unless accented, as a palm-muted low note. |
 | alt bass | `A` | The fifth of the chord where a string plays one, and otherwise the second lowest string. |
 | string 1 to string 4 | `1` to `4` | One string, counted from the highest. A string the chord lacks plays the nearest string the chord has. |
 
 Where a bar has any accented cell, the strokes without an accent play a little softer.
 
-The ready-made bars are folk strum, boom-chick, travis pick, crosspick, four to the bar, backbeat, boogie, shuffle, scratch, all down, arena, chug, gallop, thrash, tremolo, chime, roll up, roll down and held. Picking one replaces the strokes, the accents and the cell length together, and the bar can be edited from there. A rolled chord is the roll up or the roll down bar with Let ring on.
+The ready-made bars are folk strum, boom-chick, travis pick, crosspick, four to the bar, backbeat, boogie, shuffle, scratch, all down, arena, chug, gallop, thrash, tremolo, chime, roll up, roll down, held, skank, disco, pedal riff and power groove. Picking one replaces the strokes, the accents and the cell length together, and the bar can be edited from there. A rolled chord is the roll up or the roll down bar with Let ring on.
 
 ## Applying the Generator
 

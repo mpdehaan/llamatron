@@ -74,6 +74,12 @@ FRET_COST = 1
 MUTE_LENGTH = Rational(1, 4)
 MUTE_VELOCITY = Rational(1, 2)
 UNACCENTED_VELOCITY = Rational(4, 5)
+# A stab and a muted bass note sound for this share of their cell, whatever Let ring says: the silence after is the point.
+SHORT_LENGTH = Rational(1, 2)
+# A muted bass note without an accent plays at this share: the body of a riff, louder than a scratch.
+MUTED_BASS_VELOCITY = Rational(4, 5)
+# The strokes that stop short of their cell, each with the share of the cell it sounds for.
+SHORT_STROKES = {Stroke.MUTE: MUTE_LENGTH, Stroke.STAB: SHORT_LENGTH, Stroke.MUTED_BASS: SHORT_LENGTH}
 # A velocity a note has none of its own is taken as, to make it softer from.
 FULL_VELOCITY = 127
 LOWEST_VELOCITY = 1
@@ -260,15 +266,18 @@ class Guitarify(ClipGenerator):
             delays = self._delays(count=len(chosen), room=following - time, seed_place=place * len(self._bar) + index)
             for string, (note, delay) in enumerate(zip(chosen, delays)):
                 stops = self._stops(note=note, index=index, struck=struck, end=end, following=following)
-                if stroke == Stroke.MUTE:
-                    stops = min(stops, time + self._cell * MUTE_LENGTH)
+                if stroke in SHORT_STROKES:
+                    stops = min(stops, time + self._cell * SHORT_STROKES[stroke])
                 begins = time + delay
                 if stops <= begins:
                     continue
                 share = Rational(1)
                 if stroke == Stroke.MUTE:
                     share = share * MUTE_VELOCITY
-                if any_accent and not accent:
+                if stroke == Stroke.MUTED_BASS:
+                    if not accent:
+                        share = share * MUTED_BASS_VELOCITY
+                elif any_accent and not accent:
                     share = share * UNACCENTED_VELOCITY
                 if self._fade and len(chosen) > 1:
                     share = share * (1 - Rational(self._fade * string, PERCENT * (len(chosen) - 1)))
@@ -295,12 +304,12 @@ class Guitarify(ClipGenerator):
 
     def _strings_of(self, *, stroke, strings):
         """Return the notes a stroke strikes, in the order it strikes them, from a chord's notes given lowest first."""
-        if stroke in (Stroke.DOWN, Stroke.MUTE):
+        if stroke in (Stroke.DOWN, Stroke.MUTE, Stroke.STAB):
             return list(strings)
         if stroke == Stroke.UP:
             top = strings if self._upstroke is None else strings[-self._upstroke:]
             return list(reversed(top))
-        if stroke == Stroke.BASS:
+        if stroke in (Stroke.BASS, Stroke.MUTED_BASS):
             return strings[:1]
         if stroke == Stroke.ALT_BASS:
             fifth = (strings[0][MIDI] + FIFTH) % HALF_STEPS_PER_OCTAVE

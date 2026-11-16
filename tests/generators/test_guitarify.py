@@ -32,7 +32,7 @@ from llamatron.composition.generator_settings import (
 from llamatron.composition.guitar_bars import DEFAULT_BAR, READY_BARS, ready_bar_matching
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
-from llamatron.generators.guitarify import MUTE_LENGTH, MUTE_VELOCITY, OPEN_STRINGS, REACH, STRUM_TICKS, UNACCENTED_VELOCITY
+from llamatron.generators.guitarify import MUTE_LENGTH, MUTE_VELOCITY, MUTED_BASS_VELOCITY, OPEN_STRINGS, REACH, SHORT_LENGTH, STRUM_TICKS, UNACCENTED_VELOCITY
 from llamatron.music.midi import HALF_STEPS_PER_OCTAVE
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.support.rational import Rational
@@ -45,6 +45,7 @@ TEMPO = 120
 VELOCITY = 100
 PLAYED = 'played'
 WHOLE = '1'
+HALF = '1/2'
 QUARTER = '1/4'
 QUARTER_NOTE = Rational(1, 4)
 WHOLE_NOTE = Rational(1)
@@ -215,6 +216,20 @@ class TestStrokes(unittest.TestCase):
     def test_a_muted_stroke_is_short_and_quiet(self):
         played = events(guitar(settings=bar([Stroke.MUTE], cell=WHOLE, **{GuitarifySetting.SPREAD: NO_SPREAD})))
         self.assertEqual([(event.end - event.start, event.velocity) for event in played], [(WHOLE_NOTE * MUTE_LENGTH, round(VELOCITY * MUTE_VELOCITY))] * 3)
+
+    def test_a_stab_is_every_string_at_full_loudness_and_stops_short_even_when_left_to_ring(self):
+        for let_ring in (False, True):
+            with self.subTest(let_ring=let_ring):
+                played = events(guitar(settings=bar([Stroke.STAB], cell=WHOLE, **{GuitarifySetting.SPREAD: NO_SPREAD, GuitarifySetting.LET_RING: let_ring})))
+                self.assertEqual([(event.end - event.start, event.velocity) for event in played], [(WHOLE_NOTE * SHORT_LENGTH, VELOCITY)] * 3)
+
+    def test_a_muted_bass_is_the_lowest_string_short_and_a_little_soft(self):
+        played = events(guitar(settings=bar([Stroke.MUTED_BASS], cell=WHOLE, **{GuitarifySetting.LET_RING: True})))
+        self.assertEqual([(event.midi_number, event.end - event.start, event.velocity) for event in played], [(C, WHOLE_NOTE * SHORT_LENGTH, round(VELOCITY * MUTED_BASS_VELOCITY))])
+
+    def test_an_accented_muted_bass_is_at_full_loudness_and_the_others_no_softer_for_the_accent(self):
+        played = events(guitar(settings=bar([Stroke.MUTED_BASS, Stroke.MUTED_BASS], accents=[True, False], cell=HALF)))
+        self.assertEqual([event.velocity for event in played], [VELOCITY, round(VELOCITY * MUTED_BASS_VELOCITY)])
 
     def test_the_bass_the_alternate_bass_and_single_strings(self):
         data = guitar(settings=bar([Stroke.BASS, Stroke.ALT_BASS, Stroke.STRING_1, Stroke.STRING_2]))

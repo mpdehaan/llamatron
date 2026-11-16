@@ -220,7 +220,7 @@ guitarifies:
     let_ring: true
   backbeat:
     # the ready-made bar: backbeat
-    bar: [nothing, nothing, up, mute, nothing, nothing, up, mute]
+    bar: [nothing, nothing, stab, nothing, nothing, nothing, stab, nothing]
     accents: [false, false, true, false, false, false, true, false]
     cell: 1/8
     position: 4
@@ -257,7 +257,7 @@ guitarifies:
     fade: 0
   gallop:
     # the ready-made bar: gallop
-    bar: [mute, nothing, mute, mute, mute, nothing, mute, mute, mute, nothing, mute, mute, down, nothing, mute, mute]
+    bar: [muted_bass, nothing, muted_bass, muted_bass, muted_bass, nothing, muted_bass, muted_bass, muted_bass, nothing, muted_bass, muted_bass, down, nothing, muted_bass, muted_bass]
     accents: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false]
     cell: 1/16
     single_notes: power_chord
@@ -265,7 +265,7 @@ guitarifies:
     fade: 0
   thrash:
     # the ready-made bar: thrash
-    bar: [down, mute, mute, mute, mute, mute, down, mute, mute, mute, down, mute, mute, mute, mute, mute]
+    bar: [down, muted_bass, muted_bass, muted_bass, muted_bass, muted_bass, down, muted_bass, muted_bass, muted_bass, down, muted_bass, muted_bass, muted_bass, muted_bass, muted_bass]
     accents: [true, false, false, false, false, false, true, false, false, false, true, false, false, false, false, false]
     cell: 1/16
     single_notes: power_chord

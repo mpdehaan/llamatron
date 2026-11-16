@@ -827,7 +827,9 @@ class Stroke:
     DOWN = 'down'
     UP = 'up'
     MUTE = 'mute'
+    STAB = 'stab'
     BASS = 'bass'
+    MUTED_BASS = 'muted_bass'
     ALT_BASS = 'alt_bass'
     STRING_1 = 'string_1'
     STRING_2 = 'string_2'
@@ -836,7 +838,7 @@ class Stroke:
 
 
 # The strokes in the order the editor steps through them.
-STROKES = (Stroke.NOTHING, Stroke.DOWN, Stroke.UP, Stroke.MUTE, Stroke.BASS, Stroke.ALT_BASS, Stroke.STRING_1, Stroke.STRING_2, Stroke.STRING_3, Stroke.STRING_4)
+STROKES = (Stroke.NOTHING, Stroke.DOWN, Stroke.UP, Stroke.MUTE, Stroke.STAB, Stroke.BASS, Stroke.MUTED_BASS, Stroke.ALT_BASS, Stroke.STRING_1, Stroke.STRING_2, Stroke.STRING_3, Stroke.STRING_4)
 
 
 class ReadyBar:
@@ -861,6 +863,10 @@ class ReadyBar:
     ROLL_UP = 'roll_up'
     ROLL_DOWN = 'roll_down'
     HELD = 'held'
+    SKANK = 'skank'
+    DISCO = 'disco'
+    PEDAL_RIFF = 'pedal_riff'
+    POWER_GROOVE = 'power_groove'
 
 
 class NamedRhythm:

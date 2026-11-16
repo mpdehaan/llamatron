@@ -82,7 +82,8 @@ Reference notes for Claude, one part of `.claude/format/`: every generator and w
 - Strokes (`bar`, a list of `STROKES`, at most 32; `accents` beside it; `cell`, a time setting; `let_ring`; `spread` in
   milliseconds, `fade` and `loose_timing` in percent, `upstroke`, how many top strings, 0 for all): the bar goes round under
   the clip, following the song's bars from the generator's Restart (`continuation.offset`), and each cell's stroke strikes
-  whatever note or chord sounds there. Struck strings are held sounds (`HELD`) staggered by the spread, which is turned into
+  whatever note or chord sounds there. A `stab` (every string) and a `muted_bass` (the lowest string) stop at `SHORT_LENGTH` of
+  their cell whatever Let ring says, and a muted bass without an accent plays at `MUTED_BASS_VELOCITY`, never softened twice. Struck strings are held sounds (`HELD`) staggered by the spread, which is turned into
   time by the scene's tempo, the one generator handed it (`GeneratorSettings._with_tempo`, `SongRenderer.make_generator`);
   a strum takes at most half the time to the next stroke, and every delay is put on a grid of `STRUM_TICKS` to a whole note so
   that lengths stay exact fractions under `FINEST_LENGTH`. A string stops at the next stroke, or with Let ring when the same
