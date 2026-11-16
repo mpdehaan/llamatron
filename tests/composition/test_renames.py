@@ -28,7 +28,7 @@ from llamatron.composition.clip_slot import ClipSlot
 from llamatron.composition.chain import Chain
 from llamatron.composition.defaults import DEFAULT_GROOVE
 from llamatron.composition.generator_settings import HocketSetting, HocketSettings
-from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, Row, SceneSetting, Section, SongSetting, TrackSetting
+from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.scene import Scene
 from llamatron.composition.sections import SETLIST_SECTIONS, SONG_SECTIONS
@@ -192,7 +192,10 @@ class TestRenamesFollowEveryReference(unittest.TestCase):
         self.assertEqual(len(uses_of(setlist=setlist, section=Section.GROOVES, name=self.renamed[Section.GROOVES, SHUFFLE])), GROOVE_USES)
 
     def test_old_names_are_gone_from_the_file(self):
-        text = str(self.document.setlist().to_data())
+        data = self.document.setlist().to_data()
+        # A pattern's group is text of its own, which names no track even where a new set's group is spelled like its first track.
+        data[Section.PATTERNS] = {name: {setting: value for setting, value in pattern.items() if setting != PatternSetting.GROUP} for name, pattern in data[Section.PATTERNS].items()}
+        text = str(data)
         for (section, name), new in self.renamed.items():
             with self.subTest(section=section, name=name):
                 self.assertNotIn(repr(name), text)

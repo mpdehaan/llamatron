@@ -1083,4 +1083,6 @@ class WizardChoices:
         made.get_item(section=Section.SONGS, name=name).set_wizard_choices(self.to_data())
         # A part written for a section that leaves the part out is played by nothing, and would be left behind in the open set.
         made.remove_unused()
+        # Each pattern goes in the group named after the track that plays it, the user's design.
+        made.group_patterns_by_track(made.get_item(section=Section.SONGS, name=name))
         return made

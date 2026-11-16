@@ -20,7 +20,6 @@ from tests.support.ui_testing import SWAY, fixed_text, KEY_SHOWN, UITest, key_of
 from llamatron.strings.names import MSG_NEW_SCALE_WORD
 from llamatron.tui.drawing import NOTHING
 from llamatron.strings.marks import MSG_MOVING_CLOSE, MSG_MOVING_OPEN
-from llamatron.tui.screens.pattern.patterns_page import PatternsPage
 from llamatron.composition.file_format import (
     TIME_CHOICES,
     DRIFT_DIRECTIONS, NAMED_GENERATORS, REGISTER_NAMES, ClipSlotSetting, Direction, DriftValue, DriftVersion, GeneratorKind, Section,
@@ -871,16 +870,16 @@ class TestMoveModeOnALists(UITest):
     """Move mode on a list page, the user's design: M picks up the row, Up and Down carry it, and Enter, Esc or M drops it."""
 
     def names(self):
-        return self.document.setlist().get_pattern_names()
+        return self.document.setlist().get_chain_names()
 
     def carried_line(self):
         return next(line for line in self.text().splitlines() if MSG_MOVING_OPEN in line and MSG_MOVING_CLOSE in line)
 
     async def test_the_carried_name_is_marked_without_moving_the_columns_and_one_move_is_one_undo_step(self):
-        await self.press(keybindings.MainPage.PATTERNS)
+        await self.press(keybindings.MainPage.CHAINS)
         first = self.names()[0]
         still = next(line for line in self.text().splitlines() if first in line)
-        await self.press(keybindings.PatternsPage.MOVE)
+        await self.press(keybindings.ChainsPage.MOVE)
         carried = self.carried_line()
         self.assertIn(MSG_MOVING_OPEN + first + MSG_MOVING_CLOSE, carried)
         # The marks take the places of the spaces beside the name, so every column after it stays where it was.
@@ -889,14 +888,14 @@ class TestMoveModeOnALists(UITest):
         await self.press(*[Key.DOWN] * len(self.names()))
         self.assertEqual(self.names()[-1], first)
         await self.press(Key.ESCAPE)
-        self.assertIsInstance(self.app.screen, PatternsPage)
+        self.assertIsInstance(self.app.screen, ChainsPage)
         self.assertFalse(self.app.screen.moving)
         await self.press(keybindings.Page.UNDO)
         self.assertEqual(self.names()[0], first)
 
     async def test_m_or_enter_drops_it_too(self):
-        await self.press(keybindings.MainPage.PATTERNS, keybindings.PatternsPage.MOVE, keybindings.PatternsPage.MOVE)
+        await self.press(keybindings.MainPage.CHAINS, keybindings.ChainsPage.MOVE, keybindings.ChainsPage.MOVE)
         self.assertFalse(self.app.screen.moving)
-        await self.press(keybindings.PatternsPage.MOVE, Key.ENTER)
+        await self.press(keybindings.ChainsPage.MOVE, Key.ENTER)
         self.assertFalse(self.app.screen.moving)
-        self.assertIsInstance(self.app.screen, PatternsPage)
+        self.assertIsInstance(self.app.screen, ChainsPage)

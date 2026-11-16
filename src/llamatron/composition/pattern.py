@@ -34,9 +34,9 @@ from llamatron.composition.pattern_notes import PatternNotes
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.corrections import LEFT_OUT, NO_NEAREST_VALUE, Correction
 from llamatron.composition.row_descriptions import ROW_DESCRIPTIONS, row_described, rows_where
-from llamatron.composition.setting import Checked, Choice, Flag, Length, described, settings_held
+from llamatron.composition.setting import Checked, Choice, Flag, Length, Text, described, settings_held
 from llamatron.strings.errors import (
-    ERR_BAD_DIRECTION, ERR_BAD_STEPS, ERR_DRUM_NOT_TRUE_OR_FALSE, ERR_PATTERN_EXPECTED_SETTINGS, ERR_PATTERN_NO_SUCH_STEP,
+    ERR_BAD_DIRECTION, ERR_BAD_STEPS, ERR_DRUM_NOT_TRUE_OR_FALSE, ERR_NOT_TEXT, ERR_PATTERN_EXPECTED_SETTINGS, ERR_PATTERN_NO_SUCH_STEP,
     ERR_PATTERN_NOT_AN_ORDER, ERR_ROW_WRONG_LENGTH, ERR_TIE_ON_A_NOTE, ERR_TOGGLE_IS_NULL, ERR_WHERE_IN_ROW,
 )
 from llamatron.support.revised import notes_change
@@ -50,6 +50,7 @@ SETTINGS = described(
     Length(name=PatternSetting.ENTRY_SIZE, most=MAX_GATE),
     Flag(name=PatternSetting.DRUM, error=ERR_DRUM_NOT_TRUE_OR_FALSE),
     Choice(name=PatternSetting.DIRECTION, choices=DIRECTIONS, default=LEFT_OUT, error=ERR_BAD_DIRECTION),
+    Text(name=PatternSetting.GROUP, error=ERR_NOT_TEXT),
 )
 # The settings a file's problem with is placed by the setting's name, like "pattern (tune), step_size: ...". The messages of the others name the setting themselves.
 PLACED_BY_NAME = (PatternSetting.STEP_SIZE, PatternSetting.TIME_SIGNATURE, PatternSetting.ENTRY_SIZE)
@@ -79,13 +80,13 @@ class Pattern(PatternNotes, LlamaData):
 
     __slots__ = ('_steps', '_rows', '_settings')
 
-    def __init__(self, *, steps, rows, step_size=None, time_signature=None, entry_size=None, drum=None, direction=None):
+    def __init__(self, *, steps, rows, step_size=None, time_signature=None, entry_size=None, drum=None, direction=None, group=None):
         self.note_change()
         self._steps = steps
         self._rows = _copied_rows(rows)
         self._settings = {
             PatternSetting.STEP_SIZE: step_size, PatternSetting.TIME_SIGNATURE: time_signature, PatternSetting.ENTRY_SIZE: entry_size,
-            PatternSetting.DRUM: drum, PatternSetting.DIRECTION: direction,
+            PatternSetting.DRUM: drum, PatternSetting.DIRECTION: direction, PatternSetting.GROUP: group,
         }
 
     @classmethod
@@ -385,6 +386,17 @@ class Pattern(PatternNotes, LlamaData):
         for row in NOTE_ROWS:
             self._rows[row] = None
         self._settings[PatternSetting.DRUM] = True if drum else None
+
+    def get_group(self):
+        """Return the group the Patterns page lists it under, or None for a pattern in no group, as an older file's is."""
+        return self._settings[PatternSetting.GROUP]
+
+    @notes_change
+    def set_group(self, group):
+        """Put it in a group, by the group's name, or in none."""
+        if group is not None:
+            SETTINGS[PatternSetting.GROUP].check(group)
+        self._settings[PatternSetting.GROUP] = group or None
 
     @notes_change
     def set_direction(self, direction):

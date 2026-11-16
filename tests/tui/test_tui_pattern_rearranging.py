@@ -59,7 +59,8 @@ class TestRearrangingAPattern(UITest):
     async def asyncSetUp(self):
         await super().asyncSetUp()
         self.add_pattern_with_rows(name=LONG_PATTERN, steps=LONG_PATTERN_STEPS, rows=LONG_PATTERN_ROWS)
-        await self.press(keybindings.MainPage.PATTERNS, Key.DOWN, Key.DOWN, Key.DOWN, Key.ENTER, keybindings.PatternEditor.TO_EDITOR)
+        await self.open_patterns_on(LONG_PATTERN)
+        await self.press(Key.ENTER, keybindings.PatternEditor.TO_EDITOR)
         self.editor = self.app.screen
 
     def rows(self, *, row=Row.DEGREE):
@@ -210,7 +211,8 @@ class TestTheEditorsTwoViews(UITest):
         self.assertTrue(editor.roll.keys())
 
     async def test_a_drum_pattern_shows_only_the_rows_and_its_note_row_takes_letters(self):
-        await self.press(keybindings.MainPage.PATTERNS, Key.DOWN, Key.ENTER)
+        await self.open_patterns_on(BEAT)
+        await self.press(Key.ENTER)
         editor = self.app.screen
         self.assertTrue(editor.is_drum())
         self.assertIs(editor.view(), editor.rows_view)

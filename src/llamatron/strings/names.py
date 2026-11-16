@@ -45,6 +45,7 @@ MSG_NEW_PATTERN_NAME = 'pattern-{number}'
 # The word each kind of new thing is named with, before its dash and number (composition/naming.py's new_name); a blank pattern
 # made on an empty cell of Arrange takes its track's name for its word, the user's design.
 MSG_NEW_PATTERN_WORD = 'pattern'
+MSG_NEW_GROUP_WORD = 'group'
 MSG_NEW_SCENE_WORD = 'scene'
 MSG_NEW_TRACK_WORD = 'track'
 MSG_NEW_GROOVE_WORD = 'groove'

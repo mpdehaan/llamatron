@@ -32,6 +32,7 @@ the plan knows still builds the rest.
 """
 
 from llamatron.composition.file_format import Row, SceneSetting, Section, SongSetting, TrackSetting
+from llamatron.composition.naming import new_name
 from llamatron.composition.row_descriptions import ROW_DESCRIPTIONS
 from llamatron.composition.limits import MIN_DEGREE
 from llamatron.strings.labels import (
@@ -49,7 +50,8 @@ from llamatron.strings.narration import (
     MSG_NARRATE_PLAY, MSG_NARRATE_PLAY_LIVE, MSG_NARRATE_REAL_TIME, MSG_NARRATE_RENAMING, MSG_NARRATE_SONG, MSG_NARRATE_START,
     MSG_NARRATE_QUITTING, MSG_NARRATE_TUTORIAL_COMPLETE, MSG_NARRATE_WOULD_EXPORT,
 )
-from llamatron.strings.names import MSG_NEW_PATTERN_NAME
+from llamatron.strings.labels import MSG_NEW_GROUP_BUTTON
+from llamatron.strings.names import MSG_NEW_GROUP_WORD, MSG_NEW_PATTERN_NAME
 from llamatron.tui import keybindings
 from llamatron.tui.components.chord_row import CHORD_SYMBOLS, ChordRow, chord_text
 from llamatron.tui.components.cycle_row import CycleRow
@@ -69,7 +71,7 @@ from llamatron.tui.dialogs.quit_dialog import QuitDialog
 from llamatron.tui.screens.set.instruments_page import InstrumentsPage
 from llamatron.tui.screens.set.main_page import cell_opened_by, MainPage
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor, Reconfigure
-from llamatron.tui.screens.pattern.patterns_page import PatternsPage
+from llamatron.tui.screens.pattern.patterns_page import HEADING, NEW_GROUP, NEW_PATTERN, Listed, PatternsPage
 from llamatron.tui.screens.set.scale_page import scale_label
 from llamatron.tui.screens.set.scales_page import ScalesPage
 from llamatron.tui.screens.set.songs_page import SongsPage
@@ -380,7 +382,7 @@ class TutorialPlan:
         for _ in range(MOST_MOVES):
             if page.current() == key:
                 return
-            keys = [row[0] for row in page.rows()]
+            keys = page.row_names()
             yield from self.press(Key.UP if keys.index(key) < page.place else Key.DOWN)
         raise TutorialStuck(key)
 
@@ -543,10 +545,10 @@ class TutorialPlan:
             yield from self.go_to_list_row(STARTER_PATTERN)
             yield from self.press(keybindings.ListPage.RENAME)
             yield from self.answer_prompt(name)
+            yield from self.move_to_group(name=name, group=self.group_wanted(name))
             yield from self.press(keybindings.ListPage.EDIT)
         else:
-            yield from self.press(keybindings.ListPage.ADD)
-            yield from self.answer_prompt(name)
+            yield from self.add_to_group(name=name, group=self.group_wanted(name))
         self.expect(PatternEditor)
         if wanted.get_steps() != self.editor().steps():
             yield from self.press(keybindings.PatternEditor.RESIZE)
@@ -566,6 +568,47 @@ class TutorialPlan:
         for setting in wanted.to_data():
             if setting not in ROW_DESCRIPTIONS and setting not in self.document().setlist().get_pattern(name).to_data():
                 self.left_out.append(MSG_LEFT_OUT_PATTERN_SETTING.format(setting=setting, name=name))
+
+    def group_wanted(self, name):
+        """Return the group a pattern is built in: the target's for it, or else the one named after the first track of the target that plays it,
+        as the tracker groups a pattern made anywhere but the Patterns page, or after a new group for a pattern nothing plays."""
+        group = self.target.get_pattern(name).get_group()
+        if group is None:
+            group = self.target.first_track_playing(name)
+        return group if group is not None else new_name(word=MSG_NEW_GROUP_WORD, taken=[])
+
+    def go_to_patterns_row(self, listed):
+        """Move the Patterns page's cursor to a row by what the row is: a heading or a button."""
+        page = self.screen()
+        for _ in range(MOST_MOVES):
+            rows = [what for what, _ in page.remembered_rows()]
+            if page.listed() == listed:
+                return
+            yield from self.press(Key.UP if rows.index(listed) < page.place else Key.DOWN)
+        raise TutorialStuck(listed.name)
+
+    def add_to_group(self, *, name, group):
+        """Add a pattern to a group on the Patterns page: on the group's heading when the set has the group, and after making the group with the page's last button when it doesn't."""
+        if group in self.screen().groups():
+            yield from self.go_to_patterns_row(Listed(HEADING, group))
+            yield from self.press(keybindings.PatternsPage.ADD)
+        else:
+            yield from self.go_to_patterns_row(Listed(NEW_GROUP, None))
+            yield from self.press(keybindings.PatternsPage.NEW_GROUP)
+            yield from self.answer_prompt(group)
+            yield from self.go_to_patterns_row(Listed(NEW_PATTERN, group))
+            yield from self.press(keybindings.PatternsPage.NEW_PATTERN)
+        yield from self.answer_prompt(name)
+
+    def move_to_group(self, *, name, group):
+        """Move the pattern under the Patterns page's cursor to a group, making the group when the set doesn't have it."""
+        if self.document().pattern_group(name) == group:
+            return
+        made = group in self.screen().groups()
+        yield from self.press(keybindings.PatternsPage.GROUP)
+        yield from self.choose(group if made else MSG_NEW_GROUP_BUTTON)
+        if not made:
+            yield from self.answer_prompt(group)
 
     def starter_pattern_is_spare(self):
         """Return whether the new set's starter pattern is still there and the target has no pattern of that name, so that it becomes the first pattern built."""

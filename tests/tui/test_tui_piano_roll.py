@@ -62,7 +62,7 @@ HEADER_LINES = 3
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import first_key
 from tests.support.rendering import render_song
-from tests.support.ui_testing import fixed_text, KEY_SHOWN, LEAD, REVERSED, ROW_SHOWN, TUNE, UITest, key_name, key_of
+from tests.support.ui_testing import fixed_text, BEAT, KEY_SHOWN, LEAD, OTHER, REVERSED, ROW_SHOWN, TUNE, UITest, key_name, key_of
 
 # The tune's notes, as the roll numbers its rows: degree 1 and 3 of a seven-note scale in octave 5.
 SCALE_SIZE = 7
@@ -208,13 +208,17 @@ class TestPianoRoll(RollTest):
         self.assertIn(ROW_SHOWN.format(label=MSG_ROW_LABELS[Row.DEGREE]), self.text())
         self.assertIn(KEY_SHOWN.format(label=key_name(keybindings.PatternEditor.TO_ROLL)) + MSG_LEGEND_WHAT.format(what=MSG_TO_ROLL_WHAT), self.text())
         # Another note pattern opens on the rows too, until Tab opens the roll again.
-        await self.press(Key.ESCAPE, Key.DOWN, Key.DOWN, Key.ENTER)
+        await self.press(Key.ESCAPE, Key.ESCAPE)
+        await self.open_patterns_on(OTHER)
+        await self.press(Key.ENTER)
         self.assertFalse(self.app.screen.on_roll())
         await self.press(keybindings.PatternEditor.TO_ROLL)
         self.assertTrue(self.app.screen.on_roll())
 
     async def test_a_drum_pattern_has_no_roll(self):
-        await self.press(Key.ESCAPE, Key.DOWN, Key.ENTER)
+        await self.press(Key.ESCAPE, Key.ESCAPE)
+        await self.open_patterns_on(BEAT)
+        await self.press(Key.ENTER)
         self.assertFalse(self.app.screen.on_roll())
         self.assertIn(ROW_SHOWN.format(label=MSG_DRUM_LETTER_ROW), self.text())
         self.assertFalse(self.app.screen.has_roll())
@@ -685,7 +689,8 @@ class TestRollRanges(UITest):
 
     async def test_an_empty_pattern_opens_on_the_root_in_the_default_octave(self):
         self.document.add_pattern(name=NEW_PATTERN)
-        await self.press(keybindings.MainPage.PATTERNS, *[Key.DOWN] * self.document.song().get_pattern_names().index(NEW_PATTERN), Key.ENTER)
+        await self.open_patterns_on(NEW_PATTERN)
+        await self.press(Key.ENTER)
         self.assertEqual(self.app.screen.roll.pitch, C_PITCH)
 
 

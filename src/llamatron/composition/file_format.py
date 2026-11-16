@@ -83,6 +83,12 @@ class SetlistSetting:
     PROTECTED = 'protected'
 
 
+# The pattern groups the Patterns page shows closed, a list of names at the top of a file. It is not one of the set's settings:
+# opening or closing a group is looking, not editing, so it is no part of the set's data, of undo or of what counts as unsaved
+# (the user's design), and is only written with the file and read from it.
+CLOSED_PATTERN_GROUPS = 'closed_pattern_groups'
+
+
 class SongSetting:
     """One song's own settings, at the top of its entry in the set's songs."""
 
@@ -191,6 +197,8 @@ class PatternSetting:
     ENTRY_SIZE = 'entry_size'
     DRUM = 'drum'
     DIRECTION = 'direction'
+    # The group the Patterns page lists the pattern under, the user's design: any text, or none for a pattern of an older file.
+    GROUP = 'group'
 
 
 class Row:

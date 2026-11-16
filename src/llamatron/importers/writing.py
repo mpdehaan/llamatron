@@ -182,7 +182,7 @@ class SongWriter:
         existing = {}
         if self._share:
             for name in self._setlist.get_item_names(Section.PATTERNS):
-                existing.setdefault(repr(self._setlist.get_item(section=Section.PATTERNS, name=name).to_data()), name)
+                existing.setdefault(repr(without_group(self._setlist.get_item(section=Section.PATTERNS, name=name).to_data())), name)
         first_track = self.first_track_of_patterns()
         added = {}
         names = {}
@@ -267,6 +267,11 @@ class SongWriter:
         return sum(1 for line in self._bars[:-1] if line <= time) - 1 + FIRST_BAR_NUMBER
 
 
+def without_group(data):
+    """Return a pattern's data without its group, which says where the Patterns page lists it and nothing of what it plays."""
+    return {name: value for name, value in data.items() if name != PatternSetting.GROUP}
+
+
 def add_imported(*, setlist, imported):
     """Add an imported song to a set, with its scales and patterns first, since the song names them, and return the song."""
     for name, data in imported.scales.items():
@@ -276,5 +281,7 @@ def add_imported(*, setlist, imported):
     song = Song.from_data(data=imported.song, where=WHERE_IMPORTED, setlist=setlist)
     song.fill_in_defaults()
     setlist.add_item(section=Section.SONGS, name=imported.name, item=song)
+    # Each imported pattern goes in the group named after the track that plays it, the user's design.
+    setlist.group_patterns_by_track(song)
     return song
 

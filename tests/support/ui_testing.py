@@ -109,6 +109,9 @@ BEAT = 'beat'
 OTHER = 'other'
 LEAD = 'lead'
 DRUMS = 'drums'
+# The pattern groups of the test set: the tune's, which sorts first, and the beat's; the third pattern is in none, as an older file's are.
+MELODIES = 'melodies'
+RHYTHMS = 'rhythms'
 UP_ARP = 'up'
 NAMED = 'named'
 EMPTY = 'empty'
@@ -148,10 +151,10 @@ def a_song(*, path=None):
     data[Section.ARTICULATES] = {CLIPPED: {START_SETTING: 50}}
     data[Section.PATTERNS] = {
         TUNE: {
-            PatternSetting.STEPS: 4, PatternSetting.STEP_SIZE: EIGHTH, Row.DEGREE: [1, 3, None, None], Row.GATE: [QUARTER, QUARTER, EIGHTH, None],
+            PatternSetting.GROUP: MELODIES, PatternSetting.STEPS: 4, PatternSetting.STEP_SIZE: EIGHTH, Row.DEGREE: [1, 3, None, None], Row.GATE: [QUARTER, QUARTER, EIGHTH, None],
             Row.OCTAVE: [5, 5, None, None],
         },
-        BEAT: {PatternSetting.STEPS: 2, PatternSetting.STEP_SIZE: EIGHTH, PatternSetting.DRUM: True, Row.DEGREE: [NoteName.C, None], Row.GATE: [SIXTEENTH, None], Row.OCTAVE: [3, None]},
+        BEAT: {PatternSetting.GROUP: RHYTHMS, PatternSetting.STEPS: 2, PatternSetting.STEP_SIZE: EIGHTH, PatternSetting.DRUM: True, Row.DEGREE: [NoteName.C, None], Row.GATE: [SIXTEENTH, None], Row.OCTAVE: [3, None]},
         OTHER: {PatternSetting.STEPS: 1, PatternSetting.STEP_SIZE: HALF, Row.DEGREE: [5]},
     }
     song[Section.TRACKS] = {LEAD: {}, DRUMS: {}}
@@ -292,6 +295,15 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         for key in keys:
             self.app.screen.on_key(key_event(pressed(key)))
             await self.settle()
+
+    async def open_patterns_on(self, name):
+        """Open the Patterns page from the main screen and put its cursor on a pattern, wherever the pattern's group puts its row."""
+        await self.press(keybindings.MainPage.PATTERNS)
+        page = self.app.screen
+        names = page.row_names()
+        self.assertIn(name, names)
+        while page.current() != name:
+            await self.press(Key.UP if names.index(name) < page.place else Key.DOWN)
 
     async def settle(self):
         """Let the tracker handle what a key sent, a dialog or a page opening, without waiting for the computer to go idle as pilot.pause() does,

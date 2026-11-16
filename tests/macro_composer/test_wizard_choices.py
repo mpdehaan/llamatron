@@ -98,6 +98,9 @@ class TestWizardChoices(unittest.TestCase):
                     self.assertEqual(int(song.get_tempo()), choices.get_tempo())
                     self.assertEqual(song.get_wizard_choices(), choices.to_data())
                     self.assertIsNotNone(choices.get_seed())
+                    # Every pattern a clip plays is in the group named after the first track that plays it, and nothing is left in no group.
+                    for name in setlist.get_pattern_names():
+                        self.assertEqual(setlist.get_pattern(name).get_group(), setlist.first_track_playing(name), name)
 
     def test_another_genre_leaves_the_subgenre_to_be_chosen_again_and_the_same_genre_keeps_it(self):
         choices = chosen()

@@ -432,6 +432,13 @@ class TestNames(unittest.TestCase):
         imported, _ = imported_into(setlist=setlist, midi=self.midi)
         self.assertEqual(list(imported.song.patterns), ['lead-2'])
 
+    def test_an_imported_pattern_is_in_the_group_named_after_its_track(self):
+        setlist = Setlist.new()
+        imported, _ = imported_into(setlist=setlist, midi=self.midi)
+        for name in imported.song.patterns:
+            self.assertEqual(setlist.get_pattern(name).get_group(), setlist.first_track_playing(name))
+            self.assertIsNotNone(setlist.get_pattern(name).get_group())
+
     def test_a_second_import_is_a_second_song_with_names_of_its_own(self):
         setlist = Setlist.new()
         imported_into(setlist=setlist, midi=self.midi)

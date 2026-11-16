@@ -138,7 +138,8 @@ class TestDrumPatterns(UITest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self.press(keybindings.MainPage.PATTERNS, Key.DOWN, Key.ENTER)
+        await self.open_patterns_on(BEAT)
+        await self.press(Key.ENTER)
         self.editor = self.app.screen
 
     def value(self, row):

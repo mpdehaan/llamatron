@@ -125,3 +125,11 @@ def name_order(name):
     if number is None:
         return (base.lower(), NO_NUMBER_FIRST, NO_NUMBER_FIRST, str(name).lower())
     return (base.lower(), NUMBERED_AFTER, number, str(name).lower())
+
+
+def name_in_copied_group(*, name, old, new):
+    """Return a pattern's name for its copy in a copied group, the user's rule: the new group's name at the front, in place of
+    the old group's name where that was at the front, and joined with an underscore otherwise; nothing else of the name changes."""
+    if old and name.lower().startswith(old.lower()):
+        return new + name[len(old):]
+    return new + MEMBER_WORD_GAP + name

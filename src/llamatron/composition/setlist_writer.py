@@ -27,7 +27,7 @@ import re
 import yaml
 
 from llamatron.support.safe_yaml import load_safely
-from llamatron.composition.file_format import PATTERN_ROWS, PatternSetting, Section, SceneSetting, SetlistSetting, SongSetting
+from llamatron.composition.file_format import CLOSED_PATTERN_GROUPS, PATTERN_ROWS, PatternSetting, Section, SceneSetting, SetlistSetting, SongSetting
 
 # Text that can be written without quotes: it starts with a letter, digit or underscore, and
 # holds only those, #, ., /, spaces and hyphens.
@@ -37,13 +37,13 @@ _PLAIN = re.compile(r'[A-Za-z0-9_][A-Za-z0-9_#./ -]*')
 _SETTINGS = [
     SetlistSetting.VERSION, SetlistSetting.TITLE, SetlistSetting.AUTHOR, SetlistSetting.DESCRIPTION, SetlistSetting.STEP_SIZE, SetlistSetting.DEFAULT_OCTAVE,
     SetlistSetting.DEFAULT_DRUM_OCTAVE, SetlistSetting.OCTAVE_LABELS, SetlistSetting.DEFAULT_FOLLOW_ACTION, SetlistSetting.REAL_TIME,
-    SetlistSetting.VISUALIZER, SetlistSetting.HIDDEN_VISUALIZERS, SetlistSetting.GENERATOR_ORDER, SetlistSetting.PROTECTED,
+    SetlistSetting.VISUALIZER, SetlistSetting.HIDDEN_VISUALIZERS, SetlistSetting.GENERATOR_ORDER, SetlistSetting.PROTECTED, CLOSED_PATTERN_GROUPS,
 ]
 _BEFORE_NOTES = (SetlistSetting.VERSION, SetlistSetting.TITLE, SetlistSetting.AUTHOR, SetlistSetting.DESCRIPTION)
 # A song's settings, in the order they're written at the top of its entry.
 _SONG_SETTINGS = [SongSetting.TEMPO, SongSetting.TIME_SIGNATURE, SongSetting.ENTRY_SIZE, SongSetting.SCALE, SongSetting.SEED, SongSetting.GROOVE, SongSetting.GENRE, SongSetting.LIVE_RESPONSIVENESS, SongSetting.VISUALIZER, SongSetting.PREVIEW_INSTRUMENT, SongSetting.WIZARD]
 _GENERATOR_SECTIONS = [Section.ARPS, Section.AUTO_RATCHETS, Section.DRIFTS, Section.PROGRESSIONS, Section.VOICE_LEADINGS, Section.STRUMS, Section.GUITARIFIES, Section.EUCLIDS, Section.DENSITIES, Section.SWELLS, Section.ARTICULATES, Section.GLIDES, Section.SHORTENS, Section.RUSHES, Section.DRAGS, Section.HOCKETS]
-_PATTERN_SETTINGS = [PatternSetting.STEP_SIZE, PatternSetting.TIME_SIGNATURE, PatternSetting.ENTRY_SIZE, PatternSetting.DIRECTION]
+_PATTERN_SETTINGS = [PatternSetting.GROUP, PatternSetting.STEP_SIZE, PatternSetting.TIME_SIGNATURE, PatternSetting.ENTRY_SIZE, PatternSetting.DIRECTION]
 
 # The pieces of YAML this writes.
 NULL = '~'

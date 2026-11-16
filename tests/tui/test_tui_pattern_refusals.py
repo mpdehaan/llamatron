@@ -49,7 +49,8 @@ class TestPatternEditorRefusals(UITest):
 
     async def open(self, name):
         """Open a pattern on its rows, which a drum pattern opens on and a note pattern reaches past its piano roll."""
-        await self.press(keybindings.MainPage.PATTERNS, *[Key.DOWN] * self.document.song().get_pattern_names().index(name), Key.ENTER)
+        await self.open_patterns_on(name)
+        await self.press(Key.ENTER)
         if not self.document.song().get_pattern(name).is_drum():
             await self.press(keybindings.PatternEditor.TO_EDITOR)
         self.editor = self.app.screen

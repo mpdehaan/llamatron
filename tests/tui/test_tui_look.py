@@ -23,7 +23,7 @@ from unittest import mock
 
 from textual.app import App
 from textual.screen import Screen
-from tests.support.ui_testing import BEAT, CHROMATIC_SCALE, UITest, key_name
+from tests.support.ui_testing import CHROMATIC_SCALE, UITest, key_name
 from llamatron.tui.drawing import Box, NOTHING, SELECTED_MARK, SPACE, Style
 from llamatron.tui.screens.set.main_page import BAR_ROWS, COLUMNS
 from llamatron.composition.file_format import ChordSymbol, PatternSetting, Row, Section
@@ -69,7 +69,7 @@ from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.tui.screens.arrange.track_editor import TrackEditor
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor, Reconfigure
 from llamatron.strings.about import MSG_SITE
-from llamatron.strings.labels import MSG_CAPTION_WORDS, MSG_EDITING_CAPTION
+from llamatron.strings.labels import MSG_CAPTION_WORDS, MSG_EDITING_CAPTION, MSG_NEW_PATTERN_BUTTON
 from llamatron.strings.labels import Crumb, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TITLE_LABEL, PageName
 from llamatron.strings.marks import MSG_UNSAVED_MARK
 from llamatron.tui import keybindings
@@ -272,7 +272,7 @@ class TestArrowsAndTheMark(UITest):
         self.assertIn(TUNE, self.marked_line())
         self.assertNotIn('«', self.marked_line())
         await self.press(Key.DOWN)
-        self.assertIn(BEAT, self.marked_line())
+        self.assertIn(MSG_NEW_PATTERN_BUTTON, self.marked_line())
 
     async def test_a_settings_page_marks_the_selected_field_and_reverses_only_a_selected_button(self):
         await self.press(keybindings.MainPage.FILE)
@@ -318,8 +318,8 @@ class TestArrowsAndTheMark(UITest):
 
     async def test_no_cursor_goes_round_from_one_end_to_the_other(self):
         """Up on the first row and Down on the last stay put on a list page, a settings page and a picker, and so do Left and Right in the pattern editor and the one-row editors (.claude/UX.md)."""
-        names = self.document.song().get_pattern_names()
-        await self.press(keybindings.MainPage.PATTERNS, Key.UP)
+        names = self.document.setlist().get_chain_names()
+        await self.press(keybindings.MainPage.CHAINS, Key.UP)
         self.assertEqual(self.app.screen.current(), names[0])
         await self.press(*[Key.DOWN] * (len(names) + 1))
         self.assertIsNone(self.app.screen.current())

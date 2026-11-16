@@ -159,6 +159,10 @@ class ListPage(Page):
         self.place = self.place_before_search
         self.clamp()
 
+    def row_names(self):
+        """Return what each row is keyed by, in the rows' order."""
+        return [row[0] for row in self.remembered_rows()]
+
     def current(self):
         rows = self.remembered_rows()
         return rows[self.place][0] if rows and 0 <= self.place < len(rows) else None
@@ -211,6 +215,10 @@ class ListPage(Page):
     def move_keys(self):
         return [self.bind(self.KEYS.SELECT, action=self.move_cursor, wants_key=True)]
 
+    def row_style(self, what):
+        """Return the style a row is drawn in, by what the row is: plain, unless the page says otherwise."""
+        return Style.PLAIN
+
     def body(self, *, width, height):
         self.clamp()
         fixed = sum(size + 1 for _, size, _ in self.columns if size)
@@ -244,7 +252,7 @@ class ListPage(Page):
         at = matches.index(self.place) if self.place in matches else 0
         start = max(min(at - room // 2, len(matches) - room), 0)
         for place in matches[start:start + room]:
-            lines.append(cells(values=rows[place][1], selected=place == self.place))
+            lines.append(cells(values=rows[place][1], style=self.row_style(rows[place][0]), selected=place == self.place))
         return lines
 
     # What many lists share.
