@@ -1618,6 +1618,16 @@
   text: |
     The user wants to think about a generator that plays a drum pattern the way a drum machine would: exact on the grid, a few loudnesses with accents on chosen steps, swing as a percentage, A and B variations with a fill for each, and perhaps steps by chance and a setting's own value on single steps. It may turn out to have no place: the wizard's drummer is to get a "machine" choice, and Euclid, AutoRatchet and the grooves already cover parts of it. Undecided: whether it is a generator at all, what it would do that those do not, and whether it belongs to a clip, a track or the drums as a whole. See .claude/music_theory_notes/DRUM_MACHINES.md.
 
+- title: "Jamming: a song interpreted and stretched out"
+  priority: 99
+  text: |
+    The user sees jam music not as a genre or a set of sounds but as a way of interpreting a song: stretching the song out in
+    interesting ways. Waiting, by the user's choice, until discussed further. What is agreed in principle: a jam would be something
+    a song of any rock or blues subgenre can do, a long section on one or two chords with rising Intensity and the lead passing
+    between players, of two kinds, inside the song (the song's chords, quiet to a peak) and outside the song (a new groove in a
+    mode, a change of key, a return); jams can be long. The "southern epic" ending, a jump in tempo and a long outro, goes with it.
+    The notes are `.claude/music_theory_notes/genres/JAM.md`. Touches the wizard's section kinds, the Interplay plan and Intensity.
+
 - title: "Keyswitches: what the first build left out"
   priority: 100
   text: |

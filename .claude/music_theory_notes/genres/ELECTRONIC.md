@@ -73,6 +73,37 @@ A reaction against rave's samples and excess: take everything out until only the
 - **Acid house**: about 120 to 130, drum machine, the line alone with the drums. **Acid techno**: 130 to 150, a harder kick, the
   line distorted, often two lines against each other, spans of 32 to 64 bars. The bass line is the lead; nothing else has a tune.
 
+### The Acid Line in Detail
+
+How the machine behaves and how lines are written; a line written without these sounds like a busy bass. (practice, from the
+machine's documentation, circuit analyses and programming guides; no count of real patterns was found, so shares are judgment)
+
+- **Slide**: the pitch glides into the next step over a short fixed time (near a sixteenth at fast tempos, so it is heard as a
+  bend, not a slur), and the note is tied: the next step does not strike again, its brightness does not restart. A run of slid
+  steps is one long note bending through pitches. A slide is the only long note there is; every other step is the same short
+  length. A slide into the same pitch is simply a note of two steps.
+- **Accent** does three things at once: louder, brighter (the filter opens further), and shorter in its brightness (an accented
+  note's brightness dies at the fastest rate whatever the decay is set to), so it barks. **Accents in a row build**: the
+  second and third are each brighter than the one before, because the boost has not died away, which is the rising "wow".
+  Two to four accents on neighbouring steps is the style's loudest gesture.
+- **How the marks combine**: a slide into an accented step gives a bend that lands hard; a slide into a step an octave up or down
+  is the swoop every listener knows; an accent on a low home note after a high step is the answer to it. An accented step that
+  is also slid from keeps its bark and then bends away.
+- **Where they fall**: accents sit mostly off the beat (the second and fourth sixteenth of a beat, and the off-beat eighth), so
+  the line pumps against the kick; a line with accents on the beats sounds square. Slides are few, one to three in sixteen
+  steps, aimed at the notes that matter; sliding everything removes the contrast. Octave jumps one or two. Rests two to five;
+  a rest before an accent makes the accent hit harder.
+- **Pitches**: the home note on half the steps or more; then its octave, the minor third, the fifth, the flat seventh, and the
+  semitone above home for menace. Three to five pitch classes at most. A repeated note that changes only in octave, accent
+  and slide is livelier than a tune that moves. The line may sit high and act as the lead.
+- **Lengths**: 16 steps; 8 for sparse punctuation; 12 or other counts so the line turns against a four-beat drum bar.
+- **Changing the line in a track**: the notes stay and the marks change: accents added or moved as the track rises; a second
+  pattern that is the first with one or two steps changed, swapped in for 4 or 8 bars; the whole pattern transposed up a
+  fourth, a fifth or a minor third for a phrase and back; one step's octave flipped. New notes are rare.
+- **The knobs over a track**: cutoff is the build, opened slowly over 16 to 64 bars and pulled shut at a breakdown; resonance
+  is the scream, raised toward the peak; envelope amount and decay shape each note (short decay for dry blips at the start,
+  longer for bubbling in the middle); accent amount raised late. With resonance high, the accent build is strongest.
+
 ## Synthwave and the Synth Score
 
 See `../ARPEGGIOS.md`. Slow to middle tempos, minor keys, an arpeggio or an octave bass in even sixteenths, a heartbeat kick or a
