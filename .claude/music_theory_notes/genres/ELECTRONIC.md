@@ -34,3 +34,46 @@ makers have said of their methods and what analysts have written)
   melodic instrument on top keeps the music a performance.
 - Shared by all three: the drums are the lead instrument; rhythm changes inside a bar at a scale smaller than the sixteenth; no
   two bars need match; and something steady, a pad, a tune or a bass, is always there for the listener to hold.
+
+## Minimal Techno, the First Kind
+
+A reaction against rave's samples and excess: take everything out until only the groove is left, and it is funkier for it.
+(practice, from what its founders have said)
+
+- A track is a drum machine and one to three synthesizer parts. Drums, a bass line and one short figure; nothing decorative.
+- The figure is a chord stab or a riff of a few notes, a bar or two long, that does not change its notes for the whole track. What
+  changes is its sound: the filter, the length of each note, its loudness, a little more or less of an echo. The track is that
+  change, drawn slowly over minutes.
+- Rhythms sit inside rhythms: the hats, the stab and the bass each make a small pattern that interlocks with the others, drawn
+  from house's jacking drums and funk's syncopation. The hats carry much of the feeling and must have shape, not just a tick.
+- Structure is entrances and exits of parts and the opening and closing of one sound, in long spans of 16 to 64 bars. No verse, no
+  chorus, no breakdown-and-drop drama; tension is steady. Tempo about 125 to 135.
+- One chord quality, usually minor, often a single stab moved in parallel rather than a progression.
+
+## Dub Techno
+
+- The chord is the event: a short minor chord stab, sent into a long echo and a deep reverb, so that one hit becomes a decaying
+  rhythm of its own. The echo and the reverb are played like instruments, turned up and down by hand, after the engineers of
+  Jamaican dub. Old tape echo's dullness and wobble are part of it.
+- Under it, a soft kick on every beat, a deep simple bass, hats and hiss. Sparse, slow to change, very few chords, sometimes one.
+  The stab ducks under each kick, so the whole track breathes with the pulse. Tempo about 110 to 125.
+
+## Acid
+
+- One machine makes the style: a one-voice bass synthesizer with a step sequencer of 16 steps. Each step has a pitch, and may be
+  a rest, an **accent**, a **slide**, and up or down an octave. That is all a pattern is.
+- **Accent** makes a step louder and brighter at once, so accents are the rhythm inside the rhythm. **Slide** glides into the next
+  note and ties it; since steps have no lengths, a slide is the only way to make a long note. **Octave jumps** throw single steps
+  up or down.
+- Riffs are short and repeat exactly: 16 steps, sometimes 8, sometimes an odd count such as 7 to 15 so that the line turns
+  against the bar. Few pitches, mostly the home note with one or two neighbors, often chromatic, in a minor key. Many classic
+  lines came from placing notes, rests, accents and slides nearly at random and keeping what grooved.
+- The performance is the filter: cutoff, resonance and how fast each note's brightness dies are turned by hand through the
+  track. Low and dark at the start, opening as parts enter, screaming at the peak, pulled back in the breakdown, back harder.
+- **Acid house**: about 120 to 130, drum machine, the line alone with the drums. **Acid techno**: 130 to 150, a harder kick, the
+  line distorted, often two lines against each other, spans of 32 to 64 bars. The bass line is the lead; nothing else has a tune.
+
+## Synthwave and the Synth Score
+
+See `../ARPEGGIOS.md`. Slow to middle tempos, minor keys, an arpeggio or an octave bass in even sixteenths, a heartbeat kick or a
+gated-reverb drum machine of the 1980s kind, long pads, a simple lead. The synth score proper has no drums at all or a pulse only.
