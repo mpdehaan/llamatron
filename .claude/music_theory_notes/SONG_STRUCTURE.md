@@ -64,3 +64,23 @@ chart together, so a tendency of popular song, not of one style. (measured)
 - **Endings**: a fade in more than half of all songs, 56% (1960s) to 69% (1980s). An outro section in about four in ten, its
   median 8 bars (1960s), 12 (1970s), 16 (1980s). Ending cold on a chorus or verse is the minority, commonest early.
 - **Size**: median 80 bars and 8 sections (1960s), 94 and 9 (1970s), 112 and 11 (1980s).
+
+## Measured: Structure by Genre
+
+Same dataset and cautions as "Measured: Chords by Genre" in `HARMONY.md`. Its section labels are intro, verse, chorus, bridge,
+solo, instrumental, interlude and outro; it has no pre-chorus label, so that share is known only from the chart corpus. (measured)
+
+- **Verse-only songs**: a chorus is labeled in only four songs in ten in traditional blues, under six in ten in rock and roll,
+  rockabilly, doo-wop and jazz standards; seven in ten in classic rock; over nine in ten in polished eighties hard rock, pop
+  punk, later radio rock and contemporary country.
+- **Solos** are a hard rock habit: half of polished eighties hard rock, a third of hard rock and electric blues, a quarter of
+  southern rock, a fifth of classic rock, an eighth of new wave, one in twenty in pop punk and emo, almost none in soul.
+- **Bridges** rise with time and polish: six in ten pop punk songs, over half of later radio rock and contemporary country,
+  four in ten in soul and new wave, a quarter in roots styles, a sixth in outlaw country and blues, an eighth in bluegrass.
+- **Instrumental breaks** in place of solos: a third of bluegrass and ska songs.
+- **Chorus first**: four in ten reggae songs, a fifth of gospel, a sixth of soul and bluegrass, under a tenth in rock.
+- **Commonest whole shapes**: pop punk and later radio rock are intro, verse, chorus, verse, chorus, bridge, chorus more than
+  any other style has one shape. Hard rock is the same with a solo before the last chorus. Rock and roll, rockabilly and blues
+  are verses in a row with a break. Jam and southern styles alternate verse and chorus three times and then play.
+- **Size**: roots and country songs have six sections and about fifty to sixty chord changes; hard rock eight and over ninety.
+- **Intros** are labeled in six to eight songs in ten; least in outlaw country and gospel.

@@ -85,3 +85,30 @@
   heard against. (practice)
 - Parts lock by sharing some hits and avoiding others: a rhythm guitar that plays in the snare's gaps, a bass that leaves the
   backbeat alone. Everyone on every eighth is a wall, not a groove. (practice)
+
+## Measured: Drum Kits by Style
+
+From recordings of drummers playing each style to a click, as MIDI, kept on this computer only: how often each drum sounds on
+each sixteenth of a bar, and what a fill is made of. Blues, country, gospel and punk are small samples. (measured)
+
+- **Rock**: kick on 1 in two bars in three and on 3 in under half, with the and of 3 and beat 2 each in a third: the kick moves
+  from bar to bar. Snare on 2 and 4 in seven bars in ten. Hi-hat eighths, or the ride on quarters. A third of snare notes are
+  ghosts. Median 105 beats a minute.
+- **Soul**: the plainest: kick on 1 (nine in ten) and the and of 3 (over half), snare on 2 and 4 nearly always, little else.
+- **Funk**: kick on 1, then off the beat: the a of 1, the a of 2, the and of 3. Snare on 2 and 4 plus ghosts on the e and a
+  (half of all snare notes are ghosts). Sixteenths on the hi-hat, an open hi-hat on the and of 3. Almost no toms.
+- **Hip hop**: kick on 1, the and and a of 1, the and of 2, and 3; snare on 2 and 4; hats on eighths with sixteenths between.
+- **Jazz**: the ride on every beat with the skip note late (58% of the way through the beat at medium tempos), the hi-hat foot
+  on 2 and 4, kick light and scattered, snare comping evenly across the bar with half its notes ghosts.
+- **Blues shuffle**: the off-beat falls two thirds through the beat, a true triplet; kick on 1 and 3 with a pickup before each;
+  snare on 2 and 4 nearly always; six snare notes in ten are ghosts.
+- **Country train beat**: kick on every beat, the snare brushing every sixteenth with accents on 2 and 4, hi-hat on the ands.
+- **Reggae**: kick heaviest on 3 (the one drop) and absent from 1 in most bars; swung; open hi-hats on the ands.
+- **Punk**: backbeat at double time (a snare every other eighth), kick on 1 and pushed around it, the floor tom or crash-ride
+  carrying time more often than a closed hi-hat; the kick takes a fifth of a fill's notes.
+- **Dance**: kick on all four with 1 and 3 surest, snare or clap on 2 and 4, open hi-hat on the off-beats, sixteenth hats.
+- **Fills, every style**: a median just under one bar (3.3 to 3.8 beats), a quarter of them half a bar, a quarter longer than a
+  bar in rock, soul and New Orleans styles. Density about four to five hits a beat, six in hip hop and New Orleans. Made of
+  snare (four to five notes in ten), toms (a quarter to three in ten), kick (one in ten; two in punk and Latin), a crash almost
+  never inside the fill. Funk fills are half snare; pop fills use the most toms.
+- **Ghost notes** by style: country and blues six in ten snare notes, funk and jazz half, rock a third, punk and pop a quarter.

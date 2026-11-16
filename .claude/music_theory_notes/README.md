@@ -38,7 +38,7 @@ of it written for people.
 
 ## Measuring, and Weighting
 
-- A statement marked (measured) comes from counting chords and sections in the transcriptions of `.corpus/`, never from melodies,
+- A statement marked (measured) comes from counting chords and sections in the transcriptions of `.corpus/` (chart songs by decade, chords by genre tag, drummers by style), never from melodies,
   and names no song. Measures correct a template's settings: lengths, shares, what a decade or a style really does.
 - Averaging many styles together makes mud. A style is a range of habits with shares, and where two habits fight, the style is
   split rather than blended.

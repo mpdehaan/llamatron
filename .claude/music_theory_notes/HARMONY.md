@@ -43,3 +43,45 @@ Same corpus as the measures in `SONG_STRUCTURE.md`; each section reduced to its 
   bVI and seldom to ii, V or vi. In country about four chords in five are I, IV or V. Funk sits on one dominant ninth chord and
   changes in the bridge. Jazz is ii V I, the I VI ii V turnaround, the twelve-bar blues with ii V added, and 32 bars as AABA.
   Bluegrass is I IV V with a minor chord in perhaps one song in twenty: kickoff, verse, chorus, break over the verse, and a tag.
+
+## Measured: Chords by Genre
+
+From an open dataset of the chords of several hundred thousand songs, each with genre tags, kept on this computer only. The chords
+came from pages people made, so quality is uneven, the key of each song is guessed from its chords, and a song's tags are those
+of its performer. Shares are of songs carrying a tag; trust differences between genres more than any one number. (measured)
+
+**Three families of rock.** Subgenres fall into three harmonic families, and blending them makes mud:
+
+- *Roots* (rock and roll, rockabilly, southern, jam, country rock, blues rock): major keys (minor in one song in five or fewer),
+  I IV V in two- and four-chord loops, dominant sevenths on one chord in six to ten, vi in about a third of songs, few other
+  minor chords. The IV I V I loop is as common as I IV.
+- *Flat-seven* (hard rock, polished eighties hard rock, progressive, grunge, and classic rock between this and roots): bVII in
+  about half of major-key songs, bIII in a third, the major II in half, vi in a third; minor keys in a third or more, as
+  i bVII and i bVI bVII; almost no sevenths. Power chords blur major and minor, which is why II, III and VI appear as majors.
+- *Sixth-degree* (pop punk, emo, skate punk, ska punk, later radio rock): vi in two songs in three to three in four, bVII in
+  one in six or fewer, plain triads with no sevenths at all. Loops are I V vi IV and its rotations, I IV vi V, I V IV, and in
+  minor i bVI bIII bVII. Later radio rock is minor in nearly half its songs.
+
+**By genre.**
+
+- *British beat and sixties pop*: major (minor one in six), I IV and I V, bVII already in a third of songs, vi in four in ten,
+  bridges on IV with II V to return. Doo-wop: I vi IV V in a tenth of verses and choruses, I vi ii V beside it.
+- *Folk rock, heartland, power pop, soft rock*: I IV and IV I, bVII in a third, ii and vi each in four or five in ten.
+- *Yacht rock*: sevenths and extensions on one chord in five (soft rock one in eleven, classic rock one in fourteen), slash
+  chords on one in twelve, the minor iv in a fifth of songs, ii in six in ten, five distinct chords in a chorus.
+- *New wave and synthpop*: minor in a third to nearly half; bVII in four in ten; i bVII, i bVI, i bVI bVII; few sevenths.
+- *Blues*: I IV I V and I IV lead; three distinct chords in a verse; dominant sevenths on a quarter of chords in the
+  traditional kind, one in seven in the electric kind; vi in a fifth of songs only.
+- *Country*: minor keys under one song in ten. IV I V I is the leading chorus (one in eight of the older kinds, one in six in
+  bluegrass and western swing). Older country has three distinct chords a section and dominant sevenths on one in seven;
+  the major II before V in four in ten (western swing and classic). Contemporary country moves to the sixth-degree family:
+  vi in six songs in ten, I V vi IV among its choruses. Bluegrass has almost no borrowed chords.
+- *Soul, the Detroit kind, disco, funk*: sevenths and extensions on a fifth to a quarter of chords; ii in half to six in ten;
+  iii in four to five in ten; the minor iv in a fifth; I IV leads, then I ii and I vi ii V. Funk and disco are minor in a third
+  to four in ten, with i IV (the Dorian vamp) and i v. Memphis soul is plainer: sevenths on one in ten.
+- *Jazz and vocal standards*: eight or nine distinct chords a song, five a section; sevenths on a quarter, dominants on a
+  fifth; ii in seven in ten, the major II, III and VI in half; I vi ii V the commonest loop. Bossa nova: extensions on four
+  chords in ten, the minor iv in four songs in ten.
+- *Reggae*: three chords a section, almost nothing borrowed; I ii, i v, i bVII, I IV; ska shares the punk family's chords.
+- *Electronic dance*: minor in six in ten; i bVI bIII bVII and its rotations; four chords for the whole song.
+- I V vi IV is absent from the leading loops of every style before punk and appears from the 1990s on.
