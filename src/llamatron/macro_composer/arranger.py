@@ -61,6 +61,8 @@ FIGURE = 'figure'
 SOUND = 'sound'
 # The sounds a song chooses for its players itself, each a General MIDI number by the player's name.
 ROLE_SOUNDS = 'role_sounds'
+# The pieces of the drum kit a song switches off.
+WITHOUT_PIECES = 'without_pieces'
 ROLE_TITLE = 'title'
 ROLE_TITLES = 'titles'
 GENERATORS = 'generators'
@@ -512,6 +514,7 @@ def arranged(*, style, song):
     levels = song.get(PLAYERS, {})
     without = song.get(WITHOUT, [])
     no_drums = any(role.get(DRUMS) and role[ROLE] in without for role in roles)
+    pieces_off = song.get(WITHOUT_PIECES, [])
     playing = players_in(style=style, roles=roles, levels=levels, section={})
     drummer = next((playing[role[ROLE]] for role in roles if role.get(DRUMS)), {})
     drum_traits = [trait for role in roles for trait in role.get(DRUMS, [])] + [FILLS]
@@ -531,6 +534,9 @@ def arranged(*, style, song):
             made = drum_parts(style=style, picks={**picks, **changed}, roles=roles, meter=meter, phrase_bars=phrase_bars, drummer=plays, section_bars=section[BARS])
             drum_sets[key] = {}
             for piece, part in made.items():
+                # A piece of the kit switched off is left out, the user's rule: its strokes are never moved to another piece.
+                if piece in pieces_off:
+                    continue
                 if plays.get(UNEVEN):
                     part = uneven_drum(part=part, by=plays[UNEVEN], dice=random.Random(DRUM_SEED.format(song.get(SEED, 0), piece, section[KIND])))
                 named = piece if key[:2] == (levels.get(DRUMS), ()) and piece not in parts else MSG_PART_OF_SECTION.format(piece, section[KIND])
@@ -583,10 +589,12 @@ def arranged(*, style, song):
         chords = [chord_of(chord) for chord in section.get(CHORDS) or chord_entry.get(BY_SECTION, {}).get(section[KIND]) or chord_entry[PATTERN]]
         play = {}
         if section.get(HELD):
-            if not no_drums:
-                held = MSG_PART_OF_SECTION.format(CRASH, HELD)
+            held = MSG_PART_OF_SECTION.format(CRASH, HELD)
+            if not no_drums and CRASH not in pieces_off:
                 parts[held] = one_hit(style=style, meter=meter, drum=CRASH)
+            if not no_drums and KICK not in pieces_off:
                 parts[MSG_PART_OF_SECTION.format(KICK, HELD)] = one_hit(style=style, meter=meter, drum=KICK)
+            if not no_drums and CRASH not in pieces_off:
                 if CRASH not in tracks:
                     tracks[CRASH] = DRUM_KIT
                     drum_tracks.append(CRASH)
@@ -599,7 +607,7 @@ def arranged(*, style, song):
         else:
             for piece, part in drums_of.get(name, {}).items():
                 play[piece] = {PART: part, CHAINS: [MSG_TIMING_CHAIN.format(piece)]}
-            if section.get(CRASH_START) and name in drums_of:
+            if section.get(CRASH_START) and name in drums_of and CRASH not in pieces_off:
                 start = MSG_SECTION_START_PART.format(CRASH)
                 parts[start] = one_hit(style=style, meter=meter, drum=CRASH)
                 if CRASH not in tracks:
