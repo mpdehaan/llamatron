@@ -260,7 +260,7 @@ The user's design, agreed in detail in `.claude/features/WIZARD_DESIGNS.md` (S16
   until a genre and a subgenre are chosen), and `BandBranch`, a toggle for each player the genre's band may have, with a
   `PlayerBranch` under it for each player who is in: Plays, the way the player plays, or a field for each part of the
   drums, and Busy, 1 to 4, drawn as a horizontal Busy gauge. The last player cannot be left out. A player's Sound, the
-  Sounds field, the kit's pieces and the Interplay section are to come, as is Playing.
+  Sounds field, the kit's pieces and the Interplay section are to come, as is Playing. A player's own gauges (`PlayerBranch.player_gauge_field`, `MSG_WIZARD_PLAYER_GAUGE_LABELS`) are fields under the player's Busy field, each 0 to 20 drawn as a horizontal gauge; Busy is the preset that fills them in and reads `(custom)` once one is moved, until a Busy level is chosen again.
 - When the current song was made by the wizard, F5 first asks how to start in a picker titled Song Wizard, the user's
   design after a Start branch in the tree proved poor (`LlamatronApp.show_wizard`, the ways in `starts.py`): a new song or
   the current song replaced, each from the settings the current song kept or from scratch. ESC opens no wizard. Replacing

@@ -764,6 +764,8 @@ MSG_WIZARD_SUGGESTED_FORM_BUTTON = 'Use a suggested form'
 MSG_WIZARD_SUGGESTED_FORM_TITLE = 'Suggested forms'
 MSG_WIZARD_REPLACE_SECTIONS_TITLE = 'Replace sections'
 MSG_WIZARD_BUSY_LABEL = 'Busy'
+# A player's own gauges, under the Busy field, which is a preset of them all.
+MSG_WIZARD_PLAYER_GAUGE_LABELS = {'notes': 'Notes', 'variety': 'Variety', 'touch': 'Touch', 'timing': 'Loose timing', 'fills': 'Fill size', 'strumming': 'Strumming', 'range': 'Range'}
 MSG_WIZARD_LENGTH_LABEL = 'Length'
 # The last row of the dialog that asks how to start.
 MSG_WIZARD_START_CANCEL = 'CANCEL'
