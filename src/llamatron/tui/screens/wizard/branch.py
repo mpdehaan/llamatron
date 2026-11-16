@@ -83,7 +83,11 @@ class Branch:
         return []
 
     def add(self, kind):
-        """Add a new thing of a kind: after this branch where the branch is one of a list, or at the list's end."""
+        """Add a new thing of a kind at the end of the list this branch holds or is one of."""
+        raise NotImplementedError
+
+    def insert(self, kind):
+        """Put a new thing of a kind before this branch, which is one of a list."""
         raise NotImplementedError
 
     def is_listed(self):
