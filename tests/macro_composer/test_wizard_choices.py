@@ -21,11 +21,11 @@ from fractions import Fraction
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_TEMPO, MIN_TEMPO
-from llamatron.macro_composer.wizard_choices import style_of, LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, FEWEST_FILLS, FILLS_KEPT, MOST_FILLS, QUIET_NOTES_KEPT, PIECES_OFF_KEPT, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, LAST_SOUND_OF_NOTES, USUAL_SOUNDS, FEEL_TRAITS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
+from llamatron.macro_composer.wizard_choices import style_of, STAND_INS, LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, FEWEST_FILLS, FILLS_KEPT, MOST_FILLS, QUIET_NOTES_KEPT, PIECES_OFF_KEPT, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, LAST_SOUND_OF_NOTES, USUAL_SOUNDS, FEEL_TRAITS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
 from llamatron.macro_composer.melody import HOME, LADDER
 from llamatron.strings.macro_composer import MSG_PART_OF_SECTION
 from llamatron.macro_composer.notation import DEGREE, LINES
-from llamatron.macro_composer.arranger import BY_SCALE_TYPE, GRID, MELODY, PARTS, arranged, DRUMS, GENRE, PLAYERS, ROLE_TITLE, TYPE, WITHOUT, style_named, style_names
+from llamatron.macro_composer.arranger import SOUNDS, BY_SCALE_TYPE, GRID, MELODY, PARTS, arranged, DRUMS, GENRE, PLAYERS, ROLE_TITLE, TYPE, WITHOUT, style_named, style_names
 from llamatron.music.note import NoteName
 from llamatron.strings.errors import ERR_WIZARD_LAST_PIECE, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER
 from llamatron.playback.song_renderer import SongRenderer
@@ -632,6 +632,8 @@ class TestWizardGuitarists(unittest.TestCase):
 
 
 FIRST_DEGREE = 1
+GM_SOUND_KEY = 'gm_sound'
+A_SOUND_OF_NO_STYLE = 110
 EMPTY = ''
 LEAD_ROLE = 'lead'
 
@@ -818,6 +820,43 @@ class TestWizardMinorTunes(unittest.TestCase):
         minor = self.habits(choices)[BY_SCALE_TYPE][MINOR]
         self.assertNotEqual(minor[LADDER], self.habits(choices)[LADDER])
         self.assertEqual(minor[HOME][DEGREE], FIRST_DEGREE)
+
+
+class TestWizardStandIns(unittest.TestCase):
+    """A sound that stands in for a player by subgenre, as for a singer: the player stays, and the sound alone is chosen."""
+
+    def test_every_stand_in_is_a_sound_of_its_style_for_a_player_and_a_subgenre_of_the_style(self):
+        found = False
+        for place, genre in enumerate(genre_names()):
+            style = style_of(genre)
+            choices = chosen(genre=place)
+            for role, by_subgenre in style.get(STAND_INS, {}).items():
+                found = True
+                self.assertIn(role, choices.roles())
+                self.assertLessEqual(set(by_subgenre), set(choices.subgenres()))
+                self.assertLessEqual(set(by_subgenre.values()), set(style[SOUNDS]))
+        self.assertTrue(found)
+
+    def test_the_player_plays_the_stand_in_in_the_song_made_and_keeps_one_way_and_a_sound_chosen_wins(self):
+        genre = genre_names().index(A_GENRE_WITH_TUNES)
+        style = style_of(A_GENRE_WITH_TUNES)
+        for role, by_subgenre in style[STAND_INS].items():
+            for subgenre, sound in by_subgenre.items():
+                choices = chosen(genre=genre, subgenre=chosen(genre=genre).subgenres().index(subgenre))
+                choices.set_seed(A_SEED)
+                number = style[SOUNDS][sound]
+                with self.subTest(subgenre=subgenre):
+                    self.assertEqual(choices.get_sound(role), number)
+                    self.assertFalse(choices.has_own_sound(role))
+                    self.assertEqual(len(choices.ways(role=role, trait=role)), 1)
+                    self.assertIn(number, choices.genre_sounds(role))
+                    self.assertIn(number, self.sounds_made(choices))
+        choices.set_sound(role=role, sound=A_SOUND_OF_NO_STYLE)
+        self.assertIn(A_SOUND_OF_NO_STYLE, self.sounds_made(choices))
+
+    def sounds_made(self, choices):
+        instruments = choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.INSTRUMENTS]
+        return {instrument.get(GM_SOUND_KEY) for instrument in instruments.values()}
 
 
 class TestWizardBand(unittest.TestCase):

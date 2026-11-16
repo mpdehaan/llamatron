@@ -195,6 +195,10 @@ clouds; generate and test, with motif development and counterpoint last.
 - A style's melody habits may hold `by_scale_type`, habits that replace the usual ones for a song in that scale type: rock
   and soul give a minor song the notes 1, 3, 4, 5 and 7 resting on 1, since the major notes read in a minor scale rest on
   its third and sound like the major key beside it, which made a hard rock tune sound happy (the user's finding).
+- Stand-ins, the user's choice: a template's `stand_ins` gives a player a sound by subgenre in place of the sound of the
+  player's way, since General MIDI's voice is a hum that sounded weak. Rock's singer stays the singer with one way, `voice`,
+  and plays a guitar or a synth lead by subgenre; `usual_sound` returns the stand-in, the band's Sounds and the player's own
+  Sound still apply over it, and the picker offers every stand-in of the style.
 - Nothing is chosen at first, the user's rule. Choosing a subgenre fills in its usual tempo, the scale type its chords are
   in, the root that scale type starts on (C for major, E for minor, Claude's choice) and the commonest form, so that a song
   can be made from a genre and a subgenre alone; choosing another genre leaves the subgenre to be chosen again. Any tempo
