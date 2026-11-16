@@ -35,7 +35,8 @@ from llamatron.composition.generator_settings import ArpSetting, written_name
 from llamatron.generators.arp import Arp, ChordOrder, OctaveJump, along_scale
 from llamatron.music.chord import Chord
 from llamatron.generators.blend import BlendMode
-from llamatron.music.note import Note, NoteName, Rest
+from llamatron.music.midi import MAX_MIDI_NUMBER
+from llamatron.music.note import MAX_OCTAVE, Note, NoteName, Rest
 from llamatron.music.sound import Sound
 from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.clip_tree import ClipTree
@@ -138,6 +139,18 @@ class TestTracks(unittest.TestCase):
         data[Section.TRACKS][LEAD][TrackSetting.TRANSPOSE] = 2
         # Degrees 1, 3 and 5 of C major become 3, 5 and 7: E, G and B.
         self.assertEqual(pitches(lead_clip(data)), [64, 67, 71])
+
+    def test_a_note_transposed_past_the_top_of_the_midi_range_plays_in_the_nearest_octave_that_fits(self):
+        data = song_data()
+        tune = data[Section.SCENES][0][Section.TRACKS][LEAD][ClipSlotSetting.PATTERN]
+        steps = data[Section.PATTERNS][tune][PatternSetting.STEPS]
+        data[Section.PATTERNS][tune][Row.OCTAVE] = [MAX_OCTAVE] * steps
+        self.assertEqual(pitches(lead_clip(data)), [120, 124, 127])
+        data[Section.TRACKS][LEAD][TrackSetting.TRANSPOSE] = 2
+        moved = pitches(lead_clip(data))
+        self.assertLessEqual(max(moved), MAX_MIDI_NUMBER)
+        # E and G fit where they are, and B, which would be 131, plays an octave down.
+        self.assertEqual(moved, [124, 127, 119])
 
     def test_transpose_never_moves_a_drum_pattern(self):
         data = song_data()

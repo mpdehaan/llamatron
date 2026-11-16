@@ -58,7 +58,7 @@ from llamatron.strings.marks import (
     MSG_MORE_AFTER, MSG_MORE_BEFORE, MSG_NEXT_PAGE_MARK, MSG_OTHER_VALUE, MSG_OVER_THE_TOP_MARK, MSG_POSITIVE_VALUE, MSG_PREVIOUS_PAGE_MARK,
     MSG_STEPS_SHOWN, MSG_UNDER_THE_BOTTOM_MARK, MSG_ROOT_KEY_NAME,
 )
-from llamatron.strings.messages import MSG_ROOT_TITLE, MSG_SCALE_USES_NOTE
+from llamatron.strings.messages import MSG_ROOT_TITLE, MSG_SCALE_USES_NOTE, MSG_SEARCH_STATUS
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.chain_editor import step_shown
 from llamatron.strings.marks import MSG_CHAIN_STEP_AGAIN, MSG_CHAIN_STEP_SHOWN
@@ -69,6 +69,8 @@ from tests.support.rendering import render_song
 
 # Names the tests give to their own things, and other values they use.
 LEAD = 'lead'
+# What a test types into a list's search.
+SEARCH_TYPED = 'tu'
 DRUMS = 'drums'
 MAIN = 'main'
 THE_SONG = 'song untitled'
@@ -544,6 +546,18 @@ class TestDriftAdded(UITest):
         self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.DRIFT, name=name).to_data(), {})
 
 
+class TestListSearchErases(UITest):
+    """A list's search: Bksp takes back the last letter typed."""
+
+    async def test_bksp_takes_back_the_last_letter_typed_into_a_search(self):
+        await self.press(keybindings.MainPage.PATTERNS, keybindings.ListPage.SEARCH)
+        await self.type(SEARCH_TYPED)
+        self.assertIn(MSG_SEARCH_STATUS.format(text=SEARCH_TYPED), self.text())
+        await self.press(keybindings.ListPage.SEARCH_ERASE)
+        self.assertIn(MSG_SEARCH_STATUS.format(text=SEARCH_TYPED[:-1]), self.text())
+        self.assertNotIn(MSG_SEARCH_STATUS.format(text=SEARCH_TYPED), self.text())
+
+
 class TestDriftEditor(UITest):
     """A drift's editor: its own settings, then each value for both versions, Left and Right picking one."""
 
@@ -569,6 +583,15 @@ class TestDriftEditor(UITest):
         await self.select_field(MSG_DRIFT_VALUE_LABELS[DriftValue.SCALE])
         await self.press(keybindings.DriftEditor.MORE)
         self.assertEqual(self.drift().get_value(version=DriftVersion.A, value=DriftValue.SCALE), sorted(self.document.song().get_scale_names())[0])
+
+    async def test_enter_on_a_scale_override_picks_from_a_list_whose_first_entry_clears_it(self):
+        await self.select_field(MSG_DRIFT_VALUE_LABELS[DriftValue.SCALE])
+        await self.press(Key.ENTER)
+        self.assertIsInstance(self.app.screen, ChoiceDialog)
+        await self.press(Key.DOWN, keybindings.ChoiceDialog.CHOOSE)
+        self.assertEqual(self.drift().get_value(version=DriftVersion.A, value=DriftValue.SCALE), sorted(self.document.song().get_scale_names())[0])
+        await self.press(Key.ENTER, Key.UP, keybindings.ChoiceDialog.CHOOSE)
+        self.assertIsNone(self.drift().get_value(version=DriftVersion.A, value=DriftValue.SCALE))
 
     async def test_its_own_settings_step_and_go_back_to_their_defaults(self):
         await self.select_field(MSG_DRIFT_DIRECTION_LABEL)

@@ -28,6 +28,7 @@ FILE_ENCODING = 'utf-8'
 # Demos of three feels: dance music with a sung lead, a shanty in a minor key, and swung jazz.
 DEMOS = ('examples/by_genre/pop/rick_rolling.yml', 'examples/by_genre/tv_theme/three_hour_tour.yml', 'examples/by_genre/tv_theme/aunt_clara.yml')
 EIGHTH = '1/8'
+TWICE = 2
 SIXTEENTH = '1/16'
 OCTAVE = 4
 VELOCITY = 104
@@ -181,6 +182,15 @@ class TestForm(unittest.TestCase):
     def test_a_scene_no_part_divides_is_refused(self):
         with self.assertRaises(ValueError):
             self.scene({composer.SCENE: SCENE_NAME, composer.BARS: 3, composer.PLAY: {LEAD_TRACK: TUNE_PART}})
+
+
+class TestAClipsTiming(unittest.TestCase):
+
+    def test_a_repeat_is_kept_a_loop_adds_nothing_and_a_clip_played_once_says_so(self):
+        played = {composer.PART: TUNE_PART}
+        self.assertEqual(decomposer.timed(played=played, clip={composer.REPEAT: TWICE}), {composer.PART: TUNE_PART, composer.REPEAT: TWICE})
+        self.assertEqual(decomposer.timed(played=played, clip={composer.LOOP: True}), played)
+        self.assertEqual(decomposer.timed(played=played, clip={}), {composer.PART: TUNE_PART, composer.ONCE: True})
 
 
 class TestDemosAsInputs(unittest.TestCase):

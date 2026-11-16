@@ -108,6 +108,8 @@ OTHER_SONG = 'other song'
 # For the take that checks the splash and then the playing, a splash a busy machine can't see the end of before the first check, and a lead-out that keeps the tracker from quitting while the test still reads it.
 RECORDING_SPLASH = 1.5
 LONG_LEAD_OUT = 60.0
+# A splash that outlasts the test that quits from it.
+LONG_SPLASH = 60.0
 A_LONG_TIME = 60.0
 # A splash long enough to be seen before the test looks, and waited out after.
 SPLASH_IN_TEST = 0.6
@@ -1189,6 +1191,18 @@ class TestRecordingLaunch(LaunchTest):
         self.check_order((SHOWED, Splash), (SHOWED, ArrangePage), (PLAYED, None))
         self.assertNotIn(MSG_SAVED_MARK, self.text())
         self.assertNotIn(MSG_UNSAVED_CHANGES_MARK, self.text())
+
+
+class TestSplashQuitsAtOnce(LaunchTest):
+    """Ctrl+C on the splash, the one key the splash answers, quits at once."""
+
+    LAUNCH = Launch(quit_when_finished=True, for_recording=True, splash_seconds=LONG_SPLASH, lead_in_seconds=A_MOMENT, lead_out_seconds=LONG_LEAD_OUT)
+
+    async def test_ctrl_c_on_the_splash_quits(self):
+        self.assertIsInstance(self.app.screen, Splash)
+        await self.press(keybindings.Page.QUIT_NOW)
+        await self.wait_until(self.has_quit)
+        self.assertIsInstance(self.app.screen, Splash)
 
 
 class TestInteractiveRecordingLaunch(LaunchTest):

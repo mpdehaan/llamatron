@@ -28,13 +28,13 @@ import unittest
 
 import mido
 
-from llamatron.composition.file_format import ACCIDENTALS, ChordSymbol, ClipSlotSetting, PatternSetting, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
+from llamatron.composition.file_format import ACCIDENTALS, Accidental, ChordSymbol, ClipSlotSetting, PatternSetting, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.naming import default_scale_name
 from llamatron.composition.setlist import Setlist
 from llamatron.exporters.midi_arrangement import MidiSong
 from llamatron.importers.comparison import round_trip
-from llamatron.importers.keys import Key, degree_of, key_of_notes, key_of_signature
+from llamatron.importers.keys import Key, degree_of, drum_note_of, key_of_notes, key_of_signature
 from llamatron.importers.midi_import import ImportChoices, MidiImport, MidiImportProblem
 from llamatron.importers.midi_reading import HeardNote, MidiPart, read_midi
 from llamatron.importers.cutting import CONTROL_TOLERANCE
@@ -79,6 +79,10 @@ C_MAJOR_TRIAD = (60, 64, 67)
 C_MAJOR_SCALE = (60, 62, 64, 65, 67, 69, 71)
 B_FLAT = 70
 LOWEST_PITCH = 12
+# The General MIDI kick, C in octave 3 as a drum pattern writes it, and the side stick a half step above.
+KICK_PITCH = 36
+KICK_LETTER = 'C'
+KICK_OCTAVE = 3
 HIGHEST_PITCH = 127
 QUARTER = Rational(1, 4)
 SIXTEENTH_NOTE = Rational(1, 16)
@@ -251,6 +255,10 @@ class TestMidiReading(unittest.TestCase):
 
 
 class TestKeys(unittest.TestCase):
+
+    def test_a_drum_is_written_as_its_letter_its_sharp_and_its_octave(self):
+        self.assertEqual(drum_note_of(KICK_PITCH), (KICK_LETTER, None, KICK_OCTAVE))
+        self.assertEqual(drum_note_of(KICK_PITCH + 1), (KICK_LETTER, Accidental.SHARP, KICK_OCTAVE))
 
     def test_every_note_written_as_a_degree_plays_its_own_pitch(self):
         for key in (key_of_signature('C'), key_of_signature('F'), key_of_signature('Bbm'), key_of_signature('F#m'), key_of_signature('B')):

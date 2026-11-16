@@ -73,6 +73,8 @@ from tests.support.ui_testing import UITest
 
 HELLO_WORLD = os.path.join('examples', 'learning', '01_hello_world.yml')
 TARGET = os.path.join('tests', 'data', 'sample_sets', 'tutorial_target.yml')
+# A target whose first track plays nothing in its first scene, where a new set holds a clip.
+NO_FIRST_CLIP = os.path.join('tests', 'data', 'sample_sets', 'tutorial_no_first_clip.yml')
 HERE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # What a tutorial never writes: the file's attribution and the version, and the set's protection.
 # The examples' instruments, which play through FluidSynth with General MIDI sounds, are never built either: when the tutorial plays it makes its own.
@@ -249,6 +251,17 @@ class TestEveryKindOfSettingTutorial(TutorialTest):
         on_main_screen = [key for screen, key in self.pressed_on if screen is MainPage]
         self.assertIn(Key.ENTER, on_main_screen)
         self.assertEqual([key for key in on_main_screen if key not in (Key.UP, Key.DOWN, Key.LEFT, Key.RIGHT, Key.ENTER)], [])
+
+
+class TestTutorialDeletesAClip(TutorialTest):
+
+    TARGET_PATH = NO_FIRST_CLIP
+
+    async def test_a_clip_the_new_set_holds_and_the_target_lacks_is_deleted(self):
+        built = await self.built()
+        self.assertEqual(comparable_data(built), comparable_data(self.target))
+        self.assertEqual(comparable_music(built), comparable_music(self.target))
+        self.assertIn(keybindings.ArrangePage.DELETE_CLIP[0], [key for screen, key in self.pressed_on if screen is ArrangePage])
 
 
 class TestTutorialPlays(TutorialTest):

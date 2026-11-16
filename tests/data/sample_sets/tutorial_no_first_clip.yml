@@ -1,0 +1,25 @@
+title: Tutorial target with an empty first cell
+description: a set made to test that the video tutorial's plan deletes a clip
+notes: |
+  A set made to test tutorial/plan.py: its first track plays nothing in its first scene, where a new
+  set holds a clip, so that the plan has to delete that clip. It is test data, not music.
+scales:
+  C Major: { root: C, type: major }
+patterns:
+  up:
+    steps: 4
+    degree: [1, 2, 3, 4]
+songs:
+  quiet_start:
+    scale: C Major
+    tracks:
+      lead: {}
+      bass: {}
+    scenes:
+      - name: first
+        tracks:
+          bass: { pattern: up }
+      - name: second
+        tracks:
+          lead: { pattern: up }
+          bass: { pattern: up }
