@@ -264,6 +264,7 @@ such name, and `tests/rules/test_naming.py` holds that nothing else numbers one)
 - Documents for people use the names the tracker shows, never code names that differ.
 - A message, a prompt, a dialog's title and a legend's entry are as short as they can be while staying obvious, and the example
   text of a mockup is held to the same: no caption that repeats the title, no sentence where a few words do (the user's rule).
+- A count is shown as a number, `1` and `2`, never as a word, `one` and `two` (the user's rule).
 - A choice, a field's name and a value are worded the plainest, shortest way a person would say them (the user's rule):
   "only this section" and "going forward", never "this section only" and "this section and later". Proposed wording is
   simplified before it is shown.

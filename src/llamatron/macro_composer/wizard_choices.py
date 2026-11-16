@@ -78,9 +78,9 @@ def genre_title(genre):
 
 
 # One guitarist or two, and the key a template describes its one guitarist under, with the players and the way it names.
-TWO_GUITARISTS = 'two'
-ONE_GUITARIST_COUNT = 'one'
-GUITARIST_COUNTS = (TWO_GUITARISTS, ONE_GUITARIST_COUNT)
+TWO_GUITARISTS = 2
+ONE_GUITARIST_COUNT = 1
+GUITARIST_COUNTS = (ONE_GUITARIST_COUNT, TWO_GUITARISTS)
 GUITARISTS_KEPT = 'guitarists'
 ONE_GUITARIST = 'one_guitarist'
 CHORDS_PLAYER = 'chords'
@@ -628,7 +628,7 @@ class WizardChoices:
 
     def set_guitarists(self, count):
         """Choose two guitarists or one. One guitarist takes the solo on the guitar, whatever took it before."""
-        if count not in GUITARIST_COUNTS or (count == ONE_GUITARIST_COUNT and not self.offers_one_guitarist()):
+        if isinstance(count, bool) or count not in GUITARIST_COUNTS or (count == ONE_GUITARIST_COUNT and not self.offers_one_guitarist()):
             raise ValueError(ERR_WIZARD_GUITARISTS.format(value=count))
         self._guitarists = count
         if count == ONE_GUITARIST_COUNT:

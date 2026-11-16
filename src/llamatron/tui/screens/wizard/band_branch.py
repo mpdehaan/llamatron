@@ -46,7 +46,7 @@ class BandBranch(Branch):
         fields = [sounds]
         if choices.offers_one_guitarist() or choices.has_one_guitarist():
             # One guitarist plays the chords and takes the solo, and is then one player on the screen.
-            fields.append(ChoiceField(page=self.page(), label=MSG_WIZARD_GUITARISTS_LABEL, choices=list(GUITARIST_COUNTS), current=choices.get_guitarists(), set=self.page().choosing(choices.set_guitarists)))
+            fields.append(ChoiceField(page=self.page(), label=MSG_WIZARD_GUITARISTS_LABEL, choices=list(GUITARIST_COUNTS), names=[str(count) for count in GUITARIST_COUNTS], current=choices.get_guitarists(), set=self.page().choosing(choices.set_guitarists)))
         return [*fields, *(Toggle(label=choices.role_title(role), on=choices.role_is_in(role), set=self.setter_of(role)) for role in choices.roles_shown() if choices.role_can_play(role))]
 
     def setter_of(self, role):
