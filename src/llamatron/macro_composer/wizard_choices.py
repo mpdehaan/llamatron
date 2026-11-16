@@ -147,7 +147,6 @@ MELODY_STYLES = (STEP_WALK, SERIAL, EVOLVING)
 MELODY_STYLE = 'melody_style'
 # The traits of the whole song the wizard offers: the chords, under either name a genre gives them, the feel and the drum fills.
 PROGRESSION_TRAITS = ('chords', 'harmony')
-FEEL_TRAITS = ('feel',)
 FILLS_TRAITS = ('fills',)
 # The key a song keeps its own sections under, and the letter the first section that differs from its kind's first is named with.
 OWN_SECTIONS = 'own_sections'
@@ -178,6 +177,18 @@ def melody_works(*, genre, subgenre, style):
     except (ValueError, IndexError, KeyError, SongFileError):
         return False
     return True
+
+
+@functools.cache
+def melody_is_usual(*, genre, subgenre, style):
+    """Return whether a melody style sketches a subgenre's tunes just as the genre does unasked, found by making both, once:
+    such a style is the usual one under its own name, and is nothing to choose."""
+    choices = WizardChoices()
+    choices.set_genre(genre)
+    choices.set_subgenre(subgenre)
+    choices.set_seed(FIRST_SEED)
+    song = choices.song_picks(subgenre)
+    return arranged(style=style_of(genre), song={**song, MELODY_ENGINE: style})[PARTS] == arranged(style=style_of(genre), song=song)[PARTS]
 
 
 @functools.cache
@@ -914,7 +925,8 @@ class WizardChoices:
         """Return the melody styles the subgenre's tunes can be sketched by, leaving out any that makes no song of it."""
         if not self.is_ready():
             return []
-        return [style for style in MELODY_STYLES if melody_works(genre=self._genre, subgenre=self._subgenre, style=style)]
+        return [style for style in MELODY_STYLES if melody_works(genre=self._genre, subgenre=self._subgenre, style=style)
+                and not melody_is_usual(genre=self._genre, subgenre=self._subgenre, style=style)]
 
     def get_melody(self):
         """Return the melody style chosen, or None while each player's tunes are sketched as the genre says."""

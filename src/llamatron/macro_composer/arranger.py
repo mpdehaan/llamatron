@@ -320,7 +320,7 @@ def laid_over(*, bar, more):
     return [added if hit == NONE else hit for hit, added in zip(bar, more)]
 
 
-def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars):
+def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars, own_fill=False):
     """Each drum the picks play, as a part some bars long: the kind's own bar, decorated as the drummer decorates it, a bar of
     the bars of each phrase that the drummer varies each a little different, and its last bar the fill. A drummer who says nothing plays the kind's bar
     and the song's fill at the end of every phrase."""
@@ -332,8 +332,9 @@ def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars
     # A section always ends on the fill, so that it hands over to the next: the part is no longer than divides the section.
     length = math.gcd(drummer.get(FILL_EVERY, phrase_bars) or phrase_bars, section_bars)
     fill, silences = choice_that_fits(choices=drummer.get(FILL), picks=picks)
-    if not fill:
-        fill = values_of(style=style, trait=FILLS).get(picks.get(FILLS), {}).get(FILL, {})
+    if not fill or own_fill:
+        # The fill the song chose itself is played whatever the drummer would play, a song that chose none having none.
+        fill, silences = values_of(style=style, trait=FILLS).get(picks.get(FILLS), {}).get(FILL, {}), []
     if drummer.get(FILL_EVERY) == 0:
         fill, silences = {}, []
     adds, _ = choice_that_fits(choices=drummer.get(ADDS), picks=picks)
@@ -544,7 +545,7 @@ def arranged(*, style, song):
             plays = {**plays, FILL_EVERY: section[BARS] if song[FILLS_COME] == EACH_SECTION else song[FILLS_COME]}
         key = (level, tuple(sorted(changed.items())), math.gcd(plays.get(FILL_EVERY, phrase_bars) or phrase_bars, section[BARS]))
         if key not in drum_sets:
-            made = drum_parts(style=style, picks={**picks, **changed}, roles=roles, meter=meter, phrase_bars=phrase_bars, drummer=plays, section_bars=section[BARS])
+            made = drum_parts(style=style, picks={**picks, **changed}, roles=roles, meter=meter, phrase_bars=phrase_bars, drummer=plays, section_bars=section[BARS], own_fill=FILLS in song.get(PICKS, {}))
             drum_sets[key] = {}
             for piece, part in made.items():
                 # A piece of the kit switched off is left out, the user's rule: its strokes are never moved to another piece.
