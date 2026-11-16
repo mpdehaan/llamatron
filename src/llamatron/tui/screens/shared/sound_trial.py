@@ -17,7 +17,8 @@
 """Trying a sound: what a picker of sounds plays when asked to let a sound be heard.
 
 A sound is tried through the pattern preview (tui/pattern_preview.py), once, through General MIDI
-in FluidSynth, beside whatever the song plays: a run of notes for a sound that plays notes, and
+in FluidSynth, or on the song's Preview instrument where FluidSynth is not installed, beside
+whatever the song plays: a run of notes for a sound that plays notes, and
 four quarter notes for a drum of the kit or for a sound that stands in for one.
 """
 
@@ -61,16 +62,20 @@ class SoundTrial:
         return self._page.app.pattern_preview()
 
     def can_try(self, value):
-        """Return whether a value can be heard: it plays something, and FluidSynth is installed to play General MIDI."""
-        return self._played(value) is not None and self.preview().general_midi_is_installed()
+        """Return whether a value is something to hear, which the Listen key is shown for whether or not anything can sound."""
+        return self._played(value) is not None
 
     def start(self, value):
+        """Play a value, and return None, or why nothing plays, for the picker to say."""
+        refusal = self.preview().sound_refusal()
+        if refusal is not None:
+            return refusal
         numbers, step_size, sound = self._played(value)
         try:
             self.preview().play_sound(numbers=numbers, step_size=step_size, sound=sound, key=value)
-        except (SongFileError, SenderNotStarted):
-            # A sound that cannot be played is left silent: the picker stays open to choose by name.
-            pass
+        except (SongFileError, SenderNotStarted) as error:
+            return str(error)
+        return None
 
     def playing(self):
         return self.preview().playing_sound()

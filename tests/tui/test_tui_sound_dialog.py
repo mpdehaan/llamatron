@@ -18,11 +18,12 @@
 
 import unittest
 
-from llamatron.composition.file_format import PatternSetting, Row
+from llamatron.composition.file_format import FLUIDSYNTH_DEVICE, PatternSetting, Row
 from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MIN_GM_SOUND
 from llamatron.exporters.midi_arrangement import DRUM_CHANNEL_BYTE
 from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT
 from llamatron.realtime.timeline import NOTE_ON, PROGRAM_CHANGE
+from llamatron.strings.errors import ERR_NOTHING_TO_TRY_A_SOUND_WITH, ERR_PREVIEW_DEVICE_NOT_CONNECTED, ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED, ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE
 from llamatron.strings.labels import MSG_GM_FAMILIES, MSG_GM_SOUND_LABEL, MSG_GM_SOUNDS
 from llamatron.strings.legends import MSG_LISTEN_WHAT
 from llamatron.strings.marks import MSG_FLYOUT_CHOSEN, MSG_FLYOUT_CLOSED, MSG_NONE_SHOWN, MSG_SEARCH_SHOWN, MSG_SOUND_FOUND
@@ -32,9 +33,12 @@ from llamatron.tui.keys import Key
 from llamatron.tui.pattern_preview import PREVIEW_CHANNEL_BYTE, TRIAL_VELOCITY, trial_pattern
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor, sound_families, sound_text
 from llamatron.tui.screens.shared.sound_trial import HITS, HITS_STEP, MAJOR_STEPS, NOTES_IN_OCTAVE, USUAL_OCTAVE, hits_of, run_of
-from tests.tui.test_tui_playback import PatternPreviewTest
+from llamatron.tui.drawing import Box, SPACE
+from tests.tui.test_tui_playback import KIND_MASK, SYNTH_PORT, PatternPreviewTest
 
 SYNTH = 'synth'
+PREVIEW = 'monitor'
+NOT_CONNECTED = 'No Such Port'
 A_SOUND_NAME = 'Banjo'
 A_SOUND = MSG_GM_SOUNDS.index(A_SOUND_NAME) + MIN_GM_SOUND
 ITS_FAMILY = (A_SOUND - MIN_GM_SOUND) // GM_FAMILY_SIZE
@@ -216,16 +220,47 @@ class TestSoundDialog(PatternPreviewTest):
         self.assertIsNone(self.preview().playing_sound())
         self.assertEqual(self.instrument().get_gm_sound(), sound + 1)
 
-    async def test_nothing_is_tried_on_none_on_a_familys_row_or_without_fluidsynth(self):
+    async def test_nothing_is_tried_on_none_or_on_a_familys_row(self):
         await self.press(keybindings.SoundDialog.LISTEN)
         self.assertIsNone(self.preview().playing_sound())
         await self.press(Key.DOWN, keybindings.SoundDialog.LISTEN)
         self.assertIsNone(self.preview().playing_sound())
+
+    async def test_without_fluidsynth_or_a_preview_instrument_l_says_what_to_do_until_the_next_key(self):
         self.fluidsynth_installed = False
-        await self.press(keybindings.SoundDialog.OPEN)
-        self.assertNotIn(MSG_LISTEN_WHAT, self.text())
+        await self.press(Key.DOWN, keybindings.SoundDialog.OPEN)
+        self.assertIn(MSG_LISTEN_WHAT, self.text())
         await self.press(keybindings.SoundDialog.LISTEN)
         self.assertIsNone(self.preview().playing_sound())
+        self.assertIn(ERR_NOTHING_TO_TRY_A_SOUND_WITH, self.text())
+        await self.press(Key.DOWN)
+        self.assertNotIn(ERR_NOTHING_TO_TRY_A_SOUND_WITH, self.text())
+
+    async def test_without_fluidsynth_a_sound_is_tried_on_the_songs_preview_instrument_which_is_sent_no_sound(self):
+        self.fluidsynth_installed = False
+        self.document.add_instrument(PREVIEW)
+        self.document.set_instrument_device(name=PREVIEW, device=SYNTH_PORT)
+        self.document.set_preview_instrument_name(PREVIEW)
+        await self.press(Key.DOWN, keybindings.SoundDialog.OPEN, keybindings.SoundDialog.LISTEN)
+        self.assertEqual(self.preview().playing_sound(), MIN_GM_SOUND)
+        self.play_through()
+        self.assertEqual([data[1] for data in self.note_ons(SYNTH_PORT)], run_of())
+        self.assertNotIn(PROGRAM_CHANGE, [data[0] & KIND_MASK for _, data in self.outputs[SYNTH_PORT].sent])
+        self.assertEqual(self.fluidsynth.starts, 0)
+
+    async def test_a_preview_instrument_that_cannot_sound_says_why(self):
+        self.fluidsynth_installed = False
+        self.document.add_instrument(PREVIEW)
+        self.document.set_preview_instrument_name(PREVIEW)
+        await self.press(Key.DOWN, keybindings.SoundDialog.OPEN, keybindings.SoundDialog.LISTEN)
+        self.assertIn(ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE.format(name=PREVIEW), SPACE.join(self.text().replace(Box.HEAVY_BAR, SPACE).split()))
+        self.document.set_instrument_device(name=PREVIEW, device=NOT_CONNECTED)
+        await self.press(keybindings.SoundDialog.LISTEN)
+        self.assertEqual(self.preview().sound_refusal(), ERR_PREVIEW_DEVICE_NOT_CONNECTED.format(name=PREVIEW, device=NOT_CONNECTED))
+        self.document.set_instrument_device(name=PREVIEW, device=FLUIDSYNTH_DEVICE)
+        self.assertEqual(self.preview().sound_refusal(), ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED.format(name=PREVIEW))
+        self.fluidsynth_installed = True
+        self.assertIsNone(self.preview().sound_refusal())
 
     async def test_a_drum_of_the_kit_is_tried_on_the_drum_channel_with_no_sound_chosen(self):
         await self.press(Key.ESCAPE)
