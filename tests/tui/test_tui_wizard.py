@@ -21,8 +21,9 @@ from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
 from llamatron.macro_composer.melody import DEFAULT_GAUGES, GAUGE_MOVES, HIGHEST_GAUGE, SMART
 from llamatron.macro_composer.wizard_choices import USUAL_PIECE_NOTE, FEWEST_FILLS, MOST_FILLS, ONE_GUITARIST_COUNT, TWO_GUITARISTS, ACOUSTIC, BAND_SOUNDS, FILLS_TRAITS, PROGRESSION_TRAITS, MOST_BUSY, USUAL_BUSY, MINOR, SEED, genre_names, genre_title
 from llamatron.strings.errors import ERR_WIZARD_LAST_PIECE, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_CHOOSE_GENRE, ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
-from llamatron.strings.labels import MSG_GM_SOUNDS, MSG_WIZARD_KIT_DRUMS, MSG_WIZARD_PIECE_NOTE_LABEL, MSG_WIZARD_PIECE_SOUND_LABEL, MSG_GM_FAMILIES, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_GAUGE_ENDS, MSG_WIZARD_GAUGE_LABELS, MSG_WIZARD_NO_BREAK, MSG_WIZARD_ANY_PROGRESSION, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_GUITARISTS_LABEL, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_SOUND_LABEL, MSG_WIZARD_SOUNDS_LABEL, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PLAYING_BRANCH, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_THEMES_BRANCH, MSG_WIZARD_USUAL_MELODY, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_SUGGESTED_FORM_BUTTON, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_START_CANCEL
-from llamatron.strings.marks import MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_MELODY_GAUGE_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_OWN_FORM, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
+from llamatron.strings.labels import MSG_GM_SOUNDS, MSG_WIZARD_KIT_DRUMS, MSG_GM_FAMILIES, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_GAUGE_ENDS, MSG_WIZARD_GAUGE_LABELS, MSG_WIZARD_NO_BREAK, MSG_WIZARD_ANY_PROGRESSION, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_GUITARISTS_LABEL, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_SOUND_LABEL, MSG_WIZARD_SOUNDS_LABEL, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PLAYING_BRANCH, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_THEMES_BRANCH, MSG_WIZARD_USUAL_MELODY, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_SUGGESTED_FORM_BUTTON, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_START_CANCEL
+from llamatron.strings.legends import What
+from llamatron.strings.marks import MSG_SOUND_NOTE_ROW, MSG_TOGGLE_ON, MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_SOUND_ON_NOTE, MSG_WIZARD_MELODY_GAUGE_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_OWN_FORM, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
 from llamatron.strings.messages import MSG_WIZARD_NOTHING_TO_CHOOSE, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_SECTIONS_HINT, MSG_UNDONE, MSG_RESTORED, MSG_WIZARD_ALREADY_OPEN, MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CREATED, MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_REPLACED, MSG_WIZARD_NOTHING_TO_UNDO
 from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_SONG_WORD
 from llamatron.composition.naming import new_name
@@ -32,7 +33,7 @@ from llamatron.tui.document import Document
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MIN_GM_SOUND
-from llamatron.tui.screens.wizard.player_branch import note_shown
+from llamatron.tui.note_names import note_shown, note_typed
 from llamatron.tui.dialogs.sound_dialog import SoundDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.text import clock
@@ -49,6 +50,7 @@ FORM_PLACE = 3
 CREATE_PLACE = 5
 # A name the test gives the song.
 A_SONG_NAME = 'anthem'
+A_NOTE_TYPED = 'f#2'
 A_GENRE_WITH_RHYTHMS = 'rock'
 
 
@@ -567,46 +569,66 @@ class TestWizardKit(WizardTest):
         await self.press(*[key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET)] * MOST_CUT)
         self.assertEqual(choices.get_break_cut(), LEAST_CUT)
 
-    async def test_a_piece_takes_another_drum_or_a_general_midi_sound_with_a_note_shown_by_name(self):
+    async def test_a_piece_is_a_row_of_two_cells_and_left_and_right_move_between_them(self):
         await self.open_the_drums()
         choices = self.choices()
         piece = choices.pieces()[0]
-        label = MSG_WIZARD_PIECE_SOUND_LABEL.format(piece=piece)
-        note_label = MSG_WIZARD_PIECE_NOTE_LABEL.format(piece=piece)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
-        await self.select_field(label)
-        self.assertEqual(self.wizard().field().value(), MSG_WIZARD_OWN_DRUM_SHOWN.format(piece=piece))
-        self.assertNotIn(note_label, [field.label for field in self.wizard().fields()])
-        # The picker opens on the piece's own drum, above the kit's other drums and General MIDI's families.
-        await self.press(Key.ENTER)
+        await self.select_field(MSG_WIZARD_KIT_PIECE.format(piece=piece))
+        wizard = self.wizard()
+        self.assertEqual([cell.value() for cell in wizard.field().cells], [MSG_TOGGLE_ON, MSG_WIZARD_OWN_DRUM_SHOWN.format(piece=piece)])
+        # The row is come to at its first cell, where Space switches the piece off and on, and Left stays.
+        await self.press(Key.LEFT)
+        self.assertEqual(wizard.cell, 0)
+        await self.press(Key.SPACE)
+        self.assertFalse(choices.piece_is_on(piece))
+        await self.press(Key.SPACE)
+        self.assertTrue(choices.piece_is_on(piece))
+        # Right moves to the sound, steps nothing, and stays at the last cell; Left moves back.
+        await self.press(Key.RIGHT, Key.RIGHT)
+        self.assertEqual(wizard.cell, 1)
+        self.assertEqual(wizard.cell_field().enter_what, What.CHOOSE)
+        self.assertTrue(choices.piece_is_on(piece))
+        await self.press(Key.LEFT)
+        self.assertEqual(wizard.cell, 0)
+        # Another row is come to at its first cell again.
+        await self.press(Key.RIGHT, Key.DOWN)
+        self.assertEqual(wizard.cell, 0)
+
+    async def test_a_piece_takes_another_drum_or_a_general_midi_sound_on_the_note_of_the_pickers_note_row(self):
+        await self.open_the_drums()
+        choices = self.choices()
+        piece = choices.pieces()[0]
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(MSG_WIZARD_KIT_PIECE.format(piece=piece))
+        wizard = self.wizard()
+        # The picker opens from the sound's cell on the piece's own drum, above the kit's other drums and General MIDI's families.
+        await self.press(Key.RIGHT, Key.ENTER)
         dialog = self.app.screen
         self.assertIsInstance(dialog, SoundDialog)
         self.assertEqual([name for name, _ in dialog.groups], [MSG_WIZARD_KIT_DRUMS, *MSG_GM_FAMILIES])
         self.assertNotIn(piece, [drum for _, drum in dialog.groups[0][1]])
+        self.assertIn(MSG_SOUND_NOTE_ROW.format(note=note_shown(USUAL_PIECE_NOTE)), self.text())
         await self.press(Key.DOWN, Key.ENTER, Key.ENTER)
         drum = choices.piece_sound(piece)
         self.assertIn(drum, choices.kit_drums())
-        self.assertEqual(self.wizard().field().value(), drum)
-        # A General MIDI sound brings the Note field, stepped and shown by name; the piece's own drum takes it away again.
-        await self.press(Key.ENTER, Key.DOWN, Key.ENTER, Key.ENTER)
-        self.assertEqual(choices.piece_sound(piece), MIN_GM_SOUND)
-        self.assertEqual(self.wizard().field().value(), MSG_GM_SOUNDS[0])
-        await self.select_field(note_label)
-        self.assertEqual(self.wizard().field().value(), note_shown(USUAL_PIECE_NOTE))
-        await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(choices.piece_note(piece), USUAL_PIECE_NOTE + 1)
-        await self.select_field(label)
-        await self.press(Key.ENTER, *[Key.UP] * 3, Key.ENTER)
+        self.assertEqual(wizard.cell_field().value(), MSG_WIZARD_KIT_DRUM_SHOWN.format(drum=drum))
+        # A General MIDI sound plays the note of the picker's Note row, stepped there, and the cell shows both.
+        await self.press(Key.ENTER, *[Key.DOWN] * (len(MSG_GM_FAMILIES) + 1), key_of(binding=keybindings.SoundDialog.NOTE_LESS, key=Key.LEFT_BRACKET))
+        await self.press(*[Key.UP] * len(MSG_GM_FAMILIES), Key.ENTER, Key.ENTER)
+        self.assertEqual((choices.piece_sound(piece), choices.piece_note(piece)), (MIN_GM_SOUND, USUAL_PIECE_NOTE - 1))
+        self.assertEqual(wizard.cell_field().value(), MSG_WIZARD_SOUND_ON_NOTE.format(sound=MSG_GM_SOUNDS[0], note=note_shown(USUAL_PIECE_NOTE - 1)))
+        # A note typed on the Note row and taken there keeps the sound and changes the note.
+        await self.press(Key.ENTER, *[Key.DOWN] * (len(MSG_GM_FAMILIES) + 2))
+        await self.type(A_NOTE_TYPED)
+        await self.press(Key.ENTER)
+        self.assertIsInstance(self.app.screen, SoundDialog)
+        await self.press(Key.ENTER)
+        self.assertEqual((choices.piece_sound(piece), choices.piece_note(piece)), (MIN_GM_SOUND, note_typed(A_NOTE_TYPED)))
+        # Bksp on the sound's cell gives the piece its own drum back, and is offered only while the piece has another sound.
+        await self.press(keybindings.WizardPage.CLEAR)
         self.assertIsNone(choices.piece_sound(piece))
-        self.assertNotIn(note_label, [field.label for field in self.wizard().fields()])
-
-    async def test_a_piece_switched_off_shows_no_sound_field(self):
-        await self.open_the_drums()
-        choices = self.choices()
-        piece = choices.pieces()[0]
-        choices.set_piece_on(piece=piece, on=False)
-        await self.press(Key.DOWN, Key.UP)
-        self.assertNotIn(MSG_WIZARD_PIECE_SOUND_LABEL.format(piece=piece), [field.label for field in self.wizard().fields()])
+        self.assertIsNone(wizard.cell_field().clear)
 
     async def test_how_often_fills_come_is_a_gauge_that_is_empty_at_never(self):
         await self.open_the_drums()

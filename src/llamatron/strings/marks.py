@@ -389,9 +389,14 @@ MSG_WIZARD_SUGGESTED_FORM = '{form}: {count} sections, {length}'
 MSG_WIZARD_CARRIED = '<{name}>'
 MSG_WIZARD_FILLS_SHOWN = '{gauge}  {often}'
 MSG_WIZARD_BUSY_SHOWN = '{gauge}  {level} of {most}'
-# A kit piece that plays its own drum, and a note by its name and octave.
-MSG_WIZARD_OWN_DRUM_SHOWN = '{piece} (kit)'
-MSG_WIZARD_NOTE_SHOWN = '{name}{octave}'
+# A kit piece that plays its own drum or another of the kit, and a note by its name and octave.
+MSG_WIZARD_OWN_DRUM_SHOWN = '{piece}'
+MSG_WIZARD_KIT_DRUM_SHOWN = '{drum} (kit)'
+MSG_NOTE_NAME_SHOWN = '{name}{octave}'
+# A kit piece in a General MIDI sound, with its note, the Sound dialog's Note row, and a note being typed there.
+MSG_WIZARD_SOUND_ON_NOTE = '{sound}  {note}'
+MSG_SOUND_NOTE_ROW = 'Note   {note}'
+MSG_SOUND_NOTE_TYPED = 'Note   {text}_'
 MSG_WIZARD_MELODY_GAUGE_SHOWN = '{gauge}  {low} to {high}'
 MSG_WIZARD_GAUGE_FULL = '█'
 MSG_WIZARD_GAUGE_EMPTY = '░'

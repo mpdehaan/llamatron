@@ -26,7 +26,7 @@ from llamatron.tui.keys import Key
 from llamatron.tui.drawing import cursor_mark, INDENT, NOTHING, padded, Style
 from llamatron.tui.key_table import cursor_moved
 from llamatron.strings.labels import MSG_NAME_LABEL
-from llamatron.tui.screens.shared.field import NameField, Button, Field, Heading
+from llamatron.tui.screens.shared.field import Button, CELL_GAP, Cells, Field, Heading, NameField
 from llamatron.composition.setlist import NO_TEXT
 from llamatron.strings.labels import MSG_SECTION_LABEL
 from llamatron.strings.marks import MSG_SECTION_CLOSED_MARK, MSG_SECTION_OPEN_MARK
@@ -44,6 +44,8 @@ class FieldPage(Page):
     def __init__(self, holder):
         super().__init__(holder)
         self.place = 0
+        # The cell the cursor is on in a row of cells, counted from the left.
+        self.cell = 0
 
     def fields(self):
         return []
@@ -100,12 +102,26 @@ class FieldPage(Page):
         fields = self.shown_fields()
         if not fields:
             return
+        # A row is come to at its first cell.
+        self.cell = 0
         first_button = self.first_button_place()
         if self.place >= first_button:
             if name == Key.UP and first_button:
                 self.place = first_button - 1
             return
         self.place = cursor_moved(place=self.place, name=name, count=min(first_button + 1, len(fields)))
+
+    def cell_field(self):
+        """Return what the keys act on: the field under the cursor, or, in a row of cells, the cell the cursor is on."""
+        field = self.field()
+        if not isinstance(field, Cells):
+            return field
+        self.cell = max(min(self.cell, len(field.cells) - 1), 0)
+        return field.cells[self.cell]
+
+    def move_along_cells(self, name):
+        """Move between the cells of a row with Left and Right, stopping at both ends."""
+        self.cell = cursor_moved(place=self.cell, name=name, count=len(self.field().cells))
 
     def first_button_place(self):
         """Return the place of the first button among the fields shown, or how many fields show when there's none."""
@@ -130,9 +146,12 @@ class FieldPage(Page):
 
     def keys(self):
         result = [self.bind(self.KEYS.SELECT, action=self.move_cursor, wants_key=True)]
-        field = self.field()
+        row = self.field()
+        field = self.cell_field()
+        if isinstance(row, Cells):
+            result.append(self.bind(self.KEYS.ALONG_CELLS, action=self.move_along_cells, wants_key=True))
         if field is not None:
-            if field.adjust:
+            if field.adjust and not isinstance(row, Cells):
                 result.append(self.bind(self.KEYS.MORE, action=lambda: field.adjust(1)))
                 result.append(self.bind(self.KEYS.LESS, action=lambda: field.adjust(-1)))
             if field.enter and field.is_toggle():
@@ -182,6 +201,10 @@ class FieldPage(Page):
                 lines.append(line)
                 continue
             line.append(field.label.ljust(label_width), style=Style.BOLD if place == self.place else Style.PLAIN)
+            if isinstance(field, Cells):
+                self.append_cells(line=line, row=field, selected=place == self.place)
+                lines.append(line)
+                continue
             line.append(padded(field.value()))
             # A field whose Enter opens a list of choices shows a dim mark after its value, so that it isn't taken for one that's typed.
             if field.enter_what == What.CHOOSE:
@@ -202,6 +225,15 @@ class FieldPage(Page):
         if notes:
             lines += [Text(NOTHING), *notes]
         return self.window_of_lines(lines=lines, selected=selected, height=height)
+
+    def append_cells(self, *, line, row, selected):
+        """Draw a row's cells side by side, the cell under the cursor in reverse video as a grid's is, and a cell that opens a list with the picker's mark."""
+        for place, cell in enumerate(row.cells):
+            on_cell = selected and place == min(self.cell, len(row.cells) - 1)
+            line.append(padded(cell.value()), style=Style.REVERSE if on_cell else Style.PLAIN)
+            if cell.enter_what == What.CHOOSE:
+                line.append(MSG_PICKER_MARK, style=Style.DIM)
+            line.append(CELL_GAP)
 
     def label_text(self, field):
         """Return a field's label as drawn: a section's heading with its open or closed mark, any other field's label as it is."""

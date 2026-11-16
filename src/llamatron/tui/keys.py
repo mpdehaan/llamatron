@@ -139,6 +139,9 @@ LETTERS = (
 # The letters that are the names of notes, which type a note on a drum pattern's Note row.
 NOTE_LETTER_KEYS = (Key.A, Key.B, Key.C, Key.D, Key.E, Key.F, Key.G)
 DIGITS = (Key.DIGIT_0, Key.DIGIT_1, Key.DIGIT_2, Key.DIGIT_3, Key.DIGIT_4, Key.DIGIT_5, Key.DIGIT_6, Key.DIGIT_7, Key.DIGIT_8, Key.DIGIT_9)
+# What types a note by name, such as C3, f#4 or bb2: the notes' letters, the sharp, and the octave's digits; b is also the flat.
+SHARP_CHARACTER = '#'
+NOTE_CHARACTERS = (*NOTE_LETTER_KEYS, *DIGITS, SHARP_CHARACTER)
 # What can be typed into a search: letters, digits, every mark a keyboard types, and a space.
 SEARCH_CHARACTERS = (*LETTERS, *DIGITS, *string.punctuation, Key.SPACE)
 # ] means more and [ means less wherever a value steps, since neither needs Shift on a US keyboard, which + does. +, = and - still work, off the legend, for the habit of them.
