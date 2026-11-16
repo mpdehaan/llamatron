@@ -192,6 +192,9 @@ clouds; generate and test, with motif development and counterpoint last.
   until one is chosen the drummer decides and `get_fills` shows the nearest position. `set_quiet_notes(False)` leaves
   the snare's soft strokes out (`quiet_notes`), and `has_quiet_notes` says whether the groove has any, found by arranging
   the song both ways. Adding quiet notes to a groove that has none is not written yet.
+- A style's melody habits may hold `by_scale_type`, habits that replace the usual ones for a song in that scale type: rock
+  and soul give a minor song the notes 1, 3, 4, 5 and 7 resting on 1, since the major notes read in a minor scale rest on
+  its third and sound like the major key beside it, which made a hard rock tune sound happy (the user's finding).
 - Nothing is chosen at first, the user's rule. Choosing a subgenre fills in its usual tempo, the scale type its chords are
   in, the root that scale type starts on (C for major, E for minor, Claude's choice) and the commonest form, so that a song
   can be made from a genre and a subgenre alone; choosing another genre leaves the subgenre to be chosen again. Any tempo
