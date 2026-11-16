@@ -186,9 +186,13 @@ The user's design. `PatternsPage` (`tui/screens/pattern/patterns_page.py`) lists
   among them even when it has gone, so that a set opens without it and keeps it. Channel is a
   `NumberField` from 1 to 16, or a plain `Field` showing `MSG_AUTO_CHANNEL_SHOWN` (`(auto)`) while
   the Device is `*FluidSynth` (`channel_field`), which the device picker offers after `(none)`,
-  leaving out any tracker's own FluidSynth port (`FLUIDSYNTH_PORT_PREFIX`). GM sound opens a `GridChoiceDialog` of `(none)` above General MIDI's
-  families (`MSG_GM_FAMILIES`, `MSG_GM_SOUNDS`), `FAMILIES_A_PAGE` (2) to a page (`sound_pages`)
-  so that the longest names fit 80 columns, and `[` and `]` step it by number (`step_gm_sound`).
+  leaving out any tracker's own FluidSynth port (`FLUIDSYNTH_PORT_PREFIX`). GM sound opens a `SoundDialog` (`tui/dialogs/sound_dialog.py`, the user's design) of `(none)` above General MIDI's
+  families (`MSG_GM_FAMILIES`, `MSG_GM_SOUNDS`, `sound_families`), each a row that opens a flyout of its eight sounds; `/` searches every
+  sound and ENTER there opens the flyout of the sound found, since letters are keys in this dialog; `L` tries the sound under the cursor
+  through a `SoundTrial` (`tui/screens/shared/sound_trial.py`), which has the pattern preview play a run once through General MIDI in
+  FluidSynth (`PatternPreview.play_sound`), offered only where FluidSynth is installed, and stopped by `L` again, a move of the cursor
+  or closing
+  , and `[` and `]` step it by number (`step_gm_sound`).
 - The track editor's last field, Instrument, picks one of the set's instruments or `(none)`.
 - The main screen's Arrange cell reads Arrange/Play while the set's Real Time switch is on (`MainPage.shown_name`, `PageName.ARRANGE_PLAY`), the user's design; its theme, sentence and crumbs keep the name Arrange.
 - The main screen's Real Time cell (`T`, `MainPage.toggle_real_time`) sits among the pages,
@@ -234,7 +238,7 @@ The user's design, agreed in detail in `.claude/features/WIZARD_DESIGNS.md` (S16
   "guitar"; a player is shown by `role_title`, the clearer name the genre's template gives the player, which may follow
   how the player plays; the Band's Sounds field, "usual", "acoustic", "electric" or "synth", is the band's, and a player's
   Sound field shows the band's sound as `(from band)` or the player's own, an override, the user's design, picked from the
-  band's again, the genre's sounds for the player, or "More sounds", every General MIDI sound that plays notes), in the order Genre, Band, Themes, Form, Playing, Apply. `ThemesBranch` and `PlayingBranch` are built in a
+  band's again, the genre's sounds for the player, or "More sounds", every General MIDI sound by family in the same `SoundDialog`, tried as a run of the song's scale from its root in the player's octave), in the order Genre, Band, Themes, Form, Playing, Apply. `ThemesBranch` and `PlayingBranch` are built in a
   first working form, the user's ask that every page work before any is deepened (`SongWaysBranch`, a field for each way
   the whole song goes, shown only where the subgenre has more than one way, the branch saying so where none is): Themes
   has Progression and Melody, "usual" or a melody style the subgenre can use; Playing has Fills, a fill chosen there being played whatever the drummer's Busy level would play (Feel is gone until a feel changes what is played: a style's feels were written into its drums and the field chose nothing; a melody style that sketches as "usual" does is not offered). Built so far: `GenreBranch` (Genre and Subgenre, each starting on `(choose)`, then Key, Scale and Tempo once

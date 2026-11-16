@@ -1,0 +1,250 @@
+# llamatron: a music program
+# Copyright (C) 2026  Michael DeHaan
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+"""The Sound dialog: a sound chosen from groups, each a row that opens a flyout of its sounds.
+
+Its first rows, where it has any, are choices of their own, such as taking no sound. Then come
+the groups, General MIDI's families, each drawn as a button since it opens a flyout: Space or
+Enter opens the flyout of the group under the cursor, where Up and Down move, Enter takes the
+sound and Esc or Left closes the flyout with nothing chosen. / searches every group's sounds at
+once: the rows give way to the sounds that contain what was typed, and Enter opens the flyout of
+the sound under the cursor, on that sound. L tries the sound under the cursor, where the asker
+gave a way to, and L again or moving the cursor stops it. It answers with the value of the sound
+taken, or None when cancelled.
+"""
+
+from rich.text import Text
+
+from llamatron.strings.marks import MSG_FLYOUT_CHOSEN, MSG_FLYOUT_CLOSED, MSG_SEARCH_SHOWN, MSG_SOUND_FOUND
+from llamatron.tui import keybindings
+from llamatron.tui.dialogs.choice_dialog import completed, places_matching
+from llamatron.tui.dialogs.dialog import Dialog
+from llamatron.tui.drawing import NOTHING, SPACE, Style, cursor_mark, fit, legend
+from llamatron.tui.key_table import cursor_moved
+from llamatron.tui.keys import Key, SPACE_CHARACTER
+
+# How many rows show at once, the list scrolling to keep the cursor's in view, so that the dialog fits an 80 by 24 console.
+SHOWN = 12
+
+
+class SoundDialog(Dialog):
+    """Offers sounds in groups and answers with the value of the one taken."""
+
+    KEYS = keybindings.SoundDialog
+
+    def __init__(self, *, title, groups, top=(), current=None, trial=None):
+        """top is the rows before the groups, each (label, value); groups is each group's name with its sounds, each (label, value); current is the
+        value the dialog opens on; trial, where sounds can be tried, answers can_try(value), start(value), playing() and stop()."""
+        super().__init__()
+        self.title = title
+        self.top = list(top)
+        self.groups = [(name, list(sounds)) for name, sounds in groups]
+        self.current = current
+        self.trial = trial
+        self.place = self.row_of(current)
+        # The group whose flyout is open, or None, and the cursor's place in it.
+        self.flyout = None
+        self.flyout_place = 0
+        # What was typed into the search, or None while nothing is searched for, and the cursor's place among what it found.
+        self.typed = None
+        self.found_place = 0
+
+    # Where things are.
+
+    def group_of(self, value):
+        """Return the place of the group that holds a value, or None."""
+        return next((place for place, (_, sounds) in enumerate(self.groups) if any(value == held for _, held in sounds)), None)
+
+    def row_of(self, value):
+        """Return the row a value is found on: its own row at the top, its group's row, or the first row."""
+        if any(value == held for _, held in self.top):
+            return [held for _, held in self.top].index(value)
+        group = self.group_of(value)
+        return 0 if group is None else len(self.top) + group
+
+    def every_sound(self):
+        """Return every group's sounds in order, each as (group, place in the group, label)."""
+        return [(group, place, label) for group, (_, sounds) in enumerate(self.groups) for place, (label, _) in enumerate(sounds)]
+
+    def found(self):
+        """Return the sounds that contain what was typed, ignoring case, each as (group, place in the group, label)."""
+        every = self.every_sound()
+        return [every[place] for place in places_matching(options=[label for _, _, label in every], text=self.typed)]
+
+    def under_cursor(self):
+        """Return the value of the sound under the cursor, or None on a group's row and while searching."""
+        if self.typed is not None:
+            return None
+        if self.flyout is not None:
+            return self.groups[self.flyout][1][self.flyout_place][1]
+        return self.top[self.place][1] if self.place < len(self.top) else None
+
+    # The keys, by what is open.
+
+    def keys(self):
+        if self.typed is not None:
+            result = [
+                self.bind(self.KEYS.CLOSE, action=self.end_search),
+                self.bind(self.KEYS.MOVE, action=self.move_in_found, wants_key=True),
+                self.bind(self.KEYS.FIND, action=self.go_to_found),
+                self.bind(self.KEYS.TYPE, action=self.type_character, wants_key=True),
+            ]
+            if self.typed:
+                result += [self.bind(self.KEYS.ERASE, action=self.erase), self.bind(self.KEYS.COMPLETE, action=self.complete)]
+            return result
+        if self.flyout is not None:
+            return [
+                self.bind(self.KEYS.CLOSE, action=self.close_flyout),
+                self.bind(self.KEYS.MOVE_IN_FLYOUT, action=self.move_in_flyout, wants_key=True),
+                self.bind(self.KEYS.CHOOSE, action=self.choose),
+                *self.trial_keys(),
+            ]
+        on_group = self.place >= len(self.top)
+        return [
+            self.bind(self.KEYS.CANCEL, action=self.cancel),
+            self.bind(self.KEYS.MOVE, action=self.move, wants_key=True),
+            self.bind(self.KEYS.OPEN, action=self.open_flyout) if on_group else self.bind(self.KEYS.CHOOSE, action=self.choose),
+            self.bind(self.KEYS.SEARCH, action=self.start_search),
+            *self.trial_keys(),
+        ]
+
+    def trial_keys(self):
+        """Return the key that tries the sound under the cursor, or stops it while it plays, and none where it cannot be tried."""
+        value = self.under_cursor()
+        if self.trial is None or value is None or not self.trial.can_try(value):
+            return []
+        if self.trial.playing() == value:
+            return [self.bind(self.KEYS.STOP_LISTENING, action=self.trial.stop)]
+        return [self.bind(self.KEYS.LISTEN, action=lambda: self.trial.start(value))]
+
+    def hush(self):
+        """Stop a sound being tried, as moving the cursor and closing do."""
+        if self.trial is not None and self.trial.playing() is not None:
+            self.trial.stop()
+
+    def cancel(self):
+        self.hush()
+        self.dismiss(None)
+
+    def choose(self):
+        self.hush()
+        self.dismiss(self.under_cursor())
+
+    def move(self, name):
+        self.hush()
+        self.place = cursor_moved(place=self.place, name=name, count=len(self.top) + len(self.groups))
+
+    # A group's flyout.
+
+    def open_flyout(self):
+        """Open the flyout of the group under the cursor, on the current sound where the group holds it."""
+        group = self.place - len(self.top)
+        values = [held for _, held in self.groups[group][1]]
+        self.flyout = group
+        self.flyout_place = values.index(self.current) if self.current in values else 0
+
+    def close_flyout(self):
+        self.hush()
+        self.flyout = None
+
+    def move_in_flyout(self, name):
+        """Move in the flyout with Up and Down, stopping at its edges; Left closes it, and Right does nothing."""
+        self.hush()
+        if name == Key.LEFT:
+            self.flyout = None
+        elif name != Key.RIGHT:
+            self.flyout_place = cursor_moved(place=self.flyout_place, name=name, count=len(self.groups[self.flyout][1]))
+
+    # Searching every group's sounds at once.
+
+    def takes_text(self):
+        return self.typed is not None
+
+    def start_search(self):
+        self.hush()
+        self.typed = NOTHING
+        self.found_place = 0
+
+    def end_search(self):
+        self.typed = None
+
+    def type_character(self, name):
+        self.typed += SPACE_CHARACTER if name == Key.SPACE else name
+        self.found_place = 0
+
+    def erase(self):
+        self.typed = self.typed[:-1]
+        self.found_place = 0
+
+    def complete(self):
+        found = self.found()
+        self.typed = completed(options=[label for _, _, label in found], matches=range(len(found)), typed=self.typed)
+        self.found_place = 0
+
+    def move_in_found(self, name):
+        found = self.found()
+        if found:
+            self.found_place = cursor_moved(place=min(self.found_place, len(found) - 1), name=name, count=len(found))
+
+    def go_to_found(self):
+        """Open the flyout of the sound the search's cursor is on, on that sound, where it can be tried and taken."""
+        found = self.found()
+        if not found:
+            return
+        group, place, _ = found[min(self.found_place, len(found) - 1)]
+        self.typed = None
+        self.place = len(self.top) + group
+        self.flyout = group
+        self.flyout_place = place
+
+    # Drawing.
+
+    def row_text(self, row):
+        """Return a row's text: a top row's label, or a group drawn as a button, with the current sound after a mark where the group holds it."""
+        if row < len(self.top):
+            return self.top[row][0]
+        name, sounds = self.groups[row - len(self.top)]
+        chosen = next((label for label, held in sounds if held == self.current), None)
+        return MSG_FLYOUT_CLOSED.format(name=name) if chosen is None else MSG_FLYOUT_CHOSEN.format(name=name, chosen=chosen)
+
+    def windowed(self, *, rows, at):
+        """Return the rows that show, as (place, row), scrolled to keep the cursor's in view, and blank lines to SHOWN."""
+        start = max(min(at - SHOWN // 2, len(rows) - SHOWN), 0)
+        return list(enumerate(rows))[start:start + SHOWN]
+
+    def padded(self, lines):
+        return [*lines, *[Text(NOTHING)] * (SHOWN - len(lines))]
+
+    def lines(self, width):
+        if self.typed is not None:
+            found = self.found()
+            at = min(self.found_place, max(len(found) - 1, 0))
+            rows = [MSG_SOUND_FOUND.format(sound=label, group=self.groups[group][0]) for group, _, label in found]
+            shown = [Text(fit(text=cursor_mark(place == at) + row, width=width), style=Style.BOLD if place == at else NOTHING) for place, row in self.windowed(rows=rows, at=at)]
+            return [Text(fit(text=SPACE + MSG_SEARCH_SHOWN.format(text=self.typed), width=width), style=Style.DIM), *self.padded(shown)[:SHOWN - 1]]
+        rows = [self.row_text(row) for row in range(len(self.top) + len(self.groups))]
+        return self.padded([Text(fit(text=cursor_mark(place == self.place) + row, width=width), style=Style.BOLD if place == self.place else NOTHING)
+                            for place, row in self.windowed(rows=rows, at=self.place)])
+
+    def flyout_lines(self, width):
+        """Return the open flyout's lines, or None: its group as the heading, a sound a row with the cursor's marked, and its own keys."""
+        if self.flyout is None or self.typed is not None:
+            return None
+        name, sounds = self.groups[self.flyout]
+        rows = [label for label, _ in sounds]
+        shown = [Text(fit(text=cursor_mark(place == self.flyout_place) + row, width=width), style=Style.BOLD if place == self.flyout_place else NOTHING)
+                 for place, row in self.windowed(rows=rows, at=self.flyout_place)]
+        return [Text(name, style=Style.BOLD), Text(NOTHING), *self.padded(shown), Text(NOTHING), *legend(keys=self.keys(), width=width)]

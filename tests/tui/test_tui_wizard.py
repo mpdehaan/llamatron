@@ -21,7 +21,7 @@ from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
 from llamatron.macro_composer.melody import DEFAULT_GAUGES, GAUGE_MOVES, HIGHEST_GAUGE, SMART
 from llamatron.macro_composer.wizard_choices import FEWEST_FILLS, MOST_FILLS, ONE_GUITARIST_COUNT, TWO_GUITARISTS, ACOUSTIC, BAND_SOUNDS, FILLS_TRAITS, PROGRESSION_TRAITS, MOST_BUSY, USUAL_BUSY, MINOR, SEED, genre_names, genre_title
 from llamatron.strings.errors import ERR_WIZARD_LAST_PIECE, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_CHOOSE_GENRE, ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
-from llamatron.strings.labels import MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_GAUGE_ENDS, MSG_WIZARD_GAUGE_LABELS, MSG_WIZARD_NO_BREAK, MSG_WIZARD_ANY_PROGRESSION, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_GUITARISTS_LABEL, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_SOUND_LABEL, MSG_WIZARD_SOUNDS_LABEL, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PLAYING_BRANCH, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_THEMES_BRANCH, MSG_WIZARD_USUAL_MELODY, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_SUGGESTED_FORM_BUTTON, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_START_CANCEL
+from llamatron.strings.labels import MSG_GM_FAMILIES, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_GAUGE_ENDS, MSG_WIZARD_GAUGE_LABELS, MSG_WIZARD_NO_BREAK, MSG_WIZARD_ANY_PROGRESSION, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_GUITARISTS_LABEL, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_SOUND_LABEL, MSG_WIZARD_SOUNDS_LABEL, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PLAYING_BRANCH, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_THEMES_BRANCH, MSG_WIZARD_USUAL_MELODY, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_SUGGESTED_FORM_BUTTON, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_START_CANCEL
 from llamatron.strings.marks import MSG_WIZARD_MELODY_GAUGE_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_OWN_FORM, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
 from llamatron.strings.messages import MSG_WIZARD_NOTHING_TO_CHOOSE, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_SECTIONS_HINT, MSG_UNDONE, MSG_RESTORED, MSG_WIZARD_ALREADY_OPEN, MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CREATED, MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_REPLACED, MSG_WIZARD_NOTHING_TO_UNDO
 from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_SONG_WORD
@@ -31,7 +31,8 @@ from llamatron.tui.app import LlamatronApp
 from llamatron.tui.document import Document
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog
+from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND
+from llamatron.tui.dialogs.sound_dialog import SoundDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.text import clock
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
@@ -458,16 +459,20 @@ class TestWizardSounds(WizardTest):
         await self.press(Key.ENTER, *[Key.UP] * (len(own) + 2), Key.ENTER)
         self.assertFalse(choices.has_own_sound(role))
 
-    async def test_more_sounds_opens_every_sound_that_plays_notes_and_the_song_made_plays_the_one_picked(self):
+    async def test_more_sounds_opens_every_general_midi_sound_by_family_and_the_song_made_plays_the_one_picked(self):
         role = await self.open_a_player()
         choices = self.choices()
         own = choices.genre_sounds(role)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(MSG_WIZARD_SOUND_LABEL)
         await self.press(Key.ENTER, *[Key.DOWN] * (len(own) + 2), Key.ENTER)
-        self.assertIsInstance(self.app.screen, GridChoiceDialog)
-        await self.press(Key.DOWN, Key.ENTER)
+        dialog = self.app.screen
+        self.assertIsInstance(dialog, SoundDialog)
+        # Every family of General MIDI is offered, the last ones too, and a sound of the last can be taken.
+        self.assertEqual([name for name, _ in dialog.groups], MSG_GM_FAMILIES)
+        await self.press(*[Key.DOWN] * len(MSG_GM_FAMILIES), Key.ENTER, *[Key.DOWN] * GM_FAMILY_SIZE, Key.ENTER)
         picked = choices.get_sound(role)
+        self.assertEqual(picked, MAX_GM_SOUND)
         self.assertTrue(choices.has_own_sound(role))
         await self.press(keybindings.WizardPage.TO_TREE)
         await self.create()

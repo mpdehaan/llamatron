@@ -430,7 +430,7 @@ synthesizer the tracker starts itself. (none) until one is chosen, and a track o
 cannot play. A port that has gone is still shown, so that the set opens without it.
 Channel: 1 to 16, as the device numbers them, or (auto) with FluidSynth, which gives each track its own.
 GM sound: one of General MIDI's 128 sounds, which the MIDI (General MIDI) export gives this instrument's tracks and
-FluidSynth plays. ENTER chooses it from the families, two to a page, which the picker turns.
+FluidSynth plays. ENTER chooses it from the families, each opening its sounds, where a sound can be heard.
 
 Up and down select a setting. Left and right change it, and ENTER types or chooses. Bksp clears the device or sound.
 """

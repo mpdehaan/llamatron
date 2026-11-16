@@ -17,7 +17,7 @@
 
 from unittest import mock
 
-from tests.support.ui_testing import LEAD, UITest, forward_key
+from tests.support.ui_testing import LEAD, UITest
 from llamatron.composition.defaults import DEFAULT_CHANNEL
 from llamatron.composition.file_format import FLUIDSYNTH_DEVICE, Section, SetlistSetting, TrackSetting
 from llamatron.music.midi import MAX_CHANNEL, MIN_CHANNEL
@@ -31,9 +31,9 @@ from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.shared.field import Heading
-from llamatron.tui.screens.set.instrument_editor import FAMILIES_A_PAGE, InstrumentEditor, sound_text
-from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog
-from llamatron.composition.limits import GM_FAMILY_SIZE, MIN_GM_SOUND
+from llamatron.tui.screens.set.instrument_editor import InstrumentEditor, sound_text
+from llamatron.tui.dialogs.sound_dialog import SoundDialog
+from llamatron.composition.limits import MIN_GM_SOUND
 from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT
 from llamatron.tui.screens.set.instruments_page import InstrumentsPage
 from llamatron.tui.screens.set.main_page import MainPage
@@ -129,8 +129,8 @@ class TestInstrumentEditor(UITest):
         self.assertEqual(self.field_text(MSG_GM_SOUND_LABEL), MSG_NONE_SHOWN)
         await self.select_field(MSG_GM_SOUND_LABEL)
         await self.press(Key.ENTER)
-        self.assertIsInstance(self.app.screen, GridChoiceDialog)
-        await self.press(Key.DOWN, Key.ENTER)
+        self.assertIsInstance(self.app.screen, SoundDialog)
+        await self.press(Key.DOWN, Key.ENTER, Key.ENTER)
         self.assertEqual(self.instrument().get_gm_sound(), MIN_GM_SOUND)
         self.assertEqual(self.field_text(MSG_GM_SOUND_LABEL), sound_text(MIN_GM_SOUND))
         await self.press(keybindings.InstrumentEditor.MORE)
@@ -139,11 +139,6 @@ class TestInstrumentEditor(UITest):
         self.assertIsNone(self.instrument().get_gm_sound())
         await self.press(keybindings.InstrumentEditor.MORE, keybindings.FieldPage.CLEAR)
         self.assertIsNone(self.instrument().get_gm_sound())
-
-    async def test_the_sound_pickers_next_page_holds_the_next_two_families(self):
-        await self.select_field(MSG_GM_SOUND_LABEL)
-        await self.press(Key.ENTER, Key.DOWN, forward_key(keybindings.GridChoiceDialog.OTHER_PAGE), Key.ENTER)
-        self.assertIn(self.instrument().get_gm_sound(), range(MIN_GM_SOUND + FAMILIES_A_PAGE * GM_FAMILY_SIZE, MIN_GM_SOUND + 2 * FAMILIES_A_PAGE * GM_FAMILY_SIZE))
 
     async def test_the_device_is_chosen_from_fluidsynth_and_the_computers_ports_sorted_with_none_first(self):
         self.assertEqual(self.field_text(MSG_DEVICE_LABEL), MSG_NO_DEVICE_SHOWN)

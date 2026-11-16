@@ -31,15 +31,16 @@ from llamatron.composition.naming import new_name
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings.help import HELP_WIZARD_PAGE
-from llamatron.strings.labels import Crumb, MSG_GM_SOUNDS, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_MORE_SOUNDS_TITLE, MSG_WIZARD_SOUND_TITLE, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_REPLACE_SECTIONS_TITLE, MSG_WIZARD_SUGGESTED_FORM_TITLE, MSG_WIZARD_CAPTION, MSG_WIZARD_REPLACE_CAPTION
+from llamatron.strings.labels import Crumb, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_MORE_SOUNDS_TITLE, MSG_WIZARD_SOUND_TITLE, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_REPLACE_SECTIONS_TITLE, MSG_WIZARD_SUGGESTED_FORM_TITLE, MSG_WIZARD_CAPTION, MSG_WIZARD_REPLACE_CAPTION
 from llamatron.strings.marks import MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_EDITED_BRANCH
 from llamatron.strings.messages import MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CLOSE_TITLE, MSG_WIZARD_CREATED, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_NOTHING_TO_UNDO, MSG_WIZARD_REPLACED, MSG_WIZARD_SONG_NAME_PROMPT
 from llamatron.strings.names import MSG_NEW_SONG_WORD
 from llamatron.support.version import VERSION
 from llamatron.tui import keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog
-from llamatron.tui.screens.set.instrument_editor import sound_pages
+from llamatron.tui.dialogs.sound_dialog import SoundDialog
+from llamatron.tui.screens.set.instrument_editor import sound_families
+from llamatron.tui.screens.shared.sound_trial import RUN_STEP, SoundTrial, run_of
 from llamatron.tui.text import clock
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import Box, cursor_mark, INDENT, NOTHING, SPACE, Style
@@ -63,8 +64,6 @@ FIRST_PLACE = 0
 # The line and the space between the tree and the fields.
 DIVIDER = Box.BAR + SPACE
 
-# The sound picker's pages that hold sounds that play notes: every page but the last, of percussive sounds and sound effects.
-PAGES_OF_NOTES = 7
 
 class WizardPage(FieldPage):
     """The song wizard: a tree of branches beside the fields of the branch under the cursor."""
@@ -269,10 +268,15 @@ class WizardPage(FieldPage):
         self.ask(dialog=ChoiceDialog(title=MSG_WIZARD_SOUND_TITLE.format(player=choices.role_title(role)), options=options, current=current), then=chosen)
 
     def pick_any_sound(self, role):
-        """Choose a player's sound from General MIDI's families of sounds that play notes, a page of two families at a time."""
+        """Choose a player's sound from every General MIDI sound, by family; a sound is tried as a run of the song's scale in the player's octave."""
         choices = self._choices
-        dialog = GridChoiceDialog(title=MSG_WIZARD_MORE_SOUNDS_TITLE, options=[NOTHING, *MSG_GM_SOUNDS], grid=None, current=choices.get_sound(role), pages=sound_pages()[:PAGES_OF_NOTES])
-        self.ask(dialog=dialog, then=lambda place: self.choosing(lambda sound: choices.set_sound(role=role, sound=sound))(place))
+        run = run_of(root=choices.root_half_steps(), steps=choices.scale_half_steps(), octave=choices.role_octave(role))
+        dialog = SoundDialog(title=MSG_WIZARD_MORE_SOUNDS_TITLE, groups=sound_families(), current=choices.get_sound(role), trial=SoundTrial(page=self, played=lambda sound: (run, RUN_STEP, sound)))
+
+        def chosen(sound):
+            if sound is not None:
+                self.choosing(lambda picked: choices.set_sound(role=role, sound=picked))(sound)
+        self.ask(dialog=dialog, then=chosen)
 
     def pick_suggested_form(self):
         """Offer the forms the subgenre suggests in a dialog, each with its sections and its length at the tempo chosen, and

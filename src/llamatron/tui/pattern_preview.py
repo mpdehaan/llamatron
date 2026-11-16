@@ -27,23 +27,28 @@ direction takes to come round, in the scale of the first clip that uses the patt
 It sounds through the song's Preview instrument, or General MIDI's piano through FluidSynth when
 the song names none, and a drum pattern through General MIDI's drum kit. An edit made while it
 plays is heard at the pattern's next pass, since the copy is made again when the set changes.
+
+A sound is tried the same way (play_sound): some notes written for the trial, played once through
+General MIDI in FluidSynth, in a sound chosen or on the drum kit, which a picker of sounds does.
 """
 
 from math import lcm
 
 from llamatron.composition.clip_slot import ClipSlot
-from llamatron.composition.file_format import LiveResponsiveness, Section, SongSetting
+from llamatron.composition.file_format import LiveResponsiveness, PatternSetting, Row, Section, SongSetting
 from llamatron.composition.limits import MIN_GM_SOUND
 from llamatron.composition.naming import unique_name
+from llamatron.composition.pattern import Pattern
 from llamatron.composition.scene import Scene
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.track import Track
 from llamatron.exporters.midi_arrangement import DRUM_CHANNEL_BYTE, MELODIC_CHANNEL_BYTES
+from llamatron.music.note import SHARP_NAMES
 from llamatron.playback.step_order import walk_order
 from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT
 from llamatron.realtime.timeline import Route
 from llamatron.strings.errors import ERR_PREVIEW_DEVICE_NOT_CONNECTED, ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED, ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE
-from llamatron.strings.names import MSG_PREVIEW_TRACK_NAME
+from llamatron.strings.names import MSG_PREVIEW_PATTERN_NAME, MSG_PREVIEW_TRACK_NAME
 from llamatron.tui.transport import CHANNEL_OFFSET, Transport
 
 # The one scene of the copy the preview plays.
@@ -55,6 +60,20 @@ PREVIEW_CHANNEL_BYTE = MELODIC_CHANNEL_BYTES[-1]
 PIANO_PROGRAM = 0
 # How many passes a preview plays of a direction that chooses its steps as it goes: one, as many choices as the pattern has steps.
 CHOSEN_PASSES = 1
+# A sound is tried once through.
+TRIAL_PASSES = 1
+NOTES_IN_OCTAVE = 12
+# How loud the notes of a sound's trial are.
+TRIAL_VELOCITY = 100
+
+
+def trial_pattern(*, numbers, step_size):
+    """Return the data of a pattern that plays some MIDI notes one after another, a step each, written as a drum pattern's
+    notes are, by name and octave, so that no scale moves them."""
+    names = [SHARP_NAMES[number % NOTES_IN_OCTAVE] for number in numbers]
+    return {PatternSetting.STEPS: len(numbers), PatternSetting.STEP_SIZE: step_size, PatternSetting.DRUM: True,
+            Row.DEGREE: [name[0] for name in names], Row.ACCIDENTAL: [name[1:] or None for name in names],
+            Row.OCTAVE: [number // NOTES_IN_OCTAVE for number in numbers], Row.VELOCITY: [TRIAL_VELOCITY] * len(numbers)}
 
 
 def passes_to_come_round(*, steps, direction):
@@ -68,11 +87,13 @@ def passes_to_come_round(*, steps, direction):
 class PreviewSet:
     """What the preview's transport reads as its document: a copy of the set, made again when the set changes, whose current song holds only the pattern's clip."""
 
-    __slots__ = ('_holder', '_pattern', '_clip', '_revision', '_setlist', '_track', '_scale')
+    __slots__ = ('_holder', '_pattern', '_clip', '_trial', '_revision', '_setlist', '_track', '_scale')
 
-    def __init__(self, *, holder, pattern=None, clip=None):
+    def __init__(self, *, holder, pattern=None, clip=None, trial=None):
         """pattern names a pattern to play on a track made for it; clip is (scene, track) for a clip of the song played as it is, with the whole song kept, since the clip may grab from another track."""
         self._holder = holder
+        # The data of a pattern written to try a sound with, played once on a track made for it, or None.
+        self._trial = trial
         self._pattern = pattern
         self._clip = clip
         self._revision = None
@@ -126,6 +147,9 @@ class PreviewSet:
         song_data[SongSetting.LIVE_RESPONSIVENESS] = LiveResponsiveness.CLIP_RESTART
         setlist = Setlist.from_data(data=data)
         song = setlist.get_song(name)
+        if self._trial is not None:
+            self._copy_trial(setlist=setlist, song=song)
+            return
         pattern = song.get_pattern(self._pattern)
         track = unique_name(base=MSG_PREVIEW_TRACK_NAME, taken=song.get_track_names())
         song.add_item(section=Section.TRACKS, name=track, item=Track(drum=True) if pattern.is_drum() else Track())
@@ -144,10 +168,28 @@ class PreviewSet:
         self._revision = real.revision()
 
 
+    def _copy_trial(self, *, setlist, song):
+        """Finish a copy that plays the pattern written to try a sound with, once, on a drum track made for it, under no scale."""
+        name = unique_name(base=MSG_PREVIEW_PATTERN_NAME, taken=song.get_pattern_names())
+        setlist.add_item(section=Section.PATTERNS, name=name, item=Pattern.from_data(data=self._trial, where=name, song=song))
+        track = unique_name(base=MSG_PREVIEW_TRACK_NAME, taken=song.get_track_names())
+        song.add_item(section=Section.TRACKS, name=track, item=Track(drum=True))
+        clip_slot = ClipSlot()
+        clip_slot.set_pattern_name(name=name, song=song)
+        clip_slot.set_repeat(TRIAL_PASSES)
+        scene = Scene(clip_slots={})
+        song.add_scene(index=PREVIEW_SCENE, scene=scene)
+        scene.set_clip_slot(track=track, clip_slot=clip_slot, song=song)
+        self._setlist = setlist
+        self._track = track
+        self._scale = None
+        self._revision = self.real().revision()
+
+
 class PatternPreview(Transport):
     """Plays one pattern again and again beside whatever the song's transport plays, and answers which step sounds."""
 
-    __slots__ = ('_set', '_pattern', '_clip')
+    __slots__ = ('_set', '_pattern', '_clip', '_trial')
 
     def __init__(self, *, beside):
         """beside is the song's transport, whose clock, FluidSynth and way of making a sender the preview shares."""
@@ -156,6 +198,8 @@ class PatternPreview(Transport):
         self._pattern = None
         # The clip of the song, as (scene, track), that plays through General MIDI while the set's Real Time switch is off, when no pattern does.
         self._clip = None
+        # The sound being tried, as (the program byte, or None for the drum kit; what the asker tells the trial by), while one is.
+        self._trial = None
 
     def real(self):
         """Return the document the tracker edits, where document() is the copy the preview plays."""
@@ -220,6 +264,9 @@ class PatternPreview(Transport):
 
     def _route(self):
         real = self.real()
+        if self._trial is not None:
+            program, _ = self._trial
+            return Route(FLUIDSYNTH_PORT, DRUM_CHANNEL_BYTE, None, keyswitches=False) if program is None else Route(FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, program, keyswitches=False)
         if self._clip is not None:
             return Route(FLUIDSYNTH_PORT, DRUM_CHANNEL_BYTE, None, keyswitches=False) if self._clip_is_drums() else Route(FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, PIANO_PROGRAM, keyswitches=False)
         if real.song().get_pattern(self._pattern).is_drum():
@@ -261,6 +308,22 @@ class PatternPreview(Transport):
             self.stop()
             raise
 
+    def play_sound(self, *, numbers, step_size, sound, key):
+        """Try a sound: play some MIDI notes once, a step each, through General MIDI in FluidSynth, in a General MIDI sound, or on
+        the drum kit where sound is None. key is whatever the asker tells one trial from another by, answered by playing_sound()."""
+        self.stop()
+        self._trial = (None if sound is None else sound - MIN_GM_SOUND, key)
+        self._set = PreviewSet(holder=self._document_holder, trial=trial_pattern(numbers=numbers, step_size=step_size))
+        try:
+            self.play_clip(index=self._set.scene(), track=self._set.track())
+        except Exception:
+            self.stop()
+            raise
+
+    def playing_sound(self):
+        """Return the key of the sound being tried while its notes play, or None."""
+        return self._trial[1] if self._trial is not None and self.is_playing() else None
+
     def playing_clip(self):
         """Return the clip of the song that plays through General MIDI, as (scene, track), or None."""
         return self._clip if self.is_playing() else None
@@ -270,6 +333,7 @@ class PatternPreview(Transport):
         self.stop_all()
         self._pattern = None
         self._clip = None
+        self._trial = None
         self._set = None
         self._player = None
 
@@ -299,6 +363,8 @@ class PatternPreview(Transport):
         """Return whether what plays is no longer in the set: the pattern, the song's Preview instrument, or the clip."""
         real = self.real()
         song = real.song()
+        if self._trial is not None:
+            return False
         if self._clip is not None:
             index, track = self._clip
             return index >= len(song.get_scenes()) or not song.has_item(section=Section.TRACKS, name=track) or song.get_scenes()[index].get_clip_slot(track) is None

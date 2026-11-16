@@ -22,11 +22,12 @@ from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT_PREFIX
 from llamatron.realtime.outputs import output_port_names
 from llamatron.strings.help import HELP_INSTRUMENT_EDITOR
 from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MAX_KEYSWITCH_LEAD, MIN_GM_SOUND, MIN_KEYSWITCH_LEAD
-from llamatron.strings.labels import Crumb, MSG_KEYSWITCH_LEAD_LABEL, MSG_KEYSWITCH_MAP_LABEL, MSG_CHANNEL_LABEL, MSG_DEVICE_LABEL, MSG_GM_FAMILIES, MSG_GM_PAGE_NAME, MSG_GM_SOUND_LABEL, MSG_GM_SOUND_SHOWN, MSG_GM_SOUNDS
+from llamatron.strings.labels import Crumb, MSG_KEYSWITCH_LEAD_LABEL, MSG_KEYSWITCH_MAP_LABEL, MSG_CHANNEL_LABEL, MSG_DEVICE_LABEL, MSG_GM_FAMILIES, MSG_GM_SOUND_LABEL, MSG_GM_SOUND_SHOWN, MSG_GM_SOUNDS
 from llamatron.strings.legends import MSG_NO_DEVICE_WHAT, MSG_NO_GM_SOUND_WHAT, What
 from llamatron.strings.marks import MSG_KEYSWITCH_LEAD_SHOWN, MSG_AUTO_CHANNEL_SHOWN, MSG_NO_DEVICE_SHOWN, MSG_NONE_SHOWN
 from llamatron.strings.messages import MSG_KEYSWITCH_LEAD_PROMPT, MSG_KEYSWITCH_MAP_TITLE, MSG_CHANNEL_PROMPT, MSG_DEVICE_TITLE, MSG_GM_SOUND_TITLE, MSG_RENAME_INSTRUMENT_PROMPT
-from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog, grouped_grid
+from llamatron.tui.dialogs.sound_dialog import SoundDialog
+from llamatron.tui.screens.shared.sound_trial import SoundTrial, run_in_sound
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.keyswitch_map_dialog import KeyswitchMapDialog
 from llamatron.tui.screens.shared.field import Button, Field, NameField, NumberField
@@ -38,17 +39,16 @@ from llamatron.tui import keybindings
 # The place of (none) in the device picker, before FluidSynth and the ports, and in the sound picker, before the sounds.
 NO_DEVICE_PLACE = 0
 NO_SOUND_PLACE = 0
-# How many of General MIDI's families the sound picker shows on a page, side by side, so that the longest names fit an 80 by 24 console.
-FAMILIES_A_PAGE = 2
 
 
-def sound_pages():
-    """Return the sound picker's pages, each two families side by side under their headings, as places in the options, (none) being place 0 and sound n place n."""
-    families = [(family, list(range(place * GM_FAMILY_SIZE + MIN_GM_SOUND, (place + 1) * GM_FAMILY_SIZE + MIN_GM_SOUND))) for place, family in enumerate(MSG_GM_FAMILIES)]
-    return [
-        (MSG_GM_PAGE_NAME.format(number=page + 1), grouped_grid([[family] for family in families[page * FAMILIES_A_PAGE:(page + 1) * FAMILIES_A_PAGE]]))
-        for page in range(len(families) // FAMILIES_A_PAGE)
-    ]
+def sound_families(*, numbered=False):
+    """Return General MIDI's families for the sound picker, each its name with its sounds as (label, General MIDI number), a label the sound's name,
+    after its number where numbered."""
+    def label(sound):
+        name = MSG_GM_SOUNDS[sound - MIN_GM_SOUND]
+        return MSG_GM_SOUND_SHOWN.format(number=sound, name=name) if numbered else name
+    return [(family, [(label(sound), sound) for sound in range(place * GM_FAMILY_SIZE + MIN_GM_SOUND, (place + 1) * GM_FAMILY_SIZE + MIN_GM_SOUND)])
+            for place, family in enumerate(MSG_GM_FAMILIES)]
 
 
 def sound_text(sound):
@@ -91,10 +91,9 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
         self.ask(dialog=ChoiceDialog(title=MSG_DEVICE_TITLE, options=options, current=options.index(current) if current in options else NO_DEVICE_PLACE), then=chosen)
 
     def pick_gm_sound(self):
-        """Choose the instrument's General MIDI sound from its families, a page of two at a time, with (none) above them."""
-        options = [MSG_NONE_SHOWN, *MSG_GM_SOUNDS]
-        current = self.instrument().get_gm_sound() or NO_SOUND_PLACE
-        dialog = GridChoiceDialog(title=MSG_GM_SOUND_TITLE, options=options, grid=None, current=current, top=[NO_SOUND_PLACE], pages=sound_pages())
+        """Choose the instrument's General MIDI sound from its families, each a row that opens its sounds, with (none) above them; a sound can be tried."""
+        dialog = SoundDialog(title=MSG_GM_SOUND_TITLE, top=[(MSG_NONE_SHOWN, NO_SOUND_PLACE)], groups=sound_families(numbered=True), current=self.instrument().get_gm_sound() or NO_SOUND_PLACE,
+                             trial=SoundTrial(page=self, played=lambda sound: run_in_sound(sound or None)))
         self.ask(dialog=dialog, then=lambda place: self.set_gm_sound(None if place == NO_SOUND_PLACE else place))
 
     def step_gm_sound(self, offset):
