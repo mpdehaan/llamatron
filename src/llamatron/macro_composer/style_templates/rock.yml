@@ -369,6 +369,14 @@ sections:
     bars: 8
     plays: [drums, bass, guitar, keys, voices, lead]
     plan: [{line: hook, higher: true}, {line: hook, higher: true, varied: true}, {line: hook, higher: true}, {line: close}]
+  # A short ramp into the chorus: chords that keep away from home and end wanting it, the tune climbing.
+  pre-chorus:
+    intensity: {drums: 3, bass: 2, rhythm: 3, keys: 2, lead: 3}
+    picks: {cymbal: hat half open}
+    bars: 4
+    chords: [4, 4, 5, 5]
+    plays: [drums, bass, guitar, keys, lead]
+    plan: [{line: p}, {line: p, higher: true, varied: true}]
   bridge:
     intensity: {drums: 3, bass: 3, rhythm: 3, keys: 3, lead: 3}
     crash: true
@@ -400,6 +408,43 @@ forms:
     - {name: with a solo, share: 30, sections: [intro, verse, verse, chorus, verse, chorus, solo, chorus, ending]}
     - {name: short, share: 15, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, chorus, ending]}
     - {name: long with two solos, share: 10, sections: [intro, verse, verse, chorus, verse, chorus, solo, solo, bridge, chorus, chorus, ending]}
+  # Each kind of rock has the shapes its songs take: how often a solo, a bridge or a pre-chorus comes.
+  rock and roll:
+    - {name: verses in a row, share: 40, sections: [intro, verse, verse, solo, verse, ending]}
+    - {name: with a chorus, share: 35, sections: [intro, verse, chorus, verse, chorus, solo, chorus, ending]}
+    - {name: two verses first, share: 25, sections: [intro, verse, verse, chorus, solo, verse, chorus, ending]}
+  british invasion:
+    - {name: with a middle eight, share: 35, sections: [intro, verse, verse, bridge, verse, bridge, verse, ending]}
+    - {name: with a chorus and a bridge, share: 35, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, ending]}
+    - {name: middle eight and a solo, share: 15, sections: [intro, verse, verse, bridge, solo, bridge, verse, ending]}
+    - {name: short, share: 15, sections: [intro, verse, chorus, verse, chorus, ending]}
+  folk rock:
+    - {name: verse and chorus, share: 40, sections: [intro, verse, chorus, verse, chorus, verse, chorus, ending]}
+    - {name: with a solo, share: 30, sections: [intro, verse, verse, chorus, verse, chorus, solo, chorus, ending]}
+    - {name: with a bridge, share: 30, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, ending]}
+  hard rock:
+    - {name: with a solo, share: 35, sections: [intro, verse, chorus, verse, chorus, solo, chorus, ending]}
+    - {name: with a bridge and a solo, share: 30, sections: [intro, verse, chorus, verse, chorus, bridge, solo, chorus, chorus, ending]}
+    - {name: with a bridge, share: 20, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, ending]}
+    - {name: long with two solos, share: 15, sections: [intro, verse, verse, chorus, verse, chorus, solo, solo, chorus, ending]}
+  arena rock:
+    - {name: with a bridge and a solo, share: 30, sections: [intro, verse, chorus, verse, chorus, bridge, solo, chorus, chorus, ending]}
+    - {name: pre-chorus and a solo, share: 30, sections: [intro, verse, pre-chorus, chorus, verse, pre-chorus, chorus, solo, chorus, chorus, ending]}
+    - {name: with a solo, share: 25, sections: [intro, verse, verse, chorus, verse, chorus, solo, chorus, ending]}
+    - {name: pre-chorus and a bridge, share: 15, sections: [intro, verse, pre-chorus, chorus, verse, pre-chorus, chorus, bridge, chorus, ending]}
+  punk:
+    - {name: with a bridge, share: 45, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, ending]}
+    - {name: short, share: 35, sections: [intro, verse, chorus, verse, chorus, chorus, ending]}
+    - {name: two verses first, share: 20, sections: [intro, verse, verse, chorus, verse, chorus, chorus, ending]}
+  new wave:
+    - {name: with a bridge, share: 35, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, ending]}
+    - {name: pre-chorus and a bridge, share: 25, sections: [intro, verse, pre-chorus, chorus, verse, pre-chorus, chorus, bridge, chorus, chorus, ending]}
+    - {name: with a solo, share: 20, sections: [intro, verse, chorus, verse, chorus, solo, chorus, ending]}
+    - {name: two verses first, share: 20, sections: [intro, verse, verse, chorus, verse, chorus, chorus, ending]}
+  rock ballad:
+    - {name: with a solo, share: 40, sections: [intro, verse, verse, chorus, verse, chorus, solo, chorus, ending]}
+    - {name: with a bridge, share: 35, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, ending]}
+    - {name: pre-chorus and a solo, share: 25, sections: [intro, verse, pre-chorus, chorus, verse, pre-chorus, chorus, solo, chorus, ending]}
 
 melody:
   4/4:
