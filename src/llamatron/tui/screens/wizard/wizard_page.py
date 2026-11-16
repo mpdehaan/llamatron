@@ -28,14 +28,16 @@ The page knows nothing of any one branch (branch.py): it draws what the branches
 from rich.text import Text
 
 from llamatron.composition.naming import new_name
+from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings.help import HELP_WIZARD_PAGE
-from llamatron.strings.labels import Crumb, MSG_WIZARD_CAPTION, MSG_WIZARD_REPLACE_CAPTION
-from llamatron.strings.marks import MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_EDITED_BRANCH
-from llamatron.strings.messages import MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CLOSE_TITLE, MSG_WIZARD_CREATED, MSG_WIZARD_NOTHING_TO_UNDO, MSG_WIZARD_REPLACED, MSG_WIZARD_SONG_NAME_PROMPT
+from llamatron.strings.labels import Crumb, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_CAPTION, MSG_WIZARD_REPLACE_CAPTION
+from llamatron.strings.marks import MSG_WIZARD_CARRIED, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_EDITED_BRANCH
+from llamatron.strings.messages import MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CLOSE_TITLE, MSG_WIZARD_CREATED, MSG_WIZARD_MOVING, MSG_WIZARD_NOTHING_TO_UNDO, MSG_WIZARD_REPLACED, MSG_WIZARD_SONG_NAME_PROMPT
 from llamatron.strings.names import MSG_NEW_SONG_WORD
 from llamatron.support.version import VERSION
 from llamatron.tui import keybindings, themes
+from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import Box, cursor_mark, INDENT, NOTHING, SPACE, Style
 from llamatron.tui.key_table import cursor_moved
@@ -80,6 +82,8 @@ class WizardPage(FieldPage):
         self._open = set()
         self.tree_place = FIRST_PLACE
         self.in_fields = False
+        # Move mode, the tracker's: whether M has picked up the branch under the tree's cursor.
+        self.moving = False
         if start is not None:
             self.start_with(start)
 
@@ -94,8 +98,9 @@ class WizardPage(FieldPage):
     def choosing(self, setter):
         """Return a setter that also notes that something was chosen, so that closing the wizard asks before the choices are lost."""
         def chosen(value):
-            setter(value)
+            result = setter(value)
             self._changed = True
+            return result
         return chosen
 
     def ask_song_name(self):
@@ -202,13 +207,64 @@ class WizardPage(FieldPage):
         if self.in_fields:
             # A settings page's keys, but for ESC, which goes back to the tree here and not from the page.
             return [self.bind(self.KEYS.TO_TREE, action=self.to_tree), *super().keys()[1:]]
+        if self.moving:
+            # While a branch is carried, only the keys that carry and drop it work, as in every move mode.
+            return [self.bind(self.KEYS.DROP, action=self.drop), self.bind(self.KEYS.CARRY, action=self.carry)]
         depth, branch = self.row()
         result = [self.bind(self.KEYS.CLOSE, action=self.go_back), self.bind(self.KEYS.TREE, action=self.move_in_tree, wants_key=True)]
         if depth or branch.children():
             result.append(self.bind(self.KEYS.FOLD, action=self.fold, wants_key=True))
         if self.refusal_of(branch) or branch.can_be_edited():
             result.append(self.bind(self.KEYS.INTO_FIELDS, action=self.into_fields))
+        if branch.adds():
+            result.append(self.bind(self.KEYS.ADD, action=self.add_to_list))
+        if branch.is_listed():
+            result += [self.bind(self.KEYS.COPY, action=self.copy_listed), self.bind(self.KEYS.DELETE, action=self.remove_listed), self.bind(self.KEYS.MOVE, action=self.start_moving)]
         return result
+
+    # A branch that is one of a list: added to, copied, removed and moved with the keys every list of the tracker has.
+
+    def add_to_list(self):
+        """Ask which kind of thing to add, and add one: after the branch under the cursor where that is one of a list, the
+        cursor going to the new one, or at the end of the list the branch holds, which opens to show it."""
+        branch = self.branch()
+        kinds = branch.kinds_to_add()
+
+        def chosen(place):
+            self.choosing(branch.add)(kinds[place])
+            if branch.is_listed():
+                self.tree_place += 1
+            else:
+                self._open.add(branch.key())
+        self.ask(dialog=ChoiceDialog(title=MSG_WIZARD_ADD_SECTION_TITLE, options=kinds), then=chosen)
+
+    def copy_listed(self):
+        self.choosing(lambda branch: branch.copy())(self.branch())
+        self.tree_place += 1
+
+    def remove_listed(self):
+        """Remove the branch under the cursor from its list, with no question, since nothing is in the set yet; the last of a list stays."""
+        try:
+            self.choosing(lambda branch: branch.remove())(self.branch())
+        except ValueError as problem:
+            self.refuse(str(problem))
+            return
+        if not self.branch().is_listed():
+            # The last of the list went, so the cursor goes to the one that is last now.
+            self.tree_place -= 1
+
+    def start_moving(self):
+        self.moving = True
+        self.say(MSG_WIZARD_MOVING.format(name=self.branch().name()))
+
+    def carry(self, offset):
+        """Carry the branch picked up one place earlier or later in its list, the cursor going with it."""
+        if self.choosing(self.branch().move)(offset):
+            self.tree_place += offset
+        self.say(MSG_WIZARD_MOVING.format(name=self.branch().name()))
+
+    def drop(self):
+        self.moving = False
 
     # Closing, and undo, which has nothing to act on here.
 
@@ -235,7 +291,13 @@ class WizardPage(FieldPage):
         """Make the song from the choices, add it to the set with all it uses as one change, and show Arrange on it, the user's design.
         Every run of the wizard rolls the dice afresh, the user's rule: a run from the last settings keeps the settings and never the seed."""
         self._choices.forget_seed()
-        made = self._choices.made_setlist(name=self._song_name, version=VERSION)
+        try:
+            made = self._choices.made_setlist(name=self._song_name, version=VERSION)
+        except (ValueError, SongFileError) as problem:
+            # A form of the song's own can ask for what the genre's parts cannot fill, which is said and nothing made.
+            self.to_tree()
+            self.refuse(str(problem))
+            return
         document = self.document()
         replaces = self.replaces()
         if replaces:
@@ -266,7 +328,8 @@ class WizardPage(FieldPage):
                 line.append((MSG_WIZARD_BRANCH_OPEN if self.shows_children(branch) else MSG_WIZARD_BRANCH_CLOSED) + SPACE)
             else:
                 line.append(INDENT)
-            line.append(branch.name(), style=Style.DIM if self.refusal_of(branch) else (Style.BOLD if under_cursor else Style.PLAIN))
+            carried = self.moving and under_cursor
+            line.append(MSG_WIZARD_CARRIED.format(name=branch.name()) if carried else branch.name(), style=Style.DIM if self.refusal_of(branch) else (Style.BOLD if under_cursor else Style.PLAIN))
             if branch.note():
                 line.append(SPACE + branch.note(), style=Style.DIM)
             line.truncate(TREE_WIDTH - 2)

@@ -514,6 +514,12 @@ ERR_WIZARD_NO_SUCH_WAY = '{trait} must be a way of playing that fits the other c
 ERR_WIZARD_NO_WAY = 'no way of playing fits the other choices for ({value})'
 ERR_WIZARD_BUSY = 'busy must be an integer from {low} to {high}, got {value!r}'
 ERR_WIZARD_LAST_PLAYER = 'a band needs one player'
+ERR_WIZARD_NO_SUCH_SECTION = 'section must be a place in the form, got {value!r}'
+ERR_WIZARD_NO_SUCH_SECTION_KIND = 'section must be a kind the genre has, got {value!r}'
+ERR_WIZARD_LAST_SECTION = 'a form needs one section'
+ERR_WIZARD_SECTION_BARS = 'bars must be a length the section can have, got {value!r}'
+ERR_WIZARD_SECTION_NEEDS_PLAYER = 'a section needs one player'
+ERR_WIZARD_BAD_SECTIONS = 'sections must be a list of sections of the genre, got {value!r}'
 
 # tui/screens/wizard/wizard_page.py and the branches beside it
 ERR_WIZARD_CHOOSE_GENRE = 'choose a genre first'

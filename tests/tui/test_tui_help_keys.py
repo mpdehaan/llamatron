@@ -136,6 +136,8 @@ def vars_of(kind):
     """Return everything a class of tui/keybindings.py holds, its own and what it inherits."""
     return [value for _, value in inspect.getmembers(kind)]
 
+# Where the Form branch is in the song wizard's tree while the branches above it are closed.
+WIZARD_FORM_PLACE = 2
 
 class TestKeysNamedInHelp(unittest.TestCase):
     """How a help text is read for its keys."""
@@ -361,6 +363,15 @@ class KeyTour(UITest):
         await self.walk()
         await self.press(keybindings.WizardPage.TO_TREE)
         await self.walk()
+        # The Form branch opened and its first section under the cursor, which has a list's keys; then the section picked up, and
+        # its settings. No walk here, since a walk's Left closes the branch it is in.
+        await self.press(*[Key.UP] * len(self.app.screen.rows()), *[Key.DOWN] * WIZARD_FORM_PLACE, Key.RIGHT, Key.DOWN)
+        self.note()
+        await self.press(keybindings.WizardPage.MOVE)
+        self.note()
+        await self.press(keybindings.WizardPage.DROP, keybindings.WizardPage.INTO_FIELDS)
+        self.note()
+        await self.press(keybindings.WizardPage.TO_TREE, Key.LEFT, Key.LEFT)
         await self.press(*[Key.DOWN] * len(self.app.screen.rows()), keybindings.WizardPage.INTO_FIELDS)
         await self.walk()
         await self.press(keybindings.WizardPage.TO_TREE, keybindings.WizardPage.CLOSE, keybindings.ConfirmDialog.YES)

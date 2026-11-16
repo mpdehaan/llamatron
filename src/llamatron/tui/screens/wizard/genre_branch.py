@@ -23,7 +23,7 @@ from llamatron.strings.labels import (
     MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_SUBGENRE_LABEL,
 )
 from llamatron.strings.legends import What
-from llamatron.strings.marks import MSG_WIZARD_CHOOSE, MSG_WIZARD_LENGTH_SHOWN, MSG_WIZARD_TEMPO_SHOWN
+from llamatron.strings.marks import MSG_WIZARD_CHOOSE, MSG_WIZARD_LENGTH_SHOWN, MSG_WIZARD_OWN_FORM, MSG_WIZARD_TEMPO_SHOWN
 from llamatron.tui.text import clock
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NumberField
@@ -59,12 +59,21 @@ class GenreBranch(Branch):
                             lowest=MIN_TEMPO, highest=MAX_TEMPO, set=page.choosing(choices.set_tempo)),
                 # The meter is the subgenre's, so it is only shown; the length follows the sections, so stepping it chooses a longer or a shorter form.
                 Field(label=MSG_WIZARD_METER_LABEL, value=choices.meter),
-                Field(label=MSG_WIZARD_LENGTH_LABEL, value=lambda: MSG_WIZARD_LENGTH_SHOWN.format(length=clock(choices.form_seconds()), form=choices.get_form()), adjust=page.choosing(choices.step_length)),
+                self.length_field(),
             ]
         if page.replaces():
             # A replaced song keeps its name, so the name is only shown.
             return [*fields, Field(label=MSG_NAME_LABEL, value=page.song_name)]
         return [*fields, Field(label=MSG_NAME_LABEL, value=page.song_name, enter=page.ask_song_name, enter_what=What.RENAME)]
+
+    def length_field(self):
+        """Return the Length field, whose steps choose a shorter or a longer suggested form; once the form is the song's own,
+        the length is only shown, since a step would put a suggested form in place of the sections changed."""
+        choices = self.choices()
+        if choices.has_own_form():
+            return Field(label=MSG_WIZARD_LENGTH_LABEL, value=lambda: MSG_WIZARD_LENGTH_SHOWN.format(length=clock(choices.form_seconds()), form=MSG_WIZARD_OWN_FORM))
+        return Field(label=MSG_WIZARD_LENGTH_LABEL, value=lambda: MSG_WIZARD_LENGTH_SHOWN.format(length=clock(choices.form_seconds()), form=choices.get_form()),
+                     adjust=self.page().choosing(choices.step_length))
 
     def subgenre_field(self):
         """Return the Subgenre field, which refuses until a genre is chosen, since each genre has its own."""

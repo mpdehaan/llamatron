@@ -700,6 +700,8 @@ MSG_WIZARD_START_NAMES = {
 }
 MSG_WIZARD_METER_LABEL = 'Meter'
 MSG_WIZARD_BAND_BRANCH = 'Band'
+MSG_WIZARD_KIND_LABEL = 'Kind'
+MSG_WIZARD_ADD_SECTION_TITLE = 'Add section'
 MSG_WIZARD_BUSY_LABEL = 'Busy'
 MSG_WIZARD_LENGTH_LABEL = 'Length'
 # The last row of the dialog that asks how to start.
