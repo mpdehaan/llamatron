@@ -68,6 +68,7 @@ ANOTHER_DRUM = ('cowbell', 'claves')
 ANOTHER_NOTE = USUAL_PIECE_NOTE + 7
 BREAK_CUT = 'cut up'
 MELODY_GAUGE = 'melody gauge'
+HOOK = 'hook'
 GUITARISTS = 'guitarists'
 SEED = 'seed'
 TEMPO = 'tempo'
@@ -210,6 +211,8 @@ def every_choice(choices):
             for position in range(LOWEST_GAUGE, HIGHEST_GAUGE + 1):
                 if position != chosen.get_gauge(name):
                     yield MELODY_GAUGE, (style, name, position), lambda made, name=name, position=position: made.set_gauge(name=name, position=position), [lambda made, style=style: made.set_melody(style)]
+    if choices.can_have_hook():
+        yield HOOK, not choices.has_hook(), lambda made: made.set_hook(not made.has_hook()), [nothing_first]
     if choices.offers_one_guitarist():
         yield GUITARISTS, ONE_GUITARIST_COUNT, lambda made: made.set_guitarists(ONE_GUITARIST_COUNT), [nothing_first]
     yield SEED, ANOTHER_SEED, lambda made: made.set_seed(ANOTHER_SEED), [nothing_first]

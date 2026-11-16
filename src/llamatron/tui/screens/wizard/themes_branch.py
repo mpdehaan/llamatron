@@ -14,17 +14,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The wizard's Themes branch: the chord progression the song is built on and the melody style its tunes are sketched by."""
+"""The wizard's Themes branch: the chord progression the song is built on, the melody style its tunes are written by and whether the song has a hook."""
 
 from llamatron.macro_composer.melody import HIGHEST_GAUGE, LOWEST_GAUGE
-from llamatron.strings.labels import MSG_WIZARD_ANY_PROGRESSION, MSG_WIZARD_GAUGE_ENDS, MSG_WIZARD_GAUGE_LABELS, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_THEMES_BRANCH, MSG_WIZARD_USUAL_MELODY
+from llamatron.strings.labels import MSG_WIZARD_ANY_PROGRESSION, MSG_WIZARD_GAUGE_ENDS, MSG_WIZARD_GAUGE_LABELS, MSG_WIZARD_HOOK_LABEL, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_THEMES_BRANCH, MSG_WIZARD_USUAL_MELODY
 from llamatron.strings.marks import MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_MELODY_GAUGE_SHOWN
-from llamatron.tui.screens.shared.field import ChoiceField, NumberField
+from llamatron.tui.screens.shared.field import ChoiceField, NumberField, Toggle
 from llamatron.tui.screens.wizard.song_ways_branch import A_CHOICE, SongWaysBranch
 
 
 class ThemesBranch(SongWaysBranch):
-    """The song's Progression and Melody; each theme's own settings are to come."""
+    """The song's Progression, Melody and whether the song has a hook; each theme's own settings are to come."""
 
     __slots__ = ()
 
@@ -57,7 +57,11 @@ class ThemesBranch(SongWaysBranch):
             fields.append(ChoiceField(page=self.page(), label=MSG_WIZARD_MELODY_LABEL, choices=[MSG_WIZARD_USUAL_MELODY, *styles], current=choices.get_melody() or MSG_WIZARD_USUAL_MELODY,
                                       set=self.page().choosing(lambda style: choices.set_melody(None if style == MSG_WIZARD_USUAL_MELODY else style))))
         # The smart melody style's gauges, under the Melody field while the song's tunes are sketched by it.
-        return [*fields, *(self.gauge_field(name) for name in choices.gauges())]
+        fields.extend(self.gauge_field(name) for name in choices.gauges())
+        if choices.can_have_hook():
+            # Whether the song has a hook, which is made apart from the melody style that writes the other lines.
+            fields.append(Toggle(label=MSG_WIZARD_HOOK_LABEL, on=choices.has_hook(), set=self.page().choosing(choices.set_hook)))
+        return fields
 
     def gauge_field(self, name):
         """Return the field of one gauge of the smart melody style: a number stepped or typed, drawn as a horizontal gauge

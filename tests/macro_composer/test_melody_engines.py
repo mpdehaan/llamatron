@@ -310,11 +310,11 @@ def share(*, of, among):
     return len(of) / max(1, len(among))
 
 
-def hooks_song(seed):
-    """A verse and a chorus of one song by the hooks engine, and the habits they were made by."""
+def hooks_song(seed, *, writer=melody.SMART):
+    """A verse and a chorus of one song with a hook, its other lines by the writer named, and the habits they were made by."""
     habits = smart_habits()
     letters = [entry[melody.LINE] for entry in SONG_PLAN + CHORUS_PLAN]
-    made = [melody.sketched(habits=habits, plan=plan, chords=SMART_CHORDS, scale_type=melody.MAJOR, seed=seed, answers=False, engine=melody.HOOKS, letters=letters) for plan in (SONG_PLAN, CHORUS_PLAN)]
+    made = [melody.sketched(habits=habits, plan=plan, chords=SMART_CHORDS, scale_type=melody.MAJOR, seed=seed, answers=False, engine=writer, letters=letters, hook=True) for plan in (SONG_PLAN, CHORUS_PLAN)]
     return made[0], made[1], habits
 
 
@@ -366,6 +366,26 @@ class TestHooks(unittest.TestCase):
             _, chorus, habits = hooks_song(seed)
             figure = first_bar(line=chorus[0], grid=habits[melody.GRID])
             self.assertLessEqual(len(set(places_of(line=figure, habits=habits))), MOST_PITCHES_IN_A_FIGURE)
+
+    def test_the_hook_is_the_same_whoever_writes_the_other_lines_but_for_what_the_gauges_seed(self):
+        for writer in melody.ENGINES:
+            for seed in SEEDS:
+                _, chorus, habits = hooks_song(seed, writer=writer)
+                grid = habits[melody.GRID]
+                figure = first_bar(line=chorus[0], grid=grid)
+                self.assertLessEqual(len(figure), melody.MOST_SHORT_NOTES + 1, writer)
+                self.assertGreaterEqual(figure[-1][notation.STEPS] * 2, grid, writer)
+                self.assertEqual(chorus[0], chorus[2], writer)
+
+    def test_without_a_hook_the_writer_writes_alone_and_with_one_keeps_under_it_in_every_section(self):
+        letters = [entry[melody.LINE] for entry in SONG_PLAN + CHORUS_PLAN]
+        for writer in melody.ENGINES:
+            given = dict(habits=smart_habits(), chords=SMART_CHORDS, scale_type=melody.MAJOR, seed=FIRST_HOOK_SEED, answers=False, engine=writer, letters=letters)
+            alone = melody.sketched(plan=CHORUS_PLAN, **given)
+            self.assertEqual(melody.sketched(plan=CHORUS_PLAN, hook=False, **given), alone)
+            self.assertNotEqual(melody.sketched(plan=CHORUS_PLAN, hook=True, **given), alone, writer)
+        self.assertFalse(melody.has_hook(SONG_PLAN))
+        self.assertTrue(melody.has_hook(CHORUS_PLAN))
 
     def test_the_same_seed_makes_the_same_hook_and_another_seed_another(self):
         self.assertEqual(hooks_song(FIRST_HOOK_SEED)[1], hooks_song(FIRST_HOOK_SEED)[1])
