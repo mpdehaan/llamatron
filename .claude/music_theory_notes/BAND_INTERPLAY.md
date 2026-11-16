@@ -27,3 +27,36 @@
   the answering role moves to another player. Backup voices go. (practice)
 - **Starts and endings** are interplay too: who enters first and who leaves last says what the song is built on, groove or riff.
   See `SONG_STRUCTURE.md`.
+
+## House Bands and Session Players
+
+Three studio systems of the sixties, each a fixed group of players who made a label's or a city's sound. What they share: parts
+invented on the spot from a bare chart, each player owning one narrow job, and nobody playing over anyone else. (practice)
+
+- **The Detroit house band.** Songs came as chord charts with the writers' ideas; the players filled in the rest. Roles: a
+  **bass** that is the lead instrument of the rhythm section, melodic, syncopated, full of chromatic passing notes, seldom the same
+  bar twice; **two drummers** on some dates, or one with a second player on tambourine, the backbeat reinforced by handclaps, foot
+  stomps or a snare on all four beats; **three guitars**, each with one job: one chopping a dry chord on 2 and 4 high on the neck,
+  one doubling the piano's or the bass's line, one playing fills and figures; **piano and organ** together; **vibraphone and
+  tambourine** for the top; strings and horns arranged afterward. The density works because every part is small.
+- **The Memphis house band.** No arrangers and no charts: the four players and the horn players worked the song out by trying
+  accents, bass lines and chord inversions until it sat. The **drummer** places 2 and 4 late and deep and plays almost no fills;
+  the **bass** locks to the kick with short repeated figures and leaves the delayed backbeat alone; the **guitar** plays two- or
+  three-note chords and fills only in the singer's gaps, and often doubles the bass an octave up for a riff; the **organ or
+  piano** holds terse chords; the **horns** play unison lines, punches and held pads as a head arrangement, in place of backing
+  singers. Fewer notes than any other style; the space is the sound.
+- **The Nashville session system.** Three songs in a three-hour session, heard for the first time at its start; the players write
+  a number chart by ear and build a head arrangement in minutes. Roles: an upright **bass** on roots and fifths, doubled note for
+  note by a muted six-string bass guitar an octave up with a pick, for a click on each note; **drums** light, brushes or a
+  cross-stick, often no cymbals; an acoustic **rhythm guitar** strumming high like a snare; a **lead guitar** and a **steel
+  guitar** (or fiddle) who trade: one takes the intro, the other the turnaround, each fills in alternate lines of the verse and
+  never together; a **piano** playing fills with a grace note sliding up a tone into a chord tone, the top note held; a vocal
+  group singing soft held chords, and strings on the smoother records.
+- **Number charts.** Chords are written as scale degrees so that a song is played in any key at once. Each number is a bar; two
+  numbers underlined share a bar; a diamond is a chord struck once and let ring; a mark over a number is a push, the chord
+  arriving an eighth early; a slash names a bass note; a minor chord has a dash. The chart says who takes the intro, the
+  turnaround and the solo, where the band stops, and where a "walk" joins two chords. Everything else is the player's style: the
+  chart is the same for every instrument, and each reads it into its own job.
+- **What to take from all three**: give each player one job and a register; pass the fills around by turn, line by line; let one
+  instrument only answer the singer at a time; settle who has the intro and the turnaround; diamonds, stops and pushes placed
+  together by the whole band are what make a rhythm section sound arranged.
