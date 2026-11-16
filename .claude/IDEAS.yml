@@ -1605,7 +1605,8 @@
     The user's idea: in the pattern editor, a pair of keys steps to the previous and the next pattern of the pattern group the
     open pattern is in, in the order the Patterns page lists them. The pattern shown changes in the view that is open, the
     piano roll or the rows, and nothing else of the navigation changes: the crumbs keep their trail with the new pattern's
-    name, and ESC goes back to where the editor was opened from. Which keys is to be decided from suggestions of Claude's.
+    name, and ESC goes back to where the editor was opened from. The keys, the user's choice: the semicolon steps to the previous
+    pattern and the apostrophe to the next, two unshifted keys side by side under the keys that step a value, used by no page.
     To settle with it: whether the step stops at the group's first and last pattern, as a cursor does, what happens for a
     pattern in no group (the ungrouped patterns as one list is the likely answer), whether the cursor keeps its step and row,
     what a preview that is playing does, and whether an editor opened from a clip on Arrange may step at all, since the clip
