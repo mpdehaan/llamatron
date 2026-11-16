@@ -347,9 +347,10 @@ players:
         - {bars: [4], needs: {meter: 6/8}, grid: 6, ends: [{degree: 1, octave: 1, steps: 1}, {degree: 6, steps: 1}, {degree: 5, steps: 1}, {degree: 3, steps: 1}, {degree: 2, steps: 1}, {degree: 1, steps: 1}]}
 
 # What stands in for a player whose own sound General MIDI plays poorly, by subgenre: the singer's hummed voice gives way to a
-# sound that carries a tune, heavier where the music is. The player stays the singer.
+# sound that carries a tune, heavier where the music is. The player stays the singer. Hard rock and punk keep the voice, so
+# that the tune is heard apart from their two distorted guitars.
 stand_ins:
-  lead: {rock and roll: overdriven guitar, british invasion: clean guitar, folk rock: clean guitar, hard rock: distortion guitar, arena rock: overdriven guitar, punk: distortion guitar, new wave: square lead, rock ballad: clean guitar}
+  lead: {rock and roll: overdriven guitar, british invasion: clean guitar, folk rock: clean guitar, arena rock: overdriven guitar, new wave: square lead, rock ballad: clean guitar}
 
 sounds: {square lead: 81, bass: 34, picked bass: 35, guitar: 26, clean guitar: 28, overdriven guitar: 30, distortion guitar: 31, lead guitar: 31, piano: 1, organ: 19, saxophone: 67, voice: 54, voices: 53}
 

@@ -31,10 +31,11 @@ of it written for people.
 - `RHYTHM_AND_GROOVE.md`: drumming above all: the groove, fills, ghost notes, feel, the kit by section.
 - `ARPEGGIOS.md`: arpeggiators and sequenced lines, the arpeggio as a theme, the ostinato score.
 - `KEYBOARDS.md`: the organs of rock, what an organist plays, keyboard bass, organ with guitar.
+- `BASS_LINES.md`: the ways a bass part is written, by family, each named for its sound; keyboard and organ bass.
 - `DRUM_MACHINES.md`: the machines, what each gave its genres, electronic percussion by style. Machines are named, as products.
 - `BAND_INTERPLAY.md`: who answers whom, layering, making room, intensity through a song.
 - `TECHNIQUES.md`: things read about and not yet used.
-- `genres/`: a file for each genre, with what each subgenre usually does, and for kinds of music not yet a genre of the wizard (`SOUNDTRACK.md`, `JAM.md`, `JAZZ.md`, `COUNTRY.md`, `POP.md`, `METAL.md`).
+- `genres/`: a file for each genre, with what each subgenre usually does, and for kinds of music not yet a genre of the wizard (`SOUNDTRACK.md`, `JAM.md`, `JAZZ.md`, `COUNTRY.md`, `POP.md`, `METAL.md`, `TV_THEMES.md`, `MUSIC_BOX.md`).
 
 ## Measuring, and Weighting
 
