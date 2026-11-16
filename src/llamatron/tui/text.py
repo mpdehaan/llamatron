@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """How the tracker shows a value as text, shared by its pages. How a new thing is named is in composition/naming.py."""
 
+from llamatron.composition.naming import name_order
 from llamatron.support.rational import Rational
 from llamatron.strings.marks import MSG_CLOCK, MSG_NO_TIME
 
@@ -29,8 +30,8 @@ def fraction(value):
 
 
 def sorted_names(names):
-    """Return names in the order a picker shows them, alphabetical ignoring case, as a list's S key sorts, leaving the set's own order alone."""
-    return sorted(names, key=lambda name: str(name).lower())
+    """Return names in the order a picker shows them, by name ignoring case, a number at a name's end read as a number, as a list's S key sorts, leaving the set's own order alone."""
+    return sorted(names, key=name_order)
 
 
 def plain_number(number):

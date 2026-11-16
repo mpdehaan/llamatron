@@ -28,6 +28,9 @@ from llamatron.strings.names import MSG_DEFAULT_SCALE_NAME, MSG_LEGACY_SCALE_NAM
 FIRST_COPY_NUMBER = 2
 # The number the first new thing of a kind gets.
 FIRST_NEW_NUMBER = 1
+# In a sort, a name that ends in no number comes before the same words with one.
+NO_NUMBER_FIRST = 0
+NUMBERED_AFTER = 1
 # A name that ends in a number, like verse-1, name1 or bass 2, which a duplicate counts up from: its words, whatever joins the
 # number to them, and the number, as the three named groups of the pattern below. The words may themselves end in a number
 # where something joins the last number to them, as in treble 1-2; with nothing between, the words end in no digit.
@@ -113,3 +116,12 @@ def split_trailing_number(name):
     if found is None:
         return name, None, None
     return found.group(BASE_GROUP), found.group(JOINT_GROUP), int(found.group(NUMBER_GROUP))
+
+
+def name_order(name):
+    """Return what names are sorted by, everywhere the tracker sorts them, the user's rule: the words ignoring capitals, then
+    the number a name ends in read as a number, so that verse-2 comes before verse-10, a name with no number before both."""
+    base, _, number = split_trailing_number(str(name))
+    if number is None:
+        return (base.lower(), NO_NUMBER_FIRST, NO_NUMBER_FIRST, str(name).lower())
+    return (base.lower(), NUMBERED_AFTER, number, str(name).lower())

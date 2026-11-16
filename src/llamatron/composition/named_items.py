@@ -17,7 +17,7 @@
 
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import data_as_kept, data_built_anew
-from llamatron.composition.naming import is_taken, same_name
+from llamatron.composition.naming import is_taken, name_order, same_name
 from llamatron.strings.errors import ERR_NAME_TAKEN, ERR_NO_SUCH_ITEM, ERR_SONG_NAME_NOT_TEXT
 from llamatron.support.revised import notes_change, Revised
 
@@ -25,7 +25,7 @@ FIRST_PLACE = 0
 
 
 def _name_for_sorting(pair):
-    return str(pair[0]).lower()
+    return name_order(pair[0])
 
 
 def moved_in_list(*, items, place, offset):
@@ -160,7 +160,7 @@ class NamedItems(Revised):
 
     @notes_change
     def sort(self):
-        """Put the items in alphabetical order of name, ignoring case."""
+        """Put the items in order of name, ignoring case and reading a number at the end as a number."""
         self._items = dict(sorted(self._all().items(), key=_name_for_sorting))
 
     def _place_of(self, name):
