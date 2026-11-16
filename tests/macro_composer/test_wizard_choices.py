@@ -21,8 +21,8 @@ from fractions import Fraction
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_TEMPO, MIN_TEMPO
-from llamatron.macro_composer.wizard_choices import LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, LAST_SOUND_OF_NOTES, USUAL_SOUNDS, FEEL_TRAITS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
-from llamatron.macro_composer.arranger import DRUMS, GENRE, PLAYERS, TYPE, WITHOUT, style_names
+from llamatron.macro_composer.wizard_choices import LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, LAST_SOUND_OF_NOTES, USUAL_SOUNDS, FEEL_TRAITS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
+from llamatron.macro_composer.arranger import DRUMS, GENRE, PLAYERS, ROLE_TITLE, TYPE, WITHOUT, style_named, style_names
 from llamatron.music.note import NoteName
 from llamatron.strings.errors import ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER
 from llamatron.playback.song_renderer import SongRenderer
@@ -552,6 +552,80 @@ class TestWizardSounds(unittest.TestCase):
         again.set_subgenre(again.subgenres()[1])
         self.assertEqual(again.get_band_sounds(), USUAL_SOUNDS)
         self.assertFalse(again.has_own_sound(A_BASS))
+
+
+class TestWizardGuitarists(unittest.TestCase):
+    """A band with one guitarist, who plays the chords and takes the solo."""
+
+    def rock(self):
+        choices = chosen(genre=genre_names().index(A_GENRE_WITH_TUNES))
+        choices.set_seed(A_SEED)
+        return choices
+
+    def one(self, choices):
+        return style_named(choices.get_genre())[ONE_GUITARIST]
+
+    def players_by_scene(self, choices):
+        """Which tracks play in each scene of the song made, by the scene's name."""
+        song = choices.made_setlist(name=A_NAME, version=VERSION).get_song(A_NAME)
+        SongRenderer(song).render()
+        return {scene.get_name(): [track for track in song.get_track_names() if scene.get_clip_slot(track) is not None] for scene in song.get_scenes()}
+
+    def test_a_band_has_two_guitarists_until_one_is_chosen_and_a_genre_with_no_guitar_solo_offers_only_two(self):
+        choices = self.rock()
+        self.assertEqual(choices.get_guitarists(), TWO_GUITARISTS)
+        self.assertTrue(choices.offers_one_guitarist())
+        without = [place for place in range(len(genre_names())) if not chosen(genre=place).offers_one_guitarist()]
+        self.assertTrue(without)
+        with self.assertRaises(ValueError):
+            chosen(genre=without[0]).set_guitarists(ONE_GUITARIST_COUNT)
+        with self.assertRaises(ValueError):
+            choices.set_guitarists(NOT_A_CHOICE)
+
+    def test_one_guitarist_is_one_player_on_the_screen_who_takes_the_solo_on_the_guitar(self):
+        choices = self.rock()
+        one = self.one(choices)
+        choices.set_guitarists(ONE_GUITARIST_COUNT)
+        self.assertNotIn(one[SOLO_PLAYER], choices.roles_shown())
+        self.assertEqual(choices.role_title(one[CHORDS_PLAYER]), one[ROLE_TITLE])
+        self.assertEqual(choices.get_way(one[SOLO_PLAYER]), one[SOLO_WAY])
+        self.assertTrue(choices.role_is_in(one[SOLO_PLAYER]))
+        choices.set_guitarists(TWO_GUITARISTS)
+        self.assertIn(one[SOLO_PLAYER], choices.roles_shown())
+
+    def test_the_chords_stop_where_the_solo_plays_in_a_suggested_form_and_in_the_songs_own(self):
+        for own in (False, True):
+            choices = self.rock()
+            one = self.one(choices)
+            if own:
+                choices.copy_section(0)
+            both = [name for name, tracks in self.players_by_scene(choices).items() if one[SOLO_PLAYER] in tracks and one[CHORDS_PLAYER] in tracks]
+            self.assertTrue(both)
+            choices.set_guitarists(ONE_GUITARIST_COUNT)
+            scenes = self.players_by_scene(choices)
+            self.assertTrue(any(one[SOLO_PLAYER] in tracks for tracks in scenes.values()))
+            self.assertTrue(any(one[CHORDS_PLAYER] in tracks for tracks in scenes.values()))
+            for name, tracks in scenes.items():
+                self.assertFalse(one[SOLO_PLAYER] in tracks and one[CHORDS_PLAYER] in tracks, name)
+
+    def test_one_guitarist_left_out_takes_the_solo_out_too(self):
+        choices = self.rock()
+        one = self.one(choices)
+        choices.set_guitarists(ONE_GUITARIST_COUNT)
+        choices.set_role_in(role=one[CHORDS_PLAYER], on=False)
+        tracks = choices.made_setlist(name=A_NAME, version=VERSION).get_song(A_NAME).get_track_names()
+        self.assertNotIn(one[SOLO_PLAYER], tracks)
+        self.assertNotIn(one[CHORDS_PLAYER], tracks)
+
+    def test_one_guitarist_is_kept_with_the_choices_and_another_subgenre_has_two_again(self):
+        choices = self.rock()
+        self.assertNotIn(GUITARISTS_KEPT, choices.to_data())
+        choices.set_guitarists(ONE_GUITARIST_COUNT)
+        again = WizardChoices.from_data(choices.to_data())
+        self.assertTrue(again.has_one_guitarist())
+        self.assertEqual(again.to_data(), choices.to_data())
+        again.set_subgenre(again.subgenres()[1])
+        self.assertFalse(again.has_one_guitarist())
 
 
 class TestWizardBand(unittest.TestCase):

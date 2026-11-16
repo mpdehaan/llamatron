@@ -42,7 +42,7 @@ from llamatron.composition.limits import GM_FAMILY_SIZE, MIN_GM_SOUND
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.marks import MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SECTION_VARIANT
 from llamatron.support.version import VERSION as A_VERSION
-from llamatron.strings.errors import ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
+from llamatron.strings.errors import ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'
@@ -77,6 +77,15 @@ def genre_title(genre):
     return style_of(genre)[TITLE]
 
 
+# One guitarist or two, and the key a template describes its one guitarist under, with the players and the way it names.
+TWO_GUITARISTS = 'two'
+ONE_GUITARIST_COUNT = 'one'
+GUITARIST_COUNTS = (TWO_GUITARISTS, ONE_GUITARIST_COUNT)
+GUITARISTS_KEPT = 'guitarists'
+ONE_GUITARIST = 'one_guitarist'
+CHORDS_PLAYER = 'chords'
+SOLO_PLAYER = 'solo'
+SOLO_WAY = 'way'
 # The band's Sounds, the user's design: every player's usual sound, or the nearest acoustic, electric or synthetic one.
 USUAL_SOUNDS = 'usual'
 ACOUSTIC = 'acoustic'
@@ -183,7 +192,7 @@ SECONDS_IN_MINUTE = 60
 class WizardChoices:
     """The choices of one run of the song wizard."""
 
-    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_without', '_sections', '_melody', '_sounds', '_band_sounds')
+    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_without', '_sections', '_melody', '_sounds', '_band_sounds', '_guitarists')
 
     def __init__(self):
         self._genre = None
@@ -204,6 +213,8 @@ class WizardChoices:
         # The sounds chosen: the band's, one of BAND_SOUNDS, which every player follows, and each player's own General MIDI sound, which overrides it.
         self._band_sounds = USUAL_SOUNDS
         self._sounds = {}
+        # How many guitarists the band has: two, one for the chords and one for the solo, or one who plays both.
+        self._guitarists = TWO_GUITARISTS
 
     # Reading and keeping the choices.
 
@@ -229,6 +240,7 @@ class WizardChoices:
         kept = [(self.set_way, [dict(trait=trait, value=value) for trait, value in (data.get(PICKS) or {}).items()]),
                 (self._set_level, [dict(player=player, level=level) for player, level in (data.get(PLAYERS) or {}).items()]),
                 (self.set_role_in, [dict(role=role, on=False) for role in data.get(WITHOUT) or []]),
+                (self._set_kept_guitarists, [dict(count=data[GUITARISTS_KEPT])] if data.get(GUITARISTS_KEPT) else []),
                 (self._set_kept_band_sounds, [dict(sounds=data[BAND_SOUNDS_KEPT])] if data.get(BAND_SOUNDS_KEPT) else []),
                 (self.set_sound, [dict(role=role, sound=sound) for role, sound in (data.get(SOUNDS_KEPT) or {}).items()]),
                 (self.set_own_sections, [dict(sections=data[OWN_SECTIONS])] if data.get(OWN_SECTIONS) else []),
@@ -246,7 +258,8 @@ class WizardChoices:
                 PICKS: dict(self._ways) or None, PLAYERS: dict(self._levels) or None, WITHOUT: list(self._without) or None,
                 OWN_SECTIONS: [own_copy_of(entry) for entry in self._sections] if self._sections is not None else None,
                 MELODY_STYLE: self._melody, SOUNDS_KEPT: dict(self._sounds) or None,
-                BAND_SOUNDS_KEPT: self._band_sounds if self._band_sounds != USUAL_SOUNDS else None}
+                BAND_SOUNDS_KEPT: self._band_sounds if self._band_sounds != USUAL_SOUNDS else None,
+                GUITARISTS_KEPT: self._guitarists if self._guitarists != TWO_GUITARISTS else None}
         return {field: value for field, value in held.items() if value is not None}
 
     # The genre and the subgenre, which everything else follows.
@@ -555,6 +568,7 @@ class WizardChoices:
         self._without = []
         self._sounds = {}
         self._band_sounds = USUAL_SOUNDS
+        self._guitarists = TWO_GUITARISTS
 
     def _role(self, role):
         found = next((entry for entry in style_of(self._genre)[ROLES] if entry[ROLE] == role), None) if self.is_ready() else None
@@ -588,10 +602,81 @@ class WizardChoices:
         """Return what a player is called on the screen: the clearer name the genre gives the player, which may follow how the
         player plays, as a lead that is a singer or a lead guitar; or the player's name where the genre gives no other."""
         entry = self._role(role)
+        if self.has_one_guitarist() and role == self._one_guitarist()[CHORDS_PLAYER]:
+            return self._one_guitarist()[ROLE_TITLE]
         traits = self.role_traits(role)
         by_way = entry.get(ROLE_TITLES, {})
         way = self.get_way(traits[0]) if len(traits) == 1 else None
         return by_way.get(way, entry.get(ROLE_TITLE, role))
+
+    # One guitarist or two, the user's design: a band whose one guitarist plays the chords and takes the solo, the chords
+    # stopping where the solo plays, shown as one player.
+
+    def _one_guitarist(self):
+        return style_of(self._genre).get(ONE_GUITARIST) if self.is_ready() else None
+
+    def offers_one_guitarist(self):
+        """Return whether the band can have one guitarist: the genre says which two players the one would be, and the solo can be a guitar's."""
+        one = self._one_guitarist()
+        return bool(one) and self.role_can_play(one[CHORDS_PLAYER]) and one[SOLO_WAY] in self.ways(role=one[SOLO_PLAYER], trait=self._role(one[SOLO_PLAYER])[TRAIT])
+
+    def get_guitarists(self):
+        return self._guitarists
+
+    def has_one_guitarist(self):
+        return self._guitarists == ONE_GUITARIST_COUNT
+
+    def set_guitarists(self, count):
+        """Choose two guitarists or one. One guitarist takes the solo on the guitar, whatever took it before."""
+        if count not in GUITARIST_COUNTS or (count == ONE_GUITARIST_COUNT and not self.offers_one_guitarist()):
+            raise ValueError(ERR_WIZARD_GUITARISTS.format(value=count))
+        self._guitarists = count
+        if count == ONE_GUITARIST_COUNT:
+            one = self._one_guitarist()
+            if one[SOLO_PLAYER] in self._without:
+                self._without.remove(one[SOLO_PLAYER])
+            self._ways[self._role(one[SOLO_PLAYER])[TRAIT]] = one[SOLO_WAY]
+
+    def _set_kept_guitarists(self, *, count):
+        self.set_guitarists(count)
+
+    def roles_shown(self):
+        """Return the players the screen shows: every player, but for the player of the solo where one guitarist plays both."""
+        hidden = self._one_guitarist()[SOLO_PLAYER] if self.has_one_guitarist() else None
+        return [role for role in self.roles() if role != hidden]
+
+    def _song_without(self):
+        """Return the players the song leaves out: those left out, and with them the solo of one guitarist who is left out."""
+        without = list(self._without)
+        if self.has_one_guitarist():
+            one = self._one_guitarist()
+            if one[CHORDS_PLAYER] in without and one[SOLO_PLAYER] not in without:
+                without.append(one[SOLO_PLAYER])
+        return without
+
+    def _plays_of_one_guitarist(self, plays):
+        """Return who plays in a section where one guitarist plays both parts: the chords stop where the solo plays."""
+        one = self._one_guitarist()
+        if self.has_one_guitarist() and one[SOLO_PLAYER] in plays and one[CHORDS_PLAYER] in plays:
+            return [role for role in plays if role != one[CHORDS_PLAYER]]
+        return None
+
+    def _sections_of_song(self):
+        """Return the sections the song describes itself, by name: its own form's, each with its kind and what it changes; and,
+        for one guitarist, each section the solo plays in with the chords left out."""
+        if self.has_own_form():
+            sections = self._song_sections()
+            for place, name in enumerate(self.form_sections()):
+                plays = self._plays_of_one_guitarist(self.section_plays(place))
+                if plays is not None:
+                    sections[name][PLAYS] = plays
+            return sections
+        sections = {}
+        for kind in set(self.form_sections()):
+            plays = self._plays_of_one_guitarist(list(style_of(self._genre)[SECTIONS][kind].get(PLAYS, [])))
+            if plays is not None:
+                sections[kind] = {KIND: kind, PLAYS: plays}
+        return sections
 
     # A player's sound: the one the player's way of playing has, moved by the band's Sounds, unless the player has a sound of its own.
 
@@ -811,8 +896,8 @@ class WizardChoices:
     def song_picks(self, name):
         """Return the choices as a song's picks, which the arranger makes a song of."""
         return {NAME: name, TITLE: name, STYLE: self._genre, TEMPLATE: self._subgenre, KEY: {ROOT: self._root, TYPE: self._scale_type}, TEMPO: self._tempo, FORM: self.form_sections() if self.has_own_form() else self.get_form(), SEED: self._seed,
-                PICKS: dict(self._ways), PLAYERS: dict(self._levels), WITHOUT: list(self._without),
-                **({SECTIONS: self._song_sections()} if self.has_own_form() else {}),
+                PICKS: dict(self._ways), PLAYERS: dict(self._levels), WITHOUT: self._song_without(),
+                **({SECTIONS: self._sections_of_song()} if self._sections_of_song() else {}),
                 **({MELODY_ENGINE: self._melody} if self._melody is not None else {}),
                 **({ROLE_SOUNDS: self._song_sounds()} if self._song_sounds() else {})}
 

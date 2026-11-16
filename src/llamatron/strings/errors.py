@@ -514,6 +514,7 @@ ERR_WIZARD_NO_SUCH_WAY = '{trait} must be a way of playing that fits the other c
 ERR_WIZARD_NO_WAY = 'no way of playing fits the other choices for ({value})'
 ERR_WIZARD_BUSY = 'busy must be an integer from {low} to {high}, got {value!r}'
 ERR_WIZARD_LAST_PLAYER = 'a band needs one player'
+ERR_WIZARD_GUITARISTS = 'guitarists must be two, or one where the band can have one, got {value!r}'
 ERR_WIZARD_BAND_SOUNDS = 'sounds must be one of: usual, acoustic, electric, synth, got {value!r}'
 ERR_WIZARD_SOUND = 'sound must be a General MIDI sound that plays notes, an integer from 1 to 112, got {value!r}'
 ERR_WIZARD_NO_SUCH_MELODY = 'melody must be a melody style the subgenre can use, got {value!r}'
