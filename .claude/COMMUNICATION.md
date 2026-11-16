@@ -24,6 +24,9 @@ The user's rules for a reply that puts anything to them, gathered here so that e
 - **A proposal gets a number too.** Whatever Claude proposes that is not yet a question, an idea, a design or a way of building a
   thing, takes a number of the running list and needs an answer like any question, so that the user can confirm it or ask about
   it and no idea is dropped by accident (the user's rule). The list of what's open names it.
+- **An answer gets a number too.** When the user asks Claude a question, Claude's answer takes a number of the running list,
+  written at the answer's start, so that the user can refer to the answer later, even though the answer needs no reply (the
+  user's rule). The list of what's open leaves it out.
 - **In order.** Whatever is numbered is presented in ascending order of its numbers, never one out of place.
 - **Separated.** Two numbered questions in one reply are separated by a line of dashes,
   `-----------------------------------------------------`, so that each stands apart.
