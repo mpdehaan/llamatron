@@ -21,7 +21,7 @@ from fractions import Fraction
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_TEMPO, MIN_TEMPO
-from llamatron.macro_composer.wizard_choices import LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, FEEL_TRAITS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
+from llamatron.macro_composer.wizard_choices import LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, LAST_SOUND_OF_NOTES, USUAL_SOUNDS, FEEL_TRAITS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
 from llamatron.macro_composer.arranger import DRUMS, GENRE, PLAYERS, TYPE, WITHOUT, style_names
 from llamatron.music.note import NoteName
 from llamatron.strings.errors import ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER
@@ -454,6 +454,104 @@ class TestWizardSongWays(unittest.TestCase):
         self.assertIsNone(choices.get_melody())
         again.set_subgenre(again.subgenres()[1])
         self.assertIsNone(again.get_melody())
+
+
+class TestWizardSounds(unittest.TestCase):
+    """The band's Sounds and a player's own sound, and what the players are called."""
+
+    def rock(self):
+        choices = chosen(genre=genre_names().index(A_GENRE_WITH_TUNES))
+        choices.set_seed(A_SEED)
+        return choices
+
+    def sound_made(self, *, choices, role):
+        setlist = choices.made_setlist(name=A_NAME, version=VERSION)
+        return setlist.get_instrument(setlist.get_song(A_NAME).get_track(role).get_instrument_name()).get_gm_sound()
+
+    def test_every_player_of_every_genre_has_a_title_and_no_two_players_in_a_band_share_one(self):
+        for place in range(len(genre_names())):
+            choices = chosen(genre=place)
+            titles = [choices.role_title(role) for role in choices.roles()]
+            self.assertEqual(len(set(titles)), len(titles), titles)
+
+    def test_the_drums_have_no_sound_to_choose(self):
+        choices = self.rock()
+        drums = [role for role in choices.roles() if not choices.has_sound(role)]
+        self.assertTrue(drums)
+        with self.assertRaises(ValueError):
+            choices.set_sound(role=drums[0], sound=1)
+
+    def test_the_usual_sounds_change_nothing_and_each_other_kind_moves_a_player_and_is_made(self):
+        choices = self.rock()
+        usual = choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.INSTRUMENTS]
+        self.assertEqual(choices.get_band_sounds(), USUAL_SOUNDS)
+        self.assertEqual(choices.get_sound(A_BASS), choices.usual_sound(A_BASS))
+        any_moved = False
+        for sounds in BAND_SOUNDS[1:]:
+            choices.set_band_sounds(sounds)
+            moved = [role for role in choices.roles_in() if choices.has_sound(role) and choices.get_sound(role) != choices.usual_sound(role)]
+            # A band already of the kind chosen, as an electric rock band, keeps its sounds and makes the same song.
+            self.assertEqual(choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.INSTRUMENTS] != usual, bool(moved), sounds)
+            any_moved = any_moved or bool(moved)
+            for role in moved:
+                self.assertEqual(self.sound_made(choices=choices, role=role), choices.get_sound(role))
+        self.assertTrue(any_moved)
+
+    def test_a_sound_already_of_the_kind_chosen_stays(self):
+        choices = self.rock()
+        for sounds in BAND_SOUNDS[1:]:
+            choices.set_band_sounds(sounds)
+            for role in choices.roles_in():
+                if choices.has_sound(role) and choices.usual_sound(role) in KEPT_BY[sounds]:
+                    self.assertEqual(choices.get_sound(role), choices.usual_sound(role))
+
+    def test_every_kind_of_sounds_makes_a_song_that_plays_in_every_subgenre(self):
+        for place in range(len(genre_names())):
+            for subgenre in range(len(chosen(genre=place).subgenres())):
+                choices = chosen(genre=place, subgenre=subgenre)
+                choices.set_seed(A_SEED)
+                for sounds in BAND_SOUNDS[1:]:
+                    choices.set_band_sounds(sounds)
+                    with self.subTest(subgenre=choices.get_subgenre(), sounds=sounds):
+                        SongRenderer(choices.made_setlist(name=A_NAME, version=VERSION).get_song(A_NAME)).render()
+
+    def test_a_players_own_sound_overrides_the_bands_and_none_follows_the_band_again(self):
+        choices = self.rock()
+        choices.set_band_sounds(BAND_SOUNDS[1])
+        band = choices.get_sound(A_BASS)
+        choices.set_sound(role=A_BASS, sound=LAST_SOUND_OF_NOTES)
+        self.assertTrue(choices.has_own_sound(A_BASS))
+        self.assertEqual(self.sound_made(choices=choices, role=A_BASS), LAST_SOUND_OF_NOTES)
+        choices.set_band_sounds(BAND_SOUNDS[2])
+        self.assertEqual(choices.get_sound(A_BASS), LAST_SOUND_OF_NOTES)
+        choices.set_band_sounds(BAND_SOUNDS[1])
+        choices.set_sound(role=A_BASS, sound=None)
+        self.assertEqual(choices.get_sound(A_BASS), band)
+
+    def test_a_sound_that_plays_no_notes_or_is_no_sound_is_refused(self):
+        choices = self.rock()
+        for refused in (0, LAST_SOUND_OF_NOTES + 1, True, NOT_A_NUMBER):
+            with self.assertRaises(ValueError):
+                choices.set_sound(role=A_BASS, sound=refused)
+        with self.assertRaises(ValueError):
+            choices.set_band_sounds(NOT_A_CHOICE)
+
+    def test_the_genres_sounds_for_a_player_are_the_sounds_of_the_ways_the_player_plays(self):
+        choices = self.rock()
+        self.assertIn(choices.usual_sound(A_BASS), choices.genre_sounds(A_BASS))
+        self.assertTrue(choices.sound_name(choices.usual_sound(A_BASS)))
+
+    def test_the_sounds_are_kept_with_the_choices_and_another_subgenre_starts_afresh(self):
+        choices = self.rock()
+        self.assertNotIn(SOUNDS_KEPT, choices.to_data())
+        choices.set_band_sounds(BAND_SOUNDS[-1])
+        choices.set_sound(role=A_BASS, sound=LAST_SOUND_OF_NOTES)
+        again = WizardChoices.from_data(choices.to_data())
+        self.assertEqual(again.to_data(), choices.to_data())
+        self.assertEqual(again.get_sound(A_BASS), LAST_SOUND_OF_NOTES)
+        again.set_subgenre(again.subgenres()[1])
+        self.assertEqual(again.get_band_sounds(), USUAL_SOUNDS)
+        self.assertFalse(again.has_own_sound(A_BASS))
 
 
 class TestWizardBand(unittest.TestCase):

@@ -56,7 +56,7 @@ class SectionBranch(Branch):
             # A held section, or one whose parts fill only its usual length, shows its bars and takes no key.
             fields.append(Field(label=MSG_WIZARD_BARS_LABEL, value=lambda: choices.section_bars(place)))
         plays = choices.section_plays(place)
-        return [*fields, *(Toggle(label=role, on=role in plays, set=self.plays_setter(role)) for role in choices.roles_in())]
+        return [*fields, *(Toggle(label=choices.role_title(role), on=role in plays, set=self.plays_setter(role)) for role in choices.roles_in())]
 
     def plays_setter(self, role):
         """Return what has a player play in the section or sit it out, refusing to leave the section with nobody."""

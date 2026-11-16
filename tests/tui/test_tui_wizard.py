@@ -17,10 +17,10 @@
 
 from llamatron.composition.file_format import Section
 from llamatron.macro_composer.arranger import BARS, WITHOUT
-from llamatron.macro_composer.wizard_choices import FEEL_TRAITS, FILLS_TRAITS, PROGRESSION_TRAITS, MOST_BUSY, USUAL_BUSY, MINOR, SEED, genre_names, genre_title
+from llamatron.macro_composer.wizard_choices import ACOUSTIC, BAND_SOUNDS, FEEL_TRAITS, FILLS_TRAITS, PROGRESSION_TRAITS, MOST_BUSY, USUAL_BUSY, MINOR, SEED, genre_names, genre_title
 from llamatron.strings.errors import ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_CHOOSE_GENRE, ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
-from llamatron.strings.labels import MSG_WIZARD_FEEL_LABEL, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PLAYING_BRANCH, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_THEMES_BRANCH, MSG_WIZARD_USUAL_MELODY, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_SUGGESTED_FORM_BUTTON, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_START_CANCEL
-from llamatron.strings.marks import MSG_WIZARD_CARRIED, MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_OWN_FORM, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
+from llamatron.strings.labels import MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_SOUND_LABEL, MSG_WIZARD_SOUNDS_LABEL, MSG_WIZARD_FEEL_LABEL, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PLAYING_BRANCH, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_THEMES_BRANCH, MSG_WIZARD_USUAL_MELODY, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_SUGGESTED_FORM_BUTTON, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_START_CANCEL
+from llamatron.strings.marks import MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_OWN_FORM, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
 from llamatron.strings.messages import MSG_WIZARD_NOTHING_TO_CHOOSE, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_SECTIONS_HINT, MSG_UNDONE, MSG_RESTORED, MSG_WIZARD_ALREADY_OPEN, MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CREATED, MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_REPLACED, MSG_WIZARD_NOTHING_TO_UNDO
 from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_SONG_WORD
 from llamatron.composition.naming import new_name
@@ -29,6 +29,7 @@ from llamatron.tui.app import LlamatronApp
 from llamatron.tui.document import Document
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
+from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.text import clock
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
@@ -350,28 +351,28 @@ class TestWizardBand(WizardTest):
     async def test_the_band_lists_every_player_and_opens_to_a_branch_for_each_who_is_in(self):
         await self.open_the_band()
         choices = self.choices()
-        self.assertEqual([field.label for field in self.wizard().fields()], [role for role in choices.roles() if choices.role_can_play(role)])
+        self.assertEqual([field.label for field in self.wizard().fields()], [MSG_WIZARD_SOUNDS_LABEL, *(choices.role_title(role) for role in choices.roles() if choices.role_can_play(role))])
         rows = len(self.wizard().rows())
         await self.press(Key.RIGHT)
         self.assertEqual(len(self.wizard().rows()), rows + len(choices.roles_in()))
         await self.press(Key.DOWN)
-        self.assertEqual(self.wizard().branch().name(), choices.roles_in()[0])
+        self.assertEqual(self.wizard().branch().name(), choices.role_title(choices.roles_in()[0]))
 
     async def test_a_toggle_leaves_a_player_out_and_puts_the_player_back_and_the_last_player_stays(self):
         await self.open_the_band()
         choices = self.choices()
         players = choices.roles_in()
         await self.press(Key.RIGHT, keybindings.WizardPage.INTO_FIELDS)
-        await self.select_field(players[0])
+        await self.select_field(choices.role_title(players[0]))
         await self.press(Key.SPACE)
         self.assertEqual(choices.roles_in(), players[1:])
-        self.assertNotIn(players[0], [branch.name() for _, branch in self.wizard().rows()])
+        self.assertNotIn(choices.role_title(players[0]), [branch.name() for _, branch in self.wizard().rows()])
         await self.press(Key.ENTER)
         self.assertEqual(choices.roles_in(), players)
         for player in players[:-1]:
-            await self.select_field(player)
+            await self.select_field(choices.role_title(player))
             await self.press(Key.SPACE)
-        await self.select_field(players[-1])
+        await self.select_field(choices.role_title(players[-1]))
         await self.press(Key.SPACE)
         self.assertEqual(choices.roles_in(), players[-1:])
         self.assertIn(ERR_WIZARD_LAST_PLAYER, self.text())
@@ -383,7 +384,7 @@ class TestWizardBand(WizardTest):
         trait = choices.role_traits(player)[0]
         ways = choices.ways(role=player, trait=trait)
         await self.press(Key.RIGHT, *[Key.DOWN] * (choices.roles_in().index(player) + 1))
-        self.assertEqual(self.wizard().branch().name(), player)
+        self.assertEqual(self.wizard().branch().name(), choices.role_title(player))
         text = self.text()
         self.assertIn(MSG_WIZARD_BUSY_LABEL, text)
         self.assertIn(MSG_WIZARD_GAUGE_FULL * USUAL_BUSY + MSG_WIZARD_GAUGE_EMPTY * (MOST_BUSY - USUAL_BUSY), text)
@@ -404,11 +405,69 @@ class TestWizardBand(WizardTest):
         choices = self.choices()
         out = choices.roles_in()[0]
         await self.press(keybindings.WizardPage.INTO_FIELDS)
-        await self.select_field(out)
+        await self.select_field(choices.role_title(out))
         await self.press(Key.SPACE, keybindings.WizardPage.TO_TREE)
         await self.create()
         self.assertNotIn(out, self.document.song().get_track_names())
         self.assertEqual(self.document.song().get_wizard_choices()[WITHOUT], [out])
+
+
+class TestWizardSounds(WizardTest):
+    """The band's Sounds, which every player follows, and a player's own Sound, which overrides it."""
+
+    async def open_a_player(self):
+        """Choose a genre and a subgenre, open the Band and put the tree's cursor on the first player whose sound can be chosen."""
+        await self.choose_genre_and_subgenre()
+        await self.go_to_named_branch(MSG_WIZARD_BAND_BRANCH)
+        choices = self.choices()
+        role = [role for role in choices.roles_in() if choices.has_sound(role)][0]
+        await self.press(Key.RIGHT, *[Key.DOWN] * (choices.roles_in().index(role) + 1))
+        return role
+
+    async def test_the_bands_sounds_are_stepped_and_a_player_shows_the_bands_sound_as_the_bands(self):
+        role = await self.open_a_player()
+        choices = self.choices()
+        self.assertIn(MSG_WIZARD_BAND_SOUND_SHOWN.format(sound=choices.sound_name(choices.get_sound(role))), self.text())
+        await self.go_to_named_branch(MSG_WIZARD_BAND_BRANCH)
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(MSG_WIZARD_SOUNDS_LABEL)
+        await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET), keybindings.WizardPage.TO_TREE)
+        self.assertEqual(choices.get_band_sounds(), BAND_SOUNDS[1])
+        self.assertEqual(BAND_SOUNDS[1], ACOUSTIC)
+
+    async def test_a_players_sound_is_picked_from_the_genres_and_goes_back_to_the_bands(self):
+        role = await self.open_a_player()
+        choices = self.choices()
+        own = choices.genre_sounds(role)
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(MSG_WIZARD_SOUND_LABEL)
+        await self.press(Key.ENTER)
+        self.assertIsInstance(self.app.screen, ChoiceDialog)
+        self.assertIn(MSG_WIZARD_FROM_BAND.format(sound=choices.sound_name(choices.band_sound(role))), self.text())
+        self.assertIn(MSG_WIZARD_MORE_SOUNDS, self.text())
+        await self.press(*[Key.UP] * (len(own) + 2), *[Key.DOWN] * len(own), Key.ENTER)
+        self.assertTrue(choices.has_own_sound(role))
+        self.assertEqual(choices.get_sound(role), own[-1])
+        self.assertNotIn(MSG_WIZARD_BAND_SOUND_SHOWN.format(sound=choices.sound_name(own[-1])), self.text())
+        await self.press(Key.ENTER, *[Key.UP] * (len(own) + 2), Key.ENTER)
+        self.assertFalse(choices.has_own_sound(role))
+
+    async def test_more_sounds_opens_every_sound_that_plays_notes_and_the_song_made_plays_the_one_picked(self):
+        role = await self.open_a_player()
+        choices = self.choices()
+        own = choices.genre_sounds(role)
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(MSG_WIZARD_SOUND_LABEL)
+        await self.press(Key.ENTER, *[Key.DOWN] * (len(own) + 2), Key.ENTER)
+        self.assertIsInstance(self.app.screen, GridChoiceDialog)
+        await self.press(Key.DOWN, Key.ENTER)
+        picked = choices.get_sound(role)
+        self.assertTrue(choices.has_own_sound(role))
+        await self.press(keybindings.WizardPage.TO_TREE)
+        await self.create()
+        setlist = self.document.setlist()
+        instrument = setlist.get_instrument(self.document.song().get_track(role).get_instrument_name())
+        self.assertEqual(instrument.get_gm_sound(), picked)
 
 
 class TestWizardForm(WizardTest):
@@ -519,7 +578,7 @@ class TestWizardForm(WizardTest):
         players = self.choices().section_plays(place)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         for player in players:
-            await self.select_field(player)
+            await self.select_field(self.choices().role_title(player))
             await self.press(Key.SPACE)
         self.assertEqual(len(self.choices().section_plays(place)), 1)
         self.assertIn(ERR_WIZARD_SECTION_NEEDS_PLAYER, self.text())
