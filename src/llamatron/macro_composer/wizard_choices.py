@@ -29,13 +29,13 @@ from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_TEMPO, MIN_TEMPO
 from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer.arranger import (
-    COMMON_TIME, METER, bar_length,
+    COMMON_TIME, DRUMS, METER, PICKS, PLAYER, PLAYERS, ROLE, ROLES, SOUND, TRAIT, VALUE, WITHOUT, bar_length, fits,
     BARS, CHORD_TRAIT, CHORD_TRAIT_FIELD, FORM, HELD, PLAYS, GENRE, KEY, NAME, ROOT, SCALE_TYPE, SECTIONS, SEED, STYLE, TEMPLATE, TEMPLATES, TEMPO, TITLE, TRAITS, TYPE, USUAL,
     arranged, forms_of, picked, section_of, share_of, style_named, style_names, values_of,
 )
 from llamatron.macro_composer.composer import composed
 from llamatron.music.note import ROOT_NAMES
-from llamatron.strings.errors import ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
+from llamatron.strings.errors import ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'
@@ -70,6 +70,10 @@ def genre_title(genre):
     return style_of(genre)[TITLE]
 
 
+# How busy a player may be, and how busy each is until chosen: a little past the plainest, so that a song has turns and fills.
+LEAST_BUSY = 1
+MOST_BUSY = 4
+USUAL_BUSY = 2
 # A tempo counts quarter notes a minute.
 QUARTERS_IN_WHOLE = 4
 SECONDS_IN_MINUTE = 60
@@ -78,7 +82,7 @@ SECONDS_IN_MINUTE = 60
 class WizardChoices:
     """The choices of one run of the song wizard."""
 
-    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed')
+    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_without')
 
     def __init__(self):
         self._genre = None
@@ -88,6 +92,10 @@ class WizardChoices:
         self._tempo = None
         self._form = None
         self._seed = None
+        # The band: each trait's way of playing where one was chosen, how busy each instrument's player is, and the players left out.
+        self._ways = {}
+        self._levels = {}
+        self._without = []
 
     # Reading and keeping the choices.
 
@@ -102,11 +110,28 @@ class WizardChoices:
                     setter(data[field])
                 except (TypeError, ValueError):
                     pass
+        if choices.is_ready():
+            choices._read_band(data)
         return choices
+
+    def _read_band(self, data):
+        """Take the band a song kept, each part through its setter, leaving out what no longer fits. A song kept before the
+        band could be chosen names no levels, and is read as having none, so that the same choices still make the same song."""
+        self._levels = {}
+        kept = [(self.set_way, [dict(trait=trait, value=value) for trait, value in (data.get(PICKS) or {}).items()]),
+                (self._set_level, [dict(player=player, level=level) for player, level in (data.get(PLAYERS) or {}).items()]),
+                (self.set_role_in, [dict(role=role, on=False) for role in data.get(WITHOUT) or []])]
+        for setter, every in kept:
+            for named in every:
+                try:
+                    setter(**named)
+                except (TypeError, ValueError):
+                    pass
 
     def to_data(self):
         """Return the choices made, as plain data a song keeps."""
-        held = {GENRE: self._genre, SUBGENRE: self._subgenre, ROOT: self._root, TYPE: self._scale_type, TEMPO: self._tempo, FORM: self._form, SEED: self._seed}
+        held = {GENRE: self._genre, SUBGENRE: self._subgenre, ROOT: self._root, TYPE: self._scale_type, TEMPO: self._tempo, FORM: self._form, SEED: self._seed,
+                PICKS: dict(self._ways) or None, PLAYERS: dict(self._levels) or None, WITHOUT: list(self._without) or None}
         return {field: value for field, value in held.items() if value is not None}
 
     # The genre and the subgenre, which everything else follows.
@@ -122,6 +147,7 @@ class WizardChoices:
             self._genre = genre
             self._subgenre = None
             self._form = None
+            self._forget_band()
 
     def subgenres(self):
         """Return the chosen genre's subgenres, sorted by name, or none before a genre is chosen."""
@@ -136,10 +162,12 @@ class WizardChoices:
             raise ValueError(ERR_WIZARD_NO_SUCH_SUBGENRE.format(value=subgenre))
         if subgenre != self._subgenre:
             self._subgenre = subgenre
+            self._forget_band()
             self._tempo = self.usual_tempo()
             self._scale_type = self.usual_scale_type()
             self._root = USUAL_ROOTS[self._scale_type]
             self._form = None
+            self._levels = {player: USUAL_BUSY for player in style_of(self._genre).get(PLAYERS, {})}
 
     def is_ready(self):
         """Return whether a song can be made: a genre and a subgenre are chosen, and the rest has its usual values."""
@@ -148,7 +176,8 @@ class WizardChoices:
     # What the subgenre usually has.
 
     def _picks(self):
-        return picked(style=style_of(self._genre), song={TEMPLATE: self._subgenre})
+        """Return every trait's pick: the ways of playing chosen, and the subgenre's for the rest."""
+        return self._picks_with(self._ways)
 
     def usual_tempo(self):
         style = style_of(self._genre)
@@ -225,6 +254,102 @@ class WizardChoices:
         section = section_of(name=name, style=style_of(self._genre), song={})
         return (HELD_BARS if section.get(HELD) else section[BARS]), list(section.get(PLAYS, []))
 
+    # The band: who plays, how each plays and how busy each is.
+
+    def _forget_band(self):
+        self._ways = {}
+        self._levels = {}
+        self._without = []
+
+    def _role(self, role):
+        found = next((entry for entry in style_of(self._genre)[ROLES] if entry[ROLE] == role), None) if self.is_ready() else None
+        if found is None:
+            raise ValueError(ERR_WIZARD_NO_SUCH_PLAYER.format(value=role))
+        return found
+
+    def roles(self):
+        """Return the players the genre's band may have, by name, in the genre's order."""
+        return [entry[ROLE] for entry in style_of(self._genre)[ROLES]] if self.is_ready() else []
+
+    def role_traits(self, role):
+        """Return what is chosen about how a player plays: the one way of a player of notes, or each part of the drums."""
+        entry = self._role(role)
+        return list(entry[DRUMS]) if entry.get(DRUMS) else [entry[TRAIT]]
+
+    def _has_sound(self, *, trait, value):
+        return SOUND in values_of(style=style_of(self._genre), trait=trait)[value]
+
+    def role_is_in(self, role):
+        """Return whether a player is in the band: not left out, and, for a player of notes, playing in a way that sounds."""
+        entry = self._role(role)
+        return role not in self._without and (bool(entry.get(DRUMS)) or self._has_sound(trait=entry[TRAIT], value=self.get_way(entry[TRAIT])))
+
+    def roles_in(self):
+        return [role for role in self.roles() if self.role_is_in(role)]
+
+    def set_role_in(self, *, role, on):
+        """Put a player in the band or leave the player out. A player whose usual way is to sit out comes in playing the commonest way that fits."""
+        entry = self._role(role)
+        if not on:
+            if self.roles_in() == [role]:
+                raise ValueError(ERR_WIZARD_LAST_PLAYER)
+            if role not in self._without:
+                self._without.append(role)
+            return
+        if role in self._without:
+            self._without.remove(role)
+        if not entry.get(DRUMS) and not self._has_sound(trait=entry[TRAIT], value=self.get_way(entry[TRAIT])):
+            ways = self.ways(role=role, trait=entry[TRAIT])
+            if not ways:
+                raise ValueError(ERR_WIZARD_NO_WAY.format(value=role))
+            self._ways[entry[TRAIT]] = ways[0]
+
+    def _picks_with(self, ways):
+        return picked(style=style_of(self._genre), song={TEMPLATE: self._subgenre, PICKS: ways})
+
+    def _works(self, *, trait, value):
+        """Return whether a way of playing can be chosen beside the other picks, some ways needing a meter or a feel."""
+        try:
+            self._picks_with({**self._ways, trait: value})
+        except ValueError:
+            return False
+        return True
+
+    def ways(self, *, role, trait):
+        """Return the ways a player may play a trait beside the other picks, the commonest first; for a player of notes, only ways that sound."""
+        style = style_of(self._genre)
+        drums = bool(self._role(role).get(DRUMS))
+        picks = self._picks()
+        entries = [entry for entry in sorted(values_of(style=style, trait=trait).values(), key=share_of, reverse=True) if (drums or SOUND in entry) and fits(entry=entry, picks=picks)]
+        return [entry[VALUE] for entry in entries if self._works(trait=trait, value=entry[VALUE])]
+
+    def get_way(self, trait):
+        return self._picks()[trait]
+
+    def set_way(self, *, trait, value):
+        if not self.is_ready() or value not in values_of(style=style_of(self._genre), trait=trait) or not self._works(trait=trait, value=value):
+            raise ValueError(ERR_WIZARD_NO_SUCH_WAY.format(trait=trait, value=value))
+        self._ways[trait] = value
+
+    def has_busy(self, role):
+        """Return whether a player's busyness can be chosen: the genre says how the player's instrument is played at each level."""
+        return self._role(role).get(PLAYER) in style_of(self._genre).get(PLAYERS, {})
+
+    def get_busy(self, role):
+        """Return how busy a player is, from LEAST_BUSY to MOST_BUSY, or None where the song names no level."""
+        return self._levels.get(self._role(role).get(PLAYER))
+
+    def set_busy(self, *, role, level):
+        """Choose how busy a player is. Players of one instrument, as a lead and a solo, share the level."""
+        if not self.has_busy(role):
+            raise ValueError(ERR_WIZARD_BUSY.format(low=LEAST_BUSY, high=MOST_BUSY, value=level))
+        self._set_level(player=self._role(role)[PLAYER], level=level)
+
+    def _set_level(self, *, player, level):
+        if isinstance(level, bool) or not isinstance(level, int) or level not in style_of(self._genre).get(PLAYERS, {}).get(player, {}):
+            raise ValueError(ERR_WIZARD_BUSY.format(low=LEAST_BUSY, high=MOST_BUSY, value=level))
+        self._levels[player] = level
+
     # The meter and the length, which follow from the subgenre, the tempo and the form.
 
     def meter(self):
@@ -271,7 +396,8 @@ class WizardChoices:
 
     def song_picks(self, name):
         """Return the choices as a song's picks, which the arranger makes a song of."""
-        return {NAME: name, TITLE: name, STYLE: self._genre, TEMPLATE: self._subgenre, KEY: {ROOT: self._root, TYPE: self._scale_type}, TEMPO: self._tempo, FORM: self.get_form(), SEED: self._seed}
+        return {NAME: name, TITLE: name, STYLE: self._genre, TEMPLATE: self._subgenre, KEY: {ROOT: self._root, TYPE: self._scale_type}, TEMPO: self._tempo, FORM: self.get_form(), SEED: self._seed,
+                PICKS: dict(self._ways), PLAYERS: dict(self._levels), WITHOUT: list(self._without)}
 
     def made_setlist(self, *, name, version):
         """Return a set holding the one song these choices make, under a name, with all the song uses, the song keeping the choices.

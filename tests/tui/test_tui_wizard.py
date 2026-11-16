@@ -16,10 +16,11 @@
 """The song wizard: its tree and its fields, the keys between them, what Create adds to the set, closing, and undo."""
 
 from llamatron.composition.file_format import Section
-from llamatron.macro_composer.wizard_choices import MINOR, SEED, genre_names, genre_title
-from llamatron.strings.errors import ERR_WIZARD_CHOOSE_GENRE, ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE, ERR_WIZARD_CHOOSE_START
-from llamatron.strings.labels import MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_BRANCH, MSG_WIZARD_START_NAMES, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_TAKE_LABEL
-from llamatron.strings.marks import MSG_TOGGLE_ON, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
+from llamatron.macro_composer.arranger import WITHOUT
+from llamatron.macro_composer.wizard_choices import MOST_BUSY, USUAL_BUSY, MINOR, SEED, genre_names, genre_title
+from llamatron.strings.errors import ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_CHOOSE_GENRE, ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE, ERR_WIZARD_CHOOSE_START
+from llamatron.strings.labels import MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_BRANCH, MSG_WIZARD_START_NAMES, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_TAKE_LABEL
+from llamatron.strings.marks import MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_TOGGLE_ON, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
 from llamatron.strings.messages import MSG_UNDONE, MSG_RESTORED, MSG_WIZARD_ALREADY_OPEN, MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CREATED, MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_REPLACED, MSG_WIZARD_NOTHING_TO_UNDO
 from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_SONG_WORD
 from llamatron.composition.naming import new_name
@@ -39,8 +40,8 @@ from tests.support.ui_testing import UITest, fixed_text, key_of
 
 # The tree's branches by their places from the top, while none is open.
 GENRE_PLACE = 0
-FORM_PLACE = 1
-CREATE_PLACE = 2
+FORM_PLACE = 2
+CREATE_PLACE = 3
 # A name the test gives the song.
 A_SONG_NAME = 'anthem'
 
@@ -307,6 +308,83 @@ class TestWizardPage(WizardTest):
         await self.press(Key.RIGHT, *[Key.DOWN] * 30)
         self.assertEqual(self.wizard().branch().name(), MSG_WIZARD_CREATE_BRANCH)
         self.assertIn(MSG_WIZARD_CREATE_BRANCH, self.text())
+
+
+class TestWizardBand(WizardTest):
+    """The Band branch: a toggle for each player, and a branch for each player who is in."""
+
+    async def open_the_band(self):
+        await self.choose_genre_and_subgenre()
+        await self.go_to_named_branch(MSG_WIZARD_BAND_BRANCH)
+
+    async def test_the_band_waits_for_a_genre_and_a_subgenre(self):
+        await self.go_to_named_branch(MSG_WIZARD_BAND_BRANCH)
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        self.assertFalse(self.wizard().in_fields)
+        self.assertIn(ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE, self.text())
+
+    async def test_the_band_lists_every_player_and_opens_to_a_branch_for_each_who_is_in(self):
+        await self.open_the_band()
+        choices = self.choices()
+        self.assertEqual([field.label for field in self.wizard().fields()], choices.roles())
+        rows = len(self.wizard().rows())
+        await self.press(Key.RIGHT)
+        self.assertEqual(len(self.wizard().rows()), rows + len(choices.roles_in()))
+        await self.press(Key.DOWN)
+        self.assertEqual(self.wizard().branch().name(), choices.roles_in()[0])
+
+    async def test_a_toggle_leaves_a_player_out_and_puts_the_player_back_and_the_last_player_stays(self):
+        await self.open_the_band()
+        choices = self.choices()
+        players = choices.roles_in()
+        await self.press(Key.RIGHT, keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(players[0])
+        await self.press(Key.SPACE)
+        self.assertEqual(choices.roles_in(), players[1:])
+        self.assertNotIn(players[0], [branch.name() for _, branch in self.wizard().rows()])
+        await self.press(Key.ENTER)
+        self.assertEqual(choices.roles_in(), players)
+        for player in players[:-1]:
+            await self.select_field(player)
+            await self.press(Key.SPACE)
+        await self.select_field(players[-1])
+        await self.press(Key.SPACE)
+        self.assertEqual(choices.roles_in(), players[-1:])
+        self.assertIn(ERR_WIZARD_LAST_PLAYER, self.text())
+
+    async def test_a_players_branch_chooses_how_the_player_plays_and_how_busy_shown_as_a_gauge(self):
+        await self.open_the_band()
+        choices = self.choices()
+        player = next(role for role in choices.roles_in() if choices.has_busy(role) and len(choices.role_traits(role)) == 1)
+        trait = choices.role_traits(player)[0]
+        ways = choices.ways(role=player, trait=trait)
+        await self.press(Key.RIGHT, *[Key.DOWN] * (choices.roles_in().index(player) + 1))
+        self.assertEqual(self.wizard().branch().name(), player)
+        text = self.text()
+        self.assertIn(MSG_WIZARD_BUSY_LABEL, text)
+        self.assertIn(MSG_WIZARD_GAUGE_FULL * USUAL_BUSY + MSG_WIZARD_GAUGE_EMPTY * (MOST_BUSY - USUAL_BUSY), text)
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(MSG_WIZARD_PLAYS_LABEL)
+        await self.press(Key.ENTER)
+        for way in ways:
+            self.assertIn(way, self.text())
+        await self.press(Key.ESCAPE)
+        more = key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)
+        await self.select_field(MSG_WIZARD_BUSY_LABEL)
+        await self.press(*[more] * MOST_BUSY)
+        self.assertEqual(choices.get_busy(player), MOST_BUSY)
+        self.assertIn(MSG_WIZARD_GAUGE_FULL * MOST_BUSY, self.text())
+
+    async def test_the_song_made_has_the_band_chosen(self):
+        await self.open_the_band()
+        choices = self.choices()
+        out = choices.roles_in()[0]
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(out)
+        await self.press(Key.SPACE, keybindings.WizardPage.TO_TREE)
+        await self.create()
+        self.assertNotIn(out, self.document.song().get_track_names())
+        self.assertEqual(self.document.song().get_wizard_choices()[WITHOUT], [out])
 
 
 class TestWizardStart(WizardTest):
