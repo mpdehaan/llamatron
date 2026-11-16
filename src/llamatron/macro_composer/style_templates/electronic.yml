@@ -18,6 +18,7 @@
 #             A player of a figure, such as the bass, varies bars of each four-bar phrase by ending them with notes
 #             of their own (ends), written on a grid of so many steps to the bar and left out where the figure's grid differs.
 # forms       the layouts a song of each kind may take (see the note above them).
+# templates   a subgenre may name a drum break as break, and how far the break is cut up, 1 to 8, as break_cut.
 # melody      the habits a tune is sketched by when a song gives none: the notes used, rhythm cells, how far it ranges.
 #             smart holds the smart melody style's seven gauges, each from 1 to 8.
 # Sixteen steps to a bar, sixteenths. A song here is layers that enter and leave: the sections say which play.
@@ -39,11 +40,11 @@ templates:
   italo:         {tempo: 120, kick: every beat, backbeat: snare, hat: sixteenths, percussion: none, bass: octaves in eighths, chords: held pad, arp: sixteenths up and down, lead: synth line, harmony: minor four chord}
   trance:        {tempo: 138, kick: every beat, backbeat: clap, hat: open on the offbeats, percussion: none, bass: offbeat, chords: held pad, arp: gated chord, lead: synth line, harmony: minor four chord}
   drum and bass: {tempo: 172, kick: one and the and of three, backbeat: snare, hat: eighths, percussion: shaker, bass: long low notes, chords: held pad, arp: none, lead: none, harmony: minor two chord}
-  big beat:      {tempo: 104, kick: breakbeat, backbeat: snare with quiet notes, hat: eighths, percussion: shaker, fills: toms, bass: gritty riff, chords: held pad, arp: sixteenths up, lead: voice hook, harmony: one chord}
+  big beat:      {tempo: 104, break: driving break, break_cut: 2, kick: breakbeat, backbeat: snare with quiet notes, hat: eighths, percussion: shaker, fills: toms, bass: gritty riff, chords: held pad, arp: sixteenths up, lead: voice hook, harmony: one chord}
   minimal techno: {tempo: 126, kick: every beat, backbeat: none, hat: offbeats, percussion: rim late, fills: the kick drops out, bass: two notes with gaps, chords: one stab off the beat, arp: none, lead: none, harmony: one chord}
   dubstep:       {tempo: 140, kick: half time, backbeat: snare on three, hat: eighths, percussion: none, bass: wobble, chords: held pad, arp: none, lead: none, harmony: minor two chord}
   ambient:       {tempo: 80, kick: none, backbeat: none, hat: none, percussion: none, fills: none, bass: long low notes, chords: held pad, arp: eighths up and down, lead: synth line, harmony: minor four chord}
-  downtempo:     {tempo: 90, kick: breakbeat, backbeat: snare with quiet notes, hat: eighths, percussion: shaker, fills: none, bass: long low notes, chords: held pad, arp: eighths up and down, lead: synth line, harmony: minor two chord}
+  downtempo:     {tempo: 90, break: lazy break, kick: breakbeat, backbeat: snare with quiet notes, hat: eighths, percussion: shaker, fills: none, bass: long low notes, chords: held pad, arp: eighths up and down, lead: synth line, harmony: minor two chord}
   chiptune:      {tempo: 150, kick: one and three, backbeat: snare, hat: eighths, percussion: none, bass: octaves in eighths, chords: none, arp: fast chord arpeggio, lead: square line, harmony: four chord}
 
 traits:

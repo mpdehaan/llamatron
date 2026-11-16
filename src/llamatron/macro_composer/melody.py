@@ -465,6 +465,7 @@ LEAP_CURVE = 1.5
 CARRY_ON_LOSS = 0.8
 SKIP_SIZE = 2
 SHAPE_SEED = 'shape {} {} {}'
+GAUGE_SEED = '{} gauges {}'
 
 
 def share_of_gauge(position):
@@ -494,11 +495,16 @@ class Smart(StepWalk):
     by a song. A line marked higher, as a chorus's, sits higher, and each line of a song is dealt a rhythm of its own while
     the style's last, so that a chorus is unlike its verse; a varied line keeps its head, so that a hook is known when it returns."""
 
-    __slots__ = ('_gauges',)
+    __slots__ = ('_gauges', '_song_seed')
 
     def __init__(self, *, habits, chords, scale_type, seed, answers, voice=None, letters=()):
         super().__init__(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
         self._gauges = {**DEFAULT_GAUGES, **habits.get(SMART, {})}
+        # A line's notes are drawn by the seed and where the gauges stand, so that a gauge moved one position is always heard:
+        # a small change of the chances alone would often turn no draw. The rhythms dealt and each line's shape go by the
+        # song's seed alone, so that a gauge moved keeps them.
+        self._song_seed = self._seed
+        self._seed = GAUGE_SEED.format(self._seed, [self._gauges[name] for name in DEFAULT_GAUGES])
 
     def gauge(self, name):
         return share_of_gauge(self._gauges[name])
@@ -514,7 +520,7 @@ class Smart(StepWalk):
         wanted = self.gauge(GAUGE_NOTES) * (len(rhythms) - 1)
         nearest = sorted(range(len(rhythms)), key=lambda place: (abs(place - wanted), place))
         deck = [rhythms[place] for place in nearest[:max(SMALLEST_DECK, len(rhythms) - 1)]]
-        random.Random(RHYTHM_SEED.format(self._seed, self._answers)).shuffle(deck)
+        random.Random(RHYTHM_SEED.format(self._song_seed, self._answers)).shuffle(deck)
         letter = entry.get(LINE)
         if letter not in self._letters:
             return dice.choice(deck)
@@ -602,7 +608,7 @@ class Smart(StepWalk):
         return notes
 
     def new_line(self, *, entry, under, dice):
-        shapes = random.Random(SHAPE_SEED.format(self._seed, self._answers, entry.get(LINE, '')))
+        shapes = random.Random(SHAPE_SEED.format(self._song_seed, self._answers, entry.get(LINE, '')))
         return self.walked(rhythm=self.rhythm_for(entry=entry, dice=dice), centre=self.centre(entry), shape=self.shape_for(entry=entry, dice=shapes), under=under, dice=dice)
 
     def place_of(self, note):

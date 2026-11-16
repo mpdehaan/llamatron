@@ -722,6 +722,13 @@ MSG_WIZARD_PROGRESSION_LABEL = 'Progression'
 MSG_WIZARD_MELODY_LABEL = 'Melody'
 MSG_WIZARD_FILLS_LABEL = 'Fills'
 MSG_WIZARD_USUAL_MELODY = 'usual'
+# The smart melody style's gauges, each by its name in the melody engine: the field's label, then what its two ends mean.
+MSG_WIZARD_GAUGE_LABELS = {'moves': 'Moves', 'steps': 'Steps', 'after_leap': 'After leap', 'phrase': 'Phrase', 'leaning': 'Leaning', 'notes': 'Notes', 'surprise': 'Surprise'}
+MSG_WIZARD_GAUGE_ENDS = {'moves': ('steps', 'leaps'), 'steps': ('fall', 'rise'), 'after_leap': ('return', 'carry on'), 'phrase': ('flat', 'arched'),
+                         'leaning': ('resolved', 'left hanging'), 'notes': ('long', 'short'), 'surprise': ('expected', 'surprising')}
+MSG_WIZARD_BREAK_LABEL = 'Break'
+MSG_WIZARD_NO_BREAK = '(none)'
+MSG_WIZARD_BREAK_CUT_LABEL = 'Cut up'
 MSG_WIZARD_ANY_PROGRESSION = 'any'
 MSG_WIZARD_KIND_LABEL = 'Kind'
 MSG_WIZARD_ADD_SECTION_TITLE = 'Add section'
