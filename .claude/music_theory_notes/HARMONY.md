@@ -85,3 +85,56 @@ of its performer. Shares are of songs carrying a tag; trust differences between 
 - *Reggae*: three chords a section, almost nothing borrowed; I ii, i v, i bVII, I IV; ska shares the punk family's chords.
 - *Electronic dance*: minor in six in ten; i bVI bIII bVII and its rotations; four chords for the whole song.
 - I V vi IV is absent from the leading loops of every style before punk and appears from the 1990s on.
+
+## Modes in Rock and Pop
+
+Rock is seldom plain major or minor: most of it mixes a major or minor home chord with chords from a neighboring mode. A mode
+is heard from one or two marker chords, and a schema can color a section without the whole song being in the mode. (practice)
+
+- **Mixolydian** (major with a flat seventh): marker bVII, and the V chord avoided or minor. Loops: I bVII; I bVII IV; bVII IV I as a
+  cadence in place of V I. The sound of sixties psychedelia, southern and jam styles, and seventies hard rock. The tune uses the
+  flat seventh as a resting note and avoids the leading tone.
+- **Dorian** (minor with a raised sixth): marker a major IV under a minor home chord. Loops: i IV (the shuttle); i bIII IV; i IV bVII.
+  Funk, Latin rock, modal jam vamps, organ-led rock. The tune leans on the raised sixth; it is the brightest minor.
+- **Aeolian** (natural minor): markers bVI and bVII with a minor v or none. Loops: i bVII bVI bVII; the cadence bVI bVII i; i bVI bIII bVII.
+  Hard rock, metal, eighties and later pop. A major V borrowed into it (harmonic minor) is an older, more dramatic color.
+- **Phrygian** (minor with a flat second): marker bII over a minor home chord. Loops: i bII; i bII bIII. Metal, surf, flamenco color.
+  Rare (two or three songs in a hundred) and unmistakable.
+- **Lydian** (major with a raised fourth): marker a major II over the home chord with no IV. Loops: I II; I II IV I. Dreamy and
+  unresolved; film scores, progressive rock, shoegaze. Theorists argue over whether it is a home at all.
+- **Blues mixture**: major chords I IV V with a tune on the minor pentatonic: flat third and flat seventh sung against major chords.
+  The commonest "mode" of roots rock, and why bIII and bVII appear as chords in major keys.
+- **Double-tonic**: a loop that could be heard in two keys (vi IV I V as minor or major). Later pop lives here; the tune decides.
+- Measured in the chord dataset by decade (rock, pop, soul and their kin): songs starting on a minor chord grow from 6% (1950s)
+  to 13%, 19%, 25% and about 30% from the 2000s. bVII is in 14% of major songs in the 1950s, 29% to 32% from the 1960s to the
+  1980s, then falls to 12%. bVII with no V at all (Mixolydian proper) is 8 to 9% from the 1960s to the 1990s. A minor song with a
+  major IV and no minor iv (Dorian) is about a quarter of minor songs in every decade. The major II falls from a third of songs in
+  the 1950s to a fifth; the minor iv from a tenth to a twentieth. A flat second in minor stays near one song in ten minor songs. (measured)
+- **What a mode changes for a band**: the bass's passing notes, the scale of every fill and solo, which chord tones the keys add,
+  and where the tune rests. A solo in the wrong mode over a modal loop is the commonest wrong note in rock.
+
+## The Adventurous Pop Writer of the Mid-Sixties
+
+One strand of sixties pop took harmony and arrangement much further than its neighbors; its habits make pop that is not boring.
+Not typical of the era, and to be used as a color with its own share. (practice)
+
+- **The bass is seldom on the root.** Chords stand on their third or fifth; the home chord most of all appears with its fifth in the
+  bass, so that home never feels settled until the chorus or the last bar. The bass moves by step or chromatically and is a tune.
+- **Bass and chords disagree**: the bass line implies one progression while the chords above imply another; a pedal bass under
+  moving chords, or a falling bass under a held chord.
+- **Leaning to the subdominant side**: IV, ii and the minor iv more than V; phrases turn around the most charged chord in the
+  middle and not around a final cadence. Plain V to I is saved up.
+- **The key is in doubt**: a verse can sit a third away from where the chorus lands; sections change key by a third (to VI, bVI
+  or bIII) or step up by a semitone or tone into the chorus; a brief slide into a foreign key and straight back.
+- **Chord colors**: sixths, major sevenths, ninths, suspended and diminished chords as passing chords, half-diminished chords at the
+  tensest point; major swapped for minor on the same root.
+- **A chorus that climbs**: the same phrase repeated a whole step higher each time, three times, then falling back to the verse's key.
+- **A minor verse falling by step** (i bVII bVI V) answered by a chorus in the relative major.
+- **Episodes**: a song assembled from contrasting sections that do not return in order: verse and chorus twice, then a new slow
+  section on held organ chords with a shaker on every beat, then a fragment of the chorus stepping down, then a short contrapuntal
+  close. Six sections in three and a half minutes; joins hidden by reverb or made abruptly on purpose.
+- **Orchestration as hook**: two unlike instruments doubling one line; keyboards doubled slightly out of tune; bass doubled by
+  two basses, played with a pick, sometimes high as a lead voice; unusual colors (harpsichord, tack piano, French horn, accordion,
+  bass harmonica, sleigh bells, timpani, bicycle bell, an electronic whistle of gliding pitch); percussion as color and not as a
+  backbeat; instruments held back and entered one at a time; stacked wordless vocal harmony in close voicing with counterpoint.
+- **Forms**: thirty-two bar and verse-chorus both; tempo changes inside a song; phrases of odd length.

@@ -106,3 +106,22 @@ band's two eras show the border: the strummed guitar engine first, keyboard rhyt
   gaps; country lead guitar of double stops and pedal-steel bends; twin leads in thirds; arpeggiated twelve-string figures.
 - Folk rock: stacked close harmonies as the hook, acoustic guitars in altered tunings, a ragged electric lead against them. A
   whole song can sit on two chords with a guitar harmonic ringing like a bell on the beat, a soft snare, and nothing else.
+
+## The Roots Ensemble That Plays Every Style
+
+A five-piece that is a rock band by line-up and a songbook of American styles by repertoire: blues, gospel, country, New Orleans
+rhythm and blues, rock and roll, folk ballads and waltzes, each played in its own idiom with one band's accent. (practice)
+
+- **Two keyboards at once**: a piano that plays rhythm (barrelhouse, gospel, rolling eighths) and an organ that plays color and
+  lines: swells, circus and church figures, a counter-melody, never the same part as the piano. The organist also takes accordion
+  and saxophone, so the color changes from song to song.
+- **Three lead singers** who trade verses and stack rough three-part harmony, the parts crossing; the drummer sings lead while
+  playing, so the drumming is plain, behind the beat and deep, with few fills.
+- **Everyone doubles**: the drummer on mandolin, the bassist on fiddle, the pianist on drums; a song's line-up is chosen for it.
+- **The rhythm section plays soul**: bass lines that slide and leave holes, a backbeat that drags, the guitar playing short stinging
+  fills and almost no long solos.
+- **Horns as arranged color** on some songs only: a small section written like a New Orleans or brass-band part, with tuba or
+  low reeds, answering the voices.
+- **With guests** the band becomes each guest's backing group: a Chicago blues band for a blues singer, a second-line piano band
+  for a New Orleans pianist, a country band with fiddle for a country singer, a gospel group's support for a family of singers.
+  The lesson: one set of players, many styles, by changing who leads, the feel and two instruments.
