@@ -21,6 +21,9 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   continued across replies, so that the user can answer "on 11, yes". A number is never reused while anything numbered is
   open, and one reply never holds two lists that both start at 1. A question keeps its number until it's answered; once
   every number is resolved, the next may start again from 1.
+- **A proposal gets a number too.** Whatever Claude proposes that is not yet a question, an idea, a design or a way of building a
+  thing, takes a number of the running list and needs an answer like any question, so that the user can confirm it or ask about
+  it and no idea is dropped by accident (the user's rule). The list of what's open names it.
 - **In order.** Whatever is numbered is presented in ascending order of its numbers, never one out of place.
 - **Separated.** Two numbered questions in one reply are separated by a line of dashes,
   `-----------------------------------------------------`, so that each stands apart.
