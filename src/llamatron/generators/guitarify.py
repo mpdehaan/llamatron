@@ -32,7 +32,7 @@ and the notes of a picked chord overlap as they do on a guitar.
 
 from fractions import Fraction
 
-from llamatron.composition.file_format import SingleNotes, Stroke, Tuning
+from llamatron.composition.file_format import Approach, ChordColor, SingleNotes, Stroke, Tuning
 from llamatron.generators.base import ClipGenerator
 from llamatron.music.midi import HALF_STEPS_PER_OCTAVE, MAX_MIDI_NUMBER
 from llamatron.music.sound import CHORD, DEGREE, HELD, GLIDE, HELD_SOUND, KIND, LENGTH, MIDI, NAME, NOTE, NOTES, REST, VELOCITY, Sound
@@ -78,8 +78,21 @@ UNACCENTED_VELOCITY = Rational(4, 5)
 SHORT_LENGTH = Rational(1, 2)
 # A muted bass note without an accent plays at this share: the body of a riff, louder than a scratch.
 MUTED_BASS_VELOCITY = Rational(4, 5)
+# A squeal sounds this far above the chord's lowest note.
+SQUEAL_ABOVE = 2 * HALF_STEPS_PER_OCTAVE
+OCTAVE_ABOVE = (HALF_STEPS_PER_OCTAVE,)
+# A double stop adds the note this far below.
+FOURTH_BELOW = 5
+# A chord's third is this far above its lowest note, minor or major.
+THIRDS = (3, 4)
+# What each color puts in the third's place, in half steps above the lowest note, and the ninth a color adds.
+THIRD_MOVED_TO = {ChordColor.SUS_2: 2, ChordColor.SUS_4: 5}
+NINTH_ABOVE = 14
+# A chord approached from a fret away is played there for this long, or half its length where it is shorter.
+APPROACH_LENGTH = Rational(1, 16)
+APPROACH_FROM = {Approach.FROM_BELOW: -1, Approach.FROM_ABOVE: 1}
 # The strokes that stop short of their cell, each with the share of the cell it sounds for.
-SHORT_STROKES = {Stroke.MUTE: MUTE_LENGTH, Stroke.STAB: SHORT_LENGTH, Stroke.MUTED_BASS: SHORT_LENGTH}
+SHORT_STROKES = {Stroke.MUTE: MUTE_LENGTH, Stroke.STAB: SHORT_LENGTH, Stroke.MUTED_BASS: SHORT_LENGTH, Stroke.SQUEAL: SHORT_LENGTH}
 # A velocity a note has none of its own is taken as, to make it softer from.
 FULL_VELOCITY = 127
 LOWEST_VELOCITY = 1
@@ -101,17 +114,20 @@ class Guitarify(ClipGenerator):
     """Plays a clip's chords and notes as a guitar does: shaped onto strings, then struck by a bar of strokes."""
 
     __slots__ = (
-        '_shape', '_open', '_position', '_single_notes', '_strokes', '_bar', '_accents', '_cell', '_let_ring', '_gap', '_fade', '_loose_timing', '_upstroke',
+        '_shape', '_open', '_position', '_single_notes', '_color', '_approach', '_strokes', '_bar', '_accents', '_cell', '_let_ring', '_gap', '_fade', '_loose_timing', '_upstroke',
         '_seed', '_offset', '_voicings',
     )
 
     def __init__(self, *, shape, tuning, position, capo, strings, single_notes, strokes, bar, accents, cell, let_ring, spread, fade, loose_timing, upstroke,
-                 tempo, seed=None, continuation=None):
+                 tempo, color=ChordColor.AS_WRITTEN, approach=Approach.OFF, seed=None, continuation=None):
         """shape and strokes switch the halves on; tuning, position, capo, strings and single_notes are Shape's; bar, accents, cell (a length in whole notes), let_ring, spread (milliseconds between strings), fade and loose_timing (percentages) and upstroke (how many top strings an upstroke catches, or None for all) are the strokes'; tempo is the scene's, which turns the spread into time."""
         self._shape = shape
         self._open = tuple(pitch + capo for pitch in OPEN_STRINGS[tuning][-strings:])
         self._position = position
         self._single_notes = single_notes
+        # How every chord is voiced, and how the strokes reach a new chord.
+        self._color = color
+        self._approach = approach
         self._strokes = strokes and bool(bar)
         self._bar = tuple(bar)
         self._accents = tuple(accents) + (False,) * (len(self._bar) - len(accents))
@@ -163,7 +179,31 @@ class Guitarify(ClipGenerator):
             above = _triad_above(note=note, scale=scale)
             if above:
                 return self._voiced(Sound.chord_above(note, above))
+        if self._single_notes == SingleNotes.OCTAVE and note[MIDI] + HALF_STEPS_PER_OCTAVE <= MAX_MIDI_NUMBER:
+            return Sound.chord_above(note, OCTAVE_ABOVE)
+        if self._single_notes == SingleNotes.THIRD_ABOVE and scale is not None:
+            above = _triad_above(note=note, scale=scale)
+            if above and note[MIDI] + above[0] <= MAX_MIDI_NUMBER:
+                return Sound.chord_above(note, above[:1])
+        if self._single_notes == SingleNotes.DOUBLE_STOP and note[MIDI] >= FOURTH_BELOW:
+            return Sound.chord([_moved(note=note, midi=note[MIDI] - FOURTH_BELOW), note])
         return sound
+
+    def _colored(self, notes):
+        """Return a chord's notes, lowest first, as the color voices them: a ninth added, or the third moved or left out; a chord with no third keeps its notes."""
+        if self._color == ChordColor.AS_WRITTEN:
+            return notes
+        root = notes[0]
+        if self._color == ChordColor.ADD_9:
+            return [*notes, _moved(note=root, midi=root[MIDI] + NINTH_ABOVE)] if root[MIDI] + NINTH_ABOVE <= MAX_MIDI_NUMBER else notes
+        colored = []
+        for note in notes:
+            above = (note[MIDI] - root[MIDI]) % HALF_STEPS_PER_OCTAVE
+            if above not in THIRDS:
+                colored.append(note)
+            elif self._color in THIRD_MOVED_TO:
+                colored.append(_moved(note=note, midi=note[MIDI] - above + THIRD_MOVED_TO[self._color]))
+        return colored
 
     def _power_chord(self, note):
         """Return a single note as a power chord on the low strings: its root on the lowest string that can play it, the fifth and the octave above."""
@@ -173,7 +213,7 @@ class Guitarify(ClipGenerator):
 
     def _voiced(self, chord):
         """Return a chord as a hand holds it on the strings: its root first, then the rest from the lowest string up, every note as long and as loud as the chord's own."""
-        notes = sorted(chord[NOTES], key=_pitch_of)
+        notes = self._colored(sorted(chord[NOTES], key=_pitch_of))
         classes = tuple(sorted({note[MIDI] % HALF_STEPS_PER_OCTAVE for note in notes}))
         root = notes[0][MIDI] % HALF_STEPS_PER_OCTAVE
         key = (classes, root)
@@ -235,15 +275,40 @@ class Guitarify(ClipGenerator):
         """Return the positions the bar of strokes makes of the shaped ones."""
         events = []
         time = NO_TIME
+        before = None
         for place, sound in enumerate(sounds):
             length = Length.rational(sound[LENGTH])
             played = sound[HELD_SOUND] if sound[KIND] == HELD else sound
             if played[KIND] in (NOTE, CHORD):
-                events.extend(self._strokes_on(played=played, start=time, end=time + self._sounding_length(sound=sound, played=played, length=length), place=place))
+                end = time + self._sounding_length(sound=sound, played=played, length=length)
+                strokes = self._strokes_on(played=played, start=time, end=end, place=place)
+                pitches = _pitches_of(played)
+                if self._approach != Approach.OFF and before is not None and pitches != before:
+                    strokes = self._approached(played=played, strokes=strokes, start=time, end=end)
+                before = pitches
+                events.extend(strokes)
             elif played[KIND] != REST:
                 events.append((time, PASSED_ON, sound, time + length))
             time += length
         return _positions(events=events, total=time)
+
+    def _approached(self, *, played, strokes, start, end):
+        """Return a new chord's strokes with the chord first played a fret away: every note of it for a moment, and whatever was struck in that moment struck after it."""
+        moment = min(APPROACH_LENGTH, (end - start) / 2)
+        lands = start + moment
+        from_fret = APPROACH_FROM[self._approach]
+        strings = played[NOTES] if played[KIND] == CHORD else [played]
+        if not all(0 <= note[MIDI] + from_fret <= MAX_MIDI_NUMBER for note in strings):
+            return strokes
+        events = [(start, STRUCK, Sound.with_length(_moved(note=note, midi=note[MIDI] + from_fret), Length.of(moment)), lands) for note in strings]
+        for begins, kind, note, stops in strokes:
+            if begins < lands:
+                begins = begins + moment
+                if stops <= begins:
+                    continue
+                note = Sound.with_length(note, Length.of(stops - begins))
+            events.append((begins, kind, note, stops))
+        return events
 
     def _sounding_length(self, *, sound, played, length):
         """Return how long what a position plays sounds: its own length when it is held past its place, and its place's otherwise."""
@@ -277,7 +342,7 @@ class Guitarify(ClipGenerator):
                 if stroke == Stroke.MUTED_BASS:
                     if not accent:
                         share = share * MUTED_BASS_VELOCITY
-                elif any_accent and not accent:
+                elif any_accent and not accent and stroke != Stroke.SQUEAL:
                     share = share * UNACCENTED_VELOCITY
                 if self._fade and len(chosen) > 1:
                     share = share * (1 - Rational(self._fade * string, PERCENT * (len(chosen) - 1)))
@@ -311,6 +376,9 @@ class Guitarify(ClipGenerator):
             return list(reversed(top))
         if stroke in (Stroke.BASS, Stroke.MUTED_BASS):
             return strings[:1]
+        if stroke == Stroke.SQUEAL:
+            high = strings[0][MIDI] + SQUEAL_ABOVE
+            return [_moved(note=strings[0], midi=high)] if high <= MAX_MIDI_NUMBER else strings[-1:]
         if stroke == Stroke.ALT_BASS:
             fifth = (strings[0][MIDI] + FIFTH) % HALF_STEPS_PER_OCTAVE
             fifths = [note for note in strings[1:] if note[MIDI] % HALF_STEPS_PER_OCTAVE == fifth]
@@ -349,6 +417,11 @@ def _on_the_grid(time):
 
 def _pitch_of(note):
     return note[MIDI]
+
+
+def _pitches_of(played):
+    """Return the pitches a note or chord plays, to tell one chord from the next."""
+    return tuple(sorted(note[MIDI] for note in played[NOTES])) if played[KIND] == CHORD else (played[MIDI],)
 
 
 def _moved(*, note, midi):

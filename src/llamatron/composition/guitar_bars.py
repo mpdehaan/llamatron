@@ -86,6 +86,13 @@ READY_BARS = {
     # The low string muted in eighths under three chords.
     ReadyBar.PEDAL_RIFF: GuitarBar(cell=EIGHTH, strokes=(D, L, L, D, L, L, D, L), accents=(Y, O, O, Y, O, O, Y, O)),
     # Two bars of the low string with rests, the short chords pushed ahead of the beats and across the bar line.
+    # Three hits and then two, on one chord.
+    ReadyBar.FIVE_BEAT: GuitarBar(cell=SIXTEENTH, strokes=(D, N, N, D, N, N, D, N, N, N, D, N, D, N, N, N), accents=(O,) * 16),
+    # Strums with a muted stroke between each, like a clock.
+    ReadyBar.STRUM_AND_CLICK: GuitarBar(cell=EIGHTH, strokes=(D, M, U, M, D, M, U, M), accents=(Y, O, O, O, Y, O, O, O)),
+    # A chord picked slowly, one string at a time, from the bass.
+    ReadyBar.SLOW_PICK: GuitarBar(cell=EIGHTH, strokes=(B, S3, S2, S3, S1, S3, S2, S3), accents=(O,) * 8),
+    ReadyBar.FOUR_STOMPS: GuitarBar(cell=QUARTER, strokes=(D, D, D, D), accents=(Y, O, Y, O)),
     ReadyBar.POWER_GROOVE: GuitarBar(
         cell=SIXTEENTH,
         strokes=(L, N, N, L, N, N, S, N, L, N, L, N, N, L, N, S, N, N, L, N, L, N, N, S, N, L, N, L, S, N, L, L),

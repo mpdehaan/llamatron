@@ -39,7 +39,7 @@ from llamatron.support.rational import Rational
 from llamatron.generators.progression import Progression
 from llamatron.generators.voice_leading import VoiceLeading
 from llamatron.generators.guitarify import Guitarify
-from llamatron.composition.file_format import SINGLE_NOTES, STROKES, TUNINGS, GuitarifySetting, SingleNotes, Tuning
+from llamatron.composition.file_format import APPROACHES, CHORD_COLORS, SINGLE_NOTES, STROKES, TUNINGS, Approach, ChordColor, GuitarifySetting, SingleNotes, Tuning
 from llamatron.composition.guitar_bars import DEFAULT_BAR, READY_BARS
 from llamatron.generators.euclid import EuclidMask
 from llamatron.generators.glide import Glide
@@ -672,6 +672,7 @@ class GuitarifySettings(GeneratorSettings):
         WholeNumber(name=GuitarifySetting.CAPO, lowest=0, highest=MAX_GUITAR_FRET, error=ERR_BAD_SHAPE_PERCENT),
         WholeNumber(name=GuitarifySetting.STRINGS, lowest=MIN_GUITAR_STRINGS, highest=MAX_GUITAR_STRINGS, error=ERR_BAD_SHAPE_PERCENT),
         Choice(name=GuitarifySetting.SINGLE_NOTES, choices=SINGLE_NOTES, default=LEFT_OUT, error=ERR_NOT_A_CHOICE),
+        Choice(name=GuitarifySetting.COLOR, choices=CHORD_COLORS, default=LEFT_OUT, error=ERR_NOT_A_CHOICE),
         _guitar_flag(GuitarifySetting.STROKES),
         Checked(name=GuitarifySetting.BAR, check=_check_guitar_bar),
         Checked(name=GuitarifySetting.ACCENTS, check=_check_guitar_accents),
@@ -681,6 +682,7 @@ class GuitarifySettings(GeneratorSettings):
         WholeNumber(name=GuitarifySetting.FADE, lowest=0, highest=MAX_GUITAR_PERCENT, error=ERR_BAD_SHAPE_PERCENT),
         WholeNumber(name=GuitarifySetting.LOOSE_TIMING, lowest=0, highest=MAX_GUITAR_PERCENT, error=ERR_BAD_SHAPE_PERCENT),
         WholeNumber(name=GuitarifySetting.UPSTROKE, lowest=EVERY_STRING, highest=MAX_GUITAR_STRINGS, error=ERR_BAD_SHAPE_PERCENT),
+        Choice(name=GuitarifySetting.APPROACH, choices=APPROACHES, default=LEFT_OUT, error=ERR_NOT_A_CHOICE),
         RESTART_SETTING,
     )
     TAKEN_AS = {GuitarifySetting.CELL: time_length}
@@ -693,7 +695,7 @@ class GuitarifySettings(GeneratorSettings):
         cell = time_length(self.get_cell())
         return dict(
             shape=self.shapes(), tuning=self.get_tuning(), position=self.get_position(), capo=self.get_capo(), strings=self.get_strings(),
-            single_notes=self.get_single_notes(), strokes=self.strikes(), bar=self.get_bar(), accents=self.get_accents(),
+            single_notes=self.get_single_notes(), color=self.get_color(), approach=self.get_approach(), strokes=self.strikes(), bar=self.get_bar(), accents=self.get_accents(),
             cell=bar * cell.count if isinstance(cell, Bars) else cell, let_ring=self.lets_ring(), spread=self.get_spread(), fade=self.get_fade(),
             loose_timing=self.get_loose_timing(), upstroke=self.get_upstroke() or None, seed=default_seed,
         )
@@ -726,6 +728,12 @@ class GuitarifySettings(GeneratorSettings):
 
     def get_single_notes(self):
         return self._written(GuitarifySetting.SINGLE_NOTES) or SingleNotes.LEAVE
+
+    def get_color(self):
+        return self._written(GuitarifySetting.COLOR) or ChordColor.AS_WRITTEN
+
+    def get_approach(self):
+        return self._written(GuitarifySetting.APPROACH) or Approach.OFF
 
     def get_bar(self):
         """Return the stroke of each cell, the default bar's unless written."""
