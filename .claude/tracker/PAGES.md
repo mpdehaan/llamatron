@@ -197,7 +197,10 @@ The user's design, agreed in detail in `dev_notes/QUEUE.md` (S16 to S39), of whi
   a subgenre is chosen, with Meter, the subgenre's and only shown, and Length, the song's length with the form's name,
   whose `[` and `]` choose the next shorter and longer form, since the length follows the sections, and the song's Name), `FormBranch` (the Form picker, the sections listed under the fields, and a
   `SectionBranch` for each section, to read) and `CreateBranch` (a summary and the Create button, refused with `(genre?)`
-  until a genre and a subgenre are chosen). Band, Themes and Playing are to come.
+  until a genre and a subgenre are chosen), and `BandBranch`, a toggle for each player the genre's band may have, with a
+  `PlayerBranch` under it for each player who is in: Plays, the way the player plays, or a field for each part of the
+  drums, and Busy, 1 to 4, drawn as a horizontal Busy gauge. The last player cannot be left out. A player's Sound, the
+  Sounds field, the kit's pieces and the Interplay section are to come, as are Themes and Playing.
 - When the current song was made by the wizard, the tree starts with `StartBranch` (`start_branch.py`, the ways in
   `starts.py`): four rows, none selected at first, ENTER selecting one and the dot `●` marking it: a new song or the current
   song replaced, each from the settings the current song kept or from scratch. Every other branch refuses until one is

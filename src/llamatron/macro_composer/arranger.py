@@ -80,6 +80,8 @@ LINES_GIVEN = 'tunes'
 STYLE = 'style'
 TEMPLATE = 'template'
 PICKS = 'picks'
+# The roles a song leaves out of its band, by name.
+WITHOUT = 'without'
 KEY = 'key'
 ROOT = 'root'
 TYPE = 'type'
@@ -490,6 +492,8 @@ def arranged(*, style, song):
     scale = SCALE_NAME.format(song[KEY][ROOT], scale_type.capitalize())
     habits = style[MELODY] if GRID in style[MELODY] else style[MELODY][meter]
     levels = song.get(PLAYERS, {})
+    without = song.get(WITHOUT, [])
+    no_drums = any(role.get(DRUMS) and role[ROLE] in without for role in roles)
     playing = players_in(style=style, roles=roles, levels=levels, section={})
     drummer = next((playing[role[ROLE]] for role in roles if role.get(DRUMS)), {})
     drum_traits = [trait for role in roles for trait in role.get(DRUMS, [])] + [FILLS]
@@ -498,7 +502,7 @@ def arranged(*, style, song):
     drums_of = {}
     for name in form_names:
         section = section_of(name=name, style=style, song=song)
-        if section.get(HELD) or DRUMS not in section[PLAYS] or name in drums_of:
+        if no_drums or section.get(HELD) or DRUMS not in section[PLAYS] or name in drums_of:
             continue
         level = min(levels[DRUMS], section.get(ALLOWS, {}).get(DRUMS, levels[DRUMS])) if DRUMS in levels else None
         changed = {trait: value for trait, value in section.get(PICKS, {}).items()
@@ -526,7 +530,7 @@ def arranged(*, style, song):
     shaped = []
     pitched = []
     for role in roles:
-        if role.get(DRUMS):
+        if role.get(DRUMS) or role[ROLE] in without:
             continue
         entry = values_of(style=style, trait=role[TRAIT])[picks[role[TRAIT]]]
         if SOUND not in entry:
@@ -560,13 +564,14 @@ def arranged(*, style, song):
         chords = [chord_of(chord) for chord in section.get(CHORDS) or chord_entry.get(BY_SECTION, {}).get(section[KIND]) or chord_entry[PATTERN]]
         play = {}
         if section.get(HELD):
-            held = MSG_PART_OF_SECTION.format(CRASH, HELD)
-            parts[held] = one_hit(style=style, meter=meter, drum=CRASH)
-            parts[MSG_PART_OF_SECTION.format(KICK, HELD)] = one_hit(style=style, meter=meter, drum=KICK)
-            if CRASH not in tracks:
-                tracks[CRASH] = DRUM_KIT
-                drum_tracks.append(CRASH)
-            play[CRASH] = held
+            if not no_drums:
+                held = MSG_PART_OF_SECTION.format(CRASH, HELD)
+                parts[held] = one_hit(style=style, meter=meter, drum=CRASH)
+                parts[MSG_PART_OF_SECTION.format(KICK, HELD)] = one_hit(style=style, meter=meter, drum=KICK)
+                if CRASH not in tracks:
+                    tracks[CRASH] = DRUM_KIT
+                    drum_tracks.append(CRASH)
+                play[CRASH] = held
             if KICK in tracks:
                 play[KICK] = {PART: MSG_PART_OF_SECTION.format(KICK, HELD), ONCE: True}
             for role, entry in pitched:

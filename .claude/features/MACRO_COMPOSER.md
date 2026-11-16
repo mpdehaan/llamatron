@@ -165,6 +165,11 @@ clouds; generate and test, with motif development and counterpoint last.
   in, the root that scale type starts on (C for major, E for minor, Claude's choice) and the commonest form, so that a song
   can be made from a genre and a subgenre alone; choosing another genre leaves the subgenre to be chosen again. Any tempo
   the tracker plays is allowed, the template's usual range being advice.
+- The band: `roles()` are the genre's players; `set_role_in` leaves one out (a song's `without`, which the arranger
+  honors: no track, and no drum tracks without the drums) or puts one in, a player whose usual way is to sit out coming in
+  on the commonest way that sounds; `ways` and `set_way` choose a trait's pick among those that fit the other picks;
+  `set_busy` sets the level of the player's instrument, 1 to 4, each starting at 2 (Claude's choice, so that a song has
+  turns and fills). Choices kept before the band could be chosen name no levels and still make the same song.
 - `meter()` is the subgenre's; `form_seconds()` is a form's length at the tempo chosen, held by a test to the length of
   the song made for every form of every subgenre; `step_length` chooses the next longer or shorter form.
 - The seed is never shown: `made_setlist` draws one when the run has none, and the song keeps it with the other choices

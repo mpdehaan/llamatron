@@ -42,6 +42,7 @@ from llamatron.tui.drawing import Box, cursor_mark, INDENT, NOTHING, SPACE, Styl
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.shared.field_page import FieldPage
+from llamatron.tui.screens.wizard.band_branch import BandBranch
 from llamatron.tui.screens.wizard.create_branch import CreateBranch
 from llamatron.tui.screens.wizard.form_branch import FormBranch
 from llamatron.tui.screens.wizard.genre_branch import GenreBranch
@@ -149,7 +150,7 @@ class WizardPage(FieldPage):
     def roots(self):
         """Return the tree's top branches, in the order a song is thought through."""
         start = [StartBranch(page=self)] if self.asks_how_to_start() else []
-        return [*start, GenreBranch(page=self), FormBranch(page=self), CreateBranch(page=self)]
+        return [*start, GenreBranch(page=self), BandBranch(page=self), FormBranch(page=self), CreateBranch(page=self)]
 
     def rows(self):
         """Return the branches the tree shows, each with how deep it is: every top branch, and the branches under each open one."""

@@ -509,6 +509,11 @@ ERR_WIZARD_TEMPO = 'tempo must be an integer from {low} to {high}, got {value!r}
 ERR_WIZARD_NO_SUCH_FORM = 'form must be one the subgenre suggests, got {value!r}'
 ERR_WIZARD_NOT_READY = 'the wizard needs a genre and a subgenre first'
 ERR_WIZARD_SEED = 'seed must be an integer, got {value!r}'
+ERR_WIZARD_NO_SUCH_PLAYER = 'player must be one of the genre, got {value!r}'
+ERR_WIZARD_NO_SUCH_WAY = '{trait} must be a way of playing that fits the other choices, got {value!r}'
+ERR_WIZARD_NO_WAY = 'no way of playing fits the other choices for ({value})'
+ERR_WIZARD_BUSY = 'busy must be an integer from {low} to {high}, got {value!r}'
+ERR_WIZARD_LAST_PLAYER = 'a band needs one player'
 
 # tui/screens/wizard/wizard_page.py and the branches beside it
 ERR_WIZARD_CHOOSE_GENRE = 'choose a genre first'
