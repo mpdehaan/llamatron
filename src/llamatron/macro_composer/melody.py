@@ -16,7 +16,7 @@
 
 """A sketch of a tune, made by rule from a style's melody habits, a section's chords and a seed.
 
-The sketch is a starting tune for a person to improve: correct, singable and in the style's scale, never a hook. A section is
+The sketch is a starting tune for a person to improve: correct, singable and in the style's scale. A section is
 cut into lines; the style's plan says which line each is (a letter, so that a line returns), whether it is varied, and whether
 the lead or the answering instrument plays it. A line takes one of the style's rhythm cells and walks the style's ladder of
 notes by step, landing its long notes on the notes of the chord under them. The same seed gives the same tune.
@@ -41,6 +41,8 @@ SPAN = 'span'
 LINE = 'line'
 VARIED = 'varied'
 ANSWER = 'answer'
+# A line that is its section's hook: a short figure said, then said again with another ending.
+HOOK = 'hook'
 # What a line's notes are seeded by: the song's seed, whether it answers, the line's letter, and its place when it is varied.
 LINE_SEED = '{} {} {} {}'
 HIGHER = 'higher'
@@ -50,6 +52,7 @@ STEP_WALK = 'step walk'
 SERIAL = 'serial'
 EVOLVING = 'evolving'
 SMART = 'smart'
+HOOKS = 'hooks'
 # The smart engine's seven gauges, each from 1 to 8, and where each stands until a style or a song says: how often a tune leaps,
 # whether its steps fall or rise, whether the note after a leap comes back or carries on, how strongly a phrase arches, whether
 # a note that leans is resolved or left hanging, how long its notes are, and how often it breaks its own tendencies.
@@ -238,7 +241,7 @@ class StepWalk:
         return line_of(rhythm=dice.choice(rhythms), ladder=self._ladder, start=self.within(start), low=self._low, high=self._high, chords=under,
                        grid=self._grid, scale_type=self._scale_type, dice=dice)
 
-    def varied_line(self, *, line, dice):
+    def varied_line(self, *, line, dice, entry=None, under=None):
         """A line heard before, changed a little: its last notes moved."""
         sounds = [note for note in line if REST not in note]
         for note in sounds[-VARIED_NOTES:]:
@@ -264,7 +267,7 @@ class StepWalk:
                 lines.append([dict(note) for note in known[letter]])
                 continue
             if letter in known:
-                lines.append(stressed(self.varied_line(line=[dict(note) for note in known[letter]], dice=dice)))
+                lines.append(stressed(self.varied_line(line=[dict(note) for note in known[letter]], dice=dice, entry=entry, under=under)))
                 continue
             made = stressed(self.new_line(entry=entry, under=under, dice=dice))
             known[letter] = made
@@ -355,7 +358,7 @@ class Serial(StepWalk):
             at += length
         return notes
 
-    def varied_line(self, *, line, dice):
+    def varied_line(self, *, line, dice, entry=None, under=None):
         sounds = [note for note in line if REST not in note]
         pitches = [{field: note[field] for field in PITCH_FIELDS if field in note} for note in reversed(sounds)]
         for note, pitch in zip(sounds, pitches):
@@ -417,7 +420,7 @@ class Evolving(StepWalk):
             made.append(dict(note) if REST in note else {**self._ladder[left.pop(0)][1], STEPS: note[STEPS]})
         return made
 
-    def varied_line(self, *, line, dice):
+    def varied_line(self, *, line, dice, entry=None, under=None):
         places = [self.place_of(note) for note in line if REST not in note]
         return self.with_places(line=line, places=rotated(row=places, by=1))
 
@@ -626,7 +629,7 @@ class Smart(StepWalk):
                 return place
         return self._home
 
-    def varied_line(self, *, line, dice):
+    def varied_line(self, *, line, dice, entry=None, under=None):
         """A line heard before, changed: its head kept note for note, on its own rhythm, and its tail walked anew about the
         line's own middle, falling to its close."""
         rhythm = [{REST: note[REST]} if REST in note else {STEPS: note[STEPS]} for note in line]
@@ -634,6 +637,143 @@ class Smart(StepWalk):
         kept = places[:max(1, round(len(places) * HEAD_SHARE))]
         centre = self.within(round(sum(places) / len(places))) if places else self._home
         return self.walked(rhythm=rhythm, centre=centre, shape=SHAPE_TUMBLE, under=self._chords, dice=dice, kept=kept)
+
+
+# A hook's peak, the long note its figure reaches, sits at least this share of the range above the home note, and every line
+# that is neither a hook nor marked higher stays below that, so that the hook's top is the song's.
+HOOK_FLOOR_SHARE = 0.5
+# A hook's figure fills a bar: short notes through this share of it, then one long note to the bar's end.
+HOOK_HEAD_SHARE = 0.5
+# The bar is counted in this many units where it divides so, the short notes each lasting 1 to 3 of them, 2 to 4 notes in all.
+HOOK_UNITS = 8
+LONGEST_SHORT_NOTE = 3
+FEWEST_SHORT_NOTES = 2
+MOST_SHORT_NOTES = 4
+# How many of the figures nearest the Notes gauge a hook's rhythm is drawn from.
+HOOK_DECK = 3
+# The ways a figure's short notes reach its peak: one note repeated and a leap up, a climb by step, the peak first and a fall
+# away from it, and a turn about the notes under it.
+REACH_REPEATED = 'repeated'
+REACH_CLIMB = 'climb'
+REACH_DIP = 'dip'
+REACH_TURN = 'turn'
+REACHES = (REACH_REPEATED, REACH_CLIMB, REACH_DIP, REACH_TURN)
+LEAPS_INTO_PEAK = (2, 3)
+FARTHEST_CLIMB = 3
+FARTHEST_DIP = 2
+# The answer to a hook's figure turns about a place this far under the peak.
+ANSWER_BELOW = 2
+
+
+def short_note_figures(units):
+    """Every way of filling some units with 2 to 4 short notes of 1 to 3 units each, the busiest first."""
+    figures = []
+
+    def filled(*, so_far, left):
+        if left == 0 and FEWEST_SHORT_NOTES <= len(so_far) <= MOST_SHORT_NOTES:
+            figures.append(tuple(so_far))
+        if left > 0 and len(so_far) < MOST_SHORT_NOTES:
+            for length in range(1, min(LONGEST_SHORT_NOTE, left) + 1):
+                filled(so_far=[*so_far, length], left=left - length)
+
+    filled(so_far=[], left=units)
+    return sorted(figures, key=lambda figure: (-len(figure), figure))
+
+
+class Hooks(Smart):
+    """The smart engine with a hook: a line the plan marks as its section's hook is a figure of one bar, a few short notes
+    reaching one long note that is the top of the song, said in the first bar of the line and each second bar after, the bars
+    between answering it lower. Its rhythm could be clapped, it has few pitches, and it comes back the same. A varied hook keeps all
+    of it but its last note, which rises. Every other line is the smart engine's, kept under the hook's top unless marked higher."""
+
+    __slots__ = ()
+
+    def hook_floor(self):
+        """The lowest place a hook's peak may sit."""
+        return self.within(self._home + round(self._habits[SPAN] * HOOK_FLOOR_SHARE))
+
+    def chord_place(self, *, chord, lowest, highest, toward):
+        """The place of the chord's note nearest a place wanted, between two places, or the place wanted where the chord has none there."""
+        places = [place for place in range(max(self._low, lowest), min(self._high, highest) + 1) if self.in_chord(place=place, chord=chord)]
+        if not places:
+            return self.within(max(lowest, min(highest, toward)))
+        return min(places, key=lambda place: (abs(place - toward), -place))
+
+    def hook_rhythm(self, dice):
+        """A hook's bar: the lengths of its short notes, of its long one and of the unit they are counted in. The Notes gauge says how few the short notes are."""
+        unit = self._grid // HOOK_UNITS if self._grid % HOOK_UNITS == 0 else 1
+        head = max(FEWEST_SHORT_NOTES, round(self._grid * HOOK_HEAD_SHARE / unit))
+        figures = short_note_figures(head)
+        wanted = self.gauge(GAUGE_NOTES) * (len(figures) - 1)
+        nearest = sorted(range(len(figures)), key=lambda place: (abs(place - wanted), place))[:HOOK_DECK]
+        figure = figures[dice.choice(nearest)]
+        return [length * unit for length in figure], self._grid - head * unit, unit
+
+    def reached(self, *, count, peak, dice):
+        """The places of a figure's short notes, which reach the peak one of four ways."""
+        reach = dice.choice(REACHES)
+        if reach == REACH_REPEATED:
+            return [self.within(peak - dice.choice(LEAPS_INTO_PEAK))] * count
+        if reach == REACH_CLIMB:
+            return [self.within(peak - min(count - place, FARTHEST_CLIMB)) for place in range(count)]
+        if reach == REACH_DIP:
+            return [self.within(peak - min(place, FARTHEST_DIP)) for place in range(count)]
+        return [self.within(peak - 1 - (count - 1 - place) % 2) for place in range(count)]
+
+    def answer_bar(self, *, short, long, unit, peak, chord, dice):
+        """The bar after a hook's figure: the figure's short notes in the opposite order and a long note that leaves a breath, falling from under the peak to a note of the chord."""
+        rhythm = [{STEPS: length} for length in reversed(short)]
+        rhythm += [{STEPS: long - unit}, {REST: unit}] if long > unit else [{STEPS: long}]
+        highest = self._high
+        self._high = max(self._low, peak - 1)
+        try:
+            return self.walked(rhythm=rhythm, centre=self.within(peak - ANSWER_BELOW), shape=SHAPE_TUMBLE, under=[chord], dice=dice)
+        finally:
+            self._high = highest
+
+    def hook_line(self, *, under, dice):
+        """A hook: the figure, ending on the peak, in the first bar of the line and each second bar after, and an answer to it in the bars between."""
+        floor = self.hook_floor()
+        peak = self.chord_place(chord=under[0], lowest=floor, highest=self._high, toward=floor + 1)
+        short, long, unit = self.hook_rhythm(dice)
+        head = self.reached(count=len(short), peak=peak, dice=dice)
+        notes = []
+        for bar, chord in enumerate(under):
+            if bar % 2:
+                notes.extend(self.answer_bar(short=short, long=long, unit=unit, peak=peak, chord=chord, dice=dice))
+                continue
+            notes.extend({**self._ladder[place][1], STEPS: length} for place, length in zip(head, short))
+            ending = peak if bar == 0 else self.chord_place(chord=chord, lowest=floor, highest=self._high, toward=peak)
+            notes.append({**self._ladder[ending][1], STEPS: long})
+        return notes
+
+    def new_line(self, *, entry, under, dice):
+        if entry.get(HOOK):
+            return self.hook_line(under=under, dice=dice)
+        return self.under_the_hook(entry=entry, made=lambda: Smart.new_line(self, entry=entry, under=under, dice=dice))
+
+    def under_the_hook(self, *, entry, made):
+        """What makes a line, run with the line held under the lowest place a hook's peak may sit, unless the line is marked higher."""
+        if entry.get(HIGHER):
+            return made()
+        highest = self._high
+        self._high = max(self._low, self.hook_floor() - 1)
+        try:
+            return made()
+        finally:
+            self._high = highest
+
+    def varied_line(self, *, line, dice, entry=None, under=None):
+        """A hook heard before with its last note risen to a note of the chord at or above its peak; any other line as the smart engine varies one."""
+        if not (entry or {}).get(HOOK):
+            return self.under_the_hook(entry=entry or {}, made=lambda: Smart.varied_line(self, line=line, dice=dice))
+        sounds = [note for note in line if REST not in note]
+        peak = max(self.place_of(note) for note in sounds)
+        ending = self.chord_place(chord=under[-1], lowest=peak, highest=self._high, toward=peak + 1)
+        for field in PITCH_FIELDS + (STRESS,):
+            sounds[-1].pop(field, None)
+        sounds[-1].update(self._ladder[ending][1])
+        return line
 
 
 def same_note(*, one, other):
@@ -674,7 +814,7 @@ def row_as_written(*, row, size):
 
 # The four forms of a row.
 FORMS = (row_as_written, row_backwards, row_upside_down, row_upside_down_and_backwards)
-ENGINES = {STEP_WALK: StepWalk, SERIAL: Serial, EVOLVING: Evolving, SMART: Smart}
+ENGINES = {STEP_WALK: StepWalk, SERIAL: Serial, EVOLVING: Evolving, SMART: Smart, HOOKS: Hooks}
 
 
 def sketched(*, habits, plan, chords, scale_type, seed, answers, engine=None, voice=None, letters=()):

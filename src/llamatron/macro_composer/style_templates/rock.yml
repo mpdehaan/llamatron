@@ -368,7 +368,7 @@ sections:
     picks: {cymbal: ride eighths}
     bars: 8
     plays: [drums, bass, guitar, keys, voices, lead]
-    plan: [{line: hook, higher: true}, {line: hook, higher: true, varied: true}, {line: hook, higher: true}, {line: close}]
+    plan: [{line: hook, hook: true, higher: true}, {line: hook, hook: true, higher: true, varied: true}, {line: hook, hook: true, higher: true}, {line: close}]
   # A short ramp into the chorus: chords that keep away from home and end wanting it, the tune climbing.
   pre-chorus:
     intensity: {drums: 3, bass: 2, rhythm: 3, keys: 2, lead: 3}
