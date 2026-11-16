@@ -74,10 +74,9 @@ class WizardPage(FieldPage):
         self._song_name = new_name(word=MSG_NEW_SONG_WORD, taken=self.document().song_names())
         self._changed = False
         # What the current song kept of the run that made it, the way of starting chosen in the dialog that opens the wizard on
-        # such a song, and whether a new take is wanted.
+        # such a song.
         self._last = self.document().song().get_wizard_choices()
         self._start = None
-        self._new_take = False
         self._open = set()
         self.tree_place = FIRST_PLACE
         self.in_fields = False
@@ -116,23 +115,12 @@ class WizardPage(FieldPage):
         Nothing is chosen yet, so the wizard still closes without asking."""
         self._start = start
         self._choices = WizardChoices.from_data(self._last) if start in FROM_LAST else WizardChoices()
-        self._new_take = False
         document = self.document()
         self._song_name = document.current_song_name() if self.replaces() else new_name(word=MSG_NEW_SONG_WORD, taken=document.song_names())
 
     def replaces(self):
         """Return whether Create replaces the current song, where otherwise a song is added."""
         return self._start in REPLACING
-
-    def starts_from_last(self):
-        return self._start in FROM_LAST
-
-    def wants_new_take(self):
-        return self._new_take
-
-    def want_new_take(self, wanted):
-        self._new_take = wanted
-        self._changed = True
 
     def refusal_of(self, branch):
         """Return why the cursor cannot move into a branch's fields yet, or None when it can."""
@@ -244,10 +232,9 @@ class WizardPage(FieldPage):
     # Create.
 
     def create(self):
-        """Make the song from the choices, add it to the set with all it uses as one change, and show Arrange on it, the user's design."""
-        if not self.starts_from_last() or self._new_take:
-            # A song from scratch and a new take each roll the dice afresh; a run from the last settings keeps the seed, so that what was not changed stays.
-            self._choices.forget_seed()
+        """Make the song from the choices, add it to the set with all it uses as one change, and show Arrange on it, the user's design.
+        Every run of the wizard rolls the dice afresh, the user's rule: a run from the last settings keeps the settings and never the seed."""
+        self._choices.forget_seed()
         made = self._choices.made_setlist(name=self._song_name, version=VERSION)
         document = self.document()
         replaces = self.replaces()

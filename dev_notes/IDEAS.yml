@@ -1940,7 +1940,6 @@
   text: |
     Beyond the five agreed first (serialism, phasing, additive process, unequal loops, chance), five more ways of composing a whole piece, each a subgenre of Experimental with a wizard step of its own: stochastic (clouds of notes whose density, height and loudness follow drawn curves, which can be very dense), markov (each note chosen by what tends to follow the note before, from a table), cellular (a grid evolving by a simple rule decides who plays when), grammar (a short seed rewritten by rules into a long self-similar line) and change ringing (a set of notes run through every order by swapping neighbours). Stochastic and cellular want trial songs before they are promised. Ways of Claude's and the user's own invention may join them.
 
-
 - title: "An Archaic genre for the wizard"
   priority: 99
   text: |
@@ -1951,3 +1950,7 @@
   text: |
     The user's ask: a drum solo as a kind of section the wizard can add, the drummer alone or over a held chord, built from the kit's pieces that are switched on, so that a large kit with its extra toms, cymbals and percussion gives a long, elaborate solo. It is never part of a ready-made form unless the form says so, and its length and how wild it gets are the person's to set. It would use the solo section's settings that build across the section.
 
+- title: "The song wizard makes several takes at once"
+  priority: 99
+  text: |
+    The wizard could make any number of takes of one set of choices, at most 10, each a new song of the set, so that a person listens through them and keeps the one liked. Today each press of Create rolls the dice once. Measured: a new roll changes only the tunes (the lead, the solo and the answering lines: their notes, octaves, ties and loudness) and the small unevenness of each drum stroke's loudness; the chords, the bass, the rhythm parts, the drum grooves and fills and the form stay the same, since those come from the choices. So takes differ in melody alone until the dice reach more of the song, and ten takes would add ten songs' tune patterns to the set while the parts that are the same are shared. Undecided: how takes are named, whether the takes not kept are removed in one step, and whether a take is a song or only a set of tune patterns to audition inside one song.

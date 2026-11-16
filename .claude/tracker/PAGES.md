@@ -205,9 +205,9 @@ The user's design, agreed in detail in `dev_notes/QUEUE.md` (S16 to S39), of whi
   design after a Start branch in the tree proved poor (`LlamatronApp.show_wizard`, the ways in `starts.py`): a new song or
   the current song replaced, each from the settings the current song kept or from scratch. ESC opens no wizard. Replacing
   keeps the song's name, which the Genre branch then only shows, and its place (`Document.replace_with_made_song`,
-  `Setlist.replace_song`), as one undo step. A run from the last settings keeps the song's seed, so the same choices make
-  the same song, unless the Create branch's Take field, shown only then, is set to "a new take"; a run from scratch always
-  draws a seed. The four names are Claude's shortening of the user's, which the user accepted. A current song nothing was
+  `Setlist.replace_song`), as one undo step. The picker's last row is CANCEL, the user's ask. Every run of the wizard
+  draws a new seed at Create, the user's rule: a run from the last settings keeps the settings and never the seed, and
+  there is no Take field. The four names are Claude's shortening of the user's, which the user accepted. A current song nothing was
   done to, as a new set's (`Setlist.song_is_untouched`), is filled in place under the wizard's name, where otherwise a song
   is added. Create turns the set's Real Time switch on, in the same undo step, the user's ask, so that the song can be
   played at once.

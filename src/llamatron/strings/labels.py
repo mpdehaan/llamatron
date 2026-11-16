@@ -698,12 +698,12 @@ MSG_WIZARD_START_NAMES = {
     'replace from last': 'Replace song, from last settings',
     'replace from scratch': 'Replace song, from scratch',
 }
-MSG_WIZARD_TAKE_LABEL = 'Take'
 MSG_WIZARD_METER_LABEL = 'Meter'
 MSG_WIZARD_BAND_BRANCH = 'Band'
 MSG_WIZARD_BUSY_LABEL = 'Busy'
 MSG_WIZARD_LENGTH_LABEL = 'Length'
-MSG_WIZARD_TAKE_NAMES = ['the same', 'a new take']
+# The last row of the dialog that asks how to start.
+MSG_WIZARD_START_CANCEL = 'CANCEL'
 MSG_WIZARD_GENRE_BRANCH = 'Genre'
 MSG_WIZARD_FORM_BRANCH = 'Form'
 MSG_WIZARD_CREATE_BRANCH = 'Create'
