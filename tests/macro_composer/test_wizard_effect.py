@@ -60,24 +60,10 @@ SECTION_BARS = "a section's bars"
 SECTION_KIND = "a section's kind"
 FORM = 'form'
 PLAYS_IN_SECTION = 'who plays in a section'
-# How many choices of each kind change nothing, by genre, and why each is allowed for now:
-# - busy: the positions of a player's Busy gauge that make a song another position makes. A keys player and a rhythm guitarist
-#   decorate nothing yet, and a style's lead or session player is written the same at two positions.
-# - who plays in a section: a drummer put into a section of a subgenre whose drums have no way of playing.
+# How many choices of each kind change nothing, by genre and half, with the reason each is allowed for now: none is.
 FIRST_HALF = 0
 SECOND_HALF = 1
-KNOWN_TO_CHANGE_NOTHING = {
-    ('blues', FIRST_HALF): {BUSY: 11},
-    ('blues', SECOND_HALF): {BUSY: 10},
-    ('electronic', FIRST_HALF): {BUSY: 24},
-    ('electronic', SECOND_HALF): {BUSY: 39},
-    ('rock', FIRST_HALF): {BUSY: 9},
-    ('rock', SECOND_HALF): {BUSY: 8},
-    ('sixties_pop', FIRST_HALF): {BUSY: 14},
-    ('sixties_pop', SECOND_HALF): {BUSY: 9},
-    ('soul_funk', FIRST_HALF): {BUSY: 14},
-    ('soul_funk', SECOND_HALF): {BUSY: 9},
-}
+KNOWN_TO_CHANGE_NOTHING = {}
 LABEL = '{subgenre}: {what}'
 
 

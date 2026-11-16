@@ -279,24 +279,51 @@ players:
     2:
       says: 'Plays the bass part with two notes walking up into each turn.'
       varies:
-        - {bars: [4], grid: 16, ends: [{degree: 5, steps: 2}, {degree: 6, steps: 2}]}
+        - {bars: [4], needs: {meter: 4/4}, grid: 16, ends: [{degree: 5, steps: 2}, {degree: 6, steps: 2}]}
+        - {bars: [4], needs: {meter: 12/8}, grid: 12, ends: [{degree: 5, steps: 1}, {degree: 6, steps: 1}]}
     3:
       says: 'Pops an octave at the end of the second bar, and climbs to the octave into each turn.'
       varies:
-        - {bars: [2], grid: 16, ends: [{degree: 1, octave: 1, steps: 1}, {degree: 5, steps: 1}]}
-        - {bars: [4], grid: 16, ends: [{degree: 5, steps: 1}, {degree: 6, steps: 1}, {degree: 1, octave: 1, steps: 2}]}
+        - {bars: [2], needs: {meter: 4/4}, grid: 16, ends: [{degree: 1, octave: 1, steps: 1}, {degree: 5, steps: 1}]}
+        - {bars: [4], needs: {meter: 4/4}, grid: 16, ends: [{degree: 5, steps: 1}, {degree: 6, steps: 1}, {degree: 1, octave: 1, steps: 2}]}
+        - {bars: [2], needs: {meter: 12/8}, grid: 12, ends: [{degree: 1, octave: 1, steps: 1}]}
+        - {bars: [4], needs: {meter: 12/8}, grid: 12, ends: [{degree: 3, steps: 1}, {degree: 5, steps: 1}, {degree: 6, steps: 1}]}
     4:
       says: 'Behind the beat. Pops the octave twice at the end of the second bar, ends the third with two notes of their own, and runs down from the octave into each turn.'
       timing: {drag: 8}
       varies:
-        - {bars: [2], grid: 16, ends: [{degree: 1, octave: 1, steps: 1}, {degree: 1, octave: 1, steps: 1}]}
-        - {bars: [3], grid: 16, ends: [{degree: 5, steps: 1}, {degree: 6, steps: 1}]}
-        - {bars: [4], grid: 16, ends: [{degree: 1, octave: 1, steps: 1}, {degree: 6, steps: 1}, {degree: 5, steps: 1}, {degree: 3, steps: 1}]}
+        - {bars: [2], needs: {meter: 4/4}, grid: 16, ends: [{degree: 1, octave: 1, steps: 1}, {degree: 1, octave: 1, steps: 1}]}
+        - {bars: [3], needs: {meter: 4/4}, grid: 16, ends: [{degree: 5, steps: 1}, {degree: 6, steps: 1}]}
+        - {bars: [4], needs: {meter: 4/4}, grid: 16, ends: [{degree: 1, octave: 1, steps: 1}, {degree: 6, steps: 1}, {degree: 5, steps: 1}, {degree: 3, steps: 1}]}
+        - {bars: [2], needs: {meter: 12/8}, grid: 12, ends: [{degree: 1, octave: 1, steps: 1}, {degree: 5, steps: 1}]}
+        - {bars: [3], needs: {meter: 12/8}, grid: 12, ends: [{degree: 6, steps: 1}, {degree: 5, steps: 1}]}
+        - {bars: [4], needs: {meter: 12/8}, grid: 12, ends: [{degree: 1, octave: 1, steps: 1}, {degree: 6, steps: 1}, {degree: 5, steps: 1}, {degree: 3, steps: 1}, {degree: 2, steps: 1}, {degree: 1, steps: 1}]}
   rhythm:
     1: {says: 'Plays the part exactly as written, tight and even.', guitarify: {spread: 4}}
-    2: {says: 'Plays the part with a wider, slightly loose stroke.', guitarify: {spread: 12, loose_timing: 8}}
-    3: {says: 'Plays the part loosely, each stroke spread across the strings.', guitarify: {spread: 6}}
-    4: {says: 'Plays the part with the widest and loosest stroke.', guitarify: {spread: 10, loose_timing: 14}}
+    2:
+      says: 'Plays the part with a wider, slightly loose stroke, and adds two strokes into each turn.'
+      guitarify: {spread: 12, loose_timing: 8}
+      varies:
+        - {bars: [4], needs: {meter: 4/4}, grid: 16, ends: [{degree: 1, chord: '3', steps: 2}, {degree: 1, chord: '3', steps: 2}]}
+        - {bars: [4], needs: {meter: 12/8}, grid: 12, ends: [{degree: 1, chord: '3', steps: 2}, {degree: 1, chord: '3', steps: 1}]}
+    3:
+      says: 'Plays the part loosely, each stroke spread across the strings, with a stroke pushed in at the end of the second bar and a run of strokes into each turn.'
+      guitarify: {spread: 6}
+      varies:
+        - {bars: [2], needs: {meter: 4/4}, grid: 16, ends: [{degree: 1, chord: '3', steps: 2}]}
+        - {bars: [4], needs: {meter: 4/4}, grid: 16, ends: [{degree: 1, chord: '3', steps: 2}, {degree: 1, chord: '3', steps: 2}, {degree: 1, chord: '3', steps: 2}, {degree: 1, chord: '3', steps: 2}]}
+        - {bars: [2], needs: {meter: 12/8}, grid: 12, ends: [{degree: 1, chord: '3', steps: 1}]}
+        - {bars: [4], needs: {meter: 12/8}, grid: 12, ends: [{degree: 1, chord: '3', steps: 1}, {degree: 1, chord: '3', steps: 1}, {degree: 1, chord: '3', steps: 1}]}
+    4:
+      says: 'Plays the part with the widest and loosest stroke, extra strokes ending the second and third bars, and strokes climbing an octave into each turn.'
+      guitarify: {spread: 10, loose_timing: 14}
+      varies:
+        - {bars: [2], needs: {meter: 4/4}, grid: 16, ends: [{degree: 1, chord: '3', steps: 2}]}
+        - {bars: [3], needs: {meter: 4/4}, grid: 16, ends: [{degree: 1, chord: '3', steps: 2}, {degree: 1, chord: '3', steps: 2}]}
+        - {bars: [4], needs: {meter: 4/4}, grid: 16, ends: [{degree: 1, chord: '3', steps: 2}, {degree: 1, chord: '3', steps: 2}, {degree: 1, chord: '3', octave: 1, steps: 2}, {degree: 1, chord: '3', octave: 1, steps: 2}]}
+        - {bars: [2], needs: {meter: 12/8}, grid: 12, ends: [{degree: 1, chord: '3', steps: 1}]}
+        - {bars: [3], needs: {meter: 12/8}, grid: 12, ends: [{degree: 1, chord: '3', steps: 2}, {degree: 1, chord: '3', steps: 1}]}
+        - {bars: [4], needs: {meter: 12/8}, grid: 12, ends: [{degree: 1, chord: '3', steps: 1}, {degree: 1, chord: '3', steps: 1}, {degree: 1, chord: '3', octave: 1, steps: 1}]}
   lead:
     1: {says: 'Few notes, close together.', span: 2}
     2: {says: 'Phrases that leave room, behind the beat.', span: 3, timing: {drag: 10}}
@@ -304,9 +331,27 @@ players:
     4: {says: 'The widest range and the most notes.', span: 5, busy: true, timing: {drag: 6}}
   keys:
     1: {says: 'Plays the part exactly as written.'}
-    2: {says: 'Plays the part as written.'}
-    3: {says: 'Plays the part pushing ahead of the beat.'}
-    4: {says: 'Plays the part leaning far back.'}
+    2:
+      says: 'Plays the part as written, and strikes the chord again on the last beat of every fourth bar.'
+      varies:
+        - {bars: [4], needs: {meter: 4/4}, grid: 16, ends: [{degree: 1, chord: '3', steps: 4}]}
+        - {bars: [4], needs: {meter: 12/8}, grid: 12, ends: [{degree: 1, chord: '3', steps: 3}]}
+    3:
+      says: 'Ends the second bar with two quick chords, and runs up the chord into each turn.'
+      varies:
+        - {bars: [2], needs: {meter: 4/4}, grid: 16, ends: [{degree: 1, chord: '3', steps: 2}, {degree: 1, chord: '3', steps: 2}]}
+        - {bars: [4], needs: {meter: 4/4}, grid: 16, ends: [{degree: 1, steps: 2}, {degree: 3, steps: 2}, {degree: 5, steps: 2}, {degree: 1, octave: 1, steps: 2}]}
+        - {bars: [2], needs: {meter: 12/8}, grid: 12, ends: [{degree: 1, chord: '3', steps: 1}, {degree: 1, chord: '3', steps: 2}]}
+        - {bars: [4], needs: {meter: 12/8}, grid: 12, ends: [{degree: 1, steps: 1}, {degree: 3, steps: 1}, {degree: 5, steps: 1}]}
+    4:
+      says: 'Ends the second bar with two quick chords and the third with one off the beat, and runs down from the octave into each turn.'
+      varies:
+        - {bars: [2], needs: {meter: 4/4}, grid: 16, ends: [{degree: 1, chord: '3', steps: 2}, {degree: 1, chord: '3', steps: 2}]}
+        - {bars: [3], needs: {meter: 4/4}, grid: 16, ends: [{degree: 1, chord: '3', steps: 2}]}
+        - {bars: [4], needs: {meter: 4/4}, grid: 16, ends: [{degree: 1, octave: 1, steps: 2}, {degree: 6, steps: 2}, {degree: 5, steps: 2}, {degree: 3, steps: 2}]}
+        - {bars: [2], needs: {meter: 12/8}, grid: 12, ends: [{degree: 1, chord: '3', steps: 1}, {degree: 1, chord: '3', steps: 2}]}
+        - {bars: [3], needs: {meter: 12/8}, grid: 12, ends: [{degree: 1, chord: '3', steps: 1}]}
+        - {bars: [4], needs: {meter: 12/8}, grid: 12, ends: [{degree: 1, octave: 1, steps: 1}, {degree: 6, steps: 1}, {degree: 5, steps: 1}, {degree: 3, steps: 1}, {degree: 2, steps: 1}, {degree: 1, steps: 1}]}
 
 sounds: {bass: 34, guitar: 28, muted guitar: 29, piano: 1, organ: 17, solo organ: 19, electric piano: 5, clavinet: 8, horns: 62, saxophone: 67, voice: 54, voices: 53}
 

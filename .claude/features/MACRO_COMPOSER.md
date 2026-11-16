@@ -138,12 +138,16 @@ clouds; generate and test, with motif development and counterpoint last.
   hundredths of a step) and `uneven` (velocity moved by a seed). Each choice says what it `needs`, so one that does not fit
   the meter is left out. A decoration's drum says its `steps` and which are `loud` and `soft`, and is laid over the bar only
   where the bar is silent.
-- A player of a figure, the bass so far, decorates by `varies` too: each names the `bars` of a four-bar phrase and the `ends`,
-  notes of the player's own that take the bar's last steps, written on a `grid` of so many steps to the bar; what the bar played
-  before them stays, and a variation whose grid the figure's does not divide by is left out. A section's intensity holds a
-  figure's player back as it holds the drummer, with a part for each level a song uses, and no part of its own where the
-  player held back plays the figure no differently.
-- The rhythm guitar and the keys so far change only timing and Guitarify's spread and looseness, and a lead its span and busyness.
+- A player of a figure, the bass, the keys and the rhythm guitar, decorates by `varies` too: each names the `bars` of a four-bar
+  phrase and the `ends`, notes of the player's own that take the bar's last steps, written on a `grid` of so many steps to the
+  bar, and may say the meter it `needs`; what the bar played before them stays. An ending fits a figure when one of the two
+  grids divides the other, the figure written on the finer; any other, and one written for another meter, is left out. A
+  section's intensity holds a figure's player back as it holds the drummer, with a part for each level a song uses, and no
+  part of its own where the player held back plays the figure no differently.
+- A keys player strikes the chord again before a turn, then ends bars with quick chords and runs along the chord's notes; a
+  rhythm guitarist adds strokes into each turn, more at each level, beside Guitarify's spread and looseness; the electronic
+  style's sequenced part jumps an octave instead (the user's choice of the bass's way for every player). A lead changes its
+  span and busyness. `tests/macro_composer/test_wizard_effect.py` holds every position of every Busy gauge to a song of its own.
 - What a player says for people is written in the same block as what the player does, and must say only that.
 
 ## Sections

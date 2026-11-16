@@ -263,10 +263,22 @@ players:
         - {bars: [3], grid: 16, ends: [{degree: 5, steps: 2}]}
         - {bars: [4], grid: 16, ends: [{degree: 1, steps: 1}, {degree: 3, steps: 1}, {degree: 5, steps: 1}, {degree: 1, octave: 1, steps: 1}]}
   rhythm:
-    1: {says: 'Plays the part exactly as written, tight and even.'}
-    2: {says: 'Plays the part with a wider, slightly loose stroke.'}
-    3: {says: 'Plays the part loosely, each stroke spread across the strings.'}
-    4: {says: 'Plays the part with the widest and loosest stroke.'}
+    1: {says: 'A sequenced part, the same in every bar.'}
+    2:
+      says: 'A sequenced part that jumps an octave on the last beat of every fourth bar.'
+      varies:
+        - {bars: [4], grid: 16, ends: [{degree: 1, chord: '3', octave: 1, steps: 4}]}
+    3:
+      says: 'A sequenced part that jumps an octave at the end of the second bar and through the last two beats of the fourth.'
+      varies:
+        - {bars: [2], grid: 16, ends: [{degree: 1, chord: '3', octave: 1, steps: 4}]}
+        - {bars: [4], grid: 16, ends: [{degree: 1, chord: '3', octave: 1, steps: 8}]}
+    4:
+      says: 'A part programmed bar by bar: an octave jump ending the second bar, a flicker ending the third, and the octave traded back and forth into each turn.'
+      varies:
+        - {bars: [2], grid: 16, ends: [{degree: 1, chord: '3', octave: 1, steps: 4}]}
+        - {bars: [3], grid: 16, ends: [{degree: 1, chord: '3', octave: 1, steps: 2}, {degree: 1, chord: '3', steps: 2}]}
+        - {bars: [4], grid: 16, ends: [{degree: 1, chord: '3', octave: 1, steps: 2}, {degree: 1, chord: '3', steps: 2}, {degree: 1, chord: '3', octave: 1, steps: 2}, {degree: 1, chord: '3', steps: 2}]}
   lead:
     1: {says: 'Few notes, close together.', span: 2}
     2: {says: 'A hook that leaves room.', span: 3}
@@ -274,9 +286,21 @@ players:
     4: {says: 'The widest range.', span: 5}
   keys:
     1: {says: 'Plays the part exactly as written.'}
-    2: {says: 'Plays the part as written.'}
-    3: {says: 'Plays the part pushing ahead of the beat.'}
-    4: {says: 'Plays the part leaning far back.'}
+    2:
+      says: 'Plays the part as written, and strikes the chord again on the last beat of every fourth bar.'
+      varies:
+        - {bars: [4], grid: 16, ends: [{degree: 1, chord: '3', steps: 4}]}
+    3:
+      says: 'Ends the second bar with two quick chords, and runs up the chord into each turn.'
+      varies:
+        - {bars: [2], grid: 16, ends: [{degree: 1, chord: '3', steps: 2}, {degree: 1, chord: '3', steps: 2}]}
+        - {bars: [4], grid: 16, ends: [{degree: 1, steps: 2}, {degree: 3, steps: 2}, {degree: 5, steps: 2}, {degree: 1, octave: 1, steps: 2}]}
+    4:
+      says: 'Ends the second bar with two quick chords and the third with one off the beat, and runs down from the octave into each turn.'
+      varies:
+        - {bars: [2], grid: 16, ends: [{degree: 1, chord: '3', steps: 2}, {degree: 1, chord: '3', steps: 2}]}
+        - {bars: [3], grid: 16, ends: [{degree: 1, chord: '3', steps: 2}]}
+        - {bars: [4], grid: 16, ends: [{degree: 1, octave: 1, steps: 2}, {degree: 6, steps: 2}, {degree: 5, steps: 2}, {degree: 3, steps: 2}]}
 
 sounds: {grit bass: 31, synth bass: 39, acid bass: 40, sub bass: 39, pad: 90, piano: 2, organ: 18, arp: 82, soft arp: 6, square: 81, lead: 82, voice: 86}
 
