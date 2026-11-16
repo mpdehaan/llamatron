@@ -31,7 +31,6 @@ DOCUMENTS = [
     ROOT / 'GUIDE.md',
     ROOT / 'INSTALL.md',
     ROOT / 'README.md',
-    *sorted((ROOT / 'dev_notes').glob('*.md')),
     *sorted((ROOT / 'docs').rglob('*.md')),
     *sorted((ROOT / '.claude').rglob('*.md')),
 ]
@@ -41,10 +40,10 @@ DOCS = ROOT / 'docs'
 GUIDE_LINK = '](docs/{name})'
 TABLE_ROW = '|'
 # A path in backticks that starts in one of the repository's folders and ends in a file suffix.
-PATH_IN_BACKTICKS = re.compile(r'`((?:src|test|internal_tools|user_scripts|examples|docs|dev_notes)/[A-Za-z0-9_./-]+\.(?:py|yml|svg|sh|md|mid|als|ly))`')
+PATH_IN_BACKTICKS = re.compile(r'`((?:src|test|internal_tools|user_scripts|examples|docs)/[A-Za-z0-9_./-]+\.(?:py|yml|svg|sh|md|mid|als|ly))`')
 ENCODING = 'utf-8'
 # Files the documents name that git ignores, so a new clone has none: Claude's own queue, kept on one computer (the user's choice).
-KEPT_OUT_OF_GIT = ('dev_notes/QUEUE.md',)
+KEPT_OUT_OF_GIT = ('.claude/QUEUE.md',)
 USER_SCRIPTS = ROOT / 'user_scripts'
 USER_SCRIPTS_GUIDE = ROOT / 'docs' / 'USER_SCRIPTS.md'
 # The genre library's user scripts, kept off the website and out of docs/USER_SCRIPTS.md until the user decides (115 B); they will

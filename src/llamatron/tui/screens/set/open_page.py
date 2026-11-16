@@ -18,7 +18,7 @@
 
 The same page picks the MIDI file to import, given the files to show, where to start, its crumbs
 and what to do with the file chosen, until the file picker is designed for the whole tracker
-(dev_notes/IDEAS.yml, "The file picker, shared and better").
+(.claude/IDEAS.yml, "The file picker, shared and better").
 """
 
 import os
