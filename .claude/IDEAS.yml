@@ -11,6 +11,21 @@
 # A title that starts "In progress:" is work started but not finished, which is named first when the user asks what
 # to do next. Keys are described by what they do, not by their letters, since the letters change.
 
+- title: "Bassify: a generator that plays a clip's chords as a bass player would"
+  priority: 1
+  text: |
+    The user asks whether, beside Guitarify, a Bassify is needed and what it would do. To discuss before anything is built. Claude's
+    first thoughts, to bring as proposals: a bass has no chord to strum, so its two halves would be which note of the chord is
+    played and how the bar is filled. Notes: root, fifth, octave, third, an approach note a step or a half step before the next
+    chord, a walk through the scale, all kept in a bass's range on four or five strings. A bar of cells as Guitarify's, with
+    its own strokes: root, fifth, octave, approach, a ghost (dead) note, a slide in, a rest, and a note held or cut short.
+    Ready-made bars by style: roots in eighths, root and fifth on one and three, a walking four, octaves on the off-beats, a
+    reggae bar that leaves beat one empty, a funk sixteenth bar with ghosts, a gallop, an acid bar. It would let a row of chords
+    become a bass line with no bass pattern written, and give the wizard's bass player a generator to set rather than notes to
+    write. What it overlaps: the Progression generator already moves a figure through chords, and the wizard's bass player
+    already writes lines, so the questions are whether Bassify replaces either or sits beside them, and whether a bar of
+    strokes is the right picture for a bass.
+
 - title: "A picker field's mark that is not taken for the other arrows"
   priority: 1
   text: |
