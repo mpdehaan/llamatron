@@ -33,7 +33,7 @@ from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings.help import HELP_WIZARD_PAGE
 from llamatron.macro_composer.notation import KIT
 from llamatron.macro_composer.wizard_choices import USUAL_PIECE_NOTE
-from llamatron.strings.labels import MSG_WIZARD_KIT_DRUMS, MSG_WIZARD_PIECE_SOUND_TITLE, Crumb, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_MORE_SOUNDS_TITLE, MSG_WIZARD_SOUND_TITLE, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_REPLACE_SECTIONS_TITLE, MSG_WIZARD_SUGGESTED_FORM_TITLE, MSG_WIZARD_CAPTION, MSG_WIZARD_REPLACE_CAPTION
+from llamatron.strings.labels import MSG_WIZARD_KIT_DRUMS, MSG_WIZARD_PIECE_SOUND_TITLE, Crumb, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_MORE_SOUNDS_TITLE, MSG_WIZARD_SOUND_TITLE, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_COMPOSITION_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_REPLACE_SECTIONS_TITLE, MSG_WIZARD_SUGGESTED_FORM_TITLE, MSG_WIZARD_CAPTION, MSG_WIZARD_REPLACE_CAPTION
 from llamatron.strings.marks import MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_EDITED_BRANCH
 from llamatron.strings.messages import MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CLOSE_TITLE, MSG_WIZARD_CREATED, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_NOTHING_TO_UNDO, MSG_WIZARD_REPLACED, MSG_WIZARD_SONG_NAME_PROMPT
 from llamatron.strings.names import MSG_NEW_SONG_WORD
@@ -50,10 +50,10 @@ from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.wizard.band_branch import BandBranch
+from llamatron.tui.screens.wizard.composition_branch import CompositionBranch
 from llamatron.tui.screens.wizard.create_branch import CreateBranch
 from llamatron.tui.screens.wizard.form_branch import FormBranch
 from llamatron.tui.screens.wizard.playing_branch import PlayingBranch
-from llamatron.tui.screens.wizard.themes_branch import ThemesBranch
 from llamatron.tui.screens.wizard.genre_branch import GenreBranch
 from llamatron.tui.screens.wizard.starts import FROM_LAST, REPLACING
 
@@ -91,7 +91,7 @@ class WizardPage(FieldPage):
         self._start = None
         # The Band and Form branches start open, so that the players and the sections, and the keys that add, copy,
         # remove and move a section, show themselves with no key to learn.
-        self._open = {MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_FORM_BRANCH}
+        self._open = {MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_COMPOSITION_BRANCH, MSG_WIZARD_FORM_BRANCH}
         self.tree_place = FIRST_PLACE
         self.in_fields = False
         # Move mode, the tracker's: whether M has picked up the branch under the tree's cursor.
@@ -150,7 +150,7 @@ class WizardPage(FieldPage):
 
     def roots(self):
         """Return the tree's top branches, in the order a song is thought through."""
-        return [GenreBranch(page=self), BandBranch(page=self), ThemesBranch(page=self), FormBranch(page=self), PlayingBranch(page=self), CreateBranch(page=self)]
+        return [GenreBranch(page=self), BandBranch(page=self), CompositionBranch(page=self), FormBranch(page=self), PlayingBranch(page=self), CreateBranch(page=self)]
 
     def rows(self):
         """Return the branches the tree shows, each with how deep it is: every top branch, and the branches under each open one."""
