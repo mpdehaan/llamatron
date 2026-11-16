@@ -644,10 +644,13 @@ def arranged(*, style, song):
                     chains[chain] += [{RUSH: role[ROLE]}, {DRAG: role[ROLE]}]
                     figure = role[ROLE]
                     if here[role[ROLE]] != playing[role[ROLE]]:
-                        figure = MSG_PART_AT_LEVEL.format(role[ROLE], level_in(levels=levels, role=role, section=section))
-                        if figure not in parts:
-                            parts[figure] = figure_part(entry=entry, role=role, meter=meter, player=here[role[ROLE]], phrase_bars=phrase_bars)
-                            shaped.append(figure)
+                        held_back = figure_part(entry=entry, role=role, meter=meter, player=here[role[ROLE]], phrase_bars=phrase_bars)
+                        # A player held back who plays the figure no differently plays the one part, so that no part is written twice.
+                        if held_back != parts[role[ROLE]]:
+                            figure = MSG_PART_AT_LEVEL.format(role[ROLE], level_in(levels=levels, role=role, section=section))
+                            if figure not in parts:
+                                parts[figure] = held_back
+                                shaped.append(figure)
                     play[role[ROLE]] = {PART: figure, CHAINS: [chain]}
                     continue
                 part = MSG_PART_OF_SECTION.format(name, role[ROLE])

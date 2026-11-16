@@ -271,7 +271,7 @@ players:
     1: {says: 'Few notes, close together.', span: 2}
     2: {says: 'A hook that leaves room.', span: 3}
     3: {says: 'A line over a wider range.', span: 4}
-    4: {says: 'The widest range.', span: 4}
+    4: {says: 'The widest range.', span: 5}
   keys:
     1: {says: 'Plays the part exactly as written.'}
     2: {says: 'Plays the part as written.'}

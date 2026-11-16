@@ -141,7 +141,8 @@ clouds; generate and test, with motif development and counterpoint last.
 - A player of a figure, the bass so far, decorates by `varies` too: each names the `bars` of a four-bar phrase and the `ends`,
   notes of the player's own that take the bar's last steps, written on a `grid` of so many steps to the bar; what the bar played
   before them stays, and a variation whose grid the figure's does not divide by is left out. A section's intensity holds a
-  figure's player back as it holds the drummer, with a part for each level a song uses.
+  figure's player back as it holds the drummer, with a part for each level a song uses, and no part of its own where the
+  player held back plays the figure no differently.
 - The rhythm guitar and the keys so far change only timing and Guitarify's spread and looseness, and a lead its span and busyness.
 - What a player says for people is written in the same block as what the player does, and must say only that.
 
