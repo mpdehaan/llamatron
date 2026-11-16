@@ -31,7 +31,7 @@ from llamatron.composition.file_format import Section
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT
 from llamatron.macro_composer.melody import HIGHEST_GAUGE, LOWEST_GAUGE, SMART
 from llamatron.support.version import VERSION
-from llamatron.macro_composer.wizard_choices import (BAND_SOUNDS, FEWEST_FILLS, FILLS_TRAITS, LEAST_BUSY, MOST_BUSY, MOST_FILLS, ONE_GUITARIST_COUNT,
+from llamatron.macro_composer.wizard_choices import (USUAL_PIECE_NOTE, BAND_SOUNDS, FEWEST_FILLS, FILLS_TRAITS, LEAST_BUSY, MOST_BUSY, MOST_FILLS, ONE_GUITARIST_COUNT,
                                                      USUAL_SOUNDS, WizardChoices, genre_names)
 
 A_NAME = 'a_song'
@@ -56,6 +56,11 @@ FILLS_COME = 'fills come'
 KIT_PIECE = 'a piece of the kit'
 QUIET_NOTES = 'quiet notes'
 BREAK = 'break'
+PIECE_SOUND = 'kit piece sound'
+PIECE_NOTE = 'kit piece note'
+# Two drums of the kit, the second for the piece that is the first, and a note that is not the usual one.
+ANOTHER_DRUM = ('cowbell', 'claves')
+ANOTHER_NOTE = USUAL_PIECE_NOTE + 7
 BREAK_CUT = 'cut up'
 MELODY_GAUGE = 'melody gauge'
 GUITARISTS = 'guitarists'
@@ -133,6 +138,12 @@ def every_choice(choices):
                 yield KIT_PIECE, piece, lambda made, piece=piece: made.set_piece_on(piece=piece, on=False), [first]
             if choices.has_quiet_notes():
                 yield QUIET_NOTES, False, lambda made: made.set_quiet_notes(False), [first]
+            for piece in choices.pieces():
+                # A piece sounds as another drum of the kit or as a General MIDI sound, and in such a sound on a note of its own.
+                yield PIECE_SOUND, (piece, ANOTHER_DRUM[piece == ANOTHER_DRUM[0]]), lambda made, piece=piece: made.set_piece_sound(piece=piece, sound=ANOTHER_DRUM[piece == ANOTHER_DRUM[0]]), [first]
+                yield PIECE_SOUND, (piece, A_SOUND_OF_NO_STYLE), lambda made, piece=piece: made.set_piece_sound(piece=piece, sound=A_SOUND_OF_NO_STYLE), [first]
+                in_a_sound = both(first=first, then=lambda made, piece=piece: made.set_piece_sound(piece=piece, sound=A_SOUND_OF_NO_STYLE))
+                yield PIECE_NOTE, (piece, ANOTHER_NOTE), lambda made, piece=piece: made.set_piece_note(piece=piece, note=ANOTHER_NOTE), [in_a_sound]
             for name in [None, *choices.breaks()] if choices.breaks() else []:
                 if name != choices.get_break():
                     yield BREAK, name, lambda made, name=name: made.set_break(name), [first]

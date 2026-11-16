@@ -31,13 +31,13 @@ from fractions import Fraction
 
 from llamatron.macro_composer.breaks import BREAKS, LEAST_CUT, MOST_CUT, cut_up
 from llamatron.macro_composer.melody import ANSWER, ANSWER_RHYTHMS, ENGINE, GRID, LINE, RHYTHMS, SPAN, sketched
-from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, DRUM, FLAT, HITS, LINES, LOUD, NONE, OCTAVE, REST, SHARP, SOFT, STEP, STEPS, VELOCITY, CHORD, clamped, drum_rows
+from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, DRUM, FLAT, HITS, KIT, LINES, LOUD, NONE, OCTAVE, REST, SHARP, SOFT, STEP, STEPS, VELOCITY, CHORD, clamped, drum_rows
 from llamatron.macro_composer.players import player_name
 from llamatron.support.safe_yaml import load_safely
-from llamatron.composition.limits import MIN_GM_SOUND
+from llamatron.composition.limits import MAX_GM_SOUND, MIN_GM_SOUND
 from llamatron.strings.labels import MSG_GM_SOUNDS
-from llamatron.strings.errors import ERR_BREAK_CUT, ERR_NO_STYLE_FORM, ERR_NO_SUCH_BREAK, ERR_NO_STYLE_FORMS, ERR_NO_STYLE_KIND, ERR_NO_SUCH_SECTION, ERR_NO_TRAIT_VALUE, ERR_PICK_NEEDS
-from llamatron.strings.macro_composer import MSG_MADE_PICK, MSG_MADE_SCENE, MSG_MADE_SONG_NOTES, MSG_PART_AT_LEVEL, MSG_PART_OF_SECTION, MSG_PLAYED_BY, MSG_REPEATED_SCENE, MSG_SECTION_START_PART, MSG_TIMING_CHAIN
+from llamatron.strings.errors import ERR_PIECE_SOUND, ERR_BREAK_CUT, ERR_NO_STYLE_FORM, ERR_NO_SUCH_BREAK, ERR_NO_STYLE_FORMS, ERR_NO_STYLE_KIND, ERR_NO_SUCH_SECTION, ERR_NO_TRAIT_VALUE, ERR_PICK_NEEDS
+from llamatron.strings.macro_composer import MSG_PIECE_INSTRUMENT, MSG_MADE_PICK, MSG_MADE_SCENE, MSG_MADE_SONG_NOTES, MSG_PART_AT_LEVEL, MSG_PART_OF_SECTION, MSG_PLAYED_BY, MSG_REPEATED_SCENE, MSG_SECTION_START_PART, MSG_TIMING_CHAIN
 
 # The fields of a style template.
 NAME = 'name'
@@ -63,6 +63,14 @@ SOUND = 'sound'
 ROLE_SOUNDS = 'role_sounds'
 # The pieces of the drum kit a song switches off.
 WITHOUT_PIECES = 'without_pieces'
+# What a song has pieces of the kit sound as, by piece: another drum of the kit (played_drum), or a General MIDI sound on one
+# note (sound and note), which makes the piece a track with an instrument of its own, since the drum channel plays only the kit.
+PIECE_SOUNDS = 'piece_sounds'
+PLAYED_DRUM = 'drum'
+PLAYED_SOUND = 'sound'
+PLAYED_NOTE = 'note'
+LOWEST_NOTE = 0
+HIGHEST_NOTE = 127
 # A style's melody habits for one scale type, in place of its usual ones.
 BY_SCALE_TYPE = 'by_scale_type'
 # How often a song has a fill come: 0 for never, each section, or every so many bars; and whether the snare's quiet notes are played.
@@ -345,7 +353,25 @@ def cut_of(picks):
     return cut
 
 
-def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars, own_fill=False, seed=0):
+def pieces_played(song):
+    """What each remapped piece of a song's kit plays, as the drum's name or the note's number drum_rows takes, each checked."""
+    played = {}
+    for piece, sounds_as in song.get(PIECE_SOUNDS, {}).items():
+        if set(sounds_as) == {PLAYED_DRUM} and sounds_as[PLAYED_DRUM] in KIT:
+            played[piece] = sounds_as[PLAYED_DRUM]
+        elif set(sounds_as) == {PLAYED_SOUND, PLAYED_NOTE} and whole(value=sounds_as[PLAYED_SOUND], low=MIN_GM_SOUND, high=MAX_GM_SOUND) and whole(value=sounds_as[PLAYED_NOTE], low=LOWEST_NOTE, high=HIGHEST_NOTE):
+            played[piece] = sounds_as[PLAYED_NOTE]
+        else:
+            raise ValueError(ERR_PIECE_SOUND.format(piece, sounds_as))
+    return played
+
+
+def whole(*, value, low, high):
+    """Whether a value is an integer within a range."""
+    return not isinstance(value, bool) and isinstance(value, int) and low <= value <= high
+
+
+def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars, own_fill=False, seed=0, kit=None):
     """Each drum the picks play, as a part some bars long: the kind's own bar, decorated as the drummer decorates it, a bar of
     the bars of each phrase that the drummer varies each a little different, and its last bar the fill. A drummer who says nothing plays the kind's bar
     and the song's fill at the end of every phrase. Where the picks name a break, the break's bar is the kind's, in place of
@@ -401,14 +427,14 @@ def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars
                         played = laid_over(bar=played, more=widened(hits=more[piece], to=grid))
                 hits += played
         loud = style[LOUDNESS].get(piece, style[LOUDNESS][DRUMS])
-        parts[piece] = {DRUM: piece, STEP: step_of(meter=meter, grid=grid), LOUD: loud, SOFT: int(loud * SOFT_SHARE), HITS: hits}
+        parts[piece] = {DRUM: (kit or {}).get(piece, piece), STEP: step_of(meter=meter, grid=grid), LOUD: loud, SOFT: int(loud * SOFT_SHARE), HITS: hits}
     return parts
 
 
-def one_hit(*, style, meter, drum):
-    """One bar in which a drum is hit once, on the first beat."""
+def one_hit(*, style, meter, drum, played):
+    """One bar in which a piece of the kit is hit once, on the first beat, as the drum or the note the song has the piece play."""
     loud = style[LOUDNESS].get(drum, style[LOUDNESS][DRUMS])
-    return {DRUM: drum, STEP: EIGHTH, LOUD: loud, SOFT: loud, HITS: [LOUD] + [NONE] * (int(bar_length(meter) * EIGHTHS_IN_WHOLE) - 1)}
+    return {DRUM: played.get(drum, drum), STEP: EIGHTH, LOUD: loud, SOFT: loud, HITS: [LOUD] + [NONE] * (int(bar_length(meter) * EIGHTHS_IN_WHOLE) - 1)}
 
 
 def lasts(note):
@@ -589,6 +615,7 @@ def arranged(*, style, song):
     without = song.get(WITHOUT, [])
     no_drums = any(role.get(DRUMS) and role[ROLE] in without for role in roles)
     pieces_off = song.get(WITHOUT_PIECES, [])
+    played = pieces_played(song)
     playing = players_in(style=style, roles=roles, levels=levels, section={})
     drummer = next((playing[role[ROLE]] for role in roles if role.get(DRUMS)), {})
     drum_traits = [trait for role in roles for trait in role.get(DRUMS, [])] + [FILLS]
@@ -608,7 +635,7 @@ def arranged(*, style, song):
             plays = {**plays, FILL_EVERY: section[BARS] if song[FILLS_COME] == EACH_SECTION else song[FILLS_COME]}
         key = (level, tuple(sorted(changed.items())), math.gcd(plays.get(FILL_EVERY, phrase_bars) or phrase_bars, section[BARS]))
         if key not in drum_sets:
-            made = drum_parts(style=style, picks={**picks, **changed}, roles=roles, meter=meter, phrase_bars=phrase_bars, drummer=plays, section_bars=section[BARS], own_fill=FILLS in song.get(PICKS, {}), seed=song.get(SEED, 0))
+            made = drum_parts(style=style, picks={**picks, **changed}, roles=roles, meter=meter, phrase_bars=phrase_bars, drummer=plays, section_bars=section[BARS], own_fill=FILLS in song.get(PICKS, {}), seed=song.get(SEED, 0), kit=played)
             drum_sets[key] = {}
             for piece, part in made.items():
                 # A piece of the kit switched off is left out: its strokes are never moved to another piece.
@@ -672,9 +699,9 @@ def arranged(*, style, song):
         if section.get(HELD):
             held = MSG_PART_OF_SECTION.format(CRASH, HELD)
             if not no_drums and CRASH not in pieces_off:
-                parts[held] = one_hit(style=style, meter=meter, drum=CRASH)
+                parts[held] = one_hit(style=style, meter=meter, drum=CRASH, played=played)
             if not no_drums and KICK not in pieces_off:
-                parts[MSG_PART_OF_SECTION.format(KICK, HELD)] = one_hit(style=style, meter=meter, drum=KICK)
+                parts[MSG_PART_OF_SECTION.format(KICK, HELD)] = one_hit(style=style, meter=meter, drum=KICK, played=played)
             if not no_drums and CRASH not in pieces_off:
                 if CRASH not in tracks:
                     tracks[CRASH] = DRUM_KIT
@@ -690,7 +717,7 @@ def arranged(*, style, song):
                 play[piece] = {PART: part, CHAINS: [MSG_TIMING_CHAIN.format(piece)]}
             if section.get(CRASH_START) and name in drums_of and CRASH not in pieces_off:
                 start = MSG_SECTION_START_PART.format(CRASH)
-                parts[start] = one_hit(style=style, meter=meter, drum=CRASH)
+                parts[start] = one_hit(style=style, meter=meter, drum=CRASH, played=played)
                 if CRASH not in tracks:
                     tracks[CRASH] = DRUM_KIT
                     drum_tracks.append(CRASH)
@@ -740,11 +767,16 @@ def arranged(*, style, song):
     if any(role.get(VOICE_LEADING) for role, _ in pitched):
         generators[VOICE_LEADINGS] = {NEAR: dict(NEAR_VOICES)}
     said = '\n'.join(band_said(style=style, song=song, roles=roles) + [MSG_MADE_PICK.format(trait, value) for trait, value in picks.items()])
+    # A piece of the kit that sounds as a General MIDI sound is a track with an instrument of its own, and no drum track.
+    own_sounds = {piece: sounds_as[PLAYED_SOUND] for piece, sounds_as in song.get(PIECE_SOUNDS, {}).items() if PLAYED_SOUND in sounds_as and piece in tracks}
+    for piece, sound in own_sounds.items():
+        instruments[MSG_PIECE_INSTRUMENT.format(piece)] = sound
+        tracks[piece] = MSG_PIECE_INSTRUMENT.format(piece)
     given = {
         NAME: song[NAME], TITLE: song[TITLE], DESCRIPTION: song.get(DESCRIPTION, song[TITLE]), GENRE: style[GENRE],
         NOTES: MSG_MADE_SONG_NOTES.format(title=song[TITLE], style=style[TITLE], template=song[TEMPLATE], picks=said, form='\n'.join(notes)),
         SCALES: {scale: {ROOT: song[KEY][ROOT], TYPE: scale_type}}, SCALE: scale, TEMPO: tempo,
-        FEEL: style[FEEL], SHAPED: shaped, INSTRUMENTS: instruments, TRACKS: tracks, DRUM_TRACKS: drum_tracks, GENERATORS: generators, CHAINS: chains,
+        FEEL: style[FEEL], SHAPED: shaped, INSTRUMENTS: instruments, TRACKS: tracks, DRUM_TRACKS: [piece for piece in drum_tracks if piece not in own_sounds], GENERATORS: generators, CHAINS: chains,
         PARTS: parts, FORM: form,
     }
     if meter != COMMON_TIME:

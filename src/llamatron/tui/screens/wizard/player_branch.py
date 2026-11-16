@@ -16,13 +16,22 @@
 
 """A player of the wizard's band: how the player plays, and how busy the player is."""
 
+from llamatron.composition.limits import MIN_GM_SOUND
+from llamatron.macro_composer.arranger import HIGHEST_NOTE, LOWEST_NOTE
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT
+from llamatron.macro_composer.melody import NOTES_IN_OCTAVE
 from llamatron.macro_composer.wizard_choices import FEWEST_FILLS, LEAST_BUSY, MOST_BUSY, MOST_FILLS
-from llamatron.strings.labels import MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_NO_BREAK, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_WIZARD_SOUND_LABEL
+from llamatron.music.note import SHARP_NAMES
+from llamatron.strings.labels import MSG_GM_SOUNDS, MSG_WIZARD_PIECE_NOTE_LABEL, MSG_WIZARD_PIECE_SOUND_LABEL, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_NO_BREAK, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_WIZARD_SOUND_LABEL
 from llamatron.strings.legends import What
-from llamatron.strings.marks import MSG_WIZARD_FILLS_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_BUSY_SHOWN, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL
+from llamatron.strings.marks import MSG_WIZARD_NOTE_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_FILLS_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_BUSY_SHOWN, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NumberField, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
+
+
+def note_shown(note):
+    """Return a MIDI note as its name and octave."""
+    return MSG_WIZARD_NOTE_SHOWN.format(name=SHARP_NAMES[note % NOTES_IN_OCTAVE], octave=note // NOTES_IN_OCTAVE)
 
 
 class PlayerBranch(Branch):
@@ -57,7 +66,10 @@ class PlayerBranch(Branch):
             if choices.has_quiet_notes() or not choices.plays_quiet_notes():
                 fields.append(Toggle(label=MSG_WIZARD_QUIET_NOTES_LABEL, on=choices.plays_quiet_notes(), set=self.page().choosing(choices.set_quiet_notes)))
             # The drums: a toggle for each piece of the kit the song plays.
-            fields += [Toggle(label=MSG_WIZARD_KIT_PIECE.format(piece=piece), on=choices.piece_is_on(piece), set=self.piece_setter(piece)) for piece in choices.pieces()]
+            for piece in choices.pieces():
+                fields.append(Toggle(label=MSG_WIZARD_KIT_PIECE.format(piece=piece), on=choices.piece_is_on(piece), set=self.piece_setter(piece)))
+                if choices.piece_is_on(piece):
+                    fields += self.piece_sound_fields(piece)
         return fields
 
     def piece_setter(self, piece):
@@ -87,6 +99,24 @@ class PlayerBranch(Branch):
             name = choices.sound_name(choices.get_sound(role))
             return name if choices.has_own_sound(role) else MSG_WIZARD_BAND_SOUND_SHOWN.format(sound=name)
         return Field(label=MSG_WIZARD_SOUND_LABEL, value=shown, enter=lambda: self.page().pick_sound(role), enter_what=What.CHOOSE)
+
+    def piece_sound_fields(self, piece):
+        """Return the Sound field of a piece of the kit, its own drum until another drum or a General MIDI sound is chosen from a list, and under a
+        General MIDI sound the Note field: the note the piece plays, stepped or typed, shown by name."""
+        choices = self.choices()
+        page = self.page()
+
+        def shown():
+            sound = choices.piece_sound(piece)
+            if sound is None:
+                return MSG_WIZARD_OWN_DRUM_SHOWN.format(piece=piece)
+            return sound if isinstance(sound, str) else MSG_GM_SOUNDS[sound - MIN_GM_SOUND]
+        fields = [Field(label=MSG_WIZARD_PIECE_SOUND_LABEL.format(piece=piece), value=shown, enter=lambda: page.pick_piece_sound(piece), enter_what=What.CHOOSE)]
+        note = choices.piece_note(piece)
+        if note is not None:
+            fields.append(NumberField(page=page, label=MSG_WIZARD_PIECE_NOTE_LABEL.format(piece=piece), number=note, shown=note_shown(note), lowest=LOWEST_NOTE, highest=HIGHEST_NOTE,
+                                      set=page.choosing(lambda value: choices.set_piece_note(piece=piece, note=value))))
+        return fields
 
     def break_fields(self):
         """Return the Break field where the song may play a break, and under it, while one is chosen, how far it is cut up:
