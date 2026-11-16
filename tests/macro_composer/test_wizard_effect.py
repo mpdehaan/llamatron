@@ -28,6 +28,8 @@ import json
 import unittest
 
 from llamatron.composition.file_format import Section
+from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT
+from llamatron.macro_composer.melody import HIGHEST_GAUGE, LOWEST_GAUGE, SMART
 from llamatron.support.version import VERSION
 from llamatron.macro_composer.wizard_choices import (BAND_SOUNDS, FEWEST_FILLS, FILLS_TRAITS, LEAST_BUSY, MOST_BUSY, MOST_FILLS, ONE_GUITARIST_COUNT,
                                                      USUAL_SOUNDS, WizardChoices, genre_names)
@@ -53,6 +55,9 @@ MELODY = 'melody'
 FILLS_COME = 'fills come'
 KIT_PIECE = 'a piece of the kit'
 QUIET_NOTES = 'quiet notes'
+BREAK = 'break'
+BREAK_CUT = 'cut up'
+MELODY_GAUGE = 'melody gauge'
 GUITARISTS = 'guitarists'
 SEED = 'seed'
 TEMPO = 'tempo'
@@ -128,6 +133,15 @@ def every_choice(choices):
                 yield KIT_PIECE, piece, lambda made, piece=piece: made.set_piece_on(piece=piece, on=False), [first]
             if choices.has_quiet_notes():
                 yield QUIET_NOTES, False, lambda made: made.set_quiet_notes(False), [first]
+            for name in [None, *choices.breaks()] if choices.breaks() else []:
+                if name != choices.get_break():
+                    yield BREAK, name, lambda made, name=name: made.set_break(name), [first]
+            if choices.breaks():
+                # How far a break is cut up is held under a break, the subgenre's own or the first there is.
+                with_break = first if choices.get_break() is not None else both(first=first, then=lambda made: made.set_break(made.breaks()[0]))
+                for cut in range(LEAST_CUT, MOST_CUT + 1):
+                    if cut != choices.get_break_cut():
+                        yield BREAK_CUT, cut, lambda made, cut=cut: made.set_break_cut(cut), [with_break]
         if len(choices.roles_in()) > 1:
             yield PLAYER_OUT, role, lambda made, role=role: made.set_role_in(role=role, on=False), [first]
         if role in choices.roles_shown():
@@ -147,6 +161,13 @@ def every_choice(choices):
                 yield kind, way, lambda made, trait=trait, way=way: made.set_way(trait=trait, value=way), firsts
     for style in choices.melody_styles():
         yield MELODY, style, lambda made, style=style: made.set_melody(style), [nothing_first]
+    if SMART in choices.melody_styles():
+        # The smart melody style's gauges show once the style is chosen, and each position of each is held against the genre's own.
+        chosen = fresh_smart(choices)
+        for name in chosen.gauges():
+            for position in range(LOWEST_GAUGE, HIGHEST_GAUGE + 1):
+                if position != chosen.get_gauge(name):
+                    yield MELODY_GAUGE, (name, position), lambda made, name=name, position=position: made.set_gauge(name=name, position=position), [choose_smart]
     if choices.offers_one_guitarist():
         yield GUITARISTS, ONE_GUITARIST_COUNT, lambda made: made.set_guitarists(ONE_GUITARIST_COUNT), [nothing_first]
     yield SEED, ANOTHER_SEED, lambda made: made.set_seed(ANOTHER_SEED), [nothing_first]
@@ -160,6 +181,25 @@ def every_choice(choices):
     for form in choices.forms():
         if form != choices.get_form():
             yield FORM, form, lambda made, form=form: made.set_form(form), [nothing_first]
+
+
+def both(*, first, then):
+    """Return one thing done first made of two, in order."""
+    def done(made):
+        first(made)
+        then(made)
+    return done
+
+
+def choose_smart(made):
+    made.set_melody(SMART)
+
+
+def fresh_smart(choices):
+    """Return choices like some others with the smart melody style chosen, to read its gauges from."""
+    chosen = WizardChoices.from_data(choices.to_data())
+    chosen.set_melody(SMART)
+    return chosen
 
 
 def busy_gauges(choices):

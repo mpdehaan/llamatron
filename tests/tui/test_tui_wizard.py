@@ -17,10 +17,12 @@
 
 from llamatron.composition.file_format import Section
 from llamatron.macro_composer.arranger import BARS, WITHOUT
+from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
+from llamatron.macro_composer.melody import DEFAULT_GAUGES, GAUGE_MOVES, HIGHEST_GAUGE, SMART
 from llamatron.macro_composer.wizard_choices import FEWEST_FILLS, MOST_FILLS, ONE_GUITARIST_COUNT, TWO_GUITARISTS, ACOUSTIC, BAND_SOUNDS, FILLS_TRAITS, PROGRESSION_TRAITS, MOST_BUSY, USUAL_BUSY, MINOR, SEED, genre_names, genre_title
 from llamatron.strings.errors import ERR_WIZARD_LAST_PIECE, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_CHOOSE_GENRE, ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
-from llamatron.strings.labels import MSG_WIZARD_ANY_PROGRESSION, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_GUITARISTS_LABEL, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_SOUND_LABEL, MSG_WIZARD_SOUNDS_LABEL, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PLAYING_BRANCH, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_THEMES_BRANCH, MSG_WIZARD_USUAL_MELODY, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_SUGGESTED_FORM_BUTTON, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_START_CANCEL
-from llamatron.strings.marks import MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_OWN_FORM, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
+from llamatron.strings.labels import MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_GAUGE_ENDS, MSG_WIZARD_GAUGE_LABELS, MSG_WIZARD_NO_BREAK, MSG_WIZARD_ANY_PROGRESSION, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_GUITARISTS_LABEL, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_SOUND_LABEL, MSG_WIZARD_SOUNDS_LABEL, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PLAYING_BRANCH, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_THEMES_BRANCH, MSG_WIZARD_USUAL_MELODY, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_SUGGESTED_FORM_BUTTON, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_START_CANCEL
+from llamatron.strings.marks import MSG_WIZARD_MELODY_GAUGE_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_OWN_FORM, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
 from llamatron.strings.messages import MSG_WIZARD_NOTHING_TO_CHOOSE, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_SECTIONS_HINT, MSG_UNDONE, MSG_RESTORED, MSG_WIZARD_ALREADY_OPEN, MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CREATED, MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_REPLACED, MSG_WIZARD_NOTHING_TO_UNDO
 from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_SONG_WORD
 from llamatron.composition.naming import new_name
@@ -45,6 +47,7 @@ FORM_PLACE = 3
 CREATE_PLACE = 5
 # A name the test gives the song.
 A_SONG_NAME = 'anthem'
+A_GENRE_WITH_RHYTHMS = 'rock'
 
 
 class WizardTest(UITest):
@@ -535,6 +538,29 @@ class TestWizardKit(WizardTest):
         self.assertTrue(choices.piece_is_on(pieces[-1]))
         self.assertIn(ERR_WIZARD_LAST_PIECE, self.text())
 
+    async def test_a_break_is_chosen_on_the_drums_branch_and_takes_the_place_of_the_drums_other_ways(self):
+        await self.open_the_drums()
+        choices = self.choices()
+        drums = choices.roles_in()[-1]
+        self.assertEqual(choices.breaks(), break_names())
+        before = choices.role_traits(drums)
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(MSG_WIZARD_BREAK_LABEL)
+        self.assertEqual(self.wizard().field().value(), MSG_WIZARD_NO_BREAK)
+        self.assertNotIn(MSG_WIZARD_BREAK_CUT_LABEL, self.text())
+        await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
+        self.assertIsNotNone(choices.get_break())
+        self.assertIn(choices.get_break(), self.text())
+        self.assertLess(len(choices.role_traits(drums)), len(before))
+        # How far the break is cut up shows under a break chosen: a gauge that is empty for the break as written.
+        await self.select_field(MSG_WIZARD_BREAK_CUT_LABEL)
+        self.assertNotIn(MSG_WIZARD_GAUGE_FULL, self.wizard().field().value())
+        await self.press(*[key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)] * MOST_CUT)
+        self.assertEqual(choices.get_break_cut(), MOST_CUT)
+        self.assertNotIn(MSG_WIZARD_GAUGE_EMPTY, self.wizard().field().value())
+        await self.press(*[key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET)] * MOST_CUT)
+        self.assertEqual(choices.get_break_cut(), LEAST_CUT)
+
     async def test_how_often_fills_come_is_a_gauge_that_is_empty_at_never(self):
         await self.open_the_drums()
         choices = self.choices()
@@ -779,6 +805,31 @@ class TestWizardThemesAndPlaying(WizardTest):
         self.assertIn(ways[0], self.text())
         await self.step(MSG_WIZARD_PROGRESSION_LABEL)
         self.assertEqual(choices.get_way(trait), ways[1])
+
+    async def test_the_smart_melody_styles_gauges_show_under_the_melody_field_and_are_stepped(self):
+        await self.choose(genre=A_GENRE_WITH_RHYTHMS)
+        choices = self.choices()
+        await self.go_to_named_branch(MSG_WIZARD_THEMES_BRANCH)
+        for name in DEFAULT_GAUGES:
+            self.assertNotIn(MSG_WIZARD_GAUGE_ENDS[name][1], self.text())
+        choices.set_melody(SMART)
+        await self.press(Key.DOWN, Key.UP)
+        shown = self.text()
+        for name in DEFAULT_GAUGES:
+            self.assertIn(MSG_WIZARD_GAUGE_LABELS[name], shown)
+            self.assertIn(MSG_WIZARD_MELODY_GAUGE_SHOWN.format(gauge=self.gauge_drawn(choices.get_gauge(name)), low=MSG_WIZARD_GAUGE_ENDS[name][0], high=MSG_WIZARD_GAUGE_ENDS[name][1]), shown)
+        for name in DEFAULT_GAUGES:
+            before = choices.get_gauge(name)
+            await self.step(MSG_WIZARD_GAUGE_LABELS[name])
+            self.assertEqual(choices.get_gauge(name), before + 1)
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(MSG_WIZARD_GAUGE_LABELS[GAUGE_MOVES])
+        await self.press(*[key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)] * HIGHEST_GAUGE)
+        self.assertEqual(choices.get_gauge(GAUGE_MOVES), HIGHEST_GAUGE)
+        self.assertNotIn(MSG_WIZARD_GAUGE_EMPTY, self.wizard().field().value())
+
+    def gauge_drawn(self, position):
+        return MSG_WIZARD_GAUGE_FULL * position + MSG_WIZARD_GAUGE_EMPTY * (HIGHEST_GAUGE - position)
 
     async def test_the_progression_starts_on_any_and_is_left_to_chance_again_from_the_field(self):
         await self.choose(genre=self.a_genre_with(PROGRESSION_TRAITS))

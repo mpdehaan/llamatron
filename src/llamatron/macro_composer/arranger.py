@@ -29,13 +29,14 @@ import os
 import random
 from fractions import Fraction
 
+from llamatron.macro_composer.breaks import BREAKS, LEAST_CUT, MOST_CUT, cut_up
 from llamatron.macro_composer.melody import ANSWER, ANSWER_RHYTHMS, ENGINE, GRID, LINE, RHYTHMS, SPAN, sketched
 from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, DRUM, FLAT, HITS, LINES, LOUD, NONE, OCTAVE, REST, SHARP, SOFT, STEP, STEPS, VELOCITY, CHORD, clamped, drum_rows
 from llamatron.macro_composer.players import player_name
 from llamatron.support.safe_yaml import load_safely
 from llamatron.composition.limits import MIN_GM_SOUND
 from llamatron.strings.labels import MSG_GM_SOUNDS
-from llamatron.strings.errors import ERR_NO_STYLE_FORM, ERR_NO_STYLE_FORMS, ERR_NO_STYLE_KIND, ERR_NO_SUCH_SECTION, ERR_NO_TRAIT_VALUE, ERR_PICK_NEEDS
+from llamatron.strings.errors import ERR_BREAK_CUT, ERR_NO_STYLE_FORM, ERR_NO_SUCH_BREAK, ERR_NO_STYLE_FORMS, ERR_NO_STYLE_KIND, ERR_NO_SUCH_SECTION, ERR_NO_TRAIT_VALUE, ERR_PICK_NEEDS
 from llamatron.strings.macro_composer import MSG_MADE_PICK, MSG_MADE_SCENE, MSG_MADE_SONG_NOTES, MSG_PART_AT_LEVEL, MSG_PART_OF_SECTION, MSG_PLAYED_BY, MSG_REPEATED_SCENE, MSG_SECTION_START_PART, MSG_TIMING_CHAIN
 
 # The fields of a style template.
@@ -169,6 +170,13 @@ LENGTH = 'length'
 SECONDS_IN_A_MINUTE = 60
 BEATS_IN_A_WHOLE = 4
 BUSY = 'busy'
+# A song's pick of a drum break, which takes the place of every way the drums are played but the percussion's, the pick that
+# says a subgenre built on a break plays none, how far the break is cut up, and what the cutting of a bar is seeded by.
+BREAK = 'break'
+NO_BREAK = 'none'
+BREAK_CUT = 'break_cut'
+KEPT_BESIDE_A_BREAK = 'percussion'
+CUT_SEED = 'cut {} {}'
 GUITARIFY_OF_PLAYER = 'guitarify'
 RUSH = 'rush'
 DRAG = 'drag'
@@ -318,15 +326,43 @@ def laid_over(*, bar, more):
     return [added if hit == NONE else hit for hit, added in zip(bar, more)]
 
 
-def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars, own_fill=False):
+def break_of(*, picks, meter):
+    """The bar of the break the picks name, a drum's hits for each drum, or None where they name none or the meter is not
+    the one a break is written in."""
+    name = picks.get(BREAK, NO_BREAK)
+    if name == NO_BREAK or meter != COMMON_TIME:
+        return None
+    if name not in BREAKS:
+        raise ValueError(ERR_NO_SUCH_BREAK.format(name, listed(BREAKS)))
+    return BREAKS[name]
+
+
+def cut_of(picks):
+    """How far the picks cut their break up."""
+    cut = picks.get(BREAK_CUT, LEAST_CUT)
+    if isinstance(cut, bool) or not isinstance(cut, int) or not LEAST_CUT <= cut <= MOST_CUT:
+        raise ValueError(ERR_BREAK_CUT.format(LEAST_CUT, MOST_CUT, cut))
+    return cut
+
+
+def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars, own_fill=False, seed=0):
     """Each drum the picks play, as a part some bars long: the kind's own bar, decorated as the drummer decorates it, a bar of
     the bars of each phrase that the drummer varies each a little different, and its last bar the fill. A drummer who says nothing plays the kind's bar
-    and the song's fill at the end of every phrase."""
+    and the song's fill at the end of every phrase. Where the picks name a break, the break's bar is the kind's, in place of
+    every way but the percussion's, and each bar of a phrase after the first is the break cut up, its own way, by the seed."""
     bars = {}
+    played_break = break_of(picks=picks, meter=meter)
     for role in roles:
         if role.get(DRUMS):
             for trait in role[DRUMS]:
-                bars.update(values_of(style=style, trait=trait)[picks[trait]].get(BAR, {}))
+                if played_break is None or trait == KEPT_BESIDE_A_BREAK:
+                    bars.update(values_of(style=style, trait=trait)[picks[trait]].get(BAR, {}))
+    cut_bars = {}
+    if played_break is not None:
+        bars.update(played_break)
+        cut = cut_of(picks)
+        for count in range(1, phrase_bars):
+            cut_bars[count] = cut_up(bars=played_break, cut=cut, dice=random.Random(CUT_SEED.format(seed, count)))
     # A section always ends on the fill, so that it hands over to the next: the part is no longer than divides the section.
     length = math.gcd(drummer.get(FILL_EVERY, phrase_bars) or phrase_bars, section_bars)
     fill, silences = choice_that_fits(choices=drummer.get(FILL), picks=picks)
@@ -356,6 +392,10 @@ def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars
                 hits += [NONE] * grid
             else:
                 played = plain
+                if piece in cut_bars.get((bar - 1) % phrase_bars, {}):
+                    played = widened(hits=cut_bars[(bar - 1) % phrase_bars][piece], to=grid)
+                    if piece in adds:
+                        played = laid_over(bar=played, more=widened(hits=adds[piece], to=grid))
                 for which, more in varied:
                     if piece in more and (bar - 1) % phrase_bars + 1 in which:
                         played = laid_over(bar=played, more=widened(hits=more[piece], to=grid))
@@ -568,7 +608,7 @@ def arranged(*, style, song):
             plays = {**plays, FILL_EVERY: section[BARS] if song[FILLS_COME] == EACH_SECTION else song[FILLS_COME]}
         key = (level, tuple(sorted(changed.items())), math.gcd(plays.get(FILL_EVERY, phrase_bars) or phrase_bars, section[BARS]))
         if key not in drum_sets:
-            made = drum_parts(style=style, picks={**picks, **changed}, roles=roles, meter=meter, phrase_bars=phrase_bars, drummer=plays, section_bars=section[BARS], own_fill=FILLS in song.get(PICKS, {}))
+            made = drum_parts(style=style, picks={**picks, **changed}, roles=roles, meter=meter, phrase_bars=phrase_bars, drummer=plays, section_bars=section[BARS], own_fill=FILLS in song.get(PICKS, {}), seed=song.get(SEED, 0))
             drum_sets[key] = {}
             for piece, part in made.items():
                 # A piece of the kit switched off is left out: its strokes are never moved to another piece.

@@ -140,7 +140,21 @@ clouds; generate and test, with motif development and counterpoint last.
   has a rhythm no line of the verse has; a varied line keeps the first half of its notes and its rhythm, so a hook is known
   when it returns. The wizard's Melody picker offers it, and no subgenre takes it unasked yet: that waits for the user's say
   once trial songs are heard. `TestSmart` in `tests/macro_composer/test_melody_engines.py` measures each tendency and each
-  gauge over forty seeds. The gauges' fields in a theme's window come with the Themes step.
+  gauge over forty seeds. The gauges are fields of the wizard's Themes branch, under the Melody field while it reads smart
+  (`ThemesBranch.gauge_field`), kept by the song as `melody_gauges`. A line's notes are drawn by the seed and where the gauges
+  stand together, so a gauge moved one position always redraws the notes, while each line's rhythm and shape, which go by
+  the seed alone, stay (Claude's choice, to hold the rule that every choice changes the song: the chances alone often
+  turned no draw).
+- **Drum breaks** (`breaks.py`, the user's design): six bars of drums each played as one thing, named by feel (tumbling,
+  shuffling, stuttering, rolling, lazy, driving), written for the program in the manner of a kind of break, no record's
+  strokes and no sample. A song's pick `break` names one, in any style, in 4/4: the arranger (`break_of`, `drum_parts`) plays
+  its bar in place of every way of the drums but the percussion's, the drummer's additions and fills still laid over. The
+  pick `break_cut`, 1 to 8, cuts the break up: the bar is eight slices, and in each bar of a phrase after the first, one
+  slice more for each position is swapped for another slice that sounds different, every drum cut alike, never the first
+  slice, seeded by the song's seed and the bar. A subgenre built on a break names it in its template (big beat and downtempo
+  of the electronic style). In the wizard the drums' branch starts with a Break field, (none) first, and under a chosen
+  break a Cut up gauge; a break hides the kick's, the snare's and the cymbal's own fields (`WizardChoices.breaks`,
+  `get_break`, `set_break`, `get_break_cut`, `set_break_cut`, `role_traits`). `tests/macro_composer/test_breaks.py`.
 - A song gives each instrument's player a complexity from 1 to 4, which people see as an imaginary player's name
   (`player_name` in `players.py`). The instruments and names are the same in every style; what each player does is the style's.
 - **A player only decorates the kind's own parts and never replaces them** (the user's choice). Complexity 1 goes by the book

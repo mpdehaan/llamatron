@@ -22,12 +22,12 @@ from fractions import Fraction
 from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_TEMPO, MIN_TEMPO
 from llamatron.macro_composer.wizard_choices import style_of, STAND_INS, LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, FEWEST_FILLS, FILLS_KEPT, MOST_FILLS, QUIET_NOTES_KEPT, PIECES_OFF_KEPT, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, LAST_SOUND_OF_NOTES, USUAL_SOUNDS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
-from llamatron.macro_composer.melody import HOME, LADDER
+from llamatron.macro_composer.melody import DEFAULT_GAUGES, HIGHEST_GAUGE, HOME, LADDER, LOWEST_GAUGE, SMART
 from llamatron.strings.macro_composer import MSG_PART_OF_SECTION
 from llamatron.macro_composer.notation import DEGREE, LINES
 from llamatron.macro_composer.arranger import PICKS, SCALE_TYPE, values_of, SOUNDS, BY_SCALE_TYPE, GRID, MELODY, PARTS, arranged, DRUMS, GENRE, PLAYERS, ROLE_TITLE, TYPE, WITHOUT, style_named, style_names
 from llamatron.music.note import NoteName
-from llamatron.strings.errors import ERR_WIZARD_LAST_PIECE, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER
+from llamatron.strings.errors import ERR_WIZARD_GAUGE, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.support.version import VERSION
 
@@ -40,6 +40,8 @@ NOT_A_NUMBER = 'fast'
 A_SECOND = 1
 # A genre whose songs have tunes sketched from the seed, so that another seed is heard.
 A_GENRE_WITH_TUNES = 'rock'
+NO_SUCH_GAUGE = 'wobble'
+A_GAUGE_IN_WORDS = 'high'
 # A player that genre always has.
 A_BASS = 'bass'
 
@@ -786,6 +788,57 @@ class TestWizardFillsAndQuietNotes(unittest.TestCase):
         self.assertEqual(again.get_fills(), MOST_FILLS)
         again.set_subgenre([name for name in again.subgenres() if name != again.get_subgenre()][0])
         self.assertTrue(again.plays_quiet_notes())
+
+
+class TestWizardMelodyGauges(unittest.TestCase):
+    """The smart melody style's gauges: shown once the style is chosen, set by the genre, moved, kept and refused."""
+
+    def rock(self):
+        choices = chosen(genre=genre_names().index(A_GENRE_WITH_TUNES))
+        choices.set_seed(A_SEED)
+        return choices
+
+    def patterns(self, choices):
+        return choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+
+    def test_the_gauges_show_only_while_the_melody_style_is_smart(self):
+        choices = self.rock()
+        self.assertEqual(choices.gauges(), [])
+        choices.set_melody(SMART)
+        self.assertEqual(choices.gauges(), list(DEFAULT_GAUGES))
+        choices.set_melody(None)
+        self.assertEqual(choices.gauges(), [])
+
+    def test_a_gauge_stands_where_the_genre_sets_it_until_moved(self):
+        choices = self.rock()
+        choices.set_melody(SMART)
+        style = style_of(A_GENRE_WITH_TUNES)[MELODY]
+        own = (style if GRID in style else style[choices.meter()])[SMART]
+        for name in choices.gauges():
+            self.assertEqual(choices.get_gauge(name), own.get(name, DEFAULT_GAUGES[name]))
+            self.assertIn(choices.get_gauge(name), range(LOWEST_GAUGE, HIGHEST_GAUGE + 1))
+
+    def test_a_gauge_set_where_it_stands_makes_the_same_song_and_a_moved_one_another_and_is_kept(self):
+        choices = self.rock()
+        choices.set_melody(SMART)
+        usual = self.patterns(choices)
+        name = choices.gauges()[0]
+        choices.set_gauge(name=name, position=choices.get_gauge(name))
+        self.assertEqual(self.patterns(choices), usual)
+        choices.set_gauge(name=name, position=HIGHEST_GAUGE)
+        self.assertNotEqual(self.patterns(choices), usual)
+        again = WizardChoices.from_data(choices.to_data())
+        self.assertEqual(again.get_gauge(name), HIGHEST_GAUGE)
+        self.assertEqual(self.patterns(again), self.patterns(choices))
+
+    def test_a_gauge_there_is_none_of_and_a_position_out_of_range_are_refused(self):
+        choices = self.rock()
+        choices.set_melody(SMART)
+        name = choices.gauges()[0]
+        for refused_name, position in ((NO_SUCH_GAUGE, LOWEST_GAUGE), (name, LOWEST_GAUGE - 1), (name, HIGHEST_GAUGE + 1), (name, True), (name, A_GAUGE_IN_WORDS)):
+            with self.assertRaises(ValueError) as refused:
+                choices.set_gauge(name=refused_name, position=position)
+            self.assertEqual(str(refused.exception), ERR_WIZARD_GAUGE.format(name=refused_name, low=LOWEST_GAUGE, high=HIGHEST_GAUGE, value=position))
 
 
 class TestWizardMinorTunes(unittest.TestCase):

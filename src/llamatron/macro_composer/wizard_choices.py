@@ -31,18 +31,20 @@ from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer.arranger import (
     COMMON_TIME, DEFAULT_PHRASE_BARS, DRUMS, DRUM_TRACKS, EACH_SECTION, FILLS_COME, FILL_EVERY, KIND, PARTS, PHRASE_BARS, QUIET_NOTES, MELODY_ENGINE, METER, PICKS, ROLE_SOUNDS, ROLE_TITLE, ROLE_TITLES, SOUNDS, WITHOUT_PIECES, PLAYER, PLAYERS, ROLE, ROLES, SOUND, TRAIT, VALUE, WITHOUT, bar_length, fits,
     BARS, CHORD_TRAIT, CHORD_TRAIT_FIELD, FORM, HELD, PLAYS, GENRE, KEY, NAME, ROOT, SCALE_TYPE, SECTIONS, SEED, STYLE, TEMPLATE, TEMPLATES, TEMPO, TITLE, TRAITS, TYPE, USUAL,
+    BREAK, BREAK_CUT, KEPT_BESIDE_A_BREAK, MELODY, NO_BREAK,
     arranged, forms_of, picked, player_of, section_of, share_of, style_named, style_names, values_of,
 )
 from llamatron.macro_composer.composer import composed
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.macro_composer.melody import EVOLVING, SERIAL, SMART, STEP_WALK
+from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
+from llamatron.macro_composer.melody import DEFAULT_GAUGES, EVOLVING, GRID, HIGHEST_GAUGE, LOWEST_GAUGE, SERIAL, SMART, STEP_WALK
 from llamatron.music.note import ROOT_NAMES
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.composition.limits import GM_FAMILY_SIZE, MIN_GM_SOUND
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.marks import MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SECTION_VARIANT
 from llamatron.support.version import VERSION as A_VERSION
-from llamatron.strings.errors import ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
+from llamatron.strings.errors import ERR_WIZARD_BREAK_CUT, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'
@@ -87,6 +89,11 @@ MOST_FILLS = 4
 FILLS_EVERY = {1: 0, 4: 2, 3: 4, 2: EACH_SECTION}
 FILLS_KEPT = 'fills'
 QUIET_NOTES_KEPT = 'quiet_notes'
+# The drum break chosen, kept as its name or as NO_BREAK where a subgenre built on a break plays none, how far it is cut up,
+# and the smart melody style's gauges that were moved.
+BREAK_KEPT = 'break'
+BREAK_CUT_KEPT = 'break_cut'
+GAUGES_KEPT = 'melody_gauges'
 # The key a song keeps the kit's pieces that are switched off under.
 PIECES_OFF_KEPT = 'pieces_off'
 # One guitarist or two, and the key a template describes its one guitarist under, with the players and the way it names.
@@ -217,7 +224,7 @@ SECONDS_IN_MINUTE = 60
 class WizardChoices:
     """The choices of one run of the song wizard."""
 
-    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_without', '_sections', '_melody', '_sounds', '_band_sounds', '_guitarists', '_pieces_off', '_fills', '_quiet_notes')
+    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_without', '_sections', '_melody', '_sounds', '_band_sounds', '_guitarists', '_pieces_off', '_break', '_break_cut', '_gauges', '_fills', '_quiet_notes')
 
     def __init__(self):
         self._genre = None
@@ -245,6 +252,9 @@ class WizardChoices:
         # How often a fill comes, a position from FEWEST_FILLS to MOST_FILLS, or None while the drummer decides; and whether the snare's quiet notes are played.
         self._fills = None
         self._quiet_notes = True
+        self._break = None
+        self._break_cut = None
+        self._gauges = {}
 
     # Reading and keeping the choices.
 
@@ -273,11 +283,14 @@ class WizardChoices:
                 (self.set_piece_on, [dict(piece=piece, on=False) for piece in data.get(PIECES_OFF_KEPT) or []]),
                 (self._set_kept_fills, [dict(position=data[FILLS_KEPT])] if data.get(FILLS_KEPT) is not None else []),
                 (self._set_kept_quiet_notes, [dict(on=False)] if data.get(QUIET_NOTES_KEPT) is False else []),
+                (self._set_kept_break, [dict(name=data[BREAK_KEPT])] if data.get(BREAK_KEPT) else []),
+                (self._set_kept_break_cut, [dict(position=data[BREAK_CUT_KEPT])] if data.get(BREAK_CUT_KEPT) is not None else []),
                 (self._set_kept_guitarists, [dict(count=data[GUITARISTS_KEPT])] if data.get(GUITARISTS_KEPT) else []),
                 (self._set_kept_band_sounds, [dict(sounds=data[BAND_SOUNDS_KEPT])] if data.get(BAND_SOUNDS_KEPT) else []),
                 (self.set_sound, [dict(role=role, sound=sound) for role, sound in (data.get(SOUNDS_KEPT) or {}).items()]),
                 (self.set_own_sections, [dict(sections=data[OWN_SECTIONS])] if data.get(OWN_SECTIONS) else []),
-                (self._set_kept_melody, [dict(style=data[MELODY_STYLE])] if data.get(MELODY_STYLE) else [])]
+                (self._set_kept_melody, [dict(style=data[MELODY_STYLE])] if data.get(MELODY_STYLE) else []),
+                (self.set_gauge, [dict(name=name, position=position) for name, position in (data.get(GAUGES_KEPT) or {}).items()])]
         for setter, every in kept:
             for named in every:
                 try:
@@ -293,7 +306,8 @@ class WizardChoices:
                 MELODY_STYLE: self._melody, SOUNDS_KEPT: dict(self._sounds) or None,
                 BAND_SOUNDS_KEPT: self._band_sounds if self._band_sounds != USUAL_SOUNDS else None,
                 GUITARISTS_KEPT: self._guitarists if self._guitarists != TWO_GUITARISTS else None,
-                PIECES_OFF_KEPT: list(self._pieces_off) or None, FILLS_KEPT: self._fills, QUIET_NOTES_KEPT: None if self._quiet_notes else False}
+                PIECES_OFF_KEPT: list(self._pieces_off) or None, FILLS_KEPT: self._fills, QUIET_NOTES_KEPT: None if self._quiet_notes else False,
+                BREAK_KEPT: self._break, BREAK_CUT_KEPT: self._break_cut, GAUGES_KEPT: dict(self._gauges) or None}
         return {field: value for field, value in held.items() if value is not None}
 
     # The genre and the subgenre, which everything else follows.
@@ -601,6 +615,9 @@ class WizardChoices:
         self._pieces_off = []
         self._fills = None
         self._quiet_notes = True
+        self._break = None
+        self._break_cut = None
+        self._gauges = {}
 
     def _role(self, role):
         found = next((entry for entry in style_of(self._genre)[ROLES] if entry[ROLE] == role), None) if self.is_ready() else None
@@ -615,7 +632,10 @@ class WizardChoices:
     def role_traits(self, role):
         """Return what is chosen about how a player plays: the one way of a player of notes, or each part of the drums."""
         entry = self._role(role)
-        return list(entry[DRUMS]) if entry.get(DRUMS) else [entry[TRAIT]]
+        if not entry.get(DRUMS):
+            return [entry[TRAIT]]
+        # A break takes the place of every way the drums are played but the percussion's.
+        return [trait for trait in entry[DRUMS] if self.get_break() is None or trait == KEPT_BESIDE_A_BREAK]
 
     def _has_sound(self, *, trait, value):
         return SOUND in values_of(style=style_of(self._genre), trait=trait)[value]
@@ -691,6 +711,66 @@ class WizardChoices:
 
     def _set_kept_fills(self, *, position):
         self.set_fills(position)
+
+    # The drum break: a bar of drums played as one thing, in place of the kick's, the snare's and the cymbal's own ways.
+
+    def breaks(self):
+        """Return the drum breaks the song may play: every break where the band has drums and the meter is the one a break
+        is written in, and none otherwise."""
+        if not self.is_ready() or self.meter() != COMMON_TIME or not any(not self.has_sound(role) for role in self.roles()):
+            return []
+        return break_names()
+
+    def get_break(self):
+        """Return the break the drums play, the one chosen or the subgenre's own, or None where they play none."""
+        if not self.breaks():
+            return None
+        name = self._break if self._break is not None else self._picks().get(BREAK, NO_BREAK)
+        return None if name == NO_BREAK else name
+
+    def set_break(self, name):
+        """Choose the break the drums play, or None for none."""
+        if name is not None and name not in self.breaks():
+            raise ValueError(ERR_WIZARD_NO_SUCH_BREAK.format(value=name))
+        self._break = NO_BREAK if name is None else name
+
+    def _set_kept_break(self, *, name):
+        self.set_break(None if name == NO_BREAK else name)
+
+    def get_break_cut(self):
+        """Return how far the break is cut up, from LEAST_CUT, as written, to MOST_CUT."""
+        return self._break_cut if self._break_cut is not None else self._picks().get(BREAK_CUT, LEAST_CUT)
+
+    def set_break_cut(self, position):
+        if isinstance(position, bool) or not isinstance(position, int) or not LEAST_CUT <= position <= MOST_CUT:
+            raise ValueError(ERR_WIZARD_BREAK_CUT.format(low=LEAST_CUT, high=MOST_CUT, value=position))
+        self._break_cut = position
+
+    def _set_kept_break_cut(self, *, position):
+        self.set_break_cut(position)
+
+    def _break_picks(self):
+        """Return the song's picks of a break and its cut, where either was chosen."""
+        return {**({BREAK: self._break} if self._break is not None else {}), **({BREAK_CUT: self._break_cut} if self._break_cut is not None else {})}
+
+    # The smart melody style's gauges, shown while the song's tunes are sketched by it.
+
+    def gauges(self):
+        """Return the names of the smart melody style's gauges while the song's tunes are sketched by it, and none otherwise."""
+        return list(DEFAULT_GAUGES) if self._melody == SMART else []
+
+    def get_gauge(self, name):
+        """Return where a gauge stands, from LOWEST_GAUGE to HIGHEST_GAUGE: where it was moved to, else where the genre sets it."""
+        if name in self._gauges:
+            return self._gauges[name]
+        habits = style_of(self._genre)[MELODY]
+        habits = habits if GRID in habits else habits[self.meter()]
+        return habits.get(SMART, {}).get(name, DEFAULT_GAUGES[name])
+
+    def set_gauge(self, *, name, position):
+        if name not in DEFAULT_GAUGES or isinstance(position, bool) or not isinstance(position, int) or not LOWEST_GAUGE <= position <= HIGHEST_GAUGE:
+            raise ValueError(ERR_WIZARD_GAUGE.format(name=name, low=LOWEST_GAUGE, high=HIGHEST_GAUGE, value=position))
+        self._gauges[name] = position
 
     def _set_kept_quiet_notes(self, *, on):
         self.set_quiet_notes(on)
@@ -1046,14 +1126,15 @@ class WizardChoices:
         given, or the first the seed draws."""
         drawn = [progression] if progression else self.progressions_by_chance()[:1]
         if drawn:
-            return {**self._song_picks(name), PICKS: {**self._ways, self.progression_trait(): drawn[0]}}
+            return {**self._song_picks(name), PICKS: {**self._ways, **self._break_picks(), self.progression_trait(): drawn[0]}}
         return self._song_picks(name)
 
     def _song_picks(self, name):
         return {NAME: name, TITLE: name, STYLE: self._genre, TEMPLATE: self._subgenre, KEY: {ROOT: self._root, TYPE: self._scale_type}, TEMPO: self._tempo, FORM: self.form_sections() if self.has_own_form() else self.get_form(), SEED: self._seed,
-                PICKS: dict(self._ways), PLAYERS: dict(self._levels), WITHOUT: self._song_without(),
+                PICKS: {**self._ways, **self._break_picks()}, PLAYERS: dict(self._levels), WITHOUT: self._song_without(),
                 **({SECTIONS: self._sections_of_song()} if self._sections_of_song() else {}),
                 **({MELODY_ENGINE: self._melody} if self._melody is not None else {}),
+                **({MELODY: {SMART: {**{name: self.get_gauge(name) for name in DEFAULT_GAUGES}, **self._gauges}}} if self._melody == SMART and self._gauges else {}),
                 **({ROLE_SOUNDS: self._song_sounds()} if self._song_sounds() else {}),
                 **({WITHOUT_PIECES: list(self._pieces_off)} if self._pieces_off else {}),
                 **({FILLS_COME: FILLS_EVERY[self._fills]} if self._fills is not None else {}),

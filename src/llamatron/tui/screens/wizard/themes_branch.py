@@ -16,8 +16,10 @@
 
 """The wizard's Themes branch: the chord progression the song is built on and the melody style its tunes are sketched by."""
 
-from llamatron.strings.labels import MSG_WIZARD_ANY_PROGRESSION, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_THEMES_BRANCH, MSG_WIZARD_USUAL_MELODY
-from llamatron.tui.screens.shared.field import ChoiceField
+from llamatron.macro_composer.melody import HIGHEST_GAUGE, LOWEST_GAUGE
+from llamatron.strings.labels import MSG_WIZARD_ANY_PROGRESSION, MSG_WIZARD_GAUGE_ENDS, MSG_WIZARD_GAUGE_LABELS, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_THEMES_BRANCH, MSG_WIZARD_USUAL_MELODY
+from llamatron.strings.marks import MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_MELODY_GAUGE_SHOWN
+from llamatron.tui.screens.shared.field import ChoiceField, NumberField
 from llamatron.tui.screens.wizard.song_ways_branch import A_CHOICE, SongWaysBranch
 
 
@@ -54,4 +56,15 @@ class ThemesBranch(SongWaysBranch):
             # The first choice leaves each player's tunes to the style the genre gives the player.
             fields.append(ChoiceField(page=self.page(), label=MSG_WIZARD_MELODY_LABEL, choices=[MSG_WIZARD_USUAL_MELODY, *styles], current=choices.get_melody() or MSG_WIZARD_USUAL_MELODY,
                                       set=self.page().choosing(lambda style: choices.set_melody(None if style == MSG_WIZARD_USUAL_MELODY else style))))
-        return fields
+        # The smart melody style's gauges, under the Melody field while the song's tunes are sketched by it.
+        return [*fields, *(self.gauge_field(name) for name in choices.gauges())]
+
+    def gauge_field(self, name):
+        """Return the field of one gauge of the smart melody style: a number stepped or typed, drawn as a horizontal gauge
+        beside what its two ends mean."""
+        choices = self.choices()
+        position = choices.get_gauge(name)
+        low, high = MSG_WIZARD_GAUGE_ENDS[name]
+        gauge = MSG_WIZARD_GAUGE_FULL * position + MSG_WIZARD_GAUGE_EMPTY * (HIGHEST_GAUGE - position)
+        return NumberField(page=self.page(), label=MSG_WIZARD_GAUGE_LABELS[name], number=position, shown=MSG_WIZARD_MELODY_GAUGE_SHOWN.format(gauge=gauge, low=low, high=high),
+                           lowest=LOWEST_GAUGE, highest=HIGHEST_GAUGE, set=self.page().choosing(lambda value: choices.set_gauge(name=name, position=value)))
