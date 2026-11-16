@@ -61,7 +61,7 @@ EXPERIMENTAL = 'experimental'
 LEAD = 'lead'
 THREE = 'three'
 VERSE = 'verse'
-BEAT_GROUP = 'beat group'
+BRITISH_INVASION = 'british invasion'
 SERIAL_TRIO = 'serial trio'
 CHORUS = 'chorus'
 COMMON_TIME = '4/4'
@@ -446,7 +446,7 @@ class TestEngineChosen(unittest.TestCase):
         return [part for name, part in made[composer.PARTS].items() if notation.LINES in part and name.endswith(LEAD)]
 
     def song(self, **more):
-        return {arranger.NAME: 'a_song', arranger.TITLE: 'A song', arranger.STYLE: ROCK, arranger.TEMPLATE: BEAT_GROUP, arranger.KEY: {arranger.ROOT: 'D'},
+        return {arranger.NAME: 'a_song', arranger.TITLE: 'A song', arranger.STYLE: ROCK, arranger.TEMPLATE: BRITISH_INVASION, arranger.KEY: {arranger.ROOT: 'D'},
                 arranger.SEED: SEED, arranger.FORM: [VERSE], **more}
 
     def test_a_song_picks_the_engine_its_tunes_are_made_by_and_the_step_walk_is_usual(self):

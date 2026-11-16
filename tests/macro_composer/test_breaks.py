@@ -30,7 +30,7 @@ from llamatron.strings.macro_composer import MSG_PIECE_INSTRUMENT
 from llamatron.support.version import VERSION
 
 ROCK = 'rock'
-ROCK_KIND = 'beat group'
+ROCK_KIND = 'british invasion'
 BALLAD = 'rock ballad'
 ELECTRONIC = 'electronic'
 BUILT_ON_A_BREAK = 'big beat'
