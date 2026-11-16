@@ -30,7 +30,6 @@ from rich.text import Text
 from llamatron.composition.naming import new_name
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings.help import HELP_WIZARD_PAGE
-from llamatron.strings.errors import ERR_WIZARD_CHOOSE_START
 from llamatron.strings.labels import Crumb, MSG_WIZARD_CAPTION, MSG_WIZARD_REPLACE_CAPTION
 from llamatron.strings.marks import MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_EDITED_BRANCH
 from llamatron.strings.messages import MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CLOSE_TITLE, MSG_WIZARD_CREATED, MSG_WIZARD_NOTHING_TO_UNDO, MSG_WIZARD_REPLACED, MSG_WIZARD_SONG_NAME_PROMPT
@@ -46,7 +45,6 @@ from llamatron.tui.screens.wizard.band_branch import BandBranch
 from llamatron.tui.screens.wizard.create_branch import CreateBranch
 from llamatron.tui.screens.wizard.form_branch import FormBranch
 from llamatron.tui.screens.wizard.genre_branch import GenreBranch
-from llamatron.tui.screens.wizard.start_branch import StartBranch
 from llamatron.tui.screens.wizard.starts import FROM_LAST, REPLACING
 
 # How wide the tree is, with its cursor's mark, and the least the fields beside it are given.
@@ -70,18 +68,21 @@ class WizardPage(FieldPage):
 
     crumbs = (Crumb.WIZARD,)
 
-    def __init__(self, holder):
+    def __init__(self, holder, *, start=None):
         super().__init__(holder)
         self._choices = WizardChoices()
         self._song_name = new_name(word=MSG_NEW_SONG_WORD, taken=self.document().song_names())
         self._changed = False
-        # What the current song kept of the run that made it, the way of starting chosen where one is asked for, and whether a new take is wanted.
+        # What the current song kept of the run that made it, the way of starting chosen in the dialog that opens the wizard on
+        # such a song, and whether a new take is wanted.
         self._last = self.document().song().get_wizard_choices()
         self._start = None
         self._new_take = False
         self._open = set()
         self.tree_place = FIRST_PLACE
         self.in_fields = False
+        if start is not None:
+            self.start_with(start)
 
     # What the branches read and change.
 
@@ -104,23 +105,20 @@ class WizardPage(FieldPage):
     def name_song(self, name):
         self._song_name = name
 
-    # How the run starts, asked when the current song was made by the wizard.
-
-    def asks_how_to_start(self):
-        return self._last is not None
+    # How the run starts, which a dialog asks before the wizard opens on a song the wizard made (LlamatronApp.show_wizard).
 
     def start(self):
-        """Return the way of starting chosen, or None before one is."""
+        """Return the way of starting chosen, or None on a song the wizard did not make, where a new song is started from scratch."""
         return self._start
 
     def start_with(self, start):
-        """Start the run one of the four ways: from the choices the current song kept or from none, a new song or the current song replaced."""
+        """Start the run one of the four ways: from the choices the current song kept or from none, a new song or the current song replaced.
+        Nothing is chosen yet, so the wizard still closes without asking."""
         self._start = start
         self._choices = WizardChoices.from_data(self._last) if start in FROM_LAST else WizardChoices()
         self._new_take = False
         document = self.document()
         self._song_name = document.current_song_name() if self.replaces() else new_name(word=MSG_NEW_SONG_WORD, taken=document.song_names())
-        self._changed = True
 
     def replaces(self):
         """Return whether Create replaces the current song, where otherwise a song is added."""
@@ -137,9 +135,7 @@ class WizardPage(FieldPage):
         self._changed = True
 
     def refusal_of(self, branch):
-        """Return why the cursor cannot move into a branch's fields yet, or None when it can: a way of starting comes before all else."""
-        if self.asks_how_to_start() and self._start is None and branch.waits_for_start():
-            return ERR_WIZARD_CHOOSE_START
+        """Return why the cursor cannot move into a branch's fields yet, or None when it can."""
         return branch.refusal()
 
     def has_choices_to_lose(self):
@@ -149,8 +145,7 @@ class WizardPage(FieldPage):
 
     def roots(self):
         """Return the tree's top branches, in the order a song is thought through."""
-        start = [StartBranch(page=self)] if self.asks_how_to_start() else []
-        return [*start, GenreBranch(page=self), BandBranch(page=self), FormBranch(page=self), CreateBranch(page=self)]
+        return [GenreBranch(page=self), BandBranch(page=self), FormBranch(page=self), CreateBranch(page=self)]
 
     def rows(self):
         """Return the branches the tree shows, each with how deep it is: every top branch, and the branches under each open one."""

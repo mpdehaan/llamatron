@@ -517,5 +517,4 @@ ERR_WIZARD_LAST_PLAYER = 'a band needs one player'
 
 # tui/screens/wizard/wizard_page.py and the branches beside it
 ERR_WIZARD_CHOOSE_GENRE = 'choose a genre first'
-ERR_WIZARD_CHOOSE_START = 'choose how to start first'
 ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE = 'choose a genre and a subgenre first'
