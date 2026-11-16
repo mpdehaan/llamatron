@@ -279,6 +279,10 @@ class WizardChoices:
         forms = self.forms()
         return forms[0] if forms else None
 
+    def form_section_count(self, form):
+        """Return how many sections a suggested form has."""
+        return len(next((form_[SECTIONS] for form_ in self._forms() if form_[NAME] == form), []))
+
     def set_form(self, form):
         """Choose one of the forms the subgenre suggests, which puts its sections in place of any a person changed."""
         if form not in self.forms():
