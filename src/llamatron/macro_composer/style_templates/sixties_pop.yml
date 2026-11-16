@@ -87,13 +87,21 @@ traits:
         - [{degree: 1, steps: 4}, {degree: 5, steps: 2}]
   guitar:
     - value: strummed
-      share: 38
+      share: 34
       sound: guitar
       needs: {meter: 4/4}
       figure:
         - [{degree: 1, chord: '3', steps: 8}]
       generators:
         - guitarify: {bar: [down, nothing, down, up, nothing, up, down, up], cell: 1/8}
+    - value: strummed in three
+      share: 4
+      sound: guitar
+      needs: {meter: 3/4}
+      figure:
+        - [{degree: 1, chord: '3', steps: 6}]
+      generators:
+        - guitarify: {bar: [down, nothing, down, up, down, up], cell: 1/8}
     - value: chops on two and four
       share: 16
       sound: clean guitar

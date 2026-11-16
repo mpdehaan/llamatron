@@ -245,12 +245,9 @@ class TestWizardBand(unittest.TestCase):
 
     def try_a_player(self, *, choices, role):
         was_in = choices.role_is_in(role)
-        try:
-            choices.set_role_in(role=role, on=True)
-        except ValueError:
-            # No way of playing is written for the player in this subgenre.
-            self.assertFalse(was_in)
-            return
+        # Every player of every subgenre has a way of playing written, so each can be put in.
+        self.assertTrue(choices.role_can_play(role))
+        choices.set_role_in(role=role, on=True)
         for trait in choices.role_traits(role):
             usual = choices.get_way(trait)
             self.assertIn(usual, choices.ways(role=role, trait=trait))

@@ -284,6 +284,11 @@ class WizardChoices:
         entry = self._role(role)
         return role not in self._without and (bool(entry.get(DRUMS)) or self._has_sound(trait=entry[TRAIT], value=self.get_way(entry[TRAIT])))
 
+    def role_can_play(self, role):
+        """Return whether a player can be in the band at all: the drums always, and a player of notes where a way of playing that sounds fits the subgenre."""
+        entry = self._role(role)
+        return bool(entry.get(DRUMS)) or self.role_is_in(role) or bool(self.ways(role=role, trait=entry[TRAIT]))
+
     def roles_in(self):
         return [role for role in self.roles() if self.role_is_in(role)]
 

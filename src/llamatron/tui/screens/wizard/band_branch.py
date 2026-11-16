@@ -39,7 +39,8 @@ class BandBranch(Branch):
 
     def fields(self):
         choices = self.choices()
-        return [Toggle(label=role, on=choices.role_is_in(role), set=self.setter_of(role)) for role in choices.roles()]
+        # A player with no way of playing written for the subgenre is not offered, the user's rule.
+        return [Toggle(label=role, on=choices.role_is_in(role), set=self.setter_of(role)) for role in choices.roles() if choices.role_can_play(role)]
 
     def setter_of(self, role):
         """Return what puts a player in the band or leaves the player out, refusing to leave out the last."""
