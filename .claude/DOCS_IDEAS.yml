@@ -1,6 +1,6 @@
 # Ideas for the documentation
 #
-# The user's ideas for the documentation, kept apart from the ideas for the program in dev_notes/IDEAS.yml (the
+# The user's ideas for the documentation, kept apart from the ideas for the program in .claude/IDEAS.yml (the
 # user's rule), under the same rules and in the same shape: a title, a priority where 1 is the highest (high 1,
 # medium 5, low 10, unranked 99) and a text, kept sorted by internal_tools/sort_ideas.sh. Claude keeps the file and
 # may reword it, an idea is removed as soon as it's done, ideas are added only when the user asks, and nothing here

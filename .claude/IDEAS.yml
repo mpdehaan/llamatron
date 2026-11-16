@@ -518,8 +518,7 @@
     anything is removed.
 
     For the discussion: which of what exists is on each side (the analyzer, the measures, the comparing and `describe_style.sh`
-    explain; the cells, the wizards and anything that writes notes generate or improve), what the plan in
-    `dev_notes/GENRE_PLAN.md` and the genre items of `.claude/DESIGNS.md` become, whether the training tools under
+    explain; the cells, the wizards and anything that writes notes generate or improve), what the genre items of `.claude/DESIGNS.md` become, whether the training tools under
     `internal_tools/analysis_and_generation/` that only feed generation stay as tools for the explanations or go, what
     `.claude/features/GENRES.md` then says the library is for, and what an explanation looks like to a person: a report, a page of the
     tracker, or both.
@@ -618,39 +617,6 @@
     reuse what Progression and `composition/progressions.py` know about a scale's chords, and changing melodies would
     need rules of its own, such as keeping rhythm and contour while moving degrees within the chord. What "the overall
     feel" keeps, how much changes, and which generators, are the questions to settle first.
-
-- title: "A composing tool, to be discussed"
-  priority: 99
-  text: |
-    The user calls it critical that llamatron learns to compose well in a style: the homage review in `.claude/DESIGNS.md`
-    writes its method down as "demo generation intelligence", which this tool and the wizards that generate songs should build on.
-    Its core is a codified library of genre and subgenre, each a genome of traits after the idea of the Music Genome Project, and
-    the rules of expectation in David Huron's "Sweet Anticipation" as they vary by genre (see the review in the queue).
-
-    **What exists.** Claude wrote the 32 demos of 2026-11-12 (the homages, `strange_woodworking.yml` and
-    `incoming_message.yml`, and a black MIDI demo since deleted) with a small composing tool, kept as it was in `dev_notes/composing_tool/`: a sketch, not part of the
-    program, following none of the code's rules yet. The user wants it to become part of llamatron some day, and this is the
-    starting point for that talk.
-
-    **How it works.**
-    - A song is a short Python specification: tempo, key, genre, instruments and tracks, the patterns, the progressions and the
-      scenes, each scene a name, a length in bars, which pattern each track plays (with its chains) and a sentence about it.
-    - Melodies are written as one token a step: `5` a degree, `b3` and `#4` with an accidental, `5'` and `5,` an octave up or
-      down, `1:3` with a chord symbol, `5!90` with a velocity, `.` a rest and `-` a tie. Drums are a line of characters a voice,
-      `x` loud, `o` soft and `.` silent, with a table of named beats (rock, disco, punk, shuffle, trance and so on) to start from.
-    - Harmony is written once: the bass, the chords and any riff are one bar over chord I, and a Progression chain in each scene
-      moves them through the chords, as `07_blues_chords.yml` does. Only the melody is written out against the chords.
-    - The tool works out each scene's length: the clip with the longest pattern repeats to fill the scene and every other clip
-      loops, so that every clip lasts as long as its scene, as the examples require. It also writes the notes' scene list and
-      "When changing this demo" from the specification, reads the set back through `Setlist.read_file` and saves it in the
-      program's own layout, and reports each song's length in seconds, its count of notes, and any note off the piano's keys.
-
-    **What it could become in llamatron.** Some directions to talk over, none decided:
-    - A text notation for a pattern, typed into the pattern editor or pasted into it, the way the tokens above write a melody.
-    - A "new song from a form" page: pick a beat, a key, progressions for the verse and chorus and a form, and get the tracks,
-      patterns and scenes laid out, the melody left to write.
-    - Beats and bass figures as a library of starting patterns, offered when a pattern is added.
-    - The scene-length rule (one clip repeats, the rest loop) as what a new scene does by default.
 
 - title: "Generators for composing in sections, approved by the user, each with a demo"
   priority: 99
@@ -1073,7 +1039,7 @@
 - title: "Import MIDI, what's left"
   priority: 99
   text: |
-    The user's direction: when the import is refined, it should use the genre library (`dev_notes/GENRE_PLAN.md`)
+    The user's direction: when the import is refined, it should use the genre library
     to decide how to break a song into patterns and scenes, recognizing its form and sections, and where a part is better
     described as a simpler pattern with a generator (an arpeggiator, a strum, a ratchet, a Euclidean rhythm) than as raw notes.
 

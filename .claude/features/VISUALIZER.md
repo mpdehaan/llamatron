@@ -5,7 +5,7 @@ Reference notes for Claude, one of `.claude/features/`: the visualizer and its m
 ## The visualizer
 
 - On Arrange, with the set's Real Time switch on, `Z` (`ArrangePage.VISUALIZER`) shows the
-  visualizer over the clip area, the user's design (dev_notes/IDEAS.yml, "The visualizer", holds
+  visualizer over the clip area, the user's design (.claude/IDEAS.yml, "The visualizer", holds
   the plan, built a stage at a time): `next_visualizer` steps through `MODES`
   (`visualizers/modes.py`) and after the last back to the clips. While it shows, the page binds
   only `TO_CLIPS` (ESC, which brings the clips back and stays on the page) and `VISUALIZER`, and

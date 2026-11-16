@@ -104,7 +104,7 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   the same way. The one exception is a path, a file name or a command a change made wrong, like a
   renamed script, which Claude always fixes without asking (the user's rule). Every reply that follows
   a change to them brings a synopsis of exactly what changed, grouped by document. The generated parts,
-  the diagrams and the demo table, are rewritten by their tools as ever. `CLAUDE.md`, `dev_notes/IDEAS.yml` and `dev_notes/DOCS_IDEAS.yml`
+  the diagrams and the demo table, are rewritten by their tools as ever. `CLAUDE.md`, `.claude/IDEAS.yml` and `.claude/DOCS_IDEAS.yml`
   are Claude's, like the files in `.claude/`: `CLAUDE.md` holds the rules for Claude, whose style
   doesn't matter, and the ideas file's language is for Claude, which may reword it (the user's rule),
   so Claude keeps all of them consistent and correct as needed. For now, until the work reaches the video tutorial, the
@@ -130,7 +130,7 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   the user's answers are acted on without asking them to be confirmed. A message that asks a question ends the turn: what
   depends on the answer waits for it.
 - What is agreed and not yet built is written, design by design, in `.claude/DESIGNS.md` and, for the arranger and the song wizard,
-  `.claude/features/WIZARD_DESIGNS.md`, which are in the repository; the order the work is built in is `dev_notes/QUEUE.md`, Claude's
+  `.claude/features/WIZARD_DESIGNS.md`, which are in the repository; the order the work is built in is `.claude/QUEUE.md`, Claude's
   own short list, which git ignores and which is never committed (the user's choice, for privacy and a quieter history). An item
   leaves the designs once built, and a
   request that comes in while Claude works goes where the user says, the bottom unless told otherwise, and Claude says where
@@ -152,14 +152,14 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   because consistency and usability matter more to the user than novelty.
 - The user edits the wording of messages themselves, so a change doesn't need to name the `MSG_`,
   `ERR_` or `HELP_` constants it touched.
-- The ideas files, `dev_notes/IDEAS.yml` and `dev_notes/DOCS_IDEAS.yml`, are YAML lists of ideas, each a `title`, a `priority`
+- The ideas files, `.claude/IDEAS.yml` and `.claude/DOCS_IDEAS.yml`, are YAML lists of ideas, each a `title`, a `priority`
   and a `text` (the user's design). Priority 1 is the highest, and the user's words are numbers there: high is 1, medium is 5,
   low is 10, and an idea the user hasn't ranked is 99, under every ranked one. The files are kept sorted, priority 1 at the top,
   ideas of one priority in the order they have, so that the user can edit a priority or move an idea by hand and Claude can move
   one when asked; whenever Claude opens one and finds it out of order, it sorts it with `internal_tools/sort_ideas.sh`
   (`internal_tools/sort_ideas.py`, tested by `tests/tools/test_sort_ideas.py`). An idea describes keys by what they do rather
   than by their letters, since the letters change (the user's rules).
-- An idea in `dev_notes/IDEAS.yml` is removed as soon as it's built, without being asked, and ideas are added
+- An idea in `.claude/IDEAS.yml` is removed as soon as it's built, without being asked, and ideas are added
   to it only when the user asks. Nothing in it is started or proposed unprompted: the user picks
   what to do from it, one item at a time.
 - The rules carry no dates: a choice is marked as the user's design or rule, never dated (the user's
@@ -316,7 +316,7 @@ row says which, and a reply says which too.
 | a settings page, a list page | a page of fields, and a page of rows with a `+` row at the bottom | `FieldPage` with `Field` and `Button`, and `ListPage` |
 | protected | the Protected toggle on the File/Global page | `protected`, `file_is_protected` |
 | the demos, the examples | the sets in `examples/` | every set there but the pieces, and the pieces, `PIECES` in `tests/support/rendering.py` |
-| the ideas file | `dev_notes/IDEAS.yml`, and `dev_notes/DOCS_IDEAS.yml` for the documentation's ideas | |
+| the ideas file | `.claude/IDEAS.yml`, and `.claude/DOCS_IDEAS.yml` for the documentation's ideas | |
 | the support folder | nothing on screen: `internal_tools/`, the folder of development tools and scripts (the user's word, since there is no other support folder at the top) | `internal_tools/` |
 | follow action, advance | Follow action on the clip page, "With Scene" or "Off", and Default follow action on the File/Global page | `FollowAction`, `ClipSlotSetting.FOLLOW_ACTION`, `follow_action_of` |
 | launch together, advance together | Launch together on the Scene page, and `┆` after a scene's name on Arrange when off | `SceneSetting.LAUNCH_TOGETHER`, `Scene.launches_together` |

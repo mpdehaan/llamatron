@@ -5,7 +5,7 @@ Reference notes for Claude, one of `.claude/features/`: the engine and the Realt
 ## Real-time playback
 
 - `src/llamatron/realtime/` plays a rendered song out of the computer's MIDI ports, the user's
-  design. What is left of it is in `dev_notes/IDEAS.yml` under "Real-time
+  design. What is left of it is in `.claude/IDEAS.yml` under "Real-time
   MIDI, what's left". How the tracker drives it is under "Real-time playback on the pages" below.
 - Render first, then only schedule: `song_timeline(grid=, routes=)` in `realtime/timeline.py`
   turns a `ClipGrid` into one time-ordered list of `Playing` events across every track, the

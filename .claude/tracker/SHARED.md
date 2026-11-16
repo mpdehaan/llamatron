@@ -447,7 +447,7 @@ code.
   calls `import_midi` (`screens/set/importing.py`), which shows the Open page given
   `suffixes=MIDI_SUFFIXES`, `folder=home_folder()`, the crumbs `IMPORT MIDI` and `chosen`, what
   ENTER on a file does in place of opening a set, until the file picker is designed for the
-  whole tracker (dev_notes/IDEAS.yml). `offer_import` reads the file with `MidiImport`, telling a file that
+  whole tracker (.claude/IDEAS.yml). `offer_import` reads the file with `MidiImport`, telling a file that
   can't be read in a `MessageDialog`, and asks with an `ImportDialog`.
 - `ImportDialog` (`tui/dialogs/import_dialog.py`, `keybindings.ImportDialog`) is a dialog of
   fields, the user's design: the found line (`MidiImport.found`), Song name,

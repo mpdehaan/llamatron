@@ -285,7 +285,7 @@ such name, and `tests/rules/test_naming.py` holds that nothing else numbers one)
   (`tui/components/title_card.py`) is all in blue, block letters, scanner, address and prompt, the
   user's design after a classic video game's start page, and the set's name that a recording scrolls from right
   to left after the title, `DEMO:` and the file's name as words, in large capitals, is light orange, the user's choice (`tui/components/scroll_text.py`); the user wants the questions of a colour
-  mode for the rest explored as the demos are built (`dev_notes/IDEAS.yml`). The
+  mode for the rest explored as the demos are built (`.claude/IDEAS.yml`). The
   visualizer (`visualizers/`), shown over Arrange's clip area while a song plays in real time, is
   the other place colour is allowed, the user's design, and it never strobes and
   never flashes brightly, since some people are sensitive to that: brightness rises and falls

@@ -40,7 +40,7 @@ person who only edits documents commits at once. Claude tests when appropriate i
 anything that changes code, tests, examples or tools, it stages the files and runs
 `internal_tools/check_before_commit.sh`, which first refuses when Python under `src/` is staged without a
 version bump (`internal_tools/bump_version.py --check`, `internal_tools/bump.sh` to fix) and then runs
-`internal_tools/test.sh`, and commits only when both pass. A change that only touches `dev_notes/IDEAS.yml`,
+`internal_tools/test.sh`, and commits only when both pass. A change that only touches `.claude/IDEAS.yml`,
 the `.claude/` files or other documents can't fail a test, so it is committed with no run, on its own,
 apart from code that's mid-change; a document that names paths is the exception, since
 `tests/rules/test_doc_paths.py` checks them, and Claude runs that test before committing it.
@@ -118,7 +118,7 @@ so that the math stays free to improve, and `internal_tools/compare_exports.py` 
 change that shouldn't alter the music.
 
 Many older tests predate these rules; new tests follow them, and old ones are brought over as
-they're touched (`dev_notes/IDEAS.yml`, "Refactoring the tests to the program's style rules").
+they're touched (`.claude/IDEAS.yml`, "Refactoring the tests to the program's style rules").
 
 ## Where the tests live
 

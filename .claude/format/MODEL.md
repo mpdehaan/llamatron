@@ -303,7 +303,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
   would be allowed if a need appeared, as long as renames stay safe.
 - The one known exception is that probability rolls and random directions are seeded from the
   track's name, so renaming a track changes what they roll. That's an open question in
-  `dev_notes/IDEAS.yml`.
+  `.claude/IDEAS.yml`.
 
 ## Tests of the model
 

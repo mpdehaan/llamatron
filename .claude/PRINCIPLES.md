@@ -19,7 +19,7 @@ says what llamatron is for; this file says how the user weighs one way of buildi
   the queue.
 - **Bugs are understood.** A bug the user finds is reproduced, fixed at its cause, explained, and held by a test.
 - **Progress with every reply.** Agreed work is built before the next questions are asked; each question offers lettered
-  choices with Claude's recommendation; the queue (`dev_notes/QUEUE.md`) says what's next.
+  choices with Claude's recommendation; the queue (`.claude/QUEUE.md`) says what's next.
 - **Defaults steer toward good music, and nothing is walled off.** A screen that composes arrives filled in with choices that
   sound good untouched, recommends what usually works, and still lets a person choose anything; good UX is never bought by
   removing options, and an option is never added in a way that makes the plain case harder (the user's rule).

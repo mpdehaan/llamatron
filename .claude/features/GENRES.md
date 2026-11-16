@@ -1,8 +1,7 @@
 # The Genre Library: the Generator and What It Learns From
 
 The standing rules for the genre library (`src/llamatron/genres/`), each stated once, in Claude's words. Not imported: read it
-before working on the library, a demo or a generator. What is wanted, what exists, what was measured and the steps in order are
-in `dev_notes/GENRE_PLAN.md`. Neither file names a band, an artist or a composer, and neither quotes the user.
+before working on the library, a demo or a generator. The file names no band, artist or composer, and does not quote the user.
 
 ## What It Is
 
@@ -53,7 +52,7 @@ what attribution it needs. So every source records its terms, and every value ge
 ## Ideas Kept for the Generator
 
 - **Balancing with sliders.** A style is a network of traits that pull on one another, and making or adjusting a song balances
-  them; the person sets how much each matters, with no AI model inside (`dev_notes/SLIDERS.md`, a design not built).
+  them; the person sets how much each matters, with no AI model inside (a design not built, its notes removed at the user's word).
 - **Players that listen.** Simulated players, each producing a part while reacting to the others: trading, answering, comping
   under a soloist, vamping until a cue, laying out, building together.
 

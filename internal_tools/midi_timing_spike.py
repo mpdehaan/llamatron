@@ -31,7 +31,7 @@ a virtual input port opened in a process of its own, which records when each mes
 what arrived with the spacing that was scheduled, so no clock has to be shared between the two processes, and says how
 many events were late or early by more than a millisecond, five and ten. A few milliseconds is inaudible, and tens of
 milliseconds starts to be heard on drums. Nothing here touches the tracker or the exports: it answers one question, which
-of the senders in dev_notes/IDEAS.yml ("Previewing with real-time MIDI") is tight enough, and it is kept so that the answer can be
+of the senders in .claude/IDEAS.yml ("Previewing with real-time MIDI") is tight enough, and it is kept so that the answer can be
 checked again on another computer.
 """
 

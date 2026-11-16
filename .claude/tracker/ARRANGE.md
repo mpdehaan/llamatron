@@ -102,7 +102,7 @@ Reference notes for Claude, one part of `.claude/tracker/`: Arrange, its details
   dividers, which belong to the details view) and locks onto its first line naming something with a page of its own
   (`pickable`, each `DetailLine` carrying a `Target`): a chain, the `+`, or a line naming a scale, an instrument or
   a groove, the user's choice over chains and generators alone. On a track's or a scene's name it opens only that
-  name's own details, the user's choice over the whole column or row (`dev_notes/IDEAS.yml`). A cell with no details of
+  name's own details, the user's choice over the whole column or row (`.claude/IDEAS.yml`). A cell with no details of
   its own shows `stock` in red (`or_stock`, `MSG_DETAILS_STOCK`), in the details view too, and Tab still locks into it
   with nothing picked; an empty clip slot has no Tab. While locked (`locked`, `picked`, `picking`), the cell's box is
   green (`Style.DETAILS_LOCKED`, `Frame.styled`) and the page binds only Up and Down (`PICK_DETAIL`), which pick among

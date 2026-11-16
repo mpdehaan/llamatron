@@ -10,7 +10,7 @@ llamatron is a text UI that helps people compose electronic music in MIDI, for A
 
 - `.claude/PRINCIPLES.md`: the goals the user judges the work by, which decide a close call the rules don't settle.
 - `.claude/DESIGNS.md` and `.claude/features/WIZARD_DESIGNS.md`: the designs agreed with the user and not yet built, the second the arranger's and the song wizard's. Neither is imported: read the part at hand before building it.
-- `dev_notes/QUEUE.md`: the order the agreed work is built in, Claude's own list, kept on this computer only and ignored by git (the user's choice).
+- `.claude/QUEUE.md`: the order the agreed work is built in, Claude's own list, kept on this computer only and ignored by git (the user's choice).
 - `.claude/STYLE.md`: every rule for the code and the documents, with its reason and the test that enforces it.
 - `.claude/TESTING.md`: how the tests are run, what a change must come with, how tests are written and where each kind lives.
 - `.claude/COMMUNICATION.md`: how Claude works with the user: committing, asking, numbering questions and explaining changes.
@@ -23,11 +23,10 @@ llamatron is a text UI that helps people compose electronic music in MIDI, for A
 - `.claude/features/GENRES.md`: the genre library's standing rules: what it is, what may be read, how imperfect data is weighed, and licenses. It isn't imported: read it before working on `src/llamatron/genres/`, a demo or a generator. Nothing of the genre library goes on the website until the user says so (the user's rule).
 - `.claude/features/MASHUPS.md`: how a mashup is made so that its genre is half the piece, and how a classical work's notes are brought in for one. It isn't imported: read it before making or changing a mashup.
 
-- `dev_notes/GENRE_PLAN.md`: the genre library's one plan, kept by Claude in its own words with no band, artist or composer named: what is wanted, what exists, what was measured and the steps in order.
 - `.claude/DECISIONS.md`: the history of the choices behind the tracker and the format, with their dates, for when a choice is questioned. It isn't imported, so read it when a note in the other files says a thing was decided and the reason matters.
 - `src/llamatron/strings/`: every piece of text the program shows or raises, one module for each
   way the text is used.
-- `dev_notes/IDEAS.yml`: the user's ideas for later, kept by Claude, with what each would mean for the code. The user calls it their ideas file. `dev_notes/DOCS_IDEAS.yml` beside it keeps the ideas for the documentation, the guides, the website and the demo videos, apart, the user's rule, under the same rules.
+- `.claude/IDEAS.yml`: the user's ideas for later, kept by Claude, with what each would mean for the code. The user calls it their ideas file. `.claude/DOCS_IDEAS.yml` beside it keeps the ideas for the documentation, the guides, the website and the demo videos, apart, the user's rule, under the same rules.
 - `README.md`, `GUIDE.md`, `INSTALL.md`, every chapter in `docs/` and `docs/DEMOS.md` are for people, and the user edits them by hand too. `GUIDE.md` is the documentation's home page and the website's: an introduction, the demo songs featured, and tables linking every page, which the website's sidebar is built from, each heading a group that opens and closes: Intro (`docs/WHY_LLAMATRON.md`; Installing, `docs/INSTALLING.md` with `docs/FLUIDSYNTH.md` and `docs/INSTALLING_RECORDING.md` under it; `docs/GETTING_STARTED.md`; `docs/CONCEPTS.md`), Demo Songs (`docs/DEMOS.md`, `docs/LISTENING_TO_DEMOS.md`, `docs/demos/TUTORIAL.md`, a page for each genre in `docs/demos/`, and `docs/demos/OTHER.md` last), Mashups (a page for each subgenre of mashup, in `docs/demos/`), Objects (`docs/OBJECT_MODEL.md`, `docs/PATTERNS.md`, `docs/SCENES.md`, `docs/TRACKS.md`, `docs/INSTRUMENTS.md`, `docs/ARRANGE.md`, `docs/CLIPS.md`, `docs/SCALES.md`, `docs/REGISTERS.md`, `docs/CHAINS.md`, `docs/GROOVES.md`), Generators (`docs/GENERATORS.md` and a page for each in `docs/generators/`, in six categories), File Operations (`docs/EXPORTING.md`, `docs/IMPORTING.md`), MIDI & Performance (`docs/MIDI_SETUP.md`, `docs/PLAYING_LIVE.md`, `docs/VISUALIZERS.md`) and Advanced (`docs/USER_SCRIPTS.md`, `docs/RECORDING.md`, `docs/ARCHITECTURE.md`). `INSTALL.md` points to `docs/INSTALLING.md`. Each thing is described on one page only; another links to it rather than repeating it, and titles and headings are formal, in Title Case (the user's rules).
 
 Everything in `.claude/` is for Claude: it holds what the user doesn't need to read. `STYLE.md`, `TESTING.md`, `COMMUNICATION.md`, `UX.md` and `PRINCIPLES.md` are imported at the end of this file, so they load in every session; the files of `.claude/format/` and `.claude/tracker/`, the files of `.claude/features/`, `COMMANDS.md`, `KEYMAP.md` and `DECISIONS.md` are read when the work needs them, each a file for one component so that only the part at hand is read (the user's choice). `tests/rules/test_doc_paths.py` checks that every source path these documents name exists.
@@ -101,5 +100,5 @@ The references aren't imported, to keep every session light, and each is a file 
 | Any page's keys | `.claude/KEYMAP.md` |
 | A script or a tool | `.claude/COMMANDS.md` |
 | The MacroComposer | `.claude/features/MACRO_COMPOSER.md` |
-| The genre library | `.claude/features/GENRES.md`, `dev_notes/GENRE_PLAN.md` |
+| The genre library | `.claude/features/GENRES.md` |
 | A choice that is questioned | `.claude/DECISIONS.md` |
