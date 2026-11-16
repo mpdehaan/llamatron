@@ -25,7 +25,7 @@ from llamatron.macro_composer.wizard_choices import style_of, STAND_INS, LEAST_B
 from llamatron.macro_composer.melody import DEFAULT_GAUGES, HIGHEST_GAUGE, HOME, LADDER, LOWEST_GAUGE, SMART
 from llamatron.strings.macro_composer import MSG_PART_OF_SECTION
 from llamatron.macro_composer.notation import DEGREE, LINES
-from llamatron.macro_composer.arranger import PICKS, SCALE_TYPE, values_of, SOUNDS, BY_SCALE_TYPE, GRID, MELODY, PARTS, arranged, DRUMS, GENRE, PLAYERS, ROLE_TITLE, TYPE, WITHOUT, style_named, style_names
+from llamatron.macro_composer.arranger import PICKS, SCALE_TYPE, values_of, share_in, SOUNDS, BY_SCALE_TYPE, GRID, MELODY, PARTS, arranged, DRUMS, GENRE, PLAYERS, ROLE_TITLE, TYPE, WITHOUT, style_named, style_names
 from llamatron.music.note import NoteName
 from llamatron.strings.errors import ERR_WIZARD_GAUGE, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER
 from llamatron.playback.song_renderer import SongRenderer
@@ -961,6 +961,8 @@ class TestWizardProgressionByChance(unittest.TestCase):
                     continue
                 entries = values_of(style=style_of(genre), trait=trait)
                 suited = {way for way in choices.song_ways(trait) if entries[way].get(SCALE_TYPE, MAJOR) == choices.get_scale_type()}
+                # A progression the subgenre's harmonic family never uses is drawn by no seed, and is chosen by hand.
+                suited = {way for way in suited if share_in(style=style_of(genre), entry=entries[way], template=choices.get_subgenre())} or suited
                 for seed in range(A_SEED, A_SEED + MANY_RUNS):
                     choices.set_seed(seed)
                     with self.subTest(subgenre=choices.get_subgenre(), seed=seed):

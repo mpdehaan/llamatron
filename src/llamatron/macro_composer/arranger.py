@@ -198,6 +198,8 @@ VOICE_LEADING_KIND = 'voice_leading'
 HELD_CHORD = '3'
 MAJOR = 'major'
 BY_SECTION = 'by_section'
+FAMILIES = 'families'
+BY_FAMILY = 'by_family'
 # The keys whose home note is the lowest of an octave: a band written for the middle of its range plays an octave up in them.
 LOW_ROOTS = ('C', 'C#', 'Db', 'D', 'D#', 'Eb')
 SOFT_SHARE = Fraction(2, 3)
@@ -282,6 +284,13 @@ def uneven_drum(*, part, by, dice):
 
 def share_of(entry):
     return entry[SHARE]
+
+
+def share_in(*, style, entry, template):
+    """How common a value is in one of a style's templates: its share in the template's family where the style has families and the
+    value says how common it is in each, or its share in the style as a whole."""
+    family = style.get(FAMILIES, {}).get(template)
+    return entry.get(BY_FAMILY, {}).get(family, entry[SHARE])
 
 
 def bar_length(meter):

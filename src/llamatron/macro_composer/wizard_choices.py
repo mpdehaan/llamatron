@@ -35,7 +35,7 @@ from llamatron.macro_composer.arranger import (
     BARS, CHORD_TRAIT, CHORD_TRAIT_FIELD, FORM, HELD, PLAYS, GENRE, KEY, NAME, ROOT, SCALE_TYPE, SECTIONS, SEED, STYLE, TEMPLATE, TEMPLATES, TEMPO, TITLE, TRAITS, TYPE, USUAL,
     BREAK, BREAK_CUT, HIGHEST_NOTE, KEPT_BESIDE_A_BREAK, LOWEST_NOTE, MELODY, NO_BREAK, PIECE_SOUNDS, PLAYED_DRUM, PLAYED_NOTE, PLAYED_SOUND,
     ANSWERS, BESIDE, BESIDE_BUSY, BESIDE_WAYS, FIGURE,
-    arranged, forms_of, picked, player_of, section_of, share_of, style_named, style_names, values_of,
+    arranged, forms_of, picked, player_of, section_of, share_in, share_of, style_named, style_names, values_of,
 )
 from llamatron.macro_composer.composer import composed
 from llamatron.composition.song_file_error import SongFileError
@@ -1083,8 +1083,12 @@ class WizardChoices:
 
     def song_ways(self, trait):
         """Return the ways a trait of the whole song may go beside the other picks, the commonest first."""
-        entries = sorted(values_of(style=style_of(self._genre), trait=trait).values(), key=share_of, reverse=True)
+        entries = sorted(values_of(style=style_of(self._genre), trait=trait).values(), key=self._share, reverse=True)
         return [entry[VALUE] for entry in entries if self._works(trait=trait, value=entry[VALUE])]
+
+    def _share(self, entry):
+        """Return how common a value is in the subgenre chosen."""
+        return share_in(style=style_of(self._genre), entry=entry, template=self._subgenre)
 
     # The melody style, which every tune of the song is sketched by.
 
@@ -1383,10 +1387,12 @@ class WizardChoices:
         # A progression written for the other of major and minor is left to be chosen by hand: its chords were not meant for the song's scale.
         suited = [way for way in left if entries[way].get(SCALE_TYPE, MAJOR) == self._scale_type]
         left = suited or left
+        # A progression the subgenre's family never uses is left to be chosen by hand too.
+        left = [way for way in left if self._share(entries[way])] or left
         dice = random.Random(PROGRESSION_SEED.format(self._seed))
         drawn = []
         while left:
-            weights = [share_of(entries[way]) * (USUAL_COUNTS if way == usual else 1) or 1 for way in left]
+            weights = [self._share(entries[way]) * (USUAL_COUNTS if way == usual else 1) or 1 for way in left]
             drawn.append(dice.choices(left, weights=weights)[0])
             left.remove(drawn[-1])
         return drawn

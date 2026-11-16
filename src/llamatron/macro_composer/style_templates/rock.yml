@@ -39,6 +39,10 @@ templates:
   new wave:      {meter: 4/4, tempo: 144, kick: every beat, snare: two and four, cymbal: hat eighths, percussion: handclaps, bass: roots in eighths, guitar: clipped offbeats, keys: organ held, voices: none, chords: four chord, lead: voice, solo: organ}
   rock ballad:   {meter: 6/8, tempo: 62, kick: one in six, snare: four in six, cymbal: hat in six, percussion: none, bass: roots in six, guitar: arpeggio in six, keys: organ held, voices: harmony, chords: four chord, lead: voice, solo: guitar}
 
+# The harmonic family of each kind of rock, which says how common each progression is there: roots (three chords and sevenths), pop
+# (the sixth chord and a borrowed flat seven), flat seven (borrowed majors and minor keys) and sixth (loops through the sixth chord).
+families: {rock and roll: roots, british invasion: pop, folk rock: pop, hard rock: flat seven, arena rock: pop, punk: sixth, new wave: pop, rock ballad: pop}
+
 traits:
   meter:
     - {value: 4/4, share: 92}
@@ -179,15 +183,28 @@ traits:
       sound: voices
       figure:
         - [{degree: 1, chord: '3', steps: 8}]
+  # Each progression with how common it is in each harmonic family (families, below): a share of 0 is still offered, last, and never drawn by chance.
   chords:
-    - {value: three chord, share: 24, pattern: [1, 4, 1, 5], by_section: {chorus: [4, 5, 1, 1], bridge: [4, 4, 5, 5]}}
-    - {value: four chord, share: 26, pattern: [1, 6, 4, 5], by_section: {chorus: [1, 5, 6, 4], bridge: [4, 4, 5, 5]}}
-    - {value: borrowed flat seven, share: 18, pattern: [1, {degree: 7, accidental: flat}, 4, 1], by_section: {chorus: [4, 1, 5, 1], bridge: [{degree: 7, accidental: flat}, 4, {degree: 7, accidental: flat}, 5]}}
-    - {value: twelve bar, share: 8, pattern: [1, 1, 1, 1, 4, 4, 1, 1], by_section: {chorus: [5, 4, 1, 1, 5, 4, 1, 5], bridge: [4, 4, 1, 1, 4, 4, 5, 5]}}
-    - {value: minor power, share: 10, scale_type: minor, pattern: [1, 1, 6, 7], by_section: {chorus: [1, 6, 3, 7], bridge: [4, 4, 5, 5]}}
-    - {value: minor fall, share: 7, scale_type: minor, pattern: [1, 7, 6, 7], by_section: {chorus: [6, 7, 1, 1], bridge: [4, 4, 6, 7]}}
-    - {value: minor anthem, share: 5, scale_type: minor, pattern: [1, 6, 3, 7], by_section: {chorus: [6, 3, 7, 1], bridge: [4, 6, 7, 7]}}
-    - {value: minor drive, share: 2, scale_type: minor, pattern: [1, 1, 4, 1], by_section: {chorus: [6, 6, 7, 1], bridge: [4, 4, 5, 5]}}
+    - {value: three chord, share: 8, by_family: {roots: 14, pop: 8, flat seven: 3, sixth: 6}, pattern: [1, 4, 1, 5], by_section: {chorus: [4, 5, 1, 1], bridge: [4, 1, 4, 5]}}
+    - {value: one and four, share: 11, by_family: {roots: 16, pop: 12, flat seven: 5, sixth: 8}, pattern: [1, 4], by_section: {chorus: [4, 1, 5, 1], bridge: [4, 1, 4, 5]}}
+    - {value: one and five, share: 6, by_family: {roots: 8, pop: 8, flat seven: 4, sixth: 4}, pattern: [1, 5], by_section: {chorus: [4, 5, 1, 1], bridge: [4, 4, 5, 5]}}
+    - {value: four to one, share: 6, by_family: {roots: 12, pop: 5, flat seven: 2, sixth: 3}, pattern: [4, 1, 5, 1], by_section: {chorus: [1, 4, 1, 5], bridge: [4, 1, 2, 5]}}
+    - {value: twelve bar, share: 3, by_family: {roots: 10, pop: 1, flat seven: 1, sixth: 0}, pattern: [1, 1, 1, 1, 4, 4, 1, 1], by_section: {chorus: [5, 4, 1, 1, 5, 4, 1, 5], bridge: [4, 4, 1, 1, 4, 4, 5, 5]}}
+    - {value: four chord, share: 5, by_family: {roots: 4, pop: 10, flat seven: 1, sixth: 5}, pattern: [1, 6, 4, 5], by_section: {chorus: [4, 5, 1, 6], bridge: [4, 4, 5, 5]}}
+    - {value: borrowed flat seven, share: 9, by_family: {roots: 8, pop: 12, flat seven: 14, sixth: 3}, pattern: [1, {degree: 7, accidental: flat}, 4, 1], by_section: {chorus: [4, 1, 5, 1], bridge: [{degree: 7, accidental: flat}, 4, {degree: 7, accidental: flat}, 5]}}
+    - {value: flat seven vamp, share: 7, by_family: {roots: 4, pop: 8, flat seven: 14, sixth: 2}, pattern: [1, {degree: 7, accidental: flat}], by_section: {chorus: [4, {degree: 7, accidental: flat}, 1, 1], bridge: [{degree: 6, accidental: flat}, {degree: 7, accidental: flat}, {degree: 6, accidental: flat}, {degree: 7, accidental: flat}]}}
+    - {value: flat three climb, share: 4, by_family: {roots: 2, pop: 2, flat seven: 10, sixth: 0}, pattern: [1, {degree: 3, accidental: flat}, 4, 1], by_section: {chorus: [1, {degree: 7, accidental: flat}, 4, 4], bridge: [5, 4, 5, 4]}}
+    - {value: one five six four, share: 6, by_family: {roots: 0, pop: 4, flat seven: 1, sixth: 20}, pattern: [1, 4, 6, 5], by_section: {chorus: [1, 5, 6, 4], bridge: [6, 4, 1, 5]}}
+    - {value: six four one five, share: 4, by_family: {roots: 0, pop: 3, flat seven: 1, sixth: 12}, pattern: [6, 4, 1, 5], by_section: {chorus: [1, 5, 6, 4], bridge: [4, 5, 6, 6]}}
+    - {value: one five four, share: 5, by_family: {roots: 2, pop: 5, flat seven: 3, sixth: 10}, pattern: [1, 5, 4, 4], by_section: {chorus: [4, 1, 5, 5], bridge: [6, 4, 1, 5]}}
+    - {value: stepping up, share: 2, by_family: {roots: 1, pop: 6, flat seven: 0, sixth: 3}, pattern: [1, 3, 4, 5], by_section: {chorus: [4, 5, 1, 6], bridge: [2, 5, 2, 5]}}
+    - {value: one and two, share: 2, by_family: {roots: 1, pop: 5, flat seven: 0, sixth: 1}, pattern: [1, 2], by_section: {chorus: [4, 5, 1, 1], bridge: [4, 5, 4, 5]}}
+    - {value: minor power, share: 4, by_family: {roots: 1, pop: 2, flat seven: 10, sixth: 3}, scale_type: minor, pattern: [1, 1, 6, 7], by_section: {chorus: [1, 6, 3, 7], bridge: [4, 4, 5, 5]}}
+    - {value: minor fall, share: 4, by_family: {roots: 1, pop: 3, flat seven: 8, sixth: 2}, scale_type: minor, pattern: [1, 7, 6, 7], by_section: {chorus: [6, 7, 1, 1], bridge: [4, 4, 6, 7]}}
+    - {value: minor anthem, share: 5, by_family: {roots: 0, pop: 2, flat seven: 5, sixth: 12}, scale_type: minor, pattern: [1, 6, 3, 7], by_section: {chorus: [6, 3, 7, 1], bridge: [4, 6, 7, 7]}}
+    - {value: minor drive, share: 2, by_family: {roots: 3, pop: 1, flat seven: 3, sixth: 1}, scale_type: minor, pattern: [1, 1, 4, 1], by_section: {chorus: [6, 6, 7, 1], bridge: [4, 4, 5, 5]}}
+    - {value: minor two chord, share: 4, by_family: {roots: 1, pop: 3, flat seven: 8, sixth: 2}, scale_type: minor, pattern: [1, 7], by_section: {chorus: [6, 7, 1, 1], bridge: [4, 4, 5, 5]}}
+    - {value: minor sixth vamp, share: 3, by_family: {roots: 0, pop: 2, flat seven: 3, sixth: 8}, scale_type: minor, pattern: [1, 6], by_section: {chorus: [3, 7, 1, 6], bridge: [4, 6, 7, 7]}}
   lead:
     - {value: voice, share: 100, sound: voice}
   solo:
