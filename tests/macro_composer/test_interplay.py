@@ -179,6 +179,8 @@ class TestArrangedBesideTheTune(unittest.TestCase):
 
     def test_fills_are_drawn_anew_each_time_a_section_returns_and_the_hook_is_the_same_every_time(self):
         choices = wizard()
+        # A seed is set, since a seed whose verse leaves room for one short fill can draw the same fill twice.
+        choices.set_seed(A_SEED)
         parts, song = self.parts_of(choices=choices, way=None)
         second = MSG_REPEATED_SCENE.format(VERSE, 2)
         self.assertEqual(parts[second], MSG_PART_BESIDE.format(second, SOLO, interplay.FILLS))
