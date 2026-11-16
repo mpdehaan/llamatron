@@ -104,9 +104,8 @@ ROWS_SET_IN_THE_ROWS_VIEW = [name for name in ROW_DESCRIPTIONS if name not in (R
 MOST_MOVES = 400
 # Where a binding keeps the words its legend gives it.
 WORDS = 2
-# The first instrument's channel, and the number of the first instrument a tutorial adds.
+# The first instrument's channel.
 FIRST_CHANNEL = 1
-FIRST_INSTRUMENT = 1
 # The first song of a new set is the one the tutorial builds.
 FIRST = 0
 STARTER_PATTERN = MSG_NEW_PATTERN_NAME.format(number=1)

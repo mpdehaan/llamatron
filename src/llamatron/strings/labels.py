@@ -278,7 +278,6 @@ MSG_DRIFT_VALUE_LABELS = {
 # A version row's two values, the one the cursor is on marked like the offsets editor's cursor.
 MSG_DRIFT_PAIR = '{a:<10}{b}'
 MSG_DRIFT_PICKED = '<{value}>'
-MSG_ONE_BAR = '1 bar'
 # tui/screens/generators/shape_fields.py: each shape's name, which heads its section, and its parts' labels, the shape's name in front on the Scene and clip pages.
 MSG_SHAPE_NAMES = {Shape.DENSITY: 'Density', Shape.SWELL: 'Swell', Shape.ARTICULATE: 'Articulate'}
 MSG_SHAPE_FIELD_LABELS = {ShapePart.START: '{shape} start', ShapePart.END: '{shape} end', ShapePart.OVER: '{shape} over', ShapePart.THEN: '{shape} then'}

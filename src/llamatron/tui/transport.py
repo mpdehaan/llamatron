@@ -61,7 +61,6 @@ from llamatron.strings.messages import MSG_LIVE_EDIT_NOT_HEARD, MSG_LIVE_EDIT_NE
 TICK_SECONDS = 0.1
 # MIDI channels are sent one less than people number them.
 CHANNEL_OFFSET = 1
-NO_CHANNELS = 0
 # How long after the last edit made while playing the edit is heard, so that typed digits, 1 then 12 then 120, are heard as 120 alone.
 LIVE_SETTLE_SECONDS = 0.15
 # The seeds a play draws its random parts from, for a song with no seed of its own, one seed for the whole play so that an edit re-rolls nothing.

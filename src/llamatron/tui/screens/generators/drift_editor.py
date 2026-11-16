@@ -30,7 +30,7 @@ from llamatron.tui.screens.shared.shared import NO_SEED
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.tui.text import sorted_names
 from llamatron.strings.labels import (
-    Crumb, MSG_DRIFT_DIRECTION_LABEL, MSG_DRIFT_LABEL, MSG_DRIFT_PAIR, MSG_DRIFT_PICKED, MSG_DRIFT_VALUE_LABELS, MSG_EVERY_LABEL, MSG_ONE_BAR, MSG_TIME_NAMES,
+    Crumb, MSG_DRIFT_DIRECTION_LABEL, MSG_DRIFT_LABEL, MSG_DRIFT_PAIR, MSG_DRIFT_PICKED, MSG_DRIFT_VALUE_LABELS, MSG_EVERY_LABEL,
     MSG_SEED_LABEL, MSG_STEPS_TO_B_LABEL,
 )
 from llamatron.strings.legends import MSG_USE_SONG_SEED_WHAT, What
@@ -40,12 +40,6 @@ from llamatron.tui import keybindings
 
 # What a value of a version is when the drift leaves it out.
 NOTHING = 0
-
-
-def every_text(every):
-    """Return how often a drift triggers, as the Drifts page shows it: 1 bar when left blank, and a dotted or triplet length by its name."""
-    shown = MSG_ONE_BAR if every is None else str(every)
-    return MSG_TIME_NAMES.get(shown, shown)
 
 
 class DriftEditor(ShowsNamedItem, FieldPage):

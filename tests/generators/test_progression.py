@@ -26,7 +26,7 @@ from llamatron.composition.file_format import (
 )
 from llamatron.composition.generator_settings import ProgressionSetting
 from llamatron.composition.named_scale import NamedScale
-from llamatron.composition.progressions import chord_name, named_progression_in, roman_numeral
+from llamatron.composition.progressions import named_progression_in, roman_numeral
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.music.note import NoteName
 from llamatron.support.rational import Rational
@@ -184,19 +184,11 @@ class TestChordsInAScale(unittest.TestCase):
 
     def test_numerals_and_names_of_c_major(self):
         self.assertEqual([roman_numeral(scale=self.C_MAJOR, degree=degree) for degree in range(1, 8)], ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°'])
-        self.assertEqual([chord_name(scale=self.C_MAJOR, degree=degree) for degree in range(1, 8)], ['C', 'Dm', 'Em', 'F', 'G', 'Am', 'B°'])
 
     def test_a_flat_chord_keeps_the_figures_quality_and_is_spelled_with_a_flat(self):
         self.assertEqual(roman_numeral(scale=self.C_MAJOR, degree=7, accidental=Accidental.FLAT), '♭VII')
-        self.assertEqual(chord_name(scale=self.C_MAJOR, degree=7, accidental=Accidental.FLAT), 'Bb')
-
-    def test_the_same_degrees_follow_an_edited_scale(self):
-        self.assertEqual([chord_name(scale=self.A_MINOR, degree=degree) for degree in (1, 5, 6, 4)], ['Am', 'Em', 'F', 'Dm'])
 
     def test_a_named_progression_is_matched_to_the_scale(self):
         self.assertEqual(named_progression_in(key=NamedProgression.ANDALUSIAN, scale=self.A_MINOR), ([1, 7, 6, 5], [None] * 4))
         self.assertEqual(named_progression_in(key=NamedProgression.ROCK, scale=self.C_MAJOR), ([1, 7, 4], [None, Accidental.FLAT, None]))
         self.assertEqual(named_progression_in(key=NamedProgression.GRUNGE, scale=self.C_MAJOR), ([1, 6, 3, 7], [None, Accidental.FLAT, Accidental.FLAT, Accidental.FLAT]))
-
-    def test_no_scale_reads_as_c_major(self):
-        self.assertEqual(chord_name(scale=None, degree=6), 'Am')

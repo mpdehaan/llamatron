@@ -37,8 +37,6 @@ from llamatron.strings.reprs import REPR_RATIONAL
 
 # The denominator of a whole number.
 WHOLE = 1
-# The kinds of value a Rational can be made from, besides another Rational.
-NUMBER_TYPES = (int, Fraction, float, str)
 # How Python hashes numbers, so that equal values hash the same whatever their type.
 HASH_MODULUS = sys.hash_info.modulus
 HASH_INF = sys.hash_info.inf

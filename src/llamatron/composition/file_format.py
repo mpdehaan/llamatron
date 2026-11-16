@@ -763,7 +763,6 @@ class StrumPart:
     UPSTROKE_STRINGS = 'upstroke_strings'
 
 
-STRUM_PARTS = [StrumPart.DIRECTION, StrumPart.SPREAD, StrumPart.FADE, StrumPart.LOOSE_TIMING, StrumPart.UPSTROKE_STRINGS]
 STRUM_SETTING = 'strum_{part}'
 
 
@@ -781,7 +780,6 @@ class EuclidPart:
     STEP = 'step'
 
 
-EUCLID_PARTS = [EuclidPart.HITS, EuclidPart.STEPS, EuclidPart.ROTATE, EuclidPart.STEP]
 EUCLID_SETTING = 'euclid_{part}'
 
 

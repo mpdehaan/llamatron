@@ -53,8 +53,6 @@ TENSION_PLACES = {
     Tension.ELEVENTH: ELEVENTH_PLACE, Tension.SHARP_ELEVENTH: ELEVENTH_PLACE,
     Tension.FLAT_THIRTEENTH: THIRTEENTH_PLACE, Tension.THIRTEENTH: THIRTEENTH_PLACE,
 }
-# The triad a scale builds when its notes can't be read, as a chord of a pentatonic's can't: a major one.
-OTHER_TRIAD = (4, 7)
 # The letters of the notes, which a chord's notes are spelled along: a third is two letters above its root, whatever its half steps.
 LETTERS = 'CDEFGAB'
 # How far a spelled note may lie from its letter's plain note: one sharp or one flat, and any further is named plainly.
