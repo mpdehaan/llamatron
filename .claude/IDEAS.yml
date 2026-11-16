@@ -11,6 +11,16 @@
 # A title that starts "In progress:" is work started but not finished, which is named first when the user asks what
 # to do next. Keys are described by what they do, not by their letters, since the letters change.
 
+- title: "A picker field's mark that is not taken for the other arrows"
+  priority: 1
+  text: |
+    A settings field that opens a list of choices shows a dim down-pointing triangle after its value (`MSG_PICKER_MARK`). At a small
+    text size, and from a distance, that mark reads like the tracker's other triangles and diamonds: the selected row's mark, the
+    play mark, the flyout's mark and the keyswitch light. The user asks how a list field could be marked differently, so that
+    the kind of field is still seen at a glance and is not confused with those. To discuss with pictures of the candidates at
+    the size they are drawn, before anything changes; whatever is chosen changes every settings page, the mockup rules of
+    `.claude/UX.md` and the screenshots.
+
 - title: "Playing lights on the list pages"
   priority: 1
   text: |
