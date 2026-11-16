@@ -37,7 +37,7 @@ from llamatron.macro_composer.composer import composed
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.music.note import ROOT_NAMES
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.strings.marks import MSG_WIZARD_SECTION_VARIANT
+from llamatron.strings.marks import MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SECTION_VARIANT
 from llamatron.support.version import VERSION as A_VERSION
 from llamatron.strings.errors import ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
@@ -330,6 +330,17 @@ class WizardChoices:
             place = variants.index(own)
             names.append(entry[KIND] if not place else MSG_WIZARD_SECTION_VARIANT.format(kind=entry[KIND], letter=chr(ord(FIRST_VARIANT_LETTER) + place)))
         return names
+
+    def section_labels(self):
+        """Return what each section is shown as, in order: its kind, and where the form has several of a kind, the kind with
+        a dash and the section's count among them, the user's design, as the tracker numbers every name it makes."""
+        kinds = [entry[KIND] for entry in self._entries()]
+        counts = {}
+        labels = []
+        for kind in kinds:
+            counts[kind] = counts.get(kind, 0) + 1
+            labels.append(kind if kinds.count(kind) == 1 else MSG_WIZARD_SECTION_NUMBERED.format(kind=kind, number=counts[kind]))
+        return labels
 
     def _song_sections(self):
         """Return the song's own sections as the arranger reads them, by name: each its kind and what it changes."""

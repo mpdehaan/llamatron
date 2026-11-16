@@ -201,7 +201,7 @@ The user's design, agreed in detail in `dev_notes/QUEUE.md` (S16 to S39), of whi
   replace sections a person changed, since no stepped field may replace a person's work with one stray key; the sections
   listed under the button with a line saying they are in the tree, and a `SectionBranch` for each section by its place: Kind, Bars, offered
   only at the lengths the subgenre's parts fill, and a toggle for each player of the band, a section keeping one. A section is
-  one of a list and takes a list's keys in the tree, the user's ask for an editable form: `I` (insert) asks the kind in a picker
+  one of a list and takes a list's keys in the tree, the user's ask for an editable form: In the tree and the list, a kind the form has several of is numbered, `verse-1`, `verse-2`, the user's design (`section_labels`). `I` (insert) asks the kind in a picker
   and puts the new section before the cursor's, as on Arrange, and `A` (add) puts one at the form's end, the user's wording; `C` (copy), `Bksp` (delete), with no
   question since nothing is in the set yet, the last section staying; and `M` (move), the tracker's move mode, the carried
   section's name between `<` and `>`. A `Branch` says `adds()`, `is_listed()`, `kinds_to_add()`, `add`, `copy`, `remove` and
