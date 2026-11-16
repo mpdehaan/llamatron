@@ -13,18 +13,18 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Fireworks, a visualizer mode: a rocket for each note, in its track's colour, bursting into sparks that fall and fade, the user's design of 2026-11-10.
+"""Fireworks, a visualizer mode: a rocket for each note, in its track's colour, bursting into sparks that fall and fade.
 
 A note starting launches a rocket from the bottom of the area, across at its pitch, low at the left;
 the rockets burst around BURST_HEIGHT of the way up, a little higher for a louder note, into sparks,
 more for a louder note, which fly out, slow, fall and fade, leaving trails, since the picture fades a
 little each frame rather than clearing. The rockets take ROCKET_COLOURS in turn, seven strongly different colours, so that
-each has an equal share and two bursts side by side read apart, the user's ask. A drum's note is a small pale crackle
+each has an equal share and two bursts side by side read apart. A drum's note is a small pale crackle
 where its rocket would burst. The sparks are numpy arrays, at most MOST_SPARKS of them, each one
 fine pixel, drawn at SUPERSAMPLE times the big pixels each way and taken down by the brightest of
-each block rather than the average, with no blur, so that they stay crisp points, the user's ask
+each block rather than the average, with no blur, so that they stay crisp points,
 after the first ones were blurry; the limiter holds the whole under its level, so that a sky full of
-bursts never flashes. The amounts are named constants here, for the user to tune by eye.
+bursts never flashes. The amounts are named constants here, to tune by eye.
 """
 
 import math

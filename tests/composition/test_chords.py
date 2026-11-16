@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""A chord's scale, quality and tensions (the user's design): on a pattern's step, the Tension row adding notes on top of the
+"""A chord's scale, quality and tensions: on a pattern's step, the Tension row adding notes on top of the
 step's chord and the Scale row drawing the step from another scale type on the clip's root; what a file refuses of both; and
 what a chord comes to in a scale, its names and its notes, as the editors show it."""
 

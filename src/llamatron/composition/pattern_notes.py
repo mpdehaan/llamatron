@@ -166,7 +166,7 @@ class PatternNotes:
 
         Whatever the steps it covers held goes, so placing inside a held note cuts that note off
         where the new one starts, and what the old note held beyond the new one carries on as a
-        note of its own at the old pitch, the user's decision of 2026-11-08, so that drawing a
+        note of its own at the old pitch, so that drawing a
         note never silences anything to its right. The gate is only for an entry size shorter
         than a step.
         """
@@ -187,8 +187,8 @@ class PatternNotes:
         """Draw a note of a length on a step: in ties for each whole step it covers, or as a gate when it's shorter than a step, cutting the note it lands in.
 
         The length is in whole notes, like the entry size the piano roll draws with. On the step of a
-        chord, the chord's root moves to the note and nothing else of the step changes (the user's
-        rule): the chord, its tensions, scale and inversion and the note's length are kept, and
+        chord, the chord's root moves to the note and nothing else of the step changes:
+        the chord, its tensions, scale and inversion and the note's length are kept, and
         erasing the note is what removes them.
         """
         if self.starts_chord(step):

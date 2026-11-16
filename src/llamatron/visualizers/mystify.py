@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Mystify, a visualizer mode after the Windows screensavers Mystify and Starfield at once, heavily polygons, in fine Braille dots, the user's choice of 2026-11-10, its details Claude's.
+"""Mystify, a visualizer mode after the Windows screensavers Mystify and Starfield at once, heavily polygons, in fine Braille dots, its details Claude's.
 
 Behind, a starfield streams toward the viewer at the tempo, its stars brightening as they come near,
 and each note starting tints a few stars in its track's colour as they fly. In front, a polygon for
@@ -23,7 +23,7 @@ track's harmony: three for a single note, one more for each note held with it, u
 so that a chord turns a triangle into a pentagon; and they quicken on each note and settle back.
 Everything is drawn in Braille, eight dots a cell, so that lines are fine, each cell in the colour
 of its brightest dot, and nothing ever flashes: brightness only rises gently. The amounts are named
-constants here, for the user to tune by eye.
+constants here, to tune by eye.
 """
 
 import math
@@ -57,7 +57,7 @@ QUICKEN_KEPT_PER_SECOND = 0.3
 TRAIL_COPIES = 5
 TRAIL_SECONDS = 0.12
 OLDEST_BRIGHTNESS = 0.2
-# A polygon's brightness at rest and playing, and over both, how much brighter than its colour, the user's ask of sixty percent more, how fast it may rise and how much of its energy is kept a second.
+# A polygon's brightness at rest and playing, and over both, how much brighter than its colour, sixty percent more, how fast it may rise and how much of its energy is kept a second.
 RESTING_BRIGHTNESS = 0.7
 PLAYING_BRIGHTNESS = 1.0
 ENERGY_PER_NOTE = 0.4

@@ -15,11 +15,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The Grab row: a toggle that works on every step, and makes an empty step a note.
 
-The user decided on 2026-11-08 that a grab can be marked on an empty step: marking it gives the
+A grab can be marked on an empty step: marking it gives the
 step the root in the default octave as a note of its own, which the grab overrides at render, so
 that the step has a velocity, a gate and the rest like any note and the note rows open on it. A
-step that grabs can hold a chord, which is built on the grabbed note, as the user asked on
-2026-11-09: until then the Chord row was blocked on such a step.
+step that grabs can hold a chord, which is built on the grabbed note.
 """
 
 from llamatron.composition.file_format import Row

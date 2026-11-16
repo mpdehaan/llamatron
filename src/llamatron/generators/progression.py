@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The Progression generator: a clip's notes moved along the scale to each chord of a progression in turn, the user's design of 2026-11-11.
+"""The Progression generator: a clip's notes moved along the scale to each chord of a progression in turn.
 
 The clip's pattern is taken as written over chord I. Each chord lasts every (a bar by default),
 counted from the clip's start, and the progression loops for as long as the clip plays. A plain
@@ -23,7 +23,7 @@ the half steps from the root to that scale degree and one more or less, keeping 
 sound, so bVII from a C major figure is B flat major. A chord's inversion moves its lowest one or
 two notes up an octave. Rests, rhythm, velocity and gates stay as written.
 
-A chord may also leave the clip's scale three ways (the user's design, composition/chords.py). Its scale, a scale type on the
+A chord may also leave the clip's scale three ways (composition/chords.py). Its scale, a scale type on the
 clip's root, takes the clip's scale's place while the chord plays, each note of the figure carried to the same place in it, so
 a chord is borrowed from the parallel minor with its passing notes. Its quality, a named chord symbol, sets the figure's notes
 that are the chord's third, fifth and seventh. Its tensions set the notes between, and are added on top of a chord of the figure.

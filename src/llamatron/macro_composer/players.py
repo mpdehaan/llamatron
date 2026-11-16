@@ -18,7 +18,7 @@
 
 A file says how a player plays as a complexity from 1 to 4 and never by a name; the names are for people, shown by the wizard
 and written into a made song's notes. A player's name and instrument are the same in every style, and who the player is
-underneath, what the player picks and how the player keeps time, is each style template's to say (the user's design). Every
+underneath, what the player picks and how the player keeps time, is each style template's to say. Every
 player is imaginary. The family name says the complexity: a Llama is plain and dependable, an Alpaca tasteful and serving the
 song, a Vicuna wilder and busier, a Guanaco the most advanced.
 """

@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The pattern preview: Listen on the Patterns page and in the pattern editor, the user's design.
+"""The pattern preview: Listen on the Patterns page and in the pattern editor.
 
 One key plays a pattern at once, again and again, and the same key stops it, whether the set's
 Real Time switch is on or off. The preview has a
@@ -53,7 +53,7 @@ PREVIEW_SCENE = 0
 PREVIEW_CHANNEL_BYTE = MELODIC_CHANNEL_BYTES[-1]
 # General MIDI's first sound, the piano, as the program byte sent.
 PIANO_PROGRAM = 0
-# How many passes a preview plays of a direction that chooses its steps as it goes: one, as many choices as the pattern has steps (the user's rule).
+# How many passes a preview plays of a direction that chooses its steps as it goes: one, as many choices as the pattern has steps.
 CHOSEN_PASSES = 1
 
 
@@ -236,7 +236,7 @@ class PatternPreview(Transport):
     # Playing.
 
     def may_play(self):
-        """Return that a preview plays whatever the set's Real Time switch says, since it needs none of the tracks' instruments (the user's rule)."""
+        """Return that a preview plays whatever the set's Real Time switch says, since it needs none of the tracks' instruments."""
         return True
 
     def play(self, pattern):
@@ -251,7 +251,7 @@ class PatternPreview(Transport):
             raise
 
     def play_clip_of_song(self, *, index, track):
-        """Play a clip of the song as its scene would, again and again, through General MIDI in FluidSynth: the piano, or the drum kit for drums. The clip page listens this way while the set's Real Time switch is off (the user's rule)."""
+        """Play a clip of the song as its scene would, again and again, through General MIDI in FluidSynth: the piano, or the drum kit for drums. The clip page listens this way while the set's Real Time switch is off."""
         self.stop()
         self._clip = (index, track)
         self._set = PreviewSet(holder=self._document_holder, clip=self._clip)

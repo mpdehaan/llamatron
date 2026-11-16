@@ -92,7 +92,7 @@ class TestGrab(unittest.TestCase):
         return sorted(note.get_midi_number() for note in notes)
 
     def test_a_grab_step_builds_its_named_chord_on_the_grabbed_note(self):
-        # The user asked for this on 2026-11-09: the bass plays C, so the step's m7 is C, Eb, G and Bb, the root and three more.
+        # The bass plays C, so the step's m7 is C, Eb, G and Bb, the root and three more.
         riff = pat([1, QUARTER], grab=[True], chord=[ChordSymbol.MINOR7])
         self.assertEqual(self.sounding(self.lead(riff=riff).get_notes()[0]), [60, 63, 67, 70])
 
@@ -159,7 +159,7 @@ class TestGrab(unittest.TestCase):
         self.assertEqual([event[2:] for event in events], [(60, 33), (60, 33)])
 
     def test_a_marked_step_with_no_note_of_its_own_plays_the_grabbed_note(self):
-        # The user decided on 2026-11-08 that a grab works on an empty step, so a file can mark one with no degree.
+        # A grab works on an empty step, so a file can mark one with no degree.
         riff = pat([None, QUARTER], [1, QUARTER], grab=[True, False])
         self.assertEqual(pitches(self.lead(riff=riff)), [60, 48])
 

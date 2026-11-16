@@ -20,7 +20,7 @@ it is, 16 plays it 16% of a cell late and -16 plays it early. The row repeats it
 the start of the scene, and a note takes the amount of the cell its time falls in, whatever the
 step size or direction of its pattern, so a groove follows time rather than steps. Its gate is
 kept, so a delayed note ends later too, and a step's CC values move with it. The amounts are
-limited so that notes can't change order. Decided with the user on 2026-11-07, after looking at
+limited so that notes can't change order. Decided after looking at
 swing on the sampling drum machines, the early sampled drum machines, the grooveboxes and a hardware step sequencer, where swing is timing only:
 velocity shaping may be added to grooves later.
 
@@ -261,8 +261,8 @@ def check_groove_choice(*, value, song):
 def groove_for(*, choices, song):
     """Return the groove that choices, from the most specific to the least, settle on, or None for none.
 
-    A false anywhere switches grooving off, whatever else is chosen, as the user accepted on
-    2026-11-07: a kick track with groove false stays straight in a swung scene, and a scene
+    A false anywhere switches grooving off, whatever else is chosen:
+    a kick track with groove false stays straight in a swung scene, and a scene
     with groove false stays straight for a swung hi-hat track. Otherwise the first name wins,
     so a track's groove beats its scene's, which beats its song's, and the factory groove none
     and any other straight groove move nothing.

@@ -144,7 +144,7 @@ class Arp(ClipGenerator):
 
     The ax_add to dx_add settings add to a register on every note it plays, and ax_step_adds to
     dx_step_adds on each step of the offsets, silent ones too, since registers follow time and
-    not sound (the user's design of 2026-11-11). register_adds() says what the last clip it made
+    not sound. register_adds() says what the last clip it made
     added and when, for the render's register timeline.
     """
 

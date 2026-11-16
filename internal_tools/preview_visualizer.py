@@ -27,8 +27,7 @@ the tracks on channels by --track-assign-auto or --track-assign, and nothing wri
 opens the tracker straight on Arrange, with no splash, the visualizer mode showing (the first, or
 the one --visualizer names, and it asks which once there are several), plays the song from the
 top and quits two seconds after it ends. The DAW plays what arrives on those channels through the
-speakers as ever: no audio device is needed, since nothing is recorded. The user's design of
-2026-11-10 (.claude/IDEAS.yml, "The visualizer").
+speakers as ever: no audio device is needed, since nothing is recorded.
 """
 
 import argparse

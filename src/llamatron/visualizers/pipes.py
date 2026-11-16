@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Pipes, a visualizer mode in homage to the Windows screensaver: a pipe for each track, growing across the area in heavy box characters as its notes play, the user's choice of 2026-11-10.
+"""Pipes, a visualizer mode in homage to the Windows screensaver: a pipe for each track, growing across the area in heavy box characters as its notes play.
 
 Each track that has played lays a pipe from a free place of its own: each note starting adds a few
 cells to it, more for a louder note, which it lays at a pace set by the tempo, so that a busy track
@@ -21,8 +21,7 @@ grows quickly and a quiet one waits. A pipe goes straight, turns now and then an
 way ahead is taken, and its corners join properly; when it has nowhere to go it starts again from a
 free place. Its head is the brightest, and what it laid dims a little with age. When most of the
 area is pipe, everything fades over FADE_SECONDS and the area starts again empty, never at once.
-It draws at the characters' own resolution. The amounts are named constants here, for the user to
-tune by eye.
+It draws at the characters' own resolution. The amounts are named constants here, to tune by eye.
 """
 
 import random

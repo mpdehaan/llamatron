@@ -111,7 +111,7 @@ MSG_SAVE_BEFORE_EXPORT_TITLE = 'Save first'
 MSG_SAVE_BEFORE_EXPORT = 'Exports are named after the set and written beside its file, so the set has to be saved first.'
 # What X offers, in the order of EXPORT_KINDS: a Live set, then the three kinds of MIDI files.
 MSG_EXPORT_TITLE = 'Export song {name}'
-# Only a Live set asks before it's written over, and only the first time in a session, as the user asked.
+# Only a Live set asks before it's written over, and only the first time in a session.
 MSG_REPLACE_EXPORT_TITLE = 'Overwrite'
 # Choosing the WAV export, which plays only the tracks whose instrument plays through FluidSynth.
 MSG_WAV_EXPORT_TITLE = 'WAV export'
@@ -313,7 +313,7 @@ MSG_STEP_ROW_NOTES = {
     Section.DRAGS: 'a note starting on a step that is on plays late',
 }
 
-# tui/screens/shared/list_page.py and tui/screens/arrange/arrange_page.py: Move mode, the user's design.
+# tui/screens/shared/list_page.py and tui/screens/arrange/arrange_page.py: Move mode.
 MSG_MOVING = 'moving {what}: the arrows carry it, ENTER drops it'
 MSG_MOVING_SCENE = 'scene ({name})'
 MSG_MOVING_TRACK = 'track ({name})'

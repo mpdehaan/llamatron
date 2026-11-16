@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Tests Arrange's details view (R), the user's design: the details under every bar, the marks after a clip's name, the columns and rows growing to fit, the coloured dividers, and every key working as in the usual view."""
+"""Tests Arrange's details view (R): the details under every bar, the marks after a clip's name, the columns and rows growing to fit, the coloured dividers, and every key working as in the usual view."""
 
 import unittest
 
@@ -107,10 +107,10 @@ class TestDetails(unittest.TestCase):
 
     def test_a_chain_shows_its_name_in_parentheses_and_its_generators_under_it_in_order(self):
         self.document.set_clip_slot_setting(index=FIRST_SCENE, track=LEAD, setting=ClipSlotSetting.CHAINS, value=[NAMED])
-        # A cell holds chains, so the details list the chains, chain: name, and a + to add one, the user's design.
+        # A cell holds chains, so the details list the chains, chain: name, and a + to add one.
         self.assertEqual(self.clip_lines(), [MSG_DETAILS_CHAIN.format(name=NAMED)])
         self.assertEqual(texts(clip_details(setlist=self.setlist, song=self.song, clip_slot=self.clip_slot()))[1], MSG_DETAILS_ADD_CHAIN)
-        # A chain is drawn in the chains' theme colour and a generator in the generators', the user's rule that a kind has one colour everywhere.
+        # A chain is drawn in the chains' theme colour and a generator in the generators', since a kind has one colour everywhere.
         lines = clip_details(setlist=self.setlist, song=self.song, clip_slot=self.clip_slot())
         self.assertEqual(lines[0].style, themes.text_style(themes.CHAINS))
         self.assertEqual(lines[1].target.kind, ADD_CHAIN)
@@ -329,7 +329,7 @@ class TestPickingDetails(UITest):
         self.assertIn(Style.DETAILS_LOCKED, styles())
 
     async def test_esc_while_locked_leaves_the_cell_and_r_closes_every_detail_and_leaves_the_cell(self):
-        # Esc closes the topmost thing, the user's rule: the lock first, staying on Arrange.
+        # Esc closes the topmost thing: the lock first, staying on Arrange.
         await self.press(keybindings.ArrangePage.INTO_DETAILS, Key.ESCAPE)
         self.assertFalse(self.page.picking())
         self.assertIs(self.app.screen, self.page)
@@ -430,7 +430,7 @@ class TestPickingDetails(UITest):
         self.assertEqual(self.picked_text(), MSG_DETAILS_ADD_CHAIN)
 
     async def test_plus_adds_a_chain_to_the_cell_alone_and_backspace_takes_one_out(self):
-        # The user's design: Enter on + picks one of the set's chains for this cell, and Bksp on a chain: line removes it from this cell.
+        # Enter on + picks one of the set's chains for this cell, and Bksp on a chain: line removes it from this cell.
         await self.press(keybindings.ArrangePage.INTO_DETAILS, Key.DOWN)
         self.assertEqual(self.picked_text(), MSG_DETAILS_ADD_CHAIN)
         await self.press(keybindings.ArrangePage.ADD_CHAIN)

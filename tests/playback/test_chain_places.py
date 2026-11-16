@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Chains on clips, scenes and tracks: a clip runs its own chains, then its scene's, then its track's, each list in its order, a chain named twice running twice (the user's design of 2026-11-11)."""
+"""Chains on clips, scenes and tracks: a clip runs its own chains, then its scene's, then its track's, each list in its order, a chain named twice running twice."""
 
 import unittest
 

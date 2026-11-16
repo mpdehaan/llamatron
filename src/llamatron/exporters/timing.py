@@ -160,8 +160,8 @@ def keyswitch_events(*, clip, clip_length):
 
     Each moves with the note it belongs to, by the clip's groove and its rushes and drags, keeps
     its length, starts earlier by the clip's keyswitch lead where the instrument has one, never
-    before the clip, and is cut at the clip's end, or where the same keyswitch starts again. Its velocity is always the same (the user's
-    rules). They are kept apart from timed_events, so that nothing that reads a clip's music, a
+    before the clip, and is cut at the clip's end, or where the same keyswitch starts again. Its velocity is always the same.
+    They are kept apart from timed_events, so that nothing that reads a clip's music, a
     grab, a Hocket, Scene View or a visualizer, ever meets one.
     """
     groove = clip.get_groove()

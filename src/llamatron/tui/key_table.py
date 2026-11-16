@@ -161,7 +161,7 @@ BACK_KEYS = (Key.UP, Key.LEFT)
 def cursor_moved(*, place, name, count):
     """Return where a cursor at place goes when an arrow moves it among count places: back for Up and Left, forward for Down and Right, and stopping at either end.
 
-    No cursor goes round from one end to the other, the user's rule of 2026-11-09 (.claude/UX.md):
+    No cursor goes round from one end to the other (.claude/UX.md):
     an arrow held down flies to the end and stays there, which going round would break.
     """
     moved = place + (STEP_BACK if name in BACK_KEYS else STEP_FORWARD)
@@ -202,5 +202,5 @@ def pressed_key(event):
 
 
 def quits_at_once(name):
-    """Return whether a pressed key quits the tracker at once, whatever has the keys: Ctrl+C, the user's ask, which closes FluidSynth and the MIDI sender as quitting does."""
+    """Return whether a pressed key quits the tracker at once, whatever has the keys: Ctrl+C, which closes FluidSynth and the MIDI sender as quitting does."""
     return name == Key.CTRL_C

@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The caption strip, the user's design: what the video tutorial says, shown at the foot of the screen as a film's captions are.
+"""The caption strip: what the video tutorial says, shown at the foot of the screen as a film's captions are.
 
 The tracker's pages move up two lines to make room, so that nothing is covered. The first of the two
 lines is the caption, bold black on white and centred; the second is white, so that the words stand

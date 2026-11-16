@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The MacroComposer, the user's name for it: a set made from structured data that says what to play. composer.py turns a
+"""The MacroComposer: a set made from structured data that says what to play. composer.py turns a
 song's input, its parts, bands and form, into a set's data, deciding nothing; decomposer.py writes an existing set as an
 input; arranger.py makes an input from a song's picks and a style template of style_templates/, a style's traits with how
 common each value is; melody.py sketches a tune by rule where a song gives none; players.py names the imaginary players a

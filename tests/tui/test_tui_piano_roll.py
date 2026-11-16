@@ -110,7 +110,7 @@ class RollTest(UITest):
         self.roll = self.editor.roll
 
     async def test_the_roll_and_the_rows_share_one_label_column_so_the_step_columns_stay_put_when_tab_switches_views(self):
-        # The user's choice of 2026-11-09: the roll's labels are short, so it takes the rows' width, and every step column lines up between the views.
+        # The roll's labels are short, so it takes the rows' width, and every step column lines up between the views.
         rows_width = self.editor.drawing.widest_label()
         self.assertGreater(rows_width, self.editor.roll_drawing.widest_label())
         self.assertEqual(self.editor.label_width(), rows_width)
@@ -122,7 +122,7 @@ class RollTest(UITest):
         self.assertEqual(step_heading_on_roll.index(Box.DOUBLE_BAR), rows_width + 1)
 
     async def test_the_headers_two_lines_are_aligned_cells_time_under_steps_scale_under_step_size_and_entry_under_drum(self):
-        # The user's layout of 2026-11-09: each column is as wide as its wider cell, so the second line's cells start where the first's do.
+        # Each column is as wide as its wider cell, so the second line's cells start where the first's do.
         header = self.app.screen.header_lines()
         first, second = self.text().splitlines()[header:header + 2]
         self.assertTrue(first.startswith(MSG_HEADER_INDENT + MSG_STEPS_HEADER.format(steps=self.document.song().get_pattern(TUNE).get_steps())))
@@ -283,7 +283,7 @@ class TestPlacingNotes(RollTest):
         self.assertIn(KEY_SHOWN.format(label=KeyName.RIGHT_BRACKET) + MSG_LEGEND_WHAT.format(what=MSG_STRETCH_WHAT), self.text())
 
     async def test_nothing_on_the_roll_takes_shift_with_an_arrow(self):
-        """The roll's keys are plain ones, the user's choice of 2026-11-09: the octave jump went, and [ and ] drag."""
+        """The roll's keys are plain ones: the octave jump went, and [ and ] drag."""
         every = [name for item in self.editor.key_table() for name in item.keys]
         for name in (*SHIFT_UP_DOWN, *SHIFT_LEFT_RIGHT):
             self.assertNotIn(name, every)
@@ -324,7 +324,7 @@ class TestPlacingNotes(RollTest):
         self.assertEqual(self.value(row=Row.OCTAVE, step=E_STEP), DEFAULT_OCTAVE)
 
     async def test_enter_draws_and_erases_exactly_as_space_does(self):
-        # The user's choice of 2026-11-09: Space and Enter do the same here as everywhere else, and the chord picker moved to H.
+        # Space and Enter do the same here as everywhere else, and the chord picker moved to H.
         enter = key_of(binding=keybindings.PianoRoll.PLACE, key=Key.ENTER)
         await self.press(Key.RIGHT, Key.RIGHT, Key.UP, enter)
         self.assertEqual(self.row(Row.DEGREE), [1, 3, D_DEGREE, None])
@@ -620,7 +620,7 @@ class TestChordsOnTheRoll(RollTest):
         self.assertIsInstance(self.app.screen, PatternEditor)
 
     async def test_h_on_a_step_no_note_covers_draws_a_note_at_the_cursor_and_picks_its_chord(self):
-        # The user's design: the same as the pencil and then H.
+        # The same as the pencil and then H.
         await self.press(*[Key.RIGHT] * LAST_STEP)
         self.assertIsNone(self.value(row=Row.DEGREE, step=LAST_STEP))
         await self.press(keybindings.PianoRoll.CHORD)
@@ -637,7 +637,7 @@ class TestChordsOnTheRoll(RollTest):
         self.assertIsNone(self.value(row=Row.CHORD, step=LAST_STEP))
 
     async def test_h_under_a_note_at_another_pitch_picks_that_notes_chord_and_replaces_nothing(self):
-        # The user's design: the key goes by the step. The E holds this step, rows above the cursor, which is on the C's row.
+        # The key goes by the step. The E holds this step, rows above the cursor, which is on the C's row.
         await self.press(Key.RIGHT, Key.RIGHT, keybindings.PianoRoll.CHORD)
         self.assertIsInstance(self.app.screen, ChordDialog)
         self.pick_quality(ChordSymbol.MINOR7)
@@ -646,7 +646,7 @@ class TestChordsOnTheRoll(RollTest):
         self.assertEqual(self.value(row=Row.DEGREE, step=E_STEP), E_DEGREE)
 
     async def test_a_note_that_grabs_takes_a_chord_and_shows_its_g_alone_with_no_thin_lines(self):
-        # The user asked on 2026-11-09: a grab step holds a chord, built on whatever note the grab takes, which the roll can't know, so the G is all the roll shows.
+        # A grab step holds a chord, built on whatever note the grab takes, which the roll can't know, so the G is all the roll shows.
         await self.press(keybindings.PianoRoll.GRAB, keybindings.PianoRoll.CHORD)
         self.assertIsInstance(self.app.screen, ChordDialog)
         self.pick_quality(ChordSymbol.MINOR7)

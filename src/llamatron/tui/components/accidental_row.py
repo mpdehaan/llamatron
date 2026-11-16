@@ -21,7 +21,7 @@ from llamatron.tui import keybindings
 
 
 class AccidentalRow(CycleRow):
-    """None, sharp, then flat, shown as # or b with nothing for a natural, since the user wanted the plain characters."""
+    """None, sharp, then flat, shown as # or b with nothing for a natural, in plain characters."""
 
     KEYS = keybindings.AccidentalRow
 

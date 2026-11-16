@@ -16,9 +16,9 @@
 
 """The rows that use a register, +Note and +Vel: each step adds the register, subtracts it or does neither, and a rest can hold them.
 
-The user decided on 2026-11-08 that no register setting is ever locked out for want of a note on
+No register setting is ever locked out for want of a note on
 the step, so these work on every step like the register changes do; on a step with no note the
-render has nothing to move and ignores them. On 2026-11-09 the user made them three-way, where
+render has nothing to move and ignores them. They are three-way, where
 they had been toggles: a cell shows + for add, - for subtract and nothing for off.
 """
 

@@ -78,7 +78,7 @@ def _check_version(value):
 
 
 def _never_refused(value):
-    """Refuse nothing: a visualizer setting that makes no sense is made sensible as it's read (sensible_visualizer), the user's rule."""
+    """Refuse nothing: a visualizer setting that makes no sense is made sensible as it's read (sensible_visualizer)."""
 
 
 # The set's own settings, each described once, in the order they're written to a file. The title, author, description and notes are only for people reading or sharing the file.
@@ -129,7 +129,7 @@ ONE_SONG_KEYS = [
 
 
 # The starter pattern of a new set: one bar of sixteenths in 4/4, with the root on every beat, so
-# that a new set shows what a pattern looks like and plays from the first moment, as the user asked.
+# that a new set shows what a pattern looks like and plays from the first moment.
 # Everything in it can be deleted, like the C major scale.
 STARTER_PATTERN_STEPS = 16
 STARTER_STEPS_PER_BEAT = 4
@@ -588,7 +588,7 @@ class Setlist(LlamaData):
         if section in GENERATOR_KINDS_OF_SECTIONS:
             self._rename_in_generator_order(kind=GENERATOR_KINDS_OF_SECTIONS[section], old=old, new=new)
 
-    # The order of the Generators page, the user's design: every generator on one list, kept in an order of its own.
+    # The order of the Generators page: every generator on one list, kept in an order of its own.
 
     def ordered_generators(self):
         """Return every generator as (kind, name) in the Generators page's order: the order kept, leaving out any generator
@@ -679,7 +679,7 @@ class Setlist(LlamaData):
 
     def song_is_untouched(self, name):
         """Return whether a song is as a new set's song or a newly added song is, with nothing done to it, so that the song
-        wizard may fill it in place of adding a song beside it (the user's design)."""
+        wizard may fill it in place of adding a song beside it."""
         song = self.get_song(name).to_data()
         new = Setlist.new()
         new.fill_in_defaults()
@@ -811,7 +811,7 @@ class Setlist(LlamaData):
         return min(limits) if limits else None
 
     def hold_adds_within_limits(self):
-        """Bring every pattern's += rows within the narrowest Allowed Inc Max of the songs that play it, the user's design of 2026-11-11: lowering a limit changes what used it."""
+        """Bring every pattern's += rows within the narrowest Allowed Inc Max of the songs that play it: lowering a limit changes what used it."""
         for name in self.get_pattern_names():
             pattern = self.get_pattern(name)
             for register, row in REGISTER_ADD_ROWS.items():

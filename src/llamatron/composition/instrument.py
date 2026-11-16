@@ -16,8 +16,8 @@
 
 """An instrument: a MIDI device and channel that real-time playback sends a track to.
 
-Instruments are a named section of the set, like patterns, and each track chooses one or none,
-the user's design of 2026-11-09 (.claude/IDEAS.yml, "Previewing with real-time MIDI"). A track with no
+Instruments are a named section of the set, like patterns, and each track chooses one or none.
+A track with no
 instrument is left out of real-time playback and gets no play keys. The device is the name of a
 MIDI output port of the computer, as the port lists itself, or blank until one is chosen, and the
 channel is numbered 1 to 16 as people and devices number them, so the byte sent is one less. Two
@@ -27,7 +27,7 @@ FLUIDSYNTH_DEVICE plays through FluidSynth, which the tracker starts (realtime/f
 channel is then ignored, each track getting one as the General MIDI export gives them, and the
 sound is sent as a program change, which no MIDI port's instrument is sent.
 
-Its keyswitches are for a plugin whose articulations a note switches, the user's design: ten slots,
+Its keyswitches are for a plugin whose articulations a note switches: ten slots,
 numbered from 0, each with a name and a MIDI note, either of which may be missing. A pattern's
 Keyswitch row names slots, and a slot with no note plays nothing until it has one. Its keyswitch
 lead is how many milliseconds before its note a keyswitch is sent, nothing unless set.

@@ -384,7 +384,7 @@ class RowOfToggles(RowDescription):
 
 
 class RowOfRegisterUses(RowDescription):
-    """A register's +Vel row: each step adds the register's value (1), subtracts it (-1) or does neither (0), the user's design of 2026-11-09.
+    """A register's +Vel row: each step adds the register's value (1), subtracts it (-1) or does neither (0).
 
     A rest can hold the row, as it can hold every register row, so erasing a note leaves it on the
     step. A file from before the change held true and false, which read as 1 and 0, and a null

@@ -85,7 +85,7 @@ MSG_MAZE = 'Maze'
 # visualizers/mystify.py
 MSG_MYSTIFY = 'Mystify'
 
-# visualizers/laser_llama.py: the synthwave mode after the user's own channel's backgrounds, and its llama, Claude's drawing, a laser cannon on its back, facing right.
+# visualizers/laser_llama.py: the synthwave mode after a video channel's backgrounds, and its llama, Claude's drawing, a laser cannon on its back, facing right.
 MSG_LASER_LLAMA = 'Laser Llama'
 MSG_LASER_LLAMA_DRAWING = (
     '       ▄▄▄==',

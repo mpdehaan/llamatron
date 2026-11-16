@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """The Generators page: every generator of the set, of every kind, on one list in an order of the user's own, each with its kind
-beside its name, the user's design. Enter edits one, A adds one of a kind asked for, N renames, C copies, Bksp deletes once
+beside its name. Enter edits one, A adds one of a kind asked for, N renames, C copies, Bksp deletes once
 nothing uses it, and M moves it, the order kept in the set (Setlist.ordered_generators)."""
 
 from llamatron.composition.file_format import NAMED_GENERATORS

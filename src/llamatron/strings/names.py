@@ -36,14 +36,14 @@ MSG_SCENE_WITHOUT_A_NAME = 'scene'
 # file's single song gets when the file's name can't be used.
 MSG_DEFAULT_SONG_NAME = 'untitled'
 # What a new scene or track is called, by its number from 1: a new song starts with one of each, and the
-# Arrange page names the ones it adds the same way, to be renamed on their own pages, as the user asked on 2026-11-07.
+# Arrange page names the ones it adds the same way, to be renamed on their own pages.
 MSG_NEW_SCENE_NAME = 'scene-{number}'
 MSG_NEW_TRACK_NAME = 'track-{number}'
 # The track a pattern's preview plays on, in the copy of the set the preview plays (tui/pattern_preview.py).
 MSG_PREVIEW_TRACK_NAME = '(preview)'
 MSG_NEW_PATTERN_NAME = 'pattern-{number}'
 # The word each kind of new thing is named with, before its dash and number (composition/naming.py's new_name); a blank pattern
-# made on an empty cell of Arrange takes its track's name for its word, the user's design.
+# made on an empty cell of Arrange takes its track's name for its word.
 MSG_NEW_PATTERN_WORD = 'pattern'
 MSG_NEW_GROUP_WORD = 'group'
 MSG_NEW_SCENE_WORD = 'scene'

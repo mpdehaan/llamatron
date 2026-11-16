@@ -16,7 +16,7 @@
 
 """The Offsets editor page: an arpeggiator's offsets, up to 16 steps drawn as a gauge of bars either side of a zero line.
 
-The user's design of 2026-11-08: each offset is a bar from the zero line, five scale steps either
+Each offset is a bar from the zero line, five scale steps either
 side on a usual console and seven on a taller one, a value past the edge fills to it and is marked
 in the Offset row under the gauge, like +7▲, and the cursor's column is marked at both ends,
 <<4>> around the step number and <+7▲> around the offset, in reverse video too. A row wider than
@@ -51,7 +51,7 @@ BLANK_CELL = ''
 
 
 class OffsetsEditor(ShowsNamedItem, OneRowEditor):
-    """An arpeggiator's offsets: one row of up to 16 steps, drawn as a gauge around a zero line, and under it a row per register of what each step adds to it, which Tab moves the cursor between (the user's design of 2026-11-11)."""
+    """An arpeggiator's offsets: one row of up to 16 steps, drawn as a gauge around a zero line, and under it a row per register of what each step adds to it, which Tab moves the cursor between."""
 
     KEYS = keybindings.OffsetsEditor
 

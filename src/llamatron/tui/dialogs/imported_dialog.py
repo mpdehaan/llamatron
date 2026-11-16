@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The dialog after an import: what the song was imported as, what it holds, and every warning, or that there were none, with one OK button, the user's design of 2026-11-10.
+"""The dialog after an import: what the song was imported as, what it holds, and every warning, or that there were none, with one OK button.
 
 There is nothing to choose, since the song is in the set already; the dialog makes sure what the
 import had to change, like CCs left out or notes moved to a step, is seen before going on. Enter

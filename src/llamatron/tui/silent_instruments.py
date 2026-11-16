@@ -16,7 +16,7 @@
 
 """The warning when a set opens whose tracks play through instruments that cannot sound on this computer.
 
-The user's design of 2026-11-11: an instrument whose Device is FluidSynth, when FluidSynth isn't installed,
+An instrument whose Device is FluidSynth, when FluidSynth isn't installed,
 and an instrument whose MIDI port this computer doesn't list, like a set saved on another computer with
 "IAC Driver Bus 1", are each told once, in one dialog, as the set opens. Only instruments some track of
 some song plays through count, and nothing about the set changes: the set keeps every device, so that it

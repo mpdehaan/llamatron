@@ -18,7 +18,7 @@
 
 It's called a clip slot, Live's own word for the place where a track meets a scene, to keep it
 apart from the finished Clip that it renders into, and from the cells of a groove and of the
-grids the tracker draws. It was called Cell until the user chose this name. People are always
+grids the tracker draws. It was once called Cell. People are always
 shown the word clip. Its settings are changed through its setters, which check a value the way
 reading a file does and raise InvalidValue if it's wrong, with the song passed in wherever a
 setting names something the song holds.
@@ -98,7 +98,7 @@ class ClipSlot(LlamaData):
     """A pattern to play, and how: its chain, repeats or loop, direction, morph and grab, and its own name if it has one.
 
     Settings the file leaves out are kept as None, meaning their defaults. A clip with no name of
-    its own goes by its pattern's, on the grid and in everything exported, as the user asked on 2026-11-07. The pattern, chain and
+    its own goes by its pattern's, on the grid and in everything exported. The pattern, chain and
     other patterns and tracks are kept as names, and looked up when the song renders.
     """
 
@@ -209,7 +209,7 @@ class ClipSlot(LlamaData):
         return self._settings[ClipSlotSetting.FOLLOW_ACTION]
 
     def get_scale_name(self):
-        """Return the name of its own scale, which wins over its scene's and its song's, or None to take theirs (the user's design of 2026-11-11)."""
+        """Return the name of its own scale, which wins over its scene's and its song's, or None to take theirs."""
         return self._settings[ClipSlotSetting.SCALE]
 
     def get_grab_track(self):

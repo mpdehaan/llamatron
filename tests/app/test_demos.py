@@ -138,7 +138,7 @@ class TestDemos(TemporaryFolderTest):
                 self.assertIn('When changing this demo:', data.get(SetlistSetting.NOTES, ''))
 
     def test_every_demo_is_described_on_a_genre_page_and_nothing_else_is(self):
-        # Each demo has a section on its genre's page in docs/demos/, the user's layout, where its description lives.
+        # Each demo has a section on its genre's page in docs/demos/, where its description lives.
         text = NOTHING.join(path.read_text() for path in sorted(pathlib.Path(DEMO_PAGES).glob(DEMO_PAGE_FILES)))
         for name in names():
             with self.subTest(name=name):

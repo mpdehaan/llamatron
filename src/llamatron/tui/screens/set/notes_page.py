@@ -57,8 +57,8 @@ class NotesPage(Page):
 
     While editing, the text is a draft of the page's own, and the Save button under it, which Tab
     reaches, stores it in the set, so that everything typed between E and Save is one undo step:
-    undo never works letter by letter, as the user decided. Esc, or the Cancel button, throws the
-    draft away, as the user asked on 2026-11-08. Nothing is written to the file; that's Ctrl+S, as
+    undo never works letter by letter. Esc, or the Cancel button, throws the
+    draft away. Nothing is written to the file; that's Ctrl+S, as
     everywhere.
     """
 

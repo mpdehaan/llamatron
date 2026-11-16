@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """Density, Swell and Articulate: how a clip's notes are thinned, made louder or softer and made shorter or longer over time, set on a scene, a clip or a generator.
 
-The user's design of 2026-11-11. Most tests play a bar of sixteen sixteenth-note Cs, so that every
+Most tests play a bar of sixteen sixteenth-note Cs, so that every
 strength of place in a 4/4 bar is there: the bar's start, its middle, the two other beats, the
 eighths between and the sixteenths between those.
 """

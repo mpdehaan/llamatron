@@ -91,10 +91,10 @@ KEEP_OWN = '-'
 MARGIN_SECONDS = 1.0
 # After the song, the tracker shows the splash again for its usual seconds and then stays on it this
 # long, and this much is cut off the end of the video afterwards, so that the video ends on the splash
-# and never shows the terminal it quits back to (the user's fix of 2026-11-11).
+# and never shows the terminal it quits back to.
 HOLD_SECONDS = 5.0
 TRIMMED_SECONDS = 4.0
-# The start of a take, the user's design: once the screen recording has begun, the terminal shows black for
+# The start of a take: once the screen recording has begun, the terminal shows black for
 # SETTLE_SECONDS before the tracker starts, so that nothing of the calibration or the shell is in the video, and the
 # first CUT_FROM_START seconds are cut, so that the video opens on a moment of black and then the title.
 SETTLE_SECONDS = 3.0
@@ -349,7 +349,7 @@ def explain_setup(*, plays, port, device):
 
 
 def wait_for_go(*, go):
-    """Wait for ENTER before the take, unless --go said to start at once. The prompt is the last thing printed before the take, by the user's wish, so whoever runs it reads it."""
+    """Wait for ENTER before the take, unless --go said to start at once. The prompt is the last thing printed before the take, so whoever runs it reads it."""
     if not go:
         print(SETUP_GO)
         input()
@@ -413,7 +413,7 @@ def remove_trim_leftovers(folder):
 def trim_end(*, video, recorded_seconds):
     """Cut CUT_FROM_START seconds off the start of a video recorded for recorded_seconds and TRIMMED_SECONDS off its end, in place, so that it opens on black and ends while the tracker still shows. Return None, or why it couldn't.
 
-    Only the trimmed video is kept, the user's rule: the trimmed copy is made in a hidden
+    Only the trimmed video is kept: the trimmed copy is made in a hidden
     folder and takes the video's place once it is whole, and the folder is removed however the
     trim ends, a stopped take included.
     """
@@ -444,7 +444,7 @@ def screen_recording():
 
 
 def scroll_text_of(*, path, scroll=True, scroll_text=None):
-    """Return the words a take of the set at path scrolls after the title: the words given, or DEMO: and the set's name from its file, or None when the take scrolls nothing (the user's rules)."""
+    """Return the words a take of the set at path scrolls after the title: the words given, or DEMO: and the set's name from its file, or None when the take scrolls nothing."""
     if not scroll:
         return None
     return scroll_text or scroll_text_for(path)
@@ -470,7 +470,7 @@ def record(*, path, driver, audio_device, assignment, max_seconds, window_id, go
     of the visualizer mode given, recorded from the rectangle the window's cells cover alone, so that
     no title bar or margin is in it, and named after the set and the mode; region is what finds that
     rectangle, which the tests give. A take that isn't interactive and shows a visualizer mode is a batch video
-    unless staged is false, the user's choice: the title, Arrange with READY, then the visualizer filling its frame.
+    unless staged is false: the title, Arrange with READY, then the visualizer filling its frame.
     """
     if fluidsynth:
         port = None
@@ -563,7 +563,7 @@ def recorded_until_quit(*, document, video, window, device, launch, region, reco
     """Record the screen while the tracker runs the launch, stopping when the tracker quits, however it quits, then trim the video's end as a take's. Return the exit code.
 
     The recording stops when the tracker does, so quitting early, through the main screen's Quit, ends
-    the video there rather than leaving the screen recorded until a time limit, the user's ask.
+    the video there rather than leaving the screen recorded until a time limit.
     """
     recording_class = screen_recording() if recording is None else recording
     capture = recording_class(path=video, window=window, audio_device=device[0], region=region)

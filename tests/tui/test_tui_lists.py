@@ -142,7 +142,7 @@ class TestScalesPage(UITest):
         self.assertEqual(self.document.song().get_scale_names(), [])
 
     async def test_a_is_the_add_key_and_plus_adds_only_from_its_row(self):
-        """A adds on every list page, the user's choice of 2026-11-09, since + needs Shift; the + row at the bottom still adds with Enter."""
+        """A adds on every list page, since + needs Shift; the + row at the bottom still adds with Enter."""
         await self.press(keybindings.MainPage.SCALES, OLD_ADD_KEY)
         self.assertIsInstance(self.app.screen, ScalesPage)
         self.assertEqual(self.document.song().get_scale_names(), [DEFAULT_SCALE])
@@ -183,7 +183,7 @@ class TestScalePage(UITest):
         self.document.rename_named(section=Section.SCALES, old=DEFAULT_SCALE, new=C_MAJOR)
 
     async def test_a_scale_named_by_its_number_keeps_its_name_when_its_notes_change(self):
-        # The user's rule: a new scale is scale-1, and only a person renames it.
+        # A new scale is scale-1, and only a person renames it.
         await self.press(keybindings.MainPage.SCALES, Key.ENTER)
         await self.select_field(MSG_ROOT_LABEL)
         await self.press(Key.RIGHT, Key.RIGHT)
@@ -365,7 +365,7 @@ class TestScalePage(UITest):
         render_song(self.document.song())
 
 class TestGeneratorsPage(UITest):
-    """The Generators page: every generator on one list, its kind beside its name, in an order of the user's own, the user's design."""
+    """The Generators page: every generator on one list, its kind beside its name, in an order of the user's own."""
 
     async def test_it_lists_every_generator_with_its_kind_and_enter_opens_its_editor(self):
         await self.press(keybindings.MainPage.GENERATORS)
@@ -867,7 +867,7 @@ class TestChainEditorAdding(UITest):
 
 
 class TestMoveModeOnALists(UITest):
-    """Move mode on a list page, the user's design: M picks up the row, Up and Down carry it, and Enter, Esc or M drops it."""
+    """Move mode on a list page: M picks up the row, Up and Down carry it, and Enter, Esc or M drops it."""
 
     def names(self):
         return self.document.setlist().get_chain_names()

@@ -17,7 +17,7 @@
 
 A test that presses 'n' says nothing about whether it means rename, new or no, and breaks
 silently when the program's key changes. Pressing keybindings.PatternsPage.RENAME says what it
-means and follows the program, as the user asked on 2026-11-07. The same goes for naming the
+means and follows the program. The same goes for naming the
 letter as a key: Key.N is still only the letter. A key that types nothing, like Enter, Esc or an
 arrow, is pressed by its name in Key, and a digit is the value being typed, so it stays a
 literal. A key that isn't a binding's first is pressed with key_of(binding=..., key=Key.PLUS),
@@ -105,7 +105,7 @@ def character_keys(tree):
 class TestPressedKeys(unittest.TestCase):
 
     def test_no_test_presses_a_key_by_its_character(self):
-        """A test that pressed the plus character to add broke when add became A, and said nothing about what it meant: about 35 lines did on 2026-11-09."""
+        """A test that pressed the plus character to add broke when add became A, and said nothing about what it meant: about 35 lines once did."""
         for path in test_files():
             for line, key in character_keys(parsed(path)):
                 with self.subTest(file=os.path.basename(path), line=line):

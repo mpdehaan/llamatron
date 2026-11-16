@@ -34,7 +34,7 @@ DIALOG_SELECTOR = SELECTOR.format(id=DIALOG_ID)
 # The widest a dialog is, and the margin around it.
 DIALOG_WIDTH = 70
 DIALOG_MARGIN = 4
-# How far down and to the right a flyout's box is drawn from its dialog's, so that the two read as a stack (the user's design).
+# How far down and to the right a flyout's box is drawn from its dialog's, so that the two read as a stack.
 FLYOUT_SHIFT = 2
 
 
@@ -67,7 +67,7 @@ class Dialog(BindsKeys, ModalScreen):
         return []
 
     def heading(self, width):
-        """Return the dialog's top line, in red for a question about deleting, the user's design, so that it isn't answered by habit."""
+        """Return the dialog's top line, in red for a question about deleting, so that it isn't answered by habit."""
         return Text(self.title, style=Style.DELETE_TITLE if self.title == MSG_DELETE_TITLE else Style.BOLD)
 
     def draw(self):

@@ -102,7 +102,7 @@ class ArrangeDrawing:
         self._page = page
 
     def shows_details(self):
-        """Return whether the page shows its details view, the user's design, which widens the columns and lengthens the rows to fit the details under each bar."""
+        """Return whether the page shows its details view, which widens the columns and lengthens the rows to fit the details under each bar."""
         return self._page.shows_details()
 
     def layout(self):
@@ -369,7 +369,7 @@ class ArrangeDrawing:
         """Return a clip's length bar: full for a looping clip, and otherwise its seconds against its scene's first play.
 
         With played, the seconds the clip has played so far, the bar is a read head like the
-        scene's, filling from the left as the clip plays (the user's idea of 2026-11-10): a
+        scene's, filling from the left as the clip plays: a
         looping clip's fills over one play of its scene and starts over.
         """
         total = lengths.scene_play_seconds(index)
@@ -379,7 +379,7 @@ class ArrangeDrawing:
 
     @staticmethod
     def play_button(line, *, column, playing):
-        """Draw a play button, dim, or the stop mark in the playing colour while the thing plays, the user's one use of colour."""
+        """Draw a play button, dim, or the stop mark in the playing colour while the thing plays, the one use of colour here."""
         if playing:
             line.write(column=column, text=MSG_STOP_MARK, style=Style.PLAYING)
         else:
@@ -476,7 +476,7 @@ class ArrangeDrawing:
             start += self.scene_lines(index)
         self.draw_footer(lines[-FOOTER_LINES:], at_end=shown.stop == len(self._page.scenes()), first=first, last=last)
         if self._page.boxes_playing_scene():
-            # A recording nobody performs has no cursor to show: the playing scene is boxed instead, the user's design.
+            # A recording nobody performs has no cursor to show: the playing scene is boxed instead.
             tops = {}
             top = header
             for index in shown:

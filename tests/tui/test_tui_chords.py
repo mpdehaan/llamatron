@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""A chord in the pattern editor (the user's design): the Scale and Tension rows beside the Chord row, each stepped and
+"""A chord in the pattern editor: the Scale and Tension rows beside the Chord row, each stepped and
 cleared, the Chord dialog all three open with its three lists, what the dialog says of the chord as the choice moves, the
 status line naming the chord under the cursor, and the whole choice as one step of undo."""
 
@@ -92,7 +92,7 @@ class TestPatternEditorChords(UITest):
         self.assertEqual(self.value(Row.CHORD_SCALE), SCALE_TYPES_IN_ORDER[0])
         await self.press(keybindings.ChordScaleRow.MORE, keybindings.ChordScaleRow.LESS, keybindings.ChordScaleRow.LESS)
         self.assertIsNone(self.value(Row.CHORD_SCALE))
-        # The scale types stop at the last and never go round to none (the user's rule), and [ goes back from the last.
+        # The scale types stop at the last and never go round to none, and [ goes back from the last.
         self.set(row=Row.CHORD_SCALE, value=SCALE_TYPES_IN_ORDER[-1])
         await self.press(keybindings.ChordScaleRow.MORE, keybindings.ChordScaleRow.NEXT)
         self.assertEqual(self.value(Row.CHORD_SCALE), SCALE_TYPES_IN_ORDER[-1])
@@ -169,7 +169,7 @@ class TestPatternEditorChords(UITest):
         self.assertIsNone(dialog.flyout)
         self.assertEqual((dialog.kind, dialog.part), (COMMON_SCALE_TYPES[0], QUALITY_LIST))
         self.assertIn(MSG_FLYOUT_CHOSEN.format(name=MSG_SCALE_CATEGORY_COMMON, chosen=SCALE_CELL), self.dialog_text())
-        # Every category is drawn as a button, and only the one whose scale type was picked carries the mark (the user's design).
+        # Every category is drawn as a button, and only the one whose scale type was picked carries the mark.
         for name, _ in dialog.categories:
             if name != MSG_SCALE_CATEGORY_COMMON:
                 self.assertIn(MSG_FLYOUT_CLOSED.format(name=name), self.dialog_text(), name)
@@ -284,7 +284,7 @@ class TestPatternEditorChords(UITest):
         self.set(row=Row.INVERSION, value=INVERSIONS[0])
         degree = self.value(Row.DEGREE)
         await self.press(keybindings.PatternEditor.TO_ROLL)
-        # Two rows above the chord's note, on the chord's step, the pencil moves the root there and keeps the chord (the user's rule).
+        # Two rows above the chord's note, on the chord's step, the pencil moves the root there and keeps the chord.
         await self.press(Key.UP, Key.UP, keybindings.PianoRoll.PLACE)
         self.assertEqual(self.value(Row.DEGREE), degree + 2)
         self.assertEqual((self.value(Row.CHORD), self.value(Row.INVERSION)), (ChordSymbol.MAJOR, INVERSIONS[0]))
@@ -343,7 +343,7 @@ class TestPatternEditorChords(UITest):
         return [lines[number] for number in numbers], (numbers[0] if numbers else None)
 
     async def test_the_keyboard_under_the_sentences_outlines_the_scale_and_fills_the_chord_one_blank_line_down(self):
-        # The user's design: where the pattern's scale is known for certain and the console has room, a keyboard under the
+        # Where the pattern's scale is known for certain and the console has room, a keyboard under the
         # sentences, one blank line down, the scale's keys outlined and the chord's filled. It takes no key.
         dialog = await self.open_on_the_chord()
         keys_before = [item.keys for item in dialog.keys()]

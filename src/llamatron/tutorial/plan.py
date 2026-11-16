@@ -16,7 +16,7 @@
 
 """The plan of a video tutorial: the keys that rebuild a target set from a new one in the running tracker, worked out from the target as the build goes.
 
-The user's design of 2026-11-10: a planner reads the set a demo file holds and presses the keys
+A planner reads the set a demo file holds and presses the keys
 a person would, so that any demo becomes a tutorial with nothing written by hand, and a test can
 prove that what the keys built is the demo. The plan is a generator of steps, a Press of one key
 or a Say of one sentence, and between two steps it reads the tracker's state, the page open and
@@ -24,7 +24,7 @@ where its cursor is, so that it never counts keys ahead: it presses an arrow, lo
 again until the cursor is where the next key wants it, as a person does. Narration comes at the
 parts worth a sentence, never at every key.
 
-The build goes the way the user asked: the song's own settings, the scales, then one track at a
+The build goes in this order: the song's own settings, the scales, then one track at a
 time, each track's clips scene by scene from the top, every pattern drawn on the piano roll when
 the track first needs it and its finer rows set in the rows view after, then the clip put on
 Arrange. Whatever the plan can't set yet is reported as left out, so a demo that uses more than
@@ -98,7 +98,7 @@ CELL_PAGES = {
     keybindings.MainPage.SONGS: SongsPage, keybindings.MainPage.SCALES: ScalesPage, keybindings.MainPage.PATTERNS: PatternsPage,
     keybindings.MainPage.ARRANGE: ArrangePage, keybindings.MainPage.INSTRUMENTS: InstrumentsPage,
 }
-# The seconds the tutorial waits once the song has played, before it goes back to the main screen and quits, the user's choice of 2026-11-10.
+# The seconds the tutorial waits once the song has played, before it goes back to the main screen and quits.
 AFTER_THE_SONG_SECONDS = 2.0
 # The rows the plan sets in the rows view: every row but the two the piano roll writes.
 ROWS_SET_IN_THE_ROWS_VIEW = [name for name in ROW_DESCRIPTIONS if name not in (Row.DEGREE, Row.OCTAVE)]
@@ -202,7 +202,7 @@ class TutorialPlan:
         return not self.app.transport.is_playing()
 
     def quit(self):
-        """Go back to the main screen and quit through the Quit cell, without saving, the user's design of 2026-11-10."""
+        """Go back to the main screen and quit through the Quit cell, without saving."""
         yield from self.go_home()
         yield Say(MSG_NARRATE_QUITTING)
         yield from self.open_page(keybindings.MainPage.QUIT, said=False)
@@ -231,7 +231,7 @@ class TutorialPlan:
             yield from self.pressing(Key.SPACE if character == SPACE_CHARACTER else character, in_dialog=in_dialog, typed=True)
 
     def pressing(self, key, *, in_dialog=False, what=None, typed=False):
-        """Return the steps of a key's press: what it says first, the user's design of 2026-11-10, and the press. The arrows, Enter and Space are explained once where they matter, a letter is called the first time on each kind of page with its legend's words, and what is typed is never called."""
+        """Return the steps of a key's press: what it says first, and the press. The arrows, Enter and Space are explained once where they matter, a letter is called the first time on each kind of page with its legend's words, and what is typed is never called."""
         if in_dialog or typed:
             yield Press(key, in_dialog)
             return
@@ -280,7 +280,7 @@ class TutorialPlan:
         raise TutorialStuck(type(self.screen()).__name__)
 
     def open_page(self, binding, *, said=True):
-        """Open a main screen cell the way the user asked on 2026-11-10: go to the main screen, move the cursor's box onto the cell with the arrows, say which cell after a blank line unless said is False, and press Enter, so that a viewer sees where the tutorial is going. A page that is open already, under what is on top, is gone back to with Esc instead, saying nothing, so that it is never opened twice."""
+        """Open a main screen cell: go to the main screen, move the cursor's box onto the cell with the arrows, say which cell after a blank line unless said is False, and press Enter, so that a viewer sees where the tutorial is going. A page that is open already, under what is on top, is gone back to with Esc instead, saying nothing, so that it is never opened twice."""
         page_class = CELL_PAGES.get(binding)
         if page_class is not None and any(isinstance(page, page_class) for page in self.app.pages()):
             yield from self.go_back_to(page_class)
@@ -420,7 +420,7 @@ class TutorialPlan:
         name = self.target.get_song_names()[FIRST]
         yield Say(MSG_NARRATE_SONG)
         yield from self.open_page(keybindings.MainPage.SONGS)
-        # A rename is said on the list of the things renamed, where the thing already there shows, the user's wish of 2026-11-10.
+        # A rename is said on the list of the things renamed, where the thing already there shows.
         if self.document().current_song_name() != name:
             yield Say(MSG_NARRATE_RENAMING.format(kind=MSG_A_SONG))
         yield from self.press(keybindings.SongsPage.SETTINGS)

@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The drum grooves styles are built on, a library of named patterns, the user's direction: a style uses several, never one
+"""The drum grooves styles are built on, a library of named patterns: a style uses several, never one
 fixed beat. Each groove is a bar or two of every voice it uses, written as text a step at a time (x a hit, o a ghost or soft hit,
 . none), on a grid of sixteenths, or of triplets for the swung and compound feels, so that a shuffle is never forced into
 sixteenths. The grooves are the standard ones drummers learn for each style, described in measuring/strings.py."""

@@ -18,7 +18,7 @@
 trait class lists how each of its fields compares in COMPARED, so that one function compares any two traits of a kind, and a
 field a measured song leaves unknown (None) is skipped rather than counted as a difference.
 
-Comparing two styles compares their typical values. Fitting a song to a style treats the style as a region, the user's model:
+Comparing two styles compares their typical values. Fitting a song to a style treats the style as a region:
 no style is one sound, so a number within the style's spread of its typical value fits wholly, and only the distance past the
 spread counts; a set is the style's alternatives, and a song fits by doing what is among them, not by doing all of them; and
 grooves fit by the nearest of the style's. A tightness below 1 narrows the spreads, for fitting a homage to the one song it is

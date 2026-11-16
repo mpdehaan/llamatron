@@ -60,7 +60,7 @@ REVERSED_ENDS = '»'
 
 
 class TestMainPageStartedWithNoSet(UITest):
-    """The tracker started with no set named, the user's ask, opens with the main screen's cursor on Open."""
+    """The tracker started with no set named, opens with the main screen's cursor on Open."""
 
     def make_app(self):
         return LlamatronApp(document=self.document, cursor_on_open=True)
@@ -73,7 +73,7 @@ class TestMainPageStartedWithNoSet(UITest):
 class TestMainPage(UITest):
 
     async def test_the_header_keeps_the_crumbs_left_llamatron_centred_and_the_set_and_song_right(self):
-        # The user's design: the crumbs, which change with every page, in the left corner of the first line, llamatron centred, and the
+        # The crumbs, which change with every page, in the left corner of the first line, llamatron centred, and the
         # set and its song as one block at the right, just left of the save mark and the length.
         unsaved = MSG_SET_CRUMB.format(file=MSG_NO_FILE_CRUMB)
         song = MSG_SONG_CRUMB.format(song=MSG_DEFAULT_SONG_NAME)
@@ -103,7 +103,7 @@ class TestMainPage(UITest):
         self.assertTrue(self.title_line().rstrip().endswith(MSG_SAVED_MARK))
 
     async def test_o_opens_and_x_exports_on_the_main_screen_without_ctrl_and_the_cells_show_the_letters(self):
-        # The user's choice of 2026-11-09, to save a keystroke: the main screen's letters are its own. Ctrl+O and Ctrl+X still work.
+        # To save a keystroke: the main screen's letters are its own. Ctrl+O and Ctrl+X still work.
         text = self.text()
         # In the bar a column's names start at one place, so Open stands clear of its key by the room Save's longer key takes.
         open_line = next(line for line in text.splitlines() if PageName.OPEN in line)
@@ -195,7 +195,7 @@ class TestMainPage(UITest):
         self.assertFalse(self.document.is_dirty())
 
     async def test_a_large_console_shows_the_same_block_of_buttons_at_the_top_left_never_stretched(self):
-        # The user's rule: the buttons are the size they are on an 80 by 24 console, however large the window.
+        # The buttons are the size they are on an 80 by 24 console, however large the window.
         lines = [line.replace(REVERSED_STARTS + SPACE, NOTHING).replace(SPACE + REVERSED_ENDS, NOTHING).rstrip() for line in self.text().splitlines()]
         boxed = [line for line in lines if line.startswith((Box.TOP_LEFT, Box.DOUBLE_TOP_LEFT, Box.BOTTOM_LEFT, Box.DOUBLE_BOTTOM_LEFT))]
         self.assertTrue(boxed)
@@ -228,12 +228,12 @@ class TestMainPageOnAUsualConsole(UITest):
     SIZE = (80, 24)
 
     async def test_the_screen_is_named_once_and_the_stripe_carries_no_caption(self):
-        # The user's rule: the crumbs name the main screen, so the theme's stripe under the header says nothing.
+        # The crumbs name the main screen, so the theme's stripe under the header says nothing.
         self.assertEqual(self.text().count(Crumb.MAIN_SCREEN), 1)
         self.assertEqual(self.app.screen.caption(), NOTHING)
 
     async def test_the_status_line_stays_empty_until_something_is_refused_or_said(self):
-        # No description of the selected button: the line is for refusals and warnings here (the user's rule).
+        # No description of the selected button: the line is for refusals and warnings here.
         page = self.app.screen
         self.assertEqual(page.resting_status(), NOTHING)
         lines = self.text().splitlines()
@@ -314,7 +314,7 @@ class TestMainPageOnAUsualConsole(UITest):
         self.assertIn(PageName.CHAINS, boxed_line(self.text()))
 
     async def test_every_arrow_moves_by_the_geometry_drawn_and_stops_at_every_edge(self):
-        # The user's layout and rule: from each cell, where Up, Down, Left and Right go, the cell itself where the arrow stops at an edge.
+        # From each cell, where Up, Down, Left and Right go, the cell itself where the arrow stops at an edge.
         keys = keybindings.MainPage
         moves = {
             keys.ARRANGE: (keys.ARRANGE, keys.SONGS, keys.ARRANGE, keys.ARRANGE),
@@ -367,7 +367,7 @@ class TestMainPageOnAUsualConsole(UITest):
         self.assertEqual(self.text().count(Box.DOUBLE_TOP_LEFT), 1)
 
     async def test_in_the_bar_a_columns_keys_sit_under_the_buttons_keys_and_its_names_start_at_one_place(self):
-        # The user's design: Open is directly above Save though Save's key is longer, and both keys start where Songs' key does.
+        # Open is directly above Save though Save's key is longer, and both keys start where Songs' key does.
         lines = self.text().splitlines()
         save = next(line for line in lines if PageName.SAVE in line)
         opened = next(line for line in lines if PageName.OPEN in line)

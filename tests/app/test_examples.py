@@ -38,7 +38,7 @@ from tests.support.song_testing import pitches
 SONG = 'song'
 # Every song in examples/, including the demos, which test_demos.py checks more closely.
 EXAMPLE_PATHS = example_sets()
-# How long an example runs, in seconds, give or take the leeway, unless it came before the rule or the user asked for another length.
+# How long an example runs, in seconds, give or take the leeway, unless it came before the rule or is named below for another length.
 THREE_MINUTES = 180
 GENRE_WITH_A_SPACE = 'TV theme'
 FOLDER_OF_GENRE_WITH_A_SPACE = 'tv_theme'
@@ -51,7 +51,7 @@ WRITTEN_BEFORE_THE_LENGTH_RULE = {
     '12_sailor_arpeggiator.yml', '20_arrangement_shanty.yml', '17_complex_gifts_chain.yml', '10_mtn_king_direction.yml', 'entertainer.yml', '19_hocket_shanty.yml', '09_groove.yml', '01_hello_world.yml',
     '03_mary_keychange.yml', '02_pachelbel.yml', '11_ode_to_joy_ratchet.yml', '22_registers.yml', '04_scale.yml', '18_techno_morph.yml', '08_tie.yml',
 }
-# The examples the user asked to run another length, by name, with that length in seconds: the nine-minute video game piece, the
+# The examples that run another length, by name, with that length in seconds: the nine-minute video game piece, the
 # guitar showpiece, which is short as the solo it follows is, and the TV themes, each about a minute as a theme runs.
 OTHER_LENGTHS = {
     'incoming_message.yml': 526,
@@ -113,7 +113,7 @@ class TestExamples(unittest.TestCase):
         self.assertEqual(set(GENERATOR_SETTINGS) - used, set())
 
     def test_every_example_since_the_rule_lasts_about_three_minutes(self):
-        # The user's rule of 2026-11-11: a new example runs about three minutes unless the user asks for another length.
+        # A new example runs about three minutes unless it is named for another length.
         for path in self.paths:
             name = os.path.basename(path)
             if name in WRITTEN_BEFORE_THE_LENGTH_RULE:
@@ -191,7 +191,7 @@ class TestExamplesRenderToGeneralMidi(RendersEveryExample, unittest.TestCase):
 
 
 class TestExamplesHaveSounds(unittest.TestCase):
-    """Every example can be heard without a synth through its General MIDI export, the user's design of 2026-11-11."""
+    """Every example can be heard without a synth through its General MIDI export."""
 
     def test_every_melodic_track_that_plays_has_an_instrument_with_a_sound(self):
         for path in EXAMPLE_PATHS:
@@ -206,7 +206,7 @@ class TestExamplesHaveSounds(unittest.TestCase):
                         self.assertIsNotNone(setlist.get_instrument(track.get_instrument_name()).get_gm_sound())
 
     def test_every_example_plays_in_real_time_through_fluidsynth_out_of_the_box(self):
-        # The user's design of 2026-11-11: open an example, press Space on Arrange's corner, and hear it, with no synth and no DAW.
+        # Open an example, press Space on Arrange's corner, and hear it, with no synth and no DAW.
         for path in EXAMPLE_PATHS:
             setlist = Setlist.read_file(path)
             with self.subTest(path=path):

@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """Drifts as the song plays: one process for each drift, for the whole song, which every clip naming it in its chain hears.
 
-The user's design of 2026-11-11. A drift's clock runs from the top of the song, the scenes laid
+A drift's clock runs from the top of the song, the scenes laid
 end to end, and triggers every so often (its every, or a bar of the song's time signature). At
 each trigger it picks new amounts and holds them until the next. Its position between its
 versions A and B moves one step a trigger, over steps_to_b triggers, in its direction, always

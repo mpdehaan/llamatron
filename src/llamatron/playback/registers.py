@@ -23,8 +23,7 @@ adds. A RegisterTimeline then applies those
 changes in time order, and at the same moment in track order, starting from the values the scene
 starts with. Then every clip is played again with a RegisterReader, so each step sees the values
 at its own moment, after its own change. Registers only change pitches and velocities and whether
-a note sounds, never when anything plays or what a step sets or adds (the user's rule of
-2026-11-11: a condition or probability silences a note and never a change), so both plays go
+a note sounds, never when anything plays or what a step sets or adds (a condition or probability silences a note and never a change), so both plays go
 through exactly the same changes.
 """
 
@@ -131,7 +130,7 @@ class RegisterRecorder:
         return no_values()
 
     def is_counting(self):
-        """Return true: a clip played to count its changes plays every note, as if neither probability nor a condition silenced one, so that what an arpeggiator adds for its notes is counted the same in every take (the user's rule of 2026-11-11)."""
+        """Return true: a clip played to count its changes plays every note, as if neither probability nor a condition silenced one, so that what an arpeggiator adds for its notes is counted the same in every take."""
         return True
 
     def get_changes(self):

@@ -23,7 +23,7 @@ index.md, every chapter in docs/ beside it, in the subfolders docs/ has them in,
 rewriting the links to the guide: the guide's docs/X.md becomes X.md, and a chapter's ../GUIDE.md becomes
 index.md (../../GUIDE.md becoming ../index.md a folder down). It writes sidebar.json, the site's sidebar, from
 the guide's own tables of chapters, in their order: each chapter a page of its own, except that the tables
-under the headings GROUPED names make groups that open and close, the user's design, a group opening the page of
+under the headings GROUPED names make groups that open and close, a group opening the page of
 its own name and a ### heading making a group within a group.
 So the site lists exactly what the guide does, and the guide stays the one place a chapter is added. The Markdown
 in docs/ and GUIDE.md is never changed; the staging folder is built afresh each time, and git ignores it.
@@ -88,7 +88,7 @@ def sidebar(guide_text):
     The front page comes first. A table under a heading GROUPED doesn't name lists pages of their own;
     the tables under a heading it names make a group of that name that opens and closes, which opens
     the page of the same name when the group's first chapter is it, and a ### heading inside such a group
-    makes a group within it, the user's design; a group within one opens the page of its own name when its first chapter is
+    makes a group within it; a group within one opens the page of its own name when its first chapter is
     it, and a group within one that holds only that chapter is the chapter alone.
     """
     entries = [{TEXT: FRONT_PAGE_ITEM, LINK: FRONT_PAGE_LINK}]

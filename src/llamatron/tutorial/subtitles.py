@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The video tutorial's captions as a SubRip (.srt) file, the user's design, so that YouTube has them for search and
+"""The video tutorial's captions as a SubRip (.srt) file, so that YouTube has them for search and
 translation as well as in the picture: each sentence and key called out, from the second it was said until the next."""
 
 from llamatron.strings.narration import MSG_SUBTITLE_CUE, MSG_SUBTITLE_TIME

@@ -16,8 +16,8 @@
 
 """The player: launches a score's scenes and clips, and sends each clip's events to a sender as its moment comes.
 
-The user's design of 2026-11-09 and 2026-11-10, Live's words where Live has them, the clip's
-setting shown as Advance on the clip page. A scene launched by hand plays every clip of it. A scene
+The words are Live's where Live has them, and the clip's
+setting is shown as Advance on the clip page. A scene launched by hand plays every clip of it. A scene
 is done when every clip launched in it that doesn't loop has finished its repeats, and then each
 clip of the scene whose Advance is "With Scene", looping or not, sends a start to the clip directly
 below it, an empty slot counting as "With Scene". A clip whose Advance is "Next" sends its start the
@@ -31,7 +31,7 @@ finished, so it sends no start. A looping clip never finishes on its own: it loo
 is launched on its track or everything stops, so it doesn't hold its scene, and a scene whose every
 clip loops is never done, so the song waits there for the human. So with the defaults every example
 played from the top sends exactly what its export holds, which tests/realtime/test_realtime.py holds the
-player to. Until 2026-11-10 one looping clip held its scene, and the user changed that when the
+player to. One looping clip once held its scene, which changed when the
 registers demo never left its first scene.
 
 A launch by hand while anything plays is always at the next bar of the song's time signature, as
@@ -140,7 +140,7 @@ class Player:
         """Take a score rendered afresh, which the next launch plays from; what plays already keeps its events."""
         self._score = score
 
-    # Edits made while playing, the user's design: what plays takes the new score from a moment the song's Live response says.
+    # Edits made while playing: what plays takes the new score from a moment the song's Live response says.
 
     def update_score(self, *, score, responsiveness, scene_map, track_map):
         """Take a score rendered afresh after an edit, and change what plays to it: each clip from the moment responsiveness says, keeping its place in the music.

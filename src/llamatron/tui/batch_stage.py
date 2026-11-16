@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""What a batch video shows, moment by moment, once the title has gone: the user's design.
+"""What a batch video shows, moment by moment, once the title has gone.
 
 Arrange fades in, in grey on black, with the READY box over it and the cursor on the corner; after
 READY_SECONDS the song starts, and over GROW_SECONDS the box grows out into the scene frame while
@@ -36,7 +36,7 @@ from llamatron.tui.components.title_card import eased
 ARRANGE_FADE_IN_SECONDS = 0.6
 READY_SECONDS = 3.0
 GROW_SECONDS = 1.5
-# Alternating inside the frame, the user's design and the default for batch videos: the clips, then the visualizer, each
+# Alternating inside the frame, the default for batch videos: the clips, then the visualizer, each
 # for ALTERNATE_SECONDS, starting on the clips, each change a fade through black over ALTERNATE_FADE_SECONDS, one view
 # dimming out before the other comes in, so that nothing flashes.
 ALTERNATE_SECONDS = 10.0
@@ -157,7 +157,7 @@ class BatchStage:
         """Move the pulse on since the last frame: by the clock round the box, and round the frame at a speed the song's tempo sets, a lap every FRAME_LAP_BARS bars, blended as it grows; turn it round and take the next colour when the scene changes.
 
         It moves by the frames' smoothed length, never by the beats counted since the last frame,
-        which arrive unevenly and made it jerky (the user's ask): the tempo sets its speed, and
+        which arrive unevenly and made it jerky: the tempo sets its speed, and
         nothing steps it.
         """
         seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_STEP_SECONDS)

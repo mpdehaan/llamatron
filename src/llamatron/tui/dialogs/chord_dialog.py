@@ -14,15 +14,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The Chord dialog (the user's design): one chord's quality, inversion, tensions and borrowed scale as four lists side by side, in the
-user's order, with what the chord comes to said under them as the choice moves, its name in the scale it is
+"""The Chord dialog: one chord's quality, inversion, tensions and borrowed scale as four lists side by side,
+with what the chord comes to said under them as the choice moves, its name in the scale it is
 drawn from and its exact notes.
 
 The pattern editor's Chord, Tension and Scale rows, the piano roll and a progression's chord editor all open it, so a chord is
 chosen one way everywhere. Up and Down move in a list, Left, Right and Tab go from list to list, Space turns the tension
 under the cursor on or off, Enter answers with the three choices and Esc cancels, changing nothing.
 
-The scale list holds categories of scale types, not the fifty types (the user's design): Space or Enter on a category opens
+The scale list holds categories of scale types, not the fifty types: Space or Enter on a category opens
 its flyout, drawn as a box of the dialog's size over it, a little down and to the right, so that the two read as a stack, with the category's scale types, where Up and Down move, Enter picks one and
 closes the flyout, and Esc or Left closes it with nothing changed. A flyout is not a dialog: nothing opens over the Chord
 dialog. After a pick the cursor goes on to the qualities, so that the next Enter takes the chord.
@@ -41,7 +41,7 @@ from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import ARROWS_LEFT_RIGHT, Key
 from llamatron.tui import keybindings
 
-# The four lists, left to right, in the user's order: quality, inversion, tensions, scale.
+# The four lists, left to right: quality, inversion, tensions, scale.
 QUALITY_LIST = 0
 INVERSION_LIST = 1
 TENSION_LIST = 2
@@ -224,7 +224,7 @@ class ChordDialog(Dialog):
         )
 
     def scale_row_text(self, row):
-        """Return a row of the scale list: the row that borrows none, or a category, drawn as a button since it opens a flyout (the user's design), with the scale type
+        """Return a row of the scale list: the row that borrows none, or a category, drawn as a button since it opens a flyout, with the scale type
         borrowed after the name of the one that holds it, the only row with the mark."""
         if row == NOT_BORROWED_ROW:
             return MSG_SCALE_NOT_BORROWED
@@ -283,7 +283,7 @@ class ChordDialog(Dialog):
         return [*lines, *[Text(NOTHING)] * (most - len(lines))]
 
     def wanted_width(self):
-        """Return the width at which every list's keys fit on one line, so that the dialog is one size on every list (the user's design)."""
+        """Return the width at which every list's keys fit on one line, so that the dialog is one size on every list."""
         return max(legend(keys=self.list_keys(part), width=WIDEST)[0].cell_len for part in range(LISTS)) + DIALOG_MARGIN
 
     def sentences(self, width):
@@ -315,7 +315,7 @@ class ChordDialog(Dialog):
 
     def sentences_and_keyboard(self, width):
         """Return what is said of the choice and then, where the scale is known for certain and the console has the room, the
-        keyboard, one blank line under the last sentence (the user's design), the lines left over under it so that the dialog
+        keyboard, one blank line under the last sentence, the lines left over under it so that the dialog
         keeps its height as the choice moves. The keyboard can't be selected."""
         keyboard = self.keyboard(self.choice()) if self.keyboard is not None and self.has_room_for_keyboard(width) else None
         if keyboard is None:

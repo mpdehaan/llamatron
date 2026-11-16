@@ -325,8 +325,8 @@ class UITest(unittest.IsolatedAsyncioTestCase):
     async def type(self, text):
         """Type text into the prompt, the picker's search, the list's search or the description that is open, and fail when none is.
 
-        Typing a name while a page is showing would press the page's keys, one per letter, and on
-        2026-11-09 two tests passed that way: the key that should have opened the prompt had stopped
+        Typing a name while a page is showing would press the page's keys, one per letter, and
+        two tests once passed that way: the key that should have opened the prompt had stopped
         working, and the letter a of the name fast pressed the new add key.
         """
         self.assertTrue(self.app.screen.takes_text(), NOTHING_TAKES_TEXT.format(text=text, screen=type(self.app.screen).__name__))
@@ -382,7 +382,7 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         return self.text().splitlines()[SONG_LINE]
 
     def assert_header(self, *, set_crumb, song_crumb):
-        """Check the header's right side, the user's design: the set on the first line and the song on the second, one block starting in one column, left of the save mark and the length."""
+        """Check the header's right side: the set on the first line and the song on the second, one block starting in one column, left of the save mark and the length."""
         first = self.title_line()
         second = self.song_line()
         self.assertIn(set_crumb, first)
@@ -397,7 +397,7 @@ class UITest(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(line.index(PROGRAM_NAME), (len(line) - len(PROGRAM_NAME)) // 2)
 
     def crumbs_line(self):
-        """Return the header's line with the crumbs, which say where the page was reached from, in its left corner: the first, the user's design."""
+        """Return the header's line with the crumbs, which say where the page was reached from, in its left corner: the first."""
         return self.text().splitlines()[CRUMBS_LINE]
 
     def assert_buttons_come_last_after_a_blank_line(self):
@@ -452,7 +452,7 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         """Move a settings page's cursor to the field with this label, wherever the page puts it, among the fields that show, which leave out a closed section's."""
         screen = self.app.screen
         if hasattr(screen, 'move_in_grid'):
-            # The Registers page is a grid, the user's design: the cell is reached with Down and Up, then Right and Left.
+            # The Registers page is a grid: the cell is reached with Down and Up, then Right and Left.
             columns = len(screen.fields()) // len(REGISTER_NAMES)
             row, column = divmod([field.label for field in screen.fields()].index(label), columns)
             here_row, here_column = divmod(screen.place, columns)
@@ -474,7 +474,7 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         labels = [field.label for field in (screen.shown_fields() if hasattr(screen, 'shown_fields') else screen.fields())]
         target = labels.index(label)
         first_button = screen.first_button_place() if hasattr(screen, 'first_button_place') else len(labels)
-        # The buttons are a row under the settings, the user's design: Down reaches the first and Left and Right move along them,
+        # The buttons are a row under the settings: Down reaches the first and Left and Right move along them,
         # and Up from any of them goes back to the last setting.
         if screen.place >= first_button and target < first_button:
             await self.press(Key.UP)

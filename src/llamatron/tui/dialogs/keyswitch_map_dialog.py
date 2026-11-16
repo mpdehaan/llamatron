@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""An instrument's Keyswitch Map, the user's design: ten slots, numbered from 0, each with a name and the note that switches it.
+"""An instrument's Keyswitch Map: ten slots, numbered from 0, each with a name and the note that switches it.
 
 Up and Down move through the slots and down to the OK and CANCEL buttons. On a slot, N names it,
 Bksp empties it, and Enter opens the note picker, drawn over the map two cells down and to the
@@ -52,7 +52,7 @@ BUTTON_BINDINGS = (keybindings.KeyswitchMapDialog.OK, keybindings.KeyswitchMapDi
 # The styles of the picker's keys: the key picked filled in the Chord dialog's green, the rest dim.
 KEY_STYLES = {KeyKind.CHORD: Style.CHORD_KEY, KeyKind.OUTSIDE: Style.DIM}
 ONE_HALF_STEP = 1
-# Where the cursor is along a slot's row, the user's design: on the name, where Enter renames, or on the note, where Enter opens the note picker; the slot's number is only text at the left.
+# Where the cursor is along a slot's row: on the name, where Enter renames, or on the note, where Enter opens the note picker; the slot's number is only text at the left.
 NAME_CELL = 0
 NOTE_CELL = 1
 CELL_COUNT = 2
@@ -60,7 +60,7 @@ SPACE = ' '
 
 
 def first_note_offered(keyswitches):
-    """Return the note the picker opens on for a slot with none: a half step above the map's highest note, or the lowest C for an empty map (the user's choice)."""
+    """Return the note the picker opens on for a slot with none: a half step above the map's highest note, or the lowest C for an empty map."""
     notes = [keyswitch.note for keyswitch in keyswitches if keyswitch.note is not None]
     return min(max(notes) + ONE_HALF_STEP, MAX_MIDI_NUMBER) if notes else MIN_MIDI_NUMBER
 
@@ -156,7 +156,7 @@ class KeyswitchMapDialog(Dialog):
         self.picking = None
 
     def pick_note(self, name):
-        """Move a key along, staying within the octave shown, the user's design of an octave picked apart from the key."""
+        """Move a key along, staying within the octave shown, since the octave is picked apart from the key."""
         within = self.picking % HALF_STEPS_PER_OCTAVE
         moved = cursor_moved(place=within, name=name, count=HALF_STEPS_PER_OCTAVE)
         self.picking = min(self.picking - within + moved, MAX_MIDI_NUMBER)

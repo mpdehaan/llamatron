@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Digital rain: green streams of ones and zeros falling down the screen, the user's design after the film The Matrix.
+"""Digital rain: green streams of ones and zeros falling down the screen, after the film The Matrix.
 
 Each column of characters holds a one or a zero, and a few change every frame, as the code in the
 film does; only the glyphs change, never the brightness. A note starting sends a stream down from
@@ -22,7 +22,7 @@ the top in the column of its pitch, low at the left, its head pale green and as 
 loud, its tail fading behind it; the streams fall STREAM_ROWS_PER_BEAT rows a beat, each a little
 faster or slower, so that the rain keeps to the tempo. The whole green brightens as more plays and
 settles back, gently, and a sparse dim rain keeps falling in silence. It draws only in green, the
-heads never white. The amounts are named constants here, for the user to tune.
+heads never white. The amounts are named constants here, to tune.
 """
 
 import random

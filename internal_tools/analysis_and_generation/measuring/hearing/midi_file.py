@@ -44,7 +44,7 @@ PROGRAM_MESSAGE = 'program_change'
 NOTE_ON = 'note_on'
 NOTE_OFF = 'note_off'
 # General MIDI's pianos, numbered from 1, and the word a track named for a piano holds: a piano's two staves are often written as
-# two tracks, which are almost certainly one player, so they are read as one part (the user's direction).
+# two tracks, which are almost certainly one player, so they are read as one part.
 PIANO_PROGRAMS = range(1, 9)
 PIANO_WORD = 'piano'
 PIANO_PART = 'piano'

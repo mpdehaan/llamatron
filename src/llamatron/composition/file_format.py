@@ -75,17 +75,17 @@ class SetlistSetting:
     OCTAVE_LABELS = 'octave_labels'
     DEFAULT_FOLLOW_ACTION = 'default_follow_action'
     REAL_TIME = 'real_time'
-    # The visualizer mode Arrange's visualizer key shows first, unless a song names its own, and the modes left out of the key's list (the user's design).
+    # The visualizer mode Arrange's visualizer key shows first, unless a song names its own, and the modes left out of the key's list.
     VISUALIZER = 'visualizer'
     HIDDEN_VISUALIZERS = 'hidden_visualizers'
-    # The order the Generators page lists every generator in, each written as its kind and its name, the user's design.
+    # The order the Generators page lists every generator in, each written as its kind and its name.
     GENERATOR_ORDER = 'generator_order'
     PROTECTED = 'protected'
 
 
 # The pattern groups the Patterns page shows closed, a list of names at the top of a file. It is not one of the set's settings:
 # opening or closing a group is looking, not editing, so it is no part of the set's data, of undo or of what counts as unsaved
-# (the user's design), and is only written with the file and read from it.
+#, and is only written with the file and read from it.
 CLOSED_PATTERN_GROUPS = 'closed_pattern_groups'
 
 
@@ -98,15 +98,15 @@ class SongSetting:
     SCALE = 'scale'
     SEED = 'seed'
     GROOVE = 'groove'
-    # A short word or two saying what kind of music the song is, only for people to read (the user's design of 2026-11-11).
+    # A short word or two saying what kind of music the song is, only for people to read.
     GENRE = 'genre'
-    # When an edit made while the song plays in real time is heard on what plays (the user's design).
+    # When an edit made while the song plays in real time is heard on what plays.
     LIVE_RESPONSIVENESS = 'live_responsiveness'
-    # The visualizer mode Arrange's visualizer key shows first for this song, over the set's (the user's design).
+    # The visualizer mode Arrange's visualizer key shows first for this song, over the set's.
     VISUALIZER = 'visualizer'
-    # The instrument of the set that Listen plays a pattern through, over the pattern's own track (the user's design).
+    # The instrument of the set that Listen plays a pattern through, over the pattern's own track.
     PREVIEW_INSTRUMENT = 'preview_instrument'
-    # What the song wizard was told when it made the song, kept so that the wizard can start from it again (the user's design).
+    # What the song wizard was told when it made the song, kept so that the wizard can start from it again.
     WIZARD = 'wizard'
 
 
@@ -130,7 +130,7 @@ VISUALIZER_NAMES = [
 def sensible_visualizer(value):
     """Return a visualizer setting made sensible: a mode's name as it is, and anything else, a mode taken out of the program among them, None.
 
-    A visualizer setting is never refused, the user's rule, since modes come and go and no set should stop opening for one.
+    A visualizer setting is never refused, since modes come and go and no set should stop opening for one.
     """
     return value if isinstance(value, str) and value in VISUALIZER_NAMES else None
 
@@ -175,13 +175,13 @@ class TrackSetting:
     VELOCITY_REGISTER = 'velocity_register'
     # The chains every clip of the track runs, after the clip's and the scene's.
     CHAINS = 'chains'
-    # How the track's chords are strummed, unless a clip strums its own way (the user's design of 2026-11-11).
+    # How the track's chords are strummed, unless a clip strums its own way.
     STRUM_DIRECTION = 'strum_direction'
     STRUM_SPREAD = 'strum_spread'
     STRUM_FADE = 'strum_fade'
     STRUM_LOOSE_TIMING = 'strum_loose_timing'
     STRUM_UPSTROKE_STRINGS = 'strum_upstroke_strings'
-    # The Euclidean rhythm that masks every clip on the track: only a note starting on one of its hits plays (the user's design of 2026-11-11).
+    # The Euclidean rhythm that masks every clip on the track: only a note starting on one of its hits plays.
     EUCLID_HITS = 'euclid_hits'
     EUCLID_STEPS = 'euclid_steps'
     EUCLID_ROTATE = 'euclid_rotate'
@@ -197,7 +197,7 @@ class PatternSetting:
     ENTRY_SIZE = 'entry_size'
     DRUM = 'drum'
     DIRECTION = 'direction'
-    # The group the Patterns page lists the pattern under, the user's design: any text, or none for a pattern of an older file.
+    # The group the Patterns page lists the pattern under: any text, or none for a pattern of an older file.
     GROUP = 'group'
 
 
@@ -264,7 +264,7 @@ class ClipSlotSetting:
     PATTERN = 'pattern'
     # Only read, from a file saved before a clip held a list of chains: one chain's name, read as a list of one.
     CHAIN = 'chain'
-    # The chains a clip runs, in order, before its scene's and its track's (the user's design of 2026-11-11).
+    # The chains a clip runs, in order, before its scene's and its track's.
     CHAINS = 'chains'
     # How the clip's chords are strummed, over its track's.
     STRUM_DIRECTION = 'strum_direction'
@@ -272,7 +272,7 @@ class ClipSlotSetting:
     STRUM_FADE = 'strum_fade'
     STRUM_LOOSE_TIMING = 'strum_loose_timing'
     STRUM_UPSTROKE_STRINGS = 'strum_upstroke_strings'
-    # How busy, how loud and how long its notes are over time, over its scene's (the user's design of 2026-11-11).
+    # How busy, how loud and how long its notes are over time, over its scene's.
     DENSITY_START = 'density_start'
     DENSITY_END = 'density_end'
     DENSITY_OVER = 'density_over'
@@ -310,7 +310,7 @@ class SceneSetting:
     LAUNCH_TOGETHER = 'launch_together'
     # The chains every clip of the scene runs, after the clip's own.
     CHAINS = 'chains'
-    # How busy, how loud and how long its clips' notes are over the scene (the user's design of 2026-11-11).
+    # How busy, how loud and how long its clips' notes are over the scene.
     DENSITY_START = 'density_start'
     DENSITY_END = 'density_end'
     DENSITY_OVER = 'density_over'
@@ -374,7 +374,7 @@ class RegisterSetting:
 
 
 class AtLimit:
-    """What a register does when an add would take it past its minimum or maximum (the user's design of 2026-11-11)."""
+    """What a register does when an add would take it past its minimum or maximum."""
 
     # Stop at the end it reached.
     STOP = 'stop'
@@ -432,7 +432,7 @@ STEP_SIZE_CHOICES = ['1/64', '1/32', '1/16', '1/8', '1/4', '1/2', '1']
 # A time setting written in bars, like 2 bars, which the song's time signature turns into a length.
 ONE_BAR_WRITTEN = '1 bar'
 BARS_WRITTEN = '{count} bars'
-# Every time setting chooses from one list (the user's rule of 2026-11-11): Step, Every and Over,
+# Every time setting chooses from one list: Step, Every and Over,
 # and the Harmonizer's Delay. Each value is as a file writes it: a length in whole notes, each
 # triplet after its straight value and then the dotted one, then bars.
 TIME_CHOICES = [
@@ -469,9 +469,9 @@ class InstrumentSetting:
 
     DEVICE = 'device'
     CHANNEL = 'channel'
-    # The General MIDI sound a General MIDI export gives the instrument's tracks, numbered 1 to 128 as people number them (the user's design of 2026-11-11).
+    # The General MIDI sound a General MIDI export gives the instrument's tracks, numbered 1 to 128 as people number them.
     GM_SOUND = 'gm_sound'
-    # The notes that switch a plugin's articulations, a list of the ten slots, each blank or a name and a note (the user's design).
+    # The notes that switch a plugin's articulations, a list of the ten slots, each blank or a name and a note.
     KEYSWITCHES = 'keyswitches'
     # How many milliseconds before its note a keyswitch is sent, for a plugin that needs it early.
     KEYSWITCH_LEAD = 'keyswitch_lead'
@@ -484,18 +484,18 @@ class KeyswitchSetting:
     NOTE = 'note'
 
 
-# An instrument's keyswitch slots, numbered from 0 as a computer counts (the user's choice), which a pattern's Keyswitch row names.
+# An instrument's keyswitch slots, numbered from 0 as a computer counts, which a pattern's Keyswitch row names.
 KEYSWITCH_SLOT_COUNT = 10
 KEYSWITCH_SLOTS = tuple(range(KEYSWITCH_SLOT_COUNT))
 
 
 # The Device an instrument names to play through FluidSynth, the software synthesizer the tracker starts, rather than
-# through a MIDI port: its star can never begin a port's name, so it can't be mistaken for one (the user's design of 2026-11-11).
+# through a MIDI port: its star can never begin a port's name, so it can't be mistaken for one.
 FLUIDSYNTH_DEVICE = '*FluidSynth'
 
 
 class FollowAction:
-    """What a clip does in real-time playback when it finishes, which no export reads: Live's word for the same thing, shown as Advance on the clip page (the user's design of 2026-11-10)."""
+    """What a clip does in real-time playback when it finishes, which no export reads: Live's word for the same thing, shown as Advance on the clip page."""
 
     # The clip sends a start to the clip directly below it when the whole scene is done: when every clip of the scene that doesn't loop has finished.
     WITH_SCENE = 'with_scene'
@@ -528,7 +528,7 @@ LLAMATRON_OCTAVES_SINCE = '1.0.30'
 # read as a set holding that one song.
 SETLISTS_SINCE = '1.0.39'
 # Files saved before this version held the long text under description, which is now notes, and a
-# description is one line saying what the set is (the user's design of 2026-11-10).
+# description is one line saying what the set is.
 NOTES_SINCE = '1.0.155'
 
 # The registers, in the order the Registers page and the pattern editor show them.
@@ -877,7 +877,7 @@ class NamedRhythm:
 
 
 class Restart:
-    """When a generator starts over: with every clip, as it always has; the first time each scene plays, carrying on through its repeats; or never, running along the song from its top (the user's design of 2026-11-11)."""
+    """When a generator starts over: with every clip, as it always has; the first time each scene plays, carrying on through its repeats; or never, running along the song from its top."""
 
     EVERY_CLIP = 'every_clip'
     ON_NEW_SCENE = 'on_new_scene'

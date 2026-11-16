@@ -131,7 +131,7 @@ class TestSettingArrows(UITest):
         self.assertEqual(self.document.song().get_octave_labels(), OctaveLabels.LIVE)
 
     async def test_default_follow_action_is_chosen_from_a_list_and_written_only_when_set(self):
-        # Real-time playback alone reads it (the user's design of 2026-11-09), and a set that never sets it writes nothing, so the demos stay as they are.
+        # Real-time playback alone reads it, and a set that never sets it writes nothing, so the demos stay as they are.
         await self.press(keybindings.MainPage.FILE)
         await self.select_field(MSG_DEFAULT_FOLLOW_ACTION_LABEL)
         self.assertEqual(self.document.setlist().get_default_follow_action(), FollowAction.WITH_SCENE)
@@ -154,7 +154,7 @@ class TestSettingArrows(UITest):
 
 
 class TestPickerMark(UITest):
-    """A settings field whose ENTER opens a list shows a dim mark after its value, the user's choice; a typed one shows none."""
+    """A settings field whose ENTER opens a list shows a dim mark after its value; a typed one shows none."""
 
     async def test_scale_shows_the_mark_and_tempo_does_not(self):
         await self.press(keybindings.MainPage.SONGS, Key.ENTER)
@@ -165,7 +165,7 @@ class TestPickerMark(UITest):
 
 class TestButtonRowOnASettingsPage(UITest):
     """A settings page's buttons are one row under its settings: Down from the last setting reaches the first, Left and Right
-    move along them, Up from any goes back to the last setting, and Down on them stays, the user's design."""
+    move along them, Up from any goes back to the last setting, and Down on them stays."""
 
     async def test_the_arrows_reach_and_leave_the_buttons(self):
         await self.press(keybindings.MainPage.FILE)

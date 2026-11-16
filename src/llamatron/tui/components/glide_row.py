@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The Glide row, a toggle drawn with the dot like Tie: the user chose the dot over a bar into the next step on 2026-11-09, since the bar didn't read well."""
+"""The Glide row, a toggle drawn with the dot like Tie: the dot was chosen over a bar into the next step, since the bar didn't read well."""
 
 from llamatron.tui.components.toggle_row import ToggleRow
 from llamatron.tui import keybindings

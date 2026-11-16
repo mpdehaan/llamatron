@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Glide, Shorten, Rush and Drag, the user's design of 2026-11-11: rows of on-or-off steps running from each clip's start, gliding or shortening the notes starting on the steps that are on, or moving them early or late."""
+"""Glide, Shorten, Rush and Drag: rows of on-or-off steps running from each clip's start, gliding or shortening the notes starting on the steps that are on, or moving them early or late."""
 
 import unittest
 

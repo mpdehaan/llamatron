@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""A grab takes the root of the chord it hears, the note the chord was built on, however the chord is inverted or voiced, the user's rule of 2026-11-11."""
+"""A grab takes the root of the chord it hears, the note the chord was built on, however the chord is inverted or voiced."""
 
 import unittest
 

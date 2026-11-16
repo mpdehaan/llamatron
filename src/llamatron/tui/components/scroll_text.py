@@ -14,10 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The demo's name scrolling across the screen: what a recording shows after the title, the user's design.
+"""The demo's name scrolling across the screen: what a recording shows after the title.
 
 The words are DEMO: and the set's file name as words, like DEMO: HOCKET SHANTY, or whatever the
-recorder was told to show instead, in light orange on black (the user's choice, where the title is blue) and in the title's block letters,
+recorder was told to show instead, in light orange on black (where the title is blue) and in the title's block letters,
 which are capitals, drawn large. The words come in at the right edge, cross at one speed and
 leave at the left.
 """

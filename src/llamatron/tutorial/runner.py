@@ -37,12 +37,12 @@ from llamatron.tutorial.plan import TutorialPlan
 from llamatron.tui.drawing import NOTHING
 from llamatron.tutorial.steps import Gap, Press, Say, Wait
 
-# The seconds between two keys when a video is made, how many of those a sentence is given, and the share of them a key typed into a dialog waits, the user's choice of 2026-11-10: typing into a dialog goes twice as fast.
+# The seconds between two keys when a video is made, how many of those a sentence is given, and the share of them a key typed into a dialog waits: typing into a dialog goes twice as fast.
 HUMAN_PACE = 0.35
 SAY_PAUSES = 6
 DIALOG_TYPING_SHARE = 0.5
 NO_PACE = 0.0
-# The extra seconds after every caption, so that it can be read, the user's choice of 2026-11-10; nothing when the tutorial runs at no pace.
+# The extra seconds after every caption, so that it can be read; nothing when the tutorial runs at no pace.
 LINE_SECONDS = 1.0
 # How fast a viewer reads a caption, in characters a second, which gives a long caption longer than a short one.
 READING_CHARACTERS_PER_SECOND = 15
@@ -164,7 +164,7 @@ class TutorialRunner:
 
     async def _pause(self, *, pilot, seconds):
         """Let the tracker handle the key, then wait the pace. At no pace, as the tests run it, the tracker only handles what the key sent, with no
-        wait for the computer to go idle, which took a fiftieth of a second a key or far more on a busy machine (the user's idea of 2026-11-11)."""
+        wait for the computer to go idle, which took a fiftieth of a second a key or far more on a busy machine."""
         if self.pace > NO_PACE:
             await pilot.pause()
             await asyncio.sleep(seconds)

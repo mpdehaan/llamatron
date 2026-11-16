@@ -22,7 +22,7 @@ cells and runs through the dividers it crosses, so one held note is one bar and 
 to back keep the divider between them; the cursor is shaded on a note and a reversed blank on an
 empty cell. Rows outside the one playing track's octaves are dim and marked off. A note whose gate
 ends inside a step fills only part of its last cell, as near as five columns can, so the bar ends
-where the sound does, the user's design of 2026-11-08; the header's second line names the scale
+where the sound does; the header's second line names the scale
 and the entry size.
 """
 
@@ -236,7 +236,7 @@ class RollDrawing(GridDrawing):
         editor = self._editor
         on_row = pitch == roll.pitch
         in_range = roll.in_range(pitch)
-        # The cursor's cell stands between two bold double bars, the user's choice of 2026-11-08 over a box over the rows beside it, since a shaded bar alone was hard to find.
+        # The cursor's cell stands between two bold double bars, chosen over a box over the rows beside it, since a shaded bar alone was hard to find.
         cursor_edges = self.cursor_edges() if on_row else ()
         beats = self.beat_steps()
         line = Text(no_wrap=True)
@@ -298,7 +298,7 @@ class RollDrawing(GridDrawing):
 
     def with_keyswitch_lights(self, *, line, first, last):
         """Return the roll's top row with a light in the middle of the cell of every step shown whose note has keyswitches, drawn over a note's bar when one is
-        there (the user's design): the top row stays in view however far the roll scrolls. The line drawn is kept as it is, and the lights go on a copy."""
+        there: the top row stays in view however far the roll scrolls. The line drawn is kept as it is, and the lights go on a copy."""
         editor = self._editor
         steps = [step for step in range(first, last) if editor.value(row=Row.KEYSWITCH, step=step) and editor.is_note(step=step)]
         if not steps:
@@ -314,7 +314,7 @@ class RollDrawing(GridDrawing):
 
     def with_read_head(self, *, lines, first, last):
         """Return the roll's lines with the read head down them at the left edge of the step that sounds, while the pattern plays: a thin light yellow line, left
-        off wherever a note's bar runs through the edge (the user's design). The lines drawn are kept as they are, and the read head goes on copies."""
+        off wherever a note's bar runs through the edge. The lines drawn are kept as they are, and the read head goes on copies."""
         step = self._editor.playing_step()
         if step is None or not first <= step < last:
             return lines

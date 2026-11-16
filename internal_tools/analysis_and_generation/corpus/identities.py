@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""One identity for each creator across every source (the user's direction): the same person is DebussyC in Mutopia, Claude
+"""One identity for each creator across every source: the same person is DebussyC in Mutopia, Claude
 Debussy in MAESTRO and debussy in a composer's collection, and a band is "The Beatles" in one place and "Beatles" in another, so
 every creator is resolved to a canonical key and a display name before anything is grouped, merged or compared, and conclusions
 drawn across sources neither split one person in two nor count them twice."""

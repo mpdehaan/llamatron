@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""What Arrange shows in its details view, the user's design: D shows, under each bar, the details that are cluttery while performing but needed to understand how a song is put together.
+"""What Arrange shows in its details view: D shows, under each bar, the details that are cluttery while performing but needed to understand how a song is put together.
 
 Every detail is a line of its own under the bar of what holds it, a scene, a clip, or a track's
 name in the header, and shows only when it isn't the default. Chains come first, each by its name
@@ -40,7 +40,7 @@ from llamatron.strings.marks import (
 from llamatron.tui import themes
 from llamatron.tui.drawing import Style, fit
 
-# The widest a detail line is drawn, the user's choice: a longer one is cut with an ellipsis. A clip's name is never cut.
+# The widest a detail line is drawn: a longer one is cut with an ellipsis. A clip's name is never cut.
 DETAIL_WIDTH = 24
 # The key the layout is remembered under.
 DETAILS_LAYOUT = 'arrange details layout'
@@ -112,7 +112,7 @@ def detailed_clip_text(clip_slot, *, repeats_left=None):
 
 
 def detail(text, *, style=Style.PLAIN, target=None):
-    """Return a line of details, cut to DETAIL_WIDTH, naming a Target that Enter opens, or nothing; a line naming a thing is drawn in the colour of its kind's pages, the user's rule."""
+    """Return a line of details, cut to DETAIL_WIDTH, naming a Target that Enter opens, or nothing; a line naming a thing is drawn in the colour of its kind's pages."""
     colour = themes.target_theme(target.kind) if target else None
     if colour is not None:
         style = themes.text_style(colour)
@@ -121,7 +121,7 @@ def detail(text, *, style=Style.PLAIN, target=None):
 
 def chain_lines(*, song, names):
     """Return a line for each chain the cell runs, chain: name, in the order they run, in the chains' theme colour, then the +
-    line that adds one, the user's design: a cell holds chains, and a chain's generators are seen on the chain's own page."""
+    line that adds one: a cell holds chains, and a chain's generators are seen on the chain's own page."""
     lines = [detail(MSG_DETAILS_CHAIN.format(name=name), target=Target(kind=Section.CHAINS, name=name, place=place)) for place, name in enumerate(names)]
     return lines + [detail(MSG_DETAILS_ADD_CHAIN, style=Style.DIM, target=Target(kind=ADD_CHAIN, name=None))]
 
@@ -208,7 +208,7 @@ def track_details(*, song, track):
 
 
 def or_stock(lines):
-    """Return a cell's lines of details, with the one word stock, in red, the user's design, above the + of a cell with nothing else."""
+    """Return a cell's lines of details, with the one word stock, in red, above the + of a cell with nothing else."""
     if all(line.target is not None and line.target.kind == ADD_CHAIN for line in lines):
         return [detail(MSG_DETAILS_STOCK, style=Style.DETAILS_STOCK), *lines]
     return lines

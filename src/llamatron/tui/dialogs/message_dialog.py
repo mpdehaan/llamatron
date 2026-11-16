@@ -38,7 +38,7 @@ class MessageDialog(Dialog):
         return [self.bind(self.KEYS.CLOSE, action=lambda: self.dismiss(None))]
 
     def lines(self, width):
-        """Return the messages, a blank line and the one OK button, boxed as a real window's, the user's design."""
+        """Return the messages, a blank line and the one OK button, boxed as a real window's."""
         _, key_name, _ = self.KEYS.CLOSE
         return [*self.message_lines(width), Text(NOTHING), *button_row(buttons=[(key_name, MSG_OK_BUTTON)], selected=0)]
 

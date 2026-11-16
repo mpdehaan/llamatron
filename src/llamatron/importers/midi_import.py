@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The MIDI import: a MIDI file made into a song of the open set, with the patterns and scales it needs, the user's design of 2026-11-10.
+"""The MIDI import: a MIDI file made into a song of the open set, with the patterns and scales it needs.
 
 MidiImport reads the file once, says what it holds (found), and makes the song for a set and a
 set of choices as often as the choices change (imported), without changing the set, so that the

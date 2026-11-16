@@ -36,7 +36,7 @@ class GrabSource:
         """Return the MIDI number of the note most recently started at or before a time, or None.
 
         A chord gives its root, the note it was built on, which is its first note however it's
-        inverted or voiced (the user's rule of 2026-11-11), where it gave its lowest until
+        inverted or voiced, where it gave its lowest until
         inversions came. Two sounds starting together give the first one's.
         """
         latest = self._latest_start_by(time)

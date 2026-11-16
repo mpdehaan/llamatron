@@ -124,7 +124,7 @@ class TestDirectionsAndGrab(UITest):
         render_song(self.document.song())
 
     async def test_a_grab_step_takes_a_chord_and_the_description_names_the_chord_and_no_note(self):
-        # The user asked on 2026-11-09 for a grab step to hold a chord, built on the grabbed note.
+        # A grab step holds a chord, built on the grabbed note.
         await self.press(keybindings.MainPage.PATTERNS, Key.ENTER, keybindings.PatternEditor.TO_EDITOR)
         self.document.set_step_value(name=TUNE, row=Row.GRAB, step=0, value=True)
         self.document.changed()

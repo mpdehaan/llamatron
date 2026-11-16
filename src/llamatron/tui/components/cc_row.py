@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """A CC row: a value from 0 to 127 on any step, one line of numbers, labelled with the CC number the lane sends.
 
-The user dropped the bars drawn above the numbers on 2026-11-08, so a CC row is one line like
+The bars once drawn above the numbers were dropped, so a CC row is one line like
 Velocity. The label says which CC number the lane sends on the tracks that play the pattern, like
 CC 1 (74), or (off) for a lane that sends nothing on them, or (?) when the tracks disagree, and
 plain CC 1 when no track plays the pattern yet.

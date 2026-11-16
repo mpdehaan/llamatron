@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The row of track names at the top of the Arrange page, where tracks are added, duplicated, inserted, moved,
-renamed and deleted since the Tracks page went on 2026-11-07, and the track editor it opens."""
+renamed and deleted since the Tracks page went, and the track editor it opens."""
 
 from tests.support.ui_testing import UITest, back_key, forward_key, key_of
 from llamatron.composition.file_format import REGISTER_NAMES, ClipSlotSetting, PatternSetting, TrackSetting

@@ -168,7 +168,7 @@ class PatternDrawing(GridDrawing):
             line.append(Box.BAR, style=Style.DIM)
             line.append(fit(text=SPACE + label, width=self.label_width()), style=self.label_style(row=row, on_row=on_row, number=number))
             if row.marks_label():
-                # A section heading has no cells, so no divider crosses it: the dividers above end in the rule over it and the ones below start in the rule under it, the user's ask of 2026-11-09.
+                # A section heading has no cells, so no divider crosses it: the dividers above end in the rule over it and the ones below start in the rule under it.
                 line.append(SPACE * ((last - first) * (CELL_WIDTH + 1)))
                 line.append(Box.BAR, style=Style.DIM)
                 lines.append(line)

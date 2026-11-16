@@ -40,8 +40,8 @@ class BandBranch(Branch):
 
     def fields(self):
         choices = self.choices()
-        # A player with no way of playing written for the subgenre is not offered, the user's rule.
-        # Sounds is the band's, which every player follows unless the player has a Sound of its own, the user's design.
+        # A player with no way of playing written for the subgenre is not offered.
+        # Sounds is the band's, which every player follows unless the player has a Sound of its own.
         sounds = ChoiceField(page=self.page(), label=MSG_WIZARD_SOUNDS_LABEL, choices=list(BAND_SOUNDS), current=choices.get_band_sounds(), set=self.page().choosing(choices.set_band_sounds))
         fields = [sounds]
         if choices.offers_one_guitarist() or choices.has_one_guitarist():

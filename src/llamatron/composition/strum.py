@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Strum: a chord's notes sounding one after another, as a guitarist's pick crosses the strings, the user's design of 2026-11-11.
+"""Strum: a chord's notes sounding one after another, as a guitarist's pick crosses the strings.
 
 A track's strum holds for every clip on it, a clip's own wins over its track's, and a Strum
 generator in a clip's chain wins over both. Each is in force once its direction is set; a clip's

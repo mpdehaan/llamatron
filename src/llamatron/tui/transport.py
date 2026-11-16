@@ -300,7 +300,7 @@ class Transport:
         if self._player is None:
             return
         # Real Time turned off while something plays, on the main screen or by deleting the last instrument, stops it, since the
-        # pages then show no stop for it (a bug the user found).
+        # pages then show no stop for it, which was once a bug.
         if not self.may_play():
             self.stop_all()
             return

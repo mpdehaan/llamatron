@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Tests the visualizer modes a set and a song choose, the user's design: the mode Arrange's visualizer key shows first, the song's over the set's, the modes the set hides, [ and ] stepping through the rest, and every visualizer setting that makes no sense made sensible as it's read."""
+"""Tests the visualizer modes a set and a song choose: the mode Arrange's visualizer key shows first, the song's over the set's, the modes the set hides, [ and ] stepping through the rest, and every visualizer setting that makes no sense made sensible as it's read."""
 
 import unittest
 
@@ -128,7 +128,7 @@ class TestArrangeVisualizerChoices(UITest):
 
 
 class TestHideVisualizersSection(UITest):
-    """The File/Global page's Hide Visualizers field opens a list where each mode can be picked, the user's design."""
+    """The File/Global page's Hide Visualizers field opens a list where each mode can be picked."""
 
     async def test_picking_modes_hides_them_and_esc_changes_nothing(self):
         await self.press(keybindings.MainPage.FILE)

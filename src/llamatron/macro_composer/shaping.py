@@ -17,7 +17,7 @@
 """Velocity shaped by rhythm and style: how far each note of a part moves from its own velocity by where it falls in the bar.
 
 A part keeps a full default velocity and moves a little from it, never more than REACH, so that a song is never made quiet by
-its dynamics (the user's rule). The feel says which places a style leans on: backbeat (rock, pop, funk), four (dance music),
+its dynamics. The feel says which places a style leans on: backbeat (rock, pop, funk), four (dance music),
 swing (shuffles and jazz) or down (marches, folk, orchestral and chip music). A note off the beat that is held over the next
 beat is a push, and is accented.
 """

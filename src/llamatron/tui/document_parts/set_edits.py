@@ -122,7 +122,7 @@ class SetEdits:
         return name
 
     def _play_made_song_in_real_time(self):
-        """Turn real-time playback on, as the first instrument added does, since a made song brings instruments and is there to be heard (the user's ask)."""
+        """Turn real-time playback on, as the first instrument added does, since a made song brings instruments and is there to be heard."""
         if self._setlist.get_instrument_names() and not self._setlist.is_real_time():
             self._change(self._setlist.set_real_time, True)
 
@@ -184,7 +184,7 @@ class SetEdits:
         """Rename a scale that was still named after its root and kind, like C Major, to say what it is now, and return its name.
 
         A scale with a name of the user's own, like main, keeps it, and so does one whose new
-        name is already taken. The user asked for this on 2026-11-07, so that a scale can't be
+        name is already taken. This is so that a scale can't be
         called C Major and play D minor.
         """
         scale = self._scale(name)
@@ -266,7 +266,7 @@ class SetEdits:
     # Grooves, of the set, beside the factory grooves every set has, which can be copied but not changed.
 
     def add_instrument(self, name):
-        """Add an instrument with no device yet under a name. The first instrument turns real-time playback on (the user's design of 2026-11-09)."""
+        """Add an instrument with no device yet under a name. The first instrument turns real-time playback on."""
         first = not self._setlist.get_instrument_names()
         self._change(self._setlist.add_item, section=Section.INSTRUMENTS, name=name, item=Instrument())
         if first:

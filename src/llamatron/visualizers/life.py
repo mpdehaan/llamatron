@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Life, a visualizer mode: Conway's Game of Life over a drifting gradient that follows the music, the user's design of 2026-11-10.
+"""Life, a visualizer mode: Conway's Game of Life over a drifting gradient that follows the music.
 
 The background is a diffuse gradient that drifts and turns, going between the colours of the tracks
 heard, kept around the middle of bright so that it never glares, and brightening gently as the

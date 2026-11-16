@@ -63,7 +63,7 @@ class StepEditor(Page):
         """Return the number made by another digit, or just that digit if the number would be out of range, or None if neither fits.
 
         A digit that extends the number already typed continues the same edit, so that typing 12
-        into a cell is one undo step rather than two, as the user asked.
+        into a cell is one undo step rather than two.
         """
         for text in (self.typed + digit, digit):
             if low <= int(text) <= high:

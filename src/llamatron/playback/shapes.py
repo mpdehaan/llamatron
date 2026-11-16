@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """Shapes as a clip plays: Density thins its notes, Swell scales their velocity, Articulate their length, each by a percentage that ramps over time.
 
-The user's design of 2026-11-11. A finished clip's sounds are reshaped after its chains: each
+A finished clip's sounds are reshaped after its chains: each
 position keeps its place, so a dropped note becomes a rest of the same length, and a lengthened
 note is held past its place but never past where the track's next note starts. The percentage at
 a moment comes from the shape's start, end, over and then (percent_at). Which shape a clip

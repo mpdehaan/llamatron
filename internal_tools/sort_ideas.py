@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Keep the ideas files sorted by priority, the user's design: 1 first, then by the order the ideas already have.
+"""Keep the ideas files sorted by priority: 1 first, then by the order the ideas already have.
 
     .venv/bin/python internal_tools/sort_ideas.py            # sort .claude/IDEAS.yml and .claude/DOCS_IDEAS.yml in place
     .venv/bin/python internal_tools/sort_ideas.py --check    # say which are out of order, change nothing, and fail if any is

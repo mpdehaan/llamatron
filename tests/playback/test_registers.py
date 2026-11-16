@@ -238,7 +238,7 @@ class TestAddingAndUsing(unittest.TestCase):
         self.assertEqual(pitches(data), scale_notes([default]))
 
     def test_a_step_that_subtracts_moves_down_by_the_registers_value(self):
-        # The user's design of 2026-11-09: - on a +Note row subtracts the register, where the row was a toggle that could only add.
+        # - on a +Note row subtracts the register, where the row was a toggle that could only add.
         data = one_clip(rows={ADDS: [self.ADD, 0, 0], USES_NOTE: [SUBTRACTS_IT, ADDS_IT, OFF]}, steps=3)
         self.assertEqual(pitches(data), scale_notes([-self.ADD, self.ADD, 0]))
 

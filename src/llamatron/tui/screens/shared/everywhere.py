@@ -259,7 +259,7 @@ def choose_export(page):
 
 
 def export_chosen(page, *, to):
-    """Write the kind of export chosen. The WAV export says first that only the tracks playing through FluidSynth are in it, the user's design, or that FluidSynth isn't installed."""
+    """Write the kind of export chosen. The WAV export says first that only the tracks playing through FluidSynth are in it, or that FluidSynth isn't installed."""
     if to != ExportKind.WAV:
         export_as(page, to=to)
     elif not fluidsynth_installed():

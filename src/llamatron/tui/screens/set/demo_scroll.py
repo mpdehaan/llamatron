@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The demo's name crossing the screen (tui/components/scroll_text.py), shown after the title when an example is recorded, the user's design."""
+"""The demo's name crossing the screen (tui/components/scroll_text.py), shown after the title when an example is recorded."""
 
 from llamatron.tui.components.scroll_text import banner, scroll_lines
 from llamatron.tui.screens.set.splash import Splash

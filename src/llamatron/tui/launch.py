@@ -22,7 +22,7 @@
 a visualizer mode over the clip area in place of the clips, the one way Arrange opens on one. --launch-for-recording
 opens on the splash first, shows it again once the song has ended, leaves the save mark off the
 header, and refuses a song that would wait on a looping clip forever, since a recording of it would never end (internal_tools/record_demo.py).
-An interactive launch for recording, the user's design, opens Arrange after the splash with the cursor on the corner and
+An interactive launch for recording, opens Arrange after the splash with the cursor on the corner and
 plays nothing: the person recording starts it with Space, performs, and ends the take by stopping from the corner, or
 with Esc, after which the splash shows again and the tracker quits. A
 launch driven from outside, which internal_tools/make_video_tutorial.py makes, hands the app to something
@@ -43,7 +43,7 @@ LEAD_OUT_SECONDS = 2.0
 NO_HOLD = 0.0
 # How often the launch asks whether the song is still playing, once it has started.
 FINISHED_CHECK_SECONDS = 0.25
-# The environment variable that skips the start screen when it is set to NO_SPLASH, the user's design.
+# The environment variable that skips the start screen when it is set to NO_SPLASH.
 NO_SPLASH_VARIABLE = 'LLAMATRON_NO_SPLASH'
 NO_SPLASH = '1'
 
@@ -67,10 +67,10 @@ class Launch:
         is open; with it, quit_when_finished quits once whatever it played has ended.
 
         Launched for recording, a song that ends shows the splash again for splash_seconds after the
-        lead-out, the user's design of 2026-11-11, and the tracker then waits hold_seconds more
+        lead-out, and the tracker then waits hold_seconds more
         before it quits, so that the recorder can end the video while the splash still shows.
 
-        batch_video, the user's design, records a batch video (tui/batch_stage.py): the title on black for
+        batch_video, records a batch video (tui/batch_stage.py): the title on black for
         its whole length, then Arrange with the READY box for ready_seconds, then the song with the
         visualizer mode filling the scene frame, and black at the end, with no splash; it implies
         for_recording and quit_when_finished. opening_only stops it where the song would start, cutting
@@ -80,8 +80,8 @@ class Launch:
         interactive, launched for recording, plays nothing by itself: Arrange waits on its corner for
         the person recording, and the take ends when they stop everything from the corner or press Esc.
 
-        announce, the user's design, shows each scene's name as it starts, where a visualizer mode's name
-        shows, and no mode's name then. details, the user's ask, opens Arrange with its details view showing,
+        announce, shows each scene's name as it starts, where a visualizer mode's name
+        shows, and no mode's name then. details, opens Arrange with its details view showing,
         as D shows it, wherever the clips show.
         """
         self.autoplay = (autoplay or quit_when_finished or visualizer is not None) and driven_by is None
@@ -100,7 +100,7 @@ class Launch:
         self.batch_video = batch_video
         self.opening_only = opening_only and batch_video
         self.ready_seconds = ready_seconds
-        # Whether a batch video's frame alternates between the clips and the visualizer, the user's default.
+        # Whether a batch video's frame alternates between the clips and the visualizer, the default.
         self.alternate = alternate
         # The words that cross the screen after the opening title, the demo's name when an example is recorded, or None for none.
         self.scroll_text = scroll_text
@@ -127,7 +127,7 @@ class Launch:
 
 
     def boxes_playing_scene(self):
-        """Return whether Arrange draws a blue box around the playing scene and no box around its cursor: in a recording nobody performs, the user's design."""
+        """Return whether Arrange draws a blue box around the playing scene and no box around its cursor: in a recording nobody performs."""
         return self.for_recording and not self.interactive
 
 

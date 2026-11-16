@@ -17,7 +17,7 @@
 
 """Reading the chord files of the research datasets: a song of the chart chord annotations as its key, its chords by degree and
 its sections, the index of its years, and a rock corpus file's rules written out as numerals. The corpus readers use these;
-the study that printed tables of them is gone (the user's choice)."""
+the study that printed tables of them is gone."""
 
 import csv
 import re

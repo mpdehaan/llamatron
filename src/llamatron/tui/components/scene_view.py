@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Scene View, the user's design: what one scene of Arrange plays, every track's notes laid over each other in one read-only piano roll, inside an Inset Window.
+"""Scene View: what one scene of Arrange plays, every track's notes laid over each other in one read-only piano roll, inside an Inset Window.
 
 Its first line is a caption saying which view shows, as written or as played (tui/scene_notes.py),
 which Tab switches, and the window's border says it too, purple for written and blue for played; then
@@ -24,10 +24,10 @@ name of every key a note plays beside its octave's label, a column for every six
 wide as the zoom says, with a mark at each bar, and the drums in lanes at the foot; a sidebar of each
 track's details, as Arrange's details view shows them, which PgUp and PgDn scroll; and a line naming
 the notes under the cursor, which the arrows move. A cell where two tracks sound at once shows the first
-track's colour behind a bold X in the second's, or for more the count in black, the user's choice, and
+track's colour behind a bold X in the second's, or for more the count in black, and
 the line under the roll names every note there. A clip that reads the registers is drawn in a hatched
 block, apart from the rest, since what the registers do depends on the song before it. Velocity isn't
-shown, the user's choice.
+shown.
 """
 
 from rich.style import Style as RichStyle
@@ -86,7 +86,7 @@ LABEL_COLOUR = (150, 150, 170)
 NOTE_LABEL_COLOUR = (210, 210, 225)
 WRITTEN_COLOUR = (150, 80, 230)
 PLAYED_COLOUR = TITLE_BLUE
-# The tracks' colours, pure where they can be, the user's design: the drum tracks take the warm ones, reds, oranges, yellows and
+# The tracks' colours, pure where they can be: the drum tracks take the warm ones, reds, oranges, yellows and
 # white, and the others the cool ones, green first and the colours most unlike it next; a group that needs more borrows the other's that are left.
 WARM_COLOURS = [
     (255, 0, 0), (255, 128, 0), (255, 255, 0), (255, 255, 255), (255, 64, 64), (255, 192, 0), (255, 0, 128), (140, 0, 0), (140, 70, 0), (140, 140, 0),
@@ -149,7 +149,7 @@ class SceneView:
         return self._index
 
     def track_colour(self, place):
-        """Return a track's colour, the drum tracks warm and the others cool (coloured), each track keeping its colour from scene to scene, unless the song has more tracks than there are colours, the user's rule, when only the tracks that play in the scene take them."""
+        """Return a track's colour, the drum tracks warm and the others cool (coloured), each track keeping its colour from scene to scene, unless the song has more tracks than there are colours, when only the tracks that play in the scene take them."""
         song = self._document.song()
         names = song.get_track_names()
         places = range(len(names))
@@ -420,7 +420,7 @@ class SceneView:
         return SPACE, None
 
     def overlap(self, tracks):
-        """Return the character and style of a cell where several tracks sound at once, the user's choice: the first track's colour behind, the second's bold X on it, or the count in black for three or more."""
+        """Return the character and style of a cell where several tracks sound at once: the first track's colour behind, the second's bold X on it, or the count in black for three or more."""
         background = self.track_colour(tracks[0])
         if len(tracks) == 2:
             return OVERLAP_CHARACTER, self._cells.style_of(colour=self.track_colour(tracks[1]), background=background) + BOLD

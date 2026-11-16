@@ -104,7 +104,7 @@ class Page(BindsKeys, Screen):
         return NOTHING
 
     def refuse(self, text):
-        """Show why a key did nothing or what went wrong on the status line, in amber, the user's design, so that a refusal isn't missed."""
+        """Show why a key did nothing or what went wrong on the status line, in amber, so that a refusal isn't missed."""
         self.holder.status_line().say(text, refusal=True)
 
     # What an undo or redo asks of a page, since it may take away what the page shows or move what it shows.
@@ -166,7 +166,7 @@ class Page(BindsKeys, Screen):
 
     def show_help(self):
         where = MSG_CRUMB_SEPARATOR.join(self.crumb_trail())
-        # F1 isn't listed in its own dialog, by the user's choice (2026-11-09): it closes the dialog, and leaving it out puts Undo and Redo in one column.
+        # F1 isn't listed in its own dialog: it closes the dialog, and leaving it out puts Undo and Redo in one column.
         everywhere = [key for key in everywhere_keys(self) if key.binding is not self.KEYS.HELP]
         self.app.push_screen(HelpDialog(where=where, everywhere=everywhere, own=self.page_key_table(), about=help_lines(self.HELP)))
 
@@ -220,7 +220,7 @@ class Page(BindsKeys, Screen):
         return False
 
     def go_back(self):
-        """Close the page. Leaving a page stops a preview it played, the user's rule, while a song played from Arrange plays on, so that it can be edited as it plays."""
+        """Close the page. Leaving a page stops a preview it played, while a song played from Arrange plays on, so that it can be edited as it plays."""
         self.stop_playing()
         self.app.pop_screen()
 
@@ -229,7 +229,7 @@ class Page(BindsKeys, Screen):
         self.app.push_screen(page)
 
     def stop_playing(self):
-        """Stop a listening page's preview, if one plays, as its page is left or another opened over it; a song played from Arrange plays on, the user's rule."""
+        """Stop a listening page's preview, if one plays, as its page is left or another opened over it; a song played from Arrange plays on."""
         if self.app.transport.is_previewing():
             self.app.transport.stop_all()
         self.app.pattern_preview().stop()
@@ -281,7 +281,7 @@ class Page(BindsKeys, Screen):
     def header(self, width):
         """Return the header's lines: where you are and what is open, then the rule or the theme's stripe.
 
-        The user's design, keeping what matters most in the corners: the first line has the crumbs,
+        Keeping what matters most in the corners: the first line has the crumbs,
         which change with every page, in the left corner, llamatron centred, and the set's file and
         the save mark at the right; the second has the current song and the song's length at the
         right. The set and the song are one block, left-justified and as wide as it needs, just left
@@ -300,7 +300,7 @@ class Page(BindsKeys, Screen):
         theme = self.theme()
         if theme is None:
             return [first, second, Text(Box.HEAVY_RULE * width)]
-        # The page's theme colour, the user's design: a solid stripe in place of the rule carrying the page's caption, and a blank line
+        # The page's theme colour: a solid stripe in place of the rule carrying the page's caption, and a blank line
         # under it before the page where the screen has room, so that an 80 by 24 console keeps every line it had.
         caption = fit(text=self.caption(), width=max(width - 2, 1)).rstrip()
         text = Text((SPACE + caption).ljust(width)[:width], style=RichStyle(bold=True, color=Color.from_rgb(*caption_colour(theme)), bgcolor=Color.from_rgb(*theme)))
@@ -365,7 +365,7 @@ class Page(BindsKeys, Screen):
         top = self.header(width)
         bottom = legend(keys=self.shown_keys(), width=width) if self.shows_legend else []
         rule = [Text(Box.RULE * width, style=Style.DIM)] if bottom else []
-        # The status line is dim, as the user asked, so that it reads as a note rather than part of the page.
+        # The status line is dim, so that it reads as a note rather than part of the page.
         line = self.holder.status_line()
         status = Text(SPACE + fit(text=line.text() or self.resting_status(), width=width - 1), style=Style.REFUSAL if line.is_refusal() else Style.DIM)
         room = max(height - len(top) - len(rule) - len(bottom) - 1, 1)

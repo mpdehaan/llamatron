@@ -17,7 +17,7 @@
 
 # What it does: the checks Claude runs before committing code: the version bump, then every test
 
-# There is no git hook, by the user's rule, so that a person editing documents commits at once; Claude
+# There is no git hook, so that a person editing documents commits at once; Claude
 # stages its files and runs this before committing anything that changes code, tests, examples or
 # tools, and commits only when it passes (.claude/TESTING.md).
 
@@ -25,7 +25,7 @@ set -e
 # Run from the repository's top folder, wherever it is started.
 cd "$(git rev-parse --show-toplevel)"
 # A commit that changes the program's Python carries a version bump, which `internal_tools/bump.sh` writes. The check comes
-# before the tests because it takes no time: on 2026-11-09 two commits went in without their bump.
+# before the tests because it takes no time: two commits once went in without their bump.
 .venv/bin/python internal_tools/bump_version.py --check
 echo 'check before commit: running every test'
 internal_tools/test.sh

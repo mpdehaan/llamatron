@@ -16,7 +16,7 @@
 
 """Find the rectangle of the screen that a terminal window's cells cover, with no title bar, margin or rounded corner, for recording just that.
 
-The user's design for the batch videos: a video of the tracker alone, starting on the title on
+For the batch videos: a video of the tracker alone, starting on the title on
 black, with no window around it. Just before a take, the recorder fills every cell of its terminal
 with CALIBRATION_COLOUR on the alternate screen (calibration_text), takes a still of the window
 (window_still), and asks macOS where the window is on the screen (window_bounds, in points). The
@@ -25,7 +25,7 @@ cells are the largest run of rows and columns that hold the colour found at the 
 rounded corner and a pixel more each side, and turned into the screen's points (screen_region), the
 rectangle screencapture -R records. The still is taken as a BMP file and read by read_bmp with numpy in a few
 operations: a still of a whole terminal on a Retina screen is millions of pixels, and decoding it as a PNG in Python
-took about a minute, while the cells stayed filled with the colour and the take seemed frozen (found by the user).
+took about a minute, while the cells stayed filled with the colour and the take seemed frozen.
 """
 
 import os

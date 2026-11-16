@@ -13,9 +13,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The lava lamp, the visualizer's first mode: colour blobs drifting and rippling over the clip area, the user's design of 2026-11-10.
+"""The lava lamp, the visualizer's first mode: colour blobs drifting and rippling over the clip area.
 
-In the user's words: big blocky pixels, like a rotozoomer drawn small and blown back up; mostly
+In short: big blocky pixels, like a rotozoomer drawn small and blown back up; mostly
 primary-coloured blobs drifting around, one for each track, each sending ripples out as its notes
 fire, thicker for longer notes, coloured by the pitch; the view turning and zooming gently with
 the beat; the waves from different sources splashing and bouncing off each other like ripples in
@@ -38,7 +38,7 @@ times finer than the big pixels each way:
 - The view turns a little back and forth and zooms with a gentle pulse on each beat; then it is
   averaged down to the big pixels and held under the limiter, so nothing ever flashes.
 
-The amounts are named constants here, grouped by what they shape, for the user to tune by eye.
+The amounts are named constants here, grouped by what they shape, to tune by eye.
 """
 
 import math

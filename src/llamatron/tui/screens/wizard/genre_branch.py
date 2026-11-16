@@ -84,7 +84,7 @@ class GenreBranch(Branch):
         return self.choice_field(label=MSG_WIZARD_SUBGENRE_LABEL, values=subgenres, names=subgenres, current=choices.get_subgenre(), set_value=choices.set_subgenre)
 
     def choice_field(self, *, label, values, names, current, set_value):
-        """Return a field that picks one of a list and starts with nothing chosen, the user's rule for the genre and the subgenre:
+        """Return a field that picks one of a list and starts with nothing chosen, as the genre and the subgenre do:
         it shows (choose) until then, and stepping it or opening its list starts from the first."""
         page = self.page()
         chosen = page.choosing(set_value)

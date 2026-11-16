@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""A row of boxed buttons, the user's design for dialogs, drawn as the main screen draws its cells: each button's key reversed
+"""A row of boxed buttons, for dialogs, drawn as the main screen draws its cells: each button's key reversed
 and then its name, in a box, the selected button's box double-lined and its name bold, so that a dialog's answers look like a
 real window's buttons."""
 
@@ -22,7 +22,7 @@ from rich.text import Text
 from llamatron.tui.drawing import Box, SPACE, Style, padded
 
 # The space between two buttons, and inside a box before its key's reversed label and after its name, so that the label stands clear of the box's side as on the
-# main screen (the user's design).
+# main screen.
 BUTTON_GAP = SPACE
 INSIDE = SPACE
 ROW_LINES = 3

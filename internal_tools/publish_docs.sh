@@ -22,7 +22,7 @@
 # published as the whole of a branch of its own. The gh-pages branch holds one commit, made fresh each time from
 # the committed web_docs/, with no history, and is pushed with --force. Nothing is built here: run
 # internal_tools/build_docs.sh and commit web_docs/ first. Uncommitted changes to web_docs/ are not published.
-# The website never goes up ahead of the code it describes (the user's rule): the script refuses while main holds
+# The website never goes up ahead of the code it describes: the script refuses while main holds
 # commits that GitHub's main doesn't, and internal_tools/push_all.sh pushes main and then publishes, in that order.
 
 set -eu

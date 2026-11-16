@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""A gauge of signed values around a zero line, the user's design of 2026-11-08 for the arp's offsets.
+"""A gauge of signed values around a zero line, designed for the arp's offsets.
 
 Each value is a bar from the zero line, up for a positive value and down for a negative one, so
 many levels either side, and a value past the edge fills to it and carries a mark after its

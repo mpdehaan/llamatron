@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The Tension row of the pattern editor: the notes added on top of a step's chord, like a flat ninth (the user's design)."""
+"""The Tension row of the pattern editor: the notes added on top of a step's chord, like a flat ninth."""
 
 from llamatron.composition.file_format import Row
 from llamatron.strings.marks import MSG_TENSIONS_COUNTED, MSG_TENSIONS_IN_CELL_SEPARATOR, MSG_UNSET_MARK

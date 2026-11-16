@@ -437,7 +437,7 @@ class TestGeneratorSettings(RoundTrip):
             AutoRatchetSettings.from_data(data=None, where=HERE)
 
     def test_an_arp_with_no_step_takes_the_step_of_the_pattern_its_clip_plays(self):
-        # Since 2026-11-11 an arp's step left out is "(pattern)", the user's rule, where it was refused before.
+        # An arp's step left out is "(pattern)", where it was refused before.
         settings = ArpSettings.from_data(data=None, where=HERE)
         self.assertIsNone(settings.get_step())
         self.assertEqual(settings.make_generator(where=CHAIN_X, default_seed=7, default_step=EIGHTH_FRACTION).get_step(), EIGHTH_FRACTION)

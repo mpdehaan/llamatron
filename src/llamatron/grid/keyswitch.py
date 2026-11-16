@@ -16,7 +16,7 @@
 """The notes a Hocket hands a clip, which the exporters' timing adds to the clip's own (exporters/timing.py)."""
 """Keyswitches as a render carries them: the slots a step asks for, and the notes a clip sends for them.
 
-A keyswitch is a note a plugin reads as an order to change how it plays, the user's design. A
+A keyswitch is a note a plugin reads as an order to change how it plays. A
 pattern's step names slots of its track's instrument; playing the pattern gives SwitchedSlots,
 which nothing between the pattern and the clip touches, no generator, scale or transposing; and
 the clip's track turns each slot into the instrument's note, a SwitchNote, leaving out a slot the

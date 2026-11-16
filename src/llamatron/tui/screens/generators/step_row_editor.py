@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The step row editor: a Glide's, a Shorten's, a Rush's or a Drag's row of steps, each on or off, the user's design of 2026-11-11.
+"""The step row editor: a Glide's, a Shorten's, a Rush's or a Drag's row of steps, each on or off.
 
 Left and Right move along the steps, stopping at the ends; Space or Enter turns the cursor's step on
 or off, drawn as every toggle is, the dot or a blank; I inserts a step that's off before the

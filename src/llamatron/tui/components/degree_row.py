@@ -15,13 +15,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The Degree row, drawn as a gauge: a bar in each step's column, filled from the bottom to the note's degree, with the number beneath.
 
-The user chose gauges over numbers on 2026-11-08 so that a melody can be read as a shape. The
+Gauges were chosen over numbers so that a melody can be read as a shape. The
 gauge is as tall as the scale when the pattern's uses agree on one, with the scale's note names
 labelling its rows, and seven rows labelled by number when they don't or when nothing says. When
 the scale is known, the gauge caps at the scale's size: a degree past it is shown, and written,
 as the degree within the scale an octave higher, and + at the top and - at the bottom stop there
-and say on the status line that the octave is changed on the Octave row, as the user chose on
-2026-11-08 over carrying into the next octave. When the screen is too short for the whole gauge,
+and say on the status line that the octave is changed on the Octave row,
+rather than carrying into the next octave. When the screen is too short for the whole gauge,
 a degree above the rows that fit fills the bar and marks the number. A drum pattern keeps its
 note letters and has no gauge.
 """

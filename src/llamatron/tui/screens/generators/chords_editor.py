@@ -15,13 +15,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The chord editor: a progression's chords as a row of bars rising to each chord's degree, with its numeral and its name in the song's scale, and rows of sharps and flats and of inversions beneath.
 
-The user's design of 2026-11-11. Up and Down move the cursor between the Chord row, the #/b row,
+Up and Down move the cursor between the Chord row, the #/b row,
 the Quality, Tens. and Scale rows and the Inv. row, and Left and Right along the chords. On the Chord row, [ and ] step the degree from 1 to 7 and digits type one; on the #/b
 and Inv. rows, [ and ] and Space or Enter step through their choices. I inserts a chord I before
 the cursor's, D removes the cursor's, and H fills the chords with a named progression, matched to
 the song's scale.
 
-A chord leaves the song's scale three ways, the user's design (composition/chords.py): its Scale, a scale type on the same
+A chord leaves the song's scale three ways (composition/chords.py): its Scale, a scale type on the same
 root that the chord borrows; its Quality, a named chord symbol in place of the chord the scale builds; and its Tensions, the
 notes added on top. On those rows [ and ] and Space step through the choices and Enter opens the Chord dialog, the one the
 pattern editor opens, on that row's list. The Name row and the status line say what the cursor's chord comes to.
@@ -59,7 +59,7 @@ from llamatron.tui.screens.shared.step_editor import StepEditor
 from llamatron.tui.screens.shared.step_grid import StepGrid
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 
-# The rows the cursor edits, top to bottom, in the user's order, the same wherever a chord is chosen: its root, with the root's sharp or flat, then its quality, its
+# The rows the cursor edits, top to bottom, in the order that is the same wherever a chord is chosen: its root, with the root's sharp or flat, then its quality, its
 # tensions, the scale it borrows, and how it is voiced.
 CHORD_ROW = 0
 ACCIDENTAL_ROW = 1
@@ -187,7 +187,7 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
             # Several tensions at once are no step of the cycle, which starts again from none.
             current = None
         place = cycle.index(current) + offset
-        # A chord's quality, tensions and scale stop at both ends and never go round (the user's rule); a sharp or flat and an inversion, a few choices each, go round.
+        # A chord's quality, tensions and scale stop at both ends and never go round; a sharp or flat and an inversion, a few choices each, go round.
         place = max(min(place, len(cycle) - 1), 0) if self.edited_row in STOPPING_ROWS else place % len(cycle)
         self.changed_here(row=self.edited_row, value=cycle[place])
 

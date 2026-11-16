@@ -200,7 +200,7 @@ EDITING = {
 
 # Where write() puts the demos. main() sets it, so that a test can write them somewhere else.
 OUTPUT = 'examples'
-# The folder of examples/ each demo goes in, the user's layout (src/llamatron/support/example_sets.py): learning unless named here.
+# The folder of examples/ each demo goes in (src/llamatron/support/example_sets.py): learning unless named here.
 LEARNING_FOLDER = 'learning'
 # The number in front of a learning demo's file name, which orders the demos as a newcomer learns them.
 LEARNING_NUMBER = r'^\d+_'
@@ -921,7 +921,7 @@ def pachelbel():
 # The Entertainer, from the Mutopia Project's public domain typesetting of the 1902 edition.
 
 MEASURE = F(1, 2)
-# A scene is an eight-bar phrase, half a strain, the user's choice of 2026-11-08 over four bars, which made over a hundred patterns; the Intro and the Bridge are four bars on their own.
+# A scene is an eight-bar phrase, half a strain, chosen over four bars, which made over a hundred patterns; the Intro and the Bridge are four bars on their own.
 PHRASE_BARS = 8
 VOICES = 3
 # Each strain in the order the piece plays, with its repeats written out, as (name, bars, scale).

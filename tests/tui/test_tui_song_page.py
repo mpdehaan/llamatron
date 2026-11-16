@@ -186,7 +186,7 @@ class TestSongPage(UITest):
         self.assertTrue(self.document.is_dirty())
 
     async def test_the_brackets_change_the_tempo_and_the_legend_names_the_arrows_alone(self):
-        """A setting's legend says the arrows, with [ and ] and the older + and - working beside them, the user's choice of 2026-11-09."""
+        """A setting's legend says the arrows, with [ and ] and the older + and - working beside them."""
         await self.select_field(TEMPO)
         before = self.document.song().get_tempo()
         await self.press(key_of(binding=keybindings.SongPage.MORE, key=Key.RIGHT_BRACKET), key_of(binding=keybindings.SongPage.MORE, key=Key.RIGHT_BRACKET), key_of(binding=keybindings.SongPage.LESS, key=Key.LEFT_BRACKET))

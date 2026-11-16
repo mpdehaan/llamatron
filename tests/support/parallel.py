@@ -50,7 +50,7 @@ FILTER_OPTION = '-k'
 MSG_NO_COUNT = '{name} did not say how many tests it ran:\n{output}'
 MSG_TIMED_OUT = '{name} did not finish within {seconds}s and was stopped: a test is probably looping, waiting for a key to do something it never does.\n{output}'
 # How long one class may run before it's stopped and counted as failed: the slowest takes about 35 seconds, so a class that
-# runs this long is a test looping, like one pressing a key until a row appears that never does, which the user asked to be caught on 2026-11-08.
+# runs this long is a test looping, like one pressing a key until a row appears that never does, which is caught here.
 CLASS_TIMEOUT_SECONDS = 120
 MSG_SUMMARY = 'Ran {tests} tests in {classes} classes in {seconds:.1f}s, with {workers} at a time. The slowest was {slowest}, at {slowest_seconds:.1f}s.'
 MSG_OK = 'OK'

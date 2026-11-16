@@ -120,7 +120,7 @@ class TestHelpDialog(UITest):
         # The dialog's own lines are between its side bars; the page shows through either side of them.
         lines = [line.split('┃')[1] for line in text.splitlines() if line.count('┃') >= 2]
         lines = [line for line in lines if '»' in line]
-        # Seven everywhere keys fill two columns downwards over four lines, F1 left out of its own dialog, Silence last in the first column so that Undo still sits above Redo in the second, as the user asked on 2026-11-09.
+        # Seven everywhere keys fill two columns downwards over four lines, F1 left out of its own dialog, Silence last in the first column so that Undo still sits above Redo in the second.
         self.assertIn('« Ctrl+S »', lines[0])
         self.assertIn('« Ctrl+Z »', lines[0])
         self.assertIn('« Ctrl+Y »', lines[1])

@@ -80,7 +80,7 @@ class TestFilePage(UITest):
         self.assertIsInstance(self.app.screen, OpenPage)
 
     async def test_the_loose_settings_come_alphabetically_and_title_and_author_start_blank(self):
-        # The user's order: the loose settings alphabetically, then the Notes & Octaves and Visualizers sections.
+        # The loose settings alphabetically, then the Notes & Octaves and Visualizers sections.
         labels = [field.label for field in self.app.screen.fields()]
         self.assertEqual(labels[:6], [AUTHOR, MSG_DEFAULT_FOLLOW_ACTION_LABEL, MSG_DESCRIPTION_LABEL, MSG_NOTES_LABEL, MSG_PROTECTED_LABEL, TITLE])
         self.assertEqual(self.document.setlist().get_title(), NO_TEXT)

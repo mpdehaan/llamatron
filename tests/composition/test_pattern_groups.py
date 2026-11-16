@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The names the tracker makes up itself: one rule for the whole tracker, the user's (.claude/UX.md, "Names the tracker makes")."""
 """Pattern groups: the group a pattern says it is in, the groups a set shows closed, a group renamed, emptied and copied, and patterns grouped by the track that plays them."""
 
 import os

@@ -14,8 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The Quit dialog, asked when quitting with unsaved changes: Quit without saving, Save, then Quit, and Cancel as boxed buttons, the
-user's design and words. Left and Right choose, Enter presses, Q and S answer at once and Esc cancels. It answers QUIT_WITHOUT_SAVING,
+"""The Quit dialog, asked when quitting with unsaved changes: Quit without saving, Save, then Quit, and Cancel as boxed buttons.
+Left and Right choose, Enter presses, Q and S answer at once and Esc cancels. It answers QUIT_WITHOUT_SAVING,
 SAVE_THEN_QUIT, or None for Cancel."""
 
 from rich.text import Text
@@ -55,7 +55,7 @@ class QuitDialog(MessageDialog):
         ]
 
     def wanted_width(self):
-        """Return a width that holds the dialog's keys on one line, where the console has the room, since they are too many for the usual width (the user's ask)."""
+        """Return a width that holds the dialog's keys on one line, where the console has the room, since they are too many for the usual width."""
         keys_on_one_line = max(line.cell_len for line in legend(keys=self.keys(), width=UNLIMITED_WIDTH))
         return max(super().wanted_width(), keys_on_one_line + DIALOG_MARGIN)
 

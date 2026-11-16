@@ -136,8 +136,8 @@ class ClipSlotPlayer:
     def _through_chain(self, clip, *, counting):
         """Return the clip after each generator of its chains, in order, and what the generators add to the registers, as (time, adds) in time order.
 
-        Its chains are the clip slot's own, then its scene's, then its track's (the user's design
-        of 2026-11-11), each in its own order, so a chain named in two places runs twice. Each
+        Its chains are the clip slot's own, then its scene's, then its track's,
+        each in its own order, so a chain named in two places runs twice. Each
         generator is counted along all of them for its seed, so a clip with one chain draws as
         it always has.
         """
@@ -151,7 +151,7 @@ class ClipSlotPlayer:
         for chain in chains:
             for step in self._song.get_chain(chain).get_steps():
                 # A drift works on the steps as the pattern plays, and a shape on the finished clip after the chains (playback/drift.py, playback/shapes.py).
-                # A progression leaves a drum pattern alone, since moving a drum note changes the drum, not the pitch (the user's rule of 2026-11-11).
+                # A progression leaves a drum pattern alone, since moving a drum note changes the drum, not the pitch.
                 if GENERATOR_SETTINGS[step.kind].GENERATOR is not None and not (step.kind == GeneratorKind.PROGRESSION and self._plays_drums()):
                     key = (step.kind, step.name, times.get((step.kind, step.name), 0))
                     times[(step.kind, step.name)] = key[-1] + 1
@@ -212,7 +212,7 @@ class ClipSlotPlayer:
 
         A slot the instrument gives no note sends nothing until it has one, and a track with no
         instrument, or one that plays through FluidSynth, which would sound each as a note, sends
-        none (the user's rules). The notes are the instrument's as written: no
+        none. The notes are the instrument's as written: no
         scale, transposing or generator reaches them.
         """
         instrument = self._renderer.instrument_of(self._track)
@@ -282,7 +282,7 @@ class ClipSlotPlayer:
 
         The clip slot's direction applies to everything the clip slot plays, its own pattern and a morph's
         target, which otherwise follows its own pattern's direction and keeps its place from pass
-        to pass in target_order, as the user decided on 2026-11-07. Only the first pattern takes
+        to pass in target_order. Only the first pattern takes
         grabs. A morph's target uses the registers but doesn't add to them, so that a step isn't
         counted twice, and ties at the start of a pass follow the clip slot's own pattern, whatever the
         morph puts there. A pass with no positions at all, which only ties can make, has nothing

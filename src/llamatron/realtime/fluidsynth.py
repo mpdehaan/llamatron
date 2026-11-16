@@ -17,7 +17,7 @@
 """FluidSynth as a real-time instrument: the software synthesizer, started by the tracker when something plays through it.
 
 An instrument whose Device is FLUIDSYNTH_DEVICE plays through FluidSynth rather than through a MIDI port
-of the computer, the user's design of 2026-11-11, so that someone with no synthesizer and no DAW hears a
+of the computer, so that someone with no synthesizer and no DAW hears a
 set at once. user_scripts/install_fluidsynth.sh puts FluidSynth in the Mac's own Homebrew and the GeneralUser GS
 SoundFont in ~/soundfonts, and this module looks for them there.
 

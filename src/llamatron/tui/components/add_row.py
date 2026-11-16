@@ -28,7 +28,7 @@ class AddRow(ControlRow):
     """The same keys as a number row, on every step, held from minus the register's Allowed Inc Max to plus it.
 
     The limit is the narrowest of the songs that play the pattern, or the current song's when
-    none does, the user's design of 2026-11-11, so that [ and ] step through a short line.
+    none does, so that [ and ] step through a short line.
     """
 
     KEYS = keybindings.AddRow

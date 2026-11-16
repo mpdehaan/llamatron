@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """Drift: one process for the whole song, triggering every so often, moving from its version A to its version B, heard by every clip whose chain names it.
 
-The user's design of 2026-11-11. Each test plays clips of four quarter-note steps, a bar of
+Each test plays clips of four quarter-note steps, a bar of
 4/4, so that a drift's triggers, a bar each unless set, fall on each repeat of a clip.
 """
 

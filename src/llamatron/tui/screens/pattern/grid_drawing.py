@@ -54,7 +54,7 @@ class GridDrawing:
         self._editor = editor
 
     def label_width(self):
-        """Return how wide the labels down the left are: one width for both views, the wider, so that the grid stays put when Tab switches views (the user's choice of 2026-11-09)."""
+        """Return how wide the labels down the left are: one width for both views, the wider, so that the grid stays put when Tab switches views."""
         return self._editor.label_width()
 
     def widest_label(self):
@@ -91,7 +91,7 @@ class GridDrawing:
         raise NotImplementedError
 
     def header_lines(self, *, width, first, last):
-        """Return the two header lines as aligned cells: Steps, Step size, Drum and Direction over Time and what the view adds (the user's layout of 2026-11-09)."""
+        """Return the two header lines as aligned cells: Steps, Step size, Drum and Direction over Time and what the view adds."""
         pattern = self._editor.pattern()
         drum = MSG_DRUM_ON if pattern.is_drum() else MSG_DRUM_OFF
         whose = NOTHING if pattern.get_written_step_size() else MSG_FROM_SONG_SHOWN
@@ -139,13 +139,13 @@ class GridDrawing:
         When boxed names a step, the rule is the edge of the cursor's cell on that step: the piece
         under or over the cell is a bold double rule, joined to the cell's double bars by boxed_tee
         at both ends, or boxed_right where the cell's right bar is the grid's border, so that the
-        cursor's cell is boxed on that side too, as the user asked on 2026-11-09 when the single
+        cursor's cell is boxed on that side too, since the single
         rule between the double joints read as the wrong corners.
 
         A joint where the bold beat edge crosses the dim rule is plain, between the two, so that
         neither line reads as broken: a bold cross showed as a break in the rule at every beat,
         and a dim one as a break in the beat edge at every rule and section heading, both of which
-        the user saw on 2026-11-08. Every crossing is read after a change to a drawing (.claude/UX.md).
+        were seen once. Every crossing is read after a change to a drawing (.claude/UX.md).
         """
         # The line has no style of its own, so that a plain joint stays plain among the dim pieces.
         line = Text(no_wrap=True)
@@ -211,7 +211,7 @@ class GridDrawing:
             line.append(single, style=Style.DIM)
 
     def step_line(self, *, first, last, sounding=None):
-        """Return the line of step numbers, with the number of the step that sounds, if one is given, in the read head's light yellow (the user's choice for the rows view)."""
+        """Return the line of step numbers, with the number of the step that sounds, if one is given, in the read head's light yellow, as the rows view shows it."""
         head = Text(no_wrap=True)
         head.append(Box.BAR, style=Style.DIM)
         head.append(fit(text=MSG_STEP_HEADING, width=self.label_width()), style=Style.BOLD)
@@ -233,7 +233,7 @@ class GridDrawing:
         where = NOTHING if self._editor.is_drum() else MSG_IN_SCALE.format(scale=document.pattern_scale(self._editor.item) or document.song().get_scale_name() or MSG_NO_SCALE)
         played = self._editor.document().note_name(name=self._editor.item, step=self._editor.step)
         if self._editor.value(row=Row.GRAB):
-            # What a grab step plays is whatever the other track played, moved by whatever else is at work, so the line names no note, as the user chose.
+            # What a grab step plays is whatever the other track played, moved by whatever else is at work, so the line names no note.
             sound = MSG_GRABBED_SOUND
         elif played:
             sound = played + where

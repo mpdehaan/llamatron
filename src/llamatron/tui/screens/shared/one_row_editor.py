@@ -18,8 +18,8 @@
 The offsets editor (an arpeggiator's offsets) and the groove editor (a groove's cells) are each
 one row, so no row lies below the cursor and Up and Down change the cursor's number. Left and
 Right move along the row, digits type a number and keep its sign, I inserts a step and D removes
-one. A row wider than the screen scrolls sideways like the pattern editor, as the user chose for
-both. A new editor of this kind says what its values are, how one is stored, and how its grid is
+one. A row wider than the screen scrolls sideways like the pattern editor.
+A new editor of this kind says what its values are, how one is stored, and how its grid is
 drawn.
 """
 

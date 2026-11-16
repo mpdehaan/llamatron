@@ -13,13 +13,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Cycle, a visualizer mode of modes: each of the other modes in turn, moving on every CYCLE_SECONDS, the user's design of 2026-11-10.
+"""Cycle, a visualizer mode of modes: each of the other modes in turn, moving on every CYCLE_SECONDS.
 
 It shows each mode from the start, fresh, and says which is showing, so that the page shows the
 name for a while each time it moves on, as it does when the key changes the mode. The order is
 shuffled once when the program starts (CYCLE_ORDER), so that every run, and so every recording,
-goes through the modes in an order of its own, and keeps that order for the whole run, the
-user's ask.
+goes through the modes in an order of its own, and keeps that order for the whole run.
 """
 
 import random
@@ -44,7 +43,7 @@ from llamatron.visualizers.warpzone import WarpZone
 from llamatron.visualizers.visualizer import Visualizer
 from llamatron.strings.visualizers import MSG_CYCLE
 
-# How long each mode shows before the next, hard-coded for now as the user asked, and the modes it goes through.
+# How long each mode shows before the next, hard-coded for now, and the modes it goes through.
 CYCLE_SECONDS = 15.0
 CYCLED = (
     LavaLamp, PianoRoll, Spectrum, Milkdrop, Llamas, Hypercube, Fireworks, WarpZone, Pipes, Plasma, Maze, Mystify, LaserLlama, Mandelbrot, Life, DigitalRain,

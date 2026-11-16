@@ -87,7 +87,7 @@ class TestImportDialog(UITest):
         self.assertEqual(cell_opened_by(Key.M), PageName.IMPORT)
 
     async def test_the_cell_sits_in_the_bar_of_actions_above_export(self):
-        # The user's layout: Import over Export, the bar's second column.
+        # Import over Export, the bar's second column.
         above, below = [[cell_name(item) for item in row] for row in self.app.screen.rows()[-2:]]
         self.assertEqual(below[above.index(PageName.IMPORT)], PageName.EXPORT)
         self.assertIn(PageName.IMPORT, self.text())

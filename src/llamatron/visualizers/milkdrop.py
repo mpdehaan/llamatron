@@ -22,7 +22,7 @@ velocity, and a dot that keeps glowing while a note is held, the tracks spread a
 their places and the notes along it by pitch. So everything a track plays streams outward and
 twists into trails. The warp's zoom and turn breathe slowly with the beat. It is worked out at
 SUPERSAMPLE times the big pixels each way and averaged down, and held under the limiter so that it
-never flashes. The amounts are named constants here, for the user to tune by eye.
+never flashes. The amounts are named constants here, to tune by eye.
 """
 
 import math

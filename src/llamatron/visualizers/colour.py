@@ -19,7 +19,7 @@ The colours are primaries and their neighbours, saturated but never full, so tha
 and mix into clean secondaries rather than mud. A note's pitch leans its track's colour toward the
 next in the cycle a little, and its octave sets how bright it is. The limiter holds the picture's
 mean brightness under a level, changing its gain only slowly, and caps every channel below white,
-the user's rule that the visualizer never strobes or flashes brightly (.claude/UX.md, "Drawing").
+the rule that the visualizer never strobes or flashes brightly (.claude/UX.md, "Drawing").
 """
 
 import numpy
@@ -70,7 +70,7 @@ def luminance(colour):
 def vivid(colour, *, least=LEAST_LUMINANCE):
     """Return a colour at its full value, its hue kept, with just enough white mixed in to look at least as bright as least, as floats from 0 to 255.
 
-    The user found several modes too dim to read on an iPad or iPhone, where a saturated blue or
+    Several modes were too dim to read on an iPad or iPhone, where a saturated blue or
     red at full value still looks dark; this lifts such a colour the least that reads, rather than
     turning every colour pale.
     """

@@ -16,7 +16,7 @@
 
 """A section's row in the pattern editor: the heading of an accordion section, which opens and closes the rows under it.
 
-The user's design of 2026-11-08, in place of the sets of rows that Tab cycled through: the rows
+In place of the sets of rows that Tab cycled through: the rows
 under Octave come in sections, each headed by a row of the grid with a rule above and below it,
 whose label is a mark, + closed or - open, and the section's name. The cursor rests on the row
 like any other, keeping its step, and the label is drawn in reverse video there, since the row

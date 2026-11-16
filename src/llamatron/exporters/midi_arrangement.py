@@ -125,7 +125,7 @@ class MidiSong(WritesOneFile, _Arrangement):
 
 
 class MidiGeneralMidi(WritesOneFile, _Arrangement):
-    """Exports a ClipGrid as one General MIDI file, <directory>/<name>_gm.mid, for any player with General MIDI's sounds, the user's design of 2026-11-11.
+    """Exports a ClipGrid as one General MIDI file, <directory>/<name>_gm.mid, for any player with General MIDI's sounds.
 
     It is the single file of MidiSong with each track on a channel of its own: drums on channel 10,
     every other unmuted track on the others in turn, and a program change first that gives a

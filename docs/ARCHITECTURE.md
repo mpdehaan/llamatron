@@ -184,10 +184,10 @@ flowchart LR
 | `grid` | The finished clips a song exports into, and the grid that maps them to tracks and scenes. |
 | `exporters` | The exporters of a played song: a Live set, one MIDI file, a file per track, a file per clip, a General MIDI file, or a WAV file played through FluidSynth. |
 | `importers` | The importers: a file from outside llamatron made into what a set holds, so far a MIDI file made into a song. |
-| `macro_composer` | The MacroComposer, the user's name for it: a set made from structured data that says what to play. composer.py turns a |
+| `macro_composer` | The MacroComposer: a set made from structured data that says what to play. composer.py turns a |
 | `realtime` | Real-time playback: the timeline of MIDI events a rendered grid becomes, the score of a song with each clip's events from its scene's start, the player that launches scenes and clips as the follow actions say, the engine that sends the events on time, the ports they go out of, the Realtime Sender Process, which runs the engine apart from the tracker, and FluidSynth, which the tracker starts when something plays through it. |
 | `tutorial` | The video tutorial: a plan that rebuilds a set from nothing in the running tracker, key by key, and the runner that presses its keys at a human pace, saying a sentence at each part worth one (internal_tools/make_video_tutorial.py). |
-| `visualizers` | The visualizers: what Arrange's clip area can show in place of the clips while a song plays in real time, the user's design of 2026-11-10. |
+| `visualizers` | The visualizers: what Arrange's clip area can show in place of the clips while a song plays in real time. |
 | `music` | The musical values every part of llamatron works with: notes, chords, scales, time signatures, held notes and MIDI numbers. |
 | `support` | Plumbing the rest of llamatron stands on: exact fractions, file names, safe YAML loading, random sources and the version. |
 | `strings` | Every piece of text llamatron shows people, one module for each way the text is used. |

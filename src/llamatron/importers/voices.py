@@ -58,7 +58,7 @@ SHAPES = chord_shapes()
 
 
 # The CC numbers a track's lanes take first, in this order, each only if the part sends it: the mod wheel, volume and
-# the sustain pedal, the user's order of 2026-11-10. The lanes left take the part's other CCs, the most sent first.
+# the sustain pedal. The lanes left take the part's other CCs, the most sent first.
 MOD_WHEEL = 1
 VOLUME = 7
 SUSTAIN = 64

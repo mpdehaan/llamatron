@@ -76,7 +76,7 @@ class TestSections(UITest):
         return next(number for number, line in enumerate(lines) if self.heading_shown(section) in line), lines
 
     async def test_no_divider_crosses_a_heading_and_the_rules_around_it_close_and_reopen_the_dividers(self):
-        """The dividers above a heading end in bottom tees, the ones below an open heading start in top tees, two closed headings share an unbroken rule, and a closed last heading sits on a plain bottom rule (the user's ask of 2026-11-09)."""
+        """The dividers above a heading end in bottom tees, the ones below an open heading start in top tees, two closed headings share an unbroken rule, and a closed last heading sits on a plain bottom rule."""
         # Basics is open and under a row, Octave; Timing, open too, is under the closed Chord heading, whose rule it shares.
         self.assertIn(RowSection.BASICS, self.app.open_sections)
         at, lines = self.line_of_heading(RowSection.BASICS)
@@ -263,7 +263,7 @@ class TestSections(UITest):
         render_song(self.document.song())
 
     async def test_register_uses_cycle_add_subtract_and_off_on_notes_and_on_empty_steps_alike(self):
-        # The user's design of 2026-11-09: Space or Enter cycles +, - and blank, where the rows were toggles.
+        # Space or Enter cycles +, - and blank, where the rows were toggles.
         await open_section(test=self, section=RowSection.REGISTER_APPLY)
         row = REGISTER_VELOCITY_ROWS[RegisterName.CX]
         while self.editor.row_name() != row:

@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The import dialog: what a MIDI file holds, the import's few choices as fields, what the import would make, and Import and Cancel, the user's design of 2026-11-10.
+"""The import dialog: what a MIDI file holds, the import's few choices as fields, what the import would make, and Import and Cancel.
 
 It is a dialog of fields over the file picker, not a page. Up and Down move between the fields
 and the row of buttons; on a field [ and ] step its value, Space or Enter flips a toggle and
@@ -57,7 +57,7 @@ LABEL_WIDTH = max(len(label) for label in LABELS) + 2
 IMPORT_BUTTON = 0
 CANCEL_BUTTON = 1
 BUTTON_BINDINGS = (keybindings.ImportDialog.IMPORT, keybindings.Dialog.CANCEL)
-# The step sizes the Step size field steps through, auto first, as the user decided: auto, then 1/32 to 1/4.
+# The step sizes the Step size field steps through, auto first: auto, then 1/32 to 1/4.
 STEP_SIZES = (None, Rational(1, 32), Rational(1, 16), Rational(1, 8), Rational(1, 4))
 # How many keys the found line names before it counts the rest.
 KEYS_NAMED = 2

@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The scale types in categories (the user's design), for the Chord dialog's flyout: each category a name and its scale
+"""The scale types in categories, for the Chord dialog's flyout: each category a name and its scale
 types in a logical order, the commonest borrowed from first, the modes by the degree each starts on, the melodic minor's
 modes after their parent, and the rest as the Scale page's picker groups them. Common repeats six that also sit in their own
 categories; every scale type is in one of the others exactly once."""

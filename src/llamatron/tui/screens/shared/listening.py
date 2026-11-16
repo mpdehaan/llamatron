@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Listening: how the clip page and the pattern editor play one clip again and again, the user's design of 2026-11-09.
+"""Listening: how the clip page and the pattern editor play one clip again and again.
 
 A clip is played as its scene would play it, with its chain, its grabs from the scene's grab track,
 its scale and its direction, looping until stopped. When the clip's track has no instrument, a
@@ -36,7 +36,7 @@ def listen(*, page, index, track, song=None, name):
     """Play one clip of a song, the current one or the one given, on its own and again and again, asking for an instrument when its track has none."""
     transport = page.app.transport
     preview = page.app.pattern_preview()
-    # With the set's Real Time switch off, the clip plays through General MIDI in FluidSynth, where FluidSynth is installed (the user's rule).
+    # With the set's Real Time switch off, the clip plays through General MIDI in FluidSynth, where FluidSynth is installed.
     if song is None and not page.document().setlist().is_real_time() and preview.general_midi_is_installed():
         try:
             preview.play_clip_of_song(index=index, track=track)
@@ -77,7 +77,7 @@ def listen_to_pattern(*, page, pattern):
         page.refuse(refusal)
         return
     # A song with so many tracks through FluidSynth that one of them has the preview's channel is stopped first, so that the preview's sound never
-    # changes a track that plays; the song sends each track's sound again when it next plays (the user's rule).
+    # changes a track that plays; the song sends each track's sound again when it next plays.
     if preview.shares_a_channel_with(pattern=pattern, routes=page.app.transport.routes()) and page.app.transport.is_playing():
         page.app.transport.stop_all()
     try:
@@ -97,7 +97,7 @@ def stop_listening_to_pattern(page):
 
 def pattern_listen_keys(*, page, pattern):
     """Return the key that listens to a pattern, or stops it while it is the one playing, and none when nothing could sound: the song names no
-    Preview instrument and FluidSynth is not installed (the user's rule)."""
+    Preview instrument and FluidSynth is not installed."""
     preview = page.app.pattern_preview()
     if pattern is None:
         return []

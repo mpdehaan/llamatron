@@ -34,7 +34,7 @@ DOCUMENTS = [
     *sorted((ROOT / 'docs').rglob('*.md')),
     *sorted((ROOT / '.claude').rglob('*.md')),
 ]
-# The guide, whose table of guides links every chapter in docs/, the user's rule.
+# The guide, whose table of guides links every chapter in docs/.
 GUIDE = ROOT / 'GUIDE.md'
 DOCS = ROOT / 'docs'
 GUIDE_LINK = '](docs/{name})'
@@ -42,7 +42,7 @@ TABLE_ROW = '|'
 # A path in backticks that starts in one of the repository's folders and ends in a file suffix.
 PATH_IN_BACKTICKS = re.compile(r'`((?:src|test|internal_tools|user_scripts|examples|docs)/[A-Za-z0-9_./-]+\.(?:py|yml|svg|sh|md|mid|als|ly))`')
 ENCODING = 'utf-8'
-# Files the documents name that git ignores, so a new clone has none: Claude's own queue, kept on one computer (the user's choice).
+# Files the documents name that git ignores, so a new clone has none: Claude's own queue, kept on one computer.
 KEPT_OUT_OF_GIT = ('.claude/QUEUE.md',)
 USER_SCRIPTS = ROOT / 'user_scripts'
 USER_SCRIPTS_GUIDE = ROOT / 'docs' / 'USER_SCRIPTS.md'
@@ -78,7 +78,7 @@ class TestDocumentPaths(unittest.TestCase):
 
 
 class TestEveryChapterIsInTheGuide(unittest.TestCase):
-    """Every guide in docs/ and its subfolders is linked from a row of one of GUIDE.md's tables, the user's rule, so that the guide is the way in to all of them and the website's sidebar lists them."""
+    """Every guide in docs/ and its subfolders is linked from a row of one of GUIDE.md's tables, so that the guide is the way in to all of them and the website's sidebar lists them."""
 
     def test_every_markdown_file_in_docs_is_linked_from_a_table_row_of_the_guide(self):
         rows = [line for line in GUIDE.read_text(encoding='utf-8').splitlines() if line.startswith(TABLE_ROW)]
@@ -90,7 +90,7 @@ class TestEveryChapterIsInTheGuide(unittest.TestCase):
 
 
 class TestEveryUserScriptIsDescribed(unittest.TestCase):
-    """docs/USER_SCRIPTS.md describes every script in user_scripts/, the user's rule, so that a new script can't arrive unexplained."""
+    """docs/USER_SCRIPTS.md describes every script in user_scripts/, so that a new script can't arrive unexplained."""
 
     def test_every_script_has_a_section_in_user_scripts_md(self):
         text = USER_SCRIPTS_GUIDE.read_text(encoding=ENCODING)
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     unittest.main()
 
 
-# Whether the song wizard is released: until the user says so, no document for people names it (the user's rule).
+# Whether the song wizard is released: until the user says so, no document for people names it.
 WIZARD_IS_RELEASED = False
 WIZARD_WORD = 'wizard'
 DOCUMENTS_FOR_PEOPLE = [ROOT / 'GUIDE.md', ROOT / 'INSTALL.md', ROOT / 'README.md', *sorted((ROOT / 'docs').rglob('*.md')), *sorted((ROOT / 'docs').rglob('*.svg'))]

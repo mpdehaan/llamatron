@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """Shapes: how many of a clip's notes play, how loud and how long, each a percentage ramping over time, set on a scene, a clip or a generator.
 
-The user's design of 2026-11-11. Density keeps a share of the notes, the strongest places in the
+Density keeps a share of the notes, the strongest places in the
 bar first; Swell scales their velocity; Articulate scales how long each note sounds. Each runs
 from its start to its end percentage over its span, which is the whole scene or clip unless its
 over says a length, and then holds, repeats or bounces back. A part left blank is 100%, so a

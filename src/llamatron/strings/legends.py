@@ -93,8 +93,8 @@ class KeyName:
 
 
 # tui/screens/arrange/arrange_page.py
-# What the Arrange page's keys do, on a scene, a track or a clip. C copies everywhere, as the user chose on
-# 2026-11-07: a scene or track in place, and a clip to be pasted with V.
+# What the Arrange page's keys do, on a scene, a track or a clip. C copies everywhere:
+# a scene or track in place, and a clip to be pasted with V.
 MSG_ADD_SCENE_WHAT = 'add scene'
 MSG_SCENE_SETTINGS_WHAT = 'scene settings'
 MSG_COPY_SCENE_WHAT = 'copy scene'
@@ -115,7 +115,7 @@ MSG_MOVE_TRACK_WHAT = 'move track'
 MSG_DELETE_TRACK_WHAT = 'delete track'
 MSG_ADD_CLIP_WHAT = 'add clip'
 MSG_EDIT_CLIP_WHAT = 'edit clip'
-# The piano roll's [ and ], which drag a note's end: the user's words, shrink and stretch (2026-11-09), where every other value steps dec and inc.
+# The piano roll's [ and ], which drag a note's end: Shrink and stretch, where every other value steps dec and inc.
 MSG_SHRINK_WHAT = 'shrink'
 MSG_STRETCH_WHAT = 'stretch'
 MSG_OPEN_PATTERN_WHAT = 'jump to pattern'
@@ -147,7 +147,7 @@ class What:
     HELP = 'HELP'
     BACK = 'back'
     MOVE = 'move'
-    # Move mode, the user's design: M picks up what the cursor is on, the arrows carry it, and ENTER, ESC or M drops it.
+    # Move mode: M picks up what the cursor is on, the arrows carry it, and ENTER, ESC or M drops it.
     CARRY = 'carry'
     DROP = 'drop'
     ENDS = 'ends'
@@ -175,7 +175,7 @@ class What:
     RENAME = 'rename'
     SORT = 'sort'
     TOGGLE = 'toggle'
-    # [ and ] on every value that steps, the user's words of 2026-11-09.
+    # [ and ] on every value that steps.
     MORE = 'inc'
     LESS = 'dec'
     TYPE = 'type'
@@ -191,7 +191,7 @@ class What:
     INSERT_CELL = 'insert cell'
     REMOVE_CELL = 'remove cell'
     MUNGE = 'munge'
-    # The keys every page has, in capitals as the user asked, so that they stand out from a page's own.
+    # The keys every page has, in capitals, so that they stand out from a page's own.
     SAVE = 'SAVE'
     OPEN_SET = 'OPEN'
     UNDO = 'UNDO'

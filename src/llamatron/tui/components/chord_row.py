@@ -65,7 +65,7 @@ def step_chord_in_words(*, editor, step, choice=None):
 
 def step_keyboard(*, editor, step, choice):
     """Return the lines of a keyboard showing a step's chord in the pattern's scale, for the Chord dialog: the scale's keys in an
-    outline's colour and the chord's filled (the user's design). None where the scale isn't known for certain: a drum pattern,
+    outline's colour and the chord's filled. None where the scale isn't known for certain: a drum pattern,
     a pattern its uses play under more than one scale, or a step that grabs its note."""
     if editor.is_drum() or len(editor.document().scales_of_pattern(editor.item)) != 1:
         return None
@@ -98,7 +98,7 @@ def step_choice(*, editor, step):
 def pick_chord(*, editor, step, opens_on=QUALITY_LIST):
     """Open the Chord dialog on a step of the pattern editor and store what it answers on the step's Chord, Tension and Scale rows:
     the Chord, Tension and Scale rows' Enter, and the roll's chord key. A single note takes no tensions and no inversion, and the Inversion row is stored with them. The editor underneath
-    shows the chord as the choice moves (the user's design), the roll its thin lines and the rows their cells."""
+    shows the chord as the choice moves, the roll its thin lines and the rows their cells."""
     def chosen(choice):
         editor.set_value(value=chord_value(choice.quality), row=Row.CHORD, step=step)
         editor.set_value(value=None if choice.quality is None else choice.tensions, row=Row.TENSION, step=step)
@@ -152,5 +152,5 @@ class ChordRow(PatternRow):
         value = self.value()
         shown = [chord_text(option) for option in options]
         place = shown.index(chord_text(value)) if chord_text(value) in shown else 0
-        # The choices stop at both ends and never go round (the user's rule for a chord's quality, tensions and scale).
+        # The choices stop at both ends and never go round, as a chord's quality, tensions and scale never do.
         self.set_value(options[max(min(place + offset, len(options) - 1), 0)])

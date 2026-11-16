@@ -193,7 +193,7 @@ class Modulation:
 
 @dataclass(slots=True, kw_only=True, frozen=True)
 class Drums:
-    """A style's drums: the grooves it plays (measuring/measures/drum_patterns.py), several and never one fixed beat, the user's direction,
+    """A style's drums: the grooves it plays (measuring/measures/drum_patterns.py), several and never one fixed beat,
     the most typical first; how often it plays a fill, from 0 never to 1 every bar, and the kinds of fill; and the voice that
     keeps time (the hats, the ride, a crash wash or the toms). A measured song's grooves are the bars it plays most."""
 
@@ -332,7 +332,7 @@ class VoiceLeading:
     contrary motion, one rising as the other falls; the share of oblique motion, one holding as the other moves; parallel
     perfect intervals (fifths and octaves moving in step) per hundred motions, which the chorale forbids and rock's power chords
     are made of; and how independent the voices' rhythms are, from 0 always together to 1 never. Counterpoint's rules are one
-    region of this trait, never every style's: each style holds its own values, the user's direction."""
+    region of this trait, never every style's: each style holds its own values."""
 
     contrary: float
     oblique: float
@@ -421,7 +421,7 @@ class Form:
 
 @dataclass(slots=True, kw_only=True, frozen=True)
 class Solos:
-    """How a style uses solos, the user's direction that the library know when solos are normal, when they come, how they sit
+    """How a style uses solos, so that the library knows when solos are normal, when they come, how they sit
     in the song, who plays them and how many, so that one can be asked for or left out: presence is the share of songs with at
     least one, from 0 (a style without solos) to 1; count how many a song with solos usually has; bars how long one usually is;
     players who solos, most usual first; spots where in the song they come; bases what they're played over, which says how they

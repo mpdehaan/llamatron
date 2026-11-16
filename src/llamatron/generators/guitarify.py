@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The Guitarify generator: a clip's chords and notes played as a guitar plays them, the user's design.
+"""The Guitarify generator: a clip's chords and notes played as a guitar plays them.
 
 It has two halves, each of which can be off. Shape is the fretting hand: a chord is voiced again
 as a hand can hold it, one note a string, on the strings of a tuning, within a few frets of a
@@ -306,7 +306,7 @@ class Guitarify(ClipGenerator):
             fifth = (strings[0][MIDI] + FIFTH) % HALF_STEPS_PER_OCTAVE
             fifths = [note for note in strings[1:] if note[MIDI] % HALF_STEPS_PER_OCTAVE == fifth]
             return fifths[:1] or strings[1:2] or strings[:1]
-        # A string the chord lacks is the nearest it has, the user's rule.
+        # A string the chord lacks is the nearest it has.
         return [strings[max(len(strings) - STRING_OF[stroke], 0)]]
 
     def _delays(self, *, count, room, seed_place):

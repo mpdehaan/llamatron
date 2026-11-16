@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Tests of the row of boxed buttons the dialogs draw, the user's design."""
+"""Tests of the row of boxed buttons the dialogs draw."""
 
 import unittest
 
@@ -43,7 +43,7 @@ class TestButtonRow(unittest.TestCase):
 
 
 class TestRefusalsAndDeletes(unittest.TestCase):
-    """A refusal on the status line is amber and a question about deleting has a red title, the user's design."""
+    """A refusal on the status line is amber and a question about deleting has a red title."""
 
     def test_the_status_line_knows_a_refusal_until_cleared(self):
         line = StatusLine()

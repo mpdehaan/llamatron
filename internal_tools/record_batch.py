@@ -19,11 +19,11 @@
     .venv/bin/python internal_tools/record_batch.py
     LLAMATRON_BATCH_RECORD_MAX=2 sh user_scripts/record_all.sh     # the two shortest only, to try it
 
-The user's design. Each take is internal_tools/record_demo.py's batch video (tui/batch_stage.py): the
+Each take is internal_tools/record_demo.py's batch video (tui/batch_stage.py): the
 title on black, Arrange with READY, then the song with its mode filling the scene frame, recorded from
 the rectangle the terminal window's cells cover alone, written as recordings/<set>_<mode>.mov. The
 examples go shortest first, so that a problem shows in the first minute; an example that has any video in
-recordings/ already, its plain take or a take of any mode (has_a_video), is left out, the user's rule, so that running it again records only what is
+recordings/ already, its plain take or a take of any mode (has_a_video), is left out, so that running it again records only what is
 missing; and LLAMATRON_BATCH_RECORD_MAX stops after that many. An example the pairings don't list gets the mode
 they use least, which tells a new demo what is seen less. It lists the takes and the time they need
 and asks once before starting, unless --go, and stops at the first take that fails. The screen and

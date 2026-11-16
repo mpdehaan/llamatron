@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The Pick Many dialog: a list where several choices can be picked at once, each marked on or off, the user's design for a
+"""The Pick Many dialog: a list where several choices can be picked at once, each marked on or off, for a
 setting that holds a list, like the visualizers left out. Up and Down move, Space turns the choice under the
 cursor on or off, Enter finishes and answers with the choices picked, and Esc cancels, changing nothing."""
 

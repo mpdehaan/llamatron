@@ -98,7 +98,7 @@ ONE_GUITARIST = 'one_guitarist'
 CHORDS_PLAYER = 'chords'
 SOLO_PLAYER = 'solo'
 SOLO_WAY = 'way'
-# The band's Sounds, the user's design: every player's usual sound, or the nearest acoustic, electric or synthetic one.
+# The band's Sounds: every player's usual sound, or the nearest acoustic, electric or synthetic one.
 USUAL_SOUNDS = 'usual'
 ACOUSTIC = 'acoustic'
 ELECTRIC = 'electric'
@@ -459,7 +459,7 @@ class WizardChoices:
 
     def section_labels(self):
         """Return what each section is shown as, in order: its kind, and where the form has several of a kind, the kind with
-        a dash and the section's count among them, the user's design, as the tracker numbers every name it makes."""
+        a dash and the section's count among them, as the tracker numbers every name it makes."""
         kinds = [entry[KIND] for entry in self._entries()]
         counts = {}
         labels = []
@@ -641,7 +641,7 @@ class WizardChoices:
         way = self.get_way(traits[0]) if len(traits) == 1 else None
         return by_way.get(way, entry.get(ROLE_TITLE, role))
 
-    # The drum kit's pieces, each switched on or off, the user's design: a stroke on a piece that is off is left out, never
+    # The drum kit's pieces, each switched on or off: a stroke on a piece that is off is left out, never
     # moved to another piece.
 
     def pieces(self):
@@ -712,7 +712,7 @@ class WizardChoices:
             raise ValueError(ERR_WIZARD_QUIET_NOTES.format(value=on))
         self._quiet_notes = on
 
-    # One guitarist or two, the user's design: a band whose one guitarist plays the chords and takes the solo, the chords
+    # One guitarist or two: a band whose one guitarist plays the chords and takes the solo, the chords
     # stopping where the solo plays, shown as one player.
 
     def _one_guitarist(self):
@@ -789,7 +789,7 @@ class WizardChoices:
 
     def usual_sound(self, role):
         """Return the General MIDI sound a player usually plays with: what the genre has stand in for the player in the subgenre,
-        as it does for a singer, whose voice General MIDI plays poorly (the user's choice), or the sound of the player's way."""
+        as it does for a singer, whose voice General MIDI plays poorly, or the sound of the player's way."""
         style = style_of(self._genre)
         stands_in = style.get(STAND_INS, {}).get(role, {}).get(self._subgenre)
         return style[SOUNDS][stands_in] if stands_in else self._way_sound(role)
@@ -981,7 +981,7 @@ class WizardChoices:
 
     def step_length(self, offset):
         """Choose the next longer form, or the next shorter, stopping at the longest and the shortest: the song's length
-        follows its sections, so a length is chosen by choosing a form (the user's design)."""
+        follows its sections, so a length is chosen by choosing a form."""
         forms = self.forms_by_length()
         place = forms.index(self.get_form()) + offset
         if 0 <= place < len(forms):
@@ -1007,7 +1007,7 @@ class WizardChoices:
 
     # The song.
 
-    # The progression left to chance, the user's ask: a song whose progression nobody chose takes one of the subgenre's by the
+    # The progression left to chance: a song whose progression nobody chose takes one of the subgenre's by the
     # seed, so that two runs differ in more than their tunes.
 
     def progression_trait(self):
@@ -1083,6 +1083,6 @@ class WizardChoices:
         made.get_item(section=Section.SONGS, name=name).set_wizard_choices(self.to_data())
         # A part written for a section that leaves the part out is played by nothing, and would be left behind in the open set.
         made.remove_unused()
-        # Each pattern goes in the group named after the track that plays it, the user's design.
+        # Each pattern goes in the group named after the track that plays it.
         made.group_patterns_by_track(made.get_item(section=Section.SONGS, name=name))
         return made

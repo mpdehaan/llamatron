@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The fields that choose visualizer modes, the user's design: the mode Arrange's visualizer key shows first, on the File/Global page and the Song page, the song's over the set's, and the File/Global page's Hide Visualizers section."""
+"""The fields that choose visualizer modes: the mode Arrange's visualizer key shows first, on the File/Global page and the Song page, the song's over the set's, and the File/Global page's Hide Visualizers section."""
 
 from llamatron.composition.file_format import VISUALIZER_NAMES
 from llamatron.strings.labels import MSG_HIDE_VISUALIZERS_LABEL, MSG_VISUALIZER_LABEL
@@ -37,7 +37,7 @@ def visualizer_field(*, page, current, set_name, first):
 
 def hidden_visualizers_field(*, page):
     """Return the field of the modes left out of the visualizer key: their names, or (none), and Enter opening a list where each
-    can be picked, the user's design of one field rather than a section of toggles."""
+    can be picked: one field rather than a section of toggles."""
     setlist = page.document().setlist()
 
     def shown():

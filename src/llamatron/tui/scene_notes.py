@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""What Scene View shows of one scene, the user's design: every track's notes laid over each other, as played or as written, and the chord heard on each beat.
+"""What Scene View shows of one scene: every track's notes laid over each other, as played or as written, and the chord heard on each beat.
 
 Played is the song's own render, the one the exports and real-time playback use, so it shows what
 every chain, groove, strum, shape and register does; a song with no seed draws its random parts
@@ -21,7 +21,7 @@ afresh, so it is one take. Written renders a copy of the set with everything tak
 after the patterns are read: every chain, shape, strum, Euclidean mask and groove, and the steps'
 probability and the rows that read the registers, so that each note shows as its pattern writes it.
 A clip whose pattern reads the registers is marked either way, since what the registers do to it
-depends on the whole song before it, the user's ask: its notes are drawn apart, never mixed in.
+depends on the whole song before it: its notes are drawn apart, never mixed in.
 
 The chord on a beat is found from every note sounding in it, across every track but the drums,
 each counted by how long it sounds there: every note of a llamatron chord symbol must sound, up to
@@ -303,7 +303,7 @@ def beat_chords(*, notes, scale):
 
 
 class Effective(NamedTuple):
-    """What a scene plays with in the end, and where each comes from, since overrides can confuse, the user's ask: its tempo, scale and groove, each with its source, and each track whose clip takes a scale of its own."""
+    """What a scene plays with in the end, and where each comes from, since overrides can confuse: its tempo, scale and groove, each with its source, and each track whose clip takes a scale of its own."""
 
     tempo: str
     tempo_source: str

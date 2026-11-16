@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""What the editors say of a chord in words (the user's design): the scale it is drawn from, its name there, its notes, and its
+"""What the editors say of a chord in words: the scale it is drawn from, its name there, its notes, and its
 name in the clip's own scale when it borrows another. The pattern editor's status line, a progression's chord editor and the
 Chord dialog all say it through here, so that a chord reads the same wherever it is edited."""
 

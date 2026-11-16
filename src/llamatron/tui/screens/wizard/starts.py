@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The four ways a run of the song wizard starts when the current song was made by the wizard, the user's design."""
+"""The four ways a run of the song wizard starts when the current song was made by the wizard."""
 
 NEW_FROM_LAST = 'new from last'
 NEW_FROM_SCRATCH = 'new from scratch'

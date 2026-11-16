@@ -102,7 +102,7 @@ class SongRenderer:
     register's value on its lane, as a CC value held between 0 and 127: at the clip's start, and
     whenever the value it would send changes while the clip plays. A track with nothing in a
     scene sends nothing there, and a CC value of the clip's own at the same moment on the same
-    lane wins (the user's design of 2026-11-11).
+    lane wins.
     """
 
     __slots__ = ('_song', '_seed', '_scenes', '_registers', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round')

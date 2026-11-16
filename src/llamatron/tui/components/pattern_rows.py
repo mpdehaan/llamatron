@@ -20,8 +20,8 @@
 One of the editor's two views, shaped like the other, PianoRoll: it holds its own cursor and
 keys, reads and writes the pattern through the editor's document, and knows nothing of Textual;
 PatternDrawing draws it. The pinned rows (the Degree gauge with its number, and the octave under
-it) stay at the top while the rows beneath scroll. Those rows come in sections, the user's design
-of 2026-11-08: each is headed by a row (SectionRow) that Space or Enter opens or closes, PgUp and
+it) stay at the top while the rows beneath scroll. Those rows come in sections:
+each is headed by a row (SectionRow) that Space or Enter opens or closes, PgUp and
 PgDn jump between the headings, and which sections are open is kept on the app for the session.
 """
 
@@ -54,15 +54,15 @@ from llamatron.tui import keybindings
 
 # The rows at the top, which stay in place while the rows beneath them scroll: the note's gauge and its octave right under it.
 PINNED_ROWS = [Row.DEGREE, Row.OCTAVE]
-# The sections of rows under the pinned ones, in order, each headed by a row the cursor can rest on: the user's grouping of 2026-11-08.
+# The sections of rows under the pinned ones, in order, each headed by a row the cursor can rest on.
 SECTIONS = {
     RowSection.BASICS: [Row.ACCIDENTAL, Row.VELOCITY, Row.KEYSWITCH],
-    # Everything about a step's chord together, in the user's order, the same wherever a chord is chosen: the chord, its tensions, the scale it borrows and its inversion.
+    # Everything about a step's chord together, in the order that is the same wherever a chord is chosen: the chord, its tensions, the scale it borrows and its inversion.
     RowSection.CHORD: [Row.CHORD, Row.TENSION, Row.CHORD_SCALE, Row.INVERSION],
     RowSection.TIMING: [Row.TIE, Row.GATE, Row.DOT, Row.GLIDE],
     RowSection.ADVANCED: [Row.PROBABILITY, Row.RATCHET, Row.RATCHET_OFFSET, Row.GRAB],
     RowSection.CC: [*CC_ROWS, Row.SLIDE],
-    # The register sections read in the order a step works them out, the user's choice of 2026-11-11: sets, then adds, then the uses, then the conditions.
+    # The register sections read in the order a step works them out: sets, then adds, then the uses, then the conditions.
     RowSection.REGISTER_MOD: [*REGISTER_SET_ROWS.values(), *REGISTER_ADD_ROWS.values()],
     RowSection.REGISTER_APPLY: [*REGISTER_NOTE_ROWS.values(), *REGISTER_VELOCITY_ROWS.values()],
     RowSection.REGISTER_COND: [*CONDITION_ROWS.values()],

@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The song wizard's page, the user's design: a tree of the song's parts at the left, and at the right the fields of the part under the cursor.
+"""The song wizard's page: a tree of the song's parts at the left, and at the right the fields of the part under the cursor.
 
 The cursor is in the tree or in the fields. In the tree, Up and Down move, Left and Right
 close and open a branch, the fields of the branch under the cursor show dim, and ENTER or Tab
@@ -86,7 +86,7 @@ class WizardPage(FieldPage):
         # such a song.
         self._last = self.document().song().get_wizard_choices()
         self._start = None
-        # The Band and Form branches start open, the user's ask, so that the players and the sections, and the keys that add, copy,
+        # The Band and Form branches start open, so that the players and the sections, and the keys that add, copy,
         # remove and move a section, show themselves with no key to learn.
         self._open = {MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_FORM_BRANCH}
         self.tree_place = FIRST_PLACE
@@ -255,7 +255,7 @@ class WizardPage(FieldPage):
 
     def pick_sound(self, role):
         """Choose a player's sound from a list: the band's first, which takes the sound from the band again, then the genre's
-        own sounds that suit the player, then a row that opens every General MIDI sound that plays notes, the user's choice."""
+        own sounds that suit the player, then a row that opens every General MIDI sound that plays notes."""
         choices = self._choices
         own = choices.genre_sounds(role)
         options = [MSG_WIZARD_FROM_BAND.format(sound=choices.sound_name(choices.band_sound(role))), *(choices.sound_name(sound) for sound in own), MSG_WIZARD_MORE_SOUNDS]
@@ -324,7 +324,7 @@ class WizardPage(FieldPage):
     # Closing, and undo, which has nothing to act on here.
 
     def go_back(self):
-        """Close the wizard, which loses every choice, the user's design, so it asks first when anything was chosen."""
+        """Close the wizard, which loses every choice, so it asks first when anything was chosen."""
         if not self.has_choices_to_lose():
             super().go_back()
             return
@@ -343,8 +343,8 @@ class WizardPage(FieldPage):
     # Create.
 
     def create(self):
-        """Make the song from the choices, add it to the set with all it uses as one change, and show Arrange on it, the user's design.
-        Every run of the wizard rolls the dice afresh, the user's rule: a run from the last settings keeps the settings and never the seed."""
+        """Make the song from the choices, add it to the set with all it uses as one change, and show Arrange on it.
+        Every run of the wizard rolls the dice afresh: a run from the last settings keeps the settings and never the seed."""
         self._choices.forget_seed()
         try:
             made = self._choices.made_setlist(name=self._song_name, version=VERSION)
@@ -358,7 +358,7 @@ class WizardPage(FieldPage):
         if replaces:
             name = document.replace_with_made_song(made)
         elif document.current_song_is_untouched():
-            # A song nothing was done to, as a new set's, is filled in place of a song added beside it, the user's design.
+            # A song nothing was done to, as a new set's, is filled in place of a song added beside it.
             name = document.replace_with_made_song(made, new=self._song_name)
         else:
             name = document.add_made_song(made)

@@ -421,7 +421,7 @@ class TestControls(unittest.TestCase):
 
 
 class TestNames(unittest.TestCase):
-    """What the import names, the user's rules of 2026-11-10."""
+    """What the import names."""
 
     def setUp(self):
         self.midi = midi_of(tracks=[('lead', 0, melody(pitches=C_MAJOR_SCALE[:4]))])

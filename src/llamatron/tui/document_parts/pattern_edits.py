@@ -48,7 +48,7 @@ class PatternEdits:
             steps = self.song().steps_in_a_bar() or NEW_PATTERN_STEPS
         self._change(self._setlist.add_item, section=Section.PATTERNS, name=name, item=Pattern(steps=steps, rows={}, group=group))
 
-    # Pattern groups, which the Patterns page lists the patterns under (the user's design).
+    # Pattern groups, which the Patterns page lists the patterns under.
 
     def pattern_group(self, name):
         return self._pattern(name).get_group()

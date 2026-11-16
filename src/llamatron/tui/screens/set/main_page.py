@@ -14,9 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The Main page: a button for every page and the file's actions, the user's design, with a double-lined box around what the cursor is on.
+"""The Main page: a button for every page and the file's actions, with a double-lined box around what the cursor is on.
 
-One block of buttons, the same size on every console and at the top left, never stretched to the window (the user's rule):
+One block of buttons, the same size on every console and at the top left, never stretched to the window:
 Arrange, where most of the work happens, is a bar across the top, as wide as the three columns under it. Under it, three rows
 of three, in the order a song is made: Songs, Patterns and Scales; Generators, Chains and Grooves; Instruments, Registers and
 the Real Time switch. Then a blank line, and one bar as wide as the grid with the file's six actions in two rows on the grid's
@@ -62,7 +62,7 @@ from rich.color import Color
 from rich.style import Style as RichStyle
 
 
-# The grid: three columns, a space between them, this wide in all on every console, never widened to the window (the user's rule).
+# The grid: three columns, a space between them, this wide in all on every console, never widened to the window.
 COLUMNS = 3
 GRID_WIDTH = 80
 CELL_GAP = 1
@@ -202,7 +202,7 @@ class MainPage(Page):
         on = not document.setlist().is_real_time()
         document.set_real_time(on)
         if not on and self.app.transport.is_playing():
-            # Arrange shows no stop with Real Time off, so turning it off stops what plays (a bug the user found).
+            # Arrange shows no stop with Real Time off, so turning it off stops what plays, which was once a bug.
             self.app.transport.stop_all()
             self.say(MSG_REAL_TIME_OFF_STOPPED)
             return
@@ -234,7 +234,7 @@ class MainPage(Page):
         ]
 
     def rows(self):
-        """Return the cells by the geometry drawn, six rows of three, the user's layout: Arrange across the first row; Songs,
+        """Return the cells by the geometry drawn, six rows of three: Arrange across the first row; Songs,
         Patterns and Scales; Generators, Chains and Grooves; Instruments, Registers and the Real Time switch; then the bar's two
         rows, Open, Import and File/Global over Save, Export and Quit."""
         pages = {item.binding: item for item in self.keys()}
@@ -268,7 +268,7 @@ class MainPage(Page):
         self.position = None
 
     def select_open(self):
-        """Put the cursor on the Open cell, as the tracker started with no set named does, the user's ask."""
+        """Put the cursor on the Open cell, as the tracker started with no set named does."""
         self.select(self.KEYS.OPEN_SET_HERE)
 
     def row_and_column(self):
@@ -285,7 +285,7 @@ class MainPage(Page):
         return self.chosen is self.KEYS.FILE or any(item.binding is self.chosen for item in self.actions())
 
     def move_cursor(self, name):
-        """Move by the geometry drawn, the user's rule: an arrow goes to the cell beside, above or below, and none goes past an edge.
+        """Move by the geometry drawn: an arrow goes to the cell beside, above or below, and none goes past an edge.
         Arrange is three columns wide, so Left and Right stay on it, and Down from it goes back to the button the cursor came
         from, or to the first one."""
         rows = self.rows()
@@ -308,11 +308,11 @@ class MainPage(Page):
 
     def time_text(self):
         """Return the time at the right of the header: where the song is while it plays, and how long it is, or its length alone,
-        the one thing here that says a song plays on (the user's choice)."""
+        the one thing here that says a song plays on."""
         return self.playing_clock() or super().time_text()
 
     def caption(self):
-        """The theme's stripe carries no words here: the crumbs already name the main screen, and the user wants the name once."""
+        """The theme's stripe carries no words here: the crumbs already name the main screen, and the name shows once."""
         return NOTHING
 
     def count(self, item):
@@ -347,7 +347,7 @@ class MainPage(Page):
 
     def shown_name(self, item):
         """Return the name drawn on a cell: its own, but Arrange/Play on the Arrange cell while the set's Real Time switch is on,
-        so that the cell says where a song is played (the user's design)."""
+        so that the cell says where a song is played."""
         if item.binding is self.KEYS.ARRANGE and self.document().setlist().is_real_time():
             return PageName.ARRANGE_PLAY
         return cell_name(item)
@@ -393,7 +393,7 @@ class MainPage(Page):
     def draw_bar(self, *, canvases, rows, lefts, left, width):
         """Draw the bar of the file's actions: one box, double-lined while the cursor is in it, its actions in rows on the grid's
         columns with no lines between them, each column's keys starting under the keys of the buttons above and its names starting
-        at one place, past the column's longest key, and the selected action's name in reverse video (the user's design)."""
+        at one place, past the column's longest key, and the selected action's name in reverse video."""
         selected = self.selected()
         self.draw_box(canvases=canvases, left=left, width=width, selected=self.in_bar(), style=Style.BOLD if self.in_bar() else Style.DIM)
         for column, column_left in enumerate(lefts):

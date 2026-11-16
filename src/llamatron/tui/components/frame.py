@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """A double-lined box drawn around what the cursor is on, over the lines of a grid.
 
-The Arrange page draws one around the clip, scene or track under the cursor, as the user chose
+The Arrange page draws one around the clip, scene or track under the cursor,
 over reverse video, so that the selection stands out on a grid of bars. The frame's top and
 bottom edges go on the lines above and below what it frames, and its sides on each line between.
 """

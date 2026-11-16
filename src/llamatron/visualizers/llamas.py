@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The llamas, a visualizer mode: an ASCII llama for each track that plays, strolling, bobbing and hopping, slowly changing colour, dimming and growing, the user's design of 2026-11-10.
+"""The llamas, a visualizer mode: an ASCII llama for each track that plays, strolling, bobbing and hopping, slowly changing colour, dimming and growing.
 
 Mildly in the feel of Winnie the Pooh's "Heffalumps and Woozles": a dreamy parade. Each llama
 strolls across the area at its own pace, turning at the edges, bobbing as if dancing, and hops when
@@ -22,8 +22,7 @@ place on it; it dims while its track rests and brightens gently as it plays, nev
 nothing flashes; and it grows from small to medium to large with how much its track plays, never
 changing size more often than SIZE_HOLD_SECONDS, so that it never flickers. It draws at the
 characters' full resolution, not derezzed: the drawings are lines of text, mirrored to stroll the
-other way, later tracks' llamas over earlier ones. The amounts are named constants here, for the
-user to tune by eye.
+other way, later tracks' llamas over earlier ones. The amounts are named constants here, to tune by eye.
 """
 
 import colorsys
