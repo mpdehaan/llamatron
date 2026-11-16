@@ -129,6 +129,18 @@ clouds; generate and test, with motif development and counterpoint last.
 
 ## Players
 
+- **The smart engine** (`Smart` in `melody.py`, the user's design after discussion): a tune that follows what a listener expects.
+  Most moves are steps, steps mostly fall and leaps mostly rise, a step tends to carry on, a leap is followed by a move back,
+  each line has a shape (an arch, a climb, a tumble or a dip), a note off the chord leans toward the chord's note beside it,
+  and a note that lands, a long one or a line's last, wants the chord. Seven gauges of eight positions say how strongly, in a
+  style's `melody` as `smart`, which a song's `melody` may change: `moves` (steps to leaps), `steps` (fall to rise),
+  `after_leap` (return to carry on), `phrase` (flat to arched), `leaning` (resolved to left hanging), `notes` (long to short)
+  and `surprise` (expected to surprising). A line marked `higher` sits higher; each line of a song is dealt a rhythm of its own
+  from the style's while they last, by its place among the song's lines (`line_letters` in `arranger.py`), so a chorus's hook
+  has a rhythm no line of the verse has; a varied line keeps the first half of its notes and its rhythm, so a hook is known
+  when it returns. The wizard's Melody picker offers it, and no subgenre takes it unasked yet: that waits for the user's say
+  once trial songs are heard. `TestSmart` in `tests/macro_composer/test_melody_engines.py` measures each tendency and each
+  gauge over forty seeds. The gauges' fields in a theme's window come with the Themes step.
 - A song gives each instrument's player a complexity from 1 to 4, which people see as an imaginary player's name
   (`player_name` in `players.py`). The instruments and names are the same in every style; what each player does is the style's.
 - **A player only decorates the kind's own parts and never replaces them** (the user's choice). Complexity 1 goes by the book

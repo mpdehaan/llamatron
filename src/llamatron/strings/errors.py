@@ -485,6 +485,7 @@ ERR_NO_STYLE_KIND = 'the style ({}) has no template called ({}); it has: {}'
 ERR_NO_TRAIT_VALUE = 'the trait ({}) has no value called ({}); it has: {}'
 ERR_PICK_NEEDS = 'the pick {} = {} needs {} = {}, and the song picks {}'
 ERR_NO_STYLE_FORM = 'the style ({}) has no form called ({}) for the kind ({})'
+ERR_MELODY_NEEDS_RHYTHMS = 'the smart melody style needs a style that has rhythms'
 ERR_NO_STYLE_FORMS = 'the song gives no form and the style ({}) suggests none'
 ERR_NO_SUCH_SECTION = 'the form names the section ({}), which neither the song nor the style describes'
 

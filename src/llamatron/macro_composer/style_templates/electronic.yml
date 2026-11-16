@@ -19,6 +19,7 @@
 #             of their own (ends), written on a grid of so many steps to the bar and left out where the figure's grid differs.
 # forms       the layouts a song of each kind may take (see the note above them).
 # melody      the habits a tune is sketched by when a song gives none: the notes used, rhythm cells, how far it ranges.
+#             smart holds the smart melody style's seven gauges, each from 1 to 8.
 # Sixteen steps to a bar, sixteenths. A song here is layers that enter and leave: the sections say which play.
 # No act, label or work is named or followed.
 
@@ -391,6 +392,7 @@ melody:
   grid: 8
   line_bars: 2
   span: 3
+  smart: {moves: 2, steps: 3, after_leap: 2, phrase: 3, leaning: 3, notes: 5, surprise: 1}
   home: {degree: 5}
   ladder: [{degree: 1}, {degree: 2}, {degree: 3}, {degree: 5}, {degree: 7}]
   rhythms:
