@@ -129,6 +129,13 @@ clouds; generate and test, with motif development and counterpoint last.
 
 ## Players
 
+- **The hooks engine** (`Hooks` in `melody.py`, a subclass of `Smart`): a plan's line marked `hook: true` is a figure of one bar,
+  2 to 4 short notes (`short_note_figures`, the Notes gauge choosing how few) reaching a long note, the peak: a note of the chord
+  at or above `hook_floor()`, half the span over home. The figure fills the line's first bar and each second bar after; the bars
+  between are an answer (`answer_bar`), walked under the peak. A varied hook changes only its last note, which rises to the peak
+  or above. Every line neither a hook nor `higher` is walked under `hook_floor()`, so the hook's top is the song's
+  (`under_the_hook`). The wizard offers it as the Melody "hooks", with the smart gauges (`GAUGED_STYLES`); it is no subgenre's
+  default until the user says. `TestHooks` holds each property on forty seeds.
 - **The smart engine** (`Smart` in `melody.py`, the user's design after discussion): a tune that follows what a listener expects.
   Most moves are steps, steps mostly fall and leaps mostly rise, a step tends to carry on, a leap is followed by a move back,
   each line has a shape (an arch, a climb, a tumble or a dip), a note off the chord leans toward the chord's note beside it,

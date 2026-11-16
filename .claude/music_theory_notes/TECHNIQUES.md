@@ -38,3 +38,32 @@ taught to add is what an arranger of generated songs must add. (practice)
   long home chord moving; add a passing diminished chord between neighbors a tone apart.
 - **Vary by chorus**: first time plain, second time fuller or higher, with a counter-line; a different texture for the bridge;
   hold back for the last verse and open up for the last chorus.
+
+## Rhythm Guitar Strokes
+
+- **The palm-muted low string** is the engine of hard rock and metal rhythm: short, a little soft, on the lowest string, with full
+  chords or accents breaking in. A chug is mostly these with a chord on the backbeats; a gallop is one long and two short of
+  them to a beat; a thrash bar is sixteenths of them with chords stabbed on a few. Scratching every string where the low string
+  should chug sounds like funk, not metal. (practice)
+- **The stab**: every string, full loudness, cut off halfway, with silence after. On beats 2 and 4 it is the soul and reggae
+  backbeat chord; on every off-beat it is the ska and reggae skank. The silence is as much the part as the chord. (practice)
+- **Muted strokes between strums** keep time like a clock in acoustic and funk playing; in disco the bar is mostly muted
+  sixteenths with two or three chords let through. (practice)
+- **The squeal**: one very high, short, loud note ending a low riff's phrase, a mark of groove metal and later hard rock. (practice)
+- **Approach from a fret away**: a chord struck a half step below or above for an instant before it lands, the slide of grunge
+  and groove riffs. Used on every chord it tires; used on changes it gives weight. (practice)
+- **Chord colors as a player's habit**: leaving the third out (the power chord and its open sound), a suspended second or fourth
+  for chime and ambiguity, an added ninth for shimmer. One color kept through a part characterizes it more than any single
+  chord choice. (practice)
+- **Single lines thickened**: in octaves for weight; with the scale's third above for the twin-lead sound; with the fourth below
+  for the early rock and roll double stop. (practice)
+- **A slow picked chord**, one string at a time from the bass, opens ballads; **four heavy down strokes** a bar is the stomp of
+  glam and arena choruses; **three hits and two** on one chord is the oldest rock and roll hand-drum beat. (practice)
+
+## Stretching a Song Out
+
+- A jam is built in stages, not one long solo: the band settles on a vamp from the song, climbs in steps (each a little
+  busier, higher or louder), peaks, and either falls back to settle and climbs again or returns to the song's theme. The return
+  of the theme is the payoff, so it must be recognizable. (practice)
+- The groove players keep one part through a stage and change at its edge; only the lead changes within it. A stage is as long
+  as it needs, but its material is short and repeats. The lead may pass between players at a stage's edge. (practice)
