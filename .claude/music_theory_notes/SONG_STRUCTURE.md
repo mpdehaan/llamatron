@@ -21,6 +21,39 @@
 - Energy over a whole song usually rises in steps: the second verse a little fuller than the first, the last chorus the fullest,
   with a drop somewhere, often the bridge or a stripped-down verse, so that the last rise has somewhere to come from. (practice)
 
+## The Pre-Chorus
+
+- **What it does**: a ramp of 2, 4 or sometimes 8 bars between verse and chorus that makes the chorus feel arrived at. It returns
+  with the same tune each time, and often the same words, so it is a second small hook. (practice)
+- **Chords**: it leaves the verse's loop and avoids the home chord, starting on IV, ii or vi, the chords changing faster than in
+  the verse (two a bar where the verse had one), and ends on V or IV held, wanting home, which the chorus's first chord gives.
+  Where the verse and chorus share one loop, the pre-chorus is the only place the harmony moves. (practice)
+- **Tune**: it climbs: each phrase starts a step higher, or the phrases shorten, so the chorus's first note is the top. (practice)
+- **Band**: the drums build (kick on every beat, the snare doubling to eighths then sixteenths in the last bar, or a drop to
+  half-time and then the fill); the bass climbs or pedals on V; guitars open from muted to ringing; a bar of near silence or one
+  held chord before the chorus is as strong as a fill. (practice)
+- **When**: rare in the 1960s (about one chart song in fourteen), one in four by the 1980s, and usual in later pop, pop punk and
+  polished hard rock. Roots styles, blues and country seldom have one: there the verse's last line turns around instead. (measured)
+- The first verse may go to the chorus by way of it, or the first pass may hold it back so that it is new the second time.
+
+## Shapes of Whole Songs
+
+- **Verses in a row** (blues, rock and roll, rockabilly, folk): intro, three to five verses with an instrumental break after the
+  second or third, the title as each verse's last line (a refrain), and a tag. No chorus; variety comes from the break and the band.
+- **Verse and chorus alternating** (roots rock, country, soul, jam): verse, chorus, verse, chorus, a break over the verse's chords,
+  chorus; a bridge in a quarter of songs or fewer. Country often tells two verses before the first chorus.
+- **Thirty-two bars with a middle** (early beat groups, standards, doo-wop): two verses ending on the title, a contrasting middle
+  eight starting away from home, a last verse; then the middle and last verse again, sometimes with half a verse as a solo.
+- **Verse, chorus, verse, chorus, bridge, chorus** (later rock, pop punk, new wave, radio rock): the commonest shape from the 1980s
+  on; the bridge drops down or changes key color, and the last chorus comes twice, the first time stripped or the second time
+  with a lift.
+- **The same with a solo** (hard rock, arena rock): the solo over the verse's or chorus's chords after the second chorus, before or
+  in place of the bridge, then a double chorus.
+- **Chorus first** (soul, gospel, reggae, some pop): the hook opens the song, then the verse explains it.
+- **Groove forms** (funk, dance): one vamp throughout, sections made by who plays, with one bridge that changes the chord.
+- A song grows longer with the decades: 8 sections in the 1960s, 9 in the 1970s, 11 in the 1980s, and the first chorus arrives
+  later (bar 16, 20, 24). The second verse is often half the first's length in later styles, to reach the chorus sooner.
+
 ## How Songs Start
 
 - An intro sets tempo, key and mood before the singer. Its length has fallen over time: hits of the mid-1980s averaged over twenty
@@ -38,6 +71,16 @@
 - A start with nothing to set it up, a chord instrument sounding on the first instant, is the least natural on a recording unless
   the style is meant to feel abrupt. (judgment)
 
+- **Lead-ins by style**: rock and roll and rockabilly, a two- or four-bar riff or a pickup into the verse, sometimes the voice
+  alone for a beat; beat groups, a four-bar riff or the chorus's last line played; folk rock, the chiming figure alone, then the
+  band; hard rock, the riff alone twice, a fill, the riff with the band twice (8 bars, often 16 in the 1980s); punk and pop punk,
+  a count and straight in, or four bars of guitar alone then all; country, a kickoff by fiddle, steel or guitar over the last
+  line's chords (the turnaround), 2 to 4 bars; bluegrass, a kickoff of a full verse by one instrument; blues, the last four bars
+  of the form as an intro, starting on V; soul, a horn line or a drum pickup into the groove; funk, the drums or the guitar's
+  figure alone, then one part at a time; yacht rock, the keyboard's chords with a short lead line; ballads, piano or guitar alone.
+- **The join into each section** matters as much as the top: a fill or a pickup into every chorus, a crash on its first beat, a
+  stop of a beat or a bar before it; a drop to fewer players at each verse so the next chorus has room to rise. (practice)
+
 ## How Songs End
 
 - The **fade** over a repeating chorus ruled recordings from the 1950s into the 1980s and has nearly vanished from hits since, giving
@@ -46,6 +89,14 @@
   held while the drums roll and then one last hit together; a **tag**, the chorus's last line two or three times; a **slowing** of
   the last bars into a held chord; **stripping down**, players leaving one at a time; the **opening riff alone** once more; the
   blues **turnaround** walked down to a held chord. (practice)
+- **Play-outs by style**: rock and roll and blues, the turnaround and a held chord, or the last line tagged three times; beat
+  groups, a tag and a held chord with harmony, or a short fade; sixties to eighties pop, soul and yacht rock, a fade over the
+  chorus or a vamp with the singer ad-libbing, its outro growing from 8 bars to 16; hard and arena rock, the big finish, or a
+  fade over the solo guitar; southern and jam styles, a long instrumental play-out that doubles the tempo or stacks solos; punk
+  and pop punk, a hard stop, or the last chord left ringing; country, the last line tagged and a ritard into a held chord;
+  bluegrass, a tag and the standard closing lick; funk, the vamp to a fade or a stop on a hit together; dance, layers out.
+- **The vamp out**: two or four bars of the chorus's or a new loop repeated, the band adding or the singer answering, is the usual
+  body of a fade and of a long play-out. A fade needs something still changing in it, or it sounds like waiting. (practice)
 - An ending mirrors a start: layers in, layers out; riff first, riff last. An ending that stops needs its tension resolved before
   the last note, or the silence sounds like a cut. (practice)
 
