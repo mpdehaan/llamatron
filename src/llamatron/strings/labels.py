@@ -315,7 +315,8 @@ MSG_GUITAR_UPSTROKE_LABEL = 'Upstroke strings'
 MSG_GUITAR_TUNING_NAMES = {Tuning.STANDARD: 'standard', Tuning.DROP_D: 'drop D', Tuning.OPEN_G: 'open G', Tuning.OPEN_D: 'open D', Tuning.DADGAD: 'DADGAD'}
 MSG_GUITAR_SINGLE_NOTES_NAMES = {SingleNotes.LEAVE: 'leave', SingleNotes.POWER_CHORD: 'power chord', SingleNotes.SCALE_CHORD: 'scale chord'}
 MSG_GUITAR_STROKE_NAMES = {
-    Stroke.NOTHING: 'nothing', Stroke.DOWN: 'down', Stroke.UP: 'up', Stroke.MUTE: 'mute', Stroke.BASS: 'bass', Stroke.ALT_BASS: 'alt bass',
+    Stroke.NOTHING: 'nothing', Stroke.DOWN: 'down', Stroke.UP: 'up', Stroke.MUTE: 'mute', Stroke.STAB: 'stab', Stroke.BASS: 'bass', Stroke.MUTED_BASS: 'muted bass',
+    Stroke.ALT_BASS: 'alt bass',
     Stroke.STRING_1: 'string 1', Stroke.STRING_2: 'string 2', Stroke.STRING_3: 'string 3', Stroke.STRING_4: 'string 4',
 }
 MSG_READY_BAR_NAMES = {
@@ -323,6 +324,7 @@ MSG_READY_BAR_NAMES = {
     ReadyBar.FOUR_TO_THE_BAR: 'four to the bar', ReadyBar.BACKBEAT: 'backbeat', ReadyBar.BOOGIE: 'boogie', ReadyBar.SHUFFLE: 'shuffle', ReadyBar.SCRATCH: 'scratch',
     ReadyBar.ALL_DOWN: 'all down', ReadyBar.ARENA: 'arena', ReadyBar.CHUG: 'chug', ReadyBar.GALLOP: 'gallop', ReadyBar.THRASH: 'thrash', ReadyBar.TREMOLO: 'tremolo',
     ReadyBar.CHIME: 'chime', ReadyBar.ROLL_UP: 'roll up', ReadyBar.ROLL_DOWN: 'roll down', ReadyBar.HELD: 'held',
+    ReadyBar.SKANK: 'skank', ReadyBar.DISCO: 'disco', ReadyBar.PEDAL_RIFF: 'pedal riff', ReadyBar.POWER_GROOVE: 'power groove',
 }
 MSG_OWN_BAR = 'custom'
 MSG_STROKE_ROW_LABEL = 'Stroke'

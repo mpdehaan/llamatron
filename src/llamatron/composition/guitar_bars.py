@@ -18,6 +18,7 @@
 
 Each bar is a way of playing known by its sound, not a song's part: a strummed folk rhythm, a
 country bass and strum, a picked pattern for thumb and fingers, palm-muted chugging, a roll.
+A bar may run longer than one bar of the song: its cells are counted, not its bars.
 """
 
 from typing import NamedTuple
@@ -43,6 +44,8 @@ N = Stroke.NOTHING
 D = Stroke.DOWN
 U = Stroke.UP
 M = Stroke.MUTE
+S = Stroke.STAB
+L = Stroke.MUTED_BASS
 B = Stroke.BASS
 A = Stroke.ALT_BASS
 S1 = Stroke.STRING_1
@@ -58,7 +61,8 @@ READY_BARS = {
     ReadyBar.TRAVIS_PICK: GuitarBar(cell=EIGHTH, strokes=(B, S2, A, S1, B, S3, A, S2), accents=(O, O, O, O, O, O, O, O)),
     ReadyBar.CROSSPICK: GuitarBar(cell=EIGHTH, strokes=(S3, S2, S1, S3, S2, S1, S3, S2), accents=(Y, O, O, Y, O, O, Y, O)),
     ReadyBar.FOUR_TO_THE_BAR: GuitarBar(cell=QUARTER, strokes=(D, D, D, D), accents=(O, Y, O, Y)),
-    ReadyBar.BACKBEAT: GuitarBar(cell=EIGHTH, strokes=(N, N, U, M, N, N, U, M), accents=(O, O, Y, O, O, O, Y, O)),
+    # A short chord on beats two and four, and silence between.
+    ReadyBar.BACKBEAT: GuitarBar(cell=EIGHTH, strokes=(N, N, S, N, N, N, S, N), accents=(O, O, Y, O, O, O, Y, O)),
     ReadyBar.BOOGIE: GuitarBar(cell=EIGHTH, strokes=(D, D, D, D, D, D, D, D), accents=(O, O, Y, O, O, O, Y, O)),
     # A shuffle: each beat a long stroke and a short one, the backbeats accented.
     ReadyBar.SHUFFLE: GuitarBar(cell=TRIPLET, strokes=(D, N, D) * 4, accents=(O, O, O, Y, O, O) * 2),
@@ -66,14 +70,27 @@ READY_BARS = {
     ReadyBar.ALL_DOWN: GuitarBar(cell=EIGHTH, strokes=(D, D, D, D, D, D, D, D), accents=(O, O, O, O, O, O, O, O)),
     # Three strokes a bar left to ring, on the beat, the and of two and the and of three.
     ReadyBar.ARENA: GuitarBar(cell=EIGHTH, strokes=(D, N, N, D, N, D, N, N), accents=(Y, O, O, O, O, O, O, O)),
-    ReadyBar.CHUG: GuitarBar(cell=EIGHTH, strokes=(M, M, D, M, M, M, D, M), accents=(O, O, Y, O, O, O, Y, O)),
-    ReadyBar.GALLOP: GuitarBar(cell=SIXTEENTH, strokes=(M, N, M, M, M, N, M, M, M, N, M, M, D, N, M, M), accents=(Y, O, O, O, Y, O, O, O, Y, O, O, O, Y, O, O, O)),
-    ReadyBar.THRASH: GuitarBar(cell=SIXTEENTH, strokes=(D, M, M, M, M, M, D, M, M, M, D, M, M, M, M, M), accents=(Y, O, O, O, O, O, Y, O, O, O, Y, O, O, O, O, O)),
+    # The low string muted, the chord on the backbeats.
+    ReadyBar.CHUG: GuitarBar(cell=EIGHTH, strokes=(L, L, D, L, L, L, D, L), accents=(O, O, Y, O, O, O, Y, O)),
+    ReadyBar.GALLOP: GuitarBar(cell=SIXTEENTH, strokes=(L, N, L, L, L, N, L, L, L, N, L, L, D, N, L, L), accents=(Y, O, O, O, Y, O, O, O, Y, O, O, O, Y, O, O, O)),
+    ReadyBar.THRASH: GuitarBar(cell=SIXTEENTH, strokes=(D, L, L, L, L, L, D, L, L, L, D, L, L, L, L, L), accents=(Y, O, O, O, O, O, Y, O, O, O, Y, O, O, O, O, O)),
     ReadyBar.TREMOLO: GuitarBar(cell=SIXTEENTH, strokes=(S1,) * 16, accents=(Y, O, O, O) * 4),
     ReadyBar.CHIME: GuitarBar(cell=EIGHTH, strokes=(S4, S2, S1, S3, S2, S1, S3, S2), accents=(O, O, O, O, O, O, O, O)),
     ReadyBar.ROLL_UP: GuitarBar(cell=EIGHTH, strokes=(B, S4, S3, S2, S1, N, N, N), accents=(O, O, O, O, O, O, O, O)),
     ReadyBar.ROLL_DOWN: GuitarBar(cell=EIGHTH, strokes=(S1, S2, S3, S4, B, N, N, N), accents=(O, O, O, O, O, O, O, O)),
     ReadyBar.HELD: GuitarBar(cell=QUARTER, strokes=(D, N, N, N), accents=(O, O, O, O)),
+    # A short chord on every off-beat.
+    ReadyBar.SKANK: GuitarBar(cell=EIGHTH, strokes=(N, S, N, S, N, S, N, S), accents=(O, O, O, O, O, O, O, O)),
+    # Sixteenths scratched, three of them a short chord let sound.
+    ReadyBar.DISCO: GuitarBar(cell=SIXTEENTH, strokes=(M, M, S, M, M, M, M, S, M, M, S, M, M, M, M, M), accents=(O, O, Y, O, O, O, O, Y, O, O, Y, O, O, O, O, O)),
+    # The low string muted in eighths under three chords.
+    ReadyBar.PEDAL_RIFF: GuitarBar(cell=EIGHTH, strokes=(D, L, L, D, L, L, D, L), accents=(Y, O, O, Y, O, O, Y, O)),
+    # Two bars of the low string with rests, the short chords pushed ahead of the beats and across the bar line.
+    ReadyBar.POWER_GROOVE: GuitarBar(
+        cell=SIXTEENTH,
+        strokes=(L, N, N, L, N, N, S, N, L, N, L, N, N, L, N, S, N, N, L, N, L, N, N, S, N, L, N, L, S, N, L, L),
+        accents=(O, O, O, O, O, O, Y, O, O, O, O, O, O, O, O, Y, O, O, O, O, O, O, O, Y, O, O, O, O, Y, O, O, O),
+    ),
 }
 # The bar a new Guitarify plays.
 DEFAULT_BAR = ReadyBar.FOLK_STRUM
