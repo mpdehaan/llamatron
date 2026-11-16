@@ -125,3 +125,33 @@ rhythm and blues, rock and roll, folk ballads and waltzes, each played in its ow
 - **With guests** the band becomes each guest's backing group: a Chicago blues band for a blues singer, a second-line piano band
   for a New Orleans pianist, a country band with fiddle for a country singer, a gospel group's support for a family of singers.
   The lesson: one set of players, many styles, by changing who leads, the feel and two instruments.
+
+## Glam Rock, Hair Metal and Grunge, Compared
+
+Three styles a decade apart that share power chords and differ in almost everything else. Measures are from the chord dataset. (measured, practice)
+
+- **Glam rock** (early seventies): fifties rock and roll made huge and simple. A stomping beat at a walking tempo, the kick and
+  snare doubled by handclaps and foot stomps, often a shuffle or a floor-tom "tribal" pattern; boogie riffs on one or two chords;
+  chanted choruses for a crowd; saxophone or piano from rock and roll; a wing that is art rock, with richer chords and odd forms.
+  Major keys (minor one in five), I IV and I V, bVII in four songs in ten, the major II in half. A solo in one song in seven only;
+  an outro in half, usually the chorus chanted to a fade. Nearer the roots and pop families than hard rock.
+- **Hair metal** (the polished hard rock of the eighties): the most uniform shape in rock: intro riff, verse, pre-chorus, chorus,
+  verse, pre-chorus, chorus, solo (half of all songs, the most of any style), sometimes a bridge, double chorus. Intro in nearly
+  nine songs in ten. Riffs on a pedal tone: the open low string palm-muted in eighths with two-note power chords stabbing above
+  it. Minor in over a third; bVII in half the major songs, bIII in a third, the major II in over half; i bVI bVII and
+  i bVI bIII bVII in choruses; no sevenths. Choruses in major with stacked harmony or the whole band shouting the title.
+  Solos are singable first and fast second: a tune, then tapping, dive bombs and a climb to a held bent note, eight or sixteen
+  bars over the verse's or a new progression. Guitars doubled and panned wide; a very large snare with a long gated echo; kick on
+  1 and 3 with pushes; fills round the toms. Tempos 110 to 160 for anthems, 70 to 100 for the **power ballad**: clean arpeggios or
+  piano and voice, the drums entering at the second verse or first chorus, distorted guitars at the chorus, a solo, and a last
+  chorus with everything, sometimes a key up.
+- **Grunge** (around 1990): punk's bluntness at hard rock's weight. Quiet verse, loud chorus: a clean or thin guitar, sometimes
+  with a watery chorus effect, bass and voice alone, then full distortion with the same or neighboring chords. Power chords moved
+  in parallel with no regard for key, so the major II, III and VI appear (II in half of songs, bIII in three in ten, vi in
+  under a third, the least of any modern rock style); chromatic and semitone moves; the lowest string tuned down for one-finger
+  chords and a darker sound; suspended chords and droning open strings. Minor in a third. Solos in a fifth of songs, short,
+  often just the vocal tune played with noise. Drums heavy and plain, a big roomy snare, crashes ridden through choruses, a hard
+  fill into each loud section. Feedback as an instrument. One wing leans to seventies rock: two guitars, one strumming funky
+  sixteenth-note chords and one playing pentatonic blues leads, wider harmony and anthem choruses, a busier bass.
+- The later radio rock that followed grunge keeps the quiet and loud but moves to the sixth-degree family: minor in nearly half,
+  vi in half of major songs, a bridge in six in ten, and the fixed verse, chorus, verse, chorus, bridge, chorus shape.
