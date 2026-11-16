@@ -46,3 +46,6 @@ Instruments are named as products; no player is. (practice throughout, from less
 - **In classic rock and jam music** the organ is the backdrop for the lead guitar: pads and rhythmic comping under the solo,
   swelling as the solo rises, the speaker switched to fast at the peak, then a solo of its own. With two guitars the organ takes
   the middle and leaves the low and high registers to them.
+- **The roots-rock organist** takes cues from the singer: pads and swells that follow the words, never a part for its own sake.
+- **The rock pianist-songwriter**: a pounding chord riff on piano as the song's hook, played like a rhythm guitar; a classical
+  introduction echoed at the end.

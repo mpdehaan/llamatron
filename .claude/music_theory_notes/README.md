@@ -34,4 +34,4 @@ of it written for people.
 - `DRUM_MACHINES.md`: the machines, what each gave its genres, electronic percussion by style. Machines are named, as products.
 - `BAND_INTERPLAY.md`: who answers whom, layering, making room, intensity through a song.
 - `TECHNIQUES.md`: things read about and not yet used.
-- `genres/`: a file for each genre, with what each subgenre usually does, and for kinds of music not yet a genre of the wizard (`SOUNDTRACK.md`, `JAM.md`).
+- `genres/`: a file for each genre, with what each subgenre usually does, and for kinds of music not yet a genre of the wizard (`SOUNDTRACK.md`, `JAM.md`, `JAZZ.md`, `COUNTRY.md`).

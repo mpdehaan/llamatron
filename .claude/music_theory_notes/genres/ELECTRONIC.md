@@ -77,3 +77,12 @@ A reaction against rave's samples and excess: take everything out until only the
 
 See `../ARPEGGIOS.md`. Slow to middle tempos, minor keys, an arpeggio or an octave bass in even sixteenths, a heartbeat kick or a
 gated-reverb drum machine of the 1980s kind, long pads, a simple lead. The synth score proper has no drums at all or a pulse only.
+
+## Other Electronic Habits
+
+- **Eighties synth pop**: a drum kit assembled from several machines and samples, not one; a triplet or shuffle feel under
+  straight synth arpeggios; sequenced bass; a guitar lick as one more hook.
+- **Tape-and-synth novelty pop** of the sixties: cheerful tunes built from spliced tape loops of odd sounds as the rhythm, with
+  an early synthesizer and keyboard melodies; comic, bouncy, exact.
+- **Dub techno's second generation**: sequencers the artist builds, light drum patterns that never sit still, heavy bass, short
+  found sounds (hand drums, metal) layered in; a track kept in several versions.

@@ -39,3 +39,70 @@ Each is a set of habits that could become a subgenre or settings of one. (practi
   left and right, building to the fastest playing at the end.
 - **The guitar army**: three guitars, two trading and harmonizing leads while one holds rhythm, with three- and four-part vocal
   harmonies from country rock and fast, clean, country and bluegrass picking in the leads.
+
+## More Ways of Playing Rock
+
+Habits gathered style by style; each could be a subgenre or the defaults of one. (practice, from lessons, reviews and interviews; thin
+where marked)
+
+- **Pop punk**: 160 to 200 and faster; power chords and barre chords downpicked in even eighths, palm-muted in verses and opened
+  in choruses; the bass is the melodic one, walking and running between roots, and may carry a verse alone before the guitars
+  crash in; major keys, three or four chords, short songs. Some songs swing their eighths. The verse thin, the chorus full.
+- **Emo and melodic punk**: the same engine with a second guitar playing octave leads over the chords in choruses and bridges,
+  singable and never showy; clean arpeggios in verses; two or three guitar parts, not a wall, so the pick attack stays clear;
+  quiet bridges that build; acoustic or country colors now and then.
+- **Metal-leaning pop punk**: adds galloping palm-muted riffs, harmonized leads and a real solo from thrash.
+- **Ska punk**: guitar chops on every off-beat, short and percussive; horns (trumpet, trombone, sax) that double the hook, stab
+  the off-beats or play a countermelody; bass busy and fast rather than walking; drums switch between an off-beat ska feel in
+  verses and straight double-time punk in choruses. The switch is the form.
+- **Power pop**: melody first, chords found after; major-key power chords under a sweet tune with a sad story; the four chord
+  leaned on; short songs, a hook every few bars, wordless vocal hooks, a key change or a borrowed minor chord for a pang.
+- **Nineties radio rock**: grunge's loud guitars with pop construction; mid tempo, earnest, a clean or acoustic verse and a wall
+  in the chorus; open tunings for ringing, unusual chords; half-spoken rhythmic verses in the lighter kind.
+- **Quiet and loud**: a hushed verse and an explosive chorus, the drums doing most of the lifting; stops and starts.
+- **Layered alternative**: many guitar tracks stacked until they are an orchestra, polished, with a jazz-trained drummer whose
+  rolls and ghost notes keep the wall moving; dreamy quiet passages against the wall.
+- **Progressive rock**: long forms in sections rather than verses and choruses; meters of five and seven and changes of meter,
+  tempo and key; a lead bass that plays counter-lines high and bright; imitation between instruments suggesting counterpoint;
+  modes rather than chord function; a violin or keyboards as a second lead; in the American kind, boogie rock underneath.
+- **Modern heavy prog**: odd meters (five, seven, eleven) written around the drummer, soft atmospheric verses with harmony
+  vocals, then a heavy riff; long builds.
+- **Groove metal**: mid tempo; a syncopated palm-muted riff locked to the kick drum note for note, bass with them; rests as
+  heavy as notes; triplet and twelve-eight lean; a riff of three against the drums' four; beats displaced by a sixteenth.
+- **Bare hard rock**: open chords, not barre chords, little distortion, all downstrokes; chords pushed onto off-beats with
+  silence between; the rhythm guitar leaves room for the drums, which play the plainest beat there is. Timing is everything.
+- **Arena rock**: a piano or keyboard figure as the opening hook; an arpeggiated guitar that builds between verses; a soaring
+  voice; a solo that sings the tune; the chorus held back and then repeated to the end.
+- **Polished eighties hard rock**: backing vocals stacked dozens deep and used as an instrument; two guitars as texture, playing
+  inversions and stacked fourths cleanly rather than thick chords; drums sampled and programmed, huge and exact.
+- **Boogie and heartland rock**: a chugging shuffle or boogie riff, gritty, simple, blues and country underneath.
+- **Strummed-engine rock**: a rhythm guitar played like a drum, written on an acoustic and moved to electric, sixteenth strums
+  with accents; fingerpicked folk guitar against it; stacked harmonies; two drummers.
+- **Three guitars**: parts kept apart by register, or deliberately in the same register playing different things; a rhythm
+  part that is itself a hook; a piano filling the gaps.
+- **Synth-and-guitar midwest rock**: a lead synthesizer riff over hard rock, with harmonies.
+- **Three singers**: each takes a verse in turn, all three in harmony on the chorus.
+- **Indie pop**: sixties psych-pop, folk and power pop; sparse, crafted, room to breathe; a simple wordless hook; odd chord
+  turns under a sweet tune.
+- **Psychedelic synth pop**: a nursery-simple one-voice synth riff over an even simpler keyboard bass; everything distorted
+  and compressed; drums blown out on purpose; orchestral strings against the noise.
+- **The loop duo**: one player with a looper builds the song live, bass line first, then chords, then a tune, each layer
+  entering in turn over a live drummer; the form is the order of entries and exits; odd meters; no vocals.
+- **Rhythm and lead as one** (from blues-rock's great innovator): small triads on the middle strings with the bass note under,
+  hammered and pulled ornaments between chord hits, so the accompaniment is always half a melody.
+- **The singing instrumental**: a lead guitar as the vocalist, notes swelled in with no attack, bent by the bar, phrased as a
+  singer breathes; whole pieces with no voice.
+
+## Yacht Rock
+
+Late seventies and early eighties. 80 to 110, never fast. Electric piano at the center; clean chorused guitar; major sevenths,
+ninths, diminished passing chords, ii-V-I and secondary dominants, plain triads rare; a rhythm section that grooves without
+pushing, the half-time shuffle a signature; glossy stacked backing vocals, a saxophone lead; studio players, perfect takes. One
+band's two eras show the border: the strummed guitar engine first, keyboard rhythm and blues after.
+
+## Country Rock and Folk Rock
+
+- Lead singer chosen first, harmonies built around the tune by ear; three-part harmony on choruses with guitar fills in the
+  gaps; country lead guitar of double stops and pedal-steel bends; twin leads in thirds; arpeggiated twelve-string figures.
+- Folk rock: stacked close harmonies as the hook, acoustic guitars in altered tunings, a ragged electric lead against them. A
+  whole song can sit on two chords with a guitar harmonic ringing like a bell on the beat, a soft snare, and nothing else.

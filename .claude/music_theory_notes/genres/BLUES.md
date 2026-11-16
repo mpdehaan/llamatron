@@ -23,3 +23,8 @@ the last four bars of the twelve, and ends on a turnaround walked down to a held
   solo its line is nearly a song of its own, while staying tied to the drums. The drummer comes from jazz: toms and cymbals as
   melody, patterns that answer the soloist, power throughout. Live, one song opens into fifteen minutes of three-way
   improvising. With no chord instrument, the bass's fullness is what keeps a guitar solo from sounding empty. (practice)
+- **The Texas shuffle**: bass walking in quarter notes, the guitar hitting chords on the upbeats with a heavy down-up stroke
+  while muting, so one guitar is bass, chords and percussion; swung hard; in a guitar-friendly key with open strings. A small
+  stock of licks played with great force is enough: feeling over vocabulary. (practice)
+- **Sacred steel**: a pedal steel guitar as the lead voice, from gospel, sliding and crying like a singer, over seventies
+  funk grooves; long dance jams that climb and climb; family-band call and response. (practice)
