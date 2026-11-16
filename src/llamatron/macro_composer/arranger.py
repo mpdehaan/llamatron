@@ -30,6 +30,8 @@ import random
 from fractions import Fraction
 
 from llamatron.macro_composer.breaks import BREAKS, LEAST_CUT, MOST_CUT, cut_up
+from llamatron.macro_composer.characters import ADDS, BUSY, FILL, FILL_EVERY, GUITARIFY_OF_PLAYER, SAYS, TIMING, UNEVEN, VARIES, character_of, held_to, label_of, level_of
+from llamatron.macro_composer import characters
 from llamatron.macro_composer.melody import ANSWER, ANSWER_RHYTHMS, ENGINE, GRID, LINE, RHYTHMS, SPAN, sketched
 from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, DRUM, FLAT, HITS, KIT, LINES, LOUD, NONE, OCTAVE, REST, SHARP, SOFT, STEP, STEPS, VELOCITY, CHORD, clamped, drum_rows
 from llamatron.macro_composer.players import player_name
@@ -37,7 +39,7 @@ from llamatron.support.safe_yaml import load_safely
 from llamatron.composition.limits import MAX_GM_SOUND, MIN_GM_SOUND
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.errors import ERR_PIECE_SOUND, ERR_BREAK_CUT, ERR_NO_STYLE_FORM, ERR_NO_SUCH_BREAK, ERR_NO_STYLE_FORMS, ERR_NO_STYLE_KIND, ERR_NO_SUCH_SECTION, ERR_NO_TRAIT_VALUE, ERR_PICK_NEEDS
-from llamatron.strings.macro_composer import MSG_PIECE_INSTRUMENT, MSG_MADE_PICK, MSG_MADE_SCENE, MSG_MADE_SONG_NOTES, MSG_PART_AT_LEVEL, MSG_PART_OF_SECTION, MSG_PLAYED_BY, MSG_REPEATED_SCENE, MSG_SECTION_START_PART, MSG_TIMING_CHAIN
+from llamatron.strings.macro_composer import MSG_PIECE_INSTRUMENT, MSG_MADE_PICK, MSG_MADE_SCENE, MSG_MADE_SONG_NOTES, MSG_PART_AT_LEVEL, MSG_PART_OF_SECTION, MSG_PLAYED_BY, MSG_PLAYED_BY_OWN, MSG_REPEATED_SCENE, MSG_SECTION_START_PART, MSG_TIMING_CHAIN
 
 # The fields of a style template.
 NAME = 'name'
@@ -56,7 +58,6 @@ VALUE = 'value'
 SHARE = 'share'
 NEEDS = 'needs'
 BAR = 'bar'
-FILL = 'fill'
 FIGURE = 'figure'
 SOUND = 'sound'
 # The sounds a song chooses for its players itself, each a General MIDI number by the player's name.
@@ -152,14 +153,8 @@ KIND = 'kind'
 # style says, for each instrument and complexity, what that player picks and how the player keeps time.
 PLAYER = 'player'
 PLAYERS = 'players'
-SAYS = 'says'
-TIMING = 'timing'
-UNEVEN = 'uneven'
-ADDS = 'adds'
-VARIES = 'varies'
 CHOICES = 'choices'
 SILENCES = 'silences'
-FILL_EVERY = 'fill_every'
 ALLOWS = 'intensity'
 CRASH_START = 'crash'
 ENDS = 'ends'
@@ -177,7 +172,6 @@ FORMS = 'forms'
 LENGTH = 'length'
 SECONDS_IN_A_MINUTE = 60
 BEATS_IN_A_WHOLE = 4
-BUSY = 'busy'
 # A song's pick of a drum break, which takes the place of every way the drums are played but the percussion's, the pick that
 # says a subgenre built on a break plays none, how far the break is cut up, and what the cutting of a bar is seeded by.
 BREAK = 'break'
@@ -185,7 +179,6 @@ NO_BREAK = 'none'
 BREAK_CUT = 'break_cut'
 KEPT_BESIDE_A_BREAK = 'percussion'
 CUT_SEED = 'cut {} {}'
-GUITARIFY_OF_PLAYER = 'guitarify'
 RUSH = 'rush'
 DRAG = 'drag'
 RUSHES = 'rushes'
@@ -252,21 +245,22 @@ def style_named(name):
         return load_safely(file)
 
 
-def player_of(*, style, instrument, complexity):
-    """What a style says of an instrument's player at a complexity, or nothing."""
-    return style.get(PLAYERS, {}).get(instrument, {}).get(complexity, {})
+def player_of(*, style, instrument, character):
+    """What a style says of an instrument's player of a character, or nothing."""
+    return characters.player_of(levels=style.get(PLAYERS, {}).get(instrument, {}), character=character)
 
 
 def players_in(*, style, roles, levels, section):
     """Each role's player in a section: the song's, held to the complexity the section allows the instrument."""
-    return {role[ROLE]: player_of(style=style, instrument=role.get(PLAYER), complexity=level_in(levels=levels, role=role, section=section)) for role in roles}
+    return {role[ROLE]: player_of(style=style, instrument=role.get(PLAYER), character=character_in(levels=levels, instrument=role.get(PLAYER), section=section)) for role in roles}
 
 
-def level_in(*, levels, role, section):
-    """The complexity a role's player plays at in a section, or nothing where the song names no player for the role."""
-    if role.get(PLAYER) not in levels:
+def character_in(*, levels, instrument, section):
+    """The character an instrument's player plays with in a section, or nothing where the song names no player for the instrument: the
+    song's, a level or the places of its gauges, held to the level the section allows the instrument."""
+    if instrument not in levels:
         return None
-    return min(levels[role[PLAYER]], section.get(ALLOWS, {}).get(role[PLAYER], levels[role[PLAYER]]))
+    return held_to(character=character_of(levels[instrument]), allowed=section.get(ALLOWS, {}).get(instrument))
 
 
 def timing_generators(*, move):
@@ -529,8 +523,13 @@ def band_said(*, style, song, roles):
     said = []
     for instrument, complexity in song.get(PLAYERS, {}).items():
         if any(role.get(PLAYER) == instrument for role in roles):
-            player = player_of(style=style, instrument=instrument, complexity=complexity)
-            said.append(MSG_PLAYED_BY.format(instrument, player_name(instrument=instrument, complexity=complexity), player.get(SAYS, '')).strip())
+            level = level_of(character_of(complexity))
+            if level is None:
+                # A player whose gauges were set one by one is nobody's preset, and is named by the instrument alone.
+                said.append(MSG_PLAYED_BY_OWN.format(instrument))
+                continue
+            player = player_of(style=style, instrument=instrument, character=character_of(level))
+            said.append(MSG_PLAYED_BY.format(instrument, player_name(instrument=instrument, complexity=level), player.get(SAYS, '')).strip())
     return said
 
 
@@ -621,15 +620,17 @@ def arranged(*, style, song):
     drum_traits = [trait for role in roles for trait in role.get(DRUMS, [])] + [FILLS]
     parts = {}
     drum_sets = {}
+    usual_drummer = label_of(character_of(levels[DRUMS])) if DRUMS in levels else None
     drums_of = {}
     for name in form_names:
         section = section_of(name=name, style=style, song=song)
         if no_drums or section.get(HELD) or DRUMS not in section[PLAYS] or name in drums_of:
             continue
-        level = min(levels[DRUMS], section.get(ALLOWS, {}).get(DRUMS, levels[DRUMS])) if DRUMS in levels else None
+        character = character_in(levels=levels, instrument=DRUMS, section=section)
+        level = None if character is None else label_of(character)
         changed = {trait: value for trait, value in section.get(PICKS, {}).items()
                    if trait in drum_traits and fits(entry=values_of(style=style, trait=trait)[value], picks=picks)}
-        plays = player_of(style=style, instrument=DRUMS, complexity=level)
+        plays = player_of(style=style, instrument=DRUMS, character=character)
         if FILLS_COME in song:
             # The song says how often a fill comes, whatever the drummer would do: never, at the end of each section, or every so many bars.
             plays = {**plays, FILL_EVERY: section[BARS] if song[FILLS_COME] == EACH_SECTION else song[FILLS_COME]}
@@ -646,7 +647,7 @@ def arranged(*, style, song):
                     part = {**part, HITS: [NONE if hit == SOFT else hit for hit in part[HITS]]}
                 if plays.get(UNEVEN):
                     part = uneven_drum(part=part, by=plays[UNEVEN], dice=random.Random(DRUM_SEED.format(song.get(SEED, 0), piece, section[KIND])))
-                named = piece if key[:2] == (levels.get(DRUMS), ()) and piece not in parts else MSG_PART_OF_SECTION.format(piece, section[KIND])
+                named = piece if key[:2] == (usual_drummer, ()) and piece not in parts else MSG_PART_OF_SECTION.format(piece, section[KIND])
                 parts[named] = part
                 drum_sets[key][piece] = named
         drums_of[name] = drum_sets[key]
@@ -739,7 +740,7 @@ def arranged(*, style, song):
                         held_back = figure_part(entry=entry, role=role, meter=meter, player=here[role[ROLE]], phrase_bars=phrase_bars)
                         # A player held back who plays the figure no differently plays the one part, so that no part is written twice.
                         if held_back != parts[role[ROLE]]:
-                            figure = MSG_PART_AT_LEVEL.format(role[ROLE], level_in(levels=levels, role=role, section=section))
+                            figure = MSG_PART_AT_LEVEL.format(role[ROLE], label_of(character_in(levels=levels, instrument=role.get(PLAYER), section=section)))
                             if figure not in parts:
                                 parts[figure] = held_back
                                 shaped.append(figure)
