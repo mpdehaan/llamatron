@@ -32,7 +32,7 @@ from fractions import Fraction
 from llamatron.macro_composer.breaks import BREAKS, LEAST_CUT, MOST_CUT, cut_up
 from llamatron.macro_composer.characters import ADDS, BUSY, FILL, FILL_EVERY, GUITARIFY_OF_PLAYER, SAYS, TIMING, UNEVEN, VARIES, character_of, held_to, label_of, level_of
 from llamatron.macro_composer import characters
-from llamatron.macro_composer.interplay import ANSWERS as ANSWERS_EVERY_LINE, USUAL_BUSY as USUAL_BESIDE_BUSY, WAITS, WAYS as WAYS_BESIDE, UnderLead
+from llamatron.macro_composer.interplay import ANSWERS as ANSWERS_EVERY_LINE, DRAWN_ANEW as WAYS_DRAWN_ANEW, USUAL_BUSY as USUAL_BESIDE_BUSY, WAITS, WAYS as WAYS_BESIDE, UnderLead
 from llamatron.macro_composer.melody import ANSWER, ANSWER_RHYTHMS, ENGINE, GRID, LINE, RHYTHMS, SPAN, sketched
 from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, DRUM, FLAT, HITS, KIT, LINES, LOUD, NONE, OCTAVE, REST, SHARP, SOFT, STEP, STEPS, VELOCITY, CHORD, clamped, drum_rows
 from llamatron.macro_composer.players import player_name
@@ -759,9 +759,11 @@ def arranged(*, style, song):
                 if way == WAITS or (way is None and role[ROLE] not in section[PLAYS]):
                     continue
                 if way is not None:
-                    part = MSG_PART_BESIDE.format(name, role[ROLE], way)
+                    # Fills and answers are drawn anew each time a section returns; the hook and a riff are the same every time.
+                    drawn_in = scene_name if way in WAYS_DRAWN_ANEW else name
+                    part = MSG_PART_BESIDE.format(drawn_in, role[ROLE], way)
                     if part not in parts:
-                        lines = under.lines(way=way, tune=lines_of(tune_role), chords=chords, section=name)
+                        lines = under.lines(way=way, tune=lines_of(tune_role), chords=chords, section=drawn_in)
                         if not all(all(REST in note for note in line) for line in lines):
                             parts[part] = tune_part(lines=lines, role=role, meter=meter, grid=habits[GRID])
                             shaped.append(part)
