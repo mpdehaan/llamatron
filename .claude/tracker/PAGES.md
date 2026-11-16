@@ -195,8 +195,11 @@ The user's design, agreed in detail in `dev_notes/QUEUE.md` (S16 to S39), of whi
   (`branch.py`) says its `name`, `note`, `children`, `fields`, `notes` and `refusal`, and `WizardPage.roots()` lists the
   top branches. Built so far: `GenreBranch` (Genre and Subgenre, each starting on `(choose)`, then Key, Scale and Tempo once
   a subgenre is chosen, with Meter, the subgenre's and only shown, and Length, the song's length with the form's name,
-  whose `[` and `]` choose the next shorter and longer form, since the length follows the sections, and the song's Name), `FormBranch` (the Form picker, which reads "your own" once a section was changed and whose choice puts a suggested form's
-  sections back, the sections listed under the fields, and a `SectionBranch` for each section by its place: Kind, Bars, offered
+  whose `[` and `]` choose the next shorter and longer form, since the length follows the sections, and the song's Name), `FormBranch` (which starts open in the tree, the user's ask, so that the sections and their keys show themselves; the
+  form's name, only shown, reading "your own" once a section was changed; the "Use a suggested form" button, the user's
+  design, which opens a dialog of the subgenre's forms, each with its sections and length, and asks first where it would
+  replace sections a person changed, since no stepped field may replace a person's work with one stray key; the sections
+  listed under the button with a line saying they are in the tree, and a `SectionBranch` for each section by its place: Kind, Bars, offered
   only at the lengths the subgenre's parts fill, and a toggle for each player of the band, a section keeping one. A section is
   one of a list and takes a list's keys in the tree, the user's ask for an editable form: `A` (add) asks the kind in a picker
   and puts the new section after the cursor's, or at the form's end from the Form branch; `C` (copy), `Bksp` (delete), with no

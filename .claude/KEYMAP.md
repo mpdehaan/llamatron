@@ -362,7 +362,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - **the Length field**: `ESC` to tree · `↑↓` select · `[` dec · `]` inc
 - **the Name field**: `ESC` to tree · `↑↓` select · `ENTER` rename
 - **the drums field**: `ESC` close · `↑↓` move · `←→` fold · `ENTER` edit
-- **the Form field**: `ESC` close · `↑↓` move · `←→` fold · `ENTER` edit · `A` add
+- **the Use a suggested form button**: `ESC` close · `↑↓` move · `←→` fold · `ENTER` edit · `A` add
 - **the drums field**: `ESC` close · `↑↓` move · `←→` fold · `ENTER` edit · `A` add · `C` copy · `Bksp` delete · `M` move
 - **Move mode**: `ENTER/ESC/M` drop · `↑↓` carry
 - **the Create button**: `ESC` to tree · `↑↓` select · `←→` select · `ENTER` create
@@ -490,7 +490,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - PatternsPage: add (a row, the + row)
 - ScalesPage: add (a row, the + row)
 - SongsPage: add (a row, the + row)
-- WizardPage: add (the Form field, the drums field)
+- WizardPage: add (the Use a suggested form button, the drums field)
 
 ## `A-Z 0-9`
 
@@ -738,7 +738,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - VoiceLeadingEditor: rename (the Name field)
 - VoiceLeadingEditor: edit (the Lowest octave field, the Highest octave field)
 - VoiceLeadingEditor: choose (the Restart field)
-- WizardPage: edit (the Genre field, anywhere, the Song field, the Name field, the Create button, the Tempo field, the drums field, the Form field)
+- WizardPage: edit (the Genre field, anywhere, the Song field, the Name field, the Create button, the Tempo field, the drums field, the Use a suggested form button)
 - WizardPage: choose (the Genre field, the Subgenre field, the Key field, the Scale field, the Kind field)
 - WizardPage: rename (the Name field)
 - WizardPage: create (the Create button)
@@ -808,7 +808,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - SwellEditor: back (the Name field, the Start field, the End field, the Accent field, the Over field, the Then field, the Restart field)
 - TrackEditor: back (the Name field, the Drum field, the Mute field, the Euclid heading, the Strum heading, the Groove field, the Transpose field, the Lowest octave field, the Highest octave field, the CC 1 field, the CC 2 field, the CC 3 field, the CC 4 field, the CC1 Reg field, the CC2 Reg field, the CC3 Reg field, the CC4 Reg field, the Vel Reg field, the Chains field, the Instrument field)
 - VoiceLeadingEditor: back (the Name field, the Lowest octave field, the Highest octave field, the Keep the root in the bass field, the Restart field)
-- WizardPage: close (the Genre field, anywhere, the Song field, the Name field, the Create button, the drums field, the Form field)
+- WizardPage: close (the Genre field, anywhere, the Song field, the Name field, the Create button, the drums field, the Use a suggested form button)
 - WizardPage: to tree (the Genre field, the Subgenre field, the Key field, the Scale field, the Kind field, the Tempo field, the Meter field, the Song field, the Form field, the Length field, the Name field, the Create button)
 
 ## `F`
@@ -1063,7 +1063,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - RushStepsEditor: move (anywhere)
 - ShortenStepsEditor: move (anywhere)
 - SongPage: select (the Export button)
-- WizardPage: fold (the drums field, the Form field)
+- WizardPage: fold (the drums field, the Use a suggested form button)
 - WizardPage: select (the Create button)
 
 ## `↑↓`
@@ -1104,7 +1104,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - SwellEditor: select (the Name field, the Start field, the End field, the Accent field, the Over field, the Then field, the Restart field)
 - TrackEditor: select (the Name field, the Drum field, the Mute field, the Euclid heading, the Strum heading, the Groove field, the Transpose field, the Lowest octave field, the Highest octave field, the CC 1 field, the CC 2 field, the CC 3 field, the CC 4 field, the CC1 Reg field, the CC2 Reg field, the CC3 Reg field, the CC4 Reg field, the Vel Reg field, the Chains field, the Instrument field)
 - VoiceLeadingEditor: select (the Name field, the Lowest octave field, the Highest octave field, the Keep the root in the bass field, the Restart field)
-- WizardPage: move (the Genre field, anywhere, the Song field, the Name field, the Create button, the drums field, the Form field)
+- WizardPage: move (the Genre field, anywhere, the Song field, the Name field, the Create button, the drums field, the Use a suggested form button)
 - WizardPage: select (the Genre field, the Subgenre field, the Key field, the Scale field, the Kind field, the Tempo field, the Meter field, the Song field, the Form field, the Length field, the Name field, the Create button)
 - WizardPage: carry (Move mode)
 

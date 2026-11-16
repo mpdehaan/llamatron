@@ -19,9 +19,9 @@ from llamatron.composition.file_format import Section
 from llamatron.macro_composer.arranger import BARS, WITHOUT
 from llamatron.macro_composer.wizard_choices import MOST_BUSY, USUAL_BUSY, MINOR, SEED, genre_names, genre_title
 from llamatron.strings.errors import ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_CHOOSE_GENRE, ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
-from llamatron.strings.labels import MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_START_CANCEL
-from llamatron.strings.marks import MSG_WIZARD_CARRIED, MSG_WIZARD_OWN_FORM, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
-from llamatron.strings.messages import MSG_WIZARD_MOVING, MSG_UNDONE, MSG_RESTORED, MSG_WIZARD_ALREADY_OPEN, MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CREATED, MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_REPLACED, MSG_WIZARD_NOTHING_TO_UNDO
+from llamatron.strings.labels import MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_SUGGESTED_FORM_BUTTON, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_START_CANCEL
+from llamatron.strings.marks import MSG_WIZARD_CARRIED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_OWN_FORM, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
+from llamatron.strings.messages import MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_SECTIONS_HINT, MSG_UNDONE, MSG_RESTORED, MSG_WIZARD_ALREADY_OPEN, MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CREATED, MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_REPLACED, MSG_WIZARD_NOTHING_TO_UNDO
 from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_SONG_WORD
 from llamatron.composition.naming import new_name
 from llamatron.tui import keybindings
@@ -222,12 +222,11 @@ class TestWizardPage(WizardTest):
         sections = choices.form_sections()
         text = self.text()
         self.assertIn(MSG_WIZARD_FORM_LABEL, text)
-        self.assertIn(MSG_WIZARD_BRANCH_CLOSED, text)
+        # The Form branch starts open, so that the sections show themselves.
+        self.assertIn(MSG_WIZARD_BRANCH_OPEN, text)
+        self.assertIn(MSG_WIZARD_SECTIONS_HINT, text)
         for name in sections:
             self.assertIn(name, text)
-        self.assertEqual(len(self.wizard().rows()), CREATE_PLACE + 1)
-        await self.press(Key.RIGHT)
-        self.assertIn(MSG_WIZARD_BRANCH_OPEN, self.text())
         self.assertEqual(len(self.wizard().rows()), CREATE_PLACE + 1 + len(sections))
         await self.press(Key.DOWN)
         self.assertEqual(self.wizard().branch().name(), sections[0])
@@ -239,15 +238,30 @@ class TestWizardPage(WizardTest):
         self.assertEqual(self.wizard().branch().name(), MSG_WIZARD_FORM_BRANCH)
         await self.press(Key.LEFT)
         self.assertEqual(len(self.wizard().rows()), CREATE_PLACE + 1)
+        self.assertIn(MSG_WIZARD_BRANCH_CLOSED, self.text())
+        await self.press(Key.RIGHT)
+        self.assertEqual(len(self.wizard().rows()), CREATE_PLACE + 1 + len(sections))
 
-    async def test_another_form_changes_the_sections(self):
+    async def test_a_suggested_form_is_picked_from_a_dialog_that_says_each_forms_sections_and_length(self):
         await self.choose_genre_and_subgenre()
         await self.go_to_branch(FORM_PLACE)
-        forms = self.choices().forms()
+        choices = self.choices()
+        forms = choices.forms()
         self.assertGreater(len(forms), 1)
-        self.assertEqual(self.choices().get_form(), forms[0])
-        await self.press(keybindings.WizardPage.INTO_FIELDS, key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(self.choices().get_form(), forms[1])
+        self.assertEqual(choices.get_form(), forms[0])
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(MSG_WIZARD_SUGGESTED_FORM_BUTTON)
+        # No key steps the form, which only the dialog changes.
+        await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET), Key.RIGHT, Key.DOWN)
+        self.assertEqual(choices.get_form(), forms[0])
+        await self.press(Key.ENTER)
+        self.assertIsInstance(self.app.screen, ChoiceDialog)
+        for form in forms:
+            self.assertIn(MSG_WIZARD_SUGGESTED_FORM.format(form=form, count=choices.form_section_count(form), length=clock(choices.form_seconds(form=form))), self.text())
+        await self.press(Key.ESCAPE)
+        self.assertEqual(choices.get_form(), forms[0])
+        await self.press(Key.ENTER, Key.DOWN, Key.ENTER)
+        self.assertEqual(choices.get_form(), forms[1])
 
     async def test_create_refuses_until_a_genre_and_a_subgenre_are_chosen(self):
         before = self.document.setlist().to_data()
@@ -409,12 +423,9 @@ class TestWizardForm(WizardTest):
     def sections(self):
         return self.choices().form_sections()
 
-    async def test_the_form_opens_to_a_branch_for_each_section_in_order(self):
+    async def test_down_from_the_form_reaches_each_section_in_order(self):
         await self.choose_genre_and_subgenre()
         await self.go_to_named_branch(MSG_WIZARD_FORM_BRANCH)
-        rows = len(self.wizard().rows())
-        await self.press(Key.RIGHT)
-        self.assertEqual(len(self.wizard().rows()), rows + len(self.sections()))
         for name in self.sections():
             await self.press(Key.DOWN)
             self.assertEqual(self.wizard().branch().name(), name)
@@ -509,8 +520,15 @@ class TestWizardForm(WizardTest):
         await self.select_field(MSG_WIZARD_LENGTH_LABEL)
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET), keybindings.WizardPage.TO_TREE)
         self.assertTrue(self.choices().has_own_form())
+        # The button asks before a suggested form replaces the sections changed, and NO keeps them.
         await self.go_to_named_branch(MSG_WIZARD_FORM_BRANCH)
-        await self.press(keybindings.WizardPage.INTO_FIELDS, Key.ENTER, Key.ENTER)
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(MSG_WIZARD_SUGGESTED_FORM_BUTTON)
+        await self.press(Key.ENTER)
+        self.assertIn(MSG_WIZARD_REPLACE_SECTIONS_QUESTION, self.text())
+        await self.press(keybindings.ConfirmDialog.NO)
+        self.assertTrue(self.choices().has_own_form())
+        await self.press(Key.ENTER, keybindings.ConfirmDialog.YES, Key.ENTER)
         self.assertFalse(self.choices().has_own_form())
         self.assertEqual(self.sections(), suggested)
 

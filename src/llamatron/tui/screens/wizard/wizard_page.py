@@ -31,13 +31,14 @@ from llamatron.composition.naming import new_name
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings.help import HELP_WIZARD_PAGE
-from llamatron.strings.labels import Crumb, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_CAPTION, MSG_WIZARD_REPLACE_CAPTION
-from llamatron.strings.marks import MSG_WIZARD_CARRIED, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_EDITED_BRANCH
-from llamatron.strings.messages import MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CLOSE_TITLE, MSG_WIZARD_CREATED, MSG_WIZARD_MOVING, MSG_WIZARD_NOTHING_TO_UNDO, MSG_WIZARD_REPLACED, MSG_WIZARD_SONG_NAME_PROMPT
+from llamatron.strings.labels import Crumb, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_REPLACE_SECTIONS_TITLE, MSG_WIZARD_SUGGESTED_FORM_TITLE, MSG_WIZARD_CAPTION, MSG_WIZARD_REPLACE_CAPTION
+from llamatron.strings.marks import MSG_WIZARD_CARRIED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_EDITED_BRANCH
+from llamatron.strings.messages import MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CLOSE_TITLE, MSG_WIZARD_CREATED, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_NOTHING_TO_UNDO, MSG_WIZARD_REPLACED, MSG_WIZARD_SONG_NAME_PROMPT
 from llamatron.strings.names import MSG_NEW_SONG_WORD
 from llamatron.support.version import VERSION
 from llamatron.tui import keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
+from llamatron.tui.text import clock
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import Box, cursor_mark, INDENT, NOTHING, SPACE, Style
 from llamatron.tui.key_table import cursor_moved
@@ -79,7 +80,8 @@ class WizardPage(FieldPage):
         # such a song.
         self._last = self.document().song().get_wizard_choices()
         self._start = None
-        self._open = set()
+        # The Form branch starts open, so that the sections, and the keys that add, copy, remove and move one, show themselves.
+        self._open = {MSG_WIZARD_FORM_BRANCH}
         self.tree_place = FIRST_PLACE
         self.in_fields = False
         # Move mode, the tracker's: whether M has picked up the branch under the tree's cursor.
@@ -237,6 +239,25 @@ class WizardPage(FieldPage):
             else:
                 self._open.add(branch.key())
         self.ask(dialog=ChoiceDialog(title=MSG_WIZARD_ADD_SECTION_TITLE, options=kinds), then=chosen)
+
+    def pick_suggested_form(self):
+        """Offer the forms the subgenre suggests in a dialog, each with its sections and its length at the tempo chosen, and
+        take the one picked; where a person changed the sections, ask first, since the form picked replaces them."""
+        choices = self._choices
+        forms = choices.forms()
+        options = [MSG_WIZARD_SUGGESTED_FORM.format(form=form, count=choices.form_section_count(form), length=clock(choices.form_seconds(form=form))) for form in forms]
+
+        def pick():
+            self.ask(dialog=ChoiceDialog(title=MSG_WIZARD_SUGGESTED_FORM_TITLE, options=options, current=forms.index(choices.get_form())),
+                     then=lambda place: self.choosing(choices.set_form)(forms[place]))
+
+        def answered(yes):
+            if yes:
+                pick()
+        if choices.has_own_form():
+            self.ask(dialog=ConfirmDialog(title=MSG_WIZARD_REPLACE_SECTIONS_TITLE, messages=[MSG_WIZARD_REPLACE_SECTIONS_QUESTION]), then=answered)
+        else:
+            pick()
 
     def copy_listed(self):
         self.choosing(lambda branch: branch.copy())(self.branch())

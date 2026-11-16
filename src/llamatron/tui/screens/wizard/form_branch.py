@@ -18,11 +18,12 @@
 from rich.text import Text
 
 from llamatron.strings.errors import ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
-from llamatron.strings.labels import MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL
+from llamatron.strings.labels import MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_SUGGESTED_FORM_BUTTON
+from llamatron.strings.legends import KeyName, MSG_WIZARD_SUGGESTED_FORM_WHAT
 from llamatron.strings.marks import MSG_WIZARD_OWN_FORM, MSG_WIZARD_SECTION_LINE
-from llamatron.strings.messages import MSG_WIZARD_CHOOSE_FIRST
+from llamatron.strings.messages import MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_SECTIONS_HINT
 from llamatron.tui.drawing import INDENT, Style
-from llamatron.tui.screens.shared.field import ChoiceField
+from llamatron.tui.screens.shared.field import Button, Field
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.section_branch import SectionBranch
 
@@ -51,18 +52,20 @@ class FormBranch(Branch):
         choices = self.choices()
         if not choices.is_ready():
             return []
-        # Choosing a suggested form puts its sections in place of the song's own, which shows as the form's name until then.
-        return [ChoiceField(page=self.page(), label=MSG_WIZARD_FORM_LABEL, choices=choices.forms(), current=choices.get_form(),
-                            shown=MSG_WIZARD_OWN_FORM if choices.has_own_form() else None, set=self.page().choosing(choices.set_form))]
+        # The form is only shown here, the user's design: a suggested form is taken through a button and a dialog, never by
+        # stepping a field, which could replace the sections a person changed with one stray key.
+        return [Field(label=MSG_WIZARD_FORM_LABEL, value=lambda: MSG_WIZARD_OWN_FORM if choices.has_own_form() else choices.get_form()),
+                Button(label=MSG_WIZARD_SUGGESTED_FORM_BUTTON, key_name=KeyName.ENTER, enter=self.page().pick_suggested_form, enter_what=MSG_WIZARD_SUGGESTED_FORM_WHAT)]
 
     def notes(self, width):
         """Return the form's sections in order, each with its bars, so that the whole form reads at a glance; or what to choose first."""
         choices = self.choices()
         if not choices.is_ready():
             return [Text(INDENT + MSG_WIZARD_CHOOSE_FIRST, style=Style.DIM)]
+        hint = [Text(INDENT + MSG_WIZARD_SECTIONS_HINT, style=Style.DIM), Text()]
         sections = self.sections()
         longest = max((len(name) for name in sections), default=0)
-        return [Text(INDENT + MSG_WIZARD_SECTION_LINE.format(number=place + FIRST_SECTION_NUMBER, name=name, width=longest, bars=choices.section_bars(place)))
+        return hint + [Text(INDENT + MSG_WIZARD_SECTION_LINE.format(number=place + FIRST_SECTION_NUMBER, name=name, width=longest, bars=choices.section_bars(place)))
                 for place, name in enumerate(sections)]
 
     # A new section is added at the end of the form from here, and after a section from the section.
