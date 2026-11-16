@@ -88,7 +88,7 @@ class EveryKeyIsShownTests:
     async def test_a_key_that_is_not_shown_does_nothing(self):
         await self.press(keybindings.MainPage.PATTERNS)
         before = self.text()
-        await self.press(*UNBOUND_LETTERS, Key.F5)
+        await self.press(*UNBOUND_LETTERS, Key.F4)
         self.assertEqual(self.text(), before)
 
     async def test_no_key_table_is_empty(self):

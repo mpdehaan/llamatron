@@ -126,8 +126,8 @@ class TestHelpDialog(UITest):
         self.assertIn('« Ctrl+Y »', lines[1])
         self.assertIn('« F3 »', lines[2])
         self.assertIn('« Ctrl+T »', lines[3])
-        # The wizard's F9 ends the first column, under Silence, so that Undo still starts the second.
-        self.assertIn('« F9 »', lines[4])
+        # The wizard's F5 ends the first column, under Silence, so that Undo still starts the second.
+        self.assertIn('« F5 »', lines[4])
         self.assertNotIn('« F1 »', text)
         # The page's own keys start with ESC, the back key, and then the arrows.
         self.assertIn('« ESC »', lines[5])

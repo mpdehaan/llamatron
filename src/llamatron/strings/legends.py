@@ -41,7 +41,7 @@ class KeyName:
     F1 = 'F1'
     F2 = 'F2'
     F3 = 'F3'
-    F9 = 'F9'
+    F5 = 'F5'
     N_F2 = 'N/F2'
     # A letter is shown in upper case, though no key needs Shift.
     A = 'A'
@@ -202,7 +202,7 @@ class What:
     # Ctrl+T, the emergency stop: note offs, all notes off and all sound off on every channel the instruments use.
     SILENCE = 'SILENCE'
     QUIT_NOW = 'QUIT NOW'
-    # F9, the song wizard, which makes a whole song from a few choices.
+    # F5, the song wizard, which makes a whole song from a few choices.
     WIZARD = 'WIZARD'
 
 

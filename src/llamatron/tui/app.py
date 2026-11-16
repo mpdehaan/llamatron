@@ -168,7 +168,7 @@ class LlamatronApp(App, inherit_bindings=False):
             self.pop_screen()
 
     def show_wizard(self, page):
-        """Open the song wizard over a page, which F9 does from anywhere, unless the page is the wizard itself."""
+        """Open the song wizard over a page, which F5 does from anywhere, unless the page is the wizard itself."""
         if isinstance(page, WizardPage):
             page.say(MSG_WIZARD_ALREADY_OPEN)
         else:
