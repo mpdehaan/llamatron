@@ -15,6 +15,13 @@ of it written for people.
   players commonly say and do), **judgment** (Claude's own, to be tested by listening).
 - Claude adds to a file whenever the work teaches something, and reads the subject's file before building in its area.
 
+## How the Research Is Done (the user's)
+
+- Search one narrow thing at a time, a few words, such as one beat's name or one machine's one feature: a search of many terms
+  at once returns thin summaries of everything. Run many small searches side by side.
+- Read into the best pages a search finds rather than stopping at the search's summary, and go back with narrower searches for
+  whatever a first pass left out.
+
 ## The Files
 
 - `SONG_STRUCTURE.md`: sections, forms, lengths, how songs start and end.

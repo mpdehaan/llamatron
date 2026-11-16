@@ -39,6 +39,20 @@ whole genres sound as they do, so a machine's limits are a style's rules.
   patterns; tracks are muted and brought back as a performance. The instrument of much IDM and minimal techno. Later machines of
   the family added steps that play only on some passes or by chance.
 
+## Details Worth Having
+
+- **A, B and fill** on the session boxes: asking for a fill while A plays gives A's fill from that point of the bar to its end and
+  then B; asking during B gives B's fill and then A; holding the request past the fill's end returns to the same part. So a fill
+  is also the door between two variations, and can start at any beat. (practice)
+- **Parameter locks**: a lock is one setting's value for one step only; the sound returns to the kit's own value on the next step
+  unless that step has a lock too. A lock can also slide toward the next. Kits hold sounds, patterns hold steps and locks.
+- **The 1980s sampled sound**: short, low-resolution samples of real drums, a little grainy, made huge by a reverb cut off
+  suddenly on the snare. (practice)
+- **Chance in a pattern**, as IDM uses it: a line of sixteenths in which most steps sound one time in ten and the last two of each
+  bar always, with loudness drawn at random over a wide range; a held note fed to a random arpeggiator two octaves wide; soft
+  ghost kicks before or after the kick on each bar's first beat; clap, snare and a third sound stacked on the off-beats, each with
+  its own varying loudness; a short clap fill closing a four-bar loop; a fast tempo, near 160. (practice)
+
 ## Electronic Percussion by Style
 
 - **Dance music (house, techno, trance)**: a kick on every beat; a clap or snare on two and four; an open hat on every off-beat; a

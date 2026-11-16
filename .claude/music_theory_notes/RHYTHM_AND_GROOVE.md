@@ -46,6 +46,39 @@
 - A crash marks the first beat of a section; a chorus may crash every two or four bars. (practice)
 - Leaving out is arranging: no kick in a first verse, hi-hat alone in an intro, everything out for a beat before a chorus. (practice)
 
+## More on Sections, Balance and Fills
+
+- **Change the surface, keep the groove**: the quickest way to say a new section has come is the cymbal, not more notes. A ladder
+  of intensity: tight closed hi-hat (low), ride played on its bow (middle), a crash on the first beat and then the ride (high). The
+  reverse, ride in the verse and an open hi-hat in the chorus, also works; what matters is that the surface changes. (practice)
+- **Crashes**: on the first beat of a section, then about every four bars at a phrase's start in an open chorus; the hand returns
+  to the time-keeping cymbal within a beat. Crashing all the time is no accent at all. A ride's bell is an accent to spend rarely,
+  as on the first bar of a chorus. (practice)
+- **Three faders**: the snare is the clearest voice, the kick supports and locks with the bass, the cymbals carry time under both
+  and never over the singer. A quieter verse lowers the cymbals first and keeps the snare clear; a bigger chorus gives the snare
+  and kick more weight and opens the cymbals without making them louder than the snare. (practice)
+- **Hold a groove**: one groove for eight or sixteen bars, the same at the end as at the start. In a build, change one thing at a
+  time: loudness, or how many notes, or the surface. (practice)
+- **Kick and bass**: anchor the first beat, often the third, line up with any figure the bass repeats, and take out kicks that
+  blur it; under a long bass note play fewer kicks. (practice)
+- **Fill lengths, each landing on the next bar's first beat**: one beat (from beat four), two beats (from beat three), one bar.
+  Shapes from plain to wide: snare alone, snare and one tom, toms going down. Eighths before sixteenths: a fill that drifts is too
+  hard. The landing, crash and kick together, is louder and surer than the fill. The time keeps going through a fill, a foot on
+  the hi-hat or one hand on the pulse, and a fill never shortens or lengthens its bar. (practice)
+
+## Named Grooves
+
+- **Soul's four-snare beat**: the snare on every beat with the kicks between, a tambourine on every beat or on two and four;
+  driving and bright. (practice)
+- **Second line**: a New Orleans street beat. A walking pulse of four with snare accents, buzzes and rolls bouncing around it, felt
+  between straight and swung, often shaped by a clave of three hits then two; the root of that city's funk. (practice)
+- **Punk beats**: the fast two-step, kick and snare alternating on every eighth like a sped-up polka; and a harder variant whose
+  kicks push ahead of the beat for a rushed, tumbling feel, around two hundred beats a minute. (practice)
+- **Shuffles**: the plain shuffle, close to a rock beat with the off-beat late; the Chicago kind leaning on two and four and the
+  Texas kind on one and three; the half-time shuffle with the snare on three alone and ghost notes filling the triplets; the
+  up-beat shuffle, accents on the last triplet of each beat over a kick on every beat; and the slow blues in twelve-eight.
+  (practice)
+
 ## Rhythm Beyond the Drums
 
 - **Syncopation**, accents where the beat is not, is what makes a part groove; a syncopated part needs a steady one beside it to be
