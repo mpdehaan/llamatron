@@ -24,6 +24,8 @@ from llamatron.strings.messages import MSG_UNDONE, MSG_RESTORED, MSG_WIZARD_ALRE
 from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_SONG_WORD
 from llamatron.composition.naming import new_name
 from llamatron.tui import keybindings
+from llamatron.tui.app import LlamatronApp
+from llamatron.tui.document import Document
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import NOTHING
 from llamatron.tui.keys import Key
@@ -409,6 +411,36 @@ class TestWizardStart(WizardTest):
         self.assertEqual(self.document.current_song_name(), first)
         await self.press(keybindings.Page.REDO)
         self.assertEqual(self.document.setlist().to_data(), replaced)
+
+
+class TestWizardFillsAnUntouchedSong(WizardTest):
+    """On a song nothing was done to, as a new set's, Create fills the song in place of adding one beside it, the user's design."""
+
+    def make_app(self):
+        self.document = Document()
+        return LlamatronApp(document=self.document)
+
+    async def test_a_new_sets_song_is_filled_under_the_wizards_name_and_its_starter_pattern_goes(self):
+        before = self.document.setlist().to_data()
+        starter = self.document.setlist().get_pattern_names()
+        await self.choose_genre_and_subgenre()
+        name = self.wizard().song_name()
+        await self.create()
+        self.assertEqual(self.document.song_names(), [name])
+        self.assertEqual(self.document.current_song_name(), name)
+        self.assertIn(MSG_WIZARD_CREATED.format(name=name), self.text())
+        for pattern in starter:
+            self.assertFalse(self.document.setlist().has_pattern(pattern))
+        await self.press(keybindings.Page.UNDO)
+        self.assertEqual(self.document.setlist().to_data(), before)
+        self.assertEqual(self.document.song_names(), [MSG_DEFAULT_SONG_NAME])
+
+    async def test_a_song_that_was_changed_is_kept_and_the_new_song_added_beside_it(self):
+        self.document.set_tempo(self.document.song().get_tempo() + 1)
+        await self.choose_genre_and_subgenre()
+        name = self.wizard().song_name()
+        await self.create()
+        self.assertEqual(self.document.song_names(), [MSG_DEFAULT_SONG_NAME, name])
 
 
 class TestWizardPageUndo(WizardTest):

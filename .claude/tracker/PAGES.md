@@ -204,7 +204,8 @@ The user's design, agreed in detail in `dev_notes/QUEUE.md` (S16 to S39), of whi
   only shows, and its place (`Document.replace_with_made_song`, `Setlist.replace_song`), as one undo step. A run from the
   last settings keeps the song's seed, so the same choices make the same song, unless the Create branch's Take field,
   shown only then, is set to "a new take"; a run from scratch always draws a seed. The four names are Claude's shortening
-  of the user's, to fit the fields' width.
+  of the user's, to fit the fields' width, which the user accepted. A current song nothing was done to, as a new set's
+  (`Setlist.song_is_untouched`), is filled in place under the wizard's name, where otherwise a song is added.
 - Nothing in the set changes until Create, so undo and redo do nothing in the wizard and say why (`Page.steps_history`,
   `why_no_history`). Create is `Document.add_made_song`: `Setlist.take_in` of the set `WizardChoices.made_setlist` made
   (`.claude/features/MACRO_COMPOSER.md`, "The Wizard's Choices"), one change and so one undo step, after which
