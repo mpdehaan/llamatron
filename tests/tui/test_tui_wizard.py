@@ -119,7 +119,7 @@ class TestWizardPage(WizardTest):
         for name in (MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_CREATE_BRANCH, MSG_GENRE_LABEL, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CHOOSE, MSG_NAME_LABEL):
             self.assertIn(name, text)
         self.assertIn(MSG_WIZARD_NEEDS_GENRE, text)
-        await self.go_to_branch(FORM_PLACE)
+        await self.go_to_named_branch(MSG_WIZARD_FORM_BRANCH)
         self.assertIn(MSG_WIZARD_CHOOSE_FIRST, self.text())
         self.assertNotIn(MSG_WIZARD_SUBGENRE_LABEL, self.text())
 
@@ -218,7 +218,7 @@ class TestWizardPage(WizardTest):
 
     async def test_the_form_branch_picks_a_form_lists_its_sections_and_opens_to_a_branch_for_each(self):
         await self.choose_genre_and_subgenre()
-        await self.go_to_branch(FORM_PLACE)
+        await self.go_to_named_branch(MSG_WIZARD_FORM_BRANCH)
         choices = self.choices()
         sections = choices.form_sections()
         text = self.text()
@@ -228,7 +228,7 @@ class TestWizardPage(WizardTest):
         self.assertIn(MSG_WIZARD_SECTIONS_HINT, text)
         for name in sections:
             self.assertIn(name, text)
-        self.assertEqual(len(self.wizard().rows()), CREATE_PLACE + 1 + len(sections))
+        self.assertEqual(len(self.wizard().rows()), CREATE_PLACE + 1 + len(choices.roles_in()) + len(sections))
         await self.press(Key.DOWN)
         self.assertEqual(self.wizard().branch().name(), sections[0])
         self.assertIn(MSG_WIZARD_BARS_LABEL, self.text())
@@ -238,14 +238,14 @@ class TestWizardPage(WizardTest):
         await self.press(Key.ESCAPE, Key.DOWN, Key.LEFT)
         self.assertEqual(self.wizard().branch().name(), MSG_WIZARD_FORM_BRANCH)
         await self.press(Key.LEFT)
-        self.assertEqual(len(self.wizard().rows()), CREATE_PLACE + 1)
+        self.assertEqual(len(self.wizard().rows()), CREATE_PLACE + 1 + len(choices.roles_in()))
         self.assertIn(MSG_WIZARD_BRANCH_CLOSED, self.text())
         await self.press(Key.RIGHT)
-        self.assertEqual(len(self.wizard().rows()), CREATE_PLACE + 1 + len(sections))
+        self.assertEqual(len(self.wizard().rows()), CREATE_PLACE + 1 + len(choices.roles_in()) + len(sections))
 
     async def test_a_suggested_form_is_picked_from_a_dialog_that_says_each_forms_sections_and_length(self):
         await self.choose_genre_and_subgenre()
-        await self.go_to_branch(FORM_PLACE)
+        await self.go_to_named_branch(MSG_WIZARD_FORM_BRANCH)
         choices = self.choices()
         forms = choices.forms()
         self.assertGreater(len(forms), 1)
@@ -329,7 +329,7 @@ class TestWizardPage(WizardTest):
 
     async def test_the_wizard_fits_an_80_by_24_console_with_a_long_form_open(self):
         await self.choose_genre_and_subgenre()
-        await self.go_to_branch(FORM_PLACE)
+        await self.go_to_named_branch(MSG_WIZARD_FORM_BRANCH)
         await self.press(Key.RIGHT, *[Key.DOWN] * 30)
         self.assertEqual(self.wizard().branch().name(), MSG_WIZARD_CREATE_BRANCH)
         self.assertIn(MSG_WIZARD_CREATE_BRANCH, self.text())
@@ -352,9 +352,12 @@ class TestWizardBand(WizardTest):
         await self.open_the_band()
         choices = self.choices()
         self.assertEqual([field.label for field in self.wizard().fields()], [MSG_WIZARD_SOUNDS_LABEL, *(choices.role_title(role) for role in choices.roles() if choices.role_can_play(role))])
+        # The Band starts open, the user's ask: Left closes it and Right opens it to a branch for each player who is in.
         rows = len(self.wizard().rows())
+        await self.press(Key.LEFT)
+        self.assertEqual(len(self.wizard().rows()), rows - len(choices.roles_in()))
         await self.press(Key.RIGHT)
-        self.assertEqual(len(self.wizard().rows()), rows + len(choices.roles_in()))
+        self.assertEqual(len(self.wizard().rows()), rows)
         await self.press(Key.DOWN)
         self.assertEqual(self.wizard().branch().name(), choices.role_title(choices.roles_in()[0]))
 
