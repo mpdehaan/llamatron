@@ -135,6 +135,10 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   leaves the designs once built, and a
   request that comes in while Claude works goes where the user says, the bottom unless told otherwise, and Claude says where
   it went (the user's rule).
+- A feature of the song wizard is put on the wizard's page in the same change that builds it, and the reply says where it is, by
+  branch and field (the user's rule). Where a thing is built underneath and not yet on the page, the reply says so in those words
+  and why. A reply that reports on agreed work says of each agreed thing which of three it is: on the page, built underneath
+  only, or not started, so that the user never has to ask whether a thing was forgotten (the user's rule).
 - A set Claude points the user to, to open or to listen to, is given as the whole command that opens it, one command a set, like
   `sh llamatron.sh previews/some_folder/song.yml`, never the file's name alone (the user's ask).
 - When the user says they'll test something, Claude stops there and never reminds them to test (the user's rule).
