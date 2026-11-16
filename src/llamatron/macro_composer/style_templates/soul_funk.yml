@@ -355,6 +355,7 @@ melody:
     span: 4
     home: {degree: 5}
     ladder: [{degree: 1}, {degree: 2}, {degree: 3}, {degree: 5}, {degree: 6}]
+    by_scale_type: {minor: {home: {degree: 1}, ladder: [{degree: 1}, {degree: 3}, {degree: 4}, {degree: 5}, {degree: 7}]}}
     rhythms:
       - [{rest: 2}, {steps: 2}, {steps: 1}, {steps: 3}, {steps: 2}, {steps: 6}, {steps: 3}, {steps: 3}, {steps: 6}, {rest: 4}]
       - [{steps: 3}, {steps: 3}, {steps: 2}, {steps: 3}, {steps: 5}, {rest: 2}, {steps: 2}, {steps: 2}, {steps: 6}, {rest: 4}]
@@ -369,6 +370,7 @@ melody:
     span: 4
     home: {degree: 5}
     ladder: [{degree: 1}, {degree: 2}, {degree: 3}, {degree: 5}, {degree: 6}]
+    by_scale_type: {minor: {home: {degree: 1}, ladder: [{degree: 1}, {degree: 3}, {degree: 4}, {degree: 5}, {degree: 7}]}}
     rhythms:
       - [{rest: 3}, {steps: 2}, {steps: 1}, {steps: 3}, {steps: 3}, {steps: 3}, {steps: 6}, {rest: 3}]
       - [{steps: 3}, {steps: 2}, {steps: 1}, {steps: 6}, {steps: 2}, {steps: 1}, {steps: 6}, {rest: 3}]

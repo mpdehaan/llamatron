@@ -21,8 +21,11 @@ from fractions import Fraction
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_TEMPO, MIN_TEMPO
-from llamatron.macro_composer.wizard_choices import LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, FEWEST_FILLS, FILLS_KEPT, MOST_FILLS, QUIET_NOTES_KEPT, PIECES_OFF_KEPT, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, LAST_SOUND_OF_NOTES, USUAL_SOUNDS, FEEL_TRAITS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
-from llamatron.macro_composer.arranger import DRUMS, GENRE, PLAYERS, ROLE_TITLE, TYPE, WITHOUT, style_named, style_names
+from llamatron.macro_composer.wizard_choices import style_of, LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, FEWEST_FILLS, FILLS_KEPT, MOST_FILLS, QUIET_NOTES_KEPT, PIECES_OFF_KEPT, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, LAST_SOUND_OF_NOTES, USUAL_SOUNDS, FEEL_TRAITS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
+from llamatron.macro_composer.melody import HOME, LADDER
+from llamatron.strings.macro_composer import MSG_PART_OF_SECTION
+from llamatron.macro_composer.notation import DEGREE, LINES
+from llamatron.macro_composer.arranger import BY_SCALE_TYPE, GRID, MELODY, PARTS, arranged, DRUMS, GENRE, PLAYERS, ROLE_TITLE, TYPE, WITHOUT, style_named, style_names
 from llamatron.music.note import NoteName
 from llamatron.strings.errors import ERR_WIZARD_LAST_PIECE, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER
 from llamatron.playback.song_renderer import SongRenderer
@@ -628,6 +631,11 @@ class TestWizardGuitarists(unittest.TestCase):
         self.assertFalse(again.has_one_guitarist())
 
 
+FIRST_DEGREE = 1
+EMPTY = ''
+LEAD_ROLE = 'lead'
+
+
 class TestWizardKit(unittest.TestCase):
     """The drum kit's pieces, each switched on or off."""
 
@@ -774,6 +782,42 @@ class TestWizardFillsAndQuietNotes(unittest.TestCase):
         again.set_subgenre([name for name in again.subgenres() if name != again.get_subgenre()][0])
         self.assertTrue(again.plays_quiet_notes())
         self.assertFalse(again.has_own_fills())
+
+
+class TestWizardMinorTunes(unittest.TestCase):
+    """A minor song's tune is made of the style's minor notes, where the style gives some, and a major song's of its usual ones."""
+
+    def degrees_sung(self, choices):
+        """Return the scale degrees of every tune of the song the choices make: the lead's part in each section."""
+        style = style_of(choices.get_genre())
+        parts = arranged(style=style, song=choices.song_picks(A_NAME))[PARTS]
+        tunes = [part for name, part in parts.items() if name.endswith(MSG_PART_OF_SECTION.format(EMPTY, LEAD_ROLE)) and LINES in part]
+        return {note[DEGREE] for part in tunes for line in part[LINES] for note in line if DEGREE in note}
+
+    def habits(self, choices):
+        habits = style_of(choices.get_genre())[MELODY]
+        return habits if GRID in habits else habits[choices.meter()]
+
+    def test_every_subgenre_of_a_style_with_minor_notes_sings_the_notes_of_its_scale_type(self):
+        checked = set()
+        for place, genre in enumerate(genre_names()):
+            for subgenre in range(len(chosen(genre=place).subgenres())):
+                choices = chosen(genre=place, subgenre=subgenre)
+                choices.set_seed(A_SEED)
+                habits = self.habits(choices)
+                if BY_SCALE_TYPE not in habits:
+                    continue
+                own = habits[BY_SCALE_TYPE].get(choices.get_scale_type(), habits)
+                checked.add(choices.get_scale_type())
+                with self.subTest(subgenre=choices.get_subgenre()):
+                    self.assertLessEqual(self.degrees_sung(choices), {note[DEGREE] for note in own[LADDER]})
+        self.assertGreater(len(checked), 1)
+
+    def test_the_minor_notes_differ_from_the_usual_ones_and_rest_on_the_first(self):
+        choices = chosen(genre=genre_names().index(A_GENRE_WITH_TUNES))
+        minor = self.habits(choices)[BY_SCALE_TYPE][MINOR]
+        self.assertNotEqual(minor[LADDER], self.habits(choices)[LADDER])
+        self.assertEqual(minor[HOME][DEGREE], FIRST_DEGREE)
 
 
 class TestWizardBand(unittest.TestCase):

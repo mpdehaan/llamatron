@@ -63,6 +63,8 @@ SOUND = 'sound'
 ROLE_SOUNDS = 'role_sounds'
 # The pieces of the drum kit a song switches off.
 WITHOUT_PIECES = 'without_pieces'
+# A style's melody habits for one scale type, in place of its usual ones.
+BY_SCALE_TYPE = 'by_scale_type'
 # How often a song has a fill come: 0 for never, each section, or every so many bars; and whether the snare's quiet notes are played.
 FILLS_COME = 'fills_come'
 EACH_SECTION = 'each section'
@@ -516,6 +518,9 @@ def arranged(*, style, song):
     scale_type = song[KEY].get(TYPE, chord_entry.get(SCALE_TYPE, MAJOR))
     scale = SCALE_NAME.format(song[KEY][ROOT], scale_type.capitalize())
     habits = style[MELODY] if GRID in style[MELODY] else style[MELODY][meter]
+    # A tune in a scale type the style gives notes of its own, a minor song its minor notes and home, takes those: the major
+    # notes read in a minor scale rest on the scale's third and sound like the major key beside it.
+    habits = {**habits, **habits.get(BY_SCALE_TYPE, {}).get(scale_type, {})}
     levels = song.get(PLAYERS, {})
     without = song.get(WITHOUT, [])
     no_drums = any(role.get(DRUMS) and role[ROLE] in without for role in roles)
