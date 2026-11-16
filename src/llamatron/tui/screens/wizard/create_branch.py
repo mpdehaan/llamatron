@@ -17,12 +17,12 @@
 
 from llamatron.macro_composer.wizard_choices import genre_title
 from llamatron.strings.errors import ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
-from llamatron.strings.labels import MSG_GENRE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_SONG_LABEL, MSG_WIZARD_TAKE_LABEL, MSG_WIZARD_TAKE_NAMES
+from llamatron.strings.labels import MSG_GENRE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_SONG_LABEL
 from llamatron.strings.legends import KeyName, MSG_WIZARD_CREATE_WHAT
 from llamatron.strings.marks import MSG_WIZARD_FORM_SHOWN, MSG_WIZARD_GENRE_SHOWN, MSG_WIZARD_KEY_SHOWN, MSG_WIZARD_NEEDS_GENRE
 from llamatron.tui.drawing import NOTHING
 from llamatron.tui.text import clock
-from llamatron.tui.screens.shared.field import Button, ChoiceField, Field
+from llamatron.tui.screens.shared.field import Button, Field
 from llamatron.tui.screens.wizard.branch import Branch
 
 
@@ -52,9 +52,4 @@ class CreateBranch(Branch):
                 Field(label=MSG_WIZARD_FORM_LABEL, value=lambda: MSG_WIZARD_FORM_SHOWN.format(form=choices.get_form(), count=len(choices.form_sections()))),
                 Field(label=MSG_WIZARD_LENGTH_LABEL, value=lambda: clock(choices.form_seconds())),
             ]
-        if choices.is_ready() and page.starts_from_last():
-            # A run from the last settings makes the same song where nothing was changed, unless a new take is asked for, the user's design.
-            takes = [False, True]
-            fields.append(ChoiceField(page=page, label=MSG_WIZARD_TAKE_LABEL, choices=takes, names=MSG_WIZARD_TAKE_NAMES, current=page.wants_new_take(),
-                                      shown=MSG_WIZARD_TAKE_NAMES[takes.index(page.wants_new_take())], set=page.want_new_take))
         return [*fields, Button(label=MSG_WIZARD_CREATE_BUTTON, key_name=KeyName.ENTER, enter=page.create, enter_what=MSG_WIZARD_CREATE_WHAT)]

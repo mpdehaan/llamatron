@@ -19,7 +19,7 @@ from llamatron.composition.file_format import Section
 from llamatron.macro_composer.arranger import WITHOUT
 from llamatron.macro_composer.wizard_choices import MOST_BUSY, USUAL_BUSY, MINOR, SEED, genre_names, genre_title
 from llamatron.strings.errors import ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_CHOOSE_GENRE, ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
-from llamatron.strings.labels import MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_TAKE_LABEL
+from llamatron.strings.labels import MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_START_CANCEL
 from llamatron.strings.marks import MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
 from llamatron.strings.messages import MSG_UNDONE, MSG_RESTORED, MSG_WIZARD_ALREADY_OPEN, MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CREATED, MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_REPLACED, MSG_WIZARD_NOTHING_TO_UNDO
 from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_SONG_WORD
@@ -76,7 +76,9 @@ class WizardTest(UITest):
     async def create(self):
         """Press the Create button, the last row of the Create branch."""
         await self.go_to_named_branch(MSG_WIZARD_CREATE_BRANCH)
-        await self.press(keybindings.WizardPage.INTO_FIELDS, *[Key.DOWN] * len(self.wizard().fields()), Key.ENTER)
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(MSG_WIZARD_CREATE_BUTTON)
+        await self.press(Key.ENTER)
 
     async def start_with(self, start):
         """Choose one of the four ways to start in the dialog that F5 opens on a song the wizard made, which then opens the wizard."""
@@ -396,7 +398,7 @@ class TestWizardBand(WizardTest):
 
 
 class TestWizardStart(WizardTest):
-    """The four ways a run starts when the current song was made by the wizard, replacing a song, and the Take field."""
+    """The four ways a run starts when the current song was made by the wizard, and replacing a song."""
 
     async def test_no_way_of_starting_is_asked_for_on_a_song_the_wizard_did_not_make(self):
         self.assertIsInstance(self.app.screen, WizardPage)
@@ -410,6 +412,12 @@ class TestWizardStart(WizardTest):
         for start in STARTS:
             self.assertIn(MSG_WIZARD_START_NAMES[start], text)
         await self.press(Key.ESCAPE)
+        self.assertIsInstance(self.app.screen, ArrangePage)
+
+    async def test_the_last_row_of_the_dialog_is_cancel_which_opens_no_wizard(self):
+        await self.make_a_song_and_open_the_wizard_on_it()
+        self.assertIn(MSG_WIZARD_START_CANCEL, self.text())
+        await self.press(*[Key.DOWN] * len(STARTS), Key.ENTER)
         self.assertIsInstance(self.app.screen, ArrangePage)
 
     async def test_the_wizard_closes_without_asking_until_something_is_changed_after_the_start(self):
@@ -429,7 +437,8 @@ class TestWizardStart(WizardTest):
         self.assertFalse(self.wizard().replaces())
         await self.create()
         self.assertEqual(len(self.document.song_names()), 3)
-        self.assertEqual(self.document.song().get_wizard_choices(), kept)
+        # The settings are kept and the dice rolled again, as on every run.
+        self.assertEqual({**self.document.song().get_wizard_choices(), SEED: None}, {**kept, SEED: None})
 
     async def test_a_new_song_from_scratch_starts_with_nothing_chosen(self):
         await self.make_a_song_and_open_the_wizard_on_it()
@@ -439,34 +448,22 @@ class TestWizardStart(WizardTest):
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         self.assertIn(ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE, self.text())
 
-    async def test_replacing_from_the_last_settings_with_the_same_take_makes_the_same_song_in_its_place(self):
+    async def test_replacing_from_the_last_settings_keeps_the_settings_rolls_the_dice_again_and_leaves_nothing_behind(self):
         first = await self.make_a_song_and_open_the_wizard_on_it()
-        before = self.document.setlist().to_data()
+        kept = self.document.song().get_wizard_choices()
+        patterns = len(self.document.setlist().get_pattern_names())
         await self.start_with(REPLACE_FROM_LAST)
         self.assertIn(first, self.wizard().caption())
-        await self.go_to_named_branch(MSG_WIZARD_CREATE_BRANCH)
-        self.assertIn(MSG_WIZARD_TAKE_LABEL, self.text())
         await self.create()
         self.assertIsInstance(self.app.screen, ArrangePage)
         self.assertIn(MSG_WIZARD_REPLACED.format(name=first), self.text())
-        self.assertEqual(self.document.setlist().to_data(), before)
-
-    async def test_a_new_take_rolls_the_dice_again_and_leaves_nothing_of_the_old_take_behind(self):
-        first = await self.make_a_song_and_open_the_wizard_on_it()
-        seed = self.document.song().get_wizard_choices()[SEED]
-        patterns = len(self.document.setlist().get_pattern_names())
-        await self.start_with(REPLACE_FROM_LAST)
-        await self.go_to_named_branch(MSG_WIZARD_CREATE_BRANCH)
-        await self.press(keybindings.WizardPage.INTO_FIELDS)
-        await self.select_field(MSG_WIZARD_TAKE_LABEL)
-        await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET), keybindings.WizardPage.TO_TREE)
-        self.assertTrue(self.wizard().wants_new_take())
-        await self.create()
         self.assertEqual(self.document.song_names(), [MSG_DEFAULT_SONG_NAME, first])
-        self.assertNotEqual(self.document.song().get_wizard_choices()[SEED], seed)
+        now = self.document.song().get_wizard_choices()
+        self.assertNotEqual(now[SEED], kept[SEED])
+        self.assertEqual({**now, SEED: None}, {**kept, SEED: None})
         self.assertEqual(len(self.document.setlist().get_pattern_names()), patterns)
 
-    async def test_replacing_from_scratch_keeps_the_songs_name_and_place_and_shows_no_take(self):
+    async def test_replacing_from_scratch_keeps_the_songs_name_and_place(self):
         first = await self.make_a_song_and_open_the_wizard_on_it()
         await self.press(Key.ESCAPE)
         # A third song after it, so that the replaced song's place is not the last.
@@ -486,8 +483,6 @@ class TestWizardStart(WizardTest):
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, WizardPage)
         await self.press(keybindings.WizardPage.TO_TREE)
-        await self.go_to_named_branch(MSG_WIZARD_CREATE_BRANCH)
-        self.assertNotIn(MSG_WIZARD_TAKE_LABEL, self.text())
         await self.create()
         self.assertEqual(self.document.song_names(), [MSG_DEFAULT_SONG_NAME, first, third])
         self.assertEqual(self.document.current_song_name(), first)

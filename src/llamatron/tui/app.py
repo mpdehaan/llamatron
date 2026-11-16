@@ -46,7 +46,7 @@ from llamatron.tui.pattern_preview import PatternPreview
 from llamatron.tui.transport import Transport
 from llamatron.tui.silent_instruments import warn_of_silent_instruments
 from llamatron.strings.errors import ERR_PRINTED
-from llamatron.strings.labels import MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE
+from llamatron.strings.labels import MSG_WIZARD_START_CANCEL, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE
 from llamatron.strings.messages import MSG_WIZARD_ALREADY_OPEN
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 
@@ -178,8 +178,13 @@ class LlamatronApp(App, inherit_bindings=False):
             page.show_page(WizardPage(self))
         else:
             # On a song the wizard made, a dialog asks how to start first, the user's design; ESC opens no wizard.
-            names = [MSG_WIZARD_START_NAMES[start] for start in STARTS]
-            page.ask(dialog=ChoiceDialog(title=MSG_WIZARD_START_TITLE, options=names), then=lambda place: page.show_page(WizardPage(self, start=STARTS[place])))
+            # The last row is CANCEL, the user's ask, which opens no wizard, as ESC does.
+            names = [*(MSG_WIZARD_START_NAMES[start] for start in STARTS), MSG_WIZARD_START_CANCEL]
+
+            def answered(place):
+                if place < len(STARTS):
+                    page.show_page(WizardPage(self, start=STARTS[place]))
+            page.ask(dialog=ChoiceDialog(title=MSG_WIZARD_START_TITLE, options=names), then=answered)
 
     def show_arrange_on_new_song(self):
         """Close every page down to the main screen and open Arrange, which shows the current song: where the song wizard leaves a person once it has made one."""
