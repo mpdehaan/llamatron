@@ -479,9 +479,6 @@ ERR_MIDI_NO_NOTES = 'the MIDI file plays no notes'
 ERR_CANT_IMPORT_TITLE = 'Cannot import'
 ERR_CANT_READ_MIDI = 'The file {file} cannot be read as MIDI: {problem}.'
 
-# genres/measures/registry.py
-ERR_NO_SUCH_MEASURE = 'no measure called ({name})'
-
 # macro_composer/arranger.py
 ERR_NO_STYLE_KIND = 'the style ({}) has no template called ({}); it has: {}'
 ERR_NO_TRAIT_VALUE = 'the trait ({}) has no value called ({}); it has: {}'

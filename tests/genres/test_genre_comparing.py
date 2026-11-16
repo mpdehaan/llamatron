@@ -18,9 +18,9 @@ shuffle is far from a rock beat, and a rock beat with one more kick is nearer a 
 
 import unittest
 
-from llamatron.genres.measures.comparing import SAME, groove_gap
-from llamatron.genres.measures.drum_patterns import GROOVES
-from llamatron.strings.genres import GrooveName
+from measuring.measures.comparing import SAME, groove_gap
+from measuring.measures.drum_patterns import GROOVES
+from measuring.strings import GrooveName
 
 GROOVES_BY_NAME = {groove.name: groove for groove in GROOVES}
 FAR = 0.1

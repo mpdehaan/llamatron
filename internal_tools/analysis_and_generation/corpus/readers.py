@@ -28,7 +28,7 @@ import pretty_midi
 from music21 import converter, harmony, key as m21key, meter as m21meter
 
 from corpus.piece import CorpusNote, Piece
-from dataset_study import billboard_song, billboard_years, expanded_rules, numeral_root
+from corpus.chord_files import billboard_song, billboard_years, expanded_rules, numeral_root
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent.parent / '.corpus'
 KERN = '*.krn'

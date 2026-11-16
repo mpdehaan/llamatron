@@ -20,7 +20,7 @@ its notes are drums). A piece with notes becomes the analyzer's performance, so 
 
 from dataclasses import dataclass, field
 
-from llamatron.genres.hearing.performance import Performance, PlayedNote, PlayedTrack
+from measuring.hearing.performance import Performance, PlayedNote, PlayedTrack
 
 DEFAULT_TEMPO = 100
 DEFAULT_VELOCITY = 80

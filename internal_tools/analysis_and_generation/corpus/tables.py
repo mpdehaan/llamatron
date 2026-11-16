@@ -17,7 +17,7 @@
 """Each piece's measures as a table row, cached per source in .corpus/tables/, for meta-analysis and calibration: every numeric
 field the library compares, under its trait's name and field's name joined by a dot, with the piece's source, identity, creator,
 year and the library style it is labelled as, where its source says (a rag is ragtime, a reel is Celtic, a bebop solo is
-bebop). A table records a fingerprint of the analyzer that measured it (the source of genres/hearing/ and the traits), so that a table
+bebop). A table records a fingerprint of the analyzer that measured it (the source of measuring/hearing/ and the traits), so that a table
 measured by an older analyzer is rebuilt rather than trusted (114 C: everything is re-analysed as the analyzers improve), while a
 change elsewhere in llamatron leaves it alone."""
 
@@ -29,12 +29,12 @@ import zlib
 
 import pandas
 
-from llamatron.genres.hearing.midi_file import performance_of_midi
-from llamatron.genres.hearing.profile import profile_of_performance
-from llamatron.genres.measures.registry import MEASURES
-from llamatron.strings.genres import StyleName
-import llamatron.genres.hearing
-import llamatron.genres.measures.traits
+from measuring.hearing.midi_file import performance_of_midi
+from measuring.hearing.profile import profile_of_performance
+from measuring.measures.registry import MEASURES
+from measuring.strings import StyleName
+import measuring.hearing
+import measuring.measures.traits
 
 from corpus.composers import period_of
 from corpus.readers import COMPOSER_COLLECTIONS, READERS, ROOT
@@ -149,10 +149,10 @@ def build_table(*, source, limit=None, processes=None):
 
 
 def analyzer_fingerprint():
-    """Return a fingerprint of the analyzer's source: every module of genres/hearing/ and the traits it measures into."""
+    """Return a fingerprint of the analyzer's source: every module of measuring/hearing/ and the traits it measures into."""
     digest = hashlib.sha256()
-    folder = pathlib.Path(llamatron.genres.hearing.__file__).parent
-    for path in sorted(folder.glob(PYTHON_FILES)) + [pathlib.Path(llamatron.genres.measures.traits.__file__)]:
+    folder = pathlib.Path(measuring.hearing.__file__).parent
+    for path in sorted(folder.glob(PYTHON_FILES)) + [pathlib.Path(measuring.measures.traits.__file__)]:
         digest.update(path.read_bytes())
     return digest.hexdigest()
 

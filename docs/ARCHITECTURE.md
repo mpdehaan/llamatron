@@ -127,7 +127,6 @@ flowchart LR
     generators["generators"]
     grid["grid"]
     exporters["exporters"]
-    genres["genres"]
     importers["importers"]
     macro_composer["macro_composer"]
     realtime["realtime"]
@@ -144,8 +143,6 @@ flowchart LR
     exporters --> realtime
     generators --> composition
     generators --> grid
-    genres --> exporters
-    genres --> playback
     grid --> composition
     importers --> composition
     importers --> exporters
@@ -186,7 +183,6 @@ flowchart LR
 | `generators` | The generators that change a clip's notes as it exports: arpeggiators, AutoRatchets and blending for morphs. |
 | `grid` | The finished clips a song exports into, and the grid that maps them to tracks and scenes. |
 | `exporters` | The exporters of a played song: a Live set, one MIDI file, a file per track, a file per clip, a General MIDI file, or a WAV file played through FluidSynth. |
-| `genres` | What makes a style of music, as rules in code, the user's design: genres and subgenres as genomes of traits, each subgenre |
 | `importers` | The importers: a file from outside llamatron made into what a set holds, so far a MIDI file made into a song. |
 | `macro_composer` | The MacroComposer, the user's name for it: a set made from structured data that says what to play. composer.py turns a |
 | `realtime` | Real-time playback: the timeline of MIDI events a rendered grid becomes, the score of a song with each clip's events from its scene's start, the player that launches scenes and clips as the follow actions say, the engine that sends the events on time, the ports they go out of, the Realtime Sender Process, which runs the engine apart from the tracker, and FluidSynth, which the tracker starts when something plays through it. |
