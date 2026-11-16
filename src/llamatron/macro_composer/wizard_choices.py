@@ -29,7 +29,7 @@ from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_TEMPO, MIN_TEMPO
 from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer.arranger import (
-    COMMON_TIME, DRUMS, KIND, MELODY_ENGINE, METER, PICKS, ROLE_SOUNDS, ROLE_TITLE, ROLE_TITLES, SOUNDS, PLAYER, PLAYERS, ROLE, ROLES, SOUND, TRAIT, VALUE, WITHOUT, bar_length, fits,
+    COMMON_TIME, DRUMS, DRUM_TRACKS, KIND, MELODY_ENGINE, METER, PICKS, ROLE_SOUNDS, ROLE_TITLE, ROLE_TITLES, SOUNDS, WITHOUT_PIECES, PLAYER, PLAYERS, ROLE, ROLES, SOUND, TRAIT, VALUE, WITHOUT, bar_length, fits,
     BARS, CHORD_TRAIT, CHORD_TRAIT_FIELD, FORM, HELD, PLAYS, GENRE, KEY, NAME, ROOT, SCALE_TYPE, SECTIONS, SEED, STYLE, TEMPLATE, TEMPLATES, TEMPO, TITLE, TRAITS, TYPE, USUAL,
     arranged, forms_of, picked, section_of, share_of, style_named, style_names, values_of,
 )
@@ -42,7 +42,7 @@ from llamatron.composition.limits import GM_FAMILY_SIZE, MIN_GM_SOUND
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.marks import MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SECTION_VARIANT
 from llamatron.support.version import VERSION as A_VERSION
-from llamatron.strings.errors import ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
+from llamatron.strings.errors import ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'
@@ -77,6 +77,8 @@ def genre_title(genre):
     return style_of(genre)[TITLE]
 
 
+# The key a song keeps the kit's pieces that are switched off under.
+PIECES_OFF_KEPT = 'pieces_off'
 # One guitarist or two, and the key a template describes its one guitarist under, with the players and the way it names.
 TWO_GUITARISTS = 2
 ONE_GUITARIST_COUNT = 1
@@ -192,7 +194,7 @@ SECONDS_IN_MINUTE = 60
 class WizardChoices:
     """The choices of one run of the song wizard."""
 
-    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_without', '_sections', '_melody', '_sounds', '_band_sounds', '_guitarists')
+    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_without', '_sections', '_melody', '_sounds', '_band_sounds', '_guitarists', '_pieces_off')
 
     def __init__(self):
         self._genre = None
@@ -215,6 +217,8 @@ class WizardChoices:
         self._sounds = {}
         # How many guitarists the band has: two, one for the chords and one for the solo, or one who plays both.
         self._guitarists = TWO_GUITARISTS
+        # The pieces of the drum kit switched off.
+        self._pieces_off = []
 
     # Reading and keeping the choices.
 
@@ -240,6 +244,7 @@ class WizardChoices:
         kept = [(self.set_way, [dict(trait=trait, value=value) for trait, value in (data.get(PICKS) or {}).items()]),
                 (self._set_level, [dict(player=player, level=level) for player, level in (data.get(PLAYERS) or {}).items()]),
                 (self.set_role_in, [dict(role=role, on=False) for role in data.get(WITHOUT) or []]),
+                (self.set_piece_on, [dict(piece=piece, on=False) for piece in data.get(PIECES_OFF_KEPT) or []]),
                 (self._set_kept_guitarists, [dict(count=data[GUITARISTS_KEPT])] if data.get(GUITARISTS_KEPT) else []),
                 (self._set_kept_band_sounds, [dict(sounds=data[BAND_SOUNDS_KEPT])] if data.get(BAND_SOUNDS_KEPT) else []),
                 (self.set_sound, [dict(role=role, sound=sound) for role, sound in (data.get(SOUNDS_KEPT) or {}).items()]),
@@ -259,7 +264,8 @@ class WizardChoices:
                 OWN_SECTIONS: [own_copy_of(entry) for entry in self._sections] if self._sections is not None else None,
                 MELODY_STYLE: self._melody, SOUNDS_KEPT: dict(self._sounds) or None,
                 BAND_SOUNDS_KEPT: self._band_sounds if self._band_sounds != USUAL_SOUNDS else None,
-                GUITARISTS_KEPT: self._guitarists if self._guitarists != TWO_GUITARISTS else None}
+                GUITARISTS_KEPT: self._guitarists if self._guitarists != TWO_GUITARISTS else None,
+                PIECES_OFF_KEPT: list(self._pieces_off) or None}
         return {field: value for field, value in held.items() if value is not None}
 
     # The genre and the subgenre, which everything else follows.
@@ -569,6 +575,7 @@ class WizardChoices:
         self._sounds = {}
         self._band_sounds = USUAL_SOUNDS
         self._guitarists = TWO_GUITARISTS
+        self._pieces_off = []
 
     def _role(self, role):
         found = next((entry for entry in style_of(self._genre)[ROLES] if entry[ROLE] == role), None) if self.is_ready() else None
@@ -608,6 +615,32 @@ class WizardChoices:
         by_way = entry.get(ROLE_TITLES, {})
         way = self.get_way(traits[0]) if len(traits) == 1 else None
         return by_way.get(way, entry.get(ROLE_TITLE, role))
+
+    # The drum kit's pieces, each switched on or off, the user's design: a stroke on a piece that is off is left out, never
+    # moved to another piece.
+
+    def pieces(self):
+        """Return the pieces of the kit the drums play in the song as chosen, in the order the song has them, on or off."""
+        if not self.is_ready():
+            return []
+        song = {**self.song_picks(self._subgenre), WITHOUT_PIECES: []}
+        return list(arranged(style=style_of(self._genre), song=song)[DRUM_TRACKS])
+
+    def piece_is_on(self, piece):
+        return piece not in self._pieces_off
+
+    def set_piece_on(self, *, piece, on):
+        """Switch a piece of the kit on or off. The last piece stays on: a band with no drums leaves the drums out."""
+        if piece not in self.pieces():
+            raise ValueError(ERR_WIZARD_NO_SUCH_PIECE.format(value=piece))
+        if on:
+            if piece in self._pieces_off:
+                self._pieces_off.remove(piece)
+            return
+        if [name for name in self.pieces() if self.piece_is_on(name)] == [piece]:
+            raise ValueError(ERR_WIZARD_LAST_PIECE)
+        if piece not in self._pieces_off:
+            self._pieces_off.append(piece)
 
     # One guitarist or two, the user's design: a band whose one guitarist plays the chords and takes the solo, the chords
     # stopping where the solo plays, shown as one player.
@@ -899,7 +932,8 @@ class WizardChoices:
                 PICKS: dict(self._ways), PLAYERS: dict(self._levels), WITHOUT: self._song_without(),
                 **({SECTIONS: self._sections_of_song()} if self._sections_of_song() else {}),
                 **({MELODY_ENGINE: self._melody} if self._melody is not None else {}),
-                **({ROLE_SOUNDS: self._song_sounds()} if self._song_sounds() else {})}
+                **({ROLE_SOUNDS: self._song_sounds()} if self._song_sounds() else {}),
+                **({WITHOUT_PIECES: list(self._pieces_off)} if self._pieces_off else {})}
 
     def made_setlist(self, *, name, version):
         """Return a set holding the one song these choices make, under a name, with all the song uses, the song keeping the choices.

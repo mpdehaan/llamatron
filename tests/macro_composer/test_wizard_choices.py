@@ -21,10 +21,10 @@ from fractions import Fraction
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_TEMPO, MIN_TEMPO
-from llamatron.macro_composer.wizard_choices import LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, LAST_SOUND_OF_NOTES, USUAL_SOUNDS, FEEL_TRAITS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
+from llamatron.macro_composer.wizard_choices import LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, PIECES_OFF_KEPT, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, LAST_SOUND_OF_NOTES, USUAL_SOUNDS, FEEL_TRAITS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
 from llamatron.macro_composer.arranger import DRUMS, GENRE, PLAYERS, ROLE_TITLE, TYPE, WITHOUT, style_named, style_names
 from llamatron.music.note import NoteName
-from llamatron.strings.errors import ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER
+from llamatron.strings.errors import ERR_WIZARD_LAST_PIECE, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.support.version import VERSION
 
@@ -626,6 +626,70 @@ class TestWizardGuitarists(unittest.TestCase):
         self.assertEqual(again.to_data(), choices.to_data())
         again.set_subgenre(again.subgenres()[1])
         self.assertFalse(again.has_one_guitarist())
+
+
+class TestWizardKit(unittest.TestCase):
+    """The drum kit's pieces, each switched on or off."""
+
+    def rock(self):
+        choices = chosen(genre=genre_names().index(A_GENRE_WITH_TUNES))
+        choices.set_seed(A_SEED)
+        return choices
+
+    def tracks(self, choices):
+        song = choices.made_setlist(name=A_NAME, version=VERSION).get_song(A_NAME)
+        SongRenderer(song).render()
+        return song.get_track_names()
+
+    def test_the_pieces_are_the_drum_tracks_of_the_song_and_all_are_on(self):
+        choices = self.rock()
+        pieces = choices.pieces()
+        self.assertTrue(pieces)
+        self.assertTrue(all(choices.piece_is_on(piece) for piece in pieces))
+        self.assertLessEqual(set(pieces), set(self.tracks(choices)))
+        self.assertEqual(WizardChoices().pieces(), [])
+
+    def test_every_piece_of_every_subgenre_switched_off_is_left_out_and_the_song_plays(self):
+        for place in range(len(genre_names())):
+            for subgenre in range(len(chosen(genre=place).subgenres())):
+                choices = chosen(genre=place, subgenre=subgenre)
+                choices.set_seed(A_SEED)
+                pieces = choices.pieces()
+                for piece in pieces[1:]:
+                    choices.set_piece_on(piece=piece, on=False)
+                    with self.subTest(subgenre=choices.get_subgenre(), piece=piece):
+                        self.assertNotIn(piece, self.tracks(choices))
+                    choices.set_piece_on(piece=piece, on=True)
+
+    def test_the_other_pieces_play_as_they_did(self):
+        choices = self.rock()
+        before = choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+        choices.set_piece_on(piece=choices.pieces()[-1], on=False)
+        after = choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+        self.assertLess(len(after), len(before))
+        for name, pattern in after.items():
+            self.assertEqual(pattern, before[name], name)
+
+    def test_the_last_piece_stays_on_and_a_piece_the_kit_has_not_is_refused(self):
+        choices = self.rock()
+        pieces = choices.pieces()
+        for piece in pieces[1:]:
+            choices.set_piece_on(piece=piece, on=False)
+        with self.assertRaisesRegex(ValueError, ERR_WIZARD_LAST_PIECE):
+            choices.set_piece_on(piece=pieces[0], on=False)
+        with self.assertRaises(ValueError):
+            choices.set_piece_on(piece=NOT_A_CHOICE, on=False)
+
+    def test_the_pieces_switched_off_are_kept_with_the_choices_and_another_subgenre_has_them_all(self):
+        choices = self.rock()
+        self.assertNotIn(PIECES_OFF_KEPT, choices.to_data())
+        piece = choices.pieces()[-1]
+        choices.set_piece_on(piece=piece, on=False)
+        again = WizardChoices.from_data(choices.to_data())
+        self.assertFalse(again.piece_is_on(piece))
+        self.assertEqual(again.to_data(), choices.to_data())
+        again.set_subgenre(again.subgenres()[1])
+        self.assertTrue(all(again.piece_is_on(name) for name in again.pieces()))
 
 
 class TestWizardBand(unittest.TestCase):

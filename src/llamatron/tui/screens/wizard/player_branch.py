@@ -17,10 +17,10 @@
 """A player of the wizard's band: how the player plays, and how busy the player is."""
 
 from llamatron.macro_composer.wizard_choices import LEAST_BUSY, MOST_BUSY
-from llamatron.strings.labels import MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_WIZARD_SOUND_LABEL
+from llamatron.strings.labels import MSG_WIZARD_KIT_PIECE, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_WIZARD_SOUND_LABEL
 from llamatron.strings.legends import What
 from llamatron.strings.marks import MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_BUSY_SHOWN, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL
-from llamatron.tui.screens.shared.field import ChoiceField, Field, NumberField
+from llamatron.tui.screens.shared.field import ChoiceField, Field, NumberField, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
 
 
@@ -49,7 +49,22 @@ class PlayerBranch(Branch):
             fields.append(self.sound_field())
         if choices.has_busy(self._role) and choices.get_busy(self._role) is not None:
             fields.append(self.busy_field())
+        if not choices.has_sound(self._role):
+            # The drums: a toggle for each piece of the kit the song plays, the user's design.
+            fields += [Toggle(label=MSG_WIZARD_KIT_PIECE.format(piece=piece), on=choices.piece_is_on(piece), set=self.piece_setter(piece)) for piece in choices.pieces()]
         return fields
+
+    def piece_setter(self, piece):
+        """Return what switches a piece of the kit on or off, refusing to switch off the last."""
+        choices = self.choices()
+        page = self.page()
+
+        def set_on(on):
+            try:
+                page.choosing(lambda wanted: choices.set_piece_on(piece=piece, on=wanted))(on)
+            except ValueError as problem:
+                page.refuse(str(problem))
+        return set_on
 
     def way_field(self, *, trait, label):
         choices = self.choices()

@@ -193,7 +193,8 @@ The user's design, agreed in detail in `dev_notes/QUEUE.md` (S16 to S39), of whi
   chosen (`choosing` wraps every setter and notes it).
 - The page knows nothing of any one branch, the user's ask, who expects to revise the organization: a `Branch`
   (`branch.py`) says its `name`, `note`, `children`, `fields`, `notes` and `refusal`, and `WizardPage.roots()` lists the
-  top branches (the Band's Guitarists field, "2" or "1", the user's choice, shows where the genre's template says who its
+  top branches (the drums' branch has a toggle for each piece of the kit the song plays, `kit: kick`, the user's design, the
+  last piece staying on; the Band's Guitarists field, "2" or "1", the user's choice, shows where the genre's template says who its
   one guitarist would be: with "1" the player of the solo is not shown, `roles_shown`, and the player of the chords is called
   "guitar"; a player is shown by `role_title`, the clearer name the genre's template gives the player, which may follow
   how the player plays; the Band's Sounds field, "usual", "acoustic", "electric" or "synth", is the band's, and a player's

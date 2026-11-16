@@ -183,6 +183,10 @@ clouds; generate and test, with motif development and counterpoint last.
   then played and what the one player is called. `set_guitarists` chooses it; the solo is then a guitar's, the chords are
   left out of every section the solo plays in (`_sections_of_song`), and leaving the guitarist out leaves the solo out.
   Fills between the sung lines by the one guitarist are not written yet.
+- The kit's pieces: `pieces()` are the drum tracks of the song as chosen, and `set_piece_on` switches one off, kept under
+  `pieces_off` and handed to the arranger as `without_pieces`: a part for a piece that is off is not made, so its strokes
+  are left out and never moved to another piece, the user's rule. Extra pieces that are off until switched on, with busy
+  parts written for them, are not written yet.
 - Nothing is chosen at first, the user's rule. Choosing a subgenre fills in its usual tempo, the scale type its chords are
   in, the root that scale type starts on (C for major, E for minor, Claude's choice) and the commonest form, so that a song
   can be made from a genre and a subgenre alone; choosing another genre leaves the subgenre to be chosen again. Any tempo
