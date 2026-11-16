@@ -11,6 +11,25 @@
 # A title that starts "In progress:" is work started but not finished, which is named first when the user asks what
 # to do next. Keys are described by what they do, not by their letters, since the letters change.
 
+- title: "Playing lights on the list pages"
+  priority: 1
+  text: |
+    While a song plays in real time, the Patterns page lights a playing mark beside each pattern that a playing clip is
+    playing at that moment, and the Generators and Chains pages do the same for each generator and chain that is active
+    in a clip that is playing. It would use the lights Arrange already has, so that the same mark means playing everywhere.
+    To work out: the transport already knows which clips play, so each list asks it which patterns, chains and generators
+    those clips use, a chain counting its generators; whether a pattern reached only through a generator lights; and where
+    the mark goes in a row beside the count columns.
+
+- title: "Looping a whole scene, to tweak patterns live"
+  priority: 1
+  text: |
+    A way to loop one whole scene in real-time playback, for changing patterns by ear as they play. While the loop is set,
+    no clip's follow action runs, so the scene plays round until the loop is taken off. A scene set to loop blocks export,
+    which needs a song that ends, and never blocks real-time playback. To work out: whether the loop is a setting kept in
+    the set's file or a state of the tracker only; what sets it and takes it off, and how Arrange shows it; and how export
+    says which scene blocks it.
+
 - title: "Keyswitches: what the first build left out"
   priority: 1
   text: |
