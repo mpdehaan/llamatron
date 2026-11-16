@@ -22,6 +22,7 @@ the song they made, as plain data, so that the wizard can start from them again;
 dice is kept with them and never shown.
 """
 
+import copy
 import functools
 import random
 
@@ -232,13 +233,14 @@ def hook_matters(*, genre, subgenre, form):
 
 
 @functools.cache
-def bars_work(*, genre, subgenre, kind, bars):
+def bars_work(*, genre, subgenre, kind, bars, plays=None):
     """Return whether a subgenre's parts can fill a section of a kind at a length, found by making one and measuring it, once:
     some parts are written over several bars and divide only some lengths, and some, as a chorus of twelve bars, last as long
-    as they are written whatever is asked."""
+    as they are written whatever is asked. Given the section's players, only their parts are asked, since a part that sits
+    out cannot time the section."""
     style = style_of(genre)
     song = {NAME: kind, TITLE: kind, STYLE: genre, TEMPLATE: subgenre, KEY: {ROOT: USUAL_ROOTS[MAJOR], TYPE: MAJOR}, SEED: FIRST_SEED,
-            FORM: [kind], SECTIONS: {kind: {KIND: kind, BARS: bars}}}
+            FORM: [kind], SECTIONS: {kind: {KIND: kind, BARS: bars, **({} if plays is None else {PLAYS: list(plays)})}}}
     try:
         given = arranged(style=style, song=song)
         made = Setlist.from_data(data=composed(given=given, version=A_VERSION)).get_song(kind)
@@ -613,7 +615,20 @@ class WizardChoices:
             return []
         usual = self._usual(place)[BARS]
         lengths = sorted({usual // HALF, usual, usual * HALF, self.section_bars(place)} - {0})
-        return [bars for bars in lengths if bars == usual or bars_work(genre=self._genre, subgenre=self._subgenre, kind=self._entry(place)[KIND], bars=bars)]
+        return [bars for bars in lengths if bars == usual or self._bars_fit(place=place, bars=bars)]
+
+    def _bars_fit(self, *, place, bars):
+        """Return whether the players of a section can fill the section at a length: on their own, and then in this song, where
+        a part may be written differently beside another section of the kind."""
+        if not bars_work(genre=self._genre, subgenre=self._subgenre, kind=self._entry(place)[KIND], bars=bars, plays=tuple(self.section_plays(place))):
+            return False
+        trial = copy.deepcopy(self)
+        trial._own_entries()[place][BARS] = bars
+        try:
+            trial.made_setlist(name=self._entry(place)[KIND], version=A_VERSION)
+        except (ValueError, SongFileError):
+            return False
+        return True
 
     def set_section_bars(self, *, place, bars):
         if isinstance(bars, bool) or not isinstance(bars, int) or bars not in self.bars_offered(place):
@@ -624,7 +639,7 @@ class WizardChoices:
             entry[BARS] = bars
 
     def set_section_plays(self, *, place, role, on):
-        """Have a player play in a section or sit it out. A section keeps one player."""
+        """Have a player play in a section or sit it out. A section keeps one player, and a length its players can fill."""
         self._role(role)
         plays = [name for name in self.roles() if (name in self.section_plays(place) or (on and name == role)) and (on or name != role)]
         if not plays:
@@ -633,6 +648,9 @@ class WizardChoices:
         entry.pop(PLAYS, None)
         if sorted(plays) != sorted(self._usual(place).get(PLAYS, [])):
             entry[PLAYS] = plays
+        # A length the players left cannot fill gives way to the kind's usual length.
+        if BARS in entry and not self._bars_fit(place=place, bars=entry[BARS]):
+            del entry[BARS]
 
     def set_own_sections(self, *, sections):
         """Take a form's sections a song kept, each through the setters, or none of them where one no longer fits."""
