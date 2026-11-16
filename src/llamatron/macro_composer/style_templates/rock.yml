@@ -185,8 +185,7 @@ traits:
     - {value: twelve bar, share: 8, pattern: [1, 1, 1, 1, 4, 4, 1, 1], by_section: {chorus: [5, 4, 1, 1, 5, 4, 1, 5], bridge: [4, 4, 1, 1, 4, 4, 5, 5]}}
     - {value: minor power, share: 18, scale_type: minor, pattern: [1, 1, 6, 7], by_section: {chorus: [1, 6, 3, 7], bridge: [4, 4, 5, 5]}}
   lead:
-    - {value: voice, share: 86, sound: voice}
-    - {value: guitar, share: 14, sound: lead guitar}
+    - {value: voice, share: 100, sound: voice}
   solo:
     - {value: guitar, share: 56, sound: lead guitar}
     - {value: none, share: 28}
@@ -196,7 +195,7 @@ traits:
 roles:
   - {role: guitar, title: rhythm guitar, player: rhythm, trait: guitar, octave: 3, velocity: 92}
   - {role: keys, player: keys, trait: keys, octave: 4, velocity: 78}
-  - {role: lead, title: singer, titles: {guitar: melody guitar}, player: lead, trait: lead, octave: 4, velocity: 106}
+  - {role: lead, title: singer, player: lead, trait: lead, octave: 4, velocity: 106}
   - {role: voices, title: backup singers, player: session, trait: voices, octave: 4, velocity: 80}
   - {role: solo, title: lead guitar, titles: {organ: organ, saxophone: saxophone}, player: lead, trait: solo, octave: 4, velocity: 100, answers: true}
   - {role: bass, player: bass, trait: bass, octave: 2, velocity: 106}
@@ -278,7 +277,12 @@ players:
     3: {says: 'Plays the part pushing ahead of the beat.', timing: {rush: 8}}
     4: {says: 'Plays the part leaning far back.', timing: {drag: 14}}
 
-sounds: {bass: 34, picked bass: 35, guitar: 26, clean guitar: 28, overdriven guitar: 30, distortion guitar: 31, lead guitar: 31, piano: 1, organ: 19, saxophone: 67, voice: 54, voices: 53}
+# What stands in for a player whose own sound General MIDI plays poorly, by subgenre: the singer's hummed voice gives way to a
+# sound that carries a tune, heavier where the music is. The player stays the singer.
+stand_ins:
+  lead: {rock and roll: overdriven guitar, beat group: clean guitar, folk rock: clean guitar, hard rock: distortion guitar, arena rock: overdriven guitar, punk: distortion guitar, new wave: square lead, rock ballad: clean guitar}
+
+sounds: {square lead: 81, bass: 34, picked bass: 35, guitar: 26, clean guitar: 28, overdriven guitar: 30, distortion guitar: 31, lead guitar: 31, piano: 1, organ: 19, saxophone: 67, voice: 54, voices: 53}
 
 sections:
   intro:

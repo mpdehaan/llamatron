@@ -103,6 +103,8 @@ SYNTH = 'synth'
 BAND_SOUNDS = (USUAL_SOUNDS, ACOUSTIC, ELECTRIC, SYNTH)
 SOUNDS_KEPT = 'sounds'
 BAND_SOUNDS_KEPT = 'band_sounds'
+# The key a template keeps the sounds that stand in for a player under, by player and subgenre.
+STAND_INS = 'stand_ins'
 # General MIDI's families, eight sounds each, by their place; the last two, percussive sounds and sound effects, play no notes a part can use.
 PIANOS = 0
 ORGANS = 2
@@ -780,7 +782,14 @@ class WizardChoices:
         return not self._role(role).get(DRUMS)
 
     def usual_sound(self, role):
-        """Return the General MIDI sound a player's way of playing has."""
+        """Return the General MIDI sound a player usually plays with: what the genre has stand in for the player in the subgenre,
+        as it does for a singer, whose voice General MIDI plays poorly (the user's choice), or the sound of the player's way."""
+        style = style_of(self._genre)
+        stands_in = style.get(STAND_INS, {}).get(role, {}).get(self._subgenre)
+        return style[SOUNDS][stands_in] if stands_in else self._way_sound(role)
+
+    def _way_sound(self, role):
+        """Return the General MIDI sound a player's way of playing has, which the arranger gives the player unless the song says another."""
         style = style_of(self._genre)
         entry = values_of(style=style, trait=self._role(role)[TRAIT])[self.get_way(self._role(role)[TRAIT])]
         return style[SOUNDS][entry[SOUND]]
@@ -829,6 +838,9 @@ class WizardChoices:
         for entry in values_of(style=style, trait=self._role(role)[TRAIT]).values():
             if SOUND in entry and style[SOUNDS][entry[SOUND]] not in found:
                 found.append(style[SOUNDS][entry[SOUND]])
+        for stands_in in style.get(STAND_INS, {}).get(role, {}).values():
+            if style[SOUNDS][stands_in] not in found:
+                found.append(style[SOUNDS][stands_in])
         return found
 
     def sound_name(self, sound):
@@ -838,7 +850,7 @@ class WizardChoices:
 
     def _song_sounds(self):
         """Return the sounds the song chooses itself, by player: each player in the band whose sound is not its way's usual one."""
-        return {role: self.get_sound(role) for role in self.roles_in() if self.has_sound(role) and self.role_can_play(role) and self.get_sound(role) != self.usual_sound(role)}
+        return {role: self.get_sound(role) for role in self.roles_in() if self.has_sound(role) and self.role_can_play(role) and self.get_sound(role) != self._way_sound(role)}
 
     def roles_in(self):
         return [role for role in self.roles() if self.role_is_in(role)]
