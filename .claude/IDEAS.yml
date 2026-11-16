@@ -27,6 +27,8 @@
     While a song plays in real time, the Patterns page lights a playing mark beside each pattern that a playing clip is
     playing at that moment, and the Generators and Chains pages do the same for each generator and chain that is active
     in a clip that is playing. It would use the lights Arrange already has, so that the same mark means playing everywhere.
+    On the Patterns page a group's heading lights too, while any pattern of the group is playing, so that a closed group
+    still shows that something inside plays.
     To work out: the transport already knows which clips play, so each list asks it which patterns, chains and generators
     those clips use, a chain counting its generators; whether a pattern reached only through a generator lights; and where
     the mark goes in a row beside the count columns.
