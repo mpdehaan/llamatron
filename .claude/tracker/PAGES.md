@@ -193,7 +193,10 @@ The user's design, agreed in detail in `dev_notes/QUEUE.md` (S16 to S39), of whi
   chosen (`choosing` wraps every setter and notes it).
 - The page knows nothing of any one branch, the user's ask, who expects to revise the organization: a `Branch`
   (`branch.py`) says its `name`, `note`, `children`, `fields`, `notes` and `refusal`, and `WizardPage.roots()` lists the
-  top branches, in the order Genre, Band, Themes, Form, Playing, Apply. `ThemesBranch` and `PlayingBranch` are built in a
+  top branches (a player is shown by `role_title`, the clearer name the genre's template gives the player, which may follow
+  how the player plays; the Band's Sounds field, "usual", "acoustic", "electric" or "synth", is the band's, and a player's
+  Sound field shows the band's sound as `(from band)` or the player's own, an override, the user's design, picked from the
+  band's again, the genre's sounds for the player, or "More sounds", every General MIDI sound that plays notes), in the order Genre, Band, Themes, Form, Playing, Apply. `ThemesBranch` and `PlayingBranch` are built in a
   first working form, the user's ask that every page work before any is deepened (`SongWaysBranch`, a field for each way
   the whole song goes, shown only where the subgenre has more than one way, the branch saying so where none is): Themes
   has Progression and Melody, "usual" or a melody style the subgenre can use; Playing has Feel and Fills. Built so far: `GenreBranch` (Genre and Subgenre, each starting on `(choose)`, then Key, Scale and Tempo once

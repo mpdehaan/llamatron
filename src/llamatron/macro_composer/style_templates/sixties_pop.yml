@@ -209,12 +209,12 @@ traits:
     - {value: guitar, share: 10, sound: solo guitar}
 
 roles:
-  - {role: guitar, player: rhythm, trait: guitar, octave: 3, velocity: 84}
+  - {role: guitar, title: rhythm guitar, player: rhythm, trait: guitar, octave: 3, velocity: 84}
   - {role: keys, player: keys, trait: keys, octave: 4, velocity: 76}
-  - {role: colour, player: session, trait: colour, octave: 5, velocity: 78}
-  - {role: lead, player: lead, trait: lead, octave: 4, velocity: 106}
-  - {role: voices, player: session, trait: voices, octave: 4, velocity: 82}
-  - {role: solo, player: session, trait: solo, octave: 5, velocity: 100, answers: true}
+  - {role: colour, title: orchestra, player: session, trait: colour, octave: 5, velocity: 78}
+  - {role: lead, title: singer, player: lead, trait: lead, octave: 4, velocity: 106}
+  - {role: voices, title: backup singers, player: session, trait: voices, octave: 4, velocity: 82}
+  - {role: solo, title: soloist, player: session, trait: solo, octave: 5, velocity: 100, answers: true}
   - {role: bass, player: bass, trait: bass, octave: 2, velocity: 102}
   - {role: drums, player: drums, drums: [drums, percussion]}
 

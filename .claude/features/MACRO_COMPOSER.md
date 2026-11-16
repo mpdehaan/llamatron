@@ -173,6 +173,12 @@ clouds; generate and test, with motif development and counterpoint last.
   name a genre gives them, the feel or the fills, and `song_ways` lists its ways that fit. `set_melody` chooses the melody
   style every tune is sketched by, or None for each player's own, kept under `melody_style`; `melody_styles()` leaves out
   a style that makes no song of the subgenre (`melody_works`).
+- A player's sound is its way's usual one, moved by the band's Sounds (`band_sound`: the nearest sound of the kind chosen
+  for the sound's General MIDI family, `NEAREST`, a sound already of the kind staying, `KEPT_BY`), unless the player has
+  a sound of its own (`set_sound`, any General MIDI sound but the percussive sounds and sound effects). The drums have no
+  sound to choose, since the grooves are written for the kit. A song carries the sounds that differ as `role_sounds`,
+  which the arranger's `sound_of` turns into the track's instrument. A role's `title` and `titles` in a template are what
+  the wizard calls the player; tracks keep the role's name.
 - Nothing is chosen at first, the user's rule. Choosing a subgenre fills in its usual tempo, the scale type its chords are
   in, the root that scale type starts on (C for major, E for minor, Claude's choice) and the commonest form, so that a song
   can be made from a genre and a subgenre alone; choosing another genre leaves the subgenre to be chosen again. Any tempo

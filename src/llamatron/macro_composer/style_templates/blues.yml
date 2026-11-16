@@ -199,9 +199,9 @@ traits:
     - {value: none, share: 12}
 
 roles:
-  - {role: comping, player: rhythm, trait: comping, octave: 4, velocity: 84}
-  - {role: lead, player: lead, trait: lead, octave: 4, velocity: 106}
-  - {role: answers, player: session, trait: answers, octave: 4, velocity: 96, answers: true}
+  - {role: comping, title: rhythm, player: rhythm, trait: comping, octave: 4, velocity: 84}
+  - {role: lead, title: singer, titles: {guitar: lead guitar, harmonica: lead harmonica, saxophone: lead saxophone}, player: lead, trait: lead, octave: 4, velocity: 106}
+  - {role: answers, title: answering player, player: session, trait: answers, octave: 4, velocity: 96, answers: true}
   - {role: bass, player: bass, trait: bass, octave: 2, velocity: 104}
   - {role: drums, player: drums, drums: [drums]}
 

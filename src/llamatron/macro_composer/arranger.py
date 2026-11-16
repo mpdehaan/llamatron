@@ -34,6 +34,8 @@ from llamatron.macro_composer.melody import ANSWER_RHYTHMS, RHYTHMS, SPAN
 from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, DRUM, FLAT, HITS, LINES, LOUD, NONE, OCTAVE, REST, SHARP, SOFT, STEP, STEPS, VELOCITY, CHORD, clamped, drum_rows
 from llamatron.macro_composer.players import player_name
 from llamatron.support.safe_yaml import load_safely
+from llamatron.composition.limits import MIN_GM_SOUND
+from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.errors import ERR_NO_STYLE_FORM, ERR_NO_STYLE_FORMS, ERR_NO_STYLE_KIND, ERR_NO_SUCH_SECTION, ERR_NO_TRAIT_VALUE, ERR_PICK_NEEDS
 from llamatron.strings.macro_composer import MSG_MADE_PICK, MSG_MADE_SCENE, MSG_MADE_SONG_NOTES, MSG_PART_AT_LEVEL, MSG_PART_OF_SECTION, MSG_PLAYED_BY, MSG_REPEATED_SCENE, MSG_SECTION_START_PART, MSG_TIMING_CHAIN
 
@@ -57,6 +59,10 @@ BAR = 'bar'
 FILL = 'fill'
 FIGURE = 'figure'
 SOUND = 'sound'
+# The sounds a song chooses for its players itself, each a General MIDI number by the player's name.
+ROLE_SOUNDS = 'role_sounds'
+ROLE_TITLE = 'title'
+ROLE_TITLES = 'titles'
 GENERATORS = 'generators'
 PATTERN = 'pattern'
 EVERY = 'every'
@@ -429,6 +435,18 @@ def band_said(*, style, song, roles):
     return said
 
 
+def sound_of(*, style, song, role, usual):
+    """The name of the sound a player plays with: the song's own choice for the player, a General MIDI number, called by the
+    style's name for that number where the style has one and by General MIDI's otherwise; or the sound the way of playing has."""
+    number = song.get(ROLE_SOUNDS, {}).get(role)
+    if number is None:
+        return usual
+    named = [name for name, of_style in style[SOUNDS].items() if of_style == number]
+    if usual in named:
+        return usual
+    return named[0] if named else MSG_GM_SOUNDS[number - MIN_GM_SOUND].lower()
+
+
 def section_of(*, name, style, song):
     """A section as the song describes it over what the style says of a section of its name."""
     of_song = song.get(SECTIONS, {}).get(name, {})
@@ -535,8 +553,9 @@ def arranged(*, style, song):
         entry = values_of(style=style, trait=role[TRAIT])[picks[role[TRAIT]]]
         if SOUND not in entry:
             continue
-        instruments[entry[SOUND]] = style[SOUNDS][entry[SOUND]]
-        tracks[role[ROLE]] = entry[SOUND]
+        sound = sound_of(style=style, song=song, role=role[ROLE], usual=entry[SOUND])
+        instruments[sound] = style[SOUNDS].get(sound, song.get(ROLE_SOUNDS, {}).get(role[ROLE]))
+        tracks[role[ROLE]] = sound
         pitched.append((role, entry))
         if FIGURE in entry:
             parts[role[ROLE]] = figure_part(entry=entry, role=role, meter=meter, player=playing[role[ROLE]], phrase_bars=phrase_bars)

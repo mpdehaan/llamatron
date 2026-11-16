@@ -194,11 +194,11 @@ traits:
     - {value: saxophone, share: 8, sound: saxophone}
 
 roles:
-  - {role: guitar, player: rhythm, trait: guitar, octave: 3, velocity: 92}
+  - {role: guitar, title: rhythm guitar, player: rhythm, trait: guitar, octave: 3, velocity: 92}
   - {role: keys, player: keys, trait: keys, octave: 4, velocity: 78}
-  - {role: lead, player: lead, trait: lead, octave: 4, velocity: 106}
-  - {role: voices, player: session, trait: voices, octave: 4, velocity: 80}
-  - {role: solo, player: lead, trait: solo, octave: 4, velocity: 100, answers: true}
+  - {role: lead, title: singer, titles: {guitar: lead guitar}, player: lead, trait: lead, octave: 4, velocity: 106}
+  - {role: voices, title: backup singers, player: session, trait: voices, octave: 4, velocity: 80}
+  - {role: solo, title: soloist, player: lead, trait: solo, octave: 4, velocity: 100, answers: true}
   - {role: bass, player: bass, trait: bass, octave: 2, velocity: 106}
   - {role: drums, player: drums, drums: [kick, snare, cymbal, percussion]}
 

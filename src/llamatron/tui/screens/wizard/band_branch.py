@@ -17,8 +17,9 @@
 """The wizard's Band branch: who is in the band, and a branch for each player who is."""
 
 from llamatron.strings.errors import ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE, ERR_WIZARD_LAST_PLAYER
-from llamatron.strings.labels import MSG_WIZARD_BAND_BRANCH
-from llamatron.tui.screens.shared.field import Toggle
+from llamatron.macro_composer.wizard_choices import BAND_SOUNDS
+from llamatron.strings.labels import MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_SOUNDS_LABEL
+from llamatron.tui.screens.shared.field import ChoiceField, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.player_branch import PlayerBranch
 
@@ -40,7 +41,9 @@ class BandBranch(Branch):
     def fields(self):
         choices = self.choices()
         # A player with no way of playing written for the subgenre is not offered, the user's rule.
-        return [Toggle(label=role, on=choices.role_is_in(role), set=self.setter_of(role)) for role in choices.roles() if choices.role_can_play(role)]
+        # Sounds is the band's, which every player follows unless the player has a Sound of its own, the user's design.
+        sounds = ChoiceField(page=self.page(), label=MSG_WIZARD_SOUNDS_LABEL, choices=list(BAND_SOUNDS), current=choices.get_band_sounds(), set=self.page().choosing(choices.set_band_sounds))
+        return [sounds, *(Toggle(label=choices.role_title(role), on=choices.role_is_in(role), set=self.setter_of(role)) for role in choices.roles() if choices.role_can_play(role))]
 
     def setter_of(self, role):
         """Return what puts a player in the band or leaves the player out, refusing to leave out the last."""

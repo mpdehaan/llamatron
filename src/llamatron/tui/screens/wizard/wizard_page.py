@@ -31,13 +31,15 @@ from llamatron.composition.naming import new_name
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings.help import HELP_WIZARD_PAGE
-from llamatron.strings.labels import Crumb, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_REPLACE_SECTIONS_TITLE, MSG_WIZARD_SUGGESTED_FORM_TITLE, MSG_WIZARD_CAPTION, MSG_WIZARD_REPLACE_CAPTION
-from llamatron.strings.marks import MSG_WIZARD_CARRIED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_EDITED_BRANCH
+from llamatron.strings.labels import Crumb, MSG_GM_SOUNDS, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_MORE_SOUNDS_TITLE, MSG_WIZARD_SOUND_TITLE, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_REPLACE_SECTIONS_TITLE, MSG_WIZARD_SUGGESTED_FORM_TITLE, MSG_WIZARD_CAPTION, MSG_WIZARD_REPLACE_CAPTION
+from llamatron.strings.marks import MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_EDITED_BRANCH
 from llamatron.strings.messages import MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CLOSE_TITLE, MSG_WIZARD_CREATED, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_NOTHING_TO_UNDO, MSG_WIZARD_REPLACED, MSG_WIZARD_SONG_NAME_PROMPT
 from llamatron.strings.names import MSG_NEW_SONG_WORD
 from llamatron.support.version import VERSION
 from llamatron.tui import keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
+from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog
+from llamatron.tui.screens.set.instrument_editor import sound_pages
 from llamatron.tui.text import clock
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import Box, cursor_mark, INDENT, NOTHING, SPACE, Style
@@ -61,6 +63,8 @@ FIRST_PLACE = 0
 # The line and the space between the tree and the fields.
 DIVIDER = Box.BAR + SPACE
 
+# The sound picker's pages that hold sounds that play notes: every page but the last, of percussive sounds and sound effects.
+PAGES_OF_NOTES = 7
 
 class WizardPage(FieldPage):
     """The song wizard: a tree of branches beside the fields of the branch under the cursor."""
@@ -247,6 +251,27 @@ class WizardPage(FieldPage):
         branch = self.branch()
         kinds = branch.kinds_to_add()
         self.ask(dialog=ChoiceDialog(title=MSG_WIZARD_INSERT_SECTION_TITLE, options=kinds), then=lambda place: self.choosing(branch.insert)(kinds[place]))
+
+    def pick_sound(self, role):
+        """Choose a player's sound from a list: the band's first, which takes the sound from the band again, then the genre's
+        own sounds that suit the player, then a row that opens every General MIDI sound that plays notes, the user's choice."""
+        choices = self._choices
+        own = choices.genre_sounds(role)
+        options = [MSG_WIZARD_FROM_BAND.format(sound=choices.sound_name(choices.band_sound(role))), *(choices.sound_name(sound) for sound in own), MSG_WIZARD_MORE_SOUNDS]
+        current = own.index(choices.get_sound(role)) + 1 if choices.has_own_sound(role) and choices.get_sound(role) in own else (len(options) - 1 if choices.has_own_sound(role) else FIRST_PLACE)
+
+        def chosen(place):
+            if place == len(options) - 1:
+                self.pick_any_sound(role)
+            else:
+                self.choosing(lambda sound: choices.set_sound(role=role, sound=sound))(None if place == FIRST_PLACE else own[place - 1])
+        self.ask(dialog=ChoiceDialog(title=MSG_WIZARD_SOUND_TITLE.format(player=choices.role_title(role)), options=options, current=current), then=chosen)
+
+    def pick_any_sound(self, role):
+        """Choose a player's sound from General MIDI's families of sounds that play notes, a page of two families at a time."""
+        choices = self._choices
+        dialog = GridChoiceDialog(title=MSG_WIZARD_MORE_SOUNDS_TITLE, options=[NOTHING, *MSG_GM_SOUNDS], grid=None, current=choices.get_sound(role), pages=sound_pages()[:PAGES_OF_NOTES])
+        self.ask(dialog=dialog, then=lambda place: self.choosing(lambda sound: choices.set_sound(role=role, sound=sound))(place))
 
     def pick_suggested_form(self):
         """Offer the forms the subgenre suggests in a dialog, each with its sections and its length at the tempo chosen, and

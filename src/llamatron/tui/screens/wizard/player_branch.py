@@ -17,9 +17,10 @@
 """A player of the wizard's band: how the player plays, and how busy the player is."""
 
 from llamatron.macro_composer.wizard_choices import LEAST_BUSY, MOST_BUSY
-from llamatron.strings.labels import MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL
-from llamatron.strings.marks import MSG_WIZARD_BUSY_SHOWN, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL
-from llamatron.tui.screens.shared.field import ChoiceField, NumberField
+from llamatron.strings.labels import MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_WIZARD_SOUND_LABEL
+from llamatron.strings.legends import What
+from llamatron.strings.marks import MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_BUSY_SHOWN, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL
+from llamatron.tui.screens.shared.field import ChoiceField, Field, NumberField
 from llamatron.tui.screens.wizard.branch import Branch
 
 
@@ -33,6 +34,10 @@ class PlayerBranch(Branch):
         self._role = role
 
     def name(self):
+        return self.choices().role_title(self._role)
+
+    def key(self):
+        # The player's own name, since what a player is called can follow how the player plays.
         return self._role
 
     def fields(self):
@@ -40,6 +45,8 @@ class PlayerBranch(Branch):
         traits = choices.role_traits(self._role)
         # A player of notes plays one way, called Plays; the drums have a way for each of their parts, each called by the part's name.
         fields = [self.way_field(trait=trait, label=MSG_WIZARD_PLAYS_LABEL if len(traits) == 1 else trait.capitalize()) for trait in traits]
+        if choices.has_sound(self._role):
+            fields.append(self.sound_field())
         if choices.has_busy(self._role) and choices.get_busy(self._role) is not None:
             fields.append(self.busy_field())
         return fields
@@ -49,6 +56,16 @@ class PlayerBranch(Branch):
         page = self.page()
         return ChoiceField(page=page, label=label, choices=choices.ways(role=self._role, trait=trait), current=choices.get_way(trait),
                            set=page.choosing(lambda value: choices.set_way(trait=trait, value=value)))
+
+    def sound_field(self):
+        """Return the Sound field: the band's sound for the player, marked as the band's, or the player's own, chosen from a list."""
+        choices = self.choices()
+        role = self._role
+
+        def shown():
+            name = choices.sound_name(choices.get_sound(role))
+            return name if choices.has_own_sound(role) else MSG_WIZARD_BAND_SOUND_SHOWN.format(sound=name)
+        return Field(label=MSG_WIZARD_SOUND_LABEL, value=shown, enter=lambda: self.page().pick_sound(role), enter_what=What.CHOOSE)
 
     def busy_field(self):
         """Return the Busy field: a number stepped or typed, drawn as a horizontal Busy gauge beside the number."""

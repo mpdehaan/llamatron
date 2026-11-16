@@ -29,7 +29,7 @@ from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_TEMPO, MIN_TEMPO
 from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer.arranger import (
-    COMMON_TIME, DRUMS, KIND, MELODY_ENGINE, METER, PICKS, PLAYER, PLAYERS, ROLE, ROLES, SOUND, TRAIT, VALUE, WITHOUT, bar_length, fits,
+    COMMON_TIME, DRUMS, KIND, MELODY_ENGINE, METER, PICKS, ROLE_SOUNDS, ROLE_TITLE, ROLE_TITLES, SOUNDS, PLAYER, PLAYERS, ROLE, ROLES, SOUND, TRAIT, VALUE, WITHOUT, bar_length, fits,
     BARS, CHORD_TRAIT, CHORD_TRAIT_FIELD, FORM, HELD, PLAYS, GENRE, KEY, NAME, ROOT, SCALE_TYPE, SECTIONS, SEED, STYLE, TEMPLATE, TEMPLATES, TEMPO, TITLE, TRAITS, TYPE, USUAL,
     arranged, forms_of, picked, section_of, share_of, style_named, style_names, values_of,
 )
@@ -38,9 +38,11 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.melody import EVOLVING, SERIAL, STEP_WALK
 from llamatron.music.note import ROOT_NAMES
 from llamatron.playback.song_renderer import SongRenderer
+from llamatron.composition.limits import GM_FAMILY_SIZE, MIN_GM_SOUND
+from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.marks import MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SECTION_VARIANT
 from llamatron.support.version import VERSION as A_VERSION
-from llamatron.strings.errors import ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
+from llamatron.strings.errors import ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'
@@ -73,6 +75,48 @@ def genre_names():
 def genre_title(genre):
     """Return a genre's name as people read it."""
     return style_of(genre)[TITLE]
+
+
+# The band's Sounds, the user's design: every player's usual sound, or the nearest acoustic, electric or synthetic one.
+USUAL_SOUNDS = 'usual'
+ACOUSTIC = 'acoustic'
+ELECTRIC = 'electric'
+SYNTH = 'synth'
+BAND_SOUNDS = (USUAL_SOUNDS, ACOUSTIC, ELECTRIC, SYNTH)
+SOUNDS_KEPT = 'sounds'
+BAND_SOUNDS_KEPT = 'band_sounds'
+# General MIDI's families, eight sounds each, by their place; the last two, percussive sounds and sound effects, play no notes a part can use.
+PIANOS = 0
+ORGANS = 2
+GUITARS = 3
+BASSES = 4
+STRINGS = 5
+ENSEMBLES = 6
+BRASS = 7
+REEDS = 8
+PIPES = 9
+SYNTH_LEADS = 10
+SYNTH_PADS = 11
+FAMILIES_OF_NOTES = 14
+LAST_SOUND_OF_NOTES = FAMILIES_OF_NOTES * GM_FAMILY_SIZE
+# The nearest sound of each kind for a sound of a family, by General MIDI number: an acoustic band's guitar is a steel-string
+# guitar, its bass an upright, its keyboard a piano; an electric band's keyboard is an electric piano; a synth band's guitar a saw lead.
+NEAREST = {
+    ACOUSTIC: {PIANOS: 1, ORGANS: 1, GUITARS: 26, BASSES: 33, SYNTH_LEADS: 74, SYNTH_PADS: 49},
+    ELECTRIC: {PIANOS: 5, GUITARS: 28, BASSES: 34, SYNTH_LEADS: 30, SYNTH_PADS: 17},
+    SYNTH: {PIANOS: 6, ORGANS: 90, GUITARS: 82, BASSES: 39, STRINGS: 51, ENSEMBLES: 55, BRASS: 63, REEDS: 81, PIPES: 83},
+}
+# The sounds that are already of each kind and so stay: acoustic pianos, guitars and bass; electric pianos, guitars and basses; synth basses and strings.
+KEPT_BY = {
+    ACOUSTIC: (1, 2, 3, 4, 25, 26, 33),
+    ELECTRIC: (5, 6, 27, 28, 29, 30, 31, 32, 34, 35, 36, 37, 38),
+    SYNTH: (39, 40, 51, 52, 55, 63, 64),
+}
+
+
+def family_of(sound):
+    """Return the place of the General MIDI family a sound is in."""
+    return (sound - MIN_GM_SOUND) // GM_FAMILY_SIZE
 
 
 # The melody styles, and the key a song keeps the one chosen under.
@@ -139,7 +183,7 @@ SECONDS_IN_MINUTE = 60
 class WizardChoices:
     """The choices of one run of the song wizard."""
 
-    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_without', '_sections', '_melody')
+    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_without', '_sections', '_melody', '_sounds', '_band_sounds')
 
     def __init__(self):
         self._genre = None
@@ -157,6 +201,9 @@ class WizardChoices:
         self._sections = None
         # The melody style chosen for the song's tunes, or None for the one the genre gives each player.
         self._melody = None
+        # The sounds chosen: the band's, one of BAND_SOUNDS, which every player follows, and each player's own General MIDI sound, which overrides it.
+        self._band_sounds = USUAL_SOUNDS
+        self._sounds = {}
 
     # Reading and keeping the choices.
 
@@ -182,6 +229,8 @@ class WizardChoices:
         kept = [(self.set_way, [dict(trait=trait, value=value) for trait, value in (data.get(PICKS) or {}).items()]),
                 (self._set_level, [dict(player=player, level=level) for player, level in (data.get(PLAYERS) or {}).items()]),
                 (self.set_role_in, [dict(role=role, on=False) for role in data.get(WITHOUT) or []]),
+                (self._set_kept_band_sounds, [dict(sounds=data[BAND_SOUNDS_KEPT])] if data.get(BAND_SOUNDS_KEPT) else []),
+                (self.set_sound, [dict(role=role, sound=sound) for role, sound in (data.get(SOUNDS_KEPT) or {}).items()]),
                 (self.set_own_sections, [dict(sections=data[OWN_SECTIONS])] if data.get(OWN_SECTIONS) else []),
                 (self._set_kept_melody, [dict(style=data[MELODY_STYLE])] if data.get(MELODY_STYLE) else [])]
         for setter, every in kept:
@@ -196,7 +245,8 @@ class WizardChoices:
         held = {GENRE: self._genre, SUBGENRE: self._subgenre, ROOT: self._root, TYPE: self._scale_type, TEMPO: self._tempo, FORM: self._form, SEED: self._seed,
                 PICKS: dict(self._ways) or None, PLAYERS: dict(self._levels) or None, WITHOUT: list(self._without) or None,
                 OWN_SECTIONS: [own_copy_of(entry) for entry in self._sections] if self._sections is not None else None,
-                MELODY_STYLE: self._melody}
+                MELODY_STYLE: self._melody, SOUNDS_KEPT: dict(self._sounds) or None,
+                BAND_SOUNDS_KEPT: self._band_sounds if self._band_sounds != USUAL_SOUNDS else None}
         return {field: value for field, value in held.items() if value is not None}
 
     # The genre and the subgenre, which everything else follows.
@@ -503,6 +553,8 @@ class WizardChoices:
         self._ways = {}
         self._levels = {}
         self._without = []
+        self._sounds = {}
+        self._band_sounds = USUAL_SOUNDS
 
     def _role(self, role):
         found = next((entry for entry in style_of(self._genre)[ROLES] if entry[ROLE] == role), None) if self.is_ready() else None
@@ -531,6 +583,82 @@ class WizardChoices:
         """Return whether a player can be in the band at all: the drums always, and a player of notes where a way of playing that sounds fits the subgenre."""
         entry = self._role(role)
         return bool(entry.get(DRUMS)) or self.role_is_in(role) or bool(self.ways(role=role, trait=entry[TRAIT]))
+
+    def role_title(self, role):
+        """Return what a player is called on the screen: the clearer name the genre gives the player, which may follow how the
+        player plays, as a lead that is a singer or a lead guitar; or the player's name where the genre gives no other."""
+        entry = self._role(role)
+        traits = self.role_traits(role)
+        by_way = entry.get(ROLE_TITLES, {})
+        way = self.get_way(traits[0]) if len(traits) == 1 else None
+        return by_way.get(way, entry.get(ROLE_TITLE, role))
+
+    # A player's sound: the one the player's way of playing has, moved by the band's Sounds, unless the player has a sound of its own.
+
+    def has_sound(self, role):
+        """Return whether a player's sound can be chosen: a player of notes, never the drums, whose kit the grooves are written for."""
+        return not self._role(role).get(DRUMS)
+
+    def usual_sound(self, role):
+        """Return the General MIDI sound a player's way of playing has."""
+        style = style_of(self._genre)
+        entry = values_of(style=style, trait=self._role(role)[TRAIT])[self.get_way(self._role(role)[TRAIT])]
+        return style[SOUNDS][entry[SOUND]]
+
+    def get_band_sounds(self):
+        return self._band_sounds
+
+    def set_band_sounds(self, sounds):
+        if sounds not in BAND_SOUNDS:
+            raise ValueError(ERR_WIZARD_BAND_SOUNDS.format(value=sounds))
+        self._band_sounds = sounds
+
+    def _set_kept_band_sounds(self, *, sounds):
+        self.set_band_sounds(sounds)
+
+    def band_sound(self, role):
+        """Return the sound the band's Sounds gives a player: the usual one, or the nearest of the family chosen, a sound
+        already of that family staying as it is."""
+        usual = self.usual_sound(role)
+        if self._band_sounds == USUAL_SOUNDS or usual in KEPT_BY[self._band_sounds]:
+            return usual
+        return NEAREST[self._band_sounds].get(family_of(usual), usual)
+
+    def has_own_sound(self, role):
+        return role in self._sounds
+
+    def get_sound(self, role):
+        """Return the General MIDI sound a player plays with: the player's own, or the band's."""
+        return self._sounds.get(role, self.band_sound(role)) if role in self._sounds else self.band_sound(role)
+
+    def set_sound(self, *, role, sound):
+        """Give a player a sound of its own, any General MIDI sound that plays notes; or None, to follow the band's again."""
+        if not self.has_sound(role):
+            raise ValueError(ERR_WIZARD_NO_SUCH_PLAYER.format(value=role))
+        if sound is None:
+            self._sounds.pop(role, None)
+            return
+        if isinstance(sound, bool) or not isinstance(sound, int) or not MIN_GM_SOUND <= sound <= LAST_SOUND_OF_NOTES:
+            raise ValueError(ERR_WIZARD_SOUND.format(value=sound))
+        self._sounds[role] = sound
+
+    def genre_sounds(self, role):
+        """Return the genre's own sounds that suit a player, each a General MIDI number: the sounds of the ways the player can play."""
+        style = style_of(self._genre)
+        found = []
+        for entry in values_of(style=style, trait=self._role(role)[TRAIT]).values():
+            if SOUND in entry and style[SOUNDS][entry[SOUND]] not in found:
+                found.append(style[SOUNDS][entry[SOUND]])
+        return found
+
+    def sound_name(self, sound):
+        """Return what a General MIDI sound is called: by the genre where the genre names it, or by General MIDI."""
+        named = [name for name, number in style_of(self._genre)[SOUNDS].items() if number == sound]
+        return named[0] if named else MSG_GM_SOUNDS[sound - MIN_GM_SOUND]
+
+    def _song_sounds(self):
+        """Return the sounds the song chooses itself, by player: each player in the band whose sound is not its way's usual one."""
+        return {role: self.get_sound(role) for role in self.roles_in() if self.has_sound(role) and self.role_can_play(role) and self.get_sound(role) != self.usual_sound(role)}
 
     def roles_in(self):
         return [role for role in self.roles() if self.role_is_in(role)]
@@ -685,7 +813,8 @@ class WizardChoices:
         return {NAME: name, TITLE: name, STYLE: self._genre, TEMPLATE: self._subgenre, KEY: {ROOT: self._root, TYPE: self._scale_type}, TEMPO: self._tempo, FORM: self.form_sections() if self.has_own_form() else self.get_form(), SEED: self._seed,
                 PICKS: dict(self._ways), PLAYERS: dict(self._levels), WITHOUT: list(self._without),
                 **({SECTIONS: self._song_sections()} if self.has_own_form() else {}),
-                **({MELODY_ENGINE: self._melody} if self._melody is not None else {})}
+                **({MELODY_ENGINE: self._melody} if self._melody is not None else {}),
+                **({ROLE_SOUNDS: self._song_sounds()} if self._song_sounds() else {})}
 
     def made_setlist(self, *, name, version):
         """Return a set holding the one song these choices make, under a name, with all the song uses, the song keeping the choices.
