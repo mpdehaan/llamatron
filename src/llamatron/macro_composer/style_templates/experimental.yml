@@ -79,11 +79,17 @@ sections:
 
 forms:
   serial chords:
-    - {name: chords first, share: 100, sections: [chords, over chords, thin, over chords, chords]}
+    - {name: chords first, share: 60, sections: [chords, over chords, thin, over chords, chords]}
+    - {name: mosaic, share: 40, sections: [chords, thin, chords, over chords, thin, chords, over chords, chords]}
+  # Forms a listener can hear: the voices gathering, an arch that goes out and comes back by the same sections, a mirror whose
+  # second half is the first in reverse, and a mosaic of short blocks that return.
   usual:
-    - {name: gathering, share: 50, sections: [alone, two, three, thin, three, last]}
-    - {name: short, share: 25, sections: [alone, three, last]}
-    - {name: long, share: 25, sections: [alone, two, three, thin, two, three, alone, last]}
+    - {name: gathering, share: 30, sections: [alone, two, three, thin, three, last]}
+    - {name: arch, share: 25, sections: [alone, two, three, two, alone]}
+    - {name: mirror, share: 15, sections: [alone, two, thin, three, three, thin, two, alone]}
+    - {name: mosaic, share: 15, sections: [alone, three, alone, thin, three, alone, last]}
+    - {name: short, share: 10, sections: [alone, three, last]}
+    - {name: long, share: 5, sections: [alone, two, three, thin, two, three, alone, last]}
 
 melody:
   engine: serial
