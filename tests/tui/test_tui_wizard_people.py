@@ -117,7 +117,10 @@ class TestWizardPeople(WizardTest):
             made[reacts] = self.patterns(choices)
         self.assertNotEqual(made[LOWEST_ENERGY], made[HIGHEST_ENERGY])
         self.assertNotEqual(made[USUAL_CONTRAST], made[HIGHEST_ENERGY])
-        self.assertFalse(self.chosen(genre=A_POP_GENRE).reacts(THE_DRUMS))
+        # With no song plan there is no Energy to answer to, and so nothing for Reacts to change.
+        unplanned = self.chosen()
+        unplanned.set_song_plan(False)
+        self.assertFalse(unplanned.reacts(THE_DRUMS))
 
     async def test_the_player_s_panel_shows_the_three_and_steps_them(self):
         choices = await self.to_player(THE_BASS)
