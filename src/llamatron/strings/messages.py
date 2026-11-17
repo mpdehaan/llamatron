@@ -333,6 +333,7 @@ MSG_WIZARD_REPLACE_SECTIONS_QUESTION = 'Replace your sections with a suggested f
 MSG_WIZARD_ROW_TITLE = '{row}: {player}'
 MSG_WIZARD_HOOK_MADE = 'made by the wizard, for the {player}'
 # What a panel of the wizard listens to, and what the status line says of it.
+MSG_WIZARD_SECTION_CHORDS_PROMPT = 'Chords, as degrees: 6 4 1 b7'
 MSG_WIZARD_LISTENING = 'listening to {what}'
 MSG_WIZARD_LISTEN_HOOK = 'the hook'
 MSG_WIZARD_LISTEN_TUNE = 'the tune'

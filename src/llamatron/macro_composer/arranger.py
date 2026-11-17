@@ -795,6 +795,8 @@ def arranged(*, style, song):
     notes = []
     met = {}
     same_tunes = {}
+    # The scales of sections in a key or a scale of their own, by name.
+    more_scales = {}
     plans = [section_of(name=name, style=style, song=song).get(PLAN, []) for name in form_names]
     # A song has a hook where the song or its style asks for one and a section of its form marks a line as one.
     has_a_hook = bool(song.get(HOOK, style.get(HOOK, False))) and any(has_hook(plan) for plan in plans)
@@ -908,7 +910,13 @@ def arranged(*, style, song):
             # Nothing of the song's picks plays in this section, as pads alone where the song has no chord part: it is left out.
             met[name] -= 1
             continue
-        form.append({SCENE: scene_name, BARS: bars, PLAY: play, **({SETTINGS_OF_SCENE: dict(section[SCENE_SETTINGS])} if section.get(SCENE_SETTINGS) else {})})
+        scene_settings = dict(section.get(SCENE_SETTINGS) or {})
+        if isinstance(scene_settings.get(SCALE), dict):
+            # A section in a key or a scale of its own: the scale is named as the song's is and added to the set's.
+            own_scale = scene_settings[SCALE]
+            scene_settings[SCALE] = SCALE_NAME.format(own_scale[ROOT], own_scale[TYPE].capitalize())
+            more_scales[scene_settings[SCALE]] = {ROOT: own_scale[ROOT], TYPE: own_scale[TYPE]}
+        form.append({SCENE: scene_name, BARS: bars, PLAY: play, **({SETTINGS_OF_SCENE: scene_settings} if scene_settings else {})})
         said_of_scene = MSG_MADE_SCENE.format(count, scene_name, bars)
         notes.append(MADE_SCENE_SAID.format(said_of_scene, section[SAID_OF_SECTION]) if section.get(SAID_OF_SECTION) else said_of_scene)
     generators = {PROGRESSIONS: progressions, **extra}
@@ -923,7 +931,7 @@ def arranged(*, style, song):
     given = {
         NAME: song[NAME], TITLE: song[TITLE], DESCRIPTION: song.get(DESCRIPTION, song[TITLE]), GENRE: style[GENRE],
         NOTES: MSG_MADE_SONG_NOTES.format(title=song[TITLE], style=style[TITLE], template=song[TEMPLATE], picks=said, form='\n'.join(notes)),
-        SCALES: {scale: {ROOT: song[KEY][ROOT], TYPE: scale_type}}, SCALE: scale, TEMPO: tempo,
+        SCALES: {scale: {ROOT: song[KEY][ROOT], TYPE: scale_type}, **more_scales}, SCALE: scale, TEMPO: tempo,
         FEEL: style[FEEL], SHAPED: shaped, INSTRUMENTS: instruments, TRACKS: tracks, DRUM_TRACKS: [piece for piece in drum_tracks if piece not in own_sounds], GENERATORS: generators, CHAINS: chains,
         PARTS: parts, FORM: form,
     }

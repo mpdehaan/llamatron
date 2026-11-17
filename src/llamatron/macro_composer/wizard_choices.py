@@ -43,7 +43,11 @@ from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer import hook_kinds
 from llamatron.macro_composer.arranger import CHORDS, form_of
 from llamatron.macro_composer.melody import HOOK_KIND
-from llamatron.macro_composer.song_plan import CONTRAST, HIGHEST_ENERGY, LOWEST_ENERGY, PHRASING, PLAN_OF_SONG, SAID_OF_SECTION, USUAL_CONTRAST, SongPlan
+from llamatron.macro_composer.joins import BUILD, DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL
+from llamatron.macro_composer.song_plan import (
+    BIG, BY_PLACE, CONTRAST, ENERGY, FILL_SIZE, FILL_SIZES, HIGHEST_ENERGY, LOWEST_ENERGY, MEDIUM, NOT_AT_ALL, PHRASING, PLAN_OF_SONG, ROOT_OF_PLACE, SAID_OF_SECTION, SETUP, SMALL,
+    TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE, USUAL_CONTRAST, SongPlan,
+)
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
 from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, FLAT, KIT, LINES, OCTAVE, REST, SHARP, STEPS
@@ -55,7 +59,7 @@ from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MIN_GM_SO
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.marks import MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SECTION_VARIANT
 from llamatron.support.version import VERSION as A_VERSION
-from llamatron.strings.errors import ERR_WIZARD_CONTRAST, ERR_WIZARD_EXTRAS, ERR_WIZARD_HOOK_PART, ERR_WIZARD_GENRE_HAS_NO_PLAN, ERR_WIZARD_NO_SONG_PLAN, ERR_WIZARD_SWITCH, ERR_WIZARD_NO_SUCH_ROW, ERR_WIZARD_ROW, ERR_WIZARD_HOOK_TAKE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_MELODY_NUMBER, ERR_WIZARD_MELODY_SWITCH, ERR_WIZARD_NO_SUCH_MELODY_SETTING, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
+from llamatron.strings.errors import ERR_WIZARD_CONTRAST, ERR_WIZARD_EXTRAS, ERR_WIZARD_HOOK_PART, ERR_WIZARD_CHORDS, ERR_WIZARD_SECTION_OWN, ERR_WIZARD_SECTION_OWN_UNMADE, ERR_WIZARD_GENRE_HAS_NO_PLAN, ERR_WIZARD_NO_SONG_PLAN, ERR_WIZARD_SWITCH, ERR_WIZARD_NO_SUCH_ROW, ERR_WIZARD_ROW, ERR_WIZARD_HOOK_TAKE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_MELODY_NUMBER, ERR_WIZARD_MELODY_SWITCH, ERR_WIZARD_NO_SUCH_MELODY_SETTING, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'
@@ -218,6 +222,22 @@ FILLS_TRAITS = ('fills',)
 # The key a song keeps its own sections under, and the letter the first section that differs from its kind's first is named with.
 OWN_SECTIONS = 'own_sections'
 PREVIEW_NAME = 'preview'
+JOINS_ANSWER = 'joins'
+# What a section of the form is given of its own, kept with the section so that it moves, copies and goes with it.
+OWN_OF_SECTION = 'own'
+# How a section may leave, by the words a person chooses, each as the plan's join.
+LEAVES_NOTHING = 'nothing'
+LEAVES_SMALL_FILL = 'a small fill'
+LEAVES_MEDIUM_FILL = 'a medium fill'
+LEAVES_BIG_FILL = 'a big fill'
+LEAVES_AS_JOIN = {
+    LEAVES_SMALL_FILL: {FILL_SIZE: SMALL}, LEAVES_MEDIUM_FILL: {FILL_SIZE: MEDIUM}, LEAVES_BIG_FILL: {FILL_SIZE: BIG},
+    STOPS: {TAIL: STOPS}, DROP_OUT: {TAIL: DROP_OUT}, BUILD: {TAIL: BUILD}, LEAVES_NOTHING: {},
+}
+SETUP_USUAL = 'when it helps'
+MARKS_TYPED = {'b': FLAT, '#': SHARP}
+FIRST_DEGREE_OF_SCALE = 1
+LAST_DEGREE_OF_SCALE = 7
 PLAN_ANSWER = 'plan'
 ENERGY_ANSWER = 'energies'
 # The parts of a hook's kind and what each may be.
@@ -234,8 +254,28 @@ LEAST_BUSY = 1
 MOST_BUSY = 4
 USUAL_BUSY = 2
 def own_copy_of(entry):
-    """Return a section's entry sharing no list with the entry given."""
-    return {field: (list(value) if isinstance(value, list) else value) for field, value in entry.items()}
+    """Return a section's entry sharing no list and no dictionary with the entry given."""
+    return copy.deepcopy(entry)
+
+
+def chords_from_text(text):
+    """Return chords typed as degrees with a space between, a flat or a sharp before a degree, such as 6 4 1 b7, as the arranger reads them."""
+    chords = []
+    for word in str(text).split():
+        mark = word[0] if word[0] in MARKS_TYPED else None
+        number = word[1:] if mark else word
+        if not number.isdigit() or not FIRST_DEGREE_OF_SCALE <= int(number) <= LAST_DEGREE_OF_SCALE:
+            raise ValueError(ERR_WIZARD_CHORDS.format(value=text))
+        chords.append({DEGREE: int(number), ACCIDENTAL: MARKS_TYPED[mark]} if mark else int(number))
+    if not chords:
+        raise ValueError(ERR_WIZARD_CHORDS.format(value=text))
+    return chords
+
+
+def chords_as_text(chords):
+    """Return chords as they are typed."""
+    marks = {accidental: mark for mark, accidental in MARKS_TYPED.items()}
+    return ' '.join(marks.get(chord_of(chord).get(ACCIDENTAL), '') + str(chord_of(chord)[DEGREE]) for chord in chords)
 
 
 @functools.cache
@@ -606,7 +646,7 @@ class WizardChoices:
 
     def _song_sections(self):
         """Return the song's own sections as the arranger reads them, by name: each its kind and what it changes."""
-        return {name: dict(entry) for name, entry in zip(self.form_sections(), self._entries())}
+        return {name: {field: value for field, value in entry.items() if field != OWN_OF_SECTION} for name, entry in zip(self.form_sections(), self._entries())}
 
     def _section(self, place):
         """Return a section as it will be played: its kind as the genre describes it, with what the section changes."""
@@ -744,6 +784,8 @@ class WizardChoices:
                     if entry[BESIDE_KEPT] not in WAYS_BESIDE:
                         raise ValueError(ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=entry[BESIDE_KEPT]))
                     self._sections[place][BESIDE_KEPT] = entry[BESIDE_KEPT]
+                if entry.get(OWN_OF_SECTION):
+                    self._sections[place][OWN_OF_SECTION] = {field: self._checked_own(field=field, value=value) for field, value in entry[OWN_OF_SECTION].items()}
             if not self._sections:
                 raise ValueError(ERR_WIZARD_LAST_SECTION)
         except (KeyError, TypeError, ValueError):
@@ -1744,7 +1786,93 @@ class WizardChoices:
         return self._song_picks(name)
 
     def _song_picks(self, name):
-        return data_laid_over(under=self._picks_chosen(name), over=self._extras)
+        return data_laid_over(under=self._picks_chosen(name), over=self._extras_with_sections())
+
+    def _extras_with_sections(self):
+        """The song's extras, the plan in them holding what each section of the form was given of its own, by place."""
+        if not self.has_song_plan() or not any(entry.get(OWN_OF_SECTION) for entry in self._entries()):
+            return self._extras
+        plan = self._extras[PLAN_OF_SONG] if isinstance(self._extras[PLAN_OF_SONG], dict) else {}
+        given = list(plan.get(BY_PLACE) or [])
+        by_place = []
+        for place, entry in enumerate(self._entries()):
+            own = dict(entry.get(OWN_OF_SECTION) or {})
+            if LEAVES in own:
+                own[LEAVES] = dict(LEAVES_AS_JOIN[own[LEAVES]])
+            by_place.append({**((given[place] or {}) if place < len(given) else {}), **own})
+        return {**self._extras, PLAN_OF_SONG: {**plan, BY_PLACE: by_place}}
+
+    # What a section of a planned song is given of its own, over the plan and the song: each is None until given, and None gives it back.
+
+    def section_own_fields(self, place):
+        """Return the fields a section can be given of its own, in the order shown: none without a plan, and no join for the last section or a held one."""
+        if not self.has_song_plan():
+            return []
+        joins = self._remembered(key=JOINS_ANSWER, compute=lambda: self._song_plan().joins())
+        leaves = [LEAVES, SETUP] if place < len(joins) and joins[place] is not None else []
+        return [ENERGY, *leaves, CHORDS, TEMPO_OF_PLACE, TEMPO_END_OF_PLACE, ROOT_OF_PLACE, TYPE_OF_PLACE]
+
+    def section_own(self, *, place, field):
+        """Return what a section was given of its own for a field, or None."""
+        return copy.deepcopy(self._entry(place).get(OWN_OF_SECTION, {}).get(field))
+
+    def section_from_plan(self, *, place, field):
+        """Return what a section takes for a field where it is given nothing: the plan's Energy and join, the progression's chords, the song's tempo and key."""
+        self._plan()
+        if field == ENERGY:
+            return self.energies()[place]
+        if field == LEAVES:
+            join = self._remembered(key=JOINS_ANSWER, compute=lambda: self._song_plan().joins())[place] or {}
+            if join.get(TAIL):
+                return join[TAIL]
+            # A fill is said by its size, as it is chosen.
+            fills = style_of(self._genre)[PLAN_OF_SONG].get(FILL_SIZES, {})
+            return next((way for way, given in LEAVES_AS_JOIN.items() if FILL_SIZE in given and fills.get(given[FILL_SIZE]) == join.get(FILL_OF_JOIN)), LEAVES_NOTHING)
+        if field == SETUP:
+            return SETUP_USUAL
+        if field == CHORDS:
+            return chords_as_text(self._song_plan().chords_at(place))
+        if field in (TEMPO_OF_PLACE, TEMPO_END_OF_PLACE):
+            return self.section_own(place=place, field=TEMPO_OF_PLACE) or self._tempo
+        return self._root if field == ROOT_OF_PLACE else self._scale_type
+
+    def _checked_own(self, *, field, value):
+        if field == ENERGY and not isinstance(value, bool) and isinstance(value, int) and LOWEST_ENERGY <= value <= HIGHEST_ENERGY:
+            return value
+        if field == LEAVES and value in LEAVES_AS_JOIN:
+            return value
+        if field == SETUP and value == NOT_AT_ALL:
+            return value
+        if field == CHORDS:
+            return chords_from_text(chords_as_text(value) if isinstance(value, list) else value)
+        if field in (TEMPO_OF_PLACE, TEMPO_END_OF_PLACE) and not isinstance(value, bool) and isinstance(value, int) and MIN_TEMPO <= value <= MAX_TEMPO:
+            return value
+        if field == ROOT_OF_PLACE and value in ROOT_NAMES:
+            return value
+        if field == TYPE_OF_PLACE and value in SCALE_TYPES:
+            return value
+        raise ValueError(ERR_WIZARD_SECTION_OWN.format(field=field, value=value))
+
+    def set_section_own(self, *, place, field, value):
+        """Give a section something of its own, or give the field back with None. What the song cannot then be made with is refused, and nothing changes."""
+        self._plan()
+        self._entry(place)
+        checked = None if value is None else self._checked_own(field=field, value=value)
+        before = copy.deepcopy(self._sections)
+        entry = self._own_entries()[place]
+        own = entry.setdefault(OWN_OF_SECTION, {})
+        own.pop(field, None)
+        if checked is not None:
+            own[field] = checked
+        if not own:
+            del entry[OWN_OF_SECTION]
+        self._answers = {}
+        try:
+            self.made_setlist(name=PREVIEW_NAME, version=A_VERSION)
+        except (ValueError, KeyError, IndexError, SongFileError) as problem:
+            self._sections = before
+            self._answers = {}
+            raise ValueError(ERR_WIZARD_SECTION_OWN_UNMADE.format(field=field, value=value, problem=problem)) from None
 
     def _picks_chosen(self, name):
         return {NAME: name, TITLE: name, STYLE: self._genre, TEMPLATE: self._subgenre, KEY: {ROOT: self._root, TYPE: self._scale_type}, TEMPO: self._tempo, FORM: self.form_sections() if self.has_own_form() else self.get_form(), SEED: self._seed,

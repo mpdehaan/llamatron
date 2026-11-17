@@ -16,11 +16,17 @@
 
 """The song wizard's page on a planned song: the plan's fields on the Form panel and the hook's kind on the Hooks panel."""
 
+from llamatron.composition.limits import MAX_NAME_LENGTH
 from llamatron.macro_composer import hook_kinds
+from llamatron.macro_composer.arranger import CHORDS
+from llamatron.macro_composer.joins import LEAVES
+from llamatron.macro_composer.song_plan import ENERGY, ROOT_OF_PLACE, TEMPO_END_OF_PLACE, TYPE_OF_PLACE
+from llamatron.macro_composer.wizard_choices import chords_as_text
+from llamatron.strings.errors import ERR_WIZARD_CHORDS
 from llamatron.macro_composer.song_plan import USUAL_CONTRAST
 from llamatron.strings.labels import (
     MSG_WIZARD_CONTRAST_LABEL, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_HOOK_PART_LABELS, MSG_WIZARD_HOOKS_BRANCH, MSG_WIZARD_PHRASING_LABEL, MSG_WIZARD_PICK_SHOWN,
-    MSG_WIZARD_SONG_PLAN_LABEL,
+    MSG_WIZARD_SECTION_ORIGINS, MSG_WIZARD_SECTION_OWN_LABELS, MSG_WIZARD_SONG_PLAN_LABEL, MSG_WIZARD_VALUE_FROM,
 )
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
@@ -28,6 +34,11 @@ from tests.support.ui_testing import key_of
 from tests.tui.test_tui_wizard import WizardTest
 
 A_PLANNED_GENRE = 'rock'
+A_SECTION = 'verse-1'
+A_PLACE = 1
+SOME_CHORDS = '6 4 1 5'
+NOT_A_CHORD = ' x'
+A_FEW_WORDS = 20
 A_SUBGENRE = 'arena rock'
 A_SUBGENRE_IN_SIX = 'rock ballad'
 AN_UNPLANNED_GENRE = 'blues'
@@ -122,3 +133,65 @@ class TestWizardPlan(WizardTest):
         await self.go_to_hooks()
         self.assertIn(MSG_WIZARD_HOOK_PART_LABELS[hook_kinds.CONTOUR], self.text())
         self.assertNotIn(MSG_WIZARD_HOOK_PART_LABELS[hook_kinds.DETAIL], self.text())
+
+
+class TestWizardSectionOwnFields(WizardTest):
+    """A section's panel on a planned song: what the section is given of its own."""
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        choices = self.choices()
+        choices.set_genre(A_PLANNED_GENRE)
+        choices.set_subgenre(A_SUBGENRE)
+        choices.set_song_plan(True)
+        await self.press(Key.DOWN, Key.UP)
+        names = [branch.name() for _, branch in self.wizard().rows()]
+        await self.go_to_branch(names.index(A_SECTION))
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+
+    def label(self, field):
+        return MSG_WIZARD_SECTION_OWN_LABELS[field]
+
+    async def test_each_field_shows_what_the_section_takes_and_where_from(self):
+        choices = self.choices()
+        shown = self.text()
+        for field in choices.section_own_fields(A_PLACE):
+            self.assertIn(self.label(field), shown)
+            self.assertIn(MSG_WIZARD_VALUE_FROM.format(value=choices.section_from_plan(place=A_PLACE, field=field), origin=MSG_WIZARD_SECTION_ORIGINS[field]), shown)
+
+    async def test_energy_steps_from_the_plan_s_and_bksp_gives_it_back(self):
+        choices = self.choices()
+        usual = choices.energies()[A_PLACE]
+        await self.select_field(self.label(ENERGY))
+        await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
+        self.assertEqual(choices.section_own(place=A_PLACE, field=ENERGY), usual + 1)
+        self.assertNotIn(MSG_WIZARD_VALUE_FROM.format(value=usual, origin=MSG_WIZARD_SECTION_ORIGINS[ENERGY]), self.text())
+        await self.press(keybindings.FieldPage.CLEAR)
+        self.assertIsNone(choices.section_own(place=A_PLACE, field=ENERGY))
+
+    async def test_a_way_of_leaving_a_key_and_a_scale_are_chosen_from_a_list(self):
+        choices = self.choices()
+        for field in (LEAVES, ROOT_OF_PLACE, TYPE_OF_PLACE):
+            await self.select_field(self.label(field))
+            await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
+            self.assertIsNotNone(choices.section_own(place=A_PLACE, field=field))
+
+    async def test_chords_are_typed_and_what_cannot_be_chords_is_said(self):
+        choices = self.choices()
+        await self.select_field(self.label(CHORDS))
+        await self.press(Key.ENTER)
+        for _ in range(MAX_NAME_LENGTH):
+            await self.press(Key.BACKSPACE)
+        await self.type(SOME_CHORDS)
+        await self.press(Key.ENTER)
+        self.assertEqual(chords_as_text(choices.section_own(place=A_PLACE, field=CHORDS)), SOME_CHORDS)
+        await self.press(Key.ENTER)
+        await self.type(NOT_A_CHORD)
+        await self.press(Key.ENTER)
+        self.assertEqual(chords_as_text(choices.section_own(place=A_PLACE, field=CHORDS)), SOME_CHORDS)
+        self.assertIn(ERR_WIZARD_CHORDS.split('{')[0][:A_FEW_WORDS], self.text())
+
+    async def test_a_song_with_no_plan_shows_none_of_the_fields(self):
+        self.choices().set_song_plan(False)
+        await self.press(Key.DOWN, Key.UP)
+        self.assertNotIn(self.label(TEMPO_END_OF_PLACE), self.text())

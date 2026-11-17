@@ -68,6 +68,20 @@ SEED = 'seed'
 TEMPLATE = 'template'
 MELODY = 'melody'
 SECTION_PLAN = 'plan'
+# What a place of the form may say of its scene: a tempo, the tempo it reaches by its end, and the root and the type of a scale of its own.
+TEMPO_OF_PLACE = 'tempo'
+TEMPO_END_OF_PLACE = 'tempo_end'
+ROOT_OF_PLACE = 'root'
+TYPE_OF_PLACE = 'type'
+SCENE_FIELDS = (TEMPO_OF_PLACE, TEMPO_END_OF_PLACE, ROOT_OF_PLACE, TYPE_OF_PLACE)
+SCENE_TEMPO = 'tempo'
+SCENE_TEMPO_START = 'tempo_start'
+SCENE_TEMPO_END = 'tempo_end'
+# A scene's scale, as its root and type, which the arranger names and adds to the set's scales.
+SCALE_OF_PLACE = 'scale'
+KEY_OF_SONG = 'key'
+# A join's fill given by its size, for the style's fill of that size.
+FILL_SIZE = 'fill_size'
 SCENE_SETTINGS = 'settings'
 DRAWN_AS = 'drawn_as'
 SAID_OF_SECTION = 'said'
@@ -191,6 +205,14 @@ class SongPlan:
         """The Energy of each place of the form."""
         return list(self._energies)
 
+    def chords_at(self, place):
+        """The chords of a place of the form, as the song or the progression gives them."""
+        return self._chords_of(self._sections[place])
+
+    def joins(self):
+        """What each place of the form leaves with, or None for a place that leaves with nothing worked out."""
+        return self._joins()
+
     # What follows from a section's Energy.
 
     def _points_of(self, instrument):
@@ -261,10 +283,36 @@ class SongPlan:
                     size = OTHER_SIZE[size]
                 if self._fill(size):
                     join = {FILL_OF_JOIN: self._fill(size)}
-            join = {**join, **self._at(place).get(LEAVES, {})} if LEAVES in self._at(place) else join
+            if LEAVES in self._at(place):
+                # A join the song gives is the whole join, and a drop-out with no length takes the tempo's.
+                join = self._given_join(place)
             joins.append(join)
             before = join
         return joins
+
+    def _given_join(self, place):
+        join = dict(self._at(place)[LEAVES] or {})
+        if FILL_SIZE in join:
+            size = join.pop(FILL_SIZE)
+            if self._fill(size):
+                join[FILL_OF_JOIN] = self._fill(size)
+        if join.get(TAIL) == DROP_OUT and TAIL_EIGHTHS not in join:
+            join[TAIL_EIGHTHS] = DROP_EIGHTHS_FAST if self._tempo >= FAST_TEMPO else DROP_EIGHTHS_SLOW
+        return join
+
+    def _scene_settings(self, place):
+        """The settings of a section's scene the song gives the place: a tempo of its own, one it moves to by its end, and a key or a scale of its own."""
+        at = self._at(place)
+        settings = {}
+        if TEMPO_OF_PLACE in at and TEMPO_END_OF_PLACE in at:
+            settings.update({SCENE_TEMPO_START: at[TEMPO_OF_PLACE], SCENE_TEMPO_END: at[TEMPO_END_OF_PLACE]})
+        elif TEMPO_END_OF_PLACE in at:
+            settings.update({SCENE_TEMPO_START: self._tempo, SCENE_TEMPO_END: at[TEMPO_END_OF_PLACE]})
+        elif TEMPO_OF_PLACE in at:
+            settings[SCENE_TEMPO] = at[TEMPO_OF_PLACE]
+        if ROOT_OF_PLACE in at or TYPE_OF_PLACE in at:
+            settings[SCALE_OF_PLACE] = {ROOT_OF_PLACE: at.get(ROOT_OF_PLACE, self._song[KEY_OF_SONG][ROOT_OF_PLACE]), TYPE_OF_PLACE: at.get(TYPE_OF_PLACE, self._scale_type)}
+        return settings
 
     def _last_chord(self, place):
         """The chord a section's last bar takes to set up the next, or nothing: a section that rises into one starting at home, or
@@ -333,8 +381,9 @@ class SongPlan:
                 said.append(MSG_PLAN_HOOK.format(hook_kinds.said_of(kind)))
                 hook_said = True
             # What the song says of the section itself, and of this place of its form, stands over what the plan worked out.
-            own = {field: value for field, value in self._at(place).items() if field not in (ENERGY, SETUP, LEAVES)}
-            sections[name] = {**made, **of_song, **own, SAID_OF_SECTION: ' '.join(said)}
+            own = {field: value for field, value in self._at(place).items() if field not in (ENERGY, SETUP, LEAVES, *SCENE_FIELDS)}
+            scene = {**made.get(SCENE_SETTINGS, {}), **self._scene_settings(place)}
+            sections[name] = {**made, **of_song, **own, **({SCENE_SETTINGS: scene} if scene else {}), SAID_OF_SECTION: ' '.join(said)}
         melody = {**({BREATHES: True} if self._given.get(PHRASING, True) else {}), **({HOOK_KINDS: True} if self._given.get(HOOK_KINDS, True) else {}), **self._song.get(MELODY, {})}
         return {**self._song, FORM: list(self._names), SECTIONS: sections, MELODY: melody}
 
