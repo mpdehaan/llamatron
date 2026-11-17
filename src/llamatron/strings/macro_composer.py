@@ -35,6 +35,15 @@ MSG_PART_OF_SECTION = '{} {}'
 MSG_PIECE_INSTRUMENT = '{} sound'
 MSG_REPEATED_SCENE = '{} {}'
 
+# macro_composer/song_plan.py: what a planned section says of itself in the song's notes.
+MSG_PLAN_ENERGY = 'Energy {}.'
+MSG_PLAN_LEAVES_TAIL = 'Leaves with: {}.'
+MSG_PLAN_LEAVES_FILL = 'Leaves with a fill, {}.'
+MSG_PLAN_SET_UP = 'Last bar on chord {}.'
+MSG_PLAN_HOOK = 'The hook: {}.'
+# macro_composer/hook_kinds.py: a hook's kind in words, its contour, its rhythm and its odd detail.
+MSG_HOOK_KIND = '{}, {}, {}'
+
 # macro_composer/players.py
 # A player's name, the first name and the family's, and each list from complexity 1 to 4.
 MSG_PLAYER = '{} {}'

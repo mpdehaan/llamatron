@@ -32,10 +32,13 @@ from fractions import Fraction
 from llamatron.macro_composer.breaks import BREAKS, LEAST_CUT, MOST_CUT, cut_up
 from llamatron.macro_composer.characters import ADDS, BUSY, FILL, FILL_EVERY, GUITARIFY_OF_PLAYER, SAYS, TIMING, UNEVEN, VARIES, character_of, held_to, label_of, level_of
 from llamatron.macro_composer import characters
+from llamatron.macro_composer import drum_solo
 from llamatron.macro_composer.interplay import ANSWERS as ANSWERS_EVERY_LINE, DRAWN_ANEW as WAYS_DRAWN_ANEW, USUAL_BUSY as USUAL_BESIDE_BUSY, WAITS, WAYS as WAYS_BESIDE, UnderLead
+from llamatron.macro_composer.joins import DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL, TAIL_EIGHTHS, drum_tail, pieces_of_tail, with_tail
 from llamatron.macro_composer.melody import ANSWER, ANSWER_RHYTHMS, ENGINE, FIRST_HOOK_TAKE, GRID, HOOK, HOOK_TAKE, LINE, RHYTHMS, SPAN, has_hook, sketched
 from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, DRUM, FLAT, HITS, KIT, LINES, LOUD, NONE, OCTAVE, REST, SHARP, SOFT, STEP, STEPS, VELOCITY, CHORD, clamped, drum_rows
 from llamatron.macro_composer.players import player_name
+from llamatron.macro_composer.song_plan import PLAN_OF_SONG, SongPlan
 from llamatron.support.safe_yaml import load_safely
 from llamatron.composition.limits import MAX_GM_SOUND, MIN_GM_SOUND
 from llamatron.strings.labels import MSG_GM_SOUNDS
@@ -205,6 +208,19 @@ BY_FAMILY = 'by_family'
 # The keys whose home note is the lowest of an octave: a band written for the middle of its range plays an octave up in them.
 LOW_ROOTS = ('C', 'C#', 'Db', 'D', 'D#', 'Eb')
 SOFT_SHARE = Fraction(2, 3)
+# What a planned section says of itself (song_plan.py): each instrument's level in the section, in place of the song's; the
+# scene's own settings; what the section is called where a part is the same each time its kind comes; what is said of the
+# section in the song's notes; that the drummer plays it alone, as a solo; and the small fill inside it with how many bars apart it comes.
+LEVELS_HERE = 'levels'
+SCENE_SETTINGS = 'settings'
+DRAWN_AS = 'drawn_as'
+SAID_OF_SECTION = 'said'
+DRUM_SOLO = 'drum_solo'
+FILL_INSIDE = 'fill_inside'
+FILL_INSIDE_EVERY = 'fill_inside_every'
+MADE_SCENE_SAID = '{} {}'
+LAST_CHORD = 'last_chord'
+SETTINGS_OF_SCENE = 'settings'
 
 
 
@@ -267,6 +283,9 @@ def players_in(*, style, roles, levels, section):
 def character_in(*, levels, instrument, section):
     """The character an instrument's player plays with in a section, or nothing where the song names no player for the instrument: the
     song's, a level or the places of its gauges, held to the level the section allows the instrument."""
+    here = section.get(LEVELS_HERE, {}).get(instrument)
+    if here is not None:
+        return character_of(here)
     if instrument not in levels:
         return None
     return held_to(character=character_of(levels[instrument]), allowed=section.get(ALLOWS, {}).get(instrument))
@@ -381,11 +400,14 @@ def whole(*, value, low, high):
     return not isinstance(value, bool) and isinstance(value, int) and low <= value <= high
 
 
-def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars, own_fill=False, seed=0, kit=None):
+def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars, own_fill=False, seed=0, kit=None, leaves=None, inside=None):
     """Each drum the picks play, as a part some bars long: the kind's own bar, decorated as the drummer decorates it, a bar of
     the bars of each phrase that the drummer varies each a little different, and its last bar the fill. A drummer who says nothing plays the kind's bar
     and the song's fill at the end of every phrase. Where the picks name a break, the break's bar is the kind's, in place of
-    every way but the percussion's, and each bar of a phrase after the first is the break cut up, its own way, by the seed."""
+    every way but the percussion's, and each bar of a phrase after the first is the break cut up, its own way, by the seed.
+
+    A section that says what it leaves with is written out whole: its last bar is the join's fill under the join's tail, and
+    the small fill inside comes only as often as the section says."""
     bars = {}
     played_break = break_of(picks=picks, meter=meter)
     for role in roles:
@@ -407,13 +429,21 @@ def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars
         fill, silences = values_of(style=style, trait=FILLS).get(picks.get(FILLS), {}).get(FILL, {}), []
     if drummer.get(FILL_EVERY) == 0:
         fill, silences = {}, []
+    last_fill = {}
+    if leaves is not None:
+        # A planned section: the fill inside is the small one the section names, and the last bar's is the join's.
+        length = section_bars
+        fill, silences = fill_named(style=style, name=(inside or {}).get(FILL_INSIDE)), []
+        last_fill = fill_named(style=style, name=leaves.get(FILL_OF_JOIN))
+    tail = (leaves or {}).get(TAIL)
+    inside_every = (inside or {}).get(FILL_INSIDE_EVERY) or length
     adds, _ = choice_that_fits(choices=drummer.get(ADDS), picks=picks)
     varied = []
     for variation in drummer.get(VARIES, []):
         more, _ = choice_that_fits(choices=variation[CHOICES], picks=picks)
         varied.append((variation[BARS], more))
     parts = {}
-    every = [bars, adds, fill] + [more for _, more in varied]
+    every = [bars, adds, fill, last_fill, {piece: [NONE] for piece in pieces_of_tail(tail)}] + [more for _, more in varied]
     for piece in list(dict.fromkeys(piece for layer in every for piece in layer)):
         layers = [layer[piece] for layer in every if piece in layer]
         grid = math.lcm(*(len(layer) for layer in layers))
@@ -422,9 +452,9 @@ def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars
             plain = laid_over(bar=plain, more=widened(hits=adds[piece], to=grid))
         hits = []
         for bar in range(1, length + 1):
-            if bar == length and piece in fill:
+            if leaves is None and bar == length and piece in fill:
                 hits += widened(hits=fill[piece], to=grid)
-            elif bar == length and piece in silences:
+            elif leaves is None and bar == length and piece in silences:
                 hits += [NONE] * grid
             else:
                 played = plain
@@ -435,10 +465,39 @@ def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars
                 for which, more in varied:
                     if piece in more and (bar - 1) % phrase_bars + 1 in which:
                         played = laid_over(bar=played, more=widened(hits=more[piece], to=grid))
+                if leaves is not None and bar == length and tail is not None:
+                    played = drum_tail(piece=piece, plain=played, tail=tail, eighths=leaves.get(TAIL_EIGHTHS, 0))
+                elif leaves is not None and bar == length and piece in last_fill:
+                    played = widened(hits=last_fill[piece], to=grid)
+                elif leaves is not None and bar != length and bar % inside_every == 0 and piece in fill:
+                    played = widened(hits=fill[piece], to=grid)
                 hits += played
         loud = style[LOUDNESS].get(piece, style[LOUDNESS][DRUMS])
         parts[piece] = {DRUM: (kit or {}).get(piece, piece), STEP: step_of(meter=meter, grid=grid), LOUD: loud, SOFT: int(loud * SOFT_SHARE), HITS: hits}
     return parts
+
+
+def fill_named(*, style, name):
+    """The fill of a name, each drum's hits, or no fill for no name or a name the style lacks."""
+    return values_of(style=style, trait=FILLS).get(name, {}).get(FILL, {})
+
+
+def solo_parts(*, style, bars, seed, kit):
+    """A drum solo's parts, a part for each piece of the kit that sounds in it."""
+    parts = {}
+    for piece, hits in drum_solo.solo_hits(bars=bars, seed=seed).items():
+        loud = style[LOUDNESS].get(piece, style[LOUDNESS][DRUMS])
+        parts[piece] = {DRUM: (kit or {}).get(piece, piece), STEP: drum_solo.STEP, LOUD: loud, SOFT: int(loud * SOFT_SHARE), HITS: hits}
+    return parts
+
+
+def frozen(value):
+    """Plain data as something that can be a key."""
+    if isinstance(value, dict):
+        return tuple(sorted((name, frozen(inner)) for name, inner in value.items()))
+    if isinstance(value, list):
+        return tuple(frozen(inner) for inner in value)
+    return value
 
 
 def one_hit(*, style, meter, drum, played):
@@ -639,6 +698,12 @@ def arranged(*, style, song):
     # A tune in a scale type the style gives notes of its own, a minor song its minor notes and home, takes those: the major
     # notes read in a minor scale rest on the scale's third and sound like the major key beside it.
     habits = {**habits, **habits.get(BY_SCALE_TYPE, {}).get(scale_type, {})}
+    if song.get(PLAN_OF_SONG):
+        # A song that asks for a plan has a section made for each place of its form, each saying what the plan worked out.
+        def chords_of(section):
+            return [chord_of(chord) for chord in section.get(CHORDS) or chord_entry.get(BY_SECTION, {}).get(section[KIND]) or chord_entry[PATTERN]]
+        song = SongPlan(style=style, song=song, form_names=form_names, tempo=tempo, scale_type=scale_type, chords_of=chords_of).planned()
+        form_names = song[FORM]
     levels = song.get(PLAYERS, {})
     without = song.get(WITHOUT, [])
     no_drums = any(role.get(DRUMS) and role[ROLE] in without for role in roles)
@@ -663,9 +728,20 @@ def arranged(*, style, song):
         if FILLS_COME in song:
             # The song says how often a fill comes, whatever the drummer would do: never, at the end of each section, or every so many bars.
             plays = {**plays, FILL_EVERY: section[BARS] if song[FILLS_COME] == EACH_SECTION else song[FILLS_COME]}
+        # A drum solo is written in four; in another meter the drummer plays the section alone as any other.
+        drum_solo_here = bool(section.get(DRUM_SOLO)) and meter == COMMON_TIME
+        leaves = section.get(LEAVES)
         key = (level, tuple(sorted(changed.items())), math.gcd(plays.get(FILL_EVERY, phrase_bars) or phrase_bars, section[BARS]))
+        if leaves is not None:
+            key = key + (section[BARS], frozen(leaves), section.get(FILL_INSIDE), section.get(FILL_INSIDE_EVERY))
+        if drum_solo_here:
+            key = (DRUM_SOLO, section[BARS])
         if key not in drum_sets:
-            made = drum_parts(style=style, picks={**picks, **changed}, roles=roles, meter=meter, phrase_bars=phrase_bars, drummer=plays, section_bars=section[BARS], own_fill=FILLS in song.get(PICKS, {}), seed=song.get(SEED, 0), kit=played)
+            if drum_solo_here:
+                made = solo_parts(style=style, bars=section[BARS], seed=song.get(SEED, 0), kit=played)
+            else:
+                made = drum_parts(style=style, picks={**picks, **changed}, roles=roles, meter=meter, phrase_bars=phrase_bars, drummer=plays, section_bars=section[BARS], own_fill=FILLS in song.get(PICKS, {}), seed=song.get(SEED, 0), kit=played,
+                                  leaves=leaves, inside={FILL_INSIDE: section.get(FILL_INSIDE), FILL_INSIDE_EVERY: section.get(FILL_INSIDE_EVERY)})
             drum_sets[key] = {}
             for piece, part in made.items():
                 # A piece of the kit switched off is left out: its strokes are never moved to another piece.
@@ -674,9 +750,9 @@ def arranged(*, style, song):
                 if piece == SNARE and not song.get(QUIET_NOTES, True):
                     # The quiet notes switched off: the snare's soft strokes between the main ones are left out.
                     part = {**part, HITS: [NONE if hit == SOFT else hit for hit in part[HITS]]}
-                if plays.get(UNEVEN):
+                if plays.get(UNEVEN) and not drum_solo_here:
                     part = uneven_drum(part=part, by=plays[UNEVEN], dice=random.Random(DRUM_SEED.format(song.get(SEED, 0), piece, section[KIND])))
-                named = piece if key[:2] == (usual_drummer, ()) and piece not in parts else MSG_PART_OF_SECTION.format(piece, section[KIND])
+                named = piece if leaves is None and key[:2] == (usual_drummer, ()) and piece not in parts else MSG_PART_OF_SECTION.format(piece, name if leaves is not None else section[KIND])
                 parts[named] = part
                 drum_sets[key][piece] = named
         drums_of[name] = drum_sets[key]
@@ -718,6 +794,7 @@ def arranged(*, style, song):
     form = []
     notes = []
     met = {}
+    same_tunes = {}
     plans = [section_of(name=name, style=style, song=song).get(PLAN, []) for name in form_names]
     # A song has a hook where the song or its style asks for one and a section of its form marks a line as one.
     has_a_hook = bool(song.get(HOOK, style.get(HOOK, False))) and any(has_hook(plan) for plan in plans)
@@ -729,6 +806,9 @@ def arranged(*, style, song):
         scene_name = name if met[name] == 1 else MSG_REPEATED_SCENE.format(name, met[name])
         bars = 1 if section.get(HELD) else section[BARS]
         chords = [chord_of(chord) for chord in section.get(CHORDS) or chord_entry.get(BY_SECTION, {}).get(section[KIND]) or chord_entry[PATTERN]]
+        if section.get(LAST_CHORD) is not None and not section.get(EVERY, chord_entry.get(EVERY)) and len(chords) <= bars:
+            # The section's last bar is set up for what follows: the chords are written out a bar each, and the last bar takes the approach chord.
+            chords = [chords[bar % len(chords)] for bar in range(bars - 1)] + [chord_of(section[LAST_CHORD])]
         play = {}
         if section.get(HELD):
             held = MSG_PART_OF_SECTION.format(CRASH, HELD)
@@ -774,7 +854,7 @@ def arranged(*, style, song):
                     continue
                 if way is not None:
                     # Fills and answers are drawn anew each time a section returns; the hook and a riff are the same every time.
-                    drawn_in = scene_name if way in WAYS_DRAWN_ANEW else name
+                    drawn_in = scene_name if way in WAYS_DRAWN_ANEW else section.get(DRAWN_AS, name)
                     part = MSG_PART_BESIDE.format(drawn_in, role[ROLE], way)
                     if part not in parts:
                         lines = under.lines(way=way, tune=lines_of(tune_role), chords=chords, section=drawn_in)
@@ -799,6 +879,13 @@ def arranged(*, style, song):
                             if figure not in parts:
                                 parts[figure] = held_back
                                 shaped.append(figure)
+                    leaves = section.get(LEAVES) or {}
+                    if leaves.get(TAIL) in (DROP_OUT, STOPS):
+                        # The band's last bar together: the figure is written out for the whole section, so that its last bar alone differs.
+                        whole_part = MSG_PART_OF_SECTION.format(name, MSG_PART_OF_SECTION.format(role[ROLE], leaves[TAIL]))
+                        parts[whole_part] = {**parts[figure], LINES: with_tail(bars=parts[figure][LINES], count=bars, tail=leaves[TAIL], eighths=leaves.get(TAIL_EIGHTHS, 0))}
+                        shaped.append(whole_part)
+                        figure = whole_part
                     play[role[ROLE]] = {PART: figure, CHAINS: [chain]}
                     continue
                 part = MSG_PART_OF_SECTION.format(name, role[ROLE])
@@ -806,16 +893,24 @@ def arranged(*, style, song):
                     lines = lines_of(role)
                     if all(all(REST in note for note in line) for line in lines):
                         continue
-                    parts[part] = tune_part(lines=lines, role=role, meter=meter, grid=habits[GRID])
-                    shaped.append(part)
+                    written = tune_part(lines=lines, role=role, meter=meter, grid=habits[GRID])
+                    # A tune that returns note for note, as a chorus's, is the one part each time, where the song's sections are planned.
+                    same = same_tunes.get((role[ROLE], repr(written))) if DRAWN_AS in section else None
+                    if same is not None:
+                        part = same
+                    else:
+                        parts[part] = written
+                        shaped.append(part)
+                        same_tunes[(role[ROLE], repr(written))] = part
                 if part in parts:
                     play[role[ROLE]] = {PART: part, ONCE: True, CHAINS: [MSG_TIMING_CHAIN.format(role[ROLE])]}
         if not play:
             # Nothing of the song's picks plays in this section, as pads alone where the song has no chord part: it is left out.
             met[name] -= 1
             continue
-        form.append({SCENE: scene_name, BARS: bars, PLAY: play})
-        notes.append(MSG_MADE_SCENE.format(count, scene_name, bars))
+        form.append({SCENE: scene_name, BARS: bars, PLAY: play, **({SETTINGS_OF_SCENE: dict(section[SCENE_SETTINGS])} if section.get(SCENE_SETTINGS) else {})})
+        said_of_scene = MSG_MADE_SCENE.format(count, scene_name, bars)
+        notes.append(MADE_SCENE_SAID.format(said_of_scene, section[SAID_OF_SECTION]) if section.get(SAID_OF_SECTION) else said_of_scene)
     generators = {PROGRESSIONS: progressions, **extra}
     if any(role.get(VOICE_LEADING) for role, _ in pitched):
         generators[VOICE_LEADINGS] = {NEAR: dict(NEAR_VOICES)}

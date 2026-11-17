@@ -44,11 +44,11 @@ from llamatron.composition.setlist import Setlist, file_stem
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.exporters.exports import EXPORT_KINDS_IN_HELP, ExportKind, export_name, make_exporter, shown_export_path, remove_earlier_export
-from llamatron.strings.errors import ERR_BATCH_VIDEO_NEEDS_VISUALIZER, ERR_LAUNCH_NEEDS_SET, ERR_NEEDS_FORCE, ERR_NOT_WITH_TO, ERR_ONLY_WITH_TO, ERR_PRINTED, ERR_TO_NEEDS_SET
+from llamatron.strings.errors import ERR_BATCH_VIDEO_NEEDS_VISUALIZER, ERR_LAUNCH_NEEDS_SET, ERR_NEEDS_FORCE, ERR_NOT_WITH_TO, ERR_ONLY_WITH_TO, ERR_PRINTED, ERR_TO_NEEDS_SET, ERR_ONLY_WITH_WIZARD, ERR_WIZARD_ONLY_ALONE
 from llamatron.visualizers.modes import mode_options
 from llamatron.tui.launch import Launch, start_screen_wanted
 from llamatron.strings.cli import (
-    MSG_CLI_CHANGED, MSG_CLI_WOULD_CHANGE, MSG_CLI_WROTE, MSG_HELP_AUTOPLAY, MSG_HELP_AUTOPLAY_QUIT, MSG_HELP_DESCRIPTION, MSG_HELP_FORCE,
+    MSG_CLI_CHANGED, MSG_CLI_MADE_SONG, MSG_CLI_WOULD_CHANGE, MSG_CLI_WROTE, MSG_HELP_BATCH, MSG_HELP_WIZARD, MSG_HELP_AUTOPLAY, MSG_HELP_AUTOPLAY_QUIT, MSG_HELP_DESCRIPTION, MSG_HELP_FORCE,
     MSG_HELP_BATCH_VIDEO, MSG_HELP_NO_ALTERNATE, MSG_HELP_FOR_RECORDING, MSG_HELP_MAX_SECONDS, MSG_HELP_VISUALIZER, MSG_HELP_OUT, MSG_HELP_REPLACE, MSG_HELP_SEED, MSG_HELP_SET, MSG_HELP_SONG, MSG_HELP_TEMPLATE, MSG_HELP_TO,
 )
 
@@ -70,7 +70,12 @@ OPTION_MAX_SECONDS = '--max-seconds'
 OPTION_VISUALIZER = '--visualizer'
 OPTION_BATCH_VIDEO = '--batch-video'
 OPTION_NO_ALTERNATE = '--no-alternate'
+# The options that make a song from a song file, as the song wizard would.
+OPTION_WIZARD = '--wizard'
+OPTION_BATCH = '--batch'
+MADE_SET_NAME = '{}_song.yml'
 SET_ARGUMENT = 'set'
+WIZARD_METAVAR = 'SONG_FILE'
 ONE_OR_NONE = '?'
 STORE_TRUE = 'store_true'
 SUCCEEDED = 0
@@ -97,7 +102,15 @@ def _arguments(argv):
     parser.add_argument(OPTION_VISUALIZER, choices=mode_options(), help=MSG_HELP_VISUALIZER)
     parser.add_argument(OPTION_BATCH_VIDEO, action=STORE_TRUE, help=MSG_HELP_BATCH_VIDEO)
     parser.add_argument(OPTION_NO_ALTERNATE, action=STORE_TRUE, help=MSG_HELP_NO_ALTERNATE)
+    parser.add_argument(OPTION_WIZARD, metavar=WIZARD_METAVAR, help=MSG_HELP_WIZARD)
+    parser.add_argument(OPTION_BATCH, action=STORE_TRUE, help=MSG_HELP_BATCH)
     arguments = parser.parse_args(argv)
+    if arguments.wizard is not None:
+        if arguments.set is not None or arguments.to is not None:
+            parser.error(ERR_WIZARD_ONLY_ALONE)
+        return arguments
+    if arguments.batch:
+        parser.error(ERR_ONLY_WITH_WIZARD.format(options=OPTION_BATCH))
     if arguments.to is None:
         given = _render_options_given(arguments)
         if given:
@@ -140,6 +153,18 @@ def _render_options_given(arguments):
     return [option for option, given in options if given]
 
 
+def make_wizard_song(arguments):
+    """Make the song a song file describes, as the song wizard would, write its set and return the set's path: the one --out
+    names, or one beside the song file, named after it."""
+    # Imported here so that opening a set or exporting doesn't load the MacroComposer.
+    from llamatron.macro_composer.wizard_file import made_of_file
+    from llamatron.support.version import VERSION
+    path = arguments.out or os.path.join(os.path.dirname(arguments.wizard), MADE_SET_NAME.format(file_stem(arguments.wizard)))
+    made_of_file(path=arguments.wizard, version=VERSION, seed=arguments.seed).write_file(path)
+    print(MSG_CLI_MADE_SONG.format(path=path))
+    return path
+
+
 def export_directory(set_path):
     """Return where a set's exports go unless --out says otherwise: beside the set's file, which is the current directory for a bare file name."""
     return os.path.dirname(set_path) or os.curdir
@@ -179,6 +204,16 @@ def export_song(*, setlist, name, directory, arguments):
 def main(*, argv=None):
     """Return 0 if the tracker closed or the song was written, or 1 after explaining what went wrong."""
     arguments = _arguments(argv)
+    if arguments.wizard is not None:
+        try:
+            made = make_wizard_song(arguments)
+        except (SongFileError, ValueError, KeyError, IndexError, OSError) as error:
+            print(ERR_PRINTED.format(problem=error), file=sys.stderr)
+            return FAILED
+        if arguments.batch:
+            return SUCCEEDED
+        from llamatron.tui.app import main as open_tracker
+        return open_tracker(argv=[made], launch=launch_of(arguments), start_screen=False)
     if arguments.to is None:
         # Imported here so that exporting doesn't need to load the text UI.
         from llamatron.tui.app import main as open_tracker

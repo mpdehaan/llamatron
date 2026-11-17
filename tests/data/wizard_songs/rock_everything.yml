@@ -1,0 +1,25 @@
+# Test data: a trial of the song plan: an arena rock song that uses every part of it. Made into a set with
+#   llamatron --wizard tests/data/wizard_songs/rock_everything.yml
+name: rock everything
+genre: rock
+subgenre: arena rock
+root: A
+type: major
+tempo: 126
+seed: 11
+song_plan: {contrast: 6}
+form:
+  - intro
+  - verse
+  - pre-chorus
+  - chorus
+  - {kind: verse, energy: 5}
+  - pre-chorus
+  - chorus
+  - {kind: bridge, chords: [6, 4, 1, 5, 6, 4, 5, 5], energy: 4}
+  - {kind: drum solo, bars: 8}
+  - solo
+  - pre-chorus
+  - chorus
+  - chorus
+  - ending

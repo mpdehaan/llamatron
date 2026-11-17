@@ -51,7 +51,7 @@ from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MIN_GM_SO
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.marks import MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SECTION_VARIANT
 from llamatron.support.version import VERSION as A_VERSION
-from llamatron.strings.errors import ERR_WIZARD_NO_SUCH_ROW, ERR_WIZARD_ROW, ERR_WIZARD_HOOK_TAKE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_MELODY_NUMBER, ERR_WIZARD_MELODY_SWITCH, ERR_WIZARD_NO_SUCH_MELODY_SETTING, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
+from llamatron.strings.errors import ERR_WIZARD_EXTRAS, ERR_WIZARD_NO_SUCH_ROW, ERR_WIZARD_ROW, ERR_WIZARD_HOOK_TAKE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_MELODY_NUMBER, ERR_WIZARD_MELODY_SWITCH, ERR_WIZARD_NO_SUCH_MELODY_SETTING, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'
@@ -73,6 +73,13 @@ PROGRESSION_SEED = 'progression {}'
 USUAL_COUNTS = 2
 FIRST_SEED = 1
 LAST_SEED = 999999
+
+
+def data_laid_over(*, under, over):
+    """Plain data with other data laid over it: a mapping's fields are laid over field by field, and anything else is replaced."""
+    if isinstance(under, dict) and isinstance(over, dict):
+        return {**under, **{field: data_laid_over(under=under[field], over=value) if field in under else value for field, value in over.items()}}
+    return over
 
 
 @functools.cache
@@ -206,6 +213,8 @@ PROGRESSION_TRAITS = ('chords', 'harmony')
 FILLS_TRAITS = ('fills',)
 # The key a song keeps its own sections under, and the letter the first section that differs from its kind's first is named with.
 OWN_SECTIONS = 'own_sections'
+# What a song file lays over the song's picks, as a song keeps it.
+EXTRAS_KEPT = 'song'
 FIRST_VARIANT_LETTER = 'a'
 # How near a made section's length must be to the length asked, in seconds: far less than any bar lasts.
 PART_OF_A_BAR = 0.01
@@ -287,7 +296,7 @@ SECONDS_IN_MINUTE = 60
 class WizardChoices:
     """The choices of one run of the song wizard."""
 
-    __slots__ = ('_hook_take', '_rows', '_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_own_gauges', '_beside', '_without', '_sections', '_melody', '_hook', '_sounds', '_band_sounds', '_guitarists', '_pieces_off', '_break', '_break_cut', '_gauges', '_piece_sounds', '_fills', '_quiet_notes', '_melody_settings', '_answers', '_answers_of')
+    __slots__ = ('_extras', '_hook_take', '_rows', '_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_own_gauges', '_beside', '_without', '_sections', '_melody', '_hook', '_sounds', '_band_sounds', '_guitarists', '_pieces_off', '_break', '_break_cut', '_gauges', '_piece_sounds', '_fills', '_quiet_notes', '_melody_settings', '_answers', '_answers_of')
 
     def __init__(self):
         # Answers found by making the song, each kept until a choice changes.
@@ -329,6 +338,8 @@ class WizardChoices:
         self._gauges = {}
         self._melody_settings = {}
         self._piece_sounds = {}
+        # What a song file lays over the song's picks: the song's plan, and anything a section is given, as its chords or a tune.
+        self._extras = {}
 
     # Reading and keeping the choices.
 
@@ -376,7 +387,8 @@ class WizardChoices:
                 (self.set_gauge, [dict(name=name, position=position) for name, position in (data.get(GAUGES_KEPT) or {}).items()]),
                 (self._set_kept_player_row, [dict(role=role, name=name, values=values) for role, rows in (data.get(PLAYER_ROWS_KEPT) or {}).items() for name, values in rows.items()]
                  if isinstance(data.get(PLAYER_ROWS_KEPT), dict) and all(isinstance(rows, dict) for rows in data[PLAYER_ROWS_KEPT].values()) else []),
-                (self._set_kept_melody_setting, [dict(name=name, value=value) for name, value in (data.get(MELODY_SETTINGS_KEPT) or {}).items()])]
+                (self._set_kept_melody_setting, [dict(name=name, value=value) for name, value in (data.get(MELODY_SETTINGS_KEPT) or {}).items()]),
+                (self._set_kept_extras, [dict(extras=data[EXTRAS_KEPT])] if data.get(EXTRAS_KEPT) else [])]
         for setter, every in kept:
             for named in every:
                 try:
@@ -397,7 +409,8 @@ class WizardChoices:
                 GUITARISTS_KEPT: self._guitarists if self._guitarists != TWO_GUITARISTS else None,
                 PIECES_OFF_KEPT: list(self._pieces_off) or None, FILLS_KEPT: self._fills, QUIET_NOTES_KEPT: None if self._quiet_notes else False,
                 BREAK_KEPT: self._break, BREAK_CUT_KEPT: self._break_cut, GAUGES_KEPT: dict(self._gauges) or None, MELODY_SETTINGS_KEPT: dict(self._melody_settings) or None,
-                PIECE_SOUNDS_KEPT: {piece: dict(sounds_as) for piece, sounds_as in self._piece_sounds.items()} or None}
+                PIECE_SOUNDS_KEPT: {piece: dict(sounds_as) for piece, sounds_as in self._piece_sounds.items()} or None,
+                EXTRAS_KEPT: copy.deepcopy(self._extras) or None}
         return {field: value for field, value in held.items() if value is not None}
 
     # The genre and the subgenre, which everything else follows.
@@ -1719,6 +1732,9 @@ class WizardChoices:
         return self._song_picks(name)
 
     def _song_picks(self, name):
+        return data_laid_over(under=self._picks_chosen(name), over=self._extras)
+
+    def _picks_chosen(self, name):
         return {NAME: name, TITLE: name, STYLE: self._genre, TEMPLATE: self._subgenre, KEY: {ROOT: self._root, TYPE: self._scale_type}, TEMPO: self._tempo, FORM: self.form_sections() if self.has_own_form() else self.get_form(), SEED: self._seed,
                 PICKS: {**self._ways, **self._break_picks()}, PLAYERS: self._players(), WITHOUT: self._song_without(), **self._song_beside(),
                 **({SECTIONS: self._sections_of_song()} if self._sections_of_song() else {}),
@@ -1732,6 +1748,19 @@ class WizardChoices:
                 **({PIECE_SOUNDS: {piece: dict(sounds_as) for piece, sounds_as in self._piece_sounds.items()}} if self._piece_sounds else {}),
                 **({FILLS_COME: FILLS_EVERY[self._fills]} if self._fills is not None else {}),
                 **({} if self._quiet_notes else {QUIET_NOTES: False})}
+
+    def set_song_extras(self, extras):
+        """Lay a song file's own picks over what the choices make: the song's plan, and whatever a section is given."""
+        if not isinstance(extras, dict):
+            raise ValueError(ERR_WIZARD_EXTRAS.format(value=extras))
+        self._extras = copy.deepcopy(extras)
+        self._answers = {}
+
+    def get_song_extras(self):
+        return copy.deepcopy(self._extras)
+
+    def _set_kept_extras(self, *, extras):
+        self.set_song_extras(extras)
 
     def made_setlist(self, *, name, version):
         """Return a set holding the one song these choices make, under a name, with all the song uses, the song keeping the choices.

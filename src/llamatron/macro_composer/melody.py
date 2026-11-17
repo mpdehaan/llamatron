@@ -25,8 +25,10 @@ notes by step, landing its long notes on the notes of the chord under them. The 
 import math
 import random
 
+from llamatron.macro_composer import hook_kinds
 from llamatron.macro_composer.notation import ACCIDENTAL, ARRIVAL, DEGREE, ENDING, FLAT, LOUDER, OCTAVE, REST, SHARP, STEPS, STRESS
 from llamatron.macro_composer.operations import backwards, moved, rotated, upside_down
+from llamatron.macro_composer.phrasing import breathed
 from llamatron.strings.errors import ERR_MELODY_NEEDS_RHYTHMS
 
 # The fields of a style's melody habits.
@@ -50,6 +52,12 @@ HOOK_TAKE = 'hook_take'
 FIRST_HOOK_TAKE = 0
 HOOK_TAKE_SEED = '{} hook take {}'
 HIGHER = 'higher'
+# Habits a planned song asks for: the tune's lines breathe, and the hook is of a kind, each take another.
+BREATHES = 'breathes'
+HOOK_KINDS = 'hook_kinds'
+BREATH_SEED = '{} breath {} {}'
+# The degrees an ending left open rests on.
+OPEN_DEGREES = (2, 6)
 # The engines a tune is made by, and the habits the serial one reads besides.
 ENGINE = 'engine'
 STEP_WALK = 'step walk'
@@ -285,7 +293,11 @@ class StepWalk:
             if letter in known:
                 lines.append(stressed(self.varied_line(line=[dict(note) for note in known[letter]], dice=dice, entry=entry, under=under)))
                 continue
-            made = stressed(self.new_line(entry=entry, under=under, dice=dice))
+            made = self.new_line(entry=entry, under=under, dice=dice)
+            if self._habits.get(BREATHES) and not entry.get(HOOK):
+                # The breath is drawn apart from the line, so that a line is the same notes whether it breathes or not.
+                made = breathed(line=made, grid=self._grid, count=count, dice=random.Random(BREATH_SEED.format(self._seed, self._answers, letter)))
+            made = stressed(made)
             known[letter] = made
             lines.append([dict(note) for note in made])
         return lines
@@ -702,7 +714,54 @@ class Hooks(Smart):
     walks. Its rhythm could be clapped, it has few pitches, and it comes back the same. A varied hook keeps all of it but its
     last note, which rises."""
 
-    __slots__ = ()
+    __slots__ = ('_take',)
+
+    def set_take(self, take):
+        """Say which take of the song's hook is made, where the hook is of a kind."""
+        self._take = take
+
+    def kind(self):
+        """The kind of the hook, where the habits ask for kinds and the bar is counted in eighths, or None for a hook made the first way."""
+        if not self._habits.get(HOOK_KINDS) or self._grid % hook_kinds.UNITS:
+            return None
+        kind = hook_kinds.kind_of(seed=self._song_seed, take=getattr(self, '_take', FIRST_HOOK_TAKE))
+        return None if kind[hook_kinds.CONTOUR] == hook_kinds.LONG_NOTE else kind
+
+    def open_place(self, *, lowest, highest, toward):
+        """The place nearest one wanted whose note leaves an ending open, or the place wanted where none is near."""
+        places = [place for place in range(max(self._low, lowest), min(self._high, highest) + 1) if self._ladder[place][1][DEGREE] in OPEN_DEGREES]
+        return min(places, key=lambda place: (abs(place - toward), -place)) if places else toward
+
+    def kind_line(self, *, kind, under, dice):
+        """A hook of a kind: its bar in the first bar of the line and each second bar after, note for note, and an answer on its rhythm in the bars between, lower, ending in a breath."""
+        floor = self.hook_floor()
+        peak = self.chord_place(chord=under[0], lowest=floor, highest=self._high, toward=floor + 1)
+        unit = self._grid // hook_kinds.UNITS
+        lengths, depths = hook_kinds.bar_of(kind=kind)
+        places = [self.within(peak - depth) for depth in depths]
+        if kind[hook_kinds.DETAIL] == hook_kinds.OPEN_ENDING:
+            places[-1] = self.open_place(lowest=peak - hook_kinds.DEEPEST, highest=peak, toward=places[-1])
+        last = max(place for place, length in enumerate(lengths) if length > 0)
+        breath = min(2, lengths[last] - 1)
+        answer = [{REST: -length * unit} if length < 0 else {STEPS: (length - breath if place == last else length) * unit} for place, length in enumerate(lengths)]
+        answer += [{REST: breath * unit}] if breath else []
+        notes = []
+        for bar, chord in enumerate(under):
+            if bar % 2:
+                highest = self._high
+                self._high = max(self._low, peak - 1)
+                try:
+                    notes.extend(self.walked(rhythm=answer, centre=self.within(peak - ANSWER_BELOW), shape=SHAPE_TUMBLE, under=[chord], dice=dice))
+                finally:
+                    self._high = highest
+                continue
+            sounding = iter(places)
+            for place, length in enumerate(lengths):
+                if length < 0 or (bar and place == last and kind[hook_kinds.DETAIL] == hook_kinds.CUT_SHORT):
+                    notes.append({REST: abs(length) * unit})
+                    continue
+                notes.append({**self._ladder[next(sounding)][1], STEPS: length * unit})
+        return notes
 
     def hook_floor(self):
         """The lowest place a hook's peak may sit."""
@@ -749,6 +808,9 @@ class Hooks(Smart):
 
     def hook_line(self, *, under, dice):
         """A hook: the figure, ending on the peak, in the first bar of the line and each second bar after, and an answer to it in the bars between."""
+        kind = self.kind()
+        if kind is not None:
+            return self.kind_line(kind=kind, under=under, dice=dice)
         floor = self.hook_floor()
         peak = self.chord_place(chord=under[0], lowest=floor, highest=self._high, toward=floor + 1)
         short, long, unit = self.hook_rhythm(dice)
@@ -785,6 +847,7 @@ class Hooked(StepWalk):
         super().__init__(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
         self._writer = writer(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
         self._hooks = Hooks(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
+        self._hooks.set_take(hook_take)
         # Each line's dice are drawn as the writer draws them, so that a line the writer makes is the line the writer would make alone, lowered.
         self._seed = self._writer.seed()
         # The first take of the hook is rolled with its line's dice, as every song made before takes could be asked for; a later take with dice of its own.

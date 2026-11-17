@@ -393,7 +393,31 @@ sections:
     bars: 8
     plays: [drums, bass, guitar, keys, solo]
     plan: [{line: s1, answer: true}, {line: s2, answer: true, higher: true}, {line: s1, answer: true, varied: true}, {line: s3, answer: true, higher: true}]
+  # The drummer alone: a theme, the theme moved round the kit, a build, a peak, and a last bar that plays the band back in.
+  drum solo: {bars: 8, plays: [drums], drum_solo: true, plan: []}
   ending: {held: true, plays: [bass, guitar, keys]}
+
+# What a song that asks for a plan is planned by. Each kind of section has an Energy from 1 to 10, a kind that returns gaining
+# a little each time and the last chorus taking the most; a rising kind grows louder through its bars and leaves with a build.
+# Each player reaches the next level of their own playing at Energies of their own, so that the band never changes all at once,
+# and some players come in only from an Energy up. The cymbal goes from fewer closed strokes to open ones and then to the ride.
+# The fills are sized by how far the Energy rises into the next section. The tails are what a subgenre's band does together in a
+# last bar, and a subgenre named under no_setup never has its last bar's chord changed to lead into the next section.
+song_plan:
+  energy: {intro: 4, verse: 4, pre-chorus: 6, chorus: 8, bridge: 5, solo: 8, drum solo: 7, ending: 8}
+  growth: 1
+  last_chorus: 10
+  rising: [pre-chorus]
+  levels: {drums: [1, 4, 7, 9], bass: [1, 5, 7, 10], rhythm: [1, 4, 6, 9], keys: [1, 6, 8, 10], lead: [1, 3, 6, 9], session: [1, 5, 8, 10]}
+  comes_in: {keys: 5, voices: 8}
+  cymbal: [[1, hat quarters], [4, hat eighths], [7, hat half open], [9, ride eighths]]
+  fills: {small: toms on four, medium: snare and toms, big: snare on every eighth of the last half}
+  tails:
+    usual: [drop-out, stops, build]
+    punk: [stops]
+    new wave: [build]
+    rock and roll: [stops]
+  no_setup: [punk]
 
 # The forms a song may take when it gives none, each with how common it is; a longer form has more sections, never the same form twice over.
 # What the player beside the tune does in each kind of section, with a plan of its own for some subgenres, and how busy, from 0 to 20; a kind
