@@ -42,14 +42,14 @@ from llamatron.macro_composer.composer import composed
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
 from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, KIT, OCTAVE
-from llamatron.macro_composer.melody import HALF_STEPS, NOTES_IN_OCTAVE, DEFAULT_GAUGES, EVOLVING, GRID, HIGHEST_GAUGE, HOOK, LOWEST_GAUGE, SERIAL, SMART, STEP_WALK
+from llamatron.macro_composer.melody import CHROMATIC, DEFAULT_EVOLVE, EVOLVE, HALF_STEPS, LEAPS, MOVE, NOTES_IN_OCTAVE, DEFAULT_GAUGES, EVOLVING, GRID, HIGHEST_GAUGE, HOOK, LOWEST_GAUGE, ROTATE, ROTATIONS, SERIAL, SMART, STEP_WALK
 from llamatron.music.note import ROOT_NAMES, SEMITONES_ABOVE_C
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MIN_GM_SOUND
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.marks import MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SECTION_VARIANT
 from llamatron.support.version import VERSION as A_VERSION
-from llamatron.strings.errors import ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
+from llamatron.strings.errors import ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_MELODY_NUMBER, ERR_WIZARD_MELODY_SWITCH, ERR_WIZARD_NO_SUCH_MELODY_SETTING, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'
@@ -101,6 +101,7 @@ QUIET_NOTES_KEPT = 'quiet_notes'
 BREAK_KEPT = 'break'
 BREAK_CUT_KEPT = 'break_cut'
 GAUGES_KEPT = 'melody_gauges'
+MELODY_SETTINGS_KEPT = 'melody_settings'
 HOOK_KEPT = 'hook'
 # What pieces of the kit sound as, kept as the song's picks hold them, and the note a piece first plays in a General MIDI sound.
 PIECE_SOUNDS_KEPT = 'piece_sounds'
@@ -176,6 +177,14 @@ def family_of(sound):
 MELODY_STYLES = (SMART, STEP_WALK, SERIAL, EVOLVING)
 # The melody styles the seven gauges steer.
 GAUGED_STYLES = (SMART,)
+# A melody style's own settings, by the style, the usual style's under None: for the evolving style how far each new line moves
+# up and how many notes later it starts, each a number with its lowest and highest; for the serial style whether the row is
+# all twelve notes, whether a note may leap to any octave and whether a form of the row may start anywhere in it, each true or
+# false with what it is where the genre does not say. How far a tune ranges is not one: it is the Range gauge of the player.
+MELODY_SETTINGS_OF = {None: (), STEP_WALK: (), SMART: (), EVOLVING: (MOVE, ROTATE), SERIAL: (CHROMATIC, LEAPS, ROTATIONS)}
+MELODY_NUMBERS = {MOVE: (0, 4), ROTATE: (0, 4)}
+MELODY_SWITCHES = {CHROMATIC: False, LEAPS: False, ROTATIONS: True}
+EVOLVE_SETTINGS = (MOVE, ROTATE)
 MELODY_STYLE = 'melody_style'
 # The traits of the whole song the wizard offers: the chords, under either name a genre gives them, the feel and the drum fills.
 PROGRESSION_TRAITS = ('chords', 'harmony')
@@ -263,7 +272,7 @@ SECONDS_IN_MINUTE = 60
 class WizardChoices:
     """The choices of one run of the song wizard."""
 
-    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_own_gauges', '_beside', '_without', '_sections', '_melody', '_hook', '_sounds', '_band_sounds', '_guitarists', '_pieces_off', '_break', '_break_cut', '_gauges', '_piece_sounds', '_fills', '_quiet_notes', '_answers', '_answers_of')
+    __slots__ = ('_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_own_gauges', '_beside', '_without', '_sections', '_melody', '_hook', '_sounds', '_band_sounds', '_guitarists', '_pieces_off', '_break', '_break_cut', '_gauges', '_piece_sounds', '_fills', '_quiet_notes', '_melody_settings', '_answers', '_answers_of')
 
     def __init__(self):
         # Answers found by making the song, each kept until a choice changes.
@@ -301,6 +310,7 @@ class WizardChoices:
         self._break = None
         self._break_cut = None
         self._gauges = {}
+        self._melody_settings = {}
         self._piece_sounds = {}
 
     # Reading and keeping the choices.
@@ -344,7 +354,8 @@ class WizardChoices:
                 (self.set_own_sections, [dict(sections=data[OWN_SECTIONS])] if data.get(OWN_SECTIONS) else []),
                 (self._set_kept_melody, [dict(style=data[MELODY_STYLE])] if data.get(MELODY_STYLE) else []),
                 (self._set_kept_hook, [dict(on=data[HOOK_KEPT])] if isinstance(data.get(HOOK_KEPT), bool) else []),
-                (self.set_gauge, [dict(name=name, position=position) for name, position in (data.get(GAUGES_KEPT) or {}).items()])]
+                (self.set_gauge, [dict(name=name, position=position) for name, position in (data.get(GAUGES_KEPT) or {}).items()]),
+                (self._set_kept_melody_setting, [dict(name=name, value=value) for name, value in (data.get(MELODY_SETTINGS_KEPT) or {}).items()])]
         for setter, every in kept:
             for named in every:
                 try:
@@ -363,7 +374,7 @@ class WizardChoices:
                 BAND_SOUNDS_KEPT: self._band_sounds if self._band_sounds != USUAL_SOUNDS else None,
                 GUITARISTS_KEPT: self._guitarists if self._guitarists != TWO_GUITARISTS else None,
                 PIECES_OFF_KEPT: list(self._pieces_off) or None, FILLS_KEPT: self._fills, QUIET_NOTES_KEPT: None if self._quiet_notes else False,
-                BREAK_KEPT: self._break, BREAK_CUT_KEPT: self._break_cut, GAUGES_KEPT: dict(self._gauges) or None,
+                BREAK_KEPT: self._break, BREAK_CUT_KEPT: self._break_cut, GAUGES_KEPT: dict(self._gauges) or None, MELODY_SETTINGS_KEPT: dict(self._melody_settings) or None,
                 PIECE_SOUNDS_KEPT: {piece: dict(sounds_as) for piece, sounds_as in self._piece_sounds.items()} or None}
         return {field: value for field, value in held.items() if value is not None}
 
@@ -706,6 +717,7 @@ class WizardChoices:
         self._break = None
         self._break_cut = None
         self._gauges = {}
+        self._melody_settings = {}
         self._piece_sounds = {}
 
     def _role(self, role):
@@ -917,6 +929,62 @@ class WizardChoices:
         if name not in DEFAULT_GAUGES or isinstance(position, bool) or not isinstance(position, int) or not LOWEST_GAUGE <= position <= HIGHEST_GAUGE:
             raise ValueError(ERR_WIZARD_GAUGE.format(name=name, low=LOWEST_GAUGE, high=HIGHEST_GAUGE, value=position))
         self._gauges[name] = position
+
+    def _melody_habits(self):
+        """Return the genre's melody habits for the song's meter."""
+        habits = style_of(self._genre)[MELODY]
+        return habits if GRID in habits else habits[self.meter()]
+
+    def melody_settings(self):
+        """Return the names of the settings the song's melody style has of its own, the usual style's while none is chosen."""
+        return list(MELODY_SETTINGS_OF[self._melody]) if self.is_ready() else []
+
+    def melody_setting_range(self, name):
+        """Return the lowest and highest a melody setting that is a number may be."""
+        return MELODY_NUMBERS[name]
+
+    def melody_setting_is_switch(self, name):
+        return name in MELODY_SWITCHES
+
+    def get_melody_setting(self, name):
+        """Return a melody setting: what it was set to, else what the genre's habits say, else what the style does unasked."""
+        if name in self._melody_settings:
+            return self._melody_settings[name]
+        habits = self._melody_habits()
+        if name in MELODY_SWITCHES:
+            return bool(habits.get(name, MELODY_SWITCHES[name]))
+        return {**DEFAULT_EVOLVE, **habits.get(EVOLVE, {})}[name]
+
+    def set_melody_setting(self, *, name, value):
+        """Set a setting of the song's melody style, refusing one the style does not have."""
+        if name not in self.melody_settings():
+            raise ValueError(ERR_WIZARD_NO_SUCH_MELODY_SETTING.format(value=name))
+        self._set_kept_melody_setting(name=name, value=value)
+
+    def _set_kept_melody_setting(self, *, name, value):
+        if name in MELODY_SWITCHES:
+            if not isinstance(value, bool):
+                raise ValueError(ERR_WIZARD_MELODY_SWITCH.format(name=name, value=value))
+        elif name in MELODY_NUMBERS:
+            low, high = MELODY_NUMBERS[name]
+            if isinstance(value, bool) or not isinstance(value, int) or not low <= value <= high:
+                raise ValueError(ERR_WIZARD_MELODY_NUMBER.format(name=name, low=low, high=high, value=value))
+        else:
+            raise ValueError(ERR_WIZARD_NO_SUCH_MELODY_SETTING.format(value=name))
+        self._melody_settings[name] = value
+
+    def _song_melody(self):
+        """Return what the song says of its melody over the genre's habits: the smart style's gauges where one was moved, and
+        the settings set of the style in use; a setting of another style is kept and says nothing."""
+        said = {}
+        if self._melody in GAUGED_STYLES and self._gauges:
+            said[SMART] = {**{name: self.get_gauge(name) for name in DEFAULT_GAUGES}, **self._gauges}
+        own = {name: value for name, value in self._melody_settings.items() if name in MELODY_SETTINGS_OF[self._melody]}
+        evolve = {name: value for name, value in own.items() if name in EVOLVE_SETTINGS}
+        if evolve:
+            said[EVOLVE] = {**DEFAULT_EVOLVE, **self._melody_habits().get(EVOLVE, {}), **evolve}
+        said.update({name: value for name, value in own.items() if name not in EVOLVE_SETTINGS})
+        return said
 
     def _set_kept_quiet_notes(self, *, on):
         self.set_quiet_notes(on)
@@ -1526,7 +1594,7 @@ class WizardChoices:
                 **({SECTIONS: self._sections_of_song()} if self._sections_of_song() else {}),
                 **({MELODY_ENGINE: self._melody} if self._melody is not None else {}),
                 **({HOOK: self._hook} if self._hook is not None else {}),
-                **({MELODY: {SMART: {**{name: self.get_gauge(name) for name in DEFAULT_GAUGES}, **self._gauges}}} if self._melody in GAUGED_STYLES and self._gauges else {}),
+                **({MELODY: self._song_melody()} if self._song_melody() else {}),
                 **({ROLE_SOUNDS: self._song_sounds()} if self._song_sounds() else {}),
                 **({WITHOUT_PIECES: list(self._pieces_off)} if self._pieces_off else {}),
                 **({PIECE_SOUNDS: {piece: dict(sounds_as) for piece, sounds_as in self._piece_sounds.items()}} if self._piece_sounds else {}),

@@ -749,6 +749,8 @@ MSG_WIZARD_USUAL_MELODY = 'usual'
 MSG_WIZARD_GAUGE_LABELS = {'moves': 'Moves', 'steps': 'Steps', 'after_leap': 'After leap', 'phrase': 'Phrase', 'leaning': 'Leaning', 'notes': 'Notes', 'surprise': 'Surprise'}
 MSG_WIZARD_GAUGE_ENDS = {'moves': ('steps', 'leaps'), 'steps': ('fall', 'rise'), 'after_leap': ('return', 'carry on'), 'phrase': ('flat', 'arched'),
                          'leaning': ('resolved', 'left hanging'), 'notes': ('long', 'short'), 'surprise': ('expected', 'surprising')}
+# A melody style's own settings, under the Melody field while the style is in use.
+MSG_WIZARD_MELODY_SETTING_LABELS = {'chromatic': 'All 12 notes', 'leaps': 'Leaps', 'rotations': 'Rotations', 'move': 'Moves up', 'rotate': 'Starts later'}
 MSG_WIZARD_BREAK_LABEL = 'Break'
 # A kit piece's own sound and the note it plays in a General MIDI sound, and the group of the kit's drums in the picker.
 MSG_WIZARD_PIECE_SOUND_TITLE = 'Sound of {piece}'

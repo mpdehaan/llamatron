@@ -68,6 +68,7 @@ ANOTHER_DRUM = ('cowbell', 'claves')
 ANOTHER_NOTE = USUAL_PIECE_NOTE + 7
 BREAK_CUT = 'cut up'
 MELODY_GAUGE = 'melody gauge'
+MELODY_SETTING = 'melody setting'
 HOOK = 'hook'
 GUITARISTS = 'guitarists'
 SEED = 'seed'
@@ -211,6 +212,13 @@ def every_choice(choices):
             for position in range(LOWEST_GAUGE, HIGHEST_GAUGE + 1):
                 if position != chosen.get_gauge(name):
                     yield MELODY_GAUGE, (style, name, position), lambda made, name=name, position=position: made.set_gauge(name=name, position=position), [lambda made, style=style: made.set_melody(style)]
+    # A melody style's own settings show once the style is chosen, the usual style's with none chosen, and every other value of each is held against the genre's own.
+    for style in (None, *choices.melody_styles()):
+        chosen = choices if style is None else fresh_with_melody(choices=choices, style=style)
+        first = nothing_first if style is None else (lambda made, style=style: made.set_melody(style))
+        for name in chosen.melody_settings() if choices.melody_styles() else []:
+            for value in other_melody_values(choices=chosen, name=name):
+                yield MELODY_SETTING, (style, name, value), lambda made, name=name, value=value: made.set_melody_setting(name=name, value=value), [first]
     if choices.can_have_hook():
         yield HOOK, not choices.has_hook(), lambda made: made.set_hook(not made.has_hook()), [nothing_first]
     if choices.offers_one_guitarist():
@@ -234,6 +242,15 @@ def both(*, first, then):
         first(made)
         then(made)
     return done
+
+
+def other_melody_values(*, choices, name):
+    """Return every value a melody setting may take but the one it has."""
+    now = choices.get_melody_setting(name)
+    if choices.melody_setting_is_switch(name):
+        return [not now]
+    lowest, highest = choices.melody_setting_range(name)
+    return [value for value in range(lowest, highest + 1) if value != now]
 
 
 def fresh_with_melody(*, choices, style):
