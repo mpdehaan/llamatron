@@ -228,6 +228,8 @@ such name, and `tests/rules/test_naming.py` holds that nothing else numbers one)
 ## Dialogs and the status line
 
 - A dialog asks one thing. ENTER answers, ESC cancels, and nothing changes until it's answered.
+- ESC in the song wizard's tree always asks before closing the wizard, even with nothing chosen, since the wizard is easy to leave
+  by accident, and the question starts on NO, so that ENTER alone keeps the wizard (the user's rule; `ConfirmDialog(starts_on_no=True)`).
 - Deleting anything still used is refused with up to five uses listed, and otherwise confirms.
   Deleting a scene, a track or a clip always confirms, and the last scene and the last track of a
   song are refused in a dialog.

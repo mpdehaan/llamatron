@@ -41,9 +41,10 @@ class ConfirmDialog(MessageDialog):
 
     KEYS = keybindings.ConfirmDialog
 
-    def __init__(self, *, title, messages):
+    def __init__(self, *, title, messages, starts_on_no=False):
         super().__init__(title=title, messages=messages)
-        self.choice = YES
+        # A question whose yes is easy to give by accident starts on No, so that ENTER alone changes nothing.
+        self.choice = NO if starts_on_no else YES
 
     def keys(self):
         return [

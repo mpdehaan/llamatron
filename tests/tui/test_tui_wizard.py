@@ -26,7 +26,7 @@ from llamatron.strings.labels import MSG_WIZARD_ROW_LABELS, MSG_WIZARD_NEW_HOOK_
 from llamatron.strings.legends import What
 from llamatron.strings.macro_composer import MSG_PIECE_INSTRUMENT
 from llamatron.strings.marks import MSG_ROW_DIALOG_BAR, MSG_ROW_DIALOG_ZERO, MSG_WIZARD_GENRE_ROW_SHOWN, MSG_WIZARD_ROW_SEPARATOR, MSG_WIZARD_GENRE_MELODY_SHOWN, MSG_WIZARD_PROGRESSION_FOR, MSG_WIZARD_HOOK_BAR_LINE, MSG_WIZARD_HOOK_CELL, MSG_WIZARD_HOOK_GAP, MSG_WIZARD_CHORDS_KEY, MSG_WIZARD_CHORDS_LINE, MSG_WIZARD_PROGRESSION_SHOWN, MSG_WIZARD_BUSY_CUSTOM_SHOWN, MSG_WIZARD_COMPOSITION_LINE, MSG_WIZARD_ROLE_FROM_PLAN, MSG_SOUND_NOTE_ROW, MSG_TOGGLE_ON, MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_SOUND_ON_NOTE, MSG_WIZARD_MELODY_GAUGE_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_OWN_FORM, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
-from llamatron.strings.messages import MSG_WIZARD_ROW_TITLE, MSG_WIZARD_HOOK_MADE, MSG_WIZARD_CHORDS_DRAWN_LATER, MSG_WIZARD_NOTHING_TO_CHOOSE, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_SECTIONS_HINT, MSG_UNDONE, MSG_RESTORED, MSG_WIZARD_ALREADY_OPEN, MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CREATED, MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_REPLACED, MSG_WIZARD_NOTHING_TO_UNDO
+from llamatron.strings.messages import MSG_WIZARD_CLOSE_UNCHANGED_QUESTION, MSG_WIZARD_ROW_TITLE, MSG_WIZARD_HOOK_MADE, MSG_WIZARD_CHORDS_DRAWN_LATER, MSG_WIZARD_NOTHING_TO_CHOOSE, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_SECTIONS_HINT, MSG_UNDONE, MSG_RESTORED, MSG_WIZARD_ALREADY_OPEN, MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CREATED, MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_REPLACED, MSG_WIZARD_NOTHING_TO_UNDO
 from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_SONG_WORD
 from llamatron.composition.naming import new_name
 from llamatron.support.version import VERSION
@@ -146,9 +146,9 @@ class TestWizardPage(WizardTest):
         self.assertIsInstance(self.wizard(), WizardPage)
         self.assertFalse(self.wizard().in_fields)
         self.assertEqual(self.wizard().branch().name(), MSG_WIZARD_GENRE_BRANCH)
-        await self.press(Key.ESCAPE, keybindings.MainPage.SONGS, keybindings.Page.WIZARD)
+        await self.press(Key.ESCAPE, keybindings.ConfirmDialog.YES, keybindings.MainPage.SONGS, keybindings.Page.WIZARD)
         self.assertIsInstance(self.wizard(), WizardPage)
-        await self.press(Key.ESCAPE)
+        await self.press(Key.ESCAPE, keybindings.ConfirmDialog.YES)
         self.assertIsInstance(self.app.screen, SongsPage)
 
     async def test_f5_in_the_wizard_says_the_wizard_is_open(self):
@@ -355,8 +355,17 @@ class TestWizardPage(WizardTest):
         self.assertEqual(self.document.song_names(), [MSG_DEFAULT_SONG_NAME, first, second])
         self.assertEqual(self.document.setlist().get_item(section=Section.SONGS, name=first).to_data(), first_data)
 
-    async def test_esc_in_the_tree_closes_at_once_with_nothing_chosen(self):
+    async def test_esc_in_the_tree_asks_even_with_nothing_chosen_and_enter_alone_keeps_the_wizard(self):
         await self.press(keybindings.WizardPage.INTO_FIELDS, keybindings.WizardPage.TO_TREE, Key.ESCAPE)
+        self.assertIsInstance(self.app.screen, ConfirmDialog)
+        self.assertIn(MSG_WIZARD_CLOSE_UNCHANGED_QUESTION, self.text())
+        self.assertNotIn(MSG_WIZARD_CLOSE_QUESTION, self.text())
+        # No is selected, so ENTER keeps the wizard, and so does ESC.
+        await self.press(Key.ENTER)
+        self.assertIsInstance(self.app.screen, WizardPage)
+        await self.press(Key.ESCAPE, Key.ESCAPE)
+        self.assertIsInstance(self.app.screen, WizardPage)
+        await self.press(Key.ESCAPE, keybindings.ConfirmDialog.YES)
         self.assertIsInstance(self.app.screen, MainPage)
 
     async def test_esc_in_the_tree_asks_once_something_is_chosen_and_no_keeps_the_wizard(self):
@@ -1451,11 +1460,13 @@ class TestWizardStart(WizardTest):
         await self.press(*[Key.DOWN] * len(STARTS), Key.ENTER)
         self.assertIsInstance(self.app.screen, ArrangePage)
 
-    async def test_the_wizard_closes_without_asking_until_something_is_changed_after_the_start(self):
+    async def test_the_wizard_asks_before_closing_and_names_no_choices_until_something_is_changed_after_the_start(self):
         await self.make_a_song_and_open_the_wizard_on_it()
         await self.start_with(NEW_FROM_LAST)
         self.assertIsInstance(self.app.screen, WizardPage)
         await self.press(Key.ESCAPE)
+        self.assertIn(MSG_WIZARD_CLOSE_UNCHANGED_QUESTION, self.text())
+        await self.press(keybindings.ConfirmDialog.YES)
         self.assertIsInstance(self.app.screen, ArrangePage)
 
     async def test_a_new_song_from_the_last_settings_starts_with_the_songs_choices_and_a_name_of_its_own(self):

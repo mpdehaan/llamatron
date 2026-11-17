@@ -24,6 +24,9 @@ revise how the wizard is organized).
 from llamatron.strings.marks import MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_PLAYER_GAUGE_SHOWN
 from llamatron.tui.drawing import NOTHING
 
+# The key of the answer kept of whether a panel has a field that does something.
+EDITABLE_ANSWER = 'editable'
+
 
 class Branch:
     """One part of the wizard's tree. A subclass says what the part is called and what it holds."""
@@ -112,7 +115,8 @@ class Branch:
 
     def can_be_edited(self):
         """Return whether any field of the branch does something, so that a branch only to be read takes no cursor."""
-        return any(field.enter or field.adjust for field in self.fields())
+        # The legend asks at every key, and making a panel's fields may mean making the song, so the answer is kept with the choices.
+        return self.choices().remembered(key=(EDITABLE_ANSWER, type(self).__name__, self.name()), compute=lambda: any(field.enter or field.adjust for field in self.fields()))
 
 
 def gauge_shown(*, place, lowest, highest, said=None):

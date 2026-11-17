@@ -37,7 +37,7 @@ from llamatron.macro_composer.notation import KIT
 from llamatron.macro_composer.wizard_choices import USUAL_PIECE_NOTE
 from llamatron.strings.labels import MSG_WIZARD_FORM_QUESTION_TITLES, MSG_WIZARD_KIT_DRUMS, MSG_WIZARD_PIECE_SOUND_TITLE, Crumb, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_MORE_SOUNDS_TITLE, MSG_WIZARD_SOUND_TITLE, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_COMPOSITION_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_REPLACE_SECTIONS_TITLE, MSG_WIZARD_SUGGESTED_FORM_TITLE, MSG_WIZARD_CAPTION, MSG_WIZARD_REPLACE_CAPTION
 from llamatron.strings.marks import MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_EDITED_BRANCH
-from llamatron.strings.messages import MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CLOSE_TITLE, MSG_WIZARD_CREATED, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_NOTHING_TO_UNDO, MSG_WIZARD_REPLACED, MSG_WIZARD_SONG_NAME_PROMPT
+from llamatron.strings.messages import MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CLOSE_UNCHANGED_QUESTION, MSG_WIZARD_CLOSE_TITLE, MSG_WIZARD_CREATED, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_NOTHING_TO_UNDO, MSG_WIZARD_REPLACED, MSG_WIZARD_SONG_NAME_PROMPT
 from llamatron.strings.messages import MSG_STOPPED, MSG_WIZARD_LISTENING
 from llamatron.strings.names import MSG_NEW_SONG_WORD
 from llamatron.support.version import VERSION
@@ -455,16 +455,15 @@ class WizardPage(FieldPage):
     # Closing, and undo, which has nothing to act on here.
 
     def go_back(self):
-        """Close the wizard, which loses every choice, so it asks first when anything was chosen."""
+        """Close the wizard, which is easy to do by accident, so it always asks first, with No selected, and says what is lost when
+        anything was chosen."""
         self.app.made_preview().stop()
-        if not self.has_choices_to_lose():
-            super().go_back()
-            return
 
         def answered(yes):
             if yes:
                 FieldPage.go_back(self)
-        self.ask(dialog=ConfirmDialog(title=MSG_WIZARD_CLOSE_TITLE, messages=[MSG_WIZARD_CLOSE_QUESTION]), then=answered)
+        question = MSG_WIZARD_CLOSE_QUESTION if self.has_choices_to_lose() else MSG_WIZARD_CLOSE_UNCHANGED_QUESTION
+        self.ask(dialog=ConfirmDialog(title=MSG_WIZARD_CLOSE_TITLE, messages=[question], starts_on_no=True), then=answered)
 
     def steps_history(self):
         return False
