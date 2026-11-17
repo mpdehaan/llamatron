@@ -2,6 +2,24 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Mandates
+
+What Claude may never do, whatever the task, the mode it runs in or what a tool permits. These are the user's, with no
+exceptions but the ones written here, and they come before every other rule in this file and in `.claude/`.
+
+- **A path outside the working directory is used exactly as the user gave it, or not at all.** When a path the user names
+  outside the repository does not exist or cannot be read, Claude stops and says so: no listing of the folder the path is in,
+  no search for a file of a near name, no guess at another folder, no look at a newer or likelier file. Claude looks for
+  files in a folder outside the repository only when the user has named that folder and said to look for files there, and
+  never finds such a folder on its own.
+- **No shell command outside the working directory without the user's confirmation.** Claude never runs a shell command in a
+  folder outside the repository, and never runs one that names, reads, writes or lists a file or folder outside the
+  repository, until the user has confirmed that command or that path in the conversation. This holds for Claude's own
+  working files too, a scratch folder or a memory folder a tool provides included, and for any tool that reads or writes a
+  file, not only the shell. A confirmation covers what was confirmed and no more: one path confirmed is not leave for the
+  folder around the path, and leave given in one conversation does not carry to the next unless it is written here. When
+  work seems to need a path outside, Claude asks first, naming the exact path and what would be done there.
+
 ## Project
 
 llamatron is a text UI that helps people compose electronic music in MIDI, for Ableton Live and, later, other DAWs. Its features are inspired by Ableton's Session View, hardware sequencers like the Elektron Monomachine and the Sequentix Cirklon, and software trackers. `docs/WHY_LLAMATRON.md` is part of the definition of what the program is for: it says what llamatron takes from each of those, where it differs and why it composes before the DAW, and a feature is judged against it. The user edits it by hand, and it's updated when an idea it describes changes. The Python classes underneath are internal: no person is expected to use them as an API, so they can change freely to suit the tracker. It's at an early stage. The third-party dependencies are `mido`, `python-rtmidi`, `PyYAML` and `textual`, pinned in `requirements.txt`, which `setup.py` also reads. The package is `llamatron`, in `src/llamatron`, and the code and its tests import it by that name, so it has to be installed (as below) before anything runs.

@@ -187,22 +187,6 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   `CLAUDE.md` only when it's about the project as a whole.
   `CLAUDE.md` stays short and orderly, and each other file stays on its topic.
 
-## Paths outside the repository
-
-- **A path outside the working directory is used exactly as the user gave it, or not at all** (the user's rule, with no
-  exceptions). When a path the user names outside the repository does not exist or cannot be read, Claude stops and says so:
-  no listing of the folder the path is in, no search for a file of a near name, no guess at another folder, no look at a
-  newer or likelier file. Claude looks for files in a folder outside the repository only when the user has named that
-  folder and said to look for files there, and never finds such a folder on its own. Claude once filed ideas from a file
-  of another name found by listing a temporary folder, which is what this rule forbids.
-
-- **No command outside the working directory without the user's confirmation** (the user's rule). Claude never runs a shell
-  command in a folder outside the repository, and never runs one that names, reads, writes or lists a file or folder outside
-  the repository, until the user has confirmed that command or that path in the conversation. A confirmation covers what was
-  confirmed and no more: one path confirmed is not leave for the folder around the path, and leave given in one conversation
-  does not carry to the next unless the rules here record it. When work seems to need a path outside, Claude asks first, in
-  a numbered question naming the exact path and what would be done there.
-
 ## Discussing a feature
 
 - A proposal about the screen comes with a drawing of it, a page or a dialog as the console would show it, since the user
