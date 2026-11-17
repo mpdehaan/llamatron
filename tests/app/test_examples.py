@@ -38,14 +38,16 @@ from tests.support.song_testing import pitches
 SONG = 'song'
 # Every song in examples/, including the demos, which test_demos.py checks more closely.
 EXAMPLE_PATHS = example_sets()
-# How long an example runs, in seconds, give or take the leeway, unless it came before the rule or is named below for another length.
-THREE_MINUTES = 180
+# How long an example may run, in seconds, unless it came before the rule or is named below for another length: three minutes is the aim.
+SHORTEST_EXAMPLE = 120
+LONGEST_EXAMPLE = 240
 GENRE_WITH_A_SPACE = 'TV theme'
 FOLDER_OF_GENRE_WITH_A_SPACE = 'tv_theme'
 GENRE_WITH_A_HYPHEN = 'Hip-Hop'
 FOLDER_OF_GENRE_WITH_A_HYPHEN = 'hip_hop'
 GENRE_OF_ONE_WORD = 'Rock'
 FOLDER_OF_GENRE_OF_ONE_WORD = 'rock'
+# How far an example named for another length may be from it, in seconds.
 LENGTH_LEEWAY = 10
 WRITTEN_BEFORE_THE_LENGTH_RULE = {
     '12_sailor_arpeggiator.yml', '20_arrangement_shanty.yml', '17_complex_gifts_chain.yml', '10_mtn_king_direction.yml', 'entertainer.yml', '19_hocket_shanty.yml', '09_groove.yml', '01_hello_world.yml',
@@ -112,15 +114,19 @@ class TestExamples(unittest.TestCase):
                     used |= {next(iter(step)) for step in chain}
         self.assertEqual(set(GENERATOR_SETTINGS) - used, set())
 
-    def test_every_example_since_the_rule_lasts_about_three_minutes(self):
-        # A new example runs about three minutes unless it is named for another length.
+    def test_every_example_since_the_rule_lasts_two_to_four_minutes(self):
+        # A new example runs from two to four minutes unless it is named for another length.
         for path in self.paths:
             name = os.path.basename(path)
             if name in WRITTEN_BEFORE_THE_LENGTH_RULE:
                 continue
             with self.subTest(path=path):
                 seconds = float(Document.load(path).lengths().song_seconds())
-                self.assertAlmostEqual(seconds, OTHER_LENGTHS.get(name, THREE_MINUTES), delta=LENGTH_LEEWAY)
+                if name in OTHER_LENGTHS:
+                    self.assertAlmostEqual(seconds, OTHER_LENGTHS[name], delta=LENGTH_LEEWAY)
+                else:
+                    self.assertGreaterEqual(seconds, SHORTEST_EXAMPLE)
+                    self.assertLessEqual(seconds, LONGEST_EXAMPLE)
 
     def test_every_song_lasts_about_three_minutes(self):
         for path in self.songs:

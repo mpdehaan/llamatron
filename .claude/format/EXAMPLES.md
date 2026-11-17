@@ -63,8 +63,8 @@ Reference notes for Claude, one part of `.claude/format/`: the rules for the set
   line; Density, Swell and Articulate for builds. Keyswitches stay out while the demos play through FluidSynth.
 - Whether a new feature gets a demo is asked of the user every time (`.claude/COMMUNICATION.md`,
   "Discussing a feature").
-- A new example runs about three minutes, give or take ten seconds, unless the user asks for
-  another length, as for `weather.yml`'s ten minutes (the user's rule). The demos
+- A new example aims at three minutes and may run from two to four; shorter is fine where shorter is better, though several
+  named scenes that show different options are usually worth their time, since a person can play each. Another length is the user's to ask for, as for `weather.yml`'s ten minutes (the user's rule). The demos
   written before the rule keep their lengths. `tests/app/test_examples.py` holds every example to it
   but those listed in `WRITTEN_BEFORE_THE_LENGTH_RULE` and, with their own lengths, `OTHER_LENGTHS`.
 - `tests/app/test_demos.py` loads, renders and saves every demo without checking what it plays, so
