@@ -102,12 +102,17 @@ FIRST_PART = 0
 # played; and its one line that would come early repeats an idea, which takes no early note of its own. Bubblegum's singer,
 # whose Energy never falls, plays two neighbouring positions of the gauge alike.
 SECOND_PART = 1
+# The parts of blues whose kind is a shuffle or the jump blues: every kind but the slow blues and the minor blues.
+SHUFFLE_PARTS = (0, 1, 3, 5)
 THIRD_PART = 2
 KNOWN_TO_CHANGE_NOTHING = {('rock', FIRST_PART): {SECTION_SHAPE: 2}, ('sixties_pop', FIRST_PART): {FILLS: 1, PHRASING_WAY: 2}, ('sixties_pop', THIRD_PART): {BUSY: 1},
                            # Disco's one line that would come early repeats an idea, as baroque pop's does.
                            ('soul_funk', FIRST_PART): {PHRASING_WAY: 2},
                            # Funk's plan plays the short fill at every join but the biggest, which a level song never has.
-                           ('soul_funk', SECOND_PART): {FILLS: 1}}
+                           ('soul_funk', SECOND_PART): {FILLS: 1},
+                           # A shuffle climbs a step a chorus, so none of its joins is big, and the short fill a person may choose is
+                           # the one its plan already plays.
+                           **{('blues', part): {FILLS: 1} for part in SHUFFLE_PARTS}}
 A_SECOND_PLACE = 1
 NO_PLAN = 'with no plan'
 SECTION_OWN_ANYWHERE = (('fades', True), ('chords', '6 4 2 5'), ('chords', '1 4'), ('tempo', 61), ('tempo_end', 62), ('root', 'F#'), ('root', 'C'), ('type', 'minor'), ('type', 'major'))

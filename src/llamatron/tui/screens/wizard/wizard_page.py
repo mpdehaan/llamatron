@@ -70,6 +70,9 @@ OWN_DRUM = ''
 # The line and the space between the tree and the fields.
 DIVIDER = Box.BAR + SPACE
 
+# What a field keeps its label as.
+LABEL_OF_FIELD = 'label'
+
 
 class WizardPage(FieldPage):
     """The song wizard: a tree of branches beside the fields of the branch under the cursor."""
@@ -113,12 +116,27 @@ class WizardPage(FieldPage):
     def choosing(self, setter):
         """Return a setter that also notes that something was chosen, so that closing the wizard asks before the choices are lost."""
         def chosen(value):
+            label = self.label_under_cursor()
             result = setter(value)
+            self.stay_on(label)
             self._changed = True
             # What was heard is no longer what the choices make.
             self.app.made_preview().stop()
             return result
         return chosen
+
+    def label_under_cursor(self):
+        """Return the label of the field the cursor is on, or None in the tree or on a field with no label."""
+        return getattr(self.field(), LABEL_OF_FIELD, None)
+
+    def stay_on(self, label):
+        """Keep the cursor on the field of a label: a choice may make a field appear or leave above the one chosen, which would
+        otherwise put the cursor on its neighbour."""
+        if label is None:
+            return
+        places = [place for place, field in enumerate(self.shown_fields()) if getattr(field, LABEL_OF_FIELD, None) == label]
+        if places and self.place not in places:
+            self.place = min(places, key=lambda place: abs(place - self.place))
 
     # Listening: a part of the song as it would be made, heard through FluidSynth and thrown away.
 
