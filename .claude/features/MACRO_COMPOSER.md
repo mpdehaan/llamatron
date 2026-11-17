@@ -267,6 +267,25 @@ clouds; generate and test, with motif development and counterpoint last.
 - A tune that returns note for note is one part, in a planned song, and a part beside the tune is drawn by the section's kind
   (`drawn_as`), so that a hook or a riff stays the same each time.
 
+- On the wizard's page (`tui/screens/wizard/`): a genre whose template has `song_plan` plans every song from the start, and the Form
+  panel's Song plan switch turns the plan off (`WizardChoices.has_song_plan`, kept as false in the choices). The Form panel has
+  Contrast, each section's plan in a line, and the Form questions button (`form_questions`, `set_form_from_answers`: verses first,
+  pre-choruses, a bridge, solos, a drum solo, last choruses). The Hooks panel has Contour, Rhythm and Detail (`set_hook_part`) and
+  Intro hook (`set_intro_hook`: the answering player or the singer says the hook in the intro). The Melody panel has Phrasing,
+  Breath, Line lengths and Early notes (`set_phrasing_way`; early notes are a count of lines in four, never chance). A section's
+  panel has Energy, Shape (`shapes:` under a kind in the template, for a solo, a pre-chorus and a bridge), Rises, Leaves with and
+  Setup under a plan, and Chords, Tempo, Tempo at end, Key and Scale in every genre with or without one (`set_section_own`,
+  `OWN_WITHOUT_PLAN`; without a plan they go to the section as `chords` and the scene's settings). What a section is given is kept
+  in its entry of the form and moves, copies and goes with the section; a value the song cannot be made with is refused.
+- A plan keeps what the person chose for the drummer: a chosen fill is the fill of every size, how often fills come sets the fills
+  inside a section, and a chosen cymbal is ridden all through in place of the cymbal by Energy.
+- `L` (Listen) on the Hooks panel plays the hook over the chorus's drums, looping; on the Melody panel the first section's tune
+  over its drums, looping; on a section the section once (`tui/made_preview.py`, `Branch.listens`). It plays a song made from the
+  choices and thrown away, through FluidSynth, and any change of a choice stops it. The whole song is never played in the wizard
+  (the user's rule: small parts have previews, the song is heard on Arrange).
+- Not on the page yet: editing a hook's notes by hand, keeping hooks and choosing among them, the phrase designer (a section's lines
+  one by one), players' Comes in, Lays out and Reacts, a riff by rule for a rhythm player, a plan for any genre but rock.
+
 ## A Song File
 
 - `src/llamatron/macro_composer/wizard_file.py` reads a song file: the wizard's kept choices, a `name`, a `form` that is a
