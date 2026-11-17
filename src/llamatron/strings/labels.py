@@ -322,12 +322,8 @@ MSG_PHRASING_LABEL = 'Phrasing'
 MSG_PHRASING_LINE_LABEL = 'Line'
 MSG_PHRASING_LINE_NAMES = {1: '1 bar', 2: '2 bars', 4: '4 bars'}
 MSG_PHRASING_BREATH_LABEL = 'Breath'
-MSG_PHRASING_LINE_LENGTHS_LABEL = 'Line lengths'
-MSG_PHRASING_EARLY_LABEL = 'Early notes'
-# The heading of the table of what each kind of section does of its own, and the title of the picker one of its cells opens.
-MSG_BY_SECTION_HEADING = 'By Section'
-MSG_BY_SECTION_CELL_TITLE = '{label}: {section}'
-MSG_BY_SECTION_COLUMN = 'SECTION'
+MSG_PHRASING_RISE_LABEL = 'Rise and fall'
+MSG_PHRASING_NOTES_LABEL = 'Notes'
 MSG_GUITAR_SHAPE_SECTION = 'Shape'
 MSG_GUITAR_STROKES_SECTION = 'Strokes'
 MSG_GUITAR_SHAPE_LABEL = 'Shape chords'
@@ -479,7 +475,7 @@ MSG_ROW_LABELS = {
     Row.DEGREE: 'Degree', Row.GATE: 'Gate', Row.DOT: 'Dot', Row.ACCIDENTAL: '#/b', Row.OCTAVE: 'Octave', Row.CHORD: 'Chord', Row.INVERSION: 'Inversion',
     Row.TENSION: 'Tension', Row.CHORD_SCALE: 'Scale',
     Row.VELOCITY: 'Velocity', Row.PROBABILITY: 'Probability', Row.GLIDE: 'Glide', Row.TIE: 'Tie', Row.RATCHET: 'Ratchet',
-    Row.RATCHET_OFFSET: 'Ratchet Offset', Row.GRAB: 'Grab', Row.NO_BREATH: 'No Breath', Row.KEYSWITCH: 'Keyswitch',
+    Row.RATCHET_OFFSET: 'Ratchet Offset', Row.GRAB: 'Grab', Row.KEYSWITCH: 'Keyswitch',
     Row.CC1: 'CC 1', Row.CC2: 'CC 2', Row.CC3: 'CC 3', Row.CC4: 'CC 4', Row.SLIDE: 'Slide',
     **register_labels(rows=REGISTER_NOTE_ROWS, label=MSG_REGISTER_NOTE_LABEL),
     **register_labels(rows=REGISTER_VELOCITY_ROWS, label=MSG_REGISTER_VELOCITY_LABEL),
@@ -489,13 +485,12 @@ MSG_ROW_LABELS = {
 }
 # The sections of rows under Octave, each a row of the grid: its name after a mark saying whether it's closed (+) or open (-), chosen over triangles, which were hard to tell apart at a distance.
 MSG_SECTION_NAMES = {
-    RowSection.BASICS: 'Basics', RowSection.CHORD: 'Chord', RowSection.TIMING: 'Timing', RowSection.BAND: 'Band', RowSection.ADVANCED: 'Advanced', RowSection.CC: 'CCs',
+    RowSection.BASICS: 'Basics', RowSection.CHORD: 'Chord', RowSection.TIMING: 'Timing', RowSection.ADVANCED: 'Advanced', RowSection.CC: 'CCs',
     RowSection.REGISTER_MOD: 'Reg. Mod', RowSection.REGISTER_APPLY: 'Reg. Apply', RowSection.REGISTER_COND: 'Reg. Cond',
 }
 MSG_SECTION_LABEL = '{mark} {name}'
 # What the second line of the header says while the cursor is in a section with something to explain, in place of the scale.
 MSG_SECTION_HINTS = {
-    RowSection.BAND: 'Band: Phrasing leaves a No Breath note as written',
     RowSection.ADVANCED: "Advanced: Grab plays the Grab track's last note",
     RowSection.CC: "CCs: the track sets each row's CC number",
     RowSection.REGISTER_MOD: 'Reg. Mod: = sets, then += adds, even on an empty step',

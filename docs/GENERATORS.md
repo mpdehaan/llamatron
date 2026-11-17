@@ -55,7 +55,7 @@ How each note is played: joined, short, or phrased.
 | Generator | What it does | Demo |
 | --- | --- | --- |
 | [Glide](generators/GLIDE.md) | Runs notes on chosen steps into the next note | `examples/learning/14_acid_glide.yml` |
-| [Phrasing](generators/PHRASING.md) | Ends each line of a tune early for a breath | `examples/learning/25_phrasing.yml` |
+| [Phrasing](generators/PHRASING.md) | Plays a tune in lines, as a singer would: a breath after each, a rise and fall, notes choppy or flowing | `examples/learning/25_phrasing.yml` |
 | [Shorten](generators/SHORTEN.md) | Plays notes on chosen steps short | `examples/learning/14_acid_glide.yml` |
 
 ### Harmony

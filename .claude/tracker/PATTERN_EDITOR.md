@@ -87,7 +87,7 @@ roll or the rows.
 - `PINNED_ROWS` (Degree, Octave, with a rule under Octave) come first and stay on screen while
   the rows beneath scroll (`pinned_rows()`, `scrolled_rows()`, `scrolled_row()`).
 - The rows under the pinned ones come in sections (`SECTIONS`, keyed by `RowSection` in
-  `tui/keys.py`): Basics (#/b, Chord, Inversion, Velocity), Timing (Tie, Gate, Dot, Glide), Band (No Breath, which Phrasing reads; Riff Core is to come first in it), Advanced
+  `tui/keys.py`): Basics (#/b, Chord, Inversion, Velocity), Timing (Tie, Gate, Dot, Glide), Advanced
   (Probability, Ratchet, Ratchet Offset, Grab), CCs (the CC rows and Slide), Reg. Mod (the `=` rows, `SetRow`,
   then `+=`, `AddRow`), Reg. Apply (`+Note` and `+Vel`) and Reg. Cond (`ConditionRow`), in the order a step
   works them out (the user's choice). `SetRow`'s number line starts at blank just below the current

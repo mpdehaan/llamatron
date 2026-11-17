@@ -48,13 +48,19 @@ Reference notes for Claude, one part of `.claude/format/`: every generator and w
 ### Phrasing
 
 - The generator section `phrasings` (`PhrasingSettings`, kind `phrasing`, `PhrasingSetting`), the user's design, under
-  Articulation: `line_bars` (1, 2 or 4), `breath`, `line_lengths`, `early_notes` (0 to 4) and `by_section`, a kind of section to
-  the last three (`get_for(section=, name=)`; the page's By Section table, `Cells` rows, "(same)" first). It is being redesigned
-  with a loudness shape and connected notes (`.claude/features/WIZARD_DESIGNS.md`, `.claude/music_theory_notes/MELODY.md`,
-  "Phrasing A Line"), so breath alone is not the last word.
-- `SongRenderer.make_generator` builds `Phrasing` (`generators/phrasing.py`) with the scene's Section, the bar and the pattern's
-  `no_breath_stretches(step_size)`, the times of the steps marked in the row `no_breath` (`Row.NO_BREATH`, a toggle row in the
-  rows view's section Band), read for a pattern played forward. Nothing is random.
+  Articulation: four lists of plain words and nothing else, the user's choice of a simple page over more power. `line_bars`
+  (1, 2 or 4, shown "1 bar", "2 bars", "4 bars", default 2), `breath` ("none", "quick", "deep", default "quick"), `rise_and_fall`
+  ("none", "a little", "a lot", default "a little") and `notes` ("choppy", "as written", "flowing", default "as written"). No
+  number is shown, no row of the pattern marks anything for it, and nothing is by section: a section that wants another delivery
+  names another Phrasing in its clip's chain.
+- What the program decides (`generators/phrasing.py`): a breath shortens a line's last note, an eighth for "quick" and a quarter
+  for "deep", by half the note at most, by nothing where the tune already rests or the note sounds on into the next line, and
+  never drops a note; a line's main note is its longest note starting on a bar's start or middle in the line's second half, the
+  higher and then the later of two as long; the main note stays as loud as written and the others are softer, the last softest,
+  a note that starts a bar a little louder (`RISE_DEPTHS`); "choppy" halves a note up to a quarter and takes an eighth off a
+  longer one; "flowing" holds each note of a line but the last until the next, stopping short of a note of its own pitch.
+  The breath is a note length, not milliseconds, so far. Nothing is random.
+- `SongRenderer.make_generator` builds it with the bar's length (`PhrasingSettings.generator_for(where=, bar=)`).
 - `tests/generators/test_phrasing.py` and `tests/tui/test_tui_phrasing.py` test it; `25_phrasing.yml` is its demo.
 
 ### Follow Chords

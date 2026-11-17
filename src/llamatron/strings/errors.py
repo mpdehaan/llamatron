@@ -155,7 +155,6 @@ ERR_UNKNOWN_SCALE_TYPE = 'unknown scale type ({kind}), expected one of: {names}'
 
 # composition/pattern.py
 ERR_PATTERN_EXPECTED_SETTINGS = 'expected pattern settings'
-ERR_BAD_BY_SECTION = 'by_section must be settings by section, each one of: {choices}, got {value!r}'
 ERR_BAD_SCALE_LENGTH = '{name} must be an integer from {lowest} to {highest}, got {value!r}'
 ERR_BAD_STEPS = 'steps must be an integer of {lowest} or more, got {value!r}'
 ERR_DRUM_NOT_TRUE_OR_FALSE = 'drum must be true or false, got {value!r}'

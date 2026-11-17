@@ -389,12 +389,12 @@ the key, and the fifth follows chords that a Progression makes on that track.
 <a id="phrasing"></a>
 ## Phrasing: `25_phrasing.yml`
 
-A slow ballad in A minor whose tune is heard as written and then through a Phrasing generator, which
-ends each line early for a breath, as a singer stops for air. The verse's lines stop three and five
-eighths early, and in the chorus, where the breath is longer, the hook is marked in the pattern's
-No Breath row and plays whole.
+A slow ballad in A minor whose tune is heard as written and then through a Phrasing generator with
+one setting changed in each scene: a deep breath after each line, a rise and fall of loudness, choppy
+notes, and flowing notes on the tune written short. The last two scenes are a verse and a chorus sung
+with the settings together.
 
-[`examples/learning/25_phrasing.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/25_phrasing.yml) · A minor · 64 BPM · 3:00 · 6 scenes · 6 tracks
+[`examples/learning/25_phrasing.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/25_phrasing.yml) · A minor · 68 BPM · 3:46 · 8 scenes · 6 tracks
 
 | chords | chains | phrasing | ties |
 | :---: | :---: | :---: | :---: |
