@@ -18,7 +18,7 @@
 from rich.text import Text
 
 from llamatron.macro_composer.wizard_choices import HOOK_PARTS
-from llamatron.strings.labels import MSG_WIZARD_HOOK_PART_LABELS, MSG_WIZARD_PICK, MSG_WIZARD_PICK_SHOWN, MSG_WIZARD_NEW_HOOK_BUTTON, MSG_WIZARD_HOOK_LABEL, MSG_WIZARD_HOOK_OFF, MSG_WIZARD_HOOK_ON, MSG_WIZARD_HOOKS_BRANCH
+from llamatron.strings.labels import MSG_WIZARD_INTRO_HOOK_LABEL, MSG_WIZARD_NOBODY, MSG_WIZARD_HOOK_PART_LABELS, MSG_WIZARD_PICK, MSG_WIZARD_PICK_SHOWN, MSG_WIZARD_NEW_HOOK_BUTTON, MSG_WIZARD_HOOK_LABEL, MSG_WIZARD_HOOK_OFF, MSG_WIZARD_HOOK_ON, MSG_WIZARD_HOOKS_BRANCH
 from llamatron.strings.legends import KeyName, MSG_WIZARD_NEW_HOOK_WHAT
 from llamatron.strings.marks import MSG_WIZARD_HOOK_BAR_LINE, MSG_WIZARD_HOOK_CELL, MSG_WIZARD_HOOK_FLOOR, MSG_WIZARD_HOOK_FLOOR_BAR, MSG_WIZARD_HOOK_GAP, MSG_WIZARD_HOOK_ROW
 from llamatron.strings.messages import MSG_WIZARD_HOOK_MADE, MSG_WIZARD_LISTEN_HOOK
@@ -65,7 +65,18 @@ class HooksBranch(SongWaysBranch):
         new_hook = Button(label=MSG_WIZARD_NEW_HOOK_BUTTON, key_name=KeyName.ENTER, enter=lambda: self.page().choosing(lambda nothing: choices.new_hook())(None), enter_what=MSG_WIZARD_NEW_HOOK_WHAT)
         # In a planned song the hook is of a kind, each part the wizard's pick until a person chooses it.
         kind = [self.part_field(part) for part in choices.hook_parts()] if choices.has_song_plan() else []
-        return [switch, *kind, new_hook]
+        return [switch, *kind, *self.intro_hook_fields(), new_hook]
+
+    def intro_hook_fields(self):
+        """Return the field of who says the hook in the intro, before anybody sings it, where somebody can."""
+        choices = self.choices()
+        players = choices.intro_hook_players()
+        if not players:
+            return []
+        titles = {choices.role_title(role): role for role in players}
+        now = choices.get_intro_hook()
+        return [ChoiceField(page=self.page(), label=MSG_WIZARD_INTRO_HOOK_LABEL, choices=[MSG_WIZARD_NOBODY, *titles], current=MSG_WIZARD_NOBODY if now is None else choices.role_title(now),
+                            set=self.page().choosing(lambda title: choices.set_intro_hook(titles.get(title))))]
 
     def part_field(self, part):
         """Return the field of one part of the hook's kind, its contour, its rhythm or its odd detail: the wizard's pick, said to be so, or the one

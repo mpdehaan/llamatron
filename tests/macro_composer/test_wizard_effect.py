@@ -80,9 +80,12 @@ PHRASING = 'phrasing'
 PHRASING_WAY = 'how the lines breathe'
 HOOK_PART = "a part of the hook's kind"
 SECTION_OWN = "a section's own"
+FORM_ANSWER = 'an answer of the form questions'
+INTRO_HOOK = 'intro hook'
+SECTION_SHAPE = "a section's shape"
 A_SECOND_PLACE = 1
 # A value of each field a section can be given of its own.
-SECTION_OWN_TRIED = (('energy', 10), ('energy', 1), ('leaves', 'stops'), ('leaves', 'build'), ('leaves', 'drop-out'), ('leaves', 'a big fill'), ('leaves', 'a small fill'), ('leaves', 'nothing'),
+SECTION_OWN_TRIED = (('rises', True), ('energy', 10), ('energy', 1), ('leaves', 'stops'), ('leaves', 'build'), ('leaves', 'drop-out'), ('leaves', 'a big fill'), ('leaves', 'a small fill'), ('leaves', 'nothing'),
                      ('chords', '6 4 2 5'), ('tempo', 61), ('tempo_end', 62), ('root', 'F#'), ('type', 'minor'), ('type', 'major'))
 GUITARISTS = 'guitarists'
 SEED = 'seed'
@@ -272,9 +275,19 @@ def every_choice(choices):
 
         def planned_first(made):
             made.set_song_plan(True)
+        for role in under_plan.intro_hook_players():
+            yield INTRO_HOOK, role, lambda made, role=role: made.set_intro_hook(role), [planned_first]
+        for place in range(len(under_plan.section_labels())):
+            for shape in under_plan.section_shapes(place):
+                yield SECTION_SHAPE, (place, shape), lambda made, place=place, shape=shape: made.set_section_own(place=place, field='shape', value=shape), [planned_first]
         for field, value in SECTION_OWN_TRIED:
             if field in under_plan.section_own_fields(A_SECOND_PLACE) and value != under_plan.section_from_plan(place=A_SECOND_PLACE, field=field):
                 yield SECTION_OWN, (field, value), lambda made, field=field, value=value: made.set_section_own(place=A_SECOND_PLACE, field=field, value=value), [planned_first]
+    for name, offered, usual in choices.form_questions():
+        # Each answer of each question a form is made from, held against the form the usual answers make.
+        for answer in offered:
+            if answer != usual:
+                yield FORM_ANSWER, (name, answer), lambda made, name=name, answer=answer: made.set_form_from_answers({name: answer}), [lambda made: made.set_form_from_answers({})]
     if choices.offers_one_guitarist():
         yield GUITARISTS, ONE_GUITARIST_COUNT, lambda made: made.set_guitarists(ONE_GUITARIST_COUNT), [nothing_first]
     yield SEED, ANOTHER_SEED, lambda made: made.set_seed(ANOTHER_SEED), [nothing_first]

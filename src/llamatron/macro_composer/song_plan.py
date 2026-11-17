@@ -46,6 +46,8 @@ BY_PLACE = 'sections'
 ENERGY = 'energy'
 ENERGY_OF_KIND = 'energy'
 RISING = 'rising'
+# Whether a place of the form rises, where the song says so itself.
+RISES = 'rises'
 LAST_CHORUS = 'last_chorus'
 CHANGE_POINTS = 'levels'
 COMES_IN = 'comes_in'
@@ -241,9 +243,13 @@ class SongPlan:
                 chosen = cymbal
         return chosen
 
+    def _rises(self, place):
+        """Whether a section grows louder through its bars and leaves with a build: a rising kind of the style's, or as the song says of the place."""
+        return bool(self._at(place).get(RISES, self._sections[place][KIND] in self._of_style.get(RISING, [])))
+
     def _loudness(self, place):
         energy = self._energies[place]
-        rising = self._sections[place][KIND] in self._of_style.get(RISING, [])
+        rising = self._rises(place)
         return {SWELL_START: loudness_at(energy - RISES_FROM if rising else energy), SWELL_END: loudness_at(energy)}
 
     # Joins.
@@ -277,7 +283,7 @@ class SongPlan:
                 # The one silence of the song: the band stops for about a second, and the last chorus comes in whole.
                 join = {TAIL: DROP_OUT, TAIL_EIGHTHS: DROP_EIGHTHS_FAST if self._tempo >= FAST_TEMPO else DROP_EIGHTHS_SLOW}
                 dropped = True
-            elif kinds[place] in self._of_style.get(RISING, []) and BUILD in allowed and (before or {}).get(TAIL) != BUILD:
+            elif self._rises(place) and BUILD in allowed and (before or {}).get(TAIL) != BUILD:
                 join = {TAIL: BUILD}
             elif not following.get(HELD):
                 size = BIG if rise >= BIG_RISE else MEDIUM if rise > 0 else SMALL
@@ -383,7 +389,7 @@ class SongPlan:
                 said.append(MSG_PLAN_HOOK.format(hook_kinds.said_of(kind)))
                 hook_said = True
             # What the song says of the section itself, and of this place of its form, stands over what the plan worked out.
-            own = {field: value for field, value in self._at(place).items() if field not in (ENERGY, SETUP, LEAVES, *SCENE_FIELDS)}
+            own = {field: value for field, value in self._at(place).items() if field not in (ENERGY, SETUP, LEAVES, RISES, *SCENE_FIELDS)}
             scene = {**made.get(SCENE_SETTINGS, {}), **self._scene_settings(place)}
             sections[name] = {**made, **of_song, **own, **({SCENE_SETTINGS: scene} if scene else {}), SAID_OF_SECTION: ' '.join(said)}
         melody = {**({BREATHES: self._given.get(PHRASING_WAYS) or True} if self._given.get(PHRASING, True) else {}), **({HOOK_KINDS: True} if self._given.get(HOOK_KINDS, True) else {}), **self._song.get(MELODY, {})}

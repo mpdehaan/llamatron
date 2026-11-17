@@ -35,7 +35,7 @@ from llamatron.strings.errors import ERR_WIZARD_CANNOT_LISTEN, ERR_WIZARD_NOTHIN
 from llamatron.strings.help import HELP_WIZARD_PAGE
 from llamatron.macro_composer.notation import KIT
 from llamatron.macro_composer.wizard_choices import USUAL_PIECE_NOTE
-from llamatron.strings.labels import MSG_WIZARD_KIT_DRUMS, MSG_WIZARD_PIECE_SOUND_TITLE, Crumb, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_MORE_SOUNDS_TITLE, MSG_WIZARD_SOUND_TITLE, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_COMPOSITION_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_REPLACE_SECTIONS_TITLE, MSG_WIZARD_SUGGESTED_FORM_TITLE, MSG_WIZARD_CAPTION, MSG_WIZARD_REPLACE_CAPTION
+from llamatron.strings.labels import MSG_WIZARD_FORM_QUESTION_TITLES, MSG_WIZARD_KIT_DRUMS, MSG_WIZARD_PIECE_SOUND_TITLE, Crumb, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_MORE_SOUNDS_TITLE, MSG_WIZARD_SOUND_TITLE, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_COMPOSITION_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_REPLACE_SECTIONS_TITLE, MSG_WIZARD_SUGGESTED_FORM_TITLE, MSG_WIZARD_CAPTION, MSG_WIZARD_REPLACE_CAPTION
 from llamatron.strings.marks import MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_EDITED_BRANCH
 from llamatron.strings.messages import MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CLOSE_TITLE, MSG_WIZARD_CREATED, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_NOTHING_TO_UNDO, MSG_WIZARD_REPLACED, MSG_WIZARD_SONG_NAME_PROMPT
 from llamatron.strings.messages import MSG_STOPPED, MSG_WIZARD_LISTENING
@@ -366,6 +366,39 @@ class WizardPage(FieldPage):
             self.ask(dialog=ConfirmDialog(title=MSG_WIZARD_REPLACE_SECTIONS_TITLE, messages=[MSG_WIZARD_REPLACE_SECTIONS_QUESTION]), then=answered)
         else:
             pick()
+
+    def ask_form_questions(self):
+        """Ask the questions a form is made from, one dialog a question, each opening on its usual answer, and make the form the answers ask for
+        the song's own; ESC at any question leaves the form as it was, and where a person changed the sections, the last step asks first."""
+        choices = self._choices
+        questions = choices.form_questions()
+        answers = {}
+
+        def make():
+            try:
+                self.choosing(choices.set_form_from_answers)(answers)
+            except ValueError as problem:
+                self.refuse(str(problem))
+                return
+            self._open.add(MSG_WIZARD_FORM_BRANCH)
+
+        def finish():
+            if choices.has_own_form():
+                self.ask(dialog=ConfirmDialog(title=MSG_WIZARD_REPLACE_SECTIONS_TITLE, messages=[MSG_WIZARD_REPLACE_SECTIONS_QUESTION]), then=lambda yes: make() if yes else None)
+            else:
+                make()
+
+        def ask(place):
+            if place == len(questions):
+                finish()
+                return
+            name, offered, usual = questions[place]
+
+            def answered(chosen):
+                answers[name] = offered[chosen]
+                ask(place + 1)
+            self.ask(dialog=ChoiceDialog(title=MSG_WIZARD_FORM_QUESTION_TITLES[name], options=list(offered), current=offered.index(usual)), then=answered)
+        ask(FIRST_PLACE)
 
     def copy_listed(self):
         self.choosing(lambda branch: branch.copy())(self.branch())

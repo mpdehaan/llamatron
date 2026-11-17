@@ -19,8 +19,8 @@
 from llamatron.composition.limits import MAX_NAME_LENGTH, MAX_TEMPO, MIN_TEMPO
 from llamatron.macro_composer.arranger import CHORDS
 from llamatron.macro_composer.joins import LEAVES
-from llamatron.macro_composer.song_plan import ENERGY, HIGHEST_ENERGY, LOWEST_ENERGY, NOT_AT_ALL, ROOT_OF_PLACE, SETUP, TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE
-from llamatron.macro_composer.wizard_choices import LEAVES_AS_JOIN, SCALE_TYPES, chords_as_text
+from llamatron.macro_composer.song_plan import ENERGY, HIGHEST_ENERGY, LOWEST_ENERGY, NOT_AT_ALL, RISES, ROOT_OF_PLACE, SETUP, TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE
+from llamatron.macro_composer.wizard_choices import LEAVES_AS_JOIN, SCALE_TYPES, SHAPE_OF_SECTION, chords_as_text
 from llamatron.music.note import ROOT_NAMES
 from llamatron.strings.labels import (
     MSG_WIZARD_BARS_LABEL, MSG_WIZARD_FROM_ORIGIN, MSG_WIZARD_FROM_PLAN, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_SECTION_ORIGINS, MSG_WIZARD_SECTION_OWN_LABELS, MSG_WIZARD_SECTION_ROLE_LABEL,
@@ -112,8 +112,10 @@ class SectionBranch(Branch):
             def ask():
                 page.ask(dialog=PromptDialog(title=MSG_WIZARD_SECTION_CHORDS_PROMPT, value=chords_as_text(own) if own is not None else usual, max_length=MAX_NAME_LENGTH), then=set_own)
             return Field(label=label, value=lambda: shown if own is None else chords_as_text(own), enter=ask, **clear)
+        if field == RISES:
+            return Toggle(label=label, on=usual if own is None else own, set=set_own, **clear)
         from_above = MSG_WIZARD_FROM_ORIGIN.format(origin=origin)
-        offered = CHOICES_OF_SECTION[field]
+        offered = choices.section_shapes(place) if field == SHAPE_OF_SECTION else CHOICES_OF_SECTION[field]
         return ChoiceField(page=page, label=label, choices=[from_above, *offered], current=from_above if own is None else own, shown=shown,
                            set=lambda picked: set_own(None if picked == from_above else picked), **clear)
 
