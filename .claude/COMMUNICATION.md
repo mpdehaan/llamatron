@@ -197,6 +197,14 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   item of the running sequence, with the rule it chose and the alternative, so that the user
   can answer "1 is wrong". The user dislikes assumptions being made at all, so fewer, asked
   earlier, is the rule.
+- **The professor's review** (the user's rule, after a generator was designed from what the old code did and not from what the
+  musical idea means). Before designing anything with a musical side, Claude reads the subject's file in
+  `.claude/music_theory_notes/`. The reply that proposes the design opens the proposal with a short section, "The professor's
+  review", written as an expert teacher of music would judge it: what the musical idea means to players, what real players do,
+  what the proposal leaves out and why, and whether a musician would want the feature at all. For a large design, a new
+  generator, a musician's page or a wizard panel, Claude also starts a fresh agent that sees only the proposal and critiques it
+  as a strict professor of music, and the reply says where that agent disagreed. What is learnt goes into the notes. Claude
+  brings musicality up itself, in every design discussion, and never waits to be asked.
 - A recommendation weighs the least surprising musical result heavily, which usually wins over
   what is simplest to build (`.claude/format/GENERATORS.md`, "Musical answers first").
 - Rewriting an example set, moving a feature's demonstration into it or changing what it plays, is always confirmed by
