@@ -1,7 +1,6 @@
 # Leads
 
-How a lead line, a guitar's above all, is composed. A note Claude wrote in another conversation, kept nearly whole, with the
-players, bands and songs the note named taken out. (practice throughout)
+How a lead line, a guitar's above all, is composed. A note Claude wrote in another conversation, kept nearly whole, names and all. (practice throughout)
 
 Guitar leads are usually composed in one of three ways: improvised and then fixed, written as a melody, or assembled from a
 vocabulary of licks. The theory underneath is the same for all three. Land on the right notes at the right moments, develop a
@@ -10,9 +9,10 @@ small idea, and shape the whole solo into a story.
 ## Three Ways Leads Get Made
 
 - **Improvise, then fix it.** Many famous solos started as improvisations. The player records take after take over the backing
-  track, then keeps the best phrases or edits several takes together, and finally learns the result as a fixed part. Once a solo
+  track, then keeps the best phrases or edits several takes together, and finally learns the result as a fixed part. David Gilmour's solos on
+  "Comfortably Numb" are a well-known example of a solo edited together from several takes. Once a solo
   works, it is often played the same way live because the audience expects it.
-- **Write it like a vocal melody.** Some players are known for leads a person can sing. The approach is to treat the guitar as a
+- **Write it like a vocal melody.** David Gilmour, Brian May and Mark Knopfler are known for leads a person can sing. The approach is to treat the guitar as a
   second singer: hum the line first, then find it on the neck. Everything about hooks applies here (`HOOKS.md`): short phrases,
   repetition, one surprise, a contour with a peak. Pop and country solos often start by paraphrasing the vocal melody with
   ornaments, then break away from it.
@@ -39,14 +39,14 @@ and mix major and minor pentatonic. That friction between scale and chord is the
 
 A useful composing exercise is to write the skeleton first. Write a slow line with one note per chord, moving by step through
 guide tones. Then decorate it with passing tones, neighbor notes, arpeggios and bends. Baroque musicians called this decoration
-diminution, and one school of analysis is built on it: a simple structural line underneath, elaborated on the surface. The solo
+diminution, and Schenkerian analysis is built on it: a simple structural line underneath, elaborated on the surface. The solo
 sounds free, but it is tied to the harmony.
 
 ## Developing an Idea
 
 - **Motif development.** State a short idea, repeat it, sequence it up the scale, shift it rhythmically, extend it. A solo built
   from one motif sounds composed even when it is improvised.
-- **Call and response.** Play a phrase, answer it, and leave space. Phrases about the length of a breath sound like singing, and
+- **Call and response.** Play a phrase, answer it, and leave space. B.B. King is the model. Phrases about the length of a breath sound like singing, and
   the gaps give the listener time to take them in.
 - **Repeating licks against the meter.** Repeating a three-note lick over 4/4 creates the same tension as a drummer's groups of
   three. It shows up all over classic rock solos as they build toward the climax.
@@ -73,12 +73,12 @@ pitches and sound nothing alike.
   root) combines targeting and expression in one move.
 - **Vibrato**: its width and speed are a player's fingerprint.
 - **Legato**: hammer-ons, pull-offs and slides, for smooth fast lines.
-- **Double stops**: two-note figures, as early rock and roll guitar played them.
+- **Double stops**: two-note figures like Chuck Berry's.
 - **Harmonics, tremolo picking, the whammy bar, volume swells.**
 
 The fretboard shapes the lines too. Moving along one string gives a different contour than moving across strings in one position.
 Three notes per string makes fast runs easier. Alternating a moving line with an open string gives the pedal-tone licks of
-twin-guitar hard rock and metal, which descend from baroque violin writing.
+Thin Lizzy and Iron Maiden, which descend from Bach's violin writing.
 
 ## Genre Flavors
 
@@ -88,8 +88,9 @@ twin-guitar hard rock and metal, which descend from baroque violin writing.
   guitar (bending one string while holding another).
 - **Jazz**: guide-tone lines, bebop scales, enclosures, "outside" playing that slips a half step away from the key and back.
 - **Neoclassical metal**: harmonic minor and phrygian dominant, sweep-picked arpeggios, scalar sequences in groups of four or six.
-- **Harmony leads**: twin guitars in diatonic thirds or sixths, or stacked guitar choirs.
-- **Ambient and post-rock**: the delay is part of the composition. A dotted-eighth delay turns a simple line into interlocking
+- **Harmony leads**: twin guitars in diatonic thirds or sixths (Thin Lizzy, Iron Maiden, the Allman Brothers), or
+  Brian May's stacked guitar choirs.
+- **Ambient and post-rock**: the delay is part of the composition. The Edge's dotted-eighth delay turns a simple line into interlocking
   rhythmic counterpoint.
 - **Highlife and soukous**: bright, high, interlocking loops that cycle instead of building to a climax.
 

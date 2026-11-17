@@ -63,7 +63,7 @@ invented on the spot from a bare chart, each player owning one narrow job, and n
 
 ## Trading Parts
 
-A note Claude wrote in another conversation, kept nearly whole, with the players, composers and works the note named taken out.
+A note Claude wrote in another conversation, kept nearly whole, names and all.
 (practice throughout)
 
 Players trade parts in two ways: they pass the lead back and forth in agreed-size chunks, or they swap roles, so whoever was
@@ -84,7 +84,7 @@ Other traditions use the same structure:
 
 - Blues trades between the voice and the guitar: two bars of vocal, two bars of answer.
 - Bluegrass passes "breaks" around the band, with each instrument taking the melody for one pass.
-- Indian classical music has question and answer between the soloist and the drums, also with shrinking phrases.
+- Indian classical music has sawal-jawab (question and answer) between the soloist and the tabla, also with shrinking phrases.
 - Rock has guitar duels and twin-lead harmonies.
 
 ### Swapping Roles
@@ -111,6 +111,6 @@ Since trades often are not written down, bands rely on cues:
 
 ### Trading Within a Texture
 
-Some trading is built into the part itself. Hocket is the extreme case, with a melody split note by note. Gamelan interlocks two
+Some trading is built into the part itself. Hocket is the extreme case, with a melody split note by note. Balinese gamelan interlocks two
 players into one fast line, and funk guitarists split one rhythm part between them. Stride pianists do it alone, with the hands
 trading bass and chord.

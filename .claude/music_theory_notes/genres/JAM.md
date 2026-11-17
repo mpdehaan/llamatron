@@ -48,7 +48,7 @@ A four-piece (guitar, keyboards, bass, drums) whose songs pair written-out passa
 
 ## A Song Is a Plan, a Jam Is Players Listening
 
-A note Claude wrote in another conversation, kept nearly whole, with the players, composers and works the note named taken out.
+A note Claude wrote in another conversation, kept nearly whole, names and all.
 (practice throughout)
 
 A composed song is modeled from the top down, with every player reading a shared plan. A jam is modeled from the bottom up, with
@@ -72,7 +72,7 @@ What makes it sound like a band is coupling between the parts:
 - **A density budget**: when the vocal is busy, everyone else thins out, and when it rests, someone fills.
 
 Because the plan is known, every player has lookahead. The drummer's fill is scheduled because the chorus is two bars away.
-Rule-based accompaniment programs work this way explicitly. Neural multitrack models learn the same coordination implicitly from
+Rule-based tools like Band-in-a-Box work this way explicitly. Neural multitrack models such as MuseGAN learn the same coordination implicitly from
 data, by modeling all the tracks jointly.
 
 ### Jamming: Agents That Listen
@@ -95,19 +95,19 @@ Four things change in kind:
 Timing changes too. In a real band, the tempo is a mutual adjustment, with each player correcting slightly toward the others.
 Researchers model this as coupled oscillators.
 
-Kinds of system that exist: one that listens to a human improviser and decides whether to follow or go its own way; one that
-answers a player's phrases in the player's own style from a Markov model; one that does the same from a live memory of the
-performance; one that trades fours.
+Real systems worth knowing: George Lewis's Voyager listens to a human improviser and decides whether to follow or go its own
+way; François Pachet's Continuator answers a player's phrases in the player's own style using Markov models; IRCAM's OMax does
+something similar from a live memory of the performance; Al Biles's GenJam trades fours.
 
 ### Most Music Sits in Between
 
-Pure plan and pure freedom are the two ends. Most improvised music fixes something, which theory calls the referent:
+Pure plan and pure freedom are the two ends. Most improvised music fixes something, which the theorist Jeff Pressing called the referent:
 
 | Music | What is fixed | What is free |
 | --- | --- | --- |
 | A jazz standard | The form and chords, cycling | The notes |
 | A modal vamp | A groove and a mode | Length and direction |
-| A minimalist piece of numbered phrases | The phrases, in order | When each player moves on |
+| Terry Riley's In C | 53 phrases, in order | When each player moves on |
 | Free improvisation | Nothing | Everything |
 
 A good jam model picks a referent and lets the agents negotiate the rest.

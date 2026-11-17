@@ -1,7 +1,7 @@
 # A Player's Style, and Breaking Rules
 
 What makes one skilled player sound unlike another, and when a rule of music is rightly broken. Two notes Claude wrote in another
-conversation, kept nearly whole, with the players, composers and works the notes named taken out. (practice throughout)
+conversation, kept nearly whole, names and all. (practice throughout)
 
 ## What Separates Skilled Players
 
@@ -11,35 +11,42 @@ within a few notes.
 
 ### Where Styles Differ
 
-- **Time feel.** Some players phrase far behind the beat, which sounds relaxed and heavy. Others sit on top of the beat and push
-  the band forward. A pianist can do both at once: the left hand keeping strict time while the right hand lags.
-- **Tone and touch.** A vibrato, a muted horn or a fretless bass can each be known from one note.
-- **Density.** Some players fill the space. Others leave most of it empty and make each note count.
-- **Melody versus pattern.** Some play lines a person can sing. Some build from patterns: scale cells, arpeggios and sequences
-  run through the harmony. A third type is the thematic improviser, who develops one small motif across an entire solo.
-- **Vocabulary.** Every virtuoso has favorite intervals, licks and rhythmic cells that recur across the player's work.
+- **Time feel.** Dexter Gordon and Billie Holiday phrase far behind the beat, which sounds relaxed and heavy. Other players sit
+  on top of it and push the band forward. Erroll Garner did both at once: his left hand kept strict time while his right hand
+  lagged.
+- **Tone and touch.** B.B. King's vibrato, Miles Davis's muted trumpet and Jaco Pastorius's fretless bass are each identifiable
+  from one note.
+- **Density.** Art Tatum, Oscar Peterson and John Coltrane fill the space. Miles Davis and Wayne Shorter leave most of it empty
+  and make each note count.
+- **Melody versus pattern.** Lester Young, Paul Desmond and David Gilmour play lines a person can sing. Coltrane, Michael Brecker
+  and Yngwie Malmsteen build from patterns: scale cells, arpeggios and sequences run through the harmony. Sonny Rollins is a
+  third type, a thematic improviser who develops one small motif across an entire solo.
+- **Vocabulary.** Every virtuoso has favorite intervals, licks and rhythmic cells that recur across their playing.
 
 ### Technique as Invention
 
-Many virtuosos are known for a technique they invented or made central: two-handed tapping on a guitar; feedback and the whammy
-bar turned into musical material; melodies in harmonics on a bass; legato and wide stretches that make a guitar phrase like a
-saxophone.
+Many virtuosos are known for a technique they invented or made central:
 
-Limitation is often the source. A guitarist with two working fingers on the fretting hand built a style of fast arpeggios and
-octaves from that. Another, missing two fingertips, tuned the strings down to ease the tension, and that became the sound of a
-whole heavy genre.
+- Eddie Van Halen made two-handed tapping a core technique.
+- Jimi Hendrix turned feedback and the whammy bar into musical material.
+- Jaco Pastorius played melodies in harmonics on the bass.
+- Allan Holdsworth used legato and wide stretches to make a guitar phrase like a saxophone.
+
+Limitation is often the source. Django Reinhardt had two working fingers on his fretting hand after a fire, and his style of fast
+arpeggios and octaves came from that. Tony Iommi lost two fingertips, tuned his strings down to ease the tension, and that became
+the sound of heavy metal.
 
 ### How They Break Rules
 
 The pattern is consistent: they break one rule at a time, deliberately, while holding everything else steady.
 
-- "Wrong" notes, clashing seconds and oddly placed accents, played with exact time and an exact sense of form. The secure frame is
-  why the dissonance sounds intended.
-- Other chord cycles laid over the written changes, then resolved back.
-- The chord changes dropped entirely, with the melody, the swing and the blues feeling kept.
-- Parallel fifths and unresolved dominant chords, both forbidden in the harmony textbooks, used as color.
-- Songs built on the dominant seventh chord with a sharp ninth, which has both a major and a minor third.
-- Polyrhythms that drift across the bar line while the pulse stays implied.
+- Thelonious Monk played "wrong" notes, clashing seconds and oddly placed accents, but his time and sense of form were exact. The
+  secure frame is why the dissonance sounds intended.
+- Coltrane superimposed different chord cycles over the written changes, then resolved back.
+- Ornette Coleman dropped the chord changes entirely but kept the melody, swing and blues feeling.
+- Debussy used parallel fifths and unresolved dominant chords, both forbidden in the harmony textbooks, as color.
+- Hendrix built songs on the 7 sharp 9 chord, which has both a major and a minor third.
+- Elvin Jones played polyrhythms that drifted across the bar line while the pulse stayed implied.
 
 A few principles make broken rules work:
 
@@ -60,12 +67,12 @@ fusion. The rule and the violation are both correct, for different goals.
 
 ### Good Reasons to Break One
 
-- **The purpose does not apply.** Avoiding the muddy low register matters in a string quartet and not in the slowest, heaviest
-  metal, where mud is the point.
-- **The expression demands it.** An unresolved dissonance suits words about something unresolved. Painting the words has
-  justified broken rules since the Renaissance.
+- **The purpose does not apply.** Avoiding the muddy low register matters in a string quartet and not in doom metal, where mud
+  is the point.
+- **The expression demands it.** An unresolved dissonance suits words about something unresolved. Word painting has justified
+  broken rules since the Renaissance: Monteverdi defended his forbidden dissonances by saying the text required them.
 - **The expectation has been set up.** Surprise needs a norm to push against. A deceptive cadence only works after enough normal
-  cadences have taught the ear where the phrase should land, and a sudden loud chord needs its quiet opening.
+  cadences have taught the ear where the phrase should land, and Haydn's "Surprise" Symphony needs its quiet opening.
 - **It is a structural moment.** Violations are most effective when they are rare and placed where the form wants an event: the
   bridge, the climax, the last chorus. The odd-length bar or the borrowed chord works because it happens once.
 - **The style has gone stale.** Most genres began as someone else's rule violation that listeners liked enough to codify. The
@@ -87,5 +94,6 @@ Three questions cover most cases:
 - Does it make the moment stronger, or only different?
 - Does everything else hold steady enough that a listener can hear it as a choice?
 
-Departures are earned by understanding what is departed from. Plenty of great musicians learned the rules by ear and could not
+Schoenberg, who broke more rules than almost anyone, taught strict traditional harmony for his entire career. His view was that
+departures are earned by understanding what is departed from. Softened slightly: plenty of great musicians learned the rules by ear and could not
 have named them, but they knew what normal sounded like, and that is the knowledge a meaningful violation depends on.

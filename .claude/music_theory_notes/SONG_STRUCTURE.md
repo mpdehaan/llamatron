@@ -138,7 +138,7 @@ solo, instrumental, interlude and outro; it has no pre-chorus label, so that sha
 
 ## How Intros Begin and Exit, at Length
 
-A note Claude wrote in another conversation, kept nearly whole, with the players and songs the note named taken out. (practice
+A note Claude wrote in another conversation, kept nearly whole, names and all. (practice
 throughout, but for the one figure marked measured)
 
 ### How Intros Begin
@@ -146,7 +146,7 @@ throughout, but for the one figure marked measured)
 Rock and pop intros usually run four or eight bars and come in a handful of standard types:
 
 - **The riff or hook alone.** One instrument states the song's signature idea, and the others enter in layers: guitar, then
-  hi-hat, then full drums and bass. The textbook case of hard rock.
+  hi-hat, then full drums and bass. "Smoke on the Water" is the textbook case.
 - **The chorus without the vocal.** The band plays the chorus chords, often with the hook on an instrument, so the chorus feels
   familiar when it arrives.
 - **A verse vamp.** Two or four bars of the verse groove, waiting for the singer.
@@ -154,7 +154,7 @@ Rock and pop intros usually run four or eight bars and come in a handful of stan
 - **An atmospheric build.** A pad, noise or a filtered version of the track that swells into the song.
 - **A cold open.** The vocal starts immediately, sometimes with the chorus itself.
 
-Intros have shrunk a lot in the streaming era. A study found that the average intro of hit songs fell from over 20 seconds in the
+Intros have shrunk a lot in the streaming era. A study by Hubert Léveillé Gauvin found that the average intro of hit songs fell from over 20 seconds in the
 mid-1980s to about 5 by 2015, because listeners can skip. (measured)
 
 ### How Intros Exit
