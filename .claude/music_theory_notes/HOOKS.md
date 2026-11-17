@@ -41,3 +41,73 @@
 - A long or loosely played song wants several: the sung hook, an instrumental figure, and a returning theme that a jam leaves and
   finds again. Each must be short enough to be known after one hearing, and they should differ in rhythm before they differ in
   pitch. (practice)
+
+## How Hooks Are Found, at Length
+
+A note Claude wrote in another conversation, kept nearly whole, with the writers, studies' authors, books and works the note named
+taken out. (practice throughout, but for the one finding marked measured)
+
+Most hooks come from a small set of methods. The skill is less in having the idea than in generating lots of candidates and
+recognizing the one that sticks.
+
+### What Makes Something Stick
+
+A hook is whatever part of a song cannot be shaken. Usually that is a melody or riff, but it can be a rhythm, a lyric phrase, a
+sound or a chord move. The sticky ones tend to share a few traits:
+
+- **Short.** One or two bars, a few seconds long, so it fits in the head at once.
+- **Easy to sing.** A narrow range, often within a fifth or sixth, mostly stepwise with one leap.
+- **Simple pitch, interesting rhythm.** Many hooks repeat one or two notes, and the rhythm does the work.
+- **Repeated in the song**, but with enough variation that it does not wear out.
+- **A familiar shape with one odd detail.** A study of earworms found that catchy tunes tend to have an ordinary overall shape,
+  rising then falling, combined with unusual intervals or rhythms. The frame is predictable and one detail surprises. (measured)
+
+### Methods Writers Use
+
+- **Start from the words.** The hook is the title, and its melody is found by saying the phrase out loud and exaggerating its
+  natural stresses and pitch until it becomes singing. Good prosody, where the stressed syllables land on strong beats and higher
+  notes, makes a line feel inevitable.
+- **Mumble over a loop.** The main modern pop method. A producer makes a track, often just four chords and a beat. The writer of
+  the vocal melody sings nonsense syllables over it for dozens of passes, recording everything, then combs through the recording
+  for the two seconds that work, and the words come later. One school adds a kind of arithmetic: phrases whose lengths and
+  syllable counts mirror or answer each other.
+- **Rhythm first.** Tap or clap a rhythm until it feels good, then add pitches. Hip-hop hooks often work this way: a chant-like
+  line with few pitches, built on cadence and repetition.
+- **Find it with the hands.** Guitar riffs often come from shapes that fall naturally under the fingers, like pentatonic boxes
+  and open strings. Since the instrument suggests the idea, riffs found this way tend to sound idiomatic.
+- **Statement, repeat, break.** Classical theory calls this the sentence: state a short idea, repeat it (often transposed), then
+  break the pattern with a continuation that runs to a cadence. It is the shape of a huge number of pop choruses and of the most
+  famous opening in the symphonies. It works because the repeat teaches the listener the pattern and the break rewards the
+  learning.
+- **Hold something back.** Choruses hit harder when the verse has saved something for them. The verse stays low, busy and
+  syncopated, or avoids the tonic or the top note. The chorus hook then lifts into a higher register with longer notes on the
+  beat, finally landing on the note the verse kept avoiding.
+- **Transform something already liked.** Take the rhythm of one tune and the contour of another, then invert it, displace it by
+  an eighth note, or move it to a new mode. (For llamatron this method is not used on any existing work: the rules about
+  melodies forbid it.)
+
+### How It Varies by Genre
+
+- **Rock**: the riff is the hook, often instrumental and repeated through the whole song.
+- **Electronic dance music**: the hook is often a sound: the drop's lead patch, a chopped vocal, a sidechained chord stab.
+- **Jazz**: a head with one memorable motif that the soloists can quote and bend.
+- **Film**: the leitmotif, sometimes as small as two notes, tied to a character or idea and transformed as the story changes.
+- **Folk**: the refrain, built so a room can sing it back after one hearing.
+- **Video games**: the hook has to survive hundreds of loops, so writers favor melodies that resolve back into their own beginning.
+
+### Testing a Hook
+
+Writers use a few blunt tests:
+
+- Sing it with no accompaniment and see whether it still works.
+- Ask whether a stranger could hum it back after hearing it twice.
+- Check whether it is remembered the next morning without the recording.
+
+If a hook needs its chords or production to sound good, it is probably an arrangement idea, not a hook.
+
+### In llamatron
+
+The mumble-over-a-loop method maps closely onto llamatron. Write the loop as a progression, then have a generator produce many
+short candidate patterns under hook-style rules: a range of a sixth or less, at most one leap, ending on degree 1, 3 or 5, with
+some syncopation. A seed browser would let a person audition them and keep the ones that stick. The machine does the mumbling
+and the person picks the keepers, which is how many working writers already split the job.
