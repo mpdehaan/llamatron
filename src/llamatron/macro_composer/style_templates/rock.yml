@@ -470,6 +470,8 @@ song_plan:
   rising: [pre-chorus]
   levels: {drums: [1, 4, 7, 9], bass: [1, 5, 7, 10], rhythm: [1, 4, 6, 9], keys: [1, 6, 8, 10], lead: [1, 3, 6, 9], session: [1, 5, 8, 10]}
   comes_in: {keys: 5, voices: 8}
+  # A tambourine, handclaps or a cowbell come in with the chorus.
+  percussion_from: 6
   cymbal: [[1, hat quarters], [4, hat eighths], [7, hat half open], [9, ride eighths]]
   fills: {small: toms on four, medium: snare and toms, big: snare on every eighth of the last half}
   # A marker ends a phrase inside a section where no fill is played: a stroke or two laid over the bar.

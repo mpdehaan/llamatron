@@ -54,6 +54,10 @@ LAST_CHORUS = 'last_chorus'
 CHANGE_POINTS = 'levels'
 COMES_IN = 'comes_in'
 CYMBALS = 'cymbal'
+# The Energy from which a section has the kit's percussion, which a quieter section goes without.
+PERCUSSION_FROM = 'percussion_from'
+PERCUSSION = 'percussion'
+NO_PERCUSSION = 'none'
 FILL_SIZES = 'fills'
 TAILS_ALLOWED = 'tails'
 NO_SETUP = 'no_setup'
@@ -451,6 +455,9 @@ class SongPlan:
                 # A cymbal the song chose is the drummer's all through; the plan's goes by Energy.
                 cymbal = None if CYMBAL in self._song.get(PICKS, {}) else self._cymbal(place)
                 made[PICKS] = {**section.get(PICKS, {}), **({CYMBAL: cymbal} if cymbal else {})}
+                # Percussion the song chose plays all through; the kind's comes in from an Energy up, usually at the chorus.
+                if PERCUSSION not in self._song.get(PICKS, {}) and energy < self._of_style.get(PERCUSSION_FROM, LOWEST_ENERGY):
+                    made[PICKS][PERCUSSION] = NO_PERCUSSION
                 if joins[place] is not None:
                     made[LEAVES] = joins[place]
                     inside_every = self._fill_inside_every(place=place)

@@ -329,6 +329,10 @@ clouds; generate and test, with motif development and counterpoint last.
   heading with a number for each level the song plays (`set_loudness_level`, `loudness_levels_offered`, found by making the song
   with the level moved, only while the heading is open); Bksp gives a level back to the genre. Not yet: the lean on players of
   notes, the phrase offsets (a section's first beat, a climbing last bar) and the small random amount.
+- **Percussion by Energy** (`song_plan: percussion_from:`): the kit's percussion, a tambourine, handclaps or a cowbell, plays
+  only in sections of that Energy or more, so that it comes in with the chorus, in rock and in soul and funk (new orleans'
+  plays all through, and funk's Energies never fall under it); percussion the song chose itself plays all through, as a
+  cymbal the song chose does. Sixties pop, which leans on its percussion, has none. Nothing on the wizard's page.
 - **Swing by subgenre** (a template's `groove:` under `by_subgenre`, `arranger.GROOVE`): the name of one of the grooves every
   set has, which the made song takes as its groove: rock and roll, sunshine pop and bubblegum bounce on their eighths
   (`8th swing 58`), new orleans swings its sixteenths (`swing 58`) and funk a little (`swing 54`). A style written in

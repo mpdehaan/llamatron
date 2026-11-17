@@ -72,6 +72,7 @@ One genre at a time, rock first, alternating with the electronic stages (band st
 - **Structure by subgenre:** how many verses before a chorus, section lengths, and how likely a chorus, a pre-chorus, a bridge, a
   solo, a fade and a key lift are; the Form questions' usual answers and another take's draw come from these.
 - **Percussion** comes in by Energy, usually at the chorus; more kinds as bars (shaken tambourine, shaker, maracas, clap figures).
+  Coming in by Energy is built (`.claude/features/MACRO_COMPOSER.md`, "Percussion by Energy"); the new kinds of bar are not.
 - **Who solos** by subgenre: keys and horns far more often than the templates have. A solo style is a block of the lead writer's
   settings with devices and how often each is used: ladder, notes a bar, share of silence, phrase length, long notes and where
   they land, placement, register. Guitar styles by plain name: slow singing, blues-rock, chordal, sustained, tapped, riff-rock,
