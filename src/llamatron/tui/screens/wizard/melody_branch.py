@@ -17,7 +17,7 @@
 
 from llamatron.macro_composer.melody import HIGHEST_GAUGE, LOWEST_GAUGE
 from llamatron.strings.labels import MSG_WIZARD_GAUGE_ENDS, MSG_WIZARD_GAUGE_LABELS, MSG_WIZARD_MELODY_BRANCH, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_MELODY_SETTING_LABELS, MSG_WIZARD_USUAL_MELODY
-from llamatron.strings.marks import MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_MELODY_GAUGE_SHOWN
+from llamatron.strings.marks import MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_GENRE_MELODY_SHOWN, MSG_WIZARD_MELODY_GAUGE_SHOWN
 from llamatron.tui.screens.shared.field import ChoiceField, NumberField, Toggle
 from llamatron.tui.screens.wizard.song_ways_branch import A_CHOICE, SongWaysBranch
 
@@ -37,14 +37,20 @@ class MelodyBranch(SongWaysBranch):
         return self.choices().is_ready() and len(self.choices().melody_styles()) >= A_CHOICE
 
     def summary(self):
-        return (self.choices().get_melody() or MSG_WIZARD_USUAL_MELODY) if self.offers_styles() else None
+        return self.shown() if self.offers_styles() else None
+
+    def shown(self):
+        """Return the melody style as the field shows it: the one chosen, or the genre's own marked as the genre's."""
+        choices = self.choices()
+        return choices.get_melody() or MSG_WIZARD_GENRE_MELODY_SHOWN.format(style=choices.genre_melody())
 
     def fields(self):
         if not self.offers_styles():
             return []
         choices = self.choices()
-        # The first choice leaves each player's tunes to the style the genre gives the player.
-        style = ChoiceField(page=self.page(), label=MSG_WIZARD_MELODY_LABEL, choices=[MSG_WIZARD_USUAL_MELODY, *choices.melody_styles()], current=choices.get_melody() or MSG_WIZARD_USUAL_MELODY,
+        # The first choice leaves the tunes to the style the genre sketches its own by, which the field names; a style that
+        # would sketch as the genre's does is not offered again by its name.
+        style = ChoiceField(page=self.page(), label=MSG_WIZARD_MELODY_LABEL, choices=[MSG_WIZARD_USUAL_MELODY, *choices.melody_styles()], current=choices.get_melody() or MSG_WIZARD_USUAL_MELODY, shown=self.shown(),
                             set=self.page().choosing(lambda chosen: choices.set_melody(None if chosen == MSG_WIZARD_USUAL_MELODY else chosen)))
         # The smart melody style's gauges, under the Melody field while the song's tunes are sketched by it.
         return [style, *(self.gauge_field(name) for name in choices.gauges()), *(self.setting_field(name) for name in choices.melody_settings())]
