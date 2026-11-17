@@ -2,7 +2,7 @@
 
 A pattern says what a part is; a generator says how it is played. This page explains what generators are,
 how they are put to work, and the settings every kind shares. Each kind has a page of its own, listed under
-The Kinds below, and [Chains](CHAINS.md) covers the chains that run them.
+Generator Kinds below, and [Chains](CHAINS.md) covers the chains that run them.
 
 ## What a Generator Does
 
@@ -40,26 +40,72 @@ changes only what you edited.
 
 The generators fall into seven categories by what they change, as the sidebar and the picker of a new generator's type group them.
 
-| Category | Generator | What it does | Demo |
-| --- | --- | --- | --- |
-| Arrangement | [Hocket](generators/HOCKET.md) | Deals one track's notes out among other tracks | `examples/learning/19_hocket_shanty.yml` |
-| Articulation | [Glide](generators/GLIDE.md) | Runs notes on chosen steps into the next note | `examples/learning/14_acid_glide.yml` |
-| Articulation | [Phrasing](generators/PHRASING.md) | Ends each line of a tune early for a breath | `examples/learning/25_phrasing.yml` |
-| Articulation | [Shorten](generators/SHORTEN.md) | Plays notes on chosen steps short | `examples/learning/14_acid_glide.yml` |
-| Harmony | [FollowChords](generators/FOLLOW_CHORDS.md) | Moves a figure to the chords another track plays | `examples/learning/24_follow_chords.yml` |
-| Harmony | [Progression](generators/PROGRESSION.md) | Moves a figure through a progression of chords | `examples/learning/06_chord_progression_generator.yml` |
-| Rhythm | [AutoRatchet](generators/AUTORATCHET.md) | Chops notes into quick repeats | `examples/learning/11_ode_to_joy_ratchet.yml` |
-| Rhythm | [Euclid](generators/EUCLID.md) | Keeps only the notes on a Euclidean rhythm | `examples/other/euclidean.yml` |
-| Rhythm | [Strum](generators/STRUM.md) | Spreads a chord's notes in time like a pick | `examples/learning/13_classic_strum.yml` |
-| Timing | [Drag](generators/DRAG.md) | Plays notes on chosen steps late | `examples/learning/14_acid_glide.yml` |
-| Timing | [Rush](generators/RUSH.md) | Plays notes on chosen steps early | `examples/learning/14_acid_glide.yml` |
-| Transitions | [Articulate](generators/ARTICULATE.md) | Ramps how long notes sound over a section | `examples/learning/15_acid_articulate.yml` |
-| Transitions | [Density](generators/DENSITY.md) | Ramps how many notes play over a section | `examples/by_genre/electronic/edm_density.yml` |
-| Transitions | [Drift](generators/DRIFT.md) | Changes the song slowly from version A to version B | `examples/by_genre/electronic/mainstreet_hoedown.yml` |
-| Transitions | [Swell](generators/SWELL.md) | Ramps how loud notes play over a section | `examples/learning/16_bolero_swell.yml` |
-| Voicing | [Arpeggiator](generators/ARPEGGIATOR.md) | Plays a chord one note at a time, with offsets | `examples/learning/12_sailor_arpeggiator.yml` |
-| Voicing | [Guitarify](generators/GUITARIFY.md) | Holds chords as a hand does and plays a bar of strokes on them | `examples/learning/23_guitarify.yml` |
-| Voicing | [VoiceLeading](generators/VOICE_LEADING.md) | Voices each chord nearest the chord before | `examples/learning/05_voice_leading.yml` |
+### Arrangement
+
+What plays where, among the tracks.
+
+| Generator | What it does | Demo |
+| --- | --- | --- |
+| [Hocket](generators/HOCKET.md) | Deals one track's notes out among other tracks | `examples/learning/19_hocket_shanty.yml` |
+
+### Articulation
+
+How each note is played: joined, short, or phrased.
+
+| Generator | What it does | Demo |
+| --- | --- | --- |
+| [Glide](generators/GLIDE.md) | Runs notes on chosen steps into the next note | `examples/learning/14_acid_glide.yml` |
+| [Phrasing](generators/PHRASING.md) | Ends each line of a tune early for a breath | `examples/learning/25_phrasing.yml` |
+| [Shorten](generators/SHORTEN.md) | Plays notes on chosen steps short | `examples/learning/14_acid_glide.yml` |
+
+### Harmony
+
+Which chords a figure follows.
+
+| Generator | What it does | Demo |
+| --- | --- | --- |
+| [FollowChords](generators/FOLLOW_CHORDS.md) | Moves a figure to the chords another track plays | `examples/learning/24_follow_chords.yml` |
+| [Progression](generators/PROGRESSION.md) | Moves a figure through a progression of chords | `examples/learning/06_chord_progression_generator.yml` |
+
+### Rhythm
+
+Which notes sound, and when within the beat.
+
+| Generator | What it does | Demo |
+| --- | --- | --- |
+| [AutoRatchet](generators/AUTORATCHET.md) | Chops notes into quick repeats | `examples/learning/11_ode_to_joy_ratchet.yml` |
+| [Euclid](generators/EUCLID.md) | Keeps only the notes on a Euclidean rhythm | `examples/other/euclidean.yml` |
+| [Strum](generators/STRUM.md) | Spreads a chord's notes in time like a pick | `examples/learning/13_classic_strum.yml` |
+
+### Timing
+
+Notes placed early or late.
+
+| Generator | What it does | Demo |
+| --- | --- | --- |
+| [Drag](generators/DRAG.md) | Plays notes on chosen steps late | `examples/learning/14_acid_glide.yml` |
+| [Rush](generators/RUSH.md) | Plays notes on chosen steps early | `examples/learning/14_acid_glide.yml` |
+
+### Transitions
+
+A change that takes place over a section or a song.
+
+| Generator | What it does | Demo |
+| --- | --- | --- |
+| [Articulate](generators/ARTICULATE.md) | Ramps how long notes sound over a section | `examples/learning/15_acid_articulate.yml` |
+| [Density](generators/DENSITY.md) | Ramps how many notes play over a section | `examples/by_genre/electronic/edm_density.yml` |
+| [Drift](generators/DRIFT.md) | Changes the song slowly from version A to version B | `examples/by_genre/electronic/mainstreet_hoedown.yml` |
+| [Swell](generators/SWELL.md) | Ramps how loud notes play over a section | `examples/learning/16_bolero_swell.yml` |
+
+### Voicing
+
+How a chord's notes are laid out and played.
+
+| Generator | What it does | Demo |
+| --- | --- | --- |
+| [Arpeggiator](generators/ARPEGGIATOR.md) | Plays a chord one note at a time, with offsets | `examples/learning/12_sailor_arpeggiator.yml` |
+| [Guitarify](generators/GUITARIFY.md) | Holds chords as a hand does and plays a bar of strokes on them | `examples/learning/23_guitarify.yml` |
+| [VoiceLeading](generators/VOICE_LEADING.md) | Voices each chord nearest the chord before | `examples/learning/05_voice_leading.yml` |
 
 [About Demos](DEMOS.md) describes every demo, and its table shows which features each one uses.
 
