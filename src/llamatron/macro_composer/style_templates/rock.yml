@@ -472,6 +472,8 @@ song_plan:
   comes_in: {keys: 5, voices: 8}
   cymbal: [[1, hat quarters], [4, hat eighths], [7, hat half open], [9, ride eighths]]
   fills: {small: toms on four, medium: snare and toms, big: snare on every eighth of the last half}
+  # A marker ends a phrase inside a section where no fill is played: a stroke or two laid over the bar.
+  marker: {tom low: [none, none, none, none, none, none, none, soft]}
   tails:
     usual: [drop-out, stops, build]
     punk: [stops]

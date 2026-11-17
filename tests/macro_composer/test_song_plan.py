@@ -23,7 +23,8 @@ from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer import arranger, composer, drum_solo, hook_kinds, joins, phrasing
 from llamatron.macro_composer.melody import BREATHES
 from llamatron.macro_composer.notation import LOUD, NONE, REST, SOFT, STEPS
-from llamatron.macro_composer.song_plan import (ALLOWS, APPROACH, BY_PLACE, CONTRAST, CRASH_START, ENERGY, GROWTH, HIGHEST_ENERGY, LAST_CHORD, LOUDEST, LOWEST_ENERGY, NOT_AT_ALL,
+from llamatron.macro_composer.song_plan import (ALLOWS, APPROACH, BIG, BY_PLACE, CONTRAST, CRASH_START, ENERGY, GROWTH, HIGHEST_ENERGY, LAST_CHORD, LOUDEST, FILLS_COME, LAST_CHORUS, LOWEST_ENERGY, MARKER,
+                                                MARKER_BARS, MARKER_EVERY, NOT_AT_ALL,
                                                 PHRASING, PLAN_OF_SONG, PLAYS, QUIETEST, SCENE_SETTINGS, SECTION_PLAN, SETUP, SHAPES, STAGE_LINE, STAGED, SWELL_END, SWELL_START,
                                                 SongPlan, level_at, loudness_at)
 from llamatron.macro_composer.wizard_choices import SHAPE_OF_SECTION, SHAPE_USUAL, WizardChoices
@@ -75,6 +76,10 @@ THE_HOOK = 'hook'
 THE_SOLOIST = 'solo'
 A_KIND_WITH_SOLOS = 'rock and roll'
 BLUES = 'blues'
+TOM_LOW = 'tom low'
+TWO_PHRASES = 8
+A_CHOSEN_FILL = 'toms on four'
+A_LEVEL_PLAN = {GROWTH: 0, CONTRAST: 0}
 A_BLUES = 'shuffle'
 
 
@@ -204,6 +209,41 @@ class TestJoins(unittest.TestCase):
         build = joins.drum_tail(piece=SNARE, plain=plain, tail=joins.BUILD, eighths=0)
         self.assertEqual(build, [SOFT] * (EIGHTHS // 2) + [LOUD] * (EIGHTHS // 2))
         self.assertEqual(joins.drum_tail(piece=KICK, plain=plain, tail=joins.BUILD, eighths=0), plain)
+
+    def marker(self):
+        return arranger.style_named(ROCK)[PLAN_OF_SONG][MARKER]
+
+    def test_a_phrase_inside_a_section_ends_on_the_marker_and_a_section_of_one_phrase_has_none(self):
+        made = sections_of(song(form=[INTRO, VERSE, CHORUS, ENDING], sections={INTRO: {arranger.BARS: MARKER_BARS}, VERSE: {arranger.BARS: TWO_PHRASES}}))
+        self.assertNotIn(MARKER, made[0])
+        self.assertEqual((made[1][MARKER], made[1][MARKER_EVERY]), (self.marker(), MARKER_BARS))
+
+    def test_a_song_that_chose_its_fill_or_how_often_fills_come_has_no_marker(self):
+        form = [VERSE, CHORUS]
+        chosen = {**song(form=form), arranger.PICKS: {arranger.FILLS: A_CHOSEN_FILL}}
+        often = {**song(form=form), FILLS_COME: MARKER_BARS}
+        for given in (chosen, often):
+            self.assertTrue(all(MARKER not in section for section in sections_of(given)))
+
+    def test_the_kit_plays_the_marker_over_the_last_bar_of_a_phrase_and_never_over_the_section_s_last(self):
+        style = arranger.style_named(ROCK)
+        given = arranger.arranged(style=style, song=song(form=[VERSE, CHORUS], sections={VERSE: {arranger.BARS: TWO_PHRASES}}))
+        part = given[composer.PARTS][given[composer.FORM][0][composer.PLAY][TOM_LOW][composer.PART]]
+        hits = part[arranger.HITS]
+        grid = len(hits) // TWO_PHRASES
+        stroke = self.marker()[TOM_LOW]
+        marked = hits[(MARKER_BARS - 1) * grid:MARKER_BARS * grid]
+        self.assertEqual([hit for hit in marked if hit != NONE], [hit for hit in stroke if hit != NONE])
+        self.assertTrue(all(hit == NONE for hit in hits[:(MARKER_BARS - 1) * grid]))
+
+    def test_the_last_chorus_is_come_into_on_the_big_fill_whatever_the_rise(self):
+        style = arranger.style_named(ROCK)
+        big = style[PLAN_OF_SONG][arranger.FILLS][BIG]
+        form = [VERSE, CHORUS, VERSE, BRIDGE, CHORUS]
+        # A song with no tail allowed before its last chorus and no rise into it still takes the big fill there.
+        given = {**song(form=form, template=PUNK), PLAN_OF_SONG: {**A_LEVEL_PLAN, LAST_CHORUS: LOWEST_ENERGY}}
+        made = sections_of(given)
+        self.assertEqual(made[3][joins.LEAVES].get(joins.FILL_OF_JOIN), big)
 
 
 class TestStagedSolos(unittest.TestCase):

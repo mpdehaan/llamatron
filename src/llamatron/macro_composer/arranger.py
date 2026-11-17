@@ -232,6 +232,8 @@ SAID_OF_SECTION = 'said'
 DRUM_SOLO = 'drum_solo'
 FILL_INSIDE = 'fill_inside'
 FILL_INSIDE_EVERY = 'fill_inside_every'
+MARKER = 'marker'
+MARKER_EVERY = 'marker_every'
 MADE_SCENE_SAID = '{} {}'
 LAST_CHORD = 'last_chord'
 SETTINGS_OF_SCENE = 'settings'
@@ -535,13 +537,16 @@ def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars
         last_fill = fill_named(style=style, name=leaves.get(FILL_OF_JOIN))
     tail = (leaves or {}).get(TAIL)
     inside_every = (inside or {}).get(FILL_INSIDE_EVERY) or length
+    # A marker is a stroke or two laid over a phrase's last bar where no fill is played.
+    marker = ((inside or {}).get(MARKER) or {}) if leaves is not None else {}
+    marker_every = (inside or {}).get(MARKER_EVERY) or length
     adds, _ = choice_that_fits(choices=drummer.get(ADDS), picks=picks)
     varied = []
     for variation in drummer.get(VARIES, []):
         more, _ = choice_that_fits(choices=variation[CHOICES], picks=picks)
         varied.append((variation[BARS], more))
     parts = {}
-    every = [bars, adds, fill, last_fill, {piece: [NONE] for piece in pieces_of_tail(tail)}] + [more for _, more in varied]
+    every = [bars, adds, fill, last_fill, marker, {piece: [NONE] for piece in pieces_of_tail(tail)}] + [more for _, more in varied]
     every += [{piece: given} for piece, given_bars in over.items() for given in given_bars if given is not None]
     for piece in list(dict.fromkeys(piece for layer in every for piece in layer)):
         layers = [layer[piece] for layer in every if piece in layer]
@@ -573,6 +578,8 @@ def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars
                     played = widened(hits=last_fill[piece], to=grid)
                 elif leaves is not None and bar != length and bar % inside_every == 0 and piece in fill:
                     played = widened(hits=fill[piece], to=grid)
+                elif bar != length and bar % marker_every == 0 and bar % inside_every != 0 and piece in marker:
+                    played = laid_over(bar=played, more=widened(hits=marker[piece], to=grid))
                 hits += played
         # A style as written says a drum's normal stroke alone, and a song's style all four levels.
         levels = drum_levels(style[LOUDNESS].get(piece, style[LOUDNESS][DRUMS]))
@@ -865,7 +872,7 @@ def arranged(*, style, song):
         leaves = section.get(LEAVES)
         key = (level, tuple(sorted(changed.items())), math.gcd(plays.get(FILL_EVERY, phrase_bars) or phrase_bars, section[BARS]))
         if leaves is not None:
-            key = key + (section[BARS], frozen(leaves), section.get(FILL_INSIDE), section.get(FILL_INSIDE_EVERY))
+            key = key + (section[BARS], frozen(leaves), section.get(FILL_INSIDE), section.get(FILL_INSIDE_EVERY), frozen(section.get(MARKER)), section.get(MARKER_EVERY))
         if drum_solo_here:
             key = (DRUM_SOLO, section[BARS])
         # Under a riff of chords on its accents the kick strikes each accent, bar by bar.
@@ -879,7 +886,7 @@ def arranged(*, style, song):
                 made = solo_parts(style=style, bars=section[BARS], seed=song.get(SEED, 0), kit=played)
             else:
                 made = drum_parts(style=style, picks={**picks, **changed}, roles=roles, meter=meter, phrase_bars=phrase_bars, drummer=plays, section_bars=section[BARS], own_fill=FILLS in song.get(PICKS, {}), seed=song.get(SEED, 0), kit=played,
-                                  leaves=leaves, inside={FILL_INSIDE: section.get(FILL_INSIDE), FILL_INSIDE_EVERY: section.get(FILL_INSIDE_EVERY)}, over=over)
+                                  leaves=leaves, inside={FILL_INSIDE: section.get(FILL_INSIDE), FILL_INSIDE_EVERY: section.get(FILL_INSIDE_EVERY), MARKER: section.get(MARKER), MARKER_EVERY: section.get(MARKER_EVERY)}, over=over)
             drum_sets[key] = {}
             for piece, part in made.items():
                 # A piece of the kit switched off is left out: its strokes are never moved to another piece.

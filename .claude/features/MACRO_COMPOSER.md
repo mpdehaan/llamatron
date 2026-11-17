@@ -329,6 +329,11 @@ clouds; generate and test, with motif development and counterpoint last.
   heading with a number for each level the song plays (`set_loudness_level`, `loudness_levels_offered`, found by making the song
   with the level moved, only while the heading is open); Bksp gives a level back to the genre. Not yet: the lean on players of
   notes, the phrase offsets (a section's first beat, a climbing last bar) and the small random amount.
+- **Fills by the join, and markers** (`SongPlan._joins`, `_fill_inside_every`, `_marker`): a section leaves on a fill sized by
+  how far the Energy rises, the big one always into the last chorus; inside a section from Energy 5 up the small fill comes
+  every 8 bars; and every phrase of 4 bars that ends inside a section with no fill there ends on the style's `marker`
+  (`song_plan: marker:`, a stroke or two laid over the bar by `drum_parts`). A song that chose its fill, or how often fills
+  come, has no markers. The four band genres each write a marker.
 - **Staged solos** (`SongPlan.stages`, a section's `staged: true` with `shapes`): the first solo of a song plays its kind's
   plan, and each solo after takes the next of the kind's shapes in turn (theme and variations, climbs, starts from the hook,
   a repeated figure, at the peak), its lines named for the stage so that each solo has ideas of its own and no two running

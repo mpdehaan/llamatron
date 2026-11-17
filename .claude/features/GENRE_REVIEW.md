@@ -54,6 +54,8 @@ One genre at a time, rock first, alternating with the electronic stages (band st
 - **Fills by the join.** The plan owns fills in every genre: a marker at a 4-bar phrase's end, up to a beat at an 8-bar phrase's
   end, half a bar into a new section, a whole bar into the last chorus. A level changes how a fill is played, never how often.
   Blues keeps a small fill at bars 4 and 8 and a larger at bar 12.
+  Built (`.claude/features/MACRO_COMPOSER.md`, "Fills by the join, and markers"), but for half a bar against a whole bar as sizes
+  of their own.
 - **What a level never does:** change the kick or snare that names the subgenre, fill over the tune, move the bass off the root
   on a new chord's first beat, play more when Energy is low, or decide placement. Ahead of or behind the beat is a trait of its own.
 - **Chords:** two chords in a bar, a chord over two bars, a quality for every degree (triad, sevenths, ninth, power), and a

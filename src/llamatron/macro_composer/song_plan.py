@@ -100,6 +100,9 @@ SAID_OF_SECTION = 'said'
 DRUM_SOLO = 'drum_solo'
 FILL_INSIDE = 'fill_inside'
 FILL_INSIDE_EVERY = 'fill_inside_every'
+# A marker: a stroke or two the style's plan writes, laid over the last bar of each phrase inside a section that has no fill there.
+MARKER = 'marker'
+MARKER_EVERY = 'marker_every'
 LAST_CHORD = 'last_chord'
 DEGREE = 'degree'
 ACCIDENTAL = 'accidental'
@@ -139,7 +142,8 @@ MEDIUM = 'medium'
 BIG = 'big'
 BIG_RISE = 3
 FILL_INSIDE_FROM = 5
-FILL_INSIDE_BARS = 4
+FILL_INSIDE_BARS = 8
+MARKER_BARS = 4
 OTHER_SIZE = {BIG: MEDIUM, MEDIUM: SMALL, SMALL: MEDIUM}
 # A crash starts a section that arrives at this Energy or more from below, and a drop-out lasts about a second: so many eighths by the tempo.
 CRASH_FROM = 6
@@ -325,6 +329,13 @@ class SongPlan:
             return asked if isinstance(asked, int) and 0 < asked < bars else None
         return FILL_INSIDE_BARS if bars > FILL_INSIDE_BARS and self._energies[place] >= FILL_INSIDE_FROM else None
 
+    def _marker(self, *, place):
+        """The marker the section's phrases end on, or nothing: the style's, in a section longer than a phrase, unless the song says how
+        often its fills come, chose its fill or asked for none."""
+        if self._song.get(FILLS_COME) is not None or self._song.get(PICKS, {}).get(FILLS_TRAIT) is not None:
+            return None
+        return self._of_style.get(MARKER) if self._sections[place].get(BARS, 0) > MARKER_BARS else None
+
     def _joins(self):
         """What each section leaves with: the tail and the fill, by what follows, how far the Energy moves and what was done last."""
         allowed = self._for_subgenre(field=TAILS_ALLOWED, default=(DROP_OUT, STOPS, BUILD))
@@ -349,7 +360,8 @@ class SongPlan:
             elif self._rises(place) and BUILD in allowed and (before or {}).get(TAIL) != BUILD:
                 join = {TAIL: BUILD}
             elif not following.get(HELD):
-                size = BIG if rise >= BIG_RISE else MEDIUM if rise > 0 else SMALL
+                # The last chorus is come into on the biggest fill, whatever the rise.
+                size = BIG if rise >= BIG_RISE or place + 1 == last_chorus else MEDIUM if rise > 0 else SMALL
                 if (before or {}).get(FILL_OF_JOIN) == self._fill(size):
                     size = OTHER_SIZE[size]
                 if self._fill(size):
@@ -445,6 +457,10 @@ class SongPlan:
                     if inside_every and self._fill(SMALL):
                         made[FILL_INSIDE] = self._fill(SMALL)
                         made[FILL_INSIDE_EVERY] = inside_every
+                    marker = self._marker(place=place)
+                    if marker:
+                        made[MARKER] = marker
+                        made[MARKER_EVERY] = MARKER_BARS
                     if joins[place].get(TAIL):
                         said.append(MSG_PLAN_LEAVES_TAIL.format(joins[place][TAIL]))
                     elif joins[place].get(FILL_OF_JOIN):
