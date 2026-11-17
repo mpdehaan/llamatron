@@ -758,6 +758,10 @@ MSG_WIZARD_GROUP_RIFF = 'Riff'
 MSG_WIZARD_RIFF_PLAYED_BY_LABEL = 'Played by'
 MSG_WIZARD_RIFF_SAID_LABEL = 'Heard'
 MSG_WIZARD_RIFF_NOTES_LABEL = 'Riff notes'
+# Made of, since Notes is the hook's field on the same panel.
+MSG_WIZARD_RIFF_SETTING_LABELS = {'notes': 'Made of', 'bars': 'Bars', 'between': 'Between', 'under the tune': 'Under the tune', 'with chords': 'With chords'}
+# The kick's row above the riff's picture.
+MSG_WIZARD_RIFF_KICK_ROW = 'kick'
 MSG_WIZARD_RIFF_NOTES_TITLE = 'Riff notes'
 MSG_WIZARD_NEW_RIFF_BUTTON = 'New riff'
 MSG_WIZARD_RIFF_PLAYERS_JOINED = ' and '
