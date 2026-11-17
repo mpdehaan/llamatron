@@ -64,3 +64,12 @@ How a singer or a wind player delivers a line, which a tune written by rule lack
 - **A hierarchy of lines.** A line of four bars is two of two, with a smaller dip at its middle.
 - **Anticipation**, a note an eighth early, suits syncopated popular styles and is wrong for others.
 - With notes alone (start, length, loudness) a held note cannot swell or fade; that needs a controller.
+- **More on the breath** (from a second review, which read the generator's code). A breath is musical time that scales with the
+  tempo, never a count of eighths, and takes at most half of the line's last note; where the last note is too short, time comes
+  from the note before, or no breath is taken. Where the tune already rests, no breath is cut. Pickup notes before a bar line
+  belong to the next line, so the breath goes before them. The breath after the last line of a clip is the fullest.
+- **What matters most** in making a programmed tune sound played: first the loudness shape of each line, since notes all at one
+  loudness are the clearest sign of a machine; then how notes end and join. Timing nudges matter least. An early note is chosen
+  where it fits, a long note before a strong beat, never by a count of lines, and is off unless the style is syncopated.
+- Shaping a line (its loudness and its joining) is a different thing from a ramp over a whole clip or section: the first knows
+  where lines end.
