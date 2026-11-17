@@ -33,13 +33,10 @@ from llamatron.music.sound import CHORD, DEGREE, HELD, HELD_SOUND, KIND, LENGTH,
 from llamatron.support.length import ZERO, Length
 
 HALF_STEPS_PER_OCTAVE = 12
-HALF_STEP = 1
-# The places above a figure's root, counted in notes of the scale from 0, that are a chord's third, fifth and seventh.
-CHORD_PLACES = (2, 4, 6)
+# The half steps above a chord's root that its third, its fifth and its seventh can be, by the place above a figure's root, counted in notes of the scale from 0, that is the figure's.
+KINDS_OF_CHORD_NOTE = {2: (3, 4), 4: (6, 7, 8), 6: (9, 10, 11)}
 # How many notes a scale has when its thirds, fifths and sevenths lie at those places.
 PLACED_SCALE_SIZE = 7
-# How many different notes a chord needs before it says what its third is.
-FEWEST_NOTES_OF_A_FULL_CHORD = 3
 
 
 class FollowChords(ClipGenerator):
@@ -86,31 +83,41 @@ class FollowChords(ClipGenerator):
 
 
 def _to_chord(*, note, chord, scale):
-    """Return a note moved to a chord, given as its root's MIDI number and its notes within an octave, or as it was where moving it would leave the MIDI range."""
+    """Return a note moved to a chord, given as its root's MIDI number and its notes within an octave, or as it was where moving it would leave the MIDI range.
+
+    A root on a note of the scale moves the note along the scale. A root between two notes of
+    the scale moves it by the exact half steps from the scale's root to the chord's, keeping
+    the figure's own sound, as a Progression moves a figure to a degree with a sharp or a flat.
+    """
     root, held = chord
     steps, extra = _place_in(midi=root, scale=scale)
     try:
-        moved = along_scale(note=note, steps=steps, scale=scale)
         if extra:
-            moved = Sound.half_step(moved, extra)
-        return _as_the_chord_has_it(note=note, moved=moved, held=held, scale=scale)
+            moved = Sound.half_step(note, (root - scale.get_root().get_midi_number()) % HALF_STEPS_PER_OCTAVE)
+        else:
+            moved = along_scale(note=note, steps=steps, scale=scale)
+        return _as_the_chord_has_it(note=note, moved=moved, chord=chord, scale=scale)
     except ValueError:
         return note
 
 
-def _as_the_chord_has_it(*, note, moved, held, scale):
-    """Return a moved note as the chord's own third, fifth or seventh where the scale's is a half step off the chord's."""
+def _as_the_chord_has_it(*, note, moved, chord, scale):
+    """Return a moved note as the chord's own third, fifth or seventh, where the note is the figure's third, fifth or seventh and the chord has another of that kind.
+
+    Each kind is the half steps above a chord's root it can be: a third 3 or 4, a fifth 6, 7 or
+    8, a seventh 9, 10 or 11. A chord with none of the kind, a triad with no seventh, says
+    nothing of it, and one with two leaves the note as moved.
+    """
+    root, held = chord
     above, extra = _place_in(midi=note[MIDI], scale=scale)
-    if extra or above not in CHORD_PLACES or len(scale.get_type().value) != PLACED_SCALE_SIZE or len(held) < FEWEST_NOTES_OF_A_FULL_CHORD:
+    if extra or above not in KINDS_OF_CHORD_NOTE or len(scale.get_type().value) != PLACED_SCALE_SIZE:
         return moved
-    place = moved[MIDI] % HALF_STEPS_PER_OCTAVE
-    if place in held:
+    kind = KINDS_OF_CHORD_NOTE[above]
+    own = (moved[MIDI] - root) % HALF_STEPS_PER_OCTAVE
+    has = [interval for interval in kind if (root + interval) % HALF_STEPS_PER_OCTAVE in held]
+    if own not in kind or own in has or len(has) != 1:
         return moved
-    higher = (place + HALF_STEP) % HALF_STEPS_PER_OCTAVE in held
-    lower = (place - HALF_STEP) % HALF_STEPS_PER_OCTAVE in held
-    if higher == lower:
-        return moved
-    return Sound.half_step(moved, HALF_STEP if higher else -HALF_STEP)
+    return Sound.half_step(moved, has[0] - own)
 
 
 def _place_in(*, midi, scale):

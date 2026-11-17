@@ -115,7 +115,15 @@ class TestFollowing(unittest.TestCase):
         played = pitches(following_data(chords=[3, None, None, None], chord_rows={Row.CHORD: [ChordSymbol.MAJOR, None, None, None]}))
         self.assertEqual(played[SYNTH], [E, G_SHARP, B, E])
 
-    def test_a_root_between_two_notes_of_the_scale_moves_the_figure_the_half_step_besides(self):
+    def test_a_triad_says_nothing_of_a_seventh_so_the_figures_seventh_stays_in_the_scale(self):
+        played = pitches(following_data(chords=[1, 4], figure=[7, 7]))
+        self.assertEqual(played[SYNTH], [B, E + OCTAVE_UP])
+
+    def test_a_seventh_chord_gives_the_figure_its_own_seventh(self):
+        played = pitches(following_data(chords=[1], chord_rows={Row.CHORD: [ChordSymbol.DOMINANT7]}, figure=[7]))
+        self.assertEqual(played[SYNTH], [B_FLAT])
+
+    def test_a_root_between_two_notes_of_the_scale_moves_the_figure_by_exact_half_steps(self):
         rows = {Row.CHORD: [ChordSymbol.MAJOR, None, None, None], Row.ACCIDENTAL: [Accidental.FLAT, None, None, None]}
         played = pitches(following_data(chords=[7, None, None, None], chord_rows=rows))
         self.assertEqual(played[SYNTH], [B_FLAT, D + OCTAVE_UP, F + OCTAVE_UP, B_FLAT])

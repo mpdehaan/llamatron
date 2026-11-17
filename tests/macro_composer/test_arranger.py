@@ -20,10 +20,12 @@ made into a whole song, the picks checked against what each needs, and a tune sk
 import os
 import unittest
 
-from llamatron.composition.limits import MAX_PROGRESSION_CHORDS
+from llamatron.composition.file_format import ChordSymbol, GeneratorKind, PatternSetting, Row, Section
+from llamatron.composition.generator_settings import FollowChordsSetting
+from llamatron.composition.limits import MAX_PROGRESSION_CHORDS, MAX_STEP_SIZE
 from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer import arranger, composer, loudness, melody, notation, players
-from llamatron.strings.macro_composer import MSG_PART_OF_SECTION, MSG_TIMING_CHAIN
+from llamatron.strings.macro_composer import MSG_CHORDS_TRACK, MSG_FOLLOW_CHORDS_NAME, MSG_PART_OF_SECTION, MSG_TIMING_CHAIN
 from llamatron.support.safe_yaml import load_safely
 from llamatron.support.version import VERSION
 
@@ -87,6 +89,7 @@ PHRASE = 4
 LAST_BAR = 4
 OWN_CHORDS = [1, 1, 4, 4]
 HALF_NOTE = '1/2'
+FLAT_MARK = 'b'
 DOTTED_HALF_NOTE = '3/4'
 A_WHOLE_BAR = '1 bar'
 WHOLE = 100
@@ -344,16 +347,40 @@ class TestArranged(unittest.TestCase):
         self.assertEqual([scene[composer.SCENE] for scene in given[composer.FORM]], [INTRO, CHORUS, SECOND_CHORUS, SOLO, ENDING])
         self.assertEqual(given[composer.FORM][1][composer.BARS], self.style[arranger.SECTIONS][CHORUS][arranger.BARS])
 
-    def test_the_bass_and_the_chords_are_written_over_chord_one_and_run_through_the_sections_progression(self):
+    def chords_written(self, *, given, section):
+        """The pattern of the chords track in a section, as the arranger wrote it."""
+        return given[composer.PARTS][MSG_PART_OF_SECTION.format(section, arranger.CHORDS)][composer.RAW]
+
+    def test_the_bass_and_the_chords_are_written_over_chord_one_and_follow_the_sections_chords_on_the_chords_track(self):
         given = arranger.arranged(style=self.style, song=a_song())
-        chain = given[composer.FORM][1][composer.PLAY][BASS][composer.CHAINS][0]
-        progression = given[composer.CHAINS][chain][0][arranger.PROGRESSION]
+        played = given[composer.FORM][1][composer.PLAY]
+        chain = played[BASS][composer.CHAINS][0]
+        self.assertEqual(given[composer.CHAINS][chain][0], {GeneratorKind.FOLLOW_CHORDS: MSG_FOLLOW_CHORDS_NAME})
+        self.assertEqual(given[composer.GENERATORS][Section.FOLLOW_CHORDS], {MSG_FOLLOW_CHORDS_NAME: {FollowChordsSetting.CHORDS_FROM: MSG_CHORDS_TRACK}})
+        self.assertNotIn(arranger.PROGRESSIONS, given[composer.GENERATORS])
         pattern = arranger.values_of(style=self.style, trait=arranger.CHORD_TRAIT)[self.style[arranger.TEMPLATES][SHUFFLE][arranger.CHORD_TRAIT]][arranger.PATTERN]
-        made = given[composer.GENERATORS][arranger.PROGRESSIONS][progression]
-        # The shuffle's last two bars hold two chords each, so the progression is written by the half bar.
+        made = given[composer.PARTS][played[MSG_CHORDS_TRACK]][composer.RAW]
+        # The shuffle's last two bars hold two chords each, so the chords are written by the half bar, a step a chord.
         self.assertTrue(any(arranger.shares_a_bar(chord) for chord in pattern))
-        self.assertEqual(made[arranger.CHORDS], [arranger.chord_of(chord)[arranger.DEGREE] for chord in arranger.halves_of(pattern)])
-        self.assertEqual(made[arranger.EVERY], arranger.half_bar_of(arranger.COMMON_TIME))
+        self.assertEqual(made[Row.DEGREE], [arranger.chord_of(chord)[arranger.DEGREE] for chord in arranger.halves_of(pattern)])
+        self.assertEqual(made[PatternSetting.STEP_SIZE], arranger.half_bar_of(arranger.COMMON_TIME))
+        self.assertEqual(set(made[Row.CHORD]), {arranger.SCALE_TRIAD})
+
+    def test_the_chords_track_is_muted_in_the_set_made(self):
+        given = arranger.arranged(style=self.style, song=a_song())
+        setlist = Setlist.from_data(data=composer.composed(given=given, version=VERSION))
+        song = setlist.get_songs()[0]
+        self.assertEqual([name for name in song.get_track_names() if song.get_track(name).is_muted()], [MSG_CHORDS_TRACK])
+
+    def test_a_chord_with_a_sharp_or_a_flat_is_written_as_the_scales_home_chord_moved_there(self):
+        made = arranger.chords_written(progression={arranger.CHORDS: [1, 7], arranger.ACCIDENTALS: [None, FLAT_MARK]}, meter=arranger.COMMON_TIME, scale_type=arranger.MAJOR)
+        self.assertEqual(made[Row.CHORD], [arranger.SCALE_TRIAD, ChordSymbol.MAJOR])
+        self.assertEqual(made[Row.ACCIDENTAL], [None, FLAT_MARK])
+
+    def test_chords_longer_than_a_step_can_be_are_left_to_a_progression_on_the_chords_track(self):
+        long = {arranger.CHORDS: [1, 4], arranger.EVERY: MAX_STEP_SIZE * 2}
+        self.assertIsNone(arranger.chords_written(progression=long, meter=arranger.COMMON_TIME, scale_type=arranger.MAJOR))
+        self.assertEqual(arranger.one_chord(arranger.COMMON_TIME)[Row.DEGREE], [arranger.HOME_DEGREE])
 
     def test_a_bar_of_two_chords_is_its_two_by_the_half_bar_and_its_first_bar_by_bar(self):
         self.assertEqual(arranger.halves_of([1, [1, 5]]), [1, 1, 1, 5])
@@ -367,9 +394,9 @@ class TestArranged(unittest.TestCase):
 
     def test_a_song_whose_bars_hold_two_chords_loads_and_plays_them(self):
         given = arranger.arranged(style=self.style, song=a_song(sections={SOLO: {arranger.CHORDS: [1, [4, 5]]}}))
-        made = given[composer.GENERATORS][arranger.PROGRESSIONS][MSG_PART_OF_SECTION.format(SOLO, arranger.CHORDS)]
-        self.assertEqual(made[arranger.CHORDS], [1, 1, 4, 5])
-        self.assertEqual(made[arranger.EVERY], arranger.half_bar_of(arranger.COMMON_TIME))
+        made = self.chords_written(given=given, section=SOLO)
+        self.assertEqual(made[Row.DEGREE], [1, 1, 4, 5])
+        self.assertEqual(made[PatternSetting.STEP_SIZE], arranger.half_bar_of(arranger.COMMON_TIME))
         Setlist.from_data(data=composer.composed(given=given, version=VERSION))
 
     def test_more_shared_bars_than_a_progression_holds_are_played_a_chord_a_bar(self):
@@ -381,7 +408,7 @@ class TestArranged(unittest.TestCase):
 
     def test_a_sections_own_chords_replace_the_styles(self):
         given = arranger.arranged(style=self.style, song=a_song(sections={SOLO: {arranger.CHORDS: OWN_CHORDS}}))
-        self.assertEqual(given[composer.GENERATORS][arranger.PROGRESSIONS][MSG_PART_OF_SECTION.format(SOLO, arranger.CHORDS)][arranger.CHORDS], OWN_CHORDS)
+        self.assertEqual(self.chords_written(given=given, section=SOLO)[Row.DEGREE], OWN_CHORDS)
 
     def test_a_strummed_guitar_brings_its_guitarify(self):
         given = arranger.arranged(style=self.style, song=a_song(picks={COMPING: STABS}))
@@ -399,7 +426,7 @@ class TestArranged(unittest.TestCase):
         given = arranger.arranged(style=self.style, song=a_song())
         tracks = list(given[composer.TRACKS])
         drums = given[composer.DRUM_TRACKS]
-        self.assertEqual(tracks[0], COMPING)
+        self.assertEqual(tracks[:2], [MSG_CHORDS_TRACK, COMPING])
         self.assertEqual(tracks[-len(drums):], drums)
         self.assertLess(tracks.index(LEAD), tracks.index(BASS))
 

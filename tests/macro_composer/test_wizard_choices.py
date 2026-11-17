@@ -23,7 +23,7 @@ from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_GM_SOUND, MAX_TEMPO, MIN_TEMPO
 from llamatron.macro_composer.wizard_choices import HOOK_TAKE_KEPT, MOST_ROW_CELLS, PLAYER_ROWS, PLAYER_ROWS_KEPT, MELODY_SETTINGS_KEPT, MELODY_SETTINGS_OF, style_of, STAND_INS, LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, FEWEST_FILLS, FILLS_KEPT, MOST_FILLS, QUIET_NOTES_KEPT, PIECES_OFF_KEPT, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, USUAL_SOUNDS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, HOOK_KEPT, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
 from llamatron.macro_composer.melody import LENGTHS, DEFAULT_GAUGES, HIGHEST_GAUGE, EVOLVING, HOME, LADDER, LEAPS, LOWEST_GAUGE, MOVE, SERIAL, SMART
-from llamatron.strings.macro_composer import MSG_PART_OF_SECTION
+from llamatron.strings.macro_composer import MSG_CHORDS_TRACK, MSG_PART_OF_SECTION
 from llamatron.macro_composer.notation import DEGREE, LINES
 from llamatron.macro_composer.arranger import PICKS, SCALE_TYPE, values_of, share_in, SOUNDS, BY_SCALE_TYPE, GRID, MELODY, PARTS, arranged, DRUMS, GENRE, PLAYERS, ROLE_TITLE, TYPE, WITHOUT, style_named, style_names
 from llamatron.music.note import NoteName
@@ -1422,7 +1422,7 @@ class TestWizardBand(unittest.TestCase):
         self.assertEqual(self.tracks_of(choices), whole)
         choices.set_role_in(role=DRUMS, on=False)
         left = self.tracks_of(choices)
-        self.assertEqual(left, [track for track in whole if track in choices.roles()])
+        self.assertEqual(left, [track for track in whole if track in choices.roles() or track == MSG_CHORDS_TRACK])
 
     def test_the_last_player_cannot_be_left_out(self):
         choices = self.rock()

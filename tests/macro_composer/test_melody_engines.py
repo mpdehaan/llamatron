@@ -552,7 +552,7 @@ class TestEngineChosen(unittest.TestCase):
         song = {**self.song(), arranger.STYLE: EXPERIMENTAL, arranger.TEMPLATE: SERIAL_TRIO, arranger.FORM: [THREE]}
         made = arranger.arranged(style=style, song=song)
         self.assertEqual(style[arranger.MELODY][melody.ENGINE], melody.SERIAL)
-        voices = [part for name, part in made[composer.PARTS].items() if name.startswith(THREE)]
+        voices = [part for name, part in made[composer.PARTS].items() if name.startswith(THREE) and composer.RAW not in part]
         self.assertEqual(len(voices), len(style[arranger.SECTIONS][THREE][arranger.PLAYS]))
         for voice in voices:
             heard = [pitch_of(note) for line in voice[notation.LINES] for note in line if notation.REST not in note][:NOTES_IN_SCALE]
