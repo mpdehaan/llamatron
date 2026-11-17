@@ -469,6 +469,15 @@
     flags, `--autoplay` and `--autoplay-quit-when-finished`, are separate, so a take can be played
     without the page scrolling.
 
+- title: "Discuss the ideas from Claude"
+  priority: 80
+  text: |
+    `.claude/IDEAS_FROM_CLAUDE.yml` holds a dozen ideas a Claude chat gave after reading the generators' pages: for
+    Guitarify, Strum, the Glide, Shorten, Rush and Drag rows, the AutoRatchet, Swell, Density and Articulate. To do with the
+    user, later: check what each says of llamatron against the code, discuss them by generator, and decide which are folded
+    into this file with a priority, which are dropped, and which join an idea here or in `.claude/COMPUTER_MUSIC_IDEAS.yml`.
+    An idea leaves that file when it is folded in or dropped.
+
 - title: "Ocean, a visualizer of ripples on water"
   priority: 99
   text: |
