@@ -44,6 +44,7 @@ The generators fall into seven categories by what they change, as the sidebar an
 | --- | --- | --- | --- |
 | Arrangement | [Hocket](generators/HOCKET.md) | Deals one track's notes out among other tracks | `examples/learning/19_hocket_shanty.yml` |
 | Articulation | [Glide](generators/GLIDE.md) | Runs notes on chosen steps into the next note | `examples/learning/14_acid_glide.yml` |
+| Articulation | [Phrasing](generators/PHRASING.md) | Ends each line of a tune early for a breath | `examples/learning/25_phrasing.yml` |
 | Articulation | [Shorten](generators/SHORTEN.md) | Plays notes on chosen steps short | `examples/learning/14_acid_glide.yml` |
 | Harmony | [FollowChords](generators/FOLLOW_CHORDS.md) | Moves a figure to the chords another track plays | `examples/learning/24_follow_chords.yml` |
 | Harmony | [Progression](generators/PROGRESSION.md) | Moves a figure through a progression of chords | `examples/learning/06_chord_progression_generator.yml` |

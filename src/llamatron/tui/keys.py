@@ -161,6 +161,7 @@ class RowSection:
     # Not 'chord', which is the Chord row's own name.
     CHORD = 'chord_section'
     TIMING = 'timing'
+    BAND = 'band'
     ADVANCED = 'advanced'
     CC = 'cc'
     REGISTER_MOD = 'register_mod'

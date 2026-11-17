@@ -27,6 +27,7 @@ The demos in `examples/learning/`, in the order to learn them, each teaching one
 - [Registers](#registers): `22_registers.yml`
 - [Guitarify](#guitarify): `23_guitarify.yml`
 - [Follow Chords](#follow_chords): `24_follow_chords.yml`
+- [Phrasing](#phrasing): `25_phrasing.yml`
 <!-- end of the generated index -->
 
 <a id="hello_world"></a>
@@ -384,3 +385,18 @@ the key, and the fifth follows chords that a Progression makes on that track.
 | :---: | :---: | :---: | :---: | :---: |
 | ✓ | ✓ | ✓ | ✓ | ✓ |
 <!-- end of the generated summary of 24_follow_chords -->
+
+<a id="phrasing"></a>
+## Phrasing: `25_phrasing.yml`
+
+A slow ballad in A minor whose tune is heard as written and then through a Phrasing generator, which
+ends each line early for a breath, as a singer stops for air. The verse's lines stop three and five
+eighths early, and in the chorus, where the breath is longer, the hook is marked in the pattern's
+No Breath row and plays whole.
+
+[`examples/learning/25_phrasing.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/25_phrasing.yml) · A minor · 64 BPM · 3:00 · 6 scenes · 6 tracks
+
+| chords | chains | phrasing | ties |
+| :---: | :---: | :---: | :---: |
+| ✓ | ✓ | ✓ | ✓ |
+<!-- end of the generated summary of 25_phrasing -->

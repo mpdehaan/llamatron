@@ -187,7 +187,7 @@ class TestRowsOfToggles(unittest.TestCase):
         self.assertEqual(row.written([True, False, None]), [True, False, False])
 
     def test_the_rows_that_are_on_or_off(self):
-        toggles = {Row.GLIDE, Row.TIE, Row.GRAB, Row.SLIDE}
+        toggles = {Row.GLIDE, Row.TIE, Row.GRAB, Row.NO_BREATH, Row.SLIDE}
         self.assertEqual(set(rows_where(lambda row: row.is_on_or_off())), toggles)
 
 

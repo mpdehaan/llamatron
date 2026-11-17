@@ -47,6 +47,8 @@ def section_label(section, *, open_):
     """Return a section's heading as the grid shows it, with its mark for open or closed."""
     return MSG_SECTION_LABEL.format(mark=MSG_SECTION_OPEN_MARK if open_ else MSG_SECTION_CLOSED_MARK, name=MSG_SECTION_NAMES[section])
 
+# How many headings PgDn passes from Basics to reach CCs: Chord, Timing, Band, Advanced and CCs.
+HEADINGS_FROM_BASICS_TO_CCS = 5
 
 class TestSections(UITest):
     """The rows under Octave come in sections headed by rows of the grid: Space or Enter opens and closes one, PgUp and PgDn jump between them, and Tab opens the roll over them."""
@@ -92,16 +94,19 @@ class TestSections(UITest):
         self.assertIn(Box.TOP_TEE, below)
         self.assertIn(Box.DOUBLE_TOP_TEE, below)
         self.assertNotIn(Box.CROSS, below)
-        # Advanced and CCs are closed: their headings share a rule with no joints at all. Timing is closed first so that both headings fit on this screen.
+        # Band and Advanced are closed: their headings share a rule with no joints at all. Timing is closed first so that both headings fit on this screen.
         await self.press(*[forward_key(keybindings.PatternRows.SECTION)] * 3, keybindings.SectionRow.CLOSE)
         self.assertEqual(self.editor.row_name(), RowSection.TIMING)
-        at, lines = self.line_of_heading(RowSection.ADVANCED)
+        at, lines = self.line_of_heading(RowSection.BAND)
         between = lines[at + 1]
         self.assertEqual(between.rstrip(), Box.LEFT_TEE + Box.RULE * (len(between.rstrip()) - 2) + Box.RIGHT_TEE)
-        self.assertIn(self.heading_shown(RowSection.CC), lines[at + 2])
-        # With Basics and Timing closed every heading fits, and the last row is the closed Reg. Cond heading, so the bottom rule under it has no tees.
+        self.assertIn(self.heading_shown(RowSection.ADVANCED), lines[at + 2])
+        # With Basics and Timing closed the last row is the closed Reg. Cond heading, so the bottom rule under it has no tees.
         await self.press(back_key(keybindings.PatternRows.SECTION), back_key(keybindings.PatternRows.SECTION), keybindings.SectionRow.CLOSE)
         self.assertEqual(self.editor.row_name(), RowSection.BASICS)
+        # The cursor goes to the last heading, which brings it onto the screen where the headings are one too many to fit.
+        await self.press(*[forward_key(keybindings.PatternRows.SECTION)] * len(SECTIONS))
+        self.assertEqual(self.editor.row_name(), RowSection.REGISTER_COND)
         _, lines = self.line_of_heading(RowSection.REGISTER_COND)
         bottom = lines[-1].rstrip()
         self.assertIn(self.heading_shown(RowSection.REGISTER_COND), lines[-2])
@@ -160,7 +165,7 @@ class TestSections(UITest):
         await self.press(Key.DOWN)
         self.assertEqual((self.editor.row_name(), self.editor.step), (Row.ACCIDENTAL, 1))
         self.assertIn(Box.BAR + SPACE + section_label(RowSection.BASICS, open_=True), self.text())
-        await self.press(Key.PAGE_DOWN, Key.PAGE_DOWN, Key.PAGE_DOWN, Key.PAGE_DOWN)
+        await self.press(*[Key.PAGE_DOWN] * HEADINGS_FROM_BASICS_TO_CCS)
         self.assertIn(self.heading_shown(RowSection.CC), self.text())
 
     async def test_the_label_column_is_as_wide_as_the_widest_row_whether_its_section_is_open_or_not(self):

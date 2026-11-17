@@ -1,0 +1,179 @@
+version: 1.0.468
+title: Phrasing
+description: a tune heard as written and then breathing, its lines ending early as a singer stops for air
+notes: |
+  Phrasing: a slow ballad at 64 beats a minute in A minor whose tune is heard twice, first as
+  written and then through the Phrasing generator called breath, which ends each line early
+  for a breath, as a singer stops for air. The tune's patterns are the same both times.
+  Run it with: llamatron examples/learning/25_phrasing.yml --to ableton --replace
+
+  Scene 1, the verse as written: four lines of two bars, each ending on a note held for a bar,
+  with no room for air between them.
+  Scene 2, the verse breathing: the same pattern with the chain sung on its clip. The first and
+  third lines stop three eighths early, the second and fourth five, and in the second and fourth
+  the held note comes an eighth early.
+  Scene 3, the chorus as written. Its first and third lines are the hook.
+  Scene 4, the chorus breathing: the scene's Section is chorus, and the generator's By Section
+  table gives a chorus a long breath and no early notes. Every step of the hook is marked in the
+  pattern's No Breath row, under Band, so the hook's held note plays whole while the lines
+  between stop early.
+  Scenes 5 and 6: the verse and the chorus again, breathing.
+
+  Try it: open the generator breath and set Breath to off, or open the pattern chorus tune and
+  take the No Breath marks off the hook, and hear the difference.
+
+  When changing this demo:
+  - Keep each tune the same pattern in its scene as written and its scene breathing.
+  - Keep the hook's steps marked in the No Breath row.
+real_time: true
+protected: true
+
+scales:
+  A Minor: { root: A, type: minor }
+
+patterns:
+  verse tune:
+    steps: 64
+    step_size: 1/8
+    degree: [5, ~, 4, 3, 1, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~, 4, ~, 5, 6, 5, ~, 4, ~, 2, ~, ~, ~, ~, ~, ~, ~, 5, ~, 7, 1, 7, ~, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~, 6, ~, 5, 4, 3, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, 4, 4, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, 4, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, 5, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, 4, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, false, false, false, true, false, true, false, true, true, true, true, true, true, true, false, true, false, false, false, true, false, true, false, true, true, true, true, true, true, true, false, true, false, false, false, true, false, true, false, true, true, true, true, true, true, true, false, true, false, false, false, true, false, true, false, true, true, true, true, true, true, true]
+  chorus tune:
+    steps: 64
+    step_size: 1/8
+    degree: [5, ~, 7, ~, 1, ~, 7, 1, 2, ~, ~, ~, ~, ~, ~, ~, 3, ~, 2, 1, 7, ~, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~, 5, ~, 7, ~, 1, ~, 7, 1, 2, ~, ~, ~, ~, ~, ~, ~, 3, ~, 2, 1, 7, ~, 1, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [4, ~, 4, ~, 5, ~, 4, 5, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, 5, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, ~, 5, ~, 4, 5, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, 5, 4, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, true, false, true, false, true, false, false, false, true, true, true, true, true, true, true, false, true, false, false, false, true, false, true, false, true, true, true, true, true, true, true, false, true, false, true, false, true, false, false, false, true, true, true, true, true, true, true, false, true, false, false, false, true, false, true, false, true, true, true, true, true, true, true]
+    no_breath: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false]
+  verse keys:
+    steps: 8
+    step_size: 1
+    degree: [1, 6, 4, 5, 1, 6, 4, 5]
+    octave: [4, 4, 4, 4, 4, 4, 4, 4]
+    chord: [3, 3, 3, M, 3, 3, 3, M]
+    velocity: [64, 64, 64, 64, 64, 64, 64, 64]
+  chorus keys:
+    steps: 8
+    step_size: 1
+    degree: [3, 7, 1, 6, 3, 7, 1, 6]
+    octave: [4, 4, 4, 4, 4, 4, 4, 4]
+    chord: [3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [64, 64, 64, 64, 64, 64, 64, 64]
+  verse bass:
+    steps: 64
+    step_size: 1/8
+    degree: [1, ~, ~, 1, 1, ~, ~, ~, 6, ~, ~, 6, 6, ~, ~, ~, 4, ~, ~, 4, 4, ~, ~, ~, 5, ~, ~, 5, 5, ~, ~, ~, 1, ~, ~, 1, 1, ~, ~, ~, 6, ~, ~, 6, 6, ~, ~, ~, 4, ~, ~, 4, 4, ~, ~, ~, 5, ~, ~, 5, 5, ~, ~, ~]
+    octave: [3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~]
+    tie: [false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false]
+  chorus bass:
+    steps: 64
+    step_size: 1/8
+    degree: [3, ~, ~, 3, 3, ~, ~, ~, 7, ~, ~, 7, 7, ~, ~, ~, 1, ~, ~, 1, 1, ~, ~, ~, 6, ~, ~, 6, 6, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 7, ~, ~, 7, 7, ~, ~, ~, 1, ~, ~, 1, 1, ~, ~, ~, 6, ~, ~, 6, 6, ~, ~, ~]
+    octave: [3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~]
+    tie: [false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false]
+  kick:
+    steps: 8
+    drum: true
+    step_size: 1/8
+    degree: [C, ~, ~, C, C, ~, ~, ~]
+    octave: [3, ~, ~, 3, 3, ~, ~, ~]
+  snare:
+    steps: 8
+    drum: true
+    step_size: 1/8
+    degree: [~, ~, D, ~, ~, ~, D, ~]
+    octave: [~, ~, 3, ~, ~, ~, 3, ~]
+    velocity: [~, ~, 84, ~, ~, ~, 90, ~]
+  hats:
+    steps: 8
+    drum: true
+    step_size: 1/8
+    degree: [F, F, F, F, F, F, F, F]
+    accidental: ["#", "#", "#", "#", "#", "#", "#", "#"]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [70, 44, 60, 44, 70, 44, 60, 44]
+
+phrasings:
+  breath:
+    by_section:
+      chorus: { breath: long, early_notes: 0 }
+
+chains:
+  sung:
+    - phrasing: breath
+
+instruments:
+  voice: { device: "*FluidSynth", gm_sound: 54 }
+  electric piano: { device: "*FluidSynth", gm_sound: 5 }
+  finger bass: { device: "*FluidSynth", gm_sound: 34 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  phrasing:
+    tempo: 64
+    scale: A Minor
+    genre: Pop
+
+    tracks:
+      lead: { instrument: voice }
+      keys: { instrument: electric piano }
+      bass: { instrument: finger bass }
+      kick: { drum: true, instrument: drum kit }
+      snare: { drum: true, instrument: drum kit }
+      hats: { drum: true, instrument: drum kit }
+
+    scenes:
+      - name: "verse, as written"
+        section: verse
+        tracks:
+          lead: { pattern: verse tune }
+          keys: { pattern: verse keys }
+          bass: { pattern: verse bass }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+      - name: "verse, breathing"
+        section: verse
+        tracks:
+          lead: { pattern: verse tune, chains: [sung] }
+          keys: { pattern: verse keys }
+          bass: { pattern: verse bass }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+      - name: "chorus, as written"
+        section: chorus
+        tracks:
+          lead: { pattern: chorus tune }
+          keys: { pattern: chorus keys }
+          bass: { pattern: chorus bass }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+      - name: "chorus, breathing"
+        section: chorus
+        tracks:
+          lead: { pattern: chorus tune, chains: [sung] }
+          keys: { pattern: chorus keys }
+          bass: { pattern: chorus bass }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+      - name: "verse, breathing again"
+        section: verse
+        tracks:
+          lead: { pattern: verse tune, chains: [sung] }
+          keys: { pattern: verse keys }
+          bass: { pattern: verse bass }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+      - name: "chorus, breathing again"
+        section: chorus
+        tracks:
+          lead: { pattern: chorus tune, chains: [sung] }
+          keys: { pattern: chorus keys }
+          bass: { pattern: chorus bass }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }

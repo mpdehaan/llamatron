@@ -481,6 +481,7 @@ ROW_DESCRIPTIONS = described_rows(
     RowOfNumbers(name=Row.RATCHET, lowest=MIN_RATCHET, highest=MAX_RATCHET, default=DEFAULT_RATCHET, quiet=True),
     RowOfNumbers(name=Row.RATCHET_OFFSET, lowest=-MAX_RATCHET_OFFSET, highest=MAX_RATCHET_OFFSET, default=NO_RATCHET_OFFSET, quiet=True),
     RowOfToggles(name=Row.GRAB),
+    RowOfToggles(name=Row.NO_BREATH),
     RowOfKeyswitches(name=Row.KEYSWITCH, choices=KEYSWITCH_SLOTS),
     *[control_row(name) for name in CC_ROWS],
     RowOfToggles(name=Row.SLIDE, kept_by_a_rest=True),

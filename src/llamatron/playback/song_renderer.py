@@ -608,6 +608,12 @@ class SongRenderer:
         settings = self._song.get_generator_settings(kind=step.kind, name=step.name)
         if step.kind == GeneratorKind.FOLLOW_CHORDS:
             return FollowChords(chords=self.chords_followed(scene=scene, track=track, source=settings.get_chords_from(), counting=counting))
+        if step.kind == GeneratorKind.PHRASING:
+            pattern = self._song.get_pattern(scene.get_clip_slot(track).get_pattern_name())
+            return settings.generator_for(
+                where=ERR_WHERE_CHAIN.format(chain=chain, kind=step.kind), section=scene.get_scene().get_section(), bar=self._song.get_time_signature().bar_length(),
+                whole=pattern.no_breath_stretches(self._song.get_pattern_step_size(pattern)),
+            )
         place = self._song.get_track_names().index(track)
         seed = None if self._seed is None else self._seed * SEED_SONG_FACTOR + scene.get_number() * SEED_SCENE_FACTOR + place * SEED_TRACK_FACTOR + index
         pattern_step = self._song.get_pattern_step_size(self._song.get_pattern(scene.get_clip_slot(track).get_pattern_name()))

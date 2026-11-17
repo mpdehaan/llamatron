@@ -219,6 +219,7 @@ FEATURES = [
     ('hockets', has_section(Section.HOCKETS)),
     ('guitarifies', has_section(Section.GUITARIFIES)),
     ('follow chords', has_section(Section.FOLLOW_CHORDS)),
+    ('phrasings', has_section(Section.PHRASINGS)),
     ('strums', lambda data: has_section(Section.STRUMS)(data) or any_track_setting(TrackSetting.STRUM_DIRECTION)(data) or any_clip_slot_setting(ClipSlotSetting.STRUM_DIRECTION)(data)),
     ('Densities', has_section(Section.DENSITIES)),
     ('Swells', has_section(Section.SWELLS)),

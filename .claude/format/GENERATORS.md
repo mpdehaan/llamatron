@@ -45,6 +45,18 @@ Reference notes for Claude, one part of `.claude/format/`: every generator and w
 - `tests/playback/test_step_rows.py` tests them; `14_acid_glide.yml` is the Glide and Shorten demo and
   its drop has the Rush and the Drags.
 
+### Phrasing
+
+- The generator section `phrasings` (`PhrasingSettings`, kind `phrasing`, `PhrasingSetting`), the user's design, under
+  Articulation: `line_bars` (1, 2 or 4), `breath`, `line_lengths`, `early_notes` (0 to 4) and `by_section`, a kind of section to
+  the last three (`get_for(section=, name=)`; the page's By Section table, `Cells` rows, "(same)" first). It is being redesigned
+  with a loudness shape and connected notes (`.claude/features/WIZARD_DESIGNS.md`, `.claude/music_theory_notes/MELODY.md`,
+  "Phrasing A Line"), so breath alone is not the last word.
+- `SongRenderer.make_generator` builds `Phrasing` (`generators/phrasing.py`) with the scene's Section, the bar and the pattern's
+  `no_breath_stretches(step_size)`, the times of the steps marked in the row `no_breath` (`Row.NO_BREATH`, a toggle row in the
+  rows view's section Band), read for a pattern played forward. Nothing is random.
+- `tests/generators/test_phrasing.py` and `tests/tui/test_tui_phrasing.py` test it; `25_phrasing.yml` is its demo.
+
 ### Follow Chords
 
 - The generator section `follow_chords` (`FollowChordsSettings`, kind `follow_chords`, `FollowChordsSetting`), the user's

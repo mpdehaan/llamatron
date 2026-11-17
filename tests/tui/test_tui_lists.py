@@ -16,7 +16,9 @@
 
 """The Tracks, Scales, Generators and Chains pages and their editors."""
 
-from tests.support.ui_testing import SWAY, fixed_text, KEY_SHOWN, UITest, key_of, key_name
+from tests.support.ui_testing import (
+    BREATHES, CLAVE, CLIPPED, CLIPS, FADE, FOLK, FOLLOWS, KEY_SHOWN, LAZY, PICKED, POP, PUSH, ROLLS, SLIDES, SMOOTH, SWAY, THIN, TRADE, UP_ARP, UITest, fixed_text, key_name, key_of,
+)
 from llamatron.strings.names import MSG_NEW_SCALE_WORD
 from llamatron.tui.drawing import NOTHING
 from llamatron.strings.marks import MSG_MOVING_CLOSE, MSG_MOVING_OPEN
@@ -113,7 +115,6 @@ AUTORATCHETS = 'AutoRatchets'
 QUARTER = '1/4'
 INTEGERS = 'integers'
 EMPTY = 'empty'
-ROLLS = 'rolls'
 CHAIN_EMPTY = 'chain empty'
 CHAIN_NAMED = 'chain named'
 GENERATORS = 'Generators'
@@ -795,7 +796,13 @@ class TestChainEditor(UITest):
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         self.assertEqual(self.app.screen.options[0], MSG_NEW_GENERATOR_CHOICE)
-        self.assertEqual(self.app.screen.options[1:], [step_shown(kind='arp', name='up'), step_shown(kind='auto_ratchet', name='rolls'), step_shown(kind='drift', name='sway'), step_shown(kind='progression', name='pop'), step_shown(kind='voice_leading', name='smooth'), step_shown(kind='strum', name='folk'), step_shown(kind='euclid', name='clave'), step_shown(kind='density', name='thin'), step_shown(kind='swell', name='fade'), step_shown(kind='articulate', name='clipped'), step_shown(kind='glide', name='slides'), step_shown(kind='shorten', name='clips'), step_shown(kind='rush', name='push'), step_shown(kind='drag', name='lazy'), step_shown(kind='hocket', name='trade'), step_shown(kind='guitarify', name='picked'), step_shown(kind='follow_chords', name='follows')])
+        named = [
+            (GeneratorKind.ARP, UP_ARP), (GeneratorKind.AUTO_RATCHET, ROLLS), (GeneratorKind.DRIFT, SWAY), (GeneratorKind.PROGRESSION, POP), (GeneratorKind.VOICE_LEADING, SMOOTH),
+            (GeneratorKind.STRUM, FOLK), (GeneratorKind.EUCLID, CLAVE), (GeneratorKind.DENSITY, THIN), (GeneratorKind.SWELL, FADE), (GeneratorKind.ARTICULATE, CLIPPED),
+            (GeneratorKind.GLIDE, SLIDES), (GeneratorKind.SHORTEN, CLIPS), (GeneratorKind.RUSH, PUSH), (GeneratorKind.DRAG, LAZY), (GeneratorKind.HOCKET, TRADE),
+            (GeneratorKind.GUITARIFY, PICKED), (GeneratorKind.FOLLOW_CHORDS, FOLLOWS), (GeneratorKind.PHRASING, BREATHES),
+        ]
+        self.assertEqual(self.app.screen.options[1:], [step_shown(kind=kind, name=name) for kind, name in named])
         self.app.screen.place = 2
         await self.press(Key.ENTER)
         self.assertEqual(self.steps(), [(GeneratorKind.AUTO_RATCHET, ROLLS), (GeneratorKind.AUTO_RATCHET, ROLLS)])

@@ -53,6 +53,7 @@ class Section:
     HOCKETS = 'hockets'
     GUITARIFIES = 'guitarifies'
     FOLLOW_CHORDS = 'follow_chords'
+    PHRASINGS = 'phrasings'
     CHAINS = 'chains'
     GROOVES = 'grooves'
     INSTRUMENTS = 'instruments'
@@ -229,6 +230,8 @@ class Row:
     RATCHET = 'ratchet'
     RATCHET_OFFSET = 'ratchet_offset'
     GRAB = 'grab'
+    # Whether a step's note is left exactly as written by a generator that reshapes a tune, such as Phrasing: a hook's notes.
+    NO_BREATH = 'no_breath'
     # Which of its instrument's keyswitches a step's note is played with: a list of slots, or blank for none.
     KEYSWITCH = 'keyswitch'
     CC1 = 'cc1'
@@ -433,6 +436,7 @@ class GeneratorKind:
     HOCKET = 'hocket'
     GUITARIFY = 'guitarify'
     FOLLOW_CHORDS = 'follow_chords'
+    PHRASING = 'phrasing'
 
 
 # The step sizes the editor offers, shortest first. Any other length can be typed.
@@ -592,7 +596,7 @@ CONDITION_ROWS = {RegisterName.BX: Row.AX_BX, RegisterName.CX: Row.AX_CX, Regist
 
 PATTERN_ROWS = [
     Row.DEGREE, Row.GATE, Row.DOT, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.INVERSION, Row.TENSION, Row.CHORD_SCALE, Row.VELOCITY, Row.PROBABILITY, Row.GLIDE,
-    Row.TIE, Row.RATCHET, Row.RATCHET_OFFSET, Row.GRAB, Row.KEYSWITCH,
+    Row.TIE, Row.RATCHET, Row.RATCHET_OFFSET, Row.GRAB, Row.NO_BREATH, Row.KEYSWITCH,
     Row.CC1, Row.CC2, Row.CC3, Row.CC4, Row.SLIDE,
     *REGISTER_NOTE_ROWS.values(), *REGISTER_VELOCITY_ROWS.values(), *REGISTER_ADD_ROWS.values(),
     *REGISTER_SET_ROWS.values(), *CONDITION_ROWS.values(),
@@ -712,6 +716,7 @@ NAMED_GENERATORS = {
     GeneratorKind.DENSITY: Section.DENSITIES, GeneratorKind.SWELL: Section.SWELLS, GeneratorKind.ARTICULATE: Section.ARTICULATES,
     GeneratorKind.GLIDE: Section.GLIDES, GeneratorKind.SHORTEN: Section.SHORTENS, GeneratorKind.RUSH: Section.RUSHES, GeneratorKind.DRAG: Section.DRAGS,
     GeneratorKind.HOCKET: Section.HOCKETS, GeneratorKind.GUITARIFY: Section.GUITARIFIES, GeneratorKind.FOLLOW_CHORDS: Section.FOLLOW_CHORDS,
+    GeneratorKind.PHRASING: Section.PHRASINGS,
 }
 
 
