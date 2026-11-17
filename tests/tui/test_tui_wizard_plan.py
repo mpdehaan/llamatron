@@ -62,16 +62,12 @@ class TestWizardPlan(WizardTest):
         await self.go_to_branch(names.index(MSG_WIZARD_MELODY_BRANCH))
 
     async def switch_plan_on(self):
+        """Go into the Form panel's fields, where a genre with a plan has the plan on from the start."""
         await self.go_to_named_branch(MSG_WIZARD_FORM_BRANCH)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
-        await self.select_field(MSG_WIZARD_SONG_PLAN_LABEL)
-        await self.press(Key.ENTER)
 
-    async def test_the_plan_is_switched_on_from_the_form_panel_and_shows_its_fields_and_each_section(self):
+    async def test_a_genre_with_a_plan_plans_the_song_from_the_start_and_the_switch_takes_the_plan_s_fields_away(self):
         await self.choose()
-        await self.go_to_named_branch(MSG_WIZARD_FORM_BRANCH)
-        self.assertIn(MSG_WIZARD_SONG_PLAN_LABEL, self.text())
-        self.assertNotIn(MSG_WIZARD_CONTRAST_LABEL, self.text())
         await self.switch_plan_on()
         choices = self.choices()
         self.assertTrue(choices.has_song_plan())
@@ -79,6 +75,10 @@ class TestWizardPlan(WizardTest):
         self.assertIn(MSG_WIZARD_CONTRAST_LABEL, shown)
         for said in choices.said_of_sections():
             self.assertIn(said.split('.')[0], shown)
+        await self.select_field(MSG_WIZARD_SONG_PLAN_LABEL)
+        await self.press(Key.ENTER)
+        self.assertFalse(choices.has_song_plan())
+        self.assertNotIn(MSG_WIZARD_CONTRAST_LABEL, self.text())
         self.assertTrue(self.wizard().has_choices_to_lose())
 
     async def test_contrast_steps_and_phrasing_toggles(self):
@@ -116,6 +116,8 @@ class TestWizardPlan(WizardTest):
 
     async def test_the_hooks_panel_shows_the_kind_only_under_a_plan_and_marks_the_wizard_s_pick(self):
         await self.choose()
+        self.choices().set_song_plan(False)
+        await self.press(Key.DOWN, Key.UP)
         await self.go_to_hooks()
         for label in MSG_WIZARD_HOOK_PART_LABELS.values():
             self.assertNotIn(label, self.text())
@@ -211,10 +213,13 @@ class TestWizardSectionOwnFields(WizardTest):
         self.assertEqual(chords_as_text(choices.section_own(place=A_PLACE, field=CHORDS)), SOME_CHORDS)
         self.assertIn(ERR_WIZARD_CHORDS.split('{')[0][:A_FEW_WORDS], self.text())
 
-    async def test_a_song_with_no_plan_shows_none_of_the_fields(self):
+    async def test_a_song_with_no_plan_keeps_the_chords_the_tempo_the_key_and_the_scale(self):
         self.choices().set_song_plan(False)
         await self.press(Key.DOWN, Key.UP)
-        self.assertNotIn(self.label(TEMPO_END_OF_PLACE), self.text())
+        shown = self.text()
+        self.assertNotIn(self.label(ENERGY), shown)
+        for field in (CHORDS, TEMPO_END_OF_PLACE, ROOT_OF_PLACE, TYPE_OF_PLACE):
+            self.assertIn(self.label(field), shown)
 
 
 class TestWizardFormQuestions(WizardTest):

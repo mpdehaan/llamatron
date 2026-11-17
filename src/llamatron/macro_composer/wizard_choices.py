@@ -41,11 +41,11 @@ from llamatron.macro_composer.arranger import (
 )
 from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer import hook_kinds, phrasing
-from llamatron.macro_composer.arranger import CHORDS, form_of
+from llamatron.macro_composer.arranger import CHORDS, SCENE_SETTINGS, form_of
 from llamatron.macro_composer.melody import ANSWER, HOOK_KIND, LINE
 from llamatron.macro_composer.joins import BUILD, DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL
 from llamatron.macro_composer.song_plan import (
-    BIG, BY_PLACE, PHRASING_WAYS, RISES, RISING, CONTRAST, ENERGY, FILL_SIZE, FILL_SIZES, HIGHEST_ENERGY, LOWEST_ENERGY, MEDIUM, NOT_AT_ALL, PHRASING, PLAN_OF_SONG, ROOT_OF_PLACE, SAID_OF_SECTION, SETUP, SMALL,
+    BIG, BY_PLACE, PHRASING_WAYS, RISES, RISING, SCALE_OF_PLACE, SCENE_TEMPO, SCENE_TEMPO_END, SCENE_TEMPO_START, CONTRAST, ENERGY, FILL_SIZE, FILL_SIZES, HIGHEST_ENERGY, LOWEST_ENERGY, MEDIUM, NOT_AT_ALL, PHRASING, PLAN_OF_SONG, ROOT_OF_PLACE, SAID_OF_SECTION, SETUP, SMALL,
     TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE, USUAL_CONTRAST, SongPlan,
 )
 from llamatron.composition.song_file_error import SongFileError
@@ -223,6 +223,8 @@ FILLS_TRAITS = ('fills',)
 OWN_SECTIONS = 'own_sections'
 PREVIEW_NAME = 'preview'
 JOINS_ANSWER = 'joins'
+# What a section can be given of its own in any genre, with or without a plan.
+OWN_WITHOUT_PLAN = (CHORDS, TEMPO_OF_PLACE, TEMPO_END_OF_PLACE, ROOT_OF_PLACE, TYPE_OF_PLACE)
 # What each respect of the lines' breathing may be.
 PHRASING_OFFERED = {phrasing.BREATH: tuple(phrasing.BREATHS), phrasing.LINE_LENGTHS: phrasing.LINE_LENGTH_WAYS, phrasing.EARLY_NOTES: tuple(range(phrasing.FEWEST_EARLY, phrasing.MOST_EARLY + 1))}
 # What a section of the form is given of its own, kept with the section so that it moves, copies and goes with it.
@@ -659,6 +661,9 @@ class WizardChoices:
         seen = {}
         for entry in self._entries():
             own = (entry.get(BARS), tuple(entry[PLAYS]) if PLAYS in entry else None)
+            if not self.has_song_plan() and self._own_without_plan(entry):
+                # A section with chords, a tempo, a key or a scale of its own is a section of its own, where no plan makes one for each place.
+                own = (*own, repr(sorted(self._own_without_plan(entry).items(), key=str)))
             # The kind as the genre describes it comes first, so that an unchanged section keeps the kind's plain name.
             variants = seen.setdefault(entry[KIND], [(None, None)])
             if own not in variants:
@@ -679,8 +684,26 @@ class WizardChoices:
         return labels
 
     def _song_sections(self):
-        """Return the song's own sections as the arranger reads them, by name: each its kind and what it changes."""
-        return {name: {field: value for field, value in entry.items() if field != OWN_OF_SECTION} for name, entry in zip(self.form_sections(), self._entries())}
+        """Return the song's own sections as the arranger reads them, by name: each its kind and what it changes, with the chords and the scene's
+        tempo, key and scale a section was given where no plan lays those out by place."""
+        return {name: {**{field: value for field, value in entry.items() if field != OWN_OF_SECTION}, **self._as_section(entry)} for name, entry in zip(self.form_sections(), self._entries())}
+
+    def _own_without_plan(self, entry):
+        """What a section was given of its own that a song with no plan can still take: chords, a tempo, the tempo at its end, a key and a scale."""
+        return {field: value for field, value in entry.get(OWN_OF_SECTION, {}).items() if field in OWN_WITHOUT_PLAN}
+
+    def _as_section(self, entry):
+        if self.has_song_plan():
+            return {}
+        own = self._own_without_plan(entry)
+        settings = {}
+        if TEMPO_END_OF_PLACE in own:
+            settings.update({SCENE_TEMPO_START: own.get(TEMPO_OF_PLACE, self._tempo), SCENE_TEMPO_END: own[TEMPO_END_OF_PLACE]})
+        elif TEMPO_OF_PLACE in own:
+            settings[SCENE_TEMPO] = own[TEMPO_OF_PLACE]
+        if ROOT_OF_PLACE in own or TYPE_OF_PLACE in own:
+            settings[SCALE_OF_PLACE] = {ROOT_OF_PLACE: own.get(ROOT_OF_PLACE, self._root), TYPE_OF_PLACE: own.get(TYPE_OF_PLACE, self._scale_type)}
+        return {**({CHORDS: copy.deepcopy(own[CHORDS])} if CHORDS in own else {}), **({SCENE_SETTINGS: settings} if settings else {})}
 
     def _section(self, place):
         """Return a section as it will be played: its kind as the genre describes it, with what the section changes."""
@@ -1875,9 +1898,12 @@ class WizardChoices:
 
     def _extras_with_sections(self):
         """The song's extras, the plan in them holding what each section of the form was given of its own, by place."""
-        if not self.has_song_plan() or not (any(entry.get(OWN_OF_SECTION) for entry in self._entries()) or self._intro_hook_kept() is not None):
+        if not self.has_song_plan():
             return self._extras
-        plan = self._extras[PLAN_OF_SONG] if isinstance(self._extras[PLAN_OF_SONG], dict) else {}
+        plan = self._extras[PLAN_OF_SONG] if isinstance(self._extras.get(PLAN_OF_SONG), dict) else {}
+        if not (any(entry.get(OWN_OF_SECTION) for entry in self._entries()) or self._intro_hook_kept() is not None):
+            # A song planned because its genre plans every song asks for the plan as one that was switched on does.
+            return {**self._extras, PLAN_OF_SONG: plan}
         given = list(plan.get(BY_PLACE) or [])
         by_place = []
         for place, entry in enumerate(self._entries()):
@@ -1912,7 +1938,7 @@ class WizardChoices:
     def _intro_hook_kept(self):
         """Who was chosen to say the hook in the intro, while that player is still one who could: asked while the song is made, so it makes no song to answer."""
         role = self._extras.get(PLAN_OF_SONG, {}).get(INTRO_HOOK) if isinstance(self._extras.get(PLAN_OF_SONG), dict) else None
-        able = self.can_have_hook() and self.has_hook() and role is not None and role in (self.answered_by(), self.tune_player())
+        able = role is not None and self.can_have_hook() and self.has_hook() and role in (self.answered_by(), self.tune_player())
         return role if able else None
 
     def set_intro_hook(self, role):
@@ -1936,8 +1962,10 @@ class WizardChoices:
 
     def section_own_fields(self, place):
         """Return the fields a section can be given of its own, in the order shown: none without a plan, and no join for the last section or a held one."""
-        if not self.has_song_plan():
+        if not self.is_ready() or self.section_is_held(place):
             return []
+        if not self.has_song_plan():
+            return list(OWN_WITHOUT_PLAN)
         joins = self._remembered(key=JOINS_ANSWER, compute=lambda: self._song_plan().joins())
         leaves = [LEAVES, SETUP] if place < len(joins) and joins[place] is not None else []
         shape = [SHAPE_OF_SECTION] if self.section_shapes(place) else []
@@ -1954,6 +1982,12 @@ class WizardChoices:
 
     def section_from_plan(self, *, place, field):
         """Return what a section takes for a field where it is given nothing: the plan's Energy and join, the progression's chords, the song's tempo and key."""
+        if field == CHORDS:
+            return chords_as_text(self._chords_at(place))
+        if field in (TEMPO_OF_PLACE, TEMPO_END_OF_PLACE):
+            return self.section_own(place=place, field=TEMPO_OF_PLACE) or self._tempo
+        if field in (ROOT_OF_PLACE, TYPE_OF_PLACE):
+            return self._root if field == ROOT_OF_PLACE else self._scale_type
         self._plan()
         if field == ENERGY:
             return self.energies()[place]
@@ -1975,6 +2009,14 @@ class WizardChoices:
         if field in (TEMPO_OF_PLACE, TEMPO_END_OF_PLACE):
             return self.section_own(place=place, field=TEMPO_OF_PLACE) or self._tempo
         return self._root if field == ROOT_OF_PLACE else self._scale_type
+
+    def _chords_at(self, place):
+        """The chords a section plays where it is given none: its kind's own, the progression's for the kind, or the progression's."""
+        style = style_of(self._genre)
+        picks = picked(style=style, song=self.song_picks(PREVIEW_NAME))
+        entry = values_of(style=style, trait=self.progression_trait())[picks[self.progression_trait()]]
+        kind = self._entry(place)[KIND]
+        return [chord_of(chord) for chord in style[SECTIONS][kind].get(CHORDS) or entry.get(BY_SECTION, {}).get(kind) or entry[PATTERN]]
 
     def _checked_own(self, *, field, value):
         if field == ENERGY and not isinstance(value, bool) and isinstance(value, int) and LOWEST_ENERGY <= value <= HIGHEST_ENERGY:
@@ -1999,7 +2041,8 @@ class WizardChoices:
 
     def set_section_own(self, *, place, field, value):
         """Give a section something of its own, or give the field back with None. What the song cannot then be made with is refused, and nothing changes."""
-        self._plan()
+        if field not in OWN_WITHOUT_PLAN:
+            self._plan()
         self._entry(place)
         checked = None if value is None else self._checked_own(field=field, value=value)
         if field == SHAPE_OF_SECTION and checked is not None and checked not in self.section_shapes(place):
@@ -2045,8 +2088,10 @@ class WizardChoices:
     # The song plan, which a song made on the wizard's page asks for with a switch, and its settings.
 
     def has_song_plan(self):
-        """Return whether the song is planned section by section (song_plan.py)."""
-        return self._extras.get(PLAN_OF_SONG) not in (None, False)
+        """Return whether the song is planned section by section (song_plan.py): a genre that says how its songs are planned plans every
+        song until the plan is switched off."""
+        kept = self._extras.get(PLAN_OF_SONG)
+        return self.can_have_song_plan() if kept is None else kept is not False
 
     def can_have_song_plan(self):
         """Return whether the genre says how a song of its own is planned."""
@@ -2057,16 +2102,18 @@ class WizardChoices:
             raise ValueError(ERR_WIZARD_SWITCH.format(value=on))
         if on and not self.can_have_song_plan():
             raise ValueError(ERR_WIZARD_GENRE_HAS_NO_PLAN)
-        if on and not self.has_song_plan():
+        if on and not isinstance(self._extras.get(PLAN_OF_SONG), dict):
             self._extras[PLAN_OF_SONG] = {}
         if not on:
-            self._extras.pop(PLAN_OF_SONG, None)
+            self._extras[PLAN_OF_SONG] = False
             self._extras.pop(MELODY, None)
         self._answers = {}
 
     def _plan(self):
         if not self.has_song_plan():
             raise ValueError(ERR_WIZARD_NO_SONG_PLAN)
+        if not isinstance(self._extras.get(PLAN_OF_SONG), dict):
+            self._extras[PLAN_OF_SONG] = {}
         return self._extras[PLAN_OF_SONG]
 
     def get_contrast(self):

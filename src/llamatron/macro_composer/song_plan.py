@@ -98,6 +98,11 @@ ACCIDENTAL = 'accidental'
 SWELL_START = 'swell_start'
 SWELL_END = 'swell_end'
 CYMBAL = 'cymbal'
+# What a song may say of its fills: the trait that names the fill, the value for none, how often they come and the count for never.
+FILLS_TRAIT = 'fills'
+NO_FILL = 'none'
+FILLS_COME = 'fills_come'
+NO_FILLS = 0
 CHORUS = 'chorus'
 MINOR = 'minor'
 # Energy: its limits, the kind's where a style says nothing, the middle that Contrast pulls about, and the usual Contrast and growth.
@@ -260,7 +265,21 @@ class SongPlan:
         return place < len(self._sections) - 1 and not section.get(HELD) and not section.get(DRUM_SOLO)
 
     def _fill(self, size):
+        """The fill of a size: the style's, unless the song chose its fill, which is then the fill of every size, or chose none, or asked for no fills at all."""
+        if self._song.get(FILLS_COME) == NO_FILLS:
+            return None
+        chosen = self._song.get(PICKS, {}).get(FILLS_TRAIT)
+        if chosen is not None:
+            return None if chosen == NO_FILL else chosen
         return self._of_style.get(FILL_SIZES, {}).get(size)
+
+    def _fill_inside_every(self, *, place):
+        """How many bars apart the fills inside a section come, or nothing for none: as the song asks, and otherwise every four bars of a long section from an Energy up."""
+        bars = self._sections[place].get(BARS, 0)
+        asked = self._song.get(FILLS_COME)
+        if asked is not None:
+            return asked if isinstance(asked, int) and 0 < asked < bars else None
+        return FILL_INSIDE_BARS if bars > FILL_INSIDE_BARS and self._energies[place] >= FILL_INSIDE_FROM else None
 
     def _joins(self):
         """What each section leaves with: the tail and the fill, by what follows, how far the Energy moves and what was done last."""
@@ -369,13 +388,15 @@ class SongPlan:
                 after_tail = place > 0 and (joins[place - 1] or {}).get(TAIL) in (DROP_OUT, BUILD, STOPS)
                 made.update({ALLOWS: self._allowed(place), PLAYS: self._plays(place), CRASH_START: bool(arrives or after_tail or (place > 0 and self._sections[place - 1].get(DRUM_SOLO))),
                              SCENE_SETTINGS: self._loudness(place)})
-                cymbal = self._cymbal(place)
+                # A cymbal the song chose is the drummer's all through; the plan's goes by Energy.
+                cymbal = None if CYMBAL in self._song.get(PICKS, {}) else self._cymbal(place)
                 made[PICKS] = {**section.get(PICKS, {}), **({CYMBAL: cymbal} if cymbal else {})}
                 if joins[place] is not None:
                     made[LEAVES] = joins[place]
-                    if section.get(BARS, 0) > FILL_INSIDE_BARS and energy >= FILL_INSIDE_FROM and self._fill(SMALL):
+                    inside_every = self._fill_inside_every(place=place)
+                    if inside_every and self._fill(SMALL):
                         made[FILL_INSIDE] = self._fill(SMALL)
-                        made[FILL_INSIDE_EVERY] = FILL_INSIDE_BARS
+                        made[FILL_INSIDE_EVERY] = inside_every
                     if joins[place].get(TAIL):
                         said.append(MSG_PLAN_LEAVES_TAIL.format(joins[place][TAIL]))
                     elif joins[place].get(FILL_OF_JOIN):
