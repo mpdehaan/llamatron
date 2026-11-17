@@ -23,3 +23,7 @@ says what llamatron is for; this file says how the user weighs one way of buildi
 - **Defaults steer toward good music, and nothing is walled off.** A screen that composes arrives filled in with choices that
   sound good untouched, recommends what usually works, and still lets a person choose anything; good UX is never bought by
   removing options, and an option is never added in a way that makes the plain case harder (the user's rule).
+- **What is rearranged stays musically right.** Where a setting could be kept beside the notes or apart from them, it is kept
+  where moving, copying or reconfiguring the notes carries it along, so that nothing has to be fixed by hand afterwards: a mark on
+  a step travels with the step, where a line number in another page would go stale. Reconfiguring anything tries to leave what is
+  musically appropriate, where it can (the user's principle, for the whole program).
