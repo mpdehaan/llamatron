@@ -456,5 +456,5 @@ Composition: Chords, the chord progression; Melody, the melody style of the tune
 Form: the sections the song plays, in order, listed under Form in the tree. On a section, I inserts a section before it, A adds one at the end, C copies it, Bksp removes it
 and M moves it, and its settings choose its kind, how many bars it lasts and who plays in it.
 Apply: ENTER on the Apply button makes the song and shows Arrange. Undo then takes the whole song away again.
-ESC in the tree closes the wizard, and asks first when anything was chosen.
+L listens to a hook, a tune or a section, and stops it. ESC in the tree closes the wizard, and asks first.
 """

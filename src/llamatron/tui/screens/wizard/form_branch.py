@@ -17,13 +17,14 @@
 
 from rich.text import Text
 
+from llamatron.macro_composer.song_plan import HIGHEST_ENERGY, LOWEST_ENERGY
 from llamatron.strings.errors import ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
-from llamatron.strings.labels import MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_SUGGESTED_FORM_BUTTON
+from llamatron.strings.labels import MSG_WIZARD_CONTRAST_LABEL, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_PHRASING_LABEL, MSG_WIZARD_PLAN_LINE, MSG_WIZARD_SONG_PLAN_LABEL, MSG_WIZARD_SUGGESTED_FORM_BUTTON
 from llamatron.strings.legends import KeyName, MSG_WIZARD_SUGGESTED_FORM_WHAT
 from llamatron.strings.marks import MSG_WIZARD_OWN_FORM, MSG_WIZARD_SECTION_LINE
 from llamatron.strings.messages import MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_SECTIONS_HINT
 from llamatron.tui.drawing import INDENT, Style
-from llamatron.tui.screens.shared.field import Button, Field
+from llamatron.tui.screens.shared.field import Button, Field, NumberField, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.section_branch import SectionBranch
 
@@ -54,7 +55,14 @@ class FormBranch(Branch):
             return []
         # The form is only shown here: a suggested form is taken through a button and a dialog, never by
         # stepping a field, which could replace the sections a person changed with one stray key.
-        return [Field(label=MSG_WIZARD_FORM_LABEL, value=lambda: MSG_WIZARD_OWN_FORM if choices.has_own_form() else choices.get_form()),
+        page = self.page()
+        # A planned song gives every section an Energy, and from it who plays, how hard, how loud and how each section leaves.
+        plan = [Toggle(label=MSG_WIZARD_SONG_PLAN_LABEL, on=choices.has_song_plan(), set=page.choosing(choices.set_song_plan))] if choices.can_have_song_plan() else []
+        if choices.has_song_plan():
+            plan.append(NumberField(page=page, label=MSG_WIZARD_CONTRAST_LABEL, number=choices.get_contrast(), lowest=LOWEST_ENERGY, highest=HIGHEST_ENERGY, set=page.choosing(choices.set_contrast)))
+            if choices.counts_in_four():
+                plan.append(Toggle(label=MSG_WIZARD_PHRASING_LABEL, on=choices.has_phrasing(), set=page.choosing(choices.set_phrasing)))
+        return [Field(label=MSG_WIZARD_FORM_LABEL, value=lambda: MSG_WIZARD_OWN_FORM if choices.has_own_form() else choices.get_form()), *plan,
                 Button(label=MSG_WIZARD_SUGGESTED_FORM_BUTTON, key_name=KeyName.ENTER, enter=self.page().pick_suggested_form, enter_what=MSG_WIZARD_SUGGESTED_FORM_WHAT)]
 
     def notes(self, width):
@@ -65,6 +73,14 @@ class FormBranch(Branch):
         hint = [Text(INDENT + MSG_WIZARD_SECTIONS_HINT, style=Style.DIM), Text()]
         sections = choices.section_labels()
         longest = max((len(name) for name in sections), default=0)
+        if choices.has_song_plan():
+            # A planned song's sections each say their Energy and how they leave.
+            try:
+                said = choices.said_of_sections()
+            except (ValueError, KeyError, IndexError):
+                said = []
+            if len(said) == len(sections):
+                return hint + [Text(INDENT + MSG_WIZARD_PLAN_LINE.format(number=place + FIRST_SECTION_NUMBER, name=name, width=longest, said=said[place])) for place, name in enumerate(sections)]
         return hint + [Text(INDENT + MSG_WIZARD_SECTION_LINE.format(number=place + FIRST_SECTION_NUMBER, name=name, width=longest, bars=choices.section_bars(place)))
                 for place, name in enumerate(sections)]
 

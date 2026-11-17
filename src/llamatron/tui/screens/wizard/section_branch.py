@@ -19,6 +19,7 @@
 from llamatron.strings.labels import MSG_WIZARD_BARS_LABEL, MSG_WIZARD_FROM_PLAN, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_SECTION_ROLE_LABEL
 from llamatron.strings.legends import MSG_FROM_PLAN_WHAT
 from llamatron.strings.marks import MSG_WIZARD_ROLE_FROM_PLAN
+from llamatron.strings.messages import MSG_WIZARD_LISTEN_SECTION
 from llamatron.tui.screens.shared.field import ChoiceField, Field, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
 
@@ -61,6 +62,9 @@ class SectionBranch(Branch):
             fields.append(self.role_field())
         plays = choices.section_plays(place)
         return [*fields, *(Toggle(label=choices.role_title(role), on=role in plays, set=self.plays_setter(role)) for role in choices.roles_in() if role in choices.roles_shown())]
+
+    def listens(self):
+        return MSG_WIZARD_LISTEN_SECTION.format(number=self._place + FIRST_SECTION_NUMBER, name=self.name()), self._place, None
 
     def role_field(self):
         """Return the field of what the answering player does in the section: the plan's, marked as the plan's, until the section is given

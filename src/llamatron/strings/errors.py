@@ -513,6 +513,13 @@ ERR_WIZARD_NO_SUCH_SCALE_TYPE = 'scale type must be one the wizard offers, got {
 ERR_WIZARD_TEMPO = 'tempo must be an integer from {low} to {high}, got {value!r}'
 ERR_WIZARD_NO_SUCH_FORM = 'form must be one the subgenre suggests, got {value!r}'
 ERR_WIZARD_NOT_READY = 'the wizard needs a genre and a subgenre first'
+ERR_WIZARD_CANNOT_LISTEN = 'cannot listen: FluidSynth is not installed'
+ERR_WIZARD_NOTHING_TO_LISTEN_TO = 'cannot listen: the song as chosen cannot be made'
+ERR_WIZARD_SWITCH = 'expected true or false, got {value!r}'
+ERR_WIZARD_GENRE_HAS_NO_PLAN = 'the genre has no song plan yet'
+ERR_WIZARD_NO_SONG_PLAN = 'the song has no song plan: switch Song plan on first'
+ERR_WIZARD_CONTRAST = 'contrast must be an integer from {low} to {high}, got {value!r}'
+ERR_WIZARD_HOOK_PART = 'the hook has no {part} called ({value})'
 ERR_WIZARD_EXTRAS = 'the picks of a song file must be a mapping, got {value!r}'
 # macro_composer/wizard_file.py
 ERR_SONG_FILE_NOT_A_MAPPING = '{path}: a song file must be a mapping of choices'

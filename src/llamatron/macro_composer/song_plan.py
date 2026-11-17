@@ -32,7 +32,7 @@ import random
 
 from llamatron.macro_composer import hook_kinds
 from llamatron.macro_composer.joins import BUILD, DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL, TAIL_EIGHTHS
-from llamatron.macro_composer.melody import BREATHES, FIRST_HOOK_TAKE, HOOK, HOOK_KINDS, HOOK_TAKE
+from llamatron.macro_composer.melody import BREATHES, FIRST_HOOK_TAKE, HOOK, HOOK_KIND, HOOK_KINDS, HOOK_TAKE
 from llamatron.strings.macro_composer import MSG_PLAN_ENERGY, MSG_PLAN_HOOK, MSG_PLAN_LEAVES_FILL, MSG_PLAN_LEAVES_TAIL, MSG_PLAN_SET_UP, MSG_REPEATED_SCENE
 
 # The fields of a song's plan, and of the plan a style gives.
@@ -329,7 +329,8 @@ class SongPlan:
                     made[LAST_CHORD] = last_chord
                     said.append(MSG_PLAN_SET_UP.format(last_chord))
             if not hook_said and self._has_hook() and any(entry.get(HOOK) for entry in section.get(SECTION_PLAN, [])) and self._given.get(HOOK_KINDS, True):
-                said.append(MSG_PLAN_HOOK.format(hook_kinds.said_of(hook_kinds.kind_of(seed=self._song.get(SEED, 0), take=self._song.get(HOOK_TAKE, FIRST_HOOK_TAKE)))))
+                kind = {**hook_kinds.kind_of(seed=self._song.get(SEED, 0), take=self._song.get(HOOK_TAKE, FIRST_HOOK_TAKE)), **self._song.get(MELODY, {}).get(HOOK_KIND, {})}
+                said.append(MSG_PLAN_HOOK.format(hook_kinds.said_of(kind)))
                 hook_said = True
             # What the song says of the section itself, and of this place of its form, stands over what the plan worked out.
             own = {field: value for field, value in self._at(place).items() if field not in (ENERGY, SETUP, LEAVES)}
