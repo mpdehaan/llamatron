@@ -205,6 +205,11 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   generator, a musician's page or a wizard panel, Claude also starts a fresh agent that sees only the proposal and critiques it
   as a strict professor of music, and the reply says where that agent disagreed. What is learnt goes into the notes. Claude
   brings musicality up itself, in every design discussion, and never waits to be asked.
+- **The code maintainability expert** (the user's rule): a fresh agent that reads the code knowing nothing of Claude's reasoning
+  and judges it as an engineer who wants code that is inspiring to read, clear, well explained, logically organized, fast and easy
+  to work on, so that others want to contribute. It is consulted only when the user says to, never on Claude's own initiative,
+  runs in the background and changes nothing; the reply reports what it found, and what Claude agrees and disagrees with, as
+  numbered proposals, and nothing is reorganized until the user approves.
 - A recommendation weighs the least surprising musical result heavily, which usually wins over
   what is simplest to build (`.claude/format/GENERATORS.md`, "Musical answers first").
 - Rewriting an example set, moving a feature's demonstration into it or changing what it plays, is always confirmed by
