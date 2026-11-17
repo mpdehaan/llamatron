@@ -41,3 +41,26 @@
 - Let the tune rest; a gap is where another player answers and where the listener catches up.
 - Verse low, narrow and busy; chorus higher, wider and longer-noted. A bridge takes a new rhythm or starts on a new chord.
 - Ornaments, used sparingly: a grace note, a slide into a note, a turn, a held note that swells. (all practice)
+
+## Phrasing A Line
+
+How a singer or a wind player delivers a line, which a tune written by rule lacks. (from a review of the Phrasing generator's design; practice)
+
+- Phrasing has three pillars: breath, a loudness contour, and articulation. Breath alone is the thinnest of the three.
+- **The goal note.** A line grows toward one note and relaxes after it. The goal is usually a long note on a strong beat late in the
+  line, not simply the highest note: the highest note may be a short passing note, sit on a weak beat or come first. A simple rule:
+  the longest note on a strong beat in the line's second half, the higher and then the later where two tie. The rise is slower than
+  the fall, the range is modest, and the line's last note is its softest.
+- **Metric accent.** Strong beats are a little louder than weak ones underneath the contour; without that the contour sounds like a fader.
+- **The first note after a breath** is clean and a little louder.
+- **Breath.** A performer with no room to breathe shortens the line's last note first, then steals time from the note before, and
+  only at the last drops a short ornamental note on a weak beat; the arrival note is never dropped. Breaths are not all one size:
+  a short catch breath, an eighth to a quarter, between the two lines of a pair, a fuller one, a quarter to a half, after the pair,
+  and the longest at a section's end. A breath scales with tempo; six eighths is a hole, not a breath. A fixed alternation of two
+  sizes is heard as a machine's pattern.
+- **Articulation.** Legato connects the notes inside a line, but a repeated pitch is always struck again, with a gap; the line's
+  last note is shortened and softened in every manner; played detached, long notes keep nearly their full length and only short
+  notes are clipped.
+- **A hierarchy of lines.** A line of four bars is two of two, with a smaller dip at its middle.
+- **Anticipation**, a note an eighth early, suits syncopated popular styles and is wrong for others.
+- With notes alone (start, length, loudness) a held note cannot swell or fade; that needs a controller.
