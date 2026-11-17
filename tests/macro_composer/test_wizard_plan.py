@@ -18,10 +18,14 @@
 
 import unittest
 
+from llamatron.composition.file_format import SceneSetting, Section
 from llamatron.macro_composer import hook_kinds
-from llamatron.macro_composer.song_plan import HIGHEST_ENERGY, LOWEST_ENERGY, USUAL_CONTRAST
-from llamatron.macro_composer.wizard_choices import HOOK_PARTS, WizardChoices
+from llamatron.macro_composer.arranger import CHORDS
+from llamatron.macro_composer.joins import BUILD, DROP_OUT, LEAVES, STOPS
+from llamatron.macro_composer.song_plan import ENERGY, HIGHEST_ENERGY, LOWEST_ENERGY, NOT_AT_ALL, ROOT_OF_PLACE, SETUP, TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE, USUAL_CONTRAST
+from llamatron.macro_composer.wizard_choices import HOOK_PARTS, LEAVES_AS_JOIN, MINOR, WizardChoices, chords_as_text, chords_from_text
 from llamatron.strings.errors import ERR_WIZARD_GENRE_HAS_NO_PLAN, ERR_WIZARD_NO_SONG_PLAN
+from llamatron.strings.macro_composer import MSG_PLAN_LEAVES_TAIL, MSG_PLAN_SET_UP
 from llamatron.support.version import VERSION
 
 A_NAME = 'made'
@@ -33,6 +37,13 @@ AN_UNPLANNED_GENRE = 'blues'
 NOT_A_SWITCH = 'yes'
 NOT_A_PART = 'wobble'
 A_HIGH_CONTRAST = 9
+A_VERSE = 1
+MANY_SEEDS = 40
+A_SLOW_TEMPO = 90
+A_FAST_TEMPO = 150
+ANOTHER_ROOT = 'D'
+SOME_CHORDS = '6 4 1 b7'
+NOT_CHORDS = ('', '9', 'x', '0', 'bb3')
 
 
 def chosen(*, genre=A_PLANNED_GENRE, subgenre=A_SUBGENRE, plan=True):
@@ -170,6 +181,120 @@ class TestWizardHookKind(unittest.TestCase):
         self.assertFalse(choices.counts_in_four())
         self.assertEqual(choices.hook_parts(), [])
         self.assertTrue(chosen().counts_in_four())
+
+
+class TestWizardSectionOwn(unittest.TestCase):
+    """What a section of a planned song is given of its own: Energy, how it leaves, its setup, chords, tempo, key and scale."""
+
+    __slots__ = ()
+
+    def scene(self, *, choices, place=A_VERSE):
+        return choices.made_setlist(name=A_NAME, version=VERSION).get_song(A_NAME).get_scenes()[place]
+
+    def test_a_section_has_fields_of_its_own_only_under_a_plan_and_a_join_only_where_it_leaves(self):
+        self.assertEqual(chosen(plan=False).section_own_fields(A_VERSE), [])
+        choices = chosen()
+        last = len(choices.section_labels()) - 1
+        self.assertIn(LEAVES, choices.section_own_fields(A_VERSE))
+        self.assertNotIn(LEAVES, choices.section_own_fields(last))
+        self.assertIn(ENERGY, choices.section_own_fields(last))
+
+    def test_each_field_is_none_until_given_and_shows_what_the_plan_or_the_song_gives(self):
+        choices = chosen()
+        for field in choices.section_own_fields(A_VERSE):
+            self.assertIsNone(choices.section_own(place=A_VERSE, field=field))
+        self.assertEqual(choices.section_from_plan(place=A_VERSE, field=ENERGY), choices.energies()[A_VERSE])
+        self.assertEqual(choices.section_from_plan(place=A_VERSE, field=TEMPO_OF_PLACE), choices.get_tempo())
+        self.assertEqual(choices.section_from_plan(place=A_VERSE, field=ROOT_OF_PLACE), choices.get_root())
+        self.assertEqual(choices.section_from_plan(place=A_VERSE, field=TYPE_OF_PLACE), choices.get_scale_type())
+
+    def test_an_energy_of_its_own_is_the_section_s_energy_and_none_gives_it_back(self):
+        choices = chosen()
+        usual = choices.energies()
+        choices.set_section_own(place=A_VERSE, field=ENERGY, value=HIGHEST_ENERGY)
+        self.assertEqual(choices.energies()[A_VERSE], HIGHEST_ENERGY)
+        self.assertTrue(choices.has_own_form())
+        choices.set_section_own(place=A_VERSE, field=ENERGY, value=None)
+        self.assertEqual(choices.energies(), usual)
+
+    def test_a_tempo_a_tempo_at_the_end_a_key_and_a_scale_are_the_scene_s(self):
+        choices = chosen()
+        choices.set_section_own(place=A_VERSE, field=TEMPO_OF_PLACE, value=A_SLOW_TEMPO)
+        self.assertEqual(self.scene(choices=choices).get_tempo_setting(), A_SLOW_TEMPO)
+        choices.set_section_own(place=A_VERSE, field=TEMPO_END_OF_PLACE, value=A_FAST_TEMPO)
+        data = choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.SONGS][A_NAME][Section.SCENES][A_VERSE]
+        self.assertEqual((data[SceneSetting.TEMPO_START], data[SceneSetting.TEMPO_END]), (A_SLOW_TEMPO, A_FAST_TEMPO))
+        choices.set_section_own(place=A_VERSE, field=ROOT_OF_PLACE, value=ANOTHER_ROOT)
+        choices.set_section_own(place=A_VERSE, field=TYPE_OF_PLACE, value=MINOR)
+        made = choices.made_setlist(name=A_NAME, version=VERSION)
+        name = made.get_song(A_NAME).get_scenes()[A_VERSE].get_scale_name()
+        scale = made.to_data()[Section.SCALES][name]
+        self.assertEqual((scale[ROOT_OF_PLACE], scale[TYPE_OF_PLACE]), (ANOTHER_ROOT, MINOR))
+        # The section before keeps the song's.
+        self.assertIsNone(made.get_song(A_NAME).get_scenes()[A_VERSE - 1].get_scale_name())
+
+    def test_a_tempo_at_the_end_alone_starts_from_the_song_s_tempo(self):
+        choices = chosen()
+        choices.set_section_own(place=A_VERSE, field=TEMPO_END_OF_PLACE, value=A_SLOW_TEMPO)
+        data = choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.SONGS][A_NAME][Section.SCENES][A_VERSE]
+        self.assertEqual((data[SceneSetting.TEMPO_START], data[SceneSetting.TEMPO_END]), (choices.get_tempo(), A_SLOW_TEMPO))
+
+    def test_each_way_of_leaving_is_what_the_plan_says_of_the_section(self):
+        choices = chosen()
+        said = set()
+        for way in LEAVES_AS_JOIN:
+            choices.set_section_own(place=A_VERSE, field=LEAVES, value=way)
+            said.add(choices.said_of_sections()[A_VERSE])
+            if way in (STOPS, DROP_OUT, BUILD):
+                self.assertIn(MSG_PLAN_LEAVES_TAIL.format(way), choices.said_of_sections()[A_VERSE])
+        self.assertEqual(len(said), len(LEAVES_AS_JOIN))
+
+    def test_chords_are_typed_as_degrees_and_change_the_song(self):
+        choices = chosen()
+        before = choices.made_setlist(name=A_NAME, version=VERSION).to_data()
+        choices.set_section_own(place=A_VERSE, field=CHORDS, value=SOME_CHORDS)
+        self.assertEqual(chords_as_text(choices.section_own(place=A_VERSE, field=CHORDS)), SOME_CHORDS)
+        self.assertNotEqual(choices.made_setlist(name=A_NAME, version=VERSION).to_data(), before)
+        for wrong in NOT_CHORDS:
+            with self.assertRaises(ValueError):
+                chords_from_text(wrong)
+
+    def test_what_a_field_cannot_take_is_refused_and_nothing_changes(self):
+        choices = chosen()
+        before = choices.to_data()
+        for field, wrong in ((ENERGY, HIGHEST_ENERGY + 1), (LEAVES, NOT_A_PART), (SETUP, NOT_A_PART), (TEMPO_OF_PLACE, 0), (ROOT_OF_PLACE, NOT_A_PART), (TYPE_OF_PLACE, NOT_A_PART), (NOT_A_PART, 1)):
+            with self.assertRaises(ValueError):
+                choices.set_section_own(place=A_VERSE, field=field, value=wrong)
+        self.assertEqual(choices.to_data(), before)
+        with self.assertRaises(ValueError):
+            chosen(plan=False).set_section_own(place=A_VERSE, field=ENERGY, value=HIGHEST_ENERGY)
+
+    def test_what_a_section_was_given_goes_with_it_when_moved_and_copied_and_is_kept(self):
+        choices = chosen()
+        choices.set_section_own(place=A_VERSE, field=ENERGY, value=HIGHEST_ENERGY)
+        choices.set_section_own(place=A_VERSE, field=CHORDS, value=SOME_CHORDS)
+        choices.copy_section(A_VERSE)
+        choices.move_section(place=A_VERSE, offset=1)
+        for place in (A_VERSE, A_VERSE + 1):
+            self.assertEqual(choices.section_own(place=place, field=ENERGY), HIGHEST_ENERGY)
+        again = WizardChoices.from_data(choices.to_data())
+        self.assertEqual(again.to_data(), choices.to_data())
+        self.assertEqual(again.made_setlist(name=A_NAME, version=VERSION).to_data(), choices.made_setlist(name=A_NAME, version=VERSION).to_data())
+        choices.remove_section(A_VERSE)
+        choices.remove_section(A_VERSE)
+        self.assertIsNone(choices.section_own(place=A_VERSE, field=ENERGY))
+
+    def test_no_setup_leaves_the_section_s_last_chord_alone(self):
+        # A progression that starts at home is the one a section is set up for, so the seeds are tried until a song has one.
+        for seed in range(MANY_SEEDS):
+            choices = chosen()
+            choices.set_seed(seed)
+            set_up = [place for place, said in enumerate(choices.said_of_sections()) if MSG_PLAN_SET_UP.split('{')[0] in said]
+            if set_up:
+                break
+        self.assertTrue(set_up)
+        choices.set_section_own(place=set_up[0], field=SETUP, value=NOT_AT_ALL)
+        self.assertNotIn(MSG_PLAN_SET_UP.split('{')[0], choices.said_of_sections()[set_up[0]])
 
 
 class TestWizardListeningPlaces(unittest.TestCase):

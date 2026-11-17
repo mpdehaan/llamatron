@@ -78,6 +78,11 @@ SONG_PLAN = 'song plan'
 CONTRAST = 'contrast'
 PHRASING = 'phrasing'
 HOOK_PART = "a part of the hook's kind"
+SECTION_OWN = "a section's own"
+A_SECOND_PLACE = 1
+# A value of each field a section can be given of its own.
+SECTION_OWN_TRIED = (('energy', 10), ('energy', 1), ('leaves', 'stops'), ('leaves', 'build'), ('leaves', 'drop-out'), ('leaves', 'a big fill'), ('leaves', 'a small fill'), ('leaves', 'nothing'),
+                     ('chords', '6 4 2 5'), ('tempo', 61), ('tempo_end', 62), ('root', 'F#'), ('type', 'minor'), ('type', 'major'))
 GUITARISTS = 'guitarists'
 SEED = 'seed'
 TEMPO = 'tempo'
@@ -256,6 +261,15 @@ def every_choice(choices):
                         # A long note has neither a rhythm nor a detail to choose, so those are held under another contour.
                         first = planned if part == hook_kinds.CONTOUR else both(first=planned, then=lambda made: made.set_hook_part(part=hook_kinds.CONTOUR, value=hook_kinds.CHANT))
                         yield HOOK_PART, (part, value), lambda made, part=part, value=value: made.set_hook_part(part=part, value=value), [first]
+    if choices.can_have_song_plan():
+        # What a section of a planned song is given of its own, each held under a plan: the second section, which a section follows.
+        under_plan = fresh_with_plan(choices)
+
+        def planned_first(made):
+            made.set_song_plan(True)
+        for field, value in SECTION_OWN_TRIED:
+            if field in under_plan.section_own_fields(A_SECOND_PLACE) and value != under_plan.section_from_plan(place=A_SECOND_PLACE, field=field):
+                yield SECTION_OWN, (field, value), lambda made, field=field, value=value: made.set_section_own(place=A_SECOND_PLACE, field=field, value=value), [planned_first]
     if choices.offers_one_guitarist():
         yield GUITARISTS, ONE_GUITARIST_COUNT, lambda made: made.set_guitarists(ONE_GUITARIST_COUNT), [nothing_first]
     yield SEED, ANOTHER_SEED, lambda made: made.set_seed(ANOTHER_SEED), [nothing_first]

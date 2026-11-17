@@ -749,6 +749,11 @@ MSG_WIZARD_CONTRAST_LABEL = 'Contrast'
 MSG_WIZARD_PHRASING_LABEL = 'Phrasing'
 MSG_WIZARD_HOOK_PART_LABELS = {'contour': 'Contour', 'rhythm': 'Rhythm', 'detail': 'Detail'}
 MSG_WIZARD_PICK = "(wizard's pick)"
+# What a section of a planned song can be given of its own, and where each comes from until it is.
+MSG_WIZARD_SECTION_OWN_LABELS = {'energy': 'Energy', 'leaves': 'Leaves with', 'setup': 'Setup', 'chords': 'Chords', 'tempo': 'Tempo', 'tempo_end': 'Tempo at end', 'root': 'Key', 'type': 'Scale'}
+MSG_WIZARD_SECTION_ORIGINS = {'energy': 'from plan', 'leaves': 'from plan', 'setup': 'from plan', 'chords': 'from progression', 'tempo': 'from song', 'tempo_end': 'from song', 'root': 'from song', 'type': 'from song'}
+MSG_WIZARD_VALUE_FROM = '{value} ({origin})'
+MSG_WIZARD_FROM_ORIGIN = '({origin})'
 MSG_WIZARD_PICK_SHOWN = "{value} (wizard's pick)"
 MSG_WIZARD_PLAN_LINE = '{number:>2}  {name:<{width}}  {said}'
 MSG_WIZARD_FILLS_LABEL = 'Fill pattern'
