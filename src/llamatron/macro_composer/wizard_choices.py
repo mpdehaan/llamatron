@@ -42,7 +42,8 @@ from llamatron.macro_composer.arranger import (
 from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer import hook_kinds, line_edits, phrasing
 from llamatron.macro_composer.arranger import CHORDS, SCENE_SETTINGS, form_of
-from llamatron.macro_composer.melody import ANSWER, HOOK_KIND, HOOK_NOTES, LINE
+from llamatron.macro_composer.melody import ANSWER, HOOK_KIND, HOOK_NOTES, LINE, LINE_NOTES
+from llamatron.macro_composer.phrasing import LINE_BREATH, LINE_EARLY
 from llamatron.macro_composer.joins import BUILD, DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL
 from llamatron.macro_composer.song_plan import (
     BIG, BY_PLACE, FADED, FADES, UNFADED, SWELL_END, SWELL_START, PHRASING_WAYS, RISES, RISING, SCALE_OF_PLACE, SCENE_TEMPO, SCENE_TEMPO_END, SCENE_TEMPO_START, CONTRAST, ENERGY, FILL_SIZE, FILL_SIZES, HIGHEST_ENERGY, LOWEST_ENERGY, MEDIUM, NOT_AT_ALL, PHRASING, PLAN_OF_SONG, ROOT_OF_PLACE, SAID_OF_SECTION, SETUP, SMALL,
@@ -226,6 +227,16 @@ OWN_SECTIONS = 'own_sections'
 PREVIEW_NAME = 'preview'
 JOINS_ANSWER = 'joins'
 SETUP_BARS_ANSWER = 'setup bars'
+ARRANGED_ANSWER = 'arranged'
+LINES_ANSWER = 'lines'
+# What a section's lines are given of their own, by the line's count, and what is said of a line.
+LINES_OF_SECTION = 'lines'
+LINE_PLAYER = 'player'
+LINE_BREATHES = 'breathes'
+LINE_IS_HOOK = 'hook'
+LINE_OWN = 'own'
+PLAY_OF_SCENE = 'play'
+PART = 'part'
 # What a section can be given of its own in any genre, with or without a plan.
 OWN_WITHOUT_PLAN = (CHORDS, TEMPO_OF_PLACE, TEMPO_END_OF_PLACE, ROOT_OF_PLACE, TYPE_OF_PLACE, FADES)
 # How a song starts: the sections before its first section with a tune, each stage a section of its own that can be changed like any other.
@@ -725,9 +736,14 @@ class WizardChoices:
         tempo, key and scale a section was given where no plan lays those out by place."""
         return {name: {**{field: value for field, value in entry.items() if field != OWN_OF_SECTION}, **self._as_section(entry)} for name, entry in zip(self.form_sections(), self._entries())}
 
+    def _plan_with_lines(self, *, kind, plan, lines):
+        """A section's plan of lines with what each line was given of its own laid over it: its notes, its breath and whether a note comes early."""
+        usual = style_of(self._genre)[SECTIONS][kind].get(PLAN, []) if plan is None else plan
+        return [{**entry, **(lines.get(count) or {})} for count, entry in enumerate(copy.deepcopy(usual))]
+
     def _own_without_plan(self, entry):
         """What a section was given of its own that a song with no plan can still take: chords, a tempo, the tempo at its end, a key and a scale."""
-        return {field: value for field, value in entry.get(OWN_OF_SECTION, {}).items() if field in OWN_WITHOUT_PLAN}
+        return {field: value for field, value in entry.get(OWN_OF_SECTION, {}).items() if field in OWN_WITHOUT_PLAN or field == LINES_OF_SECTION}
 
     def _as_section(self, entry):
         if self.has_song_plan():
@@ -742,6 +758,8 @@ class WizardChoices:
             settings[SCALE_OF_PLACE] = {ROOT_OF_PLACE: own.get(ROOT_OF_PLACE, self._root), TYPE_OF_PLACE: own.get(TYPE_OF_PLACE, self._scale_type)}
         if own.get(FADES):
             settings.update({SWELL_START: UNFADED, SWELL_END: FADED})
+        if own.get(LINES_OF_SECTION):
+            return {PLAN: self._plan_with_lines(kind=entry[KIND], plan=None, lines=own[LINES_OF_SECTION]), **({CHORDS: copy.deepcopy(own[CHORDS])} if CHORDS in own else {}), **({SCENE_SETTINGS: settings} if settings else {})}
         return {**({CHORDS: copy.deepcopy(own[CHORDS])} if CHORDS in own else {}), **({SCENE_SETTINGS: settings} if settings else {})}
 
     def _section(self, place):
@@ -2185,6 +2203,9 @@ class WizardChoices:
                 if shape is not None:
                     own[PLAN] = copy.deepcopy(shape)
             own.update(self._intro_hook_at(place))
+            if own.get(LINES_OF_SECTION):
+                own[PLAN] = self._plan_with_lines(kind=entry[KIND], plan=own.get(PLAN), lines=own[LINES_OF_SECTION])
+            own.pop(LINES_OF_SECTION, None)
             by_place.append({**((given[place] or {}) if place < len(given) else {}), **own})
         return {**self._extras, PLAN_OF_SONG: {**plan, BY_PLACE: by_place}}
 
@@ -2298,6 +2319,8 @@ class WizardChoices:
             return value
         if field in (RISES, FADES) and isinstance(value, bool):
             return value
+        if field == LINES_OF_SECTION and isinstance(value, dict):
+            return {int(count): self._checked_line_own(given) for count, given in value.items() if given}
         if field == SHAPE_OF_SECTION and isinstance(value, str):
             return value
         if field == CHORDS:
@@ -2310,10 +2333,88 @@ class WizardChoices:
             return value
         raise ValueError(ERR_WIZARD_SECTION_OWN.format(field=field, value=value))
 
+    def _checked_line_own(self, given):
+        """What one line of a section was given of its own, checked: notes written by hand, a breath in eighths and whether a note comes early."""
+        if not isinstance(given, dict) or not set(given) <= {LINE_NOTES, LINE_BREATH, LINE_EARLY}:
+            raise ValueError(ERR_WIZARD_SECTION_OWN.format(field=LINES_OF_SECTION, value=given))
+        checked = {}
+        if LINE_NOTES in given:
+            checked[LINE_NOTES] = self._checked_line(line=given[LINE_NOTES], steps=line_edits.steps_of(given[LINE_NOTES]) if isinstance(given[LINE_NOTES], list) and all(isinstance(note, dict) for note in given[LINE_NOTES]) else 0)
+        if LINE_BREATH in given:
+            if isinstance(given[LINE_BREATH], bool) or not isinstance(given[LINE_BREATH], int) or not phrasing.NO_BREATH <= given[LINE_BREATH] <= phrasing.LONGEST_BREATH:
+                raise ValueError(ERR_WIZARD_SECTION_OWN.format(field=LINE_BREATH, value=given[LINE_BREATH]))
+            checked[LINE_BREATH] = given[LINE_BREATH]
+        if LINE_EARLY in given:
+            if not isinstance(given[LINE_EARLY], bool):
+                raise ValueError(ERR_WIZARD_SECTION_OWN.format(field=LINE_EARLY, value=given[LINE_EARLY]))
+            checked[LINE_EARLY] = given[LINE_EARLY]
+        return checked
+
+    # A section's lines, one by one: who plays each, its notes as the song has them, and what the line is given of its own.
+
+    def _made_form(self):
+        """The song arranged as the choices stand: its parts and its form, kept until a choice changes."""
+        return self._remembered(key=ARRANGED_ANSWER, compute=lambda: arranged(style=style_of(self._genre), song=self.song_picks(PREVIEW_NAME)))
+
+    def _plan_at(self, place):
+        """The plan of lines a section is played by, with what its lines were given."""
+        if self.has_song_plan():
+            by_place = self._extras_with_sections().get(PLAN_OF_SONG, {}).get(BY_PLACE) or []
+            given = by_place[place].get(PLAN) if place < len(by_place) and by_place[place] else None
+            if given is not None:
+                return given
+        return self._plan_with_lines(kind=self._entry(place)[KIND], plan=None, lines=self._entry(place).get(OWN_OF_SECTION, {}).get(LINES_OF_SECTION, {}))
+
+    def tune_steps_in_bar(self):
+        """Return how many steps a bar of the tune has."""
+        return self._melody_habits()[GRID]
+
+    def section_lines(self, place):
+        """Return a section's lines in order, each a mapping: who plays the line, its notes (line_edits.py) or None where nobody of the band plays the line,
+        whether its breath and early note can be set (a new idea of the tune in a song in four, not the hook), and what the line was given of its own."""
+        self._entry(place)
+        return self._remembered(key=(LINES_ANSWER, place), compute=lambda: self._section_lines(place))
+
+    def _section_lines(self, place):
+        made = self._made_form()
+        scene = made[FORM][place]
+        own = self._entry(place).get(OWN_OF_SECTION, {}).get(LINES_OF_SECTION, {})
+        seen = set()
+        lines = []
+        for count, entry in enumerate(self._plan_at(place)):
+            player = self.answered_by() if entry.get(ANSWER) else self.tune_player()
+            part = made[PARTS].get((scene.get(PLAY_OF_SCENE, {}).get(player) or {}).get(PART))
+            notes = copy.deepcopy(part[LINES][count]) if part is not None and LINES in part and count < len(part[LINES]) else None
+            letter = (bool(entry.get(ANSWER)), entry.get(LINE, str(count)))
+            new = letter not in seen
+            seen.add(letter)
+            in_eighths = not self._melody_habits()[GRID] % phrasing.EIGHTHS_IN_BAR
+            breathes = new and notes is not None and not entry.get(HOOK) and self.counts_in_four() and in_eighths and LINE_NOTES not in (own.get(count) or {})
+            lines.append({LINE_PLAYER: player, LINE_NOTES: notes, LINE_BREATHES: breathes, LINE_IS_HOOK: bool(entry.get(HOOK)), LINE_OWN: copy.deepcopy(own.get(count) or {})})
+        return lines
+
+    def set_section_line(self, *, place, line, field, value):
+        """Give one line of a section its own notes, breath or early note, or give the field back with None. What the song cannot then be made with is refused."""
+        lines = self.section_lines(place)
+        if isinstance(line, bool) or not isinstance(line, int) or not 0 <= line < len(lines) or field not in (LINE_NOTES, LINE_BREATH, LINE_EARLY):
+            raise ValueError(ERR_WIZARD_SECTION_OWN.format(field=field, value=line))
+        if field == LINE_NOTES and value is not None and (lines[line][LINE_NOTES] is None or not isinstance(value, list) or line_edits.steps_of(self._checked_line(line=value, steps=line_edits.steps_of(lines[line][LINE_NOTES]))) == 0):
+            raise ValueError(ERR_WIZARD_SECTION_OWN.format(field=field, value=value))
+        own = {count: dict(given) for count, given in (self._entry(place).get(OWN_OF_SECTION, {}).get(LINES_OF_SECTION) or {}).items()}
+        given = own.setdefault(line, {})
+        given.pop(field, None)
+        if value is not None:
+            given[field] = value
+        own = {count: given for count, given in own.items() if given}
+        self._set_own(place=place, field=LINES_OF_SECTION, value=own or None)
+
     def set_section_own(self, *, place, field, value):
         """Give a section something of its own, or give the field back with None. What the song cannot then be made with is refused, and nothing changes."""
         if field not in OWN_WITHOUT_PLAN:
             self._plan()
+        self._set_own(place=place, field=field, value=value)
+
+    def _set_own(self, *, place, field, value):
         self._entry(place)
         checked = None if value is None else self._checked_own(field=field, value=value)
         if field == SHAPE_OF_SECTION and checked is not None and checked not in self.section_shapes(place):
