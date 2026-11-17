@@ -20,12 +20,12 @@ from llamatron.composition.limits import MAX_NAME_LENGTH
 from llamatron.macro_composer import hook_kinds, phrasing
 from llamatron.macro_composer.arranger import CHORDS
 from llamatron.macro_composer.joins import LEAVES
-from llamatron.macro_composer.song_plan import ENERGY, ROOT_OF_PLACE, TEMPO_END_OF_PLACE, TYPE_OF_PLACE
-from llamatron.macro_composer.wizard_choices import chords_as_text
+from llamatron.macro_composer.song_plan import ENERGY, RISES, ROOT_OF_PLACE, TEMPO_END_OF_PLACE, TYPE_OF_PLACE
+from llamatron.macro_composer.wizard_choices import DRUM_SOLO_KIND, chords_as_text
 from llamatron.strings.errors import ERR_WIZARD_CHORDS
 from llamatron.macro_composer.song_plan import USUAL_CONTRAST
 from llamatron.strings.labels import (
-    MSG_WIZARD_CONTRAST_LABEL, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_HOOK_PART_LABELS, MSG_WIZARD_HOOKS_BRANCH, MSG_WIZARD_MELODY_BRANCH, MSG_WIZARD_PHRASING_LABEL, MSG_WIZARD_PHRASING_WAY_LABELS, MSG_WIZARD_PICK_SHOWN,
+    MSG_WIZARD_CONTRAST_LABEL, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_QUESTION_TITLES, MSG_WIZARD_FORM_QUESTIONS_BUTTON, MSG_WIZARD_REPLACE_SECTIONS_TITLE, MSG_WIZARD_HOOK_PART_LABELS, MSG_WIZARD_HOOKS_BRANCH, MSG_WIZARD_MELODY_BRANCH, MSG_WIZARD_PHRASING_LABEL, MSG_WIZARD_PHRASING_WAY_LABELS, MSG_WIZARD_PICK_SHOWN,
     MSG_WIZARD_SECTION_ORIGINS, MSG_WIZARD_SECTION_OWN_LABELS, MSG_WIZARD_SONG_PLAN_LABEL, MSG_WIZARD_VALUE_FROM,
 )
 from llamatron.tui import keybindings
@@ -174,6 +174,9 @@ class TestWizardSectionOwnFields(WizardTest):
         shown = self.text()
         for field in choices.section_own_fields(A_PLACE):
             self.assertIn(self.label(field), shown)
+            if field == RISES:
+                # A switch shows on or off and no origin.
+                continue
             self.assertIn(MSG_WIZARD_VALUE_FROM.format(value=choices.section_from_plan(place=A_PLACE, field=field), origin=MSG_WIZARD_SECTION_ORIGINS[field]), shown)
 
     async def test_energy_steps_from_the_plan_s_and_bksp_gives_it_back(self):
@@ -212,3 +215,60 @@ class TestWizardSectionOwnFields(WizardTest):
         self.choices().set_song_plan(False)
         await self.press(Key.DOWN, Key.UP)
         self.assertNotIn(self.label(TEMPO_END_OF_PLACE), self.text())
+
+
+class TestWizardFormQuestions(WizardTest):
+    """The Form panel's questions, a dialog each, and the form made from the answers."""
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        choices = self.choices()
+        choices.set_genre(A_PLANNED_GENRE)
+        choices.set_subgenre(A_SUBGENRE)
+        await self.press(Key.DOWN, Key.UP)
+        await self.go_to_named_branch(MSG_WIZARD_FORM_BRANCH)
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(MSG_WIZARD_FORM_QUESTIONS_BUTTON)
+
+    async def test_the_usual_answers_make_the_usual_form_of_the_questions(self):
+        choices = self.choices()
+        await self.press(Key.ENTER)
+        for name, _, _ in choices.form_questions():
+            self.assertIn(MSG_WIZARD_FORM_QUESTION_TITLES[name], self.text())
+            await self.press(Key.ENTER)
+        self.assertTrue(choices.has_own_form())
+        self.assertEqual(choices.section_kinds_in_form(), choices.form_of_answers({}))
+        self.assertTrue(self.wizard().has_choices_to_lose())
+
+    async def test_another_answer_is_in_the_form_made(self):
+        choices = self.choices()
+        await self.press(Key.ENTER)
+        for name, _, _ in choices.form_questions():
+            await self.press(*([Key.DOWN] if name == DRUM_SOLO_KIND else []), Key.ENTER)
+        self.assertIn(DRUM_SOLO_KIND, choices.section_kinds_in_form())
+
+    async def test_esc_at_a_question_leaves_the_form_alone(self):
+        choices = self.choices()
+        before = choices.section_kinds_in_form()
+        await self.press(Key.ENTER, Key.ENTER, Key.ESCAPE)
+        self.assertFalse(choices.has_own_form())
+        self.assertEqual(choices.section_kinds_in_form(), before)
+
+    async def test_a_form_a_person_changed_is_replaced_only_on_a_yes(self):
+        choices = self.choices()
+        choices.copy_section(A_PLACE)
+        before = choices.section_kinds_in_form()
+        await self.press(Key.ENTER)
+        for _ in choices.form_questions():
+            await self.press(Key.ENTER)
+        self.assertIn(MSG_WIZARD_REPLACE_SECTIONS_TITLE, self.text())
+        await self.press(keybindings.ConfirmDialog.NO)
+        self.assertEqual(choices.section_kinds_in_form(), before)
+
+    async def test_a_genre_with_no_verse_and_chorus_has_no_questions(self):
+        choices = self.choices()
+        choices.set_genre(AN_UNPLANNED_GENRE)
+        choices.set_subgenre(choices.subgenres()[0])
+        await self.press(keybindings.WizardPage.TO_TREE, Key.DOWN, Key.UP)
+        await self.go_to_named_branch(MSG_WIZARD_FORM_BRANCH)
+        self.assertNotIn(MSG_WIZARD_FORM_QUESTIONS_BUTTON, self.text())

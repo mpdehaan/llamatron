@@ -752,8 +752,10 @@ MSG_WIZARD_EARLY_SHOWN = '{count} lines in {of}'
 MSG_WIZARD_HOOK_PART_LABELS = {'contour': 'Contour', 'rhythm': 'Rhythm', 'detail': 'Detail'}
 MSG_WIZARD_PICK = "(wizard's pick)"
 # What a section of a planned song can be given of its own, and where each comes from until it is.
-MSG_WIZARD_SECTION_OWN_LABELS = {'energy': 'Energy', 'leaves': 'Leaves with', 'setup': 'Setup', 'chords': 'Chords', 'tempo': 'Tempo', 'tempo_end': 'Tempo at end', 'root': 'Key', 'type': 'Scale'}
-MSG_WIZARD_SECTION_ORIGINS = {'energy': 'from plan', 'leaves': 'from plan', 'setup': 'from plan', 'chords': 'from progression', 'tempo': 'from song', 'tempo_end': 'from song', 'root': 'from song', 'type': 'from song'}
+MSG_WIZARD_INTRO_HOOK_LABEL = 'Intro hook'
+MSG_WIZARD_NOBODY = '(nobody)'
+MSG_WIZARD_SECTION_OWN_LABELS = {'shape': 'Shape', 'rises': 'Rises', 'energy': 'Energy', 'leaves': 'Leaves with', 'setup': 'Setup', 'chords': 'Chords', 'tempo': 'Tempo', 'tempo_end': 'Tempo at end', 'root': 'Key', 'type': 'Scale'}
+MSG_WIZARD_SECTION_ORIGINS = {'shape': 'from genre', 'rises': 'from plan', 'energy': 'from plan', 'leaves': 'from plan', 'setup': 'from plan', 'chords': 'from progression', 'tempo': 'from song', 'tempo_end': 'from song', 'root': 'from song', 'type': 'from song'}
 MSG_WIZARD_VALUE_FROM = '{value} ({origin})'
 MSG_WIZARD_FROM_ORIGIN = '({origin})'
 MSG_WIZARD_PICK_SHOWN = "{value} (wizard's pick)"
@@ -777,6 +779,12 @@ MSG_WIZARD_KIND_LABEL = 'Kind'
 MSG_WIZARD_ADD_SECTION_TITLE = 'Add section'
 MSG_WIZARD_INSERT_SECTION_TITLE = 'Insert section'
 MSG_WIZARD_SUGGESTED_FORM_BUTTON = 'Use a suggested form'
+# The questions a form is made from, each a dialog's title, by the question's name.
+MSG_WIZARD_FORM_QUESTIONS_BUTTON = 'Form questions'
+MSG_WIZARD_FORM_QUESTION_TITLES = {
+    'verses first': 'Verses before the first chorus', 'pre-choruses': 'Pre-chorus', 'bridge': 'Bridge', 'solos': 'Solos', 'drum solo': 'Drum solo',
+    'last choruses': 'Choruses at the end',
+}
 MSG_WIZARD_NEW_HOOK_BUTTON = 'New hook'
 MSG_WIZARD_ROW_LABELS = {'lengths': 'Lengths', 'loudness': 'Loudness', 'articulation': 'Articulation'}
 MSG_WIZARD_SUGGESTED_FORM_TITLE = 'Suggested forms'

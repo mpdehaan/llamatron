@@ -42,10 +42,10 @@ from llamatron.macro_composer.arranger import (
 from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer import hook_kinds, phrasing
 from llamatron.macro_composer.arranger import CHORDS, form_of
-from llamatron.macro_composer.melody import HOOK_KIND
+from llamatron.macro_composer.melody import ANSWER, HOOK_KIND, LINE
 from llamatron.macro_composer.joins import BUILD, DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL
 from llamatron.macro_composer.song_plan import (
-    BIG, BY_PLACE, PHRASING_WAYS, CONTRAST, ENERGY, FILL_SIZE, FILL_SIZES, HIGHEST_ENERGY, LOWEST_ENERGY, MEDIUM, NOT_AT_ALL, PHRASING, PLAN_OF_SONG, ROOT_OF_PLACE, SAID_OF_SECTION, SETUP, SMALL,
+    BIG, BY_PLACE, PHRASING_WAYS, RISES, RISING, CONTRAST, ENERGY, FILL_SIZE, FILL_SIZES, HIGHEST_ENERGY, LOWEST_ENERGY, MEDIUM, NOT_AT_ALL, PHRASING, PLAN_OF_SONG, ROOT_OF_PLACE, SAID_OF_SECTION, SETUP, SMALL,
     TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE, USUAL_CONTRAST, SongPlan,
 )
 from llamatron.composition.song_file_error import SongFileError
@@ -59,7 +59,7 @@ from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MIN_GM_SO
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.marks import MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SECTION_VARIANT
 from llamatron.support.version import VERSION as A_VERSION
-from llamatron.strings.errors import ERR_WIZARD_CONTRAST, ERR_WIZARD_EXTRAS, ERR_WIZARD_HOOK_PART, ERR_WIZARD_CHORDS, ERR_WIZARD_PHRASING, ERR_WIZARD_SECTION_OWN, ERR_WIZARD_SECTION_OWN_UNMADE, ERR_WIZARD_GENRE_HAS_NO_PLAN, ERR_WIZARD_NO_SONG_PLAN, ERR_WIZARD_SWITCH, ERR_WIZARD_NO_SUCH_ROW, ERR_WIZARD_ROW, ERR_WIZARD_HOOK_TAKE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_MELODY_NUMBER, ERR_WIZARD_MELODY_SWITCH, ERR_WIZARD_NO_SUCH_MELODY_SETTING, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
+from llamatron.strings.errors import ERR_WIZARD_CONTRAST, ERR_WIZARD_EXTRAS, ERR_WIZARD_HOOK_PART, ERR_WIZARD_CHORDS, ERR_WIZARD_FORM_ANSWER, ERR_WIZARD_NO_FORM_QUESTIONS, ERR_WIZARD_INTRO_HOOK, ERR_WIZARD_PHRASING, ERR_WIZARD_SECTION_OWN, ERR_WIZARD_SECTION_OWN_UNMADE, ERR_WIZARD_GENRE_HAS_NO_PLAN, ERR_WIZARD_NO_SONG_PLAN, ERR_WIZARD_SWITCH, ERR_WIZARD_NO_SUCH_ROW, ERR_WIZARD_ROW, ERR_WIZARD_HOOK_TAKE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_MELODY_NUMBER, ERR_WIZARD_MELODY_SWITCH, ERR_WIZARD_NO_SUCH_MELODY_SETTING, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'
@@ -237,6 +237,38 @@ LEAVES_AS_JOIN = {
     STOPS: {TAIL: STOPS}, DROP_OUT: {TAIL: DROP_OUT}, BUILD: {TAIL: BUILD}, LEAVES_NOTHING: {},
 }
 SETUP_USUAL = 'when it helps'
+# The questions a form is made from, the kinds of section they are about and the answers offered.
+VERSES_FIRST = 'verses first'
+PRE_CHORUSES = 'pre-choruses'
+SOLOS = 'solos'
+LAST_CHORUSES = 'last choruses'
+VERSE_KIND = 'verse'
+CHORUS_KIND = 'chorus'
+PRE_CHORUS = 'pre-chorus'
+BRIDGE = 'bridge'
+SOLO = 'solo'
+DRUM_SOLO_KIND = 'drum solo'
+ENDING = 'ending'
+NO = 'no'
+YES = 'yes'
+ONE = '1'
+TWO = '2'
+NONE_OF = '0'
+BEFORE_EVERY = 'before every chorus'
+BEFORE_FIRST_TWO = 'before the first 2 choruses'
+YES_OR_NO = (NO, YES)
+COUNTS_ONE_OR_TWO = (ONE, TWO)
+SOLO_COUNTS = (NONE_OF, ONE, TWO)
+PRE_CHORUS_ANSWERS = (NO, BEFORE_EVERY, BEFORE_FIRST_TWO)
+# The shape of a section's lines: one of its kind's shapes by name, kept with the section, and what the field says of the kind's own.
+SHAPE_OF_SECTION = 'shape'
+SHAPES = 'shapes'
+SHAPE_USUAL = 'usual'
+INTRO = 'intro'
+INTRO_HOOK = 'intro_hook'
+BARS_IN_A_LINE = 2
+HIGHER = 'higher'
+VARIED = 'varied'
 MARKS_TYPED = {'b': FLAT, '#': SHARP}
 FIRST_DEGREE_OF_SCALE = 1
 LAST_DEGREE_OF_SCALE = 7
@@ -793,6 +825,57 @@ class WizardChoices:
         except (KeyError, TypeError, ValueError):
             self._sections = kept
             raise ValueError(ERR_WIZARD_BAD_SECTIONS.format(value=sections)) from None
+
+    # A form made from a few answers, each question asked only where the subgenre can play the kind of section it is about.
+
+    def form_questions(self):
+        """Return the questions a form is made from, in order, each its name, the answers offered and the usual answer."""
+        kinds = self.section_kinds()
+        questions = [(VERSES_FIRST, COUNTS_ONE_OR_TWO, ONE)]
+        if PRE_CHORUS in kinds:
+            questions.append((PRE_CHORUSES, PRE_CHORUS_ANSWERS, NO))
+        if BRIDGE in kinds:
+            questions.append((BRIDGE, YES_OR_NO, YES))
+        if SOLO in kinds:
+            questions.append((SOLOS, SOLO_COUNTS, ONE))
+        if DRUM_SOLO_KIND in kinds:
+            questions.append((DRUM_SOLO_KIND, YES_OR_NO, NO))
+        return [*questions, (LAST_CHORUSES, COUNTS_ONE_OR_TWO, TWO)] if CHORUS_KIND in kinds and VERSE_KIND in kinds else []
+
+    def form_of_answers(self, answers):
+        """Return the kinds of section, in order, of the form some answers ask for: a question left out takes its usual answer."""
+        asked = {name: (offered, usual) for name, offered, usual in self.form_questions()}
+        if not asked:
+            raise ValueError(ERR_WIZARD_NO_FORM_QUESTIONS)
+        given = {}
+        for name, (offered, usual) in asked.items():
+            given[name] = answers.get(name, usual)
+            if given[name] not in offered:
+                raise ValueError(ERR_WIZARD_FORM_ANSWER.format(name=name, value=given[name]))
+        unknown = [name for name in answers if name not in asked]
+        if unknown:
+            raise ValueError(ERR_WIZARD_FORM_ANSWER.format(name=unknown[0], value=answers[unknown[0]]))
+        kinds = self.section_kinds()
+        before = given.get(PRE_CHORUSES, NO)
+        solos = SOLO_COUNTS.index(given.get(SOLOS, NONE_OF))
+
+        def chorus(count):
+            """A chorus, with a pre-chorus before it where the answers ask for one before this chorus."""
+            return ([PRE_CHORUS] if before == BEFORE_EVERY or (before == BEFORE_FIRST_TWO and count <= 2) else []) + [CHORUS_KIND]
+        form = [INTRO] if INTRO in kinds else []
+        form += [VERSE_KIND] * COUNTS_ONE_OR_TWO.index(given[VERSES_FIRST]) + [VERSE_KIND] + chorus(1) + [VERSE_KIND] + chorus(2)
+        # The middle of the song: a first solo, the bridge, the drummer alone, and the solo that leads back to the last choruses.
+        form += [SOLO] if solos == 2 else []
+        form += [BRIDGE] if given.get(BRIDGE) == YES else []
+        form += [DRUM_SOLO_KIND] if given.get(DRUM_SOLO_KIND) == YES else []
+        form += [SOLO] if solos else []
+        form += chorus(3) + [CHORUS_KIND] * COUNTS_ONE_OR_TWO.index(given[LAST_CHORUSES])
+        return form + ([ENDING] if ENDING in kinds else [])
+
+    def set_form_from_answers(self, answers):
+        """Make the form some answers ask for the song's own, in place of its sections, or leave the form as it was where the answers are refused."""
+        self.set_own_sections(sections=[{KIND: kind} for kind in self.form_of_answers(answers)])
+        self._answers = {}
 
     # The band: who plays, how each plays and how busy each is.
 
@@ -1792,7 +1875,7 @@ class WizardChoices:
 
     def _extras_with_sections(self):
         """The song's extras, the plan in them holding what each section of the form was given of its own, by place."""
-        if not self.has_song_plan() or not any(entry.get(OWN_OF_SECTION) for entry in self._entries()):
+        if not self.has_song_plan() or not (any(entry.get(OWN_OF_SECTION) for entry in self._entries()) or self._intro_hook_kept() is not None):
             return self._extras
         plan = self._extras[PLAN_OF_SONG] if isinstance(self._extras[PLAN_OF_SONG], dict) else {}
         given = list(plan.get(BY_PLACE) or [])
@@ -1801,8 +1884,53 @@ class WizardChoices:
             own = dict(entry.get(OWN_OF_SECTION) or {})
             if LEAVES in own:
                 own[LEAVES] = dict(LEAVES_AS_JOIN[own[LEAVES]])
+            if SHAPE_OF_SECTION in own:
+                # A shape the kind no longer has, as after the section was made another kind, is left as the kind's own.
+                shape = style_of(self._genre)[SECTIONS][entry[KIND]].get(SHAPES, {}).get(own.pop(SHAPE_OF_SECTION))
+                if shape is not None:
+                    own[PLAN] = copy.deepcopy(shape)
+            own.update(self._intro_hook_at(place))
             by_place.append({**((given[place] or {}) if place < len(given) else {}), **own})
         return {**self._extras, PLAN_OF_SONG: {**plan, BY_PLACE: by_place}}
+
+    # The hook said in the intro, before anybody sings it, by the player who answers the tune or the tune's own player.
+
+    def intro_hook_players(self):
+        """Return the players who can say the hook in the intro: the tune's player and the player who answers the tune, where the song has a hook, a plan and an intro the band plays."""
+        if not self.has_song_plan() or not self.can_have_hook() or not self.has_hook() or not self.counts_in_four() or not self._intro_places():
+            return []
+        return [role for role in (self.answered_by(), self.tune_player()) if role is not None]
+
+    def _intro_places(self):
+        return [place for place, entry in enumerate(self._entries()) if entry[KIND] == INTRO and not self.section_is_held(place)]
+
+    def get_intro_hook(self):
+        """Return who says the hook in the intro, or None for nobody."""
+        role = self._intro_hook_kept()
+        return role if role in self.intro_hook_players() else None
+
+    def _intro_hook_kept(self):
+        """Who was chosen to say the hook in the intro, while that player is still one who could: asked while the song is made, so it makes no song to answer."""
+        role = self._extras.get(PLAN_OF_SONG, {}).get(INTRO_HOOK) if isinstance(self._extras.get(PLAN_OF_SONG), dict) else None
+        able = self.can_have_hook() and self.has_hook() and role is not None and role in (self.answered_by(), self.tune_player())
+        return role if able else None
+
+    def set_intro_hook(self, role):
+        if role is not None and role not in self.intro_hook_players():
+            raise ValueError(ERR_WIZARD_INTRO_HOOK.format(value=role))
+        self._plan().pop(INTRO_HOOK, None)
+        if role is not None:
+            self._plan()[INTRO_HOOK] = role
+        self._answers = {}
+
+    def _intro_hook_at(self, place):
+        """What an intro is given so that somebody says the hook in it: a line of the hook for each two bars, as answers where the answering player says them, and the player among those who play."""
+        role = self._intro_hook_kept()
+        if role is None or place not in self._intro_places():
+            return {}
+        answers = {ANSWER: True} if role == self.answered_by() else {}
+        lines = [{LINE: HOOK, HOOK: True, HIGHER: True, **answers, **({VARIED: True} if count % 2 else {})} for count in range(max(self.section_bars(place) // BARS_IN_A_LINE, 1))]
+        return {PLAN: lines, PLAYS: list(dict.fromkeys([*self.section_plays(place), role]))}
 
     # What a section of a planned song is given of its own, over the plan and the song: each is None until given, and None gives it back.
 
@@ -1812,7 +1940,13 @@ class WizardChoices:
             return []
         joins = self._remembered(key=JOINS_ANSWER, compute=lambda: self._song_plan().joins())
         leaves = [LEAVES, SETUP] if place < len(joins) and joins[place] is not None else []
-        return [ENERGY, *leaves, CHORDS, TEMPO_OF_PLACE, TEMPO_END_OF_PLACE, ROOT_OF_PLACE, TYPE_OF_PLACE]
+        shape = [SHAPE_OF_SECTION] if self.section_shapes(place) else []
+        rises = [RISES] if place < len(joins) and joins[place] is not None else []
+        return [ENERGY, *shape, *rises, *leaves, CHORDS, TEMPO_OF_PLACE, TEMPO_END_OF_PLACE, ROOT_OF_PLACE, TYPE_OF_PLACE]
+
+    def section_shapes(self, place):
+        """Return the shapes a section's lines may take besides its kind's own, by name."""
+        return list(self._usual(place).get(SHAPES, {}))
 
     def section_own(self, *, place, field):
         """Return what a section was given of its own for a field, or None."""
@@ -1832,6 +1966,10 @@ class WizardChoices:
             return next((way for way, given in LEAVES_AS_JOIN.items() if FILL_SIZE in given and fills.get(given[FILL_SIZE]) == join.get(FILL_OF_JOIN)), LEAVES_NOTHING)
         if field == SETUP:
             return SETUP_USUAL
+        if field == SHAPE_OF_SECTION:
+            return SHAPE_USUAL
+        if field == RISES:
+            return self._entry(place)[KIND] in style_of(self._genre)[PLAN_OF_SONG].get(RISING, [])
         if field == CHORDS:
             return chords_as_text(self._song_plan().chords_at(place))
         if field in (TEMPO_OF_PLACE, TEMPO_END_OF_PLACE):
@@ -1844,6 +1982,10 @@ class WizardChoices:
         if field == LEAVES and value in LEAVES_AS_JOIN:
             return value
         if field == SETUP and value == NOT_AT_ALL:
+            return value
+        if field == RISES and isinstance(value, bool):
+            return value
+        if field == SHAPE_OF_SECTION and isinstance(value, str):
             return value
         if field == CHORDS:
             return chords_from_text(chords_as_text(value) if isinstance(value, list) else value)
@@ -1860,6 +2002,8 @@ class WizardChoices:
         self._plan()
         self._entry(place)
         checked = None if value is None else self._checked_own(field=field, value=value)
+        if field == SHAPE_OF_SECTION and checked is not None and checked not in self.section_shapes(place):
+            raise ValueError(ERR_WIZARD_SECTION_OWN.format(field=field, value=value))
         before = copy.deepcopy(self._sections)
         entry = self._own_entries()[place]
         own = entry.setdefault(OWN_OF_SECTION, {})

@@ -380,6 +380,10 @@ sections:
     chords: [4, 4, 5, 5]
     plays: [drums, bass, guitar, keys, lead]
     plan: [{line: p}, {line: p, higher: true, varied: true}]
+    # Other shapes a pre-chorus may take, each a plan of its lines, chosen for a section by name.
+    shapes:
+      holds back: [{line: p}, {line: p, varied: true}]
+      two ideas: [{line: p}, {line: q, higher: true}]
   bridge:
     intensity: {drums: 3, bass: 3, rhythm: 3, keys: 3, lead: 3}
     crash: true
@@ -387,12 +391,21 @@ sections:
     bars: 8
     plays: [drums, bass, guitar, keys, lead]
     plan: [{line: m}, {line: m, varied: true}, {line: n, higher: true}, {line: n, higher: true, varied: true}]
+    shapes:
+      one idea climbing: [{line: m}, {line: m, varied: true}, {line: m, higher: true}, {line: m, higher: true, varied: true}]
+      four ideas: [{line: m}, {line: n}, {line: o, higher: true}, {line: r, higher: true}]
+      around the hook: [{line: m}, {line: hook, hook: true}, {line: m, varied: true}, {line: n, higher: true}]
   solo:
     crash: true
     picks: {cymbal: hat half open}
     bars: 8
     plays: [drums, bass, guitar, keys, solo]
     plan: [{line: s1, answer: true}, {line: s2, answer: true, higher: true}, {line: s1, answer: true, varied: true}, {line: s3, answer: true, higher: true}]
+    # Other shapes a solo may take: one idea worked over, a climb with a new idea each line, and a solo that starts from the song's hook.
+    shapes:
+      theme and variations: [{line: s1, answer: true}, {line: s1, answer: true, varied: true}, {line: s1, answer: true, higher: true}, {line: s1, answer: true, higher: true, varied: true}]
+      climbs: [{line: s1, answer: true}, {line: s2, answer: true}, {line: s3, answer: true, higher: true}, {line: s4, answer: true, higher: true}]
+      starts from the hook: [{line: hook, hook: true, answer: true}, {line: s1, answer: true, higher: true}, {line: hook, hook: true, answer: true, varied: true}, {line: s2, answer: true, higher: true}]
   # The drummer alone: a theme, the theme moved round the kit, a build, a peak, and a last bar that plays the band back in.
   drum solo: {bars: 8, plays: [drums], drum_solo: true, plan: []}
   ending: {held: true, plays: [bass, guitar, keys]}

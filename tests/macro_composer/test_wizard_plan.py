@@ -16,6 +16,7 @@
 
 """The wizard's choices of a planned song: the plan switched on, its contrast, its phrasing and the hook's kind."""
 
+import itertools
 import random
 import unittest
 
@@ -24,8 +25,8 @@ from llamatron.macro_composer import hook_kinds, phrasing
 from llamatron.macro_composer.notation import REST, STEPS
 from llamatron.macro_composer.arranger import CHORDS
 from llamatron.macro_composer.joins import BUILD, DROP_OUT, LEAVES, STOPS
-from llamatron.macro_composer.song_plan import ENERGY, HIGHEST_ENERGY, LOWEST_ENERGY, NOT_AT_ALL, ROOT_OF_PLACE, SETUP, TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE, USUAL_CONTRAST
-from llamatron.macro_composer.wizard_choices import HOOK_PARTS, LEAVES_AS_JOIN, PHRASING_OFFERED, MINOR, WizardChoices, chords_as_text, chords_from_text
+from llamatron.macro_composer.song_plan import ENERGY, HIGHEST_ENERGY, LOWEST_ENERGY, NOT_AT_ALL, RISES, ROOT_OF_PLACE, SETUP, TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE, USUAL_CONTRAST
+from llamatron.macro_composer.wizard_choices import BRIDGE, DRUM_SOLO_KIND, LAST_CHORUSES, NO, PRE_CHORUS, PRE_CHORUSES, SOLO, SOLO_COUNTS, SOLOS, VERSES_FIRST, YES, HOOK_PARTS, LEAVES_AS_JOIN, PHRASING_OFFERED, SHAPE_OF_SECTION, MINOR, WizardChoices, chords_as_text, chords_from_text
 from llamatron.strings.errors import ERR_WIZARD_GENRE_HAS_NO_PLAN, ERR_WIZARD_NO_SONG_PLAN
 from llamatron.strings.macro_composer import MSG_PLAN_LEAVES_TAIL, MSG_PLAN_SET_UP
 from llamatron.support.version import VERSION
@@ -40,6 +41,10 @@ NOT_A_SWITCH = 'yes'
 NOT_A_PART = 'wobble'
 A_HIGH_CONTRAST = 9
 A_VERSE = 1
+A_FEW_FORMS_APART = 7
+KIND_OF_SECTION = 'kind'
+THE_INTRO = 0
+A_KIND_WITH_SHAPES = 'solo'
 A_BAR_OF_STEPS = 16
 MANY_SEEDS = 40
 A_SLOW_TEMPO = 90
@@ -330,6 +335,99 @@ class TestWizardSectionOwn(unittest.TestCase):
         self.assertTrue(set_up)
         choices.set_section_own(place=set_up[0], field=SETUP, value=NOT_AT_ALL)
         self.assertNotIn(MSG_PLAN_SET_UP.split('{')[0], choices.said_of_sections()[set_up[0]])
+
+
+class TestWizardShapesAndIntroHook(unittest.TestCase):
+    """A section's shape, a section that rises, and the hook said in the intro."""
+
+    __slots__ = ()
+
+    def test_a_kind_with_shapes_offers_them_and_each_makes_another_song(self):
+        choices = chosen()
+        solo = choices.section_kinds_in_form().index(A_KIND_WITH_SHAPES)
+        self.assertTrue(choices.section_shapes(solo))
+        self.assertEqual(choices.section_shapes(A_VERSE), [])
+        self.assertNotIn(SHAPE_OF_SECTION, choices.section_own_fields(A_VERSE))
+        for shape in choices.section_shapes(solo):
+            choices.set_section_own(place=solo, field=SHAPE_OF_SECTION, value=shape)
+            self.assertEqual(choices.section_own(place=solo, field=SHAPE_OF_SECTION), shape)
+        with self.assertRaises(ValueError):
+            choices.set_section_own(place=solo, field=SHAPE_OF_SECTION, value=NOT_A_PART)
+        with self.assertRaises(ValueError):
+            choices.set_section_own(place=A_VERSE, field=SHAPE_OF_SECTION, value=choices.section_shapes(solo)[0])
+
+    def test_a_section_made_to_rise_leaves_with_a_build_and_grows_louder(self):
+        choices = chosen()
+        self.assertFalse(choices.section_from_plan(place=A_VERSE, field=RISES))
+        choices.set_section_own(place=A_VERSE, field=RISES, value=True)
+        self.assertIn(MSG_PLAN_LEAVES_TAIL.format(BUILD), choices.said_of_sections()[A_VERSE])
+        scene = choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.SONGS][A_NAME][Section.SCENES][A_VERSE]
+        self.assertLess(scene[SceneSetting.SWELL_START], scene[SceneSetting.SWELL_END])
+
+    def test_the_hook_is_said_in_the_intro_by_whoever_is_chosen_and_by_nobody_until_then(self):
+        choices = chosen()
+        players = choices.intro_hook_players()
+        self.assertEqual(players, [choices.answered_by(), choices.tune_player()])
+        self.assertIsNone(choices.get_intro_hook())
+        for role in players:
+            choices.set_intro_hook(role)
+            self.assertEqual(choices.get_intro_hook(), role)
+            self.assertEqual(WizardChoices.from_data(choices.to_data()).get_intro_hook(), role)
+            song = choices.made_setlist(name=A_NAME, version=VERSION).get_song(A_NAME)
+            self.assertIsNotNone(song.get_scenes()[THE_INTRO].get_clip_slot(role))
+        choices.set_intro_hook(None)
+        self.assertIsNone(choices.get_intro_hook())
+        with self.assertRaises(ValueError):
+            choices.set_intro_hook(NOT_A_PART)
+
+    def test_nobody_can_say_the_hook_in_an_intro_without_a_plan_or_a_hook(self):
+        self.assertEqual(chosen(plan=False).intro_hook_players(), [])
+        choices = chosen()
+        choices.set_hook(False)
+        self.assertEqual(choices.intro_hook_players(), [])
+
+
+class TestWizardFormQuestions(unittest.TestCase):
+    """A form made from a few answers."""
+
+    __slots__ = ()
+
+    def test_only_the_kinds_the_subgenre_plays_are_asked_about_and_a_genre_with_no_chorus_is_asked_nothing(self):
+        asked = [name for name, _, _ in chosen(plan=False).form_questions()]
+        self.assertEqual(asked, [VERSES_FIRST, PRE_CHORUSES, BRIDGE, SOLOS, DRUM_SOLO_KIND, LAST_CHORUSES])
+        other = chosen(genre=AN_UNPLANNED_GENRE, subgenre=None, plan=False)
+        self.assertEqual(other.form_questions(), [])
+        with self.assertRaises(ValueError):
+            other.form_of_answers({})
+
+    def test_every_run_of_answers_makes_a_form_the_song_can_be_made_with(self):
+        choices = chosen(plan=False)
+        questions = choices.form_questions()
+        forms = set()
+        for answers in itertools.product(*(offered for _, offered, _ in questions)):
+            given = {name: answer for (name, _, _), answer in zip(questions, answers)}
+            form = choices.form_of_answers(given)
+            forms.add(tuple(form))
+            self.assertEqual(form.count(SOLO), SOLO_COUNTS.index(given[SOLOS]))
+            self.assertEqual(BRIDGE in form, given[BRIDGE] == YES)
+            self.assertEqual(DRUM_SOLO_KIND in form, given[DRUM_SOLO_KIND] == YES)
+            self.assertEqual(PRE_CHORUS in form, given[PRE_CHORUSES] != NO)
+        self.assertEqual(len(forms), len(list(itertools.product(*(offered for _, offered, _ in questions)))))
+        for form in sorted(forms)[::A_FEW_FORMS_APART]:
+            made = chosen()
+            made.set_own_sections(sections=[{KIND_OF_SECTION: kind} for kind in form])
+            made.made_setlist(name=A_NAME, version=VERSION)
+
+    def test_the_answers_become_the_song_s_own_form_and_a_wrong_answer_changes_nothing(self):
+        choices = chosen(plan=False)
+        choices.set_form_from_answers({SOLOS: SOLO_COUNTS[2], DRUM_SOLO_KIND: YES})
+        self.assertTrue(choices.has_own_form())
+        kinds = choices.section_kinds_in_form()
+        self.assertEqual((kinds.count(SOLO), kinds.count(DRUM_SOLO_KIND)), (2, 1))
+        for wrong in ({SOLOS: NOT_A_PART}, {NOT_A_PART: YES}):
+            with self.assertRaises(ValueError):
+                choices.set_form_from_answers(wrong)
+        self.assertEqual(choices.section_kinds_in_form(), kinds)
 
 
 class TestWizardListeningPlaces(unittest.TestCase):
