@@ -29,7 +29,6 @@ from tests.tui.test_tui_wizard import WizardTest
 A_NAME = 'made'
 A_GENRE = 'rock'
 A_SUBGENRE = 'arena rock'
-A_POP_GENRE = 'sixties_pop'
 A_SEED = 11
 THE_BASS = 'bass'
 THE_DRUMS = 'drums'

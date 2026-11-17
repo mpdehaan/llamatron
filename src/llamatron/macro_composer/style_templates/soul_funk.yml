@@ -34,7 +34,7 @@ templates:
   sixties soul:  {meter: 4/4, tempo: 120, drums: snare on every beat, percussion: tambourine on two and four, bass: melodic and busy, guitar: chops on two and four, keys: piano eighths, horns: riffs answering, voices: answering, chords: two chord vamp, lead: voice, solo: saxophone}
   southern soul: {meter: 4/4, tempo: 104, drums: backbeat with a pushing kick, percussion: none, bass: sparse and syncopated, guitar: chops on two and four, keys: organ held, horns: held swells, voices: none, chords: plagal, lead: voice, solo: organ}
   soul ballad:   {meter: 12/8, tempo: 60, drums: slow twelve-eight, percussion: none, bass: roots with a climb, guitar: arpeggio in triplets, keys: organ held, horns: held swells, voices: backing vowels, chords: doo-wop, lead: voice, solo: saxophone}
-  new orleans:   {meter: 4/4, tempo: 96, drums: second line, percussion: cowbell, bass: syncopated tumbao, guitar: scratch sixteenths, keys: piano eighths, horns: riffs answering, voices: answering, chords: three chord, lead: voice, solo: saxophone}
+  new orleans:   {meter: 4/4, tempo: 96, drums: second line, percussion: cowbell, bass: syncopated tumbao, guitar: scratch sixteenths, keys: piano eighths, horns: riffs answering, voices: answering, chords: twelve bar, lead: voice, solo: saxophone}
   funk:          {meter: 4/4, tempo: 108, drums: funk with ghost notes, percussion: none, bass: on the one then syncopated, guitar: scratch sixteenths, keys: clavinet riff, horns: stabs, voices: none, chords: one chord, lead: voice, solo: saxophone}
   disco:         {meter: 4/4, tempo: 120, drums: four on the floor with open hats, percussion: congas, bass: octaves on the offbeats, guitar: scratch sixteenths, keys: electric piano chords, horns: held swells, voices: backing vowels, chords: minor four chord, lead: voice, solo: none}
 
@@ -48,7 +48,7 @@ traits:
       share: 16
       needs: {meter: 4/4}
       bar:
-        kick: [none, none, none, none, none, none, loud, none, none, none, none, none, none, none, loud, none]
+        kick: [loud, none, none, none, none, none, loud, none, loud, none, none, none, none, none, none, none]
         snare: [soft, none, none, none, loud, none, none, none, soft, none, none, none, loud, none, none, none]
         hat: [loud, none, soft, none, loud, none, soft, none, loud, none, soft, none, loud, none, soft, none]
     - value: backbeat with a pushing kick
@@ -70,8 +70,8 @@ traits:
       share: 10
       needs: {meter: 4/4}
       bar:
-        kick: [loud, none, none, none, none, none, loud, none, loud, none, none, none, none, none, loud, none]
-        snare: [soft, none, soft, soft, none, soft, loud, none, soft, none, soft, soft, loud, none, loud, none]
+        kick: [loud, none, none, none, none, none, loud, none, none, none, none, none, loud, none, none, none]
+        snare: [loud, soft, soft, loud, soft, soft, loud, soft, soft, soft, loud, soft, loud, soft, soft, soft]
     - value: four on the floor with open hats
       share: 18
       needs: {meter: 4/4}
@@ -88,7 +88,8 @@ traits:
         snare: [none, none, none, loud, none, none, none, none, none, loud, none, none]
         hat: [loud, soft, soft, loud, soft, soft, loud, soft, soft, loud, soft, soft]
   fills:
-    - {value: snare sixteenths on four, share: 45, needs: {meter: 4/4}, fill: {snare: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, loud, loud, loud]}}
+    - {value: snare sixteenths on four, share: 35, needs: {meter: 4/4}, fill: {snare: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, loud, loud, loud]}}
+    - {value: a snare before the bar, share: 10, needs: {meter: 4/4}, fill: {snare: [none, none, none, none, none, none, none, none, none, none, none, none, none, none, loud, loud]}}
     - {value: toms down, share: 25, needs: {meter: 4/4}, fill: {tom high: [none, none, none, none, none, none, none, none, loud, loud, none, none, none, none, none, none], tom low: [none, none, none, none, none, none, none, none, none, none, none, none, loud, loud, none, loud]}}
     - {value: none, share: 30}
   percussion:
@@ -220,12 +221,16 @@ traits:
         - [{degree: 1, chord: '3', steps: 2}]
     - {value: none, share: 36}
   chords:
-    - {value: one chord, share: 16, pattern: [1], by_section: {bridge: [4, 4, 4, 4, 5, 5, 5, 5]}}
-    - {value: two chord vamp, share: 26, pattern: [1, 4], by_section: {bridge: [2, 5, 2, 5]}}
-    - {value: plagal, share: 16, pattern: [1, 1, 4, 4], by_section: {chorus: [{degree: 7, accidental: flat}, 4, 1, 1], bridge: [5, 5, 4, 4]}}
-    - {value: three chord, share: 14, pattern: [1, 4, 5, 4], by_section: {bridge: [4, 4, 5, 5]}}
-    - {value: doo-wop, share: 14, pattern: [1, 6, 4, 5], by_section: {bridge: [4, 4, 1, 1, 2, 2, 5, 5]}}
-    - {value: minor four chord, share: 14, scale_type: minor, pattern: [1, 4, 7, 3], by_section: {chorus: [1, 7, 6, 5], bridge: [4, 4, 5, 5]}}
+    - {value: one chord, share: 14, by: {sixties soul: 0, southern soul: 0, soul ballad: 0, new orleans: 0, funk: 55, disco: 15}, pattern: [1], by_section: {bridge: [4, 4, 4, 4, 5, 5, 5, 5]}}
+    - {value: two chord vamp, share: 20, by: {sixties soul: 30, southern soul: 25, soul ballad: 0, new orleans: 30, funk: 30, disco: 10}, pattern: [1, 4], by_section: {bridge: [2, 5, 2, 5]}}
+    - {value: plagal, share: 14, by: {sixties soul: 0, southern soul: 35, soul ballad: 0, new orleans: 0, funk: 0, disco: 0}, pattern: [1, 1, 4, 4], by_section: {chorus: [{degree: 7, accidental: flat}, 4, 1, 1], bridge: [5, 5, 4, 4]}}
+    - {value: three chord, share: 12, by: {sixties soul: 25, southern soul: 20, soul ballad: 20, new orleans: 35, funk: 15, disco: 0}, pattern: [1, 4, 5, 4], by_section: {bridge: [4, 4, 5, 5]}}
+    - {value: doo-wop, share: 12, by: {sixties soul: 25, southern soul: 0, soul ballad: 40, new orleans: 0, funk: 0, disco: 0}, pattern: [1, 6, 4, 5], by_section: {bridge: [4, 4, 1, 1, 2, 2, 5, 5]}}
+    - {value: minor four chord, share: 10, by: {sixties soul: 0, southern soul: 0, soul ballad: 0, new orleans: 0, funk: 0, disco: 45}, scale_type: minor, pattern: [1, 4, 7, 3], by_section: {chorus: [1, 7, 6, 5], bridge: [4, 4, 5, 5]}}
+    - {value: twelve bar, share: 6, by: {sixties soul: 0, southern soul: 20, soul ballad: 0, new orleans: 35, funk: 0, disco: 0}, pattern: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5], by_section: {chorus: [4, 4, 1, 1, 5, 4, 1, 5], bridge: [4, 4, 1, 1, 4, 4, 5, 5]}}
+    - {value: circle, share: 4, by: {sixties soul: 0, southern soul: 0, soul ballad: 25, new orleans: 0, funk: 0, disco: 0}, pattern: [1, 6, 2, 5], by_section: {bridge: [4, 4, 3, 6]}}
+    - {value: stepping up, share: 4, by: {sixties soul: 20, southern soul: 0, soul ballad: 15, new orleans: 0, funk: 0, disco: 0}, pattern: [1, 3, 4, 5], by_section: {bridge: [2, 5, 2, 5]}}
+    - {value: minor with a fall, share: 4, by: {sixties soul: 0, southern soul: 0, soul ballad: 0, new orleans: 0, funk: 0, disco: 30}, scale_type: minor, pattern: [1, 7, 6, 5], by_section: {chorus: [6, 7, 1, 1], bridge: [4, 4, 5, 5]}}
   lead:
     - {value: voice, share: 100, sound: voice}
   solo:
@@ -403,10 +408,65 @@ interplay:
 
 forms:
   usual:
-    - {name: with a bridge and a solo, share: 45, sections: [intro, verse, verse, chorus, verse, chorus, bridge, solo, chorus, chorus, ending]}
+    - {name: with a bridge and a solo, share: 45, sections: [intro, verse, chorus, verse, chorus, bridge, solo, chorus, chorus, ending]}
     - {name: with a solo, share: 30, sections: [intro, verse, verse, chorus, verse, chorus, solo, chorus, ending]}
-    - {name: short, share: 15, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, chorus, ending]}
-    - {name: long with two solos, share: 10, sections: [intro, verse, verse, chorus, verse, chorus, solo, solo, bridge, chorus, chorus, ending]}
+    - {name: short, share: 25, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, chorus, ending]}
+  # Each kind has the shapes its records took: verses that climb with no chorus, a groove said again and again, a long dance form.
+  sixties soul:
+    - {name: with a solo, share: 50, sections: [intro, verse, chorus, verse, chorus, solo, chorus, chorus, chorus, ending]}
+    - {name: with a bridge, share: 30, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, chorus, ending]}
+    - {name: short, share: 20, sections: [intro, verse, chorus, verse, chorus, chorus, ending]}
+  southern soul:
+    - {name: verses with a bridge and a solo, share: 50, sections: [intro, verse, verse, bridge, verse, solo, verse, verse, ending]}
+    - {name: with a chorus, share: 30, sections: [intro, verse, chorus, verse, chorus, solo, chorus, chorus, ending]}
+    - {name: verses and a bridge, share: 20, sections: [intro, verse, verse, bridge, verse, verse, ending]}
+  soul ballad:
+    - {name: verses and a bridge twice, share: 60, sections: [intro, verse, verse, bridge, verse, bridge, verse, ending]}
+    - {name: with a solo, share: 40, sections: [intro, verse, verse, bridge, verse, solo, bridge, verse, ending]}
+  new orleans:
+    - {name: with a solo, share: 60, sections: [intro, verse, verse, chorus, verse, solo, chorus, chorus, ending]}
+    - {name: verses in a row, share: 40, sections: [intro, verse, verse, solo, verse, verse, ending]}
+  funk:
+    - {name: grooves with a bridge and a solo, share: 45, sections: [intro, verse, verse, bridge, verse, solo, verse, verse, ending]}
+    - {name: grooves with a bridge, share: 35, sections: [intro, verse, verse, bridge, verse, verse, ending]}
+    - {name: with a chorus, share: 20, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, chorus, ending]}
+  disco:
+    - {name: with a break, share: 60, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, chorus, ending]}
+    - {name: long, share: 40, sections: [intro, intro, verse, chorus, verse, chorus, bridge, bridge, chorus, chorus, outro, ending]}
+
+# What a song that asks for a plan is planned by, as rock's is: soul climbs a little, funk stays level and grows by who plays,
+# the ballad climbs furthest, and the horns and the backup singers come in from an Energy up.
+song_plan:
+  energy: {intro: 5, outro: 6, verse: 5, chorus: 7, bridge: 6, solo: 7, ending: 7}
+  growth: 1
+  last_chorus: 9
+  rising: []
+  levels: {drums: [1, 4, 7, 9], bass: [1, 5, 7, 10], rhythm: [1, 4, 7, 10], keys: [1, 5, 7, 9], lead: [1, 3, 6, 9], session: [1, 5, 7, 9]}
+  comes_in: {horns: 6, voices: 6}
+  fills: {small: a snare before the bar, medium: snare sixteenths on four, big: toms down}
+  tails:
+    usual: [stops]
+    disco: [build]
+
+# What a kind says differently from soul and funk as a whole: how long its sections are, a refrain or a chant as the hook where
+# its songs have no chorus, and its plan's numbers.
+by_subgenre:
+  sixties soul:
+    sections: {verse: {bars: 16}}
+  southern soul:
+    sections: {verse: {plan: [{line: a}, {line: a, varied: true}, {line: b, higher: true}, {line: hook, hook: true}]}}
+    song_plan: {energy: {intro: 3, verse: 3, chorus: 5, bridge: 5, solo: 6}, growth: 1, comes_in: {horns: 4, voices: 5}}
+  soul ballad:
+    sections: {verse: {plan: [{line: a}, {line: a, varied: true}, {line: b, higher: true}, {line: hook, hook: true}]}}
+    song_plan: {energy: {intro: 2, verse: 2, bridge: 5, solo: 6}, growth: 2, comes_in: {horns: 5, voices: 5}}
+  new orleans:
+    sections: {verse: {bars: 12}, solo: {bars: 12}}
+  funk:
+    sections: {verse: {bars: 16, plan: [{line: a}, {line: hook, hook: true}, {line: a, varied: true}, {line: hook, hook: true}]}}
+    song_plan: {energy: {intro: 6, verse: 7, chorus: 7, bridge: 8, solo: 6}, growth: 0, last_chorus: 8, fills: {small: a snare before the bar, medium: a snare before the bar, big: snare sixteenths on four}}
+  disco:
+    sections: {intro: {bars: 8}, verse: {bars: 16}, chorus: {bars: 16}, bridge: {bars: 16}}
+    song_plan: {energy: {intro: 4, verse: 6, chorus: 8, bridge: 3}, growth: 1, rising: [bridge]}
 
 melody:
   4/4:
