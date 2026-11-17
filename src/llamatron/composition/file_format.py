@@ -308,6 +308,8 @@ class SceneSetting:
     RESET = 'reset'
     GROOVE = 'groove'
     LAUNCH_TOGETHER = 'launch_together'
+    # The kind of section the scene is, which says nothing of how the scene plays: it is what a part that knows sections reads.
+    SECTION = 'section'
     # The chains every clip of the scene runs, after the clip's own.
     CHAINS = 'chains'
     # How busy, how loud and how long its clips' notes are over the scene.
@@ -492,6 +494,35 @@ KEYSWITCH_SLOTS = tuple(range(KEYSWITCH_SLOT_COUNT))
 # The Device an instrument names to play through FluidSynth, the software synthesizer the tracker starts, rather than
 # through a MIDI port: its star can never begin a port's name, so it can't be mistaken for one.
 FLUIDSYNTH_DEVICE = '*FluidSynth'
+
+
+class SectionKind:
+    """The kinds of section a scene may say it is."""
+
+    INTRO = 'intro'
+    VERSE = 'verse'
+    PRE_CHORUS = 'pre-chorus'
+    CHORUS = 'chorus'
+    POST_CHORUS = 'post-chorus'
+    BRIDGE = 'bridge'
+    SOLO = 'solo'
+    BREAKDOWN = 'breakdown'
+    BUILD = 'build'
+    DROP = 'drop'
+    GROOVE = 'groove'
+    INTERLUDE = 'interlude'
+    THEME = 'theme'
+    VARIATION = 'variation'
+    DEVELOPMENT = 'development'
+    ENDING = 'ending'
+
+
+# In the order a song usually has them, the kinds of a song with words first, then an electronic piece's, then a classical one's.
+SECTION_KINDS = [
+    SectionKind.INTRO, SectionKind.VERSE, SectionKind.PRE_CHORUS, SectionKind.CHORUS, SectionKind.POST_CHORUS, SectionKind.BRIDGE, SectionKind.SOLO,
+    SectionKind.BREAKDOWN, SectionKind.BUILD, SectionKind.DROP, SectionKind.GROOVE, SectionKind.INTERLUDE,
+    SectionKind.THEME, SectionKind.VARIATION, SectionKind.DEVELOPMENT, SectionKind.ENDING,
+]
 
 
 class FollowAction:

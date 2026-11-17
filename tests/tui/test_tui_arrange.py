@@ -54,7 +54,9 @@ from llamatron.strings.labels import (
     MSG_FOLLOW_ACTION_LABEL, MSG_FOLLOW_ACTION_NAMES, MSG_CLIP_CRUMB, MSG_NAME_LABEL, MSG_SCENE_CRUMB, MSG_REGISTER_FIELD_LABEL, MSG_REGISTER_NUMBER_FIELDS, MSG_RESET_LABEL,
     MSG_REGISTER_AT_LIMIT_FIELD, MSG_REGISTER_RESET_EACH_SCENE_FIELD, MSG_REGISTER_ALLOWED_INC_MAX_FIELD, MSG_AT_LIMIT_NAMES, Crumb, MSG_PATTERN_CRUMB, MSG_PATTERN_LABEL, MSG_REPEAT_LABEL,
 )
-from llamatron.strings.marks import MSG_CHAIN_JOIN, MSG_CRUMB_SEPARATOR
+from llamatron.strings.marks import MSG_CHAIN_JOIN, MSG_CRUMB_SEPARATOR, MSG_NONE_SHOWN
+from llamatron.strings.labels import MSG_SECTION_LABEL
+from llamatron.composition.file_format import SECTION_KINDS
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.strings.legends import MSG_LEGEND_WHAT, MSG_MOVE_SCENE_WHAT, MSG_MOVE_TRACK_WHAT, MSG_OPEN_PATTERN_WHAT, What, KeyName
 from llamatron.strings.messages import MSG_MOVING, MSG_MOVING_SCENE
@@ -72,6 +74,7 @@ PATTERNS_PAGE = 'Patterns page'
 # How many words of a dialog's message to look for, since the dialog wraps it.
 FIRST_WORDS = 5
 LEAD = 'lead'
+NEW_LINE = '\n'
 T19 = 't19'
 TWO = 'two'
 ONE = 'one'
@@ -738,6 +741,20 @@ class TestScenePage(UITest):
     async def test_shows_the_length_of_its_longest_clip(self):
         self.assertIn(LENGTH, self.text())
         self.assertIn('0:01', self.text())
+
+    async def test_the_section_is_chosen_from_the_kinds_a_scene_may_be_and_stepped_back_to_none(self):
+        self.assertIn(MSG_NONE_SHOWN, next(line for line in self.text().split(NEW_LINE) if MSG_SECTION_LABEL in line))
+        await self.go_to(MSG_SECTION_LABEL)
+        await self.press(key_of(binding=keybindings.ScenePage.MORE, key=Key.RIGHT_BRACKET))
+        self.assertEqual(self.scene().get_section(), SECTION_KINDS[0])
+        await self.press(Key.ENTER)
+        # The list is longer than a small console, so its first kinds are looked for.
+        for kind in SECTION_KINDS[:FIRST_WORDS]:
+            self.assertIn(kind, self.text())
+        await self.press(Key.DOWN, Key.ENTER)
+        self.assertEqual(self.scene().get_section(), SECTION_KINDS[1])
+        await self.press(*[key_of(binding=keybindings.ScenePage.LESS, key=Key.LEFT_BRACKET)] * len(SECTION_KINDS))
+        self.assertIsNone(self.scene().get_section())
 
     async def test_scale_can_be_set_and_cleared(self):
         await self.go_to(SCALE)

@@ -15,6 +15,7 @@ On Arrange, `ENTER` on a scene's name opens the Scene page.
 | Setting | What it does |
 | --- | --- |
 | Name | The scene's name. |
+| Section | The kind of section the scene is, such as verse, chorus or solo, chosen from a list, or `(none)`. It changes nothing about how the scene plays. |
 | Scale | A scale for the scene's clips in place of the song's. `Bksp` goes back to the song's. |
 | Groove | A groove for the scene's clips in place of the song's, or `off` to play them straight whatever the song or a track chooses. A track's own groove still wins over the scene's, but not over the scene's `off`. `Bksp` goes back to the song's. |
 | Tempo | A tempo in place of the song's. `Bksp` goes back to the song's. |

@@ -224,6 +224,9 @@ class SongEdits:
         """Make a start reaching any clip of a scene launch the whole scene in real-time playback, or not."""
         self._change(self._scene(index).set_launch_together, value)
 
+    def set_scene_section(self, *, index, section):
+        self._change(self._scene(index).set_section, section)
+
     def set_scene_repeat(self, *, index, repeat):
         self._change(self._scene(index).set_repeat, repeat)
 

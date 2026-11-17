@@ -75,6 +75,7 @@ MSG_FOLLOW_ACTION_LABEL = 'Advance'
 MSG_DEFAULT_FOLLOW_ACTION_LABEL = 'Default follow action'
 MSG_FOLLOW_ACTION_NAMES = {FollowAction.WITH_SCENE: 'With Scene', FollowAction.NEXT: 'Next', FollowAction.OFF: 'Off'}
 MSG_LAUNCH_TOGETHER_LABEL = 'Launch together'
+MSG_SECTION_LABEL = 'Section'
 
 # tui/screens/shared/page.py and tui/key_table.py: the key names, the labels and the words every page shares
 # The file crumb, right after the title on every page: the file's name, or this before the set is saved.
