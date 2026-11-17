@@ -20,6 +20,7 @@ import random
 import unittest
 
 from llamatron.composition.setlist import Setlist
+from llamatron.strings.macro_composer import MSG_CHORDS_TRACK
 from llamatron.macro_composer import arranger, composer, drum_solo, hook_kinds, joins, phrasing
 from llamatron.macro_composer.melody import BREATHES
 from llamatron.macro_composer.notation import LOUD, NONE, REST, SOFT, STEPS
@@ -364,7 +365,7 @@ class TestDrumSolo(unittest.TestCase):
     def test_only_the_drummer_plays_a_drum_solo_in_a_song(self):
         given = arranger.arranged(style=arranger.style_named(ROCK), song=song())
         played = given[arranger.FORM][DRUM_SOLO_PLACE][arranger.PLAY]
-        self.assertTrue(all(given[arranger.TRACKS][track] == arranger.DRUM_KIT for track in played))
+        self.assertTrue(all(given[arranger.TRACKS][track] == arranger.DRUM_KIT for track in played if track != MSG_CHORDS_TRACK))
         self.assertIn(drum_solo.TOM_LOW, played)
 
     def test_a_drum_solo_in_another_meter_is_the_drummer_alone(self):

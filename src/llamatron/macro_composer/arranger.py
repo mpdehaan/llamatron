@@ -44,11 +44,14 @@ from llamatron.macro_composer.riffs import (ACCENT_CHORDS, RIFF, RIFF_KINDS, RIF
 from llamatron.macro_composer.shaping import COMPOUND_BEAT, SIMPLE_BEAT, is_compound
 from llamatron.macro_composer.song_plan import PLAN_OF_SONG, SongPlan
 from llamatron.support.safe_yaml import load_safely
-from llamatron.composition.file_format import SECTION_KINDS, SceneSetting
-from llamatron.composition.limits import MAX_GM_SOUND, MAX_PROGRESSION_CHORDS, MIN_GM_SOUND
+from llamatron.composition.checks import in_whole_notes
+from llamatron.composition.file_format import SECTION_KINDS, ChordSymbol, GeneratorKind, PatternSetting, Row, SceneSetting, Section
+from llamatron.composition.generator_settings import FollowChordsSetting
+from llamatron.composition.named_scale import scale_type_called
+from llamatron.composition.limits import MAX_GM_SOUND, MAX_PROGRESSION_CHORDS, MAX_STEP_SIZE, MIN_GM_SOUND
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.errors import ERR_NO_SUCH_WAY_BESIDE, ERR_PIECE_SOUND, ERR_BREAK_CUT, ERR_NO_STYLE_FORM, ERR_NO_SUCH_BREAK, ERR_NO_STYLE_FORMS, ERR_NO_STYLE_KIND, ERR_NO_SUCH_SECTION, ERR_NO_TRAIT_VALUE, ERR_PICK_NEEDS
-from llamatron.strings.macro_composer import MSG_PIECE_INSTRUMENT, MSG_MADE_PICK, MSG_MADE_SCENE, MSG_MADE_SONG_NOTES, MSG_PART_AT_LEVEL, MSG_PART_BESIDE, MSG_PART_OF_SECTION, MSG_PLAYED_BY, MSG_PLAYED_BY_OWN, MSG_REPEATED_SCENE, MSG_SECTION_START_PART, MSG_TIMING_CHAIN
+from llamatron.strings.macro_composer import MSG_CHORDS_INSTRUMENT, MSG_CHORDS_TRACK, MSG_FOLLOW_CHORDS_NAME, MSG_PIECE_INSTRUMENT, MSG_MADE_PICK, MSG_MADE_SCENE, MSG_MADE_SONG_NOTES, MSG_PART_AT_LEVEL, MSG_PART_BESIDE, MSG_PART_OF_SECTION, MSG_PLAYED_BY, MSG_PLAYED_BY_OWN, MSG_REPEATED_SCENE, MSG_SECTION_START_PART, MSG_TIMING_CHAIN
 
 # The fields of a style template.
 NAME = 'name'
@@ -162,6 +165,17 @@ CRASH = 'crash'
 KICK = 'kick'
 COMMON_TIME = '4/4'
 ACCIDENTAL_MARKS = {SHARP: '#', FLAT: 'b'}
+# The chords track: its chords as the pattern editor's Chord row names them, and what a clip that follows it has first in its chain.
+SCALE_TRIAD = 3
+HOME_DEGREE = 1
+NOTES_OF_A_SCALE_WITH_TRIADS = 7
+THIRD_PLACE = 2
+FIFTH_PLACE = 4
+HOME_CHORDS = {(4, 7): ChordSymbol.MAJOR, (3, 7): ChordSymbol.MINOR, (3, 6): ChordSymbol.DIMINISHED, (4, 8): ChordSymbol.AUGMENTED}
+FOLLOWS_THE_CHORDS = {GeneratorKind.FOLLOW_CHORDS: MSG_FOLLOW_CHORDS_NAME}
+MUTED_TRACKS = 'muted_tracks'
+# The General MIDI sound of the chords track's instrument, a piano, heard only when a person unmutes the track.
+CHORDS_GUIDE_SOUND = 1
 NEAR_VOICES = {'lowest_octave': 3, 'highest_octave': 5}
 DEFAULT_PHRASE_BARS = 4
 EIGHTH = '1/8'
@@ -479,6 +493,39 @@ def progression_of(*, chords, every, meter=COMMON_TIME):
     if every:
         made[EVERY] = every
     return made
+
+
+def home_chord_of(scale_type):
+    """The chord symbol of the chord a scale type builds on its first note, or nothing where its third and fifth name no plain chord or it has not seven notes."""
+    shape = scale_type_called(scale_type).value
+    if len(shape) != NOTES_OF_A_SCALE_WITH_TRIADS:
+        return None
+    return HOME_CHORDS.get((shape[THIRD_PLACE], shape[FIFTH_PLACE]))
+
+
+def chords_written(*, progression, meter, scale_type):
+    """A progression's chords as a pattern of the chords track, a step a chord, each a triad of the scale on its degree; a chord
+    on a degree with a sharp or a flat is the scale's home chord moved there, as a Progression plays it. Nothing where a chord
+    lasts longer than a step can, or such a chord's kind cannot be named: the chords track then makes its chords with the
+    Progression."""
+    bar = Fraction(meter)
+    lasts = Fraction(str(in_whole_notes(time=progression[EVERY], bar=bar))) if EVERY in progression else bar
+    marks = progression.get(ACCIDENTALS) or [None] * len(progression[CHORDS])
+    home = home_chord_of(scale_type)
+    if lasts > MAX_STEP_SIZE or (any(marks) and home is None):
+        return None
+    written = {
+        PatternSetting.STEPS: len(progression[CHORDS]), PatternSetting.STEP_SIZE: str(lasts), Row.DEGREE: list(progression[CHORDS]),
+        Row.CHORD: [SCALE_TRIAD if mark is None else home for mark in marks],
+    }
+    if any(marks):
+        written[Row.ACCIDENTAL] = list(marks)
+    return written
+
+
+def one_chord(meter):
+    """The home chord for a bar, as a pattern of the chords track that a Progression moves."""
+    return {PatternSetting.STEPS: 1, PatternSetting.STEP_SIZE: str(Fraction(meter)), Row.DEGREE: [HOME_DEGREE], Row.CHORD: [SCALE_TRIAD]}
 
 
 def hits_of(marks):
@@ -966,9 +1013,9 @@ def arranged(*, style, song):
         drums_of[name] = drum_sets[key]
     drum_tracks = list(dict.fromkeys(piece for pieces in drums_of.values() for piece in pieces))
     timing = {piece: timing_generators(move=drummer.get(TIMING, {}).get(piece, {})) for piece in drum_tracks}
-    # The order of a made song's tracks: the chords first, then the lead and the backing, the bass, and the drums last.
-    tracks = {}
-    instruments = {DRUM_KIT: None}
+    # The order of a made song's tracks: the muted chords track first, then the chords, the lead and the backing, the bass, and the drums last.
+    tracks = {MSG_CHORDS_TRACK: MSG_CHORDS_INSTRUMENT}
+    instruments = {DRUM_KIT: None, MSG_CHORDS_INSTRUMENT: CHORDS_GUIDE_SOUND}
     progressions = {}
     chains = {}
     extra = {}
@@ -1045,7 +1092,18 @@ def arranged(*, style, song):
                 play.setdefault(CRASH, {PART: start, ONCE: True})
             here = players_in(style=style, roles=roles, levels=levels, section=section)
             progression = MSG_PART_OF_SECTION.format(name, CHORDS)
-            progressions[progression] = progression_of(chords=chords_in(section, shared=True), every=section.get(EVERY, chord_entry.get(EVERY)), meter=meter)
+            # The section's chords go on the chords track, written a step a chord, which every clip that plays them follows.
+            section_progression = progression_of(chords=chords_in(section, shared=True), every=section.get(EVERY, chord_entry.get(EVERY)), meter=meter)
+            own_scale = (section.get(SCENE_SETTINGS) or {}).get(SCALE)
+            written_chords = chords_written(progression=section_progression, meter=meter, scale_type=own_scale[TYPE] if isinstance(own_scale, dict) else scale_type)
+            if written_chords is None:
+                progressions[progression] = section_progression
+                chains[progression] = [{PROGRESSION: progression}]
+                parts[progression] = {RAW: one_chord(meter)}
+                chords_played = {PART: progression, CHAINS: [progression]}
+            else:
+                parts[progression] = {RAW: written_chords}
+                chords_played = progression
 
             def lines_of(role, *, section=section, chords=chords, here=here):
                 """The lines a player of a tune plays in the section: those the section gives, or those sketched for the player."""
@@ -1073,7 +1131,7 @@ def arranged(*, style, song):
                     continue
                 if FIGURE in entry:
                     chain = MSG_PART_OF_SECTION.format(name, role[ROLE])
-                    chains[chain] = [{PROGRESSION: progression}] + [{kind: role[ROLE]} for generator in entry.get(GENERATORS, []) for kind in generator]
+                    chains[chain] = [dict(FOLLOWS_THE_CHORDS)] + [{kind: role[ROLE]} for generator in entry.get(GENERATORS, []) for kind in generator]
                     if role.get(VOICE_LEADING):
                         chains[chain].append({VOICE_LEADING_KIND: NEAR})
                     chains[chain] += [{RUSH: role[ROLE]}, {DRAG: role[ROLE]}]
@@ -1108,7 +1166,7 @@ def arranged(*, style, song):
                             parts[riff_part] = {STEP: EIGHTH, OCTAVE: role[OCTAVE], **voice_of(role), LINES: [[dict(note) for note in (line if first else single(line))] for line in lines]}
                             shaped.append(riff_part)
                         riff_chain = MSG_PART_OF_SECTION.format(chain, RIFF)
-                        chains[riff_chain] = [{PROGRESSION: progression}, {RUSH: role[ROLE]}, {DRAG: role[ROLE]}]
+                        chains[riff_chain] = [dict(FOLLOWS_THE_CHORDS), {RUSH: role[ROLE]}, {DRAG: role[ROLE]}]
                         play[role[ROLE]] = {PART: riff_part, CHAINS: [riff_chain]}
                         continue
                     leaves = section.get(LEAVES) or {}
@@ -1140,6 +1198,9 @@ def arranged(*, style, song):
             # Nothing of the song's picks plays in this section, as pads alone where the song has no chord part: it is left out.
             met[name] -= 1
             continue
+        if not section.get(HELD):
+            # A section that only holds a chord has it written out in its parts, and nothing there follows the chords track.
+            play[MSG_CHORDS_TRACK] = chords_played
         scene_settings = dict(section.get(SCENE_SETTINGS) or {})
         if section[KIND] in SECTION_KINDS:
             # A scene says what kind of section it is, where the kind is one a scene may be.
@@ -1152,7 +1213,9 @@ def arranged(*, style, song):
         form.append({SCENE: scene_name, BARS: bars, PLAY: play, **({SETTINGS_OF_SCENE: scene_settings} if scene_settings else {})})
         said_of_scene = MSG_MADE_SCENE.format(count, scene_name, bars)
         notes.append(MADE_SCENE_SAID.format(said_of_scene, section[SAID_OF_SECTION]) if section.get(SAID_OF_SECTION) else said_of_scene)
-    generators = {PROGRESSIONS: progressions, **extra}
+    generators = {Section.FOLLOW_CHORDS: {MSG_FOLLOW_CHORDS_NAME: {FollowChordsSetting.CHORDS_FROM: MSG_CHORDS_TRACK}}, **extra}
+    if progressions:
+        generators[PROGRESSIONS] = progressions
     if any(role.get(VOICE_LEADING) for role, _ in pitched):
         generators[VOICE_LEADINGS] = {NEAR: dict(NEAR_VOICES)}
     said = '\n'.join(band_said(style=style, song=song, roles=roles) + [MSG_MADE_PICK.format(trait, value) for trait, value in picks.items()])
@@ -1165,7 +1228,7 @@ def arranged(*, style, song):
         NAME: song[NAME], TITLE: song[TITLE], DESCRIPTION: song.get(DESCRIPTION, song[TITLE]), GENRE: style[GENRE], SUBGENRE: song[TEMPLATE], VARIANT: song.get(VARIANT),
         NOTES: MSG_MADE_SONG_NOTES.format(title=song[TITLE], style=style[TITLE], template=song[TEMPLATE], picks=said, form='\n'.join(notes)),
         SCALES: {scale: {ROOT: song[KEY][ROOT], TYPE: scale_type}, **more_scales}, SCALE: scale, TEMPO: tempo,
-        FEEL: style[FEEL], SHAPED: shaped, INSTRUMENTS: instruments, TRACKS: tracks, DRUM_TRACKS: [piece for piece in drum_tracks if piece not in own_sounds], GENERATORS: generators, CHAINS: chains,
+        FEEL: style[FEEL], SHAPED: shaped, INSTRUMENTS: instruments, TRACKS: tracks, DRUM_TRACKS: [piece for piece in drum_tracks if piece not in own_sounds], MUTED_TRACKS: [MSG_CHORDS_TRACK], GENERATORS: generators, CHAINS: chains,
         PARTS: parts, FORM: form,
     }
     groove = song.get(GROOVE, style.get(GROOVE))

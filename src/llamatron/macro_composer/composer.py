@@ -65,6 +65,8 @@ BANDS = 'bands'
 FORM = 'form'
 # The fields of a part that is a pattern as written, of a scene and of what a track plays.
 RAW = 'raw'
+MUTED_TRACKS = 'muted_tracks'
+MUTE = 'mute'
 SCENE = 'scene'
 BARS = 'bars'
 WITH = 'with'
@@ -191,6 +193,8 @@ def composed(*, given, version):
             song[optional] = given[optional]
     drums = set(given.get(DRUM_TRACKS, []))
     song[TRACKS] = {track: ({DRUM: True, INSTRUMENT: instrument} if track in drums else {INSTRUMENT: instrument}) for track, instrument in given[TRACKS].items()}
+    for track in given.get(MUTED_TRACKS, []):
+        song[TRACKS][track][MUTE] = True
     song[SCENES] = scenes
     data[SONGS] = {given[NAME]: song}
     return data

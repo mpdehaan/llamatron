@@ -33,6 +33,10 @@ MSG_MADE_SCENE = 'Scene {}, {}, {} bars.'
 MSG_PART_OF_SECTION = '{} {}'
 # The instrument made for a piece of the kit that sounds as a General MIDI sound.
 MSG_PIECE_INSTRUMENT = '{} sound'
+# The muted track a made song's chords are written on, in capitals to show it is a guide and no instrument, its instrument, and the generator that follows it.
+MSG_CHORDS_TRACK = 'CHORDS'
+MSG_CHORDS_INSTRUMENT = 'chords guide'
+MSG_FOLLOW_CHORDS_NAME = 'follow chords'
 MSG_REPEATED_SCENE = '{} {}'
 
 # macro_composer/song_plan.py: what a planned section says of itself in the song's notes.
