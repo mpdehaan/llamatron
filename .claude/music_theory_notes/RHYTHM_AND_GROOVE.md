@@ -39,41 +39,12 @@
 - Lead-in fills set up an entrance: a beat or a bar before the band lands. Starting on beat three and resolving on one is common.
   (practice)
 
-- A fill is to the form what a dominant chord is to the harmony: the fill is the tension and the crash and kick on the next
-  first beat are the release. Fills too often, or all one size, flatten the order of sizes and the form stops reading. (practice)
-- A fill is a cue before it is decoration: drum traditions with a lead drummer have set calls that the whole group answers
-  with the change of section. (practice)
-- Raising the subdivision raises the pull: eighths, then sixteenths, then sixteenth triplets; a fill that goes up a subdivision
-  in its last beat pulls hardest at the landing. (practice)
-- Groups against the bar: sixteenths in threes (two hands and a kick, say), four threes and a four filling a bar of 4/4. The
-  threes fight the beat and the last group of four gives in to it, so the landing feels owed. Fives and sevens work the same
-  way. (practice)
-- A linear fill has no two limbs striking at once, so the fill sounds like one line passed around the kit, kick included.
-  (practice)
-- Texture without speed: a grace note before a stroke, a doubled stroke, a sticking pattern spread over the toms. (practice)
-- A fill going up the kit, low to high, lifts where the usual high to low falls; it is the rarer kind. (practice)
-- The beginner's fault is a fill that hurries, so that the landing comes early. A good fill grows out of the groove and lands
-  back in it. (practice)
-
 ## The Kit by Section
 
 - The same pattern on another surface is another section: closed hi-hat in a verse, the ride or an open hi-hat in a chorus, toms
   under a bridge or an intro, a rim click in a quiet verse. (practice)
 - A crash marks the first beat of a section; a chorus may crash every two or four bars. (practice)
 - Leaving out is arranging: no kick in a first verse, hi-hat alone in an intro, everything out for a beat before a chorus. (practice)
-- A second verse is a little busier than the first, an added kick or more ghost notes, so that the song keeps growing.
-  (practice)
-- A pre-chorus builds, the snare on every beat, eighths on the low tom, a rise in loudness; or does the opposite and thins or
-  stops, so that the chorus hits harder by contrast. (practice)
-- A bridge is contrast: another groove, another cymbal (the ride's bell is a favourite), half time, a groove on the toms, or
-  the drums out and built again from nothing. (practice)
-- The last chorus is the biggest; often a chorus with the drums out comes first, the voice carrying, and then the full kit
-  comes back with a crash on every bar. (practice)
-- Ways a drummer ends a song: holding the groove through a fade; a vamp whose fills grow; one hit with the whole band; the
-  big ending, cymbals washing and toms rolling over a held chord until the last hit; slowing down; or the intro's groove
-  again, so that the song closes as it opened. (practice)
-- The form as numbers: a level of energy for each section, say intro 3, verse 4, pre-chorus 6, chorus 8, verse 5, bridge 3,
-  last chorus 10, and the drum part follows the curve. (practice)
 
 ## More on Sections, Balance and Fills
 
@@ -141,3 +112,83 @@ each sixteenth of a bar, and what a fill is made of. Blues, country, gospel and 
   snare (four to five notes in ten), toms (a quarter to three in ten), kick (one in ten; two in punk and Latin), a crash almost
   never inside the fill. Funk fills are half snare; pop fills use the most toms.
 - **Ghost notes** by style: country and blues six in ten snare notes, funk and jazz half, rock a third, punk and pop a quarter.
+
+## Fills and Form, at Length
+
+A note Claude wrote in another conversation, kept nearly whole, with the players and songs the note named taken out. (practice
+throughout)
+
+Drummers think about form more than almost anyone else in the band. The drummer is in effect the arranger of energy: each section
+gets its own texture, and fills are the signposts telling everyone a change is coming.
+
+### What a Fill Is For
+
+A fill marks the end of a phrase and sets up the next downbeat. Harmonically it works like a dominant chord: the fill creates
+tension, and the crash plus kick on the next "1" resolves it. The fill tells the band and the listener when the change happens,
+and the landing confirms it.
+
+The most important idea is fill hierarchy. Drummers count in phrases of 4, 8 and 16 bars, and the size of the fill matches the
+size of the boundary:
+
+- Every 2 or 4 bars: a tiny marker. An open hi-hat on the "and" of 4, one flam, a few ghost notes.
+- 8 bars, inside a section: a beat or two of fill.
+- Into a new section: half a bar to a full bar, landing on a crash.
+- Into the final chorus: the biggest fill of the song.
+
+Filling too often, or making every fill big, flattens that hierarchy and the form stops reading clearly. It is the same principle
+as a ranking of the places in a bar, applied to whole sections instead of beats in a bar.
+
+### How Fills Are Built
+
+- **Subdivision.** Moving up a subdivision raises intensity: eighths, then sixteenths, then sixteenth triplets or sextuplets. A
+  fill that speeds up in its last beat pulls hard toward the downbeat.
+- **Orchestration.** The classic route runs high to low (snare, then rack toms, then floor tom), so the pitch falls into the
+  landing. Ascending fills feel like lift and are rarer.
+- **Groupings against the bar.** The professional's trick. Play sixteenths in groups of three (hand, hand, kick, for example) as
+  3+3+3+3+4, which fills one bar. The threes fight the beat, the final four resolves it, and the landing feels inevitable.
+  Groups of five and seven work the same way. Hard rock's famous triplet fills used this hands-plus-kick idea.
+- **Linear fills.** No two limbs strike at once, so the fill sounds like one flowing line.
+- **Rudiments.** Flams, drags and paradiddles spread around the toms give texture without extra speed.
+- **Dynamics.** Most fills crescendo into the landing.
+- **Space.** Some of the best fills are silence: the band stops for a beat and everyone comes back on the 1. Some of the most
+  loved drummers say a lot with very little.
+
+The common amateur mistake is rushing the fill so the landing comes early. A good fill sounds as if it grew out of the groove
+and lands right back in it.
+
+### How Drummers Shape Each Section
+
+Much of a song's form is carried by cymbal choice: each section gets its own timekeeping surface.
+
+- **Intro.** It can be drums alone with a signature beat, a sparse texture of hi-hat, ride or a floor-tom groove, or the full
+  band, often with a fill into the verse. In electronic dance music the intro is usually a stripped beat made for DJs to mix.
+- **Verse.** Lower energy, with space left for the vocal. Closed hi-hat, cross-stick (rim click) instead of a full snare, and a
+  simple kick part. The second verse often gets a little busier than the first, with an extra kick or more ghost notes, so the
+  song keeps building.
+- **Pre-chorus.** A build: snare on all four beats, a switch to floor-tom eighths, a crescendo. Or the opposite, pulling back or
+  dropping out, so the chorus hits harder by contrast.
+- **Chorus.** Peak energy. Half-open hi-hat or a washy ride, full backbeat with rimshots, a busier kick, and crashes at the
+  starts of phrases. Dance music goes four-on-the-floor; some rock goes double-time.
+- **Bridge.** Contrast is the job. A new groove, a different cymbal (the ride bell is a favorite), half-time feel, a tom-based
+  groove, or a breakdown where the drums drop out and rebuild from nothing.
+- **Final chorus.** The biggest version. A common move is a "breakdown chorus" first, where the drums drop out and the vocal
+  carries it, then a full re-entry with crashes on every bar.
+- **Outro.** There are several standard choices: a fade, with the drummer holding the groove and maybe adding fills as it fades;
+  a vamp, with fills growing more elaborate as the band jams; a hard ending on an ensemble hit, sometimes called a "button"; the
+  big rock ending, a cymbal wash and tom cascade while the band holds a chord, until a cue for the final hit; a ritardando; or a
+  return to the intro groove, so the song is bookended.
+
+Producers often sketch this as an energy graph with a number per section, something like intro 3, verse 4, pre-chorus 6, chorus
+8, verse 5, bridge 3, final chorus 10. The drum part follows that curve.
+
+### Across Genres
+
+- **Jazz.** The drummer comps on snare and kick in conversation with the soloist. Fills set up big-band ensemble figures
+  ("setting up the band"), and drummers trade fours with soloists, so the fill becomes a solo.
+- **Funk.** Fills are minimal. The groove is the point, and everything orbits the downbeat, "the one."
+- **Metal.** Double kick marks the chorus, and breakdowns go half-time with accents locked to the guitar chugs.
+- **Hip-hop and electronic dance music.** Fills are often production moves: drop-outs, reverse cymbals, filter sweeps, and snare
+  rolls that speed up across 8 or 16 bars into the drop.
+- **Afro-Cuban and Brazilian music.** These traditions formalize the fill's function as a set call. The lead drummer plays a
+  specific signal and the ensemble answers with the section change. It is the clearest evidence that a fill is a cue, not
+  decoration.

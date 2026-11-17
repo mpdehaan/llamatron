@@ -14,6 +14,8 @@ of it written for people.
 - Each statement says how sure it is where that matters: **measured** (a study counted it), **practice** (what arrangers and
   players commonly say and do), **judgment** (Claude's own, to be tested by listening).
 - Claude adds to a file whenever the work teaches something, and reads the subject's file before building in its area.
+- A note Claude wrote in another conversation, which the user hands over as Claude's own, is folded in nearly whole, in a section
+  that says so, with any band, artist, composer or work it names taken out as the rule above requires.
 
 ## How the Research Is Done (the user's)
 
@@ -28,9 +30,10 @@ of it written for people.
 - `HOOKS.md`: what a hook is, where hooks go, repetition and variation.
 - `MELODY.md`: the ways a melody is made and made interesting.
 - `HARMONY.md`: progressions, borrowed chords, chords across sections.
-- `RHYTHM_AND_GROOVE.md`: drumming above all: the groove, fills, ghost notes, feel, the kit by section.
+- `RHYTHM_AND_GROOVE.md`: drumming above all: the groove, fills, ghost notes, feel, the kit by section; fills and form at length.
 - `ARPEGGIOS.md`: arpeggiators and sequenced lines, the arpeggio as a theme, the ostinato score.
-- `KEYBOARDS.md`: the organs of rock, what an organist plays, keyboard bass, organ with guitar.
+- `KEYBOARDS.md`: the organs of rock, what an organist plays, keyboard bass, organ with guitar; keyboards in a band at length: voicings, accompaniment by genre, the organ, soloing.
+- `LEADS.md`: how a lead line is composed: the three ways, target notes, developing an idea, the arc, technique, leads by genre.
 - `BASS_LINES.md`: the ways a bass part is written, by family, each named for its sound; keyboard and organ bass.
 - `DRUM_MACHINES.md`: the machines, what each gave its genres, electronic percussion by style. Machines are named, as products.
 - `BAND_INTERPLAY.md`: who answers whom, layering, making room, intensity through a song.
