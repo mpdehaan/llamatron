@@ -17,14 +17,16 @@
 
 from rich.text import Text
 
-from llamatron.macro_composer.wizard_choices import HOOK_PARTS
-from llamatron.strings.labels import MSG_WIZARD_INTRO_HOOK_LABEL, MSG_WIZARD_NOBODY, MSG_WIZARD_HOOK_PART_LABELS, MSG_WIZARD_PICK, MSG_WIZARD_PICK_SHOWN, MSG_WIZARD_NEW_HOOK_BUTTON, MSG_WIZARD_HOOK_LABEL, MSG_WIZARD_HOOK_OFF, MSG_WIZARD_HOOK_ON, MSG_WIZARD_HOOKS_BRANCH
-from llamatron.strings.legends import KeyName, MSG_WIZARD_NEW_HOOK_WHAT
+from llamatron.macro_composer import line_edits
+from llamatron.macro_composer.wizard_choices import HOOK_PARTS, WizardChoices
+from llamatron.strings.labels import MSG_WIZARD_INTRO_HOOK_LABEL, MSG_WIZARD_NOBODY, MSG_WIZARD_HOOK_PART_LABELS, MSG_WIZARD_PICK, MSG_WIZARD_PICK_SHOWN, MSG_WIZARD_NEW_HOOK_BUTTON, MSG_WIZARD_HOOK_LABEL, MSG_WIZARD_HOOK_NOTES_LABEL, MSG_WIZARD_HOOK_NOTES_OWN, MSG_WIZARD_HOOK_NOTES_TITLE, MSG_WIZARD_HOOK_NOTES_WIZARD, MSG_WIZARD_HOOK_OFF, MSG_WIZARD_HOOK_ON, MSG_WIZARD_HOOKS_BRANCH
+from llamatron.strings.legends import KeyName, MSG_TUNE_USUAL_WHAT, MSG_WIZARD_EDIT_NOTES_WHAT, MSG_WIZARD_NEW_HOOK_WHAT
 from llamatron.strings.marks import MSG_WIZARD_HOOK_BAR_LINE, MSG_WIZARD_HOOK_CELL, MSG_WIZARD_HOOK_FLOOR, MSG_WIZARD_HOOK_FLOOR_BAR, MSG_WIZARD_HOOK_GAP, MSG_WIZARD_HOOK_ROW
-from llamatron.strings.messages import MSG_WIZARD_HOOK_MADE, MSG_WIZARD_LISTEN_HOOK
+from llamatron.strings.messages import MSG_WIZARD_HOOK_MADE, MSG_WIZARD_HOOK_OWN, MSG_WIZARD_LISTEN_HOOK
 from llamatron.tui.drawing import INDENT, Style
 from llamatron.tui.note_names import note_shown
-from llamatron.tui.screens.shared.field import Button, ChoiceField, Toggle
+from llamatron.tui.dialogs.tune_dialog import TuneDialog
+from llamatron.tui.screens.shared.field import Button, ChoiceField, Field, Toggle
 from llamatron.tui.screens.wizard.song_ways_branch import SongWaysBranch
 
 # A step of the picture is two cells wide where the hook fits so, and one where it is long.
@@ -65,7 +67,22 @@ class HooksBranch(SongWaysBranch):
         new_hook = Button(label=MSG_WIZARD_NEW_HOOK_BUTTON, key_name=KeyName.ENTER, enter=lambda: self.page().choosing(lambda nothing: choices.new_hook())(None), enter_what=MSG_WIZARD_NEW_HOOK_WHAT)
         # In a planned song the hook is of a kind, each part the wizard's pick until a person chooses it.
         kind = [self.part_field(part) for part in choices.hook_parts()] if choices.has_song_plan() else []
-        return [switch, *kind, *self.intro_hook_fields(), new_hook]
+        if choices.hook_line() is None:
+            return [switch, *kind, *self.intro_hook_fields(), new_hook]
+        # The hook's notes are the wizard's until they are written by hand; then the notes are the hook, whatever its kind was, until Bksp gives them back.
+        own = choices.hook_is_own()
+        notes = Field(label=MSG_WIZARD_HOOK_NOTES_LABEL, value=lambda: MSG_WIZARD_HOOK_NOTES_OWN if own else MSG_WIZARD_HOOK_NOTES_WIZARD, enter=self.edit_notes, enter_what=MSG_WIZARD_EDIT_NOTES_WHAT,
+                      clear=(lambda: self.page().choosing(lambda nothing: choices.set_hook_line(None))(None)) if own else None, clear_what=MSG_TUNE_USUAL_WHAT)
+        return [switch, *([] if own else kind), notes, *self.intro_hook_fields(), *([] if own else [new_hook])]
+
+    def edit_notes(self):
+        """Open the hook's line in the Tune dialog, and keep the line the dialog answers with as the hook's own notes."""
+        choices = self.choices()
+        page = self.page()
+        usual = WizardChoices.from_data(choices.to_data())
+        usual.set_hook_line(None)
+        dialog = TuneDialog(title=MSG_WIZARD_HOOK_NOTES_TITLE, line=choices.hook_line(), steps_in_bar=choices.hook_notes()[1], pitch_of_place=choices.pitch_of_place, usual=usual.hook_line())
+        page.ask(dialog=dialog, then=page.choosing(lambda line: choices.set_hook_line(None if line == line_edits.tidied(usual.hook_line()) else line)))
 
     def intro_hook_fields(self):
         """Return the field of who says the hook in the intro, before anybody sings it, where somebody can."""
@@ -102,7 +119,7 @@ class HooksBranch(SongWaysBranch):
         if hook is None:
             return []
         choices = self.choices()
-        made = MSG_WIZARD_HOOK_MADE.format(player=choices.role_title(choices.tune_player()))
+        made = (MSG_WIZARD_HOOK_OWN if choices.hook_is_own() else MSG_WIZARD_HOOK_MADE).format(player=choices.role_title(choices.tune_player()))
         return [Text(), *(Text(INDENT + line) for line in picture_of(hook=hook, width=width)), Text(INDENT + made, style=Style.DIM)]
 
 

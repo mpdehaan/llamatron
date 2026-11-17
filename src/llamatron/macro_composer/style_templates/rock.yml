@@ -360,6 +360,12 @@ sections:
     bars: 4
     plays: [drums, bass, guitar]
     plan: []
+  # What the band plays after the last tune, where a song ends in stages: the intro's figure again.
+  outro:
+    intensity: {drums: 1, bass: 1, rhythm: 2, keys: 1, lead: 2}
+    bars: 4
+    plays: [drums, bass, guitar]
+    plan: []
   verse:
     intensity: {drums: 2, bass: 2, rhythm: 2, keys: 2, lead: 3}
     bars: 8
@@ -417,7 +423,7 @@ sections:
 # The fills are sized by how far the Energy rises into the next section. The tails are what a subgenre's band does together in a
 # last bar, and a subgenre named under no_setup never has its last bar's chord changed to lead into the next section.
 song_plan:
-  energy: {intro: 4, verse: 4, pre-chorus: 6, chorus: 8, bridge: 5, solo: 8, drum solo: 7, ending: 8}
+  energy: {intro: 4, outro: 5, verse: 4, pre-chorus: 6, chorus: 8, bridge: 5, solo: 8, drum solo: 7, ending: 8}
   growth: 1
   last_chorus: 10
   rising: [pre-chorus]

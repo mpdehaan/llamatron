@@ -299,6 +299,13 @@ sections:
     chords: [5, 4, 1, 5]
     plays: [drums, bass, comping, answers]
     plan: [{line: intro, answer: true}, {line: intro, answer: true, varied: true}]
+  # What the band plays after the last tune, where a song ends in stages: the intro's figure again.
+  outro:
+    intensity: {drums: 1, bass: 2, rhythm: 2, lead: 2, session: 2}
+    bars: 4
+    chords: [5, 4, 1, 5]
+    plays: [drums, bass, comping, answers]
+    plan: [{line: intro, answer: true}, {line: intro, answer: true, varied: true}]
   chorus:
     intensity: {drums: 3, bass: 3, rhythm: 3, lead: 3, session: 3}
     bars: 12

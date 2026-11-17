@@ -18,14 +18,15 @@
 from rich.text import Text
 
 from llamatron.macro_composer.song_plan import HIGHEST_ENERGY, LOWEST_ENERGY
+from llamatron.macro_composer.wizard_choices import WAYS_WITH_FIRST_PLAYER, WAYS_WITH_SETUP_BARS
 from llamatron.strings.errors import ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
-from llamatron.strings.labels import MSG_WIZARD_FORM_QUESTIONS_BUTTON, MSG_WIZARD_CONTRAST_LABEL, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_PLAN_LINE, MSG_WIZARD_SONG_PLAN_LABEL, MSG_WIZARD_SUGGESTED_FORM_BUTTON
+from llamatron.strings.labels import MSG_WIZARD_FORM_QUESTIONS_BUTTON, MSG_WIZARD_CONTRAST_LABEL, MSG_WIZARD_ENDS_LABEL, MSG_WIZARD_FIRST_PLAYER_LABEL, MSG_WIZARD_OWN_START, MSG_WIZARD_SETUP_BARS_LABEL, MSG_WIZARD_STARTS_LABEL, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_PLAN_LINE, MSG_WIZARD_SONG_PLAN_LABEL, MSG_WIZARD_SUGGESTED_FORM_BUTTON
 from llamatron.strings.legends import KeyName, MSG_WIZARD_FORM_QUESTIONS_WHAT, MSG_WIZARD_SUGGESTED_FORM_WHAT
 from llamatron.strings.marks import MSG_WIZARD_OWN_FORM, MSG_WIZARD_SECTION_LINE
 from llamatron.strings.messages import MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_SECTIONS_HINT
 from llamatron.tui.drawing import INDENT, Style
-from llamatron.tui.screens.shared.field import Button, Field, NumberField, Toggle
-from llamatron.tui.screens.wizard.branch import Branch
+from llamatron.tui.screens.shared.field import Button, ChoiceField, Field, NumberField, Toggle
+from llamatron.tui.screens.wizard.branch import Branch, gauge_shown
 from llamatron.tui.screens.wizard.section_branch import SectionBranch
 
 # Sections are counted from 1, as they are shown.
@@ -59,10 +60,37 @@ class FormBranch(Branch):
         # A planned song gives every section an Energy, and from it who plays, how hard, how loud and how each section leaves.
         plan = [Toggle(label=MSG_WIZARD_SONG_PLAN_LABEL, on=choices.has_song_plan(), set=page.choosing(choices.set_song_plan))] if choices.can_have_song_plan() else []
         if choices.has_song_plan():
-            plan.append(NumberField(page=page, label=MSG_WIZARD_CONTRAST_LABEL, number=choices.get_contrast(), lowest=LOWEST_ENERGY, highest=HIGHEST_ENERGY, set=page.choosing(choices.set_contrast)))
-        return [Field(label=MSG_WIZARD_FORM_LABEL, value=lambda: MSG_WIZARD_OWN_FORM if choices.has_own_form() else choices.get_form()), *plan,
+            plan.append(NumberField(page=page, label=MSG_WIZARD_CONTRAST_LABEL, number=choices.get_contrast(), shown=gauge_shown(place=choices.get_contrast(), lowest=LOWEST_ENERGY, highest=HIGHEST_ENERGY), lowest=LOWEST_ENERGY, highest=HIGHEST_ENERGY, set=page.choosing(choices.set_contrast)))
+        return [Field(label=MSG_WIZARD_FORM_LABEL, value=lambda: MSG_WIZARD_OWN_FORM if choices.has_own_form() else choices.get_form()), *plan, *self.stage_fields(),
                 Button(label=MSG_WIZARD_SUGGESTED_FORM_BUTTON, key_name=KeyName.ENTER, enter=self.page().pick_suggested_form, enter_what=MSG_WIZARD_SUGGESTED_FORM_WHAT),
                 *([Button(label=MSG_WIZARD_FORM_QUESTIONS_BUTTON, key_name=KeyName.ENTER, enter=self.page().ask_form_questions, enter_what=MSG_WIZARD_FORM_QUESTIONS_WHAT)] if choices.form_questions() else [])]
+
+    def stage_fields(self):
+        """Return the fields of how the song starts and ends: the way of each, who starts alone and is left alone, and how long a stage lasts. Each stage
+        is a section of its own in the tree, to change like any other; opening or closing sections a person changed read as the person's own."""
+        choices = self.choices()
+        page = self.page()
+
+        def staging(setter):
+            def set_way(value):
+                try:
+                    page.choosing(setter)(value)
+                except ValueError as problem:
+                    page.refuse(str(problem))
+            return set_way
+        fields = []
+        start, end = choices.get_start(), choices.get_end()
+        if choices.starts():
+            fields.append(ChoiceField(page=page, label=MSG_WIZARD_STARTS_LABEL, choices=choices.starts(), current=start or choices.starts()[0], shown=None if start is not None else MSG_WIZARD_OWN_START, set=staging(choices.set_start)))
+        if choices.ends():
+            fields.append(ChoiceField(page=page, label=MSG_WIZARD_ENDS_LABEL, choices=choices.ends(), current=end or choices.ends()[0], shown=None if end is not None else MSG_WIZARD_OWN_START, set=staging(choices.set_end)))
+        if (start in WAYS_WITH_FIRST_PLAYER or end in WAYS_WITH_FIRST_PLAYER) and len(choices.first_players()) > 1:
+            titles = {choices.role_title(role): role for role in choices.first_players()}
+            fields.append(ChoiceField(page=page, label=MSG_WIZARD_FIRST_PLAYER_LABEL, choices=list(titles), current=choices.role_title(choices.get_first_player()), set=staging(lambda title: choices.set_first_player(titles[title]))))
+        if start in WAYS_WITH_SETUP_BARS or end in WAYS_WITH_SETUP_BARS:
+            bars = {str(count): count for count in choices.setup_bars_offered()}
+            fields.append(ChoiceField(page=page, label=MSG_WIZARD_SETUP_BARS_LABEL, choices=list(bars), current=str(choices.get_setup_bars()), set=staging(lambda count: choices.set_setup_bars(bars[count]))))
+        return fields
 
     def notes(self, width):
         """Return the form's sections in order, each with its bars, so that the whole form reads at a glance; or what to choose first."""

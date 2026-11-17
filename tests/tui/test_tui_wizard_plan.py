@@ -20,7 +20,7 @@ from llamatron.composition.limits import MAX_NAME_LENGTH
 from llamatron.macro_composer import hook_kinds, phrasing
 from llamatron.macro_composer.arranger import CHORDS
 from llamatron.macro_composer.joins import LEAVES
-from llamatron.macro_composer.song_plan import ENERGY, RISES, ROOT_OF_PLACE, TEMPO_END_OF_PLACE, TYPE_OF_PLACE
+from llamatron.macro_composer.song_plan import ENERGY, FADES, RISES, ROOT_OF_PLACE, TEMPO_END_OF_PLACE, TYPE_OF_PLACE
 from llamatron.macro_composer.wizard_choices import DRUM_SOLO_KIND, chords_as_text
 from llamatron.strings.errors import ERR_WIZARD_CHORDS
 from llamatron.macro_composer.song_plan import USUAL_CONTRAST
@@ -176,7 +176,7 @@ class TestWizardSectionOwnFields(WizardTest):
         shown = self.text()
         for field in choices.section_own_fields(A_PLACE):
             self.assertIn(self.label(field), shown)
-            if field == RISES:
+            if field in (RISES, FADES):
                 # A switch shows on or off and no origin.
                 continue
             self.assertIn(MSG_WIZARD_VALUE_FROM.format(value=choices.section_from_plan(place=A_PLACE, field=field), origin=MSG_WIZARD_SECTION_ORIGINS[field]), shown)

@@ -32,9 +32,9 @@ from llamatron.macro_composer import interplay
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT
 from llamatron.macro_composer.melody import HIGHEST_GAUGE, LOWEST_GAUGE
 from llamatron.support.version import VERSION
-from llamatron.macro_composer import hook_kinds, phrasing
+from llamatron.macro_composer import hook_kinds, line_edits, phrasing
 from llamatron.macro_composer.song_plan import HIGHEST_ENERGY, LOWEST_ENERGY
-from llamatron.macro_composer.wizard_choices import (HOOK_PARTS, PHRASING_OFFERED, USUAL_PIECE_NOTE, BAND_SOUNDS, GAUGED_STYLES, FEWEST_FILLS, FILLS_TRAITS, LEAST_BUSY, MOST_BUSY, MOST_FILLS, ONE_GUITARIST_COUNT,
+from llamatron.macro_composer.wizard_choices import (HOOK_PARTS, ONE_PLAYER_FIRST, PHRASING_OFFERED, USUAL_PIECE_NOTE, BAND_SOUNDS, GAUGED_STYLES, FEWEST_FILLS, FILLS_TRAITS, LEAST_BUSY, MOST_BUSY, MOST_FILLS, ONE_GUITARIST_COUNT,
                                                      USUAL_SOUNDS, WizardChoices, genre_names)
 
 A_NAME = 'a_song'
@@ -79,13 +79,19 @@ CONTRAST = 'contrast'
 PHRASING = 'phrasing'
 PHRASING_WAY = 'how the lines breathe'
 HOOK_PART = "a part of the hook's kind"
+HOOK_LINE = "the hook's notes written by hand"
+START = 'a way of starting'
+END = 'a way of ending'
+FIRST_PLAYER = 'the first player'
+SETUP_BARS = "the setup's bars"
+DRUMS_ROLE = 'drums'
 SECTION_OWN = "a section's own"
 FORM_ANSWER = 'an answer of the form questions'
 INTRO_HOOK = 'intro hook'
 SECTION_SHAPE = "a section's shape"
 A_SECOND_PLACE = 1
 NO_PLAN = 'with no plan'
-SECTION_OWN_ANYWHERE = (('chords', '6 4 2 5'), ('chords', '1 4'), ('tempo', 61), ('tempo_end', 62), ('root', 'F#'), ('root', 'C'), ('type', 'minor'), ('type', 'major'))
+SECTION_OWN_ANYWHERE = (('fades', True), ('chords', '6 4 2 5'), ('chords', '1 4'), ('tempo', 61), ('tempo_end', 62), ('root', 'F#'), ('root', 'C'), ('type', 'minor'), ('type', 'major'))
 # A value of each field a section can be given of its own.
 SECTION_OWN_TRIED = (('rises', True), ('energy', 10), ('energy', 1), ('leaves', 'stops'), ('leaves', 'build'), ('leaves', 'drop-out'), ('leaves', 'a big fill'), ('leaves', 'a small fill'), ('leaves', 'nothing'),
                      ('chords', '6 4 2 5'), ('tempo', 61), ('tempo_end', 62), ('root', 'F#'), ('type', 'minor'), ('type', 'major'))
@@ -272,6 +278,9 @@ def every_choice(choices):
                         # A long note has neither a rhythm nor a detail to choose, so those are held under another contour.
                         first = planned if part == hook_kinds.CONTOUR else both(first=planned, then=lambda made: made.set_hook_part(part=hook_kinds.CONTOUR, value=hook_kinds.CHANT))
                         yield HOOK_PART, (part, value), lambda made, part=part, value=value: made.set_hook_part(part=part, value=value), [first]
+    if choices.can_have_hook() and choices.has_hook() and choices.hook_line() is not None:
+        # The hook's notes written by hand: its first note moved a note of the scale up.
+        yield HOOK_LINE, 'first note up', lambda made: made.set_hook_line(line_edits.moved(line=made.hook_line(), step=0, by=1)), [nothing_first]
     if choices.can_have_song_plan():
         # What a section of a planned song is given of its own, each held under a plan: the second section, which a section follows.
         under_plan = fresh_with_plan(choices)
@@ -290,6 +299,23 @@ def every_choice(choices):
         # What a section of any genre can be given of its own, held with no plan, on the second section where it takes any.
         if field in without_plan(choices).section_own_fields(A_SECOND_PLACE) and value != without_plan(choices).section_from_plan(place=A_SECOND_PLACE, field=field):
             yield SECTION_OWN, (field, value, NO_PLAN), lambda made, field=field, value=value: made.set_section_own(place=A_SECOND_PLACE, field=field, value=value), [switch_plan_off]
+    # How the song starts and ends: each way but the one the song has, another first player under layers, and another length of a stage.
+    for way in choices.starts():
+        if way != choices.get_start():
+            yield START, way, lambda made, way=way: made.set_start(way), [nothing_first]
+    for way in choices.ends():
+        if way != choices.get_end():
+            yield END, way, lambda made, way=way: made.set_end(way), [nothing_first]
+    if ONE_PLAYER_FIRST in choices.starts():
+        # What the stages offer is asked of choices that start with one player, since a length is offered only where that player fills it.
+        staged = WizardChoices.from_data(choices.to_data())
+        one_player_first(staged)
+        for role in staged.first_players():
+            if role != staged.get_first_player() and role != DRUMS_ROLE:
+                yield FIRST_PLAYER, role, lambda made, role=role: made.set_first_player(role), [one_player_first]
+        for bars in staged.setup_bars_offered():
+            if bars != staged.get_setup_bars():
+                yield SETUP_BARS, bars, lambda made, bars=bars: made.set_setup_bars(bars), [one_player_first]
     for name, offered, usual in choices.form_questions():
         # Each answer of each question a form is made from, held against the form the usual answers make.
         for answer in offered:
@@ -308,6 +334,10 @@ def every_choice(choices):
     for form in choices.forms():
         if form != choices.get_form():
             yield FORM, form, lambda made, form=form: made.set_form(form), [nothing_first]
+
+
+def one_player_first(made):
+    made.set_start(ONE_PLAYER_FIRST)
 
 
 def switch_plan_off(made):

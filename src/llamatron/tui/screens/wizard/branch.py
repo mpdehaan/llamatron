@@ -21,6 +21,7 @@ branch is added, moved or split by changing the branches alone (who expects to
 revise how the wizard is organized).
 """
 
+from llamatron.strings.marks import MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_PLAYER_GAUGE_SHOWN
 from llamatron.tui.drawing import NOTHING
 
 
@@ -112,3 +113,10 @@ class Branch:
     def can_be_edited(self):
         """Return whether any field of the branch does something, so that a branch only to be read takes no cursor."""
         return any(field.enter or field.adjust for field in self.fields())
+
+
+def gauge_shown(*, place, lowest, highest, said=None):
+    """Return a number drawn as a horizontal gauge with the number after it, as the players' gauges are: a block for each place up to the number's,
+    and what is said of the number, such as where it comes from, in place of the bare number."""
+    drawn = MSG_WIZARD_GAUGE_FULL * (place - lowest + 1) + MSG_WIZARD_GAUGE_EMPTY * (highest - place)
+    return MSG_WIZARD_PLAYER_GAUGE_SHOWN.format(gauge=drawn, place=place if said is None else said)

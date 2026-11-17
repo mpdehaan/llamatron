@@ -332,6 +332,7 @@ MSG_WIZARD_CREATED = 'created song ({name})'
 MSG_WIZARD_REPLACE_SECTIONS_QUESTION = 'Replace your sections with a suggested form?'
 MSG_WIZARD_ROW_TITLE = '{row}: {player}'
 MSG_WIZARD_HOOK_MADE = 'made by the wizard, for the {player}'
+MSG_WIZARD_HOOK_OWN = 'your own notes, for the {player}'
 # What a panel of the wizard listens to, and what the status line says of it.
 MSG_WIZARD_SECTION_CHORDS_PROMPT = 'Chords, as degrees: 6 4 1 b7'
 MSG_WIZARD_LISTENING = 'listening to {what}'
