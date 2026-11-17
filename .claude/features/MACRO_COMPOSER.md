@@ -332,10 +332,10 @@ clouds; generate and test, with motif development and counterpoint last.
 - **Two chords in a bar** (`arranger.shares_a_bar`, `halves_of`, `progression_of`): a list inside a progression's pattern, or
   inside a section's own chords, is two chords in one bar, each half of it; the section's Progression is then written by the
   half bar (`every` half a bar of the meter), and whatever goes bar by bar, the tune, the riff, the last bar's setup, takes
-  the bar's first chord (`chord_of`). A Progression holds 16 chords, so shared bars are played only in a run of 8 bars or
-  fewer (`fits_by_halves`), a longer run falling back to a chord a bar; no template writes a shared bar yet, since the twelve
-  bars' turnarounds need 24. Wizard: a section's Chords field takes two chords joined by a dash, such as `1 4 1 1-5`, and
-  refuses more than 8 bars of them. Not built: a quality for every degree, a chord over two bars, a progression's own length.
+  the bar's first chord (`chord_of`). A Progression holds 32 chords, so shared bars are played only in a run of 16 bars or
+  fewer (`fits_by_halves`), a longer run falling back to a chord a bar. The blues' quick change and two five twelve bars
+  end on a turnaround of two bars of two chords. Wizard: a section's Chords field takes two chords joined by a dash, such as `1 4 1 1-5`, and
+  refuses more than 16 bars of them. Not built: a quality for every degree, a chord over two bars, a progression's own length.
 - **Percussion by Energy** (`song_plan: percussion_from:`): the kit's percussion, a tambourine, handclaps or a cowbell, plays
   only in sections of that Energy or more, so that it comes in with the chorus, in rock and in soul and funk (new orleans'
   plays all through, and funk's Energies never fall under it); percussion the song chose itself plays all through, as a

@@ -155,9 +155,10 @@ traits:
             - [{degree: 1, steps: 3}, {degree: 3, steps: 3}, {degree: 5, steps: 3}, {degree: 6, steps: 3}]
   chords:
     - {value: twelve bar, share: 25, pattern: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 1]}
-    - {value: twelve bar quick change, share: 38, pattern: [1, 4, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5]}
+    # A list inside a pattern is two chords in one bar, each half of it: the turnaround of the last two bars.
+    - {value: twelve bar quick change, share: 38, pattern: [1, 4, 1, 1, 4, 4, 1, 1, 5, 4, [1, 4], [1, 5]]}
     - {value: twelve bar slow change, share: 12, pattern: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5]}
-    - {value: twelve bar with two five, share: 12, pattern: [1, 4, 1, 1, 4, 4, 1, 6, 2, 5, 1, 5]}
+    - {value: twelve bar with two five, share: 12, pattern: [1, 4, 1, 1, 4, 4, 1, 6, 2, 5, [1, 6], [2, 5]]}
     - {value: minor twelve bar, share: 13, scale_type: minor, pattern: [1, 1, 1, 1, 4, 4, 1, 1, 6, 5, 1, 5]}
   comping:
     - value: guitar on the backbeats

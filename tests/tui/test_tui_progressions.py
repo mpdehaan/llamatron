@@ -214,6 +214,9 @@ class TestChordsEditor(UITest):
     async def test_a_full_row_offers_no_insert_and_one_chord_no_remove(self):
         await self.press(*[keybindings.ChordsEditor.INSERT_STEP] * MAX_PROGRESSION_CHORDS)
         self.assertEqual(len(self.progression().get_chords()), MAX_PROGRESSION_CHORDS)
+        # A row longer than the console follows the cursor to its last chord.
+        await self.press(*[Key.RIGHT] * MAX_PROGRESSION_CHORDS)
+        self.assertIn(str(MAX_PROGRESSION_CHORDS), self.text())
         await self.press(*[keybindings.ChordsEditor.REMOVE_STEP] * MAX_PROGRESSION_CHORDS)
         self.assertEqual(len(self.progression().get_chords()), 1)
 

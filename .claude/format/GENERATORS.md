@@ -180,7 +180,7 @@ Reference notes for Claude, one part of `.claude/format/`: every generator and w
 ### Progression
 
 - `progressions` is a generator section (`ProgressionSettings`, kind `progression`,
-  `generators/progression.py`), the user's design: `chords`, 1 to 16 degrees from
+  `generators/progression.py`), the user's design: `chords`, 1 to 32 degrees from
   1 to 7, a new one `[1]`; `accidentals` and `inversions`, lists beside the chords, each a sharp
   or flat or an inversion of 1 or 2, or nothing; and `every`, a time setting, a bar when left
   out. The rows beside the chords are read as long as the chords (`_lined_up`).
