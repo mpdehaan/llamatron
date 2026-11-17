@@ -210,11 +210,11 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   to work on, so that others want to contribute. It is consulted only when the user says to, never on Claude's own initiative,
   runs in the background and changes nothing; the reply reports what it found, and what Claude agrees and disagrees with, as
   numbered proposals, and nothing is reorganized until the user approves.
-- **The user interface expert** (the user's rule): a fresh agent that reads the code and judges a screen as a designer who has
-  read the field's works and favours simple interfaces: intuitive with little of the documentation read, consistent, things
-  presented in the right order, laid out for rapid comprehension and obviousness, at ease with a text interface. It is consulted
-  only on the user's demand, runs in the background and changes nothing; what it proposes is brought to the user as a mockup
-  with numbered questions, with where Claude agrees and disagrees, and nothing is built until the user approves.
+- **The Python performance expert** (the user's rule): a fresh agent, current on how Python runs fast, that reviews routines or
+  the whole program when the user asks, for the program's speed, its latency as keys are pressed and songs play, and the speed of
+  the tests. It knows the rules of `.claude/STYLE.md` and proposes nothing that breaks one. It changes nothing: what it finds is
+  brought to the user as numbered proposals, measured where it can be, and a change made for speed is reported with its timings
+  before and after and committed only on the user's yes, as every such change is.
 - A recommendation weighs the least surprising musical result heavily, which usually wins over
   what is simplest to build (`.claude/format/GENERATORS.md`, "Musical answers first").
 - Rewriting an example set, moving a feature's demonstration into it or changing what it plays, is always confirmed by
