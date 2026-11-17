@@ -60,6 +60,8 @@ ROCK = 'rock'
 ELECTRONIC = 'electronic'
 TRANCE = 'trance'
 HOUSE = 'house'
+# A kind with no forms of its own.
+SYNTH_POP = 'synth-pop'
 AMBIENT = 'ambient'
 BEAT = 'beat'
 PADS = 'pads'
@@ -277,7 +279,7 @@ class TestForms(unittest.TestCase):
         self.assertGreater(len(set(by_length[-1][arranger.SECTIONS])), len(set(by_length[0][arranger.SECTIONS])))
 
     def test_a_kind_with_no_forms_of_its_own_takes_the_styles_usual_ones(self):
-        self.assertEqual(arranger.forms_of(style=self.style, song={arranger.TEMPLATE: HOUSE}), self.style[arranger.FORMS][arranger.USUAL])
+        self.assertEqual(arranger.forms_of(style=self.style, song={arranger.TEMPLATE: SYNTH_POP}), self.style[arranger.FORMS][arranger.USUAL])
 
     def test_a_section_in_which_nothing_of_the_songs_picks_plays_is_left_out(self):
         song = {**a_song(template=AMBIENT), arranger.STYLE: ELECTRONIC, arranger.FORM: [BEAT, PADS]}

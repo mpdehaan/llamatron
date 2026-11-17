@@ -32,18 +32,18 @@ phrase_bars: 4
 loudness: {drums: 100, kick: 116, snare: 106, clap: 100, hat: 70, open: 82, ride: 72, crash: 98, tom high: 96, tom low: 98, shaker: 60, rim: 80, cowbell: 76}
 
 templates:
-  house:         {tempo: 124, kick: every beat, backbeat: clap, hat: open on the offbeats, percussion: shaker, bass: offbeat, chords: piano stabs, arp: none, lead: voice hook, harmony: two chord vamp}
-  techno:        {tempo: 132, kick: every beat, backbeat: none, hat: sixteenths, percussion: rim in threes, bass: one note in sixteenths, chords: one stab off the beat, arp: none, lead: none, harmony: one chord}
-  electro:       {tempo: 118, kick: broken, backbeat: snare, hat: sixteenths, percussion: cowbell, bass: syncopated, chords: none, arp: sixteenths up, lead: synth line, harmony: minor two chord}
+  house:         {tempo: 124, kick: every beat, backbeat: clap, hat: open on the offbeats, percussion: shaker, bass: offbeat, chords: piano stabs, arp: none, lead: voice hook, harmony: minor two chord}
+  techno:        {tempo: 132, kick: every beat, backbeat: quiet clap, hat: sixteenths, percussion: rim in threes, bass: one note in sixteenths, chords: one stab off the beat, arp: none, lead: none, harmony: one chord}
+  electro:       {tempo: 126, kick: three hits, backbeat: snare, hat: sixteenths, percussion: cowbell, bass: syncopated, chords: none, arp: sixteenths up, lead: synth line, harmony: minor two chord}
   synth-pop:     {tempo: 120, kick: one and three, backbeat: snare, hat: eighths, percussion: none, bass: octaves in eighths, chords: held pad, arp: eighths up and down, lead: synth line, harmony: four chord}
-  hi-nrg:        {tempo: 127, kick: every beat, backbeat: clap, hat: offbeats, percussion: none, bass: octaves in sixteenths, chords: held pad, arp: sixteenths up, lead: synth line, harmony: four chord}
+  hi-nrg:        {tempo: 127, kick: every beat, backbeat: clap, hat: offbeats, percussion: none, bass: octaves in sixteenths, chords: held pad, arp: sixteenths up, lead: synth line, harmony: minor four chord}
   italo:         {tempo: 120, kick: every beat, backbeat: snare, hat: sixteenths, percussion: none, bass: octaves in eighths, chords: held pad, arp: sixteenths up and down, lead: synth line, harmony: minor four chord}
-  trance:        {tempo: 138, kick: every beat, backbeat: clap, hat: open on the offbeats, percussion: none, bass: offbeat, chords: held pad, arp: gated chord, lead: synth line, harmony: minor four chord}
-  drum and bass: {tempo: 172, kick: one and the and of three, backbeat: snare, hat: eighths, percussion: shaker, bass: long low notes, chords: held pad, arp: none, lead: none, harmony: minor two chord}
-  big beat:      {tempo: 104, break: driving break, break_cut: 2, kick: breakbeat, backbeat: snare with quiet notes, hat: eighths, percussion: shaker, fills: toms, bass: gritty riff, chords: held pad, arp: sixteenths up, lead: voice hook, harmony: one chord}
+  trance:        {tempo: 138, kick: every beat, backbeat: clap and snare, hat: open on the offbeats, percussion: none, bass: offbeat, chords: held pad, arp: gated chord, lead: synth line, harmony: minor four chord}
+  drum and bass: {tempo: 174, kick: one and the and of three, backbeat: snare, hat: eighths, percussion: shaker, bass: long low notes, chords: held pad, arp: none, lead: none, harmony: minor two chord}
+  big beat:      {tempo: 128, break: driving break, break_cut: 2, kick: breakbeat, backbeat: snare with quiet notes, hat: eighths, percussion: shaker, fills: toms, bass: gritty riff, chords: held pad, arp: sixteenths up, lead: voice hook, harmony: one chord}
   minimal techno: {tempo: 126, kick: every beat, backbeat: none, hat: offbeats, percussion: rim late, fills: the kick drops out, bass: two notes with gaps, chords: one stab off the beat, arp: none, lead: none, harmony: one chord}
-  dubstep:       {tempo: 140, kick: half time, backbeat: snare on three, hat: eighths, percussion: none, bass: wobble, chords: held pad, arp: none, lead: none, harmony: minor two chord}
-  ambient:       {tempo: 80, kick: none, backbeat: none, hat: none, percussion: none, fills: none, bass: long low notes, chords: held pad, arp: eighths up and down, lead: synth line, harmony: minor four chord}
+  dubstep:       {tempo: 140, kick: half time, backbeat: snare on three, hat: eighths, percussion: none, bass: wobble, chords: held pad, arp: none, lead: none, harmony: one chord}
+  ambient:       {tempo: 80, kick: none, backbeat: none, hat: none, percussion: none, fills: none, bass: long low notes, chords: held pad, arp: eighths up and down, lead: synth line, harmony: minor two chord}
   downtempo:     {tempo: 90, break: lazy break, kick: breakbeat, backbeat: snare with quiet notes, hat: eighths, percussion: shaker, fills: none, bass: long low notes, chords: held pad, arp: eighths up and down, lead: synth line, harmony: minor two chord}
   chiptune:      {tempo: 150, kick: one and three, backbeat: snare, hat: eighths, percussion: none, bass: octaves in eighths, chords: none, arp: fast chord arpeggio, lead: square line, harmony: four chord}
 
@@ -52,19 +52,22 @@ traits:
   kick:
     - {value: every beat, share: 52, bar: {kick: [loud, none, none, none, loud, none, none, none, loud, none, none, none, loud, none, none, none]}}
     - {value: one and three, share: 12, bar: {kick: [loud, none, none, none, none, none, none, none, loud, none, none, none, none, none, none, none]}}
-    - {value: broken, share: 12, bar: {kick: [loud, none, none, loud, none, none, loud, none, none, none, loud, none, none, none, none, none]}}
+    - {value: three hits, share: 4, bar: {kick: [loud, none, none, none, none, none, loud, none, none, none, loud, none, none, none, none, none]}}
+    - {value: broken, share: 8, bar: {kick: [loud, none, none, loud, none, none, loud, none, none, none, loud, none, none, none, none, none]}}
     - {value: one and the and of three, share: 8, bar: {kick: [loud, none, none, none, none, none, none, none, none, none, loud, none, none, none, none, none]}}
     - {value: threes, share: 6, bar: {kick: [loud, none, none, loud, none, none, loud, none, loud, none, none, loud, none, none, loud, none]}}
     - {value: breakbeat, share: 4, bar: {kick: [loud, none, none, none, none, none, none, loud, none, none, loud, none, none, none, none, none]}}
-    - {value: half time, share: 4, bar: {kick: [loud, none, none, none, none, none, none, none, none, none, none, loud, none, none, none, none]}}
+    - {value: half time, share: 2, bar: {kick: [loud, none, none, none, none, none, none, none, none, none, none, none, none, none, none, none]}}
+    - {value: half time pushed, share: 2, bar: {kick: [loud, none, none, none, none, none, loud, none, none, none, none, none, none, none, none, none]}}
     - {value: none, share: 2}
   backbeat:
-    - {value: clap, share: 38, bar: {clap: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, none, none, none]}}
-    - {value: snare, share: 36, bar: {snare: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, none, none, none]}}
+    - {value: quiet clap, share: 6, bar: {clap: [none, none, none, none, soft, none, none, none, none, none, none, none, soft, none, none, none]}}
+    - {value: clap, share: 36, bar: {clap: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, none, none, none]}}
+    - {value: snare, share: 34, bar: {snare: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, none, none, none]}}
     - {value: clap and snare, share: 8, bar: {clap: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, none, none, none], snare: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, none, none, none]}}
     - {value: snare on three, share: 4, bar: {snare: [none, none, none, none, none, none, none, none, loud, none, none, none, none, none, none, none]}}
     - {value: snare with quiet notes, share: 4, bar: {snare: [none, none, none, none, loud, none, none, none, none, soft, none, none, loud, none, none, soft]}}
-    - {value: none, share: 10}
+    - {value: none, share: 8}
   hat:
     - {value: offbeats, share: 22, bar: {hat: [none, none, loud, none, none, none, loud, none, none, none, loud, none, none, none, loud, none]}}
     - {value: open on the offbeats, share: 28, bar: {hat: [soft, soft, none, soft, soft, soft, none, soft, soft, soft, none, soft, soft, soft, none, soft], open: [none, none, loud, none, none, none, loud, none, none, none, loud, none, none, none, loud, none]}}
@@ -194,11 +197,15 @@ traits:
       generators:
         - arp: {step: 1/32, order: up}
   harmony:
-    - {value: one chord, share: 14, scale_type: minor, pattern: [1]}
-    - {value: two chord vamp, share: 18, pattern: [1, 1, 4, 4], by_section: {breakdown: [2, 2, 5, 5], second: [6, 6, 5, 5], other: [6, 6, 5, 5]}}
-    - {value: minor two chord, share: 18, scale_type: minor, pattern: [1, 1, 7, 7], by_section: {breakdown: [6, 6, 7, 7], second: [4, 4, 1, 1], other: [4, 4, 1, 1]}}
-    - {value: four chord, share: 24, pattern: [1, 5, 6, 4], by_section: {breakdown: [6, 4, 1, 5], second: [4, 5, 6, 6], other: [4, 5, 6, 6]}}
-    - {value: minor four chord, share: 26, scale_type: minor, pattern: [1, 6, 3, 7], by_section: {breakdown: [6, 7, 1, 1], second: [4, 6, 1, 7], other: [4, 6, 1, 7]}}
+    - {value: one chord, share: 16, by: {house: 20, techno: 80, electro: 50, synth-pop: 0, hi-nrg: 0, italo: 0, trance: 0, drum and bass: 20, big beat: 60, minimal techno: 85, dubstep: 55, ambient: 40, downtempo: 0, chiptune: 0}, scale_type: minor, pattern: [1]}
+    - {value: two chord vamp, share: 6, by: {house: 0, techno: 0, electro: 0, synth-pop: 0, hi-nrg: 0, italo: 0, trance: 0, drum and bass: 0, big beat: 0, minimal techno: 0, dubstep: 0, ambient: 30, downtempo: 0, chiptune: 0}, pattern: [1, 1, 4, 4], by_section: {breakdown: [2, 2, 5, 5], second: [6, 6, 5, 5], other: [6, 6, 5, 5]}}
+    - {value: minor two chord, share: 18, by: {house: 40, techno: 20, electro: 50, synth-pop: 0, hi-nrg: 0, italo: 0, trance: 0, drum and bass: 15, big beat: 40, minimal techno: 15, dubstep: 15, ambient: 30, downtempo: 25, chiptune: 0}, scale_type: minor, pattern: [1, 1, 7, 7], by_section: {breakdown: [6, 6, 7, 7], second: [4, 4, 1, 1], other: [4, 4, 1, 1]}}
+    - {value: four chord, share: 16, by: {house: 0, techno: 0, electro: 0, synth-pop: 35, hi-nrg: 0, italo: 0, trance: 0, drum and bass: 0, big beat: 0, minimal techno: 0, dubstep: 0, ambient: 0, downtempo: 0, chiptune: 45}, pattern: [1, 5, 6, 4], by_section: {breakdown: [6, 4, 1, 5], second: [4, 5, 6, 6], other: [4, 5, 6, 6]}}
+    - {value: minor four chord, share: 20, by: {house: 20, techno: 0, electro: 0, synth-pop: 35, hi-nrg: 55, italo: 55, trance: 45, drum and bass: 0, big beat: 0, minimal techno: 0, dubstep: 0, ambient: 0, downtempo: 0, chiptune: 25}, scale_type: minor, pattern: [1, 6, 3, 7], by_section: {breakdown: [6, 7, 1, 1], second: [4, 6, 1, 7], other: [4, 6, 1, 7]}}
+    - {value: minor with a sixth, share: 8, by: {house: 20, techno: 0, electro: 0, synth-pop: 0, hi-nrg: 0, italo: 0, trance: 10, drum and bass: 25, big beat: 0, minimal techno: 0, dubstep: 30, ambient: 0, downtempo: 35, chiptune: 0}, scale_type: minor, pattern: [1, 1, 6, 6], by_section: {breakdown: [6, 6, 7, 7], second: [4, 4, 1, 1], other: [4, 4, 1, 1]}}
+    - {value: climb, share: 8, by: {house: 0, techno: 0, electro: 0, synth-pop: 30, hi-nrg: 45, italo: 0, trance: 30, drum and bass: 15, big beat: 0, minimal techno: 0, dubstep: 0, ambient: 0, downtempo: 0, chiptune: 30}, scale_type: minor, pattern: [6, 7, 1, 1], by_section: {breakdown: [4, 4, 6, 7], second: [1, 7, 6, 7], other: [1, 7, 6, 7]}}
+    - {value: fall and return, share: 4, by: {house: 0, techno: 0, electro: 0, synth-pop: 0, hi-nrg: 0, italo: 45, trance: 15, drum and bass: 0, big beat: 0, minimal techno: 0, dubstep: 0, ambient: 0, downtempo: 0, chiptune: 0}, scale_type: minor, pattern: [1, 7, 6, 7], by_section: {breakdown: [6, 6, 7, 7], second: [4, 6, 1, 7], other: [4, 6, 1, 7]}}
+    - {value: minor circle, share: 4, by: {house: 0, techno: 0, electro: 0, synth-pop: 0, hi-nrg: 0, italo: 0, trance: 0, drum and bass: 25, big beat: 0, minimal techno: 0, dubstep: 0, ambient: 0, downtempo: 40, chiptune: 0}, scale_type: minor, pattern: [1, 4, 7, 3], by_section: {breakdown: [6, 6, 7, 7], second: [4, 7, 3, 6], other: [4, 7, 3, 6]}}
   lead:
     - {value: none, share: 25}
     - {value: synth line, share: 32, sound: lead}
@@ -360,6 +367,17 @@ forms:
     - {name: one breakdown, share: 40, sections: [intro, groove, breakdown, build, groove, outro, ending]}
     - {name: two breakdowns, share: 35, sections: [intro, groove, breakdown, build, groove, breakdown, build, groove, outro, ending]}
     - {name: with a second theme, share: 25, sections: [intro, bassline, groove, breakdown, build, second, strip, groove, breakdown, build, groove, outro, ending]}
+  # House comes in block by block, the beat and then the bass, and its edit is short.
+  house:
+    - {name: two breakdowns, share: 45, sections: [beat, bassline, groove, breakdown, build, groove, breakdown, build, groove, outro, ending]}
+    - {name: with a strip, share: 35, sections: [beat, bassline, groove, strip, groove, breakdown, build, groove, outro, ending]}
+    - {name: edit, share: 20, sections: [intro, groove, breakdown, build, groove, strip, outro, ending]}
+  electro:
+    - {name: track, share: 60, sections: [beat, groove, strip, groove, breakdown, groove, outro, ending]}
+    - {name: one breakdown, share: 40, sections: [intro, groove, breakdown, build, groove, outro, ending]}
+  big beat:
+    - {name: with a strip, share: 60, sections: [intro, groove, strip, groove, breakdown, build, groove, outro, ending]}
+    - {name: one breakdown, share: 40, sections: [intro, groove, breakdown, build, groove, outro, ending]}
   techno:
     - {name: layers in and out, share: 40, sections: [beat, bassline, groove, strip, groove, outro, ending]}
     - {name: one breakdown, share: 35, sections: [beat, bassline, groove, breakdown, build, groove, strip, groove, outro, ending]}
@@ -388,6 +406,33 @@ forms:
     - {name: short, share: 25, sections: [beat, groove, breakdown, groove, ending]}
     - {name: one breakdown, share: 45, sections: [pads, beat, groove, breakdown, groove, outro, ending]}
     - {name: two themes, share: 30, sections: [pads, beat, bassline, groove, thin, second, breakdown, groove, outro, ending]}
+
+# What a kind says differently from electronic music as a whole: how long its sections are. A kind made for mixing thinks in
+# sixteens and thirty-twos, where a song thinks in eights.
+# A breakdown of sixteen bars says its calm idea and its rise twice over, so that a tune alone lasts the whole of it.
+long_breakdown: &long_breakdown [{line: calm}, {line: calm, varied: true}, {line: calm}, {line: rise, higher: true}, {line: calm}, {line: calm, varied: true}, {line: rise, higher: true}, {line: rise, higher: true, varied: true}]
+
+by_subgenre:
+  house:
+    sections: {beat: {bars: 16}, bassline: {bars: 16}, groove: {bars: 32}, breakdown: {bars: 16, plan: *long_breakdown}, build: {bars: 8}, strip: {bars: 16}, outro: {bars: 16}}
+  techno:
+    sections: {beat: {bars: 16}, bassline: {bars: 16}, groove: {bars: 32}, strip: {bars: 16}, breakdown: {bars: 16, plan: *long_breakdown}, build: {bars: 8}, second: {bars: 32}, outro: {bars: 16}}
+  minimal techno:
+    sections: {beat: {bars: 16}, bassline: {bars: 16}, groove: {bars: 32}, strip: {bars: 16}, thin: {bars: 16}, second: {bars: 32}, breakdown: {bars: 16, plan: *long_breakdown}, outro: {bars: 16}}
+  trance:
+    sections: {beat: {bars: 16}, bassline: {bars: 16}, groove: {bars: 32}, strip: {bars: 16}, breakdown: {bars: 16, plan: *long_breakdown}, pads: {bars: 16}, build: {bars: 16}, second: {bars: 32}, outro: {bars: 16}}
+  drum and bass:
+    sections: {pads: {bars: 16}, drift: {bars: 16}, build: {bars: 8}, groove: {bars: 32}, strip: {bars: 16}, second: {bars: 32}, breakdown: {bars: 16, plan: *long_breakdown}, outro: {bars: 16}}
+  dubstep:
+    sections: {pads: {bars: 16}, build: {bars: 8}, groove: {bars: 32}, strip: {bars: 16}, breakdown: {bars: 16, plan: *long_breakdown}, second: {bars: 32}, outro: {bars: 16}}
+  hi-nrg:
+    sections: {intro: {bars: 16}, outro: {bars: 16}}
+  italo:
+    sections: {intro: {bars: 16}, outro: {bars: 16}}
+  big beat:
+    sections: {intro: {bars: 16}, groove: {bars: 32}, breakdown: {bars: 16, plan: *long_breakdown}, build: {bars: 8}, outro: {bars: 16}}
+  ambient:
+    sections: {pads: {bars: 16}, drift: {bars: 16}, theme: {bars: 32}, thin: {bars: 16}, other: {bars: 32}}
 
 melody:
   grid: 8
