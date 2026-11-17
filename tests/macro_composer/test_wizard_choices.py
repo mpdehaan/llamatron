@@ -47,6 +47,8 @@ GENRES_WITH_A_HOOK = ('rock', 'sixties_pop', 'soul_funk')
 # A player that genre always has.
 A_BASS = 'bass'
 ANOTHER_GENRE = 'blues'
+ANOTHER_ROOT = 'A'
+NOTES_IN_AN_OCTAVE = 12
 HARD_ROCK = 'hard rock'
 DRUMS_ROLE = 'drums'
 GUITAR_ROLE = 'guitar'
@@ -950,6 +952,30 @@ class TestWizardMelodyGauges(unittest.TestCase):
         choices.set_hook(True)
         self.assertEqual(self.patterns(choices), with_hook)
         self.assertNotIn(HOOK_KEPT, choices.to_data())
+
+    def test_the_hooks_notes_are_read_from_the_song_as_chosen_and_follow_every_choice(self):
+        choices = self.rock()
+        steps, steps_in_bar, notes = choices.hook_notes()
+        self.assertEqual(steps % steps_in_bar, 0)
+        self.assertTrue(notes)
+        for start, length, pitch in notes:
+            self.assertGreaterEqual(start, 0)
+            self.assertLessEqual(start + length, steps)
+            self.assertIn((pitch - choices.root_half_steps()) % NOTES_IN_AN_OCTAVE, choices.scale_half_steps())
+        self.assertEqual(WizardChoices.from_data(choices.to_data()).hook_notes(), choices.hook_notes())
+        choices.set_root(ANOTHER_ROOT)
+        self.assertNotEqual(choices.hook_notes()[2], notes)
+        choices.set_seed(ANOTHER_SEED)
+        self.assertNotEqual(choices.hook_notes(), (steps, steps_in_bar, notes))
+
+    def test_a_song_with_no_hook_has_no_hook_notes(self):
+        choices = self.rock()
+        choices.set_hook(False)
+        self.assertIsNone(choices.hook_notes())
+        for genre in genre_names():
+            other = chosen(genre=genre_names().index(genre))
+            if not other.can_have_hook():
+                self.assertIsNone(other.hook_notes(), genre)
 
     def test_a_genre_whose_sections_mark_a_hook_has_none_until_asked_and_a_genre_with_none_refuses(self):
         for genre in genre_names():

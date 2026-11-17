@@ -412,5 +412,12 @@ MSG_WIZARD_CHORDS_KEY = 'in {root} {scale}'
 MSG_WIZARD_CHORDS_LINE = '{kind:<{width}}  {chords}'
 MSG_WIZARD_CHORD_SEPARATOR = '  '
 MSG_WIZARD_CHORD_SUFFIXES = {Quality.MAJOR: '', Quality.MINOR: 'm', Quality.DIMINISHED: '°', Quality.AUGMENTED: '+'}
+# The Hooks panel's picture of the hook: a row for each note the hook plays, the highest first, a bar line between bars, and under the rows the beats of each bar.
+MSG_WIZARD_HOOK_ROW = '{name:<{width}} {cells}'
+MSG_WIZARD_HOOK_CELL = '▓'
+MSG_WIZARD_HOOK_GAP = ' '
+MSG_WIZARD_HOOK_BAR_LINE = '│'
+MSG_WIZARD_HOOK_FLOOR = '─'
+MSG_WIZARD_HOOK_FLOOR_BAR = '┴'
 MSG_WIZARD_COMPOSITION_LINE = '{name:<{width}}  {value}'
 MSG_WIZARD_SECTION_LINE = '{number:>2}  {name:<{width}}  {bars:>3} bars'

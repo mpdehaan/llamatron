@@ -82,6 +82,7 @@ class WizardPage(FieldPage):
     def __init__(self, holder, *, start=None):
         super().__init__(holder)
         self._choices = WizardChoices()
+        self._choices.draw_seed()
         self._song_name = new_name(word=MSG_NEW_SONG_WORD, taken=self.document().song_names())
         self._changed = False
         # What the current song kept of the run that made it, the way of starting chosen in the dialog that opens the wizard on
@@ -131,6 +132,9 @@ class WizardPage(FieldPage):
         Nothing is chosen yet, so the wizard still closes without asking."""
         self._start = start
         self._choices = WizardChoices.from_data(self._last) if start in FROM_LAST else WizardChoices()
+        # Every run of the wizard rolls the dice afresh, and at its start, so that what a panel shows of the song, as its hook, is
+        # what Apply makes: a run from the last settings keeps the settings and never the seed.
+        self._choices.draw_seed()
         document = self.document()
         self._song_name = document.current_song_name() if self.replaces() else new_name(word=MSG_NEW_SONG_WORD, taken=document.song_names())
 
@@ -374,9 +378,8 @@ class WizardPage(FieldPage):
     # Create.
 
     def create(self):
-        """Make the song from the choices, add it to the set with all it uses as one change, and show Arrange on it.
-        Every run of the wizard rolls the dice afresh: a run from the last settings keeps the settings and never the seed."""
-        self._choices.forget_seed()
+        """Make the song from the choices and the seed the run drew when it started, add it to the set with all it uses as one
+        change, and show Arrange on it."""
         try:
             made = self._choices.made_setlist(name=self._song_name, version=VERSION)
         except (ValueError, SongFileError) as problem:
