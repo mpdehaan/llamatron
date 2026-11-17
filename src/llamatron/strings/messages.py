@@ -328,6 +328,7 @@ MSG_GUITAR_CELL_ACCENTED_NOTE = 'cell {number}: {stroke}, accented'
 # tui/screens/wizard/wizard_page.py and the branches beside it
 MSG_WIZARD_CLOSE_TITLE = 'Close the wizard'
 MSG_WIZARD_CLOSE_QUESTION = 'Close the wizard and lose these choices?'
+MSG_WIZARD_CLOSE_UNCHANGED_QUESTION = 'Close the wizard?'
 MSG_WIZARD_CREATED = 'created song ({name})'
 MSG_WIZARD_REPLACE_SECTIONS_QUESTION = 'Replace your sections with a suggested form?'
 MSG_WIZARD_ROW_TITLE = '{row}: {player}'

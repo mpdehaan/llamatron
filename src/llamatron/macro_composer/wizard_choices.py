@@ -486,12 +486,14 @@ SECONDS_IN_MINUTE = 60
 class WizardChoices:
     """The choices of one run of the song wizard."""
 
-    __slots__ = ('_extras', '_stages', '_hook_take', '_rows', '_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_own_gauges', '_beside', '_without', '_sections', '_melody', '_hook', '_sounds', '_band_sounds', '_guitarists', '_pieces_off', '_break', '_break_cut', '_gauges', '_piece_sounds', '_fills', '_quiet_notes', '_melody_settings', '_answers', '_answers_of')
+    __slots__ = ('_extras', '_stages', '_hook_take', '_rows', '_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_own_gauges', '_beside', '_without', '_sections', '_melody', '_hook', '_sounds', '_band_sounds', '_guitarists', '_pieces_off', '_break', '_break_cut', '_gauges', '_piece_sounds', '_fills', '_quiet_notes', '_melody_settings', '_answers', '_answers_of', '_picks_kept')
 
     def __init__(self):
         # Answers found by making the song, each kept until a choice changes.
         self._answers = {}
         self._answers_of = None
+        # Every trait's pick, kept with what it was worked out from, since every field of every panel asks for it.
+        self._picks_kept = None
         self._genre = None
         self._subgenre = None
         self._root = None
@@ -672,8 +674,12 @@ class WizardChoices:
     # What the subgenre usually has.
 
     def _picks(self):
-        """Return every trait's pick: the ways of playing chosen, and the subgenre's for the rest."""
-        return self._picks_with(self._ways)
+        """Return every trait's pick: the ways of playing chosen, and the subgenre's for the rest. The picks are worked out once
+        for a genre, a subgenre and the ways chosen, and a caller never changes what is returned."""
+        of = (self._genre, self._subgenre, repr(self._ways))
+        if self._picks_kept is None or self._picks_kept[0] != of:
+            self._picks_kept = (of, self._picks_with(self._ways))
+        return self._picks_kept[1]
 
     def usual_tempo(self):
         style = self._style()
@@ -1351,6 +1357,10 @@ class WizardChoices:
 
     # The drum kit's pieces, each switched on or off: a stroke on a piece that is off is left out, never
     # moved to another piece.
+
+    def remembered(self, *, key, compute):
+        """Return an answer a page works out from these choices, kept until a choice changes."""
+        return self._remembered(key=key, compute=compute)
 
     def _remembered(self, *, key, compute):
         """Return an answer that is found by making the song, worked out once for the choices as they stand: a page asks the
