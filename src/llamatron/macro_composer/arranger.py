@@ -33,7 +33,7 @@ from llamatron.macro_composer.breaks import BREAKS, LEAST_CUT, MOST_CUT, cut_up
 from llamatron.macro_composer.characters import ADDS, BUSY, FILL, FILL_EVERY, GUITARIFY_OF_PLAYER, SAYS, TIMING, UNEVEN, VARIES, character_of, held_to, label_of, level_of
 from llamatron.macro_composer import characters
 from llamatron.macro_composer.interplay import ANSWERS as ANSWERS_EVERY_LINE, DRAWN_ANEW as WAYS_DRAWN_ANEW, USUAL_BUSY as USUAL_BESIDE_BUSY, WAITS, WAYS as WAYS_BESIDE, UnderLead
-from llamatron.macro_composer.melody import ANSWER, ANSWER_RHYTHMS, ENGINE, GRID, HOOK, LINE, RHYTHMS, SPAN, has_hook, sketched
+from llamatron.macro_composer.melody import ANSWER, ANSWER_RHYTHMS, ENGINE, FIRST_HOOK_TAKE, GRID, HOOK, HOOK_TAKE, LINE, RHYTHMS, SPAN, has_hook, sketched
 from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, DRUM, FLAT, HITS, KIT, LINES, LOUD, NONE, OCTAVE, REST, SHARP, SOFT, STEP, STEPS, VELOCITY, CHORD, clamped, drum_rows
 from llamatron.macro_composer.players import player_name
 from llamatron.support.safe_yaml import load_safely
@@ -763,7 +763,7 @@ def arranged(*, style, song):
                 given = section.get(LINES_GIVEN, {}).get(role[ROLE])
                 return given or sketched(habits={**habits_of(habits=habits, player=here[role[ROLE]]), **role.get(HABITS, {}), **song.get(MELODY, {})}, plan=section[PLAN], chords=chords, scale_type=scale_type, seed=song.get(SEED, 0),
                                          answers=bool(role.get(ANSWERS)), engine=song.get(MELODY_ENGINE, role.get(ENGINE)), voice=role.get(VOICE), letters=line_letters(plans=plans, answers=bool(role.get(ANSWERS))),
-                                         hook=has_a_hook)
+                                         hook=has_a_hook, hook_take=song.get(HOOK_TAKE, FIRST_HOOK_TAKE))
             # The player who has the tune in the section, if any: a player of lines who answers nobody.
             tune_role = next((other for other, other_entry in pitched if FIGURE not in other_entry and not other.get(ANSWERS) and other[ROLE] in section[PLAYS]), None)
             for role, entry in pitched:

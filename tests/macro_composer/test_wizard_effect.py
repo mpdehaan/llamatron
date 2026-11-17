@@ -70,6 +70,7 @@ BREAK_CUT = 'cut up'
 MELODY_GAUGE = 'melody gauge'
 MELODY_SETTING = 'melody setting'
 HOOK = 'hook'
+NEW_HOOK = 'new hook'
 GUITARISTS = 'guitarists'
 SEED = 'seed'
 TEMPO = 'tempo'
@@ -221,6 +222,8 @@ def every_choice(choices):
                 yield MELODY_SETTING, (style, name, value), lambda made, name=name, value=value: made.set_melody_setting(name=name, value=value), [first]
     if choices.can_have_hook():
         yield HOOK, not choices.has_hook(), lambda made: made.set_hook(not made.has_hook()), [nothing_first]
+    if choices.can_have_hook() and choices.has_hook():
+        yield NEW_HOOK, choices.get_hook_take() + 1, lambda made: made.new_hook(), [nothing_first]
     if choices.offers_one_guitarist():
         yield GUITARISTS, ONE_GUITARIST_COUNT, lambda made: made.set_guitarists(ONE_GUITARIST_COUNT), [nothing_first]
     yield SEED, ANOTHER_SEED, lambda made: made.set_seed(ANOTHER_SEED), [nothing_first]

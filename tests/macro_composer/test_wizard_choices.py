@@ -21,7 +21,7 @@ from fractions import Fraction
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_GM_SOUND, MAX_TEMPO, MIN_TEMPO
-from llamatron.macro_composer.wizard_choices import MELODY_SETTINGS_KEPT, MELODY_SETTINGS_OF, style_of, STAND_INS, LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, FEWEST_FILLS, FILLS_KEPT, MOST_FILLS, QUIET_NOTES_KEPT, PIECES_OFF_KEPT, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, USUAL_SOUNDS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, HOOK_KEPT, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
+from llamatron.macro_composer.wizard_choices import HOOK_TAKE_KEPT, MELODY_SETTINGS_KEPT, MELODY_SETTINGS_OF, style_of, STAND_INS, LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, FEWEST_FILLS, FILLS_KEPT, MOST_FILLS, QUIET_NOTES_KEPT, PIECES_OFF_KEPT, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, USUAL_SOUNDS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, HOOK_KEPT, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
 from llamatron.macro_composer.melody import DEFAULT_GAUGES, HIGHEST_GAUGE, EVOLVING, HOME, LADDER, LEAPS, LOWEST_GAUGE, MOVE, SERIAL, SMART
 from llamatron.strings.macro_composer import MSG_PART_OF_SECTION
 from llamatron.macro_composer.notation import DEGREE, LINES
@@ -47,6 +47,9 @@ GENRES_WITH_A_HOOK = ('rock', 'sixties_pop', 'soul_funk')
 # A player that genre always has.
 A_BASS = 'bass'
 ANOTHER_GENRE = 'blues'
+SECTIONS_OF_STYLE = 'sections'
+PLAN_OF_SECTION = 'plan'
+HOOK_MARK = 'hook'
 ANOTHER_ROOT = 'A'
 NOTES_IN_AN_OCTAVE = 12
 HARD_ROCK = 'hard rock'
@@ -967,6 +970,37 @@ class TestWizardMelodyGauges(unittest.TestCase):
         self.assertNotEqual(choices.hook_notes()[2], notes)
         choices.set_seed(ANOTHER_SEED)
         self.assertNotEqual(choices.hook_notes(), (steps, steps_in_bar, notes))
+
+    def test_a_new_hook_changes_the_hook_and_no_other_part_and_is_kept(self):
+        choices = self.rock()
+        before = arranged(style=style_of(choices.get_genre()), song=choices.song_picks(A_NAME))[PARTS]
+        first = choices.hook_notes()
+        choices.new_hook()
+        self.assertEqual(choices.get_hook_take(), 1)
+        self.assertNotEqual(choices.hook_notes(), first)
+        after = arranged(style=style_of(choices.get_genre()), song=choices.song_picks(A_NAME))[PARTS]
+        changed = [part for part in before if before[part] != after[part]]
+        self.assertTrue(changed)
+        # Only parts of the sections that have the hook change: the tune's, and any player's who plays the hook with the tune.
+        sections = style_of(choices.get_genre())[SECTIONS_OF_STYLE]
+        with_hook = [kind for kind in sections if any(entry.get(HOOK_MARK) for entry in sections[kind].get(PLAN_OF_SECTION, []))]
+        for part in changed:
+            self.assertTrue(any(part.startswith(kind) for kind in with_hook), part)
+        again = WizardChoices.from_data(choices.to_data())
+        self.assertEqual(again.get_hook_take(), 1)
+        self.assertEqual(again.hook_notes(), choices.hook_notes())
+
+    def test_a_new_hook_is_refused_without_a_hook_and_a_new_genre_goes_back_to_the_first_take(self):
+        choices = self.rock()
+        choices.new_hook()
+        choices.set_hook(False)
+        with self.assertRaises(ValueError):
+            choices.new_hook()
+        choices.set_genre(ANOTHER_GENRE)
+        self.assertEqual(choices.get_hook_take(), 0)
+        # A take kept that is no take is left out, as any kept choice that no longer holds is.
+        for take in (-1, True, NOT_A_NUMBER):
+            self.assertEqual(WizardChoices.from_data({**self.rock().to_data(), HOOK_TAKE_KEPT: take}).get_hook_take(), 0)
 
     def test_a_song_with_no_hook_has_no_hook_notes(self):
         choices = self.rock()

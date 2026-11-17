@@ -30,7 +30,7 @@ from llamatron.tui.screens import wizard
 
 SETTER_START = 'set_'
 # What changes a choice without being named a setter.
-OTHER_CHANGES = ('add_section', 'copy_section', 'remove_section', 'move_section')
+OTHER_CHANGES = ('add_section', 'copy_section', 'remove_section', 'move_section', 'new_hook')
 # Changes with no field of their own: the sections a song kept are taken back one by one through the other setters, and
 # the seed is never shown, since every run of the wizard draws a new one when it starts.
 NOT_ON_THE_PAGE = ('set_own_sections', 'set_seed')
