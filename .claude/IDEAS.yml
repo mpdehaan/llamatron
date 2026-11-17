@@ -1698,6 +1698,26 @@
     mode, a change of key, a return); jams can be long. The "southern epic" ending, a jump in tempo and a long outro, goes with it.
     The notes are `.claude/music_theory_notes/genres/JAM.md`. Touches the wizard's section kinds, the Interplay plan and Intensity.
 
+- title: "A controller ramp over time, the sibling of Swell, Density and Articulate"
+  priority: 99
+  text: |
+    From the music expert's review of the electronic template. A generator, or a shape on a clip, a scene and a
+    generator as Swell is, that writes one MIDI controller from a first value to a last over a span of time: a filter
+    opening over 16 bars (controller 74, with 71 for resonance), a pad swelling on held notes (11), a reverb wash over
+    the last bar (91). It is the dependency of the song wizard's "filter opens", "pad swell" and "wash" rises in the
+    electronic genres; the other rises (hats filling in, a snare roll, a kick or bass dropping out, a gap) need only
+    what exists. Open: whether it is a fourth shape beside Swell, Density and Articulate, sharing their time settings,
+    or a generator of its own; how it meets a pattern's own CC lane of the same controller; and what the wizard says
+    when the preview synth does not answer to the controller, since General MIDI sounds often ignore 74.
+
+- title: "Pitch bend as the electronic genres' riser and bass slide"
+  priority: 99
+  text: |
+    From the music expert's review of the electronic template, adding to the "Pitch bend" idea: a true riser, a
+    sliding sub bass and a drum and bass or dubstep bass slide want pitch bend, where Glide covers only synths with
+    portamento. A dependency of those rises and bass figures in the song wizard's electronic genres, and of none of the
+    rest of the review.
+
 - title: "Keyswitches: what the first build left out"
   priority: 100
   text: |
