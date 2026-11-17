@@ -40,6 +40,8 @@ PLAN_OF_SONG = 'song_plan'
 CONTRAST = 'contrast'
 GROWTH = 'growth'
 PHRASING = 'phrasing'
+# How the lines breathe, where the song asks: the fields of phrasing.py.
+PHRASING_WAYS = 'phrasing_ways'
 BY_PLACE = 'sections'
 ENERGY = 'energy'
 ENERGY_OF_KIND = 'energy'
@@ -384,7 +386,7 @@ class SongPlan:
             own = {field: value for field, value in self._at(place).items() if field not in (ENERGY, SETUP, LEAVES, *SCENE_FIELDS)}
             scene = {**made.get(SCENE_SETTINGS, {}), **self._scene_settings(place)}
             sections[name] = {**made, **of_song, **own, **({SCENE_SETTINGS: scene} if scene else {}), SAID_OF_SECTION: ' '.join(said)}
-        melody = {**({BREATHES: True} if self._given.get(PHRASING, True) else {}), **({HOOK_KINDS: True} if self._given.get(HOOK_KINDS, True) else {}), **self._song.get(MELODY, {})}
+        melody = {**({BREATHES: self._given.get(PHRASING_WAYS) or True} if self._given.get(PHRASING, True) else {}), **({HOOK_KINDS: True} if self._given.get(HOOK_KINDS, True) else {}), **self._song.get(MELODY, {})}
         return {**self._song, FORM: list(self._names), SECTIONS: sections, MELODY: melody}
 
     def _has_hook(self):

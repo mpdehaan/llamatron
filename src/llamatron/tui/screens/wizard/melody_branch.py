@@ -15,8 +15,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The wizard's Melody branch, under Composition: the melody style the song's tunes are written by, and the smart style's gauges."""
 
+from llamatron.macro_composer import phrasing
 from llamatron.macro_composer.melody import HIGHEST_GAUGE, LOWEST_GAUGE
-from llamatron.strings.labels import MSG_WIZARD_GAUGE_ENDS, MSG_WIZARD_GAUGE_LABELS, MSG_WIZARD_MELODY_BRANCH, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_MELODY_SETTING_LABELS, MSG_WIZARD_USUAL_MELODY
+from llamatron.macro_composer.wizard_choices import PHRASING_OFFERED
+from llamatron.strings.labels import MSG_WIZARD_EARLY_SHOWN, MSG_WIZARD_GAUGE_ENDS, MSG_WIZARD_GAUGE_LABELS, MSG_WIZARD_PHRASING_LABEL, MSG_WIZARD_PHRASING_WAY_LABELS, MSG_WIZARD_MELODY_BRANCH, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_MELODY_SETTING_LABELS, MSG_WIZARD_USUAL_MELODY
 from llamatron.strings.marks import MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_GENRE_MELODY_SHOWN, MSG_WIZARD_MELODY_GAUGE_SHOWN
 from llamatron.strings.messages import MSG_WIZARD_LISTEN_TUNE
 from llamatron.tui.screens.shared.field import ChoiceField, NumberField, Toggle
@@ -46,15 +48,33 @@ class MelodyBranch(SongWaysBranch):
         return choices.get_melody() or MSG_WIZARD_GENRE_MELODY_SHOWN.format(style=choices.genre_melody())
 
     def fields(self):
-        if not self.offers_styles():
-            return []
         choices = self.choices()
+        if not self.offers_styles():
+            return self.phrasing_fields()
         # The first choice leaves the tunes to the style the genre sketches its own by, which the field names; a style that
         # would sketch as the genre's does is not offered again by its name.
         style = ChoiceField(page=self.page(), label=MSG_WIZARD_MELODY_LABEL, choices=[MSG_WIZARD_USUAL_MELODY, *choices.melody_styles()], current=choices.get_melody() or MSG_WIZARD_USUAL_MELODY, shown=self.shown(),
                             set=self.page().choosing(lambda chosen: choices.set_melody(None if chosen == MSG_WIZARD_USUAL_MELODY else chosen)))
         # The smart melody style's gauges, under the Melody field while the song's tunes are sketched by it.
-        return [style, *(self.gauge_field(name) for name in choices.gauges()), *(self.setting_field(name) for name in choices.melody_settings())]
+        return [style, *(self.gauge_field(name) for name in choices.gauges()), *(self.setting_field(name) for name in choices.melody_settings()), *self.phrasing_fields()]
+
+    def phrasing_fields(self):
+        """Return the fields of how a planned song's lines breathe, in a song in four: the switch, and under it how long the breaths are,
+        which lines of a section are the shorter and how many lines in four have a note come early."""
+        choices = self.choices()
+        page = self.page()
+        if not choices.is_ready() or not choices.has_song_plan() or not choices.counts_in_four():
+            return []
+        fields = [Toggle(label=MSG_WIZARD_PHRASING_LABEL, on=choices.has_phrasing(), set=page.choosing(choices.set_phrasing))]
+        if not choices.has_phrasing():
+            return fields
+
+        def setter(name):
+            return page.choosing(lambda value: choices.set_phrasing_way(name=name, value=value))
+        return [*fields,
+                *(ChoiceField(page=page, label=MSG_WIZARD_PHRASING_WAY_LABELS[name], choices=list(PHRASING_OFFERED[name]), current=choices.phrasing_way(name), set=setter(name)) for name in (phrasing.BREATH, phrasing.LINE_LENGTHS)),
+                NumberField(page=page, label=MSG_WIZARD_PHRASING_WAY_LABELS[phrasing.EARLY_NOTES], number=choices.phrasing_way(phrasing.EARLY_NOTES), lowest=phrasing.FEWEST_EARLY, highest=phrasing.MOST_EARLY,
+                            shown=MSG_WIZARD_EARLY_SHOWN.format(count=choices.phrasing_way(phrasing.EARLY_NOTES), of=phrasing.MOST_EARLY), set=setter(phrasing.EARLY_NOTES))]
 
     def listens(self):
         choices = self.choices()
