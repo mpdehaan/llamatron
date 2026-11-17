@@ -106,6 +106,7 @@ class TestWizardRiff(unittest.TestCase):
         self.assertEqual(choices.get_riff_players(), [THE_GUITAR, THE_BASS])
         self.assertEqual(choices.get_riff_said(), RIFF_INTRO_AND_VERSES)
         with_riff = patterns(choices)
+        with_riff_made = made(choices).to_data()
         self.assertNotEqual(with_riff, usual)
         for role in (THE_GUITAR, THE_BASS):
             self.assertIn(MSG_PART_OF_SECTION.format(role, THE_RIFF), with_riff)
@@ -115,7 +116,8 @@ class TestWizardRiff(unittest.TestCase):
         self.assertTrue(all(name.startswith(('intro', 'verse')) for name in riff_scenes))
         choices.set_riff(players=[THE_GUITAR, THE_BASS], said=RIFF_UNDER_CHORUSES)
         self.assertEqual(choices.get_riff_said(), RIFF_UNDER_CHORUSES)
-        self.assertNotEqual(patterns(choices), with_riff)
+        # The same riff, played in other sections: the patterns may be the same ones, and the scenes that play them differ.
+        self.assertNotEqual(made(choices).to_data(), with_riff_made)
         choices.set_riff(players=[])
         self.assertFalse(choices.has_riff())
         self.assertEqual(patterns(choices), usual)

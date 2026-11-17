@@ -31,7 +31,7 @@ from llamatron.support.version import VERSION
 
 ROCK = 'rock'
 ROCK_KIND = 'british invasion'
-BALLAD = 'rock ballad'
+BALLAD = 'six-eight ballad'
 ELECTRONIC = 'electronic'
 BUILT_ON_A_BREAK = 'big beat'
 EXPERIMENTAL = 'experimental'

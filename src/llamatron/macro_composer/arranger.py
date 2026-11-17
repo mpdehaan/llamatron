@@ -206,6 +206,10 @@ MAJOR = 'major'
 BY_SECTION = 'by_section'
 FAMILIES = 'families'
 BY_FAMILY = 'by_family'
+# How common a value is in a template, by the template's name, in place of its share in the family or the style: a share of 0 is offered last and never drawn by chance.
+BY = 'by'
+# What a style says differently for one of its templates, laid over the style: a section's bars, the plan's numbers and the like.
+BY_SUBGENRE = 'by_subgenre'
 # The keys whose home note is the lowest of an octave: a band written for the middle of its range plays an octave up in them.
 LOW_ROOTS = ('C', 'C#', 'Db', 'D', 'D#', 'Eb')
 SOFT_SHARE = Fraction(2, 3)
@@ -310,9 +314,33 @@ def share_of(entry):
 
 def share_in(*, style, entry, template):
     """How common a value is in one of a style's templates: its share in the template's family where the style has families and the
-    value says how common it is in each, or its share in the style as a whole."""
+    value says how common it is in each, or its share in the style as a whole; a value that says how common it is in the template itself is that common."""
+    if template in entry.get(BY, {}):
+        return entry[BY][template]
     family = style.get(FAMILIES, {}).get(template)
     return entry.get(BY_FAMILY, {}).get(family, entry[SHARE])
+
+
+def said_over(*, usual, own):
+    """What a style says with one template's own words laid over it: a dictionary's entries one by one, anything else replaced whole."""
+    if not isinstance(usual, dict) or not isinstance(own, dict):
+        return own
+    return {**usual, **{key: said_over(usual=usual[key], own=value) if key in usual else value for key, value in own.items()}}
+
+
+STYLES_IN_TEMPLATES = {}
+
+
+def style_in(*, style, template):
+    """A style as one of its templates has it: what the style says by_subgenre for the template laid over the style, worked out once.
+    A style that says nothing of the template, or one already so laid over, is returned as it is."""
+    own = style.get(BY_SUBGENRE, {}).get(template)
+    if not own:
+        return style
+    key = (style[NAME], template)
+    if key not in STYLES_IN_TEMPLATES:
+        STYLES_IN_TEMPLATES[key] = {**said_over(usual={name: value for name, value in style.items() if name != BY_SUBGENRE}, own=own)}
+    return STYLES_IN_TEMPLATES[key]
 
 
 def bar_length(meter):
@@ -684,6 +712,7 @@ def form_of(*, style, song, meter, tempo):
 
 def arranged(*, style, song):
     """A song's picks as a MacroComposer input."""
+    style = style_in(style=style, template=song[TEMPLATE])
     picks = picked(style=style, song=song)
     meter = str(picks.get(METER, COMMON_TIME))
     tempo = tempo_of(style=style, song=song, picks=picks)
