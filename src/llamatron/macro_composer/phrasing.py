@@ -94,7 +94,14 @@ def is_shorter(*, count, lengths):
     return bool(count % 2) == (lengths == LONG_THEN_SHORT)
 
 
-def breathed(*, line, grid, count, dice, ways=None):
+# What one line of a section's plan may say of itself, over the song's ways: its breath in eighths, and whether a note of it comes early.
+LINE_BREATH = 'breath'
+LINE_EARLY = 'early'
+NO_BREATH = 0
+LONGEST_BREATH = 8
+
+
+def breathed(*, line, grid, count, dice, ways=None, breath=None, early=None):
     """A line of a tune made to breathe: a shorter line, the second and the fourth of its section unless the song asks otherwise,
     ends in the longer breath, and two lines of every four unless asked have a note come early. A style whose bar is not counted
     in eighths is left as written."""
@@ -103,10 +110,12 @@ def breathed(*, line, grid, count, dice, ways=None):
     ways = {**USUAL_WAYS, **(ways or {})}
     eighth = grid // EIGHTHS_IN_BAR
     after_longer, after_shorter = BREATHS[ways[BREATH]]
-    breath = dice.choice(after_shorter) if is_shorter(count=count, lengths=ways[LINE_LENGTHS]) else after_longer
-    made = ended_early(line=line, breath=breath * eighth)
+    # The dice are thrown whether or not the line says its own breath, so that the lines after it stay as they were.
+    drawn = dice.choice(after_shorter) if is_shorter(count=count, lengths=ways[LINE_LENGTHS]) else after_longer
+    breath = drawn if breath is None else breath
+    made = ended_early(line=line, breath=breath * eighth) if breath else [dict(note) for note in line]
     # So many lines of every four have a note come early, the second and the fourth first: a count, with no dice, so that one more is always heard.
-    early = EARLY_ORDER.index(count % MOST_EARLY) < ways[EARLY_NOTES]
+    early = EARLY_ORDER.index(count % MOST_EARLY) < ways[EARLY_NOTES] if early is None else early
     if early:
         made = pushed(line=made, grid=grid)
     return made

@@ -29,7 +29,7 @@ import random
 from llamatron.macro_composer import hook_kinds
 from llamatron.macro_composer.notation import ACCIDENTAL, ARRIVAL, DEGREE, ENDING, FLAT, LOUDER, OCTAVE, REST, SHARP, STEPS, STRESS
 from llamatron.macro_composer.operations import backwards, moved, rotated, upside_down
-from llamatron.macro_composer.phrasing import breathed
+from llamatron.macro_composer.phrasing import LINE_BREATH, LINE_EARLY, breathed
 from llamatron.strings.errors import ERR_MELODY_NEEDS_RHYTHMS
 
 # The fields of a style's melody habits.
@@ -60,6 +60,8 @@ HOOK_KINDS = 'hook_kinds'
 HOOK_KIND = 'hook_kind'
 # The hook's line written out by hand, note by note: where the habits hold one, the hook is that line and no other.
 HOOK_NOTES = 'hook_notes'
+# A line of a section's plan written out by hand.
+LINE_NOTES = 'written'
 BREATH_SEED = '{} breath {} {}'
 # The degrees an ending left open rests on.
 OPEN_DEGREES = (2, 6)
@@ -291,6 +293,11 @@ class StepWalk:
                 lines.append(silent_line(grid=self._grid, bars=bars))
                 continue
             letter = entry.get(LINE, str(count))
+            if entry.get(LINE_NOTES):
+                # A line written by hand is the line, and the idea its letter names from here on.
+                known[letter] = copy.deepcopy(entry[LINE_NOTES])
+                lines.append(copy.deepcopy(entry[LINE_NOTES]))
+                continue
             dice = random.Random(LINE_SEED.format(self._seed, self._answers, letter, len(lines) if entry.get(VARIED) else ''))
             if letter in known and not entry.get(VARIED):
                 lines.append([dict(note) for note in known[letter]])
@@ -299,10 +306,10 @@ class StepWalk:
                 lines.append(stressed(self.varied_line(line=[dict(note) for note in known[letter]], dice=dice, entry=entry, under=under)))
                 continue
             made = self.new_line(entry=entry, under=under, dice=dice)
-            if self._habits.get(BREATHES) and not entry.get(HOOK):
+            if (self._habits.get(BREATHES) or LINE_BREATH in entry or LINE_EARLY in entry) and not entry.get(HOOK):
                 # The breath is drawn apart from the line, so that a line is the same notes whether it breathes or not.
                 made = breathed(line=made, grid=self._grid, count=count, dice=random.Random(BREATH_SEED.format(self._seed, self._answers, letter)),
-                                ways=self._habits[BREATHES] if isinstance(self._habits[BREATHES], dict) else None)
+                                ways=self._habits[BREATHES] if isinstance(self._habits.get(BREATHES), dict) else None, breath=entry.get(LINE_BREATH), early=entry.get(LINE_EARLY))
             made = stressed(made)
             known[letter] = made
             lines.append([dict(note) for note in made])

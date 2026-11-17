@@ -19,16 +19,18 @@
 from llamatron.composition.limits import MAX_NAME_LENGTH, MAX_TEMPO, MIN_TEMPO
 from llamatron.macro_composer.arranger import CHORDS
 from llamatron.macro_composer.joins import LEAVES
+from llamatron.macro_composer.melody import LINE_NOTES
 from llamatron.macro_composer.song_plan import ENERGY, FADES, HIGHEST_ENERGY, LOWEST_ENERGY, NOT_AT_ALL, RISES, ROOT_OF_PLACE, SETUP, TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE
-from llamatron.macro_composer.wizard_choices import LEAVES_AS_JOIN, SCALE_TYPES, SHAPE_OF_SECTION, chords_as_text
+from llamatron.macro_composer.wizard_choices import LEAVES_AS_JOIN, LINE_OWN, SCALE_TYPES, SHAPE_OF_SECTION, chords_as_text
 from llamatron.music.note import ROOT_NAMES
 from llamatron.strings.labels import (
-    MSG_WIZARD_BARS_LABEL, MSG_WIZARD_FROM_ORIGIN, MSG_WIZARD_FROM_PLAN, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_SECTION_ORIGINS, MSG_WIZARD_SECTION_OWN_LABELS, MSG_WIZARD_SECTION_ROLE_LABEL,
+    MSG_WIZARD_BARS_LABEL, MSG_WIZARD_LINES_LABEL, MSG_WIZARD_LINES_TITLE, MSG_WIZARD_LINE_NOTES_TITLE, MSG_WIZARD_FROM_ORIGIN, MSG_WIZARD_FROM_PLAN, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_SECTION_ORIGINS, MSG_WIZARD_SECTION_OWN_LABELS, MSG_WIZARD_SECTION_ROLE_LABEL,
     MSG_WIZARD_VALUE_FROM,
 )
-from llamatron.strings.legends import MSG_FROM_PLAN_WHAT
-from llamatron.strings.marks import MSG_WIZARD_ROLE_FROM_PLAN
+from llamatron.strings.legends import MSG_FROM_PLAN_WHAT, MSG_WIZARD_EDIT_LINES_WHAT
+from llamatron.strings.marks import MSG_LINES_COUNT, MSG_LINES_COUNT_OWN, MSG_WIZARD_ROLE_FROM_PLAN
 from llamatron.strings.messages import MSG_WIZARD_LISTEN_SECTION, MSG_WIZARD_SECTION_CHORDS_PROMPT
+from llamatron.tui.dialogs.lines_dialog import LinesDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NumberField, Toggle
 from llamatron.tui.screens.wizard.branch import Branch, gauge_shown
@@ -76,8 +78,37 @@ class SectionBranch(Branch):
         if choices.section_has_role(place):
             fields.append(self.role_field())
         fields += [self.own_field(field) for field in choices.section_own_fields(place)]
+        fields += self.lines_fields()
         plays = choices.section_plays(place)
         return [*fields, *(Toggle(label=choices.role_title(role), on=role in plays, set=self.plays_setter(role)) for role in choices.roles_in() if role in choices.roles_shown())]
+
+    # A section's lines, one by one, in the Lines dialog.
+
+    def lines_fields(self):
+        """Return the field that says how many lines the section's tune has and how many are a person's own, where the section has a tune; ENTER opens the lines."""
+        choices = self.choices()
+        lines = choices.section_lines(self._place)
+        if not any(line[LINE_NOTES] is not None for line in lines):
+            return []
+        own = sum(1 for line in lines if line[LINE_OWN])
+        said = MSG_LINES_COUNT_OWN.format(count=len(lines), own=own) if own else MSG_LINES_COUNT.format(count=len(lines))
+        return [Field(label=MSG_WIZARD_LINES_LABEL, value=lambda: said, enter=self.edit_lines, enter_what=MSG_WIZARD_EDIT_LINES_WHAT)]
+
+    def edit_lines(self):
+        choices = self.choices()
+        page = self.page()
+        place = self._place
+
+        def set_line(*, line, field, value):
+            try:
+                page.choosing(lambda given: choices.set_section_line(place=place, line=line, field=field, value=given))(value)
+            except ValueError as problem:
+                return str(problem)
+            return None
+        section = choices.section_labels()[place]
+        dialog = LinesDialog(title=MSG_WIZARD_LINES_TITLE.format(section=section), lines=lambda: choices.section_lines(place), set_line=set_line, steps_in_bar=choices.tune_steps_in_bar(),
+                             pitch_of_place=choices.pitch_of_place, title_of_player=choices.role_title, notes_title=MSG_WIZARD_LINE_NOTES_TITLE.format(line='{line}', section=section))
+        page.ask(dialog=dialog, then=lambda nothing: None)
 
     # What a section of a planned song is given of its own: each field shows what the section takes and where from until it is given, and Bksp gives it back.
 

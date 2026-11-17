@@ -34,7 +34,9 @@ from llamatron.macro_composer.melody import HIGHEST_GAUGE, LOWEST_GAUGE
 from llamatron.support.version import VERSION
 from llamatron.macro_composer import hook_kinds, line_edits, phrasing
 from llamatron.macro_composer.song_plan import HIGHEST_ENERGY, LOWEST_ENERGY
-from llamatron.macro_composer.wizard_choices import (HOOK_PARTS, ONE_PLAYER_FIRST, PHRASING_OFFERED, USUAL_PIECE_NOTE, BAND_SOUNDS, GAUGED_STYLES, FEWEST_FILLS, FILLS_TRAITS, LEAST_BUSY, MOST_BUSY, MOST_FILLS, ONE_GUITARIST_COUNT,
+from llamatron.macro_composer.melody import LINE_NOTES
+from llamatron.macro_composer.phrasing import LINE_BREATH, LONGEST_BREATH, NO_BREATH
+from llamatron.macro_composer.wizard_choices import (HOOK_PARTS, LINE_BREATHES, ONE_PLAYER_FIRST, PHRASING_OFFERED, USUAL_PIECE_NOTE, BAND_SOUNDS, GAUGED_STYLES, FEWEST_FILLS, FILLS_TRAITS, LEAST_BUSY, MOST_BUSY, MOST_FILLS, ONE_GUITARIST_COUNT,
                                                      USUAL_SOUNDS, WizardChoices, genre_names)
 
 A_NAME = 'a_song'
@@ -80,6 +82,7 @@ PHRASING = 'phrasing'
 PHRASING_WAY = 'how the lines breathe'
 HOOK_PART = "a part of the hook's kind"
 HOOK_LINE = "the hook's notes written by hand"
+A_LINE = "a line's own"
 START = 'a way of starting'
 END = 'a way of ending'
 FIRST_PLAYER = 'the first player'
@@ -299,6 +302,16 @@ def every_choice(choices):
         # What a section of any genre can be given of its own, held with no plan, on the second section where it takes any.
         if field in without_plan(choices).section_own_fields(A_SECOND_PLACE) and value != without_plan(choices).section_from_plan(place=A_SECOND_PLACE, field=field):
             yield SECTION_OWN, (field, value, NO_PLAN), lambda made, field=field, value=value: made.set_section_own(place=A_SECOND_PLACE, field=field, value=value), [switch_plan_off]
+    # A section's lines, one by one: the first line that breathes of the first section with a tune, its breath, its early note either way and its notes moved.
+    for place in range(len(choices.section_labels())):
+        lines = choices.section_lines(place)
+        line = next((count for count, said in enumerate(lines) if said[LINE_BREATHES]), None)
+        if line is None:
+            continue
+        for breath in (NO_BREATH, LONGEST_BREATH - 1):
+            yield A_LINE, (LINE_BREATH, breath), lambda made, place=place, line=line, breath=breath: made.set_section_line(place=place, line=line, field=LINE_BREATH, value=breath), [nothing_first]
+        yield A_LINE, LINE_NOTES, lambda made, place=place, line=line: made.set_section_line(place=place, line=line, field=LINE_NOTES, value=first_note_moved(made.section_lines(place)[line][LINE_NOTES])), [nothing_first]
+        break
     # How the song starts and ends: each way but the one the song has, another first player under layers, and another length of a stage.
     for way in choices.starts():
         if way != choices.get_start():
@@ -334,6 +347,12 @@ def every_choice(choices):
     for form in choices.forms():
         if form != choices.get_form():
             yield FORM, form, lambda made, form=form: made.set_form(form), [nothing_first]
+
+
+def first_note_moved(notes):
+    """A line with its first note that sounds two places of the scale higher."""
+    step = sum(line_edits.length_of(note) for note in notes[:next(count for count, note in enumerate(notes) if not line_edits.is_rest(note))])
+    return line_edits.moved(line=notes, step=step, by=2)
 
 
 def one_player_first(made):

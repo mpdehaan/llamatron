@@ -747,6 +747,15 @@ MSG_WIZARD_HOOK_NOTES_LABEL = 'Notes'
 MSG_WIZARD_HOOK_NOTES_OWN = 'your own'
 MSG_WIZARD_HOOK_NOTES_WIZARD = "the wizard's"
 MSG_WIZARD_HOOK_NOTES_TITLE = 'Hook notes'
+# The Lines dialog, a section's lines one by one, and the section panel's field that opens it.
+MSG_WIZARD_LINES_LABEL = 'Lines'
+MSG_WIZARD_LINES_TITLE = 'Lines: {section}'
+MSG_WIZARD_LINE_NOTES_TITLE = 'Line {line}: {section}'
+MSG_LINES_BREATH_LABEL = 'Breath'
+MSG_LINES_EARLY_LABEL = 'Early note'
+MSG_LINES_NOTES_LABEL = 'Notes'
+MSG_LINES_YES = 'yes'
+MSG_LINES_NO = 'no'
 # The song plan's fields on the Form panel, the parts of a hook's kind on the Hooks panel, and a value the wizard picked itself.
 MSG_WIZARD_SONG_PLAN_LABEL = 'Song plan'
 MSG_WIZARD_CONTRAST_LABEL = 'Contrast'
