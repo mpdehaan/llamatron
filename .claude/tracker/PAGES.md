@@ -276,3 +276,12 @@ The user's design, agreed in detail in `.claude/features/WIZARD_DESIGNS.md` (S16
   (`.claude/features/MACRO_COMPOSER.md`, "The Wizard's Choices"), one change and so one undo step, after which
   `LlamatronApp.show_arrange_on_new_song` closes down to the main screen and opens Arrange on the song.
 - `tests/tui/test_tui_wizard.py` tests the page and undo, and the key tour and the fields tour both visit it.
+
+- **The picker of a new generator's type** (the user's design). `generator_type_dialog` in `tui/screens/generators/generator_pages.py`
+  makes a `GroupedChoiceDialog` (`tui/dialogs/grouped_choice_dialog.py`): the types under headings, `GeneratorGroup` in
+  `strings/labels.py`, Arrangement, Articulation, Harmony, Rhythm, Timing, Transitions and Voicing, sorted by name, each
+  `GeneratorListing` naming its `group`; a Band heading joins them with the first musician. Headings start closed, Space or
+  ENTER opens and closes one, PgUp and PgDn jump between them, the open ones are kept for the session in
+  `app.open_generator_groups`, and typing searches every type with no headings. The Generators page's `A` and the chain
+  editor's new generator both open it. The generators are written FollowChords and VoiceLeading, one word, as AutoRatchet is.
+  `tests/tui/test_tui_generator_type_picker.py` tests it.

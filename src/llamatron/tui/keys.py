@@ -144,6 +144,8 @@ SHARP_CHARACTER = '#'
 NOTE_CHARACTERS = (*NOTE_LETTER_KEYS, *DIGITS, SHARP_CHARACTER)
 # What can be typed into a search: letters, digits, every mark a keyboard types, and a space.
 SEARCH_CHARACTERS = (*LETTERS, *DIGITS, *string.punctuation, Key.SPACE)
+# What starts a search where Space does something else until a search has started.
+SEARCH_STARTERS = (*LETTERS, *DIGITS, *string.punctuation)
 # ] means more and [ means less wherever a value steps, since neither needs Shift on a US keyboard, which + does. +, = and - still work, off the legend, for the habit of them.
 MORE_KEYS = (Key.RIGHT_BRACKET, Key.PLUS, Key.EQUALS)
 LESS_KEYS = (Key.LEFT_BRACKET, Key.MINUS)

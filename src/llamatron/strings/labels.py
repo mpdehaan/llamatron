@@ -274,6 +274,17 @@ MSG_NEW_PATTERN_BUTTON = '[ New Pattern ]'
 MSG_NEW_GROUP_BUTTON = '[ New Pattern Group ]'
 MSG_NEW_GROUP_NAME_LABEL = 'New Group Name: '
 MSG_NOTES_KIND = 'notes'
+# tui/screens/generators/generator_pages.py: the headings the kinds of generator are offered under, by what each kind is for.
+class GeneratorGroup:
+    ARRANGEMENT = 'Arrangement'
+    ARTICULATION = 'Articulation'
+    HARMONY = 'Harmony'
+    RHYTHM = 'Rhythm'
+    TIMING = 'Timing'
+    TRANSITIONS = 'Transitions'
+    VOICING = 'Voicing'
+
+
 MSG_ARP_LABEL = 'arpeggiator'
 MSG_AUTO_RATCHET_LABEL = 'AutoRatchet'
 MSG_DRIFT_LABEL = 'Drift'
@@ -297,11 +308,11 @@ MSG_WHOLE_SPAN = '(whole)'
 # tui/screens/generators/chords_editor.py: a progression's fields, and the chord editor's rows, which the progression editor shares.
 MSG_PROGRESSION_LABEL = 'Progression'
 # tui/screens/generators/voice_leading_editor.py: a voice leading's name in a prompt, and its toggle.
-MSG_VOICE_LEADING_LABEL = 'Voice leading'
+MSG_VOICE_LEADING_LABEL = 'VoiceLeading'
 MSG_HOCKET_LABEL = 'Hocket'
 # tui/screens/generators/guitarify_editor.py, tui/screens/generators/guitar_bar_editor.py: a Guitarify's name, its two sections, their fields, and what its choices are called.
 MSG_GUITARIFY_LABEL = 'Guitarify'
-MSG_FOLLOW_CHORDS_LABEL = 'Follow Chords'
+MSG_FOLLOW_CHORDS_LABEL = 'FollowChords'
 MSG_CHORDS_FROM_LABEL = 'Chords from'
 MSG_GUITAR_SHAPE_SECTION = 'Shape'
 MSG_GUITAR_STROKES_SECTION = 'Strokes'

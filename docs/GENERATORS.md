@@ -38,27 +38,27 @@ changes only what you edited.
 
 ## Generator Kinds
 
-The generators fall into six categories by what they change, as the sidebar groups them.
+The generators fall into seven categories by what they change, as the sidebar and the picker of a new generator's type group them.
 
 | Category | Generator | What it does | Demo |
 | --- | --- | --- | --- |
 | Arrangement | [Hocket](generators/HOCKET.md) | Deals one track's notes out among other tracks | `examples/learning/19_hocket_shanty.yml` |
 | Articulation | [Glide](generators/GLIDE.md) | Runs notes on chosen steps into the next note | `examples/learning/14_acid_glide.yml` |
 | Articulation | [Shorten](generators/SHORTEN.md) | Plays notes on chosen steps short | `examples/learning/14_acid_glide.yml` |
-| Chords | [Arpeggiator](generators/ARPEGGIATOR.md) | Plays a chord one note at a time, with offsets | `examples/learning/12_sailor_arpeggiator.yml` |
-| Chords | [Follow Chords](generators/FOLLOW_CHORDS.md) | Moves a figure to the chords another track plays | `examples/learning/24_follow_chords.yml` |
-| Chords | [Guitarify](generators/GUITARIFY.md) | Holds chords as a hand does and plays a bar of strokes on them | `examples/learning/23_guitarify.yml` |
-| Chords | [Progression](generators/PROGRESSION.md) | Moves a figure through a progression of chords | `examples/learning/06_chord_progression_generator.yml` |
-| Chords | [Strum](generators/STRUM.md) | Spreads a chord's notes in time like a pick | `examples/learning/13_classic_strum.yml` |
-| Chords | [Voice Leading](generators/VOICE_LEADING.md) | Voices each chord nearest the chord before | `examples/learning/05_voice_leading.yml` |
+| Harmony | [FollowChords](generators/FOLLOW_CHORDS.md) | Moves a figure to the chords another track plays | `examples/learning/24_follow_chords.yml` |
+| Harmony | [Progression](generators/PROGRESSION.md) | Moves a figure through a progression of chords | `examples/learning/06_chord_progression_generator.yml` |
 | Rhythm | [AutoRatchet](generators/AUTORATCHET.md) | Chops notes into quick repeats | `examples/learning/11_ode_to_joy_ratchet.yml` |
 | Rhythm | [Euclid](generators/EUCLID.md) | Keeps only the notes on a Euclidean rhythm | `examples/other/euclidean.yml` |
+| Rhythm | [Strum](generators/STRUM.md) | Spreads a chord's notes in time like a pick | `examples/learning/13_classic_strum.yml` |
 | Timing | [Drag](generators/DRAG.md) | Plays notes on chosen steps late | `examples/learning/14_acid_glide.yml` |
 | Timing | [Rush](generators/RUSH.md) | Plays notes on chosen steps early | `examples/learning/14_acid_glide.yml` |
 | Transitions | [Articulate](generators/ARTICULATE.md) | Ramps how long notes sound over a section | `examples/learning/15_acid_articulate.yml` |
 | Transitions | [Density](generators/DENSITY.md) | Ramps how many notes play over a section | `examples/by_genre/electronic/edm_density.yml` |
 | Transitions | [Drift](generators/DRIFT.md) | Changes the song slowly from version A to version B | `examples/by_genre/electronic/mainstreet_hoedown.yml` |
 | Transitions | [Swell](generators/SWELL.md) | Ramps how loud notes play over a section | `examples/learning/16_bolero_swell.yml` |
+| Voicing | [Arpeggiator](generators/ARPEGGIATOR.md) | Plays a chord one note at a time, with offsets | `examples/learning/12_sailor_arpeggiator.yml` |
+| Voicing | [Guitarify](generators/GUITARIFY.md) | Holds chords as a hand does and plays a bar of strokes on them | `examples/learning/23_guitarify.yml` |
+| Voicing | [VoiceLeading](generators/VOICE_LEADING.md) | Voices each chord nearest the chord before | `examples/learning/05_voice_leading.yml` |
 
 [About Demos](DEMOS.md) describes every demo, and its table shows which features each one uses.
 
@@ -66,7 +66,7 @@ The generators fall into six categories by what they change, as the sidebar grou
 
 ![The Generators page](screenshots/generators.svg)
 
-Press `G` on the main screen for the Generators page, which lists every generator of the set on one list, whatever its kind, with its kind in parentheses beside its name, such as `sparse (Density)`. The kinds are the arpeggiator, AutoRatchet, Drift, Progression, Voice leading, Strum, Euclid, Density, Swell, Articulate, Glide, Shorten, Rush, Drag, Hocket, Guitarify and Follow Chords. A generator changes a clip's notes when the song plays or exports; to use one, add it to a chain, then choose the chain on a clip, a scene or a track.
+Press `G` on the main screen for the Generators page, which lists every generator of the set on one list, whatever its kind, with its kind in parentheses beside its name, such as `sparse (Density)`. The kinds are the arpeggiator, AutoRatchet, Drift, Progression, VoiceLeading, Strum, Euclid, Density, Swell, Articulate, Glide, Shorten, Rush, Drag, Hocket, Guitarify and FollowChords. A generator changes a clip's notes when the song plays or exports; to use one, add it to a chain, then choose the chain on a clip, a scene or a track.
 
 | Key | What it does |
 | --- | --- |

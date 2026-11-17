@@ -49,7 +49,7 @@ from llamatron.strings.legends import (
 )
 from llamatron.tui.keys import (
     ARROWS, ARROWS_LEFT_RIGHT, ARROWS_UP_DOWN, CANCEL_KEYS, MOVE_DROP_KEYS, DIGITS, LESS_KEYS, MORE_KEYS, NOTE_CHARACTERS, NOTE_LETTER_KEYS, NUDGE_LESS_KEYS,
-    NUDGE_MORE_KEYS, SEARCH_CHARACTERS, TOGGLE_KEYS, Key, Steps,
+    NUDGE_MORE_KEYS, SEARCH_CHARACTERS, SEARCH_STARTERS, TOGGLE_KEYS, Key, Steps,
 )
 
 
@@ -977,6 +977,17 @@ class ChoiceDialog(Dialog):
     ERASE = (Key.BACKSPACE, KeyName.BACKSPACE, What.ERASE)
     COMPLETE = (Key.TAB, KeyName.TAB, What.COMPLETE)
     IN_HELP = [Dialog.CANCEL, MOVE, CHOOSE, SEARCH, ERASE, COMPLETE]
+    IN_LEGEND = IN_HELP
+
+
+class GroupedChoiceDialog(ChoiceDialog):
+    """A picker under headings: Space or Enter opens and closes a heading, PgUp and PgDn jump between headings, and typing searches every choice."""
+
+    OPEN = (TOGGLE_KEYS, KeyName.SPACE_ENTER, What.OPEN)
+    CLOSE = (TOGGLE_KEYS, KeyName.SPACE_ENTER, What.CLOSE)
+    HEADING = (Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), KeyName.PAGE_UP_DOWN, MSG_NEXT_SECTION_WHAT)
+    START_SEARCH = (SEARCH_STARTERS, KeyName.SEARCH_CHARACTERS, What.SEARCH)
+    IN_HELP = [Dialog.CANCEL, ChoiceDialog.MOVE, OPEN, CLOSE, ChoiceDialog.CHOOSE, HEADING, START_SEARCH, ChoiceDialog.SEARCH, ChoiceDialog.ERASE, ChoiceDialog.COMPLETE]
     IN_LEGEND = IN_HELP
 
 

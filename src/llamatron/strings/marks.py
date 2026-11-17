@@ -197,6 +197,9 @@ MSG_ROOT_KEY_NAME = '[{name}]'
 # tui/screens/pattern/pattern_editor.py, its two drawings and the rows in tui/components/
 MSG_SECTION_CLOSED_MARK = '+'
 MSG_SECTION_OPEN_MARK = '-'
+# tui/dialogs/grouped_choice_dialog.py: a heading of choices, and a choice under one.
+MSG_GROUP_OF_CHOICES = '{mark} {name}'
+MSG_GROUPED_CHOICE = '    {name}'
 # What a settings page's section heading says when a field inside it holds a value, so that a closed one never hides it.
 MSG_SECTION_SET = '(set)'
 # The header's two lines are cells laid out in columns, each column as wide as its wider cell, so that the second line's cells start under the
