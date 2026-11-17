@@ -397,6 +397,13 @@ sections:
     bars: 8
     plays: [drums, bass, guitar, keys, solo]
     plan: [{line: s1, answer: true}, {line: s1, answer: true, varied: true}, {line: s2, answer: true, higher: true}, {line: s1, answer: true, varied: true}]
+    shapes:
+      theme and variations: [{line: s1, answer: true}, {line: s1, answer: true, varied: true}, {line: s1, answer: true, higher: true}, {line: s1, answer: true, higher: true, varied: true}]
+      climbs: [{line: s1, answer: true}, {line: s2, answer: true}, {line: s3, answer: true, higher: true}, {line: s4, answer: true, higher: true}]
+      a repeated figure: [{line: r1, answer: true}, {line: r1, answer: true}, {line: r1, answer: true, higher: true}, {line: r1, answer: true, higher: true, varied: true}]
+      at the peak: [{line: p1, answer: true, higher: true}, {line: p1, answer: true, higher: true, varied: true}, {line: p2, answer: true, higher: true}, {line: p2, answer: true, higher: true, varied: true}]
+    # A solo is staged: each solo after a song's first takes the next of these shapes, with ideas of its own, so that no two solos are alike.
+    staged: true
   ending: {held: true, plays: [bass, guitar, keys, colour, voices]}
 
 # The forms a song may take when it gives none, each with how common it is; a longer form has more sections, never the same form twice over.

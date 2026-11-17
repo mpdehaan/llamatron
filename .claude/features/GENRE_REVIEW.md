@@ -43,6 +43,8 @@ One genre at a time, rock first, alternating with the electronic stages (band st
    a change of feel or mode, and the song's riff as the way back. A drum solo's stages: the riff's rhythm, round the kit, triplets
    between hands and foot, quiet, over a steady foot pattern (which lets a listener follow), rolls, peak, and a call that cues
    the band. A closing solo may jump the tempo, creep faster and end by slowing into a held chord.
+   Built so far: each solo after a song's first takes another shape with ideas of its own (`.claude/features/MACRO_COMPOSER.md`,
+   "Staged solos"). The stages inside one solo, the jam and the drum solo's stages are not built.
 6. **A monotony report** in `internal_tools/`: for each player and section, the share of bars the same as an earlier bar, run
    before and after each step.
 7. **Instruments, in this order:** keyboard solos with organ and piano backing; backing singers; horns; strings.

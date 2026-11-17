@@ -329,6 +329,14 @@ clouds; generate and test, with motif development and counterpoint last.
   heading with a number for each level the song plays (`set_loudness_level`, `loudness_levels_offered`, found by making the song
   with the level moved, only while the heading is open); Bksp gives a level back to the genre. Not yet: the lean on players of
   notes, the phrase offsets (a section's first beat, a climbing last bar) and the small random amount.
+- **Staged solos** (`SongPlan.stages`, a section's `staged: true` with `shapes`): the first solo of a song plays its kind's
+  plan, and each solo after takes the next of the kind's shapes in turn (theme and variations, climbs, starts from the hook,
+  a repeated figure, at the peak), its lines named for the stage so that each solo has ideas of its own and no two running
+  are alike; the hook's line stays the song's. A shape the song gives a place stands over the stage. Rock, sixties pop, soul
+  and funk and the blues stage their solos; a blues kind the guitar leads (`lead_solo`) gives the solo to the lead, since no
+  player answers there. Wizard: a solo's Shape field on its section's wizard panel says the stage's shape as the plan's.
+  Not built: stages inside one long solo with the band rising a step a stage, a second player trading, a jam on a vamp, the
+  drum solo's named stages, a closing solo that jumps the tempo.
 - **A riff of chords on its accents** (`riffs.heavy_line`, the riff's `notes: chords on the accents`): the root's two-note chord
   on beat 1, two to four accents off the beat as two-note chords at the accent level, the low root short (`gate`) at the ghost
   level or rests between (`between`), one or two `bars` alike, two or three single notes at the end that lead back, half the

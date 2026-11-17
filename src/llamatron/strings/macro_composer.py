@@ -41,6 +41,7 @@ MSG_PLAN_LEAVES_TAIL = 'Leaves with: {}.'
 MSG_PLAN_LEAVES_FILL = 'Leaves with a fill, {}.'
 MSG_PLAN_SET_UP = 'Last bar on chord {}.'
 MSG_PLAN_HOOK = 'The hook: {}.'
+MSG_PLAN_STAGE = 'Its shape: {}.'
 # macro_composer/hook_kinds.py: a hook's kind in words, its contour, its rhythm and its odd detail.
 MSG_HOOK_KIND = '{}, {}, {}'
 
