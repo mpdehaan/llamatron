@@ -231,6 +231,7 @@ FILLS_TRAITS = ('fills',)
 # The key a song keeps its own sections under, and the letter the first section that differs from its kind's first is named with.
 OWN_SECTIONS = 'own_sections'
 PREVIEW_NAME = 'preview'
+STAGES_ANSWER = 'stages'
 JOINS_ANSWER = 'joins'
 SETUP_BARS_ANSWER = 'setup bars'
 RIFF_ABLE_ANSWER = 'riff able'
@@ -2450,7 +2451,8 @@ class WizardChoices:
         if field == SETUP:
             return SETUP_USUAL
         if field == SHAPE_OF_SECTION:
-            return SHAPE_USUAL
+            # A solo after the song's first is a stage, which takes the next of its kind's shapes.
+            return self._remembered(key=STAGES_ANSWER, compute=lambda: self._song_plan().shapes())[place] or SHAPE_USUAL
         if field == RISES:
             return self._entry(place)[KIND] in self._style()[PLAN_OF_SONG].get(RISING, [])
         if field == CHORDS:

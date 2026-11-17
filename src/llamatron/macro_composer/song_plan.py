@@ -33,7 +33,7 @@ import random
 from llamatron.macro_composer import hook_kinds
 from llamatron.macro_composer.joins import BUILD, DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL, TAIL_EIGHTHS
 from llamatron.macro_composer.melody import BREATHES, FIRST_HOOK_TAKE, HOOK, HOOK_KIND, HOOK_KINDS, HOOK_TAKE
-from llamatron.strings.macro_composer import MSG_PLAN_ENERGY, MSG_PLAN_HOOK, MSG_PLAN_LEAVES_FILL, MSG_PLAN_LEAVES_TAIL, MSG_PLAN_SET_UP, MSG_REPEATED_SCENE
+from llamatron.strings.macro_composer import MSG_PLAN_ENERGY, MSG_PLAN_HOOK, MSG_PLAN_LEAVES_FILL, MSG_PLAN_LEAVES_TAIL, MSG_PLAN_SET_UP, MSG_PLAN_STAGE, MSG_REPEATED_SCENE
 
 # The fields of a song's plan, and of the plan a style gives.
 PLAN_OF_SONG = 'song_plan'
@@ -74,6 +74,12 @@ SEED = 'seed'
 TEMPLATE = 'template'
 MELODY = 'melody'
 SECTION_PLAN = 'plan'
+# A kind of section that is staged plays another of its shapes each time it comes after the first, with lines of its own.
+STAGED = 'staged'
+SHAPES = 'shapes'
+LINE = 'line'
+HOOK_LINE = 'hook'
+STAGE_LINE = '{} stage {}'
 # What a place of the form may say of its scene: a tempo, the tempo it reaches by its end, and the root and the type of a scale of its own.
 TEMPO_OF_PLACE = 'tempo'
 TEMPO_END_OF_PLACE = 'tempo_end'
@@ -185,6 +191,31 @@ class SongPlan:
             self._names.append(name if met[name] == 1 else MSG_REPEATED_SCENE.format(name, met[name]))
             self._sections.append({**style[SECTIONS].get(kind, {}), **of_song, KIND: kind})
         self._energies = self._worked_energies()
+
+    # The stages of a kind of section that is staged, as a solo: the first time the kind comes it plays its own plan, and each
+    # time after another of its shapes in turn, so that no two running are alike, each with lines of its own.
+
+    def stages(self):
+        """Return, for each place of the form, the stage the place is: the shape's name and its plan, or None for a place that plays
+        its kind's own plan."""
+        met = {}
+        found = []
+        for section in self._sections:
+            shapes = section.get(SHAPES) or {}
+            met[section[KIND]] = met.get(section[KIND], 0) + 1
+            stage = met[section[KIND]]
+            if not section.get(STAGED) or not shapes or stage == 1:
+                found.append(None)
+                continue
+            name = list(shapes)[(stage - 2) % len(shapes)]
+            # The song's hook is the same line wherever it is said; every other line is the stage's own.
+            plan = [{**entry, LINE: entry[LINE] if entry.get(HOOK_LINE) else STAGE_LINE.format(entry[LINE], stage)} for entry in shapes[name]]
+            found.append((name, plan))
+        return found
+
+    def shapes(self):
+        """Return the name of the shape each place takes as a stage, or None."""
+        return [stage[0] if stage else None for stage in self.stages()]
 
     # What a song says of one place of its form.
 
@@ -388,6 +419,7 @@ class SongPlan:
         """The song with a section for each place of its form, each saying what the plan worked out, and its tunes asked to
         breathe and its hook to be of a kind."""
         joins = self._joins()
+        stages = self.stages()
         sections = {}
         hook_said = False
         for place, name in enumerate(self._names):
@@ -396,6 +428,9 @@ class SongPlan:
             energy = self._energies[place]
             said = [MSG_PLAN_ENERGY.format(energy)]
             made = {KIND: section[KIND], DRAWN_AS: section[KIND]}
+            if stages[place] is not None:
+                made[SECTION_PLAN] = stages[place][1]
+                said.append(MSG_PLAN_STAGE.format(stages[place][0]))
             if not section.get(HELD) and not section.get(DRUM_SOLO):
                 arrives = place > 0 and energy > self._energies[place - 1] and energy >= CRASH_FROM
                 after_tail = place > 0 and (joins[place - 1] or {}).get(TAIL) in (DROP_OUT, BUILD, STOPS)

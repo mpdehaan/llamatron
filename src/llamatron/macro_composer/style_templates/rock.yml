@@ -449,6 +449,10 @@ sections:
       theme and variations: [{line: s1, answer: true}, {line: s1, answer: true, varied: true}, {line: s1, answer: true, higher: true}, {line: s1, answer: true, higher: true, varied: true}]
       climbs: [{line: s1, answer: true}, {line: s2, answer: true}, {line: s3, answer: true, higher: true}, {line: s4, answer: true, higher: true}]
       starts from the hook: [{line: hook, hook: true, answer: true}, {line: s1, answer: true, higher: true}, {line: hook, hook: true, answer: true, varied: true}, {line: s2, answer: true, higher: true}]
+      a repeated figure: [{line: r1, answer: true}, {line: r1, answer: true}, {line: r1, answer: true, higher: true}, {line: r1, answer: true, higher: true, varied: true}]
+      at the peak: [{line: p1, answer: true, higher: true}, {line: p1, answer: true, higher: true, varied: true}, {line: p2, answer: true, higher: true}, {line: p2, answer: true, higher: true, varied: true}]
+    # A solo is staged: each solo after a song's first takes the next of these shapes, with ideas of its own, so that no two solos are alike.
+    staged: true
   # The drummer alone: a theme, the theme moved round the kit, a build, a peak, and a last bar that plays the band back in.
   drum solo: {bars: 8, plays: [drums], drum_solo: true, plan: []}
   ending: {held: true, plays: [bass, guitar, keys]}

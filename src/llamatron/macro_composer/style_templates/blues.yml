@@ -327,6 +327,13 @@ sections:
     plays: [drums, bass, comping, answers]
     plan: [{line: s1, answer: true}, {line: s2, answer: true, higher: true}, {line: s1, answer: true, varied: true}, {line: s3, answer: true, higher: true},
            {line: s4, answer: true, higher: true}, {line: s5, answer: true}]
+    shapes:
+      theme and variations: [{line: s1, answer: true}, {line: s1, answer: true, varied: true}, {line: s1, answer: true, higher: true}, {line: s1, answer: true, higher: true, varied: true}, {line: s2, answer: true, higher: true}, {line: s1, answer: true}]
+      climbs: [{line: s1, answer: true}, {line: s2, answer: true}, {line: s3, answer: true, higher: true}, {line: s4, answer: true, higher: true}, {line: s5, answer: true, higher: true}, {line: s6, answer: true, higher: true}]
+      a repeated figure: [{line: r1, answer: true}, {line: r1, answer: true}, {line: r1, answer: true, higher: true}, {line: r1, answer: true, higher: true}, {line: r1, answer: true, varied: true}, {line: r2, answer: true}]
+      at the peak: [{line: p1, answer: true, higher: true}, {line: p1, answer: true, higher: true, varied: true}, {line: p2, answer: true, higher: true}, {line: p2, answer: true, higher: true, varied: true}, {line: p3, answer: true, higher: true}, {line: p1, answer: true}]
+    # A solo is staged: each solo after a song's first takes the next of these shapes, with ideas of its own, so that no two solos are alike.
+    staged: true
   ending: {held: true, plays: [bass, comping]}
 
 # The forms a song may take when it gives none, each with how common it is; a longer form has more choruses and solos.
@@ -377,10 +384,23 @@ song_plan:
     usual: [stops]
 
 # What a kind says differently from blues as a whole: a slow blues starts lower and climbs further.
+# A solo in a kind the guitar leads, where no player answers a singer: the lead plays the solo, in lines of the lead's own.
+lead_solo: &lead_solo
+  plays: [drums, bass, comping, lead]
+  plan: [{line: s1}, {line: s2, higher: true}, {line: s1, varied: true}, {line: s3, higher: true}, {line: s4, higher: true}, {line: s5}]
+  shapes:
+    theme and variations: [{line: s1}, {line: s1, varied: true}, {line: s1, higher: true}, {line: s1, higher: true, varied: true}, {line: s2, higher: true}, {line: s1}]
+    climbs: [{line: s1}, {line: s2}, {line: s3, higher: true}, {line: s4, higher: true}, {line: s5, higher: true}, {line: s6, higher: true}]
+    a repeated figure: [{line: r1}, {line: r1}, {line: r1, higher: true}, {line: r1, higher: true}, {line: r1, varied: true}, {line: r2}]
+    at the peak: [{line: p1, higher: true}, {line: p1, higher: true, varied: true}, {line: p2, higher: true}, {line: p2, higher: true, varied: true}, {line: p3, higher: true}, {line: p1}]
+
 by_subgenre:
+  texas shuffle:
+    sections: {solo: *lead_solo}
   slow blues:
     song_plan: {energy: {intro: 3, chorus: 3, solo: 5}, growth: 2, last_chorus: 9}
   minor blues:
+    sections: {solo: *lead_solo}
     song_plan: {energy: {intro: 3, chorus: 3, solo: 5}, growth: 2, last_chorus: 9}
 
 melody:

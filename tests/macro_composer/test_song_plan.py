@@ -24,7 +24,9 @@ from llamatron.macro_composer import arranger, composer, drum_solo, hook_kinds, 
 from llamatron.macro_composer.melody import BREATHES
 from llamatron.macro_composer.notation import LOUD, NONE, REST, SOFT, STEPS
 from llamatron.macro_composer.song_plan import (ALLOWS, APPROACH, BY_PLACE, CONTRAST, CRASH_START, ENERGY, GROWTH, HIGHEST_ENERGY, LAST_CHORD, LOUDEST, LOWEST_ENERGY, NOT_AT_ALL,
-                                                PHRASING, PLAN_OF_SONG, PLAYS, QUIETEST, SCENE_SETTINGS, SETUP, SWELL_END, SWELL_START, SongPlan, level_at, loudness_at)
+                                                PHRASING, PLAN_OF_SONG, PLAYS, QUIETEST, SCENE_SETTINGS, SECTION_PLAN, SETUP, SHAPES, STAGE_LINE, STAGED, SWELL_END, SWELL_START,
+                                                SongPlan, level_at, loudness_at)
+from llamatron.macro_composer.wizard_choices import SHAPE_OF_SECTION, SHAPE_USUAL, WizardChoices
 from llamatron.support.version import VERSION
 
 ROCK = 'rock'
@@ -67,6 +69,13 @@ LINE_STEPS = 16
 A_FIGURE = [[{STEPS: 2}, {STEPS: 2}, {STEPS: 2}, {STEPS: 2}]]
 FOUR_BARS = 4
 TAKES = range(7)
+MANY_SOLOS = 8
+A_LINE = 'line'
+THE_HOOK = 'hook'
+THE_SOLOIST = 'solo'
+A_KIND_WITH_SOLOS = 'rock and roll'
+BLUES = 'blues'
+A_BLUES = 'shuffle'
 
 
 def song(*, form=FORM, template=ARENA, plan=True, seed=SEED, sections=None):
@@ -195,6 +204,82 @@ class TestJoins(unittest.TestCase):
         build = joins.drum_tail(piece=SNARE, plain=plain, tail=joins.BUILD, eighths=0)
         self.assertEqual(build, [SOFT] * (EIGHTHS // 2) + [LOUD] * (EIGHTHS // 2))
         self.assertEqual(joins.drum_tail(piece=KICK, plain=plain, tail=joins.BUILD, eighths=0), plain)
+
+
+class TestStagedSolos(unittest.TestCase):
+    """A kind of section that is staged, as a solo: each time after a song's first it takes another of its shapes."""
+
+    def shapes(self):
+        return arranger.style_named(ROCK)[arranger.SECTIONS][SOLO][SHAPES]
+
+    def test_the_first_solo_plays_its_own_plan_and_each_after_takes_the_next_shape_in_turn(self):
+        self.assertTrue(arranger.style_named(ROCK)[arranger.SECTIONS][SOLO][STAGED])
+        names = list(self.shapes())
+        form = [VERSE, SOLO, VERSE, *[SOLO] * (MANY_SOLOS - 1)]
+        found = planned(song(form=form)).shapes()
+        self.assertEqual(found[:2], [None, None])
+        self.assertEqual(found[2], None)
+        self.assertEqual(found[3:], [names[count % len(names)] for count in range(MANY_SOLOS - 1)])
+        # No two solos running take one shape.
+        self.assertTrue(all(one != another for one, another in zip(found[3:], found[4:])))
+
+    def test_a_stage_has_lines_of_its_own_and_the_hook_is_the_songs(self):
+        made = sections_of(song(form=[SOLO] * (len(self.shapes()) + 1)))
+        self.assertNotIn(SECTION_PLAN, made[0])
+        for stage, (name, shape) in enumerate(self.shapes().items(), start=2):
+            plan = made[stage - 1][SECTION_PLAN]
+            with self.subTest(shape=name):
+                self.assertEqual(len(plan), len(shape))
+                for line, written in zip(plan, shape):
+                    self.assertEqual({**line, A_LINE: written[A_LINE]}, written)
+                    self.assertEqual(line[A_LINE], written[A_LINE] if written.get(THE_HOOK) else STAGE_LINE.format(written[A_LINE], stage))
+
+    def test_a_kind_that_is_not_staged_plays_its_plan_every_time(self):
+        self.assertEqual(planned(song(form=[VERSE, CHORUS, VERSE, CHORUS, CHORUS])).shapes(), [None] * 5)
+        self.assertTrue(all(SECTION_PLAN not in section for section in sections_of(song(form=[VERSE, CHORUS, VERSE, CHORUS]))))
+
+    def test_a_shape_the_song_gives_a_solo_stands_over_its_stage(self):
+        own = self.shapes()[list(self.shapes())[-1]]
+        made = sections_of({**song(form=[SOLO, SOLO]), PLAN_OF_SONG: {BY_PLACE: [None, {SECTION_PLAN: own}]}})
+        self.assertEqual(made[1][SECTION_PLAN], own)
+
+    def test_solos_in_a_row_play_tunes_of_their_own(self):
+        given = arranger.arranged(style=arranger.style_named(ROCK), song=song(form=[INTRO, SOLO, SOLO, SOLO, ENDING], template=A_KIND_WITH_SOLOS))
+        solos = [entry[composer.PLAY][THE_SOLOIST][composer.PART] for entry in given[composer.FORM] if entry[composer.SCENE].startswith(SOLO)]
+        self.assertEqual(len(solos), 3)
+        self.assertEqual(len(set(solos)), 3)
+        self.assertEqual(len({repr(given[composer.PARTS][part]) for part in solos}), 3)
+
+    def test_every_solo_of_every_kind_of_band_music_has_a_player_of_a_tune(self):
+        for name in (ROCK, 'sixties_pop', 'soul_funk', 'blues'):
+            style = arranger.style_named(name)
+            tunes = {role[arranger.ROLE] for role in style[arranger.ROLES] if not role.get(arranger.DRUMS)}
+            for template in style[arranger.TEMPLATES]:
+                # A kind with no soloist, as punk, plays a solo as the band alone, and disco has no shape with a solo.
+                if style[arranger.TEMPLATES][template].get(THE_SOLOIST) == NONE:
+                    continue
+                if not any(SOLO in shape[arranger.SECTIONS] for shape in arranger.forms_of(style=style, song={arranger.TEMPLATE: template})):
+                    continue
+                given = arranger.arranged(style=style, song={**song(form=[SOLO, SOLO], template=template), arranger.STYLE: name})
+                for entry in given[composer.FORM]:
+                    once = [role for role, played in entry[composer.PLAY].items() if role in tunes and isinstance(played, dict) and played.get(composer.ONCE)]
+                    with self.subTest(style=name, template=template, scene=entry[composer.SCENE]):
+                        self.assertTrue(once)
+
+    def test_the_wizard_says_the_shape_each_solo_takes_and_a_solo_s_own_shape_stands(self):
+        choices = WizardChoices()
+        choices.set_genre(BLUES)
+        choices.set_subgenre(A_BLUES)
+        choices.set_seed(SEED)
+        solos = [place for place, label in enumerate(choices.section_labels()) if label.startswith(SOLO)]
+        self.assertGreater(len(solos), 1)
+        names = choices.section_shapes(solos[0])
+        said = [choices.section_from_plan(place=place, field=SHAPE_OF_SECTION) for place in solos]
+        self.assertEqual(said, [SHAPE_USUAL, *names[:len(solos) - 1]])
+        before = choices.made_for_listening()[0].to_data()
+        choices.set_section_own(place=solos[1], field=SHAPE_OF_SECTION, value=names[-1])
+        self.assertEqual(choices.section_own(place=solos[1], field=SHAPE_OF_SECTION), names[-1])
+        self.assertNotEqual(choices.made_for_listening()[0].to_data(), before)
 
 
 class TestDrumSolo(unittest.TestCase):
