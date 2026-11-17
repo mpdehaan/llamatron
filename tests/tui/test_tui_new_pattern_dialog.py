@@ -16,8 +16,8 @@
 """The New Pattern dialog and a pattern's scale length in the tracker: the dialog's rows and buttons, the Patterns page's new pattern, Arrange's blank pattern, the Reconfigure choice and the header's warning."""
 
 from llamatron.composition.limits import MAX_SCALE_LENGTH, MIN_SCALE_LENGTH, NEW_PATTERN_SCALE_LENGTH
-from llamatron.strings.errors import ERR_DRUMS_HAVE_NO_SCALE_LENGTH
 from llamatron.strings.labels import MSG_DRUM_PATTERN_LABEL, MSG_SCALE_LENGTH_LABEL, MSG_WRITTEN_FOR
+from llamatron.strings.legends import MSG_SCALE_LENGTH_WHAT
 from llamatron.strings.marks import MSG_ANY_SCALE_LENGTH, MSG_BLOCKED_CELL
 from llamatron.strings.messages import MSG_NEW_PATTERN_TITLE
 from llamatron.strings.names import MSG_NUMBERED_NAME
@@ -26,7 +26,7 @@ from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.new_pattern_dialog import NewPatternDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.pattern.pattern_editor import PatternEditor, Reconfigure
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor, Reconfigure, reconfigure_choices
 from llamatron.tui.screens.pattern.patterns_page import PatternsPage
 from tests.support.ui_testing import BEAT, LEAD, TUNE, UITest, fixed_text
 
@@ -121,12 +121,13 @@ class TestScaleLengthInTheTracker(UITest):
         await self.pick(MSG_ANY_SCALE_LENGTH)
         self.assertIsNone(self.document.pattern_scale_length(TUNE))
 
-    async def test_a_drum_pattern_is_refused_a_scale_length(self):
+    async def test_a_drum_pattern_is_not_offered_a_scale_length_until_it_is_no_drum_pattern(self):
         await self.open_patterns_on(BEAT)
-        await self.press(Key.ENTER)
-        await self.reconfigure(Reconfigure.SCALE_LENGTH)
-        self.assertIsInstance(self.app.screen, PatternEditor)
-        self.assertIn(ERR_DRUMS_HAVE_NO_SCALE_LENGTH, self.text())
+        await self.press(Key.ENTER, keybindings.PatternEditor.RECONFIGURE)
+        self.assertNotIn(MSG_SCALE_LENGTH_WHAT, self.app.screen.options)
+        self.assertEqual(self.app.screen.options, reconfigure_choices(drum=True))
+        await self.press(Key.ESCAPE)
+        self.assertIn(MSG_SCALE_LENGTH_WHAT, reconfigure_choices(drum=False))
 
     async def test_the_header_says_what_a_pattern_was_written_for_only_under_a_scale_of_another_size(self):
         await self.open_patterns_on(TUNE)

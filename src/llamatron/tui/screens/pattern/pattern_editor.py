@@ -60,7 +60,7 @@ from llamatron.composition.checks import fraction_text
 from llamatron.composition.naming import words
 from llamatron.tui.text import fraction, sorted_names
 from llamatron.strings.errors import (
-    ERR_DRUMS_HAVE_NO_SCALE_LENGTH, ERR_LENGTH_OUT_OF_RANGE, ERR_NO_OTHER_PATTERNS, ERR_NOT_A_LENGTH, ERR_TYPED_NOT_AN_INTEGER, ERR_NOTHING_AFTER,
+    ERR_LENGTH_OUT_OF_RANGE, ERR_NO_OTHER_PATTERNS, ERR_NOT_A_LENGTH, ERR_TYPED_NOT_AN_INTEGER, ERR_NOTHING_AFTER,
     ERR_NOTHING_BEFORE, ERR_NOTHING_TO_PIVOT, ERR_ONE_STEP, ERR_STEPS_OUT_OF_RANGE,
 )
 from llamatron.strings.help import HELP_PATTERN_EDITOR
@@ -107,13 +107,14 @@ class Reconfigure:
     TIME_SIGNATURE = 3
     DRUM = 4
     DIRECTION = 5
-    SCALE_LENGTH = 6
-    RENAME = 7
+    RENAME = 6
+    SCALE_LENGTH = 7
 
 
 def reconfigure_choices(*, drum):
-    """Return the Reconfigure dialog's options, in the order of the Reconfigure class, with the drum entry saying which way it switches."""
-    return [What.MUNGE, MSG_LOAD_OVER_WHAT, MSG_STEP_SIZE_WHAT, MSG_TIME_SIGNATURE_WHAT, MSG_DRUM_OFF_WHAT if drum else MSG_DRUM_ON_WHAT, MSG_DIRECTION_WHAT, MSG_SCALE_LENGTH_WHAT, What.RENAME]
+    """Return the Reconfigure dialog's options, in the order of the Reconfigure class, with the drum entry saying which way it switches. The scale length is last and offered only for a pattern that is not a drum pattern, which has none."""
+    choices = [What.MUNGE, MSG_LOAD_OVER_WHAT, MSG_STEP_SIZE_WHAT, MSG_TIME_SIGNATURE_WHAT, MSG_DRUM_OFF_WHAT if drum else MSG_DRUM_ON_WHAT, MSG_DIRECTION_WHAT, What.RENAME]
+    return choices if drum else [*choices, MSG_SCALE_LENGTH_WHAT]
 
 
 class PatternEditor(ShowsNamedItem, StepEditor):
@@ -344,10 +345,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         )
 
     def pick_scale_length(self):
-        """Ask how many notes the scale has that the pattern was written for, any first; a drum pattern has none to set."""
-        if self.is_drum():
-            self.refuse(ERR_DRUMS_HAVE_NO_SCALE_LENGTH)
-            return
+        """Ask how many notes the scale has that the pattern was written for, any first."""
         current = self.pattern().get_scale_length()
         options = [MSG_ANY_SCALE_LENGTH, *[str(length) for length in SCALE_LENGTHS]]
         self.ask(
