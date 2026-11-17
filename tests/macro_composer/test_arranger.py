@@ -20,6 +20,7 @@ made into a whole song, the picks checked against what each needs, and a tune sk
 import os
 import unittest
 
+from llamatron.composition.limits import MAX_PROGRESSION_CHORDS
 from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer import arranger, composer, loudness, melody, notation, players
 from llamatron.strings.macro_composer import MSG_PART_OF_SECTION, MSG_TIMING_CHAIN
@@ -348,7 +349,11 @@ class TestArranged(unittest.TestCase):
         chain = given[composer.FORM][1][composer.PLAY][BASS][composer.CHAINS][0]
         progression = given[composer.CHAINS][chain][0][arranger.PROGRESSION]
         pattern = arranger.values_of(style=self.style, trait=arranger.CHORD_TRAIT)[self.style[arranger.TEMPLATES][SHUFFLE][arranger.CHORD_TRAIT]][arranger.PATTERN]
-        self.assertEqual(given[composer.GENERATORS][arranger.PROGRESSIONS][progression][arranger.CHORDS], pattern)
+        made = given[composer.GENERATORS][arranger.PROGRESSIONS][progression]
+        # The shuffle's last two bars hold two chords each, so the progression is written by the half bar.
+        self.assertTrue(any(arranger.shares_a_bar(chord) for chord in pattern))
+        self.assertEqual(made[arranger.CHORDS], [arranger.chord_of(chord)[arranger.DEGREE] for chord in arranger.halves_of(pattern)])
+        self.assertEqual(made[arranger.EVERY], arranger.half_bar_of(arranger.COMMON_TIME))
 
     def test_a_bar_of_two_chords_is_its_two_by_the_half_bar_and_its_first_bar_by_bar(self):
         self.assertEqual(arranger.halves_of([1, [1, 5]]), [1, 1, 1, 5])
@@ -368,10 +373,10 @@ class TestArranged(unittest.TestCase):
         Setlist.from_data(data=composer.composed(given=given, version=VERSION))
 
     def test_more_shared_bars_than_a_progression_holds_are_played_a_chord_a_bar(self):
-        long = [1, 4, 1, 1, 4, 4, 1, 1, 5, 4, [1, 4], [1, 5]]
+        long = [*[1] * (MAX_PROGRESSION_CHORDS // 2), [1, 5]]
         self.assertFalse(arranger.fits_by_halves(long))
         made = arranger.progression_of(chords=long, every=None)
-        self.assertEqual(made[arranger.CHORDS], [1, 4, 1, 1, 4, 4, 1, 1, 5, 4, 1, 1])
+        self.assertEqual(made[arranger.CHORDS], [1] * len(long))
         self.assertNotIn(arranger.EVERY, made)
 
     def test_a_sections_own_chords_replace_the_styles(self):
