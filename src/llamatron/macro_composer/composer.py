@@ -44,6 +44,8 @@ TITLE = 'title'
 DESCRIPTION = 'description'
 AUTHOR = 'author'
 GENRE = 'genre'
+SUBGENRE = 'subgenre'
+VARIANT = 'variant'
 NOTES = 'notes'
 SCALES = 'scales'
 SCALE = 'scale'
@@ -183,6 +185,9 @@ def composed(*, given, version):
     song = {TEMPO: given[TEMPO], SCALE: given[SCALE], GENRE: given[GENRE]}
     for optional in (GROOVE, TIME_SIGNATURE):
         if optional in given:
+            song[optional] = given[optional]
+    for optional in (SUBGENRE, VARIANT):
+        if given.get(optional) is not None:
             song[optional] = given[optional]
     drums = set(given.get(DRUM_TRACKS, []))
     song[TRACKS] = {track: ({DRUM: True, INSTRUMENT: instrument} if track in drums else {INSTRUMENT: instrument}) for track, instrument in given[TRACKS].items()}

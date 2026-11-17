@@ -428,7 +428,8 @@ songs:
     tempo: 200
     scale: A Minor
     groove: 8th swing 66
-    genre: Jazz Mashup
+    genre: Mashup
+    subgenre: Jazz
 
     tracks:
       ride: { drum: true, instrument: drum kit }

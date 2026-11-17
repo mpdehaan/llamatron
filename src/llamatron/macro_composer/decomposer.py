@@ -26,7 +26,7 @@ from fractions import Fraction
 
 from llamatron.macro_composer.composer import (AUTHOR, BANDS, BARS, CHAINS, DESCRIPTION, DEVICE, DRUM_TRACKS, FEEL, FLUIDSYNTH, FORM, GENERATORS, GENRE, GM_SOUND, GROOVE,
                       INSTRUMENT, INSTRUMENTS, LOOP, NAME, NOTES, ONCE, PART, PARTS, PATTERN, PATTERNS, PLAY, PROTECTED, RAW, REAL_TIME, REPEAT, SCALE,
-                      SCALES, SCENE, SCENES, SETTINGS, SHAPED, SONGS, TEMPO, TIME_SIGNATURE, TITLE, TRACKS, VERSION, WITH, bars_of, pattern_of,
+                      SCALES, SCENE, SCENES, SETTINGS, SHAPED, SONGS, SUBGENRE, TEMPO, TIME_SIGNATURE, TITLE, TRACKS, VARIANT, VERSION, WITH, bars_of, pattern_of,
                       players_of, scene_of, signature_of)
 from llamatron.macro_composer.notation import DEFAULT_STEP_SIZE, DRUM, HITS, LINES, LOUD, NotWritable, OCTAVE, SOFT, STEP, STEP_SIZE, VELOCITY, drum_hits, kept_rows, tune_lines
 from llamatron.macro_composer.shaping import FEELS, is_compound, role_of, shaped, unshaped
@@ -216,7 +216,7 @@ def decomposed(data):
         if optional in data:
             given[optional] = data[optional]
     given.update({GENRE: song[GENRE], NOTES: data.get(NOTES, ''), SCALES: data[SCALES], SCALE: song[SCALE], TEMPO: song[TEMPO]})
-    for optional in (TIME_SIGNATURE, GROOVE):
+    for optional in (TIME_SIGNATURE, GROOVE, SUBGENRE, VARIANT):
         if optional in song:
             given[optional] = song[optional]
     if shaped_names:

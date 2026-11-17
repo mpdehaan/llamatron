@@ -567,7 +567,8 @@ songs:
   night_on_the_moog:
     tempo: 132
     scale: D Minor
-    genre: Rock Mashup
+    genre: Mashup
+    subgenre: Rock
 
     tracks:
       kick: { drum: true, instrument: drum kit }

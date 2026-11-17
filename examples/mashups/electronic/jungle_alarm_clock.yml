@@ -514,7 +514,8 @@ songs:
   jungle_alarm_clock:
     tempo: 168
     scale: E Major
-    genre: Electronic Mashup
+    genre: Mashup
+    subgenre: Electronic
 
     tracks:
       kick: { drum: true, instrument: drum kit }

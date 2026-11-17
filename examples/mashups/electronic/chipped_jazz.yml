@@ -304,7 +304,8 @@ songs:
   chipped_jazz:
     tempo: 116
     scale: Ab Major
-    genre: Electronic Mashup
+    genre: Mashup
+    subgenre: Electronic
 
     tracks:
       kick: { drum: true, instrument: drum kit }

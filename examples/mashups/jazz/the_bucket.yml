@@ -549,7 +549,8 @@ songs:
     tempo: 152
     scale: Bb Major
     groove: swing 58
-    genre: Jazz Mashup
+    genre: Mashup
+    subgenre: Jazz
 
     tracks:
       kick: { drum: true, instrument: drum kit }

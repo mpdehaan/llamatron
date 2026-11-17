@@ -1228,7 +1228,8 @@ songs:
   toccata_and_funk:
     tempo: 100
     scale: D Minor
-    genre: Funk Mashup
+    genre: Mashup
+    subgenre: Funk
 
     tracks:
       kick: { drum: true, instrument: drum kit }

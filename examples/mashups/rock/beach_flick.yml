@@ -554,7 +554,8 @@ songs:
   beach_flick:
     tempo: 160
     scale: G Minor
-    genre: Rock Mashup
+    genre: Mashup
+    subgenre: Rock
 
     tracks:
       kick: { drum: true, instrument: drum kit }

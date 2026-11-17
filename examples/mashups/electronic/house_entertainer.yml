@@ -353,7 +353,8 @@ songs:
   house_entertainer:
     tempo: 124
     scale: C Major
-    genre: Electronic Mashup
+    genre: Mashup
+    subgenre: Electronic
 
     tracks:
       kick: { drum: true, instrument: drum kit }

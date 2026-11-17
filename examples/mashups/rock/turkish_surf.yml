@@ -516,7 +516,8 @@ songs:
   turkish_surf:
     tempo: 150
     scale: A Minor
-    genre: Rock Mashup
+    genre: Mashup
+    subgenre: Rock
 
     tracks:
       kick: { drum: true, instrument: drum kit }

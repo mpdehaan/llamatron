@@ -54,6 +54,7 @@ from llamatron.strings.macro_composer import MSG_PIECE_INSTRUMENT, MSG_MADE_PICK
 NAME = 'name'
 TITLE = 'title'
 GENRE = 'genre'
+SUBGENRE = 'subgenre'
 FEEL = 'feel'
 # The song's groove: a swing a subgenre is played with, by the name of one of the grooves every set has, or none.
 GROOVE = 'groove'
@@ -1161,7 +1162,7 @@ def arranged(*, style, song):
         instruments[MSG_PIECE_INSTRUMENT.format(piece)] = sound
         tracks[piece] = MSG_PIECE_INSTRUMENT.format(piece)
     given = {
-        NAME: song[NAME], TITLE: song[TITLE], DESCRIPTION: song.get(DESCRIPTION, song[TITLE]), GENRE: style[GENRE],
+        NAME: song[NAME], TITLE: song[TITLE], DESCRIPTION: song.get(DESCRIPTION, song[TITLE]), GENRE: style[GENRE], SUBGENRE: song[TEMPLATE], VARIANT: song.get(VARIANT),
         NOTES: MSG_MADE_SONG_NOTES.format(title=song[TITLE], style=style[TITLE], template=song[TEMPLATE], picks=said, form='\n'.join(notes)),
         SCALES: {scale: {ROOT: song[KEY][ROOT], TYPE: scale_type}, **more_scales}, SCALE: scale, TEMPO: tempo,
         FEEL: style[FEEL], SHAPED: shaped, INSTRUMENTS: instruments, TRACKS: tracks, DRUM_TRACKS: [piece for piece in drum_tracks if piece not in own_sounds], GENERATORS: generators, CHAINS: chains,

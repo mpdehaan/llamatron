@@ -16,6 +16,7 @@
 """The Song page: one song's name, tempo, scale and seed, reached from the Songs page, which makes it current first."""
 
 from llamatron.composition.defaults import DEFAULT_TIME_SIGNATURE
+from llamatron.composition.genres import GENRES, subgenres_of, variants_of
 from llamatron.composition.file_format import LIVE_RESPONSIVENESSES, STEP_SIZE_CHOICES, TIME_SIGNATURE_CHOICES, Section
 from llamatron.composition.limits import MAX_TEMPO, MIN_TEMPO
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -29,12 +30,12 @@ from llamatron.tui.screens.shared.shared import NO_SEED, ask_time_signature, ste
 from llamatron.strings.errors import ERR_ADD_A_SCALE_FIRST
 from llamatron.strings.labels import MSG_CAPTION_WORDS, MSG_EDITING_CAPTION
 from llamatron.strings.labels import (
-    MSG_GENRE_LABEL, MSG_LIVE_RESPONSIVENESS_LABEL, MSG_LIVE_RESPONSIVENESS_NAMES, MSG_PREVIEW_INSTRUMENT_LABEL, MSG_PREVIEW_INSTRUMENT_UNSET, MSG_SETS_VISUALIZER_CHOICE,
+    MSG_GENRE_LABEL, MSG_SUBGENRE_LABEL, MSG_VARIANT_LABEL, MSG_LIVE_RESPONSIVENESS_LABEL, MSG_LIVE_RESPONSIVENESS_NAMES, MSG_PREVIEW_INSTRUMENT_LABEL, MSG_PREVIEW_INSTRUMENT_UNSET, MSG_SETS_VISUALIZER_CHOICE,
     MSG_ENTRY_SIZE_LABEL, Crumb, MSG_GROOVE_LABEL, MSG_SCALE_LABEL, MSG_SEED_LABEL, MSG_TEMPO_LABEL,
     MSG_TIME_SIGNATURE_LABEL, PageName,
 )
 from llamatron.strings.legends import MSG_ONE_STEP_WHAT, What
-from llamatron.strings.marks import MSG_ONE_STEP_SHOWN, MSG_NONE_SHOWN, MSG_TEMPO_SHOWN
+from llamatron.strings.marks import MSG_ONE_STEP_SHOWN, MSG_NONE_SHOWN, MSG_TEMPO_SHOWN, MSG_UNDEFINED_SHOWN
 from llamatron.strings.messages import (
     MSG_NO_SCALE, MSG_NO_SEED, MSG_PREVIEW_INSTRUMENT_TITLE, MSG_RENAME_SONG_PROMPT, MSG_SONG_GROOVE_TITLE, MSG_SONG_SCALE_TITLE, MSG_SONG_TIME_SIGNATURE_PROMPT,
 )
@@ -83,7 +84,11 @@ class SongPage(FieldPage):
                 set=document.set_seed, clear=lambda: document.set_seed(None), clear_what=MSG_NO_SEED,
             ),
             Field(label=MSG_GROOVE_LABEL, value=song.get_groove_name, adjust=self.step_groove, enter=self.pick_groove, enter_what=What.CHOOSE),
-            self.text_field(label=MSG_GENRE_LABEL, current=song.get_genre, set_text=document.set_genre),
+            self.style_field(label=MSG_GENRE_LABEL, choices=GENRES, current=song.get_genre(), set_choice=document.set_genre),
+            self.style_field(label=MSG_SUBGENRE_LABEL, choices=subgenres_of(song.get_genre()), current=song.get_subgenre(), set_choice=document.set_subgenre),
+            self.style_field(
+                label=MSG_VARIANT_LABEL, choices=variants_of(genre=song.get_genre(), subgenre=song.get_subgenre()), current=song.get_variant(), set_choice=document.set_variant,
+            ),
             ChoiceField(
                 page=self, label=MSG_LIVE_RESPONSIVENESS_LABEL, choices=LIVE_RESPONSIVENESSES, current=song.get_live_responsiveness(),
                 names=[MSG_LIVE_RESPONSIVENESS_NAMES[choice] for choice in LIVE_RESPONSIVENESSES], shown=MSG_LIVE_RESPONSIVENESS_NAMES[song.get_live_responsiveness()],
@@ -156,6 +161,14 @@ class SongPage(FieldPage):
         self.ask(
             dialog=ChoiceDialog(title=MSG_PREVIEW_INSTRUMENT_TITLE, options=options, current=names.index(self.song().get_preview_instrument_name())),
             then=lambda chosen: self.document().set_preview_instrument_name(names[chosen]),
+        )
+
+    def style_field(self, *, label, choices, current, set_choice):
+        """Return a field for the song's genre, its subgenre or its variant: one of the choices, or undefined, which is all a field with no choices offers."""
+        offered = [MSG_UNDEFINED_SHOWN, *choices]
+        return ChoiceField(
+            page=self, label=label, choices=offered, current=current or MSG_UNDEFINED_SHOWN, set=lambda choice: set_choice(None if choice == MSG_UNDEFINED_SHOWN else choice),
+            clear=lambda: set_choice(None), clear_what=What.CLEAR,
         )
 
     def step_groove(self, offset):

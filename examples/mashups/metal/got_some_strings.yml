@@ -570,7 +570,8 @@ songs:
     tempo: 172
     time_signature: 9/8
     scale: B Minor
-    genre: Metal Mashup
+    genre: Mashup
+    subgenre: Metal
 
     tracks:
       kick: { drum: true, instrument: drum kit }

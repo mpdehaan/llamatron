@@ -315,3 +315,11 @@ The tests of the model, playback and the exporters, the helpers they share in
 `composition/file_format.py`, or left out), chosen on the Scene page's Section field (the user's design): a fixed list that
 grows as genres need kinds, a song's first, then an electronic piece's and a classical one's. It changes nothing a scene plays;
 it is what a part that knows sections, a player generator, reads. The song wizard's scenes say theirs.
+
+**A song's genre, subgenre and variant.** A song says its Genre, Subgenre and Variant (`SongSetting.GENRE`, `SUBGENRE`,
+`VARIANT`), each one of a list in `composition/genres.py` or nothing, shown as "(undefined)" (the user's design): the genres the
+song wizard makes and the genres the examples use, each wizard genre's subgenres, a subgenre's variants, and Mashup, whose
+subgenre is the genre mashed with. Nothing is refused: text the lists don't hold is read as nothing (`sensible_style`), whatever
+its capitals, and a genre written the older way, `Rock Mashup`, as Mashup and Rock. A subgenre is kept only under its genre and a
+variant only under its subgenre. `Song.get_style_name()` and `Setlist.get_genres()` name a mashup with its subgenre, `Rock Mashup`,
+which the demos' pages and folders are named by. `tests/composition/test_genres.py` holds the lists to the style templates.

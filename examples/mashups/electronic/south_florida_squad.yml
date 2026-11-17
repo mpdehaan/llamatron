@@ -553,7 +553,8 @@ songs:
   south_florida_squad:
     tempo: 126
     scale: C# Minor
-    genre: Electronic Mashup
+    genre: Mashup
+    subgenre: Electronic
 
     tracks:
       kick: { drum: true, instrument: drum kit }

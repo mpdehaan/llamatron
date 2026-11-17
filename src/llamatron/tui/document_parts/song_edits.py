@@ -58,8 +58,14 @@ class SongEdits:
     def set_seed(self, seed):
         self._change(self.song().set_seed, seed)
 
-    def set_genre(self, text):
-        self._change(self.song().set_genre, text)
+    def set_genre(self, genre):
+        self._change(self.song().set_genre, genre)
+
+    def set_subgenre(self, subgenre):
+        self._change(self.song().set_subgenre, subgenre)
+
+    def set_variant(self, variant):
+        self._change(self.song().set_variant, variant)
 
     def set_live_responsiveness(self, value):
         self._change(self.song().set_live_responsiveness, value)

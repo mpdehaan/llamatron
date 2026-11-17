@@ -229,6 +229,8 @@ class Column:
 # tui/screens/set/file_page.py and tui/screens/set/song_page.py
 # The File and Song pages' fields, and how they show what has no value.
 MSG_GENRE_LABEL = 'Genre'
+MSG_SUBGENRE_LABEL = 'Subgenre'
+MSG_VARIANT_LABEL = 'Variant'
 # When an edit made while the song plays is heard, the Song page's field and its choices.
 MSG_LIVE_RESPONSIVENESS_LABEL = 'Live response'
 MSG_PREVIEW_INSTRUMENT_LABEL = 'Preview instrument'

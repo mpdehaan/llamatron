@@ -697,7 +697,8 @@ songs:
   not_so_simple:
     tempo: 96
     scale: D Major
-    genre: Metal Mashup
+    genre: Mashup
+    subgenre: Metal
 
     tracks:
       kick: { drum: true, instrument: drum kit }

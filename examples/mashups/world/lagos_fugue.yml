@@ -470,7 +470,8 @@ songs:
   lagos_fugue:
     tempo: 116
     scale: G Minor
-    genre: World Mashup
+    genre: Mashup
+    subgenre: World
 
     tracks:
       kick: { drum: true, instrument: drum kit }
