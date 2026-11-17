@@ -21,8 +21,8 @@ from fractions import Fraction
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_GM_SOUND, MAX_TEMPO, MIN_TEMPO
-from llamatron.macro_composer.wizard_choices import style_of, STAND_INS, LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, FEWEST_FILLS, FILLS_KEPT, MOST_FILLS, QUIET_NOTES_KEPT, PIECES_OFF_KEPT, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, USUAL_SOUNDS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, HOOK_KEPT, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
-from llamatron.macro_composer.melody import DEFAULT_GAUGES, HIGHEST_GAUGE, HOME, LADDER, LOWEST_GAUGE, SMART
+from llamatron.macro_composer.wizard_choices import MELODY_SETTINGS_KEPT, MELODY_SETTINGS_OF, style_of, STAND_INS, LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, FEWEST_FILLS, FILLS_KEPT, MOST_FILLS, QUIET_NOTES_KEPT, PIECES_OFF_KEPT, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, USUAL_SOUNDS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, HOOK_KEPT, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
+from llamatron.macro_composer.melody import DEFAULT_GAUGES, HIGHEST_GAUGE, EVOLVING, HOME, LADDER, LEAPS, LOWEST_GAUGE, MOVE, SERIAL, SMART
 from llamatron.strings.macro_composer import MSG_PART_OF_SECTION
 from llamatron.macro_composer.notation import DEGREE, LINES
 from llamatron.macro_composer.arranger import PICKS, SCALE_TYPE, values_of, share_in, SOUNDS, BY_SCALE_TYPE, GRID, MELODY, PARTS, arranged, DRUMS, GENRE, PLAYERS, ROLE_TITLE, TYPE, WITHOUT, style_named, style_names
@@ -46,6 +46,7 @@ A_GAUGE_IN_WORDS = 'high'
 GENRES_WITH_A_HOOK = ('rock', 'sixties_pop', 'soul_funk')
 # A player that genre always has.
 A_BASS = 'bass'
+ANOTHER_GENRE = 'blues'
 HARD_ROCK = 'hard rock'
 DRUMS_ROLE = 'drums'
 GUITAR_ROLE = 'guitar'
@@ -845,6 +846,82 @@ class TestWizardFillsAndQuietNotes(unittest.TestCase):
         self.assertEqual(again.get_fills(), MOST_FILLS)
         again.set_subgenre([name for name in again.subgenres() if name != again.get_subgenre()][0])
         self.assertTrue(again.plays_quiet_notes())
+
+
+class TestWizardMelodySettings(unittest.TestCase):
+    """A melody style's own settings: shown for the style in use, set by the genre until changed, heard, kept and refused."""
+
+    def rock(self, *, style=None):
+        choices = chosen(genre=genre_names().index(A_GENRE_WITH_TUNES))
+        choices.set_seed(A_SEED)
+        if style is not None:
+            choices.set_melody(style)
+        return choices
+
+    def patterns(self, choices):
+        return choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+
+    def another_value(self, *, choices, name):
+        """A value of a setting other than the one it has."""
+        now = choices.get_melody_setting(name)
+        if choices.melody_setting_is_switch(name):
+            return not now
+        lowest, highest = choices.melody_setting_range(name)
+        return lowest if now != lowest else highest
+
+    def styles(self):
+        """The usual style, under no name, and each style the subgenre can be asked for."""
+        return [None, *self.rock().melody_styles()]
+
+    def test_each_style_shows_its_own_settings_and_the_usual_style_its_range(self):
+        self.assertGreater(len(self.styles()), 1)
+        for style in self.styles():
+            self.assertEqual(self.rock(style=style).melody_settings(), list(MELODY_SETTINGS_OF[style]))
+        self.assertEqual(WizardChoices().melody_settings(), [])
+
+    def test_a_setting_is_the_genres_until_changed_and_every_setting_changes_the_song_and_is_kept(self):
+        for style in self.styles():
+            for name in self.rock(style=style).melody_settings():
+                choices = self.rock(style=style)
+                before = self.patterns(choices)
+                self.assertNotIn(MELODY_SETTINGS_KEPT, choices.to_data())
+                value = self.another_value(choices=choices, name=name)
+                choices.set_melody_setting(name=name, value=value)
+                self.assertEqual(choices.get_melody_setting(name), value)
+                self.assertNotEqual(self.patterns(choices), before, (style, name))
+                again = WizardChoices.from_data(choices.to_data())
+                self.assertEqual(again.get_melody_setting(name), value)
+                self.assertEqual(self.patterns(again), self.patterns(choices))
+
+    def test_the_usual_style_has_no_settings_of_its_own_since_a_tunes_range_is_its_players_gauge(self):
+        self.assertEqual(self.rock().melody_settings(), [])
+        self.assertTrue(self.rock(style=EVOLVING).melody_settings())
+
+    def test_a_setting_of_another_style_is_kept_and_says_nothing(self):
+        choices = self.rock(style=SERIAL)
+        choices.set_melody_setting(name=LEAPS, value=True)
+        choices.set_melody(SMART)
+        self.assertEqual(self.patterns(choices), self.patterns(self.rock(style=SMART)))
+        choices.set_melody(SERIAL)
+        self.assertTrue(choices.get_melody_setting(LEAPS))
+
+    def test_a_setting_the_style_has_not_and_a_value_out_of_range_are_refused(self):
+        choices = self.rock(style=SERIAL)
+        for refused in (lambda: choices.set_melody_setting(name=MOVE, value=A_SECOND), lambda: choices.set_melody_setting(name=NO_SUCH_GAUGE, value=True),
+                        lambda: choices.set_melody_setting(name=LEAPS, value=A_SECOND)):
+            with self.assertRaises(ValueError):
+                refused()
+        evolving = self.rock(style=EVOLVING)
+        lowest, highest = evolving.melody_setting_range(MOVE)
+        for value in (lowest - 1, highest + 1, True, NOT_A_NUMBER):
+            with self.assertRaises(ValueError):
+                evolving.set_melody_setting(name=MOVE, value=value)
+
+    def test_a_new_genre_forgets_the_settings(self):
+        choices = self.rock(style=EVOLVING)
+        choices.set_melody_setting(name=MOVE, value=self.another_value(choices=choices, name=MOVE))
+        choices.set_genre(ANOTHER_GENRE)
+        self.assertNotIn(MELODY_SETTINGS_KEPT, choices.to_data())
 
 
 class TestWizardMelodyGauges(unittest.TestCase):
