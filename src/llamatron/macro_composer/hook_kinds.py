@@ -52,7 +52,7 @@ RHYTHMS = {
     EIGHTHS_WITH_A_GAP: (1, 1, 1, -1, 1, 1, 2),
 }
 # The odd details, one a hook: a note an eighth early, a silent first beat, an ending on a note that does not close, one note
-# said more often than seems reasonable, and a second statement cut short.
+# said more often than seems reasonable, and an answer that stops a note short.
 EARLY_NOTE = 'one note early'
 SILENT_DOWNBEAT = 'a silent first beat'
 OPEN_ENDING = 'an ending left open'
@@ -105,7 +105,7 @@ def depths_of(*, contour, count):
 
 
 def with_detail(*, lengths, depths, detail):
-    """A bar's rhythm and contour with the odd detail that changes the bar itself; the details of an ending and of the second statement are the maker's."""
+    """A bar's rhythm and contour with the odd detail that changes the bar itself; the details of an ending and of the answer are the maker's."""
     lengths = list(lengths)
     depths = list(depths)
     sounds = [place for place, length in enumerate(lengths) if length > 0]
