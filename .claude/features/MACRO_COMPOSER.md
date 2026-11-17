@@ -32,6 +32,15 @@ library's rules and `.claude/format/EXAMPLES.md` the rules for the sets in `exam
   only (`.claude/format/EXAMPLES.md`).
 - **A wizard in the tracker is to use it later.** Files hold numbers and plain names; the names people see, such as a player's,
   are made for people where they are shown.
+- **The drums are always split into tracks**, in every genre: the kick, the snare or clap, the hats and each other drum a track
+  of its own, so that each can enter, leave and be shaped alone (the user's rule).
+- **The floor is a genre's idea, not every genre's**: the kick and bass switched on and off as one belongs to the dance genres
+  that have it, and is researched genre by genre before it is given to one, drum and bass above all, where on and off may be too
+  simple; a genre unlike those, such as an early synthesizer novelty piece or a baroque piece on synthesizers, may want no
+  drums at all, and is never given a floor or a kick by default (the user's rule).
+- **Timing can be tight**: how closely a part sits on the grid is tunable by a person and defaults by genre, exactly on the
+  grid where the genre is locked in, looser where the genre has a groove. The user values tight, on-the-grid timing in the
+  genres that have it, and others will want otherwise, so neither is forced (the user's rule).
 - **The hook is vital** (the user's rule, about how Claude designs and never about what a person is told): a song has a hook,
   a short phrase a listener remembers, and the song keeps bringing the listener back to the hook. Every default is built around
   that: every ready-made form, melody engine, modifier and amount of variance, as it arrives, puts the hook early, returns to
