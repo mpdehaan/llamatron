@@ -18,16 +18,17 @@
 
 from llamatron.composition.limits import MIN_GM_SOUND
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT
+from llamatron.macro_composer.song_plan import HIGHEST_ENERGY, LOWEST_ENERGY
 from llamatron.macro_composer.interplay import LEAST_BUSY as LEAST_BUSY_BESIDE, MOST_BUSY as MOST_BUSY_BESIDE
 from llamatron.macro_composer.wizard_choices import FEWEST_ROW_CELLS, MOST_ROW_CELLS, FEWEST_FILLS, FILLS_TRAITS, HIGHEST_PLACE, LEAST_BUSY, LOWEST_PLACE, MOST_BUSY, MOST_FILLS
-from llamatron.strings.labels import MSG_WIZARD_ROW_LABELS, MSG_WIZARD_BY_SECTION, MSG_WIZARD_FILLS_BUSY_LABEL, MSG_WIZARD_ROLE_LABEL, MSG_GM_SOUNDS, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_NO_BREAK, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYER_GAUGE_LABELS, MSG_WIZARD_PLAYS_LABEL, MSG_WIZARD_SOUND_LABEL
+from llamatron.strings.labels import MSG_WIZARD_COMES_IN_LABEL, MSG_WIZARD_LAYS_OUT_LABEL, MSG_WIZARD_OWN_START, MSG_WIZARD_REACTS_LABEL, MSG_WIZARD_REACTS_SAID, MSG_WIZARD_ROW_LABELS, MSG_WIZARD_BY_SECTION, MSG_WIZARD_FILLS_BUSY_LABEL, MSG_WIZARD_ROLE_LABEL, MSG_GM_SOUNDS, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_NO_BREAK, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYER_GAUGE_LABELS, MSG_WIZARD_PLAYS_LABEL, MSG_WIZARD_SOUND_LABEL
 from llamatron.strings.legends import MSG_OWN_DRUM_WHAT, What
 from llamatron.strings.marks import MSG_WIZARD_GENRE_ROW_SHOWN, MSG_WIZARD_ROW_SEPARATOR, MSG_WIZARD_ROW_SHOWN, MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_SOUND_ON_NOTE, MSG_WIZARD_FILLS_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_BUSY_CUSTOM_SHOWN, MSG_WIZARD_BUSY_SHOWN, MSG_WIZARD_PLAYER_GAUGE_SHOWN, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL
 from llamatron.strings.messages import MSG_WIZARD_ROW_TITLE
 from llamatron.tui.dialogs.row_dialog import RowDialog
 from llamatron.tui.note_names import note_shown
 from llamatron.tui.screens.shared.field import Cells, ChoiceField, Field, NumberField, Toggle
-from llamatron.tui.screens.wizard.branch import Branch
+from llamatron.tui.screens.wizard.branch import Branch, gauge_shown
 
 # A field is worth showing once there is more than one way to choose.
 A_CHOICE = 2
@@ -56,6 +57,7 @@ class PlayerBranch(Branch):
         fields = [self.way_field(trait=trait, label=MSG_WIZARD_PLAYS_LABEL if len(traits) == 1 else trait.capitalize()) for trait in traits]
         if choices.has_sound(self._role):
             fields.append(self.sound_field())
+        fields += self.person_fields()
         if choices.has_busy(self._role) and choices.get_busy(self._role) is not None:
             fields.append(self.busy_field())
             # The player's own gauges, which the Busy field fills in and which each move alone.
@@ -72,6 +74,36 @@ class PlayerBranch(Branch):
                 fields.append(Toggle(label=MSG_WIZARD_QUIET_NOTES_LABEL, on=choices.plays_quiet_notes(), set=self.page().choosing(choices.set_quiet_notes)))
             # The drums: a row for each piece of the kit the song plays.
             fields += [self.piece_row(piece) for piece in choices.pieces()]
+        return fields
+
+    def person_fields(self):
+        """Return the fields of the player as a person in the band: where the player comes in, where the player lays out, and how strongly the player answers
+        to Energy. The first two say which sections the player plays, and read as the person's own where the sections were changed one by one."""
+        choices = self.choices()
+        page = self.page()
+        role = self._role
+
+        def refusing(setter):
+            def set_way(value):
+                try:
+                    page.choosing(setter)(value)
+                except ValueError as problem:
+                    page.refuse(str(problem))
+            return set_way
+        fields = []
+        comes, lays = choices.comes_in_offered(role), choices.lays_out_offered(role)
+        if comes:
+            now = choices.get_comes_in(role)
+            fields.append(ChoiceField(page=page, label=MSG_WIZARD_COMES_IN_LABEL, choices=comes, current=now or comes[0], shown=None if now is not None else MSG_WIZARD_OWN_START,
+                                      set=refusing(lambda way: choices.set_comes_in(role=role, way=way))))
+        if lays:
+            now = choices.get_lays_out(role)
+            fields.append(ChoiceField(page=page, label=MSG_WIZARD_LAYS_OUT_LABEL, choices=lays, current=now or lays[0], shown=None if now is not None else MSG_WIZARD_OWN_START,
+                                      set=refusing(lambda way: choices.set_lays_out(role=role, way=way))))
+        if choices.reacts(role):
+            reacts = choices.get_reacts(role)
+            fields.append(NumberField(page=page, label=MSG_WIZARD_REACTS_LABEL, number=reacts, shown=gauge_shown(place=reacts, lowest=LOWEST_ENERGY, highest=HIGHEST_ENERGY, said=MSG_WIZARD_REACTS_SAID[reacts]),
+                                      lowest=LOWEST_ENERGY, highest=HIGHEST_ENERGY, set=page.choosing(lambda number: choices.set_reacts(role=role, reacts=number))))
         return fields
 
     def piece_setter(self, piece):

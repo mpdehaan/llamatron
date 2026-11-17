@@ -20,7 +20,7 @@ from llamatron.macro_composer import line_edits
 from llamatron.macro_composer.melody import LINE_NOTES
 from llamatron.macro_composer.phrasing import LINE_BREATH, LINE_EARLY, SHORT_BREATH
 from llamatron.macro_composer.wizard_choices import LINE_BREATHES, LINE_OWN
-from llamatron.strings.labels import MSG_WIZARD_HOOK_NOTES_OWN, MSG_WIZARD_LINES_LABEL, MSG_WIZARD_LINES_TITLE
+from llamatron.strings.labels import MSG_WIZARD_SECTION_HOOK_LABEL, MSG_WIZARD_HOOK_NOTES_OWN, MSG_WIZARD_LINES_LABEL, MSG_WIZARD_LINES_TITLE
 from llamatron.strings.marks import MSG_LINES_COUNT_OWN, MSG_LINES_FROM_MELODY, MSG_LINES_SAME_IDEA
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.lines_dialog import LinesDialog
@@ -36,6 +36,7 @@ A_VERSE = 'verse-1'
 A_VERSE_PLACE = 1
 FIRST = 0
 AN_ENDING = 'ending'
+A_CHORUS = 'chorus-1'
 
 
 class TestLinesDialog(WizardTest):
@@ -108,6 +109,18 @@ class TestLinesDialog(WizardTest):
         self.assertIn(MSG_WIZARD_HOOK_NOTES_OWN, self.text())
         await self.press(keybindings.LinesDialog.CLOSE)
         self.assertIn(MSG_LINES_COUNT_OWN.format(count=len(self.lines(choices)), own=1), self.text())
+
+    async def test_a_section_that_says_the_hook_opens_the_hook_s_notes_too(self):
+        choices = await self.open_lines()
+        await self.press(keybindings.LinesDialog.CLOSE, keybindings.WizardPage.TO_TREE)
+        self.assertNotIn(MSG_WIZARD_SECTION_HOOK_LABEL, [field.label for field in self.app.screen.fields()])
+        await self.go_to_named_branch(A_CHORUS)
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(MSG_WIZARD_SECTION_HOOK_LABEL)
+        await self.press(Key.ENTER)
+        self.assertIsInstance(self.app.screen, TuneDialog)
+        await self.press(forward_key(keybindings.TuneDialog.PITCH), keybindings.TuneDialog.DONE)
+        self.assertTrue(choices.hook_is_own())
 
     async def test_a_section_with_no_tune_has_no_lines_field(self):
         await self.open_lines()
