@@ -32,7 +32,7 @@ from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer.interplay import LEAST_BUSY as LEAST_BUSY_BESIDE, MOST_BUSY as MOST_BUSY_BESIDE, USUAL_BUSY as USUAL_BUSY_BESIDE, WAITS, WAYS as WAYS_BESIDE
 from llamatron.macro_composer.characters import GAUGES as PLAYER_GAUGES, HIGHEST as HIGHEST_PLACE, LOWEST as LOWEST_PLACE, PRESET_PLACE, gauges_of, preset
 from llamatron.macro_composer.arranger import (
-    COMMON_TIME, DEFAULT_PHRASE_BARS, DRUMS, DRUM_TRACKS, EACH_SECTION, FILLS_COME, FILL_EVERY, KIND, PARTS, PHRASE_BARS, QUIET_NOTES, MELODY_ENGINE, METER, PICKS, ROLE_SOUNDS, ROLE_TITLE, ROLE_TITLES, SOUNDS, WITHOUT_PIECES, PLAYER, PLAYERS, ROLE, ROLES, SOUND, TRAIT, VALUE, WITHOUT, bar_length, fits,
+    ACCIDENTAL_MARKS, BY_SECTION, PATTERN, chord_of, COMMON_TIME, DEFAULT_PHRASE_BARS, DRUMS, DRUM_TRACKS, EACH_SECTION, FILLS_COME, FILL_EVERY, KIND, PARTS, PHRASE_BARS, QUIET_NOTES, MELODY_ENGINE, METER, PICKS, ROLE_SOUNDS, ROLE_TITLE, ROLE_TITLES, SOUNDS, WITHOUT_PIECES, PLAYER, PLAYERS, ROLE, ROLES, SOUND, TRAIT, VALUE, WITHOUT, bar_length, fits,
     BARS, CHORD_TRAIT, CHORD_TRAIT_FIELD, FORM, HELD, PLAYS, GENRE, KEY, NAME, ROOT, SCALE_TYPE, SECTIONS, SEED, STYLE, TEMPLATE, TEMPLATES, TEMPO, TITLE, TRAITS, TYPE, USUAL,
     BREAK, BREAK_CUT, HIGHEST_NOTE, KEPT_BESIDE_A_BREAK, LOWEST_NOTE, MELODY, NO_BREAK, PIECE_SOUNDS, PLAYED_DRUM, PLAYED_NOTE, PLAYED_SOUND,
     ANSWERS, BESIDE, BESIDE_BUSY, BESIDE_WAYS, FIGURE,
@@ -41,7 +41,7 @@ from llamatron.macro_composer.arranger import (
 from llamatron.macro_composer.composer import composed
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
-from llamatron.macro_composer.notation import KIT, OCTAVE
+from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, KIT, OCTAVE
 from llamatron.macro_composer.melody import HALF_STEPS, NOTES_IN_OCTAVE, DEFAULT_GAUGES, EVOLVING, GRID, HIGHEST_GAUGE, HOOK, LOWEST_GAUGE, SERIAL, SMART, STEP_WALK
 from llamatron.music.note import ROOT_NAMES, SEMITONES_ABOVE_C
 from llamatron.playback.song_renderer import SongRenderer
@@ -1466,6 +1466,29 @@ class WizardChoices:
     def set_any_progression(self):
         """Leave the progression to chance again."""
         self._ways.pop(self.progression_trait(), None)
+
+    def progression_chords(self, progression):
+        """Return a progression's chords for each kind of section the song's form plays, in the form's order, each chord its
+        degree and its sharp or flat as a set file writes one; a section played as one held chord is left out. Nothing for a
+        progression written another way than as degrees."""
+        entry = values_of(style=style_of(self._genre), trait=self.progression_trait())[progression]
+        if PATTERN not in entry:
+            return []
+        chords = {}
+        for place, kind in enumerate(self.section_kinds_in_form()):
+            if kind not in chords and not self.section_is_held(place):
+                written = entry.get(BY_SECTION, {}).get(kind) or entry[PATTERN]
+                chords[kind] = [(chord_of(chord)[DEGREE], ACCIDENTAL_MARKS.get(chord_of(chord).get(ACCIDENTAL))) for chord in written]
+        return list(chords.items())
+
+    def progression_degrees(self, progression):
+        """Return the chords a progression is known by, its first written, each a degree and its sharp or flat; or nothing."""
+        entry = values_of(style=style_of(self._genre), trait=self.progression_trait())[progression]
+        return [(chord_of(chord)[DEGREE], ACCIDENTAL_MARKS.get(chord_of(chord).get(ACCIDENTAL))) for chord in entry.get(PATTERN, [])]
+
+    def section_kinds_in_form(self):
+        """Return the kind of each section of the song's form, in order."""
+        return [self.section_kind(place) for place in range(len(self.section_labels()))]
 
     def progressions_by_chance(self):
         """Return the progressions the song may take, in the order the seed draws them: a commoner one likelier to come first, the

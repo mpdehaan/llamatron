@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""A branch of the wizard for what the whole song has a way of, each a field: the Themes and Playing branches are two."""
+"""A branch of the wizard for what the whole song has a way of, each a field: the branches under Composition are three."""
 
 from rich.text import Text
 

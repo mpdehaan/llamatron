@@ -293,6 +293,7 @@ row says which, and a reply says which too.
 | scene, track | a row and a column of Arrange | `Scene`, `Track`. Rendered, a `ClipRow` and a `ClipColumn` |
 | clip | a clip on Arrange | `ClipSlot` is what a track plays in a scene, as the file stores it. `Clip` is the finished notes in the grid. Messages always say clip |
 | pattern | a pattern, shared by every song | `Pattern` |
+| a wizard panel | one part of the song wizard's tree, such as Genre, Band, a player, Composition, Chords, a section or Apply, with the fields shown at its right. Always "wizard panel" when speaking to the user, never "branch", which reads as a git branch | `Branch` and its subclasses in `tui/screens/wizard/` |
 | the main screen, the main menu | the grid of cells the tracker opens on | `MainPage` |
 | the pattern editor | the page that edits one pattern, in either view | `PatternEditor` |
 | the roll, the piano roll | the pattern editor's piano roll view | `PianoRoll`, `RollDrawing`, `editor.roll` |
