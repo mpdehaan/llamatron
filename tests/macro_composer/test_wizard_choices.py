@@ -21,8 +21,8 @@ from fractions import Fraction
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.limits import MAX_GM_SOUND, MAX_TEMPO, MIN_TEMPO
-from llamatron.macro_composer.wizard_choices import HOOK_TAKE_KEPT, MELODY_SETTINGS_KEPT, MELODY_SETTINGS_OF, style_of, STAND_INS, LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, FEWEST_FILLS, FILLS_KEPT, MOST_FILLS, QUIET_NOTES_KEPT, PIECES_OFF_KEPT, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, USUAL_SOUNDS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, HOOK_KEPT, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
-from llamatron.macro_composer.melody import DEFAULT_GAUGES, HIGHEST_GAUGE, EVOLVING, HOME, LADDER, LEAPS, LOWEST_GAUGE, MOVE, SERIAL, SMART
+from llamatron.macro_composer.wizard_choices import HOOK_TAKE_KEPT, MOST_ROW_CELLS, PLAYER_ROWS, PLAYER_ROWS_KEPT, MELODY_SETTINGS_KEPT, MELODY_SETTINGS_OF, style_of, STAND_INS, LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, FEWEST_FILLS, FILLS_KEPT, MOST_FILLS, QUIET_NOTES_KEPT, PIECES_OFF_KEPT, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, USUAL_SOUNDS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, HOOK_KEPT, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
+from llamatron.macro_composer.melody import LENGTHS, DEFAULT_GAUGES, HIGHEST_GAUGE, EVOLVING, HOME, LADDER, LEAPS, LOWEST_GAUGE, MOVE, SERIAL, SMART
 from llamatron.strings.macro_composer import MSG_PART_OF_SECTION
 from llamatron.macro_composer.notation import DEGREE, LINES
 from llamatron.macro_composer.arranger import PICKS, SCALE_TYPE, values_of, share_in, SOUNDS, BY_SCALE_TYPE, GRID, MELODY, PARTS, arranged, DRUMS, GENRE, PLAYERS, ROLE_TITLE, TYPE, WITHOUT, style_named, style_names
@@ -47,6 +47,11 @@ GENRES_WITH_A_HOOK = ('rock', 'sixties_pop', 'soul_funk')
 # A player that genre always has.
 A_BASS = 'bass'
 ANOTHER_GENRE = 'blues'
+A_GENRE_WITH_STYLES = 'rock'
+A_SERIAL_GENRE = 'experimental'
+ROLES_OF_STYLE = 'roles'
+ROLE_OF_ENTRY = 'role'
+HABITS_OF_ENTRY = 'habits'
 SECTIONS_OF_STYLE = 'sections'
 PLAN_OF_SECTION = 'plan'
 HOOK_MARK = 'hook'
@@ -927,6 +932,104 @@ class TestWizardMelodySettings(unittest.TestCase):
         choices.set_melody_setting(name=MOVE, value=self.another_value(choices=choices, name=MOVE))
         choices.set_genre(ANOTHER_GENRE)
         self.assertNotIn(MELODY_SETTINGS_KEPT, choices.to_data())
+
+
+class TestWizardPlayerRows(unittest.TestCase):
+    """The rows of numbers the serial style deals to a player's notes: shown while the style is in use, a player's own, kept and made into the song."""
+
+    def serial(self):
+        choices = chosen(genre=genre_names().index(A_GENRE_WITH_STYLES))
+        choices.set_melody(SERIAL)
+        choices.set_seed(FIRST_SEED)
+        return choices
+
+    def a_player(self, choices):
+        return next(role for role in choices.roles_in() if choices.player_rows(role))
+
+    def parts(self, choices):
+        return arranged(style=style_of(choices.get_genre()), song=choices.song_picks(A_NAME))[PARTS]
+
+    def moved(self, *, choices, name, row):
+        """A row with every cell at the end of its range the cell is further from."""
+        lowest, highest = choices.row_limits(name)
+        return [lowest if value - lowest > highest - value else highest for value in row]
+
+    def test_rows_show_only_under_the_serial_style_and_only_for_a_player_of_lines(self):
+        choices = self.serial()
+        with_rows = [role for role in choices.roles_in() if choices.player_rows(role)]
+        self.assertTrue(with_rows)
+        self.assertLess(len(with_rows), len(choices.roles_in()))
+        for role in with_rows:
+            self.assertEqual(choices.player_rows(role), list(PLAYER_ROWS))
+        choices.set_melody(None)
+        for role in choices.roles_in():
+            self.assertEqual(choices.player_rows(role), [])
+
+    def test_a_row_is_the_genres_until_changed_and_each_row_changed_changes_the_song(self):
+        choices = self.serial()
+        role = self.a_player(choices)
+        for name in PLAYER_ROWS:
+            before = self.parts(choices)
+            usual = choices.get_player_row(role=role, name=name)
+            self.assertEqual(usual, choices.genre_row(role=role, name=name))
+            self.assertFalse(choices.player_row_is_own(role=role, name=name))
+            changed = self.moved(choices=choices, name=name, row=usual)
+            choices.set_player_row(role=role, name=name, values=changed)
+            self.assertTrue(choices.player_row_is_own(role=role, name=name))
+            self.assertEqual(choices.get_player_row(role=role, name=name), changed)
+            self.assertNotEqual(self.parts(choices), before, name)
+            again = WizardChoices.from_data(choices.to_data())
+            self.assertEqual(again.get_player_row(role=role, name=name), changed)
+            self.assertEqual(self.parts(again), self.parts(choices))
+            # The genre's own row given back is no row of the player's, and the song is as it was.
+            choices.set_player_row(role=role, name=name, values=usual)
+            self.assertFalse(choices.player_row_is_own(role=role, name=name))
+            self.assertEqual(self.parts(choices), before)
+            self.assertNotIn(PLAYER_ROWS_KEPT, choices.to_data())
+
+    def test_a_row_changes_only_its_players_parts(self):
+        choices = self.serial()
+        role = self.a_player(choices)
+        before = self.parts(choices)
+        choices.set_player_row(role=role, name=LENGTHS, values=self.moved(choices=choices, name=LENGTHS, row=choices.get_player_row(role=role, name=LENGTHS)))
+        after = self.parts(choices)
+        # A part that changed is a tune player's: the player's own, or the part of a player of lines who plays the tune along.
+        with_rows = [other for other in choices.roles_in() if choices.player_rows(other)]
+        for part in before:
+            if before[part] != after[part]:
+                self.assertTrue(any(other in part for other in with_rows), part)
+
+    def test_a_row_out_of_range_too_long_or_of_another_style_is_refused(self):
+        choices = self.serial()
+        role = self.a_player(choices)
+        lowest, highest = choices.row_limits(LENGTHS)
+        for values in ([], [lowest] * (MOST_ROW_CELLS + 1), [lowest - 1], [highest + 1], [True], [NOT_A_NUMBER], NOT_A_NUMBER):
+            with self.assertRaises(ValueError):
+                choices.set_player_row(role=role, name=LENGTHS, values=values)
+        with self.assertRaises(ValueError):
+            choices.set_player_row(role=role, name=NO_SUCH_GAUGE, values=[lowest])
+        choices.set_player_row(role=role, name=LENGTHS, values=[lowest] * MOST_ROW_CELLS)
+        choices.set_player_row(role=role, name=LENGTHS, values=[highest])
+        choices.set_melody(None)
+        with self.assertRaises(ValueError):
+            choices.get_player_row(role=role, name=LENGTHS)
+
+    def test_a_row_kept_says_nothing_under_another_style_and_a_new_genre_forgets_the_rows(self):
+        choices = self.serial()
+        role = self.a_player(choices)
+        choices.set_player_row(role=role, name=LENGTHS, values=[choices.row_limits(LENGTHS)[1]])
+        choices.set_melody(None)
+        plain = self.serial()
+        plain.set_melody(None)
+        self.assertEqual(self.parts(choices), self.parts(plain))
+        choices.set_genre(ANOTHER_GENRE)
+        self.assertNotIn(PLAYER_ROWS_KEPT, choices.to_data())
+
+    def test_the_genres_own_rows_are_those_its_players_are_written_with(self):
+        choices = chosen(genre=genre_names().index(A_SERIAL_GENRE))
+        role = self.a_player(choices)
+        written = next(entry for entry in style_of(A_SERIAL_GENRE)[ROLES_OF_STYLE] if entry[ROLE_OF_ENTRY] == role)[HABITS_OF_ENTRY]
+        self.assertEqual(choices.get_player_row(role=role, name=LENGTHS), written[LENGTHS])
 
 
 class TestWizardMelodyGauges(unittest.TestCase):

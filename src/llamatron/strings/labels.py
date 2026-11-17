@@ -763,6 +763,7 @@ MSG_WIZARD_ADD_SECTION_TITLE = 'Add section'
 MSG_WIZARD_INSERT_SECTION_TITLE = 'Insert section'
 MSG_WIZARD_SUGGESTED_FORM_BUTTON = 'Use a suggested form'
 MSG_WIZARD_NEW_HOOK_BUTTON = 'New hook'
+MSG_WIZARD_ROW_LABELS = {'lengths': 'Lengths', 'loudness': 'Loudness', 'articulation': 'Articulation'}
 MSG_WIZARD_SUGGESTED_FORM_TITLE = 'Suggested forms'
 MSG_WIZARD_REPLACE_SECTIONS_TITLE = 'Replace sections'
 MSG_WIZARD_BUSY_LABEL = 'Busy'

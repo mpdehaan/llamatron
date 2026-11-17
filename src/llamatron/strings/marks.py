@@ -408,6 +408,14 @@ MSG_WIZARD_LENGTH_SHOWN = '{length}  ({form})'
 MSG_WIZARD_FORM_SHOWN = '{form}: {count} sections'
 # The Chords panel: a progression with its numerals, the key its chords are spelled in, a kind of section's chords, and what follows a chord's root.
 MSG_WIZARD_PROGRESSION_SHOWN = '{name} ({numerals})'
+# The Row dialog: a level's number at the left of its line, a cell's bar and the zero line of a row that goes under zero.
+MSG_ROW_DIALOG_LEVEL = '{level:>4} '
+MSG_ROW_DIALOG_BAR = '█'
+MSG_ROW_DIALOG_ZERO = '─'
+# A player's row of numbers on the wizard's panel, the genre's own marked so.
+MSG_WIZARD_ROW_SHOWN = '{row}'
+MSG_WIZARD_GENRE_ROW_SHOWN = '{row}  (from genre)'
+MSG_WIZARD_ROW_SEPARATOR = ' '
 MSG_WIZARD_PROGRESSION_FOR = '{progression} for {scale}'
 MSG_WIZARD_GENRE_MELODY_SHOWN = '{style} (from genre)'
 MSG_WIZARD_CHORDS_KEY = 'in {root} {scale}'

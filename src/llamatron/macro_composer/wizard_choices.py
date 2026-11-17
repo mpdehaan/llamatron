@@ -32,6 +32,7 @@ from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer.interplay import LEAST_BUSY as LEAST_BUSY_BESIDE, MOST_BUSY as MOST_BUSY_BESIDE, USUAL_BUSY as USUAL_BUSY_BESIDE, WAITS, WAYS as WAYS_BESIDE
 from llamatron.macro_composer.characters import GAUGES as PLAYER_GAUGES, HIGHEST as HIGHEST_PLACE, LOWEST as LOWEST_PLACE, PRESET_PLACE, gauges_of, preset
 from llamatron.macro_composer.arranger import (
+    HABITS, ROLE_HABITS,
     ACCIDENTAL_MARKS, BY_SECTION, PATTERN, chord_of, COMMON_TIME, DEFAULT_PHRASE_BARS, DRUMS, DRUM_TRACKS, EACH_SECTION, FILLS_COME, FILL_EVERY, KIND, PARTS, PHRASE_BARS, QUIET_NOTES, MELODY_ENGINE, METER, PICKS, ROLE_SOUNDS, ROLE_TITLE, ROLE_TITLES, SOUNDS, WITHOUT_PIECES, PLAYER, PLAYERS, ROLE, ROLES, SOUND, TRAIT, VALUE, WITHOUT, bar_length, fits,
     BARS, CHORD_TRAIT, CHORD_TRAIT_FIELD, FORM, HELD, PLAYS, GENRE, KEY, NAME, ROOT, SCALE_TYPE, SECTIONS, SEED, STYLE, TEMPLATE, TEMPLATES, TEMPO, TITLE, TRAITS, TYPE, USUAL,
     BREAK, BREAK_CUT, HIGHEST_NOTE, KEPT_BESIDE_A_BREAK, LOWEST_NOTE, MELODY, NO_BREAK, PIECE_SOUNDS, PLAYED_DRUM, PLAYED_NOTE, PLAYED_SOUND,
@@ -43,14 +44,14 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
 from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, FLAT, KIT, LINES, OCTAVE, REST, SHARP, STEPS
 from llamatron.strings.macro_composer import MSG_PART_OF_SECTION
-from llamatron.macro_composer.melody import CHROMATIC, DEFAULT_EVOLVE, ENGINE, EVOLVE, HALF_STEPS, LEAPS, MOVE, NOTES_IN_OCTAVE, DEFAULT_GAUGES, EVOLVING, FIRST_HOOK_TAKE, GRID, HIGHEST_GAUGE, HOOK, HOOK_TAKE, LOWEST_GAUGE, ROTATE, ROTATIONS, SERIAL, SMART, STEP_WALK
+from llamatron.macro_composer.melody import ARTICULATION, CHROMATIC, DEFAULT_EVOLVE, DEFAULT_LENGTHS, ENGINE, LENGTHS, LOUDNESS, PARTS_OF_A_LENGTH, EVOLVE, HALF_STEPS, LEAPS, MOVE, NOTES_IN_OCTAVE, DEFAULT_GAUGES, EVOLVING, FIRST_HOOK_TAKE, GRID, HIGHEST_GAUGE, HOOK, HOOK_TAKE, LOWEST_GAUGE, ROTATE, ROTATIONS, SERIAL, SMART, STEP_WALK
 from llamatron.music.note import ROOT_NAMES, SEMITONES_ABOVE_C
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MIN_GM_SOUND
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.marks import MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SECTION_VARIANT
 from llamatron.support.version import VERSION as A_VERSION
-from llamatron.strings.errors import ERR_WIZARD_HOOK_TAKE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_MELODY_NUMBER, ERR_WIZARD_MELODY_SWITCH, ERR_WIZARD_NO_SUCH_MELODY_SETTING, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
+from llamatron.strings.errors import ERR_WIZARD_NO_SUCH_ROW, ERR_WIZARD_ROW, ERR_WIZARD_HOOK_TAKE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_MELODY_NUMBER, ERR_WIZARD_MELODY_SWITCH, ERR_WIZARD_NO_SUCH_MELODY_SETTING, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'
@@ -108,6 +109,7 @@ HOOK_TAKE_KEPT = 'hook_take'
 # What pieces of the kit sound as, kept as the song's picks hold them, and the note a piece first plays in a General MIDI sound.
 PIECE_SOUNDS_KEPT = 'piece_sounds'
 PLAYER_GAUGES_KEPT = 'player_gauges'
+PLAYER_ROWS_KEPT = 'player_rows'
 # The answers remembered until a choice changes.
 PIECES_ANSWER = 'pieces'
 QUIET_NOTES_ANSWER = 'quiet notes'
@@ -190,6 +192,14 @@ MELODY_SETTINGS_OF = {None: (), STEP_WALK: (), SMART: (), EVOLVING: (MOVE, ROTAT
 MELODY_NUMBERS = {MOVE: (0, 4), ROTATE: (0, 4)}
 MELODY_SWITCHES = {CHROMATIC: False, LEAPS: False, ROTATIONS: True}
 EVOLVE_SETTINGS = (MOVE, ROTATE)
+# The rows of numbers the serial style deals to a player's notes in turn, each with the lowest and highest number of a cell
+# and what a row is where the genre gives the player none, which plays as no row would: how many steps a note lasts, how
+# much louder or softer than the player a note is, and how many quarters of a note's length sound.
+PLAYER_ROWS = (LENGTHS, LOUDNESS, ARTICULATION)
+ROW_LIMITS = {LENGTHS: (1, 8), LOUDNESS: (-16, 16), ARTICULATION: (1, PARTS_OF_A_LENGTH)}
+ROWS_UNASKED = {LENGTHS: DEFAULT_LENGTHS, LOUDNESS: (0,) * len(DEFAULT_LENGTHS), ARTICULATION: (PARTS_OF_A_LENGTH,) * len(DEFAULT_LENGTHS)}
+FEWEST_ROW_CELLS = 1
+MOST_ROW_CELLS = 16
 MELODY_STYLE = 'melody_style'
 # The traits of the whole song the wizard offers: the chords, under either name a genre gives them, the feel and the drum fills.
 PROGRESSION_TRAITS = ('chords', 'harmony')
@@ -277,7 +287,7 @@ SECONDS_IN_MINUTE = 60
 class WizardChoices:
     """The choices of one run of the song wizard."""
 
-    __slots__ = ('_hook_take', '_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_own_gauges', '_beside', '_without', '_sections', '_melody', '_hook', '_sounds', '_band_sounds', '_guitarists', '_pieces_off', '_break', '_break_cut', '_gauges', '_piece_sounds', '_fills', '_quiet_notes', '_melody_settings', '_answers', '_answers_of')
+    __slots__ = ('_hook_take', '_rows', '_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_own_gauges', '_beside', '_without', '_sections', '_melody', '_hook', '_sounds', '_band_sounds', '_guitarists', '_pieces_off', '_break', '_break_cut', '_gauges', '_piece_sounds', '_fills', '_quiet_notes', '_melody_settings', '_answers', '_answers_of')
 
     def __init__(self):
         # Answers found by making the song, each kept until a choice changes.
@@ -294,6 +304,7 @@ class WizardChoices:
         self._ways = {}
         self._levels = {}
         self._own_gauges = {}
+        self._rows = {}
         self._beside = None
         self._without = []
         # The form's sections once a person has changed them, each its kind and what it changes of the kind; None while a suggested form is followed.
@@ -341,6 +352,7 @@ class WizardChoices:
         band could be chosen names no levels, and is read as having none, so that the same choices still make the same song."""
         self._levels = {}
         self._own_gauges = {}
+        self._rows = {}
         # A song kept before answering could be chosen keeps to what was made then.
         self._beside = None
         kept = [(self.set_way, [dict(trait=trait, value=value) for trait, value in (data.get(PICKS) or {}).items()]),
@@ -362,6 +374,8 @@ class WizardChoices:
                 (self._set_kept_hook, [dict(on=data[HOOK_KEPT])] if isinstance(data.get(HOOK_KEPT), bool) else []),
                 (self._set_kept_hook_take, [dict(take=data[HOOK_TAKE_KEPT])] if data.get(HOOK_TAKE_KEPT) else []),
                 (self.set_gauge, [dict(name=name, position=position) for name, position in (data.get(GAUGES_KEPT) or {}).items()]),
+                (self._set_kept_player_row, [dict(role=role, name=name, values=values) for role, rows in (data.get(PLAYER_ROWS_KEPT) or {}).items() for name, values in rows.items()]
+                 if isinstance(data.get(PLAYER_ROWS_KEPT), dict) and all(isinstance(rows, dict) for rows in data[PLAYER_ROWS_KEPT].values()) else []),
                 (self._set_kept_melody_setting, [dict(name=name, value=value) for name, value in (data.get(MELODY_SETTINGS_KEPT) or {}).items()])]
         for setter, every in kept:
             for named in every:
@@ -375,6 +389,7 @@ class WizardChoices:
         held = {GENRE: self._genre, SUBGENRE: self._subgenre, ROOT: self._root, TYPE: self._scale_type, TEMPO: self._tempo, FORM: self._form, SEED: self._seed,
                 PICKS: dict(self._ways) or None, PLAYERS: dict(self._levels) or None, WITHOUT: list(self._without) or None,
                 PLAYER_GAUGES_KEPT: {player: dict(places) for player, places in self._own_gauges.items() if places} or None,
+                PLAYER_ROWS_KEPT: {role: {name: list(row) for name, row in rows.items()} for role, rows in self._rows.items() if rows} or None,
                 BESIDE_KEPT: dict(self._beside) if self._beside is not None else None,
                 OWN_SECTIONS: [own_copy_of(entry) for entry in self._sections] if self._sections is not None else None,
                 MELODY_STYLE: self._melody, HOOK_KEPT: self._hook, HOOK_TAKE_KEPT: self._hook_take or None, SOUNDS_KEPT: dict(self._sounds) or None,
@@ -428,6 +443,7 @@ class WizardChoices:
             self._hook_take = FIRST_HOOK_TAKE
             self._levels = {player: USUAL_BUSY for player in style_of(self._genre).get(PLAYERS, {})}
             self._own_gauges = {}
+            self._rows = {}
             self._beside = self._usual_beside()
 
     def is_ready(self):
@@ -715,6 +731,7 @@ class WizardChoices:
         self._ways = {}
         self._levels = {}
         self._own_gauges = {}
+        self._rows = {}
         self._beside = None
         self._without = []
         self._sounds = {}
@@ -981,6 +998,63 @@ class WizardChoices:
         else:
             raise ValueError(ERR_WIZARD_NO_SUCH_MELODY_SETTING.format(value=name))
         self._melody_settings[name] = value
+
+    # The serial style's rows of numbers, a player's own.
+
+    def player_rows(self, role):
+        """Return the rows of numbers a player's notes are dealt, by name, while the song's tunes are written in the serial style
+        and the player plays lines of the tune in some section of the form; none otherwise."""
+        if not self.is_ready() or (self._melody or self.genre_melody()) != SERIAL or not self.has_sound(role) or not self._plays_lines(role):
+            return []
+        # A player who plays in no section of the song's form is dealt nothing, so has no row to change.
+        if not any(role in self.section_plays(place) for place in range(len(self._entries()))):
+            return []
+        return list(PLAYER_ROWS)
+
+    def genre_row(self, *, role, name):
+        """Return a player's row as the genre gives it, or the row that plays as none would."""
+        habits = {**self._melody_habits(), **self._role(role).get(HABITS, {})}
+        return list(habits.get(name) or ROWS_UNASKED[name])
+
+    def get_player_row(self, *, role, name):
+        """Return a player's row as the song will deal it: the player's own, or the genre's for the player."""
+        if name not in self.player_rows(role):
+            raise ValueError(ERR_WIZARD_NO_SUCH_ROW.format(value=name))
+        return list(self._rows.get(role, {}).get(name) or self.genre_row(role=role, name=name))
+
+    def player_row_is_own(self, *, role, name):
+        """Return whether a player's row was changed from the genre's."""
+        return name in self._rows.get(role, {})
+
+    def row_limits(self, name):
+        """Return the lowest and the highest number a cell of a row can hold."""
+        return ROW_LIMITS[name]
+
+    def set_player_row(self, *, role, name, values):
+        """Give a player a row of the player's own; the genre's own row given back is no row of the player's."""
+        if name not in self.player_rows(role):
+            raise ValueError(ERR_WIZARD_NO_SUCH_ROW.format(value=name))
+        low, high = ROW_LIMITS[name]
+        if not isinstance(values, (list, tuple)) or not FEWEST_ROW_CELLS <= len(values) <= MOST_ROW_CELLS or any(
+                isinstance(value, bool) or not isinstance(value, int) or not low <= value <= high for value in values):
+            raise ValueError(ERR_WIZARD_ROW.format(name=name, low=low, high=high, fewest=FEWEST_ROW_CELLS, most=MOST_ROW_CELLS, value=values))
+        if list(values) == self.genre_row(role=role, name=name):
+            self.clear_player_row(role=role, name=name)
+        else:
+            self._rows.setdefault(role, {})[name] = list(values)
+
+    def clear_player_row(self, *, role, name):
+        """Give a player's row back to the genre."""
+        self._rows.get(role, {}).pop(name, None)
+        if not self._rows.get(role):
+            self._rows.pop(role, None)
+
+    def _set_kept_player_row(self, *, role, name, values):
+        self.set_player_row(role=role, name=name, values=values)
+
+    def _song_role_habits(self):
+        """The rows the song's players have of their own, for the players the rows are dealt to."""
+        return {role: {name: list(row) for name, row in rows.items() if name in self.player_rows(role)} for role, rows in self._rows.items() if self.role_is_in(role) and self.player_rows(role)}
 
     def _song_melody(self):
         """Return what the song says of its melody over the genre's habits: the smart style's gauges where one was moved, and
@@ -1652,6 +1726,7 @@ class WizardChoices:
                 **({HOOK: self._hook} if self._hook is not None else {}),
                 **({HOOK_TAKE: self._hook_take} if self._hook_take else {}),
                 **({MELODY: self._song_melody()} if self._song_melody() else {}),
+                **({ROLE_HABITS: self._song_role_habits()} if self._song_role_habits() else {}),
                 **({ROLE_SOUNDS: self._song_sounds()} if self._song_sounds() else {}),
                 **({WITHOUT_PIECES: list(self._pieces_off)} if self._pieces_off else {}),
                 **({PIECE_SOUNDS: {piece: dict(sounds_as) for piece, sounds_as in self._piece_sounds.items()}} if self._piece_sounds else {}),
