@@ -508,6 +508,7 @@ ERR_NOT_A_BAR = 'the pattern cannot be written as a drum bar'
 # The song wizard's choices (macro_composer/wizard_choices.py).
 ERR_WIZARD_NO_SUCH_GENRE = 'genre must be one of the genres, got {value!r}'
 ERR_WIZARD_NO_SUCH_SUBGENRE = 'subgenre must be one of the genre, got {value!r}'
+ERR_WIZARD_NO_SUCH_VARIANT = 'variant must be one of: {choices}, got {value!r}'
 ERR_WIZARD_NO_SUCH_ROOT = 'key must be a note name, got {value!r}'
 ERR_WIZARD_NO_SUCH_SCALE_TYPE = 'scale type must be one the wizard offers, got {value!r}'
 ERR_WIZARD_TEMPO = 'tempo must be an integer from {low} to {high}, got {value!r}'

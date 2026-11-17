@@ -217,6 +217,11 @@ BY_FAMILY = 'by_family'
 BY = 'by'
 # What a style says differently for one of its templates, laid over the style: a section's bars, the plan's numbers and the like.
 BY_SUBGENRE = 'by_subgenre'
+# The kinds of song a subgenre holds, each drawn whole: a name, how common it is, a line that says what it is, and what the kind
+# says differently from its subgenre, laid over the style as the subgenre's own words are. A song names its kind as its variant.
+VARIANTS = 'variants'
+VARIANT = 'variant'
+VARIANT_SAYS = 'says'
 # How far a song's players' levels lie from their normal ones, by the player's name, from 0 to 10; a song's own levels for a
 # player are under the style's word for loudness.
 DYNAMICS = 'dynamics'
@@ -397,15 +402,28 @@ def said_over(*, usual, own):
 STYLES_IN_TEMPLATES = {}
 
 
-def style_in(*, style, template):
-    """A style as one of its templates has it: what the style says by_subgenre for the template laid over the style, worked out once.
-    A style that says nothing of the template, or one already so laid over, is returned as it is."""
+def variants_of(*, style, template):
+    """The kinds of song a style's template holds, the commonest first, or none."""
+    return sorted(style.get(VARIANTS, {}).get(template, []), key=share_of, reverse=True)
+
+
+def variant_named(*, style, template, variant):
+    """One kind of song of a template by its name, or None for a name the template has no kind of, as a song kept before the kind was renamed."""
+    return next((entry for entry in variants_of(style=style, template=template) if entry[NAME] == variant), None)
+
+
+def style_in(*, style, template, variant=None):
+    """A style as one of its templates has it: what the style says by_subgenre for the template laid over the style, and then what
+    the song's kind says laid over that, worked out once. A style that says nothing of the template or the kind, or one already so
+    laid over, is returned as it is."""
     own = style.get(BY_SUBGENRE, {}).get(template)
-    if not own:
+    kind = variant_named(style=style, template=template, variant=variant)
+    if not own and kind is None:
         return style
-    key = (style[NAME], template)
+    key = (style[NAME], template, variant if kind is not None else None)
     if key not in STYLES_IN_TEMPLATES:
-        STYLES_IN_TEMPLATES[key] = {**said_over(usual={name: value for name, value in style.items() if name != BY_SUBGENRE}, own=own)}
+        laid = said_over(usual={name: value for name, value in style.items() if name != BY_SUBGENRE}, own=own) if own else style
+        STYLES_IN_TEMPLATES[key] = {**(said_over(usual=laid, own=kind.get(STYLE, {})) if kind is not None else laid)}
     return STYLES_IN_TEMPLATES[key]
 
 
@@ -826,7 +844,7 @@ def form_of(*, style, song, meter, tempo):
 
 def arranged(*, style, song):
     """A song's picks as a MacroComposer input."""
-    style = style_in(style=style, template=song[TEMPLATE])
+    style = style_in(style=style, template=song[TEMPLATE], variant=song.get(VARIANT))
     picks = picked(style=style, song=song)
     meter = str(picks.get(METER, COMMON_TIME))
     tempo = tempo_of(style=style, song=song, picks=picks)

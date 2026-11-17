@@ -38,7 +38,7 @@ from llamatron.macro_composer.arranger import (
     BARS, CHORD_TRAIT, CHORD_TRAIT_FIELD, FORM, HELD, PLAYS, GENRE, KEY, NAME, ROOT, SCALE_TYPE, SECTIONS, SEED, STYLE, TEMPLATE, TEMPLATES, TEMPO, TITLE, TRAITS, TYPE, USUAL,
     BREAK, BREAK_CUT, HIGHEST_NOTE, KEPT_BESIDE_A_BREAK, LOWEST_NOTE, MELODY, NO_BREAK, PIECE_SOUNDS, PLAYED_DRUM, PLAYED_NOTE, PLAYED_SOUND,
     ANSWERS, BESIDE, BESIDE_BUSY, BESIDE_WAYS, FIGURE,
-    arranged, forms_of, picked, player_of, section_of, share_in, share_of, style_in, style_named, style_names, values_of,
+    arranged, forms_of, picked, player_of, section_of, share_in, share_of, style_in, style_named, style_names, values_of, variant_named, variants_of, VARIANT, VARIANT_SAYS,
 )
 from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer import hook_kinds, line_edits, phrasing
@@ -67,7 +67,7 @@ from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MIN_GM_SO
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.marks import MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SECTION_VARIANT
 from llamatron.support.version import VERSION as A_VERSION
-from llamatron.strings.errors import ERR_WIZARD_CHORDS_SHARED, ERR_WIZARD_SWING, ERR_WIZARD_DYNAMICS, ERR_WIZARD_LOUDNESS, ERR_WIZARD_NO_RIFF, ERR_WIZARD_RIFF, ERR_WIZARD_RIFF_UNMADE, ERR_WIZARD_COMES_IN, ERR_WIZARD_LAYS_OUT, ERR_WIZARD_PLAYS_UNMADE, ERR_WIZARD_REACTS, ERR_WIZARD_CONTRAST, ERR_WIZARD_EXTRAS, ERR_WIZARD_END, ERR_WIZARD_FIRST_PLAYER, ERR_WIZARD_HOOK_LINE, ERR_WIZARD_HOOK_PART, ERR_WIZARD_SETUP_BARS, ERR_WIZARD_START, ERR_WIZARD_START_UNMADE, ERR_WIZARD_CHORDS, ERR_WIZARD_FORM_ANSWER, ERR_WIZARD_NO_FORM_QUESTIONS, ERR_WIZARD_INTRO_HOOK, ERR_WIZARD_PHRASING, ERR_WIZARD_SECTION_OWN, ERR_WIZARD_SECTION_OWN_UNMADE, ERR_WIZARD_GENRE_HAS_NO_PLAN, ERR_WIZARD_NO_SONG_PLAN, ERR_WIZARD_SWITCH, ERR_WIZARD_NO_SUCH_ROW, ERR_WIZARD_ROW, ERR_WIZARD_HOOK_TAKE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_MELODY_NUMBER, ERR_WIZARD_MELODY_SWITCH, ERR_WIZARD_NO_SUCH_MELODY_SETTING, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
+from llamatron.strings.errors import ERR_WIZARD_NO_SUCH_VARIANT, ERR_WIZARD_CHORDS_SHARED, ERR_WIZARD_SWING, ERR_WIZARD_DYNAMICS, ERR_WIZARD_LOUDNESS, ERR_WIZARD_NO_RIFF, ERR_WIZARD_RIFF, ERR_WIZARD_RIFF_UNMADE, ERR_WIZARD_COMES_IN, ERR_WIZARD_LAYS_OUT, ERR_WIZARD_PLAYS_UNMADE, ERR_WIZARD_REACTS, ERR_WIZARD_CONTRAST, ERR_WIZARD_EXTRAS, ERR_WIZARD_END, ERR_WIZARD_FIRST_PLAYER, ERR_WIZARD_HOOK_LINE, ERR_WIZARD_HOOK_PART, ERR_WIZARD_SETUP_BARS, ERR_WIZARD_START, ERR_WIZARD_START_UNMADE, ERR_WIZARD_CHORDS, ERR_WIZARD_FORM_ANSWER, ERR_WIZARD_NO_FORM_QUESTIONS, ERR_WIZARD_INTRO_HOOK, ERR_WIZARD_PHRASING, ERR_WIZARD_SECTION_OWN, ERR_WIZARD_SECTION_OWN_UNMADE, ERR_WIZARD_GENRE_HAS_NO_PLAN, ERR_WIZARD_NO_SONG_PLAN, ERR_WIZARD_SWITCH, ERR_WIZARD_NO_SUCH_ROW, ERR_WIZARD_ROW, ERR_WIZARD_HOOK_TAKE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_MELODY_NUMBER, ERR_WIZARD_MELODY_SWITCH, ERR_WIZARD_NO_SUCH_MELODY_SETTING, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'
@@ -420,12 +420,13 @@ def chords_as_text(chords):
 
 
 @functools.cache
-def melody_works(*, genre, subgenre, style):
+def melody_works(*, genre, subgenre, style, variant=None):
     """Return whether a subgenre's tunes can be sketched by a melody style, found by making a song, once: a genre whose tunes
     are written as rows, with no rhythms to walk, takes only the style it was written for."""
     choices = WizardChoices()
     choices.set_genre(genre)
     choices.set_subgenre(subgenre)
+    choices.take_variant(variant)
     choices.set_seed(FIRST_SEED)
     try:
         Setlist.from_data(data=composed(given=arranged(style=style_of(genre), song={**choices.song_picks(subgenre), MELODY_ENGINE: style}), version=A_VERSION))
@@ -435,24 +436,26 @@ def melody_works(*, genre, subgenre, style):
 
 
 @functools.cache
-def melody_is_usual(*, genre, subgenre, style):
+def melody_is_usual(*, genre, subgenre, style, variant=None):
     """Return whether a melody style sketches a subgenre's tunes just as the genre does unasked, found by making both, once:
     such a style is the usual one under its own name, and is nothing to choose."""
     choices = WizardChoices()
     choices.set_genre(genre)
     choices.set_subgenre(subgenre)
+    choices.take_variant(variant)
     choices.set_seed(FIRST_SEED)
     song = choices.song_picks(subgenre)
     return arranged(style=style_of(genre), song={**song, MELODY_ENGINE: style})[PARTS] == arranged(style=style_of(genre), song=song)[PARTS]
 
 
 @functools.cache
-def hook_matters(*, genre, subgenre, form):
+def hook_matters(*, genre, subgenre, form, variant=None):
     """Return whether a hook changes a subgenre's song in a form, found by making the song with one and without, once: where
     nobody carries a tune in the sections that mark a hook, a hook is nothing to choose."""
     choices = WizardChoices()
     choices.set_genre(genre)
     choices.set_subgenre(subgenre)
+    choices.take_variant(variant)
     choices.set_form(form)
     choices.set_seed(FIRST_SEED)
     song = choices.song_picks(subgenre)
@@ -460,13 +463,13 @@ def hook_matters(*, genre, subgenre, form):
 
 
 @functools.cache
-def bars_work(*, genre, subgenre, kind, bars, plays=None):
+def bars_work(*, genre, subgenre, kind, bars, plays=None, variant=None):
     """Return whether a subgenre's parts can fill a section of a kind at a length, found by making one and measuring it, once:
     some parts are written over several bars and divide only some lengths, and some, as a chorus of twelve bars, last as long
     as they are written whatever is asked. Given the section's players, only their parts are asked, since a part that sits
     out cannot time the section."""
-    style = style_in(style=style_of(genre), template=subgenre)
-    song = {NAME: kind, TITLE: kind, STYLE: genre, TEMPLATE: subgenre, KEY: {ROOT: USUAL_ROOTS[MAJOR], TYPE: MAJOR}, SEED: FIRST_SEED,
+    style = style_in(style=style_of(genre), template=subgenre, variant=variant)
+    song = {NAME: kind, TITLE: kind, STYLE: genre, TEMPLATE: subgenre, VARIANT: variant, KEY: {ROOT: USUAL_ROOTS[MAJOR], TYPE: MAJOR}, SEED: FIRST_SEED,
             FORM: [kind], SECTIONS: {kind: {KIND: kind, BARS: bars, **({} if plays is None else {PLAYS: list(plays)})}}}
     try:
         given = arranged(style=style, song=song)
@@ -486,7 +489,7 @@ SECONDS_IN_MINUTE = 60
 class WizardChoices:
     """The choices of one run of the song wizard."""
 
-    __slots__ = ('_extras', '_stages', '_hook_take', '_rows', '_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_own_gauges', '_beside', '_without', '_sections', '_melody', '_hook', '_sounds', '_band_sounds', '_guitarists', '_pieces_off', '_break', '_break_cut', '_gauges', '_piece_sounds', '_fills', '_quiet_notes', '_melody_settings', '_answers', '_answers_of', '_picks_kept')
+    __slots__ = ('_extras', '_stages', '_hook_take', '_rows', '_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_own_gauges', '_beside', '_without', '_sections', '_melody', '_hook', '_sounds', '_band_sounds', '_guitarists', '_pieces_off', '_break', '_break_cut', '_gauges', '_piece_sounds', '_fills', '_quiet_notes', '_melody_settings', '_answers', '_answers_of', '_picks_kept', '_variant')
 
     def __init__(self):
         # Answers found by making the song, each kept until a choice changes.
@@ -496,6 +499,8 @@ class WizardChoices:
         self._picks_kept = None
         self._genre = None
         self._subgenre = None
+        # The kind of song the subgenre makes, where the subgenre holds several.
+        self._variant = None
         self._root = None
         self._scale_type = None
         self._tempo = None
@@ -541,7 +546,7 @@ class WizardChoices:
     def from_data(cls, data):
         """Return the choices a song kept, leaving out whatever no longer fits, as a genre renamed since: what is left out is chosen again."""
         choices = cls()
-        setters = [(GENRE, choices.set_genre), (SUBGENRE, choices.set_subgenre), (ROOT, choices.set_root), (TYPE, choices.set_scale_type), (TEMPO, choices.set_tempo), (FORM, choices.set_form), (SEED, choices.set_seed)]
+        setters = [(GENRE, choices.set_genre), (SUBGENRE, choices.set_subgenre), (VARIANT, choices.take_variant), (ROOT, choices.set_root), (TYPE, choices.set_scale_type), (TEMPO, choices.set_tempo), (FORM, choices.set_form), (SEED, choices.set_seed)]
         for field, setter in setters:
             if (data or {}).get(field) is not None:
                 try:
@@ -595,7 +600,7 @@ class WizardChoices:
 
     def to_data(self):
         """Return the choices made, as plain data a song keeps."""
-        held = {GENRE: self._genre, SUBGENRE: self._subgenre, ROOT: self._root, TYPE: self._scale_type, TEMPO: self._tempo, FORM: self._form, SEED: self._seed,
+        held = {GENRE: self._genre, SUBGENRE: self._subgenre, VARIANT: self._variant, ROOT: self._root, TYPE: self._scale_type, TEMPO: self._tempo, FORM: self._form, SEED: self._seed,
                 PICKS: dict(self._ways) or None, PLAYERS: dict(self._levels) or None, WITHOUT: list(self._without) or None,
                 PLAYER_GAUGES_KEPT: {player: dict(places) for player, places in self._own_gauges.items() if places} or None,
                 PLAYER_ROWS_KEPT: {role: {name: list(row) for name, row in rows.items()} for role, rows in self._rows.items() if rows} or None,
@@ -622,6 +627,7 @@ class WizardChoices:
         if genre != self._genre:
             self._genre = genre
             self._subgenre = None
+            self._variant = None
             self._form = None
             self._sections = None
             self._stages = {}
@@ -651,21 +657,56 @@ class WizardChoices:
             raise ValueError(ERR_WIZARD_NO_SUCH_SUBGENRE.format(value=subgenre))
         if subgenre != self._subgenre:
             self._subgenre = subgenre
-            self._forget_band()
-            self._tempo = self.usual_tempo()
-            self._scale_type = self.usual_scale_type()
-            self._root = USUAL_ROOTS[self._scale_type]
-            self._form = None
-            self._sections = None
-            self._stages = {}
-            self._melody = None
-            self._hook = None
-            self._hook_take = FIRST_HOOK_TAKE
-            self._levels = {player: USUAL_BUSY for player in self._style().get(PLAYERS, {})}
-            self._own_gauges = {}
-            self._rows = {}
-            self._beside = self._usual_beside()
-            self._take_riff_of_genre()
+            # The commonest kind of song the subgenre holds, which a person may change.
+            self._variant = next(iter(self.variants()), None)
+            self._take_usual_of_subgenre()
+
+    def variants(self):
+        """Return the kinds of song the subgenre holds, by name, the commonest first, or none where the subgenre is one kind."""
+        if self._subgenre is None:
+            return []
+        return [entry[NAME] for entry in variants_of(style=style_of(self._genre), template=self._subgenre)]
+
+    def get_variant(self):
+        return self._variant
+
+    def variant_says(self, *, variant=None):
+        """Return the line that says what a kind of song is, the chosen kind unless one is named, or None."""
+        entry = variant_named(style=style_of(self._genre), template=self._subgenre, variant=variant or self._variant) if self._subgenre else None
+        return entry.get(VARIANT_SAYS) if entry else None
+
+    def set_variant(self, variant):
+        """Choose the kind of song the subgenre makes, and take the kind's usual tempo, scale, form and band, as choosing a subgenre does."""
+        if variant not in self.variants():
+            raise ValueError(ERR_WIZARD_NO_SUCH_VARIANT.format(choices=', '.join(self.variants()), value=variant))
+        if variant != self._variant:
+            self._variant = variant
+            self._take_usual_of_subgenre()
+
+    def take_variant(self, variant):
+        """Choose a kind of song a kept song or a check names, where the subgenre has that kind; none leaves the subgenre's commonest."""
+        if variant is not None:
+            self.set_variant(variant)
+
+    def _take_usual_of_subgenre(self):
+        """Take what the subgenre and its kind of song usually have, leaving behind whatever was chosen for another."""
+        self._forget_band()
+        self._tempo = self.usual_tempo()
+        self._scale_type = self.usual_scale_type()
+        self._root = USUAL_ROOTS[self._scale_type]
+        self._form = None
+        self._sections = None
+        self._stages = {}
+        self._melody = None
+        self._hook = None
+        self._hook_take = FIRST_HOOK_TAKE
+        self._levels = {player: USUAL_BUSY for player in self._style().get(PLAYERS, {})}
+        self._own_gauges = {}
+        self._rows = {}
+        self._beside = self._usual_beside()
+        # A swing chosen was chosen beside another subgenre's or kind's own.
+        self._extras.pop(GROOVE, None)
+        self._take_riff_of_genre()
 
     def is_ready(self):
         """Return whether a song can be made: a genre and a subgenre are chosen, and the rest has its usual values."""
@@ -676,7 +717,7 @@ class WizardChoices:
     def _picks(self):
         """Return every trait's pick: the ways of playing chosen, and the subgenre's for the rest. The picks are worked out once
         for a genre, a subgenre and the ways chosen, and a caller never changes what is returned."""
-        of = (self._genre, self._subgenre, repr(self._ways))
+        of = (self._genre, self._subgenre, self._variant, repr(self._ways))
         if self._picks_kept is None or self._picks_kept[0] != of:
             self._picks_kept = (of, self._picks_with(self._ways))
         return self._picks_kept[1]
@@ -879,7 +920,7 @@ class WizardChoices:
             return []
         sections = self._style()[SECTIONS]
         return [kind for kind, section in sections.items()
-                if bars_work(genre=self._genre, subgenre=self._subgenre, kind=kind, bars=HELD_BARS if section.get(HELD) else section[BARS])]
+                if bars_work(genre=self._genre, subgenre=self._subgenre, variant=self._variant, kind=kind, bars=HELD_BARS if section.get(HELD) else section[BARS])]
 
     def section_kind(self, place):
         return self._entry(place)[KIND]
@@ -954,7 +995,7 @@ class WizardChoices:
     def _bars_fit(self, *, place, bars):
         """Return whether the players of a section can fill the section at a length: on their own, and then in this song, where
         a part may be written differently beside another section of the kind."""
-        if not bars_work(genre=self._genre, subgenre=self._subgenre, kind=self._entry(place)[KIND], bars=bars, plays=tuple(self.section_plays(place))):
+        if not bars_work(genre=self._genre, subgenre=self._subgenre, variant=self._variant, kind=self._entry(place)[KIND], bars=bars, plays=tuple(self.section_plays(place))):
             return False
         trial = copy.deepcopy(self)
         trial._answers = {}
@@ -1311,7 +1352,7 @@ class WizardChoices:
 
     def _style(self):
         """Return the genre's style template as the subgenre chosen has it."""
-        return style_in(style=style_of(self._genre), template=self._subgenre)
+        return style_in(style=style_of(self._genre), template=self._subgenre, variant=self._variant)
 
     def _role(self, role):
         found = next((entry for entry in self._style()[ROLES] if entry[ROLE] == role), None) if self.is_ready() else None
@@ -1886,8 +1927,8 @@ class WizardChoices:
         """Return the melody styles the subgenre's tunes can be sketched by, leaving out any that makes no song of it."""
         if not self.is_ready():
             return []
-        return [style for style in MELODY_STYLES if melody_works(genre=self._genre, subgenre=self._subgenre, style=style)
-                and not melody_is_usual(genre=self._genre, subgenre=self._subgenre, style=style)]
+        return [style for style in MELODY_STYLES if melody_works(genre=self._genre, subgenre=self._subgenre, variant=self._variant, style=style)
+                and not melody_is_usual(genre=self._genre, subgenre=self._subgenre, variant=self._variant, style=style)]
 
     def genre_melody(self):
         """Return the melody style the genre's own tunes are sketched by, which a song takes while none is chosen."""
@@ -1912,7 +1953,7 @@ class WizardChoices:
         the subgenre's own, a player carries a tune there."""
         if not self.is_ready() or not any(entry.get(HOOK) for place in range(len(self._entries())) for entry in self._section(place).get(PLAN, [])):
             return False
-        return self.has_own_form() or hook_matters(genre=self._genre, subgenre=self._subgenre, form=self.get_form())
+        return self.has_own_form() or hook_matters(genre=self._genre, subgenre=self._subgenre, variant=self._variant, form=self.get_form())
 
     def usual_hook(self):
         """Return whether the genre's songs have a hook unless a person says otherwise."""
@@ -2654,7 +2695,7 @@ class WizardChoices:
             raise ValueError(ERR_WIZARD_SECTION_OWN_UNMADE.format(field=field, value=value, problem=problem)) from None
 
     def _picks_chosen(self, name):
-        return {NAME: name, TITLE: name, STYLE: self._genre, TEMPLATE: self._subgenre, KEY: {ROOT: self._root, TYPE: self._scale_type}, TEMPO: self._tempo, FORM: self.form_sections() if self.has_own_form() else self.get_form(), SEED: self._seed,
+        return {NAME: name, TITLE: name, STYLE: self._genre, TEMPLATE: self._subgenre, VARIANT: self._variant, KEY: {ROOT: self._root, TYPE: self._scale_type}, TEMPO: self._tempo, FORM: self.form_sections() if self.has_own_form() else self.get_form(), SEED: self._seed,
                 PICKS: {**self._ways, **self._break_picks()}, PLAYERS: self._players(), WITHOUT: self._song_without(), **self._song_beside(),
                 **({SECTIONS: self._sections_of_song()} if self._sections_of_song() else {}),
                 **({MELODY_ENGINE: self._melody} if self._melody is not None else {}),
