@@ -167,6 +167,8 @@ ENDS = 'ends'
 MELODY_ENGINE = 'melody_engine'
 VOICE = 'voice'
 HABITS = 'habits'
+# A song's own habits for a player, by the player's role, which come over the genre's for that player.
+ROLE_HABITS = 'role_habits'
 STYLE_TEMPLATES = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'style_templates')
 STYLE_SUFFIX = '.yml'
 # A scale's name from its root and type, and what a drum's uneven hits are seeded by: the song's seed, the drum and the section.
@@ -761,7 +763,7 @@ def arranged(*, style, song):
             def lines_of(role, *, section=section, chords=chords, here=here):
                 """The lines a player of a tune plays in the section: those the section gives, or those sketched for the player."""
                 given = section.get(LINES_GIVEN, {}).get(role[ROLE])
-                return given or sketched(habits={**habits_of(habits=habits, player=here[role[ROLE]]), **role.get(HABITS, {}), **song.get(MELODY, {})}, plan=section[PLAN], chords=chords, scale_type=scale_type, seed=song.get(SEED, 0),
+                return given or sketched(habits={**habits_of(habits=habits, player=here[role[ROLE]]), **role.get(HABITS, {}), **song.get(ROLE_HABITS, {}).get(role[ROLE], {}), **song.get(MELODY, {})}, plan=section[PLAN], chords=chords, scale_type=scale_type, seed=song.get(SEED, 0),
                                          answers=bool(role.get(ANSWERS)), engine=song.get(MELODY_ENGINE, role.get(ENGINE)), voice=role.get(VOICE), letters=line_letters(plans=plans, answers=bool(role.get(ANSWERS))),
                                          hook=has_a_hook, hook_take=song.get(HOOK_TAKE, FIRST_HOOK_TAKE))
             # The player who has the tune in the section, if any: a player of lines who answers nobody.

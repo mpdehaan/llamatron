@@ -152,7 +152,7 @@ clouds; generate and test, with motif development and counterpoint last.
   when it returns. The wizard's Melody picker offers it, and no subgenre takes it unasked yet: that waits for the user's say
   once trial songs are heard. `TestSmart` in `tests/macro_composer/test_melody_engines.py` measures each tendency and each
   gauge over forty seeds. The gauges are fields of the wizard's Melody branch, under Composition, under the Melody field while it reads smart
-  (`MelodyBranch.gauge_field`), kept by the song as `melody_gauges`. The other styles' own settings are fields there too while the style is in use (`WizardChoices.melody_settings`, kept as `melody_settings`, written into the song's `melody` over the genre's habits by `_song_melody`): evolving's move and rotate, serial's chromatic, leaps and rotations. A line's notes are drawn by the seed and where the gauges
+  (`MelodyBranch.gauge_field`), kept by the song as `melody_gauges`. The other styles' own settings are fields there too while the style is in use (`WizardChoices.melody_settings`, kept as `melody_settings`, written into the song's `melody` over the genre's habits by `_song_melody`): evolving's move and rotate, serial's chromatic, leaps and rotations. A song may give a player habits of the player's own, `role_habits` by role, which come over the genre's habits for that player; the wizard uses them for the serial style's rows of lengths, loudness and articulation. A line's notes are drawn by the seed and where the gauges
   stand together, so a gauge moved one position always redraws the notes, while each line's rhythm and shape, which go by
   the seed alone, stay (Claude's choice, to hold the rule that every choice changes the song: the chances alone often
   turned no draw).

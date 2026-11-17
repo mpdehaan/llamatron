@@ -18,14 +18,14 @@
 from llamatron.composition.file_format import Section
 from llamatron.macro_composer.arranger import BARS, WITHOUT
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
-from llamatron.macro_composer.melody import DEFAULT_GAUGES, EVOLVING, GAUGE_MOVES, HIGHEST_GAUGE, LEAPS, MOVE, SERIAL, SMART
-from llamatron.macro_composer.wizard_choices import MAJOR, WizardChoices, USUAL_PIECE_NOTE, FEWEST_FILLS, MOST_FILLS, ONE_GUITARIST_COUNT, TWO_GUITARISTS, ACOUSTIC, BAND_SOUNDS, FILLS_TRAITS, PROGRESSION_TRAITS, MOST_BUSY, USUAL_BUSY, MINOR, SEED, genre_names, genre_title
+from llamatron.macro_composer.melody import LENGTHS, LOUDNESS, DEFAULT_GAUGES, EVOLVING, GAUGE_MOVES, HIGHEST_GAUGE, LEAPS, MOVE, SERIAL, SMART
+from llamatron.macro_composer.wizard_choices import PLAYER_ROWS, PLAYER_ROWS_KEPT, MAJOR, WizardChoices, USUAL_PIECE_NOTE, FEWEST_FILLS, MOST_FILLS, ONE_GUITARIST_COUNT, TWO_GUITARISTS, ACOUSTIC, BAND_SOUNDS, FILLS_TRAITS, PROGRESSION_TRAITS, MOST_BUSY, USUAL_BUSY, MINOR, SEED, genre_names, genre_title
 from llamatron.strings.errors import ERR_WIZARD_LAST_PIECE, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_CHOOSE_GENRE, ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
-from llamatron.strings.labels import MSG_WIZARD_NEW_HOOK_BUTTON, MSG_WIZARD_MELODY_SETTING_LABELS, MSG_WIZARD_PLAYER_GAUGE_LABELS, MSG_WIZARD_ANSWERED_BY_LABEL, MSG_WIZARD_BY_SECTION, MSG_WIZARD_FILLS_BUSY_LABEL, MSG_WIZARD_NOBODY, MSG_WIZARD_ROLE_LABEL, MSG_WIZARD_SECTION_ROLE_LABEL, MSG_WIZARD_TUNE_LABEL, MSG_GM_SOUNDS, MSG_WIZARD_KIT_DRUMS, MSG_GM_FAMILIES, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_GAUGE_ENDS, MSG_WIZARD_GAUGE_LABELS, MSG_WIZARD_HOOK_LABEL, MSG_WIZARD_NO_BREAK, MSG_WIZARD_ANY_PROGRESSION, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_GUITARISTS_LABEL, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_SOUND_LABEL, MSG_WIZARD_SOUNDS_LABEL, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_COMPOSITION_BRANCH, MSG_WIZARD_CHORDS_BRANCH, MSG_WIZARD_MELODY_BRANCH, MSG_WIZARD_HOOKS_BRANCH, MSG_WIZARD_HOOK_ON, MSG_WIZARD_HOOK_OFF, MSG_WIZARD_USUAL_MELODY, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_SUGGESTED_FORM_BUTTON, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_START_CANCEL
+from llamatron.strings.labels import MSG_WIZARD_ROW_LABELS, MSG_WIZARD_NEW_HOOK_BUTTON, MSG_WIZARD_MELODY_SETTING_LABELS, MSG_WIZARD_PLAYER_GAUGE_LABELS, MSG_WIZARD_ANSWERED_BY_LABEL, MSG_WIZARD_BY_SECTION, MSG_WIZARD_FILLS_BUSY_LABEL, MSG_WIZARD_NOBODY, MSG_WIZARD_ROLE_LABEL, MSG_WIZARD_SECTION_ROLE_LABEL, MSG_WIZARD_TUNE_LABEL, MSG_GM_SOUNDS, MSG_WIZARD_KIT_DRUMS, MSG_GM_FAMILIES, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_GAUGE_ENDS, MSG_WIZARD_GAUGE_LABELS, MSG_WIZARD_HOOK_LABEL, MSG_WIZARD_NO_BREAK, MSG_WIZARD_ANY_PROGRESSION, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_GUITARISTS_LABEL, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_SOUND_LABEL, MSG_WIZARD_SOUNDS_LABEL, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_COMPOSITION_BRANCH, MSG_WIZARD_CHORDS_BRANCH, MSG_WIZARD_MELODY_BRANCH, MSG_WIZARD_HOOKS_BRANCH, MSG_WIZARD_HOOK_ON, MSG_WIZARD_HOOK_OFF, MSG_WIZARD_USUAL_MELODY, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_SUGGESTED_FORM_BUTTON, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_START_CANCEL
 from llamatron.strings.legends import What
 from llamatron.strings.macro_composer import MSG_PIECE_INSTRUMENT
-from llamatron.strings.marks import MSG_WIZARD_GENRE_MELODY_SHOWN, MSG_WIZARD_PROGRESSION_FOR, MSG_WIZARD_HOOK_BAR_LINE, MSG_WIZARD_HOOK_CELL, MSG_WIZARD_HOOK_GAP, MSG_WIZARD_CHORDS_KEY, MSG_WIZARD_CHORDS_LINE, MSG_WIZARD_PROGRESSION_SHOWN, MSG_WIZARD_BUSY_CUSTOM_SHOWN, MSG_WIZARD_COMPOSITION_LINE, MSG_WIZARD_ROLE_FROM_PLAN, MSG_SOUND_NOTE_ROW, MSG_TOGGLE_ON, MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_SOUND_ON_NOTE, MSG_WIZARD_MELODY_GAUGE_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_OWN_FORM, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
-from llamatron.strings.messages import MSG_WIZARD_HOOK_MADE, MSG_WIZARD_CHORDS_DRAWN_LATER, MSG_WIZARD_NOTHING_TO_CHOOSE, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_SECTIONS_HINT, MSG_UNDONE, MSG_RESTORED, MSG_WIZARD_ALREADY_OPEN, MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CREATED, MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_REPLACED, MSG_WIZARD_NOTHING_TO_UNDO
+from llamatron.strings.marks import MSG_ROW_DIALOG_BAR, MSG_ROW_DIALOG_ZERO, MSG_WIZARD_GENRE_ROW_SHOWN, MSG_WIZARD_ROW_SEPARATOR, MSG_WIZARD_GENRE_MELODY_SHOWN, MSG_WIZARD_PROGRESSION_FOR, MSG_WIZARD_HOOK_BAR_LINE, MSG_WIZARD_HOOK_CELL, MSG_WIZARD_HOOK_GAP, MSG_WIZARD_CHORDS_KEY, MSG_WIZARD_CHORDS_LINE, MSG_WIZARD_PROGRESSION_SHOWN, MSG_WIZARD_BUSY_CUSTOM_SHOWN, MSG_WIZARD_COMPOSITION_LINE, MSG_WIZARD_ROLE_FROM_PLAN, MSG_SOUND_NOTE_ROW, MSG_TOGGLE_ON, MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_SOUND_ON_NOTE, MSG_WIZARD_MELODY_GAUGE_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_OWN_FORM, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
+from llamatron.strings.messages import MSG_WIZARD_ROW_TITLE, MSG_WIZARD_HOOK_MADE, MSG_WIZARD_CHORDS_DRAWN_LATER, MSG_WIZARD_NOTHING_TO_CHOOSE, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_SECTIONS_HINT, MSG_UNDONE, MSG_RESTORED, MSG_WIZARD_ALREADY_OPEN, MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CREATED, MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_REPLACED, MSG_WIZARD_NOTHING_TO_UNDO
 from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_SONG_WORD
 from llamatron.composition.naming import new_name
 from llamatron.support.version import VERSION
@@ -35,6 +35,9 @@ from llamatron.tui.document import Document
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MIN_GM_SOUND
+from llamatron.tui.dialogs.dialog import DIALOG_MARGIN
+from llamatron.tui.drawing import LINE_BREAK
+from llamatron.tui.dialogs.row_dialog import CELL_WIDTH, RowDialog
 from llamatron.tui.note_names import note_shown, note_typed
 from llamatron.tui.dialogs.sound_dialog import SoundDialog
 from llamatron.tui.keys import Key
@@ -45,7 +48,7 @@ from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.tui.screens.wizard.hooks_branch import picture_of
 from llamatron.tui.screens.wizard.starts import NEW_FROM_LAST, NEW_FROM_SCRATCH, REPLACE_FROM_LAST, REPLACE_FROM_SCRATCH, STARTS
 from llamatron.tui.screens.wizard.wizard_page import WizardPage
-from tests.support.ui_testing import UITest, back_key, fixed_text, forward_key, key_of
+from tests.support.ui_testing import UITest, back_key, first_key, fixed_text, forward_key, key_of
 
 # The tree's branches by their places from the top, while none is open.
 GENRE_PLACE = 0
@@ -58,6 +61,16 @@ A_SONG_NAME = 'anthem'
 A_NOTE_TYPED = 'f#2'
 A_GENRE_WITH_RHYTHMS = 'rock'
 A_GENRE_WITH_NO_HOOK = 'blues'
+# A row made for the Row dialog's tests, its range, how short and long it may be, and the row put back; and a row either side of zero.
+A_ROWS_TITLE = 'A row'
+A_ROW = [1, 2, 3]
+A_USUAL_ROW = [2, 2]
+A_ROWS_LOWEST = 1
+A_ROWS_HIGHEST = 4
+A_ROWS_FEWEST = 1
+A_ROWS_MOST = 16
+A_SIGNED_ROW = [-2, 0, 3]
+CONSOLE_WIDTH = 80
 # A hook of one bar made for the test, a note of it, and the widths of a panel with room for wide steps and without.
 A_HOOKS_STEPS = 8
 A_PITCH = 60
@@ -980,6 +993,135 @@ class TestWizardInterplay(WizardTest):
         await self.go_to_named_branch(MSG_WIZARD_FORM_BRANCH)
         await self.press(*[Key.DOWN] * (without + 1), keybindings.WizardPage.INTO_FIELDS)
         self.assertNotIn(label, [field.label for field in self.wizard().fields()])
+
+
+class TestWizardPlayerRows(WizardTest):
+    """A player's rows of numbers under the serial melody style: shown on the player's panel, opened in the Row dialog and kept."""
+
+    async def serial(self):
+        choices = self.choices()
+        choices.set_genre(A_GENRE_WITH_RHYTHMS)
+        choices.set_subgenre(choices.subgenres()[0])
+        choices.set_melody(SERIAL)
+        await self.press(Key.DOWN, Key.UP)
+        role = next(role for role in choices.roles_in() if choices.player_rows(role))
+        await self.go_to_named_branch(choices.role_title(role))
+        return choices, role
+
+    async def open_row(self, name):
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(MSG_WIZARD_ROW_LABELS[name])
+        await self.press(Key.ENTER)
+
+    def shown_row(self, *, choices, role, name):
+        return MSG_WIZARD_ROW_SEPARATOR.join(str(value) for value in choices.get_player_row(role=role, name=name))
+
+    async def test_the_rows_show_on_the_players_panel_only_under_the_serial_style(self):
+        choices, role = await self.serial()
+        for name in PLAYER_ROWS:
+            self.assertIn(MSG_WIZARD_GENRE_ROW_SHOWN.format(row=self.shown_row(choices=choices, role=role, name=name)), self.text())
+        choices.set_melody(None)
+        await self.press(Key.DOWN, Key.UP)
+        for name in PLAYER_ROWS:
+            self.assertNotIn(MSG_WIZARD_ROW_LABELS[name], self.text())
+
+    async def test_a_row_is_edited_in_the_row_dialog_and_kept_on_ok(self):
+        choices, role = await self.serial()
+        before = choices.get_player_row(role=role, name=LENGTHS)
+        await self.open_row(LENGTHS)
+        self.assertIsInstance(self.app.screen, RowDialog)
+        self.assertIn(MSG_WIZARD_ROW_TITLE.format(row=MSG_WIZARD_ROW_LABELS[LENGTHS], player=choices.role_title(role)), self.text())
+        await self.press(Key.RIGHT, keybindings.RowDialog.MORE, keybindings.RowDialog.DONE)
+        after = [before[0], before[1] + 1, *before[2:]]
+        self.assertEqual(choices.get_player_row(role=role, name=LENGTHS), after)
+        self.assertTrue(choices.player_row_is_own(role=role, name=LENGTHS))
+        shown = self.shown_row(choices=choices, role=role, name=LENGTHS)
+        self.assertIn(shown, self.text())
+        self.assertNotIn(MSG_WIZARD_GENRE_ROW_SHOWN.format(row=shown), self.text())
+
+    async def test_cancel_changes_nothing_and_the_usual_row_gives_the_row_back_to_the_genre(self):
+        choices, role = await self.serial()
+        usual = choices.get_player_row(role=role, name=LOUDNESS)
+        await self.open_row(LOUDNESS)
+        await self.press(keybindings.RowDialog.MORE, keybindings.RowDialog.CANCEL)
+        self.assertEqual(choices.get_player_row(role=role, name=LOUDNESS), usual)
+        await self.press(Key.ENTER, keybindings.RowDialog.MORE, keybindings.RowDialog.DONE)
+        self.assertTrue(choices.player_row_is_own(role=role, name=LOUDNESS))
+        await self.press(Key.ENTER, keybindings.RowDialog.USUAL, keybindings.RowDialog.DONE)
+        self.assertFalse(choices.player_row_is_own(role=role, name=LOUDNESS))
+        self.assertEqual(choices.get_player_row(role=role, name=LOUDNESS), usual)
+
+    async def test_a_song_is_made_with_the_row(self):
+        choices, role = await self.serial()
+        await self.open_row(LENGTHS)
+        await self.press(keybindings.RowDialog.MORE, keybindings.RowDialog.DONE, keybindings.WizardPage.TO_TREE)
+        row = choices.get_player_row(role=role, name=LENGTHS)
+        await self.create()
+        self.assertEqual(self.document.song().get_wizard_choices()[PLAYER_ROWS_KEPT], {role: {LENGTHS: row}})
+
+
+class TestRowDialog(UITest):
+    """The Row dialog on its own: the cursor, the numbers held to the row's range, cells inserted and removed between the fewest and the most, and the bars."""
+
+    async def open(self, *, values=A_ROW, lowest=A_ROWS_LOWEST, highest=A_ROWS_HIGHEST):
+        self.answers = []
+        self.app.push_screen(RowDialog(title=A_ROWS_TITLE, values=values, lowest=lowest, highest=highest, fewest=A_ROWS_FEWEST, most=A_ROWS_MOST, usual=A_USUAL_ROW), self.answers.append)
+        await self.settle()
+        return self.app.screen
+
+    def drawn_by(self, dialog):
+        """The dialog's own lines as text, apart from the page under the dialog."""
+        return LINE_BREAK.join(line.plain for line in dialog.lines(CONSOLE_WIDTH - DIALOG_MARGIN))
+
+    async def test_the_cursor_stops_at_both_ends_and_a_number_at_the_lowest_and_highest(self):
+        dialog = await self.open()
+        await self.press(Key.LEFT)
+        self.assertEqual(dialog.place, 0)
+        await self.press(*[Key.RIGHT] * (len(A_ROW) + 1))
+        self.assertEqual(dialog.place, len(A_ROW) - 1)
+        await self.press(*[keybindings.RowDialog.MORE] * (A_ROWS_HIGHEST - A_ROWS_LOWEST + 1))
+        self.assertEqual(dialog.values[-1], A_ROWS_HIGHEST)
+        await self.press(*[keybindings.RowDialog.LESS] * (A_ROWS_HIGHEST - A_ROWS_LOWEST + 1))
+        self.assertEqual(dialog.values[-1], A_ROWS_LOWEST)
+
+    async def test_cells_are_inserted_up_to_the_most_and_removed_down_to_the_fewest(self):
+        dialog = await self.open()
+        await self.press(keybindings.RowDialog.INSERT_CELL)
+        self.assertEqual(dialog.values, [A_ROW[0], *A_ROW])
+        self.assertEqual(dialog.place, 1)
+        await self.press(*[keybindings.RowDialog.INSERT_CELL] * A_ROWS_MOST)
+        self.assertEqual(len(dialog.values), A_ROWS_MOST)
+        self.assertNotIn(first_key(keybindings.RowDialog.INSERT_CELL), [key for item in dialog.keys() for key in item.keys])
+        await self.press(*[keybindings.RowDialog.REMOVE_CELL] * A_ROWS_MOST)
+        self.assertEqual(len(dialog.values), A_ROWS_FEWEST)
+        self.assertEqual(dialog.place, 0)
+
+    async def test_ok_answers_with_the_row_cancel_with_nothing_and_the_usual_row_is_put_back(self):
+        await self.open()
+        await self.press(keybindings.RowDialog.MORE, keybindings.RowDialog.DONE)
+        self.assertEqual(self.answers, [[A_ROW[0] + 1, *A_ROW[1:]]])
+        await self.open()
+        await self.press(keybindings.RowDialog.MORE, keybindings.RowDialog.CANCEL)
+        self.assertEqual(self.answers, [None])
+        await self.open()
+        await self.press(keybindings.RowDialog.USUAL, keybindings.RowDialog.DONE)
+        self.assertEqual(self.answers, [A_USUAL_ROW])
+
+    async def test_each_cell_has_a_bar_as_high_as_its_number_and_a_row_under_zero_a_zero_line(self):
+        dialog = await self.open()
+        drawn = self.drawn_by(dialog)
+        self.assertEqual(drawn.count(MSG_ROW_DIALOG_BAR), sum(A_ROW))
+        self.assertNotIn(MSG_ROW_DIALOG_ZERO * len(A_ROW) * CELL_WIDTH, drawn.split(LINE_BREAK * 2)[0])
+        await self.press(keybindings.RowDialog.CANCEL)
+        dialog = await self.open(values=A_SIGNED_ROW, lowest=-A_ROWS_HIGHEST, highest=A_ROWS_HIGHEST)
+        drawn = self.drawn_by(dialog)
+        self.assertIn(MSG_ROW_DIALOG_ZERO * len(A_SIGNED_ROW) * CELL_WIDTH, drawn.split(LINE_BREAK * 2)[0])
+        self.assertEqual(drawn.count(MSG_ROW_DIALOG_BAR), sum(abs(value) for value in A_SIGNED_ROW))
+
+    async def test_the_longest_row_fits_an_80_column_console(self):
+        dialog = await self.open(values=[A_ROWS_LOWEST] * A_ROWS_MOST)
+        for line in dialog.lines(CONSOLE_WIDTH - DIALOG_MARGIN):
+            self.assertLessEqual(line.cell_len, CONSOLE_WIDTH - DIALOG_MARGIN)
 
 
 class TestWizardComposition(WizardTest):

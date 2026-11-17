@@ -70,6 +70,7 @@ BREAK_CUT = 'cut up'
 MELODY_GAUGE = 'melody gauge'
 MELODY_SETTING = 'melody setting'
 HOOK = 'hook'
+PLAYER_ROW = 'player row'
 NEW_HOOK = 'new hook'
 GUITARISTS = 'guitarists'
 SEED = 'seed'
@@ -220,6 +221,14 @@ def every_choice(choices):
         for name in chosen.melody_settings() if choices.melody_styles() else []:
             for value in other_melody_values(choices=chosen, name=name):
                 yield MELODY_SETTING, (style, name, value), lambda made, name=name, value=value: made.set_melody_setting(name=name, value=value), [first]
+    # A player's rows show under the serial style, and each row with every cell moved to the far end of its range is held against the genre's own.
+    for style in (None, *choices.melody_styles()):
+        chosen = choices if style is None else fresh_with_melody(choices=choices, style=style)
+        first = nothing_first if style is None else (lambda made, style=style: made.set_melody(style))
+        for role in chosen.roles_in():
+            for name in chosen.player_rows(role):
+                row = far_row(choices=chosen, role=role, name=name)
+                yield PLAYER_ROW, (style, role, name), lambda made, role=role, name=name, row=row: made.set_player_row(role=role, name=name, values=row), [first]
     if choices.can_have_hook():
         yield HOOK, not choices.has_hook(), lambda made: made.set_hook(not made.has_hook()), [nothing_first]
     if choices.can_have_hook() and choices.has_hook():
@@ -245,6 +254,12 @@ def both(*, first, then):
         first(made)
         then(made)
     return done
+
+
+def far_row(*, choices, role, name):
+    """A player's row with every cell at the end of its range the cell is further from."""
+    lowest, highest = choices.row_limits(name)
+    return [lowest if value - lowest > highest - value else highest for value in choices.get_player_row(role=role, name=name)]
 
 
 def other_melody_values(*, choices, name):

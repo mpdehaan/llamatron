@@ -19,10 +19,12 @@
 from llamatron.composition.limits import MIN_GM_SOUND
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT
 from llamatron.macro_composer.interplay import LEAST_BUSY as LEAST_BUSY_BESIDE, MOST_BUSY as MOST_BUSY_BESIDE
-from llamatron.macro_composer.wizard_choices import FEWEST_FILLS, FILLS_TRAITS, HIGHEST_PLACE, LEAST_BUSY, LOWEST_PLACE, MOST_BUSY, MOST_FILLS
-from llamatron.strings.labels import MSG_WIZARD_BY_SECTION, MSG_WIZARD_FILLS_BUSY_LABEL, MSG_WIZARD_ROLE_LABEL, MSG_GM_SOUNDS, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_NO_BREAK, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYER_GAUGE_LABELS, MSG_WIZARD_PLAYS_LABEL, MSG_WIZARD_SOUND_LABEL
+from llamatron.macro_composer.wizard_choices import FEWEST_ROW_CELLS, MOST_ROW_CELLS, FEWEST_FILLS, FILLS_TRAITS, HIGHEST_PLACE, LEAST_BUSY, LOWEST_PLACE, MOST_BUSY, MOST_FILLS
+from llamatron.strings.labels import MSG_WIZARD_ROW_LABELS, MSG_WIZARD_BY_SECTION, MSG_WIZARD_FILLS_BUSY_LABEL, MSG_WIZARD_ROLE_LABEL, MSG_GM_SOUNDS, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_NO_BREAK, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYER_GAUGE_LABELS, MSG_WIZARD_PLAYS_LABEL, MSG_WIZARD_SOUND_LABEL
 from llamatron.strings.legends import MSG_OWN_DRUM_WHAT, What
-from llamatron.strings.marks import MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_SOUND_ON_NOTE, MSG_WIZARD_FILLS_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_BUSY_CUSTOM_SHOWN, MSG_WIZARD_BUSY_SHOWN, MSG_WIZARD_PLAYER_GAUGE_SHOWN, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL
+from llamatron.strings.marks import MSG_WIZARD_GENRE_ROW_SHOWN, MSG_WIZARD_ROW_SEPARATOR, MSG_WIZARD_ROW_SHOWN, MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_SOUND_ON_NOTE, MSG_WIZARD_FILLS_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_BUSY_CUSTOM_SHOWN, MSG_WIZARD_BUSY_SHOWN, MSG_WIZARD_PLAYER_GAUGE_SHOWN, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL
+from llamatron.strings.messages import MSG_WIZARD_ROW_TITLE
+from llamatron.tui.dialogs.row_dialog import RowDialog
 from llamatron.tui.note_names import note_shown
 from llamatron.tui.screens.shared.field import Cells, ChoiceField, Field, NumberField, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
@@ -58,6 +60,8 @@ class PlayerBranch(Branch):
             fields.append(self.busy_field())
             # The player's own gauges, which the Busy field fills in and which each move alone.
             fields += [self.player_gauge_field(gauge) for gauge in choices.player_gauges(self._role)]
+        # The rows of numbers the serial style deals to the player's notes, each opened in a window of its own.
+        fields += [self.row_field(name) for name in choices.player_rows(self._role)]
         if choices.answered_by() == self._role:
             fields += self.beside_fields()
         if not choices.has_sound(self._role):
@@ -179,6 +183,23 @@ class PlayerBranch(Branch):
         shown = MSG_WIZARD_BUSY_SHOWN if choices.player_preset(self._role) is not None else MSG_WIZARD_BUSY_CUSTOM_SHOWN
         return NumberField(page=page, label=MSG_WIZARD_BUSY_LABEL, number=level, shown=shown.format(gauge=gauge, level=level, most=MOST_BUSY),
                            lowest=LEAST_BUSY, highest=MOST_BUSY, set=page.choosing(lambda value: choices.set_busy(role=self._role, level=value)))
+
+    def row_field(self, name):
+        """Return the field of one of the player's rows of numbers: the row shown, the genre's own marked so, and Enter opening the row to edit."""
+        choices = self.choices()
+        row = MSG_WIZARD_ROW_SEPARATOR.join(str(value) for value in choices.get_player_row(role=self._role, name=name))
+        own = choices.player_row_is_own(role=self._role, name=name)
+        shown = (MSG_WIZARD_ROW_SHOWN if own else MSG_WIZARD_GENRE_ROW_SHOWN).format(row=row)
+        return Field(label=MSG_WIZARD_ROW_LABELS[name], value=lambda: shown, enter=lambda: self.edit_row(name), enter_what=What.EDIT)
+
+    def edit_row(self, name):
+        """Open a row of the player's in the Row dialog, and keep the row the dialog answers with."""
+        choices = self.choices()
+        page = self.page()
+        lowest, highest = choices.row_limits(name)
+        dialog = RowDialog(title=MSG_WIZARD_ROW_TITLE.format(row=MSG_WIZARD_ROW_LABELS[name], player=self.name()), values=choices.get_player_row(role=self._role, name=name),
+                           lowest=lowest, highest=highest, fewest=FEWEST_ROW_CELLS, most=MOST_ROW_CELLS, usual=choices.genre_row(role=self._role, name=name))
+        page.ask(dialog=dialog, then=page.choosing(lambda values: choices.set_player_row(role=self._role, name=name, values=values)))
 
     def player_gauge_field(self, gauge):
         """Return the field of one of the player's own gauges: a number stepped or typed, drawn as a horizontal gauge beside the number."""
