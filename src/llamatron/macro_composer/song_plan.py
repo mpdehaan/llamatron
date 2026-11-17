@@ -1,0 +1,341 @@
+# llamatron: a music program
+# Copyright (C) 2026  Michael DeHaan
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+"""The song plan: every section of a song given an Energy, and what follows from it worked out before the song is arranged.
+
+A song that asks for a plan has each place of its form made a section of its own, so that a second verse can differ from the
+first. Each takes an Energy from 1 to 10: the style's for the section's kind, a little more each time the kind returns, the
+most at the last chorus, pulled apart or together by the song's Contrast; a song may give any section's Energy itself. From
+the Energy come how far each player goes toward their own way of playing, each player changing at points of their own; who
+plays; the cymbal; how loud the section is, ordinary playing kept under full so that a chorus can grow; and how the section
+leaves for the next: the size of the fill, a drop-out, stops or a build, never the same twice running, and the chord of its
+last bar set up for what follows. Energy never changes a tune's notes.
+
+Everything worked out here is written into the song's sections, where the arranger reads it, and anything a song says of a
+section itself is kept over what the plan would say.
+"""
+
+import random
+
+from llamatron.macro_composer import hook_kinds
+from llamatron.macro_composer.joins import BUILD, DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL, TAIL_EIGHTHS
+from llamatron.macro_composer.melody import BREATHES, FIRST_HOOK_TAKE, HOOK, HOOK_KINDS, HOOK_TAKE
+from llamatron.strings.macro_composer import MSG_PLAN_ENERGY, MSG_PLAN_HOOK, MSG_PLAN_LEAVES_FILL, MSG_PLAN_LEAVES_TAIL, MSG_PLAN_SET_UP, MSG_REPEATED_SCENE
+
+# The fields of a song's plan, and of the plan a style gives.
+PLAN_OF_SONG = 'song_plan'
+CONTRAST = 'contrast'
+GROWTH = 'growth'
+PHRASING = 'phrasing'
+BY_PLACE = 'sections'
+ENERGY = 'energy'
+ENERGY_OF_KIND = 'energy'
+RISING = 'rising'
+LAST_CHORUS = 'last_chorus'
+CHANGE_POINTS = 'levels'
+COMES_IN = 'comes_in'
+CYMBALS = 'cymbal'
+FILL_SIZES = 'fills'
+TAILS_ALLOWED = 'tails'
+NO_SETUP = 'no_setup'
+SETUP = 'setup'
+NOT_AT_ALL = 'not at all'
+USUAL = 'usual'
+# The fields of a song and of a section, as the arranger reads them.
+FORM = 'form'
+SECTIONS = 'sections'
+KIND = 'kind'
+BARS = 'bars'
+PLAYS = 'plays'
+PICKS = 'picks'
+HELD = 'held'
+ALLOWS = 'intensity'
+CRASH_START = 'crash'
+SEED = 'seed'
+TEMPLATE = 'template'
+MELODY = 'melody'
+SECTION_PLAN = 'plan'
+SCENE_SETTINGS = 'settings'
+DRAWN_AS = 'drawn_as'
+SAID_OF_SECTION = 'said'
+DRUM_SOLO = 'drum_solo'
+FILL_INSIDE = 'fill_inside'
+FILL_INSIDE_EVERY = 'fill_inside_every'
+LAST_CHORD = 'last_chord'
+DEGREE = 'degree'
+ACCIDENTAL = 'accidental'
+SWELL_START = 'swell_start'
+SWELL_END = 'swell_end'
+CYMBAL = 'cymbal'
+CHORUS = 'chorus'
+MINOR = 'minor'
+# Energy: its limits, the kind's where a style says nothing, the middle that Contrast pulls about, and the usual Contrast and growth.
+LOWEST_ENERGY = 1
+HIGHEST_ENERGY = 10
+USUAL_ENERGY = 6
+MIDDLE_ENERGY = 6
+USUAL_CONTRAST = 5
+USUAL_GROWTH = 1
+USUAL_LAST_CHORUS = 10
+# The Energy at which a player reaches each level where a style says nothing, and how far a song's seed moves a player's points.
+USUAL_CHANGE_POINTS = (1, 4, 7, 9)
+POINT_MOVES = (-1, 0, 0, 1)
+POINT_SEED = '{} plan {}'
+# How loud a section is, as a share of what is written: ordinary playing leaves room above it. A rising section starts as one two lower would.
+QUIETEST = 80
+LOUDEST = 100
+RISES_FROM = 2
+# The sizes of fill, by how far the Energy rises into the next section, and the Energy at which a section has a small fill inside it, every so many bars.
+SMALL = 'small'
+MEDIUM = 'medium'
+BIG = 'big'
+BIG_RISE = 3
+FILL_INSIDE_FROM = 5
+FILL_INSIDE_BARS = 4
+OTHER_SIZE = {BIG: MEDIUM, MEDIUM: SMALL, SMALL: MEDIUM}
+# A crash starts a section that arrives at this Energy or more from below, and a drop-out lasts about a second: so many eighths by the tempo.
+CRASH_FROM = 6
+FAST_TEMPO = 120
+DROP_EIGHTHS_FAST = 4
+DROP_EIGHTHS_SLOW = 2
+# The chord a last bar takes to set up a section that starts at home: the fifth, or in a minor key the seventh, a whole step under home.
+HOME = 1
+APPROACH = 5
+APPROACH_IN_MINOR = 7
+
+
+def within(energy):
+    return max(LOWEST_ENERGY, min(HIGHEST_ENERGY, int(round(energy))))
+
+
+def loudness_at(energy):
+    """How loud a section of an Energy is, as a share of what is written."""
+    return round(QUIETEST + (within(energy) - LOWEST_ENERGY) * (LOUDEST - QUIETEST) / (HIGHEST_ENERGY - LOWEST_ENERGY))
+
+
+def level_at(*, energy, points):
+    """The level a player reaches at an Energy: how many of the player's change points the Energy has passed."""
+    return max(1, sum(1 for point in points if energy >= point))
+
+
+class SongPlan:
+    """A song's plan, worked out from the song, its style and the chords each section plays."""
+
+    __slots__ = ('_style', '_song', '_names', '_tempo', '_scale_type', '_chords_of', '_given', '_of_style', '_sections', '_energies', '_form_names')
+
+    def __init__(self, *, style, song, form_names, tempo, scale_type, chords_of):
+        self._style = style
+        self._song = song
+        self._tempo = tempo
+        self._scale_type = scale_type
+        # The chords a section plays, given the section as the arranger reads it.
+        self._chords_of = chords_of
+        self._given = song[PLAN_OF_SONG] if isinstance(song[PLAN_OF_SONG], dict) else {}
+        self._of_style = style.get(PLAN_OF_SONG, {})
+        self._form_names = list(form_names)
+        self._names = []
+        self._sections = []
+        met = {}
+        for name in form_names:
+            met[name] = met.get(name, 0) + 1
+            of_song = song.get(SECTIONS, {}).get(name, {})
+            kind = of_song.get(KIND, name)
+            self._names.append(name if met[name] == 1 else MSG_REPEATED_SCENE.format(name, met[name]))
+            self._sections.append({**style[SECTIONS].get(kind, {}), **of_song, KIND: kind})
+        self._energies = self._worked_energies()
+
+    # What a song says of one place of its form.
+
+    def _at(self, place):
+        by_place = self._given.get(BY_PLACE) or []
+        return (by_place[place] or {}) if place < len(by_place) else {}
+
+    def _for_subgenre(self, *, field, default):
+        """A field of the style's plan that is given by subgenre, the usual where the song's subgenre has none."""
+        given = self._of_style.get(field, {})
+        return given.get(self._song.get(TEMPLATE), given.get(USUAL, default))
+
+    # Energy.
+
+    def _worked_energies(self):
+        of_kind = self._of_style.get(ENERGY_OF_KIND, {})
+        growth = self._given.get(GROWTH, self._of_style.get(GROWTH, USUAL_GROWTH))
+        contrast = self._given.get(CONTRAST, USUAL_CONTRAST)
+        kinds = [section[KIND] for section in self._sections]
+        last_chorus = max((place for place, kind in enumerate(kinds) if kind == CHORUS), default=None)
+        met = {}
+        energies = []
+        for place, kind in enumerate(kinds):
+            met[kind] = met.get(kind, 0) + 1
+            energy = of_kind.get(kind, USUAL_ENERGY) + growth * (met[kind] - 1)
+            if place == last_chorus and met[kind] > 1:
+                energy = max(energy, self._of_style.get(LAST_CHORUS, USUAL_LAST_CHORUS))
+            energy = MIDDLE_ENERGY + (energy - MIDDLE_ENERGY) * contrast / USUAL_CONTRAST
+            energies.append(within(self._at(place).get(ENERGY, energy)))
+        return energies
+
+    def energies(self):
+        """The Energy of each place of the form."""
+        return list(self._energies)
+
+    # What follows from a section's Energy.
+
+    def _points_of(self, instrument):
+        """A player's change points: the style's, each moved a little by the song's seed, so that two songs' bands do not change together."""
+        points = self._of_style.get(CHANGE_POINTS, {}).get(instrument, USUAL_CHANGE_POINTS)
+        dice = random.Random(POINT_SEED.format(self._song.get(SEED, 0), instrument))
+        return [points[0]] + [point + dice.choice(POINT_MOVES) for point in points[1:]]
+
+    def _allowed(self, place):
+        """The level each player may reach in a section, by the section's Energy."""
+        instruments = list(dict.fromkeys([*self._of_style.get(CHANGE_POINTS, {}), *self._sections[place].get(ALLOWS, {})]))
+        return {instrument: level_at(energy=self._energies[place], points=self._points_of(instrument)) for instrument in instruments}
+
+    def _plays(self, place):
+        """Who plays in a section: the kind's players, but those who come in only at a higher Energy."""
+        comes_in = self._of_style.get(COMES_IN, {})
+        return [role for role in self._sections[place].get(PLAYS, []) if self._energies[place] >= comes_in.get(role, LOWEST_ENERGY)]
+
+    def _cymbal(self, place):
+        """The cymbal a section's Energy asks for, or nothing where the style says none."""
+        chosen = None
+        for energy, cymbal in self._of_style.get(CYMBALS, []):
+            if self._energies[place] >= energy:
+                chosen = cymbal
+        return chosen
+
+    def _loudness(self, place):
+        energy = self._energies[place]
+        rising = self._sections[place][KIND] in self._of_style.get(RISING, [])
+        return {SWELL_START: loudness_at(energy - RISES_FROM if rising else energy), SWELL_END: loudness_at(energy)}
+
+    # Joins.
+
+    def _stays(self, place):
+        """Whether a section is one a join is worked out for: played by the band, with a section after it."""
+        section = self._sections[place]
+        return place < len(self._sections) - 1 and not section.get(HELD) and not section.get(DRUM_SOLO)
+
+    def _fill(self, size):
+        return self._of_style.get(FILL_SIZES, {}).get(size)
+
+    def _joins(self):
+        """What each section leaves with: the tail and the fill, by what follows, how far the Energy moves and what was done last."""
+        allowed = self._for_subgenre(field=TAILS_ALLOWED, default=(DROP_OUT, STOPS, BUILD))
+        kinds = [section[KIND] for section in self._sections]
+        last_chorus = self._last_choruses_start(kinds)
+        joins = []
+        before = None
+        dropped = False
+        for place in range(len(self._sections)):
+            if not self._stays(place):
+                joins.append(None)
+                continue
+            rise = self._energies[place + 1] - self._energies[place]
+            following = self._sections[place + 1]
+            join = {}
+            if following.get(DRUM_SOLO) and STOPS in allowed:
+                join = {TAIL: STOPS}
+            elif place + 1 == last_chorus and kinds[place] != CHORUS and DROP_OUT in allowed and not dropped:
+                # The one silence of the song: the band stops for about a second, and the last chorus comes in whole.
+                join = {TAIL: DROP_OUT, TAIL_EIGHTHS: DROP_EIGHTHS_FAST if self._tempo >= FAST_TEMPO else DROP_EIGHTHS_SLOW}
+                dropped = True
+            elif kinds[place] in self._of_style.get(RISING, []) and BUILD in allowed and (before or {}).get(TAIL) != BUILD:
+                join = {TAIL: BUILD}
+            elif not following.get(HELD):
+                size = BIG if rise >= BIG_RISE else MEDIUM if rise > 0 else SMALL
+                if (before or {}).get(FILL_OF_JOIN) == self._fill(size):
+                    size = OTHER_SIZE[size]
+                if self._fill(size):
+                    join = {FILL_OF_JOIN: self._fill(size)}
+            join = {**join, **self._at(place).get(LEAVES, {})} if LEAVES in self._at(place) else join
+            joins.append(join)
+            before = join
+        return joins
+
+    def _last_chord(self, place):
+        """The chord a section's last bar takes to set up the next, or nothing: a section that rises into one starting at home, or
+        that would sit on home into home, ends on the approach chord, where the subgenre sets joins up at all."""
+        if not self._stays(place) or self._at(place).get(SETUP) == NOT_AT_ALL or self._song.get(TEMPLATE) in self._of_style.get(NO_SETUP, []):
+            return None
+        following = self._sections[place + 1]
+        if following.get(HELD) or following.get(DRUM_SOLO):
+            return None
+        last = self._chords_of(self._sections[place])[-1]
+        first = self._chords_of(following)[0]
+        approach = APPROACH_IN_MINOR if self._scale_type == MINOR else APPROACH
+        at_home = first.get(DEGREE) == HOME and ACCIDENTAL not in first
+        rises = self._energies[place + 1] > self._energies[place]
+        if not at_home or last.get(DEGREE) == approach or not (rises or last.get(DEGREE) == HOME):
+            return None
+        return approach
+
+    @staticmethod
+    def _last_choruses_start(kinds):
+        """The place of the first of the choruses a song ends with, or nothing for a song with no chorus."""
+        places = [place for place, kind in enumerate(kinds) if kind == CHORUS]
+        if not places:
+            return None
+        start = places[-1]
+        while start - 1 in places:
+            start -= 1
+        return start
+
+    # The song planned.
+
+    def planned(self):
+        """The song with a section for each place of its form, each saying what the plan worked out, and its tunes asked to
+        breathe and its hook to be of a kind."""
+        joins = self._joins()
+        sections = {}
+        hook_said = False
+        for place, name in enumerate(self._names):
+            section = self._sections[place]
+            of_song = self._song.get(SECTIONS, {}).get(self._form_names[place], {})
+            energy = self._energies[place]
+            said = [MSG_PLAN_ENERGY.format(energy)]
+            made = {KIND: section[KIND], DRAWN_AS: section[KIND]}
+            if not section.get(HELD) and not section.get(DRUM_SOLO):
+                arrives = place > 0 and energy > self._energies[place - 1] and energy >= CRASH_FROM
+                after_tail = place > 0 and (joins[place - 1] or {}).get(TAIL) in (DROP_OUT, BUILD, STOPS)
+                made.update({ALLOWS: self._allowed(place), PLAYS: self._plays(place), CRASH_START: bool(arrives or after_tail or (place > 0 and self._sections[place - 1].get(DRUM_SOLO))),
+                             SCENE_SETTINGS: self._loudness(place)})
+                cymbal = self._cymbal(place)
+                made[PICKS] = {**section.get(PICKS, {}), **({CYMBAL: cymbal} if cymbal else {})}
+                if joins[place] is not None:
+                    made[LEAVES] = joins[place]
+                    if section.get(BARS, 0) > FILL_INSIDE_BARS and energy >= FILL_INSIDE_FROM and self._fill(SMALL):
+                        made[FILL_INSIDE] = self._fill(SMALL)
+                        made[FILL_INSIDE_EVERY] = FILL_INSIDE_BARS
+                    if joins[place].get(TAIL):
+                        said.append(MSG_PLAN_LEAVES_TAIL.format(joins[place][TAIL]))
+                    elif joins[place].get(FILL_OF_JOIN):
+                        said.append(MSG_PLAN_LEAVES_FILL.format(joins[place][FILL_OF_JOIN]))
+                last_chord = self._last_chord(place)
+                if last_chord is not None:
+                    made[LAST_CHORD] = last_chord
+                    said.append(MSG_PLAN_SET_UP.format(last_chord))
+            if not hook_said and self._has_hook() and any(entry.get(HOOK) for entry in section.get(SECTION_PLAN, [])) and self._given.get(HOOK_KINDS, True):
+                said.append(MSG_PLAN_HOOK.format(hook_kinds.said_of(hook_kinds.kind_of(seed=self._song.get(SEED, 0), take=self._song.get(HOOK_TAKE, FIRST_HOOK_TAKE)))))
+                hook_said = True
+            # What the song says of the section itself, and of this place of its form, stands over what the plan worked out.
+            own = {field: value for field, value in self._at(place).items() if field not in (ENERGY, SETUP, LEAVES)}
+            sections[name] = {**made, **of_song, **own, SAID_OF_SECTION: ' '.join(said)}
+        melody = {**({BREATHES: True} if self._given.get(PHRASING, True) else {}), **({HOOK_KINDS: True} if self._given.get(HOOK_KINDS, True) else {}), **self._song.get(MELODY, {})}
+        return {**self._song, FORM: list(self._names), SECTIONS: sections, MELODY: melody}
+
+    def _has_hook(self):
+        return bool(self._song.get(HOOK, self._style.get(HOOK, False)))

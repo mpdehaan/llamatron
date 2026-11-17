@@ -230,6 +230,54 @@ clouds; generate and test, with motif development and counterpoint last.
   different combination and named after the section's kind.
 - A held section is one bar: a crash, a kick and each figure's held chord.
 
+## The Song Plan
+
+- A song whose picks hold `song_plan` (true, or a mapping of `contrast`, `growth`, `phrasing`, `hook_kinds` and `sections`, a
+  list by place of the form) is planned before it is arranged (`SongPlan` in `src/llamatron/macro_composer/song_plan.py`,
+  called from `arranged`): every place of the form becomes a section of its own, named `verse`, `verse 2`, so that a second
+  verse can differ, and the plan writes into each what the arranger reads. A song without the key is arranged as ever, and
+  nothing the wizard's page offers sets the key yet: a song file does (below).
+- Energy, 1 to 10, a section: the style's for the kind (`song_plan: energy` in a template), plus `growth` each time the kind
+  returns, the last run of choruses taking `last_chorus`, pulled about the middle by the song's `contrast`, and a place's own
+  `energy` over all of that. Energy never changes a tune's notes.
+- From Energy: `intensity`, the level each player may reach, by the player's change points (`levels` in the template, each
+  point but the first moved by the song's seed, so that the band never changes all at once); `plays`, the kind's players but
+  those whose `comes_in` Energy is higher; the cymbal (`cymbal`, a list of Energy and way); the scene's Swell, 80 to 100
+  percent, so that ordinary playing leaves room, a `rising` kind ramping from two lower; and a crash on a section arrived at
+  from below at 6 or more, or after a tail.
+- Joins (`src/llamatron/macro_composer/joins.py`): a section's `leaves` holds a `fill`, by how far the Energy rises (the
+  template's `fills`: small, medium, big, never the same twice running), or a `tail`: `stops` before a drum solo, `drop-out`
+  once a song, into the last run of choruses, about a second long by the tempo, and `build` out of a rising kind; a
+  subgenre's `tails` lists what its bands do. A section with `leaves` has its drums written out whole, the small fill inside
+  only every `fill_inside_every` bars, and a figure under `stops` or `drop-out` written out whole so that its last bar
+  differs. `last_chord` is the chord of the last bar: the fifth, or the seventh in minor, where the next section starts at
+  home and the section rises into it or would sit on home; `setup: not at all` at a place, or the subgenre under `no_setup`,
+  leaves the chords alone.
+- A drum solo (`src/llamatron/macro_composer/drum_solo.py`): a section whose kind has `drum_solo: true` is the drummer alone,
+  a theme on the snare, the theme round the toms, a build, a peak and a last bar that plays the band in, drawn from the seed;
+  in a meter other than 4/4 the drummer plays the section's ordinary part alone.
+- Phrasing (`src/llamatron/macro_composer/phrasing.py`): with the habit `breathes`, every line but a hook's ends early, three
+  eighths before its bars do, or five or six for the second and fourth lines of a section, and one line in two has a note
+  come an eighth early; the breath is drawn apart from the line's notes.
+- Hook kinds (`src/llamatron/macro_composer/hook_kinds.py`): with the habit `hook_kinds`, a hook's bar is of a contour
+  (chant, arch, falling line, leap and fill, rocking, rising sequence, or the long note, the hook made as before), a rhythm
+  and one odd detail; each take is the next contour and the next rhythm in the song's own order, so another take is another
+  kind. The bar is said note for note in each second bar of the line and answered lower between. The kind is said in the
+  song's notes beside the first section that has the hook, as each scene's Energy and join are.
+- A tune that returns note for note is one part, in a planned song, and a part beside the tune is drawn by the section's kind
+  (`drawn_as`), so that a hook or a riff stays the same each time.
+
+## A Song File
+
+- `src/llamatron/macro_composer/wizard_file.py` reads a song file: the wizard's kept choices, a `name`, a `form` that is a
+  form's name or a list of sections (a kind, or a mapping with the kind, `bars`, `plays` and whatever that place of the form
+  is given, which goes to the plan's `sections`), `song_plan` (true where left out) and `song`, picks laid over the song the
+  choices make (`WizardChoices.set_song_extras`, kept with the song under `song`, with the plan). It is the way a homage is
+  written down: the form, each section's chords and Energy, and nothing of a tune that is not the song's own.
+- `llamatron --wizard SONG_FILE` makes the song and writes its set to `--out`, or beside the song file as
+  `NAME_song.yml`, and opens it; `--batch` stops after writing, and `--seed` gives the seed. A file with no seed makes
+  another song at each run. `tests/data/wizard_songs/rock_everything.yml` is the trial that uses everything.
+
 ## The Wizard's Choices
 
 - `WizardChoices` (`src/llamatron/macro_composer/wizard_choices.py`) holds one run of the song wizard: the genre, a style

@@ -149,6 +149,7 @@ flowchart LR
     importers --> playback
     llamatron --> composition
     llamatron --> exporters
+    llamatron --> macro_composer
     llamatron --> playback
     llamatron --> tui
     llamatron --> visualizers

@@ -31,16 +31,16 @@ import mido
 import yaml
 
 from llamatron.visualizers.modes import MODES
-from llamatron.cli import main
+from llamatron.cli import MADE_SET_NAME, OPTION_BATCH, OPTION_OUT, OPTION_SEED, OPTION_WIZARD, main
 from llamatron.exporters.midi_arrangement import MULTI_TRACK_FILE, SONG_FILE, STEM_FILE
 from llamatron.exporters.exports import EXPORTERS, export_name
 from llamatron.exporters.exports import ExportKind
 from llamatron.composition.file_format import Row
-from llamatron.composition.setlist import Setlist
+from llamatron.composition.setlist import Setlist, file_stem
 from llamatron.composition.setlist_writer import dump_setlist
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.strings.cli import MSG_CLI_CHANGED, MSG_CLI_WOULD_CHANGE
-from llamatron.strings.errors import ERR_LAUNCH_NEEDS_SET, ERR_NEEDS_FORCE, ERR_PRINTED, ERR_RECORDING_SONG_LOOPS
+from llamatron.strings.cli import MSG_CLI_CHANGED, MSG_CLI_MADE_SONG, MSG_CLI_WOULD_CHANGE
+from llamatron.strings.errors import ERR_LAUNCH_NEEDS_SET, ERR_NEEDS_FORCE, ERR_ONLY_WITH_WIZARD, ERR_PRINTED, ERR_RECORDING_SONG_LOOPS, ERR_SONG_FILE_NOT_READY, ERR_WIZARD_ONLY_ALONE
 from tests.support.rendering import as_setlist, dump_song_data
 from tests.support.song_testing import BASIC, LEAD, lead_data
 
@@ -73,6 +73,11 @@ NAME = 'Name'
 TRACKS = 'Tracks'
 # The set file's name, which names its one song too, so its exports are named tune_tune.
 SONG_NAME = 'tune'
+WIZARD_SONGS = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, 'data', 'wizard_songs')
+WIZARD_SONG_FILE = 'rock_everything.yml'
+WIZARD_SONG_NAME = 'rock everything'
+WIZARD_OUT = 'made.yml'
+NOT_A_SONG_FILE = 'genre: rock'
 EXPORT = export_name(setlist=SONG_NAME, song=SONG_NAME)
 LIVE_SET = EXPORT + '.als'
 CLIP_FILES = [EXPORT + '_clip_s_001-one-t_001-lead.mid', EXPORT + '_clip_s_001-one-t_002-kick.mid']
@@ -379,3 +384,60 @@ class TestCli(unittest.TestCase):
         code, _, stderr = self.run_cli()
         self.assertEqual(code, 1)
         self.assertIn(VALID_YAML, stderr)
+
+
+class TestCliWizard(unittest.TestCase):
+    """--wizard makes a song from a song file, writes its set, and opens it unless --batch is given."""
+
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.song_file = os.path.join(temporary.name, WIZARD_SONG_FILE)
+        shutil.copy(os.path.join(WIZARD_SONGS, WIZARD_SONG_FILE), self.song_file)
+        self.beside = os.path.join(temporary.name, MADE_SET_NAME.format(file_stem(WIZARD_SONG_FILE)))
+        self.out = os.path.join(temporary.name, OUT, WIZARD_OUT)
+
+    def run_exactly(self, *arguments):
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            try:
+                code = main(argv=list(arguments))
+            except SystemExit as stop:
+                code = stop.code
+        return code, stdout.getvalue(), stderr.getvalue()
+
+    def test_batch_writes_the_set_beside_the_song_file_and_opens_nothing(self):
+        with mock.patch('llamatron.tui.app.LlamatronApp') as app:
+            code, said, _ = self.run_exactly(OPTION_WIZARD, self.song_file, OPTION_BATCH)
+            app.assert_not_called()
+        self.assertEqual(code, 0)
+        self.assertEqual(said.strip(), MSG_CLI_MADE_SONG.format(path=self.beside))
+        self.assertEqual(Setlist.read_file(self.beside).get_song_names(), [WIZARD_SONG_NAME])
+
+    def test_out_names_the_set_and_a_seed_makes_another_song(self):
+        self.assertEqual(self.run_exactly(OPTION_WIZARD, self.song_file, OPTION_BATCH, OPTION_OUT, self.out)[0], 0)
+        self.assertEqual(self.run_exactly(OPTION_WIZARD, self.song_file, OPTION_BATCH, OPTION_SEED, SEED_B)[0], 0)
+        self.assertFalse(Setlist.read_file(self.out).to_data() == Setlist.read_file(self.beside).to_data())
+
+    def test_without_batch_the_tracker_opens_on_the_set_made(self):
+        with mock.patch('llamatron.tui.app.LlamatronApp') as app:
+            self.assertEqual(self.run_exactly(OPTION_WIZARD, self.song_file)[0], 0)
+            app.return_value.run.assert_called_once_with()
+            self.assertEqual(app.call_args.kwargs[DOCUMENT_ARGUMENT].get_path(), self.beside)
+
+    def test_a_song_file_that_makes_no_song_is_explained(self):
+        with open(self.song_file, WRITE_TEXT) as file:
+            file.write(NOT_A_SONG_FILE)
+        code, _, problem = self.run_exactly(OPTION_WIZARD, self.song_file, OPTION_BATCH)
+        self.assertEqual(code, 1)
+        self.assertIn(ERR_SONG_FILE_NOT_READY.format(path=self.song_file), problem)
+        self.assertFalse(os.path.exists(self.beside))
+
+    def test_wizard_stands_alone_and_batch_needs_it(self):
+        code, _, problem = self.run_exactly(self.song_file, OPTION_WIZARD, self.song_file)
+        self.assertNotEqual(code, 0)
+        self.assertIn(ERR_WIZARD_ONLY_ALONE, problem)
+        code, _, problem = self.run_exactly(OPTION_BATCH)
+        self.assertNotEqual(code, 0)
+        self.assertIn(ERR_ONLY_WITH_WIZARD.format(options=OPTION_BATCH), problem)
