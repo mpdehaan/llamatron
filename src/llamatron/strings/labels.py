@@ -89,6 +89,7 @@ MSG_CAPTION_WORDS = {
     Section.DRIFTS: 'drift', Section.PROGRESSIONS: 'progression', Section.VOICE_LEADINGS: 'voice leading', Section.STRUMS: 'strum',
     Section.EUCLIDS: 'Euclid', Section.DENSITIES: 'density', Section.SWELLS: 'swell', Section.ARTICULATES: 'articulate',
     Section.GLIDES: 'glide', Section.SHORTENS: 'shorten', Section.RUSHES: 'rush', Section.DRAGS: 'drag', Section.HOCKETS: 'hocket', Section.GUITARIFIES: 'guitarify',
+    Section.FOLLOW_CHORDS: 'follow chords',
 }
 MSG_SCENE_CAPTION_WORD = 'scene'
 MSG_CLIP_CAPTION_WORD = 'clip'
@@ -300,6 +301,8 @@ MSG_VOICE_LEADING_LABEL = 'Voice leading'
 MSG_HOCKET_LABEL = 'Hocket'
 # tui/screens/generators/guitarify_editor.py, tui/screens/generators/guitar_bar_editor.py: a Guitarify's name, its two sections, their fields, and what its choices are called.
 MSG_GUITARIFY_LABEL = 'Guitarify'
+MSG_FOLLOW_CHORDS_LABEL = 'Follow Chords'
+MSG_CHORDS_FROM_LABEL = 'Chords from'
 MSG_GUITAR_SHAPE_SECTION = 'Shape'
 MSG_GUITAR_STROKES_SECTION = 'Strokes'
 MSG_GUITAR_SHAPE_LABEL = 'Shape chords'

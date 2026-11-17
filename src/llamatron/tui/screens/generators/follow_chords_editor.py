@@ -1,0 +1,66 @@
+# llamatron: a music program
+# Copyright (C) 2026  Michael DeHaan
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+"""The Follow Chords editor: its name and the track whose chords it follows."""
+
+from llamatron.composition.file_format import GeneratorKind, Section
+from llamatron.composition.generator_settings import FollowChordsSetting
+from llamatron.strings.help import HELP_FOLLOW_CHORDS_EDITOR
+from llamatron.strings.labels import Crumb, MSG_CHORDS_FROM_LABEL, MSG_FOLLOW_CHORDS_LABEL
+from llamatron.strings.legends import MSG_NO_TRACK_WHAT
+from llamatron.strings.marks import MSG_NONE_SHOWN
+from llamatron.strings.messages import MSG_RENAME_GENERATOR_PROMPT
+from llamatron.tui import keybindings
+from llamatron.tui.screens.shared.field import ChoiceField, NameField
+from llamatron.tui.screens.shared.field_page import FieldPage
+from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
+from llamatron.tui.text import sorted_names
+
+
+class FollowChordsEditor(ShowsNamedItem, FieldPage):
+
+    KEYS = keybindings.FollowChordsEditor
+    HELP = HELP_FOLLOW_CHORDS_EDITOR
+    SECTION = Section.FOLLOW_CHORDS
+    CRUMBS_BEFORE = (Crumb.GENERATORS,)
+    RENAME_PROMPT = MSG_RENAME_GENERATOR_PROMPT.format(label=MSG_FOLLOW_CHORDS_LABEL)
+
+    def __init__(self, *, holder, name):
+        super().__init__(holder)
+        self.show_item(name)
+
+    def follow_chords(self):
+        return self.document().song().get_generator_settings(kind=GeneratorKind.FOLLOW_CHORDS, name=self.item)
+
+    def store_chords_from(self, track):
+        self.document().set_generator_setting(section=Section.FOLLOW_CHORDS, name=self.item, setting=FollowChordsSetting.CHORDS_FROM, value=track)
+
+    def tracks(self):
+        """Return the tracks that can be followed: the current song's, sorted, and the one followed among them even when the song has no such track, so that it is seen and kept."""
+        names = set(self.document().song().get_track_names())
+        if self.follow_chords().get_chords_from() is not None:
+            names.add(self.follow_chords().get_chords_from())
+        return sorted_names(names)
+
+    def fields(self):
+        followed = self.follow_chords().get_chords_from()
+        return [
+            NameField(value=lambda: self.item, rename=self.rename),
+            ChoiceField(
+                page=self, label=MSG_CHORDS_FROM_LABEL, choices=[MSG_NONE_SHOWN, *self.tracks()], current=followed or MSG_NONE_SHOWN,
+                set=lambda choice: self.store_chords_from(None if choice == MSG_NONE_SHOWN else choice), clear=lambda: self.store_chords_from(None), clear_what=MSG_NO_TRACK_WHAT,
+            ),
+        ]

@@ -33,12 +33,12 @@ from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.naming import default_scale_name
 from llamatron.strings.labels import (
     MSG_CHORDS_LABEL, MSG_EVERY_LABEL, MSG_ROOT_IN_BASS_LABEL, MSG_DRAG_AMOUNT_LABEL, MSG_EUCLID_PART_LABELS, MSG_GLIDE_AMOUNT_LABEL, MSG_RUSH_AMOUNT_LABEL, MSG_SHAPE_PART_LABELS, MSG_SHORTEN_LABEL,
-    MSG_STEPS_LABEL, MSG_STRUM_PART_LABELS, MSG_SOURCE_TRACK_LABEL, MSG_GUITAR_BAR_LABEL, MSG_GUITAR_LET_RING_LABEL, MSG_READY_BAR_NAMES,
+    MSG_STEPS_LABEL, MSG_STRUM_PART_LABELS, MSG_SOURCE_TRACK_LABEL, MSG_CHORDS_FROM_LABEL, MSG_GUITAR_BAR_LABEL, MSG_GUITAR_LET_RING_LABEL, MSG_READY_BAR_NAMES,
 )
 from llamatron.strings.labels import MSG_SECTION_LABEL
 from llamatron.composition.file_format import EuclidPart, ReadyBar, ShapePart, StrumPart
 from llamatron.composition.generator_settings import DEFAULT_DRAG, DEFAULT_RUSH, DEFAULT_SHORTEN
-from tests.support.ui_testing import PICKED, TRADE, CLIPS, LAZY, PUSH, SLIDES, CLAVE, CLIPPED, FOLK, POP, SMOOTH, FADE, THIN
+from tests.support.ui_testing import FOLLOWS, PICKED, TRADE, CLIPS, LAZY, PUSH, SLIDES, CLAVE, CLIPPED, FOLK, POP, SMOOTH, FADE, THIN
 from llamatron.composition.defaults import DEFAULT_CHANNEL, FIRST_NUMBER
 from llamatron.composition.file_format import DriftValue, DriftVersion, GeneratorKind, RegisterName, RegisterSetting, Row, Section, SongSetting
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -632,6 +632,17 @@ class TestHocketEditorUndo(UndoTest):
         await self.select_field(MSG_SOURCE_TRACK_LABEL)
         await self.press(keybindings.HocketEditor.CLEAR)
         self.assertIsNone(self.document.song().get_generator_settings(kind=GeneratorKind.HOCKET, name=TRADE).get_source())
+        await self.check_undo_and_redo(before=before, after=self.data())
+
+
+class TestFollowChordsEditorUndo(UndoTest):
+
+    async def test_clearing_the_track_followed_is_one_step(self):
+        await self.open_generator(section=Section.FOLLOW_CHORDS)
+        before = self.data()
+        await self.select_field(MSG_CHORDS_FROM_LABEL)
+        await self.press(keybindings.FollowChordsEditor.CLEAR)
+        self.assertIsNone(self.document.song().get_generator_settings(kind=GeneratorKind.FOLLOW_CHORDS, name=FOLLOWS).get_chords_from())
         await self.check_undo_and_redo(before=before, after=self.data())
 
 

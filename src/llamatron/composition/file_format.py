@@ -52,6 +52,7 @@ class Section:
     DRAGS = 'drags'
     HOCKETS = 'hockets'
     GUITARIFIES = 'guitarifies'
+    FOLLOW_CHORDS = 'follow_chords'
     CHAINS = 'chains'
     GROOVES = 'grooves'
     INSTRUMENTS = 'instruments'
@@ -429,6 +430,7 @@ class GeneratorKind:
     DRAG = 'drag'
     HOCKET = 'hocket'
     GUITARIFY = 'guitarify'
+    FOLLOW_CHORDS = 'follow_chords'
 
 
 # The step sizes the editor offers, shortest first. Any other length can be typed.
@@ -707,7 +709,7 @@ NAMED_GENERATORS = {
     GeneratorKind.STRUM: Section.STRUMS, GeneratorKind.EUCLID: Section.EUCLIDS,
     GeneratorKind.DENSITY: Section.DENSITIES, GeneratorKind.SWELL: Section.SWELLS, GeneratorKind.ARTICULATE: Section.ARTICULATES,
     GeneratorKind.GLIDE: Section.GLIDES, GeneratorKind.SHORTEN: Section.SHORTENS, GeneratorKind.RUSH: Section.RUSHES, GeneratorKind.DRAG: Section.DRAGS,
-    GeneratorKind.HOCKET: Section.HOCKETS, GeneratorKind.GUITARIFY: Section.GUITARIFIES,
+    GeneratorKind.HOCKET: Section.HOCKETS, GeneratorKind.GUITARIFY: Section.GUITARIFIES, GeneratorKind.FOLLOW_CHORDS: Section.FOLLOW_CHORDS,
 }
 
 

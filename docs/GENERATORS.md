@@ -46,6 +46,7 @@ The generators fall into six categories by what they change, as the sidebar grou
 | Articulation | [Glide](generators/GLIDE.md) | Runs notes on chosen steps into the next note | `examples/learning/14_acid_glide.yml` |
 | Articulation | [Shorten](generators/SHORTEN.md) | Plays notes on chosen steps short | `examples/learning/14_acid_glide.yml` |
 | Chords | [Arpeggiator](generators/ARPEGGIATOR.md) | Plays a chord one note at a time, with offsets | `examples/learning/12_sailor_arpeggiator.yml` |
+| Chords | [Follow Chords](generators/FOLLOW_CHORDS.md) | Moves a figure to the chords another track plays | `examples/learning/24_follow_chords.yml` |
 | Chords | [Guitarify](generators/GUITARIFY.md) | Holds chords as a hand does and plays a bar of strokes on them | `examples/learning/23_guitarify.yml` |
 | Chords | [Progression](generators/PROGRESSION.md) | Moves a figure through a progression of chords | `examples/learning/06_chord_progression_generator.yml` |
 | Chords | [Strum](generators/STRUM.md) | Spreads a chord's notes in time like a pick | `examples/learning/13_classic_strum.yml` |
@@ -65,7 +66,7 @@ The generators fall into six categories by what they change, as the sidebar grou
 
 ![The Generators page](screenshots/generators.svg)
 
-Press `G` on the main screen for the Generators page, which lists every generator of the set on one list, whatever its kind, with its kind in parentheses beside its name, such as `sparse (Density)`. The kinds are the arpeggiator, AutoRatchet, Drift, Progression, Voice leading, Strum, Euclid, Density, Swell, Articulate, Glide, Shorten, Rush, Drag and Hocket. A generator changes a clip's notes when the song plays or exports; to use one, add it to a chain, then choose the chain on a clip, a scene or a track.
+Press `G` on the main screen for the Generators page, which lists every generator of the set on one list, whatever its kind, with its kind in parentheses beside its name, such as `sparse (Density)`. The kinds are the arpeggiator, AutoRatchet, Drift, Progression, Voice leading, Strum, Euclid, Density, Swell, Articulate, Glide, Shorten, Rush, Drag, Hocket, Guitarify and Follow Chords. A generator changes a clip's notes when the song plays or exports; to use one, add it to a chain, then choose the chain on a clip, a scene or a track.
 
 | Key | What it does |
 | --- | --- |

@@ -48,6 +48,8 @@ MORPH_DIRECTION_SEED = '{seed}/{scene}/{track}/morph direction'
 FULL_MORPH = 100
 # A clip with nothing in it ends straight away.
 NO_LENGTH = 0
+# The kinds of generator that move a clip's notes to a chord, which a drum pattern is spared.
+KINDS_MOVING_PITCHES = (GeneratorKind.PROGRESSION, GeneratorKind.FOLLOW_CHORDS)
 
 
 # What a chain's generator sets in the registers: nothing, since only the pattern's = rows set.
@@ -151,8 +153,8 @@ class ClipSlotPlayer:
         for chain in chains:
             for step in self._song.get_chain(chain).get_steps():
                 # A drift works on the steps as the pattern plays, and a shape on the finished clip after the chains (playback/drift.py, playback/shapes.py).
-                # A progression leaves a drum pattern alone, since moving a drum note changes the drum, not the pitch.
-                if GENERATOR_SETTINGS[step.kind].GENERATOR is not None and not (step.kind == GeneratorKind.PROGRESSION and self._plays_drums()):
+                # A progression and a Follow Chords leave a drum pattern alone, since moving a drum note changes the drum, not the pitch.
+                if GENERATOR_SETTINGS[step.kind].GENERATOR is not None and not (step.kind in KINDS_MOVING_PITCHES and self._plays_drums()):
                     key = (step.kind, step.name, times.get((step.kind, step.name), 0))
                     times[(step.kind, step.name)] = key[-1] + 1
                     generator = self._renderer.make_generator(step=step, scene=self._scene, track=self._track_name, chain=chain, index=index, key=key, counting=counting)

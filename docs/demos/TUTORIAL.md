@@ -26,6 +26,7 @@ The demos in `examples/learning/`, in the order to learn them, each teaching one
 - [Grabbed Parts](#look_ma_no_notes): `21_look_ma_no_notes.yml`
 - [Registers](#registers): `22_registers.yml`
 - [Guitarify](#guitarify): `23_guitarify.yml`
+- [Follow Chords](#follow_chords): `24_follow_chords.yml`
 <!-- end of the generated index -->
 
 <a id="hello_world"></a>
@@ -367,3 +368,19 @@ playing, so the demo shows what its Shape and Strokes sections do to the same ki
 | :---: | :---: | :---: | :---: | :---: | :---: |
 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 <!-- end of the generated summary of 23_guitarify -->
+
+<a id="follow_chords"></a>
+## Follow Chords: `24_follow_chords.yml`
+
+A song in A minor whose chords are written in one place, a muted track called SILENT Chords. The bass,
+the pad and the arpeggio each play one bar, written over chord I, through a Follow Chords
+generator that moves their notes to whatever chord that track plays. The first scenes follow
+four chords written by hand, the next follow four others, one of them a major chord from outside
+the key, and the fifth follows chords that a Progression makes on that track.
+
+[`examples/learning/24_follow_chords.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/24_follow_chords.yml) · A minor · 96 BPM · 3:00 · 6 scenes · 7 tracks
+
+| chords | chains | follow chords | ties | progressions |
+| :---: | :---: | :---: | :---: | :---: |
+| ✓ | ✓ | ✓ | ✓ | ✓ |
+<!-- end of the generated summary of 24_follow_chords -->

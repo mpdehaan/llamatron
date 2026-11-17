@@ -383,6 +383,10 @@ class HocketEditor(FieldPage):
     """A Hocket's editor, with the settings keys alone."""
 
 
+class FollowChordsEditor(FieldPage):
+    """A Follow Chords' editor, with the settings keys alone."""
+
+
 class GuitarifyEditor(FieldPage):
     """A Guitarify's editor, with the settings keys alone."""
 
