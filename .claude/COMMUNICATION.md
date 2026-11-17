@@ -187,6 +187,15 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   `CLAUDE.md` only when it's about the project as a whole.
   `CLAUDE.md` stays short and orderly, and each other file stays on its topic.
 
+## Paths outside the repository
+
+- **A path outside the working directory is used exactly as the user gave it, or not at all** (the user's rule, with no
+  exceptions). When a path the user names outside the repository does not exist or cannot be read, Claude stops and says so:
+  no listing of the folder the path is in, no search for a file of a near name, no guess at another folder, no look at a
+  newer or likelier file. Claude looks for files in a folder outside the repository only when the user has named that
+  folder and said to look for files there, and never finds such a folder on its own. Claude once filed ideas from a file
+  of another name found by listing a temporary folder, which is what this rule forbids.
+
 ## Discussing a feature
 
 - A proposal about the screen comes with a drawing of it, a page or a dialog as the console would show it, since the user
