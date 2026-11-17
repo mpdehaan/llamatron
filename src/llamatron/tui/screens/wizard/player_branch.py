@@ -19,13 +19,16 @@
 from llamatron.composition.limits import MIN_GM_SOUND
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT
 from llamatron.macro_composer.interplay import LEAST_BUSY as LEAST_BUSY_BESIDE, MOST_BUSY as MOST_BUSY_BESIDE
-from llamatron.macro_composer.wizard_choices import FEWEST_FILLS, HIGHEST_PLACE, LEAST_BUSY, LOWEST_PLACE, MOST_BUSY, MOST_FILLS
-from llamatron.strings.labels import MSG_WIZARD_BY_SECTION, MSG_WIZARD_FILLS_BUSY_LABEL, MSG_WIZARD_ROLE_LABEL, MSG_GM_SOUNDS, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_NO_BREAK, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYER_GAUGE_LABELS, MSG_WIZARD_PLAYS_LABEL, MSG_WIZARD_SOUND_LABEL
+from llamatron.macro_composer.wizard_choices import FEWEST_FILLS, FILLS_TRAITS, HIGHEST_PLACE, LEAST_BUSY, LOWEST_PLACE, MOST_BUSY, MOST_FILLS
+from llamatron.strings.labels import MSG_WIZARD_BY_SECTION, MSG_WIZARD_FILLS_BUSY_LABEL, MSG_WIZARD_ROLE_LABEL, MSG_GM_SOUNDS, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_NO_BREAK, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYER_GAUGE_LABELS, MSG_WIZARD_PLAYS_LABEL, MSG_WIZARD_SOUND_LABEL
 from llamatron.strings.legends import MSG_OWN_DRUM_WHAT, What
 from llamatron.strings.marks import MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_SOUND_ON_NOTE, MSG_WIZARD_FILLS_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_BUSY_CUSTOM_SHOWN, MSG_WIZARD_BUSY_SHOWN, MSG_WIZARD_PLAYER_GAUGE_SHOWN, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL
 from llamatron.tui.note_names import note_shown
 from llamatron.tui.screens.shared.field import Cells, ChoiceField, Field, NumberField, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
+
+# A field is worth showing once there is more than one way to choose.
+A_CHOICE = 2
 
 
 class PlayerBranch(Branch):
@@ -60,7 +63,7 @@ class PlayerBranch(Branch):
         if not choices.has_sound(self._role):
             # The drums' break comes first, since it takes the place of the kick's, the snare's and the cymbal's own ways.
             fields = [*self.break_fields(), *fields]
-            fields.append(self.fills_field())
+            fields += [*self.fill_pattern_fields(), self.fills_field()]
             if choices.has_quiet_notes() or not choices.plays_quiet_notes():
                 fields.append(Toggle(label=MSG_WIZARD_QUIET_NOTES_LABEL, on=choices.plays_quiet_notes(), set=self.page().choosing(choices.set_quiet_notes)))
             # The drums: a row for each piece of the kit the song plays.
@@ -147,6 +150,15 @@ class PlayerBranch(Branch):
             fields.append(NumberField(page=page, label=MSG_WIZARD_BREAK_CUT_LABEL, number=cut, shown=MSG_WIZARD_BUSY_SHOWN.format(gauge=gauge, level=cut, most=MOST_CUT),
                                       lowest=LEAST_CUT, highest=MOST_CUT, set=page.choosing(choices.set_break_cut)))
         return fields
+
+    def fill_pattern_fields(self):
+        """Return the field for what the drums' fill is, where the genre has more than one, since one is nothing to choose."""
+        choices = self.choices()
+        trait = choices.song_trait(FILLS_TRAITS)
+        if trait is None or len(choices.song_ways(trait)) < A_CHOICE:
+            return []
+        return [ChoiceField(page=self.page(), label=MSG_WIZARD_FILLS_LABEL, choices=choices.song_ways(trait), current=choices.get_way(trait),
+                            set=self.page().choosing(lambda value: choices.set_way(trait=trait, value=value)))]
 
     def fills_field(self):
         """Return the field for how often a fill comes: a number stepped or typed, drawn as a horizontal gauge that is empty at

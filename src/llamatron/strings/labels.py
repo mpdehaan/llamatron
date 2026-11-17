@@ -740,11 +740,10 @@ MSG_WIZARD_MELODY_BRANCH = 'Melody'
 MSG_WIZARD_HOOKS_BRANCH = 'Hooks'
 MSG_WIZARD_HOOK_ON = 'on'
 MSG_WIZARD_HOOK_OFF = 'off'
-MSG_WIZARD_PLAYING_BRANCH = 'Playing'
 MSG_WIZARD_PROGRESSION_LABEL = 'Progression'
 MSG_WIZARD_MELODY_LABEL = 'Melody'
 MSG_WIZARD_HOOK_LABEL = 'Hook'
-MSG_WIZARD_FILLS_LABEL = 'Fills'
+MSG_WIZARD_FILLS_LABEL = 'Fill pattern'
 MSG_WIZARD_USUAL_MELODY = 'usual'
 # The smart melody style's gauges, each by its name in the melody engine: the field's label, then what its two ends mean.
 MSG_WIZARD_GAUGE_LABELS = {'moves': 'Moves', 'steps': 'Steps', 'after_leap': 'After leap', 'phrase': 'Phrase', 'leaning': 'Leaning', 'notes': 'Notes', 'surprise': 'Surprise'}
