@@ -46,7 +46,7 @@ from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.set.song_page import SongPage
 from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.strings.help import HELP_NONE
-from llamatron.strings.labels import MSG_WIZARD_FORM_BRANCH, MSG_GUITAR_BAR_LABEL, MSG_CHORDS_LABEL, MSG_STEPS_LABEL, MSG_CHAINS_LABEL, MSG_NOTES_LABEL, MSG_OFFSETS_LABEL
+from llamatron.strings.labels import MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_SUBGENRE_BRANCH, MSG_GUITAR_BAR_LABEL, MSG_CHORDS_LABEL, MSG_STEPS_LABEL, MSG_CHAINS_LABEL, MSG_NOTES_LABEL, MSG_OFFSETS_LABEL
 from llamatron.strings.legends import KeyName
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import first_key
@@ -357,7 +357,13 @@ class KeyTour(UITest):
         await self.walk()
         more = key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)
         # The walk left the tree's cursor on its last branch, so it goes back up to Genre first.
-        await self.press(*[Key.UP] * len(self.app.screen.rows()), keybindings.WizardPage.INTO_FIELDS, more, Key.DOWN, more)
+        await self.press(*[Key.UP] * len(self.app.screen.rows()), keybindings.WizardPage.INTO_FIELDS, more, keybindings.WizardPage.TO_TREE)
+        # The subgenre is chosen on the panel under Genre, which a walk's Left may have closed.
+        if MSG_WIZARD_SUBGENRE_BRANCH not in [branch.name() for _, branch in self.app.screen.rows()]:
+            await self.press(Key.RIGHT)
+        await self.press(Key.DOWN, keybindings.WizardPage.INTO_FIELDS, more)
+        await self.walk()
+        await self.press(keybindings.WizardPage.TO_TREE, Key.UP, keybindings.WizardPage.INTO_FIELDS)
         await self.walk()
         await self.press(keybindings.WizardPage.TO_TREE)
         await self.walk()

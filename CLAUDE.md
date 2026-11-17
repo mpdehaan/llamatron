@@ -22,6 +22,8 @@ exceptions but the ones written here, and they come before every other rule in t
   The one standing exception, confirmed by the user: the folders under `/private/tmp` whose names start with `claude`, where
   Claude Code keeps a session's scratch files, may be read, written and run in without asking. The exception covers nothing
   else under `/private/tmp` or `/tmp`, and not the memory folder under the user's home.
+  A second standing exception, confirmed by the user: Claude may write demo sets for the user to listen to in the folder
+  `/tmp/llamatron_demos`, and nowhere else under `/tmp`, without asking.
 
 ## Project
 
