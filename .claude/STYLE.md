@@ -152,6 +152,13 @@ for people, like key names, file modes, the format's names and the exporters' ta
 descriptive names in their own modules. Text only for people, like docstrings and comments, stays
 where it is.
 
+**Text is imported by its module, never name by name.** Code that uses the program's text imports the modules of the `strings`
+package and names each constant through its module, `labels.MSG_PHRASING_BREATH_LABEL`, `errors.ERR_NO_SUCH_SCALE`, so that no
+file opens with a wall of names, a use says which file holds the wording, and a new piece of text needs no change to the imports:
+`from llamatron.strings import errors, labels, legends, marks, messages`, with `help.py` imported as `help_text`, since `help` is a
+Python built-in (the user's rule: namespaces are a good thing). New and changed modules follow it now; every other module is
+brought over after the song wizard, with the code maintainability expert's findings (`.claude/DESIGNS.md`).
+
 **Imports are sorted, in two groups.** A module's imports come as two groups with one blank line between them: first the system
 libraries, then everything from this project, together. In each group the import lines are in alphabetical order by the package
 or module they import from, and the names one line imports are in alphabetical order too. The one exception is an import that
