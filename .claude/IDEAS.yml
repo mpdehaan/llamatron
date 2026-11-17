@@ -346,6 +346,11 @@
   text: |
     A key on the Arrange page, the hide key, opens a dialog that lists the song's tracks and lets a person hide and show each one, so that tracks a person does not need to see, such as a muted chords track or other guide tracks, take no room on the Arrange page. A hidden track still plays and is still followed, as before; hiding changes only what Arrange draws. How many tracks are hidden has to be shown somewhere on the Arrange page, so that nobody forgets tracks are there. To discuss before building: where the count shows, whether the choice is kept in the set file or only for the session, what the cursor does at a hidden track, and whether Scene View, the details view and the exports show hidden tracks. For the code: a setting of the track or of the song, the Arrange page's drawing and cursor skipping hidden columns, a new dialog, and the key's binding in tui/keybindings.py.
 
+- title: "Code a person can work on without Claude"
+  priority: 6
+  text: |
+    A large task, to be considered before any of it is done: make the code as readable as it can be for a person with less understanding of it than Claude has, while keeping it fast and easy to change, for a future in which no Claude maintains it. The user's three worries: the text UI may be bound too closely to Textual; there may be too many constants to keep in one's head; and adding a feature means touching too many places. As a measure of the third, adding the Follow Chords generator touched about thirty files: the file format's names, the settings class, the two tables of kinds, the set's reader and writer, the renderer, the strings in five modules, the key bindings, the page, the list of pages, the tests' sample set and seven test modules, three tools and four documents. To discuss: one declaration of a generator from which the tables, the page, the strings' places and the tests' tours are derived; a thin layer of llamatron's own between the pages and Textual, so that a page names no Textual class; a written walk-through for each common change, such as adding a generator, a setting, a page or a key, kept true by a test; which constants earn their names and which are noise; and a way to measure how many files a common change touches, so that progress shows. Nothing of it is started.
+
 - title: "Sheet music and chord sheets as PDF"
   priority: 8
   text: |
