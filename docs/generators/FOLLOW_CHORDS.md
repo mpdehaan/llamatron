@@ -23,4 +23,4 @@ Change a chord on the Chords track and every clip that follows it changes with i
 
 ## Applying the Generator
 
-`examples/learning/24_follow_chords.yml` shows three tracks following one muted track, SILENT Chords, with the chords written by hand and then made by a Progression.
+`examples/learning/24_follow_chords.yml` plays a band stuck on one chord and then following one muted track, SILENT Chords, one player at a time, with the chords written by hand and then made by a Progression.

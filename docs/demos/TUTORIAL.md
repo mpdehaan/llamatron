@@ -375,11 +375,12 @@ playing, so the demo shows what its Shape and Strokes sections do to the same ki
 
 A song in A minor whose chords are written in one place, a muted track called SILENT Chords. The bass,
 the pad and the arpeggio each play one bar, written over chord I, through a Follow Chords
-generator that moves their notes to whatever chord that track plays. The first scenes follow
-four chords written by hand, the next follow four others, one of them a major chord from outside
-the key, and the fifth follows chords that a Progression makes on that track.
+generator that moves their notes to whatever chord that track plays. The chords are heard plainly
+first, then the band plays without following and sounds stuck on one chord, then the bass follows
+alone, then everyone. Later scenes add a tune, change the chords under the same patterns, change
+chord twice a bar, and follow chords that a Progression makes on that track.
 
-[`examples/learning/24_follow_chords.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/24_follow_chords.yml) · A minor · 96 BPM · 3:00 · 6 scenes · 7 tracks
+[`examples/learning/24_follow_chords.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/24_follow_chords.yml) · A minor · 96 BPM · 2:40 · 8 scenes · 8 tracks
 
 | chords | chains | follow chords | ties | progressions |
 | :---: | :---: | :---: | :---: | :---: |

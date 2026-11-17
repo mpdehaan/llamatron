@@ -63,7 +63,7 @@ MIDI = 2
 VELOCITY = 3
 
 
-def only(changed=None):
+def only(*, changed=None):
     """Return the settings of a Phrasing that changes nothing but the settings given."""
     return {**PLAIN, **(changed or {})}
 
@@ -103,32 +103,32 @@ def first_line(notes):
 class TestPhrasingBreath(unittest.TestCase):
 
     def test_a_quick_breath_takes_an_eighth_off_each_lines_last_note_and_a_deep_one_a_quarter(self):
-        self.assertEqual(line_ends(phrased_data(settings=only({PhrasingSetting.BREATH: QUICK_BREATH}), rows=LINE_ENDING_HELD)), [EIGHTH] * LINES)
-        self.assertEqual(line_ends(phrased_data(settings=only({PhrasingSetting.BREATH: DEEP_BREATH}), rows=LINE_ENDING_HELD)), [QUARTER] * LINES)
+        self.assertEqual(line_ends(phrased_data(settings=only(changed={PhrasingSetting.BREATH: QUICK_BREATH}), rows=LINE_ENDING_HELD)), [EIGHTH] * LINES)
+        self.assertEqual(line_ends(phrased_data(settings=only(changed={PhrasingSetting.BREATH: DEEP_BREATH}), rows=LINE_ENDING_HELD)), [QUARTER] * LINES)
 
     def test_no_breath_leaves_every_line_as_long_as_written(self):
         self.assertEqual(line_ends(phrased_data(settings=only(), rows=LINE_ENDING_HELD)), [0] * LINES)
 
     def test_no_note_is_left_out_or_moved(self):
         written = heard(phrased_data(settings=only(), rows=LINE_ENDING_HELD))
-        breathing = heard(phrased_data(settings=only({PhrasingSetting.BREATH: DEEP_BREATH}), rows=LINE_ENDING_HELD))
+        breathing = heard(phrased_data(settings=only(changed={PhrasingSetting.BREATH: DEEP_BREATH}), rows=LINE_ENDING_HELD))
         self.assertEqual([note[START] for note in breathing], [note[START] for note in written])
 
     def test_a_breath_takes_no_more_than_half_of_the_note_it_shortens(self):
         # Every note of the tune is an eighth, so a deep breath, a quarter, can take only a sixteenth.
-        self.assertEqual(line_ends(phrased_data(settings=only({PhrasingSetting.BREATH: DEEP_BREATH}))), [EIGHTH / 2] * LINES)
+        self.assertEqual(line_ends(phrased_data(settings=only(changed={PhrasingSetting.BREATH: DEEP_BREATH}))), [EIGHTH / 2] * LINES)
 
     def test_only_a_lines_last_note_is_shortened(self):
-        notes = heard(phrased_data(settings=only({PhrasingSetting.BREATH: DEEP_BREATH}), rows=LINE_ENDING_HELD))
+        notes = heard(phrased_data(settings=only(changed={PhrasingSetting.BREATH: DEEP_BREATH}), rows=LINE_ENDING_HELD))
         self.assertEqual([note[LENGTH] for note in first_line(notes)], [EIGHTH] * MOVING_STEPS + [HALF - QUARTER])
 
     def test_where_the_tune_already_rests_nothing_is_cut(self):
         # Each line's last two steps are rests: a quarter of silence, as much as a deep breath.
         resting = {Row.DEGREE: ([1] * (STEPS_IN_LINE - 2) + [None] * 2) * LINES}
-        self.assertEqual(line_ends(phrased_data(settings=only({PhrasingSetting.BREATH: DEEP_BREATH}), rows=resting)), [QUARTER] * LINES)
+        self.assertEqual(line_ends(phrased_data(settings=only(changed={PhrasingSetting.BREATH: DEEP_BREATH}), rows=resting)), [QUARTER] * LINES)
 
     def test_a_line_of_one_bar_breathes_every_bar(self):
-        notes = heard(phrased_data(settings=only({PhrasingSetting.BREATH: QUICK_BREATH, PhrasingSetting.LINE_BARS: 1})))
+        notes = heard(phrased_data(settings=only(changed={PhrasingSetting.BREATH: QUICK_BREATH, PhrasingSetting.LINE_BARS: 1})))
         shortened = [note[START] for note in notes if note[LENGTH] < EIGHTH]
         self.assertEqual(shortened, [bar * BAR + BAR - EIGHTH for bar in range(2 * LINES)])
 
@@ -136,7 +136,7 @@ class TestPhrasingBreath(unittest.TestCase):
         # The first line's last note is tied through the first step of the second line.
         degrees = [1] * STEPS_IN_LINE + [None] + [1] * (STEPS - STEPS_IN_LINE - 1)
         ties = [False] * STEPS_IN_LINE + [True] + [False] * (STEPS - STEPS_IN_LINE - 1)
-        notes = heard(phrased_data(settings=only({PhrasingSetting.BREATH: DEEP_BREATH}), rows={Row.DEGREE: degrees, Row.TIE: ties}))
+        notes = heard(phrased_data(settings=only(changed={PhrasingSetting.BREATH: DEEP_BREATH}), rows={Row.DEGREE: degrees, Row.TIE: ties}))
         crossing = [note for note in notes if note[START] == LINE - EIGHTH]
         self.assertEqual([note[LENGTH] for note in crossing], [QUARTER])
 
@@ -144,7 +144,7 @@ class TestPhrasingBreath(unittest.TestCase):
 class TestPhrasingRiseAndFall(unittest.TestCase):
 
     def loudness(self, rise):
-        return heard(phrased_data(settings=only({PhrasingSetting.RISE_AND_FALL: rise}), rows=LINE_ENDING_HELD))
+        return heard(phrased_data(settings=only(changed={PhrasingSetting.RISE_AND_FALL: rise}), rows=LINE_ENDING_HELD))
 
     def test_no_rise_leaves_every_note_as_loud_as_written(self):
         self.assertEqual(len({note[VELOCITY] for note in self.loudness(NO_RISE)}), 1)
@@ -173,7 +173,7 @@ class TestPhrasingRiseAndFall(unittest.TestCase):
         # Each line's long note comes in the middle of its second bar and four eighths follow it.
         degrees = ([1] * 9 + [None] * 3 + [1] * 4) * LINES
         ties = ([False] * 9 + [True] * 3 + [False] * 4) * LINES
-        line = first_line(heard(phrased_data(settings=only({PhrasingSetting.RISE_AND_FALL: BIG_RISE}), rows={Row.DEGREE: degrees, Row.TIE: ties})))
+        line = first_line(heard(phrased_data(settings=only(changed={PhrasingSetting.RISE_AND_FALL: BIG_RISE}), rows={Row.DEGREE: degrees, Row.TIE: ties})))
         falling = [note[VELOCITY] for note in line if note[START] >= BAR]
         self.assertEqual(falling, sorted(falling, reverse=True))
         self.assertEqual(min(note[VELOCITY] for note in line), line[-1][VELOCITY])
@@ -186,19 +186,19 @@ class TestPhrasingRiseAndFall(unittest.TestCase):
 class TestPhrasingNotes(unittest.TestCase):
 
     def test_choppy_halves_a_short_note_and_takes_an_eighth_off_a_long_one(self):
-        line = first_line(heard(phrased_data(settings=only({PhrasingSetting.NOTES: CHOPPY_NOTES}), rows=LINE_ENDING_HELD)))
+        line = first_line(heard(phrased_data(settings=only(changed={PhrasingSetting.NOTES: CHOPPY_NOTES}), rows=LINE_ENDING_HELD)))
         self.assertEqual([note[LENGTH] for note in line], [EIGHTH / 2] * MOVING_STEPS + [HALF - EIGHTH])
 
     def test_flowing_holds_each_note_until_the_next_starts(self):
-        line = first_line(heard(phrased_data(settings=only({PhrasingSetting.NOTES: FLOWING_NOTES}), rows=TWO_PITCHES_WITH_RESTS)))
+        line = first_line(heard(phrased_data(settings=only(changed={PhrasingSetting.NOTES: FLOWING_NOTES}), rows=TWO_PITCHES_WITH_RESTS)))
         self.assertEqual([note[LENGTH] for note in line[:-1]], [QUARTER] * (len(line) - 1))
 
     def test_flowing_leaves_a_lines_last_note_as_written(self):
-        line = first_line(heard(phrased_data(settings=only({PhrasingSetting.NOTES: FLOWING_NOTES}), rows=TWO_PITCHES_WITH_RESTS)))
+        line = first_line(heard(phrased_data(settings=only(changed={PhrasingSetting.NOTES: FLOWING_NOTES}), rows=TWO_PITCHES_WITH_RESTS)))
         self.assertEqual(line[-1][LENGTH], EIGHTH)
 
     def test_flowing_stops_short_of_a_note_of_the_same_pitch_so_that_it_is_struck_again(self):
-        line = first_line(heard(phrased_data(settings=only({PhrasingSetting.NOTES: FLOWING_NOTES}), rows=ONE_PITCH_WITH_RESTS)))
+        line = first_line(heard(phrased_data(settings=only(changed={PhrasingSetting.NOTES: FLOWING_NOTES}), rows=ONE_PITCH_WITH_RESTS)))
         self.assertEqual([note[LENGTH] for note in line[:-1]], [QUARTER - GAP_BEFORE_SAME_PITCH] * (len(line) - 1))
 
     def test_as_written_changes_no_note(self):
