@@ -298,7 +298,8 @@ class StepWalk:
             made = self.new_line(entry=entry, under=under, dice=dice)
             if self._habits.get(BREATHES) and not entry.get(HOOK):
                 # The breath is drawn apart from the line, so that a line is the same notes whether it breathes or not.
-                made = breathed(line=made, grid=self._grid, count=count, dice=random.Random(BREATH_SEED.format(self._seed, self._answers, letter)))
+                made = breathed(line=made, grid=self._grid, count=count, dice=random.Random(BREATH_SEED.format(self._seed, self._answers, letter)),
+                                ways=self._habits[BREATHES] if isinstance(self._habits[BREATHES], dict) else None)
             made = stressed(made)
             known[letter] = made
             lines.append([dict(note) for note in made])

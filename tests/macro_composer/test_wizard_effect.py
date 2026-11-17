@@ -32,9 +32,9 @@ from llamatron.macro_composer import interplay
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT
 from llamatron.macro_composer.melody import HIGHEST_GAUGE, LOWEST_GAUGE
 from llamatron.support.version import VERSION
-from llamatron.macro_composer import hook_kinds
+from llamatron.macro_composer import hook_kinds, phrasing
 from llamatron.macro_composer.song_plan import HIGHEST_ENERGY, LOWEST_ENERGY
-from llamatron.macro_composer.wizard_choices import (HOOK_PARTS, USUAL_PIECE_NOTE, BAND_SOUNDS, GAUGED_STYLES, FEWEST_FILLS, FILLS_TRAITS, LEAST_BUSY, MOST_BUSY, MOST_FILLS, ONE_GUITARIST_COUNT,
+from llamatron.macro_composer.wizard_choices import (HOOK_PARTS, PHRASING_OFFERED, USUAL_PIECE_NOTE, BAND_SOUNDS, GAUGED_STYLES, FEWEST_FILLS, FILLS_TRAITS, LEAST_BUSY, MOST_BUSY, MOST_FILLS, ONE_GUITARIST_COUNT,
                                                      USUAL_SOUNDS, WizardChoices, genre_names)
 
 A_NAME = 'a_song'
@@ -77,6 +77,7 @@ NEW_HOOK = 'new hook'
 SONG_PLAN = 'song plan'
 CONTRAST = 'contrast'
 PHRASING = 'phrasing'
+PHRASING_WAY = 'how the lines breathe'
 HOOK_PART = "a part of the hook's kind"
 SECTION_OWN = "a section's own"
 A_SECOND_PLACE = 1
@@ -254,6 +255,10 @@ def every_choice(choices):
         under_plan = fresh_with_plan(choices)
         if under_plan.counts_in_four():
             yield PHRASING, False, lambda made: made.set_phrasing(False), [planned]
+            for name, offered in PHRASING_OFFERED.items():
+                for value in offered:
+                    if value != phrasing.USUAL_WAYS[name]:
+                        yield PHRASING_WAY, (name, value), lambda made, name=name, value=value: made.set_phrasing_way(name=name, value=value), [planned]
         if choices.can_have_hook() and choices.has_hook() and under_plan.counts_in_four():
             for part, offered in HOOK_PARTS.items():
                 for value in offered:

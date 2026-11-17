@@ -747,6 +747,8 @@ MSG_WIZARD_HOOK_LABEL = 'Hook'
 MSG_WIZARD_SONG_PLAN_LABEL = 'Song plan'
 MSG_WIZARD_CONTRAST_LABEL = 'Contrast'
 MSG_WIZARD_PHRASING_LABEL = 'Phrasing'
+MSG_WIZARD_PHRASING_WAY_LABELS = {'breath': 'Breath', 'lines': 'Line lengths', 'early': 'Early notes'}
+MSG_WIZARD_EARLY_SHOWN = '{count} lines in {of}'
 MSG_WIZARD_HOOK_PART_LABELS = {'contour': 'Contour', 'rhythm': 'Rhythm', 'detail': 'Detail'}
 MSG_WIZARD_PICK = "(wizard's pick)"
 # What a section of a planned song can be given of its own, and where each comes from until it is.

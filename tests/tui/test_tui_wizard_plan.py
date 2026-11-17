@@ -17,7 +17,7 @@
 """The song wizard's page on a planned song: the plan's fields on the Form panel and the hook's kind on the Hooks panel."""
 
 from llamatron.composition.limits import MAX_NAME_LENGTH
-from llamatron.macro_composer import hook_kinds
+from llamatron.macro_composer import hook_kinds, phrasing
 from llamatron.macro_composer.arranger import CHORDS
 from llamatron.macro_composer.joins import LEAVES
 from llamatron.macro_composer.song_plan import ENERGY, ROOT_OF_PLACE, TEMPO_END_OF_PLACE, TYPE_OF_PLACE
@@ -25,7 +25,7 @@ from llamatron.macro_composer.wizard_choices import chords_as_text
 from llamatron.strings.errors import ERR_WIZARD_CHORDS
 from llamatron.macro_composer.song_plan import USUAL_CONTRAST
 from llamatron.strings.labels import (
-    MSG_WIZARD_CONTRAST_LABEL, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_HOOK_PART_LABELS, MSG_WIZARD_HOOKS_BRANCH, MSG_WIZARD_PHRASING_LABEL, MSG_WIZARD_PICK_SHOWN,
+    MSG_WIZARD_CONTRAST_LABEL, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_HOOK_PART_LABELS, MSG_WIZARD_HOOKS_BRANCH, MSG_WIZARD_MELODY_BRANCH, MSG_WIZARD_PHRASING_LABEL, MSG_WIZARD_PHRASING_WAY_LABELS, MSG_WIZARD_PICK_SHOWN,
     MSG_WIZARD_SECTION_ORIGINS, MSG_WIZARD_SECTION_OWN_LABELS, MSG_WIZARD_SONG_PLAN_LABEL, MSG_WIZARD_VALUE_FROM,
 )
 from llamatron.tui import keybindings
@@ -57,6 +57,10 @@ class TestWizardPlan(WizardTest):
         names = [branch.name() for _, branch in self.wizard().rows()]
         await self.go_to_branch(names.index(MSG_WIZARD_HOOKS_BRANCH))
 
+    async def go_to_melody(self):
+        names = [branch.name() for _, branch in self.wizard().rows()]
+        await self.go_to_branch(names.index(MSG_WIZARD_MELODY_BRANCH))
+
     async def switch_plan_on(self):
         await self.go_to_named_branch(MSG_WIZARD_FORM_BRANCH)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
@@ -72,8 +76,7 @@ class TestWizardPlan(WizardTest):
         choices = self.choices()
         self.assertTrue(choices.has_song_plan())
         shown = self.text()
-        for label in (MSG_WIZARD_CONTRAST_LABEL, MSG_WIZARD_PHRASING_LABEL):
-            self.assertIn(label, shown)
+        self.assertIn(MSG_WIZARD_CONTRAST_LABEL, shown)
         for said in choices.said_of_sections():
             self.assertIn(said.split('.')[0], shown)
         self.assertTrue(self.wizard().has_choices_to_lose())
@@ -84,9 +87,21 @@ class TestWizardPlan(WizardTest):
         await self.select_field(MSG_WIZARD_CONTRAST_LABEL)
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(self.choices().get_contrast(), USUAL_CONTRAST + 1)
+        await self.press(keybindings.WizardPage.TO_TREE)
+        await self.go_to_melody()
+        for label in MSG_WIZARD_PHRASING_WAY_LABELS.values():
+            self.assertIn(label, self.text())
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(MSG_WIZARD_PHRASING_WAY_LABELS[phrasing.BREATH])
+        await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
+        self.assertEqual(self.choices().phrasing_way(phrasing.BREATH), phrasing.LONG)
+        await self.select_field(MSG_WIZARD_PHRASING_WAY_LABELS[phrasing.EARLY_NOTES])
+        await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
+        self.assertEqual(self.choices().phrasing_way(phrasing.EARLY_NOTES), phrasing.USUAL_EARLY + 1)
         await self.select_field(MSG_WIZARD_PHRASING_LABEL)
         await self.press(Key.ENTER)
         self.assertFalse(self.choices().has_phrasing())
+        self.assertNotIn(MSG_WIZARD_PHRASING_WAY_LABELS[phrasing.BREATH], self.text())
 
     async def test_a_genre_with_no_plan_shows_no_switch_and_a_song_in_six_no_phrasing(self):
         await self.choose(genre=AN_UNPLANNED_GENRE, subgenre=None)
@@ -95,6 +110,8 @@ class TestWizardPlan(WizardTest):
         await self.choose(subgenre=A_SUBGENRE_IN_SIX)
         await self.switch_plan_on()
         self.assertIn(MSG_WIZARD_CONTRAST_LABEL, self.text())
+        await self.press(keybindings.WizardPage.TO_TREE)
+        await self.go_to_melody()
         self.assertNotIn(MSG_WIZARD_PHRASING_LABEL, self.text())
 
     async def test_the_hooks_panel_shows_the_kind_only_under_a_plan_and_marks_the_wizard_s_pick(self):

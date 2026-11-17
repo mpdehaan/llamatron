@@ -16,14 +16,16 @@
 
 """The wizard's choices of a planned song: the plan switched on, its contrast, its phrasing and the hook's kind."""
 
+import random
 import unittest
 
 from llamatron.composition.file_format import SceneSetting, Section
-from llamatron.macro_composer import hook_kinds
+from llamatron.macro_composer import hook_kinds, phrasing
+from llamatron.macro_composer.notation import REST, STEPS
 from llamatron.macro_composer.arranger import CHORDS
 from llamatron.macro_composer.joins import BUILD, DROP_OUT, LEAVES, STOPS
 from llamatron.macro_composer.song_plan import ENERGY, HIGHEST_ENERGY, LOWEST_ENERGY, NOT_AT_ALL, ROOT_OF_PLACE, SETUP, TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE, USUAL_CONTRAST
-from llamatron.macro_composer.wizard_choices import HOOK_PARTS, LEAVES_AS_JOIN, MINOR, WizardChoices, chords_as_text, chords_from_text
+from llamatron.macro_composer.wizard_choices import HOOK_PARTS, LEAVES_AS_JOIN, PHRASING_OFFERED, MINOR, WizardChoices, chords_as_text, chords_from_text
 from llamatron.strings.errors import ERR_WIZARD_GENRE_HAS_NO_PLAN, ERR_WIZARD_NO_SONG_PLAN
 from llamatron.strings.macro_composer import MSG_PLAN_LEAVES_TAIL, MSG_PLAN_SET_UP
 from llamatron.support.version import VERSION
@@ -38,6 +40,7 @@ NOT_A_SWITCH = 'yes'
 NOT_A_PART = 'wobble'
 A_HIGH_CONTRAST = 9
 A_VERSE = 1
+A_BAR_OF_STEPS = 16
 MANY_SEEDS = 40
 A_SLOW_TEMPO = 90
 A_FAST_TEMPO = 150
@@ -128,6 +131,38 @@ class TestWizardSongPlan(unittest.TestCase):
 
     def test_a_planned_song_differs_from_the_song_without_a_plan(self):
         self.assertNotEqual(chosen().made_setlist(name=A_NAME, version=VERSION).to_data(), chosen(plan=False).made_setlist(name=A_NAME, version=VERSION).to_data())
+
+
+class TestWizardPhrasing(unittest.TestCase):
+    """How a planned song's lines breathe."""
+
+    __slots__ = ()
+
+    def test_each_respect_starts_as_usual_takes_what_is_offered_and_is_kept(self):
+        choices = chosen()
+        for name, offered in PHRASING_OFFERED.items():
+            self.assertEqual(choices.phrasing_way(name), phrasing.USUAL_WAYS[name])
+            for value in offered:
+                choices.set_phrasing_way(name=name, value=value)
+                self.assertEqual(choices.phrasing_way(name), value)
+                self.assertEqual(WizardChoices.from_data(choices.to_data()).phrasing_way(name), value)
+            with self.assertRaises(ValueError):
+                choices.set_phrasing_way(name=name, value=NOT_A_PART)
+        with self.assertRaises(ValueError):
+            choices.set_phrasing_way(name=NOT_A_PART, value=phrasing.LONG)
+
+    def test_longer_breaths_leave_more_silence_and_no_early_notes_moves_none(self):
+        line = [{STEPS: A_BAR_OF_STEPS}, {STEPS: A_BAR_OF_STEPS}]
+        silences = []
+        for breath in phrasing.BREATHS:
+            made = phrasing.breathed(line=line, grid=A_BAR_OF_STEPS, count=0, dice=random.Random(A_SEED), ways={phrasing.BREATH: breath, phrasing.EARLY_NOTES: phrasing.FEWEST_EARLY})
+            silences.append(sum(note.get(REST, 0) for note in made))
+        self.assertEqual(silences, sorted(set(silences)))
+
+    def test_which_lines_are_the_shorter_follows_the_line_lengths(self):
+        self.assertEqual([phrasing.is_shorter(count=count, lengths=phrasing.LONG_THEN_SHORT) for count in range(4)], [False, True, False, True])
+        self.assertEqual([phrasing.is_shorter(count=count, lengths=phrasing.SHORT_THEN_LONG) for count in range(4)], [True, False, True, False])
+        self.assertFalse(any(phrasing.is_shorter(count=count, lengths=phrasing.EVEN) for count in range(4)))
 
 
 class TestWizardHookKind(unittest.TestCase):

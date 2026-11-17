@@ -19,7 +19,7 @@ from rich.text import Text
 
 from llamatron.macro_composer.song_plan import HIGHEST_ENERGY, LOWEST_ENERGY
 from llamatron.strings.errors import ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
-from llamatron.strings.labels import MSG_WIZARD_CONTRAST_LABEL, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_PHRASING_LABEL, MSG_WIZARD_PLAN_LINE, MSG_WIZARD_SONG_PLAN_LABEL, MSG_WIZARD_SUGGESTED_FORM_BUTTON
+from llamatron.strings.labels import MSG_WIZARD_CONTRAST_LABEL, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_PLAN_LINE, MSG_WIZARD_SONG_PLAN_LABEL, MSG_WIZARD_SUGGESTED_FORM_BUTTON
 from llamatron.strings.legends import KeyName, MSG_WIZARD_SUGGESTED_FORM_WHAT
 from llamatron.strings.marks import MSG_WIZARD_OWN_FORM, MSG_WIZARD_SECTION_LINE
 from llamatron.strings.messages import MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_SECTIONS_HINT
@@ -60,8 +60,6 @@ class FormBranch(Branch):
         plan = [Toggle(label=MSG_WIZARD_SONG_PLAN_LABEL, on=choices.has_song_plan(), set=page.choosing(choices.set_song_plan))] if choices.can_have_song_plan() else []
         if choices.has_song_plan():
             plan.append(NumberField(page=page, label=MSG_WIZARD_CONTRAST_LABEL, number=choices.get_contrast(), lowest=LOWEST_ENERGY, highest=HIGHEST_ENERGY, set=page.choosing(choices.set_contrast)))
-            if choices.counts_in_four():
-                plan.append(Toggle(label=MSG_WIZARD_PHRASING_LABEL, on=choices.has_phrasing(), set=page.choosing(choices.set_phrasing)))
         return [Field(label=MSG_WIZARD_FORM_LABEL, value=lambda: MSG_WIZARD_OWN_FORM if choices.has_own_form() else choices.get_form()), *plan,
                 Button(label=MSG_WIZARD_SUGGESTED_FORM_BUTTON, key_name=KeyName.ENTER, enter=self.page().pick_suggested_form, enter_what=MSG_WIZARD_SUGGESTED_FORM_WHAT)]
 
