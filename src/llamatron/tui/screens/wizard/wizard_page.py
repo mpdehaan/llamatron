@@ -30,12 +30,15 @@ from rich.text import Text
 from llamatron.composition.naming import new_name
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.wizard_choices import WizardChoices
+from llamatron.realtime.sender_process import SenderNotStarted
+from llamatron.strings.errors import ERR_WIZARD_CANNOT_LISTEN, ERR_WIZARD_NOTHING_TO_LISTEN_TO
 from llamatron.strings.help import HELP_WIZARD_PAGE
 from llamatron.macro_composer.notation import KIT
 from llamatron.macro_composer.wizard_choices import USUAL_PIECE_NOTE
 from llamatron.strings.labels import MSG_WIZARD_KIT_DRUMS, MSG_WIZARD_PIECE_SOUND_TITLE, Crumb, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_MORE_SOUNDS_TITLE, MSG_WIZARD_SOUND_TITLE, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_COMPOSITION_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_REPLACE_SECTIONS_TITLE, MSG_WIZARD_SUGGESTED_FORM_TITLE, MSG_WIZARD_CAPTION, MSG_WIZARD_REPLACE_CAPTION
 from llamatron.strings.marks import MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_EDITED_BRANCH
 from llamatron.strings.messages import MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CLOSE_TITLE, MSG_WIZARD_CREATED, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_NOTHING_TO_UNDO, MSG_WIZARD_REPLACED, MSG_WIZARD_SONG_NAME_PROMPT
+from llamatron.strings.messages import MSG_STOPPED, MSG_WIZARD_LISTENING
 from llamatron.strings.names import MSG_NEW_SONG_WORD
 from llamatron.support.version import VERSION
 from llamatron.tui import keybindings, themes
@@ -112,8 +115,44 @@ class WizardPage(FieldPage):
         def chosen(value):
             result = setter(value)
             self._changed = True
+            # What was heard is no longer what the choices make.
+            self.app.made_preview().stop()
             return result
         return chosen
+
+    # Listening: a part of the song as it would be made, heard through FluidSynth and thrown away.
+
+    def listen_keys(self):
+        """Return the key that listens to what the branch under the cursor has to hear, or stops it while it plays, and none for a branch with nothing to hear."""
+        heard = self.branch().listens()
+        if heard is None:
+            return []
+        if self.app.made_preview().playing() == heard[0]:
+            return [self.bind(self.KEYS.STOP_LISTENING, action=self.stop_listening)]
+        return [self.bind(self.KEYS.LISTEN, action=self.listen)]
+
+    def listen(self):
+        what, index, track = self.branch().listens()
+        preview = self.app.made_preview()
+        if not preview.can_sound():
+            self.refuse(ERR_WIZARD_CANNOT_LISTEN)
+            return
+        try:
+            setlist, name = self._choices.made_for_listening()
+            if index >= len(setlist.get_song(name).get_scenes()):
+                raise ValueError(ERR_WIZARD_NOTHING_TO_LISTEN_TO)
+            if track is None:
+                preview.play_section(setlist=setlist, name=name, index=index, what=what)
+            else:
+                preview.play_line(setlist=setlist, name=name, index=index, track=track, what=what)
+        except (ValueError, SongFileError, SenderNotStarted) as problem:
+            self.refuse(str(problem) if isinstance(problem, SenderNotStarted) else ERR_WIZARD_NOTHING_TO_LISTEN_TO)
+            return
+        self.say(MSG_WIZARD_LISTENING.format(what=what))
+
+    def stop_listening(self):
+        self.app.made_preview().stop()
+        self.say(MSG_STOPPED)
 
     def ask_song_name(self):
         self.ask_name(title=MSG_WIZARD_SONG_NAME_PROMPT, value=self._song_name, taken=self.document().song_names(), then=self.choosing(self.name_song))
@@ -221,7 +260,7 @@ class WizardPage(FieldPage):
     def keys(self):
         if self.in_fields:
             # A settings page's keys, but for ESC, which goes back to the tree here and not from the page.
-            return [self.bind(self.KEYS.TO_TREE, action=self.to_tree), *super().keys()[1:]]
+            return [self.bind(self.KEYS.TO_TREE, action=self.to_tree), *super().keys()[1:], *self.listen_keys()]
         if self.moving:
             # While a branch is carried, only the keys that carry and drop it work, as in every move mode.
             return [self.bind(self.KEYS.DROP, action=self.drop), self.bind(self.KEYS.CARRY, action=self.carry)]
@@ -237,7 +276,7 @@ class WizardPage(FieldPage):
             result.append(self.bind(self.KEYS.ADD, action=self.add_to_list))
         if branch.is_listed():
             result += [self.bind(self.KEYS.COPY, action=self.copy_listed), self.bind(self.KEYS.DELETE, action=self.remove_listed), self.bind(self.KEYS.MOVE, action=self.start_moving)]
-        return result
+        return result + self.listen_keys()
 
     # A branch that is one of a list: added to, copied, removed and moved with the keys every list of the tracker has.
 
@@ -360,6 +399,7 @@ class WizardPage(FieldPage):
 
     def go_back(self):
         """Close the wizard, which loses every choice, so it asks first when anything was chosen."""
+        self.app.made_preview().stop()
         if not self.has_choices_to_lose():
             super().go_back()
             return
@@ -387,6 +427,7 @@ class WizardPage(FieldPage):
             self.to_tree()
             self.refuse(str(problem))
             return
+        self.app.made_preview().stop()
         document = self.document()
         replaces = self.replaces()
         if replaces:

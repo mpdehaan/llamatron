@@ -40,6 +40,10 @@ from llamatron.macro_composer.arranger import (
     arranged, forms_of, picked, player_of, section_of, share_in, share_of, style_named, style_names, values_of,
 )
 from llamatron.macro_composer.composer import composed
+from llamatron.macro_composer import hook_kinds
+from llamatron.macro_composer.arranger import CHORDS, form_of
+from llamatron.macro_composer.melody import HOOK_KIND
+from llamatron.macro_composer.song_plan import CONTRAST, HIGHEST_ENERGY, LOWEST_ENERGY, PHRASING, PLAN_OF_SONG, SAID_OF_SECTION, USUAL_CONTRAST, SongPlan
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
 from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, FLAT, KIT, LINES, OCTAVE, REST, SHARP, STEPS
@@ -51,7 +55,7 @@ from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MIN_GM_SO
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.marks import MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SECTION_VARIANT
 from llamatron.support.version import VERSION as A_VERSION
-from llamatron.strings.errors import ERR_WIZARD_EXTRAS, ERR_WIZARD_NO_SUCH_ROW, ERR_WIZARD_ROW, ERR_WIZARD_HOOK_TAKE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_MELODY_NUMBER, ERR_WIZARD_MELODY_SWITCH, ERR_WIZARD_NO_SUCH_MELODY_SETTING, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
+from llamatron.strings.errors import ERR_WIZARD_CONTRAST, ERR_WIZARD_EXTRAS, ERR_WIZARD_HOOK_PART, ERR_WIZARD_GENRE_HAS_NO_PLAN, ERR_WIZARD_NO_SONG_PLAN, ERR_WIZARD_SWITCH, ERR_WIZARD_NO_SUCH_ROW, ERR_WIZARD_ROW, ERR_WIZARD_HOOK_TAKE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_MELODY_NUMBER, ERR_WIZARD_MELODY_SWITCH, ERR_WIZARD_NO_SUCH_MELODY_SETTING, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'
@@ -213,6 +217,11 @@ PROGRESSION_TRAITS = ('chords', 'harmony')
 FILLS_TRAITS = ('fills',)
 # The key a song keeps its own sections under, and the letter the first section that differs from its kind's first is named with.
 OWN_SECTIONS = 'own_sections'
+PREVIEW_NAME = 'preview'
+PLAN_ANSWER = 'plan'
+ENERGY_ANSWER = 'energies'
+# The parts of a hook's kind and what each may be.
+HOOK_PARTS = {hook_kinds.CONTOUR: hook_kinds.CONTOURS, hook_kinds.RHYTHM: tuple(hook_kinds.RHYTHMS), hook_kinds.DETAIL: hook_kinds.DETAILS}
 # What a song file lays over the song's picks, as a song keeps it.
 EXTRAS_KEPT = 'song'
 FIRST_VARIANT_LETTER = 'a'
@@ -430,6 +439,9 @@ class WizardChoices:
             self._melody = None
             self._hook = None
             self._hook_take = FIRST_HOOK_TAKE
+            # A plan is one genre's: its energies and its joins are the genre's own.
+            self._extras.pop(PLAN_OF_SONG, None)
+            self._extras.pop(MELODY, None)
             self._forget_band()
 
     def subgenres(self):
@@ -1755,6 +1767,126 @@ class WizardChoices:
             raise ValueError(ERR_WIZARD_EXTRAS.format(value=extras))
         self._extras = copy.deepcopy(extras)
         self._answers = {}
+
+    # The song plan, which a song made on the wizard's page asks for with a switch, and its settings.
+
+    def has_song_plan(self):
+        """Return whether the song is planned section by section (song_plan.py)."""
+        return self._extras.get(PLAN_OF_SONG) not in (None, False)
+
+    def can_have_song_plan(self):
+        """Return whether the genre says how a song of its own is planned."""
+        return self.is_ready() and PLAN_OF_SONG in style_of(self._genre)
+
+    def set_song_plan(self, on):
+        if not isinstance(on, bool):
+            raise ValueError(ERR_WIZARD_SWITCH.format(value=on))
+        if on and not self.can_have_song_plan():
+            raise ValueError(ERR_WIZARD_GENRE_HAS_NO_PLAN)
+        if on and not self.has_song_plan():
+            self._extras[PLAN_OF_SONG] = {}
+        if not on:
+            self._extras.pop(PLAN_OF_SONG, None)
+            self._extras.pop(MELODY, None)
+        self._answers = {}
+
+    def _plan(self):
+        if not self.has_song_plan():
+            raise ValueError(ERR_WIZARD_NO_SONG_PLAN)
+        return self._extras[PLAN_OF_SONG]
+
+    def get_contrast(self):
+        return self._plan().get(CONTRAST, USUAL_CONTRAST)
+
+    def set_contrast(self, contrast):
+        if isinstance(contrast, bool) or not isinstance(contrast, int) or not LOWEST_ENERGY <= contrast <= HIGHEST_ENERGY:
+            raise ValueError(ERR_WIZARD_CONTRAST.format(low=LOWEST_ENERGY, high=HIGHEST_ENERGY, value=contrast))
+        self._plan()[CONTRAST] = contrast
+        self._answers = {}
+
+    def has_phrasing(self):
+        """Return whether the tune's lines breathe."""
+        return bool(self._plan().get(PHRASING, True))
+
+    def set_phrasing(self, on):
+        if not isinstance(on, bool):
+            raise ValueError(ERR_WIZARD_SWITCH.format(value=on))
+        self._plan()[PHRASING] = on
+        self._answers = {}
+
+    def hook_kind(self):
+        """Return the kind of the song's hook, its contour, its rhythm and its odd detail by the fields of hook_kinds.py: the
+        take's, with whatever part was chosen over it."""
+        self._plan()
+        return {**hook_kinds.kind_of(seed=self._seed, take=self._hook_take), **self._extras.get(MELODY, {}).get(HOOK_KIND, {})}
+
+    def hook_parts(self):
+        """Return the parts of the hook's kind that can be chosen now: the contour, and under any contour but the long note, which is one
+        held note with neither, the rhythm and the odd detail."""
+        if not self.counts_in_four():
+            return []
+        return [part for part in HOOK_PARTS if part == hook_kinds.CONTOUR or self.hook_kind()[hook_kinds.CONTOUR] != hook_kinds.LONG_NOTE]
+
+    def counts_in_four(self):
+        """Return whether the song is in four, where a hook is of a kind and a tune's lines breathe: both are written for a bar of eight eighths."""
+        return str(picked(style=style_of(self._genre), song=self.song_picks(PREVIEW_NAME)).get(METER, COMMON_TIME)) == COMMON_TIME
+
+    def hook_part_is_chosen(self, part):
+        return part in self._extras.get(MELODY, {}).get(HOOK_KIND, {})
+
+    def set_hook_part(self, *, part, value):
+        """Choose the hook's contour, rhythm or odd detail, or give the part back to the take with None."""
+        self._plan()
+        offered = HOOK_PARTS.get(part)
+        if offered is None or (value is not None and value not in offered):
+            raise ValueError(ERR_WIZARD_HOOK_PART.format(part=part, value=value))
+        chosen = self._extras.setdefault(MELODY, {}).setdefault(HOOK_KIND, {})
+        chosen.pop(part, None)
+        if value is not None:
+            chosen[part] = value
+        self._answers = {}
+
+    def _song_plan(self):
+        """The plan of the song as the choices stand."""
+        song = self.song_picks(PREVIEW_NAME)
+        style = style_of(self._genre)
+        picks = picked(style=style, song=song)
+        chord_entry = values_of(style=style, trait=self.progression_trait())[picks[self.progression_trait()]]
+
+        def chords_of(section):
+            return [chord_of(chord) for chord in section.get(CHORDS) or chord_entry.get(BY_SECTION, {}).get(section[KIND]) or chord_entry[PATTERN]]
+        return SongPlan(style=style, song=song, form_names=song[FORM] if isinstance(song[FORM], list) else form_of(style=style, song=song, meter=str(picks.get(METER, COMMON_TIME)), tempo=self._tempo),
+                        tempo=self._tempo, scale_type=self._scale_type, chords_of=chords_of)
+
+    def energies(self):
+        """Return the Energy of each section of the form, in order, as the plan works them out."""
+        self._plan()
+        return self._remembered(key=ENERGY_ANSWER, compute=lambda: self._song_plan().energies())
+
+    def _said_of_sections(self):
+        planned = self._song_plan().planned()
+        return [planned[SECTIONS][name][SAID_OF_SECTION] for name in planned[FORM]]
+
+    def said_of_sections(self):
+        """Return what the plan says of each section of the form, in order: its Energy, how it leaves and, once, the hook's kind."""
+        self._plan()
+        return self._remembered(key=PLAN_ANSWER, compute=self._said_of_sections)
+
+    # What a panel listens to: the song made as the choices stand, and where in it the hook, the tune and a section are.
+
+    def made_for_listening(self):
+        """Return the set these choices make, to be heard and thrown away, with its one song's name."""
+        return self.made_setlist(name=PREVIEW_NAME, version=A_VERSION), PREVIEW_NAME
+
+    def hook_scene(self):
+        """Return the place in the form of the first section that says the hook, or None."""
+        sections = style_of(self._genre)[SECTIONS]
+        return next((place for place, kind in enumerate(self.section_kinds_in_form()) if any(entry.get(HOOK) for entry in sections[kind].get(PLAN, []))), None)
+
+    def tune_scene(self):
+        """Return the place in the form of the first section the tune's player plays in, or None."""
+        player = self.tune_player()
+        return next((place for place in range(len(self.section_labels())) if player in self.section_plays(place) and not self.section_is_held(place)), None)
 
     def get_song_extras(self):
         return copy.deepcopy(self._extras)

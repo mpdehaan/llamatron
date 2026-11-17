@@ -743,6 +743,14 @@ MSG_WIZARD_HOOK_OFF = 'off'
 MSG_WIZARD_PROGRESSION_LABEL = 'Progression'
 MSG_WIZARD_MELODY_LABEL = 'Melody'
 MSG_WIZARD_HOOK_LABEL = 'Hook'
+# The song plan's fields on the Form panel, the parts of a hook's kind on the Hooks panel, and a value the wizard picked itself.
+MSG_WIZARD_SONG_PLAN_LABEL = 'Song plan'
+MSG_WIZARD_CONTRAST_LABEL = 'Contrast'
+MSG_WIZARD_PHRASING_LABEL = 'Phrasing'
+MSG_WIZARD_HOOK_PART_LABELS = {'contour': 'Contour', 'rhythm': 'Rhythm', 'detail': 'Detail'}
+MSG_WIZARD_PICK = "(wizard's pick)"
+MSG_WIZARD_PICK_SHOWN = "{value} (wizard's pick)"
+MSG_WIZARD_PLAN_LINE = '{number:>2}  {name:<{width}}  {said}'
 MSG_WIZARD_FILLS_LABEL = 'Fill pattern'
 MSG_WIZARD_USUAL_MELODY = 'from genre'
 # The smart melody style's gauges, each by its name in the melody engine: the field's label, then what its two ends mean.

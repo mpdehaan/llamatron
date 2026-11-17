@@ -17,13 +17,14 @@
 
 from rich.text import Text
 
-from llamatron.strings.labels import MSG_WIZARD_NEW_HOOK_BUTTON, MSG_WIZARD_HOOK_LABEL, MSG_WIZARD_HOOK_OFF, MSG_WIZARD_HOOK_ON, MSG_WIZARD_HOOKS_BRANCH
+from llamatron.macro_composer.wizard_choices import HOOK_PARTS
+from llamatron.strings.labels import MSG_WIZARD_HOOK_PART_LABELS, MSG_WIZARD_PICK, MSG_WIZARD_PICK_SHOWN, MSG_WIZARD_NEW_HOOK_BUTTON, MSG_WIZARD_HOOK_LABEL, MSG_WIZARD_HOOK_OFF, MSG_WIZARD_HOOK_ON, MSG_WIZARD_HOOKS_BRANCH
 from llamatron.strings.legends import KeyName, MSG_WIZARD_NEW_HOOK_WHAT
 from llamatron.strings.marks import MSG_WIZARD_HOOK_BAR_LINE, MSG_WIZARD_HOOK_CELL, MSG_WIZARD_HOOK_FLOOR, MSG_WIZARD_HOOK_FLOOR_BAR, MSG_WIZARD_HOOK_GAP, MSG_WIZARD_HOOK_ROW
-from llamatron.strings.messages import MSG_WIZARD_HOOK_MADE
+from llamatron.strings.messages import MSG_WIZARD_HOOK_MADE, MSG_WIZARD_LISTEN_HOOK
 from llamatron.tui.drawing import INDENT, Style
 from llamatron.tui.note_names import note_shown
-from llamatron.tui.screens.shared.field import Button, Toggle
+from llamatron.tui.screens.shared.field import Button, ChoiceField, Toggle
 from llamatron.tui.screens.wizard.song_ways_branch import SongWaysBranch
 
 # A step of the picture is two cells wide where the hook fits so, and one where it is long.
@@ -62,7 +63,25 @@ class HooksBranch(SongWaysBranch):
             return [switch]
         # Another hook is made and every other line of the song is left as it was.
         new_hook = Button(label=MSG_WIZARD_NEW_HOOK_BUTTON, key_name=KeyName.ENTER, enter=lambda: self.page().choosing(lambda nothing: choices.new_hook())(None), enter_what=MSG_WIZARD_NEW_HOOK_WHAT)
-        return [switch, new_hook]
+        # In a planned song the hook is of a kind, each part the wizard's pick until a person chooses it.
+        kind = [self.part_field(part) for part in choices.hook_parts()] if choices.has_song_plan() else []
+        return [switch, *kind, new_hook]
+
+    def part_field(self, part):
+        """Return the field of one part of the hook's kind, its contour, its rhythm or its odd detail: the wizard's pick, said to be so, or the one
+        chosen from the list, whose first entry gives the part back to the wizard."""
+        choices = self.choices()
+        now = choices.hook_kind()[part]
+        chosen = choices.hook_part_is_chosen(part)
+        return ChoiceField(page=self.page(), label=MSG_WIZARD_HOOK_PART_LABELS[part], choices=[MSG_WIZARD_PICK, *HOOK_PARTS[part]], current=now if chosen else MSG_WIZARD_PICK,
+                           shown=now if chosen else MSG_WIZARD_PICK_SHOWN.format(value=now),
+                           set=self.page().choosing(lambda value: choices.set_hook_part(part=part, value=None if value == MSG_WIZARD_PICK else value)))
+
+    def listens(self):
+        choices = self.choices()
+        if not self.offers_a_hook() or not choices.has_hook() or choices.hook_scene() is None or choices.tune_player() is None:
+            return None
+        return MSG_WIZARD_LISTEN_HOOK, choices.hook_scene(), choices.tune_player()
 
     def notes(self, width):
         """Return the picture of the hook while the song has one, with who plays it; else what a branch with nothing to choose says."""

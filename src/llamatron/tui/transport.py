@@ -248,6 +248,14 @@ class Transport:
         self._run()
         return at > self._now()
 
+    def play_clips(self, *, index, tracks):
+        """Play several clips of one scene together, again and again, as a preview of a few players, which stops when its page is left."""
+        if self.is_playing() and not self._previewing:
+            self.stop_all()
+        self._previewing = True
+        self._ready(song=None, instead=None).play_clips(scene=index, tracks=tracks, forever=True)
+        self._run()
+
     def stop_clip(self, track):
         if self._player is not None:
             self._player.stop_clip(track)

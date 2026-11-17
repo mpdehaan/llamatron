@@ -72,6 +72,11 @@ class Branch:
         """Return why the cursor cannot move into the branch's fields yet, or None when it can."""
         return None
 
+    def listens(self):
+        """Return what Listen plays on this branch, as what it is called, the place of its section in the form and the player whose clip
+        alone plays, None for everybody in the section; or None for a branch with nothing to hear."""
+        return None
+
     # A branch that holds a list, or is one of a list, as the form and its sections: the page gives such a branch the tracker's keys for a list.
 
     def adds(self):

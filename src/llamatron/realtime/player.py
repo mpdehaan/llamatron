@@ -252,6 +252,15 @@ class Player:
         self.tick()
         return at
 
+    def play_clips(self, *, scene, tracks, forever=False):
+        """Launch several clips of one scene together, as play_clip launches one, so that they start at one moment. Return when they start."""
+        at = self.next_bar()
+        if at is None:
+            at = self._now()
+        self._plan(time=at, kind=CLIP_BY_HAND, scene=scene, tracks=tuple(tracks), forever=forever)
+        self.tick()
+        return at
+
     def stop_clip(self, track):
         """Cut what a track is playing now, leaving the other tracks, and what is queued ahead on this one, alone."""
         play = self.running_on(track)

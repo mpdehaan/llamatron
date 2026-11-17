@@ -18,6 +18,7 @@
 from llamatron.macro_composer.melody import HIGHEST_GAUGE, LOWEST_GAUGE
 from llamatron.strings.labels import MSG_WIZARD_GAUGE_ENDS, MSG_WIZARD_GAUGE_LABELS, MSG_WIZARD_MELODY_BRANCH, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_MELODY_SETTING_LABELS, MSG_WIZARD_USUAL_MELODY
 from llamatron.strings.marks import MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_GENRE_MELODY_SHOWN, MSG_WIZARD_MELODY_GAUGE_SHOWN
+from llamatron.strings.messages import MSG_WIZARD_LISTEN_TUNE
 from llamatron.tui.screens.shared.field import ChoiceField, NumberField, Toggle
 from llamatron.tui.screens.wizard.song_ways_branch import A_CHOICE, SongWaysBranch
 
@@ -54,6 +55,12 @@ class MelodyBranch(SongWaysBranch):
                             set=self.page().choosing(lambda chosen: choices.set_melody(None if chosen == MSG_WIZARD_USUAL_MELODY else chosen)))
         # The smart melody style's gauges, under the Melody field while the song's tunes are sketched by it.
         return [style, *(self.gauge_field(name) for name in choices.gauges()), *(self.setting_field(name) for name in choices.melody_settings())]
+
+    def listens(self):
+        choices = self.choices()
+        if not choices.is_ready() or choices.tune_player() is None or choices.tune_scene() is None:
+            return None
+        return MSG_WIZARD_LISTEN_TUNE, choices.tune_scene(), choices.tune_player()
 
     def setting_field(self, name):
         """Return the field of one setting of the melody style in use: a switch, or a number stepped or typed."""

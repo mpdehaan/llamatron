@@ -698,7 +698,7 @@ def arranged(*, style, song):
     # A tune in a scale type the style gives notes of its own, a minor song its minor notes and home, takes those: the major
     # notes read in a minor scale rest on the scale's third and sound like the major key beside it.
     habits = {**habits, **habits.get(BY_SCALE_TYPE, {}).get(scale_type, {})}
-    if song.get(PLAN_OF_SONG):
+    if song.get(PLAN_OF_SONG) not in (None, False):
         # A song that asks for a plan has a section made for each place of its form, each saying what the plan worked out.
         def chords_of(section):
             return [chord_of(chord) for chord in section.get(CHORDS) or chord_entry.get(BY_SECTION, {}).get(section[KIND]) or chord_entry[PATTERN]]

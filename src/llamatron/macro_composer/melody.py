@@ -55,6 +55,8 @@ HIGHER = 'higher'
 # Habits a planned song asks for: the tune's lines breathe, and the hook is of a kind, each take another.
 BREATHES = 'breathes'
 HOOK_KINDS = 'hook_kinds'
+# The parts of the hook's kind a song chose itself, over what the take would give.
+HOOK_KIND = 'hook_kind'
 BREATH_SEED = '{} breath {} {}'
 # The degrees an ending left open rests on.
 OPEN_DEGREES = (2, 6)
@@ -724,7 +726,7 @@ class Hooks(Smart):
         """The kind of the hook, where the habits ask for kinds and the bar is counted in eighths, or None for a hook made the first way."""
         if not self._habits.get(HOOK_KINDS) or self._grid % hook_kinds.UNITS:
             return None
-        kind = hook_kinds.kind_of(seed=self._song_seed, take=getattr(self, '_take', FIRST_HOOK_TAKE))
+        kind = {**hook_kinds.kind_of(seed=self._song_seed, take=getattr(self, '_take', FIRST_HOOK_TAKE)), **self._habits.get(HOOK_KIND, {})}
         return None if kind[hook_kinds.CONTOUR] == hook_kinds.LONG_NOTE else kind
 
     def open_place(self, *, lowest, highest, toward):

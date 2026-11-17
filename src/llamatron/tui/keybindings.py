@@ -297,7 +297,10 @@ class WizardPage(FieldPage):
     MOVE = (Key.M, KeyName.M, What.MOVE)
     CARRY = (Steps(back=(Key.UP,), forward=(Key.DOWN,)), KeyName.UP_DOWN, What.CARRY)
     DROP = (MOVE_DROP_KEYS, KeyName.ENTER_ESC_M, What.DROP)
-    IN_HELP = [CLOSE, TO_TREE, DROP, TREE, CARRY, FOLD, INTO_FIELDS, INSERT, ADD, COPY, DELETE, MOVE, *FieldPage.IN_HELP[1:]]
+    # On a part with something to hear, as the hook, a tune or a section: the part of the song as it would be made, through FluidSynth.
+    LISTEN = (Key.L, KeyName.L, MSG_LISTEN_WHAT)
+    STOP_LISTENING = (Key.L, KeyName.L, MSG_STOP_LISTENING_WHAT)
+    IN_HELP = [CLOSE, TO_TREE, DROP, TREE, CARRY, FOLD, INTO_FIELDS, INSERT, ADD, COPY, DELETE, MOVE, LISTEN, STOP_LISTENING, *FieldPage.IN_HELP[1:]]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
 

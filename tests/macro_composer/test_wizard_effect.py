@@ -32,7 +32,9 @@ from llamatron.macro_composer import interplay
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT
 from llamatron.macro_composer.melody import HIGHEST_GAUGE, LOWEST_GAUGE
 from llamatron.support.version import VERSION
-from llamatron.macro_composer.wizard_choices import (USUAL_PIECE_NOTE, BAND_SOUNDS, GAUGED_STYLES, FEWEST_FILLS, FILLS_TRAITS, LEAST_BUSY, MOST_BUSY, MOST_FILLS, ONE_GUITARIST_COUNT,
+from llamatron.macro_composer import hook_kinds
+from llamatron.macro_composer.song_plan import HIGHEST_ENERGY, LOWEST_ENERGY
+from llamatron.macro_composer.wizard_choices import (HOOK_PARTS, USUAL_PIECE_NOTE, BAND_SOUNDS, GAUGED_STYLES, FEWEST_FILLS, FILLS_TRAITS, LEAST_BUSY, MOST_BUSY, MOST_FILLS, ONE_GUITARIST_COUNT,
                                                      USUAL_SOUNDS, WizardChoices, genre_names)
 
 A_NAME = 'a_song'
@@ -72,6 +74,10 @@ MELODY_SETTING = 'melody setting'
 HOOK = 'hook'
 PLAYER_ROW = 'player row'
 NEW_HOOK = 'new hook'
+SONG_PLAN = 'song plan'
+CONTRAST = 'contrast'
+PHRASING = 'phrasing'
+HOOK_PART = "a part of the hook's kind"
 GUITARISTS = 'guitarists'
 SEED = 'seed'
 TEMPO = 'tempo'
@@ -233,6 +239,23 @@ def every_choice(choices):
         yield HOOK, not choices.has_hook(), lambda made: made.set_hook(not made.has_hook()), [nothing_first]
     if choices.can_have_hook() and choices.has_hook():
         yield NEW_HOOK, choices.get_hook_take() + 1, lambda made: made.new_hook(), [nothing_first]
+    if choices.can_have_song_plan():
+        # A planned song, and under a plan its contrast, its phrasing and each part of the hook's kind.
+        def planned(made):
+            made.set_song_plan(True)
+        yield SONG_PLAN, True, planned, [nothing_first]
+        for contrast in (LOWEST_ENERGY, HIGHEST_ENERGY):
+            yield CONTRAST, contrast, lambda made, contrast=contrast: made.set_contrast(contrast), [planned]
+        under_plan = fresh_with_plan(choices)
+        if under_plan.counts_in_four():
+            yield PHRASING, False, lambda made: made.set_phrasing(False), [planned]
+        if choices.can_have_hook() and choices.has_hook() and under_plan.counts_in_four():
+            for part, offered in HOOK_PARTS.items():
+                for value in offered:
+                    if value != under_plan.hook_kind()[part]:
+                        # A long note has neither a rhythm nor a detail to choose, so those are held under another contour.
+                        first = planned if part == hook_kinds.CONTOUR else both(first=planned, then=lambda made: made.set_hook_part(part=hook_kinds.CONTOUR, value=hook_kinds.CHANT))
+                        yield HOOK_PART, (part, value), lambda made, part=part, value=value: made.set_hook_part(part=part, value=value), [first]
     if choices.offers_one_guitarist():
         yield GUITARISTS, ONE_GUITARIST_COUNT, lambda made: made.set_guitarists(ONE_GUITARIST_COUNT), [nothing_first]
     yield SEED, ANOTHER_SEED, lambda made: made.set_seed(ANOTHER_SEED), [nothing_first]
@@ -246,6 +269,13 @@ def every_choice(choices):
     for form in choices.forms():
         if form != choices.get_form():
             yield FORM, form, lambda made, form=form: made.set_form(form), [nothing_first]
+
+
+def fresh_with_plan(choices):
+    """Choices as some are, with a song plan."""
+    planned = WizardChoices.from_data(choices.to_data())
+    planned.set_song_plan(True)
+    return planned
 
 
 def both(*, first, then):

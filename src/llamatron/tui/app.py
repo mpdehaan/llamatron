@@ -42,6 +42,7 @@ from llamatron.tui.screens.wizard.starts import STARTS
 from llamatron.tui.screens.wizard.wizard_page import WizardPage
 from llamatron.tui.keys import OPEN_AT_START
 from llamatron.tui.status_line import StatusLine
+from llamatron.tui.made_preview import MadePreview
 from llamatron.tui.pattern_preview import PatternPreview
 from llamatron.tui.transport import Transport
 from llamatron.tui.silent_instruments import warn_of_silent_instruments
@@ -107,6 +108,9 @@ class LlamatronApp(App, inherit_bindings=False):
         # The pattern preview, made when first asked for, beside the transport it shares a clock and FluidSynth with.
         self._pattern_preview = None
         self._preview_beside = None
+        # The song wizard's preview, made when first asked for, beside the same transport.
+        self._made_preview = None
+        self._made_beside = None
 
     def get_document(self):
         return self._document
@@ -118,10 +122,18 @@ class LlamatronApp(App, inherit_bindings=False):
             self._preview_beside = self.transport
         return self._pattern_preview
 
+    def made_preview(self):
+        """Return the song wizard's preview, which plays a part of a song made to be heard, made beside the transport the first time it's asked for."""
+        if self._made_preview is None or self._made_beside is not self.transport:
+            self._made_preview = MadePreview(beside=self.transport)
+            self._made_beside = self.transport
+        return self._made_preview
+
     def set_document(self, document):
         """Hold another set, after opening a file or starting a new one. A set comes with a history of its own, with nothing to undo, and nothing of the old one plays on."""
         self.transport.forget()
         self.pattern_preview().forget()
+        self.made_preview().forget()
         self._document = document
 
     def playback_timer(self, *, seconds, tick):
@@ -139,6 +151,7 @@ class LlamatronApp(App, inherit_bindings=False):
     def exit(self, *arguments, **named):
         """Quit, silencing and ending the Realtime Sender Process first."""
         self.pattern_preview().close()
+        self.made_preview().close()
         self.transport.close()
         super().exit(*arguments, **named)
 
