@@ -31,6 +31,7 @@ from llamatron.music.note import NoteName, SHARP_NAMES
 from llamatron.tui.components.keyboard import Keyboard, KEY_WIDTH as KEYBOARD_KEY_WIDTH
 from llamatron.music.scale import ScaleType
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
+from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
@@ -853,9 +854,8 @@ class TestChainEditorAdding(UITest):
     async def test_a_new_generator_is_made_of_the_kind_picked_added_to_the_chain_and_opened(self):
         await self.press(keybindings.MainPage.CHAINS, Key.DOWN, Key.ENTER)
         await self.press(keybindings.ChainEditor.ADD, Key.ENTER)
-        self.assertIsInstance(self.app.screen, ChoiceDialog)
-        self.assertEqual(self.app.screen.options[0], MSG_ARP_LABEL)
-        await self.press(Key.ENTER)
+        self.assertIsInstance(self.app.screen, GroupedChoiceDialog)
+        await self.pick(MSG_ARP_LABEL)
         name = new_name(word=suggested_word(MSG_ARP_LABEL), taken=())
         self.assertEqual(self.chain_steps(EMPTY), [(GeneratorKind.ARP, name)])
         self.assertIsInstance(self.app.screen, ArpEditor)

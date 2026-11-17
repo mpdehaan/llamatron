@@ -24,11 +24,10 @@ from llamatron.strings.help import HELP_GENERATORS_PAGE
 from llamatron.strings.labels import Column, Crumb
 from llamatron.strings.legends import MSG_GENERATOR_WHAT
 from llamatron.strings.marks import MSG_GENERATOR_KIND_SHOWN
-from llamatron.strings.messages import MSG_COPIED_TO, MSG_NEW_GENERATOR_KIND_TITLE, MSG_RENAME_GENERATOR_PROMPT
+from llamatron.strings.messages import MSG_COPIED_TO, MSG_RENAME_GENERATOR_PROMPT
 from llamatron.tui import keybindings, themes
-from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Align
-from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES, generator_page_of_kind
+from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES, generator_page_of_kind, generator_type_dialog
 from llamatron.tui.screens.shared.list_page import ListPage
 from llamatron.tui.screens.shared.shared import list_keys, move_key
 
@@ -82,7 +81,7 @@ class GeneratorsPage(ListPage):
             self.document().add_generator(section=listing.section, name=name)
             self.put_cursor_on(kind=listing.kind, name=name)
             self.show_page(listing.EDITOR(holder=self.holder, name=name))
-        self.ask(dialog=ChoiceDialog(title=MSG_NEW_GENERATOR_KIND_TITLE, options=[listing.label for listing in listings]), then=chosen)
+        self.ask(dialog=generator_type_dialog(opened=self.holder.open_generator_groups), then=chosen)
 
     def rename(self):
         kind, name = self.current()

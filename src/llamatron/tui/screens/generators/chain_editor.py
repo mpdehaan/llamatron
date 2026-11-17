@@ -22,13 +22,13 @@ from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Align
 from llamatron.strings.help import HELP_CHAIN_EDITOR
 from llamatron.tui.screens.shared.list_page import ListPage
-from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES, generator_page_of_kind
+from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES, generator_page_of_kind, generator_type_dialog
 from llamatron.composition.naming import new_name, suggested_word
 from llamatron.tui.screens.shared.shared import list_keys, move_key
 from llamatron.strings.labels import Column, Crumb
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.strings.marks import MSG_CHAIN_STEP_AGAIN, MSG_CHAIN_STEP_SHOWN
-from llamatron.strings.messages import MSG_NEW_GENERATOR_CHOICE, MSG_NEW_GENERATOR_KIND_TITLE, MSG_ADD_TO_CHAIN_TITLE, MSG_CHANGE_STEP_TITLE, MSG_RENAME_CHAIN_PROMPT
+from llamatron.strings.messages import MSG_NEW_GENERATOR_CHOICE, MSG_ADD_TO_CHAIN_TITLE, MSG_CHANGE_STEP_TITLE, MSG_RENAME_CHAIN_PROMPT
 from llamatron.tui import keybindings
 
 
@@ -111,7 +111,7 @@ class ChainEditor(ShowsNamedItem, ListPage):
             self.document().add_generator(section=sections[place], name=name)
             then(kind=listing.kind, name=name)
             self.show_page(listing.EDITOR(holder=self.holder, name=name).opened_from(page=self, word=listing.label))
-        self.ask(dialog=ChoiceDialog(title=MSG_NEW_GENERATOR_KIND_TITLE, options=[listing.label for listing in listings]), then=chosen)
+        self.ask(dialog=generator_type_dialog(opened=self.holder.open_generator_groups), then=chosen)
 
     def add(self):
         def chosen(*, kind, name):

@@ -52,6 +52,7 @@ from llamatron.tui.key_table import every_key, first_key, key_event
 from llamatron.tui.keys import Key, Steps
 from llamatron.tui import keybindings
 from llamatron.composition.file_format import REGISTER_NAMES
+from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES
 
 # Every document a test makes checks what it remembers: an answer kept after what it came from changed fails the test (support/memory.py).
@@ -447,6 +448,12 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         """Choose an option from the open picker by what it says, however the picker orders its list."""
         dialog = self.app.screen
         self.assertIn(option, dialog.options)
+        if isinstance(dialog, GroupedChoiceDialog):
+            # Its choices lie under headings closed until opened, so the option is searched for by its name, which finds it whatever is open.
+            await self.type(option)
+            self.assertEqual(dialog.options[dialog.place], option)
+            await self.press(Key.ENTER)
+            return
         # The cursor stops at the ends of a picker, so the option is walked to from where the picker opened, up or down.
         distance = dialog.options.index(option) - dialog.place
         await self.press(*[Key.DOWN if distance > 0 else Key.UP] * abs(distance), Key.ENTER)

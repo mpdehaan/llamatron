@@ -1,4 +1,4 @@
-# Voice Leading
+# VoiceLeading
 
 Chords played in root position jump around: C, then G, then Am, each built up from its root, moves every note a long way. A pianist plays G with its B at the bottom and F with its C at the bottom, so that the notes barely move. A voice leading does that for you: the first chord of a clip plays as written, and each chord after takes the inversion and the octave whose notes move least from the chord before. Single notes, such as a bass line's, are left alone.
 
@@ -15,4 +15,4 @@ Chords played in root position jump around: C, then G, then Am, each built up fr
 
 ## Applying the Generator
 
-Add the Voice Leading generator to a chain after a progression, as `voice_leading: name`, or put it on any clip of chords. `examples/learning/05_voice_leading.yml` plays three progressions in root position, inverted by hand with the chord editor's Inv. row, and voice-led; the last scene of `examples/learning/06_chord_progression_generator.yml` voice-leads its pad.
+Add the VoiceLeading generator to a chain after a progression, as `voice_leading: name`, or put it on any clip of chords. `examples/learning/05_voice_leading.yml` plays three progressions in root position, inverted by hand with the chord editor's Inv. row, and voice-led; the last scene of `examples/learning/06_chord_progression_generator.yml` voice-leads its pad.

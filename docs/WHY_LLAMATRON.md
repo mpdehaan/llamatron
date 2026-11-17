@@ -43,7 +43,7 @@ The way to think of a generator is as paint. A chain applies it to exactly the c
 There are many kinds, all listed together on the Generators page:
 
 - **Arpeggiators and AutoRatchets**, which turn chords into lines and notes into repeats (see the Monomachine, below).
-- **Progressions**, which move a figure written over one chord through a chord progression, and **Voice leading**, which plays each chord in the inversion nearest the one before.
+- **Progressions**, which move a figure written over one chord through a chord progression, and **VoiceLeading**, which plays each chord in the inversion nearest the one before.
 - **Strums**, which spread a chord's notes in time like a guitarist's hand, and **Euclids**, which keep only the notes that land on a Euclidean rhythm.
 - **Densities, Swells and Articulates**, which shape how many notes play, how loud and how long, ramping across a clip or a section, for builds, crescendos and fades.
 - **Glides, Shortens, Rushes and Drags**, rows of steps that slide notes into the next, shorten them, or push them early and late, each on its own cycle against the pattern.

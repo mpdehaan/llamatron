@@ -112,16 +112,12 @@ A generator changes how a clip's notes are played, without changing its pattern.
 | Notes sliding into the next | [Glide](docs/generators/GLIDE.md) |
 | Notes played short on chosen steps | [Shorten](docs/generators/SHORTEN.md) |
 
-### Chords
+### Harmony
 
 | What it does | Page |
 | --- | --- |
-| A chord played one note at a time | [Arpeggiator](docs/generators/ARPEGGIATOR.md) |
-| A figure moved to the chords another track plays | [Follow Chords](docs/generators/FOLLOW_CHORDS.md) |
-| Chords and notes played as a guitar plays them | [Guitarify](docs/generators/GUITARIFY.md) |
+| A figure moved to the chords another track plays | [FollowChords](docs/generators/FOLLOW_CHORDS.md) |
 | A figure moved through chords | [Progression](docs/generators/PROGRESSION.md) |
-| Chords spread in time like a pick | [Strum](docs/generators/STRUM.md) |
-| Chords voiced nearest the chord before | [Voice Leading](docs/generators/VOICE_LEADING.md) |
 
 ### Rhythm
 
@@ -129,6 +125,7 @@ A generator changes how a clip's notes are played, without changing its pattern.
 | --- | --- |
 | Notes chopped into quick repeats | [AutoRatchet](docs/generators/AUTORATCHET.md) |
 | Only the notes on a Euclidean rhythm | [Euclid](docs/generators/EUCLID.md) |
+| Chords spread in time like a pick | [Strum](docs/generators/STRUM.md) |
 
 ### Timing
 
@@ -145,6 +142,14 @@ A generator changes how a clip's notes are played, without changing its pattern.
 | How many notes play, ramping over a section | [Density](docs/generators/DENSITY.md) |
 | One slow change over the whole song | [Drift](docs/generators/DRIFT.md) |
 | How loud notes play, ramping over a section | [Swell](docs/generators/SWELL.md) |
+
+### Voicing
+
+| What it does | Page |
+| --- | --- |
+| A chord played one note at a time | [Arpeggiator](docs/generators/ARPEGGIATOR.md) |
+| Chords and notes played as a guitar plays them | [Guitarify](docs/generators/GUITARIFY.md) |
+| Chords voiced nearest the chord before | [VoiceLeading](docs/generators/VOICE_LEADING.md) |
 
 ## File Operations
 
