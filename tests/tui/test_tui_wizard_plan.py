@@ -42,7 +42,7 @@ SOME_CHORDS = '6 4 1 5'
 NOT_A_CHORD = ' x'
 A_FEW_WORDS = 20
 A_SUBGENRE = 'arena rock'
-A_SUBGENRE_IN_SIX = 'rock ballad'
+A_SUBGENRE_IN_SIX = 'six-eight ballad'
 AN_UNPLANNED_GENRE = 'blues'
 
 

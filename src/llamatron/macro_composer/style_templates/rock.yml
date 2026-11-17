@@ -32,18 +32,19 @@ hook: true
 loudness: {drums: 104, kick: 112, snare: 110, hat: 78, open: 84, ride: 82, crash: 102, tom high: 102, tom low: 104, tamb: 70, clap: 88, cowbell: 80}
 
 templates:
-  rock and roll: {meter: 4/4, tempo: 164, kick: every beat, snare: two and four, cymbal: ride eighths, percussion: none, bass: walking boogie, guitar: boogie, keys: piano eighths, voices: none, chords: three chord, lead: voice, solo: saxophone}
-  british invasion:    {meter: 4/4, tempo: 138, kick: one and the and of two, snare: two and four, cymbal: hat eighths, percussion: tambourine, bass: roots and fifths, guitar: strummed, keys: none, voices: harmony, chords: four chord, lead: voice, solo: guitar}
-  folk rock:     {meter: 4/4, tempo: 120, kick: one and the and of two, snare: two and four, cymbal: hat eighths, percussion: tambourine, bass: roots and fifths, guitar: chiming arpeggio, keys: none, voices: harmony, chords: borrowed flat seven, lead: voice, solo: guitar}
-  hard rock:     {meter: 4/4, tempo: 126, kick: one and the ands of two and four, snare: two and four, cymbal: hat half open, percussion: none, bass: roots in eighths, guitar: held power chords, keys: none, voices: none, chords: minor power, lead: voice, solo: guitar}
-  arena rock:    {meter: 4/4, tempo: 120, kick: one three and the and of three, snare: two and four, cymbal: hat eighths, percussion: none, bass: roots in eighths, guitar: downstrokes, keys: organ held, voices: harmony, chords: four chord, lead: voice, solo: guitar}
-  punk:          {meter: 4/4, tempo: 184, kick: one and three, snare: two and four, cymbal: hat eighths, percussion: none, bass: roots in eighths, guitar: downstrokes, keys: none, voices: none, chords: three chord, lead: voice, solo: none}
+  rock and roll: {meter: 4/4, tempo: 164, kick: one and three, snare: two and four, cymbal: ride eighths, percussion: none, bass: walking boogie, guitar: boogie, keys: piano eighths, voices: none, chords: twelve bar, lead: voice, solo: saxophone}
+  british invasion:    {meter: 4/4, tempo: 138, kick: one three and the and of three, snare: two and four, cymbal: hat eighths, percussion: tambourine, bass: roots and fifths, guitar: strummed, keys: none, voices: harmony, chords: four chord, lead: voice, solo: guitar}
+  folk rock:     {meter: 4/4, tempo: 120, kick: one the and of two and three, snare: two and four, cymbal: hat eighths, percussion: tambourine, bass: roots and fifths, guitar: chiming arpeggio, keys: none, voices: harmony, chords: borrowed flat seven, lead: voice, solo: guitar}
+  hard rock:     {meter: 4/4, tempo: 126, kick: one and the ands of two and four, snare: two and four, cymbal: half open quarters, percussion: none, bass: roots in eighths, guitar: held power chords, keys: none, voices: none, chords: riff on one, lead: voice, solo: guitar}
+  arena rock:    {meter: 4/4, tempo: 124, kick: one three and the and of three, snare: two and four, cymbal: hat eighths, percussion: none, bass: roots in eighths, guitar: downstrokes, keys: organ held, voices: harmony, chords: one five six four, lead: voice, solo: guitar}
+  punk:          {meter: 4/4, tempo: 184, kick: one three and the and of three, snare: two and four, cymbal: hat eighths, percussion: none, bass: roots in eighths, guitar: downstrokes, keys: none, voices: none, chords: three chord, lead: voice, solo: none}
   new wave:      {meter: 4/4, tempo: 144, kick: every beat, snare: two and four, cymbal: hat eighths, percussion: handclaps, bass: roots in eighths, guitar: clipped offbeats, keys: organ held, voices: none, chords: four chord, lead: voice, solo: organ}
-  rock ballad:   {meter: 6/8, tempo: 62, kick: one in six, snare: four in six, cymbal: hat in six, percussion: none, bass: roots in six, guitar: arpeggio in six, keys: organ held, voices: harmony, chords: four chord, lead: voice, solo: guitar}
+  rock ballad:   {meter: 4/4, tempo: 70, kick: one and three, snare: two and four, cymbal: hat eighths, percussion: none, bass: roots held, guitar: chiming arpeggio, keys: organ held, voices: harmony, chords: one five six four, lead: voice, solo: guitar}
+  six-eight ballad: {meter: 6/8, tempo: 62, kick: one in six, snare: four in six, cymbal: hat in six, percussion: none, bass: roots in six, guitar: arpeggio in six, keys: organ held, voices: harmony, chords: four chord, lead: voice, solo: guitar}
 
 # The harmonic family of each kind of rock, which says how common each progression is there: roots (three chords and sevenths), pop
 # (the sixth chord and a borrowed flat seven), flat seven (borrowed majors and minor keys) and sixth (loops through the sixth chord).
-families: {rock and roll: roots, british invasion: pop, folk rock: pop, hard rock: flat seven, arena rock: pop, punk: sixth, new wave: pop, rock ballad: pop}
+families: {rock and roll: roots, british invasion: pop, folk rock: pop, hard rock: flat seven, arena rock: pop, punk: sixth, new wave: pop, rock ballad: pop, six-eight ballad: pop}
 
 traits:
   meter:
@@ -51,15 +52,16 @@ traits:
     - {value: 6/8, share: 8}
   tempo: {lowest: 60, usual: 126, highest: 190}
   kick:
-    - {value: one and three, share: 20, needs: {meter: 4/4}, bar: {kick: [loud, none, none, none, loud, none, none, none]}}
+    - {value: one and three, share: 17, needs: {meter: 4/4}, bar: {kick: [loud, none, none, none, loud, none, none, none]}}
     - {value: one and the and of two, share: 14, needs: {meter: 4/4}, bar: {kick: [loud, none, none, loud, none, none, none, none]}}
     - {value: one three and the and of three, share: 14, needs: {meter: 4/4}, bar: {kick: [loud, none, none, none, loud, loud, none, none]}}
     - {value: one and the and of one and three, share: 9, needs: {meter: 4/4}, bar: {kick: [loud, loud, none, none, loud, none, none, none]}}
+    - {value: one the and of two and three, share: 6, needs: {meter: 4/4}, bar: {kick: [loud, none, none, loud, loud, none, none, none]}}
     - {value: one and the and of three, share: 7, needs: {meter: 4/4}, bar: {kick: [loud, none, none, none, none, loud, none, none]}}
     - {value: one and the ands of two and four, share: 9, needs: {meter: 4/4}, bar: {kick: [loud, none, none, loud, none, none, none, loud]}}
     - {value: one and the ands of three and four, share: 5, needs: {meter: 4/4}, bar: {kick: [loud, none, none, none, none, loud, none, loud]}}
     - {value: one and the ands of two three and four, share: 4, needs: {meter: 4/4}, bar: {kick: [loud, none, none, loud, none, loud, none, loud]}}
-    - {value: every beat, share: 12, needs: {meter: 4/4}, bar: {kick: [loud, none, loud, none, loud, none, loud, none]}}
+    - {value: every beat, share: 9, needs: {meter: 4/4}, bar: {kick: [loud, none, loud, none, loud, none, loud, none]}}
     - {value: one in six, share: 6, needs: {meter: 6/8}, bar: {kick: [loud, none, none, none, none, soft]}}
   snare:
     - {value: two and four, share: 86, needs: {meter: 4/4}, bar: {snare: [none, none, loud, none, none, none, loud, none]}}
@@ -67,8 +69,9 @@ traits:
     - {value: eighths with two and four, share: 3, needs: {meter: 4/4}, bar: {snare: [soft, soft, loud, soft, soft, soft, loud, soft]}}
     - {value: four in six, share: 6, needs: {meter: 6/8}, bar: {snare: [none, none, none, loud, none, none]}}
   cymbal:
-    - {value: hat eighths, share: 48, needs: {meter: 4/4}, bar: {hat: [loud, soft, loud, soft, loud, soft, loud, soft]}}
+    - {value: hat eighths, share: 42, needs: {meter: 4/4}, bar: {hat: [loud, soft, loud, soft, loud, soft, loud, soft]}}
     - {value: hat half open, share: 12, needs: {meter: 4/4}, bar: {open: [loud, soft, loud, soft, loud, soft, loud, soft]}}
+    - {value: half open quarters, share: 6, needs: {meter: 4/4}, bar: {open: [loud, none, loud, none, loud, none, loud, none]}}
     - {value: ride eighths, share: 12, needs: {meter: 4/4}, bar: {ride: [loud, soft, loud, soft, loud, soft, loud, soft]}}
     - {value: hat quarters, share: 12, needs: {meter: 4/4}, bar: {hat: [loud, none, loud, none, loud, none, loud, none]}}
     - {value: hat eighths with an open on the last, share: 10, needs: {meter: 4/4}, bar: {hat: [loud, soft, loud, soft, loud, soft, loud, none], open: [none, none, none, none, none, none, none, loud]}}
@@ -187,26 +190,27 @@ traits:
         - [{degree: 1, chord: '3', steps: 8}]
   # Each progression with how common it is in each harmonic family (families, below): a share of 0 is still offered, last, and never drawn by chance.
   chords:
-    - {value: three chord, share: 8, by_family: {roots: 14, pop: 8, flat seven: 3, sixth: 6}, pattern: [1, 4, 1, 5], by_section: {chorus: [4, 5, 1, 1], bridge: [4, 1, 4, 5]}}
-    - {value: one and four, share: 11, by_family: {roots: 16, pop: 12, flat seven: 5, sixth: 8}, pattern: [1, 4], by_section: {chorus: [4, 1, 5, 1], bridge: [4, 1, 4, 5]}}
-    - {value: one and five, share: 6, by_family: {roots: 8, pop: 8, flat seven: 4, sixth: 4}, pattern: [1, 5], by_section: {chorus: [4, 5, 1, 1], bridge: [4, 4, 5, 5]}}
-    - {value: four to one, share: 6, by_family: {roots: 12, pop: 5, flat seven: 2, sixth: 3}, pattern: [4, 1, 5, 1], by_section: {chorus: [1, 4, 1, 5], bridge: [4, 1, 2, 5]}}
-    - {value: twelve bar, share: 3, by_family: {roots: 10, pop: 1, flat seven: 1, sixth: 0}, pattern: [1, 1, 1, 1, 4, 4, 1, 1], by_section: {chorus: [5, 4, 1, 1, 5, 4, 1, 5], bridge: [4, 4, 1, 1, 4, 4, 5, 5]}}
-    - {value: four chord, share: 5, by_family: {roots: 4, pop: 10, flat seven: 1, sixth: 5}, pattern: [1, 6, 4, 5], by_section: {chorus: [4, 5, 1, 6], bridge: [4, 4, 5, 5]}}
-    - {value: borrowed flat seven, share: 9, by_family: {roots: 8, pop: 12, flat seven: 14, sixth: 3}, pattern: [1, {degree: 7, accidental: flat}, 4, 1], by_section: {chorus: [4, 1, 5, 1], bridge: [{degree: 7, accidental: flat}, 4, {degree: 7, accidental: flat}, 5]}}
-    - {value: flat seven vamp, share: 7, by_family: {roots: 4, pop: 8, flat seven: 14, sixth: 2}, pattern: [1, {degree: 7, accidental: flat}], by_section: {chorus: [4, {degree: 7, accidental: flat}, 1, 1], bridge: [{degree: 6, accidental: flat}, {degree: 7, accidental: flat}, {degree: 6, accidental: flat}, {degree: 7, accidental: flat}]}}
-    - {value: flat three climb, share: 4, by_family: {roots: 2, pop: 2, flat seven: 10, sixth: 0}, pattern: [1, {degree: 3, accidental: flat}, 4, 1], by_section: {chorus: [1, {degree: 7, accidental: flat}, 4, 4], bridge: [5, 4, 5, 4]}}
-    - {value: one five six four, share: 6, by_family: {roots: 0, pop: 4, flat seven: 1, sixth: 20}, pattern: [1, 4, 6, 5], by_section: {chorus: [1, 5, 6, 4], bridge: [6, 4, 1, 5]}}
-    - {value: six four one five, share: 4, by_family: {roots: 0, pop: 3, flat seven: 1, sixth: 12}, pattern: [6, 4, 1, 5], by_section: {chorus: [1, 5, 6, 4], bridge: [4, 5, 6, 6]}}
-    - {value: one five four, share: 5, by_family: {roots: 2, pop: 5, flat seven: 3, sixth: 10}, pattern: [1, 5, 4, 4], by_section: {chorus: [4, 1, 5, 5], bridge: [6, 4, 1, 5]}}
-    - {value: stepping up, share: 2, by_family: {roots: 1, pop: 6, flat seven: 0, sixth: 3}, pattern: [1, 3, 4, 5], by_section: {chorus: [4, 5, 1, 6], bridge: [2, 5, 2, 5]}}
-    - {value: one and two, share: 2, by_family: {roots: 1, pop: 5, flat seven: 0, sixth: 1}, pattern: [1, 2], by_section: {chorus: [4, 5, 1, 1], bridge: [4, 5, 4, 5]}}
-    - {value: minor power, share: 4, by_family: {roots: 1, pop: 2, flat seven: 10, sixth: 3}, scale_type: minor, pattern: [1, 1, 6, 7], by_section: {chorus: [1, 6, 3, 7], bridge: [4, 4, 5, 5]}}
-    - {value: minor fall, share: 4, by_family: {roots: 1, pop: 3, flat seven: 8, sixth: 2}, scale_type: minor, pattern: [1, 7, 6, 7], by_section: {chorus: [6, 7, 1, 1], bridge: [4, 4, 6, 7]}}
-    - {value: minor anthem, share: 5, by_family: {roots: 0, pop: 2, flat seven: 5, sixth: 12}, scale_type: minor, pattern: [1, 6, 3, 7], by_section: {chorus: [6, 3, 7, 1], bridge: [4, 6, 7, 7]}}
-    - {value: minor drive, share: 2, by_family: {roots: 3, pop: 1, flat seven: 3, sixth: 1}, scale_type: minor, pattern: [1, 1, 4, 1], by_section: {chorus: [6, 6, 7, 1], bridge: [4, 4, 5, 5]}}
-    - {value: minor two chord, share: 4, by_family: {roots: 1, pop: 3, flat seven: 8, sixth: 2}, scale_type: minor, pattern: [1, 7], by_section: {chorus: [6, 7, 1, 1], bridge: [4, 4, 5, 5]}}
-    - {value: minor sixth vamp, share: 3, by_family: {roots: 0, pop: 2, flat seven: 3, sixth: 8}, scale_type: minor, pattern: [1, 6], by_section: {chorus: [3, 7, 1, 6], bridge: [4, 6, 7, 7]}}
+    - {value: three chord, share: 8, by: {rock and roll: 25, british invasion: 25, folk rock: 0, hard rock: 0, arena rock: 0, punk: 40, new wave: 0, rock ballad: 0, six-eight ballad: 0}, by_family: {roots: 14, pop: 8, flat seven: 3, sixth: 6}, pattern: [1, 4, 1, 5], by_section: {chorus: [4, 5, 1, 1], bridge: [4, 1, 4, 5]}}
+    - {value: one and four, share: 8, by: {rock and roll: 10, british invasion: 10, folk rock: 20, hard rock: 0, arena rock: 0, punk: 20, new wave: 0, rock ballad: 0, six-eight ballad: 0}, by_family: {roots: 16, pop: 12, flat seven: 5, sixth: 8}, pattern: [1, 4], by_section: {chorus: [4, 1, 5, 1], bridge: [4, 1, 4, 5]}}
+    - {value: one and five, share: 6, by: {rock and roll: 0, british invasion: 0, folk rock: 0, hard rock: 0, arena rock: 0, punk: 0, new wave: 0, rock ballad: 0, six-eight ballad: 0}, by_family: {roots: 8, pop: 8, flat seven: 4, sixth: 4}, pattern: [1, 5], by_section: {chorus: [4, 5, 1, 1], bridge: [4, 4, 5, 5]}}
+    - {value: four to one, share: 6, by: {rock and roll: 10, british invasion: 0, folk rock: 0, hard rock: 0, arena rock: 0, punk: 0, new wave: 0, rock ballad: 0, six-eight ballad: 0}, by_family: {roots: 12, pop: 5, flat seven: 2, sixth: 3}, pattern: [4, 1, 5, 1], by_section: {chorus: [1, 4, 1, 5], bridge: [4, 1, 2, 5]}}
+    - {value: twelve bar, share: 3, by: {rock and roll: 55, british invasion: 5, folk rock: 0, hard rock: 15, arena rock: 0, punk: 0, new wave: 0, rock ballad: 0, six-eight ballad: 0}, by_family: {roots: 10, pop: 1, flat seven: 1, sixth: 0}, pattern: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5], by_section: {chorus: [5, 4, 1, 1, 5, 4, 1, 5], bridge: [4, 4, 1, 1, 4, 4, 5, 5]}}
+    - {value: four chord, share: 5, by: {rock and roll: 0, british invasion: 25, folk rock: 15, hard rock: 0, arena rock: 15, punk: 0, new wave: 25, rock ballad: 25, six-eight ballad: 25}, by_family: {roots: 4, pop: 10, flat seven: 1, sixth: 5}, pattern: [1, 6, 4, 5], by_section: {chorus: [4, 5, 1, 6], bridge: [4, 4, 5, 5]}}
+    - {value: borrowed flat seven, share: 9, by: {rock and roll: 0, british invasion: 20, folk rock: 30, hard rock: 15, arena rock: 10, punk: 0, new wave: 0, rock ballad: 0, six-eight ballad: 0}, by_family: {roots: 8, pop: 12, flat seven: 14, sixth: 3}, pattern: [1, {degree: 7, accidental: flat}, 4, 1], by_section: {chorus: [4, 1, 5, 1], bridge: [{degree: 7, accidental: flat}, 4, {degree: 7, accidental: flat}, 5]}}
+    - {value: flat seven vamp, share: 7, by: {rock and roll: 0, british invasion: 0, folk rock: 20, hard rock: 0, arena rock: 0, punk: 0, new wave: 20, rock ballad: 0, six-eight ballad: 0}, by_family: {roots: 4, pop: 8, flat seven: 14, sixth: 2}, pattern: [1, {degree: 7, accidental: flat}], by_section: {chorus: [4, {degree: 7, accidental: flat}, 1, 1], bridge: [{degree: 6, accidental: flat}, {degree: 7, accidental: flat}, {degree: 6, accidental: flat}, {degree: 7, accidental: flat}]}}
+    - {value: flat three climb, share: 4, by: {rock and roll: 0, british invasion: 0, folk rock: 0, hard rock: 15, arena rock: 0, punk: 20, new wave: 0, rock ballad: 0, six-eight ballad: 0}, by_family: {roots: 2, pop: 2, flat seven: 10, sixth: 0}, pattern: [1, {degree: 3, accidental: flat}, 4, 1], by_section: {chorus: [1, {degree: 7, accidental: flat}, 4, 4], bridge: [5, 4, 5, 4]}}
+    - {value: one five six four, share: 6, by: {rock and roll: 0, british invasion: 0, folk rock: 0, hard rock: 0, arena rock: 30, punk: 20, new wave: 0, rock ballad: 30, six-eight ballad: 30}, by_family: {roots: 0, pop: 4, flat seven: 1, sixth: 20}, pattern: [1, 4, 6, 5], by_section: {chorus: [1, 5, 6, 4], bridge: [6, 4, 1, 5]}}
+    - {value: six four one five, share: 4, by: {rock and roll: 0, british invasion: 0, folk rock: 0, hard rock: 0, arena rock: 20, punk: 0, new wave: 0, rock ballad: 20, six-eight ballad: 20}, by_family: {roots: 0, pop: 3, flat seven: 1, sixth: 12}, pattern: [6, 4, 1, 5], by_section: {chorus: [1, 5, 6, 4], bridge: [4, 5, 6, 6]}}
+    - {value: one five four, share: 5, by: {rock and roll: 0, british invasion: 0, folk rock: 0, hard rock: 0, arena rock: 15, punk: 0, new wave: 0, rock ballad: 15, six-eight ballad: 15}, by_family: {roots: 2, pop: 5, flat seven: 3, sixth: 10}, pattern: [1, 5, 4, 4], by_section: {chorus: [4, 1, 5, 5], bridge: [6, 4, 1, 5]}}
+    - {value: stepping up, share: 2, by: {rock and roll: 0, british invasion: 15, folk rock: 0, hard rock: 0, arena rock: 0, punk: 0, new wave: 0, rock ballad: 0, six-eight ballad: 0}, by_family: {roots: 1, pop: 6, flat seven: 0, sixth: 3}, pattern: [1, 3, 4, 5], by_section: {chorus: [4, 5, 1, 6], bridge: [2, 5, 2, 5]}}
+    - {value: one and two, share: 2, by: {rock and roll: 0, british invasion: 0, folk rock: 0, hard rock: 0, arena rock: 0, punk: 0, new wave: 15, rock ballad: 0, six-eight ballad: 0}, by_family: {roots: 1, pop: 5, flat seven: 0, sixth: 1}, pattern: [1, 2], by_section: {chorus: [4, 5, 1, 1], bridge: [4, 5, 4, 5]}}
+    - {value: minor power, share: 4, by: {rock and roll: 0, british invasion: 0, folk rock: 0, hard rock: 0, arena rock: 0, punk: 0, new wave: 0, rock ballad: 0, six-eight ballad: 0}, by_family: {roots: 1, pop: 2, flat seven: 10, sixth: 3}, scale_type: minor, pattern: [1, 1, 6, 7], by_section: {chorus: [1, 6, 3, 7], bridge: [4, 4, 5, 5]}}
+    - {value: riff on one, share: 3, by: {rock and roll: 0, british invasion: 0, folk rock: 0, hard rock: 35, arena rock: 0, punk: 0, new wave: 0, rock ballad: 0, six-eight ballad: 0}, by_family: {roots: 0, pop: 0, flat seven: 10, sixth: 1}, scale_type: minor, pattern: [1, 1, 1, 1, 6, 7, 1, 1], by_section: {chorus: [1, 6, 7, 1], bridge: [4, 4, 6, 7]}}
+    - {value: minor fall, share: 4, by: {rock and roll: 0, british invasion: 0, folk rock: 0, hard rock: 20, arena rock: 0, punk: 0, new wave: 0, rock ballad: 0, six-eight ballad: 0}, by_family: {roots: 1, pop: 3, flat seven: 8, sixth: 2}, scale_type: minor, pattern: [1, 7, 6, 7], by_section: {chorus: [6, 7, 1, 1], bridge: [4, 4, 6, 7]}}
+    - {value: minor anthem, share: 5, by: {rock and roll: 0, british invasion: 0, folk rock: 0, hard rock: 0, arena rock: 10, punk: 0, new wave: 20, rock ballad: 10, six-eight ballad: 10}, by_family: {roots: 0, pop: 2, flat seven: 5, sixth: 12}, scale_type: minor, pattern: [1, 6, 3, 7], by_section: {chorus: [6, 3, 7, 1], bridge: [4, 6, 7, 7]}}
+    - {value: minor drive, share: 2, by: {rock and roll: 0, british invasion: 0, folk rock: 0, hard rock: 0, arena rock: 0, punk: 0, new wave: 0, rock ballad: 0, six-eight ballad: 0}, by_family: {roots: 3, pop: 1, flat seven: 3, sixth: 1}, scale_type: minor, pattern: [1, 1, 4, 1], by_section: {chorus: [6, 6, 7, 1], bridge: [4, 4, 5, 5]}}
+    - {value: minor two chord, share: 4, by: {rock and roll: 0, british invasion: 0, folk rock: 15, hard rock: 0, arena rock: 0, punk: 0, new wave: 20, rock ballad: 0, six-eight ballad: 0}, by_family: {roots: 1, pop: 3, flat seven: 8, sixth: 2}, scale_type: minor, pattern: [1, 7], by_section: {chorus: [6, 7, 1, 1], bridge: [4, 4, 5, 5]}}
+    - {value: minor sixth vamp, share: 3, by: {rock and roll: 0, british invasion: 0, folk rock: 0, hard rock: 0, arena rock: 0, punk: 0, new wave: 0, rock ballad: 0, six-eight ballad: 0}, by_family: {roots: 0, pop: 2, flat seven: 3, sixth: 8}, scale_type: minor, pattern: [1, 6], by_section: {chorus: [3, 7, 1, 6], bridge: [4, 6, 7, 7]}}
   lead:
     - {value: voice, share: 100, sound: voice}
   solo:
@@ -259,7 +263,7 @@ players:
       fill_every: 4
       adds: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, soft: [7, 9]}}}]
       varies:
-        - {bars: [2], choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 16, loud: [10]}, open: {steps: 8, loud: [7]}}}]}
+        - {bars: [2], choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 16, loud: [15]}, open: {steps: 8, loud: [7]}}}]}
         - {bars: [3], choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 16, loud: [3]}, snare: {steps: 16, soft: [15]}}}]}
         - {bars: [4], choices: [{needs: {meter: 4/4}, bar: {open: {steps: 8, loud: [3]}}}]}
       fill: [{needs: {meter: 4/4}, silences: [hat, open, ride], bar: {kick: {steps: 16, loud: [0, 8]}, snare: {steps: 16, loud: [0, 2, 3], soft: [4]}, tom high: {steps: 16, loud: [5, 6, 7]}, tom mid: {steps: 16, loud: [9, 10, 11]}, tom low: {steps: 16, loud: [12, 13, 14, 15]}, splash: {steps: 16, loud: [8]}}}]
@@ -456,41 +460,74 @@ forms:
     - {name: long with two solos, share: 10, sections: [intro, verse, verse, chorus, verse, chorus, solo, solo, bridge, chorus, chorus, ending]}
   # Each kind of rock has the shapes its songs take: how often a solo, a bridge or a pre-chorus comes.
   rock and roll:
-    - {name: verses in a row, share: 40, sections: [intro, verse, verse, solo, verse, ending]}
-    - {name: with a chorus, share: 35, sections: [intro, verse, chorus, verse, chorus, solo, chorus, ending]}
-    - {name: two verses first, share: 25, sections: [intro, verse, verse, chorus, solo, verse, chorus, ending]}
+    - {name: verses in a row, share: 45, sections: [intro, verse, verse, solo, verse, solo, verse, ending]}
+    - {name: with a bridge, share: 30, sections: [intro, verse, verse, bridge, verse, solo, bridge, verse, ending]}
+    - {name: with a chorus, share: 25, sections: [intro, verse, chorus, verse, chorus, solo, chorus, ending]}
   british invasion:
-    - {name: with a middle eight, share: 35, sections: [intro, verse, verse, bridge, verse, bridge, verse, ending]}
-    - {name: with a chorus and a bridge, share: 35, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, ending]}
-    - {name: middle eight and a solo, share: 15, sections: [intro, verse, verse, bridge, solo, bridge, verse, ending]}
+    - {name: with a middle eight, share: 35, sections: [intro, verse, verse, bridge, verse, solo, bridge, verse, ending]}
+    - {name: with a chorus and a bridge, share: 35, sections: [intro, verse, chorus, verse, chorus, bridge, solo, chorus, chorus, ending]}
+    - {name: middle eight and no solo, share: 15, sections: [intro, verse, verse, bridge, verse, bridge, verse, ending]}
     - {name: short, share: 15, sections: [intro, verse, chorus, verse, chorus, ending]}
   folk rock:
-    - {name: verse and chorus, share: 40, sections: [intro, verse, chorus, verse, chorus, verse, chorus, ending]}
-    - {name: with a solo, share: 30, sections: [intro, verse, verse, chorus, verse, chorus, solo, chorus, ending]}
-    - {name: with a bridge, share: 30, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, ending]}
+    - {name: with a solo, share: 40, sections: [intro, verse, chorus, verse, chorus, solo, verse, chorus, ending]}
+    - {name: verse and chorus, share: 35, sections: [intro, verse, chorus, verse, chorus, chorus, ending]}
+    - {name: with a bridge, share: 25, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, ending]}
   hard rock:
+    - {name: with a bridge and a solo, share: 40, sections: [intro, verse, chorus, verse, chorus, bridge, solo, chorus, chorus, ending]}
     - {name: with a solo, share: 35, sections: [intro, verse, chorus, verse, chorus, solo, chorus, ending]}
-    - {name: with a bridge and a solo, share: 30, sections: [intro, verse, chorus, verse, chorus, bridge, solo, chorus, chorus, ending]}
-    - {name: with a bridge, share: 20, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, ending]}
-    - {name: long with two solos, share: 15, sections: [intro, verse, verse, chorus, verse, chorus, solo, solo, chorus, ending]}
+    - {name: long with two solos, share: 15, sections: [intro, verse, chorus, verse, chorus, solo, bridge, solo, chorus, ending]}
+    - {name: with a bridge, share: 10, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, ending]}
   arena rock:
-    - {name: with a bridge and a solo, share: 30, sections: [intro, verse, chorus, verse, chorus, bridge, solo, chorus, chorus, ending]}
+    - {name: pre-chorus bridge and a solo, share: 40, sections: [intro, verse, pre-chorus, chorus, verse, pre-chorus, chorus, bridge, solo, chorus, chorus, ending]}
     - {name: pre-chorus and a solo, share: 30, sections: [intro, verse, pre-chorus, chorus, verse, pre-chorus, chorus, solo, chorus, chorus, ending]}
-    - {name: with a solo, share: 25, sections: [intro, verse, verse, chorus, verse, chorus, solo, chorus, ending]}
-    - {name: pre-chorus and a bridge, share: 15, sections: [intro, verse, pre-chorus, chorus, verse, pre-chorus, chorus, bridge, chorus, ending]}
+    - {name: with a bridge and a solo, share: 20, sections: [intro, verse, chorus, verse, chorus, bridge, solo, chorus, chorus, ending]}
+    - {name: pre-chorus and a bridge, share: 10, sections: [intro, verse, pre-chorus, chorus, verse, pre-chorus, chorus, bridge, chorus, ending]}
   punk:
-    - {name: with a bridge, share: 45, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, ending]}
+    - {name: with a bridge, share: 45, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, chorus, ending]}
     - {name: short, share: 35, sections: [intro, verse, chorus, verse, chorus, chorus, ending]}
-    - {name: two verses first, share: 20, sections: [intro, verse, verse, chorus, verse, chorus, chorus, ending]}
+    - {name: with a short solo, share: 20, sections: [intro, verse, chorus, verse, chorus, solo, chorus, ending]}
   new wave:
-    - {name: with a bridge, share: 35, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, ending]}
+    - {name: with a bridge and a solo, share: 35, sections: [intro, verse, chorus, verse, chorus, bridge, solo, chorus, chorus, ending]}
+    - {name: with a bridge, share: 25, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, ending]}
     - {name: pre-chorus and a bridge, share: 25, sections: [intro, verse, pre-chorus, chorus, verse, pre-chorus, chorus, bridge, chorus, chorus, ending]}
-    - {name: with a solo, share: 20, sections: [intro, verse, chorus, verse, chorus, solo, chorus, ending]}
-    - {name: two verses first, share: 20, sections: [intro, verse, verse, chorus, verse, chorus, chorus, ending]}
+    - {name: with a solo, share: 15, sections: [intro, verse, chorus, verse, chorus, solo, chorus, ending]}
   rock ballad:
-    - {name: with a solo, share: 40, sections: [intro, verse, verse, chorus, verse, chorus, solo, chorus, ending]}
-    - {name: with a bridge, share: 35, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, ending]}
+    - {name: with a solo, share: 45, sections: [intro, verse, verse, chorus, verse, chorus, solo, chorus, chorus, ending]}
+    - {name: with a bridge, share: 30, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, ending]}
     - {name: pre-chorus and a solo, share: 25, sections: [intro, verse, pre-chorus, chorus, verse, pre-chorus, chorus, solo, chorus, ending]}
+  six-eight ballad:
+    - {name: with a solo, share: 45, sections: [intro, verse, verse, chorus, verse, chorus, solo, chorus, ending]}
+    - {name: with a bridge, share: 30, sections: [intro, verse, chorus, verse, chorus, bridge, chorus, ending]}
+    - {name: pre-chorus and a solo, share: 25, sections: [intro, verse, pre-chorus, chorus, verse, pre-chorus, chorus, solo, chorus, ending]}
+
+# What a kind of rock says differently from rock as a whole: how long its sections are, and its plan's numbers. A fast song's verse
+# is sixteen bars, rock and roll's is twelve, and each kind has its own distance between a verse and a chorus.
+by_subgenre:
+  rock and roll:
+    sections: {verse: {bars: 12}, solo: {bars: 12}}
+    song_plan: {energy: {intro: 6, verse: 7, chorus: 8, bridge: 7, solo: 9}, last_chorus: 9}
+  british invasion:
+    song_plan: {energy: {verse: 5, chorus: 7, bridge: 5, solo: 7}, last_chorus: 8}
+  folk rock:
+    sections: {intro: {bars: 8}, verse: {bars: 16}}
+    song_plan: {energy: {intro: 3, verse: 4, chorus: 6, bridge: 4, solo: 6}, last_chorus: 7}
+  hard rock:
+    sections: {verse: {bars: 16}, solo: {bars: 16}}
+    song_plan: {energy: {intro: 6, verse: 6, chorus: 8, bridge: 5, solo: 9}, last_chorus: 10}
+  arena rock:
+    sections: {intro: {bars: 8}, solo: {bars: 16}}
+    song_plan: {energy: {verse: 3, pre-chorus: 6, chorus: 8, bridge: 4, solo: 8}, last_chorus: 10}
+  punk:
+    sections: {verse: {bars: 16}}
+    song_plan: {energy: {intro: 7, verse: 7, chorus: 9, bridge: 6, solo: 8}, growth: 0, last_chorus: 9}
+  new wave:
+    sections: {intro: {bars: 8}, verse: {bars: 16}}
+    song_plan: {energy: {verse: 5, chorus: 7, bridge: 5, solo: 7}, last_chorus: 8}
+  rock ballad:
+    sections: {solo: {bars: 16}}
+    song_plan: {energy: {intro: 2, verse: 3, chorus: 7, bridge: 4, solo: 9}, last_chorus: 10}
+  six-eight ballad:
+    song_plan: {energy: {intro: 2, verse: 3, chorus: 7, bridge: 4, solo: 9}, last_chorus: 10}
 
 melody:
   4/4:

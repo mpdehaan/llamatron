@@ -72,7 +72,7 @@ SNARE = 'snare'
 GUITAR = 'guitar'
 METER = 'meter'
 SIX_EIGHT = '6/8'
-BALLAD = 'rock ballad'
+BALLAD = 'six-eight ballad'
 # A figure's bar of so many steps, the meters an ending is written for, the bars of a phrase and the last of them.
 TWO_STEPS = 2
 SIX_STEPS = 6
@@ -109,6 +109,66 @@ def a_song(*, template=SHUFFLE, picks=None, sections=None, seed=SEED):
 
 def steps_in(line):
     return sum(note.get(notation.REST, note.get(notation.STEPS, 0)) for note in line)
+
+
+A_STYLE_NAME = 'made up'
+SONG_PLAN = 'song_plan'
+ENERGY = 'energy'
+A_KIND = 'fast'
+ANOTHER_KIND = 'slow'
+A_FAMILY = 'plain'
+A_SHARE = 10
+A_FAMILY_SHARE = 30
+A_KIND_SHARE = 55
+USUAL_BARS = 8
+LONG_BARS = 16
+A_SECTION = 'verse'
+ANOTHER_SECTION = 'chorus'
+USUAL_ENERGY = 4
+A_KIND_ENERGY = 7
+
+
+class TestByTemplate(unittest.TestCase):
+    """What a style says for one of its templates: how common a value is there, and its own sections and numbers."""
+
+    __slots__ = ()
+
+    def style(self):
+        return {arranger.NAME: A_STYLE_NAME, arranger.FAMILIES: {A_KIND: A_FAMILY, ANOTHER_KIND: A_FAMILY},
+                arranger.SECTIONS: {A_SECTION: {arranger.BARS: USUAL_BARS, arranger.PLAYS: [KICK]}, ANOTHER_SECTION: {arranger.BARS: USUAL_BARS}},
+                SONG_PLAN: {ENERGY: {A_SECTION: USUAL_ENERGY, ANOTHER_SECTION: USUAL_ENERGY}},
+                arranger.BY_SUBGENRE: {A_KIND: {arranger.SECTIONS: {A_SECTION: {arranger.BARS: LONG_BARS}}, SONG_PLAN: {ENERGY: {A_SECTION: A_KIND_ENERGY}}}}}
+
+    def test_a_share_by_template_wins_over_the_family_s_and_the_style_s(self):
+        style = self.style()
+        plain = {arranger.SHARE: A_SHARE}
+        by_family = {**plain, arranger.BY_FAMILY: {A_FAMILY: A_FAMILY_SHARE}}
+        by_kind = {**by_family, arranger.BY: {A_KIND: A_KIND_SHARE}}
+        self.assertEqual(arranger.share_in(style=style, entry=plain, template=A_KIND), A_SHARE)
+        self.assertEqual(arranger.share_in(style=style, entry=by_family, template=A_KIND), A_FAMILY_SHARE)
+        self.assertEqual(arranger.share_in(style=style, entry=by_kind, template=A_KIND), A_KIND_SHARE)
+        self.assertEqual(arranger.share_in(style=style, entry=by_kind, template=ANOTHER_KIND), A_FAMILY_SHARE)
+
+    def test_a_template_s_own_words_are_laid_over_the_style_and_the_rest_is_kept(self):
+        style = self.style()
+        own = arranger.style_in(style=style, template=A_KIND)
+        self.assertEqual(own[arranger.SECTIONS][A_SECTION], {arranger.BARS: LONG_BARS, arranger.PLAYS: [KICK]})
+        self.assertEqual(own[arranger.SECTIONS][ANOTHER_SECTION], {arranger.BARS: USUAL_BARS})
+        self.assertEqual(own[SONG_PLAN][ENERGY], {A_SECTION: A_KIND_ENERGY, ANOTHER_SECTION: USUAL_ENERGY})
+        self.assertEqual(style[arranger.SECTIONS][A_SECTION][arranger.BARS], USUAL_BARS)
+        self.assertIs(arranger.style_in(style=style, template=ANOTHER_KIND), style)
+        self.assertIs(arranger.style_in(style=own, template=A_KIND), own)
+
+    def test_every_template_s_own_words_name_a_template_and_sections_of_the_style(self):
+        for path in style_files():
+            style = read(path)
+            for template, own in style.get(arranger.BY_SUBGENRE, {}).items():
+                with self.subTest(path=path, template=template):
+                    self.assertIn(template, style[arranger.TEMPLATES])
+                    self.assertLessEqual(set(own.get(arranger.SECTIONS, {})), set(style[arranger.SECTIONS]))
+                    song = {**a_song(template=template), arranger.STYLE: style[arranger.NAME]}
+                    del song[arranger.FORM]
+                    arranger.arranged(style=style, song=song)
 
 
 class TestStyleTemplates(unittest.TestCase):
@@ -379,7 +439,9 @@ class TestPlayers(unittest.TestCase):
                     if hit != notation.NONE:
                         with self.subTest(complexity=complexity, bar=count, place=place):
                             self.assertEqual(hits[(count * len(bar) + place) * finer], hit)
-            counts.append(sum(hit != notation.NONE for hit in hits) / every)
+            # The bars before the fill are counted: a fill is a bar of its own, which may have fewer kicks than the bar it replaces.
+            before_fill = hits[:(every - 1) * len(bar) * finer]
+            counts.append(sum(hit != notation.NONE for hit in before_fill) / (every - 1))
         self.assertEqual(counts, sorted(counts))
         self.assertGreater(counts[-1], counts[0])
 

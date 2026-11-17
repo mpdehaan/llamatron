@@ -48,7 +48,7 @@ A_SOUND_OF_NO_STYLE = 105
 A_LITTLE_FASTER = 7
 FIRST_PLACE = 0
 # A genre's subgenres are dealt to so many classes, which run side by side, so that none runs past the runner's limit for a class.
-PARTS = 4
+PARTS = 6
 # The kinds of choice.
 WAY = 'a way of playing'
 BUSY = 'busy'
@@ -96,6 +96,9 @@ SECTION_OWN = "a section's own"
 FORM_ANSWER = 'an answer of the form questions'
 INTRO_HOOK = 'intro hook'
 SECTION_SHAPE = "a section's shape"
+# Arena rock's pre-chorus already sings at the top of the tune's range, so the shape that holds the second line back is the usual shape, at both pre-choruses.
+FIRST_PART = 0
+KNOWN_TO_CHANGE_NOTHING = {('rock', FIRST_PART): {SECTION_SHAPE: 2}}
 A_SECOND_PLACE = 1
 NO_PLAN = 'with no plan'
 SECTION_OWN_ANYWHERE = (('fades', True), ('chords', '6 4 2 5'), ('chords', '1 4'), ('tempo', 61), ('tempo_end', 62), ('root', 'F#'), ('root', 'C'), ('type', 'minor'), ('type', 'major'))
@@ -110,9 +113,7 @@ SECTION_KIND = "a section's kind"
 FORM = 'form'
 PLAYS_IN_SECTION = 'who plays in a section'
 # How many choices of each kind change nothing, by genre and part, with the reason each is allowed for now.
-THIRD_PART = 2
 # Rock and roll's planned song: its sections' Energies all ask for the hat in eighths, so choosing that cymbal is choosing what the plan already plays.
-KNOWN_TO_CHANGE_NOTHING = {('rock', THIRD_PART): {WAY: 1}}
 LABEL = '{subgenre}: {what}'
 
 
@@ -518,7 +519,8 @@ def class_for(*, genre, half):
 
 
 for a_genre in genre_names():
-    for a_half in range(PARTS):
+    # A genre with fewer kinds than parts has a class for each kind and no empty one.
+    for a_half in range(min(PARTS, len(WizardChoices.from_data({'genre': a_genre}).subgenres()))):
         a_name, a_class = class_for(genre=a_genre, half=a_half)
         globals()[a_name] = a_class
 del a_class

@@ -30,7 +30,7 @@ from llamatron.support.version import VERSION
 ROCK = 'rock'
 ARENA = 'arena rock'
 PUNK = 'punk'
-BALLAD = 'rock ballad'
+BALLAD = 'six-eight ballad'
 SONG_NAME = 'a_song'
 KEY_ROOT = 'A'
 MAJOR = 'major'
