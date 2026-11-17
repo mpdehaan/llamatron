@@ -45,6 +45,10 @@ ANSWER = 'answer'
 HOOK = 'hook'
 # What a line's notes are seeded by: the song's seed, whether it answers, the line's letter, and its place when it is varied.
 LINE_SEED = '{} {} {} {}'
+# A song's later takes of its hook each have dice of their own, so that a new hook leaves every other line as it was.
+HOOK_TAKE = 'hook_take'
+FIRST_HOOK_TAKE = 0
+HOOK_TAKE_SEED = '{} hook take {}'
 HIGHER = 'higher'
 # The engines a tune is made by, and the habits the serial one reads besides.
 ENGINE = 'engine'
@@ -775,14 +779,16 @@ class Hooked(StepWalk):
     writer's, any engine's, held under the lowest place the hook's top may sit unless the line is marked higher, so that the
     hook's long note is the top of the song."""
 
-    __slots__ = ('_writer', '_hooks')
+    __slots__ = ('_writer', '_hooks', '_take_seed')
 
-    def __init__(self, *, writer, habits, chords, scale_type, seed, answers, voice=None, letters=()):
+    def __init__(self, *, writer, habits, chords, scale_type, seed, answers, voice=None, letters=(), hook_take=FIRST_HOOK_TAKE):
         super().__init__(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
         self._writer = writer(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
         self._hooks = Hooks(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
         # Each line's dice are drawn as the writer draws them, so that a line the writer makes is the line the writer would make alone, lowered.
         self._seed = self._writer.seed()
+        # The first take of the hook is rolled with its line's dice, as every song made before takes could be asked for; a later take with dice of its own.
+        self._take_seed = None if hook_take == FIRST_HOOK_TAKE else HOOK_TAKE_SEED.format(seed, hook_take)
 
     def under_the_hook(self, *, entry, made):
         if entry.get(HIGHER):
@@ -791,7 +797,7 @@ class Hooked(StepWalk):
 
     def new_line(self, *, entry, under, dice):
         if entry.get(HOOK):
-            return self._hooks.hook_line(under=under, dice=dice)
+            return self._hooks.hook_line(under=under, dice=dice if self._take_seed is None else random.Random(self._take_seed))
         return self.under_the_hook(entry=entry, made=lambda: self._writer.new_line(entry=entry, under=under, dice=dice))
 
     def varied_line(self, *, line, dice, entry=None, under=None):
@@ -841,13 +847,13 @@ FORMS = (row_as_written, row_backwards, row_upside_down, row_upside_down_and_bac
 ENGINES = {STEP_WALK: StepWalk, SERIAL: Serial, EVOLVING: Evolving, SMART: Smart}
 
 
-def sketched(*, habits, plan, chords, scale_type, seed, answers, engine=None, voice=None, letters=(), hook=False):
+def sketched(*, habits, plan, chords, scale_type, seed, answers, engine=None, voice=None, letters=(), hook=False, hook_take=FIRST_HOOK_TAKE):
     """A section's tune as lines, written by the engine named, else the one the habits name, else the step walk; in a song
     with a hook, the lines a plan marks as a hook are the hook maker's and the writer keeps under them in every section. The
     letters are those of every line of the song the player plays, for an engine that tells a song's lines apart."""
     writer = ENGINES[engine or habits.get(ENGINE, STEP_WALK)]
     given = dict(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
-    made_by = Hooked(writer=writer, **given) if hook else writer(**given)
+    made_by = Hooked(writer=writer, hook_take=hook_take, **given) if hook else writer(**given)
     return made_by.sketched(plan)
 
 

@@ -17,12 +17,13 @@
 
 from rich.text import Text
 
-from llamatron.strings.labels import MSG_WIZARD_HOOK_LABEL, MSG_WIZARD_HOOK_OFF, MSG_WIZARD_HOOK_ON, MSG_WIZARD_HOOKS_BRANCH
+from llamatron.strings.labels import MSG_WIZARD_NEW_HOOK_BUTTON, MSG_WIZARD_HOOK_LABEL, MSG_WIZARD_HOOK_OFF, MSG_WIZARD_HOOK_ON, MSG_WIZARD_HOOKS_BRANCH
+from llamatron.strings.legends import KeyName, MSG_WIZARD_NEW_HOOK_WHAT
 from llamatron.strings.marks import MSG_WIZARD_HOOK_BAR_LINE, MSG_WIZARD_HOOK_CELL, MSG_WIZARD_HOOK_FLOOR, MSG_WIZARD_HOOK_FLOOR_BAR, MSG_WIZARD_HOOK_GAP, MSG_WIZARD_HOOK_ROW
 from llamatron.strings.messages import MSG_WIZARD_HOOK_MADE
 from llamatron.tui.drawing import INDENT, Style
 from llamatron.tui.note_names import note_shown
-from llamatron.tui.screens.shared.field import Toggle
+from llamatron.tui.screens.shared.field import Button, Toggle
 from llamatron.tui.screens.wizard.song_ways_branch import SongWaysBranch
 
 # A step of the picture is two cells wide where the hook fits so, and one where it is long.
@@ -56,7 +57,12 @@ class HooksBranch(SongWaysBranch):
         if not self.offers_a_hook():
             return []
         choices = self.choices()
-        return [Toggle(label=MSG_WIZARD_HOOK_LABEL, on=choices.has_hook(), set=self.page().choosing(choices.set_hook))]
+        switch = Toggle(label=MSG_WIZARD_HOOK_LABEL, on=choices.has_hook(), set=self.page().choosing(choices.set_hook))
+        if not choices.has_hook():
+            return [switch]
+        # Another hook is made and every other line of the song is left as it was.
+        new_hook = Button(label=MSG_WIZARD_NEW_HOOK_BUTTON, key_name=KeyName.ENTER, enter=lambda: self.page().choosing(lambda nothing: choices.new_hook())(None), enter_what=MSG_WIZARD_NEW_HOOK_WHAT)
+        return [switch, new_hook]
 
     def notes(self, width):
         """Return the picture of the hook while the song has one, with who plays it; else what a branch with nothing to choose says."""
