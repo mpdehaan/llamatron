@@ -39,12 +39,41 @@
 - Lead-in fills set up an entrance: a beat or a bar before the band lands. Starting on beat three and resolving on one is common.
   (practice)
 
+- A fill is to the form what a dominant chord is to the harmony: the fill is the tension and the crash and kick on the next
+  first beat are the release. Fills too often, or all one size, flatten the order of sizes and the form stops reading. (practice)
+- A fill is a cue before it is decoration: drum traditions with a lead drummer have set calls that the whole group answers
+  with the change of section. (practice)
+- Raising the subdivision raises the pull: eighths, then sixteenths, then sixteenth triplets; a fill that goes up a subdivision
+  in its last beat pulls hardest at the landing. (practice)
+- Groups against the bar: sixteenths in threes (two hands and a kick, say), four threes and a four filling a bar of 4/4. The
+  threes fight the beat and the last group of four gives in to it, so the landing feels owed. Fives and sevens work the same
+  way. (practice)
+- A linear fill has no two limbs striking at once, so the fill sounds like one line passed around the kit, kick included.
+  (practice)
+- Texture without speed: a grace note before a stroke, a doubled stroke, a sticking pattern spread over the toms. (practice)
+- A fill going up the kit, low to high, lifts where the usual high to low falls; it is the rarer kind. (practice)
+- The beginner's fault is a fill that hurries, so that the landing comes early. A good fill grows out of the groove and lands
+  back in it. (practice)
+
 ## The Kit by Section
 
 - The same pattern on another surface is another section: closed hi-hat in a verse, the ride or an open hi-hat in a chorus, toms
   under a bridge or an intro, a rim click in a quiet verse. (practice)
 - A crash marks the first beat of a section; a chorus may crash every two or four bars. (practice)
 - Leaving out is arranging: no kick in a first verse, hi-hat alone in an intro, everything out for a beat before a chorus. (practice)
+- A second verse is a little busier than the first, an added kick or more ghost notes, so that the song keeps growing.
+  (practice)
+- A pre-chorus builds, the snare on every beat, eighths on the low tom, a rise in loudness; or does the opposite and thins or
+  stops, so that the chorus hits harder by contrast. (practice)
+- A bridge is contrast: another groove, another cymbal (the ride's bell is a favourite), half time, a groove on the toms, or
+  the drums out and built again from nothing. (practice)
+- The last chorus is the biggest; often a chorus with the drums out comes first, the voice carrying, and then the full kit
+  comes back with a crash on every bar. (practice)
+- Ways a drummer ends a song: holding the groove through a fade; a vamp whose fills grow; one hit with the whole band; the
+  big ending, cymbals washing and toms rolling over a held chord until the last hit; slowing down; or the intro's groove
+  again, so that the song closes as it opened. (practice)
+- The form as numbers: a level of energy for each section, say intro 3, verse 4, pre-chorus 6, chorus 8, verse 5, bridge 3,
+  last chorus 10, and the drum part follows the curve. (practice)
 
 ## More on Sections, Balance and Fills
 
