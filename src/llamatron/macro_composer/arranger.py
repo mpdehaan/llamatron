@@ -36,9 +36,11 @@ from llamatron.macro_composer import drum_solo
 from llamatron.macro_composer.interplay import ANSWERS as ANSWERS_EVERY_LINE, DRAWN_ANEW as WAYS_DRAWN_ANEW, USUAL_BUSY as USUAL_BESIDE_BUSY, WAITS, WAYS as WAYS_BESIDE, UnderLead
 from llamatron.macro_composer.joins import DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL, TAIL_EIGHTHS, drum_tail, pieces_of_tail, with_tail
 from llamatron.macro_composer.melody import ANSWER, ANSWER_RHYTHMS, ENGINE, FIRST_HOOK_TAKE, GRID, HOOK, HOOK_TAKE, LINE, RHYTHMS, SPAN, has_hook, sketched
-from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, DRUM, FLAT, HITS, KIT, LINES, LOUD, NONE, OCTAVE, REST, SHARP, SOFT, STEP, STEPS, VELOCITY, CHORD, clamped, drum_rows
+from llamatron.macro_composer.loudness import NORMAL, USUAL_DYNAMICS, drum_levels, in_proportion, note_levels, scaled, spread, with_own
+from llamatron.macro_composer.notation import ACCENT, ACCIDENTAL, DEGREE, DRUM, FLAT, GHOST, HITS, KIT, LINES, LOUD, NONE, OCTAVE, REST, SHARP, SOFT, STEP, STEPS, STEP_SIZE, VELOCITY, CHORD, clamped, drum_rows
 from llamatron.macro_composer.players import player_name
 from llamatron.macro_composer.riffs import FIRST_TAKE, RIFF, RIFF_BARS, RIFF_KINDS, RIFF_LINE, RIFF_ROLES, RIFF_TAKE, riff_line
+from llamatron.macro_composer.shaping import COMPOUND_BEAT, SIMPLE_BEAT, is_compound
 from llamatron.macro_composer.song_plan import PLAN_OF_SONG, SongPlan
 from llamatron.support.safe_yaml import load_safely
 from llamatron.composition.limits import MAX_GM_SOUND, MIN_GM_SOUND
@@ -210,9 +212,15 @@ BY_FAMILY = 'by_family'
 BY = 'by'
 # What a style says differently for one of its templates, laid over the style: a section's bars, the plan's numbers and the like.
 BY_SUBGENRE = 'by_subgenre'
+# How far a song's players' levels lie from their normal ones, by the player's name, from 0 to 10; a song's own levels for a
+# player are under the style's word for loudness.
+DYNAMICS = 'dynamics'
+# A style's lean on each beat of the bar: how much louder or softer the drums' strokes on the beat are, beat by beat.
+BEAT_LOUDNESS = 'beat_loudness'
+# A player of notes' accent, soft and ghost velocities, where the song gives the player levels or dynamics of its own.
+LEVELS_OF_ROLE = 'levels'
 # The keys whose home note is the lowest of an octave: a band written for the middle of its range plays an octave up in them.
 LOW_ROOTS = ('C', 'C#', 'Db', 'D', 'D#', 'Eb')
-SOFT_SHARE = Fraction(2, 3)
 # What a planned section says of itself (song_plan.py): each instrument's level in the section, in place of the song's; the
 # scene's own settings; what the section is called where a part is the same each time its kind comes; what is said of the
 # section in the song's notes; that the drummer plays it alone, as a solo; and the small fill inside it with how many bars apart it comes.
@@ -301,11 +309,62 @@ def timing_generators(*, move):
     return {kind: ({GENERATOR_STEPS: [True], AMOUNT: move[kind]} if kind in move else {GENERATOR_STEPS: [False]}) for kind in (RUSH, DRAG)}
 
 
-def uneven_drum(*, part, by, dice):
-    """A drum's part as a pattern whose hits each differ a little in loudness, as a person's do."""
-    pattern = drum_rows(drum=part[DRUM], hits=part[HITS], loud=part[LOUD], soft=part[SOFT], step_size=part[STEP])
-    pattern[VELOCITY] = [None if loud is None else clamped(loud + dice.randint(-by, by)) for loud in pattern[VELOCITY]]
-    return {RAW: pattern}
+def drum_pattern(part):
+    """A drum's part as a pattern."""
+    return drum_rows(drum=part[DRUM], hits=part[HITS], loud=part[LOUD], soft=part[SOFT], step_size=part[STEP], accent=part.get(ACCENT), ghost=part.get(GHOST))
+
+
+def uneven(*, pattern, by, dice):
+    """A drum's pattern with hits that each differ a little in loudness, as a person's do."""
+    return {**pattern, VELOCITY: [None if loud is None else clamped(loud + dice.randint(-by, by)) for loud in pattern[VELOCITY]]}
+
+
+def leaning(*, pattern, profile, meter, dynamics):
+    """A drum's pattern with the strokes on each beat louder or softer by the style's lean on that beat, as far as the drummer's dynamics say."""
+    size = Fraction(pattern[STEP_SIZE])
+    beat = COMPOUND_BEAT if is_compound(meter) else SIMPLE_BEAT
+    velocities = []
+    for place, loud in enumerate(pattern[VELOCITY]):
+        count = ((place * size) % bar_length(meter)) / beat
+        on_a_beat = loud is not None and count.denominator == 1
+        velocities.append(clamped(loud + scaled(move=profile[int(count) % len(profile)], dynamics=dynamics)) if on_a_beat else loud)
+    return {**pattern, VELOCITY: velocities}
+
+
+def drummer_role(roles):
+    """The name of the role that plays the drums."""
+    return next((role[ROLE] for role in roles if role.get(DRUMS)), DRUMS)
+
+
+def loud_style(*, style, song, roles):
+    """A style with each drum's four levels worked out, as the song has them: the kit's levels where the song gives its own, every
+    piece moved in proportion, and each level as far from the normal one as the drummer's dynamics say."""
+    drummer = drummer_role(roles)
+    kit = drum_levels(style[LOUDNESS][DRUMS])
+    chosen = with_own(levels=kit, own=song.get(LOUDNESS, {}).get(drummer))
+    dynamics = song.get(DYNAMICS, {}).get(drummer, USUAL_DYNAMICS)
+    return {**style, LOUDNESS: {piece: spread(levels=in_proportion(levels=drum_levels(given), kit=kit, chosen=chosen), dynamics=dynamics)
+                                for piece, given in style[LOUDNESS].items()}}
+
+
+def loud_role(*, role, song):
+    """A player of notes as loud as the song has the player: the role with the song's levels and dynamics for it, where it gives any."""
+    own = song.get(LOUDNESS, {}).get(role[ROLE])
+    dynamics = song.get(DYNAMICS, {}).get(role[ROLE])
+    if VELOCITY not in role or (own is None and dynamics is None):
+        return role
+    levels = spread(levels=with_own(levels=note_levels(role[VELOCITY]), own=own), dynamics=USUAL_DYNAMICS if dynamics is None else dynamics)
+    return {**role, VELOCITY: levels[NORMAL], LEVELS_OF_ROLE: {level: levels[level] for level in (ACCENT, SOFT, GHOST)}}
+
+
+def voice_of(role):
+    """How loud a player's part is: the velocity, and the player's other levels where the song gives any."""
+    return {VELOCITY: role[VELOCITY], **role.get(LEVELS_OF_ROLE, {})}
+
+
+def struck(*, levels, hits):
+    """How loud a drum's part is: its normal and soft strokes, and its accent and ghost note where its hits have any."""
+    return {LOUD: levels[NORMAL], SOFT: levels[SOFT], **{level: levels[level] for level in (ACCENT, GHOST) if level in hits}}
 
 
 def share_of(entry):
@@ -367,8 +426,8 @@ def progression_of(*, chords, every):
 
 
 def hits_of(marks):
-    """A decoration's drum as hits: it says how many steps its bar has and which are soft and which loud."""
-    return [LOUD if place in marks.get(LOUD, []) else SOFT if place in marks.get(SOFT, []) else NONE for place in range(marks[STEPS])]
+    """A decoration's drum as hits: it says how many steps its bar has and which are accents, loud, soft and ghost notes."""
+    return [next((level for level in (ACCENT, LOUD, SOFT, GHOST) if place in marks.get(level, [])), NONE) for place in range(marks[STEPS])]
 
 
 def choice_that_fits(*, choices, picks):
@@ -501,8 +560,9 @@ def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars
                 elif leaves is not None and bar != length and bar % inside_every == 0 and piece in fill:
                     played = widened(hits=fill[piece], to=grid)
                 hits += played
-        loud = style[LOUDNESS].get(piece, style[LOUDNESS][DRUMS])
-        parts[piece] = {DRUM: (kit or {}).get(piece, piece), STEP: step_of(meter=meter, grid=grid), LOUD: loud, SOFT: int(loud * SOFT_SHARE), HITS: hits}
+        # A style as written says a drum's normal stroke alone, and a song's style all four levels.
+        levels = drum_levels(style[LOUDNESS].get(piece, style[LOUDNESS][DRUMS]))
+        parts[piece] = {DRUM: (kit or {}).get(piece, piece), STEP: step_of(meter=meter, grid=grid), **struck(levels=levels, hits=hits), HITS: hits}
     return parts
 
 
@@ -515,8 +575,9 @@ def solo_parts(*, style, bars, seed, kit):
     """A drum solo's parts, a part for each piece of the kit that sounds in it."""
     parts = {}
     for piece, hits in drum_solo.solo_hits(bars=bars, seed=seed).items():
-        loud = style[LOUDNESS].get(piece, style[LOUDNESS][DRUMS])
-        parts[piece] = {DRUM: (kit or {}).get(piece, piece), STEP: drum_solo.STEP, LOUD: loud, SOFT: int(loud * SOFT_SHARE), HITS: hits}
+        # A style as written says a drum's normal stroke alone, and a song's style all four levels.
+        levels = drum_levels(style[LOUDNESS].get(piece, style[LOUDNESS][DRUMS]))
+        parts[piece] = {DRUM: (kit or {}).get(piece, piece), STEP: drum_solo.STEP, **struck(levels=levels, hits=hits), HITS: hits}
     return parts
 
 
@@ -531,7 +592,7 @@ def frozen(value):
 
 def one_hit(*, style, meter, drum, played):
     """One bar in which a piece of the kit is hit once, on the first beat, as the drum or the note the song has the piece play."""
-    loud = style[LOUDNESS].get(drum, style[LOUDNESS][DRUMS])
+    loud = style[LOUDNESS].get(drum, style[LOUDNESS][DRUMS])[NORMAL]
     return {DRUM: played.get(drum, drum), STEP: EIGHTH, LOUD: loud, SOFT: loud, HITS: [LOUD] + [NONE] * (int(bar_length(meter) * EIGHTHS_IN_WHOLE) - 1)}
 
 
@@ -588,7 +649,7 @@ def figure_part(*, entry, role, meter, player, phrase_bars):
     """A value's figure as a tune's part, as a player plays it; the figure's bars are its lines."""
     lines = decorated_figure(bars=entry[FIGURE], player=player, phrase_bars=phrase_bars, meter=meter)
     grid = sum(lasts(note) for note in lines[0])
-    return {STEP: step_of(meter=meter, grid=grid), OCTAVE: role[OCTAVE], VELOCITY: role[VELOCITY], LINES: lines}
+    return {STEP: step_of(meter=meter, grid=grid), OCTAVE: role[OCTAVE], **voice_of(role), LINES: lines}
 
 
 def held_part(*, role, meter, chord):
@@ -596,11 +657,11 @@ def held_part(*, role, meter, chord):
     note = {DEGREE: 1, STEPS: int(bar_length(meter) * EIGHTHS_IN_WHOLE)}
     if chord:
         note[CHORD] = HELD_CHORD
-    return {STEP: EIGHTH, OCTAVE: role[OCTAVE], VELOCITY: role[VELOCITY], LINES: [[note]]}
+    return {STEP: EIGHTH, OCTAVE: role[OCTAVE], **voice_of(role), LINES: [[note]]}
 
 
 def tune_part(*, lines, role, meter, grid):
-    return {STEP: step_of(meter=meter, grid=grid), OCTAVE: role[OCTAVE], VELOCITY: role[VELOCITY], LINES: lines}
+    return {STEP: step_of(meter=meter, grid=grid), OCTAVE: role[OCTAVE], **voice_of(role), LINES: lines}
 
 
 def habits_of(*, habits, player):
@@ -718,7 +779,8 @@ def arranged(*, style, song):
     tempo = tempo_of(style=style, song=song, picks=picks)
     form_names = form_of(style=style, song=song, meter=meter, tempo=tempo)
     lift = 1 if song[KEY][ROOT] in LOW_ROOTS else 0
-    roles = [{**role, OCTAVE: role[OCTAVE] + lift} if OCTAVE in role else role for role in style[ROLES]]
+    roles = [loud_role(role={**role, OCTAVE: role[OCTAVE] + lift} if OCTAVE in role else role, song=song) for role in style[ROLES]]
+    style = loud_style(style=style, song=song, roles=roles)
     phrase_bars = style.get(PHRASE_BARS, DEFAULT_PHRASE_BARS)
     chord_trait = style.get(CHORD_TRAIT_FIELD, CHORD_TRAIT)
     chord_entry = values_of(style=style, trait=chord_trait)[picks[chord_trait]]
@@ -778,10 +840,18 @@ def arranged(*, style, song):
                 if piece in pieces_off:
                     continue
                 if piece == SNARE and not song.get(QUIET_NOTES, True):
-                    # The quiet notes switched off: the snare's soft strokes between the main ones are left out.
-                    part = {**part, HITS: [NONE if hit == SOFT else hit for hit in part[HITS]]}
-                if plays.get(UNEVEN) and not drum_solo_here:
-                    part = uneven_drum(part=part, by=plays[UNEVEN], dice=random.Random(DRUM_SEED.format(song.get(SEED, 0), piece, section[KIND])))
+                    # The quiet notes switched off: the snare's soft strokes and ghost notes between the main ones are left out.
+                    part = {**part, HITS: [NONE if hit in (SOFT, GHOST) else hit for hit in part[HITS]]}
+                profile = style.get(BEAT_LOUDNESS)
+                is_uneven = plays.get(UNEVEN) and not drum_solo_here
+                if (profile and not drum_solo_here) or is_uneven:
+                    # A pattern written out, where each stroke's loudness is its own: the style's lean on each beat, then a person's unevenness on top.
+                    pattern = drum_pattern(part)
+                    if profile and not drum_solo_here:
+                        pattern = leaning(pattern=pattern, profile=profile, meter=meter, dynamics=song.get(DYNAMICS, {}).get(drummer_role(roles), USUAL_DYNAMICS))
+                    if is_uneven:
+                        pattern = uneven(pattern=pattern, by=plays[UNEVEN], dice=random.Random(DRUM_SEED.format(song.get(SEED, 0), piece, section[KIND])))
+                    part = {RAW: pattern}
                 named = piece if leaves is None and key[:2] == (usual_drummer, ()) and piece not in parts else MSG_PART_OF_SECTION.format(piece, name if leaves is not None else section[KIND])
                 parts[named] = part
                 drum_sets[key][piece] = named
@@ -919,7 +989,7 @@ def arranged(*, style, song):
                         riff_part = MSG_PART_OF_SECTION.format(role[ROLE], RIFF)
                         if riff_part not in parts:
                             line = riff.get(RIFF_LINE) or riff_line(seed=song.get(SEED, 0), take=riff.get(RIFF_TAKE, FIRST_TAKE), eighths=riff_eighths)
-                            parts[riff_part] = {STEP: EIGHTH, OCTAVE: role[OCTAVE], VELOCITY: role[VELOCITY], LINES: [[dict(note) for note in line]]}
+                            parts[riff_part] = {STEP: EIGHTH, OCTAVE: role[OCTAVE], **voice_of(role), LINES: [[dict(note) for note in line]]}
                             shaped.append(riff_part)
                         riff_chain = MSG_PART_OF_SECTION.format(chain, RIFF)
                         chains[riff_chain] = [{PROGRESSION: progression}, {RUSH: role[ROLE]}, {DRAG: role[ROLE]}]
@@ -979,6 +1049,12 @@ def arranged(*, style, song):
         FEEL: style[FEEL], SHAPED: shaped, INSTRUMENTS: instruments, TRACKS: tracks, DRUM_TRACKS: [piece for piece in drum_tracks if piece not in own_sounds], GENERATORS: generators, CHAINS: chains,
         PARTS: parts, FORM: form,
     }
+    if song.get(DYNAMICS):
+        # How far the feel moves each track's notes: a player's own track, and for the drummer every piece of the kit.
+        of_tracks = {role[ROLE]: song[DYNAMICS][role[ROLE]] for role in roles if role[ROLE] in song[DYNAMICS] and role[ROLE] in tracks}
+        if drummer_role(roles) in song[DYNAMICS]:
+            of_tracks.update({piece: song[DYNAMICS][drummer_role(roles)] for piece in drum_tracks})
+        given[DYNAMICS] = of_tracks
     if meter != COMMON_TIME:
         given[TIME_SIGNATURE] = meter
     return given

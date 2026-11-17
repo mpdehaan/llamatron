@@ -1025,8 +1025,10 @@ class TestWizardPlayerRows(WizardTest):
             self.assertIn(MSG_WIZARD_GENRE_ROW_SHOWN.format(row=self.shown_row(choices=choices, role=role, name=name)), self.text())
         choices.set_melody(None)
         await self.press(Key.DOWN, Key.UP)
+        # By the fields' labels, since a row's label may be part of another field's.
+        labels = [field.label for field in self.wizard().fields()]
         for name in PLAYER_ROWS:
-            self.assertNotIn(MSG_WIZARD_ROW_LABELS[name], self.text())
+            self.assertNotIn(MSG_WIZARD_ROW_LABELS[name], labels)
 
     async def test_a_row_is_edited_in_the_row_dialog_and_kept_on_ok(self):
         choices, role = await self.serial()

@@ -41,7 +41,8 @@ from llamatron.macro_composer.arranger import (
 )
 from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer import hook_kinds, line_edits, phrasing
-from llamatron.macro_composer.arranger import CHORDS, EIGHTHS_IN_WHOLE, SCENE_SETTINGS, form_of
+from llamatron.macro_composer.arranger import CHORDS, DYNAMICS, EIGHTHS_IN_WHOLE, LOUDNESS as LOUDNESS_OF, SCENE_SETTINGS, form_of
+from llamatron.macro_composer.loudness import LEAST_DYNAMICS, LEVELS as LOUDNESS_LEVELS, MOST_DYNAMICS, USUAL_DYNAMICS, drum_levels, note_levels, with_own
 from llamatron.macro_composer.melody import ANSWER, HOOK_KIND, HOOK_NOTES, LINE, LINE_NOTES
 from llamatron.macro_composer.phrasing import LINE_BREATH, LINE_EARLY
 from llamatron.macro_composer.riffs import FIRST_TAKE as FIRST_RIFF_TAKE, RIFF, RIFF_BARS, RIFF_KINDS, RIFF_LINE, RIFF_ROLES, RIFF_TAKE, riff_line
@@ -52,7 +53,7 @@ from llamatron.macro_composer.song_plan import (
 )
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
-from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, FLAT, KIT, LINES, OCTAVE, REST, SHARP, STEPS
+from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, FLAT, KIT, LINES, OCTAVE, REST, SHARP, STEPS, VELOCITY, LOWEST_VELOCITY, HIGHEST_VELOCITY
 from llamatron.strings.macro_composer import MSG_PART_OF_SECTION
 from llamatron.macro_composer.melody import ARTICULATION, CHROMATIC, DEFAULT_EVOLVE, DEFAULT_LENGTHS, ENGINE, LENGTHS, LOUDNESS, PARTS_OF_A_LENGTH, EVOLVE, HALF_STEPS, LEAPS, MOVE, NOTES_IN_OCTAVE, DEFAULT_GAUGES, EVOLVING, FIRST_HOOK_TAKE, GRID, HIGHEST_GAUGE, HOOK, HOOK_TAKE, LOWEST_GAUGE, ROTATE, ROTATIONS, SERIAL, SMART, STEP_WALK
 from llamatron.music.note import ROOT_NAMES, SEMITONES_ABOVE_C
@@ -61,7 +62,7 @@ from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MIN_GM_SO
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.marks import MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SECTION_VARIANT
 from llamatron.support.version import VERSION as A_VERSION
-from llamatron.strings.errors import ERR_WIZARD_NO_RIFF, ERR_WIZARD_RIFF, ERR_WIZARD_RIFF_UNMADE, ERR_WIZARD_COMES_IN, ERR_WIZARD_LAYS_OUT, ERR_WIZARD_PLAYS_UNMADE, ERR_WIZARD_REACTS, ERR_WIZARD_CONTRAST, ERR_WIZARD_EXTRAS, ERR_WIZARD_END, ERR_WIZARD_FIRST_PLAYER, ERR_WIZARD_HOOK_LINE, ERR_WIZARD_HOOK_PART, ERR_WIZARD_SETUP_BARS, ERR_WIZARD_START, ERR_WIZARD_START_UNMADE, ERR_WIZARD_CHORDS, ERR_WIZARD_FORM_ANSWER, ERR_WIZARD_NO_FORM_QUESTIONS, ERR_WIZARD_INTRO_HOOK, ERR_WIZARD_PHRASING, ERR_WIZARD_SECTION_OWN, ERR_WIZARD_SECTION_OWN_UNMADE, ERR_WIZARD_GENRE_HAS_NO_PLAN, ERR_WIZARD_NO_SONG_PLAN, ERR_WIZARD_SWITCH, ERR_WIZARD_NO_SUCH_ROW, ERR_WIZARD_ROW, ERR_WIZARD_HOOK_TAKE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_MELODY_NUMBER, ERR_WIZARD_MELODY_SWITCH, ERR_WIZARD_NO_SUCH_MELODY_SETTING, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
+from llamatron.strings.errors import ERR_WIZARD_DYNAMICS, ERR_WIZARD_LOUDNESS, ERR_WIZARD_NO_RIFF, ERR_WIZARD_RIFF, ERR_WIZARD_RIFF_UNMADE, ERR_WIZARD_COMES_IN, ERR_WIZARD_LAYS_OUT, ERR_WIZARD_PLAYS_UNMADE, ERR_WIZARD_REACTS, ERR_WIZARD_CONTRAST, ERR_WIZARD_EXTRAS, ERR_WIZARD_END, ERR_WIZARD_FIRST_PLAYER, ERR_WIZARD_HOOK_LINE, ERR_WIZARD_HOOK_PART, ERR_WIZARD_SETUP_BARS, ERR_WIZARD_START, ERR_WIZARD_START_UNMADE, ERR_WIZARD_CHORDS, ERR_WIZARD_FORM_ANSWER, ERR_WIZARD_NO_FORM_QUESTIONS, ERR_WIZARD_INTRO_HOOK, ERR_WIZARD_PHRASING, ERR_WIZARD_SECTION_OWN, ERR_WIZARD_SECTION_OWN_UNMADE, ERR_WIZARD_GENRE_HAS_NO_PLAN, ERR_WIZARD_NO_SONG_PLAN, ERR_WIZARD_SWITCH, ERR_WIZARD_NO_SUCH_ROW, ERR_WIZARD_ROW, ERR_WIZARD_HOOK_TAKE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_MELODY_NUMBER, ERR_WIZARD_MELODY_SWITCH, ERR_WIZARD_NO_SUCH_MELODY_SETTING, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'
@@ -238,6 +239,11 @@ RIFF_EVERYWHERE = 'everywhere'
 RIFF_SAID_WAYS = (RIFF_INTRO_AND_VERSES, RIFF_IN_INTRO, RIFF_UNDER_VERSES, RIFF_UNDER_CHORUSES, RIFF_EVERYWHERE)
 INTRO_KIND = 'intro'
 REACTS_ANSWER = 'reacts'
+DYNAMICS_ANSWER = 'dynamics'
+LEVELS_ANSWER = 'levels'
+# How far a trial moves a level to hear whether the level is played at all.
+LEVEL_TRIAL = 20
+MIDDLE_VELOCITY = 64
 # Where a player comes in and where a player lays out.
 FROM_THE_START = 'from the start'
 AFTER_THE_INTRO = 'after the intro'
@@ -591,6 +597,9 @@ class WizardChoices:
             self._extras.pop(PLAN_OF_SONG, None)
             self._extras.pop(MELODY, None)
             self._extras.pop(RIFF, None)
+            # A player's loudness is one genre's player's.
+            self._extras.pop(DYNAMICS, None)
+            self._extras.pop(LOUDNESS_OF, None)
             self._forget_band()
 
     def subgenres(self):
@@ -1926,6 +1935,107 @@ class WizardChoices:
         self._levels[player] = level
         # A preset chosen puts every gauge of the player back where the preset has it.
         self._own_gauges.pop(player, None)
+
+    # How loud a player is: four named levels, a ghost note, a soft note, a normal note and an accent, and the player's dynamics,
+    # how far the levels lie from the normal one.
+
+    def _levels_of_style(self, role):
+        """The four levels the genre gives a player: the whole kit's for the drummer, and a player of notes' from the player's velocity."""
+        entry = self._role(role)
+        if entry.get(DRUMS):
+            return drum_levels(self._style()[LOUDNESS_OF][DRUMS])
+        return note_levels(entry[VELOCITY])
+
+    def has_loudness(self, role):
+        """Return whether a player has levels to choose: a player in the band who drums or plays notes at a velocity."""
+        return self.is_ready() and role in self.roles() and self.role_is_in(role) and (bool(self._role(role).get(DRUMS)) or VELOCITY in self._role(role))
+
+    def loudness_levels(self, role):
+        """Return a player's four levels by name, the genre's with the song's own in their places; the drummer's are the whole kit's,
+        which every piece of the kit follows in proportion."""
+        return with_own(levels=self._levels_of_style(role), own=self._extras.get(LOUDNESS_OF, {}).get(role))
+
+    def loudness_level_is_own(self, *, role, level):
+        return level in self._extras.get(LOUDNESS_OF, {}).get(role, {})
+
+    def loudness_levels_offered(self, role):
+        """Return the levels of a player that the song plays, from the quietest up: a level no note of the player's is played at is
+        not offered. Found by making the song with each level moved, and kept until a choice changes."""
+        if not self.has_loudness(role):
+            return []
+        return self._remembered(key=(LEVELS_ANSWER, role), compute=lambda: self._levels_heard(role))
+
+    def _parts_arranged(self):
+        """The patterns of the song as made, which leaves out a part no section plays."""
+        return self.made_for_listening()[0].to_data()[Section.PATTERNS]
+
+    def _levels_heard(self, role):
+        plain = self._parts_as_written(role)
+        heard = []
+        for level in LOUDNESS_LEVELS:
+            trial = copy.deepcopy(self)
+            trial._answers = {}
+            now = trial.loudness_levels(role)[level]
+            trial._extras.setdefault(LOUDNESS_OF, {}).setdefault(role, {})[level] = now - LEVEL_TRIAL if now > MIDDLE_VELOCITY else now + LEVEL_TRIAL
+            # The player's dynamics as written, so that a level is heard apart from the normal one.
+            trial._extras.get(DYNAMICS, {}).pop(role, None)
+            if trial._parts_arranged() != plain:
+                heard.append(level)
+        return heard
+
+    def _parts_as_written(self, role):
+        """The song's parts with a player's dynamics as the genre writes them."""
+        trial = copy.deepcopy(self)
+        trial._answers = {}
+        trial._extras.get(DYNAMICS, {}).pop(role, None)
+        return trial._parts_arranged()
+
+    def set_loudness_level(self, *, role, level, number):
+        """Give a player a level of the song's own, a velocity, or give the level back to the genre with None."""
+        is_number = number is None or (isinstance(number, int) and not isinstance(number, bool) and LOWEST_VELOCITY <= number <= HIGHEST_VELOCITY)
+        if not self.has_loudness(role) or level not in LOUDNESS_LEVELS or not is_number:
+            raise ValueError(ERR_WIZARD_LOUDNESS.format(low=LOWEST_VELOCITY, high=HIGHEST_VELOCITY, value=(role, level, number)))
+        own = self._extras.setdefault(LOUDNESS_OF, {}).setdefault(role, {})
+        own.pop(level, None)
+        if number is not None and number != self._levels_of_style(role)[level]:
+            own[level] = number
+        if not own:
+            del self._extras[LOUDNESS_OF][role]
+        if not self._extras[LOUDNESS_OF]:
+            del self._extras[LOUDNESS_OF]
+        self._answers = {}
+
+    def has_dynamics(self, role):
+        """Return whether a player's dynamics are heard: whether the song differs with the player's notes all alike and at their widest,
+        found by making the song both ways and kept until a choice changes."""
+        if not self.has_loudness(role):
+            return False
+        return self._remembered(key=(DYNAMICS_ANSWER, role), compute=lambda: self._dynamics_are_heard(role))
+
+    def _dynamics_are_heard(self, role):
+        made = []
+        for dynamics in (LEAST_DYNAMICS, MOST_DYNAMICS):
+            trial = copy.deepcopy(self)
+            trial._answers = {}
+            trial._extras.setdefault(DYNAMICS, {})[role] = dynamics
+            made.append(trial.made_for_listening()[0].to_data()[Section.PATTERNS])
+        return made[0] != made[1]
+
+    def get_dynamics(self, role):
+        return self._extras.get(DYNAMICS, {}).get(role, USUAL_DYNAMICS)
+
+    def set_dynamics(self, *, role, dynamics):
+        """Say how far a player's loud and soft notes lie from the player's normal ones: not at all at the least, as the genre writes them
+        in the middle, and twice as far at the most."""
+        if not self.has_loudness(role) or isinstance(dynamics, bool) or not isinstance(dynamics, int) or not LEAST_DYNAMICS <= dynamics <= MOST_DYNAMICS:
+            raise ValueError(ERR_WIZARD_DYNAMICS.format(low=LEAST_DYNAMICS, high=MOST_DYNAMICS, value=dynamics))
+        of_players = self._extras.setdefault(DYNAMICS, {})
+        of_players.pop(role, None)
+        if dynamics != USUAL_DYNAMICS:
+            of_players[role] = dynamics
+        if not of_players:
+            del self._extras[DYNAMICS]
+        self._answers = {}
 
     # The player beside the tune: who answers the player who has the tune, and what the answering player does in each section.
 

@@ -21,7 +21,7 @@ import os
 import unittest
 
 from llamatron.composition.setlist import Setlist
-from llamatron.macro_composer import arranger, composer, melody, notation, players
+from llamatron.macro_composer import arranger, composer, loudness, melody, notation, players
 from llamatron.strings.macro_composer import MSG_PART_OF_SECTION, MSG_TIMING_CHAIN
 from llamatron.support.safe_yaml import load_safely
 from llamatron.support.version import VERSION
@@ -569,8 +569,9 @@ class TestPlayers(unittest.TestCase):
         heard = [velocity for velocity in one[composer.PARTS][snare][arranger.RAW][notation.VELOCITY] if velocity is not None]
         self.assertEqual(one[composer.PARTS][snare], again[composer.PARTS][snare])
         self.assertGreater(len(set(heard)), 1)
-        soft = int(loud * arranger.SOFT_SHARE)
-        self.assertTrue(all(abs(velocity - loud) <= by or abs(velocity - soft) <= by for velocity in heard))
+        # Each stroke lies within the player's unevenness of one of the snare's levels.
+        levels = loudness.drum_levels(loud).values()
+        self.assertTrue(all(any(abs(velocity - level) <= by for level in levels) for velocity in heard))
 
     def test_a_guitarist_changes_the_guitarify_and_the_notes_name_the_band(self):
         level = players.TASTEFUL

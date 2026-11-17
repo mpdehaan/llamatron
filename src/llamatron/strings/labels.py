@@ -780,6 +780,12 @@ MSG_WIZARD_CONTRAST_LABEL = 'Contrast'
 MSG_WIZARD_COMES_IN_LABEL = 'Comes in'
 MSG_WIZARD_LAYS_OUT_LABEL = 'Lays out'
 MSG_WIZARD_REACTS_LABEL = 'Reacts'
+# How far a player's loud and soft notes lie from the player's normal ones, and the player's four levels under a heading.
+MSG_WIZARD_DYNAMICS_LABEL = 'Dynamics'
+MSG_WIZARD_DYNAMICS_SAID = {0: 'flat', 1: 'narrow', 2: 'narrow', 3: 'gentle', 4: 'gentle', 5: 'as written', 6: 'lively', 7: 'lively', 8: 'wide', 9: 'wide', 10: 'widest'}
+# Not Loudness alone, which is a row of the serial style on the same panel.
+MSG_WIZARD_GROUP_LOUDNESS = 'Loudness levels'
+MSG_WIZARD_LEVEL_LABELS = {'ghost': 'Ghost note', 'soft': 'Soft', 'normal': 'Normal', 'accent': 'Accent'}
 MSG_WIZARD_REACTS_SAID = {1: 'even', 2: 'even', 3: 'steady', 4: 'steady', 5: 'as the band', 6: 'lively', 7: 'lively', 8: 'dramatic', 9: 'dramatic', 10: 'dramatic'}
 MSG_WIZARD_STARTS_LABEL = 'Starts with'
 MSG_WIZARD_FIRST_PLAYER_LABEL = 'First player'

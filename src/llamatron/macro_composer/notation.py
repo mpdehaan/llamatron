@@ -27,11 +27,13 @@ A tune is sung lines, each a list of notes, each note a mapping that says only w
     {degree: 1, steps: 2, stress: peak}      the strongest accent, a line's highest or most stressed note
     {degree: 3, steps: 2, stress: ending}    eased, a line's last note
     {degree: 5, steps: 2, velocity: 96}      a velocity written out, where no stress says it
+    {degree: 1, steps: 1, level: ghost}      at one of the part's named levels: ghost, soft or accent
 
-A drum's bar is a list with one of loud, soft and none for every step.
+A drum's bar is a list with one of accent, loud, soft, ghost and none for every step; loud is the drum's normal stroke.
 """
 
 from collections import Counter
+from fractions import Fraction
 from llamatron.strings.errors import ERR_NOT_A_BAR, ERR_NOT_A_TUNE
 
 # The rows of a pattern, as a set file names them.
@@ -76,6 +78,11 @@ HITS = 'hits'
 LOUD = 'loud'
 SOFT = 'soft'
 NONE = 'none'
+# A stroke louder than the normal one, and one barely heard.
+ACCENT = 'accent'
+GHOST = 'ghost'
+# The named level a note of a tune is played at, where the note says.
+LEVEL = 'level'
 NOTE_NAMES = ['C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'G', 'A', 'A', 'B']
 SHARP_MARK = '#'
 SHARPS = [None, SHARP_MARK, None, SHARP_MARK, None, None, SHARP_MARK, None, SHARP_MARK, None, SHARP_MARK, None]
@@ -102,15 +109,35 @@ def kept_rows(rows):
     return {name: values for name, values in rows.items() if any(value not in (None, False) for value in values)}
 
 
-def tune_rows(*, lines, octave, velocity, step_size):
-    """A tune's lines as a pattern."""
+def stress_moves(*, velocity, levels):
+    """How far each stress moves a note from the part's velocity: the usual distances, or where a part says its levels, the
+    distances to its accent and its soft note, a lesser stress going two thirds or half the way."""
+    if not levels:
+        return STRESSES
+    up = levels.get(ACCENT, velocity + STRESSES[PEAK]) - velocity
+    down = levels.get(SOFT, velocity + STRESSES[PICKUP]) - velocity
+    return {PEAK: up, ARRIVAL: round(Fraction(up * STRESSES[ARRIVAL], STRESSES[PEAK])), PICKUP: down, ENDING: round(Fraction(down * STRESSES[ENDING], STRESSES[PICKUP]))}
+
+
+def louder_by(*, louder, moves):
+    """An engine's louder or softer, in the usual distances, as far as the part's own distances make it."""
+    if not louder:
+        return 0
+    return round(Fraction(louder * moves[PEAK], STRESSES[PEAK])) if louder > 0 else round(Fraction(louder * moves[PICKUP], STRESSES[PICKUP]))
+
+
+def tune_rows(*, lines, octave, velocity, step_size, levels=None):
+    """A tune's lines as a pattern; levels are the part's accent, soft and ghost velocities where the part says them."""
+    moves = stress_moves(velocity=velocity, levels=levels)
+    named = {ACCENT: velocity + moves[PEAK], SOFT: velocity + moves[PICKUP], GHOST: (levels or {}).get(GHOST, velocity + moves[PICKUP])}
     rows = {name: [] for name in (DEGREE, ACCIDENTAL, OCTAVE, TIE, VELOCITY) + OTHER_ROWS}
     for line in lines:
         for note in line:
             rest = REST in note
             length = note[REST] if rest else note[STEPS]
             held = [None] * (length - 1)
-            loud = None if rest else note.get(VELOCITY, clamped(velocity + STRESSES.get(note.get(STRESS), 0) + note.get(LOUDER, 0)))
+            at = named.get(note.get(LEVEL), velocity)
+            loud = None if rest else note.get(VELOCITY, clamped(at + moves.get(note.get(STRESS), 0) + louder_by(louder=note.get(LOUDER, 0), moves=moves)))
             rows[DEGREE] += [None if rest else note[DEGREE]] + held
             rows[ACCIDENTAL] += [ACCIDENTAL_MARKS.get(note.get(ACCIDENTAL))] + held
             rows[OCTAVE] += [None if rest else octave + note.get(OCTAVE, 0)] + held
@@ -183,15 +210,17 @@ def tune_lines(*, pattern, bar, velocities=None):
     return [line for line in lines if line], octave, velocity
 
 
-def drum_rows(*, drum, hits, loud, soft, step_size):
-    """A drum's bar as a pattern; drum is a name of the kit or a General MIDI note number."""
+def drum_rows(*, drum, hits, loud, soft, step_size, accent=None, ghost=None):
+    """A drum's bar as a pattern; drum is a name of the kit or a General MIDI note number. An accent with no velocity of its
+    own is a loud stroke, and a ghost note with none a soft one."""
+    velocities = {LOUD: loud, SOFT: soft, ACCENT: loud if accent is None else accent, GHOST: soft if ghost is None else ghost}
     number = KIT.get(drum, drum)
     name = NOTE_NAMES[number % NOTES_IN_OCTAVE]
     sharp = SHARPS[number % NOTES_IN_OCTAVE]
     on = [hit != NONE for hit in hits]
     pattern = {STEPS: len(hits), DRUM: True, STEP_SIZE: step_size, DEGREE: [name if hit else None for hit in on],
                OCTAVE: [number // NOTES_IN_OCTAVE if hit else None for hit in on],
-               VELOCITY: [loud if hit == LOUD else soft if hit == SOFT else None for hit in hits]}
+               VELOCITY: [velocities.get(hit) for hit in hits]}
     if sharp:
         pattern[ACCIDENTAL] = [sharp if hit else None for hit in on]
     return pattern

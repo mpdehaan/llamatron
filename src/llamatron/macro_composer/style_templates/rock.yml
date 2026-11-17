@@ -251,7 +251,7 @@ players:
     3:
       says: 'A larger kit with three toms. One quiet snare note in every bar, an extra kick in the second bar and the third, an open hat, and half a bar down the toms at each turn.'
       fill_every: 4
-      adds: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, soft: [7]}}}]
+      adds: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, ghost: [7]}}}]
       varies:
         - {bars: [2], choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 16, loud: [11]}, open: {steps: 8, loud: [7]}}}]}
         - {bars: [3], choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 8, loud: [7]}}}]}
@@ -261,10 +261,10 @@ players:
     4:
       says: 'A very large kit. Quiet snare notes in every bar, a kick that differs in the second, third and fourth bars, open hats, and a whole bar across the toms at each turn. Holds back until the song opens up.'
       fill_every: 4
-      adds: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, soft: [7, 9]}}}]
+      adds: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, ghost: [7, 9]}}}]
       varies:
         - {bars: [2], choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 16, loud: [15]}, open: {steps: 8, loud: [7]}}}]}
-        - {bars: [3], choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 16, loud: [3]}, snare: {steps: 16, soft: [15]}}}]}
+        - {bars: [3], choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 16, loud: [3]}, snare: {steps: 16, ghost: [15]}}}]}
         - {bars: [4], choices: [{needs: {meter: 4/4}, bar: {open: {steps: 8, loud: [3]}}}]}
       fill: [{needs: {meter: 4/4}, silences: [hat, open, ride], bar: {kick: {steps: 16, loud: [0, 8]}, snare: {steps: 16, loud: [0, 2, 3], soft: [4]}, tom high: {steps: 16, loud: [5, 6, 7]}, tom mid: {steps: 16, loud: [9, 10, 11]}, tom low: {steps: 16, loud: [12, 13, 14, 15]}, splash: {steps: 16, loud: [8]}}}]
       timing: {hat: {rush: 6}, snare: {rush: 3}}
@@ -525,6 +525,8 @@ by_subgenre:
     sections: {intro: {bars: 8}, verse: {bars: 16}}
     song_plan: {energy: {verse: 5, chorus: 7, bridge: 5, solo: 7}, last_chorus: 8}
   rock ballad:
+    # A ballad leans on its first beat and a little on its third.
+    beat_loudness: [6, 0, 4, 0]
     sections: {solo: {bars: 16}}
     song_plan: {energy: {intro: 2, verse: 3, chorus: 7, bridge: 4, solo: 9}, last_chorus: 10}
   six-eight ballad:

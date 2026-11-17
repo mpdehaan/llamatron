@@ -18,12 +18,14 @@
 
 from llamatron.composition.limits import MIN_GM_SOUND
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT
+from llamatron.macro_composer.loudness import LEAST_DYNAMICS, LEVELS, MOST_DYNAMICS
+from llamatron.macro_composer.notation import HIGHEST_VELOCITY, LOWEST_VELOCITY
 from llamatron.macro_composer.song_plan import HIGHEST_ENERGY, LOWEST_ENERGY
 from llamatron.macro_composer.interplay import LEAST_BUSY as LEAST_BUSY_BESIDE, MOST_BUSY as MOST_BUSY_BESIDE
 from llamatron.macro_composer.wizard_choices import FEWEST_ROW_CELLS, MOST_ROW_CELLS, FEWEST_FILLS, FILLS_TRAITS, HIGHEST_PLACE, LEAST_BUSY, LOWEST_PLACE, MOST_BUSY, MOST_FILLS
-from llamatron.strings.labels import MSG_WIZARD_COMES_IN_LABEL, MSG_WIZARD_LAYS_OUT_LABEL, MSG_WIZARD_OWN_START, MSG_WIZARD_REACTS_LABEL, MSG_WIZARD_REACTS_SAID, MSG_WIZARD_ROW_LABELS, MSG_WIZARD_BY_SECTION, MSG_WIZARD_FILLS_BUSY_LABEL, MSG_WIZARD_ROLE_LABEL, MSG_GM_SOUNDS, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_NO_BREAK, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYER_GAUGE_LABELS, MSG_WIZARD_PLAYS_LABEL, MSG_WIZARD_SOUND_LABEL
-from llamatron.strings.legends import MSG_OWN_DRUM_WHAT, What
-from llamatron.strings.marks import MSG_WIZARD_GENRE_ROW_SHOWN, MSG_WIZARD_ROW_SEPARATOR, MSG_WIZARD_ROW_SHOWN, MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_SOUND_ON_NOTE, MSG_WIZARD_FILLS_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_BUSY_CUSTOM_SHOWN, MSG_WIZARD_BUSY_SHOWN, MSG_WIZARD_PLAYER_GAUGE_SHOWN, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL
+from llamatron.strings.labels import MSG_WIZARD_DYNAMICS_LABEL, MSG_WIZARD_DYNAMICS_SAID, MSG_WIZARD_GROUP_LOUDNESS, MSG_WIZARD_LEVEL_LABELS, MSG_WIZARD_COMES_IN_LABEL, MSG_WIZARD_LAYS_OUT_LABEL, MSG_WIZARD_OWN_START, MSG_WIZARD_REACTS_LABEL, MSG_WIZARD_REACTS_SAID, MSG_WIZARD_ROW_LABELS, MSG_WIZARD_BY_SECTION, MSG_WIZARD_FILLS_BUSY_LABEL, MSG_WIZARD_ROLE_LABEL, MSG_GM_SOUNDS, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_NO_BREAK, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYER_GAUGE_LABELS, MSG_WIZARD_PLAYS_LABEL, MSG_WIZARD_SOUND_LABEL
+from llamatron.strings.legends import MSG_FROM_GENRE_WHAT, MSG_OWN_DRUM_WHAT, What
+from llamatron.strings.marks import MSG_WIZARD_LEVEL_FROM_GENRE, MSG_WIZARD_GENRE_ROW_SHOWN, MSG_WIZARD_ROW_SEPARATOR, MSG_WIZARD_ROW_SHOWN, MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_SOUND_ON_NOTE, MSG_WIZARD_FILLS_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_BUSY_CUSTOM_SHOWN, MSG_WIZARD_BUSY_SHOWN, MSG_WIZARD_PLAYER_GAUGE_SHOWN, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL
 from llamatron.strings.messages import MSG_WIZARD_ROW_TITLE
 from llamatron.tui.dialogs.row_dialog import RowDialog
 from llamatron.tui.note_names import note_shown
@@ -58,6 +60,7 @@ class PlayerBranch(Branch):
         if choices.has_sound(self._role):
             fields.append(self.sound_field())
         fields += self.person_fields()
+        fields += self.dynamics_fields()
         if choices.has_busy(self._role) and choices.get_busy(self._role) is not None:
             fields.append(self.busy_field())
             # The player's own gauges, which the Busy field fills in and which each move alone.
@@ -74,6 +77,42 @@ class PlayerBranch(Branch):
                 fields.append(Toggle(label=MSG_WIZARD_QUIET_NOTES_LABEL, on=choices.plays_quiet_notes(), set=self.page().choosing(choices.set_quiet_notes)))
             # The drums: a row for each piece of the kit the song plays.
             fields += [self.piece_row(piece) for piece in choices.pieces()]
+        # The player's levels come last, under a heading that opens and closes, which hides every field after it while closed.
+        return [*fields, *self.loudness_fields()]
+
+    def dynamics_fields(self):
+        """Return the Dynamics gauge: how far the player's loud and soft notes lie from the normal ones, where that is heard."""
+        choices = self.choices()
+        page = self.page()
+        role = self._role
+        if not choices.has_dynamics(role):
+            return []
+        dynamics = choices.get_dynamics(role)
+        return [NumberField(page=page, label=MSG_WIZARD_DYNAMICS_LABEL, number=dynamics, lowest=LEAST_DYNAMICS, highest=MOST_DYNAMICS,
+                            shown=gauge_shown(place=dynamics, lowest=LEAST_DYNAMICS + 1, highest=MOST_DYNAMICS, said=MSG_WIZARD_DYNAMICS_SAID[dynamics]),
+                            set=page.choosing(lambda number: choices.set_dynamics(role=role, dynamics=number)))]
+
+    def loudness_fields(self):
+        """Return the player's levels under the Loudness heading, a velocity for each level the song plays, the genre's until the song
+        chooses its own; the drummer's are the whole kit's. The levels are worked out only while the heading is open."""
+        choices = self.choices()
+        page = self.page()
+        role = self._role
+        if not choices.has_loudness(role):
+            return []
+        heading = page.heading(label=MSG_WIZARD_GROUP_LOUDNESS, is_set=lambda: any(choices.loudness_level_is_own(role=role, level=level) for level in LEVELS))
+        if not page.is_open(heading):
+            return [heading]
+        levels = choices.loudness_levels(role)
+        fields = [heading]
+        for level in choices.loudness_levels_offered(role):
+            own = choices.loudness_level_is_own(role=role, level=level)
+
+            def set_level(number, level=level):
+                page.choosing(lambda wanted: choices.set_loudness_level(role=role, level=level, number=wanted))(number)
+            fields.append(NumberField(page=page, label=MSG_WIZARD_LEVEL_LABELS[level], number=levels[level], lowest=LOWEST_VELOCITY, highest=HIGHEST_VELOCITY,
+                                      shown=None if own else MSG_WIZARD_LEVEL_FROM_GENRE.format(number=levels[level]), set=set_level,
+                                      clear=(lambda set_level=set_level: set_level(None)) if own else None, clear_what=MSG_FROM_GENRE_WHAT))
         return fields
 
     def person_fields(self):

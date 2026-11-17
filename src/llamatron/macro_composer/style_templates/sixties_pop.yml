@@ -247,7 +247,7 @@ players:
     3:
       says: 'A kit with two toms. A quiet snare note before the third beat, an open hat in the second bar, a kick added in the third, and the toms at each turn.'
       fill_every: 4
-      adds: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, soft: [7]}}}]
+      adds: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, ghost: [7]}}}]
       varies:
         - {bars: [2], choices: [{needs: {meter: 4/4}, bar: {open: {steps: 8, loud: [7]}}}]}
         - {bars: [3], choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 8, loud: [7]}}}]}
@@ -256,10 +256,10 @@ players:
     4:
       says: 'A kit with three toms. A quiet snare note in every bar, a small change to the kick or the hat in the second, third and fourth bars, and a whole bar down the toms at each turn, pushing ahead. Holds back until the song opens up.'
       fill_every: 4
-      adds: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, soft: [7]}}}]
+      adds: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, ghost: [7]}}}]
       varies:
         - {bars: [2], choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 16, loud: [10]}, open: {steps: 8, loud: [7]}}}]}
-        - {bars: [3], choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 8, loud: [7]}, snare: {steps: 16, soft: [11]}}}]}
+        - {bars: [3], choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 8, loud: [7]}, snare: {steps: 16, ghost: [11]}}}]}
         - {bars: [4], choices: [{needs: {meter: 4/4}, bar: {open: {steps: 8, loud: [3]}}}]}
       fill: [{needs: {meter: 4/4}, silences: [hat, ride], bar: {kick: {steps: 16, loud: [0, 8]}, snare: {steps: 16, loud: [0, 2, 3, 4]}, tom high: {steps: 16, loud: [6, 7, 8]}, tom mid: {steps: 16, loud: [10, 11]}, tom low: {steps: 16, loud: [12, 14, 15]}}}]
       timing: {hat: {rush: 6}}

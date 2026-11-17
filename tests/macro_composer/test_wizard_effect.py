@@ -36,6 +36,7 @@ from llamatron.macro_composer import hook_kinds, line_edits, phrasing
 from llamatron.macro_composer.song_plan import HIGHEST_ENERGY, LOWEST_ENERGY
 from llamatron.macro_composer.melody import LINE_NOTES
 from llamatron.macro_composer.phrasing import LINE_BREATH, LONGEST_BREATH, NO_BREATH
+from llamatron.macro_composer.loudness import LEAST_DYNAMICS, MOST_DYNAMICS
 from llamatron.macro_composer.wizard_choices import (HOOK_PARTS, LINE_BREATHES, ONE_PLAYER_FIRST, PHRASING_OFFERED, USUAL_PIECE_NOTE, BAND_SOUNDS, GAUGED_STYLES, FEWEST_FILLS, FILLS_TRAITS, LEAST_BUSY, MOST_BUSY, MOST_FILLS, ONE_GUITARIST_COUNT,
                                                      USUAL_SOUNDS, WizardChoices, genre_names)
 
@@ -48,7 +49,7 @@ A_SOUND_OF_NO_STYLE = 105
 A_LITTLE_FASTER = 7
 FIRST_PLACE = 0
 # A genre's subgenres are dealt to so many classes, which run side by side, so that none runs past the runner's limit for a class.
-PARTS = 6
+PARTS = 9
 # The kinds of choice.
 WAY = 'a way of playing'
 BUSY = 'busy'
@@ -87,6 +88,10 @@ A_LINE = "a line's own"
 A_RIFF = 'the riff'
 COMES_IN = 'where a player comes in'
 REACTS_TO_ENERGY = 'how a player reacts'
+DYNAMICS_OF_PLAYER = "a player's dynamics"
+A_LEVEL = "a player's loudness level"
+A_STEP_OF_VELOCITY = 15
+MIDDLE_VELOCITY = 64
 START = 'a way of starting'
 END = 'a way of ending'
 FIRST_PLAYER = 'the first player'
@@ -338,6 +343,12 @@ def every_choice(choices):
         if choices.reacts(role):
             # A player who reacts is heard to at one end of the gauge at least: an even player may play as the band does where the band is never held back.
             yield REACTS_TO_ENERGY, role, lambda made, role=role: set_reacts_where_heard(made=made, role=role), [nothing_first]
+        # How loud a player is: the player's dynamics at either end, and each level the song plays, moved.
+        if choices.has_dynamics(role):
+            for dynamics in (LEAST_DYNAMICS, MOST_DYNAMICS):
+                yield DYNAMICS_OF_PLAYER, (role, dynamics), lambda made, role=role, dynamics=dynamics: made.set_dynamics(role=role, dynamics=dynamics), [nothing_first]
+        for level in choices.loudness_levels_offered(role):
+            yield A_LEVEL, (role, level), lambda made, role=role, level=level: made.set_loudness_level(role=role, level=level, number=another_velocity(made.loudness_levels(role)[level])), [nothing_first]
     # The riff: given to the first players who can play one, played in each other place, made again, and its first note moved by hand.
     if choices.riff_players_offered():
         players = choices.riff_players_offered()[-1]
@@ -401,6 +412,11 @@ def comes_in_works(*, choices, role, way):
     except ValueError:
         return False
     return True
+
+
+def another_velocity(velocity):
+    """A velocity well apart from one."""
+    return velocity - A_STEP_OF_VELOCITY if velocity > MIDDLE_VELOCITY else velocity + A_STEP_OF_VELOCITY
 
 
 def set_reacts_where_heard(*, made, role):

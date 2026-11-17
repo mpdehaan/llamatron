@@ -22,6 +22,7 @@ parts the input lists by the song's feel, lays the form out as scenes and writes
     name, title, description, author, genre, notes      what the song is called and what its notes say
     scales, scale, tempo, time_signature, groove        as a set's song has them
     feel, shaped                                        the style's feel, and the parts whose velocity the feel shapes
+    dynamics                                            how far the feel moves a track's notes, where a track says: 0 not at all, 5 as usual, 10 twice as far
     instruments                                         each instrument's General MIDI sound number, or its settings
     tracks, drum_tracks                                 each track's instrument in order, and which tracks are drums
     generators, chains                                  as a set has them
@@ -32,7 +33,8 @@ parts the input lists by the song's feel, lays the form out as scenes and writes
 
 from fractions import Fraction
 
-from llamatron.macro_composer.notation import DEFAULT_STEP_SIZE, HITS, LINES, LOUD, OCTAVE, SOFT, STEP, STEPS, STEP_SIZE, VELOCITY, DRUM, drum_rows, tune_rows
+from llamatron.macro_composer.loudness import USUAL_DYNAMICS
+from llamatron.macro_composer.notation import ACCENT, DEFAULT_STEP_SIZE, GHOST, HITS, LINES, LOUD, OCTAVE, SOFT, STEP, STEPS, STEP_SIZE, VELOCITY, DRUM, drum_rows, tune_rows
 from llamatron.macro_composer.shaping import is_compound, role_of, shaped
 from llamatron.strings.errors import ERR_NO_CLIP_FITS
 
@@ -50,6 +52,7 @@ TIME_SIGNATURE = 'time_signature'
 GROOVE = 'groove'
 FEEL = 'feel'
 SHAPED = 'shaped'
+DYNAMICS = 'dynamics'
 INSTRUMENTS = 'instruments'
 TRACKS = 'tracks'
 DRUM_TRACKS = 'drum_tracks'
@@ -94,9 +97,11 @@ def pattern_of(part):
     if RAW in part:
         return dict(part[RAW])
     if HITS in part:
-        return drum_rows(drum=part[DRUM], hits=part[HITS], loud=part[LOUD], soft=part.get(SOFT, part[LOUD]), step_size=part.get(STEP, DEFAULT_STEP_SIZE))
+        return drum_rows(drum=part[DRUM], hits=part[HITS], loud=part[LOUD], soft=part.get(SOFT, part[LOUD]), step_size=part.get(STEP, DEFAULT_STEP_SIZE),
+                         accent=part.get(ACCENT), ghost=part.get(GHOST))
     step = part.get(STEP, DEFAULT_STEP_SIZE)
-    return tune_rows(lines=part[LINES], octave=part[OCTAVE], velocity=part[VELOCITY], step_size=step)
+    levels = {level: part[level] for level in (ACCENT, SOFT, GHOST) if level in part}
+    return tune_rows(lines=part[LINES], octave=part[OCTAVE], velocity=part[VELOCITY], step_size=step, levels=levels)
 
 
 def clip_of(played):
@@ -164,7 +169,8 @@ def composed(*, given, version):
     for name in given.get(SHAPED, []):
         role = role_of(pattern=patterns[name], tracks=players.get(name, []))
         if role:
-            patterns[name][VELOCITY] = shaped(pattern=patterns[name], role=role, feel=given[FEEL], signature=signature, compound=is_compound(given.get(TIME_SIGNATURE)))
+            dynamics = next((given[DYNAMICS][track] for track in players.get(name, []) if track in given.get(DYNAMICS, {})), USUAL_DYNAMICS)
+            patterns[name][VELOCITY] = shaped(pattern=patterns[name], role=role, feel=given[FEEL], signature=signature, compound=is_compound(given.get(TIME_SIGNATURE)), dynamics=dynamics)
     data = {VERSION: version}
     for optional in (TITLE, DESCRIPTION, AUTHOR):
         if optional in given:
