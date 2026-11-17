@@ -407,7 +407,7 @@ The user's design, mockup by mockup; `.claude/format/FILE_RULES.md`, "Instrument
   (`tui/dialogs/new_pattern_dialog.py`): Scale length, stepped, starting at `NEW_PATTERN_SCALE_LENGTH` (7), where ENTER is OK,
   the Drum pattern toggle, which blocks the Scale length, and boxed OK and CANCEL; then the name's prompt. A blank pattern
   made on Arrange asks nothing: it takes its clip's scale's size (`Document.scale_length_for_pattern`) and is a drum pattern on
-  a drum track. The Reconfigure dialog's `scale length` choice opens a picker, "(any)" first and then 5 to 12, and refuses a
-  drum pattern. Where a scale the pattern plays under has another number of notes (`Document.scales_unsuited_to_pattern`), the
+  a drum track. The Reconfigure dialog's `scale length` choice, its last and left out for a drum pattern until the pattern is made
+  no drum pattern, opens a picker, "(any)" first and then 5 to 12. Where a scale the pattern plays under has another number of notes (`Document.scales_unsuited_to_pattern`), the
   header says so after the scale, `Scale A Minor Pentatonic, written for 7`. `tests/composition/test_scale_length.py` and
   `tests/tui/test_tui_new_pattern_dialog.py` test it.

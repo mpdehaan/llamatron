@@ -106,8 +106,8 @@ comparison or a dictionary of sample data, it is the program's constant, `ScaleS
 `scale_type_name(ScaleType.MINOR_PENTATONIC)`, never `'root'`, `'A'` or `'minor pentatonic'`, so that a search for a constant
 finds every use and a renamed value breaks nothing quietly. Sample data is no exception. Before committing a new or changed
 test or tool, Claude runs `internal_tools/repeated_values.py -v` on it and names every value it lists, but for a name of the
-test's own that only happens to match, such as a track a test calls bass. The older tests hold many such strings; they are
-brought over file by file as agreed with the user, and a file touched is brought over whole.
+test's own that only happens to match, such as a track a test calls bass. The older tests hold many such strings; a file touched
+is brought over whole, and once the song wizard is done every file that remains is brought over (the user's order).
 
 **Tests use the program's contract.** They work with the objects through their constructors,
 getters and setters, and with the document through its methods, never by checking raw YAML or an
