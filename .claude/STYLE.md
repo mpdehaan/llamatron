@@ -15,6 +15,7 @@ kept by reading.
 | Every string the program shows or raises is a constant: in the `src/llamatron/strings/` package and nowhere else, `ERR_` in `errors.py`, `HELP_` in `help.py`, `REPR_` in `reprs.py` and `MSG_` in the others. Each group comment names a module that exists, and the package's modules import only names. | `tests/rules/test_message_constants.py` |
 | A commit that changes Python under `src/` carries a version bump, made by `internal_tools/bump.sh`. | `internal_tools/check_before_commit.sh`, which Claude runs before committing code, through `internal_tools/bump_version.py --check`, tested by `tests/tools/test_bump_version.py` |
 | No unused import, undefined name or name defined twice, in `src/`, `tests/` or `internal_tools/`. | `tests/rules/test_pyflakes.py` |
+| No function or method carries a type hint, on a parameter or on what it returns. | `tests/rules/test_no_type_hints.py` |
 | Each screen lists its keys once, in `keys()`, so no key works without being shown in the legend or the F1 dialog, and every page's help fits an 80 by 24 console. | `tests/tui/test_tui_keys_shown.py`, `tests/tui/test_tui_help.py` |
 | A screen's method is never named after one Textual has, like `render` or `remove`. | `tests/tui/test_tui_look.py` |
 | Every key a page's help names is bound on that page, so help can't go on naming a key that moved. | `tests/tui/test_tui_help_keys.py` |
@@ -82,6 +83,10 @@ through `document.setlist()` and the current song through `document.song()`.
 hierarchy declares its own, even `()`. Dataclasses use `@dataclass(slots=True, kw_only=True)`. The
 exceptions are classes that only hold constants, and subclasses of classes from outside llamatron,
 like Textual's screens, enums and exceptions. `id` is read-only where a class has one.
+
+**No type hints.** No function or method hints a parameter's type or what it returns, in `src/`, `tests/` or `internal_tools/`, since Python
+works every hint out as a module is imported and that slows the program's start (the user's rule). What a value is, is said by
+its name and by the docstring. A dataclass or a named tuple still declares its fields in its body.
 
 **Arguments go by keyword.** Functions and methods take their arguments by keyword wherever a call
 passes more than one, or any optional one: the parameters go after a bare `*`, so that a call names

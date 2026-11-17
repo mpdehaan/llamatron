@@ -316,7 +316,7 @@ shared helpers are modules beside them:
   a resize, the drawing of big pixels, and that the lava lamp stays dark in silence, glows where a
   track plays and never passes its ceiling or jumps in brightness, even with 64 tracks hitting at once, and `tests/tui/test_tui_visualizer.py` the visualizer on
   Arrange; `tests/tools/test_preview_visualizer.py` tests the preview tool's parts that need no port.
-- **The rules.** `tests/rules/test_slots.py`, `tests/rules/test_keyword_only.py`, `tests/rules/test_revisions.py`
+- **The rules.** `tests/rules/test_slots.py`, `tests/rules/test_keyword_only.py`, `tests/rules/test_no_type_hints.py`, `tests/rules/test_revisions.py`
   (every method that changes a stored object is written under `@notes_change`),
   `tests/composition/test_setting.py` (every setting is described once, and reading and setting refuse a
   value in the same words), `tests/composition/test_row_descriptions.py` (every row of a pattern is described
