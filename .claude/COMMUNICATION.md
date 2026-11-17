@@ -274,6 +274,10 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   the setting the example is about, like `fill` ("Off"). The table marks the cursor and the key
   pressed, with `▶ Space here` or `◀ cursor`, and the sentence after it says the same in words,
   naming the page, the field or cell and the key.
+- **The grid first, then the notes.** An example that involves tracks, scenes and clips shows a basic drawing of the Arrange
+  grid before the explanation, wherever one can be drawn, so that the user sees what is where before reading about it. Every
+  pattern an example names is shown, never only named: where the notes matter, as a piano roll of the pattern or the clip, or
+  as the pattern's rows where the rows say it better. The picture comes first and the words after (the user's rule).
 - **Spelling and words.** The program is called llamatron when Claude speaks of it, rather than "the tracker" (the user's
   preference). Spelling is American, as the program's messages are: "forever", not "for
   ever". When the user says accumulators, read it as registers, the program's word, which is the
