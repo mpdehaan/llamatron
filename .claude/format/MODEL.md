@@ -310,3 +310,8 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
 The tests of the model, playback and the exporters, the helpers they share in
 `tests/support/song_testing.py` and `tests/support/rendering.py`, and the rules every test follows are in
 `.claude/TESTING.md`.
+
+**A scene's section.** A scene may say what kind of section it is (`SceneSetting.SECTION`, one of `SECTION_KINDS` in
+`composition/file_format.py`, or left out), chosen on the Scene page's Section field (the user's design): a fixed list that
+grows as genres need kinds, a song's first, then an electronic piece's and a classical one's. It changes nothing a scene plays;
+it is what a part that knows sections, a player generator, reads. The song wizard's scenes say theirs.

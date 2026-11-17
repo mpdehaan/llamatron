@@ -82,6 +82,7 @@ ERR_MORPH_NEEDS_BOTH = 'a morph needs both morph_to and morph_style'
 ERR_MORPH_TOO_FEW_REPEATS = 'a morph needs a repeat of {lowest} or more'
 ERR_BAD_MORPH_STYLE = 'morph_style must be one of: {choices}, got {value!r}'
 ERR_BAD_FOLLOW_ACTION = 'follow_action must be one of: {choices}, got {value!r}'
+ERR_BAD_SECTION = 'section must be one of: {choices}, got {value!r}'
 ERR_BAD_LIVE_RESPONSIVENESS = 'live_responsiveness must be one of: {choices}, got {value!r}'
 ERR_MORPH_STYLE_WITHOUT_MORPH = 'morph_style needs a morph_to, since it only says how a morph goes'
 

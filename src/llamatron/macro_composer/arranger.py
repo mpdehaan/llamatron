@@ -44,6 +44,7 @@ from llamatron.macro_composer.riffs import (ACCENT_CHORDS, RIFF, RIFF_KINDS, RIF
 from llamatron.macro_composer.shaping import COMPOUND_BEAT, SIMPLE_BEAT, is_compound
 from llamatron.macro_composer.song_plan import PLAN_OF_SONG, SongPlan
 from llamatron.support.safe_yaml import load_safely
+from llamatron.composition.file_format import SECTION_KINDS, SceneSetting
 from llamatron.composition.limits import MAX_GM_SOUND, MAX_PROGRESSION_CHORDS, MIN_GM_SOUND
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.errors import ERR_NO_SUCH_WAY_BESIDE, ERR_PIECE_SOUND, ERR_BREAK_CUT, ERR_NO_STYLE_FORM, ERR_NO_SUCH_BREAK, ERR_NO_STYLE_FORMS, ERR_NO_STYLE_KIND, ERR_NO_SUCH_SECTION, ERR_NO_TRAIT_VALUE, ERR_PICK_NEEDS
@@ -236,6 +237,7 @@ LOW_ROOTS = ('C', 'C#', 'Db', 'D', 'D#', 'Eb')
 # section in the song's notes; that the drummer plays it alone, as a solo; and the small fill inside it with how many bars apart it comes.
 LEVELS_HERE = 'levels'
 SCENE_SETTINGS = 'settings'
+SECTION_OF_SCENE = SceneSetting.SECTION
 DRAWN_AS = 'drawn_as'
 SAID_OF_SECTION = 'said'
 DRUM_SOLO = 'drum_solo'
@@ -1138,6 +1140,9 @@ def arranged(*, style, song):
             met[name] -= 1
             continue
         scene_settings = dict(section.get(SCENE_SETTINGS) or {})
+        if section[KIND] in SECTION_KINDS:
+            # A scene says what kind of section it is, where the kind is one a scene may be.
+            scene_settings.setdefault(SECTION_OF_SCENE, section[KIND])
         if isinstance(scene_settings.get(SCALE), dict):
             # A section in a key or a scale of its own: the scale is named as the song's is and added to the set's.
             own_scale = scene_settings[SCALE]

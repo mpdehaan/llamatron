@@ -19,24 +19,25 @@
 from rich.text import Text
 
 from llamatron.composition.limits import MAX_NAME_LENGTH
-from llamatron.composition.file_format import SHAPES, shape_setting, REGISTER_NAMES, Section
+from llamatron.composition.file_format import SECTION_KINDS, SHAPES, shape_setting, REGISTER_NAMES, Section
 from llamatron.composition.limits import MAX_SCENE_REPEAT, MAX_TEMPO, MIN_REPEAT, MIN_TEMPO
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.text import clock, plain_number, sorted_names, tempo_text
 from llamatron.tui.drawing import NOTHING, Style
 from llamatron.strings.help import HELP_SCENE_PAGE
-from llamatron.tui.screens.shared.field import Field, NameField, NumberField, Toggle
+from llamatron.tui.screens.shared.field import ChoiceField, Field, NameField, NumberField, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.arrange.groove_choice import groove_choice_field
 from llamatron.tui.screens.shared.shared import scene_name
 from llamatron.strings.labels import MSG_EDITING_CAPTION, MSG_SCENE_CAPTION_WORD
 from llamatron.strings.labels import (
-    Crumb, MSG_LAUNCH_TOGETHER_LABEL, MSG_SCENE_CRUMB, MSG_REPEAT_LABEL, MSG_RESET_LABEL, MSG_SCALE_LABEL, MSG_SONG_OPTION, MSG_TEMPO_LABEL,
+    Crumb, MSG_LAUNCH_TOGETHER_LABEL, MSG_SECTION_LABEL, MSG_SCENE_CRUMB, MSG_REPEAT_LABEL, MSG_RESET_LABEL, MSG_SCALE_LABEL, MSG_SONG_OPTION, MSG_TEMPO_LABEL,
     MSG_TEMPO_RAMP_LABEL,
 )
 from llamatron.strings.legends import MSG_NO_RAMP_WHAT, MSG_USE_SONG_GROOVE_WHAT, MSG_USE_SONG_SCALE_WHAT, MSG_USE_SONG_TEMPO_WHAT, What
 from llamatron.strings.marks import (
+    MSG_NONE_SHOWN,
     MSG_RAMP_OFF_SHOWN, MSG_SONG_GROOVE_SHOWN, MSG_SONG_SCALE_SHOWN, MSG_SONG_TEMPO_SHOWN, MSG_TEMPO_SHOWN,
 )
 from llamatron.strings.messages import (
@@ -102,6 +103,13 @@ class ScenePage(FieldPage):
             self.document().set_scene_scale(index=self.index, name=None if place == 0 else scales[place - 1])
         self.ask(dialog=ChoiceDialog(title=MSG_SCENE_SCALE_TITLE, options=options, current=options.index(current) if current in options else 0), then=chosen)
 
+    def section_field(self):
+        """Return the Section field: the kind of section the scene is, chosen from the kinds a scene may be, or none."""
+        section = self.scene().get_section()
+        choices = [MSG_NONE_SHOWN, *SECTION_KINDS]
+        return ChoiceField(page=self, label=MSG_SECTION_LABEL, choices=choices, current=section or MSG_NONE_SHOWN,
+                           set=lambda choice: self.document().set_scene_section(index=self.index, section=None if choice == MSG_NONE_SHOWN else choice))
+
     def groove_field(self):
         """Return the Groove field: the song's by default, off to play straight, or one by name."""
         song_groove = self.document().song().get_groove_name()
@@ -151,6 +159,7 @@ class ScenePage(FieldPage):
         repeat = scene.get_repeat()
         return [
             NameField(value=lambda: scene.get_name() or NOTHING, rename=self.rename),
+            self.section_field(),
             Field(label=MSG_SCALE_LABEL, value=self.scale_text, adjust=None, enter=self.pick_scale, enter_what=What.CHOOSE, clear=self.clear_scale, clear_what=MSG_USE_SONG_SCALE_WHAT),
             self.groove_field(),
             NumberField(

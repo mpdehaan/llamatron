@@ -27,15 +27,16 @@ from llamatron.composition.clip_slot import ClipSlot
 from llamatron.composition.chain import check_chain_names
 from llamatron.composition.shapes import shape_settings, shape_values
 from llamatron.composition.checks import check_keys, listed, number, reading
+from llamatron.composition.corrections import LEFT_OUT
 from llamatron.composition.defaults import DEFAULT_LAUNCH_TOGETHER, DEFAULT_REPEAT
-from llamatron.composition.file_format import REGISTER_NAMES, SceneSetting, Section
+from llamatron.composition.file_format import REGISTER_NAMES, SECTION_KINDS, SceneSetting, Section
 from llamatron.composition.groove import check_groove_choice
 from llamatron.composition.limits import MAX_SCENE_REPEAT, MIN_REPEAT
 from llamatron.composition.llama_data import LlamaData, data_as_kept, data_built_anew, own_copy, written_settings
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.setting import Checked, Flag, WholeNumber, check_settings, described
+from llamatron.composition.setting import Checked, Choice, Flag, WholeNumber, check_settings, described
 from llamatron.strings.errors import (
-    ERR_BAD_REPEAT, ERR_BAD_RESET, ERR_LAUNCH_TOGETHER_NOT_TRUE_OR_FALSE, ERR_NO_CLIP_SLOT, ERR_NO_SUCH_REGISTER, ERR_NO_SUCH_TRACK, ERR_RAMP_NEEDS_BOTH, ERR_SCENE_EXPECTED_SETTINGS,
+    ERR_BAD_REPEAT, ERR_BAD_RESET, ERR_BAD_SECTION, ERR_LAUNCH_TOGETHER_NOT_TRUE_OR_FALSE, ERR_NO_CLIP_SLOT, ERR_NO_SUCH_REGISTER, ERR_NO_SUCH_TRACK, ERR_RAMP_NEEDS_BOTH, ERR_SCENE_EXPECTED_SETTINGS,
     ERR_SCENE_NAME_NOT_TEXT, ERR_SCENE_NO_SUCH_SCALE,
 )
 from llamatron.support.revised import notes_change
@@ -68,6 +69,7 @@ def _check_reset(value):
 # A scene's settings, each described once, in the order they're written to a file, before its tracks.
 SETTINGS = described(
     Checked(name=SceneSetting.NAME, check=_check_scene_name),
+    Choice(name=SceneSetting.SECTION, choices=SECTION_KINDS, default=LEFT_OUT, error=ERR_BAD_SECTION),
     WholeNumber(name=SceneSetting.REPEAT, lowest=MIN_REPEAT, highest=MAX_SCENE_REPEAT, error=ERR_BAD_REPEAT),
     Checked(name=SceneSetting.SCALE, check=_check_scale_name, needs_song=True),
     Checked(name=SceneSetting.TEMPO, check=number),
@@ -138,6 +140,17 @@ class Scene(LlamaData):
     def get_repeat(self):
         repeat = self._settings[SceneSetting.REPEAT]
         return DEFAULT_REPEAT if repeat is None else repeat
+
+    def get_section(self):
+        """Return the kind of section the scene says it is, or None for a scene that says none."""
+        return self._settings[SceneSetting.SECTION]
+
+    @notes_change
+    def set_section(self, section):
+        """Say what kind of section the scene is, or None for no kind."""
+        if section is not None:
+            SETTINGS[SceneSetting.SECTION].check(section)
+        self._settings[SceneSetting.SECTION] = section
 
     def launches_together(self):
         """Return whether a start reaching any clip of the scene launches the whole scene in real-time playback, which no export reads."""
