@@ -29,6 +29,8 @@ from llamatron.macro_composer.song_plan import ENERGY, HIGHEST_ENERGY, LOWEST_EN
 from llamatron.macro_composer.wizard_choices import BRIDGE, DRUM_SOLO_KIND, LAST_CHORUSES, NO, PRE_CHORUS, PRE_CHORUSES, SOLO, SOLO_COUNTS, SOLOS, VERSES_FIRST, YES, HOOK_PARTS, LEAVES_AS_JOIN, OWN_WITHOUT_PLAN, PHRASING_OFFERED, SHAPE_OF_SECTION, MINOR, WizardChoices, chords_as_text, chords_from_text
 from llamatron.strings.errors import ERR_WIZARD_GENRE_HAS_NO_PLAN, ERR_WIZARD_NO_SONG_PLAN
 from llamatron.strings.macro_composer import MSG_PLAN_LEAVES_TAIL, MSG_PLAN_SET_UP
+from llamatron.composition.limits import MAX_PROGRESSION_CHORDS
+from llamatron.macro_composer.arranger import shares_a_bar as arranger_shares_a_bar
 from llamatron.support.version import VERSION
 
 A_NAME = 'made'
@@ -51,6 +53,10 @@ A_SLOW_TEMPO = 90
 A_FAST_TEMPO = 150
 ANOTHER_ROOT = 'D'
 SOME_CHORDS = '6 4 1 b7'
+CHORDS_SHARING_A_BAR = '1 4 1 1-5'
+THE_BARS_FIRST_CHORDS = '1 4 1 1'
+THREE_IN_A_BAR = '1-4-5'
+A_DASH_ALONE = '1 -'
 NOT_CHORDS = ('', '9', 'x', '0', 'bb3')
 
 
@@ -306,6 +312,25 @@ class TestWizardSectionOwn(unittest.TestCase):
         self.assertEqual(chords_as_text(choices.section_own(place=A_VERSE, field=CHORDS)), SOME_CHORDS)
         self.assertNotEqual(choices.made_setlist(name=A_NAME, version=VERSION).to_data(), before)
         for wrong in NOT_CHORDS:
+            with self.assertRaises(ValueError):
+                chords_from_text(wrong)
+
+    def test_two_chords_joined_by_a_dash_share_a_bar_and_are_played_by_the_half_bar(self):
+        choices = chosen()
+        usual = choices.made_setlist(name=A_NAME, version=VERSION).to_data()
+        choices.set_section_own(place=A_VERSE, field=CHORDS, value=CHORDS_SHARING_A_BAR)
+        own = choices.section_own(place=A_VERSE, field=CHORDS)
+        self.assertEqual(chords_as_text(own), CHORDS_SHARING_A_BAR)
+        self.assertTrue(arranger_shares_a_bar(own[-1]))
+        shared = choices.made_setlist(name=A_NAME, version=VERSION).to_data()
+        self.assertNotEqual(shared, usual)
+        # The same bars with their first chords alone are another song.
+        choices.set_section_own(place=A_VERSE, field=CHORDS, value=THE_BARS_FIRST_CHORDS)
+        self.assertNotEqual(choices.made_setlist(name=A_NAME, version=VERSION).to_data(), shared)
+
+    def test_shared_bars_are_refused_past_what_a_progression_holds_and_three_never_share(self):
+        too_many = ' '.join([CHORDS_SHARING_A_BAR] * MAX_PROGRESSION_CHORDS)
+        for wrong in (too_many, THREE_IN_A_BAR, A_DASH_ALONE):
             with self.assertRaises(ValueError):
                 chords_from_text(wrong)
 

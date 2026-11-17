@@ -44,7 +44,7 @@ from llamatron.macro_composer.riffs import (ACCENT_CHORDS, RIFF, RIFF_KINDS, RIF
 from llamatron.macro_composer.shaping import COMPOUND_BEAT, SIMPLE_BEAT, is_compound
 from llamatron.macro_composer.song_plan import PLAN_OF_SONG, SongPlan
 from llamatron.support.safe_yaml import load_safely
-from llamatron.composition.limits import MAX_GM_SOUND, MIN_GM_SOUND
+from llamatron.composition.limits import MAX_GM_SOUND, MAX_PROGRESSION_CHORDS, MIN_GM_SOUND
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.errors import ERR_NO_SUCH_WAY_BESIDE, ERR_PIECE_SOUND, ERR_BREAK_CUT, ERR_NO_STYLE_FORM, ERR_NO_SUCH_BREAK, ERR_NO_STYLE_FORMS, ERR_NO_STYLE_KIND, ERR_NO_SUCH_SECTION, ERR_NO_TRAIT_VALUE, ERR_PICK_NEEDS
 from llamatron.strings.macro_composer import MSG_PIECE_INSTRUMENT, MSG_MADE_PICK, MSG_MADE_SCENE, MSG_MADE_SONG_NOTES, MSG_PART_AT_LEVEL, MSG_PART_BESIDE, MSG_PART_OF_SECTION, MSG_PLAYED_BY, MSG_PLAYED_BY_OWN, MSG_REPEATED_SCENE, MSG_SECTION_START_PART, MSG_TIMING_CHAIN
@@ -99,6 +99,7 @@ ROLE_TITLES = 'titles'
 GENERATORS = 'generators'
 PATTERN = 'pattern'
 EVERY = 'every'
+HALVES_OF_A_BAR = 2
 SCALE_TYPE = 'scale_type'
 # The fields of a role.
 ROLE = 'role'
@@ -417,11 +418,39 @@ def step_of(*, meter, grid):
 
 
 def chord_of(entry):
+    """A chord as written, as its degree and what else it says; a bar of two chords is its first, for whatever goes bar by bar."""
+    if isinstance(entry, list):
+        return chord_of(entry[0])
     return entry if isinstance(entry, dict) else {DEGREE: entry}
 
 
-def progression_of(*, chords, every):
-    """A list of chords as a Progression's settings."""
+def shares_a_bar(entry):
+    """Whether an entry of a progression is two chords in one bar, each half of it."""
+    return isinstance(entry, list)
+
+
+def halves_of(chords):
+    """Chords by the half bar: a bar of two chords as its two, and a bar of one as the one twice."""
+    return [half for chord in chords for half in (chord if shares_a_bar(chord) else [chord, chord])]
+
+
+def fits_by_halves(chords):
+    """Whether chords written by the half bar are no more than a Progression holds; a longer run is played a chord a bar, each
+    bar's first."""
+    return len(chords) * HALVES_OF_A_BAR <= MAX_PROGRESSION_CHORDS
+
+
+def half_bar_of(meter):
+    """Half a bar of a meter, as a time a Progression takes: a length in whole notes."""
+    return str(Fraction(meter) / HALVES_OF_A_BAR)
+
+
+def progression_of(*, chords, every, meter=COMMON_TIME):
+    """A list of chords as a Progression's settings; where a bar has two chords and nothing says how long a chord lasts, each
+    chord lasts half a bar, so long as a Progression holds that many."""
+    if not every and any(shares_a_bar(chord) for chord in chords) and fits_by_halves(chords):
+        chords = halves_of(chords)
+        every = half_bar_of(meter)
     made = {CHORDS: [chord_of(chord)[DEGREE] for chord in chords]}
     marks = [ACCIDENTAL_MARKS.get(chord_of(chord).get(ACCIDENTAL)) for chord in chords]
     if any(marks):
@@ -838,10 +867,12 @@ def arranged(*, style, song):
     riff_players = [role[ROLE] for role in roles if role[ROLE] in riff.get(RIFF_ROLES, []) and role[ROLE] not in without and not role.get(DRUMS)
                     and FIGURE in values_of(style=style, trait=role[TRAIT]).get(picks.get(role[TRAIT]), {})] if riff_notes else []
 
-    def chords_in(section):
+    def chords_in(section, *, shared=False):
         """A section's chords, its last bar set up for what follows where the section says so."""
         bars = 1 if section.get(HELD) else section[BARS]
-        chords = [chord_of(chord) for chord in section.get(CHORDS) or chord_entry.get(BY_SECTION, {}).get(section[KIND]) or chord_entry[PATTERN]]
+        written = section.get(CHORDS) or chord_entry.get(BY_SECTION, {}).get(section[KIND]) or chord_entry[PATTERN]
+        # A bar of two chords is kept as its two for the progression, and is its first chord for whatever goes bar by bar.
+        chords = [[chord_of(half) for half in chord] if shared and shares_a_bar(chord) else chord_of(chord) for chord in written]
         if section.get(LAST_CHORD) is not None and not section.get(EVERY, chord_entry.get(EVERY)) and len(chords) <= bars:
             # The section's last bar is set up for what follows: the chords are written out a bar each, and the last bar takes the approach chord.
             chords = [chords[bar % len(chords)] for bar in range(bars - 1)] + [chord_of(section[LAST_CHORD])]
@@ -993,7 +1024,7 @@ def arranged(*, style, song):
                 play.setdefault(CRASH, {PART: start, ONCE: True})
             here = players_in(style=style, roles=roles, levels=levels, section=section)
             progression = MSG_PART_OF_SECTION.format(name, CHORDS)
-            progressions[progression] = progression_of(chords=chords, every=section.get(EVERY, chord_entry.get(EVERY)))
+            progressions[progression] = progression_of(chords=chords_in(section, shared=True), every=section.get(EVERY, chord_entry.get(EVERY)), meter=meter)
 
             def lines_of(role, *, section=section, chords=chords, here=here):
                 """The lines a player of a tune plays in the section: those the section gives, or those sketched for the player."""
