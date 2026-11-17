@@ -745,6 +745,10 @@ class Hooks(Smart):
         breath = min(2, lengths[last] - 1)
         answer = [{REST: -length * unit} if length < 0 else {STEPS: (length - breath if place == last else length) * unit} for place, length in enumerate(lengths)]
         answer += [{REST: breath * unit}] if breath else []
+        if kind[hook_kinds.DETAIL] == hook_kinds.CUT_SHORT:
+            # The answer says the bar's rhythm again and stops a note short.
+            sounding = max(place for place, cell in enumerate(answer) if REST not in cell)
+            answer[sounding] = {REST: answer[sounding][STEPS]}
         notes = []
         for bar, chord in enumerate(under):
             if bar % 2:
@@ -757,8 +761,8 @@ class Hooks(Smart):
                 continue
             sounding = iter(places)
             for place, length in enumerate(lengths):
-                if length < 0 or (bar and place == last and kind[hook_kinds.DETAIL] == hook_kinds.CUT_SHORT):
-                    notes.append({REST: abs(length) * unit})
+                if length < 0:
+                    notes.append({REST: -length * unit})
                     continue
                 notes.append({**self._ladder[next(sounding)][1], STEPS: length * unit})
         return notes
