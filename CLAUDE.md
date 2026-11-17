@@ -19,6 +19,9 @@ exceptions but the ones written here, and they come before every other rule in t
   file, not only the shell. A confirmation covers what was confirmed and no more: one path confirmed is not leave for the
   folder around the path, and leave given in one conversation does not carry to the next unless it is written here. When
   work seems to need a path outside, Claude asks first, naming the exact path and what would be done there.
+  The one standing exception, confirmed by the user: the folders under `/private/tmp` whose names start with `claude`, where
+  Claude Code keeps a session's scratch files, may be read, written and run in without asking. The exception covers nothing
+  else under `/private/tmp` or `/tmp`, and not the memory folder under the user's home.
 
 ## Project
 
