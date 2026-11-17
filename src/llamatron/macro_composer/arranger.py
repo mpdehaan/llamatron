@@ -976,11 +976,19 @@ def arranged(*, style, song):
                         chains[chain].append({VOICE_LEADING_KIND: NEAR})
                     chains[chain] += [{RUSH: role[ROLE]}, {DRAG: role[ROLE]}]
                     figure = role[ROLE]
+                    entry_here = entry
+                    if FIGURE in entry.get(BY_SECTION, {}).get(section[KIND], {}):
+                        # The value's own figure for this kind of section, a part of its own, in place of the figure played elsewhere.
+                        entry_here = {**entry, FIGURE: entry[BY_SECTION][section[KIND]][FIGURE]}
+                        figure = MSG_PART_OF_SECTION.format(role[ROLE], section[KIND])
+                        if figure not in parts:
+                            parts[figure] = figure_part(entry=entry_here, role=role, meter=meter, player=playing[role[ROLE]], phrase_bars=phrase_bars)
+                            shaped.append(figure)
                     if here[role[ROLE]] != playing[role[ROLE]]:
-                        held_back = figure_part(entry=entry, role=role, meter=meter, player=here[role[ROLE]], phrase_bars=phrase_bars)
+                        held_back = figure_part(entry=entry_here, role=role, meter=meter, player=here[role[ROLE]], phrase_bars=phrase_bars)
                         # A player held back who plays the figure no differently plays the one part, so that no part is written twice.
-                        if held_back != parts[role[ROLE]]:
-                            figure = MSG_PART_AT_LEVEL.format(role[ROLE], label_of(character_in(levels=levels, instrument=role.get(PLAYER), section=section)))
+                        if held_back != parts[figure]:
+                            figure = MSG_PART_AT_LEVEL.format(figure, label_of(character_in(levels=levels, instrument=role.get(PLAYER), section=section)))
                             if figure not in parts:
                                 parts[figure] = held_back
                                 shaped.append(figure)

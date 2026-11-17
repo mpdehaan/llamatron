@@ -312,6 +312,11 @@ clouds; generate and test, with motif development and counterpoint last.
   sections the player plays and set them through `set_section_plays`, and Reacts (`set_reacts`, the plan's `reacts` by player
   name), which moves the Energy the player answers to away from or toward the middle; Reacts is offered only where making the song
   with the player even and dramatic differs, since the plan only ever holds a player back.
+- **A figure for a kind of section**: a value with a `figure` may say `by_section: {kind: {figure: [...]}}`, bars as long as the
+  value's own; a section of that kind plays the figure as a part of its own (`bass chorus`), which a busier or held-back player
+  varies as any figure, and every other section plays the usual figure. The value's generators are the same in every section.
+  Written so far for the rock, sixties pop and soul basses (a verse leaving space, a chorus moving), two of rock's guitars and
+  the blues basses under a solo. Nothing on the wizard's page says a value has them.
 - **Loudness levels** (`macro_composer/loudness.py`): four named levels, ghost, soft, normal and accent. A drum's come from its
   `loudness` in the template, a number (accent 12 above, soft two thirds, ghost a third) or a mapping of the four; a player of
   notes' from the role's `velocity` (accent 12 above, soft 8 below, ghost 30 below). A drum bar's marks are `accent`, `loud`,

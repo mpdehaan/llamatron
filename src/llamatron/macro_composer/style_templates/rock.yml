@@ -92,11 +92,26 @@ traits:
       sound: bass
       figure:
         - [{degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}]
+      # A chorus moves: the octave at each bar's end, and a run up into the next phrase.
+      by_section:
+        chorus:
+          figure:
+            - [{degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, octave: 1, steps: 1}, {degree: 1, steps: 1}]
+            - [{degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 3, steps: 1}, {degree: 5, steps: 1}, {degree: 6, steps: 1}]
     - value: roots and fifths
       share: 24
       sound: bass
       figure:
         - [{degree: 1, steps: 3}, {degree: 1, steps: 1}, {degree: 5, steps: 3}, {degree: 5, steps: 1}]
+      # A verse leaves space, on the root and the fifth alone; a chorus moves, with the octave at the bar's end and a walk in every second bar.
+      by_section:
+        verse:
+          figure:
+            - [{degree: 1, steps: 3}, {rest: 1}, {degree: 5, steps: 3}, {rest: 1}]
+        chorus:
+          figure:
+            - [{degree: 1, steps: 3}, {degree: 1, steps: 1}, {degree: 5, steps: 2}, {degree: 5, steps: 1}, {degree: 1, octave: 1, steps: 1}]
+            - [{degree: 1, steps: 3}, {degree: 1, steps: 1}, {degree: 5, steps: 2}, {degree: 6, steps: 1}, {degree: 7, steps: 1}]
     - value: walking boogie
       share: 12
       sound: bass
@@ -108,6 +123,11 @@ traits:
       sound: bass
       figure:
         - [{degree: 1, steps: 6}, {degree: 1, steps: 2}]
+      # A chorus moves to the fifth at the bar's end.
+      by_section:
+        chorus:
+          figure:
+            - [{degree: 1, steps: 4}, {degree: 1, steps: 2}, {degree: 5, steps: 2}]
     - value: pushing roots
       share: 12
       sound: picked bass
@@ -134,11 +154,24 @@ traits:
         - [{degree: 1, chord: pow, steps: 8}]
       generators:
         - guitarify: {bar: [down, down, down, down, down, down, down, down], cell: 1/8}
+      # A chorus opens the two-note chords out to full ones.
+      by_section:
+        chorus:
+          figure:
+            - [{degree: 1, chord: '3', steps: 8}]
     - value: held power chords
       share: 16
       sound: distortion guitar
       figure:
         - [{degree: 1, chord: pow, steps: 3}, {degree: 1, chord: pow, steps: 5}]
+      # A chorus holds each chord for its whole bar, and a bridge strikes it on every beat.
+      by_section:
+        chorus:
+          figure:
+            - [{degree: 1, chord: pow, steps: 8}]
+        bridge:
+          figure:
+            - [{degree: 1, chord: pow, steps: 2}, {degree: 1, chord: pow, steps: 2}, {degree: 1, chord: pow, steps: 2}, {degree: 1, chord: pow, steps: 2}]
     - value: boogie
       share: 10
       sound: overdriven guitar
