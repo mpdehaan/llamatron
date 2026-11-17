@@ -70,6 +70,7 @@ FEATURE_COLUMNS = [
     ('hocket', ['hockets']),
     ('guitarify', ['guitarifies']),
     ('follow chords', ['follow chords']),
+    ('phrasing', ['phrasings']),
     ('morphs', ['morphs']),
     ('directions', ['pattern direction', 'clip direction']),
     ('ties', ['ties']),

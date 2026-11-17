@@ -272,6 +272,16 @@ The clip's pattern is taken as written over chord I. Each note moves up the scal
 The track followed may write its chords by hand or make them with a Progression, and may be muted.
 """
 
+# PhrasingEditor
+HELP_PHRASING_EDITOR = """
+Makes a tune breathe as it plays: each line ends early, as a singer stops for air. The pattern stays whole.
+Line: how long a line of the tune is. Breath: how long the silence at a line's end is.
+Line lengths: which lines are the shorter, which end in the longer breath.
+Early notes: how many lines in 4 have a note come an eighth early. No pitch changes and nothing is left to chance.
+By Section: what a kind of section does of its own, chosen by the scene's Section; (same) takes the value above.
+A note on a step marked No Breath in the pattern, under Band, is left as written: mark a hook's notes.
+"""
+
 # GuitarifyEditor
 HELP_GUITARIFY_EDITOR = """
 Plays a clip's chords and notes as a guitar does. Each half can be switched off.

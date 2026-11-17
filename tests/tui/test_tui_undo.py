@@ -37,8 +37,10 @@ from llamatron.strings.labels import (
 )
 from llamatron.strings.labels import MSG_SECTION_LABEL
 from llamatron.composition.file_format import EuclidPart, ReadyBar, ShapePart, StrumPart
-from llamatron.composition.generator_settings import DEFAULT_DRAG, DEFAULT_RUSH, DEFAULT_SHORTEN
-from tests.support.ui_testing import FOLLOWS, PICKED, TRADE, CLIPS, LAZY, PUSH, SLIDES, CLAVE, CLIPPED, FOLK, POP, SMOOTH, FADE, THIN
+from llamatron.composition.generator_settings import DEFAULT_DRAG, DEFAULT_RUSH, DEFAULT_SHORTEN, PhrasingSetting
+from llamatron.generators.phrasing import LONG_BREATH
+from llamatron.strings.labels import MSG_PHRASING_BREATH_LABEL
+from tests.support.ui_testing import BREATHES, FOLLOWS, PICKED, TRADE, CLIPS, LAZY, PUSH, SLIDES, CLAVE, CLIPPED, FOLK, POP, SMOOTH, FADE, THIN
 from llamatron.composition.defaults import DEFAULT_CHANNEL, FIRST_NUMBER
 from llamatron.composition.file_format import DriftValue, DriftVersion, GeneratorKind, RegisterName, RegisterSetting, Row, Section, SongSetting
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -632,6 +634,17 @@ class TestHocketEditorUndo(UndoTest):
         await self.select_field(MSG_SOURCE_TRACK_LABEL)
         await self.press(keybindings.HocketEditor.CLEAR)
         self.assertIsNone(self.document.song().get_generator_settings(kind=GeneratorKind.HOCKET, name=TRADE).get_source())
+        await self.check_undo_and_redo(before=before, after=self.data())
+
+
+class TestPhrasingEditorUndo(UndoTest):
+
+    async def test_a_longer_breath_is_one_step(self):
+        await self.open_generator(section=Section.PHRASINGS)
+        before = self.data()
+        await self.select_field(MSG_PHRASING_BREATH_LABEL)
+        await self.press(keybindings.PhrasingEditor.MORE)
+        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.PHRASING, name=BREATHES).get_own(PhrasingSetting.BREATH), LONG_BREATH)
         await self.check_undo_and_redo(before=before, after=self.data())
 
 

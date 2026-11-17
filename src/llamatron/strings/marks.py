@@ -25,6 +25,8 @@ MSG_NONE_SHOWN = '(none)'
 # What a field shows for a genre, subgenre or variant a song doesn't say.
 MSG_UNDEFINED_SHOWN = '(undefined)'
 MSG_ANY_SCALE_LENGTH = '(any)'
+# A cell of a table of settings by section that takes the value above the table.
+MSG_SAME_AS_ABOVE = '(same)'
 
 # tui/app.py
 MSG_CONFIRM_BUTTON_GAP = '    '

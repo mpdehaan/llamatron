@@ -149,6 +149,7 @@ Basics and Timing start open, and the editor remembers which sections are open, 
 - **Basics:** #/b, Velocity, Keyswitch;
 - **Chord:** Chord, Tension, Scale, Inversion;
 - **Timing:** Tie, Gate, Dot, Glide;
+- **Band:** No Breath, which [Phrasing](generators/PHRASING.md) reads;
 - **Advanced:** Probability, Ratchet, Ratchet Offset, Grab;
 - **CCs:** CC 1 to CC 4, Slide;
 - **Reg. Mod:** the rows that change the registers;

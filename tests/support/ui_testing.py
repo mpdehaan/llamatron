@@ -30,9 +30,9 @@ from llamatron.realtime.fluidsynth import FluidSynth
 from textual.widgets import Static
 
 from llamatron.composition.file_format import (
-    NAMED_GENERATORS, ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section,
+    NAMED_GENERATORS, ClipSlotSetting, EuclidPart, GeneratorKind, PatternSetting, Row, SceneSetting, Section, ShapePart,
 )
-from llamatron.composition.generator_settings import ArpSetting, AutoRatchetSetting, written_name
+from llamatron.composition.generator_settings import ArpSetting, AutoRatchetSetting, FollowChordsSetting, HocketSetting, ProgressionSetting, StepRowSetting, written_name
 from llamatron.generators.arp import ChordOrder
 from llamatron.music.note import NoteName
 from llamatron.tui.app import LlamatronApp
@@ -98,14 +98,9 @@ LAZY = 'lazy'
 TRADE = 'trade'
 PICKED = 'picked'
 FOLLOWS = 'follows'
-HITS_SETTING = 'hits'
-STEPS_SETTING = 'steps'
-SOURCE_SETTING = 'source'
-CHORDS_FROM_SETTING = 'chords_from'
-CHORDS_SETTING = 'chords'
+BREATHES = 'breathes'
 FADE = 'fade'
 CLIPPED = 'clipped'
-START_SETTING = 'start'
 DRIFT_SOFTER = 'b_velocity'
 TUNE = 'tune'
 BEAT = 'beat'
@@ -139,20 +134,21 @@ def a_song(*, path=None):
     data[Section.AUTO_RATCHETS] = {ROLLS: {AutoRatchetSetting.COUNTS: [1, 4]}}
     data[Section.DRIFTS] = {SWAY: {DRIFT_SOFTER: -1}}
     # A shape generator of each kind, which no chain names, so that their pages have something to show.
-    data[Section.PROGRESSIONS] = {POP: {CHORDS_SETTING: [1, 5, 6, 4]}}
+    data[Section.PROGRESSIONS] = {POP: {ProgressionSetting.CHORDS: [1, 5, 6, 4]}}
     data[Section.VOICE_LEADINGS] = {SMOOTH: {}}
     data[Section.STRUMS] = {FOLK: {}}
-    data[Section.EUCLIDS] = {CLAVE: {HITS_SETTING: 3, STEPS_SETTING: 8}}
-    data[Section.GLIDES] = {SLIDES: {STEPS_SETTING: [True, False, False]}}
-    data[Section.SHORTENS] = {CLIPS: {STEPS_SETTING: [False, True]}}
-    data[Section.RUSHES] = {PUSH: {STEPS_SETTING: [True, False, False, False]}}
-    data[Section.DRAGS] = {LAZY: {STEPS_SETTING: [False, True]}}
-    data[Section.HOCKETS] = {TRADE: {SOURCE_SETTING: LEAD}}
+    data[Section.EUCLIDS] = {CLAVE: {EuclidPart.HITS: 3, EuclidPart.STEPS: 8}}
+    data[Section.GLIDES] = {SLIDES: {StepRowSetting.STEPS: [True, False, False]}}
+    data[Section.SHORTENS] = {CLIPS: {StepRowSetting.STEPS: [False, True]}}
+    data[Section.RUSHES] = {PUSH: {StepRowSetting.STEPS: [True, False, False, False]}}
+    data[Section.DRAGS] = {LAZY: {StepRowSetting.STEPS: [False, True]}}
+    data[Section.HOCKETS] = {TRADE: {HocketSetting.SOURCE: LEAD}}
     data[Section.GUITARIFIES] = {PICKED: {}}
-    data[Section.FOLLOW_CHORDS] = {FOLLOWS: {CHORDS_FROM_SETTING: LEAD}}
-    data[Section.DENSITIES] = {THIN: {START_SETTING: 50}}
-    data[Section.SWELLS] = {FADE: {START_SETTING: 80}}
-    data[Section.ARTICULATES] = {CLIPPED: {START_SETTING: 50}}
+    data[Section.FOLLOW_CHORDS] = {FOLLOWS: {FollowChordsSetting.CHORDS_FROM: LEAD}}
+    data[Section.PHRASINGS] = {BREATHES: {}}
+    data[Section.DENSITIES] = {THIN: {ShapePart.START: 50}}
+    data[Section.SWELLS] = {FADE: {ShapePart.START: 80}}
+    data[Section.ARTICULATES] = {CLIPPED: {ShapePart.START: 50}}
     data[Section.PATTERNS] = {
         TUNE: {
             PatternSetting.GROUP: MELODIES, PatternSetting.STEPS: 4, PatternSetting.STEP_SIZE: EIGHTH, Row.DEGREE: [1, 3, None, None], Row.GATE: [QUARTER, QUARTER, EIGHTH, None],

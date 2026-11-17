@@ -48,6 +48,7 @@ from llamatron.tui.components.slide_row import SlideRow
 from llamatron.tui.components.tension_row import TensionRow
 from llamatron.tui.components.keyswitch_row import KeyswitchRow
 from llamatron.tui.components.tie_row import TieRow
+from llamatron.tui.components.toggle_row import ToggleRow
 from llamatron.tui.key_table import STEP_BACK, cursor_moved, BindsKeys
 from llamatron.tui.keys import Key, RowSection
 from llamatron.tui import keybindings
@@ -60,6 +61,8 @@ SECTIONS = {
     # Everything about a step's chord together, in the order that is the same wherever a chord is chosen: the chord, its tensions, the scale it borrows and its inversion.
     RowSection.CHORD: [Row.CHORD, Row.TENSION, Row.CHORD_SCALE, Row.INVERSION],
     RowSection.TIMING: [Row.TIE, Row.GATE, Row.DOT, Row.GLIDE],
+    # What a pattern tells the generators that play a band: which notes a tune's phrasing leaves whole.
+    RowSection.BAND: [Row.NO_BREATH],
     RowSection.ADVANCED: [Row.PROBABILITY, Row.RATCHET, Row.RATCHET_OFFSET, Row.GRAB],
     RowSection.CC: [*CC_ROWS, Row.SLIDE],
     # The register sections read in the order a step works them out: sets, then adds, then the uses, then the conditions.
@@ -71,7 +74,7 @@ SECTIONS = {
 ROW_CLASSES = {
     Row.DEGREE: DegreeRow, Row.GATE: GateRow, Row.DOT: DotRow, Row.ACCIDENTAL: AccidentalRow, Row.OCTAVE: OctaveRow,
     Row.CHORD: ChordRow, Row.TENSION: TensionRow, Row.CHORD_SCALE: ChordScaleRow, Row.INVERSION: InversionRow, Row.VELOCITY: NumberRow, Row.PROBABILITY: NumberRow, Row.GLIDE: GlideRow, Row.TIE: TieRow,
-    Row.RATCHET: NumberRow, Row.RATCHET_OFFSET: NumberRow, Row.GRAB: GrabRow, Row.KEYSWITCH: KeyswitchRow, Row.SLIDE: SlideRow,
+    Row.RATCHET: NumberRow, Row.RATCHET_OFFSET: NumberRow, Row.GRAB: GrabRow, Row.NO_BREATH: ToggleRow, Row.KEYSWITCH: KeyswitchRow, Row.SLIDE: SlideRow,
     **dict.fromkeys(CC_ROWS, CcRow),
     **dict.fromkeys(REGISTER_NOTE_ROWS.values(), RegisterRow),
     **dict.fromkeys(REGISTER_VELOCITY_ROWS.values(), RegisterRow),

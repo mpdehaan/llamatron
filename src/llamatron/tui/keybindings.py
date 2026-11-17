@@ -387,6 +387,10 @@ class FollowChordsEditor(FieldPage):
     """A Follow Chords' editor, with the settings keys alone."""
 
 
+class PhrasingEditor(FieldPage):
+    """A Phrasing's editor, with the settings keys alone."""
+
+
 class GuitarifyEditor(FieldPage):
     """A Guitarify's editor, with the settings keys alone."""
 
