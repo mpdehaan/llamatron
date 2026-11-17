@@ -504,7 +504,8 @@ forms:
 # is sixteen bars, rock and roll's is twelve, and each kind has its own distance between a verse and a chorus.
 by_subgenre:
   rock and roll:
-    sections: {verse: {bars: 12}, solo: {bars: 12}}
+    # The title line that ends each verse is the hook, since most of its songs have no chorus.
+    sections: {verse: {bars: 12, plan: [{line: a}, {line: b}, {line: a, varied: true}, {line: hook, hook: true}]}, solo: {bars: 12}}
     song_plan: {energy: {intro: 6, verse: 7, chorus: 8, bridge: 7, solo: 9}, last_chorus: 9}
   british invasion:
     song_plan: {energy: {verse: 5, chorus: 7, bridge: 5, solo: 7}, last_chorus: 8}
