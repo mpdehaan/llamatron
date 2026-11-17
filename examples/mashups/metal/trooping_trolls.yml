@@ -983,7 +983,8 @@ songs:
   trooping_trolls:
     tempo: 138
     scale: B Minor
-    genre: Metal Mashup
+    genre: Mashup
+    subgenre: Metal
 
     tracks:
       kick: { drum: true, instrument: drum kit }

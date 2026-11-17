@@ -100,6 +100,8 @@ class SongSetting:
     GROOVE = 'groove'
     # A short word or two saying what kind of music the song is, only for people to read.
     GENRE = 'genre'
+    SUBGENRE = 'subgenre'
+    VARIANT = 'variant'
     # When an edit made while the song plays in real time is heard on what plays.
     LIVE_RESPONSIVENESS = 'live_responsiveness'
     # The visualizer mode Arrange's visualizer key shows first for this song, over the set's.

@@ -26,10 +26,11 @@ remove_item, rename_item and so on, and renaming or removing a track tells the s
 from llamatron.composition.checks import check_keys, is_whole_number, listed, number, reading, time_signature, written_length
 from llamatron.composition.limits import MAX_GATE
 from llamatron.composition.invalid_value import InvalidValue
+from llamatron.composition.genres import sensible_style, style_name
 from llamatron.composition.groove import groove_for
 from llamatron.composition.defaults import DEFAULT_GROOVE, DEFAULT_LIVE_RESPONSIVENESS, DEFAULT_SEED, DEFAULT_TEMPO, DEFAULT_TIME_SIGNATURE, FIRST_NUMBER
 from llamatron.composition.corrections import LEFT_OUT
-from llamatron.composition.setting import Checked, Choice, Length, described, settings_held, Text
+from llamatron.composition.setting import Checked, Choice, Length, described, settings_held
 from llamatron.composition.file_format import LIVE_RESPONSIVENESSES, REGISTER_NAMES, sensible_visualizer, GeneratorKind, SceneSetting, Section, SongSetting
 from llamatron.composition.llama_data import LlamaData, data_as_kept, data_built_anew, or_default, own_copy, written_settings
 from llamatron.composition.named_items import NamedItems, moved_in_list
@@ -38,7 +39,7 @@ from llamatron.composition.scene import Scene
 from llamatron.composition.sections import SECTION_LABELS, SONG_SECTIONS
 from llamatron.composition.track import Track
 from llamatron.strings.errors import (
-    ERR_BAD_LIVE_RESPONSIVENESS, ERR_NOT_TEXT, ERR_NO_SUCH_REGISTER, ERR_NO_SUCH_SCENE, ERR_NOT_A_SONG, ERR_REGISTERS_NOT_NAMED, ERR_SONG_NO_SUCH_GROOVE, ERR_SONG_NO_SUCH_PREVIEW_INSTRUMENT,
+    ERR_BAD_LIVE_RESPONSIVENESS, ERR_NO_SUCH_REGISTER, ERR_NO_SUCH_SCENE, ERR_NOT_A_SONG, ERR_REGISTERS_NOT_NAMED, ERR_SONG_NO_SUCH_GROOVE, ERR_SONG_NO_SUCH_PREVIEW_INSTRUMENT,
     ERR_SCENES_NOT_A_LIST, ERR_SONG_BAD_SEED, ERR_SONG_BAD_WIZARD, ERR_SONG_NO_SUCH_SCALE, ERR_TRACKS_NOT_NAMED, ERR_WHERE_NAMED, ERR_WHERE_SCENE_ENTRY,
     ERR_WHERE_WITHIN,
 )
@@ -80,7 +81,7 @@ def _check_wizard_choices(value):
 
 # The song's own settings, each described once, in the order they're written to a file.
 def _never_refused(value):
-    """Refuse nothing: a visualizer setting that makes no sense is made sensible as it's read (sensible_visualizer)."""
+    """Refuse nothing: a visualizer, a genre, a subgenre or a variant that makes no sense is made sensible as it is read (sensible_visualizer, sensible_style)."""
 
 
 SETTINGS = described(
@@ -90,7 +91,9 @@ SETTINGS = described(
     Checked(name=SongSetting.SCALE, check=_check_scale_name, needs_song=True),
     Checked(name=SongSetting.SEED, check=seed_number),
     Checked(name=SongSetting.GROOVE, check=_check_groove_name, needs_song=True),
-    Text(name=SongSetting.GENRE, error=ERR_NOT_TEXT),
+    Checked(name=SongSetting.GENRE, check=_never_refused),
+    Checked(name=SongSetting.SUBGENRE, check=_never_refused),
+    Checked(name=SongSetting.VARIANT, check=_never_refused),
     Choice(name=SongSetting.LIVE_RESPONSIVENESS, choices=LIVE_RESPONSIVENESSES, default=LEFT_OUT, error=ERR_BAD_LIVE_RESPONSIVENESS),
     Checked(name=SongSetting.VISUALIZER, check=_never_refused),
     Checked(name=SongSetting.PREVIEW_INSTRUMENT, check=_check_preview_instrument, needs_song=True),
@@ -101,7 +104,6 @@ NAMED_BY_THEIR_MESSAGE = (SongSetting.SCALE, SongSetting.GROOVE, SongSetting.PRE
 # Scenes are counted from 1 in messages, as they're shown.
 FIRST_SCENE_NUMBER = 1
 # What a song that says nothing of its genre gives.
-NO_GENRE = ''
 
 
 def new_song(*, scale=None):
@@ -182,6 +184,15 @@ class Song(LlamaData):
                 setting.check_held(data, song=self)
         self._settings = {name: own_copy(data.get(name)) for name in SETTINGS}
         self._settings[SongSetting.VISUALIZER] = sensible_visualizer(self._settings[SongSetting.VISUALIZER])
+        self._keep_style(genre=self._settings[SongSetting.GENRE], subgenre=self._settings[SongSetting.SUBGENRE], variant=self._settings[SongSetting.VARIANT])
+
+    @notes_change
+    def _keep_style(self, *, genre, subgenre, variant):
+        """Keep a genre, subgenre and variant, each made sensible, so that none is ever one the program doesn't know."""
+        genre, subgenre, variant = sensible_style(genre=genre, subgenre=subgenre, variant=variant)
+        self._settings[SongSetting.GENRE] = genre
+        self._settings[SongSetting.SUBGENRE] = subgenre
+        self._settings[SongSetting.VARIANT] = variant
 
     def _read_registers(self, *, data, where):
         """Read the registers' settings. There are always four, so the file only names those it changes."""
@@ -387,15 +398,35 @@ class Song(LlamaData):
         self._settings[SongSetting.SEED] = seed
 
     def get_genre(self):
-        """Return what kind of music the song is, or blank text when it doesn't say."""
-        return self._settings[SongSetting.GENRE] or NO_GENRE
+        """Return the genre the song says it is, or None when it says none."""
+        return self._settings[SongSetting.GENRE]
+
+    def get_subgenre(self):
+        """Return the subgenre the song says it is, one of its genre's, or None when it says none."""
+        return self._settings[SongSetting.SUBGENRE]
+
+    def get_variant(self):
+        """Return the variant of its subgenre the song says it is, or None when it says none."""
+        return self._settings[SongSetting.VARIANT]
+
+    def get_style_name(self):
+        """Return one name for the song's genre and subgenre, a mashup's naming both, or None when the song says no genre."""
+        return style_name(genre=self.get_genre(), subgenre=self.get_subgenre())
 
     @notes_change
-    def set_genre(self, text):
-        """Say what kind of music the song is, blank text leaving it out of the file."""
-        text = text.strip()
-        SETTINGS[SongSetting.GENRE].check(text)
-        self._settings[SongSetting.GENRE] = text or None
+    def set_genre(self, genre):
+        """Say what genre the song is, None or a genre the program doesn't know for none. A subgenre and a variant of another genre go with it."""
+        self._keep_style(genre=genre, subgenre=self.get_subgenre(), variant=self.get_variant())
+
+    @notes_change
+    def set_subgenre(self, subgenre):
+        """Say what subgenre of its genre the song is, None or one the genre doesn't have for none. A variant of another subgenre goes with it."""
+        self._keep_style(genre=self.get_genre(), subgenre=subgenre, variant=self.get_variant())
+
+    @notes_change
+    def set_variant(self, variant):
+        """Say what variant of its subgenre the song is, None or one the subgenre doesn't have for none."""
+        self._keep_style(genre=self.get_genre(), subgenre=self.get_subgenre(), variant=variant)
 
     def get_wizard_choices(self):
         """Return what the song wizard was told when it made the song, as data of the song's own, or None for a song the wizard didn't make."""

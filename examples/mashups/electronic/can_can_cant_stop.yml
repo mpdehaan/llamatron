@@ -365,7 +365,8 @@ songs:
   can_can_cant_stop:
     tempo: 172
     scale: D Major
-    genre: Electronic Mashup
+    genre: Mashup
+    subgenre: Electronic
 
     tracks:
       kick: { drum: true, instrument: drum kit }

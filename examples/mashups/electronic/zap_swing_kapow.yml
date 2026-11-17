@@ -500,7 +500,8 @@ songs:
     tempo: 126
     scale: Bb Major
     groove: 8th swing 66
-    genre: Electronic Mashup
+    genre: Mashup
+    subgenre: Electronic
 
     tracks:
       kick: { drum: true, instrument: drum kit }

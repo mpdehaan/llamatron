@@ -465,7 +465,7 @@ class Setlist(LlamaData):
 
     def get_genres(self):
         """Return the genres the set's songs say they are, each once in the songs' order."""
-        return list(dict.fromkeys(genre for genre in (self.get_song(name).get_genre() for name in self.get_song_names()) if genre))
+        return list(dict.fromkeys(genre for genre in (self.get_song(name).get_style_name() for name in self.get_song_names()) if genre))
 
     def get_title(self):
         return self._setting(name=SetlistSetting.TITLE, default=NO_TEXT)

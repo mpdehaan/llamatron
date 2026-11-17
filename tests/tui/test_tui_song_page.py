@@ -27,16 +27,18 @@ from llamatron.music.time_signature import MAX_BEATS, MIN_BEATS, UNITS_LISTED
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.song_page import SongPage
 from llamatron.tui.screens.set.songs_page import SongsPage
-from llamatron.composition.song import NO_GENRE
+from llamatron.composition.genres import GENRES, MASHUP, subgenres_of, variants_of
 from llamatron.strings.labels import MSG_VISUALIZER_LABEL
-from llamatron.strings.labels import MSG_GENRE_LABEL, MSG_LIVE_RESPONSIVENESS_LABEL, MSG_LIVE_RESPONSIVENESS_NAMES, MSG_PREVIEW_INSTRUMENT_LABEL, MSG_PREVIEW_INSTRUMENT_UNSET, Crumb, MSG_EXPORT_CHOICES, MSG_SONG_CRUMB, MSG_GROOVE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_SEED_LABEL, MSG_TIME_SIGNATURE_LABEL, MSG_ENTRY_SIZE_LABEL, PageName
+from llamatron.strings.labels import MSG_GENRE_LABEL, MSG_SUBGENRE_LABEL, MSG_VARIANT_LABEL, MSG_LIVE_RESPONSIVENESS_LABEL, MSG_LIVE_RESPONSIVENESS_NAMES, MSG_PREVIEW_INSTRUMENT_LABEL, MSG_PREVIEW_INSTRUMENT_UNSET, Crumb, MSG_EXPORT_CHOICES, MSG_SONG_CRUMB, MSG_GROOVE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_SEED_LABEL, MSG_TIME_SIGNATURE_LABEL, MSG_ENTRY_SIZE_LABEL, PageName
 from llamatron.strings.legends import MSG_LEGEND_WHAT, What, KeyName
-from llamatron.strings.marks import MSG_ONE_STEP_SHOWN
+from llamatron.strings.marks import MSG_ONE_STEP_SHOWN, MSG_UNDEFINED_SHOWN
 from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_TRACK_NAME
 from llamatron.tui import keybindings
 
-A_GENRE = 'Lounge'
+A_GENRE_WITH_VARIANTS = 'Rock'
+A_SUBGENRE_WITH_VARIANTS = 'hard rock'
 # Two instruments a test adds, in the order a picker lists them, and what the first is renamed to.
+NEW_LINE = '\n'
 KEYS_INSTRUMENT = 'keys'
 ORGAN_INSTRUMENT = 'organ'
 RENAMED_INSTRUMENT = 'piano'
@@ -64,7 +66,7 @@ class TestSongPage(UITest):
     async def test_it_holds_the_song_settings_and_names_the_song(self):
         self.assertIsInstance(self.app.screen, SongPage)
         labels = [field.label for field in self.app.screen.fields()]
-        self.assertEqual(labels, [MSG_NAME_LABEL, TEMPO, MSG_TIME_SIGNATURE_LABEL, MSG_ENTRY_SIZE_LABEL, MSG_SCALE_LABEL, MSG_SEED_LABEL, MSG_GROOVE_LABEL, MSG_GENRE_LABEL, MSG_LIVE_RESPONSIVENESS_LABEL, MSG_PREVIEW_INSTRUMENT_LABEL, MSG_VISUALIZER_LABEL, PageName.EXPORT])
+        self.assertEqual(labels, [MSG_NAME_LABEL, TEMPO, MSG_TIME_SIGNATURE_LABEL, MSG_ENTRY_SIZE_LABEL, MSG_SCALE_LABEL, MSG_SEED_LABEL, MSG_GROOVE_LABEL, MSG_GENRE_LABEL, MSG_SUBGENRE_LABEL, MSG_VARIANT_LABEL, MSG_LIVE_RESPONSIVENESS_LABEL, MSG_PREVIEW_INSTRUMENT_LABEL, MSG_VISUALIZER_LABEL, PageName.EXPORT])
         self.assertIn(MSG_DEFAULT_SONG_NAME, self.text())
         self.assert_buttons_come_last_after_a_blank_line()
 
@@ -94,14 +96,49 @@ class TestSongPage(UITest):
         await self.press(keybindings.FieldPage.CLEAR)
         self.assertIsNone(song.get_preview_instrument_name())
 
-    async def test_the_genre_is_typed_and_bksp_clears_it(self):
+    def shown_on(self, label):
+        """The line of the page that shows a field, by the field's label."""
+        return next(line for line in self.text().split(NEW_LINE) if label in line.split())
+
+    async def test_the_genre_is_undefined_until_chosen_from_the_genres_and_bksp_clears_it(self):
+        song = self.document.song()
+        for label in (MSG_GENRE_LABEL, MSG_SUBGENRE_LABEL, MSG_VARIANT_LABEL):
+            self.assertIn(MSG_UNDEFINED_SHOWN, self.shown_on(label))
+        await self.select_field(MSG_GENRE_LABEL)
+        await self.press(key_of(binding=keybindings.FieldPage.MORE, key=Key.RIGHT_BRACKET))
+        self.assertEqual(song.get_genre(), GENRES[0])
+        await self.press(Key.ENTER)
+        await self.type(MASHUP)
+        await self.press(Key.ENTER)
+        self.assertEqual(song.get_genre(), MASHUP)
+        self.assertIn(MASHUP, self.shown_on(MSG_GENRE_LABEL))
+        await self.press(keybindings.FieldPage.CLEAR)
+        self.assertIsNone(song.get_genre())
+
+    async def test_the_subgenre_is_one_of_the_genres_and_the_variant_one_of_the_subgenres(self):
+        song = self.document.song()
+        await self.select_field(MSG_SUBGENRE_LABEL)
+        await self.press(key_of(binding=keybindings.FieldPage.MORE, key=Key.RIGHT_BRACKET))
+        self.assertIsNone(song.get_subgenre())
+        self.document.set_genre(A_GENRE_WITH_VARIANTS)
+        await self.press(Key.ENTER)
+        await self.type(A_SUBGENRE_WITH_VARIANTS)
+        await self.press(Key.ENTER)
+        self.assertEqual(song.get_subgenre(), A_SUBGENRE_WITH_VARIANTS)
+        await self.select_field(MSG_VARIANT_LABEL)
+        await self.press(key_of(binding=keybindings.FieldPage.MORE, key=Key.RIGHT_BRACKET))
+        variants = variants_of(genre=A_GENRE_WITH_VARIANTS, subgenre=A_SUBGENRE_WITH_VARIANTS)
+        self.assertEqual(song.get_variant(), variants[0])
+        self.assertIn(variants[0], self.shown_on(MSG_VARIANT_LABEL))
         await self.select_field(MSG_GENRE_LABEL)
         await self.press(Key.ENTER)
-        await self.type(A_GENRE)
+        await self.type(MASHUP)
         await self.press(Key.ENTER)
-        self.assertEqual(self.document.song().get_genre(), A_GENRE)
-        await self.press(keybindings.FieldPage.CLEAR)
-        self.assertEqual(self.document.song().get_genre(), NO_GENRE)
+        self.assertEqual((song.get_subgenre(), song.get_variant()), (None, None))
+        await self.select_field(MSG_SUBGENRE_LABEL)
+        await self.press(Key.ENTER)
+        for subgenre in subgenres_of(MASHUP):
+            self.assertIn(subgenre, self.text())
 
     async def test_live_response_steps_through_its_three_choices_from_next_bar(self):
         await self.select_field(MSG_LIVE_RESPONSIVENESS_LABEL)

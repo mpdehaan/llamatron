@@ -219,7 +219,8 @@ songs:
     tempo: 86
     scale: D Major
     groove: 8th swing 66
-    genre: Blues Mashup
+    genre: Mashup
+    subgenre: Blues
 
     tracks:
       kick: { drum: true, instrument: drum kit }

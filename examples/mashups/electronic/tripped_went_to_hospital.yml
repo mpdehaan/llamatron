@@ -392,7 +392,8 @@ songs:
     tempo: 80
     scale: D Minor
     groove: 8th swing 58
-    genre: Electronic Mashup
+    genre: Mashup
+    subgenre: Electronic
 
     tracks:
       kick: { drum: true, instrument: drum kit }

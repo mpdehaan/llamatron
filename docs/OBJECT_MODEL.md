@@ -84,7 +84,9 @@ Press `S` on the main screen to open the Songs page. The set's songs are listed 
 | Scale | The song's scale, from the Scales page; a scene or a clip can use another. `Bksp` sets no scale, in which case patterns with degrees can't play or export. |
 | Seed | With no seed, which a new song starts with, every play and export is a new take: the notes probability drops, random play directions and random arpeggiators all come out differently each time. A seed plays the same take every time, and a different seed gives a different take. `Bksp` clears it. |
 | Groove | The swing or other timing feel every clip plays with, unless its scene or track chooses another, from the Grooves page. `none`, which a new song starts with, plays straight. `[` and `]` step through the grooves, and `ENTER` picks one from a list. |
-| Genre | A word or two saying what kind of music the song is, such as Folk or Electronic, only for people to read. `ENTER` types it and `Bksp` clears it. [About Demos](DEMOS.md) groups the examples by genre. |
+| Genre | What kind of music the song is, such as Folk or Electronic, chosen from a list, "(undefined)" until chosen. `ENTER` chooses it and `Bksp` clears it. [About Demos](DEMOS.md) groups the examples by genre. |
+| Subgenre | A subgenre of the song's Genre, for a genre that has subgenres, chosen from a list. A Mashup's Subgenre is the genre it is mashed with. |
+| Variant | A variant of the song's Subgenre, for a subgenre that has variants, chosen from a list. |
 | Live response | When an edit made while the song plays is heard: "next bar", the default, "clip restart", at each playing clip's next pass, or "ASAP", at once. |
 | Preview instrument | The instrument that Listen plays a pattern through. `(General MIDI piano)`, which a new song starts with, plays a pattern on General MIDI's piano through FluidSynth. `[` and `]` step through the set's instruments, `ENTER` picks one, and `Bksp` clears. |
 | Export | `ENTER` here exports this song, the same as `Ctrl+X` anywhere, asking which kind of output first. |

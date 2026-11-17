@@ -82,7 +82,7 @@ SONG_FIELDS = {
     SongSetting.TEMPO: (MSG_TEMPO_LABEL, True),
     SongSetting.TIME_SIGNATURE: (MSG_TIME_SIGNATURE_LABEL, True),
     SongSetting.SCALE: (MSG_SCALE_LABEL, False),
-    SongSetting.GENRE: (MSG_GENRE_LABEL, True),
+    SongSetting.GENRE: (MSG_GENRE_LABEL, False),
 }
 # The parts of a song's data that aren't settings of the Song page.
 SONG_SECTIONS_BUILT = (Section.TRACKS, Section.SCENES, Section.REGISTERS)

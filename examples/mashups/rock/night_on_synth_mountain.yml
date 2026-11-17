@@ -567,7 +567,8 @@ songs:
   night_on_synth_mountain:
     tempo: 132
     scale: D Minor
-    genre: Rock Mashup
+    genre: Mashup
+    subgenre: Rock
 
     tracks:
       kick: { drum: true, instrument: drum kit }

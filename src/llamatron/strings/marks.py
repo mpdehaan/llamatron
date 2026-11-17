@@ -22,6 +22,8 @@ from llamatron.composition.file_format import Accidental, ChordSymbol, Direction
 
 # Shared by several pages: a field with no value, and a song or scene with no scale in a sentence.
 MSG_NONE_SHOWN = '(none)'
+# What a field shows for a genre, subgenre or variant a song doesn't say.
+MSG_UNDEFINED_SHOWN = '(undefined)'
 
 # tui/app.py
 MSG_CONFIRM_BUTTON_GAP = '    '
