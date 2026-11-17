@@ -292,8 +292,32 @@ clouds; generate and test, with motif development and counterpoint last.
   over its drums, looping; on a section the section once (`tui/made_preview.py`, `Branch.listens`). It plays a song made from the
   choices and thrown away, through FluidSynth, and any change of a choice stops it. The whole song is never played in the wizard
   (the user's rule: small parts have previews, the song is heard on Arrange).
-- Not on the page yet: editing a hook's notes by hand, keeping hooks and choosing among them, the phrase designer (a section's lines
-  one by one), players' Comes in, Lays out and Reacts, a riff by rule for a rhythm player, a plan for any genre but rock.
+- **A line edited by hand** (`macro_composer/line_edits.py`, `tui/dialogs/tune_dialog.py`): the Hooks panel's Notes field opens the
+  hook's line in the Tune dialog, a note moved along the scale, made longer and shorter, taken out and put in; the line is kept as
+  the melody's `hook_notes` habit and is the hook wherever the hook is said (`set_hook_line`). A section that says the hook has a
+  Hook row under Tune that opens the same line.
+- **A section's lines, one by one** (`tui/dialogs/lines_dialog.py`, `section_lines`, `set_section_line`): a section's Lines field
+  opens a row a line. A line that is a new idea of the tune takes a breath of its own in eighths and an early note or none
+  (`phrasing.LINE_BREATH`, `LINE_EARLY`, laid over the section's plan of lines); any line takes notes written by hand
+  (`melody.LINE_NOTES`), which are then the idea wherever the section says it again. `L` plays the section's tune. Kept in the
+  section's own values under `lines`, with or without a song plan.
+- **A section's panel is in groups** (the user's design): Kind, Bars and Energy on top, then Tune, Harmony, Shape, Joins and Who
+  plays, headings that open and close as a settings page's do; a group with nothing to offer in the section is left out. The Hooks
+  panel keeps the switch and Notes on top, with Kind, Where it is said and Riff under headings. The Melody and Form panels are to
+  be grouped the same way, each drawn for the user first.
+- **Starts and endings in stages** (S46): the Form panel's Starts with, Ends with, First player and Setup bars (`set_start`,
+  `set_end`); each stage is an ordinary section of the form, so opening or closing sections a person changed read as "your own".
+  Every section has Fades (`song_plan.FADES`; a scene swell without a plan). The band genres' templates have an `outro` kind.
+- **Players as people**: a player's panel has Comes in and Lays out (`set_comes_in`, `set_lays_out`), which are a reading of which
+  sections the player plays and set them through `set_section_plays`, and Reacts (`set_reacts`, the plan's `reacts` by player
+  name), which moves the Energy the player answers to away from or toward the middle; Reacts is offered only where making the song
+  with the player even and dramatic differs, since the plan only ever holds a player back.
+- **The riff, a song's second hook** (`macro_composer/riffs.py`, `set_riff`, `set_riff_line`, `new_riff`): two bars of single
+  notes over the home chord, the second answering the first, played in place of their figures by one player of a figure or by the
+  first and the lowest together, in the intro, under the verses, under the choruses or everywhere, through a chain of the
+  Progression alone. Kept in the song's extras as `riff`. No more than two hooks, the tune's and the riff (agreed with the user).
+- Not on the page yet: keeping hooks and choosing among them, a writer per kind of section, a plan for any genre but rock, the
+  Melody and Form panels in groups, a longer and more shaped solo section.
 
 ## A Song File
 
