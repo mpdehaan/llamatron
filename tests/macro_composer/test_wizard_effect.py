@@ -84,6 +84,8 @@ FORM_ANSWER = 'an answer of the form questions'
 INTRO_HOOK = 'intro hook'
 SECTION_SHAPE = "a section's shape"
 A_SECOND_PLACE = 1
+NO_PLAN = 'with no plan'
+SECTION_OWN_ANYWHERE = (('chords', '6 4 2 5'), ('chords', '1 4'), ('tempo', 61), ('tempo_end', 62), ('root', 'F#'), ('root', 'C'), ('type', 'minor'), ('type', 'major'))
 # A value of each field a section can be given of its own.
 SECTION_OWN_TRIED = (('rises', True), ('energy', 10), ('energy', 1), ('leaves', 'stops'), ('leaves', 'build'), ('leaves', 'drop-out'), ('leaves', 'a big fill'), ('leaves', 'a small fill'), ('leaves', 'nothing'),
                      ('chords', '6 4 2 5'), ('tempo', 61), ('tempo_end', 62), ('root', 'F#'), ('type', 'minor'), ('type', 'major'))
@@ -94,10 +96,11 @@ SECTION_BARS = "a section's bars"
 SECTION_KIND = "a section's kind"
 FORM = 'form'
 PLAYS_IN_SECTION = 'who plays in a section'
-# How many choices of each kind change nothing, by genre and half, with the reason each is allowed for now: none is.
+# How many choices of each kind change nothing, by genre and half, with the reason each is allowed for now.
 FIRST_HALF = 0
 SECOND_HALF = 1
-KNOWN_TO_CHANGE_NOTHING = {}
+# Rock and roll's planned song: its sections' Energies all ask for the hat in eighths, so choosing that cymbal is choosing what the plan already plays.
+KNOWN_TO_CHANGE_NOTHING = {('rock', FIRST_HALF): {WAY: 1}}
 LABEL = '{subgenre}: {what}'
 
 
@@ -252,7 +255,7 @@ def every_choice(choices):
         # A planned song, and under a plan its contrast, its phrasing and each part of the hook's kind.
         def planned(made):
             made.set_song_plan(True)
-        yield SONG_PLAN, True, planned, [nothing_first]
+        yield SONG_PLAN, False, lambda made: made.set_song_plan(False), [nothing_first]
         for contrast in (LOWEST_ENERGY, HIGHEST_ENERGY):
             yield CONTRAST, contrast, lambda made, contrast=contrast: made.set_contrast(contrast), [planned]
         under_plan = fresh_with_plan(choices)
@@ -283,6 +286,10 @@ def every_choice(choices):
         for field, value in SECTION_OWN_TRIED:
             if field in under_plan.section_own_fields(A_SECOND_PLACE) and value != under_plan.section_from_plan(place=A_SECOND_PLACE, field=field):
                 yield SECTION_OWN, (field, value), lambda made, field=field, value=value: made.set_section_own(place=A_SECOND_PLACE, field=field, value=value), [planned_first]
+    for field, value in SECTION_OWN_ANYWHERE:
+        # What a section of any genre can be given of its own, held with no plan, on the second section where it takes any.
+        if field in without_plan(choices).section_own_fields(A_SECOND_PLACE) and value != without_plan(choices).section_from_plan(place=A_SECOND_PLACE, field=field):
+            yield SECTION_OWN, (field, value, NO_PLAN), lambda made, field=field, value=value: made.set_section_own(place=A_SECOND_PLACE, field=field, value=value), [switch_plan_off]
     for name, offered, usual in choices.form_questions():
         # Each answer of each question a form is made from, held against the form the usual answers make.
         for answer in offered:
@@ -301,6 +308,18 @@ def every_choice(choices):
     for form in choices.forms():
         if form != choices.get_form():
             yield FORM, form, lambda made, form=form: made.set_form(form), [nothing_first]
+
+
+def switch_plan_off(made):
+    if made.can_have_song_plan():
+        made.set_song_plan(False)
+
+
+def without_plan(choices):
+    """Choices as some are, with no song plan."""
+    plain = WizardChoices.from_data(choices.to_data())
+    switch_plan_off(plain)
+    return plain
 
 
 def fresh_with_plan(choices):

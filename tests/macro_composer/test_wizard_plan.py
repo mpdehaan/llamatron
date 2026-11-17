@@ -26,7 +26,7 @@ from llamatron.macro_composer.notation import REST, STEPS
 from llamatron.macro_composer.arranger import CHORDS
 from llamatron.macro_composer.joins import BUILD, DROP_OUT, LEAVES, STOPS
 from llamatron.macro_composer.song_plan import ENERGY, HIGHEST_ENERGY, LOWEST_ENERGY, NOT_AT_ALL, RISES, ROOT_OF_PLACE, SETUP, TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE, USUAL_CONTRAST
-from llamatron.macro_composer.wizard_choices import BRIDGE, DRUM_SOLO_KIND, LAST_CHORUSES, NO, PRE_CHORUS, PRE_CHORUSES, SOLO, SOLO_COUNTS, SOLOS, VERSES_FIRST, YES, HOOK_PARTS, LEAVES_AS_JOIN, PHRASING_OFFERED, SHAPE_OF_SECTION, MINOR, WizardChoices, chords_as_text, chords_from_text
+from llamatron.macro_composer.wizard_choices import BRIDGE, DRUM_SOLO_KIND, LAST_CHORUSES, NO, PRE_CHORUS, PRE_CHORUSES, SOLO, SOLO_COUNTS, SOLOS, VERSES_FIRST, YES, HOOK_PARTS, LEAVES_AS_JOIN, OWN_WITHOUT_PLAN, PHRASING_OFFERED, SHAPE_OF_SECTION, MINOR, WizardChoices, chords_as_text, chords_from_text
 from llamatron.strings.errors import ERR_WIZARD_GENRE_HAS_NO_PLAN, ERR_WIZARD_NO_SONG_PLAN
 from llamatron.strings.macro_composer import MSG_PLAN_LEAVES_TAIL, MSG_PLAN_SET_UP
 from llamatron.support.version import VERSION
@@ -59,8 +59,8 @@ def chosen(*, genre=A_PLANNED_GENRE, subgenre=A_SUBGENRE, plan=True):
     choices.set_genre(genre)
     choices.set_subgenre(subgenre or choices.subgenres()[0])
     choices.set_seed(A_SEED)
-    if plan:
-        choices.set_song_plan(True)
+    if choices.can_have_song_plan():
+        choices.set_song_plan(plan)
     return choices
 
 
@@ -73,6 +73,12 @@ class TestWizardSongPlan(unittest.TestCase):
         choices = chosen(plan=False)
         self.assertFalse(choices.has_song_plan())
         self.assertTrue(choices.can_have_song_plan())
+        # A genre with a plan plans every song until the plan is switched off.
+        unasked = WizardChoices()
+        unasked.set_genre(A_PLANNED_GENRE)
+        unasked.set_subgenre(A_SUBGENRE)
+        self.assertTrue(unasked.has_song_plan())
+        self.assertFalse(WizardChoices.from_data(choices.to_data()).has_song_plan())
         other = chosen(genre=AN_UNPLANNED_GENRE, subgenre=None, plan=False)
         self.assertFalse(other.can_have_song_plan())
         with self.assertRaisesRegex(ValueError, ERR_WIZARD_GENRE_HAS_NO_PLAN):
@@ -132,6 +138,7 @@ class TestWizardSongPlan(unittest.TestCase):
         choices.set_song_plan(True)
         self.assertFalse(choices.hook_part_is_chosen(hook_kinds.CONTOUR))
         choices.set_genre(AN_UNPLANNED_GENRE)
+        choices.set_subgenre(choices.subgenres()[0])
         self.assertFalse(choices.has_song_plan())
 
     def test_a_planned_song_differs_from_the_song_without_a_plan(self):
@@ -232,12 +239,15 @@ class TestWizardSectionOwn(unittest.TestCase):
         return choices.made_setlist(name=A_NAME, version=VERSION).get_song(A_NAME).get_scenes()[place]
 
     def test_a_section_has_fields_of_its_own_only_under_a_plan_and_a_join_only_where_it_leaves(self):
-        self.assertEqual(chosen(plan=False).section_own_fields(A_VERSE), [])
+        # Without a plan a section still takes chords, a tempo, a key and a scale of its own, in every genre.
+        self.assertEqual(chosen(plan=False).section_own_fields(A_VERSE), list(OWN_WITHOUT_PLAN))
+        self.assertEqual(chosen(genre=AN_UNPLANNED_GENRE, subgenre=None, plan=False).section_own_fields(A_VERSE), list(OWN_WITHOUT_PLAN))
         choices = chosen()
         last = len(choices.section_labels()) - 1
         self.assertIn(LEAVES, choices.section_own_fields(A_VERSE))
-        self.assertNotIn(LEAVES, choices.section_own_fields(last))
-        self.assertIn(ENERGY, choices.section_own_fields(last))
+        # The ending, one held chord, takes nothing of its own.
+        self.assertEqual(choices.section_own_fields(last), [])
+        self.assertIn(ENERGY, choices.section_own_fields(A_VERSE))
 
     def test_each_field_is_none_until_given_and_shows_what_the_plan_or_the_song_gives(self):
         choices = chosen()
@@ -308,6 +318,23 @@ class TestWizardSectionOwn(unittest.TestCase):
         self.assertEqual(choices.to_data(), before)
         with self.assertRaises(ValueError):
             chosen(plan=False).set_section_own(place=A_VERSE, field=ENERGY, value=HIGHEST_ENERGY)
+
+    def test_a_section_of_a_song_with_no_plan_takes_chords_a_tempo_a_key_and_a_scale(self):
+        for genre in (A_PLANNED_GENRE, AN_UNPLANNED_GENRE):
+            choices = chosen(genre=genre, subgenre=None, plan=False)
+            choices.set_section_own(place=A_VERSE, field=CHORDS, value=SOME_CHORDS)
+            choices.set_section_own(place=A_VERSE, field=TEMPO_OF_PLACE, value=A_SLOW_TEMPO)
+            choices.set_section_own(place=A_VERSE, field=ROOT_OF_PLACE, value=ANOTHER_ROOT)
+            choices.set_section_own(place=A_VERSE, field=TYPE_OF_PLACE, value=MINOR)
+            made = choices.made_setlist(name=A_NAME, version=VERSION)
+            scene = made.get_song(A_NAME).get_scenes()[A_VERSE]
+            self.assertEqual(scene.get_tempo_setting(), A_SLOW_TEMPO)
+            scale = made.to_data()[Section.SCALES][scene.get_scale_name()]
+            self.assertEqual((scale[ROOT_OF_PLACE], scale[TYPE_OF_PLACE]), (ANOTHER_ROOT, MINOR))
+            # The sections beside it keep the song's.
+            self.assertIsNone(made.get_song(A_NAME).get_scenes()[A_VERSE + 1].get_tempo_setting())
+            again = WizardChoices.from_data(choices.to_data())
+            self.assertEqual(again.made_setlist(name=A_NAME, version=VERSION).to_data(), made.to_data())
 
     def test_what_a_section_was_given_goes_with_it_when_moved_and_copied_and_is_kept(self):
         choices = chosen()

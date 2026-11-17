@@ -400,6 +400,8 @@ class TestWizardForm(unittest.TestCase):
         choices = self.rock()
         choices.set_subgenre(HARD_ROCK)
         choices.set_seed(A_SEED_OF_SHORT_DRUMS)
+        # The lengths a section's own players fill are a matter of the parts as the kind writes them: a planned song writes each section's drums whole.
+        choices.set_song_plan(False)
         return choices
 
     def sit_out_all_but(self, *, choices, role):

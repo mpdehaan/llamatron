@@ -1270,6 +1270,8 @@ class TestWizardComposition(WizardTest):
     async def test_the_smart_melody_styles_gauges_show_under_the_melody_field_and_are_stepped(self):
         await self.choose(genre=A_GENRE_WITH_RHYTHMS)
         choices = self.choices()
+        # The phrasing fields of a planned song, whose choices use some of the gauges' words, are left off the panel.
+        choices.set_song_plan(False)
         await self.go_to_named_branch(MSG_WIZARD_MELODY_BRANCH)
         for name in DEFAULT_GAUGES:
             self.assertNotIn(MSG_WIZARD_GAUGE_ENDS[name][1], self.text())
