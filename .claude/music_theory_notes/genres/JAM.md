@@ -45,3 +45,69 @@ A four-piece (guitar, keyboards, bass, drums) whose songs pair written-out passa
   idea, then one player changes it and the round begins again. Imitation first, then answer, then lead.
 - Measured for the style's tag in the chord dataset: major keys (minor in one song in five), I IV, IV I and IV I V I, bVII in
   three songs in ten, vi in four in ten, a solo labeled in a sixth (the jams are not written down).
+
+## A Song Is a Plan, a Jam Is Players Listening
+
+A note Claude wrote in another conversation, kept nearly whole, with the players, composers and works the note named taken out.
+(practice throughout)
+
+A composed song is modeled from the top down, with every player reading a shared plan. A jam is modeled from the bottom up, with
+every player listening to the others and no one knowing what comes next.
+
+### Playing a Song: A Shared Plan
+
+The standard model is a hierarchy:
+
+- **Form**: the sections, their lengths and an energy level for each.
+- **Harmony**: a chord chart per section.
+- **Roles**: drums keep time and signpost the form, bass ties harmony to the kick, keys and guitar split the midrange, and the
+  lead carries the melody.
+- **Realization**: each role turns "chorus, G major, energy 8" into actual notes.
+- **Performance**: microtiming, dynamics and articulation.
+
+What makes it sound like a band is coupling between the parts:
+
+- **Rhythmic lock**: the bass agrees with the kick.
+- **Register allocation**: parts do not crowd the same octave.
+- **A density budget**: when the vocal is busy, everyone else thins out, and when it rests, someone fills.
+
+Because the plan is known, every player has lookahead. The drummer's fill is scheduled because the chorus is two bars away.
+Rule-based accompaniment programs work this way explicitly. Neural multitrack models learn the same coordination implicitly from
+data, by modeling all the tracks jointly.
+
+### Jamming: Agents That Listen
+
+In a jam the plan is gone, so the model becomes a set of agents, each with three parts:
+
+- **Listening**: it tracks what the others are doing, including density, register, loudness, rhythm and implied harmony.
+- **A stance**: it supports, complements, contrasts, leads or lays out. Knowing when not to play is a decision the model must be
+  able to make.
+- **Memory**: motifs go into a shared pool, so one player can quote what another played eight bars ago.
+
+Four things change in kind:
+
+- The model is causal. It can only use the past, so there is no lookahead.
+- Transitions are negotiated. A player proposes a change by repeating a new riff or raising the intensity, and the others join or
+  ignore it. A fill becomes a proposal instead of an announcement, like a lead drummer's set call (`RHYTHM_AND_GROOVE.md`).
+- Leadership rotates. The rhythm section follows the soloist's arc, then someone else takes over.
+- Form emerges. The build, peak and release come from feedback between the players.
+
+Timing changes too. In a real band, the tempo is a mutual adjustment, with each player correcting slightly toward the others.
+Researchers model this as coupled oscillators.
+
+Kinds of system that exist: one that listens to a human improviser and decides whether to follow or go its own way; one that
+answers a player's phrases in the player's own style from a Markov model; one that does the same from a live memory of the
+performance; one that trades fours.
+
+### Most Music Sits in Between
+
+Pure plan and pure freedom are the two ends. Most improvised music fixes something, which theory calls the referent:
+
+| Music | What is fixed | What is free |
+| --- | --- | --- |
+| A jazz standard | The form and chords, cycling | The notes |
+| A modal vamp | A groove and a mode | Length and direction |
+| A minimalist piece of numbered phrases | The phrases, in order | When each player moves on |
+| Free improvisation | Nothing | Everything |
+
+A good jam model picks a referent and lets the agents negotiate the rest.

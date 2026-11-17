@@ -60,3 +60,57 @@ invented on the spot from a bare chart, each player owning one narrow job, and n
 - **What to take from all three**: give each player one job and a register; pass the fills around by turn, line by line; let one
   instrument only answer the singer at a time; settle who has the intro and the turnaround; diamonds, stops and pushes placed
   together by the whole band are what make a rhythm section sound arranged.
+
+## Trading Parts
+
+A note Claude wrote in another conversation, kept nearly whole, with the players, composers and works the note named taken out.
+(practice throughout)
+
+Players trade parts in two ways: they pass the lead back and forth in agreed-size chunks, or they swap roles, so whoever was
+accompanying steps forward and the former lead drops back into support.
+
+### Trading in Fixed Chunks
+
+The classic form is trading fours in jazz. A soloist plays four bars, the drummer answers alone for four, and this repeats around
+the form. A few things make it work:
+
+- The form keeps running. The chords continue underneath, even during the drum breaks, when nobody is playing them. Everyone
+  counts silently, and the test of a band is whether they all land together on the top of the next chorus.
+- Each answer responds to the last phrase. A player echoes the rhythm, finishes the thought, tops it or deliberately contrasts it.
+- The chunks often shrink. Eights become fours, then twos, then ones, which raises the excitement because the handoffs come
+  faster. The same idea as a drum fill speeding up its subdivision.
+
+Other traditions use the same structure:
+
+- Blues trades between the voice and the guitar: two bars of vocal, two bars of answer.
+- Bluegrass passes "breaks" around the band, with each instrument taking the melody for one pass.
+- Indian classical music has question and answer between the soloist and the drums, also with shrinking phrases.
+- Rock has guitar duels and twin-lead harmonies.
+
+### Swapping Roles
+
+When the lead changes hands, everyone else adjusts:
+
+- The new soloist starts low, in energy and often in register, leaving room to build. The rhythm section drops down to match.
+- The old soloist becomes an accompanist, or lays out entirely for a chorus to clear the texture.
+- Compers change their approach to suit the instrument. A pianist comps differently behind a saxophone than behind a guitar,
+  because the registers clash differently.
+- In a bass solo, the drummer switches to light cymbals or brushes, the comping thins to almost nothing, and someone else may
+  cover the bass role.
+
+### Signaling the Handoff
+
+Since trades often are not written down, bands rely on cues:
+
+- **Convention**: a standard solo order, or a number of choruses agreed beforehand.
+- **Musical cues**: the soloist winds down with a phrase that sounds like an ending, drops in register, or quotes the melody to
+  signal "last chorus".
+- **Physical cues**: eye contact, a nod, lifting the instrument, or pointing at the head to mean "back to the tune".
+- **Overlap**: the outgoing soloist often plays into the first beat of the next section, and the new soloist may pick up the
+  last idea as a starting point, so the handoff sounds continuous.
+
+### Trading Within a Texture
+
+Some trading is built into the part itself. Hocket is the extreme case, with a melody split note by note. Gamelan interlocks two
+players into one fast line, and funk guitarists split one rhythm part between them. Stride pianists do it alone, with the hands
+trading bass and chord.

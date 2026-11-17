@@ -36,7 +36,8 @@ of it written for people.
 - `LEADS.md`: how a lead line is composed: the three ways, target notes, developing an idea, the arc, technique, leads by genre.
 - `BASS_LINES.md`: the ways a bass part is written, by family, each named for its sound; keyboard and organ bass.
 - `DRUM_MACHINES.md`: the machines, what each gave its genres, electronic percussion by style. Machines are named, as products.
-- `BAND_INTERPLAY.md`: who answers whom, layering, making room, intensity through a song.
+- `BAND_INTERPLAY.md`: who answers whom, layering, making room, intensity through a song; trading parts: fixed chunks, swapping roles, signaling the handoff.
+- `PLAYER_STYLE.md`: what separates skilled players (time feel, tone, density, melody or pattern, vocabulary), and when a rule is rightly broken.
 - `TECHNIQUES.md`: things read about and not yet used.
 - `genres/`: a file for each genre, with what each subgenre usually does, and for kinds of music not yet a genre of the wizard (`SOUNDTRACK.md`, `JAM.md`, `JAZZ.md`, `COUNTRY.md`, `POP.md`, `METAL.md`, `TV_THEMES.md`, `MUSIC_BOX.md`).
 
