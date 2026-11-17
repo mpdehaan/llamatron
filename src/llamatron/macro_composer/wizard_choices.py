@@ -41,9 +41,10 @@ from llamatron.macro_composer.arranger import (
 )
 from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer import hook_kinds, line_edits, phrasing
-from llamatron.macro_composer.arranger import CHORDS, SCENE_SETTINGS, form_of
+from llamatron.macro_composer.arranger import CHORDS, EIGHTHS_IN_WHOLE, SCENE_SETTINGS, form_of
 from llamatron.macro_composer.melody import ANSWER, HOOK_KIND, HOOK_NOTES, LINE, LINE_NOTES
 from llamatron.macro_composer.phrasing import LINE_BREATH, LINE_EARLY
+from llamatron.macro_composer.riffs import FIRST_TAKE as FIRST_RIFF_TAKE, RIFF, RIFF_BARS, RIFF_KINDS, RIFF_LINE, RIFF_ROLES, RIFF_TAKE, riff_line
 from llamatron.macro_composer.joins import BUILD, DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL
 from llamatron.macro_composer.song_plan import (
     BIG, BY_PLACE, FADED, FADES, UNFADED, SWELL_END, SWELL_START, PHRASING_WAYS, RISES, RISING, SCALE_OF_PLACE, SCENE_TEMPO, SCENE_TEMPO_END, SCENE_TEMPO_START, CONTRAST, ENERGY, FILL_SIZE, FILL_SIZES, HIGHEST_ENERGY, LOWEST_ENERGY, MEDIUM, NOT_AT_ALL, PHRASING, PLAN_OF_SONG, ROOT_OF_PLACE, SAID_OF_SECTION, SETUP, SMALL,
@@ -60,7 +61,7 @@ from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MIN_GM_SO
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.marks import MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SECTION_VARIANT
 from llamatron.support.version import VERSION as A_VERSION
-from llamatron.strings.errors import ERR_WIZARD_COMES_IN, ERR_WIZARD_LAYS_OUT, ERR_WIZARD_PLAYS_UNMADE, ERR_WIZARD_REACTS, ERR_WIZARD_CONTRAST, ERR_WIZARD_EXTRAS, ERR_WIZARD_END, ERR_WIZARD_FIRST_PLAYER, ERR_WIZARD_HOOK_LINE, ERR_WIZARD_HOOK_PART, ERR_WIZARD_SETUP_BARS, ERR_WIZARD_START, ERR_WIZARD_START_UNMADE, ERR_WIZARD_CHORDS, ERR_WIZARD_FORM_ANSWER, ERR_WIZARD_NO_FORM_QUESTIONS, ERR_WIZARD_INTRO_HOOK, ERR_WIZARD_PHRASING, ERR_WIZARD_SECTION_OWN, ERR_WIZARD_SECTION_OWN_UNMADE, ERR_WIZARD_GENRE_HAS_NO_PLAN, ERR_WIZARD_NO_SONG_PLAN, ERR_WIZARD_SWITCH, ERR_WIZARD_NO_SUCH_ROW, ERR_WIZARD_ROW, ERR_WIZARD_HOOK_TAKE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_MELODY_NUMBER, ERR_WIZARD_MELODY_SWITCH, ERR_WIZARD_NO_SUCH_MELODY_SETTING, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
+from llamatron.strings.errors import ERR_WIZARD_NO_RIFF, ERR_WIZARD_RIFF, ERR_WIZARD_RIFF_UNMADE, ERR_WIZARD_COMES_IN, ERR_WIZARD_LAYS_OUT, ERR_WIZARD_PLAYS_UNMADE, ERR_WIZARD_REACTS, ERR_WIZARD_CONTRAST, ERR_WIZARD_EXTRAS, ERR_WIZARD_END, ERR_WIZARD_FIRST_PLAYER, ERR_WIZARD_HOOK_LINE, ERR_WIZARD_HOOK_PART, ERR_WIZARD_SETUP_BARS, ERR_WIZARD_START, ERR_WIZARD_START_UNMADE, ERR_WIZARD_CHORDS, ERR_WIZARD_FORM_ANSWER, ERR_WIZARD_NO_FORM_QUESTIONS, ERR_WIZARD_INTRO_HOOK, ERR_WIZARD_PHRASING, ERR_WIZARD_SECTION_OWN, ERR_WIZARD_SECTION_OWN_UNMADE, ERR_WIZARD_GENRE_HAS_NO_PLAN, ERR_WIZARD_NO_SONG_PLAN, ERR_WIZARD_SWITCH, ERR_WIZARD_NO_SUCH_ROW, ERR_WIZARD_ROW, ERR_WIZARD_HOOK_TAKE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_MELODY_NUMBER, ERR_WIZARD_MELODY_SWITCH, ERR_WIZARD_NO_SUCH_MELODY_SETTING, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'
@@ -227,6 +228,15 @@ OWN_SECTIONS = 'own_sections'
 PREVIEW_NAME = 'preview'
 JOINS_ANSWER = 'joins'
 SETUP_BARS_ANSWER = 'setup bars'
+RIFF_ABLE_ANSWER = 'riff able'
+# Where a riff is played.
+RIFF_IN_INTRO = 'in the intro'
+RIFF_UNDER_VERSES = 'under the verses'
+RIFF_INTRO_AND_VERSES = 'in the intro and under the verses'
+RIFF_UNDER_CHORUSES = 'under the choruses'
+RIFF_EVERYWHERE = 'everywhere'
+RIFF_SAID_WAYS = (RIFF_INTRO_AND_VERSES, RIFF_IN_INTRO, RIFF_UNDER_VERSES, RIFF_UNDER_CHORUSES, RIFF_EVERYWHERE)
+INTRO_KIND = 'intro'
 REACTS_ANSWER = 'reacts'
 # Where a player comes in and where a player lays out.
 FROM_THE_START = 'from the start'
@@ -580,6 +590,7 @@ class WizardChoices:
             # A plan is one genre's: its energies and its joins are the genre's own.
             self._extras.pop(PLAN_OF_SONG, None)
             self._extras.pop(MELODY, None)
+            self._extras.pop(RIFF, None)
             self._forget_band()
 
     def subgenres(self):
@@ -2721,6 +2732,138 @@ class WizardChoices:
                 self._extras[MELODY] = before
             self._answers = {}
             raise ValueError(ERR_WIZARD_HOOK_LINE.format(problem=problem)) from problem
+
+    # The riff, the song's second hook: two bars of single notes a rhythm player repeats while the chords move them.
+
+    def riff_players_offered(self):
+        """Return who may play a riff, each a list of players: every player of a figure in the band alone, then the first two together, as a guitar and a bass play one in unison."""
+        if not self.is_ready():
+            return []
+        able = self._remembered(key=RIFF_ABLE_ANSWER, compute=self._riff_able)
+        # Together: the first player and the lowest, as a guitar and a bass play a riff in unison.
+        lowest = min(able, key=lambda role: self._role(role).get(OCTAVE, 0)) if able else None
+        return [[role] for role in able] + ([[able[0], lowest]] if able and lowest != able[0] else [])
+
+    def _riff_able(self):
+        """The players who can play a riff: those whose part in the song is a figure, found by asking for a riff from everybody everywhere."""
+        trial = copy.deepcopy(self)
+        trial._answers = {}
+        trial._extras[RIFF] = {RIFF_ROLES: self.roles_in(), RIFF_KINDS: self.section_kinds()}
+        try:
+            parts = arranged(style=style_of(self._genre), song=trial.song_picks(PREVIEW_NAME))[PARTS]
+        except (ValueError, KeyError, SongFileError):
+            return []
+        return [role for role in self.roles_in() if MSG_PART_OF_SECTION.format(role, RIFF) in parts]
+
+    def _riff(self):
+        kept = self._extras.get(RIFF) or {}
+        return kept if kept.get(RIFF_ROLES) in self.riff_players_offered() else {}
+
+    def has_riff(self):
+        return bool(self._riff())
+
+    def get_riff_players(self):
+        """Return who plays the riff, or an empty list while the song has none."""
+        return list(self._riff().get(RIFF_ROLES, []))
+
+    def riff_said_offered(self):
+        """Return where a riff may be played, for the places the form has: the intro, under the verses, both, under the choruses, and everywhere."""
+        kinds = self.section_kinds_in_form()
+        return [way for way in RIFF_SAID_WAYS if all(any(kind in kinds for kind in group) for group in self._riff_kind_groups(way))] if self.is_ready() else []
+
+    def _riff_kind_groups(self, way):
+        """The kinds of section a way of saying the riff names, in groups: the form has to have a kind of each group for the way to be offered."""
+        opening = (self._intro_kind() or INTRO_KIND, OUTRO_KIND)
+        return {RIFF_IN_INTRO: [opening], RIFF_UNDER_VERSES: [(VERSE_KIND,)], RIFF_INTRO_AND_VERSES: [opening, (VERSE_KIND,)], RIFF_UNDER_CHORUSES: [(CHORUS_KIND,)],
+                RIFF_EVERYWHERE: [tuple(self.section_kinds())]}[way]
+
+    def _riff_kinds(self, way):
+        return [kind for group in self._riff_kind_groups(way) for kind in group]
+
+    def get_riff_said(self):
+        """Return where the riff is played, or None while the song has none."""
+        kinds = self._riff().get(RIFF_KINDS)
+        return next((way for way in self.riff_said_offered() if self._riff_kinds(way) == kinds), None)
+
+    def set_riff(self, *, players, said=None):
+        """Give the song a riff played by these players, said where asked or in the intro and under the verses, or take the riff away with no players. A riff the
+        song cannot be made with is refused."""
+        before = copy.deepcopy(self._extras.get(RIFF))
+        if not players:
+            self._extras.pop(RIFF, None)
+            self._answers = {}
+            return
+        offered = self.riff_said_offered()
+        said = said or self.get_riff_said() or next((way for way in (RIFF_INTRO_AND_VERSES, RIFF_UNDER_VERSES) if way in offered), offered[0] if offered else None)
+        if list(players) not in self.riff_players_offered() or said not in offered:
+            raise ValueError(ERR_WIZARD_RIFF.format(value=(players, said)))
+        self._extras[RIFF] = {**(before or {}), RIFF_ROLES: list(players), RIFF_KINDS: self._riff_kinds(said)}
+        self._riff_or_back(before=before, value=(players, said))
+
+    def _riff_or_back(self, *, before, value):
+        self._answers = {}
+        try:
+            self.made_for_listening()
+        except (ValueError, KeyError, SongFileError) as problem:
+            self._extras.pop(RIFF, None)
+            if before is not None:
+                self._extras[RIFF] = before
+            self._answers = {}
+            raise ValueError(ERR_WIZARD_RIFF_UNMADE.format(value=value, problem=problem)) from None
+
+    def riff_steps_in_bar(self):
+        """Return how many steps, eighths, a bar of the riff has."""
+        return int(bar_length(self.meter()) * EIGHTHS_IN_WHOLE)
+
+    def riff_line(self):
+        """Return the riff's notes, a line of two bars in eighths (line_edits.py), or None while the song has no riff."""
+        if not self.has_riff():
+            return None
+        riff = self._riff()
+        return copy.deepcopy(riff.get(RIFF_LINE) or riff_line(seed=self._seed or 0, take=riff.get(RIFF_TAKE, FIRST_RIFF_TAKE), eighths=self.riff_steps_in_bar()))
+
+    def riff_notes(self):
+        """Return the riff for a picture, as hook_notes gives the hook: how many steps it lasts, how many a bar has, and each note as where it starts, how many
+        steps it lasts and its MIDI note. None while the song has no riff."""
+        line = self.riff_line()
+        if line is None:
+            return None
+        notes = []
+        at = 0
+        for note in line:
+            if not line_edits.is_rest(note):
+                notes.append((at, line_edits.length_of(note), self.riff_pitch_of_place(line_edits.place_of(note))))
+            at += line_edits.length_of(note)
+        return at, self.riff_steps_in_bar(), notes
+
+    def riff_is_own(self):
+        return bool(self._riff().get(RIFF_LINE))
+
+    def riff_pitch_of_place(self, place):
+        """Return the MIDI note at a place of the song's scale as the riff's first player plays it, for a picture of the riff."""
+        scale = self.scale_half_steps()
+        octaves, degree = divmod(place, len(scale))
+        return self._role(self.get_riff_players()[0])[OCTAVE] * NOTES_IN_OCTAVE + self.root_half_steps() + scale[degree] + octaves * NOTES_IN_OCTAVE
+
+    def new_riff(self):
+        """Have another riff made, the rest of the song left as it was; notes written by hand give way to the new riff."""
+        if not self.has_riff():
+            raise ValueError(ERR_WIZARD_NO_RIFF)
+        riff = self._extras[RIFF]
+        riff.pop(RIFF_LINE, None)
+        riff[RIFF_TAKE] = riff.get(RIFF_TAKE, FIRST_RIFF_TAKE) + 1
+        self._answers = {}
+
+    def set_riff_line(self, line):
+        """Write the riff's notes by hand, or give the riff back to the wizard with None. A line that is not two bars, or that the song cannot be made with, is refused."""
+        if not self.has_riff():
+            raise ValueError(ERR_WIZARD_NO_RIFF)
+        before = copy.deepcopy(self._extras[RIFF])
+        if line is None:
+            self._extras[RIFF].pop(RIFF_LINE, None)
+        else:
+            self._extras[RIFF][RIFF_LINE] = self._checked_line(line=line, steps=RIFF_BARS * self.riff_steps_in_bar())
+        self._riff_or_back(before=before, value=line)
 
     def _checked_line(self, *, line, steps):
         """A line written by hand, checked: notes of a degree of the scale and rests, each a whole number of steps, as long as the line it stands for, with a note in it."""

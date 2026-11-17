@@ -24,7 +24,7 @@ from llamatron.macro_composer.song_plan import ENERGY, FADES, RISES, ROOT_OF_PLA
 from llamatron.macro_composer.wizard_choices import DRUM_SOLO_KIND, chords_as_text
 from llamatron.strings.errors import ERR_WIZARD_CHORDS
 from llamatron.macro_composer.song_plan import USUAL_CONTRAST
-from llamatron.strings.labels import MSG_WIZARD_GROUP_HARMONY, MSG_WIZARD_GROUP_JOINS, MSG_WIZARD_GROUP_PLAYERS, MSG_WIZARD_GROUP_SHAPE, MSG_WIZARD_GROUP_TUNE
+from llamatron.strings.labels import MSG_WIZARD_GROUP_HOOK_KIND, MSG_WIZARD_GROUP_HARMONY, MSG_WIZARD_GROUP_JOINS, MSG_WIZARD_GROUP_PLAYERS, MSG_WIZARD_GROUP_SHAPE, MSG_WIZARD_GROUP_TUNE
 from llamatron.strings.marks import MSG_SECTION_SET
 from llamatron.strings.labels import (
     MSG_WIZARD_CONTRAST_LABEL, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_QUESTION_TITLES, MSG_WIZARD_FORM_QUESTIONS_BUTTON, MSG_WIZARD_REPLACE_SECTIONS_TITLE, MSG_WIZARD_HOOK_PART_LABELS, MSG_WIZARD_HOOKS_BRANCH, MSG_WIZARD_MELODY_BRANCH, MSG_WIZARD_PHRASING_LABEL, MSG_WIZARD_PHRASING_WAY_LABELS, MSG_WIZARD_PICK_SHOWN,
@@ -116,6 +116,13 @@ class TestWizardPlan(WizardTest):
         await self.go_to_melody()
         self.assertNotIn(MSG_WIZARD_PHRASING_LABEL, self.text())
 
+    async def open_kind(self):
+        """Open the Hooks panel's Kind group where it is closed, so that the hook's parts show."""
+        wizard = self.wizard()
+        if MSG_WIZARD_GROUP_HOOK_KIND not in self.app.open_field_sections:
+            wizard.toggle_section(MSG_WIZARD_GROUP_HOOK_KIND)
+            await self.press(Key.DOWN, Key.UP)
+
     async def test_the_hooks_panel_shows_the_kind_only_under_a_plan_and_marks_the_wizard_s_pick(self):
         await self.choose()
         self.choices().set_song_plan(False)
@@ -127,6 +134,7 @@ class TestWizardPlan(WizardTest):
         self.choices().set_hook_part(part=hook_kinds.CONTOUR, value=hook_kinds.CHANT)
         await self.press(Key.DOWN, Key.UP)
         await self.go_to_hooks()
+        await self.open_kind()
         shown = self.text()
         kind = self.choices().hook_kind()
         self.assertIn(hook_kinds.CHANT, shown)
@@ -152,6 +160,7 @@ class TestWizardPlan(WizardTest):
         self.choices().set_hook_part(part=hook_kinds.CONTOUR, value=hook_kinds.LONG_NOTE)
         await self.press(Key.DOWN, Key.UP)
         await self.go_to_hooks()
+        await self.open_kind()
         self.assertIn(MSG_WIZARD_HOOK_PART_LABELS[hook_kinds.CONTOUR], self.text())
         self.assertNotIn(MSG_WIZARD_HOOK_PART_LABELS[hook_kinds.DETAIL], self.text())
 
