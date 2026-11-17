@@ -13,15 +13,28 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The wizard's Hooks branch, under Composition: whether the song has a hook, which is made apart from the melody style."""
+"""The wizard's Hooks branch, under Composition: whether the song has a hook, which is made apart from the melody style, and a picture of the hook."""
+
+from rich.text import Text
 
 from llamatron.strings.labels import MSG_WIZARD_HOOK_LABEL, MSG_WIZARD_HOOK_OFF, MSG_WIZARD_HOOK_ON, MSG_WIZARD_HOOKS_BRANCH
+from llamatron.strings.marks import MSG_WIZARD_HOOK_BAR_LINE, MSG_WIZARD_HOOK_CELL, MSG_WIZARD_HOOK_FLOOR, MSG_WIZARD_HOOK_FLOOR_BAR, MSG_WIZARD_HOOK_GAP, MSG_WIZARD_HOOK_ROW
+from llamatron.strings.messages import MSG_WIZARD_HOOK_MADE
+from llamatron.tui.drawing import INDENT, Style
+from llamatron.tui.note_names import note_shown
 from llamatron.tui.screens.shared.field import Toggle
 from llamatron.tui.screens.wizard.song_ways_branch import SongWaysBranch
 
+# A step of the picture is two cells wide where the hook fits so, and one where it is long.
+WIDE_STEP = 2
+NARROW_STEP = 1
+# The cells the picture leaves for a note's name and its edges.
+ROOM_BESIDE = 8
+
 
 class HooksBranch(SongWaysBranch):
-    """The Hook switch, shown where a hook changes the song; the hook's kind, picture, variations and editing are to come."""
+    """The Hook switch, shown where a hook changes the song, and under it a picture of the hook's notes; the hook's kind,
+    its variations, listening and editing are to come."""
 
     __slots__ = ()
 
@@ -44,3 +57,39 @@ class HooksBranch(SongWaysBranch):
             return []
         choices = self.choices()
         return [Toggle(label=MSG_WIZARD_HOOK_LABEL, on=choices.has_hook(), set=self.page().choosing(choices.set_hook))]
+
+    def notes(self, width):
+        """Return the picture of the hook while the song has one, with who plays it; else what a branch with nothing to choose says."""
+        if not self.offers_a_hook():
+            return super().notes(width)
+        hook = self.choices().hook_notes()
+        if hook is None:
+            return []
+        choices = self.choices()
+        made = MSG_WIZARD_HOOK_MADE.format(player=choices.role_title(choices.tune_player()))
+        return [Text(), *(Text(INDENT + line) for line in picture_of(hook=hook, width=width)), Text(INDENT + made, style=Style.DIM)]
+
+
+def picture_of(*, hook, width):
+    """Return the lines of a hook's picture: a row for each note it plays, the highest first, each note drawn as long as it
+    lasts with a gap at its end so that a note played twice shows as two, a line between bars, and a floor under the rows."""
+    steps, steps_in_bar, notes = hook
+    step = WIDE_STEP if steps * WIDE_STEP + ROOM_BESIDE <= width else NARROW_STEP
+    pitches = sorted({pitch for _, _, pitch in notes}, reverse=True)
+    names = {pitch: note_shown(pitch) for pitch in pitches}
+    longest = max(len(name) for name in names.values())
+    lines = [MSG_WIZARD_HOOK_ROW.format(name=names[pitch], width=longest, cells=row_cells(notes=notes, pitch=pitch, steps=steps, steps_in_bar=steps_in_bar, step=step)) for pitch in pitches]
+    floor = MSG_WIZARD_HOOK_FLOOR_BAR.join([MSG_WIZARD_HOOK_FLOOR * (steps_in_bar * step)] * (steps // steps_in_bar))
+    return [*lines, MSG_WIZARD_HOOK_ROW.format(name=MSG_WIZARD_HOOK_GAP, width=longest, cells=MSG_WIZARD_HOOK_FLOOR_BAR + floor + MSG_WIZARD_HOOK_FLOOR_BAR)]
+
+
+def row_cells(*, notes, pitch, steps, steps_in_bar, step):
+    """Return one note's row of the picture: its cells filled where the hook plays the note, between bar lines."""
+    cells = [MSG_WIZARD_HOOK_GAP] * (steps * step)
+    for start, length, played in notes:
+        if played == pitch:
+            # The last cell of a note stays empty where the note has more than one, so that the next note stands apart.
+            filled = max(length * step - 1, 1)
+            cells[start * step:start * step + filled] = [MSG_WIZARD_HOOK_CELL] * filled
+    bars = [''.join(cells[bar * steps_in_bar * step:(bar + 1) * steps_in_bar * step]) for bar in range(steps // steps_in_bar)]
+    return MSG_WIZARD_HOOK_BAR_LINE + MSG_WIZARD_HOOK_BAR_LINE.join(bars) + MSG_WIZARD_HOOK_BAR_LINE

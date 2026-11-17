@@ -19,13 +19,13 @@ from llamatron.composition.file_format import Section
 from llamatron.macro_composer.arranger import BARS, WITHOUT
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
 from llamatron.macro_composer.melody import DEFAULT_GAUGES, EVOLVING, GAUGE_MOVES, HIGHEST_GAUGE, LEAPS, MOVE, SERIAL, SMART
-from llamatron.macro_composer.wizard_choices import MAJOR, USUAL_PIECE_NOTE, FEWEST_FILLS, MOST_FILLS, ONE_GUITARIST_COUNT, TWO_GUITARISTS, ACOUSTIC, BAND_SOUNDS, FILLS_TRAITS, PROGRESSION_TRAITS, MOST_BUSY, USUAL_BUSY, MINOR, SEED, genre_names, genre_title
+from llamatron.macro_composer.wizard_choices import MAJOR, WizardChoices, USUAL_PIECE_NOTE, FEWEST_FILLS, MOST_FILLS, ONE_GUITARIST_COUNT, TWO_GUITARISTS, ACOUSTIC, BAND_SOUNDS, FILLS_TRAITS, PROGRESSION_TRAITS, MOST_BUSY, USUAL_BUSY, MINOR, SEED, genre_names, genre_title
 from llamatron.strings.errors import ERR_WIZARD_LAST_PIECE, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_CHOOSE_GENRE, ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
 from llamatron.strings.labels import MSG_WIZARD_MELODY_SETTING_LABELS, MSG_WIZARD_PLAYER_GAUGE_LABELS, MSG_WIZARD_ANSWERED_BY_LABEL, MSG_WIZARD_BY_SECTION, MSG_WIZARD_FILLS_BUSY_LABEL, MSG_WIZARD_NOBODY, MSG_WIZARD_ROLE_LABEL, MSG_WIZARD_SECTION_ROLE_LABEL, MSG_WIZARD_TUNE_LABEL, MSG_GM_SOUNDS, MSG_WIZARD_KIT_DRUMS, MSG_GM_FAMILIES, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_GAUGE_ENDS, MSG_WIZARD_GAUGE_LABELS, MSG_WIZARD_HOOK_LABEL, MSG_WIZARD_NO_BREAK, MSG_WIZARD_ANY_PROGRESSION, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_GUITARISTS_LABEL, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_SOUND_LABEL, MSG_WIZARD_SOUNDS_LABEL, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_COMPOSITION_BRANCH, MSG_WIZARD_CHORDS_BRANCH, MSG_WIZARD_MELODY_BRANCH, MSG_WIZARD_HOOKS_BRANCH, MSG_WIZARD_HOOK_ON, MSG_WIZARD_HOOK_OFF, MSG_WIZARD_USUAL_MELODY, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_SUGGESTED_FORM_BUTTON, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_START_CANCEL
 from llamatron.strings.legends import What
 from llamatron.strings.macro_composer import MSG_PIECE_INSTRUMENT
-from llamatron.strings.marks import MSG_WIZARD_CHORDS_KEY, MSG_WIZARD_CHORDS_LINE, MSG_WIZARD_PROGRESSION_SHOWN, MSG_WIZARD_BUSY_CUSTOM_SHOWN, MSG_WIZARD_COMPOSITION_LINE, MSG_WIZARD_ROLE_FROM_PLAN, MSG_SOUND_NOTE_ROW, MSG_TOGGLE_ON, MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_SOUND_ON_NOTE, MSG_WIZARD_MELODY_GAUGE_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_OWN_FORM, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
-from llamatron.strings.messages import MSG_WIZARD_CHORDS_DRAWN_LATER, MSG_WIZARD_NOTHING_TO_CHOOSE, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_SECTIONS_HINT, MSG_UNDONE, MSG_RESTORED, MSG_WIZARD_ALREADY_OPEN, MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CREATED, MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_REPLACED, MSG_WIZARD_NOTHING_TO_UNDO
+from llamatron.strings.marks import MSG_WIZARD_HOOK_BAR_LINE, MSG_WIZARD_HOOK_CELL, MSG_WIZARD_HOOK_GAP, MSG_WIZARD_CHORDS_KEY, MSG_WIZARD_CHORDS_LINE, MSG_WIZARD_PROGRESSION_SHOWN, MSG_WIZARD_BUSY_CUSTOM_SHOWN, MSG_WIZARD_COMPOSITION_LINE, MSG_WIZARD_ROLE_FROM_PLAN, MSG_SOUND_NOTE_ROW, MSG_TOGGLE_ON, MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_SOUND_ON_NOTE, MSG_WIZARD_MELODY_GAUGE_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_OWN_FORM, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
+from llamatron.strings.messages import MSG_WIZARD_HOOK_MADE, MSG_WIZARD_CHORDS_DRAWN_LATER, MSG_WIZARD_NOTHING_TO_CHOOSE, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_SECTIONS_HINT, MSG_UNDONE, MSG_RESTORED, MSG_WIZARD_ALREADY_OPEN, MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CREATED, MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_REPLACED, MSG_WIZARD_NOTHING_TO_UNDO
 from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_SONG_WORD
 from llamatron.composition.naming import new_name
 from llamatron.support.version import VERSION
@@ -42,6 +42,7 @@ from llamatron.tui.text import clock
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.set.songs_page import SongsPage
+from llamatron.tui.screens.wizard.hooks_branch import picture_of
 from llamatron.tui.screens.wizard.starts import NEW_FROM_LAST, NEW_FROM_SCRATCH, REPLACE_FROM_LAST, REPLACE_FROM_SCRATCH, STARTS
 from llamatron.tui.screens.wizard.wizard_page import WizardPage
 from tests.support.ui_testing import UITest, back_key, fixed_text, forward_key, key_of
@@ -57,6 +58,11 @@ A_SONG_NAME = 'anthem'
 A_NOTE_TYPED = 'f#2'
 A_GENRE_WITH_RHYTHMS = 'rock'
 A_GENRE_WITH_NO_HOOK = 'blues'
+# A hook of one bar made for the test, a note of it, and the widths of a panel with room for wide steps and without.
+A_HOOKS_STEPS = 8
+A_PITCH = 60
+A_WIDE_PANEL = 60
+A_NARROW_PANEL = 20
 # A progression of rock with a borrowed chord, as written, and its verse spelled in two keys.
 A_PROGRESSION = 'borrowed flat seven'
 A_ROOT = 'C'
@@ -1056,6 +1062,40 @@ class TestWizardComposition(WizardTest):
         await self.press(Key.ENTER)
         self.assertIn(MSG_WIZARD_PROGRESSION_SHOWN.format(name=A_PROGRESSION, numerals=ITS_NUMERALS), self.text())
 
+    async def test_the_hooks_panel_draws_the_hook_the_song_made_will_have(self):
+        await self.choose(genre=A_GENRE_WITH_RHYTHMS)
+        choices = self.choices()
+        await self.go_to_named_branch(MSG_WIZARD_HOOKS_BRANCH)
+        hook = choices.hook_notes()
+        shown = self.text()
+        for line in picture_of(hook=hook, width=A_WIDE_PANEL):
+            self.assertIn(line, shown)
+        self.assertIn(MSG_WIZARD_HOOK_MADE.format(player=choices.role_title(choices.tune_player())), shown)
+        for _, _, pitch in hook[2]:
+            self.assertIn(note_shown(pitch), shown)
+        await self.create()
+        self.assertEqual(WizardChoices.from_data(self.document.song().get_wizard_choices()).hook_notes(), hook)
+
+    async def test_the_hooks_picture_goes_with_the_hook(self):
+        await self.choose(genre=A_GENRE_WITH_RHYTHMS)
+        choices = self.choices()
+        await self.go_to_named_branch(MSG_WIZARD_HOOKS_BRANCH)
+        self.assertIn(MSG_WIZARD_HOOK_CELL, self.text())
+        choices.set_hook(False)
+        await self.press(Key.DOWN, Key.UP)
+        self.assertNotIn(MSG_WIZARD_HOOK_CELL, self.text())
+
+    def test_a_note_of_the_picture_leaves_its_last_cell_empty_and_a_long_hook_is_drawn_narrow(self):
+        hook = (A_HOOKS_STEPS, A_HOOKS_STEPS, [(0, 2, A_PITCH), (2, 2, A_PITCH), (4, 1, A_PITCH + 1)])
+        high, low, floor = picture_of(hook=hook, width=A_WIDE_PANEL)
+        self.assertIn(MSG_WIZARD_HOOK_BAR_LINE + (MSG_WIZARD_HOOK_CELL * 3 + MSG_WIZARD_HOOK_GAP) * 2, low)
+        self.assertIn(MSG_WIZARD_HOOK_CELL, high)
+        self.assertEqual(len(high), len(low))
+        self.assertEqual(len(floor), len(low))
+        narrow = picture_of(hook=hook, width=A_NARROW_PANEL)
+        self.assertLess(len(narrow[1]), len(low))
+        self.assertIn(MSG_WIZARD_HOOK_BAR_LINE + (MSG_WIZARD_HOOK_CELL + MSG_WIZARD_HOOK_GAP) * 2, narrow[1])
+
     async def test_the_hook_is_switched_on_the_hooks_branch(self):
         await self.choose(genre=A_GENRE_WITH_RHYTHMS)
         choices = self.choices()
@@ -1226,18 +1266,22 @@ class TestWizardStart(WizardTest):
         kept = self.document.song().get_wizard_choices()
         await self.start_with(NEW_FROM_LAST)
         self.assertEqual(self.wizard().start(), NEW_FROM_LAST)
-        self.assertEqual(self.choices().to_data(), kept)
+        # The run keeps the song's choices and draws a seed of its own at once, so that what a panel shows is what Apply makes.
+        self.assertEqual({**self.choices().to_data(), SEED: None}, {**kept, SEED: None})
+        drawn = self.choices().get_seed()
+        self.assertNotEqual(drawn, kept[SEED])
         self.assertNotEqual(self.wizard().song_name(), first)
         self.assertFalse(self.wizard().replaces())
         await self.create()
         self.assertEqual(len(self.document.song_names()), 3)
-        # The settings are kept and the dice rolled again, as on every run.
+        # The settings are kept and the dice rolled again, as on every run, and the song is made with the seed the run drew.
         self.assertEqual({**self.document.song().get_wizard_choices(), SEED: None}, {**kept, SEED: None})
+        self.assertEqual(self.document.song().get_wizard_choices()[SEED], drawn)
 
     async def test_a_new_song_from_scratch_starts_with_nothing_chosen(self):
         await self.make_a_song_and_open_the_wizard_on_it()
         await self.start_with(NEW_FROM_SCRATCH)
-        self.assertEqual(self.choices().to_data(), {})
+        self.assertEqual(list(self.choices().to_data()), [SEED])
         await self.go_to_named_branch(MSG_WIZARD_CREATE_BRANCH)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         self.assertIn(ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE, self.text())

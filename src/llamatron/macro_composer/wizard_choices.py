@@ -41,7 +41,8 @@ from llamatron.macro_composer.arranger import (
 from llamatron.macro_composer.composer import composed
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
-from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, KIT, OCTAVE
+from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, FLAT, KIT, LINES, OCTAVE, REST, SHARP, STEPS
+from llamatron.strings.macro_composer import MSG_PART_OF_SECTION
 from llamatron.macro_composer.melody import CHROMATIC, DEFAULT_EVOLVE, EVOLVE, HALF_STEPS, LEAPS, MOVE, NOTES_IN_OCTAVE, DEFAULT_GAUGES, EVOLVING, GRID, HIGHEST_GAUGE, HOOK, LOWEST_GAUGE, ROTATE, ROTATIONS, SERIAL, SMART, STEP_WALK
 from llamatron.music.note import ROOT_NAMES, SEMITONES_ABOVE_C
 from llamatron.playback.song_renderer import SongRenderer
@@ -110,6 +111,9 @@ PLAYER_GAUGES_KEPT = 'player_gauges'
 PIECES_ANSWER = 'pieces'
 QUIET_NOTES_ANSWER = 'quiet notes'
 BARS_ANSWER = 'bars offered'
+HOOK_ANSWER = 'hook notes'
+# How far a sharp or a flat moves a note, in half steps.
+HALF_STEPS_OF_ACCIDENTAL = {SHARP: 1, FLAT: -1}
 # What is kept of the player beside the tune: who answers, the one thing done in every section or None for the genre's plan, and how busy; and a section's own choice.
 BESIDE_KEPT = 'beside'
 BY = 'by'
@@ -1263,6 +1267,34 @@ class WizardChoices:
     def has_hook(self):
         return self.usual_hook() if self._hook is None else self._hook
 
+    def hook_notes(self):
+        """Return the hook as the song's tune player first plays it: how many steps the hook line lasts, how many steps a bar
+        has, and each note as where it starts, how many steps it lasts and its MIDI note. None while the song has no hook.
+        Found by arranging the song, and kept until a choice changes."""
+        return self._remembered(key=HOOK_ANSWER, compute=self._hook_notes)
+
+    def _hook_notes(self):
+        player = self.tune_player()
+        if not self.can_have_hook() or not self.has_hook() or player is None:
+            return None
+        sections = style_of(self._genre)[SECTIONS]
+        kind = next(kind for kind in self.section_kinds_in_form() if any(entry.get(HOOK) for entry in sections[kind].get(PLAN, [])))
+        line = next(place for place, entry in enumerate(sections[kind][PLAN]) if entry.get(HOOK))
+        part = arranged(style=style_of(self._genre), song=self.song_picks(kind))[PARTS].get(MSG_PART_OF_SECTION.format(kind, player))
+        if part is None or LINES not in part:
+            return None
+        scale = self.scale_half_steps()
+        lowest = part[OCTAVE] * NOTES_IN_OCTAVE + self.root_half_steps()
+        notes = []
+        at = 0
+        for note in part[LINES][line]:
+            length = note.get(STEPS, note.get(REST))
+            if REST not in note:
+                octaves, place = divmod(note[DEGREE] - 1, len(scale))
+                notes.append((at, length, lowest + scale[place] + (octaves + note.get(OCTAVE, 0)) * NOTES_IN_OCTAVE + HALF_STEPS_OF_ACCIDENTAL.get(note.get(ACCIDENTAL), 0)))
+            at += length
+        return at, self._melody_habits()[GRID], notes
+
     def set_hook(self, on):
         if on and not self.can_have_hook():
             raise ValueError(ERR_WIZARD_NO_HOOK)
@@ -1510,10 +1542,6 @@ class WizardChoices:
         if isinstance(seed, bool) or not isinstance(seed, int):
             raise ValueError(ERR_WIZARD_SEED.format(value=seed))
         self._seed = seed
-
-    def forget_seed(self):
-        """Leave the seed to be drawn when the song is made."""
-        self._seed = None
 
     def draw_seed(self, *, dice=None):
         """Draw a new seed at random, for a song from scratch or a new take."""
