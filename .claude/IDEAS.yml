@@ -283,6 +283,42 @@
 
     The way in would be Play and Stop buttons on the Scene page, as the clip page has.
 
+- title: "Isorhythm: a rhythm and a series of pitches that repeat at different lengths"
+  priority: 3
+  text: |
+    A repeating rhythm and a repeating series of pitches, each of its own length, played together so that the two drift out
+    of phase and meet again only after many bars, as in medieval isorhythm. To look at first: how much already works, since a
+    pattern's rows can each have a step of their own and a list generator steps through its values note by note, so a row of
+    pitches of one length under a rhythm of another may need only a demo; and what is missing, such as a pattern's pitch row
+    and rhythm row having lengths of their own, or a generator that deals a series of degrees to whatever notes arrive.
+
+- title: "Canon and imitation: a track replaying another's pattern after a delay"
+  priority: 3
+  text: |
+    A generator that replays a pattern on another track after a delay, moved up or down within the scale: rounds, stretto
+    where the entries crowd closer, and phasing where the delay keeps growing a little each time round. What exists already:
+    the Harmonizer's Delay repeats a clip some steps later, moved along the scale and quieter, on the same track. What would
+    be new: taking the notes from another track, as the Hocket does, and a delay that changes over time. To settle: whether
+    this is a new source for the Harmonizer or a generator of its own, and how Restart treats the growing delay.
+
+- title: "Serial transforms as playback generators: inversion, retrograde, augmentation"
+  priority: 3
+  text: |
+    Generators that turn a clip's line upside down around a note of the scale, play the line backwards, or stretch or
+    squeeze the line's lengths, at playback, leaving the pattern as written, so that they chain with Voice leading and
+    Progression. What exists already: Munge reverses and pivots a pattern for good in the pattern editor, and the serial
+    melody style of the MacroComposer makes the forms of a row. To settle: where in a chain each belongs, what retrograde
+    means for a clip that loops or is cut short by its scene, and whether inversion is by scale step or by half step.
+
+- title: "Modal interchange for a scene: borrowing the parallel scale without rewriting patterns"
+  priority: 3
+  text: |
+    A scene, such as a bridge, played in the parallel minor or another scale type on the same root, the patterns untouched.
+    What exists already: a scene can name a scale of its own, and degrees stay degrees until the clip knows its scale, so a
+    scene set to the parallel scale already borrows the whole of the scale; a step can borrow a scale type for one chord.
+    What may be missing: a quick way to say "the song's scale, but minor" on a scene without making a named scale, and
+    borrowing for some tracks of a scene only. Likely first a demo and a short field, then anything more.
+
 - title: "Velocity Assist: a few named velocity levels in place of numbers"
   priority: 5
   text: |
