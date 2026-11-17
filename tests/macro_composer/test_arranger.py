@@ -47,6 +47,7 @@ ENDING = 'ending'
 FORM = [INTRO, CHORUS, CHORUS, SOLO, ENDING]
 SECOND_CHORUS = 'chorus 2'
 BASS = 'bass'
+ROOTS_AND_FIFTHS = 'roots and fifths'
 LEAD = 'lead'
 ANSWERS = 'answers'
 COMPING = 'comping'
@@ -204,6 +205,20 @@ class TestStyleTemplates(unittest.TestCase):
                     with self.subTest(path=path, trait=trait, value=value[arranger.VALUE]):
                         self.assertLessEqual(len({len(hits) for hits in value.get(arranger.BAR, {}).values()}), 1)
                         self.assertLessEqual(len({steps_in(bar) for bar in value.get(arranger.FIGURE, [])}), 1)
+
+    def test_a_figure_for_a_kind_of_section_is_for_a_kind_the_style_has_and_as_long_as_the_values_own(self):
+        found = 0
+        for path in style_files():
+            style = read(path)
+            for trait, values in style[arranger.TRAITS].items():
+                for value in values if isinstance(values, list) else []:
+                    for kind, own in value.get(arranger.BY_SECTION, {}).items() if arranger.FIGURE in value else []:
+                        found += 1
+                        with self.subTest(path=path, trait=trait, value=value[arranger.VALUE], kind=kind):
+                            self.assertIn(kind, style[arranger.SECTIONS])
+                            self.assertEqual({steps_in(bar) for bar in own[arranger.FIGURE]}, {steps_in(bar) for bar in value[arranger.FIGURE]})
+                            self.assertNotEqual(own[arranger.FIGURE], value[arranger.FIGURE])
+        self.assertGreater(found, 0)
 
     def test_every_template_of_every_style_makes_a_song_that_loads(self):
         for path in style_files():
@@ -477,16 +492,39 @@ class TestPlayers(unittest.TestCase):
         self.assertIn(arranger.CRASH, self.drums_of(given=given, scene=CHORUS))
         self.assertNotIn(arranger.CRASH, self.drums_of(given=given, scene=VERSE))
 
-    def bass_figure(self, *, template=ROCK_KIND):
-        return arranger.values_of(style=self.style, trait=BASS)[self.style[arranger.TEMPLATES][template][BASS]][arranger.FIGURE]
+    def bass_figure(self, *, template=ROCK_KIND, kind=None):
+        """The figure the kind's bass plays as written: the one for a kind of section where the value has one, or the usual one."""
+        value = arranger.values_of(style=self.style, trait=BASS)[self.style[arranger.TEMPLATES][template][BASS]]
+        return value.get(arranger.BY_SECTION, {}).get(kind, value)[arranger.FIGURE]
 
     def bass_lines(self, *, song, scene):
         given = arranger.arranged(style=self.style, song=song)
         play = next(entry[composer.PLAY] for entry in given[composer.FORM] if entry[composer.SCENE] == scene)
         return given[composer.PARTS][play[BASS][composer.PART]][notation.LINES]
 
+    def own_figure(self, *, way, kind):
+        return arranger.values_of(style=self.style, trait=BASS)[way][arranger.BY_SECTION][kind][arranger.FIGURE]
+
+    def test_a_value_plays_its_own_figure_in_a_kind_of_section_and_its_usual_one_elsewhere(self):
+        song = self.song(levels={players.BASS: players.PLAIN}, picks={BASS: ROOTS_AND_FIFTHS})
+        usual = arranger.values_of(style=self.style, trait=BASS)[ROOTS_AND_FIFTHS][arranger.FIGURE]
+        self.assertEqual(self.bass_lines(song=song, scene=VERSE), self.own_figure(way=ROOTS_AND_FIFTHS, kind=VERSE))
+        self.assertEqual(self.bass_lines(song=song, scene=CHORUS), self.own_figure(way=ROOTS_AND_FIFTHS, kind=CHORUS))
+        self.assertEqual(self.bass_lines(song={**song, arranger.FORM: [SOLO]}, scene=SOLO), usual)
+        # Every verse plays the one part.
+        given = arranger.arranged(style=self.style, song={**song, arranger.FORM: [VERSE, CHORUS, VERSE]})
+        verses = [entry[composer.PLAY][BASS][composer.PART] for entry in given[composer.FORM] if entry[composer.SCENE].startswith(VERSE)]
+        self.assertEqual(len(verses), 2)
+        self.assertEqual(len(set(verses)), 1)
+
+    def test_a_busier_player_varies_the_figure_of_the_kind_of_section(self):
+        plain = self.bass_lines(song=self.song(levels={players.BASS: players.PLAIN}, picks={BASS: ROOTS_AND_FIFTHS}), scene=CHORUS)
+        busy = self.bass_lines(song=self.song(levels={players.BASS: players.COMPLEXITIES[-1]}, picks={BASS: ROOTS_AND_FIFTHS}), scene=CHORUS)
+        self.assertNotEqual(busy, plain)
+        self.assertEqual(busy[0], self.own_figure(way=ROOTS_AND_FIFTHS, kind=CHORUS)[0])
+
     def test_the_plain_bass_player_plays_the_kinds_figure_as_written(self):
-        self.assertEqual(self.bass_lines(song=self.song(levels={players.BASS: players.PLAIN}), scene=CHORUS), self.bass_figure())
+        self.assertEqual(self.bass_lines(song=self.song(levels={players.BASS: players.PLAIN}), scene=CHORUS), self.bass_figure(kind=CHORUS))
 
     def test_a_busier_bass_player_ends_the_bars_the_player_varies_and_leaves_the_others_as_written(self):
         figure = self.bass_figure()

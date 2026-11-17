@@ -68,6 +68,15 @@ traits:
       sound: bass
       figure:
         - [{degree: 1, steps: 3}, {degree: 1, steps: 1}, {degree: 5, steps: 3}, {degree: 5, steps: 1}]
+      # A verse leaves space, on the root and the fifth alone; a chorus moves, with the octave at the bar's end and a walk in every second bar.
+      by_section:
+        verse:
+          figure:
+            - [{degree: 1, steps: 3}, {rest: 1}, {degree: 5, steps: 3}, {rest: 1}]
+        chorus:
+          figure:
+            - [{degree: 1, steps: 3}, {degree: 1, steps: 1}, {degree: 5, steps: 2}, {degree: 5, steps: 1}, {degree: 1, octave: 1, steps: 1}]
+            - [{degree: 1, steps: 3}, {degree: 1, steps: 1}, {degree: 5, steps: 2}, {degree: 6, steps: 1}, {degree: 7, steps: 1}]
     - value: walking down
       share: 16
       sound: bass
@@ -79,11 +88,22 @@ traits:
       figure:
         - [{degree: 1, steps: 2}, {degree: 1, steps: 1}, {degree: 3, steps: 1}, {degree: 5, steps: 2}, {degree: 6, steps: 1}, {degree: 5, steps: 1}]
         - [{degree: 1, steps: 2}, {degree: 5, steps: 1}, {degree: 6, steps: 1}, {degree: 1, octave: 1, steps: 2}, {degree: 6, steps: 1}, {degree: 5, steps: 1}]
+      # A verse stays under the singer, plainer, and the chorus is the busy line.
+      by_section:
+        verse:
+          figure:
+            - [{degree: 1, steps: 3}, {degree: 1, steps: 1}, {degree: 5, steps: 2}, {degree: 6, steps: 1}, {degree: 5, steps: 1}]
     - value: roots in eighths
       share: 26
       sound: picked bass
       figure:
         - [{degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}]
+      # A chorus moves: the octave at each bar's end, and a run up into the next phrase.
+      by_section:
+        chorus:
+          figure:
+            - [{degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, octave: 1, steps: 1}, {degree: 1, steps: 1}]
+            - [{degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 1, steps: 1}, {degree: 3, steps: 1}, {degree: 5, steps: 1}, {degree: 6, steps: 1}]
     - value: root then rest
       share: 8
       sound: bass

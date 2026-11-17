@@ -105,11 +105,21 @@ traits:
       figure:
         - [{degree: 1, steps: 4}, {degree: 1, steps: 2}, {degree: 3, steps: 2}, {degree: 5, steps: 4}, {degree: 6, steps: 2}, {degree: 5, steps: 2}]
         - [{degree: 1, steps: 4}, {degree: 5, steps: 2}, {degree: 6, steps: 2}, {degree: 1, octave: 1, steps: 3}, {degree: 6, steps: 3}, {degree: 5, steps: 2}]
+      # A verse stays under the singer, on the root and the fifth with space after each; the chorus is the busy line.
+      by_section:
+        verse:
+          figure:
+            - [{degree: 1, steps: 4}, {degree: 1, steps: 2}, {rest: 2}, {degree: 5, steps: 4}, {degree: 5, steps: 2}, {rest: 2}]
     - value: sparse and syncopated
       share: 20
       sound: bass
       figure:
         - [{degree: 1, steps: 6}, {rest: 1}, {degree: 1, steps: 3}, {rest: 2}, {degree: 5, steps: 2}, {degree: 6, steps: 2}]
+      # A chorus fills the first half of the bar with a climb.
+      by_section:
+        chorus:
+          figure:
+            - [{degree: 1, steps: 4}, {degree: 1, steps: 2}, {degree: 3, steps: 2}, {degree: 5, steps: 3}, {rest: 1}, {degree: 5, steps: 2}, {degree: 6, steps: 2}]
     - value: on the one then syncopated
       share: 24
       sound: bass

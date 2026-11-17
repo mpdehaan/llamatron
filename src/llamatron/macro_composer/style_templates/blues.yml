@@ -133,6 +133,11 @@ traits:
       sound: upright bass
       figure:
         - [{degree: 1, steps: 6}, {degree: 5, steps: 5}, {degree: 5, steps: 1}]
+      # Under a solo the second half of the bar moves.
+      by_section:
+        solo:
+          figure:
+            - [{degree: 1, steps: 6}, {degree: 5, steps: 3}, {degree: 6, steps: 2}, {degree: 5, steps: 1}]
     - value: slow walk
       share: 12
       sound: bass
@@ -143,6 +148,11 @@ traits:
       sound: bass
       figure:
         - [{degree: 1, steps: 2}, {degree: 1, steps: 1}, {degree: 1, steps: 2}, {degree: 1, steps: 1}, {degree: 1, steps: 2}, {degree: 1, steps: 1}, {degree: 1, steps: 2}, {degree: 1, steps: 1}]
+      # Under a solo the bass walks.
+      by_section:
+        solo:
+          figure:
+            - [{degree: 1, steps: 3}, {degree: 3, steps: 3}, {degree: 5, steps: 3}, {degree: 6, steps: 3}]
   chords:
     - {value: twelve bar, share: 25, pattern: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 1]}
     - {value: twelve bar quick change, share: 38, pattern: [1, 4, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5]}
