@@ -364,6 +364,16 @@
        chapters), a test failing when a link is missing or points nowhere. The examples are in examples/learning, examples/other and
        examples/by_genre (the user's choice), where the new demos go by purpose.
 
+- title: "Digest and discuss the computer music ideas"
+  priority: 15
+  text: |
+    `.claude/COMPUTER_MUSIC_IDEAS.yml` holds some twenty ideas from algorithmic composition, sorted by family (probability,
+    grammars, rules, processes, search, rhythm and meter, import, tuning). To do with the user: check what each says of
+    llamatron against the code, since the statements came from the website; discuss each family in a reply of its own; and
+    decide which ideas are folded into this file with a priority, which are dropped, and which join an idea already here
+    (the canons with "Canon and imitation", phasing with the same, the chord grammar and the seed browser with the wizard).
+    An idea leaves that file when it is folded in or dropped.
+
 - title: "Playing lights on the list pages"
   priority: 20
   text: |
