@@ -22,7 +22,7 @@ from llamatron.macro_composer.wizard_choices import HOOK_PARTS, WizardChoices
 from llamatron.strings.labels import MSG_WIZARD_GROUP_HOOK_KIND, MSG_WIZARD_GROUP_HOOK_SAID, MSG_WIZARD_GROUP_RIFF, MSG_WIZARD_NEW_RIFF_BUTTON, MSG_WIZARD_RIFF_NOTES_LABEL, MSG_WIZARD_RIFF_NOTES_TITLE, MSG_WIZARD_RIFF_PLAYED_BY_LABEL, MSG_WIZARD_RIFF_PLAYERS_JOINED, MSG_WIZARD_RIFF_SAID_LABEL, MSG_WIZARD_INTRO_HOOK_LABEL, MSG_WIZARD_NOBODY, MSG_WIZARD_HOOK_PART_LABELS, MSG_WIZARD_PICK, MSG_WIZARD_PICK_SHOWN, MSG_WIZARD_NEW_HOOK_BUTTON, MSG_WIZARD_HOOK_LABEL, MSG_WIZARD_HOOK_NOTES_LABEL, MSG_WIZARD_HOOK_NOTES_OWN, MSG_WIZARD_HOOK_NOTES_TITLE, MSG_WIZARD_HOOK_NOTES_WIZARD, MSG_WIZARD_HOOK_OFF, MSG_WIZARD_HOOK_ON, MSG_WIZARD_HOOKS_BRANCH
 from llamatron.strings.legends import KeyName, MSG_TUNE_USUAL_WHAT, MSG_WIZARD_EDIT_NOTES_WHAT, MSG_WIZARD_NEW_HOOK_WHAT
 from llamatron.strings.marks import MSG_WIZARD_HOOK_BAR_LINE, MSG_WIZARD_HOOK_CELL, MSG_WIZARD_HOOK_FLOOR, MSG_WIZARD_HOOK_FLOOR_BAR, MSG_WIZARD_HOOK_GAP, MSG_WIZARD_HOOK_ROW
-from llamatron.strings.messages import MSG_WIZARD_RIFF_SAID, MSG_WIZARD_HOOK_MADE, MSG_WIZARD_HOOK_OWN, MSG_WIZARD_LISTEN_HOOK
+from llamatron.strings.messages import MSG_WIZARD_LISTEN_RIFF, MSG_WIZARD_RIFF_SAID, MSG_WIZARD_HOOK_MADE, MSG_WIZARD_HOOK_OWN, MSG_WIZARD_LISTEN_HOOK
 from llamatron.tui.drawing import INDENT, Style
 from llamatron.tui.note_names import note_shown
 from llamatron.tui.dialogs.tune_dialog import TuneDialog
@@ -156,7 +156,10 @@ class HooksBranch(SongWaysBranch):
     def listens(self):
         choices = self.choices()
         if not self.offers_a_hook() or not choices.has_hook() or choices.hook_scene() is None or choices.tune_player() is None:
-            return None
+            # With no hook to hear, the riff is heard where the song has one: the first section that plays it, its first player alone.
+            if choices.riff_scene() is None:
+                return None
+            return MSG_WIZARD_LISTEN_RIFF, choices.riff_scene(), choices.get_riff_players()[0]
         return MSG_WIZARD_LISTEN_HOOK, choices.hook_scene(), choices.tune_player()
 
     def notes(self, width):

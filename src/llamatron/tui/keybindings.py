@@ -1067,7 +1067,7 @@ class TuneDialog(Dialog):
 
 class LinesDialog(Dialog):
     """The Lines dialog, a section's lines one by one: Up and Down move between the lines, [ and ] make the line's breath shorter and longer, Space has a note of the line come
-    early or not, Enter opens the line's notes, Bksp gives the line back to the wizard and Esc closes."""
+    early or not, Enter opens the line's notes, Bksp gives the line back to the wizard, L plays the section's tune and Esc closes."""
 
     CLOSE = (CANCEL_KEYS, KeyName.ESCAPE, What.CLOSE)
     MOVE = (ARROWS_UP_DOWN, KeyName.UP_DOWN, What.MOVE)
@@ -1076,7 +1076,8 @@ class LinesDialog(Dialog):
     EARLY = (Key.SPACE, KeyName.SPACE, MSG_LINES_EARLY_WHAT)
     EDIT = (Key.ENTER, KeyName.ENTER, MSG_WIZARD_EDIT_NOTES_WHAT)
     USUAL = (Key.BACKSPACE, KeyName.BACKSPACE, MSG_LINES_USUAL_WHAT)
-    IN_HELP = [CLOSE, MOVE, SHORTER, LONGER, EARLY, EDIT, USUAL]
+    LISTEN = (Key.L, KeyName.L, MSG_LISTEN_WHAT)
+    IN_HELP = [CLOSE, MOVE, SHORTER, LONGER, EARLY, EDIT, USUAL, LISTEN]
     IN_LEGEND = IN_HELP
 
 

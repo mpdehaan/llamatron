@@ -19,7 +19,7 @@
 Up and Down move between the lines. [ and ] make the breath after the cursor's line shorter and longer, in eighths, and
 Space has a note of the line come an eighth early or not: both only on a line that is a new idea of the tune, since a
 line that says an idea again is that idea's line. Enter opens the line's notes in the Tune dialog, Bksp gives the line
-back to the wizard, and Esc closes. Every change is made at once, through the functions the dialog is given, and a
+back to the wizard, L plays the section's tune as the lines stand, and Esc closes. Every change is made at once, through the functions the dialog is given, and a
 change the song cannot be made with is said under the lines and left out.
 """
 
@@ -52,7 +52,7 @@ class LinesDialog(Dialog):
 
     KEYS = keybindings.LinesDialog
 
-    def __init__(self, *, title, lines, set_line, steps_in_bar, pitch_of_place, title_of_player, notes_title):
+    def __init__(self, *, title, lines, set_line, steps_in_bar, pitch_of_place, title_of_player, notes_title, listen, stop_listening):
         super().__init__()
         self.title = title
         # The section's lines as the song has them now, asked again after every change (WizardChoices.section_lines).
@@ -63,6 +63,9 @@ class LinesDialog(Dialog):
         self.pitch_of_place = pitch_of_place
         self.title_of_player = title_of_player
         self.notes_title = notes_title
+        # Plays the section's tune as the lines now stand, and returns what went wrong, or None.
+        self.listen = listen
+        self.stop_listening = stop_listening
         self.place = 0
         self.problem = None
 
@@ -71,7 +74,7 @@ class LinesDialog(Dialog):
 
     def keys(self):
         line = self.line()
-        result = [self.bind(self.KEYS.CLOSE, action=lambda: self.dismiss(None)), self.bind(self.KEYS.MOVE, action=self.move, wants_key=True)]
+        result = [self.bind(self.KEYS.CLOSE, action=self.close), self.bind(self.KEYS.MOVE, action=self.move, wants_key=True), self.bind(self.KEYS.LISTEN, action=self.hear)]
         if line[LINE_BREATHES]:
             result += [self.bind(self.KEYS.SHORTER, action=lambda: self.breathe(STEP_BACK)), self.bind(self.KEYS.LONGER, action=lambda: self.breathe(STEP_FORWARD)),
                        self.bind(self.KEYS.EARLY, action=self.flip_early)]
@@ -80,6 +83,14 @@ class LinesDialog(Dialog):
         if line[LINE_OWN]:
             result.append(self.bind(self.KEYS.USUAL, action=self.put_back))
         return result
+
+    def close(self):
+        """Close the dialog, and stop what it was playing."""
+        self.stop_listening()
+        self.dismiss(None)
+
+    def hear(self):
+        self.problem = self.listen()
 
     def move(self, name):
         self.place = cursor_moved(place=self.place, name=name, count=len(self.lines_now()))

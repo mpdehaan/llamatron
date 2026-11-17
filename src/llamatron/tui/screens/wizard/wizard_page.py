@@ -133,10 +133,17 @@ class WizardPage(FieldPage):
 
     def listen(self):
         what, index, track = self.branch().listens()
+        problem = self.problem_listening(what=what, index=index, track=track)
+        if problem is not None:
+            self.refuse(problem)
+            return
+        self.say(MSG_WIZARD_LISTENING.format(what=what))
+
+    def problem_listening(self, *, what, index, track):
+        """Play a section of the song as it would be made, or one track of the section, and return why it could not be heard, or None. A dialog over the page listens through this too."""
         preview = self.app.made_preview()
         if not preview.can_sound():
-            self.refuse(ERR_WIZARD_CANNOT_LISTEN)
-            return
+            return ERR_WIZARD_CANNOT_LISTEN
         try:
             setlist, name = self._choices.made_for_listening()
             if index >= len(setlist.get_song(name).get_scenes()):
@@ -146,9 +153,8 @@ class WizardPage(FieldPage):
             else:
                 preview.play_line(setlist=setlist, name=name, index=index, track=track, what=what)
         except (ValueError, SongFileError, SenderNotStarted) as problem:
-            self.refuse(str(problem) if isinstance(problem, SenderNotStarted) else ERR_WIZARD_NOTHING_TO_LISTEN_TO)
-            return
-        self.say(MSG_WIZARD_LISTENING.format(what=what))
+            return str(problem) if isinstance(problem, SenderNotStarted) else ERR_WIZARD_NOTHING_TO_LISTEN_TO
+        return None
 
     def stop_listening(self):
         self.app.made_preview().stop()
