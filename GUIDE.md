@@ -110,7 +110,7 @@ A generator changes how a clip's notes are played, without changing its pattern.
 | What it does | Page |
 | --- | --- |
 | Notes sliding into the next | [Glide](docs/generators/GLIDE.md) |
-| Lines of a tune ending early for a breath | [Phrasing](docs/generators/PHRASING.md) |
+| A tune delivered in lines, with a breath, a rise and fall | [Phrasing](docs/generators/PHRASING.md) |
 | Notes played short on chosen steps | [Shorten](docs/generators/SHORTEN.md) |
 
 ### Harmony

@@ -23,7 +23,7 @@ are checked again when a chain makes the generator, since settings can be built 
 
 from llamatron.composition.checks import Bars, check_keys, in_whole_notes, is_true_or_false, number, is_whole_number, is_whole_number_from, listed, reading, time_length
 from llamatron.composition.file_format import (
-    FIXED_CHORDS, GENERATOR_RESTART, RESTARTS, SECTION_KINDS, TENSIONS, Accidental, EuclidPart, NamedRhythm, Restart, StrumDirection, StrumPart, DRIFT_DIRECTIONS, DRIFT_VERSIONS, REGISTER_NAMES, SHAPE_PARTS, SHAPE_THENS, DriftValue, GeneratorKind, RegisterName, Shape, ShapePart, shape_setting, Section,
+    FIXED_CHORDS, GENERATOR_RESTART, RESTARTS, TENSIONS, Accidental, EuclidPart, NamedRhythm, Restart, StrumDirection, StrumPart, DRIFT_DIRECTIONS, DRIFT_VERSIONS, REGISTER_NAMES, SHAPE_PARTS, SHAPE_THENS, DriftValue, GeneratorKind, RegisterName, Shape, ShapePart, shape_setting, Section,
 )
 from llamatron.composition.named_scale import scale_type_names
 from llamatron.composition.strum import strum_part_settings, strum_values
@@ -37,7 +37,7 @@ from llamatron.composition.setting import Checked, Choice, Flag, Text, WholeNumb
 from llamatron.music.note import MAX_OCTAVE, MIN_OCTAVE
 from llamatron.support.rational import Rational
 from llamatron.generators.follow_chords import FollowChords
-from llamatron.generators.phrasing import BREATHS, FEWEST_EARLY, LINE_LENGTHS, LONG_THEN_SHORT, MEDIUM_BREATH, MOST_EARLY, Phrasing
+from llamatron.generators.phrasing import BREATHS, JOINS, LITTLE_RISE, NOTES_AS_WRITTEN, QUICK_BREATH, RISES, Phrasing
 from llamatron.generators.progression import Progression
 from llamatron.generators.voice_leading import VoiceLeading
 from llamatron.generators.guitarify import Guitarify
@@ -50,7 +50,7 @@ from llamatron.composition.euclid import NAMED_RHYTHMS, euclid_part_settings, eu
 from llamatron.generators.arp import MAX_OCTAVE_RANGE, MAX_OFFSET, MAX_OFFSETS, MIN_OFFSETS, Arp, ChordOrder, OctaveJump, _check_offsets
 from llamatron.generators.auto_ratchet import AutoRatchet
 from llamatron.strings.errors import (
-    ERR_BAD_BY_SECTION, ERR_NOT_TEXT,
+    ERR_NOT_TEXT,
     ERR_BAD_SHAPE_PERCENT,
     ERR_BAD_PROGRESSION_CHORDS,
     ERR_BAD_PROGRESSION_ROW, ERR_BAD_PROGRESSION_TENSIONS,
@@ -1192,38 +1192,23 @@ class PhrasingSetting:
 
     LINE_BARS = 'line_bars'
     BREATH = 'breath'
-    LINE_LENGTHS = 'line_lengths'
-    EARLY_NOTES = 'early_notes'
-    BY_SECTION = 'by_section'
+    RISE_AND_FALL = 'rise_and_fall'
+    NOTES = 'notes'
 
 
 # How many bars a line of a tune can be, and what a Phrasing does with each setting left out.
 LINES_IN_BARS = (1, 2, 4)
 DEFAULT_LINE_BARS = 2
-DEFAULT_EARLY_NOTES = 2
-# The settings a kind of section can have of its own, each described as the Phrasing's own is.
-PHRASING_BY_SECTION = described(
-    Choice(name=PhrasingSetting.BREATH, choices=BREATHS, default=LEFT_OUT, error=ERR_NOT_A_CHOICE),
-    Choice(name=PhrasingSetting.LINE_LENGTHS, choices=LINE_LENGTHS, default=LEFT_OUT, error=ERR_NOT_A_CHOICE),
-    WholeNumber(name=PhrasingSetting.EARLY_NOTES, lowest=FEWEST_EARLY, highest=MOST_EARLY, error=ERR_BAD_SHAPE_PERCENT),
-)
-PHRASING_DEFAULTS = {PhrasingSetting.BREATH: MEDIUM_BREATH, PhrasingSetting.LINE_LENGTHS: LONG_THEN_SHORT, PhrasingSetting.EARLY_NOTES: DEFAULT_EARLY_NOTES}
-
-
-def check_phrasing_by_section(value):
-    """Raise InvalidValue unless a value is settings by kind of section, each a Phrasing's breath, line lengths or early notes."""
-    if not isinstance(value, dict) or any(section not in SECTION_KINDS or not isinstance(own, dict) for section, own in value.items()):
-        raise InvalidValue(ERR_BAD_BY_SECTION.format(choices=listed(SECTION_KINDS), value=value))
-    for own in value.values():
-        check_keys(data=own, allowed=set(PHRASING_BY_SECTION))
-        check_settings(settings=PHRASING_BY_SECTION, data=own)
+PHRASING_DEFAULTS = {
+    PhrasingSetting.LINE_BARS: DEFAULT_LINE_BARS, PhrasingSetting.BREATH: QUICK_BREATH, PhrasingSetting.RISE_AND_FALL: LITTLE_RISE,
+    PhrasingSetting.NOTES: NOTES_AS_WRITTEN,
+}
 
 
 class PhrasingSettings(GeneratorSettings):
-    """A Phrasing's settings: how long a line is, how its lines breathe, and what a kind of section does of its own.
+    """A Phrasing's settings: how long a line of the tune is, the breath after it, how far it rises and falls, and how its notes are joined.
 
-    The renderer hands the generator the clip's kind of section and the stretches of its pattern
-    marked whole, so the settings are asked for the generator of one clip (generator_for).
+    The generator needs the length of a bar, which the song says, so the settings are asked for the generator of one clip (generator_for).
     """
 
     __slots__ = ()
@@ -1231,53 +1216,26 @@ class PhrasingSettings(GeneratorSettings):
     GENERATOR = Phrasing
     SETTINGS = described(
         Choice(name=PhrasingSetting.LINE_BARS, choices=LINES_IN_BARS, default=LEFT_OUT, error=ERR_NOT_A_CHOICE),
-        *PHRASING_BY_SECTION.values(),
-        Checked(name=PhrasingSetting.BY_SECTION, check=check_phrasing_by_section),
+        Choice(name=PhrasingSetting.BREATH, choices=BREATHS, default=LEFT_OUT, error=ERR_NOT_A_CHOICE),
+        Choice(name=PhrasingSetting.RISE_AND_FALL, choices=RISES, default=LEFT_OUT, error=ERR_NOT_A_CHOICE),
+        Choice(name=PhrasingSetting.NOTES, choices=JOINS, default=LEFT_OUT, error=ERR_NOT_A_CHOICE),
     )
 
     @classmethod
     def new(cls):
         return cls({})
 
-    def get_line_bars(self):
-        return or_default(value=self._written(PhrasingSetting.LINE_BARS), default=DEFAULT_LINE_BARS)
-
     def get_own(self, name):
-        """Return the breath, the line lengths or the early notes every section has unless it says its own."""
+        """Return one of the Phrasing's settings, or what the Phrasing does with the setting left out."""
         return or_default(value=self._written(name), default=PHRASING_DEFAULTS[name])
 
-    def get_section_own(self, *, section, name):
-        """Return what a kind of section says of its own for one setting, or None where it takes the Phrasing's."""
-        return (self._written(PhrasingSetting.BY_SECTION) or {}).get(section, {}).get(name)
-
-    def get_for(self, *, section, name):
-        """Return the setting a clip in a kind of section plays with: the section's own, or the Phrasing's. A scene that says no section takes the Phrasing's."""
-        own = None if section is None else self.get_section_own(section=section, name=name)
-        return self.get_own(name) if own is None else own
-
-    @notes_change
-    def set_section_own(self, *, section, name, value):
-        """Set what a kind of section says of its own for one setting, checked as a file's is, or None for the Phrasing's."""
-        by_section = own_copy(self._written(PhrasingSetting.BY_SECTION) or {})
-        own = by_section.setdefault(section, {})
-        if value is None:
-            own.pop(name, None)
-        else:
-            own[name] = value
-        by_section = {kind: values for kind, values in by_section.items() if values}
-        check_phrasing_by_section(by_section)
-        if by_section:
-            self._settings[PhrasingSetting.BY_SECTION] = by_section
-        else:
-            self._settings.pop(PhrasingSetting.BY_SECTION, None)
-
-    def generator_for(self, *, where, section, bar, whole):
-        """Return the Phrasing of one clip: in a kind of section, with bars of a length, leaving the stretches marked whole as written."""
+    def generator_for(self, *, where, bar):
+        """Return the Phrasing of one clip, whose bars are of a length."""
         with reading(where):
             self.check_data(self._settings)
         return Phrasing(
-            line=self.get_line_bars() * bar, bar=bar, breath=self.get_for(section=section, name=PhrasingSetting.BREATH),
-            line_lengths=self.get_for(section=section, name=PhrasingSetting.LINE_LENGTHS), early=self.get_for(section=section, name=PhrasingSetting.EARLY_NOTES), whole=whole,
+            line=self.get_own(PhrasingSetting.LINE_BARS) * bar, bar=bar, breath=self.get_own(PhrasingSetting.BREATH),
+            rise=self.get_own(PhrasingSetting.RISE_AND_FALL), join=self.get_own(PhrasingSetting.NOTES),
         )
 
 

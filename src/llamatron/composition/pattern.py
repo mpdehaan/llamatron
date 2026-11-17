@@ -406,19 +406,6 @@ class Pattern(PatternNotes, LlamaData):
         """Return whether it was written for a scale of this many notes, as a pattern written for any scale is."""
         return self.get_scale_length() in (None, size)
 
-    def no_breath_stretches(self, step_size):
-        """Return the stretches of the pattern whose notes are marked whole, as (start, end) from its start in whole notes, each run of marked steps one stretch."""
-        stretches = []
-        first = None
-        for step in range(self.get_steps() + 1):
-            marked = step < self.get_steps() and bool(self.get_value(row=Row.NO_BREATH, step=step))
-            if marked and first is None:
-                first = step
-            elif not marked and first is not None:
-                stretches.append((first * step_size, step * step_size))
-                first = None
-        return stretches
-
     def get_group(self):
         """Return the group the Patterns page lists it under, or None for a pattern in no group, as an older file's is."""
         return self._settings[PatternSetting.GROUP]
