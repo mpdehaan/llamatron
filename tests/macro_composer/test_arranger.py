@@ -372,6 +372,14 @@ class TestArranged(unittest.TestCase):
         song = setlist.get_songs()[0]
         self.assertEqual([name for name in song.get_track_names() if song.get_track(name).is_muted()], [MSG_CHORDS_TRACK])
 
+    def test_every_scene_has_its_chords_on_the_chords_track_and_a_held_chord_is_followed_there(self):
+        given = arranger.arranged(style=self.style, song=a_song())
+        self.assertTrue(all(MSG_CHORDS_TRACK in entry[composer.PLAY] for entry in given[composer.FORM]))
+        held = [entry[composer.PLAY] for entry in given[composer.FORM] if any(isinstance(played, dict) and played.get(composer.CHAINS) == [MSG_FOLLOW_CHORDS_NAME] for played in entry[composer.PLAY].values())]
+        self.assertTrue(held)
+        for play in held:
+            self.assertEqual(given[composer.PARTS][play[MSG_CHORDS_TRACK][composer.PART]][composer.RAW], arranger.one_chord(arranger.COMMON_TIME))
+
     def test_a_chord_with_a_sharp_or_a_flat_is_written_as_the_scales_home_chord_moved_there(self):
         made = arranger.chords_written(progression={arranger.CHORDS: [1, 7], arranger.ACCIDENTALS: [None, FLAT_MARK]}, meter=arranger.COMMON_TIME, scale_type=arranger.MAJOR)
         self.assertEqual(made[Row.CHORD], [arranger.SCALE_TRIAD, ChordSymbol.MAJOR])

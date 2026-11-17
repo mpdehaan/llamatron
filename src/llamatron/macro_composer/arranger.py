@@ -1079,7 +1079,12 @@ def arranged(*, style, song):
                 play[KICK] = {PART: MSG_PART_OF_SECTION.format(KICK, HELD), ONCE: True}
             for role, entry in pitched:
                 if FIGURE in entry and role[ROLE] in section.get(PLAYS, [role[ROLE]]):
-                    play[role[ROLE]] = {PART: MSG_PART_OF_SECTION.format(role[ROLE], HELD), ONCE: True}
+                    play[role[ROLE]] = {PART: MSG_PART_OF_SECTION.format(role[ROLE], HELD), ONCE: True, CHAINS: [MSG_FOLLOW_CHORDS_NAME]}
+            # The held chord is on the chords track too, the home chord for a bar, and what holds it follows it there.
+            chains[MSG_FOLLOW_CHORDS_NAME] = [dict(FOLLOWS_THE_CHORDS)]
+            chords_played = MSG_PART_OF_SECTION.format(name, CHORDS)
+            parts[chords_played] = {RAW: one_chord(meter)}
+            chords_played = {PART: chords_played, ONCE: True}
         else:
             for piece, part in drums_of.get(name, {}).items():
                 play[piece] = {PART: part, CHAINS: [MSG_TIMING_CHAIN.format(piece)]}
@@ -1198,9 +1203,7 @@ def arranged(*, style, song):
             # Nothing of the song's picks plays in this section, as pads alone where the song has no chord part: it is left out.
             met[name] -= 1
             continue
-        if not section.get(HELD):
-            # A section that only holds a chord has it written out in its parts, and nothing there follows the chords track.
-            play[MSG_CHORDS_TRACK] = chords_played
+        play[MSG_CHORDS_TRACK] = chords_played
         scene_settings = dict(section.get(SCENE_SETTINGS) or {})
         if section[KIND] in SECTION_KINDS:
             # A scene says what kind of section it is, where the kind is one a scene may be.
