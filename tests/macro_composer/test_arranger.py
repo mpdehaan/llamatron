@@ -85,6 +85,9 @@ WALTZ = '3/4'
 PHRASE = 4
 LAST_BAR = 4
 OWN_CHORDS = [1, 1, 4, 4]
+HALF_NOTE = '1/2'
+DOTTED_HALF_NOTE = '3/4'
+A_WHOLE_BAR = '1 bar'
 WHOLE = 100
 A_SIXTH_BAR = 6
 OWN_LINE = [{notation.DEGREE: 1, notation.STEPS: 12}, {notation.REST: 12}]
@@ -346,6 +349,30 @@ class TestArranged(unittest.TestCase):
         progression = given[composer.CHAINS][chain][0][arranger.PROGRESSION]
         pattern = arranger.values_of(style=self.style, trait=arranger.CHORD_TRAIT)[self.style[arranger.TEMPLATES][SHUFFLE][arranger.CHORD_TRAIT]][arranger.PATTERN]
         self.assertEqual(given[composer.GENERATORS][arranger.PROGRESSIONS][progression][arranger.CHORDS], pattern)
+
+    def test_a_bar_of_two_chords_is_its_two_by_the_half_bar_and_its_first_bar_by_bar(self):
+        self.assertEqual(arranger.halves_of([1, [1, 5]]), [1, 1, 1, 5])
+        self.assertEqual(arranger.chord_of([4, 5]), {arranger.DEGREE: 4})
+        self.assertEqual((arranger.half_bar_of(arranger.COMMON_TIME), arranger.half_bar_of(TWELVE_EIGHT)), (HALF_NOTE, DOTTED_HALF_NOTE))
+        whole = arranger.progression_of(chords=[1, 4], every=None)
+        self.assertNotIn(arranger.EVERY, whole)
+        # A progression that says how long its chords last keeps that, each bar's first chord standing for the bar.
+        said = arranger.progression_of(chords=[1, [4, 5]], every=A_WHOLE_BAR)
+        self.assertEqual((said[arranger.CHORDS], said[arranger.EVERY]), ([1, 4], A_WHOLE_BAR))
+
+    def test_a_song_whose_bars_hold_two_chords_loads_and_plays_them(self):
+        given = arranger.arranged(style=self.style, song=a_song(sections={SOLO: {arranger.CHORDS: [1, [4, 5]]}}))
+        made = given[composer.GENERATORS][arranger.PROGRESSIONS][MSG_PART_OF_SECTION.format(SOLO, arranger.CHORDS)]
+        self.assertEqual(made[arranger.CHORDS], [1, 1, 4, 5])
+        self.assertEqual(made[arranger.EVERY], arranger.half_bar_of(arranger.COMMON_TIME))
+        Setlist.from_data(data=composer.composed(given=given, version=VERSION))
+
+    def test_more_shared_bars_than_a_progression_holds_are_played_a_chord_a_bar(self):
+        long = [1, 4, 1, 1, 4, 4, 1, 1, 5, 4, [1, 4], [1, 5]]
+        self.assertFalse(arranger.fits_by_halves(long))
+        made = arranger.progression_of(chords=long, every=None)
+        self.assertEqual(made[arranger.CHORDS], [1, 4, 1, 1, 4, 4, 1, 1, 5, 4, 1, 1])
+        self.assertNotIn(arranger.EVERY, made)
 
     def test_a_sections_own_chords_replace_the_styles(self):
         given = arranger.arranged(style=self.style, song=a_song(sections={SOLO: {arranger.CHORDS: OWN_CHORDS}}))
