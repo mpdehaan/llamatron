@@ -244,6 +244,54 @@ class TestWizardChoices(unittest.TestCase):
                     self.assertAlmostEqual(choices.form_seconds(), made, delta=A_SECOND, msg=(choices.get_subgenre(), form))
 
 
+def scene_bars_of(choices):
+    """How long each scene of the song made lasts, in bars."""
+    song = choices.made_setlist(name=A_NAME, version=VERSION).get_song(A_NAME)
+    seconds_in_a_bar = float(Fraction(choices.meter()) * QUARTERS_IN_WHOLE * SECONDS_IN_MINUTE / choices.get_tempo())
+    return [round(float(scene.seconds) / seconds_in_a_bar) for scene in SongRenderer(song).estimate()]
+
+
+class FormLengthsOfAGenre:
+    """Every kind of section of every subgenre of one genre, at every length the wizard offers: a class a genre, since it makes a great many songs."""
+
+    __slots__ = ()
+    GENRE = None
+
+    def test_every_kind_of_section_of_every_subgenre_plays_at_every_length_offered(self):
+        for genre in (self.GENRE,):
+            choices = WizardChoices()
+            choices.set_genre(genre)
+            for subgenre in choices.subgenres():
+                choices.set_subgenre(subgenre)
+                choices.set_seed(A_SEED)
+                kinds = choices.section_kinds()
+                wanted = []
+                for kind in kinds:
+                    choices.add_section(place=len(choices.form_sections()), kind=kind)
+                    place = len(choices.form_sections()) - 1
+                    wanted.append(choices.section_bars(place))
+                # Every kind once at its usual length, then each at every other length offered, one song a length.
+                with self.subTest(genre=genre, subgenre=subgenre):
+                    self.assertEqual(scene_bars_of(choices)[-len(kinds):], wanted)
+                first = len(choices.form_sections()) - len(kinds)
+                for place in range(first, first + len(kinds)):
+                    for bars in choices.bars_offered(place):
+                        choices.set_section_bars(place=place, bars=bars)
+                        with self.subTest(genre=genre, subgenre=subgenre, kind=kinds[place - first], bars=bars):
+                            self.assertEqual(scene_bars_of(choices)[place], bars)
+
+
+def lengths_class_for(genre):
+    name = 'TestWizardFormLengthsOf{}'.format(''.join(word.capitalize() for word in genre.split('_')))
+    return name, type(name, (FormLengthsOfAGenre, unittest.TestCase), {'GENRE': genre, '__slots__': ()})
+
+
+for a_genre in genre_names():
+    a_name, a_class = lengths_class_for(a_genre)
+    globals()[a_name] = a_class
+del a_class
+
+
 class TestWizardForm(unittest.TestCase):
     """A form of the song's own: sections added, copied, removed, moved and changed."""
 
@@ -253,10 +301,7 @@ class TestWizardForm(unittest.TestCase):
         return choices
 
     def scene_bars(self, choices):
-        """How long each scene of the song made lasts, in bars."""
-        song = choices.made_setlist(name=A_NAME, version=VERSION).get_song(A_NAME)
-        seconds_in_a_bar = float(Fraction(choices.meter()) * QUARTERS_IN_WHOLE * SECONDS_IN_MINUTE / choices.get_tempo())
-        return [round(float(scene.seconds) / seconds_in_a_bar) for scene in SongRenderer(song).estimate()]
+        return scene_bars_of(choices)
 
     def test_a_suggested_form_is_followed_until_a_section_changes_and_then_the_form_is_the_songs_own(self):
         choices = self.rock()
@@ -431,29 +476,6 @@ class TestWizardForm(unittest.TestCase):
         again = WizardChoices.from_data(data)
         self.assertFalse(again.has_own_form())
         self.assertEqual(again.get_subgenre(), choices.get_subgenre())
-
-    def test_every_kind_of_section_of_every_subgenre_plays_at_every_length_offered(self):
-        for genre in genre_names():
-            choices = WizardChoices()
-            choices.set_genre(genre)
-            for subgenre in choices.subgenres():
-                choices.set_subgenre(subgenre)
-                choices.set_seed(A_SEED)
-                kinds = choices.section_kinds()
-                wanted = []
-                for kind in kinds:
-                    choices.add_section(place=len(choices.form_sections()), kind=kind)
-                    place = len(choices.form_sections()) - 1
-                    wanted.append(choices.section_bars(place))
-                # Every kind once at its usual length, then each at every other length offered, one song a length.
-                with self.subTest(genre=genre, subgenre=subgenre):
-                    self.assertEqual(self.scene_bars(choices)[-len(kinds):], wanted)
-                first = len(choices.form_sections()) - len(kinds)
-                for place in range(first, first + len(kinds)):
-                    for bars in choices.bars_offered(place):
-                        choices.set_section_bars(place=place, bars=bars)
-                        with self.subTest(genre=genre, subgenre=subgenre, kind=kinds[place - first], bars=bars):
-                            self.assertEqual(self.scene_bars(choices)[place], bars)
 
 
 class TestWizardSongWays(unittest.TestCase):
