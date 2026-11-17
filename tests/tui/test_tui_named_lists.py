@@ -200,7 +200,7 @@ class TestNamesAreHeldToTheirLength(UITest):
         self.assertIn(A_LETTER * MAX_NAME_LENGTH, self.document.setlist().get_item_names(Section.PATTERNS))
 
     async def test_a_new_patterns_name_stops_there_too(self):
-        await self.press(keybindings.MainPage.PATTERNS, keybindings.PatternsPage.ADD)
+        await self.press(keybindings.MainPage.PATTERNS, keybindings.PatternsPage.ADD, keybindings.NewPatternDialog.OK)
         self.app.screen.value = NOTHING
         await self.type(A_LETTER * MORE_THAN_A_NAME_HOLDS)
         self.assertEqual(len(self.app.screen.value), MAX_NAME_LENGTH)

@@ -815,10 +815,12 @@ class ArrangePage(Page):
         taken = self.document().song().get_pattern_names()
         name = new_name(word=track, taken=taken)
         # A pattern made on a clip goes in the group named after the clip's track.
-        self.document().add_pattern(name=name, group=track)
-        if self.document().song().get_track(track).is_drum():
-            self.document().set_drum(name=name, drum=True)
+        drum = self.document().song().get_track(track).is_drum()
+        self.document().add_pattern(name=name, group=track, drum=drum)
         self.document().add_clip_slot(index=self.row, track=track, pattern=name)
+        if not drum:
+            # The pattern is written for a scale as large as the one its clip plays under.
+            self.document().set_pattern_scale_length(name=name, scale_length=self.document().scale_length_for_pattern(name))
         self.open_pattern(self.document().clip_slot(index=self.row, track=track))
 
     def open_pattern(self, clip_slot):

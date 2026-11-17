@@ -399,3 +399,15 @@ The user's design, mockup by mockup; `.claude/format/FILE_RULES.md`, "Instrument
   are drawn (`shown_add_rows`), so the gauge keeps five levels on an 80 by 24 console when an arp
   adds nothing. The arp editor has AX+= per note to DX+= per note (`note_add_field`), and its
   Step starts at `(pattern)` (`STEP_CHOICES`).
+
+- **Scale length** (the user's design). A pattern's `scale_length` (`PatternSetting.SCALE_LENGTH`, `Pattern.get_scale_length`,
+  `set_scale_length`, `suits_scale_of`) says how many notes the scale has that it was written for, `MIN_SCALE_LENGTH` (5) to
+  `MAX_SCALE_LENGTH` (12), or nothing, shown as "(any)", which an older file's pattern and every drum pattern have. It changes
+  no note and nothing a render plays. `[ New Pattern ]` and `A` on the Patterns page open the `NewPatternDialog`
+  (`tui/dialogs/new_pattern_dialog.py`): Scale length, stepped, starting at `NEW_PATTERN_SCALE_LENGTH` (7), where ENTER is OK,
+  the Drum pattern toggle, which blocks the Scale length, and boxed OK and CANCEL; then the name's prompt. A blank pattern
+  made on Arrange asks nothing: it takes its clip's scale's size (`Document.scale_length_for_pattern`) and is a drum pattern on
+  a drum track. The Reconfigure dialog's `scale length` choice opens a picker, "(any)" first and then 5 to 12, and refuses a
+  drum pattern. Where a scale the pattern plays under has another number of notes (`Document.scales_unsuited_to_pattern`), the
+  header says so after the scale, `Scale A Minor Pentatonic, written for 7`. `tests/composition/test_scale_length.py` and
+  `tests/tui/test_tui_new_pattern_dialog.py` test it.

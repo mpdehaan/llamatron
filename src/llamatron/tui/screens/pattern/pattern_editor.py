@@ -41,7 +41,7 @@ on the rows.
 
 from llamatron.composition.checks import is_written_length
 from llamatron.composition.file_format import DIRECTIONS, Row, Section
-from llamatron.composition.limits import MAX_STEP_SIZE, MAX_STEPS, MIN_STEPS
+from llamatron.composition.limits import MAX_SCALE_LENGTH, MAX_STEP_SIZE, MAX_STEPS, MIN_SCALE_LENGTH, MIN_STEPS
 from llamatron.tui.components.chord_row import step_chord_in_words
 from llamatron.tui.components.pattern_rows import PatternRows
 from llamatron.tui.components.piano_roll import PianoRoll
@@ -60,19 +60,20 @@ from llamatron.composition.checks import fraction_text
 from llamatron.composition.naming import words
 from llamatron.tui.text import fraction, sorted_names
 from llamatron.strings.errors import (
-    ERR_LENGTH_OUT_OF_RANGE, ERR_NO_OTHER_PATTERNS, ERR_NOT_A_LENGTH, ERR_TYPED_NOT_AN_INTEGER, ERR_NOTHING_AFTER,
+    ERR_DRUMS_HAVE_NO_SCALE_LENGTH, ERR_LENGTH_OUT_OF_RANGE, ERR_NO_OTHER_PATTERNS, ERR_NOT_A_LENGTH, ERR_TYPED_NOT_AN_INTEGER, ERR_NOTHING_AFTER,
     ERR_NOTHING_BEFORE, ERR_NOTHING_TO_PIVOT, ERR_ONE_STEP, ERR_STEPS_OUT_OF_RANGE,
 )
 from llamatron.strings.help import HELP_PATTERN_EDITOR
 from llamatron.strings.labels import Crumb, MSG_DIRECTION_NAMES, MSG_MUNGE_CHOICES, MSG_PATTERN_CRUMB
+from llamatron.strings.marks import MSG_ANY_SCALE_LENGTH
 from llamatron.strings.legends import (
-    MSG_DEGREES_WHAT, MSG_DIRECTION_WHAT, MSG_DRUM_OFF_WHAT, MSG_DRUM_ON_WHAT, MSG_LETTERS_WHAT, MSG_LOAD_OVER_WHAT, MSG_STEP_SIZE_WHAT,
+    MSG_DEGREES_WHAT, MSG_DIRECTION_WHAT, MSG_DRUM_OFF_WHAT, MSG_DRUM_ON_WHAT, MSG_LETTERS_WHAT, MSG_LOAD_OVER_WHAT, MSG_SCALE_LENGTH_WHAT, MSG_STEP_SIZE_WHAT,
     MSG_TIME_SIGNATURE_WHAT, What,
 )
 from llamatron.strings.messages import MSG_KEYSWITCH_NO_INSTRUMENT, MSG_KEYSWITCH_SEVERAL_INSTRUMENTS, MSG_RESTING_STEP
 from llamatron.strings.messages import (
     MSG_CHANGE_TYPE_EMPTY_QUESTION, MSG_CHANGE_TYPE_QUESTION, MSG_CHANGE_TYPE_TITLE, MSG_LOAD_OVER_CHOICE_TITLE, MSG_LOAD_OVER_QUESTION,
-    MSG_LOAD_OVER_TITLE, MSG_PLAY_DIRECTION_TITLE, MSG_RENAME_PATTERN_PROMPT, MSG_RECONFIGURE_TITLE, MSG_SHORTEN_QUESTION,
+    MSG_LOAD_OVER_TITLE, MSG_PLAY_DIRECTION_TITLE, MSG_RENAME_PATTERN_PROMPT, MSG_RECONFIGURE_TITLE, MSG_SCALE_LENGTH_TITLE, MSG_SHORTEN_QUESTION,
     MSG_SHORTEN_TITLE, MSG_STEP_SIZE_PROMPT, MSG_TIME_SIGNATURE_PROMPT, MSG_STEPS_PROMPT, MSG_MUNGE_TITLE,
 )
 from llamatron.tui import keybindings
@@ -93,6 +94,10 @@ class Munge:
     RANDOMIZE = 4
 
 
+# The scale lengths a pattern can be written for, in the order the picker lists them after any.
+SCALE_LENGTHS = tuple(range(MIN_SCALE_LENGTH, MAX_SCALE_LENGTH + 1))
+
+
 class Reconfigure:
     """The Reconfigure dialog's choices, in the order reconfigure_choices lists them: the whole-pattern actions that R gathers, so that the legend stays short."""
 
@@ -102,12 +107,13 @@ class Reconfigure:
     TIME_SIGNATURE = 3
     DRUM = 4
     DIRECTION = 5
-    RENAME = 6
+    SCALE_LENGTH = 6
+    RENAME = 7
 
 
 def reconfigure_choices(*, drum):
     """Return the Reconfigure dialog's options, in the order of the Reconfigure class, with the drum entry saying which way it switches."""
-    return [What.MUNGE, MSG_LOAD_OVER_WHAT, MSG_STEP_SIZE_WHAT, MSG_TIME_SIGNATURE_WHAT, MSG_DRUM_OFF_WHAT if drum else MSG_DRUM_ON_WHAT, MSG_DIRECTION_WHAT, What.RENAME]
+    return [What.MUNGE, MSG_LOAD_OVER_WHAT, MSG_STEP_SIZE_WHAT, MSG_TIME_SIGNATURE_WHAT, MSG_DRUM_OFF_WHAT if drum else MSG_DRUM_ON_WHAT, MSG_DIRECTION_WHAT, MSG_SCALE_LENGTH_WHAT, What.RENAME]
 
 
 class PatternEditor(ShowsNamedItem, StepEditor):
@@ -284,6 +290,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
             Reconfigure.TIME_SIGNATURE: self.ask_time_signature,
             Reconfigure.DRUM: self.toggle_drum,
             Reconfigure.DIRECTION: self.pick_direction,
+            Reconfigure.SCALE_LENGTH: self.pick_scale_length,
             Reconfigure.RENAME: self.rename,
         }
         actions[choice]()
@@ -334,6 +341,18 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         self.ask(
             dialog=ChoiceDialog(title=MSG_PLAY_DIRECTION_TITLE, options=direction_choices(DIRECTIONS), current=DIRECTIONS.index(current)),
             then=lambda chosen: self.document().set_direction(name=self.item, direction=DIRECTIONS[chosen]),
+        )
+
+    def pick_scale_length(self):
+        """Ask how many notes the scale has that the pattern was written for, any first; a drum pattern has none to set."""
+        if self.is_drum():
+            self.refuse(ERR_DRUMS_HAVE_NO_SCALE_LENGTH)
+            return
+        current = self.pattern().get_scale_length()
+        options = [MSG_ANY_SCALE_LENGTH, *[str(length) for length in SCALE_LENGTHS]]
+        self.ask(
+            dialog=ChoiceDialog(title=MSG_SCALE_LENGTH_TITLE, options=options, current=0 if current is None else SCALE_LENGTHS.index(current) + 1),
+            then=lambda chosen: self.document().set_pattern_scale_length(name=self.item, scale_length=SCALE_LENGTHS[chosen - 1] if chosen else None),
         )
 
     def munge(self):
