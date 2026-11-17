@@ -344,6 +344,12 @@ sections:
     bars: 4
     plays: [drums, bass, guitar, keys, colour]
     plan: []
+  # What the band plays after the last tune, where a song ends in stages: the intro's figure again.
+  outro:
+    intensity: {drums: 1, bass: 1, rhythm: 2, keys: 2, lead: 2}
+    bars: 4
+    plays: [drums, bass, guitar, keys, colour]
+    plan: []
   verse:
     intensity: {drums: 2, bass: 2, rhythm: 2, keys: 2, lead: 3}
     bars: 8

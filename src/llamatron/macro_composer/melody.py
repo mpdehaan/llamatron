@@ -22,6 +22,7 @@ the lead or the answering instrument plays it. A line takes one of the style's r
 notes by step, landing its long notes on the notes of the chord under them. The same seed gives the same tune.
 """
 
+import copy
 import math
 import random
 
@@ -57,6 +58,8 @@ BREATHES = 'breathes'
 HOOK_KINDS = 'hook_kinds'
 # The parts of the hook's kind a song chose itself, over what the take would give.
 HOOK_KIND = 'hook_kind'
+# The hook's line written out by hand, note by note: where the habits hold one, the hook is that line and no other.
+HOOK_NOTES = 'hook_notes'
 BREATH_SEED = '{} breath {} {}'
 # The degrees an ending left open rests on.
 OPEN_DEGREES = (2, 6)
@@ -815,6 +818,8 @@ class Hooks(Smart):
 
     def hook_line(self, *, under, dice):
         """A hook: the figure, ending on the peak, in the first bar of the line and each second bar after, and an answer to it in the bars between."""
+        if self._habits.get(HOOK_NOTES):
+            return copy.deepcopy(self._habits[HOOK_NOTES])
         kind = self.kind()
         if kind is not None:
             return self.kind_line(kind=kind, under=under, dice=dice)

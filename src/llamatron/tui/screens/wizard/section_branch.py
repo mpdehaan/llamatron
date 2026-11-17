@@ -19,7 +19,7 @@
 from llamatron.composition.limits import MAX_NAME_LENGTH, MAX_TEMPO, MIN_TEMPO
 from llamatron.macro_composer.arranger import CHORDS
 from llamatron.macro_composer.joins import LEAVES
-from llamatron.macro_composer.song_plan import ENERGY, HIGHEST_ENERGY, LOWEST_ENERGY, NOT_AT_ALL, RISES, ROOT_OF_PLACE, SETUP, TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE
+from llamatron.macro_composer.song_plan import ENERGY, FADES, HIGHEST_ENERGY, LOWEST_ENERGY, NOT_AT_ALL, RISES, ROOT_OF_PLACE, SETUP, TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE
 from llamatron.macro_composer.wizard_choices import LEAVES_AS_JOIN, SCALE_TYPES, SHAPE_OF_SECTION, chords_as_text
 from llamatron.music.note import ROOT_NAMES
 from llamatron.strings.labels import (
@@ -31,7 +31,7 @@ from llamatron.strings.marks import MSG_WIZARD_ROLE_FROM_PLAN
 from llamatron.strings.messages import MSG_WIZARD_LISTEN_SECTION, MSG_WIZARD_SECTION_CHORDS_PROMPT
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NumberField, Toggle
-from llamatron.tui.screens.wizard.branch import Branch
+from llamatron.tui.screens.wizard.branch import Branch, gauge_shown
 
 # What two sections of one name are told apart by: the section's number in the form and its name.
 SECTION_KEY = '{number} {name}'
@@ -107,12 +107,15 @@ class SectionBranch(Branch):
         clear = dict(clear=lambda: set_own(None), clear_what=origin) if own is not None else {}
         if field in NUMBERS_OF_SECTION:
             lowest, highest = NUMBERS_OF_SECTION[field]
+            if field == ENERGY:
+                # Energy is a gauge, as Contrast and the players' gauges are, the plan's saying so after the number.
+                shown = gauge_shown(place=usual if own is None else own, lowest=lowest, highest=highest, said=shown)
             return NumberField(page=page, label=label, number=own, start=usual, shown=shown, lowest=lowest, highest=highest, set=set_own, **clear)
         if field == CHORDS:
             def ask():
                 page.ask(dialog=PromptDialog(title=MSG_WIZARD_SECTION_CHORDS_PROMPT, value=chords_as_text(own) if own is not None else usual, max_length=MAX_NAME_LENGTH), then=set_own)
             return Field(label=label, value=lambda: shown if own is None else chords_as_text(own), enter=ask, **clear)
-        if field == RISES:
+        if field in (RISES, FADES):
             return Toggle(label=label, on=usual if own is None else own, set=set_own, **clear)
         from_above = MSG_WIZARD_FROM_ORIGIN.format(origin=origin)
         offered = choices.section_shapes(place) if field == SHAPE_OF_SECTION else CHOICES_OF_SECTION[field]

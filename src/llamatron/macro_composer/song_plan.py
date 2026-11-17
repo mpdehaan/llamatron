@@ -97,6 +97,10 @@ DEGREE = 'degree'
 ACCIDENTAL = 'accidental'
 SWELL_START = 'swell_start'
 SWELL_END = 'swell_end'
+# A section that fades: softer bar by bar to this share of what is written, from all of it where no plan says how loud the section is.
+FADES = 'fades'
+FADED = 20
+UNFADED = 100
 CYMBAL = 'cymbal'
 # What a song may say of its fills: the trait that names the fill, the value for none, how often they come and the count for never.
 FILLS_TRAIT = 'fills'
@@ -255,6 +259,8 @@ class SongPlan:
     def _loudness(self, place):
         energy = self._energies[place]
         rising = self._rises(place)
+        if self._at(place).get(FADES):
+            return {SWELL_START: loudness_at(energy), SWELL_END: FADED}
         return {SWELL_START: loudness_at(energy - RISES_FROM if rising else energy), SWELL_END: loudness_at(energy)}
 
     # Joins.
@@ -410,7 +416,7 @@ class SongPlan:
                 said.append(MSG_PLAN_HOOK.format(hook_kinds.said_of(kind)))
                 hook_said = True
             # What the song says of the section itself, and of this place of its form, stands over what the plan worked out.
-            own = {field: value for field, value in self._at(place).items() if field not in (ENERGY, SETUP, LEAVES, RISES, *SCENE_FIELDS)}
+            own = {field: value for field, value in self._at(place).items() if field not in (ENERGY, SETUP, LEAVES, RISES, FADES, *SCENE_FIELDS)}
             scene = {**made.get(SCENE_SETTINGS, {}), **self._scene_settings(place)}
             sections[name] = {**made, **of_song, **own, **({SCENE_SETTINGS: scene} if scene else {}), SAID_OF_SECTION: ' '.join(said)}
         melody = {**({BREATHES: self._given.get(PHRASING_WAYS) or True} if self._given.get(PHRASING, True) else {}), **({HOOK_KINDS: True} if self._given.get(HOOK_KINDS, True) else {}), **self._song.get(MELODY, {})}
