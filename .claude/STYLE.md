@@ -285,6 +285,11 @@ page in `docs/`):
   or the scripts of `user_scripts/` and `internal_tools/`, and installing says to run
   `sh user_scripts/setup.sh` rather than spelling out what the script does. The Installing page alone
   explains the virtual environment.
+- *Music first, reference second.* A page explains a thing in its musical context before listing its settings: what a
+  player or a singer does that the feature stands for, when a musician would reach for it, and what is heard with it and
+  without it, in plain words a school band student would follow, with a small example. A table of settings comes after that
+  and never stands in for it, since a page that is only reference is hard to understand. The same holds when Claude explains a
+  feature to the user (the user's rule).
 - *Prose that flows.* Sentences follow from one another logically, in full sentences, never a choppy run
   of fragments, and never the stock phrases of a chatbot, such as "And that's great." or "Let's dive in."
   Say a thing once, plainly, and link the page that covers it rather than repeating it.
