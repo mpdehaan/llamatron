@@ -460,6 +460,8 @@ song_plan:
   rising: []
   levels: {drums: [1, 4, 7, 9], bass: [1, 5, 7, 10], rhythm: [1, 4, 7, 10], keys: [1, 5, 7, 9], lead: [1, 3, 6, 9], session: [1, 5, 7, 9]}
   comes_in: {horns: 6, voices: 6}
+  # A tambourine comes in with the chorus; funk's and new orleans' percussion is part of the groove and plays all through.
+  percussion_from: 6
   fills: {small: a snare before the bar, medium: snare sixteenths on four, big: toms down}
   # A marker ends a phrase inside a section where no fill is played: a stroke or two laid over the bar.
   marker: {snare: [none, none, none, none, none, none, none, none, none, none, none, none, none, none, ghost, soft]}
@@ -481,6 +483,7 @@ by_subgenre:
     sections: {verse: {plan: [{line: a}, {line: a, varied: true}, {line: b, higher: true}, {line: hook, hook: true}]}}
     song_plan: {energy: {intro: 2, verse: 2, bridge: 5, solo: 6}, growth: 2, comes_in: {horns: 5, voices: 5}}
   new orleans:
+    song_plan: {percussion_from: 1}
     # The second line swings its sixteenths, and funk a little.
     groove: swing 58
     sections: {verse: {bars: 12}, solo: {bars: 12}}

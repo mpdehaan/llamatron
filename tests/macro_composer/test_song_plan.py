@@ -24,7 +24,7 @@ from llamatron.macro_composer import arranger, composer, drum_solo, hook_kinds, 
 from llamatron.macro_composer.melody import BREATHES
 from llamatron.macro_composer.notation import LOUD, NONE, REST, SOFT, STEPS
 from llamatron.macro_composer.song_plan import (ALLOWS, APPROACH, BIG, BY_PLACE, CONTRAST, CRASH_START, ENERGY, GROWTH, HIGHEST_ENERGY, LAST_CHORD, LOUDEST, FILLS_COME, LAST_CHORUS, LOWEST_ENERGY, MARKER,
-                                                MARKER_BARS, MARKER_EVERY, NOT_AT_ALL,
+                                                MARKER_BARS, MARKER_EVERY, NOT_AT_ALL, NO_PERCUSSION, PERCUSSION, PERCUSSION_FROM,
                                                 PHRASING, PLAN_OF_SONG, PLAYS, QUIETEST, SCENE_SETTINGS, SECTION_PLAN, SETUP, SHAPES, STAGE_LINE, STAGED, SWELL_END, SWELL_START,
                                                 SongPlan, level_at, loudness_at)
 from llamatron.macro_composer.wizard_choices import SHAPE_OF_SECTION, SHAPE_USUAL, WizardChoices
@@ -65,6 +65,7 @@ KICK = 'kick'
 SNARE = 'snare'
 CRASH = 'crash'
 HAT = 'hat'
+TAMB = 'tamb'
 LINE = [{STEPS: 2}, {STEPS: 2}, {STEPS: 2}, {STEPS: 2}, {STEPS: 2}, {STEPS: 2}, {STEPS: 2}, {STEPS: 2}]
 LINE_STEPS = 16
 A_FIGURE = [[{STEPS: 2}, {STEPS: 2}, {STEPS: 2}, {STEPS: 2}]]
@@ -76,6 +77,7 @@ THE_HOOK = 'hook'
 THE_SOLOIST = 'solo'
 A_KIND_WITH_SOLOS = 'rock and roll'
 BLUES = 'blues'
+A_TAMBOURINE = 'tambourine'
 TOM_LOW = 'tom low'
 TWO_PHRASES = 8
 A_CHOSEN_FILL = 'toms on four'
@@ -149,6 +151,26 @@ class TestWhatFollowsFromEnergy(unittest.TestCase):
         self.assertNotIn(VOICES, sections[FORM.index(VERSE)][PLAYS])
         self.assertIn(VOICES, sections[LAST_CHORUSES][PLAYS])
         self.assertGreater(sections[LAST_CHORUSES][ALLOWS][DRUMS], sections[FORM.index(INTRO)][ALLOWS][DRUMS])
+
+    def test_the_kit_s_percussion_comes_in_from_an_energy_up_and_a_song_s_own_plays_all_through(self):
+        given = song(form=[VERSE, CHORUS])
+        starts = arranger.style_named(ROCK)[PLAN_OF_SONG][PERCUSSION_FROM]
+        energies = planned(given).energies()
+        self.assertLess(energies[0], starts)
+        self.assertGreaterEqual(energies[1], starts)
+        verse, chorus = sections_of(given)
+        self.assertEqual(verse[arranger.PICKS][PERCUSSION], NO_PERCUSSION)
+        self.assertNotIn(PERCUSSION, chorus[arranger.PICKS])
+        own = sections_of({**given, arranger.PICKS: {PERCUSSION: A_TAMBOURINE}})
+        self.assertTrue(all(PERCUSSION not in section[arranger.PICKS] for section in own))
+
+    def test_a_tambourine_is_heard_in_the_chorus_and_not_in_the_verse(self):
+        style = arranger.style_named(ROCK)
+        style = {**style, arranger.TEMPLATES: {**style[arranger.TEMPLATES], ARENA: {**style[arranger.TEMPLATES][ARENA], PERCUSSION: A_TAMBOURINE}}}
+        given = arranger.arranged(style=style, song=song(form=[VERSE, CHORUS]))
+        verse, chorus = (entry[composer.PLAY] for entry in given[composer.FORM])
+        self.assertNotIn(TAMB, verse)
+        self.assertIn(TAMB, chorus)
 
     def test_a_section_arrived_at_from_below_starts_on_a_crash(self):
         sections = sections_of(song())
