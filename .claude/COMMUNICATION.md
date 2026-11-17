@@ -278,6 +278,9 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   grid before the explanation, wherever one can be drawn, so that the user sees what is where before reading about it. Every
   pattern an example names is shown, never only named: where the notes matter, as a piano roll of the pattern or the clip, or
   as the pattern's rows where the rows say it better. The picture comes first and the words after (the user's rule).
+- **A chain is shown.** An example that mentions a chain shows a table of the chain: each generator in the chain, in the
+  order the chain runs them, with its kind and the value of each of its settings, never the chain's name alone (the user's
+  rule).
 - **Spelling and words.** The program is called llamatron when Claude speaks of it, rather than "the tracker" (the user's
   preference). Spelling is American, as the program's messages are: "forever", not "for
   ever". When the user says accumulators, read it as registers, the program's word, which is the
