@@ -329,6 +329,12 @@ clouds; generate and test, with motif development and counterpoint last.
   heading with a number for each level the song plays (`set_loudness_level`, `loudness_levels_offered`, found by making the song
   with the level moved, only while the heading is open); Bksp gives a level back to the genre. Not yet: the lean on players of
   notes, the phrase offsets (a section's first beat, a climbing last bar) and the small random amount.
+- **Swing by subgenre** (a template's `groove:` under `by_subgenre`, `arranger.GROOVE`): the name of one of the grooves every
+  set has, which the made song takes as its groove: rock and roll, sunshine pop and bubblegum bounce on their eighths
+  (`8th swing 58`), new orleans swings its sixteenths (`swing 58`) and funk a little (`swing 54`). A style written in
+  triplets, as the blues, swings as written and takes none. Wizard: the Genre panel's Swing field under Tempo
+  (`has_swing`, `get_swing`, `set_swing`), the subgenre's own said to be the genre's; `none` plays a swung kind straight.
+  The review's swing numbers lie between the factory grooves, so the nearest lighter one is used.
 - **Fills by the join, and markers** (`SongPlan._joins`, `_fill_inside_every`, `_marker`): a section leaves on a fill sized by
   how far the Energy rises, the big one always into the last chorus; inside a section from Energy 5 up the small fill comes
   every 8 bars; and every phrase of 4 bars that ends inside a section with no fill there ends on the style's `marker`

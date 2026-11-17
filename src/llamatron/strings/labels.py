@@ -714,6 +714,7 @@ MSG_WIZARD_START_NAMES = {
     'replace from scratch': 'Replace song, from scratch',
 }
 MSG_WIZARD_METER_LABEL = 'Meter'
+MSG_WIZARD_SWING_LABEL = 'Swing'
 MSG_WIZARD_BAND_BRANCH = 'Band'
 MSG_WIZARD_SOUNDS_LABEL = 'Sounds'
 MSG_WIZARD_DRUM_FILLS_LABEL = 'Fills come'

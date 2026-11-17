@@ -61,6 +61,7 @@ One genre at a time, rock first, alternating with the electronic stages (band st
 - **Chords:** two chords in a bar, a chord over two bars, a quality for every degree (triad, sevenths, ninth, power), and a
   progression that says its own length so that a section takes it.
 - **Swing** by subgenre as a percent, applied as the song's groove.
+  Built with the factory grooves (`.claude/features/MACRO_COMPOSER.md`, "Swing by subgenre"); a percent of the song's own is not.
 - **Monotony's remedies:** a section changes one thing at its halfway point; its last bar leads somewhere; a return differs; a
   verse and a chorus have several shapes; the band does a thing together (a pushed chord, a bar of stops, a unison tail); one
   chord swapped on a second pass; which bars vary is drawn per song; the answering player rotates.

@@ -54,6 +54,9 @@ NAME = 'name'
 TITLE = 'title'
 GENRE = 'genre'
 FEEL = 'feel'
+# The song's groove: a swing a subgenre is played with, by the name of one of the grooves every set has, or none.
+GROOVE = 'groove'
+NO_GROOVE = 'none'
 TEMPLATES = 'templates'
 TRAITS = 'traits'
 ROLES = 'roles'
@@ -1110,6 +1113,9 @@ def arranged(*, style, song):
         FEEL: style[FEEL], SHAPED: shaped, INSTRUMENTS: instruments, TRACKS: tracks, DRUM_TRACKS: [piece for piece in drum_tracks if piece not in own_sounds], GENERATORS: generators, CHAINS: chains,
         PARTS: parts, FORM: form,
     }
+    groove = song.get(GROOVE, style.get(GROOVE))
+    if groove and groove != NO_GROOVE:
+        given[GROOVE] = groove
     if song.get(DYNAMICS):
         # How far the feel moves each track's notes: a player's own track, and for the drummer every piece of the kit.
         of_tracks = {role[ROLE]: song[DYNAMICS][role[ROLE]] for role in roles if role[ROLE] in song[DYNAMICS] and role[ROLE] in tracks}

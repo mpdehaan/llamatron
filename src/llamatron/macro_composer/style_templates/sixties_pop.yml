@@ -479,8 +479,12 @@ by_subgenre:
   waltz ballad:
     sections: {verse: {bars: 16, plan: [{line: a}, {line: a, varied: true}, {line: b, higher: true}, {line: hook, hook: true}]}, bridge: {plays: [drums, bass, keys, colour, voices, lead]}}
     song_plan: {energy: {verse: 3, chorus: 5, bridge: 5, solo: 5}, last_chorus: 6, levels: {drums: [1, 3, 5, 6], bass: [1, 3, 4, 6], rhythm: [1, 3, 4, 6], keys: [1, 3, 5, 6], lead: [1, 3, 4, 6], session: [1, 3, 5, 6]}}
+  # Bubblegum and sunshine pop bounce on their eighths.
   bubblegum:
+    groove: 8th swing 58
     song_plan: {energy: {verse: 6, chorus: 8}, growth: 0}
+  sunshine:
+    groove: 8th swing 58
 
 melody:
   4/4:

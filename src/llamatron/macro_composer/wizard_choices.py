@@ -27,6 +27,7 @@ import functools
 import random
 
 from llamatron.composition.file_format import Section
+from llamatron.composition.groove import FactoryGroove
 from llamatron.composition.limits import MAX_TEMPO, MIN_TEMPO
 from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer.interplay import LEAST_BUSY as LEAST_BUSY_BESIDE, MOST_BUSY as MOST_BUSY_BESIDE, USUAL_BUSY as USUAL_BUSY_BESIDE, WAITS, WAYS as WAYS_BESIDE
@@ -43,7 +44,7 @@ from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer import hook_kinds, line_edits, phrasing
 from llamatron.macro_composer.arranger import KICK as KICK_PIECE
 from llamatron.macro_composer.notation import NONE as NO_HIT
-from llamatron.macro_composer.arranger import CHORDS, DYNAMICS, EIGHTHS_IN_WHOLE, LOUDNESS as LOUDNESS_OF, SCENE_SETTINGS, form_of
+from llamatron.macro_composer.arranger import CHORDS, DYNAMICS, EIGHTHS_IN_WHOLE, GROOVE, LOUDNESS as LOUDNESS_OF, NO_GROOVE, SCENE_SETTINGS, form_of
 from llamatron.macro_composer.loudness import LEAST_DYNAMICS, LEVELS as LOUDNESS_LEVELS, MOST_DYNAMICS, USUAL_DYNAMICS, drum_levels, note_levels, with_own
 from llamatron.macro_composer.melody import ANSWER, HOOK_KIND, HOOK_NOTES, LINE, LINE_NOTES
 from llamatron.macro_composer.phrasing import LINE_BREATH, LINE_EARLY
@@ -66,7 +67,7 @@ from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MIN_GM_SO
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.marks import MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SECTION_VARIANT
 from llamatron.support.version import VERSION as A_VERSION
-from llamatron.strings.errors import ERR_WIZARD_DYNAMICS, ERR_WIZARD_LOUDNESS, ERR_WIZARD_NO_RIFF, ERR_WIZARD_RIFF, ERR_WIZARD_RIFF_UNMADE, ERR_WIZARD_COMES_IN, ERR_WIZARD_LAYS_OUT, ERR_WIZARD_PLAYS_UNMADE, ERR_WIZARD_REACTS, ERR_WIZARD_CONTRAST, ERR_WIZARD_EXTRAS, ERR_WIZARD_END, ERR_WIZARD_FIRST_PLAYER, ERR_WIZARD_HOOK_LINE, ERR_WIZARD_HOOK_PART, ERR_WIZARD_SETUP_BARS, ERR_WIZARD_START, ERR_WIZARD_START_UNMADE, ERR_WIZARD_CHORDS, ERR_WIZARD_FORM_ANSWER, ERR_WIZARD_NO_FORM_QUESTIONS, ERR_WIZARD_INTRO_HOOK, ERR_WIZARD_PHRASING, ERR_WIZARD_SECTION_OWN, ERR_WIZARD_SECTION_OWN_UNMADE, ERR_WIZARD_GENRE_HAS_NO_PLAN, ERR_WIZARD_NO_SONG_PLAN, ERR_WIZARD_SWITCH, ERR_WIZARD_NO_SUCH_ROW, ERR_WIZARD_ROW, ERR_WIZARD_HOOK_TAKE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_MELODY_NUMBER, ERR_WIZARD_MELODY_SWITCH, ERR_WIZARD_NO_SUCH_MELODY_SETTING, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
+from llamatron.strings.errors import ERR_WIZARD_SWING, ERR_WIZARD_DYNAMICS, ERR_WIZARD_LOUDNESS, ERR_WIZARD_NO_RIFF, ERR_WIZARD_RIFF, ERR_WIZARD_RIFF_UNMADE, ERR_WIZARD_COMES_IN, ERR_WIZARD_LAYS_OUT, ERR_WIZARD_PLAYS_UNMADE, ERR_WIZARD_REACTS, ERR_WIZARD_CONTRAST, ERR_WIZARD_EXTRAS, ERR_WIZARD_END, ERR_WIZARD_FIRST_PLAYER, ERR_WIZARD_HOOK_LINE, ERR_WIZARD_HOOK_PART, ERR_WIZARD_SETUP_BARS, ERR_WIZARD_START, ERR_WIZARD_START_UNMADE, ERR_WIZARD_CHORDS, ERR_WIZARD_FORM_ANSWER, ERR_WIZARD_NO_FORM_QUESTIONS, ERR_WIZARD_INTRO_HOOK, ERR_WIZARD_PHRASING, ERR_WIZARD_SECTION_OWN, ERR_WIZARD_SECTION_OWN_UNMADE, ERR_WIZARD_GENRE_HAS_NO_PLAN, ERR_WIZARD_NO_SONG_PLAN, ERR_WIZARD_SWITCH, ERR_WIZARD_NO_SUCH_ROW, ERR_WIZARD_ROW, ERR_WIZARD_HOOK_TAKE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_MELODY_NUMBER, ERR_WIZARD_MELODY_SWITCH, ERR_WIZARD_NO_SUCH_MELODY_SETTING, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'
@@ -250,6 +251,10 @@ RIFF_SETTING_ANSWER = 'riff setting'
 INTRO_KIND = 'intro'
 REACTS_ANSWER = 'reacts'
 DYNAMICS_ANSWER = 'dynamics'
+# The swings a song may be played with, the lightest first of those of the eighths and then of the sixteenths, and the steps of
+# a bar a genre written in triplets counts, which is swung as written and takes none.
+SWINGS = (NO_GROOVE, FactoryGroove.EIGHTH_SWING_58, FactoryGroove.EIGHTH_SWING_66, FactoryGroove.SWING_54, FactoryGroove.SWING_58, FactoryGroove.SWING_62, FactoryGroove.SWING_66)
+TRIPLET_GRID = 12
 LEVELS_ANSWER = 'levels'
 # How far a trial moves a level to hear whether the level is played at all.
 LEVEL_TRIAL = 20
@@ -609,6 +614,7 @@ class WizardChoices:
             self._extras.pop(PLAN_OF_SONG, None)
             self._extras.pop(MELODY, None)
             self._extras.pop(RIFF, None)
+            self._extras.pop(GROOVE, None)
             # A player's loudness is one genre's player's.
             self._extras.pop(DYNAMICS, None)
             self._extras.pop(LOUDNESS_OF, None)
@@ -696,6 +702,34 @@ class WizardChoices:
         if isinstance(tempo, bool) or not isinstance(tempo, int) or not MIN_TEMPO <= tempo <= MAX_TEMPO:
             raise ValueError(ERR_WIZARD_TEMPO.format(low=MIN_TEMPO, high=MAX_TEMPO, value=tempo))
         self._tempo = tempo
+
+    # The swing.
+
+    def has_swing(self):
+        """Return whether the song can be swung: a subgenre in four whose bars are not written in triplets, which swing already."""
+        if not self.is_ready() or self.meter() != COMMON_TIME:
+            return False
+        habits = self._style().get(MELODY, {})
+        return (habits if GRID in habits else habits.get(COMMON_TIME, {})).get(GRID) != TRIPLET_GRID
+
+    def swings(self):
+        return list(SWINGS)
+
+    def swing_of_genre(self):
+        """Return the swing the subgenre is usually played with, or none."""
+        return self._style().get(GROOVE, NO_GROOVE) if self.has_swing() else NO_GROOVE
+
+    def get_swing(self):
+        return self._extras.get(GROOVE, self.swing_of_genre())
+
+    def set_swing(self, swing):
+        """Say the swing the song is played with, one of the grooves every set has or none; the subgenre's own is kept as the subgenre's."""
+        if not self.has_swing() or swing not in SWINGS:
+            raise ValueError(ERR_WIZARD_SWING.format(choices=', '.join(SWINGS), value=swing))
+        self._extras.pop(GROOVE, None)
+        if swing != self.swing_of_genre():
+            self._extras[GROOVE] = swing
+        self._answers = {}
 
     # The form.
 
