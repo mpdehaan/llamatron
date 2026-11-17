@@ -42,6 +42,35 @@ templates:
   rock ballad:   {meter: 4/4, tempo: 70, kick: one and three, snare: two and four, cymbal: hat eighths, percussion: none, bass: roots held, guitar: chiming arpeggio, keys: organ held, voices: harmony, chords: one five six four, lead: voice, solo: guitar}
   six-eight ballad: {meter: 6/8, tempo: 62, kick: one in six, snare: four in six, cymbal: hat in six, percussion: none, bass: roots in six, guitar: arpeggio in six, keys: organ held, voices: harmony, chords: four chord, lead: voice, solo: guitar}
 
+# The kinds of song a subgenre holds. A song is one kind, drawn whole, never a blend of several: each kind has a name, how common
+# it is, a line that says what it is, and under style what the kind says differently from its subgenre, laid over the style as
+# by_subgenre is, a template's row included. The commonest kind is the one a subgenre starts with.
+variants:
+  hard rock:
+    - name: blues-based
+      share: 35
+      says: 'A swung riff with a gap. The singer answers it.'
+      style: {groove: 8th swing 58}
+    - name: heavy
+      share: 25
+      says: 'Slow and low. Everyone on the riff, with no gap.'
+      style:
+        templates: {hard rock: {tempo: 92, chords: minor power}}
+        riff: {under the tune: in full}
+    - name: boogie
+      share: 20
+      says: 'A shuffle figure on three chords, sung over.'
+      style:
+        groove: 8th swing 66
+        templates: {hard rock: {tempo: 138, guitar: boogie, bass: walking boogie, chords: three chord, cymbal: hat eighths}}
+        riff: null
+    - name: stomp
+      share: 20
+      says: 'Plain chords on every beat, with handclaps.'
+      style:
+        templates: {hard rock: {tempo: 118, kick: every beat, guitar: downstrokes, bass: roots in eighths, chords: three chord, percussion: handclaps, cymbal: hat quarters}}
+        riff: null
+
 # The harmonic family of each kind of rock, which says how common each progression is there: roots (three chords and sevenths), pop
 # (the sixth chord and a borrowed flat seven), flat seven (borrowed majors and minor keys) and sixth (loops through the sixth chord).
 families: {rock and roll: roots, british invasion: pop, folk rock: pop, hard rock: flat seven, arena rock: pop, punk: sixth, new wave: pop, rock ballad: pop, six-eight ballad: pop}

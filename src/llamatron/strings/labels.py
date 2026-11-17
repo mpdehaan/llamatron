@@ -715,6 +715,9 @@ MSG_WIZARD_START_NAMES = {
 }
 MSG_WIZARD_METER_LABEL = 'Meter'
 MSG_WIZARD_SWING_LABEL = 'Swing'
+MSG_WIZARD_VARIANT_LABEL = 'Variant'
+# A kind of song in the Variant picker, with the line that says what it is.
+MSG_WIZARD_VARIANT_NAMED = '{name}: {says}'
 MSG_WIZARD_BAND_BRANCH = 'Band'
 MSG_WIZARD_SOUNDS_LABEL = 'Sounds'
 MSG_WIZARD_DRUM_FILLS_LABEL = 'Fills come'

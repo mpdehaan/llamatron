@@ -123,6 +123,7 @@ GUITARISTS = 'guitarists'
 SEED = 'seed'
 TEMPO = 'tempo'
 SWING = 'swing'
+VARIANT = 'variant'
 SECTION_BARS = "a section's bars"
 SECTION_KIND = "a section's kind"
 FORM = 'form'
@@ -392,6 +393,9 @@ def every_choice(choices):
         yield GUITARISTS, ONE_GUITARIST_COUNT, lambda made: made.set_guitarists(ONE_GUITARIST_COUNT), [nothing_first]
     yield SEED, ANOTHER_SEED, lambda made: made.set_seed(ANOTHER_SEED), [nothing_first]
     yield TEMPO, A_LITTLE_FASTER, lambda made: made.set_tempo(made.get_tempo() + A_LITTLE_FASTER), [nothing_first]
+    for variant in choices.variants():
+        if variant != choices.get_variant():
+            yield VARIANT, variant, lambda made, variant=variant: made.set_variant(variant), [nothing_first]
     if choices.has_swing():
         for swing in choices.swings():
             if swing != choices.get_swing():
