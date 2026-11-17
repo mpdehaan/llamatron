@@ -470,6 +470,8 @@ class TestWizardBand(WizardTest):
         await self.press(*[more] * MOST_BUSY)
         self.assertEqual(choices.get_busy(player), MOST_BUSY)
         self.assertIn(MSG_WIZARD_GAUGE_FULL * MOST_BUSY, self.text())
+        # A field that a busier player brings above the gauge leaves the cursor on the gauge.
+        self.assertEqual(self.wizard().label_under_cursor(), MSG_WIZARD_BUSY_LABEL)
 
     async def test_the_song_made_has_the_band_chosen(self):
         await self.open_the_band()
@@ -1492,7 +1494,13 @@ class TestWizardStart(WizardTest):
         now = self.document.song().get_wizard_choices()
         self.assertNotEqual(now[SEED], kept[SEED])
         self.assertEqual({**now, SEED: None}, {**kept, SEED: None})
-        self.assertEqual(len(self.document.setlist().get_pattern_names()), patterns)
+        # Another roll of the dice may need a pattern more or fewer, so the set holds what it held, less the old song's
+        # patterns and with the new song's.
+        self.assertEqual(len(self.document.setlist().get_pattern_names()), patterns - self.patterns_made_from(kept) + self.patterns_made_from(now))
+
+    def patterns_made_from(self, kept):
+        """How many patterns the song made from the kept choices has."""
+        return len(WizardChoices.from_data(kept).made_setlist(name=A_SONG_NAME, version=VERSION).get_pattern_names())
 
     async def test_replacing_from_scratch_keeps_the_songs_name_and_place(self):
         first = await self.make_a_song_and_open_the_wizard_on_it()

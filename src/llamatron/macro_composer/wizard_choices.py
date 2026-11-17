@@ -2423,8 +2423,7 @@ class WizardChoices:
             letter = (bool(entry.get(ANSWER)), entry.get(LINE, str(count)))
             new = letter not in seen
             seen.add(letter)
-            in_eighths = not self._melody_habits()[GRID] % phrasing.EIGHTHS_IN_BAR
-            breathes = new and notes is not None and not entry.get(HOOK) and self.counts_in_four() and in_eighths and LINE_NOTES not in (own.get(count) or {})
+            breathes = new and notes is not None and not entry.get(HOOK) and self.counts_in_four() and LINE_NOTES not in (own.get(count) or {})
             lines.append({LINE_PLAYER: player, LINE_NOTES: notes, LINE_BREATHES: breathes, LINE_IS_HOOK: bool(entry.get(HOOK)), LINE_OWN: copy.deepcopy(own.get(count) or {})})
         return lines
 
@@ -2691,8 +2690,10 @@ class WizardChoices:
         return [part for part in HOOK_PARTS if part == hook_kinds.CONTOUR or self.hook_kind()[hook_kinds.CONTOUR] != hook_kinds.LONG_NOTE]
 
     def counts_in_four(self):
-        """Return whether the song is in four, where a hook is of a kind and a tune's lines breathe: both are written for a bar of eight eighths."""
-        return str(picked(style=self._style(), song=self.song_picks(PREVIEW_NAME)).get(METER, COMMON_TIME)) == COMMON_TIME
+        """Return whether the song is in four with a tune written in eighths, where a hook is of a kind and a tune's lines breathe: both
+        are written for a bar of eight eighths, which a shuffle's bar of triplets is not."""
+        in_four = str(picked(style=self._style(), song=self.song_picks(PREVIEW_NAME)).get(METER, COMMON_TIME)) == COMMON_TIME
+        return in_four and not self._melody_habits()[GRID] % phrasing.EIGHTHS_IN_BAR
 
     def hook_part_is_chosen(self, part):
         return part in self._extras.get(MELODY, {}).get(HOOK_KIND, {})

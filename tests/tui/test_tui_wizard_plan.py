@@ -43,7 +43,7 @@ NOT_A_CHORD = ' x'
 A_FEW_WORDS = 20
 A_SUBGENRE = 'arena rock'
 A_SUBGENRE_IN_SIX = 'six-eight ballad'
-AN_UNPLANNED_GENRE = 'blues'
+AN_UNPLANNED_GENRE = 'experimental'
 
 
 class TestWizardPlan(WizardTest):

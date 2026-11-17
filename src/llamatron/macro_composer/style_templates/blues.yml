@@ -328,9 +328,50 @@ interplay:
 
 forms:
   usual:
-    - {name: one solo, share: 40, sections: [intro, chorus, chorus, solo, chorus, ending]}
+    - {name: two solos together, share: 40, sections: [intro, chorus, chorus, solo, solo, chorus, chorus, ending]}
     - {name: two solos apart, share: 35, sections: [intro, chorus, chorus, solo, chorus, solo, chorus, ending]}
-    - {name: two solos together, share: 25, sections: [intro, chorus, chorus, solo, solo, chorus, chorus, ending]}
+    - {name: one solo, share: 25, sections: [intro, chorus, chorus, solo, chorus, ending]}
+  # A chorus is over quickly at speed, so a faster kind has more of them, and a solo is two or three choruses.
+  shuffle:
+    - {name: two solos and a third, share: 45, sections: [intro, chorus, chorus, solo, solo, chorus, solo, chorus, chorus, ending]}
+    - {name: two solos together, share: 35, sections: [intro, chorus, chorus, solo, solo, chorus, chorus, ending]}
+    - {name: two solos apart, share: 20, sections: [intro, chorus, chorus, solo, chorus, solo, chorus, ending]}
+  texas shuffle:
+    - {name: three solos together, share: 50, sections: [intro, chorus, chorus, solo, solo, solo, chorus, chorus, ending]}
+    - {name: two solos together, share: 30, sections: [intro, chorus, chorus, solo, solo, chorus, chorus, ending]}
+    - {name: two pairs of solos, share: 20, sections: [intro, chorus, solo, solo, chorus, solo, solo, chorus, ending]}
+  driving shuffle:
+    - {name: two pairs of solos, share: 50, sections: [intro, chorus, chorus, solo, solo, chorus, chorus, solo, solo, chorus, ending]}
+    - {name: two solos together, share: 30, sections: [intro, chorus, chorus, solo, solo, chorus, chorus, ending]}
+    - {name: three solos together, share: 20, sections: [intro, chorus, chorus, solo, solo, solo, chorus, chorus, ending]}
+  slow blues:
+    - {name: one solo, share: 50, sections: [intro, chorus, chorus, solo, chorus, ending]}
+    - {name: two solos together, share: 50, sections: [intro, chorus, chorus, solo, solo, chorus, ending]}
+  minor blues:
+    - {name: one solo, share: 50, sections: [intro, chorus, chorus, solo, chorus, ending]}
+    - {name: two solos together, share: 50, sections: [intro, chorus, chorus, solo, solo, chorus, ending]}
+  jump blues:
+    - {name: two pairs of solos, share: 55, sections: [intro, chorus, chorus, solo, solo, chorus, chorus, solo, solo, chorus, ending]}
+    - {name: two solos together, share: 45, sections: [intro, chorus, chorus, solo, solo, chorus, chorus, ending]}
+
+# What a song that asks for a plan is planned by, as rock's is: the Energy goes chorus by chorus, each one higher than the last,
+# a solo starting a little above the choruses before it, and the last chorus the loudest.
+song_plan:
+  energy: {intro: 5, outro: 6, chorus: 5, solo: 6, ending: 8}
+  growth: 1
+  last_chorus: 9
+  rising: []
+  levels: {drums: [1, 4, 6, 8], bass: [1, 4, 6, 9], rhythm: [1, 4, 6, 9], lead: [1, 3, 6, 9], session: [1, 4, 6, 8]}
+  fills: {small: snare triplet on four, medium: snare triplet on four, big: snare into toms}
+  tails:
+    usual: [stops]
+
+# What a kind says differently from blues as a whole: a slow blues starts lower and climbs further.
+by_subgenre:
+  slow blues:
+    song_plan: {energy: {intro: 3, chorus: 3, solo: 5}, growth: 2, last_chorus: 9}
+  minor blues:
+    song_plan: {energy: {intro: 3, chorus: 3, solo: 5}, growth: 2, last_chorus: 9}
 
 melody:
   grid: 12
