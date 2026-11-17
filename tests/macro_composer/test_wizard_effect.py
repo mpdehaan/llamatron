@@ -47,7 +47,8 @@ ANOTHER_SEED = 8
 A_SOUND_OF_NO_STYLE = 105
 A_LITTLE_FASTER = 7
 FIRST_PLACE = 0
-HALVES = 2
+# A genre's subgenres are dealt to so many classes, which run side by side, so that none runs past the runner's limit for a class.
+PARTS = 4
 # The kinds of choice.
 WAY = 'a way of playing'
 BUSY = 'busy'
@@ -83,6 +84,8 @@ PHRASING_WAY = 'how the lines breathe'
 HOOK_PART = "a part of the hook's kind"
 HOOK_LINE = "the hook's notes written by hand"
 A_LINE = "a line's own"
+COMES_IN = 'where a player comes in'
+REACTS_TO_ENERGY = 'how a player reacts'
 START = 'a way of starting'
 END = 'a way of ending'
 FIRST_PLAYER = 'the first player'
@@ -105,11 +108,10 @@ SECTION_BARS = "a section's bars"
 SECTION_KIND = "a section's kind"
 FORM = 'form'
 PLAYS_IN_SECTION = 'who plays in a section'
-# How many choices of each kind change nothing, by genre and half, with the reason each is allowed for now.
-FIRST_HALF = 0
-SECOND_HALF = 1
+# How many choices of each kind change nothing, by genre and part, with the reason each is allowed for now.
+THIRD_PART = 2
 # Rock and roll's planned song: its sections' Energies all ask for the hat in eighths, so choosing that cymbal is choosing what the plan already plays.
-KNOWN_TO_CHANGE_NOTHING = {('rock', FIRST_HALF): {WAY: 1}}
+KNOWN_TO_CHANGE_NOTHING = {('rock', THIRD_PART): {WAY: 1}}
 LABEL = '{subgenre}: {what}'
 
 
@@ -312,6 +314,14 @@ def every_choice(choices):
             yield A_LINE, (LINE_BREATH, breath), lambda made, place=place, line=line, breath=breath: made.set_section_line(place=place, line=line, field=LINE_BREATH, value=breath), [nothing_first]
         yield A_LINE, LINE_NOTES, lambda made, place=place, line=line: made.set_section_line(place=place, line=line, field=LINE_NOTES, value=first_note_moved(made.section_lines(place)[line][LINE_NOTES])), [nothing_first]
         break
+    # A player as a person: each other way of coming in and of laying out, and Reacts at either end.
+    for role in choices.roles_in():
+        for way in choices.comes_in_offered(role):
+            if way != choices.get_comes_in(role) and comes_in_works(choices=choices, role=role, way=way):
+                yield COMES_IN, (role, way), lambda made, role=role, way=way: made.set_comes_in(role=role, way=way), [nothing_first]
+        if choices.reacts(role):
+            # A player who reacts is heard to at one end of the gauge at least: an even player may play as the band does where the band is never held back.
+            yield REACTS_TO_ENERGY, role, lambda made, role=role: set_reacts_where_heard(made=made, role=role), [nothing_first]
     # How the song starts and ends: each way but the one the song has, another first player under layers, and another length of a stage.
     for way in choices.starts():
         if way != choices.get_start():
@@ -353,6 +363,25 @@ def first_note_moved(notes):
     """A line with its first note that sounds two places of the scale higher."""
     step = sum(line_edits.length_of(note) for note in notes[:next(count for count, note in enumerate(notes) if not line_edits.is_rest(note))])
     return line_edits.moved(line=notes, step=step, by=2)
+
+
+def comes_in_works(*, choices, role, way):
+    """Whether a player can come in a way: a way that would leave a section with nobody is refused, and is no choice to try."""
+    trial = WizardChoices.from_data(choices.to_data())
+    try:
+        trial.set_comes_in(role=role, way=way)
+    except ValueError:
+        return False
+    return True
+
+
+def set_reacts_where_heard(*, made, role):
+    """Have a player react at the end of the gauge where the song is not the song the band's own reacting makes."""
+    usual = made.made_for_listening()[0].to_data()[Section.PATTERNS]
+    for reacts in (LOWEST_ENERGY, HIGHEST_ENERGY):
+        made.set_reacts(role=role, reacts=reacts)
+        if made.made_for_listening()[0].to_data()[Section.PATTERNS] != usual:
+            return
 
 
 def one_player_first(made):
@@ -450,13 +479,13 @@ class EveryChoiceOfAGenre:
     classes run side by side."""
 
     GENRE = None
-    HALF = None
+    PART = None
 
     def test_every_choice_changes_the_song_but_those_known_not_to(self):
         subgenres = fresh(genre=self.GENRE, subgenre=WizardChoices.from_data({'genre': self.GENRE}).subgenres()[0]).subgenres()
         nothing = collections.defaultdict(list)
         tried = 0
-        for subgenre in subgenres[self.HALF::HALVES]:
+        for subgenre in subgenres[self.PART::PARTS]:
             for kind, what, change, firsts in every_choice(fresh(genre=self.GENRE, subgenre=subgenre)):
                 tried += 1
                 if not changes(genre=self.GENRE, subgenre=subgenre, change=change, firsts=firsts):
@@ -467,16 +496,16 @@ class EveryChoiceOfAGenre:
                 nothing[BUSY].extend([LABEL.format(subgenre=subgenre, what=role)] * alike)
         self.assertGreater(tried, 0)
         found = {kind: len(labels) for kind, labels in nothing.items() if labels}
-        self.assertEqual(found, KNOWN_TO_CHANGE_NOTHING.get((self.GENRE, self.HALF), {}), dict(nothing))
+        self.assertEqual(found, KNOWN_TO_CHANGE_NOTHING.get((self.GENRE, self.PART), {}), dict(nothing))
 
 
 def class_for(*, genre, half):
-    name = 'TestEveryChoiceOf{}Half{}'.format(''.join(word.capitalize() for word in genre.split('_')), half + 1)
-    return name, type(name, (EveryChoiceOfAGenre, unittest.TestCase), {'GENRE': genre, 'HALF': half, '__slots__': ()})
+    name = 'TestEveryChoiceOf{}Part{}'.format(''.join(word.capitalize() for word in genre.split('_')), half + 1)
+    return name, type(name, (EveryChoiceOfAGenre, unittest.TestCase), {'GENRE': genre, 'PART': half, '__slots__': ()})
 
 
 for a_genre in genre_names():
-    for a_half in range(HALVES):
+    for a_half in range(PARTS):
         a_name, a_class = class_for(genre=a_genre, half=a_half)
         globals()[a_name] = a_class
 del a_class

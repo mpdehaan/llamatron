@@ -749,6 +749,13 @@ MSG_WIZARD_HOOK_NOTES_WIZARD = "the wizard's"
 MSG_WIZARD_HOOK_NOTES_TITLE = 'Hook notes'
 # The Lines dialog, a section's lines one by one, and the section panel's field that opens it.
 MSG_WIZARD_LINES_LABEL = 'Lines'
+# The groups of a section's panel, each a heading that opens and closes.
+MSG_WIZARD_GROUP_TUNE = 'Tune'
+MSG_WIZARD_SECTION_HOOK_LABEL = 'Hook'
+MSG_WIZARD_GROUP_HARMONY = 'Harmony'
+MSG_WIZARD_GROUP_SHAPE = 'Shape'
+MSG_WIZARD_GROUP_JOINS = 'Joins'
+MSG_WIZARD_GROUP_PLAYERS = 'Who plays'
 MSG_WIZARD_LINES_TITLE = 'Lines: {section}'
 MSG_WIZARD_LINE_NOTES_TITLE = 'Line {line}: {section}'
 MSG_LINES_BREATH_LABEL = 'Breath'
@@ -759,6 +766,11 @@ MSG_LINES_NO = 'no'
 # The song plan's fields on the Form panel, the parts of a hook's kind on the Hooks panel, and a value the wizard picked itself.
 MSG_WIZARD_SONG_PLAN_LABEL = 'Song plan'
 MSG_WIZARD_CONTRAST_LABEL = 'Contrast'
+# A player as a person: where the player comes in and lays out, and how strongly the player answers to Energy, by the gauge's place.
+MSG_WIZARD_COMES_IN_LABEL = 'Comes in'
+MSG_WIZARD_LAYS_OUT_LABEL = 'Lays out'
+MSG_WIZARD_REACTS_LABEL = 'Reacts'
+MSG_WIZARD_REACTS_SAID = {1: 'even', 2: 'even', 3: 'steady', 4: 'steady', 5: 'as the band', 6: 'lively', 7: 'lively', 8: 'dramatic', 9: 'dramatic', 10: 'dramatic'}
 MSG_WIZARD_STARTS_LABEL = 'Starts with'
 MSG_WIZARD_FIRST_PLAYER_LABEL = 'First player'
 MSG_WIZARD_SETUP_BARS_LABEL = 'Setup bars'

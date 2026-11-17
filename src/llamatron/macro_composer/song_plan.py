@@ -38,6 +38,8 @@ from llamatron.strings.macro_composer import MSG_PLAN_ENERGY, MSG_PLAN_HOOK, MSG
 # The fields of a song's plan, and of the plan a style gives.
 PLAN_OF_SONG = 'song_plan'
 CONTRAST = 'contrast'
+# How strongly each player answers to Energy, by the player's name: the usual, or less for a player who plays evenly and more for a dramatic one.
+REACTS = 'reacts'
 GROWTH = 'growth'
 PHRASING = 'phrasing'
 # How the lines breathe, where the song asks: the fields of phrasing.py.
@@ -237,7 +239,12 @@ class SongPlan:
     def _allowed(self, place):
         """The level each player may reach in a section, by the section's Energy."""
         instruments = list(dict.fromkeys([*self._of_style.get(CHANGE_POINTS, {}), *self._sections[place].get(ALLOWS, {})]))
-        return {instrument: level_at(energy=self._energies[place], points=self._points_of(instrument)) for instrument in instruments}
+        return {instrument: level_at(energy=self._energy_felt(place=place, instrument=instrument), points=self._points_of(instrument)) for instrument in instruments}
+
+    def _energy_felt(self, *, place, instrument):
+        """A section's Energy as one player answers to it: further from the middle for a dramatic player, nearer for an even one."""
+        reacts = (self._given.get(REACTS) or {}).get(instrument, USUAL_CONTRAST)
+        return within(MIDDLE_ENERGY + (self._energies[place] - MIDDLE_ENERGY) * reacts / USUAL_CONTRAST)
 
     def _plays(self, place):
         """Who plays in a section: the kind's players, but those who come in only at a higher Energy."""

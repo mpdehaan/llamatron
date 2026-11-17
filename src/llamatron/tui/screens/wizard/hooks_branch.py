@@ -36,6 +36,20 @@ NARROW_STEP = 1
 ROOM_BESIDE = 8
 
 
+def hook_notes_field(*, choices, page, label):
+    """Return the field of the hook's notes, the wizard's until they are written by hand: ENTER opens the hook's line in the Tune dialog and keeps the line
+    the dialog answers with as the hook's own notes, and Bksp gives the wizard's back. The Hooks panel shows it, and so does every section that says the hook."""
+    own = choices.hook_is_own()
+
+    def edit_notes():
+        usual = WizardChoices.from_data(choices.to_data())
+        usual.set_hook_line(None)
+        dialog = TuneDialog(title=MSG_WIZARD_HOOK_NOTES_TITLE, line=choices.hook_line(), steps_in_bar=choices.hook_notes()[1], pitch_of_place=choices.pitch_of_place, usual=usual.hook_line())
+        page.ask(dialog=dialog, then=page.choosing(lambda line: choices.set_hook_line(None if line == line_edits.tidied(usual.hook_line()) else line)))
+    return Field(label=label, value=lambda: MSG_WIZARD_HOOK_NOTES_OWN if own else MSG_WIZARD_HOOK_NOTES_WIZARD, enter=edit_notes, enter_what=MSG_WIZARD_EDIT_NOTES_WHAT,
+                 clear=(lambda: page.choosing(lambda nothing: choices.set_hook_line(None))(None)) if own else None, clear_what=MSG_TUNE_USUAL_WHAT)
+
+
 class HooksBranch(SongWaysBranch):
     """The Hook switch, shown where a hook changes the song, and under it a picture of the hook's notes; the hook's kind,
     its variations, listening and editing are to come."""
@@ -71,18 +85,8 @@ class HooksBranch(SongWaysBranch):
             return [switch, *kind, *self.intro_hook_fields(), new_hook]
         # The hook's notes are the wizard's until they are written by hand; then the notes are the hook, whatever its kind was, until Bksp gives them back.
         own = choices.hook_is_own()
-        notes = Field(label=MSG_WIZARD_HOOK_NOTES_LABEL, value=lambda: MSG_WIZARD_HOOK_NOTES_OWN if own else MSG_WIZARD_HOOK_NOTES_WIZARD, enter=self.edit_notes, enter_what=MSG_WIZARD_EDIT_NOTES_WHAT,
-                      clear=(lambda: self.page().choosing(lambda nothing: choices.set_hook_line(None))(None)) if own else None, clear_what=MSG_TUNE_USUAL_WHAT)
+        notes = hook_notes_field(choices=choices, page=self.page(), label=MSG_WIZARD_HOOK_NOTES_LABEL)
         return [switch, *([] if own else kind), notes, *self.intro_hook_fields(), *([] if own else [new_hook])]
-
-    def edit_notes(self):
-        """Open the hook's line in the Tune dialog, and keep the line the dialog answers with as the hook's own notes."""
-        choices = self.choices()
-        page = self.page()
-        usual = WizardChoices.from_data(choices.to_data())
-        usual.set_hook_line(None)
-        dialog = TuneDialog(title=MSG_WIZARD_HOOK_NOTES_TITLE, line=choices.hook_line(), steps_in_bar=choices.hook_notes()[1], pitch_of_place=choices.pitch_of_place, usual=usual.hook_line())
-        page.ask(dialog=dialog, then=page.choosing(lambda line: choices.set_hook_line(None if line == line_edits.tidied(usual.hook_line()) else line)))
 
     def intro_hook_fields(self):
         """Return the field of who says the hook in the intro, before anybody sings it, where somebody can."""

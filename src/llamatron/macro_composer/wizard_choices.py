@@ -47,7 +47,7 @@ from llamatron.macro_composer.phrasing import LINE_BREATH, LINE_EARLY
 from llamatron.macro_composer.joins import BUILD, DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL
 from llamatron.macro_composer.song_plan import (
     BIG, BY_PLACE, FADED, FADES, UNFADED, SWELL_END, SWELL_START, PHRASING_WAYS, RISES, RISING, SCALE_OF_PLACE, SCENE_TEMPO, SCENE_TEMPO_END, SCENE_TEMPO_START, CONTRAST, ENERGY, FILL_SIZE, FILL_SIZES, HIGHEST_ENERGY, LOWEST_ENERGY, MEDIUM, NOT_AT_ALL, PHRASING, PLAN_OF_SONG, ROOT_OF_PLACE, SAID_OF_SECTION, SETUP, SMALL,
-    TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE, USUAL_CONTRAST, SongPlan,
+    REACTS, TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE, USUAL_CONTRAST, SongPlan,
 )
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
@@ -60,7 +60,7 @@ from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MIN_GM_SO
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.marks import MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SECTION_VARIANT
 from llamatron.support.version import VERSION as A_VERSION
-from llamatron.strings.errors import ERR_WIZARD_CONTRAST, ERR_WIZARD_EXTRAS, ERR_WIZARD_END, ERR_WIZARD_FIRST_PLAYER, ERR_WIZARD_HOOK_LINE, ERR_WIZARD_HOOK_PART, ERR_WIZARD_SETUP_BARS, ERR_WIZARD_START, ERR_WIZARD_START_UNMADE, ERR_WIZARD_CHORDS, ERR_WIZARD_FORM_ANSWER, ERR_WIZARD_NO_FORM_QUESTIONS, ERR_WIZARD_INTRO_HOOK, ERR_WIZARD_PHRASING, ERR_WIZARD_SECTION_OWN, ERR_WIZARD_SECTION_OWN_UNMADE, ERR_WIZARD_GENRE_HAS_NO_PLAN, ERR_WIZARD_NO_SONG_PLAN, ERR_WIZARD_SWITCH, ERR_WIZARD_NO_SUCH_ROW, ERR_WIZARD_ROW, ERR_WIZARD_HOOK_TAKE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_MELODY_NUMBER, ERR_WIZARD_MELODY_SWITCH, ERR_WIZARD_NO_SUCH_MELODY_SETTING, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
+from llamatron.strings.errors import ERR_WIZARD_COMES_IN, ERR_WIZARD_LAYS_OUT, ERR_WIZARD_PLAYS_UNMADE, ERR_WIZARD_REACTS, ERR_WIZARD_CONTRAST, ERR_WIZARD_EXTRAS, ERR_WIZARD_END, ERR_WIZARD_FIRST_PLAYER, ERR_WIZARD_HOOK_LINE, ERR_WIZARD_HOOK_PART, ERR_WIZARD_SETUP_BARS, ERR_WIZARD_START, ERR_WIZARD_START_UNMADE, ERR_WIZARD_CHORDS, ERR_WIZARD_FORM_ANSWER, ERR_WIZARD_NO_FORM_QUESTIONS, ERR_WIZARD_INTRO_HOOK, ERR_WIZARD_PHRASING, ERR_WIZARD_SECTION_OWN, ERR_WIZARD_SECTION_OWN_UNMADE, ERR_WIZARD_GENRE_HAS_NO_PLAN, ERR_WIZARD_NO_SONG_PLAN, ERR_WIZARD_SWITCH, ERR_WIZARD_NO_SUCH_ROW, ERR_WIZARD_ROW, ERR_WIZARD_HOOK_TAKE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_MELODY_NUMBER, ERR_WIZARD_MELODY_SWITCH, ERR_WIZARD_NO_SUCH_MELODY_SETTING, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'
@@ -227,6 +227,22 @@ OWN_SECTIONS = 'own_sections'
 PREVIEW_NAME = 'preview'
 JOINS_ANSWER = 'joins'
 SETUP_BARS_ANSWER = 'setup bars'
+REACTS_ANSWER = 'reacts'
+# Where a player comes in and where a player lays out.
+FROM_THE_START = 'from the start'
+AFTER_THE_INTRO = 'after the intro'
+IN_FIRST_CHORUS = 'in the first chorus'
+AFTER_FIRST_VERSE = 'after the first verse'
+IN_LAST_CHORUS = 'late, in the last chorus'
+COMES_IN_WAYS = (FROM_THE_START, AFTER_THE_INTRO, AFTER_FIRST_VERSE, IN_FIRST_CHORUS, IN_LAST_CHORUS)
+NEVER_LAYS_OUT = 'never'
+IN_BREAKDOWNS = 'only in breakdowns'
+WHEN_QUIET = 'whenever it is quiet'
+CHORUS_KIND = 'chorus'
+VERSE_KIND = 'verse'
+# The kinds of section that are a breakdown, by the names the genres give them, and the Energy at or under which a section is quiet.
+BREAKDOWN_KINDS = ('bridge', 'breakdown', 'strip', 'thin', 'drift')
+QUIET_ENERGY = 4
 ARRANGED_ANSWER = 'arranged'
 LINES_ANSWER = 'lines'
 # What a section's lines are given of their own, by the line's count, and what is said of a line.
@@ -790,6 +806,10 @@ class WizardChoices:
     def section_plays(self, place):
         """Return who plays in a section, by the names the genre gives its players."""
         return list(self._section(place).get(PLAYS, []))
+
+    def section_usually_plays(self, place):
+        """Return who plays in a section of its kind as the genre has the kind."""
+        return list(self._usual(place).get(PLAYS, []))
 
     def add_section(self, *, place, kind):
         """Put a new section of a kind before a place in the form, as the genre describes the kind."""
@@ -2499,6 +2519,122 @@ class WizardChoices:
             raise ValueError(ERR_WIZARD_CONTRAST.format(low=LOWEST_ENERGY, high=HIGHEST_ENERGY, value=contrast))
         self._plan()[CONTRAST] = contrast
         self._answers = {}
+
+    # A player, as a person in the band: how strongly the player answers to Energy, where the player comes in and where the player lays out.
+
+    def reacts(self, role):
+        """Return whether a player answers to Energy more or less than the band: a player of a planned song whose playing the plan holds back or lets go,
+        which is found by making the song with the player even and dramatic, and kept until a choice changes."""
+        if not (self.has_song_plan() and self.role_is_in(role) and PLAYER in self._role(role)):
+            return False
+        return self._remembered(key=(REACTS_ANSWER, self._role(role)[PLAYER]), compute=lambda: self._reacts_is_heard(role))
+
+    def _reacts_is_heard(self, role):
+        made = []
+        for reacts in (LOWEST_ENERGY, HIGHEST_ENERGY):
+            trial = copy.deepcopy(self)
+            trial._answers = {}
+            trial._plan()[REACTS] = {**(trial._plan().get(REACTS) or {}), self._role(role)[PLAYER]: reacts}
+            made.append(trial.made_for_listening()[0].to_data()[Section.PATTERNS])
+        return made[0] != made[1]
+
+    def get_reacts(self, role):
+        return (self._plan().get(REACTS) or {}).get(self._role(role)[PLAYER], USUAL_CONTRAST)
+
+    def set_reacts(self, *, role, reacts):
+        """Have a player answer to Energy evenly, at the lowest, or dramatically, at the highest. Two players who are one person, as a singer who also plays, answer alike."""
+        if not self.reacts(role) or isinstance(reacts, bool) or not isinstance(reacts, int) or not LOWEST_ENERGY <= reacts <= HIGHEST_ENERGY:
+            raise ValueError(ERR_WIZARD_REACTS.format(low=LOWEST_ENERGY, high=HIGHEST_ENERGY, value=reacts))
+        kept = dict(self._plan().get(REACTS) or {})
+        kept.pop(self._role(role)[PLAYER], None)
+        if reacts != USUAL_CONTRAST:
+            kept[self._role(role)[PLAYER]] = reacts
+        self._plan().pop(REACTS, None)
+        if kept:
+            self._plan()[REACTS] = kept
+        self._answers = {}
+
+    def _comes_in_places(self):
+        """Where each way of coming in puts a player's first section, for the ways the form has a place for, in the order they are offered."""
+        kinds = self.section_kinds_in_form()
+        intro = self._intro_kind()
+        after_intro = next((place for place, kind in enumerate(kinds) if kind != intro), None)
+        choruses = [place for place, kind in enumerate(kinds) if kind == CHORUS_KIND]
+        verse = next((place for place, kind in enumerate(kinds) if kind == VERSE_KIND), None)
+        found = {FROM_THE_START: 0, AFTER_THE_INTRO: after_intro, IN_FIRST_CHORUS: choruses[0] if choruses else None,
+                 AFTER_FIRST_VERSE: verse + 1 if verse is not None and verse + 1 < len(kinds) else None, IN_LAST_CHORUS: choruses[-1] if len(choruses) > 1 else None}
+        places = {}
+        for way in COMES_IN_WAYS:
+            if found[way] is not None and found[way] not in places.values():
+                places[way] = found[way]
+        return places
+
+    def comes_in_offered(self, role):
+        """Return the ways a player may come in, where the song has sections and the player is in the band."""
+        return list(self._comes_in_places()) if self.is_ready() and self.role_is_in(role) else []
+
+    def _first_place(self, role):
+        return next((place for place in range(len(self._entries())) if role in self.section_plays(place)), None)
+
+    def get_comes_in(self, role):
+        """Return the way a player comes in, or None where the player's first section is none of the ways' or the player plays nowhere."""
+        first = self._first_place(role)
+        return next((way for way, place in self._comes_in_places().items() if place == first), None)
+
+    def _usually_plays(self, *, place, role):
+        return role in self._usual(place).get(PLAYS, [])
+
+    def _quiet_places(self):
+        """The places of the form a player who lays out when it is quiet sits out: those of a low Energy in a planned song."""
+        return [place for place, energy in enumerate(self.energies()) if energy <= QUIET_ENERGY] if self.has_song_plan() else []
+
+    def _breakdown_places(self):
+        return [place for place, kind in enumerate(self.section_kinds_in_form()) if kind in BREAKDOWN_KINDS]
+
+    def _laid_out(self, *, role, way, first):
+        """Which sections a player plays under a way of laying out, from the player's first section on: never is every section the genre gives the player any part in."""
+        out = {NEVER_LAYS_OUT: [], IN_BREAKDOWNS: self._breakdown_places(), WHEN_QUIET: self._quiet_places()}[way]
+        return [place for place in range(first, len(self._entries())) if place == first or (place not in out and (not self.section_is_held(place) or self._usually_plays(place=place, role=role)))]
+
+    def lays_out_offered(self, role):
+        """Return the ways a player may lay out: never, only in the breakdowns where the form has one, and whenever it is quiet in a planned song with a quiet section."""
+        if not self.comes_in_offered(role) or self._first_place(role) is None:
+            return []
+        return [NEVER_LAYS_OUT, *([IN_BREAKDOWNS] if self._breakdown_places() else []), *([WHEN_QUIET] if self._quiet_places() else [])]
+
+    def get_lays_out(self, role):
+        """Return the way a player lays out, or None where the sections the player plays are none of the ways'."""
+        first = self._first_place(role)
+        plays = [place for place in range(len(self._entries())) if role in self.section_plays(place)]
+        return next((way for way in self.lays_out_offered(role) if self._laid_out(role=role, way=way, first=first) == plays), None)
+
+    def set_comes_in(self, *, role, way):
+        """Have a player come in at a place of the form and sit out every section before it; the sections after are left as they are."""
+        if way not in self.comes_in_offered(role):
+            raise ValueError(ERR_WIZARD_COMES_IN.format(value=way))
+        first = self._comes_in_places()[way]
+        plays = [place for place in range(first, len(self._entries())) if place == first or role in self.section_plays(place)]
+        self._set_plays_of(role=role, plays=plays)
+
+    def set_lays_out(self, *, role, way):
+        """Have a player lay out never, only in the breakdowns, or whenever it is quiet, from the player's first section on."""
+        if way not in self.lays_out_offered(role):
+            raise ValueError(ERR_WIZARD_LAYS_OUT.format(value=way))
+        self._set_plays_of(role=role, plays=self._laid_out(role=role, way=way, first=self._first_place(role)))
+
+    def _set_plays_of(self, *, role, plays):
+        """Have a player play in the sections at these places and no others; a section that would be left with nobody, or a song that cannot then be made, is refused."""
+        kept = copy.deepcopy((self._sections, self._stages))
+        try:
+            for place in range(len(self._entries())):
+                if (place in plays) != (role in self.section_plays(place)):
+                    self.set_section_plays(place=place, role=role, on=place in plays)
+            self._answers = {}
+            self.made_for_listening()
+        except (ValueError, SongFileError) as problem:
+            self._sections, self._stages = kept
+            self._answers = {}
+            raise ValueError(ERR_WIZARD_PLAYS_UNMADE.format(problem=problem)) from None
 
     def has_phrasing(self):
         """Return whether the tune's lines breathe."""

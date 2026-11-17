@@ -24,6 +24,8 @@ from llamatron.macro_composer.song_plan import ENERGY, FADES, RISES, ROOT_OF_PLA
 from llamatron.macro_composer.wizard_choices import DRUM_SOLO_KIND, chords_as_text
 from llamatron.strings.errors import ERR_WIZARD_CHORDS
 from llamatron.macro_composer.song_plan import USUAL_CONTRAST
+from llamatron.strings.labels import MSG_WIZARD_GROUP_HARMONY, MSG_WIZARD_GROUP_JOINS, MSG_WIZARD_GROUP_PLAYERS, MSG_WIZARD_GROUP_SHAPE, MSG_WIZARD_GROUP_TUNE
+from llamatron.strings.marks import MSG_SECTION_SET
 from llamatron.strings.labels import (
     MSG_WIZARD_CONTRAST_LABEL, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_QUESTION_TITLES, MSG_WIZARD_FORM_QUESTIONS_BUTTON, MSG_WIZARD_REPLACE_SECTIONS_TITLE, MSG_WIZARD_HOOK_PART_LABELS, MSG_WIZARD_HOOKS_BRANCH, MSG_WIZARD_MELODY_BRANCH, MSG_WIZARD_PHRASING_LABEL, MSG_WIZARD_PHRASING_WAY_LABELS, MSG_WIZARD_PICK_SHOWN,
     MSG_WIZARD_SECTION_ORIGINS, MSG_WIZARD_SECTION_OWN_LABELS, MSG_WIZARD_SONG_PLAN_LABEL, MSG_WIZARD_VALUE_FROM,
@@ -153,6 +155,8 @@ class TestWizardPlan(WizardTest):
         self.assertIn(MSG_WIZARD_HOOK_PART_LABELS[hook_kinds.CONTOUR], self.text())
         self.assertNotIn(MSG_WIZARD_HOOK_PART_LABELS[hook_kinds.DETAIL], self.text())
 
+THE_GROUPS = (MSG_WIZARD_GROUP_TUNE, MSG_WIZARD_GROUP_HARMONY, MSG_WIZARD_GROUP_SHAPE, MSG_WIZARD_GROUP_JOINS, MSG_WIZARD_GROUP_PLAYERS)
+
 
 class TestWizardSectionOwnFields(WizardTest):
     """A section's panel on a planned song: what the section is given of its own."""
@@ -171,8 +175,31 @@ class TestWizardSectionOwnFields(WizardTest):
     def label(self, field):
         return MSG_WIZARD_SECTION_OWN_LABELS[field]
 
+    async def open_every_group(self):
+        """Open each heading of the section's panel that is closed, so that every field shows."""
+        for label in THE_GROUPS:
+            headings = [field for field in self.app.screen.shown_fields() if field.label == label]
+            if headings and not self.app.screen.is_open(headings[0]):
+                await self.select_field(label)
+                await self.press(Key.ENTER)
+
+    async def test_the_fields_are_in_groups_closed_until_opened_that_say_when_something_inside_is_set(self):
+        choices = self.choices()
+        shown = self.text()
+        for label in THE_GROUPS:
+            self.assertIn(label, shown)
+        self.assertIn(self.label(ENERGY), shown)
+        self.assertNotIn(self.label(TEMPO_END_OF_PLACE), shown)
+        self.assertNotIn(MSG_SECTION_SET, shown)
+        choices.set_section_own(place=A_PLACE, field=FADES, value=True)
+        await self.press(Key.DOWN, Key.UP)
+        self.assertIn(MSG_SECTION_SET, self.text())
+        await self.open_every_group()
+        self.assertIn(self.label(TEMPO_END_OF_PLACE), self.text())
+
     async def test_each_field_shows_what_the_section_takes_and_where_from(self):
         choices = self.choices()
+        await self.open_every_group()
         shown = self.text()
         for field in choices.section_own_fields(A_PLACE):
             self.assertIn(self.label(field), shown)
@@ -216,6 +243,7 @@ class TestWizardSectionOwnFields(WizardTest):
     async def test_a_song_with_no_plan_keeps_the_chords_the_tempo_the_key_and_the_scale(self):
         self.choices().set_song_plan(False)
         await self.press(Key.DOWN, Key.UP)
+        await self.open_every_group()
         shown = self.text()
         self.assertNotIn(self.label(ENERGY), shown)
         for field in (CHORDS, TEMPO_END_OF_PLACE, ROOT_OF_PLACE, TYPE_OF_PLACE):
