@@ -271,6 +271,8 @@ MSG_PLAY_CLIP_WHAT = 'play clip'
 MSG_STOP_WHAT = 'stop'
 MSG_STOP_CLIP_WHAT = 'stop clip'
 MSG_LISTEN_WHAT = 'listen'
+# What Bksp does on a player's loudness level of the song's own.
+MSG_FROM_GENRE_WHAT = 'from genre'
 MSG_OWN_DRUM_WHAT = 'own drum'
 MSG_FROM_PLAN_WHAT = 'from plan'
 MSG_TYPE_NOTE_WHAT = 'type a note'

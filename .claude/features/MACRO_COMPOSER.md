@@ -312,6 +312,18 @@ clouds; generate and test, with motif development and counterpoint last.
   sections the player plays and set them through `set_section_plays`, and Reacts (`set_reacts`, the plan's `reacts` by player
   name), which moves the Energy the player answers to away from or toward the middle; Reacts is offered only where making the song
   with the player even and dramatic differs, since the plan only ever holds a player back.
+- **Loudness levels** (`macro_composer/loudness.py`): four named levels, ghost, soft, normal and accent. A drum's come from its
+  `loudness` in the template, a number (accent 12 above, soft two thirds, ghost a third) or a mapping of the four; a player of
+  notes' from the role's `velocity` (accent 12 above, soft 8 below, ghost 30 below). A drum bar's marks are `accent`, `loud`,
+  `soft`, `ghost` and `none`; a tune's note may say `level`, and its stresses reach for the part's own accent and soft note.
+  `beat_loudness`, at the template's top or under `by_subgenre`, is a lean added to the drums' strokes on each beat of the bar
+  (funk lands on the one, the ballads lean on one and three). A song keeps `dynamics: {player: 0 to 10}` (5 as written, 0 every
+  note alike, 10 twice as far, which also scales the feel's shaping and the lean) and `loudness: {player: {level: number}}`; the
+  drummer's numbers are the whole kit's, each piece moved in proportion, and a normal level of the song's own carries the other
+  three with it. On a player's panel: the Dynamics gauge (`set_dynamics`, shown where heard) and, last, the closed Loudness
+  heading with a number for each level the song plays (`set_loudness_level`, `loudness_levels_offered`, found by making the song
+  with the level moved, only while the heading is open); Bksp gives a level back to the genre. Not yet: the lean on players of
+  notes, the phrase offsets (a section's first beat, a climbing last bar) and the small random amount.
 - **The riff, a song's second hook** (`macro_composer/riffs.py`, `set_riff`, `set_riff_line`, `new_riff`): two bars of single
   notes over the home chord, the second answering the first, played in place of their figures by one player of a figure or by the
   first and the lowest together, in the intro, under the verses, under the choruses or everywhere, through a chain of the

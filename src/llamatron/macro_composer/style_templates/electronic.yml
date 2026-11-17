@@ -66,7 +66,7 @@ traits:
     - {value: snare, share: 34, bar: {snare: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, none, none, none]}}
     - {value: clap and snare, share: 8, bar: {clap: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, none, none, none], snare: [none, none, none, none, loud, none, none, none, none, none, none, none, loud, none, none, none]}}
     - {value: snare on three, share: 4, bar: {snare: [none, none, none, none, none, none, none, none, loud, none, none, none, none, none, none, none]}}
-    - {value: snare with quiet notes, share: 4, bar: {snare: [none, none, none, none, loud, none, none, none, none, soft, none, none, loud, none, none, soft]}}
+    - {value: snare with quiet notes, share: 4, bar: {snare: [none, none, none, none, loud, none, none, none, none, ghost, none, none, loud, none, none, ghost]}}
     - {value: none, share: 8}
   hat:
     - {value: offbeats, share: 22, bar: {hat: [none, none, loud, none, none, none, loud, none, none, none, loud, none, none, none, loud, none]}}

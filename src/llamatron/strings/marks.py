@@ -393,6 +393,8 @@ MSG_WIZARD_BUSY_SHOWN = '{gauge}  {level} of {most}'
 # The Busy field of a player whose own gauges were moved from the preset, and one of those gauges.
 MSG_WIZARD_BUSY_CUSTOM_SHOWN = '{gauge}  {level} of {most} (custom)'
 MSG_WIZARD_PLAYER_GAUGE_SHOWN = '{gauge}  {place}'
+# A player's loudness level the genre gives, where the song has not chosen its own.
+MSG_WIZARD_LEVEL_FROM_GENRE = '{number} (from genre)'
 # A kit piece that plays its own drum or another of the kit, and a note by its name and octave.
 MSG_WIZARD_OWN_DRUM_SHOWN = '{piece}'
 MSG_WIZARD_KIT_DRUM_SHOWN = '{drum} (kit)'

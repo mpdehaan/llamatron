@@ -24,6 +24,9 @@ One genre at a time, rock first, alternating with the electronic stages (band st
    phrase offsets (a line's highest and longest note louder, its last softer, the bar before a bigger section climbing); a small
    random amount last. A player's panel has a closed Loudness heading with a Dynamics gauge, flat to dramatic, and the four numbers.
    Loudness and timing are apart: a song may be on the grid and strongly accented.
+   Built: the four levels, the snare's ghost notes, the lean on the beat for the drums in funk and the ballads, Dynamics and the
+   Loudness heading (`.claude/features/MACRO_COMPOSER.md`, "Loudness levels"). Waiting: a figure for each kind of section, the
+   lean on players of notes, the phrase offsets and the random amount.
 3. **The controller ramp**, straight after the loudness levels (`.claude/IDEAS.yml`): organ loudness and rotary speed, string and
    pad entries, the piano's pedal and the electronic rises wait on it. Pitch bend waits; grace notes and late vibrato stand in.
 4. **The riff done as the review has it**, proved on hard rock: one or two bars said four times, mostly the root, starting on the

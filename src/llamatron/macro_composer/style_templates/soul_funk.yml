@@ -63,7 +63,7 @@ traits:
       needs: {meter: 4/4}
       bar:
         kick: [loud, none, loud, none, none, none, none, none, none, none, loud, none, none, none, none, none]
-        snare: [none, none, none, soft, loud, none, none, soft, none, soft, none, none, loud, none, none, soft]
+        snare: [none, none, none, ghost, loud, none, none, ghost, none, ghost, none, none, loud, none, none, ghost]
         hat: [loud, none, loud, none, loud, none, loud, none, loud, none, loud, none, loud, none, none, none]
         open: [none, none, none, none, none, none, none, none, none, none, none, none, none, none, loud, none]
     - value: second line
@@ -264,7 +264,7 @@ players:
     3:
       says: 'A kit with two toms. Quiet snare notes between the loud ones, an open hat in the second bar, a kick added in the third, and the toms at each turn.'
       fill_every: 4
-      adds: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, soft: [3, 9]}}}]
+      adds: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, ghost: [3, 9]}}}]
       varies:
         - {bars: [2], choices: [{needs: {meter: 4/4}, bar: {open: {steps: 16, loud: [14]}}}]}
         - {bars: [3], choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 16, loud: [11]}}}]}
@@ -274,10 +274,10 @@ players:
     4:
       says: 'A kit with congas beside it. Quiet snare notes and soft congas in every bar, a small change to the kick or the hat in the second, third and fourth bars, and fills that run a whole bar. Holds back until the song opens up.'
       fill_every: 4
-      adds: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, soft: [3, 9]}, conga high: {steps: 16, soft: [2, 10]}, conga low: {steps: 16, soft: [6, 14]}}}]
+      adds: [{needs: {meter: 4/4}, bar: {snare: {steps: 16, ghost: [3, 9]}, conga high: {steps: 16, soft: [2, 10]}, conga low: {steps: 16, soft: [6, 14]}}}]
       varies:
         - {bars: [2], choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 16, loud: [13]}, open: {steps: 16, loud: [14]}}}]}
-        - {bars: [3], choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 16, loud: [7]}, snare: {steps: 16, soft: [15]}}}]}
+        - {bars: [3], choices: [{needs: {meter: 4/4}, bar: {kick: {steps: 16, loud: [7]}, snare: {steps: 16, ghost: [15]}}}]}
         - {bars: [4], choices: [{needs: {meter: 4/4}, bar: {open: {steps: 16, loud: [6]}}}]}
       fill: [{needs: {meter: 4/4}, silences: [hat, open], bar: {kick: {steps: 16, loud: [0, 10]}, snare: {steps: 16, loud: [0, 3, 4, 6], soft: [1, 5]}, tom high: {steps: 16, loud: [8, 9]}, tom mid: {steps: 16, loud: [11, 12]}, tom low: {steps: 16, loud: [13, 14, 15]}}}]
       timing: {snare: {drag: 14}, hat: {drag: 4}}
@@ -457,12 +457,16 @@ by_subgenre:
     sections: {verse: {plan: [{line: a}, {line: a, varied: true}, {line: b, higher: true}, {line: hook, hook: true}]}}
     song_plan: {energy: {intro: 3, verse: 3, chorus: 5, bridge: 5, solo: 6}, growth: 1, comes_in: {horns: 4, voices: 5}}
   soul ballad:
+    # A ballad leans on its first beat and a little on its third.
+    beat_loudness: [6, 0, 4, 0]
     sections: {verse: {plan: [{line: a}, {line: a, varied: true}, {line: b, higher: true}, {line: hook, hook: true}]}}
     song_plan: {energy: {intro: 2, verse: 2, bridge: 5, solo: 6}, growth: 2, comes_in: {horns: 5, voices: 5}}
   new orleans:
     sections: {verse: {bars: 12}, solo: {bars: 12}}
   funk:
     sections: {verse: {bars: 16, plan: [{line: a}, {line: hook, hook: true}, {line: a, varied: true}, {line: hook, hook: true}]}}
+    # Everybody lands on the one: the drums' strokes on the first beat are louder.
+    beat_loudness: [10, 0, 0, 0]
     song_plan: {energy: {intro: 6, verse: 7, chorus: 7, bridge: 8, solo: 6}, growth: 0, last_chorus: 8, fills: {small: a snare before the bar, medium: a snare before the bar, big: snare sixteenths on four}}
   disco:
     sections: {intro: {bars: 8}, verse: {bars: 16}, chorus: {bars: 16}, bridge: {bars: 16}}

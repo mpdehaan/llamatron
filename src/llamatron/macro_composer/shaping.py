@@ -24,6 +24,7 @@ beat is a push, and is accented.
 
 from fractions import Fraction
 
+from llamatron.macro_composer.loudness import USUAL_DYNAMICS, scaled
 from llamatron.macro_composer.notation import DEGREE, DRUM, CHORD, DEFAULT_STEP_SIZE, STEP_SIZE, VELOCITY
 
 REACH = 8
@@ -103,12 +104,12 @@ def moves(*, pattern, role, feel, signature, compound):
     return found
 
 
-def shaped(*, pattern, role, feel, signature, compound):
-    """A pattern's velocities moved by its rhythm."""
+def shaped(*, pattern, role, feel, signature, compound, dynamics=USUAL_DYNAMICS):
+    """A pattern's velocities moved by its rhythm, as far as the player's dynamics say."""
     new = list(pattern[VELOCITY])
     for place, move in moves(pattern=pattern, role=role, feel=feel, signature=signature, compound=compound).items():
         if new[place] is not None:
-            new[place] = max(LOWEST_SHAPED, min(HIGHEST_SHAPED, new[place] + move))
+            new[place] = max(LOWEST_SHAPED, min(HIGHEST_SHAPED, new[place] + scaled(move=move, dynamics=dynamics)))
     return new
 
 
