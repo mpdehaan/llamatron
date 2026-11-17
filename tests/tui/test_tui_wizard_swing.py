@@ -13,10 +13,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Tests of the Swing field on the song wizard's Genre panel."""
+"""Tests of the Swing field on the song wizard's Subgenre panel."""
 
 from llamatron.macro_composer.arranger import NO_GROOVE
-from llamatron.strings.labels import MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_SWING_LABEL, MSG_WIZARD_VALUE_FROM
+from llamatron.strings.labels import MSG_WIZARD_SUBGENRE_BRANCH, MSG_WIZARD_SWING_LABEL, MSG_WIZARD_VALUE_FROM
 from llamatron.strings.legends import MSG_FROM_GENRE_WHAT
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
@@ -31,13 +31,13 @@ NEW_LINE = '\n'
 
 
 class TestWizardSwingField(WizardTest):
-    """The swing a song is played with, on the Genre panel under the tempo."""
+    """The swing a song is played with, on the Subgenre panel under the tempo."""
 
     async def to_genre(self, *, genre, subgenre):
         choices = self.choices()
         choices.set_genre(genre)
         choices.set_subgenre(subgenre)
-        await self.go_to_named_branch(MSG_WIZARD_GENRE_BRANCH)
+        await self.go_to_named_branch(MSG_WIZARD_SUBGENRE_BRANCH)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         return choices
 

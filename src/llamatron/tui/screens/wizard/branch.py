@@ -21,8 +21,14 @@ branch is added, moved or split by changing the branches alone (who expects to
 revise how the wizard is organized).
 """
 
-from llamatron.strings.marks import MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_PLAYER_GAUGE_SHOWN
+from llamatron.strings.legends import What
+from llamatron.strings.marks import MSG_WIZARD_CHOOSE, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_PLAYER_GAUGE_SHOWN
+from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import NOTHING
+from llamatron.tui.screens.shared.field import ChoiceField, Field
+
+# Where a picker opens, and what stepping picks, before anything is chosen.
+FIRST_CHOICE = 0
 
 # The key of the answer kept of whether a panel has a field that does something.
 EDITABLE_ANSWER = 'editable'
@@ -71,6 +77,18 @@ class Branch:
     def notes(self, width):
         """Return lines shown under the fields, such as an overview of what the branches under this one hold."""
         return []
+
+    def choice_from_nothing(self, *, label, values, names, current, set_value):
+        """Return a field that picks one of a list and starts with nothing chosen, as the genre and the subgenre do:
+        it shows (choose) until then, and stepping it or opening its list starts from the first."""
+        page = self.page()
+        chosen = page.choosing(set_value)
+        if current is not None:
+            return ChoiceField(page=page, label=label, choices=values, names=names, current=current, shown=names[values.index(current)], set=chosen)
+
+        def pick():
+            page.ask(dialog=ChoiceDialog(title=label, options=names, current=FIRST_CHOICE), then=lambda place: chosen(values[place]))
+        return Field(label=label, value=lambda: MSG_WIZARD_CHOOSE, adjust=lambda offset: chosen(values[FIRST_CHOICE]), enter=pick, enter_what=What.CHOOSE)
 
     def refusal(self):
         """Return why the cursor cannot move into the branch's fields yet, or None when it can."""

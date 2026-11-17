@@ -22,7 +22,7 @@ from llamatron.macro_composer.melody import LENGTHS, LOUDNESS, DEFAULT_GAUGES, E
 from llamatron.macro_composer.wizard_choices import PLAYER_ROWS, PLAYER_ROWS_KEPT, MAJOR, WizardChoices, USUAL_PIECE_NOTE, FEWEST_FILLS, MOST_FILLS, ONE_GUITARIST_COUNT, TWO_GUITARISTS, ACOUSTIC, BAND_SOUNDS, FILLS_TRAITS, PROGRESSION_TRAITS, MOST_BUSY, USUAL_BUSY, MINOR, SEED, genre_names, genre_title
 from llamatron.strings.errors import ERR_WIZARD_LAST_PIECE, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_CHOOSE_GENRE, ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
 from llamatron.strings.labels import MSG_WIZARD_GROUP_RIFF, MSG_WIZARD_RIFF_PLAYED_BY_LABEL
-from llamatron.strings.labels import MSG_WIZARD_ROW_LABELS, MSG_WIZARD_NEW_HOOK_BUTTON, MSG_WIZARD_MELODY_SETTING_LABELS, MSG_WIZARD_PLAYER_GAUGE_LABELS, MSG_WIZARD_ANSWERED_BY_LABEL, MSG_WIZARD_BY_SECTION, MSG_WIZARD_FILLS_BUSY_LABEL, MSG_WIZARD_NOBODY, MSG_WIZARD_ROLE_LABEL, MSG_WIZARD_SECTION_ROLE_LABEL, MSG_WIZARD_TUNE_LABEL, MSG_GM_SOUNDS, MSG_WIZARD_KIT_DRUMS, MSG_GM_FAMILIES, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_GAUGE_ENDS, MSG_WIZARD_GAUGE_LABELS, MSG_WIZARD_HOOK_LABEL, MSG_WIZARD_NO_BREAK, MSG_WIZARD_ANY_PROGRESSION, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_GUITARISTS_LABEL, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_SOUND_LABEL, MSG_WIZARD_SOUNDS_LABEL, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_COMPOSITION_BRANCH, MSG_WIZARD_CHORDS_BRANCH, MSG_WIZARD_MELODY_BRANCH, MSG_WIZARD_HOOKS_BRANCH, MSG_WIZARD_HOOK_ON, MSG_WIZARD_HOOK_OFF, MSG_WIZARD_USUAL_MELODY, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_SUGGESTED_FORM_BUTTON, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_START_CANCEL
+from llamatron.strings.labels import MSG_WIZARD_ROW_LABELS, MSG_WIZARD_SUBGENRE_BRANCH, MSG_WIZARD_NEW_HOOK_BUTTON, MSG_WIZARD_MELODY_SETTING_LABELS, MSG_WIZARD_PLAYER_GAUGE_LABELS, MSG_WIZARD_ANSWERED_BY_LABEL, MSG_WIZARD_BY_SECTION, MSG_WIZARD_FILLS_BUSY_LABEL, MSG_WIZARD_NOBODY, MSG_WIZARD_ROLE_LABEL, MSG_WIZARD_SECTION_ROLE_LABEL, MSG_WIZARD_TUNE_LABEL, MSG_GM_SOUNDS, MSG_WIZARD_KIT_DRUMS, MSG_GM_FAMILIES, MSG_WIZARD_BREAK_CUT_LABEL, MSG_WIZARD_BREAK_LABEL, MSG_WIZARD_GAUGE_ENDS, MSG_WIZARD_GAUGE_LABELS, MSG_WIZARD_HOOK_LABEL, MSG_WIZARD_NO_BREAK, MSG_WIZARD_ANY_PROGRESSION, MSG_WIZARD_DRUM_FILLS_LABEL, MSG_WIZARD_FILLS_COME, MSG_WIZARD_QUIET_NOTES_LABEL, MSG_WIZARD_KIT_PIECE, MSG_WIZARD_GUITARISTS_LABEL, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_SOUND_LABEL, MSG_WIZARD_SOUNDS_LABEL, MSG_WIZARD_FILLS_LABEL, MSG_WIZARD_MELODY_LABEL, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_COMPOSITION_BRANCH, MSG_WIZARD_CHORDS_BRANCH, MSG_WIZARD_MELODY_BRANCH, MSG_WIZARD_HOOKS_BRANCH, MSG_WIZARD_HOOK_ON, MSG_WIZARD_HOOK_OFF, MSG_WIZARD_USUAL_MELODY, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_SUGGESTED_FORM_BUTTON, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_BUSY_LABEL, MSG_WIZARD_PLAYS_LABEL, MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_BARS_LABEL, MSG_WIZARD_CREATE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE, MSG_WIZARD_CREATE_BUTTON, MSG_WIZARD_START_CANCEL
 from llamatron.strings.legends import What
 from llamatron.strings.macro_composer import MSG_PIECE_INSTRUMENT
 from llamatron.strings.marks import MSG_ROW_DIALOG_BAR, MSG_ROW_DIALOG_ZERO, MSG_WIZARD_GENRE_ROW_SHOWN, MSG_WIZARD_ROW_SEPARATOR, MSG_WIZARD_GENRE_MELODY_SHOWN, MSG_WIZARD_PROGRESSION_FOR, MSG_WIZARD_HOOK_BAR_LINE, MSG_WIZARD_HOOK_CELL, MSG_WIZARD_HOOK_GAP, MSG_WIZARD_CHORDS_KEY, MSG_WIZARD_CHORDS_LINE, MSG_WIZARD_PROGRESSION_SHOWN, MSG_WIZARD_BUSY_CUSTOM_SHOWN, MSG_WIZARD_COMPOSITION_LINE, MSG_WIZARD_ROLE_FROM_PLAN, MSG_SOUND_NOTE_ROW, MSG_TOGGLE_ON, MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_SOUND_ON_NOTE, MSG_WIZARD_MELODY_GAUGE_SHOWN, MSG_WIZARD_BAND_SOUND_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_OWN_FORM, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_CHOOSE, MSG_WIZARD_EDITED_BRANCH, MSG_WIZARD_NEEDS_GENRE
@@ -56,7 +56,8 @@ GENRE_PLACE = 0
 # The branches under Composition, which the tree shows from the start, and the places of the branches after them.
 COMPOSITION_BRANCHES = 3
 FORM_PLACE = 3 + COMPOSITION_BRANCHES
-CREATE_PLACE = 4 + COMPOSITION_BRANCHES
+# The tree's top panels and the Subgenre panel under Genre come before Create.
+CREATE_PLACE = 5 + COMPOSITION_BRANCHES
 # A name the test gives the song.
 A_SONG_NAME = 'anthem'
 A_NOTE_TYPED = 'f#2'
@@ -112,10 +113,14 @@ class WizardTest(UITest):
         await self.go_to_branch([branch.name() for _, branch in self.wizard().rows()].index(name))
 
     async def choose_genre_and_subgenre(self):
-        """Choose the first genre and its first subgenre, each with ] (inc) from nothing chosen, and go back to the tree."""
-        await self.go_to_named_branch(MSG_WIZARD_GENRE_BRANCH)
+        """Choose the first genre and its first subgenre, each with ] (inc) from nothing chosen on its panel, and go back to the tree."""
         more = key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)
-        await self.press(keybindings.WizardPage.INTO_FIELDS, more, Key.DOWN, more, keybindings.WizardPage.TO_TREE)
+        await self.go_to_named_branch(MSG_WIZARD_GENRE_BRANCH)
+        await self.press(keybindings.WizardPage.INTO_FIELDS, more, keybindings.WizardPage.TO_TREE)
+        # The subgenre is chosen on the panel under Genre, and the cursor goes back to Genre, where the tests go on from.
+        await self.go_to_named_branch(MSG_WIZARD_SUBGENRE_BRANCH)
+        await self.press(keybindings.WizardPage.INTO_FIELDS, more, keybindings.WizardPage.TO_TREE)
+        await self.go_to_named_branch(MSG_WIZARD_GENRE_BRANCH)
 
     async def create(self):
         """Press the Create button, the last row of the Create branch."""
@@ -159,12 +164,12 @@ class TestWizardPage(WizardTest):
 
     async def test_the_tree_lists_genre_form_and_create_and_the_fields_of_the_branch_under_the_cursor_show(self):
         text = self.text()
-        for name in (MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_CREATE_BRANCH, MSG_GENRE_LABEL, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_CHOOSE, MSG_NAME_LABEL):
+        for name in (MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_CREATE_BRANCH, MSG_GENRE_LABEL, MSG_WIZARD_SUBGENRE_BRANCH, MSG_WIZARD_CHOOSE, MSG_NAME_LABEL):
             self.assertIn(name, text)
         self.assertIn(MSG_WIZARD_NEEDS_GENRE, text)
         await self.go_to_named_branch(MSG_WIZARD_FORM_BRANCH)
         self.assertIn(MSG_WIZARD_CHOOSE_FIRST, self.text())
-        self.assertNotIn(MSG_WIZARD_SUBGENRE_LABEL, self.text())
+        self.assertNotIn(MSG_NAME_LABEL, self.text())
 
     async def test_the_new_song_is_named_as_the_tracker_names_a_new_thing(self):
         self.assertEqual(self.wizard().song_name(), new_name(word=MSG_NEW_SONG_WORD, taken=[MSG_DEFAULT_SONG_NAME]))
@@ -187,7 +192,9 @@ class TestWizardPage(WizardTest):
             self.assertNotIn(MSG_WIZARD_EDITED_BRANCH, self.text())
 
     async def test_the_subgenre_refuses_until_a_genre_is_chosen(self):
-        await self.press(keybindings.WizardPage.INTO_FIELDS, Key.DOWN, Key.ENTER)
+        await self.go_to_named_branch(MSG_WIZARD_SUBGENRE_BRANCH)
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        self.assertFalse(self.wizard().in_fields)
         self.assertIn(ERR_WIZARD_CHOOSE_GENRE, self.text())
         self.assertIsNone(self.choices().get_subgenre())
 
@@ -204,9 +211,12 @@ class TestWizardPage(WizardTest):
         choices = self.choices()
         self.assertEqual(choices.get_genre(), genre_names()[0])
         self.assertEqual(choices.get_subgenre(), choices.subgenres()[0])
+        for label in (MSG_WIZARD_KEY_LABEL, MSG_SCALE_LABEL):
+            self.assertIn(label, self.text())
+        # The tempo is the subgenre's, on the panel under Genre, with the subgenre's usual range after it.
+        await self.go_to_named_branch(MSG_WIZARD_SUBGENRE_BRANCH)
         text = self.text()
-        for label in (MSG_WIZARD_KEY_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL):
-            self.assertIn(label, text)
+        self.assertIn(MSG_TEMPO_LABEL, text)
         lowest, highest = choices.tempo_range()
         self.assertIn(str(lowest), text)
         self.assertIn(str(highest), text)
@@ -215,6 +225,9 @@ class TestWizardPage(WizardTest):
         await self.select_field(MSG_TEMPO_LABEL)
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(choices.get_tempo(), tempo + 1)
+        await self.press(keybindings.WizardPage.TO_TREE)
+        await self.go_to_named_branch(MSG_WIZARD_GENRE_BRANCH)
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(MSG_SCALE_LABEL)
         await self.press(Key.ENTER, Key.DOWN, Key.ENTER)
         self.assertEqual(choices.get_scale_type(), MINOR)
@@ -245,6 +258,8 @@ class TestWizardPage(WizardTest):
         await self.press(keybindings.WizardPage.INTO_FIELDS, key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(self.choices().get_genre(), genre_names()[1])
         self.assertIsNone(self.choices().get_subgenre())
+        await self.press(keybindings.WizardPage.TO_TREE)
+        await self.go_to_named_branch(MSG_WIZARD_SUBGENRE_BRANCH)
         self.assertIn(MSG_WIZARD_CHOOSE, self.text())
 
     async def test_the_song_is_named_on_the_genre_branch_and_a_name_in_use_is_refused(self):
