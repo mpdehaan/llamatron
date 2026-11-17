@@ -18,8 +18,8 @@
 
 from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT
 from llamatron.strings.errors import ERR_WIZARD_CANNOT_LISTEN
-from llamatron.strings.labels import MSG_WIZARD_HOOKS_BRANCH, MSG_WIZARD_MELODY_BRANCH
-from llamatron.strings.messages import MSG_STOPPED, MSG_WIZARD_LISTEN_HOOK, MSG_WIZARD_LISTEN_SECTION, MSG_WIZARD_LISTEN_TUNE, MSG_WIZARD_LISTENING
+from llamatron.strings.labels import MSG_WIZARD_HOOKS_BRANCH, MSG_WIZARD_LINES_LABEL, MSG_WIZARD_MELODY_BRANCH
+from llamatron.strings.messages import MSG_STOPPED, MSG_WIZARD_LISTEN_RIFF, MSG_WIZARD_LISTEN_HOOK, MSG_WIZARD_LISTEN_SECTION, MSG_WIZARD_LISTEN_TUNE, MSG_WIZARD_LISTENING
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from tests.tui.test_tui_playback import PlaybackTest
@@ -30,6 +30,8 @@ A_WHILE = 2.0
 A_LONG_WHILE = 120.0
 FIRST_SECTION = 'intro'
 FIRST_SECTION_NUMBER = 1
+A_VERSE = 'verse-1'
+A_VERSE_NUMBER = 2
 DRUM_CHANNEL_BYTE = 9
 CHANNEL_MASK = 0x0F
 THE_HOOK_AND_THE_DRUMS = 2
@@ -108,6 +110,31 @@ class TestWizardListening(PlaybackTest):
         await self.go_to(MSG_WIZARD_HOOKS_BRANCH)
         await self.press(keybindings.WizardPage.LISTEN, keybindings.WizardPage.CLOSE)
         self.assertIsNone(self.preview().playing())
+
+    async def test_the_lines_dialog_plays_the_section_s_tune_and_stops_when_it_closes(self):
+        await self.go_to(A_VERSE)
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(MSG_WIZARD_LINES_LABEL)
+        await self.press(Key.ENTER, keybindings.LinesDialog.LISTEN)
+        what = MSG_WIZARD_LISTEN_SECTION.format(number=A_VERSE_NUMBER, name=A_VERSE)
+        self.assertEqual(self.preview().playing(), what)
+        await self.let_the_preview_play(A_WHILE)
+        self.assertTrue(self.note_ons(FLUIDSYNTH_PORT))
+        # A change to a line stops what was heard, since it is no longer what the lines make.
+        await self.press(keybindings.LinesDialog.LONGER)
+        self.assertIsNone(self.preview().playing())
+        await self.press(keybindings.LinesDialog.LISTEN, keybindings.LinesDialog.CLOSE)
+        self.assertIsNone(self.preview().playing())
+
+    async def test_with_the_hook_off_the_hooks_panel_plays_the_riff(self):
+        choices = self.app.screen.choices()
+        choices.set_hook(False)
+        await self.go_to(MSG_WIZARD_HOOKS_BRANCH)
+        self.assertNotIn(keybindings.WizardPage.LISTEN, self.app.screen.shown_keys())
+        choices.set_riff(players=choices.riff_players_offered()[0])
+        await self.press(Key.DOWN, Key.UP)
+        await self.press(keybindings.WizardPage.LISTEN)
+        self.assertEqual(self.preview().playing(), MSG_WIZARD_LISTEN_RIFF)
 
     async def test_without_fluidsynth_listen_is_refused(self):
         self.fluidsynth_installed = False

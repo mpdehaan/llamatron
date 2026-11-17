@@ -135,7 +135,8 @@ class SectionBranch(Branch):
             return None
         section = choices.section_labels()[place]
         dialog = LinesDialog(title=MSG_WIZARD_LINES_TITLE.format(section=section), lines=lambda: choices.section_lines(place), set_line=set_line, steps_in_bar=choices.tune_steps_in_bar(),
-                             pitch_of_place=choices.pitch_of_place, title_of_player=choices.role_title, notes_title=MSG_WIZARD_LINE_NOTES_TITLE.format(line='{line}', section=section))
+                             pitch_of_place=choices.pitch_of_place, title_of_player=choices.role_title, notes_title=MSG_WIZARD_LINE_NOTES_TITLE.format(line='{line}', section=section),
+                             listen=lambda: page.problem_listening(what=self.listens()[0], index=place, track=choices.tune_player()), stop_listening=page.app.made_preview().stop)
         page.ask(dialog=dialog, then=lambda nothing: None)
 
     # What a section of a planned song is given of its own: each field shows what the section takes and where from until it is given, and Bksp gives it back.

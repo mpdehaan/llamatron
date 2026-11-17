@@ -2836,6 +2836,11 @@ class WizardChoices:
             at += line_edits.length_of(note)
         return at, self.riff_steps_in_bar(), notes
 
+    def riff_scene(self):
+        """Return the place in the form of the first section that plays the riff, or None."""
+        kinds = self._riff().get(RIFF_KINDS, [])
+        return next((place for place, kind in enumerate(self.section_kinds_in_form()) if kind in kinds and not self.section_is_held(place)), None)
+
     def riff_is_own(self):
         return bool(self._riff().get(RIFF_LINE))
 
