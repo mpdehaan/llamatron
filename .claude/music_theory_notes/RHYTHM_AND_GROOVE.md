@@ -192,3 +192,31 @@ Producers often sketch this as an energy graph with a number per section, someth
 - **Afro-Cuban and Brazilian music.** These traditions formalize the fill's function as a set call. The lead drummer plays a
   specific signal and the ensemble answers with the section change. It is the clearest evidence that a fill is a cue, not
   decoration.
+
+## How Drum Solos Are Built, at Length
+
+A note Claude wrote in another conversation, kept nearly whole, with the players and pieces the note named taken out. (practice
+throughout)
+
+The setting determines the structure. There are three common ones:
+
+- **Over the form.** In jazz, the drummer solos across the tune's chorus structure while everyone counts silently. Good soloists
+  keep the form audible, often by playing the rhythm of the melody around the kit.
+- **Over a vamp.** The band, or the drummer's own feet, holds a repeating figure while the hands solo, as over a piano's vamp in
+  an odd meter.
+- **Open.** The band leaves the stage and the drummer plays freely.
+
+Within any of these, a good solo follows the same arc as a guitar solo (`LEADS.md`):
+
+- **State a theme.** The solo opens with a short, simple motif, often sparse and quiet.
+- **Develop it.** The drummer moves the motif around the kit, displaces it against the beat, and answers it in call and response
+  between snare and toms or between hands and feet.
+- **Build.** The subdivision gets faster, the dynamics rise and the cymbals come in.
+- **Climax.** Fast single strokes, double bass or a long roll.
+- **Cue the band.** The drummer returns to the groove or plays a prearranged figure, and the band comes back in on the downbeat.
+
+The melodic solo keeps a pattern in the feet, a waltz for one, while the hands develop themes over it. Long rock solos tend to
+be episodic instead, with a snare section, a tom section, a quiet passage played with the hands or at a whisper, and then the
+finale.
+
+Contrast does more for a drum solo than speed. The quiet passages and the silences make the climax register as loud.

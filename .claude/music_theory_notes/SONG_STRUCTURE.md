@@ -135,3 +135,41 @@ solo, instrumental, interlude and outro; it has no pre-chorus label, so that sha
   are verses in a row with a break. Jam and southern styles alternate verse and chorus three times and then play.
 - **Size**: roots and country songs have six sections and about fifty to sixty chord changes; hard rock eight and over ninety.
 - **Intros** are labeled in six to eight songs in ten; least in outlaw country and gospel.
+
+## How Intros Begin and Exit, at Length
+
+A note Claude wrote in another conversation, kept nearly whole, with the players and songs the note named taken out. (practice
+throughout, but for the one figure marked measured)
+
+### How Intros Begin
+
+Rock and pop intros usually run four or eight bars and come in a handful of standard types:
+
+- **The riff or hook alone.** One instrument states the song's signature idea, and the others enter in layers: guitar, then
+  hi-hat, then full drums and bass. The textbook case of hard rock.
+- **The chorus without the vocal.** The band plays the chorus chords, often with the hook on an instrument, so the chorus feels
+  familiar when it arrives.
+- **A verse vamp.** Two or four bars of the verse groove, waiting for the singer.
+- **A drum intro.** A count-in, a pickup fill or a signature beat.
+- **An atmospheric build.** A pad, noise or a filtered version of the track that swells into the song.
+- **A cold open.** The vocal starts immediately, sometimes with the chorus itself.
+
+Intros have shrunk a lot in the streaming era. A study found that the average intro of hit songs fell from over 20 seconds in the
+mid-1980s to about 5 by 2015, because listeners can skip. (measured)
+
+### How Intros Exit
+
+The handoff into the first verse is usually one of these:
+
+- **Fill and crash.** A drum fill sets up the verse downbeat.
+- **The drop-down.** The band thins out as the vocal enters, often to just bass and drums. The intro promises the energy of the
+  chorus and the verse pulls back from it.
+- **A stop.** The band hits a chord and leaves a beat of silence, and the singer's pickup notes lead into the verse over the gap.
+- **A build.** A crescendo or a held dominant chord resolves on the verse's first beat.
+- **No exit at all.** In riff-based songs, the riff carries on under the verse.
+
+Intro material tends to return later. It often comes back as a short turnaround after the first chorus, and again as the outro to
+bookend the song.
+
+The exits from the song itself mirror these. The standard ones are the fade, the hard stop on a final hit, the tag (the last
+line repeated three times), the ritardando, and the last chord left to ring.
