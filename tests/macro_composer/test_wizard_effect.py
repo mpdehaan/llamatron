@@ -122,6 +122,7 @@ SECTION_OWN_TRIED = (('rises', True), ('energy', 10), ('energy', 1), ('leaves', 
 GUITARISTS = 'guitarists'
 SEED = 'seed'
 TEMPO = 'tempo'
+SWING = 'swing'
 SECTION_BARS = "a section's bars"
 SECTION_KIND = "a section's kind"
 FORM = 'form'
@@ -391,6 +392,10 @@ def every_choice(choices):
         yield GUITARISTS, ONE_GUITARIST_COUNT, lambda made: made.set_guitarists(ONE_GUITARIST_COUNT), [nothing_first]
     yield SEED, ANOTHER_SEED, lambda made: made.set_seed(ANOTHER_SEED), [nothing_first]
     yield TEMPO, A_LITTLE_FASTER, lambda made: made.set_tempo(made.get_tempo() + A_LITTLE_FASTER), [nothing_first]
+    if choices.has_swing():
+        for swing in choices.swings():
+            if swing != choices.get_swing():
+                yield SWING, swing, lambda made, swing=swing: made.set_swing(swing), [nothing_first]
     for bars in choices.bars_offered(FIRST_PLACE):
         if bars != choices.section_bars(FIRST_PLACE):
             yield SECTION_BARS, bars, lambda made, bars=bars: made.set_section_bars(place=FIRST_PLACE, bars=bars), [nothing_first]

@@ -20,9 +20,10 @@ from llamatron.macro_composer.wizard_choices import SCALE_TYPES, genre_names, ge
 from llamatron.music.note import ROOT_NAMES
 from llamatron.strings.errors import ERR_WIZARD_CHOOSE_GENRE
 from llamatron.strings.labels import (
-    MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_SUBGENRE_LABEL,
+    MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_SWING_LABEL,
+    MSG_WIZARD_VALUE_FROM,
 )
-from llamatron.strings.legends import What
+from llamatron.strings.legends import MSG_FROM_GENRE_WHAT, What
 from llamatron.strings.marks import MSG_WIZARD_CHOOSE, MSG_WIZARD_LENGTH_SHOWN, MSG_WIZARD_OWN_FORM, MSG_WIZARD_TEMPO_SHOWN
 from llamatron.tui.text import clock
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -41,6 +42,16 @@ class GenreBranch(Branch):
     def name(self):
         return MSG_WIZARD_GENRE_BRANCH
 
+    def swing_fields(self):
+        """Return the field of the song's swing, the subgenre's own said to be the genre's, or none for a song that takes no swing."""
+        choices = self.choices()
+        page = self.page()
+        if not choices.has_swing():
+            return []
+        swing = choices.get_swing()
+        shown = MSG_WIZARD_VALUE_FROM.format(value=swing, origin=MSG_FROM_GENRE_WHAT) if swing == choices.swing_of_genre() else None
+        return [ChoiceField(page=page, label=MSG_WIZARD_SWING_LABEL, choices=choices.swings(), current=swing, shown=shown, set=page.choosing(choices.set_swing))]
+
     def fields(self):
         choices = self.choices()
         page = self.page()
@@ -57,6 +68,7 @@ class GenreBranch(Branch):
                             shown=MSG_WIZARD_SCALE_TYPE_NAMES[choices.get_scale_type()], set=page.choosing(choices.set_scale_type)),
                 NumberField(page=page, label=MSG_TEMPO_LABEL, number=choices.get_tempo(), shown=MSG_WIZARD_TEMPO_SHOWN.format(tempo=choices.get_tempo(), low=lowest, high=highest),
                             lowest=MIN_TEMPO, highest=MAX_TEMPO, set=page.choosing(choices.set_tempo)),
+                *self.swing_fields(),
                 # The meter is the subgenre's, so it is only shown; the length follows the sections, so stepping it chooses a longer or a shorter form.
                 Field(label=MSG_WIZARD_METER_LABEL, value=choices.meter),
                 self.length_field(),

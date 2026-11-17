@@ -481,8 +481,11 @@ by_subgenre:
     sections: {verse: {plan: [{line: a}, {line: a, varied: true}, {line: b, higher: true}, {line: hook, hook: true}]}}
     song_plan: {energy: {intro: 2, verse: 2, bridge: 5, solo: 6}, growth: 2, comes_in: {horns: 5, voices: 5}}
   new orleans:
+    # The second line swings its sixteenths, and funk a little.
+    groove: swing 58
     sections: {verse: {bars: 12}, solo: {bars: 12}}
   funk:
+    groove: swing 54
     sections: {verse: {bars: 16, plan: [{line: a}, {line: hook, hook: true}, {line: a, varied: true}, {line: hook, hook: true}]}}
     # Everybody lands on the one: the drums' strokes on the first beat are louder.
     beat_loudness: [10, 0, 0, 0]
