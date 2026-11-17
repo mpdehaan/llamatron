@@ -202,6 +202,8 @@ class PatternSetting:
     DIRECTION = 'direction'
     # The group the Patterns page lists the pattern under: any text, or none for a pattern of an older file.
     GROUP = 'group'
+    # How many notes the scale has that the pattern was written for, or none for a pattern written for any scale.
+    SCALE_LENGTH = 'scale_length'
 
 
 class Row:

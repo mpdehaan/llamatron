@@ -323,7 +323,7 @@ class TestPatternsPageUndo(UndoTest):
     async def test_adding_a_pattern_is_one_step(self):
         before = self.data()
         added = self.next_pattern_name()
-        await self.press(keybindings.MainPage.PATTERNS, keybindings.PatternsPage.ADD, Key.ENTER, Key.ESCAPE)
+        await self.press(keybindings.MainPage.PATTERNS, keybindings.PatternsPage.ADD, keybindings.NewPatternDialog.OK, Key.ENTER, Key.ESCAPE)
         self.assertIsInstance(self.app.screen, PatternsPage)
         self.assertIn(added, self.document.song().get_pattern_names())
         # The page has no + row for the cursor to fall to when the pattern goes, so the cursor waits on a pattern that stays.
@@ -338,7 +338,7 @@ class TestPatternsPageUndo(UndoTest):
 
     async def test_undoing_the_add_while_its_editor_is_open_goes_back_to_the_list(self):
         added = self.next_pattern_name()
-        await self.press(keybindings.MainPage.PATTERNS, keybindings.PatternsPage.ADD, Key.ENTER)
+        await self.press(keybindings.MainPage.PATTERNS, keybindings.PatternsPage.ADD, keybindings.NewPatternDialog.OK, Key.ENTER)
         self.assertIsInstance(self.app.screen, PatternEditor)
         await self.check_undo_goes_back_to(PatternsPage)
         self.assertNotIn(added, self.document.song().get_pattern_names())

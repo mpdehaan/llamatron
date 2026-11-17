@@ -27,16 +27,16 @@ from llamatron.composition.file_format import (
 )
 from llamatron.music.note import Note
 from llamatron.support.random_source import random_source
-from llamatron.composition.limits import MAX_GATE, MAX_STEP_SIZE, MIN_DEGREE, MIN_STEPS
+from llamatron.composition.limits import MAX_GATE, MAX_SCALE_LENGTH, MAX_STEP_SIZE, MIN_DEGREE, MIN_SCALE_LENGTH, MIN_STEPS
 from llamatron.music.midi import HALF_STEPS_PER_OCTAVE
 from llamatron.composition.llama_data import LlamaData, written_settings
 from llamatron.composition.pattern_notes import PatternNotes
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.corrections import LEFT_OUT, NO_NEAREST_VALUE, Correction
 from llamatron.composition.row_descriptions import ROW_DESCRIPTIONS, row_described, rows_where
-from llamatron.composition.setting import Checked, Choice, Flag, Length, Text, described, settings_held
+from llamatron.composition.setting import Checked, Choice, Flag, Length, Text, WholeNumber, described, settings_held
 from llamatron.strings.errors import (
-    ERR_BAD_DIRECTION, ERR_BAD_STEPS, ERR_DRUM_NOT_TRUE_OR_FALSE, ERR_NOT_TEXT, ERR_PATTERN_EXPECTED_SETTINGS, ERR_PATTERN_NO_SUCH_STEP,
+    ERR_BAD_DIRECTION, ERR_BAD_SCALE_LENGTH, ERR_BAD_STEPS, ERR_DRUM_NOT_TRUE_OR_FALSE, ERR_NOT_TEXT, ERR_PATTERN_EXPECTED_SETTINGS, ERR_PATTERN_NO_SUCH_STEP,
     ERR_PATTERN_NOT_AN_ORDER, ERR_ROW_WRONG_LENGTH, ERR_TIE_ON_A_NOTE, ERR_TOGGLE_IS_NULL, ERR_WHERE_IN_ROW,
 )
 from llamatron.support.revised import notes_change
@@ -51,6 +51,7 @@ SETTINGS = described(
     Flag(name=PatternSetting.DRUM, error=ERR_DRUM_NOT_TRUE_OR_FALSE),
     Choice(name=PatternSetting.DIRECTION, choices=DIRECTIONS, default=LEFT_OUT, error=ERR_BAD_DIRECTION),
     Text(name=PatternSetting.GROUP, error=ERR_NOT_TEXT),
+    WholeNumber(name=PatternSetting.SCALE_LENGTH, lowest=MIN_SCALE_LENGTH, highest=MAX_SCALE_LENGTH, error=ERR_BAD_SCALE_LENGTH),
 )
 # The settings a file's problem with is placed by the setting's name, like "pattern (tune), step_size: ...". The messages of the others name the setting themselves.
 PLACED_BY_NAME = (PatternSetting.STEP_SIZE, PatternSetting.TIME_SIGNATURE, PatternSetting.ENTRY_SIZE)
@@ -80,13 +81,13 @@ class Pattern(PatternNotes, LlamaData):
 
     __slots__ = ('_steps', '_rows', '_settings')
 
-    def __init__(self, *, steps, rows, step_size=None, time_signature=None, entry_size=None, drum=None, direction=None, group=None):
+    def __init__(self, *, steps, rows, step_size=None, time_signature=None, entry_size=None, drum=None, direction=None, group=None, scale_length=None):
         self.note_change()
         self._steps = steps
         self._rows = _copied_rows(rows)
         self._settings = {
             PatternSetting.STEP_SIZE: step_size, PatternSetting.TIME_SIGNATURE: time_signature, PatternSetting.ENTRY_SIZE: entry_size,
-            PatternSetting.DRUM: drum, PatternSetting.DIRECTION: direction, PatternSetting.GROUP: group,
+            PatternSetting.DRUM: drum, PatternSetting.DIRECTION: direction, PatternSetting.GROUP: group, PatternSetting.SCALE_LENGTH: scale_length,
         }
 
     @classmethod
@@ -386,6 +387,24 @@ class Pattern(PatternNotes, LlamaData):
         for row in NOTE_ROWS:
             self._rows[row] = None
         self._settings[PatternSetting.DRUM] = True if drum else None
+        if drum:
+            # A drum's notes are of no scale.
+            self._settings[PatternSetting.SCALE_LENGTH] = None
+
+    def get_scale_length(self):
+        """Return how many notes the scale has that it was written for, or None for a pattern written for any scale, as a drum pattern and an older file's are."""
+        return self._settings[PatternSetting.SCALE_LENGTH]
+
+    @notes_change
+    def set_scale_length(self, scale_length):
+        """Say how many notes the scale has that it was written for, or None for any; no note changes."""
+        if scale_length is not None:
+            SETTINGS[PatternSetting.SCALE_LENGTH].check(scale_length)
+        self._settings[PatternSetting.SCALE_LENGTH] = scale_length
+
+    def suits_scale_of(self, size):
+        """Return whether it was written for a scale of this many notes, as a pattern written for any scale is."""
+        return self.get_scale_length() in (None, size)
 
     def get_group(self):
         """Return the group the Patterns page lists it under, or None for a pattern in no group, as an older file's is."""

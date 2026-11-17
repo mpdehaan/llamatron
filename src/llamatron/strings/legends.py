@@ -312,6 +312,7 @@ MSG_TIME_SIGNATURE_WHAT = 'time signature'
 MSG_DRUM_ON_WHAT = 'drum on'
 MSG_DRUM_OFF_WHAT = 'drum off'
 MSG_DIRECTION_WHAT = 'direction'
+MSG_SCALE_LENGTH_WHAT = 'scale length'
 # The roll's [ and ] drag a note's end shorter or longer.
 # P opens the piano roll over the rows and closes it again.
 MSG_TO_ROLL_WHAT = 'to piano roll'

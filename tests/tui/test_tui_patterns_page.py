@@ -120,7 +120,7 @@ class TestPatternsPage(PatternsPageTest):
         self.assertEqual(self.app.screen.item, TUNE)
 
     async def test_a_adds_one_to_the_cursors_group_and_opens_it(self):
-        await self.press(keybindings.PatternsPage.ADD)
+        await self.press(keybindings.PatternsPage.ADD, keybindings.NewPatternDialog.OK)
         await self.answer(NEW)
         self.assertIn(NEW, self.names())
         self.assertEqual(self.group_of(NEW), MELODIES)
@@ -302,14 +302,14 @@ class TestPatternGroups(PatternsPageTest):
     async def test_a_groups_button_makes_a_pattern_in_that_group(self):
         await self.go_to(Listed(NEW_PATTERN, RHYTHMS))
         self.assertIn(key_name(keybindings.PatternsPage.NEW_PATTERN), self.text())
-        await self.press(keybindings.PatternsPage.NEW_PATTERN)
+        await self.press(keybindings.PatternsPage.NEW_PATTERN, keybindings.NewPatternDialog.OK)
         await self.answer(NEW)
         self.assertEqual(self.group_of(NEW), RHYTHMS)
         self.assertIsInstance(self.app.screen, PatternEditor)
 
     async def test_a_on_a_heading_makes_a_pattern_in_its_group(self):
         await self.go_to_heading(RHYTHMS)
-        await self.press(keybindings.PatternsPage.ADD)
+        await self.press(keybindings.PatternsPage.ADD, keybindings.NewPatternDialog.OK)
         await self.answer(NEW)
         self.assertEqual(self.group_of(NEW), RHYTHMS)
 
@@ -322,7 +322,7 @@ class TestPatternGroups(PatternsPageTest):
         self.assertIn(self.heading(group=BASSES, count=0), self.text())
         # A group is only what its patterns hold, so an empty one is not in the set.
         self.assertEqual(self.document.setlist().to_data(), before)
-        await self.press(keybindings.PatternsPage.NEW_PATTERN)
+        await self.press(keybindings.PatternsPage.NEW_PATTERN, keybindings.NewPatternDialog.OK)
         await self.answer(NEW)
         self.assertEqual(self.group_of(NEW), BASSES)
         self.assertEqual(self.document.setlist().get_pattern_groups(), [BASSES, MELODIES, RHYTHMS])

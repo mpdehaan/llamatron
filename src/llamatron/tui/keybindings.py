@@ -958,6 +958,20 @@ class ImportDialog(Dialog):
     IN_LEGEND = IN_HELP
 
 
+class NewPatternDialog(Dialog):
+    """The New Pattern dialog: Up and Down pick a row, [ and ] step the scale length, where Enter is OK, Space or Enter flips the drum toggle, and on the buttons Left and Right choose and Enter presses."""
+
+    SELECT = (ARROWS_UP_DOWN, KeyName.UP_DOWN, What.SELECT)
+    CHOOSE_BUTTON = (ARROWS_LEFT_RIGHT, KeyName.LEFT_RIGHT, What.SELECT)
+    LESS = ((Key.LEFT, *LESS_KEYS), KeyName.LEFT_BRACKET, What.LESS)
+    MORE = ((Key.RIGHT, *MORE_KEYS), KeyName.RIGHT_BRACKET, What.MORE)
+    TOGGLE = (TOGGLE_KEYS, KeyName.SPACE_ENTER, What.TOGGLE)
+    OK = (Key.ENTER, KeyName.ENTER, MSG_OK_WHAT)
+    PRESS = (Key.ENTER, KeyName.ENTER, MSG_PRESS_WHAT)
+    IN_HELP = [Dialog.CANCEL, SELECT, CHOOSE_BUTTON, LESS, MORE, TOGGLE, OK, PRESS]
+    IN_LEGEND = IN_HELP
+
+
 class PromptDialog(Dialog):
     """A prompt for text: Left and Right move the cursor in it."""
 

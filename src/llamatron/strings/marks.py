@@ -24,6 +24,7 @@ from llamatron.composition.file_format import Accidental, ChordSymbol, Direction
 MSG_NONE_SHOWN = '(none)'
 # What a field shows for a genre, subgenre or variant a song doesn't say.
 MSG_UNDEFINED_SHOWN = '(undefined)'
+MSG_ANY_SCALE_LENGTH = '(any)'
 
 # tui/app.py
 MSG_CONFIRM_BUTTON_GAP = '    '

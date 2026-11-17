@@ -90,6 +90,12 @@ MAX_OCTAVE = 10
 MIN_TEMPO = 10
 MAX_TEMPO = 999
 
+# The fewest and the most notes of the scale a pattern says it was written for: a pentatonic scale to the chromatic.
+MIN_SCALE_LENGTH = 5
+MAX_SCALE_LENGTH = 12
+# What a new pattern is written for unless told otherwise: a scale of seven notes.
+NEW_PATTERN_SCALE_LENGTH = 7
+
 # The longest a step or a gate can be, in whole notes: four bars of 4/4.
 MAX_STEP_SIZE = 4
 MAX_GATE = 4

@@ -18,6 +18,7 @@
 
 
 from llamatron.composition.file_format import Section
+from llamatron.composition.limits import MAX_SCALE_LENGTH, MIN_SCALE_LENGTH
 from llamatron.composition.pattern import Pattern
 
 # How many steps a new pattern has.
@@ -42,11 +43,32 @@ class PatternEdits:
     def _pattern(self, name):
         return self._setlist.get_pattern(name)
 
-    def add_pattern(self, *, name, steps=None, group=None):
-        """Add a pattern of empty steps: one bar of the current song's time signature unless a count is given, or 16 when a bar isn't whole steps."""
+    def add_pattern(self, *, name, steps=None, group=None, drum=None, scale_length=None):
+        """Add a pattern of empty steps: one bar of the current song's time signature unless a count is given, or 16 when a bar isn't whole steps; a drum pattern
+        where told so, and written for a scale of as many notes as told."""
         if steps is None:
             steps = self.song().steps_in_a_bar() or NEW_PATTERN_STEPS
-        self._change(self._setlist.add_item, section=Section.PATTERNS, name=name, item=Pattern(steps=steps, rows={}, group=group))
+        made = Pattern(steps=steps, rows={}, group=group, drum=True if drum else None, scale_length=None if drum else scale_length)
+        self._change(self._setlist.add_item, section=Section.PATTERNS, name=name, item=made)
+
+    def pattern_scale_length(self, name):
+        return self._pattern(name).get_scale_length()
+
+    def set_pattern_scale_length(self, *, name, scale_length):
+        self._change(self._pattern(name).set_scale_length, scale_length)
+
+    def scale_length_for_pattern(self, name):
+        """Return the scale length a pattern would take from the one scale it plays under, or None where it plays under several or the scale is of a size no scale length says."""
+        scale = self.pattern_scale(name)
+        size = None if scale is None else self.scale_size(scale)
+        return size if size is not None and MIN_SCALE_LENGTH <= size <= MAX_SCALE_LENGTH else None
+
+    def scales_unsuited_to_pattern(self, name):
+        """Return the scales a pattern plays under that have another number of notes than the pattern was written for, in order: none for a pattern written for any scale."""
+        pattern = self._pattern(name)
+        if pattern.get_scale_length() is None:
+            return []
+        return [scale for scale in self.scales_of_pattern(name) if not pattern.suits_scale_of(self.scale_size(scale))]
 
     # Pattern groups, which the Patterns page lists the patterns under.
 

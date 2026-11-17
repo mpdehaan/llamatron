@@ -34,7 +34,7 @@ the plan knows still builds the rest.
 from llamatron.composition.file_format import Row, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.composition.naming import new_name
 from llamatron.composition.row_descriptions import ROW_DESCRIPTIONS
-from llamatron.composition.limits import MIN_DEGREE
+from llamatron.composition.limits import MIN_DEGREE, NEW_PATTERN_SCALE_LENGTH
 from llamatron.strings.labels import (
     MSG_CHANNEL_LABEL, MSG_DEVICE_LABEL, MSG_DRUM_LABEL, MSG_INSTRUMENT_LABEL, MSG_KIND_LABEL, MSG_LOOP_LABEL, MSG_MUTE_LABEL, MSG_NAME_LABEL,
     MSG_LAUNCH_TOGETHER_LABEL, MSG_PATTERN_LABEL, MSG_REPEAT_LABEL, MSG_ROOT_LABEL, MSG_GENRE_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_TIME_SIGNATURE_LABEL, MSG_TRANSPOSE_LABEL,
@@ -60,6 +60,7 @@ from llamatron.tui.components.number_row import NumberRow
 from llamatron.tui.components.toggle_row import ToggleRow
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
+from llamatron.tui.dialogs.new_pattern_dialog import SCALE_LENGTHS
 from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.key_table import first_key
@@ -548,7 +549,9 @@ class TutorialPlan:
             yield from self.move_to_group(name=name, group=self.group_wanted(name))
             yield from self.press(keybindings.ListPage.EDIT)
         else:
-            yield from self.add_to_group(name=name, group=self.group_wanted(name))
+            # A drum pattern is made one later, which clears its scale length, so the dialog's number is left as it opens.
+            scale_length = NEW_PATTERN_SCALE_LENGTH if wanted.is_drum() else wanted.get_scale_length()
+            yield from self.add_to_group(name=name, group=self.group_wanted(name), scale_length=scale_length)
         self.expect(PatternEditor)
         if wanted.get_steps() != self.editor().steps():
             yield from self.press(keybindings.PatternEditor.RESIZE)
@@ -587,8 +590,8 @@ class TutorialPlan:
             yield from self.press(Key.UP if rows.index(listed) < page.place else Key.DOWN)
         raise TutorialStuck(listed.name)
 
-    def add_to_group(self, *, name, group):
-        """Add a pattern to a group on the Patterns page: on the group's heading when the set has the group, and after making the group with the page's last button when it doesn't."""
+    def add_to_group(self, *, name, group, scale_length):
+        """Add a pattern written for a scale of so many notes to a group on the Patterns page: on the group's heading when the set has the group, and after making the group with the page's last button when it doesn't."""
         if group in self.screen().groups():
             yield from self.go_to_patterns_row(Listed(HEADING, group))
             yield from self.press(keybindings.PatternsPage.ADD)
@@ -598,6 +601,14 @@ class TutorialPlan:
             yield from self.answer_prompt(group)
             yield from self.go_to_patterns_row(Listed(NEW_PATTERN, group))
             yield from self.press(keybindings.PatternsPage.NEW_PATTERN)
+        # The New Pattern dialog's first row is stepped to the scale length wanted and takes OK; the pattern is made a drum pattern later where the set says so.
+        dialog = self.screen()
+        for _ in range(len(SCALE_LENGTHS)):
+            if dialog.scale_length == scale_length:
+                break
+            higher = dialog.scale_length is None or (scale_length is not None and scale_length > dialog.scale_length)
+            yield from self.press(keybindings.NewPatternDialog.MORE if higher else keybindings.NewPatternDialog.LESS)
+        yield from self.press(keybindings.NewPatternDialog.OK)
         yield from self.answer_prompt(name)
 
     def move_to_group(self, *, name, group):

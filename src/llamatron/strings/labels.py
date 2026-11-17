@@ -271,6 +271,10 @@ MSG_DRUM_KIND = 'drum'
 MSG_GROUP_HEADING = '{mark} {name} ({count})'
 MSG_UNGROUPED = 'Ungrouped'
 MSG_NEW_PATTERN_BUTTON = '[ New Pattern ]'
+# tui/dialogs/new_pattern_dialog.py: its two rows and its buttons; the Scale length is also a choice of the pattern editor's Reconfigure.
+MSG_SCALE_LENGTH_LABEL = 'Scale length'
+MSG_DRUM_PATTERN_LABEL = 'Drum pattern'
+MSG_NEW_PATTERN_BUTTONS = ('OK', 'CANCEL')
 MSG_NEW_GROUP_BUTTON = '[ New Pattern Group ]'
 MSG_NEW_GROUP_NAME_LABEL = 'New Group Name: '
 MSG_NOTES_KIND = 'notes'
@@ -490,6 +494,8 @@ MSG_SECTION_HINTS = {
 MSG_SCALE_HEADER = 'Scale {scale}'
 MSG_NO_SCALE_NEEDED = 'no scale needed'
 MSG_SEVERAL_SCALES = 'Scale varies by scene'
+# What follows the scale where the pattern was written for a scale of another number of notes than one it plays under.
+MSG_WRITTEN_FOR = '{scale}, written for {length}'
 # The first choice of the roll's entry size picker (E), before the step sizes: the pattern takes the song's entry size.
 MSG_SONG_ENTRY_SIZE_CHOICE = "(the song's)"
 # The piano roll's row labels: the note's name with its octave and the degree, or the octave alone when the scale isn't known.

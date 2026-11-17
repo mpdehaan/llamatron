@@ -28,7 +28,7 @@ from llamatron.composition.file_format import Row
 from llamatron.tui.drawing import Align, Box, fit, NOTHING, SPACE, Style
 from llamatron.composition.checks import fraction_text
 from llamatron.composition.naming import words
-from llamatron.strings.labels import MSG_DOT_NAMES, MSG_NO_SCALE_NEEDED, MSG_SCALE_HEADER, MSG_SEVERAL_SCALES, MSG_STEP_HEADING
+from llamatron.strings.labels import MSG_DOT_NAMES, MSG_NO_SCALE_NEEDED, MSG_SCALE_HEADER, MSG_SEVERAL_SCALES, MSG_STEP_HEADING, MSG_WRITTEN_FOR
 from llamatron.strings.marks import (
     MSG_DIRECTION_HEADER, MSG_DRUM_HEADER, MSG_DRUM_OFF, MSG_DRUM_ON, MSG_FROM_SONG_SHOWN, MSG_HEADER_CELL_GAP, MSG_HEADER_INDENT, MSG_SCALE_SHOWN,
     MSG_STEPS_HEADER, MSG_STEP_SIZE_SHOWN, MSG_TIME_SIGNATURE_SHOWN,
@@ -72,6 +72,14 @@ class GridDrawing:
     # The header.
 
     def scale_header(self):
+        """Return what the header says about the scale, and after it the scale length the pattern was written for where a scale it plays under has another."""
+        said = self.scale_said()
+        editor = self._editor
+        if editor.document().scales_unsuited_to_pattern(editor.item):
+            return MSG_WRITTEN_FOR.format(scale=said, length=editor.pattern().get_scale_length())
+        return said
+
+    def scale_said(self):
         """Return what the header says about the scale: the one the rows are drawn in, the note that there are several, or that drums need none."""
         editor = self._editor
         if editor.pattern().is_drum():

@@ -122,7 +122,7 @@ class TestPatternEditorRefusals(UITest):
         self.assertIsNone(self.document.step_value(name=TUNE, row=Row.VELOCITY, step=0))
 
     async def test_turning_an_empty_pattern_into_drums_asks_too(self):
-        await self.press(keybindings.MainPage.PATTERNS, keybindings.PatternsPage.ADD)
+        await self.press(keybindings.MainPage.PATTERNS, keybindings.PatternsPage.ADD, keybindings.NewPatternDialog.OK)
         self.app.screen.value = NEW_PATTERN
         await self.press(Key.ENTER, keybindings.PatternEditor.TO_EDITOR)
         await self.reconfigure(Reconfigure.DRUM)

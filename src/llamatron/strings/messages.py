@@ -216,6 +216,8 @@ MSG_DEGREE_WITHOUT_SCALE = 'degree {degree}, no scale'
 # The munge dialog, which rearranges a pattern's steps around the cursor, in the order of Munge.
 MSG_MUNGE_TITLE = 'Munge'
 MSG_RECONFIGURE_TITLE = 'Reconfigure'
+MSG_NEW_PATTERN_TITLE = 'New Pattern'
+MSG_SCALE_LENGTH_TITLE = 'Scale length: notes in the scale the pattern is written for'
 # Prompts, dialogs and messages.
 MSG_NUMBER_PROMPT = '{row} ({low} to {high})'
 MSG_PLAY_DIRECTION_TITLE = 'Play direction'

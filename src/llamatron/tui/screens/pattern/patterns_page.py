@@ -20,6 +20,7 @@ from llamatron.strings.names import MSG_NEW_GROUP_WORD, MSG_NEW_PATTERN_WORD
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
+from llamatron.tui.dialogs.new_pattern_dialog import NewPatternDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.drawing import Align, NOTHING, Style
 from llamatron.tui.key_table import STEP_FORWARD
@@ -213,7 +214,10 @@ class PatternsPage(NamedListPage):
         self.show_page(PatternEditor(holder=self.holder, name=self.listed().name))
 
     def add(self):
-        """Make a pattern in the cursor's group and open it."""
+        """Ask what kind of pattern to make, a drum pattern or one written for a scale of so many notes, then its name, make it in the cursor's group and open it."""
+        self.ask(dialog=NewPatternDialog(), then=self.add_of_kind)
+
+    def add_of_kind(self, kind):
         group = self.group_under_cursor()
         patterns = self.names()
 
@@ -222,7 +226,7 @@ class PatternsPage(NamedListPage):
             if not text or is_taken(name=text, taken=patterns):
                 self.refuse(ERR_NAME_EMPTY_OR_IN_USE)
                 return
-            self.document().add_pattern(name=text, group=group)
+            self.document().add_pattern(name=text, group=group, drum=kind.drum, scale_length=kind.scale_length)
             self.new_groups = [made for made in self.new_groups if made != group]
             self.put_cursor_on(text)
             self.show_page(PatternEditor(holder=self.holder, name=text))
