@@ -41,11 +41,15 @@ from llamatron.macro_composer.arranger import (
 )
 from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer import hook_kinds, line_edits, phrasing
+from llamatron.macro_composer.arranger import KICK as KICK_PIECE
+from llamatron.macro_composer.notation import NONE as NO_HIT
 from llamatron.macro_composer.arranger import CHORDS, DYNAMICS, EIGHTHS_IN_WHOLE, LOUDNESS as LOUDNESS_OF, SCENE_SETTINGS, form_of
 from llamatron.macro_composer.loudness import LEAST_DYNAMICS, LEVELS as LOUDNESS_LEVELS, MOST_DYNAMICS, USUAL_DYNAMICS, drum_levels, note_levels, with_own
 from llamatron.macro_composer.melody import ANSWER, HOOK_KIND, HOOK_NOTES, LINE, LINE_NOTES
 from llamatron.macro_composer.phrasing import LINE_BREATH, LINE_EARLY
-from llamatron.macro_composer.riffs import FIRST_TAKE as FIRST_RIFF_TAKE, RIFF, RIFF_BARS, RIFF_KINDS, RIFF_LINE, RIFF_ROLES, RIFF_TAKE, riff_line
+from llamatron.macro_composer.riffs import (ACCENT_CHORDS, BAR_COUNTS, BETWEEN_WAYS, FIRST_TAKE as FIRST_RIFF_TAKE, IN_FULL, MOVES_WHOLE, MUTED_ROOTS, NOTES_WAYS, RIFF, RIFF_BAR_COUNT, RIFF_BARS,
+                                            RIFF_BETWEEN, RIFF_KINDS, RIFF_LINE, RIFF_NOTES, RIFF_ROLES, RIFF_TAKE, RIFF_UNDER_TUNE, RIFF_WITH_CHORDS, SINGLE_NOTES, UNDER_TUNE_WAYS, WITH_CHORDS_WAYS,
+                                            accent_bars, bars_of as riff_bars_of, flattened_in, line_of as riff_line_of)
 from llamatron.macro_composer.joins import BUILD, DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL
 from llamatron.macro_composer.song_plan import (
     BIG, BY_PLACE, FADED, FADES, UNFADED, SWELL_END, SWELL_START, PHRASING_WAYS, RISES, RISING, SCALE_OF_PLACE, SCENE_TEMPO, SCENE_TEMPO_END, SCENE_TEMPO_START, CONTRAST, ENERGY, FILL_SIZE, FILL_SIZES, HIGHEST_ENERGY, LOWEST_ENERGY, MEDIUM, NOT_AT_ALL, PHRASING, PLAN_OF_SONG, ROOT_OF_PLACE, SAID_OF_SECTION, SETUP, SMALL,
@@ -237,6 +241,11 @@ RIFF_INTRO_AND_VERSES = 'in the intro and under the verses'
 RIFF_UNDER_CHORUSES = 'under the choruses'
 RIFF_EVERYWHERE = 'everywhere'
 RIFF_SAID_WAYS = (RIFF_INTRO_AND_VERSES, RIFF_IN_INTRO, RIFF_UNDER_VERSES, RIFF_UNDER_CHORUSES, RIFF_EVERYWHERE)
+# A riff's settings, each with what may be chosen, the first what a riff has until another is chosen.
+RIFF_SETTINGS = {RIFF_NOTES: NOTES_WAYS, RIFF_BAR_COUNT: tuple(reversed(BAR_COUNTS)), RIFF_BETWEEN: BETWEEN_WAYS, RIFF_UNDER_TUNE: UNDER_TUNE_WAYS, RIFF_WITH_CHORDS: WITH_CHORDS_WAYS}
+assert (RIFF_SETTINGS[RIFF_NOTES][0], RIFF_SETTINGS[RIFF_BAR_COUNT][0], RIFF_SETTINGS[RIFF_BETWEEN][0]) == (SINGLE_NOTES, RIFF_BARS, MUTED_ROOTS)
+assert (RIFF_SETTINGS[RIFF_UNDER_TUNE][0], RIFF_SETTINGS[RIFF_WITH_CHORDS][0]) == (IN_FULL, MOVES_WHOLE)
+RIFF_SETTING_ANSWER = 'riff setting'
 INTRO_KIND = 'intro'
 REACTS_ANSWER = 'reacts'
 DYNAMICS_ANSWER = 'dynamics'
@@ -527,6 +536,8 @@ class WizardChoices:
         self._rows = {}
         # A song kept before answering could be chosen keeps to what was made then.
         self._beside = None
+        # And a song kept has the riff it kept, or none: the riff its kind of music gives a new song is no part of it.
+        self._extras.pop(RIFF, None)
         kept = [(self.set_way, [dict(trait=trait, value=value) for trait, value in (data.get(PICKS) or {}).items()]),
                 (self._set_level, [dict(player=player, level=level) for player, level in (data.get(PLAYERS) or {}).items()]),
                 (self._set_kept_player_gauge, [dict(player=player, gauge=gauge, place=place) for player, places in (data.get(PLAYER_GAUGES_KEPT) or {}).items() for gauge, place in places.items()]),
@@ -629,6 +640,7 @@ class WizardChoices:
             self._own_gauges = {}
             self._rows = {}
             self._beside = self._usual_beside()
+            self._take_riff_of_genre()
 
     def is_ready(self):
         """Return whether a song can be made: a genre and a subgenre are chosen, and the rest has its usual values."""
@@ -2870,6 +2882,21 @@ class WizardChoices:
             return []
         return [role for role in self.roles_in() if MSG_PART_OF_SECTION.format(role, RIFF) in parts]
 
+    def _take_riff_of_genre(self):
+        """Give the song the riff its kind of music is built on, where the subgenre has one and its players can play it; a person may
+        then change the riff or take it away. Any riff of another subgenre is left behind."""
+        self._extras.pop(RIFF, None)
+        self._answers = {}
+        usual = self._style().get(RIFF)
+        if not usual:
+            return
+        players = [role for role in usual.get(RIFF_ROLES, []) if role in self.roles_in()]
+        offered = self.riff_said_offered()
+        said = next((way for way in (RIFF_INTRO_AND_VERSES, RIFF_UNDER_VERSES) if way in offered), None)
+        if players in self.riff_players_offered() and said is not None:
+            settings = {field: usual[field] for field, ways in RIFF_SETTINGS.items() if usual.get(field) in ways[1:]}
+            self._extras[RIFF] = {**settings, RIFF_ROLES: players, RIFF_KINDS: self._riff_kinds(said)}
+
     def _riff(self):
         kept = self._extras.get(RIFF) or {}
         return kept if kept.get(RIFF_ROLES) in self.riff_players_offered() else {}
@@ -2935,7 +2962,61 @@ class WizardChoices:
         if not self.has_riff():
             return None
         riff = self._riff()
-        return copy.deepcopy(riff.get(RIFF_LINE) or riff_line(seed=self._seed or 0, take=riff.get(RIFF_TAKE, FIRST_RIFF_TAKE), eighths=self.riff_steps_in_bar()))
+        return riff_line_of(riff=copy.deepcopy(riff), seed=self._seed or 0, eighths=self.riff_steps_in_bar(), flattened=flattened_in(self._scale_type))
+
+    def riff_kick(self):
+        """Return the steps of the riff where the kick strikes with it, for a picture: the accents of a riff of chords, while the song's
+        kick is played. None for any other riff."""
+        if not self.has_riff() or self.get_riff_setting(RIFF_NOTES) != ACCENT_CHORDS or KICK_PIECE not in self.pieces() or not self.piece_is_on(KICK_PIECE):
+            return None
+        hits = [hit for bar in accent_bars(line=self.riff_line(), eighths=self.riff_steps_in_bar()) for hit in bar]
+        return [step for step, hit in enumerate(hits) if hit != NO_HIT]
+
+    # A riff's settings: how its notes are drawn, how many bars it has, what lies between its accents, what it does under the
+    # tune and what it does as the chords change.
+
+    def get_riff_setting(self, field):
+        """Return a setting of the riff, the usual one until another is chosen."""
+        return self._riff().get(field, RIFF_SETTINGS[field][0])
+
+    def riff_settings_offered(self):
+        """Return the riff's settings that are heard, in the order shown: how the notes are drawn; for chords on the accents, how many
+        bars, what lies between and, with two bars, what the riff does under the tune; and what it does as the chords change.
+        Notes written by hand are drawn no way, so only what the riff does with the chords is offered then."""
+        if not self.has_riff():
+            return []
+        fields = [RIFF_WITH_CHORDS]
+        if not self.riff_is_own():
+            heavy = self.get_riff_setting(RIFF_NOTES) == ACCENT_CHORDS
+            two_bars = self.get_riff_setting(RIFF_BAR_COUNT) == RIFF_BARS
+            fields = [RIFF_NOTES, *([RIFF_BAR_COUNT, RIFF_BETWEEN] if heavy else []), *([RIFF_UNDER_TUNE] if heavy and two_bars else []), RIFF_WITH_CHORDS]
+        return [field for field in fields if self._remembered(key=(RIFF_SETTING_ANSWER, field), compute=lambda field=field: self._riff_setting_is_heard(field))]
+
+    def _riff_setting_is_heard(self, field):
+        """Whether the song differs with a setting of the riff the other way, found by making the song both ways."""
+        made = []
+        for value in RIFF_SETTINGS[field]:
+            trial = copy.deepcopy(self)
+            trial._answers = {}
+            trial._extras[RIFF] = {**self._riff(), field: value}
+            try:
+                # The patterns alone, since the set also keeps the choices, which differ whatever is heard.
+                made.append(trial.made_for_listening()[0].to_data()[Section.PATTERNS])
+            except (ValueError, KeyError, SongFileError):
+                return False
+        return made[0] != made[1]
+
+    def set_riff_setting(self, *, field, value):
+        """Choose a setting of the riff. What is no setting, and a riff the song cannot be made with, is refused."""
+        if not self.has_riff():
+            raise ValueError(ERR_WIZARD_NO_RIFF)
+        if field not in RIFF_SETTINGS or value not in RIFF_SETTINGS[field]:
+            raise ValueError(ERR_WIZARD_RIFF.format(value=(field, value)))
+        before = copy.deepcopy(self._extras[RIFF])
+        self._extras[RIFF].pop(field, None)
+        if value != RIFF_SETTINGS[field][0]:
+            self._extras[RIFF][field] = value
+        self._riff_or_back(before=before, value=(field, value))
 
     def riff_notes(self):
         """Return the riff for a picture, as hook_notes gives the hook: how many steps it lasts, how many a bar has, and each note as where it starts, how many
@@ -2975,14 +3056,14 @@ class WizardChoices:
         self._answers = {}
 
     def set_riff_line(self, line):
-        """Write the riff's notes by hand, or give the riff back to the wizard with None. A line that is not two bars, or that the song cannot be made with, is refused."""
+        """Write the riff's notes by hand, or give the riff back to the wizard with None. A line that is not as long as the riff, or that the song cannot be made with, is refused."""
         if not self.has_riff():
             raise ValueError(ERR_WIZARD_NO_RIFF)
         before = copy.deepcopy(self._extras[RIFF])
         if line is None:
             self._extras[RIFF].pop(RIFF_LINE, None)
         else:
-            self._extras[RIFF][RIFF_LINE] = self._checked_line(line=line, steps=RIFF_BARS * self.riff_steps_in_bar())
+            self._extras[RIFF][RIFF_LINE] = self._checked_line(line=line, steps=riff_bars_of(line=self.riff_line(), eighths=self.riff_steps_in_bar()) * self.riff_steps_in_bar())
         self._riff_or_back(before=before, value=line)
 
     def _checked_line(self, *, line, steps):

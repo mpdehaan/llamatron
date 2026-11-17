@@ -18,8 +18,8 @@
 from rich.text import Text
 
 from llamatron.macro_composer import line_edits
-from llamatron.macro_composer.wizard_choices import HOOK_PARTS, WizardChoices
-from llamatron.strings.labels import MSG_WIZARD_GROUP_HOOK_KIND, MSG_WIZARD_GROUP_HOOK_SAID, MSG_WIZARD_GROUP_RIFF, MSG_WIZARD_NEW_RIFF_BUTTON, MSG_WIZARD_RIFF_NOTES_LABEL, MSG_WIZARD_RIFF_NOTES_TITLE, MSG_WIZARD_RIFF_PLAYED_BY_LABEL, MSG_WIZARD_RIFF_PLAYERS_JOINED, MSG_WIZARD_RIFF_SAID_LABEL, MSG_WIZARD_INTRO_HOOK_LABEL, MSG_WIZARD_NOBODY, MSG_WIZARD_HOOK_PART_LABELS, MSG_WIZARD_PICK, MSG_WIZARD_PICK_SHOWN, MSG_WIZARD_NEW_HOOK_BUTTON, MSG_WIZARD_HOOK_LABEL, MSG_WIZARD_HOOK_NOTES_LABEL, MSG_WIZARD_HOOK_NOTES_OWN, MSG_WIZARD_HOOK_NOTES_TITLE, MSG_WIZARD_HOOK_NOTES_WIZARD, MSG_WIZARD_HOOK_OFF, MSG_WIZARD_HOOK_ON, MSG_WIZARD_HOOKS_BRANCH
+from llamatron.macro_composer.wizard_choices import HOOK_PARTS, RIFF_SETTINGS, WizardChoices
+from llamatron.strings.labels import MSG_WIZARD_RIFF_KICK_ROW, MSG_WIZARD_RIFF_SETTING_LABELS, MSG_WIZARD_GROUP_HOOK_KIND, MSG_WIZARD_GROUP_HOOK_SAID, MSG_WIZARD_GROUP_RIFF, MSG_WIZARD_NEW_RIFF_BUTTON, MSG_WIZARD_RIFF_NOTES_LABEL, MSG_WIZARD_RIFF_NOTES_TITLE, MSG_WIZARD_RIFF_PLAYED_BY_LABEL, MSG_WIZARD_RIFF_PLAYERS_JOINED, MSG_WIZARD_RIFF_SAID_LABEL, MSG_WIZARD_INTRO_HOOK_LABEL, MSG_WIZARD_NOBODY, MSG_WIZARD_HOOK_PART_LABELS, MSG_WIZARD_PICK, MSG_WIZARD_PICK_SHOWN, MSG_WIZARD_NEW_HOOK_BUTTON, MSG_WIZARD_HOOK_LABEL, MSG_WIZARD_HOOK_NOTES_LABEL, MSG_WIZARD_HOOK_NOTES_OWN, MSG_WIZARD_HOOK_NOTES_TITLE, MSG_WIZARD_HOOK_NOTES_WIZARD, MSG_WIZARD_HOOK_OFF, MSG_WIZARD_HOOK_ON, MSG_WIZARD_HOOKS_BRANCH
 from llamatron.strings.legends import KeyName, MSG_TUNE_USUAL_WHAT, MSG_WIZARD_EDIT_NOTES_WHAT, MSG_WIZARD_NEW_HOOK_WHAT
 from llamatron.strings.marks import MSG_WIZARD_HOOK_BAR_LINE, MSG_WIZARD_HOOK_CELL, MSG_WIZARD_HOOK_FLOOR, MSG_WIZARD_HOOK_FLOOR_BAR, MSG_WIZARD_HOOK_GAP, MSG_WIZARD_HOOK_ROW
 from llamatron.strings.messages import MSG_WIZARD_LISTEN_RIFF, MSG_WIZARD_RIFF_SAID, MSG_WIZARD_HOOK_MADE, MSG_WIZARD_HOOK_OWN, MSG_WIZARD_LISTEN_HOOK
@@ -79,6 +79,13 @@ class HooksBranch(SongWaysBranch):
         """Return a group of the panel's fields under a heading that opens and closes, or nothing for a group with no fields."""
         return [self.page().heading(label=label, is_set=is_set), *fields] if fields else []
 
+    def riff_setting_field(self, *, field, refusing):
+        """Return one setting of the riff as a choice of its ways, each shown as text."""
+        choices = self.choices()
+        ways = {str(way): way for way in RIFF_SETTINGS[field]}
+        return ChoiceField(page=self.page(), label=MSG_WIZARD_RIFF_SETTING_LABELS[field], choices=list(ways), current=str(choices.get_riff_setting(field)),
+                           set=refusing(lambda shown: choices.set_riff_setting(field=field, value=ways[shown])))
+
     def riff_fields(self):
         """Return the group of the song's riff, its second hook: who plays it, nobody until chosen, and then where it is played, its notes and another take."""
         choices = self.choices()
@@ -107,6 +114,7 @@ class HooksBranch(SongWaysBranch):
                 page.ask(dialog=dialog, then=refusing(lambda line: choices.set_riff_line(None if line == line_edits.tidied(usual.riff_line()) else line)))
             fields += [ChoiceField(page=page, label=MSG_WIZARD_RIFF_SAID_LABEL, choices=choices.riff_said_offered(), current=choices.get_riff_said(),
                                    set=refusing(lambda said: choices.set_riff(players=choices.get_riff_players(), said=said))),
+                       *(self.riff_setting_field(field=field, refusing=refusing) for field in choices.riff_settings_offered()),
                        Field(label=MSG_WIZARD_RIFF_NOTES_LABEL, value=lambda: MSG_WIZARD_HOOK_NOTES_OWN if own else MSG_WIZARD_HOOK_NOTES_WIZARD, enter=edit_notes, enter_what=MSG_WIZARD_EDIT_NOTES_WHAT,
                              clear=(lambda: refusing(lambda nothing: choices.set_riff_line(None))(None)) if own else None, clear_what=MSG_TUNE_USUAL_WHAT),
                        Button(label=MSG_WIZARD_NEW_RIFF_BUTTON, key_name=KeyName.ENTER, enter=lambda: page.choosing(lambda nothing: choices.new_riff())(None), enter_what=MSG_WIZARD_NEW_HOOK_WHAT)]
@@ -168,27 +176,39 @@ class HooksBranch(SongWaysBranch):
             return super().notes(width)
         choices = self.choices()
         hook = choices.hook_notes()
-        lines = []
+        of_hook = []
         if hook is not None:
             made = (MSG_WIZARD_HOOK_OWN if choices.hook_is_own() else MSG_WIZARD_HOOK_MADE).format(player=choices.role_title(choices.tune_player()))
-            lines += [Text(), *(Text(INDENT + line) for line in picture_of(hook=hook, width=width)), Text(INDENT + made, style=Style.DIM)]
+            of_hook = [Text(), *(Text(INDENT + line) for line in picture_of(hook=hook, width=width)), Text(INDENT + made, style=Style.DIM)]
         riff = choices.riff_notes()
+        of_riff = []
         if riff is not None:
-            # The riff's picture under the hook's, with who plays it.
+            # The riff's picture, with who plays it, and the kick's strokes over it where the kick follows the riff.
             said = MSG_WIZARD_RIFF_SAID.format(players=MSG_WIZARD_RIFF_PLAYERS_JOINED.join(choices.role_title(role) for role in choices.get_riff_players()))
-            lines += [Text(), *(Text(INDENT + line) for line in picture_of(hook=riff, width=width)), Text(INDENT + said, style=Style.DIM)]
-        return lines
+            of_riff = [Text(), *(Text(INDENT + line) for line in picture_of(hook=riff, width=width, kick=choices.riff_kick())), Text(INDENT + said, style=Style.DIM)]
+        # The riff's picture under the hook's, and over it while the cursor is on a field of the riff, so that the picture of what is being changed shows.
+        page = self.page()
+        on_riff = page.in_fields and page.label_under_cursor() in self.riff_labels()
+        return of_riff + of_hook if on_riff else of_hook + of_riff
+
+    def riff_labels(self):
+        """Return the labels of the riff's fields."""
+        return [MSG_WIZARD_RIFF_PLAYED_BY_LABEL, MSG_WIZARD_RIFF_SAID_LABEL, *MSG_WIZARD_RIFF_SETTING_LABELS.values(), MSG_WIZARD_RIFF_NOTES_LABEL, MSG_WIZARD_NEW_RIFF_BUTTON]
 
 
-def picture_of(*, hook, width):
+def picture_of(*, hook, width, kick=None):
     """Return the lines of a hook's picture: a row for each note it plays, the highest first, each note drawn as long as it
-    lasts with a gap at its end so that a note played twice shows as two, a line between bars, and a floor under the rows."""
+    lasts with a gap at its end so that a note played twice shows as two, a line between bars, and a floor under the rows.
+    Where the kick strikes with a riff, the kick's row comes first, a stroke at each step given."""
     steps, steps_in_bar, notes = hook
     step = WIDE_STEP if steps * WIDE_STEP + ROOM_BESIDE <= width else NARROW_STEP
     pitches = sorted({pitch for _, _, pitch in notes}, reverse=True)
     names = {pitch: note_shown(pitch) for pitch in pitches}
-    longest = max(len(name) for name in names.values())
+    longest = max(len(name) for name in [*names.values(), *([MSG_WIZARD_RIFF_KICK_ROW] if kick else [])])
     lines = [MSG_WIZARD_HOOK_ROW.format(name=names[pitch], width=longest, cells=row_cells(notes=notes, pitch=pitch, steps=steps, steps_in_bar=steps_in_bar, step=step)) for pitch in pitches]
+    if kick:
+        strokes = [(at, 1, None) for at in kick]
+        lines.insert(0, MSG_WIZARD_HOOK_ROW.format(name=MSG_WIZARD_RIFF_KICK_ROW, width=longest, cells=row_cells(notes=strokes, pitch=None, steps=steps, steps_in_bar=steps_in_bar, step=step)))
     floor = MSG_WIZARD_HOOK_FLOOR_BAR.join([MSG_WIZARD_HOOK_FLOOR * (steps_in_bar * step)] * (steps // steps_in_bar))
     return [*lines, MSG_WIZARD_HOOK_ROW.format(name=MSG_WIZARD_HOOK_GAP, width=longest, cells=MSG_WIZARD_HOOK_FLOOR_BAR + floor + MSG_WIZARD_HOOK_FLOOR_BAR)]
 

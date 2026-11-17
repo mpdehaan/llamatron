@@ -546,6 +546,9 @@ by_subgenre:
     sections: {intro: {bars: 8}, verse: {bars: 16}}
     song_plan: {energy: {intro: 3, verse: 4, chorus: 6, bridge: 4, solo: 6}, last_chorus: 7}
   hard rock:
+    # Hard rock is built on a riff: the guitar's chords on its accents with the low root short between them, the bass under the guitar, the kick
+    # on the accents; over the home chord only, every other chord held; the first bar's second half left for the voice.
+    riff: {roles: [guitar, bass], notes: chords on the accents, with chords: stays on the home chord, under the tune: leaves a gap}
     sections: {verse: {bars: 16}, solo: {bars: 16}}
     song_plan: {energy: {intro: 6, verse: 6, chorus: 8, bridge: 5, solo: 9}, last_chorus: 10}
   arena rock:

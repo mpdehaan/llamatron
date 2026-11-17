@@ -37,7 +37,8 @@ from llamatron.macro_composer.song_plan import HIGHEST_ENERGY, LOWEST_ENERGY
 from llamatron.macro_composer.melody import LINE_NOTES
 from llamatron.macro_composer.phrasing import LINE_BREATH, LONGEST_BREATH, NO_BREATH
 from llamatron.macro_composer.loudness import LEAST_DYNAMICS, MOST_DYNAMICS
-from llamatron.macro_composer.wizard_choices import (HOOK_PARTS, LINE_BREATHES, ONE_PLAYER_FIRST, PHRASING_OFFERED, USUAL_PIECE_NOTE, BAND_SOUNDS, GAUGED_STYLES, FEWEST_FILLS, FILLS_TRAITS, LEAST_BUSY, MOST_BUSY, MOST_FILLS, ONE_GUITARIST_COUNT,
+from llamatron.macro_composer.riffs import NOTES_WAYS, RIFF_NOTES
+from llamatron.macro_composer.wizard_choices import (RIFF_SETTINGS, HOOK_PARTS, LINE_BREATHES, ONE_PLAYER_FIRST, PHRASING_OFFERED, USUAL_PIECE_NOTE, BAND_SOUNDS, GAUGED_STYLES, FEWEST_FILLS, FILLS_TRAITS, LEAST_BUSY, MOST_BUSY, MOST_FILLS, ONE_GUITARIST_COUNT,
                                                      USUAL_SOUNDS, WizardChoices, genre_names)
 
 A_NAME = 'a_song'
@@ -89,6 +90,7 @@ A_RIFF = 'the riff'
 COMES_IN = 'where a player comes in'
 REACTS_TO_ENERGY = 'how a player reacts'
 DYNAMICS_OF_PLAYER = "a player's dynamics"
+A_RIFF_SETTING = "a riff's setting"
 A_LEVEL = "a player's loudness level"
 A_STEP_OF_VELOCITY = 15
 MIDDLE_VELOCITY = 64
@@ -353,13 +355,22 @@ def every_choice(choices):
     if choices.riff_players_offered():
         players = choices.riff_players_offered()[-1]
         with_riff = lambda made, players=players: made.set_riff(players=players)
-        yield A_RIFF, tuple(players), with_riff, [nothing_first]
+        # Given to a song that has none: a kind of music built on a riff has one before any is given.
+        yield A_RIFF, tuple(players), with_riff, [lambda made: made.set_riff(players=[])]
         staged = WizardChoices.from_data(choices.to_data())
         with_riff(staged)
         for said in staged.riff_said_offered():
             if said != staged.get_riff_said():
                 yield A_RIFF, said, lambda made, players=players, said=said: made.set_riff(players=players, said=said), [with_riff]
         yield A_RIFF, 'another take', lambda made: made.new_riff(), [with_riff]
+        # The riff's settings that are offered, each the other way, for a riff of single notes and for one of chords on its accents.
+        for notes in NOTES_WAYS:
+            drawn = both(first=with_riff, then=lambda made, notes=notes: made.set_riff_setting(field=RIFF_NOTES, value=notes))
+            staged = WizardChoices.from_data(choices.to_data())
+            drawn(staged)
+            for field in staged.riff_settings_offered():
+                other = next(value for value in RIFF_SETTINGS[field] if value != staged.get_riff_setting(field))
+                yield A_RIFF_SETTING, (notes, field, other), lambda made, field=field, other=other: made.set_riff_setting(field=field, value=other), [drawn]
         yield A_RIFF, 'notes by hand', lambda made: made.set_riff_line(first_note_moved(made.riff_line())), [with_riff]
     # How the song starts and ends: each way but the one the song has, another first player under layers, and another length of a stage.
     for way in choices.starts():

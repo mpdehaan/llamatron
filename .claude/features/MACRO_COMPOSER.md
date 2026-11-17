@@ -329,6 +329,21 @@ clouds; generate and test, with motif development and counterpoint last.
   heading with a number for each level the song plays (`set_loudness_level`, `loudness_levels_offered`, found by making the song
   with the level moved, only while the heading is open); Bksp gives a level back to the genre. Not yet: the lean on players of
   notes, the phrase offsets (a section's first beat, a climbing last bar) and the small random amount.
+- **A riff of chords on its accents** (`riffs.heavy_line`, the riff's `notes: chords on the accents`): the root's two-note chord
+  on beat 1, two to four accents off the beat as two-note chords at the accent level, the low root short (`gate`) at the ghost
+  level or rests between (`between`), one or two `bars` alike, two or three single notes at the end that lead back, half the
+  notes or more the root, the third and seventh flattened over a scale that has them major; `under the tune: leaves a gap`
+  empties the first bar's second half. The riff's first player plays the chords and any other its notes alone
+  (`riffs.single`); the kick strikes the accents in the sections that play it (`drum_parts(over=)`, `riffs.accent_bars`), the
+  rest of the kit as ever; `with chords: stays on the home chord` writes the section out, the riff over the home chord and
+  every other chord held, where half the section or more is at home and the home chord lasts the whole riff somewhere, and
+  else the riff moves with each chord. A subgenre's template may say `riff:` (hard rock's does), which a new song of the
+  wizard's takes when the subgenre is chosen (`_take_riff_of_genre`); a kept song has the riff it kept or none, and the
+  arranger never reads the template's. Wizard: the Hooks panel's Riff group has Played by, Heard, Made of, Bars, Between,
+  Under the tune and With chords, each setting shown only where it is heard (`riff_settings_offered`), hidden but With chords
+  while the notes are written by hand; the riff's picture has the kick's row over it (`riff_kick`) and comes above the hook's
+  while the cursor is on a field of the riff. Not built: a tail that changes into the next chord, the riff thinned to muted
+  roots under the voice, the guitar alone saying it before the band (the Form panel's "riff first" start does that by hand).
 - **The riff, a song's second hook** (`macro_composer/riffs.py`, `set_riff`, `set_riff_line`, `new_riff`): two bars of single
   notes over the home chord, the second answering the first, played in place of their figures by one player of a figure or by the
   first and the lowest together, in the intro, under the verses, under the choruses or everywhere, through a chain of the

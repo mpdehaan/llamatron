@@ -16,10 +16,12 @@
 
 """Tests of the song wizard's Hooks panel in groups, and of the riff on it."""
 
+from llamatron.macro_composer.riffs import ACCENT_CHORDS, MUTED_ROOTS, RESTS_BETWEEN, RIFF_BETWEEN, RIFF_NOTES, RIFF_UNDER_TUNE, SINGLE_NOTES
 from llamatron.strings.labels import (
     MSG_WIZARD_GROUP_HOOK_KIND, MSG_WIZARD_GROUP_HOOK_SAID, MSG_WIZARD_GROUP_RIFF, MSG_WIZARD_HOOK_NOTES_LABEL, MSG_WIZARD_HOOKS_BRANCH, MSG_WIZARD_NEW_RIFF_BUTTON, MSG_WIZARD_NOBODY,
-    MSG_WIZARD_RIFF_NOTES_LABEL, MSG_WIZARD_RIFF_PLAYED_BY_LABEL, MSG_WIZARD_RIFF_SAID_LABEL,
+    MSG_WIZARD_RIFF_KICK_ROW, MSG_WIZARD_RIFF_NOTES_LABEL, MSG_WIZARD_RIFF_PLAYED_BY_LABEL, MSG_WIZARD_RIFF_PLAYERS_JOINED, MSG_WIZARD_RIFF_SAID_LABEL, MSG_WIZARD_RIFF_SETTING_LABELS,
 )
+from llamatron.strings.marks import MSG_WIZARD_HOOK_BAR_LINE, MSG_WIZARD_HOOK_CELL, MSG_WIZARD_HOOK_ROW
 from llamatron.strings.messages import MSG_WIZARD_RIFF_SAID
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.tune_dialog import TuneDialog
@@ -30,20 +32,28 @@ from tests.tui.test_tui_wizard import WizardTest
 A_GENRE = 'rock'
 A_SUBGENRE = 'hard rock'
 A_SEED = 11
+NEW_LINE = '\n'
 
 
 class TestWizardRiffPanel(WizardTest):
     """The Hooks panel's groups and its Riff."""
 
-    async def to_hooks(self):
+    async def to_hooks(self, *, riff=False):
         choices = self.choices()
         choices.set_genre(A_GENRE)
         choices.set_subgenre(A_SUBGENRE)
         choices.set_seed(A_SEED)
+        if not riff:
+            # A song with no riff until one is given: the riff the kind is built on is taken away.
+            choices.set_riff(players=[])
         await self.press(Key.DOWN, Key.UP)
         await self.go_to_named_branch(MSG_WIZARD_HOOKS_BRANCH)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         return choices
+
+    def is_kick_row(self, line):
+        """Whether a line of the screen is the kick's row of the riff's picture: the kick's name, then cells that end at a bar line."""
+        return MSG_WIZARD_HOOK_ROW.format(name=MSG_WIZARD_RIFF_KICK_ROW, width=0, cells='') in line and line.strip().endswith(MSG_WIZARD_HOOK_BAR_LINE)
 
     def more(self):
         return key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)
@@ -88,3 +98,36 @@ class TestWizardRiffPanel(WizardTest):
         await self.select_field(MSG_WIZARD_NEW_RIFF_BUTTON)
         await self.press(Key.ENTER)
         self.assertNotEqual(choices.riff_line(), usual)
+
+    async def test_hard_rock_s_riff_shows_its_settings_and_one_steps(self):
+        choices = await self.to_hooks(riff=True)
+        self.assertTrue(choices.has_riff())
+        await self.select_field(MSG_WIZARD_RIFF_SETTING_LABELS[RIFF_BETWEEN])
+        labels = [field.label for field in self.wizard().shown_fields()]
+        for field in choices.riff_settings_offered():
+            self.assertIn(MSG_WIZARD_RIFF_SETTING_LABELS[field], labels)
+        self.assertIn(ACCENT_CHORDS, self.text())
+        self.assertEqual(choices.get_riff_setting(RIFF_BETWEEN), MUTED_ROOTS)
+        await self.press(self.more())
+        self.assertEqual(choices.get_riff_setting(RIFF_BETWEEN), RESTS_BETWEEN)
+        self.assertIn(RESTS_BETWEEN, self.text())
+        self.assertTrue(self.wizard().has_choices_to_lose())
+
+    async def test_the_riff_s_picture_comes_first_on_the_riff_s_fields_with_the_kick_s_strokes_over_it(self):
+        choices = await self.to_hooks(riff=True)
+        said = MSG_WIZARD_RIFF_SAID.format(players=MSG_WIZARD_RIFF_PLAYERS_JOINED.join(choices.role_title(role) for role in choices.get_riff_players()))
+        await self.select_field(MSG_WIZARD_HOOK_NOTES_LABEL)
+        shown = self.text()
+        self.assertTrue(MSG_WIZARD_RIFF_KICK_ROW not in shown or shown.index(MSG_WIZARD_GROUP_RIFF) < shown.index(MSG_WIZARD_RIFF_KICK_ROW))
+        await self.select_field(MSG_WIZARD_RIFF_PLAYED_BY_LABEL)
+        shown = self.text()
+        kick_row = next(line for line in shown.split(NEW_LINE) if self.is_kick_row(line))
+        self.assertIn(said, shown)
+        self.assertLess(shown.index(kick_row), shown.index(said))
+        self.assertEqual(sum(cell == MSG_WIZARD_HOOK_CELL for cell in kick_row), len(choices.riff_kick()))
+        # A riff of single notes leaves the kick alone, and its picture has no row for the kick.
+        await self.select_field(MSG_WIZARD_RIFF_SETTING_LABELS[RIFF_NOTES])
+        await self.press(key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET))
+        self.assertEqual(choices.get_riff_setting(RIFF_NOTES), SINGLE_NOTES)
+        self.assertFalse(any(self.is_kick_row(line) for line in self.text().split(NEW_LINE)))
+        self.assertNotIn(MSG_WIZARD_RIFF_SETTING_LABELS[RIFF_UNDER_TUNE], [field.label for field in self.wizard().shown_fields()])

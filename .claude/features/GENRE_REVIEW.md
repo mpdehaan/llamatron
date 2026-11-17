@@ -34,6 +34,8 @@ One genre at a time, rock first, alternating with the electronic stages (band st
    root on beat 1, two to four accents off the beat as power chords with short muted roots between, a tail that leads back, a gap
    for the voice; the bass an octave under or on its accents; the kick on its accents. It stays on the home chord, moves whole, or
    changes its tail into the next chord. The guitar alone says it before the band comes in.
+   Built, and on by default in hard rock (`.claude/features/MACRO_COMPOSER.md`, "A riff of chords on its accents"), but for the tail
+   that changes into the next chord and the guitar alone before the band.
 5. **One staged section** for long solos, jams and drum solos: passes round the chords, stages of 8 or 16 bars each with one
    device (theme, answering, repeated figure, climb, held notes, stops, a second player trading, together, peak), never the same
    twice running, the band rising a step a stage, an Energy that climbs across it. A jam is the same on a vamp of one or two

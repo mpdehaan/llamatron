@@ -39,7 +39,8 @@ from llamatron.macro_composer.melody import ANSWER, ANSWER_RHYTHMS, ENGINE, FIRS
 from llamatron.macro_composer.loudness import NORMAL, USUAL_DYNAMICS, drum_levels, in_proportion, note_levels, scaled, spread, with_own
 from llamatron.macro_composer.notation import ACCENT, ACCIDENTAL, DEGREE, DRUM, FLAT, GHOST, HITS, KIT, LINES, LOUD, NONE, OCTAVE, REST, SHARP, SOFT, STEP, STEPS, STEP_SIZE, VELOCITY, CHORD, clamped, drum_rows
 from llamatron.macro_composer.players import player_name
-from llamatron.macro_composer.riffs import FIRST_TAKE, RIFF, RIFF_BARS, RIFF_KINDS, RIFF_LINE, RIFF_ROLES, RIFF_TAKE, riff_line
+from llamatron.macro_composer.riffs import (ACCENT_CHORDS, RIFF, RIFF_KINDS, RIFF_NOTES, RIFF_ROLES, RIFF_WITH_CHORDS, STAYS_HOME, accent_bars, bars_of as riff_bars_of, bars_played,
+                                            flattened_in, held_bar, line_of as riff_line_of, single, split_bars)
 from llamatron.macro_composer.shaping import COMPOUND_BEAT, SIMPLE_BEAT, is_compound
 from llamatron.macro_composer.song_plan import PLAN_OF_SONG, SongPlan
 from llamatron.support.safe_yaml import load_safely
@@ -488,15 +489,19 @@ def whole(*, value, low, high):
     return not isinstance(value, bool) and isinstance(value, int) and low <= value <= high
 
 
-def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars, own_fill=False, seed=0, kit=None, leaves=None, inside=None):
+def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars, own_fill=False, seed=0, kit=None, leaves=None, inside=None, over=None):
     """Each drum the picks play, as a part some bars long: the kind's own bar, decorated as the drummer decorates it, a bar of
     the bars of each phrase that the drummer varies each a little different, and its last bar the fill. A drummer who says nothing plays the kind's bar
     and the song's fill at the end of every phrase. Where the picks name a break, the break's bar is the kind's, in place of
     every way but the percussion's, and each bar of a phrase after the first is the break cut up, its own way, by the seed.
 
     A section that says what it leaves with is written out whole: its last bar is the join's fill under the join's tail, and
-    the small fill inside comes only as often as the section says."""
+    the small fill inside comes only as often as the section says.
+
+    over gives a piece bars of its own, bar by bar of the section and round again, as a kick that follows a riff: such a bar
+    is played as given, in place of the kind's bar and all the drummer adds to it, and a bar given as None is the kind's."""
     bars = {}
+    over = over or {}
     played_break = break_of(picks=picks, meter=meter)
     for role in roles:
         if role.get(DRUMS):
@@ -511,6 +516,10 @@ def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars
             cut_bars[count] = cut_up(bars=played_break, cut=cut, dice=random.Random(CUT_SEED.format(seed, count)))
     # A section always ends on the fill, so that it hands over to the next: the part is no longer than divides the section.
     length = math.gcd(drummer.get(FILL_EVERY, phrase_bars) or phrase_bars, section_bars)
+    fill_every = length
+    if over:
+        # Bars given one by one are the whole section's.
+        length = section_bars
     fill, silences = choice_that_fits(choices=drummer.get(FILL), picks=picks)
     if not fill or own_fill:
         # The fill the song chose itself is played whatever the drummer would play, a song that chose none having none.
@@ -521,6 +530,7 @@ def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars
     if leaves is not None:
         # A planned section: the fill inside is the small one the section names, and the last bar's is the join's.
         length = section_bars
+        fill_every = length
         fill, silences = fill_named(style=style, name=(inside or {}).get(FILL_INSIDE)), []
         last_fill = fill_named(style=style, name=leaves.get(FILL_OF_JOIN))
     tail = (leaves or {}).get(TAIL)
@@ -532,6 +542,7 @@ def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars
         varied.append((variation[BARS], more))
     parts = {}
     every = [bars, adds, fill, last_fill, {piece: [NONE] for piece in pieces_of_tail(tail)}] + [more for _, more in varied]
+    every += [{piece: given} for piece, given_bars in over.items() for given in given_bars if given is not None]
     for piece in list(dict.fromkeys(piece for layer in every for piece in layer)):
         layers = [layer[piece] for layer in every if piece in layer]
         grid = math.lcm(*(len(layer) for layer in layers))
@@ -540,17 +551,20 @@ def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars
             plain = laid_over(bar=plain, more=widened(hits=adds[piece], to=grid))
         hits = []
         for bar in range(1, length + 1):
-            if leaves is None and bar == length and piece in fill:
+            if leaves is None and bar % fill_every == 0 and piece in fill:
                 hits += widened(hits=fill[piece], to=grid)
-            elif leaves is None and bar == length and piece in silences:
+            elif leaves is None and bar % fill_every == 0 and piece in silences:
                 hits += [NONE] * grid
             else:
                 played = plain
-                if piece in cut_bars.get((bar - 1) % phrase_bars, {}):
+                own = over[piece][(bar - 1) % len(over[piece])] if piece in over else None
+                if own is not None:
+                    played = widened(hits=own, to=grid)
+                elif piece in cut_bars.get((bar - 1) % phrase_bars, {}):
                     played = widened(hits=cut_bars[(bar - 1) % phrase_bars][piece], to=grid)
                     if piece in adds:
                         played = laid_over(bar=played, more=widened(hits=adds[piece], to=grid))
-                for which, more in varied:
+                for which, more in varied if own is None else []:
                     if piece in more and (bar - 1) % phrase_bars + 1 in which:
                         played = laid_over(bar=played, more=widened(hits=more[piece], to=grid))
                 if leaves is not None and bar == length and tail is not None:
@@ -804,6 +818,32 @@ def arranged(*, style, song):
     playing = players_in(style=style, roles=roles, levels=levels, section={})
     drummer = next((playing[role[ROLE]] for role in roles if role.get(DRUMS)), {})
     drum_traits = [trait for role in roles for trait in role.get(DRUMS, [])] + [FILLS]
+    # The song's riff, where it has one: the song's own, or the one its kind of music is built on, how many eighths a bar of
+    # it lasts, its notes and its bars.
+    riff = song.get(RIFF, style.get(RIFF)) or {}
+    riff_eighths = int(bar_length(meter) * EIGHTHS_IN_WHOLE)
+    riff_notes = riff_line_of(riff=riff, seed=song.get(SEED, 0), eighths=riff_eighths, flattened=flattened_in(scale_type)) if riff.get(RIFF_ROLES) else []
+    riff_count = riff_bars_of(line=riff_notes, eighths=riff_eighths) or 1
+    riff_split = split_bars(line=riff_notes, eighths=riff_eighths)
+    riff_players = [role[ROLE] for role in roles if role[ROLE] in riff.get(RIFF_ROLES, []) and role[ROLE] not in without and not role.get(DRUMS)
+                    and FIGURE in values_of(style=style, trait=role[TRAIT]).get(picks.get(role[TRAIT]), {})] if riff_notes else []
+
+    def chords_in(section):
+        """A section's chords, its last bar set up for what follows where the section says so."""
+        bars = 1 if section.get(HELD) else section[BARS]
+        chords = [chord_of(chord) for chord in section.get(CHORDS) or chord_entry.get(BY_SECTION, {}).get(section[KIND]) or chord_entry[PATTERN]]
+        if section.get(LAST_CHORD) is not None and not section.get(EVERY, chord_entry.get(EVERY)) and len(chords) <= bars:
+            # The section's last bar is set up for what follows: the chords are written out a bar each, and the last bar takes the approach chord.
+            chords = [chords[bar % len(chords)] for bar in range(bars - 1)] + [chord_of(section[LAST_CHORD])]
+        return chords
+
+    def riff_bars_in(section):
+        """Which bar of the riff each bar of a section plays, None where a riff that stays at home gives way to a held chord; nothing
+        where the section has no riff."""
+        if not riff_players or section.get(HELD) or section[KIND] not in riff.get(RIFF_KINDS, []) or section[BARS] % riff_count:
+            return []
+        stays = riff.get(RIFF_WITH_CHORDS) == STAYS_HOME and riff_split is not None and not section.get(EVERY, chord_entry.get(EVERY))
+        return bars_played(chords=chords_in(section), bars=section[BARS], count=riff_count, stays=stays)
     parts = {}
     drum_sets = {}
     usual_drummer = label_of(character_of(levels[DRUMS])) if DRUMS in levels else None
@@ -828,12 +868,18 @@ def arranged(*, style, song):
             key = key + (section[BARS], frozen(leaves), section.get(FILL_INSIDE), section.get(FILL_INSIDE_EVERY))
         if drum_solo_here:
             key = (DRUM_SOLO, section[BARS])
+        # Under a riff of chords on its accents the kick strikes each accent, bar by bar.
+        riff_here = riff_bars_in(section) if riff.get(RIFF_NOTES) == ACCENT_CHORDS and not drum_solo_here else []
+        kick_bars = accent_bars(line=riff_notes, eighths=riff_eighths)
+        over = {KICK: [None if bar is None else kick_bars[bar] for bar in riff_here]} if any(bar is not None for bar in riff_here) else None
+        if over:
+            key = key + (RIFF, section[BARS], tuple(riff_here))
         if key not in drum_sets:
             if drum_solo_here:
                 made = solo_parts(style=style, bars=section[BARS], seed=song.get(SEED, 0), kit=played)
             else:
                 made = drum_parts(style=style, picks={**picks, **changed}, roles=roles, meter=meter, phrase_bars=phrase_bars, drummer=plays, section_bars=section[BARS], own_fill=FILLS in song.get(PICKS, {}), seed=song.get(SEED, 0), kit=played,
-                                  leaves=leaves, inside={FILL_INSIDE: section.get(FILL_INSIDE), FILL_INSIDE_EVERY: section.get(FILL_INSIDE_EVERY)})
+                                  leaves=leaves, inside={FILL_INSIDE: section.get(FILL_INSIDE), FILL_INSIDE_EVERY: section.get(FILL_INSIDE_EVERY)}, over=over)
             drum_sets[key] = {}
             for piece, part in made.items():
                 # A piece of the kit switched off is left out: its strokes are never moved to another piece.
@@ -852,7 +898,7 @@ def arranged(*, style, song):
                     if is_uneven:
                         pattern = uneven(pattern=pattern, by=plays[UNEVEN], dice=random.Random(DRUM_SEED.format(song.get(SEED, 0), piece, section[KIND])))
                     part = {RAW: pattern}
-                named = piece if leaves is None and key[:2] == (usual_drummer, ()) and piece not in parts else MSG_PART_OF_SECTION.format(piece, name if leaves is not None else section[KIND])
+                named = piece if leaves is None and not over and key[:2] == (usual_drummer, ()) and piece not in parts else MSG_PART_OF_SECTION.format(piece, name if leaves is not None or over else section[KIND])
                 parts[named] = part
                 drum_sets[key][piece] = named
         drums_of[name] = drum_sets[key]
@@ -901,19 +947,13 @@ def arranged(*, style, song):
     # A song has a hook where the song or its style asks for one and a section of its form marks a line as one.
     has_a_hook = bool(song.get(HOOK, style.get(HOOK, False))) and any(has_hook(plan) for plan in plans)
     beside = song.get(BESIDE, {})
-    # The song's riff, where it has one, and how many eighths a bar of it lasts.
-    riff = song.get(RIFF) or {}
-    riff_eighths = int(bar_length(meter) * EIGHTHS_IN_WHOLE)
     under = UnderLead(busy=beside.get(BESIDE_BUSY, USUAL_BESIDE_BUSY), habits=habits, grid=habits[GRID], scale_type=scale_type, seed=song.get(SEED, 0))
     for count, name in enumerate(form_names, start=1):
         section = section_of(name=name, style=style, song=song)
         met[name] = met.get(name, 0) + 1
         scene_name = name if met[name] == 1 else MSG_REPEATED_SCENE.format(name, met[name])
         bars = 1 if section.get(HELD) else section[BARS]
-        chords = [chord_of(chord) for chord in section.get(CHORDS) or chord_entry.get(BY_SECTION, {}).get(section[KIND]) or chord_entry[PATTERN]]
-        if section.get(LAST_CHORD) is not None and not section.get(EVERY, chord_entry.get(EVERY)) and len(chords) <= bars:
-            # The section's last bar is set up for what follows: the chords are written out a bar each, and the last bar takes the approach chord.
-            chords = [chords[bar % len(chords)] for bar in range(bars - 1)] + [chord_of(section[LAST_CHORD])]
+        chords = chords_in(section)
         play = {}
         if section.get(HELD):
             held = MSG_PART_OF_SECTION.format(CRASH, HELD)
@@ -992,12 +1032,18 @@ def arranged(*, style, song):
                             if figure not in parts:
                                 parts[figure] = held_back
                                 shaped.append(figure)
-                    if role[ROLE] in riff.get(RIFF_ROLES, []) and section[KIND] in riff.get(RIFF_KINDS, []) and not bars % RIFF_BARS:
-                        # The song's riff takes the place of the player's figure here: single notes, moved by the chords and played as written, with none of the figure's own generators.
+                    riff_here = riff_bars_in(section) if role[ROLE] in riff_players else []
+                    if riff_here:
+                        # The song's riff takes the place of the player's figure here: moved by the chords and played as written, with none of the figure's
+                        # own generators. Its first player plays its chords, and a player under the first its notes alone.
+                        first = role[ROLE] == riff_players[0]
                         riff_part = MSG_PART_OF_SECTION.format(role[ROLE], RIFF)
+                        if None in riff_here:
+                            # A riff that stays at home is written out for the whole section: the riff over the home chord, and every other chord held.
+                            riff_part = MSG_PART_OF_SECTION.format(name, riff_part)
                         if riff_part not in parts:
-                            line = riff.get(RIFF_LINE) or riff_line(seed=song.get(SEED, 0), take=riff.get(RIFF_TAKE, FIRST_TAKE), eighths=riff_eighths)
-                            parts[riff_part] = {STEP: EIGHTH, OCTAVE: role[OCTAVE], **voice_of(role), LINES: [[dict(note) for note in line]]}
+                            lines = [riff_notes] if None not in riff_here else [held_bar(eighths=riff_eighths, chord=first) if bar is None else riff_split[bar] for bar in riff_here]
+                            parts[riff_part] = {STEP: EIGHTH, OCTAVE: role[OCTAVE], **voice_of(role), LINES: [[dict(note) for note in (line if first else single(line))] for line in lines]}
                             shaped.append(riff_part)
                         riff_chain = MSG_PART_OF_SECTION.format(chain, RIFF)
                         chains[riff_chain] = [{PROGRESSION: progression}, {RUSH: role[ROLE]}, {DRAG: role[ROLE]}]
