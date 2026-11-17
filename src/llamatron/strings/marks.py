@@ -408,6 +408,8 @@ MSG_WIZARD_LENGTH_SHOWN = '{length}  ({form})'
 MSG_WIZARD_FORM_SHOWN = '{form}: {count} sections'
 # The Chords panel: a progression with its numerals, the key its chords are spelled in, a kind of section's chords, and what follows a chord's root.
 MSG_WIZARD_PROGRESSION_SHOWN = '{name} ({numerals})'
+MSG_WIZARD_PROGRESSION_FOR = '{progression} for {scale}'
+MSG_WIZARD_GENRE_MELODY_SHOWN = '{style} (from genre)'
 MSG_WIZARD_CHORDS_KEY = 'in {root} {scale}'
 MSG_WIZARD_CHORDS_LINE = '{kind:<{width}}  {chords}'
 MSG_WIZARD_CHORD_SEPARATOR = '  '

@@ -43,7 +43,7 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
 from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, FLAT, KIT, LINES, OCTAVE, REST, SHARP, STEPS
 from llamatron.strings.macro_composer import MSG_PART_OF_SECTION
-from llamatron.macro_composer.melody import CHROMATIC, DEFAULT_EVOLVE, EVOLVE, HALF_STEPS, LEAPS, MOVE, NOTES_IN_OCTAVE, DEFAULT_GAUGES, EVOLVING, GRID, HIGHEST_GAUGE, HOOK, LOWEST_GAUGE, ROTATE, ROTATIONS, SERIAL, SMART, STEP_WALK
+from llamatron.macro_composer.melody import CHROMATIC, DEFAULT_EVOLVE, ENGINE, EVOLVE, HALF_STEPS, LEAPS, MOVE, NOTES_IN_OCTAVE, DEFAULT_GAUGES, EVOLVING, GRID, HIGHEST_GAUGE, HOOK, LOWEST_GAUGE, ROTATE, ROTATIONS, SERIAL, SMART, STEP_WALK
 from llamatron.music.note import ROOT_NAMES, SEMITONES_ABOVE_C
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MIN_GM_SOUND
@@ -1239,6 +1239,10 @@ class WizardChoices:
         return [style for style in MELODY_STYLES if melody_works(genre=self._genre, subgenre=self._subgenre, style=style)
                 and not melody_is_usual(genre=self._genre, subgenre=self._subgenre, style=style)]
 
+    def genre_melody(self):
+        """Return the melody style the genre's own tunes are sketched by, which a song takes while none is chosen."""
+        return self._melody_habits().get(ENGINE, STEP_WALK)
+
     def get_melody(self):
         """Return the melody style chosen, or None while each player's tunes are sketched as the genre says."""
         return self._melody
@@ -1576,6 +1580,10 @@ class WizardChoices:
                 written = entry.get(BY_SECTION, {}).get(kind) or entry[PATTERN]
                 chords[kind] = [(chord_of(chord)[DEGREE], ACCIDENTAL_MARKS.get(chord_of(chord).get(ACCIDENTAL))) for chord in written]
         return list(chords.items())
+
+    def progression_scale_type(self, progression):
+        """Return the scale type a progression's chords were written for, major where the genre does not say."""
+        return values_of(style=style_of(self._genre), trait=self.progression_trait())[progression].get(SCALE_TYPE, MAJOR)
 
     def progression_degrees(self, progression):
         """Return the chords a progression is known by, its first written, each a degree and its sharp or flat; or nothing."""

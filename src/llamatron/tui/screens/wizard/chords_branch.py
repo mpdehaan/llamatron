@@ -21,7 +21,7 @@ from llamatron.composition.chords import root_name
 from llamatron.composition.named_scale import NamedScale
 from llamatron.composition.progressions import quality_of, roman_numeral
 from llamatron.strings.labels import MSG_WIZARD_ANY_PROGRESSION, MSG_WIZARD_CHORDS_BRANCH, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES
-from llamatron.strings.marks import MSG_NUMERALS_SEPARATOR, MSG_WIZARD_CHORD_SEPARATOR, MSG_WIZARD_CHORD_SUFFIXES, MSG_WIZARD_CHORDS_KEY, MSG_WIZARD_CHORDS_LINE, MSG_WIZARD_PROGRESSION_SHOWN
+from llamatron.strings.marks import MSG_NUMERALS_SEPARATOR, MSG_WIZARD_CHORD_SEPARATOR, MSG_WIZARD_CHORD_SUFFIXES, MSG_WIZARD_CHORDS_KEY, MSG_WIZARD_CHORDS_LINE, MSG_WIZARD_PROGRESSION_FOR, MSG_WIZARD_PROGRESSION_SHOWN
 from llamatron.strings.messages import MSG_WIZARD_CHORDS_DRAWN_LATER
 from llamatron.tui.drawing import INDENT, Style
 from llamatron.tui.screens.shared.field import ChoiceField
@@ -74,11 +74,15 @@ class ChordsBranch(SongWaysBranch):
             root_name(scale=scale, degree=degree, accidental=accidental) + MSG_WIZARD_CHORD_SUFFIXES[quality_of(scale=scale, degree=degree, accidental=accidental)] for degree, accidental in chords)
 
     def shown(self, progression):
-        """Return a progression as the field and its list show it: its name, and its numerals where it is written as degrees."""
+        """Return a progression as the field and its list show it: its name, its numerals where it is written as degrees, and the scale type it was written for where that is not the song's."""
         if progression == MSG_WIZARD_ANY_PROGRESSION:
             return progression
-        degrees = self.choices().progression_degrees(progression)
-        return MSG_WIZARD_PROGRESSION_SHOWN.format(name=progression, numerals=self.numerals(degrees)) if degrees else progression
+        choices = self.choices()
+        degrees = choices.progression_degrees(progression)
+        shown = MSG_WIZARD_PROGRESSION_SHOWN.format(name=progression, numerals=self.numerals(degrees)) if degrees else progression
+        # A progression written for the other of major and minor says so: its borrowed chords were not meant for the song's scale.
+        written_for = choices.progression_scale_type(progression)
+        return shown if written_for == choices.get_scale_type() else MSG_WIZARD_PROGRESSION_FOR.format(progression=shown, scale=MSG_WIZARD_SCALE_TYPE_NAMES[written_for])
 
     def summary(self):
         return self.shown(self.progression()) if self.offers_progressions() else None
