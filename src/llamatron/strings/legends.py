@@ -336,6 +336,7 @@ MSG_NO_INSTRUMENT_WHAT = 'no instrument'
 MSG_NO_DEVICE_WHAT = 'no device'
 MSG_NO_GM_SOUND_WHAT = 'no sound'
 MSG_NO_SOURCE_WHAT = 'no source'
+MSG_NO_TRACK_WHAT = 'no track'
 MSG_VIEW_WHAT = 'view'
 
 # tui/screens/set/groove_editor.py

@@ -132,7 +132,7 @@ MSG_CHANGED_IN_SONG = 'song ({song}): {what}'
 MSG_CHANGED_SCENE = 'scene {number}'
 MSG_CHANGED_THE_SET = 'the set'
 MSG_CHANGED_WORDS = {
-    Section.SCALES: 'scale', Section.PATTERNS: 'pattern', Section.ARPS: 'arp', Section.AUTO_RATCHETS: 'AutoRatchet', Section.DRIFTS: 'drift', Section.PROGRESSIONS: 'progression', Section.VOICE_LEADINGS: 'voice leading', Section.STRUMS: 'Strum', Section.GUITARIFIES: 'Guitarify', Section.EUCLIDS: 'Euclid', Section.GLIDES: 'Glide', Section.SHORTENS: 'Shorten', Section.RUSHES: 'Rush', Section.DRAGS: 'Drag', Section.HOCKETS: 'Hocket', Section.DENSITIES: 'Density', Section.SWELLS: 'Swell',
+    Section.SCALES: 'scale', Section.PATTERNS: 'pattern', Section.ARPS: 'arp', Section.AUTO_RATCHETS: 'AutoRatchet', Section.DRIFTS: 'drift', Section.PROGRESSIONS: 'progression', Section.VOICE_LEADINGS: 'voice leading', Section.STRUMS: 'Strum', Section.GUITARIFIES: 'Guitarify', Section.EUCLIDS: 'Euclid', Section.GLIDES: 'Glide', Section.SHORTENS: 'Shorten', Section.RUSHES: 'Rush', Section.DRAGS: 'Drag', Section.HOCKETS: 'Hocket', Section.FOLLOW_CHORDS: 'Follow Chords', Section.DENSITIES: 'Density', Section.SWELLS: 'Swell',
     Section.ARTICULATES: 'Articulate',
     Section.CHAINS: 'chain', Section.GROOVES: 'groove', Section.INSTRUMENTS: 'instrument', Section.SONGS: 'song', Section.TRACKS: 'track', Section.REGISTERS: 'register',
     SetlistSetting.TITLE: 'title', SetlistSetting.AUTHOR: 'author', SetlistSetting.DESCRIPTION: 'description', SetlistSetting.NOTES: 'notes',

@@ -147,6 +147,11 @@ settings page's fields. The keys that work everywhere are listed once:
 - **the Save button**: `ESC` back · `↑↓` select · `←→` select · `ENTER` SAVE · `PgUp/PgDn` next section · `N` new · `W` save as
 - **the Open button**: `ESC` back · `↑↓` select · `←→` select · `ENTER` OPEN · `PgUp/PgDn` next section · `N` new · `W` save as
 
+## FollowChordsEditor
+
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `F2` rename
+- **the Chords from field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` no track · `F2` rename
+
 ## GeneratorsPage
 
 - **a row**: `ESC` back · `↑↓` select · `A` add · `ENTER` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `/` search
@@ -425,6 +430,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - DriftEditor: dec (the Every field, the Steps to B field, the Direction field, the Restart field, the Seed field, the AX+= field, the BX+= field, the CX+= field, the DX+= field, the Vel+= field, the Prob ± field, the Degree + field, the Degree random field, the Scale prob field, the Root prob field, the Scale field, the Root field)
 - EuclidEditor: dec (the Hits field, the Steps field, the Rotate field, the Step field, the Restart field)
 - FilePage: dec (the Default follow action field)
+- FollowChordsEditor: dec (the Chords from field)
 - GlideEditor: dec (the Step field, the Glide amount field, the Restart field)
 - GrooveEditor: dec (anywhere)
 - GuitarBarEditor: dec (anywhere)
@@ -462,6 +468,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - DriftEditor: inc (the Every field, the Steps to B field, the Direction field, the Restart field, the Seed field, the AX+= field, the BX+= field, the CX+= field, the DX+= field, the Vel+= field, the Prob ± field, the Degree + field, the Degree random field, the Scale prob field, the Root prob field, the Scale field, the Root field)
 - EuclidEditor: inc (the Hits field, the Steps field, the Rotate field, the Step field, the Restart field)
 - FilePage: inc (the Default follow action field)
+- FollowChordsEditor: inc (the Chords from field)
 - GlideEditor: inc (the Step field, the Glide amount field, the Restart field)
 - GrooveEditor: inc (anywhere)
 - GuitarBarEditor: inc (anywhere)
@@ -544,6 +551,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - DriftEditor: use the song seed (the Seed field)
 - EuclidEditor: clear (the Hits field, the Steps field, the Rotate field, the Step field)
 - FilePage: clear (the Author field, the Description field, the Title field)
+- FollowChordsEditor: no track (the Chords from field)
 - GeneratorsPage: delete (a row)
 - GeneratorsPage: erase (while searching)
 - GlideEditor: clear (the Step field)
@@ -678,6 +686,8 @@ settings page's fields. The keys that work everywhere are listed once:
 - FilePage: choose (the Default follow action field)
 - FilePage: SAVE (the Save button)
 - FilePage: OPEN (the Open button)
+- FollowChordsEditor: rename (the Name field)
+- FollowChordsEditor: choose (the Chords from field)
 - GeneratorsPage: edit (a row)
 - GeneratorsPage: add (the + row)
 - GeneratorsPage: keep (while searching)
@@ -779,6 +789,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - DriftEditor: back (the Name field, the Every field, the Steps to B field, the Direction field, the Restart field, the Seed field, the AX+= field, the BX+= field, the CX+= field, the DX+= field, the Vel+= field, the Prob ± field, the Degree + field, the Degree random field, the Scale prob field, the Root prob field, the Scale field, the Root field)
 - EuclidEditor: back (the Name field, the Hits field, the Steps field, the Rotate field, the Step field, the Restart field)
 - FilePage: back (the Author field, the Description field, the Title field, the Default follow action field, the Notes field, the Protected field, the Notes & Octaves heading, the Visualizers heading, the Save button, the Open button)
+- FollowChordsEditor: back (the Name field, the Chords from field)
 - GeneratorsPage: back (a row, the + row)
 - GeneratorsPage: CANCEL (while searching)
 - GlideEditor: back (the Name field, the Step field, the Glide amount field, the Restart field, the Steps field)
@@ -834,6 +845,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - DragEditor: rename (the Name field, the Step field, the Drag amount field, the Steps field, the Restart field)
 - DriftEditor: rename (the Name field, the Every field, the Steps to B field, the Direction field, the Restart field, the Seed field, the AX+= field, the BX+= field, the CX+= field, the DX+= field, the Vel+= field, the Prob ± field, the Degree + field, the Degree random field, the Scale prob field, the Root prob field, the Scale field, the Root field)
 - EuclidEditor: rename (the Name field, the Hits field, the Steps field, the Rotate field, the Step field, the Restart field)
+- FollowChordsEditor: rename (the Name field, the Chords from field)
 - GlideEditor: rename (the Name field, the Step field, the Glide amount field, the Restart field, the Steps field)
 - GuitarifyEditor: rename (the Name field, the Shape heading, the Strokes heading)
 - HocketEditor: rename (the Name field, the Source track field, the Restart field)
@@ -1095,6 +1107,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - DriftEditor: select (the Name field, the Every field, the Steps to B field, the Direction field, the Restart field, the Seed field, the AX+= field, the BX+= field, the CX+= field, the DX+= field, the Vel+= field, the Prob ± field, the Degree + field, the Degree random field, the Scale prob field, the Root prob field, the Scale field, the Root field)
 - EuclidEditor: select (the Name field, the Hits field, the Steps field, the Rotate field, the Step field, the Restart field)
 - FilePage: select (the Author field, the Description field, the Title field, the Default follow action field, the Notes field, the Protected field, the Notes & Octaves heading, the Visualizers heading, the Save button, the Open button)
+- FollowChordsEditor: select (the Name field, the Chords from field)
 - GeneratorsPage: select (a row, the + row, while searching)
 - GlideEditor: select (the Name field, the Step field, the Glide amount field, the Restart field, the Steps field)
 - GroovesPage: select (a row, the + row, while searching)
@@ -1132,6 +1145,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - **DriftEditor**: Name, Every, Steps to B, Direction, Seed, Restart, AX+=, BX+=, CX+=, DX+=, Vel+=, Prob ±, Degree +, Degree random, Scale, Scale prob, Root, Root prob
 - **EuclidEditor**: Name, Hits, Steps, Rotate, Step, Restart
 - **FilePage**: Author, Default follow action, Description, Notes, Protected, Title, [Notes & Octaves], Default drum octave, Default octave, Octave labels, Step size, [Visualizers], Visualizer, Hide Visualizers, (Save), (Open)
+- **FollowChordsEditor**: Name, Chords from
 - **GlideEditor**: Name, Step, Glide amount, Steps, Restart
 - **GuitarifyEditor**: Name, [Shape], Shape chords, Tuning, Position, Capo, Strings, Single notes, Color, [Strokes], Play strokes, Bar, Let ring, Spread, Fade, Loose timing, Upstroke strings, Approach, Restart
 - **HocketEditor**: Name, Source track, Restart

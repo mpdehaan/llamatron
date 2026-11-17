@@ -47,6 +47,9 @@ from llamatron.strings.names import MSG_NEW_SCENE_NAME, MSG_NEW_TRACK_NAME, MSG_
 from llamatron.support.revised import notes_change
 
 
+# The kinds of generator whose settings name a track of the song.
+KINDS_NAMING_A_TRACK = (GeneratorKind.HOCKET, GeneratorKind.FOLLOW_CHORDS)
+
 
 def _check_scale_name(*, value, song):
     """Refuse a scale the set doesn't have. None is no scale."""
@@ -473,10 +476,11 @@ class Song(LlamaData):
         """Rename an item, keeping its place, and update everything in the song that names it."""
         self._section(section).rename(old=old, new=new)
         self.rename_references(section=section, old=old, new=new)
-        # A Hocket belongs to the set but names a track of the song as its source, so a track's rename reaches the set's hockets too.
+        # A Hocket and a Follow Chords belong to the set but name a track of the song, so a track's rename reaches the set's too.
         if section == Section.TRACKS and self._setlist is not None:
-            for name in self._setlist.get_generator_names(GeneratorKind.HOCKET):
-                self._setlist.get_generator_settings(kind=GeneratorKind.HOCKET, name=name).rename_references(section=section, old=old, new=new)
+            for kind in KINDS_NAMING_A_TRACK:
+                for name in self._setlist.get_generator_names(kind):
+                    self._setlist.get_generator_settings(kind=kind, name=name).rename_references(section=section, old=old, new=new)
 
     def names_item(self, *, section, name):
         """Return whether the song's own setting names an item of a section: its scale, or its groove, which is the default groove, none, when it sets no other."""

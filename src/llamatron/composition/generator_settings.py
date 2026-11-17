@@ -36,6 +36,7 @@ from llamatron.composition.corrections import LEFT_OUT, NO_NEAREST_VALUE
 from llamatron.composition.setting import Checked, Choice, Flag, Text, WholeNumber, check_settings, described
 from llamatron.music.note import MAX_OCTAVE, MIN_OCTAVE
 from llamatron.support.rational import Rational
+from llamatron.generators.follow_chords import FollowChords
 from llamatron.generators.progression import Progression
 from llamatron.generators.voice_leading import VoiceLeading
 from llamatron.generators.guitarify import Guitarify
@@ -1149,12 +1150,48 @@ class HocketSettings(GeneratorSettings):
         self._settings[HocketSetting.SOURCE] = new
 
 
+class FollowChordsSetting:
+    """A Follow Chords' settings, as a file names them: the track whose chords it follows."""
+
+    CHORDS_FROM = 'chords_from'
+
+
+class FollowChordsSettings(GeneratorSettings):
+    """A Follow Chords' settings: the track whose chords a clip's notes are moved to.
+
+    The renderer hands the generator the chords that track plays in the clip's scene, after that
+    track's own chains, so the settings hold only the track's name, and a rename of that track follows.
+    """
+
+    __slots__ = ()
+
+    GENERATOR = FollowChords
+    SETTINGS = described(Text(name=FollowChordsSetting.CHORDS_FROM, error=ERR_NOT_TEXT))
+    REFERENCES = {Section.TRACKS: (FollowChordsSetting.CHORDS_FROM,)}
+
+    @classmethod
+    def new(cls):
+        """Return the settings a new Follow Chords starts with: no track, so that it moves nothing until one is chosen."""
+        return cls({})
+
+    def get_chords_from(self):
+        """Return the name of the track whose chords it follows, or None for none."""
+        return self._written(FollowChordsSetting.CHORDS_FROM)
+
+    def names_item(self, *, section, name):
+        return section == Section.TRACKS and self.get_chords_from() == name
+
+    @notes_change
+    def _rename_own_references(self, *, section, old, new):
+        self._settings[FollowChordsSetting.CHORDS_FROM] = new
+
+
 GENERATOR_SETTINGS = {
     GeneratorKind.ARP: ArpSettings, GeneratorKind.AUTO_RATCHET: AutoRatchetSettings, GeneratorKind.DRIFT: DriftSettings,
     GeneratorKind.PROGRESSION: ProgressionSettings, GeneratorKind.VOICE_LEADING: VoiceLeadingSettings,
     GeneratorKind.STRUM: StrumSettings, GeneratorKind.EUCLID: EuclidSettings, GeneratorKind.GLIDE: GlideSettings, GeneratorKind.SHORTEN: ShortenSettings,
     GeneratorKind.RUSH: RushSettings, GeneratorKind.DRAG: DragSettings,
     GeneratorKind.DENSITY: DensitySettings, GeneratorKind.SWELL: SwellSettings, GeneratorKind.ARTICULATE: ArticulateSettings,
-    GeneratorKind.HOCKET: HocketSettings, GeneratorKind.GUITARIFY: GuitarifySettings,
+    GeneratorKind.HOCKET: HocketSettings, GeneratorKind.GUITARIFY: GuitarifySettings, GeneratorKind.FOLLOW_CHORDS: FollowChordsSettings,
 }
 

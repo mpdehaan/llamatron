@@ -1,0 +1,175 @@
+version: 1.0.462
+title: Follow Chords
+description: a song's chords written once, on a muted track that three other tracks follow
+notes: |
+  Follow Chords: a song at 96 beats a minute in A minor whose chords are written in one
+  place, the muted track called SILENT Chords. The bass, the pad and the arpeggio each play one bar,
+  written over chord I, through the Follow Chords generator called follow, which moves their
+  notes to whatever chord the SILENT Chords track plays at that moment in the same scene.
+  Run it with: llamatron examples/learning/24_follow_chords.yml --to ableton --replace
+
+  Scenes 1 and 2, written chords: the SILENT Chords track's pattern holds four chords, a bar each, Am,
+  F, C and G. Nothing else in the scene names a chord. The bass and the pad follow first, then
+  the arpeggio and the drums come in.
+  Scenes 3 and 4, other chords: the same three patterns again, and only the SILENT Chords track's
+  pattern differs, Am, Dm, F and E. The E is a major chord, from outside A minor, and the tracks
+  that follow take its G sharp.
+  Scene 5, chords from a Progression: the SILENT Chords track's pattern holds one chord, and a
+  Progression in that clip's chain makes Am, G, F and G of it. What follows reads the chords as
+  they come out of the SILENT Chords track, so it never matters how they were written.
+  Scene 6: the written chords again, to end.
+
+  Try it: open the pattern chords written, change a step's degree, and hear the bass, the pad and
+  the arpeggio all move.
+
+  When changing this demo:
+  - Keep the SILENT Chords track muted, and keep every chord of a scene on that track alone.
+  - Keep the three figures one bar long, written over chord I.
+real_time: true
+protected: true
+
+scales:
+  A Minor: { root: A, type: minor }
+
+patterns:
+  chords written:
+    steps: 4
+    step_size: 1
+    degree: [1, 6, 3, 7]
+    octave: [4, 4, 4, 4]
+    chord: [3, 3, 3, 3]
+  chords changed:
+    steps: 4
+    step_size: 1
+    degree: [1, 4, 6, 5]
+    octave: [4, 4, 4, 4]
+    chord: [3, 3, 3, M]
+  one chord:
+    steps: 1
+    step_size: 1
+    degree: [1]
+    octave: [4]
+    chord: [3]
+  arpeggio:
+    steps: 8
+    step_size: 1/8
+    degree: [1, 3, 5, 1, 5, 3, 5, 3]
+    octave: [5, 5, 5, 6, 5, 5, 5, 5]
+    velocity: [96, 70, 80, 90, 70, 80, 70, 80]
+  bass:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, 1, ~, 5, ~, 1, 5]
+    octave: [3, ~, 3, ~, 3, ~, 3, 3]
+  pad:
+    steps: 4
+    step_size: 1/4
+    degree: [1, ~, ~, ~]
+    octave: [4, ~, ~, ~]
+    chord: [3, ~, ~, ~]
+    velocity: [70, ~, ~, ~]
+    tie: [false, true, true, true]
+  kick:
+    steps: 4
+    drum: true
+    step_size: 1/4
+    degree: [C, ~, C, ~]
+    octave: [3, ~, 3, ~]
+  snare:
+    steps: 4
+    drum: true
+    step_size: 1/4
+    degree: [~, D, ~, D]
+    octave: [~, 3, ~, 3]
+  hats:
+    steps: 8
+    drum: true
+    step_size: 1/8
+    degree: [F, F, F, F, F, F, F, F]
+    accidental: ["#", "#", "#", "#", "#", "#", "#", "#"]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [90, 60, 80, 60, 90, 60, 80, 60]
+
+progressions:
+  down and back: { chords: [1, 7, 6, 7] }
+
+follow_chords:
+  follow: { chords_from: SILENT Chords }
+
+chains:
+  follow:
+    - follow_chords: follow
+  down and back:
+    - progression: down and back
+
+instruments:
+  finger bass: { device: "*FluidSynth", gm_sound: 34 }
+  warm pad: { device: "*FluidSynth", gm_sound: 90 }
+  electric piano: { device: "*FluidSynth", gm_sound: 5 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  follow_chords:
+    tempo: 96
+    scale: A Minor
+    genre: Pop
+
+    tracks:
+      SILENT Chords: { mute: true, instrument: warm pad }
+      kick: { drum: true, instrument: drum kit }
+      snare: { drum: true, instrument: drum kit }
+      hats: { drum: true, instrument: drum kit }
+      bass: { instrument: finger bass }
+      pad: { instrument: warm pad }
+      arpeggio: { instrument: electric piano }
+
+    scenes:
+      - name: written chords
+        tracks:
+          SILENT Chords: { pattern: chords written, repeat: 3 }
+          bass: { pattern: bass, chains: [follow], repeat: 12 }
+          pad: { pattern: pad, chains: [follow], repeat: 12 }
+      - name: "written chords, everyone"
+        tracks:
+          SILENT Chords: { pattern: chords written, repeat: 3 }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+          bass: { pattern: bass, chains: [follow], repeat: 12 }
+          pad: { pattern: pad, chains: [follow], repeat: 12 }
+          arpeggio: { pattern: arpeggio, chains: [follow], repeat: 12 }
+      - name: other chords
+        tracks:
+          SILENT Chords: { pattern: chords changed, repeat: 3 }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+          bass: { pattern: bass, chains: [follow], repeat: 12 }
+          pad: { pattern: pad, chains: [follow], repeat: 12 }
+          arpeggio: { pattern: arpeggio, chains: [follow], repeat: 12 }
+      - name: "other chords, no pad"
+        tracks:
+          SILENT Chords: { pattern: chords changed, repeat: 3 }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+          bass: { pattern: bass, chains: [follow], repeat: 12 }
+          arpeggio: { pattern: arpeggio, chains: [follow], repeat: 12 }
+      - name: chords from a Progression
+        tracks:
+          SILENT Chords: { pattern: one chord, chains: [down and back], repeat: 12 }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+          bass: { pattern: bass, chains: [follow], repeat: 12 }
+          pad: { pattern: pad, chains: [follow], repeat: 12 }
+          arpeggio: { pattern: arpeggio, chains: [follow], repeat: 12 }
+      - name: "written chords, again"
+        tracks:
+          SILENT Chords: { pattern: chords written, repeat: 3 }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+          bass: { pattern: bass, chains: [follow], repeat: 12 }
+          pad: { pattern: pad, chains: [follow], repeat: 12 }
+          arpeggio: { pattern: arpeggio, chains: [follow], repeat: 12 }

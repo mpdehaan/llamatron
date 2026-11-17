@@ -45,6 +45,22 @@ Reference notes for Claude, one part of `.claude/format/`: every generator and w
 - `tests/playback/test_step_rows.py` tests them; `14_acid_glide.yml` is the Glide and Shorten demo and
   its drop has the Rush and the Drags.
 
+### Follow Chords
+
+- The generator section `follow_chords` (`FollowChordsSettings`, kind `follow_chords`, `FollowChordsSetting`), the user's
+  design, kept for good: one setting, `chords_from`, a track of the song, which a rename of the track follows
+  (`KINDS_NAMING_A_TRACK` in `composition/song.py`). It lets a song's chords be written once, on a muted Chords track, by hand
+  or by a Progression in that track's chain, the Progression itself unchanged.
+- `SongRenderer.chords_followed` hands `FollowChords` (`generators/follow_chords.py`) a `ChordSource`
+  (`playback/chord_source.py`) of the followed track's finished clip in the same written scene, after its chains, the counting
+  pass's clip in the counting pass, each worked out once; None for no track, a track the song lacks, one with no clip there or
+  the clip's own track. Tracks following each other in a circle raise `ERR_CIRCULAR_FOLLOW`.
+- A note moves up the clip's scale by the place of the chord's root in the scale, and the half steps left over for a root
+  between two scale notes; a note a third, fifth or seventh above the figure's root then takes the chord's own note where the
+  scale's is a half step off, so a chord from outside the scale is followed. A chord goes on through rests; nothing moves
+  before the first. A drum pattern is skipped (`KINDS_MOVING_PITCHES` in `playback/clip_slot_player.py`).
+- `tests/generators/test_follow_chords.py` and `tests/tui/test_tui_follow_chords.py` test it; `24_follow_chords.yml` is its demo.
+
 ### Hocket
 
 - The generator section `hockets` (`HocketSettings`, kind `hocket`, `HocketSetting`), the user's

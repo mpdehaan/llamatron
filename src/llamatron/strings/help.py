@@ -263,6 +263,15 @@ song carry them on.
 Each track still plays its own pattern's notes besides those it is handed.
 """
 
+# FollowChordsEditor
+HELP_FOLLOW_CHORDS_EDITOR = """
+Moves a clip's notes to the chords another track plays, so that the chords are written once.
+Chords from: the track of the current song whose chords are followed, in the same scene. Renaming that track renames it
+here too. With no track, or a track with no clip in the scene, nothing moves.
+The clip's pattern is taken as written over chord I. Each note moves up the scale to the chord sounding as it starts.
+The track followed may write its chords by hand or make them with a Progression, and may be muted.
+"""
+
 # GuitarifyEditor
 HELP_GUITARIFY_EDITOR = """
 Plays a clip's chords and notes as a guitar does. Each half can be switched off.
