@@ -173,3 +173,138 @@ bookend the song.
 
 The exits from the song itself mirror these. The standard ones are the fade, the hard stop on a final hit, the tag (the last
 line repeated three times), the ritardando, and the last chord left to ring.
+
+## Section Lengths, Bridges and Transitions, at Length
+
+A note Claude wrote in another conversation, kept nearly whole. (practice throughout)
+
+### Typical Lengths
+
+Nearly everything in rock and pop comes in multiples of four bars, and most sections are 8 or 16. These are typical lengths in 4/4:
+
+| Section | Typical length | Notes |
+| --- | --- | --- |
+| Intro | 4 or 8 bars | Often 2 or none in current pop |
+| Verse | 8 or 16 | 12 in blues-based songs |
+| Pre-chorus | 4 or 8 | |
+| Chorus | 8 or 16 | Often an 8-bar idea played twice |
+| Post-chorus | 4 or 8 | An instrumental or chanted hook |
+| Turnaround | 2 or 4 | A short reset between chorus and next verse |
+| Bridge | 8 | Hence the British name "middle eight"; sometimes 4 or 16 |
+| Solo | 8 or 16 | 12 over a blues form |
+| Breakdown | 4 or 8 | |
+| Outro | 4 or 8, or a fade | |
+
+### Solos
+
+A solo usually borrows a section's chords, so it inherits that section's length. Most are played over the verse or chorus
+progression. Three sizes cover most cases:
+
+- 8 bars: a half-verse solo, common in pop and radio edits.
+- 16 bars: the standard rock solo, one full verse or chorus.
+- 12 or 24 bars: one or two choruses of a blues.
+
+Classic rock stretches well past this, especially at the end of a song. Closing solos like the ones in "Comfortably Numb" and
+"Free Bird" run for dozens of bars, and live versions go longer. Current pop tends the other way: often there is no solo, or the
+slot goes to a 4- or 8-bar instrumental hook.
+
+### Thinking in Seconds
+
+Tempo changes what a bar count means, so it helps to convert. At 120 BPM there are 30 bars per minute, so 8 bars is 16 seconds
+and a 3:30 song is about 105 bars. Most sections last 15 to 30 seconds whatever the tempo, which is why fast songs use 16-bar
+sections where slow ballads use 8.
+
+### Exceptions
+
+Writers often bend the grid on purpose:
+
+- **Extensions**: an extra bar or two at the end of a section to delay the chorus.
+- **Cut bars**: a bar of 2/4, or a dropped bar, so the next section arrives early.
+- **Odd phrases**: the verse of "Yesterday" is seven bars long.
+- **Short second verses**: the second verse is often half the length of the first, to reach the chorus sooner.
+
+These deviations work for the same reason as other broken rules (`PLAYER_STYLE.md`): the four-bar habit is strong enough that a
+listener feels the extra or missing bar.
+
+### Bridges
+
+A bridge is designed in opposition to the rest of the song: whatever the verse and chorus have used most, the bridge uses least.
+Transitions run on three levers: a signal that change is coming, a shift in energy, and a harmonic pull from an unstable chord to
+a stable one.
+
+The bridge usually comes once, after the second chorus, and its job is to make the final chorus sound fresh. Writers look at what
+the song has done so far and move away from it:
+
+- **Harmony.** If the verse and chorus start on the tonic, the bridge starts somewhere else, most often on IV, vi or ii. A
+  major-key song often leans toward its relative minor here. Borrowed chords like flat VI and flat VII, or a brief change of key,
+  are common.
+- **Harmonic rhythm.** A song built on a fast four-chord loop might hold one chord for the whole bridge. A song with slow, static
+  harmony might start changing chords twice a bar.
+- **Melody.** The bridge takes a register the chorus has not used, and changes the phrasing. If earlier melodies start on the
+  downbeat, the bridge starts off the beat. Short busy phrases give way to long notes, or the reverse.
+- **Groove.** Half-time is the classic move. Others are double-time, stop-time hits, or dropping the drums entirely.
+- **Texture.** A loud song strips down to voice and one instrument. A sparse song may add strings or stacked vocals.
+- **Lyrics.** The bridge gives a new angle: a twist, a different point in time, or the wider view.
+
+The type of song shapes the choice: loop-based pop often keeps the same chords and changes only the production (the "breakdown
+bridge"); rock often uses a new riff, a new key, or the guitar solo as the bridge; EDM uses the breakdown before the final drop;
+hip-hop may switch the beat.
+
+### Verse Into Chorus: The Lift
+
+- The pre-chorus builds. The melody rises, the chords change faster, and the section ends on an unstable chord, usually V or IV,
+  that the chorus resolves.
+- Drums signal it. The usual signals are a snare build, a fill and a crash on the chorus downbeat.
+- The drop-out. The band cuts out for the last beat or bar, leaving silence or the vocal alone, and the chorus then enters at full
+  strength. Taking energy away just before adding it is one of the most reliable tricks in arranging.
+- The vocal pickup. The first words of the chorus begin before the bar line.
+- The arrangement widens. The melody jumps up in register, and backing vocals, doubled guitars and open hi-hats come in.
+
+### Chorus Into Verse: The Come-Down
+
+- A turnaround. Two or four bars of the intro riff reset the song.
+- A hard drop. The band crashes on the verse downbeat and thins out at once.
+- A ring-over. The last chorus chord sustains into the verse's first bar.
+- A partial retreat. The second verse keeps something from the chorus, such as extra percussion or a counter-line, so the energy
+  does not fall all the way back to verse one.
+
+### Into the Bridge
+
+- A direct cut. The chorus ends and the bridge starts on a new chord with a new texture. The abruptness is deliberate.
+- A pivot. The chorus's final tonic chord is reinterpreted, for example as V of IV, leading smoothly into a bridge that starts on
+  IV. Or a deceptive move to vi opens the bridge in the relative minor.
+- A drop-out. Everything cuts but a pad or one instrument.
+- A fill into half-time.
+
+### Out of the Bridge
+
+This is usually the biggest transition in the song.
+
+- Dominant preparation. The bridge ends on V, often held for a bar or two with a crescendo, a snare roll and a rising line.
+  Classical theory calls this the retransition.
+- Layered rebuild. After a breakdown, instruments re-enter one at a time, ending with the song's largest fill.
+- Stop and slam. A beat of silence, then the full chorus.
+- The breakdown chorus. The bridge leads into a quiet chorus with voice and minimal backing, and then the full band enters for
+  the repeat.
+- The key change. The bridge ends on V of a key a half step or whole step higher, and the last chorus arrives in the new key.
+
+### Into the Ending
+
+- The final chorus is doubled, with ad-libs, higher harmonies or a new counter-melody on the repeat.
+- The tag. The last line repeats two or three times. Often a deceptive cadence (V to vi) delays the final tonic, so the true
+  ending feels earned.
+- An outro vamp. The hook or intro riff loops, under a fade or under solos.
+- A bookend. The intro returns to close the song.
+- A hard ending. The band plays a final figure together and stops, or holds the last chord while the cymbals swell. Sometimes it
+  slows down first.
+- A cold stop on the last word.
+- A coda with new material, as in "Hey Jude" and "Layla".
+
+### Intro Into the First Verse
+
+The exits are above ("How Intros Begin and Exit, at Length"): fill and crash, the drop-down, the stop with a vocal pickup, and
+the build. Two further points:
+
+- **Carry-over.** Part of the intro usually continues, such as the riff, the drum groove or a pad, so the verse sounds like the
+  same song.
+- **Headroom.** The first verse is normally the sparsest full section. Starting small leaves room for every later section to grow.

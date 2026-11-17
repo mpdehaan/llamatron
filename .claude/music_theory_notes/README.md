@@ -7,7 +7,9 @@ of it written for people.
 ## The Rules of These Notes (the user's)
 
 - The notes run ahead of the code: a note need not match what is built, and a build is checked against the notes.
-- No band, artist, composer, song or other work is named, only genres and subgenres. No melody, riff, bass line or lyric is written down.
+- No band, artist, composer, song or other work is named, only genres and subgenres, with one exception: a note Claude wrote in
+  another conversation, which the user hands over as Claude's own, keeps the names it has, in these notes only. A name the user
+  mentions in conversation is never written down anywhere. No melody, riff, bass line or lyric is written down.
 - Principles are stated and summarized, high level, in Claude's own words. No source is listed; a reader can search for alternatives.
 - What may go in: what public searching finds, general theory, and the theory books the user lent, paraphrased as principles with no
   passage, example or exercise taken. Nothing learned from the homage work goes in.
@@ -15,7 +17,7 @@ of it written for people.
   players commonly say and do), **judgment** (Claude's own, to be tested by listening).
 - Claude adds to a file whenever the work teaches something, and reads the subject's file before building in its area.
 - A note Claude wrote in another conversation, which the user hands over as Claude's own, is folded in nearly whole, in a section
-  that says so, with any band, artist, composer or work it names taken out as the rule above requires.
+  that says so, and may keep the names it has.
 
 ## How the Research Is Done (the user's)
 
@@ -26,7 +28,7 @@ of it written for people.
 
 ## The Files
 
-- `SONG_STRUCTURE.md`: sections, forms, lengths, how songs start and end.
+- `SONG_STRUCTURE.md`: sections, forms, lengths, how songs start and end; at length: how intros begin and exit, typical lengths, bridges, and the transition at every join.
 - `HOOKS.md`: what a hook is, where hooks go, repetition and variation.
 - `MELODY.md`: the ways a melody is made and made interesting.
 - `HARMONY.md`: progressions, borrowed chords, chords across sections.
