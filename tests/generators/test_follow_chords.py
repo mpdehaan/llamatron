@@ -22,6 +22,7 @@ from llamatron.composition.file_format import Accidental, ChordSymbol, ClipSlotS
 from llamatron.composition.generator_settings import FollowChordsSetting, ProgressionSetting
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
+from llamatron.music.note import NoteName
 from llamatron.strings.errors import ERR_CIRCULAR_FOLLOW
 from tests.playback.test_registers import OCTAVE, STEP_SIZE, pattern, song
 from tests.support.rendering import render_data, setlist_from_data
@@ -162,7 +163,7 @@ class TestNothingToFollow(unittest.TestCase):
 
     def test_a_drum_pattern_is_left_alone(self):
         data = following_data()
-        data[Section.PATTERNS][FIGURE].update({PatternSetting.DRUM: True, Row.DEGREE: ['C', 'E', 'G', 'C']})
+        data[Section.PATTERNS][FIGURE].update({PatternSetting.DRUM: True, Row.DEGREE: [NoteName.C, NoteName.E, NoteName.G, NoteName.C]})
         with_drums = pitches(data)[SYNTH]
         data[Section.SCENES][0][SceneSetting.TRACKS][SYNTH].pop(ClipSlotSetting.CHAINS)
         self.assertEqual(with_drums, pitches(data)[SYNTH])

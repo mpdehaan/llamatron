@@ -22,6 +22,7 @@ internal_tools/analysis_and_generation/fetch_corpus.sh                          
 internal_tools/analysis_and_generation/corpus_tables.sh                     # every corpus source measured into tables in .corpus/tables/, rebuilt when the analyzer changes (--rebuild to force)
 .venv/bin/python internal_tools/show_midi.py some.mid                     # a MIDI file's notes as names and lengths
 .venv/bin/python internal_tools/loose_strings.py src                      # string literals inside functions, which should be constants
+.venv/bin/python internal_tools/repeated_values.py tests                  # strings written out that repeat a value the program names, to read before committing a test (internal_tools/repeated_values.sh)
 .venv/bin/python internal_tools/show_keys.py                              # every key binding of the tracker, or one page's, or every binding that has a key (internal_tools/keys.sh)
 .venv/bin/python internal_tools/demo_features.py                          # which features each example uses, and which no demo shows
 .venv/bin/python internal_tools/demo_summary.py                           # one line per example: its length when played, scenes, tracks and a few features, plain, bordered or Markdown (internal_tools/demo_summary.sh), and --write-docs puts the Markdown table into docs/DEMOS.md (internal_tools/demo_table.sh)

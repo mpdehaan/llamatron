@@ -100,6 +100,15 @@ program's constant in a test too, and any other literal a test needs is a named 
 top of the test file or a variable, never inline; test data of the test's own, like a pattern it
 calls `tune`, can stay literal.
 
+**A value the program names is never written out, in data least of all** (the user's rule, made stricter). A file's key, a
+setting's name, a note's name, a scale type, a kind of generator, a section: wherever a test or a tool needs one, in a call, a
+comparison or a dictionary of sample data, it is the program's constant, `ScaleSetting.ROOT`, `NoteName.A`,
+`scale_type_name(ScaleType.MINOR_PENTATONIC)`, never `'root'`, `'A'` or `'minor pentatonic'`, so that a search for a constant
+finds every use and a renamed value breaks nothing quietly. Sample data is no exception. Before committing a new or changed
+test or tool, Claude runs `internal_tools/repeated_values.py -v` on it and names every value it lists, but for a name of the
+test's own that only happens to match, such as a track a test calls bass. The older tests hold many such strings; they are
+brought over file by file as agreed with the user, and a file touched is brought over whole.
+
 **Tests use the program's contract.** They work with the objects through their constructors,
 getters and setters, and with the document through its methods, never by checking raw YAML or an
 object's internal data structures directly; reading a file with `yaml.safe_load` to learn what it

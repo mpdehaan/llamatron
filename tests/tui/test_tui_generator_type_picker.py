@@ -29,7 +29,8 @@ from tests.support.ui_testing import UITest, back_key, forward_key
 
 HEADINGS = sorted([GeneratorGroup.ARRANGEMENT, GeneratorGroup.ARTICULATION, GeneratorGroup.HARMONY, GeneratorGroup.RHYTHM, GeneratorGroup.TIMING, GeneratorGroup.TRANSITIONS, GeneratorGroup.VOICING])
 HARMONY_PLACE = HEADINGS.index(GeneratorGroup.HARMONY)
-SEARCHED = 'strum'
+# What is typed to search for Strum: its name in small letters, since a search ignores case.
+SEARCHED = MSG_STRUM_LABEL.lower()
 
 
 def heading(*, name, is_open):
