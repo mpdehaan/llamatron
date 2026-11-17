@@ -38,6 +38,7 @@ from llamatron.macro_composer.joins import DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS
 from llamatron.macro_composer.melody import ANSWER, ANSWER_RHYTHMS, ENGINE, FIRST_HOOK_TAKE, GRID, HOOK, HOOK_TAKE, LINE, RHYTHMS, SPAN, has_hook, sketched
 from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, DRUM, FLAT, HITS, KIT, LINES, LOUD, NONE, OCTAVE, REST, SHARP, SOFT, STEP, STEPS, VELOCITY, CHORD, clamped, drum_rows
 from llamatron.macro_composer.players import player_name
+from llamatron.macro_composer.riffs import FIRST_TAKE, RIFF, RIFF_BARS, RIFF_KINDS, RIFF_LINE, RIFF_ROLES, RIFF_TAKE, riff_line
 from llamatron.macro_composer.song_plan import PLAN_OF_SONG, SongPlan
 from llamatron.support.safe_yaml import load_safely
 from llamatron.composition.limits import MAX_GM_SOUND, MIN_GM_SOUND
@@ -801,6 +802,9 @@ def arranged(*, style, song):
     # A song has a hook where the song or its style asks for one and a section of its form marks a line as one.
     has_a_hook = bool(song.get(HOOK, style.get(HOOK, False))) and any(has_hook(plan) for plan in plans)
     beside = song.get(BESIDE, {})
+    # The song's riff, where it has one, and how many eighths a bar of it lasts.
+    riff = song.get(RIFF) or {}
+    riff_eighths = int(bar_length(meter) * EIGHTHS_IN_WHOLE)
     under = UnderLead(busy=beside.get(BESIDE_BUSY, USUAL_BESIDE_BUSY), habits=habits, grid=habits[GRID], scale_type=scale_type, seed=song.get(SEED, 0))
     for count, name in enumerate(form_names, start=1):
         section = section_of(name=name, style=style, song=song)
@@ -881,6 +885,17 @@ def arranged(*, style, song):
                             if figure not in parts:
                                 parts[figure] = held_back
                                 shaped.append(figure)
+                    if role[ROLE] in riff.get(RIFF_ROLES, []) and section[KIND] in riff.get(RIFF_KINDS, []) and not bars % RIFF_BARS:
+                        # The song's riff takes the place of the player's figure here: single notes, moved by the chords and played as written, with none of the figure's own generators.
+                        riff_part = MSG_PART_OF_SECTION.format(role[ROLE], RIFF)
+                        if riff_part not in parts:
+                            line = riff.get(RIFF_LINE) or riff_line(seed=song.get(SEED, 0), take=riff.get(RIFF_TAKE, FIRST_TAKE), eighths=riff_eighths)
+                            parts[riff_part] = {STEP: EIGHTH, OCTAVE: role[OCTAVE], VELOCITY: role[VELOCITY], LINES: [[dict(note) for note in line]]}
+                            shaped.append(riff_part)
+                        riff_chain = MSG_PART_OF_SECTION.format(chain, RIFF)
+                        chains[riff_chain] = [{PROGRESSION: progression}, {RUSH: role[ROLE]}, {DRAG: role[ROLE]}]
+                        play[role[ROLE]] = {PART: riff_part, CHAINS: [riff_chain]}
+                        continue
                     leaves = section.get(LEAVES) or {}
                     if leaves.get(TAIL) in (DROP_OUT, STOPS):
                         # The band's last bar together: the figure is written out for the whole section, so that its last bar alone differs.

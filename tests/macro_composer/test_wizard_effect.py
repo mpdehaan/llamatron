@@ -84,6 +84,7 @@ PHRASING_WAY = 'how the lines breathe'
 HOOK_PART = "a part of the hook's kind"
 HOOK_LINE = "the hook's notes written by hand"
 A_LINE = "a line's own"
+A_RIFF = 'the riff'
 COMES_IN = 'where a player comes in'
 REACTS_TO_ENERGY = 'how a player reacts'
 START = 'a way of starting'
@@ -322,6 +323,18 @@ def every_choice(choices):
         if choices.reacts(role):
             # A player who reacts is heard to at one end of the gauge at least: an even player may play as the band does where the band is never held back.
             yield REACTS_TO_ENERGY, role, lambda made, role=role: set_reacts_where_heard(made=made, role=role), [nothing_first]
+    # The riff: given to the first players who can play one, played in each other place, made again, and its first note moved by hand.
+    if choices.riff_players_offered():
+        players = choices.riff_players_offered()[-1]
+        with_riff = lambda made, players=players: made.set_riff(players=players)
+        yield A_RIFF, tuple(players), with_riff, [nothing_first]
+        staged = WizardChoices.from_data(choices.to_data())
+        with_riff(staged)
+        for said in staged.riff_said_offered():
+            if said != staged.get_riff_said():
+                yield A_RIFF, said, lambda made, players=players, said=said: made.set_riff(players=players, said=said), [with_riff]
+        yield A_RIFF, 'another take', lambda made: made.new_riff(), [with_riff]
+        yield A_RIFF, 'notes by hand', lambda made: made.set_riff_line(first_note_moved(made.riff_line())), [with_riff]
     # How the song starts and ends: each way but the one the song has, another first player under layers, and another length of a stage.
     for way in choices.starts():
         if way != choices.get_start():
