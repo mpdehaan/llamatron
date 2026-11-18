@@ -114,3 +114,14 @@ Since trades often are not written down, bands rely on cues:
 Some trading is built into the part itself. Hocket is the extreme case, with a melody split note by note. Balinese gamelan interlocks two
 players into one fast line, and funk guitarists split one rhythm part between them. Stride pianists do it alone, with the hands
 trading bass and chord.
+
+## A Riff Belongs to the Song
+
+- A band thinks of a riff as the song's, usually one, sometimes a second for a bridge, and each player has a role toward it: plays
+  it, doubles it an octave below or above, plays hits on its accents, or stays out; the drums put the kick on its accents.
+  Nobody is taught a riff: doubling is a role. (practice)
+- Under singing a riff simplifies: fewer notes, lower, muted, or its first half only; it is at full strength in the intro, between
+  the singer's lines and after the chorus. By section it is full, simplified, stripped to one player, or doubled by everyone, with
+  a turnaround in its last bar every four or eight bars. It follows the chords, moved with each or held while the bass moves, and
+  lasts one, two or four bars. (practice)
+- A riff has a relation to the hook: it is the hook, it answers the hook, or it stays under the hook. (practice)

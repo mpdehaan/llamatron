@@ -94,3 +94,25 @@ From a review asked for before the song wizard's melody panels were redrawn. (pr
 - What a person does with a written melody, in order of worth: hear it, alone and with the band; ask for another version of one
   section's; keep a phrase and rewrite around it; change who plays it or its octave; edit notes by hand, which few do.
 - A program should not ask about intervals, scale degrees, shares of chord notes or contours drawn bar by bar.
+
+## What Makes a Melody Good, and Why a Written One Sounds Like a Machine
+
+- In order of weight: a rhythm that repeats and is known when clapped; a motif of two to five notes that returns a little
+  changed; each phrase an arch, a rise or a fall, and the section's highest note once, about two thirds through, on a strong beat;
+  phrase endings that read as question, off the home note, then answer; phrases a singer can breathe between, not all one length;
+  notes of the chord on strong beats and long notes, thirds and fifths more than roots; mostly steps, a leap past a fourth followed
+  by a step back; a note outside the chord on a strong beat resolved by step; a range of about a tenth. Rules hold all of these and
+  give a melody that is not bad; only the ear picks a good one. (practice)
+- A melody sounds made by a machine when it wanders, so each phrase's last note and peak are chosen first and written toward;
+  when every phrase has one length and density; when each line draws a new rhythm, so one rhythm cell is drawn for a section and
+  used in most of its lines; when it has no motif; when every line peaks; when lines land on roots, which belong at final endings;
+  when the only silence is at line ends; and when leaps are random, where one leap a phrase is the phrase's feature. Walking by
+  step makes scales: the motif comes first, the plan second, and steps only fill between planned notes. (practice)
+- A song is one melodic design, not a melody for each kind of section: the chorus states the hook's motif whole, the verse has
+  another motif and may borrow one small feature of the hook once, late, the pre-chorus repeats a fragment that shortens and
+  rises, and the bridge is the contrast. A verse belongs to its chorus by family and is its opposite in behaviour: lower, busier,
+  open-ended, starting off the beat where the chorus starts on it. (practice)
+- What returns is not identical: the chorus is nearly the same each time, as is the pre-chorus, whose sameness says the chorus is
+  coming; a later verse keeps its contour and endings with a pickup changed, a few notes added or dropped and a last line that
+  leads on; the last chorus is lifted, by an extension, a higher last statement or a key rise; a harmony voice joins the hook
+  from the second chorus; the song's last line lands on the home note and holds. Small random changes each time are noise. (practice)

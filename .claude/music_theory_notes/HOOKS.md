@@ -131,3 +131,26 @@ The mumble-over-a-loop method maps closely onto llamatron. Write the loop as a p
 short candidate patterns under hook-style rules: a range of a sixth or less, at most one leap, ending on degree 1, 3 or 5, with
 some syncopation. A seed browser would let a person audition them and keep the ones that stick. The machine does the mumbling
 and the person picks the keepers, which is how many working writers already split the job.
+
+## What Makes a Hook Good, and How One Is Chosen
+
+- In order of weight: a rhythm that is known when clapped with no pitches, and unlike the verse's; three to seven notes in one or
+  two bars, sung in one breath; a small cell said twice, or a note repeated, then one change; three or four pitches within about a
+  sixth, with one leap at most; one surprise and only one, since two cancel; the long note a note of the chord on a strong beat or
+  pushed just ahead of one; one highest note, once a statement, above anything in the verse; room to breathe after it. All of
+  these can be held by rule. Whether the hook is loved is judged only by ear. (practice)
+- So a program makes many hooks, discards each that breaks a rule, and lets a person hear the rest and choose: hearing and
+  choosing comes first, nudges to the one chosen second (higher, lower, simpler, busier, a longer last note, more repetition,
+  another ending), and the technical parts are what an expert opens afterwards. A few candidates at a time, unlike one another,
+  each heard over the chorus's chords with the drums, never bare. (practice)
+- A hook is not one mould: the long note may come first, the figure may fall, or sit on one note. What a person can say of a hook
+  in plain words is its shape (rises, falls, up and back, stays put, jumps then steps back), where it starts against the beat,
+  how many notes it has, how high it reaches, and whether its ending is settled or left hanging. (practice)
+- A hook is commonly written to a title: one syllable a note, stressed syllables on strong beats or pushed just ahead, the main
+  word on the long note, small leading words as a pickup, and silence after the phrase. (practice)
+- By genre: an anthem's hook is a few long notes, high, on the beat, settled; in soul and funk the rhythm is the hook, short and
+  syncopated with much silence, answered by the band; a tuneful pop hook goes up and back with one leap and repeats at once; a
+  blues hook is a falling refrain line answered by an instrument, or a low riff; a dance track's hook is an instrumental cell of
+  one or two bars and two or three pitches, looped unchanged. Who carries the hook, a voice or an instrument, is part of it. (practice)
+- The hook is written first where the song is led by its singing, and everything else is written to make it land; where a song
+  is led by a riff the riff is written first and the singing is written into its gaps. (practice)

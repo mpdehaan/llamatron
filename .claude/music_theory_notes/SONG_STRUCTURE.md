@@ -308,3 +308,18 @@ the build. Two further points:
 - **Carry-over.** Part of the intro usually continues, such as the riff, the drum groove or a pad, so the verse sounds like the
   same song.
 - **Headroom.** The first verse is normally the sparsest full section. Starting small leaves room for every later section to grow.
+
+## What Makes a Chorus Good
+
+- A chorus differs from its verse on at least three counts: register, its centre a third to a fifth up; longer notes; fewer
+  notes; a plainer, more repeated rhythm; starting on or just before the downbeat where the verse started after it. (practice)
+- The hook is at an edge of the chorus, never inside a line: at the start of the first line or the end of the last, best both.
+  A chorus that closes on something other than the hook gives up the place a listener remembers. (practice)
+- The arrival is written: in the bar before, the band thins or stops, a fill, the harmony on the chord that pulls home, the
+  melody rising or silent; then the full band on the first beat. The chorus ends with the hook on the home note, held, and a bar
+  of space. It is as long as the verse or half of it, never longer the first time; the last may double. (practice)
+- The band lifts a chorus by adding one or two things, not everything: open cymbals, a firmer bass, a harmony voice on the hook
+  alone, a held pad or doubled guitar. How much a chorus lifts is one thing to a listener, moving register, note length,
+  density and the band together, and it means something else in each genre: in a dance track the lift is the arrangement. (practice)
+- A chorus fails when it does not lift, is too like the verse, is too busy, buries its hook, has no arrival or overstays; each
+  can be measured and a failed one written again. (practice)
