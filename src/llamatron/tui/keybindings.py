@@ -294,9 +294,10 @@ class WizardPage(FieldPage):
     # On a part with something to hear, as the hook, a tune or a section: the part of the song as it would be made, through FluidSynth.
     LISTEN = (Key.L, legends.KeyName.L, legends.MSG_LISTEN_WHAT)
     STOP_LISTENING = (Key.L, legends.KeyName.L, legends.MSG_STOP_LISTENING_WHAT)
-    # On a tune: another take of it, drawn for its kind of section alone.
-    NEW_TAKE = (Key.T, legends.KeyName.T, legends.MSG_NEW_TAKE_WHAT)
-    IN_HELP = [CLOSE, TO_TREE, DROP, TREE, CARRY, FOLD, INTO_FIELDS, INSERT, ADD, COPY, DELETE, MOVE, LISTEN, STOP_LISTENING, NEW_TAKE, *FieldPage.IN_HELP[1:]]
+    # On a riff or a section's melody: other notes written for it, after a question. On a riff: its name.
+    REGENERATE = (Key.R, legends.KeyName.R, legends.MSG_REGENERATE_WHAT)
+    RENAME_RIFF = (Key.N, legends.KeyName.N, legends.What.RENAME)
+    IN_HELP = [CLOSE, TO_TREE, DROP, TREE, CARRY, FOLD, INTO_FIELDS, INSERT, ADD, COPY, DELETE, MOVE, LISTEN, STOP_LISTENING, REGENERATE, RENAME_RIFF, *FieldPage.IN_HELP[1:]]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
 
@@ -973,6 +974,20 @@ class NewPatternDialog(Dialog):
     OK = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_OK_WHAT)
     PRESS = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_PRESS_WHAT)
     IN_HELP = [Dialog.CANCEL, SELECT, CHOOSE_BUTTON, LESS, MORE, TOGGLE, OK, PRESS]
+    IN_LEGEND = IN_HELP
+
+
+class NewRiffDialog(Dialog):
+    """The New Riff dialog: Up and Down pick a row, [ and ] step a choice, where Enter writes the riff, Space or Enter flips the toggle, and on the buttons Left and Right choose and Enter presses."""
+
+    SELECT = (ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
+    CHOOSE_BUTTON = (ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    LESS = ((Key.LEFT, *LESS_KEYS), legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = ((Key.RIGHT, *MORE_KEYS), legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    TOGGLE = (TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
+    WRITE = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_WRITE_RIFF_WHAT)
+    PRESS = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_PRESS_WHAT)
+    IN_HELP = [Dialog.CANCEL, SELECT, CHOOSE_BUTTON, LESS, MORE, TOGGLE, WRITE, PRESS]
     IN_LEGEND = IN_HELP
 
 

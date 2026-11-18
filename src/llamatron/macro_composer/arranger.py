@@ -37,7 +37,8 @@ from llamatron.macro_composer import band, characters
 from llamatron.macro_composer import drum_solo
 from llamatron.macro_composer.interplay import ANSWERS as ANSWERS_EVERY_LINE, DRAWN_ANEW as WAYS_DRAWN_ANEW, USUAL_BUSY as USUAL_BESIDE_BUSY, WAITS, WAYS as WAYS_BESIDE, UnderLead
 from llamatron.macro_composer.joins import DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL, TAIL_EIGHTHS, drum_tail, pieces_of_tail, with_tail
-from llamatron.macro_composer.melody import ANSWER, ANSWER_RHYTHMS, ENGINE, FIRST_HOOK_TAKE, GRID, HOOK, HOOK_TAKE, LINE, RHYTHMS, SPAN, has_hook, sketched
+from llamatron.macro_composer.melody import (ANSWER, ANSWER_RHYTHMS, BY_KIND, ENGINE, FIRST_HOOK_TAKE, GRID, HEIGHT, HOOK, HOOK_TAKE, LINE, LINE_BUSY, MELODY_ASKS, REPEATS, RHYTHMS, SPAN, has_hook,
+                                             plan_as_asked, sketched)
 from llamatron.macro_composer.loudness import NORMAL, USUAL_DYNAMICS, drum_levels, in_proportion, note_levels, scaled, spread, with_own
 from llamatron.macro_composer.notation import ACCENT, ACCIDENTAL, DEGREE, DRUM, FLAT, GHOST, HITS, KIT, LINES, LOUD, NONE, OCTAVE, REST, SHARP, SOFT, STEP, STEPS, STEP_SIZE, VELOCITY, CHORD, clamped, drum_rows
 from llamatron.macro_composer.players import player_name
@@ -204,6 +205,11 @@ MORE_RIFFS = 'more_riffs'
 # A riff's notes written by hand: a pattern's data as its first player plays it, which its other players play in their own octaves.
 RIFF_OWN = 'own'
 MORE_RIFF_SEED = '{seed} riff {name}'
+# The player a riff was written for, who plays its chords and in whose octave its notes are written, where that is not the first
+# of the players who play it; and the name a riff's notes are drawn by, where that is not the riff's name, so that a riff
+# renamed or copied keeps its notes.
+RIFF_FOR = 'for'
+RIFF_DRAWN_AS = 'drawn_as'
 # Who plays the tune: a player's name for each kind of section, and one for the whole song, the player the genre gives the tune
 # where neither says; NOBODY for a kind of section that has no tune.
 TUNE_BY = 'tune_by'
@@ -869,7 +875,13 @@ def section_of(*, name, style, song):
     kind = of_song.get(KIND, name)
     if kind not in style[SECTIONS] and not of_song:
         raise ValueError(errors.ERR_NO_SUCH_SECTION.format(name))
-    return {**style[SECTIONS].get(kind, {}), **of_song, KIND: kind}
+    section = {**style[SECTIONS].get(kind, {}), **of_song, KIND: kind}
+    asks = song.get(MELODY_ASKS)
+    if asks and section.get(PLAN):
+        # What the song asks of its melodies is laid over the plan: for the whole song, and for this kind of section.
+        of_kind = asks.get(BY_KIND, {}).get(kind, {})
+        section[PLAN] = plan_as_asked(plan=section[PLAN], height=of_kind.get(HEIGHT), busy=of_kind.get(LINE_BUSY, asks.get(LINE_BUSY)), repeats=asks.get(REPEATS))
+    return section
 
 
 def tempo_of(*, style, song, picks):
@@ -982,7 +994,7 @@ def arranged(*, style, song):
         return SongRiff(name=name, riff=riff, notes=notes, count=riff_bars_of(line=notes, eighths=riff_eighths) or 1, split=split_bars(line=notes, eighths=riff_eighths), players=players)
     riffs = [riff_made(riff=song.get(RIFF, style.get(RIFF)) or {}, name=None, seed=song.get(SEED, 0))]
     for more in song.get(MORE_RIFFS, []):
-        riffs.append(riff_made(riff=more, name=more[NAME], seed=zlib.crc32(MORE_RIFF_SEED.format(seed=song.get(SEED, 0), name=more[NAME]).encode())))
+        riffs.append(riff_made(riff=more, name=more[NAME], seed=zlib.crc32(MORE_RIFF_SEED.format(seed=song.get(SEED, 0), name=more.get(RIFF_DRAWN_AS, more[NAME])).encode())))
 
     def chords_in(section, *, shared=False):
         """A section's chords, its last bar set up for what follows where the section says so."""
@@ -1222,14 +1234,15 @@ def arranged(*, style, song):
                     if riff_here:
                         # The song's riff takes the place of the player's figure here: moved by the chords and played as written, with none of the figure's
                         # own generators. Its first player plays its chords, and a player under the first its notes alone.
-                        first = role[ROLE] == riff.players[0]
+                        written_for = riff.riff.get(RIFF_FOR, riff.players[0])
+                        first = role[ROLE] == written_for
                         riff_part = composer_text.MSG_PART_OF_SECTION.format(role[ROLE], riff.name or RIFF)
                         if None in riff_here:
                             # A riff that stays at home is written out for the whole section: the riff over the home chord, and every other chord held.
                             riff_part = composer_text.MSG_PART_OF_SECTION.format(name, riff_part)
                         if riff.riff.get(RIFF_OWN) is not None:
                             # A riff written by hand is played as written, each player in the player's own octave.
-                            first_role = next(other for other in roles if other[ROLE] == riff.players[0])
+                            first_role = next(other for other in roles if other[ROLE] == written_for)
                             parts.setdefault(riff_part, {RAW: in_octaves_of(pattern=riff.riff[RIFF_OWN], by=role[OCTAVE] - first_role[OCTAVE], group=role[ROLE])})
                         elif riff_part not in parts:
                             lines = [riff.notes] if None not in riff_here else [held_bar(eighths=riff_eighths, chord=first) if bar is None else riff.split[bar] for bar in riff_here]

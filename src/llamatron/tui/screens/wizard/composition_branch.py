@@ -21,13 +21,15 @@ from llamatron.strings import errors, labels, marks, messages
 from llamatron.tui.drawing import INDENT, Style
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.chords_branch import ChordsBranch
-from llamatron.tui.screens.wizard.hooks_branch import HooksBranch
 from llamatron.tui.screens.wizard.melody_branch import MelodyBranch
-from llamatron.tui.screens.wizard.tunes_branch import TunesBranch
+from llamatron.tui.screens.wizard.riff_assign_branch import RiffAssignBranch
+from llamatron.tui.screens.wizard.riffs_branch import RiffsBranch
+from llamatron.tui.screens.wizard.section_melody_branch import SectionMelodyBranch
+from llamatron.tui.screens.wizard.section_players_branch import SectionPlayersBranch
 
 
 class CompositionBranch(Branch):
-    """The branches Chords, Melody, Tunes and Hooks, with what each is set to shown at a glance; the words and the bass lines are to come."""
+    """The branches Chords, Melody, one for each kind of section that has a melody, Riffs, Riff Assign and Section Players, with what each is set to shown at a glance."""
 
     __slots__ = ()
 
@@ -39,7 +41,9 @@ class CompositionBranch(Branch):
 
     def children(self):
         page = self.page()
-        return [ChordsBranch(page=page), MelodyBranch(page=page), TunesBranch(page=page), HooksBranch(page=page)]
+        choices = self.choices()
+        melodies = [SectionMelodyBranch(page=page, kind=kind) for kind in choices.tune_kinds()] if choices.is_ready() else []
+        return [ChordsBranch(page=page), MelodyBranch(page=page), *melodies, RiffsBranch(page=page), RiffAssignBranch(page=page), SectionPlayersBranch(page=page)]
 
     def notes(self, width):
         """Return each branch under this one with what it is set to, leaving out a branch the subgenre has nothing to choose in; or what to choose first."""

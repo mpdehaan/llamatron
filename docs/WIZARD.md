@@ -20,7 +20,7 @@ Another genre brings another band and another form, so choosing one after settin
 
 ## Band
 
-The Band panel chooses who is in the band. Each player is switched in or out, Sounds chooses the band's set of instrument sounds, Guitarists chooses one guitar or two, Tune played by names the player who carries the tune, and Answered by names the player who answers the tune in the gaps between its lines.
+The Band panel chooses who is in the band. Each player is switched in or out, Sounds chooses the band's set of instrument sounds, Guitarists chooses one guitar or two, Melody played by names the player who carries the melody, and Answered by names the player who answers the tune in the gaps between its lines.
 
 ![The song wizard's Band panel](screenshots/wizard_band.svg)
 
@@ -34,7 +34,7 @@ Edit Player opens the player's [Musician](generators/MUSICIAN.md), the generator
 
 ## Composition
 
-Composition holds the panels of what the song is made of: its chords, its melody style, its tunes and its hook.
+Composition holds the panels of what the song is made of: its chords, its melodies, its hook, its riffs and what each player plays in each kind of section.
 
 ### Chords
 
@@ -44,23 +44,35 @@ The Chords panel chooses the chord progression: one of the genre's progressions 
 
 ### Melody
 
-The Melody panel chooses the style the tunes are written in, such as a walk by steps or a tune of leaps, and how the tune is delivered. A singer or a horn player delivers a tune in lines, with a breath after each and a rise toward the line's main note, and the Phrasing switch has the tune's player do the same, through a [Phrasing](generators/PHRASING.md) generator that every clip of the tune runs. Edit Phrasing opens that generator's page, where the line's length, the breath, the rise and fall and how the notes are joined are chosen; `ESC` there comes back to the wizard. With the switch off the tune is played as written.
+A song has more than one melody: the verses share one, the choruses another, and a bridge has its own. The Melody panel holds what those melodies have in common. Melody played by chooses the player who carries them. Busy chooses how many notes a line holds, Range how far a melody travels from its lowest note to its highest, and Repeats how much the lines of a section repeat one another. Character chooses how a melody moves: by steps, in the notes of the blues, by leaps, or as the genre writes it. Each field starts at what the genre does, and a field shows only the values that change the song. A singer or a horn player delivers a melody in lines, with a breath after each and a rise toward the line's main note, and the Phrasing switch has the melody's player do the same, through a [Phrasing](generators/PHRASING.md) generator that every clip of the melody runs.
 
 ![The song wizard's Melody panel](screenshots/wizard_melody.svg)
 
-### Tunes and Riffs
+### Section Melodies
 
-The Tunes and Riffs panel has a heading for each kind of section of the form. A kind of section that has a tune holds that tune, one for the verses and one for the choruses, so that every verse plays the same tune as verses do. `Space` or `ENTER` on a heading opens the heading, which holds the Tune of that kind of section and its Played by field. Tune played by chooses the player who carries the tune through the song, a singer, a lead guitar or any player of the band but the bass and the drums, and the Played by field of a kind of section goes by the song until another player is chosen there, or nobody, for a section with no tune. The player given the tune plays it in place of that player's usual part. Hook line, under Tune played by, names the line of the tune that is the song's hook, the line a listener goes away humming, such as "chorus, line 1"; "(none)" makes a song with no hook. `ENTER` (edit notes) on a tune opens the tune in the pattern editor, where the notes are edited as any pattern's are, and `ESC` there comes back to the wizard. A tune that was edited is marked `(edited)`, belongs to the person from then on, and is never written over by another choice; `Bksp` gives the tune back to the wizard. When a later choice changes the chords under an edited tune, the wizard asks whether to fit the tune: yes moves each long note that clashes with its new chord to the nearest note of that chord and leaves the short passing notes, and no keeps the tune as written. `T` (new take) writes another tune for that kind of section alone, leaving the rest of the song as it was, and the row then says which take it shows.
+Each kind of section that has a melody has a panel of its own under Melody, named for the kind, such as Verse or Chorus. Height sets the melody high, in the middle or low against the song's other melodies, since a chorus usually sits above its verse. Busy gives the kind of section its own answer in place of the song's. Notes opens the melody in the pattern editor, where the notes are edited by hand, and `Bksp` on Notes gives edited notes back to the wizard. Listen plays the melody, as `L` (listen) does, and Regenerate, or `R` (regenerate), writes another melody for that kind of section after asking, keeping nothing of the old one.
 
-A riff is a short figure a player repeats in place of that player's usual part, as a guitar and a bass play one under a verse. Add Riff under a heading adds a riff to that kind of section: a new riff the wizard writes, a blank riff to write by hand, or a riff already in the song, which the same players then play with the same notes in that kind of section too. A new or a blank riff asks who plays the riff, one player or two together. Only players with their hands free are offered: a player has one riff in a section, and the player of the section's tune has none. Each riff has a row with its name and its players, where `ENTER` (edit notes) opens the riff in the pattern editor as a tune opens, `T` (new take) writes other notes for the riff and `Bksp` takes the riff out of that kind of section. A riff that was edited is marked `(edited)` and is kept through a change of genre, as an edited tune is; where two players share the riff, the second plays the edited notes in that player's own octave. The riff the genre itself brings, where the genre has one, is still chosen on the Hooks panel. When a player who has a riff is switched out of the band on the Band panel, the wizard asks who takes the riff over, offering each player free to play it, or whether the riff is removed; `ESC` keeps the player in the band.
+The panel of the kind of section that says the hook line, the phrase a listener goes away humming, also holds the hook: the Hook line switch, who plays the hook in the intro, New hook, which draws another, the parts of the hook's kind, and a picture of the hook's notes.
 
-![The song wizard's Tunes and Riffs panel](screenshots/wizard_tunes.svg)
+![The panel of the chorus's melody](screenshots/wizard_section_melody.svg)
 
-### Hooks
+### Riffs
 
-The Hooks panel switches the song's hook on, the short phrase a listener goes away humming, and shows the hook's notes. Its sections choose the hook's kind, where in the song the hook is said, and the riff, a short figure a player repeats under the song. New hook draws another.
+A riff is a short figure of 1 or 2 bars that a player repeats in place of the accompaniment, as a guitar and a bass play one under a verse. The Riffs panel lists the song's riffs under a heading for each player a riff can be written for, with how many bars each lasts and the kinds of section that use it. `A` (add) on a heading, or `ENTER` on its `+` row, opens the New Riff dialog, which asks how many bars the riff lasts, whether it is made of notes or of notes and chords, whether it follows the chords, and what fills the gaps between the accents, and then writes the riff. On a riff, `ENTER` opens its notes in the pattern editor, `N` (rename) names it, `C` (copy) copies it for a player, in that player's octave, `R` (regenerate) writes other notes for it after asking, `L` (listen) plays it alone, and `Bksp` (delete) deletes it after saying where it is used. A riff exists from the moment it is written, whether or not anybody plays it yet, and a genre built on a riff arrives with that riff written.
 
-![The song wizard's Hooks panel](screenshots/wizard_hooks.svg)
+![The song wizard's Riffs panel](screenshots/wizard_riffs.svg)
+
+### Riff Assign
+
+The Riff Assign panel chooses the riffs each player knows. A player knows the riffs written for that player, and `A` (add) on the player's heading gives the player a riff written for another, which the player then plays in the player's own octave. `Bksp` (delete) on a riff takes it from the player and leaves the riff in the song.
+
+![The song wizard's Riff Assign panel](screenshots/wizard_riff_assign.svg)
+
+### Section Players
+
+The Section Players panel chooses what each player plays in each kind of section. Under the heading of a kind of section, each player with a choice there has a field: accompaniment, the part the genre writes for the player; melody, for a player who can carry it; or a riff the player knows. A player given the melody takes it from the player who had it in that kind of section.
+
+![The song wizard's Section Players panel](screenshots/wizard_section_players.svg)
 
 ## Form
 

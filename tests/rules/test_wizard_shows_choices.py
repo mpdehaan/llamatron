@@ -37,7 +37,9 @@ OTHER_CHANGES = ('add_section', 'copy_section', 'remove_section', 'move_section'
 # A riff's notes are written in the pattern editor; its notes as one line are kept from songs made before that, and are given
 # back from the page with the riff's pattern.
 # How a written tune's lines breathe is the wizard's own; a song kept from before the Phrasing generator still holds what was chosen.
-NOT_ON_THE_PAGE = ('set_own_sections', 'set_seed', 'set_song_extras', 'set_riff_line', 'set_phrasing', 'set_phrasing_way')
+# The last four are the writing methods and their gauges, which the Melody panel's Character chooses among, and a kind of section's own
+# player of the melody, which Section Players chooses through what each player plays there.
+NOT_ON_THE_PAGE = ('set_own_sections', 'set_seed', 'set_song_extras', 'set_phrasing', 'set_phrasing_way', 'set_melody', 'set_gauge', 'set_melody_setting', 'set_tune_played_by_in')
 A_CALL = r'\.{name}\b'
 SOURCE_FILES = '*.py'
 

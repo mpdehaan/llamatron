@@ -72,9 +72,9 @@ class FieldPage(Page):
     def is_open(self, heading):
         return heading.label in self.app.open_field_sections
 
-    def heading(self, *, label, is_set):
-        """Return a section's heading, closed until opened and remembered open or closed for the session."""
-        return Heading(label=label, is_set=is_set, toggle=lambda: self.toggle_section(label))
+    def heading(self, *, label, is_set, said=None):
+        """Return a section's heading, closed until opened and remembered open or closed for the session; said() is what it shows after its name, where that is not the mark of a value inside."""
+        return Heading(label=label, is_set=is_set, toggle=lambda: self.toggle_section(label), said=said)
 
     def heading_over_cursor(self):
         """Return the label of the heading the cursor is on or under, or None where the cursor is above every heading."""

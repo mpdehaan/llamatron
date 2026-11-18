@@ -53,6 +53,29 @@ HOOK_TAKE = 'hook_take'
 FIRST_HOOK_TAKE = 0
 HOOK_TAKE_SEED = '{} hook take {}'
 HIGHER = 'higher'
+# A line that sits lower than the song's lines do, as a verse under its chorus.
+LOWER = 'lower'
+# How busy a line is asked to be, a place on the gauges' scale, over what the writer would choose: the line takes a rhythm of
+# about so many notes.
+LINE_BUSY = 'busy'
+# What a song asks of its melodies over its style's plans: how much a section's lines repeat, how busy every line is, and, by
+# kind of section, how high the section's lines sit and how busy they are.
+MELODY_ASKS = 'melody_asks'
+REPEATS = 'repeats'
+REPEATS_A_LITTLE = 'a little'
+REPEATS_SOME = 'some'
+REPEATS_A_LOT = 'a lot'
+REPEATS_WAYS = (REPEATS_A_LITTLE, REPEATS_SOME, REPEATS_A_LOT)
+BY_KIND = 'by_kind'
+HEIGHT = 'height'
+LOW = 'low'
+MIDDLE = 'middle'
+HIGH = 'high'
+HEIGHTS = (LOW, MIDDLE, HIGH)
+# The letter of a line that repeats no other line of its section.
+LINE_OF_ITS_OWN = '{letter} {place}'
+# How many of a style's rhythms a line asked to be so busy chooses among: the nearest.
+BUSY_DECK = 2
 # Habits a planned song asks for: the tune's lines breathe, and the hook is of a kind, each take another.
 BREATHES = 'breathes'
 HOOK_KINDS = 'hook_kinds'
@@ -268,7 +291,13 @@ class StepWalk:
     def new_line(self, *, entry, under, dice):
         """A line nobody has heard yet."""
         rhythms = self._habits[ANSWER_RHYTHMS] if self._answers else self._habits[RHYTHMS]
-        start = self._home + (HIGHER_BY if entry.get(HIGHER) else 0) + dice.choice((0, 0, 1, -1, 2))
+        start = self._home + (HIGHER_BY if entry.get(HIGHER) else -HIGHER_BY if entry.get(LOWER) else 0) + dice.choice((0, 0, 1, -1, 2))
+        if LINE_BUSY in entry:
+            # A line asked to be so busy takes one of the style's few rhythms nearest that many notes, so that the lines are not all one rhythm.
+            ordered = sorted(rhythms, key=sounds_in)
+            place = round(share_of_gauge(entry[LINE_BUSY]) * (len(ordered) - 1))
+            first = max(0, min(place - BUSY_DECK // 2, len(ordered) - BUSY_DECK))
+            rhythms = ordered[first:first + BUSY_DECK]
         return line_of(rhythm=dice.choice(rhythms), ladder=self._ladder, start=self.within(start), low=self._low, high=self._high, chords=under,
                        grid=self._grid, scale_type=self._scale_type, dice=dice)
 
@@ -569,9 +598,11 @@ class Smart(StepWalk):
         rhythms = sorted(self._habits[ANSWER_RHYTHMS] if self._answers else self._habits[RHYTHMS], key=sounds_in)
         if not rhythms:
             raise ValueError(errors.ERR_MELODY_NEEDS_RHYTHMS)
-        wanted = self.gauge(GAUGE_NOTES) * (len(rhythms) - 1)
+        asked = entry.get(LINE_BUSY)
+        wanted = (self.gauge(GAUGE_NOTES) if asked is None else share_of_gauge(asked)) * (len(rhythms) - 1)
         nearest = sorted(range(len(rhythms)), key=lambda place: (abs(place - wanted), place))
-        deck = [rhythms[place] for place in nearest[:max(SMALLEST_DECK, len(rhythms) - 1)]]
+        # A line asked to be so busy chooses among the few rhythms nearest, so that what was asked is heard.
+        deck = [rhythms[place] for place in nearest[:max(SMALLEST_DECK, len(rhythms) - 1) if asked is None else BUSY_DECK]]
         random.Random(RHYTHM_SEED.format(self._song_seed, self._answers)).shuffle(deck)
         letter = entry.get(LINE)
         if letter not in self._letters:
@@ -587,7 +618,8 @@ class Smart(StepWalk):
 
     def centre(self, entry):
         """The place a line's shape turns about: the home note, or higher by a share of the range for a line marked higher."""
-        return self.within(self._home + (round(self._habits[SPAN] * HIGHER_SHARE) if entry.get(HIGHER) else 0))
+        lift = round(self._habits[SPAN] * HIGHER_SHARE)
+        return self.within(self._home + (lift if entry.get(HIGHER) else -lift if entry.get(LOWER) else 0))
 
     def in_chord(self, *, place, chord):
         return self._ladder[place][0] % NOTES_IN_OCTAVE in chord_notes(chord=chord, scale_type=self._scale_type)
@@ -937,6 +969,41 @@ def sketched(*, habits, plan, chords, scale_type, seed, answers, engine=None, vo
     given = dict(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
     made_by = Hooked(writer=writer, hook_take=hook_take, **given) if hook else writer(**given)
     return made_by.sketched(plan)
+
+
+def plan_as_asked(*, plan, height=None, busy=None, repeats=None):
+    """A section's plan as a song asks for its melody: every line sitting high, in the middle or low; every line so busy; and
+    the lines that are no hook repeating a lot, each then the section's first line with the last varied, or a little, each then
+    a line of its own. What is not asked is left as the plan has it."""
+    firsts = {}
+    first_places = {}
+    lasts = {}
+    for place, entry in enumerate(plan):
+        if not entry.get(HOOK):
+            firsts.setdefault(bool(entry.get(ANSWER)), entry.get(LINE, str(place)))
+            first_places.setdefault(bool(entry.get(ANSWER)), place)
+            lasts[bool(entry.get(ANSWER))] = place
+    asked = []
+    for place, entry in enumerate(plan):
+        entry = dict(entry)
+        if height is not None:
+            entry.pop(HIGHER, None)
+            entry.pop(LOWER, None)
+            if height != MIDDLE:
+                entry[HIGHER if height == HIGH else LOWER] = True
+        if busy is not None:
+            entry[LINE_BUSY] = busy
+        if not entry.get(HOOK) and not entry.get(LINE_NOTES) and repeats in (REPEATS_A_LITTLE, REPEATS_A_LOT):
+            entry.pop(VARIED, None)
+            answers = bool(entry.get(ANSWER))
+            if repeats == REPEATS_A_LOT:
+                entry[LINE] = firsts[answers]
+                if place == lasts[answers] and place != first_places[answers]:
+                    entry[VARIED] = True
+            else:
+                entry[LINE] = LINE_OF_ITS_OWN.format(letter=entry.get(LINE, str(place)), place=place)
+        asked.append(entry)
+    return asked
 
 
 def has_hook(plan):

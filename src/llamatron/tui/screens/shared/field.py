@@ -234,6 +234,8 @@ class Heading(Field):
     toggle: Callable = None
     value: Callable = None
     enter_what: str = None
+    # What the heading says after its name in place of the mark of a value inside, as a list's heading says how many it holds.
+    said: Callable = None
 
     def __post_init__(self):
         self.value = self.shown
@@ -243,6 +245,8 @@ class Heading(Field):
         return True
 
     def shown(self):
+        if self.said is not None:
+            return self.said()
         return marks.MSG_SECTION_SET if self.is_set() else NOTHING_SET
 
 

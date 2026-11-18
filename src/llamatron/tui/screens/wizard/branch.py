@@ -100,10 +100,10 @@ class Branch:
 
     # A branch that holds a list, or is one of a list, as the form and its sections: the page gives such a branch the tracker's keys for a list.
 
-    def takes(self):
-        """Return what draws another take of what the cursor is on in this branch's fields, a function of no arguments, or None where
-        nothing there has takes."""
-        return None
+    def field_keys(self):
+        """Return the keys of the branch's own that work while the cursor is in its fields, bound through the page, as a list's keys to
+        add, rename and copy are."""
+        return []
 
     def adds(self):
         """Return whether a new thing can be added from this branch."""

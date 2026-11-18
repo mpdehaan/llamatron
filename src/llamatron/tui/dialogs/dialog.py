@@ -48,6 +48,8 @@ class Dialog(BindsKeys, ModalScreen):
     title = NOTHING
     # Whether the keys are listed under the dialog: a dialog whose one button names its key leaves the list off.
     shows_legend = True
+    # Whether the dialog's yes deletes something, so that its title is red whatever it reads.
+    deletes = False
 
     def compose(self):
         with Container(id=DIALOG_ID):
@@ -70,7 +72,7 @@ class Dialog(BindsKeys, ModalScreen):
 
     def heading(self, width):
         """Return the dialog's top line, in red for a question whose yes gives something up, so that it isn't answered by habit."""
-        return Text(self.title, style=Style.DELETE_TITLE if self.title in TITLES_IN_RED else Style.BOLD)
+        return Text(self.title, style=Style.DELETE_TITLE if self.deletes or self.title in TITLES_IN_RED else Style.BOLD)
 
     def draw(self):
         if not self.is_attached or not self.query(DIALOG_VIEW_SELECTOR):
