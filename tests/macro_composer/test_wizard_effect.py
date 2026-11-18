@@ -168,9 +168,8 @@ PHRASING_OFFERED_VALUES = {PhrasingSetting.LINE_BARS: LINES_IN_BARS, PhrasingSet
 
 def song_of(choices):
     """The music of the song some choices make: the set's data without its notes, which say who plays in words, and without
-    the choices the song keeps, both of which differ where nothing that is heard does. The song is the song as written: each
-    player's trade of loudness is measured by playing the song, far slower than writing it, and is tested in test_loudness_steps.py."""
-    data = choices.written_setlist(name=A_NAME, version=VERSION).to_data()
+    the choices the song keeps, both of which differ where nothing that is heard does."""
+    data = choices.made_setlist(name=A_NAME, version=VERSION).to_data()
     song = {field: value for field, value in data[Section.SONGS][A_NAME].items() if field != WIZARD_CHOICES_KEPT}
     return {**{field: value for field, value in data.items() if field not in (NOTES_KEPT, Section.SONGS)}, Section.SONGS: song}
 
@@ -405,7 +404,7 @@ def every_choice(choices):
                     yield TUNE_PHRASING_CHOICE, (setting, value), lambda made, setting=setting, value=value: made.set_tune_phrasing({setting: value}), [nothing_first]
     if choices.has_musicians():
         # A player's Musician of the person's own, for each player whose clips run one: the loudest.
-        setlist, name = choices.written_for_trial()
+        setlist, name = choices.made_for_listening()
         for role in choices.roles_in():
             if setlist.get_song(name).has_generator(kind=GeneratorKind.MUSICIAN, name=choices.musician_name(role)):
                 yield PLAYER_MUSICIAN, role, lambda made, role=role: made.set_player_musician(role=role, settings={MusicianSetting.LOUDNESS: musician.LOUDEST}), [nothing_first]
@@ -520,10 +519,10 @@ def another_velocity(velocity):
 
 def set_reacts_where_heard(*, made, role):
     """Have a player react at the end of the gauge where the song is not the song the band's own reacting makes."""
-    usual = made.written_for_trial()[0].to_data()[Section.PATTERNS]
+    usual = made.made_for_listening()[0].to_data()[Section.PATTERNS]
     for reacts in (LOWEST_ENERGY, HIGHEST_ENERGY):
         made.set_reacts(role=role, reacts=reacts)
-        if made.written_for_trial()[0].to_data()[Section.PATTERNS] != usual:
+        if made.made_for_listening()[0].to_data()[Section.PATTERNS] != usual:
             return
 
 

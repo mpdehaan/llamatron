@@ -17,13 +17,16 @@
 """The step in loudness from one section to the next, and each player's trade of loudness for a much denser part."""
 
 import unittest
+import unittest.mock
 
-from llamatron.composition.file_format import Shape
+from llamatron.composition.file_format import FIXED_CHORDS, ChordSymbol, GuitarifySetting, Shape, Stroke
+from llamatron.composition.generator_settings import GuitarifySettings
 from llamatron.macro_composer import loudness_steps
 from llamatron.macro_composer.breaks import HAT, OPEN, RIDE
-from llamatron.macro_composer.loudness_steps import AS_DENSE, FEWEST_NOTES_A_BAR, LARGEST_STEP, LEAST_KEPT, MUCH_DENSER, TIMEKEEPER
+from llamatron.macro_composer.loudness_steps import AS_DENSE, NOTES, ONE_NOTE, POWER_CHORD_STRINGS, FEWEST_NOTES_A_BAR, LARGEST_STEP, LEAST_KEPT, MUCH_DENSER, TIMEKEEPER
 from llamatron.macro_composer.song_plan import CHORUS
 from llamatron.macro_composer.wizard_choices import WizardChoices
+from llamatron.support.rational import Rational
 from llamatron.support.version import VERSION
 
 A_NAME = 'a_song'
@@ -40,6 +43,9 @@ TWICE = 2
 FAR_DENSER = 10
 NOT_TRADED = 1
 A_LITTLE = 0.01
+NEAR = 0.3
+A_QUARTER = '1/4'
+A_BAR = Rational(1)
 
 
 def part(*, notes=SOME_NOTES, loudness=SOME_LOUDNESS):
@@ -130,6 +136,30 @@ class TestTheTradesOfASong(unittest.TestCase):
         self.assertEqual(loudness_steps.player_of(A_BASS), A_BASS)
 
 
+class TestTheCount(unittest.TestCase):
+
+    def test_a_step_sounds_one_note_or_its_chords(self):
+        self.assertEqual(loudness_steps.chord_notes(None), ONE_NOTE)
+        self.assertEqual(loudness_steps.chord_notes(ChordSymbol.POWER), len(FIXED_CHORDS[ChordSymbol.POWER].value) + ONE_NOTE)
+        self.assertEqual(loudness_steps.chord_notes(ChordSymbol.MAJOR7), len(FIXED_CHORDS[ChordSymbol.MAJOR7].value) + ONE_NOTE)
+
+    def test_each_note_lasts_until_the_note_after(self):
+        self.assertEqual(loudness_steps.lasting(steps=[0, 6], count=SOME_NOTES), [6, SOME_NOTES - 6])
+
+    def test_a_guitar_strikes_every_string_of_a_chord_and_three_of_a_power_chord(self):
+        settings = GuitarifySettings.from_data(data={GuitarifySetting.BAR: [Stroke.DOWN, Stroke.NOTHING, Stroke.BASS, Stroke.UP], GuitarifySetting.CELL: A_QUARTER}, where=A_NAME)
+        full = loudness_steps.strummed(symbols=[ChordSymbol.MAJOR], lasts=[WHOLE], settings=settings, bar_length=A_BAR)
+        power = loudness_steps.strummed(symbols=[ChordSymbol.POWER], lasts=[WHOLE], settings=settings, bar_length=A_BAR)
+        self.assertEqual(full, settings.get_strings() * TWICE + ONE_NOTE)
+        self.assertEqual(power, POWER_CHORD_STRINGS * TWICE + ONE_NOTE)
+
+    def test_a_chord_counts_for_as_long_as_the_chord_lasts(self):
+        settings = GuitarifySettings.from_data(data={GuitarifySetting.BAR: [Stroke.DOWN], GuitarifySetting.CELL: A_QUARTER}, where=A_NAME)
+        mostly_power = loudness_steps.strummed(symbols=[ChordSymbol.POWER, ChordSymbol.MAJOR], lasts=[3, 1], settings=settings, bar_length=A_BAR)
+        mostly_full = loudness_steps.strummed(symbols=[ChordSymbol.POWER, ChordSymbol.MAJOR], lasts=[1, 3], settings=settings, bar_length=A_BAR)
+        self.assertLess(mostly_power, mostly_full)
+
+
 class TestTheWizardsSong(unittest.TestCase):
     """The song the wizard makes holds the trades, and the song as written holds none."""
 
@@ -160,6 +190,17 @@ class TestTheWizardsSong(unittest.TestCase):
             self.assertNotIn(track, melodies)
             self.assertLess(own.end, scene.get_shape(Shape.SWELL).end)
             self.assertGreaterEqual(own.end, round(scene.get_shape(Shape.SWELL).end * LEAST_KEPT))
+
+    def test_the_count_from_what_is_written_is_near_what_is_played(self):
+        song = arena_rock().written_setlist(name=A_NAME, version=VERSION).get_song(A_NAME)
+        for counted, played in zip(loudness_steps.counted(song=song), loudness_steps.measured(song=song)):
+            self.assertEqual(set(counted), set(played))
+            for player, sums in played.items():
+                self.assertAlmostEqual(counted[player][NOTES] / sums[NOTES], WHOLE, delta=NEAR, msg=player)
+
+    def test_no_song_is_played_to_make_a_song(self):
+        with unittest.mock.patch.object(loudness_steps, 'SongRenderer', side_effect=AssertionError):
+            arena_rock().made_setlist(name=A_NAME, version=VERSION)
 
     def test_the_same_choices_make_the_same_trades(self):
         choices = arena_rock()

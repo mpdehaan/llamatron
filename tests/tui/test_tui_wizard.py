@@ -763,7 +763,7 @@ class TestWizardKit(WizardTest):
         self.assertIn(drum, choices.kit_drums())
         self.assertIsNone(choices.piece_note(piece))
         self.assertEqual(self.wizard().cell_field().value(), marks.MSG_WIZARD_KIT_DRUM_SHOWN.format(drum=drum))
-        self.assertNotIn(composer_text.MSG_PIECE_INSTRUMENT.format(piece), choices.written_setlist(name=A_SONG_NAME, version=VERSION).to_data()[Section.INSTRUMENTS])
+        self.assertNotIn(composer_text.MSG_PIECE_INSTRUMENT.format(piece), choices.made_setlist(name=A_SONG_NAME, version=VERSION).to_data()[Section.INSTRUMENTS])
         # ENTER on the Note row then keeps the drum, and so does the piece's own drum.
         await self.press(Key.ENTER, *[Key.DOWN] * (len(labels_text.MSG_GM_FAMILIES) + 2), Key.ENTER)
         self.assertEqual((choices.piece_sound(piece), choices.piece_note(piece)), (drum, None))

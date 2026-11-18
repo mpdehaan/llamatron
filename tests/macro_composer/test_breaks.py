@@ -74,7 +74,7 @@ def wizard(*, genre=ROCK, subgenre=ROCK_KIND, seed=SEED):
 
 
 def patterns_of(choices):
-    return choices.written_setlist(name=SONG_NAME, version=VERSION).to_data()[Section.PATTERNS]
+    return choices.made_setlist(name=SONG_NAME, version=VERSION).to_data()[Section.PATTERNS]
 
 
 class TestBreaks(unittest.TestCase):
