@@ -43,7 +43,7 @@ from llamatron.macro_composer.arranger import (
     arranged, forms_of, picked, player_of, section_of, share_in, share_of, style_in, style_named, style_names, values_of, variant_named, variants_of, VARIANT, VARIANT_SAYS,
 )
 from llamatron.macro_composer.composer import composed
-from llamatron.macro_composer import hook_kinds, line_edits, phrasing
+from llamatron.macro_composer import hook_kinds, line_edits, phrasing, tune_fit
 from llamatron.macro_composer.arranger import KICK as KICK_PIECE, MORE_RIFFS, NOBODY, OWN_TUNES, RIFF_OWN, TAKEN_TUNES, TUNE_BY, TUNE_BY_SONG
 from llamatron.macro_composer.players import BASS as BASS_PLAYER
 from llamatron.macro_composer.notation import NONE as NO_HIT
@@ -3148,6 +3148,30 @@ class WizardChoices:
         if not by:
             del self._extras[TUNE_BY]
         self._answers = {}
+
+    # A tune written by hand and the chords under it: when the chords change, the tune can be fitted to them.
+
+    def own_tune_chords(self):
+        """Return, for each kind of section whose tune was written by hand, the chords its first section hears, so that a change of
+        chords under such a tune can be told. A kind whose chords cannot be told is left out."""
+        heard = {}
+        for kind in self._extras.get(OWN_TUNES, {}):
+            try:
+                place = self.tune_place(kind)
+                if place is not None:
+                    heard[kind] = copy.deepcopy(self.section_own(place=place, field=CHORDS) or (self._song_plan().chords_at(place) if self.has_song_plan() else self._chords_at(place)))
+            except (ValueError, KeyError, IndexError, SongFileError):
+                continue
+        return heard
+
+    def fit_tune(self, kind):
+        """Fit a kind of section's tune, written by hand, to the chords its section now hears: each long note that is no note of its
+        chord moves to the nearest note of the chord, and short notes stay (tune_fit.py)."""
+        chords = self.own_tune_chords().get(kind)
+        if chords is None:
+            raise ValueError(errors.ERR_WIZARD_NO_TUNE_IN.format(value=kind))
+        own = self._extras[OWN_TUNES][kind]
+        self.set_tune_pattern(kind=kind, pattern=tune_fit.fitted(pattern=own, chords=chords, bar=bar_length(self.meter())))
 
     def tune_take(self, kind):
         """Return which take of its tune a kind of section has: the first, the tune the choices write, or a later one asked for."""

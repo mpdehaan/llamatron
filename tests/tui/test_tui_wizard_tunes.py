@@ -17,7 +17,7 @@
 """The song wizard's Tunes panel: a tune for each kind of section, opened in the pattern editor on a draft of the set and kept as the person's own."""
 
 from llamatron.composition.file_format import Row
-from llamatron.macro_composer.arranger import NOBODY
+from llamatron.macro_composer.arranger import CHORDS, NOBODY
 from llamatron.macro_composer.riffs import FIRST_TAKE as FIRST_RIFF_TAKE
 from llamatron.macro_composer.wizard_choices import FIRST_TUNE_TAKE, genre_title
 from llamatron.strings import errors, labels, marks, messages
@@ -37,6 +37,9 @@ A_KIND = 'verse'
 ANOTHER_GENRE = 'blues'
 # The degree a test writes on a tune's first step, and another for a second edit.
 A_DEGREE = 7
+# Chords a test gives a section in place of its own, and a tempo a test sets.
+OTHER_CHORDS = [2, 5]
+A_TEMPO = 100
 # How the row shows the take after the first.
 SECOND_TAKE_SHOWN = 2
 # The attribute a field keeps its label in.
@@ -226,6 +229,42 @@ class TestWizardTunes(TunesPanelTest):
             await self.press(binding)
             self.assertIsInstance(self.app.screen, PatternEditor)
             self.assertIn(errors.ERR_NOT_WHILE_DRAFTING, self.text())
+
+    async def test_a_choice_that_changes_the_chords_under_an_edited_tune_asks_whether_to_fit_the_tune(self):
+        choices = self.choices()
+        await self.open_tune()
+        self.change_first_step()
+        await self.press(Key.ESCAPE)
+        written = choices.tune_pattern(A_KIND)
+        place = choices.tune_place(A_KIND)
+        self.wizard().choosing(lambda chords: choices.set_section_own(place=place, field=CHORDS, value=chords))(OTHER_CHORDS)
+        await self.settle()
+        self.assertIsInstance(self.app.screen, ConfirmDialog)
+        self.assertIn(messages.MSG_WIZARD_FIT_TUNE_TITLE, self.text())
+        await self.press(keybindings.ConfirmDialog.NO)
+        self.assertEqual(choices.tune_pattern(A_KIND), written)
+        self.wizard().choosing(lambda chords: choices.set_section_own(place=place, field=CHORDS, value=chords))(None)
+        await self.settle()
+        await self.press(keybindings.ConfirmDialog.NO)
+        self.wizard().choosing(lambda chords: choices.set_section_own(place=place, field=CHORDS, value=chords))(OTHER_CHORDS)
+        await self.settle()
+        await self.press(keybindings.ConfirmDialog.YES)
+        self.assertNotEqual(choices.tune_pattern(A_KIND)[Row.DEGREE], written[Row.DEGREE])
+        self.assertTrue(choices.tune_is_own(A_KIND))
+        self.assertIn(messages.MSG_WIZARD_TUNES_FITTED.format(kinds=A_KIND), self.text())
+
+    async def test_a_choice_that_leaves_the_chords_alone_or_a_tune_the_wizard_wrote_asks_nothing(self):
+        choices = self.choices()
+        place = choices.tune_place(A_KIND)
+        self.wizard().choosing(lambda chords: choices.set_section_own(place=place, field=CHORDS, value=chords))(OTHER_CHORDS)
+        await self.settle()
+        self.assertIsInstance(self.app.screen, WizardPage)
+        await self.open_tune()
+        self.change_first_step()
+        await self.press(Key.ESCAPE)
+        self.wizard().choosing(choices.set_tempo)(A_TEMPO)
+        await self.settle()
+        self.assertIsInstance(self.app.screen, WizardPage)
 
 
 class TestWizardRiffs(TunesPanelTest):

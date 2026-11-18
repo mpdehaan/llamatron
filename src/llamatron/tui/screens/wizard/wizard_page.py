@@ -27,6 +27,7 @@ The page knows nothing of any one branch (branch.py): it draws what the branches
 
 from rich.text import Text
 
+from llamatron.composition.checks import listed
 from llamatron.composition.naming import new_name
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.wizard_choices import WizardChoices
@@ -116,13 +117,34 @@ class WizardPage(FieldPage):
         """Return a setter that also notes that something was chosen, so that closing the wizard asks before the choices are lost."""
         def chosen(value):
             label = self.label_under_cursor()
+            chords = self._choices.own_tune_chords()
             result = setter(value)
             self.stay_on(label)
             self._changed = True
             # What was heard is no longer what the choices make.
             self.app.made_preview().stop()
+            self.ask_to_fit_tunes(before=chords)
             return result
         return chosen
+
+    def ask_to_fit_tunes(self, *, before):
+        """Ask whether to fit each tune written by hand whose chords a choice just changed: YES moves its long notes that clash to
+        the nearest note of the new chord, and NO keeps the tune as written."""
+        after = self._choices.own_tune_chords()
+        kinds = [kind for kind in after if kind in before and after[kind] != before[kind]]
+        if not kinds:
+            return
+
+        def fit(_):
+            for kind in kinds:
+                try:
+                    self._choices.fit_tune(kind)
+                except ValueError as problem:
+                    self.refuse(str(problem))
+                    return
+            self.say(messages.MSG_WIZARD_TUNES_FITTED.format(kinds=listed(kinds)))
+        question = messages.MSG_WIZARD_FIT_TUNE_QUESTION.format(kinds=listed(kinds))
+        self.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_FIT_TUNE_TITLE, messages=[question, messages.MSG_WIZARD_FIT_TUNE_SAYS]), then=fit)
 
     def label_under_cursor(self):
         """Return the label of the field the cursor is on, or None in the tree or on a field with no label."""
