@@ -63,7 +63,7 @@ class TunesBranch(Branch):
             question = messages.MSG_WIZARD_TUNE_GIVE_BACK_QUESTION.format(kind=kind)
             page.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_TUNE_GIVE_BACK_TITLE, messages=[question], starts_on_no=True),
                      then=page.choosing(lambda _: choices.set_tune_pattern(kind=kind, pattern=None)))
-        return Field(label=labels.MSG_WIZARD_TUNE_LABEL.format(kind=kind), value=shown, enter=lambda: page.edit_tune(kind), enter_what=legends.MSG_WIZARD_EDIT_NOTES_WHAT,
+        return Field(label=labels.MSG_WIZARD_KIND_TUNE_LABEL.format(kind=kind), value=shown, enter=lambda: page.edit_tune(kind), enter_what=legends.MSG_WIZARD_EDIT_NOTES_WHAT,
                      clear=give_back if own else None, clear_what=legends.MSG_TUNE_USUAL_WHAT)
 
     def listens(self):
@@ -73,5 +73,5 @@ class TunesBranch(Branch):
         if not kinds:
             return None
         label = self.page().label_under_cursor()
-        kind = next((kind for kind in kinds if labels.MSG_WIZARD_TUNE_LABEL.format(kind=kind) == label), kinds[0])
+        kind = next((kind for kind in kinds if labels.MSG_WIZARD_KIND_TUNE_LABEL.format(kind=kind) == label), kinds[0])
         return messages.MSG_WIZARD_LISTEN_TUNE, choices.tune_place(kind), choices.tune_player()

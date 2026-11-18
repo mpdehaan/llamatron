@@ -32,7 +32,7 @@ from llamatron.tui.screens.arrange.groove_choice import groove_choice_field
 from llamatron.tui.screens.shared.shared import scene_name
 from llamatron.strings.labels import MSG_EDITING_CAPTION, MSG_SCENE_CAPTION_WORD
 from llamatron.strings.labels import (
-    Crumb, MSG_LAUNCH_TOGETHER_LABEL, MSG_SECTION_LABEL, MSG_SCENE_CRUMB, MSG_REPEAT_LABEL, MSG_RESET_LABEL, MSG_SCALE_LABEL, MSG_SONG_OPTION, MSG_TEMPO_LABEL,
+    Crumb, MSG_LAUNCH_TOGETHER_LABEL, MSG_SCENE_SECTION_LABEL, MSG_SCENE_CRUMB, MSG_REPEAT_LABEL, MSG_RESET_LABEL, MSG_SCALE_LABEL, MSG_SONG_OPTION, MSG_TEMPO_LABEL,
     MSG_TEMPO_RAMP_LABEL,
 )
 from llamatron.strings.legends import MSG_NO_RAMP_WHAT, MSG_USE_SONG_GROOVE_WHAT, MSG_USE_SONG_SCALE_WHAT, MSG_USE_SONG_TEMPO_WHAT, What
@@ -107,7 +107,7 @@ class ScenePage(FieldPage):
         """Return the Section field: the kind of section the scene is, chosen from the kinds a scene may be, or none."""
         section = self.scene().get_section()
         choices = [MSG_NONE_SHOWN, *SECTION_KINDS]
-        return ChoiceField(page=self, label=MSG_SECTION_LABEL, choices=choices, current=section or MSG_NONE_SHOWN,
+        return ChoiceField(page=self, label=MSG_SCENE_SECTION_LABEL, choices=choices, current=section or MSG_NONE_SHOWN,
                            set=lambda choice: self.document().set_scene_section(index=self.index, section=None if choice == MSG_NONE_SHOWN else choice))
 
     def groove_field(self):

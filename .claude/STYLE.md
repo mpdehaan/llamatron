@@ -12,7 +12,7 @@ kept by reading.
 | --- | --- |
 | Every class declares `__slots__`, each class in a hierarchy its own, even `()`. Dataclasses are `@dataclass(slots=True, kw_only=True)`. Exceptions: classes that only hold constants, and subclasses of classes from outside llamatron. | `tests/rules/test_slots.py` |
 | Every function and method takes its arguments by keyword where a call passes more than one or any optional one: a bare `*` before the parameters. In `src/`, `tests/` and `internal_tools/`. Exceptions are listed in the test: Python's special methods, `Rational`, `Length` and `Sound`, methods Textual or `unittest` call positionally, forwarders and nested functions. | `tests/rules/test_keyword_only.py` |
-| Every string the program shows or raises is a constant: in the `src/llamatron/strings/` package and nowhere else, `ERR_` in `errors.py`, `HELP_` in `help.py`, `REPR_` in `reprs.py` and `MSG_` in the others. Each group comment names a module that exists, and the package's modules import only names. | `tests/rules/test_message_constants.py` |
+| Every string the program shows or raises is a constant: in the `src/llamatron/strings/` package and nowhere else, `ERR_` in `errors.py`, `HELP_` in `help.py`, `REPR_` in `reprs.py` and `MSG_` in the others. Each group comment names a module that exists, the package's modules import only names, and no module there defines a name twice, since the second definition silently replaces the first. | `tests/rules/test_message_constants.py` |
 | A commit that changes Python under `src/` carries a version bump, made by `internal_tools/bump.sh`. | `internal_tools/check_before_commit.sh`, which Claude runs before committing code, through `internal_tools/bump_version.py --check`, tested by `tests/tools/test_bump_version.py` |
 | No unused import, undefined name or name defined twice, in `src/`, `tests/` or `internal_tools/`. | `tests/rules/test_pyflakes.py` |
 | No function or method carries a type hint, on a parameter or on what it returns. | `tests/rules/test_no_type_hints.py` |
@@ -255,7 +255,7 @@ above the module docstring, opening with `# llamatron: a music program`. Where t
 
 **The guide is the way in.** `GUIDE.md` is the documentation's home page, and the website's: an
 introduction, the demo songs featured, and tables that link every page in `docs/`, under the headings
-Intro, Demo Songs, Mashups, Objects, Generators, File Operations, MIDI & Performance and Advanced, which the website's
+Intro, Demo Songs, Mashups, Objects, Generators, Song Wizard, File Operations, MIDI & Performance and Advanced, which the website's
 sidebar is built from, in that order, each a group that opens and closes (`GROUPED` in
 `internal_tools/stage_docs_site.py`), a `###` heading inside one making a group within it, or the page alone when it
 holds only the page of its name. Every page in `docs/` and its subfolders, such as `docs/generators/`, a page for each generator,

@@ -35,7 +35,7 @@ from llamatron.strings.labels import (
     MSG_CHORDS_LABEL, MSG_EVERY_LABEL, MSG_ROOT_IN_BASS_LABEL, MSG_DRAG_AMOUNT_LABEL, MSG_EUCLID_PART_LABELS, MSG_GLIDE_AMOUNT_LABEL, MSG_RUSH_AMOUNT_LABEL, MSG_SHAPE_PART_LABELS, MSG_SHORTEN_LABEL,
     MSG_STEPS_LABEL, MSG_STRUM_PART_LABELS, MSG_SOURCE_TRACK_LABEL, MSG_CHORDS_FROM_LABEL, MSG_GUITAR_BAR_LABEL, MSG_GUITAR_LET_RING_LABEL, MSG_READY_BAR_NAMES,
 )
-from llamatron.strings.labels import MSG_SECTION_LABEL
+from llamatron.strings.labels import MSG_SCENE_SECTION_LABEL
 from llamatron.composition.file_format import EuclidPart, ReadyBar, ShapePart, StrumPart
 from llamatron.composition.generator_settings import DEFAULT_DRAG, DEFAULT_RUSH, DEFAULT_SHORTEN, PhrasingSetting
 from llamatron.generators.phrasing import DEEP_BREATH
@@ -939,7 +939,7 @@ class TestScenePageUndo(UndoTest):
     async def test_a_section_chosen_is_one_step(self):
         await self.press(keybindings.MainPage.ARRANGE, Key.ENTER)
         before = self.data()
-        await self.select_field(MSG_SECTION_LABEL)
+        await self.select_field(MSG_SCENE_SECTION_LABEL)
         await self.press(key_of(binding=keybindings.ScenePage.MORE, key=Key.RIGHT_BRACKET))
         await self.check_undo_and_redo(before=before, after=self.data())
 

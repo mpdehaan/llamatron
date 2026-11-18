@@ -110,8 +110,8 @@ if __name__ == '__main__':
     unittest.main()
 
 
-# Whether the song wizard is released: until the user says so, no document for people names it.
-WIZARD_IS_RELEASED = False
+# Whether the song wizard is released: until it was, no document for people named it.
+WIZARD_IS_RELEASED = True
 WIZARD_WORD = 'wizard'
 DOCUMENTS_FOR_PEOPLE = [ROOT / 'GUIDE.md', ROOT / 'INSTALL.md', ROOT / 'README.md', *sorted((ROOT / 'docs').rglob('*.md')), *sorted((ROOT / 'docs').rglob('*.svg'))]
 

@@ -151,6 +151,12 @@ A generator changes how a clip's notes are played, without changing its pattern.
 | Chords and notes played as a guitar plays them | [Guitarify](docs/generators/GUITARIFY.md) |
 | Chords voiced nearest the chord before | [VoiceLeading](docs/generators/VOICE_LEADING.md) |
 
+## Song Wizard
+
+| Page | What it covers |
+| --- | --- |
+| [Song Wizard](docs/WIZARD.md) | A whole song made from a few choices: each panel of the wizard and what it holds. |
+
 ## File Operations
 
 | Page | What it covers |

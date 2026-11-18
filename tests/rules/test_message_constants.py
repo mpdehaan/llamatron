@@ -37,6 +37,7 @@ SOURCE_FOLDER = os.path.dirname(llamatron.__file__)
 TEST_FOLDER = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TOOLS_FOLDER = os.path.join(os.path.dirname(TEST_FOLDER), 'internal_tools')
 PYTHON_SUFFIX = '.py'
+FILE_ENCODING = 'utf-8'
 ERROR_PREFIX = 'ERR_'
 MESSAGE_PREFIX = 'MSG_'
 HELP_PREFIX = 'HELP_'
@@ -125,6 +126,21 @@ class TestMessageConstants(unittest.TestCase):
                 continue
             with self.subTest(path=path):
                 self.assertEqual(prefixed(defined_constants(path)), [])
+
+    def test_no_module_of_the_strings_package_defines_a_name_twice(self):
+        """A second definition silently replaces the first, so that whatever used the first shows the second's text."""
+        twice = []
+        for name in sorted(os.listdir(STRINGS_FOLDER)):
+            if not name.endswith(PYTHON_SUFFIX):
+                continue
+            with open(os.path.join(STRINGS_FOLDER, name), encoding=FILE_ENCODING) as source:
+                tree = ast.parse(source.read())
+            seen = set()
+            for node in tree.body:
+                targets = [target.id for target in node.targets if isinstance(target, ast.Name)] if isinstance(node, ast.Assign) else []
+                twice += [(name, target) for target in targets if target in seen]
+                seen.update(targets)
+        self.assertEqual(twice, [])
 
     def test_each_module_holds_only_its_own_prefix(self):
         for path, prefix in OWN_PREFIX.items():
