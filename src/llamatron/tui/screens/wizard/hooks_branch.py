@@ -109,6 +109,7 @@ class HooksBranch(Branch):
             # Notes written by hand are never written over by another hook.
             buttons.append(Button(label=labels.MSG_WIZARD_REGENERATE_BUTTON, enter=self.regenerate, enter_what=legends.MSG_REGENERATE_WHAT))
         buttons.append(Button(label=labels.MSG_WIZARD_LISTEN_BUTTON, enter=lambda: page.listen_to(self.listens()), enter_what=legends.MSG_LISTEN_WHAT))
+        buttons.append(Button(label=labels.MSG_WIZARD_LISTEN_BAND_BUTTON, enter=lambda: page.listen_to(self.heard_with_band()), enter_what=legends.MSG_LISTEN_WHAT))
         if choices.has_second_hook():
             buttons.append(Button(label=labels.MSG_WIZARD_NEW_SECOND_HOOK_BUTTON, enter=lambda: page.choosing(lambda nothing: choices.new_second_hook())(None), enter_what=legends.MSG_WIZARD_NEW_HOOK_WHAT))
         return buttons
@@ -127,6 +128,14 @@ class HooksBranch(Branch):
     def on_second_hook(self):
         """Return whether the cursor is on or under the second hook's heading."""
         return self.page().in_fields and self.page().heading_over_cursor() == labels.MSG_WIZARD_SECOND_HOOK_HEADING
+
+    def heard_with_band(self):
+        """Return what Listen With Band plays: everybody in the first section that sings the hook under the cursor's heading."""
+        heard = self.listens()
+        return None if heard is None else (messages.MSG_WIZARD_SECTION_WITH_BAND.format(kind=self.choices().section_kind(heard[1])), heard[1], None)
+
+    def listens_alone(self):
+        return True
 
     def listens(self):
         """Listen plays the melody's player in the first section that sings the hook under the cursor's heading: the main hook's,

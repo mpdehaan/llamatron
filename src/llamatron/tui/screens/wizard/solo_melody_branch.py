@@ -17,8 +17,8 @@
 
 Each solo of the song has a panel under Melodies, after the melodies of the sections, named
 Solo, Solo 2 and so on in the form's order, since no two solos of a song are alike. The panel
-has buttons to edit the solo's notes in the pattern editor and to hear the solo, its player
-alone and with the band. What shapes a solo, its kind, bars and energy, is on the solo's own
+has buttons to edit the solo's notes in the pattern editor, to have the solo written again,
+and to hear the solo, its player alone and with the band. What shapes a solo, its kind, bars and energy, is on the solo's own
 section under Form.
 """
 
@@ -85,8 +85,24 @@ class SoloMelodyBranch(Branch):
         # On notes edited by hand, the delete key on the button gives the notes back to the wizard, after a question.
         return [Button(label=labels.MSG_WIZARD_EDIT_NOTES_BUTTON, enter=lambda: page.edit_solo(place), enter_what=legends.MSG_WIZARD_EDIT_NOTES_WHAT, clear=give_back if choices.solo_is_own(place) else None,
                        clear_what=legends.MSG_TUNE_USUAL_WHAT),
+                Button(label=labels.MSG_WIZARD_REGENERATE_BUTTON, enter=self.regenerate, enter_what=legends.MSG_REGENERATE_WHAT),
                 Button(label=labels.MSG_WIZARD_LISTEN_BUTTON, enter=lambda: page.listen_to(self.listens()), enter_what=legends.MSG_LISTEN_WHAT),
                 Button(label=labels.MSG_WIZARD_LISTEN_BAND_BUTTON, enter=lambda: page.listen_to(self.heard_with_band()), enter_what=legends.MSG_LISTEN_WHAT)]
+
+    def regenerate(self):
+        """Have this solo written again, with nothing kept of the old one and the song's other solos left alone, after asking."""
+        choices = self.choices()
+        page = self.page()
+        place = self.place()
+        name = messages.MSG_WIZARD_MELODY_OF.format(kind=SOLO)
+
+        def written(_):
+            page.choosing(choices.new_solo_take)(place)
+            page.say(messages.MSG_WIZARD_REGENERATED.format(name=name))
+        page.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_REGENERATE_TITLE.format(name=name), messages=[messages.MSG_WIZARD_REGENERATE_SAYS.format(name=name)], starts_on_no=True), then=written)
+
+    def listens_alone(self):
+        return True
 
     def listens(self):
         """Listen plays the solo's player alone in the solo."""

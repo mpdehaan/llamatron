@@ -485,12 +485,15 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         # The buttons are a row under the settings: Down reaches the first and Left and Right move along them,
         # and Up from any of them goes back to the last setting.
         if screen.place >= first_button and target < first_button:
-            await self.press(Key.UP)
+            await self.press(*[Key.UP] * (screen.place - first_button + 1 if hasattr(screen, 'buttons_stacked') and screen.buttons_stacked() else 1))
         if target >= first_button:
             if screen.place < first_button:
                 await self.press(*[Key.DOWN] * (first_button - screen.place))
             offset = target - screen.place
-            await self.press(*([Key.RIGHT] * offset if offset > 0 else [Key.LEFT] * -offset))
+            # Buttons too wide for a row stand one under another, and Down and Up go through them.
+            stacked = hasattr(screen, 'buttons_stacked') and screen.buttons_stacked()
+            forward, back = (Key.DOWN, Key.UP) if stacked else (Key.RIGHT, Key.LEFT)
+            await self.press(*([forward] * offset if offset > 0 else [back] * -offset))
             return
         offset = target - screen.place
         await self.press(*([Key.DOWN] * offset if offset > 0 else [Key.UP] * -offset))

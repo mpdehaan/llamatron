@@ -21,6 +21,7 @@ of it through General MIDI in FluidSynth, beside whatever the tracker's own tran
 who plays in it, or one player's clip again and again, as a hook or a tune.
 """
 
+from llamatron.strings import errors
 from llamatron.tui.transport import Transport
 
 MADE_REVISION = 0
@@ -81,12 +82,16 @@ class MadePreview(Transport):
                 song.remove_scene(other)
         self._begin(setlist=setlist, name=name, what=what, play=lambda: self.play_scene(index=FIRST_SCENE))
 
-    def play_line(self, *, setlist, name, index, track, what):
-        """Play one player's clip of a section again and again, with the drums of the section under it where the section has drums, which a line is judged against."""
+    def play_line(self, *, setlist, name, index, track, what, with_drums=True):
+        """Play one player's clip of a section again and again: with the drums of the section under it where the section has drums,
+        which a part is judged against, or with nothing under it. A player with no clip in the section is refused, so that the
+        drums are never heard alone in the player's place."""
         self.stop()
         song = setlist.get_song(name)
         scene = song.get_scenes()[index]
-        drums = [other for other in song.get_track_names() if other != track and song.get_track(other).is_drum() and scene.get_clip_slot(other) is not None]
+        if not scene.has_clip_slot(track):
+            raise ValueError(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
+        drums = [other for other in song.get_track_names() if other != track and song.get_track(other).is_drum() and scene.get_clip_slot(other) is not None] if with_drums else []
         self._begin(setlist=setlist, name=name, what=what, play=lambda: self.play_clips(index=index, tracks=[track, *drums]))
 
     def _begin(self, *, setlist, name, what, play):

@@ -347,13 +347,13 @@ class WizardPage(FieldPage):
             self.refuse(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
             return
         what, index, track, *made = heard
-        problem = self.problem_listening(what=what, index=index, track=track, made=made[0] if made else None)
+        problem = self.problem_listening(what=what, index=index, track=track, made=made[0] if made else None, alone=self.branch().listens_alone())
         if problem is not None:
             self.refuse(problem)
             return
         self.say(messages.MSG_WIZARD_LISTENING.format(what=what))
 
-    def problem_listening(self, *, what, index, track, made=None):
+    def problem_listening(self, *, what, index, track, made=None, alone=False):
         """Play a section of the song as it would be made, or one track of the section, and return why it could not be heard, or None. A dialog over the page listens through this too."""
         preview = self.app.made_preview()
         if not preview.can_sound():
@@ -365,7 +365,7 @@ class WizardPage(FieldPage):
             if track is None:
                 preview.play_section(setlist=setlist, name=name, index=index, what=what)
             else:
-                preview.play_line(setlist=setlist, name=name, index=index, track=track, what=what)
+                preview.play_line(setlist=setlist, name=name, index=index, track=track, what=what, with_drums=not alone)
         except (ValueError, SongFileError, SenderNotStarted) as problem:
             return str(problem) if isinstance(problem, SenderNotStarted) else errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO
         return None

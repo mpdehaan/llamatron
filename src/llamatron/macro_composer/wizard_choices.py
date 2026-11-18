@@ -250,6 +250,10 @@ MELODY_HEARD_ANSWER = 'melody values heard'
 TUNE_TAKES = 'tune_takes'
 FIRST_TUNE_TAKE = 0
 TUNE_TAKE_SEED = '{seed} {kind} tune take {take}'
+# Which take each solo is, by the solo's number among the song's solos, where a solo is not the first the choices write.
+SOLO_TAKES = 'solo_takes'
+SOLO_TAKE_SEED = '{seed} solo {number} take {take}'
+SOLO_TAKEN_ANSWER = 'a solo of another take'
 TUNE_TAKEN_ANSWER = 'tune taken'
 # The name the band's settings that are one value each are counted under.
 GENRE_SETTING = 'setting'
@@ -2910,6 +2914,9 @@ class WizardChoices:
         picks.update(self._melody_picks(picks))
         # The takes are kept as numbers; the arranger is handed the tune each number draws.
         picks.pop(TUNE_TAKES, None)
+        picks.pop(SOLO_TAKES, None)
+        for number, players in self._taken_solos().items():
+            picks.setdefault(OWN_SOLOS, {}).setdefault(number, {}).update(players)
         taken = self._taken_tunes()
         delivery = self.tune_phrasing()
         picks.pop(TUNE_PHRASING, None)
@@ -3080,6 +3087,57 @@ class WizardChoices:
         if slot is None:
             return None, None
         return slot.get_pattern_name(), setlist.get_pattern(slot.get_pattern_name()).to_data()
+
+    def solo_take(self, place):
+        """Return which take the solo at a place of the form is: the first, the solo the choices write, or a later one asked for."""
+        return self._extras.get(SOLO_TAKES, {}).get(self._solo_number_at(place), FIRST_TUNE_TAKE)
+
+    def new_solo_take(self, place):
+        """Have another solo written for the solo at a place of the form, the rest of the song left as it was. Notes written by
+        hand for that solo are given up for it."""
+        if place not in self.solo_places():
+            raise ValueError(errors.ERR_WIZARD_NO_TUNE_IN.format(value=SOLO))
+        number = self._solo_number_at(place)
+        self._extras.setdefault(SOLO_TAKES, {})[number] = self.solo_take(place) + 1
+        own = self._extras.get(OWN_SOLOS, {})
+        own.get(number, {}).pop(self.solo_player(), None)
+        for empty in [key for key, players in own.items() if not players]:
+            del own[empty]
+        if not own:
+            self._extras.pop(OWN_SOLOS, None)
+        self._answers = {}
+
+    def _taken_solos(self):
+        """The pattern of each solo that is a later take and not written by hand, under the solo's number and its player's name."""
+        takes = self._extras.get(SOLO_TAKES, {})
+        if not takes:
+            return {}
+        own = self._extras.get(OWN_SOLOS, {})
+        role = self._soloist()
+        taken = {}
+        for number in sorted(takes):
+            if role is not None and role not in own.get(number, {}) and takes[number] != FIRST_TUNE_TAKE:
+                pattern = self._remembered(key=(SOLO_TAKEN_ANSWER, number), compute=lambda number=number: self._solo_taken(number=number, take=takes[number]))
+                if pattern is not None:
+                    taken[number] = {role: copy.deepcopy(pattern)}
+        return taken
+
+    def _solo_taken(self, *, number, take):
+        """The solo another take draws: that solo in the song these choices would make from a seed of the take's own, with the same
+        chords and no solo of another take or written by hand, or None where that song has none."""
+        other = WizardChoices.from_data(self.to_data())
+        other._extras.pop(SOLO_TAKES, None)
+        other._extras.pop(OWN_SOLOS, None)
+        trait = self.progression_trait()
+        drawn = self.progressions_by_chance()[:1]
+        if trait is not None and drawn:
+            other.set_way(trait=trait, value=drawn[0])
+        other.set_seed(zlib.crc32(SOLO_TAKE_SEED.format(seed=self._seed, number=number, take=take).encode()) % (LAST_SEED + 1))
+        try:
+            place = next(place for place in other.solo_places() if other._solo_number_at(place) == number)
+            return other._found_solo_in_made(place)[1]
+        except (StopIteration, ValueError, IndexError, KeyError, SongFileError):
+            return None
 
     def set_solo_pattern(self, *, place, pattern):
         """Keep a pattern's data as the own notes of the solo at a place of the form, for the player who plays the solo, or forget

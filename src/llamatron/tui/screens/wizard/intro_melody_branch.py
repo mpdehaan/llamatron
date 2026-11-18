@@ -79,6 +79,9 @@ class IntroMelodyBranch(Branch):
                 Button(label=labels.MSG_WIZARD_LISTEN_BUTTON, enter=lambda: page.listen_to(self.listens()), enter_what=legends.MSG_LISTEN_WHAT),
                 Button(label=labels.MSG_WIZARD_LISTEN_BAND_BUTTON, enter=lambda: page.listen_to(self.heard_with_band()), enter_what=legends.MSG_LISTEN_WHAT)]
 
+    def listens_alone(self):
+        return True
+
     def listens(self):
         """Listen plays the intro's player alone in the intro."""
         choices = self.choices()
