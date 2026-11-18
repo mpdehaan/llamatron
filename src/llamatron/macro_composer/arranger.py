@@ -197,6 +197,8 @@ OWN_TUNES = 'own_tunes'
 # The riffs a song has besides its first, in order: each a riff as the first is, with a name of its own, which its players play in
 # its kinds of section in place of their usual parts; and the seed a riff of a name is written from.
 MORE_RIFFS = 'more_riffs'
+# A riff's notes written by hand: a pattern's data as its first player plays it, which its other players play in their own octaves.
+RIFF_OWN = 'own'
 MORE_RIFF_SEED = '{seed} riff {name}'
 # Who plays the tune: a player's name for each kind of section, and one for the whole song, the player the genre gives the tune
 # where neither says; NOBODY for a kind of section that has no tune.
@@ -905,6 +907,17 @@ def form_of(*, style, song, meter, tempo):
     return max(forms, key=share_of)[SECTIONS]
 
 
+def in_octaves_of(*, pattern, by, group):
+    """A pattern's data with every note an octave or more higher or lower and in a player's group of patterns, as a second player
+    plays a first player's riff."""
+    moved = copy.deepcopy(pattern)
+    if PatternSetting.GROUP in moved:
+        moved[PatternSetting.GROUP] = group
+    if by and Row.OCTAVE in moved:
+        moved[Row.OCTAVE] = [None if octave is None else octave + by for octave in moved[Row.OCTAVE]]
+    return moved
+
+
 class SongRiff:
     """One riff of a song as the arranger places it: its name, None for the song's first; the riff as chosen; its notes, a line in
     eighths; how many bars it lasts; its bars apart, or None where it has one; and the players who play it, the first its chords."""
@@ -1209,7 +1222,11 @@ def arranged(*, style, song):
                         if None in riff_here:
                             # A riff that stays at home is written out for the whole section: the riff over the home chord, and every other chord held.
                             riff_part = composer_text.MSG_PART_OF_SECTION.format(name, riff_part)
-                        if riff_part not in parts:
+                        if riff.riff.get(RIFF_OWN) is not None:
+                            # A riff written by hand is played as written, each player in the player's own octave.
+                            first_role = next(other for other in roles if other[ROLE] == riff.players[0])
+                            parts.setdefault(riff_part, {RAW: in_octaves_of(pattern=riff.riff[RIFF_OWN], by=role[OCTAVE] - first_role[OCTAVE], group=role[ROLE])})
+                        elif riff_part not in parts:
                             lines = [riff.notes] if None not in riff_here else [held_bar(eighths=riff_eighths, chord=first) if bar is None else riff.split[bar] for bar in riff_here]
                             parts[riff_part] = {STEP: EIGHTH, OCTAVE: role[OCTAVE], **voice_of(role), LINES: [[dict(note) for note in (line if first else single(line))] for line in lines]}
                             shaped.append(riff_part)

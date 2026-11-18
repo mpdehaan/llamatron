@@ -22,7 +22,7 @@ from llamatron.composition import naming
 from llamatron.composition.file_format import PatternSetting, Row
 from llamatron.macro_composer.arranger import NOBODY
 from llamatron.macro_composer.riffs import FIRST_TAKE as FIRST_RIFF_TAKE
-from llamatron.macro_composer.wizard_choices import FIRST_TUNE_TAKE, WizardChoices
+from llamatron.macro_composer.wizard_choices import FIRST_TUNE_TAKE, KEPT_OWN_RIFFS, LOST_RIFFS, WizardChoices
 from llamatron.strings import errors, macro_composer as composer_text, names
 from tests.support.ui_testing import fixed_text
 
@@ -366,3 +366,56 @@ class TestRiffsAdded(unittest.TestCase):
         choices.set_genre(A_GENRE)
         choices.set_subgenre(A_SUBGENRE)
         self.assertEqual(choices.added_riffs(), [])
+
+    def test_a_riff_written_by_hand_is_played_as_written_by_each_player_in_the_players_own_octave_until_a_new_take(self):
+        choices = chosen()
+        one, other = choices.riff_players_free(A_KIND)[:2]
+        riff = choices.add_riff(kind=A_KIND, players=[one, other])
+        self.assertEqual(choices.riff_pattern_name(riff), composer_text.MSG_PART_OF_SECTION.format(one, riff))
+        self.assertFalse(choices.added_riff_is_own(riff))
+        setlist, _ = choices.made_for_listening()
+        apart = [high - low for high, low in zip(setlist.get_pattern(choices.riff_pattern_name(riff)).to_data()[Row.OCTAVE],
+                                                 setlist.get_pattern(composer_text.MSG_PART_OF_SECTION.format(other, riff)).to_data()[Row.OCTAVE]) if high is not None]
+        own = rewritten(choices.riff_pattern(riff))
+        choices.set_riff_pattern(riff=riff, pattern=own)
+        self.assertTrue(choices.added_riff_is_own(riff))
+        self.assertEqual(choices.riff_pattern(riff), own)
+        setlist, _ = choices.made_for_listening()
+        second = setlist.get_pattern(composer_text.MSG_PART_OF_SECTION.format(other, riff)).to_data()
+        self.assertEqual(second[Row.DEGREE], own[Row.DEGREE])
+        self.assertEqual([high - low for high, low in zip(own[Row.OCTAVE], second[Row.OCTAVE]) if high is not None], apart)
+        self.assertEqual(WizardChoices.from_data(choices.to_data()).riff_pattern(riff), own)
+        choices.new_riff_take_of(riff)
+        self.assertFalse(choices.added_riff_is_own(riff))
+        self.assertNotEqual(choices.riff_pattern(riff)[Row.DEGREE], own[Row.DEGREE])
+
+    def test_a_blank_riff_has_no_note_and_a_pattern_the_song_cannot_be_made_with_is_refused(self):
+        choices = chosen()
+        riff = choices.add_riff(kind=A_KIND, players=choices.riff_players_free(A_KIND)[:1])
+        written = choices.riff_pattern(riff)
+        blank = choices.blank_riff_pattern(riff)
+        self.assertEqual(blank[PatternSetting.STEPS], written[PatternSetting.STEPS])
+        self.assertNotIn(Row.DEGREE, blank)
+        choices.set_riff_pattern(riff=riff, pattern=blank)
+        self.assertEqual(choices.riff_pattern(riff), blank)
+        with self.assertRaises(ValueError):
+            choices.set_riff_pattern(riff=riff, pattern={PatternSetting.STEPS: NOT_A_STEP_COUNT})
+        self.assertEqual(choices.riff_pattern(riff), blank)
+
+    def test_a_riff_written_by_hand_is_kept_through_another_genre_and_waits_while_its_player_is_out_of_the_band(self):
+        choices = chosen()
+        player = choices.riff_players_free(A_KIND)[0]
+        riff = choices.add_riff(kind=A_KIND, players=[player])
+        made_by_wizard = choices.add_riff(kind=ANOTHER_KIND, players=[player])
+        own = rewritten(choices.riff_pattern(riff))
+        choices.set_riff_pattern(riff=riff, pattern=own)
+        self.assertEqual(choices.lost_with_genre(), ({LOST_RIFFS: 1}, {KEPT_OWN_RIFFS: 1}))
+        choices.set_role_in(role=player, on=False)
+        self.assertEqual(choices.added_riffs(), [])
+        choices.set_role_in(role=player, on=True)
+        self.assertEqual(choices.added_riffs(), [riff, made_by_wizard])
+        choices.set_genre(ANOTHER_GENRE)
+        choices.set_genre(A_GENRE)
+        choices.set_subgenre(A_SUBGENRE)
+        self.assertEqual(choices.added_riffs(), [riff])
+        self.assertEqual(choices.riff_pattern(riff), own)

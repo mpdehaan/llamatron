@@ -151,34 +151,56 @@ class WizardPage(FieldPage):
         if name is None:
             self.refuse(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
             return
+        self.open_pattern(setlist=setlist, name=name, keep=lambda pattern: self._choices.set_tune_pattern(kind=kind, pattern=pattern),
+                          kept=messages.MSG_WIZARD_TUNE_KEPT.format(kind=kind), unchanged=messages.MSG_WIZARD_TUNE_UNCHANGED.format(kind=kind))
+
+    def edit_riff(self, riff):
+        """Open the pattern editor on a riff's notes as its first player plays them, kept as the riff's own when the editor closes, if
+        they were changed."""
+        try:
+            setlist, _ = self._choices.made_for_listening()
+            name = self._choices.riff_pattern_name(riff)
+        except (ValueError, SongFileError) as problem:
+            self.refuse(str(problem))
+            return
+        if not setlist.has_pattern(name):
+            self.refuse(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
+            return
+        self.open_pattern(setlist=setlist, name=name, keep=lambda pattern: self._choices.set_riff_pattern(riff=riff, pattern=pattern),
+                          kept=messages.MSG_WIZARD_RIFF_KEPT.format(riff=riff), unchanged=messages.MSG_WIZARD_RIFF_UNCHANGED.format(riff=riff))
+
+    def open_pattern(self, *, setlist, name, keep, kept, unchanged):
+        """Open the pattern editor on a pattern of a draft of the set the choices make. When the editor closes, keep() is given the
+        pattern's data if it changed, and the status line says kept or unchanged."""
         self.app.made_preview().stop()
         draft = Document(setlist=setlist)
-        self._tune_open = (kind, name, draft.setlist().get_pattern(name).to_data())
+        self._tune_open = (name, draft.setlist().get_pattern(name).to_data(), keep, kept, unchanged)
         self.app.open_draft(draft)
         self.show_page(PatternEditor(holder=self.holder, name=name, opened_from=self))
 
     def on_screen_resume(self):
-        """Take a tune's notes back from the pattern editor, which has closed, before the page is drawn again."""
-        if self._tune_open is not None and self.app.is_drafting():
+        """Take a tune's or a riff's notes back from the pattern editor, which has closed, before the page is drawn again."""
+        # A dialog closing over the page resumes it too, so the notes are taken back only once the page itself is on top.
+        if self._tune_open is not None and self.app.is_drafting() and self.app.screen is self:
             self.keep_tune_edited(self.app.close_draft())
         super().on_screen_resume()
 
     def keep_tune_edited(self, draft):
-        """Keep the notes of the tune that was open as its kind's own, where the editor changed them, and say which happened. A pattern
-        that was renamed or deleted in the editor is not found, and nothing is kept."""
-        kind, name, before = self._tune_open
+        """Keep the notes of the pattern that was open as the person's own, where the editor changed them, and say which happened. A
+        pattern that was renamed or deleted in the editor is not found, and nothing is kept."""
+        name, before, keep, kept, unchanged = self._tune_open
         self._tune_open = None
         setlist = draft.setlist()
         after = setlist.get_pattern(name).to_data() if setlist.has_pattern(name) else before
         if after == before:
-            self.say(messages.MSG_WIZARD_TUNE_UNCHANGED.format(kind=kind))
+            self.say(unchanged)
             return
         try:
-            self.choosing(lambda pattern: self._choices.set_tune_pattern(kind=kind, pattern=pattern))(after)
+            self.choosing(keep)(after)
         except ValueError as problem:
             self.refuse(str(problem))
             return
-        self.say(messages.MSG_WIZARD_TUNE_KEPT.format(kind=kind))
+        self.say(kept)
 
     # Listening: a part of the song as it would be made, heard through FluidSynth and thrown away.
 
