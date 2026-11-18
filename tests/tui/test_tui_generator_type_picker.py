@@ -25,7 +25,7 @@ from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES
 from llamatron.tui.screens.generators.generators_page import GeneratorsPage
 from tests.support.ui_testing import UITest, back_key, forward_key
 
-HEADINGS = sorted([labels.GeneratorGroup.ARRANGEMENT, labels.GeneratorGroup.ARTICULATION, labels.GeneratorGroup.HARMONY, labels.GeneratorGroup.RHYTHM, labels.GeneratorGroup.TIMING, labels.GeneratorGroup.TRANSITIONS, labels.GeneratorGroup.VOICING])
+HEADINGS = sorted([labels.GeneratorGroup.ARRANGEMENT, labels.GeneratorGroup.ARTICULATION, labels.GeneratorGroup.BAND, labels.GeneratorGroup.HARMONY, labels.GeneratorGroup.RHYTHM, labels.GeneratorGroup.TIMING, labels.GeneratorGroup.TRANSITIONS, labels.GeneratorGroup.VOICING])
 HARMONY_PLACE = HEADINGS.index(labels.GeneratorGroup.HARMONY)
 # What is typed to search for Strum: its name in small letters, since a search ignores case.
 SEARCHED = labels.MSG_STRUM_LABEL.lower()

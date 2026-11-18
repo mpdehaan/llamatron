@@ -209,6 +209,10 @@ class SetEdits:
         """Set one setting of a named arp or AutoRatchet, or None to leave it out and use its default."""
         self._change(self._generator(section=section, name=name).set_setting, name=setting, value=value)
 
+    def set_musician_section(self, *, name, section, setting, value):
+        """Set what a kind of section has of its own for a musician, whether the musician plays there or how the part is played, or None for what a section does unasked."""
+        self._change(self._generator(section=Section.MUSICIANS, name=name).set_section_own, section=section, name=setting, value=value)
+
     def set_progression(self, *, name, chords, accidentals, inversions, scales=None, qualities=None, tensions=None):
         """Set a progression's chords, with a sharp or flat, an inversion, a borrowed scale type, a quality and tensions for each, a row of nothing left out."""
         progression = self._generator(section=Section.PROGRESSIONS, name=name)

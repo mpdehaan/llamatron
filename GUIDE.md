@@ -112,6 +112,12 @@ A generator changes how a clip's notes are played, without changing its pattern.
 | A tune delivered in lines, with a breath, a rise and fall | [Phrasing](docs/generators/PHRASING.md) |
 | Notes played short on chosen steps | [Shorten](docs/generators/SHORTEN.md) |
 
+### Band Generators
+
+| What it does | Page |
+| --- | --- |
+| A part played as a player of the band would play it | [Musician](docs/generators/MUSICIAN.md) |
+
 ### Harmony
 
 | What it does | Page |

@@ -29,7 +29,7 @@ from llamatron.composition.file_format import (
 )
 from llamatron.composition.file_format import DRIFT_VERSIONS, DriftValue
 from llamatron.composition.file_format import GuitarifySetting
-from llamatron.composition.generator_settings import FollowChordsSetting, FollowChordsSettings, PhrasingSetting, PhrasingSettings, GuitarifySettings, HocketSetting, HocketSettings, DriftSetting, DriftSettings, ProgressionSetting, ProgressionSettings, ShapeSetting, VoiceLeadingSetting, VoiceLeadingSettings, StepRowSetting, GlideSettings, ShortenSettings, RushSettings, SwellSettings, versioned, ArpSetting, ArpSettings, AutoRatchetSetting, AutoRatchetSettings
+from llamatron.composition.generator_settings import MusicianSetting, MusicianSettings, FollowChordsSetting, FollowChordsSettings, PhrasingSetting, PhrasingSettings, GuitarifySettings, HocketSetting, HocketSettings, DriftSetting, DriftSettings, ProgressionSetting, ProgressionSettings, ShapeSetting, VoiceLeadingSetting, VoiceLeadingSettings, StepRowSetting, GlideSettings, ShortenSettings, RushSettings, SwellSettings, versioned, ArpSetting, ArpSettings, AutoRatchetSetting, AutoRatchetSettings
 from llamatron.composition.groove import Groove, new_groove
 from llamatron.composition.instrument import Instrument
 from llamatron.music import midi
@@ -124,6 +124,7 @@ DESCRIBED = [
     (HocketSetting, HocketSettings.SETTINGS, ()),
     (FollowChordsSetting, FollowChordsSettings.SETTINGS, ()),
     (PhrasingSetting, PhrasingSettings.SETTINGS, ()),
+    (MusicianSetting, MusicianSettings.SETTINGS, ()),
     (GuitarifySetting, GuitarifySettings.SETTINGS, ()),
 ]
 

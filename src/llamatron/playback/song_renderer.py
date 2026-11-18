@@ -28,6 +28,7 @@ from llamatron.support.rational import Rational
 from llamatron.composition.file_format import REGISTER_NAMES, GeneratorKind, Restart, Section
 from llamatron.generators.base import Continuation
 from llamatron.generators.follow_chords import FollowChords
+from llamatron.generators.musician import Surroundings
 from llamatron.music.sound import CHORD, HELD, HELD_SOUND, KIND
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.support.random_source import random_source
@@ -36,6 +37,7 @@ from llamatron.playback.clip_slot_player import ClipSlotPlayer
 from llamatron.playback.drift import DriftPlay, drifts_named
 from llamatron.playback.pattern_player import check_pattern_has_a_scale
 from llamatron.playback.grab_source import GrabSource
+from llamatron.playback.tune_source import TuneSource
 from llamatron.playback.registers import RegisterChange, RegisterReader, RegisterRecorder, RegisterTimeline, starting_values, with_resets
 from llamatron.playback.written_scene import WrittenScene
 from llamatron.grid.clip_grid import ClipGrid
@@ -107,7 +109,7 @@ class SongRenderer:
     lane wins.
     """
 
-    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources')
+    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources')
 
     def __init__(self, song, *, seed=None, looping_scenes_go_round=False):
         """Render a song, with a seed in place of the song's own if one is given, so that any render can be repeated.
@@ -144,6 +146,7 @@ class SongRenderer:
         # The clips waiting on the chords of a track they follow, as (scene, track), which finds tracks following each other in a circle, and the chords each followed track plays in each written scene, worked out once.
         self._following = []
         self._chord_sources = {}
+        self._tune_sources = {}
 
     def instrument_of(self, track):
         """Return a track's instrument, or None when it has none."""
@@ -598,6 +601,27 @@ class SongRenderer:
             self._chord_sources[key] = ChordSource(clip)
         return self._chord_sources[key]
 
+    def tune_heard(self, *, scene, track, source, counting):
+        """Return when the tune sounds on the track a musician reads it from, in a written-out scene, after that track's own chains, or None when the track plays nothing there, is no track of the song or is the musician's own.
+
+        The track's finished clip is found as a followed track's chords are, so tracks that read each other in a circle are refused the same way.
+        """
+        if source is None or source == track or source not in self._song.get_track_names() or scene.get_clip_slot(source) is None:
+            return None
+        key = (scene.get_number(), source, counting)
+        if key not in self._tune_sources:
+            waiting = [*self._following, (scene.get_number(), track)]
+            if (scene.get_number(), source) in waiting:
+                tracks = [name for _, name in waiting[waiting.index((scene.get_number(), source)):]]
+                raise SongFileError(errors.ERR_CIRCULAR_FOLLOW.format(scene=scene.describe(), loop=GRAB_ARROW.join([*tracks, source])))
+            self._following.append((scene.get_number(), track))
+            try:
+                clip = self._counted_clip(scene=scene, track=source)[0] if counting else self.get_clip(scene=scene, track=source)
+            finally:
+                self._following.pop()
+            self._tune_sources[key] = TuneSource(clip)
+        return self._tune_sources[key]
+
     def make_generator(self, *, step, scene, track, chain, index, key=None, counting=False):
         """Return the generator for one step of a chain, as a clip slot on a track in a scene uses it.
 
@@ -612,6 +636,13 @@ class SongRenderer:
             return settings.generator_for(where=errors.ERR_WHERE_CHAIN.format(chain=chain, kind=step.kind), bar=self._song.get_time_signature().bar_length())
         place = self._song.get_track_names().index(track)
         seed = None if self._seed is None else self._seed * SEED_SONG_FACTOR + scene.get_number() * SEED_SCENE_FACTOR + place * SEED_TRACK_FACTOR + index
+        if step.kind == GeneratorKind.MUSICIAN:
+            signature = self._song.get_time_signature()
+            surroundings = Surroundings(
+                section=scene.get_scene().get_section(), chords=self.chords_followed(scene=scene, track=track, source=settings.get_chords_from(), counting=counting),
+                tune=self.tune_heard(scene=scene, track=track, source=settings.get_tune_from(), counting=counting),
+            )
+            return settings.generator_for(where=errors.ERR_WHERE_CHAIN.format(chain=chain, kind=step.kind), bar=signature.bar_length(), beat=signature.beat_length(), surroundings=surroundings, seed=seed)
         pattern_step = self._song.get_pattern_step_size(self._song.get_pattern(scene.get_clip_slot(track).get_pattern_name()))
         continuation = None if key is None else self.continuation(settings=settings, scene=scene, track=track, key=key, counting=counting)
         return settings.make_generator(

@@ -54,6 +54,7 @@ class Section:
     GUITARIFIES = 'guitarifies'
     FOLLOW_CHORDS = 'follow_chords'
     PHRASINGS = 'phrasings'
+    MUSICIANS = 'musicians'
     CHAINS = 'chains'
     GROOVES = 'grooves'
     INSTRUMENTS = 'instruments'
@@ -436,6 +437,7 @@ class GeneratorKind:
     GUITARIFY = 'guitarify'
     FOLLOW_CHORDS = 'follow_chords'
     PHRASING = 'phrasing'
+    MUSICIAN = 'musician'
 
 
 # The step sizes the editor offers, shortest first. Any other length can be typed.
@@ -715,7 +717,7 @@ NAMED_GENERATORS = {
     GeneratorKind.DENSITY: Section.DENSITIES, GeneratorKind.SWELL: Section.SWELLS, GeneratorKind.ARTICULATE: Section.ARTICULATES,
     GeneratorKind.GLIDE: Section.GLIDES, GeneratorKind.SHORTEN: Section.SHORTENS, GeneratorKind.RUSH: Section.RUSHES, GeneratorKind.DRAG: Section.DRAGS,
     GeneratorKind.HOCKET: Section.HOCKETS, GeneratorKind.GUITARIFY: Section.GUITARIFIES, GeneratorKind.FOLLOW_CHORDS: Section.FOLLOW_CHORDS,
-    GeneratorKind.PHRASING: Section.PHRASINGS,
+    GeneratorKind.PHRASING: Section.PHRASINGS, GeneratorKind.MUSICIAN: Section.MUSICIANS,
 }
 
 

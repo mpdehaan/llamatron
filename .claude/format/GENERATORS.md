@@ -45,6 +45,29 @@ Reference notes for Claude, one part of `.claude/format/`: every generator and w
 - `tests/playback/test_step_rows.py` tests them; `14_acid_glide.yml` is the Glide and Shorten demo and
   its drop has the Rush and the Drags.
 
+### Musician
+
+- The generator section `musicians` (`MusicianSettings`, kind `musician`, `MusicianSetting`), under the picker's heading
+  "Band Generators" (`labels.GeneratorGroup.BAND`): one kind of generator for every player of a band, whose Instrument
+  setting chooses among the fifteen classes of `generators/musician.py` (`MUSICIANS`), each a subclass of `Musician` that
+  says the instrument's lowest and highest note and what its player does unasked (`USUAL_GIVES_WAY`, `USUAL_NOTES`). One
+  kind with an Instrument setting was chosen over fifteen kinds, so that a new instrument is a small class and no new page.
+- Settings: `instrument`, `chords_from` and `tune_from` (tracks, which a rename follows, `REFERENCES`), `activity`,
+  `loudness` (-3 to 3), `looseness` (0 to 3), `gives_way`, `accents`, `notes`, `range`, and `by_section`, a dictionary by
+  kind of section (`SECTION_KINDS`) of `plays` (true or false) and `played` (a form), checked by
+  `check_musician_by_section`. A value that is what the musician does unasked is left out of the file; for `gives_way` and
+  `notes` that is the instrument's.
+- What it does, in order (`Musician._generate`): rests where the section's `plays` is off; follows the chords of the track
+  named (through `FollowChords`, pitched instruments only); the section's form; activity; gives way to the tune; holds or
+  shortens notes; accents; range; loudness and looseness. Every note heard is one the clip wrote. Chance is used only for a
+  loose player's loudness, drawn from the render's seed.
+- `SongRenderer.make_generator` builds it with `Surroundings` (`section` from the written scene's scene, `chords` a
+  `ChordSource` as Follow Chords gets, `tune` a `TuneSource` of the named track's finished clip, `playback/tune_source.py`,
+  found by `SongRenderer.tune_heard`, which refuses a circle of tracks as `chords_followed` does).
+- `generators/parts.py` holds `Part` and `parts_of`, the sounds of a clip with their starts, which Phrasing shares.
+- Stage 1 shapes the clip's own notes. Riffs by section, a musician choosing among patterns, are not built.
+- `tests/generators/test_musician.py` and `tests/tui/test_tui_musician.py` test it; `26_musician.yml` is its demo.
+
 ### Phrasing
 
 - The generator section `phrasings` (`PhrasingSettings`, kind `phrasing`, `PhrasingSetting`), the user's design, under

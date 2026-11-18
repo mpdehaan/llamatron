@@ -42,7 +42,7 @@ from llamatron.support.revised import notes_change
 
 
 # The kinds of generator whose settings name a track of the song.
-KINDS_NAMING_A_TRACK = (GeneratorKind.HOCKET, GeneratorKind.FOLLOW_CHORDS)
+KINDS_NAMING_A_TRACK = (GeneratorKind.HOCKET, GeneratorKind.FOLLOW_CHORDS, GeneratorKind.MUSICIAN)
 
 
 def _check_scale_name(*, value, song):

@@ -24,7 +24,7 @@ import unittest
 
 from llamatron.macro_composer.wizard_choices import genre_names
 from llamatron.tui.screens.wizard.wizard_page import WizardPage
-from tests.support.ui_testing import BREATHES, FOLLOWS, PICKED, TRADE, CLIPS, LAZY, PUSH, SLIDES, CLAVE, CLIPPED, FADE, FOLK, POP, SMOOTH, SWAY, LEAD, ROLLS, THIN, UITest, UP_ARP, leaf_pages
+from tests.support.ui_testing import STRUMMER, BREATHES, FOLLOWS, PICKED, TRADE, CLIPS, LAZY, PUSH, SLIDES, CLAVE, CLIPPED, FADE, FOLK, POP, SMOOTH, SWAY, LEAD, ROLLS, THIN, UITest, UP_ARP, leaf_pages
 from llamatron.composition import limits
 from llamatron.strings import errors, labels, legends, marks
 from llamatron.composition.setlist import DEFAULT_SCALE
@@ -42,6 +42,7 @@ from llamatron.tui.screens.generators.progression_editor import ProgressionEdito
 from llamatron.tui.screens.generators.voice_leading_editor import VoiceLeadingEditor
 from llamatron.tui.screens.generators.guitarify_editor import GuitarifyEditor
 from llamatron.tui.screens.generators.follow_chords_editor import FollowChordsEditor
+from llamatron.tui.screens.generators.musician_editor import MusicianEditor
 from llamatron.tui.screens.generators.phrasing_editor import PhrasingEditor
 from llamatron.tui.screens.generators.hocket_editor import HocketEditor
 from llamatron.tui.screens.generators.strum_editor import StrumEditor
@@ -263,7 +264,7 @@ class TestFieldsOnThePages(UITest):
         return [
             SongPage(holder), ScenePage(holder=holder, index=FIRST_SCENE), ClipPage(holder=holder, index=FIRST_SCENE, track=LEAD), ArpEditor(holder=holder, name=UP_ARP),
             TrackEditor(holder=holder, name=LEAD), RegistersPage(holder), FilePage(holder), AutoRatchetEditor(holder=holder, name=ROLLS), DriftEditor(holder=holder, name=SWAY),
-            ProgressionEditor(holder=holder, name=POP), VoiceLeadingEditor(holder=holder, name=SMOOTH), HocketEditor(holder=holder, name=TRADE), FollowChordsEditor(holder=holder, name=FOLLOWS), PhrasingEditor(holder=holder, name=BREATHES), GuitarifyEditor(holder=holder, name=PICKED), StrumEditor(holder=holder, name=FOLK), EuclidEditor(holder=holder, name=CLAVE), GlideEditor(holder=holder, name=SLIDES), ShortenEditor(holder=holder, name=CLIPS),
+            ProgressionEditor(holder=holder, name=POP), VoiceLeadingEditor(holder=holder, name=SMOOTH), HocketEditor(holder=holder, name=TRADE), FollowChordsEditor(holder=holder, name=FOLLOWS), PhrasingEditor(holder=holder, name=BREATHES), MusicianEditor(holder=holder, name=STRUMMER), GuitarifyEditor(holder=holder, name=PICKED), StrumEditor(holder=holder, name=FOLK), EuclidEditor(holder=holder, name=CLAVE), GlideEditor(holder=holder, name=SLIDES), ShortenEditor(holder=holder, name=CLIPS),
             RushEditor(holder=holder, name=PUSH), DragEditor(holder=holder, name=LAZY),
             DensityEditor(holder=holder, name=THIN), SwellEditor(holder=holder, name=FADE), ArticulateEditor(holder=holder, name=CLIPPED),
             ScalePage(holder=holder, name=DEFAULT_SCALE), InstrumentEditor(holder=holder, name=AN_INSTRUMENT), self.a_wizard(holder),

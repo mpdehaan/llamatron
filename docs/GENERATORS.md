@@ -38,7 +38,7 @@ changes only what you edited.
 
 ## Generator Kinds
 
-The generators fall into seven categories by what they change, as the sidebar and the picker of a new generator's type group them.
+The generators fall into eight categories by what they change, as the sidebar and the picker of a new generator's type group them.
 
 ### Arrangement
 
@@ -57,6 +57,12 @@ How each note is played: joined, short, or phrased.
 | [Glide](generators/GLIDE.md) | Runs notes on chosen steps into the next note | `examples/learning/14_acid_glide.yml` |
 | [Phrasing](generators/PHRASING.md) | Plays a tune in lines, as a singer would: a breath after each, a rise and fall, notes choppy or flowing | `examples/learning/25_phrasing.yml` |
 | [Shorten](generators/SHORTEN.md) | Plays notes on chosen steps short | `examples/learning/14_acid_glide.yml` |
+
+### Band Generators
+
+| Generator | What it does | Demo |
+| --- | --- | --- |
+| [Musician](generators/MUSICIAN.md) | Plays a clip as a player of the band would: by the kind of section, round the tune, with the instrument's habits | `examples/learning/26_musician.yml` |
 
 ### Harmony
 
