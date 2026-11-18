@@ -28,6 +28,7 @@ The demos in `examples/learning/`, in the order to learn them, each teaching one
 - [Guitarify](#guitarify): `23_guitarify.yml`
 - [Follow Chords](#follow_chords): `24_follow_chords.yml`
 - [Phrasing](#phrasing): `25_phrasing.yml`
+- [Musician](#musician): `26_musician.yml`
 <!-- end of the generated index -->
 
 <a id="hello_world"></a>
@@ -479,3 +480,25 @@ with the settings together.
 | phrasing |
 | :---: |
 | [✓](../generators/PHRASING.md) |
+
+<a id="musician"></a>
+## Musician: `26_musician.yml`
+
+A band in G major whose players each have one bar. The first scene plays every pattern as written,
+all the time. The scenes after it hand the same patterns to Musician generators: in the verse the
+rhythm guitar plays softer, the hi-hat keeps to the beats, the organ sits out and the lead guitar
+plays only where the tune rests; in the chorus everyone plays and the organ holds each chord; in the
+breakdown the bass plays one hit a bar and the rhythm guitar is muted.
+
+[`examples/learning/26_musician.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/26_musician.yml) · G major · 104 BPM · 2:09 · 7 scenes · 9 tracks
+
+| chords | chains | follow chords | musician | ties |
+| :---: | :---: | :---: | :---: | :---: |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../generators/FOLLOW_CHORDS.md) | [✓](../generators/MUSICIAN.md) | [✓](../PATTERNS.md#ties) |
+<!-- end of the generated summary of 26_musician -->
+
+**New Features Introduced**
+
+| musician |
+| :---: |
+| [✓](../generators/MUSICIAN.md) |

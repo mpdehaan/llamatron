@@ -30,6 +30,7 @@ from llamatron.tui.screens.generators.euclid_editor import EuclidEditor
 from llamatron.tui.screens.generators.glide_editor import GlideEditor
 from llamatron.tui.screens.generators.guitarify_editor import GuitarifyEditor
 from llamatron.tui.screens.generators.follow_chords_editor import FollowChordsEditor
+from llamatron.tui.screens.generators.musician_editor import MusicianEditor
 from llamatron.tui.screens.generators.phrasing_editor import PhrasingEditor
 from llamatron.tui.screens.generators.hocket_editor import HocketEditor
 from llamatron.tui.screens.generators.progression_editor import ProgressionEditor
@@ -76,6 +77,7 @@ GENERATOR_PAGES = {
         GeneratorListing(kind=GeneratorKind.GUITARIFY, section=Section.GUITARIFIES, label=labels.MSG_GUITARIFY_LABEL, group=labels.GeneratorGroup.VOICING, EDITOR=GuitarifyEditor),
         GeneratorListing(kind=GeneratorKind.FOLLOW_CHORDS, section=Section.FOLLOW_CHORDS, label=labels.MSG_FOLLOW_CHORDS_LABEL, group=labels.GeneratorGroup.HARMONY, EDITOR=FollowChordsEditor),
         GeneratorListing(kind=GeneratorKind.PHRASING, section=Section.PHRASINGS, label=labels.MSG_PHRASING_LABEL, group=labels.GeneratorGroup.ARTICULATION, EDITOR=PhrasingEditor),
+        GeneratorListing(kind=GeneratorKind.MUSICIAN, section=Section.MUSICIANS, label=labels.MSG_MUSICIAN_LABEL, group=labels.GeneratorGroup.BAND, EDITOR=MusicianEditor),
     ))
 }
 

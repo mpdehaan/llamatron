@@ -145,7 +145,7 @@ def new_setlist():
         SetlistSetting.STEP_SIZE: defaults.DEFAULT_STEP_SIZE,
         SetlistSetting.DEFAULT_OCTAVE: defaults.DEFAULT_OCTAVE, SetlistSetting.DEFAULT_DRUM_OCTAVE: defaults.DEFAULT_DRUM_OCTAVE,
         SetlistSetting.OCTAVE_LABELS: defaults.DEFAULT_OCTAVE_LABELS,
-        Section.PATTERNS: {first_pattern: {**starter_pattern(), PatternSetting.GROUP: first_track}}, Section.ARPS: {}, Section.AUTO_RATCHETS: {}, Section.DRIFTS: {}, Section.PROGRESSIONS: {}, Section.VOICE_LEADINGS: {}, Section.STRUMS: {}, Section.GUITARIFIES: {}, Section.EUCLIDS: {}, Section.DENSITIES: {}, Section.SWELLS: {}, Section.ARTICULATES: {}, Section.GLIDES: {}, Section.SHORTENS: {}, Section.RUSHES: {}, Section.DRAGS: {}, Section.HOCKETS: {}, Section.FOLLOW_CHORDS: {}, Section.PHRASINGS: {}, Section.CHAINS: {},
+        Section.PATTERNS: {first_pattern: {**starter_pattern(), PatternSetting.GROUP: first_track}}, Section.ARPS: {}, Section.AUTO_RATCHETS: {}, Section.DRIFTS: {}, Section.PROGRESSIONS: {}, Section.VOICE_LEADINGS: {}, Section.STRUMS: {}, Section.GUITARIFIES: {}, Section.EUCLIDS: {}, Section.DENSITIES: {}, Section.SWELLS: {}, Section.ARTICULATES: {}, Section.GLIDES: {}, Section.SHORTENS: {}, Section.RUSHES: {}, Section.DRAGS: {}, Section.HOCKETS: {}, Section.FOLLOW_CHORDS: {}, Section.PHRASINGS: {}, Section.MUSICIANS: {}, Section.CHAINS: {},
         Section.SONGS: {names_text.MSG_DEFAULT_SONG_NAME: song},
     }
 

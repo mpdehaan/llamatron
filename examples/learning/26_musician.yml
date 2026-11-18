@@ -1,0 +1,260 @@
+version: 1.0.487
+title: Musician
+description: a band that plays its patterns as written, then the same patterns played by musicians who know a verse from a chorus and leave room for the tune
+notes: |
+  Musician: a band at 104 beats a minute in G major. Every player has one bar, written over chord
+  I, and the song's chords are written once, on the muted track called SILENT Chords. The patterns
+  are the same in every scene: only who plays them differs.
+  Run it with: llamatron examples/learning/26_musician.yml --to ableton --replace
+
+  Scene 1, as written: each pattern goes through a Follow Chords generator and nothing else. Every
+  player plays every note all the time, the lead guitar on top of the tune.
+  Scene 2, a verse: each clip is played by a Musician instead. The rhythm guitar plays softer, the
+  hi-hat keeps to the beats, the organ sits out, and the lead guitar plays only where the tune
+  rests, since a lead guitarist plays in the gaps.
+  Scene 3, a chorus: everyone plays the part whole. The organ comes in and holds each chord into
+  the next, as an organ does, and the rhythm guitar still backs off a little under the tune.
+  Scenes 4 and 5, the second verse and chorus: the same players, who know which is which.
+  Scene 6, a breakdown: the bass plays a hit at the start of each bar, the rhythm guitar is
+  muted, and the snare and the hi-hat sit out.
+  Scene 7, the last chorus.
+
+  Try it: open the generator called rhythm guitar, open the heading In a verse, and change Played
+  while scene 2 plays. Then change Gives way on the generator called lead guitar to not at all.
+
+  When changing this demo:
+  - Keep every pattern the same in all seven scenes, and scene 1 without a Musician.
+  - Keep the SILENT Chords track muted and every scene's kind of section set.
+real_time: true
+protected: true
+
+scales:
+  G Major: { root: G, type: major }
+
+patterns:
+  chords written:
+    steps: 4
+    step_size: 1
+    degree: [1, 5, 6, 4]
+    octave: [4, 4, 4, 4]
+    chord: [3, 3, 3, 3]
+  tune:
+    steps: 32
+    step_size: 1/8
+    degree: [3, ~, 3, 4, 5, ~, 5, ~, 6, ~, 5, ~, ~, ~, ~, ~, 4, ~, 4, 5, 6, ~, 6, ~, 5, ~, 3, ~, ~, ~, ~, ~]
+    octave: [5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~]
+    tie: [false, true, false, false, false, true, false, true, false, true, false, true, false, false, false, false, false, true, false, false, false, true, false, true, false, true, false, true, false, false, false, false]
+  licks:
+    steps: 8
+    step_size: 1/8
+    degree: [5, 6, 1, 6, 5, 3, 5, 6]
+    octave: [5, 5, 6, 5, 5, 5, 5, 5]
+    velocity: [100, 84, 104, 84, 96, 84, 92, 88]
+  strum:
+    steps: 8
+    step_size: 1/8
+    degree: [1, 1, 1, 1, 1, 1, 1, 1]
+    octave: [4, 4, 4, 4, 4, 4, 4, 4]
+    chord: [3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [96, 70, 84, 70, 92, 70, 84, 74]
+  organ:
+    steps: 4
+    step_size: 1/4
+    degree: [1, ~, 1, ~]
+    octave: [4, ~, 4, ~]
+    chord: [3, ~, 3, ~]
+    velocity: [76, ~, 70, ~]
+  bass:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, 1, 1, 5, ~, 1, 5]
+    octave: [3, ~, 3, 3, 3, ~, 3, 3]
+    velocity: [104, ~, 88, 92, 96, ~, 88, 92]
+  kick:
+    steps: 8
+    drum: true
+    step_size: 1/8
+    degree: [C, ~, ~, C, C, ~, ~, ~]
+    octave: [3, ~, ~, 3, 3, ~, ~, ~]
+  snare:
+    steps: 4
+    drum: true
+    step_size: 1/4
+    degree: [~, D, ~, D]
+    octave: [~, 3, ~, 3]
+  hats:
+    steps: 8
+    drum: true
+    step_size: 1/8
+    degree: [F, F, F, F, F, F, F, F]
+    accidental: ["#", "#", "#", "#", "#", "#", "#", "#"]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [90, 60, 80, 60, 90, 60, 80, 60]
+
+follow_chords:
+  follow: { chords_from: SILENT Chords }
+
+musicians:
+  rhythm guitar:
+    instrument: rhythm guitarist
+    chords_from: SILENT Chords
+    tune_from: tune
+    accents: backbeat
+    by_section:
+      verse: { played: softer }
+      breakdown: { played: muted }
+  bass:
+    instrument: bassist
+    chords_from: SILENT Chords
+    by_section:
+      breakdown: { played: hits }
+  organ:
+    instrument: backing organ
+    chords_from: SILENT Chords
+    tune_from: tune
+    by_section:
+      verse: { plays: false }
+      breakdown: { plays: false }
+  lead guitar:
+    instrument: lead guitarist
+    chords_from: SILENT Chords
+    tune_from: tune
+    by_section:
+      breakdown: { plays: false }
+  hats:
+    instrument: drummer
+    looseness: 1
+    by_section:
+      verse: { played: thinned }
+      breakdown: { plays: false }
+  snare:
+    instrument: drummer
+    by_section:
+      breakdown: { plays: false }
+
+chains:
+  follow:
+    - follow_chords: follow
+  rhythm guitar:
+    - musician: rhythm guitar
+  bass:
+    - musician: bass
+  organ:
+    - musician: organ
+  lead guitar:
+    - musician: lead guitar
+  hats:
+    - musician: hats
+  snare:
+    - musician: snare
+
+instruments:
+  finger bass: { device: "*FluidSynth", gm_sound: 34 }
+  steel guitar: { device: "*FluidSynth", gm_sound: 26 }
+  clean guitar: { device: "*FluidSynth", gm_sound: 28 }
+  drawbar organ: { device: "*FluidSynth", gm_sound: 17 }
+  warm pad: { device: "*FluidSynth", gm_sound: 90 }
+  flute: { device: "*FluidSynth", gm_sound: 74 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  musician:
+    tempo: 104
+    scale: G Major
+    genre: Rock
+
+    tracks:
+      SILENT Chords: { mute: true, instrument: warm pad }
+      kick: { drum: true, instrument: drum kit }
+      snare: { drum: true, instrument: drum kit }
+      hats: { drum: true, instrument: drum kit }
+      bass: { instrument: finger bass }
+      rhythm guitar: { instrument: steel guitar }
+      organ: { instrument: drawbar organ }
+      lead guitar: { instrument: clean guitar }
+      tune: { instrument: flute }
+
+    scenes:
+      - name: "as written"
+        tracks:
+          SILENT Chords: { pattern: chords written, repeat: 2 }
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: snare, repeat: 8 }
+          hats: { pattern: hats, repeat: 8 }
+          bass: { pattern: bass, chains: [follow], repeat: 8 }
+          rhythm guitar: { pattern: strum, chains: [follow], repeat: 8 }
+          organ: { pattern: organ, chains: [follow], repeat: 8 }
+          lead guitar: { pattern: licks, chains: [follow], repeat: 8 }
+          tune: { pattern: tune, repeat: 2 }
+      - name: "a verse"
+        section: verse
+        tracks:
+          SILENT Chords: { pattern: chords written, repeat: 2 }
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: snare, chains: [snare], repeat: 8 }
+          hats: { pattern: hats, chains: [hats], repeat: 8 }
+          bass: { pattern: bass, chains: [bass], repeat: 8 }
+          rhythm guitar: { pattern: strum, chains: [rhythm guitar], repeat: 8 }
+          organ: { pattern: organ, chains: [organ], repeat: 8 }
+          lead guitar: { pattern: licks, chains: [lead guitar], repeat: 8 }
+          tune: { pattern: tune, repeat: 2 }
+      - name: "a chorus"
+        section: chorus
+        tracks:
+          SILENT Chords: { pattern: chords written, repeat: 2 }
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: snare, chains: [snare], repeat: 8 }
+          hats: { pattern: hats, chains: [hats], repeat: 8 }
+          bass: { pattern: bass, chains: [bass], repeat: 8 }
+          rhythm guitar: { pattern: strum, chains: [rhythm guitar], repeat: 8 }
+          organ: { pattern: organ, chains: [organ], repeat: 8 }
+          lead guitar: { pattern: licks, chains: [lead guitar], repeat: 8 }
+          tune: { pattern: tune, repeat: 2 }
+      - name: "the second verse"
+        section: verse
+        tracks:
+          SILENT Chords: { pattern: chords written, repeat: 2 }
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: snare, chains: [snare], repeat: 8 }
+          hats: { pattern: hats, chains: [hats], repeat: 8 }
+          bass: { pattern: bass, chains: [bass], repeat: 8 }
+          rhythm guitar: { pattern: strum, chains: [rhythm guitar], repeat: 8 }
+          organ: { pattern: organ, chains: [organ], repeat: 8 }
+          lead guitar: { pattern: licks, chains: [lead guitar], repeat: 8 }
+          tune: { pattern: tune, repeat: 2 }
+      - name: "the second chorus"
+        section: chorus
+        tracks:
+          SILENT Chords: { pattern: chords written, repeat: 2 }
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: snare, chains: [snare], repeat: 8 }
+          hats: { pattern: hats, chains: [hats], repeat: 8 }
+          bass: { pattern: bass, chains: [bass], repeat: 8 }
+          rhythm guitar: { pattern: strum, chains: [rhythm guitar], repeat: 8 }
+          organ: { pattern: organ, chains: [organ], repeat: 8 }
+          lead guitar: { pattern: licks, chains: [lead guitar], repeat: 8 }
+          tune: { pattern: tune, repeat: 2 }
+      - name: "a breakdown"
+        section: breakdown
+        tracks:
+          SILENT Chords: { pattern: chords written, repeat: 2 }
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: snare, chains: [snare], repeat: 8 }
+          hats: { pattern: hats, chains: [hats], repeat: 8 }
+          bass: { pattern: bass, chains: [bass], repeat: 8 }
+          rhythm guitar: { pattern: strum, chains: [rhythm guitar], repeat: 8 }
+          organ: { pattern: organ, chains: [organ], repeat: 8 }
+          lead guitar: { pattern: licks, chains: [lead guitar], repeat: 8 }
+          tune: { pattern: tune, repeat: 2 }
+      - name: "the last chorus"
+        section: chorus
+        tracks:
+          SILENT Chords: { pattern: chords written, repeat: 2 }
+          kick: { pattern: kick, repeat: 8 }
+          snare: { pattern: snare, chains: [snare], repeat: 8 }
+          hats: { pattern: hats, chains: [hats], repeat: 8 }
+          bass: { pattern: bass, chains: [bass], repeat: 8 }
+          rhythm guitar: { pattern: strum, chains: [rhythm guitar], repeat: 8 }
+          organ: { pattern: organ, chains: [organ], repeat: 8 }
+          lead guitar: { pattern: licks, chains: [lead guitar], repeat: 8 }
+          tune: { pattern: tune, repeat: 2 }

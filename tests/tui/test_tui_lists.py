@@ -17,7 +17,7 @@
 """The Tracks, Scales, Generators and Chains pages and their editors."""
 
 from tests.support.ui_testing import (
-    BREATHES, CLAVE, CLIPPED, CLIPS, FADE, FOLK, FOLLOWS, KEY_SHOWN, LAZY, PICKED, POP, PUSH, ROLLS, SLIDES, SMOOTH, SWAY, THIN, TRADE, UP_ARP, UITest, fixed_text, key_name, key_of,
+    STRUMMER, BREATHES, CLAVE, CLIPPED, CLIPS, FADE, FOLK, FOLLOWS, KEY_SHOWN, LAZY, PICKED, POP, PUSH, ROLLS, SLIDES, SMOOTH, SWAY, THIN, TRADE, UP_ARP, UITest, fixed_text, key_name, key_of,
 )
 from llamatron.strings import labels, legends, marks, messages, names as names_text
 from llamatron.tui.drawing import NOTHING
@@ -783,7 +783,7 @@ class TestChainEditor(UITest):
             (GeneratorKind.ARP, UP_ARP), (GeneratorKind.AUTO_RATCHET, ROLLS), (GeneratorKind.DRIFT, SWAY), (GeneratorKind.PROGRESSION, POP), (GeneratorKind.VOICE_LEADING, SMOOTH),
             (GeneratorKind.STRUM, FOLK), (GeneratorKind.EUCLID, CLAVE), (GeneratorKind.DENSITY, THIN), (GeneratorKind.SWELL, FADE), (GeneratorKind.ARTICULATE, CLIPPED),
             (GeneratorKind.GLIDE, SLIDES), (GeneratorKind.SHORTEN, CLIPS), (GeneratorKind.RUSH, PUSH), (GeneratorKind.DRAG, LAZY), (GeneratorKind.HOCKET, TRADE),
-            (GeneratorKind.GUITARIFY, PICKED), (GeneratorKind.FOLLOW_CHORDS, FOLLOWS), (GeneratorKind.PHRASING, BREATHES),
+            (GeneratorKind.GUITARIFY, PICKED), (GeneratorKind.FOLLOW_CHORDS, FOLLOWS), (GeneratorKind.PHRASING, BREATHES), (GeneratorKind.MUSICIAN, STRUMMER),
         ]
         self.assertEqual(self.app.screen.options[1:], [step_shown(kind=kind, name=name) for kind, name in named])
         self.app.screen.place = 2

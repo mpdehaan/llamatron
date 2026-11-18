@@ -27,7 +27,7 @@ import unittest
 from llamatron.composition.clip_slot import ClipSlot
 from llamatron.composition.chain import Chain
 from llamatron.composition import defaults
-from llamatron.composition.generator_settings import FollowChordsSetting, FollowChordsSettings, HocketSetting, HocketSettings
+from llamatron.composition.generator_settings import FollowChordsSetting, FollowChordsSettings, HocketSetting, HocketSettings, MusicianSetting, MusicianSettings
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.scene import Scene
@@ -82,7 +82,7 @@ GROOVE_USES = 3
 EXAMPLES = example_sets()
 # The classes that declare which of their settings name things, and where each keeps its settings' names. A chain names
 # generators by its steps, which aren't settings, so it answers for itself.
-SETTINGS_OF = {ClipSlot: ClipSlotSetting, Scene: SceneSetting, Song: SongSetting, Track: TrackSetting, HocketSettings: HocketSetting, FollowChordsSettings: FollowChordsSetting}
+SETTINGS_OF = {ClipSlot: ClipSlotSetting, Scene: SceneSetting, Song: SongSetting, Track: TrackSetting, HocketSettings: HocketSetting, FollowChordsSettings: FollowChordsSetting, MusicianSettings: MusicianSetting}
 # One name given to a pattern, a scale, a chain, a groove, an arp, an AutoRatchet and a track at once.
 SHARED = 'shared'
 RENAMED_SCALE = 'the scale renamed'

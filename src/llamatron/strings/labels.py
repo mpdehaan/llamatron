@@ -89,7 +89,7 @@ MSG_CAPTION_WORDS = {
     Section.DRIFTS: 'drift', Section.PROGRESSIONS: 'progression', Section.VOICE_LEADINGS: 'voice leading', Section.STRUMS: 'strum',
     Section.EUCLIDS: 'Euclid', Section.DENSITIES: 'density', Section.SWELLS: 'swell', Section.ARTICULATES: 'articulate',
     Section.GLIDES: 'glide', Section.SHORTENS: 'shorten', Section.RUSHES: 'rush', Section.DRAGS: 'drag', Section.HOCKETS: 'hocket', Section.GUITARIFIES: 'guitarify',
-    Section.FOLLOW_CHORDS: 'follow chords', Section.PHRASINGS: 'phrasing',
+    Section.FOLLOW_CHORDS: 'follow chords', Section.PHRASINGS: 'phrasing', Section.MUSICIANS: 'musician',
 }
 MSG_SCENE_CAPTION_WORD = 'scene'
 MSG_CLIP_CAPTION_WORD = 'clip'
@@ -282,6 +282,7 @@ MSG_NOTES_KIND = 'notes'
 class GeneratorGroup:
     ARRANGEMENT = 'Arrangement'
     ARTICULATION = 'Articulation'
+    BAND = 'Band Generators'
     HARMONY = 'Harmony'
     RHYTHM = 'Rhythm'
     TIMING = 'Timing'
@@ -324,6 +325,20 @@ MSG_PHRASING_LINE_NAMES = {1: '1 bar', 2: '2 bars', 4: '4 bars'}
 MSG_PHRASING_BREATH_LABEL = 'Breath'
 MSG_PHRASING_RISE_LABEL = 'Rise and fall'
 MSG_PHRASING_NOTES_LABEL = 'Notes'
+# tui/screens/generators/musician_editor.py: a musician's settings, then a heading for each kind of section.
+MSG_MUSICIAN_LABEL = 'Musician'
+MSG_MUSICIAN_INSTRUMENT_LABEL = 'Instrument'
+MSG_TUNE_FROM_LABEL = 'Tune from'
+MSG_MUSICIAN_ACTIVITY_LABEL = 'Activity'
+MSG_MUSICIAN_LOUDNESS_LABEL = 'Loudness'
+MSG_MUSICIAN_LOOSENESS_LABEL = 'Looseness'
+MSG_MUSICIAN_GIVES_WAY_LABEL = 'Gives way'
+MSG_MUSICIAN_ACCENTS_LABEL = 'Accents'
+MSG_MUSICIAN_NOTES_LABEL = 'Notes'
+MSG_MUSICIAN_RANGE_LABEL = 'Range'
+MSG_MUSICIAN_PLAYS_LABEL = 'Plays'
+MSG_MUSICIAN_PLAYED_LABEL = 'Played'
+MSG_MUSICIAN_SECTION_HEADING = 'In a {section}'
 MSG_GUITAR_SHAPE_SECTION = 'Shape'
 MSG_GUITAR_STROKES_SECTION = 'Strokes'
 MSG_GUITAR_SHAPE_LABEL = 'Shape chords'

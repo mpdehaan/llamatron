@@ -34,9 +34,10 @@ from llamatron.composition.naming import default_scale_name
 from llamatron.composition import defaults
 from llamatron.strings import labels, messages, names as names_text
 from llamatron.composition.file_format import EuclidPart, ReadyBar, ShapePart, StrumPart
-from llamatron.composition.generator_settings import DEFAULT_DRAG, DEFAULT_RUSH, DEFAULT_SHORTEN, PhrasingSetting
+from llamatron.composition.generator_settings import DEFAULT_DRAG, DEFAULT_RUSH, DEFAULT_SHORTEN, MusicianSetting, PhrasingSetting
+from llamatron.generators.musician import BUSY
 from llamatron.generators.phrasing import DEEP_BREATH
-from tests.support.ui_testing import BREATHES, FOLLOWS, PICKED, TRADE, CLIPS, LAZY, PUSH, SLIDES, CLAVE, CLIPPED, FOLK, POP, SMOOTH, FADE, THIN
+from tests.support.ui_testing import STRUMMER, BREATHES, FOLLOWS, PICKED, TRADE, CLIPS, LAZY, PUSH, SLIDES, CLAVE, CLIPPED, FOLK, POP, SMOOTH, FADE, THIN
 from llamatron.composition.file_format import DriftValue, DriftVersion, GeneratorKind, RegisterName, RegisterSetting, Row, Section, SongSetting
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
@@ -630,6 +631,17 @@ class TestPhrasingEditorUndo(UndoTest):
         await self.select_field(labels.MSG_PHRASING_BREATH_LABEL)
         await self.press(keybindings.PhrasingEditor.MORE)
         self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.PHRASING, name=BREATHES).get_own(PhrasingSetting.BREATH), DEEP_BREATH)
+        await self.check_undo_and_redo(before=before, after=self.data())
+
+
+class TestMusicianEditorUndo(UndoTest):
+
+    async def test_a_busier_musician_is_one_step(self):
+        await self.open_generator(section=Section.MUSICIANS)
+        before = self.data()
+        await self.select_field(labels.MSG_MUSICIAN_ACTIVITY_LABEL)
+        await self.press(keybindings.MusicianEditor.MORE)
+        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.MUSICIAN, name=STRUMMER).get_own(MusicianSetting.ACTIVITY), BUSY)
         await self.check_undo_and_redo(before=before, after=self.data())
 
 

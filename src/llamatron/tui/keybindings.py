@@ -381,6 +381,10 @@ class PhrasingEditor(FieldPage):
     """A Phrasing's editor, with the settings keys alone."""
 
 
+class MusicianEditor(FieldPage):
+    """A musician's editor, with the settings keys alone."""
+
+
 class GuitarifyEditor(FieldPage):
     """A Guitarify's editor, with the settings keys alone."""
 

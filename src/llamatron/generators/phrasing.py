@@ -24,9 +24,7 @@ another tune. No note is left out, no pitch changes and nothing is drawn by chan
 """
 
 from llamatron.generators.base import ClipGenerator
-from llamatron.music import midi
-from llamatron.music.sound import CHORD, GLIDE, HELD, HELD_SOUND, KIND, LENGTH, MIDI, NAME, NOTE, NOTES, PHRASE, REST, VELOCITY, Sound
-from llamatron.support.length import ZERO, Length
+from llamatron.generators.parts import parts_of
 from llamatron.support.rational import Rational
 
 EIGHTH = Rational(1, 8)
@@ -63,8 +61,6 @@ LONGEST_HALVED_NOTE = QUARTER
 GAP_BEFORE_SAME_PITCH = Rational(1, 32)
 # The parts of a bar a line's main note may start on: the bar's start and its middle.
 PARTS_OF_BAR = 2
-# What stands for the pitch of a sound that has none of its own to compare.
-NO_PITCH = -1
 
 
 class Phrasing(ClipGenerator):
@@ -81,7 +77,7 @@ class Phrasing(ClipGenerator):
         self._join = join
 
     def _generate(self, clip):
-        voiced = _voiced(clip.resolved_sounds())
+        voiced = parts_of(clip.resolved_sounds())
         for line in self._lines_of(voiced):
             self._join_notes(line)
             self._take_breath(line)
@@ -146,60 +142,6 @@ class Phrasing(ClipGenerator):
         return max(strong or late or line, key=_weight)
 
 
-class _Part:
-    """One sound of a clip while it is phrased: where it starts, how long its place is and how long it is heard, in whole notes."""
-
-    __slots__ = ('start', 'place', 'heard', 'sound')
-
-    def __init__(self, *, start, sound):
-        self.start = start
-        self.place = Length.rational(sound[LENGTH])
-        self.sound = sound[HELD_SOUND] if sound[KIND] == HELD else sound
-        self.heard = Length.rational(self.sound[LENGTH])
-
-    def is_note(self):
-        """Return whether the sound is a note or a chord of them, which phrasing changes; a rest and a phrase are left as they are."""
-        return self.sound[KIND] in (NOTE, CHORD)
-
-    def pitch(self):
-        """Return the highest pitch that sounds, to tell a note from the note after it."""
-        if self.sound[KIND] == CHORD:
-            return max((note[MIDI] for note in self.sound[NOTES] if note[KIND] == NOTE), default=NO_PITCH)
-        return self.sound[MIDI]
-
-    def louder_by(self, steps):
-        """Change how loud the sound is by steps of velocity, held to what MIDI allows; a note with no loudness of its own is left."""
-        if self.sound[KIND] == CHORD:
-            self.sound = Sound.chord([_louder(note=note, steps=steps) for note in self.sound[NOTES]])
-        else:
-            self.sound = _louder(note=self.sound, steps=steps)
-
-    def sounds(self):
-        """Return the sounds that take this one's place: itself as heard, held where it outlasts its place and followed by a rest where it stops short."""
-        if not self.is_note():
-            return [Sound.with_length(self.sound, Length.of(self.place))] if self.sound[KIND] in (REST, PHRASE) else [self._as_placed(self.sound)]
-        played = _lasting(sound=self.sound, heard=self.heard)
-        if self.heard == self.place:
-            return [played]
-        if self.heard > self.place:
-            return [Sound.held(played, Length.of(self.place))]
-        return [played, Sound.rest(Length.of(self.place - self.heard))]
-
-    def _as_placed(self, sound):
-        """Return a sound phrasing does not change, in its place: held again where it was held."""
-        return sound if self.heard == self.place else Sound.held(sound, Length.of(self.place))
-
-
-def _voiced(sounds):
-    """Return each sound of a clip as a part, with the time it starts at from the clip's start."""
-    parts = []
-    now = ZERO
-    for sound in sounds:
-        parts.append(_Part(start=Length.rational(now), sound=sound))
-        now = Length.add(now, sound[LENGTH])
-    return parts
-
-
 def _share(*, start, first, last):
     """Return how far a time is from a first time to a last, from 0 to 1, which is 1 where the two are one time."""
     return Rational(1) if last == first else (start - first) / (last - first)
@@ -208,19 +150,3 @@ def _share(*, start, first, last):
 def _weight(part):
     """Return what makes one note more a line's main note than another: its length, then its pitch, then how late it starts."""
     return (part.heard, part.pitch(), part.start)
-
-
-def _lasting(*, sound, heard):
-    """Return a note or a chord heard for a time, a chord's shorter notes no longer than that."""
-    length = Length.of(heard)
-    if sound[KIND] == CHORD:
-        return Sound.chord([Sound.with_length(note, length) for note in sound[NOTES]])
-    return Sound.with_length(sound, length)
-
-
-def _louder(*, note, steps):
-    """Return a note louder or softer by steps of velocity, within what MIDI allows; any other sound, and a note with no loudness yet, as it is."""
-    if note[KIND] != NOTE or note[VELOCITY] is None:
-        return note
-    velocity = max(midi.MIN_VELOCITY, min(midi.MAX_VELOCITY, note[VELOCITY] + steps))
-    return Sound.note(length=note[LENGTH], midi=note[MIDI], velocity=velocity, glide=note[GLIDE], name=note[NAME])
