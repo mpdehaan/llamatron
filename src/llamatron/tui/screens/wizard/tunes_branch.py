@@ -22,6 +22,7 @@ over it until the person gives the wizard's notes back.
 """
 
 from llamatron.macro_composer.arranger import NOBODY
+from llamatron.macro_composer.wizard_choices import FIRST_TUNE_TAKE
 from llamatron.strings import labels, legends, marks, messages
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.screens.shared.field import ChoiceField, Field
@@ -32,7 +33,8 @@ FROM_SONG = ''
 
 
 class TunesBranch(Branch):
-    """A row for each kind of section that has a tune: ENTER edits the tune's notes in the pattern editor, and Bksp gives an edited tune back to the wizard."""
+    """Who plays the song's tune, then a section for each kind of section that has a tune: the tune, whose notes ENTER edits in the pattern
+    editor and Bksp gives back to the wizard, and who plays it there."""
 
     __slots__ = ()
 
@@ -59,10 +61,20 @@ class TunesBranch(Branch):
             return []
         fields = [self.song_player_field()]
         for kind in kinds:
+            fields.append(self.page().heading(label=self.heading_of(kind), is_set=lambda kind=kind: self.kind_is_set(kind)))
             if choices.tune_player_in(kind) is not None:
                 fields.append(self.tune_field(kind))
             fields.append(self.player_field(kind))
         return fields
+
+    def heading_of(self, kind):
+        """Return the heading of a kind of section's part of the panel."""
+        return labels.MSG_WIZARD_KIND_HEADING.format(kind=kind)
+
+    def kind_is_set(self, kind):
+        """Return whether anything of a kind of section was chosen here: its notes edited, another take, or a player of its own."""
+        choices = self.choices()
+        return choices.tune_is_own(kind) or choices.tune_take(kind) != FIRST_TUNE_TAKE or choices.tune_played_by_in(kind) is not None
 
     def song_player_field(self):
         choices = self.choices()
@@ -77,7 +89,7 @@ class TunesBranch(Branch):
         own = choices.tune_played_by_in(kind)
         from_song = marks.MSG_WIZARD_FROM_SONG_SHOWN.format(value=choices.role_title(choices.tune_played_by()))
         names = {FROM_SONG: from_song, NOBODY: labels.MSG_WIZARD_NOBODY, **{role: choices.role_title(role) for role in offered}}
-        return ChoiceField(page=self.page(), label=labels.MSG_WIZARD_KIND_PLAYED_BY_LABEL.format(kind=kind), choices=list(names), names=list(names.values()),
+        return ChoiceField(page=self.page(), label=labels.MSG_WIZARD_PLAYED_BY_LABEL, choices=list(names), names=list(names.values()),
                            current=own or FROM_SONG, shown=names[own or FROM_SONG],
                            set=self.page().choosing(lambda role: choices.set_tune_played_by_in(kind=kind, role=None if role == FROM_SONG else role)))
 
@@ -97,19 +109,18 @@ class TunesBranch(Branch):
             question = messages.MSG_WIZARD_TUNE_GIVE_BACK_QUESTION.format(kind=kind)
             page.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_TUNE_GIVE_BACK_TITLE, messages=[question], starts_on_no=True),
                      then=page.choosing(lambda _: choices.set_tune_pattern(kind=kind, pattern=None)))
-        return Field(label=labels.MSG_WIZARD_KIND_TUNE_LABEL.format(kind=kind), value=shown, enter=lambda: page.edit_tune(kind), enter_what=legends.MSG_WIZARD_EDIT_NOTES_WHAT,
+        return Field(label=labels.MSG_WIZARD_TUNE_ROW_LABEL, value=shown, enter=lambda: page.edit_tune(kind), enter_what=legends.MSG_WIZARD_EDIT_NOTES_WHAT,
                      clear=give_back if own else None, clear_what=legends.MSG_TUNE_USUAL_WHAT)
 
     def kind_under_cursor(self):
         """Return the kind of section whose tune the cursor is on, the first where the cursor is in the tree, or None for a song with no tune."""
         kinds = self.kinds()
-        label = self.page().label_under_cursor()
-        own = (labels.MSG_WIZARD_KIND_TUNE_LABEL, labels.MSG_WIZARD_KIND_PLAYED_BY_LABEL)
-        return next((kind for kind in kinds if label in [each.format(kind=kind) for each in own]), kinds[0] if kinds else None)
+        heading = self.page().heading_over_cursor()
+        return next((kind for kind in kinds if self.heading_of(kind) == heading), kinds[0] if kinds else None)
 
     def on_a_tune(self):
         """Return whether the cursor is on a tune's row, where the tune's keys work."""
-        return self.page().label_under_cursor() in [labels.MSG_WIZARD_KIND_TUNE_LABEL.format(kind=kind) for kind in self.kinds()]
+        return self.page().label_under_cursor() == labels.MSG_WIZARD_TUNE_ROW_LABEL
 
     def takes(self):
         """A new take writes another tune for the kind under the cursor alone, asking first where the tune was edited by hand."""

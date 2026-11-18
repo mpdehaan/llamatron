@@ -24,6 +24,7 @@ from llamatron.tui import keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
+from llamatron.tui.screens.shared.field import Heading
 from llamatron.tui.screens.wizard.wizard_page import WizardPage
 from tests.support.ui_testing import fixed_text
 from tests.tui.test_tui_wizard import WizardTest
@@ -38,6 +39,8 @@ A_DEGREE = 7
 SECOND_TAKE_SHOWN = 2
 # The attribute a field keeps its label in.
 LABEL = 'label'
+# The most fields a kind of section's part of the panel holds under its heading.
+FIELDS_OF_A_KIND = 2
 
 
 class TestWizardTunes(WizardTest):
@@ -51,11 +54,34 @@ class TestWizardTunes(WizardTest):
         await self.go_to_named_branch(labels.MSG_WIZARD_TUNES_BRANCH)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
 
-    def label(self, *, kind=A_KIND):
-        return labels.MSG_WIZARD_KIND_TUNE_LABEL.format(kind=kind)
+    def heading(self, *, kind=A_KIND):
+        return labels.MSG_WIZARD_KIND_HEADING.format(kind=kind)
+
+    async def select_in_kind(self, *, label, kind=A_KIND):
+        """Move the cursor to a field of a kind of section's part of the panel, opening the kind's heading first where it is closed."""
+        await self.select_field(self.heading(kind=kind))
+        page = self.wizard()
+        if not page.is_open(page.field()):
+            await self.press(keybindings.FieldPage.TOGGLE)
+        for _ in range(FIELDS_OF_A_KIND):
+            if page.label_under_cursor() != label:
+                await self.press(Key.DOWN)
+        self.assertEqual(page.label_under_cursor(), label)
+        self.assertEqual(page.heading_over_cursor(), self.heading(kind=kind))
+
+    def labels_under(self, *, kind=A_KIND):
+        """Return the labels of the fields that show under a kind of section's heading."""
+        fields = self.wizard().shown_fields()
+        start = [getattr(field, LABEL, None) for field in fields].index(self.heading(kind=kind)) + 1
+        under = []
+        for field in fields[start:]:
+            if isinstance(field, Heading):
+                break
+            under.append(field.label)
+        return under
 
     async def open_tune(self):
-        await self.select_field(self.label())
+        await self.select_in_kind(label=labels.MSG_WIZARD_TUNE_ROW_LABEL)
         await self.press(Key.ENTER)
 
     def change_first_step(self):
@@ -63,11 +89,16 @@ class TestWizardTunes(WizardTest):
         editor = self.app.screen
         editor.document().set_step_value(name=editor.item, row=Row.DEGREE, step=0, value=A_DEGREE)
 
-    async def test_the_panel_has_a_row_for_each_kind_of_section_with_a_tune(self):
+    async def test_the_panel_has_a_heading_for_each_kind_of_section_with_a_tune_closed_until_opened_with_its_tune_inside(self):
+        choices = self.choices()
+        headings = [field.label for field in self.wizard().shown_fields() if isinstance(field, Heading)]
+        self.assertEqual(headings, [self.heading(kind=kind) for kind in choices.tune_kinds()])
+        for kind in choices.tune_kinds():
+            self.assertNotIn(choices.tune_pattern_name(kind), self.text())
+            await self.select_in_kind(label=labels.MSG_WIZARD_TUNE_ROW_LABEL, kind=kind)
+            self.assertIn(choices.tune_pattern_name(kind), self.text())
+            self.assertEqual(self.labels_under(kind=kind), [labels.MSG_WIZARD_TUNE_ROW_LABEL, labels.MSG_WIZARD_PLAYED_BY_LABEL])
         shown = self.text()
-        for kind in self.choices().tune_kinds():
-            self.assertIn(self.label(kind=kind), shown)
-            self.assertIn(self.choices().tune_pattern_name(kind), shown)
         self.assertNotIn(marks.MSG_WIZARD_TUNE_EDITED.format(name=self.choices().tune_pattern_name(A_KIND)), shown)
 
     async def test_enter_opens_the_pattern_editor_on_a_draft_and_esc_unchanged_keeps_nothing(self):
@@ -116,7 +147,7 @@ class TestWizardTunes(WizardTest):
         await self.open_tune()
         self.change_first_step()
         await self.press(Key.ESCAPE)
-        await self.select_field(self.label())
+        await self.select_in_kind(label=labels.MSG_WIZARD_TUNE_ROW_LABEL)
         await self.press(keybindings.WizardPage.CLEAR)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(Key.ENTER)
@@ -129,7 +160,7 @@ class TestWizardTunes(WizardTest):
         other = next(kind for kind in choices.tune_kinds() if kind != A_KIND)
         first = choices.tune_pattern(A_KIND)
         others = choices.tune_pattern(other)
-        await self.select_field(self.label())
+        await self.select_in_kind(label=labels.MSG_WIZARD_TUNE_ROW_LABEL)
         await self.press(keybindings.WizardPage.NEW_TAKE)
         self.assertEqual(choices.tune_take(A_KIND), FIRST_TUNE_TAKE + 1)
         self.assertNotEqual(choices.tune_pattern(A_KIND)[Row.DEGREE], first[Row.DEGREE])
@@ -141,7 +172,7 @@ class TestWizardTunes(WizardTest):
         await self.open_tune()
         self.change_first_step()
         await self.press(Key.ESCAPE)
-        await self.select_field(self.label())
+        await self.select_in_kind(label=labels.MSG_WIZARD_TUNE_ROW_LABEL)
         await self.press(keybindings.WizardPage.NEW_TAKE)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(Key.ENTER)
@@ -154,6 +185,7 @@ class TestWizardTunes(WizardTest):
         choices = self.choices()
         usual = choices.tune_played_by()
         other = next(role for role in choices.tune_players_offered() if role != usual)
+        await self.select_in_kind(label=labels.MSG_WIZARD_PLAYED_BY_LABEL)
         self.assertIn(marks.MSG_WIZARD_FROM_SONG_SHOWN.format(value=choices.role_title(usual)), self.text())
         await self.select_field(labels.MSG_WIZARD_TUNE_LABEL)
         await self.press(Key.ENTER)
@@ -165,18 +197,19 @@ class TestWizardTunes(WizardTest):
 
     async def test_a_kinds_played_by_takes_a_player_of_its_own_or_nobody_which_hides_the_kinds_tune(self):
         choices = self.choices()
-        played_by = labels.MSG_WIZARD_KIND_PLAYED_BY_LABEL.format(kind=A_KIND)
-        await self.select_field(played_by)
+        other_kind = next(kind for kind in choices.tune_kinds() if kind != A_KIND)
+        await self.select_in_kind(label=labels.MSG_WIZARD_PLAYED_BY_LABEL, kind=other_kind)
+        await self.select_in_kind(label=labels.MSG_WIZARD_PLAYED_BY_LABEL)
         await self.press(Key.ENTER)
         await self.type(labels.MSG_WIZARD_NOBODY)
         await self.press(Key.ENTER)
         self.assertEqual(choices.tune_played_by_in(A_KIND), NOBODY)
         self.assertIsNone(choices.tune_player_in(A_KIND))
-        labels_shown = [getattr(field, LABEL, None) for field in self.wizard().shown_fields()]
-        self.assertNotIn(self.label(), labels_shown)
-        self.assertIn(played_by, labels_shown)
-        other_kind = next(kind for kind in choices.tune_kinds() if kind != A_KIND)
-        self.assertIn(self.label(kind=other_kind), labels_shown)
+        self.assertEqual(self.labels_under(), [labels.MSG_WIZARD_PLAYED_BY_LABEL])
+        self.assertEqual(self.labels_under(kind=other_kind), [labels.MSG_WIZARD_TUNE_ROW_LABEL, labels.MSG_WIZARD_PLAYED_BY_LABEL])
+        # The cursor stays on the field that was changed, whose heading now says something inside was chosen.
+        self.assertEqual(self.wizard().label_under_cursor(), labels.MSG_WIZARD_PLAYED_BY_LABEL)
+        self.assertEqual(self.wizard().heading_over_cursor(), self.heading())
 
     async def test_the_set_cannot_be_saved_opened_or_exported_while_a_tune_is_edited(self):
         await self.open_tune()

@@ -76,6 +76,11 @@ class FieldPage(Page):
         """Return a section's heading, closed until opened and remembered open or closed for the session."""
         return Heading(label=label, is_set=is_set, toggle=lambda: self.toggle_section(label))
 
+    def heading_over_cursor(self):
+        """Return the label of the heading the cursor is on or under, or None where the cursor is above every heading."""
+        over = [field for field in self.shown_fields()[:self.place + 1] if isinstance(field, Heading)]
+        return over[-1].label if over else None
+
     def toggle_section(self, label):
         self.app.open_field_sections ^= {label}
 
