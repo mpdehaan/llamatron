@@ -19,7 +19,7 @@ import unittest
 import yaml
 
 from llamatron.composition.setlist import Setlist
-from llamatron.composition.setlist_writer import dump_setlist
+from llamatron.composition.setlist_writer import _text, dump_setlist
 from tests.support.rendering import as_setlist, render_data
 from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SetlistSetting, SongSetting
 from llamatron.support.example_sets import example_sets
@@ -61,8 +61,22 @@ WALTZ = '3/4'
 A_2 = 'a'
 UNTITLED = 'untitled'
 
+# Texts that YAML would read as a number and as true unless they are quoted.
+TEXT_OF_A_NUMBER = '1'
+TEXT_OF_TRUE = 'true'
+
 
 class TestDumpSetlist(unittest.TestCase):
+
+    def test_values_python_calls_equal_are_each_written_as_their_own_kind(self):
+        # 1, 1.0 and true are equal to Python; a text remembered for one must never be handed back for another.
+        self.assertEqual([_text(1), _text(1.0), _text(True), _text(1), _text(True), _text(1.0)], ['1', '1.0', 'true', '1', 'true', '1.0'])
+        self.assertEqual([_text(0), _text(False), _text(0)], ['0', 'false', '0'])
+
+    def test_a_text_that_would_read_back_as_something_else_is_quoted_every_time(self):
+        for _ in range(2):
+            self.assertEqual(yaml.safe_load(_text(TEXT_OF_A_NUMBER)), TEXT_OF_A_NUMBER)
+            self.assertEqual(yaml.safe_load(_text(TEXT_OF_TRUE)), TEXT_OF_TRUE)
 
     def test_reads_back_the_same(self):
         self.assertEqual(yaml.safe_load(dump_setlist(SETLIST)), SETLIST)
