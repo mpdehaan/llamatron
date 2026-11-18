@@ -212,6 +212,10 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   is to be taken as fixed. This does not extend to the rest of llamatron, whose designs are the user's
   and are changed only on the user's word, and it never extends to the example sets, which are rewritten only with the user's
   say-so.
+- **The professor may be told real works by name** (the user's rule). When the user asks about specific songs, Claude names them to
+  the professor, who discusses their structure literally, quoting no lyrics and writing out no melody, riff or bass line. The
+  names stay in the conversation: no name of a work, a band or an artist goes into the repository, its git history, the notes or
+  the queue, where what was learnt is written as principles only.
 - **The code maintainability expert** (the user's rule): a fresh agent that reads the code knowing nothing of Claude's reasoning
   and judges it as an engineer who wants code that is inspiring to read, clear, well explained, logically organized, fast and easy
   to work on, so that others want to contribute. It is consulted only when the user says to, never on Claude's own initiative,
