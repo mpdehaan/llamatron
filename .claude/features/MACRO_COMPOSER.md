@@ -292,15 +292,11 @@ clouds; generate and test, with motif development and counterpoint last.
   over its drums, looping; on a section the section once (`tui/made_preview.py`, `Branch.listens`). It plays a song made from the
   choices and thrown away, through FluidSynth, and any change of a choice stops it. The whole song is never played in the wizard
   (the user's rule: small parts have previews, the song is heard on Arrange).
-- **A line edited by hand** (`macro_composer/line_edits.py`, `tui/dialogs/tune_dialog.py`): the Hooks panel's Notes field opens the
-  hook's line in the Tune dialog, a note moved along the scale, made longer and shorter, taken out and put in; the line is kept as
-  the melody's `hook_notes` habit and is the hook wherever the hook is said (`set_hook_line`). A section that says the hook has a
-  Hook row under Tune that opens the same line.
-- **A section's lines, one by one** (`tui/dialogs/lines_dialog.py`, `section_lines`, `set_section_line`): a section's Lines field
-  opens a row a line. A line that is a new idea of the tune takes a breath of its own in eighths and an early note or none
-  (`phrasing.LINE_BREATH`, `LINE_EARLY`, laid over the section's plan of lines); any line takes notes written by hand
-  (`melody.LINE_NOTES`), which are then the idea wherever the section says it again. `L` plays the section's tune. Kept in the
-  section's own values under `lines`, with or without a song plan.
+- **Notes written by hand** are patterns: a tune's and a riff's notes open in the pattern editor from the wizard
+  (`WizardPage.open_pattern`, `OWN_TUNES`, a riff's `own`). The Lines window and the one-line note dialog are gone. A song kept
+  from before still plays its `hook_notes`, its sections' `lines` and a riff's line (`macro_composer/line_edits.py`), and the
+  page shows each as the person's with Bksp to give it back: the Hooks panel's Notes row, a section's Lines row under Tune and
+  the riff's Notes field.
 - **A section's panel is in groups** (the user's design): Kind, Bars and Energy on top, then Tune, Harmony, Shape, Joins and Who
   plays, headings that open and close as a settings page's do; a group with nothing to offer in the section is left out. The Hooks
   panel keeps the switch and Notes on top, with Kind, Where it is said and Riff under headings. The Melody and Form panels are to

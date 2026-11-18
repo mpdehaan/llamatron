@@ -191,6 +191,21 @@ class WizardPage(FieldPage):
         self.open_pattern(setlist=setlist, name=name, keep=lambda pattern: self._choices.set_riff_pattern(riff=riff, pattern=pattern),
                           kept=messages.MSG_WIZARD_RIFF_KEPT.format(riff=riff), unchanged=messages.MSG_WIZARD_RIFF_UNCHANGED.format(riff=riff))
 
+    def edit_song_riff(self):
+        """Open the pattern editor on the notes of the song's first riff, as its first player plays them."""
+        try:
+            setlist, _ = self._choices.made_for_listening()
+            name = self._choices.song_riff_pattern_name()
+        except (ValueError, SongFileError) as problem:
+            self.refuse(str(problem))
+            return
+        if name is None:
+            self.refuse(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
+            return
+        riff = labels.MSG_WIZARD_GROUP_RIFF
+        self.open_pattern(setlist=setlist, name=name, keep=self._choices.set_song_riff_pattern, kept=messages.MSG_WIZARD_RIFF_KEPT.format(riff=riff),
+                          unchanged=messages.MSG_WIZARD_RIFF_UNCHANGED.format(riff=riff))
+
     def open_pattern(self, *, setlist, name, keep, kept, unchanged):
         """Open the pattern editor on a pattern of a draft of the set the choices make. When the editor closes, keep() is given the
         pattern's data if it changed, and the status line says kept or unchanged."""

@@ -109,21 +109,6 @@ class TestWizardListening(PlaybackTest):
         await self.press(keybindings.WizardPage.LISTEN, keybindings.WizardPage.CLOSE)
         self.assertIsNone(self.preview().playing())
 
-    async def test_the_lines_dialog_plays_the_section_s_tune_and_stops_when_it_closes(self):
-        await self.go_to(A_VERSE)
-        await self.press(keybindings.WizardPage.INTO_FIELDS)
-        await self.select_field(labels.MSG_WIZARD_LINES_LABEL)
-        await self.press(Key.ENTER, keybindings.LinesDialog.LISTEN)
-        what = messages.MSG_WIZARD_LISTEN_SECTION.format(number=A_VERSE_NUMBER, name=A_VERSE)
-        self.assertEqual(self.preview().playing(), what)
-        await self.let_the_preview_play(A_WHILE)
-        self.assertTrue(self.note_ons(FLUIDSYNTH_PORT))
-        # A change to a line stops what was heard, since it is no longer what the lines make.
-        await self.press(keybindings.LinesDialog.LONGER)
-        self.assertIsNone(self.preview().playing())
-        await self.press(keybindings.LinesDialog.LISTEN, keybindings.LinesDialog.CLOSE)
-        self.assertIsNone(self.preview().playing())
-
     async def test_with_the_hook_off_the_hooks_panel_plays_the_riff(self):
         choices = self.app.screen.choices()
         choices.set_hook(False)

@@ -16,18 +16,21 @@
 
 """Tests of the song wizard's Hooks panel in groups, and of the riff on it."""
 
+from llamatron.composition.file_format import Row
 from llamatron.macro_composer.riffs import ACCENT_CHORDS, MUTED_ROOTS, RESTS_BETWEEN, RIFF_BETWEEN, RIFF_NOTES, RIFF_UNDER_TUNE, SINGLE_NOTES
 from llamatron.strings import labels as labels_text, marks, messages
 from llamatron.tui import keybindings
-from llamatron.tui.dialogs.tune_dialog import TuneDialog
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.keys import Key
-from tests.support.ui_testing import forward_key, key_of
+from tests.support.ui_testing import key_of
 from tests.tui.test_tui_wizard import WizardTest
 
 A_GENRE = 'rock'
 A_SUBGENRE = 'hard rock'
 A_SEED = 11
 NEW_LINE = '\n'
+# A degree a test writes on a riff's first step.
+A_DEGREE = 7
 
 
 class TestWizardRiffPanel(WizardTest):
@@ -53,10 +56,10 @@ class TestWizardRiffPanel(WizardTest):
     def more(self):
         return key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)
 
-    async def test_the_panel_keeps_the_hook_s_notes_on_top_and_groups_the_rest(self):
+    async def test_the_panel_keeps_the_hook_s_switch_on_top_and_groups_the_rest(self):
         await self.to_hooks()
         shown = self.text()
-        for said in (labels_text.MSG_WIZARD_HOOK_NOTES_LABEL, labels_text.MSG_WIZARD_GROUP_HOOK_KIND, labels_text.MSG_WIZARD_GROUP_HOOK_SAID, labels_text.MSG_WIZARD_GROUP_RIFF):
+        for said in (labels_text.MSG_WIZARD_HOOK_LABEL, labels_text.MSG_WIZARD_GROUP_HOOK_KIND, labels_text.MSG_WIZARD_GROUP_HOOK_SAID, labels_text.MSG_WIZARD_GROUP_RIFF):
             self.assertIn(said, shown)
         self.assertNotIn(labels_text.MSG_WIZARD_RIFF_PLAYED_BY_LABEL, shown)
 
@@ -83,9 +86,12 @@ class TestWizardRiffPanel(WizardTest):
         usual = choices.riff_line()
         await self.select_field(labels_text.MSG_WIZARD_RIFF_NOTES_LABEL)
         await self.press(Key.ENTER)
-        self.assertIsInstance(self.app.screen, TuneDialog)
-        await self.press(forward_key(keybindings.TuneDialog.PITCH), keybindings.TuneDialog.DONE)
+        self.assertIsInstance(self.app.screen, PatternEditor)
+        editor = self.app.screen
+        editor.document().set_step_value(name=editor.item, row=Row.DEGREE, step=0, value=A_DEGREE)
+        await self.press(Key.ESCAPE)
         self.assertTrue(choices.riff_is_own())
+        self.assertNotEqual(choices.riff_notes(), None)
         await self.select_field(labels_text.MSG_WIZARD_RIFF_NOTES_LABEL)
         await self.press(keybindings.WizardPage.CLEAR)
         self.assertFalse(choices.riff_is_own())
@@ -111,7 +117,7 @@ class TestWizardRiffPanel(WizardTest):
     async def test_the_riff_s_picture_comes_first_on_the_riff_s_fields_with_the_kick_s_strokes_over_it(self):
         choices = await self.to_hooks(riff=True)
         said = messages.MSG_WIZARD_RIFF_SAID.format(players=labels_text.MSG_WIZARD_RIFF_PLAYERS_JOINED.join(choices.role_title(role) for role in choices.get_riff_players()))
-        await self.select_field(labels_text.MSG_WIZARD_HOOK_NOTES_LABEL)
+        await self.select_field(labels_text.MSG_WIZARD_HOOK_LABEL)
         shown = self.text()
         self.assertTrue(labels_text.MSG_WIZARD_RIFF_KICK_ROW not in shown or shown.index(labels_text.MSG_WIZARD_GROUP_RIFF) < shown.index(labels_text.MSG_WIZARD_RIFF_KICK_ROW))
         await self.select_field(labels_text.MSG_WIZARD_RIFF_PLAYED_BY_LABEL)

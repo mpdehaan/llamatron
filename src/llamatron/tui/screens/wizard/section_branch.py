@@ -20,15 +20,12 @@ from llamatron.composition import limits
 from llamatron.strings import labels, legends, marks, messages
 from llamatron.macro_composer.arranger import CHORDS
 from llamatron.macro_composer.joins import LEAVES
-from llamatron.macro_composer.melody import LINE_NOTES
 from llamatron.macro_composer.song_plan import ENERGY, FADES, HIGHEST_ENERGY, LOWEST_ENERGY, NOT_AT_ALL, RISES, ROOT_OF_PLACE, SETUP, TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE
-from llamatron.macro_composer.wizard_choices import LEAVES_AS_JOIN, LINE_IS_HOOK, LINE_OWN, SCALE_TYPES, SHAPE_OF_SECTION, chords_as_text
+from llamatron.macro_composer.wizard_choices import LEAVES_AS_JOIN, LINE_OWN, SCALE_TYPES, SHAPE_OF_SECTION, chords_as_text
 from llamatron.music.note import ROOT_NAMES
-from llamatron.tui.dialogs.lines_dialog import LinesDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NumberField, Toggle
 from llamatron.tui.screens.wizard.branch import Branch, gauge_shown
-from llamatron.tui.screens.wizard.hooks_branch import hook_notes_field
 
 # What two sections of one name are told apart by: the section's number in the form and its name.
 SECTION_KEY = '{number} {name}'
@@ -82,15 +79,30 @@ class SectionBranch(Branch):
         usual = choices.section_usually_plays(place)
         players = [Toggle(label=choices.role_title(role), on=role in plays, set=self.plays_setter(role)) for role in choices.roles_in() if role in choices.roles_shown()]
         # The rest in groups, the same on every section and in the order a section is shaped; a group with nothing to offer in this section is left out.
-        says_hook = choices.hook_line() is not None and any(line[LINE_IS_HOOK] for line in choices.section_lines(place))
-        hook = [hook_notes_field(choices=choices, page=page, label=labels.MSG_WIZARD_SECTION_HOOK_LABEL)] if says_hook else []
-        groups = [(labels.MSG_WIZARD_GROUP_TUNE, [*self.lines_fields(), *hook, *([self.role_field()] if choices.section_has_role(place) else [])], lambda: self.has_own_lines() or self.has_own_role() or (says_hook and choices.hook_is_own())),
+        groups = [(labels.MSG_WIZARD_GROUP_TUNE, [*self.own_lines_fields(), *([self.role_field()] if choices.section_has_role(place) else [])], lambda: self.has_own_lines() or self.has_own_role()),
                   *[(label, [self.own_field(field) for field in own if field in of_group], self.own_checker(of_group)) for label, of_group in OWN_GROUPS],
                   (labels.MSG_WIZARD_GROUP_PLAYERS, players, lambda: sorted(plays) != sorted(usual))]
         for label, inside, is_set in groups:
             if inside:
                 fields += [page.heading(label=label, is_set=is_set), *inside]
         return fields
+
+    def own_lines_fields(self):
+        """Return the field that says how many of the section's lines a person gave notes, a breath or an early note of their own, in
+        a song made before tunes were patterns; Bksp gives every line back to the wizard. A tune's notes are now edited on the
+        Tunes and Riffs panel, so a section with no such line has no such field."""
+        choices = self.choices()
+        place = self._place
+        own = {count: line[LINE_OWN] for count, line in enumerate(choices.section_lines(place)) if line[LINE_OWN]}
+        if not own:
+            return []
+
+        def give_back(nothing):
+            for count, given in own.items():
+                for field in given:
+                    choices.set_section_line(place=place, line=count, field=field, value=None)
+        return [Field(label=labels.MSG_WIZARD_LINES_LABEL, value=lambda: marks.MSG_LINES_COUNT_OWN.format(count=len(choices.section_lines(place)), own=len(own)),
+                      clear=lambda: self.page().choosing(give_back)(None), clear_what=legends.MSG_TUNE_USUAL_WHAT)]
 
     def has_own_lines(self):
         return any(line[LINE_OWN] for line in self.choices().section_lines(self._place))
@@ -105,33 +117,6 @@ class SectionBranch(Branch):
         return lambda: any(choices.section_own(place=self._place, field=field) is not None for field in of_group)
 
     # A section's lines, one by one, in the Lines dialog.
-
-    def lines_fields(self):
-        """Return the field that says how many lines the section's tune has and how many are a person's own, where the section has a tune; ENTER opens the lines."""
-        choices = self.choices()
-        lines = choices.section_lines(self._place)
-        if not any(line[LINE_NOTES] is not None for line in lines):
-            return []
-        own = sum(1 for line in lines if line[LINE_OWN])
-        said = marks.MSG_LINES_COUNT_OWN.format(count=len(lines), own=own) if own else marks.MSG_LINES_COUNT.format(count=len(lines))
-        return [Field(label=labels.MSG_WIZARD_LINES_LABEL, value=lambda: said, enter=self.edit_lines, enter_what=legends.MSG_WIZARD_EDIT_LINES_WHAT)]
-
-    def edit_lines(self):
-        choices = self.choices()
-        page = self.page()
-        place = self._place
-
-        def set_line(*, line, field, value):
-            try:
-                page.choosing(lambda given: choices.set_section_line(place=place, line=line, field=field, value=given))(value)
-            except ValueError as problem:
-                return str(problem)
-            return None
-        section = choices.section_labels()[place]
-        dialog = LinesDialog(title=labels.MSG_WIZARD_LINES_TITLE.format(section=section), lines=lambda: choices.section_lines(place), set_line=set_line, steps_in_bar=choices.tune_steps_in_bar(),
-                             pitch_of_place=choices.pitch_of_place, title_of_player=choices.role_title, notes_title=labels.MSG_WIZARD_LINE_NOTES_TITLE.format(line='{line}', section=section),
-                             listen=lambda: page.problem_listening(what=self.listens()[0], index=place, track=choices.tune_player()), stop_listening=page.app.made_preview().stop)
-        page.ask(dialog=dialog, then=lambda nothing: None)
 
     # What a section of a planned song is given of its own: each field shows what the section takes and where from until it is given, and Bksp gives it back.
 
