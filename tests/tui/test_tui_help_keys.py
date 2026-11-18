@@ -359,9 +359,7 @@ class KeyTour(UITest):
         more = key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)
         # The walk left the tree's cursor on its last branch, so it goes back up to Genre first.
         await self.press(*[Key.UP] * len(self.app.screen.rows()), keybindings.WizardPage.INTO_FIELDS, more, keybindings.WizardPage.TO_TREE)
-        # The subgenre is chosen on the panel under Genre, which a walk's Left may have closed.
-        if labels.MSG_WIZARD_SUBGENRE_BRANCH not in [branch.name() for _, branch in self.app.screen.rows()]:
-            await self.press(Key.RIGHT)
+        # The subgenre is chosen on the panel after Genre.
         await self.press(Key.DOWN, keybindings.WizardPage.INTO_FIELDS, more)
         await self.walk()
         await self.press(keybindings.WizardPage.TO_TREE, Key.UP, keybindings.WizardPage.INTO_FIELDS)

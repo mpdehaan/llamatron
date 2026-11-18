@@ -58,6 +58,7 @@ from llamatron.tui.screens.wizard.create_branch import CreateBranch
 from llamatron.tui.screens.wizard.form_branch import FormBranch
 from llamatron.tui.screens.wizard.genre_branch import GenreBranch
 from llamatron.tui.screens.wizard.starts import FROM_LAST, REPLACING
+from llamatron.tui.screens.wizard.subgenre_branch import SubgenreBranch
 
 # How wide the tree is, with its cursor's mark, and the least the fields beside it are given.
 TREE_WIDTH = 24
@@ -362,15 +363,16 @@ class WizardPage(FieldPage):
     # The tree.
 
     def roots(self):
-        """Return the tree's top branches, in the order a song is thought through."""
-        return [GenreBranch(page=self), BandBranch(page=self), CompositionBranch(page=self), FormBranch(page=self), CreateBranch(page=self)]
+        """Return the tree's top branches, in the order a song is thought through: each is a page of the wizard, the genre and then the subgenre unlocking the rest."""
+        return [GenreBranch(page=self), SubgenreBranch(page=self), BandBranch(page=self), CompositionBranch(page=self), FormBranch(page=self), CreateBranch(page=self)]
 
     def rows(self):
         """Return the branches the tree shows, each with how deep it is: every top branch, and the branches under each open one."""
         rows = []
         for root in self.roots():
             rows.append((0, root))
-            if root.key() in self._open:
+            # A locked branch shows nothing under it, whatever was open before the choice that locked it.
+            if root.key() in self._open and not self.refusal_of(root):
                 rows += [(1, child) for child in root.children()]
         return rows
 
@@ -384,8 +386,8 @@ class WizardPage(FieldPage):
         return self.row()[1]
 
     def shows_children(self, branch):
-        """Return whether a branch of the tree is open, showing the branches under it."""
-        return branch.key() in self._open
+        """Return whether a branch of the tree is open, showing the branches under it, which a locked branch never is."""
+        return branch.key() in self._open and not self.refusal_of(branch)
 
     def move_in_tree(self, name):
         self.tree_place = cursor_moved(place=self.tree_place, name=name, count=len(self.rows()))
@@ -394,7 +396,9 @@ class WizardPage(FieldPage):
         """Open the branch under the cursor with Right and close it with Left; Left on a branch inside another goes to the branch that holds it."""
         depth, branch = self.row()
         if name == Key.RIGHT:
-            if branch.children():
+            if self.refusal_of(branch):
+                self.refuse(self.refusal_of(branch))
+            elif branch.children():
                 self._open.add(branch.key())
             return
         if depth:

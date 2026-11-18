@@ -480,8 +480,8 @@ The song wizard makes a whole song from a few choices. Nothing in the set change
 
 The tree at the left lists the wizard's parts. Up and down move through the tree, left and right close and open a part, and the settings of the part under the cursor show at the right.
 ENTER or Tab moves into the settings, and ESC or Tab moves back to the tree.
-Genre: choose a genre and a subgenre first. The key, the scale, the tempo and the form then take what the subgenre usually has, and each can be changed.
-Tune: Chords, the chord progression; Melody, the melody style of the tunes; Hooks, whether the song has a hook.
+Genre, then Subgenre: choose both first. A dim part of the tree is locked until then. The key, the scale, the tempo and the form take what the subgenre usually has, and each can be changed.
+Composition: Chords, the chord progression; Melody, the melody style of the tunes; Hooks, whether the song has a hook.
 Tunes: the tune of each kind of section. ENTER edits its notes in the pattern editor; edited notes are yours, and no choice changes them.
 A new take, in the legend on a tune, writes that tune again and leaves the rest of the song.
 Form: the sections the song plays, in order, listed under Form in the tree. On a section, I inserts a section before it, A adds one at the end, C copies it, Bksp removes it
