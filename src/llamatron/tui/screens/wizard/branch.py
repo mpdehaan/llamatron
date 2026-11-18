@@ -148,4 +148,4 @@ class Branch:
     def can_be_edited(self):
         """Return whether any field of the branch does something, so that a branch only to be read takes no cursor."""
         # The legend asks at every key, and making a panel's fields may mean making the song, so the answer is kept with the choices.
-        return self.choices().remembered(key=(EDITABLE_ANSWER, type(self).__name__, self.name()), compute=lambda: any(field.enter or field.adjust for field in self.fields()))
+        return self.choices().offered(key=(EDITABLE_ANSWER, type(self).__name__, self.name()), compute=lambda: any(field.enter or field.adjust for field in self.fields()))

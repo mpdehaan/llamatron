@@ -32,6 +32,8 @@ from llamatron.support.version import VERSION
 
 A_NAME = 'made'
 NOT_A_CHOICE = 'polka of the spheres'
+AN_OFFER = 'an offer'
+ANOTHER_OFFER = 'another offer'
 A_SEED = 11
 ANOTHER_SEED = 12
 NOT_A_NUMBER = 'fast'
@@ -478,6 +480,80 @@ class TestWizardForm(unittest.TestCase):
         again = WizardChoices.from_data(data)
         self.assertFalse(again.has_own_form())
         self.assertEqual(again.get_subgenre(), choices.get_subgenre())
+
+
+class TestWizardOffers(unittest.TestCase):
+    """What a page offers is kept until a choice changes, held through changes while a page says so, and never copied to a trial."""
+
+    def setUp(self):
+        self.choices = chosen(genre=genre_names().index(A_GENRE_WITH_TUNES))
+        self.choices.set_seed(A_SEED)
+        self.asked = 0
+
+    def offer(self):
+        def worked_out():
+            self.asked += 1
+            return self.asked
+        return self.choices.offered(key=AN_OFFER, compute=worked_out)
+
+    def change_something(self):
+        self.choices.set_tempo(self.choices.get_tempo() + 1)
+
+    def test_an_offer_is_worked_out_once_and_again_after_a_choice_changes(self):
+        self.assertEqual([self.offer(), self.offer()], [1, 1])
+        self.change_something()
+        self.assertEqual([self.offer(), self.offer()], [2, 2])
+
+    def test_a_held_offer_stays_through_a_change_and_is_worked_out_again_once_let_go(self):
+        self.offer()
+        self.choices.hold_offers()
+        self.assertTrue(self.choices.holds_offers())
+        self.change_something()
+        self.assertEqual(self.offer(), 1)
+        self.choices.release_offers()
+        self.assertFalse(self.choices.holds_offers())
+        self.assertEqual(self.offer(), 2)
+
+    def test_a_value_changed_and_put_back_while_held_costs_nothing_when_let_go(self):
+        self.offer()
+        tempo = self.choices.get_tempo()
+        self.choices.hold_offers()
+        self.change_something()
+        self.choices.set_tempo(tempo)
+        self.choices.release_offers()
+        self.assertEqual(self.offer(), 1)
+
+    def test_an_offer_found_while_held_for_other_choices_is_forgotten_even_when_the_value_is_put_back(self):
+        self.choices.offered(key=ANOTHER_OFFER, compute=lambda: None)
+        tempo = self.choices.get_tempo()
+        self.choices.hold_offers()
+        self.change_something()
+        self.assertEqual(self.offer(), 1)
+        self.choices.set_tempo(tempo)
+        self.choices.release_offers()
+        self.assertEqual(self.offer(), 2)
+
+    def test_an_offer_first_asked_for_while_held_is_worked_out(self):
+        self.choices.hold_offers()
+        self.assertEqual(self.offer(), 1)
+
+    def test_what_a_song_is_made_from_is_never_held(self):
+        self.choices.hold_offers()
+        before = self.choices.made_setlist(name=A_NAME, version=VERSION).to_data()
+        self.change_something()
+        self.assertNotEqual(self.choices.made_setlist(name=A_NAME, version=VERSION).to_data(), before)
+
+    def test_a_question_answered_by_making_songs_holds_nothing_and_leaves_the_hold_as_it_was(self):
+        self.choices.hold_offers()
+        self.offer()
+        role = self.choices.roles_in()[0]
+        self.choices.has_dynamics(role)
+        self.assertTrue(self.choices.holds_offers())
+        self.assertEqual(self.offer(), 1)
+
+    def test_the_patterns_asked_of_the_writer_are_the_patterns_of_the_set_made(self):
+        made = self.choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+        self.assertEqual(sorted(self.choices._patterns_played()), sorted(made))
 
 
 class TestWizardSongWays(unittest.TestCase):
