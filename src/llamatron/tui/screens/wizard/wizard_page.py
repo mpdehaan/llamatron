@@ -326,7 +326,9 @@ class WizardPage(FieldPage):
     def keys(self):
         if self.in_fields:
             # A settings page's keys, but for ESC, which goes back to the tree here and not from the page.
-            return [self.bind(self.KEYS.TO_TREE, action=self.to_tree), *super().keys()[1:], *self.listen_keys()]
+            take = self.branch().takes()
+            takes = [self.bind(self.KEYS.NEW_TAKE, action=take)] if take is not None else []
+            return [self.bind(self.KEYS.TO_TREE, action=self.to_tree), *super().keys()[1:], *takes, *self.listen_keys()]
         if self.moving:
             # While a branch is carried, only the keys that carry and drop it work, as in every move mode.
             return [self.bind(self.KEYS.DROP, action=self.drop), self.bind(self.KEYS.CARRY, action=self.carry)]

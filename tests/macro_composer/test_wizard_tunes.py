@@ -19,7 +19,7 @@
 import unittest
 
 from llamatron.composition.file_format import PatternSetting, Row
-from llamatron.macro_composer.wizard_choices import WizardChoices
+from llamatron.macro_composer.wizard_choices import FIRST_TUNE_TAKE, WizardChoices
 from llamatron.strings import errors
 from tests.support.ui_testing import fixed_text
 
@@ -143,3 +143,56 @@ class TestWizardTunes(unittest.TestCase):
         with self.assertRaises(ValueError):
             choices.set_tune_pattern(kind=A_KIND, pattern={**own, PatternSetting.STEPS: NOT_A_STEP_COUNT})
         self.assertEqual(choices.tune_pattern(A_KIND), own)
+
+
+class TestWizardTuneTakes(unittest.TestCase):
+
+    def test_a_new_take_writes_another_tune_for_its_kind_and_leaves_every_other_pattern_of_the_song(self):
+        choices = chosen()
+        before, name = choices.made_for_listening()
+        first = choices.tune_pattern(A_KIND)
+        usual_name = choices.tune_pattern_name(A_KIND)
+        choices.new_tune_take(A_KIND)
+        self.assertEqual(choices.tune_take(A_KIND), FIRST_TUNE_TAKE + 1)
+        taken = choices.tune_pattern(A_KIND)
+        self.assertNotEqual(taken[Row.DEGREE], first[Row.DEGREE])
+        self.assertEqual(len(taken[Row.DEGREE]), len(first[Row.DEGREE]))
+        after, _ = choices.made_for_listening()
+        took = choices.tune_pattern_name(A_KIND)
+        for pattern in before.get_pattern_names():
+            if pattern != usual_name:
+                self.assertEqual(after.get_pattern(pattern).to_data(), before.get_pattern(pattern).to_data(), pattern)
+        self.assertEqual(set(after.get_pattern_names()) - set(before.get_pattern_names()), {took})
+        self.assertEqual(set(tunes_played(choices=choices, kind=A_KIND)), {took})
+
+    def test_each_take_is_another_tune_the_same_take_is_the_same_tune_and_takes_are_kept_with_the_choices(self):
+        choices = chosen()
+        choices.new_tune_take(A_KIND)
+        second = choices.tune_pattern(A_KIND)
+        self.assertEqual(WizardChoices.from_data(choices.to_data()).tune_pattern(A_KIND), second)
+        choices.new_tune_take(A_KIND)
+        self.assertNotEqual(choices.tune_pattern(A_KIND)[Row.DEGREE], second[Row.DEGREE])
+        read = WizardChoices.from_data(choices.to_data())
+        self.assertEqual(read.tune_take(A_KIND), FIRST_TUNE_TAKE + 2)
+        self.assertEqual(read.tune_pattern(A_KIND), choices.tune_pattern(A_KIND))
+
+    def test_a_new_take_gives_up_notes_written_by_hand_and_notes_written_by_hand_win_over_a_take(self):
+        choices = chosen()
+        own = rewritten(choices.tune_pattern(A_KIND))
+        choices.set_tune_pattern(kind=A_KIND, pattern=own)
+        choices.new_tune_take(A_KIND)
+        self.assertFalse(choices.tune_is_own(A_KIND))
+        self.assertNotEqual(choices.tune_pattern(A_KIND), own)
+        choices.set_tune_pattern(kind=A_KIND, pattern=own)
+        self.assertEqual(choices.tune_pattern(A_KIND), own)
+        self.assertEqual(choices.tune_take(A_KIND), FIRST_TUNE_TAKE + 1)
+
+    def test_a_kind_with_no_tune_has_no_take_and_another_genre_starts_from_the_first_take(self):
+        choices = chosen()
+        with self.assertRaises(ValueError):
+            choices.new_tune_take(A_KIND_WITH_NO_TUNE)
+        choices.new_tune_take(A_KIND)
+        choices.set_genre(ANOTHER_GENRE)
+        choices.set_genre(A_GENRE)
+        choices.set_subgenre(A_SUBGENRE)
+        self.assertEqual(choices.tune_take(A_KIND), FIRST_TUNE_TAKE)

@@ -89,6 +89,7 @@ HOOK_PART = "a part of the hook's kind"
 DEGREES_TRIED = 5
 HOOK_LINE = "the hook's notes written by hand"
 OWN_TUNE = 'a tune written by hand'
+TUNE_TAKE = 'another take of a tune'
 A_LINE = "a line's own"
 A_RIFF = 'the riff'
 COMES_IN = 'where a player comes in'
@@ -340,6 +341,9 @@ def every_choice(choices):
     for kind in choices.tune_kinds():
         if choices.tune_pattern(kind) is not None:
             yield OWN_TUNE, kind, lambda made, kind=kind: made.set_tune_pattern(kind=kind, pattern=first_degree_changed(made.tune_pattern(kind))), [nothing_first]
+    # Another take of a tune, for each kind of section that has one.
+    for kind in choices.tune_kinds():
+        yield TUNE_TAKE, kind, lambda made, kind=kind: made.new_tune_take(kind), [nothing_first]
     # A section's lines, one by one: the first line that breathes of the first section with a tune, its breath, its early note either way and its notes moved.
     for place in range(len(choices.section_labels())):
         lines = choices.section_lines(place)

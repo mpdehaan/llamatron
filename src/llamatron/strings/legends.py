@@ -371,3 +371,4 @@ MSG_LINES_USUAL_WHAT = "wizard's line"
 MSG_WIZARD_EDIT_LINES_WHAT = 'edit lines'
 MSG_TUNE_USUAL_WHAT = "wizard's notes"
 MSG_WIZARD_EDIT_NOTES_WHAT = 'edit notes'
+MSG_NEW_TAKE_WHAT = 'new take'

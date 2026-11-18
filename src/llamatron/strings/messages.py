@@ -356,5 +356,8 @@ MSG_WIZARD_CHOOSE_FIRST = 'Choose a genre and a subgenre first.'
 # tui/screens/wizard/tunes_branch.py, tui/screens/wizard/wizard_page.py: giving an edited tune back to the wizard, and what editing a tune did.
 MSG_WIZARD_TUNE_GIVE_BACK_TITLE = 'Wizard\'s Notes'
 MSG_WIZARD_TUNE_GIVE_BACK_QUESTION = 'Lose your notes of the {kind} tune and let the wizard write the tune?'
+MSG_WIZARD_TUNE_TAKE_TITLE = 'New Take'
+MSG_WIZARD_TUNE_TAKE_QUESTION = 'Lose your notes of the {kind} tune and write a new take?'
+MSG_WIZARD_TUNE_TAKEN = 'take {take} of the {kind} tune'
 MSG_WIZARD_TUNE_KEPT = 'kept your notes of the {kind} tune'
 MSG_WIZARD_TUNE_UNCHANGED = 'the {kind} tune is unchanged'

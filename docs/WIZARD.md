@@ -46,7 +46,7 @@ The Melody panel chooses the style the tunes are written in, such as a walk by s
 
 ### Tunes
 
-The Tunes panel lists the tune of each kind of section, one for the verses and one for the choruses, so that every verse plays the same tune as verses do. `ENTER` (edit notes) on a tune opens the tune in the pattern editor, where the notes are edited as any pattern's are, and `ESC` there comes back to the wizard. A tune that was edited is marked `(edited)`, belongs to the person from then on, and is never written over by another choice; `Bksp` gives the tune back to the wizard.
+The Tunes panel lists the tune of each kind of section, one for the verses and one for the choruses, so that every verse plays the same tune as verses do. `ENTER` (edit notes) on a tune opens the tune in the pattern editor, where the notes are edited as any pattern's are, and `ESC` there comes back to the wizard. A tune that was edited is marked `(edited)`, belongs to the person from then on, and is never written over by another choice; `Bksp` gives the tune back to the wizard. `T` (new take) writes another tune for that kind of section alone, leaving the rest of the song as it was, and the row then says which take it shows.
 
 ![The song wizard's Tunes panel](screenshots/wizard_tunes.svg)
 

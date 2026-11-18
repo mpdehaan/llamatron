@@ -288,7 +288,9 @@ class WizardPage(FieldPage):
     # On a part with something to hear, as the hook, a tune or a section: the part of the song as it would be made, through FluidSynth.
     LISTEN = (Key.L, legends.KeyName.L, legends.MSG_LISTEN_WHAT)
     STOP_LISTENING = (Key.L, legends.KeyName.L, legends.MSG_STOP_LISTENING_WHAT)
-    IN_HELP = [CLOSE, TO_TREE, DROP, TREE, CARRY, FOLD, INTO_FIELDS, INSERT, ADD, COPY, DELETE, MOVE, LISTEN, STOP_LISTENING, *FieldPage.IN_HELP[1:]]
+    # On a tune: another take of it, drawn for its kind of section alone.
+    NEW_TAKE = (Key.T, legends.KeyName.T, legends.MSG_NEW_TAKE_WHAT)
+    IN_HELP = [CLOSE, TO_TREE, DROP, TREE, CARRY, FOLD, INTO_FIELDS, INSERT, ADD, COPY, DELETE, MOVE, LISTEN, STOP_LISTENING, NEW_TAKE, *FieldPage.IN_HELP[1:]]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
 
