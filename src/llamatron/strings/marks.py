@@ -452,5 +452,5 @@ MSG_WIZARD_SECTION_LINE = '{number:>2}  {name:<{width}}  {bars:>3} bars'
 MSG_WIZARD_TUNE_EDITED = '{name} (edited)'
 # A riff's row on the Riffs panel, under BARS and USED IN; a riff's row on the Riff Assign panel, under FOR and PLAYED IN; and how many a heading holds.
 MSG_WIZARD_RIFF_ROW = '{bars:>4}  {used}'
-MSG_WIZARD_RIFF_KNOWN_ROW = '{player}  {used}'
+MSG_WIZARD_RIFF_KNOWN_ROW = '{player:<{width}}  {used}'
 MSG_WIZARD_COUNT_SHOWN = '({count})'
