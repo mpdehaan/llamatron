@@ -19,6 +19,7 @@ made into a whole song, the picks checked against what each needs, and a tune sk
 
 import os
 import unittest
+import unittest.mock
 
 from llamatron.composition.file_format import ChordSymbol, GeneratorKind, PatternSetting, Row, Section
 from llamatron.composition.generator_settings import FollowChordsSetting
@@ -710,6 +711,25 @@ class TestSketchedTune(unittest.TestCase):
     def test_the_same_seed_gives_the_same_tune_and_another_seed_another(self):
         self.assertEqual(self.sketch(), self.sketch())
         self.assertNotEqual(self.sketch(), self.sketch(seed=OTHER_SEED))
+
+    def test_a_tune_asked_for_again_is_the_tune_kept_and_as_written_anew(self):
+        kept = self.sketch()
+        melody.LINES_KEPT.clear()
+        self.assertEqual(self.sketch(), kept)
+
+    def test_each_asker_gets_lines_of_its_own_to_change(self):
+        first = self.sketch()
+        first[0].clear()
+        self.assertNotEqual(self.sketch(), first)
+        self.assertTrue(self.sketch()[0])
+
+    def test_the_tunes_kept_are_forgotten_when_there_are_too_many(self):
+        melody.LINES_KEPT.clear()
+        self.sketch()
+        with unittest.mock.patch.object(melody, 'MOST_LINES_KEPT', len(melody.LINES_KEPT)):
+            written = self.sketch(seed=OTHER_SEED)
+        self.assertEqual(len(melody.LINES_KEPT), 1)
+        self.assertEqual(self.sketch(seed=OTHER_SEED), written)
 
     def test_a_line_of_the_plan_returns_and_the_lead_rests_where_the_answer_plays(self):
         lead = self.sketch()

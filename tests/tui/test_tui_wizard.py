@@ -41,7 +41,8 @@ from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.tui.screens.wizard.hook_picture import picture_of
 from llamatron.tui.screens.wizard.starts import NEW_FROM_LAST, NEW_FROM_SCRATCH, REPLACE_FROM_LAST, REPLACE_FROM_SCRATCH, STARTS
-from llamatron.tui.screens.wizard.wizard_page import WizardPage
+from llamatron.support.memory import StaleAnswer
+from llamatron.tui.screens.wizard.wizard_page import ROWS_KEPT, WizardPage
 from tests.support.ui_testing import UITest, back_key, first_key, fixed_text, forward_key, key_of
 
 # The tree's first branch, by its place from the top.
@@ -168,6 +169,26 @@ class TestWizardPage(WizardTest):
     async def test_the_new_song_is_named_as_the_tracker_names_a_new_thing(self):
         self.assertEqual(self.wizard().song_name(), new_name(word=names.MSG_NEW_SONG_WORD, taken=[names.MSG_DEFAULT_SONG_NAME]))
         self.assertIn(self.wizard().song_name(), self.text())
+
+    async def test_the_rows_and_the_fields_are_kept_until_a_choice_or_the_page_changes(self):
+        await self.choose_genre_and_subgenre()
+        wizard = self.wizard()
+        rows = wizard.rows()
+        fields = wizard.fields()
+        self.assertIs(wizard.rows(), rows)
+        self.assertIs(wizard.fields(), fields)
+        await self.press(Key.DOWN)
+        self.assertIs(wizard.rows(), rows)
+        self.assertIsNot(wizard.fields(), fields)
+        self.choices().set_tempo(self.choices().get_tempo() + 1)
+        self.assertIsNot(wizard.rows(), rows)
+
+    async def test_a_kept_answer_that_no_longer_holds_is_found_by_the_check(self):
+        await self.choose_genre_and_subgenre()
+        wizard = self.wizard()
+        wizard.rows()
+        with self.assertRaises(StaleAnswer):
+            wizard.kept(key=ROWS_KEPT, compute=lambda: [])
 
     async def test_the_cursor_stops_at_both_ends_of_the_tree(self):
         await self.press(Key.UP)

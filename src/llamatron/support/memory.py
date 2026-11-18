@@ -70,6 +70,11 @@ class Memory:
         """
         cls._checks_by_default = checks
 
+    @classmethod
+    def checks_by_default(cls):
+        """Whether memories made now check their answers, which whatever keeps answers of its own asks, to check them too."""
+        return cls._checks_by_default
+
     def __init__(self, *, checks=None):
         self._kept = {}
         self._checks = Memory._checks_by_default if checks is None else checks

@@ -18,6 +18,7 @@
 rhythm, a form laid out as scenes, and existing demos written as inputs that compose back to the same music."""
 
 import unittest
+import unittest.mock
 
 from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer import composer, decomposer, notation, shaping
@@ -132,6 +133,36 @@ class TestShaping(unittest.TestCase):
             for role in (shaping.PERCUSSION, shaping.BASS, shaping.COMPING, shaping.TUNE):
                 with self.subTest(feel=feel, role=role):
                     self.assertLessEqual(max(abs(value - LOUD) for value in self.shaped(feel=feel, role=role)), shaping.REACH)
+
+    def test_the_moves_of_a_rhythm_are_kept_and_are_the_moves_worked_out_anew(self):
+        for feel in shaping.FEELS:
+            for role in (shaping.PERCUSSION, shaping.BASS, shaping.COMPING, shaping.TUNE):
+                with self.subTest(feel=feel, role=role):
+                    kept = self.shaped(feel=feel, role=role)
+                    shaping.MOVES_KEPT.clear()
+                    self.assertEqual(self.shaped(feel=feel, role=role), kept)
+
+    def test_another_rhythm_has_moves_of_its_own(self):
+        every_step = notation.drum_rows(drum=HAT, hits=[notation.LOUD] * 16, loud=LOUD, soft=LOUD, step_size=SIXTEENTH)
+        offbeats = notation.drum_rows(drum=HAT, hits=[notation.NONE, notation.LOUD] * 8, loud=LOUD, soft=LOUD, step_size=SIXTEENTH)
+        given = dict(role=shaping.BASS, feel=shaping.FEELS[0], signature=FOUR_FOUR, compound=False)
+        self.assertNotEqual(shaping.moves(pattern=every_step, **given), shaping.moves(pattern=offbeats, **given))
+        self.assertEqual(shaping.moves(pattern=every_step, **given), shaping.moves(pattern=every_step, **given))
+
+    def test_a_note_before_a_beat_nothing_lands_on_is_pushed_and_one_before_a_note_is_not(self):
+        alone = notation.drum_rows(drum=HAT, hits=[notation.NONE, notation.NONE, notation.LOUD, notation.NONE] + [notation.NONE] * 12, loud=LOUD, soft=LOUD, step_size=SIXTEENTH)
+        followed = notation.drum_rows(drum=HAT, hits=[notation.NONE, notation.NONE, notation.LOUD, notation.LOUD] + [notation.NONE] * 12, loud=LOUD, soft=LOUD, step_size=SIXTEENTH)
+        given = dict(role=shaping.BASS, feel=shaping.FEELS[0], signature=FOUR_FOUR, compound=False)
+        self.assertEqual(shaping.moves(pattern=alone, **given)[2], shaping.PUSH)
+        self.assertNotEqual(shaping.moves(pattern=followed, **given)[2], shaping.PUSH)
+
+    def test_the_moves_kept_are_forgotten_when_there_are_too_many(self):
+        shaping.MOVES_KEPT.clear()
+        kept = self.shaped(feel=shaping.FEELS[0], role=shaping.BASS)
+        with unittest.mock.patch.object(shaping, 'MOST_MOVES_KEPT', len(shaping.MOVES_KEPT)):
+            self.shaped(feel=shaping.FEELS[0], role=shaping.TUNE)
+            self.assertEqual(len(shaping.MOVES_KEPT), 1)
+        self.assertEqual(self.shaped(feel=shaping.FEELS[0], role=shaping.BASS), kept)
 
     def test_dance_music_leans_on_the_offbeats_and_a_march_on_the_downbeat(self):
         four = self.shaped(feel=shaping.FOUR, role=shaping.PERCUSSION)

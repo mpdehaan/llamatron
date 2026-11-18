@@ -113,6 +113,16 @@ class TestMemory(unittest.TestCase):
 
 class TestAMemoryThatChecksItself(unittest.TestCase):
 
+    def test_whether_memories_check_by_default_can_be_asked(self):
+        before = Memory.checks_by_default()
+        try:
+            Memory.check_every_answer(checks=False)
+            self.assertFalse(Memory.checks_by_default())
+            Memory.check_every_answer()
+            self.assertTrue(Memory.checks_by_default())
+        finally:
+            Memory.check_every_answer(checks=before)
+
     def setUp(self):
         self.memory = Memory(checks=True)
         self.thing = ChangeMark()

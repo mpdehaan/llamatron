@@ -36,6 +36,7 @@ from llamatron.realtime.sender_process import SenderNotStarted
 from llamatron.strings import errors, help as help_text, labels, macro_composer as composer_text, marks, messages, names
 from llamatron.macro_composer.notation import KIT
 from llamatron.macro_composer.wizard_choices import USUAL_PIECE_NOTE
+from llamatron.support.memory import Memory, StaleAnswer
 from llamatron.support.version import VERSION
 from llamatron.tui import keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -75,6 +76,17 @@ BOLD_IN_COLOUR = '{bold} {colour}'
 
 # What a field keeps its label as.
 LABEL_OF_FIELD = 'label'
+CHOICES_OF_FIELD = 'choices'
+# What the page keeps the tree's rows and a branch's fields under.
+ROWS_KEPT = 'rows'
+FIELDS_KEPT = 'fields'
+
+
+def said_of(answer):
+    """What a kept answer says, to hold against the same answer worked out again: each row's depth and branch by name, or each
+    field's kind, label and choices."""
+    return [(item[0], item[1].key()) if isinstance(item, tuple) else (type(item).__name__, getattr(item, LABEL_OF_FIELD, None), getattr(item, CHOICES_OF_FIELD, None))
+            for item in answer]
 
 
 class WizardPage(FieldPage):
@@ -108,6 +120,9 @@ class WizardPage(FieldPage):
         # The tune whose notes the pattern editor has open over the wizard: its kind of section, its pattern's name in the draft set and
         # the pattern as it was when opened. None when no tune is being edited.
         self._tune_open = None
+        # The tree's rows and each branch's fields as last worked out, and what they were worked out from (kept).
+        self._kept = {}
+        self._kept_of = None
         if start is not None:
             self.start_with(start)
 
@@ -364,8 +379,29 @@ class WizardPage(FieldPage):
         """Return the tree's top branches, in the order a song is thought through: each is a page of the wizard, the genre and then the subgenre unlocking the rest."""
         return [GenreBranch(page=self), SubgenreBranch(page=self), BandBranch(page=self), CompositionBranch(page=self), FormBranch(page=self), CreateBranch(page=self)]
 
+    def kept(self, *, key, compute):
+        """Return an answer about what the page shows, worked out once for the choices and the page as they stand. One key asks for
+        the tree's rows and the fields of the branch under the cursor dozens of times, to find the cursor, to list the keys and to
+        draw, and each asking builds every branch and field again from the choices, which made every key slow. Everything the
+        rows and the fields are made from says whether they changed: the choices, the song's name, the open branches, move
+        mode and the sections of fields that are open. While the tests run, a kept answer is worked out again every time and has to say the same."""
+        state = (repr(self._choices.to_data()), self._song_name, tuple(sorted(self._open)), self.moving, self._start, tuple(sorted(self.app.open_field_sections)))
+        if state != self._kept_of:
+            self._kept = {}
+            self._kept_of = state
+        if key not in self._kept:
+            self._kept[key] = compute()
+        elif Memory.checks_by_default():
+            again = said_of(compute())
+            if again != said_of(self._kept[key]):
+                raise StaleAnswer(errors.ERR_STALE_ANSWER.format(key=key, kept=said_of(self._kept[key]), again=again))
+        return self._kept[key]
+
     def rows(self):
         """Return the branches the tree shows, each with how deep it is: every top branch, and the branches under each open one, however deep."""
+        return self.kept(key=ROWS_KEPT, compute=self.rows_now)
+
+    def rows_now(self):
         rows = []
 
         def listed(*, branch, depth):
@@ -425,7 +461,7 @@ class WizardPage(FieldPage):
     # The fields, a settings page's, of the branch under the tree's cursor.
 
     def fields(self):
-        return self.branch().fields()
+        return self.kept(key=(FIELDS_KEPT, self.tree_place), compute=lambda: self.branch().fields())
 
     def notes(self, width):
         return self.branch().notes(width)
