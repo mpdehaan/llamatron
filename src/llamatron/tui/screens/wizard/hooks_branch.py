@@ -129,13 +129,18 @@ class HooksBranch(Branch):
         return self.page().in_fields and self.page().heading_over_cursor() == labels.MSG_WIZARD_SECOND_HOOK_HEADING
 
     def listens(self):
-        """Listen plays the melody's player alone in the first section that sings the hook under the cursor's heading: the main hook's, unless the cursor is on the second hook."""
+        """Listen plays the melody's player in the first section that sings the hook under the cursor's heading: the main hook's,
+        unless the cursor is on the second hook. The player is whoever plays the melody in that kind of section, which the song
+        may give to another player than the genre's; a section nobody plays the melody in has nothing to listen to."""
         choices = self.choices()
-        if not choices.is_ready() or not choices.can_have_hook() or not choices.has_hook() or choices.tune_player() is None:
+        if not choices.is_ready() or not choices.can_have_hook() or not choices.has_hook():
             return None
-        if self.on_second_hook() and choices.has_second_hook():
-            return messages.MSG_WIZARD_LISTEN_SECOND_HOOK, choices.second_hook_scene(), choices.tune_player()
-        return messages.MSG_WIZARD_LISTEN_HOOK, choices.hook_scene(), choices.tune_player()
+        second = self.on_second_hook() and choices.has_second_hook()
+        scene = choices.second_hook_scene() if second else choices.hook_scene()
+        player = None if scene is None else choices.tune_player_in(choices.section_kind(scene))
+        if player is None:
+            return None
+        return (messages.MSG_WIZARD_LISTEN_SECOND_HOOK if second else messages.MSG_WIZARD_LISTEN_HOOK), scene, player
 
     def notes(self, width):
         """Return the picture of the main hook, while the song has one: the notes of the whole section that says the hook, as they
