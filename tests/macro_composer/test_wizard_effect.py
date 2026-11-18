@@ -29,6 +29,7 @@ import unittest
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.file_format import Row
+from llamatron.macro_composer.arranger import NOBODY
 from llamatron.macro_composer import interplay
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT
 from llamatron.macro_composer.melody import HIGHEST_GAUGE, LOWEST_GAUGE
@@ -90,6 +91,8 @@ DEGREES_TRIED = 5
 HOOK_LINE = "the hook's notes written by hand"
 OWN_TUNE = 'a tune written by hand'
 TUNE_TAKE = 'another take of a tune'
+TUNE_BY_SONG_CHOICE = 'who plays the tune in the song'
+TUNE_BY_KIND_CHOICE = 'who plays the tune in a kind of section'
 A_LINE = "a line's own"
 A_RIFF = 'the riff'
 COMES_IN = 'where a player comes in'
@@ -341,6 +344,15 @@ def every_choice(choices):
     for kind in choices.tune_kinds():
         if choices.tune_pattern(kind) is not None:
             yield OWN_TUNE, kind, lambda made, kind=kind: made.set_tune_pattern(kind=kind, pattern=first_degree_changed(made.tune_pattern(kind))), [nothing_first]
+    # Who plays the tune: each other player for the song, and for each kind of section each other player and nobody.
+    # A song with no tune, as some electronic kinds, offers neither.
+    for role in choices.tune_players_offered() if choices.tune_kinds() else []:
+        if role != choices.tune_played_by():
+            yield TUNE_BY_SONG_CHOICE, role, lambda made, role=role: made.set_tune_played_by(role), [nothing_first]
+            for kind in choices.tune_kinds():
+                yield TUNE_BY_KIND_CHOICE, (kind, role), lambda made, kind=kind, role=role: made.set_tune_played_by_in(kind=kind, role=role), [nothing_first]
+    for kind in choices.tune_kinds():
+        yield TUNE_BY_KIND_CHOICE, (kind, NOBODY), lambda made, kind=kind: made.set_tune_played_by_in(kind=kind, role=NOBODY), [nothing_first]
     # Another take of a tune, for each kind of section that has one.
     for kind in choices.tune_kinds():
         yield TUNE_TAKE, kind, lambda made, kind=kind: made.new_tune_take(kind), [nothing_first]

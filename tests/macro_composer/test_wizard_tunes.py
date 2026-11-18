@@ -19,6 +19,7 @@
 import unittest
 
 from llamatron.composition.file_format import PatternSetting, Row
+from llamatron.macro_composer.arranger import NOBODY
 from llamatron.macro_composer.wizard_choices import FIRST_TUNE_TAKE, WizardChoices
 from llamatron.strings import errors
 from tests.support.ui_testing import fixed_text
@@ -196,3 +197,75 @@ class TestWizardTuneTakes(unittest.TestCase):
         choices.set_genre(A_GENRE)
         choices.set_subgenre(A_SUBGENRE)
         self.assertEqual(choices.tune_take(A_KIND), FIRST_TUNE_TAKE)
+
+
+class TestWhoPlaysTheTune(unittest.TestCase):
+
+    def test_the_genres_player_has_the_tune_until_another_is_chosen_and_the_bass_and_the_drums_are_not_offered(self):
+        choices = chosen()
+        self.assertEqual(choices.tune_played_by(), choices.tune_player())
+        offered = choices.tune_players_offered()
+        self.assertIn(choices.tune_player(), offered)
+        self.assertTrue(set(offered) < set(choices.roles_in()))
+        for kind in choices.tune_kinds():
+            self.assertIsNone(choices.tune_played_by_in(kind))
+            self.assertEqual(choices.tune_player_in(kind), choices.tune_player())
+
+    def test_the_songs_player_plays_every_tune_in_place_of_the_usual_part_and_the_genres_player_rests(self):
+        choices = chosen()
+        usual = choices.tune_player()
+        other = next(role for role in choices.tune_players_offered() if role != usual)
+        tune = choices.tune_pattern(A_KIND)
+        choices.set_tune_played_by(other)
+        setlist, name = choices.made_for_listening()
+        for place, scene in enumerate(setlist.get_song(name).get_scenes()):
+            if choices.section_kind(place) == A_KIND:
+                self.assertFalse(scene.has_clip_slot(usual))
+                self.assertEqual(setlist.get_pattern(scene.get_clip_slot(other).get_pattern_name()).to_data()[Row.DEGREE], tune[Row.DEGREE])
+        self.assertEqual(choices.tune_pattern(A_KIND)[Row.DEGREE], tune[Row.DEGREE])
+        choices.set_tune_played_by(None)
+        self.assertEqual(choices.to_data(), chosen().to_data())
+
+    def test_a_kind_of_section_takes_a_player_of_its_own_or_nobody_and_the_other_kinds_go_by_the_song(self):
+        choices = chosen()
+        usual = choices.tune_player()
+        other = next(role for role in choices.tune_players_offered() if role != usual)
+        another_kind = next(kind for kind in choices.tune_kinds() if kind != A_KIND)
+        choices.set_tune_played_by_in(kind=A_KIND, role=other)
+        self.assertEqual(choices.tune_player_in(A_KIND), other)
+        self.assertEqual(choices.tune_player_in(another_kind), usual)
+        # A last chorus may be written anew, so the kind's tune is one of the tunes its sections play.
+        self.assertIn(choices.tune_pattern_name(another_kind), tunes_played(choices=choices, kind=another_kind))
+        choices.set_tune_played_by_in(kind=A_KIND, role=NOBODY)
+        self.assertIsNone(choices.tune_player_in(A_KIND))
+        self.assertIsNone(choices.tune_pattern(A_KIND))
+        setlist, name = choices.made_for_listening()
+        for place, scene in enumerate(setlist.get_song(name).get_scenes()):
+            if choices.section_kind(place) == A_KIND:
+                self.assertFalse(scene.has_clip_slot(usual))
+        self.assertIn(A_KIND, choices.tune_kinds())
+        choices.set_tune_played_by_in(kind=A_KIND, role=None)
+        self.assertEqual(choices.to_data(), chosen().to_data())
+
+    def test_what_is_chosen_is_kept_refused_when_no_such_player_and_given_up_with_the_genre_or_the_player(self):
+        choices = chosen()
+        usual = choices.tune_player()
+        other = next(role for role in choices.tune_players_offered() if role != usual)
+        for refused in (NOT_A_KIND, next(role for role in choices.roles_in() if role not in choices.tune_players_offered())):
+            with self.assertRaises(ValueError):
+                choices.set_tune_played_by(refused)
+            with self.assertRaises(ValueError):
+                choices.set_tune_played_by_in(kind=A_KIND, role=refused)
+        with self.assertRaises(ValueError):
+            choices.set_tune_played_by_in(kind=A_KIND_WITH_NO_TUNE, role=other)
+        choices.set_tune_played_by(other)
+        choices.set_tune_played_by_in(kind=A_KIND, role=NOBODY)
+        read = WizardChoices.from_data(choices.to_data())
+        self.assertEqual(read.tune_played_by(), other)
+        self.assertEqual(read.tune_played_by_in(A_KIND), NOBODY)
+        choices.set_role_in(role=other, on=False)
+        self.assertEqual(choices.tune_played_by(), usual)
+        choices.set_genre(ANOTHER_GENRE)
+        choices.set_genre(A_GENRE)
+        choices.set_subgenre(A_SUBGENRE)
+        self.assertIsNone(choices.tune_played_by_in(A_KIND))

@@ -51,7 +51,7 @@ class BandBranch(Branch):
             answerers = choices.answerers()
             names = [choices.role_title(role) for role in answerers]
             by = choices.answered_by()
-            fields += [Field(label=labels.MSG_WIZARD_TUNE_LABEL, value=lambda: choices.role_title(choices.tune_player()) if choices.tune_player() else labels.MSG_WIZARD_NOBODY),
+            fields += [Field(label=labels.MSG_WIZARD_TUNE_LABEL, value=lambda: choices.role_title(choices.tune_played_by()) if choices.tune_played_by() else labels.MSG_WIZARD_NOBODY),
                        ChoiceField(page=self.page(), label=labels.MSG_WIZARD_ANSWERED_BY_LABEL, choices=[labels.MSG_WIZARD_NOBODY, *answerers], names=[labels.MSG_WIZARD_NOBODY, *names],
                                    current=by or labels.MSG_WIZARD_NOBODY, shown=choices.role_title(by) if by else labels.MSG_WIZARD_NOBODY,
                                    set=self.page().choosing(lambda role: choices.set_answered_by(None if role == labels.MSG_WIZARD_NOBODY else role)))]

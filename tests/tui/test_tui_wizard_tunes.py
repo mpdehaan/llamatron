@@ -17,6 +17,7 @@
 """The song wizard's Tunes panel: a tune for each kind of section, opened in the pattern editor on a draft of the set and kept as the person's own."""
 
 from llamatron.composition.file_format import Row
+from llamatron.macro_composer.arranger import NOBODY
 from llamatron.macro_composer.wizard_choices import FIRST_TUNE_TAKE
 from llamatron.strings import errors, labels, marks, messages
 from llamatron.tui import keybindings
@@ -34,6 +35,8 @@ ANOTHER_GENRE = 'blues'
 A_DEGREE = 7
 # How the row shows the take after the first.
 SECOND_TAKE_SHOWN = 2
+# The attribute a field keeps its label in.
+LABEL = 'label'
 
 
 class TestWizardTunes(WizardTest):
@@ -145,6 +148,34 @@ class TestWizardTunes(WizardTest):
         await self.press(keybindings.WizardPage.NEW_TAKE, keybindings.ConfirmDialog.YES)
         self.assertFalse(self.choices().tune_is_own(A_KIND))
         self.assertEqual(self.choices().tune_take(A_KIND), FIRST_TUNE_TAKE + 1)
+
+    async def test_tune_played_by_gives_the_songs_tune_to_another_player_and_each_kind_goes_by_the_song(self):
+        choices = self.choices()
+        usual = choices.tune_played_by()
+        other = next(role for role in choices.tune_players_offered() if role != usual)
+        self.assertIn(marks.MSG_WIZARD_FROM_SONG_SHOWN.format(value=choices.role_title(usual)), self.text())
+        await self.select_field(labels.MSG_WIZARD_TUNE_LABEL)
+        await self.press(Key.ENTER)
+        await self.type(choices.role_title(other))
+        await self.press(Key.ENTER)
+        self.assertEqual(choices.tune_played_by(), other)
+        self.assertEqual(choices.tune_player_in(A_KIND), other)
+        self.assertIn(marks.MSG_WIZARD_FROM_SONG_SHOWN.format(value=choices.role_title(other)), self.text())
+
+    async def test_a_kinds_played_by_takes_a_player_of_its_own_or_nobody_which_hides_the_kinds_tune(self):
+        choices = self.choices()
+        played_by = labels.MSG_WIZARD_KIND_PLAYED_BY_LABEL.format(kind=A_KIND)
+        await self.select_field(played_by)
+        await self.press(Key.ENTER)
+        await self.type(labels.MSG_WIZARD_NOBODY)
+        await self.press(Key.ENTER)
+        self.assertEqual(choices.tune_played_by_in(A_KIND), NOBODY)
+        self.assertIsNone(choices.tune_player_in(A_KIND))
+        labels_shown = [getattr(field, LABEL, None) for field in self.wizard().shown_fields()]
+        self.assertNotIn(self.label(), labels_shown)
+        self.assertIn(played_by, labels_shown)
+        other_kind = next(kind for kind in choices.tune_kinds() if kind != A_KIND)
+        self.assertIn(self.label(kind=other_kind), labels_shown)
 
     async def test_the_set_cannot_be_saved_opened_or_exported_while_a_tune_is_edited(self):
         await self.open_tune()
