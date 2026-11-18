@@ -120,7 +120,7 @@ class ScenePage(FieldPage):
         self.document().clear_scene_tempo(self.index)
 
     def tempo_ramp_section(self, way):
-        """Return a tempo ramp's section, closed until opened: the tempo it starts from, the tempo it reaches, each the scene's tempo until given, and the bars it takes, the whole scene until given."""
+        """Return a tempo ramp's section, closed until opened: the tempo it starts from, the tempo it reaches, each the scene's tempo until given, and the bars it takes, with no ramp until they are given."""
         scene = self.scene()
         document = self.document()
 
@@ -133,7 +133,7 @@ class ScenePage(FieldPage):
         base = plain_number(document.song().get_tempo()) if here is None else here
         blank = marks.MSG_SONG_TEMPO_SHOWN.format(tempo=base) if here is None else marks.MSG_SCENE_TEMPO_SHOWN.format(tempo=base)
         over = value(RampPart.OVER)
-        bars = marks.MSG_RAMP_WHOLE_SCENE_SHOWN if over is None else marks.MSG_RAMP_ONE_BAR_SHOWN if over == limits.MIN_RAMP_BARS else marks.MSG_RAMP_BARS_SHOWN.format(bars=over)
+        bars = marks.MSG_NONE_SHOWN if over is None else marks.MSG_RAMP_ONE_BAR_SHOWN if over == limits.MIN_RAMP_BARS else marks.MSG_RAMP_BARS_SHOWN.format(bars=over)
         return [
             self.heading(label=labels.MSG_TEMPO_RAMP_SECTIONS[way], is_set=lambda: scene.get_tempo_ramp(way) is not None),
             *[NumberField(

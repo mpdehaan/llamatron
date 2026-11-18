@@ -47,6 +47,7 @@ OWN_SCALE_ROOT = 'D'
 OWN_SCALE_KIND = 'dorian'
 SCENE_TEMPO = 132
 RAMP_END = 140
+RAMP_BARS = 2
 SONG_GROOVE = 'swing 58'
 TRANSPOSE = -7
 INSTRUMENT = 'piano'
@@ -135,6 +136,7 @@ class TestDetails(unittest.TestCase):
         self.document.set_scene_tempo(index=FIRST_SCENE, tempo=SCENE_TEMPO)
         self.assertEqual(self.scene_lines(), [marks.MSG_DETAILS_TEMPO.format(tempo=SCENE_TEMPO)])
         self.document.set_scene_tempo_ramp_setting(index=FIRST_SCENE, way=RampWay.IN, part=RampPart.END, value=RAMP_END)
+        self.document.set_scene_tempo_ramp_setting(index=FIRST_SCENE, way=RampWay.IN, part=RampPart.OVER, value=RAMP_BARS)
         self.document.set_scene_groove(index=FIRST_SCENE, choice=False)
         self.document.set_reset(index=FIRST_SCENE, register=RegisterName.AX, on=True)
         self.document.set_reset(index=FIRST_SCENE, register=RegisterName.DX, on=True)

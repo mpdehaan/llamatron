@@ -283,6 +283,10 @@ class TestScene(SetterTestCase):
         self.scene.set_tempo_ramp_setting(way=RampWay.IN, part=RampPart.OVER, value=limits.MIN_RAMP_BARS)
         # Bars alone change nothing: a ramp needs a start or an end.
         self.assertIsNone(self.scene.get_tempo_ramp(RampWay.IN))
+        # And a start or an end alone changes nothing: a ramp needs its bars.
+        self.scene.set_tempo_ramp_setting(way=RampWay.OUT, part=RampPart.END, value=FASTER)
+        self.assertIsNone(self.scene.get_tempo_ramp(RampWay.OUT))
+        self.scene.set_tempo_ramp_setting(way=RampWay.OUT, part=RampPart.END, value=None)
         self.scene.set_tempo_ramp_setting(way=RampWay.IN, part=RampPart.END, value=FASTER)
         self.assertEqual((self.scene.get_tempo_setting(), self.scene.get_tempo_ramp(RampWay.IN)), (TEMPO, TempoRamp(None, FASTER, limits.MIN_RAMP_BARS)))
         self.assertIsNone(self.scene.get_tempo_ramp(RampWay.OUT))

@@ -178,7 +178,7 @@ def tempo_ramp_lines(*, song, scene):
     for way, template in ((RampWay.IN, marks_text.MSG_DETAILS_TEMPO_RAMP_IN), (RampWay.OUT, marks_text.MSG_DETAILS_TEMPO_RAMP_OUT)):
         ramp = scene.get_tempo_ramp_setting
         start, end = (ramp(way=way, part=part) for part in (RampPart.START, RampPart.END))
-        if start is None and end is None:
+        if scene.get_tempo_ramp(way) is None:
             continue
         lines.append(detail(template.format(start=base if start is None else start, end=base if end is None else end)))
     return lines

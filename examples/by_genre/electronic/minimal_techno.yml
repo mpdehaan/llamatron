@@ -109,6 +109,7 @@ songs:
       - name: drift
         repeat: 3
         tempo_in_end: 128
+        tempo_in_over: 24
         tracks:
           kick: { pattern: kick, repeat: 32 }
           hat: { pattern: hat_loose, loop: true }
@@ -118,6 +119,7 @@ songs:
       - name: turn
         tempo: 128
         tempo_in_end: 130
+        tempo_in_over: 24
         tracks:
           kick: { pattern: kick, repeat: 96 }
           hat: { pattern: hat_loose, loop: true }
@@ -128,6 +130,7 @@ songs:
         scale: F Dorian
         tempo: 130
         tempo_in_end: 131
+        tempo_in_over: 8
         tracks:
           kick: { pattern: kick, repeat: 32 }
           hat: { pattern: hat_loose, loop: true }
@@ -138,6 +141,7 @@ songs:
       - name: tumble
         tempo: 131
         tempo_in_end: 132
+        tempo_in_over: 8
         tracks:
           kick: { pattern: kick, repeat: 32 }
           hat: { pattern: hat_loose, loop: true }

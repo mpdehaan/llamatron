@@ -36,7 +36,7 @@ nothing in the first scenes starts with silence and every file lines up. Every M
 lines on the song's beats. The MIDI file, the MIDI stems, the MIDI clips and the Live set carry the keyswitch notes described in
 [Instruments](INSTRUMENTS.md); the General MIDI file and the WAV file leave them out.
 
-A scene's [tempo ramps](SCENES.md#tempo-ramps) are written into every MIDI file and the WAV file, a tempo change at each beat. In a Live set, the ramps are tempo automation in Arrangement View, which follows them. A scene in Live's Session View launches at one tempo and cannot ramp, so each scene there launches at the tempo of its first beat. To hear the ramps while launching scenes, play the song from llamatron into Live over MIDI in real time, or import the MIDI file.
+A scene's [tempo ramps](SCENES.md#tempo-ramps) are written into every MIDI file and the WAV file, a tempo change at each step. In a Live set, the ramps are tempo automation in Arrangement View, which follows them. A scene in Live's Session View launches at one tempo and cannot ramp, so each scene there launches at the tempo of its first beat. To hear the ramps while launching scenes, play the song from llamatron into Live over MIDI in real time, or import the MIDI file.
 
 ## File Locations
 
