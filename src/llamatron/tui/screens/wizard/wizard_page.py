@@ -123,6 +123,8 @@ class WizardPage(FieldPage):
         # The tree's rows and each branch's fields as last worked out, and what they were worked out from (kept).
         self._kept = {}
         self._kept_of = None
+        # The cell whose change holds what the panel offers (cursor_place), or None while nothing is held.
+        self._held_at = None
         if start is not None:
             self.start_with(start)
 
@@ -139,8 +141,11 @@ class WizardPage(FieldPage):
         def chosen(value):
             label = self.label_under_cursor()
             chords = self._choices.own_tune_chords()
+            # What the panel offers is held while this cell is changed, and found again once the cursor leaves the cell.
+            self._choices.hold_offers()
             result = setter(value)
             self.stay_on(label)
+            self._held_at = self.cursor_place()
             self._changed = True
             # What was heard is no longer what the choices make.
             self.app.made_preview().stop()
@@ -379,12 +384,31 @@ class WizardPage(FieldPage):
         """Return the tree's top branches, in the order a song is thought through: each is a page of the wizard, the genre and then the subgenre unlocking the rest."""
         return [GenreBranch(page=self), SubgenreBranch(page=self), BandBranch(page=self), CompositionBranch(page=self), FormBranch(page=self), CreateBranch(page=self)]
 
+    def cursor_place(self):
+        """Where the cursor is: the branch of the tree, and the field while the cursor is in the fields."""
+        return (self.tree_place, self.in_fields, self.place if self.in_fields else NO_PLACE)
+
+    def release_offers_once_left(self):
+        """Let the held offers go once the cursor has left the cell whose change held them, and forget what the page kept, which
+        was made from them: the panel then shows the fields and the values that the choices as they now stand offer, with the
+        cursor on the field the cursor moved to."""
+        if self._held_at is not None and self.cursor_place() != self._held_at:
+            self._held_at = None
+            # The cursor has moved to a field of the panel as it was drawn; fields may now appear or leave above that field,
+            # so the cursor stays on the field by its label.
+            label = self.label_under_cursor()
+            self._choices.release_offers()
+            self._kept_of = None
+            if self.in_fields:
+                self.stay_on(label)
+
     def kept(self, *, key, compute):
         """Return an answer about what the page shows, worked out once for the choices and the page as they stand. One key asks for
         the tree's rows and the fields of the branch under the cursor dozens of times, to find the cursor, to list the keys and to
         draw, and each asking builds every branch and field again from the choices, which made every key slow. Everything the
         rows and the fields are made from says whether they changed: the choices, the song's name, the open branches, move
         mode and the sections of fields that are open. While the tests run, a kept answer is worked out again every time and has to say the same."""
+        self.release_offers_once_left()
         state = (repr(self._choices.to_data()), self._song_name, tuple(sorted(self._open)), self.moving, self._start, tuple(sorted(self.app.open_field_sections)))
         if state != self._kept_of:
             self._kept = {}

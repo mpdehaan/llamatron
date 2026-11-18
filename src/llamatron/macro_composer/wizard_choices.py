@@ -43,6 +43,7 @@ from llamatron.macro_composer.arranger import (
     ANSWERS, BESIDE, BESIDE_BUSY, BESIDE_WAYS, FIGURE,
     arranged, forms_of, picked, player_of, section_of, share_in, share_of, style_in, style_named, style_names, values_of, variant_named, variants_of, VARIANT, VARIANT_SAYS,
 )
+from llamatron.macro_composer import composer as set_writer
 from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer import band, hook_writing, line_edits, loudness_steps, phrasing, tune_fit
 from llamatron.macro_composer.arranger import (GENRE as GENRE_OF_STYLE, MORE_RIFFS, MUSICIANS, NOBODY, OWN_TUNES, RIFF_DRAWN_AS, RIFF_FOR, RIFF_OWN, TAKEN_TUNES, TUNE_BY, TUNE_BY_SONG,
@@ -569,12 +570,19 @@ SECONDS_IN_MINUTE = 60
 class WizardChoices:
     """The choices of one run of the song wizard."""
 
-    __slots__ = ('_extras', '_stages', '_hook_take', '_writing', '_rows', '_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_own_gauges', '_beside', '_without', '_sections', '_melody', '_hook', '_sounds', '_band_sounds', '_guitarists', '_pieces_off', '_break', '_break_cut', '_gauges', '_piece_sounds', '_fills', '_quiet_notes', '_melody_settings', '_answers', '_answers_of', '_picks_kept', '_variant')
+    __slots__ = ('_extras', '_stages', '_hook_take', '_writing', '_rows', '_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_own_gauges', '_beside', '_without', '_sections', '_melody', '_hook', '_sounds', '_band_sounds', '_guitarists', '_pieces_off', '_break', '_break_cut', '_gauges', '_piece_sounds', '_fills', '_quiet_notes', '_melody_settings', '_answers', '_answers_of', '_offers', '_offers_of', '_offers_held', '_offers_mixed', '_picks_kept', '_variant')
 
     def __init__(self):
         # Answers found by making the song, each kept until a choice changes.
         self._answers = {}
         self._answers_of = None
+        # Answers that only say what a page offers, which fields show and which values a field lists, each found by making
+        # the song more than once. A page holds them while one cell's value is stepped, so that each step does not make
+        # those songs again, and lets them go when the cursor leaves the cell (hold_offers).
+        self._offers = {}
+        self._offers_of = None
+        self._offers_held = False
+        self._offers_mixed = False
         # Every trait's pick, kept with what it was worked out from, since every field of every panel asks for it.
         self._picks_kept = None
         self._genre = None
@@ -1126,7 +1134,7 @@ class WizardChoices:
     def bars_offered(self, place):
         """Return the lengths a section may have, in bars: half its kind's usual length, the usual and twice that, leaving out
         any the genre's parts cannot fill, and nothing for a held section."""
-        return list(self._remembered(key=(BARS_ANSWER, place), compute=lambda: self._bars_offered(place)))
+        return list(self._offered(key=(BARS_ANSWER, place), compute=lambda: self._bars_offered(place)))
 
     def _bars_offered(self, place):
         if self.section_is_held(place):
@@ -1140,8 +1148,7 @@ class WizardChoices:
         a part may be written differently beside another section of the kind."""
         if not bars_work(genre=self._genre, subgenre=self._subgenre, variant=self._variant, kind=self._entry(place)[KIND], bars=bars, plays=tuple(self.section_plays(place))):
             return False
-        trial = copy.deepcopy(self)
-        trial._answers = {}
+        trial = self._copied_for_trial()
         trial._own_entries()[place][BARS] = bars
         try:
             trial.written_setlist(name=self._entry(place)[KIND], version=A_VERSION)
@@ -1252,11 +1259,10 @@ class WizardChoices:
 
     def setup_bars_offered(self):
         """Return how long a stage of a start or an ending may last, in bars: of the lengths a stage could last, those the song as it starts and ends can be made with."""
-        return list(self._remembered(key=SETUP_BARS_ANSWER, compute=lambda: [bars for bars in self._setup_bars_possible() if bars == self.get_setup_bars() or self._setup_bars_work(bars)]))
+        return list(self._offered(key=SETUP_BARS_ANSWER, compute=lambda: [bars for bars in self._setup_bars_possible() if bars == self.get_setup_bars() or self._setup_bars_work(bars)]))
 
     def _setup_bars_work(self, bars):
-        trial = copy.deepcopy(self)
-        trial._answers = {}
+        trial = self._copied_for_trial()
         try:
             trial._restaged(change=lambda: trial._stages.update({SETUP_BARS_KEPT: bars}))
         except ValueError:
@@ -1546,6 +1552,56 @@ class WizardChoices:
         """Return an answer a page works out from these choices, kept until a choice changes."""
         return self._remembered(key=key, compute=compute)
 
+    def _copied_for_trial(self):
+        """A copy of the choices to try something on, which remembers nothing and holds nothing: the answers kept are large,
+        and copying them only to throw them away took as long as writing a song."""
+        answers, offers = self._answers, self._offers
+        self._answers, self._offers = {}, {}
+        try:
+            trial = copy.deepcopy(self)
+        finally:
+            self._answers, self._offers = answers, offers
+        trial._offers_held = False
+        trial._offers_mixed = False
+        return trial
+
+    def offered(self, *, key, compute):
+        """Return an answer about what a page offers, worked out from these choices and kept as _offered keeps one."""
+        return self._offered(key=key, compute=compute)
+
+    def _offered(self, *, key, compute):
+        """Return an answer that only says what a page offers, a field shown or the values a field lists, kept until a choice
+        changes, or while the offers are held, until they are let go. Nothing a song is made from may be kept here: a held
+        answer is that of the choices as they were when the hold began."""
+        state = repr(self.to_data())
+        if state != self._offers_of and not self._offers_held:
+            self._offers = {}
+            self._offers_of = state
+        if key not in self._offers:
+            if state != self._offers_of:
+                # Found while held, for choices other than those the rest were found for: letting go forgets them all,
+                # even when the choices are by then back as they were.
+                self._offers_mixed = True
+            self._offers[key] = compute()
+        return self._offers[key]
+
+    def hold_offers(self):
+        """Keep what the pages offer as it stands, through the changes that follow, until release_offers: a page holds the
+        offers while one cell's value is stepped, since each step would else make several songs to find again which fields
+        show, and nothing a person is looking at changes for it but the cell stepped."""
+        self._offers_held = True
+
+    def release_offers(self):
+        """Let the held offers go: the next asking finds them again for the choices as they now stand, and keeps them where
+        the choices are again as they were when the offers were found, so that a value stepped away and back costs nothing."""
+        self._offers_held = False
+        if self._offers_mixed:
+            self._offers_of = None
+            self._offers_mixed = False
+
+    def holds_offers(self):
+        return self._offers_held
+
     def _remembered(self, *, key, compute):
         """Return an answer that is found by making the song, worked out once for the choices as they stand: a page asks the
         same thing at every key, and making a song each time made the keys slow. Everything a song keeps of the choices says
@@ -1830,7 +1886,7 @@ class WizardChoices:
 
     def has_quiet_notes(self):
         """Return whether the snare of the song as chosen has quiet notes, soft strokes between the main ones, to switch off."""
-        return self._remembered(key=QUIET_NOTES_ANSWER, compute=self._has_quiet_notes)
+        return self._offered(key=QUIET_NOTES_ANSWER, compute=self._has_quiet_notes)
 
     def _has_quiet_notes(self):
         if not self.is_ready():
@@ -2439,18 +2495,17 @@ class WizardChoices:
         not offered. Found by making the song with each level moved, and kept until a choice changes."""
         if not self.has_loudness(role):
             return []
-        return self._remembered(key=(LEVELS_ANSWER, role), compute=lambda: self._levels_heard(role))
+        return self._offered(key=(LEVELS_ANSWER, role), compute=lambda: self._levels_heard(role))
 
     def _parts_arranged(self):
         """The patterns of the song as made, which leaves out a part no section plays."""
-        return self._written_for_trial()[0].to_data()[Section.PATTERNS]
+        return self._patterns_played()
 
     def _levels_heard(self, role):
         plain = self._parts_as_written(role)
         heard = []
         for level in LOUDNESS_LEVELS:
-            trial = copy.deepcopy(self)
-            trial._answers = {}
+            trial = self._copied_for_trial()
             now = trial.loudness_levels(role)[level]
             trial._extras.setdefault(LOUDNESS_OF, {}).setdefault(role, {})[level] = now - LEVEL_TRIAL if now > MIDDLE_VELOCITY else now + LEVEL_TRIAL
             # The player's dynamics as written, so that a level is heard apart from the normal one.
@@ -2461,8 +2516,7 @@ class WizardChoices:
 
     def _parts_as_written(self, role):
         """The song's parts with a player's dynamics as the genre writes them."""
-        trial = copy.deepcopy(self)
-        trial._answers = {}
+        trial = self._copied_for_trial()
         trial._extras.get(DYNAMICS, {}).pop(role, None)
         return trial._parts_arranged()
 
@@ -2486,15 +2540,14 @@ class WizardChoices:
         found by making the song both ways and kept until a choice changes."""
         if not self.has_loudness(role):
             return False
-        return self._remembered(key=(DYNAMICS_ANSWER, role), compute=lambda: self._dynamics_are_heard(role))
+        return self._offered(key=(DYNAMICS_ANSWER, role), compute=lambda: self._dynamics_are_heard(role))
 
     def _dynamics_are_heard(self, role):
         made = []
         for dynamics in (LEAST_DYNAMICS, MOST_DYNAMICS):
-            trial = copy.deepcopy(self)
-            trial._answers = {}
+            trial = self._copied_for_trial()
             trial._extras.setdefault(DYNAMICS, {})[role] = dynamics
-            made.append(trial._written_for_trial()[0].to_data()[Section.PATTERNS])
+            made.append(trial._patterns_played())
         return made[0] != made[1]
 
     def get_dynamics(self, role):
@@ -3146,15 +3199,14 @@ class WizardChoices:
         which is found by making the song with the player even and dramatic, and kept until a choice changes."""
         if not (self.has_song_plan() and self.role_is_in(role) and PLAYER in self._role(role)):
             return False
-        return self._remembered(key=(REACTS_ANSWER, self._role(role)[PLAYER]), compute=lambda: self._reacts_is_heard(role))
+        return self._offered(key=(REACTS_ANSWER, self._role(role)[PLAYER]), compute=lambda: self._reacts_is_heard(role))
 
     def _reacts_is_heard(self, role):
         made = []
         for reacts in (LOWEST_ENERGY, HIGHEST_ENERGY):
-            trial = copy.deepcopy(self)
-            trial._answers = {}
+            trial = self._copied_for_trial()
             trial._plan()[REACTS] = {**(trial._plan().get(REACTS) or {}), self._role(role)[PLAYER]: reacts}
-            made.append(trial._written_for_trial()[0].to_data()[Section.PATTERNS])
+            made.append(trial._patterns_played())
         return made[0] != made[1]
 
     def get_reacts(self, role):
@@ -3591,7 +3643,7 @@ class WizardChoices:
     def _melody_values_heard(self, *, field, kind=None):
         """The values of a melody field, of the song or of a kind of section, that make another song than the field left
         unchosen does, found by arranging the song each way, once, until a choice changes."""
-        return self._remembered(key=(MELODY_HEARD_ANSWER, field, kind), compute=lambda: self._found_melody_values_heard(field=field, kind=kind))
+        return self._offered(key=(MELODY_HEARD_ANSWER, field, kind), compute=lambda: self._found_melody_values_heard(field=field, kind=kind))
 
     def _found_melody_values_heard(self, *, field, kind):
         made = {}
@@ -3743,11 +3795,7 @@ class WizardChoices:
     def _trial(self):
         """A copy of the choices to try something on, which remembers who can play a riff and nothing else."""
         answers = self._answers
-        self._answers = {}
-        try:
-            trial = copy.deepcopy(self)
-        finally:
-            self._answers = answers
+        trial = self._copied_for_trial()
         trial._answers = {key: value for key, value in answers.items() if RIFF_ABLE_ANSWER in (key, key[0] if isinstance(key, tuple) else None)}
         return trial
 
@@ -4175,6 +4223,19 @@ class WizardChoices:
     def made_for_listening(self):
         """Return the set these choices make, to be heard and thrown away, with its one song's name."""
         return self.made_setlist(name=PREVIEW_NAME, version=A_VERSION), PREVIEW_NAME
+
+    def _patterns_played(self):
+        """The patterns the song plays, straight from the writer, for a question that asks only whether a choice changes the
+        notes: the set itself is never built, which takes as long again as writing the song. A pattern no clip plays is left
+        out, as the set made leaves it out. Choices the writer cannot make a song of are answered from the set, which tries
+        the other progressions drawn."""
+        try:
+            data = composed(given=arranged(style=self._style(), song=self.song_picks(PREVIEW_NAME)), version=A_VERSION)
+        except (ValueError, IndexError, KeyError, SongFileError):
+            return self._written_for_trial()[0].to_data()[Section.PATTERNS]
+        scenes = data[set_writer.SONGS][PREVIEW_NAME][set_writer.SCENES]
+        played = {clip[set_writer.PATTERN] for scene in scenes for clip in scene[set_writer.TRACKS].values()}
+        return {name: pattern for name, pattern in data[Section.PATTERNS].items() if name in played}
 
     def _written_for_trial(self):
         """The set these choices write, with its one song's name, for a question that is answered by making the song: whether

@@ -183,6 +183,34 @@ class TestWizardPage(WizardTest):
         self.choices().set_tempo(self.choices().get_tempo() + 1)
         self.assertIsNot(wizard.rows(), rows)
 
+    async def go_to_a_field_that_steps(self):
+        """Put the cursor on the first field that steps of the first player's panel, and return the field's label."""
+        await self.choose_genre_and_subgenre()
+        await self.go_to_named_branch(labels_text.MSG_WIZARD_BAND_BRANCH)
+        await self.press(Key.DOWN, keybindings.WizardPage.INTO_FIELDS)
+        label = next(field.label for field in self.wizard().shown_fields() if field.adjust)
+        await self.select_field(label)
+        return label
+
+    async def test_what_the_panel_offers_is_held_while_a_cell_is_stepped_and_let_go_when_the_cursor_leaves_the_cell(self):
+        label = await self.go_to_a_field_that_steps()
+        self.assertFalse(self.choices().holds_offers())
+        more = key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)
+        await self.press(more)
+        self.assertTrue(self.choices().holds_offers())
+        self.assertEqual(self.wizard().label_under_cursor(), label)
+        await self.press(more)
+        self.assertTrue(self.choices().holds_offers())
+        await self.press(Key.DOWN)
+        self.wizard().fields()
+        self.assertFalse(self.choices().holds_offers())
+
+    async def test_going_back_to_the_tree_lets_the_held_offers_go(self):
+        await self.go_to_a_field_that_steps()
+        await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET), keybindings.WizardPage.TO_TREE)
+        self.wizard().rows()
+        self.assertFalse(self.choices().holds_offers())
+
     async def test_a_kept_answer_that_no_longer_holds_is_found_by_the_check(self):
         await self.choose_genre_and_subgenre()
         wizard = self.wizard()
