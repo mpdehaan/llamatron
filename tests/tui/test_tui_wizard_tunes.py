@@ -193,6 +193,29 @@ class TestWizardTunes(TunesPanelTest):
         self.assertFalse(self.choices().tune_is_own(A_KIND))
         self.assertEqual(self.choices().tune_take(A_KIND), FIRST_TUNE_TAKE + 1)
 
+    async def test_hook_line_names_the_line_of_the_tune_that_is_the_hook_and_none_takes_the_hook_away(self):
+        choices = self.choices()
+        kind, line = choices.hook_line_place()
+        shown = labels.MSG_WIZARD_HOOK_LINE_SHOWN.format(kind=kind, line=line)
+        await self.select_field(labels.MSG_WIZARD_HOOK_LINE_LABEL)
+        self.assertEqual(choices.has_hook(), shown in self.text())
+        was = choices.has_hook()
+        await self.press(Key.ENTER)
+        await self.type(marks.MSG_NONE_SHOWN if was else shown)
+        await self.press(Key.ENTER)
+        self.assertEqual(choices.has_hook(), not was)
+        await self.press(Key.ENTER)
+        await self.type(shown if was else marks.MSG_NONE_SHOWN)
+        await self.press(Key.ENTER)
+        self.assertEqual(choices.has_hook(), was)
+
+    async def test_a_song_that_can_have_no_hook_has_no_hook_line(self):
+        choices = self.choices()
+        choices.set_genre(ANOTHER_GENRE)
+        await self.press(Key.UP, Key.DOWN)
+        self.assertIsNone(choices.hook_line_place())
+        self.assertNotIn(labels.MSG_WIZARD_HOOK_LINE_LABEL, [getattr(field, LABEL, None) for field in self.wizard().shown_fields()])
+
     async def test_tune_played_by_gives_the_songs_tune_to_another_player_and_each_kind_goes_by_the_song(self):
         choices = self.choices()
         usual = choices.tune_played_by()
