@@ -68,7 +68,9 @@ class TestWizardLoudnessFields(WizardTest):
         self.assertNotIn(labels_text.MSG_WIZARD_LEVEL_LABELS[NORMAL], self.labels())
         await self.select_field(labels_text.MSG_WIZARD_LEVEL_LABELS[NORMAL])
         offered = choices.loudness_levels_offered(THE_LEAD)
-        self.assertEqual(self.labels()[-len(offered):], [labels_text.MSG_WIZARD_LEVEL_LABELS[level] for level in offered])
+        # The levels are the last settings of the panel, with only the panel's button after them.
+        after_heading = self.labels()[self.labels().index(labels_text.MSG_WIZARD_GROUP_LOUDNESS) + 1:]
+        self.assertEqual(after_heading, [*(labels_text.MSG_WIZARD_LEVEL_LABELS[level] for level in offered), labels_text.MSG_WIZARD_EDIT_PLAYER_BUTTON])
         self.assertNotIn(labels_text.MSG_WIZARD_LEVEL_LABELS[GHOST], self.labels())
         self.assertIn(marks.MSG_WIZARD_LEVEL_FROM_GENRE.format(number=choices.loudness_levels(THE_LEAD)[NORMAL]), self.text())
 

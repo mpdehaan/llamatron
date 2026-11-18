@@ -28,6 +28,8 @@ The Band panel chooses who is in the band. Each player is switched in or out, So
 
 Each player in the band has a panel under Band in the tree. Plays chooses the kind of part the player plays, such as a chiming arpeggio or strummed chords, and Sound the instrument. Comes in and Lays out say when the player joins the song and when the player rests, as a real player waits for the second verse or drops out before a chorus. Reacts and Dynamics set how much the player follows the rest of the band and the song's louds and softs, and the gauges below them set how busy and how varied the part is.
 
+Edit Player opens the player's [Musician](generators/MUSICIAN.md), the generator that plays the player's part as a player of that instrument would in a band: softer under the tune, an organ holding each chord, and differently in each kind of section. What is changed on the Musician's page is kept for the player when the page closes, the button then reads "Edit Player (your own)", and `Bksp` on the button gives the player back the Musician the genre gives. Songs of the Electronic and Experimental genres have no Musicians.
+
 ![The panel of one player, the rhythm guitar](screenshots/wizard_player.svg)
 
 ## Composition

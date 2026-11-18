@@ -40,6 +40,7 @@ from llamatron.support.version import VERSION
 from llamatron.tui import keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.document import Document
+from llamatron.tui.screens.generators.musician_editor import MusicianEditor
 from llamatron.tui.screens.generators.phrasing_editor import PhrasingEditor
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.dialogs.sound_dialog import SoundDialog
@@ -241,6 +242,25 @@ class WizardPage(FieldPage):
             return
         self.open_in_draft(setlist=setlist, read=phrasing_of, screen=lambda: PhrasingEditor(holder=self.holder, name=name), keep=self._choices.set_tune_phrasing,
                            kept=messages.MSG_WIZARD_PHRASING_KEPT, unchanged=messages.MSG_WIZARD_PHRASING_UNCHANGED)
+
+    def edit_player(self, role):
+        """Open the Musician page on the Musician that plays a player's clips, in a draft of the set the choices make."""
+        name = self._choices.musician_name(role)
+        try:
+            setlist, _ = self._choices.made_for_listening()
+        except (ValueError, SongFileError) as problem:
+            self.refuse(str(problem))
+            return
+
+        def musician_of(draft):
+            song = draft.song()
+            return song.get_generator_settings(kind=GeneratorKind.MUSICIAN, name=name).to_data() if song.has_generator(kind=GeneratorKind.MUSICIAN, name=name) else None
+        if musician_of(Document(setlist=setlist)) is None:
+            # A player who plays in no section of the song has no clips, and so no Musician to open.
+            self.refuse(errors.ERR_WIZARD_PLAYER_PLAYS_NOTHING)
+            return
+        self.open_in_draft(setlist=setlist, read=musician_of, screen=lambda: MusicianEditor(holder=self.holder, name=name),
+                           keep=lambda settings: self._choices.set_player_musician(role=role, settings=settings), kept=messages.MSG_WIZARD_PLAYER_KEPT, unchanged=messages.MSG_WIZARD_PLAYER_UNCHANGED)
 
     def on_screen_resume(self):
         """Take a tune's or a riff's notes back from the pattern editor, which has closed, before the page is drawn again."""

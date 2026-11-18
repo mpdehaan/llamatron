@@ -27,9 +27,10 @@ import collections
 import json
 import unittest
 
-from llamatron.composition.file_format import Section
+from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition.file_format import Row
-from llamatron.composition.generator_settings import LINES_IN_BARS, PHRASING_DEFAULTS, PhrasingSetting
+from llamatron.composition.generator_settings import LINES_IN_BARS, PHRASING_DEFAULTS, MusicianSetting, PhrasingSetting
+from llamatron.generators import musician
 from llamatron.generators.phrasing import BREATHS, JOINS, RISES
 from llamatron.macro_composer.arranger import NOBODY
 from llamatron.macro_composer import interplay
@@ -97,6 +98,7 @@ RIFF_ADDED = 'a riff added to a kind of section'
 OWN_RIFF = 'a riff written by hand'
 TUNE_BY_SONG_CHOICE = 'who plays the tune in the song'
 TUNE_PHRASING_CHOICE = 'how the tune is delivered'
+PLAYER_MUSICIAN = "a player's musician"
 TUNE_BY_KIND_CHOICE = 'who plays the tune in a kind of section'
 A_LINE = "a line's own"
 A_RIFF = 'the riff'
@@ -367,6 +369,12 @@ def every_choice(choices):
             for value in offered:
                 if value != PHRASING_DEFAULTS[setting]:
                     yield TUNE_PHRASING_CHOICE, (setting, value), lambda made, setting=setting, value=value: made.set_tune_phrasing({setting: value}), [nothing_first]
+    if choices.has_musicians():
+        # A player's Musician of the person's own, for each player whose clips run one: the loudest.
+        setlist, name = choices.made_for_listening()
+        for role in choices.roles_in():
+            if setlist.get_song(name).has_generator(kind=GeneratorKind.MUSICIAN, name=choices.musician_name(role)):
+                yield PLAYER_MUSICIAN, role, lambda made, role=role: made.set_player_musician(role=role, settings={MusicianSetting.LOUDNESS: musician.LOUDEST}), [nothing_first]
     # A riff added to each kind of section, for each player free there.
     for kind in choices.riff_kinds_offered():
         for role in choices.riff_players_free(kind):

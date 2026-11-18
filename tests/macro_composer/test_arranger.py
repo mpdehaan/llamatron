@@ -25,7 +25,7 @@ from llamatron.composition.generator_settings import FollowChordsSetting
 from llamatron.composition import limits
 from llamatron.strings import macro_composer as composer_text
 from llamatron.composition.setlist import Setlist
-from llamatron.macro_composer import arranger, composer, loudness, melody, notation, players
+from llamatron.macro_composer import arranger, band, composer, loudness, melody, notation, players
 from llamatron.support.safe_yaml import load_safely
 from llamatron.support.version import VERSION
 
@@ -354,7 +354,9 @@ class TestArranged(unittest.TestCase):
     def test_the_bass_and_the_chords_are_written_over_chord_one_and_follow_the_sections_chords_on_the_chords_track(self):
         given = arranger.arranged(style=self.style, song=a_song())
         played = given[composer.FORM][1][composer.PLAY]
-        chain = played[BASS][composer.CHAINS][0]
+        # The bass player's Musician plays the clip first, and the clip's own chain then follows the chords.
+        musician_chain, chain = played[BASS][composer.CHAINS]
+        self.assertEqual(given[composer.CHAINS][musician_chain], [{GeneratorKind.MUSICIAN: band.musician_name(BASS)}])
         self.assertEqual(given[composer.CHAINS][chain][0], {GeneratorKind.FOLLOW_CHORDS: composer_text.MSG_FOLLOW_CHORDS_NAME})
         self.assertEqual(given[composer.GENERATORS][Section.FOLLOW_CHORDS], {composer_text.MSG_FOLLOW_CHORDS_NAME: {FollowChordsSetting.CHORDS_FROM: composer_text.MSG_CHORDS_TRACK}})
         self.assertNotIn(arranger.PROGRESSIONS, given[composer.GENERATORS])
@@ -375,7 +377,8 @@ class TestArranged(unittest.TestCase):
     def test_every_scene_has_its_chords_on_the_chords_track_and_a_held_chord_is_followed_there(self):
         given = arranger.arranged(style=self.style, song=a_song())
         self.assertTrue(all(composer_text.MSG_CHORDS_TRACK in entry[composer.PLAY] for entry in given[composer.FORM]))
-        held = [entry[composer.PLAY] for entry in given[composer.FORM] if any(isinstance(played, dict) and played.get(composer.CHAINS) == [composer_text.MSG_FOLLOW_CHORDS_NAME] for played in entry[composer.PLAY].values())]
+        # What holds the chord is played by the player's Musician and then follows the chord.
+        held = [entry[composer.PLAY] for entry in given[composer.FORM] if any(isinstance(played, dict) and played.get(composer.CHAINS, [])[1:] == [composer_text.MSG_FOLLOW_CHORDS_NAME] for played in entry[composer.PLAY].values())]
         self.assertTrue(held)
         for play in held:
             self.assertEqual(given[composer.PARTS][play[composer_text.MSG_CHORDS_TRACK][composer.PART]][composer.RAW], arranger.one_chord(arranger.COMMON_TIME))
@@ -421,7 +424,8 @@ class TestArranged(unittest.TestCase):
     def test_a_strummed_guitar_brings_its_guitarify(self):
         given = arranger.arranged(style=self.style, song=a_song(picks={COMPING: STABS}))
         self.assertIn(COMPING, given[composer.GENERATORS][GUITARIFIES])
-        chain = given[composer.FORM][1][composer.PLAY][COMPING][composer.CHAINS][0]
+        musician_chain, chain = given[composer.FORM][1][composer.PLAY][COMPING][composer.CHAINS]
+        self.assertEqual(musician_chain, band.musician_name(COMPING))
         self.assertIn({GUITARIFY: COMPING}, given[composer.CHAINS][chain])
 
     def test_a_drums_phrase_ends_in_the_fill(self):
