@@ -90,7 +90,7 @@ class SectionBranch(Branch):
     def own_lines_fields(self):
         """Return the field that says how many of the section's lines a person gave notes, a breath or an early note of their own, in
         a song made before tunes were patterns; Bksp gives every line back to the wizard. A tune's notes are now edited on the
-        Tunes and Riffs panel, so a section with no such line has no such field."""
+        panel of its kind of section, so a section with no such line has no such field."""
         choices = self.choices()
         place = self._place
         own = {count: line[LINE_OWN] for count, line in enumerate(choices.section_lines(place)) if line[LINE_OWN]}

@@ -231,7 +231,8 @@ class TestWizardLoudness(unittest.TestCase):
         choices = chosen()
         # The bass under the kind's riff plays its accents and its short quiet roots; with no riff the bass plays one level.
         self.assertLessEqual({GHOST, NORMAL, ACCENT}, set(choices.loudness_levels_offered(THE_BASS)))
-        choices.set_riff(players=[])
+        for riff in choices.riff_names():
+            choices.delete_riff(riff)
         self.assertEqual(choices.loudness_levels_offered(THE_BASS), [NORMAL])
         self.assertIn(ACCENT, choices.loudness_levels_offered(THE_LEAD))
         self.assertNotIn(GHOST, choices.loudness_levels_offered(THE_DRUMS))

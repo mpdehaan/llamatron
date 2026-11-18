@@ -27,7 +27,7 @@ import functools
 import random
 import zlib
 
-from llamatron.composition.file_format import PatternSetting, Row, Section
+from llamatron.composition.file_format import PatternSetting, Section
 from llamatron.composition.generator_settings import PHRASING_DEFAULTS, MusicianSetting, MusicianSettings, PhrasingSettings
 from llamatron.composition.groove import FactoryGroove
 from llamatron.composition import limits, naming
@@ -45,16 +45,17 @@ from llamatron.macro_composer.arranger import (
 )
 from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer import band, hook_kinds, line_edits, phrasing, tune_fit
-from llamatron.macro_composer.arranger import GENRE as GENRE_OF_STYLE, KICK as KICK_PIECE, MORE_RIFFS, MUSICIANS, NOBODY, OWN_TUNES, RIFF_OWN, TAKEN_TUNES, TUNE_BY, TUNE_BY_SONG, TUNE_PHRASING
+from llamatron.macro_composer.arranger import (GENRE as GENRE_OF_STYLE, MORE_RIFFS, MUSICIANS, NOBODY, OWN_TUNES, RIFF_DRAWN_AS, RIFF_FOR, RIFF_OWN, TAKEN_TUNES, TUNE_BY, TUNE_BY_SONG,
+                                               TUNE_PHRASING, in_octaves_of)
 from llamatron.macro_composer.players import BASS as BASS_PLAYER
-from llamatron.macro_composer.notation import NONE as NO_HIT
 from llamatron.macro_composer.arranger import CHORDS, DYNAMICS, EIGHTHS_IN_WHOLE, GROOVE, LOUDNESS as LOUDNESS_OF, NO_GROOVE, SCENE_SETTINGS, form_of
 from llamatron.macro_composer.loudness import LEAST_DYNAMICS, LEVELS as LOUDNESS_LEVELS, MOST_DYNAMICS, USUAL_DYNAMICS, drum_levels, note_levels, with_own
-from llamatron.macro_composer.melody import ANSWER, HOOK_KIND, HOOK_NOTES, LINE, LINE_NOTES
+from llamatron.macro_composer.melody import (ANSWER, BY_KIND, GAUGE_AFTER_LEAP, GAUGE_LEANING, GAUGE_MOVES, GAUGE_PHRASE, GAUGE_STEPS, GAUGE_SURPRISE, HEIGHT, HEIGHTS, HIGH, HOME as MELODY_HOME,
+                                             HOOK_KIND, HOOK_NOTES, LADDER as MELODY_LADDER, LINE, LINE_BUSY, LINE_NOTES, MELODY_ASKS, MIDDLE, REPEATS, REPEATS_SOME, REPEATS_WAYS, SPAN)
 from llamatron.macro_composer.phrasing import LINE_BREATH, LINE_EARLY
-from llamatron.macro_composer.riffs import (ACCENT_CHORDS, BAR_COUNTS, BETWEEN_WAYS, FIRST_TAKE as FIRST_RIFF_TAKE, IN_FULL, MOVES_WHOLE, MUTED_ROOTS, NOTES_WAYS, RIFF, RIFF_BAR_COUNT, RIFF_BARS,
-                                            RIFF_BETWEEN, RIFF_KINDS, RIFF_LINE, RIFF_NOTES, RIFF_ROLES, RIFF_TAKE, RIFF_UNDER_TUNE, RIFF_WITH_CHORDS, SINGLE_NOTES, UNDER_TUNE_WAYS, WITH_CHORDS_WAYS,
-                                            accent_bars, bars_of as riff_bars_of, flattened_in, line_of as riff_line_of)
+from llamatron.macro_composer.riffs import (BAR_COUNTS, BETWEEN_WAYS, FIRST_TAKE as FIRST_RIFF_TAKE, IN_FULL, MOVES_WHOLE, MUTED_ROOTS, NOTES_WAYS, RIFF, RIFF_BAR_COUNT, RIFF_BARS,
+                                            RIFF_BETWEEN, RIFF_KINDS, RIFF_NOTES, RIFF_ROLES, RIFF_TAKE, RIFF_UNDER_TUNE, RIFF_WITH_CHORDS, SINGLE_NOTES, UNDER_TUNE_WAYS, WITH_CHORDS_WAYS,
+                                            bars_of as riff_bars_of, flattened_in, line_of as riff_line_of)
 from llamatron.macro_composer.joins import BUILD, DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL
 from llamatron.macro_composer.song_plan import (
     BIG, BY_PLACE, FADED, FADES, UNFADED, SWELL_END, SWELL_START, PHRASING_WAYS, RISES, RISING, SCALE_OF_PLACE, SCENE_TEMPO, SCENE_TEMPO_END, SCENE_TEMPO_START, CONTRAST, ENERGY, FILL_SIZE, FILL_SIZES, HIGHEST_ENERGY, LOWEST_ENERGY, MEDIUM, NOT_AT_ALL, PHRASING, PLAN_OF_SONG, ROOT_OF_PLACE, SAID_OF_SECTION, SETUP, SMALL,
@@ -234,6 +235,7 @@ OWN_SECTIONS = 'own_sections'
 PREVIEW_NAME = 'preview'
 # The key of the answer kept of a kind of section's tune in the set the choices make.
 TUNE_MADE_ANSWER = 'tune made'
+MELODY_HEARD_ANSWER = 'melody values heard'
 # Which take of its tune each kind of section has, kept with the song's extras, the first take being the tune the choices write;
 # the seed another take is drawn from; and the key of the answer kept of a take's pattern.
 TUNE_TAKES = 'tune_takes'
@@ -252,25 +254,68 @@ LOST_RIFFS = 'riffs'
 KEPT_OWN_TUNES = 'tunes written by hand'
 KEPT_OWN_RIFFS = 'riffs written by hand'
 # The extras of a song that are settings of one genre's band and song, which another genre gives up.
-EXTRAS_OF_ONE_GENRE = (PLAN_OF_SONG, MELODY, GROOVE, DYNAMICS, LOUDNESS_OF, TUNE_BY, TUNE_BY_SONG)
+MELODY_CHOSEN = 'melody_chosen'
+EXTRAS_OF_ONE_GENRE = (PLAN_OF_SONG, MELODY, GROOVE, DYNAMICS, LOUDNESS_OF, TUNE_BY, TUNE_BY_SONG, MELODY_CHOSEN)
 STAGES_ANSWER = 'stages'
 JOINS_ANSWER = 'joins'
 SETUP_BARS_ANSWER = 'setup bars'
 RIFF_ABLE_ANSWER = 'riff able'
+RIFF_HEARD_ANSWER = 'riff heard'
+# What a song keeps of its riffs: the riffs, each with its name, the player it was written for and how it is drawn; the riffs each
+# player knows, by player; and the riff each player plays in a kind of section, by kind and player.
+RIFF_BOOK = 'riffs'
+# A riff the genre gave the song, which goes when another subgenre is chosen unless its notes were written by hand.
+RIFF_OF_GENRE = 'of_genre'
+RIFFS_KNOWN = 'riffs_known'
+RIFFS_PLAYED = 'riffs_played'
+# What a song says of its melodies, on the Melody panel for the whole song and on a kind of section's panel for the kind: how
+# busy the melodies are, how wide they range, how much they repeat and their character; and by kind of section, how high the
+# kind's melody sits and how busy it is, kept as MELODY_CHOSEN.
+MELODY_BUSY = 'busy'
+MELODY_SPARSE = 'sparse'
+MELODY_MEDIUM = 'medium'
+MELODY_BUSIEST = 'busy'
+MELODY_RANGE = 'range'
+MELODY_NARROW = 'narrow'
+MELODY_WIDE = 'wide'
+MELODY_CHARACTER = 'character'
+# Each field of the whole song's melodies with what may be chosen and what a song has until one is: the genre's own.
+MELODY_WAYS = {MELODY_BUSY: (MELODY_SPARSE, MELODY_MEDIUM, MELODY_BUSIEST), MELODY_RANGE: (MELODY_NARROW, MELODY_MEDIUM, MELODY_WIDE), REPEATS: REPEATS_WAYS}
+USUAL_MELODY_WAYS = {MELODY_BUSY: MELODY_MEDIUM, MELODY_RANGE: MELODY_MEDIUM, REPEATS: REPEATS_SOME}
+# Each field of one kind of section's melody with what may be chosen; nothing chosen leaves the height to the genre and the busyness to the song.
+SECTION_MELODY_WAYS = {HEIGHT: HEIGHTS, MELODY_BUSY: MELODY_WAYS[MELODY_BUSY]}
+# Where on the gauges' scale a line asked to be so busy stands.
+MIDDLE_GAUGE = 4
+BUSY_POSITIONS = {MELODY_SPARSE: LOWEST_GAUGE, MELODY_MEDIUM: MIDDLE_GAUGE, MELODY_BUSIEST: HIGHEST_GAUGE}
+# How many places of the ladder a narrow or a wide range differs from the genre's, and the least a range may be.
+SPAN_CHANGES = {MELODY_NARROW: -2, MELODY_WIDE: 2}
+LEAST_SPAN = 2
+# A melody's character: the engine that writes it and where the smart engine's gauges stand for it, over the genre's own.
+SMOOTH = 'smooth'
+BLUESY = 'bluesy'
+ANGULAR = 'angular'
+ATONAL = 'atonal'
+CHARACTER_EVOLVING = 'evolving'
+CHARACTERS = (SMOOTH, BLUESY, ANGULAR, ATONAL, CHARACTER_EVOLVING)
+CHARACTER_ENGINES = {SMOOTH: SMART, BLUESY: SMART, ANGULAR: SMART, ATONAL: SERIAL, CHARACTER_EVOLVING: EVOLVING}
+CHARACTER_GAUGES = {SMOOTH: {GAUGE_MOVES: 1, GAUGE_AFTER_LEAP: 1, GAUGE_PHRASE: 7, GAUGE_SURPRISE: 1}, ANGULAR: {GAUGE_MOVES: 7, GAUGE_AFTER_LEAP: 6, GAUGE_PHRASE: 2, GAUGE_SURPRISE: 6},
+                    BLUESY: {GAUGE_STEPS: 2, GAUGE_LEANING: 6}}
+# The degrees a bluesy melody is drawn from, the third and the seventh flattened over a scale that has them major, and its home.
+BLUES_DEGREES = (1, 3, 4, 5, 7)
+BLUES_HOME = 1
+
+# What a player plays in a kind of section besides a riff: what the genre writes for the player, nothing, or the melody.
+ACCOMPANIMENT = 'accompaniment'
+RESTS_PART = 'rests'
+MELODY_PART = 'melody'
 # The name of the riff asked for to find who can play one in a kind of section.
 TRIAL_RIFF = 'trial riff'
-# Where a riff is played.
-RIFF_IN_INTRO = 'in the intro'
-RIFF_UNDER_VERSES = 'under the verses'
-RIFF_INTRO_AND_VERSES = 'in the intro and under the verses'
-RIFF_UNDER_CHORUSES = 'under the choruses'
-RIFF_EVERYWHERE = 'everywhere'
-RIFF_SAID_WAYS = (RIFF_INTRO_AND_VERSES, RIFF_IN_INTRO, RIFF_UNDER_VERSES, RIFF_UNDER_CHORUSES, RIFF_EVERYWHERE)
 # A riff's settings, each with what may be chosen, the first what a riff has until another is chosen.
 RIFF_SETTINGS = {RIFF_NOTES: NOTES_WAYS, RIFF_BAR_COUNT: tuple(reversed(BAR_COUNTS)), RIFF_BETWEEN: BETWEEN_WAYS, RIFF_UNDER_TUNE: UNDER_TUNE_WAYS, RIFF_WITH_CHORDS: WITH_CHORDS_WAYS}
 assert (RIFF_SETTINGS[RIFF_NOTES][0], RIFF_SETTINGS[RIFF_BAR_COUNT][0], RIFF_SETTINGS[RIFF_BETWEEN][0]) == (SINGLE_NOTES, RIFF_BARS, MUTED_ROOTS)
 assert (RIFF_SETTINGS[RIFF_UNDER_TUNE][0], RIFF_SETTINGS[RIFF_WITH_CHORDS][0]) == (IN_FULL, MOVES_WHOLE)
-RIFF_SETTING_ANSWER = 'riff setting'
+# The settings a new riff is asked for.
+NEW_RIFF_SETTINGS = (RIFF_BAR_COUNT, RIFF_NOTES, RIFF_WITH_CHORDS, RIFF_BETWEEN)
 INTRO_KIND = 'intro'
 REACTS_ANSWER = 'reacts'
 DYNAMICS_ANSWER = 'dynamics'
@@ -662,17 +707,15 @@ class WizardChoices:
             # A plan is one genre's: its energies and its joins are the genre's own.
             self._extras.pop(PLAN_OF_SONG, None)
             self._extras.pop(MELODY, None)
-            self._extras.pop(RIFF, None)
             self._extras.pop(GROOVE, None)
             # A player's loudness is one genre's player's.
             self._extras.pop(DYNAMICS, None)
             self._extras.pop(LOUDNESS_OF, None)
             self._extras.pop(TUNE_TAKES, None)
-            # A riff whose notes were written by hand is the person's own, which no genre gives up: its players play it again wherever
-            # a band has them and a form has its kinds of section.
-            own_riffs = [entry for entry in self._extras.pop(MORE_RIFFS, []) if entry.get(RIFF_OWN) is not None]
-            if own_riffs:
-                self._extras[MORE_RIFFS] = own_riffs
+            self._extras.pop(MELODY_CHOSEN, None)
+            # A riff whose notes were written by hand is the person's own, which no genre gives up: whoever knows it plays it again
+            # wherever a band has the player and a form has the kind of section.
+            self._drop_riffs(lambda entry: entry.get(RIFF_OWN) is None)
             self._extras.pop(TUNE_BY, None)
             self._extras.pop(TUNE_BY_SONG, None)
             self._forget_band()
@@ -695,8 +738,8 @@ class WizardChoices:
                 LOST_OWN_CHORDS: sum(1 for entry in self._entries() if entry.get(OWN_OF_SECTION, {}).get(CHORDS)),
                 LOST_FORM: int(self._sections is not None or self._form != usual._form),
                 LOST_TUNE_TAKES: len(self._extras.get(TUNE_TAKES, {})) + int(self._hook_take != FIRST_HOOK_TAKE),
-                LOST_RIFFS: int(bool(self._extras.get(RIFF))) + len([entry for entry in self._extras.get(MORE_RIFFS, []) if entry.get(RIFF_OWN) is None])}
-        kept = {KEPT_OWN_TUNES: len(self._extras.get(OWN_TUNES, {})), KEPT_OWN_RIFFS: len([entry for entry in self._extras.get(MORE_RIFFS, []) if entry.get(RIFF_OWN) is not None])}
+                LOST_RIFFS: len([entry for entry in self._extras.get(RIFF_BOOK, []) if entry.get(RIFF_OWN) is None])}
+        kept = {KEPT_OWN_TUNES: len(self._extras.get(OWN_TUNES, {})), KEPT_OWN_RIFFS: len([entry for entry in self._extras.get(RIFF_BOOK, []) if entry.get(RIFF_OWN) is not None])}
         return {kind: count for kind, count in lost.items() if count}, {kind: count for kind, count in kept.items() if count}
 
     def _band_as_counted(self):
@@ -1702,7 +1745,7 @@ class WizardChoices:
     def player_rows(self, role):
         """Return the rows of numbers a player's notes are dealt, by name, while the song's tunes are written in the serial style
         and the player plays lines of the tune in some section of the form; none otherwise."""
-        if not self.is_ready() or (self._melody or self.genre_melody()) != SERIAL or not self.has_sound(role) or not self._plays_lines(role):
+        if not self.is_ready() or self.melody_engine() != SERIAL or not self.has_sound(role) or not self._plays_lines(role):
             return []
         # A player who plays in no section of the song's form is dealt nothing, so has no row to change.
         if not any(role in self.section_plays(place) for place in range(len(self._entries()))):
@@ -2019,6 +2062,11 @@ class WizardChoices:
     def genre_melody(self):
         """Return the melody style the genre's own tunes are sketched by, which a song takes while none is chosen."""
         return self._melody_habits().get(ENGINE, STEP_WALK)
+
+    def melody_engine(self):
+        """Return the melody style the song's melodies are written by: the one the character chosen writes by, else one chosen by
+        name, else the genre's own."""
+        return CHARACTER_ENGINES.get(self.get_melody_character()) or self._melody or self.genre_melody()
 
     def get_melody(self):
         """Return the melody style chosen, or None while each player's tunes are sketched as the genre says."""
@@ -2539,6 +2587,15 @@ class WizardChoices:
 
     def _song_picks(self, name):
         picks = data_laid_over(under=self._picks_chosen(name), over=self._extras_with_sections())
+        # The riffs are kept as the panels show them; the arranger is handed each riff with who plays it where. A song with no
+        # riff of its own asks for none, where the arranger would else take the genre's.
+        for kept in (RIFF_BOOK, RIFFS_KNOWN, RIFFS_PLAYED, MELODY_CHOSEN):
+            picks.pop(kept, None)
+        picks.setdefault(RIFF, {})
+        riffs = [*picks.get(MORE_RIFFS, []), *self._riffs_arranged()]
+        if riffs:
+            picks[MORE_RIFFS] = riffs
+        picks.update(self._melody_picks(picks))
         # The takes are kept as numbers; the arranger is handed the tune each number draws.
         picks.pop(TUNE_TAKES, None)
         taken = self._taken_tunes()
@@ -3315,21 +3372,162 @@ class WizardChoices:
             self._answers = {}
             raise ValueError(errors.ERR_WIZARD_TUNE_PATTERN.format(problem=problem)) from problem
 
-    # The riff, the song's second hook: two bars of single notes a rhythm player repeats while the chords move them.
+    # The melodies: what a song says of them all, and what a kind of section says of its own. Each field starts at what the genre
+    # does, and only a field that changes the subgenre's songs is offered.
 
-    def riff_players_offered(self):
-        """Return who may play a riff, each a list of players: every player of a figure in the band alone, then the first two together, as a guitar and a bass play one in unison."""
-        if not self.is_ready():
+    def melody_fields(self):
+        """Return the fields of the whole song's melodies that are heard in the subgenre, in the order shown."""
+        if not self.is_ready() or not self.tune_kinds():
             return []
-        able = self._remembered(key=RIFF_ABLE_ANSWER, compute=self._riff_able)
-        # Together: the first player and the lowest, as a guitar and a bass play a riff in unison.
-        lowest = min(able, key=lambda role: self._role(role).get(OCTAVE, 0)) if able else None
-        return [[role] for role in able] + ([[able[0], lowest]] if able and lowest != able[0] else [])
+        return [field for field in MELODY_WAYS if len(self.melody_ways_offered(field)) > 1]
+
+    def melody_ways_offered(self, field):
+        """Return the values of a field of the whole song's melodies that are heard in the song as it stands: the genre's own,
+        each other that makes another song, and the one chosen."""
+        heard = self._melody_values_heard(field=field)
+        return [value for value in MELODY_WAYS[field] if value == USUAL_MELODY_WAYS[field] or value in heard or value == self.get_melody_way(field)]
+
+    def _melody_values_heard(self, *, field, kind=None):
+        """The values of a melody field, of the song or of a kind of section, that make another song than the field left
+        unchosen does, found by arranging the song each way, once, until a choice changes."""
+        return self._remembered(key=(MELODY_HEARD_ANSWER, field, kind), compute=lambda: self._found_melody_values_heard(field=field, kind=kind))
+
+    def _found_melody_values_heard(self, *, field, kind):
+        made = {}
+        for value in (None, *(SECTION_MELODY_WAYS if kind is not None else MELODY_WAYS)[field]):
+            trial = WizardChoices.from_data(self.to_data())
+            trial._keep_melody_chosen(field=field, value=value, kind=kind)
+            try:
+                made[value] = arranged(style=style_of(self._genre), song=trial.song_picks(self._subgenre))[PARTS]
+            except (ValueError, IndexError, KeyError, SongFileError):
+                made[value] = made.get(None)
+        return [value for value in made if value is not None and made[value] != made[None]]
+
+    def get_melody_way(self, field):
+        """Return what the song says of its melodies in one field: the genre's own until another is chosen."""
+        chosen = self._extras.get(MELODY_CHOSEN, {}).get(field)
+        return chosen if chosen in MELODY_WAYS[field] else USUAL_MELODY_WAYS[field]
+
+    def set_melody_way(self, *, field, value):
+        """Choose how busy the song's melodies are, how wide they range or how much they repeat; the genre's own is asked for by its name."""
+        if field not in MELODY_WAYS or value not in MELODY_WAYS[field]:
+            raise ValueError(errors.ERR_WIZARD_MELODY_WAY.format(field=field, value=value))
+        self._keep_melody_chosen(field=field, value=None if value == USUAL_MELODY_WAYS[field] else value)
+
+    def _keep_melody_chosen(self, *, field, value, kind=None):
+        """Keep one thing chosen of the melodies, for the song or for a kind of section, or forget it with None."""
+        chosen = self._extras.setdefault(MELODY_CHOSEN, {})
+        held = chosen if kind is None else chosen.setdefault(BY_KIND, {}).setdefault(kind, {})
+        held.pop(field, None)
+        if value is not None:
+            held[field] = value
+        if kind is not None:
+            chosen[BY_KIND] = {name: own for name, own in chosen[BY_KIND].items() if own}
+            if not chosen[BY_KIND]:
+                del chosen[BY_KIND]
+        if not chosen:
+            del self._extras[MELODY_CHOSEN]
+        self._answers = {}
+
+    def melody_characters_offered(self):
+        """Return the characters a melody of the subgenre can be given: each whose engine can write the subgenre's melodies, an
+        engine with no gauges only where the genre does not write by it already."""
+        if not self.is_ready() or not self.tune_kinds():
+            return []
+        given = dict(genre=self._genre, subgenre=self._subgenre, variant=self._variant)
+        offered = []
+        for character in CHARACTERS:
+            engine = CHARACTER_ENGINES[character]
+            if melody_works(style=engine, **given) and (engine in GAUGED_STYLES or not melody_is_usual(style=engine, **given)):
+                offered.append(character)
+        return offered
+
+    def get_melody_character(self):
+        """Return the character chosen for the song's melodies, or None while they are written as the genre writes them."""
+        chosen = self._extras.get(MELODY_CHOSEN, {}).get(MELODY_CHARACTER)
+        return chosen if chosen in self.melody_characters_offered() else None
+
+    def set_melody_character(self, character):
+        """Choose the character of the song's melodies, or the genre's own with None."""
+        if character is not None and character not in self.melody_characters_offered():
+            raise ValueError(errors.ERR_WIZARD_MELODY_WAY.format(field=MELODY_CHARACTER, value=character))
+        self._keep_melody_chosen(field=MELODY_CHARACTER, value=character)
+
+    def section_melody_fields(self, kind):
+        """Return the fields of one kind of section's melody that are heard in the subgenre: how high it sits and how busy it is."""
+        if not self.is_ready() or kind not in self.tune_kinds() or kind not in self._style()[SECTIONS]:
+            return []
+        return [field for field in SECTION_MELODY_WAYS if self.section_melody_ways_offered(kind=kind, field=field)]
+
+    def section_melody_ways_offered(self, *, kind, field):
+        """Return the values of a field of a kind of section's own melody that are heard in the song as it stands: each that
+        makes another song than the field left to the genre or the song, and the one chosen."""
+        heard = self._melody_values_heard(field=field, kind=kind)
+        return [value for value in SECTION_MELODY_WAYS[field] if value in heard or value == self.get_section_melody(kind=kind, field=field)]
+
+    def get_section_melody(self, *, kind, field):
+        """Return what a kind of section says of its own melody in one field, or None where nothing was chosen."""
+        chosen = self._extras.get(MELODY_CHOSEN, {}).get(BY_KIND, {}).get(kind, {}).get(field)
+        return chosen if chosen in SECTION_MELODY_WAYS[field] else None
+
+    def genre_height_in(self, kind):
+        """Return how high the genre sets a kind of section's melody: high where its plan lifts a line, else in the middle."""
+        plan = self._style()[SECTIONS].get(kind, {}).get(PLAN, [])
+        return HIGH if any(entry.get(HIGHER) for entry in plan) else MIDDLE
+
+    def set_section_melody(self, *, kind, field, value):
+        """Choose how high a kind of section's melody sits or how busy it is, or leave it to the genre or the song with None."""
+        if field not in SECTION_MELODY_WAYS or (value is not None and value not in SECTION_MELODY_WAYS[field]) or kind not in self.tune_kinds():
+            raise ValueError(errors.ERR_WIZARD_MELODY_WAY.format(field=field, value=(kind, value)))
+        self._keep_melody_chosen(field=field, value=value, kind=kind)
+
+    def _melody_picks(self, picks):
+        """What the arranger is handed of the melodies chosen, over the song's picks: what is asked of the plans' lines, the engine
+        a character writes by, and the habits a range and a character change."""
+        chosen = self._extras.get(MELODY_CHOSEN)
+        if not chosen or not self.is_ready():
+            return {}
+        said = {}
+        asks = {}
+        if chosen.get(REPEATS) in REPEATS_WAYS:
+            asks[REPEATS] = chosen[REPEATS]
+        if chosen.get(MELODY_BUSY) in BUSY_POSITIONS:
+            asks[LINE_BUSY] = BUSY_POSITIONS[chosen[MELODY_BUSY]]
+        by_kind = {}
+        for kind, own in chosen.get(BY_KIND, {}).items():
+            of_kind = {**({HEIGHT: own[HEIGHT]} if own.get(HEIGHT) in HEIGHTS else {}), **({LINE_BUSY: BUSY_POSITIONS[own[MELODY_BUSY]]} if own.get(MELODY_BUSY) in BUSY_POSITIONS else {})}
+            if of_kind:
+                by_kind[kind] = of_kind
+        if by_kind:
+            asks[BY_KIND] = by_kind
+        if asks:
+            said[MELODY_ASKS] = asks
+        habits = dict(picks.get(MELODY, {}))
+        genre_habits = self._melody_habits()
+        if chosen.get(MELODY_RANGE) in SPAN_CHANGES and SPAN in genre_habits:
+            habits[SPAN] = max(LEAST_SPAN, genre_habits[SPAN] + SPAN_CHANGES[chosen[MELODY_RANGE]])
+        character = self.get_melody_character()
+        if character is not None:
+            said[MELODY_ENGINE] = CHARACTER_ENGINES[character]
+            if character in CHARACTER_GAUGES:
+                habits[SMART] = {**{name: self.get_gauge(name) for name in DEFAULT_GAUGES}, **CHARACTER_GAUGES[character]}
+            if character == BLUESY:
+                flattened = flattened_in(self._scale_type)
+                habits[MELODY_LADDER] = [{DEGREE: degree, **({ACCIDENTAL: FLAT} if degree in flattened else {})} for degree in BLUES_DEGREES]
+                habits[MELODY_HOME] = {DEGREE: BLUES_HOME}
+        if habits:
+            said[MELODY] = habits
+        return said
+
+    # The riffs: figures of a bar or two that a player repeats in place of the accompaniment. A riff is written for one player of
+    # the band, in that player's octave, and exists whether or not anybody plays it yet; each player knows some of the song's
+    # riffs; and in each kind of section a player plays the accompaniment, the melody or one of the riffs the player knows.
 
     def _riff_able(self):
         """The players who can play a riff: those whose part in the song is a figure, found by asking for a riff from everybody everywhere."""
-        trial = copy.deepcopy(self)
+        trial = self._trial()
         trial._answers = {}
+        trial._extras.pop(RIFFS_PLAYED, None)
         trial._extras[RIFF] = {RIFF_ROLES: self.roles_in(), RIFF_KINDS: self.section_kinds()}
         try:
             parts = arranged(style=self._style(), song=trial.song_picks(PREVIEW_NAME))[PARTS]
@@ -3337,146 +3535,27 @@ class WizardChoices:
             return []
         return [role for role in self.roles_in() if composer_text.MSG_PART_OF_SECTION.format(role, RIFF) in parts]
 
-    def _take_riff_of_genre(self):
-        """Give the song the riff its kind of music is built on, where the subgenre has one and its players can play it; a person may
-        then change the riff or take it away. Any riff of another subgenre is left behind."""
-        self._extras.pop(RIFF, None)
-        self._answers = {}
-        usual = self._style().get(RIFF)
-        if not usual:
-            return
-        players = [role for role in usual.get(RIFF_ROLES, []) if role in self.roles_in()]
-        offered = self.riff_said_offered()
-        said = next((way for way in (RIFF_INTRO_AND_VERSES, RIFF_UNDER_VERSES) if way in offered), None)
-        if players in self.riff_players_offered() and said is not None:
-            settings = {field: usual[field] for field, ways in RIFF_SETTINGS.items() if usual.get(field) in ways[1:]}
-            self._extras[RIFF] = {**settings, RIFF_ROLES: players, RIFF_KINDS: self._riff_kinds(said)}
-
-    def _riff(self):
-        kept = self._extras.get(RIFF) or {}
-        return kept if kept.get(RIFF_ROLES) in self.riff_players_offered() else {}
-
-    def has_riff(self):
-        return bool(self._riff())
-
-    def get_riff_players(self):
-        """Return who plays the riff, or an empty list while the song has none."""
-        return list(self._riff().get(RIFF_ROLES, []))
-
-    def riff_said_offered(self):
-        """Return where a riff may be played, for the places the form has: the intro, under the verses, both, under the choruses, and everywhere."""
-        kinds = self.section_kinds_in_form()
-        return [way for way in RIFF_SAID_WAYS if all(any(kind in kinds for kind in group) for group in self._riff_kind_groups(way))] if self.is_ready() else []
-
-    def _riff_kind_groups(self, way):
-        """The kinds of section a way of saying the riff names, in groups: the form has to have a kind of each group for the way to be offered."""
-        opening = (self._intro_kind() or INTRO_KIND, OUTRO_KIND)
-        return {RIFF_IN_INTRO: [opening], RIFF_UNDER_VERSES: [(VERSE_KIND,)], RIFF_INTRO_AND_VERSES: [opening, (VERSE_KIND,)], RIFF_UNDER_CHORUSES: [(CHORUS_KIND,)],
-                RIFF_EVERYWHERE: [tuple(self.section_kinds())]}[way]
-
-    def _riff_kinds(self, way):
-        return [kind for group in self._riff_kind_groups(way) for kind in group]
-
-    def get_riff_said(self):
-        """Return where the riff is played, or None while the song has none."""
-        kinds = self._riff().get(RIFF_KINDS)
-        return next((way for way in self.riff_said_offered() if self._riff_kinds(way) == kinds), None)
-
-    def set_riff(self, *, players, said=None):
-        """Give the song a riff played by these players, said where asked or in the intro and under the verses, or take the riff away with no players. A riff the
-        song cannot be made with is refused."""
-        before = copy.deepcopy(self._extras.get(RIFF))
-        if not players:
-            self._extras.pop(RIFF, None)
-            self._answers = {}
-            return
-        offered = self.riff_said_offered()
-        said = said or self.get_riff_said() or next((way for way in (RIFF_INTRO_AND_VERSES, RIFF_UNDER_VERSES) if way in offered), offered[0] if offered else None)
-        if list(players) not in self.riff_players_offered() or said not in offered:
-            raise ValueError(errors.ERR_WIZARD_RIFF.format(value=(players, said)))
-        self._extras[RIFF] = {**(before or {}), RIFF_ROLES: list(players), RIFF_KINDS: self._riff_kinds(said)}
-        self._riff_or_back(before=before, value=(players, said))
-
-    def _riff_or_back(self, *, before, value):
+    def _trial(self):
+        """A copy of the choices to try something on, which remembers who can play a riff and nothing else."""
+        answers = self._answers
         self._answers = {}
         try:
-            self.made_for_listening()
-        except (ValueError, KeyError, SongFileError) as problem:
-            self._extras.pop(RIFF, None)
-            if before is not None:
-                self._extras[RIFF] = before
-            self._answers = {}
-            raise ValueError(errors.ERR_WIZARD_RIFF_UNMADE.format(value=value, problem=problem)) from None
+            trial = copy.deepcopy(self)
+        finally:
+            self._answers = answers
+        trial._answers = {key: value for key, value in answers.items() if RIFF_ABLE_ANSWER in (key, key[0] if isinstance(key, tuple) else None)}
+        return trial
 
-    # The riffs added for kinds of section, besides the song's first: each has a name and its players, who play it in its kinds of
-    # section in place of their usual parts. A player plays one thing in a section, so a riff's players are neither the tune's
-    # player there nor the players of another riff there.
-
-    def _more_riffs(self):
-        """The riffs added whose players are all in the band: a riff of a player who is out waits, unseen, for the player to come back."""
-        band = set(self.roles_in()) if self.is_ready() else set()
-        return [entry for entry in self._extras.get(MORE_RIFFS, []) if set(entry[RIFF_ROLES]) <= band]
-
-    def _more_riff(self, riff):
-        found = next((entry for entry in self._more_riffs() if entry[NAME] == riff), None)
-        if found is None:
-            raise ValueError(errors.ERR_WIZARD_NO_SUCH_RIFF.format(value=riff))
-        return found
-
-    def riff_kinds_offered(self):
-        """Return the kinds of section a riff may be added for: each kind the song's form has, once, in the form's order, but for a
-        kind whose every section is one held chord."""
-        if not self.is_ready():
-            return []
-        return [kind for kind in dict.fromkeys(self.section_kinds_in_form()) if self.riff_place(kind) is not None]
-
-    def added_riffs(self):
-        """Return the names of the riffs added, in the order they were."""
-        return [entry[NAME] for entry in self._more_riffs()]
-
-    def riffs_in(self, kind):
-        """Return the names of the riffs added that play in a kind of section, in the order they were added."""
-        return [entry[NAME] for entry in self._more_riffs() if kind in entry[RIFF_KINDS]]
-
-    def riff_players_of(self, riff):
-        """Return who plays a riff that was added, the first its chords where it has any."""
-        return list(self._more_riff(riff)[RIFF_ROLES])
-
-    def riff_kinds_of(self, riff):
-        """Return the kinds of section a riff that was added plays in."""
-        return list(self._more_riff(riff)[RIFF_KINDS])
-
-    def riff_take_of(self, riff):
-        """Return which take of its notes a riff that was added has."""
-        return self._more_riff(riff).get(RIFF_TAKE, FIRST_RIFF_TAKE)
-
-    def riff_place(self, kind):
-        """Return the place in the form of the first section of a kind that is played and not one held chord, where a riff of the kind is heard, or None."""
-        places = range(len(self.section_labels()))
-        return next((place for place in places if self.section_kind(place) == kind and not self.section_is_held(place)), None)
-
-    def riff_players_free(self, kind):
-        """Return the players who may take a riff in a kind of section, by name: the players whose part is a figure and who play in
-        the kind's first section, but for the player of the kind's tune and the players who already have a riff there."""
-        place = self.riff_place(kind) if self.is_ready() and kind in self.section_kinds_in_form() else None
-        if place is None:
-            return []
-        busy = {self.tune_player_in(kind)} if self.tune_place(kind) is not None else set()
-        first = self._riff()
-        if kind in first.get(RIFF_KINDS, []):
-            busy |= set(first[RIFF_ROLES])
-        for entry in self._more_riffs():
-            if kind in entry[RIFF_KINDS]:
-                busy |= set(entry[RIFF_ROLES])
-        return [role for role in self._remembered(key=(RIFF_ABLE_ANSWER, kind), compute=lambda: self._riff_able_in(kind)) if role not in busy]
+    def riff_instruments(self):
+        """Return the players of the band a riff can be written for, by name: those whose part in the song is a figure, never the drummer."""
+        return list(self._remembered(key=RIFF_ABLE_ANSWER, compute=self._riff_able)) if self.is_ready() else []
 
     def _riff_able_in(self, kind):
         """The players a riff would be heard from in a kind of section, found by asking for one there from every player of a figure
         with no other riff in the song: a player who sits the kind out, or whose sections there a riff's bars do not fill, has none."""
-        able = self._remembered(key=RIFF_ABLE_ANSWER, compute=self._riff_able)
-        trial = copy.deepcopy(self)
-        trial._answers = {}
-        trial._extras.pop(RIFF, None)
+        able = self.riff_instruments()
+        trial = self._trial()
+        trial._extras.pop(RIFFS_PLAYED, None)
         trial._extras[MORE_RIFFS] = [{NAME: TRIAL_RIFF, RIFF_ROLES: able, RIFF_KINDS: [kind]}]
         try:
             parts = arranged(style=self._style(), song=trial.song_picks(PREVIEW_NAME))[PARTS]
@@ -3484,275 +3563,365 @@ class WizardChoices:
             return []
         return [role for role in able if composer_text.MSG_PART_OF_SECTION.format(role, TRIAL_RIFF) in parts]
 
-    def add_riff(self, *, kind, players=None, riff=None):
-        """Add a riff to a kind of section and return its name: a new riff for these players, or with a riff's name one already
-        added, which its own players then play in this kind as well. Players who are not free there are refused, as is a riff
-        the song cannot be made with."""
-        free = self.riff_players_free(kind)
-        before = copy.deepcopy(self._extras.get(MORE_RIFFS, []))
-        if riff is not None:
-            entry = self._more_riff(riff)
-            if kind in entry[RIFF_KINDS] or not set(entry[RIFF_ROLES]) <= set(free):
-                raise ValueError(errors.ERR_WIZARD_RIFF.format(value=(riff, kind)))
-            entry[RIFF_KINDS].append(kind)
-        else:
-            players = list(players or [])
-            if not players or len(set(players)) != len(players) or not set(players) <= set(free):
-                raise ValueError(errors.ERR_WIZARD_RIFF.format(value=(players, kind)))
-            riff = naming.new_name(word=names_text.MSG_NEW_RIFF_WORD, taken=[entry[NAME] for entry in self._extras.get(MORE_RIFFS, [])])
-            self._extras.setdefault(MORE_RIFFS, []).append({NAME: riff, RIFF_ROLES: players, RIFF_KINDS: [kind]})
-        self._more_riffs_or_back(before=before, value=(riff, kind))
+    def riff_players_in(self, kind):
+        """Return the players a riff can be heard from in a kind of section, by name."""
+        if not self.is_ready() or kind not in self.section_kinds_in_form() or self.riff_place(kind) is None:
+            return []
+        return list(self._remembered(key=(RIFF_ABLE_ANSWER, kind), compute=lambda: self._riff_able_in(kind)))
+
+    def riff_place(self, kind):
+        """Return the place in the form of the first section of a kind that is played and not one held chord, where a riff of the kind is heard, or None."""
+        places = range(len(self.section_labels()))
+        return next((place for place in places if self.section_kind(place) == kind and not self.section_is_held(place)), None)
+
+    def _riffs(self):
+        """The song's riffs whose player is in the band and can play one: a riff of a player who is out waits, unseen, for the player to come back."""
+        able = self.riff_instruments()
+        return [entry for entry in self._extras.get(RIFF_BOOK, []) if entry[RIFF_FOR] in able]
+
+    def _riff_entry(self, riff):
+        found = next((entry for entry in self._riffs() if entry[NAME] == riff), None)
+        if found is None:
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_RIFF.format(value=riff))
+        return found
+
+    def riff_names(self):
+        """Return the names of the song's riffs, in the order they were made."""
+        return [entry[NAME] for entry in self._riffs()]
+
+    def riffs_for(self, role):
+        """Return the names of the riffs written for a player, in the order they were made."""
+        return [entry[NAME] for entry in self._riffs() if entry[RIFF_FOR] == role]
+
+    def riff_written_for(self, riff):
+        """Return the player a riff was written for."""
+        return self._riff_entry(riff)[RIFF_FOR]
+
+    def riff_setting(self, *, riff, field):
+        """Return how a riff is drawn in one way: how many bars, what it is made of, what fills its gaps or what it does as the chords change."""
+        return self._riff_entry(riff).get(field, RIFF_SETTINGS[field][0])
+
+    def riff_is_edited(self, riff):
+        """Return whether a riff's notes were written by hand, so that only regenerating writes over them."""
+        return self._riff_entry(riff).get(RIFF_OWN) is not None
+
+    def riff_bar_count(self, riff):
+        """Return how many bars a riff lasts."""
+        entry = self._riff_entry(riff)
+        eighths = self.riff_steps_in_bar()
+        if entry.get(RIFF_OWN) is not None:
+            return max(entry[RIFF_OWN].get(PatternSetting.STEPS, eighths) // eighths, 1)
+        return riff_bars_of(line=riff_line_of(riff=entry, seed=0, eighths=eighths, flattened=flattened_in(self._scale_type)), eighths=eighths)
+
+    def riff_steps_in_bar(self):
+        """Return how many steps, eighths, a bar of a riff has."""
+        return int(bar_length(self.meter()) * EIGHTHS_IN_WHOLE)
+
+    def riff_kinds_used(self, riff):
+        """Return the kinds of section a riff is played in by anybody in the band, in the form's order."""
+        self._riff_entry(riff)
+        played = self._riffs_played()
+        return [kind for kind in dict.fromkeys(self.section_kinds_in_form()) if riff in played.get(kind, {}).values()]
+
+    def add_riff(self, *, role, settings=None):
+        """Write a new riff for a player and return its name: the player knows the riff, and nobody plays it yet. What is no
+        setting of a riff, and a player a riff cannot be written for, are refused."""
+        settings = dict(settings or {})
+        if role not in self.riff_instruments() or any(field not in NEW_RIFF_SETTINGS or value not in RIFF_SETTINGS[field] for field, value in settings.items()):
+            raise ValueError(errors.ERR_WIZARD_RIFF.format(value=(role, settings)))
+        riff = naming.new_name(word=names_text.MSG_NEW_RIFF_WORD, taken=self._riff_names_taken())
+        chosen = {field: value for field, value in settings.items() if value != RIFF_SETTINGS[field][0]}
+        self._keep_riff({**chosen, NAME: riff, RIFF_FOR: role, RIFF_DRAWN_AS: riff})
         return riff
 
-    def riffs_of_player(self, role):
-        """Return the riffs that were added which a player plays, by name, in the order they were added."""
-        return [entry[NAME] for entry in self._more_riffs() if role in entry[RIFF_ROLES]]
+    def _riff_names_taken(self):
+        """Every riff's name, those of players who are out included, which wait."""
+        return [entry[NAME] for entry in self._extras.get(RIFF_BOOK, [])]
 
-    def riff_takers(self, *, riff, leaving):
-        """Return the players who could take a riff over from a player who leaves the band: each player free of the tune and of
-        any other riff in every kind of section the riff plays in."""
-        entry = self._more_riff(riff)
-        takers = None
-        for kind in entry[RIFF_KINDS]:
-            free = [role for role in self.riff_players_free(kind) if role != leaving]
-            takers = free if takers is None else [role for role in takers if role in free]
-        return takers or []
-
-    def give_riff(self, *, riff, leaving, taker):
-        """Give a player's place in a riff to another player, who must be one of the riff's takers. A riff the song cannot then be
-        made with is refused and nothing changes."""
-        if taker not in self.riff_takers(riff=riff, leaving=leaving) or leaving not in self.riff_players_of(riff):
-            raise ValueError(errors.ERR_WIZARD_RIFF.format(value=(riff, taker)))
-        before = copy.deepcopy(self._extras.get(MORE_RIFFS, []))
-        entry = self._more_riff(riff)
-        entry[RIFF_ROLES] = [taker if role == leaving else role for role in entry[RIFF_ROLES]]
-        self._more_riffs_or_back(before=before, value=(riff, taker))
-
-    def drop_riff(self, riff):
-        """Take a riff that was added out of the song, from every kind of section."""
-        for kind in self.riff_kinds_of(riff):
-            self.remove_riff(kind=kind, riff=riff)
-
-    def remove_riff(self, *, kind, riff):
-        """Take a riff out of a kind of section; a riff left with no kind of section is gone."""
-        entry = self._more_riff(riff)
-        if kind not in entry[RIFF_KINDS]:
-            raise ValueError(errors.ERR_WIZARD_RIFF.format(value=(riff, kind)))
-        entry[RIFF_KINDS].remove(kind)
-        if not entry[RIFF_KINDS]:
-            self._extras[MORE_RIFFS].remove(entry)
-        if not self._extras[MORE_RIFFS]:
-            del self._extras[MORE_RIFFS]
+    def _keep_riff(self, entry):
+        """Put a riff among the song's, known by the player it was written for."""
+        self._extras.setdefault(RIFF_BOOK, []).append(entry)
+        known = self._extras.setdefault(RIFFS_KNOWN, {}).setdefault(entry[RIFF_FOR], [])
+        known.append(entry[NAME])
         self._answers = {}
 
-    def new_riff_take_of(self, riff):
-        """Have other notes written for a riff that was added, its players and its kinds of section left as they were."""
-        entry = self._more_riff(riff)
+    def rename_riff(self, *, riff, name):
+        """Give a riff another name, wherever the riff is known and played; its notes stay. A name another riff has is refused."""
+        entry = self._riff_entry(riff)
+        if name != riff and name.lower() in [taken.lower() for taken in self._riff_names_taken() if taken != riff]:
+            raise ValueError(errors.ERR_WIZARD_RIFF_NAME_TAKEN.format(name=name))
+        entry[NAME] = name
+        for known in self._extras.get(RIFFS_KNOWN, {}).values():
+            known[:] = [name if other == riff else other for other in known]
+        for by in self._extras.get(RIFFS_PLAYED, {}).values():
+            for role in by:
+                if by[role] == riff:
+                    by[role] = name
+        self._answers = {}
+
+    def copy_riff(self, *, riff, role):
+        """Copy a riff for a player and return the copy's name: the same notes, in the player's own octave, known by the player
+        and played by nobody yet."""
+        entry = self._riff_entry(riff)
+        if role not in self.riff_instruments():
+            raise ValueError(errors.ERR_WIZARD_RIFF.format(value=(riff, role)))
+        copied = copy.deepcopy(entry)
+        copied[NAME] = naming.copy_name(name=riff, taken=self._riff_names_taken())
+        if copied.get(RIFF_OWN) is not None:
+            copied[RIFF_OWN] = in_octaves_of(pattern=copied[RIFF_OWN], by=self._role(role)[OCTAVE] - self._role(entry[RIFF_FOR])[OCTAVE], group=role)
+        copied[RIFF_FOR] = role
+        self._keep_riff(copied)
+        return copied[NAME]
+
+    def delete_riff(self, riff):
+        """Take a riff out of the song: nobody knows it any more, and whoever played it plays the accompaniment again."""
+        entry = self._riff_entry(riff)
+        self._extras[RIFF_BOOK].remove(entry)
+        for known in self._extras.get(RIFFS_KNOWN, {}).values():
+            known[:] = [other for other in known if other != riff]
+        for by in self._extras.get(RIFFS_PLAYED, {}).values():
+            for role in [role for role, played in by.items() if played == riff]:
+                del by[role]
+        self._tidy_riffs()
+
+    def _tidy_riffs(self):
+        """Leave nothing empty among what the song keeps of its riffs."""
+        for kept in (RIFFS_KNOWN, RIFFS_PLAYED):
+            held = {name: value for name, value in self._extras.get(kept, {}).items() if value}
+            self._extras.pop(kept, None)
+            if held:
+                self._extras[kept] = held
+        if not self._extras.get(RIFF_BOOK):
+            self._extras.pop(RIFF_BOOK, None)
+        self._answers = {}
+
+    def regenerate_riff(self, riff):
+        """Have other notes written for a riff, with nothing kept of the old ones, written by hand or not."""
+        entry = self._riff_entry(riff)
         entry[RIFF_TAKE] = entry.get(RIFF_TAKE, FIRST_RIFF_TAKE) + 1
         entry.pop(RIFF_OWN, None)
         self._answers = {}
 
-    def riff_pattern_name(self, riff):
-        """Return the name of the pattern a riff that was added is played from by its first player, in the set the choices make."""
-        return composer_text.MSG_PART_OF_SECTION.format(self.riff_players_of(riff)[0], riff)
-
-    def riff_pattern(self, riff):
-        """Return the data of the pattern a riff's first player plays, or None where the riff is not heard in the song."""
-        name = self.riff_pattern_name(riff)
-        setlist, _ = self.made_for_listening()
-        return setlist.get_pattern(name).to_data() if setlist.has_pattern(name) else None
-
-    def added_riff_is_own(self, riff):
-        """Return whether a riff's notes were written by hand, so that only a new take writes over them."""
-        return self._more_riff(riff).get(RIFF_OWN) is not None
-
     def set_riff_pattern(self, *, riff, pattern):
-        """Keep a pattern's data as a riff's own notes, as its first player plays them, or forget the person's own with None. A
-        pattern the song cannot be made with is refused and nothing changes."""
-        entry = self._more_riff(riff)
-        before = copy.deepcopy(self._extras.get(MORE_RIFFS, []))
-        if pattern is None:
-            entry.pop(RIFF_OWN, None)
-        else:
-            entry[RIFF_OWN] = copy.deepcopy(pattern)
-        self._more_riffs_or_back(before=before, value=riff)
-
-    def blank_riff_pattern(self, riff):
-        """Return a riff's pattern with no note in it, as long as the riff the wizard wrote, to write by hand."""
-        made = self.riff_pattern(riff)
-        return {field: made[field] for field in (PatternSetting.STEPS, PatternSetting.STEP_SIZE, PatternSetting.GROUP) if field in made}
-
-    def _more_riffs_or_back(self, *, before, value):
+        """Keep a pattern's data as a riff's own notes, as the player the riff was written for plays them. A pattern the song
+        cannot be made with is refused and nothing changes."""
+        entry = self._riff_entry(riff)
+        before = copy.deepcopy(self._extras.get(RIFF_BOOK))
+        entry[RIFF_OWN] = copy.deepcopy(pattern)
         self._answers = {}
         try:
+            self.riff_heard(riff)
             self.made_for_listening()
         except Exception as problem:
             # A pattern written by hand can fail in any way a set's data can, as a tune's can.
-            self._extras.pop(MORE_RIFFS, None)
-            if before:
-                self._extras[MORE_RIFFS] = before
+            self._extras[RIFF_BOOK] = before
             self._answers = {}
-            raise ValueError(errors.ERR_WIZARD_RIFF_UNMADE.format(value=value, problem=problem)) from None
+            raise ValueError(errors.ERR_WIZARD_RIFF_UNMADE.format(value=riff, problem=problem)) from None
 
-    def riff_steps_in_bar(self):
-        """Return how many steps, eighths, a bar of the riff has."""
-        return int(bar_length(self.meter()) * EIGHTHS_IN_WHOLE)
+    def riff_heard(self, riff):
+        """Return where a riff is heard alone, played or not, as the set a song is made in, the song's name, the place of a
+        section in its form, the player's track and the name of the pattern that holds the riff's notes: the song the choices
+        make with the riff's own player playing it, moving with each chord, in the first kind of section that can hold it."""
+        return self._remembered(key=(RIFF_HEARD_ANSWER, riff), compute=lambda: self._riff_heard(riff))
 
-    def riff_line(self):
-        """Return the riff's notes, a line of two bars in eighths (line_edits.py), or None while the song has no riff."""
-        if not self.has_riff():
-            return None
-        riff = self._riff()
-        return riff_line_of(riff=copy.deepcopy(riff), seed=self._seed or 0, eighths=self.riff_steps_in_bar(), flattened=flattened_in(self._scale_type))
+    def _riff_heard(self, riff):
+        entry = self._riff_entry(riff)
+        role = entry[RIFF_FOR]
+        kind = next((kind for kind in dict.fromkeys(self.section_kinds_in_form()) if role in self.riff_players_in(kind) and self.section_bars(self.riff_place(kind)) % self.riff_bar_count(riff) == 0), None)
+        if kind is None:
+            raise ValueError(errors.ERR_WIZARD_RIFF_FITS_NOWHERE.format(riff=riff))
+        trial = self._trial()
+        shown = trial._riff_entry(riff)
+        shown.pop(RIFF_WITH_CHORDS, None)
+        trial._extras[RIFFS_PLAYED] = {kind: {role: riff}}
+        # The melody stays with whoever has it, so the riff's player is free of it in the trial's section.
+        trial._extras.setdefault(TUNE_BY, {})
+        if trial.tune_player_in(kind) == role:
+            trial._extras[TUNE_BY][kind] = NOBODY
+        if not trial._extras[TUNE_BY]:
+            del trial._extras[TUNE_BY]
+        setlist, name = trial.made_for_listening()
+        pattern = composer_text.MSG_PART_OF_SECTION.format(role, riff)
+        if not setlist.has_pattern(pattern):
+            raise ValueError(errors.ERR_WIZARD_RIFF_FITS_NOWHERE.format(riff=riff))
+        return setlist, name, self.riff_place(kind), role, pattern
 
-    def riff_kick(self):
-        """Return the steps of the riff where the kick strikes with it, for a picture: the accents of a riff of chords, while the song's
-        kick is played. None for any other riff."""
-        if not self.has_riff() or self.get_riff_setting(RIFF_NOTES) != ACCENT_CHORDS or KICK_PIECE not in self.pieces() or not self.piece_is_on(KICK_PIECE):
-            return None
-        hits = [hit for bar in accent_bars(line=self.riff_line(), eighths=self.riff_steps_in_bar()) for hit in bar]
-        return [step for step, hit in enumerate(hits) if hit != NO_HIT]
+    # Riff Assign: the riffs each player knows. A player knows the riffs written for the player until one is taken away, and may be
+    # given a riff written for another player, which the player then plays in the player's own octave.
 
-    # A riff's settings: how its notes are drawn, how many bars it has, what lies between its accents, what it does under the
-    # tune and what it does as the chords change.
+    def riffs_known_by(self, role):
+        """Return the names of the riffs a player knows, in the order the player was given them."""
+        names = self.riff_names()
+        return [riff for riff in self._extras.get(RIFFS_KNOWN, {}).get(role, []) if riff in names] if role in self.riff_instruments() else []
 
-    def get_riff_setting(self, field):
-        """Return a setting of the riff, the usual one until another is chosen."""
-        return self._riff().get(field, RIFF_SETTINGS[field][0])
+    def riffs_to_give(self, role):
+        """Return the names of the song's riffs a player does not know yet."""
+        known = self.riffs_known_by(role)
+        return [riff for riff in self.riff_names() if riff not in known] if role in self.riff_instruments() else []
 
-    def riff_settings_offered(self):
-        """Return the riff's settings that are heard, in the order shown: how the notes are drawn; for chords on the accents, how many
-        bars, what lies between and, with two bars, what the riff does under the tune; and what it does as the chords change.
-        Notes written by hand are drawn no way, so only what the riff does with the chords is offered then."""
-        if not self.has_riff():
-            return []
-        fields = [RIFF_WITH_CHORDS]
-        if not self.riff_is_own():
-            heavy = self.get_riff_setting(RIFF_NOTES) == ACCENT_CHORDS
-            two_bars = self.get_riff_setting(RIFF_BAR_COUNT) == RIFF_BARS
-            fields = [RIFF_NOTES, *([RIFF_BAR_COUNT, RIFF_BETWEEN] if heavy else []), *([RIFF_UNDER_TUNE] if heavy and two_bars else []), RIFF_WITH_CHORDS]
-        return [field for field in fields if self._remembered(key=(RIFF_SETTING_ANSWER, field), compute=lambda field=field: self._riff_setting_is_heard(field))]
-
-    def _riff_setting_is_heard(self, field):
-        """Whether the song differs with a setting of the riff the other way, found by making the song both ways."""
-        made = []
-        for value in RIFF_SETTINGS[field]:
-            trial = copy.deepcopy(self)
-            trial._answers = {}
-            trial._extras[RIFF] = {**self._riff(), field: value}
-            try:
-                # The patterns alone, since the set also keeps the choices, which differ whatever is heard.
-                made.append(trial.made_for_listening()[0].to_data()[Section.PATTERNS])
-            except (ValueError, KeyError, SongFileError):
-                return False
-        return made[0] != made[1]
-
-    def set_riff_setting(self, *, field, value):
-        """Choose a setting of the riff. What is no setting, and a riff the song cannot be made with, is refused."""
-        if not self.has_riff():
-            raise ValueError(errors.ERR_WIZARD_NO_RIFF)
-        if field not in RIFF_SETTINGS or value not in RIFF_SETTINGS[field]:
-            raise ValueError(errors.ERR_WIZARD_RIFF.format(value=(field, value)))
-        before = copy.deepcopy(self._extras[RIFF])
-        self._extras[RIFF].pop(field, None)
-        if value != RIFF_SETTINGS[field][0]:
-            self._extras[RIFF][field] = value
-        self._riff_or_back(before=before, value=(field, value))
-
-    def riff_notes(self):
-        """Return the riff for a picture, as hook_notes gives the hook: how many steps it lasts, how many a bar has, and each note as where it starts, how many
-        steps it lasts and its MIDI note. None while the song has no riff."""
-        line = self.riff_line()
-        if line is None:
-            return None
-        own = self._riff().get(RIFF_OWN)
-        if own is not None:
-            return own[PatternSetting.STEPS], self.riff_steps_in_bar(), self._notes_of_pattern(own)
-        notes = []
-        at = 0
-        for note in line:
-            if not line_edits.is_rest(note):
-                notes.append((at, line_edits.length_of(note), self.riff_pitch_of_place(line_edits.place_of(note))))
-            at += line_edits.length_of(note)
-        return at, self.riff_steps_in_bar(), notes
-
-    def riff_scene(self):
-        """Return the place in the form of the first section that plays the riff, or None."""
-        kinds = self._riff().get(RIFF_KINDS, [])
-        return next((place for place, kind in enumerate(self.section_kinds_in_form()) if kind in kinds and not self.section_is_held(place)), None)
-
-    def riff_is_own(self):
-        """Return whether the riff's notes were written by hand: as a pattern, or as a line in a song made before patterns were."""
-        return bool(self._riff().get(RIFF_LINE)) or self._riff().get(RIFF_OWN) is not None
-
-    def _notes_of_pattern(self, pattern):
-        """The notes of a pattern for a picture: each as the step it starts on, how many steps it lasts and its MIDI note."""
-        scale = self.scale_half_steps()
-        degrees = pattern.get(Row.DEGREE) or []
-        octaves = pattern.get(Row.OCTAVE) or [None] * len(degrees)
-        ties = pattern.get(Row.TIE) or [False] * len(degrees)
-        notes = []
-        for place, degree in enumerate(degrees):
-            if degree is not None and octaves[place] is not None:
-                held = tune_fit.steps_held(ties=ties, degrees=degrees, place=place)
-                notes.append((place, held, (octaves[place] - PATTERN_OCTAVES_OVER_PICTURE) * NOTES_IN_OCTAVE + self.root_half_steps() + scale[(degree - 1) % len(scale)]))
-        return notes
-
-    def song_riff_pattern_name(self):
-        """Return the name of the pattern the riff's first player plays it from, in the set the choices make, or None where the riff is not heard."""
-        place = self.riff_scene()
-        if place is None:
-            return None
-        setlist, name = self.made_for_listening()
-        scene = setlist.get_song(name).get_scenes()[place]
-        player = self.get_riff_players()[0]
-        return scene.get_clip_slot(player).get_pattern_name() if scene.has_clip_slot(player) else None
-
-    def set_song_riff_pattern(self, pattern):
-        """Keep a pattern's data as the riff's own notes, as its first player plays them, or give the riff back to the wizard with
-        None. A pattern the song cannot be made with is refused and nothing changes."""
-        if not self.has_riff():
-            raise ValueError(errors.ERR_WIZARD_NO_RIFF)
-        before = copy.deepcopy(self._extras[RIFF])
-        self._extras[RIFF].pop(RIFF_LINE, None)
-        self._extras[RIFF].pop(RIFF_OWN, None)
-        if pattern is not None:
-            self._extras[RIFF][RIFF_OWN] = copy.deepcopy(pattern)
+    def give_riff(self, *, role, riff):
+        """Have a player know a riff, to play wherever Section Players says."""
+        if riff not in self.riffs_to_give(role):
+            raise ValueError(errors.ERR_WIZARD_RIFF.format(value=(riff, role)))
+        self._extras.setdefault(RIFFS_KNOWN, {}).setdefault(role, []).append(riff)
         self._answers = {}
+
+    def kinds_playing(self, *, role, riff):
+        """Return the kinds of section a player plays a riff in, in the form's order."""
+        played = self._riffs_played()
+        return [kind for kind in dict.fromkeys(self.section_kinds_in_form()) if played.get(kind, {}).get(role) == riff]
+
+    def take_riff_from(self, *, role, riff):
+        """Have a player know a riff no longer: wherever the player played it, the player plays the accompaniment again."""
+        if riff not in self.riffs_known_by(role):
+            raise ValueError(errors.ERR_WIZARD_RIFF.format(value=(riff, role)))
+        self._extras[RIFFS_KNOWN][role].remove(riff)
+        for by in self._extras.get(RIFFS_PLAYED, {}).values():
+            if by.get(role) == riff:
+                del by[role]
+        self._tidy_riffs()
+
+    # Section Players: what each player plays in each kind of section. A player plays one thing in a section: the accompaniment the
+    # genre writes, the melody, or a riff the player knows.
+
+    def _riffs_played(self):
+        """What the song keeps of who plays which riff, by kind of section and player, leaving out a riff the player no longer
+        knows and a player who has the melody there."""
+        played = {}
+        for kind, by in self._extras.get(RIFFS_PLAYED, {}).items():
+            here = {role: riff for role, riff in by.items() if riff in self.riffs_known_by(role)}
+            if here:
+                played[kind] = here
+        return played
+
+    def section_player_kinds(self):
+        """Return the kinds of section the song's form has, once each, in the form's order."""
+        return list(dict.fromkeys(self.section_kinds_in_form())) if self.is_ready() else []
+
+    def section_players(self, kind):
+        """Return the players who have something to choose in a kind of section, by name, in the band's order: whoever can
+        play the melody or a riff there."""
+        return [role for role in self.roles_in() if len(self.section_parts_offered(kind=kind, role=role)) > 1] if self.is_ready() else []
+
+    def _carries_melody_in(self, *, kind, role):
+        """Whether a player may be given the melody in a kind of section: a kind that has a melody, and a player who can carry one."""
+        return kind in self.tune_kinds() and role in self.tune_players_offered()
+
+    def section_parts_offered(self, *, kind, role):
+        """Return what a player may play in a kind of section: the accompaniment, or for the player the genre gives the melody
+        to, a rest; the melody, where the player can carry it there; and each riff the player knows, where a riff can be
+        heard from the player there."""
+        own = self.tune_player()
+        offered = [RESTS_PART if role == own else ACCOMPANIMENT]
+        if self._carries_melody_in(kind=kind, role=role):
+            offered.append(MELODY_PART)
+        if role in self.riff_players_in(kind):
+            offered += self.riffs_known_by(role)
+        return offered
+
+    def section_part(self, *, kind, role):
+        """Return what a player plays in a kind of section: ACCOMPANIMENT, RESTS_PART, MELODY_PART or a riff's name."""
+        if self._carries_melody_in(kind=kind, role=role) and self.tune_player_in(kind) == role:
+            return MELODY_PART
+        riff = self._riffs_played().get(kind, {}).get(role)
+        if riff is not None and role in self.riff_players_in(kind):
+            return riff
+        return RESTS_PART if role == self.tune_player() else ACCOMPANIMENT
+
+    def set_section_part(self, *, kind, role, part):
+        """Choose what a player plays in a kind of section. A player given the melody takes it from whoever had it there; a
+        player who gives the melody up leaves the section with none, or with the song's own player where another had been
+        chosen for the kind. What is not offered, and a song that cannot then be made, are refused and nothing changes."""
+        if part not in self.section_parts_offered(kind=kind, role=role):
+            raise ValueError(errors.ERR_WIZARD_SECTION_PART.format(value=part, kind=kind, player=role))
+        before = copy.deepcopy(self._extras)
+        had = self.section_part(kind=kind, role=role)
+        by = self._extras.setdefault(TUNE_BY, {})
+        if part == MELODY_PART:
+            by.pop(kind, None)
+            if role != self.tune_played_by():
+                by[kind] = role
+        elif had == MELODY_PART:
+            by.pop(kind, None)
+            if role == self.tune_played_by():
+                by[kind] = NOBODY
+        if not by:
+            del self._extras[TUNE_BY]
+        played = self._extras.setdefault(RIFFS_PLAYED, {}).setdefault(kind, {})
+        played.pop(role, None)
+        if part not in (ACCOMPANIMENT, RESTS_PART, MELODY_PART):
+            played[role] = part
+        self._tidy_riffs()
         try:
             self.made_for_listening()
-        except Exception as problem:
-            # A pattern written by hand can fail in any way a set's data can.
-            self._extras[RIFF] = before
+        except (ValueError, KeyError, IndexError, SongFileError) as problem:
+            self._extras = before
             self._answers = {}
-            raise ValueError(errors.ERR_WIZARD_RIFF_UNMADE.format(value=RIFF, problem=problem)) from None
+            raise ValueError(errors.ERR_WIZARD_RIFF_UNMADE.format(value=(kind, role, part), problem=problem)) from None
 
-    def riff_pitch_of_place(self, place):
-        """Return the MIDI note at a place of the song's scale as the riff's first player plays it, for a picture of the riff."""
-        scale = self.scale_half_steps()
-        octaves, degree = divmod(place, len(scale))
-        return self._role(self.get_riff_players()[0])[OCTAVE] * NOTES_IN_OCTAVE + self.root_half_steps() + scale[degree] + octaves * NOTES_IN_OCTAVE
+    def _riffs_arranged(self):
+        """The song's riffs as the arranger places them: for each riff and each player who plays it, the kinds of section the
+        player plays it in, with who the riff was written for and the name its notes are drawn by."""
+        if not self._extras.get(RIFFS_PLAYED):
+            # Nobody plays a riff, which is also so of every song made to find who could.
+            return []
+        played = self._riffs_played()
+        arranged_riffs = []
+        for entry in self._riffs():
+            for role in self.roles_in():
+                kinds = [kind for kind, by in played.items() if by.get(role) == entry[NAME] and self.section_part(kind=kind, role=role) == entry[NAME]]
+                if kinds:
+                    arranged_riffs.append({**copy.deepcopy(entry), RIFF_ROLES: [role], RIFF_KINDS: kinds})
+        return arranged_riffs
 
-    def new_riff(self):
-        """Have another riff made, the rest of the song left as it was; notes written by hand give way to the new riff."""
-        if not self.has_riff():
-            raise ValueError(errors.ERR_WIZARD_NO_RIFF)
-        riff = self._extras[RIFF]
-        riff.pop(RIFF_LINE, None)
-        riff.pop(RIFF_OWN, None)
-        riff[RIFF_TAKE] = riff.get(RIFF_TAKE, FIRST_RIFF_TAKE) + 1
+    def _drop_riffs(self, goes):
+        """Take out of the song every riff a test says goes, with who knows it and who plays it."""
+        gone = [entry[NAME] for entry in self._extras.get(RIFF_BOOK, []) if goes(entry)]
+        for kept in (RIFF, MORE_RIFFS):
+            self._extras.pop(kept, None)
+        self._extras[RIFF_BOOK] = [entry for entry in self._extras.get(RIFF_BOOK, []) if entry[NAME] not in gone]
+        for known in self._extras.get(RIFFS_KNOWN, {}).values():
+            known[:] = [riff for riff in known if riff not in gone]
+        for by in self._extras.get(RIFFS_PLAYED, {}).values():
+            for role in [role for role, riff in by.items() if riff in gone]:
+                del by[role]
+        self._tidy_riffs()
+
+    def _take_riff_of_genre(self):
+        """Give the song the riff its kind of music is built on, where the subgenre has one and its players can play it: written
+        for the first of its players, known by each, and played by each in the intro, the outro and the verses, where the form
+        has them. A person may then change the riff or delete it. A riff written by hand is kept from genre to genre."""
+        self._drop_riffs(lambda entry: entry.get(RIFF_OF_GENRE) and entry.get(RIFF_OWN) is None)
+        usual = self._style().get(RIFF)
+        if not usual:
+            return
+        players = [role for role in usual.get(RIFF_ROLES, []) if role in self.riff_instruments()]
+        if not players:
+            return
+        riff = naming.new_name(word=names_text.MSG_NEW_RIFF_WORD, taken=self._riff_names_taken())
+        settings = {field: usual[field] for field, ways in RIFF_SETTINGS.items() if usual.get(field) in ways[1:]}
+        self._keep_riff({**settings, NAME: riff, RIFF_FOR: players[0], RIFF_DRAWN_AS: riff, RIFF_OF_GENRE: True})
+        for role in players[1:]:
+            self._extras[RIFFS_KNOWN].setdefault(role, []).append(riff)
+        for kind in (self._intro_kind() or INTRO_KIND, OUTRO_KIND, VERSE_KIND):
+            here = {role: riff for role in players if role in self.riff_players_in(kind) and self.section_part(kind=kind, role=role) == ACCOMPANIMENT}
+            if here:
+                self._extras.setdefault(RIFFS_PLAYED, {})[kind] = here
         self._answers = {}
 
-    def set_riff_line(self, line):
-        """Write the riff's notes by hand, or give the riff back to the wizard with None. A line that is not as long as the riff, or that the song cannot be made with, is refused."""
-        if not self.has_riff():
-            raise ValueError(errors.ERR_WIZARD_NO_RIFF)
-        before = copy.deepcopy(self._extras[RIFF])
-        if line is None:
-            self._extras[RIFF].pop(RIFF_LINE, None)
-        else:
-            self._extras[RIFF][RIFF_LINE] = self._checked_line(line=line, steps=riff_bars_of(line=self.riff_line(), eighths=self.riff_steps_in_bar()) * self.riff_steps_in_bar())
-        self._riff_or_back(before=before, value=line)
+    def _riffs_of_older_song(self):
+        """Bring the riffs of a song kept before riffs stood on their own over to the song's riffs: the song's first riff and each
+        riff added, written for its first player, known by each of its players and played by each in its kinds of section."""
+        older = [entry for entry in [self._extras.pop(RIFF, None), *self._extras.pop(MORE_RIFFS, [])] if isinstance(entry, dict) and entry.get(RIFF_ROLES)]
+        for entry in older:
+            name = entry.get(NAME) or naming.new_name(word=names_text.MSG_NEW_RIFF_WORD, taken=self._riff_names_taken())
+            kept = {field: value for field, value in entry.items() if field in RIFF_SETTINGS or field in (RIFF_TAKE, RIFF_OWN)}
+            # The first riff's notes were drawn by the song's seed alone, which no name stands for: a kept song draws a new seed all the same.
+            self._extras.setdefault(RIFF_BOOK, []).append({**kept, NAME: name, RIFF_FOR: entry[RIFF_ROLES][0], RIFF_DRAWN_AS: name})
+            for role in entry[RIFF_ROLES]:
+                self._extras.setdefault(RIFFS_KNOWN, {}).setdefault(role, []).append(name)
+                for kind in entry.get(RIFF_KINDS, []):
+                    self._extras.setdefault(RIFFS_PLAYED, {}).setdefault(kind, {})[role] = name
 
     def _checked_line(self, *, line, steps):
         """A line written by hand, checked: notes of a degree of the scale and rests, each a whole number of steps, as long as the line it stands for, with a note in it."""
@@ -3829,6 +3998,7 @@ class WizardChoices:
 
     def _set_kept_extras(self, *, extras):
         self.set_song_extras(extras)
+        self._riffs_of_older_song()
 
     def _set_kept_stages(self, *, stages):
         """Take how a song starts and ends as a song kept it: the sections are the song's already, so only what was chosen is kept, where it is still offered."""

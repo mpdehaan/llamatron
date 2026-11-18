@@ -116,11 +116,11 @@ def answered(*, bar, dice):
     return again
 
 
-def riff_line(*, seed, take, eighths):
-    """A song's riff as one line of two bars, drawn from the song's seed and the riff's take."""
+def riff_line(*, seed, take, eighths, bars=RIFF_BARS):
+    """A song's riff as one line of two bars, drawn from the song's seed and the riff's take, or its first bar alone where one bar is asked for."""
     dice = random.Random(RIFF_SEED.format(seed, take))
     first = riff_bar(dice=dice, eighths=eighths)
-    return first + answered(bar=first, dice=dice)
+    return first if bars == 1 else first + answered(bar=first, dice=dice)
 
 
 # A heavy riff: its seed, the chord of an accent, how short a muted root is, and the notes an accent is drawn from, each a
@@ -225,7 +225,7 @@ def line_of(*, riff, seed, eighths, flattened=()):
         return [dict(note) for note in riff[RIFF_LINE]]
     take = riff.get(RIFF_TAKE, FIRST_TAKE)
     if riff.get(RIFF_NOTES, SINGLE_NOTES) == SINGLE_NOTES:
-        return riff_line(seed=seed, take=take, eighths=eighths)
+        return riff_line(seed=seed, take=take, eighths=eighths, bars=riff.get(RIFF_BAR_COUNT, RIFF_BARS))
     return heavy_line(seed=seed, take=take, eighths=eighths, bars=riff.get(RIFF_BAR_COUNT, RIFF_BARS), between=riff.get(RIFF_BETWEEN, MUTED_ROOTS),
                       flattened=flattened, gap=riff.get(RIFF_UNDER_TUNE, IN_FULL) == LEAVES_A_GAP)
 

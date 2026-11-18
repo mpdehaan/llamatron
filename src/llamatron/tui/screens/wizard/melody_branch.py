@@ -13,54 +13,73 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The wizard's Melody branch, under Composition: the melody style the song's tunes are written by, and the smart style's gauges."""
 
-from llamatron.macro_composer.melody import HIGHEST_GAUGE, LOWEST_GAUGE
-from llamatron.strings import labels, legends, marks, messages
-from llamatron.tui.screens.shared.field import Button, ChoiceField, NumberField, Toggle
-from llamatron.tui.screens.wizard.song_ways_branch import A_CHOICE, SongWaysBranch
+"""The wizard's Melody panel: what is decided once for every melody of the song.
+
+Who carries the melody, how busy the melodies are, how wide they range, how much they repeat
+and their character, each starting at what the genre does, then how the melody is delivered.
+A kind of section's own melody has a panel of its own (section_melody_branch.py).
+"""
+
+from llamatron.strings import labels, legends, messages
+from llamatron.tui.screens.shared.field import Button, ChoiceField, Toggle
+from llamatron.tui.screens.wizard.branch import Branch
+
+# The choice that leaves the character to the genre, which is no character's name.
+FROM_GENRE = ''
 
 
-class MelodyBranch(SongWaysBranch):
-    """The song's melody style, the gauges of the smart style and the settings of the style in use; a style for each kind of section is to come."""
+class MelodyBranch(Branch):
+    """Who plays the song's melody, how busy, how wide and how repeated the melodies are, their character, and the Phrasing."""
 
     __slots__ = ()
 
     def name(self):
         return labels.MSG_WIZARD_MELODY_BRANCH
 
-    def traits(self):
-        return []
-
-    def offers_styles(self):
-        return self.choices().is_ready() and len(self.choices().melody_styles()) >= A_CHOICE
+    def has_melody(self):
+        return self.choices().is_ready() and bool(self.choices().tune_kinds())
 
     def summary(self):
-        return self.shown() if self.offers_styles() else None
-
-    def shown(self):
-        """Return the melody style as the field shows it: the one chosen, or the genre's own marked as the genre's."""
+        """Return who plays the song's melody, or None for a song with none."""
         choices = self.choices()
-        return choices.get_melody() or marks.MSG_WIZARD_GENRE_MELODY_SHOWN.format(style=choices.genre_melody())
+        return choices.role_title(choices.tune_played_by()) if self.has_melody() and choices.tune_played_by() else None
 
     def fields(self):
+        if not self.has_melody():
+            return []
         choices = self.choices()
-        if not self.offers_styles():
-            return self.phrasing_fields()
-        # The first choice leaves the tunes to the style the genre sketches its own by, which the field names; a style that
-        # would sketch as the genre's does is not offered again by its name.
-        style = ChoiceField(page=self.page(), label=labels.MSG_WIZARD_MELODY_LABEL, choices=[labels.MSG_WIZARD_USUAL_MELODY, *choices.melody_styles()], current=choices.get_melody() or labels.MSG_WIZARD_USUAL_MELODY, shown=self.shown(),
-                            set=self.page().choosing(lambda chosen: choices.set_melody(None if chosen == labels.MSG_WIZARD_USUAL_MELODY else chosen)))
-        # The smart melody style's gauges, under the Melody field while the song's tunes are sketched by it.
-        return [style, *(self.gauge_field(name) for name in choices.gauges()), *(self.setting_field(name) for name in choices.melody_settings()), *self.phrasing_fields()]
+        fields = [self.player_field(), *(self.way_field(field) for field in choices.melody_fields())]
+        if choices.melody_characters_offered():
+            fields.append(self.character_field())
+        return fields + self.phrasing_fields()
+
+    def player_field(self):
+        choices = self.choices()
+        offered = choices.tune_players_offered()
+        return ChoiceField(page=self.page(), label=labels.MSG_WIZARD_TUNE_LABEL, choices=offered, names=[choices.role_title(role) for role in offered],
+                           current=choices.tune_played_by(), shown=choices.role_title(choices.tune_played_by()), set=self.page().choosing(choices.set_tune_played_by))
+
+    def way_field(self, field):
+        """Return the field of how busy the melodies are, how wide they range or how much they repeat."""
+        choices = self.choices()
+        ways = choices.melody_ways_offered(field)
+        return ChoiceField(page=self.page(), label=labels.MSG_WIZARD_MELODY_WAY_LABELS[field], choices=ways, current=choices.get_melody_way(field),
+                           set=self.page().choosing(lambda value: choices.set_melody_way(field=field, value=value)))
+
+    def character_field(self):
+        """Return the field of the melodies' character: the genre's own until one is chosen, which the list's first entry gives back."""
+        choices = self.choices()
+        offered = choices.melody_characters_offered()
+        return ChoiceField(page=self.page(), label=labels.MSG_WIZARD_CHARACTER_LABEL, choices=[FROM_GENRE, *offered], names=[labels.MSG_WIZARD_USUAL_MELODY, *offered],
+                           current=choices.get_melody_character() or FROM_GENRE, shown=choices.get_melody_character() or labels.MSG_WIZARD_USUAL_MELODY,
+                           set=self.page().choosing(lambda chosen: choices.set_melody_character(chosen or None)))
 
     def phrasing_fields(self):
-        """Return how the tune is delivered, where the song has a tune: the Phrasing switch, and under it the button that opens the
-        Phrasing page, where a line's length, its breath, its rise and fall and its notes are chosen."""
+        """Return how the melody is delivered: the Phrasing switch, and under it the button that opens the Phrasing page, where a
+        line's length, its breath, its rise and fall and its notes are chosen."""
         choices = self.choices()
         page = self.page()
-        if not choices.is_ready() or not choices.tune_kinds():
-            return []
         on = choices.tune_phrasing() is not None
         fields = [Toggle(label=labels.MSG_WIZARD_PHRASING_LABEL, on=on, set=page.choosing(lambda wanted: choices.set_tune_phrasing(None if wanted else False)))]
         if on:
@@ -69,25 +88,6 @@ class MelodyBranch(SongWaysBranch):
 
     def listens(self):
         choices = self.choices()
-        if not choices.is_ready() or choices.tune_player() is None or choices.tune_scene() is None:
+        if not self.has_melody() or choices.tune_player() is None or choices.tune_scene() is None:
             return None
         return messages.MSG_WIZARD_LISTEN_TUNE, choices.tune_scene(), choices.tune_player()
-
-    def setting_field(self, name):
-        """Return the field of one setting of the melody style in use: a switch, or a number stepped or typed."""
-        choices = self.choices()
-        to_value = self.page().choosing(lambda value: choices.set_melody_setting(name=name, value=value))
-        if choices.melody_setting_is_switch(name):
-            return Toggle(label=labels.MSG_WIZARD_MELODY_SETTING_LABELS[name], on=choices.get_melody_setting(name), set=to_value)
-        lowest, highest = choices.melody_setting_range(name)
-        return NumberField(page=self.page(), label=labels.MSG_WIZARD_MELODY_SETTING_LABELS[name], number=choices.get_melody_setting(name), lowest=lowest, highest=highest, set=to_value)
-
-    def gauge_field(self, name):
-        """Return the field of one gauge of the smart melody style: a number stepped or typed, drawn as a horizontal gauge
-        beside what its two ends mean."""
-        choices = self.choices()
-        position = choices.get_gauge(name)
-        low, high = labels.MSG_WIZARD_GAUGE_ENDS[name]
-        gauge = marks.MSG_WIZARD_GAUGE_FULL * position + marks.MSG_WIZARD_GAUGE_EMPTY * (HIGHEST_GAUGE - position)
-        return NumberField(page=self.page(), label=labels.MSG_WIZARD_GAUGE_LABELS[name], number=position, shown=marks.MSG_WIZARD_MELODY_GAUGE_SHOWN.format(gauge=gauge, low=low, high=high),
-                           lowest=LOWEST_GAUGE, highest=HIGHEST_GAUGE, set=self.page().choosing(lambda value: choices.set_gauge(name=name, position=value)))

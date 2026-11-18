@@ -16,9 +16,8 @@
 
 """The wizard's Band branch: who is in the band, and a branch for each player who is."""
 
-from llamatron.strings import errors, labels, messages
+from llamatron.strings import errors, labels
 from llamatron.macro_composer.wizard_choices import BAND_SOUNDS, GUITARIST_COUNTS
-from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.screens.shared.field import ChoiceField, Field, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.player_branch import PlayerBranch
@@ -67,37 +66,9 @@ class BandBranch(Branch):
             if not on and choices.roles_in() == [role]:
                 page.refuse(errors.ERR_WIZARD_LAST_PLAYER)
                 return
-            if not on and choices.riffs_of_player(role):
-                self.ask_about_riffs(role=role, riffs=choices.riffs_of_player(role), then=lambda: set_in(False))
-                return
             try:
                 page.choosing(lambda wanted: choices.set_role_in(role=role, on=wanted))(on)
             except ValueError as problem:
                 # A player with no way of playing that fits the subgenre, as a strummed guitar in a waltz that has none written.
                 page.refuse(str(problem))
         return set_in
-
-    def ask_about_riffs(self, *, role, riffs, then):
-        """Ask, of the first riff a leaving player plays, who takes the riff over or whether the riff goes, and go on once answered:
-        ESC leaves the player in the band and every riff as it was."""
-        choices = self.choices()
-        page = self.page()
-        riff = riffs[0]
-        takers = choices.riff_takers(riff=riff, leaving=role)
-
-        def answered(place):
-            if place is None:
-                return
-            try:
-                if place < len(takers):
-                    page.choosing(lambda taker: choices.give_riff(riff=riff, leaving=role, taker=taker))(takers[place])
-                else:
-                    page.choosing(choices.drop_riff)(riff)
-            except ValueError as problem:
-                page.refuse(str(problem))
-                return
-            # The picker is still closing: the next question, or the change, comes once the wizard's page is on top again.
-            page.call_later(then)
-        title = messages.MSG_WIZARD_RIFF_LEFT_TITLE.format(player=choices.role_title(role), riff=riff)
-        offered = [messages.MSG_WIZARD_RIFF_TAKEN_BY.format(player=choices.role_title(taker)) for taker in takers]
-        page.ask(dialog=ChoiceDialog(title=title, options=[*offered, messages.MSG_WIZARD_RIFF_GOES]), then=answered)

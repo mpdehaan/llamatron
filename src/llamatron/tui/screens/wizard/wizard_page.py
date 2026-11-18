@@ -156,6 +156,12 @@ class WizardPage(FieldPage):
         """Return the label of the field the cursor is on, or None in the tree or on a field with no label."""
         return getattr(self.field(), LABEL_OF_FIELD, None)
 
+    def go_to_field(self, label):
+        """Put the cursor on the field of a label, where one shows."""
+        places = [place for place, field in enumerate(self.shown_fields()) if getattr(field, LABEL_OF_FIELD, None) == label]
+        if places:
+            self.place = places[0]
+
     def stay_on(self, label):
         """Keep the cursor on the field of a label: a choice may make a field appear or leave above the one chosen, which would
         otherwise put the cursor on its neighbour."""
@@ -183,34 +189,16 @@ class WizardPage(FieldPage):
                           kept=messages.MSG_WIZARD_TUNE_KEPT.format(kind=kind), unchanged=messages.MSG_WIZARD_TUNE_UNCHANGED.format(kind=kind))
 
     def edit_riff(self, riff):
-        """Open the pattern editor on a riff's notes as its first player plays them, kept as the riff's own when the editor closes, if
-        they were changed."""
+        """Open the pattern editor on a riff's notes as the player the riff was written for plays them, in a song where that player
+        plays the riff, whoever plays it in the song itself; the notes are kept as the riff's own when the editor closes, if they
+        were changed."""
         try:
-            setlist, _ = self._choices.made_for_listening()
-            name = self._choices.riff_pattern_name(riff)
+            setlist, _, _, _, name = self._choices.riff_heard(riff)
         except (ValueError, SongFileError) as problem:
             self.refuse(str(problem))
-            return
-        if not setlist.has_pattern(name):
-            self.refuse(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
             return
         self.open_pattern(setlist=setlist, name=name, keep=lambda pattern: self._choices.set_riff_pattern(riff=riff, pattern=pattern),
                           kept=messages.MSG_WIZARD_RIFF_KEPT.format(riff=riff), unchanged=messages.MSG_WIZARD_RIFF_UNCHANGED.format(riff=riff))
-
-    def edit_song_riff(self):
-        """Open the pattern editor on the notes of the song's first riff, as its first player plays them."""
-        try:
-            setlist, _ = self._choices.made_for_listening()
-            name = self._choices.song_riff_pattern_name()
-        except (ValueError, SongFileError) as problem:
-            self.refuse(str(problem))
-            return
-        if name is None:
-            self.refuse(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
-            return
-        riff = labels.MSG_WIZARD_GROUP_RIFF
-        self.open_pattern(setlist=setlist, name=name, keep=self._choices.set_song_riff_pattern, kept=messages.MSG_WIZARD_RIFF_KEPT.format(riff=riff),
-                          unchanged=messages.MSG_WIZARD_RIFF_UNCHANGED.format(riff=riff))
 
     def open_pattern(self, *, setlist, name, keep, kept, unchanged):
         """Open the pattern editor on a pattern of a draft of the set the choices make. When the editor closes, keep() is given the
@@ -300,20 +288,28 @@ class WizardPage(FieldPage):
         return [self.bind(self.KEYS.LISTEN, action=self.listen)]
 
     def listen(self):
-        what, index, track = self.branch().listens()
-        problem = self.problem_listening(what=what, index=index, track=track)
+        self.listen_to(self.branch().listens())
+
+    def listen_to(self, heard):
+        """Play what a panel names: what it is called, the place of its section, the player whose clip alone plays, and, where it is
+        heard in another song than the one the choices make, as a riff nobody plays yet is, that song's set and name."""
+        if heard is None:
+            self.refuse(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
+            return
+        what, index, track, *made = heard
+        problem = self.problem_listening(what=what, index=index, track=track, made=made[0] if made else None)
         if problem is not None:
             self.refuse(problem)
             return
         self.say(messages.MSG_WIZARD_LISTENING.format(what=what))
 
-    def problem_listening(self, *, what, index, track):
+    def problem_listening(self, *, what, index, track, made=None):
         """Play a section of the song as it would be made, or one track of the section, and return why it could not be heard, or None. A dialog over the page listens through this too."""
         preview = self.app.made_preview()
         if not preview.can_sound():
             return errors.ERR_WIZARD_CANNOT_LISTEN
         try:
-            setlist, name = self._choices.made_for_listening()
+            setlist, name = made or self._choices.made_for_listening()
             if index >= len(setlist.get_song(name).get_scenes()):
                 raise ValueError(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
             if track is None:
@@ -437,9 +433,7 @@ class WizardPage(FieldPage):
     def keys(self):
         if self.in_fields:
             # A settings page's keys, but for ESC, which goes back to the tree here and not from the page.
-            take = self.branch().takes()
-            takes = [self.bind(self.KEYS.NEW_TAKE, action=take)] if take is not None else []
-            return [self.bind(self.KEYS.TO_TREE, action=self.to_tree), *super().keys()[1:], *takes, *self.listen_keys()]
+            return [self.bind(self.KEYS.TO_TREE, action=self.to_tree), *super().keys()[1:], *self.branch().field_keys(), *self.listen_keys()]
         if self.moving:
             # While a branch is carried, only the keys that carry and drop it work, as in every move mode.
             return [self.bind(self.KEYS.DROP, action=self.drop), self.bind(self.KEYS.CARRY, action=self.carry)]

@@ -770,7 +770,7 @@ MSG_WIZARD_FILLS_COME = ['never', 'each section', 'every 4 bars', 'every 2 bars'
 MSG_WIZARD_KIT_PIECE = 'kit: {piece}'
 MSG_WIZARD_GUITARISTS_LABEL = 'Guitarists'
 # Who has the tune and who answers, the answering player's role, a section's own, and how busy the fills are.
-MSG_WIZARD_TUNE_LABEL = 'Tune played by'
+MSG_WIZARD_TUNE_LABEL = 'Melody played by'
 MSG_WIZARD_ANSWERED_BY_LABEL = 'Answered by'
 MSG_WIZARD_NOBODY = '(nobody)'
 MSG_WIZARD_ROLE_LABEL = 'Role'
@@ -785,45 +785,42 @@ MSG_WIZARD_MORE_SOUNDS_TITLE = 'More sounds'
 MSG_WIZARD_COMPOSITION_BRANCH = 'Composition'
 MSG_WIZARD_CHORDS_BRANCH = 'Chords'
 MSG_WIZARD_MELODY_BRANCH = 'Melody'
-MSG_WIZARD_HOOKS_BRANCH = 'Hooks'
-# tui/screens/wizard/tunes_branch.py: the panel of the tunes, and the label of a kind of section's tune.
-MSG_WIZARD_TUNES_BRANCH = 'Tunes and Riffs'
-MSG_WIZARD_KIND_HEADING = '{kind}'
-MSG_WIZARD_TUNE_ROW_LABEL = 'Tune'
-MSG_WIZARD_PLAYED_BY_LABEL = 'Played by'
+# tui/screens/wizard/melody_branch.py, tui/screens/wizard/section_melody_branch.py: the whole song's melodies, and one kind of section's.
+MSG_WIZARD_MELODY_WAY_LABELS = {'busy': 'Busy', 'range': 'Range', 'repeats': 'Repeats'}
+MSG_WIZARD_CHARACTER_LABEL = 'Character'
+MSG_WIZARD_HEIGHT_LABEL = 'Height'
+MSG_WIZARD_SECTION_BUSY_LABEL = 'Busy'
+MSG_WIZARD_FROM_SONG = 'from song'
+MSG_WIZARD_NOTES_LABEL = 'Notes'
+MSG_WIZARD_NOTES_WIZARD = 'from wizard'
+MSG_WIZARD_NOTES_EDITED = 'edited'
+MSG_WIZARD_LISTEN_BUTTON = 'Listen'
+MSG_WIZARD_REGENERATE_BUTTON = 'Regenerate'
+MSG_WIZARD_GROUP_HOOK = 'Hook Kind'
+# tui/screens/wizard/riffs_branch.py, tui/screens/wizard/riff_assign_branch.py, tui/screens/wizard/section_players_branch.py, tui/dialogs/new_riff_dialog.py: the riffs.
+MSG_WIZARD_RIFFS_BRANCH = 'Riffs'
+MSG_WIZARD_RIFF_ASSIGN_BRANCH = 'Riff Assign'
+MSG_WIZARD_SECTION_PLAYERS_BRANCH = 'Section Players'
+MSG_WIZARD_RIFF_COLUMNS = 'BARS  USED IN'
+MSG_WIZARD_RIFF_KNOWN_COLUMNS = 'FOR  PLAYED IN'
+MSG_WIZARD_COPY_RIFF_TITLE = 'Copy {riff} for'
+MSG_WIZARD_GIVE_RIFF_TITLE = 'Add Riff for {player}'
+MSG_NEW_RIFF_TITLE = 'New Riff for {player}'
+MSG_NEW_RIFF_LABELS = {'bars': 'Bars', 'notes': 'Made of', 'with chords': 'Follows chords', 'between': 'Gaps'}
+MSG_NEW_RIFF_VALUES = {1: '1', 2: '2', 'single notes': 'notes', 'chords on the accents': 'notes and chords', 'muted roots': 'muted roots', 'rests': 'silence'}
+MSG_NEW_RIFF_BUTTONS = ('Write Riff', 'CANCEL')
+# tui/screens/wizard/section_melody_branch.py: a kind of section's melody.
 MSG_WIZARD_HOOK_LINE_LABEL = 'Hook line'
-MSG_WIZARD_HOOK_LINE_SHOWN = '{kind}, line {line}'
-MSG_WIZARD_ADD_RIFF_LABEL = 'Add Riff'
-MSG_WIZARD_ADD_RIFF_TITLE = 'Add Riff: {kind}'
-MSG_WIZARD_NEW_RIFF = 'New riff'
-MSG_WIZARD_BLANK_RIFF = 'Blank riff'
-MSG_WIZARD_RIFF_PLAYERS_TITLE = 'Played by'
-MSG_WIZARD_RIFF_PLAYERS_JOIN = ' and '
-MSG_WIZARD_HOOK_ON = 'on'
-MSG_WIZARD_HOOK_OFF = 'off'
 MSG_WIZARD_PROGRESSION_LABEL = 'Progression'
-MSG_WIZARD_MELODY_LABEL = 'Melody'
-MSG_WIZARD_HOOK_LABEL = 'Hook'
-MSG_WIZARD_HOOK_NOTES_LABEL = 'Notes'
-MSG_WIZARD_HOOK_NOTES_OWN = 'your own'
-MSG_WIZARD_HOOK_NOTES_WIZARD = "the wizard's"
+MSG_WIZARD_HOOK_NOTES_LABEL = 'Hook notes'
+MSG_WIZARD_HOOK_NOTES_OWN = 'edited'
 # The Lines dialog, a section's lines one by one, and the section panel's field that opens it.
 MSG_WIZARD_LINES_LABEL = 'Lines'
 # The groups of a section's panel, each a heading that opens and closes.
 MSG_WIZARD_GROUP_TUNE = 'Tune'
 # The groups of the Hooks panel, and the riff's fields.
-MSG_WIZARD_GROUP_HOOK_KIND = 'Kind'
-MSG_WIZARD_GROUP_HOOK_SAID = 'Where it is said'
-MSG_WIZARD_GROUP_RIFF = 'Riff'
-MSG_WIZARD_RIFF_PLAYED_BY_LABEL = 'Played by'
-MSG_WIZARD_RIFF_SAID_LABEL = 'Heard'
-MSG_WIZARD_RIFF_NOTES_LABEL = 'Riff notes'
 # Made of, since Notes is the hook's field on the same panel.
-MSG_WIZARD_RIFF_SETTING_LABELS = {'notes': 'Made of', 'bars': 'Bars', 'between': 'Between', 'under the tune': 'Under the tune', 'with chords': 'With chords'}
 # The kick's row above the riff's picture.
-MSG_WIZARD_RIFF_KICK_ROW = 'kick'
-MSG_WIZARD_NEW_RIFF_BUTTON = 'New riff'
-MSG_WIZARD_RIFF_PLAYERS_JOINED = ' and '
 MSG_WIZARD_GROUP_HARMONY = 'Harmony'
 MSG_WIZARD_GROUP_SHAPE = 'Shape'
 MSG_WIZARD_GROUP_JOINS = 'Joins'
@@ -864,11 +861,7 @@ MSG_WIZARD_PLAN_LINE = '{number:>2}  {name:<{width}}  {said}'
 MSG_WIZARD_FILLS_LABEL = 'Fill pattern'
 MSG_WIZARD_USUAL_MELODY = 'from genre'
 # The smart melody style's gauges, each by its name in the melody engine: the field's label, then what its two ends mean.
-MSG_WIZARD_GAUGE_LABELS = {'moves': 'Moves', 'steps': 'Steps', 'after_leap': 'After leap', 'phrase': 'Phrase', 'leaning': 'Leaning', 'notes': 'Notes', 'surprise': 'Surprise'}
-MSG_WIZARD_GAUGE_ENDS = {'moves': ('steps', 'leaps'), 'steps': ('fall', 'rise'), 'after_leap': ('return', 'carry on'), 'phrase': ('flat', 'arched'),
-                         'leaning': ('resolved', 'left hanging'), 'notes': ('long', 'short'), 'surprise': ('expected', 'surprising')}
 # A melody style's own settings, under the Melody field while the style is in use.
-MSG_WIZARD_MELODY_SETTING_LABELS = {'chromatic': 'All 12 notes', 'leaps': 'Leaps', 'rotations': 'Rotations', 'move': 'Moves up', 'rotate': 'Starts later'}
 MSG_WIZARD_BREAK_LABEL = 'Break'
 # A kit piece's own sound and the note it plays in a General MIDI sound, and the group of the kit's drums in the picker.
 MSG_WIZARD_PIECE_SOUND_TITLE = 'Sound of {piece}'

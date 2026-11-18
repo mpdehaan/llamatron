@@ -41,7 +41,7 @@ AN_UNPLANNED_GENRE = 'experimental'
 
 
 class TestWizardPlan(WizardTest):
-    """The Form panel's Song plan, Contrast and Phrasing, and the Hooks panel's Contour, Rhythm and Detail."""
+    """The Form panel's Song plan, Contrast and Phrasing, and the hook's Contour, Rhythm and Detail on the panel of the kind of section that says the hook line."""
 
     async def choose(self, *, genre=A_PLANNED_GENRE, subgenre=A_SUBGENRE):
         choices = self.choices()
@@ -50,8 +50,7 @@ class TestWizardPlan(WizardTest):
         await self.press(Key.DOWN, Key.UP)
 
     async def go_to_hooks(self):
-        names = [branch.name() for _, branch in self.wizard().rows()]
-        await self.go_to_branch(names.index(labels.MSG_WIZARD_HOOKS_BRANCH))
+        await self.go_to_hook_panel()
 
     async def go_to_melody(self):
         names = [branch.name() for _, branch in self.wizard().rows()]
@@ -107,10 +106,10 @@ class TestWizardPlan(WizardTest):
         self.assertIn(labels.MSG_WIZARD_PHRASING_LABEL, self.text())
 
     async def open_kind(self):
-        """Open the Hooks panel's Kind group where it is closed, so that the hook's parts show."""
+        """Open the hook's group of details where it is closed, so that the hook's parts show."""
         wizard = self.wizard()
-        if labels.MSG_WIZARD_GROUP_HOOK_KIND not in self.app.open_field_sections:
-            wizard.toggle_section(labels.MSG_WIZARD_GROUP_HOOK_KIND)
+        if labels.MSG_WIZARD_GROUP_HOOK not in self.app.open_field_sections:
+            wizard.toggle_section(labels.MSG_WIZARD_GROUP_HOOK)
             await self.press(Key.DOWN, Key.UP)
 
     async def test_the_hooks_panel_shows_the_kind_only_under_a_plan_and_marks_the_wizard_s_pick(self):

@@ -64,6 +64,8 @@ FOLDER = ROOT / 'docs' / 'screenshots'
 # What the song wizard's shots choose, and the player and the section whose panels are shown.
 WIZARD_GENRE = 'rock'
 WIZARD_SUBGENRE = 'folk rock'
+# The panel of the melody of the kind of section that says the hook line in that subgenre.
+WIZARD_SECTION_MELODY = 'Chorus'
 WIZARD_SEED = 7
 WIZARD_PLAYER = 'rhythm guitar'
 WIZARD_SECTION = 'verse-1'
@@ -166,9 +168,11 @@ SHOTS = [
     Shot(name='wizard_player', wizard=WIZARD_PLAYER, keys=[]),
     Shot(name='wizard_chords', wizard=labels.MSG_WIZARD_CHORDS_BRANCH, keys=[]),
     Shot(name='wizard_melody', wizard=labels.MSG_WIZARD_MELODY_BRANCH, keys=[]),
-    # The first kind of section's heading opened, to show the tune and who plays it.
-    Shot(name='wizard_tunes', wizard=labels.MSG_WIZARD_TUNES_BRANCH, keys=[keybindings.WizardPage.INTO_FIELDS, Key.DOWN, keybindings.FieldPage.TOGGLE]),
-    Shot(name='wizard_hooks', wizard=labels.MSG_WIZARD_HOOKS_BRANCH, keys=[]),
+    Shot(name='wizard_section_melody', wizard=WIZARD_SECTION_MELODY, keys=[]),
+    # The first player's heading opened on each, to show the rows under it.
+    Shot(name='wizard_riffs', wizard=labels.MSG_WIZARD_RIFFS_BRANCH, keys=[keybindings.WizardPage.INTO_FIELDS, keybindings.FieldPage.TOGGLE]),
+    Shot(name='wizard_riff_assign', wizard=labels.MSG_WIZARD_RIFF_ASSIGN_BRANCH, keys=[keybindings.WizardPage.INTO_FIELDS, keybindings.FieldPage.TOGGLE]),
+    Shot(name='wizard_section_players', wizard=labels.MSG_WIZARD_SECTION_PLAYERS_BRANCH, keys=[keybindings.WizardPage.INTO_FIELDS, keybindings.FieldPage.TOGGLE]),
     Shot(name='wizard_form', wizard=labels.MSG_WIZARD_FORM_BRANCH, keys=[]),
     Shot(name='wizard_section', wizard=WIZARD_SECTION, keys=[]),
     Shot(name='wizard_apply', wizard=labels.MSG_WIZARD_CREATE_BRANCH, keys=[]),

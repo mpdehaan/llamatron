@@ -366,4 +366,5 @@ MSG_WIZARD_NEW_HOOK_WHAT = 'new hook'
 MSG_USUAL_ROW_WHAT = 'usual row'
 MSG_TUNE_USUAL_WHAT = "wizard's notes"
 MSG_WIZARD_EDIT_NOTES_WHAT = 'edit notes'
-MSG_NEW_TAKE_WHAT = 'new take'
+MSG_REGENERATE_WHAT = 'regenerate'
+MSG_WRITE_RIFF_WHAT = 'write riff'
