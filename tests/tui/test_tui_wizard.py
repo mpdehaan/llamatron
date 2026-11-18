@@ -24,7 +24,7 @@ from llamatron.composition import limits
 from llamatron.strings import errors, labels as labels_text, legends, macro_composer as composer_text, marks, messages, names
 from llamatron.composition.naming import new_name
 from llamatron.support.version import VERSION
-from llamatron.tui import keybindings
+from llamatron.tui import keybindings, themes
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.document import Document
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -176,6 +176,13 @@ class TestWizardPage(WizardTest):
         await self.press(*[Key.DOWN] * (CREATE_PLACE + 1))
         self.assertEqual(self.wizard().tree_place, len(self.wizard().rows()) - 1)
         self.assertEqual(self.wizard().branch().name(), labels_text.MSG_WIZARD_CREATE_BRANCH)
+
+    async def test_the_part_under_the_cursor_is_drawn_in_the_wizards_colour_and_no_other_is(self):
+        colour = themes.text_style(WizardPage.THEME)
+        await self.press(Key.DOWN)
+        lines = self.wizard().tree_lines()
+        coloured = [place for place, line in enumerate(lines) if any(colour in str(span.style) for span in line.spans)]
+        self.assertEqual(coloured, [self.wizard().tree_place])
 
     async def test_the_subgenre_is_a_top_part_of_the_tree_after_the_genre(self):
         names = [branch.name() for depth, branch in self.wizard().rows() if not depth]
