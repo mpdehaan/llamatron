@@ -20,7 +20,7 @@ from typing import NamedTuple
 
 from llamatron.composition.generator_settings import GENERATOR_SETTINGS
 from llamatron.composition.llama_data import LlamaData
-from llamatron.composition.sections import GENERATOR_KINDS
+from llamatron.composition.sections import GENERATOR_KINDS, NAMED_GENERATORS
 from llamatron.composition.checks import listed, reading
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.strings.errors import (
@@ -76,6 +76,10 @@ class Chain(LlamaData):
     def names_item(self, *, section, name):
         """Return whether one of its steps runs a generator of a section, like an arp of the arps. A chain names nothing else."""
         return section in GENERATOR_KINDS and ChainStep(GENERATOR_KINDS[section], name) in self._steps
+
+    def named_items(self):
+        """Return the generators its steps run, as a set of (section, name)."""
+        return {(NAMED_GENERATORS[step.kind], step.name) for step in self._steps}
 
     def copy(self):
         return Chain(self._steps)

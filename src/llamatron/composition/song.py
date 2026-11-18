@@ -488,6 +488,10 @@ class Song(LlamaData):
             return self.get_groove_name() == name
         return super().names_item(section=section, name=name)
 
+    def named_items(self):
+        """Return what the song's own settings name, with its groove, which is the default groove when it sets no other."""
+        return super().named_items() | {(Section.GROOVES, self.get_groove_name())}
+
     def referring_parts(self):
         """Return its scenes, which name scales and grooves and hold the clips, and its tracks, which name grooves."""
         return [*self.get_scenes(), *self._section(Section.TRACKS).values()]
