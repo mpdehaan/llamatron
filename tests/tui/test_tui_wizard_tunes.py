@@ -18,13 +18,14 @@
 
 from llamatron.composition.file_format import Row
 from llamatron.macro_composer.arranger import NOBODY
-from llamatron.macro_composer.wizard_choices import FIRST_TUNE_TAKE
+from llamatron.macro_composer.wizard_choices import FIRST_TUNE_TAKE, genre_title
 from llamatron.strings import errors, labels, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.wizard.wizard_page import WizardPage
+from tests.support.ui_testing import fixed_text
 from tests.tui.test_tui_wizard import WizardTest
 
 A_GENRE = 'rock'
@@ -183,3 +184,56 @@ class TestWizardTunes(WizardTest):
             await self.press(binding)
             self.assertIsInstance(self.app.screen, PatternEditor)
             self.assertIn(errors.ERR_NOT_WHILE_DRAFTING, self.text())
+
+
+class TestWizardChangeGenre(WizardTest):
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        choices = self.choices()
+        choices.set_genre(A_GENRE)
+        choices.set_subgenre(A_SUBGENRE)
+        await self.press(Key.DOWN, Key.UP)
+        await self.go_to_named_branch(labels.MSG_WIZARD_GENRE_BRANCH)
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(labels.MSG_GENRE_LABEL)
+
+    async def choose_another_genre(self):
+        await self.press(Key.ENTER)
+        await self.type(genre_title(ANOTHER_GENRE))
+        await self.press(Key.ENTER)
+
+    async def test_another_genre_is_taken_at_once_while_nothing_was_changed_by_hand(self):
+        await self.choose_another_genre()
+        self.assertIsInstance(self.app.screen, WizardPage)
+        self.assertEqual(self.choices().get_genre(), ANOTHER_GENRE)
+
+    async def test_another_genre_asks_first_counting_what_is_lost_and_kept_and_enter_alone_keeps_the_genre(self):
+        choices = self.choices()
+        choices.new_tune_take(A_KIND)
+        other_kind = next(kind for kind in choices.tune_kinds() if kind != A_KIND)
+        choices.set_tune_pattern(kind=other_kind, pattern=choices.tune_pattern(other_kind))
+        await self.choose_another_genre()
+        self.assertIsInstance(self.app.screen, ConfirmDialog)
+        shown = self.text()
+        for said in (messages.MSG_CHANGE_GENRE_TITLE, messages.MSG_CHANGE_GENRE_LOST, messages.MSG_CHANGE_GENRE_KEPT, messages.MSG_CHANGE_GENRE_TUNE_TAKES.format(count=1),
+                     messages.MSG_CHANGE_GENRE_OWN_TUNES.format(count=1)):
+            self.assertIn(said, shown)
+        for unsaid in (fixed_text(messages.MSG_CHANGE_GENRE_BAND_SETTINGS), messages.MSG_CHANGE_GENRE_FORM, choices.tune_pattern_name(other_kind)):
+            self.assertNotIn(unsaid, shown)
+        await self.press(Key.ENTER)
+        self.assertEqual(choices.get_genre(), A_GENRE)
+        self.assertEqual(choices.tune_take(A_KIND), FIRST_TUNE_TAKE + 1)
+
+    async def test_yes_takes_the_genre_gives_up_what_was_counted_lost_and_keeps_the_edited_tunes(self):
+        choices = self.choices()
+        choices.new_tune_take(A_KIND)
+        other_kind = next(kind for kind in choices.tune_kinds() if kind != A_KIND)
+        choices.set_tune_pattern(kind=other_kind, pattern=choices.tune_pattern(other_kind))
+        await self.choose_another_genre()
+        await self.press(keybindings.ConfirmDialog.YES)
+        self.assertEqual(choices.get_genre(), ANOTHER_GENRE)
+        self.assertEqual(choices.tune_take(A_KIND), FIRST_TUNE_TAKE)
+        choices.set_genre(A_GENRE)
+        choices.set_subgenre(A_SUBGENRE)
+        self.assertTrue(choices.tune_is_own(other_kind))

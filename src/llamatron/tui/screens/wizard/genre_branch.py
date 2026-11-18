@@ -15,13 +15,27 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The wizard's Genre branch: the genre and the subgenre, which must be chosen, then the key, the tempo and the song's name, which arrive filled in."""
 
-from llamatron.macro_composer.wizard_choices import SCALE_TYPES, genre_names, genre_title
+from llamatron.macro_composer.wizard_choices import (
+    KEPT_OWN_TUNES, LOST_BAND_SETTINGS, LOST_FORM, LOST_OWN_CHORDS, LOST_RIFFS, LOST_TUNE_TAKES, SCALE_TYPES, genre_names, genre_title,
+)
 from llamatron.music.note import ROOT_NAMES
-from llamatron.strings import labels, legends, marks
+from llamatron.strings import labels, legends, marks, messages
+from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
+from llamatron.tui.drawing import NOTHING
 from llamatron.tui.text import clock
 from llamatron.tui.screens.shared.field import ChoiceField, Field
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.subgenre_branch import SubgenreBranch
+
+# How the Change Genre question words each kind of thing lost and kept.
+LOST_SHOWN = {
+    LOST_BAND_SETTINGS: messages.MSG_CHANGE_GENRE_BAND_SETTINGS,
+    LOST_OWN_CHORDS: messages.MSG_CHANGE_GENRE_OWN_CHORDS,
+    LOST_FORM: messages.MSG_CHANGE_GENRE_FORM,
+    LOST_TUNE_TAKES: messages.MSG_CHANGE_GENRE_TUNE_TAKES,
+    LOST_RIFFS: messages.MSG_CHANGE_GENRE_RIFFS,
+}
+KEPT_SHOWN = {KEPT_OWN_TUNES: messages.MSG_CHANGE_GENRE_OWN_TUNES}
 
 
 class GenreBranch(Branch):
@@ -36,12 +50,26 @@ class GenreBranch(Branch):
         # The subgenre and its own settings are a panel under the genre.
         return [SubgenreBranch(page=self.page())]
 
+    def set_genre(self, genre):
+        """Choose a genre, asking first where another genre would give up what was chosen by hand: the question counts what is lost
+        and what is kept, by kind and never by name."""
+        choices = self.choices()
+        lost, kept = choices.lost_with_genre() if genre != choices.get_genre() else ({}, {})
+        if not lost:
+            choices.set_genre(genre)
+            return
+        said = [messages.MSG_CHANGE_GENRE_LOST, *(LOST_SHOWN[kind].format(count=count) for kind, count in lost.items())]
+        if kept:
+            said += [NOTHING, messages.MSG_CHANGE_GENRE_KEPT, *(KEPT_SHOWN[kind].format(count=count) for kind, count in kept.items())]
+        dialog = ConfirmDialog(title=messages.MSG_CHANGE_GENRE_TITLE, messages=[*said, NOTHING, messages.MSG_CHANGE_GENRE_QUESTION], starts_on_no=True)
+        self.page().ask(dialog=dialog, then=lambda _: self.page().choosing(choices.set_genre)(genre))
+
     def fields(self):
         choices = self.choices()
         page = self.page()
         genres = genre_names()
         fields = [
-            self.choice_from_nothing(label=labels.MSG_GENRE_LABEL, values=genres, names=[genre_title(genre) for genre in genres], current=choices.get_genre(), set_value=choices.set_genre),
+            self.choice_from_nothing(label=labels.MSG_GENRE_LABEL, values=genres, names=[genre_title(genre) for genre in genres], current=choices.get_genre(), set_value=self.set_genre),
         ]
         if choices.is_ready():
             fields += [

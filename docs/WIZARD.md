@@ -14,6 +14,8 @@ The tree at the left lists the wizard's panels, and the settings of the panel un
 
 The Genre panel comes first, since every other panel starts from what the genre usually does. Choosing a genre and, under Genre in the tree, a subgenre fills in the key, the scale, the tempo, the meter, the band and the form with what that kind of song usually has. Each can then be changed, and the panel shows how long the song will play.
 
+Another genre brings another band and another form, so choosing one after settings were changed by hand first asks, in a Change Genre question that counts what would be lost, such as band settings and new takes of tunes, and what is kept: a tune whose notes were edited stays as written through any change of genre.
+
 ![The song wizard's Genre panel](screenshots/wizard_genre.svg)
 
 ## Band
