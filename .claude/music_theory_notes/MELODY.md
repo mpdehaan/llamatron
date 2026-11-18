@@ -116,3 +116,31 @@ From a review asked for before the song wizard's melody panels were redrawn. (pr
   coming; a later verse keeps its contour and endings with a pickup changed, a few notes added or dropped and a last line that
   leads on; the last chorus is lifted, by an extension, a higher last statement or a key rise; a harmony voice joins the hook
   from the second chorus; the song's last line lands on the home note and holds. Small random changes each time are noise. (practice)
+
+## The Objects of a Song's Melodies, and the Order They Are Written In
+
+- The smallest thing is a motif, a rhythm and a contour of three to seven notes, the rhythm the more memorable half; a song has
+  one or a few, and a line names the motif it comes from and how it was changed. A kind of section has one master melody of
+  lines. A chorus has a hook, which is a line built from the first motif, a placement saying which lines are the hook, and body
+  lines that answer the hook and lead back to it. Each time a section returns is an occurrence: its master with a recipe of
+  changes, not a copy, until a person edits it. The song has a register plan: verse low to middle, pre-chorus rising, chorus
+  highest, bridge elsewhere, and no kind trespasses. (practice)
+- The most memorable thing is written first and the rest serves it: the frame (key, range, register plan, chords, form), the
+  hook, the chorus's body, the verse, the pre-chorus, the bridge, the riff and a second hook, then the variations. The body
+  takes the hook's rhythm, peak and last note; the verse takes the chorus's peak, to stay under, and its density, to differ; the
+  pre-chorus takes the verse's last note and the chorus's first; the bridge takes all of it, to avoid. Where a riff leads, the
+  riff is second and the singing leaves it room. Where there is no chorus, the refrain line is the hook, the verse's last line.
+  Where a cell loops, the cell is the hook and the sections are thinner and fuller dressings of it. (practice)
+- What makes a written melody good is repetition and shape across lines, held by rules that are not dials: the order of the
+  peaks, the contrast of density, the plan of the endings, where in the bar a line starts, the recovery of a leap, chord notes on
+  strong beats. Dials of note-to-note motion are seasoning. Rhythm deserves more of the design than pitch. (practice)
+- A genre is a preset of one writer: its values, its way of writing each kind of section, its vocabulary of rhythms, its scale
+  habits and its register plan; never a second, simpler writer. (practice)
+- The ways a return differs: the same melody with new pickups, the last two notes and the peak of each line kept; a long note
+  split or two joined, never in the hook; the last line raised; the hook's peak lifted, in the last chorus; the last line or the
+  hook said again and the last note lengthened; a harmony voice a third or a sixth away, from the second chorus; the first half
+  thinned; a pre-chorus halved. A variation never changes the hook's rhythm: choruses change by dressing, verses by notes. To vary
+  notes a person wrote, the phrase ends, each line's peak and ending note, the repeated rhythm and the range are found first, and
+  shown, so that a wrong reading is corrected. (practice)
+- With no words a line still needs a count of syllables and a pattern of stresses, or a verse does not sound sung. (practice)
+
