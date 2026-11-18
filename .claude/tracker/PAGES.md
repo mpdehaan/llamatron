@@ -93,8 +93,9 @@ The user's design. `PatternsPage` (`tui/screens/pattern/patterns_page.py`) lists
 - The Generators page (`G`, `screens/generators/generators_page.py`, the user's design) lists every generator of the set under a
   heading for its type, `- Density (2)` (`MSG_GROUP_HEADING`), the types sorted by what the tracker calls each and the generators
   sorted by name under each, always, as the Patterns page lists patterns by group, so the page has no move and no sort. Only a
-  type the set has a generator of gets a heading. Space or ENTER on a heading closes and opens its type, kept for the session in
-  `app.closed_generator_types` (every type starts open), PgUp and PgDn jump between headings, and a search looks inside closed
+  type the set has a generator of gets a heading. Every type is closed until opened (the user's rule): Space or ENTER on a heading opens and closes
+  its type, which the set keeps and its file holds as `open_generator_types` (`Setlist.show_generator_type`, looking and not
+  editing, as the closed pattern groups are), so the page comes back as it was left; PgUp and PgDn jump between headings, and a search looks inside closed
   types. ENTER opens the editor (`GENERATOR_PAGES` in `screens/generators/generator_pages.py`, a `GeneratorListing` of kind,
   section, label and `EDITOR` for each kind); `A`, or ENTER on the `+` row the page lists last, asks for a type, names one after
   it and opens it; `N`/F2, `C`, `Bksp` (refused while a chain uses it) and `/` as on every list, the cursor following the
@@ -286,5 +287,5 @@ The user's design, agreed in detail in `.claude/features/WIZARD_DESIGNS.md` (S16
   `GeneratorListing` naming its `group`; a Band heading joins them with the first musician. Headings start closed, Space or
   ENTER opens and closes one, PgUp and PgDn jump between them, the open ones are kept for the session in
   `app.open_generator_groups`, and typing searches every type with no headings. The Generators page's `A` and the chain
-  editor's new generator both open it. The generators are written FollowChords and VoiceLeading, one word, as AutoRatchet is.
+  editor's new generator both open it. The generators are written FollowChords and VoiceLeading, one word, as AutoRatchet is, and every type's name starts with a capital, Arpeggiator included (the user's rule).
   `tests/tui/test_tui_generator_type_picker.py` tests it.

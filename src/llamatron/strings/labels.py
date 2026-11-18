@@ -289,7 +289,7 @@ class GeneratorGroup:
     VOICING = 'Voicing'
 
 
-MSG_ARP_LABEL = 'arpeggiator'
+MSG_ARP_LABEL = 'Arpeggiator'
 MSG_AUTO_RATCHET_LABEL = 'AutoRatchet'
 MSG_DRIFT_LABEL = 'Drift'
 # tui/screens/generators/drift_editor.py: its own fields, then each version's values, shown as A and B side by side.

@@ -41,7 +41,7 @@ from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition import defaults, limits as set_limits
 from llamatron.strings import errors, names as names_text
 from llamatron.composition.file_format import (
-    CLOSED_PATTERN_GROUPS, FOLLOW_ACTION_CHOICES, LIVE_OCTAVE_OFFSET, REGISTER_ADD_ROWS, LLAMATRON_OCTAVES_SINCE, NAMED_GENERATORS, NOTES_SINCE, OCTAVE_LABEL_CHOICES, OCTAVE_LABEL_OFFSETS, SETLISTS_SINCE,
+    CLOSED_PATTERN_GROUPS, FOLLOW_ACTION_CHOICES, OPEN_GENERATOR_TYPES, LIVE_OCTAVE_OFFSET, REGISTER_ADD_ROWS, LLAMATRON_OCTAVES_SINCE, NAMED_GENERATORS, NOTES_SINCE, OCTAVE_LABEL_CHOICES, OCTAVE_LABEL_OFFSETS, SETLISTS_SINCE,
     VISUALIZER_NAMES, ClipSlotSetting, sensible_generator_order, sensible_hidden_visualizers, sensible_visualizer, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting,
 )
 from llamatron.composition.generator_settings import GENERATOR_SETTINGS
@@ -162,12 +162,14 @@ class Setlist(LlamaData):
     name, and the set looks the names up; each song does the same for what it shares.
     """
 
-    __slots__ = ('_settings', '_sections', '_closed_groups')
+    __slots__ = ('_settings', '_sections', '_closed_groups', '_open_types')
 
     def __init__(self):
         self.note_change()
         # The pattern groups shown closed: no part of the set's data, so no undo or restore touches it (file_format.CLOSED_PATTERN_GROUPS).
         self._closed_groups = []
+        # The types of generator shown open on the Generators page, kept the same way (file_format.OPEN_GENERATOR_TYPES).
+        self._open_types = []
         self._settings = {name: None for name in SETTINGS}
         self._sections = {name: NamedItems(label=SECTION_LABELS[name]) for name in SETLIST_SECTIONS}
 
@@ -201,11 +203,14 @@ class Setlist(LlamaData):
             file.write(dump_setlist(self._file_data()))
 
     def _file_data(self):
-        """Return what a file holds: the set's data, and the pattern groups shown closed, where any are."""
+        """Return what a file holds: the set's data, and the pattern groups shown closed and the types of generator shown open, where any are."""
         data = self.to_data()
         closed = self.get_closed_pattern_groups()
         if closed:
             data[CLOSED_PATTERN_GROUPS] = closed
+        opened = self.get_open_generator_types()
+        if opened:
+            data[OPEN_GENERATOR_TYPES] = opened
         return data
 
     @classmethod
@@ -235,6 +240,7 @@ class Setlist(LlamaData):
         written = _as_a_set_is_written(data=data, where=where, one_song_name=one_song_name)
         setlist._read(written)
         setlist._closed_groups = closed_groups_held(written)
+        setlist._open_types = open_types_held(written)
         return setlist
 
     @classmethod
@@ -955,6 +961,20 @@ class Setlist(LlamaData):
         if closed:
             self._closed_groups.append(group)
 
+    def get_open_generator_types(self):
+        """Return the kinds of generator the Generators page shows open, in the order kinds are listed, leaving out any the set has no generator of any more."""
+        return [kind for kind in NAMED_GENERATORS if kind in self._open_types and self._section(NAMED_GENERATORS[kind]).names()]
+
+    def is_generator_type_open(self, kind):
+        return kind in self._open_types
+
+    @notes_change
+    def show_generator_type(self, *, kind, opened):
+        """Show a type of generator open or closed on the Generators page. This changes nothing of the set's data: it is neither undone nor an unsaved change."""
+        self._open_types = [held for held in self._open_types if held != kind]
+        if opened:
+            self._open_types.append(kind)
+
     def has_generator(self, *, kind, name):
         """Return whether there's a generator of a kind, like arp, with this name."""
         return self._section(NAMED_GENERATORS[kind]).has(name)
@@ -1046,6 +1066,14 @@ def closed_groups_held(data):
     return [name for name in held if isinstance(name, str)]
 
 
+def open_types_held(data):
+    """Return the types of generator a file's data shows open: its list's kinds of generator, and none where the file holds anything else, as for the closed groups."""
+    held = data.get(OPEN_GENERATOR_TYPES)
+    if not isinstance(held, list):
+        return []
+    return [kind for kind in held if isinstance(kind, str) and kind in NAMED_GENERATORS]
+
+
 def _as_a_set_is_written(*, data, where, one_song_name):
     """Return a file's data in the layout a set is written in now, or raise SongFileError if it isn't a set at all.
 
@@ -1059,7 +1087,7 @@ def _as_a_set_is_written(*, data, where, one_song_name):
     if holds_one_song(data):
         data = as_setlist_data(data=data, song_name=one_song_name)
     with reading(where):
-        check_keys(data=data, allowed={*SETTINGS, *SETLIST_SECTIONS, CLOSED_PATTERN_GROUPS})
+        check_keys(data=data, allowed={*SETTINGS, *SETLIST_SECTIONS, CLOSED_PATTERN_GROUPS, OPEN_GENERATOR_TYPES})
     if _saved_before(data=data, version=LLAMATRON_OCTAVES_SINCE):
         data = _with_live_octaves_moved_up(data)
     if _saved_before(data=data, version=NOTES_SINCE) and SetlistSetting.DESCRIPTION in data:

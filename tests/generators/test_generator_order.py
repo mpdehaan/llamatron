@@ -16,9 +16,11 @@
 
 """Tests of the order the Generators page lists every generator in, kept in the set as generator_order."""
 
+import os
+import tempfile
 import unittest
 
-from llamatron.composition.file_format import GeneratorKind, Section, SetlistSetting
+from llamatron.composition.file_format import OPEN_GENERATOR_TYPES, GeneratorKind, Section, SetlistSetting
 from llamatron.composition.setlist import Setlist
 from tests.support.rendering import as_setlist
 
@@ -28,6 +30,8 @@ RATCHET = 'rolls'
 RENAMED = 'climb'
 COPIED = 'up 2'
 UNKNOWN = 'nothing'
+A_NUMBER = 7
+SAVED_FILE = 'saved.yml'
 
 
 def a_set(*, order=None):
@@ -60,3 +64,43 @@ class TestGeneratorOrder(unittest.TestCase):
         self.assertEqual(setlist.ordered_generators()[1], (GeneratorKind.ARP, RENAMED))
         setlist.copy_item(section=Section.AUTO_RATCHETS, name=RATCHET, new=COPIED)
         self.assertEqual(setlist.ordered_generators()[1], (GeneratorKind.AUTO_RATCHET, COPIED))
+
+
+class TestOpenGeneratorTypes(unittest.TestCase):
+    """The types of generator the Generators page shows open, which the set keeps and its file holds."""
+
+    def test_every_type_is_closed_until_opened_and_closes_again(self):
+        setlist = a_set()
+        self.assertEqual(setlist.get_open_generator_types(), [])
+        setlist.show_generator_type(kind=GeneratorKind.AUTO_RATCHET, opened=True)
+        setlist.show_generator_type(kind=GeneratorKind.ARP, opened=True)
+        self.assertEqual(setlist.get_open_generator_types(), [GeneratorKind.ARP, GeneratorKind.AUTO_RATCHET])
+        setlist.show_generator_type(kind=GeneratorKind.ARP, opened=False)
+        self.assertFalse(setlist.is_generator_type_open(GeneratorKind.ARP))
+        self.assertTrue(setlist.is_generator_type_open(GeneratorKind.AUTO_RATCHET))
+
+    def test_the_open_types_are_no_part_of_the_sets_data(self):
+        setlist = a_set()
+        before = setlist.to_data()
+        setlist.show_generator_type(kind=GeneratorKind.ARP, opened=True)
+        self.assertEqual(setlist.to_data(), before)
+        self.assertNotIn(OPEN_GENERATOR_TYPES, setlist.to_data())
+
+    def test_a_file_keeps_the_open_types_and_forgets_a_type_with_no_generator(self):
+        data = a_set().to_data()
+        data[OPEN_GENERATOR_TYPES] = [GeneratorKind.ARP, GeneratorKind.DRIFT, UNKNOWN]
+        self.assertEqual(Setlist.from_data(data=data).get_open_generator_types(), [GeneratorKind.ARP])
+
+    def test_a_file_holding_anything_else_there_still_opens(self):
+        for held in (A_NUMBER, [A_NUMBER, GeneratorKind.ARP], {GeneratorKind.ARP: True}):
+            data = a_set().to_data()
+            data[OPEN_GENERATOR_TYPES] = held
+            self.assertIn(Setlist.from_data(data=data).get_open_generator_types(), ([], [GeneratorKind.ARP]))
+
+    def test_an_open_type_is_written_to_the_file_and_read_back(self):
+        setlist = a_set()
+        setlist.show_generator_type(kind=GeneratorKind.AUTO_RATCHET, opened=True)
+        with tempfile.TemporaryDirectory() as folder:
+            path = os.path.join(folder, SAVED_FILE)
+            setlist.write_file(path)
+            self.assertEqual(Setlist.read_file(path).get_open_generator_types(), [GeneratorKind.AUTO_RATCHET])

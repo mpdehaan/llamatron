@@ -119,7 +119,7 @@ How a chord's notes are laid out and played.
 
 ![The Generators page](screenshots/generators.svg)
 
-Press `G` on the main screen for the Generators page, which lists every generator of the set under a heading for its type, such as `- Density (2)`, the types and the generators under each sorted by name. Space or `ENTER` on a heading closes and opens its type, and `PgUp` and `PgDn` jump between the headings. The kinds are the arpeggiator, AutoRatchet, Drift, Progression, VoiceLeading, Strum, Euclid, Density, Swell, Articulate, Glide, Shorten, Rush, Drag, Hocket, Guitarify and FollowChords. A generator changes a clip's notes when the song plays or exports; to use one, add it to a chain, then choose the chain on a clip, a scene or a track.
+Press `G` on the main screen for the Generators page, which lists every generator of the set under a heading for its type, such as `- Density (2)`, the types and the generators under each sorted by name. Every type is closed until opened: Space or `ENTER` on a heading opens and closes its type, the set's file keeps which types are open, and `PgUp` and `PgDn` jump between the headings. The kinds are the Arpeggiator, AutoRatchet, Drift, Progression, VoiceLeading, Strum, Euclid, Density, Swell, Articulate, Glide, Shorten, Rush, Drag, Hocket, Guitarify and FollowChords. A generator changes a clip's notes when the song plays or exports; to use one, add it to a chain, then choose the chain on a clip, a scene or a track.
 
 | Key | What it does |
 | --- | --- |

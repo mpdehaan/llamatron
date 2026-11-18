@@ -124,3 +124,7 @@ class NamedEdits:
     def sort_named(self, section):
         """Put a section's items in order of their names, for good."""
         self._change(self._owner_of(section).sort_items, section)
+
+    def show_generator_type(self, *, kind, opened):
+        """Show a type of generator open or closed on the Generators page, which is no change to the set: nothing to undo and nothing to save."""
+        self._setlist.show_generator_type(kind=kind, opened=opened)
