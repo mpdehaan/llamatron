@@ -27,7 +27,7 @@ import functools
 import random
 import zlib
 
-from llamatron.composition.file_format import Section
+from llamatron.composition.file_format import PatternSetting, Section
 from llamatron.composition.groove import FactoryGroove
 from llamatron.composition import limits, naming
 from llamatron.strings import labels as labels_text, macro_composer as composer_text, marks as marks_text, names as names_text
@@ -44,7 +44,7 @@ from llamatron.macro_composer.arranger import (
 )
 from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer import hook_kinds, line_edits, phrasing
-from llamatron.macro_composer.arranger import KICK as KICK_PIECE, MORE_RIFFS, NOBODY, OWN_TUNES, TAKEN_TUNES, TUNE_BY, TUNE_BY_SONG
+from llamatron.macro_composer.arranger import KICK as KICK_PIECE, MORE_RIFFS, NOBODY, OWN_TUNES, RIFF_OWN, TAKEN_TUNES, TUNE_BY, TUNE_BY_SONG
 from llamatron.macro_composer.players import BASS as BASS_PLAYER
 from llamatron.macro_composer.notation import NONE as NO_HIT
 from llamatron.macro_composer.arranger import CHORDS, DYNAMICS, EIGHTHS_IN_WHOLE, GROOVE, LOUDNESS as LOUDNESS_OF, NO_GROOVE, SCENE_SETTINGS, form_of
@@ -249,6 +249,7 @@ LOST_FORM = 'form'
 LOST_TUNE_TAKES = 'tune takes'
 LOST_RIFFS = 'riffs'
 KEPT_OWN_TUNES = 'tunes written by hand'
+KEPT_OWN_RIFFS = 'riffs written by hand'
 # The extras of a song that are settings of one genre's band and song, which another genre gives up.
 EXTRAS_OF_ONE_GENRE = (PLAN_OF_SONG, MELODY, GROOVE, DYNAMICS, LOUDNESS_OF, TUNE_BY, TUNE_BY_SONG)
 STAGES_ANSWER = 'stages'
@@ -664,7 +665,11 @@ class WizardChoices:
             self._extras.pop(DYNAMICS, None)
             self._extras.pop(LOUDNESS_OF, None)
             self._extras.pop(TUNE_TAKES, None)
-            self._extras.pop(MORE_RIFFS, None)
+            # A riff whose notes were written by hand is the person's own, which no genre gives up: its players play it again wherever
+            # a band has them and a form has its kinds of section.
+            own_riffs = [entry for entry in self._extras.pop(MORE_RIFFS, []) if entry.get(RIFF_OWN) is not None]
+            if own_riffs:
+                self._extras[MORE_RIFFS] = own_riffs
             self._extras.pop(TUNE_BY, None)
             self._extras.pop(TUNE_BY_SONG, None)
             self._forget_band()
@@ -687,8 +692,8 @@ class WizardChoices:
                 LOST_OWN_CHORDS: sum(1 for entry in self._entries() if entry.get(OWN_OF_SECTION, {}).get(CHORDS)),
                 LOST_FORM: int(self._sections is not None or self._form != usual._form),
                 LOST_TUNE_TAKES: len(self._extras.get(TUNE_TAKES, {})) + int(self._hook_take != FIRST_HOOK_TAKE),
-                LOST_RIFFS: int(bool(self._extras.get(RIFF))) + len(self._extras.get(MORE_RIFFS, []))}
-        kept = {KEPT_OWN_TUNES: len(self._extras.get(OWN_TUNES, {}))}
+                LOST_RIFFS: int(bool(self._extras.get(RIFF))) + len([entry for entry in self._extras.get(MORE_RIFFS, []) if entry.get(RIFF_OWN) is None])}
+        kept = {KEPT_OWN_TUNES: len(self._extras.get(OWN_TUNES, {})), KEPT_OWN_RIFFS: len([entry for entry in self._extras.get(MORE_RIFFS, []) if entry.get(RIFF_OWN) is not None])}
         return {kind: count for kind, count in lost.items() if count}, {kind: count for kind, count in kept.items() if count}
 
     def _band_as_counted(self):
@@ -3309,7 +3314,9 @@ class WizardChoices:
     # player there nor the players of another riff there.
 
     def _more_riffs(self):
-        return self._extras.get(MORE_RIFFS, [])
+        """The riffs added whose players are all in the band: a riff of a player who is out waits, unseen, for the player to come back."""
+        band = set(self.roles_in()) if self.is_ready() else set()
+        return [entry for entry in self._extras.get(MORE_RIFFS, []) if set(entry[RIFF_ROLES]) <= band]
 
     def _more_riff(self, riff):
         found = next((entry for entry in self._more_riffs() if entry[NAME] == riff), None)
@@ -3383,7 +3390,7 @@ class WizardChoices:
         added, which its own players then play in this kind as well. Players who are not free there are refused, as is a riff
         the song cannot be made with."""
         free = self.riff_players_free(kind)
-        before = copy.deepcopy(self._more_riffs())
+        before = copy.deepcopy(self._extras.get(MORE_RIFFS, []))
         if riff is not None:
             entry = self._more_riff(riff)
             if kind in entry[RIFF_KINDS] or not set(entry[RIFF_ROLES]) <= set(free):
@@ -3393,7 +3400,7 @@ class WizardChoices:
             players = list(players or [])
             if not players or len(set(players)) != len(players) or not set(players) <= set(free):
                 raise ValueError(errors.ERR_WIZARD_RIFF.format(value=(players, kind)))
-            riff = naming.new_name(word=names_text.MSG_NEW_RIFF_WORD, taken=self.added_riffs())
+            riff = naming.new_name(word=names_text.MSG_NEW_RIFF_WORD, taken=[entry[NAME] for entry in self._extras.get(MORE_RIFFS, [])])
             self._extras.setdefault(MORE_RIFFS, []).append({NAME: riff, RIFF_ROLES: players, RIFF_KINDS: [kind]})
         self._more_riffs_or_back(before=before, value=(riff, kind))
         return riff
@@ -3414,13 +3421,45 @@ class WizardChoices:
         """Have other notes written for a riff that was added, its players and its kinds of section left as they were."""
         entry = self._more_riff(riff)
         entry[RIFF_TAKE] = entry.get(RIFF_TAKE, FIRST_RIFF_TAKE) + 1
+        entry.pop(RIFF_OWN, None)
         self._answers = {}
+
+    def riff_pattern_name(self, riff):
+        """Return the name of the pattern a riff that was added is played from by its first player, in the set the choices make."""
+        return composer_text.MSG_PART_OF_SECTION.format(self.riff_players_of(riff)[0], riff)
+
+    def riff_pattern(self, riff):
+        """Return the data of the pattern a riff's first player plays, or None where the riff is not heard in the song."""
+        name = self.riff_pattern_name(riff)
+        setlist, _ = self.made_for_listening()
+        return setlist.get_pattern(name).to_data() if setlist.has_pattern(name) else None
+
+    def added_riff_is_own(self, riff):
+        """Return whether a riff's notes were written by hand, so that only a new take writes over them."""
+        return self._more_riff(riff).get(RIFF_OWN) is not None
+
+    def set_riff_pattern(self, *, riff, pattern):
+        """Keep a pattern's data as a riff's own notes, as its first player plays them, or forget the person's own with None. A
+        pattern the song cannot be made with is refused and nothing changes."""
+        entry = self._more_riff(riff)
+        before = copy.deepcopy(self._extras.get(MORE_RIFFS, []))
+        if pattern is None:
+            entry.pop(RIFF_OWN, None)
+        else:
+            entry[RIFF_OWN] = copy.deepcopy(pattern)
+        self._more_riffs_or_back(before=before, value=riff)
+
+    def blank_riff_pattern(self, riff):
+        """Return a riff's pattern with no note in it, as long as the riff the wizard wrote, to write by hand."""
+        made = self.riff_pattern(riff)
+        return {field: made[field] for field in (PatternSetting.STEPS, PatternSetting.STEP_SIZE, PatternSetting.GROUP) if field in made}
 
     def _more_riffs_or_back(self, *, before, value):
         self._answers = {}
         try:
             self.made_for_listening()
-        except (ValueError, KeyError, SongFileError) as problem:
+        except Exception as problem:
+            # A pattern written by hand can fail in any way a set's data can, as a tune's can.
             self._extras.pop(MORE_RIFFS, None)
             if before:
                 self._extras[MORE_RIFFS] = before

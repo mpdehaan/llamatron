@@ -16,7 +16,7 @@
 """The wizard's Genre branch: the genre and the subgenre, which must be chosen, then the key, the tempo and the song's name, which arrive filled in."""
 
 from llamatron.macro_composer.wizard_choices import (
-    KEPT_OWN_TUNES, LOST_BAND_SETTINGS, LOST_FORM, LOST_OWN_CHORDS, LOST_RIFFS, LOST_TUNE_TAKES, SCALE_TYPES, genre_names, genre_title,
+    KEPT_OWN_RIFFS, KEPT_OWN_TUNES, LOST_BAND_SETTINGS, LOST_FORM, LOST_OWN_CHORDS, LOST_RIFFS, LOST_TUNE_TAKES, SCALE_TYPES, genre_names, genre_title,
 )
 from llamatron.music.note import ROOT_NAMES
 from llamatron.strings import labels, legends, marks, messages
@@ -35,7 +35,7 @@ LOST_SHOWN = {
     LOST_TUNE_TAKES: messages.MSG_CHANGE_GENRE_TUNE_TAKES,
     LOST_RIFFS: messages.MSG_CHANGE_GENRE_RIFFS,
 }
-KEPT_SHOWN = {KEPT_OWN_TUNES: messages.MSG_CHANGE_GENRE_OWN_TUNES}
+KEPT_SHOWN = {KEPT_OWN_TUNES: messages.MSG_CHANGE_GENRE_OWN_TUNES, KEPT_OWN_RIFFS: messages.MSG_CHANGE_GENRE_OWN_RIFFS}
 
 
 class GenreBranch(Branch):

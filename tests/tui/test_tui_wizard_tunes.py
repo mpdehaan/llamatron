@@ -235,10 +235,9 @@ class TestWizardRiffs(TunesPanelTest):
         before = self.choices().added_riffs()
         await self.select_in_kind(label=labels.MSG_WIZARD_ADD_RIFF_LABEL, kind=kind)
         await self.press(Key.ENTER)
-        if labels.MSG_WIZARD_NEW_RIFF in self.text():
-            # With a riff of the song that could be played again here, the picker first asks which: a new one is its first choice.
-            await self.press(Key.ENTER)
-        await self.press(Key.ENTER)
+        # The picker first asks which riff, a new one its first choice, and then who plays.
+        self.assertIn(labels.MSG_WIZARD_NEW_RIFF, self.text())
+        await self.press(Key.ENTER, Key.ENTER)
         return next(riff for riff in self.choices().added_riffs() if riff not in before)
 
     async def test_every_kind_of_the_form_has_a_heading_and_a_kind_with_no_tune_holds_add_riff_alone(self):
@@ -255,6 +254,9 @@ class TestWizardRiffs(TunesPanelTest):
         await self.select_in_kind(label=labels.MSG_WIZARD_ADD_RIFF_LABEL)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
+        for said in (labels.MSG_WIZARD_NEW_RIFF, labels.MSG_WIZARD_BLANK_RIFF):
+            self.assertIn(said, self.text())
+        await self.press(Key.ENTER)
         for role in offered:
             self.assertIn(choices.role_title(role), self.text())
         await self.press(Key.ENTER)
@@ -299,6 +301,43 @@ class TestWizardRiffs(TunesPanelTest):
         self.assertEqual([choices.riff_players_of(riff) for riff in riffs], [[role] for role in free])
         self.assertEqual(choices.riff_players_free(A_KIND), [])
         self.assertNotIn(labels.MSG_WIZARD_ADD_RIFF_LABEL, self.labels_under())
+
+    async def test_enter_on_a_riff_edits_its_notes_which_are_kept_as_the_riffs_own_and_a_new_take_then_asks(self):
+        choices = self.choices()
+        riff = await self.add_riff()
+        await self.select_in_kind(label=riff)
+        await self.press(Key.ENTER)
+        self.assertIsInstance(self.app.screen, PatternEditor)
+        self.assertEqual(self.app.screen.item, choices.riff_pattern_name(riff))
+        await self.press(Key.ESCAPE)
+        self.assertFalse(choices.added_riff_is_own(riff))
+        self.assertIn(messages.MSG_WIZARD_RIFF_UNCHANGED.format(riff=riff), self.text())
+        await self.press(Key.ENTER)
+        self.change_first_step()
+        await self.press(Key.ESCAPE)
+        self.assertTrue(choices.added_riff_is_own(riff))
+        self.assertEqual(choices.riff_pattern(riff)[Row.DEGREE][0], A_DEGREE)
+        self.assertIn(messages.MSG_WIZARD_RIFF_KEPT.format(riff=riff), self.text())
+        await self.press(keybindings.WizardPage.NEW_TAKE)
+        self.assertIsInstance(self.app.screen, ConfirmDialog)
+        await self.press(Key.ENTER)
+        self.assertTrue(choices.added_riff_is_own(riff))
+        await self.press(keybindings.WizardPage.NEW_TAKE, keybindings.ConfirmDialog.YES)
+        self.assertFalse(choices.added_riff_is_own(riff))
+
+    async def test_a_blank_riff_opens_in_the_pattern_editor_with_no_note_and_is_the_persons_own(self):
+        choices = self.choices()
+        await self.select_in_kind(label=labels.MSG_WIZARD_ADD_RIFF_LABEL)
+        await self.press(Key.ENTER)
+        await self.type(labels.MSG_WIZARD_BLANK_RIFF)
+        await self.press(Key.ENTER, Key.ENTER)
+        self.assertIsInstance(self.app.screen, PatternEditor)
+        riff = choices.added_riffs()[0]
+        self.assertTrue(choices.added_riff_is_own(riff))
+        self.assertNotIn(Row.DEGREE, choices.riff_pattern(riff))
+        self.change_first_step()
+        await self.press(Key.ESCAPE)
+        self.assertEqual(choices.riff_pattern(riff)[Row.DEGREE][0], A_DEGREE)
 
 
 class TestWizardChangeGenre(WizardTest):

@@ -33,8 +33,10 @@ from llamatron.tui.screens.wizard.branch import Branch
 # The choice that leaves a kind of section's tune to the song's player, which no player is named.
 FROM_SONG = ''
 
-# The place in the Add Riff picker of a new riff, which the riffs already in the song follow.
+# The Add Riff picker's first choices, a riff the wizard writes and a riff with no notes yet, which the riffs already in the song follow.
 NEW_RIFF_PLACE = 0
+BLANK_RIFF_PLACE = 1
+RIFFS_TO_WRITE = (labels.MSG_WIZARD_NEW_RIFF, labels.MSG_WIZARD_BLANK_RIFF)
 
 
 class TunesBranch(Branch):
@@ -86,21 +88,24 @@ class TunesBranch(Branch):
 
         def shown():
             players = self.players_shown(choices.riff_players_of(riff))
+            if choices.added_riff_is_own(riff):
+                return marks.MSG_WIZARD_TUNE_EDITED.format(name=players)
             take = choices.riff_take_of(riff)
             return marks.MSG_WIZARD_TUNE_TAKE_SHOWN.format(name=players, take=take + 1) if take else players
 
         def remove():
             question = messages.MSG_WIZARD_RIFF_REMOVE_QUESTION.format(riff=riff, kind=kind)
             page.ask(dialog=ConfirmDialog(title=messages.MSG_DELETE_TITLE, messages=[question]), then=page.choosing(lambda _: choices.remove_riff(kind=kind, riff=riff)))
-        return Field(label=riff, value=shown, clear=remove, clear_what=legends.What.DELETE)
+        return Field(label=riff, value=shown, enter=lambda: page.edit_riff(riff), enter_what=legends.MSG_WIZARD_EDIT_NOTES_WHAT, clear=remove, clear_what=legends.What.DELETE)
 
     def players_shown(self, players):
         """Return players as a riff's row and the picker name them: each by the name on the Band panel, joined."""
         return labels.MSG_WIZARD_RIFF_PLAYERS_JOIN.join(self.choices().role_title(role) for role in players)
 
     def add_riff(self, kind):
-        """Add a riff to a kind of section in two steps: a new riff or one already in the song, then, for a new riff, who plays it,
-        one of the players free in the kind or two of them together."""
+        """Add a riff to a kind of section in two steps: a new riff, a blank riff to write by hand or one already in the song, then,
+        for a new or a blank riff, who plays it, one of the players free in the kind or two of them together. A blank riff opens in
+        the pattern editor at once."""
         choices = self.choices()
         page = self.page()
         free = choices.riff_players_free(kind)
@@ -110,25 +115,32 @@ class TunesBranch(Branch):
         def added(riff):
             page.say(messages.MSG_WIZARD_RIFF_ADDED.format(riff=riff, kind=kind))
 
-        def with_players(place):
+        def with_players(*, place, blank):
+            def add(players):
+                riff = choices.add_riff(kind=kind, players=players)
+                if blank:
+                    choices.set_riff_pattern(riff=riff, pattern=choices.blank_riff_pattern(riff))
+                return riff
             try:
-                added(page.choosing(lambda players: choices.add_riff(kind=kind, players=players))(groups[place]))
+                riff = page.choosing(add)(groups[place])
             except ValueError as problem:
                 page.refuse(str(problem))
+                return
+            added(riff)
+            if blank:
+                # The picker is still closing: the editor opens once the wizard's page is on top again.
+                page.call_later(page.edit_riff, riff)
 
         def chosen(place):
-            if place == NEW_RIFF_PLACE:
-                page.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_RIFF_PLAYERS_TITLE, options=[self.players_shown(group) for group in groups]), then=with_players)
+            if place in (NEW_RIFF_PLACE, BLANK_RIFF_PLACE):
+                page.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_RIFF_PLAYERS_TITLE, options=[self.players_shown(group) for group in groups]),
+                         then=lambda players: with_players(place=players, blank=place == BLANK_RIFF_PLACE))
                 return
             try:
-                added(page.choosing(lambda riff: choices.add_riff(kind=kind, riff=riff))(again[place - 1]))
+                added(page.choosing(lambda riff: choices.add_riff(kind=kind, riff=riff))(again[place - len(RIFFS_TO_WRITE)]))
             except ValueError as problem:
                 page.refuse(str(problem))
-        if not again:
-            # With no riff of the song to play again, the riff is a new one, and only its players are asked.
-            chosen(NEW_RIFF_PLACE)
-            return
-        page.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_ADD_RIFF_TITLE.format(kind=kind), options=[labels.MSG_WIZARD_NEW_RIFF, *again]), then=chosen)
+        page.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_ADD_RIFF_TITLE.format(kind=kind), options=[*RIFFS_TO_WRITE, *again]), then=chosen)
 
     def heading_of(self, kind):
         """Return the heading of a kind of section's part of the panel."""
@@ -198,10 +210,17 @@ class TunesBranch(Branch):
         page = self.page()
         riff = self.riff_under_cursor()
         if riff is not None:
-            def take_riff():
+            def take_riff(_=None):
                 page.choosing(choices.new_riff_take_of)(riff)
                 page.say(messages.MSG_WIZARD_RIFF_TAKEN.format(take=choices.riff_take_of(riff) + 1, riff=riff))
-            return take_riff
+
+            def ask_or_take_riff():
+                if not choices.added_riff_is_own(riff):
+                    take_riff()
+                    return
+                question = messages.MSG_WIZARD_RIFF_TAKE_QUESTION.format(riff=riff)
+                page.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_TUNE_TAKE_TITLE, messages=[question], starts_on_no=True), then=take_riff)
+            return ask_or_take_riff
         if kind is None or not self.on_a_tune():
             return None
 
