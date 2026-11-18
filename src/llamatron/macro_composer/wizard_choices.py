@@ -3443,6 +3443,35 @@ class WizardChoices:
         self._more_riffs_or_back(before=before, value=(riff, kind))
         return riff
 
+    def riffs_of_player(self, role):
+        """Return the riffs that were added which a player plays, by name, in the order they were added."""
+        return [entry[NAME] for entry in self._more_riffs() if role in entry[RIFF_ROLES]]
+
+    def riff_takers(self, *, riff, leaving):
+        """Return the players who could take a riff over from a player who leaves the band: each player free of the tune and of
+        any other riff in every kind of section the riff plays in."""
+        entry = self._more_riff(riff)
+        takers = None
+        for kind in entry[RIFF_KINDS]:
+            free = [role for role in self.riff_players_free(kind) if role != leaving]
+            takers = free if takers is None else [role for role in takers if role in free]
+        return takers or []
+
+    def give_riff(self, *, riff, leaving, taker):
+        """Give a player's place in a riff to another player, who must be one of the riff's takers. A riff the song cannot then be
+        made with is refused and nothing changes."""
+        if taker not in self.riff_takers(riff=riff, leaving=leaving) or leaving not in self.riff_players_of(riff):
+            raise ValueError(errors.ERR_WIZARD_RIFF.format(value=(riff, taker)))
+        before = copy.deepcopy(self._extras.get(MORE_RIFFS, []))
+        entry = self._more_riff(riff)
+        entry[RIFF_ROLES] = [taker if role == leaving else role for role in entry[RIFF_ROLES]]
+        self._more_riffs_or_back(before=before, value=(riff, taker))
+
+    def drop_riff(self, riff):
+        """Take a riff that was added out of the song, from every kind of section."""
+        for kind in self.riff_kinds_of(riff):
+            self.remove_riff(kind=kind, riff=riff)
+
     def remove_riff(self, *, kind, riff):
         """Take a riff out of a kind of section; a riff left with no kind of section is gone."""
         entry = self._more_riff(riff)
