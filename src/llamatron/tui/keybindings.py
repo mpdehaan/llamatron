@@ -878,8 +878,14 @@ class RegisterRow(CycleRow):
     """A register's +Note or +Vel row: Space or Enter cycles add, subtract and off, and [ and ] step back and forward."""
 
 
-class ConditionRow(CycleRow):
-    """A condition row: Space or Enter cycles blank, <, > and =, and [ and ] step back and forward."""
+class StatementRow(PatternRow):
+    """A row of a step's statement about the registers: Enter opens the picker of the part, Space goes to the next choice or number, and [ and ] step."""
+
+    CHOOSE = (Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
+    NEXT = (Key.SPACE, legends.KeyName.SPACE, legends.What.NEXT)
+    CLEAR = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
+    IN_HELP = [CHOOSE, NEXT, PatternRow.LESS, PatternRow.MORE, CLEAR]
+    IN_LEGEND = IN_HELP
 
 
 class SectionRow(PatternRow):

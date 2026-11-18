@@ -89,9 +89,9 @@ roll or the rows.
 - The rows under the pinned ones come in sections (`SECTIONS`, keyed by `RowSection` in
   `tui/keys.py`): Basics (#/b, Chord, Inversion, Velocity), Timing (Tie, Gate, Dot, Glide), Advanced
   (Probability, Ratchet, Ratchet Offset, Grab), CCs (the CC rows and Slide), Reg. Mod (the `=` rows, `SetRow`,
-  then `+=`, `AddRow`), Reg. Apply (`+Note` and `+Vel`) and Reg. Cond (`ConditionRow`), in the order a step
+  then `+=`, `AddRow`), Reg. Apply (`+Note` and `+Vel`), then Stop When, Restart When and Mute When (`StatementRow`, five rows `c1` to `c5` each, one statement a step, written whole through `Document.set_step_statement`; ENTER picks a part, Space and `[` `]` step, stopping at the ends, Bksp clears the statement; every Restart When row is blocked on step 1), in the order a step
   works them out (the user's choice). `SetRow`'s number line starts at blank just below the current
-  song's register Minimum; `AddRow` stops at `Document.allowed_inc_max` and says so; a condition is blocked on an empty step. A drum pattern leaves out the rows whose description says it has none (`is_in_drum_patterns()`).
+  song's register Minimum; `AddRow` stops at `Document.allowed_inc_max` and says so . A drum pattern leaves out the rows whose description says it has none (`is_in_drum_patterns()`).
 - Each section is headed by a `SectionRow` (`tui/components/section_row.py`), labelled
   `+ Advanced` closed or `- Advanced` open (`MSG_SECTION_LABEL`, `MSG_SECTION_CLOSED_MARK`,
   `MSG_SECTION_OPEN_MARK`). The row has no cells, so the label is drawn in reverse video under

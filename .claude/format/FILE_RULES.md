@@ -299,20 +299,27 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
 - A step's `ax_set` sets AX to a value before anything adds to it, blank leaving it as it is
   and 0 setting it to 0, held between the register's minimum and maximum and never wrapped
   (`Register.held`). A step's `ax_add` adds to AX as it plays. Both happen even with no note,
-  when probability drops it or when a condition silences it, and once for a ratchet.
+  when probability drops it or when a Mute When statement silences it, and once for a ratchet.
 - `ax_note` moves the note along the scale by AX's value, up for `1` and down for `-1`, which
   drum patterns can't use, and `ax_velocity` adds AX's value to the velocity for `1` or takes
   it off for `-1`, keeping the velocity from 1 to 127 (`_used_values` in
   `playback/pattern_player.py` sums each register's value times its row's sign).
-- Within a step: sets, then adds, then uses (`+Note`, `+Vel` and the bound velocity), then the
-  conditions and probability decide whether the note sounds. Going past an end does what
+- Within a step: sets, then adds, then uses (`+Note`, `+Vel` and the bound velocity), then
+  probability decides whether the note sounds. Going past an end does what
   `at_limit` says, dropping what is left over.
-- The condition rows `ax_bx`, `ax_cx` and `ax_dx` (`CONDITION_ROWS`, `Comparison`) each hold
-  `<`, `>`, `=` or nothing: AX compared with that register, as the step sees them, after its own
-  changes. A note sounds only when every condition on its step holds (`_conditions_hold`), and
-  a step that fails sounds nothing, all its ratchet slices together, a chord whole. Only a note
-  can hold one, so clearing a note clears its conditions. A condition never stops a register
-  change, so the counting play still finds every change, the user's rule.
+- A step's statements (the user's design; `STATEMENT_ROWS`, `StepStatement`): the rows `stop_c1` to `stop_c5`, `restart_c1` to
+  `restart_c5` and `mute_c1` to `mute_c5` hold, step by step, the five parts of one Conditional Execution statement of each kind
+  (register, operator, value, comparison, against), which `Pattern.get_statement` puts together (`conditions.statement_of`) and
+  `Pattern.set_statement` writes whole; parts that make no whole statement are no statement. A rest keeps them. Each is read as
+  the step is reached, before the step's own sets and adds (`before_step`, `BEFORE_OWN_CHANGE`), in the order stop, restart,
+  mute. Stop: the clip is done as if every repeat were played (`Pass.done`). Restart: the pass ends there and counts as a
+  repeat, never on the first step played. Mute: the step is silent and still changes the registers. A step that stops or
+  restarts makes none of its own changes. A looping clip whose pattern holds a stop is a clip that ends
+  (`SongRenderer.fills_its_scene`, `Song.scene_never_ends`), giving up at `MAX_CLIP_REPEAT` passes. A scene with a clip whose
+  pattern can cut a pass short is played until its registers settle (`SongRenderer._decide`: `RegisterSolo`, then
+  `RegisterTrial` rounds until the changes and lengths repeat); every other scene keeps the two plays, and what is asked of a
+  pattern or a scene to choose between them is asked once a render (`_cutting_of`, `_is_settled_by_playing`). The old condition
+  rows `ax_bx`, `ax_cx` and `ax_dx` are gone, with no conversion.
 - Registers are shared by every track. `SongRenderer` plays each clip once with a
   `RegisterRecorder` to collect changes (the same play that finds lengths, since registers only
   change pitches, velocities and whether a note sounds), a `RegisterTimeline` applies them in

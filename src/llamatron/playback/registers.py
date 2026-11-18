@@ -43,6 +43,8 @@ CLIPS_BEFORE_STEPS = 1000000
 # The place a clip reads the registers from as its pattern starts over: after every clip's own change then, before any step's.
 AS_A_PASS_STARTS = -1
 NO_CHANGES = {}
+# How far before a track's own change at a moment its step reads the registers to decide whether the clip goes on.
+BEFORE_OWN_CHANGE = 0.5
 # When a scene's own changes happen: as it starts.
 SCENE_START = 0
 
@@ -144,6 +146,10 @@ class RegisterRecorder:
             self._changes.append(RegisterChange(time, self._place - CLIPS_BEFORE_STEPS, sets, adds))
         return None
 
+    def before_step(self, time):
+        """Return None: nothing is known of the values while a clip is only played to count changes that depend on none of them."""
+        return None
+
     def is_counting(self):
         """Return true: a clip played to count its changes plays every note, as if neither probability nor a condition silenced one, so that what an arpeggiator adds for its notes is counted the same in every take."""
         return True
@@ -173,6 +179,66 @@ class RegisterReader:
     def at_step(self, *, time, sets, adds):
         """Return the values a step sees at a time in the scene. What it sets and adds is already in the timeline."""
         return self._timeline.values_at(time=time, place=self._place)
+
+    def before_step(self, time):
+        """Return the values as a step is reached at a time in the scene, before the step's own sets and adds, after every earlier track's then."""
+        return self._timeline.values_at(time=time, place=self._place - BEFORE_OWN_CHANGE)
+
+
+class RegisterTrial(RegisterRecorder):
+    """Stands in for the registers while a clip whose statements can end it is played to find its changes and its length.
+
+    Such a clip's changes depend on the registers, since a step it never reaches changes
+    nothing. So it notes its changes as a RegisterRecorder does, and decides whether it goes
+    on from a guess at the scene's timeline. The scene is played again with the timeline its
+    changes make until that timeline is the guess (SongRenderer), which it comes to because a
+    value at any moment depends only on the changes before it.
+    """
+
+    __slots__ = ('_timeline',)
+
+    def __init__(self, *, place, timeline):
+        super().__init__(place)
+        self._timeline = timeline
+
+    def before_step(self, time):
+        """Return the values as a step is reached at a time in the scene, before the step's own sets and adds, by the guess."""
+        return self._timeline.values_at(time=time, place=self._place - BEFORE_OWN_CHANGE)
+
+
+class RegisterSolo(RegisterRecorder):
+    """The first guess for a clip whose statements can end it: the clip played as if no other track changed a register.
+
+    It keeps the registers' values itself, from the values its scene starts with, changing
+    them by what its own steps set and add. With one track counting, the usual case, the guess
+    is already right; where other tracks count too, the trials after it put that right.
+    """
+
+    __slots__ = ('_registers', '_values', '_chooser')
+
+    def __init__(self, *, place, registers, start, chooser):
+        super().__init__(place)
+        self._registers = registers
+        self._values = dict(start)
+        self._chooser = chooser
+
+    def at_step(self, *, time, sets, adds):
+        self._change(sets=sets, adds=adds)
+        return super().at_step(time=time, sets=sets, adds=adds)
+
+    def at_pass(self, *, time, sets, adds):
+        self._change(sets=sets, adds=adds)
+        return super().at_pass(time=time, sets=sets, adds=adds)
+
+    def before_step(self, time):
+        """Return the values as a step is reached, before the step's own sets and adds."""
+        return self._values
+
+    def _change(self, *, sets, adds):
+        for name, value in sets.items():
+            self._values[name] = self._registers[name].held(value)
+        for name, amount in adds.items():
+            self._values[name] = self._registers[name].added(value=self._values[name], amount=amount, chooser=self._chooser)
 
 
 def scene_change(*, sets, adds):

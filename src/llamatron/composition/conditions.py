@@ -52,6 +52,9 @@ LAST_PLACE_BACK = 1
 COMPARING_PARTS = (StatementPart.VALUE,)
 ARITHMETIC_PARTS = (StatementPart.VALUE, StatementPart.COMPARISON, StatementPart.AGAINST)
 EVERY_PART = (StatementPart.REGISTER, StatementPart.OPERATOR, *ARITHMETIC_PARTS)
+# Where a statement's register stands among its parts, and what a statement read from a pattern's rows is called in a refusal nobody sees.
+REGISTER_PLACE = 0
+NO_NAME = ''
 
 # How each comparison answers for two integers.
 COMPARED = {
@@ -127,6 +130,18 @@ def check_statement(*, name, statement):
         if statement.get(StatementPart.COMPARISON) not in RESULT_COMPARISONS:
             raise InvalidValue(errors.ERR_STATEMENT_BAD_COMPARISON.format(name=name, choices=listed(RESULT_COMPARISONS), value=statement.get(StatementPart.COMPARISON)))
         _check_number(name=name, part=StatementPart.AGAINST, value=statement.get(StatementPart.AGAINST))
+
+
+def statement_of(parts):
+    """Return the statement made of parts in the order they are written, None for a part left out, or None when the parts name no register or make no whole statement, as rows written by hand can."""
+    if parts[REGISTER_PLACE] is None:
+        return None
+    statement = {part: value for part, value in zip(EVERY_PART, parts) if value is not None}
+    try:
+        check_statement(name=NO_NAME, statement=statement)
+    except InvalidValue:
+        return None
+    return statement
 
 
 def statements_setting(name):

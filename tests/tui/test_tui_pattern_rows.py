@@ -18,7 +18,11 @@
 
 from tests.support.ui_testing import ROW_SHOWN, UITest
 from llamatron.composition.row_descriptions import ROW_DESCRIPTIONS, RowOfNumbers
-from llamatron.composition.file_format import CONDITION_ROWS, REGISTER_ADD_ROWS, REGISTER_SET_ROWS, RegisterSetting, Comparison, RegisterName, Row
+from llamatron.composition import conditions, limits
+from llamatron.composition.file_format import (
+    OPERATORS, REGISTER_ADD_ROWS, REGISTER_NAMES, REGISTER_SET_ROWS, RESULT_COMPARISONS, STATEMENT_ROWS, Operator, RegisterName, RegisterSetting, Row, StatementPart,
+    StepStatement,
+)
 from llamatron.music.note import NoteName
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.document import Document
@@ -38,8 +42,8 @@ EMPTY_STEP = 2
 # The register rows whose line is narrower than a file allows, and an Allowed Inc Max narrower than the default.
 NARROWER_ROWS = {*REGISTER_ADD_ROWS.values(), *REGISTER_SET_ROWS.values()}
 NARROW_INC_MAX = 4
-# What Space or Enter goes through on a condition row, from blank, and back to blank.
-COMPARISON_CYCLE = [Comparison.LESS, Comparison.MORE, Comparison.SAME, None]
+# A number typed into a statement.
+TYPED_NUMBER = 12
 
 
 class TestTheRowsLimitsAreTheFiles(PatternEditorTest):
@@ -81,7 +85,7 @@ class TestTheRowsLimitsAreTheFiles(PatternEditorTest):
 
 
 class TestRegisterChangeRows(PatternEditorTest):
-    """The = rows step from blank through the current song's register, the += rows within the register's Allowed Inc Max, and the condition rows cycle their comparisons on a note's step alone."""
+    """The = rows step from blank through the current song's register, the += rows within the register's Allowed Inc Max, """
 
     async def test_an_add_row_stops_at_the_registers_allowed_inc_max_and_says_so(self):
         for register, name in REGISTER_ADD_ROWS.items():
@@ -118,16 +122,97 @@ class TestRegisterChangeRows(PatternEditorTest):
                 await self.press(keybindings.SetRow.MORE, keybindings.SetRow.MORE, keybindings.SetRow.DEFAULT)
                 self.assertIsNone(self.value(row=name))
 
-    async def test_a_condition_cycles_its_comparisons_on_a_note_and_is_blocked_on_an_empty_step(self):
-        for name in CONDITION_ROWS.values():
-            with self.subTest(row=name):
-                await self.go_to_row(name)
-                seen = []
-                for _ in range(len(COMPARISON_CYCLE)):
-                    await self.press(keybindings.ConditionRow.NEXT)
-                    seen.append(self.value(row=name))
-                self.assertEqual(seen, COMPARISON_CYCLE)
-                self.assertTrue(self.editor.row_for(name).blocked(step=EMPTY_STEP))
+
+class TestStatementRows(PatternEditorTest):
+    """The five rows of Stop When, Restart When and Mute When write one statement on a step, part by part."""
+
+    async def test_a_register_starts_a_statement_and_the_other_rows_then_take_their_parts(self):
+        for kind, rows in STATEMENT_ROWS.items():
+            with self.subTest(kind=kind):
+                register_row, operator_row, value_row, comparison_row, against_row = rows
+                await self.go_to_row(register_row)
+                await self.press(Key.RIGHT)
+                for row in rows[1:]:
+                    self.assertTrue(self.editor.row_for(row).blocked())
+                await self.press(keybindings.StatementRow.NEXT)
+                started = conditions.new_statement(REGISTER_NAMES[0])
+                self.assertEqual(self.statement(kind), started)
+                self.assertFalse(self.editor.row_for(value_row).blocked())
+                self.assertTrue(self.editor.row_for(comparison_row).blocked())
+                await self.go_to_row(value_row)
+                await self.press(keybindings.StatementRow.MORE, keybindings.StatementRow.MORE, keybindings.StatementRow.LESS)
+                self.assertEqual(self.statement(kind)[StatementPart.VALUE], started[StatementPart.VALUE] + 1)
+                await self.go_to_row(operator_row)
+                for _ in range(OPERATORS.index(Operator.PLUS) - OPERATORS.index(started[StatementPart.OPERATOR])):
+                    await self.press(keybindings.StatementRow.MORE)
+                self.assertEqual(self.statement(kind)[StatementPart.OPERATOR], Operator.PLUS)
+                self.assertFalse(self.editor.row_for(comparison_row).blocked())
+                self.assertFalse(self.editor.row_for(against_row).blocked())
+                await self.go_to_row(comparison_row)
+                await self.press(keybindings.StatementRow.NEXT)
+                self.assertIn(self.statement(kind)[StatementPart.COMPARISON], RESULT_COMPARISONS)
+                await self.press(keybindings.StatementRow.CLEAR)
+                self.assertIsNone(self.statement(kind))
+                await self.press(Key.LEFT)
+
+    async def test_a_choice_stops_at_each_end_of_its_list(self):
+        register_row, operator_row = STATEMENT_ROWS[StepStatement.MUTE][:2]
+        await self.go_to_row(register_row)
+        await self.press(keybindings.StatementRow.LESS)
+        self.assertIsNone(self.statement(StepStatement.MUTE))
+        for _ in range(len(REGISTER_NAMES) + 1):
+            await self.press(keybindings.StatementRow.MORE)
+        self.assertEqual(self.statement(StepStatement.MUTE)[StatementPart.REGISTER], REGISTER_NAMES[-1])
+        await self.go_to_row(operator_row)
+        for _ in range(len(OPERATORS)):
+            await self.press(keybindings.StatementRow.LESS)
+        self.assertEqual(self.statement(StepStatement.MUTE)[StatementPart.OPERATOR], OPERATORS[0])
+
+    async def test_the_picker_chooses_a_register_and_a_number_or_a_register_to_compare_with(self):
+        register_row, _, value_row = STATEMENT_ROWS[StepStatement.STOP][:3]
+        await self.go_to_row(register_row)
+        await self.press(keybindings.StatementRow.CHOOSE, Key.DOWN, Key.DOWN, Key.ENTER)
+        self.assertEqual(self.statement(StepStatement.STOP)[StatementPart.REGISTER], REGISTER_NAMES[1])
+        await self.go_to_row(value_row)
+        await self.press(keybindings.StatementRow.CHOOSE, Key.DOWN, Key.ENTER)
+        self.assertEqual(self.statement(StepStatement.STOP)[StatementPart.VALUE], REGISTER_NAMES[0])
+        await self.press(keybindings.StatementRow.CHOOSE, Key.UP, Key.ENTER)
+        await self.type(str(TYPED_NUMBER))
+        await self.press(Key.ENTER)
+        self.assertEqual(self.statement(StepStatement.STOP)[StatementPart.VALUE], TYPED_NUMBER)
+        await self.press(keybindings.StatementRow.CHOOSE, Key.ENTER)
+        await self.type(str(limits.MAX_STATEMENT_NUMBER + 1))
+        await self.press(Key.ENTER)
+        self.assertEqual(self.statement(StepStatement.STOP)[StatementPart.VALUE], TYPED_NUMBER)
+
+    async def test_a_statement_cannot_divide_by_zero(self):
+        register_row, _, value_row = STATEMENT_ROWS[StepStatement.MUTE][:3]
+        await self.go_to_row(register_row)
+        await self.press(keybindings.StatementRow.NEXT)
+        self.document.set_step_statement(
+            name=self.editor.item, kind=StepStatement.MUTE, step=self.editor.step,
+            statement=conditions.with_operator(statement=self.statement(StepStatement.MUTE), operator=Operator.REMAINDER),
+        )
+        await self.go_to_row(value_row)
+        await self.press(keybindings.StatementRow.LESS)
+        self.assertNotEqual(self.statement(StepStatement.MUTE)[StatementPart.VALUE], 0)
+        self.assertIn(errors.ERR_CANNOT_DIVIDE_BY_ZERO, self.text())
+
+    async def test_the_first_step_cannot_start_the_pattern_over(self):
+        for row in STATEMENT_ROWS[StepStatement.RESTART]:
+            self.assertTrue(self.editor.row_for(row).blocked(step=0))
+        self.assertFalse(self.editor.row_for(STATEMENT_ROWS[StepStatement.RESTART][0]).blocked(step=EMPTY_STEP))
+
+    async def test_an_empty_step_holds_a_statement_and_clearing_a_note_keeps_one(self):
+        register_row = STATEMENT_ROWS[StepStatement.MUTE][0]
+        self.assertFalse(self.editor.row_for(register_row).blocked(step=EMPTY_STEP))
+        await self.go_to_row(register_row)
+        await self.press(keybindings.StatementRow.NEXT)
+        self.document.clear_sound(name=self.editor.item, step=self.editor.step)
+        self.assertIsNotNone(self.statement(StepStatement.MUTE))
+
+    def statement(self, kind):
+        return self.editor.pattern().get_statement(kind=kind, step=self.editor.step)
 
 
 class TestDrumPatterns(UITest):

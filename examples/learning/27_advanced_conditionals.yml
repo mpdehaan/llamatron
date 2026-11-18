@@ -1,9 +1,10 @@
 version: 1.0.510
 title: Advanced Conditionals
-description: four single notes that come and go by counting, then one bar of chords played four ways by one chain
+description: single notes that come and go by counting, one bar of chords played four ways, then steps that mute, start over and stop by the registers
 notes: |
   Advanced Conditionals: Conditional Execution, statements about the registers that say when a
-  clip sits out and when a generator is passed by.
+  clip sits out, when a generator is passed by, and when a step of a pattern is muted, starts its
+  pattern over or stops its clip.
   Run it with: llamatron examples/learning/27_advanced_conditionals.yml
 
   Scene 1, counting: four tracks, each with one note in a bar, each at a different place in the
@@ -22,12 +23,27 @@ notes: |
   8 times, and the pattern's last step adds 1 to AX: the same four chords are strummed, then picked,
   then chugged, then rolled, and AX goes round to 0 for all four again.
 
+  Scene 3, fill every fourth bar: Mute When, in the pattern editor. The pattern called fill adds 1
+  to AX on its last step, and its last four steps each hold Mute When: AX != 3, so the run at the
+  end of the bar is heard only in every fourth bar. The pattern called answers has two notes: the
+  first holds Mute When: AX odd and the second Mute When: AX even, so they take turns, bar by bar.
+
+  Scene 4, false start: Restart When. The pattern called riff adds 1 to BX on its first step, and
+  its ninth step holds Restart When: BX != 0. BX counts 1, 2, 0, so the riff starts over after
+  half a bar twice and then plays whole: 8 steps, 8 steps, 16 steps, round and round, while the
+  bass keeps the bar. The clip loops, and nothing stops it but the scene.
+
+  Scene 5, two and a half: Stop When. The pattern called phrase adds 1 to AX on its eighth step,
+  and its ninth step holds Stop When: AX >= 3. The clip loops, and is done the third time it
+  reaches the ninth step: the phrase is heard exactly two and a half times, and the song ends.
+
   Try it: on the track called every third, change BX != 0 to BX = 0, and the note rests every third
   bar. On the guitarify called picked, change AX != 1 to AX > 1, and the picking is laid over the strum.
 
   When changing this demo:
   - Keep scene 1 sparse, one note a track, so that what sits out is heard at once.
   - Keep scene 2 one pattern and one chain: everything that differs is the registers' doing.
+  - Keep scene 5 last, and its clip looping: the Stop When alone ends the song.
 real_time: true
 protected: true
 
@@ -55,6 +71,40 @@ patterns:
     degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~]
     octave: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~]
     ax_note: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+  phrase:
+    steps: 16
+    degree: [1, 3, 5, 3, 6, 5, 3, 2, 1, 2, 3, 5, 6, 5, 3, 1]
+    octave: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+    ax_add: [~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~]
+    stop_c1: [~, ~, ~, ~, ~, ~, ~, ~, AX, ~, ~, ~, ~, ~, ~, ~]
+    stop_c2: [~, ~, ~, ~, ~, ~, ~, ~, ">=", ~, ~, ~, ~, ~, ~, ~]
+    stop_c3: [~, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~]
+  fill:
+    steps: 16
+    degree: [1, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, 1, 3, 4, 5]
+    octave: [2, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, 2, 2, 2, 2]
+    ax_add: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1]
+    mute_c1: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, AX, AX, AX, AX]
+    mute_c2: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "!=", "!=", "!=", "!="]
+    mute_c3: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, 3, 3, 3]
+  answers:
+    steps: 16
+    degree: [~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+    octave: [~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~]
+    mute_c1: [~, ~, ~, ~, AX, ~, ~, ~, ~, ~, ~, ~, AX, ~, ~, ~]
+    mute_c2: [~, ~, ~, ~, odd, ~, ~, ~, ~, ~, ~, ~, even, ~, ~, ~]
+  pulse:
+    steps: 16
+    degree: [1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~]
+    octave: [2, ~, ~, ~, 2, ~, ~, ~, 2, ~, ~, ~, 2, ~, ~, ~]
+  riff:
+    steps: 16
+    degree: [1, 1, 3, 1, 4, 3, 1, 5, 6, 5, 4, 3, 5, 4, 3, 1]
+    octave: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+    bx_add: [1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    restart_c1: [~, ~, ~, ~, ~, ~, ~, ~, BX, ~, ~, ~, ~, ~, ~, ~]
+    restart_c2: [~, ~, ~, ~, ~, ~, ~, ~, "!=", ~, ~, ~, ~, ~, ~, ~]
+    restart_c3: [~, ~, ~, ~, ~, ~, ~, ~, 0, ~, ~, ~, ~, ~, ~, ~]
   four chords:
     steps: 4
     step_size: 1
@@ -135,10 +185,10 @@ songs:
       - name: counting
         set_registers: { AX: 0, BX: 0 }
         tracks:
-          every bar: { pattern: every bar, repeat: 36 }
-          every second: { pattern: every second, repeat: 36 }
-          every third: { pattern: every third, repeat: 36 }
-          counted: { pattern: counted, repeat: 36 }
+          every bar: { pattern: every bar, repeat: 24 }
+          every second: { pattern: every second, repeat: 24 }
+          every third: { pattern: every third, repeat: 24 }
+          counted: { pattern: counted, repeat: 24 }
       - name: one pattern four ways
         scale: G Major
         tempo: 100
@@ -146,3 +196,20 @@ songs:
         set_registers: { AX: 0 }
         tracks:
           guitar: { pattern: four chords, chains: [four ways] }
+      - name: fill every fourth bar
+        scale: A Minor Pentatonic
+        set_registers: { AX: 0 }
+        tracks:
+          every bar: { pattern: fill, repeat: 8 }
+          counted: { pattern: answers, repeat: 8 }
+      - name: false start
+        scale: A Minor Pentatonic
+        set_registers: { BX: 0 }
+        tracks:
+          every bar: { pattern: pulse, repeat: 8 }
+          counted: { pattern: riff, loop: true }
+      - name: two and a half
+        scale: A Minor Pentatonic
+        set_registers: { AX: 0 }
+        tracks:
+          counted: { pattern: phrase, loop: true }

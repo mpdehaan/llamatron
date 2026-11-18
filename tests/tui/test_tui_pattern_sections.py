@@ -97,12 +97,14 @@ class TestSections(UITest):
         between = lines[at + 1]
         self.assertEqual(between.rstrip(), Box.LEFT_TEE + Box.RULE * (len(between.rstrip()) - 2) + Box.RIGHT_TEE)
         self.assertIn(self.heading_shown(RowSection.CC), lines[at + 2])
-        # With Basics and Timing closed every heading fits, and the last row is the closed Reg. Cond heading, so the bottom rule under it has no tees.
+        # With Basics and Timing closed and the cursor on the last heading, the last row is the closed Mute When heading, so the bottom rule under it has no tees.
         await self.press(back_key(keybindings.PatternRows.SECTION), back_key(keybindings.PatternRows.SECTION), keybindings.SectionRow.CLOSE)
         self.assertEqual(self.editor.row_name(), RowSection.BASICS)
-        _, lines = self.line_of_heading(RowSection.REGISTER_COND)
+        await self.press(*[forward_key(keybindings.PatternRows.SECTION)] * len(SECTIONS))
+        self.assertEqual(self.editor.row_name(), RowSection.MUTE_WHEN)
+        _, lines = self.line_of_heading(RowSection.MUTE_WHEN)
         bottom = lines[-1].rstrip()
-        self.assertIn(self.heading_shown(RowSection.REGISTER_COND), lines[-2])
+        self.assertIn(self.heading_shown(RowSection.MUTE_WHEN), lines[-2])
         self.assertEqual(bottom, Box.BOTTOM_LEFT + Box.RULE * (len(bottom) - 2) + Box.BOTTOM_RIGHT)
 
     async def test_the_sections_open_at_the_start_show_their_rows_and_the_rest_show_only_their_headings(self):

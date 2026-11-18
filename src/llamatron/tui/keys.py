@@ -165,7 +165,9 @@ class RowSection:
     CC = 'cc'
     REGISTER_MOD = 'register_mod'
     REGISTER_APPLY = 'register_apply'
-    REGISTER_COND = 'register_cond'
+    STOP_WHEN = 'stop_when'
+    RESTART_WHEN = 'restart_when'
+    MUTE_WHEN = 'mute_when'
 
 
 # The sections open when the program starts, which hold what the first set of rows held before the sections: the rest open as they're wanted and stay open for the session.

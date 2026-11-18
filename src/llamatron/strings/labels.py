@@ -19,7 +19,7 @@ Each constant starts with MSG_, and the classes Crumb and Column group the words
 """
 
 from llamatron.composition.file_format import (
-    CONDITION_ROWS, AtLimit, DriftValue, FollowAction, LiveResponsiveness, NamedProgression, Shape, ShapePart, EuclidPart, NamedRhythm, Restart, Section, StrumDirection, StrumPart, UpstrokeStrings, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, ChordSymbol, Direction, GateModifier, OctaveLabels, RegisterSetting, Row,
+    STATEMENT_ROWS, AtLimit, DriftValue, FollowAction, LiveResponsiveness, NamedProgression, Shape, ShapePart, EuclidPart, NamedRhythm, Restart, Section, StrumDirection, StrumPart, UpstrokeStrings, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, ChordSymbol, Direction, GateModifier, OctaveLabels, RegisterSetting, Row,
     Approach, ChordColor, ScaleKind, ReadyBar, SingleNotes, Stroke, Tuning,
 )
 from llamatron.tui.keys import RowSection
@@ -500,8 +500,8 @@ MSG_REGISTER_NOTE_LABEL = '{name}+Note'
 MSG_REGISTER_VELOCITY_LABEL = '{name}+Vel'
 MSG_REGISTER_ADD_LABEL = '{name}+='
 MSG_REGISTER_SET_LABEL = '{name}='
-# A condition row is labelled by the two registers it compares, like AX,BX.
-MSG_CONDITION_LABEL = 'AX,{name}'
+# A row of a step's statement is labelled by its place among the statement's five parts, c for condition.
+MSG_STATEMENT_ROW_LABEL = 'c{place}'
 # The rows on screen. Degree always shows, and the rest depend on the set of rows showing.
 MSG_ROW_LABELS = {
     Row.DEGREE: 'Degree', Row.GATE: 'Gate', Row.DOT: 'Dot', Row.ACCIDENTAL: '#/b', Row.OCTAVE: 'Octave', Row.CHORD: 'Chord', Row.INVERSION: 'Inversion',
@@ -513,12 +513,13 @@ MSG_ROW_LABELS = {
     **register_labels(rows=REGISTER_VELOCITY_ROWS, label=MSG_REGISTER_VELOCITY_LABEL),
     **register_labels(rows=REGISTER_ADD_ROWS, label=MSG_REGISTER_ADD_LABEL),
     **register_labels(rows=REGISTER_SET_ROWS, label=MSG_REGISTER_SET_LABEL),
-    **register_labels(rows=CONDITION_ROWS, label=MSG_CONDITION_LABEL),
+    **{row: MSG_STATEMENT_ROW_LABEL.format(place=place) for rows in STATEMENT_ROWS.values() for place, row in enumerate(rows, start=1)},
 }
 # The sections of rows under Octave, each a row of the grid: its name after a mark saying whether it's closed (+) or open (-), chosen over triangles, which were hard to tell apart at a distance.
 MSG_SECTION_NAMES = {
     RowSection.BASICS: 'Basics', RowSection.CHORD: 'Chord', RowSection.TIMING: 'Timing', RowSection.ADVANCED: 'Advanced', RowSection.CC: 'CCs',
-    RowSection.REGISTER_MOD: 'Reg. Mod', RowSection.REGISTER_APPLY: 'Reg. Apply', RowSection.REGISTER_COND: 'Reg. Cond',
+    RowSection.REGISTER_MOD: 'Reg. Mod', RowSection.REGISTER_APPLY: 'Reg. Apply', RowSection.STOP_WHEN: 'Stop When',
+    RowSection.RESTART_WHEN: 'Restart When', RowSection.MUTE_WHEN: 'Mute When',
 }
 MSG_SECTION_LABEL = '{mark} {name}'
 # What the second line of the header says while the cursor is in a section with something to explain, in place of the scale.
@@ -527,7 +528,9 @@ MSG_SECTION_HINTS = {
     RowSection.CC: "CCs: the track sets each row's CC number",
     RowSection.REGISTER_MOD: 'Reg. Mod: = sets, then += adds, even on an empty step',
     RowSection.REGISTER_APPLY: 'Reg. Apply: +Note and +Vel add (+) or subtract (-) a register',
-    RowSection.REGISTER_COND: 'Reg. Cond: the note sounds only if every comparison holds',
+    RowSection.STOP_WHEN: 'Stop When: the clip is done at a step whose statement is true',
+    RowSection.RESTART_WHEN: 'Restart When: the pattern starts over at a step whose statement is true',
+    RowSection.MUTE_WHEN: 'Mute When: a step whose statement is true does not sound',
 }
 MSG_SCALE_HEADER = 'Scale {scale}'
 MSG_NO_SCALE_NEEDED = 'no scale needed'

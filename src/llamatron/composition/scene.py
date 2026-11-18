@@ -236,7 +236,7 @@ class Scene(LlamaData):
         return Scene(clip_slots=clip_slots, **self._settings)
 
     def every_clip_loops(self):
-        """Return whether every clip in the scene loops, which would leave the scene with no end."""
+        """Return whether every clip in the scene loops, which would leave the scene with no end, unless a step of a looping clip's pattern can stop the clip, which only the song knows (Song.scene_never_ends)."""
         clip_slots = [self.get_clip_slot(track) for track in self.get_track_names()]
         return bool(clip_slots) and all(clip_slot.loops() for clip_slot in clip_slots)
 
