@@ -26,13 +26,13 @@ The descriptions check and describe. They hold no steps: a pattern's values stay
 which playback reads directly, since it reads every step of every pass.
 """
 
-from llamatron.composition.checks import is_true_or_false, is_whole_number, listed
+from llamatron.composition.checks import is_true_or_false, is_whole_number, is_whole_number_from, listed
 from llamatron.composition.corrections import NO_NEAREST_VALUE
 from llamatron.composition import defaults, limits
 from llamatron.strings import errors
 from llamatron.composition.file_format import (
-    ACCIDENTALS, CC_ROWS, KEYSWITCH_SLOTS, CHORD_SYMBOLS, COMPARISONS, TENSIONS, CONDITION_ROWS, GATE_MODIFIERS, NOTE_LETTERS, PATTERN_ROWS, REGISTER_ADD_ROWS,
-    REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_USES, REGISTER_VELOCITY_ROWS, RegisterUse, Row,
+    ACCIDENTALS, CC_ROWS, KEYSWITCH_SLOTS, CHORD_SYMBOLS, TENSIONS, GATE_MODIFIERS, NOTE_LETTERS, OPERATORS, PATTERN_ROWS, REGISTER_ADD_ROWS, REGISTER_NAMES,
+    REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_USES, REGISTER_VELOCITY_ROWS, RESULT_COMPARISONS, STATEMENT_OF_ROW, RegisterUse, Row, StatementPart,
 )
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.named_scale import scale_type_names
@@ -450,9 +450,40 @@ def register_set_row(name):
     return RowOfNumbers(name=name, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, default=NO_DEFAULT, quiet=True, kept_by_a_rest=True)
 
 
-def condition_row(name):
-    """Return the description of one condition row: how AX has to compare with another register for the step's note to sound, or blank for no comparison. Only a note can be silenced, so a rest can't hold one."""
-    return RowOfChoices(name=name, choices=COMPARISONS, problem=errors.ERR_NOT_COMPARISON.format(choices=listed(COMPARISONS)))
+class RowOfStatementValues(RowDescription):
+    """A row that holds a number or a register's name: what a step's statement about the registers compares with, or reckons with. A rest holds one too."""
+
+    __slots__ = ()
+
+    def __init__(self, *, name):
+        super().__init__(name=name, kept_by_a_rest=True)
+
+    def problem_with(self, value, *, drum):
+        if value in REGISTER_NAMES or is_whole_number_from(value=value, lowest=-limits.MAX_STATEMENT_NUMBER, highest=limits.MAX_STATEMENT_NUMBER):
+            return None
+        return errors.ERR_NOT_STATEMENT_VALUE.format(lowest=-limits.MAX_STATEMENT_NUMBER, highest=limits.MAX_STATEMENT_NUMBER, choices=listed(REGISTER_NAMES))
+
+
+class RowOfStatementChoices(RowOfChoices):
+    """A row that holds one part of a step's statement about the registers chosen from a list: the register, the operator or the comparison of a sum's result. A rest holds one too."""
+
+    __slots__ = ()
+
+    def __init__(self, *, name, choices):
+        super().__init__(name=name, choices=choices, problem=errors.ERR_NOT_STATEMENT_CHOICE.format(choices=listed(choices)))
+        self._kept_by_a_rest = True
+
+
+# What each part of a statement may be, by the part.
+STATEMENT_PART_CHOICES = {StatementPart.REGISTER: REGISTER_NAMES, StatementPart.OPERATOR: OPERATORS, StatementPart.COMPARISON: RESULT_COMPARISONS}
+
+
+def statement_row(name):
+    """Return the description of one row of a step's statements: the row of one part of one kind of statement."""
+    _, part = STATEMENT_OF_ROW[name]
+    if part in STATEMENT_PART_CHOICES:
+        return RowOfStatementChoices(name=name, choices=STATEMENT_PART_CHOICES[part])
+    return RowOfStatementValues(name=name)
 
 
 # Every row of a pattern, described once, in the order a file writes the rows (PATTERN_ROWS).
@@ -480,7 +511,7 @@ ROW_DESCRIPTIONS = described_rows(
     *[RowOfRegisterUses(name=name) for name in REGISTER_VELOCITY_ROWS.values()],
     *[register_change_row(name) for name in REGISTER_ADD_ROWS.values()],
     *[register_set_row(name) for name in REGISTER_SET_ROWS.values()],
-    *[condition_row(name) for name in CONDITION_ROWS.values()],
+    *[statement_row(name) for name in STATEMENT_OF_ROW],
 )
 
 

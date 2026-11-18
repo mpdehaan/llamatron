@@ -220,10 +220,10 @@ class TestLengthsAgreeWithPlaying(unittest.TestCase):
                     with self.subTest(path=path, scene=scene.describe(), track=track):
                         self.assertEqual(renderer.get_clip_length(scene=scene, track=track), length)
                 with self.subTest(path=path, scene=scene.describe()):
-                    self.assertEqual(renderer.get_scene_length(scene), longest_without_looping(scene=scene, played=played))
+                    self.assertEqual(renderer.get_scene_length(scene), longest_without_looping(renderer=renderer, scene=scene, played=played))
 
 
-def longest_without_looping(*, scene, played):
-    """Return the longest of a scene's played clips that doesn't loop, or no length if none."""
-    lengths = [length for track, length in played.items() if not scene.get_clip_slot(track).loops()]
+def longest_without_looping(*, renderer, scene, played):
+    """Return the longest of a scene's played clips that doesn't loop for as long as its scene lasts, or no length if none."""
+    lengths = [length for track, length in played.items() if not renderer.fills_its_scene(scene=scene, track=track)]
     return max(lengths, default=NO_LENGTH)

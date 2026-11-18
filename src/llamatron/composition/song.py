@@ -31,7 +31,7 @@ from llamatron.composition.genres import sensible_style, style_name
 from llamatron.composition.groove import groove_for
 from llamatron.composition.corrections import LEFT_OUT
 from llamatron.composition.setting import Checked, Choice, Length, described, settings_held
-from llamatron.composition.file_format import LIVE_RESPONSIVENESSES, REGISTER_NAMES, sensible_visualizer, GeneratorKind, SceneSetting, Section, SongSetting
+from llamatron.composition.file_format import LIVE_RESPONSIVENESSES, REGISTER_NAMES, sensible_visualizer, GeneratorKind, SceneSetting, Section, SongSetting, StepStatement
 from llamatron.composition.llama_data import LlamaData, data_as_kept, data_built_anew, or_default, own_copy, written_settings
 from llamatron.composition.named_items import NamedItems, moved_in_list
 from llamatron.composition.register import Register
@@ -588,7 +588,14 @@ class Song(LlamaData):
 
     def scenes_that_never_end(self):
         """Return (number, scene) for each scene in which every clip loops."""
-        return [(number, scene) for number, scene in self.numbered_scenes() if scene.every_clip_loops()]
+        return [(number, scene) for number, scene in self.numbered_scenes() if self.scene_never_ends(scene)]
+
+    def scene_never_ends(self, scene):
+        """Return whether every clip of a scene loops and no step of a pattern they play can stop its clip, so that nothing ends the scene."""
+        if not scene.every_clip_loops():
+            return False
+        patterns = [scene.get_clip_slot(track).get_pattern_name() for track in scene.get_track_names()]
+        return not any(self.has_pattern(name) and self.get_pattern(name).has_statements(StepStatement.STOP) for name in patterns)
 
     def track_clip_count(self, name):
         """Return how many scenes a track plays in."""

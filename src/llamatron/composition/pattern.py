@@ -20,10 +20,11 @@ Everything that reads or changes a pattern's steps is here: reading and saving i
 values, editing single values, resizing and rearranging it, and working out what a step plays.
 """
 
+from llamatron.composition.conditions import check_statement, statement_of
 from llamatron.composition.checks import check_keys, is_whole_number, is_whole_number_from, reading, time_signature, written_length
 from llamatron.composition.file_format import (
     ACCIDENTALS, CC_ROWS, DIRECTIONS, PATTERN_ROWS, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, Direction, PatternSetting, Row,
-    CONDITION_ROWS, REGISTER_SET_ROWS,
+    REGISTER_SET_ROWS, STATEMENT_PARTS, STATEMENT_ROWS, STATEMENTS_CUTTING_A_PASS, StepStatement,
 )
 from llamatron.music.note import Note
 from llamatron.support.random_source import random_source
@@ -40,6 +41,9 @@ from llamatron.support.revised import notes_change
 
 # Steps are counted from 1 in messages, as the editor shows them.
 FIRST_STEP_NUMBER = 1
+# The first step, which cannot start the pattern over, since that would take no time, and where a statement's register stands among its rows.
+FIRST_STEP = 0
+REGISTER_PART = 0
 # A pattern's settings besides its steps and rows, each described once, in the order they're written to a file.
 SETTINGS = described(
     Length(name=PatternSetting.STEP_SIZE, most=limits.MAX_STEP_SIZE),
@@ -209,8 +213,28 @@ class Pattern(PatternNotes, LlamaData):
         return self.adds_to_registers() or self.sets_registers()
 
     def uses_registers(self):
-        """Return whether any step reads a register: a row of +Note or +Vel switched on there, or a condition."""
-        return any(self._adds_on(row) for rows in (REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, CONDITION_ROWS) for row in rows.values())
+        """Return whether any step reads a register: a row of +Note or +Vel switched on there, or a statement about the registers."""
+        if any(self._adds_on(row) for rows in (REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS) for row in rows.values()):
+            return True
+        return any(self.has_statements(kind) for kind in STATEMENT_ROWS)
+
+    def has_statements(self, kind):
+        """Return whether any step holds a statement of a kind about the registers: one that stops the clip, starts the pattern over or mutes the step."""
+        return any(self._rows[STATEMENT_ROWS[kind][REGISTER_PART]] or [])
+
+    def cuts_passes_short(self):
+        """Return whether any step can stop the clip or start the pattern over, so that how long a pass lasts is known only as it plays."""
+        return any(self.has_statements(kind) for kind in STATEMENTS_CUTTING_A_PASS)
+
+    def get_statement(self, *, kind, step):
+        """Return the statement of a kind a step holds, as a file writes one on a clip, or None when the step holds none or holds parts that make no statement."""
+        return statement_of([self.get_value(row=row, step=step) for row in STATEMENT_ROWS[kind]])
+
+    def get_statements(self, kind):
+        """Return every step's statement of a kind, None where a step holds none, or None when no step holds one."""
+        if not self.has_statements(kind):
+            return None
+        return [self.get_statement(kind=kind, step=step) for step in range(self._steps)]
 
     def sends_keyswitches(self):
         """Return whether any step names a keyswitch slot."""
@@ -310,6 +334,22 @@ class Pattern(PatternNotes, LlamaData):
         if self._rows[row] is None:
             self._rows[row] = _blank_row(row=row, steps=self._steps)
         self._rows[row][step] = value
+
+    @notes_change
+    def set_statement(self, *, kind, step, statement):
+        """Give a step a statement of a kind about the registers, written across the kind's five rows, or None to take the step's away."""
+        self._check_step(step)
+        if statement is not None:
+            check_statement(name=kind, statement=statement)
+            if kind == StepStatement.RESTART and step == FIRST_STEP:
+                raise InvalidValue(errors.ERR_RESTART_ON_FIRST_STEP)
+        for row, part in zip(STATEMENT_ROWS[kind], STATEMENT_PARTS):
+            value = None if statement is None else statement.get(part)
+            if value is None and self._rows[row] is None:
+                continue
+            if self._rows[row] is None:
+                self._rows[row] = _blank_row(row=row, steps=self._steps)
+            self._rows[row][step] = value
 
     @notes_change
     def clear_sound(self, step):

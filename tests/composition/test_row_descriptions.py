@@ -27,14 +27,14 @@ from llamatron.composition.corrections import NO_NEAREST_VALUE
 from llamatron.composition import defaults, limits
 from llamatron.strings import errors, labels
 from llamatron.composition.file_format import (
-    ACCIDENTAL_CYCLE, CC_ROWS, CHORD_SYMBOLS, KEYSWITCH_SLOTS, PATTERN_ROWS, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, Accidental,
+    ACCIDENTAL_CYCLE, CC_ROWS, CHORD_SYMBOLS, KEYSWITCH_SLOTS, PATTERN_ROWS, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, STATEMENT_OF_ROW, Accidental,
     ChordSymbol, GateModifier, PatternSetting, RegisterName, RegisterUse, Row, Section, Tension,
 )
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.pattern import NOTE_ROWS, REST_ROWS
 from llamatron.composition.row_descriptions import (
     ROW_DESCRIPTIONS, RowOfChoices, RowOfChords, RowOfDegrees, RowOfLengths, RowOfNoteMoves, RowOfNumbers, RowOfOctaves, RowOfRegisterUses, RowOfTensions, RowOfKeyswitches,
-    RowOfToggles,
+    RowOfStatementValues, RowOfToggles,
     is_note_letter, row_described, rows_where,
 )
 from llamatron.composition.setlist import Setlist
@@ -93,6 +93,8 @@ def a_value_of(row, *, drum=False):
         return (KEYSWITCH_SLOTS[-1],)
     if isinstance(described, RowOfChoices):
         return described.get_choices()[0]
+    if isinstance(described, RowOfStatementValues):
+        return limits.MAX_STATEMENT_NUMBER
     if isinstance(described, RowOfLengths):
         return QUARTER
     if isinstance(described, RowOfDegrees):
@@ -354,9 +356,9 @@ class TestEveryRowIsDescribedOnce(unittest.TestCase):
         self.assertEqual(numbers, set(rows_of(RowOfNumbers)))
 
     def test_what_a_rest_keeps_and_what_changes_with_drums_come_from_the_descriptions(self):
-        # A rest can hold every register row that changes or uses a register, so erasing a note keeps +Note and +Vel with = and +=; a condition only silences a note, so it goes with the note.
+        # A rest can hold every register row that changes or uses a register, so erasing a note keeps +Note and +Vel with = and +=, and a step's statements, which a step with no note can hold.
         register_rows = {*REGISTER_NOTE_ROWS.values(), *REGISTER_VELOCITY_ROWS.values(), *REGISTER_ADD_ROWS.values(), *REGISTER_SET_ROWS.values()}
-        self.assertEqual(set(REST_ROWS), {*CC_ROWS, Row.SLIDE, *register_rows})
+        self.assertEqual(set(REST_ROWS), {*CC_ROWS, Row.SLIDE, *register_rows, *STATEMENT_OF_ROW})
         self.assertEqual(set(NOTE_ROWS), {Row.DEGREE, Row.ACCIDENTAL, Row.CHORD, Row.INVERSION, Row.TENSION, Row.CHORD_SCALE, *REGISTER_NOTE_ROWS.values()})
         self.assertEqual(set(rows_where(lambda row: not row.is_in_drum_patterns())), {Row.CHORD, Row.INVERSION, Row.TENSION, Row.CHORD_SCALE, *REGISTER_NOTE_ROWS.values()})
 

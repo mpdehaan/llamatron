@@ -25,14 +25,13 @@ each is headed by a row (SectionRow) that Space or Enter opens or closes, PgUp a
 PgDn jump between the headings, and which sections are open is kept on the app for the session.
 """
 
-from llamatron.composition.file_format import CC_ROWS, CONDITION_ROWS, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, Row
+from llamatron.composition.file_format import CC_ROWS, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, STATEMENT_OF_ROW, STATEMENT_ROWS, Row, StepStatement
 from llamatron.composition.row_descriptions import ROW_DESCRIPTIONS
 from llamatron.tui.components.accidental_row import AccidentalRow
 from llamatron.tui.components.add_row import AddRow
 from llamatron.tui.components.cc_row import CcRow
 from llamatron.tui.components.chord_row import ChordRow
 from llamatron.tui.components.chord_scale_row import ChordScaleRow
-from llamatron.tui.components.condition_row import ConditionRow
 from llamatron.tui.components.degree_row import DegreeRow, GAUGE_ROWS_WITHOUT_SCALE
 from llamatron.tui.components.dot_row import DotRow
 from llamatron.tui.components.inversion_row import InversionRow
@@ -45,6 +44,7 @@ from llamatron.tui.components.register_row import RegisterRow
 from llamatron.tui.components.section_row import SectionRow
 from llamatron.tui.components.set_row import SetRow
 from llamatron.tui.components.slide_row import SlideRow
+from llamatron.tui.components.statement_row import StatementRow
 from llamatron.tui.components.tension_row import TensionRow
 from llamatron.tui.components.keyswitch_row import KeyswitchRow
 from llamatron.tui.components.tie_row import TieRow
@@ -62,10 +62,13 @@ SECTIONS = {
     RowSection.TIMING: [Row.TIE, Row.GATE, Row.DOT, Row.GLIDE],
     RowSection.ADVANCED: [Row.PROBABILITY, Row.RATCHET, Row.RATCHET_OFFSET, Row.GRAB],
     RowSection.CC: [*CC_ROWS, Row.SLIDE],
-    # The register sections read in the order a step works them out: sets, then adds, then the uses, then the conditions.
+    # The register sections read in the order a step works them out: sets, then adds, then the uses.
     RowSection.REGISTER_MOD: [*REGISTER_SET_ROWS.values(), *REGISTER_ADD_ROWS.values()],
     RowSection.REGISTER_APPLY: [*REGISTER_NOTE_ROWS.values(), *REGISTER_VELOCITY_ROWS.values()],
-    RowSection.REGISTER_COND: [*CONDITION_ROWS.values()],
+    # A step's statements, in the order a step reads them.
+    RowSection.STOP_WHEN: [*STATEMENT_ROWS[StepStatement.STOP]],
+    RowSection.RESTART_WHEN: [*STATEMENT_ROWS[StepStatement.RESTART]],
+    RowSection.MUTE_WHEN: [*STATEMENT_ROWS[StepStatement.MUTE]],
 }
 # The component that draws and edits each row.
 ROW_CLASSES = {
@@ -77,7 +80,7 @@ ROW_CLASSES = {
     **dict.fromkeys(REGISTER_VELOCITY_ROWS.values(), RegisterRow),
     **dict.fromkeys(REGISTER_ADD_ROWS.values(), AddRow),
     **dict.fromkeys(REGISTER_SET_ROWS.values(), SetRow),
-    **dict.fromkeys(CONDITION_ROWS.values(), ConditionRow),
+    **dict.fromkeys(STATEMENT_OF_ROW, StatementRow),
 }
 # The arrows that move the cursor along the steps; the others move it between rows.
 STEP_ARROWS = (Key.LEFT, Key.RIGHT)

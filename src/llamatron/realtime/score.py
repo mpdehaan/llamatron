@@ -106,7 +106,8 @@ class Score:
             for track in self._tracks:
                 self._events[(index, track)] = []
                 clip_slot = scene.get_clip_slot(track) if scene.has_clip_slot(track) else None
-                self._loops[(index, track)] = clip_slot is not None and clip_slot.loops()
+                # A looping clip that a step of its pattern can stop is a clip that ends, as an export has it.
+                self._loops[(index, track)] = clip_slot is not None and renderer.fills_its_scene(scene=scene, track=track)
                 # An empty slot is done when its scene is done and counts as "With Scene", so the track below starts as the export has it start.
                 self._follow_actions[(index, track)] = FollowAction.WITH_SCENE if clip_slot is None else setlist.follow_action_of(clip_slot)
                 self._repeats[(index, track)] = None if clip_slot is None or clip_slot.loops() else clip_slot.get_repeat()

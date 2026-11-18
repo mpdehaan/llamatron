@@ -16,18 +16,18 @@
 
 """Playing one pass through a pattern, step by step, into notes, chords and rests."""
 
-import operator
 from dataclasses import dataclass, field
 from typing import NamedTuple
 
 from llamatron.support.length import ZERO, Length
 from llamatron.support.rational import Rational
 from llamatron.composition.checks import written_length
+from llamatron.composition.conditions import is_true
 from llamatron.composition import defaults, limits
 from llamatron.strings import errors
 from llamatron.composition.file_format import (
-    ACCIDENTALS, CC_ROWS, CONDITION_ROWS, FIXED_CHORDS, TENSIONS, GATE_MODIFIERS, PATTERN_ROWS, REGISTER_ADD_ROWS,
-    REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, SCALE_CHORDS, TESTED_REGISTER, Comparison, Row,
+    ACCIDENTALS, CC_ROWS, FIXED_CHORDS, TENSIONS, GATE_MODIFIERS, PATTERN_ROWS, REGISTER_ADD_ROWS,
+    REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, SCALE_CHORDS, STATEMENT_OF_ROW, Row, StepStatement,
 )
 from llamatron.composition.named_scale import NamedScale
 from llamatron.playback.drift import NO_EFFECTS
@@ -50,6 +50,10 @@ NO_HALF_STEPS = 0
 PATTERN_STEPS = 'steps'
 # What registers add to a note or velocity when a step uses none of them.
 NOTHING_ADDED = 0
+# The start of a pass.
+NO_TIME = 0
+# The rows whose values a step plays from. A step's statements are gathered apart, whole, only where a pattern holds any.
+PLAYED_ROWS = [row for row in PATTERN_ROWS if row not in STATEMENT_OF_ROW]
 # Where what a step sounds keeps when it starts in the pass, before its pieces.
 START = 0
 # What a gate is multiplied by when its step is dotted or a triplet, as pairs, since every such step asks.
@@ -70,6 +74,8 @@ class Pass:
     length: Rational
     # The keyswitch slots its steps' notes are played with, SwitchedSlots in time order, which no morph or generator touches.
     keyswitches: list = field(default_factory=list)
+    # Whether a step's statement ended the clip during the pass, which then lasts only as far as it played, as a pass a step started over does.
+    done: bool = False
 class PlayedPattern(NamedTuple):
     """What playing needs to know of a pattern, gathered once for a clip: every step's values, and what no step of it does.
 
@@ -82,13 +88,15 @@ class PlayedPattern(NamedTuple):
     sends_keyswitches: bool
     changes_registers: bool
     uses_registers: bool
+    # Each step's statement about the registers that stops the clip, that starts the pattern over and that mutes the step, or None where no step holds one.
+    stops: object
+    restarts: object
+    mutes: object
 
 
 # What a step sets the registers to and adds to them when its pattern changes none, or when a morph's target plays.
 NO_ADDS = {}
 NO_SETS = {}
-# Whether AX compared with another register holds, for each comparison a condition row can make.
-COMPARED = {Comparison.LESS: operator.lt, Comparison.MORE: operator.gt, Comparison.SAME: operator.eq}
 
 
 class PatternPlayer:
@@ -123,8 +131,9 @@ class PatternPlayer:
         """Return a pattern's PlayedPattern, gathered the first time the pattern plays."""
         if pattern_name not in self._played_patterns:
             self._played_patterns[pattern_name] = PlayedPattern(
-                pattern.get_every_step_values(rows=PATTERN_ROWS), pattern.sends_controls(), pattern.sends_keyswitches(),
+                pattern.get_every_step_values(rows=PLAYED_ROWS), pattern.sends_controls(), pattern.sends_keyswitches(),
                 pattern.changes_registers(), pattern.uses_registers(),
+                pattern.get_statements(StepStatement.STOP), pattern.get_statements(StepStatement.RESTART), pattern.get_statements(StepStatement.MUTE),
             )
         return self._played_patterns[pattern_name]
 
@@ -190,7 +199,24 @@ class PatternPlayer:
         counting = registers.is_counting()
         drum = pattern.is_drum()
         steps = order.next_steps(key=(PATTERN_STEPS, pattern_name), count=pattern.get_steps(), direction=direction or pattern.get_direction())
+        # A morph's target neither changes the registers nor is cut short by them: only the clip's own pattern decides.
+        stops = played.stops if changes_registers else None
+        restarts = played.restarts if changes_registers else None
+        mutes = None if counting else played.mutes
+        # Where a step's statement cut the pass short, if one did, and whether it ended the clip or only started the pattern over.
+        cut_at = None
+        done = False
         for slot, step in enumerate(steps):
+            # A step's statements are read first of all, before the step changes anything, in the order stop, restart, mute.
+            if stops is not None and stops[step] is not None and _holds(statement=stops[step], values=registers.before_step(start + slot * step_size)):
+                cut_at = slot
+                done = True
+                break
+            # The first step played never starts the pattern over, which would take no time.
+            if restarts is not None and slot and restarts[step] is not None and _holds(statement=restarts[step], values=registers.before_step(start + slot * step_size)):
+                cut_at = slot
+                break
+            muted = mutes is not None and mutes[step] is not None and _holds(statement=mutes[step], values=registers.before_step(start + slot * step_size))
             time = Length.times(step_length, slot)
             values = played.values[step]
             # A step with no note can send CC values and add to the registers too.
@@ -217,12 +243,11 @@ class PatternPlayer:
             note_moved = NOTHING_ADDED
             velocity_added = NOTHING_ADDED
             velocity = values[Row.VELOCITY]
-            heard = True
+            heard = not muted
             if uses_registers:
                 # Drum patterns have no scale to move a note along, so registers only change their velocity.
                 note_moved = NOTHING_ADDED if drum else _used_values(values=values, current=current, rows=REGISTER_NOTE_ROWS)
                 velocity_added = _used_values(values=values, current=current, rows=REGISTER_VELOCITY_ROWS)
-                heard = counting or _conditions_hold(values=values, current=current)
             if velocity is None and self._velocity_register is not None:
                 velocity = current[self._velocity_register]
             effects = NO_EFFECTS
@@ -243,6 +268,8 @@ class PatternPlayer:
                 velocity_added=velocity_added, heard=heard, counting=counting, effects=effects,
             )))
         clip = Clip(sounds=_in_sequence(sounding=sounding, length=pass_length, step_length=step_length), scale=self._scale, controls=controls)
+        if cut_at is not None:
+            return _cut_short(clip=clip, end=cut_at * step_size, tied_from_before=leading_ties * step_size, keyswitches=keyswitches, done=done)
         return Pass(clip=clip, tied_from_before=leading_ties * step_size, length=length, keyswitches=keyswitches)
 
     def pattern_length(self, pattern):
@@ -451,6 +478,22 @@ def _gate(*, values, step_length):
     return gate if modifier is None else Length.multiplied(gate, GATE_MODIFIER_PAIRS[modifier])
 
 
+def _holds(*, statement, values):
+    """Return whether a step's statement holds for the registers' values as the step is reached, which is never while they are not known."""
+    return values is not None and is_true(statement=statement, values=values)
+
+
+def _cut_short(*, clip, end, tied_from_before, keyswitches, done):
+    """Return the pass a step's statement cut short at a time in the pass: what it played before then, a note still sounding cut there. done says the clip ended, rather than the pattern starting over."""
+    if end <= NO_TIME:
+        return Pass(clip=Clip(sounds=[], scale=clip.get_scale()), tied_from_before=NO_TIME, length=NO_TIME, done=done)
+    cut = clip.section(start=NO_TIME, end=end)
+    controls = [control for control in clip.get_controls() if control.get_time() < end]
+    kept = Clip(sounds=cut.get_sounds(), scale=clip.get_scale(), controls=controls)
+    switches = [slots.ending(min(slots.end, end)) for slots in keyswitches if slots.start < end]
+    return Pass(clip=kept, tied_from_before=min(tied_from_before, end), length=end, keyswitches=switches, done=done)
+
+
 def _in_sequence(*, sounding, length, step_length):
     """Return the notes of a pass as a clip's sequence of sounds, from what each step that plays sounds.
 
@@ -512,13 +555,6 @@ def _register_adds(values):
 def _register_sets(values):
     """Return what a step sets each register to, by register name, for each register it sets."""
     return {name: values[row] for name, row in REGISTER_SET_ROWS.items() if values[row] is not None}
-
-
-def _conditions_hold(*, values, current):
-    """Return whether every condition a step has holds, comparing AX with each other register a condition row names: all of them, as people read several conditions."""
-    return all(
-        COMPARED[values[row]](current[TESTED_REGISTER], current[name]) for name, row in CONDITION_ROWS.items() if values[row] is not None
-    )
 
 
 def _used_values(*, values, current, rows):

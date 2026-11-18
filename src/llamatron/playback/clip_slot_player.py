@@ -27,6 +27,7 @@ from llamatron.playback.morph_controls import morph_controls
 from llamatron.playback.pattern_player import PatternPlayer
 from llamatron.playback.step_order import StepOrder
 from llamatron.support.random_source import random_source
+from llamatron.composition import limits
 from llamatron.composition.conditions import any_true
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, Shape, TrackSetting
 from llamatron.composition.generator_settings import GENERATOR_SETTINGS
@@ -99,7 +100,8 @@ class ClipSlotPlayer:
         hearing = None if not drifts or registers.is_counting() else (self._renderer.get_drifts(), drifts, self._renderer.scene_start(scene), origins)
         player = PatternPlayer(song=self._song, scene=scene, scale=scale, track=self._track, scale_name=self._scale_name(), drifts=hearing)
         grab = self._renderer.get_grab_source(scene=scene, track=self._track_name) if grabbing else None
-        loop = clip_slot.loops()
+        # A looping clip that a step of its pattern can stop is never cut to its scene nor made to fill it: it lasts until the step's statement holds.
+        loop = self._renderer.fills_its_scene(scene=scene, track=self._track_name)
         fill = self._renderer.get_scene_length(scene) if loop else None
         try:
             clip, switched, passes = self._play_passes(player=player, grab=grab, scale=scale, where=where, fill=fill, registers=registers)
@@ -294,12 +296,14 @@ class ClipSlotPlayer:
         order = StepOrder(random_source(self._seed_for(DIRECTION_SEED)))
         target_order = StepOrder(random_source(self._seed_for(MORPH_DIRECTION_SEED)))
         repeat = self._clip_slot.get_repeat()
+        # A looping clip that a step of its pattern can stop plays until the step's statement holds, giving up after the most passes a clip can repeat.
+        most = limits.MAX_CLIP_REPEAT if fill is None and self._clip_slot.loops() else repeat
         sounds = []
         controls = []
         switched = []
         total = Rational(0)
         place = 0
-        while (place < repeat) if fill is None else (total < fill):
+        while (place < most) if fill is None else (total < fill):
             values = registers.at_pass(time=total, sets=sets if place == FIRST_PASS else NO_SETS, adds=adds)
             played = self._play_pass(player=player, grab=grab, scale=scale, place=place % repeat, repeat=repeat, where=where, rolls=rolls, order=order, target_order=target_order, registers=registers, start=total)
             length = played.length
@@ -321,6 +325,8 @@ class ClipSlotPlayer:
             switched += [slots.moved_by(total) for slots in played.keyswitches]
             total += length
             place += 1
+            if played.done:
+                break
         clip = Clip(sounds=sounds, scale=scale, controls=controls)
         return (clip.section(start=NO_LENGTH, end=fill) if fill else clip), switched, passes
 
@@ -346,7 +352,8 @@ class ClipSlotPlayer:
         played = player.play_pass(pattern_name=clip_slot.get_pattern_name(), grab=grab, direction=clip_slot.get_direction(), where=where, rolls=rolls, order=order, registers=registers, start=start)
         clip = played.clip
         morph_to = clip_slot.get_morph_target()
-        if morph_to is None or not clip.has_positions():
+        # A pass a step's statement cut short is left as it played, with no morph over the part it never reached.
+        if morph_to is None or played.length != player.pattern_length(self._song.get_pattern(clip_slot.get_pattern_name())) or not clip.has_positions():
             return played
         target = player.play_pass(pattern_name=morph_to, grab=None, direction=clip_slot.get_direction(), where=where, rolls=rolls, order=target_order, registers=registers, start=start, changes_registers=False).clip
         amount = Rational(place, repeat - 1) * FULL_MORPH

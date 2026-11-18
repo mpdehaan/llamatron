@@ -265,10 +265,23 @@ class Row:
     BX_SET = 'bx_set'
     CX_SET = 'cx_set'
     DX_SET = 'dx_set'
-    # How AX has to compare with each other register for the step's note to sound, or blank for no comparison.
-    AX_BX = 'ax_bx'
-    AX_CX = 'ax_cx'
-    AX_DX = 'ax_dx'
+    # A step's statements about the registers, one of each kind, each written across five rows: the register, the operator,
+    # a number or a register, and after a sum the comparison of the result and what it is compared with.
+    STOP_C1 = 'stop_c1'
+    STOP_C2 = 'stop_c2'
+    STOP_C3 = 'stop_c3'
+    STOP_C4 = 'stop_c4'
+    STOP_C5 = 'stop_c5'
+    RESTART_C1 = 'restart_c1'
+    RESTART_C2 = 'restart_c2'
+    RESTART_C3 = 'restart_c3'
+    RESTART_C4 = 'restart_c4'
+    RESTART_C5 = 'restart_c5'
+    MUTE_C1 = 'mute_c1'
+    MUTE_C2 = 'mute_c2'
+    MUTE_C3 = 'mute_c3'
+    MUTE_C4 = 'mute_c4'
+    MUTE_C5 = 'mute_c5'
 
 
 class ClipSlotSetting:
@@ -372,18 +385,6 @@ class RegisterUse:
 
 # The uses a key cycles through on a +Note or +Vel row, after off: add, then subtract.
 REGISTER_USES = [RegisterUse.ADD, RegisterUse.SUBTRACT]
-
-
-class Comparison:
-    """How AX has to compare with another register on a condition row for the step's note to sound: less, more or the same."""
-
-    LESS = '<'
-    MORE = '>'
-    SAME = '='
-
-
-# The comparisons a key cycles through on a condition row, after blank.
-COMPARISONS = [Comparison.LESS, Comparison.MORE, Comparison.SAME]
 
 
 class StatementPart:
@@ -658,16 +659,37 @@ REGISTER_ADD_ROWS = {
 REGISTER_SET_ROWS = {
     RegisterName.AX: Row.AX_SET, RegisterName.BX: Row.BX_SET, RegisterName.CX: Row.CX_SET, RegisterName.DX: Row.DX_SET,
 }
-# The register a condition row tests, and the condition row comparing it with each of the others.
-TESTED_REGISTER = RegisterName.AX
-CONDITION_ROWS = {RegisterName.BX: Row.AX_BX, RegisterName.CX: Row.AX_CX, RegisterName.DX: Row.AX_DX}
+
+
+class StepStatement:
+    """The kinds of statement about the registers a step of a pattern can hold, each read as the step is reached, in this order."""
+
+    # The clip is done, as if every repeat had been played.
+    STOP = 'stop'
+    # The pattern starts over from its first step, which uses one repeat.
+    RESTART = 'restart'
+    # The step does not sound, and still changes the registers.
+    MUTE = 'mute'
+
+
+# The parts of a statement in the order they are written and read, and the five rows that hold each kind of statement, a row for each part.
+STATEMENT_PARTS = (StatementPart.REGISTER, StatementPart.OPERATOR, StatementPart.VALUE, StatementPart.COMPARISON, StatementPart.AGAINST)
+STATEMENT_ROWS = {
+    StepStatement.STOP: (Row.STOP_C1, Row.STOP_C2, Row.STOP_C3, Row.STOP_C4, Row.STOP_C5),
+    StepStatement.RESTART: (Row.RESTART_C1, Row.RESTART_C2, Row.RESTART_C3, Row.RESTART_C4, Row.RESTART_C5),
+    StepStatement.MUTE: (Row.MUTE_C1, Row.MUTE_C2, Row.MUTE_C3, Row.MUTE_C4, Row.MUTE_C5),
+}
+# The kind of statement and the part each such row holds.
+STATEMENT_OF_ROW = {row: (kind, part) for kind, rows in STATEMENT_ROWS.items() for row, part in zip(rows, STATEMENT_PARTS)}
+# The kinds that change how long a pass lasts, so that what the clip plays and changes is known only by playing it with the registers.
+STATEMENTS_CUTTING_A_PASS = (StepStatement.STOP, StepStatement.RESTART)
 
 PATTERN_ROWS = [
     Row.DEGREE, Row.GATE, Row.DOT, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.INVERSION, Row.TENSION, Row.CHORD_SCALE, Row.VELOCITY, Row.PROBABILITY, Row.GLIDE,
     Row.TIE, Row.RATCHET, Row.RATCHET_OFFSET, Row.GRAB, Row.KEYSWITCH,
     Row.CC1, Row.CC2, Row.CC3, Row.CC4, Row.SLIDE,
     *REGISTER_NOTE_ROWS.values(), *REGISTER_VELOCITY_ROWS.values(), *REGISTER_ADD_ROWS.values(),
-    *REGISTER_SET_ROWS.values(), *CONDITION_ROWS.values(),
+    *REGISTER_SET_ROWS.values(), *STATEMENT_OF_ROW,
 ]
 # A pattern's CC lanes, whose numbers each track sets for itself.
 CC_ROWS = (Row.CC1, Row.CC2, Row.CC3, Row.CC4)

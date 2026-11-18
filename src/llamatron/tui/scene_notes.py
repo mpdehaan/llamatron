@@ -32,7 +32,7 @@ numbered in the scene's scale, with the bass after a slash when it isn't the roo
 from typing import NamedTuple
 
 from llamatron.composition.file_format import (
-    CONDITION_ROWS, FIXED_CHORDS, REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, Accidental, ChordSymbol, ClipSlotSetting, Quality, SceneSetting, Section,
+    FIXED_CHORDS, REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, STATEMENT_OF_ROW, Accidental, ChordSymbol, ClipSlotSetting, Quality, SceneSetting, Section,
     SongSetting, TrackSetting,
 )
 from llamatron.composition.euclid import euclid_settings
@@ -54,7 +54,7 @@ LETTERS = 'CDEFGAB'
 ROMAN_NUMERALS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
 # The pattern rows a written view takes out: the steps' probability and every row that reads a register.
 PROBABILITY_ROW = 'probability'
-READING_ROWS = [*REGISTER_NOTE_ROWS.values(), *REGISTER_VELOCITY_ROWS.values(), *CONDITION_ROWS.values()]
+READING_ROWS = [*REGISTER_NOTE_ROWS.values(), *REGISTER_VELOCITY_ROWS.values(), *STATEMENT_OF_ROW]
 # A chord's root, its third and its fifth, as half steps, which say its quality.
 MINOR_THIRD = 3
 MAJOR_THIRD = 4

@@ -185,7 +185,8 @@ class ClipPage(FieldPage):
     def set_loop(self, loops):
         """Make the clip loop or play its repeats, and say so when that leaves every clip of the scene looping, since such a scene never ends."""
         self.set_value(setting=ClipSlotSetting.LOOP, value=True if loops else None)
-        if self.document().song().get_scenes()[self.index].every_clip_loops():
+        song = self.document().song()
+        if song.scene_never_ends(song.get_scenes()[self.index]):
             self.tell(errors.ERR_LOOP_SCENES_TITLE, *loop_error_lines(self.document().song()))
 
     def morph_style(self):
@@ -243,7 +244,7 @@ class ClipPage(FieldPage):
         )
 
     def register_sections(self):
-        """Return the clip's sections about the registers: what it sets them to as it launches, what it adds every time its pattern starts over, and the statements that bypass its generators and that make it sit out."""
+        """Return the clip's sections about the registers: what it sets them to as it launches, what it adds every time its pattern starts over, and the statements that bypass its generators, and that make it sit out."""
         clip_slot = self.clip_slot()
         document = self.document()
         tables = ((labels_text.MSG_BYPASS_WHEN_LABEL, FIRST_TABLE, ClipSlotSetting.BYPASS_WHEN), (labels_text.MSG_SKIP_WHEN_LABEL, SECOND_TABLE, ClipSlotSetting.SKIP_WHEN))

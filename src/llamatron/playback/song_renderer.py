@@ -25,7 +25,7 @@ from llamatron.exporters.timing import timed_events
 from llamatron.grid.handed_note import HandedNote
 from llamatron.grid.nudge_plan import MovingRow, NudgePlan, amount_moved
 from llamatron.support.rational import Rational
-from llamatron.composition.file_format import REGISTER_NAMES, GeneratorKind, Restart, Section
+from llamatron.composition.file_format import REGISTER_NAMES, GeneratorKind, Restart, Section, StepStatement
 from llamatron.generators.base import Continuation
 from llamatron.generators.follow_chords import FollowChords
 from llamatron.generators.musician import Surroundings
@@ -38,7 +38,7 @@ from llamatron.playback.drift import DriftPlay, drifts_named
 from llamatron.playback.pattern_player import check_pattern_has_a_scale
 from llamatron.playback.grab_source import GrabSource
 from llamatron.playback.tune_source import TuneSource
-from llamatron.playback.registers import RegisterChange, RegisterReader, RegisterRecorder, RegisterTimeline, scene_change, starting_values, with_resets
+from llamatron.playback.registers import RegisterChange, RegisterReader, RegisterRecorder, RegisterSolo, RegisterTimeline, RegisterTrial, scene_change, starting_values, with_resets
 from llamatron.playback.written_scene import WrittenScene
 from llamatron.grid.clip_grid import ClipGrid
 from llamatron.grid.clip_row import ClipRow
@@ -69,6 +69,11 @@ SECONDS_PER_MINUTE = 60
 QUARTER_NOTES_PER_WHOLE_NOTE = 4
 # A drift's register adds come before every track's at the same moment, from a place before the first track's.
 DRIFT_PLACE = -1
+# The seed of the random values a register draws while a scene's first guess is played, which the plays after it replace.
+GUESS_SEED = 0
+# Where a pattern's two answers about cutting stand: whether a step can cut a pass short, and whether one can stop the clip.
+CUTS = 0
+STOPS = 1
 # How long a scene with nothing in it lasts, and where a clip starts in its scene.
 NO_LENGTH = Rational(0)
 START = Rational(0)
@@ -109,7 +114,7 @@ class SongRenderer:
     lane wins.
     """
 
-    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources')
+    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing')
 
     def __init__(self, song, *, seed=None, looping_scenes_go_round=False):
         """Render a song, with a seed in place of the song's own if one is given, so that any render can be repeated.
@@ -147,6 +152,12 @@ class SongRenderer:
         self._following = []
         self._chord_sources = {}
         self._tune_sources = {}
+        # How long each clip that the registers can cut short lasts, by written scene and track, found by playing, and the registers each such scene's clips read while it is still being found.
+        self._decided = {}
+        self._guesses = {}
+        # What is asked once for the render: of each pattern, whether a step can cut a pass short, and of each written scene, whether any of its clips plays such a pattern.
+        self._cutting = {}
+        self._settled_by_playing = {}
 
     def instrument_of(self, track):
         """Return a track's instrument, or None when it has none."""
@@ -374,6 +385,8 @@ class SongRenderer:
         finished clip can read them, which is why this pass comes first.
         """
         key = (scene.get_number(), track)
+        if key not in self._counted and self._cuts_passes(scene=scene, track=track):
+            return self._decided_clip(scene=scene, track=track)
         if key not in self._counted:
             recorder = RegisterRecorder(self._track_place(track))
             clip = ClipSlotPlayer(renderer=self, song=self._song, scene=scene, track_name=track).play(grabbing=False, registers=recorder)
@@ -398,15 +411,116 @@ class SongRenderer:
             if number not in self._timelines:
                 start = with_resets(values=values, registers=self._registers, names=self._resets_of(written))
                 try:
-                    self._timelines[number] = RegisterTimeline(
-                        registers=self._registers, start=start, changes=self._scene_changes(written), chooser=self._register_chooser,
-                    )
+                    if self._is_settled_by_playing(written):
+                        self._timelines[number] = self._decide(scene=written, start=start)
+                    else:
+                        self._timelines[number] = RegisterTimeline(
+                            registers=self._registers, start=start, changes=self._scene_changes(written), chooser=self._register_chooser,
+                        )
                 except SongFileError:
                     if written is scene:
                         raise
                     continue
             values = self._timelines[number].end_values()
         return self._timelines[scene.get_number()]
+
+    def _cutting_of(self, name):
+        """Return whether a step of a pattern can cut a pass short, and whether one can stop its clip, asked of the pattern once for the render."""
+        if name not in self._cutting:
+            pattern = self._song.get_pattern(name)
+            self._cutting[name] = (pattern.cuts_passes_short(), pattern.has_statements(StepStatement.STOP))
+        return self._cutting[name]
+
+    def _cuts_passes(self, *, scene, track):
+        """Return whether a step of the pattern a track's clip plays in a scene can stop the clip or start the pattern over, so that the clip is played with the registers to find what it does."""
+        return self._cutting_of(scene.get_clip_slot(track).get_pattern_name())[CUTS]
+
+    def fills_its_scene(self, *, scene, track):
+        """Return whether a track's clip in a scene loops for as long as the scene lasts: a looping clip that no step of its pattern can stop."""
+        clip_slot = scene.get_clip_slot(track)
+        return clip_slot.loops() and not self._cutting_of(clip_slot.get_pattern_name())[STOPS]
+
+    def _is_settled_by_playing(self, scene):
+        """Return whether any clip of a scene can be cut short by the registers, so that the scene's length and its registers are found together, by playing. Asked once for each play of a scene."""
+        number = scene.get_number()
+        if number not in self._settled_by_playing:
+            self._settled_by_playing[number] = any(self._cuts_passes(scene=scene, track=track) for track in scene.get_track_names())
+        return self._settled_by_playing[number]
+
+    def _decide(self, *, scene, start):
+        """Return the register values through a scene in which a step's statement can stop a clip or start a pattern over, finding how long its clips and the scene last.
+
+        What such a clip changes in the registers depends on the registers, since a step it
+        never reaches changes nothing, so its changes cannot be counted before anything reads
+        them. Each such clip is first played as if no other track changed a register
+        (RegisterSolo), which is right already when one track does the counting. The scene's
+        timeline is made from what every clip then changes, the clips are played again reading
+        it (RegisterTrial), and so on until a play changes what the timeline was made from in
+        no way. It always comes to that: the values at any moment depend only on the changes
+        before it, so each play is right for longer than the one before.
+        """
+        number = scene.get_number()
+        every = scene.get_track_names()
+        cut = [track for track in every if self._cuts_passes(scene=scene, track=track)]
+        # The clips whose own length the registers decide, and the looping ones that fill the scene whatever length it comes to.
+        ending = [track for track in cut if not self.fills_its_scene(scene=scene, track=track)]
+        filling = [track for track in cut if track not in ending]
+        fixed = [self._played_once(scene=scene, track=track) for track in every if track not in cut and not scene.get_clip_slot(track).loops()]
+        if not ending and not fixed:
+            # Nothing in the scene ends: it is refused, or goes round once, as any scene whose every clip loops.
+            if not self._looping_scenes_go_round:
+                raise SongFileError(errors.ERR_RENDERER_EVERY_CLIP_LOOPS.format(scene=scene.describe()))
+            fixed = [self._played_once(scene=scene, track=track) for track in every]
+        own = scene_change(sets=scene.get_scene().get_register_sets() if scene.is_first_play() else {}, adds=scene.get_scene().get_register_adds())
+        guess = random_source(GUESS_SEED)
+        alone = RegisterTimeline(registers=self._registers, start=start, changes=[own] if own else [], chooser=guess).end_values()
+        self._guesses[number] = lambda track: RegisterSolo(place=self._track_place(track), registers=self._registers, start=alone, chooser=guess)
+        # Until the first play is in, the scene is taken to last as long as the clips nothing can cut.
+        self._lengths[number] = max(fixed, default=NO_LENGTH)
+        drawn = self._register_chooser.getstate()
+        settled = None
+        try:
+            while True:
+                plays = {track: self._tried(scene=scene, track=track) for track in ending}
+                self._forget_plays_of(scene)
+                for track, play in plays.items():
+                    self._counted[(number, track)] = play
+                    self._decided[(number, track)] = play[0].total_length()
+                self._lengths[number] = max([*fixed, *[self._decided[(number, track)] for track in ending]], default=NO_LENGTH)
+                for track in filling:
+                    self._counted[(number, track)] = self._tried(scene=scene, track=track)
+                changes = self._scene_changes(scene)
+                found = (changes, [self._decided[(number, track)] for track in ending])
+                # Every round draws a register's random values from the same place, so that the same changes always make the same timeline.
+                self._register_chooser.setstate(drawn)
+                timeline = RegisterTimeline(registers=self._registers, start=start, changes=changes, chooser=self._register_chooser)
+                if found == settled:
+                    return timeline
+                settled = found
+                self._guesses[number] = lambda track, timeline=timeline: RegisterTrial(place=self._track_place(track), timeline=timeline)
+        finally:
+            del self._guesses[number]
+
+    def _tried(self, *, scene, track):
+        """Return a clip the registers can cut short, played to count its changes against the scene's registers as they are guessed so far, and those changes."""
+        registers = self._guesses[scene.get_number()](track)
+        clip = ClipSlotPlayer(renderer=self, song=self._song, scene=scene, track_name=track).play(grabbing=False, registers=registers)
+        return clip, registers.get_changes()
+
+    def _decided_clip(self, *, scene, track):
+        """Return a clip the registers can cut short, played to count its changes, and those changes: as its scene settled them, or as guessed so far when another clip asks while the scene is still being settled."""
+        number = scene.get_number()
+        if number in self._guesses:
+            return self._tried(scene=scene, track=track)
+        self.get_timeline(scene)
+        return self._counted[(number, track)]
+
+    def _forget_plays_of(self, scene):
+        """Forget what was worked out from a scene's clips while how long they last was still a guess: the counted clips, and the chords and tunes other clips followed in them."""
+        number = scene.get_number()
+        for kept in (self._counted, self._chord_sources, self._tune_sources):
+            for key in [key for key in kept if key[0] == number]:
+                del kept[key]
 
     def _resets_of(self, written):
         """Return the registers a written-out scene sets back to their defaults as it starts: its own resets, and on its first play every register that resets each scene."""
@@ -468,6 +582,10 @@ class SongRenderer:
         number = scene.get_number()
         if number in self._lengths:
             return self._lengths[number]
+        if self._is_settled_by_playing(scene):
+            # The registers can cut one of its clips short, so its length is found by playing it, with its registers.
+            self.get_timeline(scene)
+            return self._lengths[number]
         if scene.every_clip_loops():
             if not self._looping_scenes_go_round:
                 raise SongFileError(errors.ERR_RENDERER_EVERY_CLIP_LOOPS.format(scene=scene.describe()))
@@ -492,6 +610,10 @@ class SongRenderer:
         length. test_clip_lengths.py checks this against a real play of every example.
         """
         clip_slot = scene.get_clip_slot(track)
+        if self._cuts_passes(scene=scene, track=track) and not self.fills_its_scene(scene=scene, track=track):
+            # A clip the registers can cut short lasts as long as it played, which its scene found.
+            self.get_scene_length(scene)
+            return self._decided[(scene.get_number(), track)]
         if clip_slot.loops():
             return self.get_scene_length(scene)
         return self._played_once(scene=scene, track=track)

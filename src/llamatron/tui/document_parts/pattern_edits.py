@@ -98,6 +98,10 @@ class PatternEdits:
     def set_step_value(self, *, name, row, step, value):
         self._change(self._pattern(name).set_value, row=row, step=step, value=value)
 
+    def set_step_statement(self, *, name, kind, step, statement):
+        """Give a step of a pattern a statement of a kind about the registers, or None to take the step's away."""
+        self._change(self._pattern(name).set_statement, kind=kind, step=step, statement=statement)
+
     def clear_sound(self, *, name, step):
         """Empty a step, which keeps only its CC values, since they don't need a note."""
         self._change(self._pattern(name).clear_sound, step)

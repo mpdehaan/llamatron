@@ -13,10 +13,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Register binding, the = rows and the conditions: what a step sets a register to, when a note is silenced, and what a bound CC lane and a bound velocity send.
+"""Register binding and the = rows: what a step sets a register to, and what a bound CC lane and a bound velocity send.
 
 A step's sets come before its adds, a set is held to the
-register's range, a condition never stops a change, the conditions on a step must all hold, a
+register's range, a
 bound velocity stands in for a blank Velocity, and a bound CC lane sends its register's value at
 the clip's start and whenever it changes, with the clip's own value winning at the same moment.
 """
@@ -24,7 +24,7 @@ the clip's start and whenever it changes, with the clip's own value winning at t
 import unittest
 
 from llamatron.composition.file_format import (
-    CONDITION_ROWS, REGISTER_ADD_ROWS, AtLimit, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, ClipSlotSetting, Comparison,
+    REGISTER_ADD_ROWS, AtLimit, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, ClipSlotSetting,
     REGISTER_NAMES, GeneratorKind, RegisterSetting, Row, SceneSetting, Section, TrackSetting,
 )
 from llamatron.composition import defaults as set_defaults, limits
@@ -115,37 +115,6 @@ class TestSetRows(unittest.TestCase):
     def test_a_set_past_the_registers_maximum_stops_there_and_never_wraps(self):
         data = one_clip(rows={REGISTER_SET_ROWS[AX]: [TOO_HIGH], REGISTER_NOTE_ROWS[AX]: [1]}, registers={AX: {RegisterSetting.AT_LIMIT: AtLimit.OVERFLOW}})
         self.assertEqual(pitches(data), scale_notes([10]))
-
-
-class TestConditions(unittest.TestCase):
-
-    def test_a_note_sounds_only_when_every_condition_holds(self):
-        cases = [
-            ({CONDITION_ROWS[BX]: [Comparison.LESS]}, 1),
-            ({CONDITION_ROWS[BX]: [Comparison.MORE]}, 0),
-            ({CONDITION_ROWS[BX]: [Comparison.LESS], CONDITION_ROWS[CX]: [Comparison.SAME]}, 1),
-            ({CONDITION_ROWS[BX]: [Comparison.LESS], CONDITION_ROWS[CX]: [Comparison.MORE]}, 0),
-        ]
-        for rows, notes in cases:
-            with self.subTest(rows=rows):
-                data = one_clip(rows=rows, registers=registers(AX=LOW, BX=HIGH, CX=LOW))
-                self.assertEqual(len(pitches(data)), notes)
-
-    def test_a_silenced_note_still_sets_and_adds(self):
-        rows = {CONDITION_ROWS[BX]: [Comparison.MORE, None], REGISTER_ADD_ROWS[AX]: [ADDED, None], REGISTER_NOTE_ROWS[AX]: [0, 1]}
-        data = one_clip(steps=2, rows=rows, registers=registers(AX=LOW, BX=HIGH))
-        self.assertEqual(pitches(data), scale_notes([LOW + ADDED]))
-
-    def test_a_ratchet_sounds_every_slice_or_none(self):
-        for comparison, notes in ((Comparison.LESS, RATCHET), (Comparison.MORE, 0)):
-            with self.subTest(comparison=comparison):
-                data = one_clip(rows={CONDITION_ROWS[BX]: [comparison], Row.RATCHET: [RATCHET]}, registers=registers(AX=LOW, BX=HIGH))
-                self.assertEqual(len(pitches(data)), notes)
-
-    def test_a_condition_reads_what_a_track_to_the_left_changed_at_the_same_moment(self):
-        lead = pattern(1, **{CONDITION_ROWS[BX]: [Comparison.SAME]})
-        driver = pattern(1, **{REGISTER_ADD_ROWS[AX]: [HIGH - LOW]})
-        self.assertEqual(len(pitches(two_tracks(lead=lead, driver=driver, registers_=registers(AX=LOW, BX=HIGH)))), 1)
 
 
 class TestBoundVelocity(unittest.TestCase):

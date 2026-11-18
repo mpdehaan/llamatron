@@ -1,6 +1,6 @@
 # Registers
 
-Registers are four numbers that the whole song shares. Pattern steps set them, add to them, use them to move notes and velocities, and compare them to decide whether a note plays. This page covers the Registers page; the pattern rows that work with registers are described under [Reg. Mod, Reg. Apply and Reg. Cond](PATTERNS.md#reg-mod-reg-apply-and-reg-cond) on the Patterns page.
+Registers are four numbers that the whole song shares. Pattern steps set them, add to them, use them to move notes and velocities, and test them to decide what plays. This page covers the Registers page; the pattern rows that work with registers are described under [Reg. Mod and Reg. Apply](PATTERNS.md#reg-mod-and-reg-apply) and [Stop When, Restart When and Mute When](PATTERNS.md#stop-when-restart-when-and-mute-when) on the Patterns page.
 
 ![The Registers page](screenshots/registers.svg)
 
@@ -61,4 +61,6 @@ The sums are in whole numbers: a division rounds down, and a remainder is counte
 
 Left and Right move between the parts of a line and `ENTER` changes the part under the cursor: the register, the operator, and then a number or a register. `Bksp` sets the line back to `ignored`.
 
-`examples/learning/27_advanced_conditionals.yml` shows both tables: four single notes that come and go by counting, and one pattern of chords played four ways by one chain.
+A step of a pattern can hold a statement of its own, which is read as the step is reached and stops the clip, starts the pattern over or mutes the step: see [Stop When, Restart When and Mute When](PATTERNS.md#stop-when-restart-when-and-mute-when).
+
+`examples/learning/27_advanced_conditionals.yml` shows both tables and the three kinds of statement on a step: single notes that come and go by counting, one pattern of chords played four ways by one chain, a fill in every fourth bar, a riff that starts over, and a phrase played two and a half times.

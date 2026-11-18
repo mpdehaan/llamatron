@@ -153,7 +153,7 @@ Basics and Timing start open, and the editor remembers which sections are open, 
 - **CCs:** CC 1 to CC 4, Slide;
 - **Reg. Mod:** the rows that change the registers;
 - **Reg. Apply:** the rows that use the registers;
-- **Reg. Cond:** the conditions that decide whether a note sounds.
+- **Stop When, Restart When, Mute When:** a statement about the registers on each step, which stops the clip, starts the pattern over or mutes the step.
 
 ### Basic and Timing Rows
 
@@ -295,11 +295,11 @@ CC rows and Slide can be set on a rest, so a sweep can carry on through silence.
 
 In a Live set, each CC becomes a clip envelope, and Live draws a slide as a straight line. In MIDI files, a slide is sent as a new value every 1/64 note.
 
-## Reg. Mod, Reg. Apply and Reg. Cond
+## Reg. Mod and Reg. Apply
 
 The song has four registers, AX, BX, CX and DX: numbers the whole song shares, which pattern steps change and use as the song plays. Their settings are on the [Registers](REGISTERS.md) page. They're for changes that build up from bar to bar, like a note that climbs each time a riff comes round, or a fade.
 
-The `Reg. Mod` section holds the rows that change the registers, `Reg. Apply` the rows that use them, and `Reg. Cond` the conditions a note needs to sound.
+The `Reg. Mod` section holds the rows that change the registers, and `Reg. Apply` the rows that use them.
 
 ![The pattern editor on the register rows](screenshots/pattern_editor_registers.svg)
 
@@ -311,18 +311,48 @@ The `Reg. Mod` section holds the rows that change the registers, `Reg. Apply` th
 | AX+Vel to DX+Vel | `+`, `-` or blank | `+` adds the register's value to the velocity and `-` takes it off, keeping the velocity between 1 and 127; blank leaves it. The same keys. Can be set on an empty step, where nothing changes. |
 | AX= to DX= | blank, or a value | Sets the register to this value when the step plays, before anything adds to it, held between the register's Minimum and Maximum; blank leaves it. `]` (inc) on a blank step gives the register's Minimum in the current song, `[` (dec) on the Minimum gives blank again, and `Bksp` clears. |
 | AX+= to DX+= | minus to plus the register's Allowed Inc Max | Adds this much to the register when the step plays, or takes it away. `[` (dec) and `]` (inc) stop at the register's Allowed Inc Max on the [Registers](REGISTERS.md) page, 20 unless changed, the narrowest of the songs that play the pattern. |
-| AX,BX, AX,CX, AX,DX | `<`, `>`, `=` or blank | The note sounds only when AX is less than, more than or the same as that register, after the step's own changes; blank makes no comparison, and when a step has several, every one has to hold. A step that fails sounds nothing, a ratchet's slices all together and a chord whole, and its changes still happen. `Space` or `ENTER` cycles them, `[` (dec) and `]` (inc) step back and forward, and `Bksp` clears. Only a note's step can hold one. |
 
 How they work:
 
-- A step sets the registers, then adds to them, then uses them, then checks its conditions, so a step's own `=` and `+=` already change its note.
-- Every step sets and adds, even an empty one or one that probability or a condition silences, so a change can go on a step with no note. Putting it on the last step of a pattern means the first time through plays as written.
+- A step sets the registers, then adds to them, then uses them, so a step's own `=` and `+=` already change its note.
+- Every step sets and adds, even an empty one or one that probability or a Mute When statement silences, so a change can go on a step with no note. Putting it on the last step of a pattern means the first time through plays as written.
 - A step that uses several registers adds all their values together, each added or subtracted as its row says. A register's value can be negative too, so `-` on a register holding -3 moves the note up three.
 - A ratcheted step adds once, and every slice uses the same value.
 - The registers are shared by every track, so one track can change a register that others use. Within a scene, steps are taken in time order, and steps at the same moment in track order. Only one track adding to a register usually makes the most sense.
 - Values carry on from scene to scene, unless a scene resets them (see [Scenes](SCENES.md)).
 - A morph's target pattern uses the registers but doesn't add to them.
 - A note pushed out of the MIDI range moves to the nearest octave that fits.
+
+## Stop When, Restart When and Mute When
+
+A drummer who plays the fill only in every fourth bar, a riff that stumbles and starts again, a phrase that breaks off halfway through its third time: each is a player deciding, at one moment in the bar, by a count kept in the head. These three sections give every step of a pattern that decision, with a register as the count.
+
+Each section holds one statement about the registers on each step, written down the step's column in five rows, `c1` to `c5`. The five rows are the five parts of a statement of [Conditional Execution](REGISTERS.md#conditional-execution), stood on end:
+
+| Row | Holds | Example: `AX % 4 = 3` |
+| --- | --- | --- |
+| c1 | The register, or blank for no statement | `AX` |
+| c2 | The operator: `<`, `<=`, `=`, `>=`, `>`, `odd`, `even`, `!=`, `+`, `-`, `%`, `*` or `/` | `%` |
+| c3 | A number or a register | `4` |
+| c4 | After a sum, how the result is compared | `=` |
+| c5 | After a sum, the number or the register the result is compared with | `3` |
+
+`AX >= 3` takes the first three rows and `AX odd` the first two; the rows a statement has no use for show a light `/`. `ENTER` chooses a part from a list, `Space` goes to the next choice or number, `[` (dec) and `]` (inc) step, and `Bksp` takes the step's whole statement away. A step with no note can hold a statement too.
+
+| Section | When the step's statement is true |
+| --- | --- |
+| Stop When | The clip is done, as if it had played every repeat: the step and everything after it are not played, and the clip's follow action takes over. The clip plays again the next time its scene or another clip launches it. |
+| Restart When | The pattern starts over from its first step, and the pass counts as one of the clip's repeats. A looping clip runs on, in passes of uneven length. The first step cannot hold one. |
+| Mute When | The step does not sound. The step still sets and adds to the registers. |
+
+How they work:
+
+- A step's statements are read as the step is reached, before the step's own `=` and `+=`. A Stop When on the first step therefore ends the clip exactly on the edge of a pass.
+- When several are true on one step, Stop When acts first, then Restart When, then Mute When.
+- A step that stops the clip or starts the pattern over never makes its own register changes.
+- A looping clip whose pattern holds a Stop When ends when the statement comes true, and its scene can then end. An export gives up on a statement that never comes true after 9999 passes.
+
+In an example scenario, a pattern of 16 steps adds 1 to AX on step 8 and holds Stop When `AX >= 3` on step 9, and the scene sets AX to 0. The clip plays the pattern twice, plays the first 8 steps a third time, and is done: exactly two and a half times. `examples/learning/27_advanced_conditionals.yml` plays this, with a scene for each of the other two sections.
 
 The register change rows take digits, `[` (dec) and `]` (inc), or `ENTER` to type a negative number, and `Bksp` clears them, and every register row can be set on an empty step: no register setting is ever locked out for want of a note, and erasing a note leaves the step's register rows as they are. The rows that use registers are toggled with `Space` or `ENTER`.
 
