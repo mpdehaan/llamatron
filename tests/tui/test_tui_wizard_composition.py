@@ -49,6 +49,7 @@ A_NARROW_ROOM = 30
 THE_GUITAR = 'guitar'
 THE_BASS = 'bass'
 A_DEGREE = 7
+A_COLUMN_GAP = '  '
 A_NEW_NAME = 'main riff'
 FIRST_RIFF = names.MSG_NEW_RIFF_WORD + '-1'
 # The attribute a field keeps its label in.
@@ -588,9 +589,26 @@ class TestWizardRiffAssign(CompositionTest):
 
     async def test_each_player_lists_the_riffs_the_player_knows_with_who_each_was_written_for(self):
         await self.select_under(heading=self.title(THE_GUITAR), label=self.riff)
-        self.assertEqual(self.wizard().field().value(), marks.MSG_WIZARD_RIFF_KNOWN_ROW.format(player=self.title(THE_GUITAR), used='').rstrip())
+        self.assertEqual(self.wizard().field().value(), self.title(THE_GUITAR))
         bass = next(field for field in self.wizard().shown_fields() if field.label == self.title(THE_BASS))
         self.assertEqual(bass.value(), marks.MSG_WIZARD_COUNT_SHOWN.format(count=0))
+
+    async def test_the_for_column_is_as_wide_as_its_widest_value_so_that_played_in_starts_at_one_place_on_every_row(self):
+        choices = self.choices()
+        guitar = self.title(THE_GUITAR)
+        self.assertGreater(len(guitar), len(labels.MSG_WIZARD_RIFF_FOR_COLUMN))
+        choices.give_riff(role=THE_BASS, riff=self.riff)
+        choices.set_section_part(kind=A_KIND, role=THE_GUITAR, part=self.riff)
+        await self.press(Key.DOWN, Key.UP)
+        self.wizard().app.open_field_sections.add(guitar)
+        await self.press(Key.DOWN, Key.UP)
+        heading = next(field for field in self.wizard().shown_fields() if field.label == guitar)
+        row = next(field for field in self.wizard().shown_fields() if field.label == self.riff)
+        played_in = heading.value().index(labels.MSG_WIZARD_RIFF_PLAYED_IN_COLUMN)
+        self.assertEqual(played_in, len(guitar) + len(A_COLUMN_GAP))
+        self.assertTrue(heading.value().startswith(labels.MSG_WIZARD_RIFF_FOR_COLUMN))
+        self.assertEqual(row.value()[:played_in].rstrip(), guitar)
+        self.assertEqual(row.value()[played_in:], A_KIND)
 
     async def test_a_player_is_given_a_riff_of_another_from_a_list_and_a_player_who_knows_every_riff_is_refused(self):
         choices = self.choices()

@@ -55,17 +55,25 @@ class RiffAssignBranch(RiffsBranch):
         fields = []
         for role in choices.riff_instruments():
             known = choices.riffs_known_by(role)
-            fields.append(self.player_heading(role=role, count=len(known), columns=labels.MSG_WIZARD_RIFF_KNOWN_COLUMNS))
+            columns = marks.MSG_WIZARD_RIFF_KNOWN_ROW.format(player=labels.MSG_WIZARD_RIFF_FOR_COLUMN, width=self.for_width(), used=labels.MSG_WIZARD_RIFF_PLAYED_IN_COLUMN)
+            fields.append(self.player_heading(role=role, count=len(known), columns=columns))
             fields += [self.known_field(role=role, riff=riff) for riff in known]
             fields.append(Field(label=marks.MSG_ADD_ROW_MARK, value=lambda: NOTHING, enter=lambda role=role: self.give(role), enter_what=legends.What.ADD))
         return fields
+
+    def for_width(self):
+        """Return how wide the FOR column is: as wide as its widest value on the panel, the name of a player a riff was written
+        for, and no narrower than its heading, so that the column after it starts at one place on every row, as a table's."""
+        choices = self.choices()
+        written_for = [choices.role_title(choices.riff_written_for(riff)) for role in choices.riff_instruments() for riff in choices.riffs_known_by(role)]
+        return max(len(name) for name in [labels.MSG_WIZARD_RIFF_FOR_COLUMN, *written_for])
 
     def known_field(self, *, role, riff):
         """Return the row of a riff a player knows: who the riff was written for and the kinds of section the player plays it in; Bksp takes the riff from the player."""
         choices = self.choices()
 
         def shown():
-            return marks.MSG_WIZARD_RIFF_KNOWN_ROW.format(player=choices.role_title(choices.riff_written_for(riff)), used=listed(choices.kinds_playing(role=role, riff=riff))).rstrip()
+            return marks.MSG_WIZARD_RIFF_KNOWN_ROW.format(player=choices.role_title(choices.riff_written_for(riff)), width=self.for_width(), used=listed(choices.kinds_playing(role=role, riff=riff))).rstrip()
         return Field(label=riff, value=shown, clear=lambda: self.take(role=role, riff=riff), clear_what=legends.What.DELETE)
 
     def field_keys(self):
