@@ -268,6 +268,10 @@ such name, and `tests/rules/test_naming.py` holds that nothing else numbers one)
 - A message, a prompt, a dialog's title and a legend's entry are as short as they can be while staying obvious, and the example
   text of a mockup is held to the same: no caption that repeats the title, no sentence where a few words do (the user's rule).
 - A count is shown as a number, `1` and `2`, never as a word, `one` and `two` (the user's rule).
+- The tracker's text is formal, never casual (the user's rule): a message, a question, a label or a value says what happens in
+  exact, plain terms, with no chatty phrasing and no word that leans on what the reader is assumed to know, such as "usual" for
+  what the genre writes or "go back to" for what a deletion leaves. Where a word needs explaining, a more exact word is found.
+  A sentence that adds nothing the reader needs is left out. Mockups and proposed wording are held to the same.
 - A choice, a field's name and a value are worded the plainest, shortest way a person would say them (the user's rule):
   "only this section" and "going forward", never "this section only" and "this section and later". Proposed wording is
   simplified before it is shown.
