@@ -525,6 +525,26 @@ class TestWizardShapesAndIntroHook(unittest.TestCase):
         with self.assertRaises(ValueError):
             choices.set_solo_pattern(place=THE_INTRO, pattern=own)
 
+    def test_another_take_of_a_solo_changes_that_solo_alone_is_kept_with_the_song_and_gives_up_notes_by_hand(self):
+        choices = chosen(genre=A_GENRE_OF_MANY_SOLOS, subgenre=None)
+        places = choices.solo_places()
+        before = [choices.solo_pattern(place) for place in places]
+        choices.new_solo_take(places[0])
+        after = [choices.solo_pattern(place) for place in places]
+        self.assertNotEqual(after[0], before[0])
+        self.assertEqual(after[1:], before[1:])
+        again = WizardChoices.from_data(choices.to_data())
+        self.assertEqual([again.solo_pattern(place) for place in places], after)
+        own = copy.deepcopy(after[0])
+        step = next(place for place, degree in enumerate(own[Row.DEGREE]) if degree is not None)
+        own[Row.DEGREE][step] = A_DEGREE if own[Row.DEGREE][step] != A_DEGREE else ANOTHER_DEGREE
+        choices.set_solo_pattern(place=places[0], pattern=own)
+        choices.new_solo_take(places[0])
+        self.assertFalse(choices.solo_is_own(places[0]))
+        self.assertNotIn(choices.solo_pattern(places[0])[Row.DEGREE], (own[Row.DEGREE], after[0][Row.DEGREE]))
+        with self.assertRaises(ValueError):
+            choices.new_solo_take(THE_INTRO)
+
     def test_a_band_with_one_guitarist_still_has_its_solo_to_edit(self):
         choices = chosen()
         places = choices.solo_places()

@@ -98,6 +98,7 @@ DEGREES_TRIED = 5
 HOOK_LINE = "the hook's notes written by hand"
 OWN_TUNE = 'a tune written by hand'
 OWN_SOLO_NOTES = 'a solo written by hand'
+SOLO_TAKE = 'another take of a solo'
 OWN_INTRO_NOTES = 'an intro melody written by hand'
 TUNE_TAKE = 'another take of a tune'
 OWN_RIFF = 'a riff written by hand'
@@ -384,6 +385,7 @@ def every_choice(choices):
         if choices.tune_pattern(kind) is not None:
             yield OWN_TUNE, kind, lambda made, kind=kind: made.set_tune_pattern(kind=kind, pattern=first_degree_changed(made.tune_pattern(kind))), [nothing_first]
         for place in choices.solo_places():
+            yield SOLO_TAKE, place, lambda made, place=place: made.new_solo_take(place), [nothing_first]
             yield OWN_SOLO_NOTES, place, lambda made, place=place: made.set_solo_pattern(place=place, pattern=first_degree_changed(made.solo_pattern(place))), [nothing_first]
     # Who plays the tune: each other player for the song, and for each kind of section each other player and nobody.
     # A song with no tune, as some electronic kinds, offers neither.

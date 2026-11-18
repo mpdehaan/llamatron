@@ -175,6 +175,9 @@ class SectionMelodyBranch(Branch):
             page.say(messages.MSG_WIZARD_REGENERATED.format(name=name))
         page.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_REGENERATE_TITLE.format(name=name), messages=[messages.MSG_WIZARD_REGENERATE_SAYS.format(name=name)], starts_on_no=True), then=written)
 
+    def listens_alone(self):
+        return True
+
     def listens(self):
         """Listen plays the melody's player alone in the first section of the kind."""
         choices = self.choices()

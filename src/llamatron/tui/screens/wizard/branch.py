@@ -103,6 +103,11 @@ class Branch:
         """Return why the cursor cannot move into the branch's fields yet, or None when it can."""
         return None
 
+    def listens_alone(self):
+        """Return whether Listen plays the branch's player with nothing under the line. A melody is heard bare, since its panel has
+        Listen With Band for the rest; a player's part or a riff is heard over the section's drums, which it is judged against."""
+        return False
+
     def listens(self):
         """Return what Listen plays on this branch, as what it is called, the place of its section in the form and the player whose clip
         alone plays, None for everybody in the section; or None for a branch with nothing to hear."""

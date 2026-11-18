@@ -26,6 +26,8 @@ from tests.tui.test_tui_playback import PlaybackTest
 GENRE = 'rock'
 SUBGENRE = 'arena rock'
 A_WHILE = 2.0
+A_PART = 'a part'
+A_TRACK_NOBODY_HAS = 'nobody'
 A_LONG_WHILE = 120.0
 FIRST_SECTION = 'intro'
 FIRST_SECTION_NUMBER = 1
@@ -33,7 +35,8 @@ A_VERSE = 'verse-1'
 A_VERSE_NUMBER = 2
 DRUM_CHANNEL_BYTE = 9
 CHANNEL_MASK = 0x0F
-THE_HOOK_AND_THE_DRUMS = 2
+THE_MELODY_ALONE = 1
+A_PLAYER_AND_THE_DRUMS = 2
 
 
 class TestWizardListening(PlaybackTest):
@@ -80,20 +83,33 @@ class TestWizardListening(PlaybackTest):
     def channels_heard(self):
         return {data[0] & CHANNEL_MASK for data in self.note_ons(FLUIDSYNTH_PORT)}
 
-    async def test_the_hook_is_heard_over_the_drums_again_and_again_and_stops(self):
+    async def test_a_melody_is_heard_alone_with_no_drums_under_it_again_and_again_and_stops(self):
         await self.go_to_hook()
         await self.press(keybindings.WizardPage.LISTEN)
         self.assertIn(messages.MSG_WIZARD_LISTENING.format(what=self.hook_heard()), self.text())
         self.assertEqual(self.preview().playing(), self.hook_heard())
         await self.let_the_preview_play(A_WHILE)
         self.assertTrue(self.note_ons(FLUIDSYNTH_PORT))
-        # The hook's player and the drums under it, and nobody else.
-        self.assertEqual(len(self.channels_heard()), THE_HOOK_AND_THE_DRUMS)
-        self.assertIn(DRUM_CHANNEL_BYTE, self.channels_heard())
+        # The melody's player and nobody else: the drums are heard with Listen With Band.
+        self.assertEqual(len(self.channels_heard()), THE_MELODY_ALONE)
+        self.assertNotIn(DRUM_CHANNEL_BYTE, self.channels_heard())
         await self.let_the_preview_play(A_LONG_WHILE)
         self.assertEqual(self.preview().playing(), self.hook_heard())
         await self.press(keybindings.WizardPage.STOP_LISTENING)
         self.assertIn(messages.MSG_STOPPED, self.text())
+        self.assertIsNone(self.preview().playing())
+
+    async def test_a_part_that_is_no_melody_is_heard_over_the_drums_and_a_player_with_no_clip_is_refused(self):
+        choices = self.app.screen.choices()
+        setlist, name = choices.made_for_listening()
+        scene = choices.hook_scene()
+        self.preview().play_line(setlist=setlist, name=name, index=scene, track=choices.tune_player(), what=A_PART)
+        await self.let_the_preview_play(A_WHILE)
+        self.assertEqual(len(self.channels_heard()), A_PLAYER_AND_THE_DRUMS)
+        self.assertIn(DRUM_CHANNEL_BYTE, self.channels_heard())
+        self.preview().stop()
+        with self.assertRaises(ValueError):
+            self.preview().play_line(setlist=setlist, name=name, index=scene, track=A_TRACK_NOBODY_HAS, what=A_PART)
         self.assertIsNone(self.preview().playing())
 
     async def test_the_tune_is_heard_from_the_melody_panel(self):
