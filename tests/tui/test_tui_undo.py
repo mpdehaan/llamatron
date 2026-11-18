@@ -436,7 +436,7 @@ class TestChainEditorUndo(UndoTest):
 
 class TestGeneratorsPageUndo(UndoTest):
 
-    async def test_adding_a_generator_and_moving_one_are_each_one_step(self):
+    async def test_adding_a_generator_is_one_step(self):
         await self.press(keybindings.MainPage.GENERATORS)
         self.assertIsInstance(self.app.screen, GeneratorsPage)
         await self.undo()
@@ -449,11 +449,6 @@ class TestGeneratorsPageUndo(UndoTest):
         self.assertIsInstance(self.app.screen, GeneratorsPage)
         await self.check_undo_and_redo(before=before, after=self.data())
 
-    async def test_moving_one_is_one_step(self):
-        await self.press(keybindings.MainPage.GENERATORS)
-        before = self.data()
-        await self.press(keybindings.GeneratorsPage.MOVE, Key.DOWN, Key.ENTER)
-        await self.check_undo_and_redo(before=before, after=self.data())
 
 class TestArpEditorUndo(UndoTest):
 

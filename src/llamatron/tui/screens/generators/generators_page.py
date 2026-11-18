@@ -14,22 +14,36 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The Generators page: every generator of the set, of every kind, on one list in an order of the user's own, each with its kind
-beside its name. Enter edits one, A adds one of a kind asked for, N renames, C copies, Bksp deletes once
-nothing uses it, and M moves it, the order kept in the set (Setlist.ordered_generators)."""
+"""The Generators page: every generator of the set under a heading for its type, the types sorted by name and the generators
+sorted under each, always, so that nothing here moves or sorts. A heading opens and closes its type. Enter edits a generator,
+A adds one of a type asked for, N renames, C copies and Bksp deletes once nothing uses it."""
+
+from typing import NamedTuple
 
 from llamatron.composition.file_format import NAMED_GENERATORS
-from llamatron.composition.naming import new_name, suggested_word
+from llamatron.composition.naming import name_order, new_name, suggested_word
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings, themes
-from llamatron.tui.drawing import Align
+from llamatron.tui.drawing import NOTHING, Align, Style
+from llamatron.tui.key_table import STEP_FORWARD
 from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES, generator_page_of_kind, generator_type_dialog
 from llamatron.tui.screens.shared.list_page import ListPage
-from llamatron.tui.screens.shared.shared import list_keys, move_key
 
-# How wide the kind's column is: the longest kind's name in parentheses.
-KIND_WIDTH = 15
+# The kinds of row the page lists: a generator, a type's heading, and the row that adds a generator.
+GENERATOR = 'generator'
+HEADING = 'heading'
+NEW_GENERATOR = 'new generator'
+# How far a type's generators stand in from its heading.
+INDENT = '    '
 USED_WIDTH = 4
+
+
+class Listed(NamedTuple):
+    """What a row of the Generators page is: the row's kind, the generators' kind, and the generator's name on a generator's row."""
+
+    row: str
+    kind: object = None
+    name: object = None
 
 
 class GeneratorsPage(ListPage):
@@ -38,37 +52,127 @@ class GeneratorsPage(ListPage):
     KEYS = keybindings.GeneratorsPage
     crumbs = (labels.Crumb.GENERATORS,)
     HELP = help_text.HELP_GENERATORS_PAGE
-    columns = ((labels.Column.SELECT_ANY_GENERATOR, None, Align.LEFT), (labels.Column.KIND, KIND_WIDTH, Align.LEFT), (labels.Column.USED, USED_WIDTH, Align.RIGHT))
+    columns = ((labels.Column.SELECT_ANY_GENERATOR, None, Align.LEFT), (labels.Column.USED, USED_WIDTH, Align.RIGHT))
+    NAME_COLUMN_WIDTH = ListPage.NAME_COLUMN_WIDTH + len(INDENT)
+
+    def __init__(self, holder):
+        super().__init__(holder)
+        # The page opens with the cursor on its first generator, where one shows, so that ENTER edits at once, as on every list.
+        self.place = self.first_generator_place()
+
+    # The rows.
+
+    def can_add(self):
+        """Return that the page has no + row of the list's own: the row that adds is a row the page lists, since ENTER on a heading opens and closes it."""
+        return False
 
     def generators(self):
-        """Return every generator as (kind, name), in the page's order."""
-        return self.document().setlist().ordered_generators()
+        """Return every generator as (kind, name), in the page's order: by the type's name, then by the generator's own."""
+        return [(kind, name) for kind in self.kinds() for name in self.names_of_kind(kind)]
+
+    def kinds(self):
+        """Return the kinds of generator the set has any of, sorted by what the tracker calls each."""
+        held = {kind for kind, _ in self.document().setlist().ordered_generators()}
+        return sorted(held, key=lambda kind: name_order(generator_page_of_kind(kind).label))
+
+    def names_of_kind(self, kind):
+        return sorted(self.document().names_of(NAMED_GENERATORS[kind]), key=name_order)
+
+    def is_closed(self, kind):
+        return kind in self.holder.closed_generator_types
+
+    def rows_depend_on(self):
+        """Return what the rows depend on besides the set: which types are closed, and a search, which looks inside every type."""
+        return (tuple(sorted(self.holder.closed_generator_types)), self.searching)
 
     def rows(self):
-        return [((kind, name), [name, marks.MSG_GENERATOR_KIND_SHOWN.format(kind=generator_page_of_kind(kind).label), len(self.uses(kind=kind, name=name))])
-                for kind, name in self.generators()]
+        rows = []
+        for kind in self.kinds():
+            rows += self.kind_rows(kind)
+        rows.append((Listed(NEW_GENERATOR), self.one_cell(marks.MSG_ADD_ROW_MARK)))
+        return rows
+
+    def kind_rows(self, kind):
+        """Return a type's rows: its heading, and while it is open, or a search looks inside it, its generators."""
+        names = self.names_of_kind(kind)
+        closed = self.is_closed(kind) and not self.searching
+        heading = labels.MSG_GROUP_HEADING.format(mark=marks.MSG_SECTION_CLOSED_MARK if closed else marks.MSG_SECTION_OPEN_MARK, name=generator_page_of_kind(kind).label, count=len(names))
+        rows = [(Listed(HEADING, kind), self.one_cell(heading))]
+        if not closed:
+            rows += [(Listed(GENERATOR, kind, name), [INDENT + name, len(self.uses(kind=kind, name=name))]) for name in names]
+        return rows
+
+    def one_cell(self, text):
+        """Return the cells of a row that holds only its first."""
+        return [text, *[NOTHING] * (len(self.columns) - 1)]
+
+    def row_style(self, what):
+        return Style.BOLD if what.row == HEADING else Style.PLAIN
+
+    def first_generator_place(self):
+        """Return the place of the first generator showing, or the top row when none shows."""
+        return next((place for place, (what, _) in enumerate(self.remembered_rows()) if what.row == GENERATOR), 0)
+
+    def listed(self):
+        """Return what the cursor is on, which is never nothing, since the page always ends with the row that adds."""
+        self.clamp()
+        return self.remembered_rows()[self.place][0]
+
+    def current(self):
+        """Return the generator the cursor is on as (kind, name), or nothing on a heading or the row that adds."""
+        listed = self.listed()
+        return (listed.kind, listed.name) if listed.row == GENERATOR else None
+
+    def remember_place(self):
+        """Return what the cursor is on, a heading included, for a redraw to find again."""
+        return self.listed()
 
     def uses(self, *, kind, name):
         return self.document().uses(section=NAMED_GENERATORS[kind], name=name)
 
-    def keys(self):
-        return list_keys(page=self, extra=[
-            self.bind(self.KEYS.EDIT, action=self.open_item),
-            self.bind(self.KEYS.RENAME, action=self.rename),
-            self.bind(self.KEYS.COPY, action=self.copy),
-            self.bind(self.KEYS.DELETE, action=self.delete),
-            move_key(self),
-        ])
-
     def put_cursor_on(self, *, kind, name):
-        self.place = self.generators().index((kind, name))
+        """Put the cursor on a generator's row, opening its type if the type is closed."""
+        self.holder.closed_generator_types.discard(kind)
+        self.restore_place(Listed(GENERATOR, kind, name))
+
+    # The keys, by what the cursor is on.
+
+    def keys(self):
+        listed = self.listed()
+        result = [self.bind(self.KEYS.BACK, action=self.go_back), *self.move_keys()]
+        if listed.row == GENERATOR:
+            result += [
+                self.bind(self.KEYS.EDIT, action=self.open_item), self.bind(self.KEYS.ADD, action=self.add), self.bind(self.KEYS.RENAME, action=self.rename),
+                self.bind(self.KEYS.COPY, action=self.copy), self.bind(self.KEYS.DELETE, action=self.delete),
+            ]
+        elif listed.row == HEADING:
+            result += [self.bind(self.KEYS.TOGGLE_TYPE, action=self.toggle_type), self.bind(self.KEYS.ADD, action=self.add)]
+        else:
+            result += [self.bind(self.KEYS.ADD_HERE, action=self.add), self.bind(self.KEYS.ADD, action=self.add)]
+        return [*result, self.bind(self.KEYS.NEXT_TYPE, action=self.jump_type)]
+
+    def toggle_type(self):
+        """Open or close the type whose heading the cursor is on, kept until the tracker closes."""
+        kind = self.listed().kind
+        closed = self.holder.closed_generator_types
+        if kind in closed:
+            closed.discard(kind)
+        else:
+            closed.add(kind)
+
+    def jump_type(self, direction):
+        """Move the cursor to the next type's heading, or the one before, staying put past the last or the first."""
+        places = [place for place, (what, _) in enumerate(self.remembered_rows()) if what.row == HEADING]
+        ahead = [place for place in places if place > self.place] if direction == STEP_FORWARD else [place for place in places if place < self.place]
+        if ahead:
+            self.place = ahead[0] if direction == STEP_FORWARD else ahead[-1]
 
     def open_item(self):
         kind, name = self.current()
         self.show_page(generator_page_of_kind(kind).EDITOR(holder=self.holder, name=name))
 
     def add(self):
-        """Ask which kind of generator to make, make one named after the kind, numbered, put the cursor on it and open it."""
+        """Ask which type of generator to make, make one named after the type, numbered, put the cursor on it and open it."""
         listings = list(GENERATOR_PAGES.values())
 
         def chosen(place):
@@ -82,10 +186,11 @@ class GeneratorsPage(ListPage):
     def rename(self):
         kind, name = self.current()
         section = NAMED_GENERATORS[kind]
-        self.ask_name(
-            title=messages.MSG_RENAME_GENERATOR_PROMPT.format(label=generator_page_of_kind(kind).label), value=name, taken=self.document().names_of(section),
-            then=lambda new: self.document().rename_named(section=section, old=name, new=new),
-        )
+
+        def renamed(new):
+            self.document().rename_named(section=section, old=name, new=new)
+            self.put_cursor_on(kind=kind, name=new)
+        self.ask_name(title=messages.MSG_RENAME_GENERATOR_PROMPT.format(label=generator_page_of_kind(kind).label), value=name, taken=self.document().names_of(section), then=renamed)
 
     def copy(self):
         """Copy the selected generator, say what the copy is called and put the cursor on it."""
@@ -99,7 +204,3 @@ class GeneratorsPage(ListPage):
         kind, name = self.current()
         what = legends.MSG_GENERATOR_WHAT.format(label=generator_page_of_kind(kind).label, name=name)
         self.delete_after_checks(what=what, uses=self.uses(kind=kind, name=name), delete=lambda: self.document().delete_named(section=NAMED_GENERATORS[kind], name=name))
-
-    def shift(self, offset):
-        if self.document().move_generator(place=self.place, offset=offset):
-            self.place += offset

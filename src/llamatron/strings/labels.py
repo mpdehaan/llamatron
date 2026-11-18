@@ -221,7 +221,6 @@ class Column:
     SELECT_GROOVE = 'SELECT GROOVE'
     SELECT_INSTRUMENT = 'SELECT INSTRUMENT'
     SELECT_ANY_GENERATOR = 'SELECT GENERATOR'
-    KIND = 'KIND'
     SELECT_CHAIN_LINKS = 'SELECT CHAIN LINKS (generators)'
     SELECT_FILE = 'SELECT FILE'
     # A generator page's first column, with the kind's name, like SELECT ARPEGGIATOR.

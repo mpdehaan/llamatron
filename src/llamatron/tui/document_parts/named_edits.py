@@ -124,12 +124,3 @@ class NamedEdits:
     def sort_named(self, section):
         """Put a section's items in order of their names, for good."""
         self._change(self._owner_of(section).sort_items, section)
-
-    def move_generator(self, *, place, offset):
-        """Move a generator up or down the Generators page's list, every kind on one list, and return whether it moved."""
-        pairs = self._setlist.ordered_generators()
-        moved = place + offset
-        if not 0 <= moved < len(pairs):
-            return False
-        self._change(self._setlist.move_generator, place=place, offset=offset)
-        return True

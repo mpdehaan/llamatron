@@ -193,11 +193,17 @@ class ScalesPage(NamedListPage):
 
 
 class GeneratorsPage(ListPage):
-    """The Generators page, every generator on one list: Enter edits one, A adds one of a kind asked for, and the
-    usual keys rename, copy, delete and move one; there's no sort, since the order is the user's own."""
+    """The Generators page, which lists the generators by type, always sorted, so it neither moves nor sorts: Enter edits one,
+    A adds one of a type asked for, the usual keys rename, copy and delete one, and a type's heading opens and closes."""
 
-    IN_HELP = [binding for binding in ListPage.IN_HELP if binding is not ListPage.SORT]
-    IN_LEGEND = all_but(bindings=IN_HELP, hidden=[ListPage.SEARCH])
+    # A type's heading opens and closes as a settings page's section does, and PgUp and PgDn jump between the headings.
+    TOGGLE_TYPE = (TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
+    NEXT_TYPE = (Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_NEXT_TYPE_WHAT)
+    IN_HELP = [
+        Page.BACK, ListPage.SEARCH_CANCEL, ListPage.ADD_HERE, ListPage.SELECT, *ListPage.SEARCHING[1:], TOGGLE_TYPE, ListPage.ADD, ListPage.EDIT, ListPage.RENAME, ListPage.COPY,
+        ListPage.DELETE, NEXT_TYPE, ListPage.SEARCH,
+    ]
+    IN_LEGEND = all_but(bindings=IN_HELP, hidden=[ListPage.SEARCH, NEXT_TYPE])
 
 
 class OpenPage(ListPage):
