@@ -332,6 +332,8 @@ such name, and `tests/rules/test_naming.py` holds that nothing else numbers one)
   Degree gauge are, a toggle that's on is `●`, a tie and a glide included, never a letter or
   `*`, and a cell that can't take a value, which the render would ignore, is a light `/`; the
   register rows are never such a cell, since no register setting is locked out for want of a note.
+- In the song wizard's tree the part under the cursor is drawn bold in the wizard's theme colour (`WizardPage.name_style`), the user's
+  design, so that the selection is seen at a glance; a locked part is dim.
 - Every page but Arrange has a theme colour by its kind, the main screen's white, the user's design, a solid stripe in place of the
   header's rule (`.claude/tracker/SHARED.md`, "The header and the crumbs"); the stripes are the fifth allowance of colour.
 - The header is two lines over the rule or the theme's stripe, the user's design of keeping what matters in the corners: the

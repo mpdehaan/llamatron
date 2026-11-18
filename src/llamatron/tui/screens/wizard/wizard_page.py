@@ -70,6 +70,8 @@ FIRST_PLACE = 0
 OWN_DRUM = ''
 # The line and the space between the tree and the fields.
 DIVIDER = Box.BAR + SPACE
+# The style of the tree's selected branch: bold, in the wizard's theme colour.
+BOLD_IN_COLOUR = '{bold} {colour}'
 
 # What a field keeps its label as.
 LABEL_OF_FIELD = 'label'
@@ -668,7 +670,7 @@ class WizardPage(FieldPage):
             else:
                 line.append(INDENT)
             carried = self.moving and under_cursor
-            line.append(marks.MSG_WIZARD_CARRIED.format(name=branch.name()) if carried else branch.name(), style=Style.DIM if self.refusal_of(branch) else (Style.BOLD if under_cursor else Style.PLAIN))
+            line.append(marks.MSG_WIZARD_CARRIED.format(name=branch.name()) if carried else branch.name(), style=self.name_style(branch=branch, under_cursor=under_cursor))
             if branch.note():
                 line.append(SPACE + branch.note(), style=Style.DIM)
             line.truncate(TREE_WIDTH - 2)
@@ -676,6 +678,13 @@ class WizardPage(FieldPage):
             line.append((marks.MSG_WIZARD_EDITED_BRANCH if under_cursor and self.in_fields else SPACE) + SPACE)
             lines.append(line)
         return lines
+
+    def name_style(self, *, branch, under_cursor):
+        """Return the style of a branch's name in the tree: the branch under the cursor bold in the wizard's theme colour, so that the
+        selection is seen at a glance, a locked branch dim, and the rest plain."""
+        if under_cursor:
+            return BOLD_IN_COLOUR.format(bold=Style.BOLD, colour=themes.text_style(self.THEME))
+        return Style.DIM if self.refusal_of(branch) else Style.PLAIN
 
     def field_lines(self, *, width, height):
         """Return the right side's lines: the branch's title, then its fields as a settings page draws them, all dim while the cursor is in the tree."""
