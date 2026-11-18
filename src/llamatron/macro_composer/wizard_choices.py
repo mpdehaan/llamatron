@@ -239,6 +239,18 @@ TUNE_TAKES = 'tune_takes'
 FIRST_TUNE_TAKE = 0
 TUNE_TAKE_SEED = '{seed} {kind} tune take {take}'
 TUNE_TAKEN_ANSWER = 'tune taken'
+# The name the band's settings that are one value each are counted under.
+GENRE_SETTING = 'setting'
+# What another genre gives up of what was chosen by hand, and what it keeps, each counted: the band's settings, the sections whose
+# chords were written by hand, the form, the tunes of a later take, the riff, and the tunes whose notes were written by hand.
+LOST_BAND_SETTINGS = 'band settings'
+LOST_OWN_CHORDS = 'chords written by hand'
+LOST_FORM = 'form'
+LOST_TUNE_TAKES = 'tune takes'
+LOST_RIFFS = 'riffs'
+KEPT_OWN_TUNES = 'tunes written by hand'
+# The extras of a song that are settings of one genre's band and song, which another genre gives up.
+EXTRAS_OF_ONE_GENRE = (PLAN_OF_SONG, MELODY, GROOVE, DYNAMICS, LOUDNESS_OF, TUNE_BY, TUNE_BY_SONG)
 STAGES_ANSWER = 'stages'
 JOINS_ANSWER = 'joins'
 SETUP_BARS_ANSWER = 'setup bars'
@@ -653,6 +665,44 @@ class WizardChoices:
             self._extras.pop(TUNE_BY, None)
             self._extras.pop(TUNE_BY_SONG, None)
             self._forget_band()
+
+    def lost_with_genre(self):
+        """Return what choosing another genre would give up of what was chosen by hand and what it would keep, each a dictionary of
+        counts by kind that leaves out a kind counting nothing. Before a subgenre is chosen nothing has been chosen to lose."""
+        if self._genre is None or self._subgenre is None:
+            return {}, {}
+        usual = WizardChoices()
+        usual.set_genre(self._genre)
+        usual.set_subgenre(self._subgenre)
+        if self._variant != usual._variant:
+            usual.set_variant(self._variant)
+        own = self._band_as_counted()
+        untouched = usual._band_as_counted()
+        settings = sum(1 for name in own.keys() | untouched.keys() if own.get(name) != untouched.get(name))
+        settings += sum(1 for name in EXTRAS_OF_ONE_GENRE if self._extras.get(name))
+        lost = {LOST_BAND_SETTINGS: settings,
+                LOST_OWN_CHORDS: sum(1 for entry in self._entries() if entry.get(OWN_OF_SECTION, {}).get(CHORDS)),
+                LOST_FORM: int(self._sections is not None or self._form != usual._form),
+                LOST_TUNE_TAKES: len(self._extras.get(TUNE_TAKES, {})) + int(self._hook_take != FIRST_HOOK_TAKE),
+                LOST_RIFFS: int(bool(self._extras.get(RIFF)))}
+        kept = {KEPT_OWN_TUNES: len(self._extras.get(OWN_TUNES, {}))}
+        return {kind: count for kind, count in lost.items() if count}, {kind: count for kind, count in kept.items() if count}
+
+    def _band_as_counted(self):
+        """Return every setting of the band another genre forgets, each under a name of its own, so that two bands can be compared
+        setting by setting."""
+        by_name = {(GENRE_SETTING, name): value for name, value in (
+            (BESIDE_KEPT, self._beside), (WITHOUT, sorted(self._without)), (BAND_SOUNDS_KEPT, self._band_sounds), (GUITARISTS_KEPT, self._guitarists),
+            (PIECES_OFF_KEPT, sorted(self._pieces_off)), (FILLS_KEPT, self._fills), (QUIET_NOTES_KEPT, self._quiet_notes), (BREAK_KEPT, self._break),
+            (BREAK_CUT_KEPT, self._break_cut), (MELODY_STYLE, self._melody), (HOOK_KEPT, self._hook))}
+        for kept_as, held in ((PICKS, self._ways), (PLAYERS, self._levels), (PLAYER_GAUGES_KEPT, self._own_gauges), (PLAYER_ROWS_KEPT, self._rows), (SOUNDS_KEPT, self._sounds),
+                              (GAUGES_KEPT, self._gauges), (MELODY_SETTINGS_KEPT, self._melody_settings), (PIECE_SOUNDS_KEPT, self._piece_sounds), (STAGES_KEPT, self._stages)):
+            for name, value in held.items():
+                if isinstance(value, dict):
+                    by_name.update({(kept_as, name, inner): each for inner, each in value.items()})
+                else:
+                    by_name[(kept_as, name)] = value
+        return by_name
 
     def subgenres(self):
         """Return the chosen genre's subgenres, sorted by name, or none before a genre is chosen."""

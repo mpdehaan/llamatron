@@ -36,6 +36,8 @@ DIALOG_WIDTH = 70
 DIALOG_MARGIN = 4
 # How far down and to the right a flyout's box is drawn from its dialog's, so that the two read as a stack.
 FLYOUT_SHIFT = 2
+# The titles drawn in red: questions whose yes gives something up, so that none is answered by habit.
+TITLES_IN_RED = (messages.MSG_DELETE_TITLE, messages.MSG_CHANGE_GENRE_TITLE)
 
 
 class Dialog(BindsKeys, ModalScreen):
@@ -67,8 +69,8 @@ class Dialog(BindsKeys, ModalScreen):
         return []
 
     def heading(self, width):
-        """Return the dialog's top line, in red for a question about deleting, so that it isn't answered by habit."""
-        return Text(self.title, style=Style.DELETE_TITLE if self.title == messages.MSG_DELETE_TITLE else Style.BOLD)
+        """Return the dialog's top line, in red for a question whose yes gives something up, so that it isn't answered by habit."""
+        return Text(self.title, style=Style.DELETE_TITLE if self.title in TITLES_IN_RED else Style.BOLD)
 
     def draw(self):
         if not self.is_attached or not self.query(DIALOG_VIEW_SELECTOR):
