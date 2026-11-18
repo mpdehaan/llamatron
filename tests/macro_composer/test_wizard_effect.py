@@ -29,6 +29,8 @@ import unittest
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.file_format import Row
+from llamatron.composition.generator_settings import LINES_IN_BARS, PHRASING_DEFAULTS, PhrasingSetting
+from llamatron.generators.phrasing import BREATHS, JOINS, RISES
 from llamatron.macro_composer.arranger import NOBODY
 from llamatron.macro_composer import interplay
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT
@@ -94,6 +96,7 @@ TUNE_TAKE = 'another take of a tune'
 RIFF_ADDED = 'a riff added to a kind of section'
 OWN_RIFF = 'a riff written by hand'
 TUNE_BY_SONG_CHOICE = 'who plays the tune in the song'
+TUNE_PHRASING_CHOICE = 'how the tune is delivered'
 TUNE_BY_KIND_CHOICE = 'who plays the tune in a kind of section'
 A_LINE = "a line's own"
 A_RIFF = 'the riff'
@@ -155,6 +158,8 @@ def fresh(*, genre, subgenre):
     if trait is not None:
         choices.set_way(trait=trait, value=choices.get_way(trait))
     return choices
+# Every value each setting of a Phrasing takes.
+PHRASING_OFFERED_VALUES = {PhrasingSetting.LINE_BARS: LINES_IN_BARS, PhrasingSetting.BREATH: BREATHS, PhrasingSetting.RISE_AND_FALL: RISES, PhrasingSetting.NOTES: JOINS}
 
 
 def song_of(choices):
@@ -355,6 +360,13 @@ def every_choice(choices):
                 yield TUNE_BY_KIND_CHOICE, (kind, role), lambda made, kind=kind, role=role: made.set_tune_played_by_in(kind=kind, role=role), [nothing_first]
     for kind in choices.tune_kinds():
         yield TUNE_BY_KIND_CHOICE, (kind, NOBODY), lambda made, kind=kind: made.set_tune_played_by_in(kind=kind, role=NOBODY), [nothing_first]
+    if choices.tune_kinds():
+        # The tune delivered with no Phrasing, and with each setting of a Phrasing moved from what one starts with.
+        yield TUNE_PHRASING_CHOICE, False, lambda made: made.set_tune_phrasing(False), [nothing_first]
+        for setting, offered in PHRASING_OFFERED_VALUES.items():
+            for value in offered:
+                if value != PHRASING_DEFAULTS[setting]:
+                    yield TUNE_PHRASING_CHOICE, (setting, value), lambda made, setting=setting, value=value: made.set_tune_phrasing({setting: value}), [nothing_first]
     # A riff added to each kind of section, for each player free there.
     for kind in choices.riff_kinds_offered():
         for role in choices.riff_players_free(kind):

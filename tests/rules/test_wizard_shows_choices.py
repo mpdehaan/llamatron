@@ -36,7 +36,8 @@ OTHER_CHANGES = ('add_section', 'copy_section', 'remove_section', 'move_section'
 # plan among them, are given by a file alone until the wizard's pages for them are built.
 # A riff's notes are written in the pattern editor; its notes as one line are kept from songs made before that, and are given
 # back from the page with the riff's pattern.
-NOT_ON_THE_PAGE = ('set_own_sections', 'set_seed', 'set_song_extras', 'set_riff_line')
+# How a written tune's lines breathe is the wizard's own; a song kept from before the Phrasing generator still holds what was chosen.
+NOT_ON_THE_PAGE = ('set_own_sections', 'set_seed', 'set_song_extras', 'set_riff_line', 'set_phrasing', 'set_phrasing_way')
 A_CALL = r'\.{name}\b'
 SOURCE_FILES = '*.py'
 

@@ -39,6 +39,7 @@ MSG_PIECE_INSTRUMENT = '{} sound'
 MSG_CHORDS_TRACK = 'CHORDS'
 MSG_CHORDS_INSTRUMENT = 'chords guide'
 MSG_FOLLOW_CHORDS_NAME = 'follow chords'
+MSG_TUNE_PHRASING_NAME = 'tune phrasing'
 MSG_REPEATED_SCENE = '{} {}'
 
 # macro_composer/song_plan.py: what a planned section says of itself in the song's notes.

@@ -15,11 +15,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The wizard's Melody branch, under Composition: the melody style the song's tunes are written by, and the smart style's gauges."""
 
-from llamatron.macro_composer import phrasing
 from llamatron.macro_composer.melody import HIGHEST_GAUGE, LOWEST_GAUGE
-from llamatron.macro_composer.wizard_choices import PHRASING_OFFERED
-from llamatron.strings import labels, marks, messages
-from llamatron.tui.screens.shared.field import ChoiceField, NumberField, Toggle
+from llamatron.strings import labels, legends, marks, messages
+from llamatron.tui.screens.shared.field import Button, ChoiceField, NumberField, Toggle
 from llamatron.tui.screens.wizard.song_ways_branch import A_CHOICE, SongWaysBranch
 
 
@@ -57,22 +55,17 @@ class MelodyBranch(SongWaysBranch):
         return [style, *(self.gauge_field(name) for name in choices.gauges()), *(self.setting_field(name) for name in choices.melody_settings()), *self.phrasing_fields()]
 
     def phrasing_fields(self):
-        """Return the fields of how a planned song's lines breathe, in a song in four: the switch, and under it how long the breaths are,
-        which lines of a section are the shorter and how many lines in four have a note come early."""
+        """Return how the tune is delivered, where the song has a tune: the Phrasing switch, and under it the button that opens the
+        Phrasing page, where a line's length, its breath, its rise and fall and its notes are chosen."""
         choices = self.choices()
         page = self.page()
-        if not choices.is_ready() or not choices.has_song_plan() or not choices.counts_in_four():
+        if not choices.is_ready() or not choices.tune_kinds():
             return []
-        fields = [Toggle(label=labels.MSG_WIZARD_PHRASING_LABEL, on=choices.has_phrasing(), set=page.choosing(choices.set_phrasing))]
-        if not choices.has_phrasing():
-            return fields
-
-        def setter(name):
-            return page.choosing(lambda value: choices.set_phrasing_way(name=name, value=value))
-        return [*fields,
-                *(ChoiceField(page=page, label=labels.MSG_WIZARD_PHRASING_WAY_LABELS[name], choices=list(PHRASING_OFFERED[name]), current=choices.phrasing_way(name), set=setter(name)) for name in (phrasing.BREATH, phrasing.LINE_LENGTHS)),
-                NumberField(page=page, label=labels.MSG_WIZARD_PHRASING_WAY_LABELS[phrasing.EARLY_NOTES], number=choices.phrasing_way(phrasing.EARLY_NOTES), lowest=phrasing.FEWEST_EARLY, highest=phrasing.MOST_EARLY,
-                            shown=labels.MSG_WIZARD_EARLY_SHOWN.format(count=choices.phrasing_way(phrasing.EARLY_NOTES), of=phrasing.MOST_EARLY), set=setter(phrasing.EARLY_NOTES))]
+        on = choices.tune_phrasing() is not None
+        fields = [Toggle(label=labels.MSG_WIZARD_PHRASING_LABEL, on=on, set=page.choosing(lambda wanted: choices.set_tune_phrasing(None if wanted else False)))]
+        if on:
+            fields.append(Button(label=labels.MSG_WIZARD_EDIT_PHRASING_BUTTON, key_name=legends.KeyName.ENTER, enter=page.edit_tune_phrasing, enter_what=legends.What.EDIT))
+        return fields
 
     def listens(self):
         choices = self.choices()

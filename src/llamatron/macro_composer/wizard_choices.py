@@ -28,6 +28,7 @@ import random
 import zlib
 
 from llamatron.composition.file_format import PatternSetting, Row, Section
+from llamatron.composition.generator_settings import PHRASING_DEFAULTS, PhrasingSettings
 from llamatron.composition.groove import FactoryGroove
 from llamatron.composition import limits, naming
 from llamatron.strings import labels as labels_text, macro_composer as composer_text, marks as marks_text, names as names_text
@@ -44,7 +45,7 @@ from llamatron.macro_composer.arranger import (
 )
 from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer import hook_kinds, line_edits, phrasing, tune_fit
-from llamatron.macro_composer.arranger import KICK as KICK_PIECE, MORE_RIFFS, NOBODY, OWN_TUNES, RIFF_OWN, TAKEN_TUNES, TUNE_BY, TUNE_BY_SONG
+from llamatron.macro_composer.arranger import KICK as KICK_PIECE, MORE_RIFFS, NOBODY, OWN_TUNES, RIFF_OWN, TAKEN_TUNES, TUNE_BY, TUNE_BY_SONG, TUNE_PHRASING
 from llamatron.macro_composer.players import BASS as BASS_PLAYER
 from llamatron.macro_composer.notation import NONE as NO_HIT
 from llamatron.macro_composer.arranger import CHORDS, DYNAMICS, EIGHTHS_IN_WHOLE, GROOVE, LOUDNESS as LOUDNESS_OF, NO_GROOVE, SCENE_SETTINGS, form_of
@@ -2541,6 +2542,10 @@ class WizardChoices:
         # The takes are kept as numbers; the arranger is handed the tune each number draws.
         picks.pop(TUNE_TAKES, None)
         taken = self._taken_tunes()
+        delivery = self.tune_phrasing()
+        picks.pop(TUNE_PHRASING, None)
+        if delivery is not None:
+            picks[TUNE_PHRASING] = delivery
         return {**picks, TAKEN_TUNES: taken} if taken else picks
 
     def _extras_with_sections(self):
@@ -2975,6 +2980,30 @@ class WizardChoices:
             self._sections, self._stages = kept
             self._answers = {}
             raise ValueError(errors.ERR_WIZARD_PLAYS_UNMADE.format(problem=problem)) from None
+
+    # How the tune is delivered: one Phrasing generator on the tune's clips, with its own settings where they were changed.
+
+    def tune_phrasing(self):
+        """Return the settings of the Phrasing the tune's clips run, each given only where it is not what a Phrasing starts with, or
+        None where the tune is played as written, with no Phrasing."""
+        kept = self._extras.get(TUNE_PHRASING, {})
+        return None if kept is False else dict(kept)
+
+    def set_tune_phrasing(self, settings):
+        """Say how the tune is delivered: a Phrasing's settings by name, None for a Phrasing as one starts, or False for no
+        Phrasing. Settings no Phrasing has, or values a setting cannot take, are refused."""
+        if settings is False:
+            self._extras[TUNE_PHRASING] = False
+        else:
+            try:
+                given = {name: value for name, value in dict(settings or {}).items() if value != PHRASING_DEFAULTS.get(name, value) or name not in PHRASING_DEFAULTS}
+                kept = PhrasingSettings.from_data(data=given, where=composer_text.MSG_TUNE_PHRASING_NAME).to_data()
+            except (SongFileError, TypeError, ValueError) as problem:
+                raise ValueError(errors.ERR_WIZARD_TUNE_PHRASING.format(value=settings, problem=problem)) from None
+            self._extras.pop(TUNE_PHRASING, None)
+            if kept:
+                self._extras[TUNE_PHRASING] = kept
+        self._answers = {}
 
     def has_phrasing(self):
         """Return whether the tune's lines breathe."""

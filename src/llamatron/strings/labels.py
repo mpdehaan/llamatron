@@ -833,8 +833,7 @@ MSG_WIZARD_SETUP_BARS_LABEL = 'Setup bars'
 MSG_WIZARD_ENDS_LABEL = 'Ends with'
 MSG_WIZARD_OWN_START = 'your own'
 MSG_WIZARD_PHRASING_LABEL = 'Phrasing'
-MSG_WIZARD_PHRASING_WAY_LABELS = {'breath': 'Breath', 'lines': 'Line lengths', 'early': 'Early notes'}
-MSG_WIZARD_EARLY_SHOWN = '{count} lines in {of}'
+MSG_WIZARD_EDIT_PHRASING_BUTTON = 'Edit Phrasing'
 MSG_WIZARD_HOOK_PART_LABELS = {'contour': 'Contour', 'rhythm': 'Rhythm', 'detail': 'Detail'}
 MSG_WIZARD_PICK = "(wizard's pick)"
 # What a section of a planned song can be given of its own, and where each comes from until it is.

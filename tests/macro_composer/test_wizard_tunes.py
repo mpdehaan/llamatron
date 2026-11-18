@@ -19,7 +19,9 @@
 import unittest
 
 from llamatron.composition import naming
-from llamatron.composition.file_format import PatternSetting, Row
+from llamatron.composition.file_format import GeneratorKind, PatternSetting, Row
+from llamatron.composition.generator_settings import PHRASING_DEFAULTS, PhrasingSetting
+from llamatron.generators.phrasing import DEEP_BREATH
 from llamatron.macro_composer.arranger import NOBODY
 from llamatron.macro_composer.riffs import FIRST_TAKE as FIRST_RIFF_TAKE
 from llamatron.macro_composer.wizard_choices import FIRST_TUNE_TAKE, KEPT_OWN_RIFFS, LOST_RIFFS, WizardChoices
@@ -272,6 +274,31 @@ class TestWhoPlaysTheTune(unittest.TestCase):
         choices.set_genre(A_GENRE)
         choices.set_subgenre(A_SUBGENRE)
         self.assertIsNone(choices.tune_played_by_in(A_KIND))
+
+
+class TestTunePhrasing(unittest.TestCase):
+
+    def test_a_tune_is_delivered_by_a_phrasing_as_one_starts_until_its_settings_are_chosen_or_it_is_switched_off(self):
+        choices = chosen()
+        self.assertEqual(choices.tune_phrasing(), {})
+        choices.set_tune_phrasing({PhrasingSetting.BREATH: DEEP_BREATH, PhrasingSetting.NOTES: PHRASING_DEFAULTS[PhrasingSetting.NOTES]})
+        self.assertEqual(choices.tune_phrasing(), {PhrasingSetting.BREATH: DEEP_BREATH})
+        self.assertEqual(WizardChoices.from_data(choices.to_data()).tune_phrasing(), {PhrasingSetting.BREATH: DEEP_BREATH})
+        setlist, name = choices.made_for_listening()
+        made = setlist.get_song(name).get_generator_settings(kind=GeneratorKind.PHRASING, name=composer_text.MSG_TUNE_PHRASING_NAME)
+        self.assertEqual(made.to_data(), {PhrasingSetting.BREATH: DEEP_BREATH})
+        choices.set_tune_phrasing(False)
+        self.assertIsNone(choices.tune_phrasing())
+        self.assertIsNone(WizardChoices.from_data(choices.to_data()).tune_phrasing())
+        choices.set_tune_phrasing(None)
+        self.assertEqual(choices.tune_phrasing(), {})
+
+    def test_settings_no_phrasing_has_are_refused_and_nothing_changes(self):
+        choices = chosen()
+        for wrong in ({PhrasingSetting.BREATH: NOT_A_KIND}, {NOT_A_KIND: DEEP_BREATH}):
+            with self.assertRaises(ValueError):
+                choices.set_tune_phrasing(wrong)
+        self.assertEqual(choices.tune_phrasing(), {})
 
 
 class TestRiffsAdded(unittest.TestCase):
