@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""A scene's tempo ramps: the tempo of each beat, the ramps across a scene's repeats, and every length and export that has to agree about them."""
+"""A scene's tempo ramps: the tempo of each step, the ramps across a scene's repeats, and every length and export that has to agree about them."""
 
 import os
 import unittest
@@ -45,10 +45,12 @@ SONG_NAME = 'ramps'
 BASE = 120
 SLOW = 100
 FAST = 140
-# A bar and a beat of four four, in whole notes, and the beats of a bar.
+# A bar of four four and the step the unit tests ramp by, a quarter note, in whole notes, and those steps in a bar. A song's own step is a sixteenth.
 BAR = Fraction(1)
 BEAT = Fraction(1, 4)
 BEATS_IN_A_BAR = 4
+SIXTEENTH = Fraction(1, 16)
+SIXTEENTHS_IN_A_BAR = 16
 # The pattern a of the tests' data lasts one bar, so a clip's repeat is its bars.
 EIGHT_BARS = 8
 TWO_BARS = 2
@@ -58,7 +60,7 @@ CLOSE = 2
 
 
 def tempos(*, length=EIGHT_BARS * BAR, ramp_in=None, ramp_out=None):
-    return ramped_tempos(base=BASE, ramp_in=ramp_in, ramp_out=ramp_out, length=length, bar=BAR, beat=BEAT)
+    return ramped_tempos(base=BASE, ramp_in=ramp_in, ramp_out=ramp_out, length=length, bar=BAR, step=BEAT)
 
 
 def tempo_at(*, changes, time):
@@ -101,8 +103,8 @@ class TestTheTempoOfEachBeat(unittest.TestCase):
         changes = tempos(length=FOUR_BARS * BAR, ramp_in=TempoRamp(SLOW, SLOW, FOUR_BARS - 1), ramp_out=TempoRamp(FAST, FAST, FOUR_BARS))
         self.assertEqual(changes, [(0, float(SLOW)), ((FOUR_BARS - 1) * BAR, float(FAST))])
 
-    def test_a_ramp_with_no_bars_takes_the_whole_scene(self):
-        changes = tempos(ramp_in=TempoRamp(None, FAST, None))
+    def test_a_ramp_over_the_whole_scene_never_holds_a_tempo_for_more_than_a_step(self):
+        changes = tempos(ramp_in=TempoRamp(None, FAST, EIGHT_BARS))
         self.assertEqual(len(changes), EIGHT_BARS * BEATS_IN_A_BAR)
         self.assertEqual(changes[0][1], BASE)
         self.assertLess(changes[-1][1], FAST)
@@ -144,26 +146,31 @@ class TestARampInASong(unittest.TestCase):
 
     def test_the_rows_hold_the_tempo_of_each_beat(self):
         grid = render_data(data_with({BARS: TWO_BARS, SceneSetting.TEMPO_IN_START: SLOW, SceneSetting.TEMPO_IN_OVER: 1}))
-        self.assertEqual(grid.tempos_in(grid.get_rows()[0]), [(0, 100.0), (BEAT, 105.0), (2 * BEAT, 110.0), (3 * BEAT, 115.0), (BAR, 120.0)])
+        # The tempo moves at every step of the song, a sixteenth: 16 steps of 1.25 from 100, then the scene's 120.
+        self.assertEqual(grid.tempos_in(grid.get_rows()[0]), [(step * SIXTEENTH, 100 + 1.25 * step) for step in range(SIXTEENTHS_IN_A_BAR + 1)])
+
+    def test_a_ramp_with_no_bars_is_no_ramp(self):
+        grid = render_data(data_with({BARS: TWO_BARS, SceneSetting.TEMPO_IN_START: SLOW, SceneSetting.TEMPO_IN_END: FAST}))
+        self.assertEqual(grid.tempos_in(grid.get_rows()[0]), [(0, BASE)])
 
     def test_a_ramp_runs_across_every_repeat_of_its_scene_once(self):
-        grid = render_data(data_with({BARS: TWO_BARS, SceneSetting.REPEAT: 2, SceneSetting.TEMPO_IN_END: FAST}))
+        grid = render_data(data_with({BARS: TWO_BARS, SceneSetting.REPEAT: 2, SceneSetting.TEMPO_IN_END: FAST, SceneSetting.TEMPO_IN_OVER: FOUR_BARS}))
         first, second = grid.get_rows()
-        # Four bars in all, 16 beats, 1.25 a beat: the second repeat goes on from where the first stopped.
+        # Four bars in all, 64 steps of 0.3125: the second repeat goes on from where the first stopped.
         self.assertEqual(grid.tempo_at(first), 120.0)
-        self.assertEqual(grid.tempos_in(first)[-1], (TWO_BARS * BAR - BEAT, 128.75))
+        self.assertEqual(grid.tempos_in(first)[-1], (TWO_BARS * BAR - SIXTEENTH, 129.6875))
         self.assertEqual(grid.tempo_at(second), 130.0)
-        self.assertEqual(grid.tempos_in(second)[-1], (TWO_BARS * BAR - BEAT, 138.75))
+        self.assertEqual(grid.tempos_in(second)[-1], (TWO_BARS * BAR - SIXTEENTH, 139.6875))
 
     def test_a_ramp_has_no_effect_after_its_scene(self):
-        grid = render_data(data_with({BARS: TWO_BARS, SceneSetting.TEMPO_OUT_END: SLOW}, {BARS: TWO_BARS}))
+        grid = render_data(data_with({BARS: TWO_BARS, SceneSetting.TEMPO_OUT_END: SLOW, SceneSetting.TEMPO_OUT_OVER: TWO_BARS}, {BARS: TWO_BARS}))
         after = grid.get_rows()[1]
         self.assertEqual(grid.tempos_in(after), [(0, BASE)])
 
     def test_a_blank_start_and_end_are_the_scenes_own_tempo_where_it_has_one(self):
         grid = render_data(data_with({BARS: TWO_BARS, SceneSetting.TEMPO: SLOW, SceneSetting.TEMPO_OUT_END: FAST, SceneSetting.TEMPO_OUT_OVER: 1}))
         changes = grid.tempos_in(grid.get_rows()[0])
-        self.assertEqual((changes[0], changes[-1]), ((0, SLOW), (TWO_BARS * BAR - BEAT, float(FAST))))
+        self.assertEqual((changes[0], changes[-1]), ((0, SLOW), (TWO_BARS * BAR - SIXTEENTH, float(FAST))))
 
 
 class TestLengthsAgree(unittest.TestCase):
@@ -173,7 +180,7 @@ class TestLengthsAgree(unittest.TestCase):
         return data_with(
             {BARS: FOUR_BARS, SceneSetting.TEMPO_IN_START: SLOW, SceneSetting.TEMPO_IN_OVER: TWO_BARS},
             {BARS: TWO_BARS},
-            {BARS: FOUR_BARS, SceneSetting.REPEAT: 2, SceneSetting.TEMPO_IN_END: FAST, SceneSetting.TEMPO_OUT_END: SLOW, SceneSetting.TEMPO_OUT_OVER: 1},
+            {BARS: FOUR_BARS, SceneSetting.REPEAT: 2, SceneSetting.TEMPO_IN_END: FAST, SceneSetting.TEMPO_IN_OVER: EIGHT_BARS, SceneSetting.TEMPO_OUT_END: SLOW, SceneSetting.TEMPO_OUT_OVER: 1},
         )
 
     def test_the_estimate_the_timeline_and_the_midi_file_last_the_same(self):
@@ -193,8 +200,9 @@ class TestLengthsAgree(unittest.TestCase):
         song = song_from_data(self.scenes())
         first = SongRenderer(song).estimate()[0]
         self.assertAlmostEqual(float(first.clip_seconds[LEAD]), float(first.seconds))
-        # Two bars from 100 to 120, beat by beat, then two bars at 120.
-        ramp = sum(BEATS_IN_A_BAR * 60 / (100 + 2.5 * beat) / BEATS_IN_A_BAR for beat in range(TWO_BARS * BEATS_IN_A_BAR))
+        # Two bars from 100 to 120, a sixteenth at a time, then two bars at 120.
+        steps = TWO_BARS * SIXTEENTHS_IN_A_BAR
+        ramp = sum(float(SIXTEENTH) * seconds_per_whole(SLOW + (BASE - SLOW) * step / steps) for step in range(steps))
         self.assertAlmostEqual(float(first.seconds), ramp + TWO_BARS * seconds_per_whole(BASE))
 
     def test_every_note_of_the_timeline_is_where_the_midi_file_has_it(self):
@@ -213,17 +221,17 @@ class TestLengthsAgree(unittest.TestCase):
         for written, played in zip(sorted(ons), timeline_ons):
             self.assertAlmostEqual(written, played, places=CLOSE)
 
-    def test_the_midi_file_changes_tempo_at_each_beat_of_a_ramp(self):
+    def test_the_midi_file_changes_tempo_at_each_step_of_a_ramp(self):
         grid = render_data(data_with({BARS: TWO_BARS, SceneSetting.TEMPO_IN_START: SLOW, SceneSetting.TEMPO_IN_OVER: 1}))
         midi = MidiSong(directory=os.curdir, grid=grid, name=SONG_NAME).midi_file()
-        written = [round(mido.tempo2bpm(message.tempo), 1) for message in midi.tracks[0] if message.type == SET_TEMPO_MESSAGE]
-        self.assertEqual(written, [100.0, 105.0, 110.0, 115.0, 120.0])
+        written = [round(mido.tempo2bpm(message.tempo), 2) for message in midi.tracks[0] if message.type == SET_TEMPO_MESSAGE]
+        self.assertEqual(written, [100 + 1.25 * step for step in range(SIXTEENTHS_IN_A_BAR + 1)])
 
 
 class TestTheSongsTempo(unittest.TestCase):
 
     def test_the_songs_tempo_is_what_a_blank_ramp_part_takes(self):
-        data = data_with({BARS: TWO_BARS, SceneSetting.TEMPO_IN_END: FAST})
+        data = data_with({BARS: TWO_BARS, SceneSetting.TEMPO_IN_END: FAST, SceneSetting.TEMPO_IN_OVER: TWO_BARS})
         data[SongSetting.TEMPO] = SLOW
         grid = render_data(data)
         self.assertEqual(grid.tempo_at(grid.get_rows()[0]), SLOW)

@@ -308,9 +308,9 @@ class TestWizardSectionOwn(unittest.TestCase):
         self.assertEqual(self.scene(choices=choices).get_tempo_setting(), A_SLOW_TEMPO)
         choices.set_section_own(place=A_VERSE, field=TEMPO_END_OF_PLACE, value=A_FAST_TEMPO)
         data = choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.SONGS][A_NAME][Section.SCENES][A_VERSE]
-        # The scene keeps its tempo and ramps in to the tempo at its end, over the whole scene.
+        # The scene keeps its tempo and ramps in to the tempo at its end, over every bar of the section.
         self.assertEqual((data[SceneSetting.TEMPO], data[SceneSetting.TEMPO_IN_END]), (A_SLOW_TEMPO, A_FAST_TEMPO))
-        self.assertNotIn(SceneSetting.TEMPO_IN_OVER, data)
+        self.assertEqual(data[SceneSetting.TEMPO_IN_OVER], choices.section_bars(A_VERSE))
         choices.set_section_own(place=A_VERSE, field=ROOT_OF_PLACE, value=ANOTHER_ROOT)
         choices.set_section_own(place=A_VERSE, field=TYPE_OF_PLACE, value=MINOR)
         made = choices.made_setlist(name=A_NAME, version=VERSION)

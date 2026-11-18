@@ -545,8 +545,8 @@ class TestScene(RoundTrip):
         self.assert_round_trip(Scene, {}, a_song())
 
     def test_values_and_defaults(self):
-        scene = Scene.from_data(data={SceneSetting.REPEAT: 3, SceneSetting.TEMPO: 100, SceneSetting.TEMPO_IN_END: 120, SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A}}}, where=HERE, song=a_song())
-        self.assertEqual((scene.get_tempo(), scene.get_tempo_ramp(RampWay.IN), scene.get_tempo_ramp(RampWay.OUT)), (100, TempoRamp(None, 120, None), None))
+        scene = Scene.from_data(data={SceneSetting.REPEAT: 3, SceneSetting.TEMPO: 100, SceneSetting.TEMPO_IN_END: 120, SceneSetting.TEMPO_IN_OVER: 3, SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A}}}, where=HERE, song=a_song())
+        self.assertEqual((scene.get_tempo(), scene.get_tempo_ramp(RampWay.IN), scene.get_tempo_ramp(RampWay.OUT)), (100, TempoRamp(None, 120, 3), None))
         self.assertEqual(scene.get_track_names(), [LEAD])
         self.assertEqual(scene.get_clip_slot(LEAD).get_pattern_name(), A)
         self.assertIsNone(scene.get_clip_slot(BASS))

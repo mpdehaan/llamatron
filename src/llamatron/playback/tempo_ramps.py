@@ -18,10 +18,10 @@
 
 A scene has a ramp in, counted from its first bar, and a ramp out, counted back from its last,
 each a tempo it starts from, a tempo it reaches and the bars it takes. The tempo changes at
-each beat, so that a slow ramp over many bars is smooth. Where the two ramps' bars overlap the
+every step, the song's step size, so that a ramp is a slope and never a stair of bars or beats. Where the two ramps' bars overlap the
 ramp in wins, between them the tempo is the scene's own, and neither reaches past the scene.
-A ramp in starts at its start and comes to its end on the first beat after its bars; a ramp
-out leaves its start on its first beat and is at its end on the scene's last beat.
+A ramp in starts at its start and comes to its end on the first step after its bars; a ramp
+out leaves its start on its first step and is at its end on the scene's last step.
 """
 
 from llamatron.support.rational import Rational
@@ -32,10 +32,10 @@ SCENE_START = Rational(0)
 WHOLE_RAMP = 1
 
 
-def ramped_tempos(*, base, ramp_in, ramp_out, length, bar, beat):
-    """Return (time, tempo) for each beat of a scene's whole play at which the tempo changes, the first at the scene's start.
+def ramped_tempos(*, base, ramp_in, ramp_out, length, bar, step):
+    """Return (time, tempo) for each step of a scene's whole play at which the tempo changes, the first at the scene's start.
 
-    base is the tempo with no ramp, each ramp a TempoRamp or None, and length, bar and beat are in whole notes.
+    base is the tempo with no ramp, each ramp a TempoRamp or None, and length, bar and step are in whole notes.
     """
     in_span = _span(ramp=ramp_in, length=length, bar=bar)
     out_span = _span(ramp=ramp_out, length=length, bar=bar)
@@ -46,12 +46,12 @@ def ramped_tempos(*, base, ramp_in, ramp_out, length, bar, beat):
         if ramp_in is not None and time < in_span:
             tempo = _between(ramp=ramp_in, base=base, share=time / in_span)
         elif ramp_out is not None and time >= out_from:
-            tempo = _between(ramp=ramp_out, base=base, share=min((time - out_from + beat) / out_span, WHOLE_RAMP))
+            tempo = _between(ramp=ramp_out, base=base, share=min((time - out_from + step) / out_span, WHOLE_RAMP))
         else:
             tempo = float(base)
         if not tempos or tempos[-1][1] != tempo:
             tempos.append((time, tempo))
-        time += beat
+        time += step
     return tempos
 
 
@@ -62,10 +62,8 @@ def tempos_within(*, tempos, start, end):
 
 
 def _span(*, ramp, length, bar):
-    """Return how long a ramp lasts in whole notes: its bars, or the whole scene where it gives none."""
-    if ramp is None or ramp.over is None:
-        return length
-    return ramp.over * bar
+    """Return how long a ramp lasts in whole notes, by its bars, or the whole scene for no ramp, which is never read."""
+    return length if ramp is None else ramp.over * bar
 
 
 def _between(*, ramp, base, share):

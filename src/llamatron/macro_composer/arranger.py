@@ -1341,6 +1341,9 @@ def arranged(*, style, song):
             own_scale = scene_settings[SCALE]
             scene_settings[SCALE] = SCALE_NAME.format(own_scale[ROOT], own_scale[TYPE].capitalize())
             more_scales[scene_settings[SCALE]] = {ROOT: own_scale[ROOT], TYPE: own_scale[TYPE]}
+        if SceneSetting.TEMPO_IN_END in scene_settings:
+            # A section that moves to another tempo by its end ramps across all of its bars.
+            scene_settings.setdefault(SceneSetting.TEMPO_IN_OVER, bars)
         form.append({SCENE: scene_name, BARS: bars, PLAY: play, **({SETTINGS_OF_SCENE: scene_settings} if scene_settings else {})})
         said_of_scene = composer_text.MSG_MADE_SCENE.format(count, scene_name, bars)
         notes.append(MADE_SCENE_SAID.format(said_of_scene, section[SAID_OF_SECTION]) if section.get(SAID_OF_SECTION) else said_of_scene)

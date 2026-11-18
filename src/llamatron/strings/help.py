@@ -49,7 +49,7 @@ HELP_SCENE_PAGE = """
 A scene starts all of its clips together, and lasts as long as its longest clip that does not loop.
 Scale: used by its clips, instead of the song's. Tempo: instead of the song's.
 Groove: for its clips, instead of the song's. off plays them straight whatever the song or a track chooses.
-Tempo Ramp In and Tempo Ramp Out: move the tempo beat by beat over a number of bars, from the scene's start and back from its end.
+Tempo Ramp In and Tempo Ramp Out: move the tempo step by step over a number of bars, from the scene's start and back from its end.
 Repeat: plays the whole scene that many times.
 Reset AX to DX: sets that register back to its default as the scene starts, but not on its repeats.
 Launch together: in real-time playback only, a start reaching any clip of the scene launches them all. Off, each clip waits for the clip above it to send one, and Arrange marks the scene.

@@ -45,7 +45,7 @@ RAMP_SETTINGS = tuple(TEMPO_RAMP_SETTINGS[(way, part)] for way in RAMP_WAYS for 
 
 
 class TempoRamp(NamedTuple):
-    """One tempo ramp of a scene as written: the tempo it starts from and the tempo it reaches, either None for the tempo there would have been, and the bars it takes, None for the whole scene."""
+    """One tempo ramp of a scene as written: the tempo it starts from and the tempo it reaches, either None for the tempo there would have been, and the bars it takes."""
 
     start: object
     end: object
@@ -191,9 +191,9 @@ class Scene(LlamaData):
         return self._settings[SceneSetting.TEMPO]
 
     def get_tempo_ramp(self, way):
-        """Return its tempo ramp in or out as a TempoRamp, or None when the ramp gives neither a start nor an end and so changes nothing."""
+        """Return its tempo ramp in or out as a TempoRamp, or None when the ramp changes nothing: it gives no bars, or neither a start nor an end."""
         start, end, over = (self._settings[TEMPO_RAMP_SETTINGS[(way, part)]] for part in RAMP_PARTS)
-        if start is None and end is None:
+        if over is None or (start is None and end is None):
             return None
         return TempoRamp(None if start is None else number(start), None if end is None else number(end), over)
 

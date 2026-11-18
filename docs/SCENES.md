@@ -38,13 +38,13 @@ A band that eases into a song, a DJ set that creeps a few beats a minute faster 
 | --- | --- |
 | Tempo in start, Tempo out start | The tempo the ramp starts from. Blank, the ramp starts from the scene's tempo, which is the Tempo field or else the song's tempo. |
 | Tempo in end, Tempo out end | The tempo the ramp reaches. Blank, the ramp reaches the scene's tempo. |
-| Tempo in over, Tempo out over | How many bars the ramp takes, from 1 to 9999. Blank, the ramp takes the whole scene. |
+| Tempo in over, Tempo out over | How many bars the ramp takes, from 1 to 9999. Blank, there is no ramp. |
 
-A ramp does something as soon as its start or its end is given, and `Bksp` on a field makes the field blank again. The tempo changes at every beat, so a ramp of 1 BPM over 64 bars is as smooth as a ramp of 40 BPM over 2. A scene that repeats counts its bars across all of its repeats together, so one ramp runs once through the whole scene. Where the bars of the two ramps overlap, Tempo Ramp In wins. Between the ramps the scene plays at its own tempo, and neither ramp changes anything after the scene: the next scene starts at its own tempo, so a tempo that should stay where a ramp took it is set as the next scene's Tempo.
+A ramp needs its bars and a start or an end, and `Bksp` on a field makes the field blank again. The tempo changes at every step, the set's step size, a sixteenth note unless changed, so a ramp is a slope and never a stair of bars: a note in the middle of a bar is already a little faster than the note before. A ramp of 1 BPM over 64 bars is as smooth as a ramp of 40 BPM over 2. A scene that repeats counts its bars across all of its repeats together, so one ramp runs once through the whole scene. Where the bars of the two ramps overlap, Tempo Ramp In wins. Between the ramps the scene plays at its own tempo, and neither ramp changes anything after the scene: the next scene starts at its own tempo, so a tempo that should stay where a ramp took it is set as the next scene's Tempo.
 
 In an example scenario, a song plays at 120 and a scene of 8 bars sets Tempo in start to 100 and Tempo in over to 2, and Tempo out end to 90 and Tempo out over to 1. The scene starts at 100, reaches 120 as bar 3 starts, plays bars 3 to 7 at 120, and slows through bar 8 to end at 90.
 
-`examples/by_genre/electronic/minimal_techno.yml` climbs from 126 to 132 across its last five scenes, each scene's Tempo Ramp In reaching the tempo the next scene starts at, and its last scene's Tempo Ramp Out slows the final 2 bars to a stop.
+`examples/by_genre/electronic/minimal_techno.yml` climbs from 126 to 132 across its last five scenes, each scene's Tempo Ramp In taking all of the scene's bars to reach the tempo the next scene starts at, and its last scene's Tempo Ramp Out slows the final 2 bars to a stop.
 
 The song's length, each scene's length and each clip's length on Arrange are measured through the ramps, as are the MIDI files, the WAV file and real-time playback. A Live set follows a ramp in Arrangement View only: see [Exporting](EXPORTING.md#export-contents).
 

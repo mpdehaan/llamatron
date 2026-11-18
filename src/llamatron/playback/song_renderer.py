@@ -222,7 +222,7 @@ class SongRenderer:
             base = self._song.get_tempo() if played.get_tempo() is None else played.get_tempo()
             tempos = ramped_tempos(
                 base=base, ramp_in=played.get_tempo_ramp(RampWay.IN), ramp_out=played.get_tempo_ramp(RampWay.OUT),
-                length=sum(lengths, START), bar=signature.bar_length(), beat=signature.beat_length(),
+                length=sum(lengths, START), bar=signature.bar_length(), step=self._song.get_step_size(),
             )
             start = START
             for written, length in zip(rows, lengths):

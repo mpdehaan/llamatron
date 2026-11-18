@@ -263,11 +263,11 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   clip ends, and every clip in a scene looping is an error at build.
 - A scene's tempo ramps (the user's design): `tempo_in_start`, `tempo_in_end` and `tempo_in_over` ramp from the scene's first bar,
   `tempo_out_start`, `tempo_out_end` and `tempo_out_over` back from its last. A start or an end left out is the scene's own tempo
-  (its `tempo`, else the song's), an over left out is the whole scene, and a ramp with neither start nor end does nothing. The
-  tempo changes at every beat (the user's choice, for slow ramps over many bars), counted across all the scene's repeats together;
+  (its `tempo`, else the song's), a ramp with no over, or with neither start nor end, does nothing (the user's design: Over is a number of bars). The
+  tempo changes at every step of the set's step size (the user's rule: a slope, never a stair of bars or beats), counted across all the scene's repeats together;
   the ramp in wins where they overlap; nothing reaches past the scene. `playback/tempo_ramps.py` works the beats out, the renderer
   gives each row its changes (`ClipRow.get_tempo_changes`), and every length in seconds goes through `grid/row_clock.py`'s
-  `RowClock`: the estimate, the real-time score and timeline. The MIDI exports write a tempo change a beat; a Live set writes
+  `RowClock`: the estimate, the real-time score and timeline. The MIDI exports write a tempo change a step; a Live set writes
   them as arrangement automation and launches the Session View scene at its first tempo (the user's choice, documented in
   `docs/EXPORTING.md`). Strums and keyswitch leads, set in milliseconds, are measured at the scene's own tempo, not the ramp's.
   The old `tempo_start` and `tempo_end` are gone, with no reading of older files.

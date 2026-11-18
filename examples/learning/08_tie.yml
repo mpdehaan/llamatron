@@ -253,6 +253,7 @@ songs:
       - name: slow
         repeat: 2
         tempo_in_end: 72
+        tempo_in_over: 8
         tracks:
           bass: { pattern: bass }
           pad: { pattern: pad, loop: true }
