@@ -294,6 +294,24 @@ class TestRiffsAdded(unittest.TestCase):
         self.assertEqual(choices.riff_players_free(NOT_A_KIND), [])
         self.assertEqual(choices.added_riffs(), [])
 
+    def test_a_leaving_players_riff_is_taken_by_a_player_free_in_all_its_kinds_or_dropped(self):
+        choices = chosen()
+        one, other = choices.riff_players_free(A_KIND)[:2]
+        riff = choices.add_riff(kind=A_KIND, players=[one])
+        self.assertEqual(choices.riffs_of_player(one), [riff])
+        self.assertEqual(choices.riffs_of_player(other), [])
+        takers = choices.riff_takers(riff=riff, leaving=one)
+        self.assertIn(other, takers)
+        self.assertNotIn(one, takers)
+        self.assertNotIn(choices.tune_player_in(A_KIND), takers)
+        with self.assertRaises(ValueError):
+            choices.give_riff(riff=riff, leaving=one, taker=choices.tune_player_in(A_KIND))
+        choices.give_riff(riff=riff, leaving=one, taker=other)
+        self.assertEqual(choices.riff_players_of(riff), [other])
+        self.assertIn(riff, self.players_of(choices=choices, kind=A_KIND)[other])
+        choices.drop_riff(riff)
+        self.assertEqual(choices.added_riffs(), [])
+
     def test_a_riffs_players_play_it_in_its_kind_in_place_of_their_parts_and_nowhere_else(self):
         choices = chosen()
         one, other = choices.riff_players_free(A_KIND)[:2]

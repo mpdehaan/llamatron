@@ -329,6 +329,46 @@ class TestWizardRiffs(TunesPanelTest):
         self.assertIn(messages.MSG_WIZARD_RIFF_ADDED.format(riff=riff, kind=A_KIND), self.text())
         self.assertTrue(self.wizard().has_choices_to_lose())
 
+    async def leave_band(self, role):
+        """Go to the Band panel and switch a player out of the band."""
+        await self.press(keybindings.WizardPage.TO_TREE)
+        await self.go_to_named_branch(labels.MSG_WIZARD_BAND_BRANCH)
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        await self.select_field(self.choices().role_title(role))
+        await self.press(keybindings.FieldPage.TOGGLE)
+
+    async def test_a_player_with_a_riff_who_leaves_the_band_is_asked_about_and_another_player_takes_the_riff(self):
+        choices = self.choices()
+        riff = await self.add_riff()
+        player = choices.riff_players_of(riff)[0]
+        takers = choices.riff_takers(riff=riff, leaving=player)
+        await self.leave_band(player)
+        self.assertIsInstance(self.app.screen, ChoiceDialog)
+        shown = self.text()
+        for said in (messages.MSG_WIZARD_RIFF_LEFT_TITLE.format(player=choices.role_title(player), riff=riff), messages.MSG_WIZARD_RIFF_GOES,
+                     *(messages.MSG_WIZARD_RIFF_TAKEN_BY.format(player=choices.role_title(taker)) for taker in takers)):
+            self.assertIn(said, shown)
+        # ESC leaves the player in the band with the riff.
+        await self.press(Key.ESCAPE)
+        self.assertTrue(choices.role_is_in(player))
+        self.assertEqual(choices.riff_players_of(riff), [player])
+        await self.press(keybindings.FieldPage.TOGGLE, Key.ENTER)
+        await self.settle()
+        self.assertFalse(choices.role_is_in(player))
+        self.assertEqual(choices.riff_players_of(riff), takers[:1])
+
+    async def test_remove_the_riff_takes_the_riff_out_as_the_player_leaves(self):
+        choices = self.choices()
+        riff = await self.add_riff()
+        player = choices.riff_players_of(riff)[0]
+        await self.leave_band(player)
+        for _ in choices.riff_takers(riff=riff, leaving=player):
+            await self.press(Key.DOWN)
+        await self.press(Key.ENTER)
+        await self.settle()
+        self.assertFalse(choices.role_is_in(player))
+        self.assertEqual(choices.added_riffs(), [])
+
     async def test_a_riff_of_the_song_is_offered_again_in_another_kind_under_new_riff(self):
         choices = self.choices()
         riff = await self.add_riff()
