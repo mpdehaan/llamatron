@@ -91,6 +91,7 @@ DEGREES_TRIED = 5
 HOOK_LINE = "the hook's notes written by hand"
 OWN_TUNE = 'a tune written by hand'
 TUNE_TAKE = 'another take of a tune'
+RIFF_ADDED = 'a riff added to a kind of section'
 TUNE_BY_SONG_CHOICE = 'who plays the tune in the song'
 TUNE_BY_KIND_CHOICE = 'who plays the tune in a kind of section'
 A_LINE = "a line's own"
@@ -353,6 +354,10 @@ def every_choice(choices):
                 yield TUNE_BY_KIND_CHOICE, (kind, role), lambda made, kind=kind, role=role: made.set_tune_played_by_in(kind=kind, role=role), [nothing_first]
     for kind in choices.tune_kinds():
         yield TUNE_BY_KIND_CHOICE, (kind, NOBODY), lambda made, kind=kind: made.set_tune_played_by_in(kind=kind, role=NOBODY), [nothing_first]
+    # A riff added to each kind of section, for each player free there.
+    for kind in choices.riff_kinds_offered():
+        for role in choices.riff_players_free(kind):
+            yield RIFF_ADDED, (kind, role), lambda made, kind=kind, role=role: made.add_riff(kind=kind, players=[role]), [nothing_first]
     # Another take of a tune, for each kind of section that has one.
     for kind in choices.tune_kinds():
         yield TUNE_TAKE, kind, lambda made, kind=kind: made.new_tune_take(kind), [nothing_first]
