@@ -64,7 +64,7 @@ FOLDER = ROOT / 'docs' / 'screenshots'
 # What the song wizard's shots choose, and the player and the section whose panels are shown.
 WIZARD_GENRE = 'rock'
 WIZARD_SUBGENRE = 'folk rock'
-# The panel of the melody of the kind of section that says the hook line in that subgenre.
+# The panel of the melody of one kind of section in that subgenre.
 WIZARD_SECTION_MELODY = 'Chorus'
 WIZARD_SEED = 7
 WIZARD_PLAYER = 'rhythm guitar'
@@ -168,6 +168,7 @@ SHOTS = [
     Shot(name='wizard_player', wizard=WIZARD_PLAYER, keys=[]),
     Shot(name='wizard_chords', wizard=labels.MSG_WIZARD_CHORDS_BRANCH, keys=[]),
     Shot(name='wizard_melody', wizard=labels.MSG_WIZARD_MELODY_BRANCH, keys=[]),
+    Shot(name='wizard_hooks', wizard=labels.MSG_WIZARD_HOOKS_BRANCH, keys=[]),
     Shot(name='wizard_section_melody', wizard=WIZARD_SECTION_MELODY, keys=[]),
     # The first player's heading opened on each, to show the rows under it.
     Shot(name='wizard_riffs', wizard=labels.MSG_WIZARD_RIFFS_BRANCH, keys=[keybindings.WizardPage.INTO_FIELDS, keybindings.FieldPage.TOGGLE]),

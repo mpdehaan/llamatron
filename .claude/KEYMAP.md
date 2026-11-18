@@ -220,7 +220,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - **the Instrument field, the Activity field, the Accents field, the Range field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `F2` rename
 - **the Chords from field, the Tune from field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` no track · `F2` rename
 - **the Loudness field, the Looseness field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `F2` rename
-- **the Gives way field, the Notes field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` clear · `F2` rename
+- **the Notes field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` clear · `F2` rename
 
 ## NotesPage
 
@@ -450,7 +450,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - GuitarBarEditor: dec (anywhere)
 - HocketEditor: dec (the Source track field, the Restart field)
 - InstrumentEditor: dec (the Channel field, the Keyswitch lead field, the GM sound field)
-- MusicianEditor: dec (the Instrument field, the Activity field, the Accents field, the Range field, the Chords from field, the Tune from field, the Loudness field, the Looseness field, the Gives way field, the Notes field)
+- MusicianEditor: dec (the Instrument field, the Activity field, the Accents field, the Range field, the Chords from field, the Tune from field, the Loudness field, the Looseness field, the Notes field)
 - OffsetsEditor: dec (anywhere)
 - PatternEditor: shrink (the piano roll)
 - PatternEditor: dec (the degree row, the octave row, the accidental row, the dot row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the ax_bx row, the ax_cx row, the ax_dx row, the velocity row, the probability row, the ratchet row, the ratchet_offset row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the chord row, the chord_scale row, the gate row)
@@ -490,7 +490,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - GuitarBarEditor: inc (anywhere)
 - HocketEditor: inc (the Source track field, the Restart field)
 - InstrumentEditor: inc (the Channel field, the Keyswitch lead field, the GM sound field)
-- MusicianEditor: inc (the Instrument field, the Activity field, the Accents field, the Range field, the Chords from field, the Tune from field, the Loudness field, the Looseness field, the Gives way field, the Notes field)
+- MusicianEditor: inc (the Instrument field, the Activity field, the Accents field, the Range field, the Chords from field, the Tune from field, the Loudness field, the Looseness field, the Notes field)
 - OffsetsEditor: inc (anywhere)
 - PatternEditor: stretch (the piano roll)
 - PatternEditor: inc (the degree row, the octave row, the accidental row, the dot row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the ax_bx row, the ax_cx row, the ax_dx row, the velocity row, the probability row, the ratchet row, the ratchet_offset row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the chord row, the chord_scale row, the gate row)
@@ -581,7 +581,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - InstrumentsPage: delete (a row)
 - InstrumentsPage: erase (while searching)
 - MusicianEditor: no track (the Chords from field, the Tune from field)
-- MusicianEditor: clear (the Gives way field, the Notes field)
+- MusicianEditor: clear (the Notes field)
 - NotesPage: erase (while typing)
 - NotesPage: clear (anywhere)
 - OpenPage: erase (while searching)
@@ -730,7 +730,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - InstrumentsPage: keep (while searching)
 - MainPage: open (anywhere)
 - MusicianEditor: rename (the Name field)
-- MusicianEditor: choose (the Instrument field, the Activity field, the Accents field, the Range field, the Chords from field, the Tune from field, the Gives way field, the Notes field)
+- MusicianEditor: choose (the Instrument field, the Activity field, the Accents field, the Range field, the Chords from field, the Tune from field, the Notes field)
 - MusicianEditor: edit (the Loudness field, the Looseness field)
 - NotesPage: new line (while typing)
 - NotesPage: choose (anywhere)
@@ -828,7 +828,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - InstrumentEditor: back (the Name field, the Device field, the Channel field, the Keyswitch lead field, the GM sound field, the Keyswitch Map button)
 - InstrumentsPage: back (a row, the + row)
 - InstrumentsPage: CANCEL (while searching)
-- MusicianEditor: back (the Name field, the Instrument field, the Activity field, the Accents field, the Range field, the Chords from field, the Tune from field, the Loudness field, the Looseness field, the Gives way field, the Notes field)
+- MusicianEditor: back (the Name field, the Instrument field, the Activity field, the Accents field, the Range field, the Chords from field, the Tune from field, the Loudness field, the Looseness field, the Notes field)
 - NotesPage: CANCEL (while typing, anywhere)
 - NotesPage: back (anywhere)
 - OffsetsEditor: back (anywhere)
@@ -877,7 +877,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - GuitarifyEditor: rename (the Name field, the Shape heading, the Strokes heading)
 - HocketEditor: rename (the Name field, the Source track field, the Restart field)
 - InstrumentEditor: rename (the Name field, the Device field, the Channel field, the Keyswitch lead field, the GM sound field, the Keyswitch Map button)
-- MusicianEditor: rename (the Name field, the Instrument field, the Activity field, the Accents field, the Range field, the Chords from field, the Tune from field, the Loudness field, the Looseness field, the Gives way field, the Notes field)
+- MusicianEditor: rename (the Name field, the Instrument field, the Activity field, the Accents field, the Range field, the Chords from field, the Tune from field, the Loudness field, the Looseness field, the Notes field)
 - PatternEditor: rename (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the keyswitch row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
 - PhrasingEditor: rename (the Name field, the Line field, the Breath field, the Rise and fall field, the Notes field)
 - ProgressionEditor: rename (the Name field, the Every field, the Chords field, the Restart field)
@@ -1145,7 +1145,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - HocketEditor: select (the Name field, the Source track field, the Restart field)
 - InstrumentEditor: select (the Name field, the Device field, the Channel field, the Keyswitch lead field, the GM sound field, the Keyswitch Map button)
 - InstrumentsPage: select (a row, the + row, while searching)
-- MusicianEditor: select (the Name field, the Instrument field, the Activity field, the Accents field, the Range field, the Chords from field, the Tune from field, the Loudness field, the Looseness field, the Gives way field, the Notes field)
+- MusicianEditor: select (the Name field, the Instrument field, the Activity field, the Accents field, the Range field, the Chords from field, the Tune from field, the Loudness field, the Looseness field, the Notes field)
 - NotesPage: scroll (anywhere)
 - OpenPage: select (a row, while searching)
 - PatternsPage: select (a group's heading, a pattern, the New Pattern button, the Ungrouped heading, a pattern in no group, the New Pattern Group button, while searching)
@@ -1182,7 +1182,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - **GuitarifyEditor**: Name, [Shape], Shape chords, Tuning, Position, Capo, Strings, Single notes, Color, [Strokes], Play strokes, Bar, Let ring, Spread, Fade, Loose timing, Upstroke strings, Approach, Restart
 - **HocketEditor**: Name, Source track, Restart
 - **InstrumentEditor**: Name, Device, Channel, GM sound, Keyswitch lead, (Keyswitch Map)
-- **MusicianEditor**: Name, Instrument, Chords from, Tune from, Activity, Loudness, Looseness, Gives way, Accents, Notes, Range
+- **MusicianEditor**: Name, Instrument, Chords from, Tune from, Activity, Loudness, Looseness, Accents, Notes, Range
 - **PhrasingEditor**: Name, Line, Breath, Rise and fall, Notes
 - **ProgressionEditor**: Name, Every, Chords, Restart
 - **RegistersPage**: AX allowed inc max, AX at limit, AX minimum, AX default, AX maximum, AX reset each scene, BX allowed inc max, BX at limit, BX minimum, BX default, BX maximum, BX reset each scene, CX allowed inc max, CX at limit, CX minimum, CX default, CX maximum, CX reset each scene, DX allowed inc max, DX at limit, DX minimum, DX default, DX maximum, DX reset each scene

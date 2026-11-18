@@ -233,6 +233,10 @@ code.
   to at its first cell.
 - A `Button` is drawn as the main menu draws a row: the key's name in reverse video and then the
   button's name, with no explanation beside it.
+- A `Button` with no `key_name` shows its name alone, and is reached with the arrows. A page's buttons whose row is wider than
+  the page stand one under another, each a line in brackets, `[ Listen ]` (`MSG_STACKED_BUTTON`), the selected one marked with
+  the triangle and bold; Up and Down then go through them as through the fields (`FieldPage.row_of_buttons`, `buttons_stacked`).
+  A `Heading` made with `starts_open=True` is open until closed, the same toggle closing it.
 - Buttons always come after the settings in `fields()`, and `FieldPage.body` draws them as one row of boxes
   (`tui/components/button_row.py`) below the settings after one blank line, the selected one double-lined, so no page codes
   that gap itself. Down from the last setting reaches the first button, Left and Right move along them

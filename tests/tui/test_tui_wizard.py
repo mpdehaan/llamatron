@@ -40,7 +40,6 @@ from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.tui.screens.wizard.hook_picture import picture_of
-from llamatron.tui.screens.wizard.section_melody_branch import MELODY_KEY
 from llamatron.tui.screens.wizard.starts import NEW_FROM_LAST, NEW_FROM_SCRATCH, REPLACE_FROM_LAST, REPLACE_FROM_SCRATCH, STARTS
 from llamatron.tui.screens.wizard.wizard_page import WizardPage
 from tests.support.ui_testing import UITest, back_key, first_key, fixed_text, forward_key, key_of
@@ -104,9 +103,8 @@ class WizardTest(UITest):
         await self.go_to_branch([branch.name() for _, branch in self.wizard().rows()].index(name))
 
     async def go_to_hook_panel(self):
-        """Move the tree's cursor to the panel of the melody of the kind of section that says the hook line."""
-        kind, _ = self.choices().hook_line_place()
-        await self.go_to_branch([branch.key() for _, branch in self.wizard().rows()].index(MELODY_KEY.format(kind=kind)))
+        """Move the tree's cursor to the Hooks panel."""
+        await self.go_to_named_branch(labels_text.MSG_WIZARD_HOOKS_BRANCH)
 
     async def choose_genre_and_subgenre(self):
         """Choose the first genre and its first subgenre, each with ] (inc) from nothing chosen on its panel, and go back to the tree."""
@@ -1285,7 +1283,7 @@ class TestWizardComposition(WizardTest):
         await self.go_to_hook_panel()
         first = choices.hook_notes()
         await self.press(keybindings.WizardPage.INTO_FIELDS)
-        await self.select_field(labels_text.MSG_WIZARD_NEW_HOOK_BUTTON)
+        await self.select_field(labels_text.MSG_WIZARD_NEW_MAIN_HOOK_BUTTON)
         await self.press(Key.ENTER)
         self.assertNotEqual(choices.hook_notes(), first)
         for line in picture_of(hook=choices.hook_notes(), width=A_WIDE_PANEL):
@@ -1293,7 +1291,7 @@ class TestWizardComposition(WizardTest):
         await self.press(keybindings.WizardPage.TO_TREE)
         choices.set_hook(False)
         await self.press(Key.DOWN, Key.UP)
-        self.assertNotIn(labels_text.MSG_WIZARD_NEW_HOOK_BUTTON, self.text())
+        self.assertNotIn(labels_text.MSG_WIZARD_NEW_MAIN_HOOK_BUTTON, self.text())
 
     async def test_the_hooks_picture_goes_with_the_hook(self):
         await self.choose(genre=A_GENRE_WITH_RHYTHMS)
@@ -1315,18 +1313,19 @@ class TestWizardComposition(WizardTest):
         self.assertLess(len(narrow[1]), len(low))
         self.assertIn(marks.MSG_WIZARD_HOOK_BAR_LINE + (marks.MSG_WIZARD_HOOK_CELL + marks.MSG_WIZARD_HOOK_GAP) * 2, narrow[1])
 
-    async def test_the_hook_is_switched_on_the_hooks_branch(self):
+    async def test_a_genre_with_a_hook_has_no_switch_and_a_song_without_one_is_given_it_on_the_hooks_panel(self):
         await self.choose(genre=A_GENRE_WITH_RHYTHMS)
         choices = self.choices()
         self.assertTrue(choices.has_hook())
         await self.go_to_hook_panel()
+        self.assertNotIn(labels_text.MSG_WIZARD_MAIN_HOOK_LABEL, self.text())
+        choices.set_hook(False)
+        await self.press(Key.DOWN, Key.UP)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
-        await self.select_field(labels_text.MSG_WIZARD_HOOK_LINE_LABEL)
-        await self.press(Key.SPACE)
-        self.assertFalse(choices.has_hook())
-        self.assertIn(labels_text.MSG_WIZARD_HOOK_LINE_LABEL, self.text())
+        await self.select_field(labels_text.MSG_WIZARD_MAIN_HOOK_LABEL)
         await self.press(Key.SPACE)
         self.assertTrue(choices.has_hook())
+        self.assertNotIn(labels_text.MSG_WIZARD_MAIN_HOOK_LABEL, self.text())
 
     async def test_the_progression_starts_on_any_and_is_left_to_chance_again_from_the_field(self):
         await self.choose(genre=self.a_genre_with(PROGRESSION_TRAITS))
@@ -1373,8 +1372,8 @@ class TestWizardComposition(WizardTest):
         names = [branch.name() for _, branch in self.wizard().rows()]
         start = names.index(labels_text.MSG_WIZARD_MELODY_BRANCH) + 1
         kinds = self.choices().tune_kinds()
-        self.assertEqual(names[start:start + len(kinds) + 3],
-                         [*(kind.capitalize() for kind in kinds), labels_text.MSG_WIZARD_RIFFS_BRANCH, labels_text.MSG_WIZARD_RIFF_ASSIGN_BRANCH, labels_text.MSG_WIZARD_SECTION_PLAYERS_BRANCH])
+        self.assertEqual(names[start:start + len(kinds) + 4],
+                         [labels_text.MSG_WIZARD_HOOKS_BRANCH, *(kind.capitalize() for kind in kinds), labels_text.MSG_WIZARD_RIFFS_BRANCH, labels_text.MSG_WIZARD_RIFF_ASSIGN_BRANCH, labels_text.MSG_WIZARD_SECTION_PLAYERS_BRANCH])
 
     async def go_to_the_drums(self):
         choices = self.choices()

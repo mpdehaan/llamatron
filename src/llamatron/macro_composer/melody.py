@@ -48,6 +48,34 @@ ANSWER = 'answer'
 HOOK = 'hook'
 # What a line's notes are seeded by: the song's seed, whether it answers, the line's letter, and its place when it is varied.
 LINE_SEED = '{} {} {} {}'
+# A song's hooks: the main one, which a kind of section's plan places among its lines, and a second, a short tag sung in
+# another kind of section. A song says of the main hook where it sits among its section's lines, and of the second where it is
+# sung, who sings it and which take it is.
+HOOKS = 'hooks'
+MAIN_HOOK = 'main'
+SECOND_HOOK = 'second'
+PLACEMENT = 'placement'
+SUNG_IN = 'sung_in'
+SUNG_BY = 'sung_by'
+TAG_TAKE = 'take'
+FIRST_LINES = 'first lines'
+LAST_LINE = 'last line'
+FIRST_AND_LAST = 'first and last'
+PLACEMENTS = (FIRST_LINES, LAST_LINE, FIRST_AND_LAST)
+# Which of a section's four lines are the hook under each placement.
+PLACED = {FIRST_LINES: (True, True, True, False), LAST_LINE: (False, False, False, True), FIRST_AND_LAST: (True, False, False, True)}
+# A line that is the song's second hook, its tag.
+TAG = 'tag'
+TAG_LINE = 'tag'
+# The lines that lead to a hook or stand between two statements of it, and the line that closes after it.
+TOWARD_LINE = 'toward'
+TURN_LINE = 'turn'
+CLOSE_LINE = 'close'
+TAG_SEED = '{} tag {}'
+# A tag's top sits this far under the lowest place the main hook's top may sit, so that the main hook keeps the song's top.
+TAG_BELOW = 2
+# The rhythms a tag may take, each short and choppy against a hook's long note.
+TAG_RHYTHMS = (hook_kinds.EIGHTHS_WITH_A_GAP, hook_kinds.THREE_THREE_TWO, hook_kinds.AFTER_ONE)
 # A song's later takes of its hook each have dice of their own, so that a new hook leaves every other line as it was.
 HOOK_TAKE = 'hook_take'
 FIRST_HOOK_TAKE = 0
@@ -335,7 +363,7 @@ class StepWalk:
                 lines.append(stressed(self.varied_line(line=[dict(note) for note in known[letter]], dice=dice, entry=entry, under=under)))
                 continue
             made = self.new_line(entry=entry, under=under, dice=dice)
-            if (self._habits.get(BREATHES) or LINE_BREATH in entry or LINE_EARLY in entry) and not entry.get(HOOK):
+            if (self._habits.get(BREATHES) or LINE_BREATH in entry or LINE_EARLY in entry) and not entry.get(HOOK) and not entry.get(TAG):
                 # The breath is drawn apart from the line, so that a line is the same notes whether it breathes or not.
                 made = breathed(line=made, grid=self._grid, count=count, dice=random.Random(BREATH_SEED.format(self._seed, self._answers, letter)),
                                 ways=self._habits[BREATHES] if isinstance(self._habits.get(BREATHES), dict) else None, breath=entry.get(LINE_BREATH), early=entry.get(LINE_EARLY))
@@ -887,18 +915,65 @@ class Hooks(Smart):
         return line
 
 
+class Tags(Hooks):
+    """What makes a song's second hook, its tag: one bar of a few short notes on one pitch and its neighbour, said the same in
+    every bar of its line, under the main hook's top and unlike the main hook in rhythm, so that the two are never mistaken."""
+
+    __slots__ = ('_tag_take',)
+
+    def set_tag_take(self, take):
+        self._tag_take = take
+
+    def tag_rhythm(self):
+        """The tag's bar of lengths: the next of the choppy rhythms that the main hook does not have, each take another."""
+        main = self.kind()
+        free = [name for name in TAG_RHYTHMS if main is None or name != main[hook_kinds.RHYTHM]]
+        order = random.Random(TAG_SEED.format(self._song_seed, 'rhythms')).sample(free, len(free))
+        return hook_kinds.RHYTHMS[order[self._tag_take % len(order)]]
+
+    def tag_line(self, *, under):
+        """A tag: its bar in every bar of the line, the last note of each bar cut for a breath."""
+        unit = self._grid // hook_kinds.UNITS
+        lengths = self.tag_rhythm()
+        top = self.chord_place(chord=under[0], lowest=self._low, highest=max(self._low, self.hook_floor() - TAG_BELOW), toward=self.hook_floor() - TAG_BELOW)
+        # The main hook chants where its contour is a chant, and the tag then rocks between two notes; under any other hook the tag chants.
+        main = self.kind()
+        contour = hook_kinds.ROCKING if main is not None and main[hook_kinds.CONTOUR] == hook_kinds.CHANT else hook_kinds.CHANT
+        depths = iter(hook_kinds.depths_of(contour=contour, count=sum(1 for length in lengths if length > 0)))
+        last = max(place for place, length in enumerate(lengths) if length > 0)
+        bar = []
+        for place, length in enumerate(lengths):
+            if length < 0:
+                bar.append({REST: -length * unit})
+                continue
+            note = self._ladder[self.within(top - next(depths))][1]
+            if place == last and length > 1:
+                bar += [{**note, STEPS: (length - 1) * unit}, {REST: unit}]
+            else:
+                bar.append({**note, STEPS: length * unit})
+        return [copy.deepcopy(cell) for _ in under for cell in bar]
+
+
+def can_tag(grid):
+    """Whether a tag can be written on a bar counted in so many steps: its rhythms are of eight units."""
+    return grid % hook_kinds.UNITS == 0
+
+
 class Hooked(StepWalk):
-    """A writer with a hook: a line the plan marks as its section's hook is the hook maker's, and every other line is the
-    writer's, any engine's, held under the lowest place the hook's top may sit unless the line is marked higher, so that the
-    hook's long note is the top of the song."""
+    """A writer with a hook: a line the plan marks as its section's hook is the hook maker's, a line marked as the song's tag is
+    the tag maker's, and every other line is the writer's, any engine's, held under the lowest place the hook's top may sit
+    unless the line is marked higher, so that the hook's long note is the top of the song."""
 
-    __slots__ = ('_writer', '_hooks', '_take_seed')
+    __slots__ = ('_writer', '_hooks', '_take_seed', '_tags')
 
-    def __init__(self, *, writer, habits, chords, scale_type, seed, answers, voice=None, letters=(), hook_take=FIRST_HOOK_TAKE):
+    def __init__(self, *, writer, habits, chords, scale_type, seed, answers, voice=None, letters=(), hook_take=FIRST_HOOK_TAKE, tag_take=FIRST_HOOK_TAKE):
         super().__init__(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
         self._writer = writer(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
         self._hooks = Hooks(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
         self._hooks.set_take(hook_take)
+        self._tags = Tags(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
+        self._tags.set_take(hook_take)
+        self._tags.set_tag_take(tag_take)
         # Each line's dice are drawn as the writer draws them, so that a line the writer makes is the line the writer would make alone, lowered.
         self._seed = self._writer.seed()
         # The first take of the hook is rolled with its line's dice, as every song made before takes could be asked for; a later take with dice of its own.
@@ -910,11 +985,16 @@ class Hooked(StepWalk):
         return self._writer.held_under(highest=self._hooks.hook_floor() - 1, made=made)
 
     def new_line(self, *, entry, under, dice):
+        if entry.get(TAG) and can_tag(self._grid):
+            return self._tags.tag_line(under=under)
         if entry.get(HOOK):
             return self._hooks.hook_line(under=under, dice=dice if self._take_seed is None else random.Random(self._take_seed))
         return self.under_the_hook(entry=entry, made=lambda: self._writer.new_line(entry=entry, under=under, dice=dice))
 
     def varied_line(self, *, line, dice, entry=None, under=None):
+        if (entry or {}).get(TAG):
+            # A tag comes back the same every time.
+            return line
         if (entry or {}).get(HOOK):
             return self._hooks.varied_hook(line=line, under=under)
         return self.under_the_hook(entry=entry or {}, made=lambda: self._writer.varied_line(line=line, dice=dice, entry=entry, under=under))
@@ -961,13 +1041,13 @@ FORMS = (row_as_written, row_backwards, row_upside_down, row_upside_down_and_bac
 ENGINES = {STEP_WALK: StepWalk, SERIAL: Serial, EVOLVING: Evolving, SMART: Smart}
 
 
-def sketched(*, habits, plan, chords, scale_type, seed, answers, engine=None, voice=None, letters=(), hook=False, hook_take=FIRST_HOOK_TAKE):
+def sketched(*, habits, plan, chords, scale_type, seed, answers, engine=None, voice=None, letters=(), hook=False, hook_take=FIRST_HOOK_TAKE, tag_take=FIRST_HOOK_TAKE):
     """A section's tune as lines, written by the engine named, else the one the habits name, else the step walk; in a song
     with a hook, the lines a plan marks as a hook are the hook maker's and the writer keeps under them in every section. The
     letters are those of every line of the song the player plays, for an engine that tells a song's lines apart."""
     writer = ENGINES[engine or habits.get(ENGINE, STEP_WALK)]
     given = dict(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
-    made_by = Hooked(writer=writer, hook_take=hook_take, **given) if hook else writer(**given)
+    made_by = Hooked(writer=writer, hook_take=hook_take, tag_take=tag_take, **given) if hook else writer(**given)
     return made_by.sketched(plan)
 
 
@@ -1004,6 +1084,36 @@ def plan_as_asked(*, plan, height=None, busy=None, repeats=None):
                 entry[LINE] = LINE_OF_ITS_OWN.format(letter=entry.get(LINE, str(place)), place=place)
         asked.append(entry)
     return asked
+
+
+def placement_of(plan):
+    """Where the hook sits among a section's four lines, by name, or None for a plan of another shape."""
+    marked = tuple(bool(entry.get(HOOK)) for entry in plan)
+    return next((name for name, places in PLACED.items() if places == marked), None)
+
+
+def plan_with_hook_placed(*, plan, placement):
+    """A section's plan of four lines with its hook moved to another place among them: said first three times and closed, led
+    to by three plainer lines, or said first and last with two plainer lines between. The lines that are no hook are plain,
+    never lifted, so that the hook keeps the top. A plan of another shape is left as it is."""
+    if placement_of(plan) in (None, placement) or placement not in PLACED:
+        return plan
+    hook = {field: value for field, value in next(entry for entry in plan if entry.get(HOOK)).items() if field != VARIED}
+    plain = {field: hook[field] for field in (ANSWER,) if field in hook}
+    if placement == FIRST_LINES:
+        return [dict(hook), {**hook, VARIED: True}, dict(hook), {**plain, LINE: CLOSE_LINE}]
+    if placement == LAST_LINE:
+        return [{**plain, LINE: TOWARD_LINE}, {**plain, LINE: TOWARD_LINE, VARIED: True}, {**plain, LINE: TURN_LINE}, dict(hook)]
+    return [dict(hook), {**plain, LINE: TOWARD_LINE}, {**plain, LINE: TOWARD_LINE, VARIED: True}, dict(hook)]
+
+
+def plan_with_tag(*, plan, lines):
+    """A section's plan with the song's tag in it: the last line of a plan that has lines, the lines before it kept, or, in a
+    section with no lines of its own, so many lines of the tag."""
+    tag = {LINE: TAG_LINE, TAG: True}
+    if not plan:
+        return [dict(tag) for _ in range(max(lines, 1))]
+    return [*plan[:-1], {**{field: plan[-1][field] for field in (ANSWER,) if field in plan[-1]}, **tag}]
 
 
 def has_hook(plan):

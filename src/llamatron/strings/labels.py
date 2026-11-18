@@ -796,7 +796,6 @@ MSG_WIZARD_NOTES_WIZARD = 'from wizard'
 MSG_WIZARD_NOTES_EDITED = 'edited'
 MSG_WIZARD_LISTEN_BUTTON = 'Listen'
 MSG_WIZARD_REGENERATE_BUTTON = 'Regenerate'
-MSG_WIZARD_GROUP_HOOK = 'Hook Kind'
 # tui/screens/wizard/riffs_branch.py, tui/screens/wizard/riff_assign_branch.py, tui/screens/wizard/section_players_branch.py, tui/dialogs/new_riff_dialog.py: the riffs.
 MSG_WIZARD_RIFFS_BRANCH = 'Riffs'
 MSG_WIZARD_RIFF_ASSIGN_BRANCH = 'Riff Assign'
@@ -810,7 +809,18 @@ MSG_NEW_RIFF_LABELS = {'bars': 'Bars', 'notes': 'Made of', 'with chords': 'Follo
 MSG_NEW_RIFF_VALUES = {1: '1', 2: '2', 'single notes': 'notes', 'chords on the accents': 'notes and chords', 'muted roots': 'muted roots', 'rests': 'silence'}
 MSG_NEW_RIFF_BUTTONS = ('Write Riff', 'CANCEL')
 # tui/screens/wizard/section_melody_branch.py: a kind of section's melody.
-MSG_WIZARD_HOOK_LINE_LABEL = 'Hook line'
+MSG_WIZARD_LISTEN_BAND_BUTTON = 'Listen With Band'
+# tui/screens/wizard/hooks_branch.py: the song's hooks.
+MSG_WIZARD_HOOKS_BRANCH = 'Hooks'
+MSG_WIZARD_MAIN_HOOK_HEADING = 'Main Hook'
+MSG_WIZARD_SECOND_HOOK_HEADING = 'Second Hook'
+MSG_WIZARD_MAIN_HOOK_LABEL = 'Main hook'
+MSG_WIZARD_SECOND_HOOK_LABEL = 'Second hook'
+MSG_WIZARD_SUNG_IN_LABEL = 'Sung in'
+MSG_WIZARD_SECOND_SUNG_IN_LABEL = 'Tag sung in'
+MSG_WIZARD_PLACEMENT_LABEL = 'Placement'
+MSG_WIZARD_NEW_MAIN_HOOK_BUTTON = 'New Main Hook'
+MSG_WIZARD_NEW_SECOND_HOOK_BUTTON = 'New Second Hook'
 MSG_WIZARD_PROGRESSION_LABEL = 'Progression'
 MSG_WIZARD_HOOK_NOTES_LABEL = 'Hook notes'
 MSG_WIZARD_HOOK_NOTES_OWN = 'edited'
@@ -879,7 +889,6 @@ MSG_WIZARD_FORM_QUESTION_TITLES = {
     'verses first': 'Verses before the first chorus', 'pre-choruses': 'Pre-chorus', 'bridge': 'Bridge', 'solos': 'Solos', 'drum solo': 'Drum solo',
     'last choruses': 'Choruses at the end',
 }
-MSG_WIZARD_NEW_HOOK_BUTTON = 'New hook'
 MSG_WIZARD_ROW_LABELS = {'lengths': 'Lengths', 'loudness': 'Loudness', 'articulation': 'Articulation'}
 MSG_WIZARD_SUGGESTED_FORM_TITLE = 'Suggested forms'
 MSG_WIZARD_REPLACE_SECTIONS_TITLE = 'Replace sections'

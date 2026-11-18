@@ -262,6 +262,8 @@ MSG_CC_LANE_VARIES = '?'
 MSG_TOGGLE_OFF = ' '
 # After the value of a settings field whose ENTER opens a list of choices (tui/screens/shared/field_page.py).
 MSG_PICKER_MARK = '▾'
+# A button of a settings page whose buttons stand one under another (tui/screens/shared/field_page.py).
+MSG_STACKED_BUTTON = '[ {name} ]'
 # tui/dialogs/chord_dialog.py: a row that opens a flyout, drawn as a button, alone and with the choice made inside it, with and without room for its own name, and the
 # flyout's heading.
 MSG_FLYOUT_CHOSEN = '[ {name} ▸ {chosen} ]'

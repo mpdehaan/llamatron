@@ -118,7 +118,8 @@ class MusicianEditor(ShowsNamedItem, FieldPage):
             self.choice(label=labels.MSG_MUSICIAN_ACTIVITY_LABEL, setting=MusicianSetting.ACTIVITY, choices=musician.ACTIVITIES),
             self.gauge(label=labels.MSG_MUSICIAN_LOUDNESS_LABEL, setting=MusicianSetting.LOUDNESS, lowest=musician.QUIETEST, highest=musician.LOUDEST),
             self.gauge(label=labels.MSG_MUSICIAN_LOOSENESS_LABEL, setting=MusicianSetting.LOOSENESS, lowest=musician.TIGHT, highest=musician.LOOSEST),
-            self.habit(label=labels.MSG_MUSICIAN_GIVES_WAY_LABEL, setting=MusicianSetting.GIVES_WAY, choices=musician.GIVES_WAY),
+            # Giving way is to the melody's track, so the field shows only once a track is named.
+            *([self.habit(label=labels.MSG_MUSICIAN_GIVES_WAY_LABEL, setting=MusicianSetting.GIVES_WAY, choices=musician.GIVES_WAY)] if own.get_tune_from() is not None else []),
             self.choice(label=labels.MSG_MUSICIAN_ACCENTS_LABEL, setting=MusicianSetting.ACCENTS, choices=musician.ACCENTS),
             self.habit(label=labels.MSG_MUSICIAN_NOTES_LABEL, setting=MusicianSetting.NOTES, choices=musician.NOTE_LENGTHS),
             *([self.choice(label=labels.MSG_MUSICIAN_RANGE_LABEL, setting=MusicianSetting.RANGE, choices=musician.RANGES)] if pitched else []),

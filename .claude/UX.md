@@ -164,6 +164,13 @@ a feature that already exists does what's being asked, that's pointed out first
   a closed heading saying `(set)` when anything inside holds a value (the user's design). Action rows are `Button`s, drawn below the settings after
   one blank line, the key's name in reverse video and then the button's name, so that what edits
   the set and what acts on it never run together.
+- A settings page's buttons stand in one row where the row fits, and one under another, each a line in brackets, where a row
+  would be wider than the page; Up and Down then go through them. A button deep in a page needs no key of its own: the arrows
+  and ENTER reach and press it, and only what is pressed often keeps a letter (the user's rules).
+- A list of a field's values is one list in the values' own order, with no separate row for the value from above: the value the
+  genre, the song or the level above already gives is marked in the list, `middle (from genre)`, and picking it gives the field
+  back. A value that would make exactly what the marked value makes is left out of the list (the user's design, for the wizard's
+  melody fields first).
 
 ## Pickers and lists
 

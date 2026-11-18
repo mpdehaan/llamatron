@@ -64,7 +64,10 @@ class MelodyBranch(Branch):
         """Return the field of how busy the melodies are, how wide they range or how much they repeat."""
         choices = self.choices()
         ways = choices.melody_ways_offered(field)
-        return ChoiceField(page=self.page(), label=labels.MSG_WIZARD_MELODY_WAY_LABELS[field], choices=ways, current=choices.get_melody_way(field),
+        # The genre's own value is said to be so, in the field and in its list.
+        names = [labels.MSG_WIZARD_VALUE_FROM.format(value=value, origin=labels.MSG_WIZARD_USUAL_MELODY) if value == choices.genre_melody_way(field) else value for value in ways]
+        now = choices.get_melody_way(field)
+        return ChoiceField(page=self.page(), label=labels.MSG_WIZARD_MELODY_WAY_LABELS[field], choices=ways, names=names, current=now, shown=names[ways.index(now)],
                            set=self.page().choosing(lambda value: choices.set_melody_way(field=field, value=value)))
 
     def character_field(self):

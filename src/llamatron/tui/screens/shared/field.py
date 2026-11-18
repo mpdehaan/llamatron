@@ -212,12 +212,13 @@ class Button(Field):
     """A row that runs an action on Enter, like Save on the File page, so that nobody has to remember its key.
 
     It shows the key it stands for the way the main screen's menu does, and nothing else: a
-    button's name says what it does, or the dialog it opens will. A page's buttons always come
+    button's name says what it does, or the dialog it opens will. A button reached only with the
+    arrows has no key's name. A page's buttons always come
     after its settings, and the page draws them below the settings after one blank line, so that
     what edits the set and what acts on it never run together.
     """
 
-    key_name: str
+    key_name: str = NOTHING
     value: Callable = lambda: NOTHING
 
 
@@ -234,6 +235,8 @@ class Heading(Field):
     toggle: Callable = None
     value: Callable = None
     enter_what: str = None
+    # A heading over the few fields a page is for starts open, and is closed by hand.
+    starts_open: bool = False
     # What the heading says after its name in place of the mark of a value inside, as a list's heading says how many it holds.
     said: Callable = None
 
