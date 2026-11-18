@@ -50,7 +50,7 @@ def chosen(*, genre=A_GENRE, subgenre=A_SUBGENRE, plan=None):
 
 
 def patterns(choices):
-    return choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+    return choices.written_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
 
 
 def notes_of(choices, *, line, place=A_VERSE):

@@ -147,6 +147,12 @@ class TestWhatFollowsFromEnergy(unittest.TestCase):
         rising = sections[FORM.index(PRE_CHORUS)][SCENE_SETTINGS]
         self.assertLess(rising[SWELL_START], rising[SWELL_END])
 
+    def test_a_rising_section_ends_its_climb_at_the_loudness_of_the_section_it_leads_to(self):
+        sections = sections_of(song())
+        rising = sections[FORM.index(PRE_CHORUS)][SCENE_SETTINGS]
+        self.assertEqual(FORM.index(PRE_CHORUS) + 1, FIRST_CHORUS)
+        self.assertEqual(rising[SWELL_END], sections[FIRST_CHORUS][SCENE_SETTINGS][SWELL_START])
+
     def test_players_come_in_with_energy_and_reach_further(self):
         sections = sections_of(song())
         self.assertNotIn(VOICES, sections[FORM.index(VERSE)][PLAYS])

@@ -50,7 +50,7 @@ def chosen(*, subgenre=A_PLAIN_SUBGENRE):
 
 
 def patterns(choices):
-    return choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+    return choices.written_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
 
 
 def pattern_of(*, role, riff):

@@ -114,7 +114,7 @@ class TestWizardHookNotes(unittest.TestCase):
 
     def made(self, choices):
         """The music of the song made: its patterns."""
-        return choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+        return choices.written_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
 
     def test_the_wizard_s_own_line_written_back_is_the_same_hook_and_the_same_song(self):
         choices = self.chosen()

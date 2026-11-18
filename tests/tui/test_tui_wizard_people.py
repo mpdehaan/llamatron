@@ -56,7 +56,7 @@ class TestWizardPeople(WizardTest):
         return [role in choices.section_plays(place) for place in range(len(choices.section_labels()))]
 
     def patterns(self, choices):
-        return choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+        return choices.written_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
 
     def more(self):
         return key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)

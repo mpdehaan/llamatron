@@ -121,6 +121,8 @@ The Form panel chooses the sections the song plays and in what order. Starts wit
 
 Each section has a panel under Form in the tree. On a section, `I` (insert) adds a section before it, `A` (add) adds one at the end, `C` (copy) copies it, `Bksp` (delete) removes it and `M` (move) carries it to another place. The section's settings choose its kind, how many bars it lasts and its energy, and its headings open the section's tune, harmony, shape, the way it joins the section after it, and who plays in it.
 
+A section with more energy is lifted in several ways at once: more players come in, parts grow fuller and the drummer plays harder. So that the section does not arrive too loud, a player whose part grows much denser plays each note a little softer, as a guitarist strumming full chords does not hit each string as hard. A player who comes in, and whoever carries the melody, are left as they are. A section that builds, such as a pre-chorus, ends its climb at the loudness of the section it leads to.
+
 ![The panel of one section, the first verse](screenshots/wizard_section.svg)
 
 ## Apply

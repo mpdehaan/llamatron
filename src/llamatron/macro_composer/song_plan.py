@@ -307,7 +307,12 @@ class SongPlan:
         rising = self._rises(place)
         if self._at(place).get(FADES):
             return {SWELL_START: loudness_at(energy), SWELL_END: FADED}
-        return {SWELL_START: loudness_at(energy - RISES_FROM if rising else energy), SWELL_END: loudness_at(energy)}
+        return {SWELL_START: loudness_at(energy - RISES_FROM if rising else energy), SWELL_END: loudness_at(self._arrives_at(place) if rising else energy)}
+
+    def _arrives_at(self, place):
+        """The Energy a rising section ends its climb at: that of the section it leads to where that one is higher, so that the climb arrives."""
+        after = self._energies[place + 1] if place + 1 < len(self._energies) else self._energies[place]
+        return max(self._energies[place], after)
 
     # Joins.
 

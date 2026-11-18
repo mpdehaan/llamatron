@@ -238,14 +238,14 @@ class TestWizardChoices(unittest.TestCase):
                 choices.set_seed(A_SEED)
                 for form in choices.forms():
                     choices.set_form(form)
-                    song = choices.made_setlist(name=A_NAME, version=VERSION).get_song(A_NAME)
+                    song = choices.written_setlist(name=A_NAME, version=VERSION).get_song(A_NAME)
                     made = sum(float(scene.seconds) for scene in SongRenderer(song).estimate())
                     self.assertAlmostEqual(choices.form_seconds(), made, delta=A_SECOND, msg=(choices.get_subgenre(), form))
 
 
 def scene_bars_of(choices):
     """How long each scene of the song made lasts, in bars."""
-    song = choices.made_setlist(name=A_NAME, version=VERSION).get_song(A_NAME)
+    song = choices.written_setlist(name=A_NAME, version=VERSION).get_song(A_NAME)
     seconds_in_a_bar = float(Fraction(choices.meter()) * QUARTERS_IN_WHOLE * SECONDS_IN_MINUTE / choices.get_tempo())
     return [round(float(scene.seconds) / seconds_in_a_bar) for scene in SongRenderer(song).estimate()]
 
@@ -489,7 +489,7 @@ class TestWizardSongWays(unittest.TestCase):
         return choices
 
     def patterns(self, choices):
-        return choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+        return choices.written_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
 
     def test_nothing_of_the_song_is_offered_before_a_subgenre_is_chosen(self):
         choices = WizardChoices()
@@ -502,19 +502,6 @@ class TestWizardSongWays(unittest.TestCase):
             owned = {trait for role in choices.roles() for trait in choices.role_traits(role)}
             for traits in (PROGRESSION_TRAITS, FILLS_TRAITS):
                 self.assertNotIn(choices.song_trait(traits), owned)
-
-    def test_every_way_of_every_song_trait_of_every_subgenre_makes_a_song_that_plays(self):
-        for place in range(len(genre_names())):
-            for subgenre in range(len(chosen(genre=place).subgenres())):
-                choices = chosen(genre=place, subgenre=subgenre)
-                choices.set_seed(A_SEED)
-                for traits in (PROGRESSION_TRAITS, FILLS_TRAITS):
-                    trait = choices.song_trait(traits)
-                    for way in (choices.song_ways(trait) if trait else []):
-                        with self.subTest(subgenre=choices.get_subgenre(), trait=trait, way=way):
-                            choices.set_way(trait=trait, value=way)
-                            self.assertEqual(choices.get_way(trait), way)
-                            SongRenderer(choices.made_setlist(name=A_NAME, version=VERSION).get_song(A_NAME)).render()
 
     def test_another_progression_changes_the_song(self):
         choices = self.rock()
@@ -584,7 +571,7 @@ class TestWizardSounds(unittest.TestCase):
 
     def test_the_usual_sounds_change_nothing_and_each_other_kind_moves_a_player_and_is_made(self):
         choices = self.rock()
-        usual = choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.INSTRUMENTS]
+        usual = choices.written_setlist(name=A_NAME, version=VERSION).to_data()[Section.INSTRUMENTS]
         self.assertEqual(choices.get_band_sounds(), USUAL_SOUNDS)
         self.assertEqual(choices.get_sound(A_BASS), choices.usual_sound(A_BASS))
         any_moved = False
@@ -592,7 +579,7 @@ class TestWizardSounds(unittest.TestCase):
             choices.set_band_sounds(sounds)
             moved = [role for role in choices.roles_in() if choices.has_sound(role) and choices.get_sound(role) != choices.usual_sound(role)]
             # A band already of the kind chosen, as an electric rock band, keeps its sounds and makes the same song.
-            self.assertEqual(choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.INSTRUMENTS] != usual, bool(moved), sounds)
+            self.assertEqual(choices.written_setlist(name=A_NAME, version=VERSION).to_data()[Section.INSTRUMENTS] != usual, bool(moved), sounds)
             any_moved = any_moved or bool(moved)
             for role in moved:
                 self.assertEqual(self.sound_made(choices=choices, role=role), choices.get_sound(role))
@@ -773,9 +760,9 @@ class TestWizardKit(unittest.TestCase):
 
     def test_the_other_pieces_play_as_they_did(self):
         choices = self.rock()
-        before = choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+        before = choices.written_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
         choices.set_piece_on(piece=choices.pieces()[-1], on=False)
-        after = choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+        after = choices.written_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
         self.assertLess(len(after), len(before))
         for name, pattern in after.items():
             self.assertEqual(pattern, before[name], name)
@@ -811,7 +798,7 @@ class TestWizardFillsAndQuietNotes(unittest.TestCase):
         return choices
 
     def patterns(self, choices):
-        return choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+        return choices.written_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
 
     def with_quiet_notes(self):
         """Choices whose snare has quiet notes: the first groove of any genre that has them."""
@@ -895,7 +882,7 @@ class TestWizardMelodySettings(unittest.TestCase):
         return choices
 
     def patterns(self, choices):
-        return choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+        return choices.written_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
 
     def another_value(self, *, choices, name):
         """A value of a setting other than the one it has."""
@@ -1067,7 +1054,7 @@ class TestWizardMelodyGauges(unittest.TestCase):
         return choices
 
     def patterns(self, choices):
-        return choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+        return choices.written_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
 
     def test_a_song_has_a_hook_where_the_genre_says_until_switched_and_the_switch_is_kept(self):
         choices = self.rock()
@@ -1258,7 +1245,7 @@ class TestWizardStandIns(unittest.TestCase):
         self.assertIn(A_SOUND_OF_NO_STYLE, self.sounds_made(choices))
 
     def sounds_made(self, choices):
-        instruments = choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.INSTRUMENTS]
+        instruments = choices.written_setlist(name=A_NAME, version=VERSION).to_data()[Section.INSTRUMENTS]
         return {instrument.get(GM_SOUND_KEY) for instrument in instruments.values()}
 
 
@@ -1364,6 +1351,50 @@ class EveryPlayerOfAGenre:
         choices.set_role_in(role=role, on=was_in or len(choices.roles_in()) < 1)
 
 
+class EverySongWayOfAGenre:
+    """Every way of every trait of the whole song, in every subgenre of one genre, makes a song that plays: a class for each
+    genre, since the whole takes long and the classes run side by side."""
+
+    GENRE = None
+
+    def test_every_way_of_every_song_trait_of_every_subgenre_makes_a_song_that_plays(self):
+        place = genre_names().index(self.GENRE)
+        for subgenre in range(len(chosen(genre=place).subgenres())):
+            choices = chosen(genre=place, subgenre=subgenre)
+            choices.set_seed(A_SEED)
+            for traits in (PROGRESSION_TRAITS, FILLS_TRAITS):
+                trait = choices.song_trait(traits)
+                for way in (choices.song_ways(trait) if trait else []):
+                    with self.subTest(subgenre=choices.get_subgenre(), trait=trait, way=way):
+                        choices.set_way(trait=trait, value=way)
+                        self.assertEqual(choices.get_way(trait), way)
+                        SongRenderer(choices.made_setlist(name=A_NAME, version=VERSION).get_song(A_NAME)).render()
+
+
+class TestEverySongWayOfBlues(EverySongWayOfAGenre, unittest.TestCase):
+    GENRE = 'blues'
+
+
+class TestEverySongWayOfElectronic(EverySongWayOfAGenre, unittest.TestCase):
+    GENRE = 'electronic'
+
+
+class TestEverySongWayOfExperimental(EverySongWayOfAGenre, unittest.TestCase):
+    GENRE = 'experimental'
+
+
+class TestEverySongWayOfRock(EverySongWayOfAGenre, unittest.TestCase):
+    GENRE = 'rock'
+
+
+class TestEverySongWayOfSixtiesPop(EverySongWayOfAGenre, unittest.TestCase):
+    GENRE = 'sixties_pop'
+
+
+class TestEverySongWayOfSoulFunk(EverySongWayOfAGenre, unittest.TestCase):
+    GENRE = 'soul_funk'
+
+
 class TestEveryPlayerOfBlues(EveryPlayerOfAGenre, unittest.TestCase):
     GENRE = 'blues'
 
@@ -1392,6 +1423,10 @@ class TestEveryGenreHasItsPlayersTested(unittest.TestCase):
 
     def test_every_genre_has_a_class_that_tries_its_players(self):
         tried = sorted(tests.GENRE for tests in EveryPlayerOfAGenre.__subclasses__())
+        self.assertEqual(tried, sorted(genre_names()))
+
+    def test_every_genre_has_a_class_that_tries_its_song_ways(self):
+        tried = sorted(tests.GENRE for tests in EverySongWayOfAGenre.__subclasses__())
         self.assertEqual(tried, sorted(genre_names()))
 
 
@@ -1446,9 +1481,9 @@ class TestWizardBand(unittest.TestCase):
     def test_each_player_starts_a_little_busy_and_busier_players_change_the_song(self):
         choices = self.rock()
         self.assertEqual(choices.get_busy(DRUMS), USUAL_BUSY)
-        usual = choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+        usual = choices.written_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
         choices.set_busy(role=DRUMS, level=MOST_BUSY)
-        self.assertNotEqual(choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS], usual)
+        self.assertNotEqual(choices.written_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS], usual)
         for level in (LEAST_BUSY - 1, MOST_BUSY + 1, NOT_A_NUMBER, True):
             with self.assertRaises(ValueError):
                 choices.set_busy(role=DRUMS, level=level)

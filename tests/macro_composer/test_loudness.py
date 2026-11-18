@@ -66,7 +66,7 @@ def chosen(*, genre=ROCK, subgenre=HARD_ROCK):
 
 
 def patterns(choices):
-    return choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+    return choices.written_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
 
 
 def sounded(pattern):
