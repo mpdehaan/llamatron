@@ -36,12 +36,12 @@ from llamatron.macro_composer import interplay
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT
 from llamatron.support.version import VERSION
 from llamatron.macro_composer import hook_writing, line_edits, phrasing
-from llamatron.macro_composer.song_plan import HIGHEST_ENERGY, LOWEST_ENERGY
+from llamatron.macro_composer.song_plan import FADE_LEVEL, FADE_OVER, FADES, HIGHEST_ENERGY, LOWEST_ENERGY
 from llamatron.macro_composer.melody import LINE_NOTES
 from llamatron.macro_composer.phrasing import LINE_BREATH, LONGEST_BREATH, NO_BREATH
 from llamatron.macro_composer.loudness import LEAST_DYNAMICS, MOST_DYNAMICS
 from llamatron.macro_composer.riffs import RIFF_BAR_COUNT, RIFF_NOTES
-from llamatron.macro_composer.wizard_choices import (ATONAL, RIFF_SETTINGS, LINE_BREATHES, ONE_PLAYER_FIRST, PHRASING_OFFERED, USUAL_PIECE_NOTE, BAND_SOUNDS, FEWEST_FILLS, FILLS_TRAITS, LEAST_BUSY, MOST_BUSY, MOST_FILLS, ONE_GUITARIST_COUNT,
+from llamatron.macro_composer.wizard_choices import (ATONAL, FADE_IN, RIFF_SETTINGS, LINE_BREATHES, ONE_PLAYER_FIRST, PHRASING_OFFERED, USUAL_PIECE_NOTE, BAND_SOUNDS, FEWEST_FILLS, FILLS_TRAITS, LEAST_BUSY, MOST_BUSY, MOST_FILLS, ONE_GUITARIST_COUNT,
                                                      USUAL_SOUNDS, WizardChoices, genre_names)
 
 A_NAME = 'a_song'
@@ -100,6 +100,13 @@ OWN_TUNE = 'a tune written by hand'
 OWN_SOLO_NOTES = 'a solo written by hand'
 SOLO_TAKE = 'another take of a solo'
 OWN_INTRO_NOTES = 'an intro melody written by hand'
+INTRO_PART_MELODY = 'who says the hook in a part of the intro'
+A_FADE = 'a fade'
+A_FADE_LEVEL = 'the velocity of a fade'
+A_FADE_OVER = 'the bars of a fade in'
+INTRO_PART = 'a part of the intro added'
+A_VELOCITY = 64
+A_BAR = 1
 TUNE_TAKE = 'another take of a tune'
 OWN_RIFF = 'a riff written by hand'
 TUNE_BY_SONG_CHOICE = 'who plays the tune in the song'
@@ -135,7 +142,7 @@ KNOWN_TO_CHANGE_NOTHING = {('rock', FIRST_PART): {SECTION_SHAPE: 2}, ('sixties_p
                            }
 A_SECOND_PLACE = 1
 NO_PLAN = 'with no plan'
-SECTION_OWN_ANYWHERE = (('fades', True), ('chords', '6 4 2 5'), ('chords', '1 4'), ('tempo', 61), ('tempo_end', 62), ('root', 'F#'), ('root', 'C'), ('type', 'minor'), ('type', 'major'))
+SECTION_OWN_ANYWHERE = (('chords', '6 4 2 5'), ('chords', '1 4'), ('tempo', 61), ('tempo_end', 62), ('root', 'F#'), ('root', 'C'), ('type', 'minor'), ('type', 'major'))
 # A value of each field a section can be given of its own.
 SECTION_OWN_TRIED = (('rises', True), ('energy', 10), ('energy', 1), ('leaves', 'stops'), ('leaves', 'build'), ('leaves', 'drop-out'), ('leaves', 'a big fill'), ('leaves', 'a small fill'), ('leaves', 'nothing'),
                      ('chords', '6 4 2 5'), ('tempo', 61), ('tempo_end', 62), ('root', 'F#'), ('type', 'minor'), ('type', 'major'))
@@ -369,13 +376,29 @@ def every_choice(choices):
             def said_first(made, role=role):
                 made.set_song_plan(True)
                 made.set_intro_hook(role)
-            yield OWN_INTRO_NOTES, role, lambda made: made.set_intro_pattern(first_degree_changed(made.intro_pattern())), [said_first]
+            yield OWN_INTRO_NOTES, role, lambda made: made.set_intro_pattern(pattern=first_degree_changed(made.intro_pattern())), [said_first]
+            for place in under_plan.intro_parts():
+                yield INTRO_PART_MELODY, (place, role), lambda made, place=place, role=role: made.set_intro_melody(place=place, role=role), [planned_first]
         for place in range(len(under_plan.section_labels())):
             for shape in under_plan.section_shapes(place):
                 yield SECTION_SHAPE, (place, shape), lambda made, place=place, shape=shape: made.set_section_own(place=place, field='shape', value=shape), [planned_first]
         for field, value in SECTION_OWN_TRIED:
             if field in under_plan.section_own_fields(A_SECOND_PLACE) and value != under_plan.section_from_plan(place=A_SECOND_PLACE, field=field):
                 yield SECTION_OWN, (field, value), lambda made, field=field, value=value: made.set_section_own(place=A_SECOND_PLACE, field=field, value=value), [planned_first]
+    # A fade, with or without a plan: a section that opens the song fades in and one that closes it fades out, each from or to a
+    # velocity, and a fade in over its bars.
+    for place in range(len(choices.section_labels())):
+        if choices.fade_way(place) is None:
+            continue
+
+        def fades_first(made, place=place):
+            made.set_section_own(place=place, field=FADES, value=True)
+        yield A_FADE, place, fades_first, [nothing_first]
+        yield A_FADE_LEVEL, place, lambda made, place=place: made.set_section_own(place=place, field=FADE_LEVEL, value=A_VELOCITY), [fades_first]
+        if choices.fade_way(place) == FADE_IN and choices.section_bars(place) > A_BAR:
+            yield A_FADE_OVER, place, lambda made, place=place: made.set_section_own(place=place, field=FADE_OVER, value=A_BAR), [fades_first]
+    if choices.intro_parts():
+        yield INTRO_PART, None, lambda made: made.add_intro_part(), [nothing_first]
     for field, value in SECTION_OWN_ANYWHERE:
         # What a section of any genre can be given of its own, held with no plan, on the second section where it takes any.
         if field in without_plan(choices).section_own_fields(A_SECOND_PLACE) and value != without_plan(choices).section_from_plan(place=A_SECOND_PLACE, field=field):

@@ -18,12 +18,13 @@
 
 import unittest
 
-from llamatron.composition.file_format import SceneSetting, Section
+from llamatron.composition.file_format import BARS_WRITTEN, SceneSetting, Section
 from llamatron.macro_composer.arranger import style_names
-from llamatron.macro_composer.song_plan import FADED, FADES, TEMPO_END_OF_PLACE
+from llamatron.macro_composer.song_plan import FADE_LEVEL, FADE_OVER, FADED, FADES, TEMPO_END_OF_PLACE, UNFADED
 from llamatron.macro_composer.wizard_choices import (
-    DRUM_FILL_IN, DRUMS_FIRST, ENDS, FULL_BAND, HARD_STOP, HELD_CHORD, LAYERS, ONE_PLAYER_ALONE, ONE_PLAYER_FIRST, OUTRO_KIND, REPEAT_AND_FADE, SLOWS_DOWN, STARTS, STRAIGHT_IN, STRIPS_DOWN, WizardChoices,
+    DRUM_FILL_IN, DRUMS_FIRST, ENDS, FADE_IN, FADE_OUT, FULL_BAND, HARD_STOP, HELD_CHORD, LAYERS, ONE_PLAYER_ALONE, ONE_PLAYER_FIRST, OUTRO_KIND, REPEAT_AND_FADE, SLOWS_DOWN, STARTS, STRAIGHT_IN, STRIPS_DOWN, WizardChoices,
 )
+from llamatron.music import midi
 from llamatron.support.version import VERSION
 
 A_NAME = 'made'
@@ -40,6 +41,8 @@ NOT_A_WAY = 'sideways'
 NOT_BARS = 3
 FIRST = 0
 A_VERSE = 1
+HALF_VELOCITY = 63
+TWO_BARS = 2
 
 
 def chosen(*, genre=A_GENRE, subgenre=A_SUBGENRE):
@@ -213,13 +216,43 @@ class TestWizardEnds(unittest.TestCase):
         scene = made(choices).get_song(A_NAME).get_scenes()[last - 1]
         self.assertEqual(scene.to_data()[SceneSetting.SWELL_END], FADED)
 
-    def test_any_section_fades_with_or_without_a_plan(self):
+    def test_an_opening_section_fades_in_and_a_closing_one_fades_out_with_or_without_a_plan_and_no_other_fades(self):
         for plan in (True, False):
             choices = chosen()
             choices.set_song_plan(plan)
-            self.assertFalse(choices.section_from_plan(place=A_VERSE, field=FADES))
-            before = made(choices).get_song(A_NAME).get_scenes()[A_VERSE].to_data()
-            choices.set_section_own(place=A_VERSE, field=FADES, value=True)
-            after = made(choices).get_song(A_NAME).get_scenes()[A_VERSE].to_data()
-            self.assertNotEqual(before, after)
-            self.assertEqual(after[SceneSetting.SWELL_END], FADED)
+            choices.set_end(REPEAT_AND_FADE)
+            last = len(choices.section_kinds_in_form()) - 1
+            self.assertEqual((choices.fade_way(FIRST), choices.fade_way(A_VERSE), choices.fade_way(last)), (FADE_IN, None, FADE_OUT))
+            self.assertNotIn(FADES, choices.section_own_fields(A_VERSE))
+            with self.assertRaises(ValueError):
+                choices.set_section_own(place=A_VERSE, field=FADES, value=True)
+            # A fade in rises from silence over the whole section until it is given a velocity and its bars.
+            self.assertEqual(choices.fade_fields(FIRST), [FADES])
+            choices.set_section_own(place=FIRST, field=FADES, value=True)
+            self.assertEqual(choices.fade_fields(FIRST), [FADES, FADE_LEVEL, FADE_OVER])
+            self.assertEqual(choices.section_from_plan(place=FIRST, field=FADE_LEVEL), FADED)
+            self.assertEqual(choices.section_from_plan(place=FIRST, field=FADE_OVER), choices.section_bars(FIRST))
+            scene = made(choices).get_song(A_NAME).get_scenes()[FIRST].to_data()
+            self.assertEqual(scene[SceneSetting.SWELL_START], FADED)
+            self.assertGreater(scene[SceneSetting.SWELL_END], FADED)
+            choices.set_section_own(place=FIRST, field=FADE_LEVEL, value=HALF_VELOCITY)
+            choices.set_section_own(place=FIRST, field=FADE_OVER, value=TWO_BARS)
+            scene = made(choices).get_song(A_NAME).get_scenes()[FIRST].to_data()
+            self.assertEqual(scene[SceneSetting.SWELL_START], round(HALF_VELOCITY * UNFADED / midi.MAX_VELOCITY))
+            self.assertEqual(scene[SceneSetting.SWELL_OVER], BARS_WRITTEN.format(count=TWO_BARS))
+            with self.assertRaises(ValueError):
+                choices.set_section_own(place=FIRST, field=FADE_OVER, value=choices.section_bars(FIRST) + 1)
+            with self.assertRaises(ValueError):
+                choices.set_section_own(place=FIRST, field=FADE_LEVEL, value=midi.MAX_VELOCITY + 1)
+            again = WizardChoices.from_data(choices.to_data())
+            self.assertEqual(again.section_own(place=FIRST, field=FADE_OVER), TWO_BARS)
+            # A fade out falls to its velocity over the whole section, and has no bars of its own.
+            self.assertEqual(choices.fade_fields(last), [FADES, FADE_LEVEL])
+            choices.set_section_own(place=last, field=FADE_LEVEL, value=HALF_VELOCITY)
+            scene = made(choices).get_song(A_NAME).get_scenes()[last].to_data()
+            self.assertEqual(scene[SceneSetting.SWELL_END], round(HALF_VELOCITY * UNFADED / midi.MAX_VELOCITY))
+            self.assertNotIn(SceneSetting.SWELL_OVER, scene)
+            # A fade switched off keeps nothing of how it faded.
+            choices.set_section_own(place=FIRST, field=FADES, value=False)
+            self.assertIsNone(choices.section_own(place=FIRST, field=FADE_LEVEL))
+            self.assertEqual(choices.fade_fields(FIRST), [FADES])

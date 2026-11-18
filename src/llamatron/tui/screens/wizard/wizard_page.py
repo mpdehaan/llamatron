@@ -115,6 +115,8 @@ class WizardPage(FieldPage):
         self._open = {labels.MSG_WIZARD_GENRE_BRANCH, labels.MSG_WIZARD_BAND_BRANCH, labels.MSG_WIZARD_COMPOSITION_BRANCH, labels.MSG_WIZARD_MELODIES_BRANCH, labels.MSG_WIZARD_FORM_BRANCH}
         self.tree_place = FIRST_PLACE
         self.in_fields = False
+        # The part of the intro the Intro panel's buttons act on: the part the cursor was last on or in, by its number.
+        self.marked_part = None
         # Move mode, the tracker's: whether M has picked up the branch under the tree's cursor.
         self.moving = False
         # The tune whose notes the pattern editor has open over the wizard: its kind of section, its pattern's name in the draft set and
@@ -208,19 +210,19 @@ class WizardPage(FieldPage):
         self.open_pattern(setlist=setlist, name=name, keep=lambda pattern: self._choices.set_tune_pattern(kind=kind, pattern=pattern),
                           kept=messages.MSG_WIZARD_TUNE_KEPT.format(kind=kind), unchanged=messages.MSG_WIZARD_TUNE_UNCHANGED.format(kind=kind))
 
-    def edit_intro(self):
-        """Open the pattern editor on the intro's melody, the notes of the player who says the hook in the intro; the notes are
-        kept as the intro's own when the editor closes, if they were changed."""
+    def edit_intro(self, *, place=None):
+        """Open the pattern editor on the melody of a part of the intro, the notes of the player who says the hook there; the
+        notes are kept as that part's own when the editor closes, if they were changed."""
         try:
             setlist, _ = self._choices.made_for_listening()
-            name = self._choices.intro_pattern_name()
+            name = self._choices.intro_pattern_name(place=place)
         except (ValueError, SongFileError) as problem:
             self.refuse(str(problem))
             return
         if name is None:
             self.refuse(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
             return
-        self.open_pattern(setlist=setlist, name=name, keep=self._choices.set_intro_pattern, kept=messages.MSG_WIZARD_TUNE_KEPT.format(kind=INTRO),
+        self.open_pattern(setlist=setlist, name=name, keep=lambda pattern: self._choices.set_intro_pattern(place=place, pattern=pattern), kept=messages.MSG_WIZARD_TUNE_KEPT.format(kind=INTRO),
                           unchanged=messages.MSG_WIZARD_TUNE_UNCHANGED.format(kind=INTRO))
 
     def edit_solo(self, place):

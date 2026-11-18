@@ -208,6 +208,8 @@ INTRO_KIND = 'intro'
 # A song's solos written by hand: under each solo's number among the song's solos, counted from 1, a pattern's data under the
 # name of the player who plays it, which takes the place of the solo that would be written.
 OWN_SOLOS = 'own_solos'
+# The notes written by hand for one part of an intro, by the part's number among the form's intros, from 1, and the player's name.
+OWN_INTROS = 'own_intros'
 SOLO_KIND = 'solo'
 # The riffs a song has besides its first, in order: each a riff as the first is, with a name of its own, which its players play in
 # its kinds of section in place of their usual parts; and the seed a riff of a name is written from.
@@ -1150,10 +1152,12 @@ def arranged(*, style, song):
     beside = song.get(BESIDE, {})
     under = UnderLead(busy=beside.get(BESIDE_BUSY, USUAL_BESIDE_BUSY), habits=habits, grid=habits[GRID], scale_type=scale_type, seed=song.get(SEED, 0))
     solos_met = 0
+    intros_met = 0
     for count, name in enumerate(form_names, start=1):
         section = section_of(name=name, style=style, song=song)
         met[name] = met.get(name, 0) + 1
         solos_met += section[KIND] == SOLO_KIND
+        intros_met += section[KIND] == INTRO_KIND
         scene_name = name if met[name] == 1 else composer_text.MSG_REPEATED_SCENE.format(name, met[name])
         bars = 1 if section.get(HELD) else section[BARS]
         chords = chords_in(section)
@@ -1287,6 +1291,9 @@ def arranged(*, style, song):
                 if section[KIND] == INTRO_KIND and song.get(OWN_INTRO, {}).get(role[ROLE]) is not None:
                     own_tune = song[OWN_INTRO][role[ROLE]]
                 own_solo = song.get(OWN_SOLOS, {}).get(solos_met, {}).get(role[ROLE]) if section[KIND] == SOLO_KIND else None
+                if section[KIND] == INTRO_KIND and song.get(OWN_INTROS, {}).get(intros_met, {}).get(role[ROLE]) is not None:
+                    # One part of an intro keeps notes of its own, as one solo does, named for its scene.
+                    own_solo = song[OWN_INTROS][intros_met][role[ROLE]]
                 if own_solo is not None:
                     own_tune = own_solo
                 if own_tune is not None:

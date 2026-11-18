@@ -16,8 +16,8 @@
 
 """Tests of the song wizard's Form panel fields for how a song starts and ends, and a section's Fades."""
 
-from llamatron.macro_composer.song_plan import FADES
-from llamatron.macro_composer.wizard_choices import DRUMS_FIRST, FULL_BAND, HELD_CHORD, LAYERS, SLOWS_DOWN
+from llamatron.macro_composer.song_plan import FADE_LEVEL, FADE_OVER, FADED, FADES
+from llamatron.macro_composer.wizard_choices import DRUMS_FIRST, FADE_IN, FADE_OUT, FULL_BAND, HELD_CHORD, LAYERS, SLOWS_DOWN
 from llamatron.strings import labels
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
@@ -30,6 +30,8 @@ THE_BASS = 'bass'
 FIRST = 0
 A_VERSE = 'verse-1'
 A_VERSE_PLACE = 1
+THE_INTRO = 'intro'
+THE_INTRO_PLACE = 0
 
 # The attribute a field keeps its label in.
 LABEL = 'label'
@@ -100,11 +102,27 @@ class TestWizardStages(WizardTest):
         self.assertIsNone(choices.get_start())
         self.assertIn(labels.MSG_WIZARD_OWN_START, self.text())
 
-    async def test_a_section_s_fades_is_switched_on_its_panel(self):
+    async def test_an_intro_s_fade_in_is_switched_on_its_panel_and_shows_its_velocity_and_bars(self):
         choices = await self.to_form()
+        await self.press(keybindings.WizardPage.TO_TREE)
+        await self.go_to_named_branch(THE_INTRO)
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        fade = labels.MSG_WIZARD_FADE_LABELS[FADE_IN]
+        await self.select_field(fade[FADES])
+        self.assertNotIn(fade[FADE_LEVEL], [field.label for field in self.app.screen.shown_fields()])
+        await self.press(Key.SPACE)
+        self.assertTrue(choices.section_own(place=THE_INTRO_PLACE, field=FADES))
+        self.assertIn(labels.MSG_WIZARD_FADE_VELOCITY.format(value=FADED), self.text())
+        await self.select_field(fade[FADE_LEVEL])
+        await self.press(keybindings.WizardPage.MORE)
+        self.assertEqual(choices.section_own(place=THE_INTRO_PLACE, field=FADE_LEVEL), FADED + 1)
+        await self.select_field(fade[FADE_OVER])
+        await self.press(keybindings.WizardPage.LESS)
+        self.assertEqual(choices.section_own(place=THE_INTRO_PLACE, field=FADE_OVER), choices.section_bars(THE_INTRO_PLACE) - 1)
+        # A verse has no fade.
         await self.press(keybindings.WizardPage.TO_TREE)
         await self.go_to_named_branch(A_VERSE)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
-        await self.select_field(labels.MSG_WIZARD_SECTION_OWN_LABELS[FADES])
-        await self.press(Key.SPACE)
-        self.assertTrue(choices.section_own(place=A_VERSE_PLACE, field=FADES))
+        labels_shown = [field.label for field in self.app.screen.fields()]
+        self.assertNotIn(fade[FADES], labels_shown)
+        self.assertNotIn(labels.MSG_WIZARD_FADE_LABELS[FADE_OUT][FADES], labels_shown)

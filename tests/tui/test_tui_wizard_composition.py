@@ -20,8 +20,9 @@ from llamatron.composition.file_format import Row
 from llamatron.macro_composer import hook_writing
 from llamatron.macro_composer.melody import HEIGHT, HIGH, LAST_LINE, LOW, PLACEMENTS, REPEATS, REPEATS_A_LOT
 from llamatron.macro_composer.riffs import ACCENT_CHORDS, RIFF_BARS, RIFF_BETWEEN, RIFF_NOTES, RIFF_WITH_CHORDS, STAYS_HOME
-from llamatron.macro_composer.wizard_choices import ACCOMPANIMENT, MELODY_BUSY, MELODY_RANGE, MELODY_SPARSE, MELODY_WAYS, MELODY_WIDE, SMOOTH
-from llamatron.strings import labels, marks, messages, names
+from llamatron.macro_composer.song_plan import FADES
+from llamatron.macro_composer.wizard_choices import ACCOMPANIMENT, FADE_IN, FIRST_TUNE_TAKE, LAYERS, MELODY_BUSY, MELODY_RANGE, MELODY_SPARSE, MELODY_WAYS, MELODY_WIDE, SMOOTH
+from llamatron.strings import errors, labels, marks, messages, names
 from llamatron.tui import keybindings
 from llamatron.tui.components.button_row import ROW_LINES
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -32,8 +33,7 @@ from llamatron.tui.drawing import NOTHING, SELECTED_MARK, Style
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.shared.field import Heading
-from llamatron.tui.screens.wizard.intro_melody_branch import INTRO_MELODY_KEY
-from llamatron.macro_composer.wizard_choices import FIRST_TUNE_TAKE
+from llamatron.tui.screens.wizard.intro_melody_branch import FIRST_PART, INTRO_MELODY_KEY
 from llamatron.tui.screens.wizard.section_melody_branch import MELODY_KEY
 from llamatron.tui.screens.wizard.solo_melody_branch import FIRST_SOLO, SOLO_MELODY_KEY
 from llamatron.tui.screens.wizard.wizard_page import WizardPage
@@ -45,6 +45,7 @@ A_SUBGENRE = 'folk rock'
 A_RIFF_SUBGENRE = 'hard rock'
 A_SUBGENRE_WITH_A_PRE_CHORUS = 'arena rock'
 A_KIND = 'verse'
+ONE_PART = 1
 # The room at the right of the tree on a wide console and on a narrow one, in cells.
 A_WIDE_ROOM = 80
 A_NARROW_ROOM = 30
@@ -302,41 +303,88 @@ class TestWizardIntroMelody(CompositionTest):
         await super().asyncSetUp()
         await self.open_panel(INTRO_MELODY_KEY)
 
-    async def choose_first_player(self):
-        choices = self.choices()
-        await self.select_field(labels.MSG_WIZARD_INTRO_HOOK_LABEL)
+    def part(self, number):
+        return labels.MSG_WIZARD_INTRO_PART.format(number=number)
+
+    async def open_part(self, number):
+        await self.select_field(self.part(number))
         await self.press(Key.ENTER)
+
+    async def choose_first_player(self, number=FIRST_PART):
+        choices = self.choices()
+        await self.open_part(number)
+        await self.press(Key.DOWN, Key.DOWN, Key.ENTER)
         await self.pick(choices.role_title(choices.intro_hook_players()[0]))
 
-    async def test_the_panel_has_only_who_says_the_hook_until_somebody_is_chosen_and_then_its_buttons(self):
+    async def test_the_panel_has_how_the_song_starts_a_heading_for_each_part_and_buttons_that_say_how_to_give_a_part_a_melody(self):
         choices = self.choices()
-        self.assertEqual(self.field_labels(), [labels.MSG_WIZARD_INTRO_HOOK_LABEL])
-        self.assertEqual(self.wizard().field().value(), labels.MSG_WIZARD_NOBODY)
+        buttons = [labels.MSG_WIZARD_EDIT_NOTES_BUTTON, labels.MSG_WIZARD_LISTEN_BUTTON, labels.MSG_WIZARD_LISTEN_BAND_BUTTON, labels.MSG_WIZARD_ADD_PART_BUTTON]
+        self.assertEqual(len(choices.intro_parts()), ONE_PART)
+        self.assertEqual(self.field_labels(), [labels.MSG_WIZARD_STARTS_LABEL, self.part(FIRST_PART), *buttons])
+        # With nobody saying the hook, the panel says where to choose a player, and Edit Notes and Listen say so too.
+        self.assertIn(messages.MSG_WIZARD_PART_NO_MELODY.format(number=FIRST_PART), self.text())
+        self.assertIsNone(self.wizard().branch().listens())
+        await self.select_field(labels.MSG_WIZARD_EDIT_NOTES_BUTTON)
         await self.press(Key.ENTER)
-        self.assertEqual(list(self.app.screen.options), [labels.MSG_WIZARD_NOBODY, *(choices.role_title(role) for role in choices.intro_hook_players())])
-        await self.pick(choices.role_title(choices.intro_hook_players()[0]))
-        self.assertEqual(choices.get_intro_hook(), choices.intro_hook_players()[0])
-        self.assertEqual(self.field_labels(), [labels.MSG_WIZARD_INTRO_HOOK_LABEL, labels.MSG_WIZARD_EDIT_NOTES_BUTTON, labels.MSG_WIZARD_LISTEN_BUTTON, labels.MSG_WIZARD_LISTEN_BAND_BUTTON])
-        self.assertIn(messages.MSG_WIZARD_HOOK_MADE, self.text())
+        self.assertIsInstance(self.app.screen, WizardPage)
+        self.assertIn(errors.ERR_WIZARD_PART_NO_MELODY.format(number=FIRST_PART), self.text())
+        # Listen With Band plays the part whether or not it has a melody.
+        self.assertEqual(self.wizard().branch().heard_with_band()[1:], (choices.intro_parts()[0], None))
+        await self.choose_first_player()
+        self.assertEqual(choices.intro_melody_player(choices.intro_parts()[0]), choices.intro_hook_players()[0])
+        self.assertIn(messages.MSG_WIZARD_PART_NOTES.format(number=FIRST_PART, notes=messages.MSG_WIZARD_HOOK_MADE), self.text())
         what, place, track = self.wizard().branch().listens()
-        self.assertEqual((place, track), (choices.intro_melody_place(), choices.get_intro_hook()))
-        self.assertIsNone(self.wizard().branch().heard_with_band()[2])
+        self.assertEqual((place, track), (choices.intro_parts()[0], choices.intro_hook_players()[0]))
+        self.assertTrue(self.wizard().branch().listens_alone())
 
-    async def test_the_intros_notes_open_in_the_pattern_editor_are_kept_when_edited_and_given_back_with_bksp(self):
+    async def test_starts_with_makes_the_parts_each_part_opens_onto_its_fields_and_the_buttons_act_on_the_part_the_cursor_was_in(self):
+        choices = self.choices()
+        await self.select_field(labels.MSG_WIZARD_STARTS_LABEL)
+        await self.press(Key.ENTER)
+        await self.pick(LAYERS)
+        parts = choices.intro_parts()
+        self.assertGreater(len(parts), ONE_PART)
+        self.assertEqual([label for label in self.field_labels() if label.startswith(self.part(FIRST_PART)[:-1])], [self.part(number) for number, _ in enumerate(parts, start=FIRST_PART)])
+        last = len(parts)
+        await self.open_part(last)
+        fade = labels.MSG_WIZARD_FADE_LABELS[FADE_IN][FADES]
+        for label in (labels.MSG_WIZARD_BARS_LABEL, labels.MSG_WIZARD_PART_MELODY_LABEL, fade):
+            self.assertIn(label, self.field_labels())
+        # The cursor in the last part marks that part, and the buttons then act on it.
+        await self.press(Key.DOWN)
+        self.assertEqual(self.wizard().branch().part_marked(), last)
+        await self.select_field(labels.MSG_WIZARD_LISTEN_BAND_BUTTON)
+        self.assertEqual(self.wizard().branch().heard_with_band()[1], parts[-1])
+        self.assertIn(messages.MSG_WIZARD_PART_NO_MELODY.format(number=last), self.text())
+
+    async def test_a_part_is_added_with_its_button_and_deleted_with_bksp_on_its_heading_after_a_question(self):
+        choices = self.choices()
+        await self.select_field(labels.MSG_WIZARD_ADD_PART_BUTTON)
+        await self.press(Key.ENTER)
+        self.assertEqual(len(choices.intro_parts()), ONE_PART + 1)
+        self.assertIn(messages.MSG_WIZARD_PART_ADDED.format(number=ONE_PART + 1), self.text())
+        await self.select_field(self.part(ONE_PART + 1))
+        await self.press(keybindings.WizardPage.CLEAR)
+        self.assertIsInstance(self.app.screen, ConfirmDialog)
+        await self.press(keybindings.ConfirmDialog.YES)
+        self.assertEqual(len(choices.intro_parts()), ONE_PART)
+
+    async def test_a_parts_notes_open_in_the_pattern_editor_are_kept_when_edited_and_given_back_with_bksp(self):
         choices = self.choices()
         await self.choose_first_player()
+        place = choices.intro_parts()[0]
         await self.select_field(labels.MSG_WIZARD_EDIT_NOTES_BUTTON)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, PatternEditor)
         self.change_first_step()
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, WizardPage)
-        self.assertTrue(choices.intro_is_own())
+        self.assertTrue(choices.intro_is_own(place=place))
         self.assertIn(messages.MSG_WIZARD_NOTES_BY_HAND, self.text())
         await self.press(keybindings.WizardPage.CLEAR)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(keybindings.ConfirmDialog.YES)
-        self.assertFalse(choices.intro_is_own())
+        self.assertFalse(choices.intro_is_own(place=place))
 
     async def test_the_hook_panel_no_longer_holds_who_says_the_hook_in_the_intro(self):
         await self.press(keybindings.WizardPage.TO_TREE)
