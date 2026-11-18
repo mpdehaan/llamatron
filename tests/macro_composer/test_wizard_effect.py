@@ -97,6 +97,7 @@ BODY_GAUGE = "a gauge of the chorus's body"
 DEGREES_TRIED = 5
 HOOK_LINE = "the hook's notes written by hand"
 OWN_TUNE = 'a tune written by hand'
+OWN_INTRO_NOTES = 'an intro melody written by hand'
 TUNE_TAKE = 'another take of a tune'
 OWN_RIFF = 'a riff written by hand'
 TUNE_BY_SONG_CHOICE = 'who plays the tune in the song'
@@ -362,6 +363,11 @@ def every_choice(choices):
             made.set_song_plan(True)
         for role in under_plan.intro_hook_players():
             yield INTRO_HOOK, role, lambda made, role=role: made.set_intro_hook(role), [planned_first]
+
+            def said_first(made, role=role):
+                made.set_song_plan(True)
+                made.set_intro_hook(role)
+            yield OWN_INTRO_NOTES, role, lambda made: made.set_intro_pattern(first_degree_changed(made.intro_pattern())), [said_first]
         for place in range(len(under_plan.section_labels())):
             for shape in under_plan.section_shapes(place):
                 yield SECTION_SHAPE, (place, shape), lambda made, place=place, shape=shape: made.set_section_own(place=place, field='shape', value=shape), [planned_first]

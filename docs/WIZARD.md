@@ -50,13 +50,13 @@ A song has more than one melody: the verses share one, the choruses another, and
 
 ### Melodies
 
-Melodies, under Composition, is a group that opens and closes with `←` and `→`. The group holds the Hook panel first and then a panel for each kind of section that has a melody.
+Melodies, under Composition, is a group that opens and closes with `←` and `→`. The group holds the Hook panel first, then a panel for each kind of section that has a melody, and the Intro panel last.
 
 ### Hook
 
 A hook is the few notes a listener goes away humming. The main hook is the line of the chorus that returns, and its top note is the highest note of the song: every other melody stays under it, so that the chorus arrives as the song's high point. The wizard writes a hook of two bars, a figure and an answer to the figure, and the Hook panel holds the song's hooks under two headings.
 
-Under Main Hook, Sung in names the kind of section that carries the hook, Hook bars says which bars of that section are the hook, and Intro hook chooses a player to play the hook in the intro before anybody sings it. The hook is a part of that section's melody, so how the hook is written is on that section's own panel, the Chorus panel in most genres, under the heading Hook. There, Behavior chooses what kind of figure the hook is: "chant" stays on one note and lives by its rhythm, "arch" rises to its top and comes back, "leap and fall" jumps up and walks down, "call" says a short cell, waits and says the cell again, and "ladder" climbs to its top. Under Behavior are the gauges of that behavior, each from 0 to 9 and each the genre's until moved, where `Bksp` gives a moved gauge back to the genre:
+Under Main Hook, Sung in names the kind of section that carries the hook and Hook bars says which bars of that section are the hook. The hook is a part of that section's melody, so how the hook is written is on that section's own panel, the Chorus panel in most genres, under the heading Hook. There, Behavior chooses what kind of figure the hook is: "chant" stays on one note and lives by its rhythm, "arch" rises to its top and comes back, "leap and fall" jumps up and walks down, "call" says a short cell, waits and says the cell again, and "ladder" climbs to its top. Under Behavior are the gauges of that behavior, each from 0 to 9 and each the genre's until moved, where `Bksp` gives a moved gauge back to the genre:
 
 | Gauge | At 0 | At 9 |
 | --- | --- | --- |
@@ -78,6 +78,8 @@ Edit Chorus Notes, named for the section that carries the hook, opens that whole
 ### Section Melodies
 
 Each kind of section that has a melody has a panel of its own under Hook, named for the kind, such as Verse or Chorus. Height sets the melody high, in the middle or low against the song's other melodies, since a chorus usually sits above its verse. Busy gives the kind of section its own answer in place of the song's. Each list marks the value the genre or the song already gives, and choosing that value gives the field back. Edit Notes opens the melody in the pattern editor, where the notes are edited by hand, and `Bksp` on Edit Notes gives edited notes back to the wizard. Regenerate writes another melody for that kind of section after asking, keeping nothing of the old one. Listen plays the melody alone, as `L` (listen) does, and Listen With Band plays the first section of the kind with everybody in it. The line under the buttons says whether the notes are made by the wizard or edited by hand.
+
+The Intro panel comes last, since an intro's melody is made from the hook. Intro hook chooses a player to play the hook in the intro before anybody sings it. While a player is chosen, Edit Notes opens that player's intro notes in the pattern editor, Listen plays the player alone in the intro, and Listen With Band plays the intro with everybody in it.
 
 The kind of section that carries the hook, the chorus in most genres, is written around the hook, and its panel holds other fields in place of Height and Busy, with the hook's Behavior and gauges under the heading Hook. Placement chooses where the hook sits among the four lines: "first lines" says the hook three times and closes, "last line" leads to the hook with three plainer lines, and "first and last" opens and closes the chorus with the hook. The gauges under Placement shape the lines that are not the hook, each from 0 to 9 and each the genre's until moved:
 

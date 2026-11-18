@@ -21,11 +21,12 @@ The hook comes first, since the chorus is written around it and every other melo
 from llamatron.strings import labels
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.hooks_branch import HooksBranch
+from llamatron.tui.screens.wizard.intro_melody_branch import IntroMelodyBranch
 from llamatron.tui.screens.wizard.section_melody_branch import SectionMelodyBranch
 
 
 class MelodiesBranch(Branch):
-    """The branches Hook and one for each kind of section that has a melody."""
+    """The branches Hook, one for each kind of section that has a melody, and Intro where the song can have a hook."""
 
     __slots__ = ()
 
@@ -42,4 +43,8 @@ class MelodiesBranch(Branch):
         if not choices.is_ready():
             return []
         hook = [HooksBranch(page=page)] if choices.can_have_hook() else []
-        return [*hook, *(SectionMelodyBranch(page=page, kind=kind) for kind in choices.tune_kinds())]
+        # The intro comes last: its melody is the hook, said before anybody sings, so it is made from the melodies above it. The
+        # panel is there whenever the Hook panel is, whoever can say the hook in the intro just now, so that a change to the form,
+        # which is under this group in the tree, never moves the rows above the cursor.
+        intro = [IntroMelodyBranch(page=page)] if choices.can_have_hook() else []
+        return [*hook, *(SectionMelodyBranch(page=page, kind=kind) for kind in choices.tune_kinds()), *intro]

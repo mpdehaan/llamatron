@@ -17,8 +17,8 @@
 
 The hook is the line of the chorus that returns, the few notes a listener goes away with, and
 it owns the song's highest note. The hook is a part of its section's melody, never a thing
-beside it: the panel says where it is sung, which bars of that section are the hook and who
-plays it in the intro, and its picture is the whole section's notes with the hook's bars in a
+beside it: the panel says where it is sung and which bars of that section are the hook, and
+its picture is the whole section's notes with the hook's bars in a
 frame. The notes are edited as the section's, and how the hook is written, its behavior and its
 gauges, is on that section's panel (section_melody_branch.py). A second hook is a short tag,
 written unlike the hook and under its top, sung in another kind of section.
@@ -61,11 +61,10 @@ class HooksBranch(Branch):
         return fields + self.buttons()
 
     def main_is_set(self):
-        choices = self.choices()
-        return choices.get_intro_hook() is not None
+        return False
 
     def main_fields(self):
-        """Return the main hook's fields: where it is sung, which bars of that section are the hook and who plays it in the intro;
+        """Return the main hook's fields: where it is sung and which bars of that section are the hook;
         a genre whose songs have no hook unless asked has the switch that asks first."""
         choices = self.choices()
         page = self.page()
@@ -73,7 +72,7 @@ class HooksBranch(Branch):
         if not choices.has_hook():
             return switch
         sung_in = Field(label=labels.MSG_WIZARD_SUNG_IN_LABEL, value=lambda: choices.hook_line_place()[0])
-        fields = [*switch, sung_in, *self.bars_fields(), *self.intro_hook_fields()]
+        fields = [*switch, sung_in, *self.bars_fields()]
         if choices.hook_is_own():
             # A hook written by hand in a song made before melodies were patterns is the person's, and Bksp gives the wizard's back.
             return [*fields, Field(label=labels.MSG_WIZARD_HOOK_NOTES_LABEL, value=lambda: labels.MSG_WIZARD_HOOK_NOTES_OWN, clear=lambda: page.choosing(lambda nothing: choices.set_hook_line(None))(None),
@@ -84,17 +83,6 @@ class HooksBranch(Branch):
         """Return the field that says which bars of its section are the hook."""
         bars = self.choices().hook_bars()
         return [] if bars is None else [Field(label=labels.MSG_WIZARD_HOOK_BARS_LABEL, value=lambda: labels.MSG_WIZARD_HOOK_BARS.format(first=bars[0], last=bars[1]))]
-
-    def intro_hook_fields(self):
-        """Return the field of who plays the hook in the intro, before anybody sings it, where somebody can."""
-        choices = self.choices()
-        players = choices.intro_hook_players()
-        if not players:
-            return []
-        titles = {choices.role_title(role): role for role in players}
-        now = choices.get_intro_hook()
-        return [ChoiceField(page=self.page(), label=labels.MSG_WIZARD_INTRO_HOOK_LABEL, choices=[labels.MSG_WIZARD_NOBODY, *titles], current=labels.MSG_WIZARD_NOBODY if now is None else choices.role_title(now),
-                            set=self.page().choosing(lambda title: choices.set_intro_hook(titles.get(title))))]
 
     def second_fields(self):
         """Return the second hook's fields: its switch, and while the song has one, the kind of section that sings it."""
