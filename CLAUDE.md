@@ -73,7 +73,7 @@ internal_tools/bump.sh                                          # the version's 
 internal_tools/capture.sh, internal_tools/compare.sh            # before and after a change that should leave the music alone: every export byte for byte
 internal_tools/key_map.sh                                       # .claude/KEYMAP.md rewritten, after changing a key
 internal_tools/make_docs.sh                                     # the diagrams, the screenshots and the demo tables
-internal_tools/push_all.sh                                      # the one command that sends anything to GitHub, run only when asked to push
+internal_tools/push_all.sh                                      # the one command that sends anything to GitHub, run only when asked to push; it retakes the screenshots and rebuilds the website first (internal_tools/rebuild_docs.sh)
 internal_tools/macro_compose.sh                                 # the MacroComposer (.claude/features/MACRO_COMPOSER.md)
 ```
 

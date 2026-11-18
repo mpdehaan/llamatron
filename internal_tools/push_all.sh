@@ -15,10 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# What it does: rebuild the documentation website and commit web_docs/ if the build changed it, push main to GitHub
-# and then publish the website, in that order, so that the website is rebuilt only at a push and never describes code
-# nobody can get. It stops if the push fails, never pushes with --force, and
-# runs only on main. It is the one command that sends anything to GitHub: Claude runs it when asked to push.
+# What it does: bring the screenshots and the documentation website up to date with internal_tools/rebuild_docs.sh,
+# which commits what changed, push main to GitHub and then publish the website, in that order, so that the screenshots
+# and the website are rebuilt only at a push and never describe code nobody can get. It stops if the push fails, never
+# pushes with --force, and runs only on main. It is the one command that sends anything to GitHub: Claude runs it when
+# asked to push.
 
 set -eu
 cd "$(dirname "$0")/.."
@@ -28,15 +29,6 @@ if [ "$branch" != "main" ]; then
     echo "not pushed: this is the branch $branch, and only main is pushed and published" >&2
     exit 1
 fi
-if [ -n "$(git status --porcelain -- web_docs)" ]; then
-    echo "not pushed: web_docs/ has changes that are not committed; commit or discard them first" >&2
-    exit 1
-fi
-internal_tools/build_docs.sh
-if [ -n "$(git status --porcelain -- web_docs)" ]; then
-    git add web_docs
-    git commit -q -m "The website rebuilt before a push."
-    echo "committed the rebuilt website"
-fi
+internal_tools/rebuild_docs.sh
 git push origin main
 internal_tools/publish_docs.sh

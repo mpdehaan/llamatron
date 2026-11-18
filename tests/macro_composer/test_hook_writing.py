@@ -34,6 +34,7 @@ FREE_PLAN = [{melody.LINE: 'hook', melody.HOOK: True, melody.HIGHER: True}, {mel
              {melody.LINE: 'e', melody.HIGHER: True}]
 A_FEW = 3
 AN_ORDER = 1
+HOME_CHORD_DEGREES = (1, 3, 5)
 EVERY_SECOND_POSITION = range(hook_writing.LOWEST, hook_writing.HIGHEST + 1, 3)
 
 
@@ -98,12 +99,19 @@ class TestBars(unittest.TestCase):
                     self.assertEqual(len(depths), sum(1 for length in lengths if length > 0), (behavior, gauges))
                     self.assertTrue(all(depth >= 0 for depth in depths), (behavior, gauges))
 
-    def test_a_chant_stays_on_its_note_and_a_ladder_only_climbs(self):
+    def test_a_chant_stays_on_its_note_and_a_ladder_only_climbs_by_rungs_as_wide_as_leap_says(self):
+        spans = []
         for take in range(A_FEW):
             _, chant = hook_writing.bar_of(behavior=hook_writing.CHANT, gauges=hook_writing.HOOK_GAUGES, order=AN_ORDER, take=take)
             self.assertLessEqual(max(chant) - min(chant), 1)
-            _, ladder = hook_writing.bar_of(behavior=hook_writing.LADDER, gauges=hook_writing.HOOK_GAUGES, order=AN_ORDER, take=take)
-            self.assertEqual(ladder, sorted(ladder, reverse=True))
+        for position in (hook_writing.LOWEST, hook_writing.HIGHEST):
+            _, ladder = hook_writing.bar_of(behavior=hook_writing.LADDER, gauges={**hook_writing.HOOK_GAUGES, hook_writing.LEAP: position}, order=AN_ORDER, take=0)
+            self.assertEqual(ladder[-1], 0)
+            self.assertLessEqual(max(ladder), hook_writing.LADDER_DEEPEST)
+            spans.append(max(ladder))
+        self.assertLess(spans[0], spans[1])
+        self.assertIn(hook_writing.LEAP, hook_writing.HOOK_GAUGES_OF[hook_writing.LADDER])
+        self.assertNotIn(hook_writing.LEAP, hook_writing.HOOK_GAUGES_OF[hook_writing.CHANT])
 
     def test_a_plainer_bar_has_no_more_notes_and_fills_the_bar(self):
         lengths, _ = hook_writing.bar_of(behavior=hook_writing.ARCH, gauges={**hook_writing.HOOK_GAUGES, hook_writing.SIMPLICITY: hook_writing.LOWEST}, order=AN_ORDER, take=0)
@@ -166,11 +174,23 @@ class TestWrittenHook(unittest.TestCase):
         self.assertNotEqual(plain[1], same[1])
         self.assertLessEqual(len([note for note in plain[1] if notation.REST not in note]), len([note for note in same[1] if notation.REST not in note]))
 
-    def test_the_answer_ends_in_a_breath_for_every_behavior(self):
+    def test_the_answer_leaves_room_a_breath_or_a_held_last_note_and_leaves_no_note_out(self):
         for behavior in hook_writing.BEHAVIORS:
             habits = habits_with(behavior=behavior)
+            grid = habits[melody.GRID]
             for seed in SEEDS:
-                self.assertGreater(silence_at_end(sections(habits=habits, seed=seed)[1][0]), 0, behavior)
+                line = sections(habits=habits, seed=seed)[1][0]
+                last = [note for note in line if notation.REST not in note][-1]
+                self.assertGreaterEqual(silence_at_end(line) + last[notation.STEPS], grid * melody.ANSWER_BREATH // hook_writing.UNITS, behavior)
+                figure, answer = bars_of(line=line, grid=grid)[:2]
+                if hook_writing.HOOK_GAUGES[hook_writing.CATCHINESS] >= hook_writing.SAME_RHYTHM_FROM:
+                    self.assertEqual(len([note for note in answer if notation.REST not in note]), len([note for note in figure if notation.REST not in note]), behavior)
+
+    def test_a_held_last_note_is_left_whole(self):
+        habits = habits_with(hook={hook_writing.HOLD: hook_writing.HIGHEST, hook_writing.SIMPLICITY: hook_writing.HIGHEST})
+        line = sections(habits=habits, seed=SEEDS[0])[1][0]
+        figure, answer = bars_of(line=line, grid=habits[melody.GRID])[:2]
+        self.assertEqual(lasts([note for note in answer if notation.REST not in note][-1]), lasts([note for note in figure if notation.REST not in note][-1]))
 
     def test_the_same_seed_writes_the_same_hook_and_each_behavior_another(self):
         self.assertEqual(sections(habits=habits_with(), seed=SEEDS[0]), sections(habits=habits_with(), seed=SEEDS[0]))
@@ -187,14 +207,20 @@ class TestBody(unittest.TestCase):
 
     __slots__ = ()
 
-    def test_a_line_before_the_hook_ends_open_and_the_last_line_ends_on_the_home_note(self):
+    def test_a_line_before_the_hook_ends_open_and_the_last_line_ends_on_a_note_of_the_home_chord(self):
         habits = habits_with()
         for seed in SEEDS:
             _, chorus = sections(habits=habits, seed=seed)
             leads = [note for note in chorus[1] if notation.REST not in note][-1]
             closes = [note for note in chorus[3] if notation.REST not in note][-1]
-            self.assertIn(degree_of(leads), melody.OPEN_DEGREES)
-            self.assertEqual(degree_of(closes), melody.TONIC)
+            self.assertIn(degree_of(leads), melody.LEADING_DEGREES)
+            self.assertIn(degree_of(closes), HOME_CHORD_DEGREES)
+
+    def test_space_never_leaves_fewer_than_half_of_a_line_s_notes(self):
+        for seed in SEEDS:
+            none = sections(habits=habits_with(body={hook_writing.SPACE: hook_writing.LOWEST}), seed=seed)[1][1]
+            most = sections(habits=habits_with(body={hook_writing.SPACE: hook_writing.HIGHEST}), seed=seed)[1][1]
+            self.assertGreaterEqual(2 * len([note for note in most if notation.REST not in note]), len([note for note in none if notation.REST not in note]))
 
     def test_space_is_the_silence_a_line_ends_in(self):
         silences = []
