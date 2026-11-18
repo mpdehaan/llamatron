@@ -345,3 +345,21 @@ the build. Two further points:
 - What rules do poorly and hands do well: a middle of short contrasting fragments with voices answering, a climactic solo that is
   remembered, expressive slides and bends, the seam between parts, and tempo that grows as if played. (practice)
 
+## What Long Pieces Ask of a Model of a Song
+
+- A frame is inherited and overridden, never owned at one level: the piece gives key, tempo, meter and band, a part may change
+  them, and a section may change them again, since a verse can sit in another key than the riff and chorus around it. A section
+  may also start in one key and end in another, and a value such as tempo or energy may ramp across a part with no cut. (practice)
+- A new part begins where the main idea changes and at least two of key, tempo, meter and band change, at a seam: a cut, a hold
+  or a link. Anything less is a section's own change or a ramp. (practice)
+- Main ideas and motifs belong to the whole piece and a part refers to them: a part may have none, one or two equal ones, and a
+  late part may only recall an earlier one. (practice)
+- What a section holds is one of four things: a melody, a recall, a chain of short fragments each with its own voices, key and
+  loudness, or a solo, free lead over its own or a borrowed progression. (practice)
+- In long builds the layering is the form: which instrument enters or leaves at which section is a schedule of its own, apart from
+  the notes, and the melody hardly changes. (practice)
+- A riff has its own key and chords, may frame a section in another key, and may lie under a sung line as accompaniment. (practice)
+- A transition can be a small section with material, meter and a key path of its own. A piece has an ending of a kind: a full
+  stop, a fade, a thinning to one voice, a slowing, free time, and a final key. A bar may be longer or shorter than its
+  neighbours, or change meter for one bar. A second lead may answer in the melody's gaps. (practice)
+
