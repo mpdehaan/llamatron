@@ -268,6 +268,20 @@ clouds; generate and test, with motif development and counterpoint last.
 - Phrasing (`src/llamatron/macro_composer/phrasing.py`): with the habit `breathes`, every line but a hook's ends early, three
   eighths before its bars do, or five or six for the second and fourth lines of a section, and one line in two has a note
   come an eighth early; the breath is drawn apart from the line's notes.
+- The written hook and the body of its chorus (`src/llamatron/macro_composer/hook_writing.py`, `Hooks.written_line` and `Bodies` in
+  `melody.py`; the user's design: the wizard writes one good result by rules, steered by gauges from 0 to 9 and a behavior, and a
+  genre is a preset of them). With the habits `hook_writing` (`behavior`, `gauges`) and `body_writing` (`gauges`), which the
+  templates of rock, sixties pop, soul and funk and electronic hold and the wizard always says for a song, a hook is two bars: a
+  figure made by `bar_of` from the behavior ("chant", "arch", "leap and fall", "call", "ladder") and the gauges Catchiness,
+  Simplicity, Leap, Height, Hold and Bounce, and an answer that ends in a breath (`with_breath`). Height moves the hook's floor,
+  so every other line makes room. `Hooked.sketched` marks each line of the hook's section that is no hook as the body, with
+  whether a hook follows it and whether it closes the section; `Bodies` writes those lines by Sameness (the hook's rhythm or a
+  plainer one), Space (the breath a line ends in, given by `Hooked.body_breath` through the breath pass, and the ending is set
+  again after the breath, `finished`), Lift (every line is moved up to reach its ceiling, `reaching`), Resolve (a free line ends on
+  the chord or off it, `unsettled_place`) and Call and answer (a line that returns keeps its notes and settles, or is walked anew).
+  A line before a hook ends open and the section's last line ends on the home note whatever Resolve says. Serial and evolving
+  songs keep their own lines. The old hook of a kind, below, is still what a song plan without `hook_writing` and a bar not
+  counted in eight get. `tests/macro_composer/test_hook_writing.py` holds each gauge.
 - Hook kinds (`src/llamatron/macro_composer/hook_kinds.py`): with the habit `hook_kinds`, a hook's bar is of a contour
   (chant, arch, falling line, leap and fill, rocking, rising sequence, or the long note, the hook made as before), a rhythm
   and one odd detail; each take is the next contour and the next rhythm in the song's own order, so another take is another
@@ -279,7 +293,7 @@ clouds; generate and test, with motif development and counterpoint last.
 - On the wizard's page (`tui/screens/wizard/`): a genre whose template has `song_plan` plans every song from the start, and the Form
   panel's Song plan switch turns the plan off (`WizardChoices.has_song_plan`, kept as false in the choices). The Form panel has
   Contrast, each section's plan in a line, and the Form questions button (`form_questions`, `set_form_from_answers`: verses first,
-  pre-choruses, a bridge, solos, a drum solo, last choruses). The Hooks panel has Contour, Rhythm and Detail (`set_hook_part`) and
+  pre-choruses, a bridge, solos, a drum solo, last choruses). The Hook panel has Behavior and the gauges (`set_hook_behavior`, `set_hook_gauge`; the chorus's panel `set_body_gauge`) and
   Intro hook (`set_intro_hook`: the answering player or the singer says the hook in the intro). The Melody panel has Phrasing,
   Breath, Line lengths and Early notes (`set_phrasing_way`; early notes are a count of lines in four, never chance). A section's
   panel has Energy, Shape (`shapes:` under a kind in the template, for a solo, a pre-chorus and a bridge), Rises, Leaves with and

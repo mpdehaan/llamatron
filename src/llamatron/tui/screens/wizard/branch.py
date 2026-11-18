@@ -21,10 +21,11 @@ branch is added, moved or split by changing the branches alone (who expects to
 revise how the wizard is organized).
 """
 
-from llamatron.strings import legends, marks
+from llamatron.macro_composer import hook_writing
+from llamatron.strings import labels, legends, marks
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import NOTHING
-from llamatron.tui.screens.shared.field import ChoiceField, Field
+from llamatron.tui.screens.shared.field import ChoiceField, Field, NumberField
 
 # Where a picker opens, and what stepping picks, before anything is chosen.
 FIRST_CHOICE = 0
@@ -88,6 +89,15 @@ class Branch:
         def pick():
             page.ask(dialog=ChoiceDialog(title=label, options=names, current=FIRST_CHOICE), then=lambda place: chosen(values[place]))
         return Field(label=label, value=lambda: marks.MSG_WIZARD_CHOOSE, adjust=lambda offset: chosen(values[FIRST_CHOICE]), enter=pick, enter_what=legends.What.CHOOSE)
+
+    def writing_gauge_field(self, *, label, position, moved, set_position):
+        """Return the field of a gauge of how a melody is written: a number from 0 to 9, stepped or typed, drawn as a horizontal gauge
+        with its number, said to be the genre's until the song moves it; Bksp gives a moved gauge back to the genre."""
+        page = self.page()
+        drawn = marks.MSG_WIZARD_GAUGE_FULL * (position - hook_writing.LOWEST) + marks.MSG_WIZARD_GAUGE_EMPTY * (hook_writing.HIGHEST - position)
+        said = position if moved else labels.MSG_WIZARD_VALUE_FROM.format(value=position, origin=labels.MSG_WIZARD_USUAL_MELODY)
+        return NumberField(page=page, label=label, number=position, shown=marks.MSG_WIZARD_WRITING_GAUGE_SHOWN.format(gauge=drawn, place=said), lowest=hook_writing.LOWEST, highest=hook_writing.HIGHEST,
+                           set=page.choosing(set_position), clear=(lambda: page.choosing(set_position)(None)) if moved else None, clear_what=legends.MSG_WIZARD_FROM_GENRE_WHAT)
 
     def refusal(self):
         """Return why the cursor cannot move into the branch's fields yet, or None when it can."""

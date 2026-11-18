@@ -26,10 +26,10 @@ import copy
 import math
 import random
 
-from llamatron.macro_composer import hook_kinds
+from llamatron.macro_composer import hook_kinds, hook_writing
 from llamatron.macro_composer.notation import ACCIDENTAL, ARRIVAL, DEGREE, ENDING, FLAT, LOUDER, OCTAVE, REST, SHARP, STEPS, STRESS
 from llamatron.macro_composer.operations import backwards, moved, rotated, upside_down
-from llamatron.macro_composer.phrasing import LINE_BREATH, LINE_EARLY, breathed
+from llamatron.macro_composer.phrasing import LINE_BREATH, LINE_EARLY, LINE_LENGTHS, NO_BREATH, USUAL_WAYS, breathed, is_shorter
 from llamatron.strings import errors
 
 # The fields of a style's melody habits.
@@ -76,6 +76,16 @@ TAG_SEED = '{} tag {}'
 TAG_BELOW = 2
 # The rhythms a tag may take, each short and choppy against a hook's long note.
 TAG_RHYTHMS = (hook_kinds.EIGHTHS_WITH_A_GAP, hook_kinds.THREE_THREE_TWO, hook_kinds.AFTER_ONE)
+# A line of a chorus's body, which is no hook: the line before a hook leads to it, and the section's last line closes.
+BODY = 'body'
+LEADS_TO_HOOK = 'leads_to_hook'
+CLOSES = 'closes'
+# Where among the nearest rhythms a song's first hook starts, a number of the song's own.
+WRITING_SEED = '{} hook writing'
+# The silence a written hook's answer ends in, in units of its bar, where the bar has the room.
+ANSWER_BREATH = 2
+# A shorter line of a chorus's body ends in this many eighths more silence than its Space gauge gives.
+SHORTER_LINE_BREATH = 1
 # A song's later takes of its hook each have dice of their own, so that a new hook leaves every other line as it was.
 HOOK_TAKE = 'hook_take'
 FIRST_HOOK_TAKE = 0
@@ -339,6 +349,14 @@ class StepWalk:
             note.update(rung)
         return line
 
+    def body_breath(self, *, entry, count):
+        """The breath of a line of a chorus's body, in eighths, where a writer has one to give; None leaves the breath to the song's ways."""
+        return None
+
+    def finished(self, *, line, entry, under):
+        """A new line after its breath, for a writer that has something to say of where the line then ends."""
+        return line
+
     def sketched(self, plan):
         """A section's tune as lines: the lead's, or the answering instrument's; a line that isn't its own is silent."""
         bars = self._habits[LINE_BARS]
@@ -363,10 +381,14 @@ class StepWalk:
                 lines.append(stressed(self.varied_line(line=[dict(note) for note in known[letter]], dice=dice, entry=entry, under=under)))
                 continue
             made = self.new_line(entry=entry, under=under, dice=dice)
-            if (self._habits.get(BREATHES) or LINE_BREATH in entry or LINE_EARLY in entry) and not entry.get(HOOK) and not entry.get(TAG):
+            breathes = bool(self._habits.get(BREATHES))
+            if (breathes or LINE_BREATH in entry or LINE_EARLY in entry or self.body_breath(entry=entry, count=count) is not None) and not entry.get(HOOK) and not entry.get(TAG):
+                # A line of a chorus's body ends in the silence its Space gauge gives, a shorter line in a little more, unless the line says its own breath.
                 # The breath is drawn apart from the line, so that a line is the same notes whether it breathes or not.
                 made = breathed(line=made, grid=self._grid, count=count, dice=random.Random(BREATH_SEED.format(self._seed, self._answers, letter)),
-                                ways=self._habits[BREATHES] if isinstance(self._habits.get(BREATHES), dict) else None, breath=entry.get(LINE_BREATH), early=entry.get(LINE_EARLY))
+                                ways=self._habits[BREATHES] if isinstance(self._habits.get(BREATHES), dict) else None, breath=entry.get(LINE_BREATH, self.body_breath(entry=entry, count=count)),
+                                early=entry.get(LINE_EARLY, None if breathes else False))
+                made = self.finished(line=made, entry=entry, under=under)
             made = stressed(made)
             known[letter] = made
             lines.append([dict(note) for note in made])
@@ -743,6 +765,9 @@ class Smart(StepWalk):
 # A hook's peak, the long note its figure reaches, sits at least this share of the range above the home note, and every line
 # that is neither a hook nor marked higher stays below that, so that the hook's top is the song's.
 HOOK_FLOOR_SHARE = 0.5
+# The same share for a written hook, at the bottom and at the top of its Height gauge.
+LOWEST_FLOOR_SHARE = 0.25
+HIGHEST_FLOOR_SHARE = 0.75
 # A hook's figure fills a bar: short notes through this share of it, then one long note to the bar's end.
 HOOK_HEAD_SHARE = 0.5
 # The bar is counted in this many units where it divides so, the short notes each lasting 1 to 3 of them, 2 to 4 notes in all.
@@ -795,10 +820,71 @@ class Hooks(Smart):
 
     def kind(self):
         """The kind of the hook, where the habits ask for kinds and the bar is counted in eighths, or None for a hook made the first way."""
-        if not self._habits.get(HOOK_KINDS) or self._grid % hook_kinds.UNITS:
+        if not self._habits.get(HOOK_KINDS) or self._grid % hook_kinds.UNITS or self.written() is not None:
             return None
         kind = {**hook_kinds.kind_of(seed=self._song_seed, take=getattr(self, '_take', FIRST_HOOK_TAKE)), **self._habits.get(HOOK_KIND, {})}
         return None if kind[hook_kinds.CONTOUR] == hook_kinds.LONG_NOTE else kind
+
+    def written(self):
+        """The hook as a behavior and gauges write it (hook_writing.py), where the habits say so and the bar is counted in
+        eighths: the behavior, the gauges, and the bar's lengths and depths; else None."""
+        if hook_writing.HOOK_WRITING not in self._habits or self._grid % hook_writing.UNITS:
+            return None
+        behavior, gauges = hook_writing.hook_ways(self._habits)
+        order = random.Random(WRITING_SEED.format(self._song_seed)).randrange(hook_writing.RHYTHM_DECK)
+        return behavior, gauges, hook_writing.bar_of(behavior=behavior, gauges=gauges, order=order, take=getattr(self, '_take', FIRST_HOOK_TAKE))
+
+    def peak(self, chord):
+        """Where a written hook's top sits over a chord: the note of the chord nearest the hook's floor and no lower."""
+        floor = self.hook_floor()
+        return self.chord_place(chord=chord, lowest=floor, highest=self._high, toward=floor)
+
+    def with_breath(self, *, lengths, unit):
+        """A bar's lengths as a rhythm that ends in a breath of two units where it can, so that whoever fills between the lines
+        has room: a silence the bar opens with is moved to its end, the last note is cut short, and a last note too short to
+        cut is left out while more than two notes still sound."""
+        lengths = list(lengths)
+        if lengths[0] < 0 and lengths[-1] > 0:
+            lengths = lengths[1:] + lengths[:1]
+        while True:
+            last = max(place for place, length in enumerate(lengths) if length > 0)
+            short = ANSWER_BREATH + sum(lengths[last + 1:])
+            if short <= 0:
+                break
+            if lengths[last] > 1:
+                cut = min(short, lengths[last] - 1)
+                lengths[last:last + 1] = [lengths[last] - cut, -cut]
+            elif sum(1 for length in lengths if length > 0) > 2:
+                lengths[last] = -1
+            else:
+                break
+        return [{REST: -length * unit} if length < 0 else {STEPS: length * unit} for length in lengths]
+
+    def written_line(self, *, under, dice):
+        """A written hook: its bar in the first bar of the line and each second bar after, its last note on a note of the chord,
+        and an answer in the bars between, lower, ending in a breath. The Catchiness gauge says how near the answer is to the
+        hook: on a plainer rhythm, on the hook's rhythm, or the hook's own notes a place lower."""
+        _, gauges, (lengths, depths) = self.written()
+        peak = self.peak(under[0])
+        unit = self._grid // hook_writing.UNITS
+        places = [self.within(peak - depth) for depth in depths]
+        places[-1] = self.chord_place(chord=under[0], lowest=max(self._low, peak - hook_writing.DEEPEST), highest=peak, toward=places[-1])
+        catchiness = gauges[hook_writing.CATCHINESS]
+        answer = self.with_breath(lengths=lengths if catchiness >= hook_writing.SAME_RHYTHM_FROM else hook_writing.plainer(lengths), unit=unit)
+        notes = []
+        for bar, chord in enumerate(under):
+            if not bar % 2:
+                sounding = iter(places)
+                notes.extend({REST: -length * unit} if length < 0 else {**self._ladder[next(sounding)][1], STEPS: length * unit} for length in lengths)
+                continue
+            if catchiness >= hook_writing.SAME_NOTES_FROM:
+                lower = [self.within(place - 1) for place in places]
+                lower[-1] = self.chord_place(chord=chord, lowest=max(self._low, peak - hook_writing.DEEPEST - 1), highest=max(self._low, peak - 1), toward=lower[-1])
+                sounding = iter(lower)
+                notes.extend(dict(cell) if REST in cell else {**self._ladder[next(sounding)][1], STEPS: cell[STEPS]} for cell in answer)
+                continue
+            notes.extend(self.held_under(highest=peak - 1, made=lambda: self.walked(rhythm=answer, centre=self.within(peak - ANSWER_BELOW), shape=SHAPE_TUMBLE, under=[chord], dice=dice)))
+        return notes
 
     def open_place(self, *, lowest, highest, toward):
         """The place nearest one wanted whose note leaves an ending open, or the place wanted where none is near."""
@@ -841,8 +927,13 @@ class Hooks(Smart):
         return notes
 
     def hook_floor(self):
-        """The lowest place a hook's peak may sit."""
-        return self.within(self._home + round(self._habits[SPAN] * HOOK_FLOOR_SHARE))
+        """The lowest place a hook's peak may sit: a share of the range above the home note, which a written hook's Height gauge
+        moves, so that every other line, held under it, makes room as the hook is set lower."""
+        written = self.written()
+        if written is None:
+            return self.within(self._home + round(self._habits[SPAN] * HOOK_FLOOR_SHARE))
+        share = LOWEST_FLOOR_SHARE + hook_writing.share(written[1][hook_writing.HEIGHT]) * (HIGHEST_FLOOR_SHARE - LOWEST_FLOOR_SHARE)
+        return self.within(self._home + round(self._habits[SPAN] * share))
 
     def chord_place(self, *, chord, lowest, highest, toward):
         """The place of the chord's note nearest a place wanted, between two places, or the place wanted where the chord has none there."""
@@ -887,6 +978,8 @@ class Hooks(Smart):
         """A hook: the figure, ending on the peak, in the first bar of the line and each second bar after, and an answer to it in the bars between."""
         if self._habits.get(HOOK_NOTES):
             return copy.deepcopy(self._habits[HOOK_NOTES])
+        if self.written() is not None:
+            return self.written_line(under=under, dice=dice)
         kind = self.kind()
         if kind is not None:
             return self.kind_line(kind=kind, under=under, dice=dice)
@@ -927,7 +1020,9 @@ class Tags(Hooks):
     def tag_rhythm(self):
         """The tag's bar of lengths: the next of the choppy rhythms that the main hook does not have, each take another."""
         main = self.kind()
-        free = [name for name in TAG_RHYTHMS if main is None or name != main[hook_kinds.RHYTHM]]
+        written = self.written()
+        taken = tuple(written[2][0]) if written is not None else hook_kinds.RHYTHMS[main[hook_kinds.RHYTHM]] if main is not None else None
+        free = [name for name in TAG_RHYTHMS if hook_kinds.RHYTHMS[name] != taken]
         order = random.Random(TAG_SEED.format(self._song_seed, 'rhythms')).sample(free, len(free))
         return hook_kinds.RHYTHMS[order[self._tag_take % len(order)]]
 
@@ -938,7 +1033,9 @@ class Tags(Hooks):
         top = self.chord_place(chord=under[0], lowest=self._low, highest=max(self._low, self.hook_floor() - TAG_BELOW), toward=self.hook_floor() - TAG_BELOW)
         # The main hook chants where its contour is a chant, and the tag then rocks between two notes; under any other hook the tag chants.
         main = self.kind()
-        contour = hook_kinds.ROCKING if main is not None and main[hook_kinds.CONTOUR] == hook_kinds.CHANT else hook_kinds.CHANT
+        written = self.written()
+        chants = written[0] == hook_writing.CHANT if written is not None else main is not None and main[hook_kinds.CONTOUR] == hook_kinds.CHANT
+        contour = hook_kinds.ROCKING if chants else hook_kinds.CHANT
         depths = iter(hook_kinds.depths_of(contour=contour, count=sum(1 for length in lengths if length > 0)))
         last = max(place for place, length in enumerate(lengths) if length > 0)
         bar = []
@@ -954,6 +1051,114 @@ class Tags(Hooks):
         return [copy.deepcopy(cell) for _ in under for cell in bar]
 
 
+class Bodies(Hooks):
+    """What makes the body of a chorus, its lines that are no hook: each on the hook's rhythm or a plainer form of it, never a
+    rhythm more striking than the hook's, and always under the hook's floor. The line before a hook climbs and ends open, so
+    that the hook is wanted; the section's last line falls and ends on the home note. Five gauges say the rest."""
+
+    __slots__ = ()
+
+    def can_write(self):
+        return hook_writing.BODY_WRITING in self._habits and self.written() is not None
+
+    def ceiling(self, gauges):
+        """The highest place a line of the body reaches: under the hook's floor, and lower the lower the Lift gauge stands."""
+        return max(self._low, self.hook_floor() - 1 - round((1 - hook_writing.share(gauges[hook_writing.LIFT])) * hook_writing.LIFT_ROOM))
+
+    def body_rhythm(self, *, bars, gauges):
+        """A line's rhythm: the hook's bar in as many of its bars as the Sameness gauge says, and a plainer form of it in the rest."""
+        lengths = self.written()[2][0]
+        unit = self._grid // hook_writing.UNITS
+        same = round(hook_writing.share(gauges[hook_writing.SAMENESS]) * bars)
+        rhythm = []
+        for bar in range(bars):
+            rhythm += [{REST: -length * unit} if length < 0 else {STEPS: length * unit} for length in (lengths if bar < same else hook_writing.plainer(lengths))]
+        return rhythm
+
+    def breath(self):
+        """The silence a line of the body ends in, in eighths of a bar, as the Space gauge says."""
+        return round(hook_writing.share(hook_writing.body_ways(self._habits)[hook_writing.SPACE]) * hook_writing.MOST_SPACE)
+
+    def home_under(self, *, highest, toward):
+        """The place of the scale's first note, where a section comes to rest, nearest a place wanted and no higher than a place."""
+        places = [place for place in range(self._low, max(self._low, highest) + 1) if self._ladder[place][1][DEGREE] == TONIC and ACCIDENTAL not in self._ladder[place][1]]
+        return min(places, key=lambda place: (abs(place - toward), place)) if places else self.within(min(highest, toward))
+
+    def unsettled_place(self, *, chord, highest, toward):
+        """The place nearest one wanted that is no note of the chord, an open note of the scale before any other, so that an
+        ending left open is never the ending a settled line would have."""
+        places = [place for place in range(self._low, min(self._high, highest) + 1) if not self.in_chord(place=place, chord=chord)]
+        if not places:
+            return self.open_place(lowest=self._low, highest=highest, toward=toward)
+        return min(places, key=lambda place: (self._ladder[place][1][DEGREE] not in OPEN_DEGREES, abs(place - toward), -place))
+
+    def ended(self, *, line, entry, under, gauges, answers=False):
+        """A line of the body with its last note where the line's place asks: open before a hook, the home note at the section's
+        close, and otherwise settled on a note of the chord or left open as the Resolve gauge says; a line that answers settles."""
+        sounds = [note for note in line if REST not in note]
+        highest = self.ceiling(gauges)
+        now = min(self.place_of(sounds[-1]), highest)
+        if entry.get(LEADS_TO_HOOK):
+            place = self.open_place(lowest=self._low, highest=highest, toward=now)
+        elif entry.get(CLOSES):
+            place = self.home_under(highest=highest, toward=now)
+        elif answers or gauges[hook_writing.RESOLVE] >= hook_writing.SETTLED_FROM:
+            place = self.held_under(highest=highest, made=lambda: self.chord_place(chord=under[-1], lowest=self._low, highest=highest, toward=now))
+        else:
+            place = self.unsettled_place(chord=under[-1], highest=highest, toward=now)
+        for field in PITCH_FIELDS + (STRESS,):
+            sounds[-1].pop(field, None)
+        sounds[-1].update(self._ladder[place][1])
+        return line
+
+    def body_line(self, *, entry, under, dice):
+        """A line of the body nobody has heard yet: it climbs before a hook, falls at the section's close, and arches otherwise."""
+        gauges = hook_writing.body_ways(self._habits)
+        highest = self.ceiling(gauges)
+        shape = SHAPE_CLIMB if entry.get(LEADS_TO_HOOK) else SHAPE_TUMBLE if entry.get(CLOSES) else SHAPE_ARCH
+        line = self.held_between(lowest=highest - BODY_DEPTH, highest=highest, made=lambda: self.walked(rhythm=self.body_rhythm(bars=len(under), gauges=gauges), centre=self.within(highest - BODY_BELOW), shape=shape, under=under, dice=dice))
+        return self.ended(line=self.reaching(line=line, highest=highest), entry=entry, under=under, gauges=gauges)
+
+    def reaching(self, *, line, highest):
+        """A line moved up whole until its highest note is the highest place the body reaches, so that the Lift gauge is heard in
+        every line; a line already there is left."""
+        sounds = [note for note in line if REST not in note]
+        up = highest - max(self.place_of(note) for note in sounds)
+        if up <= 0:
+            return line
+        for note in sounds:
+            place = self.place_of(note) + up
+            for field in PITCH_FIELDS:
+                note.pop(field, None)
+            note.update(self._ladder[place][1])
+        return line
+
+    def held_between(self, *, lowest, highest, made):
+        """What makes a line, run with the lowest and the highest place the writer reaches set to two places."""
+        kept = self._low
+        self._low = max(kept, min(lowest, self._high))
+        try:
+            return self.held_under(highest=highest, made=made)
+        finally:
+            self._low = kept
+
+    def varied_body(self, *, line, entry, under, dice):
+        """A line of the body heard before: high on the Call and answer gauge it answers, the same notes with a settled ending;
+        low on it the line's tail is walked anew."""
+        gauges = hook_writing.body_ways(self._habits)
+        if gauges[hook_writing.CALL_AND_ANSWER] >= hook_writing.ANSWERS_FROM:
+            return self.ended(line=line, entry=entry, under=under, gauges=gauges, answers=True)
+        again = self.held_between(lowest=self.ceiling(gauges) - BODY_DEPTH, highest=self.ceiling(gauges), made=lambda: self.varied_line(line=line, dice=dice, entry=entry, under=under))
+        return self.ended(line=again, entry=entry, under=under, gauges=gauges)
+
+
+# A line of a chorus's body turns about a place this far under the highest place it reaches.
+BODY_BELOW = 1
+# A line of the body goes no lower than this far under the highest place it reaches, so that a chorus stays above its verse.
+BODY_DEPTH = 4
+TONIC = 1
+
+
 def can_tag(grid):
     """Whether a tag can be written on a bar counted in so many steps: its rhythms are of eight units."""
     return grid % hook_kinds.UNITS == 0
@@ -964,7 +1169,7 @@ class Hooked(StepWalk):
     the tag maker's, and every other line is the writer's, any engine's, held under the lowest place the hook's top may sit
     unless the line is marked higher, so that the hook's long note is the top of the song."""
 
-    __slots__ = ('_writer', '_hooks', '_take_seed', '_tags')
+    __slots__ = ('_writer', '_hooks', '_take_seed', '_tags', '_bodies')
 
     def __init__(self, *, writer, habits, chords, scale_type, seed, answers, voice=None, letters=(), hook_take=FIRST_HOOK_TAKE, tag_take=FIRST_HOOK_TAKE):
         super().__init__(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
@@ -974,6 +1179,8 @@ class Hooked(StepWalk):
         self._tags = Tags(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
         self._tags.set_take(hook_take)
         self._tags.set_tag_take(tag_take)
+        self._bodies = Bodies(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
+        self._bodies.set_take(hook_take)
         # Each line's dice are drawn as the writer draws them, so that a line the writer makes is the line the writer would make alone, lowered.
         self._seed = self._writer.seed()
         # The first take of the hook is rolled with its line's dice, as every song made before takes could be asked for; a later take with dice of its own.
@@ -984,9 +1191,40 @@ class Hooked(StepWalk):
             return made()
         return self._writer.held_under(highest=self._hooks.hook_floor() - 1, made=made)
 
+    def sketched(self, plan):
+        """A section's tune, the lines of a chorus's body marked as such where the body is written by its gauges: each line that
+        is no hook, in a section with a hook, with whether a hook follows it and whether it closes the section."""
+        if not self._bodies.can_write() or not has_hook(plan) or isinstance(self._writer, WRITERS_OF_THEIR_OWN) or self._answers:
+            return super().sketched(plan)
+        marked = []
+        for place, entry in enumerate(plan):
+            entry = dict(entry)
+            if not (entry.get(HOOK) or entry.get(TAG) or entry.get(LINE_NOTES) or entry.get(ANSWER)):
+                entry[BODY] = True
+                if place + 1 < len(plan) and plan[place + 1].get(HOOK):
+                    entry[LEADS_TO_HOOK] = True
+                elif place + 1 == len(plan):
+                    entry[CLOSES] = True
+            marked.append(entry)
+        return super().sketched(marked)
+
+    def body_breath(self, *, entry, count):
+        """A line of a chorus's body ends in the silence its Space gauge gives, a shorter line in a little more."""
+        if not entry.get(BODY):
+            return None
+        ways = self._habits[BREATHES] if isinstance(self._habits.get(BREATHES), dict) else {}
+        shorter = is_shorter(count=count, lengths=ways.get(LINE_LENGTHS, USUAL_WAYS[LINE_LENGTHS]))
+        return self._bodies.breath() + (SHORTER_LINE_BREATH if shorter else NO_BREATH)
+
+    def finished(self, *, line, entry, under):
+        """A line of a chorus's body ends where its place asks after its breath too, since the breath may take the line's last note."""
+        return self._bodies.ended(line=line, entry=entry, under=under, gauges=hook_writing.body_ways(self._habits)) if entry.get(BODY) else line
+
     def new_line(self, *, entry, under, dice):
         if entry.get(TAG) and can_tag(self._grid):
             return self._tags.tag_line(under=under)
+        if entry.get(BODY):
+            return self._bodies.body_line(entry=entry, under=under, dice=dice)
         if entry.get(HOOK):
             return self._hooks.hook_line(under=under, dice=dice if self._take_seed is None else random.Random(self._take_seed))
         return self.under_the_hook(entry=entry, made=lambda: self._writer.new_line(entry=entry, under=under, dice=dice))
@@ -997,6 +1235,8 @@ class Hooked(StepWalk):
             return line
         if (entry or {}).get(HOOK):
             return self._hooks.varied_hook(line=line, under=under)
+        if (entry or {}).get(BODY):
+            return self._bodies.varied_body(line=line, entry=entry, under=under, dice=dice)
         return self.under_the_hook(entry=entry or {}, made=lambda: self._writer.varied_line(line=line, dice=dice, entry=entry, under=under))
 
 
@@ -1037,6 +1277,8 @@ def row_as_written(*, row, size):
 
 
 # The four forms of a row.
+# The writers whose lines are their own throughout, a chorus's body included: a row or an evolving idea is the whole of the tune.
+WRITERS_OF_THEIR_OWN = (Serial, Evolving)
 FORMS = (row_as_written, row_backwards, row_upside_down, row_upside_down_and_backwards)
 ENGINES = {STEP_WALK: StepWalk, SERIAL: Serial, EVOLVING: Evolving, SMART: Smart}
 

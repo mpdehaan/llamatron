@@ -22,6 +22,7 @@ notes, which the pattern editor opens, and buttons to hear it, alone and with th
 have it written again. The song's hooks have a panel of their own (hooks_branch.py).
 """
 
+from llamatron.macro_composer import hook_writing
 from llamatron.macro_composer.melody import HEIGHT
 from llamatron.macro_composer.wizard_choices import MELODY_BUSY, SECTION_MELODY_WAYS
 from llamatron.strings import labels, legends, messages
@@ -60,13 +61,33 @@ class SectionMelodyBranch(Branch):
         choices = self.choices()
         kind = self._kind
         fields = []
-        if HEIGHT in choices.section_melody_fields(kind):
+        if choices.is_body_of_hook(kind):
+            # The chorus that holds the hook is written around it: where the hook sits among its lines, and the gauges of the lines between.
+            fields = [*self.placement_fields(), *(self.body_gauge_field(name) for name in choices.body_gauges())]
+        elif HEIGHT in choices.section_melody_fields(kind):
             fields.append(self.own_field(field=HEIGHT, label=labels.MSG_WIZARD_HEIGHT_LABEL, ways=choices.section_melody_ways_offered(kind=kind, field=HEIGHT), usual=choices.genre_height_in(kind), origin=labels.MSG_WIZARD_USUAL_MELODY))
-        if MELODY_BUSY in choices.section_melody_fields(kind):
+        if MELODY_BUSY in choices.section_melody_fields(kind) and not choices.is_body_of_hook(kind):
             fields.append(self.own_field(field=MELODY_BUSY, label=labels.MSG_WIZARD_SECTION_BUSY_LABEL, ways=choices.section_melody_ways_offered(kind=kind, field=MELODY_BUSY), usual=choices.get_melody_way(MELODY_BUSY), origin=labels.MSG_WIZARD_FROM_SONG))
         if choices.tune_player_in(kind) is not None:
             fields.append(self.notes_field())
         return fields + self.buttons()
+
+    def placement_fields(self):
+        """Return the field of where the hook sits among the chorus's lines, the genre's own place said to be so, where the chorus has such places."""
+        choices = self.choices()
+        offered = choices.hook_placements_offered()
+        if not offered:
+            return []
+        usual = choices.genre_hook_placement()
+        names = [labels.MSG_WIZARD_VALUE_FROM.format(value=value, origin=labels.MSG_WIZARD_USUAL_MELODY) if value == usual else value for value in offered]
+        now = choices.get_hook_placement()
+        return [ChoiceField(page=self.page(), label=labels.MSG_WIZARD_PLACEMENT_LABEL, choices=offered, names=names, current=now, shown=names[offered.index(now)],
+                            set=self.page().choosing(choices.set_hook_placement))]
+
+    def body_gauge_field(self, name):
+        choices = self.choices()
+        return self.writing_gauge_field(label=labels.MSG_WIZARD_BODY_GAUGE_LABELS[name], position=choices.get_body_gauge(name), moved=choices.writing_gauge_is_moved(part=hook_writing.BODY_WRITING, name=name),
+                                        set_position=lambda position: choices.set_body_gauge(name=name, position=position))
 
     def own_field(self, *, field, label, ways, usual, origin):
         """Return a field of the kind's own melody: one list of the field's values in their order, the value the genre or the song

@@ -100,7 +100,7 @@ class WizardPage(FieldPage):
         self._start = None
         # The Band and Form branches start open, so that the players and the sections, and the keys that add, copy,
         # remove and move a section, show themselves with no key to learn.
-        self._open = {labels.MSG_WIZARD_GENRE_BRANCH, labels.MSG_WIZARD_BAND_BRANCH, labels.MSG_WIZARD_COMPOSITION_BRANCH, labels.MSG_WIZARD_FORM_BRANCH}
+        self._open = {labels.MSG_WIZARD_GENRE_BRANCH, labels.MSG_WIZARD_BAND_BRANCH, labels.MSG_WIZARD_COMPOSITION_BRANCH, labels.MSG_WIZARD_MELODIES_BRANCH, labels.MSG_WIZARD_FORM_BRANCH}
         self.tree_place = FIRST_PLACE
         self.in_fields = False
         # Move mode, the tracker's: whether M has picked up the branch under the tree's cursor.
@@ -365,13 +365,17 @@ class WizardPage(FieldPage):
         return [GenreBranch(page=self), SubgenreBranch(page=self), BandBranch(page=self), CompositionBranch(page=self), FormBranch(page=self), CreateBranch(page=self)]
 
     def rows(self):
-        """Return the branches the tree shows, each with how deep it is: every top branch, and the branches under each open one."""
+        """Return the branches the tree shows, each with how deep it is: every top branch, and the branches under each open one, however deep."""
         rows = []
-        for root in self.roots():
-            rows.append((0, root))
+
+        def listed(*, branch, depth):
+            rows.append((depth, branch))
             # A locked branch shows nothing under it, whatever was open before the choice that locked it.
-            if root.key() in self._open and not self.refusal_of(root):
-                rows += [(1, child) for child in root.children()]
+            if branch.key() in self._open and not self.refusal_of(branch):
+                for child in branch.children():
+                    listed(branch=child, depth=depth + 1)
+        for root in self.roots():
+            listed(branch=root, depth=0)
         return rows
 
     def row(self):
@@ -391,7 +395,7 @@ class WizardPage(FieldPage):
         self.tree_place = cursor_moved(place=self.tree_place, name=name, count=len(self.rows()))
 
     def fold(self, name):
-        """Open the branch under the cursor with Right and close it with Left; Left on a branch inside another goes to the branch that holds it."""
+        """Open the branch under the cursor with Right and close it with Left; Left on a branch inside another, closed or with nothing under it, goes to the branch that holds it."""
         depth, branch = self.row()
         if name == Key.RIGHT:
             if self.refusal_of(branch):
@@ -399,8 +403,8 @@ class WizardPage(FieldPage):
             elif branch.children():
                 self._open.add(branch.key())
             return
-        if depth:
-            while self.rows()[self.tree_place][0]:
+        if depth and not (branch.children() and self.shows_children(branch)):
+            while self.rows()[self.tree_place][0] >= depth:
                 self.tree_place -= 1
             return
         self._open.discard(branch.key())

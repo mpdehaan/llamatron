@@ -13,19 +13,20 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The wizard's Hooks panel: the song's main hook and its second hook.
+"""The song's hook in the wizard, and its second hook.
 
-The main hook is the line of the chorus that returns, the few notes a listener goes away
-with, and it owns the song's highest note. The panel says where it is sung, where it sits
-among its section's lines, who plays it in the intro and what kind of figure it is. A second
-hook is a short tag, written unlike the main hook and under its top, sung in another kind of
-section. The picture under the fields is the main hook's notes.
+The hook is the line of the chorus that returns, the few notes a listener goes away with, and
+it owns the song's highest note. The panel says where it is sung, who plays it in the intro,
+and how it is written: a behavior, the kind of figure it is, and a few gauges, each the
+genre's until moved. A second hook is a short tag, written unlike the hook and under its top,
+sung in another kind of section. The picture under the fields is the hook's notes.
 """
 
 from rich.text import Text
 
-from llamatron.macro_composer.wizard_choices import HOOK_PARTS
+from llamatron.macro_composer import hook_writing
 from llamatron.strings import labels, legends, messages
+from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import INDENT, Style
 from llamatron.tui.screens.shared.field import Button, ChoiceField, Field, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
@@ -60,36 +61,42 @@ class HooksBranch(Branch):
 
     def main_is_set(self):
         choices = self.choices()
-        parts = choices.hook_parts() if choices.has_song_plan() else []
-        return choices.get_intro_hook() is not None or choices.get_hook_placement() != choices.genre_hook_placement() or any(choices.hook_part_is_chosen(part) for part in parts)
+        moved = any(choices.writing_gauge_is_moved(part=hook_writing.HOOK_WRITING, name=name) for name in choices.hook_gauges())
+        return choices.get_intro_hook() is not None or moved or (choices.writes_hook() and choices.get_hook_behavior() != choices.genre_hook_behavior())
 
     def main_fields(self):
-        """Return the main hook's fields: where it is sung, where it sits among the lines, who plays it in the intro, and the parts
-        of its kind; a genre whose songs have no hook unless asked has the switch that asks first."""
+        """Return the main hook's fields: where it is sung, who plays it in the intro, and how it is written, its behavior and its
+        gauges; a genre whose songs have no hook unless asked has the switch that asks first."""
         choices = self.choices()
         page = self.page()
         switch = [] if choices.usual_hook() and choices.has_hook() else [Toggle(label=labels.MSG_WIZARD_MAIN_HOOK_LABEL, on=choices.has_hook(), set=page.choosing(choices.set_hook))]
         if not choices.has_hook():
             return switch
         sung_in = Field(label=labels.MSG_WIZARD_SUNG_IN_LABEL, value=lambda: choices.hook_line_place()[0])
-        fields = [*switch, sung_in, *self.placement_fields(), *self.intro_hook_fields()]
+        fields = [*switch, sung_in, *self.intro_hook_fields()]
         if choices.hook_is_own():
             # A hook written by hand in a song made before melodies were patterns is the person's, and Bksp gives the wizard's back.
             return [*fields, Field(label=labels.MSG_WIZARD_HOOK_NOTES_LABEL, value=lambda: labels.MSG_WIZARD_HOOK_NOTES_OWN, clear=lambda: page.choosing(lambda nothing: choices.set_hook_line(None))(None),
                                    clear_what=legends.MSG_TUNE_USUAL_WHAT)]
-        return fields + ([self.part_field(part) for part in choices.hook_parts()] if choices.has_song_plan() else [])
+        return fields + self.writing_fields()
 
-    def placement_fields(self):
-        """Return the field of where the hook sits among its chorus's lines, the genre's own place said to be so, where the chorus has such places."""
+    def writing_fields(self):
+        """Return the fields of how the hook is written: its behavior, the genre's said to be so, and the gauges that change a hook of that behavior."""
         choices = self.choices()
-        offered = choices.hook_placements_offered()
-        if not offered:
+        page = self.page()
+        if not choices.writes_hook():
             return []
-        usual = choices.genre_hook_placement()
-        names = [labels.MSG_WIZARD_VALUE_FROM.format(value=value, origin=labels.MSG_WIZARD_USUAL_MELODY) if value == usual else value for value in offered]
-        now = choices.get_hook_placement()
-        return [ChoiceField(page=self.page(), label=labels.MSG_WIZARD_PLACEMENT_LABEL, choices=offered, names=names, current=now, shown=names[offered.index(now)],
-                            set=self.page().choosing(choices.set_hook_placement))]
+        usual = choices.genre_hook_behavior()
+        values = list(hook_writing.BEHAVIORS)
+        names = [labels.MSG_WIZARD_VALUE_FROM.format(value=value, origin=labels.MSG_WIZARD_USUAL_MELODY) if value == usual else value for value in values]
+        now = choices.get_hook_behavior()
+        behavior = ChoiceField(page=page, label=labels.MSG_WIZARD_BEHAVIOR_LABEL, choices=values, names=names, current=now, shown=names[values.index(now)], set=page.choosing(choices.set_hook_behavior))
+        return [behavior, *(self.gauge_field(name) for name in choices.hook_gauges())]
+
+    def gauge_field(self, name):
+        choices = self.choices()
+        return self.writing_gauge_field(label=labels.MSG_WIZARD_HOOK_GAUGE_LABELS[name], position=choices.get_hook_gauge(name), moved=choices.writing_gauge_is_moved(part=hook_writing.HOOK_WRITING, name=name),
+                                        set_position=lambda position: choices.set_hook_gauge(name=name, position=position))
 
     def intro_hook_fields(self):
         """Return the field of who plays the hook in the intro, before anybody sings it, where somebody can."""
@@ -101,16 +108,6 @@ class HooksBranch(Branch):
         now = choices.get_intro_hook()
         return [ChoiceField(page=self.page(), label=labels.MSG_WIZARD_INTRO_HOOK_LABEL, choices=[labels.MSG_WIZARD_NOBODY, *titles], current=labels.MSG_WIZARD_NOBODY if now is None else choices.role_title(now),
                             set=self.page().choosing(lambda title: choices.set_intro_hook(titles.get(title))))]
-
-    def part_field(self, part):
-        """Return the field of one part of the hook's kind, its contour, its rhythm or its odd detail: the wizard's pick, said to be so, or the one
-        chosen from the list, whose first entry gives the part back to the wizard."""
-        choices = self.choices()
-        now = choices.hook_kind()[part]
-        chosen = choices.hook_part_is_chosen(part)
-        return ChoiceField(page=self.page(), label=labels.MSG_WIZARD_HOOK_PART_LABELS[part], choices=[labels.MSG_WIZARD_PICK, *HOOK_PARTS[part]], current=now if chosen else labels.MSG_WIZARD_PICK,
-                           shown=now if chosen else labels.MSG_WIZARD_PICK_SHOWN.format(value=now),
-                           set=self.page().choosing(lambda value: choices.set_hook_part(part=part, value=None if value == labels.MSG_WIZARD_PICK else value)))
 
     def second_fields(self):
         """Return the second hook's fields: its switch, and while the song has one, the kind of section that sings it."""
@@ -130,10 +127,21 @@ class HooksBranch(Branch):
             return []
         buttons = [Button(label=labels.MSG_WIZARD_LISTEN_BUTTON, enter=lambda: page.listen_to(self.listens()), enter_what=legends.MSG_LISTEN_WHAT)]
         if not choices.hook_is_own():
-            buttons.append(Button(label=labels.MSG_WIZARD_NEW_MAIN_HOOK_BUTTON, enter=lambda: page.choosing(lambda nothing: choices.new_hook())(None), enter_what=legends.MSG_WIZARD_NEW_HOOK_WHAT))
+            buttons.append(Button(label=labels.MSG_WIZARD_REGENERATE_BUTTON, enter=self.regenerate, enter_what=legends.MSG_REGENERATE_WHAT))
         if choices.has_second_hook():
             buttons.append(Button(label=labels.MSG_WIZARD_NEW_SECOND_HOOK_BUTTON, enter=lambda: page.choosing(lambda nothing: choices.new_second_hook())(None), enter_what=legends.MSG_WIZARD_NEW_HOOK_WHAT))
         return buttons
+
+    def regenerate(self):
+        """Have another hook written, with the behavior and the gauges as they stand, after asking."""
+        choices = self.choices()
+        page = self.page()
+        name = messages.MSG_WIZARD_HOOK_NAME
+
+        def written(_):
+            page.choosing(lambda nothing: choices.new_hook())(None)
+            page.say(messages.MSG_WIZARD_REGENERATED.format(name=name))
+        page.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_REGENERATE_TITLE.format(name=name), messages=[messages.MSG_WIZARD_REGENERATE_SAYS.format(name=name)], starts_on_no=True), then=written)
 
     def on_second_hook(self):
         """Return whether the cursor is on or under the second hook's heading."""

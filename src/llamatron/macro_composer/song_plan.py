@@ -30,7 +30,7 @@ section itself is kept over what the plan would say.
 
 import random
 
-from llamatron.macro_composer import hook_kinds
+from llamatron.macro_composer import hook_kinds, hook_writing
 from llamatron.macro_composer.joins import BUILD, DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL, TAIL_EIGHTHS
 from llamatron.macro_composer.melody import BREATHES, FIRST_HOOK_TAKE, HOOK, HOOK_KIND, HOOK_KINDS, HOOK_TAKE
 from llamatron.strings import macro_composer as composer_text
@@ -477,8 +477,10 @@ class SongPlan:
                     made[LAST_CHORD] = last_chord
                     said.append(composer_text.MSG_PLAN_SET_UP.format(last_chord))
             if not hook_said and self._has_hook() and any(entry.get(HOOK) for entry in section.get(SECTION_PLAN, [])) and self._given.get(HOOK_KINDS, True):
+                written = self._song.get(MELODY, {}).get(hook_writing.HOOK_WRITING)
                 kind = {**hook_kinds.kind_of(seed=self._song.get(SEED, 0), take=self._song.get(HOOK_TAKE, FIRST_HOOK_TAKE)), **self._song.get(MELODY, {}).get(HOOK_KIND, {})}
-                said.append(composer_text.MSG_PLAN_HOOK.format(hook_kinds.said_of(kind)))
+                # A hook written by a behavior and gauges is said by its behavior; a hook of a kind by its kind.
+                said.append(composer_text.MSG_PLAN_HOOK.format(written[hook_writing.BEHAVIOR] if written else hook_kinds.said_of(kind)))
                 hook_said = True
             # What the song says of the section itself, and of this place of its form, stands over what the plan worked out.
             own = {field: value for field, value in self._at(place).items() if field not in (ENERGY, SETUP, LEAVES, RISES, FADES, *SCENE_FIELDS)}

@@ -810,8 +810,13 @@ MSG_NEW_RIFF_VALUES = {1: '1', 2: '2', 'single notes': 'notes', 'chords on the a
 MSG_NEW_RIFF_BUTTONS = ('Write Riff', 'CANCEL')
 # tui/screens/wizard/section_melody_branch.py: a kind of section's melody.
 MSG_WIZARD_LISTEN_BAND_BUTTON = 'Listen With Band'
+MSG_WIZARD_BODY_GAUGE_LABELS = {'sameness': 'Sameness', 'space': 'Space', 'lift': 'Lift', 'resolve': 'Resolve', 'call_and_answer': 'Call and answer'}
 # tui/screens/wizard/hooks_branch.py: the song's hooks.
-MSG_WIZARD_HOOKS_BRANCH = 'Hooks'
+MSG_WIZARD_HOOKS_BRANCH = 'Hook'
+MSG_WIZARD_BEHAVIOR_LABEL = 'Behavior'
+MSG_WIZARD_HOOK_GAUGE_LABELS = {'catchiness': 'Catchiness', 'simplicity': 'Simplicity', 'leap': 'Leap', 'height': 'Height', 'hold': 'Hold', 'bounce': 'Bounce'}
+# tui/screens/wizard/melodies_branch.py: the group of the song's melodies.
+MSG_WIZARD_MELODIES_BRANCH = 'Melodies'
 MSG_WIZARD_MAIN_HOOK_HEADING = 'Main Hook'
 MSG_WIZARD_SECOND_HOOK_HEADING = 'Second Hook'
 MSG_WIZARD_MAIN_HOOK_LABEL = 'Main hook'
@@ -819,7 +824,6 @@ MSG_WIZARD_SECOND_HOOK_LABEL = 'Second hook'
 MSG_WIZARD_SUNG_IN_LABEL = 'Sung in'
 MSG_WIZARD_SECOND_SUNG_IN_LABEL = 'Tag sung in'
 MSG_WIZARD_PLACEMENT_LABEL = 'Placement'
-MSG_WIZARD_NEW_MAIN_HOOK_BUTTON = 'New Main Hook'
 MSG_WIZARD_NEW_SECOND_HOOK_BUTTON = 'New Second Hook'
 MSG_WIZARD_PROGRESSION_LABEL = 'Progression'
 MSG_WIZARD_HOOK_NOTES_LABEL = 'Hook notes'
@@ -858,15 +862,12 @@ MSG_WIZARD_PHRASING_LABEL = 'Phrasing'
 MSG_WIZARD_EDIT_PHRASING_BUTTON = 'Edit Phrasing'
 MSG_WIZARD_EDIT_PLAYER_BUTTON = 'Edit Player'
 MSG_WIZARD_EDIT_OWN_PLAYER_BUTTON = 'Edit Player (your own)'
-MSG_WIZARD_HOOK_PART_LABELS = {'contour': 'Contour', 'rhythm': 'Rhythm', 'detail': 'Detail'}
-MSG_WIZARD_PICK = "(wizard's pick)"
 # What a section of a planned song can be given of its own, and where each comes from until it is.
 MSG_WIZARD_INTRO_HOOK_LABEL = 'Intro hook'
 MSG_WIZARD_SECTION_OWN_LABELS = {'shape': 'Shape', 'rises': 'Rises', 'energy': 'Energy', 'leaves': 'Leaves with', 'setup': 'Setup', 'chords': 'Chords', 'tempo': 'Tempo', 'tempo_end': 'Tempo at end', 'root': 'Key', 'type': 'Scale', 'fades': 'Fades'}
 MSG_WIZARD_SECTION_ORIGINS = {'shape': 'from genre', 'rises': 'from plan', 'energy': 'from plan', 'leaves': 'from plan', 'setup': 'from plan', 'chords': 'from progression', 'tempo': 'from song', 'tempo_end': 'from song', 'root': 'from song', 'type': 'from song', 'fades': 'from genre'}
 MSG_WIZARD_VALUE_FROM = '{value} ({origin})'
 MSG_WIZARD_FROM_ORIGIN = '({origin})'
-MSG_WIZARD_PICK_SHOWN = "{value} (wizard's pick)"
 MSG_WIZARD_PLAN_LINE = '{number:>2}  {name:<{width}}  {said}'
 MSG_WIZARD_FILLS_LABEL = 'Fill pattern'
 MSG_WIZARD_USUAL_MELODY = 'from genre'

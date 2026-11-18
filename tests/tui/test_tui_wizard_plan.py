@@ -18,7 +18,7 @@
 
 from llamatron.composition import limits
 from llamatron.strings import errors, labels, marks
-from llamatron.macro_composer import hook_kinds
+from llamatron.macro_composer import hook_writing
 from llamatron.macro_composer.arranger import CHORDS
 from llamatron.macro_composer.joins import LEAVES
 from llamatron.macro_composer.song_plan import ENERGY, FADES, RISES, ROOT_OF_PLACE, TEMPO_END_OF_PLACE, TYPE_OF_PLACE
@@ -105,49 +105,42 @@ class TestWizardPlan(WizardTest):
         # A Phrasing counts in bars, whatever the bar holds, so a tune in six is delivered in lines as a tune in four is.
         self.assertIn(labels.MSG_WIZARD_PHRASING_LABEL, self.text())
 
-    async def open_kind(self):
-        """The hook's parts show under the Main Hook heading, which starts open."""
-
-    async def test_the_hooks_panel_shows_the_kind_only_under_a_plan_and_marks_the_wizard_s_pick(self):
+    async def test_the_hook_panel_shows_the_behavior_and_the_gauges_with_the_genre_s_said_to_be_so(self):
         await self.choose()
-        self.choices().set_song_plan(False)
-        await self.press(Key.DOWN, Key.UP)
         await self.go_to_hooks()
-        for label in labels.MSG_WIZARD_HOOK_PART_LABELS.values():
-            self.assertNotIn(label, self.text())
-        self.choices().set_song_plan(True)
-        self.choices().set_hook_part(part=hook_kinds.CONTOUR, value=hook_kinds.CHANT)
-        await self.press(Key.DOWN, Key.UP)
-        await self.go_to_hooks()
-        await self.open_kind()
+        choices = self.choices()
         shown = self.text()
-        kind = self.choices().hook_kind()
-        self.assertIn(hook_kinds.CHANT, shown)
-        self.assertNotIn(labels.MSG_WIZARD_PICK_SHOWN.format(value=hook_kinds.CHANT), shown)
-        self.assertIn(labels.MSG_WIZARD_PICK_SHOWN.format(value=kind[hook_kinds.RHYTHM]), shown)
+        self.assertIn(labels.MSG_WIZARD_VALUE_FROM.format(value=choices.genre_hook_behavior(), origin=labels.MSG_WIZARD_USUAL_MELODY), shown)
+        for name in choices.hook_gauges():
+            self.assertIn(labels.MSG_WIZARD_HOOK_GAUGE_LABELS[name], shown)
 
-    async def test_stepping_a_part_chooses_it_and_the_picture_follows(self):
+    async def test_stepping_a_gauge_moves_it_the_picture_follows_and_the_delete_key_gives_it_back(self):
         await self.choose()
-        self.choices().set_song_plan(True)
-        self.choices().set_hook_part(part=hook_kinds.CONTOUR, value=hook_kinds.CHANT)
-        await self.press(Key.DOWN, Key.UP)
         await self.go_to_hooks()
-        before = self.choices().hook_notes()
+        choices = self.choices()
+        before = choices.hook_notes()
+        usual = choices.genre_hook_gauge(hook_writing.SIMPLICITY)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
-        await self.select_field(labels.MSG_WIZARD_HOOK_PART_LABELS[hook_kinds.CONTOUR])
-        await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(self.choices().hook_kind()[hook_kinds.CONTOUR], hook_kinds.ARCH)
-        self.assertNotEqual(self.choices().hook_notes(), before)
+        await self.select_field(labels.MSG_WIZARD_HOOK_GAUGE_LABELS[hook_writing.SIMPLICITY])
+        less = key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET)
+        for _ in range(usual - hook_writing.LOWEST):
+            await self.press(less)
+        self.assertEqual(choices.get_hook_gauge(hook_writing.SIMPLICITY), hook_writing.LOWEST)
+        self.assertNotEqual(choices.hook_notes(), before)
+        await self.press(less)
+        self.assertEqual(choices.get_hook_gauge(hook_writing.SIMPLICITY), hook_writing.LOWEST)
+        await self.press(keybindings.FieldPage.CLEAR)
+        self.assertEqual(choices.get_hook_gauge(hook_writing.SIMPLICITY), usual)
+        self.assertEqual(choices.hook_notes(), before)
 
-    async def test_a_long_note_shows_no_rhythm_and_no_detail(self):
+    async def test_choosing_a_behavior_leaves_only_its_gauges(self):
         await self.choose()
-        self.choices().set_song_plan(True)
-        self.choices().set_hook_part(part=hook_kinds.CONTOUR, value=hook_kinds.LONG_NOTE)
+        self.choices().set_hook_behavior(hook_writing.CHANT)
         await self.press(Key.DOWN, Key.UP)
         await self.go_to_hooks()
-        await self.open_kind()
-        self.assertIn(labels.MSG_WIZARD_HOOK_PART_LABELS[hook_kinds.CONTOUR], self.text())
-        self.assertNotIn(labels.MSG_WIZARD_HOOK_PART_LABELS[hook_kinds.DETAIL], self.text())
+        self.assertIn(labels.MSG_WIZARD_HOOK_GAUGE_LABELS[hook_writing.HOLD], self.text())
+        self.assertNotIn(labels.MSG_WIZARD_HOOK_GAUGE_LABELS[hook_writing.LEAP], self.text())
+
 
 THE_GROUPS = (labels.MSG_WIZARD_GROUP_TUNE, labels.MSG_WIZARD_GROUP_HARMONY, labels.MSG_WIZARD_GROUP_SHAPE, labels.MSG_WIZARD_GROUP_JOINS, labels.MSG_WIZARD_GROUP_PLAYERS)
 
