@@ -32,9 +32,9 @@ Edit Player opens the player's [Musician](generators/MUSICIAN.md), the generator
 
 ![The panel of one player, the rhythm guitar](screenshots/wizard_player.svg)
 
-## Composition
+## Tune
 
-Composition holds the panels of what the song is made of: its chords, its melody style, its tunes and its hook.
+Tune holds the panels of what the song is made of: its chords, its melody style, its tunes and its hook.
 
 ### Chords
 
