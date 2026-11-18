@@ -44,7 +44,8 @@ from llamatron.macro_composer.arranger import (
 )
 from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer import hook_kinds, line_edits, phrasing
-from llamatron.macro_composer.arranger import KICK as KICK_PIECE, OWN_TUNES, TAKEN_TUNES
+from llamatron.macro_composer.arranger import KICK as KICK_PIECE, NOBODY, OWN_TUNES, TAKEN_TUNES, TUNE_BY, TUNE_BY_SONG
+from llamatron.macro_composer.players import BASS as BASS_PLAYER
 from llamatron.macro_composer.notation import NONE as NO_HIT
 from llamatron.macro_composer.arranger import CHORDS, DYNAMICS, EIGHTHS_IN_WHOLE, GROOVE, LOUDNESS as LOUDNESS_OF, NO_GROOVE, SCENE_SETTINGS, form_of
 from llamatron.macro_composer.loudness import LEAST_DYNAMICS, LEVELS as LOUDNESS_LEVELS, MOST_DYNAMICS, USUAL_DYNAMICS, drum_levels, note_levels, with_own
@@ -649,6 +650,8 @@ class WizardChoices:
             self._extras.pop(DYNAMICS, None)
             self._extras.pop(LOUDNESS_OF, None)
             self._extras.pop(TUNE_TAKES, None)
+            self._extras.pop(TUNE_BY, None)
+            self._extras.pop(TUNE_BY_SONG, None)
             self._forget_band()
 
     def subgenres(self):
@@ -3014,12 +3017,64 @@ class WizardChoices:
         place = self.tune_place(kind)
         if place is None:
             raise ValueError(errors.ERR_WIZARD_NO_TUNE_IN.format(value=kind))
+        player = self.tune_player_in(kind)
+        if player is None:
+            return None, None
         setlist, name = self.made_for_listening()
         scenes = setlist.get_song(name).get_scenes()
-        slot = scenes[place].get_clip_slot(self.tune_player()) if place < len(scenes) and scenes[place].has_clip_slot(self.tune_player()) else None
+        slot = scenes[place].get_clip_slot(player) if place < len(scenes) and scenes[place].has_clip_slot(player) else None
         if slot is None:
             return None, None
         return slot.get_pattern_name(), setlist.get_pattern(slot.get_pattern_name()).to_data()
+
+    # Who plays the tune: one player for the song, and another, or nobody, for a kind of section. The player given the tune plays it
+    # in place of the usual part there, and the player who had it rests.
+
+    def tune_players_offered(self):
+        """Return the players who may be given the tune, by name: every player of notes in the band but the bass."""
+        return [role for role in self.roles_in() if self.has_sound(role) and self._role(role).get(PLAYER) != BASS_PLAYER]
+
+    def tune_played_by(self):
+        """Return the player who plays the tune in the song: the one chosen while in the band, or else the player the genre gives the tune."""
+        chosen = self._extras.get(TUNE_BY_SONG)
+        return chosen if chosen in self.tune_players_offered() else self.tune_player()
+
+    def set_tune_played_by(self, role):
+        """Give the song's tune to a player, or back to the player the genre gives it with None."""
+        if role is not None and role not in self.tune_players_offered():
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_TUNE_PLAYER.format(value=role))
+        if role is None or role == self.tune_player():
+            self._extras.pop(TUNE_BY_SONG, None)
+        else:
+            self._extras[TUNE_BY_SONG] = role
+        self._answers = {}
+
+    def tune_played_by_in(self, kind):
+        """Return what a kind of section says of who plays its tune: a player's name, NOBODY, or None where the kind goes by the song."""
+        chosen = self._extras.get(TUNE_BY, {}).get(kind)
+        return chosen if chosen == NOBODY or chosen in self.tune_players_offered() else None
+
+    def tune_player_in(self, kind):
+        """Return the player who plays the tune in a kind of section, or None where nobody does."""
+        chosen = self.tune_played_by_in(kind)
+        if chosen == NOBODY:
+            return None
+        return chosen or self.tune_played_by()
+
+    def set_tune_played_by_in(self, *, kind, role):
+        """Give a kind of section's tune to a player, to nobody with NOBODY, or back to the song's player with None."""
+        if self.tune_place(kind) is None:
+            raise ValueError(errors.ERR_WIZARD_NO_TUNE_IN.format(value=kind))
+        if role is not None and role != NOBODY and role not in self.tune_players_offered():
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_TUNE_PLAYER.format(value=role))
+        by = self._extras.setdefault(TUNE_BY, {})
+        if role is None:
+            by.pop(kind, None)
+        else:
+            by[kind] = role
+        if not by:
+            del self._extras[TUNE_BY]
+        self._answers = {}
 
     def tune_take(self, kind):
         """Return which take of its tune a kind of section has: the first, the tune the choices write, or a later one asked for."""

@@ -193,6 +193,11 @@ ENDS = 'ends'
 MELODY_ENGINE = 'melody_engine'
 # A song's tunes written by hand, each a pattern's data under its kind of section, which take the place of the tune that would be written.
 OWN_TUNES = 'own_tunes'
+# Who plays the tune: a player's name for each kind of section, and one for the whole song, the player the genre gives the tune
+# where neither says; NOBODY for a kind of section that has no tune.
+TUNE_BY = 'tune_by'
+TUNE_BY_SONG = 'tune_by_song'
+NOBODY = 'nobody'
 # A song's tunes of another take, each a pattern's data by its kind of section: the wizard's own, drawn again for that kind alone.
 TAKEN_TUNES = 'taken_tunes'
 VOICE = 'voice'
@@ -1067,6 +1072,7 @@ def arranged(*, style, song):
         bars = 1 if section.get(HELD) else section[BARS]
         chords = chords_in(section)
         play = {}
+        tune_role = None
         if section.get(HELD):
             held = composer_text.MSG_PART_OF_SECTION.format(CRASH, HELD)
             if not no_drums and CRASH not in pieces_off:
@@ -1209,6 +1215,13 @@ def arranged(*, style, song):
                         same_tunes[(role[ROLE], repr(written))] = part
                 if part in parts:
                     play[role[ROLE]] = {PART: part, ONCE: True, CHAINS: [composer_text.MSG_TIMING_CHAIN.format(role[ROLE])]}
+        # The tune goes to the player the song gives it to: for this kind of section, or else for the whole song. That player plays
+        # the tune in place of the usual part, the player who had the tune rests, and with nobody the section has no tune.
+        tune_by = song.get(TUNE_BY, {}).get(section[KIND], song.get(TUNE_BY_SONG))
+        if tune_role is not None and tune_role[ROLE] in play and tune_by is not None and tune_by != tune_role[ROLE]:
+            tune_played = play.pop(tune_role[ROLE])
+            if tune_by != NOBODY and any(role[ROLE] == tune_by for role in roles):
+                play[tune_by] = tune_played
         if not play:
             # Nothing of the song's picks plays in this section, as pads alone where the song has no chord part: it is left out.
             met[name] -= 1

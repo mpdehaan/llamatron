@@ -21,10 +21,14 @@ the person's own: every section of the kind plays it as written, and no choice o
 over it until the person gives the wizard's notes back.
 """
 
+from llamatron.macro_composer.arranger import NOBODY
 from llamatron.strings import labels, legends, marks, messages
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui.screens.shared.field import Field
+from llamatron.tui.screens.shared.field import ChoiceField, Field
 from llamatron.tui.screens.wizard.branch import Branch
+
+# The choice that leaves a kind of section's tune to the song's player, which no player is named.
+FROM_SONG = ''
 
 
 class TunesBranch(Branch):
@@ -48,7 +52,34 @@ class TunesBranch(Branch):
         return marks.MSG_WIZARD_TUNES_SHOWN.format(count=len(kinds), edited=edited)
 
     def fields(self):
-        return [self.tune_field(kind) for kind in self.kinds()]
+        """Who plays the song's tune, then for each kind of section its tune, unless nobody plays it there, and who plays it."""
+        choices = self.choices()
+        kinds = self.kinds()
+        if not kinds:
+            return []
+        fields = [self.song_player_field()]
+        for kind in kinds:
+            if choices.tune_player_in(kind) is not None:
+                fields.append(self.tune_field(kind))
+            fields.append(self.player_field(kind))
+        return fields
+
+    def song_player_field(self):
+        choices = self.choices()
+        offered = choices.tune_players_offered()
+        return ChoiceField(page=self.page(), label=labels.MSG_WIZARD_TUNE_LABEL, choices=offered, names=[choices.role_title(role) for role in offered],
+                           current=choices.tune_played_by(), shown=choices.role_title(choices.tune_played_by()), set=self.page().choosing(choices.set_tune_played_by))
+
+    def player_field(self, kind):
+        """Return the field of who plays a kind of section's tune: the song's player until another is chosen, a player of the band, or nobody."""
+        choices = self.choices()
+        offered = choices.tune_players_offered()
+        own = choices.tune_played_by_in(kind)
+        from_song = marks.MSG_WIZARD_FROM_SONG_SHOWN.format(value=choices.role_title(choices.tune_played_by()))
+        names = {FROM_SONG: from_song, NOBODY: labels.MSG_WIZARD_NOBODY, **{role: choices.role_title(role) for role in offered}}
+        return ChoiceField(page=self.page(), label=labels.MSG_WIZARD_KIND_PLAYED_BY_LABEL.format(kind=kind), choices=list(names), names=list(names.values()),
+                           current=own or FROM_SONG, shown=names[own or FROM_SONG],
+                           set=self.page().choosing(lambda role: choices.set_tune_played_by_in(kind=kind, role=None if role == FROM_SONG else role)))
 
     def tune_field(self, kind):
         choices = self.choices()
@@ -73,12 +104,17 @@ class TunesBranch(Branch):
         """Return the kind of section whose tune the cursor is on, the first where the cursor is in the tree, or None for a song with no tune."""
         kinds = self.kinds()
         label = self.page().label_under_cursor()
-        return next((kind for kind in kinds if labels.MSG_WIZARD_KIND_TUNE_LABEL.format(kind=kind) == label), kinds[0] if kinds else None)
+        own = (labels.MSG_WIZARD_KIND_TUNE_LABEL, labels.MSG_WIZARD_KIND_PLAYED_BY_LABEL)
+        return next((kind for kind in kinds if label in [each.format(kind=kind) for each in own]), kinds[0] if kinds else None)
+
+    def on_a_tune(self):
+        """Return whether the cursor is on a tune's row, where the tune's keys work."""
+        return self.page().label_under_cursor() in [labels.MSG_WIZARD_KIND_TUNE_LABEL.format(kind=kind) for kind in self.kinds()]
 
     def takes(self):
         """A new take writes another tune for the kind under the cursor alone, asking first where the tune was edited by hand."""
         kind = self.kind_under_cursor()
-        if kind is None:
+        if kind is None or not self.on_a_tune():
             return None
         choices = self.choices()
         page = self.page()
@@ -98,6 +134,6 @@ class TunesBranch(Branch):
     def listens(self):
         """Listen plays the tune's player alone in the first section of the kind under the cursor."""
         kind = self.kind_under_cursor()
-        if kind is None:
+        if kind is None or self.choices().tune_player_in(kind) is None:
             return None
-        return messages.MSG_WIZARD_LISTEN_TUNE, self.choices().tune_place(kind), self.choices().tune_player()
+        return messages.MSG_WIZARD_LISTEN_TUNE, self.choices().tune_place(kind), self.choices().tune_player_in(kind)
