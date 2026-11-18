@@ -396,3 +396,17 @@ the build. Two further points:
   build returns reversed as the outro; a count and a turnaround do not return.
 - The intro is decided after the hook, the riff, the chords and the form exist, since it quotes them, and together with the
   turnarounds and the ending, as one step of framing the song.
+
+## What Makes a Bridge a Bridge and a Solo a Solo (the professor, as rules a program can follow)
+
+(practice)
+
+- A bridge is eight bars, never fewer in arena rock, where four is heard as a link. It begins off the home chord, usually on IV,
+  vi or bVII, uses none of the chorus's progression, and ends on V, held, to launch the last chorus. Its melody is new, with
+  nothing of the hook, a different rhythm and longer notes, under the hook's top. The band changes texture: drums to half time
+  or toms, guitars thinner or sustained, then a build over the last two bars.
+- A solo is eight or sixteen bars over the verse's or the chorus's chords with the band at full intensity, the rhythm guitar and
+  bass keeping the groove. It starts low, quoting or paraphrasing the hook's rhythm, speaks in sentences of two bars with rests
+  between and never as a stream, rises in register and in notes throughout, uses bends and held notes, peaks on its highest note
+  in the last two bars and lands on a note of the chord into the next section.
+
