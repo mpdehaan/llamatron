@@ -27,7 +27,7 @@ import functools
 import random
 import zlib
 
-from llamatron.composition.file_format import PatternSetting, Section
+from llamatron.composition.file_format import PatternSetting, Row, Section
 from llamatron.composition.groove import FactoryGroove
 from llamatron.composition import limits, naming
 from llamatron.strings import labels as labels_text, macro_composer as composer_text, marks as marks_text, names as names_text
@@ -300,6 +300,8 @@ ARRANGED_ANSWER = 'arranged'
 LINES_ANSWER = 'lines'
 # What a section's lines are given of their own, by the line's count, and what is said of a line.
 LINES_OF_SECTION = 'lines'
+# A pattern's octave row counts one octave higher than a picture of a line does.
+PATTERN_OCTAVES_OVER_PICTURE = 1
 LINE_PLAYER = 'player'
 LINE_BREATHES = 'breathes'
 LINE_IS_HOOK = 'hook'
@@ -3561,6 +3563,9 @@ class WizardChoices:
         line = self.riff_line()
         if line is None:
             return None
+        own = self._riff().get(RIFF_OWN)
+        if own is not None:
+            return own[PatternSetting.STEPS], self.riff_steps_in_bar(), self._notes_of_pattern(own)
         notes = []
         at = 0
         for note in line:
@@ -3575,7 +3580,50 @@ class WizardChoices:
         return next((place for place, kind in enumerate(self.section_kinds_in_form()) if kind in kinds and not self.section_is_held(place)), None)
 
     def riff_is_own(self):
-        return bool(self._riff().get(RIFF_LINE))
+        """Return whether the riff's notes were written by hand: as a pattern, or as a line in a song made before patterns were."""
+        return bool(self._riff().get(RIFF_LINE)) or self._riff().get(RIFF_OWN) is not None
+
+    def _notes_of_pattern(self, pattern):
+        """The notes of a pattern for a picture: each as the step it starts on, how many steps it lasts and its MIDI note."""
+        scale = self.scale_half_steps()
+        degrees = pattern.get(Row.DEGREE) or []
+        octaves = pattern.get(Row.OCTAVE) or [None] * len(degrees)
+        ties = pattern.get(Row.TIE) or [False] * len(degrees)
+        notes = []
+        for place, degree in enumerate(degrees):
+            if degree is not None and octaves[place] is not None:
+                held = tune_fit.steps_held(ties=ties, degrees=degrees, place=place)
+                notes.append((place, held, (octaves[place] - PATTERN_OCTAVES_OVER_PICTURE) * NOTES_IN_OCTAVE + self.root_half_steps() + scale[(degree - 1) % len(scale)]))
+        return notes
+
+    def song_riff_pattern_name(self):
+        """Return the name of the pattern the riff's first player plays it from, in the set the choices make, or None where the riff is not heard."""
+        place = self.riff_scene()
+        if place is None:
+            return None
+        setlist, name = self.made_for_listening()
+        scene = setlist.get_song(name).get_scenes()[place]
+        player = self.get_riff_players()[0]
+        return scene.get_clip_slot(player).get_pattern_name() if scene.has_clip_slot(player) else None
+
+    def set_song_riff_pattern(self, pattern):
+        """Keep a pattern's data as the riff's own notes, as its first player plays them, or give the riff back to the wizard with
+        None. A pattern the song cannot be made with is refused and nothing changes."""
+        if not self.has_riff():
+            raise ValueError(errors.ERR_WIZARD_NO_RIFF)
+        before = copy.deepcopy(self._extras[RIFF])
+        self._extras[RIFF].pop(RIFF_LINE, None)
+        self._extras[RIFF].pop(RIFF_OWN, None)
+        if pattern is not None:
+            self._extras[RIFF][RIFF_OWN] = copy.deepcopy(pattern)
+        self._answers = {}
+        try:
+            self.made_for_listening()
+        except Exception as problem:
+            # A pattern written by hand can fail in any way a set's data can.
+            self._extras[RIFF] = before
+            self._answers = {}
+            raise ValueError(errors.ERR_WIZARD_RIFF_UNMADE.format(value=RIFF, problem=problem)) from None
 
     def riff_pitch_of_place(self, place):
         """Return the MIDI note at a place of the song's scale as the riff's first player plays it, for a picture of the riff."""
@@ -3589,6 +3637,7 @@ class WizardChoices:
             raise ValueError(errors.ERR_WIZARD_NO_RIFF)
         riff = self._extras[RIFF]
         riff.pop(RIFF_LINE, None)
+        riff.pop(RIFF_OWN, None)
         riff[RIFF_TAKE] = riff.get(RIFF_TAKE, FIRST_RIFF_TAKE) + 1
         self._answers = {}
 

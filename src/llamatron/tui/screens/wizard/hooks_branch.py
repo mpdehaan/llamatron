@@ -17,12 +17,10 @@
 
 from rich.text import Text
 
-from llamatron.macro_composer import line_edits
-from llamatron.macro_composer.wizard_choices import HOOK_PARTS, RIFF_SETTINGS, WizardChoices
+from llamatron.macro_composer.wizard_choices import HOOK_PARTS, RIFF_SETTINGS
 from llamatron.strings import labels, legends, marks, messages
 from llamatron.tui.drawing import INDENT, Style
 from llamatron.tui.note_names import note_shown
-from llamatron.tui.dialogs.tune_dialog import TuneDialog
 from llamatron.tui.screens.shared.field import Button, ChoiceField, Field, Toggle
 from llamatron.tui.screens.wizard.song_ways_branch import SongWaysBranch
 
@@ -31,20 +29,6 @@ WIDE_STEP = 2
 NARROW_STEP = 1
 # The cells the picture leaves for a note's name and its edges.
 ROOM_BESIDE = 8
-
-
-def hook_notes_field(*, choices, page, label):
-    """Return the field of the hook's notes, the wizard's until they are written by hand: ENTER opens the hook's line in the Tune dialog and keeps the line
-    the dialog answers with as the hook's own notes, and Bksp gives the wizard's back. The Hooks panel shows it, and so does every section that says the hook."""
-    own = choices.hook_is_own()
-
-    def edit_notes():
-        usual = WizardChoices.from_data(choices.to_data())
-        usual.set_hook_line(None)
-        dialog = TuneDialog(title=labels.MSG_WIZARD_HOOK_NOTES_TITLE, line=choices.hook_line(), steps_in_bar=choices.hook_notes()[1], pitch_of_place=choices.pitch_of_place, usual=usual.hook_line())
-        page.ask(dialog=dialog, then=page.choosing(lambda line: choices.set_hook_line(None if line == line_edits.tidied(usual.hook_line()) else line)))
-    return Field(label=label, value=lambda: labels.MSG_WIZARD_HOOK_NOTES_OWN if own else labels.MSG_WIZARD_HOOK_NOTES_WIZARD, enter=edit_notes, enter_what=legends.MSG_WIZARD_EDIT_NOTES_WHAT,
-                 clear=(lambda: page.choosing(lambda nothing: choices.set_hook_line(None))(None)) if own else None, clear_what=legends.MSG_TUNE_USUAL_WHAT)
 
 
 class HooksBranch(SongWaysBranch):
@@ -104,16 +88,11 @@ class HooksBranch(SongWaysBranch):
         if choices.has_riff():
             own = choices.riff_is_own()
 
-            def edit_notes():
-                usual = WizardChoices.from_data(choices.to_data())
-                usual.set_riff_line(None)
-                dialog = TuneDialog(title=labels.MSG_WIZARD_RIFF_NOTES_TITLE, line=choices.riff_line(), steps_in_bar=choices.riff_steps_in_bar(), pitch_of_place=choices.riff_pitch_of_place, usual=usual.riff_line())
-                page.ask(dialog=dialog, then=refusing(lambda line: choices.set_riff_line(None if line == line_edits.tidied(usual.riff_line()) else line)))
             fields += [ChoiceField(page=page, label=labels.MSG_WIZARD_RIFF_SAID_LABEL, choices=choices.riff_said_offered(), current=choices.get_riff_said(),
                                    set=refusing(lambda said: choices.set_riff(players=choices.get_riff_players(), said=said))),
                        *(self.riff_setting_field(field=field, refusing=refusing) for field in choices.riff_settings_offered()),
-                       Field(label=labels.MSG_WIZARD_RIFF_NOTES_LABEL, value=lambda: labels.MSG_WIZARD_HOOK_NOTES_OWN if own else labels.MSG_WIZARD_HOOK_NOTES_WIZARD, enter=edit_notes, enter_what=legends.MSG_WIZARD_EDIT_NOTES_WHAT,
-                             clear=(lambda: refusing(lambda nothing: choices.set_riff_line(None))(None)) if own else None, clear_what=legends.MSG_TUNE_USUAL_WHAT),
+                       Field(label=labels.MSG_WIZARD_RIFF_NOTES_LABEL, value=lambda: labels.MSG_WIZARD_HOOK_NOTES_OWN if own else labels.MSG_WIZARD_HOOK_NOTES_WIZARD, enter=page.edit_song_riff, enter_what=legends.MSG_WIZARD_EDIT_NOTES_WHAT,
+                             clear=(lambda: refusing(choices.set_song_riff_pattern)(None)) if own else None, clear_what=legends.MSG_TUNE_USUAL_WHAT),
                        Button(label=labels.MSG_WIZARD_NEW_RIFF_BUTTON, key_name=legends.KeyName.ENTER, enter=lambda: page.choosing(lambda nothing: choices.new_riff())(None), enter_what=legends.MSG_WIZARD_NEW_HOOK_WHAT)]
         return self.grouped(label=labels.MSG_WIZARD_GROUP_RIFF, fields=fields, is_set=choices.has_riff)
 
@@ -134,8 +113,11 @@ class HooksBranch(SongWaysBranch):
             return [switch, *kinds, *said, new_hook]
         # The hook's notes are the wizard's until they are written by hand; then the notes are the hook, whatever its kind was, until Bksp gives them back.
         own = choices.hook_is_own()
-        notes = hook_notes_field(choices=choices, page=self.page(), label=labels.MSG_WIZARD_HOOK_NOTES_LABEL)
-        return [switch, notes, *([] if own else kinds), *said, *([] if own else [new_hook])]
+        # A hook written by hand in a song made before tunes were patterns is shown as the person's, and Bksp gives the wizard's back;
+        # the hook's notes are now edited in its section's tune, on the Tunes and Riffs panel.
+        notes = [Field(label=labels.MSG_WIZARD_HOOK_NOTES_LABEL, value=lambda: labels.MSG_WIZARD_HOOK_NOTES_OWN, clear=lambda: self.page().choosing(lambda nothing: choices.set_hook_line(None))(None),
+                       clear_what=legends.MSG_TUNE_USUAL_WHAT)] if own else []
+        return [switch, *notes, *([] if own else kinds), *said, *([] if own else [new_hook])]
 
     def intro_hook_fields(self):
         """Return the field of who says the hook in the intro, before anybody sings it, where somebody can."""

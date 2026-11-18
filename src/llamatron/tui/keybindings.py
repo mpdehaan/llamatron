@@ -1073,37 +1073,6 @@ class RowDialog(Dialog):
     IN_LEGEND = [MOVE, LESS, MORE, INSERT_CELL, REMOVE_CELL, USUAL]
 
 
-class TuneDialog(Dialog):
-    """The Tune dialog, one line of a tune: Left and Right move along its steps, Up and Down move the note under the cursor up and down the scale, Space takes the note out or puts
-    one in, [ and ] make the note shorter and longer, Bksp puts back the wizard's line, Enter is OK and Esc is CANCEL."""
-
-    MOVE = (ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
-    PITCH = (Steps(back=(Key.DOWN,), forward=(Key.UP,)), legends.KeyName.UP_DOWN, legends.MSG_TUNE_PITCH_WHAT)
-    NOTE = (Key.SPACE, legends.KeyName.SPACE, legends.MSG_PLACE_NOTE_WHAT)
-    SHORTER = (Key.LEFT_BRACKET, legends.KeyName.LEFT_BRACKET, legends.MSG_SHRINK_WHAT)
-    LONGER = (Key.RIGHT_BRACKET, legends.KeyName.RIGHT_BRACKET, legends.MSG_STRETCH_WHAT)
-    USUAL = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.MSG_TUNE_USUAL_WHAT)
-    DONE = (Key.ENTER, legends.KeyName.ENTER, legends.What.DONE)
-    IN_HELP = [Dialog.CANCEL, MOVE, PITCH, NOTE, SHORTER, LONGER, USUAL, DONE]
-    IN_LEGEND = [MOVE, PITCH, NOTE, SHORTER, LONGER, USUAL]
-
-
-class LinesDialog(Dialog):
-    """The Lines dialog, a section's lines one by one: Up and Down move between the lines, [ and ] make the line's breath shorter and longer, Space has a note of the line come
-    early or not, Enter opens the line's notes, Bksp gives the line back to the wizard, L plays the section's tune and Esc closes."""
-
-    CLOSE = (CANCEL_KEYS, legends.KeyName.ESCAPE, legends.What.CLOSE)
-    MOVE = (ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
-    SHORTER = (Key.LEFT_BRACKET, legends.KeyName.LEFT_BRACKET, legends.MSG_LINES_SHORTER_BREATH_WHAT)
-    LONGER = (Key.RIGHT_BRACKET, legends.KeyName.RIGHT_BRACKET, legends.MSG_LINES_LONGER_BREATH_WHAT)
-    EARLY = (Key.SPACE, legends.KeyName.SPACE, legends.MSG_LINES_EARLY_WHAT)
-    EDIT = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_WIZARD_EDIT_NOTES_WHAT)
-    USUAL = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.MSG_LINES_USUAL_WHAT)
-    LISTEN = (Key.L, legends.KeyName.L, legends.MSG_LISTEN_WHAT)
-    IN_HELP = [CLOSE, MOVE, SHORTER, LONGER, EARLY, EDIT, USUAL, LISTEN]
-    IN_LEGEND = IN_HELP
-
-
 class KeyswitchDialog(PickManyDialog):
     """The dialog that picks a step's keyswitches: Up and Down move, Space turns the slot under the cursor on or off, a digit turns its slot on or off, Enter is OK and Esc is CANCEL, the two shown as buttons."""
 

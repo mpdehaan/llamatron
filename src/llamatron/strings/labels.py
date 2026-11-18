@@ -790,7 +790,6 @@ MSG_WIZARD_HOOK_LABEL = 'Hook'
 MSG_WIZARD_HOOK_NOTES_LABEL = 'Notes'
 MSG_WIZARD_HOOK_NOTES_OWN = 'your own'
 MSG_WIZARD_HOOK_NOTES_WIZARD = "the wizard's"
-MSG_WIZARD_HOOK_NOTES_TITLE = 'Hook notes'
 # The Lines dialog, a section's lines one by one, and the section panel's field that opens it.
 MSG_WIZARD_LINES_LABEL = 'Lines'
 # The groups of a section's panel, each a heading that opens and closes.
@@ -806,21 +805,12 @@ MSG_WIZARD_RIFF_NOTES_LABEL = 'Riff notes'
 MSG_WIZARD_RIFF_SETTING_LABELS = {'notes': 'Made of', 'bars': 'Bars', 'between': 'Between', 'under the tune': 'Under the tune', 'with chords': 'With chords'}
 # The kick's row above the riff's picture.
 MSG_WIZARD_RIFF_KICK_ROW = 'kick'
-MSG_WIZARD_RIFF_NOTES_TITLE = 'Riff notes'
 MSG_WIZARD_NEW_RIFF_BUTTON = 'New riff'
 MSG_WIZARD_RIFF_PLAYERS_JOINED = ' and '
-MSG_WIZARD_SECTION_HOOK_LABEL = 'Hook'
 MSG_WIZARD_GROUP_HARMONY = 'Harmony'
 MSG_WIZARD_GROUP_SHAPE = 'Shape'
 MSG_WIZARD_GROUP_JOINS = 'Joins'
 MSG_WIZARD_GROUP_PLAYERS = 'Who plays'
-MSG_WIZARD_LINES_TITLE = 'Lines: {section}'
-MSG_WIZARD_LINE_NOTES_TITLE = 'Line {line}: {section}'
-MSG_LINES_BREATH_LABEL = 'Breath'
-MSG_LINES_EARLY_LABEL = 'Early note'
-MSG_LINES_NOTES_LABEL = 'Notes'
-MSG_LINES_YES = 'yes'
-MSG_LINES_NO = 'no'
 # The song plan's fields on the Form panel, the parts of a hook's kind on the Hooks panel, and a value the wizard picked itself.
 MSG_WIZARD_SONG_PLAN_LABEL = 'Song plan'
 MSG_WIZARD_CONTRAST_LABEL = 'Contrast'

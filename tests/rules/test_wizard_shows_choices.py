@@ -34,7 +34,9 @@ OTHER_CHANGES = ('add_section', 'copy_section', 'remove_section', 'move_section'
 # Changes with no field of their own: the sections a song kept are taken back one by one through the other setters, and
 # the seed is never shown, since every run of the wizard draws a new one when it starts; and a song file's own picks, the song
 # plan among them, are given by a file alone until the wizard's pages for them are built.
-NOT_ON_THE_PAGE = ('set_own_sections', 'set_seed', 'set_song_extras')
+# A riff's notes are written in the pattern editor; its notes as one line are kept from songs made before that, and are given
+# back from the page with the riff's pattern.
+NOT_ON_THE_PAGE = ('set_own_sections', 'set_seed', 'set_song_extras', 'set_riff_line')
 A_CALL = r'\.{name}\b'
 SOURCE_FILES = '*.py'
 
