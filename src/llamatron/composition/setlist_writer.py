@@ -21,6 +21,7 @@ chains and grooves), then the songs, each with its settings, registers, tracks a
 name. Comments aren't kept, because a set is only data by the time it gets here.
 """
 
+import functools
 import json
 import re
 
@@ -100,7 +101,15 @@ def _text(value):
         return LIST.format(items=ITEM_SEPARATOR.join(_text(item) for item in value))
     if isinstance(value, dict):
         return _braces(value)
-    if isinstance(value, str):
+    return _scalar_text(kind=type(value), value=value)
+
+
+@functools.lru_cache(maxsize=None)
+def _scalar_text(*, kind, value):
+    """Return one text, number or true or false as YAML, worked out once for each: a set repeats a few hundred values many
+    thousands of times, and asking YAML about each was most of the time a save took. The kind is part of what is remembered,
+    since 1, 1.0 and true are equal to Python and are written differently."""
+    if kind is str:
         return value if _reads_back_as_itself(value) else json.dumps(value)
     return _first_line(yaml.safe_dump(value))
 

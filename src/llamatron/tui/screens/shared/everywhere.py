@@ -140,14 +140,18 @@ def save(page, *, then=None):
     path = document.get_path()
     if not path:
         save_as(page, then=then)
-    elif document.file_is_protected():
+        return
+    if document.file_is_protected():
         messages = [MSG_PROTECTED_EXPLAINED.format(path=path), MSG_PROTECTED_SAVE_COPY_QUESTION]
         page.ask(dialog=ConfirmDialog(title=MSG_PROTECTED_TITLE, messages=messages), then=lambda _: save_as(page, then=then))
-    elif document.file_holds_this_set():
+        return
+    # The file is read once for both questions about it.
+    held = document.file_now()
+    if document.file_holds_this_set(held=held):
         page.say(MSG_FILE_UNCHANGED.format(path=path))
         if then is not None:
             then()
-    elif document.file_changed_elsewhere():
+    elif document.file_changed_elsewhere(held=held):
         question = MSG_FILE_CHANGED_ELSEWHERE_QUESTION.format(path=path)
         page.ask(dialog=ConfirmDialog(title=MSG_FILE_CHANGED_ELSEWHERE_TITLE, messages=[question]), then=lambda _: write(page, path=path, then=then))
     else:

@@ -24,7 +24,7 @@ import unittest
 
 from llamatron.music.midi import HALF_STEPS_PER_OCTAVE
 from llamatron.composition.clip_slot import morph_style_name
-from llamatron.composition.defaults import DEFAULT_REGISTER_MAXIMUM, DEFAULT_REGISTER_MINIMUM, DEFAULT_REGISTER_VALUE
+from llamatron.composition.defaults import DEFAULT_ALLOWED_INC_MAX, DEFAULT_REGISTER_MAXIMUM, DEFAULT_REGISTER_MINIMUM, DEFAULT_REGISTER_VALUE
 from llamatron.composition.file_format import (
     AtLimit, REGISTER_ADD_ROWS, REGISTER_NAMES, REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, ClipSlotSetting, PatternSetting,
     RegisterName, RegisterSetting, RegisterUse, Row, ScaleSetting, SceneSetting, Section, SongSetting,
@@ -34,9 +34,10 @@ from llamatron.composition.named_scale import scale_type_name
 from llamatron.generators.blend import BlendMode
 from llamatron.music.midi import MAX_VELOCITY, MIN_VELOCITY
 from llamatron.composition.song_file_error import SongFileError
+from llamatron.strings import errors
 from llamatron.music.note import NoteName
 from llamatron.exporters.timing import timed_events
-from tests.support.rendering import render_data, song_from_data
+from tests.support.rendering import render_data, setlist_from_data, song_from_data
 from llamatron.music.scale import ScaleType
 
 AX = RegisterName.AX
@@ -426,3 +427,46 @@ class TestTheFile(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+# A song's narrower limit on what a step may add to a register, and adds within and past it.
+NARROW_LIMIT = 3
+PAST_NARROW = NARROW_LIMIT + 1
+STEPS_ADDING = 2
+UNPLAYED = 'unplayed'
+
+
+def adding(*, adds, registers=None):
+    """Return a song whose lead plays a pattern that adds to AX on each step, with a second pattern no clip plays that adds the same."""
+    rows = {Row.AX_ADD: adds}
+    patterns = {X: pattern(STEPS_ADDING, **rows), UNPLAYED: pattern(STEPS_ADDING, **rows)}
+    return song(patterns=patterns, scenes=[{SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: X}}}], registers=registers)
+
+
+class TestWhatAStepMayAdd(unittest.TestCase):
+    """The limit is looked up only for a pattern that adds anything, so both kinds of pattern are held here."""
+
+    def narrow(self):
+        return {AX: {RegisterSetting.ALLOWED_INC_MAX: NARROW_LIMIT}}
+
+    def test_a_pattern_that_adds_nothing_is_read_whatever_the_limit(self):
+        setlist = setlist_from_data(adding(adds=[None, 0], registers=self.narrow()))
+        self.assertFalse(setlist.get_pattern(X).adds_anything(Row.AX_ADD))
+        self.assertFalse(setlist_from_data(song(patterns={X: pattern(1)}, scenes=[])).get_pattern(X).adds_anything(Row.AX_ADD))
+
+    def test_a_file_that_adds_within_the_limit_is_read_and_one_past_it_is_refused(self):
+        setlist = setlist_from_data(adding(adds=[NARROW_LIMIT, -NARROW_LIMIT], registers=self.narrow()))
+        self.assertTrue(setlist.get_pattern(X).adds_anything(Row.AX_ADD))
+        with self.assertRaises(SongFileError) as refused:
+            setlist_from_data(adding(adds=[None, PAST_NARROW], registers=self.narrow()))
+        self.assertIn(errors.ERR_ADD_PAST_ALLOWED.format(row=Row.AX_ADD, register=AX, most=NARROW_LIMIT), str(refused.exception))
+        with self.assertRaises(SongFileError):
+            setlist_from_data(adding(adds=[DEFAULT_ALLOWED_INC_MAX + 1, None]))
+
+    def test_holding_adds_within_the_limit_lowers_those_past_it_in_patterns_a_song_plays(self):
+        setlist = setlist_from_data(adding(adds=[PAST_NARROW, -1]))
+        setlist.get_song(setlist.first_song_name()).set_register_setting(name=AX, setting=RegisterSetting.ALLOWED_INC_MAX, value=NARROW_LIMIT)
+        setlist.hold_adds_within_limits()
+        self.assertEqual(setlist.get_pattern(X).to_data()[Row.AX_ADD], [NARROW_LIMIT, -1])
+        # No song plays the other pattern, so no limit holds it.
+        self.assertEqual(setlist.get_pattern(UNPLAYED).to_data()[Row.AX_ADD], [PAST_NARROW, -1])

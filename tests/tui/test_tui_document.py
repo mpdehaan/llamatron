@@ -49,6 +49,8 @@ from llamatron.tui.uses import grabbers, uses_of
 from llamatron.support.example_sets import example_sets
 
 # A setting from an early version of the format, which a new song must not write.
+# How many of the examples a test that reads each twice takes.
+EXAMPLES_COMPARED = 5
 OLD_LENGTH_SETTING = 'default_length'
 A_VELOCITY = 100
 # A four-step pattern the flip and swap test rearranges, with a gap in one row.
@@ -261,6 +263,29 @@ class TestSaving(unittest.TestCase):
             # Saving writes out the song settings that a file left to their defaults.
             with self.subTest(path=path):
                 self.assertEqual(without_version({key: saved[key] for key in original}), without_version(original))
+
+    def test_a_set_loaded_from_a_file_knows_what_the_file_holds_without_reading_it_again(self):
+        for path in example_sets()[:EXAMPLES_COMPARED]:
+            with self.subTest(path=path):
+                loaded = Document.load(path)
+                read_again = Document(setlist=Setlist.read_file(path), path=path)
+                self.assertEqual(loaded.file_now(), read_again.file_now())
+                self.assertFalse(loaded.file_changed_elsewhere())
+                self.assertFalse(read_again.file_changed_elsewhere())
+                self.assertTrue(loaded.file_holds_this_set())
+
+    def test_the_questions_about_the_file_answer_the_same_from_one_reading_as_from_their_own(self):
+        path = os.path.join(self.folder, 'x.yml')
+        Document().save(path=path)
+        document = Document.load(path)
+        held = document.file_now()
+        self.assertEqual(document.file_holds_this_set(held=held), document.file_holds_this_set())
+        document.add_track(LEAD)
+        Document().save(path=path)
+        held = document.file_now()
+        self.assertFalse(document.file_holds_this_set(held=held))
+        self.assertFalse(document.file_holds_this_set())
+        self.assertEqual(document.file_changed_elsewhere(held=held), document.file_changed_elsewhere())
 
     def test_only_writes_when_asked(self):
         path = os.path.join(self.folder, 'x.yml')

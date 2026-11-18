@@ -189,6 +189,11 @@ class Pattern(PatternNotes, LlamaData):
         """Return whether any step adds to a register, which is a non-zero value on a register change row."""
         return any(self._adds_on(row) for row in REGISTER_ADD_ROWS.values())
 
+    def adds_anything(self, row):
+        """Return whether any step of a register's += row adds or takes away anything at all: most patterns add nothing, and
+        whoever checks a limit asks this first, since finding the limit means searching every clip of every song."""
+        return any(self._rows[row] or [])
+
     def adds_past(self, *, row, most):
         """Return whether any step of a register's += row adds or takes away more than most."""
         return any(value and abs(value) > most for value in self._rows[row] or [])

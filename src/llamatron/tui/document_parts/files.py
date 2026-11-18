@@ -32,6 +32,10 @@ from llamatron.strings.errors import ERR_FILE_PROTECTED, ERR_NOTHING_TO_EXPORT, 
 UNTITLED = 'untitled'
 
 
+# Stands for a file's data that nobody has read yet, since None means a file that can't be read.
+NOT_READ = object()
+
+
 def comparable(data):
     """Return a set's data without its version, which is the one thing saving changes on its own."""
     return {key: value for key, value in data.items() if key != SetlistSetting.VERSION}
@@ -61,7 +65,10 @@ class DocumentFiles:
     @classmethod
     def load(cls, path):
         """Return a set from a file, or raise SongFileError if something's wrong with it."""
-        return cls(setlist=Setlist.read_file(path), path=path)
+        setlist = Setlist.read_file(path)
+        # What the file holds is what the set just read from it holds, so the file isn't read a second time to learn it.
+        setlist.fill_in_defaults()
+        return cls(setlist=setlist, path=path, saved_data=comparable(setlist.to_data()))
 
     @classmethod
     def load_or_correct(cls, path):
@@ -116,20 +123,25 @@ class DocumentFiles:
         path = path or self._path
         return self._setlist.is_protected() and path is not None and path == self._path and os.path.exists(path)
 
-    def file_holds_this_set(self):
+    def file_now(self):
+        """Return what the set's file holds at this moment, or None with no file or one that can't be read: read once and handed to
+        the questions about the file, since reading a large set takes a noticeable time."""
+        return file_data(self._path) if self._path is not None else None
+
+    def file_holds_this_set(self, *, held=NOT_READ):
         """Return whether the set's file already holds exactly what saving would write, so that saving would change nothing.
 
         The data is compared as it's loaded, not as text, with the order of lists and of each
         section's items counted, since moving a pattern up a list is a change worth saving. A set whose file holds it has
         nothing unsaved, even after a change that was changed back.
         """
-        held = file_data(self._path) if self._path is not None else None
+        held = self.file_now() if held is NOT_READ else held
         if held is None or not same_in_order(first=held, second=self._own_data()):
             return False
         self._dirty = False
         return True
 
-    def file_changed_elsewhere(self):
+    def file_changed_elsewhere(self, *, held=NOT_READ):
         """Return whether something else has changed the set's file since it was opened or last saved here.
 
         A file that can no longer be read counts as changed, so that saving asks before writing
@@ -137,7 +149,7 @@ class DocumentFiles:
         """
         if self._path is None or not os.path.exists(self._path):
             return False
-        return file_data(self._path) != self._saved_data
+        return (self.file_now() if held is NOT_READ else held) != self._saved_data
 
     def get_path(self):
         """Return the file the set came from or was last saved to, or None if it has none yet."""

@@ -298,6 +298,8 @@ class Setlist(LlamaData):
         for name in self.get_pattern_names():
             pattern = self.get_pattern(name)
             for register, row in REGISTER_ADD_ROWS.items():
+                if not pattern.adds_anything(row):
+                    continue
                 most = self.allowed_inc_max_for_pattern(name=name, register=register)
                 if most is None or not pattern.adds_past(row=row, most=most):
                     continue
@@ -815,6 +817,8 @@ class Setlist(LlamaData):
         for name in self.get_pattern_names():
             pattern = self.get_pattern(name)
             for register, row in REGISTER_ADD_ROWS.items():
+                if not pattern.adds_anything(row):
+                    continue
                 most = self.allowed_inc_max_for_pattern(name=name, register=register)
                 if most is not None and pattern.adds_past(row=row, most=most):
                     pattern.hold_adds(row=row, most=most)
