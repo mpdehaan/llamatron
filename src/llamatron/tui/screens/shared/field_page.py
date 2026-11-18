@@ -45,6 +45,19 @@ class FieldPage(Page):
     def fields(self):
         return []
 
+    def shared_sections(self):
+        """Return the sections every page of its kind shows after its own fields, such as a generator's statements about the registers; none unless a page says."""
+        return []
+
+    def every_field(self):
+        """Return the page's fields with the sections every page of its kind shares put after them, before the page's buttons, which always come last."""
+        fields = self.fields()
+        shared = self.shared_sections()
+        if not shared:
+            return fields
+        first_button = next((place for place, field in enumerate(fields) if isinstance(field, Button)), len(fields))
+        return [*fields[:first_button], *shared, *fields[first_button:]]
+
     def text_field(self, *, label, current, set_text):
         """A field for text like the title: current() reads it, and set_text(text) stores it, blank text clearing it."""
         return Field(label=label, value=current, adjust=None, enter=lambda: self.ask(dialog=PromptDialog(title=label, value=current()), then=set_text), enter_what=legends.What.EDIT,
@@ -61,7 +74,7 @@ class FieldPage(Page):
         """Return the fields that show: every one, except those after a closed section's heading, up to the next heading; a page's buttons always show."""
         shown = []
         open_now = True
-        for field in self.fields():
+        for field in self.every_field():
             if isinstance(field, Heading):
                 shown.append(field)
                 open_now = self.is_open(field)
@@ -185,12 +198,12 @@ class FieldPage(Page):
                 result.append(self.bind(self.KEYS.ENTER, action=field.enter, what=field.enter_what))
             if field.clear:
                 result.append(self.bind(self.KEYS.CLEAR, action=field.clear, what=field.clear_what))
-        name = next((item for item in self.fields() if isinstance(item, NameField)), None)
+        name = next((item for item in self.every_field() if isinstance(item, NameField)), None)
         if name is not None:
             result.append(self.bind(self.KEYS.RENAME, action=name.rename))
         if isinstance(field, Button) and not self.buttons_stacked():
             result.append(self.bind(self.KEYS.ALONG_BUTTONS, action=self.move_along_buttons, wants_key=True))
-        if any(isinstance(item, Heading) for item in self.fields()):
+        if any(isinstance(item, Heading) for item in self.every_field()):
             result.append(self.bind(self.KEYS.SECTION, action=self.jump_section))
         result += self.page_keys()
         return [self.bind(self.KEYS.BACK, action=self.go_back), *result]
@@ -203,7 +216,7 @@ class FieldPage(Page):
         """
         fields = self.shown_fields()
         self.field()
-        label_width = max((len(self.label_text(field)) for field in self.fields() if not isinstance(field, Button)), default=0) + 2
+        label_width = max((len(self.label_text(field)) for field in self.every_field() if not isinstance(field, Button)), default=0) + 2
         lines = [Text(NOTHING)]
         selected = 0
         seen_heading = False

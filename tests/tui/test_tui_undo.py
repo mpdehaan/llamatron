@@ -59,6 +59,7 @@ from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
 from llamatron.tui.screens.generators.arp_editor import ArpEditor
 from llamatron.tui.screens.generators.chords_editor import QUALITY_ROW
 from llamatron.tui.screens.generators.chain_editor import ChainEditor
+from llamatron.tui.screens.generators.chain_statements_page import ChainStatementsPage
 from llamatron.tui.screens.set.notes_page import NotesPage
 from llamatron.tui.screens.generators.generators_page import GeneratorsPage
 from llamatron.tui.screens.set.song_page import SongPage
@@ -406,6 +407,18 @@ class TestChainsPageUndo(UndoTest):
         await self.type(NEW_CHAIN)
         await self.press(Key.ENTER)
         self.assertIn(NEW_CHAIN, self.document.song().get_chain_names())
+        await self.check_undo_and_redo(before=before, after=self.data())
+
+
+class TestChainStatementsPageUndo(UndoTest):
+
+    async def test_a_statement_is_one_step(self):
+        await self.press(keybindings.MainPage.CHAINS, Key.ENTER, keybindings.ChainEditor.WHEN)
+        self.assertIsInstance(self.app.screen, ChainStatementsPage)
+        before = self.data()
+        await self.press(Key.DOWN, Key.ENTER)
+        self.assertIsInstance(self.app.screen, ChoiceDialog)
+        await self.pick(RegisterName.AX)
         await self.check_undo_and_redo(before=before, after=self.data())
 
 

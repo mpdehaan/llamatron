@@ -31,6 +31,7 @@ from llamatron.composition.file_format import strum_setting, FOLLOW_ACTION_CHOIC
 from llamatron.composition.llama_data import own_copy, LlamaData, settings_by_name, written_settings
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.chain import check_chain_names
+from llamatron.composition.conditions import register_values_setting, statements_setting, with_register_value, with_statement
 from llamatron.composition.shapes import shape_settings, shape_values
 from llamatron.composition.strum import strum_settings, strum_values
 from llamatron.composition.corrections import LEFT_OUT
@@ -84,6 +85,10 @@ SETTINGS = described(
     Checked(name=ClipSlotSetting.SCALE, check=_check_scale_name, needs_song=True),
     *shape_settings(),
     *strum_settings(),
+    register_values_setting(ClipSlotSetting.SET_REGISTERS),
+    register_values_setting(ClipSlotSetting.ADD_REGISTERS),
+    statements_setting(ClipSlotSetting.BYPASS_WHEN),
+    statements_setting(ClipSlotSetting.SKIP_WHEN),
 )
 
 
@@ -284,6 +289,40 @@ class ClipSlot(LlamaData):
         if name is not None:
             SETTINGS[ClipSlotSetting.SCALE].check(name, song=song)
         self._settings[ClipSlotSetting.SCALE] = name
+
+    def get_register_sets(self):
+        """Return what it sets registers to as it launches, a value for each register it sets."""
+        return dict(self._settings[ClipSlotSetting.SET_REGISTERS] or {})
+
+    def get_register_adds(self):
+        """Return what it adds to registers every time its pattern starts over, an amount for each register it adds to."""
+        return dict(self._settings[ClipSlotSetting.ADD_REGISTERS] or {})
+
+    def get_statements(self, name):
+        """Return one of its tables of statements about the registers, by the setting's name: the one that bypasses its generators or the one that makes it sit out."""
+        return own_copy(self._settings[name] or [])
+
+    @notes_change
+    def set_register_set(self, *, register, value):
+        """Make it set a register to a value as it launches, or None to leave the register alone."""
+        self._set_checked(name=ClipSlotSetting.SET_REGISTERS, value=with_register_value(values=self._settings[ClipSlotSetting.SET_REGISTERS], register=register, value=value))
+
+    @notes_change
+    def set_register_add(self, *, register, value):
+        """Make it add an amount to a register every time its pattern starts over, or None to add nothing."""
+        self._set_checked(name=ClipSlotSetting.ADD_REGISTERS, value=with_register_value(values=self._settings[ClipSlotSetting.ADD_REGISTERS], register=register, value=value or None))
+
+    @notes_change
+    def set_statement(self, *, name, place, statement):
+        """Write the statement at a place of one of its tables, add one just past the last, or remove one with None."""
+        self._set_checked(name=name, value=with_statement(statements=self._settings[name], place=place, statement=statement))
+
+    @notes_change
+    def _set_checked(self, *, name, value):
+        """Keep a setting's new value once its description allows it, None leaving the setting out."""
+        if value is not None:
+            SETTINGS[name].check(value)
+        self._settings[name] = value
 
     @notes_change
     def set_follow_action(self, advance):

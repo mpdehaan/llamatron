@@ -1,0 +1,148 @@
+version: 1.0.510
+title: Advanced Conditionals
+description: four single notes that come and go by counting, then one bar of chords played four ways by one chain
+notes: |
+  Advanced Conditionals: Conditional Execution, statements about the registers that say when a
+  clip sits out and when a generator is passed by.
+  Run it with: llamatron examples/learning/27_advanced_conditionals.yml
+
+  Scene 1, counting: four tracks, each with one note in a bar, each at a different place in the
+  bar. The pattern called every bar adds 1 to AX and 1 to BX on its last step, so AX counts the
+  bars 0, 1, 2, 3 and round again, and BX counts 0, 1, 2 and round again.
+  - The track called every bar plays in every bar.
+  - The track called every second has Skip Playback When: AX odd. Its note is heard every other bar.
+  - The track called every third has Skip Playback When: BX != 0. Its note is heard every third bar.
+  - The track called counted plays in every bar, and AX moves its note up a scale step a bar, so the
+    count is heard: four pitches climbing, then back to the first.
+  Twelve bars go by before the same bar comes round again, since the counts are 2, 3 and 4 long.
+
+  Scene 2, one pattern four ways: one pattern of four chords, a bar each, on one guitar. Its chain
+  lists four Guitarify generators, and each has Bypass Generators When: AX != 0, AX != 1, AX != 2
+  and AX != 3, so only one of the four plays at a time. The scene sets AX to 0 as it starts, plays
+  8 times, and the pattern's last step adds 1 to AX: the same four chords are strummed, then picked,
+  then chugged, then rolled, and AX goes round to 0 for all four again.
+
+  Try it: on the track called every third, change BX != 0 to BX = 0, and the note rests every third
+  bar. On the guitarify called picked, change AX != 1 to AX > 1, and the picking is laid over the strum.
+
+  When changing this demo:
+  - Keep scene 1 sparse, one note a track, so that what sits out is heard at once.
+  - Keep scene 2 one pattern and one chain: everything that differs is the registers' doing.
+real_time: true
+protected: true
+
+scales:
+  A Minor Pentatonic: { root: A, type: minor pentatonic }
+  G Major: { root: G, type: major }
+
+patterns:
+  every bar:
+    steps: 16
+    degree: [1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [2, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    ax_add: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1]
+    bx_add: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1]
+  every second:
+    steps: 16
+    degree: [~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  every third:
+    steps: 16
+    degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~]
+    octave: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~]
+  counted:
+    steps: 16
+    degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~]
+    octave: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~]
+    ax_note: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+  four chords:
+    steps: 4
+    step_size: 1
+    degree: [1, 5, 6, 4]
+    octave: [3, 3, 3, 3]
+    chord: [3, 3, 3, 3]
+    ax_add: [~, ~, ~, 1]
+
+guitarifies:
+  strummed:
+    # the ready-made bar: folk strum
+    bar: [down, nothing, down, up, nothing, up, down, up]
+    accents: [true, false, false, false, false, false, true, false]
+    cell: 1/8
+    let_ring: true
+    spread: 14
+    bypass_when:
+      - { register: AX, operator: "!=", value: 0 }
+  picked:
+    # the ready-made bar: travis pick
+    bar: [bass, string_2, alt_bass, string_1, bass, string_3, alt_bass, string_2]
+    accents: [false, false, false, false, false, false, false, false]
+    cell: 1/8
+    let_ring: true
+    bypass_when:
+      - { register: AX, operator: "!=", value: 1 }
+  chugged:
+    # sixteenths, mostly muted
+    bar: [down, mute, mute, up, mute, mute, down, mute, mute, up, mute, down, mute, mute, up, mute]
+    accents: [true, false, false, false, false, false, true, false, false, false, false, true, false, false, false, false]
+    cell: 1/16
+    strings: 4
+    spread: 3
+    bypass_when:
+      - { register: AX, operator: "!=", value: 2 }
+  rolled:
+    # one slow roll a bar, each string heard
+    bar: [down, nothing, nothing, nothing, up, nothing, nothing, nothing]
+    accents: [true, false, false, false, false, false, false, false]
+    cell: 1/8
+    let_ring: true
+    spread: 60
+    bypass_when:
+      - { register: AX, operator: "!=", value: 3 }
+
+chains:
+  four ways:
+    - guitarify: strummed
+    - guitarify: picked
+    - guitarify: chugged
+    - guitarify: rolled
+
+instruments:
+  bass: { device: "*FluidSynth", gm_sound: 39 }
+  marimba: { device: "*FluidSynth", gm_sound: 13 }
+  vibraphone: { device: "*FluidSynth", gm_sound: 12 }
+  bell: { device: "*FluidSynth", gm_sound: 9 }
+  steel guitar: { device: "*FluidSynth", gm_sound: 26 }
+
+songs:
+  advanced conditionals:
+    tempo: 112
+    scale: A Minor Pentatonic
+    genre: Exercise
+
+    registers:
+      AX: { maximum: 3, at_limit: overflow }
+      BX: { maximum: 2, at_limit: overflow }
+
+    tracks:
+      every bar: { instrument: bass }
+      every second: { instrument: marimba, skip_when: [{ register: AX, operator: odd }] }
+      every third: { instrument: vibraphone, skip_when: [{ register: BX, operator: "!=", value: 0 }] }
+      counted: { instrument: bell }
+      guitar: { instrument: steel guitar }
+
+    scenes:
+      - name: counting
+        set_registers: { AX: 0, BX: 0 }
+        tracks:
+          every bar: { pattern: every bar, repeat: 36 }
+          every second: { pattern: every second, repeat: 36 }
+          every third: { pattern: every third, repeat: 36 }
+          counted: { pattern: counted, repeat: 36 }
+      - name: one pattern four ways
+        scale: G Major
+        tempo: 100
+        repeat: 8
+        set_registers: { AX: 0 }
+        tracks:
+          guitar: { pattern: four chords, chains: [four ways] }

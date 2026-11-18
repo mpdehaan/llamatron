@@ -38,6 +38,9 @@ MAX_CLIP_REPEAT = 9999
 # The range of a register's settings, and of what a step can add to one.
 MIN_REGISTER_VALUE = -127
 MAX_REGISTER_VALUE = 127
+# How many statements about the registers one table holds, and the largest number a statement may be written with.
+MAX_STATEMENTS = 4
+MAX_STATEMENT_NUMBER = 9999
 # The least a register's allowed increment may be: a register no step may add to just has no adds.
 MIN_ALLOWED_INC_MAX = 1
 # How far a drift moves notes along the scale either way, a fixed amount or at random: an octave of a seven-note scale.

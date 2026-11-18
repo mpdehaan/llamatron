@@ -38,6 +38,7 @@ from llamatron.tui.screens.generators.density_editor import DensityEditor
 from llamatron.tui.screens.generators.progression_editor import ProgressionEditor
 from llamatron.tui.screens.generators.chords_editor import ChordsEditor
 from llamatron.tui.screens.generators.voice_leading_editor import VoiceLeadingEditor
+from llamatron.tui.screens.generators.chain_statements_page import ChainStatementsPage
 from llamatron.tui.screens.generators.guitar_bar_editor import GuitarBarEditor
 from llamatron.tui.screens.generators.guitarify_editor import GuitarifyEditor
 from llamatron.tui.screens.generators.follow_chords_editor import FollowChordsEditor
@@ -287,6 +288,13 @@ class TestGuitarBarEditorShowsItsGuitarify(NamedItemChecks, UITest):
     RENAMES = False
 
 
+class TestChainStatementsPageShowsItsChain(NamedItemChecks, UITest):
+
+    PAGE = ChainStatementsPage
+    FIRST = NAMED
+    RENAMES = False
+
+
 class TestStrumEditorShowsItsStrum(NamedItemChecks, UITest):
 
     PAGE = StrumEditor
@@ -398,7 +406,7 @@ class TestOffsetsEditorShowsItsArp(NamedItemChecks, UITest):
 # The test class of each page of one named thing, which the rule below reads.
 CHECKED = [
     TestPatternEditorShowsItsPattern, TestChainEditorShowsItsChain, TestGrooveEditorShowsItsGroove, TestInstrumentEditorShowsItsInstrument, TestArpEditorShowsItsArp,
-    TestAutoRatchetEditorShowsItsAutoRatchet, TestDriftEditorShowsItsDrift, TestProgressionEditorShowsItsProgression, TestChordsEditorShowsItsProgression, TestVoiceLeadingEditorShowsItsVoiceLeading, TestHocketEditorShowsItsHocket, TestFollowChordsEditorShowsItsFollowChords, TestPhrasingEditorShowsItsPhrasing, TestMusicianEditorShowsItsMusician, TestGuitarifyEditorShowsItsGuitarify, TestGuitarBarEditorShowsItsGuitarify, TestStrumEditorShowsItsStrum, TestEuclidEditorShowsItsEuclid, TestGlideEditorShowsItsGlide, TestGlideStepsEditorShowsItsGlide, TestShortenEditorShowsItsShorten, TestShortenStepsEditorShowsItsShorten,
+    TestAutoRatchetEditorShowsItsAutoRatchet, TestDriftEditorShowsItsDrift, TestProgressionEditorShowsItsProgression, TestChordsEditorShowsItsProgression, TestVoiceLeadingEditorShowsItsVoiceLeading, TestHocketEditorShowsItsHocket, TestFollowChordsEditorShowsItsFollowChords, TestPhrasingEditorShowsItsPhrasing, TestMusicianEditorShowsItsMusician, TestGuitarifyEditorShowsItsGuitarify, TestGuitarBarEditorShowsItsGuitarify, TestChainStatementsPageShowsItsChain, TestStrumEditorShowsItsStrum, TestEuclidEditorShowsItsEuclid, TestGlideEditorShowsItsGlide, TestGlideStepsEditorShowsItsGlide, TestShortenEditorShowsItsShorten, TestShortenStepsEditorShowsItsShorten,
     TestRushEditorShowsItsRush, TestRushStepsEditorShowsItsRush, TestDragEditorShowsItsDrag, TestDragStepsEditorShowsItsDrag,
     TestDensityEditorShowsItsDensity, TestSwellEditorShowsItsSwell,
     TestArticulateEditorShowsItsArticulate, TestScalePageShowsItsScale, TestTrackEditorShowsItsTrack, TestOffsetsEditorShowsItsArp,

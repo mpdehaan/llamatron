@@ -143,6 +143,10 @@ Every generator ends its settings with Restart, which says when it starts over:
 
 A generator that carries on keeps what it was doing: a progression runs on across scenes, a Euclidean rhythm keeps drifting against the bar, a shape's ramp can last the whole song, an AutoRatchet goes on through its counts, a voice leading voices a scene's first chord near the last chord before, and an arpeggiator goes on with its random choices. A generator painted on several tracks gives each track a copy of its own, so that tracks line up when their patterns do.
 
+## Bypass Generators When
+
+Every generator's page ends with a section called Bypass Generators When, a table of statements about the registers. When one is true as a clip's pattern starts over, the notes of that pass go by the generator untouched, in every chain that names the generator. See [Conditional Execution](REGISTERS.md#conditional-execution).
+
 ## Rows of Steps
 
 [Glide](generators/GLIDE.md), [Shorten](generators/SHORTEN.md), [Rush](generators/RUSH.md) and [Drag](generators/DRAG.md) are each a row of 1 to 16 steps, each on (`●`) or off, running from each clip's start at its own Step, the clip's pattern's step size unless set; a note starting on a step that is on is changed. A row shorter than the pattern, 5 or 7 steps over 16, lands somewhere new each time round, so that slides, short notes and pushes move through a line that never changes. `ENTER` on Steps opens the row: Left and Right move along it, `Space` or `ENTER` turns the step under the cursor on or off, the line above the row saying what a step that is on does, and `I` and `D` insert and remove steps.

@@ -42,6 +42,22 @@ MSG_OK_CANCEL_BUTTONS = ('OK', 'CANCEL')
 # The confirm dialog's two buttons, in the order they're drawn and the arrows move: yes first, since ENTER presses the selected one.
 MSG_CONFIRM_BUTTONS = ('YES', 'NO')
 
+# tui/screens/shared/statements.py: Conditional Execution, the table of statements about the registers, and a scene's and a clip's sets and adds
+MSG_BYPASS_WHEN_LABEL = 'Bypass Generators When'
+MSG_SKIP_WHEN_LABEL = 'Skip Playback When'
+MSG_SET_REGISTERS_LABEL = 'Set Registers'
+MSG_ADD_REGISTERS_LABEL = 'Increment Registers'
+MSG_SET_REGISTER_LABEL = '{name} ='
+MSG_ADD_REGISTER_LABEL = '{name} +='
+MSG_STATEMENT_IGNORED = 'ignored'
+MSG_STATEMENT_REGISTER_TITLE = 'Register'
+MSG_STATEMENT_OPERATOR_TITLE = 'Operator'
+MSG_STATEMENT_VALUE_TITLE = 'Value'
+MSG_STATEMENT_COMPARISON_TITLE = 'Comparison'
+MSG_STATEMENT_NUMBER_CHOICE = 'number'
+# A statement's line has no name of its own: its label is blank, and as long as its place on the page, which tells the lines apart.
+MSG_STATEMENT_LINE_LABEL = ' '
+
 # tui/screens/arrange/arrange_page.py
 # A scene's field for each register it can reset, like "Reset AX".
 MSG_RESET_LABEL = 'Reset {name}'
@@ -160,6 +176,7 @@ class Crumb:
     STEPS = 'STEPS'
     STROKES = 'STROKES'
     OFFSETS = 'OFFSETS'
+    STATEMENTS = 'WHEN'
     SCALES = 'SCALES'
     GROOVES = 'GROOVES'
     INSTRUMENTS = 'INSTRUMENTS'

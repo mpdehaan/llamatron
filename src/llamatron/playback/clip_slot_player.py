@@ -27,7 +27,8 @@ from llamatron.playback.morph_controls import morph_controls
 from llamatron.playback.pattern_player import PatternPlayer
 from llamatron.playback.step_order import StepOrder
 from llamatron.support.random_source import random_source
-from llamatron.composition.file_format import GeneratorKind, Shape
+from llamatron.composition.conditions import any_true
+from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, Shape, TrackSetting
 from llamatron.composition.generator_settings import GENERATOR_SETTINGS
 from llamatron.playback.shapes import reshaped
 from llamatron.generators.euclid import EuclidMask
@@ -58,6 +59,8 @@ KINDS_MOVING_PITCHES = (GeneratorKind.PROGRESSION, GeneratorKind.FOLLOW_CHORDS)
 NO_OFFSET = 0
 SHAPE_KINDS = {GeneratorKind.DENSITY: Shape.DENSITY, GeneratorKind.SWELL: Shape.SWELL, GeneratorKind.ARTICULATE: Shape.ARTICULATE}
 NO_SETS = {}
+# The pass a clip launches on, when it sets registers, and the pass whose statements speak for a shape, which works on the whole clip.
+FIRST_PASS = 0
 
 
 def _time_of(change):
@@ -99,11 +102,11 @@ class ClipSlotPlayer:
         loop = clip_slot.loops()
         fill = self._renderer.get_scene_length(scene) if loop else None
         try:
-            clip, switched = self._play_passes(player=player, grab=grab, scale=scale, where=where, fill=fill, registers=registers)
+            clip, switched, passes = self._play_passes(player=player, grab=grab, scale=scale, where=where, fill=fill, registers=registers)
             controls = clip.get_controls()
-            clip, chain_adds = self._through_chain(clip, counting=registers.is_counting())
+            clip, chain_adds = self._through_chain(clip, counting=registers.is_counting(), passes=passes)
             if not registers.is_counting():
-                clip = self._shaped(self._masked(clip))
+                clip = self._shaped(self._masked(clip), passes=passes)
             # What the chain's generators add to the registers comes after what the pattern's steps add at the same moment.
             for time, adds in chain_adds:
                 registers.at_step(time=time, sets=NO_SETS, adds=adds)
@@ -135,13 +138,21 @@ class ClipSlotPlayer:
             return None
         return self._song.get_named_scale(scale_name).scale_at(self._clip_octave())
 
-    def _through_chain(self, clip, *, counting):
+    def _through_chain(self, clip, *, counting, passes):
         """Return the clip after each generator of its chains, in order, and what the generators add to the registers, as (time, adds) in time order.
 
         Its chains are the clip slot's own, then its scene's, then its track's,
         each in its own order, so a chain named in two places runs twice. Each
         generator is counted along all of them for its seed, so a clip with one chain draws as
         it always has.
+
+        passes are the clip's passes of its pattern, each with the registers' values as it
+        started. A pass on which a generator's statements hold goes by that generator
+        untouched, one on which a chain's hold goes by the whole chain, and one on which the
+        scene's, the clip's or the track's hold goes by every chain. A generator still runs
+        over the whole clip, so that what it carries from note to note and what it adds to the
+        registers never depend on the registers, and the passes it is left out of are put back
+        as they were.
         """
         chains = self._renderer.chains_of(scene=self._scene, track=self._track_name)
         if not chains or clip.total_length() == NO_LENGTH:
@@ -150,19 +161,42 @@ class ClipSlotPlayer:
         index = 0
         # How many times each generator has come up in the clip's chains, so that one named twice keeps two states.
         times = {}
+        untouched = clip
         for chain in chains:
-            for step in self._song.get_chain(chain).get_steps():
+            entering = clip
+            written = self._song.get_chain(chain)
+            for step in written.get_steps():
                 # A drift works on the steps as the pattern plays, and a shape on the finished clip after the chains (playback/drift.py, playback/shapes.py).
                 # A progression and a Follow Chords leave a drum pattern alone, since moving a drum note changes the drum, not the pitch.
                 if GENERATOR_SETTINGS[step.kind].GENERATOR is not None and not (step.kind in KINDS_MOVING_PITCHES and self._plays_drums()):
                     key = (step.kind, step.name, times.get((step.kind, step.name), 0))
                     times[(step.kind, step.name)] = key[-1] + 1
                     generator = self._renderer.make_generator(step=step, scene=self._scene, track=self._track_name, chain=chain, index=index, key=key, counting=counting)
-                    clip = generator.generate(clip)
+                    generated = generator.generate(clip)
                     self._renderer.keep_end_state(scene=self._scene, track=self._track_name, key=key, counting=counting, state=generator.end_state())
                     adds += generator.register_adds()
+                    own = self._song.get_generator_settings(kind=step.kind, name=step.name).get_bypass_when()
+                    clip = _kept_where(tripped=_tripped(passes=passes, tables=[own]), before=clip, after=generated, passes=passes)
                 index += 1
+            clip = _kept_where(tripped=_tripped(passes=passes, tables=[written.get_bypass_when()]), before=entering, after=clip, passes=passes)
+        clip = _kept_where(tripped=_tripped(passes=passes, tables=self._bypass_tables()), before=untouched, after=clip, passes=passes)
         return clip, sorted(adds, key=_time_of)
+
+    def _bypass_tables(self):
+        """Return the tables of statements that bypass every generator of the clip: its scene's, its own and its track's."""
+        return [
+            self._scene.get_scene().get_bypass_when(), self._clip_slot.get_statements(ClipSlotSetting.BYPASS_WHEN),
+            self._track.get_statements(TrackSetting.BYPASS_WHEN),
+        ]
+
+    def _skip_tables(self):
+        """Return the tables of statements that make the clip sit a pass out: its own and its track's."""
+        return [self._clip_slot.get_statements(ClipSlotSetting.SKIP_WHEN), self._track.get_statements(TrackSetting.SKIP_WHEN)]
+
+    def _shape_is_bypassed(self, *, chain, name, kind, passes):
+        """Return whether a shape a chain names is left out of the clip. A shape works on the whole clip at once, so the registers as the clip's first pass starts speak for all of it."""
+        tables = [*self._bypass_tables(), self._song.get_chain(chain).get_bypass_when(), self._song.get_generator_settings(kind=kind, name=name).get_bypass_when()]
+        return any(_tripped(passes=passes[:FIRST_PASS + 1], tables=tables))
 
     def _masked(self, clip):
         """Return the clip with its track's Euclidean mask applied after its chains, or as it is when the track has none."""
@@ -178,12 +212,12 @@ class ClipSlotPlayer:
         """Return whether the clip slot's own pattern is a drum pattern."""
         return self._song.get_pattern(self._clip_slot.get_pattern_name()).is_drum()
 
-    def _shaped(self, clip):
-        """Return the clip with its Density, Swell and Articulate applied: the last generator of each kind its chains name, else the clip's own, else its scene's."""
+    def _shaped(self, clip, *, passes):
+        """Return the clip with its Density, Swell and Articulate applied: the last generator of each kind its chains name, else the clip's own, else its scene's. A generator its statements bypass is not named."""
         named = {}
         for chain in self._renderer.chains_of(scene=self._scene, track=self._track_name):
             for step in self._song.get_chain(chain).get_steps():
-                if step.kind in SHAPE_KINDS:
+                if step.kind in SHAPE_KINDS and not self._shape_is_bypassed(chain=chain, name=step.name, kind=step.kind, passes=passes):
                     named[SHAPE_KINDS[step.kind]] = step.name
         clip_length = clip.total_length()
         scene_length = self._renderer.get_scene_length(self._scene)
@@ -243,7 +277,19 @@ class ClipSlotPlayer:
         return self._song.get_default_octave() if octave is None else octave
 
     def _play_passes(self, *, player, grab, scale, where, fill, registers):
-        """Return what the clip plays before any chains: its repeats, or enough passes to fill a length."""
+        """Return what the clip plays before any chains, its repeats or enough passes to fill a length, the keyswitch slots played, and its passes.
+
+        Each pass is (start, end, values): when it starts and ends in the clip, and the
+        registers' values as it started, or None while the clip is only played to count its
+        changes. As a pass starts the clip adds to the registers, and on its first pass sets
+        them. A pass on which a statement that makes the clip sit out holds is silence of the
+        pass's length: it is still played, so that every random choice and every register
+        change is what it would have been, and what it played is dropped.
+        """
+        sets = self._clip_slot.get_register_sets()
+        adds = self._clip_slot.get_register_adds()
+        skips = [table for table in self._skip_tables() if table]
+        passes = []
         rolls = random_source(self._seed_for(PROBABILITY_SEED))
         order = StepOrder(random_source(self._seed_for(DIRECTION_SEED)))
         target_order = StepOrder(random_source(self._seed_for(MORPH_DIRECTION_SEED)))
@@ -254,10 +300,16 @@ class ClipSlotPlayer:
         total = Rational(0)
         place = 0
         while (place < repeat) if fill is None else (total < fill):
+            values = registers.at_pass(time=total, sets=sets if place == FIRST_PASS else NO_SETS, adds=adds)
             played = self._play_pass(player=player, grab=grab, scale=scale, place=place % repeat, repeat=repeat, where=where, rolls=rolls, order=order, target_order=target_order, registers=registers, start=total)
             length = played.length
             if length == NO_LENGTH:
                 break
+            if values is not None and any(any_true(statements=table, values=values) for table in skips):
+                played.clip = Clip(sounds=[Sound.rest(Length.of(length))], scale=scale)
+                played.tied_from_before = NO_LENGTH
+                played.keyswitches = []
+            passes.append((total, total + length, values))
             # Ties at the start of this pass hold the note the passes so far ended with.
             if played.tied_from_before > NO_LENGTH:
                 sounds = _tied_on(sounds=sounds, extra=Length.of(played.tied_from_before))
@@ -270,7 +322,7 @@ class ClipSlotPlayer:
             total += length
             place += 1
         clip = Clip(sounds=sounds, scale=scale, controls=controls)
-        return (clip.section(start=NO_LENGTH, end=fill) if fill else clip), switched
+        return (clip.section(start=NO_LENGTH, end=fill) if fill else clip), switched, passes
 
     def _seed_for(self, template):
         """Return the seed for one of this clip's random choices, or None when the render has no seed."""
@@ -304,6 +356,35 @@ class ClipSlotPlayer:
         controls = morph_controls(source=clip, target=target, start=start, end=end)
         played.clip = Clip(sounds=blend.generate(clip).played_sounds(), scale=scale, controls=controls)
         return played
+
+
+def _tripped(*, passes, tables):
+    """Return, for each pass of a clip, whether any statement of any of the tables holds for the registers as the pass started. A pass with no values known trips nothing."""
+    tables = [table for table in tables if table]
+    if not tables:
+        return []
+    return [values is not None and any(any_true(statements=table, values=values) for table in tables) for _, _, values in passes]
+
+
+def _kept_where(*, tripped, before, after, passes):
+    """Return a clip that is the clip before a generator on the passes that tripped and the clip after it on the rest.
+
+    A generator that changes how long the clip lasts leaves no pass to put back, so its
+    clip is taken whole unless every pass tripped.
+    """
+    if not any(tripped):
+        return after
+    if all(tripped):
+        return before
+    total = after.total_length()
+    if before.total_length() != total:
+        return after
+    sounds = []
+    for (start, end, _), left_out in zip(passes, tripped):
+        end = min(end, total)
+        if start < end:
+            sounds += (before if left_out else after).section(start=start, end=end).get_sounds()
+    return Clip(name=after.get_name(), sounds=sounds, scale=after.get_scale(), length=after.get_length(), note_length=after.get_note_length(), controls=after.get_controls())
 
 
 def _tied_on(*, sounds, extra):

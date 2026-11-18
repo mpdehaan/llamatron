@@ -22,7 +22,10 @@ its own words. They descend from three different pages (Page, ListPage and Field
 they share is a mixin beside whichever of those a page is.
 """
 
+from llamatron.composition.file_format import Section
+from llamatron.composition.sections import GENERATOR_KINDS
 from llamatron.strings import labels
+from llamatron.tui.screens.shared.statements import FIRST_TABLE, statement_section
 
 NOTHING = ''
 from llamatron.tui.themes import theme_of
@@ -49,6 +52,18 @@ class ShowsNamedItem:
     # the crumbs say where Esc goes back to, and the word for the thing among them, like chain. None when the thing's list opened it.
     opener = None
     opener_word = None
+
+    def shared_sections(self):
+        """Return, on a generator's page, the generator's statements about the registers, which every kind of generator has."""
+        # A drift changes values as a pattern plays, not a clip's notes in a chain, so no pass of a clip goes by one and it shows no table.
+        if self.SECTION not in GENERATOR_KINDS or self.SECTION == Section.DRIFTS:
+            return []
+        document = self.document()
+        return statement_section(
+            page=self, label=labels.MSG_BYPASS_WHEN_LABEL, table=FIRST_TABLE,
+            statements=lambda: document.song().get_generator_settings(kind=GENERATOR_KINDS[self.SECTION], name=self.item).get_bypass_when(),
+            store=lambda place, statement: document.set_generator_bypass_statement(section=self.SECTION, name=self.item, place=place, statement=statement),
+        )
 
     def caption(self):
         """Return what the theme's stripe says: what kind of thing the page edits, and its name."""

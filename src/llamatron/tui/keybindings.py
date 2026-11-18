@@ -234,9 +234,10 @@ class ChainEditor(ListPage):
 
     CHANGE = (Key.ENTER, legends.KeyName.ENTER, legends.What.CHANGE)
     REMOVE = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.REMOVE)
+    WHEN = (Key.W, Key.W.upper(), legends.What.WHEN)
     IN_HELP = [
         Page.BACK, ListPage.DROP, ListPage.SEARCH_CANCEL, ListPage.ADD_HERE, ListPage.SELECT, ListPage.CARRY, *ListPage.SEARCHING[1:], ListPage.ADD, CHANGE, ListPage.COPY, REMOVE,
-        ListPage.MOVE, ListPage.RENAME, ListPage.SEARCH,
+        ListPage.MOVE, ListPage.RENAME, WHEN, ListPage.SEARCH,
     ]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[ListPage.SEARCH])
 
@@ -362,6 +363,10 @@ class InstrumentEditor(FieldPage):
 
 class ArpEditor(FieldPage):
     """The arpeggiator's editor, with the settings keys alone."""
+
+
+class ChainStatementsPage(FieldPage):
+    """A chain's statements about the registers, with the settings keys alone."""
 
 
 class AutoRatchetEditor(FieldPage):

@@ -470,7 +470,7 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         if hasattr(screen, 'shown_fields') and label not in [field.label for field in screen.shown_fields()]:
             # The field is in a closed section, so the section is opened first, as a person would.
             heading = None
-            for field in screen.fields():
+            for field in (screen.every_field() if hasattr(screen, 'every_field') else screen.fields()):
                 if isinstance(field, Heading):
                     heading = field
                 if field.label == label:

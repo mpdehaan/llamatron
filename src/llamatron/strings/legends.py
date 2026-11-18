@@ -169,6 +169,7 @@ class What:
     EDIT = 'edit'
     OPEN = 'open'
     CHANGE = 'change'
+    WHEN = 'when'
     COPY = 'copy'
     DELETE = 'delete'
     REMOVE = 'remove'

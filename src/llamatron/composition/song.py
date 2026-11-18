@@ -676,6 +676,10 @@ class Song(LlamaData):
     def changes_registers(self):
         return self._setlist.changes_registers()
 
+    def scenes_change_registers(self):
+        """Return whether any of its scenes, or any clip of one, sets a register or adds to one."""
+        return any(scene.changes_registers() for scene in self.get_scenes())
+
     def get_default_octave(self):
         return self._setlist.get_default_octave()
 

@@ -20,16 +20,16 @@ reading a file and calling a setter refuse a value in the same words."""
 import inspect
 import unittest
 
-from llamatron.composition import clip_slot, file_format, generator_settings, groove, instrument, named_scale, pattern, register, scene, setlist, song, track
+from llamatron.composition import chain, clip_slot, file_format, generator_settings, groove, instrument, named_scale, pattern, register, scene, setlist, song, track
 from llamatron.composition.clip_slot import FIRST_MORPH_STYLE, MORPH_STYLES, ClipSlot
 from llamatron.composition.checks import listed
 from llamatron.composition.file_format import (
-    DIRECTIONS, OCTAVE_LABEL_CHOICES, ClipSlotSetting, GrooveSetting, InstrumentSetting, KeyswitchSetting, PatternSetting, RegisterSetting, ScaleSetting, SceneSetting, Section,
+    BYPASS_WHEN, DIRECTIONS, OCTAVE_LABEL_CHOICES, ChainSetting, ClipSlotSetting, GrooveSetting, InstrumentSetting, KeyswitchSetting, PatternSetting, RegisterSetting, ScaleSetting, SceneSetting, Section,
     SetlistSetting, SongSetting, TrackSetting,
 )
 from llamatron.composition.file_format import DRIFT_VERSIONS, DriftValue
 from llamatron.composition.file_format import GuitarifySetting
-from llamatron.composition.generator_settings import MusicianSetting, MusicianSettings, FollowChordsSetting, FollowChordsSettings, PhrasingSetting, PhrasingSettings, GuitarifySettings, HocketSetting, HocketSettings, DriftSetting, DriftSettings, ProgressionSetting, ProgressionSettings, ShapeSetting, VoiceLeadingSetting, VoiceLeadingSettings, StepRowSetting, GlideSettings, ShortenSettings, RushSettings, SwellSettings, versioned, ArpSetting, ArpSettings, AutoRatchetSetting, AutoRatchetSettings
+from llamatron.composition.generator_settings import GENERATOR_SETTINGS, MusicianSetting, MusicianSettings, FollowChordsSetting, FollowChordsSettings, PhrasingSetting, PhrasingSettings, GuitarifySettings, HocketSetting, HocketSettings, DriftSetting, DriftSettings, ProgressionSetting, ProgressionSettings, ShapeSetting, VoiceLeadingSetting, VoiceLeadingSettings, StepRowSetting, GlideSettings, ShortenSettings, RushSettings, SwellSettings, versioned, ArpSetting, ArpSettings, AutoRatchetSetting, AutoRatchetSettings
 from llamatron.composition.groove import Groove, new_groove
 from llamatron.composition.instrument import Instrument
 from llamatron.music import midi
@@ -97,6 +97,8 @@ NAMING_MODULES = [file_format, generator_settings]
 SETTING_CLASS_ENDING = 'Setting'
 # Each class of setting names, the descriptions of those settings, and the names that aren't settings with a
 # value of their own to check: a pattern's steps are its size, and a scene's tracks are its clips.
+# The setting every generator has, described once for them all and named by no generator's own class of names.
+SHARED_BY_GENERATORS = {BYPASS_WHEN}
 DESCRIBED = [
     (SetlistSetting, setlist.SETTINGS, ()),
     (SongSetting, song.SETTINGS, ()),
@@ -109,6 +111,8 @@ DESCRIBED = [
     # chain is only read, from a file saved before a clip held a list of chains.
     (ClipSlotSetting, clip_slot.SETTINGS, (ClipSlotSetting.CHAIN,)),
     (SceneSetting, scene.SETTINGS, (SceneSetting.TRACKS,)),
+    # A chain's steps are its generators, read one by one.
+    (ChainSetting, {ChainSetting.BYPASS_WHEN: chain.BYPASS_WHEN}, (ChainSetting.STEPS,)),
     # wrap is only read, from a file saved before at_limit came.
     (RegisterSetting, register.SETTINGS, (RegisterSetting.WRAP,)),
     (ArpSetting, ArpSettings.SETTINGS, ()),
@@ -311,12 +315,17 @@ class TestEverySettingIsDescribedOnce(unittest.TestCase):
     def test_every_setting_name_has_a_description_and_nothing_else_does(self):
         for names, settings, others in DESCRIBED:
             with self.subTest(names=names.__name__):
-                self.assertEqual(set(settings), names_in(names) - set(others))
+                self.assertEqual(set(settings) - SHARED_BY_GENERATORS, names_in(names) - set(others) - SHARED_BY_GENERATORS)
+
+    def test_every_generator_keeps_the_statements_that_bypass_it(self):
+        for kind, settings in GENERATOR_SETTINGS.items():
+            with self.subTest(kind=kind):
+                self.assertIn(BYPASS_WHEN, settings.SETTINGS)
 
     def test_a_drifts_other_settings_are_each_version_of_each_value(self):
         own = {value for name, value in vars(DriftSetting).items() if not name.startswith('_')}
         versions = {versioned(version=version, value=value) for version in DRIFT_VERSIONS for value in names_in(DriftValue)}
-        self.assertEqual(set(DriftSettings.SETTINGS) - own, versions)
+        self.assertEqual(set(DriftSettings.SETTINGS) - own - SHARED_BY_GENERATORS, versions)
 
     def test_every_description_is_a_setting_under_its_own_name(self):
         for names, settings, others in DESCRIBED:

@@ -43,6 +43,7 @@ Press `C` on the main screen to open the Chains page.
 | `A` | Add a step: any generator, made first on the Generators page |
 | `ENTER` | Change the step to another generator |
 | `C` | Copy the step |
+| `W` | Open the chain's Bypass Generators When statements, which say when a pass goes by the whole chain. See [Conditional Execution](REGISTERS.md#conditional-execution) |
 | `M` | Pick it up: `↑↓` carry it, and `ENTER` drops it |
 | `Bksp` | Remove it |
 | `N` | Rename the chain, which updates every clip that uses it |

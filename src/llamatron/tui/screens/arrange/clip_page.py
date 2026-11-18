@@ -37,6 +37,7 @@ from llamatron.tui.screens.shared.shared import columns, scene_name
 from llamatron.tui.uses import loop_error_lines
 from llamatron.tui.screens.arrange.chains_field import chains_field
 from llamatron.tui.screens.generators.shape_fields import shape_section
+from llamatron.tui.screens.shared.statements import FIRST_TABLE, SECOND_TABLE, register_fields, statement_section
 from llamatron.tui.screens.generators.strum_fields import strum_section
 from llamatron.tui import themes
 from llamatron.tui import keybindings
@@ -223,6 +224,7 @@ class ClipPage(FieldPage):
             self.follow_action_field(),
             *self.strum_section(),
             *[field for shape in SHAPES for field in self.shape_section(shape)],
+            *self.register_sections(),
             # Real-time playback's buttons, which do what L does, drawn below the settings after a blank line as every page's buttons are.
             Button(label=labels_text.MSG_PLAY_LABEL, key_name=legends.KeyName.L, enter=self.listen, enter_what=legends.MSG_LISTEN_WHAT),
             Button(label=labels_text.MSG_STOP_LABEL, key_name=legends.KeyName.L, enter=self.stop, enter_what=legends.MSG_STOP_WHAT),
@@ -239,6 +241,26 @@ class ClipPage(FieldPage):
             inherited=marks.MSG_FROM_TRACK_SHOWN.format(value=taken),
             store=lambda part, value: self.document().set_clip_strum_setting(index=self.index, track=self.track, part=part, value=value),
         )
+
+    def register_sections(self):
+        """Return the clip's sections about the registers: what it sets them to as it launches, what it adds every time its pattern starts over, and the statements that bypass its generators and that make it sit out."""
+        clip_slot = self.clip_slot()
+        document = self.document()
+        tables = ((labels_text.MSG_BYPASS_WHEN_LABEL, FIRST_TABLE, ClipSlotSetting.BYPASS_WHEN), (labels_text.MSG_SKIP_WHEN_LABEL, SECOND_TABLE, ClipSlotSetting.SKIP_WHEN))
+        return [
+            *register_fields(
+                page=self, label=labels_text.MSG_SET_REGISTERS_LABEL, name_label=labels_text.MSG_SET_REGISTER_LABEL, values=clip_slot.get_register_sets,
+                store=lambda register, value: document.set_clip_register_set(index=self.index, track=self.track, register=register, value=value),
+            ),
+            *register_fields(
+                page=self, label=labels_text.MSG_ADD_REGISTERS_LABEL, name_label=labels_text.MSG_ADD_REGISTER_LABEL, values=clip_slot.get_register_adds,
+                store=lambda register, value: document.set_clip_register_add(index=self.index, track=self.track, register=register, value=value),
+            ),
+            *[field for label, table, name in tables for field in statement_section(
+                page=self, label=label, table=table, statements=lambda name=name: clip_slot.get_statements(name),
+                store=lambda place, statement, name=name: document.set_clip_statement(index=self.index, track=self.track, name=name, place=place, statement=statement),
+            )],
+        ]
 
     def shape_section(self, shape):
         """Return a shape's section: how busy, loud or long the clip plays over it, over its scene's."""

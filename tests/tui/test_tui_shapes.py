@@ -165,10 +165,15 @@ class TestShapeSectionsOnTheScenePage(UITest):
         await self.press(down)
         self.assertIsInstance(self.page.field(), Heading)
         self.assertEqual(self.page.field().label, labels_text.MSG_SHAPE_NAMES[Shape.DENSITY])
-        await self.press(down, down, down)
+        await self.press(down, down)
         self.assertEqual(self.page.field().label, labels_text.MSG_SHAPE_NAMES[Shape.ARTICULATE])
         await self.press(up)
         self.assertEqual(self.page.field().label, labels_text.MSG_SHAPE_NAMES[Shape.SWELL])
+
+    async def test_pgdn_stops_at_the_last_heading(self):
+        headings = [field.label for field in self.page.fields() if isinstance(field, Heading)]
+        await self.press(*[forward_key(keybindings.FieldPage.SECTION)] * (len(headings) + 1))
+        self.assertEqual(self.page.field().label, headings[-1])
 
     async def test_an_open_section_stays_open_on_the_next_scene_page(self):
         await self.select_field(labels_text.MSG_SHAPE_NAMES[Shape.DENSITY])

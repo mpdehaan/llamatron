@@ -31,6 +31,7 @@ from llamatron.tui.screens.arrange.groove_choice import groove_choice_field
 from llamatron.tui.screens.shared.shared import scene_name
 from llamatron.tui.screens.arrange.chains_field import chains_field
 from llamatron.tui.screens.generators.shape_fields import shape_section
+from llamatron.tui.screens.shared.statements import FIRST_TABLE, register_fields, statement_section
 from llamatron.tui import themes
 from llamatron.tui import keybindings
 
@@ -165,6 +166,26 @@ class ScenePage(FieldPage):
             Toggle(label=labels.MSG_LAUNCH_TOGETHER_LABEL, on=scene.launches_together(), set=lambda on: self.document().set_scene_launch_together(index=self.index, value=on)),
             chains_field(page=self, names=lambda: self.scene().get_chain_names(), store=lambda names: self.document().set_scene_chains(index=self.index, names=names)),
             *[field for shape in SHAPES for field in self.shape_section(shape)],
+            *self.register_sections(),
+        ]
+
+    def register_sections(self):
+        """Return the scene's sections about the registers: what it sets them to as it first starts, what it adds every time it plays, and the statements that bypass the generators of its clips."""
+        scene = self.scene()
+        document = self.document()
+        return [
+            *register_fields(
+                page=self, label=labels.MSG_SET_REGISTERS_LABEL, name_label=labels.MSG_SET_REGISTER_LABEL, values=scene.get_register_sets,
+                store=lambda register, value: document.set_scene_register_set(index=self.index, register=register, value=value),
+            ),
+            *register_fields(
+                page=self, label=labels.MSG_ADD_REGISTERS_LABEL, name_label=labels.MSG_ADD_REGISTER_LABEL, values=scene.get_register_adds,
+                store=lambda register, value: document.set_scene_register_add(index=self.index, register=register, value=value),
+            ),
+            *statement_section(
+                page=self, label=labels.MSG_BYPASS_WHEN_LABEL, table=FIRST_TABLE, statements=scene.get_bypass_when,
+                store=lambda place, statement: document.set_scene_bypass_statement(index=self.index, place=place, statement=statement),
+            ),
         ]
 
     def shape_section(self, shape):
