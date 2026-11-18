@@ -42,6 +42,26 @@
   finds again. Each must be short enough to be known after one hearing, and they should differ in rhythm before they differ in
   pitch. (practice)
 
+## The Hook and Its Chorus
+
+- The hook is a part of the chorus's melody, never the whole of it and never a thing beside it: the chorus is the frame built to
+  show the hook. In a chorus of four lines the hook is the line that returns, said first, or last, or both, two to four times a
+  chorus, each time the same but for a changed ending. (practice)
+- The chorus's other lines serve the hook: plainer, lower, more by step, and never a second catchy figure. (practice)
+- Across the song three things are essential: the sections before the chorus sit lower and narrower and move in shorter notes;
+  nothing before the chorus reaches the hook's top note, though a bridge or a last chorus may pass it once; and the hook's
+  rhythm is not used up elsewhere. Hearing the hook from an instrument before it is sung, and an instrument answering it in the
+  chorus's gaps or the ending, are optional and good. (practice)
+- A song has one main sung hook, which owns the title and the highest note. A second sung hook is a short tag or chant in a
+  section after the chorus, at the end of the section before it, or in the ending, and differs from the main hook in shape: short
+  and rhythmic against a long held note. Two sung hooks are the most a song carries. (practice)
+- A riff is a hook an instrument plays, but is written and used differently: a figure looped under other things and belonging to
+  a player, where a sung hook is a line heard a few times and belonging to a section. The two are kept apart on a page and
+  treated as one family underneath: a riff differs from the main hook in rhythm, stays under its top, and thins out while the
+  hook is sung. Two catchy figures never sound at once. (practice)
+- What makes songs worse: a hook in every section, every melody derived from the hook's notes, a hook varied each time it
+  returns, and a verse that reaches the top note. (practice)
+
 ## How Hooks Are Found, at Length
 
 A note Claude wrote in another conversation, kept nearly whole, names and all. (practice throughout, but for the one finding marked measured)
