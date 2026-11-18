@@ -17,7 +17,7 @@
 """The Tracks, Scales, Generators and Chains pages and their editors."""
 
 from tests.support.ui_testing import (
-    STRUMMER, BREATHES, CLAVE, CLIPPED, CLIPS, FADE, FOLK, FOLLOWS, KEY_SHOWN, LAZY, PICKED, POP, PUSH, ROLLS, SLIDES, SMOOTH, SWAY, THIN, TRADE, UP_ARP, UITest, fixed_text, key_name, key_of,
+    STRUMMER, BREATHES, CLAVE, CLIPPED, CLIPS, FADE, FOLK, FOLLOWS, KEY_SHOWN, LAZY, PICKED, POP, PUSH, ROLLS, SLIDES, SMOOTH, SWAY, THIN, TRADE, UP_ARP, UITest, back_key, first_key, fixed_text, forward_key, key_name, key_of,
 )
 from llamatron.strings import labels, legends, marks, messages, names as names_text
 from llamatron.tui.drawing import NOTHING
@@ -36,7 +36,7 @@ from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
-from llamatron.composition.setlist import DEFAULT_SCALE, Setlist
+from llamatron.composition.setlist import DEFAULT_SCALE
 from llamatron.tui.screens.generators.generator_pages import generator_page_of_kind
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.arp_editor import ArpEditor
@@ -350,21 +350,72 @@ class TestScalePage(UITest):
         render_song(self.document.song())
 
 class TestGeneratorsPage(UITest):
-    """The Generators page: every generator on one list, its kind beside its name, in an order of the user's own."""
+    """The Generators page: every generator under its type's heading, the types and the generators under each sorted by name."""
 
-    async def test_it_lists_every_generator_with_its_kind_and_enter_opens_its_editor(self):
+    def heading(self, *, kind, closed=False):
+        mark = marks.MSG_SECTION_CLOSED_MARK if closed else marks.MSG_SECTION_OPEN_MARK
+        return labels.MSG_GROUP_HEADING.format(mark=mark, name=generator_page_of_kind(kind).label, count=len(self.document.song().get_generator_names(kind)))
+
+    async def test_it_lists_every_generator_under_its_types_heading_and_enter_opens_its_editor(self):
         await self.press(keybindings.MainPage.GENERATORS)
         page = self.app.screen
-        self.assertEqual(len(page.rows()), sum(len(self.document.song().get_generator_names(kind)) for kind in NAMED_GENERATORS))
-        self.assertIn(marks.MSG_GENERATOR_KIND_SHOWN.format(kind=generator_page_of_kind(GeneratorKind.AUTO_RATCHET).label), self.text())
+        held = [kind for kind in NAMED_GENERATORS if self.document.song().get_generator_names(kind)]
+        self.assertEqual(len(page.generators()), sum(len(self.document.song().get_generator_names(kind)) for kind in held))
+        headings = [cells[0] for what, cells in page.rows() if what.name is None]
+        for kind in held:
+            self.assertIn(self.heading(kind=kind), headings)
+        self.assertIn(self.heading(kind=GeneratorKind.ARP), self.text())
         self.assertEqual(page.current(), (GeneratorKind.ARP, UP))
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ArpEditor)
+
+    async def test_the_types_and_the_generators_under_each_are_sorted_by_name(self):
+        first = await self.add_generator(Section.ARPS)
+        await self.press(Key.ESCAPE)
+        page = self.app.screen
+        pairs = page.generators()
+        shown = [generator_page_of_kind(kind).label.casefold() for kind, _ in pairs]
+        self.assertEqual(shown, sorted(shown))
+        arps = [name for kind, name in pairs if kind == GeneratorKind.ARP]
+        self.assertIn(first, arps)
+        self.assertEqual(arps, sorted(arps, key=str.casefold))
+
+    async def test_a_heading_closes_and_opens_its_type_and_stays_closed_when_the_page_opens_again(self):
+        await self.press(keybindings.MainPage.GENERATORS, Key.UP)
+        self.assertIsNone(self.app.screen.current())
+        await self.press(first_key(keybindings.GeneratorsPage.TOGGLE_TYPE))
+        self.assertIn(self.heading(kind=GeneratorKind.ARP, closed=True), self.text())
+        self.assertNotIn((GeneratorKind.ARP, UP), [what[1:] for what, _ in self.app.screen.rows()])
+        await self.press(Key.ESCAPE, keybindings.MainPage.GENERATORS)
+        self.assertIn(self.heading(kind=GeneratorKind.ARP, closed=True), self.text())
+        await self.press(Key.UP, Key.UP, Key.ENTER)
+        self.assertIn(self.heading(kind=GeneratorKind.ARP), self.text())
+
+    async def test_page_down_and_page_up_jump_between_the_headings(self):
+        await self.press(keybindings.MainPage.GENERATORS)
+        page = self.app.screen
+        await self.press(forward_key(keybindings.GeneratorsPage.NEXT_TYPE))
+        self.assertIsNone(page.current())
+        second = page.place
+        await self.press(back_key(keybindings.GeneratorsPage.NEXT_TYPE))
+        self.assertEqual(page.place, 0)
+        self.assertGreater(second, page.place)
+
+    async def test_the_last_row_adds_with_enter(self):
+        await self.press(keybindings.MainPage.GENERATORS)
+        await self.press(*[Key.DOWN] * len(self.app.screen.rows()), Key.ENTER)
+        self.assertIsInstance(self.app.screen, GroupedChoiceDialog)
 
     async def test_adding_asks_the_kind_names_it_and_opens_it(self):
         name = await self.add_generator(Section.ARPS)
         self.assertIsInstance(self.app.screen, ArpEditor)
         self.assertEqual(self.arp(name).get_order(), written_name(ChordOrder.UP))
+        await self.press(Key.ESCAPE)
+        self.assertEqual(self.app.screen.current(), (GeneratorKind.ARP, name))
+
+    async def test_adding_into_a_closed_type_opens_it(self):
+        await self.press(keybindings.MainPage.GENERATORS, Key.UP, first_key(keybindings.GeneratorsPage.TOGGLE_TYPE), Key.ESCAPE)
+        name = await self.add_generator(Section.ARPS)
         await self.press(Key.ESCAPE)
         self.assertEqual(self.app.screen.current(), (GeneratorKind.ARP, name))
 
@@ -377,22 +428,20 @@ class TestGeneratorsPage(UITest):
         await self.press(Key.ESCAPE, Key.BACKSPACE, keybindings.ConfirmDialog.YES)
         self.assertNotIn(name, self.document.song().get_generator_names(GeneratorKind.ARP))
 
-    async def test_renaming_updates_its_chains(self):
+    async def test_renaming_updates_its_chains_and_keeps_the_cursor_on_it(self):
         await self.press(keybindings.MainPage.GENERATORS, keybindings.GeneratorsPage.RENAME)
         self.app.screen.value = CLIMB
         await self.press(Key.ENTER)
         self.assertEqual(self.chain_steps(NAMED)[0], (GeneratorKind.ARP, CLIMB))
+        self.assertEqual(self.app.screen.current(), (GeneratorKind.ARP, CLIMB))
 
-    async def test_a_copy_comes_after_what_it_copies_and_moving_keeps_the_order_in_the_set(self):
-        await self.press(keybindings.MainPage.GENERATORS, Key.DOWN, keybindings.GeneratorsPage.COPY)
-        self.assertEqual(self.auto_ratchet(ROLLS_COPY).get_counts(), [1, 4])
+    async def test_a_copy_is_listed_under_its_type_with_the_cursor_on_it(self):
+        await self.press(keybindings.MainPage.GENERATORS)
         page = self.app.screen
+        page.put_cursor_on(kind=GeneratorKind.AUTO_RATCHET, name=ROLLS)
+        await self.press(keybindings.GeneratorsPage.COPY)
+        self.assertEqual(self.auto_ratchet(ROLLS_COPY).get_counts(), [1, 4])
         self.assertEqual(page.current(), (GeneratorKind.AUTO_RATCHET, ROLLS_COPY))
-        # Move mode carries the copy above the arpeggiator, across kinds, and the set keeps the order.
-        await self.press(keybindings.GeneratorsPage.MOVE, Key.UP, Key.UP, Key.ENTER)
-        self.assertEqual(page.generators()[:3], [(GeneratorKind.AUTO_RATCHET, ROLLS_COPY), (GeneratorKind.ARP, UP), (GeneratorKind.AUTO_RATCHET, ROLLS)])
-        kept = Setlist.from_data(data=self.document.setlist().to_data())
-        self.assertEqual(kept.ordered_generators()[:3], page.generators()[:3])
 
 
 class TestArpEditor(UITest):

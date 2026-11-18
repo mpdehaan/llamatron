@@ -429,12 +429,12 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         await self.pick(size)
 
     async def open_generator(self, *, section, name=None):
-        """Open a generator's editor from the Generators page, where every generator is on one list: the one named, or the first of its section's kind."""
+        """Open a generator's editor from the Generators page, where each is under its type's heading: the one named, or the first of its section's kind."""
         await self.press(keybindings.MainPage.GENERATORS)
         kind = GENERATOR_PAGES[section].kind
-        pairs = self.app.screen.generators()
-        target = next(pair for pair in pairs if pair[0] == kind and (name is None or pair[1] == name))
-        await self.press(*[Key.DOWN] * (pairs.index(target) - self.app.screen.place), Key.ENTER)
+        found_kind, found_name = next(pair for pair in self.app.screen.generators() if pair[0] == kind and (name is None or pair[1] == name))
+        self.app.screen.put_cursor_on(kind=found_kind, name=found_name)
+        await self.press(Key.ENTER)
 
     async def add_generator(self, section):
         """Add a generator of a section's kind from the Generators page, which names it and opens its editor, and return its name."""

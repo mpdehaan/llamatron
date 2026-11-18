@@ -90,13 +90,16 @@ The user's design. `PatternsPage` (`tui/screens/pattern/patterns_page.py`) lists
 
 ## Generators and chains
 
-- The Generators page (`G`, `screens/generators/generators_page.py`, the user's design) lists every generator of the set on one
-  list, its kind in parentheses beside its name (`MSG_GENERATOR_KIND_SHOWN`), in the order `Setlist.ordered_generators`
-  gives: the set's `generator_order` (`.claude/format/FILE_RULES.md`), then any it leaves out, kind by kind. ENTER opens the editor
-  (`GENERATOR_PAGES` in `screens/generators/generator_pages.py`, a `GeneratorListing` of kind, section, label and `EDITOR` for each kind);
-  `A` asks for a kind, names one after it and opens it; `N`/F2, `C` (the copy straight after), `Bksp` (refused while a chain
-  uses it) and `/` as on every list; Move mode keeps the order in the set (`Document.move_generator`). There's no sort, and no
-  page of one kind: the fifteen were taken out, and each editor's crumbs read `GENERATORS › name`.
+- The Generators page (`G`, `screens/generators/generators_page.py`, the user's design) lists every generator of the set under a
+  heading for its type, `- Density (2)` (`MSG_GROUP_HEADING`), the types sorted by what the tracker calls each and the generators
+  sorted by name under each, always, as the Patterns page lists patterns by group, so the page has no move and no sort. Only a
+  type the set has a generator of gets a heading. Space or ENTER on a heading closes and opens its type, kept for the session in
+  `app.closed_generator_types` (every type starts open), PgUp and PgDn jump between headings, and a search looks inside closed
+  types. ENTER opens the editor (`GENERATOR_PAGES` in `screens/generators/generator_pages.py`, a `GeneratorListing` of kind,
+  section, label and `EDITOR` for each kind); `A`, or ENTER on the `+` row the page lists last, asks for a type, names one after
+  it and opens it; `N`/F2, `C`, `Bksp` (refused while a chain uses it) and `/` as on every list, the cursor following the
+  generator. The set's `generator_order` is still read and written but no page shows or changes it. Each editor's crumbs read
+  `GENERATORS › name`.
 - The drift editor (`screens/generators/drift_editor.py`, a `FieldPage`) lists the drift's own settings, then
   one row per value with A's and B's side by side, the picked one in `MSG_DRIFT_PICKED`; on such a
   row Left and Right pick the version (`DriftEditor.VERSION`), so only `[` and `]` change a value,

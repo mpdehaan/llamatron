@@ -449,7 +449,7 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   every generator in, each entry `{kind: name}`, written only when set; it's never refused (`sensible_generator_order`, an
   entry that isn't a generator's kind and a name is dropped), `Setlist.ordered_generators` leaves out entries for generators
   gone and adds any it doesn't name after the rest, kind by kind, a rename keeps a generator's place and a copy comes straight
-  after its original (`copy_item`). Nothing in the render reads it. `tests/generators/test_generator_order.py` tests it.
+  after its original (`copy_item`). Nothing in the render reads it, and since the Generators page lists by type, sorted, no page shows or changes it. `tests/generators/test_generator_order.py` tests it.
 - The set's `real_time` (`SetlistSetting.REAL_TIME`, default `DEFAULT_REAL_TIME`, false) is the
   main screen's Real Time switch. `Document.add_instrument` turns it on with the first
   instrument, and `delete_named` turns it off with the last.

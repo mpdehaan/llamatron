@@ -363,9 +363,6 @@ MSG_FLAT_SPELLED = 'b'
 MSG_NUMERALS_SEPARATOR = ' '
 MSG_PRESET_NUMERALS_SEPARATOR = '–'
 
-# tui/screens/generators/generators_page.py: a generator's kind beside its name on the Generators page.
-MSG_GENERATOR_KIND_SHOWN = '({kind})'
-
 # tui/screens/generators/guitarify_editor.py, tui/screens/generators/guitar_bar_editor.py: a Guitarify's values, and what each stroke is drawn as in its cell.
 MSG_GUITAR_OPEN_POSITION = 'open'
 MSG_GUITAR_FRET = 'fret {fret}'

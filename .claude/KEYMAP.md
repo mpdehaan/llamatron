@@ -154,8 +154,9 @@ settings page's fields. The keys that work everywhere are listed once:
 
 ## GeneratorsPage
 
-- **a row**: `ESC` back · `↑↓` select · `A` add · `ENTER` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `/` search
-- **the + row**: `ESC` back · `ENTER` add · `↑↓` select · `A` add · `/` search
+- **the + row**: `ESC` back · `↑↓` select · `Space/ENTER` toggle · `A` add · `PgUp/PgDn` next type · `/` search
+- **a row**: `ESC` back · `↑↓` select · `A` add · `ENTER` edit · `N/F2` rename · `C` copy · `Bksp` delete · `PgUp/PgDn` next type · `/` search
+- **the + row**: `ESC` back · `ENTER` add · `↑↓` select · `A` add · `PgUp/PgDn` next type · `/` search
 - **while searching**: `ESC` CANCEL · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
 
 ## GlideEditor
@@ -408,7 +409,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - ChainEditor: search (a row, the + row)
 - ChainListPage: search (a row, the + row)
 - ChainsPage: search (a row, the + row)
-- GeneratorsPage: search (a row, the + row)
+- GeneratorsPage: search (the + row, a row)
 - GroovesPage: search (a row, the + row)
 - InstrumentsPage: search (a row, the + row)
 - OpenPage: search (a row)
@@ -514,7 +515,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - ChainEditor: add (a row, the + row)
 - ChainListPage: add (a row, the + row)
 - ChainsPage: add (a row, the + row)
-- GeneratorsPage: add (a row, the + row)
+- GeneratorsPage: add (the + row, a row)
 - GroovesPage: add (a row, the + row)
 - InstrumentsPage: add (a row, the + row)
 - MainPage: Arrange (anywhere)
@@ -814,7 +815,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - EuclidEditor: back (the Name field, the Hits field, the Steps field, the Rotate field, the Step field, the Restart field)
 - FilePage: back (the Author field, the Description field, the Title field, the Default follow action field, the Notes field, the Protected field, the Notes & Octaves heading, the Visualizers heading, the Save button, the Open button)
 - FollowChordsEditor: back (the Name field, the Chords from field)
-- GeneratorsPage: back (a row, the + row)
+- GeneratorsPage: back (the + row, a row)
 - GeneratorsPage: CANCEL (while searching)
 - GlideEditor: back (the Name field, the Step field, the Glide amount field, the Restart field, the Steps field)
 - GlideStepsEditor: back (anywhere)
@@ -947,7 +948,6 @@ settings page's fields. The keys that work everywhere are listed once:
 - ChainEditor: move (a row)
 - ChainListPage: move (a row)
 - ChainsPage: move (a row)
-- GeneratorsPage: move (a row)
 - GroovesPage: move (a row)
 - InstrumentsPage: move (a row)
 - MainPage: IMPORT MIDI (anywhere)
@@ -986,6 +986,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - ArrangePage: bar (Scene View)
 - ClipPage: next section (the Name field, the Pattern field, the Scale field, the Chains field, the Repeat field, the Loop field, the Strum heading, the Density heading, the Swell heading, the Articulate heading, the Direction field, the Grab track field, the Advance field, the Play button, the Stop button)
 - FilePage: next section (the Author field, the Description field, the Title field, the Default follow action field, the Notes field, the Protected field, the Notes & Octaves heading, the Visualizers heading, the Save button, the Open button)
+- GeneratorsPage: next type (the + row, a row)
 - GuitarifyEditor: next section (the Name field, the Shape heading, the Strokes heading)
 - PatternEditor: next section (the degree row, the octave row, the accidental row, the velocity row, the keyswitch row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the ax_bx row, the ax_cx row, the ax_dx row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the register_cond row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row)
 - PatternsPage: next group (a group's heading, a pattern, the New Pattern button, the Ungrouped heading, a pattern in no group, the New Pattern Group button)
@@ -1030,6 +1031,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - ClipPage: toggle (the Loop field, the Strum heading, the Density heading, the Swell heading, the Articulate heading)
 - DragStepsEditor: toggle (anywhere)
 - FilePage: toggle (the Protected field, the Notes & Octaves heading, the Visualizers heading)
+- GeneratorsPage: toggle (the + row)
 - GlideStepsEditor: toggle (anywhere)
 - GuitarBarEditor: accent (anywhere)
 - GuitarifyEditor: toggle (the Shape heading, the Strokes heading)
@@ -1136,7 +1138,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - EuclidEditor: select (the Name field, the Hits field, the Steps field, the Rotate field, the Step field, the Restart field)
 - FilePage: select (the Author field, the Description field, the Title field, the Default follow action field, the Notes field, the Protected field, the Notes & Octaves heading, the Visualizers heading, the Save button, the Open button)
 - FollowChordsEditor: select (the Name field, the Chords from field)
-- GeneratorsPage: select (a row, the + row, while searching)
+- GeneratorsPage: select (the + row, a row, while searching)
 - GlideEditor: select (the Name field, the Step field, the Glide amount field, the Restart field, the Steps field)
 - GroovesPage: select (a row, the + row, while searching)
 - GuitarifyEditor: select (the Name field, the Shape heading, the Strokes heading)

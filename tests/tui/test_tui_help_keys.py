@@ -265,8 +265,10 @@ class KeyTour(UITest):
         # The Generators page lists every generator, each opening its editor; an arp's Offsets field opens the offsets editor.
         await self.press(Key.ESCAPE, keybindings.MainPage.GENERATORS)
         await self.walk()
-        for place in range(len(self.app.screen.generators())):
-            await self.press(Key.ESCAPE, keybindings.MainPage.GENERATORS, *[Key.DOWN] * place, Key.ENTER)
+        for kind, name in self.app.screen.generators():
+            await self.press(Key.ESCAPE, keybindings.MainPage.GENERATORS)
+            self.app.screen.put_cursor_on(kind=kind, name=name)
+            await self.press(Key.ENTER)
             await self.walk()
             await self.press(Key.ESCAPE)
         await self.press(Key.ESCAPE)
