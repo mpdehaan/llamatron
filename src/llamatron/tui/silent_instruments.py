@@ -25,7 +25,7 @@ plays again where the device is, and the Instruments page can choose another.
 
 from llamatron.realtime.fluidsynth import is_installed
 from llamatron.realtime.outputs import output_port_names
-from llamatron.strings.errors import ERR_DEVICE_WILL_NOT_SOUND, ERR_FLUIDSYNTH_WILL_NOT_SOUND, ERR_SILENT_INSTRUMENTS_TITLE
+from llamatron.strings import errors
 
 
 def fluidsynth_installed():
@@ -45,11 +45,11 @@ def silent_instrument_lines(*, setlist, installed, connected):
     lines = []
     instruments = [setlist.get_instrument(name) for name in instruments_played(setlist)]
     if not installed and any(instrument.uses_fluidsynth() for instrument in instruments):
-        lines.append(ERR_FLUIDSYNTH_WILL_NOT_SOUND)
+        lines.append(errors.ERR_FLUIDSYNTH_WILL_NOT_SOUND)
     for name in instruments_played(setlist):
         instrument = setlist.get_instrument(name)
         if instrument.has_device() and not instrument.uses_fluidsynth() and instrument.get_device() not in connected:
-            lines.append(ERR_DEVICE_WILL_NOT_SOUND.format(instrument=name, device=instrument.get_device()))
+            lines.append(errors.ERR_DEVICE_WILL_NOT_SOUND.format(instrument=name, device=instrument.get_device()))
     return lines
 
 
@@ -57,4 +57,4 @@ def warn_of_silent_instruments(*, page, document):
     """Tell in a dialog over the page which of the set's instruments will not sound here, if any."""
     lines = silent_instrument_lines(setlist=document.setlist(), installed=fluidsynth_installed(), connected=set(output_port_names()))
     if lines:
-        page.tell(ERR_SILENT_INSTRUMENTS_TITLE, *lines)
+        page.tell(errors.ERR_SILENT_INSTRUMENTS_TITLE, *lines)

@@ -17,9 +17,8 @@
 """A MIDI CC value sent at a time in a clip."""
 
 from llamatron.grid.positions import exact_length
-from llamatron.music.midi import MAX_CC_VALUE, MIN_CC_VALUE
-from llamatron.strings.errors import ERR_INVALID_CONTROL_NUMBER, ERR_INVALID_SLIDE, ERR_INVALID_TIME
-from llamatron.strings.reprs import REPR_CONTROL
+from llamatron.music import midi
+from llamatron.strings import errors, reprs
 
 # What the two CC numbers are called when one is out of range.
 NUMBER_WORD = 'number'
@@ -28,8 +27,8 @@ VALUE_WORD = 'value'
 
 def _check_cc(*, what, value):
     """Check that a CC number or value is an integer in MIDI's range."""
-    if type(value) is not int or not MIN_CC_VALUE <= value <= MAX_CC_VALUE:
-        raise ValueError(ERR_INVALID_CONTROL_NUMBER.format(name=what, value=value, lowest=MIN_CC_VALUE, highest=MAX_CC_VALUE))
+    if type(value) is not int or not midi.MIN_CC_VALUE <= value <= midi.MAX_CC_VALUE:
+        raise ValueError(errors.ERR_INVALID_CONTROL_NUMBER.format(name=what, value=value, lowest=midi.MIN_CC_VALUE, highest=midi.MAX_CC_VALUE))
 
 
 class Control:
@@ -43,11 +42,11 @@ class Control:
 
     def __init__(self, *, time, number, value, slide=False):
         if exact_length(time) < 0:
-            raise ValueError(ERR_INVALID_TIME.format(time=time))
+            raise ValueError(errors.ERR_INVALID_TIME.format(time=time))
         _check_cc(what=NUMBER_WORD, value=number)
         _check_cc(what=VALUE_WORD, value=value)
         if type(slide) is not bool:
-            raise ValueError(ERR_INVALID_SLIDE.format(slide=slide))
+            raise ValueError(errors.ERR_INVALID_SLIDE.format(slide=slide))
         self._time = time
         self._number = number
         self._value = value
@@ -89,4 +88,4 @@ class Control:
         return hash(self._as_tuple())
 
     def __repr__(self):
-        return REPR_CONTROL.format(time=self._time, number=self._number, value=self._value, slide=self._slide)
+        return reprs.REPR_CONTROL.format(time=self._time, number=self._number, value=self._value, slide=self._slide)

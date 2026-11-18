@@ -27,9 +27,9 @@ from llamatron.composition.corrections import LEFT_OUT
 from llamatron.composition.file_format import (
     STRUM_DIRECTIONS, STRUM_SPREADS, UPSTROKE_STRINGS, StrumDirection, StrumPart, StrumSpread, UpstrokeStrings, strum_setting,
 )
-from llamatron.composition.limits import MAX_LOOSE_TIMING, MAX_STRUM_FADE, MIN_STRUM_PERCENT
+from llamatron.composition import limits
+from llamatron.strings import errors
 from llamatron.composition.setting import Choice, WholeNumber
-from llamatron.strings.errors import ERR_BAD_SHAPE_PERCENT, ERR_NOT_A_CHOICE
 
 # How many milliseconds apart each spread sounds two strings: a hand's speed, whatever the tempo.
 SPREAD_MILLISECONDS = {StrumSpread.TIGHT: 2, StrumSpread.CRISP: 4, StrumSpread.NORMAL: 8, StrumSpread.LOOSE: 15, StrumSpread.RAKE: 30, StrumSpread.HARP: 70}
@@ -54,12 +54,12 @@ class StrumValues(NamedTuple):
 def strum_part_settings(named):
     """Return the descriptions of a strum's five parts, each named by named(part)."""
     def choice(part, choices):
-        return Choice(name=named(part), choices=choices, default=LEFT_OUT, error=ERR_NOT_A_CHOICE)
+        return Choice(name=named(part), choices=choices, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE)
     return [
         choice(StrumPart.DIRECTION, STRUM_DIRECTIONS),
         choice(StrumPart.SPREAD, STRUM_SPREADS),
-        WholeNumber(name=named(StrumPart.FADE), lowest=MIN_STRUM_PERCENT, highest=MAX_STRUM_FADE, error=ERR_BAD_SHAPE_PERCENT),
-        WholeNumber(name=named(StrumPart.LOOSE_TIMING), lowest=MIN_STRUM_PERCENT, highest=MAX_LOOSE_TIMING, error=ERR_BAD_SHAPE_PERCENT),
+        WholeNumber(name=named(StrumPart.FADE), lowest=limits.MIN_STRUM_PERCENT, highest=limits.MAX_STRUM_FADE, error=errors.ERR_BAD_SHAPE_PERCENT),
+        WholeNumber(name=named(StrumPart.LOOSE_TIMING), lowest=limits.MIN_STRUM_PERCENT, highest=limits.MAX_LOOSE_TIMING, error=errors.ERR_BAD_SHAPE_PERCENT),
         choice(StrumPart.UPSTROKE_STRINGS, UPSTROKE_STRINGS),
     ]
 

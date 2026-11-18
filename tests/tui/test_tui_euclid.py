@@ -18,7 +18,7 @@
 from tests.support.ui_testing import CLAVE, LEAD, UITest
 from llamatron.composition.euclid import NAMED_RHYTHMS
 from llamatron.composition.file_format import Section, EuclidPart, GeneratorKind, NamedRhythm
-from llamatron.strings.labels import MSG_EUCLID_FIELD_LABELS, MSG_EUCLID_LABEL, MSG_EUCLID_PART_LABELS
+from llamatron.strings import labels
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.euclid_editor import EuclidEditor
@@ -49,16 +49,16 @@ class TestEuclidEditor(UITest):
         return self.document.song().get_generator_settings(kind=GeneratorKind.EUCLID, name=CLAVE).get_euclid()
 
     async def test_rotate_steps_and_the_drawing_follows(self):
-        await self.select_field(MSG_EUCLID_PART_LABELS[EuclidPart.ROTATE])
+        await self.select_field(labels.MSG_EUCLID_PART_LABELS[EuclidPart.ROTATE])
         await self.press(keybindings.EuclidEditor.MORE)
         self.assertEqual(self.mask().rotate, 1)
         self.assertIn(drawn_rhythm(hits=TRESILLO_HITS, steps=TRESILLO_STEPS, rotate=1), self.text())
 
     async def test_h_is_offered_on_hits_alone(self):
-        await self.select_field(MSG_EUCLID_PART_LABELS[EuclidPart.STEPS])
+        await self.select_field(labels.MSG_EUCLID_PART_LABELS[EuclidPart.STEPS])
         await self.press(keybindings.EuclidEditor.PICK_RHYTHM)
         self.assertIsInstance(self.app.screen, EuclidEditor)
-        await self.select_field(MSG_EUCLID_PART_LABELS[EuclidPart.HITS])
+        await self.select_field(labels.MSG_EUCLID_PART_LABELS[EuclidPart.HITS])
         await self.press(keybindings.EuclidEditor.PICK_RHYTHM)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         self.assertEqual(len(self.app.screen.options), len(NAMED_RHYTHMS))
@@ -69,9 +69,9 @@ class TestTrackEuclidSection(UITest):
     async def test_the_track_takes_a_named_rhythm(self):
         self.app.screen.show_page(TrackEditor(holder=self.app.screen.holder, name=LEAD))
         await self.pilot.pause()
-        await self.select_field(MSG_EUCLID_LABEL)
+        await self.select_field(labels.MSG_EUCLID_LABEL)
         await self.press(Key.ENTER)
-        await self.select_field(MSG_EUCLID_FIELD_LABELS[EuclidPart.HITS])
+        await self.select_field(labels.MSG_EUCLID_FIELD_LABELS[EuclidPart.HITS])
         await self.press(keybindings.TrackEditor.PICK_RHYTHM, Key.DOWN, Key.ENTER)
         hits, steps = list(NAMED_RHYTHMS.values())[1]
         mask = self.document.song().get_track(LEAD).get_euclid()

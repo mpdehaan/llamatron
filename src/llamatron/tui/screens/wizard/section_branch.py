@@ -16,20 +16,14 @@
 
 """A section of the wizard's form: its kind, how long it lasts and who plays in it; it can be copied, removed and moved."""
 
-from llamatron.composition.limits import MAX_NAME_LENGTH, MAX_TEMPO, MIN_TEMPO
+from llamatron.composition import limits
+from llamatron.strings import labels, legends, marks, messages
 from llamatron.macro_composer.arranger import CHORDS
 from llamatron.macro_composer.joins import LEAVES
 from llamatron.macro_composer.melody import LINE_NOTES
 from llamatron.macro_composer.song_plan import ENERGY, FADES, HIGHEST_ENERGY, LOWEST_ENERGY, NOT_AT_ALL, RISES, ROOT_OF_PLACE, SETUP, TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE
 from llamatron.macro_composer.wizard_choices import LEAVES_AS_JOIN, LINE_IS_HOOK, LINE_OWN, SCALE_TYPES, SHAPE_OF_SECTION, chords_as_text
 from llamatron.music.note import ROOT_NAMES
-from llamatron.strings.labels import (
-    MSG_WIZARD_BARS_LABEL, MSG_WIZARD_SECTION_HOOK_LABEL, MSG_WIZARD_GROUP_HARMONY, MSG_WIZARD_GROUP_JOINS, MSG_WIZARD_GROUP_PLAYERS, MSG_WIZARD_GROUP_SHAPE, MSG_WIZARD_GROUP_TUNE, MSG_WIZARD_LINES_LABEL, MSG_WIZARD_LINES_TITLE, MSG_WIZARD_LINE_NOTES_TITLE, MSG_WIZARD_FROM_ORIGIN, MSG_WIZARD_FROM_PLAN, MSG_WIZARD_KIND_LABEL, MSG_WIZARD_SECTION_ORIGINS, MSG_WIZARD_SECTION_OWN_LABELS, MSG_WIZARD_SECTION_ROLE_LABEL,
-    MSG_WIZARD_VALUE_FROM,
-)
-from llamatron.strings.legends import MSG_FROM_PLAN_WHAT, MSG_WIZARD_EDIT_LINES_WHAT
-from llamatron.strings.marks import MSG_LINES_COUNT, MSG_LINES_COUNT_OWN, MSG_WIZARD_ROLE_FROM_PLAN
-from llamatron.strings.messages import MSG_WIZARD_LISTEN_SECTION, MSG_WIZARD_SECTION_CHORDS_PROMPT
 from llamatron.tui.dialogs.lines_dialog import LinesDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NumberField, Toggle
@@ -43,14 +37,14 @@ FIRST_SECTION_NUMBER = 1
 
 
 # The numbers a section can be given of its own, each with its range, and the choices of each field chosen from a list.
-NUMBERS_OF_SECTION = {ENERGY: (LOWEST_ENERGY, HIGHEST_ENERGY), TEMPO_OF_PLACE: (MIN_TEMPO, MAX_TEMPO), TEMPO_END_OF_PLACE: (MIN_TEMPO, MAX_TEMPO)}
+NUMBERS_OF_SECTION = {ENERGY: (LOWEST_ENERGY, HIGHEST_ENERGY), TEMPO_OF_PLACE: (limits.MIN_TEMPO, limits.MAX_TEMPO), TEMPO_END_OF_PLACE: (limits.MIN_TEMPO, limits.MAX_TEMPO)}
 CHOICES_OF_SECTION = {LEAVES: list(LEAVES_AS_JOIN), SETUP: [NOT_AT_ALL], ROOT_OF_PLACE: list(ROOT_NAMES), TYPE_OF_PLACE: list(SCALE_TYPES)}
 
 
 # The groups of what a section is given of its own, in the order they show, each with its fields in order.
-OWN_GROUPS = ((MSG_WIZARD_GROUP_HARMONY, (CHORDS, ROOT_OF_PLACE, TYPE_OF_PLACE)),
-              (MSG_WIZARD_GROUP_SHAPE, (SHAPE_OF_SECTION, RISES, FADES, TEMPO_OF_PLACE, TEMPO_END_OF_PLACE)),
-              (MSG_WIZARD_GROUP_JOINS, (LEAVES, SETUP)))
+OWN_GROUPS = ((labels.MSG_WIZARD_GROUP_HARMONY, (CHORDS, ROOT_OF_PLACE, TYPE_OF_PLACE)),
+              (labels.MSG_WIZARD_GROUP_SHAPE, (SHAPE_OF_SECTION, RISES, FADES, TEMPO_OF_PLACE, TEMPO_END_OF_PLACE)),
+              (labels.MSG_WIZARD_GROUP_JOINS, (LEAVES, SETUP)))
 
 
 class SectionBranch(Branch):
@@ -73,15 +67,15 @@ class SectionBranch(Branch):
         page = self.page()
         place = self._place
         kinds = choices.section_kinds()
-        fields = [ChoiceField(page=page, label=MSG_WIZARD_KIND_LABEL, choices=kinds, current=choices.section_kind(place),
+        fields = [ChoiceField(page=page, label=labels.MSG_WIZARD_KIND_LABEL, choices=kinds, current=choices.section_kind(place),
                               set=page.choosing(lambda kind: choices.set_section_kind(place=place, kind=kind)))]
         lengths = choices.bars_offered(place)
         if len(lengths) > 1:
-            fields.append(ChoiceField(page=page, label=MSG_WIZARD_BARS_LABEL, choices=lengths, names=[str(bars) for bars in lengths], current=choices.section_bars(place),
+            fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_BARS_LABEL, choices=lengths, names=[str(bars) for bars in lengths], current=choices.section_bars(place),
                                       set=page.choosing(lambda bars: choices.set_section_bars(place=place, bars=bars))))
         else:
             # A held section, or one whose parts fill only its usual length, shows its bars and takes no key.
-            fields.append(Field(label=MSG_WIZARD_BARS_LABEL, value=lambda: choices.section_bars(place)))
+            fields.append(Field(label=labels.MSG_WIZARD_BARS_LABEL, value=lambda: choices.section_bars(place)))
         own = choices.section_own_fields(place)
         fields += [self.own_field(field) for field in own if field == ENERGY]
         plays = choices.section_plays(place)
@@ -89,10 +83,10 @@ class SectionBranch(Branch):
         players = [Toggle(label=choices.role_title(role), on=role in plays, set=self.plays_setter(role)) for role in choices.roles_in() if role in choices.roles_shown()]
         # The rest in groups, the same on every section and in the order a section is shaped; a group with nothing to offer in this section is left out.
         says_hook = choices.hook_line() is not None and any(line[LINE_IS_HOOK] for line in choices.section_lines(place))
-        hook = [hook_notes_field(choices=choices, page=page, label=MSG_WIZARD_SECTION_HOOK_LABEL)] if says_hook else []
-        groups = [(MSG_WIZARD_GROUP_TUNE, [*self.lines_fields(), *hook, *([self.role_field()] if choices.section_has_role(place) else [])], lambda: self.has_own_lines() or self.has_own_role() or (says_hook and choices.hook_is_own())),
+        hook = [hook_notes_field(choices=choices, page=page, label=labels.MSG_WIZARD_SECTION_HOOK_LABEL)] if says_hook else []
+        groups = [(labels.MSG_WIZARD_GROUP_TUNE, [*self.lines_fields(), *hook, *([self.role_field()] if choices.section_has_role(place) else [])], lambda: self.has_own_lines() or self.has_own_role() or (says_hook and choices.hook_is_own())),
                   *[(label, [self.own_field(field) for field in own if field in of_group], self.own_checker(of_group)) for label, of_group in OWN_GROUPS],
-                  (MSG_WIZARD_GROUP_PLAYERS, players, lambda: sorted(plays) != sorted(usual))]
+                  (labels.MSG_WIZARD_GROUP_PLAYERS, players, lambda: sorted(plays) != sorted(usual))]
         for label, inside, is_set in groups:
             if inside:
                 fields += [page.heading(label=label, is_set=is_set), *inside]
@@ -119,8 +113,8 @@ class SectionBranch(Branch):
         if not any(line[LINE_NOTES] is not None for line in lines):
             return []
         own = sum(1 for line in lines if line[LINE_OWN])
-        said = MSG_LINES_COUNT_OWN.format(count=len(lines), own=own) if own else MSG_LINES_COUNT.format(count=len(lines))
-        return [Field(label=MSG_WIZARD_LINES_LABEL, value=lambda: said, enter=self.edit_lines, enter_what=MSG_WIZARD_EDIT_LINES_WHAT)]
+        said = marks.MSG_LINES_COUNT_OWN.format(count=len(lines), own=own) if own else marks.MSG_LINES_COUNT.format(count=len(lines))
+        return [Field(label=labels.MSG_WIZARD_LINES_LABEL, value=lambda: said, enter=self.edit_lines, enter_what=legends.MSG_WIZARD_EDIT_LINES_WHAT)]
 
     def edit_lines(self):
         choices = self.choices()
@@ -134,8 +128,8 @@ class SectionBranch(Branch):
                 return str(problem)
             return None
         section = choices.section_labels()[place]
-        dialog = LinesDialog(title=MSG_WIZARD_LINES_TITLE.format(section=section), lines=lambda: choices.section_lines(place), set_line=set_line, steps_in_bar=choices.tune_steps_in_bar(),
-                             pitch_of_place=choices.pitch_of_place, title_of_player=choices.role_title, notes_title=MSG_WIZARD_LINE_NOTES_TITLE.format(line='{line}', section=section),
+        dialog = LinesDialog(title=labels.MSG_WIZARD_LINES_TITLE.format(section=section), lines=lambda: choices.section_lines(place), set_line=set_line, steps_in_bar=choices.tune_steps_in_bar(),
+                             pitch_of_place=choices.pitch_of_place, title_of_player=choices.role_title, notes_title=labels.MSG_WIZARD_LINE_NOTES_TITLE.format(line='{line}', section=section),
                              listen=lambda: page.problem_listening(what=self.listens()[0], index=place, track=choices.tune_player()), stop_listening=page.app.made_preview().stop)
         page.ask(dialog=dialog, then=lambda nothing: None)
 
@@ -160,9 +154,9 @@ class SectionBranch(Branch):
         place = self._place
         own = choices.section_own(place=place, field=field)
         usual = choices.section_from_plan(place=place, field=field)
-        origin = MSG_WIZARD_SECTION_ORIGINS[field]
-        shown = MSG_WIZARD_VALUE_FROM.format(value=usual, origin=origin) if own is None else None
-        label = MSG_WIZARD_SECTION_OWN_LABELS[field]
+        origin = labels.MSG_WIZARD_SECTION_ORIGINS[field]
+        shown = labels.MSG_WIZARD_VALUE_FROM.format(value=usual, origin=origin) if own is None else None
+        label = labels.MSG_WIZARD_SECTION_OWN_LABELS[field]
         set_own = self.own_setter(field)
         clear = dict(clear=lambda: set_own(None), clear_what=origin) if own is not None else {}
         if field in NUMBERS_OF_SECTION:
@@ -173,17 +167,17 @@ class SectionBranch(Branch):
             return NumberField(page=page, label=label, number=own, start=usual, shown=shown, lowest=lowest, highest=highest, set=set_own, **clear)
         if field == CHORDS:
             def ask():
-                page.ask(dialog=PromptDialog(title=MSG_WIZARD_SECTION_CHORDS_PROMPT, value=chords_as_text(own) if own is not None else usual, max_length=MAX_NAME_LENGTH), then=set_own)
+                page.ask(dialog=PromptDialog(title=messages.MSG_WIZARD_SECTION_CHORDS_PROMPT, value=chords_as_text(own) if own is not None else usual, max_length=limits.MAX_NAME_LENGTH), then=set_own)
             return Field(label=label, value=lambda: shown if own is None else chords_as_text(own), enter=ask, **clear)
         if field in (RISES, FADES):
             return Toggle(label=label, on=usual if own is None else own, set=set_own, **clear)
-        from_above = MSG_WIZARD_FROM_ORIGIN.format(origin=origin)
+        from_above = labels.MSG_WIZARD_FROM_ORIGIN.format(origin=origin)
         offered = choices.section_shapes(place) if field == SHAPE_OF_SECTION else CHOICES_OF_SECTION[field]
         return ChoiceField(page=page, label=label, choices=[from_above, *offered], current=from_above if own is None else own, shown=shown,
                            set=lambda picked: set_own(None if picked == from_above else picked), **clear)
 
     def listens(self):
-        return MSG_WIZARD_LISTEN_SECTION.format(number=self._place + FIRST_SECTION_NUMBER, name=self.name()), self._place, None
+        return messages.MSG_WIZARD_LISTEN_SECTION.format(number=self._place + FIRST_SECTION_NUMBER, name=self.name()), self._place, None
 
     def role_field(self):
         """Return the field of what the answering player does in the section: the plan's, marked as the plan's, until the section is given
@@ -194,13 +188,13 @@ class SectionBranch(Branch):
         ways = choices.ways_beside()
         way = choices.section_role(place)
         own = choices.section_role_is_own(place)
-        chosen = page.choosing(lambda picked: choices.set_section_role(place=place, way=None if picked == MSG_WIZARD_FROM_PLAN else picked))
+        chosen = page.choosing(lambda picked: choices.set_section_role(place=place, way=None if picked == labels.MSG_WIZARD_FROM_PLAN else picked))
 
         def to_plan():
-            chosen(MSG_WIZARD_FROM_PLAN)
-        return ChoiceField(page=page, label=MSG_WIZARD_SECTION_ROLE_LABEL.format(player=choices.role_title(choices.answered_by())), choices=[MSG_WIZARD_FROM_PLAN, *ways],
-                           current=way if own else MSG_WIZARD_FROM_PLAN, shown=way if own else MSG_WIZARD_ROLE_FROM_PLAN.format(way=way), set=chosen,
-                           clear=to_plan if own else None, clear_what=MSG_FROM_PLAN_WHAT)
+            chosen(labels.MSG_WIZARD_FROM_PLAN)
+        return ChoiceField(page=page, label=labels.MSG_WIZARD_SECTION_ROLE_LABEL.format(player=choices.role_title(choices.answered_by())), choices=[labels.MSG_WIZARD_FROM_PLAN, *ways],
+                           current=way if own else labels.MSG_WIZARD_FROM_PLAN, shown=way if own else marks.MSG_WIZARD_ROLE_FROM_PLAN.format(way=way), set=chosen,
+                           clear=to_plan if own else None, clear_what=legends.MSG_FROM_PLAN_WHAT)
 
     def plays_setter(self, role):
         """Return what has a player play in the section or sit it out, refusing to leave the section with nobody."""

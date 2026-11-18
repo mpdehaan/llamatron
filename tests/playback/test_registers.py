@@ -22,17 +22,15 @@ MAXIMUM, MAXIMUM], and scale_notes turns those into the notes of C major they mo
 
 import unittest
 
-from llamatron.music.midi import HALF_STEPS_PER_OCTAVE
+from llamatron.music import midi
 from llamatron.composition.clip_slot import morph_style_name
-from llamatron.composition.defaults import DEFAULT_ALLOWED_INC_MAX, DEFAULT_REGISTER_MAXIMUM, DEFAULT_REGISTER_MINIMUM, DEFAULT_REGISTER_VALUE
+from llamatron.composition import defaults, limits
 from llamatron.composition.file_format import (
     AtLimit, REGISTER_ADD_ROWS, REGISTER_NAMES, REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, ClipSlotSetting, PatternSetting,
     RegisterName, RegisterSetting, RegisterUse, Row, ScaleSetting, SceneSetting, Section, SongSetting,
 )
-from llamatron.composition.limits import MAX_REGISTER_VALUE, MIN_REGISTER_VALUE
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.generators.blend import BlendMode
-from llamatron.music.midi import MAX_VELOCITY, MIN_VELOCITY
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.strings import errors
 from llamatron.music.note import NoteName
@@ -73,7 +71,7 @@ def scale_notes(values):
 
 def scale_note(value):
     octaves, place = divmod(value, len(C_MAJOR_STEPS))
-    return ROOT + octaves * HALF_STEPS_PER_OCTAVE + C_MAJOR_STEPS[place]
+    return ROOT + octaves * midi.HALF_STEPS_PER_OCTAVE + C_MAJOR_STEPS[place]
 
 
 def pattern(steps, **rows):
@@ -259,10 +257,10 @@ class TestAddingAndUsing(unittest.TestCase):
 
     def test_a_note_pushed_past_the_midi_range_moves_by_octaves_to_fit(self):
         # Every register at its highest, all moving one of the highest notes.
-        registers = {name: {RegisterSetting.MAXIMUM: MAX_REGISTER_VALUE, RegisterSetting.ALLOWED_INC_MAX: MAX_REGISTER_VALUE} for name in REGISTER_NAMES}
+        registers = {name: {RegisterSetting.MAXIMUM: limits.MAX_REGISTER_VALUE, RegisterSetting.ALLOWED_INC_MAX: limits.MAX_REGISTER_VALUE} for name in REGISTER_NAMES}
         rows = {Row.OCTAVE: [10]}
         for name in REGISTER_NAMES:
-            rows.update({REGISTER_ADD_ROWS[name]: [MAX_REGISTER_VALUE], REGISTER_NOTE_ROWS[name]: [ADDS_IT]})
+            rows.update({REGISTER_ADD_ROWS[name]: [limits.MAX_REGISTER_VALUE], REGISTER_NOTE_ROWS[name]: [ADDS_IT]})
         self.assertEqual(len(pitches(one_clip(rows=rows, registers=registers))), 1)
 
 
@@ -286,7 +284,7 @@ class TestLimits(unittest.TestCase):
         maximum = 3
         registers = {AX: {RegisterSetting.MAXIMUM: maximum, RegisterSetting.AT_LIMIT: AtLimit.OVERFLOW}}
         data = one_clip(rows={ADDS: [add], USES_NOTE: [ADDS_IT]}, repeat=4, registers=registers)
-        lowest = DEFAULT_REGISTER_MINIMUM
+        lowest = defaults.DEFAULT_REGISTER_MINIMUM
         self.assertEqual(pitches(data), scale_notes([add, lowest, add, lowest]))
 
     def test_wrapping_below_the_minimum_jumps_to_the_maximum(self):
@@ -300,7 +298,7 @@ class TestLimits(unittest.TestCase):
 
 class TestVelocity(unittest.TestCase):
 
-    LOWEST = {AX: {RegisterSetting.MINIMUM: MIN_REGISTER_VALUE}}
+    LOWEST = {AX: {RegisterSetting.MINIMUM: limits.MIN_REGISTER_VALUE}}
 
     def test_the_value_is_added_to_the_velocity(self):
         add = -20
@@ -308,19 +306,19 @@ class TestVelocity(unittest.TestCase):
         self.assertEqual(velocities(data), [VELOCITY + add, VELOCITY + 2 * add, VELOCITY + 3 * add])
 
     def test_the_velocity_stays_in_the_midi_range(self):
-        rows = {Row.VELOCITY: [MIN_VELOCITY + 1], ADDS: [-2], USES_VELOCITY: [ADDS_IT]}
-        self.assertEqual(velocities(one_clip(rows=rows, registers=self.LOWEST)), [MIN_VELOCITY])
+        rows = {Row.VELOCITY: [midi.MIN_VELOCITY + 1], ADDS: [-2], USES_VELOCITY: [ADDS_IT]}
+        self.assertEqual(velocities(one_clip(rows=rows, registers=self.LOWEST)), [midi.MIN_VELOCITY])
 
     def test_a_step_that_subtracts_takes_the_value_off_the_velocity(self):
         # The add stays within the register's default maximum.
-        add = DEFAULT_REGISTER_MAXIMUM // 2
+        add = defaults.DEFAULT_REGISTER_MAXIMUM // 2
         rows = {Row.VELOCITY: [VELOCITY, VELOCITY, VELOCITY], ADDS: [add, 0, 0], USES_VELOCITY: [SUBTRACTS_IT, ADDS_IT, OFF]}
         self.assertEqual(velocities(one_clip(rows=rows, steps=3)), [VELOCITY - add, VELOCITY + add, VELOCITY])
 
     def test_a_drum_pattern_can_use_registers_for_velocity(self):
         add = -10
         data = one_clip(rows={ADDS: [add], USES_VELOCITY: [ADDS_IT]}, repeat=2, drum=True, registers=self.LOWEST)
-        self.assertEqual(velocities(data), [MAX_VELOCITY + add, MAX_VELOCITY + 2 * add])
+        self.assertEqual(velocities(data), [midi.MAX_VELOCITY + add, midi.MAX_VELOCITY + 2 * add])
 
     def test_a_drum_pattern_cannot_move_notes_with_registers(self):
         with self.assertRaises(SongFileError):
@@ -396,14 +394,14 @@ class TestTheFile(unittest.TestCase):
         register = song_from_data({}).get_register(CX)
         self.assertEqual(
             (register.get_default(), register.get_minimum(), register.get_maximum(), register.get_at_limit(), register.resets_each_scene()),
-            (DEFAULT_REGISTER_VALUE, DEFAULT_REGISTER_MINIMUM, DEFAULT_REGISTER_MAXIMUM, AtLimit.STOP, False),
+            (defaults.DEFAULT_REGISTER_VALUE, defaults.DEFAULT_REGISTER_MINIMUM, defaults.DEFAULT_REGISTER_MAXIMUM, AtLimit.STOP, False),
         )
 
     def test_bad_settings_are_refused(self):
         for registers in [
-            {EX: {}}, {AX: {RegisterSetting.MAXIMUM: MAX_REGISTER_VALUE + 1}},
-            {AX: {RegisterSetting.MINIMUM: DEFAULT_REGISTER_VALUE + 1}},
-            {AX: {RegisterSetting.DEFAULT: DEFAULT_REGISTER_MAXIMUM + 1}},
+            {EX: {}}, {AX: {RegisterSetting.MAXIMUM: limits.MAX_REGISTER_VALUE + 1}},
+            {AX: {RegisterSetting.MINIMUM: defaults.DEFAULT_REGISTER_VALUE + 1}},
+            {AX: {RegisterSetting.DEFAULT: defaults.DEFAULT_REGISTER_MAXIMUM + 1}},
             {AX: {RegisterSetting.WRAP: YES}}, {AX: {RegisterSetting.AT_LIMIT: YES}}, {AX: {RegisterSetting.RESET_EACH_SCENE: YES}}, {AX: {LOUD: 1}}, {AX: {RegisterSetting.MAXIMUM: 1.5}}, [AX],
         ]:
             with self.subTest(registers=registers), self.assertRaises(SongFileError):
@@ -418,7 +416,7 @@ class TestTheFile(unittest.TestCase):
 
     def test_bad_rows_are_refused(self):
         for rows in [
-            {ADDS: [MAX_REGISTER_VALUE + 1]}, {ADDS: [MIN_REGISTER_VALUE - 1]}, {REGISTER_ADD_ROWS[BX]: [X]},
+            {ADDS: [limits.MAX_REGISTER_VALUE + 1]}, {ADDS: [limits.MIN_REGISTER_VALUE - 1]}, {REGISTER_ADD_ROWS[BX]: [X]},
             {REGISTER_NOTE_ROWS[CX]: [2]}, {REGISTER_VELOCITY_ROWS[DX]: [-2]}, {REGISTER_VELOCITY_ROWS[DX]: [X]},
         ]:
             with self.subTest(rows=rows), self.assertRaises(SongFileError):
@@ -461,7 +459,7 @@ class TestWhatAStepMayAdd(unittest.TestCase):
             setlist_from_data(adding(adds=[None, PAST_NARROW], registers=self.narrow()))
         self.assertIn(errors.ERR_ADD_PAST_ALLOWED.format(row=Row.AX_ADD, register=AX, most=NARROW_LIMIT), str(refused.exception))
         with self.assertRaises(SongFileError):
-            setlist_from_data(adding(adds=[DEFAULT_ALLOWED_INC_MAX + 1, None]))
+            setlist_from_data(adding(adds=[defaults.DEFAULT_ALLOWED_INC_MAX + 1, None]))
 
     def test_holding_adds_within_the_limit_lowers_those_past_it_in_patterns_a_song_plays(self):
         setlist = setlist_from_data(adding(adds=[PAST_NARROW, -1]))

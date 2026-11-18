@@ -16,7 +16,7 @@
 """The Drag steps page: a Drag's row of steps, each on or off."""
 
 from llamatron.composition.file_format import GeneratorKind, Section
-from llamatron.strings.labels import Crumb
+from llamatron.strings import labels
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.step_row_editor import StepRowEditor
 
@@ -26,4 +26,4 @@ class DragStepsEditor(StepRowEditor):
     KEYS = keybindings.DragStepsEditor
     SECTION = Section.DRAGS
     KIND = GeneratorKind.DRAG
-    CRUMBS_BEFORE = (Crumb.GENERATORS,)
+    CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)

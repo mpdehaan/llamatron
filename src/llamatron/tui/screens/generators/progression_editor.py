@@ -18,11 +18,7 @@
 from llamatron.composition.file_format import ONE_BAR_WRITTEN, GeneratorKind, Section
 from llamatron.composition.generator_settings import ProgressionSetting
 from llamatron.composition.progressions import roman_numeral
-from llamatron.strings.help import HELP_PROGRESSION_EDITOR
-from llamatron.strings.labels import Crumb, MSG_CHORDS_LABEL, MSG_EVERY_LABEL, MSG_PROGRESSION_LABEL
-from llamatron.strings.legends import What
-from llamatron.strings.marks import MSG_NUMERALS_SEPARATOR
-from llamatron.strings.messages import MSG_RENAME_GENERATOR_PROMPT
+from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.generators.chords_editor import ChordsEditor
@@ -34,7 +30,7 @@ from llamatron.tui.screens.generators.time_field import time_field
 
 def numerals_text(*, progression, scale):
     """Return a progression's chords as numerals in a scale, like I V vi IV, as its editor and its list page show them."""
-    return MSG_NUMERALS_SEPARATOR.join(
+    return marks.MSG_NUMERALS_SEPARATOR.join(
         roman_numeral(scale=scale, degree=degree, accidental=accidental) for degree, accidental in zip(progression.get_chords(), progression.get_accidentals()))
 
 
@@ -47,10 +43,10 @@ def song_scale(song):
 class ProgressionEditor(ShowsNamedItem, FieldPage):
 
     KEYS = keybindings.ProgressionEditor
-    HELP = HELP_PROGRESSION_EDITOR
+    HELP = help_text.HELP_PROGRESSION_EDITOR
     SECTION = Section.PROGRESSIONS
-    CRUMBS_BEFORE = (Crumb.GENERATORS,)
-    RENAME_PROMPT = MSG_RENAME_GENERATOR_PROMPT.format(label=MSG_PROGRESSION_LABEL)
+    CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_PROGRESSION_LABEL)
 
     def __init__(self, *, holder, name):
         super().__init__(holder)
@@ -64,10 +60,10 @@ class ProgressionEditor(ShowsNamedItem, FieldPage):
         return [
             NameField(value=lambda: self.item, rename=self.rename),
             time_field(
-                page=self, label=MSG_EVERY_LABEL, written=progression.get_every(), first=ONE_BAR_WRITTEN,
+                page=self, label=labels.MSG_EVERY_LABEL, written=progression.get_every(), first=ONE_BAR_WRITTEN,
                 store=lambda value: self.document().set_generator_setting(section=Section.PROGRESSIONS, name=self.item, setting=ProgressionSetting.EVERY, value=value),
             ),
-            Field(label=MSG_CHORDS_LABEL, value=lambda: numerals_text(progression=progression, scale=song_scale(self.document().song())), adjust=None,
-                  enter=lambda: self.show_page(ChordsEditor(holder=self.holder, name=self.item)), enter_what=What.EDIT),
+            Field(label=labels.MSG_CHORDS_LABEL, value=lambda: numerals_text(progression=progression, scale=song_scale(self.document().song())), adjust=None,
+                  enter=lambda: self.show_page(ChordsEditor(holder=self.holder, name=self.item)), enter_what=legends.What.EDIT),
             restart_field(self),
         ]

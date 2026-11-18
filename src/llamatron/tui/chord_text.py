@@ -20,21 +20,18 @@ Chord dialog all say it through here, so that a chord reads the same wherever it
 
 from llamatron.composition.chords import borrowed, root_name, spelled_chord
 from llamatron.composition.naming import words
-from llamatron.strings.marks import MSG_ACCIDENTAL_MARKS, MSG_NOTES_SEPARATOR, MSG_SCALE_NAMED
-from llamatron.strings.messages import (
-    MSG_CHORD_NOTES, MSG_CHORD_NO_SCALE_KNOWN, MSG_CHORD_OWN_SENTENCE, MSG_CHORD_RESTING, MSG_CHORD_RESTING_OWN, MSG_CHORD_SENTENCE, MSG_NOTE_SENTENCE,
-)
+from llamatron.strings import marks, messages
 from llamatron.tui.drawing import NOTHING
 
 
 def scale_shown(scale):
     """Return a scale by its root and type, like C Harmonic Minor."""
-    return MSG_SCALE_NAMED.format(root=scale.get_root(), kind=words(scale.get_kind()).title())
+    return marks.MSG_SCALE_NAMED.format(root=scale.get_root(), kind=words(scale.get_kind()).title())
 
 
 def degree_shown(*, degree, accidental):
     """Return a degree as it is read out, a sharp or flat sign in front."""
-    return MSG_ACCIDENTAL_MARKS.get(accidental, NOTHING) + str(degree)
+    return marks.MSG_ACCIDENTAL_MARKS.get(accidental, NOTHING) + str(degree)
 
 
 class ChordInWords:
@@ -72,7 +69,7 @@ class ChordInWords:
         """Return the names of the chord's notes from its root up, as one line."""
         if self.is_one_note():
             return self.name()
-        return MSG_NOTES_SEPARATOR.join(self.spelled(kind=self._kind).notes)
+        return marks.MSG_NOTES_SEPARATOR.join(self.spelled(kind=self._kind).notes)
 
     def note_names(self):
         """Return the names of the chord's notes from its root up, or of its one note, or none when no scale is known."""
@@ -85,24 +82,24 @@ class ChordInWords:
     def sentences(self):
         """Return what the Chord dialog says under its lists: the chord in its scale, the chord in the clip's own scale when it borrows another, and its notes."""
         if self._scale is None:
-            return [MSG_CHORD_NO_SCALE_KNOWN]
+            return [messages.MSG_CHORD_NO_SCALE_KNOWN]
         degree = degree_shown(degree=self._degree, accidental=self._accidental)
         drawn_from = borrowed(scale=self._scale, kind=self._kind)
         if self.is_one_note():
-            return [MSG_NOTE_SENTENCE.format(scale=scale_shown(drawn_from), degree=degree, name=self.name())]
-        lines = [MSG_CHORD_SENTENCE.format(scale=scale_shown(drawn_from), degree=degree, name=self.spelled(kind=self._kind).long_name)]
+            return [messages.MSG_NOTE_SENTENCE.format(scale=scale_shown(drawn_from), degree=degree, name=self.name())]
+        lines = [messages.MSG_CHORD_SENTENCE.format(scale=scale_shown(drawn_from), degree=degree, name=self.spelled(kind=self._kind).long_name)]
         if self._kind is not None:
-            lines.append(MSG_CHORD_OWN_SENTENCE.format(scale=scale_shown(self._scale), name=self.spelled(kind=None).long_name))
-        return [*lines, MSG_CHORD_NOTES.format(notes=self.notes())]
+            lines.append(messages.MSG_CHORD_OWN_SENTENCE.format(scale=scale_shown(self._scale), name=self.spelled(kind=None).long_name))
+        return [*lines, messages.MSG_CHORD_NOTES.format(notes=self.notes())]
 
     def resting(self, *, where):
         """Return what the status line says of the chord while the cursor rests on it, or nothing for one note or a scale that isn't known."""
         if self._scale is None or self.is_one_note():
             return NOTHING
-        text = MSG_CHORD_RESTING.format(
+        text = messages.MSG_CHORD_RESTING.format(
             where=where, scale=scale_shown(borrowed(scale=self._scale, kind=self._kind)), degree=degree_shown(degree=self._degree, accidental=self._accidental),
             name=self.spelled(kind=self._kind).long_name, notes=self.notes(),
         )
         if self._kind is not None:
-            text += MSG_CHORD_RESTING_OWN.format(scale=scale_shown(self._scale), name=self.spelled(kind=None).long_name)
+            text += messages.MSG_CHORD_RESTING_OWN.format(scale=scale_shown(self._scale), name=self.spelled(kind=None).long_name)
         return text

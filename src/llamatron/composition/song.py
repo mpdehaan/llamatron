@@ -24,11 +24,11 @@ remove_item, rename_item and so on, and renaming or removing a track tells the s
 """
 
 from llamatron.composition.checks import check_keys, is_whole_number, listed, number, reading, time_signature, written_length
-from llamatron.composition.limits import MAX_GATE
+from llamatron.composition import defaults, limits
+from llamatron.strings import errors, names
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.genres import sensible_style, style_name
 from llamatron.composition.groove import groove_for
-from llamatron.composition.defaults import DEFAULT_GROOVE, DEFAULT_LIVE_RESPONSIVENESS, DEFAULT_SEED, DEFAULT_TEMPO, DEFAULT_TIME_SIGNATURE, FIRST_NUMBER
 from llamatron.composition.corrections import LEFT_OUT
 from llamatron.composition.setting import Checked, Choice, Length, described, settings_held
 from llamatron.composition.file_format import LIVE_RESPONSIVENESSES, REGISTER_NAMES, sensible_visualizer, GeneratorKind, SceneSetting, Section, SongSetting
@@ -38,12 +38,6 @@ from llamatron.composition.register import Register
 from llamatron.composition.scene import Scene
 from llamatron.composition.sections import SECTION_LABELS, SONG_SECTIONS
 from llamatron.composition.track import Track
-from llamatron.strings.errors import (
-    ERR_BAD_LIVE_RESPONSIVENESS, ERR_NO_SUCH_REGISTER, ERR_NO_SUCH_SCENE, ERR_NOT_A_SONG, ERR_REGISTERS_NOT_NAMED, ERR_SONG_NO_SUCH_GROOVE, ERR_SONG_NO_SUCH_PREVIEW_INSTRUMENT,
-    ERR_SCENES_NOT_A_LIST, ERR_SONG_BAD_SEED, ERR_SONG_BAD_WIZARD, ERR_SONG_NO_SUCH_SCALE, ERR_TRACKS_NOT_NAMED, ERR_WHERE_NAMED, ERR_WHERE_SCENE_ENTRY,
-    ERR_WHERE_WITHIN,
-)
-from llamatron.strings.names import MSG_NEW_SCENE_NAME, MSG_NEW_TRACK_NAME, MSG_REGISTER_WORD, MSG_THE_FILE, MSG_TRACK_WORD
 from llamatron.support.revised import notes_change
 
 
@@ -54,32 +48,32 @@ KINDS_NAMING_A_TRACK = (GeneratorKind.HOCKET, GeneratorKind.FOLLOW_CHORDS)
 def _check_scale_name(*, value, song):
     """Refuse a scale the set doesn't have. None is no scale."""
     if value is not None and not song.has_scale(value):
-        raise InvalidValue(ERR_SONG_NO_SUCH_SCALE.format(scale=value))
+        raise InvalidValue(errors.ERR_SONG_NO_SUCH_SCALE.format(scale=value))
 
 
 def _check_groove_name(*, value, song):
     """Refuse a groove that is neither a factory groove nor one of the set's."""
     if not isinstance(value, str) or not song.has_groove(value):
-        raise InvalidValue(ERR_SONG_NO_SUCH_GROOVE.format(name=value))
+        raise InvalidValue(errors.ERR_SONG_NO_SUCH_GROOVE.format(name=value))
 
 
 def _check_preview_instrument(*, value, song):
     """Refuse an instrument the set doesn't have. None is none."""
     if value is not None and not (isinstance(value, str) and song.has_instrument(value)):
-        raise InvalidValue(ERR_SONG_NO_SUCH_PREVIEW_INSTRUMENT.format(name=value))
+        raise InvalidValue(errors.ERR_SONG_NO_SUCH_PREVIEW_INSTRUMENT.format(name=value))
 
 
 def seed_number(value):
     """Return a seed, checking that it's an integer or None, which means a new take each export."""
     if value is not None and not is_whole_number(value):
-        raise InvalidValue(ERR_SONG_BAD_SEED.format(value=value))
+        raise InvalidValue(errors.ERR_SONG_BAD_SEED.format(value=value))
     return value
 
 
 def _check_wizard_choices(value):
     """Refuse what isn't a mapping: the song wizard's choices are kept as the wizard wrote them, and the wizard reads them with care."""
     if value is not None and not isinstance(value, dict):
-        raise InvalidValue(ERR_SONG_BAD_WIZARD.format(value=value))
+        raise InvalidValue(errors.ERR_SONG_BAD_WIZARD.format(value=value))
 
 
 # The song's own settings, each described once, in the order they're written to a file.
@@ -90,14 +84,14 @@ def _never_refused(value):
 SETTINGS = described(
     Checked(name=SongSetting.TEMPO, check=number),
     Checked(name=SongSetting.TIME_SIGNATURE, check=time_signature),
-    Length(name=SongSetting.ENTRY_SIZE, most=MAX_GATE, blank_allowed=True),
+    Length(name=SongSetting.ENTRY_SIZE, most=limits.MAX_GATE, blank_allowed=True),
     Checked(name=SongSetting.SCALE, check=_check_scale_name, needs_song=True),
     Checked(name=SongSetting.SEED, check=seed_number),
     Checked(name=SongSetting.GROOVE, check=_check_groove_name, needs_song=True),
     Checked(name=SongSetting.GENRE, check=_never_refused),
     Checked(name=SongSetting.SUBGENRE, check=_never_refused),
     Checked(name=SongSetting.VARIANT, check=_never_refused),
-    Choice(name=SongSetting.LIVE_RESPONSIVENESS, choices=LIVE_RESPONSIVENESSES, default=LEFT_OUT, error=ERR_BAD_LIVE_RESPONSIVENESS),
+    Choice(name=SongSetting.LIVE_RESPONSIVENESS, choices=LIVE_RESPONSIVENESSES, default=LEFT_OUT, error=errors.ERR_BAD_LIVE_RESPONSIVENESS),
     Checked(name=SongSetting.VISUALIZER, check=_never_refused),
     Checked(name=SongSetting.PREVIEW_INSTRUMENT, check=_check_preview_instrument, needs_song=True),
     Checked(name=SongSetting.WIZARD, check=_check_wizard_choices),
@@ -115,7 +109,7 @@ def new_song(*, scale=None):
     This is also what a file that leaves settings out gets, so it holds no tracks or scenes: an empty
     file is an empty song.
     """
-    data = {SongSetting.TEMPO: DEFAULT_TEMPO}
+    data = {SongSetting.TEMPO: defaults.DEFAULT_TEMPO}
     if scale is not None:
         data[SongSetting.SCALE] = scale
     data[Section.TRACKS] = {}
@@ -126,8 +120,8 @@ def new_song(*, scale=None):
 def started_song(*, scale=None):
     """Return the data of a song to start composing in: a new song with its first track and scene, numbered 1."""
     data = new_song(scale=scale)
-    data[Section.TRACKS] = {MSG_NEW_TRACK_NAME.format(number=FIRST_NUMBER): {}}
-    data[Section.SCENES] = [{SceneSetting.NAME: MSG_NEW_SCENE_NAME.format(number=FIRST_NUMBER)}]
+    data[Section.TRACKS] = {names.MSG_NEW_TRACK_NAME.format(number=defaults.FIRST_NUMBER): {}}
+    data[Section.SCENES] = [{SceneSetting.NAME: names.MSG_NEW_SCENE_NAME.format(number=defaults.FIRST_NUMBER)}]
     return data
 
 
@@ -157,12 +151,12 @@ class Song(LlamaData):
     @classmethod
     def new(cls, *, setlist):
         """Return an empty song for a set, in the set's first scale if it has one."""
-        return cls.from_data(data=new_song(scale=setlist.first_scale_name()), where=MSG_THE_FILE, setlist=setlist)
+        return cls.from_data(data=new_song(scale=setlist.first_scale_name()), where=names.MSG_THE_FILE, setlist=setlist)
 
     @classmethod
     def started(cls, *, setlist):
         """Return a song to start composing in, with its first track and scene, in the set's first scale if it has one."""
-        return cls.from_data(data=started_song(scale=setlist.first_scale_name()), where=MSG_THE_FILE, setlist=setlist)
+        return cls.from_data(data=started_song(scale=setlist.first_scale_name()), where=names.MSG_THE_FILE, setlist=setlist)
 
     @classmethod
     def from_data(cls, *, data, where, setlist):
@@ -170,7 +164,7 @@ class Song(LlamaData):
         data = {} if data is None else data
         with reading(where):
             if not isinstance(data, dict):
-                raise InvalidValue(ERR_NOT_A_SONG.format(value=data))
+                raise InvalidValue(errors.ERR_NOT_A_SONG.format(value=data))
             check_keys(data=data, allowed={*SETTINGS, *SONG_SECTIONS, Section.SCENES})
         song = cls(setlist=setlist)
         song._read_settings(data=data, where=where)
@@ -183,7 +177,7 @@ class Song(LlamaData):
     def _read_settings(self, *, data, where):
         for setting in settings_held(settings=SETTINGS, data=data):
             name = setting.get_name()
-            with reading(where if name in NAMED_BY_THEIR_MESSAGE else ERR_WHERE_WITHIN.format(where=where, part=name)):
+            with reading(where if name in NAMED_BY_THEIR_MESSAGE else errors.ERR_WHERE_WITHIN.format(where=where, part=name)):
                 setting.check_held(data, song=self)
         self._settings = {name: own_copy(data.get(name)) for name in SETTINGS}
         self._settings[SongSetting.VISUALIZER] = sensible_visualizer(self._settings[SongSetting.VISUALIZER])
@@ -202,20 +196,20 @@ class Song(LlamaData):
         registers = data.get(Section.REGISTERS) or {}
         with reading(where):
             if not isinstance(registers, dict) or not set(registers) <= set(REGISTER_NAMES):
-                raise InvalidValue(ERR_REGISTERS_NOT_NAMED.format(names=listed(REGISTER_NAMES)))
+                raise InvalidValue(errors.ERR_REGISTERS_NOT_NAMED.format(names=listed(REGISTER_NAMES)))
         if Section.REGISTERS in data:
             self._set_section(section=Section.REGISTERS, items={
-                name: Register.from_data(data=settings, where=self._where(where=where, label=MSG_REGISTER_WORD, name=name)) for name, settings in registers.items()
+                name: Register.from_data(data=settings, where=self._where(where=where, label=names.MSG_REGISTER_WORD, name=name)) for name, settings in registers.items()
             })
 
     def _read_tracks(self, *, data, where):
         tracks = data.get(Section.TRACKS) or {}
         with reading(where):
             if not isinstance(tracks, dict):
-                raise InvalidValue(ERR_TRACKS_NOT_NAMED)
+                raise InvalidValue(errors.ERR_TRACKS_NOT_NAMED)
         if Section.TRACKS in data:
             self._set_section(section=Section.TRACKS, items={
-                name: Track.from_data(data=settings, where=self._where(where=where, label=MSG_TRACK_WORD, name=name), song=self) for name, settings in tracks.items()
+                name: Track.from_data(data=settings, where=self._where(where=where, label=names.MSG_TRACK_WORD, name=name), song=self) for name, settings in tracks.items()
             })
 
     @notes_change
@@ -223,15 +217,15 @@ class Song(LlamaData):
         scenes = data.get(Section.SCENES) or []
         with reading(where):
             if not isinstance(scenes, list):
-                raise InvalidValue(ERR_SCENES_NOT_A_LIST)
+                raise InvalidValue(errors.ERR_SCENES_NOT_A_LIST)
         self._scenes = None if Section.SCENES not in data else [
-            Scene.from_data(data=scene, where=ERR_WHERE_WITHIN.format(where=where, part=ERR_WHERE_SCENE_ENTRY.format(number=number)), song=self)
+            Scene.from_data(data=scene, where=errors.ERR_WHERE_WITHIN.format(where=where, part=errors.ERR_WHERE_SCENE_ENTRY.format(number=number)), song=self)
             for number, scene in enumerate(scenes, start=FIRST_SCENE_NUMBER)
         ]
 
     def _where(self, *, where, label, name):
         """Return how a message places one of the song's named items, like song (one), track (bass)."""
-        return ERR_WHERE_WITHIN.format(where=where, part=ERR_WHERE_NAMED.format(label=label, name=name))
+        return errors.ERR_WHERE_WITHIN.format(where=where, part=errors.ERR_WHERE_NAMED.format(label=label, name=name))
 
     @notes_change
     def _set_section(self, *, section, items):
@@ -259,7 +253,7 @@ class Song(LlamaData):
 
     def copy(self):
         """Return a copy of the song, in the same set."""
-        return Song.from_data(data=self.to_data(), where=MSG_THE_FILE, setlist=self._setlist)
+        return Song.from_data(data=self.to_data(), where=names.MSG_THE_FILE, setlist=self._setlist)
 
     @notes_change
     def fill_in_defaults(self):
@@ -284,11 +278,11 @@ class Song(LlamaData):
 
     def get_tempo(self):
         """Return the song's tempo in quarter notes a minute, as an exact number."""
-        return number(self._setting(name=SongSetting.TEMPO, default=DEFAULT_TEMPO))
+        return number(self._setting(name=SongSetting.TEMPO, default=defaults.DEFAULT_TEMPO))
 
     def get_time_signature(self):
         """Return the song's time signature, 4/4 unless the file sets one, which only changes what's drawn."""
-        return time_signature(self._setting(name=SongSetting.TIME_SIGNATURE, default=DEFAULT_TIME_SIGNATURE))
+        return time_signature(self._setting(name=SongSetting.TIME_SIGNATURE, default=defaults.DEFAULT_TIME_SIGNATURE))
 
     def steps_in_a_bar(self):
         """Return how many steps of the set's step size make one bar of this song's time signature, or None if a bar isn't whole steps.
@@ -306,7 +300,7 @@ class Song(LlamaData):
     def get_entry_size(self):
         """Return how long a note placed on a piano roll lasts unless the pattern says otherwise, in whole notes, or None for one step."""
         entry_size = self.get_written_entry_size()
-        return None if entry_size is None else written_length(value=entry_size, most=MAX_GATE)
+        return None if entry_size is None else written_length(value=entry_size, most=limits.MAX_GATE)
 
     def get_written_entry_size(self):
         """Return the song's entry size as the file writes it, like 1/8, or None for one step."""
@@ -318,7 +312,7 @@ class Song(LlamaData):
 
     def get_seed(self):
         """Return the seed every random choice is made from, or None, which makes every export a new take."""
-        return self._setting(name=SongSetting.SEED, default=DEFAULT_SEED)
+        return self._setting(name=SongSetting.SEED, default=defaults.DEFAULT_SEED)
 
     def get_scale_name(self):
         """Return the name of the song's scale, or None if it has none."""
@@ -336,7 +330,7 @@ class Song(LlamaData):
 
     def get_live_responsiveness(self):
         """Return when an edit made while the song plays is heard: next_bar unless the song says."""
-        return self._setting(name=SongSetting.LIVE_RESPONSIVENESS, default=DEFAULT_LIVE_RESPONSIVENESS)
+        return self._setting(name=SongSetting.LIVE_RESPONSIVENESS, default=defaults.DEFAULT_LIVE_RESPONSIVENESS)
 
     @notes_change
     def set_live_responsiveness(self, value):
@@ -354,7 +348,7 @@ class Song(LlamaData):
 
     def get_groove_name(self):
         """Return the name of the groove every clip takes unless its scene or track chooses otherwise: none by default."""
-        return self._setting(name=SongSetting.GROOVE, default=DEFAULT_GROOVE)
+        return self._setting(name=SongSetting.GROOVE, default=defaults.DEFAULT_GROOVE)
 
     @notes_change
     def set_groove_name(self, name):
@@ -521,7 +515,7 @@ class Song(LlamaData):
     def set_register_setting(self, *, name, setting, value):
         """Change one setting of a register, AX to DX, by its file name, or None for its default."""
         if name not in REGISTER_NAMES:
-            raise InvalidValue(ERR_NO_SUCH_REGISTER.format(name=name, names=listed(REGISTER_NAMES)))
+            raise InvalidValue(errors.ERR_NO_SUCH_REGISTER.format(name=name, names=listed(REGISTER_NAMES)))
         register = self.get_register(name).copy()
         register.set_setting(name=setting, value=value)
         registers = {**dict(self._section(Section.REGISTERS).items()), name: register}
@@ -543,7 +537,7 @@ class Song(LlamaData):
         """Put a scene at a place in the order, or at the end if index is the number of scenes."""
         scenes = self.get_scenes()
         if not 0 <= index <= len(scenes):
-            raise InvalidValue(ERR_NO_SUCH_SCENE.format(index=index, count=len(scenes)))
+            raise InvalidValue(errors.ERR_NO_SUCH_SCENE.format(index=index, count=len(scenes)))
         scenes.insert(index, scene)
         self._scenes = scenes
 
@@ -570,7 +564,7 @@ class Song(LlamaData):
 
     def _check_scene(self, index):
         if not 0 <= index < len(self._scenes or []):
-            raise InvalidValue(ERR_NO_SUCH_SCENE.format(index=index, count=len(self._scenes or [])))
+            raise InvalidValue(errors.ERR_NO_SUCH_SCENE.format(index=index, count=len(self._scenes or [])))
 
     # What uses what, so that the tracker can refuse to delete something still in use and list its uses.
 

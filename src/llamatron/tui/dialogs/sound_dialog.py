@@ -32,8 +32,7 @@ the sound the dialog opened on with the note shown. The dialog then answers (val
 
 from rich.text import Text
 
-from llamatron.strings.errors import ERR_NOT_A_NOTE_NAME
-from llamatron.strings.marks import MSG_FLYOUT_CHOSEN, MSG_FLYOUT_CLOSED, MSG_SEARCH_SHOWN, MSG_SOUND_FOUND, MSG_SOUND_NOTE_ROW, MSG_SOUND_NOTE_TYPED
+from llamatron.strings import errors, marks
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import completed, places_matching
 from llamatron.tui.dialogs.dialog import Dialog
@@ -211,7 +210,7 @@ class SoundDialog(Dialog):
             return
         typed = note_typed(self.note_typed)
         if typed is None:
-            self.said = ERR_NOT_A_NOTE_NAME.format(text=self.note_typed)
+            self.said = errors.ERR_NOT_A_NOTE_NAME.format(text=self.note_typed)
         else:
             self.note = typed
         self.note_typed = None
@@ -287,7 +286,7 @@ class SoundDialog(Dialog):
             return self.top[row][0]
         name, sounds = self.groups[row - len(self.top)]
         chosen = next((label for label, held in sounds if held == self.current), None)
-        return MSG_FLYOUT_CLOSED.format(name=name) if chosen is None else MSG_FLYOUT_CHOSEN.format(name=name, chosen=chosen)
+        return marks.MSG_FLYOUT_CLOSED.format(name=name) if chosen is None else marks.MSG_FLYOUT_CHOSEN.format(name=name, chosen=chosen)
 
     def windowed(self, *, rows, at, shown=SHOWN):
         """Return the rows that show, as (place, row), so many of them, scrolled to keep the cursor's in view."""
@@ -307,16 +306,16 @@ class SoundDialog(Dialog):
         if self.typed is not None:
             found = self.found()
             at = min(self.found_place, max(len(found) - 1, 0))
-            rows = [MSG_SOUND_FOUND.format(sound=label, group=self.groups[group][0]) for group, _, label in found]
+            rows = [marks.MSG_SOUND_FOUND.format(sound=label, group=self.groups[group][0]) for group, _, label in found]
             shown = [Text(fit(text=cursor_mark(place == at) + row, width=width), style=Style.BOLD if place == at else NOTHING) for place, row in self.windowed(rows=rows, at=at)]
-            return [Text(fit(text=SPACE + MSG_SEARCH_SHOWN.format(text=self.typed), width=width), style=Style.DIM), *self.padded(shown[:SHOWN - 1], rows=SHOWN - 1)]
+            return [Text(fit(text=SPACE + marks.MSG_SEARCH_SHOWN.format(text=self.typed), width=width), style=Style.DIM), *self.padded(shown[:SHOWN - 1], rows=SHOWN - 1)]
         rows = [self.row_text(row) for row in range(len(self.top) + len(self.groups))]
         if self.note is None:
             return self.padded([self.row_line(row=row, selected=place == self.place, width=width) for place, row in self.windowed(rows=rows, at=self.place)])
         # The Note row stays in view under the list, after a blank line, however far the list is scrolled.
         listed = SHOWN - NOTE_ROW_LINES
         on_note = self.place == len(rows)
-        note = MSG_SOUND_NOTE_ROW.format(note=note_shown(self.note)) if self.note_typed is None else MSG_SOUND_NOTE_TYPED.format(text=self.note_typed)
+        note = marks.MSG_SOUND_NOTE_ROW.format(note=note_shown(self.note)) if self.note_typed is None else marks.MSG_SOUND_NOTE_TYPED.format(text=self.note_typed)
         lines = [self.row_line(row=row, selected=place == self.place, width=width) for place, row in self.windowed(rows=rows, at=min(self.place, len(rows) - 1), shown=listed)]
         return self.padded([*lines, *[Text(NOTHING)] * (listed - len(lines)), Text(NOTHING), self.row_line(row=note, selected=on_note, width=width)])
 

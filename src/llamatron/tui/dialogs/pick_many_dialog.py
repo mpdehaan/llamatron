@@ -20,7 +20,7 @@ cursor on or off, Enter finishes and answers with the choices picked, and Esc ca
 
 from rich.text import Text
 
-from llamatron.strings.marks import MSG_FIELD_TOGGLE_OFF, MSG_TOGGLE_ON
+from llamatron.strings import marks
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.drawing import SPACE, cursor_mark, fit
 from llamatron.tui.key_table import cursor_moved
@@ -60,6 +60,6 @@ class PickManyDialog(Dialog):
         start = max(min(self.place - self.SHOWN // 2, len(self.options) - self.SHOWN), 0)
         result = []
         for place in range(start, min(start + self.SHOWN, len(self.options))):
-            mark = MSG_TOGGLE_ON if self.options[place] in self.picked else MSG_FIELD_TOGGLE_OFF
+            mark = marks.MSG_TOGGLE_ON if self.options[place] in self.picked else marks.MSG_FIELD_TOGGLE_OFF
             result.append(Text(fit(text=cursor_mark(place == self.place) + mark + SPACE + self.names[place], width=width)))
         return result

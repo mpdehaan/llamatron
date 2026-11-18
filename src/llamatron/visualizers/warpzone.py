@@ -33,7 +33,7 @@ from llamatron.visualizers.cells import BRAILLE_COLUMNS, BRAILLE_ROWS, CellPaint
 from llamatron.visualizers.colour import note_colour, track_colour, vivid
 from llamatron.visualizers.heard import SILENCE
 from llamatron.visualizers.visualizer import Visualizer
-from llamatron.strings.visualizers import MSG_WARPZONE
+from llamatron.strings import visualizers
 
 LONGEST_FRAME_SECONDS = 0.2
 FULL_VELOCITY = 127
@@ -92,7 +92,7 @@ class WarpZone(Visualizer):
 
     __slots__ = ('_rows', '_columns', '_balls', '_rings', '_last', '_cells', '_disc')
 
-    NAME = MSG_WARPZONE
+    NAME = visualizers.MSG_WARPZONE
     OPTION = 'warpzone'
 
     def __init__(self):

@@ -24,8 +24,7 @@ from llamatron.tui.dialogs.dialog import DIALOG_VIEW_SELECTOR
 from llamatron.tui.dialogs.quit_dialog import QuitDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.main_page import MainPage
-from llamatron.strings.labels import MSG_NOTES_LABEL, MSG_QUIT_BUTTONS
-from llamatron.strings.legends import MSG_QUIT_WITHOUT_SAVING_WHAT
+from llamatron.strings import labels, legends
 from llamatron.tui import keybindings
 
 EXIT = 'exit'
@@ -49,7 +48,7 @@ class TestQuitNow(UITest):
 
     async def test_ctrl_c_quits_while_the_notes_are_being_edited(self):
         await self.press(keybindings.MainPage.FILE)
-        await self.select_field(MSG_NOTES_LABEL)
+        await self.select_field(labels.MSG_NOTES_LABEL)
         exited = await self.quitting_after(Key.ENTER)
         exited.assert_called_once()
 
@@ -76,9 +75,9 @@ class TestQuitting(UITest):
         self.assertEqual({len(line) for line in lines}, {len(lines[0])})
         for line in lines[1:-1]:
             self.assertEqual((line[0], line[-1]), (Box.HEAVY_BAR, Box.HEAVY_BAR))
-        for label in MSG_QUIT_BUTTONS:
+        for label in labels.MSG_QUIT_BUTTONS:
             self.assertTrue(any(label in line for line in lines), label)
         self.assertLessEqual(len(lines[0]), self.app.size.width)
         # The console has the room, so the keys under the buttons are on one line: the first key and the last share it.
-        first = MSG_QUIT_WITHOUT_SAVING_WHAT
+        first = legends.MSG_QUIT_WITHOUT_SAVING_WHAT
         self.assertTrue(any(key_name(keybindings.QuitDialog.CANCEL) in line and first in line and key_name(keybindings.QuitDialog.SELECT) in line for line in lines[-3:]))

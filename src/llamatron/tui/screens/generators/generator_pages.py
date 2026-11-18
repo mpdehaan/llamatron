@@ -18,11 +18,7 @@
 from typing import NamedTuple
 
 from llamatron.composition.file_format import GeneratorKind, Section, Shape
-from llamatron.strings.labels import (
-    GeneratorGroup, MSG_ARP_LABEL, MSG_AUTO_RATCHET_LABEL, MSG_DRAG_LABEL, MSG_DRIFT_LABEL, MSG_EUCLID_LABEL, MSG_FOLLOW_CHORDS_LABEL, MSG_GLIDE_LABEL, MSG_GUITARIFY_LABEL, MSG_HOCKET_LABEL, MSG_PHRASING_LABEL,
-    MSG_PROGRESSION_LABEL, MSG_RUSH_LABEL, MSG_SHAPE_NAMES, MSG_SHORTEN_LABEL_NAME, MSG_STRUM_LABEL, MSG_VOICE_LEADING_LABEL,
-)
-from llamatron.strings.messages import MSG_NEW_GENERATOR_KIND_TITLE
+from llamatron.strings import labels, messages
 from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.tui.screens.generators.arp_editor import ArpEditor
 from llamatron.tui.screens.generators.articulate_editor import ArticulateEditor
@@ -62,24 +58,24 @@ def _in_shown_order(listings):
 # Every kind of generator, in the order the Generators page offers them when adding one.
 GENERATOR_PAGES = {
     listing.section: listing for listing in _in_shown_order((
-        GeneratorListing(kind=GeneratorKind.ARP, section=Section.ARPS, label=MSG_ARP_LABEL, group=GeneratorGroup.VOICING, EDITOR=ArpEditor),
-        GeneratorListing(kind=GeneratorKind.AUTO_RATCHET, section=Section.AUTO_RATCHETS, label=MSG_AUTO_RATCHET_LABEL, group=GeneratorGroup.RHYTHM, EDITOR=AutoRatchetEditor),
-        GeneratorListing(kind=GeneratorKind.DRIFT, section=Section.DRIFTS, label=MSG_DRIFT_LABEL, group=GeneratorGroup.TRANSITIONS, EDITOR=DriftEditor),
-        GeneratorListing(kind=GeneratorKind.PROGRESSION, section=Section.PROGRESSIONS, label=MSG_PROGRESSION_LABEL, group=GeneratorGroup.HARMONY, EDITOR=ProgressionEditor),
-        GeneratorListing(kind=GeneratorKind.VOICE_LEADING, section=Section.VOICE_LEADINGS, label=MSG_VOICE_LEADING_LABEL, group=GeneratorGroup.VOICING, EDITOR=VoiceLeadingEditor),
-        GeneratorListing(kind=GeneratorKind.STRUM, section=Section.STRUMS, label=MSG_STRUM_LABEL, group=GeneratorGroup.RHYTHM, EDITOR=StrumEditor),
-        GeneratorListing(kind=GeneratorKind.EUCLID, section=Section.EUCLIDS, label=MSG_EUCLID_LABEL, group=GeneratorGroup.RHYTHM, EDITOR=EuclidEditor),
-        GeneratorListing(kind=GeneratorKind.DENSITY, section=Section.DENSITIES, label=MSG_SHAPE_NAMES[Shape.DENSITY], group=GeneratorGroup.TRANSITIONS, EDITOR=DensityEditor),
-        GeneratorListing(kind=GeneratorKind.SWELL, section=Section.SWELLS, label=MSG_SHAPE_NAMES[Shape.SWELL], group=GeneratorGroup.TRANSITIONS, EDITOR=SwellEditor),
-        GeneratorListing(kind=GeneratorKind.ARTICULATE, section=Section.ARTICULATES, label=MSG_SHAPE_NAMES[Shape.ARTICULATE], group=GeneratorGroup.TRANSITIONS, EDITOR=ArticulateEditor),
-        GeneratorListing(kind=GeneratorKind.GLIDE, section=Section.GLIDES, label=MSG_GLIDE_LABEL, group=GeneratorGroup.ARTICULATION, EDITOR=GlideEditor),
-        GeneratorListing(kind=GeneratorKind.SHORTEN, section=Section.SHORTENS, label=MSG_SHORTEN_LABEL_NAME, group=GeneratorGroup.ARTICULATION, EDITOR=ShortenEditor),
-        GeneratorListing(kind=GeneratorKind.RUSH, section=Section.RUSHES, label=MSG_RUSH_LABEL, group=GeneratorGroup.TIMING, EDITOR=RushEditor),
-        GeneratorListing(kind=GeneratorKind.DRAG, section=Section.DRAGS, label=MSG_DRAG_LABEL, group=GeneratorGroup.TIMING, EDITOR=DragEditor),
-        GeneratorListing(kind=GeneratorKind.HOCKET, section=Section.HOCKETS, label=MSG_HOCKET_LABEL, group=GeneratorGroup.ARRANGEMENT, EDITOR=HocketEditor),
-        GeneratorListing(kind=GeneratorKind.GUITARIFY, section=Section.GUITARIFIES, label=MSG_GUITARIFY_LABEL, group=GeneratorGroup.VOICING, EDITOR=GuitarifyEditor),
-        GeneratorListing(kind=GeneratorKind.FOLLOW_CHORDS, section=Section.FOLLOW_CHORDS, label=MSG_FOLLOW_CHORDS_LABEL, group=GeneratorGroup.HARMONY, EDITOR=FollowChordsEditor),
-        GeneratorListing(kind=GeneratorKind.PHRASING, section=Section.PHRASINGS, label=MSG_PHRASING_LABEL, group=GeneratorGroup.ARTICULATION, EDITOR=PhrasingEditor),
+        GeneratorListing(kind=GeneratorKind.ARP, section=Section.ARPS, label=labels.MSG_ARP_LABEL, group=labels.GeneratorGroup.VOICING, EDITOR=ArpEditor),
+        GeneratorListing(kind=GeneratorKind.AUTO_RATCHET, section=Section.AUTO_RATCHETS, label=labels.MSG_AUTO_RATCHET_LABEL, group=labels.GeneratorGroup.RHYTHM, EDITOR=AutoRatchetEditor),
+        GeneratorListing(kind=GeneratorKind.DRIFT, section=Section.DRIFTS, label=labels.MSG_DRIFT_LABEL, group=labels.GeneratorGroup.TRANSITIONS, EDITOR=DriftEditor),
+        GeneratorListing(kind=GeneratorKind.PROGRESSION, section=Section.PROGRESSIONS, label=labels.MSG_PROGRESSION_LABEL, group=labels.GeneratorGroup.HARMONY, EDITOR=ProgressionEditor),
+        GeneratorListing(kind=GeneratorKind.VOICE_LEADING, section=Section.VOICE_LEADINGS, label=labels.MSG_VOICE_LEADING_LABEL, group=labels.GeneratorGroup.VOICING, EDITOR=VoiceLeadingEditor),
+        GeneratorListing(kind=GeneratorKind.STRUM, section=Section.STRUMS, label=labels.MSG_STRUM_LABEL, group=labels.GeneratorGroup.RHYTHM, EDITOR=StrumEditor),
+        GeneratorListing(kind=GeneratorKind.EUCLID, section=Section.EUCLIDS, label=labels.MSG_EUCLID_LABEL, group=labels.GeneratorGroup.RHYTHM, EDITOR=EuclidEditor),
+        GeneratorListing(kind=GeneratorKind.DENSITY, section=Section.DENSITIES, label=labels.MSG_SHAPE_NAMES[Shape.DENSITY], group=labels.GeneratorGroup.TRANSITIONS, EDITOR=DensityEditor),
+        GeneratorListing(kind=GeneratorKind.SWELL, section=Section.SWELLS, label=labels.MSG_SHAPE_NAMES[Shape.SWELL], group=labels.GeneratorGroup.TRANSITIONS, EDITOR=SwellEditor),
+        GeneratorListing(kind=GeneratorKind.ARTICULATE, section=Section.ARTICULATES, label=labels.MSG_SHAPE_NAMES[Shape.ARTICULATE], group=labels.GeneratorGroup.TRANSITIONS, EDITOR=ArticulateEditor),
+        GeneratorListing(kind=GeneratorKind.GLIDE, section=Section.GLIDES, label=labels.MSG_GLIDE_LABEL, group=labels.GeneratorGroup.ARTICULATION, EDITOR=GlideEditor),
+        GeneratorListing(kind=GeneratorKind.SHORTEN, section=Section.SHORTENS, label=labels.MSG_SHORTEN_LABEL_NAME, group=labels.GeneratorGroup.ARTICULATION, EDITOR=ShortenEditor),
+        GeneratorListing(kind=GeneratorKind.RUSH, section=Section.RUSHES, label=labels.MSG_RUSH_LABEL, group=labels.GeneratorGroup.TIMING, EDITOR=RushEditor),
+        GeneratorListing(kind=GeneratorKind.DRAG, section=Section.DRAGS, label=labels.MSG_DRAG_LABEL, group=labels.GeneratorGroup.TIMING, EDITOR=DragEditor),
+        GeneratorListing(kind=GeneratorKind.HOCKET, section=Section.HOCKETS, label=labels.MSG_HOCKET_LABEL, group=labels.GeneratorGroup.ARRANGEMENT, EDITOR=HocketEditor),
+        GeneratorListing(kind=GeneratorKind.GUITARIFY, section=Section.GUITARIFIES, label=labels.MSG_GUITARIFY_LABEL, group=labels.GeneratorGroup.VOICING, EDITOR=GuitarifyEditor),
+        GeneratorListing(kind=GeneratorKind.FOLLOW_CHORDS, section=Section.FOLLOW_CHORDS, label=labels.MSG_FOLLOW_CHORDS_LABEL, group=labels.GeneratorGroup.HARMONY, EDITOR=FollowChordsEditor),
+        GeneratorListing(kind=GeneratorKind.PHRASING, section=Section.PHRASINGS, label=labels.MSG_PHRASING_LABEL, group=labels.GeneratorGroup.ARTICULATION, EDITOR=PhrasingEditor),
     ))
 }
 
@@ -89,7 +85,7 @@ def generator_type_dialog(*, opened):
     groups = {}
     for listing in GENERATOR_PAGES.values():
         groups.setdefault(listing.group, []).append(listing.label)
-    return GroupedChoiceDialog(title=MSG_NEW_GENERATOR_KIND_TITLE, groups=list(groups.items()), opened=opened)
+    return GroupedChoiceDialog(title=messages.MSG_NEW_GENERATOR_KIND_TITLE, groups=list(groups.items()), opened=opened)
 
 
 def generator_page_of_kind(kind):

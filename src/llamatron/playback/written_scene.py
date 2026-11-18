@@ -16,7 +16,7 @@
 
 """One scene of the song as it plays, with a repeating scene written out once for each repeat."""
 
-from llamatron.strings.names import MSG_SCENE_DESCRIPTION, MSG_UNNAMED_SCENE
+from llamatron.strings import names
 
 # Scenes are numbered from 1 as they play, and so are a scene's repeats in their names.
 FIRST_NUMBER = 1
@@ -103,9 +103,9 @@ class WrittenScene:
 
     def describe(self):
         """Return how error messages name it, like "scene 3 (verse)"."""
-        return MSG_SCENE_DESCRIPTION.format(number=self._number, name=self._name)
+        return names.MSG_SCENE_DESCRIPTION.format(number=self._number, name=self._name)
 
 
 def _scene_name(*, name, number):
     """Return a scene's name as text, or one made from its number if it has none."""
-    return str(MSG_UNNAMED_SCENE.format(number=number) if name is None else name)
+    return str(names.MSG_UNNAMED_SCENE.format(number=number) if name is None else name)

@@ -39,7 +39,7 @@ from llamatron.exporters.midi_arrangement import MidiGeneralMidi, MidiSong, Midi
 from llamatron.exporters.wave_fluidsynth import WaveFluidSynth
 from llamatron.exporters.exports import EXPORT_KINDS, EXPORTERS, EXPORT_KINDS_IN_HELP, EXPORT_LABELS
 from llamatron.grid.clip_grid import ClipGrid
-from llamatron.strings.errors import ERR_BAD_DIRECTORY, ERR_FILES_EXIST, ERR_NEEDS_EXPORT, ERR_NEEDS_FILES, ERR_NOT_A_GRID
+from llamatron.strings import errors
 from llamatron.support.files import FILE_ENCODING, WRITE_TEXT
 
 EXPORT = 'my_set_tune'
@@ -153,20 +153,20 @@ class TestExporter(unittest.TestCase):
         exporter = Exporter(directory=self.directory, grid=self.grid)
         with self.assertRaises(NotImplementedError) as raised:
             exporter.export()
-        self.assertEqual(str(raised.exception), ERR_NEEDS_EXPORT.format(kind=Exporter.__name__))
+        self.assertEqual(str(raised.exception), errors.ERR_NEEDS_EXPORT.format(kind=Exporter.__name__))
         for question in (Exporter.shown_path, Exporter.earlier_files, Exporter.remove_earlier_files):
             with self.subTest(question=question.__name__):
                 with self.assertRaises(NotImplementedError) as raised:
                     question(directory=self.directory, name=EXPORT)
-                self.assertEqual(str(raised.exception), ERR_NEEDS_FILES.format(kind=Exporter.__name__))
+                self.assertEqual(str(raised.exception), errors.ERR_NEEDS_FILES.format(kind=Exporter.__name__))
 
     def test_the_directory_and_the_grid_are_checked_when_given_and_when_set(self):
         with self.assertRaises(ValueError) as raised:
             Exporter(directory=None, grid=self.grid)
-        self.assertEqual(str(raised.exception), ERR_BAD_DIRECTORY.format(value=None))
+        self.assertEqual(str(raised.exception), errors.ERR_BAD_DIRECTORY.format(value=None))
         with self.assertRaises(ValueError) as raised:
             Exporter(directory=self.directory, grid=NOT_A_GRID)
-        self.assertEqual(str(raised.exception), ERR_NOT_A_GRID.format(value=NOT_A_GRID))
+        self.assertEqual(str(raised.exception), errors.ERR_NOT_A_GRID.format(value=NOT_A_GRID))
         exporter = Exporter(directory=self.directory, grid=self.grid)
         other = ClipGrid()
         exporter.set_directory(SUBFOLDER)
@@ -207,7 +207,7 @@ class TestExporter(unittest.TestCase):
         exporter = Exporter(directory=self.directory, grid=self.grid)
         can, printed = printed_by(lambda: exporter.can_write([AN_EXISTING_FILE, EXPORT]))
         self.assertFalse(can)
-        self.assertEqual(printed, ERR_FILES_EXIST.format(directory=self.directory, files=AN_EXISTING_FILE))
+        self.assertEqual(printed, errors.ERR_FILES_EXIST.format(directory=self.directory, files=AN_EXISTING_FILE))
 
 
 class TestANewKindOfExport(unittest.TestCase):
@@ -234,7 +234,7 @@ class TestANewKindOfExport(unittest.TestCase):
         self.assertEqual(OneNote.earlier_files(directory=self.directory, name=EXPORT), [path])
         # A second export finds the file in the way and writes nothing.
         _, printed = printed_by(exporter.export)
-        self.assertEqual(printed, ERR_FILES_EXIST.format(directory=self.directory, files=os.path.basename(path)))
+        self.assertEqual(printed, errors.ERR_FILES_EXIST.format(directory=self.directory, files=os.path.basename(path)))
         OneNote.remove_earlier_files(directory=self.directory, name=EXPORT)
         self.assertEqual(self.others(), [AN_EXISTING_FILE])
 

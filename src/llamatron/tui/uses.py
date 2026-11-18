@@ -21,9 +21,7 @@ the set's patterns, chains, generators and scales.
 """
 
 from llamatron.composition.file_format import Section
-from llamatron.strings.errors import ERR_AND_MORE, ERR_LOOP_SCENES_INTRO
-from llamatron.strings.messages import MSG_USE_CHAIN, MSG_USE_SCENE, MSG_USE_SONG, MSG_USE_SONG_SCENE, MSG_USE_SONG_SCENE_TRACK, MSG_USE_SONG_TRACK
-from llamatron.strings.names import MSG_DOCUMENT_UNNAMED_SCENE
+from llamatron.strings import errors, messages, names
 
 # How many scenes the loop errors dialog lists before saying how many more there are.
 LOOP_ERRORS_SHOWN = 10
@@ -32,32 +30,32 @@ LOOP_ERRORS_SHOWN = 10
 def scene_label(*, number, scene):
     """Return how a scene is named in a use: its number and its name, if it has one."""
     name = scene.get_name()
-    return MSG_USE_SCENE.format(number=number, name=MSG_DOCUMENT_UNNAMED_SCENE if name is None else name)
+    return messages.MSG_USE_SCENE.format(number=number, name=names.MSG_DOCUMENT_UNNAMED_SCENE if name is None else name)
 
 
 def _clip_slot_uses(clip_slots):
     """Return a use for each (song name, number, scene, track) of a clip slot anywhere in the set."""
-    return [MSG_USE_SONG_SCENE_TRACK.format(song=song, scene=scene_label(number=number, scene=scene), track=track) for song, number, scene, track in clip_slots]
+    return [messages.MSG_USE_SONG_SCENE_TRACK.format(song=song, scene=scene_label(number=number, scene=scene), track=track) for song, number, scene, track in clip_slots]
 
 
 def _song_uses(songs):
     """Return a use for each song that chose something as its own."""
-    return [MSG_USE_SONG.format(name=song) for song in songs]
+    return [messages.MSG_USE_SONG.format(name=song) for song in songs]
 
 
 def _scene_uses(scenes):
     """Return a use for each (song name, number, scene) of a scene that chose something."""
-    return [MSG_USE_SONG_SCENE.format(song=song, scene=scene_label(number=number, scene=scene)) for song, number, scene in scenes]
+    return [messages.MSG_USE_SONG_SCENE.format(song=song, scene=scene_label(number=number, scene=scene)) for song, number, scene in scenes]
 
 
 def _track_uses(tracks):
     """Return a use for each (song name, track name) of a track that chose something."""
-    return [MSG_USE_SONG_TRACK.format(song=song, track=track) for song, track in tracks]
+    return [messages.MSG_USE_SONG_TRACK.format(song=song, track=track) for song, track in tracks]
 
 
 def _chain_uses(chains):
     """Return a use for each chain that runs something."""
-    return [MSG_USE_CHAIN.format(name=chain) for chain in chains]
+    return [messages.MSG_USE_CHAIN.format(name=chain) for chain in chains]
 
 
 def uses_of(*, setlist, section, name):
@@ -92,7 +90,7 @@ def loop_error_lines(song):
     scenes = looping_scenes(song)
     if not scenes:
         return []
-    lines = [ERR_LOOP_SCENES_INTRO, *scenes[:LOOP_ERRORS_SHOWN]]
+    lines = [errors.ERR_LOOP_SCENES_INTRO, *scenes[:LOOP_ERRORS_SHOWN]]
     if len(scenes) > LOOP_ERRORS_SHOWN:
-        lines.append(ERR_AND_MORE.format(count=len(scenes) - LOOP_ERRORS_SHOWN))
+        lines.append(errors.ERR_AND_MORE.format(count=len(scenes) - LOOP_ERRORS_SHOWN))
     return lines

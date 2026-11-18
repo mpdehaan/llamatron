@@ -44,13 +44,9 @@ from llamatron.composition.setlist import Setlist, file_stem
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.exporters.exports import EXPORT_KINDS_IN_HELP, ExportKind, export_name, make_exporter, shown_export_path, remove_earlier_export
-from llamatron.strings.errors import ERR_BATCH_VIDEO_NEEDS_VISUALIZER, ERR_LAUNCH_NEEDS_SET, ERR_NEEDS_FORCE, ERR_NOT_WITH_TO, ERR_ONLY_WITH_TO, ERR_PRINTED, ERR_TO_NEEDS_SET, ERR_ONLY_WITH_WIZARD, ERR_WIZARD_ONLY_ALONE
+from llamatron.strings import cli, errors
 from llamatron.visualizers.modes import mode_options
 from llamatron.tui.launch import Launch, start_screen_wanted
-from llamatron.strings.cli import (
-    MSG_CLI_CHANGED, MSG_CLI_MADE_SONG, MSG_CLI_WOULD_CHANGE, MSG_CLI_WROTE, MSG_HELP_BATCH, MSG_HELP_WIZARD, MSG_HELP_AUTOPLAY, MSG_HELP_AUTOPLAY_QUIT, MSG_HELP_DESCRIPTION, MSG_HELP_FORCE,
-    MSG_HELP_BATCH_VIDEO, MSG_HELP_NO_ALTERNATE, MSG_HELP_FOR_RECORDING, MSG_HELP_MAX_SECONDS, MSG_HELP_VISUALIZER, MSG_HELP_OUT, MSG_HELP_REPLACE, MSG_HELP_SEED, MSG_HELP_SET, MSG_HELP_SONG, MSG_HELP_TEMPLATE, MSG_HELP_TO,
-)
 
 PROGRAM = 'llamatron'
 # What --to writes when it doesn't say.
@@ -86,45 +82,45 @@ OPTION_SEPARATOR = ', '
 
 
 def _arguments(argv):
-    parser = argparse.ArgumentParser(prog=PROGRAM, description=MSG_HELP_DESCRIPTION)
-    parser.add_argument(SET_ARGUMENT, nargs=ONE_OR_NONE, help=MSG_HELP_SET)
-    parser.add_argument(OPTION_TO, nargs=ONE_OR_NONE, const=DEFAULT_KIND, choices=EXPORT_KINDS_IN_HELP, help=MSG_HELP_TO)
-    parser.add_argument(OPTION_OUT, help=MSG_HELP_OUT)
-    parser.add_argument(OPTION_TEMPLATE, help=MSG_HELP_TEMPLATE)
-    parser.add_argument(OPTION_REPLACE, action=STORE_TRUE, help=MSG_HELP_REPLACE)
-    parser.add_argument(OPTION_SEED, type=int, help=MSG_HELP_SEED)
-    parser.add_argument(OPTION_SONG, help=MSG_HELP_SONG)
-    parser.add_argument(OPTION_FORCE, action=STORE_TRUE, help=MSG_HELP_FORCE)
-    parser.add_argument(OPTION_AUTOPLAY, action=STORE_TRUE, help=MSG_HELP_AUTOPLAY)
-    parser.add_argument(OPTION_AUTOPLAY_QUIT, action=STORE_TRUE, help=MSG_HELP_AUTOPLAY_QUIT)
-    parser.add_argument(OPTION_FOR_RECORDING, action=STORE_TRUE, help=MSG_HELP_FOR_RECORDING)
-    parser.add_argument(OPTION_MAX_SECONDS, type=float, help=MSG_HELP_MAX_SECONDS)
-    parser.add_argument(OPTION_VISUALIZER, choices=mode_options(), help=MSG_HELP_VISUALIZER)
-    parser.add_argument(OPTION_BATCH_VIDEO, action=STORE_TRUE, help=MSG_HELP_BATCH_VIDEO)
-    parser.add_argument(OPTION_NO_ALTERNATE, action=STORE_TRUE, help=MSG_HELP_NO_ALTERNATE)
-    parser.add_argument(OPTION_WIZARD, metavar=WIZARD_METAVAR, help=MSG_HELP_WIZARD)
-    parser.add_argument(OPTION_BATCH, action=STORE_TRUE, help=MSG_HELP_BATCH)
+    parser = argparse.ArgumentParser(prog=PROGRAM, description=cli.MSG_HELP_DESCRIPTION)
+    parser.add_argument(SET_ARGUMENT, nargs=ONE_OR_NONE, help=cli.MSG_HELP_SET)
+    parser.add_argument(OPTION_TO, nargs=ONE_OR_NONE, const=DEFAULT_KIND, choices=EXPORT_KINDS_IN_HELP, help=cli.MSG_HELP_TO)
+    parser.add_argument(OPTION_OUT, help=cli.MSG_HELP_OUT)
+    parser.add_argument(OPTION_TEMPLATE, help=cli.MSG_HELP_TEMPLATE)
+    parser.add_argument(OPTION_REPLACE, action=STORE_TRUE, help=cli.MSG_HELP_REPLACE)
+    parser.add_argument(OPTION_SEED, type=int, help=cli.MSG_HELP_SEED)
+    parser.add_argument(OPTION_SONG, help=cli.MSG_HELP_SONG)
+    parser.add_argument(OPTION_FORCE, action=STORE_TRUE, help=cli.MSG_HELP_FORCE)
+    parser.add_argument(OPTION_AUTOPLAY, action=STORE_TRUE, help=cli.MSG_HELP_AUTOPLAY)
+    parser.add_argument(OPTION_AUTOPLAY_QUIT, action=STORE_TRUE, help=cli.MSG_HELP_AUTOPLAY_QUIT)
+    parser.add_argument(OPTION_FOR_RECORDING, action=STORE_TRUE, help=cli.MSG_HELP_FOR_RECORDING)
+    parser.add_argument(OPTION_MAX_SECONDS, type=float, help=cli.MSG_HELP_MAX_SECONDS)
+    parser.add_argument(OPTION_VISUALIZER, choices=mode_options(), help=cli.MSG_HELP_VISUALIZER)
+    parser.add_argument(OPTION_BATCH_VIDEO, action=STORE_TRUE, help=cli.MSG_HELP_BATCH_VIDEO)
+    parser.add_argument(OPTION_NO_ALTERNATE, action=STORE_TRUE, help=cli.MSG_HELP_NO_ALTERNATE)
+    parser.add_argument(OPTION_WIZARD, metavar=WIZARD_METAVAR, help=cli.MSG_HELP_WIZARD)
+    parser.add_argument(OPTION_BATCH, action=STORE_TRUE, help=cli.MSG_HELP_BATCH)
     arguments = parser.parse_args(argv)
     if arguments.wizard is not None:
         if arguments.set is not None or arguments.to is not None:
-            parser.error(ERR_WIZARD_ONLY_ALONE)
+            parser.error(errors.ERR_WIZARD_ONLY_ALONE)
         return arguments
     if arguments.batch:
-        parser.error(ERR_ONLY_WITH_WIZARD.format(options=OPTION_BATCH))
+        parser.error(errors.ERR_ONLY_WITH_WIZARD.format(options=OPTION_BATCH))
     if arguments.to is None:
         given = _render_options_given(arguments)
         if given:
-            parser.error(ERR_ONLY_WITH_TO.format(options=OPTION_SEPARATOR.join(given)))
+            parser.error(errors.ERR_ONLY_WITH_TO.format(options=OPTION_SEPARATOR.join(given)))
         if launch_of(arguments).needs_set() and arguments.set is None:
-            parser.error(ERR_LAUNCH_NEEDS_SET)
+            parser.error(errors.ERR_LAUNCH_NEEDS_SET)
         if arguments.batch_video and arguments.visualizer is None:
-            parser.error(ERR_BATCH_VIDEO_NEEDS_VISUALIZER)
+            parser.error(errors.ERR_BATCH_VIDEO_NEEDS_VISUALIZER)
     elif arguments.set is None:
-        parser.error(ERR_TO_NEEDS_SET)
+        parser.error(errors.ERR_TO_NEEDS_SET)
     else:
         given = _launch_options_given(arguments)
         if given:
-            parser.error(ERR_NOT_WITH_TO.format(options=OPTION_SEPARATOR.join(given)))
+            parser.error(errors.ERR_NOT_WITH_TO.format(options=OPTION_SEPARATOR.join(given)))
     return arguments
 
 
@@ -161,7 +157,7 @@ def make_wizard_song(arguments):
     from llamatron.support.version import VERSION
     path = arguments.out or os.path.join(os.path.dirname(arguments.wizard), MADE_SET_NAME.format(file_stem(arguments.wizard)))
     made_of_file(path=arguments.wizard, version=VERSION, seed=arguments.seed).write_file(path)
-    print(MSG_CLI_MADE_SONG.format(path=path))
+    print(cli.MSG_CLI_MADE_SONG.format(path=path))
     return path
 
 
@@ -183,11 +179,11 @@ def read_set(*, path, force):
         if error.get_correction() is None:
             raise
     setlist, corrections = Setlist.read_file_corrected(path)
-    line = MSG_CLI_CHANGED if force else MSG_CLI_WOULD_CHANGE
+    line = cli.MSG_CLI_CHANGED if force else cli.MSG_CLI_WOULD_CHANGE
     for correction in corrections:
         print(line.format(change=correction.described()), file=sys.stderr)
     if not force:
-        raise SongFileError(ERR_NEEDS_FORCE.format(path=path))
+        raise SongFileError(errors.ERR_NEEDS_FORCE.format(path=path))
     return setlist
 
 
@@ -198,7 +194,7 @@ def export_song(*, setlist, name, directory, arguments):
     if arguments.replace:
         remove_earlier_export(kind=arguments.to, directory=directory, name=files)
     make_exporter(kind=arguments.to, directory=directory, name=files, grid=grid, template=arguments.template).export()
-    print(MSG_CLI_WROTE.format(target=arguments.to, song=name, path=shown_export_path(kind=arguments.to, directory=directory, name=files)))
+    print(cli.MSG_CLI_WROTE.format(target=arguments.to, song=name, path=shown_export_path(kind=arguments.to, directory=directory, name=files)))
 
 
 def main(*, argv=None):
@@ -208,7 +204,7 @@ def main(*, argv=None):
         try:
             made = make_wizard_song(arguments)
         except (SongFileError, ValueError, KeyError, IndexError, OSError) as error:
-            print(ERR_PRINTED.format(problem=error), file=sys.stderr)
+            print(errors.ERR_PRINTED.format(problem=error), file=sys.stderr)
             return FAILED
         if arguments.batch:
             return SUCCEEDED
@@ -225,7 +221,7 @@ def main(*, argv=None):
         for name in names:
             export_song(setlist=setlist, name=name, directory=directory, arguments=arguments)
     except (SongFileError, ValueError, OSError) as error:
-        print(ERR_PRINTED.format(problem=error), file=sys.stderr)
+        print(errors.ERR_PRINTED.format(problem=error), file=sys.stderr)
         return FAILED
     return SUCCEEDED
 

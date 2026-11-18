@@ -31,7 +31,7 @@ from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.sections import GENERATOR_KINDS
 from llamatron.importers.writing import add_imported
 from llamatron.composition.naming import default_scale_name, is_default_scale_name, words
-from llamatron.strings.marks import MSG_SCALE_NOTES_TEXT
+from llamatron.strings import marks
 
 
 
@@ -156,7 +156,7 @@ class SetEdits:
     def scale_notes_text(self, name):
         """Return what a named scale is, like F minor."""
         scale = self._scale(name)
-        return MSG_SCALE_NOTES_TEXT.format(root=scale.get_root(), kind=words(scale_type_name(scale.get_scale_type())))
+        return marks.MSG_SCALE_NOTES_TEXT.format(root=scale.get_root(), kind=words(scale_type_name(scale.get_scale_type())))
 
     def scale_name_says_what_it_is(self, name):
         """Return whether a scale is still named after its root and kind, like C Major, so that showing both would say it twice."""

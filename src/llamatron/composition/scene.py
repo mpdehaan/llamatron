@@ -28,17 +28,13 @@ from llamatron.composition.chain import check_chain_names
 from llamatron.composition.shapes import shape_settings, shape_values
 from llamatron.composition.checks import check_keys, listed, number, reading
 from llamatron.composition.corrections import LEFT_OUT
-from llamatron.composition.defaults import DEFAULT_LAUNCH_TOGETHER, DEFAULT_REPEAT
+from llamatron.composition import defaults, limits
+from llamatron.strings import errors
 from llamatron.composition.file_format import REGISTER_NAMES, SECTION_KINDS, SceneSetting, Section
 from llamatron.composition.groove import check_groove_choice
-from llamatron.composition.limits import MAX_SCENE_REPEAT, MIN_REPEAT
 from llamatron.composition.llama_data import LlamaData, data_as_kept, data_built_anew, own_copy, written_settings
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.setting import Checked, Choice, Flag, WholeNumber, check_settings, described
-from llamatron.strings.errors import (
-    ERR_BAD_REPEAT, ERR_BAD_RESET, ERR_BAD_SECTION, ERR_LAUNCH_TOGETHER_NOT_TRUE_OR_FALSE, ERR_NO_CLIP_SLOT, ERR_NO_SUCH_REGISTER, ERR_NO_SUCH_TRACK, ERR_RAMP_NEEDS_BOTH, ERR_SCENE_EXPECTED_SETTINGS,
-    ERR_SCENE_NAME_NOT_TEXT, ERR_SCENE_NO_SUCH_SCALE,
-)
 from llamatron.support.revised import notes_change
 
 # How far through a tempo ramp a scene that plays only once is: at its start.
@@ -47,13 +43,13 @@ NO_RAMP = 0
 
 def _check_scene_name(name):
     if not isinstance(name, str):
-        raise InvalidValue(ERR_SCENE_NAME_NOT_TEXT.format(value=name))
+        raise InvalidValue(errors.ERR_SCENE_NAME_NOT_TEXT.format(value=name))
 
 
 def _check_scale_name(*, value, song):
     """Refuse a scale the song doesn't have. None is no scale of the scene's own."""
     if value is not None and not song.has_scale(value):
-        raise InvalidValue(ERR_SCENE_NO_SUCH_SCALE.format(scale=value))
+        raise InvalidValue(errors.ERR_SCENE_NO_SUCH_SCALE.format(scale=value))
 
 
 def is_register_list(value):
@@ -63,21 +59,21 @@ def is_register_list(value):
 
 def _check_reset(value):
     if not is_register_list(value):
-        raise InvalidValue(ERR_BAD_RESET.format(names=listed(REGISTER_NAMES), value=value))
+        raise InvalidValue(errors.ERR_BAD_RESET.format(names=listed(REGISTER_NAMES), value=value))
 
 
 # A scene's settings, each described once, in the order they're written to a file, before its tracks.
 SETTINGS = described(
     Checked(name=SceneSetting.NAME, check=_check_scene_name),
-    Choice(name=SceneSetting.SECTION, choices=SECTION_KINDS, default=LEFT_OUT, error=ERR_BAD_SECTION),
-    WholeNumber(name=SceneSetting.REPEAT, lowest=MIN_REPEAT, highest=MAX_SCENE_REPEAT, error=ERR_BAD_REPEAT),
+    Choice(name=SceneSetting.SECTION, choices=SECTION_KINDS, default=LEFT_OUT, error=errors.ERR_BAD_SECTION),
+    WholeNumber(name=SceneSetting.REPEAT, lowest=limits.MIN_REPEAT, highest=limits.MAX_SCENE_REPEAT, error=errors.ERR_BAD_REPEAT),
     Checked(name=SceneSetting.SCALE, check=_check_scale_name, needs_song=True),
     Checked(name=SceneSetting.TEMPO, check=number),
     Checked(name=SceneSetting.TEMPO_START, check=number),
     Checked(name=SceneSetting.TEMPO_END, check=number),
     Checked(name=SceneSetting.RESET, check=_check_reset),
     Checked(name=SceneSetting.GROOVE, check=check_groove_choice, needs_song=True),
-    Flag(name=SceneSetting.LAUNCH_TOGETHER, error=ERR_LAUNCH_TOGETHER_NOT_TRUE_OR_FALSE),
+    Flag(name=SceneSetting.LAUNCH_TOGETHER, error=errors.ERR_LAUNCH_TOGETHER_NOT_TRUE_OR_FALSE),
     Checked(name=SceneSetting.CHAINS, check=check_chain_names, needs_song=True),
     *shape_settings(),
 )
@@ -108,14 +104,14 @@ class Scene(LlamaData):
     def from_data(cls, *, data, where, song=None):
         with reading(where):
             if not isinstance(data, dict):
-                raise InvalidValue(ERR_SCENE_EXPECTED_SETTINGS)
+                raise InvalidValue(errors.ERR_SCENE_EXPECTED_SETTINGS)
             check_keys(data=data, allowed={*SETTINGS, SceneSetting.TRACKS})
             check_settings(settings=SETTINGS, data=data, song=song, leaving_out=READ_ANOTHER_WAY)
             _check_tempo(data)
             clip_slots = {}
             for track, clip_slot in (data.get(SceneSetting.TRACKS) or {}).items():
                 if not song.has_track(track):
-                    raise InvalidValue(ERR_NO_SUCH_TRACK.format(track=track))
+                    raise InvalidValue(errors.ERR_NO_SUCH_TRACK.format(track=track))
                 clip_slots[track] = ClipSlot.from_data(data=clip_slot, where=where, song=song, track=track)
             settings = {name: data[name] for name in SETTINGS if name in data}
             return cls(clip_slots=clip_slots if SceneSetting.TRACKS in data else None, **settings)
@@ -139,7 +135,7 @@ class Scene(LlamaData):
 
     def get_repeat(self):
         repeat = self._settings[SceneSetting.REPEAT]
-        return DEFAULT_REPEAT if repeat is None else repeat
+        return defaults.DEFAULT_REPEAT if repeat is None else repeat
 
     def get_section(self):
         """Return the kind of section the scene says it is, or None for a scene that says none."""
@@ -155,13 +151,13 @@ class Scene(LlamaData):
     def launches_together(self):
         """Return whether a start reaching any clip of the scene launches the whole scene in real-time playback, which no export reads."""
         launch = self._settings[SceneSetting.LAUNCH_TOGETHER]
-        return DEFAULT_LAUNCH_TOGETHER if launch is None else launch
+        return defaults.DEFAULT_LAUNCH_TOGETHER if launch is None else launch
 
     @notes_change
     def set_launch_together(self, value):
         """Make a start reaching any of its clips launch the whole scene, or each clip wait for its own; the default is left out of the file."""
         SETTINGS[SceneSetting.LAUNCH_TOGETHER].check(value)
-        self._settings[SceneSetting.LAUNCH_TOGETHER] = None if value == DEFAULT_LAUNCH_TOGETHER else value
+        self._settings[SceneSetting.LAUNCH_TOGETHER] = None if value == defaults.DEFAULT_LAUNCH_TOGETHER else value
 
     def get_scale_name(self):
         """Return the name of the scale it sets, or None to use the song's."""
@@ -254,7 +250,7 @@ class Scene(LlamaData):
         """Set how many times it plays, where None or 1 is once."""
         if repeat is not None:
             SETTINGS[SceneSetting.REPEAT].check(repeat)
-        self._settings[SceneSetting.REPEAT] = None if repeat == DEFAULT_REPEAT else repeat
+        self._settings[SceneSetting.REPEAT] = None if repeat == defaults.DEFAULT_REPEAT else repeat
 
     @notes_change
     def set_scale_name(self, *, name, song):
@@ -299,7 +295,7 @@ class Scene(LlamaData):
     def set_reset(self, *, register, on):
         """Make it set a register back to its default as it starts, or stop it, keeping the registers in order."""
         if register not in REGISTER_NAMES:
-            raise InvalidValue(ERR_NO_SUCH_REGISTER.format(name=register, names=listed(REGISTER_NAMES)))
+            raise InvalidValue(errors.ERR_NO_SUCH_REGISTER.format(name=register, names=listed(REGISTER_NAMES)))
         chosen = set(self.get_reset_names())
         chosen = chosen | {register} if on else chosen - {register}
         reset = [name for name in REGISTER_NAMES if name in chosen]
@@ -309,7 +305,7 @@ class Scene(LlamaData):
     def set_clip_slot(self, *, track, clip_slot, song):
         """Give a track a clip slot, replacing any it had."""
         if not song.has_track(track):
-            raise InvalidValue(ERR_NO_SUCH_TRACK.format(track=track))
+            raise InvalidValue(errors.ERR_NO_SUCH_TRACK.format(track=track))
         if self._clip_slots is None:
             self._clip_slots = {}
         self._clip_slots[track] = clip_slot
@@ -317,7 +313,7 @@ class Scene(LlamaData):
     @notes_change
     def remove_clip_slot(self, track):
         if not self.has_clip_slot(track):
-            raise InvalidValue(ERR_NO_CLIP_SLOT.format(track=track))
+            raise InvalidValue(errors.ERR_NO_CLIP_SLOT.format(track=track))
         del self._clip_slots[track]
 
     # Keeping its names right when the song renames or removes something.
@@ -389,7 +385,7 @@ def _check_tempo(data):
         SETTINGS[SceneSetting.TEMPO].check_held(data)
     elif SceneSetting.TEMPO_START in data or SceneSetting.TEMPO_END in data:
         if SceneSetting.TEMPO_START not in data or SceneSetting.TEMPO_END not in data:
-            raise InvalidValue(ERR_RAMP_NEEDS_BOTH)
+            raise InvalidValue(errors.ERR_RAMP_NEEDS_BOTH)
         SETTINGS[SceneSetting.TEMPO_START].check_held(data)
         SETTINGS[SceneSetting.TEMPO_END].check_held(data)
 

@@ -18,14 +18,12 @@ from enum import Enum, auto
 
 from llamatron.generators.base import ClipGenerator
 from llamatron.grid.positions import fit_to_length
-from llamatron.music.midi import HALF_STEPS_PER_OCTAVE
+from llamatron.music import midi
 from llamatron.support.length import ZERO, Length
 from llamatron.support.random_source import random_source
 from llamatron.music.note import _check_length
 from llamatron.music.sound import CHORD, HELD, HELD_SOUND, KIND, LENGTH, MIDI, NOTE, NOTES, PARTS, PHRASE, Sound
-from llamatron.strings.errors import (
-    ERR_ARP_BAD_OCTAVE_RANGE, ERR_ARP_BAD_OFFSETS, ERR_ARP_BAD_SEED, ERR_ARP_NOT_AN_ORDER, ERR_BAD_OFFSET, ERR_NOT_A_JUMP,
-)
+from llamatron.strings import errors
 
 # How many steps an arpeggiator's offsets can have, as on the Elektron Monomachine.
 MIN_OFFSETS = 1
@@ -64,32 +62,32 @@ class OctaveJump(Enum):
 
 def _check_order(order):
     if not isinstance(order, ChordOrder):
-        raise ValueError(ERR_ARP_NOT_AN_ORDER.format(value=order))
+        raise ValueError(errors.ERR_ARP_NOT_AN_ORDER.format(value=order))
 
 
 def _check_seed(seed):
     if seed is not None and type(seed) is not int:
-        raise ValueError(ERR_ARP_BAD_SEED.format(value=seed))
+        raise ValueError(errors.ERR_ARP_BAD_SEED.format(value=seed))
 
 
 def _check_jump(jump):
     if not isinstance(jump, OctaveJump):
-        raise ValueError(ERR_NOT_A_JUMP.format(value=jump))
+        raise ValueError(errors.ERR_NOT_A_JUMP.format(value=jump))
 
 
 def _check_octave_range(octaves):
     if type(octaves) is not int or not MIN_OCTAVE_RANGE <= octaves <= MAX_OCTAVE_RANGE:
-        raise ValueError(ERR_ARP_BAD_OCTAVE_RANGE.format(value=octaves, lowest=MIN_OCTAVE_RANGE, highest=MAX_OCTAVE_RANGE))
+        raise ValueError(errors.ERR_ARP_BAD_OCTAVE_RANGE.format(value=octaves, lowest=MIN_OCTAVE_RANGE, highest=MAX_OCTAVE_RANGE))
 
 
 def _check_offsets(offsets):
     if offsets is None:
         return
     if not isinstance(offsets, (list, tuple)) or not MIN_OFFSETS <= len(offsets) <= MAX_OFFSETS:
-        raise ValueError(ERR_ARP_BAD_OFFSETS.format(value=offsets, lowest=MIN_OFFSETS, highest=MAX_OFFSETS))
+        raise ValueError(errors.ERR_ARP_BAD_OFFSETS.format(value=offsets, lowest=MIN_OFFSETS, highest=MAX_OFFSETS))
     for offset in offsets:
         if offset is not None and not _is_offset(offset):
-            raise ValueError(ERR_BAD_OFFSET.format(value=offset, most=MAX_OFFSET))
+            raise ValueError(errors.ERR_BAD_OFFSET.format(value=offset, most=MAX_OFFSET))
 
 
 def _is_offset(offset):
@@ -108,11 +106,11 @@ def along_scale(*, note, steps, scale):
         return Sound.half_step(note, steps)
     shape = scale.get_type().value
     above_root = note[MIDI] - scale.get_root().get_midi_number()
-    octaves, within = divmod(above_root, HALF_STEPS_PER_OCTAVE)
+    octaves, within = divmod(above_root, midi.HALF_STEPS_PER_OCTAVE)
     place = _scale_note_at_or_below(shape=shape, half_steps=within)
     extra = within - shape[place]
     more, place = divmod(place + steps, len(shape))
-    return Sound.half_step(note, (octaves + more) * HALF_STEPS_PER_OCTAVE + shape[place] + extra - above_root)
+    return Sound.half_step(note, (octaves + more) * midi.HALF_STEPS_PER_OCTAVE + shape[place] + extra - above_root)
 
 
 def _scale_note_at_or_below(*, shape, half_steps):
@@ -302,7 +300,7 @@ class Arp(ClipGenerator):
 
 def _up_octaves(*, note, octaves):
     """Return a note moved up a number of octaves."""
-    return Sound.half_step(note, HALF_STEPS_PER_OCTAVE * octaves)
+    return Sound.half_step(note, midi.HALF_STEPS_PER_OCTAVE * octaves)
 
 
 def _back_without_ends(notes):

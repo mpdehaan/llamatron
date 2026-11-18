@@ -20,8 +20,7 @@ from rich.text import Text
 
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.drawing import NOTHING, padded, SPACE, Style, wrapped
-from llamatron.strings.labels import MSG_HELP_PANELS
-from llamatron.strings.messages import MSG_HELP_TITLE
+from llamatron.strings import labels, messages
 from llamatron.tui import keybindings
 
 
@@ -48,7 +47,7 @@ class HelpDialog(Dialog):
         self.panel = KEYS_PANEL
 
     def heading(self, width):
-        return Text(MSG_HELP_TITLE.format(where=self.where, panel=MSG_HELP_PANELS[self.panel]), style=Style.BOLD)
+        return Text(messages.MSG_HELP_TITLE.format(where=self.where, panel=labels.MSG_HELP_PANELS[self.panel]), style=Style.BOLD)
 
     def keys(self):
         return [
@@ -57,7 +56,7 @@ class HelpDialog(Dialog):
         ]
 
     def turn(self):
-        self.panel = (self.panel + 1) % len(MSG_HELP_PANELS)
+        self.panel = (self.panel + 1) % len(labels.MSG_HELP_PANELS)
 
     def lines(self, width):
         if self.panel == KEYS_PANEL:

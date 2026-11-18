@@ -21,7 +21,7 @@ import pathlib
 import unittest
 from unittest import mock
 
-from llamatron.strings.about import MSG_DEMO_SCROLL
+from llamatron.strings import about
 
 SCRIPT = pathlib.Path(__file__).resolve().parent.parent.parent / 'internal_tools' / 'demo_splash_screen.py'
 MODULE_NAME = 'demo_splash_screen'
@@ -60,7 +60,7 @@ class TestDemoSplashScreen(unittest.TestCase):
         self.assertEqual(launch.scroll_text, SOME_WORDS)
 
     def test_scroll_text_with_no_words_shows_the_entertainers(self):
-        self.assertEqual(self.launched_with([SCROLL_FLAG]).scroll_text, MSG_DEMO_SCROLL.format(name=THE_DEFAULT_DEMO_NAME))
+        self.assertEqual(self.launched_with([SCROLL_FLAG]).scroll_text, about.MSG_DEMO_SCROLL.format(name=THE_DEFAULT_DEMO_NAME))
 
 
 if __name__ == '__main__':

@@ -26,7 +26,7 @@ import unittest
 
 from llamatron.composition.clip_slot import ClipSlot
 from llamatron.composition.chain import Chain
-from llamatron.composition.defaults import DEFAULT_GROOVE
+from llamatron.composition import defaults
 from llamatron.composition.generator_settings import FollowChordsSetting, FollowChordsSettings, HocketSetting, HocketSettings
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.composition.named_scale import scale_type_name
@@ -327,12 +327,12 @@ class TestReferencesAreDeclaredOnce(unittest.TestCase):
     def test_a_song_with_no_groove_of_its_own_names_the_default_groove(self):
         document = song_with_one_name_for_everything()
         song = document.song()
-        self.assertTrue(song.names_item(section=Section.GROOVES, name=DEFAULT_GROOVE))
-        self.assertEqual(uses_of(setlist=document.setlist(), section=Section.GROOVES, name=DEFAULT_GROOVE), uses_of(setlist=Document().setlist(), section=Section.GROOVES, name=DEFAULT_GROOVE))
+        self.assertTrue(song.names_item(section=Section.GROOVES, name=defaults.DEFAULT_GROOVE))
+        self.assertEqual(uses_of(setlist=document.setlist(), section=Section.GROOVES, name=defaults.DEFAULT_GROOVE), uses_of(setlist=Document().setlist(), section=Section.GROOVES, name=defaults.DEFAULT_GROOVE))
         document.set_groove_name(SHARED)
-        self.assertFalse(song.names_item(section=Section.GROOVES, name=DEFAULT_GROOVE))
+        self.assertFalse(song.names_item(section=Section.GROOVES, name=defaults.DEFAULT_GROOVE))
         self.assertTrue(song.names_item(section=Section.GROOVES, name=SHARED))
-        self.assertEqual(uses_of(setlist=document.setlist(), section=Section.GROOVES, name=DEFAULT_GROOVE), [])
+        self.assertEqual(uses_of(setlist=document.setlist(), section=Section.GROOVES, name=defaults.DEFAULT_GROOVE), [])
 
     def test_uses_are_listed_songs_first_then_scenes_tracks_clips_and_chains(self):
         document = song_with_every_reference()

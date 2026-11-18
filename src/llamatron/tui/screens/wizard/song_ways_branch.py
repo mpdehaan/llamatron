@@ -18,8 +18,7 @@
 
 from rich.text import Text
 
-from llamatron.strings.errors import ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
-from llamatron.strings.messages import MSG_WIZARD_NOTHING_TO_CHOOSE
+from llamatron.strings import errors, messages
 from llamatron.tui.drawing import INDENT, Style
 from llamatron.tui.screens.shared.field import ChoiceField
 from llamatron.tui.screens.wizard.branch import Branch
@@ -34,7 +33,7 @@ class SongWaysBranch(Branch):
     __slots__ = ()
 
     def refusal(self):
-        return None if self.choices().is_ready() else ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
+        return None if self.choices().is_ready() else errors.ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
 
     def traits(self):
         """Return each field's label with the traits it may stand for, the first the genre has being the one chosen."""
@@ -61,5 +60,5 @@ class SongWaysBranch(Branch):
     def notes(self, width):
         """Say so where the subgenre leaves nothing to choose, so that an empty branch explains itself."""
         if self.choices().is_ready() and not self.fields():
-            return [Text(INDENT + MSG_WIZARD_NOTHING_TO_CHOOSE, style=Style.DIM)]
+            return [Text(INDENT + messages.MSG_WIZARD_NOTHING_TO_CHOOSE, style=Style.DIM)]
         return []

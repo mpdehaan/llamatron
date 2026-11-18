@@ -35,19 +35,13 @@ from llamatron.composition.file_format import (
     SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting,
 )
 from llamatron.composition.generator_settings import ArpSetting
-from llamatron.composition.limits import (
-    MAX_CLIP_REPEAT, MAX_GATE, MAX_GROOVE_AMOUNT, MAX_GROOVE_CELL_LENGTH, MAX_OCTAVE, MAX_PROBABILITY, MAX_RATCHET, MAX_RATCHET_OFFSET,
-    MAX_REGISTER_VALUE, MAX_SCENE_REPEAT, MAX_STEP_SIZE, MAX_TRANSPOSE,
-    MIN_DEGREE, MIN_GROOVE_AMOUNT, MIN_OCTAVE, MIN_PROBABILITY, MIN_RATCHET, MIN_REGISTER_VALUE, MIN_REPEAT,
-)
+from llamatron.composition import limits
+from llamatron.strings import errors, messages, names
 from llamatron.composition.pattern import nearest_step_value
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators.arp import MAX_OCTAVE_RANGE, MAX_OFFSET
-from llamatron.music.midi import MAX_CC_VALUE, MAX_VELOCITY, MIN_CC_VALUE, MIN_VELOCITY
-from llamatron.strings.errors import ERR_OCTAVE_RANGE_BACKWARDS
-from llamatron.strings.messages import MSG_CORRECTED, MSG_CORRECTED_SEVERAL, MSG_CORRECTED_TO_DEFAULT
-from llamatron.strings.names import MSG_THE_FILE
+from llamatron.music import midi
 
 # The two sets made for these tests.
 SAMPLE_SETS = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, 'data', 'sample_sets')
@@ -140,76 +134,76 @@ FIRST_CC = CC_ROWS[0]
 # value is in the set's data, and what is there once the set is read corrected. LEFT_OUT is a setting taken out.
 CORRECTED = [
     # The set's own settings.
-    ({SetlistSetting.DEFAULT_OCTAVE: MAX_OCTAVE + 1}, (SetlistSetting.DEFAULT_OCTAVE,), MAX_OCTAVE),
-    ({SetlistSetting.DEFAULT_DRUM_OCTAVE: MIN_OCTAVE - 1}, (SetlistSetting.DEFAULT_DRUM_OCTAVE,), MIN_OCTAVE),
-    ({SetlistSetting.STEP_SIZE: MAX_STEP_SIZE * 2}, (SetlistSetting.STEP_SIZE,), MAX_STEP_SIZE),
+    ({SetlistSetting.DEFAULT_OCTAVE: limits.MAX_OCTAVE + 1}, (SetlistSetting.DEFAULT_OCTAVE,), limits.MAX_OCTAVE),
+    ({SetlistSetting.DEFAULT_DRUM_OCTAVE: limits.MIN_OCTAVE - 1}, (SetlistSetting.DEFAULT_DRUM_OCTAVE,), limits.MIN_OCTAVE),
+    ({SetlistSetting.STEP_SIZE: limits.MAX_STEP_SIZE * 2}, (SetlistSetting.STEP_SIZE,), limits.MAX_STEP_SIZE),
     ({SetlistSetting.OCTAVE_LABELS: NOT_A_CHOICE}, (SetlistSetting.OCTAVE_LABELS,), LEFT_OUT),
     # A song.
-    (with_song({SongSetting.ENTRY_SIZE: MAX_GATE + 1}), (*SONG, SongSetting.ENTRY_SIZE), MAX_GATE),
+    (with_song({SongSetting.ENTRY_SIZE: limits.MAX_GATE + 1}), (*SONG, SongSetting.ENTRY_SIZE), limits.MAX_GATE),
     # A track.
-    (with_track({TrackSetting.TRANSPOSE: MAX_TRANSPOSE + 1}), (*TRACK, TrackSetting.TRANSPOSE), MAX_TRANSPOSE),
-    (with_track({TrackSetting.TRANSPOSE: -MAX_TRANSPOSE - 1}), (*TRACK, TrackSetting.TRANSPOSE), -MAX_TRANSPOSE),
-    (with_track({TrackSetting.LOWEST_OCTAVE: MIN_OCTAVE - 1}), (*TRACK, TrackSetting.LOWEST_OCTAVE), MIN_OCTAVE),
-    (with_track({TrackSetting.HIGHEST_OCTAVE: MAX_OCTAVE + 1}), (*TRACK, TrackSetting.HIGHEST_OCTAVE), MAX_OCTAVE),
+    (with_track({TrackSetting.TRANSPOSE: limits.MAX_TRANSPOSE + 1}), (*TRACK, TrackSetting.TRANSPOSE), limits.MAX_TRANSPOSE),
+    (with_track({TrackSetting.TRANSPOSE: -limits.MAX_TRANSPOSE - 1}), (*TRACK, TrackSetting.TRANSPOSE), -limits.MAX_TRANSPOSE),
+    (with_track({TrackSetting.LOWEST_OCTAVE: limits.MIN_OCTAVE - 1}), (*TRACK, TrackSetting.LOWEST_OCTAVE), limits.MIN_OCTAVE),
+    (with_track({TrackSetting.HIGHEST_OCTAVE: limits.MAX_OCTAVE + 1}), (*TRACK, TrackSetting.HIGHEST_OCTAVE), limits.MAX_OCTAVE),
     # A scene.
-    (with_scene({SceneSetting.REPEAT: MIN_REPEAT - 1}), (*SCENE, SceneSetting.REPEAT), MIN_REPEAT),
-    (with_scene({SceneSetting.REPEAT: MAX_SCENE_REPEAT + 1}), (*SCENE, SceneSetting.REPEAT), MAX_SCENE_REPEAT),
+    (with_scene({SceneSetting.REPEAT: limits.MIN_REPEAT - 1}), (*SCENE, SceneSetting.REPEAT), limits.MIN_REPEAT),
+    (with_scene({SceneSetting.REPEAT: limits.MAX_SCENE_REPEAT + 1}), (*SCENE, SceneSetting.REPEAT), limits.MAX_SCENE_REPEAT),
     # A clip.
-    (with_clip({ClipSlotSetting.REPEAT: MIN_REPEAT - 1}), (*CLIP, ClipSlotSetting.REPEAT), MIN_REPEAT),
-    (with_clip({ClipSlotSetting.REPEAT: MAX_CLIP_REPEAT + 1}), (*CLIP, ClipSlotSetting.REPEAT), MAX_CLIP_REPEAT),
+    (with_clip({ClipSlotSetting.REPEAT: limits.MIN_REPEAT - 1}), (*CLIP, ClipSlotSetting.REPEAT), limits.MIN_REPEAT),
+    (with_clip({ClipSlotSetting.REPEAT: limits.MAX_CLIP_REPEAT + 1}), (*CLIP, ClipSlotSetting.REPEAT), limits.MAX_CLIP_REPEAT),
     (with_clip({ClipSlotSetting.DIRECTION: NOT_A_CHOICE}), (*CLIP, ClipSlotSetting.DIRECTION), LEFT_OUT),
     (
-        with_clip({ClipSlotSetting.REPEAT: MIN_REPEAT + 1, ClipSlotSetting.MORPH_TO: TUNE, ClipSlotSetting.MORPH_STYLE: NOT_A_CHOICE}),
+        with_clip({ClipSlotSetting.REPEAT: limits.MIN_REPEAT + 1, ClipSlotSetting.MORPH_TO: TUNE, ClipSlotSetting.MORPH_STYLE: NOT_A_CHOICE}),
         (*CLIP, ClipSlotSetting.MORPH_STYLE), FIRST_MORPH_STYLE,
     ),
     # A pattern's settings.
     (with_pattern({PatternSetting.DIRECTION: NOT_A_CHOICE}), (*PATTERN, PatternSetting.DIRECTION), LEFT_OUT),
-    (with_pattern({PatternSetting.STEP_SIZE: MAX_STEP_SIZE + 1}), (*PATTERN, PatternSetting.STEP_SIZE), MAX_STEP_SIZE),
-    (with_pattern({PatternSetting.ENTRY_SIZE: MAX_GATE + 1}), (*PATTERN, PatternSetting.ENTRY_SIZE), MAX_GATE),
+    (with_pattern({PatternSetting.STEP_SIZE: limits.MAX_STEP_SIZE + 1}), (*PATTERN, PatternSetting.STEP_SIZE), limits.MAX_STEP_SIZE),
+    (with_pattern({PatternSetting.ENTRY_SIZE: limits.MAX_GATE + 1}), (*PATTERN, PatternSetting.ENTRY_SIZE), limits.MAX_GATE),
     # A pattern's rows, where every step that needs it is corrected at once.
     (
-        with_pattern({Row.DEGREE: [A_DEGREE] * STEPS, Row.VELOCITY: [MAX_VELOCITY + 1, None, MIN_VELOCITY - 1, A_VELOCITY]}),
-        (*PATTERN, Row.VELOCITY), [MAX_VELOCITY, None, MIN_VELOCITY, A_VELOCITY],
+        with_pattern({Row.DEGREE: [A_DEGREE] * STEPS, Row.VELOCITY: [midi.MAX_VELOCITY + 1, None, midi.MIN_VELOCITY - 1, A_VELOCITY]}),
+        (*PATTERN, Row.VELOCITY), [midi.MAX_VELOCITY, None, midi.MIN_VELOCITY, A_VELOCITY],
     ),
     (
-        with_pattern({Row.DEGREE: [A_DEGREE] * STEPS, Row.PROBABILITY: [MAX_PROBABILITY + 1, MIN_PROBABILITY - 1, None, None]}),
-        (*PATTERN, Row.PROBABILITY), [MAX_PROBABILITY, MIN_PROBABILITY, None, None],
+        with_pattern({Row.DEGREE: [A_DEGREE] * STEPS, Row.PROBABILITY: [limits.MAX_PROBABILITY + 1, limits.MIN_PROBABILITY - 1, None, None]}),
+        (*PATTERN, Row.PROBABILITY), [limits.MAX_PROBABILITY, limits.MIN_PROBABILITY, None, None],
     ),
-    (with_pattern({Row.DEGREE: [MIN_DEGREE - 1, A_DEGREE, None, None]}), (*PATTERN, Row.DEGREE), [MIN_DEGREE, A_DEGREE, None, None]),
+    (with_pattern({Row.DEGREE: [limits.MIN_DEGREE - 1, A_DEGREE, None, None]}), (*PATTERN, Row.DEGREE), [limits.MIN_DEGREE, A_DEGREE, None, None]),
     (
-        with_pattern({Row.DEGREE: [A_DEGREE] * STEPS, Row.OCTAVE: [MAX_OCTAVE + 1, MIN_OCTAVE - 1, None, None]}),
-        (*PATTERN, Row.OCTAVE), [MAX_OCTAVE, MIN_OCTAVE, None, None],
-    ),
-    (
-        with_pattern({Row.DEGREE: [A_DEGREE] * STEPS, Row.RATCHET: [MIN_RATCHET - 1, None, None, None]}),
-        (*PATTERN, Row.RATCHET), [MIN_RATCHET, None, None, None],
+        with_pattern({Row.DEGREE: [A_DEGREE] * STEPS, Row.OCTAVE: [limits.MAX_OCTAVE + 1, limits.MIN_OCTAVE - 1, None, None]}),
+        (*PATTERN, Row.OCTAVE), [limits.MAX_OCTAVE, limits.MIN_OCTAVE, None, None],
     ),
     (
-        with_pattern({Row.DEGREE: [A_DEGREE] * STEPS, Row.RATCHET: [MAX_RATCHET + 1, MIN_RATCHET, None, None]}),
-        (*PATTERN, Row.RATCHET), [MAX_RATCHET, MIN_RATCHET, None, None],
+        with_pattern({Row.DEGREE: [A_DEGREE] * STEPS, Row.RATCHET: [limits.MIN_RATCHET - 1, None, None, None]}),
+        (*PATTERN, Row.RATCHET), [limits.MIN_RATCHET, None, None, None],
     ),
     (
-        with_pattern({Row.DEGREE: [A_DEGREE] * STEPS, Row.RATCHET_OFFSET: [MAX_RATCHET_OFFSET + 1, -MAX_RATCHET_OFFSET - 1, None, None]}),
-        (*PATTERN, Row.RATCHET_OFFSET), [MAX_RATCHET_OFFSET, -MAX_RATCHET_OFFSET, None, None],
+        with_pattern({Row.DEGREE: [A_DEGREE] * STEPS, Row.RATCHET: [limits.MAX_RATCHET + 1, limits.MIN_RATCHET, None, None]}),
+        (*PATTERN, Row.RATCHET), [limits.MAX_RATCHET, limits.MIN_RATCHET, None, None],
     ),
     (
-        with_pattern({Row.DEGREE: [A_DEGREE] * STEPS, Row.GATE: [QUARTER, MAX_GATE + 1, None, None]}),
-        (*PATTERN, Row.GATE), [QUARTER, MAX_GATE, None, None],
+        with_pattern({Row.DEGREE: [A_DEGREE] * STEPS, Row.RATCHET_OFFSET: [limits.MAX_RATCHET_OFFSET + 1, -limits.MAX_RATCHET_OFFSET - 1, None, None]}),
+        (*PATTERN, Row.RATCHET_OFFSET), [limits.MAX_RATCHET_OFFSET, -limits.MAX_RATCHET_OFFSET, None, None],
     ),
-    (with_pattern({FIRST_CC: [MAX_CC_VALUE + 1, MIN_CC_VALUE - 1, None, None]}), (*PATTERN, FIRST_CC), [MAX_CC_VALUE, MIN_CC_VALUE, None, None]),
     (
-        with_pattern({AX_ADD: [MAX_REGISTER_VALUE + 1, MIN_REGISTER_VALUE - 1, None, None]}),
-        (*PATTERN, AX_ADD), [MAX_REGISTER_VALUE, MIN_REGISTER_VALUE, None, None],
+        with_pattern({Row.DEGREE: [A_DEGREE] * STEPS, Row.GATE: [QUARTER, limits.MAX_GATE + 1, None, None]}),
+        (*PATTERN, Row.GATE), [QUARTER, limits.MAX_GATE, None, None],
+    ),
+    (with_pattern({FIRST_CC: [midi.MAX_CC_VALUE + 1, midi.MIN_CC_VALUE - 1, None, None]}), (*PATTERN, FIRST_CC), [midi.MAX_CC_VALUE, midi.MIN_CC_VALUE, None, None]),
+    (
+        with_pattern({AX_ADD: [limits.MAX_REGISTER_VALUE + 1, limits.MIN_REGISTER_VALUE - 1, None, None]}),
+        (*PATTERN, AX_ADD), [limits.MAX_REGISTER_VALUE, limits.MIN_REGISTER_VALUE, None, None],
     ),
     # A register.
-    (with_register({RegisterSetting.MAXIMUM: MAX_REGISTER_VALUE + 1}), (*REGISTER, RegisterSetting.MAXIMUM), MAX_REGISTER_VALUE),
-    (with_register({RegisterSetting.MINIMUM: MIN_REGISTER_VALUE - 1}), (*REGISTER, RegisterSetting.MINIMUM), MIN_REGISTER_VALUE),
+    (with_register({RegisterSetting.MAXIMUM: limits.MAX_REGISTER_VALUE + 1}), (*REGISTER, RegisterSetting.MAXIMUM), limits.MAX_REGISTER_VALUE),
+    (with_register({RegisterSetting.MINIMUM: limits.MIN_REGISTER_VALUE - 1}), (*REGISTER, RegisterSetting.MINIMUM), limits.MIN_REGISTER_VALUE),
     # A groove.
     (
-        with_groove({GrooveSetting.CELLS: [MAX_GROOVE_AMOUNT + 1, STRAIGHT, MIN_GROOVE_AMOUNT - 1]}),
-        (*GROOVE, GrooveSetting.CELLS), [MAX_GROOVE_AMOUNT, STRAIGHT, MIN_GROOVE_AMOUNT],
+        with_groove({GrooveSetting.CELLS: [limits.MAX_GROOVE_AMOUNT + 1, STRAIGHT, limits.MIN_GROOVE_AMOUNT - 1]}),
+        (*GROOVE, GrooveSetting.CELLS), [limits.MAX_GROOVE_AMOUNT, STRAIGHT, limits.MIN_GROOVE_AMOUNT],
     ),
-    (with_groove({GrooveSetting.CELL_LENGTH: MAX_GROOVE_CELL_LENGTH + 1}), (*GROOVE, GrooveSetting.CELL_LENGTH), MAX_GROOVE_CELL_LENGTH),
+    (with_groove({GrooveSetting.CELL_LENGTH: limits.MAX_GROOVE_CELL_LENGTH + 1}), (*GROOVE, GrooveSetting.CELL_LENGTH), limits.MAX_GROOVE_CELL_LENGTH),
     # An arpeggiator.
     (with_arp({ArpSetting.OCTAVE_RANGE: MAX_OCTAVE_RANGE + 1}), (*ARP, ArpSetting.OCTAVE_RANGE), MAX_OCTAVE_RANGE),
     (with_arp({ArpSetting.ORDER: NOT_A_CHOICE}), (*ARP, ArpSetting.ORDER), LEFT_OUT),
@@ -219,7 +213,7 @@ CORRECTED = [
 # Data with something wrong that no allowed value is near, which is refused as it always was.
 REFUSED = [
     with_clip({ClipSlotSetting.CHAIN: NOT_A_NAME}),
-    with_clip({ClipSlotSetting.MORPH_TO: NOT_A_NAME, ClipSlotSetting.MORPH_STYLE: FIRST_MORPH_STYLE, ClipSlotSetting.REPEAT: MIN_REPEAT + 1}),
+    with_clip({ClipSlotSetting.MORPH_TO: NOT_A_NAME, ClipSlotSetting.MORPH_STYLE: FIRST_MORPH_STYLE, ClipSlotSetting.REPEAT: limits.MIN_REPEAT + 1}),
     with_clip({ClipSlotSetting.LOOP: 1}),
     with_song({SongSetting.SCALE: NOT_A_NAME}),
     with_song({SongSetting.TEMPO: NOT_A_NUMBER}),
@@ -230,7 +224,7 @@ REFUSED = [
     with_track({TrackSetting.DRUM: 1}),
     with_track({NOT_A_NAME: A_DEGREE}),
     with_pattern({Row.DEGREE: [A_DEGREE] * STEPS, Row.VELOCITY: [NOT_A_NUMBER, None, None, None]}),
-    with_pattern({Row.DEGREE: [A_DEGREE] * STEPS, Row.VELOCITY: [MAX_VELOCITY + 1]}),
+    with_pattern({Row.DEGREE: [A_DEGREE] * STEPS, Row.VELOCITY: [midi.MAX_VELOCITY + 1]}),
     with_pattern({Row.DEGREE: [A_DEGREE] * STEPS, Row.TIE: [True, False, False, False]}),
     with_pattern({PatternSetting.DRUM: True, Row.DEGREE: [STRAIGHT, None, None, None]}),
     with_pattern({PatternSetting.STEP_SIZE: STRAIGHT}),
@@ -259,14 +253,14 @@ class TestCorrection(unittest.TestCase):
     def test_it_says_where_what_was_found_and_what_is_used(self):
         correction = Correction(holder={}, key=TEMPO, name=TEMPO, found=FAR_TOO_MANY, used=A_VELOCITY)
         correction.set_place(A_PLACE)
-        self.assertEqual(correction.described(), MSG_CORRECTED.format(where=A_PLACE, name=TEMPO, found=FAR_TOO_MANY, used=A_VELOCITY))
+        self.assertEqual(correction.described(), messages.MSG_CORRECTED.format(where=A_PLACE, name=TEMPO, found=FAR_TOO_MANY, used=A_VELOCITY))
         self.assertEqual((correction.get_name(), correction.get_found(), correction.get_used()), (TEMPO, FAR_TOO_MANY, A_VELOCITY))
         self.assertIsNone(correction.get_count())
 
     def test_a_setting_taken_out_is_said_to_become_the_default(self):
         correction = Correction(holder={}, key=TEMPO, name=TEMPO, found=NOT_A_CHOICE, used=LEFT_OUT)
         correction.set_place(A_PLACE)
-        self.assertEqual(correction.described(), MSG_CORRECTED_TO_DEFAULT.format(where=A_PLACE, name=TEMPO, found=NOT_A_CHOICE))
+        self.assertEqual(correction.described(), messages.MSG_CORRECTED_TO_DEFAULT.format(where=A_PLACE, name=TEMPO, found=NOT_A_CHOICE))
 
     def test_a_list_is_one_line_with_a_count_of_the_values_changed(self):
         found = [FAR_TOO_MANY, None, A_VELOCITY, FAR_TOO_MANY]
@@ -274,15 +268,15 @@ class TestCorrection(unittest.TestCase):
         correction = Correction(holder={}, key=Row.VELOCITY, name=Row.VELOCITY, found=found, used=used)
         correction.set_place(A_PLACE)
         self.assertEqual(correction.get_count(), 2)
-        self.assertEqual(correction.described(), MSG_CORRECTED_SEVERAL.format(where=A_PLACE, name=Row.VELOCITY, count=2))
+        self.assertEqual(correction.described(), messages.MSG_CORRECTED_SEVERAL.format(where=A_PLACE, name=Row.VELOCITY, count=2))
         self.assertEqual(changed_count(found=found, used=used), 2)
         self.assertIsNone(changed_count(found=FAR_TOO_MANY, used=A_VELOCITY))
 
     def test_a_place_never_names_the_setting_twice(self):
         self.assertEqual(place_without(where=A_PLACE_WITH_THE_NAME, name=TEMPO), 'song (verse)')
         self.assertEqual(place_without(where=A_PLACE, name=TEMPO), A_PLACE)
-        self.assertEqual(place_without(where=TEMPO, name=TEMPO), MSG_THE_FILE)
-        self.assertEqual(place_without(where=None, name=TEMPO), MSG_THE_FILE)
+        self.assertEqual(place_without(where=TEMPO, name=TEMPO), names.MSG_THE_FILE)
+        self.assertEqual(place_without(where=None, name=TEMPO), names.MSG_THE_FILE)
 
 
 class TestEveryValueWithOneNearItIsCorrected(unittest.TestCase):
@@ -328,17 +322,17 @@ class TestEveryValueWithOneNearItIsCorrected(unittest.TestCase):
         self.assertEqual(setlist.to_data(), Setlist.from_data(data=with_clip({})).to_data())
 
     def test_a_row_is_corrected_once_however_many_steps_need_it(self):
-        row = [MAX_VELOCITY + 1] * STEPS
+        row = [midi.MAX_VELOCITY + 1] * STEPS
         setlist, corrections = Setlist.from_data_corrected(data=with_pattern({Row.DEGREE: [A_DEGREE] * STEPS, Row.VELOCITY: row}))
         self.assertEqual(len(corrections), 1)
         self.assertEqual(corrections[0].get_count(), STEPS)
-        self.assertEqual(setlist.get_pattern(TUNE).to_data()[Row.VELOCITY], [MAX_VELOCITY] * STEPS)
+        self.assertEqual(setlist.get_pattern(TUNE).to_data()[Row.VELOCITY], [midi.MAX_VELOCITY] * STEPS)
 
     def test_several_wrong_values_are_each_corrected_in_the_order_the_file_is_read(self):
         data = {
-            SetlistSetting.DEFAULT_OCTAVE: MAX_OCTAVE + 1,
-            **with_pattern({PatternSetting.DIRECTION: NOT_A_CHOICE, FIRST_CC: [MAX_CC_VALUE + 1, None, None, None]}),
-            **with_track({TrackSetting.TRANSPOSE: MAX_TRANSPOSE + 1}),
+            SetlistSetting.DEFAULT_OCTAVE: limits.MAX_OCTAVE + 1,
+            **with_pattern({PatternSetting.DIRECTION: NOT_A_CHOICE, FIRST_CC: [midi.MAX_CC_VALUE + 1, None, None, None]}),
+            **with_track({TrackSetting.TRANSPOSE: limits.MAX_TRANSPOSE + 1}),
         }
         setlist, corrections = Setlist.from_data_corrected(data=data, one_song_name=VERSE)
         self.assertEqual(
@@ -346,7 +340,7 @@ class TestEveryValueWithOneNearItIsCorrected(unittest.TestCase):
             [SetlistSetting.DEFAULT_OCTAVE, PatternSetting.DIRECTION, FIRST_CC, TrackSetting.TRANSPOSE],
         )
         self.assertEqual(corrections[-1].get_place(), 'song (verse), track (lead)')
-        self.assertEqual(corrections[0].get_place(), MSG_THE_FILE)
+        self.assertEqual(corrections[0].get_place(), names.MSG_THE_FILE)
         self.assertEqual(corrections[1].get_place(), 'pattern (tune)')
         self.assertEqual(corrections[2].get_place(), 'pattern (tune)')
 
@@ -354,14 +348,14 @@ class TestEveryValueWithOneNearItIsCorrected(unittest.TestCase):
 class TestTheNearestStepValue(unittest.TestCase):
 
     def test_a_row_with_limits_has_the_nearest_end(self):
-        self.assertEqual(nearest_step_value(row=Row.VELOCITY, value=MAX_VELOCITY + 1, drum=False), MAX_VELOCITY)
+        self.assertEqual(nearest_step_value(row=Row.VELOCITY, value=midi.MAX_VELOCITY + 1, drum=False), midi.MAX_VELOCITY)
         self.assertEqual(nearest_step_value(row=Row.VELOCITY, value=A_VELOCITY, drum=False), A_VELOCITY)
-        self.assertEqual(nearest_step_value(row=Row.GATE, value=MAX_GATE + 1, drum=False), MAX_GATE)
+        self.assertEqual(nearest_step_value(row=Row.GATE, value=limits.MAX_GATE + 1, drum=False), limits.MAX_GATE)
         self.assertIsNone(nearest_step_value(row=Row.VELOCITY, value=None, drum=False))
 
     def test_a_drum_pattern_has_no_nearest_note_letter(self):
-        self.assertIsNot(nearest_step_value(row=Row.DEGREE, value=STRAIGHT, drum=True), MIN_DEGREE)
-        self.assertEqual(nearest_step_value(row=Row.DEGREE, value=STRAIGHT, drum=False), MIN_DEGREE)
+        self.assertIsNot(nearest_step_value(row=Row.DEGREE, value=STRAIGHT, drum=True), limits.MIN_DEGREE)
+        self.assertEqual(nearest_step_value(row=Row.DEGREE, value=STRAIGHT, drum=False), limits.MIN_DEGREE)
 
 
 class TestWhatIsStillRefused(unittest.TestCase):
@@ -383,35 +377,35 @@ class TestWhatIsStillRefused(unittest.TestCase):
                 self.assertEqual(str(corrected.exception), str(strictly.exception))
 
     def test_one_problem_with_no_correction_refuses_a_file_whose_other_values_could_be_corrected(self):
-        data = {SetlistSetting.DEFAULT_OCTAVE: MAX_OCTAVE + 1, **with_clip({ClipSlotSetting.CHAIN: NOT_A_NAME})}
+        data = {SetlistSetting.DEFAULT_OCTAVE: limits.MAX_OCTAVE + 1, **with_clip({ClipSlotSetting.CHAIN: NOT_A_NAME})}
         with self.assertRaisesRegex(SongFileError, NOT_A_NAME):
             Setlist.from_data_corrected(data=data, one_song_name=VERSE)
 
     def test_two_values_that_no_longer_fit_each_other_once_corrected_are_refused(self):
-        data = with_track({TrackSetting.LOWEST_OCTAVE: MAX_OCTAVE + 1, TrackSetting.HIGHEST_OCTAVE: MIN_OCTAVE})
+        data = with_track({TrackSetting.LOWEST_OCTAVE: limits.MAX_OCTAVE + 1, TrackSetting.HIGHEST_OCTAVE: limits.MIN_OCTAVE})
         with self.assertRaises(SongFileError) as refused:
             Setlist.from_data_corrected(data=data, one_song_name=VERSE)
-        self.assertIn(ERR_OCTAVE_RANGE_BACKWARDS.format(lowest=MAX_OCTAVE, highest=MIN_OCTAVE), str(refused.exception))
+        self.assertIn(errors.ERR_OCTAVE_RANGE_BACKWARDS.format(lowest=limits.MAX_OCTAVE, highest=limits.MIN_OCTAVE), str(refused.exception))
 
     def test_going_back_to_earlier_data_stays_strict(self):
         setlist = Setlist.new()
         with self.assertRaises(SongFileError):
-            setlist.restore({SetlistSetting.DEFAULT_OCTAVE: MAX_OCTAVE + 1})
+            setlist.restore({SetlistSetting.DEFAULT_OCTAVE: limits.MAX_OCTAVE + 1})
 
 
 class TestOlderFilesAreCorrectedToo(unittest.TestCase):
 
     def test_a_file_of_one_song_is_read_as_a_set_and_then_corrected(self):
-        data = {Section.TRACKS: {LEAD: {TrackSetting.TRANSPOSE: MAX_TRANSPOSE + 1}}, Section.SCENES: []}
+        data = {Section.TRACKS: {LEAD: {TrackSetting.TRANSPOSE: limits.MAX_TRANSPOSE + 1}}, Section.SCENES: []}
         setlist, corrections = Setlist.from_data_corrected(data=data, one_song_name=VERSE)
-        self.assertEqual(setlist.get_song(VERSE).get_track(LEAD).get_transpose(), MAX_TRANSPOSE)
+        self.assertEqual(setlist.get_song(VERSE).get_track(LEAD).get_transpose(), limits.MAX_TRANSPOSE)
         self.assertEqual(corrections[0].get_place(), 'song (verse), track (lead)')
 
     def test_an_octave_in_lives_numbers_is_moved_before_it_is_corrected(self):
-        data = {SetlistSetting.VERSION: A_VERSION_WITH_LIVE_OCTAVES, SetlistSetting.DEFAULT_OCTAVE: MAX_OCTAVE}
+        data = {SetlistSetting.VERSION: A_VERSION_WITH_LIVE_OCTAVES, SetlistSetting.DEFAULT_OCTAVE: limits.MAX_OCTAVE}
         setlist, corrections = Setlist.from_data_corrected(data=data)
-        self.assertEqual(corrections[0].get_found(), MAX_OCTAVE + LIVE_OCTAVE_OFFSET)
-        self.assertEqual(setlist.get_default_octave(), MAX_OCTAVE)
+        self.assertEqual(corrections[0].get_found(), limits.MAX_OCTAVE + LIVE_OCTAVE_OFFSET)
+        self.assertEqual(setlist.get_default_octave(), limits.MAX_OCTAVE)
 
 
 class TestTheSampleSets(unittest.TestCase):
@@ -435,7 +429,7 @@ class TestTheSampleSets(unittest.TestCase):
 
     def test_every_velocity_step_out_of_range_is_one_correction(self):
         written = self.written(OUT_OF_RANGE)[Section.PATTERNS][TUNE][Row.VELOCITY]
-        too_loud = [value for value in written if value is not None and value > MAX_VELOCITY]
+        too_loud = [value for value in written if value is not None and value > midi.MAX_VELOCITY]
         setlist, corrections = Setlist.read_file_corrected(OUT_OF_RANGE)
         velocities = [correction for correction in corrections if correction.get_name() == Row.VELOCITY]
         self.assertEqual(len(velocities), 1)

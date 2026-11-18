@@ -20,15 +20,12 @@ from llamatron.composition.file_format import NAMED_GENERATORS, Section
 from llamatron.tui.text import sorted_names
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Align
-from llamatron.strings.help import HELP_CHAIN_EDITOR
+from llamatron.strings import help as help_text, labels as labels_text, marks, messages
 from llamatron.tui.screens.shared.list_page import ListPage
 from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES, generator_page_of_kind, generator_type_dialog
 from llamatron.composition.naming import new_name, suggested_word
 from llamatron.tui.screens.shared.shared import list_keys, move_key
-from llamatron.strings.labels import Column, Crumb
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.strings.marks import MSG_CHAIN_STEP_AGAIN, MSG_CHAIN_STEP_SHOWN
-from llamatron.strings.messages import MSG_NEW_GENERATOR_CHOICE, MSG_ADD_TO_CHAIN_TITLE, MSG_CHANGE_STEP_TITLE, MSG_RENAME_CHAIN_PROMPT
 from llamatron.tui import keybindings
 
 
@@ -40,8 +37,8 @@ def step_shown(*, kind, name, number=None):
     """Return a step as the chain editor shows it: the generator's name, numbered when number is given, then its kind by the name its page gives it."""
     label = generator_page_of_kind(kind).label
     if number is None:
-        return MSG_CHAIN_STEP_SHOWN.format(name=name, kind=label)
-    return MSG_CHAIN_STEP_AGAIN.format(name=name, number=number, kind=label)
+        return marks.MSG_CHAIN_STEP_SHOWN.format(name=name, kind=label)
+    return marks.MSG_CHAIN_STEP_AGAIN.format(name=name, number=number, kind=label)
 
 
 def steps_shown(steps):
@@ -60,12 +57,12 @@ class ChainEditor(ShowsNamedItem, ListPage):
 
     KEYS = keybindings.ChainEditor
 
-    HELP = HELP_CHAIN_EDITOR
-    columns = ((Column.SELECT_CHAIN_LINKS, None, Align.LEFT),)
+    HELP = help_text.HELP_CHAIN_EDITOR
+    columns = ((labels_text.Column.SELECT_CHAIN_LINKS, None, Align.LEFT),)
 
     SECTION = Section.CHAINS
-    CRUMBS_BEFORE = (Crumb.CHAINS,)
-    RENAME_PROMPT = MSG_RENAME_CHAIN_PROMPT
+    CRUMBS_BEFORE = (labels_text.Crumb.CHAINS,)
+    RENAME_PROMPT = messages.MSG_RENAME_CHAIN_PROMPT
 
     def __init__(self, *, holder, name):
         super().__init__(holder)
@@ -90,7 +87,7 @@ class ChainEditor(ShowsNamedItem, ListPage):
         """Ask for a generator: a new one first, then every one the set has, each with its kind; then(kind=, name=) takes the one chosen."""
         song = self.document().song()
         options = [(kind, name) for kind in NAMED_GENERATORS for name in sorted_names(song.get_generator_names(kind))]
-        labels = [MSG_NEW_GENERATOR_CHOICE, *[step_shown(kind=kind, name=name) for kind, name in options]]
+        labels = [messages.MSG_NEW_GENERATOR_CHOICE, *[step_shown(kind=kind, name=name) for kind, name in options]]
 
         def picked(place):
             if place == 0:
@@ -117,11 +114,11 @@ class ChainEditor(ShowsNamedItem, ListPage):
         def chosen(*, kind, name):
             self.document().add_chain_step(chain=self.item, kind=kind, name=name)
             self.place = len(self.steps()) - 1
-        self.pick_generator(title=MSG_ADD_TO_CHAIN_TITLE, then=chosen)
+        self.pick_generator(title=messages.MSG_ADD_TO_CHAIN_TITLE, then=chosen)
 
     def change(self):
         place = self.current()
-        self.pick_generator(title=MSG_CHANGE_STEP_TITLE, then=lambda kind, name: self.document().set_chain_step(chain=self.item, place=place, kind=kind, name=name))
+        self.pick_generator(title=messages.MSG_CHANGE_STEP_TITLE, then=lambda kind, name: self.document().set_chain_step(chain=self.item, place=place, kind=kind, name=name))
 
     def copy(self):
         self.document().copy_chain_step(chain=self.item, place=self.place)

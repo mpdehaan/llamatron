@@ -19,11 +19,7 @@ from rich.text import Text
 
 from llamatron.macro_composer.song_plan import HIGHEST_ENERGY, LOWEST_ENERGY
 from llamatron.macro_composer.wizard_choices import WAYS_WITH_FIRST_PLAYER, WAYS_WITH_SETUP_BARS
-from llamatron.strings.errors import ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
-from llamatron.strings.labels import MSG_WIZARD_FORM_QUESTIONS_BUTTON, MSG_WIZARD_CONTRAST_LABEL, MSG_WIZARD_ENDS_LABEL, MSG_WIZARD_FIRST_PLAYER_LABEL, MSG_WIZARD_OWN_START, MSG_WIZARD_SETUP_BARS_LABEL, MSG_WIZARD_STARTS_LABEL, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_LABEL, MSG_WIZARD_PLAN_LINE, MSG_WIZARD_SONG_PLAN_LABEL, MSG_WIZARD_SUGGESTED_FORM_BUTTON
-from llamatron.strings.legends import KeyName, MSG_WIZARD_FORM_QUESTIONS_WHAT, MSG_WIZARD_SUGGESTED_FORM_WHAT
-from llamatron.strings.marks import MSG_WIZARD_OWN_FORM, MSG_WIZARD_SECTION_LINE
-from llamatron.strings.messages import MSG_WIZARD_CHOOSE_FIRST, MSG_WIZARD_SECTIONS_HINT
+from llamatron.strings import errors, labels, legends, marks, messages
 from llamatron.tui.drawing import INDENT, Style
 from llamatron.tui.screens.shared.field import Button, ChoiceField, Field, NumberField, Toggle
 from llamatron.tui.screens.wizard.branch import Branch, gauge_shown
@@ -39,10 +35,10 @@ class FormBranch(Branch):
     __slots__ = ()
 
     def name(self):
-        return MSG_WIZARD_FORM_BRANCH
+        return labels.MSG_WIZARD_FORM_BRANCH
 
     def refusal(self):
-        return None if self.choices().is_ready() else ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
+        return None if self.choices().is_ready() else errors.ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
 
     def sections(self):
         return self.choices().form_sections()
@@ -58,12 +54,12 @@ class FormBranch(Branch):
         # stepping a field, which could replace the sections a person changed with one stray key.
         page = self.page()
         # A planned song gives every section an Energy, and from it who plays, how hard, how loud and how each section leaves.
-        plan = [Toggle(label=MSG_WIZARD_SONG_PLAN_LABEL, on=choices.has_song_plan(), set=page.choosing(choices.set_song_plan))] if choices.can_have_song_plan() else []
+        plan = [Toggle(label=labels.MSG_WIZARD_SONG_PLAN_LABEL, on=choices.has_song_plan(), set=page.choosing(choices.set_song_plan))] if choices.can_have_song_plan() else []
         if choices.has_song_plan():
-            plan.append(NumberField(page=page, label=MSG_WIZARD_CONTRAST_LABEL, number=choices.get_contrast(), shown=gauge_shown(place=choices.get_contrast(), lowest=LOWEST_ENERGY, highest=HIGHEST_ENERGY), lowest=LOWEST_ENERGY, highest=HIGHEST_ENERGY, set=page.choosing(choices.set_contrast)))
-        return [Field(label=MSG_WIZARD_FORM_LABEL, value=lambda: MSG_WIZARD_OWN_FORM if choices.has_own_form() else choices.get_form()), *plan, *self.stage_fields(),
-                Button(label=MSG_WIZARD_SUGGESTED_FORM_BUTTON, key_name=KeyName.ENTER, enter=self.page().pick_suggested_form, enter_what=MSG_WIZARD_SUGGESTED_FORM_WHAT),
-                *([Button(label=MSG_WIZARD_FORM_QUESTIONS_BUTTON, key_name=KeyName.ENTER, enter=self.page().ask_form_questions, enter_what=MSG_WIZARD_FORM_QUESTIONS_WHAT)] if choices.form_questions() else [])]
+            plan.append(NumberField(page=page, label=labels.MSG_WIZARD_CONTRAST_LABEL, number=choices.get_contrast(), shown=gauge_shown(place=choices.get_contrast(), lowest=LOWEST_ENERGY, highest=HIGHEST_ENERGY), lowest=LOWEST_ENERGY, highest=HIGHEST_ENERGY, set=page.choosing(choices.set_contrast)))
+        return [Field(label=labels.MSG_WIZARD_FORM_LABEL, value=lambda: marks.MSG_WIZARD_OWN_FORM if choices.has_own_form() else choices.get_form()), *plan, *self.stage_fields(),
+                Button(label=labels.MSG_WIZARD_SUGGESTED_FORM_BUTTON, key_name=legends.KeyName.ENTER, enter=self.page().pick_suggested_form, enter_what=legends.MSG_WIZARD_SUGGESTED_FORM_WHAT),
+                *([Button(label=labels.MSG_WIZARD_FORM_QUESTIONS_BUTTON, key_name=legends.KeyName.ENTER, enter=self.page().ask_form_questions, enter_what=legends.MSG_WIZARD_FORM_QUESTIONS_WHAT)] if choices.form_questions() else [])]
 
     def stage_fields(self):
         """Return the fields of how the song starts and ends: the way of each, who starts alone and is left alone, and how long a stage lasts. Each stage
@@ -81,23 +77,23 @@ class FormBranch(Branch):
         fields = []
         start, end = choices.get_start(), choices.get_end()
         if choices.starts():
-            fields.append(ChoiceField(page=page, label=MSG_WIZARD_STARTS_LABEL, choices=choices.starts(), current=start or choices.starts()[0], shown=None if start is not None else MSG_WIZARD_OWN_START, set=staging(choices.set_start)))
+            fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_STARTS_LABEL, choices=choices.starts(), current=start or choices.starts()[0], shown=None if start is not None else labels.MSG_WIZARD_OWN_START, set=staging(choices.set_start)))
         if choices.ends():
-            fields.append(ChoiceField(page=page, label=MSG_WIZARD_ENDS_LABEL, choices=choices.ends(), current=end or choices.ends()[0], shown=None if end is not None else MSG_WIZARD_OWN_START, set=staging(choices.set_end)))
+            fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_ENDS_LABEL, choices=choices.ends(), current=end or choices.ends()[0], shown=None if end is not None else labels.MSG_WIZARD_OWN_START, set=staging(choices.set_end)))
         if (start in WAYS_WITH_FIRST_PLAYER or end in WAYS_WITH_FIRST_PLAYER) and len(choices.first_players()) > 1:
             titles = {choices.role_title(role): role for role in choices.first_players()}
-            fields.append(ChoiceField(page=page, label=MSG_WIZARD_FIRST_PLAYER_LABEL, choices=list(titles), current=choices.role_title(choices.get_first_player()), set=staging(lambda title: choices.set_first_player(titles[title]))))
+            fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_FIRST_PLAYER_LABEL, choices=list(titles), current=choices.role_title(choices.get_first_player()), set=staging(lambda title: choices.set_first_player(titles[title]))))
         if start in WAYS_WITH_SETUP_BARS or end in WAYS_WITH_SETUP_BARS:
             bars = {str(count): count for count in choices.setup_bars_offered()}
-            fields.append(ChoiceField(page=page, label=MSG_WIZARD_SETUP_BARS_LABEL, choices=list(bars), current=str(choices.get_setup_bars()), set=staging(lambda count: choices.set_setup_bars(bars[count]))))
+            fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_SETUP_BARS_LABEL, choices=list(bars), current=str(choices.get_setup_bars()), set=staging(lambda count: choices.set_setup_bars(bars[count]))))
         return fields
 
     def notes(self, width):
         """Return the form's sections in order, each with its bars, so that the whole form reads at a glance; or what to choose first."""
         choices = self.choices()
         if not choices.is_ready():
-            return [Text(INDENT + MSG_WIZARD_CHOOSE_FIRST, style=Style.DIM)]
-        hint = [Text(INDENT + MSG_WIZARD_SECTIONS_HINT, style=Style.DIM), Text()]
+            return [Text(INDENT + messages.MSG_WIZARD_CHOOSE_FIRST, style=Style.DIM)]
+        hint = [Text(INDENT + messages.MSG_WIZARD_SECTIONS_HINT, style=Style.DIM), Text()]
         sections = choices.section_labels()
         longest = max((len(name) for name in sections), default=0)
         if choices.has_song_plan():
@@ -107,8 +103,8 @@ class FormBranch(Branch):
             except (ValueError, KeyError, IndexError):
                 said = []
             if len(said) == len(sections):
-                return hint + [Text(INDENT + MSG_WIZARD_PLAN_LINE.format(number=place + FIRST_SECTION_NUMBER, name=name, width=longest, said=said[place])) for place, name in enumerate(sections)]
-        return hint + [Text(INDENT + MSG_WIZARD_SECTION_LINE.format(number=place + FIRST_SECTION_NUMBER, name=name, width=longest, bars=choices.section_bars(place)))
+                return hint + [Text(INDENT + labels.MSG_WIZARD_PLAN_LINE.format(number=place + FIRST_SECTION_NUMBER, name=name, width=longest, said=said[place])) for place, name in enumerate(sections)]
+        return hint + [Text(INDENT + marks.MSG_WIZARD_SECTION_LINE.format(number=place + FIRST_SECTION_NUMBER, name=name, width=longest, bars=choices.section_bars(place)))
                 for place, name in enumerate(sections)]
 
     # A new section is added at the end of the form from here, and after a section from the section.

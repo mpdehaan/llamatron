@@ -23,7 +23,7 @@ from llamatron.composition.generator_settings import FollowChordsSetting, Progre
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
 from llamatron.music.note import NoteName
-from llamatron.strings.errors import ERR_CIRCULAR_FOLLOW
+from llamatron.strings import errors
 from tests.playback.test_registers import OCTAVE, STEP_SIZE, pattern, song
 from tests.support.rendering import render_data, setlist_from_data
 from tests.support.ui_testing import fixed_text
@@ -178,7 +178,7 @@ class TestFollowChordsSettings(unittest.TestCase):
         data[Section.SCENES][0][SceneSetting.TRACKS][CHORDS][ClipSlotSetting.CHAINS] = [PAD_CHAIN]
         with self.assertRaises(SongFileError) as refused:
             render_data(data)
-        self.assertIn(fixed_text(ERR_CIRCULAR_FOLLOW), str(refused.exception))
+        self.assertIn(fixed_text(errors.ERR_CIRCULAR_FOLLOW), str(refused.exception))
 
     def test_a_track_can_follow_a_track_that_follows_another(self):
         data = following_data()

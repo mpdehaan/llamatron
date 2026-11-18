@@ -18,17 +18,13 @@
 
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.realtime.sender_process import SenderNotStarted
-from llamatron.strings.errors import ERR_CANT_PLAY_TITLE
+from llamatron.composition import limits
+from llamatron.strings import errors, marks, messages, names
 from llamatron.composition.generator_settings import written_name
 from llamatron.music.time_signature import MAX_BEATS, MIN_BEATS, UNITS_LISTED, is_time_signature
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.strings.errors import ERR_TYPED_NOT_A_TIME_SIGNATURE
 from llamatron.generators.arp import ChordOrder
 from llamatron.tui.drawing import SPACE
-from llamatron.composition.limits import MAX_OCTAVE, MIN_OCTAVE
-from llamatron.strings.marks import MSG_COLUMN_LINE, MSG_NO_NUMBER_MARK
-from llamatron.strings.messages import MSG_STARTS_AT_NEXT_BAR
-from llamatron.strings.names import MSG_NEW_SCENE_NAME
 
 
 SONG_SUFFIX = '.yml'
@@ -43,7 +39,7 @@ DEFAULT_ORDER = ORDERS[0]
 
 def octave_moved(*, octave, offset):
     """Return an octave moved by an offset, kept within the file's range."""
-    return max(min(octave + offset, MAX_OCTAVE), MIN_OCTAVE)
+    return max(min(octave + offset, limits.MAX_OCTAVE), limits.MIN_OCTAVE)
 
 
 def stepped(*, values, current, offset):
@@ -55,7 +51,7 @@ def stepped(*, values, current, offset):
 
 def numbers_text(numbers):
     """Return numbers with a space between them and a dash for each that isn't set, like 74 - - 1."""
-    return SPACE.join(MSG_NO_NUMBER_MARK if number is None else str(number) for number in numbers)
+    return SPACE.join(marks.MSG_NO_NUMBER_MARK if number is None else str(number) for number in numbers)
 
 
 def list_keys(*, page, extra, always=()):
@@ -86,15 +82,15 @@ def play_through(*, page, play, what, said):
     try:
         waits = play()
     except (SongFileError, SenderNotStarted) as error:
-        page.tell(ERR_CANT_PLAY_TITLE, str(error))
+        page.tell(errors.ERR_CANT_PLAY_TITLE, str(error))
         return
-    page.say(MSG_STARTS_AT_NEXT_BAR.format(what=what) if waits else said)
+    page.say(messages.MSG_STARTS_AT_NEXT_BAR.format(what=what) if waits else said)
 
 
 def scene_name(*, scene, index):
     """Return a scene's name, or what it's called by its place if the file gives it none."""
     name = scene.get_name()
-    return MSG_NEW_SCENE_NAME.format(number=index + 1) if name is None else str(name)
+    return names.MSG_NEW_SCENE_NAME.format(number=index + 1) if name is None else str(name)
 
 
 def ask_time_signature(*, page, title, current, then, blank_allowed):
@@ -106,11 +102,11 @@ def ask_time_signature(*, page, title, current, then, blank_allowed):
         elif is_time_signature(text):
             then(text)
         else:
-            page.refuse(ERR_TYPED_NOT_A_TIME_SIGNATURE.format(text=text, lowest=MIN_BEATS, highest=MAX_BEATS, units=UNITS_LISTED))
+            page.refuse(errors.ERR_TYPED_NOT_A_TIME_SIGNATURE.format(text=text, lowest=MIN_BEATS, highest=MAX_BEATS, units=UNITS_LISTED))
     page.ask(dialog=PromptDialog(title=title, value=current), then=answered)
 
 
 def columns(rows):
     """Return one line for each (name, description) pair, with the descriptions lined up, for a picker's choices on the clip page and the pattern editor."""
     widest = max((len(name) for name, _ in rows), default=0)
-    return [MSG_COLUMN_LINE.format(name=name.ljust(widest), description=description).rstrip() for name, description in rows]
+    return [marks.MSG_COLUMN_LINE.format(name=name.ljust(widest), description=description).rstrip() for name, description in rows]

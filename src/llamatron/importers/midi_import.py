@@ -32,11 +32,7 @@ from llamatron.importers.keys import key_of_notes, key_of_signature
 from llamatron.importers.midi_reading import Change, read_midi
 from llamatron.importers.voices import voices_of
 from llamatron.importers.writing import SongWriter, tempo_of, time_signature_text
-from llamatron.strings.errors import ERR_MIDI_NO_NOTES
-from llamatron.strings.importing import (
-    MSG_WARN_CONTROLS_LEFT_OUT, MSG_WARN_CONTROLS_MOVED, MSG_WARN_CONTROLS_NO_NOTES, MSG_WARN_CONTROLS_OFF, MSG_WARN_LEFT_OUT,
-    MSG_WARN_LENGTHS_CHANGED, MSG_WARN_NUMBERS_JOIN, MSG_WARN_SWUNG, MSG_WARN_MOVED, MSG_WARN_TEMPOS_MOVED, MSG_WARN_TOO_LOW, MSG_WARN_UNENDED,
-)
+from llamatron.strings import errors, importing
 from llamatron.support.rational import Rational
 
 # The share of all the notes moved to a step from which the import says they were played to a timing feel, a swing,
@@ -96,7 +92,7 @@ class MidiImport:
     def __init__(self, *, midi_file):
         self._contents = read_midi(midi_file)
         if not self._contents.note_count():
-            raise MidiImportProblem(ERR_MIDI_NO_NOTES)
+            raise MidiImportProblem(errors.ERR_MIDI_NO_NOTES)
 
     @classmethod
     def from_path(cls, path):
@@ -156,14 +152,14 @@ class MidiImport:
         track_names = writer.track_names()
         control_tracks = [(place, track_names[first], voices[first].lanes) for place, first in enumerate(firsts) if voices[first].lanes]
         left_out = [control for part, first in zip(parts, firsts) for control in part.controls if control.number not in voices[first].lanes]
-        numbers = MSG_WARN_NUMBERS_JOIN.join(str(number) for number in sorted({control.number for control in left_out}))
+        numbers = importing.MSG_WARN_NUMBERS_JOIN.join(str(number) for number in sorted({control.number for control in left_out}))
         tempos_moved = sum(1 for change in contents.tempos if scene_tempo_at(cut=cut, time=change.time, step_size=grid) != change.value)
         swung = moved >= SWING_SHARE * contents.note_count()
         for count, message in (
-            (moved, MSG_WARN_SWUNG if swung else MSG_WARN_MOVED), (cut.lengths_changed, MSG_WARN_LENGTHS_CHANGED), (cut.too_low, MSG_WARN_TOO_LOW),
-            (cut.controls_moved, MSG_WARN_CONTROLS_MOVED), (tempos_moved, MSG_WARN_TEMPOS_MOVED), (contents.unended, MSG_WARN_UNENDED),
-            (len(left_out), MSG_WARN_CONTROLS_LEFT_OUT if choices.controls else MSG_WARN_CONTROLS_OFF),
-            (contents.controls_without_notes, MSG_WARN_CONTROLS_NO_NOTES), (contents.left_out, MSG_WARN_LEFT_OUT),
+            (moved, importing.MSG_WARN_SWUNG if swung else importing.MSG_WARN_MOVED), (cut.lengths_changed, importing.MSG_WARN_LENGTHS_CHANGED), (cut.too_low, importing.MSG_WARN_TOO_LOW),
+            (cut.controls_moved, importing.MSG_WARN_CONTROLS_MOVED), (tempos_moved, importing.MSG_WARN_TEMPOS_MOVED), (contents.unended, importing.MSG_WARN_UNENDED),
+            (len(left_out), importing.MSG_WARN_CONTROLS_LEFT_OUT if choices.controls else importing.MSG_WARN_CONTROLS_OFF),
+            (contents.controls_without_notes, importing.MSG_WARN_CONTROLS_NO_NOTES), (contents.left_out, importing.MSG_WARN_LEFT_OUT),
         ):
             if count:
                 warnings.append(message.format(count=count, numbers=numbers))

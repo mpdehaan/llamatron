@@ -38,14 +38,12 @@ from llamatron.composition.checks import TOP_OF_FILE, check_keys, is_whole_numbe
 from llamatron.composition.corrections import LEFT_OUT, Correction
 from llamatron.composition.setting import Checked, Choice, Flag, Length, Text, WholeNumber, described, settings_held
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.defaults import (
-    DEFAULT_FOLLOW_ACTION, DEFAULT_DRUM_OCTAVE, DEFAULT_REAL_TIME, DEFAULT_OCTAVE, DEFAULT_OCTAVE_LABELS, DEFAULT_PROTECTED, DEFAULT_STEP_SIZE, FIRST_NUMBER,
-)
+from llamatron.composition import defaults, limits as set_limits
+from llamatron.strings import errors, names as names_text
 from llamatron.composition.file_format import (
     CLOSED_PATTERN_GROUPS, FOLLOW_ACTION_CHOICES, LIVE_OCTAVE_OFFSET, REGISTER_ADD_ROWS, LLAMATRON_OCTAVES_SINCE, NAMED_GENERATORS, NOTES_SINCE, OCTAVE_LABEL_CHOICES, OCTAVE_LABEL_OFFSETS, SETLISTS_SINCE,
     VISUALIZER_NAMES, ClipSlotSetting, sensible_generator_order, sensible_hidden_visualizers, sensible_visualizer, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting,
 )
-from llamatron.composition.limits import MAX_NAME_LENGTH, MAX_OCTAVE, MAX_STEP_SIZE, MIN_OCTAVE
 from llamatron.composition.generator_settings import GENERATOR_SETTINGS
 from llamatron.composition.llama_data import LlamaData, data_as_kept, data_built_anew, or_default, own_copy, written_settings
 from llamatron.composition.named_items import NamedItems
@@ -61,12 +59,6 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.music.note import ROOT_NAMES
 from llamatron.music.scale import ScaleType
 from llamatron.support.version import VERSION, is_version, version_numbers
-from llamatron.strings.errors import (
-    ERR_ADD_PAST_ALLOWED, ERR_GROUP_COPY_NAME_TOO_LONG,
-    ERR_CANT_READ, ERR_CHECKS_BAD_OCTAVE, ERR_GENERATORS_NOT_NAMED, ERR_NOT_A_SETLIST, ERR_NOT_TEXT, ERR_PROTECTED_NOT_TRUE_OR_FALSE, ERR_NOT_YAML,
-    ERR_BAD_DEFAULT_FOLLOW_ACTION, ERR_GROOVES_NOT_NAMED, ERR_INSTRUMENTS_NOT_NAMED, ERR_REAL_TIME_NOT_TRUE_OR_FALSE, ERR_SCALES_NOT_NAMED, ERR_SONG_BAD_OCTAVE_LABELS, ERR_SONG_BAD_VERSION, ERR_SONGS_NOT_NAMED, ERR_WHERE_NAMED,
-)
-from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_PATTERN_NAME, MSG_NEW_TRACK_NAME, MSG_THE_FILE
 from llamatron.support.revised import notes_change
 
 
@@ -74,7 +66,7 @@ from llamatron.support.revised import notes_change
 def _check_version(value):
     """Refuse a version that isn't three whole numbers separated by dots. Nothing depends on the version yet, but it has to be one."""
     if not is_version(value):
-        raise InvalidValue(ERR_SONG_BAD_VERSION.format(value=value))
+        raise InvalidValue(errors.ERR_SONG_BAD_VERSION.format(value=value))
 
 
 def _never_refused(value):
@@ -84,20 +76,20 @@ def _never_refused(value):
 # The set's own settings, each described once, in the order they're written to a file. The title, author, description and notes are only for people reading or sharing the file.
 SETTINGS = described(
     Checked(name=SetlistSetting.VERSION, check=_check_version),
-    Text(name=SetlistSetting.TITLE, error=ERR_NOT_TEXT),
-    Text(name=SetlistSetting.AUTHOR, error=ERR_NOT_TEXT),
-    Text(name=SetlistSetting.DESCRIPTION, error=ERR_NOT_TEXT),
-    Text(name=SetlistSetting.NOTES, error=ERR_NOT_TEXT),
-    Length(name=SetlistSetting.STEP_SIZE, most=MAX_STEP_SIZE),
-    WholeNumber(name=SetlistSetting.DEFAULT_OCTAVE, lowest=MIN_OCTAVE, highest=MAX_OCTAVE, error=ERR_CHECKS_BAD_OCTAVE),
-    WholeNumber(name=SetlistSetting.DEFAULT_DRUM_OCTAVE, lowest=MIN_OCTAVE, highest=MAX_OCTAVE, error=ERR_CHECKS_BAD_OCTAVE),
-    Choice(name=SetlistSetting.OCTAVE_LABELS, choices=OCTAVE_LABEL_CHOICES, default=LEFT_OUT, error=ERR_SONG_BAD_OCTAVE_LABELS),
-    Choice(name=SetlistSetting.DEFAULT_FOLLOW_ACTION, choices=FOLLOW_ACTION_CHOICES, default=LEFT_OUT, error=ERR_BAD_DEFAULT_FOLLOW_ACTION),
-    Flag(name=SetlistSetting.REAL_TIME, error=ERR_REAL_TIME_NOT_TRUE_OR_FALSE),
+    Text(name=SetlistSetting.TITLE, error=errors.ERR_NOT_TEXT),
+    Text(name=SetlistSetting.AUTHOR, error=errors.ERR_NOT_TEXT),
+    Text(name=SetlistSetting.DESCRIPTION, error=errors.ERR_NOT_TEXT),
+    Text(name=SetlistSetting.NOTES, error=errors.ERR_NOT_TEXT),
+    Length(name=SetlistSetting.STEP_SIZE, most=set_limits.MAX_STEP_SIZE),
+    WholeNumber(name=SetlistSetting.DEFAULT_OCTAVE, lowest=set_limits.MIN_OCTAVE, highest=set_limits.MAX_OCTAVE, error=errors.ERR_CHECKS_BAD_OCTAVE),
+    WholeNumber(name=SetlistSetting.DEFAULT_DRUM_OCTAVE, lowest=set_limits.MIN_OCTAVE, highest=set_limits.MAX_OCTAVE, error=errors.ERR_CHECKS_BAD_OCTAVE),
+    Choice(name=SetlistSetting.OCTAVE_LABELS, choices=OCTAVE_LABEL_CHOICES, default=LEFT_OUT, error=errors.ERR_SONG_BAD_OCTAVE_LABELS),
+    Choice(name=SetlistSetting.DEFAULT_FOLLOW_ACTION, choices=FOLLOW_ACTION_CHOICES, default=LEFT_OUT, error=errors.ERR_BAD_DEFAULT_FOLLOW_ACTION),
+    Flag(name=SetlistSetting.REAL_TIME, error=errors.ERR_REAL_TIME_NOT_TRUE_OR_FALSE),
     Checked(name=SetlistSetting.VISUALIZER, check=_never_refused),
     Checked(name=SetlistSetting.HIDDEN_VISUALIZERS, check=_never_refused),
     Checked(name=SetlistSetting.GENERATOR_ORDER, check=_never_refused),
-    Flag(name=SetlistSetting.PROTECTED, error=ERR_PROTECTED_NOT_TRUE_OR_FALSE),
+    Flag(name=SetlistSetting.PROTECTED, error=errors.ERR_PROTECTED_NOT_TRUE_OR_FALSE),
 )
 # The settings whose message names the setting itself, so that a file's problem with one has no place in front of it.
 NAMED_BY_THEIR_MESSAGE = (SetlistSetting.VERSION, SetlistSetting.TITLE, SetlistSetting.AUTHOR, SetlistSetting.DESCRIPTION, SetlistSetting.NOTES)
@@ -144,17 +136,17 @@ def starter_pattern():
 
 def new_setlist():
     """Return the data of a new set: a C major scale and a starter pattern, both deletable, and one song called untitled whose first track plays the pattern in its first scene, the pattern in the group named after that track."""
-    first_pattern = MSG_NEW_PATTERN_NAME.format(number=FIRST_NUMBER)
-    first_track = MSG_NEW_TRACK_NAME.format(number=FIRST_NUMBER)
+    first_pattern = names_text.MSG_NEW_PATTERN_NAME.format(number=defaults.FIRST_NUMBER)
+    first_track = names_text.MSG_NEW_TRACK_NAME.format(number=defaults.FIRST_NUMBER)
     song = started_song(scale=DEFAULT_SCALE)
     song[Section.SCENES][0][SceneSetting.TRACKS] = {first_track: {ClipSlotSetting.PATTERN: first_pattern}}
     return {
         Section.SCALES: {DEFAULT_SCALE: {ScaleSetting.ROOT: ROOT_NAMES[0], ScaleSetting.TYPE: scale_type_name(ScaleType.MAJOR)}},
-        SetlistSetting.STEP_SIZE: DEFAULT_STEP_SIZE,
-        SetlistSetting.DEFAULT_OCTAVE: DEFAULT_OCTAVE, SetlistSetting.DEFAULT_DRUM_OCTAVE: DEFAULT_DRUM_OCTAVE,
-        SetlistSetting.OCTAVE_LABELS: DEFAULT_OCTAVE_LABELS,
+        SetlistSetting.STEP_SIZE: defaults.DEFAULT_STEP_SIZE,
+        SetlistSetting.DEFAULT_OCTAVE: defaults.DEFAULT_OCTAVE, SetlistSetting.DEFAULT_DRUM_OCTAVE: defaults.DEFAULT_DRUM_OCTAVE,
+        SetlistSetting.OCTAVE_LABELS: defaults.DEFAULT_OCTAVE_LABELS,
         Section.PATTERNS: {first_pattern: {**starter_pattern(), PatternSetting.GROUP: first_track}}, Section.ARPS: {}, Section.AUTO_RATCHETS: {}, Section.DRIFTS: {}, Section.PROGRESSIONS: {}, Section.VOICE_LEADINGS: {}, Section.STRUMS: {}, Section.GUITARIFIES: {}, Section.EUCLIDS: {}, Section.DENSITIES: {}, Section.SWELLS: {}, Section.ARTICULATES: {}, Section.GLIDES: {}, Section.SHORTENS: {}, Section.RUSHES: {}, Section.DRAGS: {}, Section.HOCKETS: {}, Section.FOLLOW_CHORDS: {}, Section.PHRASINGS: {}, Section.CHAINS: {},
-        Section.SONGS: {MSG_DEFAULT_SONG_NAME: song},
+        Section.SONGS: {names_text.MSG_DEFAULT_SONG_NAME: song},
     }
 
 
@@ -233,7 +225,7 @@ class Setlist(LlamaData):
             song.fill_in_defaults()
 
     @classmethod
-    def from_data(cls, *, data, where=MSG_THE_FILE, song=None, one_song_name=MSG_DEFAULT_SONG_NAME):
+    def from_data(cls, *, data, where=names_text.MSG_THE_FILE, song=None, one_song_name=names_text.MSG_DEFAULT_SONG_NAME):
         """Read a whole set file's data, checking every part of it, in the order the file is read.
 
         A file saved before sets existed, with one song's tracks and scenes at the top, is read as a
@@ -246,7 +238,7 @@ class Setlist(LlamaData):
         return setlist
 
     @classmethod
-    def from_data_corrected(cls, *, data, where=MSG_THE_FILE, one_song_name=MSG_DEFAULT_SONG_NAME):
+    def from_data_corrected(cls, *, data, where=names_text.MSG_THE_FILE, one_song_name=names_text.MSG_DEFAULT_SONG_NAME):
         """Return the set a file's data describes with every value that can't be used changed to the allowed value nearest it, and the corrections made, in the order they were found.
 
         The data is read as from_data reads it, which stops at the first wrong value. A value
@@ -307,7 +299,7 @@ class Setlist(LlamaData):
                 found = holder[row]
                 used = [held_add(value=value, most=most) for value in found]
                 with reading(self._where(section=Section.PATTERNS, name=name)):
-                    raise InvalidValue(ERR_ADD_PAST_ALLOWED.format(row=row, register=register, most=most),
+                    raise InvalidValue(errors.ERR_ADD_PAST_ALLOWED.format(row=row, register=register, most=most),
                                        correction=Correction(holder=holder, key=row, name=row, found=found, used=used))
 
     @notes_change
@@ -323,13 +315,13 @@ class Setlist(LlamaData):
 
     def _read_scales(self, data):
         if not isinstance(data.get(Section.SCALES) or {}, dict):
-            raise SongFileError(ERR_SCALES_NOT_NAMED)
+            raise SongFileError(errors.ERR_SCALES_NOT_NAMED)
         self._read_items(data=data, section=Section.SCALES)
 
     def _read_grooves(self, data):
         grooves = data.get(Section.GROOVES) or {}
         if not isinstance(grooves, dict):
-            raise SongFileError(ERR_GROOVES_NOT_NAMED)
+            raise SongFileError(errors.ERR_GROOVES_NOT_NAMED)
         for name in grooves:
             with reading(self._where(section=Section.GROOVES, name=name)):
                 check_groove_name(name)
@@ -337,17 +329,17 @@ class Setlist(LlamaData):
 
     def _read_instruments(self, data):
         if not isinstance(data.get(Section.INSTRUMENTS) or {}, dict):
-            raise SongFileError(ERR_INSTRUMENTS_NOT_NAMED)
+            raise SongFileError(errors.ERR_INSTRUMENTS_NOT_NAMED)
         self._read_items(data=data, section=Section.INSTRUMENTS)
 
     def _read_generators(self, *, data, section):
         if not isinstance(data.get(section) or {}, dict):
-            raise SongFileError(ERR_GENERATORS_NOT_NAMED.format(section=section))
+            raise SongFileError(errors.ERR_GENERATORS_NOT_NAMED.format(section=section))
         self._read_items(data=data, section=section)
 
     def _read_songs(self, data):
         if not isinstance(data.get(Section.SONGS) or {}, dict):
-            raise SongFileError(ERR_SONGS_NOT_NAMED)
+            raise SongFileError(errors.ERR_SONGS_NOT_NAMED)
         self._read_items(data=data, section=Section.SONGS)
 
     def _read_items(self, *, data, section):
@@ -374,7 +366,7 @@ class Setlist(LlamaData):
 
     def _where(self, *, section, name):
         """Return how a message places one item of a section, like pattern (tune)."""
-        return ERR_WHERE_NAMED.format(label=SECTION_LABELS[section], name=name)
+        return errors.ERR_WHERE_NAMED.format(label=SECTION_LABELS[section], name=name)
 
     @notes_change
     def _set_section(self, *, section, items):
@@ -406,11 +398,11 @@ class Setlist(LlamaData):
 
     def get_step_size(self):
         """Return how long each step of a pattern is, in whole notes, unless the pattern sets its own."""
-        return written_length(value=self._setting(name=SetlistSetting.STEP_SIZE, default=DEFAULT_STEP_SIZE), most=MAX_STEP_SIZE)
+        return written_length(value=self._setting(name=SetlistSetting.STEP_SIZE, default=defaults.DEFAULT_STEP_SIZE), most=set_limits.MAX_STEP_SIZE)
 
     def get_written_step_size(self):
         """Return the step size as the file writes it, like 1/16, which a new arp starts from."""
-        return self._setting(name=SetlistSetting.STEP_SIZE, default=DEFAULT_STEP_SIZE)
+        return self._setting(name=SetlistSetting.STEP_SIZE, default=defaults.DEFAULT_STEP_SIZE)
 
     def get_pattern_step_size(self, pattern):
         """Return how long each step of a pattern is: its own step size, or else the set's."""
@@ -431,14 +423,14 @@ class Setlist(LlamaData):
             generator.adds_to_registers() for section in (Section.ARPS, Section.DRIFTS) for generator in self._section(section).values())
 
     def get_default_octave(self):
-        return self._setting(name=SetlistSetting.DEFAULT_OCTAVE, default=DEFAULT_OCTAVE)
+        return self._setting(name=SetlistSetting.DEFAULT_OCTAVE, default=defaults.DEFAULT_OCTAVE)
 
     def get_default_drum_octave(self):
-        return self._setting(name=SetlistSetting.DEFAULT_DRUM_OCTAVE, default=DEFAULT_DRUM_OCTAVE)
+        return self._setting(name=SetlistSetting.DEFAULT_DRUM_OCTAVE, default=defaults.DEFAULT_DRUM_OCTAVE)
 
     def get_octave_labels(self):
         """Return how the tracker numbers octaves on screen: Live's labels, or llamatron's own from C0."""
-        return self._setting(name=SetlistSetting.OCTAVE_LABELS, default=DEFAULT_OCTAVE_LABELS)
+        return self._setting(name=SetlistSetting.OCTAVE_LABELS, default=defaults.DEFAULT_OCTAVE_LABELS)
 
     def octave_label_offset(self):
         """Return how far below the file's octave numbers the shown ones are: 2 with Live's labels."""
@@ -454,7 +446,7 @@ class Setlist(LlamaData):
 
     def get_default_follow_action(self):
         """Return what a clip sends down in real-time playback when its scene is done, unless the clip says otherwise: one of FOLLOW_ACTION_CHOICES."""
-        return self._setting(name=SetlistSetting.DEFAULT_FOLLOW_ACTION, default=DEFAULT_FOLLOW_ACTION)
+        return self._setting(name=SetlistSetting.DEFAULT_FOLLOW_ACTION, default=defaults.DEFAULT_FOLLOW_ACTION)
 
     def follow_action_of(self, clip_slot):
         """Return what a clip slot sends down in real-time playback when its scene is done: its own setting, or the set's default."""
@@ -463,7 +455,7 @@ class Setlist(LlamaData):
 
     def is_protected(self):
         """Return whether the set's file is protected, so that the tracker saves a copy rather than writing over it."""
-        return self._setting(name=SetlistSetting.PROTECTED, default=DEFAULT_PROTECTED)
+        return self._setting(name=SetlistSetting.PROTECTED, default=defaults.DEFAULT_PROTECTED)
 
     def get_genres(self):
         """Return the genres the set's songs say they are, each once in the songs' order."""
@@ -925,9 +917,9 @@ class Setlist(LlamaData):
     def copy_pattern_group(self, *, group, new):
         """Copy every pattern of a group into a new group, and return the copies' names. A name that would be longer than a name may be refuses the whole copy."""
         names = self.names_in_copied_group(group=group, new=new)
-        too_long = [copied for copied in names.values() if len(copied) > MAX_NAME_LENGTH]
+        too_long = [copied for copied in names.values() if len(copied) > set_limits.MAX_NAME_LENGTH]
         if too_long:
-            raise ValueError(ERR_GROUP_COPY_NAME_TOO_LONG.format(name=too_long[0], most=MAX_NAME_LENGTH))
+            raise ValueError(errors.ERR_GROUP_COPY_NAME_TOO_LONG.format(name=too_long[0], most=set_limits.MAX_NAME_LENGTH))
         for name, copied in names.items():
             self.copy_item(section=Section.PATTERNS, name=name, new=copied).set_group(new)
         return list(names.values())
@@ -988,7 +980,7 @@ class Setlist(LlamaData):
 
     def is_real_time(self):
         """Return whether the set plays in real time through its instruments, the main screen's Real Time switch."""
-        return self._setting(name=SetlistSetting.REAL_TIME, default=DEFAULT_REAL_TIME)
+        return self._setting(name=SetlistSetting.REAL_TIME, default=defaults.DEFAULT_REAL_TIME)
 
     def get_visualizer(self):
         """Return the visualizer mode Arrange's visualizer key shows first, by its name, unless a song names its own, or None for the first in the list."""
@@ -1041,9 +1033,9 @@ def _file_data(path):
         with open(path, encoding=FILE_ENCODING) as file:
             return load_safely(file)
     except OSError as error:
-        raise SongFileError(ERR_CANT_READ.format(path=path, reason=error.strerror)) from error
+        raise SongFileError(errors.ERR_CANT_READ.format(path=path, reason=error.strerror)) from error
     except yaml.YAMLError as error:
-        raise SongFileError(ERR_NOT_YAML.format(path=path, problem=error)) from error
+        raise SongFileError(errors.ERR_NOT_YAML.format(path=path, problem=error)) from error
 
 
 def closed_groups_held(data):
@@ -1063,7 +1055,7 @@ def _as_a_set_is_written(*, data, where, one_song_name):
     # Every setting has a default, so an empty file is an empty set.
     data = {} if data is None else data
     if not isinstance(data, dict):
-        raise SongFileError(ERR_NOT_A_SETLIST)
+        raise SongFileError(errors.ERR_NOT_A_SETLIST)
     if holds_one_song(data):
         data = as_setlist_data(data=data, song_name=one_song_name)
     with reading(where):

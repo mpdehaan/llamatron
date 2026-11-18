@@ -23,12 +23,8 @@ how far the grid has scrolled, and this draws from them, as the pattern editor's
 from the editor.
 """
 
-from llamatron.composition.defaults import DEFAULT_REPEAT
-from llamatron.strings.legends import What
-from llamatron.strings.marks import (
-    MSG_ADD_ROW_MARK, MSG_CLIP_WITH_MARKS, MSG_DIRECTION_MARK, MSG_GRAB_MARK, MSG_LAUNCH_APART_MARK, MSG_LOOP_MARK, MSG_MORPH_MARK, MSG_PLAY_MARK, MSG_REPEAT_MARK,
-    MSG_PICKED_CLOSE, MSG_PICKED_OPEN, MSG_SCENE_ROW, MSG_SONG_BUTTON, MSG_SOUNDING_MARK, MSG_STOP_MARK,
-)
+from llamatron.composition import defaults
+from llamatron.strings import legends, marks as marks_text
 from llamatron.tui.components.frame import Frame
 from llamatron.tui.components.length_bar import LengthBar
 from rich.text import Text
@@ -79,17 +75,17 @@ def clip_text(clip_slot, *, repeats_left=None):
     name = clip_slot.get_display_name()
     marks = NOTHING
     if clip_slot.get_direction():
-        marks += MSG_DIRECTION_MARK
+        marks += marks_text.MSG_DIRECTION_MARK
     if clip_slot.get_grab_track():
-        marks += MSG_GRAB_MARK
+        marks += marks_text.MSG_GRAB_MARK
     if clip_slot.get_morph_target():
-        marks += MSG_MORPH_MARK
+        marks += marks_text.MSG_MORPH_MARK
     if clip_slot.loops():
-        marks += MSG_LOOP_MARK
-    if clip_slot.get_repeat() > DEFAULT_REPEAT:
-        marks += MSG_REPEAT_MARK.format(repeat=clip_slot.get_repeat() if repeats_left is None else repeats_left)
+        marks += marks_text.MSG_LOOP_MARK
+    if clip_slot.get_repeat() > defaults.DEFAULT_REPEAT:
+        marks += marks_text.MSG_REPEAT_MARK.format(repeat=clip_slot.get_repeat() if repeats_left is None else repeats_left)
     if marks:
-        return MSG_CLIP_WITH_MARKS.format(name=fit(text=name, width=max(CELL_WIDTH - len(marks) - 2, 1)).rstrip(), marks=marks)
+        return marks_text.MSG_CLIP_WITH_MARKS.format(name=fit(text=name, width=max(CELL_WIDTH - len(marks) - 2, 1)).rstrip(), marks=marks)
     return name
 
 
@@ -142,8 +138,8 @@ class ArrangeDrawing:
             text = detail.text if room is None or len(detail.text) <= room else fit(text=detail.text, width=room).rstrip()
             line.write(column=column, text=text, style=detail.style)
             if place == picked:
-                line.write(column=column - 1, text=MSG_PICKED_OPEN, style=Style.BOLD)
-                line.write(column=column + len(text), text=MSG_PICKED_CLOSE, style=Style.BOLD)
+                line.write(column=column - 1, text=marks_text.MSG_PICKED_OPEN, style=Style.BOLD)
+                line.write(column=column + len(text), text=marks_text.MSG_PICKED_CLOSE, style=Style.BOLD)
 
     def track_width(self, place):
         """Return how wide a track's column is between its dividers: CELL_WIDTH, or in the details view as wide as its details need, and CELL_WIDTH for the + after the last track."""
@@ -270,12 +266,12 @@ class ArrangeDrawing:
         scene = self._page.scenes()[index]
         repeat = scene.get_repeat()
         name = scene_name(scene=scene, index=index)
-        if repeat > DEFAULT_REPEAT:
-            name += SPACE + MSG_REPEAT_MARK.format(repeat=repeat)
+        if repeat > defaults.DEFAULT_REPEAT:
+            name += SPACE + marks_text.MSG_REPEAT_MARK.format(repeat=repeat)
         if not scene.launches_together():
-            name += SPACE + MSG_LAUNCH_APART_MARK
+            name += SPACE + marks_text.MSG_LAUNCH_APART_MARK
         length = clock(self._page.document().lengths().scene_seconds(index))
-        return fit(text=MSG_SCENE_ROW.format(number=index + 1, name=name), width=SCENE_LABEL_WIDTH - len(length) - 1) + length
+        return fit(text=marks_text.MSG_SCENE_ROW.format(number=index + 1, name=name), width=SCENE_LABEL_WIDTH - len(length) - 1) + length
 
     def draw_header(self, lines, *, first, last):
         """Draw the row of track names, with the + after the last one, over the corner, and the rule under them.
@@ -291,7 +287,7 @@ class ArrangeDrawing:
         transport = self._page.transport()
         if self._page.real_time_on():
             playing = transport.is_playing()
-            names.write(column=SCENE_LABEL_COLUMN, text=MSG_SONG_BUTTON.format(mark=MSG_STOP_MARK if playing else MSG_PLAY_MARK), style=Style.PLAYING if playing else Style.DIM)
+            names.write(column=SCENE_LABEL_COLUMN, text=marks_text.MSG_SONG_BUTTON.format(mark=marks_text.MSG_STOP_MARK if playing else marks_text.MSG_PLAY_MARK), style=Style.PLAYING if playing else Style.DIM)
         for place in range(first, last):
             column = self.cell_column(place) + 1
             width = self.track_width(place)
@@ -300,14 +296,14 @@ class ArrangeDrawing:
                 if self._page.real_time_on():
                     names.write(column=column, text=fit(text=SPACE + shown, width=width - SOUNDING_MARK_WIDTH), style=Style.BOLD)
                     if transport.is_track_sounding(tracks[place]):
-                        names.write(column=column + width - 1, text=MSG_SOUNDING_MARK, style=Style.SOUNDING)
+                        names.write(column=column + width - 1, text=marks_text.MSG_SOUNDING_MARK, style=Style.SOUNDING)
                 else:
                     names.write(column=column, text=fit(text=SPACE + shown, width=width), style=Style.BOLD)
                 if self.cell_open(track_cell(tracks[place])):
                     here = self._page.on_track_name() and self._page.track_place() == place
                     self.draw_details(lines[2:-1], details=self.layout().track_details[place], column=column + TRACK_DETAIL_INDENT, here=here)
             else:
-                names.write(column=column, text=MSG_ADD_ROW_MARK.center(width), style=Style.DIM)
+                names.write(column=column, text=marks_text.MSG_ADD_ROW_MARK.center(width), style=Style.DIM)
         if last < len(tracks) + 1:
             names.write(column=self.cell_column(last) + 1, text=Box.MORE, style=Style.DIM)
         self.draw_rule(lines[-1], first=first, last=last)
@@ -343,8 +339,8 @@ class ArrangeDrawing:
             clip_slot = self._page.document().clip_slot(index=index, track=tracks[place])
             if clip_slot is None:
                 if index == self._page.row and self._page.on_clip_slot() and self._page.track_place() == place:
-                    lines[1].write(column=column, text=MSG_ADD_ROW_MARK.center(width))
-                    lines[2].write(column=column, text=What.ADD.center(width))
+                    lines[1].write(column=column, text=marks_text.MSG_ADD_ROW_MARK.center(width))
+                    lines[2].write(column=column, text=legends.What.ADD.center(width))
                 continue
             if real_time:
                 playing = transport.is_clip_playing(index=index, track=tracks[place])
@@ -381,16 +377,16 @@ class ArrangeDrawing:
     def play_button(line, *, column, playing):
         """Draw a play button, dim, or the stop mark in the playing colour while the thing plays, the one use of colour here."""
         if playing:
-            line.write(column=column, text=MSG_STOP_MARK, style=Style.PLAYING)
+            line.write(column=column, text=marks_text.MSG_STOP_MARK, style=Style.PLAYING)
         else:
-            line.write(column=column, text=MSG_PLAY_MARK, style=Style.DIM)
+            line.write(column=column, text=marks_text.MSG_PLAY_MARK, style=Style.DIM)
 
     def draw_footer(self, lines, *, at_end, first, last):
         """Draw the spacer under the last scene and the + row where a scene is added, when the end of the list is on screen."""
         for line in lines:
             self.draw_dividers(line, first=first, last=last)
         if at_end:
-            lines[1].write(column=SCENE_BAR_COLUMN, text=MSG_ADD_ROW_MARK, style=Style.DIM)
+            lines[1].write(column=SCENE_BAR_COLUMN, text=marks_text.MSG_ADD_ROW_MARK, style=Style.DIM)
 
     def frame_place(self, *, shown, first, last):
         """Return the frame around what the cursor is on, the line its top edge is on and how many lines it holds, or None when the cursor is off screen."""

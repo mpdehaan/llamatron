@@ -27,8 +27,7 @@ from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import ArpSetting
 from llamatron.composition.groove import FactoryGroove
 from llamatron.composition.setlist import DEFAULT_SCALE
-from llamatron.strings.errors import ERR_EMPTY_NAME, ERR_NAME_IN_USE
-from llamatron.strings.marks import MSG_CRUMB_SEPARATOR
+from llamatron.strings import errors, marks
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.drawing import NOTHING
 from llamatron.tui.keys import Key
@@ -104,11 +103,11 @@ class NamedItemChecks:
 
     def crumbs_of(self, name):
         """Return the page's crumbs for a name, as the header joins them."""
-        return MSG_CRUMB_SEPARATOR.join([*self.PAGE.CRUMBS_BEFORE, self.PAGE.ITEM_CRUMB.format(name=name), *self.PAGE.CRUMBS_AFTER])
+        return marks.MSG_CRUMB_SEPARATOR.join([*self.PAGE.CRUMBS_BEFORE, self.PAGE.ITEM_CRUMB.format(name=name), *self.PAGE.CRUMBS_AFTER])
 
     def assert_crumbs_name(self, name):
         """Check that the page's crumbs are its own with the name among them, and that the header shows the name, however much of the rest fits."""
-        self.assertEqual(MSG_CRUMB_SEPARATOR.join(self.page.crumb_trail()), self.crumbs_of(name))
+        self.assertEqual(marks.MSG_CRUMB_SEPARATOR.join(self.page.crumb_trail()), self.crumbs_of(name))
         self.assertIn(name, self.header())
 
     async def another(self):
@@ -146,9 +145,9 @@ class NamedItemChecks:
         other = await self.another()
         before = self.document.names_of(self.PAGE.SECTION)
         await self.rename_to(other)
-        self.assertIn(ERR_NAME_IN_USE.format(name=other), self.text())
+        self.assertIn(errors.ERR_NAME_IN_USE.format(name=other), self.text())
         await self.rename_to(NOTHING)
-        self.assertIn(ERR_EMPTY_NAME, self.text())
+        self.assertIn(errors.ERR_EMPTY_NAME, self.text())
         self.assertEqual(self.document.names_of(self.PAGE.SECTION), before)
         self.assertEqual(self.page.item, self.FIRST)
 
@@ -209,7 +208,7 @@ class TestGrooveEditorShowsItsGroove(NamedItemChecks, UITest):
 
     async def test_a_factory_grooves_name_is_in_use(self):
         await self.rename_to(FactoryGroove.SWING_58)
-        self.assertIn(ERR_NAME_IN_USE.format(name=FactoryGroove.SWING_58), self.text())
+        self.assertIn(errors.ERR_NAME_IN_USE.format(name=FactoryGroove.SWING_58), self.text())
         self.assertEqual(self.page.item, A_GROOVE)
 
 

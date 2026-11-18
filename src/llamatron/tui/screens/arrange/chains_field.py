@@ -15,9 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The Chains field, which the clip page, the Scene page and the track editor share: the chains something runs, and the list page that edits them."""
 
-from llamatron.strings.labels import MSG_CHAINS_LABEL
-from llamatron.strings.legends import MSG_NO_CHAIN_WHAT, What
-from llamatron.strings.marks import MSG_CHAIN_JOIN, MSG_NONE_SHOWN
+from llamatron.strings import labels, legends, marks
 from llamatron.tui.screens.generators.chain_list_page import ChainListPage
 from llamatron.tui.screens.shared.field import Field
 
@@ -29,7 +27,7 @@ def chains_field(*, page, names, store):
     the Scene page and the track editor share the field and the page it opens.
     """
     return Field(
-        label=MSG_CHAINS_LABEL, value=lambda: MSG_CHAIN_JOIN.join(names()) or MSG_NONE_SHOWN, adjust=None,
-        enter=lambda: page.show_page(ChainListPage(holder=page.holder, opener=page, names=names, store=store)), enter_what=What.EDIT,
-        clear=lambda: store([]), clear_what=MSG_NO_CHAIN_WHAT,
+        label=labels.MSG_CHAINS_LABEL, value=lambda: marks.MSG_CHAIN_JOIN.join(names()) or marks.MSG_NONE_SHOWN, adjust=None,
+        enter=lambda: page.show_page(ChainListPage(holder=page.holder, opener=page, names=names, store=store)), enter_what=legends.What.EDIT,
+        clear=lambda: store([]), clear_what=legends.MSG_NO_CHAIN_WHAT,
     )

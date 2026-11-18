@@ -23,10 +23,7 @@ knows nothing of any toolkit, so the offsets editor draws the rules and styles a
 """
 
 from llamatron.tui.drawing import NOTHING
-from llamatron.strings.marks import (
-    MSG_CURSOR_STEP_MARKS, MSG_CURSOR_VALUE_MARKS, MSG_GAUGE_BAR, MSG_OTHER_VALUE, MSG_OVER_THE_TOP_MARK, MSG_POSITIVE_VALUE,
-    MSG_UNDER_THE_BOTTOM_MARK,
-)
+from llamatron.strings import marks
 
 
 class SignedGauge:
@@ -53,8 +50,8 @@ class SignedGauge:
         if value is None:
             return NOTHING
         if level > 0:
-            return MSG_GAUGE_BAR if value >= level else NOTHING
-        return MSG_GAUGE_BAR if value <= level else NOTHING
+            return marks.MSG_GAUGE_BAR if value >= level else NOTHING
+        return marks.MSG_GAUGE_BAR if value <= level else NOTHING
 
     def value_text(self, place):
         """Return a value as the row under the gauge shows it: signed, marked when the gauge is too short to reach it, and bracketed under the cursor."""
@@ -64,13 +61,13 @@ class SignedGauge:
         else:
             mark = NOTHING
             if value > self.levels:
-                mark = MSG_OVER_THE_TOP_MARK
+                mark = marks.MSG_OVER_THE_TOP_MARK
             elif value < -self.levels:
-                mark = MSG_UNDER_THE_BOTTOM_MARK
-            text = (MSG_POSITIVE_VALUE if value > 0 else MSG_OTHER_VALUE).format(value=value, mark=mark)
-        return MSG_CURSOR_VALUE_MARKS.format(text=text) if place == self.cursor else text
+                mark = marks.MSG_UNDER_THE_BOTTOM_MARK
+            text = (marks.MSG_POSITIVE_VALUE if value > 0 else marks.MSG_OTHER_VALUE).format(value=value, mark=mark)
+        return marks.MSG_CURSOR_VALUE_MARKS.format(text=text) if place == self.cursor else text
 
     def step_text(self, place):
         """Return a step's number, bracketed under the cursor."""
         text = str(place + 1)
-        return MSG_CURSOR_STEP_MARKS.format(text=text) if place == self.cursor else text
+        return marks.MSG_CURSOR_STEP_MARKS.format(text=text) if place == self.cursor else text

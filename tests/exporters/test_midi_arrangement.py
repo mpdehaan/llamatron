@@ -48,7 +48,7 @@ from llamatron.grid.clip_grid import ClipGrid
 from llamatron.grid.control import Control
 from llamatron.grid.clip_row import ClipRow
 from llamatron.grid.clip_column import ClipColumn
-from llamatron.strings.errors import ERR_FILES_EXIST
+from llamatron.strings import errors
 
 QUARTER = 0.25
 C4 = Note(name='C', octave_number=4, length=QUARTER)
@@ -243,7 +243,7 @@ class TestMidiSong(ArrangementTestCase):
         with open(path, WRITE_TEXT) as file:
             file.write(AN_EXISTING_FILE)
         printed = export(MidiSong(directory=self.directory, grid=self.grid))
-        self.assertEqual(printed.strip(), ERR_FILES_EXIST.format(directory=self.directory, files=os.path.basename(path)))
+        self.assertEqual(printed.strip(), errors.ERR_FILES_EXIST.format(directory=self.directory, files=os.path.basename(path)))
         with open(path) as file:
             self.assertEqual(file.read(), AN_EXISTING_FILE)
 
@@ -304,7 +304,7 @@ class TestMidiStems(ArrangementTestCase):
         with open(self.path(name), WRITE_TEXT) as file:
             file.write(AN_EXISTING_FILE)
         printed = export(MidiStems(directory=self.directory, grid=self.grid))
-        self.assertEqual(printed.strip(), ERR_FILES_EXIST.format(directory=self.directory, files=name))
+        self.assertEqual(printed.strip(), errors.ERR_FILES_EXIST.format(directory=self.directory, files=name))
         self.assertEqual(os.listdir(self.directory), [name])
 
 

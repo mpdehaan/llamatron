@@ -20,11 +20,11 @@
 from llamatron.composition.clip_slot import ClipSlot, FIRST_MORPH_STYLE
 from llamatron.composition.file_format import ClipSlotSetting, RegisterSetting, Section
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.limits import MIN_REPEAT
+from llamatron.composition import limits
+from llamatron.strings import names as names_text
 from llamatron.composition.scene import Scene
 from llamatron.composition.track import Track
 from llamatron.composition.naming import copy_name
-from llamatron.strings.names import MSG_SCENE_WITHOUT_A_NAME
 
 
 
@@ -186,7 +186,7 @@ class SongEdits:
         """Put a copy of a scene right after it, named after it."""
         taken = {scene.get_name() for scene in self.song().get_scenes()}
         name = self._scene(index).get_name()
-        new = copy_name(name=MSG_SCENE_WITHOUT_A_NAME if name is None else name, taken=taken)
+        new = copy_name(name=names_text.MSG_SCENE_WITHOUT_A_NAME if name is None else name, taken=taken)
         self._change(self.song().copy_scene, index=index, name=new)
 
     def delete_scene(self, index):
@@ -323,7 +323,7 @@ class SongEdits:
 
     def set_clip_slot_repeat(self, *, index, track, repeat):
         """Set how many times a clip plays. Going back to once drops its morph, which runs across repeats."""
-        self._change(self.clip_slot(index=index, track=track).set_repeat, max(repeat, MIN_REPEAT))
+        self._change(self.clip_slot(index=index, track=track).set_repeat, max(repeat, limits.MIN_REPEAT))
 
     def set_clip_slot_morph_target(self, *, index, track, pattern):
         """Make a clip morph to a pattern across its repeats, in the first style unless it has one."""

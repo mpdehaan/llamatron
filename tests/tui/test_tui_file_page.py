@@ -23,23 +23,18 @@ from unittest import mock
 from tests.support.ui_testing import KEY_SHOWN, UITest, key_of, key_name
 from llamatron.composition.file_format import Section, STEP_SIZE_CHOICES
 from llamatron.composition.setlist import NO_TEXT
-from llamatron.composition.defaults import FIRST_NUMBER
+from llamatron.composition import defaults
+from llamatron.strings import errors, labels as labels_text, legends, marks, messages, names
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.composition.setlist import DEFAULT_SCALE
 from llamatron.tui.document import Document
-from llamatron.strings.errors import ERR_ADD_A_SCALE_FIRST, ERR_CANT_SAVE_TITLE
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.open_page import OpenPage
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.support.version import VERSION
-from llamatron.strings.labels import MSG_DESCRIPTION_LABEL, MSG_NOTES_LABEL, MSG_DEFAULT_FOLLOW_ACTION_LABEL, MSG_PROTECTED_LABEL, MSG_SCALE_LABEL, PageName
-from llamatron.strings.legends import KeyName
-from llamatron.strings.marks import MSG_EXPORTS_AFTER_SAVING, MSG_NOT_SET
-from llamatron.strings.messages import MSG_FILE_CHANGED_ELSEWHERE_TITLE, MSG_FILE_UNCHANGED, MSG_PROTECTED_TITLE
-from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_PATTERN_NAME
 from llamatron.tui import keybindings
 
 SET_FILE = 'my_set.yml'
@@ -67,22 +62,22 @@ class TestFilePage(UITest):
 
     async def test_save_and_open_buttons_come_after_a_blank_line_and_do_what_their_keys_do(self):
         labels = [field.label for field in self.app.screen.fields()]
-        self.assertEqual(labels[-2:], [PageName.SAVE, PageName.OPEN])
+        self.assertEqual(labels[-2:], [labels_text.PageName.SAVE, labels_text.PageName.OPEN])
         self.assert_buttons_come_last_after_a_blank_line()
-        await self.select_field(PageName.SAVE)
+        await self.select_field(labels_text.PageName.SAVE)
         self.assertIn(key_name(keybindings.Page.SAVE), self.text())
         self.assertIn(key_name(keybindings.Page.OPEN_SET), self.text())
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, PromptDialog)
         await self.press(Key.ESCAPE)
-        await self.select_field(PageName.OPEN)
+        await self.select_field(labels_text.PageName.OPEN)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, OpenPage)
 
     async def test_the_loose_settings_come_alphabetically_and_title_and_author_start_blank(self):
         # The loose settings alphabetically, then the Notes & Octaves and Visualizers sections.
         labels = [field.label for field in self.app.screen.fields()]
-        self.assertEqual(labels[:6], [AUTHOR, MSG_DEFAULT_FOLLOW_ACTION_LABEL, MSG_DESCRIPTION_LABEL, MSG_NOTES_LABEL, MSG_PROTECTED_LABEL, TITLE])
+        self.assertEqual(labels[:6], [AUTHOR, labels_text.MSG_DEFAULT_FOLLOW_ACTION_LABEL, labels_text.MSG_DESCRIPTION_LABEL, labels_text.MSG_NOTES_LABEL, labels_text.MSG_PROTECTED_LABEL, TITLE])
         self.assertEqual(self.document.setlist().get_title(), NO_TEXT)
         await self.select_field(TITLE)
         await self.press(Key.ENTER)
@@ -112,8 +107,8 @@ class TestFilePage(UITest):
     async def test_the_notes_say_where_the_file_and_the_exports_are(self):
         text = self.text()
         self.assertIn('not saved yet', text)
-        self.assertIn(MSG_EXPORTS_AFTER_SAVING, text)
-        self.assertIn(MSG_NOT_SET, text)
+        self.assertIn(marks.MSG_EXPORTS_AFTER_SAVING, text)
+        self.assertIn(marks.MSG_NOT_SET, text)
         self.document.save(path=SET_FILE)
         await self.press(Key.ESCAPE, keybindings.MainPage.FILE)
         self.assertIn(EXPORT, self.text())
@@ -161,8 +156,8 @@ class TestFilePage(UITest):
 
     async def test_a_protected_set_offers_a_copy_and_the_file_page_turns_protection_off(self):
         self.assertFalse(self.document.setlist().is_protected())
-        await self.select_field(MSG_PROTECTED_LABEL)
-        self.assertIn(KEY_SHOWN.format(label=KeyName.SPACE_ENTER), self.text())
+        await self.select_field(labels_text.MSG_PROTECTED_LABEL)
+        self.assertIn(KEY_SHOWN.format(label=legends.KeyName.SPACE_ENTER), self.text())
         await self.press(Key.ENTER)
         self.assertTrue(self.document.setlist().is_protected())
         # Space toggles too, like ENTER.
@@ -174,7 +169,7 @@ class TestFilePage(UITest):
         self.document.set_tempo(OTHER_TEMPO)
         await self.press(Key.CTRL_S)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        self.assertIn(MSG_PROTECTED_TITLE, self.text())
+        self.assertIn(messages.MSG_PROTECTED_TITLE, self.text())
         await self.press(keybindings.ConfirmDialog.YES)
         self.assertIsInstance(self.app.screen, PromptDialog)
         self.app.screen.value = 'copy.yml'
@@ -192,7 +187,7 @@ class TestFilePage(UITest):
         self.assertTrue(self.document.is_dirty())
         self.assertEqual(Document.load('second.yml').song().get_tempo(), OTHER_TEMPO)
         # Turning protection off on the File page lets Ctrl+S write the file again.
-        await self.select_field(MSG_PROTECTED_LABEL)
+        await self.select_field(labels_text.MSG_PROTECTED_LABEL)
         await self.press(Key.ENTER, Key.CTRL_S)
         self.assertFalse(self.document.is_dirty())
         self.assertEqual(Document.load('second.yml').song().get_tempo(), OTHER_TEMPO + 1)
@@ -203,7 +198,7 @@ class TestFilePage(UITest):
         # Unchanged, a protected set still gets the dialog rather than the status line.
         await self.press(Key.CTRL_S)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        self.assertIn(MSG_PROTECTED_TITLE, self.text())
+        self.assertIn(messages.MSG_PROTECTED_TITLE, self.text())
         await self.press(keybindings.ConfirmDialog.NO)
         before = os.stat('demo.yml').st_mtime_ns
         await self.press(keybindings.FilePage.SAVE_AS)
@@ -211,7 +206,7 @@ class TestFilePage(UITest):
         self.assertEqual(self.app.screen.value, 'demo.yml')
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, MessageDialog)
-        self.assertIn(MSG_PROTECTED_TITLE, self.text())
+        self.assertIn(messages.MSG_PROTECTED_TITLE, self.text())
         await self.press(Key.ENTER)
         self.assertEqual(os.stat('demo.yml').st_mtime_ns, before)
         self.assertEqual(self.document.get_path(), 'demo.yml')
@@ -224,7 +219,7 @@ class TestFilePage(UITest):
         self.document.changed()
         await self.press(Key.CTRL_S)
         self.assertEqual(os.stat('tune.yml').st_mtime_ns, before)
-        self.assertIn(MSG_FILE_UNCHANGED.format(path='tune.yml'), self.text())
+        self.assertIn(messages.MSG_FILE_UNCHANGED.format(path='tune.yml'), self.text())
         self.assertFalse(self.document.is_dirty())
 
     async def test_saving_over_a_file_changed_elsewhere_asks_first(self):
@@ -239,7 +234,7 @@ class TestFilePage(UITest):
         self.assertTrue(self.document.is_dirty())
         await self.press(Key.CTRL_S)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        self.assertIn(MSG_FILE_CHANGED_ELSEWHERE_TITLE, self.text())
+        self.assertIn(messages.MSG_FILE_CHANGED_ELSEWHERE_TITLE, self.text())
         await self.press(keybindings.ConfirmDialog.NO)
         self.assertEqual(Document.load('tune.yml').song().get_tempo(), OTHER_TEMPO)
         await self.press(Key.CTRL_S, keybindings.ConfirmDialog.YES)
@@ -271,9 +266,9 @@ class TestFilePage(UITest):
         await self.press(keybindings.FilePage.NEW)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(keybindings.ConfirmDialog.YES)
-        self.assertEqual(self.app.get_document().song().get_pattern_names(), [MSG_NEW_PATTERN_NAME.format(number=FIRST_NUMBER)])
+        self.assertEqual(self.app.get_document().song().get_pattern_names(), [names.MSG_NEW_PATTERN_NAME.format(number=defaults.FIRST_NUMBER)])
         self.assertEqual(self.app.get_document().song().get_scale_name(), DEFAULT_SCALE)
-        self.assertEqual(self.app.get_document().song_names(), [MSG_DEFAULT_SONG_NAME])
+        self.assertEqual(self.app.get_document().song_names(), [names.MSG_DEFAULT_SONG_NAME])
 
 
 class TestFilePageEdges(UITest):
@@ -303,7 +298,7 @@ class TestFilePageEdges(UITest):
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(keybindings.ConfirmDialog.YES)
         self.assertIsInstance(self.app.screen, MessageDialog)
-        self.assertIn(ERR_CANT_SAVE_TITLE, self.text())
+        self.assertIn(errors.ERR_CANT_SAVE_TITLE, self.text())
 
     async def test_new_and_load_ask_first_with_unsaved_changes(self):
         self.document.changed()
@@ -319,6 +314,6 @@ class TestFilePageEdges(UITest):
         for name in self.document.song().get_scale_names():
             self.document.delete_named(section=Section.SCALES, name=name)
         await self.press(keybindings.MainPage.SONGS, Key.ENTER)
-        await self.select_field(MSG_SCALE_LABEL)
+        await self.select_field(labels_text.MSG_SCALE_LABEL)
         await self.press(Key.ENTER)
-        self.assertIn(ERR_ADD_A_SCALE_FIRST, self.text())
+        self.assertIn(errors.ERR_ADD_A_SCALE_FIRST, self.text())

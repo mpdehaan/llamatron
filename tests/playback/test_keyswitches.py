@@ -21,21 +21,20 @@ import tempfile
 import unittest
 import xml.etree.ElementTree as ET
 
-from llamatron.composition.defaults import KEYSWITCH_VELOCITY
+from llamatron.composition import defaults, limits
 from llamatron.composition.file_format import (
     FLUIDSYNTH_DEVICE, KEYSWITCH_SLOT_COUNT, KEYSWITCH_SLOTS, ClipSlotSetting, GeneratorKind, GrooveSetting, InstrumentSetting, KeyswitchSetting, PatternSetting,
     Row, SceneSetting, Section, SongSetting, TrackSetting,
 )
 from llamatron.composition.instrument import NO_KEYSWITCH, Instrument, Keyswitch
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.limits import MAX_KEYSWITCH_LEAD, MAX_NAME_LENGTH
 from llamatron.composition.pattern import Pattern
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.midi_arrangement import MidiGeneralMidi, MidiSong, MidiStems
 from llamatron.exporters.midi_messages import NOTE_ON_MESSAGE
 from llamatron.exporters.timing import keyswitch_events, timed_events
-from llamatron.music.midi import MAX_MIDI_NUMBER
+from llamatron.music import midi
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime.score import Score
 from llamatron.realtime.timeline import NOTE_ON, Route, song_timeline
@@ -164,13 +163,13 @@ class TestInstrumentKeyswitches(unittest.TestCase):
 
     def test_what_a_slot_refuses(self):
         instrument = Instrument()
-        for arguments in ({'slot': KEYSWITCH_SLOT_COUNT}, {'slot': SUSTAIN_SLOT, 'note': MAX_MIDI_NUMBER + 1}, {'slot': SUSTAIN_SLOT, 'name': 'x' * (MAX_NAME_LENGTH + 1)},
+        for arguments in ({'slot': KEYSWITCH_SLOT_COUNT}, {'slot': SUSTAIN_SLOT, 'note': midi.MAX_MIDI_NUMBER + 1}, {'slot': SUSTAIN_SLOT, 'name': 'x' * (limits.MAX_NAME_LENGTH + 1)},
                           {'slot': SUSTAIN_SLOT, 'name': ''}, {'slot': SUSTAIN_SLOT, 'note': str(SUSTAIN_NOTE)}):
             with self.subTest(arguments=arguments), self.assertRaises(InvalidValue):
                 instrument.set_keyswitch(**arguments)
 
     def test_what_a_file_refuses_of_keyswitches(self):
-        for keyswitches in ([None], {}, [{}] * KEYSWITCH_SLOT_COUNT, slots_written(slot0=(SUSTAIN, MAX_MIDI_NUMBER + 1)), [{'key': SUSTAIN}, *[None] * (KEYSWITCH_SLOT_COUNT - 1)]):
+        for keyswitches in ([None], {}, [{}] * KEYSWITCH_SLOT_COUNT, slots_written(slot0=(SUSTAIN, midi.MAX_MIDI_NUMBER + 1)), [{'key': SUSTAIN}, *[None] * (KEYSWITCH_SLOT_COUNT - 1)]):
             with self.subTest(keyswitches=keyswitches), self.assertRaises((InvalidValue, SongFileError)):
                 Instrument.from_data(data={InstrumentSetting.KEYSWITCHES: keyswitches}, where=WHERE)
 
@@ -180,7 +179,7 @@ class TestInstrumentKeyswitches(unittest.TestCase):
         instrument.set_keyswitch_lead(LEAD_MILLISECONDS)
         self.assertEqual(instrument.to_data(), {InstrumentSetting.KEYSWITCH_LEAD: LEAD_MILLISECONDS})
         with self.assertRaises(InvalidValue):
-            instrument.set_keyswitch_lead(MAX_KEYSWITCH_LEAD + 1)
+            instrument.set_keyswitch_lead(limits.MAX_KEYSWITCH_LEAD + 1)
 
 
 class TestKeyswitchRow(unittest.TestCase):
@@ -286,7 +285,7 @@ class TestKeyswitchesPlayed(unittest.TestCase):
     def test_every_keyswitch_has_the_one_velocity(self):
         _, clip, scale = rendered(switched(keyswitch=[[SUSTAIN_SLOT]], rows={Row.VELOCITY: [1]}))
         _, length = timed_events(clip=clip, scale=scale)
-        self.assertEqual([event.velocity for event in keyswitch_events(clip=clip, clip_length=length)], [KEYSWITCH_VELOCITY])
+        self.assertEqual([event.velocity for event in keyswitch_events(clip=clip, clip_length=length)], [defaults.KEYSWITCH_VELOCITY])
 
     def test_a_lead_sends_each_keyswitch_early_but_never_before_the_clip(self):
         self.assertEqual(LEAD_LENGTH, Rational(LEAD_MILLISECONDS * TEMPO, MILLISECONDS_PER_WHOLE_NOTE_AT_ONE_BEAT_A_MINUTE))
@@ -341,7 +340,7 @@ class TestKeyswitchesInRealTime(unittest.TestCase):
 
     def test_a_midi_port_is_sent_the_keyswitch_before_its_note(self):
         ons = [event for event in self.timeline(Route(PORT, 0)) if event.kind == NOTE_ON]
-        self.assertEqual((ons[0].number, ons[0].switch, ons[0].value), (STACCATO_NOTE, True, KEYSWITCH_VELOCITY))
+        self.assertEqual((ons[0].number, ons[0].switch, ons[0].value), (STACCATO_NOTE, True, defaults.KEYSWITCH_VELOCITY))
         self.assertFalse(ons[1].switch)
         self.assertEqual(ons[0].whole, ons[1].whole)
 

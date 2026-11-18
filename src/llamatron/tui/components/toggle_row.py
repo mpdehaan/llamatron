@@ -17,7 +17,7 @@
 
 from llamatron.tui.components.pattern_row import PatternRow
 from llamatron.tui.drawing import NOTHING
-from llamatron.strings.marks import MSG_TOGGLE_OFF, MSG_TOGGLE_ON
+from llamatron.strings import marks
 from llamatron.tui import keybindings
 
 
@@ -40,4 +40,4 @@ class ToggleRow(PatternRow):
     def cell_text(self, *, step):
         if not self.is_note(step=step) and not self.on_rests():
             return NOTHING
-        return MSG_TOGGLE_ON if self.value(step=step) else MSG_TOGGLE_OFF
+        return marks.MSG_TOGGLE_ON if self.value(step=step) else marks.MSG_TOGGLE_OFF

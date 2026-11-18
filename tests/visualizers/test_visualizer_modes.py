@@ -35,9 +35,8 @@ from llamatron.visualizers.maze import Maze, carved, inside
 from llamatron.visualizers.mystify import FEWEST_CORNERS, Mystify
 from llamatron.visualizers.pipes import FADE_SECONDS, JOINS, Pipes
 from llamatron.visualizers.piano_roll import COLUMNS_PER_BEAT, DRUM_ROWS, LABEL_COLUMNS, LEGEND_ROWS, LINE_CHARACTER, NOTE_CHARACTER, TRACK_COLOURS, PianoRoll, drum_lane, nth_colour
-from llamatron.strings.visualizers import MSG_PIANO_ROLL_DRUM_LANES, MSG_PIANO_ROLL_LEGEND_MARK
+from llamatron.strings import visualizers
 from llamatron.visualizers.warpzone import BALL_RADIUS, BALL_SPEED, WarpZone
-from llamatron.strings.visualizers import MSG_RAIN_DIGITS
 import random
 
 WIDTH = 40
@@ -295,12 +294,12 @@ class TestPianoRoll(unittest.TestCase):
     def test_drums_take_lanes_at_the_bottom_only_once_a_drum_plays(self):
         roll = PianoRoll()
         lines, now = self.played(roll=roll, frames=1, notes=[HeardNote(LEAD_TRACK, MIDDLE_C, FULL_VELOCITY, True, False)])
-        self.assertFalse(any(line.plain.startswith(MSG_PIANO_ROLL_DRUM_LANES[0]) for line in lines))
+        self.assertFalse(any(line.plain.startswith(visualizers.MSG_PIANO_ROLL_DRUM_LANES[0]) for line in lines))
         lines, _ = self.played(roll=roll, frames=1, notes=[HeardNote(DRUM_TRACK, KICK, FULL_VELOCITY, True, True)], start=now)
         kick_row = ROLL_HEIGHT - 1 - drum_lane(KICK)
-        self.assertTrue(lines[kick_row].plain.startswith(MSG_PIANO_ROLL_DRUM_LANES[drum_lane(KICK)]))
+        self.assertTrue(lines[kick_row].plain.startswith(visualizers.MSG_PIANO_ROLL_DRUM_LANES[drum_lane(KICK)]))
         self.assertEqual(lines[kick_row].plain[-1], NOTE_CHARACTER)
-        self.assertEqual(len(MSG_PIANO_ROLL_DRUM_LANES), DRUM_ROWS)
+        self.assertEqual(len(visualizers.MSG_PIANO_ROLL_DRUM_LANES), DRUM_ROWS)
 
     def test_every_key_has_a_row_and_each_c_a_line(self):
         roll = PianoRoll()
@@ -349,7 +348,7 @@ class TestPianoRoll(unittest.TestCase):
     def test_the_legend_names_the_tracks_on_the_roll_in_track_order_and_a_track_keeps_the_colour_it_was_first_heard_with(self):
         roll = PianoRoll()
         lines, now = self.played(roll=roll, frames=1, notes=[HeardNote(DRUM_TRACK, KICK, FULL_VELOCITY, True, True)])
-        self.assertIn(MSG_PIANO_ROLL_LEGEND_MARK + TRACK_NAMES[DRUM_TRACK], lines[0].plain)
+        self.assertIn(visualizers.MSG_PIANO_ROLL_LEGEND_MARK + TRACK_NAMES[DRUM_TRACK], lines[0].plain)
         self.assertNotIn(TRACK_NAMES[LEAD_TRACK], lines[0].plain)
         lines, now = self.played(roll=roll, frames=1, notes=[HeardNote(LEAD_TRACK, MIDDLE_C, FULL_VELOCITY, True, False)], start=now)
         # The lead was heard second but is the song's first track, so its name comes first.
@@ -381,7 +380,7 @@ class TestDigitalRain(unittest.TestCase):
         for number in range(40):
             lines = rain.frame(width=WIDTH, height=HEIGHT, now=number * FRAME_SECONDS, heard=heard(every_track_starting(tracks=TRACKS, number=number)))
         self.assertEqual(len(lines), HEIGHT)
-        self.assertTrue(set(NO_CHARACTERS.join(line.plain for line in lines)) <= set(MSG_RAIN_DIGITS + SPACE))
+        self.assertTrue(set(NO_CHARACTERS.join(line.plain for line in lines)) <= set(visualizers.MSG_RAIN_DIGITS + SPACE))
         for line in lines:
             for span in line.spans:
                 red, green, blue = span.style.color.get_truecolor()

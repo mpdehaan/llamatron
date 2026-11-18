@@ -19,7 +19,7 @@
 import copy
 
 from llamatron.composition.setlist import Setlist
-from llamatron.strings.errors import ERR_STALE_DATA, ERR_WRONG_RESTORE
+from llamatron.strings import errors
 from llamatron.support.memory import StaleAnswer
 from llamatron.support.ordered_data import same_in_order
 from llamatron.tui.history import Change, describe_change, renamed_items, Snapshot
@@ -49,7 +49,7 @@ class DocumentUndo:
         if self._memory.checks():
             again = self._setlist.to_data()
             if data != again:
-                raise StaleAnswer(ERR_STALE_DATA.format(kept=data, again=again))
+                raise StaleAnswer(errors.ERR_STALE_DATA.format(kept=data, again=again))
         return Snapshot(data=data, song=self._current)
 
     def record_edit(self):
@@ -110,7 +110,7 @@ class DocumentUndo:
             afresh = Setlist.from_data(data=copy.deepcopy(snapshot.data))
             afresh.fill_in_defaults()
             if self._setlist.to_data() != afresh.to_data():
-                raise StaleAnswer(ERR_WRONG_RESTORE.format(restored=self._setlist.to_data(), afresh=afresh.to_data()))
+                raise StaleAnswer(errors.ERR_WRONG_RESTORE.format(restored=self._setlist.to_data(), afresh=afresh.to_data()))
         self._current = snapshot.song if self._setlist.has_song(snapshot.song) else self._setlist.first_song_name()
         self._forget()
         self._edited = False

@@ -39,9 +39,7 @@ from llamatron.exporters.exports import EXPORT_KINDS, EXPORT_LABELS
 from llamatron.exporters.wave_fluidsynth import MIDI_FILE, WaveFluidSynth
 from llamatron.exporters.wave_level import peak_sample
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.strings.errors import ERR_CANT_EXPORT_TITLE, ERR_FLUIDSYNTH_RENDER_FAILED, ERR_NO_FLUIDSYNTH_TRACKS, ERR_WAV_NEEDS_FLUIDSYNTH
-from llamatron.strings.labels import MSG_EXPORT_CHOICES
-from llamatron.strings.messages import MSG_EXPORTED, MSG_WAV_EXPORT_NOTE, MSG_WAV_EXPORT_TITLE
+from llamatron.strings import errors, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
@@ -152,11 +150,11 @@ class TestWaveFluidSynth(unittest.TestCase):
     def test_fluidsynth_not_installed_or_no_track_through_it_is_refused_before_anything_is_written(self):
         with mock.patch(INSTALLED, return_value=False), self.assertRaises(ValueError) as refused:
             self.exporter().export(render=StandInFluidSynth())
-        self.assertEqual(str(refused.exception), ERR_WAV_NEEDS_FLUIDSYNTH)
+        self.assertEqual(str(refused.exception), errors.ERR_WAV_NEEDS_FLUIDSYNTH)
         self.document.set_track_instrument(name=LEAD, instrument=None)
         with self.assertRaises(ValueError) as refused:
             self.exporter().export(render=StandInFluidSynth())
-        self.assertEqual(str(refused.exception), ERR_NO_FLUIDSYNTH_TRACKS)
+        self.assertEqual(str(refused.exception), errors.ERR_NO_FLUIDSYNTH_TRACKS)
         self.assertEqual(os.listdir(self.folder), [])
 
     def test_a_muted_track_is_left_out_as_every_arrangement_export_leaves_it(self):
@@ -168,7 +166,7 @@ class TestWaveFluidSynth(unittest.TestCase):
         render = StandInFluidSynth(fails=True)
         with self.assertRaises(ValueError) as refused:
             self.exporter().export(render=render)
-        self.assertEqual(str(refused.exception), ERR_FLUIDSYNTH_RENDER_FAILED.format(problem=FLUIDSYNTH_SAYS))
+        self.assertEqual(str(refused.exception), errors.ERR_FLUIDSYNTH_RENDER_FAILED.format(problem=FLUIDSYNTH_SAYS))
         self.assertFalse(os.path.exists(render.midi_folder))
 
     def test_a_wav_file_already_there_is_never_written_over(self):
@@ -192,7 +190,7 @@ class TestWaveExportInTheTracker(UITest):
     async def choose_wav(self):
         await self.press(Key.CTRL_X)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
-        self.assertEqual(self.app.screen.options[EXPORT_KINDS.index(ExportKind.WAV)], MSG_EXPORT_CHOICES[EXPORT_KINDS.index(ExportKind.WAV)])
+        self.assertEqual(self.app.screen.options[EXPORT_KINDS.index(ExportKind.WAV)], labels.MSG_EXPORT_CHOICES[EXPORT_KINDS.index(ExportKind.WAV)])
         await self.press(*([Key.DOWN] * EXPORT_KINDS.index(ExportKind.WAV)), Key.ENTER)
 
     async def test_the_note_is_shown_first_and_yes_exports(self):
@@ -200,10 +198,10 @@ class TestWaveExportInTheTracker(UITest):
                 mock.patch.object(wave_fluidsynth.subprocess, 'run', side_effect=StandInFluidSynth()):
             await self.choose_wav()
             self.assertIsInstance(self.app.screen, ConfirmDialog)
-            self.assertIn(MSG_WAV_EXPORT_TITLE, self.text())
-            self.assertIn(MSG_WAV_EXPORT_NOTE, self.app.screen.messages)
+            self.assertIn(messages.MSG_WAV_EXPORT_TITLE, self.text())
+            self.assertIn(messages.MSG_WAV_EXPORT_NOTE, self.app.screen.messages)
             await self.press(keybindings.ConfirmDialog.YES)
-        self.assertIn(fixed_text(MSG_EXPORTED), self.text())
+        self.assertIn(fixed_text(messages.MSG_EXPORTED), self.text())
         self.assertIn(EXPORT_LABELS[ExportKind.WAV], self.text())
         self.assertTrue(os.path.exists(WaveFluidSynth.FILE.format(name=NAME)))
 
@@ -217,8 +215,8 @@ class TestWaveExportInTheTracker(UITest):
         with mock.patch(TRACKER_INSTALLED, return_value=False):
             await self.choose_wav()
         self.assertIsInstance(self.app.screen, MessageDialog)
-        self.assertIn(ERR_CANT_EXPORT_TITLE, self.text())
-        self.assertIn(ERR_WAV_NEEDS_FLUIDSYNTH, self.app.screen.messages)
+        self.assertIn(errors.ERR_CANT_EXPORT_TITLE, self.text())
+        self.assertIn(errors.ERR_WAV_NEEDS_FLUIDSYNTH, self.app.screen.messages)
         self.assertFalse(os.path.exists(WaveFluidSynth.FILE.format(name=NAME)))
 
 

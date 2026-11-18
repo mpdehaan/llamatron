@@ -17,7 +17,7 @@
 
 from rich.text import Text
 
-from llamatron.strings.messages import MSG_CORRECTIONS_INTRO, MSG_CORRECTIONS_MORE, MSG_CORRECTIONS_QUESTION, MSG_CORRECTIONS_TITLE, MSG_CORRECTIONS_WARNING
+from llamatron.strings import messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import NOTHING, Style, fit, wrapped
@@ -39,18 +39,18 @@ class CorrectionsDialog(ConfirmDialog):
 
     def __init__(self, *, file, corrections):
         """file is the set file's name, and corrections the lines that describe each one."""
-        super().__init__(title=MSG_CORRECTIONS_TITLE, messages=[])
+        super().__init__(title=messages.MSG_CORRECTIONS_TITLE, messages=[])
         self.file = file
         self.corrections = corrections
 
     def message_lines(self, width):
         shown = self.corrections[:MOST_SHOWN]
         more = len(self.corrections) - len(shown)
-        lines = [*wrapped(text=MSG_CORRECTIONS_INTRO.format(file=self.file), width=width), Text(NOTHING)]
+        lines = [*wrapped(text=messages.MSG_CORRECTIONS_INTRO.format(file=self.file), width=width), Text(NOTHING)]
         lines += [Text(fit(text=correction, width=width).rstrip()) for correction in shown]
         if more:
-            lines.append(Text(MSG_CORRECTIONS_MORE.format(count=more), style=Style.DIM))
+            lines.append(Text(messages.MSG_CORRECTIONS_MORE.format(count=more), style=Style.DIM))
         lines.append(Text(NOTHING))
-        lines += wrapped(text=MSG_CORRECTIONS_WARNING, width=width)
-        lines += wrapped(text=MSG_CORRECTIONS_QUESTION, width=width)
+        lines += wrapped(text=messages.MSG_CORRECTIONS_WARNING, width=width)
+        lines += wrapped(text=messages.MSG_CORRECTIONS_QUESTION, width=width)
         return lines

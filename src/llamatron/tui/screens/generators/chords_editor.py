@@ -31,20 +31,10 @@ pattern editor opens, on that row's list. The Name row and the status line say w
 from llamatron.composition.chords import chord_half_steps, borrowed
 from llamatron.composition.file_format import ACCIDENTAL_CYCLE, FIXED_CHORDS, TENSIONS, GeneratorKind, Section
 from llamatron.composition.generator_settings import PROGRESSION_INVERSIONS
-from llamatron.composition.limits import MAX_PROGRESSION_CHORDS, MAX_PROGRESSION_DEGREE, MIN_PROGRESSION_CHORDS, MIN_PROGRESSION_DEGREE
+from llamatron.composition import limits
+from llamatron.strings import help as help_text, labels, marks, messages
 from llamatron.composition.naming import words
 from llamatron.composition.progressions import NAMED_PROGRESSIONS, ROMAN_NUMERALS, named_progression_in, shown_numerals
-from llamatron.strings.help import HELP_CHORDS_EDITOR
-from llamatron.strings.labels import (
-    Crumb, MSG_CHORD_NAME_ROW_LABEL, MSG_CHORD_ROW_LABEL, MSG_INVERSION_ROW_LABEL, MSG_NUMERAL_ROW_LABEL, MSG_PROGRESSION_ACCIDENTAL_ROW_LABEL,
-    MSG_PROGRESSION_GROUPS, MSG_PROGRESSION_NAMES, MSG_PROGRESSION_QUALITY_ROW_LABEL, MSG_PROGRESSION_SCALE_ROW_LABEL, MSG_PROGRESSION_TENSIONS_ROW_LABEL,
-)
-from llamatron.strings.marks import (
-    MSG_ACCIDENTAL_MARKS, MSG_AUGMENTED_NUMERAL_MARK, MSG_DIMINISHED_NUMERAL_MARK, MSG_GAUGE_BAR, MSG_GAUGE_HALF_BAR, MSG_TENSIONS_COUNTED, MSG_TENSIONS_IN_CELL_SEPARATOR,
-)
-from llamatron.strings.messages import (
-    MSG_CHORD_DIALOG_TITLE, MSG_CHORD_OF_PROGRESSION, MSG_CHORDS_NOTE, MSG_PROGRESSION_PICKER_TITLE, MSG_QUALITY_FROM_SCALE, MSG_RESTING_CHORD,
-)
 from llamatron.tui import keybindings
 from llamatron.tui.chord_text import ChordInWords
 from llamatron.tui.components.chord_row import quality_names
@@ -77,7 +67,7 @@ QUALITY_CYCLE = [None, *FIXED_CHORDS]
 SCALE_CYCLE = [None, *SCALE_TYPES_IN_ORDER]
 TENSION_CYCLE = [None, *[(tension,) for tension in TENSIONS]]
 # The Degree gauge is drawn two degrees a line, a half block for the odd one, so that the page fits 24 lines with the three rows added.
-GAUGE_LINES = (MAX_PROGRESSION_DEGREE + 1) // 2
+GAUGE_LINES = (limits.MAX_PROGRESSION_DEGREE + 1) // 2
 # The degree a chord with a sharp or flat keeps the sound of, when no quality is named: the figure's own, on degree 1.
 FIGURE_DEGREE = 1
 # The half steps of a minor third, a diminished fifth and an augmented fifth, which a numeral shows.
@@ -90,7 +80,7 @@ CELL_ROOM = 5
 # The inversions a chord steps through: root position first.
 INVERSION_CYCLE = [None, *PROGRESSION_INVERSIONS]
 # The chord I inserts.
-INSERTED_DEGREE = MIN_PROGRESSION_DEGREE
+INSERTED_DEGREE = limits.MIN_PROGRESSION_DEGREE
 # What a digit types on the Inv. row to go back to root position.
 ROOT_POSITION_TYPED = 0
 
@@ -99,10 +89,10 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
     """A progression's chords, up to 16, each a column of the grid."""
 
     KEYS = keybindings.ChordsEditor
-    HELP = HELP_CHORDS_EDITOR
+    HELP = help_text.HELP_CHORDS_EDITOR
     SECTION = Section.PROGRESSIONS
-    CRUMBS_BEFORE = (Crumb.GENERATORS,)
-    CRUMBS_AFTER = (Crumb.CHORDS,)
+    CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
+    CRUMBS_AFTER = (labels.Crumb.CHORDS,)
     # A cell is wide enough for a numeral like ♭vii° or a name like Bb°.
     CELL_WIDTH = 7
 
@@ -138,9 +128,9 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
                 self.bind(self.KEYS.CHOOSE, action=self.pick_chord), self.bind(self.KEYS.NEXT_CHOICE, action=lambda: self.nudge(STEP_FORWARD)),
                 self.bind(self.KEYS.CLEAR, action=lambda: self.changed_here(row=self.edited_row, value=None)),
             ]
-        if self.steps() < MAX_PROGRESSION_CHORDS:
+        if self.steps() < limits.MAX_PROGRESSION_CHORDS:
             result.append(self.bind(self.KEYS.INSERT_STEP, action=self.add_step))
-        if self.steps() > MIN_PROGRESSION_CHORDS:
+        if self.steps() > limits.MIN_PROGRESSION_CHORDS:
             result.append(self.bind(self.KEYS.REMOVE_STEP, action=self.drop_step))
         result.append(self.bind(self.KEYS.PICK, action=self.pick_progression))
         return result
@@ -179,7 +169,7 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
     def nudge(self, offset):
         """Step the cursor's value on the row being edited: the degree from 1 to 7, stopping at both, or the next or last choice of the other rows."""
         if self.edited_row == CHORD_ROW:
-            self.set_value(max(min(self.rows()[CHORD_ROW][self.step] + offset, MAX_PROGRESSION_DEGREE), MIN_PROGRESSION_DEGREE))
+            self.set_value(max(min(self.rows()[CHORD_ROW][self.step] + offset, limits.MAX_PROGRESSION_DEGREE), limits.MIN_PROGRESSION_DEGREE))
             return
         cycle = {ACCIDENTAL_ROW: ACCIDENTAL_CYCLE, INVERSION_ROW: INVERSION_CYCLE, SCALE_ROW: SCALE_CYCLE, QUALITY_ROW: QUALITY_CYCLE, TENSION_ROW: TENSION_CYCLE}[self.edited_row]
         current = self.rows()[self.edited_row][self.step]
@@ -194,7 +184,7 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
     def type_digit(self, digit):
         """Type a degree on the Chord row, or an inversion, 0 for root position, on the Inv. row."""
         if self.edited_row == CHORD_ROW:
-            number = self.typed_number(digit=digit, low=MIN_PROGRESSION_DEGREE, high=MAX_PROGRESSION_DEGREE)
+            number = self.typed_number(digit=digit, low=limits.MIN_PROGRESSION_DEGREE, high=limits.MAX_PROGRESSION_DEGREE)
             if number is not None:
                 self.set_value(number)
         elif self.edited_row == INVERSION_ROW:
@@ -239,8 +229,8 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
             self.store(rows)
 
         dialog = ChordDialog(
-            title=MSG_CHORD_DIALOG_TITLE.format(where=MSG_CHORD_OF_PROGRESSION.format(chord=place + 1, progression=self.item)),
-            qualities=QUALITY_CYCLE, quality_names=[MSG_QUALITY_FROM_SCALE, *quality_names(FIXED_CHORDS)], inversions=INVERSION_CYCLE, categories=SCALE_CATEGORIES,
+            title=messages.MSG_CHORD_DIALOG_TITLE.format(where=messages.MSG_CHORD_OF_PROGRESSION.format(chord=place + 1, progression=self.item)),
+            qualities=QUALITY_CYCLE, quality_names=[messages.MSG_QUALITY_FROM_SCALE, *quality_names(FIXED_CHORDS)], inversions=INVERSION_CYCLE, categories=SCALE_CATEGORIES,
             current=self.choice_at(place), opens_on=DIALOG_ROWS[self.edited_row], said=lambda choice: self.in_words(place=place, choice=choice).sentences(),
         )
         self.ask(dialog=dialog, then=chosen)
@@ -248,7 +238,7 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
     def resting_status(self):
         """Say the cursor's chord, its name and notes in the song's scale, while nothing else is said."""
         self.keep_step()
-        return self.in_words(place=self.step).resting(where=MSG_RESTING_CHORD.format(chord=self.step + 1))
+        return self.in_words(place=self.step).resting(where=messages.MSG_RESTING_CHORD.format(chord=self.step + 1))
 
     def numeral(self, place):
         """Return a chord's Roman numeral: upper case with a major third and lower case with a minor one, a mark for a diminished or augmented fifth, a sharp or flat in front."""
@@ -263,25 +253,25 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
         if own and own[0] == MINOR_THIRD:
             numeral = numeral.lower()
         fifth = own[1] if len(own) >= THIRD_AND_FIFTH else None
-        mark = {DIMINISHED_FIFTH: MSG_DIMINISHED_NUMERAL_MARK, AUGMENTED_FIFTH: MSG_AUGMENTED_NUMERAL_MARK}.get(fifth, NOTHING)
-        return MSG_ACCIDENTAL_MARKS.get(accidental, NOTHING) + numeral + mark
+        mark = {DIMINISHED_FIFTH: marks.MSG_DIMINISHED_NUMERAL_MARK, AUGMENTED_FIFTH: marks.MSG_AUGMENTED_NUMERAL_MARK}.get(fifth, NOTHING)
+        return marks.MSG_ACCIDENTAL_MARKS.get(accidental, NOTHING) + numeral + mark
 
     def gauge_cell(self, *, degree, line):
         """Return a chord's cell on one line of the Degree gauge, counted from the bottom: full where the degree reaches both of the line's degrees, half where it reaches the lower."""
         if degree >= 2 * line + 2:
-            return MSG_GAUGE_BAR
-        return MSG_GAUGE_HALF_BAR if degree >= 2 * line + 1 else NOTHING
+            return marks.MSG_GAUGE_BAR
+        return marks.MSG_GAUGE_HALF_BAR if degree >= 2 * line + 1 else NOTHING
 
     def pick_progression(self):
         """Fill the chords with a named progression from a picker of two columns, matched to the song's scale."""
         keys = [name for column in NAMED_PROGRESSIONS for name, _ in column]
         columns = []
         place = 0
-        for heading, column in zip(MSG_PROGRESSION_GROUPS, NAMED_PROGRESSIONS):
+        for heading, column in zip(labels.MSG_PROGRESSION_GROUPS, NAMED_PROGRESSIONS):
             columns.append([(heading, list(range(place, place + len(column))))])
             place += len(column)
         dialog = GridChoiceDialog(
-            title=MSG_PROGRESSION_PICKER_TITLE, options=[MSG_PROGRESSION_NAMES[key] for key in keys], grid=grouped_grid(columns),
+            title=messages.MSG_PROGRESSION_PICKER_TITLE, options=[labels.MSG_PROGRESSION_NAMES[key] for key in keys], grid=grouped_grid(columns),
             details=lambda chosen: shown_numerals(keys[chosen]),
         )
         self.ask(dialog=dialog, then=lambda chosen: self.fill(keys[chosen]))
@@ -301,27 +291,27 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
         chords, accidentals, qualities, tensions, scales, inversions = self.rows()
         selected = {row: self.step if self.edited_row == row else None for row in range(EDITED_ROWS)}
         lines = [
-            self.with_steps_shown(text=MSG_CHORDS_NOTE, style=Style.DIM, width=width, first=first, last=last),
+            self.with_steps_shown(text=messages.MSG_CHORDS_NOTE, style=Style.DIM, width=width, first=first, last=last),
             self.grid_rule(left=Box.TOP_LEFT, middle=Box.TOP_TEE, right=Box.TOP_RIGHT, count=len(places)),
-            self.grid_line(label=MSG_CHORD_ROW_LABEL, cells=[(place, str(place + 1)) for place in places], selected=self.step, bold=True),
+            self.grid_line(label=labels.MSG_CHORD_ROW_LABEL, cells=[(place, str(place + 1)) for place in places], selected=self.step, bold=True),
         ]
         for line in range(GAUGE_LINES - 1, -1, -1):
             lines.append(self.grid_line(label=NOTHING, cells=[(place, self.gauge_cell(degree=chords[place], line=line)) for place in places]))
-        lines.append(self.grid_line(label=MSG_NUMERAL_ROW_LABEL, cells=[(place, self.numeral(place)) for place in places], selected=selected[CHORD_ROW]))
-        lines.append(self.grid_line(label=MSG_CHORD_NAME_ROW_LABEL, cells=[(place, self.in_words(place=place).name()) for place in places]))
+        lines.append(self.grid_line(label=labels.MSG_NUMERAL_ROW_LABEL, cells=[(place, self.numeral(place)) for place in places], selected=selected[CHORD_ROW]))
+        lines.append(self.grid_line(label=labels.MSG_CHORD_NAME_ROW_LABEL, cells=[(place, self.in_words(place=place).name()) for place in places]))
         lines.append(self.grid_rule(left=Box.LEFT_TEE, middle=Box.CROSS, right=Box.RIGHT_TEE, count=len(places)))
         lines.append(self.grid_line(
-            label=MSG_PROGRESSION_ACCIDENTAL_ROW_LABEL, cells=[(place, MSG_ACCIDENTAL_MARKS.get(accidentals[place], NOTHING)) for place in places],
+            label=labels.MSG_PROGRESSION_ACCIDENTAL_ROW_LABEL, cells=[(place, marks.MSG_ACCIDENTAL_MARKS.get(accidentals[place], NOTHING)) for place in places],
             selected=selected[ACCIDENTAL_ROW],
         ))
-        lines.append(self.grid_line(label=MSG_PROGRESSION_QUALITY_ROW_LABEL, cells=[(place, qualities[place] or NOTHING) for place in places], selected=selected[QUALITY_ROW]))
-        lines.append(self.grid_line(label=MSG_PROGRESSION_TENSIONS_ROW_LABEL, cells=[(place, tensions_shown(tensions[place])) for place in places], selected=selected[TENSION_ROW]))
+        lines.append(self.grid_line(label=labels.MSG_PROGRESSION_QUALITY_ROW_LABEL, cells=[(place, qualities[place] or NOTHING) for place in places], selected=selected[QUALITY_ROW]))
+        lines.append(self.grid_line(label=labels.MSG_PROGRESSION_TENSIONS_ROW_LABEL, cells=[(place, tensions_shown(tensions[place])) for place in places], selected=selected[TENSION_ROW]))
         lines.append(self.grid_line(
-            label=MSG_PROGRESSION_SCALE_ROW_LABEL, cells=[(place, NOTHING if scales[place] is None else words(scales[place]).title()[:CELL_ROOM]) for place in places],
+            label=labels.MSG_PROGRESSION_SCALE_ROW_LABEL, cells=[(place, NOTHING if scales[place] is None else words(scales[place]).title()[:CELL_ROOM]) for place in places],
             selected=selected[SCALE_ROW],
         ))
         lines.append(self.grid_line(
-            label=MSG_INVERSION_ROW_LABEL, cells=[(place, NOTHING if inversions[place] is None else str(inversions[place])) for place in places],
+            label=labels.MSG_INVERSION_ROW_LABEL, cells=[(place, NOTHING if inversions[place] is None else str(inversions[place])) for place in places],
             selected=selected[INVERSION_ROW],
         ))
         lines.append(self.grid_rule(left=Box.BOTTOM_LEFT, middle=Box.BOTTOM_TEE, right=Box.BOTTOM_RIGHT, count=len(places)))
@@ -332,7 +322,7 @@ def tensions_shown(tensions):
     """Return a chord's tensions as a cell shows them: written out where they fit, and counted where they don't."""
     if not tensions:
         return NOTHING
-    for separator in (MSG_TENSIONS_IN_CELL_SEPARATOR, NOTHING):
+    for separator in (marks.MSG_TENSIONS_IN_CELL_SEPARATOR, NOTHING):
         if len(separator.join(tensions)) <= CELL_ROOM:
             return separator.join(tensions)
-    return MSG_TENSIONS_COUNTED.format(count=len(tensions))
+    return marks.MSG_TENSIONS_COUNTED.format(count=len(tensions))

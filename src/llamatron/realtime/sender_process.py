@@ -30,7 +30,7 @@ import time
 
 from llamatron.realtime.engine import MonotonicClock, PlaybackEngine
 from llamatron.realtime.outputs import RecordingOutput, RtMidiOutput
-from llamatron.strings.errors import ERR_SENDER_DID_NOT_START
+from llamatron.strings import errors
 
 SPAWN = 'spawn'
 # How long before an event is due the process stops sleeping and spins, and how long it sleeps at a time until then.
@@ -77,7 +77,7 @@ class RealtimeMIDISenderProcess:
         # Wait until the process has opened its ports, so that the first event is not sent late while it starts up, which measured about 150 ms on the IAC bus.
         if not self._connection.poll(START_TIMEOUT_SECONDS) or self._connection.recv() != READY:
             self.close()
-            raise SenderNotStarted(ERR_SENDER_DID_NOT_START)
+            raise SenderNotStarted(errors.ERR_SENDER_DID_NOT_START)
         self._connection.send((START, at))
 
     def add(self, events):

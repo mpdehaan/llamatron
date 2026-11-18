@@ -29,10 +29,8 @@ from llamatron.composition.file_format import REGISTER_NAMES, GeneratorKind, Sec
 from llamatron.generators.arp import MAX_OFFSET, MAX_OFFSETS
 from llamatron.tui.components.signed_gauge import SignedGauge
 from llamatron.tui.drawing import Box, NOTHING, Style
-from llamatron.strings.help import HELP_OFFSETS_EDITOR
+from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui.screens.shared.one_row_editor import OneRowEditor
-from llamatron.strings.labels import Crumb, MSG_OFFSET_ROW_LABEL, MSG_STEP_ADD_ROW_LABEL, MSG_STEP_ROW_LABEL
-from llamatron.strings.messages import MSG_OFFSETS_NOTE
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.tui import keybindings
 
@@ -55,11 +53,11 @@ class OffsetsEditor(ShowsNamedItem, OneRowEditor):
 
     KEYS = keybindings.OffsetsEditor
 
-    HELP = HELP_OFFSETS_EDITOR
+    HELP = help_text.HELP_OFFSETS_EDITOR
 
     SECTION = Section.ARPS
-    CRUMBS_BEFORE = (Crumb.GENERATORS,)
-    CRUMBS_AFTER = (Crumb.OFFSETS,)
+    CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
+    CRUMBS_AFTER = (labels.Crumb.OFFSETS,)
     # A cell is wide enough for the cursor's marks around the largest value, like <+24▲> or <<16>>.
     CELL_WIDTH = 6
     MOST = MAX_OFFSET
@@ -140,24 +138,24 @@ class OffsetsEditor(ShowsNamedItem, OneRowEditor):
         places = range(first, last)
         gauge = SignedGauge(values=self.offsets(), levels=self.gauge_levels(height), cursor=self.step)
         lines = [
-            self.with_steps_shown(text=MSG_OFFSETS_NOTE, style=Style.DIM, width=width, first=first, last=last),
+            self.with_steps_shown(text=messages.MSG_OFFSETS_NOTE, style=Style.DIM, width=width, first=first, last=last),
             Text(NOTHING),
             self.grid_rule(left=Box.TOP_LEFT, middle=Box.TOP_TEE, right=Box.TOP_RIGHT, count=len(places)),
         ]
-        lines.append(self.grid_line(label=MSG_STEP_ROW_LABEL, cells=[(place, gauge.step_text(place)) for place in places], selected=self.step, bold=True))
+        lines.append(self.grid_line(label=labels.MSG_STEP_ROW_LABEL, cells=[(place, gauge.step_text(place)) for place in places], selected=self.step, bold=True))
         for level in gauge.levels_above():
             lines.append(self.grid_line(label=NOTHING, cells=[(place, gauge.cell(place=place, level=level)) for place in places]))
         lines.append(self.grid_rule(left=Box.LEFT_TEE, middle=Box.CROSS, right=Box.RIGHT_TEE, count=len(places)))
         for level in gauge.levels_below():
             lines.append(self.grid_line(label=NOTHING, cells=[(place, gauge.cell(place=place, level=level)) for place in places]))
         on_offsets = self.register_edited() is None
-        lines.append(self.grid_line(label=MSG_OFFSET_ROW_LABEL, cells=[(place, gauge.value_text(place)) for place in places], selected=self.step if on_offsets else None))
+        lines.append(self.grid_line(label=labels.MSG_OFFSET_ROW_LABEL, cells=[(place, gauge.value_text(place)) for place in places], selected=self.step if on_offsets else None))
         shown = self.shown_add_rows()
         if shown:
             lines.append(self.grid_rule(left=Box.LEFT_TEE, middle=Box.CROSS, right=Box.RIGHT_TEE, count=len(places)))
         for register in shown:
             adds = self.arp().get_step_adds(register)
             cells = [(place, BLANK_CELL if not adds[place] else str(adds[place])) for place in places]
-            lines.append(self.grid_line(label=MSG_STEP_ADD_ROW_LABEL.format(name=register), cells=cells, selected=self.step if register == self.register_edited() else None))
+            lines.append(self.grid_line(label=labels.MSG_STEP_ADD_ROW_LABEL.format(name=register), cells=cells, selected=self.step if register == self.register_edited() else None))
         lines.append(self.grid_rule(left=Box.BOTTOM_LEFT, middle=Box.BOTTOM_TEE, right=Box.BOTTOM_RIGHT, count=len(places)))
         return lines

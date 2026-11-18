@@ -34,10 +34,10 @@ from rich.text import Text
 
 from llamatron.visualizers.heard import SILENCE
 from llamatron.visualizers.visualizer import Visualizer
-from llamatron.strings.visualizers import MSG_LLAMA_LARGE, MSG_LLAMA_MEDIUM, MSG_LLAMA_SMALL, MSG_LLAMAS
+from llamatron.strings import visualizers
 
 # The drawings, smallest first, each facing left, its head at the left, and mirrored to face right.
-SIZES = (MSG_LLAMA_SMALL, MSG_LLAMA_MEDIUM, MSG_LLAMA_LARGE)
+SIZES = (visualizers.MSG_LLAMA_SMALL, visualizers.MSG_LLAMA_MEDIUM, visualizers.MSG_LLAMA_LARGE)
 MIRRORED = str.maketrans('()/\\<>{}[]', ')(\\/><}{][')
 # How a llama moves: its stroll in columns a second at 120 a minute, varying by track, its bob in rows and how many bobs a beat, and its hop in rows after a note starts and how fast the hop settles.
 STROLL_SPEEDS = (3.0, 4.2, 2.4, 5.1, 3.6, 2.9, 4.6)
@@ -94,7 +94,7 @@ class Llamas(Visualizer):
 
     __slots__ = ('_llamas', '_last', '_motion', '_styles', '_drawings')
 
-    NAME = MSG_LLAMAS
+    NAME = visualizers.MSG_LLAMAS
     OPTION = 'llamas'
 
     def __init__(self):

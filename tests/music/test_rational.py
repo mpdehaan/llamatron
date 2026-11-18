@@ -22,7 +22,7 @@ import unittest
 from fractions import Fraction
 
 from llamatron.support.rational import Rational
-from llamatron.strings.errors import ERR_CANT_MAKE
+from llamatron.strings import errors
 
 # A sweep of values: the lengths a song uses, halves of them, thirds, negatives and zero.
 NUMERATORS = range(-5, 6)
@@ -80,7 +80,7 @@ class TestRationalAgreesWithFraction(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises(TypeError) as raised:
                     Rational(value)
-                self.assertEqual(str(raised.exception), ERR_CANT_MAKE.format(value=value))
+                self.assertEqual(str(raised.exception), errors.ERR_CANT_MAKE.format(value=value))
         # Text that isn't a number raises what Fraction raises, which reading a song file catches.
         with self.assertRaises(ValueError):
             Rational(NOT_A_WRITTEN_NUMBER)

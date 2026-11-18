@@ -19,14 +19,7 @@ import unittest
 
 from tests.support.ui_testing import DRUMS, LEAD, NAMED, OTHER, TUNE, UITest, a_song
 from llamatron.composition.file_format import ClipSlotSetting, Direction, FollowAction, RegisterName, Shape, StrumDirection, StrumPart, EuclidPart
-from llamatron.strings.labels import MSG_FOLLOW_ACTION_NAMES
-from llamatron.strings.legends import MSG_HIDE_DETAILS_WHAT, MSG_INTO_DETAILS_WHAT, MSG_SHOW_DETAILS_WHAT
-from llamatron.strings.marks import (
-    MSG_CLIP_WITH_MARKS, MSG_DETAILS_ADVANCE, MSG_DETAILS_CHAIN, MSG_DETAILS_DIRECTION, MSG_DETAILS_DIRECTION_NAMES, MSG_DETAILS_EUCLID, MSG_DETAILS_GRAB,
-    MSG_DETAILS_GROOVE, MSG_DETAILS_INSTRUMENT, MSG_DETAILS_MORPH, MSG_DETAILS_MUTED, MSG_DETAILS_NO_GROOVE, MSG_DETAILS_RESET,
-    MSG_DETAILS_SCALE, MSG_DETAILS_SHAPE, MSG_DETAILS_SHAPE_NAMES, MSG_DETAILS_STRUM, MSG_DETAILS_TEMPO, MSG_DETAILS_TEMPO_RAMP, MSG_DETAILS_TRANSPOSE,
-    MSG_LOOP_MARK, MSG_REPEAT_MARK,
-)
+from llamatron.strings import labels, legends, marks, names
 from llamatron.tui import keybindings
 from llamatron.tui import themes
 from llamatron.tui.drawing import Box
@@ -43,11 +36,7 @@ from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
 from llamatron.tui.screens.generators.generator_pages import generator_page_of_kind
 from llamatron.tui.screens.arrange.arrange_page import HEADER_ROW
 from llamatron.composition.file_format import GeneratorKind
-from llamatron.strings.labels import Crumb, MSG_OPENED_ITEM_CRUMB
-from llamatron.strings.marks import MSG_PICKED_CLOSE, MSG_PICKED_OPEN
-from llamatron.strings.marks import MSG_DETAILS_ADD_CHAIN, MSG_DETAILS_STOCK
 from llamatron.tui.drawing import Style
-from llamatron.strings.names import MSG_CHAIN_WORD, MSG_GROOVE_WORD, MSG_INSTRUMENT_WORD, MSG_SCALE_WORD
 from llamatron.visualizers.modes import MODES
 
 FIRST_SCENE = 0
@@ -108,16 +97,16 @@ class TestDetails(unittest.TestCase):
     def test_a_chain_shows_its_name_in_parentheses_and_its_generators_under_it_in_order(self):
         self.document.set_clip_slot_setting(index=FIRST_SCENE, track=LEAD, setting=ClipSlotSetting.CHAINS, value=[NAMED])
         # A cell holds chains, so the details list the chains, chain: name, and a + to add one.
-        self.assertEqual(self.clip_lines(), [MSG_DETAILS_CHAIN.format(name=NAMED)])
-        self.assertEqual(texts(clip_details(setlist=self.setlist, song=self.song, clip_slot=self.clip_slot()))[1], MSG_DETAILS_ADD_CHAIN)
+        self.assertEqual(self.clip_lines(), [marks.MSG_DETAILS_CHAIN.format(name=NAMED)])
+        self.assertEqual(texts(clip_details(setlist=self.setlist, song=self.song, clip_slot=self.clip_slot()))[1], marks.MSG_DETAILS_ADD_CHAIN)
         # A chain is drawn in the chains' theme colour and a generator in the generators', since a kind has one colour everywhere.
         lines = clip_details(setlist=self.setlist, song=self.song, clip_slot=self.clip_slot())
         self.assertEqual(lines[0].style, themes.text_style(themes.CHAINS))
         self.assertEqual(lines[1].target.kind, ADD_CHAIN)
         self.document.set_scene_chains(index=FIRST_SCENE, names=[NAMED, NAMED])
-        self.assertEqual(self.scene_lines().count(MSG_DETAILS_CHAIN.format(name=NAMED)), 2)
+        self.assertEqual(self.scene_lines().count(marks.MSG_DETAILS_CHAIN.format(name=NAMED)), 2)
         self.document.set_track_chains(name=LEAD, names=[NAMED])
-        self.assertEqual(self.track_lines()[0], MSG_DETAILS_CHAIN.format(name=NAMED))
+        self.assertEqual(self.track_lines()[0], marks.MSG_DETAILS_CHAIN.format(name=NAMED))
 
     def test_a_scale_shows_only_where_it_differs_from_the_songs(self):
         self.document.set_scene_scale(index=FIRST_SCENE, name=self.song.get_scale_name())
@@ -125,8 +114,8 @@ class TestDetails(unittest.TestCase):
         self.document.add_scale(name=OWN_SCALE, root=OWN_SCALE_ROOT, kind=OWN_SCALE_KIND)
         self.document.set_scene_scale(index=FIRST_SCENE, name=OWN_SCALE)
         self.document.set_clip_slot_setting(index=FIRST_SCENE, track=LEAD, setting=ClipSlotSetting.SCALE, value=OWN_SCALE)
-        self.assertEqual(self.scene_lines(), [MSG_DETAILS_SCALE.format(name=OWN_SCALE)])
-        self.assertEqual(self.clip_lines(), [MSG_DETAILS_SCALE.format(name=OWN_SCALE)])
+        self.assertEqual(self.scene_lines(), [marks.MSG_DETAILS_SCALE.format(name=OWN_SCALE)])
+        self.assertEqual(self.clip_lines(), [marks.MSG_DETAILS_SCALE.format(name=OWN_SCALE)])
 
     def test_a_clip_shows_its_grab_its_advance_unless_it_is_the_default_its_strum_and_its_shapes(self):
         self.document.set_clip_slot_setting(index=FIRST_SCENE, track=LEAD, setting=ClipSlotSetting.FOLLOW_ACTION, value=self.setlist.get_default_follow_action())
@@ -137,24 +126,24 @@ class TestDetails(unittest.TestCase):
         self.document.set_clip_shape_setting(index=FIRST_SCENE, track=LEAD, name=ClipSlotSetting.DENSITY_START, value=DENSITY_START)
         self.document.set_clip_shape_setting(index=FIRST_SCENE, track=LEAD, name=ClipSlotSetting.DENSITY_END, value=DENSITY_END)
         self.assertEqual(self.clip_lines(), [
-            MSG_DETAILS_GRAB.format(track=DRUMS), MSG_DETAILS_ADVANCE.format(action=MSG_FOLLOW_ACTION_NAMES[FollowAction.NEXT]),
-            MSG_DETAILS_STRUM.format(direction=StrumDirection.DOWN),
-            MSG_DETAILS_SHAPE.format(shape=MSG_DETAILS_SHAPE_NAMES[Shape.DENSITY], start=DENSITY_START, end=DENSITY_END),
+            marks.MSG_DETAILS_GRAB.format(track=DRUMS), marks.MSG_DETAILS_ADVANCE.format(action=labels.MSG_FOLLOW_ACTION_NAMES[FollowAction.NEXT]),
+            marks.MSG_DETAILS_STRUM.format(direction=StrumDirection.DOWN),
+            marks.MSG_DETAILS_SHAPE.format(shape=marks.MSG_DETAILS_SHAPE_NAMES[Shape.DENSITY], start=DENSITY_START, end=DENSITY_END),
         ])
 
     def test_a_scene_shows_its_tempo_or_its_ramp_its_groove_and_its_resets(self):
         self.document.set_scene_tempo(index=FIRST_SCENE, tempo=SCENE_TEMPO)
-        self.assertEqual(self.scene_lines(), [MSG_DETAILS_TEMPO.format(tempo=SCENE_TEMPO)])
+        self.assertEqual(self.scene_lines(), [marks.MSG_DETAILS_TEMPO.format(tempo=SCENE_TEMPO)])
         self.document.set_scene_tempo_ramp(index=FIRST_SCENE, end=RAMP_END)
         self.document.set_scene_groove(index=FIRST_SCENE, choice=False)
         self.document.set_reset(index=FIRST_SCENE, register=RegisterName.AX, on=True)
         self.document.set_reset(index=FIRST_SCENE, register=RegisterName.DX, on=True)
         self.assertEqual(self.scene_lines(), [
-            MSG_DETAILS_TEMPO_RAMP.format(start=SCENE_TEMPO, end=RAMP_END), MSG_DETAILS_NO_GROOVE,
-            MSG_DETAILS_RESET.format(registers=RegisterName.AX + ', ' + RegisterName.DX),
+            marks.MSG_DETAILS_TEMPO_RAMP.format(start=SCENE_TEMPO, end=RAMP_END), marks.MSG_DETAILS_NO_GROOVE,
+            marks.MSG_DETAILS_RESET.format(registers=RegisterName.AX + ', ' + RegisterName.DX),
         ])
         self.document.set_scene_groove(index=FIRST_SCENE, choice=SONG_GROOVE)
-        self.assertIn(MSG_DETAILS_GROOVE.format(name=SONG_GROOVE), self.scene_lines())
+        self.assertIn(marks.MSG_DETAILS_GROOVE.format(name=SONG_GROOVE), self.scene_lines())
 
     def test_a_track_shows_its_instrument_transpose_euclid_strum_and_mute(self):
         self.document.add_instrument(INSTRUMENT)
@@ -165,8 +154,8 @@ class TestDetails(unittest.TestCase):
         self.document.set_track_strum_setting(name=LEAD, part=StrumPart.DIRECTION, value=StrumDirection.UP)
         self.document.set_track_mute(name=LEAD, muted=True)
         self.assertEqual(self.track_lines(), [
-            MSG_DETAILS_INSTRUMENT.format(name=INSTRUMENT), MSG_DETAILS_TRANSPOSE.format(amount=TRANSPOSE),
-            MSG_DETAILS_EUCLID.format(hits=EUCLID_HITS, steps=EUCLID_STEPS), MSG_DETAILS_STRUM.format(direction=StrumDirection.UP), MSG_DETAILS_MUTED,
+            marks.MSG_DETAILS_INSTRUMENT.format(name=INSTRUMENT), marks.MSG_DETAILS_TRANSPOSE.format(amount=TRANSPOSE),
+            marks.MSG_DETAILS_EUCLID.format(hits=EUCLID_HITS, steps=EUCLID_STEPS), marks.MSG_DETAILS_STRUM.format(direction=StrumDirection.UP), marks.MSG_DETAILS_MUTED,
         ])
 
     def test_a_clips_name_line_marks_its_loop_and_repeats_and_its_morph_and_direction_are_spelled_out_on_lines(self):
@@ -174,13 +163,13 @@ class TestDetails(unittest.TestCase):
         self.document.set_clip_slot_repeat(index=FIRST_SCENE, track=LEAD, repeat=SOME_REPEATS)
         self.document.set_clip_slot_morph_target(index=FIRST_SCENE, track=LEAD, pattern=OTHER)
         self.document.set_clip_slot_setting(index=FIRST_SCENE, track=LEAD, setting=ClipSlotSetting.DIRECTION, value=Direction.PENDULUM)
-        self.assertEqual(detailed_clip_text(self.clip_slot()), MSG_CLIP_WITH_MARKS.format(name=TUNE, marks=MSG_REPEAT_MARK.format(repeat=SOME_REPEATS)))
-        self.assertEqual(self.clip_lines(), [MSG_DETAILS_MORPH.format(pattern=OTHER), MSG_DETAILS_DIRECTION.format(direction=MSG_DETAILS_DIRECTION_NAMES[Direction.PENDULUM])])
-        self.assertEqual(detailed_clip_text(self.document.clip_slot(index=FIRST_SCENE, track=DRUMS)), MSG_CLIP_WITH_MARKS.format(name=BEAT_NAME(self), marks=MSG_LOOP_MARK))
+        self.assertEqual(detailed_clip_text(self.clip_slot()), marks.MSG_CLIP_WITH_MARKS.format(name=TUNE, marks=marks.MSG_REPEAT_MARK.format(repeat=SOME_REPEATS)))
+        self.assertEqual(self.clip_lines(), [marks.MSG_DETAILS_MORPH.format(pattern=OTHER), marks.MSG_DETAILS_DIRECTION.format(direction=marks.MSG_DETAILS_DIRECTION_NAMES[Direction.PENDULUM])])
+        self.assertEqual(detailed_clip_text(self.document.clip_slot(index=FIRST_SCENE, track=DRUMS)), marks.MSG_CLIP_WITH_MARKS.format(name=BEAT_NAME(self), marks=marks.MSG_LOOP_MARK))
 
     def test_every_direction_but_forward_is_spelled_out_and_forward_shows_nothing(self):
         directions = [value for name, value in vars(Direction).items() if name.isupper()]
-        self.assertEqual(sorted(MSG_DETAILS_DIRECTION_NAMES), sorted(direction for direction in directions if direction != Direction.FORWARD))
+        self.assertEqual(sorted(marks.MSG_DETAILS_DIRECTION_NAMES), sorted(direction for direction in directions if direction != Direction.FORWARD))
         self.document.set_clip_slot_setting(index=FIRST_SCENE, track=LEAD, setting=ClipSlotSetting.DIRECTION, value=Direction.FORWARD)
         self.assertEqual(self.clip_lines(), [])
 
@@ -221,14 +210,14 @@ class TestArrangeDetailsView(UITest):
         return [binding.what for binding in self.page.shown_keys()]
 
     async def test_r_shows_the_details_and_r_again_hides_them(self):
-        self.assertIn(MSG_SHOW_DETAILS_WHAT, self.legend())
-        self.assertNotIn(MSG_DETAILS_CHAIN.format(name=NAMED), self.text())
+        self.assertIn(legends.MSG_SHOW_DETAILS_WHAT, self.legend())
+        self.assertNotIn(marks.MSG_DETAILS_CHAIN.format(name=NAMED), self.text())
         usual = self.drawn()
         await self.press(keybindings.ArrangePage.SHOW_DETAILS)
         self.assertTrue(self.page.shows_details())
-        self.assertIn(MSG_HIDE_DETAILS_WHAT, self.legend())
-        self.assertIn(MSG_DETAILS_CHAIN.format(name=NAMED), self.text())
-        self.assertIn(MSG_DETAILS_CHAIN.format(name=NAMED), self.text())
+        self.assertIn(legends.MSG_HIDE_DETAILS_WHAT, self.legend())
+        self.assertIn(marks.MSG_DETAILS_CHAIN.format(name=NAMED), self.text())
+        self.assertIn(marks.MSG_DETAILS_CHAIN.format(name=NAMED), self.text())
         await self.press(keybindings.ArrangePage.HIDE_DETAILS)
         self.assertFalse(self.page.shows_details())
         self.assertEqual(self.drawn(), usual)
@@ -248,7 +237,7 @@ class TestArrangeDetailsView(UITest):
         chained = len(clip_details(setlist=self.document.setlist(), song=self.document.song(), clip_slot=self.document.clip_slot(index=FIRST_SCENE, track=LEAD)))
         # The header's track names and the second scene have no details of their own, so each grows by stock's line and the + line.
         self.assertEqual(len(self.drawn()), usual + 2 + chained + 2)
-        self.assertIn(MSG_DETAILS_STOCK, self.text())
+        self.assertIn(marks.MSG_DETAILS_STOCK, self.text())
 
     async def test_the_cursor_reaches_every_cell_and_its_box_is_always_drawn(self):
         await self.press(keybindings.ArrangePage.SHOW_DETAILS)
@@ -307,17 +296,17 @@ class TestPickingDetails(UITest):
         return self.page.drawing.details_at_cursor()[self.page.picked_line()].text
 
     async def test_tab_on_a_cell_with_no_details_locks_into_it_showing_stock_and_an_empty_slot_has_no_tab(self):
-        self.assertIn(MSG_INTO_DETAILS_WHAT, self.legend())
+        self.assertIn(legends.MSG_INTO_DETAILS_WHAT, self.legend())
         await self.press(keybindings.ArrangePage.HIDE_DETAILS, Key.LEFT)
-        self.assertEqual(texts(self.page.drawing.details_at_cursor()), [MSG_DETAILS_STOCK, MSG_DETAILS_ADD_CHAIN])
+        self.assertEqual(texts(self.page.drawing.details_at_cursor()), [marks.MSG_DETAILS_STOCK, marks.MSG_DETAILS_ADD_CHAIN])
         self.assertEqual(self.page.pickable(), [1])
         await self.press(keybindings.ArrangePage.INTO_DETAILS)
         self.assertTrue(self.page.picking())
-        self.assertEqual(self.picked_text(), MSG_DETAILS_ADD_CHAIN)
-        self.assertIn(MSG_DETAILS_STOCK, self.text())
+        self.assertEqual(self.picked_text(), marks.MSG_DETAILS_ADD_CHAIN)
+        self.assertIn(marks.MSG_DETAILS_STOCK, self.text())
         await self.press(keybindings.ArrangePage.OUT_OF_DETAILS, Key.DOWN, Key.RIGHT)
         self.assertIsNone(self.document.clip_slot(index=self.page.row, track=self.page.track()))
-        self.assertNotIn(MSG_INTO_DETAILS_WHAT, self.legend())
+        self.assertNotIn(legends.MSG_INTO_DETAILS_WHAT, self.legend())
 
     async def test_a_locked_cells_box_is_green(self):
         width, height = self.SIZE
@@ -344,13 +333,13 @@ class TestPickingDetails(UITest):
 
     async def test_tab_picks_the_first_line_in_brackets_and_the_arrows_stop_at_either_end(self):
         await self.press(keybindings.ArrangePage.INTO_DETAILS)
-        self.assertEqual(self.picked_text(), MSG_DETAILS_CHAIN.format(name=NAMED))
-        self.assertIn(MSG_PICKED_OPEN + MSG_DETAILS_CHAIN.format(name=NAMED) + MSG_PICKED_CLOSE, self.text())
+        self.assertEqual(self.picked_text(), marks.MSG_DETAILS_CHAIN.format(name=NAMED))
+        self.assertIn(marks.MSG_PICKED_OPEN + marks.MSG_DETAILS_CHAIN.format(name=NAMED) + marks.MSG_PICKED_CLOSE, self.text())
         await self.press(Key.UP)
-        self.assertEqual(self.picked_text(), MSG_DETAILS_CHAIN.format(name=NAMED))
+        self.assertEqual(self.picked_text(), marks.MSG_DETAILS_CHAIN.format(name=NAMED))
         for _ in range(len(self.page.pickable()) + 2):
             await self.press(Key.DOWN)
-        self.assertEqual(self.picked_text(), MSG_DETAILS_SCALE.format(name=OWN_SCALE))
+        self.assertEqual(self.picked_text(), marks.MSG_DETAILS_SCALE.format(name=OWN_SCALE))
         self.assertEqual(self.page.row, FIRST_SCENE)
 
     async def test_tab_or_esc_leaves_the_cell_and_left_and_right_do_nothing_meanwhile(self):
@@ -376,7 +365,7 @@ class TestPickingDetails(UITest):
         opened = [line.plain for line in self.page.drawing.body(width=width, height=height)]
         lines = clip_details(setlist=self.document.setlist(), song=self.document.song(), clip_slot=self.document.clip_slot(index=FIRST_SCENE, track=LEAD))
         self.assertEqual(len(opened), len(usual) + len(lines))
-        self.assertIn(MSG_DETAILS_CHAIN.format(name=NAMED), self.text())
+        self.assertIn(marks.MSG_DETAILS_CHAIN.format(name=NAMED), self.text())
         self.assertGreater(self.page.drawing.track_width(self.document.track_names().index(LEAD)), CELL_WIDTH)
         self.assertEqual(self.page.drawing.track_width(drums), CELL_WIDTH)
         self.assertTrue(all(line[SCENE_WIDTH] != Box.DOUBLE_BAR for line in opened if len(line) > SCENE_WIDTH))
@@ -385,7 +374,7 @@ class TestPickingDetails(UITest):
 
     async def test_enter_opens_a_chains_a_generators_and_a_scales_page_with_arranges_crumbs_first(self):
         for downs, page, word, name in (
-            (0, ChainEditor, MSG_CHAIN_WORD, NAMED), (2, ScalePage, MSG_SCALE_WORD, OWN_SCALE),
+            (0, ChainEditor, names.MSG_CHAIN_WORD, NAMED), (2, ScalePage, names.MSG_SCALE_WORD, OWN_SCALE),
         ):
             with self.subTest(page=page.__name__):
                 await self.press(keybindings.ArrangePage.INTO_DETAILS)
@@ -393,7 +382,7 @@ class TestPickingDetails(UITest):
                     await self.press(Key.DOWN)
                 await self.press(keybindings.ArrangePage.OPEN_DETAIL)
                 self.assertIsInstance(self.app.screen, page)
-                self.assertEqual(self.app.screen.crumb_trail(), (Crumb.ARRANGE, MSG_OPENED_ITEM_CRUMB.format(word=word, name=name)))
+                self.assertEqual(self.app.screen.crumb_trail(), (labels.Crumb.ARRANGE, labels.MSG_OPENED_ITEM_CRUMB.format(word=word, name=name)))
                 await self.press(Key.ESCAPE)
                 self.assertIs(self.app.screen, self.page)
                 self.assertTrue(self.page.picking())
@@ -406,14 +395,14 @@ class TestPickingDetails(UITest):
         self.document.record_edit()
         self.page.row = HEADER_ROW
         await self.press(Key.RIGHT, Key.LEFT)
-        for downs, page, word, name in ((1, InstrumentEditor, MSG_INSTRUMENT_WORD, INSTRUMENT), (2, GrooveEditor, MSG_GROOVE_WORD, SONG_GROOVE)):
+        for downs, page, word, name in ((1, InstrumentEditor, names.MSG_INSTRUMENT_WORD, INSTRUMENT), (2, GrooveEditor, names.MSG_GROOVE_WORD, SONG_GROOVE)):
             with self.subTest(page=page.__name__):
                 await self.press(keybindings.ArrangePage.INTO_DETAILS)
                 for _ in range(downs):
                     await self.press(Key.DOWN)
                 await self.press(keybindings.ArrangePage.OPEN_DETAIL)
                 self.assertIsInstance(self.app.screen, page)
-                self.assertEqual(self.app.screen.crumb_trail(), (Crumb.ARRANGE, MSG_OPENED_ITEM_CRUMB.format(word=word, name=name)))
+                self.assertEqual(self.app.screen.crumb_trail(), (labels.Crumb.ARRANGE, labels.MSG_OPENED_ITEM_CRUMB.format(word=word, name=name)))
                 await self.press(Key.ESCAPE, keybindings.ArrangePage.OUT_OF_DETAILS)
 
     def test_every_kind_of_generator_has_a_page_with_an_editor(self):
@@ -427,12 +416,12 @@ class TestPickingDetails(UITest):
             await self.press(Key.DOWN)
         self.document.set_clip_slot_setting(index=FIRST_SCENE, track=LEAD, setting=ClipSlotSetting.SCALE, value=None)
         self.document.record_edit()
-        self.assertEqual(self.picked_text(), MSG_DETAILS_ADD_CHAIN)
+        self.assertEqual(self.picked_text(), marks.MSG_DETAILS_ADD_CHAIN)
 
     async def test_plus_adds_a_chain_to_the_cell_alone_and_backspace_takes_one_out(self):
         # Enter on + picks one of the set's chains for this cell, and Bksp on a chain: line removes it from this cell.
         await self.press(keybindings.ArrangePage.INTO_DETAILS, Key.DOWN)
-        self.assertEqual(self.picked_text(), MSG_DETAILS_ADD_CHAIN)
+        self.assertEqual(self.picked_text(), marks.MSG_DETAILS_ADD_CHAIN)
         await self.press(keybindings.ArrangePage.ADD_CHAIN)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         await self.pick(NAMED)

@@ -16,7 +16,7 @@
 
 """The base class for everything a set file stores."""
 
-from llamatron.strings.errors import ERR_NEEDS_FROM_DATA, ERR_NEEDS_TO_DATA
+from llamatron.strings import errors
 from llamatron.support.revised import Revised, notes_change
 
 
@@ -154,7 +154,7 @@ class LlamaData(Revised):
 
     def to_data(self):
         """Return this object's settings as plain data in the set file's format."""
-        raise NotImplementedError(ERR_NEEDS_TO_DATA.format(kind=type(self).__name__))
+        raise NotImplementedError(errors.ERR_NEEDS_TO_DATA.format(kind=type(self).__name__))
 
     @classmethod
     def from_data(cls, *, data, where, song=None):
@@ -164,7 +164,7 @@ class LlamaData(Revised):
         being read, for objects that need to check names that other parts of the file define; the
         parts of the set that every song shares, like a chain, take the setlist instead.
         """
-        raise NotImplementedError(ERR_NEEDS_FROM_DATA.format(kind=cls.__name__))
+        raise NotImplementedError(errors.ERR_NEEDS_FROM_DATA.format(kind=cls.__name__))
 
 
 def _names(*, value, name):

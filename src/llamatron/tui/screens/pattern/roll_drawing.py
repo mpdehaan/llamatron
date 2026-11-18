@@ -34,17 +34,13 @@ from llamatron.composition.file_format import Row
 from llamatron.tui.drawing import Box, fit, NOTHING, SPACE, Style
 from llamatron.tui.screens.pattern.grid_drawing import CELL_WIDTH, GridDrawing
 from llamatron.composition.checks import fraction_text
-from llamatron.strings.marks import (
-    MSG_CURSOR_BLOCK, MSG_ENTRY_SIZE_SHOWN, MSG_FROM_SONG_SHOWN, MSG_GHOST_LINE, MSG_GRAB_NOTE_MARK, MSG_NOTE_CELL, MSG_NOTE_CELL_WITH_MARK,
-    MSG_NOTE_EDGE, MSG_NOTE_HOLLOW, MSG_NOTE_HOLLOW_UNDER_CURSOR, MSG_NOTE_UNDER_CURSOR, MSG_NOTE_UNDER_CURSOR_WITH_MARK, MSG_OUT_OF_RANGE_CELL,
-    MSG_KEYSWITCH_LIGHT, MSG_READ_HEAD,
-)
+from llamatron.strings import marks
 
 # The blocks of a note's bar, which the read head never draws over, and how wide the edge before each step is.
-NOTE_BLOCKS = (MSG_NOTE_EDGE, MSG_CURSOR_BLOCK, MSG_NOTE_HOLLOW, MSG_NOTE_HOLLOW_UNDER_CURSOR)
+NOTE_BLOCKS = (marks.MSG_NOTE_EDGE, marks.MSG_CURSOR_BLOCK, marks.MSG_NOTE_HOLLOW, marks.MSG_NOTE_HOLLOW_UNDER_CURSOR)
 EDGE_WIDTH = 1
 # What a solid bar's blocks become in a hollow one.
-HOLLOW = str.maketrans({MSG_NOTE_EDGE: MSG_NOTE_HOLLOW, MSG_CURSOR_BLOCK: MSG_NOTE_HOLLOW_UNDER_CURSOR})
+HOLLOW = str.maketrans({marks.MSG_NOTE_EDGE: marks.MSG_NOTE_HOLLOW, marks.MSG_CURSOR_BLOCK: marks.MSG_NOTE_HOLLOW_UNDER_CURSOR})
 
 # The lines around the pitch rows: the two header lines, the top rule, the Step row, its double rule, the bottom rule and the description.
 LINES_AROUND_ROWS = 7
@@ -91,8 +87,8 @@ class RollDrawing(GridDrawing):
     def header_extra(self):
         """Return the second header line's cells after Time: the scale and the entry size, how long Space draws a note, said to be the song's when the pattern sets none."""
         editor = self._editor
-        whose = NOTHING if editor.pattern().get_written_entry_size() else MSG_FROM_SONG_SHOWN
-        entry = MSG_ENTRY_SIZE_SHOWN.format(size=fraction_text(editor.document().entry_size(editor.item)), whose=whose)
+        whose = NOTHING if editor.pattern().get_written_entry_size() else marks.MSG_FROM_SONG_SHOWN
+        entry = marks.MSG_ENTRY_SIZE_SHOWN.format(size=fraction_text(editor.document().entry_size(editor.item)), whose=whose)
         return [self.scale_header(), entry]
 
     # Which rows are on screen.
@@ -132,7 +128,7 @@ class RollDrawing(GridDrawing):
         if start != step:
             return None
         if roll.grabs(start):
-            return MSG_GRAB_NOTE_MARK
+            return marks.MSG_GRAB_NOTE_MARK
         # A sharp or flat has a row of its own when the scale is known, so the mark is only for numbered rows.
         return roll.accidental_symbol(start) if roll.scale_name() is None else None
 
@@ -151,12 +147,12 @@ class RollDrawing(GridDrawing):
         past its end.
         """
         if columns == CELL_WIDTH and mark is None:
-            return Text(MSG_NOTE_UNDER_CURSOR if selected else MSG_NOTE_CELL, no_wrap=True)
+            return Text(marks.MSG_NOTE_UNDER_CURSOR if selected else marks.MSG_NOTE_CELL, no_wrap=True)
         if columns == CELL_WIDTH:
-            cell = Text((MSG_NOTE_UNDER_CURSOR_WITH_MARK if selected else MSG_NOTE_CELL_WITH_MARK).format(mark=mark), no_wrap=True)
+            cell = Text((marks.MSG_NOTE_UNDER_CURSOR_WITH_MARK if selected else marks.MSG_NOTE_CELL_WITH_MARK).format(mark=mark), no_wrap=True)
             cell.stylize(Style.REVERSE, MARK_COLUMN, MARK_COLUMN + len(mark))
             return cell
-        block = MSG_CURSOR_BLOCK if selected else MSG_NOTE_EDGE
+        block = marks.MSG_CURSOR_BLOCK if selected else marks.MSG_NOTE_EDGE
         bar = block * columns
         if mark is not None:
             column = min(MARK_COLUMN, columns - 1)
@@ -209,7 +205,7 @@ class RollDrawing(GridDrawing):
     def ghost_cell(self, *, notes, step, selected):
         """Return the thin dim line of a chord's added note over one step, as far as the chord's note fills the cell."""
         columns = self.columns_filled(notes=notes, step=step)
-        return Text(fit(text=MSG_GHOST_LINE * columns, width=CELL_WIDTH), style=Style.REVERSE if selected else Style.CHORD_NOTE, no_wrap=True)
+        return Text(fit(text=marks.MSG_GHOST_LINE * columns, width=CELL_WIDTH), style=Style.REVERSE if selected else Style.CHORD_NOTE, no_wrap=True)
 
     def cursor_edges(self):
         """Return the edges the cursor's bold double bars stand on: the left edge of the cursor's step and of the step after it, which is the right border on the last step."""
@@ -248,9 +244,9 @@ class RollDrawing(GridDrawing):
             ghost = mark is False and self.ghost_here(notes=notes, pitch=pitch, step=step)
             hollow = notes.covering.get(step) in notes.lifted
             if self.continues(notes=notes, pitch=pitch, step=step):
-                replaced = MSG_NOTE_HOLLOW if hollow else MSG_NOTE_EDGE
+                replaced = marks.MSG_NOTE_HOLLOW if hollow else marks.MSG_NOTE_EDGE
             elif ghost and notes.covering.get(step) != step:
-                replaced = Text(MSG_GHOST_LINE, style=Style.CHORD_NOTE)
+                replaced = Text(marks.MSG_GHOST_LINE, style=Style.CHORD_NOTE)
             elif step in cursor_edges:
                 replaced = Text(Box.DOUBLE_BAR, style=Style.BOLD)
             else:
@@ -266,7 +262,7 @@ class RollDrawing(GridDrawing):
             elif in_range:
                 line.append(SPACE * CELL_WIDTH)
             else:
-                line.append(MSG_OUT_OF_RANGE_CELL, style=Style.DIM)
+                line.append(marks.MSG_OUT_OF_RANGE_CELL, style=Style.DIM)
         if last in cursor_edges:
             line.append(Box.DOUBLE_BAR, style=Style.BOLD)
         else:
@@ -308,7 +304,7 @@ class RollDrawing(GridDrawing):
             column = EDGE_WIDTH + self.label_width() + (step - first) * (CELL_WIDTH + EDGE_WIDTH) + EDGE_WIDTH + MARK_COLUMN
             after = marked[column + 1:]
             marked = marked[:column]
-            marked.append(MSG_KEYSWITCH_LIGHT, style=Style.KEYSWITCH_LIGHT)
+            marked.append(marks.MSG_KEYSWITCH_LIGHT, style=Style.KEYSWITCH_LIGHT)
             marked.append_text(after)
         return marked
 
@@ -326,7 +322,7 @@ class RollDrawing(GridDrawing):
         if column >= len(line.plain) or line.plain[column] in NOTE_BLOCKS:
             return line
         marked = line[:column]
-        marked.append(MSG_READ_HEAD, style=Style.READ_HEAD)
+        marked.append(marks.MSG_READ_HEAD, style=Style.READ_HEAD)
         marked.append_text(line[column + 1:])
         return marked
 

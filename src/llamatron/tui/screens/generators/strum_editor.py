@@ -16,9 +16,7 @@
 """The Strum editor page: one Strum generator's name and its strum, which wins over a clip's and its track's."""
 
 from llamatron.composition.file_format import GeneratorKind, Section
-from llamatron.strings.help import HELP_STRUM_EDITOR
-from llamatron.strings.labels import Crumb, MSG_STRUM_LABEL
-from llamatron.strings.messages import MSG_RENAME_GENERATOR_PROMPT
+from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.shared.field import NameField
@@ -30,10 +28,10 @@ from llamatron.tui.screens.generators.strum_fields import strum_fields
 class StrumEditor(ShowsNamedItem, FieldPage):
 
     KEYS = keybindings.StrumEditor
-    HELP = HELP_STRUM_EDITOR
+    HELP = help_text.HELP_STRUM_EDITOR
     SECTION = Section.STRUMS
-    CRUMBS_BEFORE = (Crumb.GENERATORS,)
-    RENAME_PROMPT = MSG_RENAME_GENERATOR_PROMPT.format(label=MSG_STRUM_LABEL)
+    CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_STRUM_LABEL)
 
     def __init__(self, *, holder, name):
         super().__init__(holder)

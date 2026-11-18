@@ -21,7 +21,7 @@ from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.drawing import NOTHING, SPACE, Style
 from llamatron.tui.key_table import pressed_key, quits_at_once
 from llamatron.tui.keys import Key
-from llamatron.strings.marks import MSG_PROMPT_MARK
+from llamatron.strings import marks
 from llamatron.tui import keybindings
 
 # How far the cursor moves for one arrow press.
@@ -82,12 +82,12 @@ class PromptDialog(Dialog):
     def lines(self, width):
         # The text scrolls so that the cursor always shows, with the cursor drawn in reverse video
         # over the character it's before, or over a space when it's at the end.
-        shown = width - len(MSG_PROMPT_MARK) - len(self.label) - 1
+        shown = width - len(marks.MSG_PROMPT_MARK) - len(self.label) - 1
         cursor = self.cursor()
         start = max(cursor - shown + 1, 0)
         text = self.value[start:start + shown]
         at = cursor - start
-        line = Text(MSG_PROMPT_MARK + self.label + text[:at])
+        line = Text(marks.MSG_PROMPT_MARK + self.label + text[:at])
         line.append(text[at:at + 1] or SPACE, style=Style.REVERSE)
         line.append(text[at + 1:])
         return [line]

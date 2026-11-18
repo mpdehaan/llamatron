@@ -16,12 +16,11 @@
 
 from enum import Enum
 
-from llamatron.music.midi import HALF_STEPS_PER_OCTAVE, MAX_MIDI_NUMBER, MIN_MIDI_NUMBER
+from llamatron.music import midi as midi_numbers
 from llamatron.music.note import FIRST_DEGREE, FLAT_NAMES, FLAT_SIGN, SHARP_NAMES, Note
 from llamatron.music.sound import Sound
 from llamatron.support.length import Length
-from llamatron.strings.errors import ERR_BAD_DEGREE, ERR_NOT_A_NOTE, ERR_NOT_A_SCALE_TYPE
-from llamatron.strings.reprs import REPR_SCALE
+from llamatron.strings import errors, reprs
 
 
 class ScaleType(Enum):
@@ -109,9 +108,9 @@ class Scale:
 
     def __init__(self, *, root, typ):
         if not isinstance(root, Note):
-            raise ValueError(ERR_NOT_A_NOTE.format(value=root))
+            raise ValueError(errors.ERR_NOT_A_NOTE.format(value=root))
         if not isinstance(typ, ScaleType):
-            raise ValueError(ERR_NOT_A_SCALE_TYPE.format(value=typ))
+            raise ValueError(errors.ERR_NOT_A_SCALE_TYPE.format(value=typ))
         self._root = root
         self._typ = typ
 
@@ -131,10 +130,10 @@ class Scale:
         """
         # bool is a subclass of int, but True is not a real degree.
         if type(degree) is not int or degree < FIRST_DEGREE:
-            raise ValueError(ERR_BAD_DEGREE.format(value=degree, lowest=FIRST_DEGREE))
+            raise ValueError(errors.ERR_BAD_DEGREE.format(value=degree, lowest=FIRST_DEGREE))
         steps = self._typ.value
         octaves, index = divmod(degree - FIRST_DEGREE + scale_notes, len(steps))
-        name, octave_number = self._root.spelled_half_step(octaves * HALF_STEPS_PER_OCTAVE + steps[index] + half_steps)
+        name, octave_number = self._root.spelled_half_step(octaves * midi_numbers.HALF_STEPS_PER_OCTAVE + steps[index] + half_steps)
         return Note(name=name, octave_number=octave_number, length=length, velocity=velocity, glide=glide)
 
     def sound_at(self, *, degree, scale_notes, half_steps, length, velocity=None, glide=False):
@@ -147,10 +146,10 @@ class Scale:
         steps = self._typ.value
         octaves, index = divmod(degree - FIRST_DEGREE + scale_notes, len(steps))
         root = self._root
-        midi = root.get_midi_number() + octaves * HALF_STEPS_PER_OCTAVE + steps[index] + half_steps
-        if MIN_MIDI_NUMBER <= midi <= MAX_MIDI_NUMBER:
+        midi = root.get_midi_number() + octaves * midi_numbers.HALF_STEPS_PER_OCTAVE + steps[index] + half_steps
+        if midi_numbers.MIN_MIDI_NUMBER <= midi <= midi_numbers.MAX_MIDI_NUMBER:
             names = FLAT_NAMES if root.get_name().endswith(FLAT_SIGN) else SHARP_NAMES
-            return Sound.note(length=length, midi=midi, velocity=velocity, glide=glide, name=names[midi % HALF_STEPS_PER_OCTAVE])
+            return Sound.note(length=length, midi=midi, velocity=velocity, glide=glide, name=names[midi % midi_numbers.HALF_STEPS_PER_OCTAVE])
         # The class says what is wrong with the note, in the words it always has.
         number = None if length is None else Length.rational(length)
         return Sound.of(self.note_at(degree=degree, scale_notes=scale_notes, half_steps=half_steps, length=number, velocity=velocity, glide=glide))
@@ -164,4 +163,4 @@ class Scale:
         return hash((self._root, self._typ))
 
     def __repr__(self):
-        return REPR_SCALE.format(root=self._root, typ=self._typ)
+        return reprs.REPR_SCALE.format(root=self._root, typ=self._typ)

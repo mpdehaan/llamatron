@@ -20,7 +20,7 @@ import unittest
 from unittest import mock
 
 from llamatron.composition.file_format import FLUIDSYNTH_DEVICE
-from llamatron.strings.errors import ERR_DEVICE_WILL_NOT_SOUND, ERR_FLUIDSYNTH_WILL_NOT_SOUND, ERR_SILENT_INSTRUMENTS_TITLE
+from llamatron.strings import errors
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.keys import Key
@@ -58,7 +58,7 @@ class TestSilentInstrumentLines(unittest.TestCase):
 
     def test_fluidsynth_not_installed_and_a_port_not_connected_are_each_told(self):
         lines = silent_instrument_lines(setlist=self.setlist, installed=False, connected=set())
-        self.assertEqual(lines, [ERR_FLUIDSYNTH_WILL_NOT_SOUND, ERR_DEVICE_WILL_NOT_SOUND.format(instrument=KEYS, device=GONE_PORT)])
+        self.assertEqual(lines, [errors.ERR_FLUIDSYNTH_WILL_NOT_SOUND, errors.ERR_DEVICE_WILL_NOT_SOUND.format(instrument=KEYS, device=GONE_PORT)])
 
     def test_an_instrument_no_track_plays_through_is_never_told(self):
         lines = silent_instrument_lines(setlist=self.setlist, installed=False, connected=set())
@@ -70,7 +70,7 @@ class TestSilentInstrumentLines(unittest.TestCase):
     def test_fluidsynth_is_told_once_however_many_instruments_use_it(self):
         document = with_instruments(a_song())
         document.set_instrument_device(name=KEYS, device=FLUIDSYNTH_DEVICE)
-        self.assertEqual(silent_instrument_lines(setlist=document.setlist(), installed=False, connected=set()), [ERR_FLUIDSYNTH_WILL_NOT_SOUND])
+        self.assertEqual(silent_instrument_lines(setlist=document.setlist(), installed=False, connected=set()), [errors.ERR_FLUIDSYNTH_WILL_NOT_SOUND])
 
 
 class SilentInstrumentsTest(UITest):
@@ -101,9 +101,9 @@ class TestSilentInstrumentsWhenTheTrackerStarts(SilentInstrumentsTest):
 
     async def test_the_dialog_tells_each_and_the_set_keeps_its_devices(self):
         self.assertIsInstance(self.app.screen, MessageDialog)
-        self.assertIn(ERR_SILENT_INSTRUMENTS_TITLE, self.text())
-        self.assert_told(ERR_FLUIDSYNTH_WILL_NOT_SOUND)
-        self.assert_told(ERR_DEVICE_WILL_NOT_SOUND.format(instrument=KEYS, device=GONE_PORT))
+        self.assertIn(errors.ERR_SILENT_INSTRUMENTS_TITLE, self.text())
+        self.assert_told(errors.ERR_FLUIDSYNTH_WILL_NOT_SOUND)
+        self.assert_told(errors.ERR_DEVICE_WILL_NOT_SOUND.format(instrument=KEYS, device=GONE_PORT))
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, MainPage)
         setlist = self.app.get_document().setlist()
@@ -117,7 +117,7 @@ class TestSilentInstrumentsWhenTheTrackerStarts(SilentInstrumentsTest):
         self.app.screen.place = rows.index(SAVED)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, MessageDialog)
-        self.assert_told(ERR_FLUIDSYNTH_WILL_NOT_SOUND)
+        self.assert_told(errors.ERR_FLUIDSYNTH_WILL_NOT_SOUND)
 
 
 class TestNoWarningWhenEverythingSounds(SilentInstrumentsTest):

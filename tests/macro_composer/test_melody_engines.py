@@ -20,7 +20,7 @@ is made by."""
 import unittest
 
 from llamatron.macro_composer import arranger, composer, melody, notation, operations
-from llamatron.strings.errors import ERR_MELODY_NEEDS_RHYTHMS
+from llamatron.strings import errors
 
 MINOR = 'minor'
 SEED = 9
@@ -529,7 +529,7 @@ class TestSmart(unittest.TestCase):
     def test_a_style_with_no_rhythms_is_refused(self):
         with self.assertRaises(ValueError) as refused:
             melody.sketched(habits=HABITS, plan=PLAN, chords=CHORDS, scale_type=melody.MAJOR, seed=SEED, answers=False, engine=melody.SMART)
-        self.assertEqual(str(refused.exception), ERR_MELODY_NEEDS_RHYTHMS)
+        self.assertEqual(str(refused.exception), errors.ERR_MELODY_NEEDS_RHYTHMS)
 
 
 class TestEngineChosen(unittest.TestCase):

@@ -25,9 +25,7 @@ from llamatron.tui.screens.set.file_page import FilePage
 from llamatron.tui.screens.set.importing import home_folder
 from llamatron.tui.screens.set.open_page import OpenPage
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
-from llamatron.strings.labels import MSG_SET_CRUMB, MSG_SONG_CRUMB
-from llamatron.strings.marks import MSG_FOLDER_ROW, MSG_PARENT_ROW
-from llamatron.strings.names import MSG_DEFAULT_SONG_NAME
+from llamatron.strings import labels, marks, names
 from llamatron.tui import keybindings
 
 LEAD = 'lead'
@@ -59,8 +57,8 @@ class TestOpenPage(UITest):
         a_song().save(path=os.path.join(FOLDER_OF_SETS, INNER_FOLDER, 'deep song.yml'))
         await self.press(Key.CTRL_O)
         shown = self.text()
-        self.assertIn(MSG_FOLDER_ROW.format(name=FOLDER_OF_SETS), shown)
-        self.assertIn(MSG_PARENT_ROW, shown)
+        self.assertIn(marks.MSG_FOLDER_ROW.format(name=FOLDER_OF_SETS), shown)
+        self.assertIn(marks.MSG_PARENT_ROW, shown)
         for folder in (FOLDER_OF_SETS, INNER_FOLDER):
             rows = [row[0] for row in self.app.screen.rows()]
             self.app.screen.place = rows.index(folder)
@@ -115,9 +113,9 @@ class TestOpenPage(UITest):
         rows = [row[0] for row in self.app.screen.rows()]
         self.app.screen.place = rows.index('two songs.yml')
         await self.press(Key.ENTER)
-        self.assertEqual(self.app.get_document().current_song_name(), MSG_DEFAULT_SONG_NAME)
+        self.assertEqual(self.app.get_document().current_song_name(), names.MSG_DEFAULT_SONG_NAME)
         self.assertEqual(self.app.get_document().song().get_track_names(), [LEAD, DRUMS])
-        self.assert_header(set_crumb=MSG_SET_CRUMB.format(file='two songs.yml'), song_crumb=MSG_SONG_CRUMB.format(song=MSG_DEFAULT_SONG_NAME))
+        self.assert_header(set_crumb=labels.MSG_SET_CRUMB.format(file='two songs.yml'), song_crumb=labels.MSG_SONG_CRUMB.format(song=names.MSG_DEFAULT_SONG_NAME))
 
     async def test_control_o_opens_from_any_page_and_comes_back_to_it(self):
         a_song().save(path='song one.yml')

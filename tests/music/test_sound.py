@@ -23,11 +23,11 @@ from fractions import Fraction
 import llamatron
 from llamatron.music.chord import Chord, ChordType
 from llamatron.music.held import Held, phrase
-from llamatron.music.midi import MAX_MIDI_NUMBER, MAX_VELOCITY, MIN_MIDI_NUMBER
+from llamatron.music import midi
 from llamatron.music.note import FIRST_DEGREE, MAX_OCTAVE, MIN_OCTAVE, SEMITONES_ABOVE_C, Degree, Note, NoteName, Rest
 from llamatron.music.scale import Scale, ScaleType
 from llamatron.music.sound import CHORD, DEGREE, HELD, NOTE, PHRASE, REST, Sound
-from llamatron.strings.errors import ERR_BAD_SOUND, ERR_NOT_A_POSITION
+from llamatron.strings import errors
 from llamatron.support.length import Length
 from llamatron.support.rational import Rational
 
@@ -36,7 +36,7 @@ EIGHTH = Fraction(1, 8)
 THIRD = Fraction(1, 3)
 # Lengths a note can have, with None for one that takes its clip's note_length.
 LENGTHS = [None, QUARTER, THIRD, 2]
-VELOCITIES = [None, 1, MAX_VELOCITY]
+VELOCITIES = [None, 1, midi.MAX_VELOCITY]
 # How far a note is moved by half steps, both ways, past an octave and past the MIDI range.
 HALF_STEPS = [-130, -13, -12, -1, 0, 1, 5, 12, 25, 130]
 # The degrees, the scale notes moved and the half steps added that a pattern's steps ask a scale for.
@@ -148,7 +148,7 @@ class TestSoundsAndPositions(unittest.TestCase):
     def test_anything_else_is_refused(self):
         with self.assertRaises(ValueError) as refused:
             Sound.of(NOT_A_POSITION)
-        self.assertEqual(str(refused.exception), ERR_NOT_A_POSITION.format(value=NOT_A_POSITION))
+        self.assertEqual(str(refused.exception), errors.ERR_NOT_A_POSITION.format(value=NOT_A_POSITION))
 
     def test_a_chord_lasts_as_long_as_its_longest_note_or_has_no_length_while_a_note_has_none(self):
         for chord in [Chord([C4, E4, G4]), Chord([E4, C4]), Chord([C4, Note(name=NoteName.E, octave_number=4)])]:
@@ -160,7 +160,7 @@ class TestSoundsAndPositions(unittest.TestCase):
         rest = Rest(Rational(1, 4))
         with self.assertRaises(ValueError) as refused:
             Sound.held(Sound.of(rest), Length.exact(EIGHTH))
-        self.assertEqual(str(refused.exception), ERR_BAD_SOUND.format(value=rest))
+        self.assertEqual(str(refused.exception), errors.ERR_BAD_SOUND.format(value=rest))
         self.assertEqual(str(refused.exception), problem(lambda: Held(sound=rest, length=EIGHTH)))
 
 
@@ -251,9 +251,9 @@ class TestAScalesSoundIsItsNote(unittest.TestCase):
 
     def test_the_ends_of_the_midi_range_are_notes(self):
         lowest = Scale(root=Note(name=NoteName.C, octave_number=MIN_OCTAVE, length=QUARTER), typ=ScaleType.MAJOR)
-        self.assertEqual(Sound.position(lowest.sound_at(degree=FIRST_DEGREE, scale_notes=0, half_steps=0, length=(1, 4))).get_midi_number(), MIN_MIDI_NUMBER)
-        highest = lowest.sound_at(degree=FIRST_DEGREE, scale_notes=0, half_steps=MAX_MIDI_NUMBER, length=(1, 4))
-        self.assertEqual(Sound.position(highest).get_midi_number(), MAX_MIDI_NUMBER)
+        self.assertEqual(Sound.position(lowest.sound_at(degree=FIRST_DEGREE, scale_notes=0, half_steps=0, length=(1, 4))).get_midi_number(), midi.MIN_MIDI_NUMBER)
+        highest = lowest.sound_at(degree=FIRST_DEGREE, scale_notes=0, half_steps=midi.MAX_MIDI_NUMBER, length=(1, 4))
+        self.assertEqual(Sound.position(highest).get_midi_number(), midi.MAX_MIDI_NUMBER)
 
 
 class TestTheRenderMakesSounds(unittest.TestCase):

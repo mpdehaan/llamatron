@@ -19,12 +19,11 @@ from tests.support.ui_testing import POP, UITest
 from llamatron.composition.file_format import Section, ONE_BAR_WRITTEN, TIME_CHOICES, Accidental, ChordSymbol, GeneratorKind, NamedProgression, Restart, Tension
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.music.scale import ScaleType
-from llamatron.strings.messages import MSG_CHORD_OWN_SENTENCE, MSG_CHORD_SENTENCE, MSG_RESTING_CHORD
+from llamatron.composition import limits
+from llamatron.strings import labels, messages
 from llamatron.composition.generator_settings import PROGRESSION_INVERSIONS
 from llamatron.tui.dialogs.chord_dialog import INVERSION_LIST, LISTS, QUALITY_LIST, SCALE_LIST, TENSION_LIST, ChordDialog
-from llamatron.composition.limits import MAX_PROGRESSION_CHORDS, MAX_PROGRESSION_DEGREE, MIN_PROGRESSION_DEGREE
 from llamatron.composition.progressions import named_progression
-from llamatron.strings.labels import MSG_CHORDS_LABEL, MSG_EVERY_LABEL, MSG_PROGRESSION_NAMES, MSG_RESTART_LABEL, MSG_RESTART_NAMES
 from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.chords_editor import ACCIDENTAL_ROW, CHORD_ROW, INVERSION_ROW, QUALITY_CYCLE, QUALITY_ROW, SCALE_ROW, TENSION_ROW, ChordsEditor
@@ -56,7 +55,7 @@ class TestProgressionAdded(UITest):
 
     async def test_a_new_one_has_one_chord_that_moves_nothing(self):
         name = await self.add_generator(Section.PROGRESSIONS)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.PROGRESSION, name=name).get_chords(), [MIN_PROGRESSION_DEGREE])
+        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.PROGRESSION, name=name).get_chords(), [limits.MIN_PROGRESSION_DEGREE])
 
 
 class TestProgressionEditor(UITest):
@@ -72,13 +71,13 @@ class TestProgressionEditor(UITest):
 
     async def test_every_starts_at_a_bar_and_steps_through_the_list(self):
         self.assertIn(ONE_BAR_WRITTEN, self.text())
-        await self.select_field(MSG_EVERY_LABEL)
+        await self.select_field(labels.MSG_EVERY_LABEL)
         await self.press(keybindings.ProgressionEditor.MORE)
         self.assertEqual(self.progression().get_every(), [time for time in TIME_CHOICES if time != ONE_BAR_WRITTEN][0])
 
     async def test_the_chords_field_shows_the_numerals_and_opens_the_chord_editor(self):
         self.assertIn(POP_NUMERALS, self.text())
-        await self.select_field(MSG_CHORDS_LABEL)
+        await self.select_field(labels.MSG_CHORDS_LABEL)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChordsEditor)
 
@@ -102,10 +101,10 @@ class TestChordsEditor(UITest):
             self.assertIn(numeral, self.text())
 
     async def test_the_degree_steps_from_1_to_7_and_stops(self):
-        await self.press(*[keybindings.ChordsEditor.MORE] * MAX_PROGRESSION_DEGREE)
-        self.assertEqual(self.progression().get_chords()[0], MAX_PROGRESSION_DEGREE)
-        await self.press(*[keybindings.ChordsEditor.LESS] * (MAX_PROGRESSION_DEGREE + 1))
-        self.assertEqual(self.progression().get_chords()[0], MIN_PROGRESSION_DEGREE)
+        await self.press(*[keybindings.ChordsEditor.MORE] * limits.MAX_PROGRESSION_DEGREE)
+        self.assertEqual(self.progression().get_chords()[0], limits.MAX_PROGRESSION_DEGREE)
+        await self.press(*[keybindings.ChordsEditor.LESS] * (limits.MAX_PROGRESSION_DEGREE + 1))
+        self.assertEqual(self.progression().get_chords()[0], limits.MIN_PROGRESSION_DEGREE)
 
     async def test_digits_type_a_degree_and_one_out_of_range_types_nothing(self):
         await self.press(SIX)
@@ -153,14 +152,14 @@ class TestChordsEditor(UITest):
         await self.settle()
         dialog.draw()
         said = str(dialog.query_one('#dialog-view').render())
-        self.assertIn(MSG_CHORD_SENTENCE.format(scale=C_MINOR, degree=POP_CHORDS[SIXTH_CHORD], name=A_FLAT_MAJOR), said)
-        self.assertIn(MSG_CHORD_OWN_SENTENCE.format(scale=C_MAJOR, name=A_MINOR), said)
+        self.assertIn(messages.MSG_CHORD_SENTENCE.format(scale=C_MINOR, degree=POP_CHORDS[SIXTH_CHORD], name=A_FLAT_MAJOR), said)
+        self.assertIn(messages.MSG_CHORD_OWN_SENTENCE.format(scale=C_MAJOR, name=A_MINOR), said)
         self.assertIn(A_FLAT_NOTES, said)
         # Enter opens the flyout of the category that holds Minor, on Minor; Enter picks it; and Enter takes the chord.
         await self.press(keybindings.ChordDialog.OPEN, keybindings.ChordDialog.CHOOSE, keybindings.ChordDialog.CHOOSE)
         self.assertEqual(self.progression().get_scales()[SIXTH_CHORD], MINOR)
         resting = self.page.resting_status()
-        self.assertTrue(resting.startswith(MSG_RESTING_CHORD.format(chord=SIXTH_CHORD + 1)))
+        self.assertTrue(resting.startswith(messages.MSG_RESTING_CHORD.format(chord=SIXTH_CHORD + 1)))
         for part in (C_MINOR, A_FLAT_MAJOR, A_FLAT_NOTES, C_MAJOR, A_MINOR):
             self.assertIn(part, resting)
         self.assertIn(resting[:20], self.text())
@@ -207,24 +206,24 @@ class TestChordsEditor(UITest):
 
     async def test_a_chord_is_inserted_before_the_cursor_and_removed_at_it(self):
         await self.press(Key.RIGHT, keybindings.ChordsEditor.INSERT_STEP)
-        self.assertEqual(self.progression().get_chords(), [POP_CHORDS[0], MIN_PROGRESSION_DEGREE, *POP_CHORDS[1:]])
+        self.assertEqual(self.progression().get_chords(), [POP_CHORDS[0], limits.MIN_PROGRESSION_DEGREE, *POP_CHORDS[1:]])
         await self.press(keybindings.ChordsEditor.REMOVE_STEP)
         self.assertEqual(self.progression().get_chords(), POP_CHORDS)
 
     async def test_a_full_row_offers_no_insert_and_one_chord_no_remove(self):
-        await self.press(*[keybindings.ChordsEditor.INSERT_STEP] * MAX_PROGRESSION_CHORDS)
-        self.assertEqual(len(self.progression().get_chords()), MAX_PROGRESSION_CHORDS)
+        await self.press(*[keybindings.ChordsEditor.INSERT_STEP] * limits.MAX_PROGRESSION_CHORDS)
+        self.assertEqual(len(self.progression().get_chords()), limits.MAX_PROGRESSION_CHORDS)
         # A row longer than the console follows the cursor to its last chord.
-        await self.press(*[Key.RIGHT] * MAX_PROGRESSION_CHORDS)
-        self.assertIn(str(MAX_PROGRESSION_CHORDS), self.text())
-        await self.press(*[keybindings.ChordsEditor.REMOVE_STEP] * MAX_PROGRESSION_CHORDS)
+        await self.press(*[Key.RIGHT] * limits.MAX_PROGRESSION_CHORDS)
+        self.assertIn(str(limits.MAX_PROGRESSION_CHORDS), self.text())
+        await self.press(*[keybindings.ChordsEditor.REMOVE_STEP] * limits.MAX_PROGRESSION_CHORDS)
         self.assertEqual(len(self.progression().get_chords()), 1)
 
     async def test_h_fills_the_chords_with_a_named_progression_matched_to_the_scale(self):
         await self.press(keybindings.ChordsEditor.PICK)
         self.assertIsInstance(self.app.screen, GridChoiceDialog)
-        self.assertIn(MSG_PROGRESSION_NAMES[NamedProgression.ROCK], self.app.screen.options)
-        self.app.screen.place = self.app.screen.options.index(MSG_PROGRESSION_NAMES[NamedProgression.ROCK])
+        self.assertIn(labels.MSG_PROGRESSION_NAMES[NamedProgression.ROCK], self.app.screen.options)
+        self.app.screen.place = self.app.screen.options.index(labels.MSG_PROGRESSION_NAMES[NamedProgression.ROCK])
         await self.press(Key.ENTER)
         self.assertEqual(len(self.progression().get_chords()), len(named_progression(NamedProgression.ROCK)))
         self.assertEqual(self.progression().get_accidentals(), [None, Accidental.FLAT, None])
@@ -244,8 +243,8 @@ class TestRestartField(UITest):
         await self.open_generator(section=Section.PROGRESSIONS)
         progression = self.document.song().get_generator_settings(kind=GeneratorKind.PROGRESSION, name=POP)
         self.assertEqual(progression.get_restart(), Restart.EVERY_CLIP)
-        self.assertIn(MSG_RESTART_NAMES[Restart.EVERY_CLIP], self.text())
-        await self.select_field(MSG_RESTART_LABEL)
+        self.assertIn(labels.MSG_RESTART_NAMES[Restart.EVERY_CLIP], self.text())
+        await self.select_field(labels.MSG_RESTART_LABEL)
         await self.press(keybindings.ProgressionEditor.MORE)
         self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.PROGRESSION, name=POP).get_restart(), Restart.ON_NEW_SCENE)
         await self.press(keybindings.ProgressionEditor.MORE)

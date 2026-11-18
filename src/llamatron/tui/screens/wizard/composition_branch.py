@@ -17,10 +17,7 @@
 
 from rich.text import Text
 
-from llamatron.strings.errors import ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
-from llamatron.strings.labels import MSG_WIZARD_COMPOSITION_BRANCH
-from llamatron.strings.marks import MSG_WIZARD_COMPOSITION_LINE
-from llamatron.strings.messages import MSG_WIZARD_CHOOSE_FIRST
+from llamatron.strings import errors, labels, marks, messages
 from llamatron.tui.drawing import INDENT, Style
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.chords_branch import ChordsBranch
@@ -35,10 +32,10 @@ class CompositionBranch(Branch):
     __slots__ = ()
 
     def name(self):
-        return MSG_WIZARD_COMPOSITION_BRANCH
+        return labels.MSG_WIZARD_COMPOSITION_BRANCH
 
     def refusal(self):
-        return None if self.choices().is_ready() else ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
+        return None if self.choices().is_ready() else errors.ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
 
     def children(self):
         page = self.page()
@@ -47,7 +44,7 @@ class CompositionBranch(Branch):
     def notes(self, width):
         """Return each branch under this one with what it is set to, leaving out a branch the subgenre has nothing to choose in; or what to choose first."""
         if not self.choices().is_ready():
-            return [Text(INDENT + MSG_WIZARD_CHOOSE_FIRST, style=Style.DIM)]
+            return [Text(INDENT + messages.MSG_WIZARD_CHOOSE_FIRST, style=Style.DIM)]
         shown = [(child.name(), child.summary()) for child in self.children() if child.summary() is not None]
         longest = max((len(name) for name, _ in shown), default=0)
-        return [Text(INDENT + MSG_WIZARD_COMPOSITION_LINE.format(name=name, width=longest, value=value)) for name, value in shown]
+        return [Text(INDENT + marks.MSG_WIZARD_COMPOSITION_LINE.format(name=name, width=longest, value=value)) for name, value in shown]

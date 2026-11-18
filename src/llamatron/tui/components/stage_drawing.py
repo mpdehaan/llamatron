@@ -35,7 +35,7 @@ from rich.text import Span, Text
 
 from llamatron.tui.components.title_card import LETTER_GAP, NARROW, eased, letter_rows, words_width
 from llamatron.tui.drawing import SPACE, Box, laid_over
-from llamatron.strings.about import MSG_BLOCK, MSG_READY_WORD
+from llamatron.strings import about
 
 BLACK = (0, 0, 0)
 BORDER_BLUE = (60, 120, 255)
@@ -109,8 +109,8 @@ def black_line(width):
 
 def ready_box(*, width, height):
     """Return the READY box centred on a screen: big enough for its border, the track, the gap and READY in single-width blocks."""
-    across = words_width(word=MSG_READY_WORD, scale=NARROW) + 2 * (GAP_COLUMNS + SIDE_TRACK + 1)
-    down = len(letter_rows(word=MSG_READY_WORD, scale=NARROW)[0]) + 2 * (GAP_ROWS + 2)
+    across = words_width(word=about.MSG_READY_WORD, scale=NARROW) + 2 * (GAP_COLUMNS + SIDE_TRACK + 1)
+    down = len(letter_rows(word=about.MSG_READY_WORD, scale=NARROW)[0]) + 2 * (GAP_ROWS + 2)
     top = max((height - down) // 2, 0)
     left = max((width - across) // 2, 0)
     return Rect(top=top, bottom=top + down - 1, left=left, right=left + across - 1)
@@ -218,15 +218,15 @@ def pulse_cells(*, rect, head, direction, colour, level):
     for place, brightness in zip(places, pulse_levels(count=len(places), head=head, direction=direction)):
         if brightness > 0:
             for cell in place:
-                cells[cell] = (MSG_BLOCK, coloured(colour=colour, level=brightness * level))
+                cells[cell] = (about.MSG_BLOCK, coloured(colour=colour, level=brightness * level))
     return cells
 
 
 def ready_cells(*, rect, level):
     """Return READY in red block letters, centred inside a box, as cells."""
     inside = inside_of(rect)
-    rows = letter_rows(word=MSG_READY_WORD, scale=NARROW)
-    across = words_width(word=MSG_READY_WORD, scale=NARROW)
+    rows = letter_rows(word=about.MSG_READY_WORD, scale=NARROW)
+    across = words_width(word=about.MSG_READY_WORD, scale=NARROW)
     top = inside.top + max((inside.bottom - inside.top + 1 - len(rows[0])) // 2, 0)
     left = inside.left + max((inside.right - inside.left + 1 - across) // 2, 0)
     style = coloured(colour=READY_RED, level=level)

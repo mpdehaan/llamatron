@@ -30,7 +30,7 @@ that presses keys into it, the video tutorial (tutorial/runner.py), which the tr
 """
 
 from llamatron.composition.checks import listed
-from llamatron.strings.errors import ERR_RECORDING_SONG_LOOPS
+from llamatron.strings import errors
 from llamatron.tui.batch_stage import READY_SECONDS
 from llamatron.tui.components.title_card import whole_title_seconds
 from llamatron.tui.uses import looping_scenes
@@ -140,5 +140,5 @@ def recording_problem(song):
     """Return why a song can't be launched for recording, or None: a scene whose every clip loops waits there for the human, so the recording would never end."""
     scenes = looping_scenes(song)
     if scenes:
-        return ERR_RECORDING_SONG_LOOPS.format(scenes=listed(scenes))
+        return errors.ERR_RECORDING_SONG_LOOPS.format(scenes=listed(scenes))
     return None

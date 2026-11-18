@@ -28,52 +28,44 @@ from llamatron.music.scale import ScaleType
 from llamatron.tui.components.keyboard import Keyboard
 from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog, grouped_grid
 from llamatron.tui.drawing import INDENT, NOTHING, SPACE, Style
-from llamatron.strings.help import HELP_SCALE_PAGE
+from llamatron.strings import help as help_text, labels, legends, messages
 from llamatron.tui.screens.shared.field import Field, NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.shared import stepped
 from llamatron.composition.naming import words
-from llamatron.strings.labels import (
-    Crumb, MSG_KIND_LABEL, MSG_ROOT_LABEL, MSG_SHORT_SCALE_NAMES, MSG_SCALE_GROUP_EAST_ASIA, MSG_SCALE_GROUP_INDIA,
-    MSG_SCALE_GROUP_JAZZ, MSG_SCALE_GROUP_MELODIC_MINOR, MSG_SCALE_GROUP_MIDDLE_EAST_AND_EUROPE, MSG_SCALE_GROUP_MINOR_AND_MAJOR,
-    MSG_SCALE_GROUP_MODES, MSG_SCALE_GROUP_PENTATONIC_AND_BLUES, MSG_SCALE_GROUP_SYMMETRIC, MSG_SCALE_PAGE_COMMON,
-    MSG_SCALE_PAGE_JAZZ_AND_WORLD,
-)
-from llamatron.strings.legends import What
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.strings.messages import MSG_KIND_TITLE, MSG_RENAME_SCALE_PROMPT, MSG_ROOT_TITLE, MSG_SCALE_NOTES_DETAIL, MSG_SCALE_USES_NOTE
 from llamatron.tui import keybindings
 
 
 # The kinds of scale, in two pages of grouped columns, as the picker lays them out.
 SCALE_PAGES = [
-    (MSG_SCALE_PAGE_COMMON, [
-        [(MSG_SCALE_GROUP_MODES, [
+    (labels.MSG_SCALE_PAGE_COMMON, [
+        [(labels.MSG_SCALE_GROUP_MODES, [
             ScaleKind.MAJOR, ScaleKind.IONIAN, ScaleKind.DORIAN, ScaleKind.PHRYGIAN, ScaleKind.LYDIAN, ScaleKind.MIXOLYDIAN,
             ScaleKind.MINOR, ScaleKind.AEOLIAN, ScaleKind.NATURAL_MINOR, ScaleKind.LOCRIAN,
         ])],
-        [(MSG_SCALE_GROUP_MINOR_AND_MAJOR, [ScaleKind.HARMONIC_MINOR, ScaleKind.MELODIC_MINOR, ScaleKind.HARMONIC_MAJOR]),
-         (MSG_SCALE_GROUP_SYMMETRIC, [
+        [(labels.MSG_SCALE_GROUP_MINOR_AND_MAJOR, [ScaleKind.HARMONIC_MINOR, ScaleKind.MELODIC_MINOR, ScaleKind.HARMONIC_MAJOR]),
+         (labels.MSG_SCALE_GROUP_SYMMETRIC, [
              ScaleKind.CHROMATIC, ScaleKind.WHOLE_TONE, ScaleKind.WHOLE_HALF_DIMINISHED, ScaleKind.HALF_WHOLE_DIMINISHED,
              ScaleKind.AUGMENTED,
          ])],
-        [(MSG_SCALE_GROUP_PENTATONIC_AND_BLUES, [
+        [(labels.MSG_SCALE_GROUP_PENTATONIC_AND_BLUES, [
             ScaleKind.MAJOR_PENTATONIC, ScaleKind.MINOR_PENTATONIC, ScaleKind.BLUES, ScaleKind.MAJOR_BLUES, ScaleKind.EGYPTIAN,
         ])],
     ]),
-    (MSG_SCALE_PAGE_JAZZ_AND_WORLD, [
-        [(MSG_SCALE_GROUP_MELODIC_MINOR, [
+    (labels.MSG_SCALE_PAGE_JAZZ_AND_WORLD, [
+        [(labels.MSG_SCALE_GROUP_MELODIC_MINOR, [
             ScaleKind.MELODIC_MINOR, ScaleKind.DORIAN_FLAT2, ScaleKind.LYDIAN_AUGMENTED, ScaleKind.LYDIAN_DOMINANT,
             ScaleKind.MIXOLYDIAN_FLAT6, ScaleKind.LOCRIAN_NATURAL2, ScaleKind.ALTERED,
         ]),
-         (MSG_SCALE_GROUP_JAZZ, [ScaleKind.BEBOP_DOMINANT, ScaleKind.BEBOP_MAJOR, ScaleKind.PROMETHEUS])],
-        [(MSG_SCALE_GROUP_MIDDLE_EAST_AND_EUROPE, [
+         (labels.MSG_SCALE_GROUP_JAZZ, [ScaleKind.BEBOP_DOMINANT, ScaleKind.BEBOP_MAJOR, ScaleKind.PROMETHEUS])],
+        [(labels.MSG_SCALE_GROUP_MIDDLE_EAST_AND_EUROPE, [
             ScaleKind.PHRYGIAN_DOMINANT, ScaleKind.DOUBLE_HARMONIC, ScaleKind.HUNGARIAN_MINOR, ScaleKind.HUNGARIAN_MAJOR,
             ScaleKind.UKRAINIAN_DORIAN, ScaleKind.PERSIAN, ScaleKind.NEAPOLITAN_MINOR, ScaleKind.NEAPOLITAN_MAJOR,
             ScaleKind.ENIGMATIC,
         ])],
-        [(MSG_SCALE_GROUP_EAST_ASIA, [ScaleKind.HIRAJOSHI, ScaleKind.IN_SEN, ScaleKind.IWATO, ScaleKind.KUMOI, ScaleKind.YO, ScaleKind.RYUKYU]),
-         (MSG_SCALE_GROUP_INDIA, [ScaleKind.TODI, ScaleKind.MARWA, ScaleKind.PURVI])],
+        [(labels.MSG_SCALE_GROUP_EAST_ASIA, [ScaleKind.HIRAJOSHI, ScaleKind.IN_SEN, ScaleKind.IWATO, ScaleKind.KUMOI, ScaleKind.YO, ScaleKind.RYUKYU]),
+         (labels.MSG_SCALE_GROUP_INDIA, [ScaleKind.TODI, ScaleKind.MARWA, ScaleKind.PURVI])],
     ]),
 ]
 # The roots as a keyboard: each flat under the sharp it shares a key with.
@@ -87,7 +79,7 @@ ROOT_KEYBOARD = [
 
 def scale_label(kind):
     """Return a kind of scale as the picker shows it, shortened where the long name wouldn't fit."""
-    return MSG_SHORT_SCALE_NAMES.get(kind, words(kind))
+    return labels.MSG_SHORT_SCALE_NAMES.get(kind, words(kind))
 
 
 def scale_notes(*, root, kind):
@@ -113,10 +105,10 @@ class ScalePage(ShowsNamedItem, FieldPage):
 
     KEYS = keybindings.ScalePage
 
-    HELP = HELP_SCALE_PAGE
+    HELP = help_text.HELP_SCALE_PAGE
     SECTION = Section.SCALES
-    CRUMBS_BEFORE = (Crumb.SCALES,)
-    RENAME_PROMPT = MSG_RENAME_SCALE_PROMPT
+    CRUMBS_BEFORE = (labels.Crumb.SCALES,)
+    RENAME_PROMPT = messages.MSG_RENAME_SCALE_PROMPT
 
     def __init__(self, *, holder, name):
         super().__init__(holder)
@@ -147,7 +139,7 @@ class ScalePage(ShowsNamedItem, FieldPage):
     def pick_root(self):
         """Choose the root on a keyboard."""
         place = ROOT_NAMES.index(self.root())
-        self.ask(dialog=GridChoiceDialog(title=MSG_ROOT_TITLE, options=ROOT_NAMES, grid=root_grid(), current=place), then=lambda chosen: self.set_root(ROOT_NAMES[chosen]))
+        self.ask(dialog=GridChoiceDialog(title=messages.MSG_ROOT_TITLE, options=ROOT_NAMES, grid=root_grid(), current=place), then=lambda chosen: self.set_root(ROOT_NAMES[chosen]))
 
     def pick_kind(self):
         """Choose the kind from its pages, with the notes of the one under the cursor shown underneath."""
@@ -155,18 +147,18 @@ class ScalePage(ShowsNamedItem, FieldPage):
         kinds = [scale_label(text) for text in SCALE_TYPE_NAMES]
 
         def notes(place):
-            return MSG_SCALE_NOTES_DETAIL.format(root=root, kind=kinds[place], notes=scale_notes(root=root, kind=SCALE_TYPE_NAMES[place]))
+            return messages.MSG_SCALE_NOTES_DETAIL.format(root=root, kind=kinds[place], notes=scale_notes(root=root, kind=SCALE_TYPE_NAMES[place]))
         place = SCALE_TYPE_NAMES.index(self.kind())
-        dialog = GridChoiceDialog(title=MSG_KIND_TITLE.format(root=root), options=kinds, grid=None, current=place, details=notes, pages=kind_pages())
+        dialog = GridChoiceDialog(title=messages.MSG_KIND_TITLE.format(root=root), options=kinds, grid=None, current=place, details=notes, pages=kind_pages())
         self.ask(dialog=dialog, then=lambda chosen: self.set_kind(SCALE_TYPE_NAMES[chosen]))
 
     def fields(self):
         return [
             NameField(value=lambda: self.item, rename=self.rename),
-            Field(label=MSG_ROOT_LABEL, value=self.root, adjust=self.step_root,
-                  enter=self.pick_root, enter_what=What.CHOOSE),
-            Field(label=MSG_KIND_LABEL, value=lambda: words(self.kind()), adjust=lambda d: self.set_kind(stepped(values=SCALE_TYPE_NAMES, current=self.kind(), offset=d)),
-                  enter=self.pick_kind, enter_what=What.CHOOSE),
+            Field(label=labels.MSG_ROOT_LABEL, value=self.root, adjust=self.step_root,
+                  enter=self.pick_root, enter_what=legends.What.CHOOSE),
+            Field(label=labels.MSG_KIND_LABEL, value=lambda: words(self.kind()), adjust=lambda d: self.set_kind(stepped(values=SCALE_TYPE_NAMES, current=self.kind(), offset=d)),
+                  enter=self.pick_kind, enter_what=legends.What.CHOOSE),
         ]
 
     def notes(self, width):
@@ -174,8 +166,8 @@ class ScalePage(ShowsNamedItem, FieldPage):
         uses = len(self.document().uses(section=Section.SCALES, name=self.item))
         keyboard = Keyboard(root=self.root(), half_steps=self.scale().get_half_steps())
         return [
-            Text(INDENT + MSG_SCALE_NOTES_DETAIL.format(root=self.root(), kind=scale_label(self.kind()), notes=scale_notes(root=self.root(), kind=self.kind())), style=Style.DIM),
-            Text(MSG_SCALE_USES_NOTE.format(count=uses), style=Style.DIM),
+            Text(INDENT + messages.MSG_SCALE_NOTES_DETAIL.format(root=self.root(), kind=scale_label(self.kind()), notes=scale_notes(root=self.root(), kind=self.kind())), style=Style.DIM),
+            Text(messages.MSG_SCALE_USES_NOTE.format(count=uses), style=Style.DIM),
             Text(NOTHING),
             *[Text(line, no_wrap=True) for line in keyboard.lines()],
         ]

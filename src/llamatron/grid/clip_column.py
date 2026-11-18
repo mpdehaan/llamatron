@@ -17,8 +17,7 @@
 """A column of the grid a song renders into: one track's clips."""
 
 from llamatron.composition.checks import check_drum, check_fluidsynth, check_gm_sound, check_mute, check_name
-from llamatron.strings.errors import ERR_COLUMN_IN_A_GRID
-from llamatron.strings.reprs import REPR_CLIP_COLUMN
+from llamatron.strings import errors, reprs
 
 
 class ClipColumn:
@@ -52,7 +51,7 @@ class ClipColumn:
     def set_id(self, new_id):
         """Give the column its id as it joins a grid. A column joins only one grid, so a second id is refused."""
         if self._id is not None:
-            raise ValueError(ERR_COLUMN_IN_A_GRID.format(column=self))
+            raise ValueError(errors.ERR_COLUMN_IN_A_GRID.format(column=self))
         self._id = new_id
 
     def get_name(self):
@@ -81,4 +80,4 @@ class ClipColumn:
         return self._fluidsynth
 
     def __repr__(self):
-        return REPR_CLIP_COLUMN.format(name=self._name, mute=self._mute, drum=self._drum, gm_sound=self._gm_sound, id=self._id)
+        return reprs.REPR_CLIP_COLUMN.format(name=self._name, mute=self._mute, drum=self._drum, gm_sound=self._gm_sound, id=self._id)

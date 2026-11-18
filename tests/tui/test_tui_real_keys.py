@@ -27,7 +27,7 @@ from llamatron.tui.keys import Key, RowSection
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.pattern.patterns_page import PatternsPage
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
-from llamatron.strings.labels import MSG_EXPORT_CHOICES
+from llamatron.strings import labels
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import first_key
 
@@ -108,7 +108,7 @@ class TestRealKeys(UITest):
         await self.pilot.press(Key.ESCAPE, Key.CTRL_X)
         await self.pilot.pause()
         self.assertIsInstance(self.app.screen, ChoiceDialog)
-        self.assertEqual(self.app.screen.options, MSG_EXPORT_CHOICES)
+        self.assertEqual(self.app.screen.options, labels.MSG_EXPORT_CHOICES)
         await self.pilot.press(Key.ESCAPE, Key.F1)
         await self.pilot.pause()
         self.assertIsInstance(self.app.screen, HelpDialog)

@@ -34,7 +34,7 @@ A drum's bar is a list with one of accent, loud, soft, ghost and none for every 
 
 from collections import Counter
 from fractions import Fraction
-from llamatron.strings.errors import ERR_NOT_A_BAR, ERR_NOT_A_TUNE
+from llamatron.strings import errors
 
 # The rows of a pattern, as a set file names them.
 STEPS = 'steps'
@@ -171,7 +171,7 @@ def tune_lines(*, pattern, bar, velocities=None):
     tie = pattern.get(TIE) or [False] * steps
     loud = velocities or pattern.get(VELOCITY) or empty
     if not any(value is not None for value in degree) or not any(value is not None for value in loud):
-        raise NotWritable(ERR_NOT_A_TUNE)
+        raise NotWritable(errors.ERR_NOT_A_TUNE)
     octave = commonest(octaves)
     velocity = plainest_velocity(loud)
     lines = [[]]
@@ -238,7 +238,7 @@ def drum_hits(*, pattern, velocities=None):
                for place in range(steps) if degree[place] is not None}
     levels = sorted({value for value in loud if value is not None}, reverse=True)
     if len(numbers) != 1 or not 1 <= len(levels) <= 2:
-        raise NotWritable(ERR_NOT_A_BAR)
+        raise NotWritable(errors.ERR_NOT_A_BAR)
     number = numbers.pop()
     hits = [NONE if degree[place] is None else LOUD if loud[place] == levels[0] else SOFT for place in range(steps)]
     return NAME_OF_DRUM.get(number, number), hits, levels[0], levels[-1]

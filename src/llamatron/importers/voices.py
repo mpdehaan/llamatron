@@ -34,9 +34,7 @@ from dataclasses import dataclass, field
 from typing import NamedTuple
 
 from llamatron.composition.file_format import CC_ROWS, FIXED_CHORDS
-from llamatron.strings.importing import (
-    MSG_BASS_PART, MSG_DRUM_NAMES, MSG_TREBLE_PART, MSG_UNNAMED_DRUM, MSG_VOICE_LETTERS, MSG_VOICE_PART,
-)
+from llamatron.strings import importing
 
 # Middle C, where a part that plays both hands is split. A part plays both hands when enough of its
 # notes sound together with a note further away than one hand reaches, a tenth and a little more.
@@ -126,9 +124,9 @@ def drum_voices(part):
     voices = []
     unnamed = FIRST_DRUM_NUMBER
     for pitch in sorted({note.pitch for note in part.notes}):
-        name = MSG_DRUM_NAMES.get(pitch)
+        name = importing.MSG_DRUM_NAMES.get(pitch)
         if name is None:
-            name = MSG_UNNAMED_DRUM.format(number=unnamed)
+            name = importing.MSG_UNNAMED_DRUM.format(number=unnamed)
             unnamed += 1
         units = [single(note) for note in part.notes if note.pitch == pitch]
         voices += named_voices(name=name, drum=True, lines=lines_of(units=units, from_top=True))
@@ -141,7 +139,7 @@ def hands(part):
     below = [note for note in notes if note.pitch < MIDDLE_C]
     above = [note for note in notes if note.pitch >= MIDDLE_C]
     if below and above and beyond_one_hand(notes) >= HAND_SHARE * len(notes):
-        return [(MSG_TREBLE_PART.format(track=part.name), above, True), (MSG_BASS_PART.format(track=part.name), below, False)]
+        return [(importing.MSG_TREBLE_PART.format(track=part.name), above, True), (importing.MSG_BASS_PART.format(track=part.name), below, False)]
     return [(part.name, notes, True)]
 
 
@@ -205,14 +203,14 @@ def lines_of(*, units, from_top):
 
 def voice_letter(place):
     """Return the letter of a voice counted from 0, like a, carrying on as aa, ab after z."""
-    letters = len(MSG_VOICE_LETTERS)
+    letters = len(importing.MSG_VOICE_LETTERS)
     if place < letters:
-        return MSG_VOICE_LETTERS[place]
-    return voice_letter(place // letters - 1) + MSG_VOICE_LETTERS[place % letters]
+        return importing.MSG_VOICE_LETTERS[place]
+    return voice_letter(place // letters - 1) + importing.MSG_VOICE_LETTERS[place % letters]
 
 
 def named_voices(*, name, drum, lines):
     """Return the voices of lines, named after the part alone when there is one and lettered when there are several."""
     if len(lines) == 1:
         return [Voice(name=name, drum=drum, played=lines[0])]
-    return [Voice(name=MSG_VOICE_PART.format(part=name, letter=voice_letter(place)), drum=drum, played=line) for place, line in enumerate(lines)]
+    return [Voice(name=importing.MSG_VOICE_PART.format(part=name, letter=voice_letter(place)), drum=drum, played=line) for place, line in enumerate(lines)]

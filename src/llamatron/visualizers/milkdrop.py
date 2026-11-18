@@ -34,7 +34,7 @@ from llamatron.visualizers.fields import Discs, blurred
 from llamatron.visualizers.heard import SILENCE
 from llamatron.visualizers.lava_lamp import derezzed
 from llamatron.visualizers.visualizer import Visualizer
-from llamatron.strings.visualizers import MSG_MILKDROP
+from llamatron.strings import visualizers
 
 # The derez: how much finer the picture is than the big pixels, each way, and the colour steps the big pixels are rounded to.
 SUPERSAMPLE = 2
@@ -80,7 +80,7 @@ class Milkdrop(Visualizer):
 
     __slots__ = ('_rows', '_columns', '_picture', '_discs', '_limiter', '_last', '_motion', '_warp_key', '_warp_rows', '_warp_columns', '_tracks_seen')
 
-    NAME = MSG_MILKDROP
+    NAME = visualizers.MSG_MILKDROP
     OPTION = 'milkdrop'
 
     def __init__(self):

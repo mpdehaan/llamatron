@@ -17,9 +17,9 @@
 
 from llamatron.composition.file_format import KEYSWITCH_SLOT_COUNT
 from llamatron.composition.instrument import NO_KEYSWITCH
-from llamatron.music.midi import HALF_STEPS_PER_OCTAVE
+from llamatron.music import midi
 from llamatron.music.note import SHARP_NAMES
-from llamatron.strings.marks import MSG_KEYSWITCH_NOTE, MSG_KEYSWITCH_SEPARATOR, MSG_KEYSWITCH_SLOT_NAMED, MSG_NONE_SHOWN
+from llamatron.strings import marks
 
 # The room a slot's note takes at the right of its row, in both keyswitch dialogs.
 KEYSWITCH_NOTE_WIDTH = 12
@@ -27,8 +27,8 @@ KEYSWITCH_NOTE_WIDTH = 12
 
 def keyswitch_note_text(*, setlist, note):
     """Return a keyswitch's MIDI note as the tracker writes it, its name in the set's octave labels and its number, like C0 (24)."""
-    name = SHARP_NAMES[note % HALF_STEPS_PER_OCTAVE] + str(setlist.shown_octave(note // HALF_STEPS_PER_OCTAVE))
-    return MSG_KEYSWITCH_NOTE.format(name=name, number=note)
+    name = SHARP_NAMES[note % midi.HALF_STEPS_PER_OCTAVE] + str(setlist.shown_octave(note // midi.HALF_STEPS_PER_OCTAVE))
+    return marks.MSG_KEYSWITCH_NOTE.format(name=name, number=note)
 
 
 def keyswitches_of(instrument):
@@ -39,14 +39,14 @@ def keyswitches_of(instrument):
 def slot_name(*, keyswitches, slot):
     """Return what a slot is called: its name where the instrument gives it one, and its number otherwise."""
     name = keyswitches[slot].name
-    return MSG_KEYSWITCH_SLOT_NAMED.format(slot=slot) if name is None else name
+    return marks.MSG_KEYSWITCH_SLOT_NAMED.format(slot=slot) if name is None else name
 
 
 def slots_in_words(*, keyswitches, slots):
     """Return a step's keyswitches as a list in words, each by its name or its number."""
-    return MSG_KEYSWITCH_SEPARATOR.join(slot_name(keyswitches=keyswitches, slot=slot) for slot in slots)
+    return marks.MSG_KEYSWITCH_SEPARATOR.join(slot_name(keyswitches=keyswitches, slot=slot) for slot in slots)
 
 
 def shown_name(keyswitch):
     """Return a slot's name as a list shows it, (none) where it has none."""
-    return MSG_NONE_SHOWN if keyswitch.name is None else keyswitch.name
+    return marks.MSG_NONE_SHOWN if keyswitch.name is None else keyswitch.name

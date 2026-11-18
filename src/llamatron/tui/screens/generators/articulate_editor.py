@@ -16,9 +16,7 @@
 """The Articulate editor page: one Articulate generator's settings."""
 
 from llamatron.composition.file_format import GeneratorKind, Section, Shape
-from llamatron.strings.help import HELP_ARTICULATE_EDITOR
-from llamatron.strings.labels import Crumb, MSG_SHAPE_NAMES
-from llamatron.strings.messages import MSG_RENAME_GENERATOR_PROMPT
+from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui.screens.generators.shape_editor import ShapeEditor
 from llamatron.tui import keybindings
 
@@ -26,11 +24,11 @@ from llamatron.tui import keybindings
 class ArticulateEditor(ShapeEditor):
 
     KEYS = keybindings.ArticulateEditor
-    HELP = HELP_ARTICULATE_EDITOR
+    HELP = help_text.HELP_ARTICULATE_EDITOR
     SECTION = Section.ARTICULATES
-    CRUMBS_BEFORE = (Crumb.GENERATORS,)
+    CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
     KIND = GeneratorKind.ARTICULATE
     SHAPE = Shape.ARTICULATE
-    LABEL = MSG_SHAPE_NAMES[Shape.ARTICULATE]
-    RENAME_PROMPT = MSG_RENAME_GENERATOR_PROMPT.format(label=MSG_SHAPE_NAMES[Shape.ARTICULATE])
+    LABEL = labels.MSG_SHAPE_NAMES[Shape.ARTICULATE]
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_SHAPE_NAMES[Shape.ARTICULATE])
     HAS_ACCENT = False

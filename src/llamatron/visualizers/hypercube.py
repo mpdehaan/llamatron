@@ -38,7 +38,7 @@ from llamatron.visualizers.fields import blurred
 from llamatron.visualizers.heard import SILENCE
 from llamatron.visualizers.lava_lamp import derezzed
 from llamatron.visualizers.visualizer import Visualizer
-from llamatron.strings.visualizers import MSG_HYPERCUBE
+from llamatron.strings import visualizers
 
 SUPERSAMPLE = 2
 COLOUR_STEP_SHIFT = 3
@@ -95,7 +95,7 @@ class Hypercube(Visualizer):
 
     __slots__ = ('_rows', '_columns', '_corners', '_edges', '_angles', '_last', '_energies', '_targets', '_colours', '_limiter', '_along')
 
-    NAME = MSG_HYPERCUBE
+    NAME = visualizers.MSG_HYPERCUBE
     OPTION = 'hypercube'
     # Its quiet edges glow even before a track has played, so that it is bright rather than dark.
     DARK_IN_SILENCE = False

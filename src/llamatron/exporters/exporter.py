@@ -28,7 +28,7 @@ import glob
 import os
 
 from llamatron.grid.clip_grid import ClipGrid
-from llamatron.strings.errors import ERR_BAD_DIRECTORY, ERR_FILES_EXIST, ERR_NEEDS_EXPORT, ERR_NEEDS_FILES, ERR_NOT_A_GRID
+from llamatron.strings import errors
 
 # What joins the names of the files that are in the way, in a warning.
 FILE_LIST_SEPARATOR = ', '
@@ -47,12 +47,12 @@ class ExportKind:
 
 def check_directory(directory):
     if not isinstance(directory, (str, os.PathLike)) or not os.fspath(directory):
-        raise ValueError(ERR_BAD_DIRECTORY.format(value=directory))
+        raise ValueError(errors.ERR_BAD_DIRECTORY.format(value=directory))
 
 
 def check_grid(grid):
     if not isinstance(grid, ClipGrid):
-        raise ValueError(ERR_NOT_A_GRID.format(value=grid))
+        raise ValueError(errors.ERR_NOT_A_GRID.format(value=grid))
 
 
 class Exporter:
@@ -100,17 +100,17 @@ class Exporter:
 
     def export(self):
         """Write the song's files, leaving every other file in the directory in place, and writing nothing if a file is in the way."""
-        raise NotImplementedError(ERR_NEEDS_EXPORT.format(kind=type(self).__name__))
+        raise NotImplementedError(errors.ERR_NEEDS_EXPORT.format(kind=type(self).__name__))
 
     @classmethod
     def shown_path(cls, *, directory, name):
         """Return where this kind of export goes, as shown to people: the file, or a pattern for a kind that writes several."""
-        raise NotImplementedError(ERR_NEEDS_FILES.format(kind=cls.__name__))
+        raise NotImplementedError(errors.ERR_NEEDS_FILES.format(kind=cls.__name__))
 
     @classmethod
     def earlier_files(cls, *, directory, name):
         """Return the files an earlier export of this kind left in a directory, and nothing else that's there."""
-        raise NotImplementedError(ERR_NEEDS_FILES.format(kind=cls.__name__))
+        raise NotImplementedError(errors.ERR_NEEDS_FILES.format(kind=cls.__name__))
 
     @classmethod
     def remove_earlier_files(cls, *, directory, name):
@@ -127,7 +127,7 @@ class Exporter:
         existing = set(os.listdir(self._directory))
         conflicts = sorted(existing.intersection(filenames))
         if conflicts:
-            print(ERR_FILES_EXIST.format(directory=os.fspath(self._directory), files=FILE_LIST_SEPARATOR.join(conflicts)))
+            print(errors.ERR_FILES_EXIST.format(directory=os.fspath(self._directory), files=FILE_LIST_SEPARATOR.join(conflicts)))
             return False
         return True
 

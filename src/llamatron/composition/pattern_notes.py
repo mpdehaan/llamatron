@@ -35,8 +35,8 @@ values and move the pattern's revision, so nothing here is written under @notes_
 from llamatron.composition.checks import fraction_text, written_length
 from llamatron.composition.chords import borrowed, chord_half_steps
 from llamatron.composition.file_format import ACCIDENTAL_CYCLE, ACCIDENTALS, FIXED_CHORDS, GATE_MODIFIERS, SCALE_CHORDS, Row
-from llamatron.composition.limits import MAX_GATE, MIN_DEGREE
-from llamatron.music.midi import HALF_STEPS_PER_OCTAVE
+from llamatron.composition import limits
+from llamatron.music import midi
 from llamatron.support.rational import Rational
 
 # What a note's second half keeps of it when the piano roll's knife splits it: its pitch, chord and velocity.
@@ -90,7 +90,7 @@ class PatternNotes:
         gate = self.get_value(row=Row.GATE, step=step)
         if gate is None:
             return None
-        length = written_length(value=gate, most=MAX_GATE)
+        length = written_length(value=gate, most=limits.MAX_GATE)
         modifier = self.get_value(row=Row.DOT, step=step)
         return length if modifier is None else length * GATE_MODIFIERS[modifier]
 
@@ -266,7 +266,7 @@ class PatternNotes:
         written = self.get_value(row=Row.GATE, step=start)
         if written is None:
             return False
-        gate = written_length(value=written, most=MAX_GATE)
+        gate = written_length(value=written, most=limits.MAX_GATE)
         if gate <= step_size:
             return False
         shorter = gate - step_size
@@ -289,14 +289,14 @@ def _tones_leaving_the_scale(*, scale, degree, octave, accidental, symbol, tensi
     """
     source = borrowed(scale=scale, kind=kind)
     steps = source.get_half_steps()
-    octaves_up, place = divmod(degree - MIN_DEGREE, len(steps))
-    root = octaves_up * HALF_STEPS_PER_OCTAVE + steps[place] + ACCIDENTALS.get(accidental, 0)
+    octaves_up, place = divmod(degree - limits.MIN_DEGREE, len(steps))
+    root = octaves_up * midi.HALF_STEPS_PER_OCTAVE + steps[place] + ACCIDENTALS.get(accidental, 0)
     above = list(chord_half_steps(scale=source, degree=degree, symbol=symbol, tensions=tensions))
     own_steps = scale.get_half_steps()
-    own_octaves_up, own_place = divmod(degree - MIN_DEGREE, len(own_steps))
-    if root != own_octaves_up * HALF_STEPS_PER_OCTAVE + own_steps[own_place] + ACCIDENTALS.get(accidental, 0):
+    own_octaves_up, own_place = divmod(degree - limits.MIN_DEGREE, len(own_steps))
+    if root != own_octaves_up * midi.HALF_STEPS_PER_OCTAVE + own_steps[own_place] + ACCIDENTALS.get(accidental, 0):
         above.insert(0, 0)
-    tones = [scale.degree_above(degree=MIN_DEGREE, octave=octave, accidental=None, half_steps=root + half_steps) for half_steps in above]
+    tones = [scale.degree_above(degree=limits.MIN_DEGREE, octave=octave, accidental=None, half_steps=root + half_steps) for half_steps in above]
     return [tone for tone in tones if tone is not None]
 
 

@@ -19,7 +19,7 @@ from llamatron.generators.base import ClipGenerator
 from llamatron.grid.positions import fit_to_length
 from llamatron.music.sound import CHORD, HELD, HELD_SOUND, KIND, LENGTH, NOTES, PARTS, PHRASE, REST, Sound
 from llamatron.support.length import Length
-from llamatron.strings.errors import ERR_AUTO_RATCHET_NOT_A_LIST, ERR_BAD_COUNT
+from llamatron.strings import errors
 
 # A count of one leaves a note as it is, and a count can't be less than that.
 UNCHANGED = 1
@@ -34,11 +34,11 @@ def divide(*, position, times):
 
 def _check_counts(counts):
     if not isinstance(counts, (list, tuple)) or not counts:
-        raise ValueError(ERR_AUTO_RATCHET_NOT_A_LIST.format(value=counts))
+        raise ValueError(errors.ERR_AUTO_RATCHET_NOT_A_LIST.format(value=counts))
     for count in counts:
         # bool is a subclass of int, but True is not a real count.
         if type(count) is not int or count < UNCHANGED:
-            raise ValueError(ERR_BAD_COUNT.format(value=count))
+            raise ValueError(errors.ERR_BAD_COUNT.format(value=count))
 
 
 class AutoRatchet(ClipGenerator):

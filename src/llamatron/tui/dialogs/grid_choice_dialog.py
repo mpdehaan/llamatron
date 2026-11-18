@@ -21,7 +21,7 @@ from rich.text import Text
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import fit, NOTHING, padded, SPACE, Style
 from llamatron.tui.keys import ARROWS_UP_DOWN, Key
-from llamatron.strings.marks import MSG_NEXT_PAGE_MARK, MSG_PAGE_TAB, MSG_PREVIOUS_PAGE_MARK
+from llamatron.strings import marks
 from llamatron.tui import keybindings
 
 
@@ -102,12 +102,12 @@ class GridChoiceDialog(ChoiceDialog):
             return Text(self.title, style=Style.BOLD)
         tabs = Text(no_wrap=True)
         if self.page > 0:
-            tabs.append(MSG_PREVIOUS_PAGE_MARK, style=Style.BOLD)
+            tabs.append(marks.MSG_PREVIOUS_PAGE_MARK, style=Style.BOLD)
         for number, (name, _) in enumerate(self.pages):
-            tabs.append(MSG_PAGE_TAB.format(name=name), style=Style.REVERSE if number == self.page else Style.DIM)
+            tabs.append(marks.MSG_PAGE_TAB.format(name=name), style=Style.REVERSE if number == self.page else Style.DIM)
             tabs.append(SPACE)
         if self.page < len(self.pages) - 1:
-            tabs.append(MSG_NEXT_PAGE_MARK, style=Style.BOLD)
+            tabs.append(marks.MSG_NEXT_PAGE_MARK, style=Style.BOLD)
         tabs.rstrip()
         # The page names always fit, so the title is cut short rather than widening the dialog.
         line = Text(fit(text=self.title, width=max(width - tabs.cell_len - 2, 0)), style=Style.BOLD)

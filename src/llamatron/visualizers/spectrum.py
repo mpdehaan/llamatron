@@ -31,7 +31,7 @@ from rich.text import Text
 
 from llamatron.visualizers.heard import SILENCE
 from llamatron.visualizers.visualizer import Visualizer
-from llamatron.strings.visualizers import MSG_SPECTRUM
+from llamatron.strings import visualizers
 
 # The bars: each this many columns wide with a gap of this many after it, and the pitches they span, low to high.
 BAR_COLUMNS = 2
@@ -80,7 +80,7 @@ class Spectrum(Visualizer):
 
     __slots__ = ('_levels', '_targets', '_caps', '_cap_ages', '_last', '_row_styles', '_cap_style')
 
-    NAME = MSG_SPECTRUM
+    NAME = visualizers.MSG_SPECTRUM
     OPTION = 'spectrum'
 
     def __init__(self):

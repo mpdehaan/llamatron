@@ -36,17 +36,13 @@ lead is how many milliseconds before its note a keyswitch is sent, nothing unles
 from typing import NamedTuple
 
 from llamatron.composition.checks import check_keys, reading
-from llamatron.composition.defaults import DEFAULT_CHANNEL, DEFAULT_KEYSWITCH_LEAD
+from llamatron.composition import defaults, limits
+from llamatron.strings import errors
 from llamatron.composition.file_format import FLUIDSYNTH_DEVICE, KEYSWITCH_SLOT_COUNT, KEYSWITCH_SLOTS, InstrumentSetting, KeyswitchSetting
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import LlamaData, own_copy, or_default, settings_by_name, written_settings
 from llamatron.composition.setting import Checked, Text, WholeNumber, check_settings, described
-from llamatron.music.midi import MAX_CHANNEL, MAX_MIDI_NUMBER, MIN_CHANNEL, MIN_MIDI_NUMBER
-from llamatron.strings.errors import (
-    ERR_BAD_CHANNEL, ERR_BAD_GM_SOUND, ERR_BAD_KEYSWITCH_LEAD, ERR_BAD_KEYSWITCH_NAME, ERR_BAD_KEYSWITCH_NOTE, ERR_BAD_KEYSWITCH_SLOT, ERR_BAD_KEYSWITCHES,
-    ERR_DEVICE_NOT_TEXT, ERR_INSTRUMENT_EXPECTED_SETTINGS,
-)
-from llamatron.composition.limits import MAX_GM_SOUND, MAX_KEYSWITCH_LEAD, MAX_NAME_LENGTH, MIN_GM_SOUND, MIN_KEYSWITCH_LEAD
+from llamatron.music import midi
 from llamatron.support.revised import notes_change
 
 class Keyswitch(NamedTuple):
@@ -64,14 +60,14 @@ NO_KEYSWITCH = Keyswitch(None, None)
 
 def check_keyswitch_name(name):
     """Refuse a keyswitch's name that isn't text short enough for a name."""
-    if not isinstance(name, str) or not name or len(name) > MAX_NAME_LENGTH:
-        raise InvalidValue(ERR_BAD_KEYSWITCH_NAME.format(most=MAX_NAME_LENGTH, value=name))
+    if not isinstance(name, str) or not name or len(name) > limits.MAX_NAME_LENGTH:
+        raise InvalidValue(errors.ERR_BAD_KEYSWITCH_NAME.format(most=limits.MAX_NAME_LENGTH, value=name))
 
 
 def check_keyswitch_note(note):
     """Refuse a keyswitch's note that isn't a MIDI note number."""
-    if type(note) is not int or not MIN_MIDI_NUMBER <= note <= MAX_MIDI_NUMBER:
-        raise InvalidValue(ERR_BAD_KEYSWITCH_NOTE.format(lowest=MIN_MIDI_NUMBER, highest=MAX_MIDI_NUMBER, value=note))
+    if type(note) is not int or not midi.MIN_MIDI_NUMBER <= note <= midi.MAX_MIDI_NUMBER:
+        raise InvalidValue(errors.ERR_BAD_KEYSWITCH_NOTE.format(lowest=midi.MIN_MIDI_NUMBER, highest=midi.MAX_MIDI_NUMBER, value=note))
 
 
 # One keyswitch slot's settings, each described once, in the order they're written to a file.
@@ -84,18 +80,18 @@ KEYSWITCH_SETTINGS = described(
 def check_keyswitch_slot(slot):
     """Refuse a slot's number that no instrument has."""
     if type(slot) is not int or slot not in KEYSWITCH_SLOTS:
-        raise InvalidValue(ERR_BAD_KEYSWITCH_SLOT.format(lowest=KEYSWITCH_SLOTS[0], highest=KEYSWITCH_SLOTS[-1], value=slot))
+        raise InvalidValue(errors.ERR_BAD_KEYSWITCH_SLOT.format(lowest=KEYSWITCH_SLOTS[0], highest=KEYSWITCH_SLOTS[-1], value=slot))
 
 
 def check_keyswitches(value):
     """Refuse keyswitches that aren't a list of the ten slots, each blank or holding a name, a note or both."""
     if not isinstance(value, list) or len(value) != KEYSWITCH_SLOT_COUNT:
-        raise InvalidValue(ERR_BAD_KEYSWITCHES.format(count=KEYSWITCH_SLOT_COUNT, value=value))
+        raise InvalidValue(errors.ERR_BAD_KEYSWITCHES.format(count=KEYSWITCH_SLOT_COUNT, value=value))
     for slot in value:
         if slot is None:
             continue
         if not isinstance(slot, dict) or not slot or any(key not in KEYSWITCH_SETTINGS for key in slot):
-            raise InvalidValue(ERR_BAD_KEYSWITCHES.format(count=KEYSWITCH_SLOT_COUNT, value=value))
+            raise InvalidValue(errors.ERR_BAD_KEYSWITCHES.format(count=KEYSWITCH_SLOT_COUNT, value=value))
         check_settings(settings=KEYSWITCH_SETTINGS, data=slot)
 
 
@@ -113,11 +109,11 @@ def _slot_data(keyswitch):
 
 # An instrument's settings, each described once, in the order they're written to a file.
 SETTINGS = described(
-    Text(name=InstrumentSetting.DEVICE, error=ERR_DEVICE_NOT_TEXT),
-    WholeNumber(name=InstrumentSetting.CHANNEL, lowest=MIN_CHANNEL, highest=MAX_CHANNEL, error=ERR_BAD_CHANNEL),
-    WholeNumber(name=InstrumentSetting.GM_SOUND, lowest=MIN_GM_SOUND, highest=MAX_GM_SOUND, error=ERR_BAD_GM_SOUND),
+    Text(name=InstrumentSetting.DEVICE, error=errors.ERR_DEVICE_NOT_TEXT),
+    WholeNumber(name=InstrumentSetting.CHANNEL, lowest=midi.MIN_CHANNEL, highest=midi.MAX_CHANNEL, error=errors.ERR_BAD_CHANNEL),
+    WholeNumber(name=InstrumentSetting.GM_SOUND, lowest=limits.MIN_GM_SOUND, highest=limits.MAX_GM_SOUND, error=errors.ERR_BAD_GM_SOUND),
     Checked(name=InstrumentSetting.KEYSWITCHES, check=check_keyswitches),
-    WholeNumber(name=InstrumentSetting.KEYSWITCH_LEAD, lowest=MIN_KEYSWITCH_LEAD, highest=MAX_KEYSWITCH_LEAD, error=ERR_BAD_KEYSWITCH_LEAD),
+    WholeNumber(name=InstrumentSetting.KEYSWITCH_LEAD, lowest=limits.MIN_KEYSWITCH_LEAD, highest=limits.MAX_KEYSWITCH_LEAD, error=errors.ERR_BAD_KEYSWITCH_LEAD),
 )
 
 
@@ -138,7 +134,7 @@ class Instrument(LlamaData):
     def from_data(cls, *, data, where, song=None):
         with reading(where):
             if not isinstance(data, dict):
-                raise InvalidValue(ERR_INSTRUMENT_EXPECTED_SETTINGS.format(data=data))
+                raise InvalidValue(errors.ERR_INSTRUMENT_EXPECTED_SETTINGS.format(data=data))
             check_keys(data=data, allowed=set(SETTINGS))
             return cls(
                 device=data.get(InstrumentSetting.DEVICE), channel=data.get(InstrumentSetting.CHANNEL), gm_sound=data.get(InstrumentSetting.GM_SOUND),
@@ -160,7 +156,7 @@ class Instrument(LlamaData):
 
     def get_channel(self):
         """Return its channel as people number them, 1 to 16."""
-        return or_default(value=self._settings[InstrumentSetting.CHANNEL], default=DEFAULT_CHANNEL)
+        return or_default(value=self._settings[InstrumentSetting.CHANNEL], default=defaults.DEFAULT_CHANNEL)
 
     def get_written_channel(self):
         """Return its channel as the file holds it, or None for the default."""
@@ -233,7 +229,7 @@ class Instrument(LlamaData):
     def set_keyswitches(self, keyswitches):
         """Give every slot its name and note at once, from ten Keyswitches in order, as the Keyswitch Map dialog answers them."""
         if len(keyswitches) != KEYSWITCH_SLOT_COUNT:
-            raise InvalidValue(ERR_BAD_KEYSWITCHES.format(count=KEYSWITCH_SLOT_COUNT, value=list(keyswitches)))
+            raise InvalidValue(errors.ERR_BAD_KEYSWITCHES.format(count=KEYSWITCH_SLOT_COUNT, value=list(keyswitches)))
         written = [_slot_data(Keyswitch(*keyswitch)) for keyswitch in keyswitches]
         if any(slot is not None for slot in written):
             check_keyswitches(written)
@@ -241,7 +237,7 @@ class Instrument(LlamaData):
 
     def get_keyswitch_lead(self):
         """Return how many milliseconds before its note a keyswitch is sent, 0 for at the same moment."""
-        return or_default(value=self._settings[InstrumentSetting.KEYSWITCH_LEAD], default=DEFAULT_KEYSWITCH_LEAD)
+        return or_default(value=self._settings[InstrumentSetting.KEYSWITCH_LEAD], default=defaults.DEFAULT_KEYSWITCH_LEAD)
 
     def get_written_keyswitch_lead(self):
         """Return its keyswitch lead as the file holds it, or None for the default."""

@@ -16,9 +16,7 @@
 """What the Glide, Shorten, Rush and Drag editors share: a generator's name, its step, its own amounts, its row of steps, which Enter opens in the step row editor, and its Restart."""
 
 from llamatron.composition.generator_settings import StepRowSetting
-from llamatron.strings.labels import MSG_STEP_LABEL, MSG_STEPS_LABEL
-from llamatron.strings.legends import What
-from llamatron.strings.marks import MSG_PATTERN_STEP_SHOWN, MSG_STEP_OFF, MSG_TOGGLE_ON
+from llamatron.strings import labels, legends, marks
 from llamatron.tui.screens.shared.field import Field, NameField, NumberField
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.generators.restart_field import restart_field
@@ -29,7 +27,7 @@ from llamatron.tui import keybindings
 
 def steps_text(values):
     """Return a row of steps on one line, the dot for a step that's on and a point for one that's off, like ● . ● ."""
-    return ' '.join(MSG_TOGGLE_ON if value else MSG_STEP_OFF for value in values)
+    return ' '.join(marks.MSG_TOGGLE_ON if value else marks.MSG_STEP_OFF for value in values)
 
 
 class StepRowGeneratorEditor(ShowsNamedItem, FieldPage):
@@ -62,9 +60,9 @@ class StepRowGeneratorEditor(ShowsNamedItem, FieldPage):
         generator = self.generator()
         return [
             NameField(value=lambda: self.item, rename=self.rename),
-            time_field(page=self, label=MSG_STEP_LABEL, written=generator.get_step(), first=MSG_PATTERN_STEP_SHOWN, store=lambda value: self.store(setting=StepRowSetting.STEP, value=value)),
+            time_field(page=self, label=labels.MSG_STEP_LABEL, written=generator.get_step(), first=marks.MSG_PATTERN_STEP_SHOWN, store=lambda value: self.store(setting=StepRowSetting.STEP, value=value)),
             *self.amount_fields(),
-            Field(label=MSG_STEPS_LABEL, value=lambda: steps_text(self.generator().get_steps()), adjust=None,
-                  enter=lambda: self.show_page(self.STEPS_EDITOR(holder=self.holder, name=self.item)), enter_what=What.EDIT),
+            Field(label=labels.MSG_STEPS_LABEL, value=lambda: steps_text(self.generator().get_steps()), adjust=None,
+                  enter=lambda: self.show_page(self.STEPS_EDITOR(holder=self.holder, name=self.item)), enter_what=legends.What.EDIT),
             restart_field(self),
         ]

@@ -35,7 +35,7 @@ from llamatron.visualizers.cells import BRAILLE_COLUMNS, BRAILLE_ROWS, CellPaint
 from llamatron.visualizers.colour import note_colour, track_colour, vivid
 from llamatron.visualizers.heard import SILENCE
 from llamatron.visualizers.visualizer import Visualizer
-from llamatron.strings.visualizers import MSG_MYSTIFY
+from llamatron.strings import visualizers
 
 SEED = 1
 LONGEST_FRAME_SECONDS = 0.2
@@ -91,7 +91,7 @@ class Mystify(Visualizer):
 
     __slots__ = ('_rows', '_columns', '_polygons', '_stars', '_star_colours', '_chooser', '_last', '_cells')
 
-    NAME = MSG_MYSTIFY
+    NAME = visualizers.MSG_MYSTIFY
     OPTION = 'mystify'
 
     def __init__(self):

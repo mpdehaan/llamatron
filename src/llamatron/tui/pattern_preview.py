@@ -36,7 +36,8 @@ from math import lcm
 
 from llamatron.composition.clip_slot import ClipSlot
 from llamatron.composition.file_format import LiveResponsiveness, PatternSetting, Row, Section, SongSetting
-from llamatron.composition.limits import MIN_GM_SOUND
+from llamatron.composition import limits
+from llamatron.strings import errors, names as names_text
 from llamatron.composition.naming import unique_name
 from llamatron.composition.pattern import Pattern
 from llamatron.composition.scene import Scene
@@ -47,8 +48,6 @@ from llamatron.music.note import SHARP_NAMES
 from llamatron.playback.step_order import walk_order
 from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT
 from llamatron.realtime.timeline import Route
-from llamatron.strings.errors import ERR_NOTHING_TO_TRY_A_SOUND_WITH, ERR_PREVIEW_DEVICE_NOT_CONNECTED, ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED, ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE
-from llamatron.strings.names import MSG_PREVIEW_PATTERN_NAME, MSG_PREVIEW_TRACK_NAME
 from llamatron.tui.transport import CHANNEL_OFFSET, Transport
 
 # The one scene of the copy the preview plays.
@@ -151,7 +150,7 @@ class PreviewSet:
             self._copy_trial(setlist=setlist, song=song)
             return
         pattern = song.get_pattern(self._pattern)
-        track = unique_name(base=MSG_PREVIEW_TRACK_NAME, taken=song.get_track_names())
+        track = unique_name(base=names_text.MSG_PREVIEW_TRACK_NAME, taken=song.get_track_names())
         song.add_item(section=Section.TRACKS, name=track, item=Track(drum=True) if pattern.is_drum() else Track())
         scales = [] if pattern.is_drum() else real.scales_of_pattern(self._pattern)
         clip_slot = ClipSlot()
@@ -170,9 +169,9 @@ class PreviewSet:
 
     def _copy_trial(self, *, setlist, song):
         """Finish a copy that plays the pattern written to try a sound with, once, on a drum track made for it, under no scale."""
-        name = unique_name(base=MSG_PREVIEW_PATTERN_NAME, taken=song.get_pattern_names())
+        name = unique_name(base=names_text.MSG_PREVIEW_PATTERN_NAME, taken=song.get_pattern_names())
         setlist.add_item(section=Section.PATTERNS, name=name, item=Pattern.from_data(data=self._trial, where=name, song=song))
-        track = unique_name(base=MSG_PREVIEW_TRACK_NAME, taken=song.get_track_names())
+        track = unique_name(base=names_text.MSG_PREVIEW_TRACK_NAME, taken=song.get_track_names())
         song.add_item(section=Section.TRACKS, name=track, item=Track(drum=True))
         clip_slot = ClipSlot()
         clip_slot.set_pattern_name(name=name, song=song)
@@ -228,11 +227,11 @@ class PatternPreview(Transport):
             return None
         instrument = self.real().setlist().get_instrument(name)
         if not instrument.has_device():
-            return ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE.format(name=name)
+            return errors.ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE.format(name=name)
         if instrument.uses_fluidsynth():
-            return None if self._fluidsynth_installed() else ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED.format(name=name)
+            return None if self._fluidsynth_installed() else errors.ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED.format(name=name)
         if not self.is_connected(instrument.get_device()):
-            return ERR_PREVIEW_DEVICE_NOT_CONNECTED.format(name=name, device=instrument.get_device())
+            return errors.ERR_PREVIEW_DEVICE_NOT_CONNECTED.format(name=name, device=instrument.get_device())
         return None
 
     def shares_a_channel_with(self, *, pattern, routes):
@@ -281,7 +280,7 @@ class PatternPreview(Transport):
         instrument = real.setlist().get_instrument(name)
         if instrument.uses_fluidsynth():
             sound = instrument.get_gm_sound()
-            return Route(FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, None if sound is None else sound - MIN_GM_SOUND, keyswitches=False)
+            return Route(FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, None if sound is None else sound - limits.MIN_GM_SOUND, keyswitches=False)
         return Route(instrument.get_device(), instrument.get_channel() - CHANNEL_OFFSET)
 
     # Playing.
@@ -320,14 +319,14 @@ class PatternPreview(Transport):
         real = self.real()
         name = real.song().get_preview_instrument_name()
         if name is None:
-            return ERR_NOTHING_TO_TRY_A_SOUND_WITH
+            return errors.ERR_NOTHING_TO_TRY_A_SOUND_WITH
         instrument = real.setlist().get_instrument(name)
         if not instrument.has_device():
-            return ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE.format(name=name)
+            return errors.ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE.format(name=name)
         if instrument.uses_fluidsynth():
-            return ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED.format(name=name)
+            return errors.ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED.format(name=name)
         if not self.is_connected(instrument.get_device()):
-            return ERR_PREVIEW_DEVICE_NOT_CONNECTED.format(name=name, device=instrument.get_device())
+            return errors.ERR_PREVIEW_DEVICE_NOT_CONNECTED.format(name=name, device=instrument.get_device())
         return None
 
     def play_sound(self, *, numbers, step_size, sound, key):
@@ -335,7 +334,7 @@ class PatternPreview(Transport):
         the drum kit where sound is None; without FluidSynth, on the song's Preview instrument, in the device's own sound. key is
         whatever the asker tells one trial from another by, answered by playing_sound()."""
         self.stop()
-        self._trial = (None if sound is None else sound - MIN_GM_SOUND, key)
+        self._trial = (None if sound is None else sound - limits.MIN_GM_SOUND, key)
         self._set = PreviewSet(holder=self._document_holder, trial=trial_pattern(numbers=numbers, step_size=step_size))
         try:
             self.play_clip(index=self._set.scene(), track=self._set.track())

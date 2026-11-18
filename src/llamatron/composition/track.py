@@ -20,19 +20,15 @@ from llamatron.composition.chain import check_chain_names
 from llamatron.composition.strum import strum_settings, strum_values
 from llamatron.composition.euclid import euclid_settings, euclid_values
 from llamatron.composition.checks import reading, check_keys, is_whole_number_from
-from llamatron.composition.defaults import DEFAULT_TRANSPOSE
+from llamatron.composition import defaults, limits
+from llamatron.strings import errors
 from llamatron.composition.corrections import LEFT_OUT
 from llamatron.composition.file_format import euclid_setting, strum_setting, CC_REGISTER_SETTINGS, CC_ROWS, REGISTER_NAMES, Section, TrackSetting
 from llamatron.composition.groove import check_groove_choice
-from llamatron.composition.limits import MAX_OCTAVE, MAX_TRANSPOSE, MIN_OCTAVE
-from llamatron.music.midi import MAX_CC_NUMBER, MIN_CC_NUMBER
+from llamatron.music import midi
 from llamatron.composition.llama_data import LlamaData, or_default, own_copy, written_settings
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.setting import Checked, Choice, Flag, WholeNumber, check_settings, described
-from llamatron.strings.errors import (
-    ERR_BAD_BOUND_REGISTER, ERR_BAD_CC_NUMBERS, ERR_BAD_TRACK_OCTAVE, ERR_BAD_TRANSPOSE, ERR_NO_SUCH_LANE, ERR_OCTAVE_RANGE_BACKWARDS, ERR_TRACK_EXPECTED_SETTINGS,
-    ERR_NO_SUCH_INSTRUMENT, ERR_TRACK_NOT_TRUE_OR_FALSE,
-)
 from llamatron.support.revised import notes_change
 
 # A track's settings, in the order they're written to a file.
@@ -46,32 +42,32 @@ def _no_cc_numbers():
 def _is_cc_number_list(numbers):
     """Return whether numbers has a CC number, or None for a lane that sends nothing, for every CC lane."""
     return isinstance(numbers, list) and len(numbers) == len(CC_ROWS) and all(
-        number is None or is_whole_number_from(value=number, lowest=MIN_CC_NUMBER, highest=MAX_CC_NUMBER) for number in numbers
+        number is None or is_whole_number_from(value=number, lowest=midi.MIN_CC_NUMBER, highest=midi.MAX_CC_NUMBER) for number in numbers
     )
 
 
 def _check_cc_numbers(numbers):
     if not _is_cc_number_list(numbers):
-        raise InvalidValue(ERR_BAD_CC_NUMBERS.format(lanes=len(CC_ROWS), lowest=MIN_CC_NUMBER, highest=MAX_CC_NUMBER, value=numbers))
+        raise InvalidValue(errors.ERR_BAD_CC_NUMBERS.format(lanes=len(CC_ROWS), lowest=midi.MIN_CC_NUMBER, highest=midi.MAX_CC_NUMBER, value=numbers))
 
 
 def _check_instrument_name(*, value, song):
     if not song.has_instrument(value):
-        raise InvalidValue(ERR_NO_SUCH_INSTRUMENT.format(name=value))
+        raise InvalidValue(errors.ERR_NO_SUCH_INSTRUMENT.format(name=value))
 
 
 # A track's settings, each described once, in the order they're written to a file.
 SETTINGS = described(
-    Flag(name=TrackSetting.DRUM, error=ERR_TRACK_NOT_TRUE_OR_FALSE),
-    Flag(name=TrackSetting.MUTE, error=ERR_TRACK_NOT_TRUE_OR_FALSE),
-    WholeNumber(name=TrackSetting.TRANSPOSE, lowest=-MAX_TRANSPOSE, highest=MAX_TRANSPOSE, error=ERR_BAD_TRANSPOSE),
-    WholeNumber(name=TrackSetting.LOWEST_OCTAVE, lowest=MIN_OCTAVE, highest=MAX_OCTAVE, error=ERR_BAD_TRACK_OCTAVE),
-    WholeNumber(name=TrackSetting.HIGHEST_OCTAVE, lowest=MIN_OCTAVE, highest=MAX_OCTAVE, error=ERR_BAD_TRACK_OCTAVE),
+    Flag(name=TrackSetting.DRUM, error=errors.ERR_TRACK_NOT_TRUE_OR_FALSE),
+    Flag(name=TrackSetting.MUTE, error=errors.ERR_TRACK_NOT_TRUE_OR_FALSE),
+    WholeNumber(name=TrackSetting.TRANSPOSE, lowest=-limits.MAX_TRANSPOSE, highest=limits.MAX_TRANSPOSE, error=errors.ERR_BAD_TRANSPOSE),
+    WholeNumber(name=TrackSetting.LOWEST_OCTAVE, lowest=limits.MIN_OCTAVE, highest=limits.MAX_OCTAVE, error=errors.ERR_BAD_TRACK_OCTAVE),
+    WholeNumber(name=TrackSetting.HIGHEST_OCTAVE, lowest=limits.MIN_OCTAVE, highest=limits.MAX_OCTAVE, error=errors.ERR_BAD_TRACK_OCTAVE),
     Checked(name=TrackSetting.CC, check=_check_cc_numbers),
     Checked(name=TrackSetting.GROOVE, check=check_groove_choice, needs_song=True),
     Checked(name=TrackSetting.INSTRUMENT, check=_check_instrument_name, needs_song=True),
-    *[Choice(name=name, choices=REGISTER_NAMES, default=LEFT_OUT, error=ERR_BAD_BOUND_REGISTER) for name in CC_REGISTER_SETTINGS],
-    Choice(name=TrackSetting.VELOCITY_REGISTER, choices=REGISTER_NAMES, default=LEFT_OUT, error=ERR_BAD_BOUND_REGISTER),
+    *[Choice(name=name, choices=REGISTER_NAMES, default=LEFT_OUT, error=errors.ERR_BAD_BOUND_REGISTER) for name in CC_REGISTER_SETTINGS],
+    Choice(name=TrackSetting.VELOCITY_REGISTER, choices=REGISTER_NAMES, default=LEFT_OUT, error=errors.ERR_BAD_BOUND_REGISTER),
     Checked(name=TrackSetting.CHAINS, check=check_chain_names, needs_song=True),
     *strum_settings(),
     *euclid_settings(),
@@ -112,10 +108,10 @@ class Track(LlamaData):
         with reading(where):
             data = {} if data is None else data
             if not isinstance(data, dict):
-                raise InvalidValue(ERR_TRACK_EXPECTED_SETTINGS.format(data=data))
+                raise InvalidValue(errors.ERR_TRACK_EXPECTED_SETTINGS.format(data=data))
             check_keys(data=data, allowed=set(SETTINGS))
             check_settings(settings=SETTINGS, data=data, song=song)
-            _check_octave_order(lowest=data.get(TrackSetting.LOWEST_OCTAVE, MIN_OCTAVE), highest=data.get(TrackSetting.HIGHEST_OCTAVE, MAX_OCTAVE))
+            _check_octave_order(lowest=data.get(TrackSetting.LOWEST_OCTAVE, limits.MIN_OCTAVE), highest=data.get(TrackSetting.HIGHEST_OCTAVE, limits.MAX_OCTAVE))
             return cls(**{name: data.get(name) for name in SETTINGS})
 
     def to_data(self):
@@ -130,31 +126,31 @@ class Track(LlamaData):
     def get_transpose(self):
         """Return how many scale notes the track moves its notes, which is always 0 on a drum track."""
         if self.is_drum():
-            return DEFAULT_TRANSPOSE
+            return defaults.DEFAULT_TRANSPOSE
         transpose = self._settings[TrackSetting.TRANSPOSE]
-        return DEFAULT_TRANSPOSE if transpose is None else transpose
+        return defaults.DEFAULT_TRANSPOSE if transpose is None else transpose
 
     def get_lowest_octave(self):
         """Return the lowest octave the track's instrument plays, the bottom of the MIDI range unless set."""
-        return or_default(value=self._settings[TrackSetting.LOWEST_OCTAVE], default=MIN_OCTAVE)
+        return or_default(value=self._settings[TrackSetting.LOWEST_OCTAVE], default=limits.MIN_OCTAVE)
 
     def get_highest_octave(self):
         """Return the highest octave the track's instrument plays, the top of the MIDI range unless set."""
-        return or_default(value=self._settings[TrackSetting.HIGHEST_OCTAVE], default=MAX_OCTAVE)
+        return or_default(value=self._settings[TrackSetting.HIGHEST_OCTAVE], default=limits.MAX_OCTAVE)
 
     @notes_change
     def set_lowest_octave(self, octave):
         """Set the lowest octave it plays, which can't be above the highest; the bottom of the MIDI range is left out of the file."""
         SETTINGS[TrackSetting.LOWEST_OCTAVE].check(octave)
         _check_octave_order(lowest=octave, highest=self.get_highest_octave())
-        self._settings[TrackSetting.LOWEST_OCTAVE] = None if octave == MIN_OCTAVE else octave
+        self._settings[TrackSetting.LOWEST_OCTAVE] = None if octave == limits.MIN_OCTAVE else octave
 
     @notes_change
     def set_highest_octave(self, octave):
         """Set the highest octave it plays, which can't be below the lowest; the top of the MIDI range is left out of the file."""
         SETTINGS[TrackSetting.HIGHEST_OCTAVE].check(octave)
         _check_octave_order(lowest=self.get_lowest_octave(), highest=octave)
-        self._settings[TrackSetting.HIGHEST_OCTAVE] = None if octave == MAX_OCTAVE else octave
+        self._settings[TrackSetting.HIGHEST_OCTAVE] = None if octave == limits.MAX_OCTAVE else octave
 
     def get_groove_choice(self):
         """Return the groove it chooses by name, False for no groove on this track whatever the scene and song choose, or None to take theirs."""
@@ -194,7 +190,7 @@ class Track(LlamaData):
     def set_cc_register(self, *, lane, register):
         """Bind one of the four CC lanes to a register by name, or None to bind it to nothing."""
         if not is_whole_number_from(value=lane, lowest=0, highest=len(CC_ROWS) - 1):
-            raise InvalidValue(ERR_NO_SUCH_LANE.format(lane=lane, last=len(CC_ROWS) - 1))
+            raise InvalidValue(errors.ERR_NO_SUCH_LANE.format(lane=lane, last=len(CC_ROWS) - 1))
         name = CC_REGISTER_SETTINGS[lane]
         if register is not None:
             SETTINGS[name].check(register)
@@ -274,13 +270,13 @@ class Track(LlamaData):
     def set_transpose(self, transpose):
         """Set how far it moves its notes along the scale, which can be negative."""
         SETTINGS[TrackSetting.TRANSPOSE].check(transpose)
-        self._settings[TrackSetting.TRANSPOSE] = None if transpose == DEFAULT_TRANSPOSE else transpose
+        self._settings[TrackSetting.TRANSPOSE] = None if transpose == defaults.DEFAULT_TRANSPOSE else transpose
 
     @notes_change
     def set_cc_number(self, *, lane, number):
         """Set the CC number one of the four lanes sends, or None for a lane that sends nothing."""
         if not is_whole_number_from(value=lane, lowest=0, highest=len(CC_ROWS) - 1):
-            raise InvalidValue(ERR_NO_SUCH_LANE.format(lane=lane, last=len(CC_ROWS) - 1))
+            raise InvalidValue(errors.ERR_NO_SUCH_LANE.format(lane=lane, last=len(CC_ROWS) - 1))
         numbers = self.get_cc_numbers()
         numbers[lane] = number
         SETTINGS[TrackSetting.CC].check(numbers)
@@ -290,4 +286,4 @@ class Track(LlamaData):
 def _check_octave_order(*, lowest, highest):
     """Check that a track's lowest octave isn't above its highest, once each has been checked on its own."""
     if lowest > highest:
-        raise InvalidValue(ERR_OCTAVE_RANGE_BACKWARDS.format(lowest=lowest, highest=highest))
+        raise InvalidValue(errors.ERR_OCTAVE_RANGE_BACKWARDS.format(lowest=lowest, highest=highest))

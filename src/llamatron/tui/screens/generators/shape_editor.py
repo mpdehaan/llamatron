@@ -16,14 +16,13 @@
 """The shape generators' editors: a Density's, Swell's or Articulate's name, start, end, over and then, and a Swell's accent."""
 
 from llamatron.composition.generator_settings import ShapeSetting
-from llamatron.composition.limits import MAX_ACCENT, MIN_ACCENT
+from llamatron.composition import limits
+from llamatron.strings import labels, marks
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.shared.field import NameField, NumberField
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.generators.shape_fields import shape_fields
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.strings.labels import MSG_ACCENT_LABEL
-from llamatron.strings.marks import MSG_NONE_SHOWN
 from llamatron.tui import keybindings
 
 NO_ACCENT = 0
@@ -58,8 +57,8 @@ class ShapeEditor(ShowsNamedItem, FieldPage):
         if self.HAS_ACCENT:
             accent = settings.to_data().get(ShapeSetting.ACCENT)
             result.append(NumberField(
-                page=self, label=MSG_ACCENT_LABEL, number=accent, start=NO_ACCENT, shown=MSG_NONE_SHOWN if accent is None else None,
-                lowest=MIN_ACCENT, highest=MAX_ACCENT, set=lambda number: self.store(setting=ShapeSetting.ACCENT, value=number or None),
+                page=self, label=labels.MSG_ACCENT_LABEL, number=accent, start=NO_ACCENT, shown=marks.MSG_NONE_SHOWN if accent is None else None,
+                lowest=limits.MIN_ACCENT, highest=limits.MAX_ACCENT, set=lambda number: self.store(setting=ShapeSetting.ACCENT, value=number or None),
                 clear=lambda: self.store(setting=ShapeSetting.ACCENT, value=None),
             ))
         result.append(restart_field(self))

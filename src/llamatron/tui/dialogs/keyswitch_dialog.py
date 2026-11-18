@@ -26,8 +26,7 @@ nothing until the instrument gives it one."""
 from rich.text import Text
 
 from llamatron.composition.file_format import KEYSWITCH_SLOT_COUNT, KEYSWITCH_SLOTS
-from llamatron.strings.labels import MSG_OK_CANCEL_BUTTONS
-from llamatron.strings.marks import MSG_FIELD_TOGGLE_OFF, MSG_KEYSWITCH_SLOT_ROW, MSG_TOGGLE_ON
+from llamatron.strings import labels, marks
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.dialogs.pick_many_dialog import PickManyDialog
 from llamatron.tui.drawing import NOTHING, Style, cursor_mark, fit, legend
@@ -66,14 +65,14 @@ class KeyswitchDialog(PickManyDialog):
 
     def slot_line(self, *, slot, width):
         picked = slot in self.picked
-        start = cursor_mark(slot == self.place) + MSG_KEYSWITCH_SLOT_ROW.format(slot=slot, toggle=MSG_TOGGLE_ON if picked else MSG_FIELD_TOGGLE_OFF)
+        start = cursor_mark(slot == self.place) + marks.MSG_KEYSWITCH_SLOT_ROW.format(slot=slot, toggle=marks.MSG_TOGGLE_ON if picked else marks.MSG_FIELD_TOGGLE_OFF)
         line = Text(start, style=Style.BOLD if picked else Style.PLAIN, no_wrap=True)
         line.append(fit(text=self.names[slot], width=max(width - len(start) - KEYSWITCH_NOTE_WIDTH, 0)), style=Style.PLAIN if self.notes[slot] or picked else Style.DIM)
         line.append(fit(text=self.notes[slot], width=KEYSWITCH_NOTE_WIDTH), style=Style.DIM)
         return line
 
     def lines(self, width):
-        buttons = [(binding[1], label) for label, binding in zip(MSG_OK_CANCEL_BUTTONS, BUTTON_BINDINGS)]
+        buttons = [(binding[1], label) for label, binding in zip(labels.MSG_OK_CANCEL_BUTTONS, BUTTON_BINDINGS)]
         return [
             Text(fit(text=self.said, width=width), style=Style.DIM), Text(NOTHING),
             *[self.slot_line(slot=slot, width=width) for slot in self.options],

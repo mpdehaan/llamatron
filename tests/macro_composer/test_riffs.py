@@ -25,7 +25,7 @@ from llamatron.macro_composer.notation import ACCENT, ACCIDENTAL, CHORD, DEGREE,
 from llamatron.macro_composer.riffs import (ACCENT_CHORDS, FIRST_TAKE, HOME, IN_FULL, LEAVES_A_GAP, MOVES_WHOLE, MUTED_ROOTS, RESTS_BETWEEN, RIFF_BAR_COUNT, RIFF_BARS, RIFF_BETWEEN, RIFF_NOTES,
                                             RIFF_UNDER_TUNE, RIFF_WITH_CHORDS, SINGLE_NOTES, STAYS_HOME, heavy_line, riff_line)
 from llamatron.macro_composer.wizard_choices import RIFF_EVERYWHERE, RIFF_INTRO_AND_VERSES, RIFF_SETTINGS, RIFF_UNDER_CHORUSES, WizardChoices
-from llamatron.strings.macro_composer import MSG_PART_OF_SECTION
+from llamatron.strings import macro_composer as composer_text
 from llamatron.support.version import VERSION
 
 A_NAME = 'made'
@@ -243,8 +243,8 @@ class TestWizardRiffOfAKind(unittest.TestCase):
         choices = of_hard_rock()
         choices.set_riff_setting(field=RIFF_WITH_CHORDS, value=MOVES_WHOLE)
         made = patterns(choices)
-        guitar = made[MSG_PART_OF_SECTION.format(THE_GUITAR, THE_RIFF)]
-        bass = made[MSG_PART_OF_SECTION.format(THE_BASS, THE_RIFF)]
+        guitar = made[composer_text.MSG_PART_OF_SECTION.format(THE_GUITAR, THE_RIFF)]
+        bass = made[composer_text.MSG_PART_OF_SECTION.format(THE_BASS, THE_RIFF)]
         self.assertTrue(any(guitar[CHORD]))
         self.assertFalse(any(bass.get(CHORD) or []))
         self.assertEqual([degree is None for degree in guitar[DEGREE]], [degree is None for degree in bass[DEGREE]])
@@ -351,9 +351,9 @@ class TestWizardRiff(unittest.TestCase):
         with_riff_made = made(choices).to_data()
         self.assertNotEqual(with_riff, usual)
         for role in (THE_GUITAR, THE_BASS):
-            self.assertIn(MSG_PART_OF_SECTION.format(role, THE_RIFF), with_riff)
+            self.assertIn(composer_text.MSG_PART_OF_SECTION.format(role, THE_RIFF), with_riff)
         song = made(choices).get_song(A_NAME)
-        riff_scenes = [scene.get_name() for scene in song.get_scenes() if MSG_PART_OF_SECTION.format(THE_GUITAR, THE_RIFF) in str(scene.to_data())]
+        riff_scenes = [scene.get_name() for scene in song.get_scenes() if composer_text.MSG_PART_OF_SECTION.format(THE_GUITAR, THE_RIFF) in str(scene.to_data())]
         self.assertTrue(riff_scenes)
         self.assertTrue(all(name.startswith(('intro', 'verse')) for name in riff_scenes))
         choices.set_riff(players=[THE_GUITAR, THE_BASS], said=RIFF_UNDER_CHORUSES)

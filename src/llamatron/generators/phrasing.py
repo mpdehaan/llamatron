@@ -24,7 +24,7 @@ another tune. No note is left out, no pitch changes and nothing is drawn by chan
 """
 
 from llamatron.generators.base import ClipGenerator
-from llamatron.music.midi import MAX_VELOCITY, MIN_VELOCITY
+from llamatron.music import midi
 from llamatron.music.sound import CHORD, GLIDE, HELD, HELD_SOUND, KIND, LENGTH, MIDI, NAME, NOTE, NOTES, PHRASE, REST, VELOCITY, Sound
 from llamatron.support.length import ZERO, Length
 from llamatron.support.rational import Rational
@@ -222,5 +222,5 @@ def _louder(*, note, steps):
     """Return a note louder or softer by steps of velocity, within what MIDI allows; any other sound, and a note with no loudness yet, as it is."""
     if note[KIND] != NOTE or note[VELOCITY] is None:
         return note
-    velocity = max(MIN_VELOCITY, min(MAX_VELOCITY, note[VELOCITY] + steps))
+    velocity = max(midi.MIN_VELOCITY, min(midi.MAX_VELOCITY, note[VELOCITY] + steps))
     return Sound.note(length=note[LENGTH], midi=note[MIDI], velocity=velocity, glide=note[GLIDE], name=note[NAME])

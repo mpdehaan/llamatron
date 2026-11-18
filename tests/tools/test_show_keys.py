@@ -21,7 +21,7 @@ import io
 import pathlib
 import unittest
 
-from llamatron.strings.legends import KeyName, What
+from llamatron.strings import legends
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import first_key
 
@@ -102,7 +102,7 @@ class TestShowKeys(unittest.TestCase):
         self.assertIn(self.tool.OWNER.format(kind=keybindings.ListPage.__name__, constant=self.tool.name_of(kind=keybindings.ListPage, binding=keybindings.ListPage.SORT)), owners)
         self.assertFalse(any(owner.startswith(keybindings.PatternsPage.__name__) for owner in owners))
         self.assertEqual(len(owners), len(set(owners)))
-        self.assertTrue(any(KeyName.S in line and What.SORT in line for line in lines))
+        self.assertTrue(any(legends.KeyName.S in line and legends.What.SORT in line for line in lines))
 
     def test_a_key_nothing_has_says_so(self):
         self.assertEqual(self.shown([self.tool.KEY_FLAG, NOT_A_CLASS]), [self.tool.MSG_NOTHING_HAS_KEY.format(key=NOT_A_CLASS.lower())])

@@ -40,9 +40,8 @@ from llamatron.support.ordered_data import same_in_order
 from llamatron.composition.file_format import ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
 from llamatron.composition.sections import SETLIST_SECTIONS, SONG_SECTIONS
 from llamatron.composition.naming import is_default_scale_name
-from llamatron.strings.errors import ERR_CHANGED_SNAPSHOT
+from llamatron.strings import errors, messages
 from llamatron.support.memory import StaleAnswer
-from llamatron.strings.messages import MSG_CHANGED_IN_SONG, MSG_CHANGED_NAMED, MSG_CHANGED_SCENE, MSG_CHANGED_THE_SET, MSG_CHANGED_WORDS
 
 # How many edits can be undone. A snapshot holds only the data of what its edit changed and shares
 # the rest with its neighbours, so a full history is a little more than the set itself.
@@ -108,7 +107,7 @@ class History:
     def _handed_back(self, snapshot):
         """Return a kept snapshot to hand back, as it is: a history that checks raises StaleAnswer if its data was changed since it was kept."""
         if self._proofs is not None and self._proofs[id(snapshot.data)].copy != snapshot.data:
-            raise StaleAnswer(ERR_CHANGED_SNAPSHOT)
+            raise StaleAnswer(errors.ERR_CHANGED_SNAPSHOT)
         return snapshot
 
     def record(self, snapshot, *, continues=False):
@@ -170,12 +169,12 @@ def describe_change(*, leaving, arriving):
         if name is None:
             continue
         if section == Section.SONGS:
-            return MSG_CHANGED_IN_SONG.format(song=name, what=_describe_song_change(leaving=leaving.data[Section.SONGS].get(name), arriving=arriving.data[Section.SONGS].get(name)))
-        return MSG_CHANGED_NAMED.format(kind=MSG_CHANGED_WORDS[section], name=name)
+            return messages.MSG_CHANGED_IN_SONG.format(song=name, what=_describe_song_change(leaving=leaving.data[Section.SONGS].get(name), arriving=arriving.data[Section.SONGS].get(name)))
+        return messages.MSG_CHANGED_NAMED.format(kind=messages.MSG_CHANGED_WORDS[section], name=name)
     for setting in SETTINGS_OF_THE_SET:
         if leaving.data.get(setting) != arriving.data.get(setting):
-            return MSG_CHANGED_WORDS[setting]
-    return MSG_CHANGED_THE_SET
+            return messages.MSG_CHANGED_WORDS[setting]
+    return messages.MSG_CHANGED_THE_SET
 
 
 # The set's own settings, in the order a difference is looked for.
@@ -190,19 +189,19 @@ SETTINGS_OF_A_SONG = [SongSetting.TEMPO, SongSetting.TIME_SIGNATURE, SongSetting
 def _describe_song_change(*, leaving, arriving):
     """Return words for the first difference inside one song: a track, a register, a scene or a setting."""
     if leaving is None or arriving is None:
-        return MSG_CHANGED_WORDS[Section.SONGS]
+        return messages.MSG_CHANGED_WORDS[Section.SONGS]
     for section in SONG_SECTIONS:
         name = _differing_name(section=section, leaving=leaving, arriving=arriving)
         if name is not None:
-            return MSG_CHANGED_NAMED.format(kind=MSG_CHANGED_WORDS[section], name=name)
+            return messages.MSG_CHANGED_NAMED.format(kind=messages.MSG_CHANGED_WORDS[section], name=name)
     scenes_leaving = leaving.get(Section.SCENES) or []
     scenes_arriving = arriving.get(Section.SCENES) or []
     if scenes_leaving != scenes_arriving:
-        return MSG_CHANGED_SCENE.format(number=_first_differing_index(before=scenes_leaving, after=scenes_arriving) + FIRST_SCENE_NUMBER)
+        return messages.MSG_CHANGED_SCENE.format(number=_first_differing_index(before=scenes_leaving, after=scenes_arriving) + FIRST_SCENE_NUMBER)
     for setting in SETTINGS_OF_A_SONG:
         if leaving.get(setting) != arriving.get(setting):
-            return MSG_CHANGED_WORDS[setting]
-    return MSG_CHANGED_WORDS[Section.SONGS]
+            return messages.MSG_CHANGED_WORDS[setting]
+    return messages.MSG_CHANGED_WORDS[Section.SONGS]
 
 
 def _differing_name(*, section, leaving, arriving):

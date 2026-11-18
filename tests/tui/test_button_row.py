@@ -19,7 +19,7 @@
 import unittest
 
 from llamatron.tui.components.button_row import ROW_LINES, button_row
-from llamatron.strings.messages import MSG_DELETE_TITLE
+from llamatron.strings import messages
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import Box, Style
 from llamatron.tui.status_line import StatusLine
@@ -55,5 +55,5 @@ class TestRefusalsAndDeletes(unittest.TestCase):
         self.assertFalse(line.is_refusal())
 
     def test_a_delete_question_has_a_red_title(self):
-        self.assertEqual(ConfirmDialog(title=MSG_DELETE_TITLE, messages=[SAID]).heading(WIDTH).style, Style.DELETE_TITLE)
+        self.assertEqual(ConfirmDialog(title=messages.MSG_DELETE_TITLE, messages=[SAID]).heading(WIDTH).style, Style.DELETE_TITLE)
         self.assertEqual(ConfirmDialog(title=SAID, messages=[SAID]).heading(WIDTH).style, Style.BOLD)

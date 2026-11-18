@@ -24,9 +24,9 @@ follows is the last generator of the kind its chains name, else the clip's own, 
 
 import math
 
-from llamatron.composition.defaults import DEFAULT_VELOCITY
+from llamatron.composition import defaults
 from llamatron.composition.file_format import ShapeThen
-from llamatron.music.midi import MAX_VELOCITY, MIN_VELOCITY
+from llamatron.music import midi
 from llamatron.music.sound import CHORD, HELD, HELD_SOUND, KIND, LENGTH, NOTE, NOTES, PARTS, PHRASE, REST, VELOCITY, Sound
 from llamatron.support.length import ZERO, Length
 from llamatron.support.rational import Rational
@@ -125,8 +125,8 @@ def _with_velocity(*, sound, scale):
     """Return a sound with every note's velocity scaled by a percentage, held from 1 to 127."""
     kind = sound[KIND]
     if kind == NOTE:
-        velocity = DEFAULT_VELOCITY if sound[VELOCITY] is None else sound[VELOCITY]
-        scaled = max(min(round(velocity * scale / FULL), MAX_VELOCITY), MIN_VELOCITY)
+        velocity = defaults.DEFAULT_VELOCITY if sound[VELOCITY] is None else sound[VELOCITY]
+        scaled = max(min(round(velocity * scale / FULL), midi.MAX_VELOCITY), midi.MIN_VELOCITY)
         return sound[:VELOCITY] + (scaled,) + sound[VELOCITY + 1:]
     if kind == CHORD:
         return (CHORD, sound[LENGTH], tuple(_with_velocity(sound=note, scale=scale) for note in sound[NOTES]))

@@ -26,8 +26,7 @@ from llamatron.composition.file_format import Section
 from llamatron.composition.groove import FactoryGroove
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.sections import SONG_SECTIONS
-from llamatron.strings.errors import ERR_LAST_SONG
-from llamatron.strings.names import MSG_DEFAULT_SONG_NAME
+from llamatron.strings import errors, names as names_text
 from llamatron.composition.naming import copy_name
 
 # The sections whose items have names, which are every section these edits take.
@@ -142,22 +141,22 @@ class TestWhatDiffersByKind(unittest.TestCase):
 
     def test_the_current_song_stays_current_when_it_is_renamed(self):
         document = a_document()
-        document.rename_named(section=Section.SONGS, old=MSG_DEFAULT_SONG_NAME, new=RENAMED)
+        document.rename_named(section=Section.SONGS, old=names_text.MSG_DEFAULT_SONG_NAME, new=RENAMED)
         self.assertEqual(document.current_song_name(), RENAMED)
         self.assertEqual(document.song().get_track_names(), [LEAD, DRUMS])
 
     def test_renaming_another_song_leaves_the_current_one_current(self):
         document = a_document()
         document.add_song(SECOND_SONG)
-        document.rename_named(section=Section.SONGS, old=MSG_DEFAULT_SONG_NAME, new=RENAMED)
+        document.rename_named(section=Section.SONGS, old=names_text.MSG_DEFAULT_SONG_NAME, new=RENAMED)
         self.assertEqual(document.current_song_name(), SECOND_SONG)
 
     def test_the_last_song_cannot_be_deleted(self):
         document = a_document()
         with self.assertRaises(InvalidValue) as refused:
-            document.delete_named(section=Section.SONGS, name=MSG_DEFAULT_SONG_NAME)
-        self.assertEqual(str(refused.exception), ERR_LAST_SONG)
-        self.assertEqual(document.song_names(), [MSG_DEFAULT_SONG_NAME])
+            document.delete_named(section=Section.SONGS, name=names_text.MSG_DEFAULT_SONG_NAME)
+        self.assertEqual(str(refused.exception), errors.ERR_LAST_SONG)
+        self.assertEqual(document.song_names(), [names_text.MSG_DEFAULT_SONG_NAME])
 
     def test_deleting_the_current_song_makes_the_one_before_it_current(self):
         document = a_document()
@@ -169,14 +168,14 @@ class TestWhatDiffersByKind(unittest.TestCase):
     def test_deleting_the_first_song_while_current_makes_the_next_one_current(self):
         document = a_document()
         document.add_song(SECOND_SONG)
-        document.select_song(MSG_DEFAULT_SONG_NAME)
-        document.delete_named(section=Section.SONGS, name=MSG_DEFAULT_SONG_NAME)
+        document.select_song(names_text.MSG_DEFAULT_SONG_NAME)
+        document.delete_named(section=Section.SONGS, name=names_text.MSG_DEFAULT_SONG_NAME)
         self.assertEqual(document.current_song_name(), SECOND_SONG)
 
     def test_deleting_another_song_leaves_the_current_one_current(self):
         document = a_document()
         document.add_song(SECOND_SONG)
-        document.delete_named(section=Section.SONGS, name=MSG_DEFAULT_SONG_NAME)
+        document.delete_named(section=Section.SONGS, name=names_text.MSG_DEFAULT_SONG_NAME)
         self.assertEqual(document.current_song_name(), SECOND_SONG)
 
     def test_a_factory_groove_is_copied_into_the_sets_own_grooves(self):

@@ -22,16 +22,10 @@ from rich.text import Text
 
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import cursor_mark, INDENT, LINE_BREAK, NOTHING, padded, SPACE, Style
-from llamatron.strings.help import HELP_NOTES_PAGE
+from llamatron.strings import help as help_text, labels, marks, messages
 from llamatron.tui.key_table import cursor_moved, pressed_key, quits_at_once
 from llamatron.tui.keys import ARROWS_UP_DOWN, Key
 from llamatron.tui.screens.shared.page import Page
-from llamatron.strings.labels import Crumb, MSG_NOTES_BUTTONS
-from llamatron.strings.marks import MSG_CONFIRM_BUTTON_GAP
-from llamatron.strings.messages import (
-    MSG_CLEAR_NOTES_QUESTION, MSG_CLEAR_NOTES_TITLE, MSG_NOTES_PROTECTED, MSG_NO_NOTES_PROTECTED, MSG_EDITING,
-    MSG_NO_NOTES_NOTE,
-)
 from llamatron.tui import themes
 from llamatron.tui import keybindings
 
@@ -64,8 +58,8 @@ class NotesPage(Page):
 
     KEYS = keybindings.NotesPage
 
-    crumbs = (Crumb.FILE, Crumb.NOTES)
-    HELP = HELP_NOTES_PAGE
+    crumbs = (labels.Crumb.FILE, labels.Crumb.NOTES)
+    HELP = help_text.HELP_NOTES_PAGE
 
     def __init__(self, holder, *, editing=False):
         super().__init__(holder)
@@ -140,7 +134,7 @@ class NotesPage(Page):
 
     def start_editing(self):
         if self.is_protected():
-            self.say(MSG_NOTES_PROTECTED)
+            self.say(messages.MSG_NOTES_PROTECTED)
             return
         lines = self.stored_lines()
         self.editing = True
@@ -149,7 +143,7 @@ class NotesPage(Page):
         self.draft = lines
         self.row = len(lines) - 1
         self.column = len(lines[-1])
-        self.say(MSG_EDITING)
+        self.say(messages.MSG_EDITING)
 
     def to_buttons(self):
         self.on_buttons = True
@@ -158,7 +152,7 @@ class NotesPage(Page):
         self.on_buttons = False
 
     def move_button(self, name):
-        self.button = cursor_moved(place=self.button, name=name, count=len(MSG_NOTES_BUTTONS))
+        self.button = cursor_moved(place=self.button, name=name, count=len(labels.MSG_NOTES_BUTTONS))
 
     def press_button(self):
         if self.button == SAVE:
@@ -185,7 +179,7 @@ class NotesPage(Page):
 
     def clear(self):
         if self.document().setlist().has_notes():
-            self.ask(dialog=ConfirmDialog(title=MSG_CLEAR_NOTES_TITLE, messages=[MSG_CLEAR_NOTES_QUESTION]), then=lambda _: self.store([NOTHING]))
+            self.ask(dialog=ConfirmDialog(title=messages.MSG_CLEAR_NOTES_TITLE, messages=[messages.MSG_CLEAR_NOTES_QUESTION]), then=lambda _: self.store([NOTHING]))
 
     def move(self, name):
         lines = self.text_lines()
@@ -246,11 +240,11 @@ class NotesPage(Page):
     def button_line(self):
         """Return the Save and Cancel buttons, the selected one marked and in reverse video while the cursor is on them."""
         line = Text(no_wrap=True)
-        for place, label in enumerate(MSG_NOTES_BUTTONS):
+        for place, label in enumerate(labels.MSG_NOTES_BUTTONS):
             selected = self.on_buttons and place == self.button
             line.append(cursor_mark(selected))
             line.append(padded(label), style=Style.REVERSE if selected else Style.BOLD)
-            line.append(MSG_CONFIRM_BUTTON_GAP)
+            line.append(marks.MSG_CONFIRM_BUTTON_GAP)
         return line
 
     def body(self, *, width, height):
@@ -275,7 +269,7 @@ class NotesPage(Page):
             shown.append(self.button_line())
             return shown
         if not self.document().setlist().has_notes():
-            return [Text(MSG_NO_NOTES_PROTECTED if self.is_protected() else MSG_NO_NOTES_NOTE, style=Style.DIM)]
+            return [Text(messages.MSG_NO_NOTES_PROTECTED if self.is_protected() else messages.MSG_NO_NOTES_NOTE, style=Style.DIM)]
         wrapped = []
         for line in self.text_lines():
             wrapped += [Text(INDENT + part) for part in (textwrap.wrap(line, width - 4) or [NOTHING])]

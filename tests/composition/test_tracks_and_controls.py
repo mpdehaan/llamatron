@@ -35,7 +35,7 @@ from llamatron.composition.generator_settings import ArpSetting, written_name
 from llamatron.generators.arp import Arp, ChordOrder, OctaveJump, along_scale
 from llamatron.music.chord import Chord
 from llamatron.generators.blend import BlendMode
-from llamatron.music.midi import MAX_MIDI_NUMBER
+from llamatron.music import midi
 from llamatron.music.note import MAX_OCTAVE, Note, NoteName, Rest
 from llamatron.music.sound import Sound
 from llamatron.exporters.ableton_project import AbletonProject
@@ -148,7 +148,7 @@ class TestTracks(unittest.TestCase):
         self.assertEqual(pitches(lead_clip(data)), [120, 124, 127])
         data[Section.TRACKS][LEAD][TrackSetting.TRANSPOSE] = 2
         moved = pitches(lead_clip(data))
-        self.assertLessEqual(max(moved), MAX_MIDI_NUMBER)
+        self.assertLessEqual(max(moved), midi.MAX_MIDI_NUMBER)
         # E and G fit where they are, and B, which would be 131, plays an octave down.
         self.assertEqual(moved, [124, 127, 119])
 

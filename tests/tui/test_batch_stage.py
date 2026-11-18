@@ -20,7 +20,7 @@ import unittest
 
 from rich.text import Text
 
-from llamatron.strings.about import MSG_BLOCK, MSG_READY_WORD
+from llamatron.strings import about
 from llamatron.tui.batch_stage import ALTERNATE_FADE_SECONDS, ALTERNATE_SECONDS, FRAME_COLOURS, FRAME_LAP_BARS, GROW_SECONDS, READY_SECONDS, BatchStage
 from llamatron.tui.components.stage_drawing import (
     BLACK, FRAME_GAP_COLUMNS, FRAME_GAP_ROWS, GAP_COLUMNS, GAP_ROWS, PULSE_CEILING, SIDE_TRACK, faded, frame_box, inside_of, pulse_levels, ready_box,
@@ -72,7 +72,7 @@ CLIPS_AGAIN = 2 * (ALTERNATE_SECONDS + ALTERNATE_FADE_SECONDS) + 1.0
 
 def visualizer_frame():
     """Return a visualizer's frame for the tests: every cell a block."""
-    return [Text(MSG_BLOCK * WIDTH) for _ in range(HEIGHT)]
+    return [Text(about.MSG_BLOCK * WIDTH) for _ in range(HEIGHT)]
 
 
 def inside_text(lines):
@@ -101,7 +101,7 @@ class TestGeometry(unittest.TestCase):
     def test_the_ready_box_holds_ready_with_two_rows_and_four_columns_of_gap(self):
         # The gap is the black gap inside the track, which the frame keeps too, and the room left inside it.
         inside = inside_of(ready_box(width=WIDTH, height=HEIGHT))
-        self.assertEqual(inside.right - inside.left + 1 + 2 * FRAME_GAP_COLUMNS, words_width(word=MSG_READY_WORD, scale=NARROW) + 2 * GAP_COLUMNS)
+        self.assertEqual(inside.right - inside.left + 1 + 2 * FRAME_GAP_COLUMNS, words_width(word=about.MSG_READY_WORD, scale=NARROW) + 2 * GAP_COLUMNS)
         self.assertEqual(inside.bottom - inside.top + 1 + 2 * FRAME_GAP_ROWS, READY_ROWS + 2 * GAP_ROWS)
 
     def test_the_frame_leaves_the_outermost_cells_black_then_the_track_then_a_gap(self):
@@ -157,20 +157,20 @@ class TestStage(unittest.TestCase):
         text = LINE_BREAK.join(line.plain for line in lines)
         self.assertNotIn(Box.DOUBLE_TOP_LEFT, text)
         area = visualizer_area(width=WIDTH, height=HEIGHT)
-        self.assertEqual(lines[area.top].plain[area.left:area.right + 1], MSG_BLOCK * (area.right - area.left + 1))
+        self.assertEqual(lines[area.top].plain[area.left:area.right + 1], about.MSG_BLOCK * (area.right - area.left + 1))
 
     def test_alternating_starts_on_the_clips_then_turns_to_the_visualizer_and_back(self):
         for after, clips in ((ON_CLIPS, True), (ON_VISUALIZER, False), (CLIPS_AGAIN, True)):
             with self.subTest(after=after):
                 text = inside_text(alternating_at(after)[0])
                 self.assertEqual(ARRANGE_WORD in text, clips)
-                self.assertEqual(MSG_BLOCK in text, not clips)
+                self.assertEqual(about.MSG_BLOCK in text, not clips)
 
     def test_a_change_fades_through_black_with_neither_view_at_its_middle(self):
         lines, stage = alternating_at(MID_FADE)
         text = inside_text(lines)
         self.assertNotIn(ARRANGE_WORD, text)
-        self.assertNotIn(MSG_BLOCK, text)
+        self.assertNotIn(about.MSG_BLOCK, text)
         self.assertFalse(stage.shows_visualizer(READY_SECONDS + GROW_SECONDS + ON_CLIPS))
         self.assertTrue(stage.shows_visualizer(READY_SECONDS + GROW_SECONDS + ON_VISUALIZER))
 

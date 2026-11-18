@@ -22,8 +22,7 @@ from llamatron.tui.dialogs.pick_many_dialog import PickManyDialog
 from tests.support.ui_testing import UITest, back_key, forward_key
 from llamatron.composition.file_format import VISUALIZER_NAMES, SetlistSetting, SongSetting, sensible_hidden_visualizers, sensible_visualizer
 from llamatron.composition.setlist import Setlist, new_setlist
-from llamatron.strings.labels import MSG_HIDE_VISUALIZERS_LABEL
-from llamatron.strings.messages import MSG_EVERY_VISUALIZER_HIDDEN
+from llamatron.strings import labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.file_page import FilePage
@@ -124,7 +123,7 @@ class TestArrangeVisualizerChoices(UITest):
             self.document.set_visualizer_hidden(name=name, hidden=True)
         await self.press(keybindings.ArrangePage.VISUALIZER)
         self.assertIsNone(self.page.visualizer)
-        self.assertIn(MSG_EVERY_VISUALIZER_HIDDEN, self.text())
+        self.assertIn(messages.MSG_EVERY_VISUALIZER_HIDDEN, self.text())
 
 
 class TestHideVisualizersSection(UITest):
@@ -133,7 +132,7 @@ class TestHideVisualizersSection(UITest):
     async def test_picking_modes_hides_them_and_esc_changes_nothing(self):
         await self.press(keybindings.MainPage.FILE)
         self.assertIsInstance(self.app.screen, FilePage)
-        await self.select_field(MSG_HIDE_VISUALIZERS_LABEL)
+        await self.select_field(labels.MSG_HIDE_VISUALIZERS_LABEL)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, PickManyDialog)
         place = list(VISUALIZER_NAMES).index(PLASMA)

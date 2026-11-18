@@ -27,12 +27,12 @@ from typing import NamedTuple
 from llamatron.composition.corrections import LEFT_OUT
 from llamatron.composition.file_format import SHAPE_THENS, SHAPES, Shape, ShapePart, shape_setting
 from llamatron.composition.checks import time_length
-from llamatron.composition.limits import MAX_ARTICULATE, MAX_DENSITY, MAX_SWELL, MIN_ARTICULATE, MIN_DENSITY, MIN_SWELL
+from llamatron.composition import limits
+from llamatron.strings import errors
 from llamatron.composition.setting import Checked, Choice, WholeNumber
-from llamatron.strings.errors import ERR_BAD_SHAPE_PERCENT, ERR_BAD_SHAPE_THEN
 
 # The lowest and highest percentage of each shape.
-SHAPE_LIMITS = {Shape.DENSITY: (MIN_DENSITY, MAX_DENSITY), Shape.SWELL: (MIN_SWELL, MAX_SWELL), Shape.ARTICULATE: (MIN_ARTICULATE, MAX_ARTICULATE)}
+SHAPE_LIMITS = {Shape.DENSITY: (limits.MIN_DENSITY, limits.MAX_DENSITY), Shape.SWELL: (limits.MIN_SWELL, limits.MAX_SWELL), Shape.ARTICULATE: (limits.MIN_ARTICULATE, limits.MAX_ARTICULATE)}
 # What a part left blank plays as: every note, as loud and as long as written.
 UNCHANGED = 100
 NO_ACCENT = 0
@@ -52,10 +52,10 @@ def shape_part_settings(*, shape, named):
     """Return the descriptions of one shape's four parts, named by named(part)."""
     lowest, highest = SHAPE_LIMITS[shape]
     return [
-        WholeNumber(name=named(ShapePart.START), lowest=lowest, highest=highest, error=ERR_BAD_SHAPE_PERCENT),
-        WholeNumber(name=named(ShapePart.END), lowest=lowest, highest=highest, error=ERR_BAD_SHAPE_PERCENT),
+        WholeNumber(name=named(ShapePart.START), lowest=lowest, highest=highest, error=errors.ERR_BAD_SHAPE_PERCENT),
+        WholeNumber(name=named(ShapePart.END), lowest=lowest, highest=highest, error=errors.ERR_BAD_SHAPE_PERCENT),
         Checked(name=named(ShapePart.OVER), check=time_length),
-        Choice(name=named(ShapePart.THEN), choices=SHAPE_THENS, default=LEFT_OUT, error=ERR_BAD_SHAPE_THEN),
+        Choice(name=named(ShapePart.THEN), choices=SHAPE_THENS, default=LEFT_OUT, error=errors.ERR_BAD_SHAPE_THEN),
     ]
 
 

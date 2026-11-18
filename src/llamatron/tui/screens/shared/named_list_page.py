@@ -22,7 +22,7 @@ word one of its things, and what Enter opens. Adding stays with each page, since
 starts with something else: a name that is asked for, a numbered name, or a C major scale.
 """
 
-from llamatron.strings.messages import MSG_COPIED_TO
+from llamatron.strings import messages
 from llamatron.tui.themes import theme_of
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared.list_page import ListPage
@@ -98,7 +98,7 @@ class NamedListPage(ListPage):
     def copy(self):
         """Copy the selected thing, say what the copy is called and put the cursor on it."""
         new = self.document().copy_named(section=self.LISTED_SECTION, name=self.current())
-        self.say(MSG_COPIED_TO.format(name=new))
+        self.say(messages.MSG_COPIED_TO.format(name=new))
         self.put_cursor_on(new)
 
     def delete(self):

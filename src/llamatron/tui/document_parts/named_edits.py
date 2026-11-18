@@ -27,7 +27,7 @@ starts with something else, so each kind keeps its own add.
 from llamatron.composition.file_format import Section
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.sections import SONG_SECTIONS
-from llamatron.strings.errors import ERR_LAST_SONG
+from llamatron.strings import errors
 from llamatron.composition.naming import copy_name
 
 # The place of the song before a deleted one, which becomes current, and the first place, for when the first song was deleted.
@@ -109,7 +109,7 @@ class NamedEdits:
     def _delete_song(self, name):
         names = self.song_names()
         if len(names) <= 1:
-            raise InvalidValue(ERR_LAST_SONG)
+            raise InvalidValue(errors.ERR_LAST_SONG)
         self._change(self._setlist.remove_item, section=Section.SONGS, name=name)
         if name == self._current:
             self.select_song(self.song_names()[max(names.index(name) - ONE_BEFORE, FIRST_PLACE)])

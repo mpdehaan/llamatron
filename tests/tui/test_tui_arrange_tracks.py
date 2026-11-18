@@ -18,15 +18,14 @@ renamed and deleted since the Tracks page went, and the track editor it opens.""
 
 from tests.support.ui_testing import UITest, back_key, forward_key, key_of
 from llamatron.composition.file_format import REGISTER_NAMES, ClipSlotSetting, PatternSetting, TrackSetting
-from llamatron.composition.limits import MAX_OCTAVE, MIN_OCTAVE
+from llamatron.composition import limits
+from llamatron.strings import labels, names as names_text
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.screens.generators.chain_list_page import ChainListPage
 from llamatron.tui.screens.arrange.track_editor import TrackEditor
-from llamatron.strings.labels import MSG_CHAINS_LABEL, MSG_CC_REGISTER_LABEL, MSG_NAME_LABEL, MSG_TRACK_CRUMB, MSG_VELOCITY_REGISTER_LABEL
-from llamatron.strings.names import MSG_NEW_SCENE_NAME, MSG_NEW_TRACK_NAME
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import first_key
 from tests.support.rendering import render_song
@@ -34,9 +33,9 @@ from tests.support.rendering import render_song
 
 LEAD = 'lead'
 DRUMS = 'drums'
-TRACK_1 = MSG_NEW_TRACK_NAME.format(number=1)
-TRACK_2 = MSG_NEW_TRACK_NAME.format(number=2)
-SCENE_1 = MSG_NEW_SCENE_NAME.format(number=1)
+TRACK_1 = names_text.MSG_NEW_TRACK_NAME.format(number=1)
+TRACK_2 = names_text.MSG_NEW_TRACK_NAME.format(number=2)
+SCENE_1 = names_text.MSG_NEW_SCENE_NAME.format(number=1)
 SECOND_SONG = 'second'
 LOW = 'low'
 LEAD_COPY = 'lead-2'
@@ -92,7 +91,7 @@ class TestArrangeTracks(UITest):
     async def test_enter_opens_the_track_editor_with_a_track_crumb(self):
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, TrackEditor)
-        self.assertIn(MSG_TRACK_CRUMB.format(name=LEAD), self.crumbs_line())
+        self.assertIn(labels.MSG_TRACK_CRUMB.format(name=LEAD), self.crumbs_line())
 
     async def test_copy_adds_a_copy_to_the_right_with_its_clips(self):
         await self.press(keybindings.ArrangePage.COPY_TRACK)
@@ -166,7 +165,7 @@ class TestChainListPage(UITest):
     async def asyncSetUp(self):
         await super().asyncSetUp()
         await self.press(keybindings.MainPage.ARRANGE, Key.UP, Key.ENTER)
-        await self.select_field(MSG_CHAINS_LABEL)
+        await self.select_field(labels.MSG_CHAINS_LABEL)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChainListPage)
 
@@ -178,7 +177,7 @@ class TestChainListPage(UITest):
         self.assertEqual(self.track(LEAD).get_chain_names(), list(reversed(names[:2])))
         await self.press(keybindings.ChainListPage.REMOVE)
         self.assertEqual(self.track(LEAD).get_chain_names(), [names[0]])
-        self.assertIn(MSG_CHAINS_LABEL.upper(), self.text())
+        self.assertIn(labels.MSG_CHAINS_LABEL.upper(), self.text())
 
 
 class TestTrackEditor(UITest):
@@ -215,12 +214,12 @@ class TestTrackEditor(UITest):
 
     async def test_a_lane_and_the_velocity_bind_to_registers_and_unbind(self):
         more = key_of(binding=keybindings.TrackEditor.MORE, key=Key.RIGHT_BRACKET)
-        await self.select_field(MSG_CC_REGISTER_LABEL.format(number=2))
+        await self.select_field(labels.MSG_CC_REGISTER_LABEL.format(number=2))
         await self.press(more, more)
         self.assertEqual(self.track(LEAD).get_cc_registers(), [None, REGISTER_NAMES[1], None, None])
         await self.press(Key.BACKSPACE)
         self.assertEqual(self.track(LEAD).get_cc_registers(), [None] * len(REGISTER_NAMES))
-        await self.select_field(MSG_VELOCITY_REGISTER_LABEL)
+        await self.select_field(labels.MSG_VELOCITY_REGISTER_LABEL)
         await self.press(more)
         self.assertEqual(self.track(LEAD).get_velocity_register(), REGISTER_NAMES[0])
         self.assertEqual(self.track(LEAD).to_data(), {TrackSetting.VELOCITY_REGISTER: REGISTER_NAMES[0]})
@@ -230,12 +229,12 @@ class TestTrackEditor(UITest):
     async def test_a_tracks_octave_range_in_the_sets_octave_labels(self):
         song = self.document.song()
         await self.select_field(LOWEST_OCTAVE)
-        self.assertIn(str(song.shown_octave(MIN_OCTAVE)), self.text())
+        self.assertIn(str(song.shown_octave(limits.MIN_OCTAVE)), self.text())
         await self.press(key_of(binding=keybindings.TrackEditor.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(self.track(LEAD).get_lowest_octave(), MIN_OCTAVE + 1)
+        self.assertEqual(self.track(LEAD).get_lowest_octave(), limits.MIN_OCTAVE + 1)
         await self.select_field(HIGHEST_OCTAVE)
         await self.press(key_of(binding=keybindings.TrackEditor.LESS, key=Key.LEFT_BRACKET))
-        self.assertEqual(self.track(LEAD).get_highest_octave(), MAX_OCTAVE - 1)
+        self.assertEqual(self.track(LEAD).get_highest_octave(), limits.MAX_OCTAVE - 1)
         # Typed in the set's octave labels, and stored in the file's numbering.
         await self.press(Key.ENTER)
         self.app.screen.value = str(song.shown_octave(TYPED_OCTAVE))
@@ -243,15 +242,15 @@ class TestTrackEditor(UITest):
         self.assertEqual(self.track(LEAD).get_highest_octave(), TYPED_OCTAVE)
         # The lowest can't be nudged past the highest.
         await self.select_field(LOWEST_OCTAVE)
-        await self.press(*[key_of(binding=keybindings.TrackEditor.MORE, key=Key.RIGHT_BRACKET)] * (MAX_OCTAVE - MIN_OCTAVE))
+        await self.press(*[key_of(binding=keybindings.TrackEditor.MORE, key=Key.RIGHT_BRACKET)] * (limits.MAX_OCTAVE - limits.MIN_OCTAVE))
         self.assertEqual(self.track(LEAD).get_lowest_octave(), TYPED_OCTAVE)
         await self.press(Key.BACKSPACE)
-        self.assertEqual(self.track(LEAD).get_lowest_octave(), MIN_OCTAVE)
+        self.assertEqual(self.track(LEAD).get_lowest_octave(), limits.MIN_OCTAVE)
         self.assertEqual(self.track(LEAD).to_data(), {TrackSetting.HIGHEST_OCTAVE: TYPED_OCTAVE})
         render_song(song)
 
     async def test_the_name_field_renames_the_track_everywhere(self):
-        await self.select_field(MSG_NAME_LABEL)
+        await self.select_field(labels.MSG_NAME_LABEL)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, PromptDialog)
         self.app.screen.value = LOW
@@ -259,7 +258,7 @@ class TestTrackEditor(UITest):
         self.assertEqual(self.track(LOW).get_transpose(), 0)
         self.assertEqual(self.document.song().get_track_names(), [LOW, DRUMS])
         self.assertIsNotNone(self.document.clip_slot(index=0, track=LOW))
-        self.assertIn(MSG_TRACK_CRUMB.format(name=LOW), self.crumbs_line())
+        self.assertIn(labels.MSG_TRACK_CRUMB.format(name=LOW), self.crumbs_line())
         await self.press(Key.ESCAPE)
         self.assertIn(LOW, self.text())
 

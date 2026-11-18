@@ -32,9 +32,7 @@ from rich.text import Text
 
 from llamatron.composition.file_format import TENSIONS
 from llamatron.composition.naming import words
-from llamatron.strings.labels import Column
-from llamatron.strings.marks import MSG_NONE_SHOWN, MSG_FIELD_TOGGLE_OFF, MSG_FLYOUT_CHOSEN, MSG_FLYOUT_CHOSEN_ALONE, MSG_FLYOUT_CLOSED, MSG_FLYOUT_TITLE, MSG_TOGGLE_ON
-from llamatron.strings.messages import MSG_SCALE_NOT_BORROWED
+from llamatron.strings import labels, marks, messages
 from llamatron.tui.dialogs.dialog import DIALOG_MARGIN, Dialog
 from llamatron.tui.drawing import NOTHING, SPACE, Style, cursor_mark, fit, legend
 from llamatron.tui.key_table import cursor_moved
@@ -227,26 +225,26 @@ class ChordDialog(Dialog):
         """Return a row of the scale list: the row that borrows none, or a category, drawn as a button since it opens a flyout, with the scale type
         borrowed after the name of the one that holds it, the only row with the mark."""
         if row == NOT_BORROWED_ROW:
-            return MSG_SCALE_NOT_BORROWED
+            return messages.MSG_SCALE_NOT_BORROWED
         name, kinds = self.categories[row - 1]
         if self.kind in kinds and row == self.row_of_kind(self.kind):
             # The scale type borrowed is shown whole, and the category's name gives way to it where both don't fit.
             chosen = words(self.kind).title()
-            room = LIST_WIDTHS[SCALE_LIST] - len(cursor_mark(False)) - len(MSG_FLYOUT_CHOSEN.format(name=NOTHING, chosen=chosen))
+            room = LIST_WIDTHS[SCALE_LIST] - len(cursor_mark(False)) - len(marks.MSG_FLYOUT_CHOSEN.format(name=NOTHING, chosen=chosen))
             if room < SHORTEST_CATEGORY_NAME:
-                return MSG_FLYOUT_CHOSEN_ALONE.format(chosen=chosen)
-            return MSG_FLYOUT_CHOSEN.format(name=fit(text=name, width=room).rstrip(), chosen=chosen)
-        return MSG_FLYOUT_CLOSED.format(name=name)
+                return marks.MSG_FLYOUT_CHOSEN_ALONE.format(chosen=chosen)
+            return marks.MSG_FLYOUT_CHOSEN.format(name=fit(text=name, width=room).rstrip(), chosen=chosen)
+        return marks.MSG_FLYOUT_CLOSED.format(name=name)
 
     def row_text(self, *, part, place):
         """Return one row of a list: a quality's name, an inversion, a tension with its mark, or a scale type."""
         if part == QUALITY_LIST:
             return self.quality_names[place]
         if part == INVERSION_LIST:
-            return MSG_NONE_SHOWN if self.inversions[place] is None else str(self.inversions[place])
+            return marks.MSG_NONE_SHOWN if self.inversions[place] is None else str(self.inversions[place])
         if part == TENSION_LIST:
             tension = list(TENSIONS)[place]
-            return (MSG_TOGGLE_ON if tension in self.picked else MSG_FIELD_TOGGLE_OFF) + SPACE + tension
+            return (marks.MSG_TOGGLE_ON if tension in self.picked else marks.MSG_FIELD_TOGGLE_OFF) + SPACE + tension
         return self.scale_row_text(place)
 
     def list_lines(self, part):
@@ -269,7 +267,7 @@ class ChordDialog(Dialog):
         if self.flyout is None:
             return None
         name, kinds = self.categories[self.flyout - 1]
-        lines = [Text(MSG_FLYOUT_TITLE.format(name=name), style=Style.BOLD), Text(NOTHING)]
+        lines = [Text(marks.MSG_FLYOUT_TITLE.format(name=name), style=Style.BOLD), Text(NOTHING)]
         for place, kind in enumerate(kinds):
             lines.append(Text(cursor_mark(place == self.flyout_place) + words(kind).title(), style=Style.BOLD if place == self.flyout_place else NOTHING))
         # The scale types take the room the lists take underneath, so that the sentences and the keys sit where the dialog's do.
@@ -292,7 +290,7 @@ class ChordDialog(Dialog):
         return [*[Text(text) for text in said], *[Text(NOTHING) for _ in range(SENTENCE_LINES - len(said))]]
 
     def lines(self, width):
-        headings = (Column.SELECT_QUALITY, Column.INVERSION, Column.TENSIONS, Column.BORROW_SCALE)
+        headings = (labels.Column.SELECT_QUALITY, labels.Column.INVERSION, labels.Column.TENSIONS, labels.Column.BORROW_SCALE)
         heading = Text(NOTHING)
         for part, name in enumerate(headings):
             heading.append(fit(text=SPACE * len(cursor_mark(False)) + name, width=LIST_WIDTHS[part]), style=Style.BOLD if part == self.part else Style.DIM)

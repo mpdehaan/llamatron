@@ -3,20 +3,9 @@
 from typing import NamedTuple
 
 from llamatron.composition.file_format import Section
-from llamatron.composition.limits import MAX_NAME_LENGTH
+from llamatron.composition import limits
+from llamatron.strings import errors, help as help_text, labels, legends, marks, messages, names as names_text
 from llamatron.composition.naming import copy_name, is_taken, name_order, new_name
-from llamatron.strings.errors import ERR_NAME_EMPTY_OR_IN_USE
-from llamatron.strings.help import HELP_PATTERNS_PAGE
-from llamatron.strings.labels import (
-    Column, Crumb, MSG_DRUM_KIND, MSG_GROUP_HEADING, MSG_NEW_GROUP_BUTTON, MSG_NEW_GROUP_NAME_LABEL, MSG_NEW_PATTERN_BUTTON, MSG_NOTES_KIND, MSG_UNGROUPED,
-)
-from llamatron.strings.legends import MSG_PATTERN_WHAT
-from llamatron.strings.marks import MSG_SECTION_CLOSED_MARK, MSG_SECTION_OPEN_MARK
-from llamatron.strings.messages import (
-    MSG_COPIED_TO, MSG_COPY_GROUP_TITLE, MSG_GROUP_COPIED, MSG_GROUP_TITLE, MSG_NEW_GROUP_PROMPT, MSG_NEW_PATTERN_PROMPT, MSG_RENAME_GROUP_PROMPT,
-    MSG_RENAME_PATTERN_PROMPT, MSG_UNGROUP_QUESTION, MSG_UNGROUP_TITLE,
-)
-from llamatron.strings.names import MSG_NEW_GROUP_WORD, MSG_NEW_PATTERN_WORD
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
@@ -56,15 +45,15 @@ class PatternsPage(NamedListPage):
 
     KEYS = keybindings.PatternsPage
     LISTED_SECTION = Section.PATTERNS
-    RENAME_PROMPT = MSG_RENAME_PATTERN_PROMPT
-    WHAT = MSG_PATTERN_WHAT
-    crumbs = (Crumb.PATTERNS,)
-    HELP = HELP_PATTERNS_PAGE
+    RENAME_PROMPT = messages.MSG_RENAME_PATTERN_PROMPT
+    WHAT = legends.MSG_PATTERN_WHAT
+    crumbs = (labels.Crumb.PATTERNS,)
+    HELP = help_text.HELP_PATTERNS_PAGE
     columns = (
-        (Column.SELECT_PATTERN, None, Align.LEFT), (Column.TYPE, 5, Align.LEFT), (Column.STEPS, 5, Align.RIGHT), (Column.TIME, 6, Align.RIGHT),
-        (Column.USED, 4, Align.RIGHT),
+        (labels.Column.SELECT_PATTERN, None, Align.LEFT), (labels.Column.TYPE, 5, Align.LEFT), (labels.Column.STEPS, 5, Align.RIGHT), (labels.Column.TIME, 6, Align.RIGHT),
+        (labels.Column.USED, 4, Align.RIGHT),
     )
-    NAME_COLUMN_WIDTH = MAX_NAME_LENGTH + len(INDENT)
+    NAME_COLUMN_WIDTH = limits.MAX_NAME_LENGTH + len(INDENT)
 
     def __init__(self, holder):
         super().__init__(holder)
@@ -99,7 +88,7 @@ class PatternsPage(NamedListPage):
             rows += self.group_rows(group)
         if self.document().setlist().patterns_in_group(UNGROUPED):
             rows += self.group_rows(UNGROUPED)
-        rows.append((Listed(NEW_GROUP, None), self.one_cell(MSG_NEW_GROUP_BUTTON)))
+        rows.append((Listed(NEW_GROUP, None), self.one_cell(labels.MSG_NEW_GROUP_BUTTON)))
         return rows
 
     def group_rows(self, group):
@@ -107,13 +96,13 @@ class PatternsPage(NamedListPage):
         document = self.document()
         names = document.setlist().patterns_in_group(group)
         closed = self.is_closed(group) and not self.searching
-        heading = MSG_GROUP_HEADING.format(mark=MSG_SECTION_CLOSED_MARK if closed else MSG_SECTION_OPEN_MARK, name=MSG_UNGROUPED if group is UNGROUPED else group, count=len(names))
+        heading = labels.MSG_GROUP_HEADING.format(mark=marks.MSG_SECTION_CLOSED_MARK if closed else marks.MSG_SECTION_OPEN_MARK, name=labels.MSG_UNGROUPED if group is UNGROUPED else group, count=len(names))
         rows = [(Listed(HEADING, group), self.one_cell(heading))]
         if closed:
             return rows
         rows += [(Listed(PATTERN, name), self.row_of(name=name, pattern=document.song().get_pattern(name), document=document)) for name in names]
         if group is not UNGROUPED:
-            rows.append((Listed(NEW_PATTERN, group), self.one_cell(INDENT + MSG_NEW_PATTERN_BUTTON)))
+            rows.append((Listed(NEW_PATTERN, group), self.one_cell(INDENT + labels.MSG_NEW_PATTERN_BUTTON)))
         return rows
 
     def one_cell(self, text):
@@ -121,7 +110,7 @@ class PatternsPage(NamedListPage):
         return [text, *[NOTHING] * (len(self.columns) - 1)]
 
     def row_of(self, *, name, pattern, document):
-        kind = MSG_DRUM_KIND if pattern.is_drum() else MSG_NOTES_KIND
+        kind = labels.MSG_DRUM_KIND if pattern.is_drum() else labels.MSG_NOTES_KIND
         return [INDENT + name, kind, pattern.get_steps(), clock(document.lengths().pattern_seconds(name)), len(self.uses(name))]
 
     def row_style(self, what):
@@ -224,13 +213,13 @@ class PatternsPage(NamedListPage):
         def named(text):
             text = text.strip()
             if not text or is_taken(name=text, taken=patterns):
-                self.refuse(ERR_NAME_EMPTY_OR_IN_USE)
+                self.refuse(errors.ERR_NAME_EMPTY_OR_IN_USE)
                 return
             self.document().add_pattern(name=text, group=group, drum=kind.drum, scale_length=kind.scale_length)
             self.new_groups = [made for made in self.new_groups if made != group]
             self.put_cursor_on(text)
             self.show_page(PatternEditor(holder=self.holder, name=text))
-        self.ask(dialog=PromptDialog(title=MSG_NEW_PATTERN_PROMPT, value=new_name(word=MSG_NEW_PATTERN_WORD, taken=patterns), max_length=MAX_NAME_LENGTH), then=named)
+        self.ask(dialog=PromptDialog(title=messages.MSG_NEW_PATTERN_PROMPT, value=new_name(word=names_text.MSG_NEW_PATTERN_WORD, taken=patterns), max_length=limits.MAX_NAME_LENGTH), then=named)
 
     def rename(self):
         name = self.listed().name
@@ -243,7 +232,7 @@ class PatternsPage(NamedListPage):
     def copy(self):
         """Copy the selected pattern into its own group, say what the copy is called and put the cursor on it."""
         new = self.document().copy_named(section=self.LISTED_SECTION, name=self.listed().name)
-        self.say(MSG_COPIED_TO.format(name=new))
+        self.say(messages.MSG_COPIED_TO.format(name=new))
         self.put_cursor_on(new)
 
     def delete(self):
@@ -266,7 +255,7 @@ class PatternsPage(NamedListPage):
                 moved(groups[place])
             else:
                 self.ask_new_group(then=moved)
-        self.ask(dialog=ChoiceDialog(title=MSG_GROUP_TITLE, options=[*groups, MSG_NEW_GROUP_BUTTON], current=groups.index(current) if current in groups else 0), then=chosen)
+        self.ask(dialog=ChoiceDialog(title=messages.MSG_GROUP_TITLE, options=[*groups, labels.MSG_NEW_GROUP_BUTTON], current=groups.index(current) if current in groups else 0), then=chosen)
 
     # A group.
 
@@ -277,10 +266,10 @@ class PatternsPage(NamedListPage):
         def named(text):
             text = text.strip()
             if not text or is_taken(name=text, taken=groups):
-                self.refuse(ERR_NAME_EMPTY_OR_IN_USE)
+                self.refuse(errors.ERR_NAME_EMPTY_OR_IN_USE)
                 return
             then(text)
-        self.ask(dialog=PromptDialog(title=MSG_NEW_GROUP_PROMPT, value=new_name(word=MSG_NEW_GROUP_WORD, taken=groups), max_length=MAX_NAME_LENGTH), then=named)
+        self.ask(dialog=PromptDialog(title=messages.MSG_NEW_GROUP_PROMPT, value=new_name(word=names_text.MSG_NEW_GROUP_WORD, taken=groups), max_length=limits.MAX_NAME_LENGTH), then=named)
 
     def new_group(self):
         """Make a group, which shows open with only its button until a pattern is made in it."""
@@ -302,7 +291,7 @@ class PatternsPage(NamedListPage):
                 self.new_groups = [new if made == group else made for made in self.new_groups]
             self.document().rename_pattern_group(old=group, new=new)
             self.put_cursor_on_row(Listed(HEADING, new))
-        self.ask_name(title=MSG_RENAME_GROUP_PROMPT, value=group, taken=self.groups(), then=renamed)
+        self.ask_name(title=messages.MSG_RENAME_GROUP_PROMPT, value=group, taken=self.groups(), then=renamed)
 
     def ungroup(self):
         """Take every pattern out of the group after asking, deleting none; a group made here that holds none is simply gone."""
@@ -312,7 +301,7 @@ class PatternsPage(NamedListPage):
             self.new_groups = [made for made in self.new_groups if made != group]
             self.document().ungroup_patterns(group)
             self.put_cursor_on_row(Listed(HEADING, UNGROUPED))
-        self.ask(dialog=ConfirmDialog(title=MSG_UNGROUP_TITLE, messages=[MSG_UNGROUP_QUESTION.format(name=group)]), then=confirmed)
+        self.ask(dialog=ConfirmDialog(title=messages.MSG_UNGROUP_TITLE, messages=[messages.MSG_UNGROUP_QUESTION.format(name=group)]), then=confirmed)
 
     def copy_group(self):
         """Copy the whole group under a new name, asked for in a confirmation that starts from the group's name counted up."""
@@ -322,7 +311,7 @@ class PatternsPage(NamedListPage):
         def named(text):
             text = text.strip()
             if not text or is_taken(name=text, taken=groups):
-                self.refuse(ERR_NAME_EMPTY_OR_IN_USE)
+                self.refuse(errors.ERR_NAME_EMPTY_OR_IN_USE)
                 return
             try:
                 copies = self.document().copy_pattern_group(group=group, new=text)
@@ -332,9 +321,9 @@ class PatternsPage(NamedListPage):
             if not copies:
                 self.new_groups.append(text)
             self.document().show_pattern_group(group=text, closed=False)
-            self.say(MSG_GROUP_COPIED.format(name=text))
+            self.say(messages.MSG_GROUP_COPIED.format(name=text))
             self.put_cursor_on_row(Listed(HEADING, text))
-        self.ask(dialog=PromptDialog(title=MSG_COPY_GROUP_TITLE, label=MSG_NEW_GROUP_NAME_LABEL, value=copy_name(name=group, taken=groups), max_length=MAX_NAME_LENGTH), then=named)
+        self.ask(dialog=PromptDialog(title=messages.MSG_COPY_GROUP_TITLE, label=labels.MSG_NEW_GROUP_NAME_LABEL, value=copy_name(name=group, taken=groups), max_length=limits.MAX_NAME_LENGTH), then=named)
 
     # Searching, which looks at the patterns alone, inside every group, closed or open.
 

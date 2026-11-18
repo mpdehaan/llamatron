@@ -35,7 +35,7 @@ import numpy
 from llamatron.visualizers.colour import Limiter
 from llamatron.visualizers.heard import SILENCE
 from llamatron.visualizers.visualizer import Visualizer
-from llamatron.strings.visualizers import MSG_FIREWORKS
+from llamatron.strings import visualizers
 
 SUPERSAMPLE = 2
 COLOUR_STEP_SHIFT = 3
@@ -100,7 +100,7 @@ class Fireworks(Visualizer):
 
     __slots__ = ('_rows', '_columns', '_picture', '_rockets', '_places', '_speeds', '_colours', '_ages', '_lives', '_last', '_chooser', '_limiter', '_launched')
 
-    NAME = MSG_FIREWORKS
+    NAME = visualizers.MSG_FIREWORKS
     OPTION = 'fireworks'
 
     def __init__(self):

@@ -25,9 +25,9 @@ key's signature has flats, so every note keeps its pitch whatever the key.
 from typing import NamedTuple
 
 from llamatron.composition.file_format import Accidental
-from llamatron.composition.limits import MAX_OCTAVE, MIN_OCTAVE
+from llamatron.composition import limits
 from llamatron.composition.named_scale import scale_type_name
-from llamatron.music.midi import HALF_STEPS_PER_OCTAVE
+from llamatron.music import midi
 from llamatron.music.note import FLAT_NAMES, FLAT_SIGN, ROOT_NAMES, SHARP_NAMES
 from llamatron.music.scale import ScaleType
 
@@ -74,20 +74,20 @@ def key_of_signature(text):
     flats = root.endswith(FLAT_SIGN) or text in FLAT_KEYS
     if root not in ROOT_NAMES:
         # A flat no scale has, Cb or Fb, is the white key a half step below its letter.
-        root = SHARP_NAMES[(pitch_class_of(root[0]) - 1) % HALF_STEPS_PER_OCTAVE]
+        root = SHARP_NAMES[(pitch_class_of(root[0]) - 1) % midi.HALF_STEPS_PER_OCTAVE]
     kind = scale_type_name(ScaleType.MINOR if minor else ScaleType.MAJOR)
     return Key(root=root, kind=kind, flats=flats)
 
 
 def key_of_notes(notes):
     """Return the key the notes are most likely in, by how long each note of the octave sounds, C major for no notes."""
-    weights = [0.0] * HALF_STEPS_PER_OCTAVE
+    weights = [0.0] * midi.HALF_STEPS_PER_OCTAVE
     for note in notes:
-        weights[note.pitch % HALF_STEPS_PER_OCTAVE] += float(note.end - note.start)
+        weights[note.pitch % midi.HALF_STEPS_PER_OCTAVE] += float(note.end - note.start)
     best = None
-    for root in range(HALF_STEPS_PER_OCTAVE):
+    for root in range(midi.HALF_STEPS_PER_OCTAVE):
         for profile, kind, names in ((MAJOR_PROFILE, ScaleType.MAJOR, MAJOR_ROOTS), (MINOR_PROFILE, ScaleType.MINOR, MINOR_ROOTS)):
-            fit = correlation(first=[weights[(root + place) % HALF_STEPS_PER_OCTAVE] for place in range(HALF_STEPS_PER_OCTAVE)], second=profile)
+            fit = correlation(first=[weights[(root + place) % midi.HALF_STEPS_PER_OCTAVE] for place in range(midi.HALF_STEPS_PER_OCTAVE)], second=profile)
             if best is None or fit > best[0]:
                 best = (fit, names[root], kind)
     _, root, kind = best
@@ -111,28 +111,28 @@ def degree_of(*, pitch, key):
     a note below the root in its octave belongs to the octave below.
     """
     steps = key.half_steps()
-    octave, above = divmod(pitch - key.root_place(), HALF_STEPS_PER_OCTAVE)
+    octave, above = divmod(pitch - key.root_place(), midi.HALF_STEPS_PER_OCTAVE)
     if above in steps:
         return within_octaves(degree=steps.index(above) + FIRST_DEGREE, accidental=None, octave=octave)
     if key.flats and above + 1 in steps:
         return within_octaves(degree=steps.index(above + 1) + FIRST_DEGREE, accidental=Accidental.FLAT, octave=octave)
     if above - 1 in steps:
         return within_octaves(degree=steps.index(above - 1) + FIRST_DEGREE, accidental=Accidental.SHARP, octave=octave)
-    if above + 1 == HALF_STEPS_PER_OCTAVE:
+    if above + 1 == midi.HALF_STEPS_PER_OCTAVE:
         return within_octaves(degree=FIRST_DEGREE, accidental=Accidental.FLAT, octave=octave + 1)
     return within_octaves(degree=steps.index(above + 1) + FIRST_DEGREE, accidental=Accidental.FLAT, octave=octave)
 
 
 def within_octaves(*, degree, accidental, octave):
     """Return a degree, accidental and octave, or None when the octave is outside the ones a pattern can hold."""
-    if MIN_OCTAVE <= octave <= MAX_OCTAVE:
+    if limits.MIN_OCTAVE <= octave <= limits.MAX_OCTAVE:
         return (degree, accidental, octave)
     return None
 
 
 def drum_note_of(pitch):
     """Return how a drum pattern writes a MIDI number: its letter, its sharp or None, and its octave."""
-    octave, place = divmod(pitch, HALF_STEPS_PER_OCTAVE)
+    octave, place = divmod(pitch, midi.HALF_STEPS_PER_OCTAVE)
     name = SHARP_NAMES[place]
     letter = name[0]
     return (letter, Accidental.SHARP if name != letter else None, octave)

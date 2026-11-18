@@ -49,7 +49,7 @@ import time
 
 from llamatron.composition.file_format import Row
 from llamatron.composition.setlist import Setlist
-from llamatron.music.midi import HALF_STEPS_PER_OCTAVE
+from llamatron.music import midi
 from llamatron.music.note import SHARP_NAMES
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime.engine import ALL_NOTES_OFF, ALL_SOUND_OFF
@@ -183,7 +183,7 @@ def first_song_events(*, path, seconds):
 
 def note_name(number):
     """Return a MIDI number as a note name in llamatron's own octaves, where C0 is 0, spelled with sharps."""
-    return NOTE_NAME.format(name=SHARP_NAMES[number % HALF_STEPS_PER_OCTAVE], octave=number // HALF_STEPS_PER_OCTAVE)
+    return NOTE_NAME.format(name=SHARP_NAMES[number % midi.HALF_STEPS_PER_OCTAVE], octave=number // midi.HALF_STEPS_PER_OCTAVE)
 
 
 def said(event):

@@ -20,7 +20,7 @@ import unittest
 
 from llamatron.macro_composer.arranger import NAME, SHARE, STYLE, TEMPLATES, VARIANT, VARIANTS, VARIANT_SAYS, style_in, style_named, style_names
 from llamatron.macro_composer.wizard_choices import WizardChoices
-from llamatron.strings.errors import ERR_WIZARD_NO_SUCH_VARIANT
+from llamatron.strings import errors
 from llamatron.support.version import VERSION
 from tests.support.ui_testing import fixed_text
 
@@ -105,7 +105,7 @@ class TestVariants(unittest.TestCase):
         choices = chosen()
         with self.assertRaises(ValueError) as refused:
             choices.set_variant(NOT_A_VARIANT)
-        self.assertIn(fixed_text(ERR_WIZARD_NO_SUCH_VARIANT), str(refused.exception))
+        self.assertIn(fixed_text(errors.ERR_WIZARD_NO_SUCH_VARIANT), str(refused.exception))
         again = WizardChoices.from_data({**choices.to_data(), VARIANT: NOT_A_VARIANT})
         self.assertEqual(again.get_variant(), choices.get_variant())
 

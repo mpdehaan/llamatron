@@ -35,10 +35,10 @@ import sys
 import wave
 
 from llamatron.exporters.wave_level import PEAK_DECIBELS, normalize_wave
-from llamatron.strings.errors import ERR_NOT_16_BIT_WAVE
+from llamatron.strings import errors
 
 # What it says of each file: the program's own refusal of a file that isn't 16-bit, and what it did.
-NOT_16_BIT = ERR_NOT_16_BIT_WAVE
+NOT_16_BIT = errors.ERR_NOT_16_BIT_WAVE
 SILENT = '{path}: silent, left as it is'
 NORMALIZED = '{path}: peak moved by {change:+.1f} dB to {target:.1f} dB'
 

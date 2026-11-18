@@ -23,15 +23,15 @@ from typing import NamedTuple
 from llamatron.support.length import ZERO, Length
 from llamatron.support.rational import Rational
 from llamatron.composition.checks import written_length
-from llamatron.composition.defaults import DEFAULT_PROBABILITY, DEFAULT_RATCHET, DEFAULT_VELOCITY
+from llamatron.composition import defaults, limits
+from llamatron.strings import errors
 from llamatron.composition.file_format import (
     ACCIDENTALS, CC_ROWS, CONDITION_ROWS, FIXED_CHORDS, TENSIONS, GATE_MODIFIERS, PATTERN_ROWS, REGISTER_ADD_ROWS,
     REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, SCALE_CHORDS, TESTED_REGISTER, Comparison, Row,
 )
-from llamatron.composition.limits import MAX_GATE, MAX_PROBABILITY, MIN_PROBABILITY
 from llamatron.composition.named_scale import NamedScale
 from llamatron.playback.drift import NO_EFFECTS
-from llamatron.music.midi import HALF_STEPS_PER_OCTAVE, MAX_VELOCITY, MIN_VELOCITY
+from llamatron.music import midi
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators.arp import along_scale
 from llamatron.music.note import MAX_OCTAVE, MIN_OCTAVE, SHARP_NAMES
@@ -39,7 +39,6 @@ from llamatron.music.sound import CHORD, KIND, LENGTH, MIDI, NOTES, REST, Sound
 from llamatron.grid.clip import Clip
 from llamatron.grid.control import Control
 from llamatron.grid.keyswitch import SwitchedSlots
-from llamatron.strings.errors import ERR_CANT_PLAY, ERR_NO_SCALE, ERR_PATTERN_PLAYER_NO_SUCH_PATTERN, ERR_WHERE_PATTERN
 
 # How many octaves away a moved note can go to find one that fits the MIDI range. A move of
 # whole octaves is taken out first, so this only has to cover the MIDI range itself.
@@ -165,7 +164,7 @@ class PatternPlayer:
         whether its note sounds, which never undoes its sets and adds.
         """
         if not self._song.has_pattern(pattern_name):
-            raise SongFileError(ERR_PATTERN_PLAYER_NO_SUCH_PATTERN.format(where=where, name=pattern_name))
+            raise SongFileError(errors.ERR_PATTERN_PLAYER_NO_SUCH_PATTERN.format(where=where, name=pattern_name))
         pattern = self._song.get_pattern(pattern_name)
         step_size = self._song.get_pattern_step_size(pattern)
         length = self.pattern_length(pattern)
@@ -173,7 +172,7 @@ class PatternPlayer:
         # The times the registers, the grabs and the CC values are asked for stay Rationals, and are only made for a step that asks.
         step_length = Length.exact(step_size)
         pass_length = Length.exact(length)
-        where = ERR_WHERE_PATTERN.format(name=pattern_name)
+        where = errors.ERR_WHERE_PATTERN.format(name=pattern_name)
         # What each step that plays sounds: when it starts in the pass, and its pieces, a note or chord for each ratchet.
         sounding = []
         controls = []
@@ -268,8 +267,8 @@ class PatternPlayer:
         """
         default = self._song.get_default_drum_octave() if drum else self._song.get_default_octave()
         octave = _value_or(value=values[Row.OCTAVE], default=default)
-        velocity = _clamped_velocity(_value_or(value=velocity, default=DEFAULT_VELOCITY) + velocity_added)
-        ratchet = values[Row.RATCHET] or DEFAULT_RATCHET
+        velocity = _clamped_velocity(_value_or(value=velocity, default=defaults.DEFAULT_VELOCITY) + velocity_added)
+        ratchet = values[Row.RATCHET] or defaults.DEFAULT_RATCHET
         offset = values[Row.RATCHET_OFFSET] or NO_HALF_STEPS
         slices = []
         transpose = NO_HALF_STEPS if drum else self._transpose
@@ -290,10 +289,10 @@ class PatternPlayer:
             slices.append(Sound.inverted(sound, values[Row.INVERSION]))
         if not heard:
             return [Sound.rest(piece[LENGTH]) for piece in slices]
-        probability = _value_or(value=values[Row.PROBABILITY], default=DEFAULT_PROBABILITY)
+        probability = _value_or(value=values[Row.PROBABILITY], default=defaults.DEFAULT_PROBABILITY)
         if effects is not None and effects.probability:
-            probability = max(min(probability + effects.probability, MAX_PROBABILITY), MIN_PROBABILITY)
-        if probability >= MAX_PROBABILITY or counting:
+            probability = max(min(probability + effects.probability, limits.MAX_PROBABILITY), limits.MIN_PROBABILITY)
+        if probability >= limits.MAX_PROBABILITY or counting:
             return slices
         return [piece if _rolls_under(rolls=rolls, probability=probability) else Sound.rest(piece[LENGTH]) for piece in slices]
 
@@ -303,7 +302,7 @@ class PatternPlayer:
         A note moved outside the MIDI range stays where it was grabbed. chord is the symbol on
         the step's Chord row, or None for a step that plays the one note.
         """
-        note = Sound.note(length=length, midi=number_grabbed, velocity=velocity, glide=glide, name=SHARP_NAMES[number_grabbed % HALF_STEPS_PER_OCTAVE])
+        note = Sound.note(length=length, midi=number_grabbed, velocity=velocity, glide=glide, name=SHARP_NAMES[number_grabbed % midi.HALF_STEPS_PER_OCTAVE])
         try:
             root = along_scale(note=note, steps=shift, scale=None if drum else self._scale)
         except ValueError:
@@ -363,12 +362,12 @@ class PatternPlayer:
                 return attempt(octave + change)
             except ValueError:
                 pass
-        raise SongFileError(ERR_CANT_PLAY.format(where=where, problem=problem)) from problem
+        raise SongFileError(errors.ERR_CANT_PLAY.format(where=where, problem=problem)) from problem
 
     def _notes_per_octave(self, drum):
         """Return how many notes a move needs to go up an octave: the size of the scene's scale, or 12 half steps for drums."""
         if drum or self._scale_name is None:
-            return HALF_STEPS_PER_OCTAVE
+            return midi.HALF_STEPS_PER_OCTAVE
         if self._scale_size is None:
             self._scale_size = len(self._scene_scale_at(MIN_OCTAVE).get_type().value)
         return self._scale_size
@@ -410,7 +409,7 @@ def _with_tensions(*, chord, tensions):
 
 def no_scale_error(*, where, scene):
     """Return the error for a pattern that uses scale degrees in a scene that has no scale, and nor does the song."""
-    return SongFileError(ERR_NO_SCALE.format(where=where, scene=scene.get_number()))
+    return SongFileError(errors.ERR_NO_SCALE.format(where=where, scene=scene.get_number()))
 
 
 def check_pattern_has_a_scale(*, song, scene, pattern_name, clip_scale=None):
@@ -421,7 +420,7 @@ def check_pattern_has_a_scale(*, song, scene, pattern_name, clip_scale=None):
     """
     pattern = song.get_pattern(pattern_name)
     if (clip_scale or scene.get_scale_name()) is None and not pattern.is_drum() and pattern.get_note_steps():
-        raise no_scale_error(where=ERR_WHERE_PATTERN.format(name=pattern_name), scene=scene)
+        raise no_scale_error(where=errors.ERR_WHERE_PATTERN.format(name=pattern_name), scene=scene)
 
 
 def _tied_to(*, sounding, end):
@@ -447,7 +446,7 @@ def _tied_to(*, sounding, end):
 
 def _gate(*, values, step_length):
     """Return how long a step's note sounds: its gate, or one step if it has none, made dotted or a triplet by its Dot row."""
-    gate = step_length if values[Row.GATE] is None else Length.exact(written_length(value=values[Row.GATE], most=MAX_GATE))
+    gate = step_length if values[Row.GATE] is None else Length.exact(written_length(value=values[Row.GATE], most=limits.MAX_GATE))
     modifier = values[Row.DOT]
     return gate if modifier is None else Length.multiplied(gate, GATE_MODIFIER_PAIRS[modifier])
 
@@ -542,12 +541,12 @@ def _value_or(*, value, default):
 
 def _clamped_velocity(velocity):
     """Return a velocity moved into the range MIDI allows, if registers pushed it out."""
-    return max(min(velocity, MAX_VELOCITY), MIN_VELOCITY)
+    return max(min(velocity, midi.MAX_VELOCITY), midi.MIN_VELOCITY)
 
 
 def _rolls_under(*, rolls, probability):
     """Return whether a step with a probability, from 0 to 100, plays this time."""
-    return rolls.random() * MAX_PROBABILITY < probability
+    return rolls.random() * limits.MAX_PROBABILITY < probability
 
 
 def _other_octaves_to_try(shift):

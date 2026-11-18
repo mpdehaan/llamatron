@@ -21,15 +21,14 @@ import unittest
 
 from llamatron.composition.clip_slot import ClipSlot, MORPH_STYLES
 from llamatron.composition.chain import Chain
-from llamatron.composition.defaults import DEFAULT_TRANSPOSE
+from llamatron.composition import defaults, limits
 from llamatron.composition.file_format import (
     CC_ROWS, REGISTER_NAMES, ClipSlotSetting, Direction, GeneratorKind, PatternSetting, RegisterName, RegisterSetting, Row,
     SceneSetting, Section, TrackSetting,
 )
 from llamatron.composition.generator_settings import ArpSetting, ArpSettings, AutoRatchetSetting, AutoRatchetSettings, NO_OFFSET
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.limits import MAX_GATE, MAX_REGISTER_VALUE, MAX_TRANSPOSE, MIN_REPEAT, MIN_STEPS
-from llamatron.music.midi import MAX_CC_NUMBER
+from llamatron.music import midi
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.pattern import Pattern
 from llamatron.composition.register import Register
@@ -65,7 +64,7 @@ NOT_A_SCALE_TYPE = 'wobbly'
 DEGREE = 3
 VELOCITY = 90
 GATE = '1/4'
-TOO_LONG_A_GATE = MAX_GATE + 1
+TOO_LONG_A_GATE = limits.MAX_GATE + 1
 NOT_A_ROW = 'colour'
 A_MOD_WHEEL = 1
 A_CC_VALUE = 64
@@ -73,14 +72,14 @@ TWO_REPEATS = 2
 FOUR_REPEATS = 4
 NEW_OCTAVE_RANGE = 2
 A_STEP_VALUE = 7
-TOO_FAR = MAX_TRANSPOSE + 1
-NOT_A_CC_NUMBER = MAX_CC_NUMBER + 1
+TOO_FAR = limits.MAX_TRANSPOSE + 1
+NOT_A_CC_NUMBER = midi.MAX_CC_NUMBER + 1
 NO_SUCH_LANE = len(CC_ROWS)
 FIRST_LANE = 0
 # Register settings in and out of order.
 LOW = 2
 HIGH = 5
-TOO_HIGH = MAX_REGISTER_VALUE + 1
+TOO_HIGH = limits.MAX_REGISTER_VALUE + 1
 AN_OFFSET = 1
 ANOTHER_OFFSET = -1
 PAST_THE_OFFSETS = 2
@@ -161,7 +160,7 @@ class TestPattern(SetterTestCase):
         self.assertEqual(self.pattern.get_row(Row.DEGREE), [None] * LAST + [DEGREE, None])
         self.pattern.set_steps(LAST)
         self.assertEqual(self.pattern.get_row(Row.DEGREE), [None] * LAST)
-        self.assertRefused(self.pattern, self.pattern.set_steps, MIN_STEPS - 1)
+        self.assertRefused(self.pattern, self.pattern.set_steps, limits.MIN_STEPS - 1)
 
     def test_a_step_is_inserted_and_removed_but_the_last_step_stays(self):
         self.pattern.set_value(row=Row.DEGREE, step=FIRST, value=DEGREE)
@@ -170,7 +169,7 @@ class TestPattern(SetterTestCase):
         self.assertEqual(self.pattern.get_value(row=Row.DEGREE, step=FIRST + 1), DEGREE)
         self.pattern.remove_step(FIRST)
         self.assertEqual(self.pattern.get_value(row=Row.DEGREE, step=FIRST), DEGREE)
-        self.pattern.set_steps(MIN_STEPS)
+        self.pattern.set_steps(limits.MIN_STEPS)
         self.assertRefused(self.pattern, self.pattern.remove_step, FIRST)
 
     def test_clearing_a_steps_sound_keeps_what_a_rest_can_hold(self):
@@ -250,7 +249,7 @@ class TestClipSlot(SetterTestCase):
         self.clip_slot.set_morph(target=ANSWER, style=FIRST_STYLE, song=self.song)
         self.assertEqual(self.clip_slot.get_morph_target(), ANSWER)
         self.assertRefused(self.clip_slot, self.clip_slot.set_morph_style, NOT_A_NAME)
-        self.clip_slot.set_repeat(MIN_REPEAT)
+        self.clip_slot.set_repeat(limits.MIN_REPEAT)
         self.assertIsNone(self.clip_slot.get_morph_target())
         self.assertNotIn(ClipSlotSetting.REPEAT, self.clip_slot.to_data())
         self.assertRefused(self.clip_slot, self.clip_slot.set_morph_style, FIRST_STYLE)
@@ -271,11 +270,11 @@ class TestScene(SetterTestCase):
 
     def test_settings_are_checked(self):
         self.assertRefused(self.scene, self.scene.set_scale_name, name=NOT_A_NAME, song=self.song)
-        self.assertRefused(self.scene, self.scene.set_repeat, MIN_REPEAT - 1)
+        self.assertRefused(self.scene, self.scene.set_repeat, limits.MIN_REPEAT - 1)
         self.assertRefused(self.scene, self.scene.set_reset, register=NOT_A_NAME, on=True)
         self.assertRefused(self.scene, self.scene.set_clip_slot, track=NOT_A_NAME, clip_slot=ClipSlot(), song=self.song)
         self.assertRefused(self.scene, self.scene.remove_clip_slot, NOT_A_NAME)
-        self.scene.set_repeat(MIN_REPEAT)
+        self.scene.set_repeat(limits.MIN_REPEAT)
         self.assertNotIn(SceneSetting.REPEAT, self.scene.to_data())
 
     def test_a_tempo_ramp_replaces_a_tempo_and_leaves_its_start_behind(self):
@@ -315,12 +314,12 @@ class TestTrack(SetterTestCase):
     def test_defaults_are_left_out_of_the_file(self):
         self.track.set_drum(True)
         self.track.set_mute(True)
-        self.track.set_transpose(MAX_TRANSPOSE)
+        self.track.set_transpose(limits.MAX_TRANSPOSE)
         self.track.set_cc_number(lane=FIRST_LANE, number=A_MOD_WHEEL)
         self.assertEqual(self.track.get_cc_numbers(), [A_MOD_WHEEL] + [None] * (len(CC_ROWS) - 1))
         self.track.set_drum(False)
         self.track.set_mute(False)
-        self.track.set_transpose(DEFAULT_TRANSPOSE)
+        self.track.set_transpose(defaults.DEFAULT_TRANSPOSE)
         self.track.set_cc_number(lane=FIRST_LANE, number=None)
         self.assertEqual(self.track.to_data(), {})
 

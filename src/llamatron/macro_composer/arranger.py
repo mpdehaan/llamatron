@@ -49,10 +49,8 @@ from llamatron.composition.checks import in_whole_notes
 from llamatron.composition.file_format import SECTION_KINDS, ChordSymbol, GeneratorKind, PatternSetting, Row, SceneSetting, Section
 from llamatron.composition.generator_settings import FollowChordsSetting
 from llamatron.composition.named_scale import scale_type_called
-from llamatron.composition.limits import MAX_GM_SOUND, MAX_PROGRESSION_CHORDS, MAX_STEP_SIZE, MIN_GM_SOUND
-from llamatron.strings.labels import MSG_GM_SOUNDS
-from llamatron.strings.errors import ERR_NO_SUCH_WAY_BESIDE, ERR_PIECE_SOUND, ERR_BREAK_CUT, ERR_NO_STYLE_FORM, ERR_NO_SUCH_BREAK, ERR_NO_STYLE_FORMS, ERR_NO_STYLE_KIND, ERR_NO_SUCH_SECTION, ERR_NO_TRAIT_VALUE, ERR_PICK_NEEDS
-from llamatron.strings.macro_composer import MSG_OWN_TUNE_PART, MSG_CHORDS_INSTRUMENT, MSG_CHORDS_TRACK, MSG_FOLLOW_CHORDS_NAME, MSG_PIECE_INSTRUMENT, MSG_MADE_PICK, MSG_MADE_SCENE, MSG_MADE_SONG_NOTES, MSG_PART_AT_LEVEL, MSG_PART_BESIDE, MSG_PART_OF_SECTION, MSG_PLAYED_BY, MSG_PLAYED_BY_OWN, MSG_REPEATED_SCENE, MSG_SECTION_START_PART, MSG_TIMING_CHAIN
+from llamatron.composition import limits
+from llamatron.strings import errors, labels, macro_composer as composer_text
 
 # The fields of a style template.
 NAME = 'name'
@@ -173,7 +171,7 @@ NOTES_OF_A_SCALE_WITH_TRIADS = 7
 THIRD_PLACE = 2
 FIFTH_PLACE = 4
 HOME_CHORDS = {(4, 7): ChordSymbol.MAJOR, (3, 7): ChordSymbol.MINOR, (3, 6): ChordSymbol.DIMINISHED, (4, 8): ChordSymbol.AUGMENTED}
-FOLLOWS_THE_CHORDS = {GeneratorKind.FOLLOW_CHORDS: MSG_FOLLOW_CHORDS_NAME}
+FOLLOWS_THE_CHORDS = {GeneratorKind.FOLLOW_CHORDS: composer_text.MSG_FOLLOW_CHORDS_NAME}
 MUTED_TRACKS = 'muted_tracks'
 # The General MIDI sound of the chords track's instrument, a piano, heard only when a person unmutes the track.
 CHORDS_GUIDE_SOUND = 1
@@ -285,7 +283,7 @@ def picked(*, style, song):
     """Every trait's pick: the song's own, else its template's, else the commonest value that fits what is picked."""
     templates = style[TEMPLATES]
     if song[TEMPLATE] not in templates:
-        raise ValueError(ERR_NO_STYLE_KIND.format(style[NAME], song[TEMPLATE], listed(templates)))
+        raise ValueError(errors.ERR_NO_STYLE_KIND.format(style[NAME], song[TEMPLATE], listed(templates)))
     picks = {**templates[song[TEMPLATE]]}
     picks.update(song.get(PICKS, {}))
     for trait in style[TRAITS]:
@@ -296,11 +294,11 @@ def picked(*, style, song):
             fitting = [entry for entry in values.values() if fits(entry=entry, picks=picks)]
             picks[trait] = max(fitting, key=share_of)[VALUE]
         if picks[trait] not in values:
-            raise ValueError(ERR_NO_TRAIT_VALUE.format(trait, picks[trait], listed(values)))
+            raise ValueError(errors.ERR_NO_TRAIT_VALUE.format(trait, picks[trait], listed(values)))
     for trait, value in picks.items():
         for needed, wanted in values_of(style=style, trait=trait).get(value, {}).get(NEEDS, {}).items():
             if picks.get(needed) != wanted:
-                raise ValueError(ERR_PICK_NEEDS.format(trait, value, needed, wanted, picks.get(needed)))
+                raise ValueError(errors.ERR_PICK_NEEDS.format(trait, value, needed, wanted, picks.get(needed)))
     return picks
 
 
@@ -475,7 +473,7 @@ def halves_of(chords):
 def fits_by_halves(chords):
     """Whether chords written by the half bar are no more than a Progression holds; a longer run is played a chord a bar, each
     bar's first."""
-    return len(chords) * HALVES_OF_A_BAR <= MAX_PROGRESSION_CHORDS
+    return len(chords) * HALVES_OF_A_BAR <= limits.MAX_PROGRESSION_CHORDS
 
 
 def half_bar_of(meter):
@@ -515,7 +513,7 @@ def chords_written(*, progression, meter, scale_type):
     lasts = Fraction(str(in_whole_notes(time=progression[EVERY], bar=bar))) if EVERY in progression else bar
     marks = progression.get(ACCIDENTALS) or [None] * len(progression[CHORDS])
     home = home_chord_of(scale_type)
-    if lasts > MAX_STEP_SIZE or (any(marks) and home is None):
+    if lasts > limits.MAX_STEP_SIZE or (any(marks) and home is None):
         return None
     written = {
         PatternSetting.STEPS: len(progression[CHORDS]), PatternSetting.STEP_SIZE: str(lasts), Row.DEGREE: list(progression[CHORDS]),
@@ -564,7 +562,7 @@ def break_of(*, picks, meter):
     if name == NO_BREAK or meter != COMMON_TIME:
         return None
     if name not in BREAKS:
-        raise ValueError(ERR_NO_SUCH_BREAK.format(name, listed(BREAKS)))
+        raise ValueError(errors.ERR_NO_SUCH_BREAK.format(name, listed(BREAKS)))
     return BREAKS[name]
 
 
@@ -572,7 +570,7 @@ def cut_of(picks):
     """How far the picks cut their break up."""
     cut = picks.get(BREAK_CUT, LEAST_CUT)
     if isinstance(cut, bool) or not isinstance(cut, int) or not LEAST_CUT <= cut <= MOST_CUT:
-        raise ValueError(ERR_BREAK_CUT.format(LEAST_CUT, MOST_CUT, cut))
+        raise ValueError(errors.ERR_BREAK_CUT.format(LEAST_CUT, MOST_CUT, cut))
     return cut
 
 
@@ -582,10 +580,10 @@ def pieces_played(song):
     for piece, sounds_as in song.get(PIECE_SOUNDS, {}).items():
         if set(sounds_as) == {PLAYED_DRUM} and sounds_as[PLAYED_DRUM] in KIT:
             played[piece] = sounds_as[PLAYED_DRUM]
-        elif set(sounds_as) == {PLAYED_SOUND, PLAYED_NOTE} and whole(value=sounds_as[PLAYED_SOUND], low=MIN_GM_SOUND, high=MAX_GM_SOUND) and whole(value=sounds_as[PLAYED_NOTE], low=LOWEST_NOTE, high=HIGHEST_NOTE):
+        elif set(sounds_as) == {PLAYED_SOUND, PLAYED_NOTE} and whole(value=sounds_as[PLAYED_SOUND], low=limits.MIN_GM_SOUND, high=limits.MAX_GM_SOUND) and whole(value=sounds_as[PLAYED_NOTE], low=LOWEST_NOTE, high=HIGHEST_NOTE):
             played[piece] = sounds_as[PLAYED_NOTE]
         else:
-            raise ValueError(ERR_PIECE_SOUND.format(piece, sounds_as))
+            raise ValueError(errors.ERR_PIECE_SOUND.format(piece, sounds_as))
     return played
 
 
@@ -803,7 +801,7 @@ def way_beside(*, beside, role, place, tune, section):
         return None
     way = beside[BESIDE_WAYS][place]
     if way not in WAYS_BESIDE:
-        raise ValueError(ERR_NO_SUCH_WAY_BESIDE.format(way))
+        raise ValueError(errors.ERR_NO_SUCH_WAY_BESIDE.format(way))
     if way == ANSWERS_EVERY_LINE and role[ROLE] in section[PLAYS] and any(entry.get(ANSWER) for entry in section.get(PLAN, [])):
         return None
     return way
@@ -828,10 +826,10 @@ def band_said(*, style, song, roles):
             level = level_of(character_of(complexity))
             if level is None:
                 # A player whose gauges were set one by one is nobody's preset, and is named by the instrument alone.
-                said.append(MSG_PLAYED_BY_OWN.format(instrument))
+                said.append(composer_text.MSG_PLAYED_BY_OWN.format(instrument))
                 continue
             player = player_of(style=style, instrument=instrument, character=character_of(level))
-            said.append(MSG_PLAYED_BY.format(instrument, player_name(instrument=instrument, complexity=level), player.get(SAYS, '')).strip())
+            said.append(composer_text.MSG_PLAYED_BY.format(instrument, player_name(instrument=instrument, complexity=level), player.get(SAYS, '')).strip())
     return said
 
 
@@ -844,7 +842,7 @@ def sound_of(*, style, song, role, usual):
     named = [name for name, of_style in style[SOUNDS].items() if of_style == number]
     if usual in named:
         return usual
-    return named[0] if named else MSG_GM_SOUNDS[number - MIN_GM_SOUND].lower()
+    return named[0] if named else labels.MSG_GM_SOUNDS[number - limits.MIN_GM_SOUND].lower()
 
 
 def section_of(*, name, style, song):
@@ -852,7 +850,7 @@ def section_of(*, name, style, song):
     of_song = song.get(SECTIONS, {}).get(name, {})
     kind = of_song.get(KIND, name)
     if kind not in style[SECTIONS] and not of_song:
-        raise ValueError(ERR_NO_SUCH_SECTION.format(name))
+        raise ValueError(errors.ERR_NO_SUCH_SECTION.format(name))
     return {**style[SECTIONS].get(kind, {}), **of_song, KIND: kind}
 
 
@@ -886,10 +884,10 @@ def form_of(*, style, song, meter, tempo):
     if given is not None:
         named = [form for form in forms if form[NAME] == given]
         if not named:
-            raise ValueError(ERR_NO_STYLE_FORM.format(style[NAME], given, song[TEMPLATE]))
+            raise ValueError(errors.ERR_NO_STYLE_FORM.format(style[NAME], given, song[TEMPLATE]))
         return named[0][SECTIONS]
     if not forms:
-        raise ValueError(ERR_NO_STYLE_FORMS.format(style[NAME]))
+        raise ValueError(errors.ERR_NO_STYLE_FORMS.format(style[NAME]))
     if LENGTH in song:
         return min(forms, key=lambda form: abs(seconds_of(sections=form[SECTIONS], style=style, song=song, meter=meter, tempo=tempo) - song[LENGTH]))[SECTIONS]
     return max(forms, key=share_of)[SECTIONS]
@@ -1010,15 +1008,15 @@ def arranged(*, style, song):
                     if is_uneven:
                         pattern = uneven(pattern=pattern, by=plays[UNEVEN], dice=random.Random(DRUM_SEED.format(song.get(SEED, 0), piece, section[KIND])))
                     part = {RAW: pattern}
-                named = piece if leaves is None and not over and key[:2] == (usual_drummer, ()) and piece not in parts else MSG_PART_OF_SECTION.format(piece, name if leaves is not None or over else section[KIND])
+                named = piece if leaves is None and not over and key[:2] == (usual_drummer, ()) and piece not in parts else composer_text.MSG_PART_OF_SECTION.format(piece, name if leaves is not None or over else section[KIND])
                 parts[named] = part
                 drum_sets[key][piece] = named
         drums_of[name] = drum_sets[key]
     drum_tracks = list(dict.fromkeys(piece for pieces in drums_of.values() for piece in pieces))
     timing = {piece: timing_generators(move=drummer.get(TIMING, {}).get(piece, {})) for piece in drum_tracks}
     # The order of a made song's tracks: the muted chords track first, then the chords, the lead and the backing, the bass, and the drums last.
-    tracks = {MSG_CHORDS_TRACK: MSG_CHORDS_INSTRUMENT}
-    instruments = {DRUM_KIT: None, MSG_CHORDS_INSTRUMENT: CHORDS_GUIDE_SOUND}
+    tracks = {composer_text.MSG_CHORDS_TRACK: composer_text.MSG_CHORDS_INSTRUMENT}
+    instruments = {DRUM_KIT: None, composer_text.MSG_CHORDS_INSTRUMENT: CHORDS_GUIDE_SOUND}
     progressions = {}
     chains = {}
     extra = {}
@@ -1037,7 +1035,7 @@ def arranged(*, style, song):
         if FIGURE in entry:
             parts[role[ROLE]] = figure_part(entry=entry, role=role, meter=meter, player=playing[role[ROLE]], phrase_bars=phrase_bars)
             shaped.append(role[ROLE])
-        parts[MSG_PART_OF_SECTION.format(role[ROLE], HELD)] = held_part(role=role, meter=meter, chord=any(CHORD in note for bar in entry.get(FIGURE, []) for note in bar))
+        parts[composer_text.MSG_PART_OF_SECTION.format(role[ROLE], HELD)] = held_part(role=role, meter=meter, chord=any(CHORD in note for bar in entry.get(FIGURE, []) for note in bar))
         timing[role[ROLE]] = timing_generators(move=playing[role[ROLE]].get(TIMING, {}))
         for generator in entry.get(GENERATORS, []):
             for kind, settings in generator.items():
@@ -1045,7 +1043,7 @@ def arranged(*, style, song):
         if role[ROLE] in extra.get(GUITARIFIES, {}):
             extra[GUITARIFIES][role[ROLE]].update(playing[role[ROLE]].get(GUITARIFY_OF_PLAYER, {}))
     for track, moves in timing.items():
-        chains[MSG_TIMING_CHAIN.format(track)] = [{RUSH: track}, {DRAG: track}]
+        chains[composer_text.MSG_TIMING_CHAIN.format(track)] = [{RUSH: track}, {DRAG: track}]
         extra.setdefault(RUSHES, {})[track] = moves[RUSH]
         extra.setdefault(DRAGS, {})[track] = moves[DRAG]
     tracks.update({piece: DRUM_KIT for piece in drum_tracks})
@@ -1063,43 +1061,43 @@ def arranged(*, style, song):
     for count, name in enumerate(form_names, start=1):
         section = section_of(name=name, style=style, song=song)
         met[name] = met.get(name, 0) + 1
-        scene_name = name if met[name] == 1 else MSG_REPEATED_SCENE.format(name, met[name])
+        scene_name = name if met[name] == 1 else composer_text.MSG_REPEATED_SCENE.format(name, met[name])
         bars = 1 if section.get(HELD) else section[BARS]
         chords = chords_in(section)
         play = {}
         if section.get(HELD):
-            held = MSG_PART_OF_SECTION.format(CRASH, HELD)
+            held = composer_text.MSG_PART_OF_SECTION.format(CRASH, HELD)
             if not no_drums and CRASH not in pieces_off:
                 parts[held] = one_hit(style=style, meter=meter, drum=CRASH, played=played)
             if not no_drums and KICK not in pieces_off:
-                parts[MSG_PART_OF_SECTION.format(KICK, HELD)] = one_hit(style=style, meter=meter, drum=KICK, played=played)
+                parts[composer_text.MSG_PART_OF_SECTION.format(KICK, HELD)] = one_hit(style=style, meter=meter, drum=KICK, played=played)
             if not no_drums and CRASH not in pieces_off:
                 if CRASH not in tracks:
                     tracks[CRASH] = DRUM_KIT
                     drum_tracks.append(CRASH)
                 play[CRASH] = held
             if KICK in tracks:
-                play[KICK] = {PART: MSG_PART_OF_SECTION.format(KICK, HELD), ONCE: True}
+                play[KICK] = {PART: composer_text.MSG_PART_OF_SECTION.format(KICK, HELD), ONCE: True}
             for role, entry in pitched:
                 if FIGURE in entry and role[ROLE] in section.get(PLAYS, [role[ROLE]]):
-                    play[role[ROLE]] = {PART: MSG_PART_OF_SECTION.format(role[ROLE], HELD), ONCE: True, CHAINS: [MSG_FOLLOW_CHORDS_NAME]}
+                    play[role[ROLE]] = {PART: composer_text.MSG_PART_OF_SECTION.format(role[ROLE], HELD), ONCE: True, CHAINS: [composer_text.MSG_FOLLOW_CHORDS_NAME]}
             # The held chord is on the chords track too, the home chord for a bar, and what holds it follows it there.
-            chains[MSG_FOLLOW_CHORDS_NAME] = [dict(FOLLOWS_THE_CHORDS)]
-            chords_played = MSG_PART_OF_SECTION.format(name, CHORDS)
+            chains[composer_text.MSG_FOLLOW_CHORDS_NAME] = [dict(FOLLOWS_THE_CHORDS)]
+            chords_played = composer_text.MSG_PART_OF_SECTION.format(name, CHORDS)
             parts[chords_played] = {RAW: one_chord(meter)}
             chords_played = {PART: chords_played, ONCE: True}
         else:
             for piece, part in drums_of.get(name, {}).items():
-                play[piece] = {PART: part, CHAINS: [MSG_TIMING_CHAIN.format(piece)]}
+                play[piece] = {PART: part, CHAINS: [composer_text.MSG_TIMING_CHAIN.format(piece)]}
             if section.get(CRASH_START) and name in drums_of and CRASH not in pieces_off:
-                start = MSG_SECTION_START_PART.format(CRASH)
+                start = composer_text.MSG_SECTION_START_PART.format(CRASH)
                 parts[start] = one_hit(style=style, meter=meter, drum=CRASH, played=played)
                 if CRASH not in tracks:
                     tracks[CRASH] = DRUM_KIT
                     drum_tracks.append(CRASH)
                 play.setdefault(CRASH, {PART: start, ONCE: True})
             here = players_in(style=style, roles=roles, levels=levels, section=section)
-            progression = MSG_PART_OF_SECTION.format(name, CHORDS)
+            progression = composer_text.MSG_PART_OF_SECTION.format(name, CHORDS)
             # The section's chords go on the chords track, written a step a chord, which every clip that plays them follows.
             section_progression = progression_of(chords=chords_in(section, shared=True), every=section.get(EVERY, chord_entry.get(EVERY)), meter=meter)
             own_scale = (section.get(SCENE_SETTINGS) or {}).get(SCALE)
@@ -1128,17 +1126,17 @@ def arranged(*, style, song):
                 if way is not None:
                     # Fills and answers are drawn anew each time a section returns; the hook and a riff are the same every time.
                     drawn_in = scene_name if way in WAYS_DRAWN_ANEW else section.get(DRAWN_AS, name)
-                    part = MSG_PART_BESIDE.format(drawn_in, role[ROLE], way)
+                    part = composer_text.MSG_PART_BESIDE.format(drawn_in, role[ROLE], way)
                     if part not in parts:
                         lines = under.lines(way=way, tune=lines_of(tune_role), chords=chords, section=drawn_in)
                         if not all(all(REST in note for note in line) for line in lines):
                             parts[part] = tune_part(lines=lines, role=role, meter=meter, grid=habits[GRID])
                             shaped.append(part)
                     if part in parts:
-                        play[role[ROLE]] = {PART: part, ONCE: True, CHAINS: [MSG_TIMING_CHAIN.format(role[ROLE])]}
+                        play[role[ROLE]] = {PART: part, ONCE: True, CHAINS: [composer_text.MSG_TIMING_CHAIN.format(role[ROLE])]}
                     continue
                 if FIGURE in entry:
-                    chain = MSG_PART_OF_SECTION.format(name, role[ROLE])
+                    chain = composer_text.MSG_PART_OF_SECTION.format(name, role[ROLE])
                     chains[chain] = [dict(FOLLOWS_THE_CHORDS)] + [{kind: role[ROLE]} for generator in entry.get(GENERATORS, []) for kind in generator]
                     if role.get(VOICE_LEADING):
                         chains[chain].append({VOICE_LEADING_KIND: NEAR})
@@ -1148,7 +1146,7 @@ def arranged(*, style, song):
                     if FIGURE in entry.get(BY_SECTION, {}).get(section[KIND], {}):
                         # The value's own figure for this kind of section, a part of its own, in place of the figure played elsewhere.
                         entry_here = {**entry, FIGURE: entry[BY_SECTION][section[KIND]][FIGURE]}
-                        figure = MSG_PART_OF_SECTION.format(role[ROLE], section[KIND])
+                        figure = composer_text.MSG_PART_OF_SECTION.format(role[ROLE], section[KIND])
                         if figure not in parts:
                             parts[figure] = figure_part(entry=entry_here, role=role, meter=meter, player=playing[role[ROLE]], phrase_bars=phrase_bars)
                             shaped.append(figure)
@@ -1156,7 +1154,7 @@ def arranged(*, style, song):
                         held_back = figure_part(entry=entry_here, role=role, meter=meter, player=here[role[ROLE]], phrase_bars=phrase_bars)
                         # A player held back who plays the figure no differently plays the one part, so that no part is written twice.
                         if held_back != parts[figure]:
-                            figure = MSG_PART_AT_LEVEL.format(figure, label_of(character_in(levels=levels, instrument=role.get(PLAYER), section=section)))
+                            figure = composer_text.MSG_PART_AT_LEVEL.format(figure, label_of(character_in(levels=levels, instrument=role.get(PLAYER), section=section)))
                             if figure not in parts:
                                 parts[figure] = held_back
                                 shaped.append(figure)
@@ -1165,22 +1163,22 @@ def arranged(*, style, song):
                         # The song's riff takes the place of the player's figure here: moved by the chords and played as written, with none of the figure's
                         # own generators. Its first player plays its chords, and a player under the first its notes alone.
                         first = role[ROLE] == riff_players[0]
-                        riff_part = MSG_PART_OF_SECTION.format(role[ROLE], RIFF)
+                        riff_part = composer_text.MSG_PART_OF_SECTION.format(role[ROLE], RIFF)
                         if None in riff_here:
                             # A riff that stays at home is written out for the whole section: the riff over the home chord, and every other chord held.
-                            riff_part = MSG_PART_OF_SECTION.format(name, riff_part)
+                            riff_part = composer_text.MSG_PART_OF_SECTION.format(name, riff_part)
                         if riff_part not in parts:
                             lines = [riff_notes] if None not in riff_here else [held_bar(eighths=riff_eighths, chord=first) if bar is None else riff_split[bar] for bar in riff_here]
                             parts[riff_part] = {STEP: EIGHTH, OCTAVE: role[OCTAVE], **voice_of(role), LINES: [[dict(note) for note in (line if first else single(line))] for line in lines]}
                             shaped.append(riff_part)
-                        riff_chain = MSG_PART_OF_SECTION.format(chain, RIFF)
+                        riff_chain = composer_text.MSG_PART_OF_SECTION.format(chain, RIFF)
                         chains[riff_chain] = [dict(FOLLOWS_THE_CHORDS), {RUSH: role[ROLE]}, {DRAG: role[ROLE]}]
                         play[role[ROLE]] = {PART: riff_part, CHAINS: [riff_chain]}
                         continue
                     leaves = section.get(LEAVES) or {}
                     if leaves.get(TAIL) in (DROP_OUT, STOPS):
                         # The band's last bar together: the figure is written out for the whole section, so that its last bar alone differs.
-                        whole_part = MSG_PART_OF_SECTION.format(name, MSG_PART_OF_SECTION.format(role[ROLE], leaves[TAIL]))
+                        whole_part = composer_text.MSG_PART_OF_SECTION.format(name, composer_text.MSG_PART_OF_SECTION.format(role[ROLE], leaves[TAIL]))
                         parts[whole_part] = {**parts[figure], LINES: with_tail(bars=parts[figure][LINES], count=bars, tail=leaves[TAIL], eighths=leaves.get(TAIL_EIGHTHS, 0))}
                         shaped.append(whole_part)
                         figure = whole_part
@@ -1189,11 +1187,11 @@ def arranged(*, style, song):
                 own_tune = song.get(OWN_TUNES, {}).get(section[KIND]) if role is tune_role else None
                 if own_tune is not None:
                     # A tune written by hand is played as written by every section of its kind, and nothing here writes one over it.
-                    part = MSG_OWN_TUNE_PART.format(kind=section[KIND])
+                    part = composer_text.MSG_OWN_TUNE_PART.format(kind=section[KIND])
                     parts.setdefault(part, {RAW: copy.deepcopy(own_tune)})
-                    play[role[ROLE]] = {PART: part, ONCE: True, CHAINS: [MSG_TIMING_CHAIN.format(role[ROLE])]}
+                    play[role[ROLE]] = {PART: part, ONCE: True, CHAINS: [composer_text.MSG_TIMING_CHAIN.format(role[ROLE])]}
                     continue
-                part = MSG_PART_OF_SECTION.format(name, role[ROLE])
+                part = composer_text.MSG_PART_OF_SECTION.format(name, role[ROLE])
                 if part not in parts:
                     lines = lines_of(role)
                     if all(all(REST in note for note in line) for line in lines):
@@ -1208,12 +1206,12 @@ def arranged(*, style, song):
                         shaped.append(part)
                         same_tunes[(role[ROLE], repr(written))] = part
                 if part in parts:
-                    play[role[ROLE]] = {PART: part, ONCE: True, CHAINS: [MSG_TIMING_CHAIN.format(role[ROLE])]}
+                    play[role[ROLE]] = {PART: part, ONCE: True, CHAINS: [composer_text.MSG_TIMING_CHAIN.format(role[ROLE])]}
         if not play:
             # Nothing of the song's picks plays in this section, as pads alone where the song has no chord part: it is left out.
             met[name] -= 1
             continue
-        play[MSG_CHORDS_TRACK] = chords_played
+        play[composer_text.MSG_CHORDS_TRACK] = chords_played
         scene_settings = dict(section.get(SCENE_SETTINGS) or {})
         if section[KIND] in SECTION_KINDS:
             # A scene says what kind of section it is, where the kind is one a scene may be.
@@ -1224,24 +1222,24 @@ def arranged(*, style, song):
             scene_settings[SCALE] = SCALE_NAME.format(own_scale[ROOT], own_scale[TYPE].capitalize())
             more_scales[scene_settings[SCALE]] = {ROOT: own_scale[ROOT], TYPE: own_scale[TYPE]}
         form.append({SCENE: scene_name, BARS: bars, PLAY: play, **({SETTINGS_OF_SCENE: scene_settings} if scene_settings else {})})
-        said_of_scene = MSG_MADE_SCENE.format(count, scene_name, bars)
+        said_of_scene = composer_text.MSG_MADE_SCENE.format(count, scene_name, bars)
         notes.append(MADE_SCENE_SAID.format(said_of_scene, section[SAID_OF_SECTION]) if section.get(SAID_OF_SECTION) else said_of_scene)
-    generators = {Section.FOLLOW_CHORDS: {MSG_FOLLOW_CHORDS_NAME: {FollowChordsSetting.CHORDS_FROM: MSG_CHORDS_TRACK}}, **extra}
+    generators = {Section.FOLLOW_CHORDS: {composer_text.MSG_FOLLOW_CHORDS_NAME: {FollowChordsSetting.CHORDS_FROM: composer_text.MSG_CHORDS_TRACK}}, **extra}
     if progressions:
         generators[PROGRESSIONS] = progressions
     if any(role.get(VOICE_LEADING) for role, _ in pitched):
         generators[VOICE_LEADINGS] = {NEAR: dict(NEAR_VOICES)}
-    said = '\n'.join(band_said(style=style, song=song, roles=roles) + [MSG_MADE_PICK.format(trait, value) for trait, value in picks.items()])
+    said = '\n'.join(band_said(style=style, song=song, roles=roles) + [composer_text.MSG_MADE_PICK.format(trait, value) for trait, value in picks.items()])
     # A piece of the kit that sounds as a General MIDI sound is a track with an instrument of its own, and no drum track.
     own_sounds = {piece: sounds_as[PLAYED_SOUND] for piece, sounds_as in song.get(PIECE_SOUNDS, {}).items() if PLAYED_SOUND in sounds_as and piece in tracks}
     for piece, sound in own_sounds.items():
-        instruments[MSG_PIECE_INSTRUMENT.format(piece)] = sound
-        tracks[piece] = MSG_PIECE_INSTRUMENT.format(piece)
+        instruments[composer_text.MSG_PIECE_INSTRUMENT.format(piece)] = sound
+        tracks[piece] = composer_text.MSG_PIECE_INSTRUMENT.format(piece)
     given = {
         NAME: song[NAME], TITLE: song[TITLE], DESCRIPTION: song.get(DESCRIPTION, song[TITLE]), GENRE: style[GENRE], SUBGENRE: song[TEMPLATE], VARIANT: song.get(VARIANT),
-        NOTES: MSG_MADE_SONG_NOTES.format(title=song[TITLE], style=style[TITLE], template=song[TEMPLATE], picks=said, form='\n'.join(notes)),
+        NOTES: composer_text.MSG_MADE_SONG_NOTES.format(title=song[TITLE], style=style[TITLE], template=song[TEMPLATE], picks=said, form='\n'.join(notes)),
         SCALES: {scale: {ROOT: song[KEY][ROOT], TYPE: scale_type}, **more_scales}, SCALE: scale, TEMPO: tempo,
-        FEEL: style[FEEL], SHAPED: shaped, INSTRUMENTS: instruments, TRACKS: tracks, DRUM_TRACKS: [piece for piece in drum_tracks if piece not in own_sounds], MUTED_TRACKS: [MSG_CHORDS_TRACK], GENERATORS: generators, CHAINS: chains,
+        FEEL: style[FEEL], SHAPED: shaped, INSTRUMENTS: instruments, TRACKS: tracks, DRUM_TRACKS: [piece for piece in drum_tracks if piece not in own_sounds], MUTED_TRACKS: [composer_text.MSG_CHORDS_TRACK], GENERATORS: generators, CHAINS: chains,
         PARTS: parts, FORM: form,
     }
     groove = song.get(GROOVE, style.get(GROOVE))

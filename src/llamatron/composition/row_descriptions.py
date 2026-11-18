@@ -28,24 +28,16 @@ which playback reads directly, since it reads every step of every pass.
 
 from llamatron.composition.checks import is_true_or_false, is_whole_number, listed
 from llamatron.composition.corrections import NO_NEAREST_VALUE
-from llamatron.composition.defaults import DEFAULT_PROBABILITY, DEFAULT_RATCHET, DEFAULT_VELOCITY
+from llamatron.composition import defaults, limits
+from llamatron.strings import errors
 from llamatron.composition.file_format import (
     ACCIDENTALS, CC_ROWS, KEYSWITCH_SLOTS, CHORD_SYMBOLS, COMPARISONS, TENSIONS, CONDITION_ROWS, GATE_MODIFIERS, NOTE_LETTERS, PATTERN_ROWS, REGISTER_ADD_ROWS,
     REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_USES, REGISTER_VELOCITY_ROWS, RegisterUse, Row,
 )
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.limits import (
-    INVERSIONS,
-    MAX_GATE, MAX_OCTAVE, MAX_PROBABILITY, MAX_RATCHET, MAX_RATCHET_OFFSET, MAX_REGISTER_VALUE, MIN_DEGREE, MIN_OCTAVE, MIN_PROBABILITY,
-    MIN_RATCHET, MIN_REGISTER_VALUE,
-)
 from llamatron.composition.named_scale import scale_type_names
 from llamatron.composition.setting import Length
-from llamatron.music.midi import MAX_CC_VALUE, MAX_VELOCITY, MIN_CC_VALUE, MIN_VELOCITY
-from llamatron.strings.errors import (
-    ERR_BAD_STEP_VALUE, ERR_CHECKS_BAD_OCTAVE, ERR_CHORD_ON_DRUMS, ERR_CHORD_SCALE_ON_DRUMS, ERR_NOT_CHORD_SCALE, ERR_NOT_TENSIONS, ERR_NOT_KEYSWITCHES, ERR_TENSION_ON_DRUMS, ERR_NOT_ACCIDENTAL, ERR_NOT_COMPARISON, ERR_NOT_CHORD, ERR_NOT_INVERSION, ERR_INVERSION_ON_DRUMS, ERR_NOT_DEGREE, ERR_NOT_GATE_MODIFIER,
-    ERR_NO_SUCH_ROW, ERR_NOT_IN_RANGE, ERR_NOT_NOTE_LETTER, ERR_NOT_REGISTER_USE, ERR_PATTERN_NOT_TRUE_OR_FALSE, ERR_REGISTER_NOTE_ON_DRUMS,
-)
+from llamatron.music import midi
 
 # A drum pattern's degree row holds one note letter per step.
 NOTE_LETTER_LENGTH = 1
@@ -116,7 +108,7 @@ class RowDescription:
         """Refuse a value a step can't hold on the row, saying which row and what the value has to be."""
         problem = self.problem_with(value, drum=drum)
         if problem:
-            raise InvalidValue(ERR_BAD_STEP_VALUE.format(row=self._name, problem=problem, value=value))
+            raise InvalidValue(errors.ERR_BAD_STEP_VALUE.format(row=self._name, problem=problem, value=value))
 
     def nearest(self, value, *, drum):
         """Return the allowed value nearest a wrong one, or NO_NEAREST_VALUE: only a row with limits has one."""
@@ -139,7 +131,7 @@ class RowOfNumbers(RowDescription):
         self._highest = highest
         self._default = default
         self._quiet = quiet
-        self._problem = ERR_NOT_IN_RANGE.format(lowest=lowest, highest=highest)
+        self._problem = errors.ERR_NOT_IN_RANGE.format(lowest=lowest, highest=highest)
 
     def get_lowest(self):
         return self._lowest
@@ -171,7 +163,7 @@ class RowOfOctaves(RowOfNumbers):
 
     def check(self, value, *, drum):
         if self.problem_with(value, drum=drum):
-            raise InvalidValue(ERR_CHECKS_BAD_OCTAVE.format(lowest=self._lowest, highest=self._highest, value=value))
+            raise InvalidValue(errors.ERR_CHECKS_BAD_OCTAVE.format(lowest=self._lowest, highest=self._highest, value=value))
 
 
 class RowOfDegrees(RowDescription):
@@ -182,14 +174,14 @@ class RowOfDegrees(RowDescription):
     def __init__(self, *, name, lowest):
         super().__init__(name=name, changes_with_drums=True)
         self._lowest = lowest
-        self._problem = ERR_NOT_DEGREE.format(lowest=lowest)
+        self._problem = errors.ERR_NOT_DEGREE.format(lowest=lowest)
 
     def get_lowest(self):
         return self._lowest
 
     def problem_with(self, value, *, drum):
         if drum:
-            return None if is_note_letter(value) else ERR_NOT_NOTE_LETTER
+            return None if is_note_letter(value) else errors.ERR_NOT_NOTE_LETTER
         return self._problem if type(value) is not int or value < self._lowest else None
 
     def nearest(self, value, *, drum):
@@ -246,14 +238,14 @@ class RowOfChords(RowOfChoices):
     __slots__ = ()
 
     def __init__(self, *, name, symbols):
-        super().__init__(name=name, choices=symbols, problem=ERR_NOT_CHORD.format(symbols=listed(symbols)), changes_with_drums=True)
+        super().__init__(name=name, choices=symbols, problem=errors.ERR_NOT_CHORD.format(symbols=listed(symbols)), changes_with_drums=True)
 
     def is_in_drum_patterns(self):
         return False
 
     def problem_with(self, value, *, drum):
         if drum:
-            return ERR_CHORD_ON_DRUMS
+            return errors.ERR_CHORD_ON_DRUMS
         return None if str(value) in self._choices else self._problem
 
 
@@ -263,14 +255,14 @@ class RowOfInversions(RowOfChoices):
     __slots__ = ()
 
     def __init__(self, *, name, choices):
-        super().__init__(name=name, choices=choices, problem=ERR_NOT_INVERSION.format(choices=listed(choices)), changes_with_drums=True)
+        super().__init__(name=name, choices=choices, problem=errors.ERR_NOT_INVERSION.format(choices=listed(choices)), changes_with_drums=True)
 
     def is_in_drum_patterns(self):
         return False
 
     def problem_with(self, value, *, drum):
         if drum:
-            return ERR_INVERSION_ON_DRUMS
+            return errors.ERR_INVERSION_ON_DRUMS
         return super().problem_with(value, drum=drum)
 
 
@@ -283,7 +275,7 @@ class RowOfTensions(RowDescription):
     def __init__(self, *, name, choices):
         super().__init__(name=name, changes_with_drums=True)
         self._choices = tuple(choices)
-        self._problem = ERR_NOT_TENSIONS.format(choices=listed(self._choices))
+        self._problem = errors.ERR_NOT_TENSIONS.format(choices=listed(self._choices))
 
     def get_choices(self):
         """Return the tensions, in the order the editor offers them."""
@@ -307,7 +299,7 @@ class RowOfTensions(RowDescription):
 
     def problem_with(self, value, *, drum):
         if drum:
-            return ERR_TENSION_ON_DRUMS
+            return errors.ERR_TENSION_ON_DRUMS
         if not isinstance(value, (list, tuple)) or not value or len(set(value)) != len(value) or any(tension not in self._choices for tension in value):
             return self._problem
         return None
@@ -323,7 +315,7 @@ class RowOfKeyswitches(RowDescription):
     def __init__(self, *, name, choices):
         super().__init__(name=name)
         self._choices = tuple(choices)
-        self._problem = ERR_NOT_KEYSWITCHES.format(choices=listed(self._choices))
+        self._problem = errors.ERR_NOT_KEYSWITCHES.format(choices=listed(self._choices))
 
     def get_choices(self):
         """Return the slots, in order."""
@@ -354,14 +346,14 @@ class RowOfChordScales(RowOfChoices):
     __slots__ = ()
 
     def __init__(self, *, name, choices):
-        super().__init__(name=name, choices=choices, problem=ERR_NOT_CHORD_SCALE.format(choices=listed(choices)), changes_with_drums=True)
+        super().__init__(name=name, choices=choices, problem=errors.ERR_NOT_CHORD_SCALE.format(choices=listed(choices)), changes_with_drums=True)
 
     def is_in_drum_patterns(self):
         return False
 
     def problem_with(self, value, *, drum):
         if drum:
-            return ERR_CHORD_SCALE_ON_DRUMS
+            return errors.ERR_CHORD_SCALE_ON_DRUMS
         return super().problem_with(value, drum=drum)
 
 
@@ -380,7 +372,7 @@ class RowOfToggles(RowDescription):
         return [bool(value) for value in values]
 
     def problem_with(self, value, *, drum):
-        return None if is_true_or_false(value) else ERR_PATTERN_NOT_TRUE_OR_FALSE
+        return None if is_true_or_false(value) else errors.ERR_PATTERN_NOT_TRUE_OR_FALSE
 
 
 class RowOfRegisterUses(RowDescription):
@@ -412,7 +404,7 @@ class RowOfRegisterUses(RowDescription):
     def problem_with(self, value, *, drum):
         if is_true_or_false(value) or (is_whole_number(value) and value in (RegisterUse.ADD, RegisterUse.SUBTRACT, RegisterUse.OFF)):
             return None
-        return ERR_NOT_REGISTER_USE
+        return errors.ERR_NOT_REGISTER_USE
 
 
 class RowOfNoteMoves(RowOfRegisterUses):
@@ -429,7 +421,7 @@ class RowOfNoteMoves(RowOfRegisterUses):
     def problem_with(self, value, *, drum):
         problem = super().problem_with(value, drum=drum)
         if problem is None and drum and value:
-            return ERR_REGISTER_NOTE_ON_DRUMS
+            return errors.ERR_REGISTER_NOTE_ON_DRUMS
         return problem
 
 
@@ -445,41 +437,41 @@ def described_rows(*rows):
 
 def control_row(name):
     """Return the description of one CC row: a value a rest can send too, and nothing sent where a step is blank."""
-    return RowOfNumbers(name=name, lowest=MIN_CC_VALUE, highest=MAX_CC_VALUE, default=NO_DEFAULT, quiet=True, kept_by_a_rest=True)
+    return RowOfNumbers(name=name, lowest=midi.MIN_CC_VALUE, highest=midi.MAX_CC_VALUE, default=NO_DEFAULT, quiet=True, kept_by_a_rest=True)
 
 
 def register_change_row(name):
     """Return the description of one register's += row: how much a step adds to the register, which a rest can do too."""
-    return RowOfNumbers(name=name, lowest=MIN_REGISTER_VALUE, highest=MAX_REGISTER_VALUE, default=NO_REGISTER_CHANGE, quiet=True, kept_by_a_rest=True)
+    return RowOfNumbers(name=name, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, default=NO_REGISTER_CHANGE, quiet=True, kept_by_a_rest=True)
 
 
 def register_set_row(name):
     """Return the description of one register's = row: the value a step sets the register to before anything adds to it, or blank to leave it, which a rest can do too."""
-    return RowOfNumbers(name=name, lowest=MIN_REGISTER_VALUE, highest=MAX_REGISTER_VALUE, default=NO_DEFAULT, quiet=True, kept_by_a_rest=True)
+    return RowOfNumbers(name=name, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, default=NO_DEFAULT, quiet=True, kept_by_a_rest=True)
 
 
 def condition_row(name):
     """Return the description of one condition row: how AX has to compare with another register for the step's note to sound, or blank for no comparison. Only a note can be silenced, so a rest can't hold one."""
-    return RowOfChoices(name=name, choices=COMPARISONS, problem=ERR_NOT_COMPARISON.format(choices=listed(COMPARISONS)))
+    return RowOfChoices(name=name, choices=COMPARISONS, problem=errors.ERR_NOT_COMPARISON.format(choices=listed(COMPARISONS)))
 
 
 # Every row of a pattern, described once, in the order a file writes the rows (PATTERN_ROWS).
 ROW_DESCRIPTIONS = described_rows(
-    RowOfDegrees(name=Row.DEGREE, lowest=MIN_DEGREE),
-    RowOfLengths(name=Row.GATE, most=MAX_GATE),
-    RowOfChoices(name=Row.DOT, choices=GATE_MODIFIERS, problem=ERR_NOT_GATE_MODIFIER),
-    RowOfChoices(name=Row.ACCIDENTAL, choices=ACCIDENTALS, problem=ERR_NOT_ACCIDENTAL, changes_with_drums=True),
-    RowOfOctaves(name=Row.OCTAVE, lowest=MIN_OCTAVE, highest=MAX_OCTAVE, default=NO_DEFAULT),
+    RowOfDegrees(name=Row.DEGREE, lowest=limits.MIN_DEGREE),
+    RowOfLengths(name=Row.GATE, most=limits.MAX_GATE),
+    RowOfChoices(name=Row.DOT, choices=GATE_MODIFIERS, problem=errors.ERR_NOT_GATE_MODIFIER),
+    RowOfChoices(name=Row.ACCIDENTAL, choices=ACCIDENTALS, problem=errors.ERR_NOT_ACCIDENTAL, changes_with_drums=True),
+    RowOfOctaves(name=Row.OCTAVE, lowest=limits.MIN_OCTAVE, highest=limits.MAX_OCTAVE, default=NO_DEFAULT),
     RowOfChords(name=Row.CHORD, symbols=CHORD_SYMBOLS),
-    RowOfInversions(name=Row.INVERSION, choices=INVERSIONS),
+    RowOfInversions(name=Row.INVERSION, choices=limits.INVERSIONS),
     RowOfTensions(name=Row.TENSION, choices=TENSIONS),
     RowOfChordScales(name=Row.CHORD_SCALE, choices=scale_type_names()),
-    RowOfNumbers(name=Row.VELOCITY, lowest=MIN_VELOCITY, highest=MAX_VELOCITY, default=DEFAULT_VELOCITY),
-    RowOfNumbers(name=Row.PROBABILITY, lowest=MIN_PROBABILITY, highest=MAX_PROBABILITY, default=DEFAULT_PROBABILITY),
+    RowOfNumbers(name=Row.VELOCITY, lowest=midi.MIN_VELOCITY, highest=midi.MAX_VELOCITY, default=defaults.DEFAULT_VELOCITY),
+    RowOfNumbers(name=Row.PROBABILITY, lowest=limits.MIN_PROBABILITY, highest=limits.MAX_PROBABILITY, default=defaults.DEFAULT_PROBABILITY),
     RowOfToggles(name=Row.GLIDE),
     RowOfToggles(name=Row.TIE),
-    RowOfNumbers(name=Row.RATCHET, lowest=MIN_RATCHET, highest=MAX_RATCHET, default=DEFAULT_RATCHET, quiet=True),
-    RowOfNumbers(name=Row.RATCHET_OFFSET, lowest=-MAX_RATCHET_OFFSET, highest=MAX_RATCHET_OFFSET, default=NO_RATCHET_OFFSET, quiet=True),
+    RowOfNumbers(name=Row.RATCHET, lowest=limits.MIN_RATCHET, highest=limits.MAX_RATCHET, default=defaults.DEFAULT_RATCHET, quiet=True),
+    RowOfNumbers(name=Row.RATCHET_OFFSET, lowest=-limits.MAX_RATCHET_OFFSET, highest=limits.MAX_RATCHET_OFFSET, default=NO_RATCHET_OFFSET, quiet=True),
     RowOfToggles(name=Row.GRAB),
     RowOfKeyswitches(name=Row.KEYSWITCH, choices=KEYSWITCH_SLOTS),
     *[control_row(name) for name in CC_ROWS],
@@ -495,7 +487,7 @@ ROW_DESCRIPTIONS = described_rows(
 def row_described(name):
     """Return the description of a row by its name, or raise InvalidValue for a name that is no row of a pattern."""
     if name not in ROW_DESCRIPTIONS:
-        raise InvalidValue(ERR_NO_SUCH_ROW.format(row=name))
+        raise InvalidValue(errors.ERR_NO_SUCH_ROW.format(row=name))
     return ROW_DESCRIPTIONS[name]
 
 

@@ -34,7 +34,7 @@ from llamatron.visualizers.colour import TRACK_COLOURS, Limiter, note_colour
 from llamatron.visualizers.heard import SILENCE
 from llamatron.visualizers.lava_lamp import derezzed
 from llamatron.visualizers.visualizer import Visualizer
-from llamatron.strings.visualizers import MSG_PLASMA
+from llamatron.strings import visualizers
 
 SUPERSAMPLE = 2
 COLOUR_STEP_SHIFT = 3
@@ -96,7 +96,7 @@ class Plasma(Visualizer):
 
     __slots__ = ('_rows', '_columns', '_grid', '_edges', '_time', '_last', '_nudge', '_energy', '_target', '_colours', '_palette', '_limiter')
 
-    NAME = MSG_PLASMA
+    NAME = visualizers.MSG_PLASMA
     OPTION = 'plasma'
     DARK_IN_SILENCE = False
 

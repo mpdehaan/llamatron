@@ -21,7 +21,7 @@ from llamatron.tui.screens.generators.time_field import time_field
 from llamatron.composition.file_format import DRIFT_DIRECTIONS, DRIFT_VERSIONS, DriftValue, GeneratorKind, Section
 from llamatron.composition.generator_settings import DRIFT_NUMBERS, DriftSetting, MAX_STEPS_TO_B, MIN_STEPS_TO_B, versioned
 from llamatron.music.note import ROOT_NAMES
-from llamatron.strings.help import HELP_DRIFT_EDITOR
+from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NameField, NumberField
@@ -29,13 +29,6 @@ from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.shared import NO_SEED
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.tui.text import sorted_names
-from llamatron.strings.labels import (
-    Crumb, MSG_DRIFT_DIRECTION_LABEL, MSG_DRIFT_LABEL, MSG_DRIFT_PAIR, MSG_DRIFT_PICKED, MSG_DRIFT_VALUE_LABELS, MSG_EVERY_LABEL,
-    MSG_SEED_LABEL, MSG_STEPS_TO_B_LABEL,
-)
-from llamatron.strings.legends import MSG_USE_SONG_SEED_WHAT, What
-from llamatron.strings.marks import MSG_NONE_SHOWN, MSG_SONG_SEED_SHOWN
-from llamatron.strings.messages import MSG_NUMBER_PROMPT, MSG_RENAME_GENERATOR_PROMPT
 from llamatron.tui import keybindings
 
 # What a value of a version is when the drift leaves it out.
@@ -46,10 +39,10 @@ class DriftEditor(ShowsNamedItem, FieldPage):
     """A drift's settings. Up and Down pick a row; on a row of values, Left and Right pick version A or B, and [ and ] change the one picked."""
 
     KEYS = keybindings.DriftEditor
-    HELP = HELP_DRIFT_EDITOR
+    HELP = help_text.HELP_DRIFT_EDITOR
     SECTION = Section.DRIFTS
-    CRUMBS_BEFORE = (Crumb.GENERATORS,)
-    RENAME_PROMPT = MSG_RENAME_GENERATOR_PROMPT.format(label=MSG_DRIFT_LABEL)
+    CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_DRIFT_LABEL)
 
     def __init__(self, *, holder, name):
         super().__init__(holder)
@@ -69,15 +62,15 @@ class DriftEditor(ShowsNamedItem, FieldPage):
         every = drift.get_every()
         return [
             NameField(value=lambda: self.item, rename=self.rename),
-            time_field(page=self, label=MSG_EVERY_LABEL, written=every, first=ONE_BAR_WRITTEN, store=lambda value: self.set_value(setting=DriftSetting.EVERY, value=value)),
-            NumberField(page=self, label=MSG_STEPS_TO_B_LABEL, number=drift.get_steps_to_b(), lowest=MIN_STEPS_TO_B, highest=MAX_STEPS_TO_B,
+            time_field(page=self, label=labels.MSG_EVERY_LABEL, written=every, first=ONE_BAR_WRITTEN, store=lambda value: self.set_value(setting=DriftSetting.EVERY, value=value)),
+            NumberField(page=self, label=labels.MSG_STEPS_TO_B_LABEL, number=drift.get_steps_to_b(), lowest=MIN_STEPS_TO_B, highest=MAX_STEPS_TO_B,
                         set=lambda number: self.set_value(setting=DriftSetting.STEPS_TO_B, value=number)),
-            ChoiceField(page=self, label=MSG_DRIFT_DIRECTION_LABEL, choices=DRIFT_DIRECTIONS, current=drift.get_direction(),
+            ChoiceField(page=self, label=labels.MSG_DRIFT_DIRECTION_LABEL, choices=DRIFT_DIRECTIONS, current=drift.get_direction(),
                         set=lambda value: self.set_value(setting=DriftSetting.DIRECTION, value=None if value == DRIFT_DIRECTIONS[0] else value)),
             NumberField(
-                page=self, label=MSG_SEED_LABEL, number=seed, start=NO_SEED, shown=MSG_SONG_SEED_SHOWN if seed is None else None,
+                page=self, label=labels.MSG_SEED_LABEL, number=seed, start=NO_SEED, shown=marks.MSG_SONG_SEED_SHOWN if seed is None else None,
                 set=lambda number: self.set_value(setting=DriftSetting.SEED, value=number),
-                clear=lambda: self.set_value(setting=DriftSetting.SEED, value=None), clear_what=MSG_USE_SONG_SEED_WHAT,
+                clear=lambda: self.set_value(setting=DriftSetting.SEED, value=None), clear_what=legends.MSG_USE_SONG_SEED_WHAT,
             ),
             restart_field(self),
         ]
@@ -104,33 +97,33 @@ class DriftEditor(ShowsNamedItem, FieldPage):
 
     def version_field(self, value):
         """Return the row of one value, showing A's and B's, the one picked marked, and changing only the one picked."""
-        label = MSG_DRIFT_VALUE_LABELS[value]
+        label = labels.MSG_DRIFT_VALUE_LABELS[value]
         drift = self.drift()
         shown = [self.value_text(value=value, written=drift.get_value(version=version, value=value)) for version in DRIFT_VERSIONS]
-        shown[self.version] = MSG_DRIFT_PICKED.format(value=shown[self.version])
+        shown[self.version] = labels.MSG_DRIFT_PICKED.format(value=shown[self.version])
         setting = versioned(version=DRIFT_VERSIONS[self.version], value=value)
         current = drift.get_value(version=DRIFT_VERSIONS[self.version], value=value)
         if value in (DriftValue.SCALE, DriftValue.ROOT):
             choices = [None, *self.choices_of(value)]
             return Field(
-                label=label, value=lambda: MSG_DRIFT_PAIR.format(a=shown[0], b=shown[1]),
+                label=label, value=lambda: labels.MSG_DRIFT_PAIR.format(a=shown[0], b=shown[1]),
                 adjust=lambda offset: self.set_value(setting=setting, value=choices[max(min(choices.index(current) + offset, len(choices) - 1), 0)]),
-                enter=lambda: self.pick_choice(setting=setting, value=value, current=current), enter_what=What.CHOOSE,
+                enter=lambda: self.pick_choice(setting=setting, value=value, current=current), enter_what=legends.What.CHOOSE,
                 clear=lambda: self.set_value(setting=setting, value=None),
             )
         lowest, highest = self.range_of(value)
         number = current or NOTHING
         return Field(
-            label=label, value=lambda: MSG_DRIFT_PAIR.format(a=shown[0], b=shown[1]),
+            label=label, value=lambda: labels.MSG_DRIFT_PAIR.format(a=shown[0], b=shown[1]),
             adjust=lambda offset: self.set_value(setting=setting, value=max(min(number + offset, highest), lowest) or None),
-            enter=lambda: self.ask_number(title=MSG_NUMBER_PROMPT.format(row=label, low=lowest, high=highest), value=number, low=lowest, high=highest,
+            enter=lambda: self.ask_number(title=messages.MSG_NUMBER_PROMPT.format(row=label, low=lowest, high=highest), value=number, low=lowest, high=highest,
                                           then=lambda typed: self.set_value(setting=setting, value=typed or None)),
             clear=lambda: self.set_value(setting=setting, value=None),
         )
 
     def value_text(self, *, value, written):
         if written is None:
-            return MSG_NONE_SHOWN if value in (DriftValue.SCALE, DriftValue.ROOT) else str(NOTHING)
+            return marks.MSG_NONE_SHOWN if value in (DriftValue.SCALE, DriftValue.ROOT) else str(NOTHING)
         return str(written)
 
     def range_of(self, value):
@@ -144,8 +137,8 @@ class DriftEditor(ShowsNamedItem, FieldPage):
         return sorted_names(self.document().song().get_scale_names()) if value == DriftValue.SCALE else list(ROOT_NAMES)
 
     def pick_choice(self, *, setting, value, current):
-        options = [MSG_NONE_SHOWN, *self.choices_of(value)]
+        options = [marks.MSG_NONE_SHOWN, *self.choices_of(value)]
 
         def chosen(item):
             self.set_value(setting=setting, value=None if item == 0 else options[item])
-        self.ask(dialog=ChoiceDialog(title=MSG_DRIFT_VALUE_LABELS[value], options=options, current=options.index(current) if current in options else 0), then=chosen)
+        self.ask(dialog=ChoiceDialog(title=labels.MSG_DRIFT_VALUE_LABELS[value], options=options, current=options.index(current) if current in options else 0), then=chosen)

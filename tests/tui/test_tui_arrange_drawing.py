@@ -23,10 +23,9 @@ shows what the drawing drew.
 import unittest
 
 from tests.support.ui_testing import DRUMS, LEAD, OTHER, TUNE, UITest, a_song
-from llamatron.composition.defaults import DEFAULT_REPEAT
+from llamatron.composition import defaults
+from llamatron.strings import marks, names
 from llamatron.composition.file_format import ClipSlotSetting, Direction
-from llamatron.strings.names import MSG_NEW_SCENE_NAME
-from llamatron.strings.marks import MSG_CLIP_WITH_MARKS, MSG_DIRECTION_MARK, MSG_GRAB_MARK, MSG_LOOP_MARK, MSG_MORPH_MARK, MSG_REPEAT_MARK
 from llamatron.tui import keybindings
 from llamatron.tui.drawing import ELLIPSIS
 from llamatron.tui.keys import Key
@@ -64,33 +63,33 @@ class TestCellText(unittest.TestCase):
 
     def test_each_setting_beyond_the_pattern_adds_its_mark(self):
         for setting, value, mark in (
-            (ClipSlotSetting.DIRECTION, Direction.REVERSE_A, MSG_DIRECTION_MARK),
-            (ClipSlotSetting.GRAB_TRACK, DRUMS, MSG_GRAB_MARK),
-            (ClipSlotSetting.LOOP, True, MSG_LOOP_MARK),
+            (ClipSlotSetting.DIRECTION, Direction.REVERSE_A, marks.MSG_DIRECTION_MARK),
+            (ClipSlotSetting.GRAB_TRACK, DRUMS, marks.MSG_GRAB_MARK),
+            (ClipSlotSetting.LOOP, True, marks.MSG_LOOP_MARK),
         ):
             with self.subTest(setting=setting):
                 self.setUp()
                 self.set(setting=setting, value=value)
-                self.assertEqual(clip_text(self.clip_slot()), MSG_CLIP_WITH_MARKS.format(name=TUNE, marks=mark))
+                self.assertEqual(clip_text(self.clip_slot()), marks.MSG_CLIP_WITH_MARKS.format(name=TUNE, marks=mark))
 
     def test_repeats_say_how_many_and_a_morph_adds_its_mark(self):
         self.document.set_clip_slot_repeat(index=FIRST_SCENE, track=LEAD, repeat=SOME_REPEATS)
-        repeats = MSG_REPEAT_MARK.format(repeat=SOME_REPEATS)
-        self.assertEqual(clip_text(self.clip_slot()), MSG_CLIP_WITH_MARKS.format(name=TUNE, marks=repeats))
+        repeats = marks.MSG_REPEAT_MARK.format(repeat=SOME_REPEATS)
+        self.assertEqual(clip_text(self.clip_slot()), marks.MSG_CLIP_WITH_MARKS.format(name=TUNE, marks=repeats))
         self.document.set_clip_slot_morph_target(index=FIRST_SCENE, track=LEAD, pattern=OTHER)
-        self.assertEqual(clip_text(self.clip_slot()), MSG_CLIP_WITH_MARKS.format(name=TUNE, marks=MSG_MORPH_MARK + repeats))
+        self.assertEqual(clip_text(self.clip_slot()), marks.MSG_CLIP_WITH_MARKS.format(name=TUNE, marks=marks.MSG_MORPH_MARK + repeats))
 
     def test_one_repeat_is_no_mark(self):
-        self.document.set_clip_slot_repeat(index=FIRST_SCENE, track=LEAD, repeat=DEFAULT_REPEAT)
+        self.document.set_clip_slot_repeat(index=FIRST_SCENE, track=LEAD, repeat=defaults.DEFAULT_REPEAT)
         self.assertEqual(clip_text(self.clip_slot()), TUNE)
 
     def test_a_long_name_gives_way_so_that_the_marks_fit_the_cell(self):
         self.set(setting=ClipSlotSetting.NAME, value=A_CLIP_NAME)
         self.set(setting=ClipSlotSetting.LOOP, value=True)
         text = clip_text(self.clip_slot())
-        self.assertTrue(text.endswith(MSG_LOOP_MARK))
+        self.assertTrue(text.endswith(marks.MSG_LOOP_MARK))
         self.assertLess(len(text), CELL_WIDTH)
-        self.assertTrue(A_CLIP_NAME.startswith(text[:-len(MSG_LOOP_MARK)].strip().rstrip(ELLIPSIS)))
+        self.assertTrue(A_CLIP_NAME.startswith(text[:-len(marks.MSG_LOOP_MARK)].strip().rstrip(ELLIPSIS)))
 
 
 class TestArrangeDrawing(UITest):
@@ -117,7 +116,7 @@ class TestArrangeDrawing(UITest):
 
     async def test_only_the_scenes_that_fit_are_drawn_and_the_cursors_scene_is_among_them(self):
         for number in range(MANY_SCENES):
-            self.document.add_scene(index=len(self.document.song().get_scenes()), name=MSG_NEW_SCENE_NAME.format(number=number + FIRST_NEW_SCENE))
+            self.document.add_scene(index=len(self.document.song().get_scenes()), name=names.MSG_NEW_SCENE_NAME.format(number=number + FIRST_NEW_SCENE))
         self.document.record_edit()
         width, height = self.SIZE
         shown = self.page.drawing.visible_scenes(height)

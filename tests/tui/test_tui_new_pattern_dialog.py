@@ -15,12 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The New Pattern dialog and a pattern's scale length in the tracker: the dialog's rows and buttons, the Patterns page's new pattern, Arrange's blank pattern, the Reconfigure choice and the header's warning."""
 
-from llamatron.composition.limits import MAX_SCALE_LENGTH, MIN_SCALE_LENGTH, NEW_PATTERN_SCALE_LENGTH
-from llamatron.strings.labels import MSG_DRUM_PATTERN_LABEL, MSG_SCALE_LENGTH_LABEL, MSG_WRITTEN_FOR
-from llamatron.strings.legends import MSG_SCALE_LENGTH_WHAT
-from llamatron.strings.marks import MSG_ANY_SCALE_LENGTH, MSG_BLOCKED_CELL
-from llamatron.strings.messages import MSG_NEW_PATTERN_TITLE
-from llamatron.strings.names import MSG_NUMBERED_NAME
+from llamatron.composition import limits
+from llamatron.strings import labels, legends, marks, messages, names
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.new_pattern_dialog import NewPatternDialog
@@ -52,31 +48,31 @@ class TestNewPatternDialog(UITest):
 
     async def test_it_shows_its_title_and_rows_and_starts_on_a_scale_of_seven_notes(self):
         shown = self.text()
-        for text in (MSG_NEW_PATTERN_TITLE, MSG_SCALE_LENGTH_LABEL, MSG_DRUM_PATTERN_LABEL):
+        for text in (messages.MSG_NEW_PATTERN_TITLE, labels.MSG_SCALE_LENGTH_LABEL, labels.MSG_DRUM_PATTERN_LABEL):
             self.assertIn(text, shown)
-        self.assertEqual(self.dialog.values()[0], str(NEW_PATTERN_SCALE_LENGTH))
+        self.assertEqual(self.dialog.values()[0], str(limits.NEW_PATTERN_SCALE_LENGTH))
 
     async def test_enter_at_once_makes_a_pattern_written_for_seven_notes_once_named(self):
         await self.press(keybindings.NewPatternDialog.OK)
         pattern = await self.name_it()
-        self.assertEqual(pattern.get_scale_length(), NEW_PATTERN_SCALE_LENGTH)
+        self.assertEqual(pattern.get_scale_length(), limits.NEW_PATTERN_SCALE_LENGTH)
         self.assertFalse(pattern.is_drum())
         self.assertIsInstance(self.app.screen, PatternEditor)
 
     async def test_the_scale_length_steps_and_stops_at_each_end(self):
-        await self.press(*[keybindings.NewPatternDialog.LESS] * MAX_SCALE_LENGTH)
+        await self.press(*[keybindings.NewPatternDialog.LESS] * limits.MAX_SCALE_LENGTH)
         self.assertIsNone(self.dialog.scale_length)
-        self.assertEqual(self.dialog.values()[0], MSG_ANY_SCALE_LENGTH)
+        self.assertEqual(self.dialog.values()[0], marks.MSG_ANY_SCALE_LENGTH)
         await self.press(keybindings.NewPatternDialog.MORE)
-        self.assertEqual(self.dialog.scale_length, MIN_SCALE_LENGTH)
-        await self.press(*[keybindings.NewPatternDialog.MORE] * MAX_SCALE_LENGTH)
-        self.assertEqual(self.dialog.scale_length, MAX_SCALE_LENGTH)
+        self.assertEqual(self.dialog.scale_length, limits.MIN_SCALE_LENGTH)
+        await self.press(*[keybindings.NewPatternDialog.MORE] * limits.MAX_SCALE_LENGTH)
+        self.assertEqual(self.dialog.scale_length, limits.MAX_SCALE_LENGTH)
         await self.press(keybindings.NewPatternDialog.OK)
-        self.assertEqual((await self.name_it()).get_scale_length(), MAX_SCALE_LENGTH)
+        self.assertEqual((await self.name_it()).get_scale_length(), limits.MAX_SCALE_LENGTH)
 
     async def test_the_drum_toggle_blocks_the_scale_length_and_makes_a_drum_pattern(self):
         await self.press(Key.DOWN, Key.SPACE)
-        self.assertEqual(self.dialog.values()[0], MSG_BLOCKED_CELL)
+        self.assertEqual(self.dialog.values()[0], marks.MSG_BLOCKED_CELL)
         await self.press(Key.DOWN, keybindings.NewPatternDialog.PRESS)
         pattern = await self.name_it()
         self.assertTrue(pattern.is_drum())
@@ -84,7 +80,7 @@ class TestNewPatternDialog(UITest):
 
     async def test_the_toggle_off_again_brings_the_number_back(self):
         await self.press(Key.DOWN, Key.SPACE, Key.ENTER)
-        self.assertEqual(self.dialog.values()[0], str(NEW_PATTERN_SCALE_LENGTH))
+        self.assertEqual(self.dialog.values()[0], str(limits.NEW_PATTERN_SCALE_LENGTH))
 
     async def test_the_cancel_button_and_escape_make_nothing(self):
         before = self.document.setlist().to_data()
@@ -105,7 +101,7 @@ class TestScaleLengthInTheTracker(UITest):
 
     async def test_a_blank_pattern_on_arrange_takes_the_scale_length_of_its_clips_scale(self):
         await self.press(keybindings.MainPage.ARRANGE, Key.RIGHT, Key.DOWN, keybindings.ArrangePage.BLANK_PATTERN)
-        name = MSG_NUMBERED_NAME.format(base=LEAD, number=1)
+        name = names.MSG_NUMBERED_NAME.format(base=LEAD, number=1)
         size = self.document.scale_size(self.document.pattern_scale(name))
         self.assertEqual(self.document.pattern_scale_length(name), size)
 
@@ -114,20 +110,20 @@ class TestScaleLengthInTheTracker(UITest):
         await self.press(Key.ENTER)
         await self.reconfigure(Reconfigure.SCALE_LENGTH)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
-        self.assertEqual(self.app.screen.options[0], MSG_ANY_SCALE_LENGTH)
+        self.assertEqual(self.app.screen.options[0], marks.MSG_ANY_SCALE_LENGTH)
         await self.pick(str(PENTATONIC))
         self.assertEqual(self.document.pattern_scale_length(TUNE), PENTATONIC)
         await self.reconfigure(Reconfigure.SCALE_LENGTH)
-        await self.pick(MSG_ANY_SCALE_LENGTH)
+        await self.pick(marks.MSG_ANY_SCALE_LENGTH)
         self.assertIsNone(self.document.pattern_scale_length(TUNE))
 
     async def test_a_drum_pattern_is_not_offered_a_scale_length_until_it_is_no_drum_pattern(self):
         await self.open_patterns_on(BEAT)
         await self.press(Key.ENTER, keybindings.PatternEditor.RECONFIGURE)
-        self.assertNotIn(MSG_SCALE_LENGTH_WHAT, self.app.screen.options)
+        self.assertNotIn(legends.MSG_SCALE_LENGTH_WHAT, self.app.screen.options)
         self.assertEqual(self.app.screen.options, reconfigure_choices(drum=True))
         await self.press(Key.ESCAPE)
-        self.assertIn(MSG_SCALE_LENGTH_WHAT, reconfigure_choices(drum=False))
+        self.assertIn(legends.MSG_SCALE_LENGTH_WHAT, reconfigure_choices(drum=False))
 
     async def test_the_header_says_what_a_pattern_was_written_for_only_under_a_scale_of_another_size(self):
         await self.open_patterns_on(TUNE)
@@ -135,9 +131,9 @@ class TestScaleLengthInTheTracker(UITest):
         size = self.document.scale_size(self.document.pattern_scale(TUNE))
         self.document.set_pattern_scale_length(name=TUNE, scale_length=size)
         await self.press(Key.RIGHT)
-        self.assertNotIn(fixed_text(MSG_WRITTEN_FOR).strip(), self.text())
-        other = PENTATONIC if size != PENTATONIC else MAX_SCALE_LENGTH
+        self.assertNotIn(fixed_text(labels.MSG_WRITTEN_FOR).strip(), self.text())
+        other = PENTATONIC if size != PENTATONIC else limits.MAX_SCALE_LENGTH
         self.document.set_pattern_scale_length(name=TUNE, scale_length=other)
         await self.press(Key.RIGHT)
-        self.assertIn(MSG_WRITTEN_FOR.format(scale=WARNING_ALONE, length=other).strip(), self.text())
+        self.assertIn(labels.MSG_WRITTEN_FOR.format(scale=WARNING_ALONE, length=other).strip(), self.text())
         self.assertEqual(self.document.scales_unsuited_to_pattern(TUNE), self.document.scales_of_pattern(TUNE))

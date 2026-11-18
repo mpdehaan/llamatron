@@ -22,7 +22,7 @@ from llamatron.composition.file_format import ClipSlotSetting, Direction, Genera
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.main_page import MainPage
-from llamatron.strings.labels import MSG_NOTES_LABEL
+from llamatron.strings import labels
 from llamatron.tui import keybindings
 
 MAIN = 'main'
@@ -120,7 +120,7 @@ class TestEveryKeyIsShownOnTheSetPages(EveryKeyIsShownTests, UITest):
         for _ in range(5):
             await self.press(Key.DOWN)
             yield FILE_FIELD
-        await self.select_field(MSG_NOTES_LABEL)
+        await self.select_field(labels.MSG_NOTES_LABEL)
         await self.press(Key.ENTER)
         yield NOTES_EDITING
         await self.press(Key.ESCAPE)

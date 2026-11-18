@@ -27,7 +27,7 @@ import re
 
 from rich.text import Text
 
-from llamatron.strings.about import MSG_BLOCK, MSG_BLOCK_LETTERS, MSG_DEMO_SCROLL
+from llamatron.strings import about
 from llamatron.tui.components.title_card import BLACK_STYLE, blank_line, shaded
 from llamatron.tui.drawing import NOTHING, SPACE
 
@@ -62,15 +62,15 @@ def demo_name(path):
 
 def scroll_text_for(path):
     """Return the words a recording of the set at path scrolls: DEMO: and its name."""
-    return MSG_DEMO_SCROLL.format(name=demo_name(path))
+    return about.MSG_DEMO_SCROLL.format(name=demo_name(path))
 
 
 def letter_lines(character):
     """Return one character's rows, BANNER_ROWS of them, in its capital's shape. A character with no shape is a space."""
-    shape = MSG_BLOCK_LETTERS.get(character.upper(), MSG_BLOCK_LETTERS[SPACE])
+    shape = about.MSG_BLOCK_LETTERS.get(character.upper(), about.MSG_BLOCK_LETTERS[SPACE])
     drawn = []
     for row in shape:
-        line = NOTHING.join((MSG_BLOCK if block != SPACE else SPACE) * BLOCK_COLUMNS for block in row)
+        line = NOTHING.join((about.MSG_BLOCK if block != SPACE else SPACE) * BLOCK_COLUMNS for block in row)
         drawn.extend([line] * BLOCK_ROWS)
     return drawn
 

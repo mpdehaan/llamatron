@@ -26,7 +26,7 @@ how far below the hook's top each note sits, the top being none.
 
 import random
 
-from llamatron.strings.macro_composer import MSG_HOOK_KIND
+from llamatron.strings import macro_composer as composer_text
 
 UNITS = 8
 # The contours.
@@ -81,7 +81,7 @@ def kind_of(*, seed, take):
 
 def said_of(kind):
     """A hook's kind in words."""
-    return MSG_HOOK_KIND.format(kind[CONTOUR], kind[RHYTHM], kind[DETAIL])
+    return composer_text.MSG_HOOK_KIND.format(kind[CONTOUR], kind[RHYTHM], kind[DETAIL])
 
 
 def depths_of(*, contour, count):

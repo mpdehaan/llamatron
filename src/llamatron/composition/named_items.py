@@ -18,7 +18,7 @@
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import data_as_kept, data_built_anew
 from llamatron.composition.naming import is_taken, name_order, same_name
-from llamatron.strings.errors import ERR_NAME_TAKEN, ERR_NO_SUCH_ITEM, ERR_SONG_NAME_NOT_TEXT
+from llamatron.strings import errors
 from llamatron.support.revised import notes_change, Revised
 
 FIRST_PLACE = 0
@@ -93,7 +93,7 @@ class NamedItems(Revised):
         try:
             return self._all()[name]
         except KeyError:
-            raise InvalidValue(ERR_NO_SUCH_ITEM.format(label=self._label, name=name)) from None
+            raise InvalidValue(errors.ERR_NO_SUCH_ITEM.format(label=self._label, name=name)) from None
 
     def find(self, name):
         """Return the item with a name, or None if there's none."""
@@ -168,11 +168,11 @@ class NamedItems(Revised):
 
     def _check(self, name):
         if not self.has(name):
-            raise InvalidValue(ERR_NO_SUCH_ITEM.format(label=self._label, name=name))
+            raise InvalidValue(errors.ERR_NO_SUCH_ITEM.format(label=self._label, name=name))
 
     def _check_new_name(self, name):
         if not isinstance(name, str):
-            raise InvalidValue(ERR_SONG_NAME_NOT_TEXT.format(name=name))
+            raise InvalidValue(errors.ERR_SONG_NAME_NOT_TEXT.format(name=name))
         # Names are compared without regard to capitals, though a file that holds two such names still loads.
         if is_taken(name=name, taken=self.names()):
-            raise InvalidValue(ERR_NAME_TAKEN.format(label=self._label, name=name))
+            raise InvalidValue(errors.ERR_NAME_TAKEN.format(label=self._label, name=name))

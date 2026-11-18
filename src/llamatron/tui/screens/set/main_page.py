@@ -37,7 +37,7 @@ from rich.text import Text
 
 from llamatron.composition.sections import GENERATOR_KINDS, Section
 from llamatron.tui.drawing import Box, Canvas, NOTHING, padded, SPACE, Style
-from llamatron.strings.help import HELP_MAIN_PAGE
+from llamatron.strings import errors, help as help_text, labels as labels_text, marks, messages
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.screens.shared.everywhere import everywhere_actions, everywhere_key, quit_key
@@ -52,10 +52,6 @@ from llamatron.tui.screens.pattern.patterns_page import PatternsPage
 from llamatron.tui.screens.set.registers_page import RegistersPage
 from llamatron.tui.screens.set.scales_page import ScalesPage
 from llamatron.tui.screens.set.songs_page import SongsPage
-from llamatron.strings.errors import ERR_ADD_INSTRUMENT_FIRST, ERR_NO_INSTRUMENTS_TITLE
-from llamatron.strings.labels import Crumb, PageName
-from llamatron.strings.marks import MSG_REAL_TIME_OFF_MARK, MSG_REAL_TIME_ON_MARK
-from llamatron.strings.messages import MSG_REAL_TIME_OFF, MSG_REAL_TIME_OFF_STOPPED, MSG_REAL_TIME_ON
 from llamatron.tui import keybindings
 from llamatron.tui import themes
 from rich.color import Color
@@ -83,19 +79,19 @@ LINES_ABOVE_BAR = 1
 ARROW_STEPS = {Key.UP: (-1, 0), Key.DOWN: (1, 0), Key.LEFT: (0, -1), Key.RIGHT: (0, 1)}
 # The colour each page's cell is boxed in, its page's theme toned to the edges' one brightness; a cell with none is boxed dim.
 CELL_THEMES = {
-    PageName.SONGS: themes.SONGS, PageName.PATTERNS: themes.PATTERNS, PageName.CHAINS: themes.CHAINS, PageName.GENERATORS: themes.GENERATORS,
-    PageName.SCALES: themes.SCALES, PageName.GROOVES: themes.GROOVES, PageName.INSTRUMENTS: themes.INSTRUMENTS, PageName.REGISTERS: themes.REGISTERS,
-    PageName.FILE: themes.SET_FILE,
+    labels_text.PageName.SONGS: themes.SONGS, labels_text.PageName.PATTERNS: themes.PATTERNS, labels_text.PageName.CHAINS: themes.CHAINS, labels_text.PageName.GENERATORS: themes.GENERATORS,
+    labels_text.PageName.SCALES: themes.SCALES, labels_text.PageName.GROOVES: themes.GROOVES, labels_text.PageName.INSTRUMENTS: themes.INSTRUMENTS, labels_text.PageName.REGISTERS: themes.REGISTERS,
+    labels_text.PageName.FILE: themes.SET_FILE,
 }
 # The pages whose cell counts the set's things, by the section counted. Generators and Grooves are counted on their own.
 COUNTED_SECTIONS = {
-    PageName.SONGS: Section.SONGS, PageName.PATTERNS: Section.PATTERNS, PageName.CHAINS: Section.CHAINS, PageName.SCALES: Section.SCALES,
-    PageName.INSTRUMENTS: Section.INSTRUMENTS,
+    labels_text.PageName.SONGS: Section.SONGS, labels_text.PageName.PATTERNS: Section.PATTERNS, labels_text.PageName.CHAINS: Section.CHAINS, labels_text.PageName.SCALES: Section.SCALES,
+    labels_text.PageName.INSTRUMENTS: Section.INSTRUMENTS,
 }
 # What each action cell in the row under the pages is called: Save by its everywhere key, Open and Export by the main screen's own letters.
 ACTION_NAMES = {
-    keybindings.Page.SAVE: PageName.SAVE, keybindings.MainPage.OPEN_SET_HERE: PageName.OPEN, keybindings.MainPage.EXPORT_HERE: PageName.EXPORT,
-    keybindings.MainPage.IMPORT_HERE: PageName.IMPORT, keybindings.MainPage.QUIT: PageName.QUIT,
+    keybindings.Page.SAVE: labels_text.PageName.SAVE, keybindings.MainPage.OPEN_SET_HERE: labels_text.PageName.OPEN, keybindings.MainPage.EXPORT_HERE: labels_text.PageName.EXPORT,
+    keybindings.MainPage.IMPORT_HERE: labels_text.PageName.IMPORT, keybindings.MainPage.QUIT: labels_text.PageName.QUIT,
 }
 
 
@@ -166,8 +162,8 @@ class MainPage(Page):
     KEYS = keybindings.MainPage
 
     # The header's second line is the crumbs, and the main screen is the start of every trail, so the line says so rather than standing blank.
-    crumbs = (Crumb.MAIN_SCREEN,)
-    HELP = HELP_MAIN_PAGE
+    crumbs = (labels_text.Crumb.MAIN_SCREEN,)
+    HELP = help_text.HELP_MAIN_PAGE
 
     def __init__(self, holder):
         super().__init__(holder)
@@ -197,16 +193,16 @@ class MainPage(Page):
         """Turn real-time playback on or off, which needs an instrument to play through, and say which on the status line."""
         document = self.document()
         if not document.setlist().get_instrument_names():
-            self.tell(ERR_NO_INSTRUMENTS_TITLE, ERR_ADD_INSTRUMENT_FIRST)
+            self.tell(errors.ERR_NO_INSTRUMENTS_TITLE, errors.ERR_ADD_INSTRUMENT_FIRST)
             return
         on = not document.setlist().is_real_time()
         document.set_real_time(on)
         if not on and self.app.transport.is_playing():
             # Arrange shows no stop with Real Time off, so turning it off stops what plays, which was once a bug.
             self.app.transport.stop_all()
-            self.say(MSG_REAL_TIME_OFF_STOPPED)
+            self.say(messages.MSG_REAL_TIME_OFF_STOPPED)
             return
-        self.say(MSG_REAL_TIME_ON if on else MSG_REAL_TIME_OFF)
+        self.say(messages.MSG_REAL_TIME_ON if on else messages.MSG_REAL_TIME_OFF)
 
     def cursor_keys(self):
         return [
@@ -319,11 +315,11 @@ class MainPage(Page):
         """Return what a cell shows at its right: how many of its things a page has, the Real Time switch's mark, or None where a count means nothing: File, Registers, Arrange and the actions."""
         setlist = self.document().setlist()
         name = cell_name(item)
-        if name == PageName.REAL_TIME:
-            return MSG_REAL_TIME_ON_MARK if setlist.is_real_time() else MSG_REAL_TIME_OFF_MARK
-        if name == PageName.GENERATORS:
+        if name == labels_text.PageName.REAL_TIME:
+            return marks.MSG_REAL_TIME_ON_MARK if setlist.is_real_time() else marks.MSG_REAL_TIME_OFF_MARK
+        if name == labels_text.PageName.GENERATORS:
             return sum(len(setlist.get_item_names(section)) for section in GENERATOR_KINDS)
-        if name == PageName.GROOVES:
+        if name == labels_text.PageName.GROOVES:
             # The set's own grooves: the factory ones are always there, so counting them would say nothing.
             return len(setlist.get_own_groove_names())
         if name in COUNTED_SECTIONS:
@@ -349,7 +345,7 @@ class MainPage(Page):
         """Return the name drawn on a cell: its own, but Arrange/Play on the Arrange cell while the set's Real Time switch is on,
         so that the cell says where a song is played."""
         if item.binding is self.KEYS.ARRANGE and self.document().setlist().is_real_time():
-            return PageName.ARRANGE_PLAY
+            return labels_text.PageName.ARRANGE_PLAY
         return cell_name(item)
 
     def edge_style(self, item):

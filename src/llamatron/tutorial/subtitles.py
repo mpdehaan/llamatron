@@ -17,7 +17,7 @@
 """The video tutorial's captions as a SubRip (.srt) file, so that YouTube has them for search and
 translation as well as in the picture: each sentence and key called out, from the second it was said until the next."""
 
-from llamatron.strings.narration import MSG_SUBTITLE_CUE, MSG_SUBTITLE_TIME
+from llamatron.strings import narration
 
 MILLISECONDS_IN_A_SECOND = 1000
 SECONDS_IN_A_MINUTE = 60
@@ -31,7 +31,7 @@ def subtitle_time(seconds):
     whole, milliseconds = divmod(milliseconds, MILLISECONDS_IN_A_SECOND)
     minutes, whole = divmod(whole, SECONDS_IN_A_MINUTE)
     hours, minutes = divmod(minutes, MINUTES_IN_AN_HOUR)
-    return MSG_SUBTITLE_TIME.format(hours=hours, minutes=minutes, seconds=whole, milliseconds=milliseconds)
+    return narration.MSG_SUBTITLE_TIME.format(hours=hours, minutes=minutes, seconds=whole, milliseconds=milliseconds)
 
 
 def subtitles(*, said, ended, offset):
@@ -40,5 +40,5 @@ def subtitles(*, said, ended, offset):
     cues = []
     for number, (start, text) in enumerate(said, start=FIRST_CUE):
         end = said[number][0] if number < len(said) else ended
-        cues.append(MSG_SUBTITLE_CUE.format(number=number, start=subtitle_time(start + offset), end=subtitle_time(end + offset), text=text))
+        cues.append(narration.MSG_SUBTITLE_CUE.format(number=number, start=subtitle_time(start + offset), end=subtitle_time(end + offset), text=text))
     return ''.join(cues)

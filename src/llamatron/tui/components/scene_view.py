@@ -35,12 +35,7 @@ from rich.text import Text
 
 from llamatron.composition.checks import fraction_text
 from llamatron.music.note import SHARP_NAMES
-from llamatron.strings.marks import (
-    MSG_SCENE_VIEW_CANT_SHOW, MSG_SCENE_VIEW_CHORD_LABEL, MSG_SCENE_VIEW_CLIP_SCALE, MSG_SCENE_VIEW_EFFECTIVE, MSG_SCENE_VIEW_LEGEND_GAP, MSG_SCENE_VIEW_LEGEND_MARK,
-    MSG_SCENE_VIEW_NOTE, MSG_SCENE_VIEW_NOTE_READS, MSG_SCENE_VIEW_NOTE_SEPARATOR, MSG_SCENE_VIEW_NOTHING_HERE, MSG_SCENE_VIEW_NUMERAL_LABEL, MSG_SCENE_VIEW_ONE_TAKE,
-    MSG_SCENE_VIEW_PLACE, MSG_SCENE_VIEW_PLAYED, MSG_SCENE_VIEW_REGISTERS, MSG_SCENE_VIEW_SIGNATURE, MSG_SCENE_VIEW_TRACK, MSG_SCENE_VIEW_WRITTEN,
-)
-from llamatron.strings.visualizers import MSG_PIANO_ROLL_DRUM_LANES, MSG_PIANO_ROLL_OCTAVE_LABEL
+from llamatron.strings import marks, visualizers
 from llamatron.tui.components.title_card import TITLE_BLUE
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
@@ -121,7 +116,7 @@ def coloured(*, drums, others):
 
 def track_label(*, name, place):
     """Return a track's name with its number, counted from 1, as the legend shows it."""
-    return MSG_SCENE_VIEW_TRACK.format(name=name, number=place + FIRST_NUMBER)
+    return marks.MSG_SCENE_VIEW_TRACK.format(name=name, number=place + FIRST_NUMBER)
 
 
 class SceneView:
@@ -256,20 +251,20 @@ class SceneView:
     def caption(self):
         """Return the line that says which view shows."""
         if self._written:
-            return MSG_SCENE_VIEW_WRITTEN
-        return MSG_SCENE_VIEW_PLAYED.format(take=MSG_SCENE_VIEW_ONE_TAKE if self._document.song().get_seed() is None else NO_TAKE)
+            return marks.MSG_SCENE_VIEW_WRITTEN
+        return marks.MSG_SCENE_VIEW_PLAYED.format(take=marks.MSG_SCENE_VIEW_ONE_TAKE if self._document.song().get_seed() is None else NO_TAKE)
 
     def lines(self, *, width, height):
         """Return the window's lines, width columns by height rows: the caption, the effective values and the legend across, then the chords and the roll beside the sidebar, then the line under the cursor."""
         lines = [Text(self.caption().ljust(width)[:width], style=CAPTION_STYLE)]
         notes = self.notes()
         if notes is None:
-            return lines + [Text(MSG_SCENE_VIEW_CANT_SHOW.format(problem=self._problem)[:width])]
+            return lines + [Text(marks.MSG_SCENE_VIEW_CANT_SHOW.format(problem=self._problem)[:width])]
         song = self._document.song()
         effective = effective_values(song=song, index=self._index)
         signature = song.get_time_signature()
-        lines.append(Text(MSG_SCENE_VIEW_EFFECTIVE.format(
-            tempo=effective.tempo, tempo_source=effective.tempo_source, signature=MSG_SCENE_VIEW_SIGNATURE.format(beats=signature.get_beats(), unit=signature.get_unit()),
+        lines.append(Text(marks.MSG_SCENE_VIEW_EFFECTIVE.format(
+            tempo=effective.tempo, tempo_source=effective.tempo_source, signature=marks.MSG_SCENE_VIEW_SIGNATURE.format(beats=signature.get_beats(), unit=signature.get_unit()),
             scale=effective.scale or NOTHING, scale_source=effective.scale_source, groove=effective.groove, groove_source=effective.groove_source,
         )[:width], style=DIM_STYLE))
         lines.append(self.legend(notes=notes, effective=effective, width=width))
@@ -303,13 +298,13 @@ class SceneView:
         text = Text()
         for track in sorted({note.track for note in notes.notes}):
             name = notes.names[track]
-            entry = MSG_SCENE_VIEW_LEGEND_MARK + track_label(name=name, place=track)
+            entry = marks.MSG_SCENE_VIEW_LEGEND_MARK + track_label(name=name, place=track)
             if name in effective.clip_scales:
-                entry += MSG_SCENE_VIEW_CLIP_SCALE.format(scale=effective.clip_scales[name])
+                entry += marks.MSG_SCENE_VIEW_CLIP_SCALE.format(scale=effective.clip_scales[name])
             text.append(entry, style=self._cells.style_of(colour=self.track_colour(track)))
-            text.append(MSG_SCENE_VIEW_LEGEND_GAP)
+            text.append(marks.MSG_SCENE_VIEW_LEGEND_GAP)
         if notes.marked_tracks:
-            text.append(MSG_SCENE_VIEW_REGISTERS, style=DIM_STYLE)
+            text.append(marks.MSG_SCENE_VIEW_REGISTERS, style=DIM_STYLE)
         text.truncate(width)
         return text
 
@@ -338,8 +333,8 @@ class SceneView:
                 if x + place < cells:
                     numerals[x + place] = character
         return [
-            Text(MSG_SCENE_VIEW_CHORD_LABEL.ljust(LABEL_COLUMNS) + NOTHING.join(names), style=PLAIN_STYLE),
-            Text(MSG_SCENE_VIEW_NUMERAL_LABEL.ljust(LABEL_COLUMNS) + NOTHING.join(numerals), style=DIM_STYLE),
+            Text(marks.MSG_SCENE_VIEW_CHORD_LABEL.ljust(LABEL_COLUMNS) + NOTHING.join(names), style=PLAIN_STYLE),
+            Text(marks.MSG_SCENE_VIEW_NUMERAL_LABEL.ljust(LABEL_COLUMNS) + NOTHING.join(numerals), style=DIM_STYLE),
         ]
 
     def roll_lines(self, *, notes, sixteenths, roll_height):
@@ -388,13 +383,13 @@ class SceneView:
     def row_label(self, *, key, played):
         """Return a row's label as its characters and styles: its octave's name along a C and the key's own name when a note plays it, or its lane's name in the drum lanes."""
         if isinstance(key, tuple):
-            text = MSG_PIANO_ROLL_DRUM_LANES[key[1]][:LABEL_COLUMNS - 1].ljust(LABEL_COLUMNS)
+            text = visualizers.MSG_PIANO_ROLL_DRUM_LANES[key[1]][:LABEL_COLUMNS - 1].ljust(LABEL_COLUMNS)
             return list(text), [self._cells.style_of(colour=LABEL_COLOUR)] * LABEL_COLUMNS
         characters = [SPACE] * LABEL_COLUMNS
         styles = [None] * LABEL_COLUMNS
         if key % HALF_STEPS_PER_OCTAVE == 0:
             octave = self._document.setlist().shown_octave(key // HALF_STEPS_PER_OCTAVE)
-            for place, character in enumerate(MSG_PIANO_ROLL_OCTAVE_LABEL.format(octave=octave)[:NOTE_LABEL_COLUMN]):
+            for place, character in enumerate(visualizers.MSG_PIANO_ROLL_OCTAVE_LABEL.format(octave=octave)[:NOTE_LABEL_COLUMN]):
                 characters[place] = character
                 styles[place] = self._cells.style_of(colour=LABEL_COLOUR)
         if key in played:
@@ -463,14 +458,14 @@ class SceneView:
         for note in notes.notes:
             here = (LANE, drum_lane(note.pitch)) if note.drum else note.pitch
             if here == key and note.start <= time < note.end:
-                text = MSG_SCENE_VIEW_NOTE.format(track=notes.names[note.track], number=note.track + FIRST_NUMBER, note=self.note_name(note.pitch),
+                text = marks.MSG_SCENE_VIEW_NOTE.format(track=notes.names[note.track], number=note.track + FIRST_NUMBER, note=self.note_name(note.pitch),
                                                   length=fraction_text(note.end - note.start))
-                found.append(text + (MSG_SCENE_VIEW_NOTE_READS if note.marked else NOTHING))
+                found.append(text + (marks.MSG_SCENE_VIEW_NOTE_READS if note.marked else NOTHING))
         if found:
-            return MSG_SCENE_VIEW_NOTE_SEPARATOR.join(found)
+            return marks.MSG_SCENE_VIEW_NOTE_SEPARATOR.join(found)
         bar, within = divmod(self._column, max(int(notes.bar * COLUMNS_PER_WHOLE), 1))
         beat = within // max(int(notes.beat * COLUMNS_PER_WHOLE), 1)
-        return MSG_SCENE_VIEW_NOTHING_HERE.format(place=MSG_SCENE_VIEW_PLACE.format(bar=bar + 1, beat=beat + 1))
+        return marks.MSG_SCENE_VIEW_NOTHING_HERE.format(place=marks.MSG_SCENE_VIEW_PLACE.format(bar=bar + 1, beat=beat + 1))
 
     def note_name(self, pitch):
         """Return a pitch's name with its octave in the set's octave labels."""

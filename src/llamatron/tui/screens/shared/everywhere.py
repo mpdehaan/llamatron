@@ -33,18 +33,8 @@ from llamatron.tui.dialogs.corrections_dialog import CorrectionsDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.screens.shared.shared import SONG_SUFFIX, SONG_SUFFIXES
 from llamatron.tui.uses import loop_error_lines
-from llamatron.strings.errors import ERR_NOT_WHILE_DRAFTING, ERR_CANT_EXPORT_TITLE, ERR_CANT_OPEN_TITLE, ERR_CANT_SAVE, ERR_CANT_SAVE_TITLE, ERR_LOOP_SCENES_TITLE, ERR_WAV_NEEDS_FLUIDSYNTH
-from llamatron.strings.labels import MSG_EXPORT_CHOICES
+from llamatron.strings import errors, labels, marks, messages as messages_text
 from llamatron.tui.dialogs.quit_dialog import SAVE_THEN_QUIT, QuitDialog
-from llamatron.strings.marks import MSG_CRUMB_SEPARATOR
-from llamatron.strings.messages import (
-    MSG_OPENED, MSG_UNSAVED_CONTINUE, MSG_UNSAVED_TITLE, MSG_EXPORT_REPLACES_LIVE_WORK, MSG_EXPORT_TITLE, MSG_EXPORTED,
-    MSG_FILE_CHANGED_ELSEWHERE_QUESTION, MSG_FILE_CHANGED_ELSEWHERE_TITLE, MSG_FILE_UNCHANGED, MSG_BACK_FROM, MSG_NOTHING_TO_REDO,
-    MSG_NOTHING_TO_UNDO, MSG_RESTORED, MSG_UNDONE, MSG_QUIT_TITLE, MSG_QUIT_UNSAVED_NOTE, MSG_QUIT_UNSAVED_QUESTION, MSG_REPLACE_EXPORT_QUESTION,
-    MSG_REPLACE_EXPORT_TITLE, MSG_REPLACE_FILE_QUESTION, MSG_REPLACE_FILE_TITLE, MSG_PROTECTED_CHOOSE_ANOTHER_NAME, MSG_PROTECTED_EXPLAINED,
-    MSG_PROTECTED_SAVE_COPY_QUESTION, MSG_PROTECTED_TITLE, MSG_SAVE_AS_PROMPT, MSG_SAVE_BEFORE_EXPORT, MSG_SAVE_BEFORE_EXPORT_TITLE,
-    MSG_SAVED, MSG_WAV_EXPORT_NOTE, MSG_WAV_EXPORT_TITLE,
-)
 
 # Where Save as starts when the set has no file yet.
 DEFAULT_SAVE_FOLDER = 'songs'
@@ -58,7 +48,7 @@ def everywhere_actions(page):
     if page.app.is_drafting():
         # A draft is no set of its own: it is neither saved nor exported, and nothing is opened over the set behind it.
         def refused():
-            page.refuse(ERR_NOT_WHILE_DRAFTING)
+            page.refuse(errors.ERR_NOT_WHILE_DRAFTING)
         return {
             page.KEYS.SAVE: refused, page.KEYS.OPEN_SET: refused, page.KEYS.EXPORT: refused, page.KEYS.WIZARD: refused,
             page.KEYS.UNDO: lambda: undo(page), page.KEYS.REDO: lambda: redo(page), page.KEYS.HELP: page.show_help, page.KEYS.ABOUT: page.show_about,
@@ -97,12 +87,12 @@ def quit_key(page):
 
 def undo(page):
     """Take back the last edit, saying what it touched, or that there is nothing to undo."""
-    step_history(page, step=page.document().undo, done=MSG_UNDONE, nothing=MSG_NOTHING_TO_UNDO)
+    step_history(page, step=page.document().undo, done=messages_text.MSG_UNDONE, nothing=messages_text.MSG_NOTHING_TO_UNDO)
 
 
 def redo(page):
     """Put back the last undone edit, saying what it touched, or that there is nothing to redo."""
-    step_history(page, step=page.document().redo, done=MSG_RESTORED, nothing=MSG_NOTHING_TO_REDO)
+    step_history(page, step=page.document().redo, done=messages_text.MSG_RESTORED, nothing=messages_text.MSG_NOTHING_TO_REDO)
 
 
 def step_history(page, *, step, done, nothing):
@@ -128,7 +118,7 @@ def step_history(page, *, step, done, nothing):
     for index, open_page in enumerate(pages):
         open_page.follow_renames(change.renames)
         if not open_page.still_exists():
-            status = MSG_BACK_FROM.format(status=status, page=MSG_CRUMB_SEPARATOR.join(open_page.crumb_trail()))
+            status = messages_text.MSG_BACK_FROM.format(status=status, page=marks.MSG_CRUMB_SEPARATOR.join(open_page.crumb_trail()))
             app.go_back_to(pages[index - 1])
             break
         open_page.restore_place(places[index])
@@ -151,18 +141,18 @@ def save(page, *, then=None):
         save_as(page, then=then)
         return
     if document.file_is_protected():
-        messages = [MSG_PROTECTED_EXPLAINED.format(path=path), MSG_PROTECTED_SAVE_COPY_QUESTION]
-        page.ask(dialog=ConfirmDialog(title=MSG_PROTECTED_TITLE, messages=messages), then=lambda _: save_as(page, then=then))
+        messages = [messages_text.MSG_PROTECTED_EXPLAINED.format(path=path), messages_text.MSG_PROTECTED_SAVE_COPY_QUESTION]
+        page.ask(dialog=ConfirmDialog(title=messages_text.MSG_PROTECTED_TITLE, messages=messages), then=lambda _: save_as(page, then=then))
         return
     # The file is read once for both questions about it.
     held = document.file_now()
     if document.file_holds_this_set(held=held):
-        page.say(MSG_FILE_UNCHANGED.format(path=path))
+        page.say(messages_text.MSG_FILE_UNCHANGED.format(path=path))
         if then is not None:
             then()
     elif document.file_changed_elsewhere(held=held):
-        question = MSG_FILE_CHANGED_ELSEWHERE_QUESTION.format(path=path)
-        page.ask(dialog=ConfirmDialog(title=MSG_FILE_CHANGED_ELSEWHERE_TITLE, messages=[question]), then=lambda _: write(page, path=path, then=then))
+        question = messages_text.MSG_FILE_CHANGED_ELSEWHERE_QUESTION.format(path=path)
+        page.ask(dialog=ConfirmDialog(title=messages_text.MSG_FILE_CHANGED_ELSEWHERE_TITLE, messages=[question]), then=lambda _: write(page, path=path, then=then))
     else:
         write(page, path=path, then=then)
 
@@ -179,12 +169,12 @@ def save_as(page, *, then=None):
         if not path.endswith(SONG_SUFFIXES):
             path += SONG_SUFFIX
         if document.file_is_protected(path=path):
-            page.tell(MSG_PROTECTED_TITLE, MSG_PROTECTED_EXPLAINED.format(path=path), MSG_PROTECTED_CHOOSE_ANOTHER_NAME)
+            page.tell(messages_text.MSG_PROTECTED_TITLE, messages_text.MSG_PROTECTED_EXPLAINED.format(path=path), messages_text.MSG_PROTECTED_CHOOSE_ANOTHER_NAME)
         elif path != document.get_path() and os.path.exists(path):
-            page.ask(dialog=ConfirmDialog(title=MSG_REPLACE_FILE_TITLE, messages=[MSG_REPLACE_FILE_QUESTION.format(path=path)]), then=lambda _: write(page, path=path, then=then, as_copy=True))
+            page.ask(dialog=ConfirmDialog(title=messages_text.MSG_REPLACE_FILE_TITLE, messages=[messages_text.MSG_REPLACE_FILE_QUESTION.format(path=path)]), then=lambda _: write(page, path=path, then=then, as_copy=True))
         else:
             write(page, path=path, then=then, as_copy=True)
-    page.ask(dialog=PromptDialog(title=MSG_SAVE_AS_PROMPT, value=default), then=chosen)
+    page.ask(dialog=PromptDialog(title=messages_text.MSG_SAVE_AS_PROMPT, value=default), then=chosen)
 
 
 def write(page, *, path, then=None, as_copy=False):
@@ -195,12 +185,12 @@ def write(page, *, path, then=None, as_copy=False):
         else:
             page.document().save(path=path)
     except OSError as error:
-        page.tell(ERR_CANT_SAVE_TITLE, ERR_CANT_SAVE.format(path=path, error=error.strerror))
+        page.tell(errors.ERR_CANT_SAVE_TITLE, errors.ERR_CANT_SAVE.format(path=path, error=error.strerror))
         return
     except SongFileError as error:
-        page.tell(ERR_CANT_SAVE_TITLE, str(error))
+        page.tell(errors.ERR_CANT_SAVE_TITLE, str(error))
         return
-    page.say(MSG_SAVED.format(path=path))
+    page.say(messages_text.MSG_SAVED.format(path=path))
     if then is not None:
         then()
 
@@ -210,7 +200,7 @@ def write(page, *, path, then=None, as_copy=False):
 def unless_unsaved(page, *, then):
     """Call then, after asking if the set has unsaved changes that it would lose."""
     if page.document().is_dirty():
-        page.ask(dialog=ConfirmDialog(title=MSG_UNSAVED_TITLE, messages=[MSG_UNSAVED_CONTINUE]), then=lambda _: then())
+        page.ask(dialog=ConfirmDialog(title=messages_text.MSG_UNSAVED_TITLE, messages=[messages_text.MSG_UNSAVED_CONTINUE]), then=lambda _: then())
     else:
         then()
 
@@ -225,7 +215,7 @@ def open_file(*, page, path, then):
     try:
         document, corrections = Document.load_or_correct(path)
     except SongFileError as error:
-        page.tell(ERR_CANT_OPEN_TITLE, str(error))
+        page.tell(errors.ERR_CANT_OPEN_TITLE, str(error))
         return
     if corrections:
         offer_corrected(page=page, document=document, corrections=corrections, then=then)
@@ -246,7 +236,7 @@ def open_set(page):
 
     def opened(document):
         page.holder.set_document(document)
-        page.say(MSG_OPENED.format(path=document.get_path()))
+        page.say(messages_text.MSG_OPENED.format(path=document.get_path()))
         warn_of_silent_instruments(page=page, document=document)
     unless_unsaved(page, then=lambda: page.show_page(OpenPage(holder=page.holder, then=opened)))
 
@@ -260,15 +250,15 @@ def export(page):
     if loops_block_export(page):
         return
     if not page.document().can_export():
-        page.ask(dialog=ConfirmDialog(title=MSG_SAVE_BEFORE_EXPORT_TITLE, messages=[MSG_SAVE_BEFORE_EXPORT]), then=lambda _: save_as(page, then=lambda: choose_export(page)))
+        page.ask(dialog=ConfirmDialog(title=messages_text.MSG_SAVE_BEFORE_EXPORT_TITLE, messages=[messages_text.MSG_SAVE_BEFORE_EXPORT]), then=lambda _: save_as(page, then=lambda: choose_export(page)))
         return
     choose_export(page)
 
 
 def choose_export(page):
     """Ask which kind of export to write for the current song, and write it."""
-    title = MSG_EXPORT_TITLE.format(name=page.document().current_song_name())
-    page.ask(dialog=ChoiceDialog(title=title, options=MSG_EXPORT_CHOICES), then=lambda place: export_chosen(page, to=EXPORT_KINDS[place]))
+    title = messages_text.MSG_EXPORT_TITLE.format(name=page.document().current_song_name())
+    page.ask(dialog=ChoiceDialog(title=title, options=labels.MSG_EXPORT_CHOICES), then=lambda place: export_chosen(page, to=EXPORT_KINDS[place]))
 
 
 def export_chosen(page, *, to):
@@ -276,16 +266,16 @@ def export_chosen(page, *, to):
     if to != ExportKind.WAV:
         export_as(page, to=to)
     elif not fluidsynth_installed():
-        page.tell(ERR_CANT_EXPORT_TITLE, ERR_WAV_NEEDS_FLUIDSYNTH)
+        page.tell(errors.ERR_CANT_EXPORT_TITLE, errors.ERR_WAV_NEEDS_FLUIDSYNTH)
     else:
-        page.ask(dialog=ConfirmDialog(title=MSG_WAV_EXPORT_TITLE, messages=[MSG_WAV_EXPORT_NOTE]), then=lambda _: export_as(page, to=to))
+        page.ask(dialog=ConfirmDialog(title=messages_text.MSG_WAV_EXPORT_TITLE, messages=[messages_text.MSG_WAV_EXPORT_NOTE]), then=lambda _: export_as(page, to=to))
 
 
 def loops_block_export(page):
     """Show the scenes in which every clip loops, and return whether there were any."""
     lines = loop_error_lines(page.document().song())
     if lines:
-        page.tell(ERR_LOOP_SCENES_TITLE, *lines)
+        page.tell(errors.ERR_LOOP_SCENES_TITLE, *lines)
     return bool(lines)
 
 
@@ -294,12 +284,12 @@ def export_as(page, *, to):
     document = page.document()
     path = document.export_path(to)
     if to == ExportKind.ABLETON and document.export_exists(to) and not page.app.has_confirmed_overwrite(path):
-        question = MSG_REPLACE_EXPORT_QUESTION.format(path=path)
+        question = messages_text.MSG_REPLACE_EXPORT_QUESTION.format(path=path)
 
         def confirmed(_):
             page.app.confirm_overwrite(path)
             write_export(page, to=to)
-        page.ask(dialog=ConfirmDialog(title=MSG_REPLACE_EXPORT_TITLE, messages=[question, MSG_EXPORT_REPLACES_LIVE_WORK]), then=confirmed)
+        page.ask(dialog=ConfirmDialog(title=messages_text.MSG_REPLACE_EXPORT_TITLE, messages=[question, messages_text.MSG_EXPORT_REPLACES_LIVE_WORK]), then=confirmed)
     else:
         write_export(page, to=to)
 
@@ -308,10 +298,10 @@ def write_export(page, *, to):
     try:
         path = page.document().export(to)
     except SongFileError as error:
-        page.tell(ERR_CANT_EXPORT_TITLE, str(error))
+        page.tell(errors.ERR_CANT_EXPORT_TITLE, str(error))
         return
     # The status line says where it went, as it does for saving, rather than a dialog to dismiss.
-    page.say(MSG_EXPORTED.format(name=EXPORT_LABELS[to], path=path))
+    page.say(messages_text.MSG_EXPORTED.format(name=EXPORT_LABELS[to], path=path))
 
 
 # Quitting, which asks only when there are changes to lose.
@@ -321,11 +311,11 @@ def quit_program(page):
     if not page.document().is_dirty():
         page.app.exit()
         return
-    title = UNSAVED_TITLE.format(title=MSG_QUIT_TITLE, note=MSG_QUIT_UNSAVED_NOTE)
+    title = UNSAVED_TITLE.format(title=messages_text.MSG_QUIT_TITLE, note=messages_text.MSG_QUIT_UNSAVED_NOTE)
 
     def chosen(answer):
         if answer == SAVE_THEN_QUIT:
             save(page, then=page.app.exit)
         else:
             page.app.exit()
-    page.ask(dialog=QuitDialog(title=title, messages=[MSG_QUIT_UNSAVED_QUESTION]), then=chosen)
+    page.ask(dialog=QuitDialog(title=title, messages=[messages_text.MSG_QUIT_UNSAVED_QUESTION]), then=chosen)

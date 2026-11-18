@@ -22,8 +22,7 @@ from llamatron.macro_composer import arranger, interplay
 from llamatron.macro_composer.melody import GRID
 from llamatron.macro_composer.notation import LINES, REST, STEPS
 from llamatron.macro_composer.wizard_choices import BESIDE_KEPT, BY, WizardChoices
-from llamatron.strings.errors import ERR_NO_SUCH_WAY_BESIDE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE
-from llamatron.strings.macro_composer import MSG_PART_BESIDE, MSG_REPEATED_SCENE
+from llamatron.strings import errors, macro_composer as composer_text
 from llamatron.support.version import VERSION
 
 ROCK = 'rock'
@@ -170,22 +169,22 @@ class TestArrangedBesideTheTune(unittest.TestCase):
     def test_each_section_plays_what_the_plan_says_and_the_solo_is_the_players_own(self):
         choices = wizard()
         parts, song = self.parts_of(choices=choices, way=None)
-        self.assertEqual(parts[VERSE], MSG_PART_BESIDE.format(VERSE, SOLO, interplay.FILLS))
-        self.assertEqual(parts[CHORUS], MSG_PART_BESIDE.format(CHORUS, SOLO, interplay.DOUBLES))
-        self.assertEqual(parts[BRIDGE], MSG_PART_BESIDE.format(BRIDGE, SOLO, interplay.ANSWERS))
+        self.assertEqual(parts[VERSE], composer_text.MSG_PART_BESIDE.format(VERSE, SOLO, interplay.FILLS))
+        self.assertEqual(parts[CHORUS], composer_text.MSG_PART_BESIDE.format(CHORUS, SOLO, interplay.DOUBLES))
+        self.assertEqual(parts[BRIDGE], composer_text.MSG_PART_BESIDE.format(BRIDGE, SOLO, interplay.ANSWERS))
         self.assertNotIn(interplay.FILLS, parts[SOLO])
         # Playing the hook with the tune is the singer's own line, on the player's own track.
-        self.assertEqual(song[arranger.PARTS][parts[CHORUS]][LINES], song[arranger.PARTS][arranger.MSG_PART_OF_SECTION.format(CHORUS, 'lead')][LINES])
+        self.assertEqual(song[arranger.PARTS][parts[CHORUS]][LINES], song[arranger.PARTS][composer_text.MSG_PART_OF_SECTION.format(CHORUS, 'lead')][LINES])
 
     def test_fills_are_drawn_anew_each_time_a_section_returns_and_the_hook_is_the_same_every_time(self):
         choices = wizard()
         # A seed is set, since a seed whose verse leaves room for one short fill can draw the same fill twice.
         choices.set_seed(A_SEED)
         parts, song = self.parts_of(choices=choices, way=None)
-        second = MSG_REPEATED_SCENE.format(VERSE, 2)
-        self.assertEqual(parts[second], MSG_PART_BESIDE.format(second, SOLO, interplay.FILLS))
+        second = composer_text.MSG_REPEATED_SCENE.format(VERSE, 2)
+        self.assertEqual(parts[second], composer_text.MSG_PART_BESIDE.format(second, SOLO, interplay.FILLS))
         self.assertNotEqual(song[arranger.PARTS][parts[VERSE]][LINES], song[arranger.PARTS][parts[second]][LINES])
-        self.assertEqual(parts[MSG_REPEATED_SCENE.format(CHORUS, 2)], parts[CHORUS])
+        self.assertEqual(parts[composer_text.MSG_REPEATED_SCENE.format(CHORUS, 2)], parts[CHORUS])
 
     def test_a_player_who_waits_everywhere_makes_the_song_made_before_answering_could_be_chosen(self):
         choices = wizard()
@@ -210,7 +209,7 @@ class TestArrangedBesideTheTune(unittest.TestCase):
         self.assertNotIn(answering, chorus[arranger.PLAY])
         choices.set_role_plan(interplay.FILLS)
         chorus = next(scene for scene in made(choices)[arranger.FORM] if scene[arranger.SCENE] == CHORUS)
-        self.assertEqual(chorus[arranger.PLAY][answering][arranger.PART], MSG_PART_BESIDE.format(CHORUS, answering, interplay.FILLS))
+        self.assertEqual(chorus[arranger.PLAY][answering][arranger.PART], composer_text.MSG_PART_BESIDE.format(CHORUS, answering, interplay.FILLS))
 
     def test_a_way_that_is_none_is_refused(self):
         choices = wizard()
@@ -218,7 +217,7 @@ class TestArrangedBesideTheTune(unittest.TestCase):
         song[arranger.BESIDE][arranger.BESIDE_WAYS] = [NO_SUCH] * len(song[arranger.BESIDE][arranger.BESIDE_WAYS])
         with self.assertRaises(ValueError) as refused:
             arranger.arranged(style=arranger.style_named(ROCK), song=song)
-        self.assertEqual(str(refused.exception), ERR_NO_SUCH_WAY_BESIDE.format(NO_SUCH))
+        self.assertEqual(str(refused.exception), errors.ERR_NO_SUCH_WAY_BESIDE.format(NO_SUCH))
 
 
 class TestWizardInterplayChoices(unittest.TestCase):
@@ -237,7 +236,7 @@ class TestWizardInterplayChoices(unittest.TestCase):
         self.assertFalse(choices.section_has_role(place_of(choices=choices, kind=SOLO)))
         with self.assertRaises(ValueError) as refused:
             choices.section_role(place_of(choices=choices, kind=SOLO))
-        self.assertEqual(str(refused.exception), ERR_WIZARD_SECTION_HAS_NO_ROLE.format(value=place_of(choices=choices, kind=SOLO)))
+        self.assertEqual(str(refused.exception), errors.ERR_WIZARD_SECTION_HAS_NO_ROLE.format(value=place_of(choices=choices, kind=SOLO)))
 
     def test_nobody_answers_where_the_genre_has_no_answering_player_or_the_subgenre_gives_the_player_no_way(self):
         for genre, subgenre in ((ELECTRONIC, 'house'), (ROCK, PUNK)):
@@ -291,15 +290,15 @@ class TestWizardInterplayChoices(unittest.TestCase):
         verse = place_of(choices=choices, kind=VERSE)
         with self.assertRaises(ValueError) as refused:
             choices.set_answered_by(NO_SUCH)
-        self.assertEqual(str(refused.exception), ERR_WIZARD_NO_SUCH_ANSWERER.format(value=NO_SUCH))
+        self.assertEqual(str(refused.exception), errors.ERR_WIZARD_NO_SUCH_ANSWERER.format(value=NO_SUCH))
         for setter in (choices.set_role_plan, lambda way: choices.set_section_role(place=verse, way=way)):
             with self.assertRaises(ValueError) as refused:
                 setter(NO_SUCH)
-            self.assertEqual(str(refused.exception), ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=NO_SUCH))
+            self.assertEqual(str(refused.exception), errors.ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=NO_SUCH))
         for busy in (interplay.LEAST_BUSY - 1, interplay.MOST_BUSY + 1, True, NO_SUCH):
             with self.assertRaises(ValueError) as refused:
                 choices.set_fills_busy(busy)
-            self.assertEqual(str(refused.exception), ERR_WIZARD_FILLS_BUSY.format(low=interplay.LEAST_BUSY, high=interplay.MOST_BUSY, value=busy))
+            self.assertEqual(str(refused.exception), errors.ERR_WIZARD_FILLS_BUSY.format(low=interplay.LEAST_BUSY, high=interplay.MOST_BUSY, value=busy))
 
     def test_every_place_of_fills_busy_makes_a_song_of_its_own(self):
         choices = wizard()

@@ -23,13 +23,10 @@ from tests.support.ui_testing import LEAD, NAMED, TUNE, UITest, leaf_pages
 from llamatron.composition.file_format import NAMED_GENERATORS, ClipSlotSetting, Section
 from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES
 from llamatron.composition.groove import FACTORY_GROOVE_NAMES, FactoryGroove
-from llamatron.composition.limits import MAX_NAME_LENGTH
+from llamatron.composition import limits
+from llamatron.strings import errors, labels, messages, names
 from llamatron.composition.setlist import DEFAULT_SCALE
-from llamatron.strings.labels import Column
 from llamatron.tui.drawing import NOTHING, SPACE, fit
-from llamatron.strings.errors import ERR_NAME_IN_USE, ERR_STILL_USED
-from llamatron.strings.messages import MSG_COPIED_TO, MSG_DELETE_QUESTION
-from llamatron.strings.names import MSG_DEFAULT_SONG_NAME
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
@@ -49,7 +46,7 @@ A_GROOVE = 'shuffle'
 A_INSTRUMENT = 'synth'
 FIRST_SCENE = 0
 A_LETTER = 'a'
-MORE_THAN_A_NAME_HOLDS = MAX_NAME_LENGTH + 5
+MORE_THAN_A_NAME_HOLDS = limits.MAX_NAME_LENGTH + 5
 # A name an older file could hold, longer than the tracker now lets a person type.
 A_LONG_NAME = 'a_very_long_pattern_name_from_an_older_file'
 NOTHING_USES_A_SONG = 'nothing in a set names a song, so a song is never in use'
@@ -103,7 +100,7 @@ class NamedListChecks:
         before = self.own_names()
         new = await self.copy_the_first()
         self.assertEqual(self.own_names(), [*before, new])
-        self.assertIn(MSG_COPIED_TO.format(name=new), self.text())
+        self.assertIn(messages.MSG_COPIED_TO.format(name=new), self.text())
         self.assertEqual(self.page().current(), new)
 
     async def test_renaming_keeps_the_place_and_the_cursor(self):
@@ -123,7 +120,7 @@ class NamedListChecks:
         self.app.screen.value = self.FIRST
         await self.press(Key.ENTER)
         self.assertEqual(self.own_names(), before)
-        self.assertIn(ERR_NAME_IN_USE.format(name=self.FIRST), self.text())
+        self.assertIn(errors.ERR_NAME_IN_USE.format(name=self.FIRST), self.text())
         self.assertEqual(self.page().current(), new)
 
     async def test_deleting_what_nothing_uses_asks_first(self):
@@ -131,7 +128,7 @@ class NamedListChecks:
         new = await self.copy_the_first()
         await self.press(self.PAGE.KEYS.DELETE)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        self.assertIn(MSG_DELETE_QUESTION.format(what=self.page_under().what_is(new)), self.text())
+        self.assertIn(messages.MSG_DELETE_QUESTION.format(what=self.page_under().what_is(new)), self.text())
         await self.press(keybindings.ConfirmDialog.NO)
         self.assertEqual(self.own_names(), [*before, new])
         await self.press(self.PAGE.KEYS.DELETE, keybindings.ConfirmDialog.YES)
@@ -144,7 +141,7 @@ class NamedListChecks:
         before = self.own_names()
         await self.press(Key.DOWN, Key.UP, self.PAGE.KEYS.DELETE)
         self.assertIsInstance(self.app.screen, MessageDialog)
-        self.assertIn(ERR_STILL_USED.format(what=self.page_under().what_is(self.FIRST)), self.text())
+        self.assertIn(errors.ERR_STILL_USED.format(what=self.page_under().what_is(self.FIRST)), self.text())
         await self.press(Key.ENTER)
         self.assertEqual(self.own_names(), before)
 
@@ -195,15 +192,15 @@ class TestNamesAreHeldToTheirLength(UITest):
         self.assertIsInstance(self.app.screen, PromptDialog)
         self.app.screen.value = NOTHING
         await self.type(A_LETTER * MORE_THAN_A_NAME_HOLDS)
-        self.assertEqual(self.app.screen.value, A_LETTER * MAX_NAME_LENGTH)
+        self.assertEqual(self.app.screen.value, A_LETTER * limits.MAX_NAME_LENGTH)
         await self.press(Key.ENTER)
-        self.assertIn(A_LETTER * MAX_NAME_LENGTH, self.document.setlist().get_item_names(Section.PATTERNS))
+        self.assertIn(A_LETTER * limits.MAX_NAME_LENGTH, self.document.setlist().get_item_names(Section.PATTERNS))
 
     async def test_a_new_patterns_name_stops_there_too(self):
         await self.press(keybindings.MainPage.PATTERNS, keybindings.PatternsPage.ADD, keybindings.NewPatternDialog.OK)
         self.app.screen.value = NOTHING
         await self.type(A_LETTER * MORE_THAN_A_NAME_HOLDS)
-        self.assertEqual(len(self.app.screen.value), MAX_NAME_LENGTH)
+        self.assertEqual(len(self.app.screen.value), limits.MAX_NAME_LENGTH)
 
     async def test_an_older_files_longer_name_is_kept_in_the_prompt_and_takes_no_more(self):
         self.document.rename_named(section=Section.PATTERNS, old=TUNE, new=A_LONG_NAME)
@@ -217,20 +214,20 @@ class TestNamesAreHeldToTheirLength(UITest):
         self.assertEqual(self.app.screen.value, A_LONG_NAME[:-1])
 
     async def test_a_number_typed_is_not_held_to_a_names_length(self):
-        dialog = PromptDialog(title=NOTHING, value=A_LETTER * MAX_NAME_LENGTH)
+        dialog = PromptDialog(title=NOTHING, value=A_LETTER * limits.MAX_NAME_LENGTH)
         dialog.insert(A_LETTER)
-        self.assertEqual(len(dialog.value), MAX_NAME_LENGTH + 1)
+        self.assertEqual(len(dialog.value), limits.MAX_NAME_LENGTH + 1)
 
     async def test_the_columns_after_the_names_start_right_after_the_room_a_name_has(self):
         await self.press(keybindings.MainPage.PATTERNS)
-        heading = next(line for line in self.text().splitlines() if Column.SELECT_PATTERN in line and Column.TYPE in line)
-        self.assertEqual(heading.index(Column.TYPE), heading.index(Column.SELECT_PATTERN) + MAX_NAME_LENGTH + len(INDENT) + len(SPACE))
+        heading = next(line for line in self.text().splitlines() if labels.Column.SELECT_PATTERN in line and labels.Column.TYPE in line)
+        self.assertEqual(heading.index(labels.Column.TYPE), heading.index(labels.Column.SELECT_PATTERN) + limits.MAX_NAME_LENGTH + len(INDENT) + len(SPACE))
 
     async def test_an_older_files_longer_name_is_shown_cut_in_the_list(self):
         self.document.rename_named(section=Section.PATTERNS, old=TUNE, new=A_LONG_NAME)
         await self.press(keybindings.MainPage.PATTERNS)
-        self.assertIn(fit(text=INDENT + A_LONG_NAME, width=MAX_NAME_LENGTH + len(INDENT)), self.text())
-        self.assertNotIn(A_LONG_NAME, self.text().split(Column.SELECT_PATTERN)[-1])
+        self.assertIn(fit(text=INDENT + A_LONG_NAME, width=limits.MAX_NAME_LENGTH + len(INDENT)), self.text())
+        self.assertNotIn(A_LONG_NAME, self.text().split(labels.Column.SELECT_PATTERN)[-1])
         self.assertIn(A_LONG_NAME, self.document.setlist().get_item_names(Section.PATTERNS))
 
 
@@ -302,7 +299,7 @@ class TestSongsPageAsANamedList(NamedListChecks, UITest):
 
     PAGE = SongsPage
     OPENING = (keybindings.MainPage.SONGS,)
-    FIRST = MSG_DEFAULT_SONG_NAME
+    FIRST = names.MSG_DEFAULT_SONG_NAME
 
     def make_used(self):
         return False

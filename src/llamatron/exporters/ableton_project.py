@@ -26,8 +26,7 @@ from llamatron.support.files import READ_BYTES, WRITE_BYTES
 from llamatron.support.rational import Rational
 from llamatron.exporters.exporter import Exporter, ExportKind, WritesOneFile
 from llamatron.exporters.timing import BEATS_PER_WHOLE_NOTE, control_points, keyswitch_events, timed_events
-from llamatron.strings.names import MSG_ABLETON_EXPORT_LABEL
-from llamatron.strings.errors import ERR_BAD_TEMPLATE, ERR_BAD_TEMPO, ERR_EMPTY_SONG, ERR_FILE_EXISTS, ERR_NO_CLIP, ERR_NO_MIDI_TRACK, ERR_NOT_LIVE_12
+from llamatron.strings import errors, names
 
 # Installed along with the code, so that a set can be written from anywhere.
 DEFAULT_TEMPLATE = Path(__file__).resolve().parents[1] / 'templates' / 'live12.als'
@@ -173,7 +172,7 @@ _SHARED_ID_TAGS = re.compile(r'(Target|Targets\.\d+|Pointee)$')
 
 def _check_template(template):
     if not isinstance(template, (str, os.PathLike)) or not os.fspath(template):
-        raise ValueError(ERR_BAD_TEMPLATE.format(value=template))
+        raise ValueError(errors.ERR_BAD_TEMPLATE.format(value=template))
 
 
 def _set_value(*, parent, path, value):
@@ -225,7 +224,7 @@ class AbletonProject(WritesOneFile, Exporter):
     __slots__ = ('_template',)
 
     KIND = ExportKind.ABLETON
-    LABEL = MSG_ABLETON_EXPORT_LABEL
+    LABEL = names.MSG_ABLETON_EXPORT_LABEL
     FILE = SET_FILE
 
     def __init__(self, *, directory, grid, template=DEFAULT_TEMPLATE, name=None):
@@ -248,7 +247,7 @@ class AbletonProject(WritesOneFile, Exporter):
         """
         os.makedirs(self._directory, exist_ok=True)
         if os.path.exists(self.path()):
-            print(ERR_FILE_EXISTS.format(path=self.path()))
+            print(errors.ERR_FILE_EXISTS.format(path=self.path()))
             return
 
         # Built before anything is written, so that an invalid clip doesn't leave a broken file.
@@ -262,7 +261,7 @@ class AbletonProject(WritesOneFile, Exporter):
         with open(self._template, READ_BYTES) as file:
             root = ET.fromstring(gzip.decompress(file.read()))
         if not _saved_by_live_12(root):
-            raise ValueError(ERR_NOT_LIVE_12.format(template=self._template, attributes=root.attrib))
+            raise ValueError(errors.ERR_NOT_LIVE_12.format(template=self._template, attributes=root.attrib))
 
         live_set = root.find(Tag.LIVE_SET)
         next_shared_id = itertools.count(int(live_set.find(Tag.NEXT_POINTEE_ID).get(Attribute.VALUE)))
@@ -278,10 +277,10 @@ class AbletonProject(WritesOneFile, Exporter):
 
     def _check_song_fits_live(self):
         if not self._grid.get_rows() or not self._grid.get_columns():
-            raise ValueError(ERR_EMPTY_SONG)
+            raise ValueError(errors.ERR_EMPTY_SONG)
         for tempo in [self._grid.get_tempo()] + [scene.get_tempo() for scene in self._grid.get_rows()]:
             if tempo is not None and not MIN_LIVE_TEMPO <= tempo <= MAX_LIVE_TEMPO:
-                raise ValueError(ERR_BAD_TEMPO.format(lowest=MIN_LIVE_TEMPO, highest=MAX_LIVE_TEMPO, value=tempo))
+                raise ValueError(errors.ERR_BAD_TEMPO.format(lowest=MIN_LIVE_TEMPO, highest=MAX_LIVE_TEMPO, value=tempo))
 
     def _scene_starts(self):
         """Return when each scene starts in Arrangement View, in fractions of a whole note."""
@@ -345,7 +344,7 @@ class AbletonProject(WritesOneFile, Exporter):
         tracks = live_set.find(Tag.TRACKS)
         midi_tracks = tracks.findall(Tag.MIDI_TRACK)
         if not midi_tracks:
-            raise ValueError(ERR_NO_MIDI_TRACK.format(template=self._template))
+            raise ValueError(errors.ERR_NO_MIDI_TRACK.format(template=self._template))
         clip_prototype = self._find_clip(midi_tracks[0])
         colors = [track.find(ElementPath.COLOR).get(Attribute.VALUE) for track in midi_tracks]
         next_track_id = itertools.count(_highest_id(tracks) + 1)
@@ -359,7 +358,7 @@ class AbletonProject(WritesOneFile, Exporter):
     def _find_clip(self, track):
         for clip in track.find(ElementPath.CLIP_SLOTS).iter(Tag.MIDI_CLIP):
             return clip
-        raise ValueError(ERR_NO_CLIP.format(template=self._template))
+        raise ValueError(errors.ERR_NO_CLIP.format(template=self._template))
 
     def _build_track(self, *, prototype, clip_prototype, track, number, color, track_id, next_shared_id, starts):
         element = copy.deepcopy(prototype)

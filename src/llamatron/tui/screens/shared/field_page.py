@@ -19,20 +19,15 @@
 from rich.text import Text
 
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.strings.legends import What
-from llamatron.strings.marks import MSG_PICKER_MARK
+from llamatron.strings import errors, labels as labels_text, legends, marks
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.keys import Key
 from llamatron.tui.drawing import cursor_mark, INDENT, NOTHING, padded, Style
 from llamatron.tui.key_table import cursor_moved
-from llamatron.strings.labels import MSG_NAME_LABEL
 from llamatron.tui.screens.shared.field import Button, CELL_GAP, Cells, Field, Heading, NameField
 from llamatron.composition.setlist import NO_TEXT
-from llamatron.strings.labels import MSG_SECTION_LABEL
-from llamatron.strings.marks import MSG_SECTION_CLOSED_MARK, MSG_SECTION_OPEN_MARK
 from llamatron.tui.key_table import STEP_FORWARD
 from llamatron.tui.screens.shared.page import Page
-from llamatron.strings.errors import ERR_OUT_OF_RANGE, ERR_TYPED_NOT_AN_INTEGER
 from llamatron.tui import keybindings
 
 
@@ -52,8 +47,8 @@ class FieldPage(Page):
 
     def text_field(self, *, label, current, set_text):
         """A field for text like the title: current() reads it, and set_text(text) stores it, blank text clearing it."""
-        return Field(label=label, value=current, adjust=None, enter=lambda: self.ask(dialog=PromptDialog(title=label, value=current()), then=set_text), enter_what=What.EDIT,
-                     clear=lambda: set_text(NO_TEXT), clear_what=What.CLEAR)
+        return Field(label=label, value=current, adjust=None, enter=lambda: self.ask(dialog=PromptDialog(title=label, value=current()), then=set_text), enter_what=legends.What.EDIT,
+                     clear=lambda: set_text(NO_TEXT), clear_what=legends.What.CLEAR)
 
     def page_keys(self):
         return []
@@ -207,11 +202,11 @@ class FieldPage(Page):
                 continue
             line.append(padded(field.value()))
             # A field whose Enter opens a list of choices shows a dim mark after its value, so that it isn't taken for one that's typed.
-            if field.enter_what == What.CHOOSE:
-                line.append(MSG_PICKER_MARK, style=Style.DIM)
+            if field.enter_what == legends.What.CHOOSE:
+                line.append(marks.MSG_PICKER_MARK, style=Style.DIM)
             lines.append(line)
             # A page that starts with its thing's Name leaves a blank line before its other settings.
-            if place == 0 and field.label == MSG_NAME_LABEL and len(fields) > 1 and not isinstance(fields[1], Button):
+            if place == 0 and field.label == labels_text.MSG_NAME_LABEL and len(fields) > 1 and not isinstance(fields[1], Button):
                 lines.append(Text(NOTHING))
         if buttons:
             # The buttons sit in one row under the settings after a blank line, boxed as the dialogs' are.
@@ -231,15 +226,15 @@ class FieldPage(Page):
         for place, cell in enumerate(row.cells):
             on_cell = selected and place == min(self.cell, len(row.cells) - 1)
             line.append(padded(cell.value()), style=Style.REVERSE if on_cell else Style.PLAIN)
-            if cell.enter_what == What.CHOOSE:
-                line.append(MSG_PICKER_MARK, style=Style.DIM)
+            if cell.enter_what == legends.What.CHOOSE:
+                line.append(marks.MSG_PICKER_MARK, style=Style.DIM)
             line.append(CELL_GAP)
 
     def label_text(self, field):
         """Return a field's label as drawn: a section's heading with its open or closed mark, any other field's label as it is."""
         if isinstance(field, Heading):
-            mark = MSG_SECTION_OPEN_MARK if self.is_open(field) else MSG_SECTION_CLOSED_MARK
-            return MSG_SECTION_LABEL.format(mark=mark, name=field.label)
+            mark = marks.MSG_SECTION_OPEN_MARK if self.is_open(field) else marks.MSG_SECTION_CLOSED_MARK
+            return labels_text.MSG_SECTION_LABEL.format(mark=mark, name=field.label)
         return field.label
 
     def window_of_lines(self, *, lines, selected, height):
@@ -263,10 +258,10 @@ class FieldPage(Page):
             try:
                 number = int(text.strip())
             except ValueError:
-                self.refuse(ERR_TYPED_NOT_AN_INTEGER.format(text=text))
+                self.refuse(errors.ERR_TYPED_NOT_AN_INTEGER.format(text=text))
                 return
             if (low is not None and number < low) or (high is not None and number > high):
-                self.refuse(ERR_OUT_OF_RANGE.format(number=number, low=low, high=high))
+                self.refuse(errors.ERR_OUT_OF_RANGE.format(number=number, low=low, high=high))
                 return
             then(number)
         self.ask(dialog=PromptDialog(title=title, value=value), then=answered)

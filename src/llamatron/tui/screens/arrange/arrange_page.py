@@ -38,7 +38,7 @@ from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.composition.naming import new_name
 from llamatron.tui.text import sorted_names
-from llamatron.strings.help import HELP_ARRANGE_PAGE
+from llamatron.strings import errors, help as help_text, labels, marks, messages, names as names_text
 from llamatron.tui.keys import Key
 from llamatron.tui.components.stage_drawing import frame_box, inside_of, visualizer_area
 from llamatron.tui.screens.arrange.arrange_details import ADD_CHAIN, SCENE_CELL, TRACK_CELL, clip_cell, scene_cell, track_cell
@@ -58,19 +58,6 @@ from llamatron.tui.screens.arrange.scene_page import ScenePage
 from llamatron.tui.screens.shared.shared import play_through, scene_name
 from llamatron.tui.screens.arrange.track_editor import TrackEditor
 from llamatron.tui.uses import grabbers
-from llamatron.strings.errors import ERR_NO_CHAINS_TO_ADD
-from llamatron.strings.errors import (
-    ERR_ADD_A_PATTERN_FIRST, ERR_CANT_DELETE_TITLE, ERR_LAST_SCENE_SHOWN, ERR_LAST_TRACK_SHOWN, ERR_NO_PATTERNS_TITLE, ERR_SCENE_PLAYING_SHOWN, ERR_TRACK_PLAYING_SHOWN,
-)
-from llamatron.strings.labels import Crumb
-from llamatron.strings.messages import MSG_ADD_CHAIN_TITLE, MSG_MOVING, MSG_MOVING_CLIP, MSG_MOVING_SCENE, MSG_MOVING_TRACK
-from llamatron.strings.messages import (
-    MSG_ALSO_DELETES_CLIPS, MSG_COPIED_CLIP, MSG_DELETE_CLIP_QUESTION, MSG_DELETE_SCENE_QUESTION, MSG_DELETE_TITLE,
-    MSG_CLIP_ON_TRACK, MSG_DELETE_TRACK_QUESTION, MSG_GRABBERS_STOP, MSG_PASTED_WITHOUT_GRAB, MSG_PATTERN_FOR_CLIP_TITLE, MSG_PLAYING_CLIP, MSG_PLAYING_FROM,
-    MSG_EVERY_VISUALIZER_HIDDEN, MSG_SCENE_NUMBER, MSG_STOPPED, MSG_STOPPED_TRACK,
-)
-from llamatron.strings.marks import MSG_SCENE_ANNOUNCED, MSG_SCENE_VIEW_CLOSING, MSG_SCENE_VIEW_TITLE
-from llamatron.strings.names import MSG_CHAIN_WORD, MSG_GROOVE_WORD, MSG_INSTRUMENT_WORD, MSG_NEW_SCENE_WORD, MSG_NEW_TRACK_WORD, MSG_SCALE_WORD
 from llamatron.tui import keybindings
 from llamatron.visualizers.modes import MODES, mode_called
 from rich.text import Text
@@ -98,8 +85,8 @@ MOVING_CLIP = 'clip'
 CLIP_STEPS = {Key.UP: (-1, 0), Key.DOWN: (1, 0), Key.LEFT: (0, -1), Key.RIGHT: (0, 1)}
 # The pages a line of details opens, by the section it names, with the word for the thing in the crumbs; a generator's is found by its kind.
 DETAIL_PAGES = {
-    Section.CHAINS: (ChainEditor, MSG_CHAIN_WORD), Section.SCALES: (ScalePage, MSG_SCALE_WORD),
-    Section.INSTRUMENTS: (InstrumentEditor, MSG_INSTRUMENT_WORD), Section.GROOVES: (GrooveEditor, MSG_GROOVE_WORD),
+    Section.CHAINS: (ChainEditor, names_text.MSG_CHAIN_WORD), Section.SCALES: (ScalePage, names_text.MSG_SCALE_WORD),
+    Section.INSTRUMENTS: (InstrumentEditor, names_text.MSG_INSTRUMENT_WORD), Section.GROOVES: (GrooveEditor, names_text.MSG_GROOVE_WORD),
 }
 
 
@@ -118,8 +105,8 @@ def announced(*, lines, text, inside):
 class ArrangePage(Page):
 
     KEYS = keybindings.ArrangePage
-    crumbs = (Crumb.ARRANGE,)
-    HELP = HELP_ARRANGE_PAGE
+    crumbs = (labels.Crumb.ARRANGE,)
+    HELP = help_text.HELP_ARRANGE_PAGE
 
     def __init__(self, holder):
         super().__init__(holder)
@@ -378,13 +365,13 @@ class ArrangePage(Page):
         """Ask for one of the set's chains and add it to the cursor's cell alone, after the chains it runs."""
         chains = sorted_names(self.document().song().get_chain_names())
         if not chains:
-            self.refuse(ERR_NO_CHAINS_TO_ADD)
+            self.refuse(errors.ERR_NO_CHAINS_TO_ADD)
             return
         names = self.cell_chain_names()
 
         def chosen(place):
             self.set_cell_chain_names([*names, chains[place]])
-        self.ask(dialog=ChoiceDialog(title=MSG_ADD_CHAIN_TITLE, options=chains), then=chosen)
+        self.ask(dialog=ChoiceDialog(title=messages.MSG_ADD_CHAIN_TITLE, options=chains), then=chosen)
 
     def remove_chain_from_cell(self):
         """Take the picked chain out of the cursor's cell alone, the chain staying in the set."""
@@ -420,7 +407,7 @@ class ArrangePage(Page):
         """Show the first mode, or the next one shown, or the clips again after the last."""
         shown = self.shown_modes()
         if not shown:
-            self.say(MSG_EVERY_VISUALIZER_HIDDEN)
+            self.say(messages.MSG_EVERY_VISUALIZER_HIDDEN)
             return
         if self.visualizer is None:
             self.show_visualizer(self.first_mode())
@@ -518,23 +505,23 @@ class ArrangePage(Page):
         return [self.bind(self.KEYS.PLAY_CLIP, action=self.play_clip)]
 
     def play_song(self):
-        scene = MSG_SCENE_NUMBER.format(number=FIRST_SCENE_NUMBER)
-        play_through(page=self, play=self.transport().play_song, what=scene, said=MSG_PLAYING_FROM.format(scene=scene))
+        scene = messages.MSG_SCENE_NUMBER.format(number=FIRST_SCENE_NUMBER)
+        play_through(page=self, play=self.transport().play_song, what=scene, said=messages.MSG_PLAYING_FROM.format(scene=scene))
 
     def play_scene(self):
         index = self.row
-        scene = MSG_SCENE_NUMBER.format(number=index + FIRST_SCENE_NUMBER)
-        play_through(page=self, play=lambda: self.transport().play_scene(index=index), what=scene, said=MSG_PLAYING_FROM.format(scene=scene))
+        scene = messages.MSG_SCENE_NUMBER.format(number=index + FIRST_SCENE_NUMBER)
+        play_through(page=self, play=lambda: self.transport().play_scene(index=index), what=scene, said=messages.MSG_PLAYING_FROM.format(scene=scene))
 
     def play_clip(self):
         index = self.row
         track = self.track()
-        clip = MSG_CLIP_ON_TRACK.format(name=self.document().clip_slot(index=index, track=track).get_display_name(), track=track)
-        play_through(page=self, play=lambda: self.transport().play_clip(index=index, track=track), what=clip, said=MSG_PLAYING_CLIP.format(clip=clip))
+        clip = messages.MSG_CLIP_ON_TRACK.format(name=self.document().clip_slot(index=index, track=track).get_display_name(), track=track)
+        play_through(page=self, play=lambda: self.transport().play_clip(index=index, track=track), what=clip, said=messages.MSG_PLAYING_CLIP.format(clip=clip))
 
     def stop_playing_all(self):
         self.transport().stop_all()
-        self.say(MSG_STOPPED)
+        self.say(messages.MSG_STOPPED)
 
     def stop_from_the_corner(self):
         """Stop everything, as Space on the corner does, which also ends an interactive take being recorded."""
@@ -556,7 +543,7 @@ class ArrangePage(Page):
 
     def stop_clip(self):
         self.transport().stop_clip(self.track())
-        self.say(MSG_STOPPED_TRACK.format(track=self.track()))
+        self.say(messages.MSG_STOPPED_TRACK.format(track=self.track()))
 
     def move(self, name):
         if name == Key.UP:
@@ -585,8 +572,8 @@ class ArrangePage(Page):
     def with_inset(self, *, screen, width, height):
         """Return the screen with Scene View's Inset Window laid over it."""
         inner_width, inner_height = inside_size(width=width, height=height)
-        title = MSG_SCENE_VIEW_TITLE.format(scene=scene_name(scene=self.scenes()[self.inset.index()], index=self.inset.index()))
-        closing = MSG_SCENE_VIEW_CLOSING.format(key=self.KEYS.CLOSE_INSET[1], what=self.KEYS.CLOSE_INSET[2])
+        title = marks.MSG_SCENE_VIEW_TITLE.format(scene=scene_name(scene=self.scenes()[self.inset.index()], index=self.inset.index()))
+        closing = marks.MSG_SCENE_VIEW_CLOSING.format(key=self.KEYS.CLOSE_INSET[1], what=self.KEYS.CLOSE_INSET[2])
         return drawn_over(screen=screen, width=width, height=height, title=title, inside=self.inset.lines(width=inner_width, height=inner_height),
                           colour=self.inset.border_colour(), closing=closing)
 
@@ -643,13 +630,13 @@ class ArrangePage(Page):
             self._scene_since = now
         if now - self._scene_since >= NAME_SECONDS:
             return None
-        return MSG_SCENE_ANNOUNCED.format(name=scene_name(scene=self.scenes()[index], index=index))
+        return marks.MSG_SCENE_ANNOUNCED.format(name=scene_name(scene=self.scenes()[index], index=index))
 
     # Scenes.
 
     def new_scene_name(self):
         names = {scene.get_name() for scene in self.scenes()}
-        return new_name(word=MSG_NEW_SCENE_WORD, taken=[name for name in names if name is not None])
+        return new_name(word=names_text.MSG_NEW_SCENE_WORD, taken=[name for name in names if name is not None])
 
     def add_scene(self):
         index = len(self.scenes()) if self.on_plus_row() else self.row + 1
@@ -668,17 +655,17 @@ class ArrangePage(Page):
 
     def delete_scene(self):
         if len(self.scenes()) <= 1:
-            self.tell(ERR_CANT_DELETE_TITLE, ERR_LAST_SCENE_SHOWN)
+            self.tell(errors.ERR_CANT_DELETE_TITLE, errors.ERR_LAST_SCENE_SHOWN)
             return
         scene = self.scenes()[self.row]
         count = len(scene.get_track_names())
         if count and self.transport().is_playing():
-            self.tell(ERR_CANT_DELETE_TITLE, ERR_SCENE_PLAYING_SHOWN)
+            self.tell(errors.ERR_CANT_DELETE_TITLE, errors.ERR_SCENE_PLAYING_SHOWN)
             return
-        message = [MSG_DELETE_SCENE_QUESTION.format(name=scene_name(scene=scene, index=self.row))]
+        message = [messages.MSG_DELETE_SCENE_QUESTION.format(name=scene_name(scene=scene, index=self.row))]
         if count:
-            message.append(MSG_ALSO_DELETES_CLIPS.format(count=count))
-        self.ask(dialog=ConfirmDialog(title=MSG_DELETE_TITLE, messages=message), then=lambda _: self.document().delete_scene(self.row))
+            message.append(messages.MSG_ALSO_DELETES_CLIPS.format(count=count))
+        self.ask(dialog=ConfirmDialog(title=messages.MSG_DELETE_TITLE, messages=message), then=lambda _: self.document().delete_scene(self.row))
 
     # Move mode: M on a scene's name, a track's name or a clip picks it up, the arrows carry it, a clip only into an
     # empty cell, and Enter, Esc or M drops it where it is. The box around it is green while it's carried.
@@ -690,12 +677,12 @@ class ArrangePage(Page):
 
     def say_moving(self):
         if self.moving == MOVING_SCENE:
-            what = MSG_MOVING_SCENE.format(name=scene_name(scene=self.scenes()[self.row], index=self.row))
+            what = messages.MSG_MOVING_SCENE.format(name=scene_name(scene=self.scenes()[self.row], index=self.row))
         elif self.moving == MOVING_TRACK:
-            what = MSG_MOVING_TRACK.format(name=self.track())
+            what = messages.MSG_MOVING_TRACK.format(name=self.track())
         else:
-            what = MSG_MOVING_CLIP.format(name=self.document().clip_slot(index=self.row, track=self.track()).get_display_name())
-        self.say(MSG_MOVING.format(what=what))
+            what = messages.MSG_MOVING_CLIP.format(name=self.document().clip_slot(index=self.row, track=self.track()).get_display_name())
+        self.say(messages.MSG_MOVING.format(what=what))
 
     def moving_keys(self):
         """Return the keys while something is carried: Enter, Esc or M drops it, and the arrows that carry it."""
@@ -734,7 +721,7 @@ class ArrangePage(Page):
                 self.row = row
                 self.column = place + FIRST_TRACK_COLUMN
                 if dropped is not None:
-                    self.say(MSG_PASTED_WITHOUT_GRAB.format(track=dropped))
+                    self.say(messages.MSG_PASTED_WITHOUT_GRAB.format(track=dropped))
                     return
                 break
             row += rows
@@ -754,7 +741,7 @@ class ArrangePage(Page):
     def new_track_name(self):
         """Return the name for a new track, numbered like a new scene, which its settings page renames."""
         tracks = self.tracks()
-        return new_name(word=MSG_NEW_TRACK_WORD, taken=tracks)
+        return new_name(word=names_text.MSG_NEW_TRACK_WORD, taken=tracks)
 
     def add_track(self):
         """Add a track after the last one, and move onto it."""
@@ -773,21 +760,21 @@ class ArrangePage(Page):
 
     def delete_track(self):
         if len(self.tracks()) <= 1:
-            self.tell(ERR_CANT_DELETE_TITLE, ERR_LAST_TRACK_SHOWN)
+            self.tell(errors.ERR_CANT_DELETE_TITLE, errors.ERR_LAST_TRACK_SHOWN)
             return
         name = self.track()
         document = self.document()
-        message = [MSG_DELETE_TRACK_QUESTION.format(name=name)]
+        message = [messages.MSG_DELETE_TRACK_QUESTION.format(name=name)]
         clips = document.song().track_clip_count(name)
         if clips and self.transport().is_playing():
-            self.tell(ERR_CANT_DELETE_TITLE, ERR_TRACK_PLAYING_SHOWN)
+            self.tell(errors.ERR_CANT_DELETE_TITLE, errors.ERR_TRACK_PLAYING_SHOWN)
             return
         if clips:
-            message.append(MSG_ALSO_DELETES_CLIPS.format(count=clips))
+            message.append(messages.MSG_ALSO_DELETES_CLIPS.format(count=clips))
         grabbing = grabbers(song=document.song(), song_name=document.current_song_name(), track=name)
         if grabbing:
-            message.append(MSG_GRABBERS_STOP.format(count=len(grabbing)))
-        self.ask(dialog=ConfirmDialog(title=MSG_DELETE_TITLE, messages=message), then=lambda _: document.delete_named(section=Section.TRACKS, name=name))
+            message.append(messages.MSG_GRABBERS_STOP.format(count=len(grabbing)))
+        self.ask(dialog=ConfirmDialog(title=messages.MSG_DELETE_TITLE, messages=message), then=lambda _: document.delete_named(section=Section.TRACKS, name=name))
 
     def shift_track(self, offset):
         """Move the cursor's track one place left or right, the cursor going with it."""
@@ -799,7 +786,7 @@ class ArrangePage(Page):
     def add_clip(self):
         patterns = sorted_names(self.document().song().get_pattern_names())
         if not patterns:
-            self.tell(ERR_NO_PATTERNS_TITLE, ERR_ADD_A_PATTERN_FIRST)
+            self.tell(errors.ERR_NO_PATTERNS_TITLE, errors.ERR_ADD_A_PATTERN_FIRST)
             return
         row = self.row
         track = self.track()
@@ -807,7 +794,7 @@ class ArrangePage(Page):
         # The clip is added and Arrange stays: Enter on the clip again opens it.
         def chosen(place):
             self.document().add_clip_slot(index=row, track=track, pattern=patterns[place])
-        self.ask(dialog=ChoiceDialog(title=MSG_PATTERN_FOR_CLIP_TITLE, options=patterns), then=chosen)
+        self.ask(dialog=ChoiceDialog(title=messages.MSG_PATTERN_FOR_CLIP_TITLE, options=patterns), then=chosen)
 
     def blank_pattern(self):
         """Make a blank pattern named after the cursor's track, a drum pattern on a drum track, put a clip of it in the empty cell and open it."""
@@ -829,14 +816,14 @@ class ArrangePage(Page):
 
     def copy_clip(self):
         self.copied = self.document().clip_slot(index=self.row, track=self.track()).copy()
-        self.say(MSG_COPIED_CLIP)
+        self.say(messages.MSG_COPIED_CLIP)
 
     def paste_clip(self):
         dropped = self.document().paste_clip_slot(index=self.row, track=self.track(), copied=self.copied)
         if dropped is not None:
-            self.say(MSG_PASTED_WITHOUT_GRAB.format(track=dropped))
+            self.say(messages.MSG_PASTED_WITHOUT_GRAB.format(track=dropped))
 
     def delete_clip(self):
         track = self.track()
         row = self.row
-        self.ask(dialog=ConfirmDialog(title=MSG_DELETE_TITLE, messages=[MSG_DELETE_CLIP_QUESTION.format(track=track)]), then=lambda _: self.document().delete_clip_slot(index=row, track=track))
+        self.ask(dialog=ConfirmDialog(title=messages.MSG_DELETE_TITLE, messages=[messages.MSG_DELETE_CLIP_QUESTION.format(track=track)]), then=lambda _: self.document().delete_clip_slot(index=row, track=track))

@@ -23,11 +23,7 @@ from rich.text import Text
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.drawing import NOTHING, wrapped
 from llamatron.support.version import BUILD_DATE, BUILD_TIME, build_year, VERSION
-from llamatron.strings.about import (
-    MSG_ABOUT_BLOG, MSG_ABOUT_MORE, MSG_ABOUT_POWERED, MSG_ABOUT_COPYRIGHT, MSG_ABOUT_LICENSE, MSG_ABOUT_QUOTES, MSG_ABOUT_TITLE,
-    MSG_ABOUT_VERSION, MSG_ABOUT_WEB, MSG_COW, MSG_COW_BUBBLE_BOTTOM, MSG_COW_BUBBLE_TEXT, MSG_COW_BUBBLE_TOP, MSG_EIGHT_BALL,
-    MSG_EIGHT_BALL_ANSWERS, MSG_SITE,
-)
+from llamatron.strings import about
 from llamatron.tui import keybindings
 
 
@@ -41,10 +37,10 @@ def cow_saying(text):
     """Return the lines of the cowsay cow with text in its speech bubble, drawn here rather than by the cowsay program."""
     rule_width = len(text) + BUBBLE_MARGIN
     return [
-        MSG_COW_BUBBLE_TOP.format(rule=BUBBLE_TOP_CHARACTER * rule_width),
-        MSG_COW_BUBBLE_TEXT.format(text=text),
-        MSG_COW_BUBBLE_BOTTOM.format(rule=BUBBLE_BOTTOM_CHARACTER * rule_width),
-        *MSG_COW,
+        about.MSG_COW_BUBBLE_TOP.format(rule=BUBBLE_TOP_CHARACTER * rule_width),
+        about.MSG_COW_BUBBLE_TEXT.format(text=text),
+        about.MSG_COW_BUBBLE_BOTTOM.format(rule=BUBBLE_BOTTOM_CHARACTER * rule_width),
+        *about.MSG_COW,
     ]
 
 
@@ -57,8 +53,8 @@ QUOTE_LINES = 4
 def random_quote():
     """Return the magic eight ball's answer a third of the time, and otherwise one of the quotes, drawn from Python's own random since it isn't music."""
     if random.random() < EIGHT_BALL_CHANCE:
-        return MSG_EIGHT_BALL.format(answer=random.choice(MSG_EIGHT_BALL_ANSWERS))
-    return random.choice(MSG_ABOUT_QUOTES)
+        return about.MSG_EIGHT_BALL.format(answer=random.choice(about.MSG_EIGHT_BALL_ANSWERS))
+    return random.choice(about.MSG_ABOUT_QUOTES)
 
 
 class AboutDialog(Dialog):
@@ -74,7 +70,7 @@ class AboutDialog(Dialog):
     def __init__(self, *, name):
         super().__init__()
         # The title is set after Textual's own set-up, which gives every screen a blank one.
-        self.title = MSG_ABOUT_TITLE
+        self.title = about.MSG_ABOUT_TITLE
         # Textual's screens have a name of their own, so the one the cow says is kept apart.
         self.shown_name = name
         self.quote = random_quote()
@@ -93,15 +89,15 @@ class AboutDialog(Dialog):
         below = [NOTHING] if len(quote) == 1 else []
         words = [
             *cow_saying(self.shown_name),
-            MSG_ABOUT_POWERED,
-            MSG_ABOUT_VERSION.format(version=VERSION, date=BUILD_DATE, time=BUILD_TIME),
-            MSG_ABOUT_WEB,
-            MSG_ABOUT_BLOG,
-            MSG_ABOUT_MORE.format(site=MSG_SITE),
+            about.MSG_ABOUT_POWERED,
+            about.MSG_ABOUT_VERSION.format(version=VERSION, date=BUILD_DATE, time=BUILD_TIME),
+            about.MSG_ABOUT_WEB,
+            about.MSG_ABOUT_BLOG,
+            about.MSG_ABOUT_MORE.format(site=about.MSG_SITE),
             *above,
             *quote,
             *below,
-            MSG_ABOUT_LICENSE,
-            MSG_ABOUT_COPYRIGHT.format(year=build_year()),
+            about.MSG_ABOUT_LICENSE,
+            about.MSG_ABOUT_COPYRIGHT.format(year=build_year()),
         ]
         return [Text(line, no_wrap=True) for line in words]

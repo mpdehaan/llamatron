@@ -27,9 +27,8 @@ from llamatron.macro_composer.arranger import CHORDS
 from llamatron.macro_composer.joins import BUILD, DROP_OUT, LEAVES, STOPS
 from llamatron.macro_composer.song_plan import ENERGY, HIGHEST_ENERGY, LOWEST_ENERGY, NOT_AT_ALL, RISES, ROOT_OF_PLACE, SETUP, TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE, USUAL_CONTRAST
 from llamatron.macro_composer.wizard_choices import BRIDGE, DRUM_SOLO_KIND, LAST_CHORUSES, NO, PRE_CHORUS, PRE_CHORUSES, SOLO, SOLO_COUNTS, SOLOS, VERSES_FIRST, YES, HOOK_PARTS, LEAVES_AS_JOIN, OWN_WITHOUT_PLAN, PHRASING_OFFERED, SHAPE_OF_SECTION, MINOR, WizardChoices, chords_as_text, chords_from_text
-from llamatron.strings.errors import ERR_WIZARD_GENRE_HAS_NO_PLAN, ERR_WIZARD_NO_SONG_PLAN
-from llamatron.strings.macro_composer import MSG_PLAN_LEAVES_TAIL, MSG_PLAN_SET_UP
-from llamatron.composition.limits import MAX_PROGRESSION_CHORDS
+from llamatron.composition import limits
+from llamatron.strings import errors, macro_composer as composer_text
 from llamatron.macro_composer.arranger import shares_a_bar as arranger_shares_a_bar
 from llamatron.support.version import VERSION
 
@@ -87,13 +86,13 @@ class TestWizardSongPlan(unittest.TestCase):
         self.assertFalse(WizardChoices.from_data(choices.to_data()).has_song_plan())
         other = chosen(genre=AN_UNPLANNED_GENRE, subgenre=None, plan=False)
         self.assertFalse(other.can_have_song_plan())
-        with self.assertRaisesRegex(ValueError, ERR_WIZARD_GENRE_HAS_NO_PLAN):
+        with self.assertRaisesRegex(ValueError, errors.ERR_WIZARD_GENRE_HAS_NO_PLAN):
             other.set_song_plan(True)
 
     def test_the_plan_s_settings_are_refused_without_a_plan(self):
         choices = chosen(plan=False)
         for asked in (choices.get_contrast, choices.has_phrasing, choices.hook_kind, choices.energies, choices.said_of_sections):
-            with self.assertRaisesRegex(ValueError, ERR_WIZARD_NO_SONG_PLAN):
+            with self.assertRaisesRegex(ValueError, errors.ERR_WIZARD_NO_SONG_PLAN):
                 asked()
 
     def test_a_plan_gives_every_section_an_energy_and_says_how_each_leaves(self):
@@ -302,7 +301,7 @@ class TestWizardSectionOwn(unittest.TestCase):
             choices.set_section_own(place=A_VERSE, field=LEAVES, value=way)
             said.add(choices.said_of_sections()[A_VERSE])
             if way in (STOPS, DROP_OUT, BUILD):
-                self.assertIn(MSG_PLAN_LEAVES_TAIL.format(way), choices.said_of_sections()[A_VERSE])
+                self.assertIn(composer_text.MSG_PLAN_LEAVES_TAIL.format(way), choices.said_of_sections()[A_VERSE])
         self.assertEqual(len(said), len(LEAVES_AS_JOIN))
 
     def test_chords_are_typed_as_degrees_and_change_the_song(self):
@@ -329,7 +328,7 @@ class TestWizardSectionOwn(unittest.TestCase):
         self.assertNotEqual(choices.made_setlist(name=A_NAME, version=VERSION).to_data(), shared)
 
     def test_shared_bars_are_refused_past_what_a_progression_holds_and_three_never_share(self):
-        too_many = ' '.join([CHORDS_SHARING_A_BAR] * MAX_PROGRESSION_CHORDS)
+        too_many = ' '.join([CHORDS_SHARING_A_BAR] * limits.MAX_PROGRESSION_CHORDS)
         for wrong in (too_many, THREE_IN_A_BAR, A_DASH_ALONE):
             with self.assertRaises(ValueError):
                 chords_from_text(wrong)
@@ -381,12 +380,12 @@ class TestWizardSectionOwn(unittest.TestCase):
         for seed in range(MANY_SEEDS):
             choices = chosen()
             choices.set_seed(seed)
-            set_up = [place for place, said in enumerate(choices.said_of_sections()) if MSG_PLAN_SET_UP.split('{')[0] in said]
+            set_up = [place for place, said in enumerate(choices.said_of_sections()) if composer_text.MSG_PLAN_SET_UP.split('{')[0] in said]
             if set_up:
                 break
         self.assertTrue(set_up)
         choices.set_section_own(place=set_up[0], field=SETUP, value=NOT_AT_ALL)
-        self.assertNotIn(MSG_PLAN_SET_UP.split('{')[0], choices.said_of_sections()[set_up[0]])
+        self.assertNotIn(composer_text.MSG_PLAN_SET_UP.split('{')[0], choices.said_of_sections()[set_up[0]])
 
 
 class TestWizardShapesAndIntroHook(unittest.TestCase):
@@ -412,7 +411,7 @@ class TestWizardShapesAndIntroHook(unittest.TestCase):
         choices = chosen()
         self.assertFalse(choices.section_from_plan(place=A_VERSE, field=RISES))
         choices.set_section_own(place=A_VERSE, field=RISES, value=True)
-        self.assertIn(MSG_PLAN_LEAVES_TAIL.format(BUILD), choices.said_of_sections()[A_VERSE])
+        self.assertIn(composer_text.MSG_PLAN_LEAVES_TAIL.format(BUILD), choices.said_of_sections()[A_VERSE])
         scene = choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.SONGS][A_NAME][Section.SCENES][A_VERSE]
         self.assertLess(scene[SceneSetting.SWELL_START], scene[SceneSetting.SWELL_END])
 

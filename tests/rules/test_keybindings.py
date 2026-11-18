@@ -30,7 +30,7 @@ import re
 import unittest
 
 import llamatron.tui
-from llamatron.strings.legends import KeyName
+from llamatron.strings import legends
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import BindsKeys, every_key, place_of
 from llamatron.tui.keys import Key, SHIFT_LEFT_RIGHT, SHIFT_UP_DOWN, Steps
@@ -170,7 +170,7 @@ class TestKeybindings(unittest.TestCase):
 
     def test_every_key_name_names_a_binding(self):
         source = (SOURCE / BINDINGS_FILE).read_text(encoding=FILE_ENCODING)
-        for name in constants_of(KeyName):
+        for name in constants_of(legends.KeyName):
             with self.subTest(name=name):
                 self.assertRegex(source, NAMED.format(name=name))
 

@@ -26,7 +26,7 @@ from llamatron.composition.setlist import Setlist, file_stem
 from llamatron.support.ordered_data import same_in_order
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.strings.errors import ERR_FILE_PROTECTED, ERR_NOTHING_TO_EXPORT, ERR_SAVE_BEFORE_EXPORT
+from llamatron.strings import errors
 
 # What the set is called in the title until it's saved.
 UNTITLED = 'untitled'
@@ -101,7 +101,7 @@ class DocumentFiles:
         """
         path = path or self._path
         if self.file_is_protected(path=path):
-            raise SongFileError(ERR_FILE_PROTECTED.format(path=path))
+            raise SongFileError(errors.ERR_FILE_PROTECTED.format(path=path))
         self._setlist.write_file(path)
         self._path = path
         self._dirty = False
@@ -194,10 +194,10 @@ class DocumentFiles:
     def export(self, to):
         """Export the current song beside the set's file, replacing an earlier export, and return where it went, or raise SongFileError if it can't be."""
         if not self.can_export():
-            raise SongFileError(ERR_SAVE_BEFORE_EXPORT)
+            raise SongFileError(errors.ERR_SAVE_BEFORE_EXPORT)
         song = self.song()
         if not song.get_track_names() or not song.get_scenes():
-            raise SongFileError(ERR_NOTHING_TO_EXPORT)
+            raise SongFileError(errors.ERR_NOTHING_TO_EXPORT)
         grid = SongRenderer(song).render()
         directory = self.export_directory()
         name = self.export_name()

@@ -24,15 +24,12 @@ from rich.text import Text
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.groove import GROOVE_CELL_LENGTH_CHOICES, is_factory_groove
-from llamatron.composition.limits import MAX_GROOVE_AMOUNT, MAX_GROOVE_CELLS, MIN_GROOVE_CELLS
+from llamatron.composition import limits
+from llamatron.strings import help as help_text, labels, marks, messages
 from llamatron.tui.drawing import Box, NOTHING, Style
-from llamatron.strings.help import HELP_GROOVE_EDITOR
 from llamatron.tui.screens.shared.one_row_editor import OneRowEditor
 from llamatron.tui.screens.shared.shared import stepped
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.strings.labels import Crumb, MSG_AMOUNT_ROW_LABEL, MSG_CELL_ROW_LABEL, MSG_NAME_LABEL
-from llamatron.strings.marks import MSG_CELLS_SHOWN, MSG_GROOVE_NAME_SHOWN
-from llamatron.strings.messages import MSG_FACTORY_GROOVE_NOTE, MSG_GROOVE_NOTE, MSG_GROOVE_REPEATS_NOTE, MSG_RENAME_GROOVE_PROMPT
 from llamatron.tui import keybindings
 
 
@@ -41,17 +38,17 @@ class GrooveEditor(ShowsNamedItem, OneRowEditor):
 
     KEYS = keybindings.GrooveEditor
 
-    HELP = HELP_GROOVE_EDITOR
+    HELP = help_text.HELP_GROOVE_EDITOR
     SECTION = Section.GROOVES
-    CRUMBS_BEFORE = (Crumb.GROOVES,)
-    RENAME_PROMPT = MSG_RENAME_GROOVE_PROMPT
+    CRUMBS_BEFORE = (labels.Crumb.GROOVES,)
+    RENAME_PROMPT = messages.MSG_RENAME_GROOVE_PROMPT
     CELL_WIDTH = 5
-    MOST = MAX_GROOVE_AMOUNT
-    MOST_STEPS = MAX_GROOVE_CELLS
-    FEWEST_STEPS = MIN_GROOVE_CELLS
+    MOST = limits.MAX_GROOVE_AMOUNT
+    MOST_STEPS = limits.MAX_GROOVE_CELLS
+    FEWEST_STEPS = limits.MIN_GROOVE_CELLS
     INSERT = KEYS.INSERT_CELL
     REMOVE = KEYS.REMOVE_CELL
-    STEPS_SHOWN = MSG_CELLS_SHOWN
+    STEPS_SHOWN = marks.MSG_CELLS_SHOWN
 
     def __init__(self, *, holder, name):
         super().__init__(holder)
@@ -97,17 +94,17 @@ class GrooveEditor(ShowsNamedItem, OneRowEditor):
         places = range(first, last)
         cells = self.cells()
         lines = [
-            self.with_steps_shown(text=MSG_GROOVE_NAME_SHOWN.format(label=MSG_NAME_LABEL, name=self.item), style=Style.BOLD, width=width, first=first, last=last),
-            Text(MSG_GROOVE_NOTE.format(length=self.groove().get_cell_length_text()), style=Style.DIM),
-            Text(MSG_GROOVE_REPEATS_NOTE, style=Style.DIM),
+            self.with_steps_shown(text=marks.MSG_GROOVE_NAME_SHOWN.format(label=labels.MSG_NAME_LABEL, name=self.item), style=Style.BOLD, width=width, first=first, last=last),
+            Text(messages.MSG_GROOVE_NOTE.format(length=self.groove().get_cell_length_text()), style=Style.DIM),
+            Text(messages.MSG_GROOVE_REPEATS_NOTE, style=Style.DIM),
         ]
         if self.is_factory():
-            lines.append(Text(MSG_FACTORY_GROOVE_NOTE, style=Style.DIM))
+            lines.append(Text(messages.MSG_FACTORY_GROOVE_NOTE, style=Style.DIM))
         lines += [
             Text(NOTHING),
             self.grid_rule(left=Box.TOP_LEFT, middle=Box.TOP_TEE, right=Box.TOP_RIGHT, count=len(places)),
-            self.grid_line(label=MSG_CELL_ROW_LABEL, cells=[(place, str(place + 1)) for place in places], bold=True),
-            self.grid_line(label=MSG_AMOUNT_ROW_LABEL, cells=[(place, str(cells[place])) for place in places], selected=self.step),
+            self.grid_line(label=labels.MSG_CELL_ROW_LABEL, cells=[(place, str(place + 1)) for place in places], bold=True),
+            self.grid_line(label=labels.MSG_AMOUNT_ROW_LABEL, cells=[(place, str(cells[place])) for place in places], selected=self.step),
             self.grid_rule(left=Box.BOTTOM_LEFT, middle=Box.BOTTOM_TEE, right=Box.BOTTOM_RIGHT, count=len(places)),
         ]
         return lines

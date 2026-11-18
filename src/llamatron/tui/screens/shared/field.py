@@ -30,9 +30,7 @@ as it is now rather than a function that reads it.
 from dataclasses import dataclass
 from typing import Callable
 
-from llamatron.strings.labels import MSG_NAME_LABEL
-from llamatron.strings.legends import What
-from llamatron.strings.marks import MSG_FIELD_TOGGLE_OFF, MSG_SECTION_SET, MSG_TOGGLE_ON
+from llamatron.strings import labels, legends, marks
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import NOTHING
 from llamatron.tui.screens.shared.shared import stepped
@@ -65,9 +63,9 @@ class Field:
     value: Callable
     adjust: Callable = None
     enter: Callable = None
-    enter_what: str = What.EDIT
+    enter_what: str = legends.What.EDIT
     clear: Callable = None
-    clear_what: str = What.CLEAR
+    clear_what: str = legends.What.CLEAR
 
     def is_toggle(self):
         """Return whether the setting is on or off, which answers to Space and Enter alike."""
@@ -83,10 +81,10 @@ class Toggle(Field):
 
     on: bool
     set: Callable
-    shown_on: str = MSG_TOGGLE_ON
-    shown_off: str = MSG_FIELD_TOGGLE_OFF
+    shown_on: str = marks.MSG_TOGGLE_ON
+    shown_off: str = marks.MSG_FIELD_TOGGLE_OFF
     value: Callable = None
-    enter_what: str = What.TOGGLE
+    enter_what: str = legends.What.TOGGLE
 
     def __post_init__(self):
         self.value = self.shown
@@ -107,8 +105,8 @@ class NameField(Field):
     """The name of what the page shows: Enter runs the page's rename."""
 
     rename: Callable
-    label: str = MSG_NAME_LABEL
-    enter_what: str = What.RENAME
+    label: str = labels.MSG_NAME_LABEL
+    enter_what: str = legends.What.RENAME
 
     def __post_init__(self):
         self.enter = self.rename
@@ -172,7 +170,7 @@ class ChoiceField(Field):
     shown: object = None
     picked: object = None
     value: Callable = None
-    enter_what: str = What.CHOOSE
+    enter_what: str = legends.What.CHOOSE
 
     def __post_init__(self):
         self.value = self.text
@@ -245,4 +243,4 @@ class Heading(Field):
         return True
 
     def shown(self):
-        return MSG_SECTION_SET if self.is_set() else NOTHING_SET
+        return marks.MSG_SECTION_SET if self.is_set() else NOTHING_SET

@@ -30,7 +30,7 @@ from llamatron.music.held import Held, phrase
 from llamatron.music.note import Degree, Note, NoteName, Rest
 from llamatron.music.scale import Scale, ScaleType
 from llamatron.music.sound import Sound
-from llamatron.strings.errors import ERR_NO_LENGTH
+from llamatron.strings import errors
 from llamatron.support.example_sets import example_sets
 from tests.support.rendering import render_file
 
@@ -124,7 +124,7 @@ class TestAHandWrittenClipBothWays(BothWays):
                 for ask in [clip.resolved_notes, clip.resolved_sounds, clip.total_length, clip.played_sounds]:
                     with self.subTest(position=position, ask=ask.__name__), self.assertRaises(ValueError) as refused:
                         ask()
-                    self.assertEqual(str(refused.exception), ERR_NO_LENGTH.format(position=NO_LENGTH_NOTE if position is not NO_LENGTH_DEGREE else NO_LENGTH_DEGREE))
+                    self.assertEqual(str(refused.exception), errors.ERR_NO_LENGTH.format(position=NO_LENGTH_NOTE if position is not NO_LENGTH_DEGREE else NO_LENGTH_DEGREE))
 
 
 class TestWhatAClipHolds(unittest.TestCase):

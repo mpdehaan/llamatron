@@ -27,15 +27,13 @@ from llamatron.composition.file_format import (
     CONDITION_ROWS, REGISTER_ADD_ROWS, AtLimit, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, ClipSlotSetting, Comparison,
     REGISTER_NAMES, GeneratorKind, RegisterSetting, Row, SceneSetting, Section, TrackSetting,
 )
-from llamatron.composition.limits import MAX_REGISTER_VALUE, MIN_REGISTER_VALUE
-from llamatron.composition.defaults import DEFAULT_ALLOWED_INC_MAX, DEFAULT_VELOCITY
+from llamatron.composition import defaults as set_defaults, limits
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.limits import MIN_ALLOWED_INC_MAX
 from llamatron.composition.register import Register
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.composition.track import Track
 from tests.playback.test_registers import EX
-from llamatron.music.midi import MIN_CC_VALUE, MIN_VELOCITY
+from llamatron.music import midi
 from llamatron.support.rational import Rational
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.generator_settings import ARP_NOTE_ADDS, ARP_STEP_ADDS, ArpSetting, ArpSettings
@@ -73,7 +71,7 @@ ARP_NOTES = 4
 # What two steps of offsets add, and AX after each of the four steps.
 STEP_ADDS = [2, 3]
 RUNNING_STEP_ADDS = [2, 5, 7, 10]
-WIDE = {RegisterSetting.MINIMUM: MIN_REGISTER_VALUE, RegisterSetting.MAXIMUM: MAX_REGISTER_VALUE}
+WIDE = {RegisterSetting.MINIMUM: limits.MIN_REGISTER_VALUE, RegisterSetting.MAXIMUM: limits.MAX_REGISTER_VALUE}
 
 
 def registers(**defaults):
@@ -166,10 +164,10 @@ class TestBoundVelocity(unittest.TestCase):
     def test_a_bound_velocity_below_one_plays_at_the_lowest_velocity_rather_than_silencing(self):
         data = one_clip(rows={}, registers=registers(BX=BELOW_THE_FLOOR))
         data['tracks'][LEAD] = {TrackSetting.VELOCITY_REGISTER: BX}
-        self.assertEqual(velocities(data), [MIN_VELOCITY])
+        self.assertEqual(velocities(data), [midi.MIN_VELOCITY])
 
     def test_an_unbound_track_plays_at_the_default(self):
-        self.assertEqual(velocities(one_clip(rows={}, registers=registers(BX=VELOCITY_HELD))), [DEFAULT_VELOCITY])
+        self.assertEqual(velocities(one_clip(rows={}, registers=registers(BX=VELOCITY_HELD))), [set_defaults.DEFAULT_VELOCITY])
 
 
 class TestBoundControls(unittest.TestCase):
@@ -197,7 +195,7 @@ class TestBoundControls(unittest.TestCase):
 
     def test_a_register_below_zero_sends_the_lowest_cc_value(self):
         data = self.driven(driver_add=0, registers_=registers(AX=BELOW_ZERO))
-        self.assertEqual(controls_of(data), [(Rational(0), BRIGHTNESS, MIN_CC_VALUE)])
+        self.assertEqual(controls_of(data), [(Rational(0), BRIGHTNESS, midi.MIN_CC_VALUE)])
 
     def test_a_bound_lane_with_no_cc_number_sends_nothing(self):
         data = self.driven()
@@ -250,21 +248,21 @@ class TestTheSettings(unittest.TestCase):
             Track().set_velocity_register(EX)
 
     def test_a_file_whose_adds_pass_the_limit_is_refused_and_opens_corrected_within_it(self):
-        past = DEFAULT_ALLOWED_INC_MAX + ADDED
+        past = set_defaults.DEFAULT_ALLOWED_INC_MAX + ADDED
         data = as_setlist(one_clip(steps=2, rows={REGISTER_ADD_ROWS[AX]: [past, -past]}))
         with self.assertRaises(SongFileError):
             Setlist.from_data(data=data)
         setlist, corrections = Setlist.from_data_corrected(data=data)
         self.assertEqual(len(corrections), 1)
         pattern = setlist.get_pattern(X)
-        self.assertEqual([pattern.get_value(row=REGISTER_ADD_ROWS[AX], step=step) for step in (0, 1)], [DEFAULT_ALLOWED_INC_MAX, -DEFAULT_ALLOWED_INC_MAX])
+        self.assertEqual([pattern.get_value(row=REGISTER_ADD_ROWS[AX], step=step) for step in (0, 1)], [set_defaults.DEFAULT_ALLOWED_INC_MAX, -set_defaults.DEFAULT_ALLOWED_INC_MAX])
 
     def test_a_registers_allowed_inc_max_defaults_to_enough_for_every_example_and_has_its_limits(self):
-        self.assertEqual(Register().get_allowed_inc_max(), DEFAULT_ALLOWED_INC_MAX)
+        self.assertEqual(Register().get_allowed_inc_max(), set_defaults.DEFAULT_ALLOWED_INC_MAX)
         register = Register()
-        register.set_setting(name=RegisterSetting.ALLOWED_INC_MAX, value=MIN_ALLOWED_INC_MAX)
-        self.assertEqual(register.get_allowed_inc_max(), MIN_ALLOWED_INC_MAX)
-        for wrong in (MIN_ALLOWED_INC_MAX - 1, MAX_REGISTER_VALUE + 1):
+        register.set_setting(name=RegisterSetting.ALLOWED_INC_MAX, value=limits.MIN_ALLOWED_INC_MAX)
+        self.assertEqual(register.get_allowed_inc_max(), limits.MIN_ALLOWED_INC_MAX)
+        for wrong in (limits.MIN_ALLOWED_INC_MAX - 1, limits.MAX_REGISTER_VALUE + 1):
             with self.subTest(value=wrong), self.assertRaises(InvalidValue):
                 register.set_setting(name=RegisterSetting.ALLOWED_INC_MAX, value=wrong)
 

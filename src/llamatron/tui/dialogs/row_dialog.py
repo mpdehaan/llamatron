@@ -24,8 +24,7 @@ drawn around a zero line."""
 
 from rich.text import Text
 
-from llamatron.strings.labels import MSG_OK_CANCEL_BUTTONS
-from llamatron.strings.marks import MSG_ROW_DIALOG_BAR, MSG_ROW_DIALOG_LEVEL, MSG_ROW_DIALOG_ZERO
+from llamatron.strings import labels, marks
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.drawing import NOTHING, SPACE, Style, legend
@@ -113,7 +112,7 @@ class RowDialog(Dialog):
         return above, below
 
     def level_label(self, level):
-        return MSG_ROW_DIALOG_LEVEL.format(level=level)
+        return marks.MSG_ROW_DIALOG_LEVEL.format(level=level)
 
     def bar_line(self, level):
         """Return one level of every cell's bar: filled where the cell's number reaches the level, on the level's side of zero."""
@@ -121,7 +120,7 @@ class RowDialog(Dialog):
         line = Text(self.level_label(level), style=Style.DIM)
         for value in self.values:
             reaches = value > level - size if level > ZERO else value < level + size
-            line.append((MSG_ROW_DIALOG_BAR if reaches and (value > ZERO) == (level > ZERO) and value != ZERO else NOTHING).center(CELL_WIDTH))
+            line.append((marks.MSG_ROW_DIALOG_BAR if reaches and (value > ZERO) == (level > ZERO) and value != ZERO else NOTHING).center(CELL_WIDTH))
         return line
 
     def number_line(self):
@@ -136,7 +135,7 @@ class RowDialog(Dialog):
 
     def lines(self, width):
         above, below = self.levels()
-        buttons = [(binding[1], label) for label, binding in zip(MSG_OK_CANCEL_BUTTONS, BUTTON_BINDINGS)]
-        zero = [Text(self.level_label(ZERO) + MSG_ROW_DIALOG_ZERO * (len(self.values) * CELL_WIDTH), style=Style.DIM)] if below else []
+        buttons = [(binding[1], label) for label, binding in zip(labels.MSG_OK_CANCEL_BUTTONS, BUTTON_BINDINGS)]
+        zero = [Text(self.level_label(ZERO) + marks.MSG_ROW_DIALOG_ZERO * (len(self.values) * CELL_WIDTH), style=Style.DIM)] if below else []
         return [*[self.bar_line(level) for level in above], *zero, *[self.bar_line(level) for level in below], self.number_line(),
                 Text(NOTHING), *button_row(buttons=buttons, selected=OK)]

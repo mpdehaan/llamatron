@@ -18,15 +18,12 @@
 
 from tests.support.ui_testing import fixed_text, ROW_SHOWN, UITest
 from llamatron.composition.file_format import Row, Section
-from llamatron.composition.limits import MAX_STEPS, MIN_STEPS
+from llamatron.composition import limits
+from llamatron.strings import errors, labels, marks, messages
 from llamatron.tui.drawing import NOTHING
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import Munge, PatternEditor, Reconfigure
-from llamatron.strings.errors import ERR_NOTHING_AFTER, ERR_NOTHING_BEFORE, ERR_NOTHING_TO_PIVOT, ERR_ONE_STEP, ERR_STEPS_OUT_OF_RANGE
-from llamatron.strings.labels import MSG_ROW_LABELS
-from llamatron.strings.marks import MSG_MORE_AFTER, MSG_STEPS_SHOWN
-from llamatron.strings.messages import MSG_CHANGE_TYPE_EMPTY_QUESTION
 from llamatron.tui import keybindings
 from tests.support.pattern_editor_testing import munge, open_section
 
@@ -67,8 +64,8 @@ class TestPatternEditorRefusals(UITest):
     async def test_munging_says_when_there_is_nothing_to_move(self):
         await self.open(OTHER)
         for choice, message in [
-            (Munge.REVERSE_AFTER, ERR_NOTHING_AFTER), (Munge.REVERSE_BEFORE, ERR_NOTHING_BEFORE), (Munge.REVERSE, ERR_ONE_STEP),
-            (Munge.PIVOT, ERR_NOTHING_TO_PIVOT), (Munge.RANDOMIZE, ERR_ONE_STEP),
+            (Munge.REVERSE_AFTER, errors.ERR_NOTHING_AFTER), (Munge.REVERSE_BEFORE, errors.ERR_NOTHING_BEFORE), (Munge.REVERSE, errors.ERR_ONE_STEP),
+            (Munge.PIVOT, errors.ERR_NOTHING_TO_PIVOT), (Munge.RANDOMIZE, errors.ERR_ONE_STEP),
         ]:
             await munge(test=self, choice=choice)
             self.assertIn(message, self.text())
@@ -95,7 +92,7 @@ class TestPatternEditorRefusals(UITest):
 
     async def test_the_step_count_must_be_a_sensible_number(self):
         await self.open(TUNE)
-        for text, message in [(LOTS, NOT_AN_INTEGER), ('0', ERR_STEPS_OUT_OF_RANGE.format(low=MIN_STEPS, high=MAX_STEPS))]:
+        for text, message in [(LOTS, NOT_AN_INTEGER), ('0', errors.ERR_STEPS_OUT_OF_RANGE.format(low=limits.MIN_STEPS, high=limits.MAX_STEPS))]:
             await self.press(keybindings.PatternEditor.RESIZE)
             self.app.screen.value = text
             await self.press(Key.ENTER)
@@ -127,7 +124,7 @@ class TestPatternEditorRefusals(UITest):
         await self.press(Key.ENTER, keybindings.PatternEditor.TO_EDITOR)
         await self.reconfigure(Reconfigure.DRUM)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        self.assertIn(fixed_text(MSG_CHANGE_TYPE_EMPTY_QUESTION), self.text())
+        self.assertIn(fixed_text(messages.MSG_CHANGE_TYPE_EMPTY_QUESTION), self.text())
         await self.press(keybindings.ConfirmDialog.YES)
         self.assertTrue(self.document.song().get_pattern(NEW_PATTERN).is_drum())
 
@@ -163,10 +160,10 @@ class TestPatternEditorRefusals(UITest):
     async def test_a_long_pattern_draws_one_grid_and_says_which_steps_show(self):
         self.document.set_steps(name=TUNE, steps=LONG)
         await self.open(TUNE)
-        self.assertEqual(self.text().count(ROW_SHOWN.format(label=MSG_ROW_LABELS[Row.DEGREE])), 1)
+        self.assertEqual(self.text().count(ROW_SHOWN.format(label=labels.MSG_ROW_LABELS[Row.DEGREE])), 1)
         shown = self.app.screen.drawing.steps_shown(self.SIZE[0])
-        self.assertIn(MSG_STEPS_SHOWN.format(before=NOTHING, first=1, last=shown, after=MSG_MORE_AFTER), self.text())
+        self.assertIn(marks.MSG_STEPS_SHOWN.format(before=NOTHING, first=1, last=shown, after=marks.MSG_MORE_AFTER), self.text())
 
     async def test_a_pattern_that_fits_says_nothing_about_which_steps_show(self):
         await self.open(TUNE)
-        self.assertNotIn(fixed_text(MSG_STEPS_SHOWN), self.text())
+        self.assertNotIn(fixed_text(marks.MSG_STEPS_SHOWN), self.text())

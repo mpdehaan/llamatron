@@ -28,8 +28,7 @@ from tests.support.ui_testing import KEY_SHOWN, UITest, UP_ARP, key_name, leaf_p
 from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import ArpSetting
 from llamatron.composition.groove import FactoryGroove
-from llamatron.strings.legends import MSG_LEGEND_WHAT
-from llamatron.strings.marks import MSG_CELLS_SHOWN, MSG_MORE_AFTER, MSG_MORE_BEFORE, MSG_STEPS_SHOWN
+from llamatron.strings import legends, marks
 from llamatron.tui import keybindings
 from llamatron.tui.drawing import Box, NOTHING
 from llamatron.tui.keys import Key
@@ -59,7 +58,7 @@ FIRST_STEP = 0
 def legend_entry(binding):
     """Return a binding as the legend shows it: the key's name and what the key does."""
     _, _, what = binding
-    return KEY_SHOWN.format(label=key_name(binding)) + MSG_LEGEND_WHAT.format(what=what)
+    return KEY_SHOWN.format(label=key_name(binding)) + legends.MSG_LEGEND_WHAT.format(what=what)
 
 
 class OneRowChecks:
@@ -163,16 +162,16 @@ class OneRowChecks:
         count = self.PAGE.MOST_STEPS
         self.assertLess(shown, count)
         self.assertEqual(self.page.first_step, FIRST_STEP)
-        self.assertIn(self.SHOWN.format(before=NOTHING, first=1, last=shown, after=MSG_MORE_AFTER), self.text())
+        self.assertIn(self.SHOWN.format(before=NOTHING, first=1, last=shown, after=marks.MSG_MORE_AFTER), self.text())
         # The grid is one block however long the row is: it scrolls, and never wraps onto a second block.
         self.assertEqual(self.text().count(Box.TOP_LEFT), 1)
         await self.press(*[Key.RIGHT] * shown)
         self.assertEqual(self.page.first_step, 1)
-        self.assertIn(self.SHOWN.format(before=MSG_MORE_BEFORE, first=2, last=shown + 1, after=MSG_MORE_AFTER), self.text())
+        self.assertIn(self.SHOWN.format(before=marks.MSG_MORE_BEFORE, first=2, last=shown + 1, after=marks.MSG_MORE_AFTER), self.text())
         await self.press(*[Key.RIGHT] * count)
         self.assertEqual(self.page.step, count - 1)
         self.assertEqual(self.page.first_step, count - shown)
-        self.assertIn(self.SHOWN.format(before=MSG_MORE_BEFORE, first=count - shown + 1, last=count, after=NOTHING), self.text())
+        self.assertIn(self.SHOWN.format(before=marks.MSG_MORE_BEFORE, first=count - shown + 1, last=count, after=NOTHING), self.text())
         await self.press(*[Key.LEFT] * count)
         self.assertEqual(self.page.first_step, FIRST_STEP)
 
@@ -192,7 +191,7 @@ class TestGrooveEditorIsOneRow(OneRowChecks, UITest):
 
     PAGE = GrooveEditor
     FIRST = A_GROOVE
-    SHOWN = MSG_CELLS_SHOWN
+    SHOWN = marks.MSG_CELLS_SHOWN
 
     def prepare(self):
         self.document.add_groove(A_GROOVE)
@@ -214,7 +213,7 @@ class TestOffsetsEditorIsOneRow(OneRowChecks, UITest):
 
     PAGE = OffsetsEditor
     FIRST = UP_ARP
-    SHOWN = MSG_STEPS_SHOWN
+    SHOWN = marks.MSG_STEPS_SHOWN
 
     def prepare(self):
         self.document.set_generator_setting(section=Section.ARPS, name=UP_ARP, setting=ArpSetting.OFFSETS, value=SOME_OFFSETS)

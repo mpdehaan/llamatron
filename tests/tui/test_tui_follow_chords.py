@@ -18,8 +18,7 @@
 
 from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition.generator_settings import FollowChordsSetting
-from llamatron.strings.labels import MSG_CHORDS_FROM_LABEL
-from llamatron.strings.marks import MSG_NONE_SHOWN
+from llamatron.strings import labels, marks
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
@@ -43,7 +42,7 @@ class TestFollowChordsEditor(UITest):
         await super().asyncSetUp()
         await self.open_generator(section=Section.FOLLOW_CHORDS)
         self.assertIsInstance(self.app.screen, FollowChordsEditor)
-        await self.select_field(MSG_CHORDS_FROM_LABEL)
+        await self.select_field(labels.MSG_CHORDS_FROM_LABEL)
 
     def followed(self):
         return self.document.song().get_generator_settings(kind=GeneratorKind.FOLLOW_CHORDS, name=FOLLOWS).get_chords_from()
@@ -51,7 +50,7 @@ class TestFollowChordsEditor(UITest):
     async def test_the_track_is_picked_from_the_songs_tracks_with_none_first(self):
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
-        self.assertEqual(self.app.screen.options, [MSG_NONE_SHOWN, DRUMS, LEAD])
+        self.assertEqual(self.app.screen.options, [marks.MSG_NONE_SHOWN, DRUMS, LEAD])
         await self.press(Key.UP, Key.ENTER)
         self.assertEqual(self.followed(), DRUMS)
         await self.press(keybindings.FollowChordsEditor.CLEAR)

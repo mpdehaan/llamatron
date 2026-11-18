@@ -29,11 +29,7 @@ from llamatron.macro_composer import line_edits
 from llamatron.macro_composer.melody import LINE_NOTES
 from llamatron.macro_composer.phrasing import LINE_BREATH, LINE_EARLY, LONGEST_BREATH, NO_BREATH, SHORT_BREATH
 from llamatron.macro_composer.wizard_choices import LINE_BREATHES, LINE_IS_HOOK, LINE_OWN, LINE_PLAYER
-from llamatron.strings.labels import MSG_LINES_BREATH_LABEL, MSG_LINES_EARLY_LABEL, MSG_LINES_NO, MSG_LINES_NOTES_LABEL, MSG_LINES_YES, MSG_WIZARD_HOOK_NOTES_OWN, MSG_WIZARD_HOOK_NOTES_WIZARD
-from llamatron.strings.marks import (
-    MSG_LINES_BREATH_OWN, MSG_LINES_FIELD, MSG_LINES_FROM_MELODY, MSG_LINES_HOOK_SAID, MSG_LINES_LINE_SAID, MSG_LINES_ROW, MSG_LINES_SAME_IDEA, MSG_LINES_SILENT, MSG_WIZARD_HOOK_BAR_LINE,
-    MSG_WIZARD_HOOK_CELL, MSG_WIZARD_HOOK_GAP,
-)
+from llamatron.strings import labels, marks
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.dialogs.tune_dialog import TuneDialog
 from llamatron.tui.drawing import NOTHING, Style, cursor_mark
@@ -134,14 +130,14 @@ class LinesDialog(Dialog):
         cells = []
         for note in notes:
             length = line_edits.length_of(note) * step
-            cells += [MSG_WIZARD_HOOK_GAP] * length if line_edits.is_rest(note) else [MSG_WIZARD_HOOK_CELL] * (length - 1) + [MSG_WIZARD_HOOK_GAP]
+            cells += [marks.MSG_WIZARD_HOOK_GAP] * length if line_edits.is_rest(note) else [marks.MSG_WIZARD_HOOK_CELL] * (length - 1) + [marks.MSG_WIZARD_HOOK_GAP]
         size = self.steps_in_bar * step
-        return MSG_WIZARD_HOOK_BAR_LINE + MSG_WIZARD_HOOK_BAR_LINE.join(''.join(cells[at:at + size]) for at in range(0, len(cells), size)) + MSG_WIZARD_HOOK_BAR_LINE
+        return marks.MSG_WIZARD_HOOK_BAR_LINE + marks.MSG_WIZARD_HOOK_BAR_LINE.join(''.join(cells[at:at + size]) for at in range(0, len(cells), size)) + marks.MSG_WIZARD_HOOK_BAR_LINE
 
     def row_line(self, *, count, line, step):
-        cells = MSG_LINES_SILENT if line[LINE_NOTES] is None else self.cells_of(notes=line[LINE_NOTES], step=step)
+        cells = marks.MSG_LINES_SILENT if line[LINE_NOTES] is None else self.cells_of(notes=line[LINE_NOTES], step=step)
         player = NOTHING if line[LINE_NOTES] is None else self.title_of_player(line[LINE_PLAYER])
-        row = Text(cursor_mark(count == self.place) + MSG_LINES_ROW.format(number=count + 1, cells=cells, player=player), no_wrap=True)
+        row = Text(cursor_mark(count == self.place) + marks.MSG_LINES_ROW.format(number=count + 1, cells=cells, player=player), no_wrap=True)
         row.stylize(Style.BOLD if line[LINE_OWN] else Style.PLAIN)
         return row
 
@@ -149,15 +145,15 @@ class LinesDialog(Dialog):
         """Return what the cursor's line is and its three values, each the line's own or said to be the melody's."""
         line = self.line()
         if line[LINE_NOTES] is None:
-            return [Text(MSG_LINES_SILENT, style=Style.DIM)]
+            return [Text(marks.MSG_LINES_SILENT, style=Style.DIM)]
         own = line[LINE_OWN]
-        said = (MSG_LINES_HOOK_SAID if line[LINE_IS_HOOK] else MSG_LINES_LINE_SAID).format(number=self.place + 1, player=self.title_of_player(line[LINE_PLAYER]))
-        from_above = MSG_LINES_FROM_MELODY if line[LINE_BREATHES] else MSG_LINES_SAME_IDEA
-        breath = MSG_LINES_BREATH_OWN.format(eighths=own[LINE_BREATH]) if LINE_BREATH in own else from_above
-        early = (MSG_LINES_YES if own[LINE_EARLY] else MSG_LINES_NO) if LINE_EARLY in own else from_above
-        notes = MSG_WIZARD_HOOK_NOTES_OWN if LINE_NOTES in own else MSG_WIZARD_HOOK_NOTES_WIZARD
-        values = [(MSG_LINES_NOTES_LABEL, notes)] if LINE_NOTES in own else [(MSG_LINES_BREATH_LABEL, breath), (MSG_LINES_EARLY_LABEL, early), (MSG_LINES_NOTES_LABEL, notes)]
-        return [Text(said, style=Style.BOLD), *[Text(MSG_LINES_FIELD.format(label=label, value=value)) for label, value in values]]
+        said = (marks.MSG_LINES_HOOK_SAID if line[LINE_IS_HOOK] else marks.MSG_LINES_LINE_SAID).format(number=self.place + 1, player=self.title_of_player(line[LINE_PLAYER]))
+        from_above = marks.MSG_LINES_FROM_MELODY if line[LINE_BREATHES] else marks.MSG_LINES_SAME_IDEA
+        breath = marks.MSG_LINES_BREATH_OWN.format(eighths=own[LINE_BREATH]) if LINE_BREATH in own else from_above
+        early = (labels.MSG_LINES_YES if own[LINE_EARLY] else labels.MSG_LINES_NO) if LINE_EARLY in own else from_above
+        notes = labels.MSG_WIZARD_HOOK_NOTES_OWN if LINE_NOTES in own else labels.MSG_WIZARD_HOOK_NOTES_WIZARD
+        values = [(labels.MSG_LINES_NOTES_LABEL, notes)] if LINE_NOTES in own else [(labels.MSG_LINES_BREATH_LABEL, breath), (labels.MSG_LINES_EARLY_LABEL, early), (labels.MSG_LINES_NOTES_LABEL, notes)]
+        return [Text(said, style=Style.BOLD), *[Text(marks.MSG_LINES_FIELD.format(label=label, value=value)) for label, value in values]]
 
     def lines(self, width):
         step = self.step_width(width)

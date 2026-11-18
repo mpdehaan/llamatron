@@ -17,15 +17,11 @@
 """The instrument editor: one instrument's name, MIDI device or FluidSynth, channel and General MIDI sound."""
 
 from llamatron.composition.file_format import FLUIDSYNTH_DEVICE, Section
-from llamatron.music.midi import MAX_CHANNEL, MIN_CHANNEL
+from llamatron.music import midi
 from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT_PREFIX
 from llamatron.realtime.outputs import output_port_names
-from llamatron.strings.help import HELP_INSTRUMENT_EDITOR
-from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MAX_KEYSWITCH_LEAD, MIN_GM_SOUND, MIN_KEYSWITCH_LEAD
-from llamatron.strings.labels import Crumb, MSG_KEYSWITCH_LEAD_LABEL, MSG_KEYSWITCH_MAP_LABEL, MSG_CHANNEL_LABEL, MSG_DEVICE_LABEL, MSG_GM_FAMILIES, MSG_GM_SOUND_LABEL, MSG_GM_SOUND_SHOWN, MSG_GM_SOUNDS
-from llamatron.strings.legends import MSG_NO_DEVICE_WHAT, MSG_NO_GM_SOUND_WHAT, What
-from llamatron.strings.marks import MSG_KEYSWITCH_LEAD_SHOWN, MSG_AUTO_CHANNEL_SHOWN, MSG_NO_DEVICE_SHOWN, MSG_NONE_SHOWN
-from llamatron.strings.messages import MSG_KEYSWITCH_LEAD_PROMPT, MSG_KEYSWITCH_MAP_TITLE, MSG_CHANNEL_PROMPT, MSG_DEVICE_TITLE, MSG_GM_SOUND_TITLE, MSG_RENAME_INSTRUMENT_PROMPT
+from llamatron.composition import limits
+from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui.dialogs.sound_dialog import SoundDialog
 from llamatron.tui.screens.shared.sound_trial import SoundTrial, run_in_sound
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -45,15 +41,15 @@ def sound_families(*, numbered=False):
     """Return General MIDI's families for the sound picker, each its name with its sounds as (label, General MIDI number), a label the sound's name,
     after its number where numbered."""
     def label(sound):
-        name = MSG_GM_SOUNDS[sound - MIN_GM_SOUND]
-        return MSG_GM_SOUND_SHOWN.format(number=sound, name=name) if numbered else name
-    return [(family, [(label(sound), sound) for sound in range(place * GM_FAMILY_SIZE + MIN_GM_SOUND, (place + 1) * GM_FAMILY_SIZE + MIN_GM_SOUND)])
-            for place, family in enumerate(MSG_GM_FAMILIES)]
+        name = labels.MSG_GM_SOUNDS[sound - limits.MIN_GM_SOUND]
+        return labels.MSG_GM_SOUND_SHOWN.format(number=sound, name=name) if numbered else name
+    return [(family, [(label(sound), sound) for sound in range(place * limits.GM_FAMILY_SIZE + limits.MIN_GM_SOUND, (place + 1) * limits.GM_FAMILY_SIZE + limits.MIN_GM_SOUND)])
+            for place, family in enumerate(labels.MSG_GM_FAMILIES)]
 
 
 def sound_text(sound):
     """Return how a General MIDI sound is shown: its number and name, or (none)."""
-    return MSG_NONE_SHOWN if sound is None else MSG_GM_SOUND_SHOWN.format(number=sound, name=MSG_GM_SOUNDS[sound - MIN_GM_SOUND])
+    return marks.MSG_NONE_SHOWN if sound is None else labels.MSG_GM_SOUND_SHOWN.format(number=sound, name=labels.MSG_GM_SOUNDS[sound - limits.MIN_GM_SOUND])
 
 
 class InstrumentEditor(ShowsNamedItem, FieldPage):
@@ -61,10 +57,10 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
 
     KEYS = keybindings.InstrumentEditor
 
-    HELP = HELP_INSTRUMENT_EDITOR
+    HELP = help_text.HELP_INSTRUMENT_EDITOR
     SECTION = Section.INSTRUMENTS
-    CRUMBS_BEFORE = (Crumb.INSTRUMENTS,)
-    RENAME_PROMPT = MSG_RENAME_INSTRUMENT_PROMPT
+    CRUMBS_BEFORE = (labels.Crumb.INSTRUMENTS,)
+    RENAME_PROMPT = messages.MSG_RENAME_INSTRUMENT_PROMPT
 
     def __init__(self, *, holder, name):
         super().__init__(holder)
@@ -83,23 +79,23 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
 
     def pick_device(self):
         devices = self.devices()
-        options = [MSG_NO_DEVICE_SHOWN, *devices]
+        options = [marks.MSG_NO_DEVICE_SHOWN, *devices]
         current = self.instrument().get_device()
 
         def chosen(place):
             self.set_device(None if place == NO_DEVICE_PLACE else devices[place - 1])
-        self.ask(dialog=ChoiceDialog(title=MSG_DEVICE_TITLE, options=options, current=options.index(current) if current in options else NO_DEVICE_PLACE), then=chosen)
+        self.ask(dialog=ChoiceDialog(title=messages.MSG_DEVICE_TITLE, options=options, current=options.index(current) if current in options else NO_DEVICE_PLACE), then=chosen)
 
     def pick_gm_sound(self):
         """Choose the instrument's General MIDI sound from its families, each a row that opens its sounds, with (none) above them; a sound can be tried."""
-        dialog = SoundDialog(title=MSG_GM_SOUND_TITLE, top=[(MSG_NONE_SHOWN, NO_SOUND_PLACE)], groups=sound_families(numbered=True), current=self.instrument().get_gm_sound() or NO_SOUND_PLACE,
+        dialog = SoundDialog(title=messages.MSG_GM_SOUND_TITLE, top=[(marks.MSG_NONE_SHOWN, NO_SOUND_PLACE)], groups=sound_families(numbered=True), current=self.instrument().get_gm_sound() or NO_SOUND_PLACE,
                              trial=SoundTrial(page=self, played=lambda sound: run_in_sound(sound or None)))
         self.ask(dialog=dialog, then=lambda place: self.set_gm_sound(None if place == NO_SOUND_PLACE else place))
 
     def step_gm_sound(self, offset):
         """Step to the next or previous sound, (none) below the first and the last staying put."""
         sound = (self.instrument().get_gm_sound() or NO_SOUND_PLACE) + offset
-        self.set_gm_sound(None if sound <= NO_SOUND_PLACE else min(sound, MAX_GM_SOUND))
+        self.set_gm_sound(None if sound <= NO_SOUND_PLACE else min(sound, limits.MAX_GM_SOUND))
 
     def set_gm_sound(self, sound):
         self.document().set_instrument_gm_sound(name=self.item, sound=sound)
@@ -112,16 +108,16 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
 
     def open_keyswitch_map(self):
         """Open the Keyswitch Map, whose ten slots go into the instrument together on OK, as one undo step."""
-        dialog = KeyswitchMapDialog(title=MSG_KEYSWITCH_MAP_TITLE.format(instrument=self.item), keyswitches=self.instrument().get_keyswitches(), setlist=self.document().setlist())
+        dialog = KeyswitchMapDialog(title=messages.MSG_KEYSWITCH_MAP_TITLE.format(instrument=self.item), keyswitches=self.instrument().get_keyswitches(), setlist=self.document().setlist())
         self.ask(dialog=dialog, then=lambda keyswitches: self.document().set_instrument_keyswitches(name=self.item, keyswitches=keyswitches))
 
     def lead_field(self):
         """Return the Keyswitch lead field: how many milliseconds before its note a keyswitch is sent, for a plugin that needs it early, nothing unless set."""
         instrument = self.instrument()
         return NumberField(
-            page=self, label=MSG_KEYSWITCH_LEAD_LABEL, number=instrument.get_keyswitch_lead(), lowest=MIN_KEYSWITCH_LEAD, highest=MAX_KEYSWITCH_LEAD,
-            shown=MSG_KEYSWITCH_LEAD_SHOWN.format(milliseconds=instrument.get_keyswitch_lead()),
-            title=MSG_KEYSWITCH_LEAD_PROMPT.format(lowest=MIN_KEYSWITCH_LEAD, highest=MAX_KEYSWITCH_LEAD),
+            page=self, label=labels.MSG_KEYSWITCH_LEAD_LABEL, number=instrument.get_keyswitch_lead(), lowest=limits.MIN_KEYSWITCH_LEAD, highest=limits.MAX_KEYSWITCH_LEAD,
+            shown=marks.MSG_KEYSWITCH_LEAD_SHOWN.format(milliseconds=instrument.get_keyswitch_lead()),
+            title=messages.MSG_KEYSWITCH_LEAD_PROMPT.format(lowest=limits.MIN_KEYSWITCH_LEAD, highest=limits.MAX_KEYSWITCH_LEAD),
             set=lambda milliseconds: self.document().set_instrument_keyswitch_lead(name=self.item, milliseconds=milliseconds or None),
         )
 
@@ -129,10 +125,10 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
         """Return the Channel field: a number from 1 to 16, or (auto) with nothing to change while the instrument plays through FluidSynth, which gives each track a channel."""
         instrument = self.instrument()
         if instrument.uses_fluidsynth():
-            return Field(label=MSG_CHANNEL_LABEL, value=lambda: MSG_AUTO_CHANNEL_SHOWN)
+            return Field(label=labels.MSG_CHANNEL_LABEL, value=lambda: marks.MSG_AUTO_CHANNEL_SHOWN)
         return NumberField(
-            page=self, label=MSG_CHANNEL_LABEL, number=instrument.get_channel(), lowest=MIN_CHANNEL, highest=MAX_CHANNEL,
-            title=MSG_CHANNEL_PROMPT.format(lowest=MIN_CHANNEL, highest=MAX_CHANNEL),
+            page=self, label=labels.MSG_CHANNEL_LABEL, number=instrument.get_channel(), lowest=midi.MIN_CHANNEL, highest=midi.MAX_CHANNEL,
+            title=messages.MSG_CHANNEL_PROMPT.format(lowest=midi.MIN_CHANNEL, highest=midi.MAX_CHANNEL),
             set=lambda channel: self.document().set_instrument_channel(name=self.item, channel=channel),
         )
 
@@ -140,11 +136,11 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
         instrument = self.instrument()
         return [
             NameField(value=lambda: self.item, rename=self.rename),
-            Field(label=MSG_DEVICE_LABEL, value=lambda: instrument.get_device() or MSG_NO_DEVICE_SHOWN, adjust=None, enter=self.pick_device, enter_what=What.CHOOSE,
-                  clear=lambda: self.set_device(None), clear_what=MSG_NO_DEVICE_WHAT),
+            Field(label=labels.MSG_DEVICE_LABEL, value=lambda: instrument.get_device() or marks.MSG_NO_DEVICE_SHOWN, adjust=None, enter=self.pick_device, enter_what=legends.What.CHOOSE,
+                  clear=lambda: self.set_device(None), clear_what=legends.MSG_NO_DEVICE_WHAT),
             self.channel_field(),
-            Field(label=MSG_GM_SOUND_LABEL, value=lambda: sound_text(instrument.get_gm_sound()), adjust=self.step_gm_sound, enter=self.pick_gm_sound, enter_what=What.CHOOSE,
-                  clear=lambda: self.set_gm_sound(None), clear_what=MSG_NO_GM_SOUND_WHAT),
+            Field(label=labels.MSG_GM_SOUND_LABEL, value=lambda: sound_text(instrument.get_gm_sound()), adjust=self.step_gm_sound, enter=self.pick_gm_sound, enter_what=legends.What.CHOOSE,
+                  clear=lambda: self.set_gm_sound(None), clear_what=legends.MSG_NO_GM_SOUND_WHAT),
             self.lead_field(),
-            Button(label=MSG_KEYSWITCH_MAP_LABEL, key_name=self.KEYS.KEYSWITCH_MAP[1], enter=self.open_keyswitch_map, enter_what=self.KEYS.KEYSWITCH_MAP[2]),
+            Button(label=labels.MSG_KEYSWITCH_MAP_LABEL, key_name=self.KEYS.KEYSWITCH_MAP[1], enter=self.open_keyswitch_map, enter_what=self.KEYS.KEYSWITCH_MAP[2]),
         ]

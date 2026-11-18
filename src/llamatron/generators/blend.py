@@ -23,7 +23,7 @@ from llamatron.support.rational import Rational
 from llamatron.generators.base import ClipGenerator
 from llamatron.music.sound import DEGREE, HELD, HELD_SOUND, KIND, LENGTH, PARTS, PHRASE, Sound
 from llamatron.grid.clip import Clip
-from llamatron.strings.errors import ERR_BAD_AMOUNT, ERR_DEGREE_NEEDS_SCALE, ERR_LENGTHS_DIFFER, ERR_NOT_A_CLIP, ERR_NOT_A_MODE
+from llamatron.strings import errors
 
 # How far a blend has moved to its target, as a percentage.
 NONE_OF_THE_TARGET = 0
@@ -46,18 +46,18 @@ class BlendMode(Enum):
 
 def _check_mode(mode):
     if not isinstance(mode, BlendMode):
-        raise ValueError(ERR_NOT_A_MODE.format(value=mode))
+        raise ValueError(errors.ERR_NOT_A_MODE.format(value=mode))
 
 
 def _check_target(target):
     if not isinstance(target, Clip):
-        raise ValueError(ERR_NOT_A_CLIP.format(value=target))
+        raise ValueError(errors.ERR_NOT_A_CLIP.format(value=target))
 
 
 def _check_amount(amount):
     # bool is a subclass of int, but True is not a real amount.
     if not _is_amount(amount):
-        raise ValueError(ERR_BAD_AMOUNT.format(value=amount, lowest=NONE_OF_THE_TARGET, highest=ALL_OF_THE_TARGET))
+        raise ValueError(errors.ERR_BAD_AMOUNT.format(value=amount, lowest=NONE_OF_THE_TARGET, highest=ALL_OF_THE_TARGET))
 
 
 def _is_amount(amount):
@@ -84,7 +84,7 @@ def _settled(*, position, scale):
     if kind != DEGREE:
         return position
     if scale is None:
-        raise ValueError(ERR_DEGREE_NEEDS_SCALE.format(degree=Sound.position(position)))
+        raise ValueError(errors.ERR_DEGREE_NEEDS_SCALE.format(degree=Sound.position(position)))
     return Sound.settled(position, scale)
 
 
@@ -117,7 +117,7 @@ class Blend(ClipGenerator):
     def _generate(self, clip):
         total = clip.total_length()
         if self._target.total_length() != total:
-            raise ValueError(ERR_LENGTHS_DIFFER.format(first=total, second=self._target.total_length()))
+            raise ValueError(errors.ERR_LENGTHS_DIFFER.format(first=total, second=self._target.total_length()))
         return self._sweep(source=_concrete(clip), target=_concrete(self._target), total=total), clip.get_length()
 
     def region(self, clip):

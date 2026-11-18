@@ -41,7 +41,7 @@ from llamatron.composition.file_format import (
     ClipSlotSetting, GeneratorKind, PatternSetting, Row, Section, SongSetting, TrackSetting,
 )
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.strings.names import MSG_DEFAULT_SONG_NAME
+from llamatron.strings import names
 from tests.support.rendering import render_data, setlist_from_data
 from llamatron.tui import app as tui_app
 from llamatron.tui.document import Document
@@ -231,7 +231,7 @@ class TestDocumentEdges(unittest.TestCase):
 
     def test_a_clip_tree_exports_beside_the_file_named_after_the_set_and_the_song(self):
         document = Document(setlist=setlist_from_data(good()), path=os.path.join(SONGS, 'tune.yml'))
-        self.assertEqual(document.export_path(ExportKind.CLIP_TREE), os.path.join(SONGS, f'{TUNE}_{MSG_DEFAULT_SONG_NAME}_clip_*.mid'))
+        self.assertEqual(document.export_path(ExportKind.CLIP_TREE), os.path.join(SONGS, f'{TUNE}_{names.MSG_DEFAULT_SONG_NAME}_clip_*.mid'))
 
     def test_an_export_that_live_refuses_is_explained(self):
         document = Document(setlist=setlist_from_data(changed(tempo=15)), path='tune.yml')

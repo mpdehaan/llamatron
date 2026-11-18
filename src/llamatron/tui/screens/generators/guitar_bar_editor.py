@@ -28,10 +28,7 @@ from rich.text import Text
 from llamatron.composition.file_format import STROKES, GeneratorKind, GuitarifySetting, Section, Stroke
 from llamatron.composition.generator_settings import MAX_GUITAR_BAR
 from llamatron.composition.guitar_bars import READY_BARS, ready_bar_matching
-from llamatron.strings.help import HELP_GUITAR_BAR_EDITOR
-from llamatron.strings.labels import Crumb, MSG_ACCENT_ROW_LABEL, MSG_CELL_ROW_LABEL, MSG_GUITAR_STROKE_NAMES, MSG_READY_BAR_NAMES, MSG_READY_BARS_TITLE, MSG_STROKE_ROW_LABEL
-from llamatron.strings.marks import MSG_CELLS_SHOWN, MSG_STROKE_MARKS, MSG_TOGGLE_OFF, MSG_TOGGLE_ON
-from llamatron.strings.messages import MSG_GUITAR_BAR_NOTE, MSG_GUITAR_CELL_ACCENTED_NOTE, MSG_GUITAR_CELL_NOTE
+from llamatron.strings import help as help_text, labels, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Box, NOTHING, Style
@@ -51,12 +48,12 @@ class GuitarBarEditor(ShowsNamedItem, StepGrid, StepEditor):
     """A Guitarify's bar of strokes, a stroke and an accent a cell."""
 
     KEYS = keybindings.GuitarBarEditor
-    HELP = HELP_GUITAR_BAR_EDITOR
+    HELP = help_text.HELP_GUITAR_BAR_EDITOR
     SECTION = Section.GUITARIFIES
-    CRUMBS_BEFORE = (Crumb.GENERATORS,)
-    CRUMBS_AFTER = (Crumb.STROKES,)
+    CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
+    CRUMBS_AFTER = (labels.Crumb.STROKES,)
     CELL_WIDTH = 3
-    STEPS_SHOWN = MSG_CELLS_SHOWN
+    STEPS_SHOWN = marks.MSG_CELLS_SHOWN
 
     def __init__(self, *, holder, name):
         super().__init__(holder)
@@ -130,7 +127,7 @@ class GuitarBarEditor(ShowsNamedItem, StepGrid, StepEditor):
         names = list(READY_BARS)
         guitar = self.guitar()
         ready = ready_bar_matching(cell=guitar.get_cell(), strokes=guitar.get_bar(), accents=guitar.get_accents())
-        dialog = ChoiceDialog(title=MSG_READY_BARS_TITLE, options=[MSG_READY_BAR_NAMES[name] for name in names], current=names.index(ready) if ready in names else FIRST_CHOICE)
+        dialog = ChoiceDialog(title=labels.MSG_READY_BARS_TITLE, options=[labels.MSG_READY_BAR_NAMES[name] for name in names], current=names.index(ready) if ready in names else FIRST_CHOICE)
         self.ask(dialog=dialog, then=lambda chosen: self.take_ready_bar(names[chosen]))
 
     def take_ready_bar(self, name):
@@ -144,15 +141,15 @@ class GuitarBarEditor(ShowsNamedItem, StepGrid, StepEditor):
         places = range(first, last)
         strokes = self.strokes()
         accents = self.accents()
-        note = MSG_GUITAR_CELL_ACCENTED_NOTE if accents[self.step] else MSG_GUITAR_CELL_NOTE
+        note = messages.MSG_GUITAR_CELL_ACCENTED_NOTE if accents[self.step] else messages.MSG_GUITAR_CELL_NOTE
         return [
-            self.with_steps_shown(text=MSG_GUITAR_BAR_NOTE.format(cell=self.guitar().get_cell()), style=Style.DIM, width=width, first=first, last=last),
-            Text(note.format(number=self.step + 1, stroke=MSG_GUITAR_STROKE_NAMES[strokes[self.step]])),
+            self.with_steps_shown(text=messages.MSG_GUITAR_BAR_NOTE.format(cell=self.guitar().get_cell()), style=Style.DIM, width=width, first=first, last=last),
+            Text(note.format(number=self.step + 1, stroke=labels.MSG_GUITAR_STROKE_NAMES[strokes[self.step]])),
             Text(NOTHING),
             self.grid_rule(left=Box.TOP_LEFT, middle=Box.TOP_TEE, right=Box.TOP_RIGHT, count=len(places)),
-            self.grid_line(label=MSG_CELL_ROW_LABEL, cells=[(place, str(place + 1)) for place in places], bold=True),
+            self.grid_line(label=labels.MSG_CELL_ROW_LABEL, cells=[(place, str(place + 1)) for place in places], bold=True),
             self.grid_rule(left=Box.LEFT_TEE, middle=Box.CROSS, right=Box.RIGHT_TEE, count=len(places)),
-            self.grid_line(label=MSG_STROKE_ROW_LABEL, cells=[(place, MSG_STROKE_MARKS[strokes[place]]) for place in places], selected=self.step),
-            self.grid_line(label=MSG_ACCENT_ROW_LABEL, cells=[(place, MSG_TOGGLE_ON if accents[place] else MSG_TOGGLE_OFF) for place in places]),
+            self.grid_line(label=labels.MSG_STROKE_ROW_LABEL, cells=[(place, marks.MSG_STROKE_MARKS[strokes[place]]) for place in places], selected=self.step),
+            self.grid_line(label=labels.MSG_ACCENT_ROW_LABEL, cells=[(place, marks.MSG_TOGGLE_ON if accents[place] else marks.MSG_TOGGLE_OFF) for place in places]),
             self.grid_rule(left=Box.BOTTOM_LEFT, middle=Box.BOTTOM_TEE, right=Box.BOTTOM_RIGHT, count=len(places)),
         ]

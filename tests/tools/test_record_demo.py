@@ -27,9 +27,8 @@ from unittest import mock
 from llamatron.composition.checks import listed
 from llamatron.composition.file_format import FLUIDSYNTH_DEVICE, ClipSlotSetting
 from llamatron.realtime.fluidsynth import AUDIO_DEVICE_VARIABLE
-from llamatron.composition.instrument import MAX_CHANNEL, MIN_CHANNEL
-from llamatron.strings.about import MSG_DEMO_SCROLL
-from llamatron.strings.errors import ERR_RECORDING_SONG_LOOPS
+from llamatron.music import midi
+from llamatron.strings import about, errors
 from llamatron.tui.launch import LEAD_IN_SECONDS, LEAD_OUT_SECONDS, SPLASH_SECONDS
 from llamatron.tui.uses import looping_scenes
 from tests.support.ui_testing import a_song, DRUMS, LEAD
@@ -128,9 +127,9 @@ class TestRecordDemo(unittest.TestCase):
 
     def test_auto_assignment_numbers_the_tracks_from_channel_1_and_goes_round_after_16(self):
         tracks = [LEAD, DRUMS]
-        self.assertEqual(self.tool.auto_assignment(tracks), [MIN_CHANNEL, MIN_CHANNEL + 1])
-        many = [str(number) for number in range(MAX_CHANNEL + 2)]
-        self.assertEqual(self.tool.auto_assignment(many)[MAX_CHANNEL], MIN_CHANNEL)
+        self.assertEqual(self.tool.auto_assignment(tracks), [midi.MIN_CHANNEL, midi.MIN_CHANNEL + 1])
+        many = [str(number) for number in range(midi.MAX_CHANNEL + 2)]
+        self.assertEqual(self.tool.auto_assignment(many)[midi.MAX_CHANNEL], midi.MIN_CHANNEL)
 
     def test_a_typed_assignment_gives_each_track_a_channel_or_keeps_its_own_and_refuses_the_wrong_count_or_channel(self):
         tracks = [LEAD, DRUMS]
@@ -194,7 +193,7 @@ class TestRecordDemo(unittest.TestCase):
     def test_a_scene_whose_every_clip_loops_is_refused_in_the_programs_words(self):
         self.assertIsNone(self.tool.recording_problem(self.document.song()))
         self.document.set_clip_slot_setting(index=FIRST_INDEX, track=LEAD, setting=ClipSlotSetting.LOOP, value=True)
-        self.assertEqual(ERR_RECORDING_SONG_LOOPS.format(scenes=listed(looping_scenes(self.document.song()))), self.tool.recording_problem(self.document.song()))
+        self.assertEqual(errors.ERR_RECORDING_SONG_LOOPS.format(scenes=listed(looping_scenes(self.document.song()))), self.tool.recording_problem(self.document.song()))
 
     def test_the_take_waits_for_enter_after_the_ready_line_which_is_the_last_thing_printed(self):
         printed = io.StringIO()
@@ -231,15 +230,15 @@ class TestRecordDemo(unittest.TestCase):
 
     def test_a_take_scrolls_the_sets_name_from_its_file_unless_told_other_words_or_none(self):
         # DEMO: and the file's name as words, for every set; --scroll-text gives other words and --no-scroll none.
-        self.assertEqual(self.tool.scroll_text_of(path=AN_EXAMPLE), MSG_DEMO_SCROLL.format(name=AN_EXAMPLE_NAME))
-        self.assertEqual(self.tool.scroll_text_of(path=SET_PATH), MSG_DEMO_SCROLL.format(name=SET_NAME))
+        self.assertEqual(self.tool.scroll_text_of(path=AN_EXAMPLE), about.MSG_DEMO_SCROLL.format(name=AN_EXAMPLE_NAME))
+        self.assertEqual(self.tool.scroll_text_of(path=SET_PATH), about.MSG_DEMO_SCROLL.format(name=SET_NAME))
         self.assertEqual(self.tool.scroll_text_of(path=AN_EXAMPLE, scroll_text=OTHER_WORDS), OTHER_WORDS)
         self.assertIsNone(self.tool.scroll_text_of(path=AN_EXAMPLE, scroll=False))
 
     def test_the_words_go_to_a_batch_take_and_a_plain_take(self):
         for staged in (True, False):
             with self.subTest(staged=staged):
-                self.assertEqual(self.visualizer_take(staged=staged, path=AN_EXAMPLE).scroll_text, MSG_DEMO_SCROLL.format(name=AN_EXAMPLE_NAME))
+                self.assertEqual(self.visualizer_take(staged=staged, path=AN_EXAMPLE).scroll_text, about.MSG_DEMO_SCROLL.format(name=AN_EXAMPLE_NAME))
                 self.assertEqual(self.visualizer_take(staged=staged, scroll_text=OTHER_WORDS).scroll_text, OTHER_WORDS)
                 self.assertIsNone(self.visualizer_take(staged=staged, scroll=False).scroll_text)
 
@@ -395,7 +394,7 @@ class TestRecordDemo(unittest.TestCase):
         self.assertEqual(sent_to, self.tool.DEFAULT_AUDIO_DEVICE)
         self.assertIn(self.tool.TRACK_FLUIDSYNTH.format(track=LEAD, instrument=FLUID), printed)
         self.assertIn(self.tool.TRACK_SILENT.format(track=DRUMS), printed)
-        self.assertNotIn(self.tool.INSTRUMENT_NAME.format(channel=MIN_CHANNEL), self.document.setlist().get_instrument_names())
+        self.assertNotIn(self.tool.INSTRUMENT_NAME.format(channel=midi.MIN_CHANNEL), self.document.setlist().get_instrument_names())
         self.assertTrue(self.document.setlist().is_real_time())
         self.assertTrue(app.call_args.kwargs['launch'].for_recording)
 

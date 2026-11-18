@@ -22,7 +22,7 @@ window of steps that scrolls sideways so that the cursor's step is always shown,
 that say which steps are on screen. They are here once.
 """
 
-from llamatron.strings.marks import MSG_MORE_AFTER, MSG_MORE_BEFORE, MSG_STEPS_SHOWN
+from llamatron.strings import marks
 from llamatron.tui import keybindings
 from llamatron.tui.drawing import NOTHING
 from llamatron.tui.key_table import pressed_key
@@ -34,7 +34,7 @@ class StepEditor(Page):
 
     KEYS = keybindings.StepEditor
     # How the page says which steps are on screen, which a page of cells words its own way.
-    STEPS_SHOWN = MSG_STEPS_SHOWN
+    STEPS_SHOWN = marks.MSG_STEPS_SHOWN
 
     def __init__(self, holder):
         super().__init__(holder)
@@ -92,4 +92,4 @@ class StepEditor(Page):
         count = self.steps()
         if last - first >= count:
             return NOTHING
-        return self.STEPS_SHOWN.format(before=MSG_MORE_BEFORE if first > 0 else NOTHING, first=first + 1, last=last, after=MSG_MORE_AFTER if last < count else NOTHING)
+        return self.STEPS_SHOWN.format(before=marks.MSG_MORE_BEFORE if first > 0 else NOTHING, first=first + 1, last=last, after=marks.MSG_MORE_AFTER if last < count else NOTHING)

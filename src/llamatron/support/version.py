@@ -23,11 +23,11 @@ first two when they choose. Versions are compared number by number, never as dec
 and time of the last version bump, written here by hand with it, and the About dialog shows them.
 """
 
-from llamatron.strings.errors import ERR_BAD_VERSION_TEXT
+from llamatron.strings import errors
 
-VERSION = '1.0.474'
+VERSION = '1.0.475'
 BUILD_DATE = '2026-11-17'
-BUILD_TIME = '20:00'
+BUILD_TIME = '20:10'
 
 DATE_SEPARATOR = '-'
 
@@ -51,5 +51,5 @@ def is_version(text):
 def version_numbers(text):
     """Return a version's three numbers, so versions compare number by number, like (1, 0, 2)."""
     if not is_version(text):
-        raise ValueError(ERR_BAD_VERSION_TEXT.format(value=text))
+        raise ValueError(errors.ERR_BAD_VERSION_TEXT.format(value=text))
     return tuple(int(part) for part in text.split(VERSION_SEPARATOR))

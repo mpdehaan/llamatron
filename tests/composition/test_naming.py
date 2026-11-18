@@ -18,12 +18,11 @@
 
 import unittest
 
-from llamatron.strings.names import MSG_NEW_SCALE_WORD
+from llamatron.strings import names
 from llamatron.composition.file_format import Section
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.naming import copy_name, default_scale_name, is_default_scale_name, is_taken, name_order, new_name, same_name, split_trailing_number, suggested_word, unique_name
 from llamatron.composition.setlist import Setlist
-from llamatron.strings.names import MSG_NEW_PATTERN_WORD
 
 # Names of the tests' own.
 FOO = 'foo'
@@ -109,13 +108,13 @@ class TestNewNames(unittest.TestCase):
     """A new thing is its kind's word, a dash and one more than the highest number in use."""
 
     def test_the_first_is_one(self):
-        self.assertEqual(new_name(word=MSG_NEW_PATTERN_WORD, taken=[OTHER]), PATTERN_1)
+        self.assertEqual(new_name(word=names.MSG_NEW_PATTERN_WORD, taken=[OTHER]), PATTERN_1)
 
     def test_a_new_thing_never_takes_the_number_of_one_deleted(self):
-        self.assertEqual(new_name(word=MSG_NEW_PATTERN_WORD, taken=[PATTERN_1, PATTERN_2, PATTERN_5]), PATTERN_6)
+        self.assertEqual(new_name(word=names.MSG_NEW_PATTERN_WORD, taken=[PATTERN_1, PATTERN_2, PATTERN_5]), PATTERN_6)
 
     def test_every_way_of_writing_the_word_and_its_number_counts(self):
-        self.assertEqual(new_name(word=MSG_NEW_PATTERN_WORD, taken=[PATTERN_1, PATTERN_SPACED_7]), PATTERN_8)
+        self.assertEqual(new_name(word=names.MSG_NEW_PATTERN_WORD, taken=[PATTERN_1, PATTERN_SPACED_7]), PATTERN_8)
 
     def test_a_word_that_ends_in_a_number_is_still_counted_by_the_number_after_the_dash(self):
         self.assertEqual(new_name(word=TREBLE_1, taken=[]), TREBLE_1_FIRST)
@@ -160,7 +159,7 @@ class TestScaleNames(unittest.TestCase):
 
     def test_a_new_set_starts_with_a_scale_named_by_its_number(self):
         # A name after the notes was wrong once the notes changed, so a new scale is numbered as every new thing.
-        self.assertEqual(Setlist.new().get_item_names(Section.SCALES), [new_name(word=MSG_NEW_SCALE_WORD, taken=[])])
+        self.assertEqual(Setlist.new().get_item_names(Section.SCALES), [new_name(word=names.MSG_NEW_SCALE_WORD, taken=[])])
 
     def test_an_older_files_name_still_says_what_the_scale_is(self):
         self.assertTrue(is_default_scale_name(name=C_MAJOR, root=ROOT_C, kind=MAJOR))

@@ -24,10 +24,9 @@ import unittest
 from llamatron.composition.file_format import (
     REGISTER_NOTE_ROWS, ClipSlotSetting, DriftDirection, GeneratorKind, RegisterSetting, Row, SceneSetting, Section,
 )
-from llamatron.composition.defaults import DEFAULT_VELOCITY
+from llamatron.composition import defaults, limits
 from llamatron.composition.file_format import DriftValue, DriftVersion
 from llamatron.composition.generator_settings import DriftSetting, versioned
-from llamatron.composition.limits import MAX_REGISTER_VALUE, MIN_REGISTER_VALUE
 from llamatron.playback.drift import DriftPlay
 from tests.support.rendering import song_from_data
 from tests.playback.test_registers import AX, LEAD, X, pattern, pitches, scale_notes, song, velocities
@@ -103,7 +102,7 @@ class TestWhatADriftDoes(unittest.TestCase):
 
     def test_velocity_moves_from_a_to_b_a_trigger_at_a_time(self):
         data = drifting(drift={DriftSetting.STEPS_TO_B: 2, b(DriftValue.VELOCITY): SOFTER})
-        self.assertEqual(per_bar(velocities(data)), [DEFAULT_VELOCITY, DEFAULT_VELOCITY + SOFTER // 2, DEFAULT_VELOCITY + SOFTER, DEFAULT_VELOCITY + SOFTER])
+        self.assertEqual(per_bar(velocities(data)), [defaults.DEFAULT_VELOCITY, defaults.DEFAULT_VELOCITY + SOFTER // 2, defaults.DEFAULT_VELOCITY + SOFTER, defaults.DEFAULT_VELOCITY + SOFTER])
 
     def test_a_probability_of_minus_100_silences_every_note(self):
         self.assertEqual(velocities(drifting(drift={a(DriftValue.PROBABILITY): -100, b(DriftValue.PROBABILITY): -100})), [])
@@ -133,13 +132,13 @@ class TestWhatADriftDoes(unittest.TestCase):
     def test_its_adds_join_the_registers_once_a_trigger_however_many_clips_name_it(self):
         rows = {REGISTER_NOTE_ROWS[AX]: [1] * STEPS}
         data = drifting(drift={a(DriftValue.AX_ADD): 1, b(DriftValue.AX_ADD): 1}, rows=rows, tracks=(LEAD, OTHER))
-        data[Section.REGISTERS] = {AX: {RegisterSetting.MINIMUM: MIN_REGISTER_VALUE, RegisterSetting.MAXIMUM: MAX_REGISTER_VALUE}}
+        data[Section.REGISTERS] = {AX: {RegisterSetting.MINIMUM: limits.MIN_REGISTER_VALUE, RegisterSetting.MAXIMUM: limits.MAX_REGISTER_VALUE}}
         self.assertEqual(per_bar(pitches(data)), scale_notes([1, 2, 3, 4]))
 
     def test_a_clip_that_names_no_drift_hears_nothing(self):
         data = drifting(drift={a(DriftValue.VELOCITY): SOFTER, b(DriftValue.VELOCITY): SOFTER})
         del data[Section.SCENES][0][SceneSetting.TRACKS][LEAD][ClipSlotSetting.CHAIN]
-        self.assertEqual(set(velocities(data)), {DEFAULT_VELOCITY})
+        self.assertEqual(set(velocities(data)), {defaults.DEFAULT_VELOCITY})
 
 
 if __name__ == '__main__':

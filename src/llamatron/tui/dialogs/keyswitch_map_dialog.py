@@ -27,13 +27,9 @@ from rich.text import Text
 
 from llamatron.composition.file_format import KEYSWITCH_SLOT_COUNT
 from llamatron.composition.instrument import NO_KEYSWITCH, Keyswitch
-from llamatron.composition.limits import MAX_NAME_LENGTH
-from llamatron.music.midi import HALF_STEPS_PER_OCTAVE, MAX_MIDI_NUMBER, MIN_MIDI_NUMBER
-from llamatron.strings.labels import MSG_OK_CANCEL_BUTTONS
-from llamatron.strings.marks import MSG_KEYSWITCH_MAP_ROW
-from llamatron.strings.messages import (
-    MSG_KEYSWITCH_NAME_PROMPT, MSG_KEYSWITCH_NOTE_NAMED_TITLE, MSG_KEYSWITCH_NOTE_TITLE, MSG_KEYSWITCH_PICKED_NOTE, MSG_KEYSWITCH_PICKED_OCTAVE,
-)
+from llamatron.composition import limits
+from llamatron.strings import labels, marks, messages
+from llamatron.music import midi
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.components.keyboard import KeyKind, one_octave_rows
 from llamatron.tui.dialogs.dialog import Dialog
@@ -62,7 +58,7 @@ SPACE = ' '
 def first_note_offered(keyswitches):
     """Return the note the picker opens on for a slot with none: a half step above the map's highest note, or the lowest C for an empty map."""
     notes = [keyswitch.note for keyswitch in keyswitches if keyswitch.note is not None]
-    return min(max(notes) + ONE_HALF_STEP, MAX_MIDI_NUMBER) if notes else MIN_MIDI_NUMBER
+    return min(max(notes) + ONE_HALF_STEP, midi.MAX_MIDI_NUMBER) if notes else midi.MIN_MIDI_NUMBER
 
 
 class KeyswitchMapDialog(Dialog):
@@ -120,7 +116,7 @@ class KeyswitchMapDialog(Dialog):
         self.cell = cursor_moved(place=self.cell, name=name, count=CELL_COUNT)
 
     def along_buttons(self, name):
-        self.button = cursor_moved(place=self.button, name=name, count=len(MSG_OK_CANCEL_BUTTONS))
+        self.button = cursor_moved(place=self.button, name=name, count=len(labels.MSG_OK_CANCEL_BUTTONS))
 
     def press_button(self):
         if self.button == OK:
@@ -142,7 +138,7 @@ class KeyswitchMapDialog(Dialog):
             if text is not None:
                 self.keyswitches[place] = Keyswitch(text.strip() or None, self.keyswitches[place].note)
             self.draw()
-        self.app.push_screen(PromptDialog(title=MSG_KEYSWITCH_NAME_PROMPT.format(slot=place), value=self.current().name or NOTHING, max_length=MAX_NAME_LENGTH), named)
+        self.app.push_screen(PromptDialog(title=messages.MSG_KEYSWITCH_NAME_PROMPT.format(slot=place), value=self.current().name or NOTHING, max_length=limits.MAX_NAME_LENGTH), named)
 
     def open_picker(self):
         note = self.current().note
@@ -157,14 +153,14 @@ class KeyswitchMapDialog(Dialog):
 
     def pick_note(self, name):
         """Move a key along, staying within the octave shown, since the octave is picked apart from the key."""
-        within = self.picking % HALF_STEPS_PER_OCTAVE
-        moved = cursor_moved(place=within, name=name, count=HALF_STEPS_PER_OCTAVE)
-        self.picking = min(self.picking - within + moved, MAX_MIDI_NUMBER)
+        within = self.picking % midi.HALF_STEPS_PER_OCTAVE
+        moved = cursor_moved(place=within, name=name, count=midi.HALF_STEPS_PER_OCTAVE)
+        self.picking = min(self.picking - within + moved, midi.MAX_MIDI_NUMBER)
 
     def pick_octave(self, name):
         """Up is an octave higher and Down an octave lower, stopping where MIDI's notes end."""
-        moved = self.picking + HALF_STEPS_PER_OCTAVE * (STEP_FORWARD if name == Key.UP else STEP_BACK)
-        if MIN_MIDI_NUMBER <= moved <= MAX_MIDI_NUMBER:
+        moved = self.picking + midi.HALF_STEPS_PER_OCTAVE * (STEP_FORWARD if name == Key.UP else STEP_BACK)
+        if midi.MIN_MIDI_NUMBER <= moved <= midi.MAX_MIDI_NUMBER:
             self.picking = moved
 
     def note_text(self, note):
@@ -175,7 +171,7 @@ class KeyswitchMapDialog(Dialog):
         on_name = slot == self.place and self.cell == NAME_CELL
         on_note = slot == self.place and self.cell == NOTE_CELL
         # The triangle stands before the name or the note, in a place each keeps for it, so that nothing shifts as the cursor moves.
-        line = Text(MSG_KEYSWITCH_MAP_ROW.format(slot=slot), no_wrap=True)
+        line = Text(marks.MSG_KEYSWITCH_MAP_ROW.format(slot=slot), no_wrap=True)
         name_mark = cursor_mark(on_name)
         note_mark = cursor_mark(on_note)
         room = max(width - line.cell_len - len(name_mark) - len(note_mark) - KEYSWITCH_NOTE_WIDTH, 0)
@@ -186,7 +182,7 @@ class KeyswitchMapDialog(Dialog):
         return line
 
     def lines(self, width):
-        buttons = [(binding[1], label) for label, binding in zip(MSG_OK_CANCEL_BUTTONS, BUTTON_BINDINGS)]
+        buttons = [(binding[1], label) for label, binding in zip(labels.MSG_OK_CANCEL_BUTTONS, BUTTON_BINDINGS)]
         return [
             *[self.slot_line(slot=slot, width=width) for slot in range(KEYSWITCH_SLOT_COUNT)],
             Text(NOTHING), *button_row(buttons=buttons, selected=self.button if self.on_buttons() else None),
@@ -201,16 +197,16 @@ class KeyswitchMapDialog(Dialog):
         if self.picking is None:
             return None
         keyswitch = self.current()
-        title = MSG_KEYSWITCH_NOTE_TITLE.format(slot=self.place) if keyswitch.name is None else MSG_KEYSWITCH_NOTE_NAMED_TITLE.format(slot=self.place, name=keyswitch.name)
+        title = messages.MSG_KEYSWITCH_NOTE_TITLE.format(slot=self.place) if keyswitch.name is None else messages.MSG_KEYSWITCH_NOTE_NAMED_TITLE.format(slot=self.place, name=keyswitch.name)
         lines = [Text(fit(text=title, width=width), style=Style.BOLD), Text(NOTHING)]
-        for row in one_octave_rows(self.picking % HALF_STEPS_PER_OCTAVE):
+        for row in one_octave_rows(self.picking % midi.HALF_STEPS_PER_OCTAVE):
             line = Text(NOTHING, no_wrap=True)
             for text, kind in row:
                 line.append(text, style=KEY_STYLES.get(kind, Style.PLAIN))
             lines.append(line)
-        octave = self.setlist.shown_octave(self.picking // HALF_STEPS_PER_OCTAVE)
+        octave = self.setlist.shown_octave(self.picking // midi.HALF_STEPS_PER_OCTAVE)
         lines += [
-            Text(NOTHING), Text(MSG_KEYSWITCH_PICKED_NOTE.format(note=self.note_text(self.picking))), Text(MSG_KEYSWITCH_PICKED_OCTAVE.format(octave=octave)),
+            Text(NOTHING), Text(messages.MSG_KEYSWITCH_PICKED_NOTE.format(note=self.note_text(self.picking))), Text(messages.MSG_KEYSWITCH_PICKED_OCTAVE.format(octave=octave)),
             Text(NOTHING), *legend(keys=self.keys(), width=width),
         ]
         return lines

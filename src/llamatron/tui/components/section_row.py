@@ -26,8 +26,7 @@ the app for the session.
 
 from llamatron.tui.components.pattern_row import PatternRow
 from llamatron.tui.drawing import NOTHING
-from llamatron.strings.labels import MSG_SECTION_LABEL, MSG_SECTION_NAMES
-from llamatron.strings.marks import MSG_SECTION_CLOSED_MARK, MSG_SECTION_OPEN_MARK
+from llamatron.strings import labels, marks
 from llamatron.tui import keybindings
 
 
@@ -42,8 +41,8 @@ class SectionRow(PatternRow):
         return self.editor.rows_view.section_is_open(self.name)
 
     def label(self):
-        mark = MSG_SECTION_OPEN_MARK if self.is_open() else MSG_SECTION_CLOSED_MARK
-        return MSG_SECTION_LABEL.format(mark=mark, name=MSG_SECTION_NAMES[self.name])
+        mark = marks.MSG_SECTION_OPEN_MARK if self.is_open() else marks.MSG_SECTION_CLOSED_MARK
+        return labels.MSG_SECTION_LABEL.format(mark=mark, name=labels.MSG_SECTION_NAMES[self.name])
 
     def rule_before(self):
         return True

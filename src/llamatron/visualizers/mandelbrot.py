@@ -33,7 +33,7 @@ from llamatron.visualizers.heard import SILENCE
 from llamatron.visualizers.lava_lamp import derezzed
 from llamatron.visualizers.plasma import PALETTE_SIZE, palette_of
 from llamatron.visualizers.visualizer import Visualizer
-from llamatron.strings.visualizers import MSG_MANDELBROT
+from llamatron.strings import visualizers
 
 SUPERSAMPLE = 2
 COLOUR_STEP_SHIFT = 3
@@ -72,7 +72,7 @@ class Mandelbrot(Visualizer):
 
     __slots__ = ('_rows', '_columns', '_offsets', '_time', '_phase', '_energy', '_target', '_colours', '_palette', '_last', '_limiter')
 
-    NAME = MSG_MANDELBROT
+    NAME = visualizers.MSG_MANDELBROT
     OPTION = 'mandelbrot'
     DARK_IN_SILENCE = False
 

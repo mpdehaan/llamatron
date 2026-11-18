@@ -22,7 +22,7 @@ its own words. They descend from three different pages (Page, ListPage and Field
 they share is a mixin beside whichever of those a page is.
 """
 
-from llamatron.strings.labels import MSG_CAPTION_WORDS, MSG_EDITING_CAPTION, MSG_ITEM_CRUMB, MSG_OPENED_ITEM_CRUMB
+from llamatron.strings import labels
 
 NOTHING = ''
 from llamatron.tui.themes import theme_of
@@ -42,7 +42,7 @@ class ShowsNamedItem:
     # The crumbs before and after the thing's name, and how the name reads among them, a template that takes the name.
     CRUMBS_BEFORE = ()
     CRUMBS_AFTER = ()
-    ITEM_CRUMB = MSG_ITEM_CRUMB
+    ITEM_CRUMB = labels.MSG_ITEM_CRUMB
     # The title of the prompt that renames the thing, on a page that renames one.
     RENAME_PROMPT = None
     # The page that opened this one when it isn't the thing's own list, such as Arrange's details view, whose crumbs come first, so that
@@ -52,7 +52,7 @@ class ShowsNamedItem:
 
     def caption(self):
         """Return what the theme's stripe says: what kind of thing the page edits, and its name."""
-        return MSG_EDITING_CAPTION.format(what=MSG_CAPTION_WORDS.get(self.SECTION, NOTHING).upper(), name=self.item)
+        return labels.MSG_EDITING_CAPTION.format(what=labels.MSG_CAPTION_WORDS.get(self.SECTION, NOTHING).upper(), name=self.item)
 
     def theme(self):
         """Return the theme colour of the section the page's thing is in, as its list's."""
@@ -68,7 +68,7 @@ class ShowsNamedItem:
         """Return the crumbs: the opener's and then the thing's word and name, when another page opened this one, and the page's own otherwise."""
         if self.opener is None:
             return self.crumbs
-        return (*self.opener.crumb_trail(), MSG_OPENED_ITEM_CRUMB.format(word=self.opener_word, name=self.item))
+        return (*self.opener.crumb_trail(), labels.MSG_OPENED_ITEM_CRUMB.format(word=self.opener_word, name=self.item))
 
     def show_item(self, name):
         """Show the thing under a name. This is the one place that sets the name and the crumbs that carry it."""

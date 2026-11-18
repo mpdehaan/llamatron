@@ -23,7 +23,7 @@ from llamatron.composition.file_format import Section
 from llamatron.macro_composer import wizard_file
 from llamatron.macro_composer.song_plan import BY_PLACE, ENERGY, PLAN_OF_SONG
 from llamatron.macro_composer.wizard_choices import EXTRAS_KEPT, FORM, WizardChoices
-from llamatron.strings.errors import ERR_SONG_FILE_FORM, ERR_SONG_FILE_FORM_ENTRY, ERR_SONG_FILE_NOT_A_MAPPING, ERR_SONG_FILE_NOT_READY, ERR_WIZARD_EXTRAS
+from llamatron.strings import errors
 from llamatron.support.version import VERSION
 
 SONG_FILES = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, 'data', 'wizard_songs')
@@ -93,11 +93,11 @@ class TestSongFile(unittest.TestCase):
         self.assertEqual(kept.get_song_extras(), made.get_song_extras())
 
     def test_a_file_that_cannot_make_a_song_is_refused(self):
-        refused = [(ERR_SONG_FILE_NOT_A_MAPPING.format(path=A_PATH), [VERSE]),
-                   (ERR_SONG_FILE_NOT_READY.format(path=A_PATH), {GENRE: ROCK}),
-                   (ERR_SONG_FILE_NOT_READY.format(path=A_PATH), {GENRE: NO_SUCH, SUBGENRE: ARENA}),
-                   (ERR_SONG_FILE_FORM_ENTRY.format(path=A_PATH, place=2, value={BARS: 8}), {**BASIC, FORM: [VERSE, {BARS: 8}]}),
-                   (ERR_SONG_FILE_FORM.format(path=A_PATH), {**BASIC, FORM: [VERSE, NO_SUCH]})]
+        refused = [(errors.ERR_SONG_FILE_NOT_A_MAPPING.format(path=A_PATH), [VERSE]),
+                   (errors.ERR_SONG_FILE_NOT_READY.format(path=A_PATH), {GENRE: ROCK}),
+                   (errors.ERR_SONG_FILE_NOT_READY.format(path=A_PATH), {GENRE: NO_SUCH, SUBGENRE: ARENA}),
+                   (errors.ERR_SONG_FILE_FORM_ENTRY.format(path=A_PATH, place=2, value={BARS: 8}), {**BASIC, FORM: [VERSE, {BARS: 8}]}),
+                   (errors.ERR_SONG_FILE_FORM.format(path=A_PATH), {**BASIC, FORM: [VERSE, NO_SUCH]})]
         for message, data in refused:
             with self.subTest(message=message):
                 with self.assertRaises(ValueError) as raised:
@@ -107,4 +107,4 @@ class TestSongFile(unittest.TestCase):
     def test_the_picks_laid_over_must_be_a_mapping(self):
         with self.assertRaises(ValueError) as raised:
             WizardChoices().set_song_extras([VERSE])
-        self.assertEqual(str(raised.exception), ERR_WIZARD_EXTRAS.format(value=[VERSE]))
+        self.assertEqual(str(raised.exception), errors.ERR_WIZARD_EXTRAS.format(value=[VERSE]))

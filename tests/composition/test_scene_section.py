@@ -21,7 +21,7 @@ import unittest
 from llamatron.composition.file_format import SECTION_KINDS, SceneSetting, Section, SectionKind
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.wizard_choices import WizardChoices
-from llamatron.strings.errors import ERR_BAD_SECTION
+from llamatron.strings import errors
 from llamatron.support.version import VERSION
 from tests.support.rendering import render_song, song_from_data
 from tests.support.song_testing import LEAD, clip, lead_data, pitches
@@ -65,13 +65,13 @@ class TestSceneSection(unittest.TestCase):
         scene = a_song().get_scenes()[0]
         with self.assertRaises(ValueError) as refused:
             scene.set_section(NOT_A_SECTION)
-        self.assertIn(fixed_text(ERR_BAD_SECTION), str(refused.exception))
+        self.assertIn(fixed_text(errors.ERR_BAD_SECTION), str(refused.exception))
         self.assertIsNone(scene.get_section())
         data = lead_data(A_STEP)
         data[Section.SCENES][0][SceneSetting.SECTION] = NOT_A_SECTION
         with self.assertRaises(SongFileError) as unread:
             song_from_data(data)
-        self.assertIn(fixed_text(ERR_BAD_SECTION), str(unread.exception))
+        self.assertIn(fixed_text(errors.ERR_BAD_SECTION), str(unread.exception))
 
     def test_a_section_is_read_back_from_a_file_and_changes_nothing_the_scene_plays(self):
         data = lead_data(A_STEP)

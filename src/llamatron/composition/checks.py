@@ -34,14 +34,9 @@ from llamatron.music.scale import Scale
 from llamatron.music.time_signature import TimeSignature
 from llamatron.support.rational import Rational
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.limits import MAX_GM_SOUND, MIN_GM_SOUND, MIN_TEMPO
+from llamatron.composition import limits
+from llamatron.strings import errors
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.strings.errors import (
-    ERR_BAD_GM_SOUND, ERR_INVALID_DRUM, ERR_INVALID_FLUIDSYNTH,
-    ERR_AT, ERR_BAD_WRITTEN_LENGTH, ERR_EXPECTED_NUMBER, ERR_EXPECTED_NUMBER_LIKE, ERR_BAD_TIME, ERR_INVALID_LOOP,
-    ERR_INVALID_MUTE, ERR_INVALID_NAME, ERR_INVALID_TEMPO, ERR_LENGTH_NOT_POSITIVE, ERR_LENGTH_TOO_LONG, ERR_NOT_A_SCALE,
-    ERR_NOT_A_TIME_SIGNATURE, ERR_UNKNOWN_SETTING,
-)
 
 # A length has to be longer than nothing.
 NO_LENGTH = 0
@@ -70,7 +65,7 @@ def reading(where):
         correction = problem.get_correction()
         if correction is not None:
             correction.set_place(where)
-        raise SongFileError(str(problem) if where is TOP_OF_FILE else ERR_AT.format(where=where, problem=problem), correction=correction) from None
+        raise SongFileError(str(problem) if where is TOP_OF_FILE else errors.ERR_AT.format(where=where, problem=problem), correction=correction) from None
 
 # How messages list choices, like "arp, auto_ratchet".
 LIST_SEPARATOR = ', '
@@ -86,7 +81,7 @@ def check_keys(*, data, allowed):
     """Refuse any setting that isn't one of the allowed names, naming the first one found."""
     unknown = unknown_settings(data=data, allowed=allowed)
     if unknown:
-        raise InvalidValue(ERR_UNKNOWN_SETTING.format(name=unknown[0], allowed=listed(sorted(allowed))))
+        raise InvalidValue(errors.ERR_UNKNOWN_SETTING.format(name=unknown[0], allowed=listed(sorted(allowed))))
 
 
 def unknown_settings(*, data, allowed):
@@ -126,13 +121,13 @@ def can_be_remembered(value):
 def number(value):
     """Return a number written like 2 or 1/8 as an exact fraction."""
     if isinstance(value, bool):
-        raise InvalidValue(ERR_EXPECTED_NUMBER.format(value=value))
+        raise InvalidValue(errors.ERR_EXPECTED_NUMBER.format(value=value))
     if can_be_remembered(value) and value in _PARSED_NUMBERS:
         return _PARSED_NUMBERS[value]
     try:
         parsed = Rational(str(value))
     except (ValueError, ZeroDivisionError):
-        raise InvalidValue(ERR_EXPECTED_NUMBER_LIKE.format(value=value)) from None
+        raise InvalidValue(errors.ERR_EXPECTED_NUMBER_LIKE.format(value=value)) from None
     if can_be_remembered(value):
         _PARSED_NUMBERS[value] = parsed
     return parsed
@@ -142,7 +137,7 @@ def positive_length(value):
     """Return a length in whole notes, which has to be more than zero."""
     length = number(value)
     if length <= NO_LENGTH:
-        raise InvalidValue(ERR_LENGTH_NOT_POSITIVE.format(value=value))
+        raise InvalidValue(errors.ERR_LENGTH_NOT_POSITIVE.format(value=value))
     return length
 
 
@@ -162,10 +157,10 @@ def written_length(*, value, most):
     if can_be_remembered(value) and key in _PARSED_LENGTHS:
         return _PARSED_LENGTHS[key]
     if not is_written_length(value):
-        raise InvalidValue(ERR_BAD_WRITTEN_LENGTH.format(value=value))
+        raise InvalidValue(errors.ERR_BAD_WRITTEN_LENGTH.format(value=value))
     length = positive_length(value)
     if length > most:
-        raise InvalidValue(ERR_LENGTH_TOO_LONG.format(most=most, value=value))
+        raise InvalidValue(errors.ERR_LENGTH_TOO_LONG.format(most=most, value=value))
     _PARSED_LENGTHS[key] = length
     return length
 
@@ -182,7 +177,7 @@ def is_written_length(value):
 
 def check_name(name):
     if name is not None and not isinstance(name, str):
-        raise InvalidValue(ERR_INVALID_NAME.format(name=name))
+        raise InvalidValue(errors.ERR_INVALID_NAME.format(name=name))
 
 
 def time_signature(value):
@@ -200,7 +195,7 @@ def time_signature(value):
 
 def check_time_signature(value):
     if not isinstance(value, TimeSignature):
-        raise InvalidValue(ERR_NOT_A_TIME_SIGNATURE.format(value=value))
+        raise InvalidValue(errors.ERR_NOT_A_TIME_SIGNATURE.format(value=value))
 
 
 def check_time_signature_override(value):
@@ -211,8 +206,8 @@ def check_time_signature_override(value):
 
 def check_tempo(tempo):
     # bool is a subclass of int, but True is not a real tempo.
-    if type(tempo) not in (int, float) or not isfinite(tempo) or tempo < MIN_TEMPO:
-        raise InvalidValue(ERR_INVALID_TEMPO.format(tempo=tempo, lowest=MIN_TEMPO))
+    if type(tempo) not in (int, float) or not isfinite(tempo) or tempo < limits.MIN_TEMPO:
+        raise InvalidValue(errors.ERR_INVALID_TEMPO.format(tempo=tempo, lowest=limits.MIN_TEMPO))
 
 
 def check_tempo_override(tempo):
@@ -223,33 +218,33 @@ def check_tempo_override(tempo):
 
 def check_scale(scale):
     if scale is not None and not isinstance(scale, Scale):
-        raise InvalidValue(ERR_NOT_A_SCALE.format(scale=scale))
+        raise InvalidValue(errors.ERR_NOT_A_SCALE.format(scale=scale))
 
 
 def check_loop(loop):
     if type(loop) is not bool:
-        raise InvalidValue(ERR_INVALID_LOOP.format(loop=loop))
+        raise InvalidValue(errors.ERR_INVALID_LOOP.format(loop=loop))
 
 
 def check_mute(mute):
     if type(mute) is not bool:
-        raise InvalidValue(ERR_INVALID_MUTE.format(mute=mute))
+        raise InvalidValue(errors.ERR_INVALID_MUTE.format(mute=mute))
 
 
 def check_drum(drum):
     if type(drum) is not bool:
-        raise InvalidValue(ERR_INVALID_DRUM.format(drum=drum))
+        raise InvalidValue(errors.ERR_INVALID_DRUM.format(drum=drum))
 
 
 def check_fluidsynth(fluidsynth):
     if type(fluidsynth) is not bool:
-        raise InvalidValue(ERR_INVALID_FLUIDSYNTH.format(fluidsynth=fluidsynth))
+        raise InvalidValue(errors.ERR_INVALID_FLUIDSYNTH.format(fluidsynth=fluidsynth))
 
 
 def check_gm_sound(sound):
     """Check a General MIDI sound, 1 to 128 as people number them, or None for none."""
-    if sound is not None and (type(sound) is not int or not MIN_GM_SOUND <= sound <= MAX_GM_SOUND):
-        raise InvalidValue(ERR_BAD_GM_SOUND.format(lowest=MIN_GM_SOUND, highest=MAX_GM_SOUND, value=sound))
+    if sound is not None and (type(sound) is not int or not limits.MIN_GM_SOUND <= sound <= limits.MAX_GM_SOUND):
+        raise InvalidValue(errors.ERR_BAD_GM_SOUND.format(lowest=limits.MIN_GM_SOUND, highest=limits.MAX_GM_SOUND, value=sound))
 
 
 def check_clip_length(length):
@@ -284,9 +279,9 @@ def time_length(value):
     try:
         length = number(value)
     except InvalidValue:
-        raise InvalidValue(ERR_BAD_TIME.format(value=value)) from None
+        raise InvalidValue(errors.ERR_BAD_TIME.format(value=value)) from None
     if length <= 0:
-        raise InvalidValue(ERR_BAD_TIME.format(value=value))
+        raise InvalidValue(errors.ERR_BAD_TIME.format(value=value))
     return length
 
 

@@ -17,9 +17,7 @@
 """Tests of the Tune dialog, a line of a tune edited by hand, opened from the song wizard's Hooks panel on the hook's notes."""
 
 from llamatron.macro_composer import line_edits
-from llamatron.strings.labels import MSG_WIZARD_HOOK_NOTES_LABEL, MSG_WIZARD_HOOK_NOTES_OWN, MSG_WIZARD_HOOK_NOTES_TITLE, MSG_WIZARD_HOOK_NOTES_WIZARD, MSG_WIZARD_HOOK_PART_LABELS, MSG_WIZARD_HOOKS_BRANCH, MSG_WIZARD_NEW_HOOK_BUTTON
-from llamatron.strings.marks import MSG_TUNE_NOTE_SAID, MSG_TUNE_REST_SAID
-from llamatron.strings.messages import MSG_WIZARD_HOOK_OWN
+from llamatron.strings import labels, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.tune_dialog import TuneDialog
 from llamatron.tui.keys import Key
@@ -45,10 +43,10 @@ class TestTuneDialog(WizardTest):
         choices.set_seed(A_SEED)
         await self.press(Key.DOWN, Key.UP)
         names = [branch.name() for _, branch in self.wizard().rows()]
-        await self.go_to_branch(names.index(MSG_WIZARD_HOOKS_BRANCH))
+        await self.go_to_branch(names.index(labels.MSG_WIZARD_HOOKS_BRANCH))
         await self.press(keybindings.WizardPage.INTO_FIELDS)
-        await self.select_field(MSG_WIZARD_HOOK_NOTES_LABEL)
-        self.assertIn(MSG_WIZARD_HOOK_NOTES_WIZARD, self.text())
+        await self.select_field(labels.MSG_WIZARD_HOOK_NOTES_LABEL)
+        self.assertIn(labels.MSG_WIZARD_HOOK_NOTES_WIZARD, self.text())
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, TuneDialog)
         return choices
@@ -57,13 +55,13 @@ class TestTuneDialog(WizardTest):
         index, _ = line_edits.found(line=line, step=step)
         note = line[index]
         if line_edits.is_rest(note):
-            return MSG_TUNE_REST_SAID.format(step=step + 1, steps=line_edits.steps_of(line))
-        return MSG_TUNE_NOTE_SAID.format(step=step + 1, steps=line_edits.steps_of(line), note=note_shown(choices.pitch_of_place(line_edits.place_of(note))), length=line_edits.length_of(note))
+            return marks.MSG_TUNE_REST_SAID.format(step=step + 1, steps=line_edits.steps_of(line))
+        return marks.MSG_TUNE_NOTE_SAID.format(step=step + 1, steps=line_edits.steps_of(line), note=note_shown(choices.pitch_of_place(line_edits.place_of(note))), length=line_edits.length_of(note))
 
     async def test_the_dialog_shows_the_hook_and_says_what_the_cursor_is_on_as_it_moves(self):
         choices = await self.open_notes()
         line = choices.hook_line()
-        self.assertIn(MSG_WIZARD_HOOK_NOTES_TITLE, self.text())
+        self.assertIn(labels.MSG_WIZARD_HOOK_NOTES_TITLE, self.text())
         self.assertIn(self.said_of(choices=choices, line=line, step=FIRST_STEP), self.text())
         await self.press(Key.RIGHT, Key.RIGHT)
         self.assertIn(self.said_of(choices=choices, line=line, step=2), self.text())
@@ -80,10 +78,10 @@ class TestTuneDialog(WizardTest):
         self.assertEqual(choices.hook_line(), line_edits.moved(line=line, step=FIRST_STEP, by=UP))
         self.assertTrue(choices.hook_is_own())
         shown = self.text()
-        self.assertIn(MSG_WIZARD_HOOK_NOTES_OWN, shown)
-        self.assertIn(MSG_WIZARD_HOOK_OWN.format(player=choices.role_title(choices.tune_player())), shown)
+        self.assertIn(labels.MSG_WIZARD_HOOK_NOTES_OWN, shown)
+        self.assertIn(messages.MSG_WIZARD_HOOK_OWN.format(player=choices.role_title(choices.tune_player())), shown)
         # The kind's fields and another take are the wizard's, and go while the notes are a person's.
-        for label in (*MSG_WIZARD_HOOK_PART_LABELS.values(), MSG_WIZARD_NEW_HOOK_BUTTON):
+        for label in (*labels.MSG_WIZARD_HOOK_PART_LABELS.values(), labels.MSG_WIZARD_NEW_HOOK_BUTTON):
             self.assertNotIn(label, shown)
         self.assertTrue(self.wizard().has_choices_to_lose())
 
@@ -120,16 +118,16 @@ class TestTuneDialog(WizardTest):
         await self.press(forward_key(keybindings.TuneDialog.PITCH), keybindings.TuneDialog.CANCEL)
         self.assertEqual(choices.hook_line(), line)
         self.assertFalse(choices.hook_is_own())
-        await self.select_field(MSG_WIZARD_HOOK_NOTES_LABEL)
+        await self.select_field(labels.MSG_WIZARD_HOOK_NOTES_LABEL)
         await self.press(Key.ENTER, forward_key(keybindings.TuneDialog.PITCH), keybindings.TuneDialog.DONE)
         self.assertTrue(choices.hook_is_own())
-        await self.select_field(MSG_WIZARD_HOOK_NOTES_LABEL)
+        await self.select_field(labels.MSG_WIZARD_HOOK_NOTES_LABEL)
         await self.press(Key.ENTER, keybindings.TuneDialog.USUAL, keybindings.TuneDialog.DONE)
         self.assertFalse(choices.hook_is_own())
         self.assertEqual(choices.hook_line(), line)
         # The kind's fields are back above the notes, so the field is found again.
-        await self.select_field(MSG_WIZARD_HOOK_NOTES_LABEL)
+        await self.select_field(labels.MSG_WIZARD_HOOK_NOTES_LABEL)
         await self.press(Key.ENTER, forward_key(keybindings.TuneDialog.PITCH), keybindings.TuneDialog.DONE)
-        await self.select_field(MSG_WIZARD_HOOK_NOTES_LABEL)
+        await self.select_field(labels.MSG_WIZARD_HOOK_NOTES_LABEL)
         await self.press(keybindings.FieldPage.CLEAR)
         self.assertFalse(choices.hook_is_own())

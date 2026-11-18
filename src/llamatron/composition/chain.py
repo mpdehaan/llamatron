@@ -23,10 +23,7 @@ from llamatron.composition.llama_data import LlamaData
 from llamatron.composition.sections import GENERATOR_KINDS, NAMED_GENERATORS
 from llamatron.composition.checks import listed, reading
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.strings.errors import (
-    ERR_NOT_CHAIN_NAMES, ERR_NO_SUCH_CHAIN,
-    ERR_CHAIN_NO_SUCH_STEP, ERR_EXPECTED_LIST, ERR_NO_SUCH_GENERATOR, ERR_ONE_GENERATOR_PER_STEP, ERR_UNKNOWN_GENERATOR,
-)
+from llamatron.strings import errors
 from llamatron.support.revised import notes_change
 
 # Each step of a chain names exactly one generator.
@@ -57,11 +54,11 @@ class Chain(LlamaData):
     def from_data(cls, *, data, where, setlist=None):
         with reading(where):
             if not isinstance(data, list):
-                raise InvalidValue(ERR_EXPECTED_LIST)
+                raise InvalidValue(errors.ERR_EXPECTED_LIST)
             steps = []
             for step in data:
                 if not _names_one_generator(step):
-                    raise InvalidValue(ERR_ONE_GENERATOR_PER_STEP.format(step=step))
+                    raise InvalidValue(errors.ERR_ONE_GENERATOR_PER_STEP.format(step=step))
                 kind, name = next(iter(step.items()))
                 steps.append(_checked_step(kind=kind, name=name, setlist=setlist))
             return cls(steps)
@@ -125,15 +122,15 @@ class Chain(LlamaData):
 
     def _check_place(self, place):
         if not 0 <= place < len(self._steps):
-            raise InvalidValue(ERR_CHAIN_NO_SUCH_STEP.format(place=place, steps=len(self._steps)))
+            raise InvalidValue(errors.ERR_CHAIN_NO_SUCH_STEP.format(place=place, steps=len(self._steps)))
 
 
 def _checked_step(*, kind, name, setlist):
     """Return a step naming a generator the set has, or raise InvalidValue."""
     if kind not in GENERATOR_SETTINGS:
-        raise InvalidValue(ERR_UNKNOWN_GENERATOR.format(kind=kind, kinds=listed(sorted(GENERATOR_SETTINGS))))
+        raise InvalidValue(errors.ERR_UNKNOWN_GENERATOR.format(kind=kind, kinds=listed(sorted(GENERATOR_SETTINGS))))
     if not isinstance(name, str) or not setlist.has_generator(kind=kind, name=name):
-        raise InvalidValue(ERR_NO_SUCH_GENERATOR.format(kind=kind, name=name))
+        raise InvalidValue(errors.ERR_NO_SUCH_GENERATOR.format(kind=kind, name=name))
     return ChainStep(kind, name)
 
 
@@ -145,7 +142,7 @@ def _names_one_generator(step):
 def check_chain_names(*, value, song):
     """Refuse a list of chains unless it is a list of the set's chains by name, a chain allowed more than once, since it then runs more than once."""
     if not isinstance(value, list) or not all(isinstance(name, str) for name in value):
-        raise InvalidValue(ERR_NOT_CHAIN_NAMES.format(value=value))
+        raise InvalidValue(errors.ERR_NOT_CHAIN_NAMES.format(value=value))
     for name in value:
         if not song.has_chain(name):
-            raise InvalidValue(ERR_NO_SUCH_CHAIN.format(name=name))
+            raise InvalidValue(errors.ERR_NO_SUCH_CHAIN.format(name=name))

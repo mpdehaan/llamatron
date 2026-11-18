@@ -33,17 +33,12 @@ from textual.widgets import Static
 
 from tests.support.ui_testing import UITest, a_song
 from llamatron.composition.file_format import PatternSetting, Row, Section, SetlistSetting
-from llamatron.composition.limits import MAX_OCTAVE, MIN_OCTAVE
+from llamatron.composition import limits
+from llamatron.strings import errors as errors_text, labels, marks, messages
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.setlist_writer import dump_setlist
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.music.midi import MAX_VELOCITY
-from llamatron.strings.errors import ERR_CANT_OPEN_TITLE, ERR_PRINTED
-from llamatron.strings.labels import MSG_NO_FILE_CRUMB, MSG_PROTECTED_LABEL, MSG_SET_CRUMB, MSG_SONG_CRUMB
-from llamatron.strings.marks import MSG_UNSAVED_CHANGES_MARK, MSG_UNSAVED_MARK
-from llamatron.strings.messages import (
-    MSG_CORRECTIONS_INTRO, MSG_CORRECTIONS_MORE, MSG_CORRECTIONS_QUESTION, MSG_CORRECTIONS_TITLE, MSG_CORRECTIONS_WARNING, MSG_OPENED, MSG_SAVED,
-)
+from llamatron.music import midi
 from llamatron.tui import app as tui_app
 from llamatron.tui import keybindings
 from llamatron.tui.app import LlamatronApp
@@ -130,7 +125,7 @@ class TestCorrectionsDialog(CorrectionsTest):
         self.assertIsInstance(self.app.screen, CorrectionsDialog)
         self.assertIs(self.app.get_document(), before)
         said = self.said()
-        for sentence in [MSG_CORRECTIONS_TITLE, MSG_CORRECTIONS_INTRO.format(file=SAMPLE), MSG_CORRECTIONS_WARNING, MSG_CORRECTIONS_QUESTION]:
+        for sentence in [messages.MSG_CORRECTIONS_TITLE, messages.MSG_CORRECTIONS_INTRO.format(file=SAMPLE), messages.MSG_CORRECTIONS_WARNING, messages.MSG_CORRECTIONS_QUESTION]:
             self.assertIn(sentence, said)
 
     async def test_only_the_first_few_are_listed_with_a_count_of_the_rest(self):
@@ -142,17 +137,17 @@ class TestCorrectionsDialog(CorrectionsTest):
             self.assertIn(fit(text=line, width=self.inner_width()).rstrip(), text)
         for line in lines[MOST_SHOWN:]:
             self.assertNotIn(line, text)
-        self.assertIn(MSG_CORRECTIONS_MORE.format(count=len(lines) - MOST_SHOWN), text)
+        self.assertIn(messages.MSG_CORRECTIONS_MORE.format(count=len(lines) - MOST_SHOWN), text)
 
     async def test_a_few_are_all_listed_with_no_count(self):
-        write_set(path=ONE_WRONG, data={SetlistSetting.DEFAULT_OCTAVE: MAX_OCTAVE + 1})
+        write_set(path=ONE_WRONG, data={SetlistSetting.DEFAULT_OCTAVE: limits.MAX_OCTAVE + 1})
         await self.choose(ONE_WRONG)
         (line,) = corrections_of(ONE_WRONG)
         self.assertIn(line, self.text())
-        self.assertNotIn(MSG_CORRECTIONS_MORE.format(count=0), self.text())
+        self.assertNotIn(messages.MSG_CORRECTIONS_MORE.format(count=0), self.text())
 
     async def test_a_line_wider_than_the_dialog_is_cut_short_with_an_ellipsis(self):
-        pattern = {PatternSetting.STEPS: STEPS, Row.DEGREE: [A_DEGREE] * STEPS, Row.VELOCITY: [MAX_VELOCITY + 1] * STEPS}
+        pattern = {PatternSetting.STEPS: STEPS, Row.DEGREE: [A_DEGREE] * STEPS, Row.VELOCITY: [midi.MAX_VELOCITY + 1] * STEPS}
         write_set(path=LONG_NAMES, data={Section.PATTERNS: {A_LONG_NAME: pattern}})
         await self.choose(LONG_NAMES)
         (line,) = corrections_of(LONG_NAMES)
@@ -169,7 +164,7 @@ class TestCorrectionsDialog(CorrectionsTest):
         self.assertLessEqual(len(lines), rows)
         self.assertTrue(any(Box.HEAVY_TOP_LEFT in line for line in lines))
         self.assertTrue(any(Box.HEAVY_BOTTOM_LEFT in line for line in lines))
-        self.assertIn(MSG_CORRECTIONS_QUESTION, self.text())
+        self.assertIn(messages.MSG_CORRECTIONS_QUESTION, self.text())
 
     async def test_yes_opens_the_set_corrected_and_unsaved_and_leaves_the_file_alone(self):
         before = file_bytes(copy_of(SAMPLE))
@@ -178,10 +173,10 @@ class TestCorrectionsDialog(CorrectionsTest):
         self.assertIsInstance(self.app.screen, MainPage)
         document = self.app.get_document()
         self.assertEqual(document.get_path(), SAMPLE)
-        self.assertEqual(document.setlist().get_default_octave(), MIN_OCTAVE)
+        self.assertEqual(document.setlist().get_default_octave(), limits.MIN_OCTAVE)
         self.assertTrue(document.is_dirty())
-        self.assertIn(MSG_UNSAVED_CHANGES_MARK, self.title_line())
-        self.assertIn(MSG_OPENED.format(path=SAMPLE), self.text())
+        self.assertIn(marks.MSG_UNSAVED_CHANGES_MARK, self.title_line())
+        self.assertIn(messages.MSG_OPENED.format(path=SAMPLE), self.text())
         self.assertEqual(file_bytes(SAMPLE), before)
 
     async def test_enter_presses_yes_which_the_dialog_opens_on(self):
@@ -212,15 +207,15 @@ class TestCorrectionsDialog(CorrectionsTest):
     async def test_saving_the_opened_set_writes_the_corrected_values_to_the_file(self):
         await self.choose(copy_of(SAMPLE))
         await self.press(keybindings.CorrectionsDialog.YES, keybindings.Page.SAVE)
-        self.assertIn(MSG_SAVED.format(path=SAMPLE), self.text())
+        self.assertIn(messages.MSG_SAVED.format(path=SAMPLE), self.text())
         self.assertFalse(self.app.get_document().is_dirty())
-        self.assertEqual(Setlist.read_file(SAMPLE).get_default_octave(), MIN_OCTAVE)
+        self.assertEqual(Setlist.read_file(SAMPLE).get_default_octave(), limits.MIN_OCTAVE)
         self.assertEqual(Document.load_or_correct(SAMPLE)[1], [])
 
     async def test_undoing_an_edit_made_after_opening_leaves_the_set_unsaved(self):
         await self.choose(copy_of(SAMPLE))
         await self.press(keybindings.CorrectionsDialog.YES, keybindings.MainPage.FILE)
-        await self.select_field(MSG_PROTECTED_LABEL)
+        await self.select_field(labels.MSG_PROTECTED_LABEL)
         await self.press(Key.ENTER, keybindings.Page.UNDO)
         self.assertFalse(self.app.get_document().setlist().is_protected())
         self.assertTrue(self.app.get_document().is_dirty())
@@ -229,7 +224,7 @@ class TestCorrectionsDialog(CorrectionsTest):
         before = self.app.get_document()
         await self.choose(copy_of(BROKEN))
         self.assertIs(type(self.app.screen), MessageDialog)
-        self.assertIn(ERR_CANT_OPEN_TITLE, self.text())
+        self.assertIn(errors_text.ERR_CANT_OPEN_TITLE, self.text())
         self.assertIs(self.app.get_document(), before)
 
     async def test_a_file_with_nothing_wrong_opens_without_asking(self):
@@ -251,7 +246,7 @@ class TestStartingTheTrackerOnSuchAFile(CorrectionsTest):
         self.assertIsInstance(self.app.screen, CorrectionsDialog)
         self.assertIsNot(self.app.get_document(), self.offered)
         self.assertIsNone(self.app.get_document().get_path())
-        self.assertIn(MSG_CORRECTIONS_INTRO.format(file=SAMPLE), self.said())
+        self.assertIn(messages.MSG_CORRECTIONS_INTRO.format(file=SAMPLE), self.said())
 
     async def test_yes_opens_the_set_corrected_and_unsaved(self):
         await self.press(keybindings.CorrectionsDialog.YES)
@@ -259,9 +254,9 @@ class TestStartingTheTrackerOnSuchAFile(CorrectionsTest):
         self.assertIs(self.app.get_document(), self.offered)
         self.assertTrue(self.app.get_document().is_dirty())
         header = self.title_line()
-        self.assertIn(MSG_SET_CRUMB.format(file=SAMPLE), header)
-        self.assertIn(MSG_SONG_CRUMB.format(song=self.offered.current_song_name()), self.song_line())
-        self.assertIn(MSG_UNSAVED_CHANGES_MARK, header)
+        self.assertIn(labels.MSG_SET_CRUMB.format(file=SAMPLE), header)
+        self.assertIn(labels.MSG_SONG_CRUMB.format(song=self.offered.current_song_name()), self.song_line())
+        self.assertIn(marks.MSG_UNSAVED_CHANGES_MARK, header)
 
     async def test_no_leaves_a_new_set_with_no_file(self):
         await self.press(keybindings.CorrectionsDialog.NO)
@@ -270,10 +265,10 @@ class TestStartingTheTrackerOnSuchAFile(CorrectionsTest):
         self.assertIsNone(document.get_path())
         self.assertFalse(document.is_dirty())
         header = self.title_line()
-        self.assertIn(MSG_NO_FILE_CRUMB, header)
+        self.assertIn(labels.MSG_NO_FILE_CRUMB, header)
         # A set that has no file is unsaved, whether or not anything was changed.
-        self.assertIn(MSG_UNSAVED_MARK, header)
-        self.assertNotIn(MSG_UNSAVED_CHANGES_MARK, header)
+        self.assertIn(marks.MSG_UNSAVED_MARK, header)
+        self.assertNotIn(marks.MSG_UNSAVED_CHANGES_MARK, header)
 
 
 class TestTheDocumentOfSuchAFile(unittest.TestCase):
@@ -354,7 +349,7 @@ class TestTheTrackersCommand(unittest.TestCase):
         run.assert_not_called()
         with self.assertRaises(SongFileError) as refused:
             Setlist.read_file_corrected(BROKEN)
-        self.assertIn(ERR_PRINTED.format(problem=refused.exception), errors)
+        self.assertIn(errors_text.ERR_PRINTED.format(problem=refused.exception), errors)
 
 
 if __name__ == '__main__':

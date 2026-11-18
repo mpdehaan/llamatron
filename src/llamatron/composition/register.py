@@ -17,37 +17,31 @@
 """A register: one of the song's four values, AX to DX, that pattern steps change and read as the song plays."""
 
 from llamatron.composition.checks import check_keys, listed, reading
-from llamatron.composition.defaults import (
-    DEFAULT_ALLOWED_INC_MAX, DEFAULT_AT_LIMIT, DEFAULT_REGISTER_MAXIMUM, DEFAULT_REGISTER_MINIMUM, DEFAULT_REGISTER_VALUE, DEFAULT_RESET_EACH_SCENE,
-)
+from llamatron.composition import defaults, limits
+from llamatron.strings import errors
 from llamatron.composition.corrections import LEFT_OUT
 from llamatron.composition.file_format import AT_LIMITS, AtLimit, RegisterSetting
 from llamatron.composition.checks import is_true_or_false
-from llamatron.composition.limits import MAX_REGISTER_VALUE, MIN_ALLOWED_INC_MAX, MIN_REGISTER_VALUE
 from llamatron.composition.llama_data import LlamaData, written_settings
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.setting import Choice, Flag, WholeNumber, described
-from llamatron.strings.errors import (
-    ERR_BAD_AT_LIMIT, ERR_BAD_VALUE, ERR_OUT_OF_ORDER, ERR_REGISTER_EXPECTED_SETTINGS, ERR_REGISTER_NO_SUCH_SETTING, ERR_RESET_EACH_SCENE_NOT_TRUE_OR_FALSE,
-    ERR_WRAP_NOT_TRUE_OR_FALSE,
-)
 from llamatron.support.revised import notes_change
 
 # A register's settings, each described once, in the order they're written to a file.
 SETTINGS = described(
-    WholeNumber(name=RegisterSetting.DEFAULT, lowest=MIN_REGISTER_VALUE, highest=MAX_REGISTER_VALUE, error=ERR_BAD_VALUE),
-    WholeNumber(name=RegisterSetting.MINIMUM, lowest=MIN_REGISTER_VALUE, highest=MAX_REGISTER_VALUE, error=ERR_BAD_VALUE),
-    WholeNumber(name=RegisterSetting.MAXIMUM, lowest=MIN_REGISTER_VALUE, highest=MAX_REGISTER_VALUE, error=ERR_BAD_VALUE),
-    Choice(name=RegisterSetting.AT_LIMIT, choices=AT_LIMITS, default=LEFT_OUT, error=ERR_BAD_AT_LIMIT),
-    Flag(name=RegisterSetting.RESET_EACH_SCENE, error=ERR_RESET_EACH_SCENE_NOT_TRUE_OR_FALSE),
-    WholeNumber(name=RegisterSetting.ALLOWED_INC_MAX, lowest=MIN_ALLOWED_INC_MAX, highest=MAX_REGISTER_VALUE, error=ERR_BAD_VALUE),
+    WholeNumber(name=RegisterSetting.DEFAULT, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, error=errors.ERR_BAD_VALUE),
+    WholeNumber(name=RegisterSetting.MINIMUM, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, error=errors.ERR_BAD_VALUE),
+    WholeNumber(name=RegisterSetting.MAXIMUM, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, error=errors.ERR_BAD_VALUE),
+    Choice(name=RegisterSetting.AT_LIMIT, choices=AT_LIMITS, default=LEFT_OUT, error=errors.ERR_BAD_AT_LIMIT),
+    Flag(name=RegisterSetting.RESET_EACH_SCENE, error=errors.ERR_RESET_EACH_SCENE_NOT_TRUE_OR_FALSE),
+    WholeNumber(name=RegisterSetting.ALLOWED_INC_MAX, lowest=limits.MIN_ALLOWED_INC_MAX, highest=limits.MAX_REGISTER_VALUE, error=errors.ERR_BAD_VALUE),
 )
 # What each setting is when the file leaves it out.
 DEFAULTS = {
-    RegisterSetting.DEFAULT: DEFAULT_REGISTER_VALUE, RegisterSetting.MINIMUM: DEFAULT_REGISTER_MINIMUM,
-    RegisterSetting.MAXIMUM: DEFAULT_REGISTER_MAXIMUM, RegisterSetting.AT_LIMIT: DEFAULT_AT_LIMIT,
-    RegisterSetting.RESET_EACH_SCENE: DEFAULT_RESET_EACH_SCENE,
-    RegisterSetting.ALLOWED_INC_MAX: DEFAULT_ALLOWED_INC_MAX,
+    RegisterSetting.DEFAULT: defaults.DEFAULT_REGISTER_VALUE, RegisterSetting.MINIMUM: defaults.DEFAULT_REGISTER_MINIMUM,
+    RegisterSetting.MAXIMUM: defaults.DEFAULT_REGISTER_MAXIMUM, RegisterSetting.AT_LIMIT: defaults.DEFAULT_AT_LIMIT,
+    RegisterSetting.RESET_EACH_SCENE: defaults.DEFAULT_RESET_EACH_SCENE,
+    RegisterSetting.ALLOWED_INC_MAX: defaults.DEFAULT_ALLOWED_INC_MAX,
 }
 
 
@@ -71,7 +65,7 @@ class Register(LlamaData):
         with reading(where):
             data = {} if data is None else data
             if not isinstance(data, dict):
-                raise InvalidValue(ERR_REGISTER_EXPECTED_SETTINGS.format(data=data))
+                raise InvalidValue(errors.ERR_REGISTER_EXPECTED_SETTINGS.format(data=data))
             check_keys(data=data, allowed={*SETTINGS, RegisterSetting.WRAP})
             _read_wrap(data)
             return _checked(data)
@@ -94,7 +88,7 @@ class Register(LlamaData):
         and the maximum, so one generic setter keeps that check in one place.
         """
         if name not in SETTINGS:
-            raise InvalidValue(ERR_REGISTER_NO_SUCH_SETTING.format(name=name, names=listed(SETTINGS)))
+            raise InvalidValue(errors.ERR_REGISTER_NO_SUCH_SETTING.format(name=name, names=listed(SETTINGS)))
         self._settings = _checked({**self._settings, name: value})._settings
 
     def get_default(self):
@@ -161,7 +155,7 @@ def _read_wrap(data):
         return
     wrap = data.pop(RegisterSetting.WRAP)
     if not is_true_or_false(wrap):
-        raise InvalidValue(ERR_WRAP_NOT_TRUE_OR_FALSE.format(value=wrap))
+        raise InvalidValue(errors.ERR_WRAP_NOT_TRUE_OR_FALSE.format(value=wrap))
     if wrap and RegisterSetting.AT_LIMIT not in data:
         data[RegisterSetting.AT_LIMIT] = AtLimit.OVERFLOW
 
@@ -174,5 +168,5 @@ def _checked(settings):
             SETTINGS[name].check_held(settings)
     register = Register(**settings)
     if not register.is_in_order():
-        raise InvalidValue(ERR_OUT_OF_ORDER.format(minimum=register.get_minimum(), default=register.get_default(), maximum=register.get_maximum()))
+        raise InvalidValue(errors.ERR_OUT_OF_ORDER.format(minimum=register.get_minimum(), default=register.get_default(), maximum=register.get_maximum()))
     return register

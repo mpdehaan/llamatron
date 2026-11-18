@@ -23,9 +23,7 @@ right step through those in that order, Enter picks from a list, and Bksp goes b
 from llamatron.tui.text import sorted_names
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.screens.shared.field import Field
-from llamatron.strings.labels import MSG_GROOVE_LABEL, MSG_GROOVE_OFF_OPTION
-from llamatron.strings.legends import What
-from llamatron.strings.marks import MSG_GROOVE_OFF_SHOWN
+from llamatron.strings import labels, legends, marks
 
 # The first two choices, before the names: take the groove from above, and off.
 TAKE_FROM_ABOVE = None
@@ -41,7 +39,7 @@ def groove_choice_field(*, page, title, choice, inherited_option, inherited_show
         if choice is TAKE_FROM_ABOVE:
             return inherited_shown
         if choice is OFF:
-            return MSG_GROOVE_OFF_SHOWN
+            return marks.MSG_GROOVE_OFF_SHOWN
         return choice
 
     def place_of(value):
@@ -51,7 +49,7 @@ def groove_choice_field(*, page, title, choice, inherited_option, inherited_show
         choose(choices[max(min(place_of(choice) + offset, len(choices) - 1), 0)])
 
     def pick():
-        options = [inherited_option, MSG_GROOVE_OFF_OPTION, *names]
+        options = [inherited_option, labels.MSG_GROOVE_OFF_OPTION, *names]
         page.ask(dialog=ChoiceDialog(title=title, options=options, current=place_of(choice)), then=lambda place: choose(choices[place]))
 
-    return Field(label=MSG_GROOVE_LABEL, value=shown, adjust=adjust, enter=pick, enter_what=What.CHOOSE, clear=lambda: choose(TAKE_FROM_ABOVE), clear_what=clear_what)
+    return Field(label=labels.MSG_GROOVE_LABEL, value=shown, adjust=adjust, enter=pick, enter_what=legends.What.CHOOSE, clear=lambda: choose(TAKE_FROM_ABOVE), clear_what=clear_what)

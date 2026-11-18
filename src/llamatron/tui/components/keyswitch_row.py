@@ -21,8 +21,7 @@ them, the same one the piano roll opens, and Bksp clears them. A step with no no
 """
 
 from llamatron.composition.file_format import Row
-from llamatron.strings.marks import MSG_NONE_SHOWN
-from llamatron.strings.messages import MSG_KEYSWITCH_DIALOG_TITLE
+from llamatron.strings import marks, messages
 from llamatron.tui.components.pattern_row import PatternRow
 from llamatron.tui.dialogs.keyswitch_dialog import KeyswitchDialog
 from llamatron.tui.drawing import NOTHING
@@ -36,8 +35,8 @@ def pick_keyswitches(*, editor, step):
     setlist = editor.document().setlist()
     keyswitches = keyswitches_of(instrument)
     dialog = KeyswitchDialog(
-        title=MSG_KEYSWITCH_DIALOG_TITLE.format(step=step + 1), heading=said,
-        names=[MSG_NONE_SHOWN if keyswitch.name is None else keyswitch.name for keyswitch in keyswitches],
+        title=messages.MSG_KEYSWITCH_DIALOG_TITLE.format(step=step + 1), heading=said,
+        names=[marks.MSG_NONE_SHOWN if keyswitch.name is None else keyswitch.name for keyswitch in keyswitches],
         notes=[NOTHING if keyswitch.note is None else keyswitch_note_text(setlist=setlist, note=keyswitch.note) for keyswitch in keyswitches],
         picked=editor.value(row=Row.KEYSWITCH, step=step) or (),
     )

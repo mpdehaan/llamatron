@@ -20,8 +20,7 @@ from llamatron.macro_composer import line_edits
 from llamatron.macro_composer.melody import LINE_NOTES
 from llamatron.macro_composer.phrasing import LINE_BREATH, LINE_EARLY, SHORT_BREATH
 from llamatron.macro_composer.wizard_choices import LINE_BREATHES, LINE_OWN
-from llamatron.strings.labels import MSG_WIZARD_SECTION_HOOK_LABEL, MSG_WIZARD_HOOK_NOTES_OWN, MSG_WIZARD_LINES_LABEL, MSG_WIZARD_LINES_TITLE
-from llamatron.strings.marks import MSG_LINES_COUNT_OWN, MSG_LINES_FROM_MELODY, MSG_LINES_SAME_IDEA
+from llamatron.strings import labels, marks
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.lines_dialog import LinesDialog
 from llamatron.tui.dialogs.tune_dialog import TuneDialog
@@ -50,7 +49,7 @@ class TestLinesDialog(WizardTest):
         await self.press(Key.DOWN, Key.UP)
         await self.go_to_named_branch(A_VERSE)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
-        await self.select_field(MSG_WIZARD_LINES_LABEL)
+        await self.select_field(labels.MSG_WIZARD_LINES_LABEL)
         await self.press(Key.ENTER)
         return choices
 
@@ -61,8 +60,8 @@ class TestLinesDialog(WizardTest):
         choices = await self.open_lines()
         self.assertIsInstance(self.app.screen, LinesDialog)
         shown = self.text()
-        self.assertIn(MSG_WIZARD_LINES_TITLE.format(section=A_VERSE), shown)
-        self.assertIn(MSG_LINES_FROM_MELODY, shown)
+        self.assertIn(labels.MSG_WIZARD_LINES_TITLE.format(section=A_VERSE), shown)
+        self.assertIn(marks.MSG_LINES_FROM_MELODY, shown)
         self.assertEqual(self.lines(choices)[FIRST][LINE_OWN], {})
         await self.press(keybindings.LinesDialog.CLOSE)
         self.assertNotIsInstance(self.app.screen, LinesDialog)
@@ -92,7 +91,7 @@ class TestLinesDialog(WizardTest):
         choices = await self.open_lines()
         again = next(count for count, line in enumerate(self.lines(choices)) if not line[LINE_BREATHES])
         await self.press(*[Key.DOWN] * again)
-        self.assertIn(MSG_LINES_SAME_IDEA, self.text())
+        self.assertIn(marks.MSG_LINES_SAME_IDEA, self.text())
         await self.press(keybindings.LinesDialog.LONGER, keybindings.LinesDialog.EARLY)
         self.assertEqual(self.lines(choices)[again][LINE_OWN], {})
 
@@ -106,17 +105,17 @@ class TestLinesDialog(WizardTest):
         after = self.lines(choices)[FIRST]
         self.assertEqual(line_edits.place_of(after[LINE_NOTES][FIRST]), line_edits.place_of(before[FIRST]) + 1)
         self.assertIn(LINE_NOTES, after[LINE_OWN])
-        self.assertIn(MSG_WIZARD_HOOK_NOTES_OWN, self.text())
+        self.assertIn(labels.MSG_WIZARD_HOOK_NOTES_OWN, self.text())
         await self.press(keybindings.LinesDialog.CLOSE)
-        self.assertIn(MSG_LINES_COUNT_OWN.format(count=len(self.lines(choices)), own=1), self.text())
+        self.assertIn(marks.MSG_LINES_COUNT_OWN.format(count=len(self.lines(choices)), own=1), self.text())
 
     async def test_a_section_that_says_the_hook_opens_the_hook_s_notes_too(self):
         choices = await self.open_lines()
         await self.press(keybindings.LinesDialog.CLOSE, keybindings.WizardPage.TO_TREE)
-        self.assertNotIn(MSG_WIZARD_SECTION_HOOK_LABEL, [field.label for field in self.app.screen.fields()])
+        self.assertNotIn(labels.MSG_WIZARD_SECTION_HOOK_LABEL, [field.label for field in self.app.screen.fields()])
         await self.go_to_named_branch(A_CHORUS)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
-        await self.select_field(MSG_WIZARD_SECTION_HOOK_LABEL)
+        await self.select_field(labels.MSG_WIZARD_SECTION_HOOK_LABEL)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, TuneDialog)
         await self.press(forward_key(keybindings.TuneDialog.PITCH), keybindings.TuneDialog.DONE)
@@ -126,4 +125,4 @@ class TestLinesDialog(WizardTest):
         await self.open_lines()
         await self.press(keybindings.LinesDialog.CLOSE, keybindings.WizardPage.TO_TREE)
         await self.go_to_named_branch(AN_ENDING)
-        self.assertNotIn(MSG_WIZARD_LINES_LABEL, self.text())
+        self.assertNotIn(labels.MSG_WIZARD_LINES_LABEL, self.text())

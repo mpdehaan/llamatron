@@ -22,7 +22,7 @@ any terminal background.
 
 from rich.text import Text
 
-from llamatron.strings.legends import MSG_LEGEND_LABEL, MSG_LEGEND_WHAT
+from llamatron.strings import legends
 
 
 # How Textual's queries name a widget by its id.
@@ -165,8 +165,8 @@ def legend(*, keys, width):
     lines = []
     line = Text(SPACE)
     for item in keys:
-        label = MSG_LEGEND_LABEL.format(label=item.shown_label())
-        what = MSG_LEGEND_WHAT.format(what=item.what)
+        label = legends.MSG_LEGEND_LABEL.format(label=item.shown_label())
+        what = legends.MSG_LEGEND_WHAT.format(what=item.what)
         size = len(label) + len(what)
         if line.cell_len + size > width and line.cell_len > 1:
             lines.append(line)

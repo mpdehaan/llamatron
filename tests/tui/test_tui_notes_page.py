@@ -23,8 +23,7 @@ from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.notes_page import NotesPage
 from llamatron.tui.screens.set.file_page import FilePage
-from llamatron.strings.labels import MSG_NOTES_BUTTONS, MSG_NOTES_LABEL
-from llamatron.strings.marks import MSG_NOT_SET
+from llamatron.strings import labels, marks
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import first_key
 
@@ -45,7 +44,7 @@ class TestNotesPage(UITest):
     async def asyncSetUp(self):
         await super().asyncSetUp()
         await self.press(keybindings.MainPage.FILE)
-        await self.select_field(MSG_NOTES_LABEL)
+        await self.select_field(labels.MSG_NOTES_LABEL)
         await self.press(Key.ENTER)
 
     async def save(self):
@@ -63,7 +62,7 @@ class TestNotesPage(UITest):
         self.assertIn(NO_NOTES_YET, self.text())
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, FilePage)
-        self.assertIn(MSG_NOT_SET, self.text())
+        self.assertIn(marks.MSG_NOT_SET, self.text())
 
     async def test_esc_and_the_cancel_button_throw_the_typing_away_and_save_keeps_it(self):
         await self.type(ONE)
@@ -74,15 +73,15 @@ class TestNotesPage(UITest):
         await self.type(ONE)
         # Tab reaches the buttons, Right moves to Cancel, and Tab again goes back to the text, where letters type again.
         await self.press(Key.TAB)
-        self.assertIn(SELECTED_MARK + KEY_SHOWN.format(label=MSG_NOTES_BUTTONS[0]), self.text())
+        self.assertIn(SELECTED_MARK + KEY_SHOWN.format(label=labels.MSG_NOTES_BUTTONS[0]), self.text())
         await self.press(Key.RIGHT)
-        self.assertIn(SELECTED_MARK + KEY_SHOWN.format(label=MSG_NOTES_BUTTONS[1]), self.text())
+        self.assertIn(SELECTED_MARK + KEY_SHOWN.format(label=labels.MSG_NOTES_BUTTONS[1]), self.text())
         await self.press(Key.TAB)
         self.assertFalse(self.app.screen.on_buttons)
         await self.type(ONE)
         # The buttons remember that Cancel was chosen, so Tab and ENTER press it.
         await self.press(Key.TAB)
-        self.assertIn(SELECTED_MARK + KEY_SHOWN.format(label=MSG_NOTES_BUTTONS[1]), self.text())
+        self.assertIn(SELECTED_MARK + KEY_SHOWN.format(label=labels.MSG_NOTES_BUTTONS[1]), self.text())
         await self.press(Key.ENTER)
         self.assertFalse(self.app.screen.editing)
         self.assertFalse(self.document.setlist().has_notes())

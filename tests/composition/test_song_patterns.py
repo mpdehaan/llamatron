@@ -45,7 +45,7 @@ from llamatron.composition.file_format import (
     Section,
     SetlistSetting,
 )
-from llamatron.composition.limits import MAX_OCTAVE, MAX_PROBABILITY, MIN_PROBABILITY
+from llamatron.composition import limits
 from llamatron.support.version import VERSION
 from llamatron.composition.song_file_error import SongFileError
 from tests.support.song_testing import BASIC, LEAD, ROWS, X, build, clip, lead, lead_data, lead_song, pat, pitches, with_parts
@@ -116,7 +116,7 @@ class TestPatterns(unittest.TestCase):
         self.assertEqual(song_from_data(with_parts()).get_octave_labels(), OctaveLabels.LIVE)
         song = song_from_data(with_parts(octave_labels=OctaveLabels.LLAMATRON))
         self.assertEqual(song.get_octave_labels(), OctaveLabels.LLAMATRON)
-        self.assertEqual((song.shown_octave(MAX_OCTAVE), song.stored_octave(MAX_OCTAVE)), (MAX_OCTAVE, MAX_OCTAVE))
+        self.assertEqual((song.shown_octave(limits.MAX_OCTAVE), song.stored_octave(limits.MAX_OCTAVE)), (limits.MAX_OCTAVE, limits.MAX_OCTAVE))
         with self.assertRaises(SongFileError):
             song_from_data(with_parts(octave_labels=X))
 
@@ -170,7 +170,7 @@ class TestPatterns(unittest.TestCase):
     def test_values_are_checked(self):
         for row, value in [
             (Row.GATE, 0), (Row.GATE, '0.25'), (Row.GATE, 0.25), (Row.GATE, 5), (Row.DOT, X),
-            (Row.ACCIDENTAL, X), (Row.OCTAVE, MAX_OCTAVE + 1), (Row.CHORD, NOPE), (Row.VELOCITY, 0),
+            (Row.ACCIDENTAL, X), (Row.OCTAVE, limits.MAX_OCTAVE + 1), (Row.CHORD, NOPE), (Row.VELOCITY, 0),
             (Row.VELOCITY, 128), (Row.PROBABILITY, 101), (Row.RATCHET, 0), (Row.GLIDE, YES),
         ]:
             with self.subTest(row=row, value=value), self.assertRaises(SongFileError):
@@ -320,19 +320,19 @@ class TestStepRows(unittest.TestCase):
         return sorted((start, end) for start, end, _, _ in events)
 
     def test_a_long_note_that_probability_keeps_sounds_over_the_next_note(self):
-        found = self.long_note_over_the_next(probability=MAX_PROBABILITY)
+        found = self.long_note_over_the_next(probability=limits.MAX_PROBABILITY)
         self.assertEqual(self.starts_and_ends(found), [(0, Fraction(1, 4)), (Fraction(1, 16), Fraction(1, 8))])
         self.assertEqual(found.total_length(), Fraction(1, 4))
 
     def test_a_long_note_that_probability_drops_is_silent_and_the_next_note_plays(self):
-        found = self.long_note_over_the_next(probability=MIN_PROBABILITY)
+        found = self.long_note_over_the_next(probability=limits.MIN_PROBABILITY)
         self.assertEqual(self.starts_and_ends(found), [(Fraction(1, 16), Fraction(1, 8))])
         sixteenth = Fraction(1, 16)
         self.assertEqual(found.get_notes(), [Rest(sixteenth), Note(name=NoteName.E, octave_number=4, length=sixteenth), Rest(sixteenth), Rest(sixteenth)])
         self.assertEqual(found.total_length(), Fraction(1, 4))
 
     def test_a_long_ratcheted_note_that_probability_drops_is_silent_and_the_next_note_plays(self):
-        found = self.long_note_over_the_next(probability=MIN_PROBABILITY, rows={Row.RATCHET: [2, None, None, None]})
+        found = self.long_note_over_the_next(probability=limits.MIN_PROBABILITY, rows={Row.RATCHET: [2, None, None, None]})
         self.assertEqual(self.starts_and_ends(found), [(Fraction(1, 16), Fraction(1, 8))])
         self.assertEqual(found.total_length(), Fraction(1, 4))
 
