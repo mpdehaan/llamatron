@@ -241,7 +241,7 @@ clouds; generate and test, with motif development and counterpoint last.
 
 ## The Song Plan
 
-- A song whose picks hold `song_plan` (true, or a mapping of `contrast`, `growth`, `phrasing`, `hook_kinds` and `sections`, a
+- A song whose picks hold `song_plan` (true, or a mapping of `contrast`, `growth`, `phrasing` and `sections`, a
   list by place of the form) is planned before it is arranged (`SongPlan` in `src/llamatron/macro_composer/song_plan.py`,
   called from `arranged`): every place of the form becomes a section of its own, named `verse`, `verse 2`, so that a second
   verse can differ, and the plan writes into each what the arranger reads. A song without the key is arranged as ever, and
@@ -280,13 +280,8 @@ clouds; generate and test, with motif development and counterpoint last.
   again after the breath, `finished`), Lift (every line is moved up to reach its ceiling, `reaching`), Resolve (a free line ends on
   the chord or off it, `unsettled_place`) and Call and answer (a line that returns keeps its notes and settles, or is walked anew).
   A line before a hook ends open and the section's last line ends on the home note whatever Resolve says. Serial and evolving
-  songs keep their own lines. The old hook of a kind, below, is still what a song plan without `hook_writing` and a bar not
-  counted in eight get. `tests/macro_composer/test_hook_writing.py` holds each gauge.
-- Hook kinds (`src/llamatron/macro_composer/hook_kinds.py`): with the habit `hook_kinds`, a hook's bar is of a contour
-  (chant, arch, falling line, leap and fill, rocking, rising sequence, or the long note, the hook made as before), a rhythm
-  and one odd detail; each take is the next contour and the next rhythm in the song's own order, so another take is another
-  kind. The bar is said note for note in each second bar of the line and answered lower between. The kind is said in the
-  song's notes beside the first section that has the hook, as each scene's Energy and join are.
+  songs keep their own lines. A bar not counted in eight keeps the first hook, a figure that ends on its long top note. `tests/macro_composer/test_hook_writing.py` holds each gauge.
+- `src/llamatron/macro_composer/hook_kinds.py` holds only the rhythms and the two contours a tag is made of; the hook's old kinds, a contour, a rhythm and a detail, are gone.
 - A tune that returns note for note is one part, in a planned song, and a part beside the tune is drawn by the section's kind
   (`drawn_as`), so that a hook or a riff stays the same each time.
 

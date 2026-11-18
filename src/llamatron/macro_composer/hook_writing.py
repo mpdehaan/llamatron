@@ -60,7 +60,7 @@ HOOK_GAUGES_OF = {
     ARCH: (CATCHINESS, SIMPLICITY, LEAP, HEIGHT, HOLD, BOUNCE),
     LEAP_AND_FALL: (CATCHINESS, SIMPLICITY, LEAP, HEIGHT, HOLD, BOUNCE),
     CALL: (CATCHINESS, SIMPLICITY, LEAP, HEIGHT, HOLD, BOUNCE),
-    LADDER: (CATCHINESS, SIMPLICITY, HEIGHT, HOLD, BOUNCE),
+    LADDER: (CATCHINESS, SIMPLICITY, LEAP, HEIGHT, HOLD, BOUNCE),
 }
 # The gauges of a chorus's body.
 SAMENESS = 'sameness'
@@ -104,6 +104,8 @@ CELLS_OF_TWO = ((1, 2), (2, 1))
 CALL_GAP = 1
 # A ladder's cell is of this many notes, each cell a step above the one before.
 LADDER_CELLS = (2, 3)
+# The farthest below its top a ladder starts, in places of the style's ladder, since its rungs may be wide.
+LADDER_DEEPEST = 5
 # How the bar after a hook's answers it, by the Catchiness gauge: on a plainer rhythm low on the gauge, on the hook's own
 # rhythm from its middle, and from high on it with the hook's own notes a place lower.
 SAME_RHYTHM_FROM = 4
@@ -229,8 +231,8 @@ def depths_for(*, behavior, gauges, count, turn):
         cell = LADDER_CELLS[turn % len(LADDER_CELLS)]
         rising = [(cell - 1 - place % cell) - place // cell for place in range(count)]
         lowest = min(rising)
-        stepped = [min(DEEPEST, depth - lowest) for depth in rising[:-1]] + [0]
-        return stepped
+        # The Leap gauge is the size of each rung: by step, by a skip, or wider.
+        return [min(LADDER_DEEPEST, (depth - lowest) * size) for depth in rising[:-1]] + [0]
     # An arch: up to the top and back, the top in the middle or a note later; the leap, where there is one, is into the top.
     peak = min(count - 2, count // 2 + turn % 2) if count > 2 else 0
     arch = [min(DEEPEST, abs(place - peak)) for place in range(count)]

@@ -67,7 +67,7 @@ Under Main Hook, Sung in names the kind of section that carries the hook, and In
 | Hold | The last note is short | The last note is held |
 | Bounce | Every note on the beat | Notes off the beat |
 
-A behavior shows only the gauges that change its hook: a chant and a ladder have no Leap.
+A behavior shows only the gauges that change its hook: a chant has no Leap, and a ladder's Leap is the size of each rung.
 
 Under Second Hook, the Second hook switch gives the song a short tag: one bar of a few short notes, written unlike the main hook and under its top, said the same every time. Tag sung in chooses the kind of section that sings the tag: the last line of the pre-chorus, a post-chorus or the outro, as the song's form has them.
 
@@ -89,7 +89,7 @@ The kind of section that carries the hook, the chorus in most genres, is written
 | Resolve | A line ends off the chord, left open | A line ends on a note of the chord |
 | Call and answer | A line that returns is written anew | A line that returns keeps its notes and settles its ending |
 
-A line that leads into the hook always ends open, and the last line of the section always ends on the home note, so Resolve shows only where another line's ending is free, and Call and answer only where a line returns.
+A line that leads into the hook always ends open, and the last line of the section always ends on a note of the home chord, so Resolve shows only where another line's ending is free, and Call and answer only where a line returns.
 
 ![The panel of the chorus's melody](screenshots/wizard_section_melody.svg)
 

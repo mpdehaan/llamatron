@@ -237,6 +237,8 @@ class TestWizardHookKind(unittest.TestCase):
             self.assertEqual(choices.hook_gauges(), list(hook_writing.HOOK_GAUGES_OF[behavior]))
         choices.set_hook_behavior(hook_writing.CHANT)
         self.assertNotIn(hook_writing.LEAP, choices.hook_gauges())
+        choices.set_hook_behavior(hook_writing.LADDER)
+        self.assertIn(hook_writing.LEAP, choices.hook_gauges())
 
     def test_what_is_no_behavior_no_gauge_or_off_the_scale_is_refused(self):
         choices = chosen()

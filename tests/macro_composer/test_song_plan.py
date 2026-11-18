@@ -21,7 +21,7 @@ import unittest
 
 from llamatron.composition.setlist import Setlist
 from llamatron.strings import macro_composer as composer_text
-from llamatron.macro_composer import arranger, composer, drum_solo, hook_kinds, joins, phrasing
+from llamatron.macro_composer import arranger, composer, drum_solo, joins, phrasing
 from llamatron.macro_composer.melody import BREATHES
 from llamatron.macro_composer.notation import LOUD, NONE, REST, SOFT, STEPS
 from llamatron.macro_composer.song_plan import (ALLOWS, APPROACH, BIG, BY_PLACE, CONTRAST, CRASH_START, ENERGY, GROWTH, HIGHEST_ENERGY, LAST_CHORD, LOUDEST, FILLS_COME, LAST_CHORUS, LOWEST_ENERGY, MARKER,
@@ -371,42 +371,6 @@ class TestDrumSolo(unittest.TestCase):
     def test_a_drum_solo_in_another_meter_is_the_drummer_alone(self):
         given = arranger.arranged(style=arranger.style_named(ROCK), song=song(template=BALLAD, form=[VERSE, DRUM_SOLO, CHORUS, ENDING], plan=False))
         Setlist.from_data(data=composer.composed(given=given, version=VERSION))
-
-
-class TestHookKinds(unittest.TestCase):
-
-    def test_each_take_is_another_kind_and_the_same_take_the_same(self):
-        kinds = [hook_kinds.kind_of(seed=SEED, take=take) for take in TAKES]
-        self.assertEqual(len({kind[hook_kinds.CONTOUR] for kind in kinds}), len(hook_kinds.CONTOURS))
-        self.assertEqual(hook_kinds.kind_of(seed=SEED, take=0), kinds[0])
-
-    def test_every_kind_fills_a_bar_reaches_its_top_and_stays_within_a_sixth(self):
-        for contour in hook_kinds.CONTOURS:
-            for rhythm in hook_kinds.RHYTHMS:
-                for detail in hook_kinds.DETAILS:
-                    lengths, depths = hook_kinds.bar_of(kind={hook_kinds.CONTOUR: contour, hook_kinds.RHYTHM: rhythm, hook_kinds.DETAIL: detail})
-                    self.assertEqual(sum(abs(length) for length in lengths), hook_kinds.UNITS)
-                    self.assertEqual(len(depths), sum(1 for length in lengths if length > 0))
-                    self.assertEqual(min(depths), 0)
-                    self.assertLessEqual(max(depths), hook_kinds.DEEPEST)
-
-    def test_an_odd_detail_changes_the_bar(self):
-        plain = hook_kinds.RHYTHMS[hook_kinds.ANTHEM]
-        early, _ = hook_kinds.with_detail(lengths=plain, depths=[0] * len(plain), detail=hook_kinds.EARLY_NOTE)
-        self.assertNotEqual(list(plain), early)
-        silent, depths = hook_kinds.with_detail(lengths=plain, depths=[0] * len(plain), detail=hook_kinds.SILENT_DOWNBEAT)
-        self.assertLess(silent[0], 0)
-        self.assertEqual(len(depths), len(plain) - 1)
-        again, _ = hook_kinds.with_detail(lengths=hook_kinds.RHYTHMS[hook_kinds.PUSHED], depths=[0] * len(hook_kinds.RHYTHMS[hook_kinds.PUSHED]), detail=hook_kinds.SAID_AGAIN)
-        self.assertGreater(len(again), len(hook_kinds.RHYTHMS[hook_kinds.PUSHED]))
-
-    def test_a_planned_songs_chorus_is_the_same_tune_each_time_and_another_take_is_another_hook(self):
-        style = arranger.style_named(ROCK)
-        first = arranger.arranged(style=style, song=song())
-        lead = [scene[arranger.PLAY]['lead'][arranger.PART] for scene in first[arranger.FORM] if scene[arranger.SCENE].startswith(CHORUS)]
-        self.assertEqual(len(set(lead[1:])), 1)
-        other = arranger.arranged(style=style, song={**song(), arranger.HOOK_TAKE: 1})
-        self.assertNotEqual(first[arranger.PARTS][lead[0]][arranger.LINES][0], other[arranger.PARTS][lead[0]][arranger.LINES][0])
 
 
 class TestPhrasing(unittest.TestCase):

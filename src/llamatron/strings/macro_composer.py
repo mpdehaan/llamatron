@@ -51,8 +51,6 @@ MSG_PLAN_LEAVES_FILL = 'Leaves with a fill, {}.'
 MSG_PLAN_SET_UP = 'Last bar on chord {}.'
 MSG_PLAN_HOOK = 'The hook: {}.'
 MSG_PLAN_STAGE = 'Its shape: {}.'
-# macro_composer/hook_kinds.py: a hook's kind in words, its contour, its rhythm and its odd detail.
-MSG_HOOK_KIND = '{}, {}, {}'
 
 # macro_composer/players.py
 # A player's name, the first name and the family's, and each list from complexity 1 to 4.

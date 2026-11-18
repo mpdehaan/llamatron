@@ -120,10 +120,13 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   change first.
 - The documentation website and the screenshots are brought up to date only before a push, or when the user asks for a rebuild
   (the user's rule, since rebuilding with every change was too much): a commit that changes `GUIDE.md`, a page in `docs/` or what
-  the tracker draws brings no rebuild of `web_docs/` and no new screenshots. When the user asks Claude to push, in any words, Claude
-  first retakes the screenshots if what the tracker draws changed since the last push (`internal_tools/screenshots.sh`, committing
-  only the shots that changed), then runs `internal_tools/push_all.sh`, which rebuilds the website with `internal_tools/build_docs.sh`,
-  commits `web_docs/` if the build changed it, pushes `main` and then publishes the website with `internal_tools/publish_docs.sh`,
+  the tracker draws brings no rebuild of `web_docs/` and no new screenshots, and Claude never retakes a screenshot in the middle
+  of other work, since that made churn and shots retaken more than once (the user's rule). When the user asks Claude to push, in
+  any words, Claude runs `internal_tools/push_all.sh`, which first runs `internal_tools/rebuild_docs.sh` (the screenshots retaken
+  with `internal_tools/screenshots.sh` and only the shots that changed committed, then the website rebuilt with
+  `internal_tools/build_docs.sh` and `web_docs/` committed if the build changed it), then pushes `main` and then publishes the
+  website with `internal_tools/publish_docs.sh`; when the user asks for the documents to be rebuilt, Claude runs
+  `internal_tools/rebuild_docs.sh` alone,
   in that order, so that the website never describes code nobody can get; `publish_docs.sh` refuses while `main` holds commits
   GitHub's `main` doesn't. Claude pushes nothing unasked. A reply that leaves commits waiting says how many wait for a push.
 - The song wizard's documents are released (the user's say-so): `docs/WIZARD.md` shows each wizard panel with a screenshot and what it
@@ -201,9 +204,11 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   musical idea means). Before designing anything with a musical side, Claude reads the subject's file in
   `.claude/music_theory_notes/`. The reply that proposes the design opens the proposal with a short section, "The professor's
   review", written as an expert teacher of music would judge it: what the musical idea means to players, what real players do,
-  what the proposal leaves out and why, and whether a musician would want the feature at all. For a large design, a new
-  generator, a musician's page or a wizard panel, Claude also starts a fresh agent that sees only the proposal and critiques it
-  as a strict professor of music, and the reply says where that agent disagreed. What is learnt goes into the notes. Claude
+  what the proposal leaves out and why, and whether a musician would want the feature at all. That section is Claude's own
+  writing. The professor as a fresh agent, one that sees only the proposal and critiques it as a strict professor of music, is
+  consulted only when the user says to, for the thing the user names: never on Claude's own initiative, and never to give an
+  opinion on each open question unless the user asks for that (the user's rule). When one is consulted, the reply says where
+  that agent disagreed. What is learnt goes into the notes. Claude
   brings musicality up itself, in every design discussion, and never waits to be asked.
 - **The professor's advice is weighed on the music alone** (the user's rule). The song wizard, the MacroComposer and the style
   templates are a discrete feature from the rest of the application. Where the professor's advice differs from how one of those
