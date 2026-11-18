@@ -18,9 +18,10 @@
 
 import itertools
 import random
+import copy
 import unittest
 
-from llamatron.composition.file_format import SceneSetting, Section
+from llamatron.composition.file_format import Row, SceneSetting, Section
 from llamatron.macro_composer import hook_writing, phrasing
 from llamatron.macro_composer.notation import REST, STEPS
 from llamatron.macro_composer.arranger import CHORDS
@@ -33,6 +34,8 @@ from llamatron.macro_composer.arranger import shares_a_bar as arranger_shares_a_
 from llamatron.support.version import VERSION
 
 A_NAME = 'made'
+A_DEGREE = 7
+ANOTHER_DEGREE = 6
 A_SEED = 11
 A_PLANNED_GENRE = 'rock'
 A_SUBGENRE = 'arena rock'
@@ -456,6 +459,45 @@ class TestWizardShapesAndIntroHook(unittest.TestCase):
         self.assertIsNone(choices.get_intro_hook())
         with self.assertRaises(ValueError):
             choices.set_intro_hook(NOT_A_PART)
+
+    def test_the_intros_notes_written_by_hand_are_played_by_its_player_kept_with_the_song_and_given_back(self):
+        for role in chosen().intro_hook_players():
+            with self.subTest(role=role):
+                choices = chosen()
+                self.assertIsNone(choices.intro_melody_place())
+                self.assertIsNone(choices.intro_pattern())
+                with self.assertRaises(ValueError):
+                    choices.set_intro_pattern({})
+                choices.set_intro_hook(role)
+                self.assertEqual(choices.intro_melody_place(), THE_INTRO)
+                written = choices.intro_pattern()
+                own = copy.deepcopy(written)
+                own[Row.DEGREE][0] = A_DEGREE if written[Row.DEGREE][0] != A_DEGREE else ANOTHER_DEGREE
+                self.assertFalse(choices.intro_is_own())
+                choices.set_intro_pattern(own)
+                self.assertTrue(choices.intro_is_own())
+                self.assertEqual(choices.intro_pattern()[Row.DEGREE], own[Row.DEGREE])
+                setlist = choices.made_setlist(name=A_NAME, version=VERSION)
+                slot = setlist.get_song(A_NAME).get_scenes()[THE_INTRO].get_clip_slot(role)
+                self.assertEqual(setlist.get_pattern(slot.get_pattern_name()).to_data()[Row.DEGREE], own[Row.DEGREE])
+                again = WizardChoices.from_data(choices.to_data())
+                self.assertTrue(again.intro_is_own())
+                self.assertEqual(again.intro_pattern()[Row.DEGREE], own[Row.DEGREE])
+                choices.set_intro_pattern(None)
+                self.assertFalse(choices.intro_is_own())
+                self.assertEqual(choices.intro_pattern(), written)
+
+    def test_the_intros_own_notes_are_one_players_and_another_player_says_the_hook(self):
+        choices = chosen()
+        first, second = choices.intro_hook_players()
+        choices.set_intro_hook(first)
+        own = choices.intro_pattern()
+        own[Row.DEGREE][0] = A_DEGREE if own[Row.DEGREE][0] != A_DEGREE else ANOTHER_DEGREE
+        choices.set_intro_pattern(own)
+        choices.set_intro_hook(second)
+        self.assertFalse(choices.intro_is_own())
+        choices.set_intro_hook(first)
+        self.assertTrue(choices.intro_is_own())
 
     def test_nobody_can_say_the_hook_in_an_intro_without_a_plan_or_a_hook(self):
         self.assertEqual(chosen(plan=False).intro_hook_players(), [])

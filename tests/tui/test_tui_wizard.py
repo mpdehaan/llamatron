@@ -19,7 +19,7 @@ from llamatron.composition.file_format import Section
 from llamatron.macro_composer.arranger import BARS, WITHOUT
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
 from llamatron.macro_composer.melody import LENGTHS, LOUDNESS, SERIAL
-from llamatron.macro_composer.wizard_choices import PLAYER_ROWS, PLAYER_ROWS_KEPT, MAJOR, WizardChoices, USUAL_PIECE_NOTE, FEWEST_FILLS, MOST_FILLS, ONE_GUITARIST_COUNT, TWO_GUITARISTS, ACOUSTIC, BAND_SOUNDS, FILLS_TRAITS, PROGRESSION_TRAITS, MOST_BUSY, USUAL_BUSY, MINOR, SEED, genre_names, genre_title
+from llamatron.macro_composer.wizard_choices import INTRO, PLAYER_ROWS, PLAYER_ROWS_KEPT, MAJOR, WizardChoices, USUAL_PIECE_NOTE, FEWEST_FILLS, MOST_FILLS, ONE_GUITARIST_COUNT, TWO_GUITARISTS, ACOUSTIC, BAND_SOUNDS, FILLS_TRAITS, PROGRESSION_TRAITS, MOST_BUSY, USUAL_BUSY, MINOR, SEED, genre_names, genre_title
 from llamatron.composition import limits
 from llamatron.strings import errors, labels as labels_text, legends, macro_composer as composer_text, marks, messages, names
 from llamatron.composition.naming import new_name
@@ -1452,9 +1452,10 @@ class TestWizardComposition(WizardTest):
         start = names.index(labels_text.MSG_WIZARD_MELODY_BRANCH) + 1
         kinds = self.choices().tune_kinds()
         # The melodies are a group of their own, open from the start, the hook's panel first in it.
-        self.assertEqual(names[start:start + len(kinds) + 5],
-                         [labels_text.MSG_WIZARD_MELODIES_BRANCH, labels_text.MSG_WIZARD_HOOKS_BRANCH, *(kind.capitalize() for kind in kinds), labels_text.MSG_WIZARD_RIFFS_BRANCH, labels_text.MSG_WIZARD_RIFF_ASSIGN_BRANCH,
-                          labels_text.MSG_WIZARD_SECTION_PLAYERS_BRANCH])
+        # The intro's panel is last in the group, since the intro's melody is made from the hook.
+        self.assertEqual(names[start:start + len(kinds) + 6],
+                         [labels_text.MSG_WIZARD_MELODIES_BRANCH, labels_text.MSG_WIZARD_HOOKS_BRANCH, *(kind.capitalize() for kind in kinds), INTRO.capitalize(), labels_text.MSG_WIZARD_RIFFS_BRANCH,
+                          labels_text.MSG_WIZARD_RIFF_ASSIGN_BRANCH, labels_text.MSG_WIZARD_SECTION_PLAYERS_BRANCH])
 
     async def test_the_melodies_group_closes_over_its_panels_and_opens_again(self):
         await self.choose(genre=A_GENRE_WITH_RHYTHMS)

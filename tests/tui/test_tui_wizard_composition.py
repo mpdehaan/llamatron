@@ -32,6 +32,7 @@ from llamatron.tui.drawing import NOTHING, SELECTED_MARK, Style
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.shared.field import Heading
+from llamatron.tui.screens.wizard.intro_melody_branch import INTRO_MELODY_KEY
 from llamatron.tui.screens.wizard.section_melody_branch import MELODY_KEY
 from llamatron.tui.screens.wizard.wizard_page import WizardPage
 from tests.support.ui_testing import key_of
@@ -287,6 +288,57 @@ class TestWizardSectionMelody(CompositionTest):
         await self.open_panel(MELODY_KEY.format(kind=kind))
         self.assertNotIn(labels.MSG_WIZARD_INTRO_HOOK_LABEL, self.field_labels())
         self.assertNotIn(marks.MSG_WIZARD_HOOK_CELL, self.text())
+
+
+class TestWizardIntroMelody(CompositionTest):
+    """The Intro panel, last under Melodies: who says the hook in the intro, and that player's notes."""
+
+    SUBGENRE = A_SUBGENRE_WITH_A_PRE_CHORUS
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        await self.open_panel(INTRO_MELODY_KEY)
+
+    async def choose_first_player(self):
+        choices = self.choices()
+        await self.select_field(labels.MSG_WIZARD_INTRO_HOOK_LABEL)
+        await self.press(Key.ENTER)
+        await self.pick(choices.role_title(choices.intro_hook_players()[0]))
+
+    async def test_the_panel_has_only_who_says_the_hook_until_somebody_is_chosen_and_then_its_buttons(self):
+        choices = self.choices()
+        self.assertEqual(self.field_labels(), [labels.MSG_WIZARD_INTRO_HOOK_LABEL])
+        self.assertEqual(self.wizard().field().value(), labels.MSG_WIZARD_NOBODY)
+        await self.press(Key.ENTER)
+        self.assertEqual(list(self.app.screen.options), [labels.MSG_WIZARD_NOBODY, *(choices.role_title(role) for role in choices.intro_hook_players())])
+        await self.pick(choices.role_title(choices.intro_hook_players()[0]))
+        self.assertEqual(choices.get_intro_hook(), choices.intro_hook_players()[0])
+        self.assertEqual(self.field_labels(), [labels.MSG_WIZARD_INTRO_HOOK_LABEL, labels.MSG_WIZARD_EDIT_NOTES_BUTTON, labels.MSG_WIZARD_LISTEN_BUTTON, labels.MSG_WIZARD_LISTEN_BAND_BUTTON])
+        self.assertIn(messages.MSG_WIZARD_HOOK_MADE, self.text())
+        what, place, track = self.wizard().branch().listens()
+        self.assertEqual((place, track), (choices.intro_melody_place(), choices.get_intro_hook()))
+        self.assertIsNone(self.wizard().branch().heard_with_band()[2])
+
+    async def test_the_intros_notes_open_in_the_pattern_editor_are_kept_when_edited_and_given_back_with_bksp(self):
+        choices = self.choices()
+        await self.choose_first_player()
+        await self.select_field(labels.MSG_WIZARD_EDIT_NOTES_BUTTON)
+        await self.press(Key.ENTER)
+        self.assertIsInstance(self.app.screen, PatternEditor)
+        self.change_first_step()
+        await self.press(Key.ESCAPE)
+        self.assertIsInstance(self.app.screen, WizardPage)
+        self.assertTrue(choices.intro_is_own())
+        self.assertIn(messages.MSG_WIZARD_NOTES_BY_HAND, self.text())
+        await self.press(keybindings.WizardPage.CLEAR)
+        self.assertIsInstance(self.app.screen, ConfirmDialog)
+        await self.press(keybindings.ConfirmDialog.YES)
+        self.assertFalse(choices.intro_is_own())
+
+    async def test_the_hook_panel_no_longer_holds_who_says_the_hook_in_the_intro(self):
+        await self.press(keybindings.WizardPage.TO_TREE)
+        await self.open_panel(labels.MSG_WIZARD_HOOKS_BRANCH)
+        self.assertNotIn(labels.MSG_WIZARD_INTRO_HOOK_LABEL, self.field_labels())
 
 
 class TestWizardHooks(CompositionTest):

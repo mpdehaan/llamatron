@@ -47,7 +47,7 @@ from llamatron.macro_composer import composer as set_writer
 from llamatron.macro_composer import melody as melody_writer
 from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer import band, hook_writing, line_edits, loudness_steps, notation as tune_notation, phrasing, tune_fit
-from llamatron.macro_composer.arranger import (GENRE as GENRE_OF_STYLE, MORE_RIFFS, MUSICIANS, NOBODY, OWN_TUNES, RIFF_DRAWN_AS, RIFF_FOR, RIFF_OWN, TAKEN_TUNES, TUNE_BY, TUNE_BY_SONG,
+from llamatron.macro_composer.arranger import (GENRE as GENRE_OF_STYLE, MORE_RIFFS, MUSICIANS, NOBODY, OWN_INTRO, OWN_TUNES, RIFF_DRAWN_AS, RIFF_FOR, RIFF_OWN, TAKEN_TUNES, TUNE_BY, TUNE_BY_SONG,
                                                TUNE_PHRASING, in_octaves_of)
 from llamatron.macro_composer.players import BASS as BASS_PLAYER
 from llamatron.macro_composer.arranger import CHORDS, DYNAMICS, EIGHTHS_IN_WHOLE, GROOVE, LOUDNESS as LOUDNESS_OF, NO_GROOVE, SCENE_SETTINGS, form_of
@@ -241,6 +241,7 @@ FILLS_TRAITS = ('fills',)
 OWN_SECTIONS = 'own_sections'
 PREVIEW_NAME = 'preview'
 # The key of the answer kept of a kind of section's tune in the set the choices make.
+INTRO_MADE_ANSWER = 'the intro melody made'
 TUNE_MADE_ANSWER = 'tune made'
 MELODY_HEARD_ANSWER = 'melody values heard'
 # Which take of its tune each kind of section has, kept with the song's extras, the first take being the tune the choices write;
@@ -2970,6 +2971,64 @@ class WizardChoices:
         if role is not None:
             self._plan()[INTRO_HOOK] = role
         self._answers = {}
+
+    # The intro's melody: the hook as the chosen player says it, until the notes are edited by hand.
+
+    def intro_melody_place(self):
+        """Return the place in the form of the intro somebody says the hook in, or None where nobody does."""
+        return self._intro_places()[0] if self.get_intro_hook() is not None else None
+
+    def intro_is_own(self):
+        """Return whether the intro's melody was written by hand for the player who now plays it."""
+        return self.get_intro_hook() is not None and self.get_intro_hook() in self._extras.get(OWN_INTRO, {})
+
+    def intro_pattern_name(self):
+        """Return the name of the pattern that holds the intro's melody in the set the choices make, or None where the set has none."""
+        return self._intro_in_made()[0]
+
+    def intro_pattern(self):
+        """Return the intro's melody as a pattern's data, the person's own or the hook as the choices write it, or None where nobody plays one."""
+        return copy.deepcopy(self._intro_in_made()[1])
+
+    def _intro_in_made(self):
+        return self._remembered(key=INTRO_MADE_ANSWER, compute=self._found_intro_in_made)
+
+    def _found_intro_in_made(self):
+        place = self.intro_melody_place()
+        if place is None:
+            return None, None
+        setlist, name = self._written_for_trial()
+        scenes = setlist.get_song(name).get_scenes()
+        role = self.get_intro_hook()
+        slot = scenes[place].get_clip_slot(role) if place < len(scenes) and scenes[place].has_clip_slot(role) else None
+        if slot is None:
+            return None, None
+        return slot.get_pattern_name(), setlist.get_pattern(slot.get_pattern_name()).to_data()
+
+    def set_intro_pattern(self, pattern):
+        """Keep a pattern's data as the intro's own melody for the player who plays it, or forget the person's own with None, so
+        that the player says the hook again. An intro nobody plays a melody in, and a pattern the song cannot be made with, are
+        refused and nothing changes."""
+        role = self.get_intro_hook()
+        if role is None:
+            raise ValueError(errors.ERR_WIZARD_NO_TUNE_IN.format(value=INTRO))
+        before = copy.deepcopy(self._extras.get(OWN_INTRO))
+        own = self._extras.setdefault(OWN_INTRO, {})
+        if pattern is None:
+            own.pop(role, None)
+        else:
+            own[role] = copy.deepcopy(pattern)
+        if not own:
+            del self._extras[OWN_INTRO]
+        self._answers = {}
+        try:
+            self._written_for_trial()
+        except Exception as problem:
+            self._extras.pop(OWN_INTRO, None)
+            if before is not None:
+                self._extras[OWN_INTRO] = before
+            self._answers = {}
+            raise ValueError(errors.ERR_WIZARD_TUNE_PATTERN.format(problem=problem)) from problem
 
     def _intro_hook_at(self, place):
         """What an intro is given so that somebody says the hook in it: a line of the hook for each two bars, as answers where the answering player says them, and the player among those who play."""

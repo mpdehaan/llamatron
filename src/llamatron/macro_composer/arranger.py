@@ -201,6 +201,10 @@ ENDS = 'ends'
 MELODY_ENGINE = 'melody_engine'
 # A song's tunes written by hand, each a pattern's data under its kind of section, which take the place of the tune that would be written.
 OWN_TUNES = 'own_tunes'
+# An intro's melody written by hand, a pattern's data under the name of the player who plays it, which takes the place of the
+# hook that player would say in the intro.
+OWN_INTRO = 'own_intro'
+INTRO_KIND = 'intro'
 # The riffs a song has besides its first, in order: each a riff as the first is, with a name of its own, which its players play in
 # its kinds of section in place of their usual parts; and the seed a riff of a name is written from.
 MORE_RIFFS = 'more_riffs'
@@ -1274,6 +1278,8 @@ def arranged(*, style, song):
                     play[role[ROLE]] = {PART: figure, CHAINS: [chain]}
                     continue
                 own_tune = (song.get(OWN_TUNES, {}).get(section[KIND]) or song.get(TAKEN_TUNES, {}).get(section[KIND])) if role is tune_role else None
+                if section[KIND] == INTRO_KIND and song.get(OWN_INTRO, {}).get(role[ROLE]) is not None:
+                    own_tune = song[OWN_INTRO][role[ROLE]]
                 if own_tune is not None:
                     # A tune written by hand is played as written by every section of its kind, and nothing here writes one over it.
                     part = composer_text.MSG_OWN_TUNE_PART.format(kind=section[KIND])
