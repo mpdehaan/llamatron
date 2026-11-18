@@ -105,9 +105,9 @@ class TestWizardPlan(WizardTest):
         # A Phrasing counts in bars, whatever the bar holds, so a tune in six is delivered in lines as a tune in four is.
         self.assertIn(labels.MSG_WIZARD_PHRASING_LABEL, self.text())
 
-    async def test_the_hook_panel_shows_the_behavior_and_the_gauges_with_the_genre_s_said_to_be_so(self):
+    async def test_the_panel_of_the_section_that_says_the_hook_shows_the_behavior_and_the_gauges_with_the_genre_s_said_to_be_so(self):
         await self.choose()
-        await self.go_to_hooks()
+        await self.go_to_hook_writing()
         choices = self.choices()
         shown = self.text()
         self.assertIn(labels.MSG_WIZARD_VALUE_FROM.format(value=choices.genre_hook_behavior(), origin=labels.MSG_WIZARD_USUAL_MELODY), shown)
@@ -116,7 +116,7 @@ class TestWizardPlan(WizardTest):
 
     async def test_stepping_a_gauge_moves_it_the_picture_follows_and_the_delete_key_gives_it_back(self):
         await self.choose()
-        await self.go_to_hooks()
+        await self.go_to_hook_writing()
         choices = self.choices()
         before = choices.hook_notes()
         usual = choices.genre_hook_gauge(hook_writing.SIMPLICITY)
@@ -137,7 +137,7 @@ class TestWizardPlan(WizardTest):
         await self.choose()
         self.choices().set_hook_behavior(hook_writing.CHANT)
         await self.press(Key.DOWN, Key.UP)
-        await self.go_to_hooks()
+        await self.go_to_hook_writing()
         self.assertIn(labels.MSG_WIZARD_HOOK_GAUGE_LABELS[hook_writing.HOLD], self.text())
         self.assertNotIn(labels.MSG_WIZARD_HOOK_GAUGE_LABELS[hook_writing.LEAP], self.text())
 

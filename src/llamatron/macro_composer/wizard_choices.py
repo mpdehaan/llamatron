@@ -44,8 +44,9 @@ from llamatron.macro_composer.arranger import (
     arranged, forms_of, picked, player_of, section_of, share_in, share_of, style_in, style_named, style_names, values_of, variant_named, variants_of, VARIANT, VARIANT_SAYS,
 )
 from llamatron.macro_composer import composer as set_writer
+from llamatron.macro_composer import melody as melody_writer
 from llamatron.macro_composer.composer import composed
-from llamatron.macro_composer import band, hook_writing, line_edits, loudness_steps, phrasing, tune_fit
+from llamatron.macro_composer import band, hook_writing, line_edits, loudness_steps, notation as tune_notation, phrasing, tune_fit
 from llamatron.macro_composer.arranger import (GENRE as GENRE_OF_STYLE, MORE_RIFFS, MUSICIANS, NOBODY, OWN_TUNES, RIFF_DRAWN_AS, RIFF_FOR, RIFF_OWN, TAKEN_TUNES, TUNE_BY, TUNE_BY_SONG,
                                                TUNE_PHRASING, in_octaves_of)
 from llamatron.macro_composer.players import BASS as BASS_PLAYER
@@ -2302,17 +2303,56 @@ class WizardChoices:
         part, line = self._hook_part()
         if part is None:
             return None
+        at, notes = self._sounded(lines=[part[LINES][line]], octave=part[OCTAVE])
+        return at, self._melody_habits()[GRID], notes
+
+    def _sounded(self, *, lines, octave):
+        """Lines of a tune as how many steps they last and each note as where it starts, how many steps it lasts and its MIDI
+        note, in the song's key, octave being the octave the lines are written against."""
         scale = self.scale_half_steps()
-        lowest = part[OCTAVE] * NOTES_IN_OCTAVE + self.root_half_steps()
+        lowest = octave * NOTES_IN_OCTAVE + self.root_half_steps()
         notes = []
         at = 0
-        for note in part[LINES][line]:
-            length = note.get(STEPS, note.get(REST))
-            if REST not in note:
-                octaves, place = divmod(note[DEGREE] - 1, len(scale))
-                notes.append((at, length, lowest + scale[place] + (octaves + note.get(OCTAVE, 0)) * NOTES_IN_OCTAVE + HALF_STEPS_OF_ACCIDENTAL.get(note.get(ACCIDENTAL), 0)))
-            at += length
-        return at, self._melody_habits()[GRID], notes
+        for line in lines:
+            for note in line:
+                length = note.get(STEPS, note.get(REST))
+                if REST not in note:
+                    octaves, place = divmod(note[DEGREE] - 1, len(scale))
+                    notes.append((at, length, lowest + scale[place] + (octaves + note.get(OCTAVE, 0)) * NOTES_IN_OCTAVE + HALF_STEPS_OF_ACCIDENTAL.get(note.get(ACCIDENTAL), 0)))
+                at += length
+        return at, notes
+
+    def hook_kind(self):
+        """Return the kind of section that says the main hook, or None where the song can have none."""
+        place = self.hook_line_place()
+        return None if place is None else place[0]
+
+    def hook_bars(self):
+        """Return the bars of its section that are the hook, the first and the last, counted from 1: the bars of the first line
+        the section's plan marks as the hook. None where the song has no hook."""
+        place = self.hook_line_place()
+        if place is None or not self.has_hook():
+            return None
+        bars = self._melody_habits()[melody_writer.LINE_BARS]
+        return (place[1] - 1) * bars + 1, place[1] * bars
+
+    def hook_section_notes(self):
+        """Return the tune of the whole section that says the hook, as hook_notes returns the hook: how many steps it lasts, how
+        many steps a bar has, and each note. The notes are the section's as they stand, a person's own where the section was
+        edited by hand. None where the song has no hook or the section's notes do not divide into the melody's bars."""
+        kind = self.hook_kind()
+        if kind is None or not self.has_hook() or self.tune_place(kind) is None or self.tune_player_in(kind) is None:
+            return None
+        pattern = self.tune_pattern(kind)
+        bar = self._melody_habits()[GRID]
+        if pattern is None or pattern[STEPS] % bar:
+            return None
+        try:
+            lines, octave, _ = tune_notation.tune_lines(pattern=pattern, bar=bar)
+        except tune_notation.NotWritable:
+            return None
+        steps, notes = self._sounded(lines=lines, octave=octave)
+        return (steps, bar, notes) if steps == pattern[STEPS] else None
 
     def set_hook(self, on):
         if on and not self.can_have_hook():
