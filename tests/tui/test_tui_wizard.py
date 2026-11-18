@@ -107,6 +107,15 @@ class WizardTest(UITest):
         """Move the tree's cursor to the Hooks panel."""
         await self.go_to_named_branch(labels_text.MSG_WIZARD_HOOKS_BRANCH)
 
+    async def go_to_hook_writing(self):
+        """Move the tree's cursor to the melody's panel of the section that says the hook, which holds how the hook is written."""
+        await self.go_to_named_branch(self.choices().hook_kind().capitalize())
+
+    def hook_picture(self):
+        """The Hooks panel's picture as the page draws it: the whole section that says the hook, with the hook's bars in a frame."""
+        choices = self.choices()
+        return [line.plain.strip() for line in self.wizard().branch().notes(A_WIDE_PANEL)], picture_of(hook=choices.hook_section_notes(), width=A_WIDE_PANEL, lit=choices.hook_bars())
+
     async def choose_genre_and_subgenre(self):
         """Choose the first genre and its first subgenre, each with ] (inc) from nothing chosen on its panel, and go back to the tree."""
         more = key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)
@@ -1318,9 +1327,14 @@ class TestWizardComposition(WizardTest):
         await self.go_to_hook_panel()
         hook = choices.hook_notes()
         shown = self.text()
-        for line in picture_of(hook=hook, width=A_WIDE_PANEL):
-            self.assertIn(line, shown)
-        self.assertIn(messages.MSG_WIZARD_HOOK_MADE.format(player=choices.role_title(choices.tune_player())), shown)
+        drawn, picture = self.hook_picture()
+        for line in picture:
+            self.assertIn(line.strip(), drawn)
+        # The section's notes hold the hook's, in the hook's bars.
+        first = choices.hook_bars()[0]
+        start = (first - 1) * hook[1]
+        self.assertEqual([note for note in choices.hook_section_notes()[2] if start <= note[0] < start + hook[0]], [(start + at, length, pitch) for at, length, pitch in hook[2]])
+        self.assertIn(messages.MSG_WIZARD_HOOK_MADE, shown)
         for _, _, pitch in hook[2]:
             self.assertIn(note_shown(pitch), shown)
         await self.create()
@@ -1335,12 +1349,28 @@ class TestWizardComposition(WizardTest):
         await self.select_field(labels_text.MSG_WIZARD_REGENERATE_BUTTON)
         await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
         self.assertNotEqual(choices.hook_notes(), first)
-        for line in picture_of(hook=choices.hook_notes(), width=A_WIDE_PANEL):
-            self.assertIn(line, self.text())
+        drawn, picture = self.hook_picture()
+        for line in picture:
+            self.assertIn(line.strip(), drawn)
         await self.press(keybindings.WizardPage.TO_TREE)
         choices.set_hook(False)
         await self.press(Key.DOWN, Key.UP)
         self.assertNotIn(labels_text.MSG_WIZARD_REGENERATE_BUTTON, self.text())
+
+    def test_a_picture_wider_than_its_room_is_drawn_as_even_rows_of_bars_with_the_frame_on_the_lit_bars(self):
+        bars = 8
+        steps_in_bar = 8
+        notes = [(bar * steps_in_bar, 2, A_PITCH + bar % 2) for bar in range(bars)]
+        whole = picture_of(hook=(bars * steps_in_bar, steps_in_bar, notes), width=A_WIDE_PANEL * 2, lit=(2, 5))
+        self.assertEqual(len([line for line in whole if marks.MSG_WIZARD_HOOK_FLOOR in line]), 1)
+        self.assertEqual(len([line for line in whole if marks.MSG_WIZARD_HOOK_FRAME_NAME in line]), 1)
+        halves = picture_of(hook=(bars * steps_in_bar, steps_in_bar, notes), width=bars * steps_in_bar, lit=(2, 5))
+        floors = [line for line in halves if marks.MSG_WIZARD_HOOK_FLOOR in line]
+        self.assertEqual([line.count(marks.MSG_WIZARD_HOOK_FLOOR_BAR) - 1 for line in floors], [bars // 2, bars // 2])
+        # The frame is over bars 2 to 4 of the first row and bar 1 of the second.
+        tops = [line for line in halves if marks.MSG_WIZARD_HOOK_FRAME_NAME in line]
+        self.assertEqual([len(line.strip()) for line in tops], [3 * (steps_in_bar + 1) + 1, steps_in_bar + 2])
+        self.assertEqual(picture_of(hook=(bars * steps_in_bar, steps_in_bar, notes), width=bars * steps_in_bar)[0].count(marks.MSG_WIZARD_HOOK_BAR_LINE), bars // 2 + 1)
 
     async def test_the_hooks_picture_goes_with_the_hook(self):
         await self.choose(genre=A_GENRE_WITH_RHYTHMS)

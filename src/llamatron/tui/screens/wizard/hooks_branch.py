@@ -16,15 +16,16 @@
 """The song's hook in the wizard, and its second hook.
 
 The hook is the line of the chorus that returns, the few notes a listener goes away with, and
-it owns the song's highest note. The panel says where it is sung, who plays it in the intro,
-and how it is written: a behavior, the kind of figure it is, and a few gauges, each the
-genre's until moved. A second hook is a short tag, written unlike the hook and under its top,
-sung in another kind of section. The picture under the fields is the hook's notes.
+it owns the song's highest note. The hook is a part of its section's melody, never a thing
+beside it: the panel says where it is sung, which bars of that section are the hook and who
+plays it in the intro, and its picture is the whole section's notes with the hook's bars in a
+frame. The notes are edited as the section's, and how the hook is written, its behavior and its
+gauges, is on that section's panel (section_melody_branch.py). A second hook is a short tag,
+written unlike the hook and under its top, sung in another kind of section.
 """
 
 from rich.text import Text
 
-from llamatron.macro_composer import hook_writing
 from llamatron.strings import labels, legends, messages
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import INDENT, Style
@@ -61,42 +62,28 @@ class HooksBranch(Branch):
 
     def main_is_set(self):
         choices = self.choices()
-        moved = any(choices.writing_gauge_is_moved(part=hook_writing.HOOK_WRITING, name=name) for name in choices.hook_gauges())
-        return choices.get_intro_hook() is not None or moved or (choices.writes_hook() and choices.get_hook_behavior() != choices.genre_hook_behavior())
+        return choices.get_intro_hook() is not None
 
     def main_fields(self):
-        """Return the main hook's fields: where it is sung, who plays it in the intro, and how it is written, its behavior and its
-        gauges; a genre whose songs have no hook unless asked has the switch that asks first."""
+        """Return the main hook's fields: where it is sung, which bars of that section are the hook and who plays it in the intro;
+        a genre whose songs have no hook unless asked has the switch that asks first."""
         choices = self.choices()
         page = self.page()
         switch = [] if choices.usual_hook() and choices.has_hook() else [Toggle(label=labels.MSG_WIZARD_MAIN_HOOK_LABEL, on=choices.has_hook(), set=page.choosing(choices.set_hook))]
         if not choices.has_hook():
             return switch
         sung_in = Field(label=labels.MSG_WIZARD_SUNG_IN_LABEL, value=lambda: choices.hook_line_place()[0])
-        fields = [*switch, sung_in, *self.intro_hook_fields()]
+        fields = [*switch, sung_in, *self.bars_fields(), *self.intro_hook_fields()]
         if choices.hook_is_own():
             # A hook written by hand in a song made before melodies were patterns is the person's, and Bksp gives the wizard's back.
             return [*fields, Field(label=labels.MSG_WIZARD_HOOK_NOTES_LABEL, value=lambda: labels.MSG_WIZARD_HOOK_NOTES_OWN, clear=lambda: page.choosing(lambda nothing: choices.set_hook_line(None))(None),
                                    clear_what=legends.MSG_TUNE_USUAL_WHAT)]
-        return fields + self.writing_fields()
+        return fields
 
-    def writing_fields(self):
-        """Return the fields of how the hook is written: its behavior, the genre's said to be so, and the gauges that change a hook of that behavior."""
-        choices = self.choices()
-        page = self.page()
-        if not choices.writes_hook():
-            return []
-        usual = choices.genre_hook_behavior()
-        values = list(hook_writing.BEHAVIORS)
-        names = [labels.MSG_WIZARD_VALUE_FROM.format(value=value, origin=labels.MSG_WIZARD_USUAL_MELODY) if value == usual else value for value in values]
-        now = choices.get_hook_behavior()
-        behavior = ChoiceField(page=page, label=labels.MSG_WIZARD_BEHAVIOR_LABEL, choices=values, names=names, current=now, shown=names[values.index(now)], set=page.choosing(choices.set_hook_behavior))
-        return [behavior, *(self.gauge_field(name) for name in choices.hook_gauges())]
-
-    def gauge_field(self, name):
-        choices = self.choices()
-        return self.writing_gauge_field(label=labels.MSG_WIZARD_HOOK_GAUGE_LABELS[name], position=choices.get_hook_gauge(name), moved=choices.writing_gauge_is_moved(part=hook_writing.HOOK_WRITING, name=name),
-                                        set_position=lambda position: choices.set_hook_gauge(name=name, position=position))
+    def bars_fields(self):
+        """Return the field that says which bars of its section are the hook."""
+        bars = self.choices().hook_bars()
+        return [] if bars is None else [Field(label=labels.MSG_WIZARD_HOOK_BARS_LABEL, value=lambda: labels.MSG_WIZARD_HOOK_BARS.format(first=bars[0], last=bars[1]))]
 
     def intro_hook_fields(self):
         """Return the field of who plays the hook in the intro, before anybody sings it, where somebody can."""
@@ -125,9 +112,15 @@ class HooksBranch(Branch):
         page = self.page()
         if not choices.has_hook():
             return []
-        buttons = [Button(label=labels.MSG_WIZARD_LISTEN_BUTTON, enter=lambda: page.listen_to(self.listens()), enter_what=legends.MSG_LISTEN_WHAT)]
-        if not choices.hook_is_own():
+        kind = choices.hook_kind()
+        buttons = []
+        if choices.tune_player_in(kind) is not None:
+            # The hook's notes are its section's: the editor opens on the whole section.
+            buttons.append(Button(label=labels.MSG_WIZARD_EDIT_KIND_NOTES_BUTTON.format(kind=kind.capitalize()), enter=lambda: page.edit_tune(kind), enter_what=legends.MSG_WIZARD_EDIT_NOTES_WHAT))
+        if not choices.hook_is_own() and not choices.tune_is_own(kind):
+            # Notes written by hand are never written over by another hook.
             buttons.append(Button(label=labels.MSG_WIZARD_REGENERATE_BUTTON, enter=self.regenerate, enter_what=legends.MSG_REGENERATE_WHAT))
+        buttons.append(Button(label=labels.MSG_WIZARD_LISTEN_BUTTON, enter=lambda: page.listen_to(self.listens()), enter_what=legends.MSG_LISTEN_WHAT))
         if choices.has_second_hook():
             buttons.append(Button(label=labels.MSG_WIZARD_NEW_SECOND_HOOK_BUTTON, enter=lambda: page.choosing(lambda nothing: choices.new_second_hook())(None), enter_what=legends.MSG_WIZARD_NEW_HOOK_WHAT))
         return buttons
@@ -157,10 +150,24 @@ class HooksBranch(Branch):
         return messages.MSG_WIZARD_LISTEN_HOOK, choices.hook_scene(), choices.tune_player()
 
     def notes(self, width):
-        """Return the picture of the main hook, while the song has one."""
+        """Return the picture of the main hook, while the song has one: the notes of the whole section that says the hook, as they
+        stand, with the hook's bars in a frame, under which bars those are and whose the notes are. Where the section's notes cannot
+        be drawn so, the hook's own two bars are drawn alone."""
         choices = self.choices()
-        hook = choices.hook_notes() if choices.is_ready() and choices.can_have_hook() else None
-        if hook is None:
+        if not choices.is_ready() or not choices.can_have_hook():
             return []
-        made = (messages.MSG_WIZARD_HOOK_OWN if choices.hook_is_own() else messages.MSG_WIZARD_HOOK_MADE).format(player=choices.role_title(choices.tune_player()))
-        return [*(Text(INDENT + line) for line in picture_of(hook=hook, width=width)), Text(INDENT + made, style=Style.DIM)]
+        hook = choices.hook_notes()
+        kind = choices.hook_kind()
+        section = choices.hook_section_notes()
+        bars = choices.hook_bars()
+        if hook is None and section is None:
+            return []
+        if choices.hook_is_own():
+            made = messages.MSG_WIZARD_HOOK_OWN
+        else:
+            made = messages.MSG_WIZARD_NOTES_BY_HAND if choices.tune_is_own(kind) else messages.MSG_WIZARD_HOOK_MADE
+        if hook is not None and (section is None or bars is None or choices.hook_is_own()):
+            return [*(Text(INDENT + line) for line in picture_of(hook=hook, width=width)), Text(INDENT + made, style=Style.DIM)]
+        said = messages.MSG_WIZARD_HOOK_IS_BARS.format(first=bars[0], last=bars[1], kind=kind)
+        # The two lines that say which bars and whose notes come first, so that a tall picture never pushes them off the page.
+        return [Text(INDENT + said, style=Style.DIM), Text(INDENT + made, style=Style.DIM), *(Text(INDENT + line) for line in picture_of(hook=section, width=width, lit=bars))]

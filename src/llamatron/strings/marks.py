@@ -437,6 +437,11 @@ MSG_WIZARD_HOOK_GAP = ' '
 MSG_WIZARD_HOOK_BAR_LINE = '│'
 MSG_WIZARD_HOOK_FLOOR = '─'
 MSG_WIZARD_HOOK_FLOOR_BAR = '┴'
+# The frame around the bars that are the hook, in a picture of the hook's whole section: its top, with its name, and its bottom.
+MSG_WIZARD_HOOK_FRAME_TOP = '╔{name:═^{width}}╗'
+MSG_WIZARD_HOOK_FRAME_BOTTOM = '╚{rule}╝'
+MSG_WIZARD_HOOK_FRAME_RULE = '═'
+MSG_WIZARD_HOOK_FRAME_NAME = ' HOOK '
 # The Tune dialog: the mark under the cursor's step, the shading of the note under the cursor, and what the cursor is on.
 # The Lines dialog: a line's row, what the cursor's line is, and its values.
 MSG_LINES_COUNT_OWN = '{count} ({own} your own)'

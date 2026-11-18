@@ -303,7 +303,7 @@ clouds; generate and test, with motif development and counterpoint last.
 - On the wizard's page (`tui/screens/wizard/`): a genre whose template has `song_plan` plans every song from the start, and the Form
   panel's Song plan switch turns the plan off (`WizardChoices.has_song_plan`, kept as false in the choices). The Form panel has
   Contrast, each section's plan in a line, and the Form questions button (`form_questions`, `set_form_from_answers`: verses first,
-  pre-choruses, a bridge, solos, a drum solo, last choruses). The Hook panel has Behavior and the gauges (`set_hook_behavior`, `set_hook_gauge`; the chorus's panel `set_body_gauge`) and
+  pre-choruses, a bridge, solos, a drum solo, last choruses). The hook is a part of its section's melody (the user's design): the Hook panel says where the hook is sung, which bars of that section are the hook (`hook_bars`), and draws the whole section's notes with those bars in a frame (`hook_section_notes`, `hook_picture.py`), with Edit Chorus Notes opening the section; the panel of the section that says the hook, the Chorus panel in most genres, has under a heading Hook the Behavior and the gauges (`set_hook_behavior`, `set_hook_gauge`; the chorus's panel `set_body_gauge`) and
   Intro hook (`set_intro_hook`: the answering player or the singer says the hook in the intro). The Melody panel has Phrasing,
   Breath, Line lengths and Early notes (`set_phrasing_way`; early notes are a count of lines in four, never chance). A section's
   panel has Energy, Shape (`shapes:` under a kind in the template, for a solo, a pre-chorus and a bridge), Rises, Leaves with and
