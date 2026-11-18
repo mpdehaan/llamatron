@@ -363,3 +363,36 @@ the build. Two further points:
   stop, a fade, a thinning to one voice, a slowing, free time, and a final key. A bar may be longer or shorter than its
   neighbours, or change meter for one bar. A second lead may answer in the melody's gaps. (practice)
 
+
+## Intros as Shapes (the professor's review of an intro panel)
+
+(practice throughout)
+
+- An arranger picks a known intro shape and then adjusts two or three things; nobody fills in a table of material, parts, players
+  and bars. Bars follow the phrase (4 or 8, 2 for a tag) and the order players join follows the genre.
+- A real multi-part intro is two gestures, a statement and an arrival, with now and then a prelude in front: three parts at most.
+- The shapes: a count or fill and straight in (0 to 1 bar: punk, sixties pop, rock and roll, a blues shuffle); the riff alone and
+  then the band on the riff (4+4, 2+2 when fast: hard rock, arena rock); the hook stated by an instrument and then a drop to the
+  verse groove (4 or 8: sixties pop, soul, arena rock, synth pop); a vamp on one or two chords by the rhythm section with a lick
+  over it (2 or 4: soul, funk, disco); a layered build, one element a phrase (8 to 32: house, techno, disco, funk); a prelude and
+  then the hit (atmosphere or one instrument for 4 to 8, then the band lands on the riff or hook: arena rock, electronic); the
+  turnaround from the top (the form's last 4 bars or the V chord: blues, rock and roll); chorus first (the song opens on the sung
+  chorus, which is a decision of form).
+- Drums alone is no shape of its own: it is the fill lengthened or the first layer of a build.
+- Defaults: arena rock a prelude and hit or the riff alone, 8 to 16 bars; hard rock the riff alone then the band, 4+4; punk a
+  count, or 2+2; folk rock one player's figure then the band, 4+4; sixties pop the hook stated in 4 or a pickup, never over 8;
+  soul a vamp with a lick, 4 (8 for a ballad); funk a vamp or a short build from drums or guitar, 4 to 8; disco a build from
+  the drums, 16; house and techno a build from the kick, 16 to 32; blues the turnaround, 4.
+- The rule that matters more than the number of parts: an intro must differ from the first verse in at least one of density,
+  level, register or material, so that the verse is heard as a change. The whole band on the verse's chords at the verse's level
+  is dull at any length.
+- Holding the bass back for the verse or the chorus is the cheapest intro device that works.
+- Exits by shape: a fill and crash after the riff, the prelude or the turnaround, never after a fill that was the intro and never
+  in house or techno; a drop to bass and drums only after an intro at the chorus's level; a stop with a beat of silence after the
+  riff, the hook, the prelude or the turnaround, never after a vamp; a build on a held chord after a prelude or a layered build;
+  carrying on under the verse is the one exit of a vamp and of a layered build, and the instrument that stated the hook stops
+  for the singer even where the groove carries on. Electronic styles also leave by a riser's release or a bar without drums.
+- What returns: a riff or a stated hook comes back after the chorus nearly always; a prelude returns only as the outro; a layered
+  build returns reversed as the outro; a count and a turnaround do not return.
+- The intro is decided after the hook, the riff, the chords and the form exist, since it quotes them, and together with the
+  turnarounds and the ending, as one step of framing the song.
