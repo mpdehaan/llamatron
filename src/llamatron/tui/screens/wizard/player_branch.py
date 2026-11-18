@@ -26,8 +26,8 @@ from llamatron.macro_composer.interplay import LEAST_BUSY as LEAST_BUSY_BESIDE, 
 from llamatron.macro_composer.wizard_choices import FEWEST_ROW_CELLS, MOST_ROW_CELLS, FEWEST_FILLS, FILLS_TRAITS, HIGHEST_PLACE, LEAST_BUSY, LOWEST_PLACE, MOST_BUSY, MOST_FILLS
 from llamatron.tui.dialogs.row_dialog import RowDialog
 from llamatron.tui.note_names import note_shown
-from llamatron.tui.screens.shared.field import Button, Cells, ChoiceField, Field, NumberField, Toggle
-from llamatron.tui.screens.wizard.branch import Branch, gauge_shown
+from llamatron.tui.screens.shared.field import Button, Cells, ChoiceField, Field, NumberField, Toggle, gauge_shown
+from llamatron.tui.screens.wizard.branch import Branch
 
 # A field is worth showing once there is more than one way to choose.
 A_CHOICE = 2

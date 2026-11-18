@@ -60,8 +60,8 @@ SPARSE = 'sparse'
 LIGHT = 'light'
 AS_WRITTEN = 'as written'
 BUSY = 'busy'
-BUSIEST = 'busiest'
-ACTIVITIES = (SPARSE, LIGHT, AS_WRITTEN, BUSY, BUSIEST)
+VERY_BUSY = 'very busy'
+ACTIVITIES = (SPARSE, LIGHT, AS_WRITTEN, BUSY, VERY_BUSY)
 # How loud a musician plays against the part as written, in steps, and what one step is in velocity.
 QUIETEST = -3
 LOUDEST = 3
@@ -72,13 +72,13 @@ TIGHT = 0
 LOOSEST = 3
 LOOSENESS_STEP = 4
 # What a musician does while the tune sounds on another track.
-NOT_AT_ALL = 'not at all'
-A_LITTLE = 'a little'
-A_LOT = 'a lot'
+NO_GIVING_WAY = 'none'
+GIVES_WAY_SOME = 'some'
+GIVES_WAY_OFTEN = 'often'
 IN_THE_GAPS = 'plays in the gaps'
-GIVES_WAY = (NOT_AT_ALL, A_LITTLE, A_LOT, IN_THE_GAPS)
+GIVES_WAY = (NO_GIVING_WAY, GIVES_WAY_SOME, GIVES_WAY_OFTEN, IN_THE_GAPS)
 # How much softer a note under the tune is, by how far the musician gives way.
-SOFTER_UNDER_TUNE = {A_LITTLE: 12, A_LOT: 22}
+SOFTER_UNDER_TUNE = {GIVES_WAY_SOME: 12, GIVES_WAY_OFTEN: 22}
 # Which notes of a bar a musician leans on.
 NO_ACCENTS = 'none'
 DOWNBEAT = 'downbeat'
@@ -141,7 +141,7 @@ class Musician(ClipGenerator):
     LOWEST = None
     HIGHEST = None
     # What the musician does with a setting left out.
-    USUAL_GIVES_WAY = NOT_AT_ALL
+    USUAL_GIVES_WAY = NO_GIVING_WAY
     USUAL_NOTES = AS_WRITTEN
 
     def __init__(self, *, bar, beat, surroundings=None, activity=AS_WRITTEN, loudness=USUAL_LOUDNESS, looseness=TIGHT, gives_way=None, accents=NO_ACCENTS, notes=None,
@@ -219,20 +219,20 @@ class Musician(ClipGenerator):
                     part.silence()
 
     def _play_activity(self, parts):
-        """Play fewer of the part's notes or strike its long notes again: a sparse player keeps the notes on the bar's halves and a light one the notes on the beats, each with every note a beat long or longer; a busy player strikes a note of a quarter or longer twice and the busiest a note of an eighth or longer twice."""
+        """Play fewer of the part's notes or strike its long notes again: a sparse player keeps the notes on the bar's halves and a light one the notes on the beats, each with every note a beat long or longer; a busy player strikes a note of a quarter or longer twice and a very busy one a note of an eighth or longer twice."""
         for part in _notes_of(parts):
             if self._activity in (SPARSE, LIGHT):
                 grid = self._bar / 2 if self._activity == SPARSE and (self._bar / 2 / self._beat).is_whole() else self._beat
                 if part.heard < self._beat and not self._on_grid(part=part, grid=grid):
                     part.silence()
-            elif self._activity in (BUSY, BUSIEST):
+            elif self._activity in (BUSY, VERY_BUSY):
                 if part.heard >= (QUARTER if self._activity == BUSY else EIGHTH):
                     part.strikes = 2
 
     def _give_way(self, parts):
         """Make room for the tune while it sounds on another track: softer, softer and only on the beats, or silent until the tune rests."""
         tune = self._surroundings.tune
-        if tune is None or self._gives_way == NOT_AT_ALL:
+        if tune is None or self._gives_way == NO_GIVING_WAY:
             return
         for part in _notes_of(parts):
             if not tune.sounds_at(part.start):
@@ -241,7 +241,7 @@ class Musician(ClipGenerator):
                 part.silence()
                 continue
             part.louder_by(-SOFTER_UNDER_TUNE[self._gives_way])
-            if self._gives_way == A_LOT and part.heard < self._beat and not self._on_grid(part=part, grid=self._beat):
+            if self._gives_way == GIVES_WAY_OFTEN and part.heard < self._beat and not self._on_grid(part=part, grid=self._beat):
                 part.silence()
 
     def _hold_notes(self, parts):
@@ -293,7 +293,7 @@ class RhythmGuitarist(Musician):
     __slots__ = ()
     LOWEST = 40
     HIGHEST = 76
-    USUAL_GIVES_WAY = A_LITTLE
+    USUAL_GIVES_WAY = GIVES_WAY_SOME
 
 
 class Bassist(Musician):
@@ -316,7 +316,7 @@ class BackingPiano(Musician):
     __slots__ = ()
     LOWEST = 36
     HIGHEST = 96
-    USUAL_GIVES_WAY = A_LITTLE
+    USUAL_GIVES_WAY = GIVES_WAY_SOME
 
 
 class BackingOrgan(Musician):
@@ -325,7 +325,7 @@ class BackingOrgan(Musician):
     __slots__ = ()
     LOWEST = 36
     HIGHEST = 84
-    USUAL_GIVES_WAY = A_LITTLE
+    USUAL_GIVES_WAY = GIVES_WAY_SOME
     USUAL_NOTES = HELD_NOTES
 
 
@@ -335,7 +335,7 @@ class BackingSynth(Musician):
     __slots__ = ()
     LOWEST = 36
     HIGHEST = 96
-    USUAL_GIVES_WAY = A_LITTLE
+    USUAL_GIVES_WAY = GIVES_WAY_SOME
     USUAL_NOTES = HELD_NOTES
 
 
@@ -391,7 +391,7 @@ class BackupSingers(Musician):
     __slots__ = ()
     LOWEST = 48
     HIGHEST = 79
-    USUAL_GIVES_WAY = A_LITTLE
+    USUAL_GIVES_WAY = GIVES_WAY_SOME
     USUAL_NOTES = HELD_NOTES
 
 
@@ -401,7 +401,7 @@ class HornSection(Musician):
     __slots__ = ()
     LOWEST = 46
     HIGHEST = 82
-    USUAL_GIVES_WAY = A_LITTLE
+    USUAL_GIVES_WAY = GIVES_WAY_SOME
     USUAL_NOTES = SHORT_NOTES
 
 
@@ -411,7 +411,7 @@ class StringSection(Musician):
     __slots__ = ()
     LOWEST = 36
     HIGHEST = 96
-    USUAL_GIVES_WAY = A_LITTLE
+    USUAL_GIVES_WAY = GIVES_WAY_SOME
     USUAL_NOTES = HELD_NOTES
 
 

@@ -139,10 +139,3 @@ class Branch:
         """Return whether any field of the branch does something, so that a branch only to be read takes no cursor."""
         # The legend asks at every key, and making a panel's fields may mean making the song, so the answer is kept with the choices.
         return self.choices().remembered(key=(EDITABLE_ANSWER, type(self).__name__, self.name()), compute=lambda: any(field.enter or field.adjust for field in self.fields()))
-
-
-def gauge_shown(*, place, lowest, highest, said=None):
-    """Return a number drawn as a horizontal gauge with the number after it, as the players' gauges are: a block for each place up to the number's,
-    and what is said of the number, such as where it comes from, in place of the bare number."""
-    drawn = marks.MSG_WIZARD_GAUGE_FULL * (place - lowest + 1) + marks.MSG_WIZARD_GAUGE_EMPTY * (highest - place)
-    return marks.MSG_WIZARD_PLAYER_GAUGE_SHOWN.format(gauge=drawn, place=place if said is None else said)

@@ -21,7 +21,7 @@ from llamatron.composition.generator_settings import MUSICIAN_DEFAULTS, MUSICIAN
 from llamatron.generators import musician
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings
-from llamatron.tui.screens.shared.field import ChoiceField, NameField, NumberField, Toggle
+from llamatron.tui.screens.shared.field import ChoiceField, NameField, NumberField, Toggle, gauge_shown
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.tui.text import sorted_names
@@ -43,16 +43,8 @@ class MusicianEditor(ShowsNamedItem, FieldPage):
         return self.document().song().get_generator_settings(kind=GeneratorKind.MUSICIAN, name=self.item)
 
     def store(self, *, setting, value):
-        """Keep a setting, left out of the file where it is what the musician does unasked: for how the musician gives way and holds its notes, what the instrument does."""
-        self.document().set_generator_setting(section=Section.MUSICIANS, name=self.item, setting=setting, value=None if value == self.unasked(setting) else value)
-
-    def unasked(self, setting):
-        """Return what the musician does with a setting left out, or None for a setting with nothing unasked, as a track's name."""
-        if setting == MusicianSetting.GIVES_WAY:
-            return self.musician().musician_class().USUAL_GIVES_WAY
-        if setting == MusicianSetting.NOTES:
-            return self.musician().musician_class().USUAL_NOTES
-        return MUSICIAN_DEFAULTS.get(setting)
+        """Keep a setting, left out of the file where it is what a musician does unasked."""
+        self.document().set_generator_setting(section=Section.MUSICIANS, name=self.item, setting=setting, value=None if value == MUSICIAN_DEFAULTS.get(setting) else value)
 
     def store_section(self, *, section, name, value):
         """Keep what a kind of section has of its own, left out where it is what a section does unasked."""
@@ -76,8 +68,23 @@ class MusicianEditor(ShowsNamedItem, FieldPage):
         """Return a field that chooses one of a setting's values from a list, in the list's own order."""
         return ChoiceField(page=self, label=label, choices=list(choices), current=self.musician().get_own(setting), set=lambda chosen: self.store(setting=setting, value=chosen))
 
-    def number(self, *, label, setting, lowest, highest):
-        return NumberField(page=self, label=label, number=self.musician().get_own(setting), lowest=lowest, highest=highest, set=lambda number: self.store(setting=setting, value=number))
+    def habit(self, *, label, setting, choices):
+        """Return a field for what the instrument decides until the musician is told otherwise: left to the instrument, the field shows the instrument's way and says so, and the list's first choice leaves it to the instrument again."""
+        own = self.musician()
+        offered = [labels.MSG_MUSICIAN_INSTRUMENT_CHOICE, *choices]
+        left_to_instrument = own.follows_instrument(setting)
+        usual = own.get_own(setting)
+        return ChoiceField(
+            page=self, label=label, choices=offered, current=labels.MSG_MUSICIAN_INSTRUMENT_CHOICE if left_to_instrument else usual,
+            shown=marks.MSG_FROM_INSTRUMENT_SHOWN.format(value=usual) if left_to_instrument else usual,
+            set=lambda chosen: self.store(setting=setting, value=None if chosen == labels.MSG_MUSICIAN_INSTRUMENT_CHOICE else chosen), clear=lambda: self.store(setting=setting, value=None),
+        )
+
+    def gauge(self, *, label, setting, lowest, highest):
+        """Return a number stepped or typed and drawn as a horizontal gauge, which is empty at the lowest."""
+        number = self.musician().get_own(setting)
+        return NumberField(page=self, label=label, number=number, shown=gauge_shown(place=number, lowest=lowest + 1, highest=highest), lowest=lowest, highest=highest,
+                           set=lambda chosen: self.store(setting=setting, value=chosen))
 
     def sections(self):
         """Return the kinds of section the musician can be told about: those the song's scenes are, and those the musician already has settings for, in the order kinds of section are listed."""
@@ -109,11 +116,11 @@ class MusicianEditor(ShowsNamedItem, FieldPage):
             *([self.track_field(label=labels.MSG_CHORDS_FROM_LABEL, setting=MusicianSetting.CHORDS_FROM, named=own.get_chords_from())] if pitched else []),
             self.track_field(label=labels.MSG_TUNE_FROM_LABEL, setting=MusicianSetting.TUNE_FROM, named=own.get_tune_from()),
             self.choice(label=labels.MSG_MUSICIAN_ACTIVITY_LABEL, setting=MusicianSetting.ACTIVITY, choices=musician.ACTIVITIES),
-            self.number(label=labels.MSG_MUSICIAN_LOUDNESS_LABEL, setting=MusicianSetting.LOUDNESS, lowest=musician.QUIETEST, highest=musician.LOUDEST),
-            self.number(label=labels.MSG_MUSICIAN_LOOSENESS_LABEL, setting=MusicianSetting.LOOSENESS, lowest=musician.TIGHT, highest=musician.LOOSEST),
-            self.choice(label=labels.MSG_MUSICIAN_GIVES_WAY_LABEL, setting=MusicianSetting.GIVES_WAY, choices=musician.GIVES_WAY),
+            self.gauge(label=labels.MSG_MUSICIAN_LOUDNESS_LABEL, setting=MusicianSetting.LOUDNESS, lowest=musician.QUIETEST, highest=musician.LOUDEST),
+            self.gauge(label=labels.MSG_MUSICIAN_LOOSENESS_LABEL, setting=MusicianSetting.LOOSENESS, lowest=musician.TIGHT, highest=musician.LOOSEST),
+            self.habit(label=labels.MSG_MUSICIAN_GIVES_WAY_LABEL, setting=MusicianSetting.GIVES_WAY, choices=musician.GIVES_WAY),
             self.choice(label=labels.MSG_MUSICIAN_ACCENTS_LABEL, setting=MusicianSetting.ACCENTS, choices=musician.ACCENTS),
-            self.choice(label=labels.MSG_MUSICIAN_NOTES_LABEL, setting=MusicianSetting.NOTES, choices=musician.NOTE_LENGTHS),
+            self.habit(label=labels.MSG_MUSICIAN_NOTES_LABEL, setting=MusicianSetting.NOTES, choices=musician.NOTE_LENGTHS),
             *([self.choice(label=labels.MSG_MUSICIAN_RANGE_LABEL, setting=MusicianSetting.RANGE, choices=musician.RANGES)] if pitched else []),
         ]
         for section in self.sections():

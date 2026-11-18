@@ -158,9 +158,9 @@ class TestMusicianTouch(unittest.TestCase):
         self.assertEqual(starts(heard(band_data(settings=plain(**{MusicianSetting.ACTIVITY: musician.SPARSE})))), [half * HALF for half in range(4)])
         self.assertEqual(starts(heard(band_data(settings=plain(**{MusicianSetting.ACTIVITY: musician.LIGHT})))), [beat * QUARTER for beat in range(8)])
 
-    def test_a_busy_player_leaves_eighths_alone_and_the_busiest_strikes_each_twice(self):
+    def test_a_busy_player_leaves_eighths_alone_and_a_very_busy_one_strikes_each_twice(self):
         self.assertEqual(len(heard(band_data(settings=plain(**{MusicianSetting.ACTIVITY: musician.BUSY})))), STEPS)
-        notes = heard(band_data(settings=plain(**{MusicianSetting.ACTIVITY: musician.BUSIEST})))
+        notes = heard(band_data(settings=plain(**{MusicianSetting.ACTIVITY: musician.VERY_BUSY})))
         self.assertEqual(starts(notes), [step * SIXTEENTH for step in range(STEPS * 2)])
 
     def test_loudness_moves_every_note_by_steps(self):
@@ -225,13 +225,13 @@ class TestMusicianRoundTheBand(unittest.TestCase):
         self.assertEqual(len(heard(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: LEAD}), tune=True))), STEPS)
 
     def test_giving_way_a_little_is_softer_under_the_tune_and_a_lot_also_leaves_the_beats_alone(self):
-        little = heard(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: LEAD, MusicianSetting.GIVES_WAY: musician.A_LITTLE}), tune=True))
+        little = heard(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: LEAD, MusicianSetting.GIVES_WAY: musician.GIVES_WAY_SOME}), tune=True))
         self.assertEqual(len(little), STEPS)
         under = [note[VELOCITY] for note in little if note[START] - (note[START] // BAR) * BAR < HALF]
         clear = [note[VELOCITY] for note in little if note[START] - (note[START] // BAR) * BAR >= HALF]
-        self.assertEqual(set(under), {WRITTEN_VELOCITY - musician.SOFTER_UNDER_TUNE[musician.A_LITTLE]})
+        self.assertEqual(set(under), {WRITTEN_VELOCITY - musician.SOFTER_UNDER_TUNE[musician.GIVES_WAY_SOME]})
         self.assertEqual(set(clear), {WRITTEN_VELOCITY})
-        lot = heard(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: LEAD, MusicianSetting.GIVES_WAY: musician.A_LOT}), tune=True))
+        lot = heard(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: LEAD, MusicianSetting.GIVES_WAY: musician.GIVES_WAY_OFTEN}), tune=True))
         self.assertEqual(starts(lot)[:6], [0, QUARTER, HALF, HALF + EIGHTH, HALF + QUARTER, HALF + QUARTER + EIGHTH])
 
     def test_with_no_tune_track_named_nobody_gives_way(self):

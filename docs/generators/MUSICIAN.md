@@ -20,11 +20,11 @@ Tune from names the track that carries the tune. The Musician listens to that tr
 
 ## Touch
 
-Activity says how much of the part the player plays. With "light" the player keeps the notes that start on a beat and every note a beat long or longer, and with "sparse" the notes on the first and third beats. With "busy" each note a quarter note or longer is struck twice, and with "busiest" each note an eighth note or longer.
+Activity says how much of the part the player plays. With "light" the player keeps the notes that start on a beat and every note a beat long or longer, and with "sparse" the notes on the first and third beats. With "busy" each note a quarter note or longer is struck twice, and with "very busy" each note an eighth note or longer.
 
 Loudness moves every note louder or softer, from -3 to 3. Looseness, from 0 to 3, lets each note come out a little louder or softer than the last, as a hand does; 0 is a player who never wavers.
 
-Gives way says what the player does while the tune sounds: "not at all"; "a little", softer; "a lot", softer still and only the notes on the beats; or "plays in the gaps", silent until the tune rests.
+Gives way says what the player does while the tune sounds: "none"; "some", softer; "often", softer still and only the notes on the beats; or "plays in the gaps", silent until the tune rests.
 
 Accents says which notes of the bar the player leans on: "downbeat", the first note of each bar; "backbeat", beats two and four; or "offbeats", the notes between the beats.
 
@@ -57,10 +57,10 @@ Played says how the part is played there:
 | Instrument | The fifteen players named above | "rhythm guitarist" |
 | Chords from | A track, or "(none)" | "(none)" |
 | Tune from | A track, or "(none)" | "(none)" |
-| Activity | "sparse", "light", "as written", "busy", "busiest" | "as written" |
+| Activity | "sparse", "light", "as written", "busy", "very busy" | "as written" |
 | Loudness | -3 to 3 | 0 |
 | Looseness | 0 to 3 | 0 |
-| Gives way | "not at all", "a little", "a lot", "plays in the gaps" | What the instrument does |
+| Gives way | "none", "some", "often", "plays in the gaps" | What the instrument does |
 | Accents | "none", "downbeat", "backbeat", "offbeats" | "none" |
 | Notes | "as written", "held", "short" | What the instrument does |
 | Range | "low", "as written", "high" | "as written" |

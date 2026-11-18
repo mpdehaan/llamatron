@@ -24,8 +24,8 @@ from llamatron.macro_composer.song_plan import ENERGY, FADES, HIGHEST_ENERGY, LO
 from llamatron.macro_composer.wizard_choices import LEAVES_AS_JOIN, LINE_OWN, SCALE_TYPES, SHAPE_OF_SECTION, chords_as_text
 from llamatron.music.note import ROOT_NAMES
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.screens.shared.field import ChoiceField, Field, NumberField, Toggle
-from llamatron.tui.screens.wizard.branch import Branch, gauge_shown
+from llamatron.tui.screens.shared.field import ChoiceField, Field, NumberField, Toggle, gauge_shown
+from llamatron.tui.screens.wizard.branch import Branch
 
 # What two sections of one name are told apart by: the section's number in the form and its name.
 SECTION_KEY = '{number} {name}'
