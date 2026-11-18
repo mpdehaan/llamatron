@@ -24,6 +24,7 @@ it then sketches one by rule from the style's melody habits and the song's seed 
 MacroComposer composes, so every choice can be read and changed there.
 """
 
+import copy
 import math
 import os
 import random
@@ -51,7 +52,7 @@ from llamatron.composition.named_scale import scale_type_called
 from llamatron.composition.limits import MAX_GM_SOUND, MAX_PROGRESSION_CHORDS, MAX_STEP_SIZE, MIN_GM_SOUND
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.errors import ERR_NO_SUCH_WAY_BESIDE, ERR_PIECE_SOUND, ERR_BREAK_CUT, ERR_NO_STYLE_FORM, ERR_NO_SUCH_BREAK, ERR_NO_STYLE_FORMS, ERR_NO_STYLE_KIND, ERR_NO_SUCH_SECTION, ERR_NO_TRAIT_VALUE, ERR_PICK_NEEDS
-from llamatron.strings.macro_composer import MSG_CHORDS_INSTRUMENT, MSG_CHORDS_TRACK, MSG_FOLLOW_CHORDS_NAME, MSG_PIECE_INSTRUMENT, MSG_MADE_PICK, MSG_MADE_SCENE, MSG_MADE_SONG_NOTES, MSG_PART_AT_LEVEL, MSG_PART_BESIDE, MSG_PART_OF_SECTION, MSG_PLAYED_BY, MSG_PLAYED_BY_OWN, MSG_REPEATED_SCENE, MSG_SECTION_START_PART, MSG_TIMING_CHAIN
+from llamatron.strings.macro_composer import MSG_OWN_TUNE_PART, MSG_CHORDS_INSTRUMENT, MSG_CHORDS_TRACK, MSG_FOLLOW_CHORDS_NAME, MSG_PIECE_INSTRUMENT, MSG_MADE_PICK, MSG_MADE_SCENE, MSG_MADE_SONG_NOTES, MSG_PART_AT_LEVEL, MSG_PART_BESIDE, MSG_PART_OF_SECTION, MSG_PLAYED_BY, MSG_PLAYED_BY_OWN, MSG_REPEATED_SCENE, MSG_SECTION_START_PART, MSG_TIMING_CHAIN
 
 # The fields of a style template.
 NAME = 'name'
@@ -192,6 +193,8 @@ CRASH_START = 'crash'
 ENDS = 'ends'
 # A song's pick of the engine its tunes are made by, and a role's own voice and habits for it.
 MELODY_ENGINE = 'melody_engine'
+# A song's tunes written by hand, each a pattern's data under its kind of section, which take the place of the tune that would be written.
+OWN_TUNES = 'own_tunes'
 VOICE = 'voice'
 HABITS = 'habits'
 # A song's own habits for a player, by the player's role, which come over the genre's for that player.
@@ -1182,6 +1185,13 @@ def arranged(*, style, song):
                         shaped.append(whole_part)
                         figure = whole_part
                     play[role[ROLE]] = {PART: figure, CHAINS: [chain]}
+                    continue
+                own_tune = song.get(OWN_TUNES, {}).get(section[KIND]) if role is tune_role else None
+                if own_tune is not None:
+                    # A tune written by hand is played as written by every section of its kind, and nothing here writes one over it.
+                    part = MSG_OWN_TUNE_PART.format(kind=section[KIND])
+                    parts.setdefault(part, {RAW: copy.deepcopy(own_tune)})
+                    play[role[ROLE]] = {PART: part, ONCE: True, CHAINS: [MSG_TIMING_CHAIN.format(role[ROLE])]}
                     continue
                 part = MSG_PART_OF_SECTION.format(name, role[ROLE])
                 if part not in parts:

@@ -110,6 +110,8 @@ class LlamatronApp(App, inherit_bindings=False):
         # The pattern preview, made when first asked for, beside the transport it shares a clock and FluidSynth with.
         self._pattern_preview = None
         self._preview_beside = None
+        # The set being edited while a draft is held over it, or None with no draft.
+        self._behind_draft = None
         # The song wizard's preview, made when first asked for, beside the same transport.
         self._made_preview = None
         self._made_beside = None
@@ -137,6 +139,28 @@ class LlamatronApp(App, inherit_bindings=False):
         self.pattern_preview().forget()
         self.made_preview().forget()
         self._document = document
+
+    def open_draft(self, document):
+        """Hold a draft set over the set being edited, until close_draft: every page opened meanwhile edits and plays the draft, as
+        the pattern editor does on a tune the song wizard has made and not yet put in a song. Nothing of either set plays on."""
+        self.transport.forget()
+        self.pattern_preview().forget()
+        self.made_preview().forget()
+        self._behind_draft = self._document
+        self._document = document
+
+    def is_drafting(self):
+        """Return whether a draft is held over the set being edited, when the set cannot be saved, opened over or exported."""
+        return self._behind_draft is not None
+
+    def close_draft(self):
+        """Put the set being edited back and return the draft that was held over it."""
+        draft = self._document
+        self.transport.forget()
+        self.pattern_preview().forget()
+        self._document = self._behind_draft
+        self._behind_draft = None
+        return draft
 
     def playback_timer(self, *, seconds, tick):
         """Start the timer that ticks the transport and redraws the page on top while something plays, and return it to be stopped."""

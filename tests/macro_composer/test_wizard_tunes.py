@@ -1,0 +1,145 @@
+# llamatron: a music program
+# Copyright (C) 2026  Michael DeHaan
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+"""The song wizard's tunes: one for each kind of section, the wizard's until a person writes its pattern by hand, and the person's own from then on."""
+
+import unittest
+
+from llamatron.composition.file_format import PatternSetting, Row
+from llamatron.macro_composer.wizard_choices import WizardChoices
+from llamatron.strings import errors
+from tests.support.ui_testing import fixed_text
+
+A_GENRE = 'rock'
+A_SUBGENRE = 'folk rock'
+ANOTHER_GENRE = 'blues'
+A_KIND = 'verse'
+A_KIND_WITH_NO_TUNE = 'intro'
+NOT_A_KIND = 'middle bit'
+A_SEED = 7
+ANOTHER_SEED = 8
+A_DEGREE = 7
+NOT_A_STEP_COUNT = 'many'
+
+
+def chosen():
+    choices = WizardChoices()
+    choices.set_genre(A_GENRE)
+    choices.set_subgenre(A_SUBGENRE)
+    choices.set_seed(A_SEED)
+    return choices
+
+
+def rewritten(pattern):
+    """Return a tune's pattern with every note on one degree, which no tune the wizard writes is."""
+    return {**pattern, Row.DEGREE: [None if degree is None else A_DEGREE for degree in pattern[Row.DEGREE]]}
+
+
+def tunes_played(*, choices, kind):
+    """Return the name of the pattern the tune's player plays in each section of a kind, in the set the choices make."""
+    setlist, name = choices.made_for_listening()
+    player = choices.tune_player()
+    scenes = setlist.get_song(name).get_scenes()
+    return [scene.get_clip_slot(player).get_pattern_name() for place, scene in enumerate(scenes) if choices.section_kind(place) == kind and scene.has_clip_slot(player)]
+
+
+class TestWizardTunes(unittest.TestCase):
+
+    def test_a_kind_of_section_the_tunes_player_plays_in_has_a_tune_and_each_is_listed_once_in_the_forms_order(self):
+        choices = chosen()
+        kinds = choices.tune_kinds()
+        self.assertIn(A_KIND, kinds)
+        self.assertNotIn(A_KIND_WITH_NO_TUNE, kinds)
+        self.assertEqual(len(kinds), len(set(kinds)))
+        in_form = choices.section_kinds_in_form()
+        self.assertEqual(kinds, sorted(kinds, key=in_form.index))
+
+    def test_until_edited_a_tune_is_the_one_the_choices_write_and_follows_them(self):
+        choices = chosen()
+        self.assertFalse(choices.tune_is_own(A_KIND))
+        first = choices.tune_pattern(A_KIND)
+        self.assertIn(choices.tune_pattern_name(A_KIND), tunes_played(choices=choices, kind=A_KIND))
+        choices.set_seed(ANOTHER_SEED)
+        self.assertNotEqual(choices.tune_pattern(A_KIND), first)
+
+    def test_a_tune_written_by_hand_is_played_by_every_section_of_its_kind_and_by_no_other(self):
+        choices = chosen()
+        other = next(kind for kind in choices.tune_kinds() if kind != A_KIND)
+        before = tunes_played(choices=choices, kind=other)
+        own = rewritten(choices.tune_pattern(A_KIND))
+        choices.set_tune_pattern(kind=A_KIND, pattern=own)
+        self.assertTrue(choices.tune_is_own(A_KIND))
+        self.assertEqual(choices.tune_pattern(A_KIND), own)
+        played = tunes_played(choices=choices, kind=A_KIND)
+        self.assertGreater(len(played), 1)
+        self.assertEqual(set(played), {choices.tune_pattern_name(A_KIND)})
+        setlist, _ = choices.made_for_listening()
+        self.assertEqual(setlist.get_pattern(played[0]).to_data()[Row.DEGREE], own[Row.DEGREE])
+        self.assertEqual(tunes_played(choices=choices, kind=other), before)
+
+    def test_what_is_handed_over_and_what_is_handed_back_are_copies(self):
+        choices = chosen()
+        own = rewritten(choices.tune_pattern(A_KIND))
+        choices.set_tune_pattern(kind=A_KIND, pattern=own)
+        note = own[Row.DEGREE].index(A_DEGREE)
+        own[Row.DEGREE][note] = None
+        choices.tune_pattern(A_KIND)[Row.DEGREE][note] = None
+        self.assertEqual(choices.tune_pattern(A_KIND)[Row.DEGREE][note], A_DEGREE)
+
+    def test_no_other_choice_writes_over_a_tune_written_by_hand(self):
+        choices = chosen()
+        own = rewritten(choices.tune_pattern(A_KIND))
+        choices.set_tune_pattern(kind=A_KIND, pattern=own)
+        choices.set_seed(ANOTHER_SEED)
+        self.assertEqual(choices.tune_pattern(A_KIND), own)
+        choices.set_genre(ANOTHER_GENRE)
+        choices.set_genre(A_GENRE)
+        choices.set_subgenre(A_SUBGENRE)
+        self.assertEqual(choices.tune_pattern(A_KIND), own)
+
+    def test_none_gives_the_tune_back_to_the_choices(self):
+        choices = chosen()
+        first = choices.tune_pattern(A_KIND)
+        choices.set_tune_pattern(kind=A_KIND, pattern=rewritten(first))
+        choices.set_tune_pattern(kind=A_KIND, pattern=None)
+        self.assertFalse(choices.tune_is_own(A_KIND))
+        self.assertEqual(choices.tune_pattern(A_KIND), first)
+        self.assertEqual(choices.to_data(), chosen().to_data())
+
+    def test_a_tune_written_by_hand_is_kept_with_the_choices_and_read_back(self):
+        choices = chosen()
+        own = rewritten(choices.tune_pattern(A_KIND))
+        choices.set_tune_pattern(kind=A_KIND, pattern=own)
+        read = WizardChoices.from_data(choices.to_data())
+        self.assertTrue(read.tune_is_own(A_KIND))
+        self.assertEqual(read.tune_pattern(A_KIND), own)
+
+    def test_a_kind_with_no_tune_and_a_pattern_no_song_can_be_made_with_are_refused_and_nothing_changes(self):
+        choices = chosen()
+        before = choices.to_data()
+        for kind in (A_KIND_WITH_NO_TUNE, NOT_A_KIND):
+            with self.assertRaises(ValueError) as refused:
+                choices.set_tune_pattern(kind=kind, pattern=choices.tune_pattern(A_KIND))
+            self.assertIn(fixed_text(errors.ERR_WIZARD_NO_TUNE_IN), str(refused.exception))
+        with self.assertRaises(ValueError) as refused:
+            choices.set_tune_pattern(kind=A_KIND, pattern={**choices.tune_pattern(A_KIND), PatternSetting.STEPS: NOT_A_STEP_COUNT})
+        self.assertIn(fixed_text(errors.ERR_WIZARD_TUNE_PATTERN), str(refused.exception))
+        self.assertEqual(choices.to_data(), before)
+        own = rewritten(choices.tune_pattern(A_KIND))
+        choices.set_tune_pattern(kind=A_KIND, pattern=own)
+        with self.assertRaises(ValueError):
+            choices.set_tune_pattern(kind=A_KIND, pattern={**own, PatternSetting.STEPS: NOT_A_STEP_COUNT})
+        self.assertEqual(choices.tune_pattern(A_KIND), own)

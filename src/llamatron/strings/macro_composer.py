@@ -31,6 +31,8 @@ MSG_MADE_SONG_NOTES = '{title}: a {style} song, {template}, made by the MacroCom
 MSG_MADE_PICK = '{}: {}.'
 MSG_MADE_SCENE = 'Scene {}, {}, {} bars.'
 MSG_PART_OF_SECTION = '{} {}'
+# The pattern of a kind of section's tune once a person has written it by hand, which every section of the kind plays.
+MSG_OWN_TUNE_PART = '{kind} tune'
 # The instrument made for a piece of the kit that sounds as a General MIDI sound.
 MSG_PIECE_INSTRUMENT = '{} sound'
 # The muted track a made song's chords are written on, in capitals to show it is a guide and no instrument, its instrument, and the generator that follows it.

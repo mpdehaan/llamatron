@@ -28,6 +28,7 @@ import json
 import unittest
 
 from llamatron.composition.file_format import Section
+from llamatron.composition.file_format import Row
 from llamatron.macro_composer import interplay
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT
 from llamatron.macro_composer.melody import HIGHEST_GAUGE, LOWEST_GAUGE
@@ -84,7 +85,10 @@ CONTRAST = 'contrast'
 PHRASING = 'phrasing'
 PHRASING_WAY = 'how the lines breathe'
 HOOK_PART = "a part of the hook's kind"
+# A degree is changed among the first few of the scale, which every scale has.
+DEGREES_TRIED = 5
 HOOK_LINE = "the hook's notes written by hand"
+OWN_TUNE = 'a tune written by hand'
 A_LINE = "a line's own"
 A_RIFF = 'the riff'
 COMES_IN = 'where a player comes in'
@@ -170,6 +174,14 @@ def under_each_drummer(*, choices, role, first):
     """Return what to do first for a choice that says what the drummer would do unasked: nothing more, then each other drummer."""
     others = [level for level in range(LEAST_BUSY, MOST_BUSY + 1) if level != choices.get_busy(role)] if choices.get_busy(role) is not None else []
     return [first] + [lambda made, level=level: (first(made), made.set_busy(role=role, level=level)) for level in others]
+
+
+def first_degree_changed(pattern):
+    """Return a pattern's data with the degree of its first note another, as a person writing the tune by hand might make it."""
+    degrees = list(pattern[Row.DEGREE])
+    step = next(place for place, degree in enumerate(degrees) if degree is not None)
+    degrees[step] = degrees[step] % DEGREES_TRIED + 1
+    return {**pattern, Row.DEGREE: degrees}
 
 
 def every_choice(choices):
@@ -322,6 +334,10 @@ def every_choice(choices):
         # What a section of any genre can be given of its own, held with no plan, on the second section where it takes any.
         if field in without_plan(choices).section_own_fields(A_SECOND_PLACE) and value != without_plan(choices).section_from_plan(place=A_SECOND_PLACE, field=field):
             yield SECTION_OWN, (field, value, NO_PLAN), lambda made, field=field, value=value: made.set_section_own(place=A_SECOND_PLACE, field=field, value=value), [switch_plan_off]
+    # A tune written by hand, for each kind of section that has one: its first note another degree.
+    for kind in choices.tune_kinds():
+        if choices.tune_pattern(kind) is not None:
+            yield OWN_TUNE, kind, lambda made, kind=kind: made.set_tune_pattern(kind=kind, pattern=first_degree_changed(made.tune_pattern(kind))), [nothing_first]
     # A section's lines, one by one: the first line that breathes of the first section with a tune, its breath, its early note either way and its notes moved.
     for place in range(len(choices.section_labels())):
         lines = choices.section_lines(place)
