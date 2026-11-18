@@ -323,3 +323,25 @@ the build. Two further points:
   density and the band together, and it means something else in each genre: in a dance track the lift is the arrangement. (practice)
 - A chorus fails when it does not lift, is too like the verse, is too busy, buries its hook, has no arrival or overstays; each
   can be measured and a failed one written again. (practice)
+
+## Long Pieces in Several Parts
+
+- A long piece that changes key, tempo, mood and material is made of parts, a part being a new frame, not a long song: each part
+  has its own key, tempo, range, register plan, motifs, riffs and melodies. An ordinary song is a piece of one part. A long build
+  with no change of frame may still be one part with many melodies. (practice)
+- A kind of section is a role that gives defaults, not the identity of a melody: a part may hold several unrelated verse-like
+  melodies, or a late melody that is neither verse, chorus nor bridge, so melodies are named things that sections point at. (practice)
+- What a part is known by is its main idea, of a kind: a sung hook, which returns often; a refrain line, which closes each verse;
+  an instrumental theme, stated, left and restated; a riff; an arrival melody, heard once, late, at the peak, with only its
+  rhythm hinted before; or none, for a chain of fragments or a solo. (practice)
+- What makes parts one work and not a medley, in order of effect: one long arc of energy and register over the whole piece, into
+  which each part is scaled, so that the highest point is where the arc says and not where a kind of section says; a shared motif
+  transformed, its rhythm kept with new pitches the most audible link; a recall of earlier material later, refitted to the key and
+  tempo and usually thinned; a written transition between parts (a hard cut, a held chord or silence, a pivot chord, a tempo ramp,
+  a link by drums or one instrument, a riff that changes under the listener); keys related simply and tempos in simple ratios. (practice)
+- In a long build the melody stays and the accompaniment grows at each return, so how a return differs has two halves, the
+  melody's and the accompaniment's. (practice)
+- A listener holds few ideas: seldom more than five or six motifs in a whole long piece, one or two in a part. (practice)
+- What rules do poorly and hands do well: a middle of short contrasting fragments with voices answering, a climactic solo that is
+  remembered, expressive slides and bends, the seam between parts, and tempo that grows as if played. (practice)
+
