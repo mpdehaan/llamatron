@@ -31,6 +31,9 @@ FIRST = 0
 A_VERSE = 'verse-1'
 A_VERSE_PLACE = 1
 
+# The attribute a field keeps its label in.
+LABEL = 'label'
+
 
 class TestWizardStages(WizardTest):
     """Starts with, Ends with, First player and Setup bars on the Form panel."""
@@ -55,6 +58,12 @@ class TestWizardStages(WizardTest):
         for label in (labels.MSG_WIZARD_FIRST_PLAYER_LABEL, labels.MSG_WIZARD_SETUP_BARS_LABEL):
             self.assertNotIn(label, shown)
         self.assertEqual(choices.get_start(), FULL_BAND)
+
+    async def test_how_the_song_starts_and_ends_comes_before_the_form_on_the_panel(self):
+        await self.to_form()
+        shown = [getattr(field, LABEL, None) for field in self.wizard().shown_fields()]
+        self.assertEqual(shown[:2], [labels.MSG_WIZARD_STARTS_LABEL, labels.MSG_WIZARD_ENDS_LABEL])
+        self.assertLess(shown.index(labels.MSG_WIZARD_ENDS_LABEL), shown.index(labels.MSG_WIZARD_FORM_LABEL))
 
     async def test_stepping_starts_with_makes_the_stages_sections_of_the_tree(self):
         choices = await self.to_form()

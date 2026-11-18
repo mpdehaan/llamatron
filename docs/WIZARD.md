@@ -62,7 +62,7 @@ The Hooks panel switches the song's hook on, the short phrase a listener goes aw
 
 ## Form
 
-The Form panel chooses the sections the song plays and in what order. Song plan gives every section a place in a rise and fall across the whole song, Contrast sets how far the loud sections stand from the quiet ones, and Starts with and Ends with choose how the song begins and ends. The list at the bottom says what the plan gives each section.
+The Form panel chooses the sections the song plays and in what order. Starts with and Ends with come first, since a band settles how to get into a song and out of it before arranging the middle: a song can start with the full band, the drums or one player alone, or in layers, a player joining with each section, and can end on a held chord, slow down, strip down a player at a time or repeat and fade. Choosing another form keeps how the song starts and ends. Song plan gives every section a place in a rise and fall across the whole song, and Contrast sets how far the loud sections stand from the quiet ones. The list at the bottom says what the plan gives each section.
 
 ![The song wizard's Form panel](screenshots/wizard_form.svg)
 

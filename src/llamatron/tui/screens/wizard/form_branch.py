@@ -57,7 +57,8 @@ class FormBranch(Branch):
         plan = [Toggle(label=labels.MSG_WIZARD_SONG_PLAN_LABEL, on=choices.has_song_plan(), set=page.choosing(choices.set_song_plan))] if choices.can_have_song_plan() else []
         if choices.has_song_plan():
             plan.append(NumberField(page=page, label=labels.MSG_WIZARD_CONTRAST_LABEL, number=choices.get_contrast(), shown=gauge_shown(place=choices.get_contrast(), lowest=LOWEST_ENERGY, highest=HIGHEST_ENERGY), lowest=LOWEST_ENERGY, highest=HIGHEST_ENERGY, set=page.choosing(choices.set_contrast)))
-        return [Field(label=labels.MSG_WIZARD_FORM_LABEL, value=lambda: marks.MSG_WIZARD_OWN_FORM if choices.has_own_form() else choices.get_form()), *plan, *self.stage_fields(),
+        # How the song starts and ends comes first, since a band settles how to get in and out before the middle is arranged.
+        return [*self.stage_fields(), *plan, Field(label=labels.MSG_WIZARD_FORM_LABEL, value=lambda: marks.MSG_WIZARD_OWN_FORM if choices.has_own_form() else choices.get_form()),
                 Button(label=labels.MSG_WIZARD_SUGGESTED_FORM_BUTTON, key_name=legends.KeyName.ENTER, enter=self.page().pick_suggested_form, enter_what=legends.MSG_WIZARD_SUGGESTED_FORM_WHAT),
                 *([Button(label=labels.MSG_WIZARD_FORM_QUESTIONS_BUTTON, key_name=legends.KeyName.ENTER, enter=self.page().ask_form_questions, enter_what=legends.MSG_WIZARD_FORM_QUESTIONS_WHAT)] if choices.form_questions() else [])]
 
