@@ -18,7 +18,7 @@
 
 from llamatron.composition import limits
 from llamatron.strings import errors, labels, marks
-from llamatron.macro_composer import hook_kinds, phrasing
+from llamatron.macro_composer import hook_kinds
 from llamatron.macro_composer.arranger import CHORDS
 from llamatron.macro_composer.joins import LEAVES
 from llamatron.macro_composer.song_plan import ENERGY, FADES, RISES, ROOT_OF_PLACE, TEMPO_END_OF_PLACE, TYPE_OF_PLACE
@@ -85,21 +85,16 @@ class TestWizardPlan(WizardTest):
         self.assertEqual(self.choices().get_contrast(), USUAL_CONTRAST + 1)
         await self.press(keybindings.WizardPage.TO_TREE)
         await self.go_to_melody()
-        for label in labels.MSG_WIZARD_PHRASING_WAY_LABELS.values():
-            self.assertIn(label, self.text())
+        self.assertIn(labels.MSG_WIZARD_EDIT_PHRASING_BUTTON, self.text())
         await self.press(keybindings.WizardPage.INTO_FIELDS)
-        await self.select_field(labels.MSG_WIZARD_PHRASING_WAY_LABELS[phrasing.BREATH])
-        await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(self.choices().phrasing_way(phrasing.BREATH), phrasing.LONG)
-        await self.select_field(labels.MSG_WIZARD_PHRASING_WAY_LABELS[phrasing.EARLY_NOTES])
-        await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(self.choices().phrasing_way(phrasing.EARLY_NOTES), phrasing.USUAL_EARLY + 1)
         await self.select_field(labels.MSG_WIZARD_PHRASING_LABEL)
         await self.press(Key.ENTER)
-        self.assertFalse(self.choices().has_phrasing())
-        self.assertNotIn(labels.MSG_WIZARD_PHRASING_WAY_LABELS[phrasing.BREATH], self.text())
+        self.assertIsNone(self.choices().tune_phrasing())
+        self.assertNotIn(labels.MSG_WIZARD_EDIT_PHRASING_BUTTON, self.text())
+        await self.press(Key.ENTER)
+        self.assertEqual(self.choices().tune_phrasing(), {})
 
-    async def test_a_genre_with_no_plan_shows_no_switch_and_a_song_in_six_no_phrasing(self):
+    async def test_a_genre_with_no_plan_shows_no_switch_and_a_song_in_six_still_has_its_phrasing(self):
         await self.choose(genre=AN_UNPLANNED_GENRE, subgenre=None)
         await self.go_to_named_branch(labels.MSG_WIZARD_FORM_BRANCH)
         self.assertNotIn(labels.MSG_WIZARD_SONG_PLAN_LABEL, self.text())
@@ -108,7 +103,8 @@ class TestWizardPlan(WizardTest):
         self.assertIn(labels.MSG_WIZARD_CONTRAST_LABEL, self.text())
         await self.press(keybindings.WizardPage.TO_TREE)
         await self.go_to_melody()
-        self.assertNotIn(labels.MSG_WIZARD_PHRASING_LABEL, self.text())
+        # A Phrasing counts in bars, whatever the bar holds, so a tune in six is delivered in lines as a tune in four is.
+        self.assertIn(labels.MSG_WIZARD_PHRASING_LABEL, self.text())
 
     async def open_kind(self):
         """Open the Hooks panel's Kind group where it is closed, so that the hook's parts show."""

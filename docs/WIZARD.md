@@ -42,7 +42,7 @@ The Chords panel chooses the chord progression: one of the genre's progressions 
 
 ### Melody
 
-The Melody panel chooses the style the tunes are written in, such as a walk by steps or a tune of leaps, and how the tune is phrased: how long its lines are, how long the breath after a line is, and how often a line starts early.
+The Melody panel chooses the style the tunes are written in, such as a walk by steps or a tune of leaps, and how the tune is delivered. A singer or a horn player delivers a tune in lines, with a breath after each and a rise toward the line's main note, and the Phrasing switch has the tune's player do the same, through a [Phrasing](generators/PHRASING.md) generator that every clip of the tune runs. Edit Phrasing opens that generator's page, where the line's length, the breath, the rise and fall and how the notes are joined are chosen; `ESC` there comes back to the wizard. With the switch off the tune is played as written.
 
 ![The song wizard's Melody panel](screenshots/wizard_melody.svg)
 

@@ -173,6 +173,8 @@ THIRD_PLACE = 2
 FIFTH_PLACE = 4
 HOME_CHORDS = {(4, 7): ChordSymbol.MAJOR, (3, 7): ChordSymbol.MINOR, (3, 6): ChordSymbol.DIMINISHED, (4, 8): ChordSymbol.AUGMENTED}
 FOLLOWS_THE_CHORDS = {GeneratorKind.FOLLOW_CHORDS: composer_text.MSG_FOLLOW_CHORDS_NAME}
+# How the tune is delivered, where a song says: the settings of the one Phrasing its tune's clips then run.
+TUNE_PHRASING = 'tune_phrasing'
 MUTED_TRACKS = 'muted_tracks'
 # The General MIDI sound of the chords track's instrument, a piano, heard only when a person unmutes the track.
 CHORDS_GUIDE_SOUND = 1
@@ -1110,6 +1112,7 @@ def arranged(*, style, song):
     plans = [section_of(name=name, style=style, song=song).get(PLAN, []) for name in form_names]
     # A song has a hook where the song or its style asks for one and a section of its form marks a line as one.
     has_a_hook = bool(song.get(HOOK, style.get(HOOK, False))) and any(has_hook(plan) for plan in plans)
+    phrased = [composer_text.MSG_TUNE_PHRASING_NAME] if song.get(TUNE_PHRASING) is not None else []
     beside = song.get(BESIDE, {})
     under = UnderLead(busy=beside.get(BESIDE_BUSY, USUAL_BESIDE_BUSY), habits=habits, grid=habits[GRID], scale_type=scale_type, seed=song.get(SEED, 0))
     for count, name in enumerate(form_names, start=1):
@@ -1248,7 +1251,7 @@ def arranged(*, style, song):
                     # A tune written by hand is played as written by every section of its kind, and nothing here writes one over it.
                     part = composer_text.MSG_OWN_TUNE_PART.format(kind=section[KIND])
                     parts.setdefault(part, {RAW: copy.deepcopy(own_tune)})
-                    play[role[ROLE]] = {PART: part, ONCE: True, CHAINS: [composer_text.MSG_TIMING_CHAIN.format(role[ROLE])]}
+                    play[role[ROLE]] = {PART: part, ONCE: True, CHAINS: [composer_text.MSG_TIMING_CHAIN.format(role[ROLE]), *phrased]}
                     continue
                 part = composer_text.MSG_PART_OF_SECTION.format(name, role[ROLE])
                 if part not in parts:
@@ -1265,7 +1268,7 @@ def arranged(*, style, song):
                         shaped.append(part)
                         same_tunes[(role[ROLE], repr(written))] = part
                 if part in parts:
-                    play[role[ROLE]] = {PART: part, ONCE: True, CHAINS: [composer_text.MSG_TIMING_CHAIN.format(role[ROLE])]}
+                    play[role[ROLE]] = {PART: part, ONCE: True, CHAINS: [composer_text.MSG_TIMING_CHAIN.format(role[ROLE]), *(phrased if role is tune_role else [])]}
         # The tune goes to the player the song gives it to: for this kind of section, or else for the whole song. That player plays
         # the tune in place of the usual part, the player who had the tune rests, and with nobody the section has no tune.
         tune_by = song.get(TUNE_BY, {}).get(section[KIND], song.get(TUNE_BY_SONG))
@@ -1291,6 +1294,10 @@ def arranged(*, style, song):
         said_of_scene = composer_text.MSG_MADE_SCENE.format(count, scene_name, bars)
         notes.append(MADE_SCENE_SAID.format(said_of_scene, section[SAID_OF_SECTION]) if section.get(SAID_OF_SECTION) else said_of_scene)
     generators = {Section.FOLLOW_CHORDS: {composer_text.MSG_FOLLOW_CHORDS_NAME: {FollowChordsSetting.CHORDS_FROM: composer_text.MSG_CHORDS_TRACK}}, **extra}
+    if phrased:
+        # The tune is delivered as a player would deliver it, by one Phrasing every clip of the tune runs after its timing.
+        generators[Section.PHRASINGS] = {composer_text.MSG_TUNE_PHRASING_NAME: dict(song[TUNE_PHRASING])}
+        chains[composer_text.MSG_TUNE_PHRASING_NAME] = [{GeneratorKind.PHRASING: composer_text.MSG_TUNE_PHRASING_NAME}]
     if progressions:
         generators[PROGRESSIONS] = progressions
     if any(role.get(VOICE_LEADING) for role, _ in pitched):

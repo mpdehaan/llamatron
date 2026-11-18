@@ -28,17 +28,19 @@ The page knows nothing of any one branch (branch.py): it draws what the branches
 from rich.text import Text
 
 from llamatron.composition.checks import listed
+from llamatron.composition.file_format import GeneratorKind
 from llamatron.composition.naming import new_name
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.realtime.sender_process import SenderNotStarted
-from llamatron.strings import errors, help as help_text, labels, marks, messages, names
+from llamatron.strings import errors, help as help_text, labels, macro_composer as composer_text, marks, messages, names
 from llamatron.macro_composer.notation import KIT
 from llamatron.macro_composer.wizard_choices import USUAL_PIECE_NOTE
 from llamatron.support.version import VERSION
 from llamatron.tui import keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.document import Document
+from llamatron.tui.screens.generators.phrasing_editor import PhrasingEditor
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.dialogs.sound_dialog import SoundDialog
 from llamatron.tui.screens.set.instrument_editor import sound_families
@@ -209,11 +211,36 @@ class WizardPage(FieldPage):
     def open_pattern(self, *, setlist, name, keep, kept, unchanged):
         """Open the pattern editor on a pattern of a draft of the set the choices make. When the editor closes, keep() is given the
         pattern's data if it changed, and the status line says kept or unchanged."""
+        def pattern_of(draft):
+            return draft.setlist().get_pattern(name).to_data() if draft.setlist().has_pattern(name) else None
+        self.open_in_draft(setlist=setlist, read=pattern_of, screen=lambda: PatternEditor(holder=self.holder, name=name, opened_from=self), keep=keep, kept=kept, unchanged=unchanged)
+
+    def open_in_draft(self, *, setlist, read, screen, keep, kept, unchanged):
+        """Open a page on a draft of the set the choices make. read(draft) gives the data of the thing the page edits, or None once
+        the thing is gone; when the page closes, keep() is given that data if it changed, and the status line says which happened."""
         self.app.made_preview().stop()
         draft = Document(setlist=setlist)
-        self._tune_open = (name, draft.setlist().get_pattern(name).to_data(), keep, kept, unchanged)
+        self._tune_open = (read, read(draft), keep, kept, unchanged)
         self.app.open_draft(draft)
-        self.show_page(PatternEditor(holder=self.holder, name=name, opened_from=self))
+        self.show_page(screen())
+
+    def edit_tune_phrasing(self):
+        """Open the Phrasing page on the Phrasing the tune's clips run, in a draft of the set the choices make."""
+        name = composer_text.MSG_TUNE_PHRASING_NAME
+        try:
+            setlist, _ = self._choices.made_for_listening()
+        except (ValueError, SongFileError) as problem:
+            self.refuse(str(problem))
+            return
+
+        def phrasing_of(draft):
+            song = draft.song()
+            return song.get_generator_settings(kind=GeneratorKind.PHRASING, name=name).to_data() if song.has_generator(kind=GeneratorKind.PHRASING, name=name) else None
+        if phrasing_of(Document(setlist=setlist)) is None:
+            self.refuse(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
+            return
+        self.open_in_draft(setlist=setlist, read=phrasing_of, screen=lambda: PhrasingEditor(holder=self.holder, name=name), keep=self._choices.set_tune_phrasing,
+                           kept=messages.MSG_WIZARD_PHRASING_KEPT, unchanged=messages.MSG_WIZARD_PHRASING_UNCHANGED)
 
     def on_screen_resume(self):
         """Take a tune's or a riff's notes back from the pattern editor, which has closed, before the page is drawn again."""
@@ -225,11 +252,10 @@ class WizardPage(FieldPage):
     def keep_tune_edited(self, draft):
         """Keep the notes of the pattern that was open as the person's own, where the editor changed them, and say which happened. A
         pattern that was renamed or deleted in the editor is not found, and nothing is kept."""
-        name, before, keep, kept, unchanged = self._tune_open
+        read, before, keep, kept, unchanged = self._tune_open
         self._tune_open = None
-        setlist = draft.setlist()
-        after = setlist.get_pattern(name).to_data() if setlist.has_pattern(name) else before
-        if after == before:
+        after = read(draft)
+        if after is None or after == before:
             self.say(unchanged)
             return
         try:

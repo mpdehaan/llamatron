@@ -16,15 +16,18 @@
 
 """The song wizard's Tunes panel: a tune for each kind of section, opened in the pattern editor on a draft of the set and kept as the person's own."""
 
-from llamatron.composition.file_format import Row
+from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, Row
+from llamatron.composition.generator_settings import PhrasingSetting
+from llamatron.generators.phrasing import DEEP_BREATH
 from llamatron.macro_composer.arranger import CHORDS, NOBODY
 from llamatron.macro_composer.riffs import FIRST_TAKE as FIRST_RIFF_TAKE
 from llamatron.macro_composer.wizard_choices import FIRST_TUNE_TAKE, genre_title
-from llamatron.strings import errors, labels, marks, messages
+from llamatron.strings import errors, labels, macro_composer as composer_text, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.keys import Key
+from llamatron.tui.screens.generators.phrasing_editor import PhrasingEditor
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.shared.field import Heading
 from llamatron.tui.screens.wizard.wizard_page import WizardPage
@@ -288,6 +291,45 @@ class TestWizardTunes(TunesPanelTest):
         self.wizard().choosing(choices.set_tempo)(A_TEMPO)
         await self.settle()
         self.assertIsInstance(self.app.screen, WizardPage)
+
+
+class TestWizardTunePhrasing(TunesPanelTest):
+    """The Melody panel's Phrasing switch and the Phrasing page it opens on the tune's Phrasing."""
+
+    async def to_melody(self):
+        await self.press(keybindings.WizardPage.TO_TREE)
+        await self.go_to_named_branch(labels.MSG_WIZARD_MELODY_BRANCH)
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+
+    async def test_the_tunes_clips_run_one_phrasing_until_the_switch_is_off(self):
+        choices = self.choices()
+        setlist, name = choices.made_for_listening()
+        slot = setlist.get_song(name).get_scenes()[choices.tune_place(A_KIND)].get_clip_slot(choices.tune_player_in(A_KIND))
+        self.assertIn(composer_text.MSG_TUNE_PHRASING_NAME, slot.to_data()[ClipSlotSetting.CHAINS])
+        await self.to_melody()
+        await self.select_field(labels.MSG_WIZARD_PHRASING_LABEL)
+        await self.press(keybindings.FieldPage.TOGGLE)
+        self.assertIsNone(choices.tune_phrasing())
+        setlist, name = choices.made_for_listening()
+        self.assertFalse(setlist.get_song(name).has_generator(kind=GeneratorKind.PHRASING, name=composer_text.MSG_TUNE_PHRASING_NAME))
+
+    async def test_edit_phrasing_opens_the_phrasing_page_and_what_is_chosen_there_is_kept(self):
+        choices = self.choices()
+        await self.to_melody()
+        await self.select_field(labels.MSG_WIZARD_EDIT_PHRASING_BUTTON)
+        await self.press(Key.ENTER)
+        self.assertIsInstance(self.app.screen, PhrasingEditor)
+        self.assertTrue(self.app.is_drafting())
+        editor = self.app.screen
+        editor.store(setting=PhrasingSetting.BREATH, value=DEEP_BREATH)
+        await self.press(Key.ESCAPE)
+        self.assertIsInstance(self.app.screen, WizardPage)
+        self.assertFalse(self.app.is_drafting())
+        self.assertEqual(choices.tune_phrasing(), {PhrasingSetting.BREATH: DEEP_BREATH})
+        self.assertIn(messages.MSG_WIZARD_PHRASING_KEPT, self.text())
+        await self.press(Key.ENTER, Key.ESCAPE)
+        self.assertIn(messages.MSG_WIZARD_PHRASING_UNCHANGED, self.text())
+        self.assertEqual(choices.tune_phrasing(), {PhrasingSetting.BREATH: DEEP_BREATH})
 
 
 class TestWizardRiffs(TunesPanelTest):
