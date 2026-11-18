@@ -39,7 +39,8 @@ OTHER_CHANGES = ('add_section', 'copy_section', 'remove_section', 'move_section'
 # How a written tune's lines breathe is the wizard's own; a song kept from before the Phrasing generator still holds what was chosen.
 # The last four are the writing methods and their gauges, which the Melody panel's Character chooses among, and a kind of section's own
 # player of the melody, which Section Players chooses through what each player plays there.
-NOT_ON_THE_PAGE = ('set_own_sections', 'set_seed', 'set_song_extras', 'set_phrasing', 'set_phrasing_way', 'set_melody', 'set_gauge', 'set_melody_setting', 'set_tune_played_by_in')
+# Who says the hook in every part of an intro at once is kept from songs made before an intro had parts; the Intro panel sets each part's.
+NOT_ON_THE_PAGE = ('set_intro_hook', 'set_own_sections', 'set_seed', 'set_song_extras', 'set_phrasing', 'set_phrasing_way', 'set_melody', 'set_gauge', 'set_melody_setting', 'set_tune_played_by_in')
 A_CALL = r'\.{name}\b'
 SOURCE_FILES = '*.py'
 

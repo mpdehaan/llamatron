@@ -30,9 +30,11 @@ section itself is kept over what the plan would say.
 
 import random
 
+from llamatron.composition.file_format import BARS_WRITTEN, ONE_BAR_WRITTEN
 from llamatron.macro_composer import hook_writing
 from llamatron.macro_composer.joins import BUILD, DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL, TAIL_EIGHTHS
 from llamatron.macro_composer.melody import BREATHES, HOOK
+from llamatron.music import midi
 from llamatron.strings import macro_composer as composer_text
 
 # The fields of a song's plan, and of the plan a style gives.
@@ -112,10 +114,31 @@ DEGREE = 'degree'
 ACCIDENTAL = 'accidental'
 SWELL_START = 'swell_start'
 SWELL_END = 'swell_end'
+SWELL_OVER = 'swell_over'
 # A section that fades: softer bar by bar to this share of what is written, from all of it where no plan says how loud the section is.
 FADES = 'fades'
-FADED = 20
+# How soft a fade goes where the section says no level: to silence, a velocity and a share of what is written alike.
+FADED = 0
 UNFADED = 100
+# A fade's own level, the velocity a fade in starts from and a fade out ends at, from silence to MIDI's loudest; the bars a fade in takes, the whole section where
+# none is said; and whether the fade is a fade in, which a section that opens the song has, where any other fades out.
+FADE_LEVEL = 'fade_level'
+FADE_OVER = 'fade_over'
+FADES_IN = 'fades_in'
+FADE_FIELDS = (FADES, FADE_LEVEL, FADE_OVER, FADES_IN)
+LOUDEST_FADE_LEVEL = midi.MAX_VELOCITY
+
+
+def faded(*, own, loud):
+    """Return the scene's swell of a section that fades, from what the section says of its fade and how loud the section is
+    played: a fade in rises from the fade's level to the section's loudness over the fade's bars and stays there, and a fade
+    out falls from the section's loudness to the fade's level over the whole section."""
+    # A scene's swell is a share of each note's written velocity, so the level is said as its share of the loudest velocity.
+    level = round(own.get(FADE_LEVEL, FADED) * UNFADED / LOUDEST_FADE_LEVEL)
+    if not own.get(FADES_IN):
+        return {SWELL_START: loud, SWELL_END: level}
+    over = {SWELL_OVER: ONE_BAR_WRITTEN if own[FADE_OVER] == 1 else BARS_WRITTEN.format(count=own[FADE_OVER])} if own.get(FADE_OVER) else {}
+    return {SWELL_START: level, SWELL_END: loud, **over}
 CYMBAL = 'cymbal'
 # What a song may say of its fills: the trait that names the fill, the value for none, how often they come and the count for never.
 FILLS_TRAIT = 'fills'
@@ -306,7 +329,7 @@ class SongPlan:
         energy = self._energies[place]
         rising = self._rises(place)
         if self._at(place).get(FADES):
-            return {SWELL_START: loudness_at(energy), SWELL_END: FADED}
+            return faded(own=self._at(place), loud=loudness_at(energy))
         return {SWELL_START: loudness_at(energy - RISES_FROM if rising else energy), SWELL_END: loudness_at(self._arrives_at(place) if rising else energy)}
 
     def _arrives_at(self, place):
@@ -486,7 +509,7 @@ class SongPlan:
                 said.append(composer_text.MSG_PLAN_HOOK.format(written[hook_writing.BEHAVIOR]))
                 hook_said = True
             # What the song says of the section itself, and of this place of its form, stands over what the plan worked out.
-            own = {field: value for field, value in self._at(place).items() if field not in (ENERGY, SETUP, LEAVES, RISES, FADES, *SCENE_FIELDS)}
+            own = {field: value for field, value in self._at(place).items() if field not in (ENERGY, SETUP, LEAVES, RISES, *FADE_FIELDS, *SCENE_FIELDS)}
             scene = {**made.get(SCENE_SETTINGS, {}), **self._scene_settings(place)}
             sections[name] = {**made, **of_song, **own, **({SCENE_SETTINGS: scene} if scene else {}), SAID_OF_SECTION: ' '.join(said)}
         melody = {**({BREATHES: self._given.get(PHRASING_WAYS) or True} if self._given.get(PHRASING, True) else {}), **self._song.get(MELODY, {})}

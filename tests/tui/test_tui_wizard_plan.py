@@ -178,7 +178,7 @@ class TestWizardSectionOwnFields(WizardTest):
         self.assertIn(self.label(ENERGY), shown)
         self.assertNotIn(self.label(TEMPO_END_OF_PLACE), shown)
         self.assertNotIn(marks.MSG_SECTION_SET, shown)
-        choices.set_section_own(place=A_PLACE, field=FADES, value=True)
+        choices.set_section_own(place=A_PLACE, field=RISES, value=not choices.section_from_plan(place=A_PLACE, field=RISES))
         await self.press(Key.DOWN, Key.UP)
         self.assertIn(marks.MSG_SECTION_SET, self.text())
         await self.open_every_group()

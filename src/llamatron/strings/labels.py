@@ -875,6 +875,15 @@ MSG_WIZARD_INTRO_HOOK_LABEL = 'Intro hook'
 MSG_WIZARD_SECTION_OWN_LABELS = {'shape': 'Shape', 'rises': 'Rises', 'energy': 'Energy', 'leaves': 'Leaves with', 'setup': 'Setup', 'chords': 'Chords', 'tempo': 'Tempo', 'tempo_end': 'Tempo at end', 'root': 'Key', 'type': 'Scale', 'fades': 'Fades'}
 MSG_WIZARD_SECTION_ORIGINS = {'shape': 'from genre', 'rises': 'from plan', 'energy': 'from plan', 'leaves': 'from plan', 'setup': 'from plan', 'chords': 'from progression', 'tempo': 'from song', 'tempo_end': 'from song', 'root': 'from song', 'type': 'from song', 'fades': 'from genre'}
 MSG_WIZARD_VALUE_FROM = '{value} ({origin})'
+# A fade's fields, named for its way: a section that opens the song fades in, and one that closes the song fades out.
+MSG_WIZARD_FADE_LABELS = {'in': {'fades': 'Fade in', 'fade_level': 'Fade from', 'fade_over': 'Fade over'}, 'out': {'fades': 'Fade out', 'fade_level': 'Fade to'}}
+MSG_WIZARD_FADE_VELOCITY = 'velocity {value}'
+# tui/screens/wizard/intro_melody_branch.py: the intro's parts.
+MSG_WIZARD_INTRO_PART = 'Part {number}'
+MSG_WIZARD_PART_MELODY_LABEL = 'Melody'
+MSG_WIZARD_ADD_PART_BUTTON = 'Add Part'
+MSG_WIZARD_FADE_BARS = '{value} bars'
+MSG_WIZARD_FADE_ONE_BAR = '1 bar'
 MSG_WIZARD_FROM_ORIGIN = '({origin})'
 MSG_WIZARD_PLAN_LINE = '{number:>2}  {name:<{width}}  {said}'
 MSG_WIZARD_FILLS_LABEL = 'Fill pattern'

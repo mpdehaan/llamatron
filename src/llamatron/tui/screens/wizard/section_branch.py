@@ -20,7 +20,7 @@ from llamatron.composition import limits
 from llamatron.strings import labels, legends, marks, messages
 from llamatron.macro_composer.arranger import CHORDS
 from llamatron.macro_composer.joins import LEAVES
-from llamatron.macro_composer.song_plan import ENERGY, FADES, HIGHEST_ENERGY, LOWEST_ENERGY, NOT_AT_ALL, RISES, ROOT_OF_PLACE, SETUP, TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE
+from llamatron.macro_composer.song_plan import ENERGY, FADE_LEVEL, FADE_OVER, FADED, FADES, LOUDEST_FADE_LEVEL, HIGHEST_ENERGY, LOWEST_ENERGY, NOT_AT_ALL, RISES, ROOT_OF_PLACE, SETUP, TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE
 from llamatron.macro_composer.wizard_choices import LEAVES_AS_JOIN, LINE_OWN, SCALE_TYPES, SHAPE_OF_SECTION, chords_as_text
 from llamatron.music.note import ROOT_NAMES
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
@@ -40,8 +40,32 @@ CHOICES_OF_SECTION = {LEAVES: list(LEAVES_AS_JOIN), SETUP: [NOT_AT_ALL], ROOT_OF
 
 # The groups of what a section is given of its own, in the order they show, each with its fields in order.
 OWN_GROUPS = ((labels.MSG_WIZARD_GROUP_HARMONY, (CHORDS, ROOT_OF_PLACE, TYPE_OF_PLACE)),
-              (labels.MSG_WIZARD_GROUP_SHAPE, (SHAPE_OF_SECTION, RISES, FADES, TEMPO_OF_PLACE, TEMPO_END_OF_PLACE)),
+              (labels.MSG_WIZARD_GROUP_SHAPE, (SHAPE_OF_SECTION, RISES, FADES, FADE_LEVEL, FADE_OVER, TEMPO_OF_PLACE, TEMPO_END_OF_PLACE)),
               (labels.MSG_WIZARD_GROUP_JOINS, (LEAVES, SETUP)))
+
+
+def fade_field(*, branch, place, field):
+    """Return a field of a section's fade, named for the fade's way: the switch, Fade in where the section opens the song and
+    Fade out where the section closes it; the level, the velocity the fade starts from or ends at; or the
+    bars a fade in takes. The level and the bars show what a fade takes until they are given, and Bksp gives each back."""
+    choices = branch.choices()
+    page = branch.page()
+    label = labels.MSG_WIZARD_FADE_LABELS[choices.fade_way(place)][field]
+    own = choices.section_own(place=place, field=field)
+
+    def set_own(value):
+        try:
+            page.choosing(lambda wanted: choices.set_section_own(place=place, field=field, value=wanted))(value)
+        except ValueError as problem:
+            page.refuse(str(problem))
+    if field == FADES:
+        return Toggle(label=label, on=bool(own), set=set_own)
+    usual = choices.section_from_plan(place=place, field=field)
+    lowest, highest = (FADED, LOUDEST_FADE_LEVEL) if field == FADE_LEVEL else (FIRST_SECTION_NUMBER, choices.section_bars(place))
+    now = usual if own is None else min(own, highest)
+    said = labels.MSG_WIZARD_FADE_VELOCITY.format(value=now) if field == FADE_LEVEL else labels.MSG_WIZARD_FADE_ONE_BAR if now == 1 else labels.MSG_WIZARD_FADE_BARS.format(value=now)
+    clear = dict(clear=lambda: set_own(None), clear_what=legends.MSG_TUNE_USUAL_WHAT) if own is not None else {}
+    return NumberField(page=page, label=label, number=own, start=usual, shown=said, lowest=lowest, highest=highest, set=set_own, **clear)
 
 
 class SectionBranch(Branch):
@@ -137,6 +161,8 @@ class SectionBranch(Branch):
         choices = self.choices()
         page = self.page()
         place = self._place
+        if field in (FADES, FADE_LEVEL, FADE_OVER):
+            return self.fade_field(field)
         own = choices.section_own(place=place, field=field)
         usual = choices.section_from_plan(place=place, field=field)
         origin = labels.MSG_WIZARD_SECTION_ORIGINS[field]
@@ -160,6 +186,9 @@ class SectionBranch(Branch):
         offered = choices.section_shapes(place) if field == SHAPE_OF_SECTION else CHOICES_OF_SECTION[field]
         return ChoiceField(page=page, label=label, choices=[from_above, *offered], current=from_above if own is None else own, shown=shown,
                            set=lambda picked: set_own(None if picked == from_above else picked), **clear)
+
+    def fade_field(self, field):
+        return fade_field(branch=self, place=self._place, field=field)
 
     def listens(self):
         return messages.MSG_WIZARD_LISTEN_SECTION.format(number=self._place + FIRST_SECTION_NUMBER, name=self.name()), self._place, None

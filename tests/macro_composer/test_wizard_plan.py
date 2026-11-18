@@ -468,14 +468,14 @@ class TestWizardShapesAndIntroHook(unittest.TestCase):
                 self.assertIsNone(choices.intro_melody_place())
                 self.assertIsNone(choices.intro_pattern())
                 with self.assertRaises(ValueError):
-                    choices.set_intro_pattern({})
+                    choices.set_intro_pattern(pattern={})
                 choices.set_intro_hook(role)
                 self.assertEqual(choices.intro_melody_place(), THE_INTRO)
                 written = choices.intro_pattern()
                 own = copy.deepcopy(written)
                 own[Row.DEGREE][0] = A_DEGREE if written[Row.DEGREE][0] != A_DEGREE else ANOTHER_DEGREE
                 self.assertFalse(choices.intro_is_own())
-                choices.set_intro_pattern(own)
+                choices.set_intro_pattern(pattern=own)
                 self.assertTrue(choices.intro_is_own())
                 self.assertEqual(choices.intro_pattern()[Row.DEGREE], own[Row.DEGREE])
                 setlist = choices.made_setlist(name=A_NAME, version=VERSION)
@@ -484,7 +484,7 @@ class TestWizardShapesAndIntroHook(unittest.TestCase):
                 again = WizardChoices.from_data(choices.to_data())
                 self.assertTrue(again.intro_is_own())
                 self.assertEqual(again.intro_pattern()[Row.DEGREE], own[Row.DEGREE])
-                choices.set_intro_pattern(None)
+                choices.set_intro_pattern(pattern=None)
                 self.assertFalse(choices.intro_is_own())
                 self.assertEqual(choices.intro_pattern(), written)
 
@@ -494,7 +494,7 @@ class TestWizardShapesAndIntroHook(unittest.TestCase):
         choices.set_intro_hook(first)
         own = choices.intro_pattern()
         own[Row.DEGREE][0] = A_DEGREE if own[Row.DEGREE][0] != A_DEGREE else ANOTHER_DEGREE
-        choices.set_intro_pattern(own)
+        choices.set_intro_pattern(pattern=own)
         choices.set_intro_hook(second)
         self.assertFalse(choices.intro_is_own())
         choices.set_intro_hook(first)
