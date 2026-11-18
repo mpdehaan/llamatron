@@ -405,6 +405,19 @@ class TestWizardHooks(CompositionTest):
         self.assertIn(marks.MSG_WIZARD_HOOK_FRAME_NAME, shown)
         self.assertIn(messages.MSG_WIZARD_HOOK_IS_BARS.format(first=first, last=last, kind=choices.hook_kind()), shown)
 
+    async def test_listen_plays_whoever_plays_the_melody_in_the_hooks_section_and_never_a_player_with_no_clip_there(self):
+        choices = self.choices()
+        what, scene, player = self.wizard().branch().listens()
+        self.assertEqual((scene, player), (choices.hook_scene(), choices.tune_player()))
+        other = next(role for role in choices.tune_players_offered() if role != choices.tune_player())
+        choices.set_tune_played_by(other)
+        await self.press(Key.DOWN, Key.UP)
+        what, scene, player = self.wizard().branch().listens()
+        self.assertEqual(player, other)
+        setlist, name = choices.made_for_listening()
+        self.assertTrue(setlist.get_song(name).get_scenes()[scene].has_clip_slot(player))
+        self.assertFalse(setlist.get_song(name).get_scenes()[scene].has_clip_slot(choices.tune_player()))
+
     async def test_edit_opens_the_whole_section_in_the_pattern_editor_and_edited_notes_are_the_sections_own(self):
         choices = self.choices()
         kind = choices.hook_kind()
