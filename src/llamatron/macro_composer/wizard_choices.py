@@ -2040,6 +2040,18 @@ class WizardChoices:
             return False
         return self.has_own_form() or hook_matters(genre=self._genre, subgenre=self._subgenre, variant=self._variant, form=self.get_form())
 
+    def hook_line_place(self):
+        """Return where the song's hook line is while the song can have one: the kind of section that says it first and which of
+        that kind's lines it is, counted from 1. None where the song can have no hook."""
+        if not self.can_have_hook():
+            return None
+        sections = self._style()[SECTIONS]
+        for kind in self.section_kinds_in_form():
+            for count, entry in enumerate(sections[kind].get(PLAN, [])):
+                if entry.get(HOOK):
+                    return kind, count + 1
+        return None
+
     def usual_hook(self):
         """Return whether the genre's songs have a hook unless a person says otherwise."""
         return self.can_have_hook() and bool(self._style().get(HOOK, False))

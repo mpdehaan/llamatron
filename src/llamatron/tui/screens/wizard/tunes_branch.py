@@ -70,6 +70,7 @@ class TunesBranch(Branch):
         choices = self.choices()
         kinds = self.kinds()
         fields = [self.song_player_field()] if kinds else []
+        fields += self.hook_line_fields()
         for kind in self.headed_kinds():
             fields.append(self.page().heading(label=self.heading_of(kind), is_set=lambda kind=kind: self.kind_is_set(kind)))
             if kind in kinds:
@@ -80,6 +81,17 @@ class TunesBranch(Branch):
             if choices.riff_players_free(kind):
                 fields.append(Field(label=labels.MSG_WIZARD_ADD_RIFF_LABEL, value=lambda: NOTHING, enter=lambda kind=kind: self.add_riff(kind), enter_what=legends.What.ADD))
         return fields
+
+    def hook_line_fields(self):
+        """Return the field that says which line of the tune is the hook line, the line a listener goes away humming, or none: shown
+        where the song can have a hook."""
+        choices = self.choices()
+        place = choices.hook_line_place()
+        if place is None:
+            return []
+        line = labels.MSG_WIZARD_HOOK_LINE_SHOWN.format(kind=place[0], line=place[1])
+        return [ChoiceField(page=self.page(), label=labels.MSG_WIZARD_HOOK_LINE_LABEL, choices=[marks.MSG_NONE_SHOWN, line], current=line if choices.has_hook() else marks.MSG_NONE_SHOWN,
+                            set=self.page().choosing(lambda shown: choices.set_hook(shown == line)))]
 
     def riff_field(self, *, kind, riff):
         """Return the row of a riff in a kind of section: its name, then who plays it; Bksp takes the riff out of the kind after asking."""
