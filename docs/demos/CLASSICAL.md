@@ -23,7 +23,7 @@ hear it.
 
 | chords | chains | ties | shapes |
 | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#section-shapes) |
 <!-- end of the generated summary of 16_bolero_swell -->
 
 <a id="pachelbel"></a>
@@ -38,7 +38,7 @@ patterns, each a scene behind the one before.
 
 | tempo changes |
 | :---: |
-| ✓ |
+| [✓](../SCENES.md#scene-settings) |
 <!-- end of the generated summary of 02_pachelbel -->
 
 <a id="voice_leading"></a>
@@ -54,5 +54,5 @@ inversion and octave nearest the chord before. The last scene keeps the root in 
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of 05_voice_leading -->

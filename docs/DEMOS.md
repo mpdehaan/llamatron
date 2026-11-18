@@ -7,7 +7,11 @@ every one, with a video where there is one, and the sections after it describe e
 
 All demos included are starting points, many are improved if you edit them, and even more so if you were to export to Ableton Live or send them in realtime to synths that you were tweaking in real time. These files are marked "protected" by default, which you can turn off in settings - although it is better to copy them to a new location first if you want to make your own versions.
 
-Open any of them in the tracker to look around:
+## Opening a Demo
+
+Start llamatron from the project folder and press `Ctrl+O`, or `O` on the main screen. The Open page starts in `examples/`:
+`ENTER` goes into a folder, such as `learning/`, and `ENTER` on a file opens the demo. A demo can also be named when
+llamatron starts:
 
 ```
 llamatron examples/learning/12_sailor_arpeggiator.yml
@@ -16,6 +20,10 @@ llamatron examples/learning/12_sailor_arpeggiator.yml
 Every set plays in real time as it comes, through FluidSynth, a free software synthesizer, each
 track on a General MIDI sound chosen for it: install FluidSynth once with `sh user_scripts/install_fluidsynth.sh`,
 open a set, press `A` for Arrange, go to the top left corner and press Space.
+
+The demos won't sound as good through FluidSynth as through a DAW, since FluidSynth has one basic sound for each of
+General MIDI's 128 instruments. Many of the songs were made quickly while the project was young, and they are improved
+over time, so a demo's video may show an older version of the song or of llamatron.
 
 Or export one straight to a Live set, then open it in Live and put an instrument on each track:
 
@@ -68,6 +76,13 @@ pages current.
 | [World Mashup](demos/WORLD_MASHUP.md) | 1 |
 | [Other](demos/OTHER.md) | 1 |
 <!-- end of the generated table -->
+
+## Additional Preview Options
+
+The demos can be heard without opening llamatron. `sh user_scripts/demos_to_midi.sh` exports every demo as a General MIDI
+file in `previews/`, which any MIDI player plays; `sh user_scripts/demos_to_wavs.sh` turns every demo into a WAV file there,
+through FluidSynth; and `sh user_scripts/play_demo.sh` lists the WAV files and plays the one chosen in the terminal.
+[User Scripts](USER_SCRIPTS.md#listening-to-the-demos) describes each script.
 
 ## Silent Tracks
 

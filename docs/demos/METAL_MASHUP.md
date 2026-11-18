@@ -22,7 +22,7 @@ own riffs is quoted.
 
 | chords | ties |
 | :---: | :---: |
-| ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../PATTERNS.md#ties) |
 <!-- end of the generated summary of got_some_strings -->
 
 <a id="not_so_simple"></a>
@@ -41,7 +41,7 @@ tune in the bass; and one clean guitar ends it as it began.
 
 | chords | ties | tempo changes |
 | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) |
 <!-- end of the generated summary of not_so_simple -->
 
 <a id="trooping_trolls"></a>
@@ -61,5 +61,5 @@ falling bass, and his crashes end it with drum fills in the silences.
 
 | chords | ties | tempo changes |
 | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) |
 <!-- end of the generated summary of trooping_trolls -->

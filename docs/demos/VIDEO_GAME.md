@@ -23,7 +23,7 @@ more with everything.
 
 | chords | chains | ties | key changes | tempo changes | progressions |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of dangerous_to_go_alone -->
 
 <a id="fang_removal"></a>
@@ -39,7 +39,7 @@ plays each chord as a fast arpeggio; the chords fall i VII VI to a major V.
 
 | chords | arps | chains | ties | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of fang_removal -->
 
 <a id="in_another_castle"></a>
@@ -56,7 +56,7 @@ fanfare and a last chord.
 
 | chords | chains | ties | key changes | tempo changes | progressions |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of in_another_castle -->
 
 <a id="incoming_message"></a>
@@ -74,5 +74,5 @@ guitar.
 
 | chords | chains | ties | key changes | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of incoming_message -->

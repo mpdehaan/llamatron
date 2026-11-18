@@ -19,5 +19,5 @@ score; the thumb's bass, the slide's answers, the harmonica and the solos are ne
 
 | chords | ties | grooves |
 | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) |
 <!-- end of the generated summary of going_home_slow -->

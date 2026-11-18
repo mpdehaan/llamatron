@@ -18,5 +18,5 @@ Scale changes, so it shows how a key change is one field on the Scene page and n
 
 | key changes |
 | :---: |
-| ✓ |
+| [✓](../SCENES.md#scene-settings) |
 <!-- end of the generated summary of 03_mary_keychange -->

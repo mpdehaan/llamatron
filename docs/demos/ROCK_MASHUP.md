@@ -26,7 +26,7 @@ reference's own tune quoted.
 
 | chords | ties |
 | :---: | :---: |
-| ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../PATTERNS.md#ties) |
 <!-- end of the generated summary of beach_flick -->
 
 <a id="magic_colored_smoke"></a>
@@ -43,7 +43,7 @@ quoted.
 
 | chords | ties |
 | :---: | :---: |
-| ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../PATTERNS.md#ties) |
 <!-- end of the generated summary of magic_colored_smoke -->
 
 <a id="moonlight_feedback"></a>
@@ -59,7 +59,7 @@ the wall of strummed guitars, the answers, the bass and the drums are new.
 
 | chords | ties |
 | :---: | :---: |
-| ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../PATTERNS.md#ties) |
 <!-- end of the generated summary of moonlight_feedback -->
 
 <a id="night_on_synth_mountain"></a>
@@ -76,7 +76,7 @@ and the drums are new.
 
 | chords | ties |
 | :---: | :---: |
-| ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../PATTERNS.md#ties) |
 <!-- end of the generated summary of night_on_synth_mountain -->
 
 <a id="three_chord_joy"></a>
@@ -91,7 +91,7 @@ knowledge of the score; the downstroked chords, the octave licks, the solos and 
 
 | chords | ties |
 | :---: | :---: |
-| ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../PATTERNS.md#ties) |
 <!-- end of the generated summary of three_chord_joy -->
 
 <a id="turkish_surf"></a>
@@ -107,5 +107,5 @@ score; the runs with their flat seconds, the saxophone's answers, the solos and 
 
 | chords | ties |
 | :---: | :---: |
-| ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../PATTERNS.md#ties) |
 <!-- end of the generated summary of turkish_surf -->

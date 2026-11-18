@@ -23,5 +23,5 @@ The demo's video plays the song from the top in real time, with no live editing 
 
 | key changes |
 | :---: |
-| ✓ |
+| [✓](../SCENES.md#scene-settings) |
 <!-- end of the generated summary of entertainer -->

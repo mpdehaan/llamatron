@@ -25,7 +25,7 @@ iv V; a calm stretch of harp and strings before it comes back.
 
 | chords | arps | chains | ties | tempo changes | progressions |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of angry_shark -->
 
 <a id="four_wheels_g"></a>
@@ -41,7 +41,7 @@ second part on a marimba and a slow theme on bells.
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of four_wheels_g -->
 
 <a id="get_the_traps_egon"></a>
@@ -57,7 +57,7 @@ and V, and ghostly whistles over the drums.
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of get_the_traps_egon -->
 
 <a id="not_star_trek"></a>
@@ -73,7 +73,7 @@ lyrical second theme on the strings; a bridge on the horns.
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of not_star_trek -->
 
 <a id="strange_woodworking"></a>
@@ -88,7 +88,7 @@ bass on one note, a slow pad, a heartbeat kick and a plain theme in long notes o
 
 | chords | arps | chains | ties | shapes | progressions |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/SWELL.md) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of strange_woodworking -->
 
 <a id="tumbleweeds"></a>
@@ -104,7 +104,7 @@ and strings; a harmonica alone with a bell in the middle.
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of tumbleweeds -->
 
 <a id="very_large_mammals"></a>
@@ -119,5 +119,5 @@ offbeats, a comic tune high on a calliope that leaves gaps, and brass answering 
 
 | chords | chains | ties | grooves | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of very_large_mammals -->

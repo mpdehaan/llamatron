@@ -23,7 +23,7 @@ that changing one pattern changes every part that follows it.
 
 | chords | arps | chains | grabs |
 | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../CHAINS.md) | [✓](../CLIPS.md#grabbing-notes) |
 <!-- end of the generated summary of 20_arrangement_shanty -->
 
 <a id="classic_strum"></a>
@@ -39,7 +39,7 @@ rolled like a harp.
 
 | chords | chains | ties | progressions | strum |
 | :---: | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) | [✓](../generators/STRUM.md) |
 <!-- end of the generated summary of 13_classic_strum -->
 
 <a id="complex_gifts_chain"></a>
@@ -53,7 +53,7 @@ metal, using only five patterns and a chain for each scene. The demo shows that 
 
 | chords | arps | ratchets | chains |
 | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../generators/AUTORATCHET.md) | [✓](../CHAINS.md) |
 <!-- end of the generated summary of 17_complex_gifts_chain -->
 
 <a id="hocket_shanty"></a>
@@ -70,7 +70,7 @@ the tune pass between them.
 
 | chains | hocket |
 | :---: | :---: |
-| ✓ | ✓ |
+| [✓](../CHAINS.md) | [✓](../generators/HOCKET.md) |
 <!-- end of the generated summary of 19_hocket_shanty -->
 
 <a id="secret_chord"></a>
@@ -86,5 +86,5 @@ falling notes. The chords are the song's, a whole step up.
 
 | chords | chains | ties | progressions | strum |
 | :---: | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) | [✓](../generators/STRUM.md) |
 <!-- end of the generated summary of secret_chord -->

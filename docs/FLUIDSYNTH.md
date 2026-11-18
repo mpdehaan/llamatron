@@ -26,4 +26,4 @@ The script needs Homebrew, the Mac's package manager, and offers to install it i
 
 ## WAV Files
 
-The WAV (FluidSynth) export renders a song's FluidSynth tracks to a WAV file faster than real time, as [Exporting](EXPORTING.md) describes, and [Listening to the Demos](LISTENING_TO_DEMOS.md) turns every demo into WAV files the same way.
+The WAV (FluidSynth) export renders a song's FluidSynth tracks to a WAV file faster than real time, as [Exporting](EXPORTING.md) describes, and `sh user_scripts/demos_to_wavs.sh` turns every demo into WAV files the same way, as [User Scripts](USER_SCRIPTS.md#listening-to-the-demos) describes.

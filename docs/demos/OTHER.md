@@ -18,5 +18,5 @@ shaker's rhythm its track's own and the rest Euclid generators painted on clips.
 
 | chains | euclid |
 | :---: | :---: |
-| ✓ | ✓ |
+| [✓](../CHAINS.md) | [✓](../generators/EUCLID.md) |
 <!-- end of the generated summary of euclidean -->

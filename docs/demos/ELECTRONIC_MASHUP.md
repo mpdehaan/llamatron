@@ -25,7 +25,7 @@ arpeggios, the solos and the drums are new.
 
 | chords | ties |
 | :---: | :---: |
-| ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../PATTERNS.md#ties) |
 <!-- end of the generated summary of can_can_cant_stop -->
 
 <a id="chipped_jazz"></a>
@@ -40,7 +40,7 @@ piano score; the arpeggios, the bass, the second voice's answers, the solos and 
 
 | ties |
 | :---: |
-| ✓ |
+| [✓](../PATTERNS.md#ties) |
 <!-- end of the generated summary of chipped_jazz -->
 
 <a id="house_entertainer"></a>
@@ -55,7 +55,7 @@ piano score; the house chords, the bass, the organ's answers, the solos and the 
 
 | chords | ties |
 | :---: | :---: |
-| ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../PATTERNS.md#ties) |
 <!-- end of the generated summary of house_entertainer -->
 
 <a id="jungle_alarm_clock"></a>
@@ -72,7 +72,7 @@ the stabs, the piano's answers and the stretches of drums and bass alone are new
 
 | chords | ties |
 | :---: | :---: |
-| ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../PATTERNS.md#ties) |
 <!-- end of the generated summary of jungle_alarm_clock -->
 
 <a id="south_florida_squad"></a>
@@ -89,7 +89,7 @@ and the tom-tom breaks are new, with nothing of the reference's own tune quoted.
 
 | chords | ties |
 | :---: | :---: |
-| ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../PATTERNS.md#ties) |
 <!-- end of the generated summary of south_florida_squad -->
 
 <a id="tripped_went_to_hospital"></a>
@@ -105,7 +105,7 @@ are new.
 
 | chords | ties | grooves |
 | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) |
 <!-- end of the generated summary of tripped_went_to_hospital -->
 
 <a id="zap_swing_kapow"></a>
@@ -121,5 +121,5 @@ are new.
 
 | chords | ties | grooves |
 | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) |
 <!-- end of the generated summary of zap_swing_kapow -->

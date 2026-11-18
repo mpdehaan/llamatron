@@ -42,8 +42,14 @@ real-time MIDI (`docs/MIDI_SETUP.md`), and record it first (`docs/RECORDING.md`)
 
 | chords |
 | :---: |
-| ✓ |
+| [✓](../PATTERNS.md#chords) |
 <!-- end of the generated summary of 01_hello_world -->
+
+**New Features Introduced**
+
+| chords |
+| :---: |
+| [✓](../PATTERNS.md#chords) |
 
 <a id="pachelbel"></a>
 ## Patterns Only: `02_pachelbel.yml`
@@ -56,8 +62,14 @@ patterns, each a scene behind the one before.
 
 | tempo changes |
 | :---: |
-| ✓ |
+| [✓](../SCENES.md#scene-settings) |
 <!-- end of the generated summary of 02_pachelbel -->
+
+**New Features Introduced**
+
+| tempo changes |
+| :---: |
+| [✓](../SCENES.md#scene-settings) |
 
 <a id="mary_keychange"></a>
 ## Key Changes: `03_mary_keychange.yml`
@@ -70,8 +82,14 @@ Scale changes, so it shows how a key change is one field on the Scene page and n
 
 | key changes |
 | :---: |
-| ✓ |
+| [✓](../SCENES.md#scene-settings) |
 <!-- end of the generated summary of 03_mary_keychange -->
+
+**New Features Introduced**
+
+| key changes |
+| :---: |
+| [✓](../SCENES.md#scene-settings) |
 
 <a id="scale"></a>
 ## Scales: `04_scale.yml`
@@ -83,7 +101,7 @@ the order of the scale picker. Use it to preview a scale before choosing one. Th
 
 | key changes |
 | :---: |
-| ✓ |
+| [✓](../SCENES.md#scene-settings) |
 <!-- end of the generated summary of 04_scale -->
 
 <a id="voice_leading"></a>
@@ -98,8 +116,14 @@ inversion and octave nearest the chord before. The last scene keeps the root in 
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of 05_voice_leading -->
+
+**New Features Introduced**
+
+| chains | ties | progressions |
+| :---: | :---: | :---: |
+| [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 
 <a id="chord_progression_generator"></a>
 ## Progressions: `06_chord_progression_generator.yml`
@@ -113,7 +137,7 @@ chords inverted so that they move less, and Pop with the pad through a Voice lea
 
 | chords | chains | ties | key changes | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of 06_chord_progression_generator -->
 
 <a id="blues_chords"></a>
@@ -128,8 +152,14 @@ with the chords.
 
 | chords | chains | grooves | progressions |
 | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../GROOVES.md) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of 07_blues_chords -->
+
+**New Features Introduced**
+
+| grooves |
+| :---: |
+| [✓](../GROOVES.md) |
 
 <a id="tie"></a>
 ## Ties: `08_tie.yml`
@@ -143,8 +173,14 @@ thing here to a finished song.
 
 | chords | arps | ratchets | chains | grabs | morphs | directions | ties | probability | key changes | tempo changes | CCs | registers |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../CHAINS.md) | [✓](../CLIPS.md#grabbing-notes) | [✓](../CLIPS.md#morphing) | [✓](../PATTERNS.md#play-directions) | [✓](../PATTERNS.md#ties) | [✓](../PATTERNS.md#glide-and-probability) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../PATTERNS.md#ccs) | [✓](../REGISTERS.md) |
 <!-- end of the generated summary of 08_tie -->
+
+**New Features Introduced**
+
+| arps | ratchets | grabs | morphs | directions | probability | CCs | registers |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../CLIPS.md#grabbing-notes) | [✓](../CLIPS.md#morphing) | [✓](../PATTERNS.md#play-directions) | [✓](../PATTERNS.md#glide-and-probability) | [✓](../PATTERNS.md#ccs) | [✓](../REGISTERS.md) |
 
 <a id="groove"></a>
 ## Grooves: `09_groove.yml`
@@ -160,7 +196,7 @@ can hear how the track's choice wins over the scene's, which wins over the song'
 
 | chords | arps | ratchets | chains | grooves |
 | :---: | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../generators/AUTORATCHET.md) | [✓](../CHAINS.md) | [✓](../GROOVES.md) |
 <!-- end of the generated summary of 09_groove -->
 
 <a id="mtn_king_direction"></a>
@@ -173,7 +209,7 @@ forward and the two reverses to pendulum, random and brownian. The demo also sho
 
 | directions |
 | :---: |
-| ✓ |
+| [✓](../PATTERNS.md#play-directions) |
 <!-- end of the generated summary of 10_mtn_king_direction -->
 
 <a id="ode_to_joy_ratchet"></a>
@@ -187,7 +223,7 @@ AutoRatchet leave the pattern alone and do the chopping in a chain instead.
 
 | chords | ratchets | chains | probability |
 | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../PATTERNS.md#advanced) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#glide-and-probability) |
 <!-- end of the generated summary of 11_ode_to_joy_ratchet -->
 
 <a id="sailor_arpeggiator"></a>
@@ -202,7 +238,7 @@ arpeggio.
 
 | chords | arps | chains |
 | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../CHAINS.md) |
 <!-- end of the generated summary of 12_sailor_arpeggiator -->
 
 <a id="classic_strum"></a>
@@ -217,8 +253,14 @@ rolled like a harp.
 
 | chords | chains | ties | progressions | strum |
 | :---: | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) | [✓](../generators/STRUM.md) |
 <!-- end of the generated summary of 13_classic_strum -->
+
+**New Features Introduced**
+
+| strum |
+| :---: |
+| [✓](../generators/STRUM.md) |
 
 <a id="acid_glide"></a>
 ## Glide and Shorten: `14_acid_glide.yml`
@@ -231,8 +273,14 @@ each bar, though the line itself never changes.
 
 | chains | feel |
 | :---: | :---: |
-| ✓ | ✓ |
+| [✓](../CHAINS.md) | [✓](../generators/GLIDE.md) |
 <!-- end of the generated summary of 14_acid_glide -->
+
+**New Features Introduced**
+
+| feel |
+| :---: |
+| [✓](../generators/GLIDE.md) |
 
 <a id="acid_articulate"></a>
 ## Articulate: `15_acid_articulate.yml`
@@ -245,8 +293,14 @@ and long every bar, and a register bound to CC 74 opens the filter as the notes 
 
 | chords | chains | ties | CCs | registers | binding | shapes |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../TRACKS.md#track-settings) | [✓](../REGISTERS.md) | [✓](../REGISTERS.md) | [✓](../SCENES.md#section-shapes) |
 <!-- end of the generated summary of 15_acid_articulate -->
+
+**New Features Introduced**
+
+| binding | shapes |
+| :---: | :---: |
+| [✓](../REGISTERS.md) | [✓](../SCENES.md#section-shapes) |
 
 <a id="bolero_swell"></a>
 ## Swell: `16_bolero_swell.yml`
@@ -262,7 +316,7 @@ hear it.
 
 | chords | chains | ties | shapes |
 | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#section-shapes) |
 <!-- end of the generated summary of 16_bolero_swell -->
 
 <a id="complex_gifts_chain"></a>
@@ -275,7 +329,7 @@ metal, using only five patterns and a chain for each scene. The demo shows that 
 
 | chords | arps | ratchets | chains |
 | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../generators/AUTORATCHET.md) | [✓](../CHAINS.md) |
 <!-- end of the generated summary of 17_complex_gifts_chain -->
 
 <a id="techno_morph"></a>
@@ -288,7 +342,7 @@ A 16-step minimal techno groove whose bass and lead slowly turn into other patte
 
 | morphs | CCs |
 | :---: | :---: |
-| ✓ | ✓ |
+| [✓](../CLIPS.md#morphing) | [✓](../PATTERNS.md#ccs) |
 <!-- end of the generated summary of 18_techno_morph -->
 
 <a id="hocket_shanty"></a>
@@ -304,8 +358,14 @@ the tune pass between them.
 
 | chains | hocket |
 | :---: | :---: |
-| ✓ | ✓ |
+| [✓](../CHAINS.md) | [✓](../generators/HOCKET.md) |
 <!-- end of the generated summary of 19_hocket_shanty -->
+
+**New Features Introduced**
+
+| hocket |
+| :---: |
+| [✓](../generators/HOCKET.md) |
 
 <a id="arrangement_shanty"></a>
 ## Few Patterns: `20_arrangement_shanty.yml`
@@ -319,7 +379,7 @@ that changing one pattern changes every part that follows it.
 
 | chords | arps | chains | grabs |
 | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../CHAINS.md) | [✓](../CLIPS.md#grabbing-notes) |
 <!-- end of the generated summary of 20_arrangement_shanty -->
 
 <a id="look_ma_no_notes"></a>
@@ -336,7 +396,7 @@ step, and every part follows.
 
 | chords | arps | ratchets | chains | grabs | ties | grooves | key changes | registers | progressions |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../CHAINS.md) | [✓](../CLIPS.md#grabbing-notes) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../SCENES.md#scene-settings) | [✓](../REGISTERS.md) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of 21_look_ma_no_notes -->
 
 <a id="registers"></a>
@@ -350,7 +410,7 @@ at once. Then DX fades the riff, kick and hat out together over six repeats of t
 
 | registers |
 | :---: |
-| ✓ |
+| [✓](../REGISTERS.md) |
 <!-- end of the generated summary of 22_registers -->
 
 <a id="guitarify"></a>
@@ -367,8 +427,14 @@ playing, so the demo shows what its Shape and Strokes sections do to the same ki
 
 | chords | chains | guitarify | key changes | tempo changes | progressions |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../generators/GUITARIFY.md) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../PATTERNS.md#chords) |
 <!-- end of the generated summary of 23_guitarify -->
+
+**New Features Introduced**
+
+| guitarify |
+| :---: |
+| [✓](../generators/GUITARIFY.md) |
 
 <a id="follow_chords"></a>
 ## Follow Chords: `24_follow_chords.yml`
@@ -384,8 +450,14 @@ chord twice a bar, and follow chords that a Progression makes on that track.
 
 | chords | chains | follow chords | ties | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../generators/FOLLOW_CHORDS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of 24_follow_chords -->
+
+**New Features Introduced**
+
+| follow chords |
+| :---: |
+| [✓](../generators/FOLLOW_CHORDS.md) |
 
 <a id="phrasing"></a>
 ## Phrasing: `25_phrasing.yml`
@@ -399,5 +471,11 @@ with the settings together.
 
 | chords | chains | phrasing | ties |
 | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../generators/PHRASING.md) | [✓](../PATTERNS.md#ties) |
 <!-- end of the generated summary of 25_phrasing -->
+
+**New Features Introduced**
+
+| phrasing |
+| :---: |
+| [✓](../generators/PHRASING.md) |

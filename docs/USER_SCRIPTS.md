@@ -73,7 +73,7 @@ Parameters:
 
 ### `demos_to_wavs.sh`
 
-Turns every demo into a WAV file in `previews/` in one go: it makes the previews first, plays each through FluidSynth, which it installs the first time, and evens out their loudness. Use it to have every demo as audio to play or share. See [Listening to the Demos](LISTENING_TO_DEMOS.md).
+Turns every demo into a WAV file in `previews/` in one go: it makes the previews first, plays each through FluidSynth, which it installs the first time, and evens out their loudness. Use it to have every demo as audio to play or share.
 
 ```
 sh user_scripts/demos_to_wavs.sh

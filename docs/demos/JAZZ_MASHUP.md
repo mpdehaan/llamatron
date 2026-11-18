@@ -20,7 +20,7 @@ piano's chords, the answers, the solos and the drums are new.
 
 | chords | ties | grooves |
 | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) |
 <!-- end of the generated summary of bop_invention -->
 
 <a id="the_bucket"></a>
@@ -37,5 +37,5 @@ the solos and the parade drums are new.
 
 | chords | ties | grooves | tempo changes |
 | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../SCENES.md#scene-settings) |
 <!-- end of the generated summary of the_bucket -->
