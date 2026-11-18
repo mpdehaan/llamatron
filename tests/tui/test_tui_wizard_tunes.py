@@ -18,9 +18,11 @@
 
 from llamatron.composition.file_format import Row
 from llamatron.macro_composer.arranger import NOBODY
+from llamatron.macro_composer.riffs import FIRST_TAKE as FIRST_RIFF_TAKE
 from llamatron.macro_composer.wizard_choices import FIRST_TUNE_TAKE, genre_title
 from llamatron.strings import errors, labels, marks, messages
 from llamatron.tui import keybindings
+from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
@@ -39,11 +41,10 @@ A_DEGREE = 7
 SECOND_TAKE_SHOWN = 2
 # The attribute a field keeps its label in.
 LABEL = 'label'
-# The most fields a kind of section's part of the panel holds under its heading.
-FIELDS_OF_A_KIND = 2
 
 
-class TestWizardTunes(WizardTest):
+class TunesPanelTest(WizardTest):
+    """The wizard opened on the Tunes and Riffs panel of a song, with what its tests share."""
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -63,7 +64,7 @@ class TestWizardTunes(WizardTest):
         page = self.wizard()
         if not page.is_open(page.field()):
             await self.press(keybindings.FieldPage.TOGGLE)
-        for _ in range(FIELDS_OF_A_KIND):
+        for _ in self.labels_under(kind=kind):
             if page.label_under_cursor() != label:
                 await self.press(Key.DOWN)
         self.assertEqual(page.label_under_cursor(), label)
@@ -80,6 +81,10 @@ class TestWizardTunes(WizardTest):
             under.append(field.label)
         return under
 
+    def tune_labels_under(self, *, kind=A_KIND):
+        """Return the labels under a kind of section's heading that are the tune's: its row and who plays it."""
+        return [label for label in self.labels_under(kind=kind) if label in (labels.MSG_WIZARD_TUNE_ROW_LABEL, labels.MSG_WIZARD_PLAYED_BY_LABEL)]
+
     async def open_tune(self):
         await self.select_in_kind(label=labels.MSG_WIZARD_TUNE_ROW_LABEL)
         await self.press(Key.ENTER)
@@ -89,15 +94,19 @@ class TestWizardTunes(WizardTest):
         editor = self.app.screen
         editor.document().set_step_value(name=editor.item, row=Row.DEGREE, step=0, value=A_DEGREE)
 
+
+class TestWizardTunes(TunesPanelTest):
+
     async def test_the_panel_has_a_heading_for_each_kind_of_section_with_a_tune_closed_until_opened_with_its_tune_inside(self):
         choices = self.choices()
         headings = [field.label for field in self.wizard().shown_fields() if isinstance(field, Heading)]
-        self.assertEqual(headings, [self.heading(kind=kind) for kind in choices.tune_kinds()])
+        for kind in choices.tune_kinds():
+            self.assertIn(self.heading(kind=kind), headings)
         for kind in choices.tune_kinds():
             self.assertNotIn(choices.tune_pattern_name(kind), self.text())
             await self.select_in_kind(label=labels.MSG_WIZARD_TUNE_ROW_LABEL, kind=kind)
             self.assertIn(choices.tune_pattern_name(kind), self.text())
-            self.assertEqual(self.labels_under(kind=kind), [labels.MSG_WIZARD_TUNE_ROW_LABEL, labels.MSG_WIZARD_PLAYED_BY_LABEL])
+            self.assertEqual(self.tune_labels_under(kind=kind), [labels.MSG_WIZARD_TUNE_ROW_LABEL, labels.MSG_WIZARD_PLAYED_BY_LABEL])
         shown = self.text()
         self.assertNotIn(marks.MSG_WIZARD_TUNE_EDITED.format(name=self.choices().tune_pattern_name(A_KIND)), shown)
 
@@ -205,8 +214,8 @@ class TestWizardTunes(WizardTest):
         await self.press(Key.ENTER)
         self.assertEqual(choices.tune_played_by_in(A_KIND), NOBODY)
         self.assertIsNone(choices.tune_player_in(A_KIND))
-        self.assertEqual(self.labels_under(), [labels.MSG_WIZARD_PLAYED_BY_LABEL])
-        self.assertEqual(self.labels_under(kind=other_kind), [labels.MSG_WIZARD_TUNE_ROW_LABEL, labels.MSG_WIZARD_PLAYED_BY_LABEL])
+        self.assertEqual(self.tune_labels_under(), [labels.MSG_WIZARD_PLAYED_BY_LABEL])
+        self.assertEqual(self.tune_labels_under(kind=other_kind), [labels.MSG_WIZARD_TUNE_ROW_LABEL, labels.MSG_WIZARD_PLAYED_BY_LABEL])
         # The cursor stays on the field that was changed, whose heading now says something inside was chosen.
         self.assertEqual(self.wizard().label_under_cursor(), labels.MSG_WIZARD_PLAYED_BY_LABEL)
         self.assertEqual(self.wizard().heading_over_cursor(), self.heading())
@@ -217,6 +226,79 @@ class TestWizardTunes(WizardTest):
             await self.press(binding)
             self.assertIsInstance(self.app.screen, PatternEditor)
             self.assertIn(errors.ERR_NOT_WHILE_DRAFTING, self.text())
+
+
+class TestWizardRiffs(TunesPanelTest):
+
+    async def add_riff(self, *, kind=A_KIND):
+        """Add a new riff to a kind of section for the first player the picker offers, and return the riff's name."""
+        before = self.choices().added_riffs()
+        await self.select_in_kind(label=labels.MSG_WIZARD_ADD_RIFF_LABEL, kind=kind)
+        await self.press(Key.ENTER)
+        if labels.MSG_WIZARD_NEW_RIFF in self.text():
+            # With a riff of the song that could be played again here, the picker first asks which: a new one is its first choice.
+            await self.press(Key.ENTER)
+        await self.press(Key.ENTER)
+        return next(riff for riff in self.choices().added_riffs() if riff not in before)
+
+    async def test_every_kind_of_the_form_has_a_heading_and_a_kind_with_no_tune_holds_add_riff_alone(self):
+        choices = self.choices()
+        headings = [field.label for field in self.wizard().shown_fields() if isinstance(field, Heading)]
+        self.assertEqual(headings, [self.heading(kind=kind) for kind in choices.riff_kinds_offered()])
+        no_tune = next(kind for kind in choices.riff_kinds_offered() if kind not in choices.tune_kinds())
+        await self.select_in_kind(label=labels.MSG_WIZARD_ADD_RIFF_LABEL, kind=no_tune)
+        self.assertEqual(self.labels_under(kind=no_tune), [labels.MSG_WIZARD_ADD_RIFF_LABEL])
+
+    async def test_add_riff_asks_who_plays_and_the_riff_has_a_row_of_its_name_and_its_players(self):
+        choices = self.choices()
+        offered = choices.riff_players_free(A_KIND)
+        await self.select_in_kind(label=labels.MSG_WIZARD_ADD_RIFF_LABEL)
+        await self.press(Key.ENTER)
+        self.assertIsInstance(self.app.screen, ChoiceDialog)
+        for role in offered:
+            self.assertIn(choices.role_title(role), self.text())
+        await self.press(Key.ENTER)
+        riff = choices.added_riffs()[0]
+        self.assertEqual(choices.riff_players_of(riff), offered[:1])
+        self.assertEqual(self.labels_under()[-2:] if len(offered) > 1 else self.labels_under()[-1:], [riff, labels.MSG_WIZARD_ADD_RIFF_LABEL][:2 if len(offered) > 1 else 1])
+        self.assertIn(choices.role_title(offered[0]), self.text())
+        self.assertIn(messages.MSG_WIZARD_RIFF_ADDED.format(riff=riff, kind=A_KIND), self.text())
+        self.assertTrue(self.wizard().has_choices_to_lose())
+
+    async def test_a_riff_of_the_song_is_offered_again_in_another_kind_under_new_riff(self):
+        choices = self.choices()
+        riff = await self.add_riff()
+        other_kind = next(kind for kind in choices.tune_kinds() if kind != A_KIND)
+        await self.select_in_kind(label=labels.MSG_WIZARD_ADD_RIFF_LABEL, kind=other_kind)
+        await self.press(Key.ENTER)
+        self.assertIn(labels.MSG_WIZARD_NEW_RIFF, self.text())
+        await self.type(riff)
+        await self.press(Key.ENTER)
+        self.assertEqual(choices.riff_kinds_of(riff), [A_KIND, other_kind])
+        self.assertIn(riff, self.labels_under(kind=other_kind))
+
+    async def test_t_on_a_riff_writes_a_new_take_of_the_riff_and_bksp_removes_it_after_asking(self):
+        choices = self.choices()
+        riff = await self.add_riff()
+        await self.select_in_kind(label=riff)
+        await self.press(keybindings.WizardPage.NEW_TAKE)
+        self.assertEqual(choices.riff_take_of(riff), FIRST_RIFF_TAKE + 1)
+        self.assertIn(messages.MSG_WIZARD_RIFF_TAKEN.format(take=SECOND_TAKE_SHOWN, riff=riff), self.text())
+        await self.press(keybindings.FieldPage.CLEAR)
+        self.assertIsInstance(self.app.screen, ConfirmDialog)
+        await self.press(keybindings.ConfirmDialog.NO)
+        self.assertEqual(choices.riffs_in(A_KIND), [riff])
+        await self.press(keybindings.FieldPage.CLEAR, keybindings.ConfirmDialog.YES)
+        self.assertEqual(choices.added_riffs(), [])
+        self.assertNotIn(riff, self.labels_under())
+
+    async def test_a_second_riff_in_a_kind_is_for_the_players_still_free_and_add_riff_leaves_when_none_is(self):
+        choices = self.choices()
+        free = list(choices.riff_players_free(A_KIND))
+        riffs = [await self.add_riff() for _ in free]
+        self.assertEqual([choices.riff_players_of(riff) for riff in riffs], [[role] for role in free])
+        self.assertEqual(choices.riff_players_free(A_KIND), [])
+        self.assertNotIn(labels.MSG_WIZARD_ADD_RIFF_LABEL, self.labels_under())
 
 
 class TestWizardChangeGenre(WizardTest):

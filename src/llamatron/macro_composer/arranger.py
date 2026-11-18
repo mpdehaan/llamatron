@@ -28,6 +28,7 @@ import copy
 import math
 import os
 import random
+import zlib
 from fractions import Fraction
 
 from llamatron.macro_composer.breaks import BREAKS, LEAST_CUT, MOST_CUT, cut_up
@@ -193,6 +194,10 @@ ENDS = 'ends'
 MELODY_ENGINE = 'melody_engine'
 # A song's tunes written by hand, each a pattern's data under its kind of section, which take the place of the tune that would be written.
 OWN_TUNES = 'own_tunes'
+# The riffs a song has besides its first, in order: each a riff as the first is, with a name of its own, which its players play in
+# its kinds of section in place of their usual parts; and the seed a riff of a name is written from.
+MORE_RIFFS = 'more_riffs'
+MORE_RIFF_SEED = '{seed} riff {name}'
 # Who plays the tune: a player's name for each kind of section, and one for the whole song, the player the genre gives the tune
 # where neither says; NOBODY for a kind of section that has no tune.
 TUNE_BY = 'tune_by'
@@ -900,6 +905,21 @@ def form_of(*, style, song, meter, tempo):
     return max(forms, key=share_of)[SECTIONS]
 
 
+class SongRiff:
+    """One riff of a song as the arranger places it: its name, None for the song's first; the riff as chosen; its notes, a line in
+    eighths; how many bars it lasts; its bars apart, or None where it has one; and the players who play it, the first its chords."""
+
+    __slots__ = ('name', 'riff', 'notes', 'count', 'split', 'players')
+
+    def __init__(self, *, name, riff, notes, count, split, players):
+        self.name = name
+        self.riff = riff
+        self.notes = notes
+        self.count = count
+        self.split = split
+        self.players = players
+
+
 def arranged(*, style, song):
     """A song's picks as a MacroComposer input."""
     style = style_in(style=style, template=song[TEMPLATE], variant=song.get(VARIANT))
@@ -933,15 +953,19 @@ def arranged(*, style, song):
     playing = players_in(style=style, roles=roles, levels=levels, section={})
     drummer = next((playing[role[ROLE]] for role in roles if role.get(DRUMS)), {})
     drum_traits = [trait for role in roles for trait in role.get(DRUMS, [])] + [FILLS]
-    # The song's riff, where it has one: the song's own, or the one its kind of music is built on, how many eighths a bar of
-    # it lasts, its notes and its bars.
-    riff = song.get(RIFF, style.get(RIFF)) or {}
+    # The song's riffs, where it has any: first the song's own, or the one its kind of music is built on, then each riff added
+    # for kinds of section, by name; and how many eighths a bar of a riff lasts.
     riff_eighths = int(bar_length(meter) * EIGHTHS_IN_WHOLE)
-    riff_notes = riff_line_of(riff=riff, seed=song.get(SEED, 0), eighths=riff_eighths, flattened=flattened_in(scale_type)) if riff.get(RIFF_ROLES) else []
-    riff_count = riff_bars_of(line=riff_notes, eighths=riff_eighths) or 1
-    riff_split = split_bars(line=riff_notes, eighths=riff_eighths)
-    riff_players = [role[ROLE] for role in roles if role[ROLE] in riff.get(RIFF_ROLES, []) and role[ROLE] not in without and not role.get(DRUMS)
-                    and FIGURE in values_of(style=style, trait=role[TRAIT]).get(picks.get(role[TRAIT]), {})] if riff_notes else []
+
+    def riff_made(*, riff, name, seed):
+        """A riff of the song with its notes, its bars and the players of the band who play it: those of its players whose part is a figure."""
+        notes = riff_line_of(riff=riff, seed=seed, eighths=riff_eighths, flattened=flattened_in(scale_type)) if riff.get(RIFF_ROLES) else []
+        players = [role[ROLE] for role in roles if role[ROLE] in riff.get(RIFF_ROLES, []) and role[ROLE] not in without and not role.get(DRUMS)
+                   and FIGURE in values_of(style=style, trait=role[TRAIT]).get(picks.get(role[TRAIT]), {})] if notes else []
+        return SongRiff(name=name, riff=riff, notes=notes, count=riff_bars_of(line=notes, eighths=riff_eighths) or 1, split=split_bars(line=notes, eighths=riff_eighths), players=players)
+    riffs = [riff_made(riff=song.get(RIFF, style.get(RIFF)) or {}, name=None, seed=song.get(SEED, 0))]
+    for more in song.get(MORE_RIFFS, []):
+        riffs.append(riff_made(riff=more, name=more[NAME], seed=zlib.crc32(MORE_RIFF_SEED.format(seed=song.get(SEED, 0), name=more[NAME]).encode())))
 
     def chords_in(section, *, shared=False):
         """A section's chords, its last bar set up for what follows where the section says so."""
@@ -954,13 +978,23 @@ def arranged(*, style, song):
             chords = [chords[bar % len(chords)] for bar in range(bars - 1)] + [chord_of(section[LAST_CHORD])]
         return chords
 
-    def riff_bars_in(section):
-        """Which bar of the riff each bar of a section plays, None where a riff that stays at home gives way to a held chord; nothing
-        where the section has no riff."""
-        if not riff_players or section.get(HELD) or section[KIND] not in riff.get(RIFF_KINDS, []) or section[BARS] % riff_count:
+    def riff_bars_in(section, *, riff):
+        """Which bar of a riff each bar of a section plays, None where a riff that stays at home gives way to a held chord; nothing
+        where the section has not the riff."""
+        if not riff.players or section.get(HELD) or section[KIND] not in riff.riff.get(RIFF_KINDS, []) or section[BARS] % riff.count:
             return []
-        stays = riff.get(RIFF_WITH_CHORDS) == STAYS_HOME and riff_split is not None and not section.get(EVERY, chord_entry.get(EVERY))
-        return bars_played(chords=chords_in(section), bars=section[BARS], count=riff_count, stays=stays)
+        stays = riff.riff.get(RIFF_WITH_CHORDS) == STAYS_HOME and riff.split is not None and not section.get(EVERY, chord_entry.get(EVERY))
+        return bars_played(chords=chords_in(section), bars=section[BARS], count=riff.count, stays=stays)
+
+    def riff_played(section, *, by=None, notes=None):
+        """The first of the song's riffs that plays in a section, with which of its bars each bar of the section plays: the first a
+        player plays where one is named, the first of one way of notes where a way is named; (None, []) where there is none."""
+        for riff in riffs:
+            if (by is None or by in riff.players) and (notes is None or riff.riff.get(RIFF_NOTES) == notes):
+                bars = riff_bars_in(section, riff=riff)
+                if bars:
+                    return riff, bars
+        return None, []
     parts = {}
     drum_sets = {}
     usual_drummer = label_of(character_of(levels[DRUMS])) if DRUMS in levels else None
@@ -986,11 +1020,11 @@ def arranged(*, style, song):
         if drum_solo_here:
             key = (DRUM_SOLO, section[BARS])
         # Under a riff of chords on its accents the kick strikes each accent, bar by bar.
-        riff_here = riff_bars_in(section) if riff.get(RIFF_NOTES) == ACCENT_CHORDS and not drum_solo_here else []
-        kick_bars = accent_bars(line=riff_notes, eighths=riff_eighths)
+        kicked_riff, riff_here = riff_played(section, notes=ACCENT_CHORDS) if not drum_solo_here else (None, [])
+        kick_bars = accent_bars(line=kicked_riff.notes, eighths=riff_eighths) if kicked_riff is not None else []
         over = {KICK: [None if bar is None else kick_bars[bar] for bar in riff_here]} if any(bar is not None for bar in riff_here) else None
         if over:
-            key = key + (RIFF, section[BARS], tuple(riff_here))
+            key = key + (RIFF, kicked_riff.name, section[BARS], tuple(riff_here))
         if key not in drum_sets:
             if drum_solo_here:
                 made = solo_parts(style=style, bars=section[BARS], seed=song.get(SEED, 0), kit=played)
@@ -1166,17 +1200,17 @@ def arranged(*, style, song):
                             if figure not in parts:
                                 parts[figure] = held_back
                                 shaped.append(figure)
-                    riff_here = riff_bars_in(section) if role[ROLE] in riff_players else []
+                    riff, riff_here = riff_played(section, by=role[ROLE])
                     if riff_here:
                         # The song's riff takes the place of the player's figure here: moved by the chords and played as written, with none of the figure's
                         # own generators. Its first player plays its chords, and a player under the first its notes alone.
-                        first = role[ROLE] == riff_players[0]
-                        riff_part = composer_text.MSG_PART_OF_SECTION.format(role[ROLE], RIFF)
+                        first = role[ROLE] == riff.players[0]
+                        riff_part = composer_text.MSG_PART_OF_SECTION.format(role[ROLE], riff.name or RIFF)
                         if None in riff_here:
                             # A riff that stays at home is written out for the whole section: the riff over the home chord, and every other chord held.
                             riff_part = composer_text.MSG_PART_OF_SECTION.format(name, riff_part)
                         if riff_part not in parts:
-                            lines = [riff_notes] if None not in riff_here else [held_bar(eighths=riff_eighths, chord=first) if bar is None else riff_split[bar] for bar in riff_here]
+                            lines = [riff.notes] if None not in riff_here else [held_bar(eighths=riff_eighths, chord=first) if bar is None else riff.split[bar] for bar in riff_here]
                             parts[riff_part] = {STEP: EIGHTH, OCTAVE: role[OCTAVE], **voice_of(role), LINES: [[dict(note) for note in (line if first else single(line))] for line in lines]}
                             shaped.append(riff_part)
                         riff_chain = composer_text.MSG_PART_OF_SECTION.format(chain, RIFF)

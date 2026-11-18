@@ -18,16 +18,19 @@
 
 import unittest
 
+from llamatron.composition import naming
 from llamatron.composition.file_format import PatternSetting, Row
 from llamatron.macro_composer.arranger import NOBODY
+from llamatron.macro_composer.riffs import FIRST_TAKE as FIRST_RIFF_TAKE
 from llamatron.macro_composer.wizard_choices import FIRST_TUNE_TAKE, WizardChoices
-from llamatron.strings import errors
+from llamatron.strings import errors, macro_composer as composer_text, names
 from tests.support.ui_testing import fixed_text
 
 A_GENRE = 'rock'
 A_SUBGENRE = 'folk rock'
 ANOTHER_GENRE = 'blues'
 A_KIND = 'verse'
+ANOTHER_KIND = 'chorus'
 A_KIND_WITH_NO_TUNE = 'intro'
 NOT_A_KIND = 'middle bit'
 A_SEED = 7
@@ -269,3 +272,97 @@ class TestWhoPlaysTheTune(unittest.TestCase):
         choices.set_genre(A_GENRE)
         choices.set_subgenre(A_SUBGENRE)
         self.assertIsNone(choices.tune_played_by_in(A_KIND))
+
+
+class TestRiffsAdded(unittest.TestCase):
+
+    def players_of(self, *, choices, kind):
+        """Return the pattern each player plays in the first section of a kind, by player, in the set the choices make."""
+        setlist, name = choices.made_for_listening()
+        scene = setlist.get_song(name).get_scenes()[choices.riff_place(kind)]
+        return {role: scene.get_clip_slot(role).get_pattern_name() for role in choices.roles_in() if scene.has_clip_slot(role)}
+
+    def test_a_riff_is_offered_in_every_kind_of_the_form_to_players_of_figures_but_the_tunes_player(self):
+        choices = chosen()
+        played = [kind for place, kind in enumerate(choices.section_kinds_in_form()) if not choices.section_is_held(place)]
+        self.assertEqual(choices.riff_kinds_offered(), list(dict.fromkeys(played)))
+        for kind in choices.riff_kinds_offered():
+            free = choices.riff_players_free(kind)
+            self.assertTrue(set(free) <= set(choices.section_plays(choices.riff_place(kind))))
+            self.assertNotIn(choices.tune_player_in(kind), free)
+        self.assertTrue(choices.riff_players_free(A_KIND))
+        self.assertEqual(choices.riff_players_free(NOT_A_KIND), [])
+        self.assertEqual(choices.added_riffs(), [])
+
+    def test_a_riffs_players_play_it_in_its_kind_in_place_of_their_parts_and_nowhere_else(self):
+        choices = chosen()
+        one, other = choices.riff_players_free(A_KIND)[:2]
+        usual = self.players_of(choices=choices, kind=A_KIND)
+        elsewhere = self.players_of(choices=choices, kind=ANOTHER_KIND)
+        riff = choices.add_riff(kind=A_KIND, players=[one, other])
+        self.assertEqual(riff, naming.new_name(word=names.MSG_NEW_RIFF_WORD, taken=[]))
+        self.assertEqual(choices.riffs_in(A_KIND), [riff])
+        self.assertEqual(choices.riff_players_of(riff), [one, other])
+        played = self.players_of(choices=choices, kind=A_KIND)
+        for role in (one, other):
+            self.assertEqual(played[role], composer_text.MSG_PART_OF_SECTION.format(role, riff))
+        self.assertEqual({role: part for role, part in played.items() if role not in (one, other)}, {role: part for role, part in usual.items() if role not in (one, other)})
+        self.assertEqual(self.players_of(choices=choices, kind=ANOTHER_KIND), elsewhere)
+
+    def test_a_player_has_one_riff_in_a_kind_and_may_have_another_in_another_kind(self):
+        choices = chosen()
+        player = choices.riff_players_free(A_KIND)[0]
+        first = choices.add_riff(kind=A_KIND, players=[player])
+        self.assertNotIn(player, choices.riff_players_free(A_KIND))
+        for refused in ([player], [], [NOT_A_KIND], [choices.tune_player_in(A_KIND)]):
+            with self.assertRaises(ValueError):
+                choices.add_riff(kind=A_KIND, players=refused)
+        second = choices.add_riff(kind=ANOTHER_KIND, players=[player])
+        self.assertNotEqual(first, second)
+        played = {kind: self.players_of(choices=choices, kind=kind)[player] for kind in (A_KIND, ANOTHER_KIND)}
+        self.assertEqual(played, {A_KIND: composer_text.MSG_PART_OF_SECTION.format(player, first), ANOTHER_KIND: composer_text.MSG_PART_OF_SECTION.format(player, second)})
+        setlist, _ = choices.made_for_listening()
+        self.assertNotEqual(setlist.get_pattern(played[A_KIND]).to_data()[Row.DEGREE], setlist.get_pattern(played[ANOTHER_KIND]).to_data()[Row.DEGREE])
+        self.assertEqual(choices.added_riffs(), [first, second])
+
+    def test_a_riff_of_the_song_is_played_again_in_another_kind_by_its_own_players_while_they_are_free_there(self):
+        choices = chosen()
+        player = choices.riff_players_free(A_KIND)[0]
+        riff = choices.add_riff(kind=A_KIND, players=[player])
+        self.assertEqual(choices.add_riff(kind=ANOTHER_KIND, riff=riff), riff)
+        self.assertEqual(choices.riff_kinds_of(riff), [A_KIND, ANOTHER_KIND])
+        self.assertEqual(self.players_of(choices=choices, kind=A_KIND)[player], self.players_of(choices=choices, kind=ANOTHER_KIND)[player])
+        for refused in (riff, NOT_A_KIND):
+            with self.assertRaises(ValueError):
+                choices.add_riff(kind=ANOTHER_KIND, riff=refused)
+
+    def test_a_riff_taken_out_of_its_last_kind_is_gone_and_the_song_is_as_it_was(self):
+        choices = chosen()
+        usual = chosen().to_data()
+        riff = choices.add_riff(kind=A_KIND, players=[choices.riff_players_free(A_KIND)[0]])
+        choices.add_riff(kind=ANOTHER_KIND, riff=riff)
+        choices.remove_riff(kind=A_KIND, riff=riff)
+        self.assertEqual(choices.riff_kinds_of(riff), [ANOTHER_KIND])
+        with self.assertRaises(ValueError):
+            choices.remove_riff(kind=A_KIND, riff=riff)
+        choices.remove_riff(kind=ANOTHER_KIND, riff=riff)
+        self.assertEqual(choices.added_riffs(), [])
+        self.assertEqual(choices.to_data(), usual)
+
+    def test_a_new_take_writes_other_notes_for_the_riff_alone_and_riffs_are_kept_with_the_choices_until_another_genre(self):
+        choices = chosen()
+        player = choices.riff_players_free(A_KIND)[0]
+        riff = choices.add_riff(kind=A_KIND, players=[player])
+        part = composer_text.MSG_PART_OF_SECTION.format(player, riff)
+        first = choices.made_for_listening()[0].get_pattern(part).to_data()
+        choices.new_riff_take_of(riff)
+        self.assertEqual(choices.riff_take_of(riff), FIRST_RIFF_TAKE + 1)
+        taken = choices.made_for_listening()[0].get_pattern(part).to_data()
+        self.assertNotEqual(taken[Row.DEGREE], first[Row.DEGREE])
+        read = WizardChoices.from_data(choices.to_data())
+        self.assertEqual(read.riffs_in(A_KIND), [riff])
+        self.assertEqual(read.made_for_listening()[0].get_pattern(part).to_data(), taken)
+        choices.set_genre(ANOTHER_GENRE)
+        choices.set_genre(A_GENRE)
+        choices.set_subgenre(A_SUBGENRE)
+        self.assertEqual(choices.added_riffs(), [])

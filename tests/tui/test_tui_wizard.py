@@ -48,6 +48,8 @@ from tests.support.ui_testing import UITest, back_key, first_key, fixed_text, fo
 GENRE_PLACE = 0
 # The branches under Composition, which the tree shows from the start, and the places of the branches after them.
 COMPOSITION_BRANCHES = 4
+# The panel under Composition with the longest name, which the Composition panel's lines are as wide as.
+WIDEST_COMPOSITION_BRANCH = labels_text.MSG_WIZARD_TUNES_BRANCH
 FORM_PLACE = 3 + COMPOSITION_BRANCHES
 # The tree's top panels and the Subgenre panel under Genre come before Create.
 CREATE_PLACE = 5 + COMPOSITION_BRANCHES
@@ -1396,16 +1398,16 @@ class TestWizardComposition(WizardTest):
         await self.go_to_named_branch(labels_text.MSG_WIZARD_COMPOSITION_BRANCH)
         shown = self.text()
         for name, value in ((labels_text.MSG_WIZARD_CHORDS_BRANCH, labels_text.MSG_WIZARD_ANY_PROGRESSION), (labels_text.MSG_WIZARD_MELODY_BRANCH, SMART), (labels_text.MSG_WIZARD_HOOKS_BRANCH, labels_text.MSG_WIZARD_HOOK_OFF)):
-            self.assertIn(marks.MSG_WIZARD_COMPOSITION_LINE.format(name=name, width=len(labels_text.MSG_WIZARD_MELODY_BRANCH), value=value), shown)
+            self.assertIn(marks.MSG_WIZARD_COMPOSITION_LINE.format(name=name, width=len(WIDEST_COMPOSITION_BRANCH), value=value), shown)
         choices.set_hook(True)
         await self.press(Key.DOWN, Key.UP)
-        self.assertIn(marks.MSG_WIZARD_COMPOSITION_LINE.format(name=labels_text.MSG_WIZARD_HOOKS_BRANCH, width=len(labels_text.MSG_WIZARD_MELODY_BRANCH), value=labels_text.MSG_WIZARD_HOOK_ON), self.text())
+        self.assertIn(marks.MSG_WIZARD_COMPOSITION_LINE.format(name=labels_text.MSG_WIZARD_HOOKS_BRANCH, width=len(WIDEST_COMPOSITION_BRANCH), value=labels_text.MSG_WIZARD_HOOK_ON), self.text())
 
     async def test_composition_leaves_out_a_branch_with_nothing_to_choose(self):
         await self.choose(genre=A_GENRE_WITH_NO_HOOK)
         await self.go_to_named_branch(labels_text.MSG_WIZARD_COMPOSITION_BRANCH)
         self.assertFalse(self.choices().can_have_hook())
-        self.assertNotIn(marks.MSG_WIZARD_COMPOSITION_LINE.format(name=labels_text.MSG_WIZARD_HOOKS_BRANCH, width=len(labels_text.MSG_WIZARD_MELODY_BRANCH), value=labels_text.MSG_WIZARD_HOOK_OFF), self.text())
+        self.assertNotIn(marks.MSG_WIZARD_COMPOSITION_LINE.format(name=labels_text.MSG_WIZARD_HOOKS_BRANCH, width=len(WIDEST_COMPOSITION_BRANCH), value=labels_text.MSG_WIZARD_HOOK_OFF), self.text())
         await self.go_to_named_branch(labels_text.MSG_WIZARD_HOOKS_BRANCH)
         # With no hook to switch, the panel offers a riff where a player of the band can play one, and else says there is nothing to choose.
         labels = [field.label for field in self.wizard().fields()]
