@@ -278,7 +278,7 @@ class AbletonProject(WritesOneFile, Exporter):
     def _check_song_fits_live(self):
         if not self._grid.get_rows() or not self._grid.get_columns():
             raise ValueError(errors.ERR_EMPTY_SONG)
-        for tempo in [self._grid.get_tempo()] + [scene.get_tempo() for scene in self._grid.get_rows()]:
+        for tempo in [self._grid.get_tempo()] + [tempo for scene in self._grid.get_rows() for tempo in (scene.get_tempo(), *(changed for _, changed in scene.get_tempo_changes()))]:
             if tempo is not None and not MIN_LIVE_TEMPO <= tempo <= MAX_LIVE_TEMPO:
                 raise ValueError(errors.ERR_BAD_TEMPO.format(lowest=MIN_LIVE_TEMPO, highest=MAX_LIVE_TEMPO, value=tempo))
 
@@ -318,13 +318,12 @@ class AbletonProject(WritesOneFile, Exporter):
                     event.set(Attribute.VALUE, str(code))
 
     def _add_tempo_changes(self, *, events, starts):
+        """Add a tempo point at each scene's start and at each beat of a scene's tempo ramp, which Arrangement View follows. A scene in Session View launches at one tempo, its first."""
         next_id = len(events)
-        for offset, (scene, start) in enumerate(zip(self._grid.get_rows(), starts)):
-            ET.SubElement(events, Tag.FLOAT_EVENT, {
-                Attribute.ID: str(next_id + offset),
-                Attribute.TIME: _beats(start),
-                Attribute.VALUE: str(self._grid.get_tempo() if scene.get_tempo() is None else scene.get_tempo()),
-            })
+        for scene, start in zip(self._grid.get_rows(), starts):
+            for time, tempo in self._grid.tempos_in(scene):
+                ET.SubElement(events, Tag.FLOAT_EVENT, {Attribute.ID: str(next_id), Attribute.TIME: _beats(start + time), Attribute.VALUE: str(tempo)})
+                next_id += 1
 
     def _build_scenes(self, live_set):
         scenes = live_set.find(Tag.SCENES)

@@ -272,26 +272,16 @@ class SongEdits:
         self._change(self._scene(index).set_scale_name, name=name, song=self.song())
 
     def set_scene_tempo(self, *, index, tempo):
-        """Set a scene's tempo, which is where its ramp starts if it has one."""
+        """Set a scene's tempo."""
         self._change(self._scene(index).set_tempo, tempo)
 
     def clear_scene_tempo(self, index):
-        """Make a scene use the song's tempo, dropping any ramp."""
+        """Make a scene use the song's tempo."""
         self._change(self._scene(index).clear_tempo)
 
-    def set_scene_tempo_ramp(self, *, index, end):
-        """Make a scene's tempo ramp to a value across its repeats, from its tempo or the song's."""
-        scene = self._scene(index)
-        start = scene.get_tempo_setting()
-        if start is None:
-            start = scene.get_tempo_start()
-        if start is None:
-            start = self.song().get_tempo()
-        self._change(scene.set_tempo_ramp, start=start, end=end)
-
-    def clear_scene_tempo_ramp(self, index):
-        """Stop a scene's tempo ramping, keeping where it started as its tempo."""
-        self._change(self._scene(index).clear_tempo_ramp)
+    def set_scene_tempo_ramp_setting(self, *, index, way, part, value):
+        """Set one part of a scene's tempo ramp in or out, or None to leave it blank."""
+        self._change(self._scene(index).set_tempo_ramp_setting, way=way, part=part, value=value)
 
     # Clips, of the current song.
 

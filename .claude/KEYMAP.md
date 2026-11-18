@@ -343,9 +343,8 @@ settings page's fields. The keys that work everywhere are listed once:
 - **the Scale field**: `ESC` back · `↑↓` select · `ENTER` choose · `Bksp` use the song scale · `PgUp/PgDn` next section · `F2` rename
 - **the Groove field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` use the song groove · `PgUp/PgDn` next section · `F2` rename
 - **the Tempo field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` use the song tempo · `PgUp/PgDn` next section · `F2` rename
-- **the Tempo ramps to field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` no ramp · `PgUp/PgDn` next section · `F2` rename
 - **the Repeat field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next section · `F2` rename
-- **the Reset AX field, the Reset BX field, the Reset CX field, the Reset DX field, the Launch together field, the Density heading, the Swell heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading**: `ESC` back · `↑↓` select · `Space/ENTER` toggle · `PgUp/PgDn` next section · `F2` rename
+- **the Reset AX field, the Reset BX field, the Reset CX field, the Reset DX field, the Launch together field, the Tempo Ramp In heading, the Tempo Ramp Out heading, the Density heading, the Swell heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading**: `ESC` back · `↑↓` select · `Space/ENTER` toggle · `PgUp/PgDn` next section · `F2` rename
 - **the Chains field**: `ESC` back · `↑↓` select · `ENTER` edit · `Bksp` no chain · `PgUp/PgDn` next section · `F2` rename
 - **the   field, the    field, the     field, the      field**: `ESC` back · `↑↓` select · `←→` move · `ENTER` choose · `Bksp` clear · `PgUp/PgDn` next section · `F2` rename
 
@@ -501,7 +500,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - RegistersPage: dec (the AX allowed inc max field, the AX minimum field, the AX default field, the AX maximum field, the BX allowed inc max field, the BX minimum field, the BX default field, the BX maximum field, the CX allowed inc max field, the CX minimum field, the CX default field, the CX maximum field, the DX allowed inc max field, the DX minimum field, the DX default field, the DX maximum field, the AX reset behavior field, the BX reset behavior field, the CX reset behavior field, the DX reset behavior field)
 - RushEditor: dec (the Step field, the Rush amount field, the Restart field)
 - ScalePage: dec (the Root field, the Kind field)
-- ScenePage: dec (the Section field, the Groove field, the Tempo field, the Tempo ramps to field, the Repeat field)
+- ScenePage: dec (the Section field, the Groove field, the Tempo field, the Repeat field)
 - ShortenEditor: dec (the Step field, the Shorten amount field, the Restart field)
 - SongPage: dec (the Tempo field, the Time signature field, the Entry size field, the Scale field, the Seed field, the Groove field, the Live response field, the Visualizer field, the Genre field, the Subgenre field, the Variant field, the Preview instrument field)
 - StrumEditor: dec (the Direction field, the Spread field, the Upstroke strings field, the Restart field, the Fade field, the Loose timing field)
@@ -541,7 +540,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - RegistersPage: inc (the AX allowed inc max field, the AX minimum field, the AX default field, the AX maximum field, the BX allowed inc max field, the BX minimum field, the BX default field, the BX maximum field, the CX allowed inc max field, the CX minimum field, the CX default field, the CX maximum field, the DX allowed inc max field, the DX minimum field, the DX default field, the DX maximum field, the AX reset behavior field, the BX reset behavior field, the CX reset behavior field, the DX reset behavior field)
 - RushEditor: inc (the Step field, the Rush amount field, the Restart field)
 - ScalePage: inc (the Root field, the Kind field)
-- ScenePage: inc (the Section field, the Groove field, the Tempo field, the Tempo ramps to field, the Repeat field)
+- ScenePage: inc (the Section field, the Groove field, the Tempo field, the Repeat field)
 - ShortenEditor: inc (the Step field, the Shorten amount field, the Restart field)
 - SongPage: inc (the Tempo field, the Time signature field, the Entry size field, the Scale field, the Seed field, the Groove field, the Live response field, the Visualizer field, the Genre field, the Subgenre field, the Variant field, the Preview instrument field)
 - StrumEditor: inc (the Direction field, the Spread field, the Upstroke strings field, the Restart field, the Fade field, the Loose timing field)
@@ -649,7 +648,6 @@ settings page's fields. The keys that work everywhere are listed once:
 - ScenePage: use the song scale (the Scale field)
 - ScenePage: use the song groove (the Groove field)
 - ScenePage: use the song tempo (the Tempo field)
-- ScenePage: no ramp (the Tempo ramps to field)
 - ScenePage: no chain (the Chains field)
 - ScenePage: clear (the   field, the    field, the     field, the      field)
 - ShortenEditor: clear (the Step field, the Shorten amount field, the   field, the    field, the     field, the      field)
@@ -813,7 +811,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - ScalesPage: keep (while searching)
 - ScenePage: rename (the Name field)
 - ScenePage: choose (the Section field, the Scale field, the Groove field, the   field, the    field, the     field, the      field)
-- ScenePage: edit (the Tempo field, the Tempo ramps to field, the Repeat field, the Chains field)
+- ScenePage: edit (the Tempo field, the Repeat field, the Chains field)
 - ShortenEditor: rename (the Name field)
 - ShortenEditor: choose (the Step field, the Restart field, the   field, the    field, the     field, the      field)
 - ShortenEditor: edit (the Shorten amount field, the Steps field)
@@ -900,7 +898,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - ScalePage: back (the Name field, the Root field, the Kind field)
 - ScalesPage: back (a row, the + row)
 - ScalesPage: CANCEL (while searching)
-- ScenePage: back (the Name field, the Section field, the Scale field, the Groove field, the Tempo field, the Tempo ramps to field, the Repeat field, the Reset AX field, the Reset BX field, the Reset CX field, the Reset DX field, the Launch together field, the Density heading, the Swell heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Chains field, the   field, the    field, the     field, the      field)
+- ScenePage: back (the Name field, the Section field, the Scale field, the Groove field, the Tempo field, the Repeat field, the Reset AX field, the Reset BX field, the Reset CX field, the Reset DX field, the Launch together field, the Tempo Ramp In heading, the Tempo Ramp Out heading, the Density heading, the Swell heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Chains field, the   field, the    field, the     field, the      field)
 - ShortenEditor: back (the Name field, the Step field, the Shorten amount field, the Steps field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - ShortenStepsEditor: back (anywhere)
 - SongPage: back (the Name field, the Tempo field, the Time signature field, the Entry size field, the Scale field, the Seed field, the Groove field, the Live response field, the Visualizer field, the Genre field, the Subgenre field, the Variant field, the Preview instrument field, the Export button)
@@ -938,7 +936,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - ProgressionEditor: rename (the Name field, the Every field, the Chords field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - RushEditor: rename (the Name field, the Step field, the Rush amount field, the Steps field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - ScalePage: rename (the Name field, the Root field, the Kind field)
-- ScenePage: rename (the Name field, the Section field, the Scale field, the Groove field, the Tempo field, the Tempo ramps to field, the Repeat field, the Reset AX field, the Reset BX field, the Reset CX field, the Reset DX field, the Launch together field, the Density heading, the Swell heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Chains field, the   field, the    field, the     field, the      field)
+- ScenePage: rename (the Name field, the Section field, the Scale field, the Groove field, the Tempo field, the Repeat field, the Reset AX field, the Reset BX field, the Reset CX field, the Reset DX field, the Launch together field, the Tempo Ramp In heading, the Tempo Ramp Out heading, the Density heading, the Swell heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Chains field, the   field, the    field, the     field, the      field)
 - ShortenEditor: rename (the Name field, the Step field, the Shorten amount field, the Steps field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - SongPage: rename (the Name field, the Tempo field, the Time signature field, the Entry size field, the Scale field, the Seed field, the Groove field, the Live response field, the Visualizer field, the Genre field, the Subgenre field, the Variant field, the Preview instrument field, the Export button)
 - StrumEditor: rename (the Name field, the Direction field, the Spread field, the Upstroke strings field, the Restart field, the Fade field, the Loose timing field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
@@ -1059,7 +1057,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - PhrasingEditor: next section (the Name field, the Line field, the Breath field, the Rise and fall field, the Notes field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - ProgressionEditor: next section (the Name field, the Every field, the Chords field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - RushEditor: next section (the Name field, the Step field, the Rush amount field, the Steps field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
-- ScenePage: next section (the Name field, the Section field, the Scale field, the Groove field, the Tempo field, the Tempo ramps to field, the Repeat field, the Reset AX field, the Reset BX field, the Reset CX field, the Reset DX field, the Launch together field, the Density heading, the Swell heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Chains field, the   field, the    field, the     field, the      field)
+- ScenePage: next section (the Name field, the Section field, the Scale field, the Groove field, the Tempo field, the Repeat field, the Reset AX field, the Reset BX field, the Reset CX field, the Reset DX field, the Launch together field, the Tempo Ramp In heading, the Tempo Ramp Out heading, the Density heading, the Swell heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Chains field, the   field, the    field, the     field, the      field)
 - ShortenEditor: next section (the Name field, the Step field, the Shorten amount field, the Steps field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - StrumEditor: next section (the Name field, the Direction field, the Spread field, the Upstroke strings field, the Restart field, the Fade field, the Loose timing field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - SwellEditor: next section (the Name field, the Start field, the End field, the Accent field, the Over field, the Then field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
@@ -1130,7 +1128,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - RegistersPage: toggle (the AX reset each scene field, the BX reset each scene field, the CX reset each scene field, the DX reset each scene field)
 - RushEditor: toggle (the Bypass Generators When heading)
 - RushStepsEditor: toggle (anywhere)
-- ScenePage: toggle (the Reset AX field, the Reset BX field, the Reset CX field, the Reset DX field, the Launch together field, the Density heading, the Swell heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading)
+- ScenePage: toggle (the Reset AX field, the Reset BX field, the Reset CX field, the Reset DX field, the Launch together field, the Tempo Ramp In heading, the Tempo Ramp Out heading, the Density heading, the Swell heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading)
 - ShortenEditor: toggle (the Bypass Generators When heading)
 - ShortenStepsEditor: toggle (anywhere)
 - StrumEditor: toggle (the Bypass Generators When heading)
@@ -1268,7 +1266,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - RushEditor: select (the Name field, the Step field, the Rush amount field, the Steps field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - ScalePage: select (the Name field, the Root field, the Kind field)
 - ScalesPage: select (a row, the + row, while searching)
-- ScenePage: select (the Name field, the Section field, the Scale field, the Groove field, the Tempo field, the Tempo ramps to field, the Repeat field, the Reset AX field, the Reset BX field, the Reset CX field, the Reset DX field, the Launch together field, the Density heading, the Swell heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Chains field, the   field, the    field, the     field, the      field)
+- ScenePage: select (the Name field, the Section field, the Scale field, the Groove field, the Tempo field, the Repeat field, the Reset AX field, the Reset BX field, the Reset CX field, the Reset DX field, the Launch together field, the Tempo Ramp In heading, the Tempo Ramp Out heading, the Density heading, the Swell heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Chains field, the   field, the    field, the     field, the      field)
 - ShortenEditor: select (the Name field, the Step field, the Shorten amount field, the Steps field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - SongPage: select (the Name field, the Tempo field, the Time signature field, the Entry size field, the Scale field, the Seed field, the Groove field, the Live response field, the Visualizer field, the Genre field, the Subgenre field, the Variant field, the Preview instrument field, the Export button)
 - SongsPage: select (a row, the + row, while searching)
@@ -1303,7 +1301,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - **RegistersPage**: AX allowed inc max, AX reset behavior, AX minimum, AX default, AX maximum, AX reset each scene, BX allowed inc max, BX reset behavior, BX minimum, BX default, BX maximum, BX reset each scene, CX allowed inc max, CX reset behavior, CX minimum, CX default, CX maximum, CX reset each scene, DX allowed inc max, DX reset behavior, DX minimum, DX default, DX maximum, DX reset each scene
 - **RushEditor**: Name, Step, Rush amount, Steps, Restart
 - **ScalePage**: Name, Root, Kind
-- **ScenePage**: Name, Section, Scale, Groove, Tempo, Tempo ramps to, Repeat, Reset AX, Reset BX, Reset CX, Reset DX, Launch together, Chains, [Density], Density start, Density end, Density over, Density then, [Swell], Swell start, Swell end, Swell over, Swell then, [Articulate], Articulate start, Articulate end, Articulate over, Articulate then, [Set Registers], AX =, BX =, CX =, DX =, [Increment Registers], AX +=, BX +=, CX +=, DX +=, [Bypass Generators When],  ,   ,    ,     
+- **ScenePage**: Name, Section, Scale, Groove, Tempo, Repeat, Reset AX, Reset BX, Reset CX, Reset DX, Launch together, Chains, [Tempo Ramp In], Tempo in start, Tempo in end, Tempo in over, [Tempo Ramp Out], Tempo out start, Tempo out end, Tempo out over, [Density], Density start, Density end, Density over, Density then, [Swell], Swell start, Swell end, Swell over, Swell then, [Articulate], Articulate start, Articulate end, Articulate over, Articulate then, [Set Registers], AX =, BX =, CX =, DX =, [Increment Registers], AX +=, BX +=, CX +=, DX +=, [Bypass Generators When],  ,   ,    ,     
 - **ShortenEditor**: Name, Step, Shorten amount, Steps, Restart
 - **SongPage**: Name, Tempo, Time signature, Entry size, Scale, Seed, Groove, Genre, Subgenre, Variant, Live response, Preview instrument, Visualizer, (Export)
 - **StrumEditor**: Name, Direction, Spread, Fade, Loose timing, Upstroke strings, Restart

@@ -171,7 +171,7 @@ than with gates, so a chord lasts as long as the ties that follow it, and whose 
 bass note with ties alone, longer than any gate could make it. The demo also brings in the tracks one at a time, morphs a tune into its answer, grabs an echo and slides a filter, so it's the closest
 thing here to a finished song.
 
-[`examples/learning/08_tie.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/08_tie.yml) · D mixolydian · 84 BPM · 2:59 · 9 scenes · 8 tracks
+[`examples/learning/08_tie.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/08_tie.yml) · D mixolydian · 84 BPM · 2:58 · 9 scenes · 8 tracks
 
 | chords | arps | ratchets | chains | grabs | morphs | directions | ties | probability | key changes | tempo changes | CCs | registers |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -524,7 +524,8 @@ visits the same five pitches in a shuffled order.
 | chords | chains | guitarify | key changes | tempo changes | registers | conditional execution |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../generators/GUITARIFY.md) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../REGISTERS.md) | [✓](../REGISTERS.md#conditional-execution) |
-<!-- end of the generated summary of 27_advanced_conditionals -->
+
+[![The Advanced Conditionals demo, 27_advanced_conditionals.yml, on YouTube](https://img.youtube.com/vi/SnS48Tv6RUw/hqdefault.jpg)](https://www.youtube.com/watch?v=SnS48Tv6RUw)
 
 **New Features Introduced**
 

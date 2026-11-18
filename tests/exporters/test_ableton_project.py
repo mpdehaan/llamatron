@@ -51,6 +51,8 @@ WB = 'wb'
 ENUMEVENT = 'EnumEvent'
 # Time signatures the tests set, and how Live's main track encodes them: beats from 0, plus 99 for each doubling of the unit.
 WALTZ = '3/4'
+# The tempos of a scene whose tempo ramps, the first where the scene starts.
+RAMP_TEMPOS = (100.0, 105.0, 110.0, 115.0)
 COMPOUND_DUPLE = '6/8'
 COMMON_TIME_CODE = '201'
 WALTZ_CODE = '200'
@@ -217,6 +219,16 @@ class TestTempo(ProjectTestCase):
         self.song.add_column(ClipColumn())
         self.song.add_row(ClipRow())
         self.assertEqual(self.tempo_values(self.live_set()), ('95', ['95']))
+
+    def test_a_scenes_tempo_ramp_is_arrangement_automation_and_the_scene_launches_at_its_first_tempo(self):
+        self.song.set_tempo(95)
+        self.song.add_column(ClipColumn())
+        scene = self.song.add_row(ClipRow(tempo=RAMP_TEMPOS[0]))
+        scene.set_tempo_changes([(Fraction(place, len(RAMP_TEMPOS)), tempo) for place, tempo in enumerate(RAMP_TEMPOS)][1:])
+        live_set = self.live_set()
+        # The automation's own first point, then a point for each tempo of the ramp.
+        self.assertEqual(self.tempo_values(live_set)[1][1:], [str(tempo) for tempo in RAMP_TEMPOS])
+        self.assertEqual(live_set.find(Tag.SCENES)[0].find(ElementPath.SCENE_TEMPO).get(Tag.VALUE), str(RAMP_TEMPOS[0]))
 
     def test_other_automation_is_left_alone(self):
         self.song.set_tempo(95)

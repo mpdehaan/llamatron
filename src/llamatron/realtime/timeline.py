@@ -29,9 +29,6 @@ from typing import NamedTuple
 from llamatron.exporters.timing import control_events, keyswitch_events, timed_events
 from llamatron.support.rational import Rational
 
-# What a tempo counts, quarter notes per minute, and the seconds in a minute.
-QUARTERS_PER_WHOLE = 4
-SECONDS_PER_MINUTE = 60
 # The three kinds of event the timeline holds, as the status byte without its channel.
 NOTE_ON = 0x90
 NOTE_OFF = 0x80
@@ -86,11 +83,6 @@ class Playing(NamedTuple):
         return [self.kind | self.channel, self.number, self.value]
 
 
-def seconds_per_whole(tempo):
-    """Return how long a whole note lasts, in seconds, at a tempo in quarter notes per minute."""
-    return QUARTERS_PER_WHOLE * SECONDS_PER_MINUTE / tempo
-
-
 def sort_key(event):
     """Return what the timeline is ordered by: time, with note offs and program changes before note ons at the same instant."""
     return (event.whole, OFFS_FIRST if event.kind in FIRST_AT_AN_INSTANT else ONS_AFTER)
@@ -105,7 +97,7 @@ def song_timeline(*, grid, routes):
     events = []
     scene_seconds = 0.0
     for place, (scene, scene_start) in enumerate(zip(grid.get_rows(), grid.row_starts())):
-        whole = seconds_per_whole(grid.tempo_at(scene))
+        clock = grid.clock_of(scene)
         for track in grid.get_columns():
             route = routes.get(track.get_name())
             clip = grid.get_clip(row=scene, column=track)
@@ -113,17 +105,17 @@ def song_timeline(*, grid, routes):
                 continue
             tag = Tag(place, track.get_name())
             events.extend(clip_timeline(clip=clip, scale=grid.scale_at(row=scene, column=track), route=route, tag=tag,
-                                        scene_start=scene_start, scene_seconds=scene_seconds, whole=whole))
-        scene_seconds += float(grid.row_length(scene)) * whole
+                                        scene_start=scene_start, scene_seconds=scene_seconds, clock=clock))
+        scene_seconds += clock.seconds_at(grid.row_length(scene))
     return sorted(events, key=sort_key)
 
 
-def clip_timeline(*, clip, scale, route, tag, scene_start, scene_seconds, whole):
-    """Return one clip's notes and CC values as events, placed at its scene's start, in no particular order, after the route's program change when it has one."""
+def clip_timeline(*, clip, scale, route, tag, scene_start, scene_seconds, clock):
+    """Return one clip's notes and CC values as events, placed at its scene's start and timed by its row's clock, in no particular order, after the route's program change when it has one."""
     events = []
 
     def at(time, kind, number, value):
-        return Playing(scene_start + time, scene_seconds + float(time) * whole, route.port, route.channel, kind, number, value, tag)
+        return Playing(scene_start + time, scene_seconds + clock.seconds_at(time), route.port, route.channel, kind, number, value, tag)
     if route.program is not None:
         events.append(at(Rational(0), PROGRAM_CHANGE, route.program, NO_VELOCITY))
     notes, clip_length = timed_events(clip=clip, scale=scale)

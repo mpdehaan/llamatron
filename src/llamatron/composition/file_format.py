@@ -336,8 +336,13 @@ class SceneSetting:
     REPEAT = 'repeat'
     SCALE = 'scale'
     TEMPO = 'tempo'
-    TEMPO_START = 'tempo_start'
-    TEMPO_END = 'tempo_end'
+    # Its tempo ramps: one in from its first bar and one out back from its last, each a tempo it starts from, a tempo it reaches and the bars it takes.
+    TEMPO_IN_START = 'tempo_in_start'
+    TEMPO_IN_END = 'tempo_in_end'
+    TEMPO_IN_OVER = 'tempo_in_over'
+    TEMPO_OUT_START = 'tempo_out_start'
+    TEMPO_OUT_END = 'tempo_out_end'
+    TEMPO_OUT_OVER = 'tempo_out_over'
     RESET = 'reset'
     GROOVE = 'groove'
     LAUNCH_TOGETHER = 'launch_together'
@@ -364,6 +369,34 @@ class SceneSetting:
     # The register statements that bypass the generators of its clips.
     BYPASS_WHEN = 'bypass_when'
     TRACKS = 'tracks'
+
+
+class RampWay:
+    """Which of a scene's two ramps: the one in, counted from the scene's first bar, or the one out, counted back from its last."""
+
+    IN = 'in'
+    OUT = 'out'
+
+
+class RampPart:
+    """The parts of a ramp: what it starts from, what it reaches and how many bars it takes."""
+
+    START = 'start'
+    END = 'end'
+    OVER = 'over'
+
+
+RAMP_WAYS = (RampWay.IN, RampWay.OUT)
+RAMP_PARTS = (RampPart.START, RampPart.END, RampPart.OVER)
+# The name a file gives each part of each tempo ramp of a scene.
+TEMPO_RAMP_SETTINGS = {
+    (RampWay.IN, RampPart.START): SceneSetting.TEMPO_IN_START,
+    (RampWay.IN, RampPart.END): SceneSetting.TEMPO_IN_END,
+    (RampWay.IN, RampPart.OVER): SceneSetting.TEMPO_IN_OVER,
+    (RampWay.OUT, RampPart.START): SceneSetting.TEMPO_OUT_START,
+    (RampWay.OUT, RampPart.END): SceneSetting.TEMPO_OUT_END,
+    (RampWay.OUT, RampPart.OVER): SceneSetting.TEMPO_OUT_OVER,
+}
 
 
 class RegisterName:

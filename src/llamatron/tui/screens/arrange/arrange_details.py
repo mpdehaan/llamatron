@@ -30,9 +30,10 @@ from typing import NamedTuple
 
 from llamatron.composition import defaults
 from llamatron.strings import labels, marks as marks_text
-from llamatron.composition.file_format import SHAPES, Section
+from llamatron.composition.file_format import SHAPES, RampPart, RampWay, Section
 from llamatron.tui import themes
 from llamatron.tui.drawing import Style, fit
+from llamatron.tui.text import plain_number
 
 # The widest a detail line is drawn: a longer one is cut with an ellipsis. A clip's name is never cut.
 DETAIL_WIDTH = 24
@@ -170,14 +171,26 @@ def clip_details(*, setlist, song, clip_slot):
     return lines + shape_lines(clip_slot)
 
 
+def tempo_ramp_lines(*, song, scene):
+    """Return a line for each tempo ramp of a scene that changes its tempo: the tempo it starts from and the tempo it reaches."""
+    base = plain_number(song.get_tempo()) if scene.get_tempo_setting() is None else scene.get_tempo_setting()
+    lines = []
+    for way, template in ((RampWay.IN, marks_text.MSG_DETAILS_TEMPO_RAMP_IN), (RampWay.OUT, marks_text.MSG_DETAILS_TEMPO_RAMP_OUT)):
+        ramp = scene.get_tempo_ramp_setting
+        start, end = (ramp(way=way, part=part) for part in (RampPart.START, RampPart.END))
+        if start is None and end is None:
+            continue
+        lines.append(detail(template.format(start=base if start is None else start, end=base if end is None else end)))
+    return lines
+
+
 def scene_details(*, song, scene):
     """Return a scene's lines of details: its chains, its scale, its tempo or tempo ramp, its groove, the registers it resets and its shapes."""
     lines = chain_lines(song=song, names=scene.get_chain_names())
     lines += scale_lines(song=song, name=scene.get_scale_name())
     if scene.get_tempo_setting() is not None:
         lines.append(detail(marks_text.MSG_DETAILS_TEMPO.format(tempo=scene.get_tempo_setting())))
-    elif scene.get_tempo_start() is not None:
-        lines.append(detail(marks_text.MSG_DETAILS_TEMPO_RAMP.format(start=scene.get_tempo_start(), end=scene.get_tempo_end())))
+    lines += tempo_ramp_lines(song=song, scene=scene)
     lines += groove_lines(scene.get_groove_choice())
     if scene.get_reset_names():
         lines.append(detail(marks_text.MSG_DETAILS_RESET.format(registers=marks_text.MSG_DETAILS_LIST_SEPARATOR.join(scene.get_reset_names()))))

@@ -26,6 +26,7 @@ from llamatron.strings import errors
 from llamatron.grid.clip import Clip
 from llamatron.grid.clip_column import ClipColumn
 from llamatron.grid.clip_row import ClipRow
+from llamatron.grid.row_clock import RowClock
 
 # How long a row with no clips lasts.
 NO_LENGTH = 0
@@ -112,6 +113,14 @@ class ClipGrid:
         """Return the tempo for a row: its own if it has one, else the song's."""
         self._check_row(row)
         return self._tempo if row.get_tempo() is None else row.get_tempo()
+
+    def tempos_in(self, row):
+        """Return a row's tempos in order, (time in whole notes from its start, tempo), the first at its start."""
+        return [(Rational(0), self.tempo_at(row)), *row.get_tempo_changes()]
+
+    def clock_of(self, row):
+        """Return a row's RowClock, which says how many seconds into the row a moment of its music falls."""
+        return RowClock(self.tempos_in(row))
 
     def row_length(self, row):
         """Return how long a row lasts, in whole notes: as long as its longest clip, or 0 with no clips."""

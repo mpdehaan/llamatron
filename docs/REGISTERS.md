@@ -82,3 +82,5 @@ Left and Right move between the parts of a line and `ENTER` changes the part und
 A step of a pattern can hold a statement of its own, which is read as the step is reached and stops the clip, starts the pattern over or mutes the step: see [Stop When, Restart When and Mute When](PATTERNS.md#stop-when-restart-when-and-mute-when).
 
 `examples/learning/27_advanced_conditionals.yml` shows both tables and the three kinds of statement on a step: single notes that come and go by counting, one pattern of chords played four ways by one chain, a fill in every fourth bar, a riff that starts over, and a phrase played two and a half times.
+
+[![The Advanced Conditionals demo, 27_advanced_conditionals.yml, on YouTube](https://img.youtube.com/vi/SnS48Tv6RUw/hqdefault.jpg)](https://www.youtube.com/watch?v=SnS48Tv6RUw)

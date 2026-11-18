@@ -159,9 +159,6 @@ class TestScenes(unittest.TestCase):
         data = with_parts(scenes=[{SceneSetting.NAME: X, SceneSetting.REPEAT: 3, SceneSetting.TRACKS: {}}])
         self.assertEqual([s.get_name() for s in render_data(data).get_rows()], [X_1, X_2, X_3])
 
-    def test_tempo_ramps_across_a_repeat(self):
-        data = with_parts(scenes=[{SceneSetting.REPEAT: 3, SceneSetting.TEMPO_START: 120, SceneSetting.TEMPO_END: 124, SceneSetting.TRACKS: {}}])
-        self.assertEqual([s.get_tempo() for s in render_data(data).get_rows()], [120, 122, 124])
 
     def test_a_scene_can_set_a_tempo(self):
         data = with_parts(scenes=[{SceneSetting.TEMPO: 90, SceneSetting.TRACKS: {}}])

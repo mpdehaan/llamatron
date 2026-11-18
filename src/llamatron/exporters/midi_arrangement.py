@@ -80,13 +80,14 @@ class _Arrangement(Exporter):
         return [time_signature_event(tick=FIRST_TICK, signature=self._grid.get_time_signature()), *self.tempo_events()]
 
     def tempo_events(self):
-        """Return a tempo change at the start of each scene whose tempo differs from the one before, and always at the start."""
+        """Return a tempo change wherever the tempo differs from the one before, at a scene's start or at a beat of a scene's tempo ramp, and always at the start."""
         events = []
         tempo = None
         for scene, start in zip(self._grid.get_rows(), self._grid.row_starts()):
-            if self._grid.tempo_at(scene) != tempo:
-                tempo = self._grid.tempo_at(scene)
-                events.append(tempo_event(tick=ticks(start), tempo=tempo))
+            for time, changed in self._grid.tempos_in(scene):
+                if changed != tempo:
+                    tempo = changed
+                    events.append(tempo_event(tick=ticks(start + time), tempo=tempo))
         return events
 
     def track_events(self, track):

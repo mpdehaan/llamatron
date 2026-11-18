@@ -18,7 +18,7 @@
 import unittest
 
 from tests.support.ui_testing import DRUMS, LEAD, NAMED, OTHER, TUNE, UITest, a_song
-from llamatron.composition.file_format import ClipSlotSetting, Direction, FollowAction, RegisterName, Shape, StrumDirection, StrumPart, EuclidPart
+from llamatron.composition.file_format import ClipSlotSetting, Direction, FollowAction, RampPart, RampWay, RegisterName, Shape, StrumDirection, StrumPart, EuclidPart
 from llamatron.strings import labels, legends, marks, names
 from llamatron.tui import keybindings
 from llamatron.tui import themes
@@ -134,12 +134,13 @@ class TestDetails(unittest.TestCase):
     def test_a_scene_shows_its_tempo_or_its_ramp_its_groove_and_its_resets(self):
         self.document.set_scene_tempo(index=FIRST_SCENE, tempo=SCENE_TEMPO)
         self.assertEqual(self.scene_lines(), [marks.MSG_DETAILS_TEMPO.format(tempo=SCENE_TEMPO)])
-        self.document.set_scene_tempo_ramp(index=FIRST_SCENE, end=RAMP_END)
+        self.document.set_scene_tempo_ramp_setting(index=FIRST_SCENE, way=RampWay.IN, part=RampPart.END, value=RAMP_END)
         self.document.set_scene_groove(index=FIRST_SCENE, choice=False)
         self.document.set_reset(index=FIRST_SCENE, register=RegisterName.AX, on=True)
         self.document.set_reset(index=FIRST_SCENE, register=RegisterName.DX, on=True)
         self.assertEqual(self.scene_lines(), [
-            marks.MSG_DETAILS_TEMPO_RAMP.format(start=SCENE_TEMPO, end=RAMP_END), marks.MSG_DETAILS_NO_GROOVE,
+            marks.MSG_DETAILS_TEMPO.format(tempo=SCENE_TEMPO), marks.MSG_DETAILS_TEMPO_RAMP_IN.format(start=SCENE_TEMPO, end=RAMP_END),
+            marks.MSG_DETAILS_NO_GROOVE,
             marks.MSG_DETAILS_RESET.format(registers=RegisterName.AX + ', ' + RegisterName.DX),
         ])
         self.document.set_scene_groove(index=FIRST_SCENE, choice=SONG_GROOVE)

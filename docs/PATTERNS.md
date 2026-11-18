@@ -354,6 +354,10 @@ How they work:
 
 In an example scenario, a pattern of 16 steps adds 1 to AX on step 8 and holds Stop When `AX >= 3` on step 9, and the scene sets AX to 0. The clip plays the pattern twice, plays the first 8 steps a third time, and is done: exactly two and a half times. `examples/learning/27_advanced_conditionals.yml` plays this, with a scene for each of the other two sections.
 
+The demo `examples/learning/27_advanced_conditionals.yml` plays all three:
+
+[![The Advanced Conditionals demo, 27_advanced_conditionals.yml, on YouTube](https://img.youtube.com/vi/SnS48Tv6RUw/hqdefault.jpg)](https://www.youtube.com/watch?v=SnS48Tv6RUw)
+
 The register change rows take digits, `[` (dec) and `]` (inc), or `ENTER` to type a negative number, and `Bksp` clears them, and every register row can be set on an empty step: no register setting is ever locked out for want of a note, and erasing a note leaves the step's register rows as they are. The rows that use registers are toggled with `Space` or `ENTER`.
 
 ## Play Directions

@@ -148,4 +148,5 @@ Reference notes for Claude, one of `.claude/features/`: the tracker launched to 
   hour) quits the tracker instead (`Launch(max_seconds=)`), and a `screencapture` that still
   doesn't stop is ended after `STOP_TIMEOUT_SECONDS` and reported, leaving no file.
   `tests/tools/test_make_video_tutorial.py` tests the recording with a stand-in for `screencapture`.
-
+- A take nobody performs gives its trim as long as the take itself lasted and 5 seconds more, then stops the trim and keeps the
+  video as recorded, saying so; an interactive take's trim has no limit (the user's design, after a trim that never returned).

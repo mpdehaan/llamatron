@@ -94,6 +94,8 @@ MARGIN_SECONDS = 1.0
 # and never shows the terminal it quits back to.
 HOLD_SECONDS = 5.0
 TRIMMED_SECONDS = 4.0
+# A trim of a take nobody performs is given as long as the take itself lasted, the song, both splashes and every pause between, and this much more: a trim that takes longer is stuck.
+TRIM_SPARE_SECONDS = 5.0
 # The start of a take: once the screen recording has begun, the terminal shows black for
 # SETTLE_SECONDS before the tracker starts, so that nothing of the calibration or the shell is in the video, and the
 # first CUT_FROM_START seconds are cut, so that the video opens on a moment of black and then the title.
@@ -192,6 +194,7 @@ CALIBRATION_SECONDS = 0.5
 TAKE = 'recording window {window} for up to {seconds:.0f} s: {splash:.0f} s of splash, {lead_in:.0f} s on Arrange, the song ({song:.0f} s), {lead_out:.0f} s to ring out'
 WRITTEN = 'wrote {path} ({size:.1f} MB)'
 NOT_WRITTEN = 'no video was written: screencapture ended with {code}'
+TRIM_GAVE_UP = 'the trim ran longer than {seconds} seconds and was stopped'
 NOT_TRIMMED = 'the video was left as it was, its last seconds showing the terminal: avconvert could not trim it ({reason})'
 MEGABYTE = 1024 * 1024
 
@@ -410,12 +413,13 @@ def remove_trim_leftovers(folder):
             os.unlink(os.path.join(folder, name))
 
 
-def trim_end(*, video, recorded_seconds):
+def trim_end(*, video, recorded_seconds, give_up_after=None):
     """Cut CUT_FROM_START seconds off the start of a video recorded for recorded_seconds and TRIMMED_SECONDS off its end, in place, so that it opens on black and ends while the tracker still shows. Return None, or why it couldn't.
 
     Only the trimmed video is kept: the trimmed copy is made in a hidden
     folder and takes the video's place once it is whole, and the folder is removed however the
-    trim ends, a stopped take included.
+    trim ends, a stopped take included. With give_up_after, a trim that runs longer than so many
+    seconds is stopped and the video is left as it was recorded.
     """
     folder = os.path.dirname(os.path.abspath(video))
     remove_trim_leftovers(folder)
@@ -426,8 +430,10 @@ def trim_end(*, video, recorded_seconds):
     try:
         subprocess.run([AVCONVERT, SOURCE_FLAG, video, OUTPUT_FLAG, trimming, PRESET_FLAG, TRIM_PRESET, START_FLAG, str(CUT_FROM_START),
                         DURATION_FLAG, str(kept), REPLACE_FLAG],
-                       check=True, capture_output=True)
+                       check=True, capture_output=True, timeout=give_up_after)
         os.replace(trimming, video)
+    except subprocess.TimeoutExpired:
+        return TRIM_GAVE_UP.format(seconds=round(give_up_after))
     except (OSError, subprocess.CalledProcessError) as error:
         return str(error)
     finally:
@@ -579,7 +585,8 @@ def recorded_until_quit(*, document, video, window, device, launch, region, reco
     if code != SUCCESS or not os.path.exists(video):
         print(NOT_WRITTEN.format(code=code), file=sys.stderr)
         return FAILURE
-    problem = trim_end(video=video, recorded_seconds=recorded)
+    # A take somebody performs is trimmed for as long as the trim takes, as ever.
+    problem = trim_end(video=video, recorded_seconds=recorded, give_up_after=None if launch.interactive else recorded + TRIM_SPARE_SECONDS)
     if problem is not None:
         print(NOT_TRIMMED.format(reason=problem), file=sys.stderr)
     print(WRITTEN.format(path=video, size=os.path.getsize(video) / MEGABYTE))

@@ -252,8 +252,7 @@ songs:
           echo: { pattern: echo, loop: true, grab_track: keys }
       - name: slow
         repeat: 2
-        tempo_start: 84
-        tempo_end: 72
+        tempo_in_end: 72
         tracks:
           bass: { pattern: bass }
           pad: { pattern: pad, loop: true }

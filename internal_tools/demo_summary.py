@@ -469,7 +469,7 @@ def starting_key_and_tempo(path):
     scenes = song.get_scenes()
     first = scenes[0] if scenes else None
     scale_name = (first.get_scale_name() if first else None) or song.get_scale_name()
-    tempo = (first.get_tempo(0) if first else None) or song.get_tempo()
+    tempo = (first.get_tempo() if first else None) or song.get_tempo()
     if scale_name is None:
         return NO_KEY, tempo
     scale = song.get_named_scale(scale_name)

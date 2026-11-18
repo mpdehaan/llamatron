@@ -18,7 +18,7 @@
 import unittest
 
 from tests.support.ui_testing import DRUMS, LEAD, NAMED, UITest, back_key, forward_key
-from llamatron.composition.file_format import ChordSymbol, ClipSlotSetting
+from llamatron.composition.file_format import ChordSymbol, ClipSlotSetting, RampPart, RampWay
 from llamatron.composition.setlist import Setlist
 from llamatron.strings import marks
 from llamatron.support.example_sets import example_sets
@@ -73,6 +73,9 @@ SIXTEENTHS_PAST_THE_NOTE = 12
 
 def example(name):
     return Setlist.read_file(next(path for path in example_sets() if path.endswith(name)))
+
+# The tempo a scene's ramp reaches.
+RAMP_END = 140
 
 
 class TestSceneNotes(unittest.TestCase):
@@ -135,7 +138,7 @@ class TestEffectiveValues(UITest):
         self.assertEqual((effective.scale_source, effective.tempo_source, effective.groove_source), (marks.MSG_SCENE_VIEW_FROM_SONG,) * 3)
         self.document.add_scale(name=OWN_SCALE, root=OWN_SCALE_ROOT, kind=OWN_SCALE_KIND)
         self.document.set_scene_scale(index=0, name=OWN_SCALE)
-        self.document.set_scene_tempo_ramp(index=0, end=140)
+        self.document.set_scene_tempo_ramp_setting(index=0, way=RampWay.IN, part=RampPart.END, value=RAMP_END)
         effective = effective_values(song=self.document.song(), index=0)
         self.assertEqual((effective.scale, effective.scale_source, effective.tempo_source), (OWN_SCALE, marks.MSG_SCENE_VIEW_FROM_SCENE, marks.MSG_SCENE_VIEW_FROM_SCENE))
         self.document.set_scene_scale(index=0, name=None)

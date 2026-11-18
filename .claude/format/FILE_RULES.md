@@ -261,7 +261,16 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   doesn't loop.
 - A clip plays its pattern `repeat` times and stops. `loop: true` repeats it until that longest
   clip ends, and every clip in a scene looping is an error at build.
-- A scene's `tempo_start` and `tempo_end` ramp the tempo across its `repeat`.
+- A scene's tempo ramps (the user's design): `tempo_in_start`, `tempo_in_end` and `tempo_in_over` ramp from the scene's first bar,
+  `tempo_out_start`, `tempo_out_end` and `tempo_out_over` back from its last. A start or an end left out is the scene's own tempo
+  (its `tempo`, else the song's), an over left out is the whole scene, and a ramp with neither start nor end does nothing. The
+  tempo changes at every beat (the user's choice, for slow ramps over many bars), counted across all the scene's repeats together;
+  the ramp in wins where they overlap; nothing reaches past the scene. `playback/tempo_ramps.py` works the beats out, the renderer
+  gives each row its changes (`ClipRow.get_tempo_changes`), and every length in seconds goes through `grid/row_clock.py`'s
+  `RowClock`: the estimate, the real-time score and timeline. The MIDI exports write a tempo change a beat; a Live set writes
+  them as arrangement automation and launches the Session View scene at its first tempo (the user's choice, documented in
+  `docs/EXPORTING.md`). Strums and keyswitch leads, set in milliseconds, are measured at the scene's own tempo, not the ramp's.
+  The old `tempo_start` and `tempo_end` are gone, with no reading of older files.
 - A scene's `repeat` runs from `MIN_REPEAT` to `MAX_SCENE_REPEAT` (999) and a clip's to
   `MAX_CLIP_REPEAT` (9999), in a file and on the Scene and Clip pages alike, with a correction
   on opening for a value outside.

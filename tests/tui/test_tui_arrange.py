@@ -17,7 +17,8 @@
 """The Arrange page, the scene and clip pages, grabs and the Registers page."""
 
 from tests.support.ui_testing import KEY_SHOWN, UITest, fixed_text, back_key, forward_key, key_of, key_name
-from llamatron.composition import defaults
+from llamatron.composition import defaults, limits
+from llamatron.composition.scene import TempoRamp
 from llamatron.strings import errors, labels as labels_text, legends, marks, messages, names
 from llamatron.composition.file_format import (
     RESET_BEHAVIORS,
@@ -27,6 +28,8 @@ from llamatron.composition.file_format import (
     ClipSlotSetting,
     Direction,
     REGISTER_NAMES,
+    RampPart,
+    RampWay,
     RegisterName,
     RegisterSetting,
     Row,
@@ -90,7 +93,6 @@ INTRO = 'intro'
 LENGTH = 'Length'
 SCALE = 'Scale'
 TEMPO = 'Tempo'
-TEMPO_RAMPS_TO = 'Tempo ramps to'
 DIRECTION = 'Direction'
 
 
@@ -753,14 +755,25 @@ class TestScenePage(UITest):
         await self.go_to(TEMPO)
         await self.press(key_of(binding=keybindings.ScenePage.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(self.scene().get_tempo_setting(), 121)
-        await self.go_to(TEMPO_RAMPS_TO)
+        # A ramp's section is closed until opened, and a blank part steps from the scene's tempo.
+        end = labels_text.MSG_TEMPO_RAMP_LABELS[(RampWay.IN, RampPart.END)]
+        self.assertNotIn(end, [field.label for field in self.page.shown_fields()])
+        await self.go_to(labels_text.MSG_TEMPO_RAMP_SECTIONS[RampWay.IN])
+        await self.press(keybindings.FieldPage.TOGGLE)
+        await self.go_to(end)
         await self.press(key_of(binding=keybindings.ScenePage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual((self.scene().get_tempo_start(), self.scene().get_tempo_end()), (121, 122))
-        self.assertIsNone(self.scene().get_tempo_setting())
+        self.assertEqual(self.scene().get_tempo_ramp(RampWay.IN), TempoRamp(None, 122, None))
+        self.assertEqual(self.scene().get_tempo_setting(), 121)
+        await self.go_to(labels_text.MSG_TEMPO_RAMP_LABELS[(RampWay.IN, RampPart.OVER)])
+        self.assertIn(marks.MSG_RAMP_WHOLE_SCENE_SHOWN, self.text())
+        await self.press(key_of(binding=keybindings.ScenePage.MORE, key=Key.RIGHT_BRACKET))
+        self.assertEqual(self.scene().get_tempo_ramp(RampWay.IN).over, limits.MIN_RAMP_BARS + 1)
         render_song(self.document.song())
         await self.press(Key.BACKSPACE)
+        await self.go_to(end)
+        await self.press(Key.BACKSPACE)
+        self.assertIsNone(self.scene().get_tempo_ramp(RampWay.IN))
         self.assertEqual(self.scene().get_tempo_setting(), 121)
-        self.assertIsNone(self.scene().get_tempo_end())
 
     async def test_repeat(self):
         await self.go_to(REPEAT)
@@ -799,15 +812,15 @@ class TestScenesAndClipsEdges(UITest):
     def scene(self):
         return self.document.song().get_scenes()[0]
 
-    async def test_tempo_with_a_ramp_moves_the_start_and_clearing_removes_both(self):
+    async def test_a_scenes_tempo_and_its_ramp_are_set_and_cleared_apart(self):
         self.document.set_scene_tempo(index=0, tempo=100)
-        self.document.set_scene_tempo_ramp(index=0, end=120)
+        self.document.set_scene_tempo_ramp_setting(index=0, way=RampWay.OUT, part=RampPart.END, value=120)
         page = await self.scene_page()
         await self.go_to(page, TEMPO)
         await self.press(key_of(binding=keybindings.ScenePage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual((self.scene().get_tempo_start(), self.scene().get_tempo_end()), (101, 120))
+        self.assertEqual((self.scene().get_tempo_setting(), self.scene().get_tempo_ramp(RampWay.OUT)), (101, TempoRamp(None, 120, None)))
         await self.press(Key.BACKSPACE)
-        self.assertEqual((self.scene().get_tempo_setting(), self.scene().get_tempo_start(), self.scene().get_tempo_end()), (None, None, None))
+        self.assertEqual((self.scene().get_tempo_setting(), self.scene().get_tempo_ramp(RampWay.OUT)), (None, TempoRamp(None, 120, None)))
 
     async def test_choosing_the_songs_scale_clears_the_scenes(self):
         self.document.set_scene_scale(index=0, name=DEFAULT_SCALE)

@@ -349,8 +349,7 @@ class Player:
         scenes = self.playing_scenes()
         if not scenes:
             return None
-        _, row = self._score.row_at(scene=scenes[0], elapsed=self.scene_elapsed(scenes[0]))
-        return row.whole / QUARTERS_PER_WHOLE
+        return self._score.seconds_per_whole(scene=scenes[0], elapsed=self.scene_elapsed(scenes[0])) / QUARTERS_PER_WHOLE
 
     def playing_scenes(self):
         """Return the scenes with a clip playing now, in order."""

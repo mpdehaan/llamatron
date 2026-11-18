@@ -41,7 +41,8 @@ import time
 from llamatron.composition.setlist import Setlist
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess
-from llamatron.realtime.timeline import Route, seconds_per_whole, song_timeline
+from llamatron.grid.row_clock import seconds_per_whole
+from llamatron.realtime.timeline import Route, song_timeline
 
 DEFAULT_SONG = 'examples/by_genre/ragtime/entertainer.yml'
 HEAVY_SET = 'tests/data/sample_sets/heavy_chain.yml'

@@ -86,7 +86,7 @@ CHAIN_IS_A_DICT = 'chain is a dict'
 SCENES_IS_A_DICT = 'scenes is a dict'
 SCENE_IS_A_LIST = 'scene is a list'
 SCENE_REPEAT_IS_ZERO = 'scene repeat is zero'
-TEMPO_RAMP_HAS_NO_END = 'tempo ramp has no end'
+TEMPO_RAMP_BARS_ARE_ZERO = 'tempo ramp bars are zero'
 ARP_SEED_IS_WORDS = 'arp seed is words'
 COUNTS_IS_NOT_A_LIST = 'counts is not a list'
 UP = 'up'
@@ -153,7 +153,7 @@ class TestMalformedFiles(unittest.TestCase):
             SCENES_IS_A_DICT: changed(scenes={ONE: {}}),
             SCENE_IS_A_LIST: changed(scenes=[[LEAD]]),
             SCENE_REPEAT_IS_ZERO: changed(scenes__0__repeat=0),
-            TEMPO_RAMP_HAS_NO_END: changed(scenes__0__tempo_start=100),
+            TEMPO_RAMP_BARS_ARE_ZERO: changed(scenes__0__tempo_in_over=0),
             ARP_SEED_IS_WORDS: changed(arps={UP: {ArpSetting.STEP: EIGHTH, ArpSetting.SEED: LUCKY}}),
             COUNTS_IS_NOT_A_LIST: changed(auto_ratchets={R: {AutoRatchetSetting.COUNTS: 4}}, chains={X: [{GeneratorKind.AUTO_RATCHET: R}]}),
         }

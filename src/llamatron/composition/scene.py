@@ -22,7 +22,8 @@ something the song holds.
 """
 
 
-from llamatron.support.rational import Rational
+from typing import NamedTuple
+
 from llamatron.composition.clip_slot import ClipSlot
 from llamatron.composition.conditions import register_values_setting, statements_setting, with_register_value, with_statement
 from llamatron.composition.chain import check_chain_names
@@ -31,15 +32,24 @@ from llamatron.composition.checks import check_keys, listed, number, reading
 from llamatron.composition.corrections import LEFT_OUT
 from llamatron.composition import defaults, limits
 from llamatron.strings import errors
-from llamatron.composition.file_format import REGISTER_NAMES, SECTION_KINDS, SceneSetting, Section
+from llamatron.composition.file_format import RAMP_PARTS, RAMP_WAYS, REGISTER_NAMES, SECTION_KINDS, TEMPO_RAMP_SETTINGS, RampPart, SceneSetting, Section
 from llamatron.composition.groove import check_groove_choice
 from llamatron.composition.llama_data import LlamaData, data_as_kept, data_built_anew, own_copy, written_settings
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.setting import Checked, Choice, Flag, WholeNumber, check_settings, described
 from llamatron.support.revised import notes_change
 
-# How far through a tempo ramp a scene that plays only once is: at its start.
-NO_RAMP = 0
+# The settings of a scene's tempo ramps that are tempos, which a file writes as it writes a scene's tempo.
+RAMP_TEMPOS = tuple(TEMPO_RAMP_SETTINGS[(way, part)] for way in RAMP_WAYS for part in (RampPart.START, RampPart.END))
+RAMP_SETTINGS = tuple(TEMPO_RAMP_SETTINGS[(way, part)] for way in RAMP_WAYS for part in RAMP_PARTS)
+
+
+class TempoRamp(NamedTuple):
+    """One tempo ramp of a scene as written: the tempo it starts from and the tempo it reaches, either None for the tempo there would have been, and the bars it takes, None for the whole scene."""
+
+    start: object
+    end: object
+    over: object
 
 
 def _check_scene_name(name):
@@ -70,8 +80,12 @@ SETTINGS = described(
     WholeNumber(name=SceneSetting.REPEAT, lowest=limits.MIN_REPEAT, highest=limits.MAX_SCENE_REPEAT, error=errors.ERR_BAD_REPEAT),
     Checked(name=SceneSetting.SCALE, check=_check_scale_name, needs_song=True),
     Checked(name=SceneSetting.TEMPO, check=number),
-    Checked(name=SceneSetting.TEMPO_START, check=number),
-    Checked(name=SceneSetting.TEMPO_END, check=number),
+    Checked(name=SceneSetting.TEMPO_IN_START, check=number),
+    Checked(name=SceneSetting.TEMPO_IN_END, check=number),
+    WholeNumber(name=SceneSetting.TEMPO_IN_OVER, lowest=limits.MIN_RAMP_BARS, highest=limits.MAX_RAMP_BARS, error=errors.ERR_BAD_RAMP_BARS),
+    Checked(name=SceneSetting.TEMPO_OUT_START, check=number),
+    Checked(name=SceneSetting.TEMPO_OUT_END, check=number),
+    WholeNumber(name=SceneSetting.TEMPO_OUT_OVER, lowest=limits.MIN_RAMP_BARS, highest=limits.MAX_RAMP_BARS, error=errors.ERR_BAD_RAMP_BARS),
     Checked(name=SceneSetting.RESET, check=_check_reset),
     Checked(name=SceneSetting.GROOVE, check=check_groove_choice, needs_song=True),
     Flag(name=SceneSetting.LAUNCH_TOGETHER, error=errors.ERR_LAUNCH_TOGETHER_NOT_TRUE_OR_FALSE),
@@ -82,8 +96,8 @@ SETTINGS = described(
     statements_setting(SceneSetting.BYPASS_WHEN),
 )
 # The settings a file is read without the plain check of: a name is kept as the file writes it, a number too, and
-# which of the tempo and its ramp are read depends on which the file gives (_check_tempo).
-READ_ANOTHER_WAY = (SceneSetting.NAME, SceneSetting.TEMPO, SceneSetting.TEMPO_START, SceneSetting.TEMPO_END)
+# so are the tempos of its ramps (_check_tempo).
+READ_ANOTHER_WAY = (SceneSetting.NAME, SceneSetting.TEMPO, *RAMP_TEMPOS)
 
 
 class Scene(LlamaData):
@@ -167,31 +181,29 @@ class Scene(LlamaData):
         """Return the name of the scale it sets, or None to use the song's."""
         return self._settings[SceneSetting.SCALE]
 
-    def get_tempo(self, place):
-        """Return its tempo on one of its repeats, counted from 0, or None to use the song's.
-
-        A scene with tempo_start and tempo_end ramps evenly between them across its repeats.
-        """
-        settings = self._settings
-        if settings[SceneSetting.TEMPO] is not None:
-            return number(settings[SceneSetting.TEMPO])
-        if settings[SceneSetting.TEMPO_START] is None:
-            return None
-        start = number(settings[SceneSetting.TEMPO_START])
-        end = number(settings[SceneSetting.TEMPO_END])
-        return start + (end - start) * _ramp_fraction(place=place, repeat=self.get_repeat())
+    def get_tempo(self):
+        """Return the tempo it sets, or None to use the song's. Its ramps move away from this tempo and back to it."""
+        tempo = self._settings[SceneSetting.TEMPO]
+        return None if tempo is None else number(tempo)
 
     def get_tempo_setting(self):
-        """Return the tempo it sets for all its repeats, as written, or None if it has none or ramps."""
+        """Return the tempo it sets, as written, or None if it has none."""
         return self._settings[SceneSetting.TEMPO]
 
-    def get_tempo_start(self):
-        """Return the tempo its ramp starts from, as written, or None if it doesn't ramp."""
-        return self._settings[SceneSetting.TEMPO_START]
+    def get_tempo_ramp(self, way):
+        """Return its tempo ramp in or out as a TempoRamp, or None when the ramp gives neither a start nor an end and so changes nothing."""
+        start, end, over = (self._settings[TEMPO_RAMP_SETTINGS[(way, part)]] for part in RAMP_PARTS)
+        if start is None and end is None:
+            return None
+        return TempoRamp(None if start is None else number(start), None if end is None else number(end), over)
 
-    def get_tempo_end(self):
-        """Return the tempo its ramp ends at, as written, or None if it doesn't ramp."""
-        return self._settings[SceneSetting.TEMPO_END]
+    def has_tempo_ramp(self):
+        """Return whether either of its tempo ramps changes its tempo."""
+        return any(self.get_tempo_ramp(way) is not None for way in RAMP_WAYS)
+
+    def get_tempo_ramp_setting(self, *, way, part):
+        """Return one part of one of its tempo ramps as written, or None where it is blank."""
+        return self._settings[TEMPO_RAMP_SETTINGS[(way, part)]]
 
     def get_reset_names(self):
         """Return the registers it sets back to their defaults as it starts, in the order the registers come."""
@@ -281,36 +293,22 @@ class Scene(LlamaData):
 
     @notes_change
     def set_tempo(self, tempo):
-        """Set its tempo, which is where its ramp starts if it has one."""
+        """Set its tempo."""
         SETTINGS[SceneSetting.TEMPO].check(tempo)
-        if self._settings[SceneSetting.TEMPO_END] is not None:
-            self._settings[SceneSetting.TEMPO_START] = tempo
-        else:
-            self._settings[SceneSetting.TEMPO] = tempo
+        self._settings[SceneSetting.TEMPO] = tempo
 
     @notes_change
     def clear_tempo(self):
-        """Make it play at the song's tempo, dropping any ramp."""
-        for setting in (SceneSetting.TEMPO, SceneSetting.TEMPO_START, SceneSetting.TEMPO_END):
-            self._settings[setting] = None
-
-    @notes_change
-    def set_tempo_ramp(self, *, start, end):
-        """Make its tempo ramp from one value to another across its repeats."""
-        SETTINGS[SceneSetting.TEMPO_START].check(start)
-        SETTINGS[SceneSetting.TEMPO_END].check(end)
+        """Make it play at the song's tempo. Its ramps stay."""
         self._settings[SceneSetting.TEMPO] = None
-        self._settings[SceneSetting.TEMPO_START] = start
-        self._settings[SceneSetting.TEMPO_END] = end
 
     @notes_change
-    def clear_tempo_ramp(self):
-        """Stop its tempo ramping, keeping where the ramp started as its tempo."""
-        start = self._settings[SceneSetting.TEMPO_START]
-        self._settings[SceneSetting.TEMPO_START] = None
-        self._settings[SceneSetting.TEMPO_END] = None
-        if start is not None:
-            self._settings[SceneSetting.TEMPO] = start
+    def set_tempo_ramp_setting(self, *, way, part, value):
+        """Set one part of one of its tempo ramps, or None to leave it blank."""
+        name = TEMPO_RAMP_SETTINGS[(way, part)]
+        if value is not None:
+            SETTINGS[name].check(value)
+        self._settings[name] = value
 
     @notes_change
     def set_reset(self, *, register, on):
@@ -423,17 +421,7 @@ class Scene(LlamaData):
 
 
 def _check_tempo(data):
-    """Refuse a tempo that isn't a number, or a ramp that doesn't give both its start and end."""
-    if SceneSetting.TEMPO in data:
-        SETTINGS[SceneSetting.TEMPO].check_held(data)
-    elif SceneSetting.TEMPO_START in data or SceneSetting.TEMPO_END in data:
-        if SceneSetting.TEMPO_START not in data or SceneSetting.TEMPO_END not in data:
-            raise InvalidValue(errors.ERR_RAMP_NEEDS_BOTH)
-        SETTINGS[SceneSetting.TEMPO_START].check_held(data)
-        SETTINGS[SceneSetting.TEMPO_END].check_held(data)
-
-
-def _ramp_fraction(*, place, repeat):
-    """Return how far through a tempo ramp a repeat is, from 0 on the first to 1 on the last."""
-    last_place = repeat - 1
-    return Rational(place, last_place) if last_place > 0 else NO_RAMP
+    """Refuse a tempo that isn't a number, the scene's own or one of its ramps'."""
+    for name in (SceneSetting.TEMPO, *RAMP_TEMPOS):
+        if name in data:
+            SETTINGS[name].check_held(data)

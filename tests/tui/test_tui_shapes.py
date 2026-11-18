@@ -16,7 +16,7 @@
 """The tracker's Density, Swell and Articulate: their list pages and editors, the sections on the Scene page and the clip page, and the settings pages' sections that hold them."""
 
 from tests.support.ui_testing import CLIPPED, FADE, LEAD, THIN, UITest, back_key, forward_key
-from llamatron.composition.file_format import Section, GeneratorKind, SHAPE_THENS, Shape, ShapePart, shape_setting
+from llamatron.composition.file_format import Section, GeneratorKind, SHAPE_THENS, RampWay, Shape, ShapePart, shape_setting
 from llamatron.composition import limits
 from llamatron.strings import labels as labels_text, marks
 from llamatron.tui.keys import Key
@@ -164,6 +164,9 @@ class TestShapeSectionsOnTheScenePage(UITest):
         up = back_key(keybindings.FieldPage.SECTION)
         await self.press(down)
         self.assertIsInstance(self.page.field(), Heading)
+        self.assertEqual(self.page.field().label, labels_text.MSG_TEMPO_RAMP_SECTIONS[RampWay.IN])
+        # Past the two tempo ramps to the shapes.
+        await self.press(down, down)
         self.assertEqual(self.page.field().label, labels_text.MSG_SHAPE_NAMES[Shape.DENSITY])
         await self.press(down, down)
         self.assertEqual(self.page.field().label, labels_text.MSG_SHAPE_NAMES[Shape.ARTICULATE])

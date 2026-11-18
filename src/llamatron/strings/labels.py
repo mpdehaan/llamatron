@@ -20,7 +20,7 @@ Each constant starts with MSG_, and the classes Crumb and Column group the words
 
 from llamatron.composition.file_format import (
     STATEMENT_ROWS, ResetBehavior, DriftValue, FollowAction, LiveResponsiveness, NamedProgression, Shape, ShapePart, EuclidPart, NamedRhythm, Restart, Section, StrumDirection, StrumPart, UpstrokeStrings, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, ChordSymbol, Direction, GateModifier, OctaveLabels, RegisterSetting, Row,
-    Approach, ChordColor, ScaleKind, ReadyBar, SingleNotes, Stroke, Tuning,
+    Approach, ChordColor, RampPart, RampWay, ScaleKind, ReadyBar, SingleNotes, Stroke, Tuning,
 )
 from llamatron.tui.keys import RowSection
 
@@ -69,7 +69,11 @@ MSG_TEMPO_LABEL = 'Tempo'
 MSG_TIME_SIGNATURE_LABEL = 'Time signature'
 # How long a note placed on the piano roll lasts, unless the pattern says otherwise: blank is one step.
 MSG_ENTRY_SIZE_LABEL = 'Entry size'
-MSG_TEMPO_RAMP_LABEL = 'Tempo ramps to'
+MSG_TEMPO_RAMP_SECTIONS = {RampWay.IN: 'Tempo Ramp In', RampWay.OUT: 'Tempo Ramp Out'}
+MSG_TEMPO_RAMP_LABELS = {
+    (RampWay.IN, RampPart.START): 'Tempo in start', (RampWay.IN, RampPart.END): 'Tempo in end', (RampWay.IN, RampPart.OVER): 'Tempo in over',
+    (RampWay.OUT, RampPart.START): 'Tempo out start', (RampWay.OUT, RampPart.END): 'Tempo out end', (RampWay.OUT, RampPart.OVER): 'Tempo out over',
+}
 MSG_REPEAT_LABEL = 'Repeat'
 MSG_PATTERN_LABEL = 'Pattern'
 MSG_CHAINS_LABEL = 'Chains'
