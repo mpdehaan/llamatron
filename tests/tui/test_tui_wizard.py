@@ -19,7 +19,7 @@ from llamatron.composition.file_format import Section
 from llamatron.macro_composer.arranger import BARS, WITHOUT
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
 from llamatron.macro_composer.melody import LENGTHS, LOUDNESS, SERIAL
-from llamatron.macro_composer.wizard_choices import INTRO, PLAYER_ROWS, PLAYER_ROWS_KEPT, MAJOR, WizardChoices, USUAL_PIECE_NOTE, FEWEST_FILLS, MOST_FILLS, ONE_GUITARIST_COUNT, TWO_GUITARISTS, ACOUSTIC, BAND_SOUNDS, FILLS_TRAITS, PROGRESSION_TRAITS, MOST_BUSY, USUAL_BUSY, MINOR, SEED, genre_names, genre_title
+from llamatron.macro_composer.wizard_choices import INTRO, SOLO, PLAYER_ROWS, PLAYER_ROWS_KEPT, MAJOR, WizardChoices, USUAL_PIECE_NOTE, FEWEST_FILLS, MOST_FILLS, ONE_GUITARIST_COUNT, TWO_GUITARISTS, ACOUSTIC, BAND_SOUNDS, FILLS_TRAITS, PROGRESSION_TRAITS, MOST_BUSY, USUAL_BUSY, MINOR, SEED, genre_names, genre_title
 from llamatron.composition import limits
 from llamatron.strings import errors, labels as labels_text, legends, macro_composer as composer_text, marks, messages, names
 from llamatron.composition.naming import new_name
@@ -42,6 +42,7 @@ from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.tui.screens.wizard.hook_picture import picture_of
 from llamatron.tui.screens.wizard.starts import NEW_FROM_LAST, NEW_FROM_SCRATCH, REPLACE_FROM_LAST, REPLACE_FROM_SCRATCH, STARTS
 from llamatron.support.memory import StaleAnswer
+from llamatron.tui.screens.wizard.solo_melody_branch import FIRST_SOLO
 from llamatron.tui.screens.wizard.wizard_page import ROWS_KEPT, WizardPage
 from tests.support.ui_testing import UITest, back_key, first_key, fixed_text, forward_key, key_of
 
@@ -1453,8 +1454,12 @@ class TestWizardComposition(WizardTest):
         kinds = self.choices().tune_kinds()
         # The melodies are a group of their own, open from the start, the hook's panel first in it.
         # The intro's panel is last in the group, since the intro's melody is made from the hook.
-        self.assertEqual(names[start:start + len(kinds) + 6],
-                         [labels_text.MSG_WIZARD_MELODIES_BRANCH, labels_text.MSG_WIZARD_HOOKS_BRANCH, *(kind.capitalize() for kind in kinds), INTRO.capitalize(), labels_text.MSG_WIZARD_RIFFS_BRANCH,
+        # Each solo has a panel after the sections' melodies, the first named for the kind alone.
+        solos = [SOLO.capitalize() if number == FIRST_SOLO else labels_text.MSG_WIZARD_SOLO_NUMBERED.format(kind=SOLO.capitalize(), number=number)
+                 for number, _ in enumerate(self.choices().solo_places(), start=FIRST_SOLO)]
+        self.assertTrue(solos)
+        self.assertEqual(names[start:start + len(kinds) + len(solos) + 6],
+                         [labels_text.MSG_WIZARD_MELODIES_BRANCH, labels_text.MSG_WIZARD_HOOKS_BRANCH, *(kind.capitalize() for kind in kinds), *solos, INTRO.capitalize(), labels_text.MSG_WIZARD_RIFFS_BRANCH,
                           labels_text.MSG_WIZARD_RIFF_ASSIGN_BRANCH, labels_text.MSG_WIZARD_SECTION_PLAYERS_BRANCH])
 
     async def test_the_melodies_group_closes_over_its_panels_and_opens_again(self):

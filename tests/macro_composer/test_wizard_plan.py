@@ -27,7 +27,7 @@ from llamatron.macro_composer.notation import REST, STEPS
 from llamatron.macro_composer.arranger import CHORDS
 from llamatron.macro_composer.joins import BUILD, DROP_OUT, LEAVES, STOPS
 from llamatron.macro_composer.song_plan import ENERGY, HIGHEST_ENERGY, LOWEST_ENERGY, NOT_AT_ALL, RISES, ROOT_OF_PLACE, SETUP, TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE, USUAL_CONTRAST
-from llamatron.macro_composer.wizard_choices import BRIDGE, DRUM_SOLO_KIND, LAST_CHORUSES, NO, PRE_CHORUS, PRE_CHORUSES, SOLO, SOLO_COUNTS, SOLOS, VERSES_FIRST, YES, LEAVES_AS_JOIN, OWN_WITHOUT_PLAN, PHRASING_OFFERED, SHAPE_OF_SECTION, MINOR, WRITING_KEPT, WizardChoices, chords_as_text, chords_from_text
+from llamatron.macro_composer.wizard_choices import BRIDGE, DRUM_SOLO_KIND, ONE_GUITARIST_COUNT, LAST_CHORUSES, NO, PRE_CHORUS, PRE_CHORUSES, SOLO, SOLO_COUNTS, SOLOS, VERSES_FIRST, YES, LEAVES_AS_JOIN, OWN_WITHOUT_PLAN, PHRASING_OFFERED, SHAPE_OF_SECTION, MINOR, WRITING_KEPT, WizardChoices, chords_as_text, chords_from_text
 from llamatron.composition import limits
 from llamatron.strings import errors, macro_composer as composer_text
 from llamatron.macro_composer.arranger import shares_a_bar as arranger_shares_a_bar
@@ -35,6 +35,7 @@ from llamatron.support.version import VERSION
 
 A_NAME = 'made'
 A_DEGREE = 7
+A_GENRE_OF_MANY_SOLOS = 'blues'
 ANOTHER_DEGREE = 6
 A_SEED = 11
 A_PLANNED_GENRE = 'rock'
@@ -498,6 +499,39 @@ class TestWizardShapesAndIntroHook(unittest.TestCase):
         self.assertFalse(choices.intro_is_own())
         choices.set_intro_hook(first)
         self.assertTrue(choices.intro_is_own())
+
+    def test_a_solos_notes_written_by_hand_are_that_solos_alone_played_kept_with_the_song_and_given_back(self):
+        choices = chosen(genre=A_GENRE_OF_MANY_SOLOS, subgenre=None)
+        places = choices.solo_places()
+        self.assertGreater(len(places), 1)
+        last = places[-1]
+        written = choices.solo_pattern(last)
+        own = copy.deepcopy(written)
+        step = next(place for place, degree in enumerate(own[Row.DEGREE]) if degree is not None)
+        own[Row.DEGREE][step] = A_DEGREE if own[Row.DEGREE][step] != A_DEGREE else ANOTHER_DEGREE
+        choices.set_solo_pattern(place=last, pattern=own)
+        self.assertEqual([choices.solo_is_own(place) for place in places], [place == last for place in places])
+        setlist = choices.made_setlist(name=A_NAME, version=VERSION)
+        scenes = setlist.get_song(A_NAME).get_scenes()
+        played = [setlist.get_pattern(scenes[place].get_clip_slot(choices.solo_player()).get_pattern_name()).to_data()[Row.DEGREE] for place in places]
+        self.assertEqual(played[-1], own[Row.DEGREE])
+        self.assertNotIn(own[Row.DEGREE], played[:-1])
+        again = WizardChoices.from_data(choices.to_data())
+        self.assertTrue(again.solo_is_own(last))
+        self.assertEqual(again.solo_pattern(last)[Row.DEGREE], own[Row.DEGREE])
+        choices.set_solo_pattern(place=last, pattern=None)
+        self.assertFalse(choices.solo_is_own(last))
+        self.assertEqual(choices.solo_pattern(last), written)
+        with self.assertRaises(ValueError):
+            choices.set_solo_pattern(place=THE_INTRO, pattern=own)
+
+    def test_a_band_with_one_guitarist_still_has_its_solo_to_edit(self):
+        choices = chosen()
+        places = choices.solo_places()
+        self.assertTrue(places)
+        choices.set_guitarists(ONE_GUITARIST_COUNT)
+        self.assertEqual(choices.solo_places(), places)
+        self.assertIsNotNone(choices.solo_pattern(places[0]))
 
     def test_nobody_can_say_the_hook_in_an_intro_without_a_plan_or_a_hook(self):
         self.assertEqual(chosen(plan=False).intro_hook_players(), [])

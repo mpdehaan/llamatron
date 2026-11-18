@@ -793,6 +793,10 @@ MSG_WIZARD_SECTION_BUSY_LABEL = 'Busy'
 MSG_WIZARD_FROM_SONG = 'from song'
 MSG_WIZARD_NOTES_EDITED = 'edited'
 MSG_WIZARD_EDIT_NOTES_BUTTON = 'Edit Notes'
+# tui/screens/wizard/solo_melody_branch.py: one solo's notes.
+MSG_WIZARD_SOLO_NUMBERED = '{kind} {number}'
+MSG_WIZARD_SOLO_PLAYED_BY_LABEL = 'Played by'
+MSG_WIZARD_SOLO_SECTION_LABEL = 'Section'
 MSG_WIZARD_LISTEN_BUTTON = 'Listen'
 MSG_WIZARD_REGENERATE_BUTTON = 'Regenerate'
 # tui/screens/wizard/riffs_branch.py, tui/screens/wizard/riff_assign_branch.py, tui/screens/wizard/section_players_branch.py, tui/dialogs/new_riff_dialog.py: the riffs.

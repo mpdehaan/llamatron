@@ -50,7 +50,7 @@ A song has more than one melody: the verses share one, the choruses another, and
 
 ### Melodies
 
-Melodies, under Composition, is a group that opens and closes with `←` and `→`. The group holds the Hook panel first, then a panel for each kind of section that has a melody, and the Intro panel last.
+Melodies, under Composition, is a group that opens and closes with `←` and `→`. The group holds the Hook panel first, then a panel for each kind of section that has a melody, a panel for each solo, and the Intro panel last.
 
 ### Hook
 
@@ -78,6 +78,8 @@ Edit Chorus Notes, named for the section that carries the hook, opens that whole
 ### Section Melodies
 
 Each kind of section that has a melody has a panel of its own under Hook, named for the kind, such as Verse or Chorus. Height sets the melody high, in the middle or low against the song's other melodies, since a chorus usually sits above its verse. Busy gives the kind of section its own answer in place of the song's. Each list marks the value the genre or the song already gives, and choosing that value gives the field back. Edit Notes opens the melody in the pattern editor, where the notes are edited by hand, and `Bksp` on Edit Notes gives edited notes back to the wizard. Regenerate writes another melody for that kind of section after asking, keeping nothing of the old one. Listen plays the melody alone, as `L` (listen) does, and Listen With Band plays the first section of the kind with everybody in it. The line under the buttons says whether the notes are made by the wizard or edited by hand.
+
+Each solo of the song has a panel of its own, named Solo, Solo 2 and so on in the order the song plays them, since no two solos of a song are alike. The panel names who plays the solo and the section that holds it. Edit Notes opens that solo's notes in the pattern editor, Listen plays the soloist alone, and Listen With Band plays the solo with everybody in it.
 
 The Intro panel comes last, since an intro's melody is made from the hook. Intro hook chooses a player to play the hook in the intro before anybody sings it. While a player is chosen, Edit Notes opens that player's intro notes in the pattern editor, Listen plays the player alone in the intro, and Listen With Band plays the intro with everybody in it.
 
