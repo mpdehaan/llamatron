@@ -44,7 +44,7 @@ from llamatron.macro_composer.arranger import (
     arranged, forms_of, picked, player_of, section_of, share_in, share_of, style_in, style_named, style_names, values_of, variant_named, variants_of, VARIANT, VARIANT_SAYS,
 )
 from llamatron.macro_composer.composer import composed
-from llamatron.macro_composer import band, hook_writing, line_edits, phrasing, tune_fit
+from llamatron.macro_composer import band, hook_writing, line_edits, loudness_steps, phrasing, tune_fit
 from llamatron.macro_composer.arranger import (GENRE as GENRE_OF_STYLE, MORE_RIFFS, MUSICIANS, NOBODY, OWN_TUNES, RIFF_DRAWN_AS, RIFF_FOR, RIFF_OWN, TAKEN_TUNES, TUNE_BY, TUNE_BY_SONG,
                                                TUNE_PHRASING, in_octaves_of)
 from llamatron.macro_composer.players import BASS as BASS_PLAYER
@@ -1144,7 +1144,7 @@ class WizardChoices:
         trial._answers = {}
         trial._own_entries()[place][BARS] = bars
         try:
-            trial.made_setlist(name=self._entry(place)[KIND], version=A_VERSION)
+            trial.written_setlist(name=self._entry(place)[KIND], version=A_VERSION)
         except (ValueError, SongFileError):
             return False
         return True
@@ -1395,7 +1395,7 @@ class WizardChoices:
             if end is not None:
                 self._stages[END_KEPT] = end
             self._answers = {}
-            self.made_setlist(name=PREVIEW_NAME, version=A_VERSION)
+            self.written_setlist(name=PREVIEW_NAME, version=A_VERSION)
         except (ValueError, KeyError, IndexError, SongFileError) as problem:
             self._sections, self._stages = before
             self._answers = {}
@@ -2443,7 +2443,7 @@ class WizardChoices:
 
     def _parts_arranged(self):
         """The patterns of the song as made, which leaves out a part no section plays."""
-        return self.made_for_listening()[0].to_data()[Section.PATTERNS]
+        return self.written_for_trial()[0].to_data()[Section.PATTERNS]
 
     def _levels_heard(self, role):
         plain = self._parts_as_written(role)
@@ -2494,7 +2494,7 @@ class WizardChoices:
             trial = copy.deepcopy(self)
             trial._answers = {}
             trial._extras.setdefault(DYNAMICS, {})[role] = dynamics
-            made.append(trial.made_for_listening()[0].to_data()[Section.PATTERNS])
+            made.append(trial.written_for_trial()[0].to_data()[Section.PATTERNS])
         return made[0] != made[1]
 
     def get_dynamics(self, role):
@@ -3068,7 +3068,7 @@ class WizardChoices:
             del entry[OWN_OF_SECTION]
         self._answers = {}
         try:
-            self.made_setlist(name=PREVIEW_NAME, version=A_VERSION)
+            self.written_setlist(name=PREVIEW_NAME, version=A_VERSION)
         except (ValueError, KeyError, IndexError, SongFileError) as problem:
             self._sections = before
             self._answers = {}
@@ -3154,7 +3154,7 @@ class WizardChoices:
             trial = copy.deepcopy(self)
             trial._answers = {}
             trial._plan()[REACTS] = {**(trial._plan().get(REACTS) or {}), self._role(role)[PLAYER]: reacts}
-            made.append(trial.made_for_listening()[0].to_data()[Section.PATTERNS])
+            made.append(trial.written_for_trial()[0].to_data()[Section.PATTERNS])
         return made[0] != made[1]
 
     def get_reacts(self, role):
@@ -3249,7 +3249,7 @@ class WizardChoices:
                 if (place in plays) != (role in self.section_plays(place)):
                     self.set_section_plays(place=place, role=role, on=place in plays)
             self._answers = {}
-            self.made_for_listening()
+            self.written_for_trial()
         except (ValueError, SongFileError) as problem:
             self._sections, self._stages = kept
             self._answers = {}
@@ -3375,7 +3375,7 @@ class WizardChoices:
             self._extras.setdefault(MELODY, {})[HOOK_NOTES] = self._checked_line(line=line, steps=line_edits.steps_of(self.hook_line()))
         self._answers = {}
         try:
-            self.made_for_listening()
+            self.written_for_trial()
         except Exception as problem:
             self._extras.pop(MELODY, None)
             if before is not None:
@@ -3426,7 +3426,7 @@ class WizardChoices:
         player = self.tune_player_in(kind)
         if player is None:
             return None, None
-        setlist, name = self.made_for_listening()
+        setlist, name = self.written_for_trial()
         scenes = setlist.get_song(name).get_scenes()
         slot = scenes[place].get_clip_slot(player) if place < len(scenes) and scenes[place].has_clip_slot(player) else None
         if slot is None:
@@ -3565,7 +3565,7 @@ class WizardChoices:
             del self._extras[OWN_TUNES]
         self._answers = {}
         try:
-            self.made_for_listening()
+            self.written_for_trial()
         except Exception as problem:
             self._extras.pop(OWN_TUNES, None)
             if before is not None:
@@ -3916,7 +3916,7 @@ class WizardChoices:
         self._answers = {}
         try:
             self.riff_heard(riff)
-            self.made_for_listening()
+            self.written_for_trial()
         except Exception as problem:
             # A pattern written by hand can fail in any way a set's data can, as a tune's can.
             self._extras[RIFF_BOOK] = before
@@ -3945,7 +3945,7 @@ class WizardChoices:
             trial._extras[TUNE_BY][kind] = NOBODY
         if not trial._extras[TUNE_BY]:
             del trial._extras[TUNE_BY]
-        setlist, name = trial.made_for_listening()
+        setlist, name = trial.written_for_trial()
         pattern = composer_text.MSG_PART_OF_SECTION.format(role, riff)
         if not setlist.has_pattern(pattern):
             raise ValueError(errors.ERR_WIZARD_RIFF_FITS_NOWHERE.format(riff=riff))
@@ -4058,7 +4058,7 @@ class WizardChoices:
             played[role] = part
         self._tidy_riffs()
         try:
-            self.made_for_listening()
+            self.written_for_trial()
         except (ValueError, KeyError, IndexError, SongFileError) as problem:
             self._extras = before
             self._answers = {}
@@ -4176,6 +4176,10 @@ class WizardChoices:
         """Return the set these choices make, to be heard and thrown away, with its one song's name."""
         return self.made_setlist(name=PREVIEW_NAME, version=A_VERSION), PREVIEW_NAME
 
+    def written_for_trial(self):
+        """Return the set these choices write, to be looked at and thrown away, with its one song's name: the song before its players trade loudness."""
+        return self.written_setlist(name=PREVIEW_NAME, version=A_VERSION), PREVIEW_NAME
+
     def hook_scene(self):
         """Return the place in the form of the first section that says the hook, or None."""
         sections = self._style()[SECTIONS]
@@ -4199,7 +4203,16 @@ class WizardChoices:
         self._stages = {field: value for field, value in kept.items() if isinstance(value, (str, int)) and not isinstance(value, bool)}
 
     def made_setlist(self, *, name, version):
-        """Return a set holding the one song these choices make, under a name, with all the song uses, the song keeping the choices.
+        """Return a set holding the one song these choices make, under a name, with all the song uses, the song keeping the choices:
+        the song as written, and then each player's trade of loudness for a much denser part, so that no section arrives too loud.
+        A melody is left on top."""
+        made = self.written_setlist(name=name, version=version)
+        loudness_steps.with_trades(song=made.get_item(section=Section.SONGS, name=name), kept=self.melody_players())
+        return made
+
+    def written_setlist(self, *, name, version):
+        """Return the set as written, before any player trades loudness. The trade is measured by playing the song, which takes
+        several times as long as writing it, so whatever only asks what a choice writes, or whether a song can be made, asks here.
 
         A run that has no seed yet draws one first, so that the same choices make the same song again.
         """
@@ -4225,3 +4238,7 @@ class WizardChoices:
         # Each pattern goes in the group named after the track that plays it.
         made.group_patterns_by_track(made.get_item(section=Section.SONGS, name=name))
         return made
+
+    def melody_players(self):
+        """Return the players who carry a melody somewhere in the song, by name: each kind of section's, and the soloist."""
+        return {self.tune_player_in(kind) for kind in self.tune_kinds()} | {SOLO}

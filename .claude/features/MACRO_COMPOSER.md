@@ -281,6 +281,17 @@ clouds; generate and test, with motif development and counterpoint last.
   the chord or off it, `unsettled_place`) and Call and answer (a line that returns keeps its notes and settles, or is walked anew).
   A line before a hook ends open and the section's last line ends on the home note whatever Resolve says. Serial and evolving
   songs keep their own lines. A bar not counted in eight keeps the first hook, a figure that ends on its long top note. `tests/macro_composer/test_hook_writing.py` holds each gauge.
+- The trade (`src/llamatron/macro_composer/loudness_steps.py`, the user's choice of three ways): a section is lifted in several
+  ways at once, more players, a fuller part, an open cymbal, harder strokes, and together they made a chorus arrive too loud.
+  `WizardChoices.made_setlist` writes the song (`written_setlist`) and then has each player trade: where a player's part has more
+  than `MUCH_DENSER` times the notes a bar of the part the player last played, its notes keep a share of their loudness, so that
+  what the player adds up to rises `LARGEST_STEP` times at most, never less than `LEAST_KEPT`; a part as dense as the one before
+  keeps that part's trade; a player who comes in, a part of under a note a bar, and whoever carries a melody
+  (`melody_players`) are left alone; the closed hat, the open hat and the ride are one player. Measured by playing the song
+  (`measured`), which takes about four times as long as writing it, so the wizard's own comparisons of what a choice writes, and
+  the tests that make a great many songs, ask `written_setlist` and `written_for_trial`. The trade is each clip's own swell, the
+  scene's lowered. `internal_tools/loudness_steps.sh` reports the step into every subgenre's first chorus; `tests/macro_composer/test_loudness_steps.py`.
+  A rising section, such as a pre-chorus, ends its climb at the loudness of the section it leads to (`SongPlan._arrives_at`).
 - `src/llamatron/macro_composer/hook_kinds.py` holds only the rhythms and the two contours a tag is made of; the hook's old kinds, a contour, a rhythm and a detail, are gone.
 - A tune that returns note for note is one part, in a planned song, and a part beside the tune is drawn by the section's kind
   (`drawn_as`), so that a hook or a riff stays the same each time.
