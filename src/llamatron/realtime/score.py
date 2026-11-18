@@ -32,7 +32,7 @@ from typing import NamedTuple
 
 from llamatron.composition.file_format import FollowAction
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.realtime.timeline import NOTE_OFF, NOTE_ON, Tag, clip_timeline, seconds_per_whole, sort_key
+from llamatron.realtime.timeline import NOTE_OFF, NOTE_ON, Tag, clip_timeline, sort_key
 from llamatron.support.rational import Rational
 
 NO_PLAY = 0
@@ -46,11 +46,11 @@ FIRST_ROW = 0
 
 
 class Row(NamedTuple):
-    """One written-out repeat of a scene: when it starts within the scene, in seconds, how long it lasts, and the seconds a whole note takes at its tempo."""
+    """One written-out repeat of a scene: when it starts within the scene, in seconds, how long it lasts, and its clock, which keeps its tempo and every change of tempo inside it."""
 
     start: float
     seconds: float
-    whole: float
+    clock: object
 
 
 class Sounding(NamedTuple):
@@ -113,20 +113,20 @@ class Score:
                 self._repeats[(index, track)] = None if clip_slot is None or clip_slot.loops() else clip_slot.get_repeat()
             for place in scene_rows:
                 row = rows[place]
-                whole = seconds_per_whole(grid.tempo_at(row))
-                row_seconds = float(grid.row_length(row)) * whole
-                self._rows[index].append(Row(scene_start, row_seconds, whole))
+                clock = grid.clock_of(row)
+                row_seconds = clock.seconds_at(grid.row_length(row))
+                self._rows[index].append(Row(scene_start, row_seconds, clock))
                 for track in grid.get_columns():
                     name = track.get_name()
                     clip = grid.get_clip(row=row, column=track)
                     route = routes.get(name)
                     if clip is None:
                         continue
-                    self._clip_seconds[(index, len(self._rows[index]) - 1, name)] = float(clip.total_length()) * whole
+                    self._clip_seconds[(index, len(self._rows[index]) - 1, name)] = clock.seconds_at(clip.total_length())
                     if route is None or track.get_mute():
                         continue
                     self._events[(index, name)].extend(clip_timeline(clip=clip, scale=grid.scale_at(row=row, column=track), route=route, tag=Tag(index, name),
-                                                                     scene_start=Rational(0), scene_seconds=scene_start, whole=whole))
+                                                                     scene_start=Rational(0), scene_seconds=scene_start, clock=clock))
                 scene_start += row_seconds
             for track in self._tracks:
                 self._events[(index, track)].sort(key=sort_key)
@@ -260,17 +260,17 @@ class Score:
         whole = 0.0
         for row in self._rows[scene]:
             if elapsed <= row.start + row.seconds or row is self._rows[scene][-1]:
-                return whole + max(elapsed - row.start, START_OF_SCENE) / row.whole
-            whole += row.seconds / row.whole
+                return whole + row.clock.whole_at(max(elapsed - row.start, START_OF_SCENE))
+            whole += row.clock.whole_at(row.seconds)
         return whole
 
     def seconds_at(self, *, scene, whole):
         """Return the moment in seconds from a scene's start that is so many whole notes into it, the other way round from whole_at."""
         counted = 0.0
         for row in self._rows[scene]:
-            row_whole = row.seconds / row.whole
+            row_whole = row.clock.whole_at(row.seconds)
             if whole <= counted + row_whole or row is self._rows[scene][-1]:
-                return row.start + (whole - counted) * row.whole
+                return row.start + row.clock.seconds_at(whole - counted)
             counted += row_whole
         return START_OF_SCENE
 
@@ -288,9 +288,13 @@ class Score:
         return sorted(notes)
 
     def bar_seconds(self, *, scene, elapsed):
-        """Return how long a bar of the song's time signature lasts, in seconds, at a moment of a scene counted from the scene's start, at that row's tempo."""
+        """Return how long a bar of the song's time signature lasts, in seconds, at a moment of a scene counted from the scene's start, at the tempo of that moment."""
+        return self._bar * self.seconds_per_whole(scene=scene, elapsed=elapsed)
+
+    def seconds_per_whole(self, *, scene, elapsed):
+        """Return how long a whole note lasts at a moment of a scene counted from the scene's start, in seconds."""
         _, row = self.row_at(scene=scene, elapsed=elapsed)
-        return self._bar * row.whole
+        return row.clock.seconds_per_whole_at(elapsed - row.start)
 
     def row_at(self, *, scene, elapsed):
         """Return the scene's row playing at a moment counted from the scene's start, and its place among the scene's rows."""

@@ -93,8 +93,8 @@ ROOT_OF_PLACE = 'root'
 TYPE_OF_PLACE = 'type'
 SCENE_FIELDS = (TEMPO_OF_PLACE, TEMPO_END_OF_PLACE, ROOT_OF_PLACE, TYPE_OF_PLACE)
 SCENE_TEMPO = 'tempo'
-SCENE_TEMPO_START = 'tempo_start'
-SCENE_TEMPO_END = 'tempo_end'
+# The tempo a scene's Tempo Ramp In reaches, over the whole scene, from the scene's tempo.
+SCENE_TEMPO_END = 'tempo_in_end'
 # A scene's scale, as its root and type, which the arranger names and adds to the set's scales.
 SCALE_OF_PLACE = 'scale'
 KEY_OF_SONG = 'key'
@@ -419,12 +419,10 @@ class SongPlan:
         """The settings of a section's scene the song gives the place: a tempo of its own, one it moves to by its end, and a key or a scale of its own."""
         at = self._at(place)
         settings = {}
-        if TEMPO_OF_PLACE in at and TEMPO_END_OF_PLACE in at:
-            settings.update({SCENE_TEMPO_START: at[TEMPO_OF_PLACE], SCENE_TEMPO_END: at[TEMPO_END_OF_PLACE]})
-        elif TEMPO_END_OF_PLACE in at:
-            settings.update({SCENE_TEMPO_START: self._tempo, SCENE_TEMPO_END: at[TEMPO_END_OF_PLACE]})
-        elif TEMPO_OF_PLACE in at:
+        if TEMPO_OF_PLACE in at:
             settings[SCENE_TEMPO] = at[TEMPO_OF_PLACE]
+        if TEMPO_END_OF_PLACE in at:
+            settings[SCENE_TEMPO_END] = at[TEMPO_END_OF_PLACE]
         if ROOT_OF_PLACE in at or TYPE_OF_PLACE in at:
             settings[SCALE_OF_PLACE] = {ROOT_OF_PLACE: at.get(ROOT_OF_PLACE, self._song[KEY_OF_SONG][ROOT_OF_PLACE]), TYPE_OF_PLACE: at.get(TYPE_OF_PLACE, self._scale_type)}
         return settings

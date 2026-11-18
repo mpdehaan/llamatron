@@ -322,10 +322,10 @@ def effective_values(*, song, index):
     scene = song.get_scenes()[index]
     if scene.get_tempo_setting() is not None:
         tempo, tempo_source = str(scene.get_tempo_setting()), SCENE_SOURCE
-    elif scene.get_tempo_start() is not None:
-        tempo, tempo_source = marks.MSG_SCENE_VIEW_TEMPO_RAMP.format(start=scene.get_tempo_start(), end=scene.get_tempo_end()), SCENE_SOURCE
     else:
         tempo, tempo_source = str(song.get_tempo()), SONG_SOURCE
+    if scene.has_tempo_ramp():
+        tempo, tempo_source = marks.MSG_SCENE_VIEW_TEMPO_RAMPS.format(tempo=tempo), SCENE_SOURCE
     scale_name = scene.get_scale_name() or song.get_scale_name()
     scale_source = SCENE_SOURCE if scene.get_scale_name() else SONG_SOURCE
     choice = scene.get_groove_choice()

@@ -199,7 +199,7 @@ FEATURES = [
     ('scene repeat', lambda data: repeats(items=scenes(data), setting=SceneSetting.REPEAT)),
     ('scene scale', any_scene_setting(SceneSetting.SCALE)),
     ('scene tempo', any_scene_setting(SceneSetting.TEMPO)),
-    ('tempo ramps', any_scene_setting(SceneSetting.TEMPO_START)),
+    ('tempo ramps', lambda data: any(any_scene_setting(setting)(data) for setting in (SceneSetting.TEMPO_IN_START, SceneSetting.TEMPO_IN_END, SceneSetting.TEMPO_OUT_START, SceneSetting.TEMPO_OUT_END))),
     ('register resets', any_scene_setting(SceneSetting.RESET)),
     ('scene register sets', any_scene_setting(SceneSetting.SET_REGISTERS)),
     ('scene register adds', any_scene_setting(SceneSetting.ADD_REGISTERS)),

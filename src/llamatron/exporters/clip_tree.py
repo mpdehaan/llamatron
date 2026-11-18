@@ -106,7 +106,9 @@ class ClipTree(WritesManyFiles, Exporter):
     def _midi_file(self, *, name, scene, track, clip):
         notes, clip_length = timed_events(clip=clip, scale=self._grid.scale_at(row=scene, column=track))
         signature = clip.get_time_signature() or self._grid.get_time_signature()
-        events = [time_signature_event(tick=AT_THE_START, signature=signature), tempo_event(tick=AT_THE_START, tempo=self._grid.tempo_at(scene))]
+        events = [time_signature_event(tick=AT_THE_START, signature=signature)]
+        # A clip of a scene that ramps its tempo carries the ramp as far as the clip lasts.
+        events.extend(tempo_event(tick=ticks(time), tempo=tempo) for time, tempo in self._grid.tempos_in(scene) if time == AT_THE_START or time < clip_length)
         events.extend(clip_events(clip=clip, notes=notes, clip_length=clip_length))
         midi = midi_track(name=name, events=events, end=ticks(clip_length))
         return mido.MidiFile(type=SINGLE_TRACK_FILE, ticks_per_beat=TICKS_PER_BEAT, tracks=[midi])

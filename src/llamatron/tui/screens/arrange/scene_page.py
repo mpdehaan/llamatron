@@ -20,7 +20,7 @@ from rich.text import Text
 
 from llamatron.composition import limits
 from llamatron.strings import help as help_text, labels, legends, marks, messages
-from llamatron.composition.file_format import SECTION_KINDS, SHAPES, shape_setting, REGISTER_NAMES, Section
+from llamatron.composition.file_format import RAMP_WAYS, REGISTER_NAMES, SECTION_KINDS, SHAPES, RampPart, Section, shape_setting
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.text import clock, plain_number, sorted_names, tempo_text
@@ -110,9 +110,8 @@ class ScenePage(FieldPage):
         self.document().set_scene_scale(index=self.index, name=None)
 
     def tempo(self):
-        """Return the tempo the scene sets, or starts its ramp from, or None if it uses the song's."""
-        scene = self.scene()
-        return scene.get_tempo_start() if scene.get_tempo_setting() is None else scene.get_tempo_setting()
+        """Return the tempo the scene sets, or None if it uses the song's."""
+        return self.scene().get_tempo_setting()
 
     def set_tempo(self, value):
         self.document().set_scene_tempo(index=self.index, tempo=value)
@@ -120,11 +119,32 @@ class ScenePage(FieldPage):
     def clear_tempo(self):
         self.document().clear_scene_tempo(self.index)
 
-    def set_ramp(self, value):
-        self.document().set_scene_tempo_ramp(index=self.index, end=value)
+    def tempo_ramp_section(self, way):
+        """Return a tempo ramp's section, closed until opened: the tempo it starts from, the tempo it reaches, each the scene's tempo until given, and the bars it takes, the whole scene until given."""
+        scene = self.scene()
+        document = self.document()
 
-    def clear_ramp(self):
-        self.document().clear_scene_tempo_ramp(self.index)
+        def value(part):
+            return scene.get_tempo_ramp_setting(way=way, part=part)
+
+        def store(part, number):
+            document.set_scene_tempo_ramp_setting(index=self.index, way=way, part=part, value=number)
+        here = self.tempo()
+        base = plain_number(document.song().get_tempo()) if here is None else here
+        blank = marks.MSG_SONG_TEMPO_SHOWN.format(tempo=base) if here is None else marks.MSG_SCENE_TEMPO_SHOWN.format(tempo=base)
+        over = value(RampPart.OVER)
+        bars = marks.MSG_RAMP_WHOLE_SCENE_SHOWN if over is None else marks.MSG_RAMP_ONE_BAR_SHOWN if over == limits.MIN_RAMP_BARS else marks.MSG_RAMP_BARS_SHOWN.format(bars=over)
+        return [
+            self.heading(label=labels.MSG_TEMPO_RAMP_SECTIONS[way], is_set=lambda: scene.get_tempo_ramp(way) is not None),
+            *[NumberField(
+                page=self, label=labels.MSG_TEMPO_RAMP_LABELS[(way, part)], number=value(part), start=base, shown=blank if value(part) is None else marks.MSG_TEMPO_SHOWN.format(tempo=value(part)),
+                lowest=limits.MIN_TEMPO, highest=limits.MAX_TEMPO, set=lambda number, part=part: store(part, number), clear=lambda part=part: store(part, None), clear_what=legends.MSG_RAMP_BLANK_WHAT,
+            ) for part in (RampPart.START, RampPart.END)],
+            NumberField(
+                page=self, label=labels.MSG_TEMPO_RAMP_LABELS[(way, RampPart.OVER)], number=over, start=limits.MIN_RAMP_BARS, shown=bars, lowest=limits.MIN_RAMP_BARS, highest=limits.MAX_RAMP_BARS,
+                set=lambda number: store(RampPart.OVER, number), clear=lambda: store(RampPart.OVER, None), clear_what=legends.MSG_RAMP_BLANK_WHAT,
+            ),
+        ]
 
     def scale_text(self):
         scene_scale = self.scene().get_scale_name()
@@ -142,7 +162,6 @@ class ScenePage(FieldPage):
         scene = self.scene()
         song_tempo = plain_number(self.document().song().get_tempo())
         tempo = self.tempo()
-        end = scene.get_tempo_end()
         repeat = scene.get_repeat()
         return [
             NameField(value=lambda: scene.get_name() or NOTHING, rename=self.rename),
@@ -154,10 +173,6 @@ class ScenePage(FieldPage):
                 set=self.set_tempo, clear=self.clear_tempo, clear_what=legends.MSG_USE_SONG_TEMPO_WHAT,
             ),
             NumberField(
-                page=self, label=labels.MSG_TEMPO_RAMP_LABEL, number=end, start=tempo or song_tempo, shown=marks.MSG_RAMP_OFF_SHOWN if end is None else marks.MSG_TEMPO_SHOWN.format(tempo=end),
-                lowest=limits.MIN_TEMPO, highest=limits.MAX_TEMPO, set=self.set_ramp, clear=self.clear_ramp, clear_what=legends.MSG_NO_RAMP_WHAT,
-            ),
-            NumberField(
                 page=self, label=labels.MSG_REPEAT_LABEL, number=repeat, lowest=limits.MIN_REPEAT, highest=limits.MAX_SCENE_REPEAT,
                 set=lambda number: self.document().set_scene_repeat(index=self.index, repeat=number),
             ),
@@ -165,6 +180,7 @@ class ScenePage(FieldPage):
             # Real-time playback alone reads it, so it comes last, after everything the export reads.
             Toggle(label=labels.MSG_LAUNCH_TOGETHER_LABEL, on=scene.launches_together(), set=lambda on: self.document().set_scene_launch_together(index=self.index, value=on)),
             chains_field(page=self, names=lambda: self.scene().get_chain_names(), store=lambda names: self.document().set_scene_chains(index=self.index, names=names)),
+            *[field for way in RAMP_WAYS for field in self.tempo_ramp_section(way)],
             *[field for shape in SHAPES for field in self.shape_section(shape)],
             *self.register_sections(),
         ]

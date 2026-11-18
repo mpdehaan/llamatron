@@ -26,7 +26,7 @@ class ClipRow:
     A tempo or scale of None uses the song's.
     """
 
-    __slots__ = ('_id', '_name', '_tempo', '_scale')
+    __slots__ = ('_id', '_name', '_tempo', '_scale', '_tempo_changes')
 
     def __init__(self, *, name=None, tempo=None, scale=None):
         check_name(name)
@@ -36,6 +36,7 @@ class ClipRow:
         self._name = name
         self._tempo = tempo
         self._scale = scale
+        self._tempo_changes = ()
 
     def get_id(self):
         return self._id
@@ -59,6 +60,16 @@ class ClipRow:
     def set_tempo(self, tempo):
         check_tempo_override(tempo)
         self._tempo = tempo
+
+    def get_tempo_changes(self):
+        """Return the changes of tempo inside the row, (time in whole notes from its start, tempo) in order, none for a row that keeps one tempo."""
+        return self._tempo_changes
+
+    def set_tempo_changes(self, changes):
+        """Give the row its changes of tempo after its start, each a time in whole notes and a tempo."""
+        for _, tempo in changes:
+            check_tempo_override(tempo)
+        self._tempo_changes = tuple(changes)
 
     def get_scale(self):
         return self._scale

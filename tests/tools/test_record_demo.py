@@ -20,6 +20,7 @@ import importlib.util
 import io
 import os
 import pathlib
+import subprocess
 import tempfile
 import unittest
 from unittest import mock
@@ -75,6 +76,8 @@ A_VIDEO = 'take.mov'
 OTHER_VIDEO = 'other.mov'
 A_TEMPORARY_ENDING = '.sb-1234'
 A_FAILURE = 'no room'
+# The argument that limits how long a command may run.
+TIMEOUT = 'timeout'
 RECORDED_SECONDS = 60
 # screencapture's flag for how many seconds it records.
 SUCCEEDED = 0
@@ -332,6 +335,29 @@ class TestRecordDemo(unittest.TestCase):
     def write_part_and_fail(self, command, **named):
         pathlib.Path(command[command.index(self.tool.OUTPUT_FLAG) + 1]).write_bytes(PART_BYTES)
         raise OSError(A_FAILURE)
+
+    def write_part_and_run_too_long(self, command, **named):
+        pathlib.Path(command[command.index(self.tool.OUTPUT_FLAG) + 1]).write_bytes(PART_BYTES)
+        raise subprocess.TimeoutExpired(cmd=command, timeout=named[TIMEOUT])
+
+    def test_a_trim_that_runs_too_long_is_stopped_and_the_video_recorded_is_kept(self):
+        with tempfile.TemporaryDirectory() as folder:
+            video = os.path.join(folder, A_VIDEO)
+            pathlib.Path(video).write_bytes(RECORDED_BYTES)
+            with mock.patch.object(self.tool.subprocess, 'run', side_effect=self.write_part_and_run_too_long) as run:
+                answer = self.tool.trim_end(video=video, recorded_seconds=RECORDED_SECONDS, give_up_after=RECORDED_SECONDS + self.tool.TRIM_SPARE_SECONDS)
+            self.assertEqual(run.call_args.kwargs[TIMEOUT], RECORDED_SECONDS + self.tool.TRIM_SPARE_SECONDS)
+            self.assertEqual(answer, self.tool.TRIM_GAVE_UP.format(seconds=round(RECORDED_SECONDS + self.tool.TRIM_SPARE_SECONDS)))
+            self.assertEqual(os.listdir(folder), [A_VIDEO])
+            self.assertEqual(pathlib.Path(video).read_bytes(), RECORDED_BYTES)
+
+    def test_a_trim_with_no_limit_waits_as_long_as_the_trim_takes(self):
+        with tempfile.TemporaryDirectory() as folder:
+            video = os.path.join(folder, A_VIDEO)
+            pathlib.Path(video).write_bytes(RECORDED_BYTES)
+            with mock.patch.object(self.tool.subprocess, 'run', side_effect=self.write_trimmed) as run:
+                self.tool.trim_end(video=video, recorded_seconds=RECORDED_SECONDS)
+            self.assertIsNone(run.call_args.kwargs[TIMEOUT])
 
     def test_a_trim_keeps_only_the_trimmed_video(self):
         with tempfile.TemporaryDirectory() as folder:

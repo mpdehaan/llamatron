@@ -308,7 +308,9 @@ class TestWizardSectionOwn(unittest.TestCase):
         self.assertEqual(self.scene(choices=choices).get_tempo_setting(), A_SLOW_TEMPO)
         choices.set_section_own(place=A_VERSE, field=TEMPO_END_OF_PLACE, value=A_FAST_TEMPO)
         data = choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.SONGS][A_NAME][Section.SCENES][A_VERSE]
-        self.assertEqual((data[SceneSetting.TEMPO_START], data[SceneSetting.TEMPO_END]), (A_SLOW_TEMPO, A_FAST_TEMPO))
+        # The scene keeps its tempo and ramps in to the tempo at its end, over the whole scene.
+        self.assertEqual((data[SceneSetting.TEMPO], data[SceneSetting.TEMPO_IN_END]), (A_SLOW_TEMPO, A_FAST_TEMPO))
+        self.assertNotIn(SceneSetting.TEMPO_IN_OVER, data)
         choices.set_section_own(place=A_VERSE, field=ROOT_OF_PLACE, value=ANOTHER_ROOT)
         choices.set_section_own(place=A_VERSE, field=TYPE_OF_PLACE, value=MINOR)
         made = choices.made_setlist(name=A_NAME, version=VERSION)
@@ -322,7 +324,8 @@ class TestWizardSectionOwn(unittest.TestCase):
         choices = chosen()
         choices.set_section_own(place=A_VERSE, field=TEMPO_END_OF_PLACE, value=A_SLOW_TEMPO)
         data = choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.SONGS][A_NAME][Section.SCENES][A_VERSE]
-        self.assertEqual((data[SceneSetting.TEMPO_START], data[SceneSetting.TEMPO_END]), (choices.get_tempo(), A_SLOW_TEMPO))
+        self.assertEqual(data[SceneSetting.TEMPO_IN_END], A_SLOW_TEMPO)
+        self.assertNotIn(SceneSetting.TEMPO, data)
 
     def test_each_way_of_leaving_is_what_the_plan_says_of_the_section(self):
         choices = chosen()

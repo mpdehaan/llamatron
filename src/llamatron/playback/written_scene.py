@@ -57,7 +57,7 @@ class WrittenScene:
                     name = REPEAT_NAME.format(name=name, repeat=place + FIRST_NUMBER)
                 resets = scene.get_reset_names() if place == FIRST_REPEAT else []
                 written.append(cls(
-                    number=number, name=name, scale_name=scale, tempo=scene.get_tempo(place), scene=scene, resets=resets, first_play=place == FIRST_REPEAT,
+                    number=number, name=name, scale_name=scale, tempo=scene.get_tempo(), scene=scene, resets=resets, first_play=place == FIRST_REPEAT,
                 ))
         return written
 

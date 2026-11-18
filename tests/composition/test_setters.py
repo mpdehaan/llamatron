@@ -23,7 +23,7 @@ from llamatron.composition.clip_slot import ClipSlot, MORPH_STYLES
 from llamatron.composition.chain import Chain
 from llamatron.composition import defaults, limits
 from llamatron.composition.file_format import (
-    CC_ROWS, REGISTER_NAMES, ClipSlotSetting, Direction, GeneratorKind, PatternSetting, RegisterName, RegisterSetting, Row,
+    CC_ROWS, REGISTER_NAMES, ClipSlotSetting, Direction, GeneratorKind, PatternSetting, RampPart, RampWay, RegisterName, RegisterSetting, Row,
     SceneSetting, Section, TrackSetting,
 )
 from llamatron.composition.generator_settings import ArpSetting, ArpSettings, AutoRatchetSetting, AutoRatchetSettings, NO_OFFSET
@@ -32,7 +32,7 @@ from llamatron.music import midi
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.pattern import Pattern
 from llamatron.composition.register import Register
-from llamatron.composition.scene import Scene
+from llamatron.composition.scene import Scene, TempoRamp
 from llamatron.composition.setlist import NO_TEXT, Setlist
 from llamatron.composition.song import Song
 from llamatron.composition.track import Track
@@ -277,14 +277,18 @@ class TestScene(SetterTestCase):
         self.scene.set_repeat(limits.MIN_REPEAT)
         self.assertNotIn(SceneSetting.REPEAT, self.scene.to_data())
 
-    def test_a_tempo_ramp_replaces_a_tempo_and_leaves_its_start_behind(self):
+    def test_a_tempo_ramp_is_set_part_by_part_beside_the_tempo(self):
         self.scene.set_tempo(TEMPO)
-        self.scene.set_tempo_ramp(start=TEMPO, end=FASTER)
-        self.assertEqual((self.scene.get_tempo_setting(), self.scene.get_tempo_start(), self.scene.get_tempo_end()), (None, TEMPO, FASTER))
-        self.scene.set_tempo(FASTER)
-        self.assertEqual(self.scene.get_tempo_start(), FASTER)
-        self.scene.clear_tempo_ramp()
-        self.assertEqual((self.scene.get_tempo_setting(), self.scene.get_tempo_end()), (FASTER, None))
+        self.assertFalse(self.scene.has_tempo_ramp())
+        self.scene.set_tempo_ramp_setting(way=RampWay.IN, part=RampPart.OVER, value=limits.MIN_RAMP_BARS)
+        # Bars alone change nothing: a ramp needs a start or an end.
+        self.assertIsNone(self.scene.get_tempo_ramp(RampWay.IN))
+        self.scene.set_tempo_ramp_setting(way=RampWay.IN, part=RampPart.END, value=FASTER)
+        self.assertEqual((self.scene.get_tempo_setting(), self.scene.get_tempo_ramp(RampWay.IN)), (TEMPO, TempoRamp(None, FASTER, limits.MIN_RAMP_BARS)))
+        self.assertIsNone(self.scene.get_tempo_ramp(RampWay.OUT))
+        self.assertRefused(self.scene, self.scene.set_tempo_ramp_setting, way=RampWay.OUT, part=RampPart.OVER, value=limits.MAX_RAMP_BARS + 1)
+        self.scene.set_tempo_ramp_setting(way=RampWay.IN, part=RampPart.END, value=None)
+        self.assertFalse(self.scene.has_tempo_ramp())
         self.scene.clear_tempo()
         self.assertNotIn(SceneSetting.TEMPO, self.scene.to_data())
 

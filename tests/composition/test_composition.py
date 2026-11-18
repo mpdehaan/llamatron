@@ -30,7 +30,7 @@ from llamatron.composition.clip_slot import ClipSlot, morph_style_name
 from llamatron.composition.chain import Chain
 from llamatron.composition.file_format import (
     CC_ROWS, PATTERN_ROWS, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, Accidental, ResetBehavior,
-    ClipSlotSetting, Direction, GeneratorKind, PatternSetting, RegisterName, RegisterSetting, Row, ScaleSetting, SceneSetting, Section,
+    ClipSlotSetting, Direction, GeneratorKind, PatternSetting, RampWay, RegisterName, RegisterSetting, Row, ScaleSetting, SceneSetting, Section,
     SetlistSetting, SongSetting, TrackSetting,
 )
 from llamatron.composition.generator_settings import (
@@ -42,7 +42,7 @@ from llamatron.composition import defaults, limits
 from llamatron.strings import errors
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.register import Register
-from llamatron.composition.scene import Scene
+from llamatron.composition.scene import Scene, TempoRamp
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.song import Song
 from llamatron.composition.song_file_error import SongFileError
@@ -540,18 +540,18 @@ class TestClipSlot(RoundTrip):
 class TestScene(RoundTrip):
 
     def test_round_trip(self):
-        data = {SceneSetting.NAME: VERSE, SceneSetting.REPEAT: 2, SceneSetting.SCALE: MAIN, SceneSetting.TEMPO_START: 100, SceneSetting.TEMPO_END: 120, SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A}}}
+        data = {SceneSetting.NAME: VERSE, SceneSetting.REPEAT: 2, SceneSetting.SCALE: MAIN, SceneSetting.TEMPO_IN_START: 100, SceneSetting.TEMPO_IN_END: 120, SceneSetting.TEMPO_OUT_END: 90, SceneSetting.TEMPO_OUT_OVER: 2, SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A}}}
         self.assert_round_trip(Scene, data, a_song())
         self.assert_round_trip(Scene, {}, a_song())
 
     def test_values_and_defaults(self):
-        scene = Scene.from_data(data={SceneSetting.REPEAT: 3, SceneSetting.TEMPO_START: 100, SceneSetting.TEMPO_END: 120, SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A}}}, where=HERE, song=a_song())
-        self.assertEqual([scene.get_tempo(place) for place in range(3)], [100, 110, 120])
+        scene = Scene.from_data(data={SceneSetting.REPEAT: 3, SceneSetting.TEMPO: 100, SceneSetting.TEMPO_IN_END: 120, SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A}}}, where=HERE, song=a_song())
+        self.assertEqual((scene.get_tempo(), scene.get_tempo_ramp(RampWay.IN), scene.get_tempo_ramp(RampWay.OUT)), (100, TempoRamp(None, 120, None), None))
         self.assertEqual(scene.get_track_names(), [LEAD])
         self.assertEqual(scene.get_clip_slot(LEAD).get_pattern_name(), A)
         self.assertIsNone(scene.get_clip_slot(BASS))
         plain = Scene.from_data(data={}, where=HERE, song=a_song())
-        self.assertEqual((plain.get_name(), plain.get_repeat(), plain.get_scale_name(), plain.get_tempo(0)), (None, 1, None, None))
+        self.assertEqual((plain.get_name(), plain.get_repeat(), plain.get_scale_name(), plain.get_tempo()), (None, 1, None, None))
 
     def test_refusals(self):
         song = a_song()
@@ -560,7 +560,7 @@ class TestScene(RoundTrip):
             self.assert_refused(errors.ERR_BAD_REPEAT.format(lowest=limits.MIN_REPEAT, highest=limits.MAX_SCENE_REPEAT, value=repeat), Scene, {SceneSetting.REPEAT: repeat}, song)
         self.assert_refused('no track called (drums)', Scene, {Section.TRACKS: {DRUMS: {ClipSlotSetting.PATTERN: A}}}, song)
         self.assert_refused('no scale called (other)', Scene, {SongSetting.SCALE: OTHER}, song)
-        self.assert_refused('needs both tempo_start and tempo_end', Scene, {SceneSetting.TEMPO_START: 90}, song)
+        self.assert_refused(errors.ERR_BAD_RAMP_BARS.format(lowest=limits.MIN_RAMP_BARS, highest=limits.MAX_RAMP_BARS, value=0), Scene, {SceneSetting.TEMPO_IN_OVER: 0}, song)
 
 
 class TestSetlistAndSong(RoundTrip):

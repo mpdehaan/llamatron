@@ -33,6 +33,9 @@ MIN_REPEAT = 1
 
 # The most times a scene plays, and the most times a clip plays its pattern, in a file and on the Scene and Clip pages alike.
 MAX_SCENE_REPEAT = 999
+# The fewest and the most bars a scene's ramp takes.
+MIN_RAMP_BARS = 1
+MAX_RAMP_BARS = 9999
 MAX_CLIP_REPEAT = 9999
 
 # The range of a register's settings, and of what a step can add to one.

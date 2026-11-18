@@ -61,7 +61,7 @@ from llamatron.macro_composer.riffs import (BAR_COUNTS, BETWEEN_WAYS, FIRST_TAKE
                                             bars_of as riff_bars_of, flattened_in, line_of as riff_line_of)
 from llamatron.macro_composer.joins import BUILD, DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL
 from llamatron.macro_composer.song_plan import (
-    BIG, BY_PLACE, FADE_LEVEL, FADE_OVER, FADED, FADES, FADES_IN, LOUDEST_FADE_LEVEL, UNFADED, faded, PHRASING_WAYS, RISES, RISING, SCALE_OF_PLACE, SCENE_TEMPO, SCENE_TEMPO_END, SCENE_TEMPO_START, CONTRAST, ENERGY, FILL_SIZE, FILL_SIZES, HIGHEST_ENERGY, LOWEST_ENERGY, MEDIUM, NOT_AT_ALL, PHRASING, PLAN_OF_SONG, ROOT_OF_PLACE, SAID_OF_SECTION, SETUP, SMALL,
+    BIG, BY_PLACE, FADE_LEVEL, FADE_OVER, FADED, FADES, FADES_IN, LOUDEST_FADE_LEVEL, UNFADED, faded, PHRASING_WAYS, RISES, RISING, SCALE_OF_PLACE, SCENE_TEMPO, SCENE_TEMPO_END, CONTRAST, ENERGY, FILL_SIZE, FILL_SIZES, HIGHEST_ENERGY, LOWEST_ENERGY, MEDIUM, NOT_AT_ALL, PHRASING, PLAN_OF_SONG, ROOT_OF_PLACE, SAID_OF_SECTION, SETUP, SMALL,
     REACTS, TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE, USUAL_CONTRAST, SongPlan,
 )
 from llamatron.composition.song_file_error import SongFileError
@@ -1060,10 +1060,10 @@ class WizardChoices:
             return {}
         own = self._own_without_plan(entry)
         settings = {}
-        if TEMPO_END_OF_PLACE in own:
-            settings.update({SCENE_TEMPO_START: own.get(TEMPO_OF_PLACE, self._tempo), SCENE_TEMPO_END: own[TEMPO_END_OF_PLACE]})
-        elif TEMPO_OF_PLACE in own:
+        if TEMPO_OF_PLACE in own:
             settings[SCENE_TEMPO] = own[TEMPO_OF_PLACE]
+        if TEMPO_END_OF_PLACE in own:
+            settings[SCENE_TEMPO_END] = own[TEMPO_END_OF_PLACE]
         if ROOT_OF_PLACE in own or TYPE_OF_PLACE in own:
             settings[SCALE_OF_PLACE] = {ROOT_OF_PLACE: own.get(ROOT_OF_PLACE, self._root), TYPE_OF_PLACE: own.get(TYPE_OF_PLACE, self._scale_type)}
         if own.get(FADES):

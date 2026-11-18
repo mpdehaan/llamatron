@@ -25,7 +25,7 @@ from llamatron.exporters.timing import timed_events
 from llamatron.grid.handed_note import HandedNote
 from llamatron.grid.nudge_plan import MovingRow, NudgePlan, amount_moved
 from llamatron.support.rational import Rational
-from llamatron.composition.file_format import REGISTER_NAMES, GeneratorKind, Restart, Section, StepStatement
+from llamatron.composition.file_format import REGISTER_NAMES, GeneratorKind, RampWay, Restart, Section, StepStatement
 from llamatron.generators.base import Continuation
 from llamatron.generators.follow_chords import FollowChords
 from llamatron.generators.musician import Surroundings
@@ -38,10 +38,12 @@ from llamatron.playback.drift import DriftPlay, drifts_named
 from llamatron.playback.pattern_player import check_pattern_has_a_scale
 from llamatron.playback.grab_source import GrabSource
 from llamatron.playback.tune_source import TuneSource
+from llamatron.playback.tempo_ramps import ramped_tempos, tempos_within
 from llamatron.playback.registers import NOT_TURNED, RegisterChange, RegisterReader, RegisterRecorder, RegisterSolo, RegisterTimeline, RegisterTrial, scene_change, starting_values, with_resets
 from llamatron.playback.written_scene import WrittenScene
 from llamatron.grid.clip_grid import ClipGrid
 from llamatron.grid.clip_row import ClipRow
+from llamatron.grid.row_clock import RowClock
 from llamatron.grid.clip_column import ClipColumn
 from llamatron.grid.control import Control
 from llamatron.music import midi
@@ -114,7 +116,7 @@ class SongRenderer:
     lane wins.
     """
 
-    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing')
+    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped')
 
     def __init__(self, song, *, seed=None, looping_scenes_go_round=False):
         """Render a song, with a seed in place of the song's own if one is given, so that any render can be repeated.
@@ -142,6 +144,8 @@ class SongRenderer:
         self._end_states = {}
         # How many chords each track's finished clip in each written scene holds, for a Strum's down up that carries on.
         self._chord_counts = {}
+        # Each ramping scene's tempos, repeat by repeat, worked out once.
+        self._ramped = {}
         self._strum_seed = random_source(None if self._seed is None else self._seed * SEED_SONG_FACTOR + STRUM_SEED_OFFSET).randrange(STRUM_SEEDS)
         # Where each written-out scene starts from the song's top, in whole notes, for the drifts' clocks.
         self._starts = {}
@@ -196,7 +200,36 @@ class SongRenderer:
                     if clip.get_keyswitches():
                         clip.set_keyswitch_lead(self.keyswitch_lead(track=name, tempo=self._song.get_tempo() if tempo is None else tempo))
                     grid.set_clip(row=grid_scene, column=tracks[name], clip=clip)
+            tempos = self.tempos_of(scene)
+            if tempos is not None:
+                grid_scene.set_tempo(tempos[0][1])
+                grid_scene.set_tempo_changes(tempos[1:])
         return grid
+
+    def tempos_of(self, scene):
+        """Return a written-out scene's tempos where its scene ramps its tempo, (time in whole notes from its start, tempo) with the first at its start, or None for a scene with no ramp, which keeps one tempo.
+
+        A scene's ramps count bars across its whole play, every repeat together, so each repeat
+        takes the part of the ramps that falls inside it.
+        """
+        played = scene.get_scene()
+        if not played.has_tempo_ramp():
+            return None
+        if id(played) not in self._ramped:
+            rows = [written for written in self._scenes if written.get_scene() is played]
+            lengths = [self.get_scene_length(written) for written in rows]
+            signature = self._song.get_time_signature()
+            base = self._song.get_tempo() if played.get_tempo() is None else played.get_tempo()
+            tempos = ramped_tempos(
+                base=base, ramp_in=played.get_tempo_ramp(RampWay.IN), ramp_out=played.get_tempo_ramp(RampWay.OUT),
+                length=sum(lengths, START), bar=signature.bar_length(), beat=signature.beat_length(),
+            )
+            start = START
+            for written, length in zip(rows, lengths):
+                self._ramped[(id(played), written.get_number())] = tempos_within(tempos=tempos, start=start, end=start + length)
+                start += length
+            self._ramped[id(played)] = True
+        return self._ramped[(id(played), scene.get_number())]
 
     def keyswitch_lead(self, *, track, tempo):
         """Return how much earlier than its note a track's instrument wants each keyswitch, in whole notes at a tempo, or None for at the same moment."""
@@ -341,10 +374,13 @@ class SongRenderer:
             try:
                 length = self.get_scene_length(scene)
                 self._check_plays(scene)
+                tempos = self.tempos_of(scene)
+                # A scene that ramps its tempo is timed beat by beat, as its exports are.
+                clock = None if tempos is None else RowClock(tempos)
                 for track in scene.get_track_names():
-                    clips[track] = self.get_clip_length(scene=scene, track=track) * whole_notes_to_seconds
+                    clips[track] = _seconds_of(length=self.get_clip_length(scene=scene, track=track), clock=clock, whole=whole_notes_to_seconds)
                 # A scene with a problem has no length, so it's set only once the checks pass.
-                seconds = length * whole_notes_to_seconds
+                seconds = _seconds_of(length=length, clock=clock, whole=whole_notes_to_seconds)
             except SongFileError as error:
                 problem = str(error)
             result.append(SceneEstimate(scene.get_number(), seconds, clips, problem))
@@ -789,6 +825,13 @@ class SongRenderer:
             where=errors.ERR_WHERE_CHAIN.format(chain=chain, kind=step.kind), default_seed=seed, default_step=pattern_step, bar=self._song.get_time_signature().bar_length(),
             continuation=continuation, tempo=self._song.get_tempo() if scene.get_tempo() is None else scene.get_tempo(),
         )
+
+
+def _seconds_of(*, length, clock, whole):
+    """Return how long a length in whole notes lasts from a scene's start: by the scene's clock where its tempo ramps, else at the one tempo whose whole note lasts whole seconds."""
+    if clock is None:
+        return length * whole
+    return Rational(clock.seconds_at(length))
 
 
 def _whole_if_possible(number):

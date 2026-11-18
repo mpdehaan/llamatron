@@ -32,6 +32,8 @@ visits the same five pitches in a shuffled order.
 | [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../generators/GUITARIFY.md) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../REGISTERS.md) | [✓](../REGISTERS.md#conditional-execution) |
 <!-- end of the generated summary of 27_advanced_conditionals -->
 
+[![The Advanced Conditionals demo, 27_advanced_conditionals.yml, on YouTube](https://img.youtube.com/vi/SnS48Tv6RUw/hqdefault.jpg)](https://www.youtube.com/watch?v=SnS48Tv6RUw)
+
 <a id="guitarify"></a>
 ## Guitarify: `23_guitarify.yml`
 
