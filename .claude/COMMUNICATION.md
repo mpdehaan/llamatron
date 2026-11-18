@@ -203,6 +203,13 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   generator, a musician's page or a wizard panel, Claude also starts a fresh agent that sees only the proposal and critiques it
   as a strict professor of music, and the reply says where that agent disagreed. What is learnt goes into the notes. Claude
   brings musicality up itself, in every design discussion, and never waits to be asked.
+- **The professor's advice is weighed on the music alone** (the user's rule). The song wizard, the MacroComposer and the style
+  templates are a discrete feature from the rest of the application. Where the professor's advice differs from how one of those
+  works today, how it works today is never a reason against the advice. Claude checks the advice against the evidence (the
+  templates, the code, songs made), reports the difference, and recommends on the music alone. The cost of the change is stated
+  separately and never offered as a musical argument. This does not extend to the rest of llamatron, whose designs are the user's
+  and are changed only on the user's word, and it never extends to the example sets, which are rewritten only with the user's
+  say-so.
 - **The code maintainability expert** (the user's rule): a fresh agent that reads the code knowing nothing of Claude's reasoning
   and judges it as an engineer who wants code that is inspiring to read, clear, well explained, logically organized, fast and easy
   to work on, so that others want to contribute. It is consulted only when the user says to, never on Claude's own initiative,
