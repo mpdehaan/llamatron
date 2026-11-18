@@ -47,7 +47,7 @@ from llamatron.macro_composer import composer as set_writer
 from llamatron.macro_composer import melody as melody_writer
 from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer import band, hook_writing, line_edits, loudness_steps, notation as tune_notation, phrasing, tune_fit
-from llamatron.macro_composer.arranger import (GENRE as GENRE_OF_STYLE, MORE_RIFFS, MUSICIANS, NOBODY, OWN_INTRO, OWN_TUNES, RIFF_DRAWN_AS, RIFF_FOR, RIFF_OWN, TAKEN_TUNES, TUNE_BY, TUNE_BY_SONG,
+from llamatron.macro_composer.arranger import (GENRE as GENRE_OF_STYLE, MORE_RIFFS, MUSICIANS, NOBODY, OWN_INTRO, OWN_SOLOS, OWN_TUNES, RIFF_DRAWN_AS, RIFF_FOR, RIFF_OWN, TAKEN_TUNES, TUNE_BY, TUNE_BY_SONG,
                                                TUNE_PHRASING, in_octaves_of)
 from llamatron.macro_composer.players import BASS as BASS_PLAYER
 from llamatron.macro_composer.arranger import CHORDS, DYNAMICS, EIGHTHS_IN_WHOLE, GROOVE, LOUDNESS as LOUDNESS_OF, NO_GROOVE, SCENE_SETTINGS, form_of
@@ -242,6 +242,7 @@ OWN_SECTIONS = 'own_sections'
 PREVIEW_NAME = 'preview'
 # The key of the answer kept of a kind of section's tune in the set the choices make.
 INTRO_MADE_ANSWER = 'the intro melody made'
+SOLO_MADE_ANSWER = 'a solo made'
 TUNE_MADE_ANSWER = 'tune made'
 MELODY_HEARD_ANSWER = 'melody values heard'
 # Which take of its tune each kind of section has, kept with the song's extras, the first take being the tune the choices write;
@@ -3027,6 +3028,84 @@ class WizardChoices:
             self._extras.pop(OWN_INTRO, None)
             if before is not None:
                 self._extras[OWN_INTRO] = before
+            self._answers = {}
+            raise ValueError(errors.ERR_WIZARD_TUNE_PATTERN.format(problem=problem)) from problem
+
+    # The solos: each solo of the song is its player's own notes, the wizard's until edited by hand.
+
+    def solo_places(self):
+        """Return the place in the form of each solo somebody other than the drummer plays, in the form's order: the sections of
+        the kind solo that the genre's answering player plays in."""
+        player = self._soloist()
+        if player is None:
+            return []
+        return [place for place in range(len(self.section_labels())) if self.section_kind(place) == SOLO and player in self.section_plays(place) and not self.section_is_held(place)]
+
+    def _soloist(self):
+        """The genre's answering player while in the band, who plays the solos whether or not the player also answers the tune,
+        and whether or not the band shows the player apart: a band with one guitarist shows its two guitar players as one."""
+        role = next((entry[ROLE] for entry in self._style()[ROLES] if entry.get(ANSWERS)), None) if self.is_ready() else None
+        return role if role is not None and role in self.roles_in() else None
+
+    def solo_player(self):
+        """Return who plays the song's solos, or None where the song has none."""
+        return self._soloist() if self.solo_places() else None
+
+    def _solo_number_at(self, place):
+        """A solo's number among the form's sections of the kind solo, counted from 1, which is what its own notes are kept under."""
+        return len([other for other in range(place + 1) if self.section_kind(other) == SOLO])
+
+    def solo_is_own(self, place):
+        """Return whether the solo at a place of the form was written by hand for the player who now plays it."""
+        return self.solo_player() in self._extras.get(OWN_SOLOS, {}).get(self._solo_number_at(place), {})
+
+    def solo_pattern_name(self, place):
+        """Return the name of the pattern that holds the solo at a place of the form in the set the choices make, or None where the set has none."""
+        return self._solo_in_made(place)[0]
+
+    def solo_pattern(self, place):
+        """Return the solo at a place of the form as a pattern's data, the person's own or the solo the choices write, or None where nobody plays one."""
+        return copy.deepcopy(self._solo_in_made(place)[1])
+
+    def _solo_in_made(self, place):
+        return self._remembered(key=(SOLO_MADE_ANSWER, place), compute=lambda: self._found_solo_in_made(place))
+
+    def _found_solo_in_made(self, place):
+        if place not in self.solo_places():
+            return None, None
+        setlist, name = self._written_for_trial()
+        scenes = setlist.get_song(name).get_scenes()
+        role = self.solo_player()
+        slot = scenes[place].get_clip_slot(role) if place < len(scenes) and scenes[place].has_clip_slot(role) else None
+        if slot is None:
+            return None, None
+        return slot.get_pattern_name(), setlist.get_pattern(slot.get_pattern_name()).to_data()
+
+    def set_solo_pattern(self, *, place, pattern):
+        """Keep a pattern's data as the own notes of the solo at a place of the form, for the player who plays the solo, or forget
+        the person's own with None, so that the choices write the solo again. A place nobody plays a solo at, and a pattern the
+        song cannot be made with, are refused and nothing changes."""
+        if place not in self.solo_places():
+            raise ValueError(errors.ERR_WIZARD_NO_TUNE_IN.format(value=SOLO))
+        role = self.solo_player()
+        number = self._solo_number_at(place)
+        before = copy.deepcopy(self._extras.get(OWN_SOLOS))
+        own = self._extras.setdefault(OWN_SOLOS, {})
+        if pattern is None:
+            own.get(number, {}).pop(role, None)
+        else:
+            own.setdefault(number, {})[role] = copy.deepcopy(pattern)
+        for empty in [key for key, players in own.items() if not players]:
+            del own[empty]
+        if not own:
+            del self._extras[OWN_SOLOS]
+        self._answers = {}
+        try:
+            self._written_for_trial()
+        except Exception as problem:
+            self._extras.pop(OWN_SOLOS, None)
+            if before is not None:
+                self._extras[OWN_SOLOS] = before
             self._answers = {}
             raise ValueError(errors.ERR_WIZARD_TUNE_PATTERN.format(problem=problem)) from problem
 

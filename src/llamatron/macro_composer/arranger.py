@@ -205,6 +205,10 @@ OWN_TUNES = 'own_tunes'
 # hook that player would say in the intro.
 OWN_INTRO = 'own_intro'
 INTRO_KIND = 'intro'
+# A song's solos written by hand: under each solo's number among the song's solos, counted from 1, a pattern's data under the
+# name of the player who plays it, which takes the place of the solo that would be written.
+OWN_SOLOS = 'own_solos'
+SOLO_KIND = 'solo'
 # The riffs a song has besides its first, in order: each a riff as the first is, with a name of its own, which its players play in
 # its kinds of section in place of their usual parts; and the seed a riff of a name is written from.
 MORE_RIFFS = 'more_riffs'
@@ -1145,9 +1149,11 @@ def arranged(*, style, song):
     phrased = [composer_text.MSG_TUNE_PHRASING_NAME] if song.get(TUNE_PHRASING) is not None else []
     beside = song.get(BESIDE, {})
     under = UnderLead(busy=beside.get(BESIDE_BUSY, USUAL_BESIDE_BUSY), habits=habits, grid=habits[GRID], scale_type=scale_type, seed=song.get(SEED, 0))
+    solos_met = 0
     for count, name in enumerate(form_names, start=1):
         section = section_of(name=name, style=style, song=song)
         met[name] = met.get(name, 0) + 1
+        solos_met += section[KIND] == SOLO_KIND
         scene_name = name if met[name] == 1 else composer_text.MSG_REPEATED_SCENE.format(name, met[name])
         bars = 1 if section.get(HELD) else section[BARS]
         chords = chords_in(section)
@@ -1280,11 +1286,16 @@ def arranged(*, style, song):
                 own_tune = (song.get(OWN_TUNES, {}).get(section[KIND]) or song.get(TAKEN_TUNES, {}).get(section[KIND])) if role is tune_role else None
                 if section[KIND] == INTRO_KIND and song.get(OWN_INTRO, {}).get(role[ROLE]) is not None:
                     own_tune = song[OWN_INTRO][role[ROLE]]
+                own_solo = song.get(OWN_SOLOS, {}).get(solos_met, {}).get(role[ROLE]) if section[KIND] == SOLO_KIND else None
+                if own_solo is not None:
+                    own_tune = own_solo
                 if own_tune is not None:
-                    # A tune written by hand is played as written by every section of its kind, and nothing here writes one over it.
-                    part = composer_text.MSG_OWN_TUNE_PART.format(kind=section[KIND])
+                    # A tune written by hand is played as written by every section of its kind, and nothing here writes one over it;
+                    # a solo written by hand is that one solo's alone.
+                    part = composer_text.MSG_OWN_TUNE_PART.format(kind=section[KIND] if own_solo is None else scene_name)
                     parts.setdefault(part, {RAW: copy.deepcopy(own_tune)})
-                    play[role[ROLE]] = {PART: part, ONCE: True, CHAINS: [composer_text.MSG_TIMING_CHAIN.format(role[ROLE]), *phrased]}
+                    # The notes keep the chains the player's written part would run: the tune's phrasing is the tune's player's alone.
+                    play[role[ROLE]] = {PART: part, ONCE: True, CHAINS: [composer_text.MSG_TIMING_CHAIN.format(role[ROLE]), *(phrased if role is tune_role else [])]}
                     continue
                 part = composer_text.MSG_PART_OF_SECTION.format(name, role[ROLE])
                 if part not in parts:

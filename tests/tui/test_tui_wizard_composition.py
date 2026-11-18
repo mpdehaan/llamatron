@@ -34,6 +34,7 @@ from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.shared.field import Heading
 from llamatron.tui.screens.wizard.intro_melody_branch import INTRO_MELODY_KEY
 from llamatron.tui.screens.wizard.section_melody_branch import MELODY_KEY
+from llamatron.tui.screens.wizard.solo_melody_branch import FIRST_SOLO, SOLO_MELODY_KEY
 from llamatron.tui.screens.wizard.wizard_page import WizardPage
 from tests.support.ui_testing import key_of
 from tests.tui.test_tui_wizard import WizardTest
@@ -340,6 +341,44 @@ class TestWizardIntroMelody(CompositionTest):
         await self.press(keybindings.WizardPage.TO_TREE)
         await self.open_panel(labels.MSG_WIZARD_HOOKS_BRANCH)
         self.assertNotIn(labels.MSG_WIZARD_INTRO_HOOK_LABEL, self.field_labels())
+
+
+class TestWizardSoloMelody(CompositionTest):
+    """A solo's panel under Melodies: the solo's notes, to edit by hand and to hear."""
+
+    SUBGENRE = A_SUBGENRE_WITH_A_PRE_CHORUS
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        await self.open_panel(SOLO_MELODY_KEY.format(number=FIRST_SOLO))
+
+    async def test_the_panel_says_who_plays_the_solo_and_in_which_section_and_has_its_buttons_edit_first(self):
+        choices = self.choices()
+        place = choices.solo_places()[0]
+        self.assertEqual(self.field_labels(), [labels.MSG_WIZARD_SOLO_PLAYED_BY_LABEL, labels.MSG_WIZARD_SOLO_SECTION_LABEL, labels.MSG_WIZARD_EDIT_NOTES_BUTTON, labels.MSG_WIZARD_LISTEN_BUTTON,
+                                               labels.MSG_WIZARD_LISTEN_BAND_BUTTON])
+        shown = self.text()
+        self.assertIn(choices.role_title(choices.solo_player()), shown)
+        self.assertIn(messages.MSG_WIZARD_HOOK_MADE, shown)
+        what, heard_at, track = self.wizard().branch().listens()
+        self.assertEqual((heard_at, track), (place, choices.solo_player()))
+        self.assertEqual(self.wizard().branch().heard_with_band()[1:], (place, None))
+
+    async def test_the_solos_notes_open_in_the_pattern_editor_are_kept_when_edited_and_given_back_with_bksp(self):
+        choices = self.choices()
+        place = choices.solo_places()[0]
+        await self.select_field(labels.MSG_WIZARD_EDIT_NOTES_BUTTON)
+        await self.press(Key.ENTER)
+        self.assertIsInstance(self.app.screen, PatternEditor)
+        self.change_first_step()
+        await self.press(Key.ESCAPE)
+        self.assertIsInstance(self.app.screen, WizardPage)
+        self.assertTrue(choices.solo_is_own(place))
+        self.assertIn(messages.MSG_WIZARD_NOTES_BY_HAND, self.text())
+        await self.press(keybindings.WizardPage.CLEAR)
+        self.assertIsInstance(self.app.screen, ConfirmDialog)
+        await self.press(keybindings.ConfirmDialog.YES)
+        self.assertFalse(choices.solo_is_own(place))
 
 
 class TestWizardHooks(CompositionTest):

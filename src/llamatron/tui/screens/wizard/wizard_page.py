@@ -31,7 +31,7 @@ from llamatron.composition.checks import listed
 from llamatron.composition.file_format import GeneratorKind
 from llamatron.composition.naming import new_name
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.macro_composer.wizard_choices import INTRO, WizardChoices
+from llamatron.macro_composer.wizard_choices import INTRO, SOLO, WizardChoices
 from llamatron.realtime.sender_process import SenderNotStarted
 from llamatron.strings import errors, help as help_text, labels, macro_composer as composer_text, marks, messages, names
 from llamatron.macro_composer.notation import KIT
@@ -222,6 +222,21 @@ class WizardPage(FieldPage):
             return
         self.open_pattern(setlist=setlist, name=name, keep=self._choices.set_intro_pattern, kept=messages.MSG_WIZARD_TUNE_KEPT.format(kind=INTRO),
                           unchanged=messages.MSG_WIZARD_TUNE_UNCHANGED.format(kind=INTRO))
+
+    def edit_solo(self, place):
+        """Open the pattern editor on the solo at a place of the form, its player's notes; the notes are kept as that solo's own
+        when the editor closes, if they were changed."""
+        try:
+            setlist, _ = self._choices.made_for_listening()
+            name = self._choices.solo_pattern_name(place)
+        except (ValueError, SongFileError) as problem:
+            self.refuse(str(problem))
+            return
+        if name is None:
+            self.refuse(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
+            return
+        self.open_pattern(setlist=setlist, name=name, keep=lambda pattern: self._choices.set_solo_pattern(place=place, pattern=pattern), kept=messages.MSG_WIZARD_TUNE_KEPT.format(kind=SOLO),
+                          unchanged=messages.MSG_WIZARD_TUNE_UNCHANGED.format(kind=SOLO))
 
     def edit_riff(self, riff):
         """Open the pattern editor on a riff's notes as the player the riff was written for plays them, in a song where that player
