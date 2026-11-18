@@ -90,8 +90,8 @@ class TestBand(unittest.TestCase):
 
     def test_a_player_of_lines_gives_way_to_nobody_and_plays_the_notes_as_written(self):
         self.assertEqual(band.usual_musician(member(backing=False, sound=AN_ORGAN)),
-                         {MusicianSetting.INSTRUMENT: musician.LEAD_ORGAN, MusicianSetting.GIVES_WAY: musician.NOT_AT_ALL, MusicianSetting.NOTES: musician.AS_WRITTEN})
-        self.assertEqual(band.usual_musician(member(backing=False, answers=True, sound=A_GUITAR)), {MusicianSetting.INSTRUMENT: musician.ANSWERING_PLAYER, MusicianSetting.GIVES_WAY: musician.A_LITTLE})
+                         {MusicianSetting.INSTRUMENT: musician.LEAD_ORGAN, MusicianSetting.GIVES_WAY: musician.NO_GIVING_WAY, MusicianSetting.NOTES: musician.AS_WRITTEN})
+        self.assertEqual(band.usual_musician(member(backing=False, answers=True, sound=A_GUITAR)), {MusicianSetting.INSTRUMENT: musician.ANSWERING_PLAYER, MusicianSetting.GIVES_WAY: musician.GIVES_WAY_SOME})
 
     def test_a_backing_player_keeps_the_instruments_habits_but_for_the_horns_short_notes(self):
         self.assertEqual(band.usual_musician(member(sound=AN_ORGAN)), {MusicianSetting.INSTRUMENT: musician.BACKING_ORGAN})

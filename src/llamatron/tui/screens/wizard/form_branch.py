@@ -21,8 +21,8 @@ from llamatron.macro_composer.song_plan import HIGHEST_ENERGY, LOWEST_ENERGY
 from llamatron.macro_composer.wizard_choices import WAYS_WITH_FIRST_PLAYER, WAYS_WITH_SETUP_BARS
 from llamatron.strings import errors, labels, legends, marks, messages
 from llamatron.tui.drawing import INDENT, Style
-from llamatron.tui.screens.shared.field import Button, ChoiceField, Field, NumberField, Toggle
-from llamatron.tui.screens.wizard.branch import Branch, gauge_shown
+from llamatron.tui.screens.shared.field import Button, ChoiceField, Field, NumberField, Toggle, gauge_shown
+from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.section_branch import SectionBranch
 
 # Sections are counted from 1, as they are shown.

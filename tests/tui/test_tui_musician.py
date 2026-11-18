@@ -24,6 +24,7 @@ from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.musician_editor import MusicianEditor
+from llamatron.tui.screens.shared.field import gauge_shown
 from tests.support.ui_testing import LEAD, STRUMMER, UITest
 
 FIRST_SCENE = 0
@@ -75,15 +76,42 @@ class TestMusicianEditor(UITest):
         await self.pick(musician.BACKING_ORGAN)
         self.assertEqual(self.musician().to_data(), {MusicianSetting.INSTRUMENT: musician.BACKING_ORGAN})
 
-    async def test_an_instruments_own_habits_show_and_are_left_out_of_the_file(self):
+    async def test_an_instruments_own_habits_show_where_from_and_are_left_out_of_the_file(self):
         await self.choose(label=labels.MSG_MUSICIAN_INSTRUMENT_LABEL, choice=musician.LEAD_ORGAN)
         self.assertEqual(self.musician().get_own(MusicianSetting.GIVES_WAY), musician.IN_THE_GAPS)
         self.assertEqual(self.musician().get_own(MusicianSetting.NOTES), musician.HELD_NOTES)
-        self.assertIn(musician.IN_THE_GAPS, self.text())
+        self.assertIn(marks.MSG_FROM_INSTRUMENT_SHOWN.format(value=musician.IN_THE_GAPS), self.text())
+        self.assertIn(marks.MSG_FROM_INSTRUMENT_SHOWN.format(value=musician.HELD_NOTES), self.text())
         await self.choose(label=labels.MSG_MUSICIAN_NOTES_LABEL, choice=musician.SHORT_NOTES)
         self.assertEqual(self.musician().to_data()[MusicianSetting.NOTES], musician.SHORT_NOTES)
+        self.assertNotIn(marks.MSG_FROM_INSTRUMENT_SHOWN.format(value=musician.SHORT_NOTES), self.text())
+
+    async def test_a_habit_chosen_by_hand_is_kept_through_a_change_of_instrument_and_given_back(self):
+        await self.choose(label=labels.MSG_MUSICIAN_INSTRUMENT_LABEL, choice=musician.LEAD_ORGAN)
         await self.choose(label=labels.MSG_MUSICIAN_NOTES_LABEL, choice=musician.HELD_NOTES)
+        self.assertEqual(self.musician().to_data()[MusicianSetting.NOTES], musician.HELD_NOTES)
+        await self.choose(label=labels.MSG_MUSICIAN_INSTRUMENT_LABEL, choice=musician.BASSIST)
+        self.assertEqual(self.musician().get_own(MusicianSetting.NOTES), musician.HELD_NOTES)
+        await self.choose(label=labels.MSG_MUSICIAN_NOTES_LABEL, choice=labels.MSG_MUSICIAN_INSTRUMENT_CHOICE)
         self.assertNotIn(MusicianSetting.NOTES, self.musician().to_data())
+        await self.choose(label=labels.MSG_MUSICIAN_GIVES_WAY_LABEL, choice=musician.GIVES_WAY_OFTEN)
+        await self.select_field(labels.MSG_MUSICIAN_GIVES_WAY_LABEL)
+        await self.press(keybindings.MusicianEditor.CLEAR)
+        self.assertNotIn(MusicianSetting.GIVES_WAY, self.musician().to_data())
+
+    async def test_the_habits_lists_start_with_the_instruments_own(self):
+        for label, choices in ((labels.MSG_MUSICIAN_GIVES_WAY_LABEL, musician.GIVES_WAY), (labels.MSG_MUSICIAN_NOTES_LABEL, musician.NOTE_LENGTHS)):
+            await self.select_field(label)
+            await self.press(Key.ENTER)
+            self.assertEqual(list(self.app.screen.options), [labels.MSG_MUSICIAN_INSTRUMENT_CHOICE, *choices])
+            await self.press(Key.ESCAPE)
+
+    async def test_loudness_and_looseness_are_drawn_as_gauges(self):
+        self.assertIn(gauge_shown(place=musician.USUAL_LOUDNESS, lowest=musician.QUIETEST + 1, highest=musician.LOUDEST), self.text())
+        self.assertIn(gauge_shown(place=musician.TIGHT, lowest=musician.TIGHT + 1, highest=musician.LOOSEST), self.text())
+        await self.select_field(labels.MSG_MUSICIAN_LOUDNESS_LABEL)
+        await self.press(keybindings.MusicianEditor.MORE)
+        self.assertIn(gauge_shown(place=musician.USUAL_LOUDNESS + 1, lowest=musician.QUIETEST + 1, highest=musician.LOUDEST), self.text())
 
     async def test_a_drummer_has_no_chords_and_no_range(self):
         await self.choose(label=labels.MSG_MUSICIAN_INSTRUMENT_LABEL, choice=musician.DRUMMER)
@@ -114,7 +142,7 @@ class TestMusicianEditor(UITest):
 
     async def test_the_touch_is_chosen_from_lists_in_their_own_order(self):
         for label, setting, choices in (
-            (labels.MSG_MUSICIAN_ACTIVITY_LABEL, MusicianSetting.ACTIVITY, musician.ACTIVITIES), (labels.MSG_MUSICIAN_GIVES_WAY_LABEL, MusicianSetting.GIVES_WAY, musician.GIVES_WAY),
+            (labels.MSG_MUSICIAN_ACTIVITY_LABEL, MusicianSetting.ACTIVITY, musician.ACTIVITIES),
             (labels.MSG_MUSICIAN_ACCENTS_LABEL, MusicianSetting.ACCENTS, musician.ACCENTS), (labels.MSG_MUSICIAN_RANGE_LABEL, MusicianSetting.RANGE, musician.RANGES),
         ):
             await self.select_field(label)

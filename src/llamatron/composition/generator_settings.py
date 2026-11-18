@@ -1306,6 +1306,10 @@ class MusicianSettings(GeneratorSettings):
             return or_default(value=self._written(name), default=self.musician_class().USUAL_NOTES)
         return or_default(value=self._written(name), default=MUSICIAN_DEFAULTS[name])
 
+    def follows_instrument(self, name):
+        """Return whether a setting is left to the instrument: how the musician gives way or holds its notes, with nothing written for it."""
+        return self._written(name) is None
+
     def get_chords_from(self):
         """Return the name of the track whose chords the musician follows, or None for none."""
         return self._written(MusicianSetting.CHORDS_FROM)

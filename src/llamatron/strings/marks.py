@@ -315,6 +315,7 @@ MSG_GROOVE_NAME_SHOWN = '  {label}: {name}'
 MSG_GROOVE_OFF_SHOWN = 'off'
 MSG_SONG_GROOVE_SHOWN = '{groove} (from song)'
 MSG_FROM_TRACK_SHOWN = '{value} (from track)'
+MSG_FROM_INSTRUMENT_SHOWN = '{value} (from instrument)'
 MSG_FROM_SET_SHOWN = '{value} (from set)'
 MSG_SCENE_OR_SONG_GROOVE_SHOWN = '(scene or song)'
 

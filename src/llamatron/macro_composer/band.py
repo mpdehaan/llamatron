@@ -101,7 +101,7 @@ def usual_musician(member):
             # A figure written for the horns already says how long each stab is.
             settings[MusicianSetting.NOTES] = musician.AS_WRITTEN
         return settings
-    gives_way = musician.A_LITTLE if member.answers else musician.NOT_AT_ALL
+    gives_way = musician.GIVES_WAY_SOME if member.answers else musician.NO_GIVING_WAY
     if of_instrument.USUAL_GIVES_WAY != gives_way:
         settings[MusicianSetting.GIVES_WAY] = gives_way
     if of_instrument.USUAL_NOTES != musician.AS_WRITTEN:
