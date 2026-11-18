@@ -19,7 +19,7 @@ Each constant starts with MSG_, and the classes Crumb and Column group the words
 """
 
 from llamatron.composition.file_format import (
-    STATEMENT_ROWS, AtLimit, DriftValue, FollowAction, LiveResponsiveness, NamedProgression, Shape, ShapePart, EuclidPart, NamedRhythm, Restart, Section, StrumDirection, StrumPart, UpstrokeStrings, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, ChordSymbol, Direction, GateModifier, OctaveLabels, RegisterSetting, Row,
+    STATEMENT_ROWS, ResetBehavior, DriftValue, FollowAction, LiveResponsiveness, NamedProgression, Shape, ShapePart, EuclidPart, NamedRhythm, Restart, Section, StrumDirection, StrumPart, UpstrokeStrings, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, ChordSymbol, Direction, GateModifier, OctaveLabels, RegisterSetting, Row,
     Approach, ChordColor, ScaleKind, ReadyBar, SingleNotes, Stroke, Tuning,
 )
 from llamatron.tui.keys import RowSection
@@ -569,16 +569,17 @@ MSG_CHORD_NAMES = {
 # tui/screens/set/registers_page.py
 # Each register's settings on the page, labelled like "AX minimum", in the order they're shown.
 # The Registers page's columns, in the grid's order.
-MSG_REGISTER_COLUMNS = ('Inc max', 'At limit', 'Minimum', 'Default', 'Maximum', 'Reset')
+MSG_REGISTER_COLUMNS = ('Inc max', 'Reset behavior', 'Minimum', 'Default', 'Maximum', 'Scene reset')
 MSG_REGISTER_FIELD_LABEL = '{name} {what}'
 MSG_REGISTER_NUMBER_FIELDS = [(RegisterSetting.DEFAULT, 'default'), (RegisterSetting.MINIMUM, 'minimum'), (RegisterSetting.MAXIMUM, 'maximum')]
-MSG_REGISTER_AT_LIMIT_FIELD = 'at limit'
+MSG_REGISTER_RESET_BEHAVIOR_FIELD = 'reset behavior'
 MSG_REGISTER_RESET_EACH_SCENE_FIELD = 'reset each scene'
 MSG_REGISTER_ALLOWED_INC_MAX_FIELD = 'allowed inc max'
-# What the At limit field calls each choice, in the order the choices step.
-MSG_AT_LIMIT_NAMES = {
-    AtLimit.STOP: 'stop', AtLimit.RESET: 'reset', AtLimit.OVERFLOW: 'overflow', AtLimit.OVERFLOW_RIGHT: 'overflow right',
-    AtLimit.OVERFLOW_LEFT: 'overflow left', AtLimit.PICK_RANDOM: 'pick random',
+# What the Reset behavior field calls each choice, in the order the choices step. The two with a slash say what happens past
+# the maximum and then what happens below the minimum.
+MSG_RESET_BEHAVIOR_NAMES = {
+    ResetBehavior.CLIP: 'clip', ResetBehavior.RESET_CLIP: 'reset/clip', ResetBehavior.CLIP_RESET: 'clip/reset', ResetBehavior.RESET_TO_DEFAULT: 'reset to default',
+    ResetBehavior.REVERSE: 'reverse', ResetBehavior.OVERFLOW: 'overflow', ResetBehavior.PICK_RANDOM: 'pick random',
 }
 
 # tui/screens/set/groove_editor.py

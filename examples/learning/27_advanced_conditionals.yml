@@ -1,6 +1,6 @@
 version: 1.0.510
 title: Advanced Conditionals
-description: single notes that come and go by counting, one bar of chords played four ways, then steps that mute, start over and stop by the registers
+description: single notes that come and go by counting, one bar of chords played four ways, steps that mute, start over and stop by the registers, and registers that turn round and roll round
 notes: |
   Advanced Conditionals: Conditional Execution, statements about the registers that say when a
   clip sits out, when a generator is passed by, and when a step of a pattern is muted, starts its
@@ -33,17 +33,26 @@ notes: |
   half a bar twice and then plays whole: 8 steps, 8 steps, 16 steps, round and round, while the
   bass keeps the bar. The clip loops, and nothing stops it but the scene.
 
-  Scene 5, two and a half: Stop When. The pattern called phrase adds 1 to AX on its eighth step,
+  Scene 5, up and down: Reset behavior, on the Registers page. Two patterns of one note each. The
+  pattern called climb moves its note by CX and adds 1 to CX; CX runs from 0 to 4 and its Reset
+  behavior is reverse, so the note walks up five steps of the scale and back down, over and over.
+  The pattern called scramble moves its note by DX and adds 3 to DX; DX runs from 0 to 4 and its
+  Reset behavior is overflow, so DX reads 0, 3, 1, 4, 2 and round again, and the note visits the
+  same five pitches in a shuffled order.
+
+  Scene 6, two and a half: Stop When. The pattern called phrase adds 1 to AX on its eighth step,
   and its ninth step holds Stop When: AX >= 3. The clip loops, and is done the third time it
   reaches the ninth step: the phrase is heard exactly two and a half times, and the song ends.
 
   Try it: on the track called every third, change BX != 0 to BX = 0, and the note rests every third
   bar. On the guitarify called picked, change AX != 1 to AX > 1, and the picking is laid over the strum.
+  On the Registers page, change DX's Reset behavior to reset/clip, and the scrambled note only
+  goes 0, 3, 0, 3.
 
   When changing this demo:
   - Keep scene 1 sparse, one note a track, so that what sits out is heard at once.
   - Keep scene 2 one pattern and one chain: everything that differs is the registers' doing.
-  - Keep scene 5 last, and its clip looping: the Stop When alone ends the song.
+  - Keep the scene called two and a half last, and its clip looping: the Stop When alone ends the song.
 real_time: true
 protected: true
 
@@ -93,6 +102,20 @@ patterns:
     octave: [~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~]
     mute_c1: [~, ~, ~, ~, AX, ~, ~, ~, ~, ~, ~, ~, AX, ~, ~, ~]
     mute_c2: [~, ~, ~, ~, odd, ~, ~, ~, ~, ~, ~, ~, even, ~, ~, ~]
+  climb:
+    steps: 4
+    step_size: 1/8
+    degree: [1, ~, ~, ~]
+    octave: [4, ~, ~, ~]
+    cx_note: [1, 0, 0, 0]
+    cx_add: [~, ~, ~, 1]
+  scramble:
+    steps: 4
+    step_size: 1/8
+    degree: [~, ~, 1, ~]
+    octave: [~, ~, 3, ~]
+    dx_note: [0, 0, 1, 0]
+    dx_add: [~, ~, ~, 3]
   pulse:
     steps: 16
     degree: [1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~]
@@ -171,8 +194,10 @@ songs:
     genre: Exercise
 
     registers:
-      AX: { maximum: 3, at_limit: overflow }
-      BX: { maximum: 2, at_limit: overflow }
+      AX: { maximum: 3, reset_behavior: overflow }
+      BX: { maximum: 2, reset_behavior: overflow }
+      CX: { maximum: 4, reset_behavior: reverse }
+      DX: { maximum: 4, reset_behavior: overflow }
 
     tracks:
       every bar: { instrument: bass }
@@ -208,6 +233,12 @@ songs:
         tracks:
           every bar: { pattern: pulse, repeat: 8 }
           counted: { pattern: riff, loop: true }
+      - name: up and down
+        scale: A Minor Pentatonic
+        set_registers: { CX: 0, DX: 0 }
+        tracks:
+          counted: { pattern: climb, repeat: 20 }
+          every bar: { pattern: scramble, repeat: 20 }
       - name: two and a half
         scale: A Minor Pentatonic
         set_registers: { AX: 0 }

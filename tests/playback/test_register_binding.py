@@ -24,7 +24,7 @@ the clip's start and whenever it changes, with the clip's own value winning at t
 import unittest
 
 from llamatron.composition.file_format import (
-    REGISTER_ADD_ROWS, AtLimit, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, ClipSlotSetting,
+    REGISTER_ADD_ROWS, ResetBehavior, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, ClipSlotSetting,
     REGISTER_NAMES, GeneratorKind, RegisterSetting, Row, SceneSetting, Section, TrackSetting,
 )
 from llamatron.composition import defaults as set_defaults, limits
@@ -113,7 +113,7 @@ class TestSetRows(unittest.TestCase):
         self.assertEqual(pitches(data), scale_notes([SET_TO, 0]))
 
     def test_a_set_past_the_registers_maximum_stops_there_and_never_wraps(self):
-        data = one_clip(rows={REGISTER_SET_ROWS[AX]: [TOO_HIGH], REGISTER_NOTE_ROWS[AX]: [1]}, registers={AX: {RegisterSetting.AT_LIMIT: AtLimit.OVERFLOW}})
+        data = one_clip(rows={REGISTER_SET_ROWS[AX]: [TOO_HIGH], REGISTER_NOTE_ROWS[AX]: [1]}, registers={AX: {RegisterSetting.RESET_BEHAVIOR: ResetBehavior.OVERFLOW}})
         self.assertEqual(pitches(data), scale_notes([10]))
 
 

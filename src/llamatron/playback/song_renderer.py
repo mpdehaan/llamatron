@@ -38,7 +38,7 @@ from llamatron.playback.drift import DriftPlay, drifts_named
 from llamatron.playback.pattern_player import check_pattern_has_a_scale
 from llamatron.playback.grab_source import GrabSource
 from llamatron.playback.tune_source import TuneSource
-from llamatron.playback.registers import RegisterChange, RegisterReader, RegisterRecorder, RegisterSolo, RegisterTimeline, RegisterTrial, scene_change, starting_values, with_resets
+from llamatron.playback.registers import NOT_TURNED, RegisterChange, RegisterReader, RegisterRecorder, RegisterSolo, RegisterTimeline, RegisterTrial, scene_change, starting_values, with_resets
 from llamatron.playback.written_scene import WrittenScene
 from llamatron.grid.clip_grid import ClipGrid
 from llamatron.grid.clip_row import ClipRow
@@ -54,7 +54,7 @@ GRAB_ARROW = ' → '
 SEED_SONG_FACTOR = 1_000_003
 SEED_SCENE_FACTOR = 1_009
 SEED_TRACK_FACTOR = 31
-# The registers' random values, for an At limit that picks one, come from a generator of their own, so that they can't change what probability or an arp draws.
+# The registers' random values, for a Reset behavior that picks one, come from a generator of their own, so that they can't change what probability or an arp draws.
 REGISTER_SEED_OFFSET = 7
 # The generators that move notes early or late in the timing, rather than running on a clip's notes.
 MOVING_KINDS = (GeneratorKind.RUSH, GeneratorKind.DRAG)
@@ -406,22 +406,28 @@ class SongRenderer:
         before it that can't be played changes nothing, so that estimates can still show this one.
         """
         values = starting_values(self._registers)
+        # The registers that reverse and are counting the other way, which a reset puts back to counting forward.
+        turned = NOT_TURNED
         for written in self._scenes[:self._scenes.index(scene) + 1]:
             number = written.get_number()
             if number not in self._timelines:
-                start = with_resets(values=values, registers=self._registers, names=self._resets_of(written))
+                resets = self._resets_of(written)
+                start = with_resets(values=values, registers=self._registers, names=resets)
+                if turned:
+                    turned = turned.difference(resets)
                 try:
                     if self._is_settled_by_playing(written):
-                        self._timelines[number] = self._decide(scene=written, start=start)
+                        self._timelines[number] = self._decide(scene=written, start=start, turned=turned)
                     else:
                         self._timelines[number] = RegisterTimeline(
-                            registers=self._registers, start=start, changes=self._scene_changes(written), chooser=self._register_chooser,
+                            registers=self._registers, start=start, changes=self._scene_changes(written), chooser=self._register_chooser, turned=turned,
                         )
                 except SongFileError:
                     if written is scene:
                         raise
                     continue
             values = self._timelines[number].end_values()
+            turned = self._timelines[number].end_turned()
         return self._timelines[scene.get_number()]
 
     def _cutting_of(self, name):
@@ -447,7 +453,7 @@ class SongRenderer:
             self._settled_by_playing[number] = any(self._cuts_passes(scene=scene, track=track) for track in scene.get_track_names())
         return self._settled_by_playing[number]
 
-    def _decide(self, *, scene, start):
+    def _decide(self, *, scene, start, turned):
         """Return the register values through a scene in which a step's statement can stop a clip or start a pattern over, finding how long its clips and the scene last.
 
         What such a clip changes in the registers depends on the registers, since a step it
@@ -473,8 +479,10 @@ class SongRenderer:
             fixed = [self._played_once(scene=scene, track=track) for track in every]
         own = scene_change(sets=scene.get_scene().get_register_sets() if scene.is_first_play() else {}, adds=scene.get_scene().get_register_adds())
         guess = random_source(GUESS_SEED)
-        alone = RegisterTimeline(registers=self._registers, start=start, changes=[own] if own else [], chooser=guess).end_values()
-        self._guesses[number] = lambda track: RegisterSolo(place=self._track_place(track), registers=self._registers, start=alone, chooser=guess)
+        alone = RegisterTimeline(registers=self._registers, start=start, changes=[own] if own else [], chooser=guess, turned=turned)
+        self._guesses[number] = lambda track: RegisterSolo(
+            place=self._track_place(track), registers=self._registers, start=alone.end_values(), chooser=guess, turned=alone.end_turned(),
+        )
         # Until the first play is in, the scene is taken to last as long as the clips nothing can cut.
         self._lengths[number] = max(fixed, default=NO_LENGTH)
         drawn = self._register_chooser.getstate()
@@ -493,7 +501,7 @@ class SongRenderer:
                 found = (changes, [self._decided[(number, track)] for track in ending])
                 # Every round draws a register's random values from the same place, so that the same changes always make the same timeline.
                 self._register_chooser.setstate(drawn)
-                timeline = RegisterTimeline(registers=self._registers, start=start, changes=changes, chooser=self._register_chooser)
+                timeline = RegisterTimeline(registers=self._registers, start=start, changes=changes, chooser=self._register_chooser, turned=turned)
                 if found == settled:
                     return timeline
                 settled = found

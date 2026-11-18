@@ -109,9 +109,9 @@ songs:
     genre: Electronic
 
     registers:
-      AX: { maximum: 3, at_limit: overflow }
-      BX: { maximum: 5, at_limit: overflow }
-      CX: { minimum: -4, maximum: 0, at_limit: overflow }
+      AX: { maximum: 3, reset_behavior: overflow }
+      BX: { maximum: 5, reset_behavior: overflow }
+      CX: { minimum: -4, maximum: 0, reset_behavior: overflow }
       DX: { minimum: -90, maximum: 0 }
 
     tracks:

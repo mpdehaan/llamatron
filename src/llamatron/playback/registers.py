@@ -36,6 +36,8 @@ from llamatron.composition.file_format import REGISTER_NAMES
 NO_VALUE = 0
 # A place after every track's, for the values once every track has made its change at a moment.
 LAST_PLACE = float('inf')
+# No register counting the other way, which is how a song starts.
+NOT_TURNED = frozenset()
 # What happens at one moment happens in this order: the scene's own sets and adds, each clip's as its pattern starts over, in
 # track order, and then the steps', in track order. A clip's place is its track's, this far before every step's.
 SCENE_PLACE = float('-inf')
@@ -74,27 +76,69 @@ def with_resets(*, values, registers, names):
     return values
 
 
+class Turned:
+    """Which of the registers that reverse are counting the other way, kept by whoever keeps their values, and the one way anything is added to a register.
+
+    A register is turned when an add or a subtraction takes it past an end, and counts forward
+    again once the other end is passed, or when anything sets it or resets it.
+    """
+
+    __slots__ = ('_registers', '_reversing', '_turned')
+
+    def __init__(self, *, registers, turned):
+        self._registers = registers
+        self._reversing = frozenset(name for name, register in registers.items() if register.reverses())
+        self._turned = set(turned) if self._reversing else NOT_TURNED
+
+    def forward(self, name):
+        """Put a register back to counting forward, as a set or a reset does."""
+        if name in self._turned:
+            self._turned.discard(name)
+
+    def added(self, *, name, value, amount, chooser):
+        """Return a register's value with an amount added, as its Reset behavior has it, noting which way it then counts."""
+        register = self._registers[name]
+        if name not in self._reversing:
+            return register.added(value=value, amount=amount, chooser=chooser)
+        result, turned = register.reversed(value=value, amount=amount, turned=name in self._turned)
+        if turned:
+            self._turned.add(name)
+        else:
+            self._turned.discard(name)
+        return result
+
+    def names(self):
+        return frozenset(self._turned)
+
+
 class RegisterTimeline:
     """The values of every register through one scene, from what its steps add to them.
 
     Changes are RegisterChanges, applied in time order, and at the same time in track order.
     """
 
-    __slots__ = ('_start', '_moments', '_values')
+    __slots__ = ('_start', '_moments', '_values', '_turned')
 
-    def __init__(self, *, registers, start, changes, chooser=None):
-        """chooser draws the random values of a register whose At limit picks one."""
+    def __init__(self, *, registers, start, changes, chooser=None, turned=NOT_TURNED):
+        """chooser draws the random values of a register whose Reset behavior picks one, and turned names the registers that reverse and are counting the other way as the scene starts."""
         self._start = dict(start)
         self._moments = []
         self._values = []
         values = dict(start)
+        turned = Turned(registers=registers, turned=turned)
         for change in sorted(changes, key=_moment_of):
             for name, value in change.sets.items():
                 values[name] = registers[name].held(value)
+                turned.forward(name)
             for name, amount in change.adds.items():
-                values[name] = registers[name].added(value=values[name], amount=amount, chooser=chooser)
+                values[name] = turned.added(name=name, value=values[name], amount=amount, chooser=chooser)
             self._moments.append((change.time, change.place))
             self._values.append(dict(values))
+        self._turned = turned.names()
+
+    def end_turned(self):
+        """Return the names of the registers that reverse and are counting the other way once the scene is over, which the next scene starts with."""
+        return self._turned
 
     def values_at(self, *, time, place):
         """Return every register's value as a track at a place sees it at a time, after any change it makes then."""
@@ -214,13 +258,14 @@ class RegisterSolo(RegisterRecorder):
     is already right; where other tracks count too, the trials after it put that right.
     """
 
-    __slots__ = ('_registers', '_values', '_chooser')
+    __slots__ = ('_registers', '_values', '_chooser', '_turned')
 
-    def __init__(self, *, place, registers, start, chooser):
+    def __init__(self, *, place, registers, start, chooser, turned=NOT_TURNED):
         super().__init__(place)
         self._registers = registers
         self._values = dict(start)
         self._chooser = chooser
+        self._turned = Turned(registers=registers, turned=turned)
 
     def at_step(self, *, time, sets, adds):
         self._change(sets=sets, adds=adds)
@@ -237,8 +282,9 @@ class RegisterSolo(RegisterRecorder):
     def _change(self, *, sets, adds):
         for name, value in sets.items():
             self._values[name] = self._registers[name].held(value)
+            self._turned.forward(name)
         for name, amount in adds.items():
-            self._values[name] = self._registers[name].added(value=self._values[name], amount=amount, chooser=self._chooser)
+            self._values[name] = self._turned.added(name=name, value=self._values[name], amount=amount, chooser=self._chooser)
 
 
 def scene_change(*, sets, adds):

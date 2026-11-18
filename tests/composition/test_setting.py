@@ -113,8 +113,7 @@ DESCRIBED = [
     (SceneSetting, scene.SETTINGS, (SceneSetting.TRACKS,)),
     # A chain's steps are its generators, read one by one.
     (ChainSetting, {ChainSetting.BYPASS_WHEN: chain.BYPASS_WHEN}, (ChainSetting.STEPS,)),
-    # wrap is only read, from a file saved before at_limit came.
-    (RegisterSetting, register.SETTINGS, (RegisterSetting.WRAP,)),
+    (RegisterSetting, register.SETTINGS, ()),
     (ArpSetting, ArpSettings.SETTINGS, ()),
     (AutoRatchetSetting, AutoRatchetSettings.SETTINGS, ()),
     # A drift's own settings; each version's values are named from DriftValue, which the test below holds them to.

@@ -25,7 +25,7 @@ import unittest
 
 from llamatron.composition import conditions, limits
 from llamatron.composition.file_format import (
-    BYPASS_WHEN, REGISTER_NOTE_ROWS, AtLimit, ChainSetting, ClipSlotSetting, GeneratorKind, Operator, PatternSetting, RegisterName,
+    BYPASS_WHEN, REGISTER_NOTE_ROWS, ResetBehavior, ChainSetting, ClipSlotSetting, GeneratorKind, Operator, PatternSetting, RegisterName,
     RegisterSetting, RegisterUse, Row, ScaleSetting, SceneSetting, Section, SongSetting, StatementPart, TrackSetting,
 )
 from llamatron.composition.generator_settings import AutoRatchetSetting
@@ -205,7 +205,7 @@ class TestRegistersSetAndAdded(unittest.TestCase):
         self.assertEqual(heard(data, track=OTHER), notes_at([13]))
 
     def test_an_add_past_the_limit_does_what_the_register_says(self):
-        registers = {AX: {RegisterSetting.MAXIMUM: 3, RegisterSetting.AT_LIMIT: AtLimit.OVERFLOW}}
+        registers = {AX: {RegisterSetting.MAXIMUM: 3, RegisterSetting.RESET_BEHAVIOR: ResetBehavior.OVERFLOW}}
         data = song(clip={ClipSlotSetting.REPEAT: 5, ClipSlotSetting.ADD_REGISTERS: {AX: 1}}, registers=registers)
         self.assertEqual(heard(data), notes_at([1, 2, 3, 0, 1]))
 
