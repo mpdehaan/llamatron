@@ -1251,14 +1251,27 @@ FORMS = (row_as_written, row_backwards, row_upside_down, row_upside_down_and_bac
 ENGINES = {STEP_WALK: StepWalk, SERIAL: Serial, EVOLVING: Evolving, SMART: Smart}
 
 
+# The lines of each melody asked for, and how many are kept before all are forgotten, so that they cannot pile up for ever.
+LINES_KEPT = {}
+MOST_LINES_KEPT = 5000
+
+
 def sketched(*, habits, plan, chords, scale_type, seed, answers, engine=None, voice=None, letters=(), hook=False, hook_take=FIRST_HOOK_TAKE, tag_take=FIRST_HOOK_TAKE):
     """A section's tune as lines, written by the engine named, else the one the habits name, else the step walk; in a song
     with a hook, the lines a plan marks as a hook are the hook maker's and the writer keeps under them in every section. The
     letters are those of every line of the song the player plays, for an engine that tells a song's lines apart."""
-    writer = ENGINES[engine or habits.get(ENGINE, STEP_WALK)]
-    given = dict(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
-    made_by = Hooked(writer=writer, hook_take=hook_take, tag_take=tag_take, **given) if hook else writer(**given)
-    return made_by.sketched(plan)
+    # The lines follow from what is asked and from nothing else, and the wizard makes a great many songs that differ in one
+    # choice and share most of their melodies, so the lines of each asking are written once and kept; each asker gets lines
+    # of its own to change.
+    key = repr((habits, plan, chords, scale_type, seed, answers, engine, voice, letters, hook, hook_take, tag_take))
+    if key not in LINES_KEPT:
+        if len(LINES_KEPT) >= MOST_LINES_KEPT:
+            LINES_KEPT.clear()
+        writer = ENGINES[engine or habits.get(ENGINE, STEP_WALK)]
+        given = dict(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
+        made_by = Hooked(writer=writer, hook_take=hook_take, tag_take=tag_take, **given) if hook else writer(**given)
+        LINES_KEPT[key] = made_by.sketched(plan)
+    return copy.deepcopy(LINES_KEPT[key])
 
 
 def plan_as_asked(*, plan, height=None, busy=None, repeats=None):

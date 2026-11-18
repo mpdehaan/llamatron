@@ -61,6 +61,11 @@ TABLES = {
 }
 
 
+# The moves of each rhythm asked about, and how many are kept before all are forgotten, so that they cannot pile up for ever.
+MOVES_KEPT = {}
+MOST_MOVES_KEPT = 20000
+
+
 def is_compound(time_signature):
     return str(time_signature) in COMPOUND_SIGNATURES
 
@@ -76,14 +81,26 @@ def role_of(*, pattern, tracks):
 
 
 def moves(*, pattern, role, feel, signature, compound):
-    """How far each note of a pattern moves, by its step."""
+    """How far each note of a pattern moves, by its step. The moves follow from where the notes start and from nothing else of
+    the pattern, and the wizard makes a great many songs that share most of their rhythms, so the moves of a rhythm are worked
+    out once and kept (MOVES_KEPT); whoever asks only reads them."""
     size = Fraction(str(pattern.get(STEP_SIZE, DEFAULT_STEP_SIZE)))
+    onsets = tuple(place for place, value in enumerate(pattern[DEGREE]) if value is not None)
+    key = (onsets, len(pattern[DEGREE]), size, role, feel, signature, compound)
+    if key not in MOVES_KEPT:
+        if len(MOVES_KEPT) >= MOST_MOVES_KEPT:
+            MOVES_KEPT.clear()
+        MOVES_KEPT[key] = moves_of(onsets=onsets, steps=len(pattern[DEGREE]), size=size, role=role, feel=feel, signature=signature, compound=compound)
+    return MOVES_KEPT[key]
+
+
+def moves_of(*, onsets, steps, size, role, feel, signature, compound):
+    """How far each note moves, by its step, for notes that start on the steps given of a pattern of so many steps."""
     beat = COMPOUND_BEAT if compound else SIMPLE_BEAT
     beats = signature / beat
-    onsets = [place for place, value in enumerate(pattern[DEGREE]) if value is not None]
     table = TABLES[DOWN if compound else feel][role]
     found = {}
-    for place in onsets:
+    for index, place in enumerate(onsets):
         count = ((place * size) % signature) / beat
         if count.denominator == 1:
             if count == 0:
@@ -96,8 +113,8 @@ def moves(*, pattern, role, feel, signature, compound):
                 move = 0
         else:
             next_beat = (int(count) + 1) * beat + (place * size) // signature * signature
-            later = [other * size for other in onsets if other > place]
-            pushed = role != PERCUSSION and (not later or later[0] > next_beat) and len(pattern[DEGREE]) * size > next_beat
+            last = index == len(onsets) - 1
+            pushed = role != PERCUSSION and (last or onsets[index + 1] * size > next_beat) and steps * size > next_beat
             finer = (count * 2).denominator != 1 and not (compound and (count * 3).denominator == 1)
             move = PUSH if pushed else table[ON_FINER] if finer else table[ON_HALF]
         found[place] = max(-REACH, min(REACH, move))
