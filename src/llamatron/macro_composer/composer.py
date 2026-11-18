@@ -36,7 +36,7 @@ from fractions import Fraction
 from llamatron.macro_composer.loudness import USUAL_DYNAMICS
 from llamatron.macro_composer.notation import ACCENT, DEFAULT_STEP_SIZE, GHOST, HITS, LINES, LOUD, OCTAVE, SOFT, STEP, STEPS, STEP_SIZE, VELOCITY, DRUM, drum_rows, tune_rows
 from llamatron.macro_composer.shaping import is_compound, role_of, shaped
-from llamatron.strings.errors import ERR_NO_CLIP_FITS
+from llamatron.strings import errors
 
 # The fields of an input.
 NAME = 'name'
@@ -145,7 +145,7 @@ def scene_of(*, entry, bands, patterns, signature):
             # A scene whose every clip plays once needs none to time it, where one of them lasts as long as the scene.
             lasting = [clip for clip in clips.values() if LOOP not in clip and bars_of(pattern=patterns[clip[PATTERN]], signature=signature) == entry[BARS]]
             if not lasting:
-                raise ValueError(ERR_NO_CLIP_FITS.format(entry[SCENE], entry[BARS]))
+                raise ValueError(errors.ERR_NO_CLIP_FITS.format(entry[SCENE], entry[BARS]))
     return {NAME: entry[SCENE], **entry.get(SETTINGS, {}), TRACKS: clips}
 
 

@@ -41,7 +41,8 @@ on the rows.
 
 from llamatron.composition.checks import is_written_length
 from llamatron.composition.file_format import DIRECTIONS, Row, Section
-from llamatron.composition.limits import MAX_SCALE_LENGTH, MAX_STEP_SIZE, MAX_STEPS, MIN_SCALE_LENGTH, MIN_STEPS
+from llamatron.composition import limits
+from llamatron.strings import errors, help as help_text, labels, legends, marks, messages
 from llamatron.tui.components.chord_row import step_chord_in_words
 from llamatron.tui.components.pattern_rows import PatternRows
 from llamatron.tui.components.piano_roll import PianoRoll
@@ -59,29 +60,12 @@ from llamatron.tui.screens.shared.step_editor import StepEditor
 from llamatron.composition.checks import fraction_text
 from llamatron.composition.naming import words
 from llamatron.tui.text import fraction, sorted_names
-from llamatron.strings.errors import (
-    ERR_LENGTH_OUT_OF_RANGE, ERR_NO_OTHER_PATTERNS, ERR_NOT_A_LENGTH, ERR_TYPED_NOT_AN_INTEGER, ERR_NOTHING_AFTER,
-    ERR_NOTHING_BEFORE, ERR_NOTHING_TO_PIVOT, ERR_ONE_STEP, ERR_STEPS_OUT_OF_RANGE,
-)
-from llamatron.strings.help import HELP_PATTERN_EDITOR
-from llamatron.strings.labels import Crumb, MSG_DIRECTION_NAMES, MSG_MUNGE_CHOICES, MSG_PATTERN_CRUMB
-from llamatron.strings.marks import MSG_ANY_SCALE_LENGTH
-from llamatron.strings.legends import (
-    MSG_DEGREES_WHAT, MSG_DIRECTION_WHAT, MSG_DRUM_OFF_WHAT, MSG_DRUM_ON_WHAT, MSG_LETTERS_WHAT, MSG_LOAD_OVER_WHAT, MSG_SCALE_LENGTH_WHAT, MSG_STEP_SIZE_WHAT,
-    MSG_TIME_SIGNATURE_WHAT, What,
-)
-from llamatron.strings.messages import MSG_KEYSWITCH_NO_INSTRUMENT, MSG_KEYSWITCH_SEVERAL_INSTRUMENTS, MSG_RESTING_STEP
-from llamatron.strings.messages import (
-    MSG_CHANGE_TYPE_EMPTY_QUESTION, MSG_CHANGE_TYPE_QUESTION, MSG_CHANGE_TYPE_TITLE, MSG_LOAD_OVER_CHOICE_TITLE, MSG_LOAD_OVER_QUESTION,
-    MSG_LOAD_OVER_TITLE, MSG_PLAY_DIRECTION_TITLE, MSG_RENAME_PATTERN_PROMPT, MSG_RECONFIGURE_TITLE, MSG_SCALE_LENGTH_TITLE, MSG_SHORTEN_QUESTION,
-    MSG_SHORTEN_TITLE, MSG_STEP_SIZE_PROMPT, MSG_TIME_SIGNATURE_PROMPT, MSG_STEPS_PROMPT, MSG_MUNGE_TITLE,
-)
 from llamatron.tui import keybindings
 
 
 def direction_choices(directions):
     """Return each direction as words beside what it does, lined up for a picker."""
-    return columns([(words(name), MSG_DIRECTION_NAMES[name]) for name in directions])
+    return columns([(words(name), labels.MSG_DIRECTION_NAMES[name]) for name in directions])
 
 
 class Munge:
@@ -95,7 +79,7 @@ class Munge:
 
 
 # The scale lengths a pattern can be written for, in the order the picker lists them after any.
-SCALE_LENGTHS = tuple(range(MIN_SCALE_LENGTH, MAX_SCALE_LENGTH + 1))
+SCALE_LENGTHS = tuple(range(limits.MIN_SCALE_LENGTH, limits.MAX_SCALE_LENGTH + 1))
 
 
 class Reconfigure:
@@ -113,17 +97,17 @@ class Reconfigure:
 
 def reconfigure_choices(*, drum):
     """Return the Reconfigure dialog's options, in the order of the Reconfigure class, with the drum entry saying which way it switches. The scale length is last and offered only for a pattern that is not a drum pattern, which has none."""
-    choices = [What.MUNGE, MSG_LOAD_OVER_WHAT, MSG_STEP_SIZE_WHAT, MSG_TIME_SIGNATURE_WHAT, MSG_DRUM_OFF_WHAT if drum else MSG_DRUM_ON_WHAT, MSG_DIRECTION_WHAT, What.RENAME]
-    return choices if drum else [*choices, MSG_SCALE_LENGTH_WHAT]
+    choices = [legends.What.MUNGE, legends.MSG_LOAD_OVER_WHAT, legends.MSG_STEP_SIZE_WHAT, legends.MSG_TIME_SIGNATURE_WHAT, legends.MSG_DRUM_OFF_WHAT if drum else legends.MSG_DRUM_ON_WHAT, legends.MSG_DIRECTION_WHAT, legends.What.RENAME]
+    return choices if drum else [*choices, legends.MSG_SCALE_LENGTH_WHAT]
 
 
 class PatternEditor(ShowsNamedItem, StepEditor):
 
     KEYS = keybindings.PatternEditor
-    HELP = HELP_PATTERN_EDITOR
+    HELP = help_text.HELP_PATTERN_EDITOR
     SECTION = Section.PATTERNS
-    CRUMBS_BEFORE = (Crumb.PATTERNS,)
-    RENAME_PROMPT = MSG_RENAME_PATTERN_PROMPT
+    CRUMBS_BEFORE = (labels.Crumb.PATTERNS,)
+    RENAME_PROMPT = messages.MSG_RENAME_PATTERN_PROMPT
 
     def __init__(self, *, holder, name, opened_from=None, track=None):
         super().__init__(holder)
@@ -151,7 +135,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         """Return the crumbs: the opener's and then this pattern's, when a clip opened the editor, and PATTERNS and the name otherwise."""
         if self.opened_from is None:
             return self.crumbs
-        return (*self.opened_from.crumb_trail(), MSG_PATTERN_CRUMB.format(name=self.item))
+        return (*self.opened_from.crumb_trail(), labels.MSG_PATTERN_CRUMB.format(name=self.item))
 
     def duration(self):
         return self.document().lengths().pattern_seconds(self.item)
@@ -227,7 +211,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         known = [name for name in names if name is not None]
         if len(names) == 1 and known:
             return document.setlist().get_instrument(known[0]), known[0]
-        return None, MSG_KEYSWITCH_SEVERAL_INSTRUMENTS if len(names) > 1 else MSG_KEYSWITCH_NO_INSTRUMENT
+        return None, messages.MSG_KEYSWITCH_SEVERAL_INSTRUMENTS if len(names) > 1 else messages.MSG_KEYSWITCH_NO_INSTRUMENT
 
     def known_scale(self):
         """Return the scale the pattern is known to play under, as a NamedScale: the first of its uses' scales, or the current song's when nothing uses it, or None when there is none or it is a drum pattern."""
@@ -241,7 +225,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         self.clamp()
         if self.is_drum() or not self.is_note() or not isinstance(self.value(row=Row.DEGREE), int):
             return NOTHING
-        return step_chord_in_words(editor=self, step=self.step).resting(where=MSG_RESTING_STEP.format(step=self.step + 1))
+        return step_chord_in_words(editor=self, step=self.step).resting(where=messages.MSG_RESTING_STEP.format(step=self.step + 1))
 
     def gate_now(self, *, step=None):
         """Return a step's gate before its Dot row, which is one step if it has none."""
@@ -281,7 +265,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
 
     def reconfigure(self):
         """Offer the whole-pattern actions in one dialog, and run the chosen one, which may ask on in a dialog of its own."""
-        self.ask(dialog=ChoiceDialog(title=MSG_RECONFIGURE_TITLE, options=reconfigure_choices(drum=self.is_drum())), then=self.reconfigure_as)
+        self.ask(dialog=ChoiceDialog(title=messages.MSG_RECONFIGURE_TITLE, options=reconfigure_choices(drum=self.is_drum())), then=self.reconfigure_as)
 
     def reconfigure_as(self, choice):
         actions = {
@@ -319,7 +303,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
                 then(None)
                 return
             if not is_written_length(text) or not 0 < fraction(text) <= most:
-                self.refuse(ERR_LENGTH_OUT_OF_RANGE.format(most=most) if is_written_length(text) else ERR_NOT_A_LENGTH.format(text=text))
+                self.refuse(errors.ERR_LENGTH_OUT_OF_RANGE.format(most=most) if is_written_length(text) else errors.ERR_NOT_A_LENGTH.format(text=text))
                 return
             then(fraction_text(fraction(text)))
         self.ask(dialog=PromptDialog(title=title, value=current), then=answered)
@@ -328,68 +312,68 @@ class PatternEditor(ShowsNamedItem, StepEditor):
 
     def ask_step_size(self):
         current = self.pattern().get_written_step_size() or NOTHING
-        self.ask_length(title=MSG_STEP_SIZE_PROMPT, current=current, most=MAX_STEP_SIZE, then=lambda text: self.document().set_step_size(name=self.item, step_size=text), blank_allowed=True)
+        self.ask_length(title=messages.MSG_STEP_SIZE_PROMPT, current=current, most=limits.MAX_STEP_SIZE, then=lambda text: self.document().set_step_size(name=self.item, step_size=text), blank_allowed=True)
 
     def ask_time_signature(self):
         current = self.pattern().get_written_time_signature() or NOTHING
         ask_time_signature(
-            page=self, title=MSG_TIME_SIGNATURE_PROMPT, current=current, blank_allowed=True,
+            page=self, title=messages.MSG_TIME_SIGNATURE_PROMPT, current=current, blank_allowed=True,
             then=lambda text: self.document().set_pattern_time_signature(name=self.item, time_signature=text),
         )
 
     def pick_direction(self):
         current = self.pattern().get_direction()
         self.ask(
-            dialog=ChoiceDialog(title=MSG_PLAY_DIRECTION_TITLE, options=direction_choices(DIRECTIONS), current=DIRECTIONS.index(current)),
+            dialog=ChoiceDialog(title=messages.MSG_PLAY_DIRECTION_TITLE, options=direction_choices(DIRECTIONS), current=DIRECTIONS.index(current)),
             then=lambda chosen: self.document().set_direction(name=self.item, direction=DIRECTIONS[chosen]),
         )
 
     def pick_scale_length(self):
         """Ask how many notes the scale has that the pattern was written for, any first."""
         current = self.pattern().get_scale_length()
-        options = [MSG_ANY_SCALE_LENGTH, *[str(length) for length in SCALE_LENGTHS]]
+        options = [marks.MSG_ANY_SCALE_LENGTH, *[str(length) for length in SCALE_LENGTHS]]
         self.ask(
-            dialog=ChoiceDialog(title=MSG_SCALE_LENGTH_TITLE, options=options, current=0 if current is None else SCALE_LENGTHS.index(current) + 1),
+            dialog=ChoiceDialog(title=messages.MSG_SCALE_LENGTH_TITLE, options=options, current=0 if current is None else SCALE_LENGTHS.index(current) + 1),
             then=lambda chosen: self.document().set_pattern_scale_length(name=self.item, scale_length=SCALE_LENGTHS[chosen - 1] if chosen else None),
         )
 
     def munge(self):
         """Offer the ways of rearranging the steps around the cursor, and do the chosen one."""
-        self.ask(dialog=ChoiceDialog(title=MSG_MUNGE_TITLE, options=MSG_MUNGE_CHOICES), then=self.munge_as)
+        self.ask(dialog=ChoiceDialog(title=messages.MSG_MUNGE_TITLE, options=labels.MSG_MUNGE_CHOICES), then=self.munge_as)
 
     def munge_as(self, choice):
         """Rearrange the steps one way, with the cursor staying on its step, so that choosing the same way again undoes it."""
         name = self.item
         if choice == Munge.REVERSE_AFTER:
             if self.step >= self.steps() - 1:
-                self.refuse(ERR_NOTHING_AFTER)
+                self.refuse(errors.ERR_NOTHING_AFTER)
                 return
             self.document().reverse_after(name=name, step=self.step)
         elif choice == Munge.REVERSE_BEFORE:
             if self.step == 0:
-                self.refuse(ERR_NOTHING_BEFORE)
+                self.refuse(errors.ERR_NOTHING_BEFORE)
                 return
             self.document().reverse_before(name=name, step=self.step)
         elif choice == Munge.REVERSE:
             if self.steps() < 2:
-                self.refuse(ERR_ONE_STEP)
+                self.refuse(errors.ERR_ONE_STEP)
                 return
             self.document().reverse_steps(name)
         elif choice == Munge.PIVOT:
             if self.steps() < 2:
-                self.refuse(ERR_NOTHING_TO_PIVOT)
+                self.refuse(errors.ERR_NOTHING_TO_PIVOT)
                 return
             self.step = self.document().pivot_around(name=name, step=self.step)
         elif choice == Munge.RANDOMIZE:
             if self.steps() < 2:
-                self.refuse(ERR_ONE_STEP)
+                self.refuse(errors.ERR_ONE_STEP)
                 return
             self.document().shuffle_steps(name)
 
     def load_over(self):
         others = sorted_names(name for name in self.document().song().get_pattern_names() if name != self.item)
         if not others:
-            self.refuse(ERR_NO_OTHER_PATTERNS)
+            self.refuse(errors.ERR_NO_OTHER_PATTERNS)
             return
 
         def load(name):
@@ -400,11 +384,11 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         def chosen(place):
             name = others[place]
             if self.document().has_notes(self.item):
-                question = MSG_LOAD_OVER_QUESTION.format(name=self.item, other=name)
-                self.ask(dialog=ConfirmDialog(title=MSG_LOAD_OVER_TITLE, messages=[question]), then=lambda _: load(name))
+                question = messages.MSG_LOAD_OVER_QUESTION.format(name=self.item, other=name)
+                self.ask(dialog=ConfirmDialog(title=messages.MSG_LOAD_OVER_TITLE, messages=[question]), then=lambda _: load(name))
             else:
                 load(name)
-        self.ask(dialog=ChoiceDialog(title=MSG_LOAD_OVER_CHOICE_TITLE.format(name=self.item), options=others), then=chosen)
+        self.ask(dialog=ChoiceDialog(title=messages.MSG_LOAD_OVER_CHOICE_TITLE.format(name=self.item), options=others), then=chosen)
 
     # The whole pattern.
 
@@ -413,18 +397,18 @@ class PatternEditor(ShowsNamedItem, StepEditor):
             try:
                 steps = int(text.strip())
             except ValueError:
-                self.refuse(ERR_TYPED_NOT_AN_INTEGER.format(text=text))
+                self.refuse(errors.ERR_TYPED_NOT_AN_INTEGER.format(text=text))
                 return
-            if not MIN_STEPS <= steps <= MAX_STEPS:
-                self.refuse(ERR_STEPS_OUT_OF_RANGE.format(low=MIN_STEPS, high=MAX_STEPS))
+            if not limits.MIN_STEPS <= steps <= limits.MAX_STEPS:
+                self.refuse(errors.ERR_STEPS_OUT_OF_RANGE.format(low=limits.MIN_STEPS, high=limits.MAX_STEPS))
                 return
             lost = self.document().steps_with_anything_past(name=self.item, steps=steps)
             if lost:
-                question = MSG_SHORTEN_QUESTION.format(count=lost)
-                self.ask(dialog=ConfirmDialog(title=MSG_SHORTEN_TITLE, messages=[question]), then=lambda _: self.document().set_steps(name=self.item, steps=steps))
+                question = messages.MSG_SHORTEN_QUESTION.format(count=lost)
+                self.ask(dialog=ConfirmDialog(title=messages.MSG_SHORTEN_TITLE, messages=[question]), then=lambda _: self.document().set_steps(name=self.item, steps=steps))
             else:
                 self.document().set_steps(name=self.item, steps=steps)
-        self.ask(dialog=PromptDialog(title=MSG_STEPS_PROMPT, value=self.steps()), then=answered)
+        self.ask(dialog=PromptDialog(title=messages.MSG_STEPS_PROMPT, value=self.steps()), then=answered)
 
     def toggle_drum(self):
         """Switch between drum and note patterns, always asking first, since the rows change and any notes go."""
@@ -433,9 +417,9 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         def change(_):
             self.document().set_drum(name=self.item, drum=drum)
             self.rows_view.go_to_top()
-        what = MSG_LETTERS_WHAT if drum else MSG_DEGREES_WHAT
-        question = MSG_CHANGE_TYPE_QUESTION if self.document().has_notes(self.item) else MSG_CHANGE_TYPE_EMPTY_QUESTION
-        self.ask(dialog=ConfirmDialog(title=MSG_CHANGE_TYPE_TITLE, messages=[question.format(what=what)]), then=change)
+        what = legends.MSG_LETTERS_WHAT if drum else legends.MSG_DEGREES_WHAT
+        question = messages.MSG_CHANGE_TYPE_QUESTION if self.document().has_notes(self.item) else messages.MSG_CHANGE_TYPE_EMPTY_QUESTION
+        self.ask(dialog=ConfirmDialog(title=messages.MSG_CHANGE_TYPE_TITLE, messages=[question.format(what=what)]), then=change)
 
     def insert_step(self):
         self.document().insert_step(name=self.item, step=self.step)

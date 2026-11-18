@@ -17,8 +17,7 @@
 """A row of the grid a song renders into: one scene's clips."""
 
 from llamatron.composition.checks import check_name, check_scale, check_tempo_override
-from llamatron.strings.errors import ERR_ROW_IN_A_GRID
-from llamatron.strings.reprs import REPR_CLIP_ROW
+from llamatron.strings import errors, reprs
 
 
 class ClipRow:
@@ -44,7 +43,7 @@ class ClipRow:
     def set_id(self, new_id):
         """Give the row its id as it joins a grid. A row joins only one grid, so a second id is refused."""
         if self._id is not None:
-            raise ValueError(ERR_ROW_IN_A_GRID.format(row=self))
+            raise ValueError(errors.ERR_ROW_IN_A_GRID.format(row=self))
         self._id = new_id
 
     def get_name(self):
@@ -69,4 +68,4 @@ class ClipRow:
         self._scale = scale
 
     def __repr__(self):
-        return REPR_CLIP_ROW.format(name=self._name, tempo=self._tempo, scale=self._scale, id=self._id)
+        return reprs.REPR_CLIP_ROW.format(name=self._name, tempo=self._tempo, scale=self._scale, id=self._id)

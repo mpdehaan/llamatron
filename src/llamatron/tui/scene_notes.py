@@ -42,9 +42,7 @@ from llamatron.composition.strum import strum_settings
 from llamatron.exporters.timing import timed_events
 from llamatron.music.note import FLAT_NAMES, SEMITONES_ABOVE_C, SHARP_NAMES
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.strings.marks import (
-    MSG_ACCIDENTAL_MARKS, MSG_QUALITY_MARKS, MSG_SCENE_VIEW_FROM_SCENE, MSG_SCENE_VIEW_SLASH_CHORD, MSG_SCENE_VIEW_FROM_SONG, MSG_SCENE_VIEW_NO_GROOVE, MSG_SCENE_VIEW_TEMPO_RAMP,
-)
+from llamatron.strings import marks
 
 HALF_STEPS_PER_OCTAVE = 12
 # How many pitch classes may sound in a beat besides its chord, as a melody's passing notes.
@@ -247,7 +245,7 @@ def chord_texts(*, root, symbol, scale, bass=None):
     """Return a chord's name, its root spelled as the scale spells, its symbol, and its bass after a slash when the bass isn't its root, and its Roman numeral in the scale, a flat in front for a root between two of its notes."""
     name = spelled(pitch_class=root, scale=scale) + PLAIN_SYMBOLS.get(symbol, symbol)
     if bass is not None:
-        name = MSG_SCENE_VIEW_SLASH_CHORD.format(chord=name, bass=spelled(pitch_class=bass, scale=scale))
+        name = marks.MSG_SCENE_VIEW_SLASH_CHORD.format(chord=name, bass=spelled(pitch_class=bass, scale=scale))
     if scale is None:
         return name, NO_SYMBOL
     shape = scale.get_half_steps()
@@ -255,14 +253,14 @@ def chord_texts(*, root, symbol, scale, bass=None):
     accidental = NO_SYMBOL
     if above not in shape:
         above = (above + 1) % HALF_STEPS_PER_OCTAVE
-        accidental = MSG_ACCIDENTAL_MARKS[Accidental.FLAT]
+        accidental = marks.MSG_ACCIDENTAL_MARKS[Accidental.FLAT]
         if above not in shape:
             return name, NO_SYMBOL
     numeral = ROMAN_NUMERALS[shape.index(above) % len(ROMAN_NUMERALS)]
     quality = quality_of_shape(chord_shapes()[symbol])
     if quality in (Quality.MINOR, Quality.DIMINISHED):
         numeral = numeral.lower()
-    return name, accidental + numeral + MSG_QUALITY_MARKS[quality]
+    return name, accidental + numeral + marks.MSG_QUALITY_MARKS[quality]
 
 
 def covered(spans):
@@ -314,9 +312,9 @@ class Effective(NamedTuple):
     clip_scales: dict
 
 
-SONG_SOURCE = MSG_SCENE_VIEW_FROM_SONG
-SCENE_SOURCE = MSG_SCENE_VIEW_FROM_SCENE
-NO_GROOVE = MSG_SCENE_VIEW_NO_GROOVE
+SONG_SOURCE = marks.MSG_SCENE_VIEW_FROM_SONG
+SCENE_SOURCE = marks.MSG_SCENE_VIEW_FROM_SCENE
+NO_GROOVE = marks.MSG_SCENE_VIEW_NO_GROOVE
 
 
 def effective_values(*, song, index):
@@ -325,7 +323,7 @@ def effective_values(*, song, index):
     if scene.get_tempo_setting() is not None:
         tempo, tempo_source = str(scene.get_tempo_setting()), SCENE_SOURCE
     elif scene.get_tempo_start() is not None:
-        tempo, tempo_source = MSG_SCENE_VIEW_TEMPO_RAMP.format(start=scene.get_tempo_start(), end=scene.get_tempo_end()), SCENE_SOURCE
+        tempo, tempo_source = marks.MSG_SCENE_VIEW_TEMPO_RAMP.format(start=scene.get_tempo_start(), end=scene.get_tempo_end()), SCENE_SOURCE
     else:
         tempo, tempo_source = str(song.get_tempo()), SONG_SOURCE
     scale_name = scene.get_scale_name() or song.get_scale_name()

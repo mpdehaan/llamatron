@@ -32,7 +32,7 @@ import numpy
 from llamatron.visualizers.cells import CellPainter
 from llamatron.visualizers.heard import SILENCE
 from llamatron.visualizers.visualizer import Visualizer
-from llamatron.strings.visualizers import MSG_DIGITAL_RAIN, MSG_RAIN_DIGITS
+from llamatron.strings import visualizers
 
 SEED = 1
 LONGEST_FRAME_SECONDS = 0.2
@@ -73,7 +73,7 @@ class DigitalRain(Visualizer):
 
     __slots__ = ('_cells', '_chooser', '_rows', '_columns', '_glyphs', '_streams', '_last', '_energy', '_target', '_owed')
 
-    NAME = MSG_DIGITAL_RAIN
+    NAME = visualizers.MSG_DIGITAL_RAIN
     OPTION = 'digital_rain'
     DARK_IN_SILENCE = False
 
@@ -95,7 +95,7 @@ class DigitalRain(Visualizer):
         """Start again at a size: every cell a one or a zero, and no streams."""
         self._rows = rows
         self._columns = columns
-        self._glyphs = [[self._chooser.choice(MSG_RAIN_DIGITS) for _ in range(columns)] for _ in range(rows)]
+        self._glyphs = [[self._chooser.choice(visualizers.MSG_RAIN_DIGITS) for _ in range(columns)] for _ in range(rows)]
         self._streams = numpy.zeros((0, 5))
 
     def stream_count(self):
@@ -150,7 +150,7 @@ class DigitalRain(Visualizer):
         for _ in range(int(GLYPH_CHANGES_PER_SECOND * self._rows * self._columns * seconds)):
             row = self._chooser.randrange(self._rows)
             column = self._chooser.randrange(self._columns)
-            self._glyphs[row][column] = self._chooser.choice(MSG_RAIN_DIGITS)
+            self._glyphs[row][column] = self._chooser.choice(visualizers.MSG_RAIN_DIGITS)
 
     def colours(self):
         """Return each cell's colour: black, a tail's green fading from its head, or a head's pale green, brighter as more plays."""

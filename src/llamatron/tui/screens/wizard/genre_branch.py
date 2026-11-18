@@ -17,9 +17,7 @@
 
 from llamatron.macro_composer.wizard_choices import SCALE_TYPES, genre_names, genre_title
 from llamatron.music.note import ROOT_NAMES
-from llamatron.strings.labels import MSG_GENRE_LABEL, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KEY_LABEL, MSG_WIZARD_LENGTH_LABEL, MSG_WIZARD_METER_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES
-from llamatron.strings.legends import What
-from llamatron.strings.marks import MSG_WIZARD_LENGTH_SHOWN, MSG_WIZARD_OWN_FORM
+from llamatron.strings import labels, legends, marks
 from llamatron.tui.text import clock
 from llamatron.tui.screens.shared.field import ChoiceField, Field
 from llamatron.tui.screens.wizard.branch import Branch
@@ -32,7 +30,7 @@ class GenreBranch(Branch):
     __slots__ = ()
 
     def name(self):
-        return MSG_WIZARD_GENRE_BRANCH
+        return labels.MSG_WIZARD_GENRE_BRANCH
 
     def children(self):
         # The subgenre and its own settings are a panel under the genre.
@@ -43,27 +41,27 @@ class GenreBranch(Branch):
         page = self.page()
         genres = genre_names()
         fields = [
-            self.choice_from_nothing(label=MSG_GENRE_LABEL, values=genres, names=[genre_title(genre) for genre in genres], current=choices.get_genre(), set_value=choices.set_genre),
+            self.choice_from_nothing(label=labels.MSG_GENRE_LABEL, values=genres, names=[genre_title(genre) for genre in genres], current=choices.get_genre(), set_value=choices.set_genre),
         ]
         if choices.is_ready():
             fields += [
-                ChoiceField(page=page, label=MSG_WIZARD_KEY_LABEL, choices=ROOT_NAMES, current=choices.get_root(), set=page.choosing(choices.set_root)),
-                ChoiceField(page=page, label=MSG_SCALE_LABEL, choices=SCALE_TYPES, names=[MSG_WIZARD_SCALE_TYPE_NAMES[kind] for kind in SCALE_TYPES], current=choices.get_scale_type(),
-                            shown=MSG_WIZARD_SCALE_TYPE_NAMES[choices.get_scale_type()], set=page.choosing(choices.set_scale_type)),
+                ChoiceField(page=page, label=labels.MSG_WIZARD_KEY_LABEL, choices=ROOT_NAMES, current=choices.get_root(), set=page.choosing(choices.set_root)),
+                ChoiceField(page=page, label=labels.MSG_SCALE_LABEL, choices=SCALE_TYPES, names=[labels.MSG_WIZARD_SCALE_TYPE_NAMES[kind] for kind in SCALE_TYPES], current=choices.get_scale_type(),
+                            shown=labels.MSG_WIZARD_SCALE_TYPE_NAMES[choices.get_scale_type()], set=page.choosing(choices.set_scale_type)),
                 # The meter is the subgenre's, so it is only shown; the length follows the sections, so stepping it chooses a longer or a shorter form.
-                Field(label=MSG_WIZARD_METER_LABEL, value=choices.meter),
+                Field(label=labels.MSG_WIZARD_METER_LABEL, value=choices.meter),
                 self.length_field(),
             ]
         if page.replaces():
             # A replaced song keeps its name, so the name is only shown.
-            return [*fields, Field(label=MSG_NAME_LABEL, value=page.song_name)]
-        return [*fields, Field(label=MSG_NAME_LABEL, value=page.song_name, enter=page.ask_song_name, enter_what=What.RENAME)]
+            return [*fields, Field(label=labels.MSG_NAME_LABEL, value=page.song_name)]
+        return [*fields, Field(label=labels.MSG_NAME_LABEL, value=page.song_name, enter=page.ask_song_name, enter_what=legends.What.RENAME)]
 
     def length_field(self):
         """Return the Length field, whose steps choose a shorter or a longer suggested form; once the form is the song's own,
         the length is only shown, since a step would put a suggested form in place of the sections changed."""
         choices = self.choices()
         if choices.has_own_form():
-            return Field(label=MSG_WIZARD_LENGTH_LABEL, value=lambda: MSG_WIZARD_LENGTH_SHOWN.format(length=clock(choices.form_seconds()), form=MSG_WIZARD_OWN_FORM))
-        return Field(label=MSG_WIZARD_LENGTH_LABEL, value=lambda: MSG_WIZARD_LENGTH_SHOWN.format(length=clock(choices.form_seconds()), form=choices.get_form()),
+            return Field(label=labels.MSG_WIZARD_LENGTH_LABEL, value=lambda: marks.MSG_WIZARD_LENGTH_SHOWN.format(length=clock(choices.form_seconds()), form=marks.MSG_WIZARD_OWN_FORM))
+        return Field(label=labels.MSG_WIZARD_LENGTH_LABEL, value=lambda: marks.MSG_WIZARD_LENGTH_SHOWN.format(length=clock(choices.form_seconds()), form=choices.get_form()),
                      adjust=self.page().choosing(choices.step_length))

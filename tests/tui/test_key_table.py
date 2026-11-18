@@ -18,7 +18,7 @@
 
 import unittest
 
-from llamatron.strings.legends import KeyName, What
+from llamatron.strings import legends
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import STEP_BACK, STEP_FORWARD, BindsKeys, bound, cursor_moved, every_key, first_key, key_event, keys_of, place_of, pressed_key
 from llamatron.tui.keys import ARROWS_LEFT_RIGHT, Key, LESS_KEYS, MORE_KEYS, Steps
@@ -32,18 +32,18 @@ PLACE_BEFORE_MIDDLE = 0
 PLACE_AFTER_MIDDLE = 2
 # What a page says in place of a binding's own name and words, and the keys it binds in place of the binding's own.
 OTHER_NAME = '1-5'
-OTHER_WHAT = What.CHOOSE
+OTHER_WHAT = legends.What.CHOOSE
 OTHER_KEYS = (Key.DIGIT_1, Key.DIGIT_2)
 
 
 class Bindings:
     """A class of bindings like those of tui/keybindings.py: two bindings that hold the same keys and words, one binding the legend leaves out, and a part's bindings in an order of their own."""
 
-    RENAME = (Key.N, KeyName.N, What.RENAME)
-    MOVE = (ARROWS_LEFT_RIGHT, KeyName.LEFT_RIGHT, What.MOVE)
-    ADJUST = (Steps(back=LESS_KEYS, forward=MORE_KEYS), KeyName.BRACKETS, What.MORE)
-    ENDS = (Steps(back=(Key.HOME,), forward=(Key.END,)), KeyName.HOME_END, What.ENDS)
-    ADJUST_AGAIN = (Steps(back=LESS_KEYS, forward=MORE_KEYS), KeyName.BRACKETS, What.MORE)
+    RENAME = (Key.N, legends.KeyName.N, legends.What.RENAME)
+    MOVE = (ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
+    ADJUST = (Steps(back=LESS_KEYS, forward=MORE_KEYS), legends.KeyName.BRACKETS, legends.What.MORE)
+    ENDS = (Steps(back=(Key.HOME,), forward=(Key.END,)), legends.KeyName.HOME_END, legends.What.ENDS)
+    ADJUST_AGAIN = (Steps(back=LESS_KEYS, forward=MORE_KEYS), legends.KeyName.BRACKETS, legends.What.MORE)
     IN_HELP = [MOVE, ADJUST, ENDS, RENAME, ADJUST_AGAIN]
     IN_LEGEND = [MOVE, ADJUST, RENAME, ADJUST_AGAIN]
 
@@ -51,8 +51,8 @@ class Bindings:
 class PartBindings:
     """The bindings of a part of a page, which the page lists among its own."""
 
-    COPY = (Key.C, KeyName.C, What.COPY)
-    SORT = (Key.S, KeyName.S, What.SORT)
+    COPY = (Key.C, legends.KeyName.C, legends.What.COPY)
+    SORT = (Key.S, legends.KeyName.S, legends.What.SORT)
     IN_HELP = [COPY, SORT]
     IN_LEGEND = IN_HELP
 
@@ -94,7 +94,7 @@ class TestKeyTable(unittest.TestCase):
         binding = self.bind(Bindings.RENAME)
         binding.press(first_key(Bindings.RENAME))
         self.assertEqual(self.recorder.calls, [()])
-        self.assertEqual((binding.keys, binding.label, binding.what), ((Key.N,), KeyName.N, What.RENAME))
+        self.assertEqual((binding.keys, binding.label, binding.what), ((Key.N,), legends.KeyName.N, legends.What.RENAME))
 
     def test_a_key_that_wants_its_name_is_passed_it(self):
         binding = self.bind(Bindings.MOVE, wants_key=True)
@@ -127,7 +127,7 @@ class TestKeyTable(unittest.TestCase):
         self.assertEqual(self.recorder.calls, [(STEP_FORWARD,), (STEP_BACK,)])
 
     def test_a_binding_shows_the_name_its_class_gives_it(self):
-        self.assertEqual(self.bind(Bindings.ADJUST).shown_label(), KeyName.BRACKETS)
+        self.assertEqual(self.bind(Bindings.ADJUST).shown_label(), legends.KeyName.BRACKETS)
 
     def test_the_legend_shows_a_binding_only_when_the_class_lists_it(self):
         self.assertTrue(self.bind(Bindings.MOVE).shown)

@@ -28,8 +28,7 @@ from llamatron.realtime.sender_process import SenderNotStarted
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.screens.shared.shared import play_through
 from llamatron.tui.text import sorted_names
-from llamatron.strings.errors import ERR_CANT_PLAY_TITLE
-from llamatron.strings.messages import MSG_CLIP_ON_TRACK, MSG_LISTEN_INSTRUMENT_TITLE, MSG_LISTENING, MSG_LISTENING_GENERAL_MIDI, MSG_LISTENING_IN_SCALE, MSG_LISTENING_TO_PATTERN, MSG_STOPPED
+from llamatron.strings import errors, messages
 
 
 def listen(*, page, index, track, song=None, name):
@@ -41,9 +40,9 @@ def listen(*, page, index, track, song=None, name):
         try:
             preview.play_clip_of_song(index=index, track=track)
         except (SongFileError, SenderNotStarted) as error:
-            page.tell(ERR_CANT_PLAY_TITLE, str(error))
+            page.tell(errors.ERR_CANT_PLAY_TITLE, str(error))
             return
-        page.say(MSG_LISTENING_GENERAL_MIDI.format(name=name))
+        page.say(messages.MSG_LISTENING_GENERAL_MIDI.format(name=name))
         return
     problem = transport.problem(track=track)
     if problem is not None:
@@ -51,8 +50,8 @@ def listen(*, page, index, track, song=None, name):
         return
     setlist = page.document().setlist()
     instrument = page.document().song().get_track(track).get_instrument_name()
-    said = MSG_LISTENING.format(name=name, track=track)
-    what = MSG_CLIP_ON_TRACK.format(name=name, track=track)
+    said = messages.MSG_LISTENING.format(name=name, track=track)
+    what = messages.MSG_CLIP_ON_TRACK.format(name=name, track=track)
     if instrument and setlist.get_instrument(instrument).has_device():
         play_through(page=page, play=lambda: transport.play_clip(index=index, track=track, song=song, forever=True), what=what, said=said)
         return
@@ -60,13 +59,13 @@ def listen(*, page, index, track, song=None, name):
 
     def chosen(place):
         play_through(page=page, play=lambda: transport.play_clip(index=index, track=track, song=song, instead={track: choices[place]}, forever=True), what=what, said=said)
-    page.ask(dialog=ChoiceDialog(title=MSG_LISTEN_INSTRUMENT_TITLE, options=choices), then=chosen)
+    page.ask(dialog=ChoiceDialog(title=messages.MSG_LISTEN_INSTRUMENT_TITLE, options=choices), then=chosen)
 
 
 def stop_listening(page):
     page.app.pattern_preview().stop()
     page.app.transport.stop_all()
-    page.say(MSG_STOPPED)
+    page.say(messages.MSG_STOPPED)
 
 
 def listen_to_pattern(*, page, pattern):
@@ -83,16 +82,16 @@ def listen_to_pattern(*, page, pattern):
     try:
         preview.play(pattern)
     except (SongFileError, SenderNotStarted) as error:
-        page.tell(ERR_CANT_PLAY_TITLE, str(error))
+        page.tell(errors.ERR_CANT_PLAY_TITLE, str(error))
         return
     scale = preview.scale()
-    page.say(MSG_LISTENING_TO_PATTERN.format(name=pattern) if scale is None else MSG_LISTENING_IN_SCALE.format(name=pattern, scale=scale))
+    page.say(messages.MSG_LISTENING_TO_PATTERN.format(name=pattern) if scale is None else messages.MSG_LISTENING_IN_SCALE.format(name=pattern, scale=scale))
 
 
 def stop_listening_to_pattern(page):
     """Stop the pattern's preview alone, leaving a song played from Arrange playing."""
     page.app.pattern_preview().stop()
-    page.say(MSG_STOPPED)
+    page.say(messages.MSG_STOPPED)
 
 
 def pattern_listen_keys(*, page, pattern):

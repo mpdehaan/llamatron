@@ -38,17 +38,14 @@ from llamatron.composition.generator_settings import (
 )
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.pattern import Pattern
-from llamatron.composition.defaults import (
-    DEFAULT_REGISTER_MAXIMUM, DEFAULT_REGISTER_MINIMUM, DEFAULT_REGISTER_VALUE, DEFAULT_AT_LIMIT, DEFAULT_RESET_EACH_SCENE, DEFAULT_TIME_SIGNATURE,
-)
+from llamatron.composition import defaults, limits
+from llamatron.strings import errors
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.limits import MAX_OCTAVE, MAX_REGISTER_VALUE, MAX_SCENE_REPEAT, MIN_OCTAVE, MIN_REGISTER_VALUE, MIN_REPEAT
 from llamatron.composition.register import Register
 from llamatron.composition.scene import Scene
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.song import Song
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.strings.errors import ERR_BAD_REPEAT, ERR_NEEDS_SETTING, ERR_NOT_A_SETLIST
 from llamatron.composition.track import Track
 from llamatron.generators.arp import MAX_OCTAVE_RANGE, Arp, ChordOrder
 from llamatron.generators.auto_ratchet import AutoRatchet
@@ -88,7 +85,7 @@ SIDEWAYS = 'sideways'
 CHAIN_X = 'chain x'
 SIXTEENTH = '1/16'
 COUNT = 'count'
-NEEDS_COUNTS = ERR_NEEDS_SETTING.format(name=AutoRatchetSetting.COUNTS)
+NEEDS_COUNTS = errors.ERR_NEEDS_SETTING.format(name=AutoRatchetSetting.COUNTS)
 EIGHTH_FRACTION = Fraction(1, 8)
 CHAIN_X_AUTO_RATCHET = 'chain (x), auto_ratchet'
 UNKNOWN_COUNT_HERE = 'here: unknown setting (count)'
@@ -195,7 +192,7 @@ class TestRegister(RoundTrip):
         plain = Register.from_data(data={}, where=HERE)
         self.assertEqual(
             (plain.get_default(), plain.get_minimum(), plain.get_maximum(), plain.get_at_limit(), plain.resets_each_scene()),
-            (DEFAULT_REGISTER_VALUE, DEFAULT_REGISTER_MINIMUM, DEFAULT_REGISTER_MAXIMUM, DEFAULT_AT_LIMIT, DEFAULT_RESET_EACH_SCENE),
+            (defaults.DEFAULT_REGISTER_VALUE, defaults.DEFAULT_REGISTER_MINIMUM, defaults.DEFAULT_REGISTER_MAXIMUM, defaults.DEFAULT_AT_LIMIT, defaults.DEFAULT_RESET_EACH_SCENE),
         )
 
     def test_adding_stops_at_the_ends_or_wraps_to_the_other_one(self):
@@ -233,14 +230,14 @@ class TestRegister(RoundTrip):
         register = Register.from_data(data={RegisterSetting.WRAP: True}, where=HERE)
         self.assertEqual(register.get_at_limit(), AtLimit.OVERFLOW)
         self.assertEqual(register.to_data(), {RegisterSetting.AT_LIMIT: AtLimit.OVERFLOW})
-        self.assertEqual(Register.from_data(data={RegisterSetting.WRAP: False}, where=HERE).get_at_limit(), DEFAULT_AT_LIMIT)
+        self.assertEqual(Register.from_data(data={RegisterSetting.WRAP: False}, where=HERE).get_at_limit(), defaults.DEFAULT_AT_LIMIT)
 
     def test_refusals(self):
-        too_high = MAX_REGISTER_VALUE + 1
-        self.assert_refused(f'maximum must be an integer from {MIN_REGISTER_VALUE} to {MAX_REGISTER_VALUE}', Register, {RegisterSetting.MAXIMUM: too_high})
+        too_high = limits.MAX_REGISTER_VALUE + 1
+        self.assert_refused(f'maximum must be an integer from {limits.MIN_REGISTER_VALUE} to {limits.MAX_REGISTER_VALUE}', Register, {RegisterSetting.MAXIMUM: too_high})
         self.assert_refused('wrap must be true or false', Register, {RegisterSetting.WRAP: 1})
-        above = DEFAULT_REGISTER_MAXIMUM + 1
-        expected = f'needs minimum ({DEFAULT_REGISTER_MINIMUM}) <= default ({above}) <= maximum ({DEFAULT_REGISTER_MAXIMUM})'
+        above = defaults.DEFAULT_REGISTER_MAXIMUM + 1
+        expected = f'needs minimum ({defaults.DEFAULT_REGISTER_MINIMUM}) <= default ({above}) <= maximum ({defaults.DEFAULT_REGISTER_MAXIMUM})'
         self.assert_refused(expected, Register, {RegisterSetting.DEFAULT: above})
         self.assert_refused('unknown setting (step)', Register, {ArpSetting.STEP: 1})
 
@@ -266,16 +263,16 @@ class TestTrack(RoundTrip):
         track = Track.from_data(data={TrackSetting.LOWEST_OCTAVE: 3, TrackSetting.HIGHEST_OCTAVE: 6}, where=HERE)
         self.assertEqual((track.get_lowest_octave(), track.get_highest_octave()), (3, 6))
         plain = Track.from_data(data=None, where=HERE)
-        self.assertEqual((plain.get_lowest_octave(), plain.get_highest_octave()), (MIN_OCTAVE, MAX_OCTAVE))
+        self.assertEqual((plain.get_lowest_octave(), plain.get_highest_octave()), (limits.MIN_OCTAVE, limits.MAX_OCTAVE))
         plain.set_lowest_octave(2)
-        plain.set_highest_octave(MAX_OCTAVE)
+        plain.set_highest_octave(limits.MAX_OCTAVE)
         self.assertEqual(plain.to_data(), {TrackSetting.LOWEST_OCTAVE: 2})
         self.assertEqual(plain.copy().get_lowest_octave(), 2)
         with self.assertRaises(InvalidValue):
             plain.set_highest_octave(1)
         with self.assertRaises(InvalidValue):
-            plain.set_lowest_octave(MAX_OCTAVE + 1)
-        self.assert_refused('lowest_octave must be an integer from 0 to 10', Track, {TrackSetting.LOWEST_OCTAVE: MAX_OCTAVE + 1})
+            plain.set_lowest_octave(limits.MAX_OCTAVE + 1)
+        self.assert_refused('lowest_octave must be an integer from 0 to 10', Track, {TrackSetting.LOWEST_OCTAVE: limits.MAX_OCTAVE + 1})
         self.assert_refused('highest_octave must be an integer from 0 to 10', Track, {TrackSetting.HIGHEST_OCTAVE: EIGHTH})
         self.assert_refused('lowest_octave must not be above highest_octave', Track, {TrackSetting.LOWEST_OCTAVE: 5, TrackSetting.HIGHEST_OCTAVE: 4})
 
@@ -541,8 +538,8 @@ class TestScene(RoundTrip):
     def test_refusals(self):
         song = a_song()
         self.assert_refused('expected scene settings', Scene, [], song)
-        for repeat in (MIN_REPEAT - 1, MAX_SCENE_REPEAT + 1):
-            self.assert_refused(ERR_BAD_REPEAT.format(lowest=MIN_REPEAT, highest=MAX_SCENE_REPEAT, value=repeat), Scene, {SceneSetting.REPEAT: repeat}, song)
+        for repeat in (limits.MIN_REPEAT - 1, limits.MAX_SCENE_REPEAT + 1):
+            self.assert_refused(errors.ERR_BAD_REPEAT.format(lowest=limits.MIN_REPEAT, highest=limits.MAX_SCENE_REPEAT, value=repeat), Scene, {SceneSetting.REPEAT: repeat}, song)
         self.assert_refused('no track called (drums)', Scene, {Section.TRACKS: {DRUMS: {ClipSlotSetting.PATTERN: A}}}, song)
         self.assert_refused('no scale called (other)', Scene, {SongSetting.SCALE: OTHER}, song)
         self.assert_refused('needs both tempo_start and tempo_end', Scene, {SceneSetting.TEMPO_START: 90}, song)
@@ -566,7 +563,7 @@ class TestSetlistAndSong(RoundTrip):
         song = song_from_data({})
         self.assertEqual(song.to_data(), {})
         self.assertEqual((song.get_tempo(), song.get_seed(), song.get_step_size()), (120, None, Fraction(1, 16)))
-        self.assertEqual(song.get_time_signature().to_text(), DEFAULT_TIME_SIGNATURE)
+        self.assertEqual(song.get_time_signature().to_text(), defaults.DEFAULT_TIME_SIGNATURE)
         self.assertEqual((song.get_default_octave(), song.get_default_drum_octave(), song.get_scale_name()), (5, 3, None))
         self.assertEqual((song.get_track_names(), song.get_scenes()), ([], []))
 
@@ -626,7 +623,7 @@ class TestSetlistAndSong(RoundTrip):
         self.assertEqual(song.get_pattern(B).get_value(row=Row.DEGREE, step=0), 5)
 
     def test_setlist_refusals(self):
-        self.assert_refused(ERR_NOT_A_SETLIST, Setlist, [1])
+        self.assert_refused(errors.ERR_NOT_A_SETLIST, Setlist, [1])
         self.assert_refused('unknown setting (themes)', Setlist, {THEMES: {}})
         self.assert_refused(TITLE_MUST_BE_TEXT, Setlist, {SetlistSetting.TITLE: 3})
         self.assert_refused('step_size: expected an integer or a fraction', Setlist, {PatternSetting.STEP_SIZE: '0.25'})

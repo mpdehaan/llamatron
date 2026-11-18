@@ -36,11 +36,7 @@ from llamatron.tui.screens.set.scales_page import ScalesPage
 from llamatron.tui.screens.set.open_page import OpenPage
 from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.support.version import VERSION
-from llamatron.strings.labels import Crumb, MSG_SET_CRUMB, MSG_SONG_CRUMB, MSG_NO_FILE_CRUMB, MSG_QUIT_BUTTONS, MSG_TITLE_LABEL, PageName
-from llamatron.strings.legends import MSG_ABOUT_FOOTER_WHAT
-from llamatron.strings.marks import MSG_CRUMB_SEPARATOR, MSG_UNSAVED_MARK, MSG_UNSAVED_CHANGES_MARK, MSG_SAVED_MARK
-from llamatron.strings.messages import MSG_QUIT_UNSAVED_NOTE, MSG_SAVE_BEFORE_EXPORT_TITLE
-from llamatron.strings.names import MSG_DEFAULT_SONG_NAME
+from llamatron.strings import labels, legends, marks, messages, names
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import first_key
 from llamatron.tui.text import clock
@@ -75,13 +71,13 @@ class TestMainPage(UITest):
     async def test_the_header_keeps_the_crumbs_left_llamatron_centred_and_the_set_and_song_right(self):
         # The crumbs, which change with every page, in the left corner of the first line, llamatron centred, and the
         # set and its song as one block at the right, just left of the save mark and the length.
-        unsaved = MSG_SET_CRUMB.format(file=MSG_NO_FILE_CRUMB)
-        song = MSG_SONG_CRUMB.format(song=MSG_DEFAULT_SONG_NAME)
+        unsaved = labels.MSG_SET_CRUMB.format(file=labels.MSG_NO_FILE_CRUMB)
+        song = labels.MSG_SONG_CRUMB.format(song=names.MSG_DEFAULT_SONG_NAME)
         self.assert_header(set_crumb=unsaved, song_crumb=song)
-        self.assertTrue(self.crumbs_line().startswith(SPACE + Crumb.MAIN_SCREEN + SPACE))
+        self.assertTrue(self.crumbs_line().startswith(SPACE + labels.Crumb.MAIN_SCREEN + SPACE))
         await self.press(keybindings.MainPage.PATTERNS, Key.ENTER)
         self.assert_header(set_crumb=unsaved, song_crumb=song)
-        self.assertTrue(self.crumbs_line().startswith(SPACE + Crumb.PATTERNS + MSG_CRUMB_SEPARATOR))
+        self.assertTrue(self.crumbs_line().startswith(SPACE + labels.Crumb.PATTERNS + marks.MSG_CRUMB_SEPARATOR))
         # The rule, or on a page with a theme its stripe, which is drawn in the theme's colour behind the page's caption.
         self.assertNotIn(Box.RULE * 3, self.text().splitlines()[2])
         # The version is left to the About dialog, and the length sits at the right of the song's line.
@@ -89,27 +85,27 @@ class TestMainPage(UITest):
         self.assertTrue(self.song_line().rstrip().endswith(clock(self.app.screen.duration())))
         self.assertNotIn(clock(self.app.screen.duration()), self.title_line())
         # A set with no file yet is unsaved, saving makes it saved, a change gives it unsaved changes, and saving again makes it saved.
-        self.assertTrue(self.title_line().rstrip().endswith(MSG_UNSAVED_MARK))
+        self.assertTrue(self.title_line().rstrip().endswith(marks.MSG_UNSAVED_MARK))
         self.document.save(path='songs/tune.yml')
         await self.press(Key.ESCAPE)
-        self.assert_header(set_crumb=MSG_SET_CRUMB.format(file='tune.yml'), song_crumb=song)
-        self.assertTrue(self.title_line().rstrip().endswith(MSG_SAVED_MARK))
+        self.assert_header(set_crumb=labels.MSG_SET_CRUMB.format(file='tune.yml'), song_crumb=song)
+        self.assertTrue(self.title_line().rstrip().endswith(marks.MSG_SAVED_MARK))
         # The main screen draws again when a page closes over it, so each change is looked at from a page.
         self.document.changed()
         await self.press(keybindings.MainPage.PATTERNS, Key.ESCAPE)
-        self.assertTrue(self.title_line().rstrip().endswith(MSG_UNSAVED_CHANGES_MARK))
+        self.assertTrue(self.title_line().rstrip().endswith(marks.MSG_UNSAVED_CHANGES_MARK))
         self.document.save(path='songs/tune.yml')
         await self.press(keybindings.MainPage.PATTERNS, Key.ESCAPE)
-        self.assertTrue(self.title_line().rstrip().endswith(MSG_SAVED_MARK))
+        self.assertTrue(self.title_line().rstrip().endswith(marks.MSG_SAVED_MARK))
 
     async def test_o_opens_and_x_exports_on_the_main_screen_without_ctrl_and_the_cells_show_the_letters(self):
         # To save a keystroke: the main screen's letters are its own. Ctrl+O and Ctrl+X still work.
         text = self.text()
         # In the bar a column's names start at one place, so Open stands clear of its key by the room Save's longer key takes.
-        open_line = next(line for line in text.splitlines() if PageName.OPEN in line)
+        open_line = next(line for line in text.splitlines() if labels.PageName.OPEN in line)
         self.assertIn(f'« {key_name(keybindings.MainPage.OPEN_SET_HERE)} »', open_line)
-        self.assertIn(f'« {key_name(keybindings.MainPage.EXPORT_HERE)} » {PageName.EXPORT}', text)
-        self.assertIn(f'« {key_name(keybindings.MainPage.SAVE)} » {PageName.SAVE}', text)
+        self.assertIn(f'« {key_name(keybindings.MainPage.EXPORT_HERE)} » {labels.PageName.EXPORT}', text)
+        self.assertIn(f'« {key_name(keybindings.MainPage.SAVE)} » {labels.PageName.SAVE}', text)
         self.assertNotIn(f'« {key_name(keybindings.MainPage.OPEN_SET)} »', text)
         await self.press(keybindings.MainPage.OPEN_SET_HERE)
         self.assertIsInstance(self.app.screen, OpenPage)
@@ -118,7 +114,7 @@ class TestMainPage(UITest):
         await self.press(Key.ESCAPE, keybindings.MainPage.EXPORT_HERE)
         # An unsaved set asks to be saved before an export.
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        self.assertIn(MSG_SAVE_BEFORE_EXPORT_TITLE, self.text())
+        self.assertIn(messages.MSG_SAVE_BEFORE_EXPORT_TITLE, self.text())
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, MainPage)
 
@@ -157,9 +153,9 @@ class TestMainPage(UITest):
         self.document.changed()
         await self.press(keybindings.MainPage.QUIT)
         self.assertIsInstance(self.app.screen, QuitDialog)
-        for button in MSG_QUIT_BUTTONS:
+        for button in labels.MSG_QUIT_BUTTONS:
             self.assertIn(button, self.text())
-        self.assertIn(MSG_QUIT_UNSAVED_NOTE, self.text())
+        self.assertIn(messages.MSG_QUIT_UNSAVED_NOTE, self.text())
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, MainPage)
         self.assertTrue(self.app.is_running)
@@ -186,7 +182,7 @@ class TestMainPage(UITest):
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, MainPage)
         await self.press(keybindings.MainPage.FILE)
-        await self.select_field(MSG_TITLE_LABEL)
+        await self.select_field(labels.MSG_TITLE_LABEL)
         await self.press(Key.ENTER)
         await self.type(ESCAPED_TITLE)
         await self.press(Key.ESCAPE)
@@ -229,7 +225,7 @@ class TestMainPageOnAUsualConsole(UITest):
 
     async def test_the_screen_is_named_once_and_the_stripe_carries_no_caption(self):
         # The crumbs name the main screen, so the theme's stripe under the header says nothing.
-        self.assertEqual(self.text().count(Crumb.MAIN_SCREEN), 1)
+        self.assertEqual(self.text().count(labels.Crumb.MAIN_SCREEN), 1)
         self.assertEqual(self.app.screen.caption(), NOTHING)
 
     async def test_the_status_line_stays_empty_until_something_is_refused_or_said(self):
@@ -251,7 +247,7 @@ class TestMainPageOnAUsualConsole(UITest):
         self.assertIn('« Ctrl+S »', text)
         # Undo and Redo have no cell, since they're Ctrl+Z and Ctrl+Y on every page, and F1 lists them.
         self.assertNotIn('« Ctrl+Z »', text)
-        self.assertNotIn(PageName.UNDO, text)
+        self.assertNotIn(labels.PageName.UNDO, text)
         # Arrange alone on a bar across the top, then three buttons to a line, a blank line, and the bar: Open, Import and
         # File/Global over Save, Export and Quit.
         lines = text.splitlines()
@@ -276,9 +272,9 @@ class TestMainPageOnAUsualConsole(UITest):
         # One blank line between the buttons and the bar of the file's actions.
         self.assertFalse(lines[opens - 2].strip())
         self.assertTrue(lines[opens - 3].startswith(Box.BOTTOM_LEFT))
-        self.assertIn(PageName.FILE, text)
+        self.assertIn(labels.PageName.FILE, text)
         self.assertIn('« F1 »', lines[-1])
-        self.assertTrue(lines[-1].rstrip().endswith(MSG_ABOUT_FOOTER_WHAT))
+        self.assertTrue(lines[-1].rstrip().endswith(legends.MSG_ABOUT_FOOTER_WHAT))
 
     async def test_each_cell_counts_what_its_page_lists_with_a_space_before_the_border(self):
         page = self.app.screen
@@ -301,17 +297,17 @@ class TestMainPageOnAUsualConsole(UITest):
 
     async def test_the_arrows_move_the_box_over_the_grid_and_it_stays_while_a_page_is_open(self):
         # The cursor starts on Arrange, and Down from it goes to the first button under it, Songs.
-        self.assertIn(PageName.ARRANGE, boxed_line(self.text()))
+        self.assertIn(labels.PageName.ARRANGE, boxed_line(self.text()))
         await self.press(Key.DOWN)
-        self.assertIn(PageName.SONGS, boxed_line(self.text()))
+        self.assertIn(labels.PageName.SONGS, boxed_line(self.text()))
         await self.press(Key.RIGHT)
-        self.assertIn(PageName.PATTERNS, boxed_line(self.text()))
+        self.assertIn(labels.PageName.PATTERNS, boxed_line(self.text()))
         await self.press(Key.DOWN)
-        self.assertIn(PageName.CHAINS, boxed_line(self.text()))
+        self.assertIn(labels.PageName.CHAINS, boxed_line(self.text()))
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChainsPage)
         await self.press(Key.ESCAPE)
-        self.assertIn(PageName.CHAINS, boxed_line(self.text()))
+        self.assertIn(labels.PageName.CHAINS, boxed_line(self.text()))
 
     async def test_every_arrow_moves_by_the_geometry_drawn_and_stops_at_every_edge(self):
         # From each cell, where Up, Down, Left and Right go, the cell itself where the arrow stops at an edge.
@@ -362,19 +358,19 @@ class TestMainPageOnAUsualConsole(UITest):
         page = self.app.screen
         page.select(keybindings.MainPage.FILE)
         await self.press(Key.DOWN)
-        self.assertIn(PageName.QUIT, boxed_line(self.text()))
-        self.assertIn(f'{PageName.QUIT} {REVERSED_ENDS}', self.text())
+        self.assertIn(labels.PageName.QUIT, boxed_line(self.text()))
+        self.assertIn(f'{labels.PageName.QUIT} {REVERSED_ENDS}', self.text())
         self.assertEqual(self.text().count(Box.DOUBLE_TOP_LEFT), 1)
 
     async def test_in_the_bar_a_columns_keys_sit_under_the_buttons_keys_and_its_names_start_at_one_place(self):
         # Open is directly above Save though Save's key is longer, and both keys start where Songs' key does.
         lines = self.text().splitlines()
-        save = next(line for line in lines if PageName.SAVE in line)
-        opened = next(line for line in lines if PageName.OPEN in line)
-        songs = next(line for line in lines if PageName.SONGS in line)
+        save = next(line for line in lines if labels.PageName.SAVE in line)
+        opened = next(line for line in lines if labels.PageName.OPEN in line)
+        songs = next(line for line in lines if labels.PageName.SONGS in line)
         self.assertEqual(save.index(REVERSED_STARTS), opened.index(REVERSED_STARTS))
         self.assertEqual(save.index(REVERSED_STARTS), songs.index(REVERSED_STARTS))
         plain = [line.replace(REVERSED_STARTS + SPACE, NOTHING).replace(SPACE + REVERSED_ENDS, NOTHING) for line in (save, opened)]
-        self.assertEqual(plain[0].index(PageName.SAVE), plain[1].index(PageName.OPEN))
-        self.assertEqual(plain[0].index(PageName.EXPORT), plain[1].index(PageName.IMPORT))
-        self.assertEqual(plain[0].index(PageName.QUIT), plain[1].index(PageName.FILE))
+        self.assertEqual(plain[0].index(labels.PageName.SAVE), plain[1].index(labels.PageName.OPEN))
+        self.assertEqual(plain[0].index(labels.PageName.EXPORT), plain[1].index(labels.PageName.IMPORT))
+        self.assertEqual(plain[0].index(labels.PageName.QUIT), plain[1].index(labels.PageName.FILE))

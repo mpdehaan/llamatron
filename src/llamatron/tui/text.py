@@ -17,7 +17,7 @@
 
 from llamatron.composition.naming import name_order
 from llamatron.support.rational import Rational
-from llamatron.strings.marks import MSG_CLOCK, MSG_NO_TIME
+from llamatron.strings import marks
 
 SECONDS_PER_MINUTE = 60
 # A whole number has this denominator.
@@ -47,6 +47,6 @@ def tempo_text(tempo):
 def clock(seconds):
     """Return seconds as minutes and seconds, like 3:05, or dashes if they aren't known."""
     if seconds is None:
-        return MSG_NO_TIME
+        return marks.MSG_NO_TIME
     total = int(round(seconds))
-    return MSG_CLOCK.format(minutes=total // SECONDS_PER_MINUTE, seconds=total % SECONDS_PER_MINUTE)
+    return marks.MSG_CLOCK.format(minutes=total // SECONDS_PER_MINUTE, seconds=total % SECONDS_PER_MINUTE)

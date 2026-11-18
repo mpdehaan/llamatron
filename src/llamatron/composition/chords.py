@@ -27,10 +27,9 @@ from dataclasses import dataclass
 
 from llamatron.composition.file_format import ACCIDENTALS, FIXED_CHORDS, SCALE_CHORDS, TENSIONS, Accidental, ChordSymbol, Tension
 from llamatron.composition.named_scale import NamedScale
-from llamatron.music.midi import HALF_STEPS_PER_OCTAVE
+from llamatron.music import midi
 from llamatron.music.note import FLAT_NAMES, SEMITONES_ABOVE_C, SHARP_NAMES
-from llamatron.strings.labels import MSG_CHORD_NAMES
-from llamatron.strings.marks import MSG_CHORD_SUFFIXES, MSG_CHORD_TENSIONS_SHOWN, MSG_FLAT_SPELLED, MSG_SHARP_SPELLED, MSG_TENSION_SEPARATOR, MSG_UNNAMED_CHORD_SUFFIX
+from llamatron.strings import labels, marks
 
 # The place of each of a chord's notes among the notes of a scale of seven, counted up from the chord's root at 0: the notes a
 # quality replaces, and the notes between them, which a tension replaces.
@@ -80,8 +79,8 @@ def borrowed(*, scale, kind):
 
 def letter_steps(half_steps):
     """Return how many letters above its root a chord's note is spelled, by its half steps above the root: a third two, a flat ninth one."""
-    within = half_steps % HALF_STEPS_PER_OCTAVE
-    if half_steps > HALF_STEPS_PER_OCTAVE:
+    within = half_steps % midi.HALF_STEPS_PER_OCTAVE
+    if half_steps > midi.HALF_STEPS_PER_OCTAVE:
         return {1: 1, 2: 1, 3: 1, 5: 3, 6: 3, 8: 5, 9: 5}.get(within, _plain_letter_steps(within))
     return _plain_letter_steps(within)
 
@@ -93,11 +92,11 @@ def _plain_letter_steps(within):
 def spelled_note(*, root, half_steps):
     """Return the name of the note some half steps above a root's name, on the letter a chord spells it with: Ab's third is C, A's flat ninth is Bb."""
     letter = LETTERS[(LETTERS.index(root[0]) + letter_steps(half_steps)) % len(LETTERS)]
-    pitch = (SEMITONES_ABOVE_C[root] + half_steps) % HALF_STEPS_PER_OCTAVE
-    signs = (pitch - SEMITONES_ABOVE_C[letter] + HALF_STEPS_PER_OCTAVE // 2) % HALF_STEPS_PER_OCTAVE - HALF_STEPS_PER_OCTAVE // 2
+    pitch = (SEMITONES_ABOVE_C[root] + half_steps) % midi.HALF_STEPS_PER_OCTAVE
+    signs = (pitch - SEMITONES_ABOVE_C[letter] + midi.HALF_STEPS_PER_OCTAVE // 2) % midi.HALF_STEPS_PER_OCTAVE - midi.HALF_STEPS_PER_OCTAVE // 2
     if abs(signs) > MOST_SIGNS:
-        return (FLAT_NAMES if MSG_FLAT_SPELLED in root else SHARP_NAMES)[pitch]
-    return letter + (MSG_SHARP_SPELLED * signs if signs > 0 else MSG_FLAT_SPELLED * -signs)
+        return (FLAT_NAMES if marks.MSG_FLAT_SPELLED in root else SHARP_NAMES)[pitch]
+    return letter + (marks.MSG_SHARP_SPELLED * signs if signs > 0 else marks.MSG_FLAT_SPELLED * -signs)
 
 
 def root_name(*, scale, degree, accidental):
@@ -106,14 +105,14 @@ def root_name(*, scale, degree, accidental):
     shape = SHAPE_WITHOUT_A_SCALE if scale is None else scale.get_half_steps()
     place = (degree - 1) % len(shape)
     half_steps = shape[place] + ACCIDENTALS.get(accidental, 0)
-    pitch = (SEMITONES_ABOVE_C[root] + half_steps) % HALF_STEPS_PER_OCTAVE
+    pitch = (SEMITONES_ABOVE_C[root] + half_steps) % midi.HALF_STEPS_PER_OCTAVE
     if len(shape) != PLACED_SCALE_SIZE:
-        return (FLAT_NAMES if accidental == Accidental.FLAT or MSG_FLAT_SPELLED in root else SHARP_NAMES)[pitch]
+        return (FLAT_NAMES if accidental == Accidental.FLAT or marks.MSG_FLAT_SPELLED in root else SHARP_NAMES)[pitch]
     letter = LETTERS[(LETTERS.index(root[0]) + place) % len(LETTERS)]
-    signs = (pitch - SEMITONES_ABOVE_C[letter] + HALF_STEPS_PER_OCTAVE // 2) % HALF_STEPS_PER_OCTAVE - HALF_STEPS_PER_OCTAVE // 2
+    signs = (pitch - SEMITONES_ABOVE_C[letter] + midi.HALF_STEPS_PER_OCTAVE // 2) % midi.HALF_STEPS_PER_OCTAVE - midi.HALF_STEPS_PER_OCTAVE // 2
     if abs(signs) > MOST_SIGNS:
         return (FLAT_NAMES if accidental == Accidental.FLAT else SHARP_NAMES)[pitch]
-    return letter + (MSG_SHARP_SPELLED * signs if signs > 0 else MSG_FLAT_SPELLED * -signs)
+    return letter + (marks.MSG_SHARP_SPELLED * signs if signs > 0 else marks.MSG_FLAT_SPELLED * -signs)
 
 
 def scale_chord_half_steps(*, scale, degree, places):
@@ -123,7 +122,7 @@ def scale_chord_half_steps(*, scale, degree, places):
     result = []
     for above in places:
         octaves, place = divmod(start + above, len(shape))
-        result.append(octaves * HALF_STEPS_PER_OCTAVE + shape[place] - shape[start])
+        result.append(octaves * midi.HALF_STEPS_PER_OCTAVE + shape[place] - shape[start])
     return tuple(result)
 
 
@@ -157,9 +156,9 @@ def spelled_chord(*, scale, degree, accidental=None, kind=None, symbol=None, ten
     own = chord_half_steps(scale=drawn_from, degree=degree, symbol=symbol, own_degree=own_degree)
     named = str(symbol) if symbol is not None and str(symbol) in FIXED_CHORDS else symbol_of(own)
     added = [tension for tension in TENSIONS if tension in (tensions or ()) and TENSIONS[tension] not in own]
-    shown_tensions = MSG_CHORD_TENSIONS_SHOWN.format(tensions=MSG_TENSION_SEPARATOR.join(added)) if added else ''
-    suffix = MSG_UNNAMED_CHORD_SUFFIX if named is None else MSG_CHORD_SUFFIXES[named]
-    long_name = root if named is None else root + ' ' + MSG_CHORD_NAMES[named].split(',')[0].title()
+    shown_tensions = marks.MSG_CHORD_TENSIONS_SHOWN.format(tensions=marks.MSG_TENSION_SEPARATOR.join(added)) if added else ''
+    suffix = marks.MSG_UNNAMED_CHORD_SUFFIX if named is None else marks.MSG_CHORD_SUFFIXES[named]
+    long_name = root if named is None else root + ' ' + labels.MSG_CHORD_NAMES[named].split(',')[0].title()
     notes = (root, *[spelled_note(root=root, half_steps=half_steps) for half_steps in (*own, *[TENSIONS[tension] for tension in added])])
     return SpelledChord(root=root, name=root + suffix + shown_tensions, long_name=(long_name + ' ' + shown_tensions).strip(), notes=notes)
 
@@ -173,8 +172,8 @@ def replaced_places(*, symbol, tensions):
     places = {}
     if symbol is not None:
         for half_steps in FIXED_CHORDS[str(symbol)].value:
-            within = half_steps % HALF_STEPS_PER_OCTAVE
-            if half_steps > HALF_STEPS_PER_OCTAVE:
+            within = half_steps % midi.HALF_STEPS_PER_OCTAVE
+            if half_steps > midi.HALF_STEPS_PER_OCTAVE:
                 places[{2: NINTH_PLACE, 5: ELEVENTH_PLACE, 9: THIRTEENTH_PLACE}[within]] = within
             elif within in THIRDS:
                 places[THIRD_PLACE] = within
@@ -183,5 +182,5 @@ def replaced_places(*, symbol, tensions):
             elif within in SEVENTHS:
                 places[SEVENTH_PLACE] = within
     for tension in tensions or ():
-        places[TENSION_PLACES[tension]] = TENSIONS[tension] % HALF_STEPS_PER_OCTAVE
+        places[TENSION_PLACES[tension]] = TENSIONS[tension] % midi.HALF_STEPS_PER_OCTAVE
     return places

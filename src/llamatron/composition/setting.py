@@ -32,7 +32,7 @@ written out in the class, after its settings have each been checked.
 from llamatron.composition.checks import NO_LENGTH, is_true_or_false, is_whole_number, is_written_length, listed, positive_length, written_length
 from llamatron.composition.corrections import NO_NEAREST_VALUE, Correction
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.strings.errors import ERR_NEEDS_CHECK
+from llamatron.strings import errors
 
 
 def described(*settings):
@@ -72,7 +72,7 @@ class Setting:
 
     def check(self, value, *, song=None):
         """Raise InvalidValue unless the setting can hold the value. song is the song or the set being read or changed, for a setting that names something in it."""
-        raise NotImplementedError(ERR_NEEDS_CHECK.format(kind=type(self).__name__))
+        raise NotImplementedError(errors.ERR_NEEDS_CHECK.format(kind=type(self).__name__))
 
     def nearest(self, value):
         """Return the allowed value nearest a wrong one, LEFT_OUT when that is the setting's default, or NO_NEAREST_VALUE when nothing allowed is near it."""

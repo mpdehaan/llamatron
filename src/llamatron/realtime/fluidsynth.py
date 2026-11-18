@@ -36,7 +36,7 @@ import time
 
 from llamatron.realtime.outputs import output_port_names
 from llamatron.realtime.sender_process import SenderNotStarted
-from llamatron.strings.errors import ERR_FLUIDSYNTH_DID_NOT_START, ERR_FLUIDSYNTH_ENDED
+from llamatron.strings import errors
 
 # Where user_scripts/install_fluidsynth.sh puts FluidSynth: the Apple Silicon Homebrew's, which only an Apple Silicon Mac has, or an
 # Intel Mac's, looked for in that order, since a Python under Rosetta reports an Intel machine on Apple Silicon.
@@ -122,10 +122,10 @@ class FluidSynth:
             code = self._process.poll()
             if code is not None:
                 self._process = None
-                raise FluidSynthNotStarted(ERR_FLUIDSYNTH_ENDED.format(code=code))
+                raise FluidSynthNotStarted(errors.ERR_FLUIDSYNTH_ENDED.format(code=code))
             if self._now() - started > START_SECONDS:
                 self.stop()
-                raise FluidSynthNotStarted(ERR_FLUIDSYNTH_DID_NOT_START.format(seconds=START_SECONDS))
+                raise FluidSynthNotStarted(errors.ERR_FLUIDSYNTH_DID_NOT_START.format(seconds=START_SECONDS))
             self._sleep(LOOK_SECONDS)
         return True
 

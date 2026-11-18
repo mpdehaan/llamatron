@@ -25,7 +25,7 @@ it with a sharp, and plain degrees then follow later edits of the scale, as a pa
 
 from llamatron.composition.file_format import ACCIDENTALS, Accidental, NamedProgression, Quality
 from llamatron.music.scale import ScaleType
-from llamatron.strings.marks import MSG_ACCIDENTAL_MARKS, MSG_PRESET_NUMERALS_SEPARATOR, MSG_QUALITY_MARKS
+from llamatron.strings import marks
 
 HALF_STEPS_PER_OCTAVE = 12
 # The half steps without a scale: the major scale's, as a song with no scale places degrees.
@@ -67,7 +67,7 @@ def roman_numeral(*, scale, degree, accidental=None):
     quality = quality_of(scale=scale, degree=degree, accidental=accidental)
     numeral = ROMAN_NUMERALS[(degree - 1) % len(ROMAN_NUMERALS)]
     numeral = numeral if quality in UPPER_CASE_QUALITIES else numeral.lower()
-    return MSG_ACCIDENTAL_MARKS.get(accidental, '') + numeral + MSG_QUALITY_MARKS[quality]
+    return marks.MSG_ACCIDENTAL_MARKS.get(accidental, '') + numeral + marks.MSG_QUALITY_MARKS[quality]
 
 
 def matched_to(*, scale, chords):
@@ -153,4 +153,4 @@ def named_progression_in(*, key, scale):
 
 def shown_numerals(key):
     """Return a named progression's numerals as the picker shows them, with flat signs."""
-    return MSG_PRESET_NUMERALS_SEPARATOR.join(MSG_ACCIDENTAL_MARKS[Accidental.FLAT] + numeral[len(FLAT_WRITTEN):] if numeral.startswith(FLAT_WRITTEN) else numeral for numeral in named_progression(key))
+    return marks.MSG_PRESET_NUMERALS_SEPARATOR.join(marks.MSG_ACCIDENTAL_MARKS[Accidental.FLAT] + numeral[len(FLAT_WRITTEN):] if numeral.startswith(FLAT_WRITTEN) else numeral for numeral in named_progression(key))

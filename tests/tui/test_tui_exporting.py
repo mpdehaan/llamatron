@@ -27,13 +27,10 @@ from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.exporters.exports import earlier_export, shown_export_path, EXPORT_LABELS, ExportKind
 from llamatron.tui.document import Document
 from llamatron.tui.uses import LOOP_ERRORS_SHOWN
-from llamatron.strings.errors import ERR_AND_MORE, ERR_LOOP_SCENES_INTRO, ERR_LOOP_SCENES_TITLE
+from llamatron.strings import errors, labels, messages, names
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
-from llamatron.strings.labels import MSG_EXPORT_CHOICES
-from llamatron.strings.messages import MSG_EXPORTED, MSG_SAVE_BEFORE_EXPORT_TITLE
-from llamatron.strings.names import MSG_NUMBERED_NAME
 from llamatron.tui import keybindings
 
 SET_FILE = 'my_set.yml'
@@ -68,29 +65,29 @@ class TestExporting(UITest):
         """Press X, pick a kind of export, and check the status line says where it went."""
         await self.press(Key.CTRL_X)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
-        self.assertEqual(self.app.screen.options, MSG_EXPORT_CHOICES)
+        self.assertEqual(self.app.screen.options, labels.MSG_EXPORT_CHOICES)
         await self.press(*([Key.DOWN] * choice), Key.ENTER)
         self.assertNotIsInstance(self.app.screen, MessageDialog)
-        self.assertIn(fixed_text(MSG_EXPORTED), self.text())
+        self.assertIn(fixed_text(messages.MSG_EXPORTED), self.text())
 
     async def test_the_live_set_is_first_and_says_where_it_went_on_the_status_line(self):
         await self.press(Key.CTRL_X, Key.ENTER)
         self.assertNotIsInstance(self.app.screen, MessageDialog)
-        self.assertIn(MSG_EXPORTED.format(name=EXPORT_LABELS[ExportKind.ABLETON], path=LIVE_SET), self.text())
+        self.assertIn(messages.MSG_EXPORTED.format(name=EXPORT_LABELS[ExportKind.ABLETON], path=LIVE_SET), self.text())
         self.assertTrue(os.path.exists(LIVE_SET))
 
     async def test_an_unsaved_set_is_saved_first_and_then_exported(self):
         self.app.set_document(Document())
         await self.press(Key.CTRL_X)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        self.assertIn(MSG_SAVE_BEFORE_EXPORT_TITLE, self.text())
+        self.assertIn(messages.MSG_SAVE_BEFORE_EXPORT_TITLE, self.text())
         await self.press(keybindings.ConfirmDialog.YES)
         self.assertIsInstance(self.app.screen, PromptDialog)
         self.app.screen.value = ''
         await self.type(OTHER_SET_FILE)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
-        self.assertEqual(self.app.screen.options, MSG_EXPORT_CHOICES)
+        self.assertEqual(self.app.screen.options, labels.MSG_EXPORT_CHOICES)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, MainPage)
         self.assertIn(OTHER_LIVE_SET, self.text())
@@ -110,7 +107,7 @@ class TestExporting(UITest):
         self.assertIn(LIVE_SET, self.text())
         await self.press(keybindings.ConfirmDialog.YES)
         self.assertIsInstance(self.app.screen, MainPage)
-        self.assertIn(fixed_text(MSG_EXPORTED), self.text())
+        self.assertIn(fixed_text(messages.MSG_EXPORTED), self.text())
         await self.export(EXPORT_LIVE)
         self.assertIsInstance(self.app.screen, MainPage)
 
@@ -173,23 +170,23 @@ class TestExporting(UITest):
         await self.press(Key.CTRL_X)
         self.assertIsInstance(self.app.screen, MessageDialog)
         words = self.dialog_words()
-        self.assertIn(ERR_LOOP_SCENES_TITLE, words)
-        self.assertIn(ERR_LOOP_SCENES_INTRO, words)
+        self.assertIn(errors.ERR_LOOP_SCENES_TITLE, words)
+        self.assertIn(errors.ERR_LOOP_SCENES_INTRO, words)
         self.assertIn(VERSE, words)
         self.assertIn(CHORUS, words)
-        self.assertNotIn(ERR_AND_MORE.format(count=1), words)
+        self.assertNotIn(errors.ERR_AND_MORE.format(count=1), words)
         await self.press(Key.ENTER)
         self.assertFalse(os.path.exists(LIVE_SET))
 
     async def test_the_loop_errors_dialog_lists_ten_scenes_and_counts_the_rest(self):
         for index in range(ONE_MORE_THAN_SHOWN):
             if index:
-                self.document.add_scene(index=index, name=MSG_NUMBERED_NAME.format(base=VERSE, number=index))
+                self.document.add_scene(index=index, name=names.MSG_NUMBERED_NAME.format(base=VERSE, number=index))
                 self.document.add_clip_slot(index=index, track=LEAD, pattern=TUNE)
-            self.loop_every_clip_in_scene(index=index, name=MSG_NUMBERED_NAME.format(base=VERSE, number=index))
+            self.loop_every_clip_in_scene(index=index, name=names.MSG_NUMBERED_NAME.format(base=VERSE, number=index))
         await self.press(Key.CTRL_X)
         self.assertIsInstance(self.app.screen, MessageDialog)
         words = self.dialog_words()
-        self.assertIn(MSG_NUMBERED_NAME.format(base=VERSE, number=LOOP_ERRORS_SHOWN - 1), words)
-        self.assertNotIn(MSG_NUMBERED_NAME.format(base=VERSE, number=LOOP_ERRORS_SHOWN), words)
-        self.assertIn(ERR_AND_MORE.format(count=1), words)
+        self.assertIn(names.MSG_NUMBERED_NAME.format(base=VERSE, number=LOOP_ERRORS_SHOWN - 1), words)
+        self.assertNotIn(names.MSG_NUMBERED_NAME.format(base=VERSE, number=LOOP_ERRORS_SHOWN), words)
+        self.assertIn(errors.ERR_AND_MORE.format(count=1), words)

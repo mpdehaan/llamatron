@@ -27,15 +27,14 @@ from llamatron.music.scale import ScaleType
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.naming import default_scale_name
 from llamatron.composition.file_format import ClipSlotSetting, Row, Section, SetlistSetting, SongSetting
-from llamatron.composition.limits import MIN_REPEAT
+from llamatron.composition import limits
+from llamatron.strings import errors, messages
 from llamatron.composition.named_items import NamedItems
 from llamatron.composition.pattern import Pattern
 from llamatron.music.note import NoteName
 from llamatron.tui.document import Document
 from llamatron.tui.history import describe_change, History, HISTORY_DEPTH, renamed_items, Snapshot
-from llamatron.strings.errors import ERR_CHANGED_SNAPSHOT, ERR_STALE_DATA, ERR_WRONG_RESTORE
 from llamatron.support.memory import Memory, StaleAnswer
-from llamatron.strings.messages import MSG_CHANGED_IN_SONG, MSG_CHANGED_NAMED, MSG_CHANGED_SCENE, MSG_CHANGED_THE_SET, MSG_CHANGED_WORDS
 from tests.support.ui_testing import a_song, fixed_text, LEAD, ONE, OTHER, TUNE
 
 # A history short enough to fill in a test, which only tests ask for: the tracker's is HISTORY_DEPTH and nothing shows or sets it.
@@ -144,7 +143,7 @@ class TestHistory(unittest.TestCase):
                 changed.data[SetlistSetting.TITLE] = CHANGED_BEHIND_ITS_BACK
                 with self.assertRaises(StaleAnswer) as raised:
                     step(history)
-                self.assertEqual(str(raised.exception), ERR_CHANGED_SNAPSHOT)
+                self.assertEqual(str(raised.exception), errors.ERR_CHANGED_SNAPSHOT)
 
     def test_a_history_that_does_not_check_copies_nothing_and_notices_nothing(self):
         given = snapshot(1)
@@ -192,31 +191,31 @@ class TestDescribingAChange(unittest.TestCase):
 
     def test_names_a_shared_item(self):
         self.document.set_step_value(name=TUNE, row=Row.DEGREE, step=0, value=2)
-        self.assertEqual(self.described(), MSG_CHANGED_NAMED.format(kind=MSG_CHANGED_WORDS[Section.PATTERNS], name=TUNE))
+        self.assertEqual(self.described(), messages.MSG_CHANGED_NAMED.format(kind=messages.MSG_CHANGED_WORDS[Section.PATTERNS], name=TUNE))
 
     def test_names_a_track_in_its_song(self):
         self.document.add_track(NEW_TRACK)
-        what = MSG_CHANGED_NAMED.format(kind=MSG_CHANGED_WORDS[Section.TRACKS], name=NEW_TRACK)
-        self.assertEqual(self.described(), MSG_CHANGED_IN_SONG.format(song=self.document.current_song_name(), what=what))
+        what = messages.MSG_CHANGED_NAMED.format(kind=messages.MSG_CHANGED_WORDS[Section.TRACKS], name=NEW_TRACK)
+        self.assertEqual(self.described(), messages.MSG_CHANGED_IN_SONG.format(song=self.document.current_song_name(), what=what))
 
     def test_names_a_scene_by_its_number(self):
         self.document.add_clip_slot(index=1, track=LEAD, pattern=TUNE)
-        self.assertEqual(self.described(), MSG_CHANGED_IN_SONG.format(song=self.document.current_song_name(), what=MSG_CHANGED_SCENE.format(number=SECOND_SCENE)))
+        self.assertEqual(self.described(), messages.MSG_CHANGED_IN_SONG.format(song=self.document.current_song_name(), what=messages.MSG_CHANGED_SCENE.format(number=SECOND_SCENE)))
 
     def test_names_a_song_setting(self):
         self.document.set_tempo(self.document.song().get_tempo() + 1)
-        self.assertEqual(self.described(), MSG_CHANGED_IN_SONG.format(song=self.document.current_song_name(), what=MSG_CHANGED_WORDS[SongSetting.TEMPO]))
+        self.assertEqual(self.described(), messages.MSG_CHANGED_IN_SONG.format(song=self.document.current_song_name(), what=messages.MSG_CHANGED_WORDS[SongSetting.TEMPO]))
 
     def test_names_a_setting_of_the_set(self):
         self.document.set_title(NEW_TRACK)
-        self.assertEqual(self.described(), MSG_CHANGED_WORDS[SetlistSetting.TITLE])
+        self.assertEqual(self.described(), messages.MSG_CHANGED_WORDS[SetlistSetting.TITLE])
 
     def test_names_a_song_that_came_or_went(self):
         self.document.add_song(SECOND_SONG)
-        self.assertEqual(self.described(), MSG_CHANGED_IN_SONG.format(song=SECOND_SONG, what=MSG_CHANGED_WORDS[Section.SONGS]))
+        self.assertEqual(self.described(), messages.MSG_CHANGED_IN_SONG.format(song=SECOND_SONG, what=messages.MSG_CHANGED_WORDS[Section.SONGS]))
 
     def test_says_the_set_when_nothing_it_knows_differs(self):
-        self.assertEqual(self.described(), MSG_CHANGED_THE_SET)
+        self.assertEqual(self.described(), messages.MSG_CHANGED_THE_SET)
 
 
 class TestFindingRenames(unittest.TestCase):
@@ -340,7 +339,7 @@ class TestDocumentHistory(unittest.TestCase):
         document.changed()
         with self.assertRaises(StaleAnswer) as raised:
             document.record_edit()
-        self.assertIn(fixed_text(ERR_STALE_DATA), str(raised.exception))
+        self.assertIn(fixed_text(errors.ERR_STALE_DATA), str(raised.exception))
 
     def test_a_document_that_does_not_check_takes_the_data_kept_as_it_is(self):
         document = unchecked_song(self)
@@ -359,7 +358,7 @@ class TestDocumentHistory(unittest.TestCase):
         with mock.patch.object(NamedItems, NamedItems.same_item.__name__, lambda self, *, name, data: self.find(name)):
             with self.assertRaises(StaleAnswer) as raised:
                 document.undo()
-        self.assertIn(fixed_text(ERR_WRONG_RESTORE), str(raised.exception))
+        self.assertIn(fixed_text(errors.ERR_WRONG_RESTORE), str(raised.exception))
 
     def test_a_continued_edit_joins_the_one_before(self):
         before = self.data()
@@ -434,7 +433,7 @@ class TestDocumentHistory(unittest.TestCase):
 
     def test_the_lengths_follow_an_undo(self):
         seconds = self.document.lengths().song_seconds()
-        self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.REPEAT, value=MIN_REPEAT + 3)
+        self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.REPEAT, value=limits.MIN_REPEAT + 3)
         self.document.record_edit()
         self.assertNotEqual(self.document.lengths().song_seconds(), seconds)
         self.document.undo()

@@ -21,14 +21,12 @@ same way, through a NamedItems each, and these lists say which is which.
 """
 
 from llamatron.composition.file_format import NAMED_GENERATORS, Section
-from llamatron.strings.names import (
-    MSG_CHAIN_WORD, MSG_GROOVE_WORD, MSG_INSTRUMENT_WORD, MSG_PATTERN_WORD, MSG_REGISTER_WORD, MSG_SCALE_WORD, MSG_SONG_WORD, MSG_TRACK_WORD,
-)
+from llamatron.strings import names
 
 # How error messages name one object in each section of named objects.
 SECTION_LABELS = {
-    Section.PATTERNS: MSG_PATTERN_WORD, Section.CHAINS: MSG_CHAIN_WORD, Section.GROOVES: MSG_GROOVE_WORD, Section.INSTRUMENTS: MSG_INSTRUMENT_WORD, Section.SCALES: MSG_SCALE_WORD, Section.TRACKS: MSG_TRACK_WORD,
-    Section.REGISTERS: MSG_REGISTER_WORD, Section.SONGS: MSG_SONG_WORD,
+    Section.PATTERNS: names.MSG_PATTERN_WORD, Section.CHAINS: names.MSG_CHAIN_WORD, Section.GROOVES: names.MSG_GROOVE_WORD, Section.INSTRUMENTS: names.MSG_INSTRUMENT_WORD, Section.SCALES: names.MSG_SCALE_WORD, Section.TRACKS: names.MSG_TRACK_WORD,
+    Section.REGISTERS: names.MSG_REGISTER_WORD, Section.SONGS: names.MSG_SONG_WORD,
     **{section: kind for kind, section in NAMED_GENERATORS.items()},
 }
 # The set's sections, in the order they're written to a file, with the songs last.

@@ -19,7 +19,7 @@
 import importlib.util
 import time
 
-from llamatron.strings.errors import ERR_NO_MIDI_LIBRARY, ERR_NO_SUCH_MIDI_PORT
+from llamatron.strings import errors
 
 RTMIDI_MODULE = 'rtmidi'
 
@@ -49,7 +49,7 @@ class RtMidiOutput(MidiOutput):
             if port_name == name or port_name.startswith(name):
                 self._port.open_port(place)
                 return
-        raise ValueError(ERR_NO_SUCH_MIDI_PORT.format(name=name))
+        raise ValueError(errors.ERR_NO_SUCH_MIDI_PORT.format(name=name))
 
     def send(self, data):
         self._port.send_message(data)
@@ -81,7 +81,7 @@ def has_midi_library():
 def midi_library():
     """Return the rtmidi module, or raise ImportError in the program's words when it isn't installed."""
     if not has_midi_library():
-        raise ImportError(ERR_NO_MIDI_LIBRARY)
+        raise ImportError(errors.ERR_NO_MIDI_LIBRARY)
     import rtmidi
     return rtmidi
 

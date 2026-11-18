@@ -17,9 +17,8 @@
 
 from tests.support.ui_testing import CLIPPED, FADE, LEAD, THIN, UITest, back_key, forward_key
 from llamatron.composition.file_format import Section, GeneratorKind, SHAPE_THENS, Shape, ShapePart, shape_setting
-from llamatron.composition.limits import MAX_ACCENT, MIN_ARTICULATE
-from llamatron.strings.labels import MSG_ACCENT_LABEL, MSG_SHAPE_FIELD_LABELS, MSG_SHAPE_NAMES, MSG_SHAPE_PART_LABELS, MSG_SECTION_LABEL
-from llamatron.strings.marks import MSG_SECTION_CLOSED_MARK, MSG_SECTION_OPEN_MARK, MSG_SECTION_SET
+from llamatron.composition import limits
+from llamatron.strings import labels as labels_text, marks
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.articulate_editor import ArticulateEditor
 from llamatron.tui.screens.arrange.clip_page import ClipPage
@@ -72,31 +71,31 @@ class TestDensityEditor(ShapeEditorTest):
     NAME = THIN
 
     async def test_start_steps_and_clears(self):
-        await self.select_field(MSG_SHAPE_PART_LABELS[ShapePart.START])
+        await self.select_field(labels_text.MSG_SHAPE_PART_LABELS[ShapePart.START])
         await self.press(keybindings.DensityEditor.MORE)
         self.assertEqual(self.shape().start, THIN_START + 1)
         await self.press(Key.BACKSPACE)
         self.assertEqual(self.shape().start, FULL)
 
     async def test_end_stops_at_the_top(self):
-        await self.select_field(MSG_SHAPE_PART_LABELS[ShapePart.END])
+        await self.select_field(labels_text.MSG_SHAPE_PART_LABELS[ShapePart.END])
         await self.press(keybindings.DensityEditor.MORE)
         self.assertEqual(self.shape().end, FULL)
 
     async def test_then_steps_through_hold_repeat_and_bounce(self):
         self.assertEqual(self.shape().then, SHAPE_THENS[0])
-        await self.select_field(MSG_SHAPE_PART_LABELS[ShapePart.THEN])
+        await self.select_field(labels_text.MSG_SHAPE_PART_LABELS[ShapePart.THEN])
         await self.press(keybindings.DensityEditor.MORE)
         self.assertEqual(self.shape().then, SHAPE_THENS[1])
 
     async def test_over_steps_from_the_whole_clip_to_a_length(self):
         self.assertIsNone(self.shape().over)
-        await self.select_field(MSG_SHAPE_PART_LABELS[ShapePart.OVER])
+        await self.select_field(labels_text.MSG_SHAPE_PART_LABELS[ShapePart.OVER])
         await self.press(keybindings.DensityEditor.MORE)
         self.assertIsNotNone(self.shape().over)
 
     async def test_it_has_no_accent(self):
-        self.assertNotIn(MSG_ACCENT_LABEL, [field.label for field in self.app.screen.fields()])
+        self.assertNotIn(labels_text.MSG_ACCENT_LABEL, [field.label for field in self.app.screen.fields()])
 
 
 class TestSwellEditor(ShapeEditorTest):
@@ -108,9 +107,9 @@ class TestSwellEditor(ShapeEditorTest):
     NAME = FADE
 
     async def test_the_accent_steps_up_to_its_most(self):
-        await self.select_field(MSG_ACCENT_LABEL)
-        await self.press(*[keybindings.SwellEditor.MORE] * (MAX_ACCENT + 1))
-        self.assertEqual(self.shape().accent, MAX_ACCENT)
+        await self.select_field(labels_text.MSG_ACCENT_LABEL)
+        await self.press(*[keybindings.SwellEditor.MORE] * (limits.MAX_ACCENT + 1))
+        self.assertEqual(self.shape().accent, limits.MAX_ACCENT)
 
 
 class TestArticulateEditor(ShapeEditorTest):
@@ -122,13 +121,13 @@ class TestArticulateEditor(ShapeEditorTest):
     NAME = CLIPPED
 
     async def test_start_stops_at_its_least(self):
-        await self.select_field(MSG_SHAPE_PART_LABELS[ShapePart.START])
+        await self.select_field(labels_text.MSG_SHAPE_PART_LABELS[ShapePart.START])
         await self.press(*[keybindings.ArticulateEditor.LESS] * CLIPPED_START)
-        self.assertEqual(self.shape().start, MIN_ARTICULATE)
+        self.assertEqual(self.shape().start, limits.MIN_ARTICULATE)
 
 
 def heading_text(*, shape, is_open):
-    return MSG_SECTION_LABEL.format(mark=MSG_SECTION_OPEN_MARK if is_open else MSG_SECTION_CLOSED_MARK, name=MSG_SHAPE_NAMES[shape])
+    return labels_text.MSG_SECTION_LABEL.format(mark=marks.MSG_SECTION_OPEN_MARK if is_open else marks.MSG_SECTION_CLOSED_MARK, name=labels_text.MSG_SHAPE_NAMES[shape])
 
 
 class TestShapeSectionsOnTheScenePage(UITest):
@@ -144,35 +143,35 @@ class TestShapeSectionsOnTheScenePage(UITest):
         return [field.label for field in self.page.shown_fields()]
 
     async def test_a_section_opens_and_closes_and_its_fields_show_only_while_open(self):
-        start = MSG_SHAPE_FIELD_LABELS[ShapePart.START].format(shape=MSG_SHAPE_NAMES[Shape.SWELL])
+        start = labels_text.MSG_SHAPE_FIELD_LABELS[ShapePart.START].format(shape=labels_text.MSG_SHAPE_NAMES[Shape.SWELL])
         self.assertIn(heading_text(shape=Shape.SWELL, is_open=False), self.text())
         self.assertNotIn(start, self.labels())
-        await self.select_field(MSG_SHAPE_NAMES[Shape.SWELL])
+        await self.select_field(labels_text.MSG_SHAPE_NAMES[Shape.SWELL])
         await self.press(keybindings.FieldPage.TOGGLE)
         self.assertIn(heading_text(shape=Shape.SWELL, is_open=True), self.text())
         self.assertIn(start, self.labels())
         await self.select_field(start)
         await self.press(keybindings.FieldPage.LESS)
         self.assertEqual(self.document.song().get_scenes()[0].get_shape(Shape.SWELL).start, FULL - 1)
-        await self.select_field(MSG_SHAPE_NAMES[Shape.SWELL])
+        await self.select_field(labels_text.MSG_SHAPE_NAMES[Shape.SWELL])
         await self.press(Key.ENTER)
         self.assertNotIn(start, self.labels())
         self.assertIn(heading_text(shape=Shape.SWELL, is_open=False), self.text())
-        self.assertIn(MSG_SECTION_SET, self.text())
+        self.assertIn(marks.MSG_SECTION_SET, self.text())
 
     async def test_pgdn_and_pgup_jump_between_the_headings(self):
         down = forward_key(keybindings.FieldPage.SECTION)
         up = back_key(keybindings.FieldPage.SECTION)
         await self.press(down)
         self.assertIsInstance(self.page.field(), Heading)
-        self.assertEqual(self.page.field().label, MSG_SHAPE_NAMES[Shape.DENSITY])
+        self.assertEqual(self.page.field().label, labels_text.MSG_SHAPE_NAMES[Shape.DENSITY])
         await self.press(down, down, down)
-        self.assertEqual(self.page.field().label, MSG_SHAPE_NAMES[Shape.ARTICULATE])
+        self.assertEqual(self.page.field().label, labels_text.MSG_SHAPE_NAMES[Shape.ARTICULATE])
         await self.press(up)
-        self.assertEqual(self.page.field().label, MSG_SHAPE_NAMES[Shape.SWELL])
+        self.assertEqual(self.page.field().label, labels_text.MSG_SHAPE_NAMES[Shape.SWELL])
 
     async def test_an_open_section_stays_open_on_the_next_scene_page(self):
-        await self.select_field(MSG_SHAPE_NAMES[Shape.DENSITY])
+        await self.select_field(labels_text.MSG_SHAPE_NAMES[Shape.DENSITY])
         await self.press(Key.ENTER, Key.ESCAPE)
         self.app.screen.show_page(ScenePage(holder=self.app.screen.holder, index=0))
         await self.pilot.pause()
@@ -185,9 +184,9 @@ class TestShapeSectionsOnTheClipPage(UITest):
     async def test_a_clips_density_is_its_own(self):
         self.app.screen.show_page(ClipPage(holder=self.app.screen.holder, index=0, track=LEAD))
         await self.pilot.pause()
-        await self.select_field(MSG_SHAPE_NAMES[Shape.DENSITY])
+        await self.select_field(labels_text.MSG_SHAPE_NAMES[Shape.DENSITY])
         await self.press(Key.ENTER)
-        await self.select_field(MSG_SHAPE_FIELD_LABELS[ShapePart.END].format(shape=MSG_SHAPE_NAMES[Shape.DENSITY]))
+        await self.select_field(labels_text.MSG_SHAPE_FIELD_LABELS[ShapePart.END].format(shape=labels_text.MSG_SHAPE_NAMES[Shape.DENSITY]))
         await self.press(Key.ENTER)
         self.app.screen.value = str(HALF)
         await self.press(Key.ENTER)

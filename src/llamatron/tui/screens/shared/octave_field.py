@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The field of one end of a range of octaves, which the track editor and the voice leading editor share, shown and typed in the set's octave labels."""
 
-from llamatron.strings.legends import MSG_WHOLE_RANGE_WHAT, What
+from llamatron.strings import legends
 from llamatron.tui.screens.shared.field import Field
 from llamatron.tui.screens.shared.shared import octave_moved
 
@@ -31,5 +31,5 @@ def octave_field(*, page, label, current, lowest, highest, default, set_octave):
         adjust=lambda offset: set_octave(within(octave_moved(octave=current(), offset=offset))),
         enter=lambda: page.ask_number(title=label, value=song.shown_octave(current()), then=lambda shown: set_octave(song.stored_octave(shown)),
                                       low=song.shown_octave(lowest()), high=song.shown_octave(highest())),
-        enter_what=What.EDIT, clear=lambda: set_octave(default), clear_what=MSG_WHOLE_RANGE_WHAT,
+        enter_what=legends.What.EDIT, clear=lambda: set_octave(default), clear_what=legends.MSG_WHOLE_RANGE_WHAT,
     )

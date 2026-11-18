@@ -17,7 +17,7 @@
 """The Scale row of the pattern editor: the scale type a step's degree and chord are drawn from, on the clip's root, which is how a chord is borrowed."""
 
 from llamatron.composition.naming import words
-from llamatron.strings.marks import MSG_UNSET_MARK
+from llamatron.strings import marks
 from llamatron.tui.components.chord_row import ChordRow
 from llamatron.tui.scale_categories import SCALE_TYPES_IN_ORDER
 from llamatron.tui.drawing import NOTHING
@@ -41,4 +41,4 @@ class ChordScaleRow(ChordRow):
         if self.blocked(step=step):
             return NOTHING
         value = self.value(step=step)
-        return MSG_UNSET_MARK if value is None else words(value).title()[:CELL_ROOM]
+        return marks.MSG_UNSET_MARK if value is None else words(value).title()[:CELL_ROOM]

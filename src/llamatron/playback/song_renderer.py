@@ -42,8 +42,8 @@ from llamatron.grid.clip_grid import ClipGrid
 from llamatron.grid.clip_row import ClipRow
 from llamatron.grid.clip_column import ClipColumn
 from llamatron.grid.control import Control
-from llamatron.music.midi import MAX_CC_VALUE, MIN_CC_VALUE
-from llamatron.strings.errors import ERR_CIRCULAR_FOLLOW, ERR_CIRCULAR_GRAB, ERR_RENDERER_EVERY_CLIP_LOOPS, ERR_WHERE_CHAIN
+from llamatron.music import midi
+from llamatron.strings import errors
 
 # How a circular grab's tracks are joined in its message, like a → b → a.
 GRAB_ARROW = ' → '
@@ -344,7 +344,7 @@ class SongRenderer:
                 check_pattern_has_a_scale(song=self._song, scene=scene, pattern_name=pattern_name, clip_scale=clip_slot.get_scale_name())
         circle = _grab_circle(scene)
         if circle is not None:
-            raise SongFileError(ERR_CIRCULAR_GRAB.format(scene=scene.describe(), loop=GRAB_ARROW.join(circle)))
+            raise SongFileError(errors.ERR_CIRCULAR_GRAB.format(scene=scene.describe(), loop=GRAB_ARROW.join(circle)))
 
     def get_clip(self, *, scene, track):
         """Return the finished clip a track plays in a written-out scene, or None if it plays nothing."""
@@ -463,7 +463,7 @@ class SongRenderer:
             return self._lengths[number]
         if scene.every_clip_loops():
             if not self._looping_scenes_go_round:
-                raise SongFileError(ERR_RENDERER_EVERY_CLIP_LOOPS.format(scene=scene.describe()))
+                raise SongFileError(errors.ERR_RENDERER_EVERY_CLIP_LOOPS.format(scene=scene.describe()))
             length = max((self._played_once(scene=scene, track=track) for track in scene.get_track_names()), default=NO_LENGTH)
             self._lengths[number] = length
             return length
@@ -501,7 +501,7 @@ class SongRenderer:
             return None
         waiting = [*self._grabbing, track]
         if other in waiting:
-            raise SongFileError(ERR_CIRCULAR_GRAB.format(scene=scene.describe(), loop=_grab_loop(waiting=waiting, track=other)))
+            raise SongFileError(errors.ERR_CIRCULAR_GRAB.format(scene=scene.describe(), loop=_grab_loop(waiting=waiting, track=other)))
         self._grabbing.append(track)
         try:
             source = self.get_clip(scene=scene, track=other)
@@ -589,7 +589,7 @@ class SongRenderer:
             waiting = [*self._following, (scene.get_number(), track)]
             if (scene.get_number(), source) in waiting:
                 tracks = [name for _, name in waiting[waiting.index((scene.get_number(), source)):]]
-                raise SongFileError(ERR_CIRCULAR_FOLLOW.format(scene=scene.describe(), loop=GRAB_ARROW.join([*tracks, source])))
+                raise SongFileError(errors.ERR_CIRCULAR_FOLLOW.format(scene=scene.describe(), loop=GRAB_ARROW.join([*tracks, source])))
             self._following.append((scene.get_number(), track))
             try:
                 clip = self._counted_clip(scene=scene, track=source)[0] if counting else self.get_clip(scene=scene, track=source)
@@ -609,13 +609,13 @@ class SongRenderer:
         if step.kind == GeneratorKind.FOLLOW_CHORDS:
             return FollowChords(chords=self.chords_followed(scene=scene, track=track, source=settings.get_chords_from(), counting=counting))
         if step.kind == GeneratorKind.PHRASING:
-            return settings.generator_for(where=ERR_WHERE_CHAIN.format(chain=chain, kind=step.kind), bar=self._song.get_time_signature().bar_length())
+            return settings.generator_for(where=errors.ERR_WHERE_CHAIN.format(chain=chain, kind=step.kind), bar=self._song.get_time_signature().bar_length())
         place = self._song.get_track_names().index(track)
         seed = None if self._seed is None else self._seed * SEED_SONG_FACTOR + scene.get_number() * SEED_SCENE_FACTOR + place * SEED_TRACK_FACTOR + index
         pattern_step = self._song.get_pattern_step_size(self._song.get_pattern(scene.get_clip_slot(track).get_pattern_name()))
         continuation = None if key is None else self.continuation(settings=settings, scene=scene, track=track, key=key, counting=counting)
         return settings.make_generator(
-            where=ERR_WHERE_CHAIN.format(chain=chain, kind=step.kind), default_seed=seed, default_step=pattern_step, bar=self._song.get_time_signature().bar_length(),
+            where=errors.ERR_WHERE_CHAIN.format(chain=chain, kind=step.kind), default_seed=seed, default_step=pattern_step, bar=self._song.get_time_signature().bar_length(),
             continuation=continuation, tempo=self._song.get_tempo() if scene.get_tempo() is None else scene.get_tempo(),
         )
 
@@ -682,7 +682,7 @@ def _sent_order(item):
 
 def _cc_value(value):
     """Return a register's value held to what a CC value can be."""
-    return max(min(value, MAX_CC_VALUE), MIN_CC_VALUE)
+    return max(min(value, midi.MAX_CC_VALUE), midi.MIN_CC_VALUE)
 
 
 def _before(*, changes, end):

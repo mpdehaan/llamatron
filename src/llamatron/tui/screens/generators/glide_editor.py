@@ -17,15 +17,12 @@
 
 from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition.generator_settings import StepRowSetting
-from llamatron.strings.labels import MSG_GLIDE_AMOUNT_LABEL
+from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui.screens.shared.field import ChoiceField
 
 # How far a glide can run into the next note, shortest first.
 GLIDE_AMOUNTS = ['1/256', '1/128', '1/64', '1/32', '1/16']
 DEFAULT_GLIDE_AMOUNT_WRITTEN = '1/128'
-from llamatron.strings.help import HELP_GLIDE_EDITOR
-from llamatron.strings.labels import Crumb, MSG_GLIDE_LABEL
-from llamatron.strings.messages import MSG_RENAME_GENERATOR_PROMPT
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.glide_steps_editor import GlideStepsEditor
 from llamatron.tui.screens.generators.step_row_generator_editor import StepRowGeneratorEditor
@@ -34,15 +31,15 @@ from llamatron.tui.screens.generators.step_row_generator_editor import StepRowGe
 class GlideEditor(StepRowGeneratorEditor):
 
     KEYS = keybindings.GlideEditor
-    HELP = HELP_GLIDE_EDITOR
+    HELP = help_text.HELP_GLIDE_EDITOR
     SECTION = Section.GLIDES
     KIND = GeneratorKind.GLIDE
     STEPS_EDITOR = GlideStepsEditor
-    CRUMBS_BEFORE = (Crumb.GENERATORS,)
-    RENAME_PROMPT = MSG_RENAME_GENERATOR_PROMPT.format(label=MSG_GLIDE_LABEL)
+    CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_GLIDE_LABEL)
 
     def amount_fields(self):
         written = self.generator().get_written_glide_amount()
         current = DEFAULT_GLIDE_AMOUNT_WRITTEN if written is None else str(written)
-        return [ChoiceField(page=self, label=MSG_GLIDE_AMOUNT_LABEL, choices=GLIDE_AMOUNTS, current=current,
+        return [ChoiceField(page=self, label=labels.MSG_GLIDE_AMOUNT_LABEL, choices=GLIDE_AMOUNTS, current=current,
                             set=lambda chosen: self.store(setting=StepRowSetting.GLIDE_AMOUNT, value=None if chosen == DEFAULT_GLIDE_AMOUNT_WRITTEN else chosen))]

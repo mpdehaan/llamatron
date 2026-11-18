@@ -17,10 +17,7 @@
 
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Align
-from llamatron.strings.errors import ERR_MAKE_A_CHAIN_FIRST, ERR_NOTHING_TO_ADD_TITLE
-from llamatron.strings.help import HELP_CHAIN_LIST_PAGE
-from llamatron.strings.labels import Column, Crumb
-from llamatron.strings.messages import MSG_ADD_CHAIN_TITLE
+from llamatron.strings import errors, help as help_text, labels, messages
 from llamatron.tui.screens.shared.list_page import ListPage
 from llamatron.tui.screens.shared.shared import list_keys, move_key
 from llamatron.tui.text import sorted_names
@@ -39,8 +36,8 @@ class ChainListPage(ListPage):
     """
 
     KEYS = keybindings.ChainListPage
-    HELP = HELP_CHAIN_LIST_PAGE
-    columns = ((Column.SELECT_CHAIN, None, Align.LEFT),)
+    HELP = help_text.HELP_CHAIN_LIST_PAGE
+    columns = ((labels.Column.SELECT_CHAIN, None, Align.LEFT),)
 
     def __init__(self, *, holder, opener, names, store):
         super().__init__(holder)
@@ -49,7 +46,7 @@ class ChainListPage(ListPage):
         self.store = store
 
     def crumb_trail(self):
-        return (*self.opener.crumb_trail(), Crumb.CHAINS)
+        return (*self.opener.crumb_trail(), labels.Crumb.CHAINS)
 
     def rows(self):
         return [(place, [name]) for place, name in enumerate(self.names())]
@@ -60,13 +57,13 @@ class ChainListPage(ListPage):
     def add(self):
         chains = sorted_names(self.document().song().get_chain_names())
         if not chains:
-            self.tell(ERR_NOTHING_TO_ADD_TITLE, ERR_MAKE_A_CHAIN_FIRST)
+            self.tell(errors.ERR_NOTHING_TO_ADD_TITLE, errors.ERR_MAKE_A_CHAIN_FIRST)
             return
 
         def picked(item):
             self.store([*self.names(), chains[item]])
             self.place = len(self.names()) - 1
-        self.ask(dialog=ChoiceDialog(title=MSG_ADD_CHAIN_TITLE, options=chains), then=picked)
+        self.ask(dialog=ChoiceDialog(title=messages.MSG_ADD_CHAIN_TITLE, options=chains), then=picked)
 
     def remove_chain(self):
         names = self.names()

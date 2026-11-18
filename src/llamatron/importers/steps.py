@@ -36,7 +36,7 @@ from bisect import bisect_right
 from typing import NamedTuple
 
 from llamatron.composition.checks import fraction_text
-from llamatron.composition.limits import MAX_GATE
+from llamatron.composition import limits
 from llamatron.exporters.timing import SLIDE_STEP, value_on_the_way
 from llamatron.importers.keys import degree_of, drum_note_of
 from llamatron.support.rational import Rational
@@ -95,7 +95,7 @@ def scene_steps(*, voice, start, end, key, step_size):
         length = (played.end - played.start) / step_size
         gate = None
         if not length.is_whole():
-            if played.end - played.start <= MAX_GATE:
+            if played.end - played.start <= limits.MAX_GATE:
                 gate = fraction_text(played.end - played.start)
                 gated.append((place, place + length))
             else:

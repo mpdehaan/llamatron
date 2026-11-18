@@ -28,15 +28,9 @@ cursor costs nothing.
 
 from typing import NamedTuple
 
-from llamatron.composition.defaults import DEFAULT_REPEAT
+from llamatron.composition import defaults
+from llamatron.strings import labels, marks as marks_text
 from llamatron.composition.file_format import SHAPES, Section
-from llamatron.strings.labels import MSG_FOLLOW_ACTION_NAMES, MSG_STRUM_WORDS
-from llamatron.strings.marks import (
-    MSG_CLIP_WITH_MARKS, MSG_DETAILS_ADVANCE, MSG_DETAILS_ADD_CHAIN, MSG_DETAILS_CHAIN, MSG_DETAILS_DIRECTION, MSG_DETAILS_DIRECTION_NAMES, MSG_DETAILS_EUCLID, MSG_DETAILS_GRAB,
-    MSG_DETAILS_GROOVE, MSG_DETAILS_INSTRUMENT, MSG_DETAILS_LIST_SEPARATOR, MSG_DETAILS_MARKS_SEPARATOR, MSG_DETAILS_MORPH, MSG_DETAILS_MUTED,
-    MSG_DETAILS_NO_GROOVE, MSG_DETAILS_RESET, MSG_DETAILS_SCALE, MSG_DETAILS_SHAPE, MSG_DETAILS_SHAPE_NAMES, MSG_DETAILS_STRUM, MSG_DETAILS_TEMPO,
-    MSG_DETAILS_STOCK, MSG_DETAILS_TEMPO_RAMP, MSG_DETAILS_TRANSPOSE, MSG_LOOP_MARK, MSG_REPEAT_MARK,
-)
 from llamatron.tui import themes
 from llamatron.tui.drawing import Style, fit
 
@@ -103,12 +97,12 @@ def detailed_clip_text(clip_slot, *, repeats_left=None):
     """Return what a clip shows on its name line in the details view: its name, never cut, then its loop or repeat mark; its morph and its direction are lines of their own."""
     marks = []
     if clip_slot.loops():
-        marks.append(MSG_LOOP_MARK)
-    if clip_slot.get_repeat() > DEFAULT_REPEAT:
-        marks.append(MSG_REPEAT_MARK.format(repeat=clip_slot.get_repeat() if repeats_left is None else repeats_left))
+        marks.append(marks_text.MSG_LOOP_MARK)
+    if clip_slot.get_repeat() > defaults.DEFAULT_REPEAT:
+        marks.append(marks_text.MSG_REPEAT_MARK.format(repeat=clip_slot.get_repeat() if repeats_left is None else repeats_left))
     if not marks:
         return clip_slot.get_display_name()
-    return MSG_CLIP_WITH_MARKS.format(name=clip_slot.get_display_name(), marks=MSG_DETAILS_MARKS_SEPARATOR.join(marks))
+    return marks_text.MSG_CLIP_WITH_MARKS.format(name=clip_slot.get_display_name(), marks=marks_text.MSG_DETAILS_MARKS_SEPARATOR.join(marks))
 
 
 def detail(text, *, style=Style.PLAIN, target=None):
@@ -122,8 +116,8 @@ def detail(text, *, style=Style.PLAIN, target=None):
 def chain_lines(*, song, names):
     """Return a line for each chain the cell runs, chain: name, in the order they run, in the chains' theme colour, then the +
     line that adds one: a cell holds chains, and a chain's generators are seen on the chain's own page."""
-    lines = [detail(MSG_DETAILS_CHAIN.format(name=name), target=Target(kind=Section.CHAINS, name=name, place=place)) for place, name in enumerate(names)]
-    return lines + [detail(MSG_DETAILS_ADD_CHAIN, style=Style.DIM, target=Target(kind=ADD_CHAIN, name=None))]
+    lines = [detail(marks_text.MSG_DETAILS_CHAIN.format(name=name), target=Target(kind=Section.CHAINS, name=name, place=place)) for place, name in enumerate(names)]
+    return lines + [detail(marks_text.MSG_DETAILS_ADD_CHAIN, style=Style.DIM, target=Target(kind=ADD_CHAIN, name=None))]
 
 
 def shape_lines(owner):
@@ -132,7 +126,7 @@ def shape_lines(owner):
     for shape in SHAPES:
         values = owner.get_shape(shape)
         if values is not None:
-            lines.append(detail(MSG_DETAILS_SHAPE.format(shape=MSG_DETAILS_SHAPE_NAMES[shape], start=values.start, end=values.end)))
+            lines.append(detail(marks_text.MSG_DETAILS_SHAPE.format(shape=marks_text.MSG_DETAILS_SHAPE_NAMES[shape], start=values.start, end=values.end)))
     return lines
 
 
@@ -141,22 +135,22 @@ def groove_lines(choice):
     if choice is None:
         return []
     if choice is False:
-        return [detail(MSG_DETAILS_NO_GROOVE)]
-    return [detail(MSG_DETAILS_GROOVE.format(name=choice), target=Target(kind=Section.GROOVES, name=choice))]
+        return [detail(marks_text.MSG_DETAILS_NO_GROOVE)]
+    return [detail(marks_text.MSG_DETAILS_GROOVE.format(name=choice), target=Target(kind=Section.GROOVES, name=choice))]
 
 
 def strum_lines(strum):
     """Return the line of a strum set on a clip or a track."""
     if strum is None:
         return []
-    return [detail(MSG_DETAILS_STRUM.format(direction=MSG_STRUM_WORDS.get(strum.direction, strum.direction)))]
+    return [detail(marks_text.MSG_DETAILS_STRUM.format(direction=labels.MSG_STRUM_WORDS.get(strum.direction, strum.direction)))]
 
 
 def scale_lines(*, song, name):
     """Return the line of a scene's or a clip's own scale, only where it differs from the song's."""
     if name is None or name == song.get_scale_name():
         return []
-    return [detail(MSG_DETAILS_SCALE.format(name=name), target=Target(kind=Section.SCALES, name=name))]
+    return [detail(marks_text.MSG_DETAILS_SCALE.format(name=name), target=Target(kind=Section.SCALES, name=name))]
 
 
 def clip_details(*, setlist, song, clip_slot):
@@ -164,14 +158,14 @@ def clip_details(*, setlist, song, clip_slot):
     lines = chain_lines(song=song, names=clip_slot.get_chain_names())
     lines += scale_lines(song=song, name=clip_slot.get_scale_name())
     if clip_slot.get_morph_target():
-        lines.append(detail(MSG_DETAILS_MORPH.format(pattern=clip_slot.get_morph_target())))
-    if clip_slot.get_direction() in MSG_DETAILS_DIRECTION_NAMES:
-        lines.append(detail(MSG_DETAILS_DIRECTION.format(direction=MSG_DETAILS_DIRECTION_NAMES[clip_slot.get_direction()])))
+        lines.append(detail(marks_text.MSG_DETAILS_MORPH.format(pattern=clip_slot.get_morph_target())))
+    if clip_slot.get_direction() in marks_text.MSG_DETAILS_DIRECTION_NAMES:
+        lines.append(detail(marks_text.MSG_DETAILS_DIRECTION.format(direction=marks_text.MSG_DETAILS_DIRECTION_NAMES[clip_slot.get_direction()])))
     if clip_slot.get_grab_track():
-        lines.append(detail(MSG_DETAILS_GRAB.format(track=clip_slot.get_grab_track())))
+        lines.append(detail(marks_text.MSG_DETAILS_GRAB.format(track=clip_slot.get_grab_track())))
     written = clip_slot.get_written_follow_action()
     if written is not None and written != setlist.get_default_follow_action():
-        lines.append(detail(MSG_DETAILS_ADVANCE.format(action=MSG_FOLLOW_ACTION_NAMES[written])))
+        lines.append(detail(marks_text.MSG_DETAILS_ADVANCE.format(action=labels.MSG_FOLLOW_ACTION_NAMES[written])))
     lines += strum_lines(clip_slot.get_strum())
     return lines + shape_lines(clip_slot)
 
@@ -181,12 +175,12 @@ def scene_details(*, song, scene):
     lines = chain_lines(song=song, names=scene.get_chain_names())
     lines += scale_lines(song=song, name=scene.get_scale_name())
     if scene.get_tempo_setting() is not None:
-        lines.append(detail(MSG_DETAILS_TEMPO.format(tempo=scene.get_tempo_setting())))
+        lines.append(detail(marks_text.MSG_DETAILS_TEMPO.format(tempo=scene.get_tempo_setting())))
     elif scene.get_tempo_start() is not None:
-        lines.append(detail(MSG_DETAILS_TEMPO_RAMP.format(start=scene.get_tempo_start(), end=scene.get_tempo_end())))
+        lines.append(detail(marks_text.MSG_DETAILS_TEMPO_RAMP.format(start=scene.get_tempo_start(), end=scene.get_tempo_end())))
     lines += groove_lines(scene.get_groove_choice())
     if scene.get_reset_names():
-        lines.append(detail(MSG_DETAILS_RESET.format(registers=MSG_DETAILS_LIST_SEPARATOR.join(scene.get_reset_names()))))
+        lines.append(detail(marks_text.MSG_DETAILS_RESET.format(registers=marks_text.MSG_DETAILS_LIST_SEPARATOR.join(scene.get_reset_names()))))
     return lines + shape_lines(scene)
 
 
@@ -194,23 +188,23 @@ def track_details(*, song, track):
     """Return a track's lines of details: its chains, its instrument, its transpose, its groove, its Euclidean mask, its strum and whether it's muted."""
     lines = chain_lines(song=song, names=track.get_chain_names())
     if track.get_instrument_name():
-        lines.append(detail(MSG_DETAILS_INSTRUMENT.format(name=track.get_instrument_name()), target=Target(kind=Section.INSTRUMENTS, name=track.get_instrument_name())))
+        lines.append(detail(marks_text.MSG_DETAILS_INSTRUMENT.format(name=track.get_instrument_name()), target=Target(kind=Section.INSTRUMENTS, name=track.get_instrument_name())))
     if track.get_transpose() != NO_TRANSPOSE:
-        lines.append(detail(MSG_DETAILS_TRANSPOSE.format(amount=track.get_transpose())))
+        lines.append(detail(marks_text.MSG_DETAILS_TRANSPOSE.format(amount=track.get_transpose())))
     lines += groove_lines(track.get_groove_choice())
     euclid = track.get_euclid()
     if euclid is not None:
-        lines.append(detail(MSG_DETAILS_EUCLID.format(hits=euclid.hits, steps=euclid.steps)))
+        lines.append(detail(marks_text.MSG_DETAILS_EUCLID.format(hits=euclid.hits, steps=euclid.steps)))
     lines += strum_lines(track.get_strum())
     if track.is_muted():
-        lines.append(detail(MSG_DETAILS_MUTED))
+        lines.append(detail(marks_text.MSG_DETAILS_MUTED))
     return lines
 
 
 def or_stock(lines):
     """Return a cell's lines of details, with the one word stock, in red, above the + of a cell with nothing else."""
     if all(line.target is not None and line.target.kind == ADD_CHAIN for line in lines):
-        return [detail(MSG_DETAILS_STOCK, style=Style.DETAILS_STOCK), *lines]
+        return [detail(marks_text.MSG_DETAILS_STOCK, style=Style.DETAILS_STOCK), *lines]
     return lines
 
 

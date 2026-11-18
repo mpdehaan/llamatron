@@ -22,7 +22,7 @@ from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.drawing import cursor_mark, fit, NOTHING, SPACE, Style
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key, SPACE_CHARACTER
-from llamatron.strings.marks import MSG_SEARCH_SHOWN
+from llamatron.strings import marks
 from llamatron.tui import keybindings
 
 
@@ -104,7 +104,7 @@ class ChoiceDialog(Dialog):
         matches = self.matches()
         result = []
         if self.typed:
-            result.append(Text(fit(text=SPACE + MSG_SEARCH_SHOWN.format(text=self.typed), width=width), style=Style.DIM))
+            result.append(Text(fit(text=SPACE + marks.MSG_SEARCH_SHOWN.format(text=self.typed), width=width), style=Style.DIM))
         at = matches.index(self.place) if self.place in matches else 0
         start = max(min(at - self.SHOWN // 2, len(matches) - self.SHOWN), 0)
         for place in matches[start:start + self.SHOWN]:

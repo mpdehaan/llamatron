@@ -17,11 +17,8 @@
 
 from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition.generator_settings import DEFAULT_SHORTEN, StepRowSetting
-from llamatron.composition.limits import MAX_SHORTEN, MIN_SHORTEN
-from llamatron.strings.labels import MSG_SHORTEN_LABEL
-from llamatron.strings.help import HELP_SHORTEN_EDITOR
-from llamatron.strings.labels import Crumb, MSG_SHORTEN_LABEL_NAME
-from llamatron.strings.messages import MSG_RENAME_GENERATOR_PROMPT
+from llamatron.composition import limits
+from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.shorten_steps_editor import ShortenStepsEditor
 from llamatron.tui.screens.generators.step_row_generator_editor import StepRowGeneratorEditor
@@ -30,13 +27,13 @@ from llamatron.tui.screens.generators.step_row_generator_editor import StepRowGe
 class ShortenEditor(StepRowGeneratorEditor):
 
     KEYS = keybindings.ShortenEditor
-    HELP = HELP_SHORTEN_EDITOR
+    HELP = help_text.HELP_SHORTEN_EDITOR
     SECTION = Section.SHORTENS
     KIND = GeneratorKind.SHORTEN
     STEPS_EDITOR = ShortenStepsEditor
-    CRUMBS_BEFORE = (Crumb.GENERATORS,)
-    RENAME_PROMPT = MSG_RENAME_GENERATOR_PROMPT.format(label=MSG_SHORTEN_LABEL_NAME)
+    CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_SHORTEN_LABEL_NAME)
 
     def amount_fields(self):
-        return [self.percent_field(label=MSG_SHORTEN_LABEL, setting=StepRowSetting.SHORTEN, current=self.generator().get_shorten(), default=DEFAULT_SHORTEN,
-                                   lowest=MIN_SHORTEN, highest=MAX_SHORTEN)]
+        return [self.percent_field(label=labels.MSG_SHORTEN_LABEL, setting=StepRowSetting.SHORTEN, current=self.generator().get_shorten(), default=DEFAULT_SHORTEN,
+                                   lowest=limits.MIN_SHORTEN, highest=limits.MAX_SHORTEN)]

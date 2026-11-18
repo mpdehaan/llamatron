@@ -31,15 +31,9 @@ from llamatron.composition.naming import new_name
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.realtime.sender_process import SenderNotStarted
-from llamatron.strings.errors import ERR_WIZARD_CANNOT_LISTEN, ERR_WIZARD_NOTHING_TO_LISTEN_TO
-from llamatron.strings.help import HELP_WIZARD_PAGE
+from llamatron.strings import errors, help as help_text, labels, marks, messages, names
 from llamatron.macro_composer.notation import KIT
 from llamatron.macro_composer.wizard_choices import USUAL_PIECE_NOTE
-from llamatron.strings.labels import MSG_WIZARD_FORM_QUESTION_TITLES, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KIT_DRUMS, MSG_WIZARD_PIECE_SOUND_TITLE, Crumb, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_MORE_SOUNDS_TITLE, MSG_WIZARD_SOUND_TITLE, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_COMPOSITION_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_REPLACE_SECTIONS_TITLE, MSG_WIZARD_SUGGESTED_FORM_TITLE, MSG_WIZARD_CAPTION, MSG_WIZARD_REPLACE_CAPTION
-from llamatron.strings.marks import MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_EDITED_BRANCH
-from llamatron.strings.messages import MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CLOSE_UNCHANGED_QUESTION, MSG_WIZARD_CLOSE_TITLE, MSG_WIZARD_CREATED, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_NOTHING_TO_UNDO, MSG_WIZARD_REPLACED, MSG_WIZARD_SONG_NAME_PROMPT
-from llamatron.strings.messages import MSG_STOPPED, MSG_WIZARD_LISTENING, MSG_WIZARD_TUNE_KEPT, MSG_WIZARD_TUNE_UNCHANGED
-from llamatron.strings.names import MSG_NEW_SONG_WORD
 from llamatron.support.version import VERSION
 from llamatron.tui import keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -83,15 +77,15 @@ class WizardPage(FieldPage):
 
     KEYS = keybindings.WizardPage
 
-    HELP = HELP_WIZARD_PAGE
+    HELP = help_text.HELP_WIZARD_PAGE
 
-    crumbs = (Crumb.WIZARD,)
+    crumbs = (labels.Crumb.WIZARD,)
 
     def __init__(self, holder, *, start=None):
         super().__init__(holder)
         self._choices = WizardChoices()
         self._choices.draw_seed()
-        self._song_name = new_name(word=MSG_NEW_SONG_WORD, taken=self.document().song_names())
+        self._song_name = new_name(word=names.MSG_NEW_SONG_WORD, taken=self.document().song_names())
         self._changed = False
         # What the current song kept of the run that made it, the way of starting chosen in the dialog that opens the wizard on
         # such a song.
@@ -99,7 +93,7 @@ class WizardPage(FieldPage):
         self._start = None
         # The Band and Form branches start open, so that the players and the sections, and the keys that add, copy,
         # remove and move a section, show themselves with no key to learn.
-        self._open = {MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_COMPOSITION_BRANCH, MSG_WIZARD_FORM_BRANCH}
+        self._open = {labels.MSG_WIZARD_GENRE_BRANCH, labels.MSG_WIZARD_BAND_BRANCH, labels.MSG_WIZARD_COMPOSITION_BRANCH, labels.MSG_WIZARD_FORM_BRANCH}
         self.tree_place = FIRST_PLACE
         self.in_fields = False
         # Move mode, the tracker's: whether M has picked up the branch under the tree's cursor.
@@ -155,7 +149,7 @@ class WizardPage(FieldPage):
             self.refuse(str(problem))
             return
         if name is None:
-            self.refuse(ERR_WIZARD_NOTHING_TO_LISTEN_TO)
+            self.refuse(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
             return
         self.app.made_preview().stop()
         draft = Document(setlist=setlist)
@@ -177,14 +171,14 @@ class WizardPage(FieldPage):
         setlist = draft.setlist()
         after = setlist.get_pattern(name).to_data() if setlist.has_pattern(name) else before
         if after == before:
-            self.say(MSG_WIZARD_TUNE_UNCHANGED.format(kind=kind))
+            self.say(messages.MSG_WIZARD_TUNE_UNCHANGED.format(kind=kind))
             return
         try:
             self.choosing(lambda pattern: self._choices.set_tune_pattern(kind=kind, pattern=pattern))(after)
         except ValueError as problem:
             self.refuse(str(problem))
             return
-        self.say(MSG_WIZARD_TUNE_KEPT.format(kind=kind))
+        self.say(messages.MSG_WIZARD_TUNE_KEPT.format(kind=kind))
 
     # Listening: a part of the song as it would be made, heard through FluidSynth and thrown away.
 
@@ -203,31 +197,31 @@ class WizardPage(FieldPage):
         if problem is not None:
             self.refuse(problem)
             return
-        self.say(MSG_WIZARD_LISTENING.format(what=what))
+        self.say(messages.MSG_WIZARD_LISTENING.format(what=what))
 
     def problem_listening(self, *, what, index, track):
         """Play a section of the song as it would be made, or one track of the section, and return why it could not be heard, or None. A dialog over the page listens through this too."""
         preview = self.app.made_preview()
         if not preview.can_sound():
-            return ERR_WIZARD_CANNOT_LISTEN
+            return errors.ERR_WIZARD_CANNOT_LISTEN
         try:
             setlist, name = self._choices.made_for_listening()
             if index >= len(setlist.get_song(name).get_scenes()):
-                raise ValueError(ERR_WIZARD_NOTHING_TO_LISTEN_TO)
+                raise ValueError(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
             if track is None:
                 preview.play_section(setlist=setlist, name=name, index=index, what=what)
             else:
                 preview.play_line(setlist=setlist, name=name, index=index, track=track, what=what)
         except (ValueError, SongFileError, SenderNotStarted) as problem:
-            return str(problem) if isinstance(problem, SenderNotStarted) else ERR_WIZARD_NOTHING_TO_LISTEN_TO
+            return str(problem) if isinstance(problem, SenderNotStarted) else errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO
         return None
 
     def stop_listening(self):
         self.app.made_preview().stop()
-        self.say(MSG_STOPPED)
+        self.say(messages.MSG_STOPPED)
 
     def ask_song_name(self):
-        self.ask_name(title=MSG_WIZARD_SONG_NAME_PROMPT, value=self._song_name, taken=self.document().song_names(), then=self.choosing(self.name_song))
+        self.ask_name(title=messages.MSG_WIZARD_SONG_NAME_PROMPT, value=self._song_name, taken=self.document().song_names(), then=self.choosing(self.name_song))
 
     def name_song(self, name):
         self._song_name = name
@@ -247,7 +241,7 @@ class WizardPage(FieldPage):
         # what Apply makes: a run from the last settings keeps the settings and never the seed.
         self._choices.draw_seed()
         document = self.document()
-        self._song_name = document.current_song_name() if self.replaces() else new_name(word=MSG_NEW_SONG_WORD, taken=document.song_names())
+        self._song_name = document.current_song_name() if self.replaces() else new_name(word=names.MSG_NEW_SONG_WORD, taken=document.song_names())
 
     def replaces(self):
         """Return whether Create replaces the current song, where otherwise a song is added."""
@@ -362,20 +356,20 @@ class WizardPage(FieldPage):
             self.choosing(branch.add)(kinds[place])
             if not branch.is_listed():
                 self._open.add(branch.key())
-        self.ask(dialog=ChoiceDialog(title=MSG_WIZARD_ADD_SECTION_TITLE, options=kinds), then=chosen)
+        self.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_ADD_SECTION_TITLE, options=kinds), then=chosen)
 
     def insert_in_list(self):
         """Ask which kind of thing to insert and put one before the branch under the cursor, the cursor staying on the new one, as on Arrange."""
         branch = self.branch()
         kinds = branch.kinds_to_add()
-        self.ask(dialog=ChoiceDialog(title=MSG_WIZARD_INSERT_SECTION_TITLE, options=kinds), then=lambda place: self.choosing(branch.insert)(kinds[place]))
+        self.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_INSERT_SECTION_TITLE, options=kinds), then=lambda place: self.choosing(branch.insert)(kinds[place]))
 
     def pick_sound(self, role):
         """Choose a player's sound from a list: the band's first, which takes the sound from the band again, then the genre's
         own sounds that suit the player, then a row that opens every General MIDI sound that plays notes."""
         choices = self._choices
         own = choices.genre_sounds(role)
-        options = [MSG_WIZARD_FROM_BAND.format(sound=choices.sound_name(choices.band_sound(role))), *(choices.sound_name(sound) for sound in own), MSG_WIZARD_MORE_SOUNDS]
+        options = [marks.MSG_WIZARD_FROM_BAND.format(sound=choices.sound_name(choices.band_sound(role))), *(choices.sound_name(sound) for sound in own), labels.MSG_WIZARD_MORE_SOUNDS]
         current = own.index(choices.get_sound(role)) + 1 if choices.has_own_sound(role) and choices.get_sound(role) in own else (len(options) - 1 if choices.has_own_sound(role) else FIRST_PLACE)
 
         def chosen(place):
@@ -383,13 +377,13 @@ class WizardPage(FieldPage):
                 self.pick_any_sound(role)
             else:
                 self.choosing(lambda sound: choices.set_sound(role=role, sound=sound))(None if place == FIRST_PLACE else own[place - 1])
-        self.ask(dialog=ChoiceDialog(title=MSG_WIZARD_SOUND_TITLE.format(player=choices.role_title(role)), options=options, current=current), then=chosen)
+        self.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_SOUND_TITLE.format(player=choices.role_title(role)), options=options, current=current), then=chosen)
 
     def pick_any_sound(self, role):
         """Choose a player's sound from every General MIDI sound, by family; a sound is tried as a run of the song's scale in the player's octave."""
         choices = self._choices
         run = run_of(root=choices.root_half_steps(), steps=choices.scale_half_steps(), octave=choices.role_octave(role))
-        dialog = SoundDialog(title=MSG_WIZARD_MORE_SOUNDS_TITLE, groups=sound_families(), current=choices.get_sound(role), trial=SoundTrial(page=self, played=lambda sound: (run, RUN_STEP, sound)))
+        dialog = SoundDialog(title=labels.MSG_WIZARD_MORE_SOUNDS_TITLE, groups=sound_families(), current=choices.get_sound(role), trial=SoundTrial(page=self, played=lambda sound: (run, RUN_STEP, sound)))
 
         def chosen(sound):
             if sound is not None:
@@ -401,7 +395,7 @@ class WizardPage(FieldPage):
         on the Note row under them the note a General MIDI sound plays. A drum is tried as four hits of the kit, and a General MIDI sound
         as four notes, on the note the row shows."""
         choices = self._choices
-        drums = [(MSG_WIZARD_KIT_DRUM_SHOWN.format(drum=drum), drum) for drum in choices.kit_drums() if drum != piece]
+        drums = [(marks.MSG_WIZARD_KIT_DRUM_SHOWN.format(drum=drum), drum) for drum in choices.kit_drums() if drum != piece]
 
         def played(sound):
             if isinstance(sound, str):
@@ -415,8 +409,8 @@ class WizardPage(FieldPage):
             else:
                 choices.set_piece_sound(piece=piece, sound=sound)
                 choices.set_piece_note(piece=piece, note=note)
-        dialog = SoundDialog(title=MSG_WIZARD_PIECE_SOUND_TITLE.format(piece=piece), top=[(MSG_WIZARD_OWN_DRUM_SHOWN.format(piece=piece), OWN_DRUM)],
-                             groups=[(MSG_WIZARD_KIT_DRUMS, drums), *sound_families()], current=choices.piece_sound(piece) or OWN_DRUM, trial=SoundTrial(page=self, played=played),
+        dialog = SoundDialog(title=labels.MSG_WIZARD_PIECE_SOUND_TITLE.format(piece=piece), top=[(marks.MSG_WIZARD_OWN_DRUM_SHOWN.format(piece=piece), OWN_DRUM)],
+                             groups=[(labels.MSG_WIZARD_KIT_DRUMS, drums), *sound_families()], current=choices.piece_sound(piece) or OWN_DRUM, trial=SoundTrial(page=self, played=played),
                              note=choices.piece_note(piece) or USUAL_PIECE_NOTE)
         self.ask(dialog=dialog, then=self.choosing(chosen))
 
@@ -425,17 +419,17 @@ class WizardPage(FieldPage):
         take the one picked; where a person changed the sections, ask first, since the form picked replaces them."""
         choices = self._choices
         forms = choices.forms()
-        options = [MSG_WIZARD_SUGGESTED_FORM.format(form=form, count=choices.form_section_count(form), length=clock(choices.form_seconds(form=form))) for form in forms]
+        options = [marks.MSG_WIZARD_SUGGESTED_FORM.format(form=form, count=choices.form_section_count(form), length=clock(choices.form_seconds(form=form))) for form in forms]
 
         def pick():
-            self.ask(dialog=ChoiceDialog(title=MSG_WIZARD_SUGGESTED_FORM_TITLE, options=options, current=forms.index(choices.get_form())),
+            self.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_SUGGESTED_FORM_TITLE, options=options, current=forms.index(choices.get_form())),
                      then=lambda place: self.choosing(choices.set_form)(forms[place]))
 
         def answered(yes):
             if yes:
                 pick()
         if choices.has_own_form():
-            self.ask(dialog=ConfirmDialog(title=MSG_WIZARD_REPLACE_SECTIONS_TITLE, messages=[MSG_WIZARD_REPLACE_SECTIONS_QUESTION]), then=answered)
+            self.ask(dialog=ConfirmDialog(title=labels.MSG_WIZARD_REPLACE_SECTIONS_TITLE, messages=[messages.MSG_WIZARD_REPLACE_SECTIONS_QUESTION]), then=answered)
         else:
             pick()
 
@@ -452,11 +446,11 @@ class WizardPage(FieldPage):
             except ValueError as problem:
                 self.refuse(str(problem))
                 return
-            self._open.add(MSG_WIZARD_FORM_BRANCH)
+            self._open.add(labels.MSG_WIZARD_FORM_BRANCH)
 
         def finish():
             if choices.has_own_form():
-                self.ask(dialog=ConfirmDialog(title=MSG_WIZARD_REPLACE_SECTIONS_TITLE, messages=[MSG_WIZARD_REPLACE_SECTIONS_QUESTION]), then=lambda yes: make() if yes else None)
+                self.ask(dialog=ConfirmDialog(title=labels.MSG_WIZARD_REPLACE_SECTIONS_TITLE, messages=[messages.MSG_WIZARD_REPLACE_SECTIONS_QUESTION]), then=lambda yes: make() if yes else None)
             else:
                 make()
 
@@ -469,7 +463,7 @@ class WizardPage(FieldPage):
             def answered(chosen):
                 answers[name] = offered[chosen]
                 ask(place + 1)
-            self.ask(dialog=ChoiceDialog(title=MSG_WIZARD_FORM_QUESTION_TITLES[name], options=list(offered), current=offered.index(usual)), then=answered)
+            self.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_FORM_QUESTION_TITLES[name], options=list(offered), current=offered.index(usual)), then=answered)
         ask(FIRST_PLACE)
 
     def copy_listed(self):
@@ -489,13 +483,13 @@ class WizardPage(FieldPage):
 
     def start_moving(self):
         self.moving = True
-        self.say(MSG_WIZARD_MOVING.format(name=self.branch().name()))
+        self.say(messages.MSG_WIZARD_MOVING.format(name=self.branch().name()))
 
     def carry(self, offset):
         """Carry the branch picked up one place earlier or later in its list, the cursor going with it."""
         if self.choosing(self.branch().move)(offset):
             self.tree_place += offset
-        self.say(MSG_WIZARD_MOVING.format(name=self.branch().name()))
+        self.say(messages.MSG_WIZARD_MOVING.format(name=self.branch().name()))
 
     def drop(self):
         self.moving = False
@@ -510,14 +504,14 @@ class WizardPage(FieldPage):
         def answered(yes):
             if yes:
                 FieldPage.go_back(self)
-        question = MSG_WIZARD_CLOSE_QUESTION if self.has_choices_to_lose() else MSG_WIZARD_CLOSE_UNCHANGED_QUESTION
-        self.ask(dialog=ConfirmDialog(title=MSG_WIZARD_CLOSE_TITLE, messages=[question], starts_on_no=True), then=answered)
+        question = messages.MSG_WIZARD_CLOSE_QUESTION if self.has_choices_to_lose() else messages.MSG_WIZARD_CLOSE_UNCHANGED_QUESTION
+        self.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_CLOSE_TITLE, messages=[question], starts_on_no=True), then=answered)
 
     def steps_history(self):
         return False
 
     def why_no_history(self):
-        return MSG_WIZARD_NOTHING_TO_UNDO
+        return messages.MSG_WIZARD_NOTHING_TO_UNDO
 
     # Create.
 
@@ -542,12 +536,12 @@ class WizardPage(FieldPage):
         else:
             name = document.add_made_song(made)
         self.holder.show_arrange_on_new_song()
-        self.say((MSG_WIZARD_REPLACED if replaces else MSG_WIZARD_CREATED).format(name=name))
+        self.say((messages.MSG_WIZARD_REPLACED if replaces else messages.MSG_WIZARD_CREATED).format(name=name))
 
     # Drawing.
 
     def caption(self):
-        return (MSG_WIZARD_REPLACE_CAPTION if self.replaces() else MSG_WIZARD_CAPTION).format(name=self._song_name)
+        return (labels.MSG_WIZARD_REPLACE_CAPTION if self.replaces() else labels.MSG_WIZARD_CAPTION).format(name=self._song_name)
 
     def tree_lines(self):
         """Return the tree's lines: each branch after its cursor's mark, indented by its depth, with its open or closed mark, its note dim,
@@ -559,16 +553,16 @@ class WizardPage(FieldPage):
             line.append(cursor_mark(under_cursor and not self.in_fields))
             line.append(INDENT * depth)
             if branch.children():
-                line.append((MSG_WIZARD_BRANCH_OPEN if self.shows_children(branch) else MSG_WIZARD_BRANCH_CLOSED) + SPACE)
+                line.append((marks.MSG_WIZARD_BRANCH_OPEN if self.shows_children(branch) else marks.MSG_WIZARD_BRANCH_CLOSED) + SPACE)
             else:
                 line.append(INDENT)
             carried = self.moving and under_cursor
-            line.append(MSG_WIZARD_CARRIED.format(name=branch.name()) if carried else branch.name(), style=Style.DIM if self.refusal_of(branch) else (Style.BOLD if under_cursor else Style.PLAIN))
+            line.append(marks.MSG_WIZARD_CARRIED.format(name=branch.name()) if carried else branch.name(), style=Style.DIM if self.refusal_of(branch) else (Style.BOLD if under_cursor else Style.PLAIN))
             if branch.note():
                 line.append(SPACE + branch.note(), style=Style.DIM)
             line.truncate(TREE_WIDTH - 2)
             line.pad_right(TREE_WIDTH - 2 - len(line.plain))
-            line.append((MSG_WIZARD_EDITED_BRANCH if under_cursor and self.in_fields else SPACE) + SPACE)
+            line.append((marks.MSG_WIZARD_EDITED_BRANCH if under_cursor and self.in_fields else SPACE) + SPACE)
             lines.append(line)
         return lines
 

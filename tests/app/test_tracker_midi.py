@@ -41,7 +41,7 @@ from llamatron.music.note import NoteName
 from llamatron.exporters.midi_messages import NOTE_ON_MESSAGE
 from llamatron.exporters.exports import EXPORT_KINDS, ExportKind
 from llamatron.composition.setlist import Setlist, new_setlist
-from llamatron.strings.names import MSG_DEFAULT_SONG_NAME
+from llamatron.strings import names as names_text
 from llamatron.tui.document import Document
 from tests.support.ui_testing import UITest
 from llamatron.tui.keys import Key
@@ -91,7 +91,7 @@ def melody(*, names, durations):
 def mary():
     """Return Mary Had a Little Lamb as a set of one song, with its chords played by an arpeggiator."""
     data = new_setlist()
-    song = data[Section.SONGS][MSG_DEFAULT_SONG_NAME]
+    song = data[Section.SONGS][names_text.MSG_DEFAULT_SONG_NAME]
     song[SongSetting.TEMPO] = 120
     data[Section.PATTERNS] = {
         FIRST: melody(names=FIRST_VERSE, durations=[Q, Q, Q, Q, Q, Q, H, Q, Q, H, Q, Q, H]),

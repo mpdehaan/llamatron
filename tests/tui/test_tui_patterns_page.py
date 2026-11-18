@@ -19,12 +19,9 @@
 import os
 
 from llamatron.composition.file_format import CLOSED_PATTERN_GROUPS
-from llamatron.composition.limits import MAX_NAME_LENGTH
+from llamatron.composition import limits
+from llamatron.strings import errors, labels, marks, messages
 from llamatron.composition.setlist import Setlist
-from llamatron.strings.errors import ERR_GROUP_COPY_NAME_TOO_LONG
-from llamatron.strings.labels import MSG_GROUP_HEADING, MSG_NEW_GROUP_BUTTON, MSG_NEW_GROUP_NAME_LABEL, MSG_NEW_PATTERN_BUTTON, MSG_UNGROUPED
-from llamatron.strings.marks import MSG_SECTION_CLOSED_MARK, MSG_SECTION_OPEN_MARK
-from llamatron.strings.messages import MSG_COPY_GROUP_TITLE, MSG_SEARCH_STATUS
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
@@ -56,7 +53,7 @@ TUNE_IN_COPY = 'melodies-2_tune'
 MELODIES_RIFF = 'melodies_riff'
 SONGS_RIFF = 'songs_riff'
 # A group's name that makes the name of a copied pattern too long.
-LONG_GROUP = 'g' * (MAX_NAME_LENGTH - 2)
+LONG_GROUP = 'g' * (limits.MAX_NAME_LENGTH - 2)
 A_SCENE = 'x{number}'
 SCENES_ADDED = 7
 SCENES_LISTED = 5
@@ -107,7 +104,7 @@ class PatternsPageTest(UITest):
         return [name for item in self.page.key_table() for name in item.keys]
 
     def heading(self, *, group, count, closed=False):
-        return MSG_GROUP_HEADING.format(mark=MSG_SECTION_CLOSED_MARK if closed else MSG_SECTION_OPEN_MARK, name=group, count=count)
+        return labels.MSG_GROUP_HEADING.format(mark=marks.MSG_SECTION_CLOSED_MARK if closed else marks.MSG_SECTION_OPEN_MARK, name=group, count=count)
 
 
 class TestPatternsPage(PatternsPageTest):
@@ -199,7 +196,7 @@ class TestPatternsPage(PatternsPageTest):
         await self.press(keybindings.PatternsPage.SEARCH)
         await self.type(SEARCH_TEXT)
         self.assertEqual(self.page.current(), SEARCH_HIT)
-        self.assertIn(MSG_SEARCH_STATUS.format(text=SEARCH_TEXT), self.text())
+        self.assertIn(messages.MSG_SEARCH_STATUS.format(text=SEARCH_TEXT), self.text())
         self.assertNotIn(BEAT, self.text())
         await self.press(Key.TAB)
         self.assertEqual(self.page.typed, SEARCH_HIT)
@@ -250,7 +247,7 @@ class TestPatternGroups(PatternsPageTest):
             Listed(HEADING, UNGROUPED), Listed(PATTERN, OTHER), Listed(NEW_GROUP, None),
         ])
         text = self.text()
-        for line in (self.heading(group=MELODIES, count=1), self.heading(group=MSG_UNGROUPED, count=1), INDENT + TUNE, INDENT + MSG_NEW_PATTERN_BUTTON, MSG_NEW_GROUP_BUTTON):
+        for line in (self.heading(group=MELODIES, count=1), self.heading(group=labels.MSG_UNGROUPED, count=1), INDENT + TUNE, INDENT + labels.MSG_NEW_PATTERN_BUTTON, labels.MSG_NEW_GROUP_BUTTON):
             self.assertIn(line, text)
 
     async def test_a_groups_patterns_are_sorted_with_a_number_at_the_end_read_as_a_number(self):
@@ -265,7 +262,7 @@ class TestPatternGroups(PatternsPageTest):
         self.document.set_pattern_group(name=OTHER, group=RHYTHMS)
         await self.press(Key.DOWN, Key.UP)
         self.assertNotIn(Listed(HEADING, UNGROUPED), self.rows())
-        self.assertNotIn(MSG_UNGROUPED, self.text())
+        self.assertNotIn(labels.MSG_UNGROUPED, self.text())
 
     async def test_space_or_enter_on_a_heading_closes_and_opens_its_group(self):
         await self.go_to_heading(MELODIES)
@@ -338,7 +335,7 @@ class TestPatternGroups(PatternsPageTest):
         await self.press(keybindings.PatternsPage.GROUP)
         dialog = self.app.screen
         self.assertIsInstance(dialog, ChoiceDialog)
-        self.assertEqual(dialog.options, [MELODIES, RHYTHMS, MSG_NEW_GROUP_BUTTON])
+        self.assertEqual(dialog.options, [MELODIES, RHYTHMS, labels.MSG_NEW_GROUP_BUTTON])
         self.assertEqual(dialog.options[dialog.place], MELODIES)
         await self.press(Key.DOWN, Key.ENTER)
         self.assertEqual(self.group_of(TUNE), RHYTHMS)
@@ -405,8 +402,8 @@ class TestPatternGroups(PatternsPageTest):
         await self.press(keybindings.PatternsPage.COPY)
         dialog = self.app.screen
         self.assertIsInstance(dialog, PromptDialog)
-        self.assertEqual((dialog.title, dialog.label, dialog.value), (MSG_COPY_GROUP_TITLE, MSG_NEW_GROUP_NAME_LABEL, MELODIES_COPY))
-        self.assertIn(MSG_NEW_GROUP_NAME_LABEL + MELODIES_COPY, self.text())
+        self.assertEqual((dialog.title, dialog.label, dialog.value), (messages.MSG_COPY_GROUP_TITLE, labels.MSG_NEW_GROUP_NAME_LABEL, MELODIES_COPY))
+        self.assertIn(labels.MSG_NEW_GROUP_NAME_LABEL + MELODIES_COPY, self.text())
         await self.press(Key.ENTER)
         # The new group's name goes at the front: joined to a name that lacked the old group's, and in its place where the name began with it.
         self.assertEqual(self.document.setlist().patterns_in_group(MELODIES_COPY), [MELODIES_COPY + MELODIES_RIFF[len(MELODIES):], TUNE_IN_COPY])
@@ -428,7 +425,7 @@ class TestPatternGroups(PatternsPageTest):
         await self.press(keybindings.PatternsPage.COPY)
         await self.answer(LONG_GROUP)
         self.assertEqual(self.names(), names)
-        self.assertIn(ERR_GROUP_COPY_NAME_TOO_LONG.format(name=self.document.setlist().names_in_copied_group(group=MELODIES, new=LONG_GROUP)[TUNE], most=MAX_NAME_LENGTH)[:40], self.text())
+        self.assertIn(errors.ERR_GROUP_COPY_NAME_TOO_LONG.format(name=self.document.setlist().names_in_copied_group(group=MELODIES, new=LONG_GROUP)[TUNE], most=limits.MAX_NAME_LENGTH)[:40], self.text())
 
     async def test_a_copy_cannot_take_a_groups_name_and_esc_copies_nothing(self):
         names = self.names()

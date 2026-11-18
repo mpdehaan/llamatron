@@ -18,11 +18,7 @@
 
 from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition.generator_settings import FollowChordsSetting
-from llamatron.strings.help import HELP_FOLLOW_CHORDS_EDITOR
-from llamatron.strings.labels import Crumb, MSG_CHORDS_FROM_LABEL, MSG_FOLLOW_CHORDS_LABEL
-from llamatron.strings.legends import MSG_NO_TRACK_WHAT
-from llamatron.strings.marks import MSG_NONE_SHOWN
-from llamatron.strings.messages import MSG_RENAME_GENERATOR_PROMPT
+from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared.field import ChoiceField, NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
@@ -33,10 +29,10 @@ from llamatron.tui.text import sorted_names
 class FollowChordsEditor(ShowsNamedItem, FieldPage):
 
     KEYS = keybindings.FollowChordsEditor
-    HELP = HELP_FOLLOW_CHORDS_EDITOR
+    HELP = help_text.HELP_FOLLOW_CHORDS_EDITOR
     SECTION = Section.FOLLOW_CHORDS
-    CRUMBS_BEFORE = (Crumb.GENERATORS,)
-    RENAME_PROMPT = MSG_RENAME_GENERATOR_PROMPT.format(label=MSG_FOLLOW_CHORDS_LABEL)
+    CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_FOLLOW_CHORDS_LABEL)
 
     def __init__(self, *, holder, name):
         super().__init__(holder)
@@ -60,7 +56,7 @@ class FollowChordsEditor(ShowsNamedItem, FieldPage):
         return [
             NameField(value=lambda: self.item, rename=self.rename),
             ChoiceField(
-                page=self, label=MSG_CHORDS_FROM_LABEL, choices=[MSG_NONE_SHOWN, *self.tracks()], current=followed or MSG_NONE_SHOWN,
-                set=lambda choice: self.store_chords_from(None if choice == MSG_NONE_SHOWN else choice), clear=lambda: self.store_chords_from(None), clear_what=MSG_NO_TRACK_WHAT,
+                page=self, label=labels.MSG_CHORDS_FROM_LABEL, choices=[marks.MSG_NONE_SHOWN, *self.tracks()], current=followed or marks.MSG_NONE_SHOWN,
+                set=lambda choice: self.store_chords_from(None if choice == marks.MSG_NONE_SHOWN else choice), clear=lambda: self.store_chords_from(None), clear_what=legends.MSG_NO_TRACK_WHAT,
             ),
         ]

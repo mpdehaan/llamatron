@@ -32,7 +32,7 @@ from llamatron.visualizers.cells import SPACE, CellPainter
 from llamatron.visualizers.colour import track_colour, vivid
 from llamatron.visualizers.heard import SILENCE
 from llamatron.visualizers.visualizer import Visualizer
-from llamatron.strings.visualizers import MSG_PIPES
+from llamatron.strings import visualizers
 
 SEED = 1
 LONGEST_FRAME_SECONDS = 0.2
@@ -89,7 +89,7 @@ class Pipes(Visualizer):
 
     __slots__ = ('_rows', '_columns', '_pipes', '_characters', '_owners', '_ages', '_last', '_chooser', '_fading', '_cells')
 
-    NAME = MSG_PIPES
+    NAME = visualizers.MSG_PIPES
     OPTION = 'pipes'
 
     def __init__(self):

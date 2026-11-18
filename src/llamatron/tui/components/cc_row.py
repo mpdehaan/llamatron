@@ -23,8 +23,7 @@ plain CC 1 when no track plays the pattern yet.
 
 from llamatron.composition.file_format import CC_ROWS
 from llamatron.tui.components.control_row import ControlRow
-from llamatron.strings.labels import MSG_CC_ROW_LABEL
-from llamatron.strings.marks import MSG_CC_LANE_OFF, MSG_CC_LANE_VARIES
+from llamatron.strings import labels, marks
 from llamatron.tui import keybindings
 
 
@@ -43,9 +42,9 @@ class CcRow(ControlRow):
         if not numbers:
             return super().label()
         if len(numbers) > 1:
-            number = MSG_CC_LANE_VARIES
+            number = marks.MSG_CC_LANE_VARIES
         elif numbers[0] is None:
-            number = MSG_CC_LANE_OFF
+            number = marks.MSG_CC_LANE_OFF
         else:
             number = str(numbers[0])
-        return MSG_CC_ROW_LABEL.format(label=super().label(), number=number)
+        return labels.MSG_CC_ROW_LABEL.format(label=super().label(), number=number)

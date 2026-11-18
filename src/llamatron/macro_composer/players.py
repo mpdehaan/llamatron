@@ -23,15 +23,14 @@ player is imaginary. The family name says the complexity: a Llama is plain and d
 song, a Vicuna wilder and busier, a Guanaco the most advanced.
 """
 
-from llamatron.strings.macro_composer import (MSG_BASS_PLAYERS, MSG_DRUMMERS, MSG_KEYS_PLAYERS, MSG_LEAD_PLAYERS, MSG_PLAYER, MSG_PLAYER_FAMILIES,
-                                             MSG_RHYTHM_PLAYERS, MSG_SESSION_PLAYERS)
+from llamatron.strings import macro_composer as composer_text
 
 PLAIN = 1
 TASTEFUL = 2
 WILD = 3
 ADVANCED = 4
 COMPLEXITIES = (PLAIN, TASTEFUL, WILD, ADVANCED)
-FAMILIES = dict(zip(COMPLEXITIES, MSG_PLAYER_FAMILIES))
+FAMILIES = dict(zip(COMPLEXITIES, composer_text.MSG_PLAYER_FAMILIES))
 # The instruments that have players of their own; any other instrument is played by a Session player.
 DRUMS = 'drums'
 BASS = 'bass'
@@ -40,16 +39,16 @@ LEAD = 'lead'
 KEYS = 'keys'
 SESSION = 'session'
 FIRST_NAMES = {
-    DRUMS: dict(zip(COMPLEXITIES, MSG_DRUMMERS)),
-    BASS: dict(zip(COMPLEXITIES, MSG_BASS_PLAYERS)),
-    RHYTHM: dict(zip(COMPLEXITIES, MSG_RHYTHM_PLAYERS)),
-    LEAD: dict(zip(COMPLEXITIES, MSG_LEAD_PLAYERS)),
-    KEYS: dict(zip(COMPLEXITIES, MSG_KEYS_PLAYERS)),
-    SESSION: dict(zip(COMPLEXITIES, MSG_SESSION_PLAYERS)),
+    DRUMS: dict(zip(COMPLEXITIES, composer_text.MSG_DRUMMERS)),
+    BASS: dict(zip(COMPLEXITIES, composer_text.MSG_BASS_PLAYERS)),
+    RHYTHM: dict(zip(COMPLEXITIES, composer_text.MSG_RHYTHM_PLAYERS)),
+    LEAD: dict(zip(COMPLEXITIES, composer_text.MSG_LEAD_PLAYERS)),
+    KEYS: dict(zip(COMPLEXITIES, composer_text.MSG_KEYS_PLAYERS)),
+    SESSION: dict(zip(COMPLEXITIES, composer_text.MSG_SESSION_PLAYERS)),
 }
 INSTRUMENTS = tuple(FIRST_NAMES)
 
 
 def player_name(*, instrument, complexity):
     """The name people see for the player of an instrument at a complexity."""
-    return MSG_PLAYER.format(FIRST_NAMES[instrument][complexity], FAMILIES[complexity])
+    return composer_text.MSG_PLAYER.format(FIRST_NAMES[instrument][complexity], FAMILIES[complexity])

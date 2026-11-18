@@ -18,15 +18,13 @@
 
 from tests.support.ui_testing import KEY_SHOWN, QUIET_VALUE, REVERSED, ROW_SHOWN, UITest, back_key, forward_key, key_name, key_of
 from llamatron.composition.file_format import REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, RegisterName, RegisterUse, Row
-from llamatron.composition.limits import MAX_REGISTER_VALUE
+from llamatron.composition import limits
+from llamatron.strings import labels as labels_text, legends, marks
 from llamatron.music.note import NoteName
 from llamatron.tui.drawing import Box, SPACE, fit
 from llamatron.tui.keys import Key, OPEN_AT_START, RowSection
 from llamatron.tui.components.pattern_rows import SECTIONS
-from llamatron.music.midi import MAX_CC_VALUE
-from llamatron.strings.labels import MSG_CC_ROW_LABEL, MSG_ROW_LABELS, MSG_SECTION_LABEL, MSG_SECTION_NAMES
-from llamatron.strings.legends import MSG_LEGEND_WHAT, What, KeyName
-from llamatron.strings.marks import MSG_BLOCKED_CELL, MSG_CC_LANE_OFF, MSG_CC_LANE_VARIES, MSG_SECTION_CLOSED_MARK, MSG_SECTION_OPEN_MARK, MSG_REGISTER_ADDS, MSG_REGISTER_SUBTRACTS, MSG_TOGGLE_OFF, MSG_TOGGLE_ON
+from llamatron.music import midi
 from llamatron.tui import keybindings
 from tests.support.rendering import render_song
 from tests.support.pattern_editor_testing import open_section
@@ -45,7 +43,7 @@ EMPTY_STEP = 2
 
 def section_label(section, *, open_):
     """Return a section's heading as the grid shows it, with its mark for open or closed."""
-    return MSG_SECTION_LABEL.format(mark=MSG_SECTION_OPEN_MARK if open_ else MSG_SECTION_CLOSED_MARK, name=MSG_SECTION_NAMES[section])
+    return labels_text.MSG_SECTION_LABEL.format(mark=marks.MSG_SECTION_OPEN_MARK if open_ else marks.MSG_SECTION_CLOSED_MARK, name=labels_text.MSG_SECTION_NAMES[section])
 
 
 class TestSections(UITest):
@@ -57,7 +55,7 @@ class TestSections(UITest):
         self.editor = self.app.screen
 
     def shown(self, row):
-        return ROW_SHOWN.format(label=MSG_ROW_LABELS[row])
+        return ROW_SHOWN.format(label=labels_text.MSG_ROW_LABELS[row])
 
     def heading_shown(self, section):
         """Return a section's heading as the screen shows it, after the bar, or after the reversed mark when the cursor is on it."""
@@ -167,7 +165,7 @@ class TestSections(UITest):
         width = self.editor.drawing.label_width()
         await open_section(test=self, section=RowSection.ADVANCED)
         self.assertEqual(self.editor.drawing.label_width(), width)
-        self.assertEqual(width, len(MSG_ROW_LABELS[Row.RATCHET_OFFSET]) + 2)
+        self.assertEqual(width, len(labels_text.MSG_ROW_LABELS[Row.RATCHET_OFFSET]) + 2)
 
     async def test_the_open_sections_stay_for_other_patterns_and_under_the_roll(self):
         await open_section(test=self, section=RowSection.ADVANCED)
@@ -196,30 +194,30 @@ class TestSections(UITest):
             await self.press(Key.DOWN)
         await self.press(Key.SPACE)
         self.assertIs(self.document.step_value(name=TUNE, row=Row.SLIDE, step=rest), True)
-        self.assertEqual(self.editor.cell_text(name=Row.SLIDE, step=rest), MSG_TOGGLE_ON)
+        self.assertEqual(self.editor.cell_text(name=Row.SLIDE, step=rest), marks.MSG_TOGGLE_ON)
         render_song(self.document.song())
 
     async def test_a_cc_row_is_one_line_and_its_label_says_the_cc_number_the_tracks_playing_the_pattern_send(self):
         await open_section(test=self, section=RowSection.CC)
         row = self.editor.row_for(Row.CC1)
-        cc_1 = MSG_ROW_LABELS[Row.CC1]
+        cc_1 = labels_text.MSG_ROW_LABELS[Row.CC1]
         # tune is played by lead alone, whose lanes send nothing yet, so the lane is off; the value stays a one-line number.
-        self.assertEqual(row.labels(), [MSG_CC_ROW_LABEL.format(label=cc_1, number=MSG_CC_LANE_OFF)])
+        self.assertEqual(row.labels(), [labels_text.MSG_CC_ROW_LABEL.format(label=cc_1, number=marks.MSG_CC_LANE_OFF)])
         self.assertEqual(row.cell_lines(step=0), [QUIET_VALUE])
-        self.document.set_step_value(name=TUNE, row=Row.CC1, step=0, value=MAX_CC_VALUE)
-        self.assertEqual(row.cell_lines(step=0), [str(MAX_CC_VALUE)])
+        self.document.set_step_value(name=TUNE, row=Row.CC1, step=0, value=midi.MAX_CC_VALUE)
+        self.assertEqual(row.cell_lines(step=0), [str(midi.MAX_CC_VALUE)])
         # Giving lead a number puts it in the label, and a second track playing tune with another number makes the label say they differ.
         self.document.set_track_cc_number(name=LEAD, lane=0, number=BRIGHTNESS)
-        self.assertEqual(row.label(), MSG_CC_ROW_LABEL.format(label=cc_1, number=str(BRIGHTNESS)))
+        self.assertEqual(row.label(), labels_text.MSG_CC_ROW_LABEL.format(label=cc_1, number=str(BRIGHTNESS)))
         while self.editor.row_name() != Row.CC1:
             await self.press(Key.DOWN)
         self.assertIn(ROW_SHOWN.format(label=row.label()), self.text())
         self.document.add_track(SECOND_TRACK)
         self.document.add_clip_slot(index=0, track=SECOND_TRACK, pattern=TUNE)
         self.document.set_track_cc_number(name=SECOND_TRACK, lane=0, number=MOD_WHEEL)
-        self.assertEqual(row.label(), MSG_CC_ROW_LABEL.format(label=cc_1, number=MSG_CC_LANE_VARIES))
+        self.assertEqual(row.label(), labels_text.MSG_CC_ROW_LABEL.format(label=cc_1, number=marks.MSG_CC_LANE_VARIES))
         self.document.set_track_cc_number(name=SECOND_TRACK, lane=0, number=BRIGHTNESS)
-        self.assertEqual(row.label(), MSG_CC_ROW_LABEL.format(label=cc_1, number=str(BRIGHTNESS)))
+        self.assertEqual(row.label(), labels_text.MSG_CC_ROW_LABEL.format(label=cc_1, number=str(BRIGHTNESS)))
         # A pattern no track plays keeps the plain label.
         await self.press(Key.ESCAPE, Key.ESCAPE)
         await self.open_patterns_on(OTHER)
@@ -257,7 +255,7 @@ class TestSections(UITest):
         await self.press(Key.ENTER)
         self.assertEqual(self.document.step_value(name=TUNE, row=row, step=rest), typed)
         await self.press(Key.ENTER)
-        self.app.screen.value = str(MAX_REGISTER_VALUE + 1)
+        self.app.screen.value = str(limits.MAX_REGISTER_VALUE + 1)
         await self.press(Key.ENTER)
         self.assertEqual(self.document.step_value(name=TUNE, row=row, step=rest), typed)
         render_song(self.document.song())
@@ -268,22 +266,22 @@ class TestSections(UITest):
         row = REGISTER_VELOCITY_ROWS[RegisterName.CX]
         while self.editor.row_name() != row:
             await self.press(Key.DOWN)
-        self.assertEqual(self.editor.cell_text(name=row, step=0), MSG_TOGGLE_OFF)
+        self.assertEqual(self.editor.cell_text(name=row, step=0), marks.MSG_TOGGLE_OFF)
         await self.press(keybindings.RegisterRow.NEXT)
         self.assertEqual(self.document.step_value(name=TUNE, row=row, step=0), RegisterUse.ADD)
-        self.assertEqual(self.editor.cell_text(name=row, step=0), MSG_REGISTER_ADDS)
+        self.assertEqual(self.editor.cell_text(name=row, step=0), marks.MSG_REGISTER_ADDS)
         await self.press(key_of(binding=keybindings.RegisterRow.NEXT, key=Key.ENTER))
         self.assertEqual(self.document.step_value(name=TUNE, row=row, step=0), RegisterUse.SUBTRACT)
-        self.assertEqual(self.editor.cell_text(name=row, step=0), MSG_REGISTER_SUBTRACTS)
+        self.assertEqual(self.editor.cell_text(name=row, step=0), marks.MSG_REGISTER_SUBTRACTS)
         await self.press(keybindings.RegisterRow.NEXT)
         self.assertEqual(self.document.step_value(name=TUNE, row=row, step=0), RegisterUse.OFF)
-        self.assertEqual(self.editor.cell_text(name=row, step=0), MSG_TOGGLE_OFF)
+        self.assertEqual(self.editor.cell_text(name=row, step=0), marks.MSG_TOGGLE_OFF)
         await self.press(keybindings.RegisterRow.LESS)
         self.assertEqual(self.document.step_value(name=TUNE, row=row, step=0), RegisterUse.SUBTRACT)
         await self.press(keybindings.RegisterRow.MORE, keybindings.RegisterRow.MORE)
         self.assertEqual(self.document.step_value(name=TUNE, row=row, step=0), RegisterUse.ADD)
-        self.assertIn(KEY_SHOWN.format(label=KeyName.LEFT_BRACKET) + MSG_LEGEND_WHAT.format(what=What.LESS), self.text())
-        self.assertIn(KEY_SHOWN.format(label=KeyName.RIGHT_BRACKET) + MSG_LEGEND_WHAT.format(what=What.MORE), self.text())
+        self.assertIn(KEY_SHOWN.format(label=legends.KeyName.LEFT_BRACKET) + legends.MSG_LEGEND_WHAT.format(what=legends.What.LESS), self.text())
+        self.assertIn(KEY_SHOWN.format(label=legends.KeyName.RIGHT_BRACKET) + legends.MSG_LEGEND_WHAT.format(what=legends.What.MORE), self.text())
         await self.press(keybindings.RegisterRow.CLEAR)
         self.assertEqual(self.document.step_value(name=TUNE, row=row, step=0), RegisterUse.OFF)
         self.assertIn(f'« {key_name(keybindings.RegisterRow.NEXT)} »', self.text())
@@ -291,10 +289,10 @@ class TestSections(UITest):
         await self.press(*[Key.RIGHT] * EMPTY_STEP)
         for name in (*REGISTER_NOTE_ROWS.values(), *REGISTER_VELOCITY_ROWS.values()):
             self.assertTrue(self.editor.row_for(name).editable(), name)
-            self.assertNotEqual(self.editor.row_for(name).cell_lines(step=EMPTY_STEP), [MSG_BLOCKED_CELL], name)
+            self.assertNotEqual(self.editor.row_for(name).cell_lines(step=EMPTY_STEP), [marks.MSG_BLOCKED_CELL], name)
         await self.press(keybindings.RegisterRow.NEXT)
         self.assertEqual(self.document.step_value(name=TUNE, row=row, step=EMPTY_STEP), RegisterUse.ADD)
-        self.assertEqual(self.editor.cell_text(name=row, step=EMPTY_STEP), MSG_REGISTER_ADDS)
+        self.assertEqual(self.editor.cell_text(name=row, step=EMPTY_STEP), marks.MSG_REGISTER_ADDS)
         render_song(self.document.song())
 
     async def test_a_drum_pattern_has_no_rows_that_move_notes(self):

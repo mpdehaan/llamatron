@@ -29,10 +29,7 @@ from unittest import mock
 from tests.support.ui_testing import UITest
 from llamatron.composition.file_format import Section
 from llamatron.importers.midi_import import DEFAULT_LONGEST_PATTERN, LONGEST_PATTERN_CHOICES
-from llamatron.strings.importing import (
-    MSG_IMPORT_AS_TRACKS, MSG_IMPORT_TITLE, MSG_IMPORTED, MSG_IMPORTED_NO_WARNINGS, MSG_IMPORTED_SONG, MSG_IMPORTED_WARNINGS,
-)
-from llamatron.strings.labels import Crumb, PageName
+from llamatron.strings import importing, labels
 from llamatron.tui.dialogs.import_dialog import BUTTONS, CANCEL_BUTTON, CHORDS, LONGEST, ImportDialog
 from llamatron.tui.dialogs.imported_dialog import ImportedDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
@@ -84,25 +81,25 @@ class TestImportDialog(UITest):
         await self.press(Key.ENTER)
 
     def test_the_main_screen_has_an_import_cell(self):
-        self.assertEqual(cell_opened_by(Key.M), PageName.IMPORT)
+        self.assertEqual(cell_opened_by(Key.M), labels.PageName.IMPORT)
 
     async def test_the_cell_sits_in_the_bar_of_actions_above_export(self):
         # Import over Export, the bar's second column.
         above, below = [[cell_name(item) for item in row] for row in self.app.screen.rows()[-2:]]
-        self.assertEqual(below[above.index(PageName.IMPORT)], PageName.EXPORT)
-        self.assertIn(PageName.IMPORT, self.text())
+        self.assertEqual(below[above.index(labels.PageName.IMPORT)], labels.PageName.EXPORT)
+        self.assertIn(labels.PageName.IMPORT, self.text())
 
     async def test_m_opens_the_picker_in_the_home_directory_showing_midi_files(self):
         await self.press(keybindings.MainPage.IMPORT_HERE)
         self.assertIsInstance(self.app.screen, OpenPage)
         self.assertEqual(os.path.abspath(self.app.screen.folder), os.path.abspath(HOME))
         self.assertIn(SAMPLE_FILE, [row[0] for row in self.app.screen.rows()])
-        self.assertIn(Crumb.IMPORT_MIDI, self.text())
+        self.assertIn(labels.Crumb.IMPORT_MIDI, self.text())
 
     async def test_enter_on_a_file_asks_how_to_import_it(self):
         await self.open_the_dialog()
         self.assertIsInstance(self.app.screen, ImportDialog)
-        self.assertIn(MSG_IMPORT_TITLE, self.text())
+        self.assertIn(importing.MSG_IMPORT_TITLE, self.text())
 
     async def test_import_adds_the_song_makes_it_current_and_says_what_it_made(self):
         before = self.document.setlist().get_item_names(Section.PATTERNS)
@@ -112,7 +109,7 @@ class TestImportDialog(UITest):
         self.assertIsInstance(self.app.screen, MainPage)
         self.assertEqual(self.document.current_song_name(), SAMPLE_SONG)
         self.assertEqual(len(self.document.setlist().get_item_names(Section.PATTERNS)), len(before) + made.patterns)
-        self.assertIn(MSG_IMPORTED.format(name=SAMPLE_SONG, tracks=made.tracks, patterns=made.patterns, scenes=made.scenes), self.text())
+        self.assertIn(importing.MSG_IMPORTED.format(name=SAMPLE_SONG, tracks=made.tracks, patterns=made.patterns, scenes=made.scenes), self.text())
         self.assertTrue(self.document.is_dirty())
 
     async def test_one_undo_takes_the_whole_import_away(self):
@@ -142,7 +139,7 @@ class TestImportDialog(UITest):
         self.assertEqual(dialog.choices.longest_pattern, LONGEST_PATTERN_CHOICES[LONGEST_PATTERN_CHOICES.index(DEFAULT_LONGEST_PATTERN) + 1])
         await self.press(*[Key.DOWN] * (CHORDS - LONGEST), keybindings.ImportDialog.TOGGLE)
         self.assertFalse(dialog.choices.chords)
-        self.assertIn(MSG_IMPORT_AS_TRACKS, self.text())
+        self.assertIn(importing.MSG_IMPORT_AS_TRACKS, self.text())
 
     async def test_enter_on_the_song_name_renames_the_song(self):
         await self.open_the_dialog()
@@ -166,8 +163,8 @@ class TestImportDialog(UITest):
         await self.open_the_dialog()
         await self.press(keybindings.ImportDialog.IMPORT)
         self.assertIsInstance(self.app.screen, ImportedDialog)
-        self.assertIn(MSG_IMPORTED_SONG.format(name=SAMPLE_SONG), self.text())
-        self.assertIn(MSG_IMPORTED_NO_WARNINGS, self.text())
+        self.assertIn(importing.MSG_IMPORTED_SONG.format(name=SAMPLE_SONG), self.text())
+        self.assertIn(importing.MSG_IMPORTED_NO_WARNINGS, self.text())
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, MainPage)
 
@@ -181,7 +178,7 @@ class TestImportDialog(UITest):
         warnings = self.app.screen.made().warnings
         self.assertTrue(warnings)
         await self.press(keybindings.ImportDialog.IMPORT)
-        self.assertIn(MSG_IMPORTED_WARNINGS, self.text())
+        self.assertIn(importing.MSG_IMPORTED_WARNINGS, self.text())
         self.assertIn(warnings[0][:WARNING_SHOWN], self.text())
 
     async def test_enter_on_a_directory_goes_into_it_and_imports_from_there(self):

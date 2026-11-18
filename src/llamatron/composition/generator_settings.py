@@ -29,7 +29,8 @@ from llamatron.composition.named_scale import scale_type_names
 from llamatron.composition.strum import strum_part_settings, strum_values
 from llamatron.composition.shapes import NO_ACCENT, UNCHANGED, ShapeValues, shape_part_settings, shape_values
 from llamatron.music.note import ROOT_NAMES
-from llamatron.composition.limits import MAX_RUSH_OR_DRAG, MAX_SHORTEN, MAX_STEP_ROW, MIN_SHORTEN, MIN_STEP_ROW, DEFAULT_EUCLID_STEPS, MAX_ACCENT, MIN_ACCENT, MAX_PROGRESSION_CHORDS, MIN_PROGRESSION_CHORDS, MAX_PROGRESSION_DEGREE, MAX_PROGRESSION_INVERSION, MIN_PROGRESSION_DEGREE, MAX_DRIFT_DEGREE, MAX_PROBABILITY, MAX_REGISTER_VALUE, MIN_PROBABILITY, MIN_REGISTER_VALUE
+from llamatron.composition import limits
+from llamatron.strings import errors
 from llamatron.composition.llama_data import LlamaData, or_default, own_copy
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.corrections import LEFT_OUT, NO_NEAREST_VALUE
@@ -49,22 +50,6 @@ from llamatron.generators.shorten import Shorten
 from llamatron.composition.euclid import NAMED_RHYTHMS, euclid_part_settings, euclid_values
 from llamatron.generators.arp import MAX_OCTAVE_RANGE, MAX_OFFSET, MAX_OFFSETS, MIN_OFFSETS, Arp, ChordOrder, OctaveJump, _check_offsets
 from llamatron.generators.auto_ratchet import AutoRatchet
-from llamatron.strings.errors import (
-    ERR_NOT_TEXT,
-    ERR_BAD_SHAPE_PERCENT,
-    ERR_BAD_PROGRESSION_CHORDS,
-    ERR_BAD_PROGRESSION_ROW, ERR_BAD_PROGRESSION_TENSIONS,
-    ERR_VOICE_LEADING_RANGE,
-    ERR_BAD_GUITAR_ACCENTS, ERR_BAD_GUITAR_BAR, ERR_GUITARIFY_NOT_TRUE_OR_FALSE,
-    ERR_ROOT_IN_BASS_NOT_TRUE_OR_FALSE,
-    ERR_EUCLID_TOO_MANY_HITS,
-    ERR_BAD_STEP_ROW,
-    ERR_BAD_GLIDE_AMOUNT,
-    ERR_DRIFT_BAD_ROOT, ERR_DRIFT_BAD_SCALE,
-    ERR_GENERATOR_BAD_ADD, ERR_GENERATOR_BAD_STEP_ADDS,
-    ERR_GENERATOR_BAD_OCTAVE_RANGE, ERR_GENERATOR_BAD_OFFSETS, ERR_GENERATOR_NO_SUCH_SETTING, ERR_GENERATOR_NOT_A_LIST,
-    ERR_GENERATOR_NOT_INTEGER, ERR_NEEDS_SETTING, ERR_NO_OFFSETS, ERR_NO_SUCH_OFFSET, ERR_NOT_A_CHOICE, ERR_NOT_SETTINGS,
-)
 from llamatron.support.revised import notes_change
 
 MIN_OCTAVE_RANGE = 1
@@ -75,7 +60,7 @@ NEW_AUTO_RATCHET_COUNTS = [2]
 
 
 # Every generator's Restart: when it starts over, every clip unless set.
-RESTART_SETTING = Choice(name=GENERATOR_RESTART, choices=RESTARTS, default=LEFT_OUT, error=ERR_NOT_A_CHOICE)
+RESTART_SETTING = Choice(name=GENERATOR_RESTART, choices=RESTARTS, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE)
 
 
 class ArpSetting:
@@ -122,13 +107,13 @@ class DriftSetting:
 DRIFT_ADDS = {RegisterName.AX: DriftValue.AX_ADD, RegisterName.BX: DriftValue.BX_ADD, RegisterName.CX: DriftValue.CX_ADD, RegisterName.DX: DriftValue.DX_ADD}
 # A version's values, in the order the editor lists them: (name, lowest, highest) for each number, and the two choices.
 DRIFT_NUMBERS = [
-    *[(name, MIN_REGISTER_VALUE, MAX_REGISTER_VALUE) for name in DRIFT_ADDS.values()],
-    (DriftValue.VELOCITY, -MAX_REGISTER_VALUE, MAX_REGISTER_VALUE),
-    (DriftValue.PROBABILITY, -MAX_PROBABILITY, MAX_PROBABILITY),
-    (DriftValue.DEGREE, -MAX_DRIFT_DEGREE, MAX_DRIFT_DEGREE),
-    (DriftValue.DEGREE_RANDOM, MIN_PROBABILITY, MAX_DRIFT_DEGREE),
-    (DriftValue.SCALE_PROBABILITY, MIN_PROBABILITY, MAX_PROBABILITY),
-    (DriftValue.ROOT_PROBABILITY, MIN_PROBABILITY, MAX_PROBABILITY),
+    *[(name, limits.MIN_REGISTER_VALUE, limits.MAX_REGISTER_VALUE) for name in DRIFT_ADDS.values()],
+    (DriftValue.VELOCITY, -limits.MAX_REGISTER_VALUE, limits.MAX_REGISTER_VALUE),
+    (DriftValue.PROBABILITY, -limits.MAX_PROBABILITY, limits.MAX_PROBABILITY),
+    (DriftValue.DEGREE, -limits.MAX_DRIFT_DEGREE, limits.MAX_DRIFT_DEGREE),
+    (DriftValue.DEGREE_RANDOM, limits.MIN_PROBABILITY, limits.MAX_DRIFT_DEGREE),
+    (DriftValue.SCALE_PROBABILITY, limits.MIN_PROBABILITY, limits.MAX_PROBABILITY),
+    (DriftValue.ROOT_PROBABILITY, limits.MIN_PROBABILITY, limits.MAX_PROBABILITY),
 ]
 DRIFT_VALUES = [
     *DRIFT_ADDS.values(), DriftValue.VELOCITY, DriftValue.PROBABILITY, DriftValue.DEGREE, DriftValue.DEGREE_RANDOM,
@@ -148,12 +133,12 @@ def versioned(*, version, value):
 
 def _check_scale_name(value):
     if not isinstance(value, str) or not value:
-        raise InvalidValue(ERR_DRIFT_BAD_SCALE.format(value=value))
+        raise InvalidValue(errors.ERR_DRIFT_BAD_SCALE.format(value=value))
 
 
 def _check_root(value):
     if value not in ROOT_NAMES:
-        raise InvalidValue(ERR_DRIFT_BAD_ROOT.format(roots=listed(ROOT_NAMES), value=value))
+        raise InvalidValue(errors.ERR_DRIFT_BAD_ROOT.format(roots=listed(ROOT_NAMES), value=value))
 
 
 class AutoRatchetSetting:
@@ -191,7 +176,7 @@ def _check_arp_offsets(value):
     try:
         _check_offsets(value)
     except ValueError as error:
-        raise InvalidValue(ERR_GENERATOR_BAD_OFFSETS.format(problem=error)) from None
+        raise InvalidValue(errors.ERR_GENERATOR_BAD_OFFSETS.format(problem=error)) from None
 
 
 def _nearest_offsets(offsets):
@@ -204,18 +189,18 @@ def _nearest_offsets(offsets):
 
 
 def _is_step_add(value):
-    return value is None or is_whole_number_from(value=value, lowest=MIN_REGISTER_VALUE, highest=MAX_REGISTER_VALUE)
+    return value is None or is_whole_number_from(value=value, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE)
 
 
 def _check_step_adds(value):
     """Refuse a row of adds under the offsets unless it is a list of 1 to 16 adds or blanks."""
     if not isinstance(value, list) or not MIN_OFFSETS <= len(value) <= MAX_OFFSETS or not all(_is_step_add(add) for add in value):
-        raise InvalidValue(ERR_GENERATOR_BAD_STEP_ADDS.format(most=MAX_OFFSETS, lowest=MIN_REGISTER_VALUE, highest=MAX_REGISTER_VALUE, value=value))
+        raise InvalidValue(errors.ERR_GENERATOR_BAD_STEP_ADDS.format(most=MAX_OFFSETS, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, value=value))
 
 
 def _check_counts(value):
     if not isinstance(value, list):
-        raise InvalidValue(ERR_GENERATOR_NOT_A_LIST.format(name=AutoRatchetSetting.COUNTS, value=value))
+        raise InvalidValue(errors.ERR_GENERATOR_NOT_A_LIST.format(name=AutoRatchetSetting.COUNTS, value=value))
 
 
 class GeneratorSettings(LlamaData):
@@ -249,12 +234,12 @@ class GeneratorSettings(LlamaData):
     def check_data(cls, data):
         """Raise InvalidValue unless data holds only settings this generator has, each one right, and every one it needs."""
         if not isinstance(data, dict):
-            raise InvalidValue(ERR_NOT_SETTINGS.format(value=data))
+            raise InvalidValue(errors.ERR_NOT_SETTINGS.format(value=data))
         check_keys(data=data, allowed=set(cls.SETTINGS))
         check_settings(settings=cls.SETTINGS, data=data)
         for name in cls.REQUIRED:
             if name not in data:
-                raise InvalidValue(ERR_NEEDS_SETTING.format(name=name))
+                raise InvalidValue(errors.ERR_NEEDS_SETTING.format(name=name))
 
     def to_data(self):
         return own_copy(self._settings)
@@ -274,9 +259,9 @@ class GeneratorSettings(LlamaData):
         the same way.
         """
         if not isinstance(self._settings, dict):
-            raise InvalidValue(ERR_NOT_SETTINGS.format(value=self._settings))
+            raise InvalidValue(errors.ERR_NOT_SETTINGS.format(value=self._settings))
         if name not in self.SETTINGS:
-            raise InvalidValue(ERR_GENERATOR_NO_SUCH_SETTING.format(name=name, names=listed(sorted(self.SETTINGS))))
+            raise InvalidValue(errors.ERR_GENERATOR_NO_SUCH_SETTING.format(name=name, names=listed(sorted(self.SETTINGS))))
         if value is None:
             self._settings.pop(name, None)
         else:
@@ -325,12 +310,12 @@ class ArpSettings(GeneratorSettings):
     GENERATOR = Arp
     SETTINGS = described(
         Checked(name=ArpSetting.STEP, check=time_length),
-        Choice(name=ArpSetting.ORDER, choices=sorted(ORDERS), default=LEFT_OUT, error=ERR_NOT_A_CHOICE),
-        WholeNumber(name=ArpSetting.SEED, error=ERR_GENERATOR_NOT_INTEGER),
-        WholeNumber(name=ArpSetting.OCTAVE_RANGE, lowest=MIN_OCTAVE_RANGE, highest=MAX_OCTAVE_RANGE, error=ERR_GENERATOR_BAD_OCTAVE_RANGE),
-        Choice(name=ArpSetting.OCTAVE_JUMP, choices=sorted(OCTAVE_JUMPS), default=LEFT_OUT, error=ERR_NOT_A_CHOICE),
+        Choice(name=ArpSetting.ORDER, choices=sorted(ORDERS), default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        WholeNumber(name=ArpSetting.SEED, error=errors.ERR_GENERATOR_NOT_INTEGER),
+        WholeNumber(name=ArpSetting.OCTAVE_RANGE, lowest=MIN_OCTAVE_RANGE, highest=MAX_OCTAVE_RANGE, error=errors.ERR_GENERATOR_BAD_OCTAVE_RANGE),
+        Choice(name=ArpSetting.OCTAVE_JUMP, choices=sorted(OCTAVE_JUMPS), default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
         Checked(name=ArpSetting.OFFSETS, check=_check_arp_offsets, nearest=_nearest_offsets),
-        *[WholeNumber(name=name, lowest=MIN_REGISTER_VALUE, highest=MAX_REGISTER_VALUE, error=ERR_GENERATOR_BAD_ADD) for name in ARP_NOTE_ADDS.values()],
+        *[WholeNumber(name=name, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, error=errors.ERR_GENERATOR_BAD_ADD) for name in ARP_NOTE_ADDS.values()],
         *[Checked(name=name, check=_check_step_adds) for name in ARP_STEP_ADDS.values()],
         RESTART_SETTING,
     )
@@ -408,7 +393,7 @@ class ArpSettings(GeneratorSettings):
         """Add a step that leaves the note where it is, before a step of the offsets, or at the end."""
         offsets = self.get_offsets()
         if offsets is None or not is_whole_number_from(value=step, lowest=0, highest=len(offsets)):
-            raise InvalidValue(ERR_NO_SUCH_OFFSET.format(step=step, count=len(offsets or [])))
+            raise InvalidValue(errors.ERR_NO_SUCH_OFFSET.format(step=step, count=len(offsets or [])))
         rows = {register: self.get_step_adds(register) for register in REGISTER_NAMES}
         offsets.insert(step, NO_OFFSET)
         self.set_setting(name=ArpSetting.OFFSETS, value=offsets)
@@ -429,9 +414,9 @@ class ArpSettings(GeneratorSettings):
         """Return a copy of the offsets with a step to change, or raise InvalidValue if there's no such step."""
         offsets = self.get_offsets()
         if offsets is None:
-            raise InvalidValue(ERR_NO_OFFSETS)
+            raise InvalidValue(errors.ERR_NO_OFFSETS)
         if not is_whole_number_from(value=step, lowest=0, highest=len(offsets) - 1):
-            raise InvalidValue(ERR_NO_SUCH_OFFSET.format(step=step, count=len(offsets)))
+            raise InvalidValue(errors.ERR_NO_SUCH_OFFSET.format(step=step, count=len(offsets)))
         return offsets
 
 
@@ -472,17 +457,17 @@ class ProgressionSetting:
 
 def _check_progression_chords(chords):
     """Check a progression's chords: a list of 1 to MAX_PROGRESSION_CHORDS degrees."""
-    fits = isinstance(chords, list) and MIN_PROGRESSION_CHORDS <= len(chords) <= MAX_PROGRESSION_CHORDS and all(
-        is_whole_number_from(value=degree, lowest=MIN_PROGRESSION_DEGREE, highest=MAX_PROGRESSION_DEGREE) for degree in chords)
+    fits = isinstance(chords, list) and limits.MIN_PROGRESSION_CHORDS <= len(chords) <= limits.MAX_PROGRESSION_CHORDS and all(
+        is_whole_number_from(value=degree, lowest=limits.MIN_PROGRESSION_DEGREE, highest=limits.MAX_PROGRESSION_DEGREE) for degree in chords)
     if not fits:
-        raise InvalidValue(ERR_BAD_PROGRESSION_CHORDS.format(most=MAX_PROGRESSION_CHORDS, lowest=MIN_PROGRESSION_DEGREE, highest=MAX_PROGRESSION_DEGREE, value=chords))
+        raise InvalidValue(errors.ERR_BAD_PROGRESSION_CHORDS.format(most=limits.MAX_PROGRESSION_CHORDS, lowest=limits.MIN_PROGRESSION_DEGREE, highest=limits.MAX_PROGRESSION_DEGREE, value=chords))
 
 
 def _row_of(*, name, allowed):
     """Return a check of a list beside the chords, each step one of the allowed values or nothing."""
     def check(values):
         if not isinstance(values, list) or not all(value is None or value in allowed for value in values):
-            raise InvalidValue(ERR_BAD_PROGRESSION_ROW.format(name=name, choices=listed(allowed), value=values))
+            raise InvalidValue(errors.ERR_BAD_PROGRESSION_ROW.format(name=name, choices=listed(allowed), value=values))
     return check
 
 
@@ -491,12 +476,12 @@ def _tensions_row(values):
     def is_tensions(value):
         return isinstance(value, (list, tuple)) and len(value) > 0 and len(set(value)) == len(value) and all(tension in TENSIONS for tension in value)
     if not isinstance(values, list) or not all(value is None or is_tensions(value) for value in values):
-        raise InvalidValue(ERR_BAD_PROGRESSION_TENSIONS.format(name=ProgressionSetting.TENSIONS, choices=listed(TENSIONS), value=values))
+        raise InvalidValue(errors.ERR_BAD_PROGRESSION_TENSIONS.format(name=ProgressionSetting.TENSIONS, choices=listed(TENSIONS), value=values))
 
 
 # What a progression's sharp-or-flat and inversion rows may hold beside nothing.
 PROGRESSION_ACCIDENTALS = [Accidental.SHARP, Accidental.FLAT]
-PROGRESSION_INVERSIONS = list(range(1, MAX_PROGRESSION_INVERSION + 1))
+PROGRESSION_INVERSIONS = list(range(1, limits.MAX_PROGRESSION_INVERSION + 1))
 # A new progression's one chord, I, which moves nothing until it's edited.
 NEW_PROGRESSION_CHORDS = [1]
 # The rows beside a progression's chords, each as long as the chords.
@@ -591,9 +576,9 @@ class VoiceLeadingSettings(GeneratorSettings):
 
     GENERATOR = VoiceLeading
     SETTINGS = described(
-        WholeNumber(name=VoiceLeadingSetting.LOWEST_OCTAVE, lowest=MIN_OCTAVE, highest=MAX_OCTAVE, error=ERR_BAD_SHAPE_PERCENT),
-        WholeNumber(name=VoiceLeadingSetting.HIGHEST_OCTAVE, lowest=MIN_OCTAVE, highest=MAX_OCTAVE, error=ERR_BAD_SHAPE_PERCENT),
-        Flag(name=VoiceLeadingSetting.ROOT_IN_BASS, error=ERR_ROOT_IN_BASS_NOT_TRUE_OR_FALSE),
+        WholeNumber(name=VoiceLeadingSetting.LOWEST_OCTAVE, lowest=MIN_OCTAVE, highest=MAX_OCTAVE, error=errors.ERR_BAD_SHAPE_PERCENT),
+        WholeNumber(name=VoiceLeadingSetting.HIGHEST_OCTAVE, lowest=MIN_OCTAVE, highest=MAX_OCTAVE, error=errors.ERR_BAD_SHAPE_PERCENT),
+        Flag(name=VoiceLeadingSetting.ROOT_IN_BASS, error=errors.ERR_ROOT_IN_BASS_NOT_TRUE_OR_FALSE),
         RESTART_SETTING,
     )
 
@@ -607,7 +592,7 @@ class VoiceLeadingSettings(GeneratorSettings):
         lowest = data.get(VoiceLeadingSetting.LOWEST_OCTAVE, DEFAULT_VOICING_LOWEST_OCTAVE)
         highest = data.get(VoiceLeadingSetting.HIGHEST_OCTAVE, DEFAULT_VOICING_HIGHEST_OCTAVE)
         if lowest > highest:
-            raise InvalidValue(ERR_VOICE_LEADING_RANGE.format(lowest=lowest, highest=highest))
+            raise InvalidValue(errors.ERR_VOICE_LEADING_RANGE.format(lowest=lowest, highest=highest))
 
     def _with_defaults(self, *, values, default_seed, default_step, bar):
         values.setdefault(VoiceLeadingSetting.LOWEST_OCTAVE, DEFAULT_VOICING_LOWEST_OCTAVE)
@@ -648,17 +633,17 @@ EVERY_STRING = 0
 def _check_guitar_bar(values):
     """Check a bar of strokes: a list of 1 to MAX_GUITAR_BAR, each a stroke's name."""
     if not (isinstance(values, list) and 1 <= len(values) <= MAX_GUITAR_BAR and all(value in STROKES for value in values)):
-        raise InvalidValue(ERR_BAD_GUITAR_BAR.format(name=GuitarifySetting.BAR, most=MAX_GUITAR_BAR, choices=listed(STROKES), value=values))
+        raise InvalidValue(errors.ERR_BAD_GUITAR_BAR.format(name=GuitarifySetting.BAR, most=MAX_GUITAR_BAR, choices=listed(STROKES), value=values))
 
 
 def _check_guitar_accents(values):
     """Check the accents beside a bar of strokes: a list of at most MAX_GUITAR_BAR, each on or off."""
     if not (isinstance(values, list) and len(values) <= MAX_GUITAR_BAR and all(is_true_or_false(value) for value in values)):
-        raise InvalidValue(ERR_BAD_GUITAR_ACCENTS.format(name=GuitarifySetting.ACCENTS, most=MAX_GUITAR_BAR, value=values))
+        raise InvalidValue(errors.ERR_BAD_GUITAR_ACCENTS.format(name=GuitarifySetting.ACCENTS, most=MAX_GUITAR_BAR, value=values))
 
 
 def _guitar_flag(name):
-    return Flag(name=name, error=ERR_GUITARIFY_NOT_TRUE_OR_FALSE.format(name=name))
+    return Flag(name=name, error=errors.ERR_GUITARIFY_NOT_TRUE_OR_FALSE.format(name=name))
 
 
 class GuitarifySettings(GeneratorSettings):
@@ -669,22 +654,22 @@ class GuitarifySettings(GeneratorSettings):
     GENERATOR = Guitarify
     SETTINGS = described(
         _guitar_flag(GuitarifySetting.SHAPE),
-        Choice(name=GuitarifySetting.TUNING, choices=TUNINGS, default=LEFT_OUT, error=ERR_NOT_A_CHOICE),
-        WholeNumber(name=GuitarifySetting.POSITION, lowest=0, highest=MAX_GUITAR_FRET, error=ERR_BAD_SHAPE_PERCENT),
-        WholeNumber(name=GuitarifySetting.CAPO, lowest=0, highest=MAX_GUITAR_FRET, error=ERR_BAD_SHAPE_PERCENT),
-        WholeNumber(name=GuitarifySetting.STRINGS, lowest=MIN_GUITAR_STRINGS, highest=MAX_GUITAR_STRINGS, error=ERR_BAD_SHAPE_PERCENT),
-        Choice(name=GuitarifySetting.SINGLE_NOTES, choices=SINGLE_NOTES, default=LEFT_OUT, error=ERR_NOT_A_CHOICE),
-        Choice(name=GuitarifySetting.COLOR, choices=CHORD_COLORS, default=LEFT_OUT, error=ERR_NOT_A_CHOICE),
+        Choice(name=GuitarifySetting.TUNING, choices=TUNINGS, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        WholeNumber(name=GuitarifySetting.POSITION, lowest=0, highest=MAX_GUITAR_FRET, error=errors.ERR_BAD_SHAPE_PERCENT),
+        WholeNumber(name=GuitarifySetting.CAPO, lowest=0, highest=MAX_GUITAR_FRET, error=errors.ERR_BAD_SHAPE_PERCENT),
+        WholeNumber(name=GuitarifySetting.STRINGS, lowest=MIN_GUITAR_STRINGS, highest=MAX_GUITAR_STRINGS, error=errors.ERR_BAD_SHAPE_PERCENT),
+        Choice(name=GuitarifySetting.SINGLE_NOTES, choices=SINGLE_NOTES, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=GuitarifySetting.COLOR, choices=CHORD_COLORS, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
         _guitar_flag(GuitarifySetting.STROKES),
         Checked(name=GuitarifySetting.BAR, check=_check_guitar_bar),
         Checked(name=GuitarifySetting.ACCENTS, check=_check_guitar_accents),
         Checked(name=GuitarifySetting.CELL, check=time_length),
         _guitar_flag(GuitarifySetting.LET_RING),
-        WholeNumber(name=GuitarifySetting.SPREAD, lowest=0, highest=MAX_GUITAR_SPREAD, error=ERR_BAD_SHAPE_PERCENT),
-        WholeNumber(name=GuitarifySetting.FADE, lowest=0, highest=MAX_GUITAR_PERCENT, error=ERR_BAD_SHAPE_PERCENT),
-        WholeNumber(name=GuitarifySetting.LOOSE_TIMING, lowest=0, highest=MAX_GUITAR_PERCENT, error=ERR_BAD_SHAPE_PERCENT),
-        WholeNumber(name=GuitarifySetting.UPSTROKE, lowest=EVERY_STRING, highest=MAX_GUITAR_STRINGS, error=ERR_BAD_SHAPE_PERCENT),
-        Choice(name=GuitarifySetting.APPROACH, choices=APPROACHES, default=LEFT_OUT, error=ERR_NOT_A_CHOICE),
+        WholeNumber(name=GuitarifySetting.SPREAD, lowest=0, highest=MAX_GUITAR_SPREAD, error=errors.ERR_BAD_SHAPE_PERCENT),
+        WholeNumber(name=GuitarifySetting.FADE, lowest=0, highest=MAX_GUITAR_PERCENT, error=errors.ERR_BAD_SHAPE_PERCENT),
+        WholeNumber(name=GuitarifySetting.LOOSE_TIMING, lowest=0, highest=MAX_GUITAR_PERCENT, error=errors.ERR_BAD_SHAPE_PERCENT),
+        WholeNumber(name=GuitarifySetting.UPSTROKE, lowest=EVERY_STRING, highest=MAX_GUITAR_STRINGS, error=errors.ERR_BAD_SHAPE_PERCENT),
+        Choice(name=GuitarifySetting.APPROACH, choices=APPROACHES, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
         RESTART_SETTING,
     )
     TAKEN_AS = {GuitarifySetting.CELL: time_length}
@@ -827,8 +812,8 @@ class EuclidSettings(GeneratorSettings):
 
 def _check_hits_fit(*, hits, steps):
     """Refuse more hits than steps, a bar of sixteenths when the steps are left out."""
-    if hits is not None and hits > (DEFAULT_EUCLID_STEPS if steps is None else steps):
-        raise InvalidValue(ERR_EUCLID_TOO_MANY_HITS.format(hits=hits, steps=DEFAULT_EUCLID_STEPS if steps is None else steps))
+    if hits is not None and hits > (limits.DEFAULT_EUCLID_STEPS if steps is None else steps):
+        raise InvalidValue(errors.ERR_EUCLID_TOO_MANY_HITS.format(hits=hits, steps=limits.DEFAULT_EUCLID_STEPS if steps is None else steps))
 
 
 class StepRowSetting:
@@ -855,15 +840,15 @@ NO_RUSH_OR_DRAG = 0
 
 def _check_step_row(values):
     """Check a row of steps: a list of 1 to MAX_STEP_ROW, each on or off."""
-    fits = isinstance(values, list) and MIN_STEP_ROW <= len(values) <= MAX_STEP_ROW and all(is_true_or_false(value) for value in values)
+    fits = isinstance(values, list) and limits.MIN_STEP_ROW <= len(values) <= limits.MAX_STEP_ROW and all(is_true_or_false(value) for value in values)
     if not fits:
-        raise InvalidValue(ERR_BAD_STEP_ROW.format(name=StepRowSetting.STEPS, most=MAX_STEP_ROW, value=values))
+        raise InvalidValue(errors.ERR_BAD_STEP_ROW.format(name=StepRowSetting.STEPS, most=limits.MAX_STEP_ROW, value=values))
 
 
 def _check_glide_amount(value):
     amount = number(value)
     if not LEAST_GLIDE_AMOUNT <= amount <= MOST_GLIDE_AMOUNT:
-        raise InvalidValue(ERR_BAD_GLIDE_AMOUNT.format(least=LEAST_GLIDE_AMOUNT, most=MOST_GLIDE_AMOUNT, value=value))
+        raise InvalidValue(errors.ERR_BAD_GLIDE_AMOUNT.format(least=LEAST_GLIDE_AMOUNT, most=MOST_GLIDE_AMOUNT, value=value))
 
 
 # What every row of steps holds besides its amount: the row, its step and its Restart.
@@ -928,7 +913,7 @@ class ShortenSettings(StepRowSettings):
 
     GENERATOR = Shorten
     SETTINGS = described(
-        STEP_ROW_SETTINGS[0], STEP_ROW_SETTINGS[1], WholeNumber(name=StepRowSetting.SHORTEN, lowest=MIN_SHORTEN, highest=MAX_SHORTEN, error=ERR_BAD_SHAPE_PERCENT),
+        STEP_ROW_SETTINGS[0], STEP_ROW_SETTINGS[1], WholeNumber(name=StepRowSetting.SHORTEN, lowest=limits.MIN_SHORTEN, highest=limits.MAX_SHORTEN, error=errors.ERR_BAD_SHAPE_PERCENT),
         STEP_ROW_SETTINGS[2],
     )
 
@@ -951,7 +936,7 @@ class MovingRowSettings(StepRowSettings):
     GENERATOR = None
     DEFAULT_AMOUNT = None
     SETTINGS = described(
-        STEP_ROW_SETTINGS[0], STEP_ROW_SETTINGS[1], WholeNumber(name=StepRowSetting.AMOUNT, lowest=NO_RUSH_OR_DRAG, highest=MAX_RUSH_OR_DRAG, error=ERR_BAD_SHAPE_PERCENT),
+        STEP_ROW_SETTINGS[0], STEP_ROW_SETTINGS[1], WholeNumber(name=StepRowSetting.AMOUNT, lowest=NO_RUSH_OR_DRAG, highest=limits.MAX_RUSH_OR_DRAG, error=errors.ERR_BAD_SHAPE_PERCENT),
         STEP_ROW_SETTINGS[2],
     )
 
@@ -1000,12 +985,12 @@ def _drift_settings():
                 versions.append(Checked(name=name, check=_check_root))
             else:
                 lowest, highest = numbers[value]
-                versions.append(WholeNumber(name=name, lowest=lowest, highest=highest, error=ERR_GENERATOR_BAD_ADD))
+                versions.append(WholeNumber(name=name, lowest=lowest, highest=highest, error=errors.ERR_GENERATOR_BAD_ADD))
     return described(
         Checked(name=DriftSetting.EVERY, check=time_length),
-        WholeNumber(name=DriftSetting.STEPS_TO_B, lowest=MIN_STEPS_TO_B, highest=MAX_STEPS_TO_B, error=ERR_GENERATOR_BAD_ADD),
-        Choice(name=DriftSetting.DIRECTION, choices=DRIFT_DIRECTIONS, default=LEFT_OUT, error=ERR_NOT_A_CHOICE),
-        WholeNumber(name=DriftSetting.SEED, error=ERR_GENERATOR_NOT_INTEGER),
+        WholeNumber(name=DriftSetting.STEPS_TO_B, lowest=MIN_STEPS_TO_B, highest=MAX_STEPS_TO_B, error=errors.ERR_GENERATOR_BAD_ADD),
+        Choice(name=DriftSetting.DIRECTION, choices=DRIFT_DIRECTIONS, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        WholeNumber(name=DriftSetting.SEED, error=errors.ERR_GENERATOR_NOT_INTEGER),
         *versions,
         RESTART_SETTING,
     )
@@ -1096,7 +1081,7 @@ class SwellSettings(ShapeSettings):
     SHAPE = Shape.SWELL
     SETTINGS = described(
         *shape_part_settings(shape=Shape.SWELL, named=lambda part: part),
-        WholeNumber(name=ShapeSetting.ACCENT, lowest=MIN_ACCENT, highest=MAX_ACCENT, error=ERR_BAD_SHAPE_PERCENT),
+        WholeNumber(name=ShapeSetting.ACCENT, lowest=limits.MIN_ACCENT, highest=limits.MAX_ACCENT, error=errors.ERR_BAD_SHAPE_PERCENT),
         RESTART_SETTING,
     )
 
@@ -1131,7 +1116,7 @@ class HocketSettings(GeneratorSettings):
     __slots__ = ()
 
     GENERATOR = None
-    SETTINGS = described(Text(name=HocketSetting.SOURCE, error=ERR_NOT_TEXT), RESTART_SETTING)
+    SETTINGS = described(Text(name=HocketSetting.SOURCE, error=errors.ERR_NOT_TEXT), RESTART_SETTING)
     REFERENCES = {Section.TRACKS: (HocketSetting.SOURCE,)}
 
     @classmethod
@@ -1167,7 +1152,7 @@ class FollowChordsSettings(GeneratorSettings):
     __slots__ = ()
 
     GENERATOR = FollowChords
-    SETTINGS = described(Text(name=FollowChordsSetting.CHORDS_FROM, error=ERR_NOT_TEXT))
+    SETTINGS = described(Text(name=FollowChordsSetting.CHORDS_FROM, error=errors.ERR_NOT_TEXT))
     REFERENCES = {Section.TRACKS: (FollowChordsSetting.CHORDS_FROM,)}
 
     @classmethod
@@ -1215,10 +1200,10 @@ class PhrasingSettings(GeneratorSettings):
 
     GENERATOR = Phrasing
     SETTINGS = described(
-        Choice(name=PhrasingSetting.LINE_BARS, choices=LINES_IN_BARS, default=LEFT_OUT, error=ERR_NOT_A_CHOICE),
-        Choice(name=PhrasingSetting.BREATH, choices=BREATHS, default=LEFT_OUT, error=ERR_NOT_A_CHOICE),
-        Choice(name=PhrasingSetting.RISE_AND_FALL, choices=RISES, default=LEFT_OUT, error=ERR_NOT_A_CHOICE),
-        Choice(name=PhrasingSetting.NOTES, choices=JOINS, default=LEFT_OUT, error=ERR_NOT_A_CHOICE),
+        Choice(name=PhrasingSetting.LINE_BARS, choices=LINES_IN_BARS, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=PhrasingSetting.BREATH, choices=BREATHS, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=PhrasingSetting.RISE_AND_FALL, choices=RISES, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=PhrasingSetting.NOTES, choices=JOINS, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
     )
 
     @classmethod

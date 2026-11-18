@@ -21,7 +21,7 @@ import mido
 
 from llamatron.composition.file_format import ClipSlotSetting, InstrumentSetting, PatternSetting, Row, SceneSetting, Section, TrackSetting
 from llamatron.composition.instrument import Instrument
-from llamatron.composition.limits import MAX_GM_SOUND, MIN_GM_SOUND
+from llamatron.composition import limits
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.midi_arrangement import DRUM_CHANNEL_BYTE, MELODIC_CHANNEL_BYTES, MidiGeneralMidi
 from llamatron.exporters.midi_messages import PROGRAM_CHANGE_MESSAGE
@@ -77,8 +77,8 @@ class TestGeneralMidi(unittest.TestCase):
 
     def test_each_track_takes_its_instruments_sound_and_drums_play_on_channel_10(self):
         tracks = exported(data_with(tracks=[('lead', False, False, PIANO), ('drums', True, False, KIT)],
-                                    instruments={PIANO: {InstrumentSetting.GM_SOUND: FLUTE}, KIT: {InstrumentSetting.GM_SOUND: MIN_GM_SOUND}}))
-        self.assertEqual(programs(tracks[0]), [FLUTE - MIN_GM_SOUND])
+                                    instruments={PIANO: {InstrumentSetting.GM_SOUND: FLUTE}, KIT: {InstrumentSetting.GM_SOUND: limits.MIN_GM_SOUND}}))
+        self.assertEqual(programs(tracks[0]), [FLUTE - limits.MIN_GM_SOUND])
         self.assertEqual(channels(tracks[0]), {MELODIC_CHANNEL_BYTES[0]})
         self.assertEqual(programs(tracks[1]), [], 'a drum track plays the kit channel 10 has, so it sends no program')
         self.assertEqual(channels(tracks[1]), {DRUM_CHANNEL_BYTE})
@@ -115,6 +115,6 @@ class TestTheInstrumentsSound(unittest.TestCase):
         self.assertNotIn(InstrumentSetting.GM_SOUND, Instrument().to_data())
 
     def test_a_sound_past_either_end_is_refused(self):
-        for sound in (MIN_GM_SOUND - 1, MAX_GM_SOUND + 1):
+        for sound in (limits.MIN_GM_SOUND - 1, limits.MAX_GM_SOUND + 1):
             with self.subTest(sound=sound), self.assertRaises(SongFileError):
                 setlist_from_data(data_with(tracks=[('lead', False, False, PIANO)], instruments={PIANO: {InstrumentSetting.GM_SOUND: sound}}))

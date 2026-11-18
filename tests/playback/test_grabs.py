@@ -27,9 +27,9 @@ from llamatron.composition.file_format import ChordSymbol, ClipSlotSetting, Gene
 from llamatron.composition.generator_settings import ArpSetting
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.music.chord import Chord
-from llamatron.music.midi import MAX_MIDI_NUMBER
+from llamatron.music import midi
 from llamatron.music.note import MAX_OCTAVE, NoteName
-from llamatron.strings.errors import ERR_NO_SCALE, ERR_WHERE_PATTERN
+from llamatron.strings import errors
 from tests.support.song_testing import LEAD, X, clip, pat, pitches, with_parts
 
 QUARTER = '1/4'
@@ -130,7 +130,7 @@ class TestGrab(unittest.TestCase):
         # The bass plays the highest note there is, so the chord has nothing to add.
         bass = pat([5, 1], octave=[MAX_OCTAVE])
         riff = pat([1, QUARTER], grab=[True], chord=[ChordSymbol.MAJOR])
-        self.assertEqual(self.sounding(self.lead(riff=riff, bass=bass).get_notes()[0]), [MAX_MIDI_NUMBER])
+        self.assertEqual(self.sounding(self.lead(riff=riff, bass=bass).get_notes()[0]), [midi.MAX_MIDI_NUMBER])
 
     def song_with_no_scale(self, chord):
         """Return the data of a song with no scale, where a step with no note of its own grabs from a drum track and holds a chord."""
@@ -149,7 +149,7 @@ class TestGrab(unittest.TestCase):
     def test_without_a_scale_a_scale_chord_on_a_grab_step_is_refused_as_a_degree_is(self):
         with self.assertRaises(SongFileError) as refused:
             render_data(self.song_with_no_scale(SCALE_TRIAD))
-        self.assertIn(ERR_NO_SCALE.format(where=ERR_WHERE_PATTERN.format(name=RIFF), scene=1), str(refused.exception))
+        self.assertIn(errors.ERR_NO_SCALE.format(where=errors.ERR_WHERE_PATTERN.format(name=RIFF), scene=1), str(refused.exception))
 
     def test_the_clip_keeps_its_rhythm_velocity_and_other_settings(self):
         riff = pat([1, EIGHTH], grab=[True], velocity=[33], ratchet=[2])

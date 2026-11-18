@@ -17,9 +17,7 @@
 """The song wizard's Listen: a part of the song as it would be made, heard through FluidSynth's stand-in and thrown away."""
 
 from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT
-from llamatron.strings.errors import ERR_WIZARD_CANNOT_LISTEN
-from llamatron.strings.labels import MSG_WIZARD_HOOKS_BRANCH, MSG_WIZARD_LINES_LABEL, MSG_WIZARD_MELODY_BRANCH
-from llamatron.strings.messages import MSG_STOPPED, MSG_WIZARD_LISTEN_RIFF, MSG_WIZARD_LISTEN_HOOK, MSG_WIZARD_LISTEN_SECTION, MSG_WIZARD_LISTEN_TUNE, MSG_WIZARD_LISTENING
+from llamatron.strings import errors, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from tests.tui.test_tui_playback import PlaybackTest
@@ -68,30 +66,30 @@ class TestWizardListening(PlaybackTest):
         return {data[0] & CHANNEL_MASK for data in self.note_ons(FLUIDSYNTH_PORT)}
 
     async def test_the_hook_is_heard_over_the_drums_again_and_again_and_stops(self):
-        await self.go_to(MSG_WIZARD_HOOKS_BRANCH)
+        await self.go_to(labels.MSG_WIZARD_HOOKS_BRANCH)
         await self.press(keybindings.WizardPage.LISTEN)
-        self.assertIn(MSG_WIZARD_LISTENING.format(what=MSG_WIZARD_LISTEN_HOOK), self.text())
-        self.assertEqual(self.preview().playing(), MSG_WIZARD_LISTEN_HOOK)
+        self.assertIn(messages.MSG_WIZARD_LISTENING.format(what=messages.MSG_WIZARD_LISTEN_HOOK), self.text())
+        self.assertEqual(self.preview().playing(), messages.MSG_WIZARD_LISTEN_HOOK)
         await self.let_the_preview_play(A_WHILE)
         self.assertTrue(self.note_ons(FLUIDSYNTH_PORT))
         # The hook's player and the drums under it, and nobody else.
         self.assertEqual(len(self.channels_heard()), THE_HOOK_AND_THE_DRUMS)
         self.assertIn(DRUM_CHANNEL_BYTE, self.channels_heard())
         await self.let_the_preview_play(A_LONG_WHILE)
-        self.assertEqual(self.preview().playing(), MSG_WIZARD_LISTEN_HOOK)
+        self.assertEqual(self.preview().playing(), messages.MSG_WIZARD_LISTEN_HOOK)
         await self.press(keybindings.WizardPage.STOP_LISTENING)
-        self.assertIn(MSG_STOPPED, self.text())
+        self.assertIn(messages.MSG_STOPPED, self.text())
         self.assertIsNone(self.preview().playing())
 
     async def test_the_tune_is_heard_from_the_melody_panel(self):
-        await self.go_to(MSG_WIZARD_MELODY_BRANCH)
+        await self.go_to(labels.MSG_WIZARD_MELODY_BRANCH)
         await self.press(keybindings.WizardPage.LISTEN)
-        self.assertEqual(self.preview().playing(), MSG_WIZARD_LISTEN_TUNE)
+        self.assertEqual(self.preview().playing(), messages.MSG_WIZARD_LISTEN_TUNE)
 
     async def test_a_section_is_heard_once_with_everybody_in_it(self):
         await self.go_to(FIRST_SECTION)
         await self.press(keybindings.WizardPage.LISTEN)
-        what = MSG_WIZARD_LISTEN_SECTION.format(number=FIRST_SECTION_NUMBER, name=FIRST_SECTION)
+        what = messages.MSG_WIZARD_LISTEN_SECTION.format(number=FIRST_SECTION_NUMBER, name=FIRST_SECTION)
         self.assertEqual(self.preview().playing(), what)
         await self.let_the_preview_play(A_WHILE)
         self.assertIn(DRUM_CHANNEL_BYTE, self.channels_heard())
@@ -101,22 +99,22 @@ class TestWizardListening(PlaybackTest):
         self.assertIsNone(self.preview().playing())
 
     async def test_a_choice_stops_what_was_heard(self):
-        await self.go_to(MSG_WIZARD_HOOKS_BRANCH)
+        await self.go_to(labels.MSG_WIZARD_HOOKS_BRANCH)
         await self.press(keybindings.WizardPage.LISTEN)
         self.app.screen.choosing(self.app.screen.choices().set_song_plan)(True)
         self.assertIsNone(self.preview().playing())
 
     async def test_closing_the_wizard_stops_what_was_heard(self):
-        await self.go_to(MSG_WIZARD_HOOKS_BRANCH)
+        await self.go_to(labels.MSG_WIZARD_HOOKS_BRANCH)
         await self.press(keybindings.WizardPage.LISTEN, keybindings.WizardPage.CLOSE)
         self.assertIsNone(self.preview().playing())
 
     async def test_the_lines_dialog_plays_the_section_s_tune_and_stops_when_it_closes(self):
         await self.go_to(A_VERSE)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
-        await self.select_field(MSG_WIZARD_LINES_LABEL)
+        await self.select_field(labels.MSG_WIZARD_LINES_LABEL)
         await self.press(Key.ENTER, keybindings.LinesDialog.LISTEN)
-        what = MSG_WIZARD_LISTEN_SECTION.format(number=A_VERSE_NUMBER, name=A_VERSE)
+        what = messages.MSG_WIZARD_LISTEN_SECTION.format(number=A_VERSE_NUMBER, name=A_VERSE)
         self.assertEqual(self.preview().playing(), what)
         await self.let_the_preview_play(A_WHILE)
         self.assertTrue(self.note_ons(FLUIDSYNTH_PORT))
@@ -129,18 +127,18 @@ class TestWizardListening(PlaybackTest):
     async def test_with_the_hook_off_the_hooks_panel_plays_the_riff(self):
         choices = self.app.screen.choices()
         choices.set_hook(False)
-        await self.go_to(MSG_WIZARD_HOOKS_BRANCH)
+        await self.go_to(labels.MSG_WIZARD_HOOKS_BRANCH)
         self.assertNotIn(keybindings.WizardPage.LISTEN, self.app.screen.shown_keys())
         choices.set_riff(players=choices.riff_players_offered()[0])
         await self.press(Key.DOWN, Key.UP)
         await self.press(keybindings.WizardPage.LISTEN)
-        self.assertEqual(self.preview().playing(), MSG_WIZARD_LISTEN_RIFF)
+        self.assertEqual(self.preview().playing(), messages.MSG_WIZARD_LISTEN_RIFF)
 
     async def test_without_fluidsynth_listen_is_refused(self):
         self.fluidsynth_installed = False
-        await self.go_to(MSG_WIZARD_HOOKS_BRANCH)
+        await self.go_to(labels.MSG_WIZARD_HOOKS_BRANCH)
         await self.press(keybindings.WizardPage.LISTEN)
-        self.assertIn(ERR_WIZARD_CANNOT_LISTEN, self.text())
+        self.assertIn(errors.ERR_WIZARD_CANNOT_LISTEN, self.text())
         self.assertIsNone(self.preview().playing())
 
     async def test_the_tracker_s_own_set_is_left_alone(self):

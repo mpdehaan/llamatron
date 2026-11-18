@@ -18,20 +18,20 @@
 
 from typing import NamedTuple
 
-from llamatron.composition.defaults import KEYSWITCH_VELOCITY
+from llamatron.composition import defaults
+from llamatron.strings import errors
 from llamatron.composition.file_format import StrumDirection
 from llamatron.support.length import ZERO, Length
 from llamatron.support.random_source import random_source
 from llamatron.support.rational import Rational
-from llamatron.music.midi import MAX_VELOCITY
+from llamatron.music import midi
 from llamatron.music.sound import CHORD, DEGREE, GLIDE, HELD, HELD_SOUND, KIND, LENGTH, MIDI, NOTE, NOTES, PARTS, PHRASE, REST, Sound
 from llamatron.music.sound import VELOCITY as NOTE_VELOCITY
-from llamatron.strings.errors import ERR_DEGREE_NEEDS_SCALE, ERR_TIMING_NOT_A_POSITION
 
 # A beat is a quarter note, which matches how MIDI and Live measure both time and tempo.
 BEATS_PER_WHOLE_NOTE = 4
 # A note with no velocity of its own plays as loud as MIDI allows.
-VELOCITY = MAX_VELOCITY
+VELOCITY = midi.MAX_VELOCITY
 
 # How far a note with glide runs into the next one, in fractions of a whole note.
 GLIDE_OVERLAP = Rational(1, 128)
@@ -72,7 +72,7 @@ def _degree_to_note(*, position, scale):
     if position[KIND] != DEGREE:
         return position
     if scale is None:
-        raise ValueError(ERR_DEGREE_NEEDS_SCALE.format(degree=Sound.position(position)))
+        raise ValueError(errors.ERR_DEGREE_NEEDS_SCALE.format(degree=Sound.position(position)))
     return Sound.settled(position, scale)
 
 
@@ -89,7 +89,7 @@ def _sounding_notes(position):
             if note[MIDI] not in notes or Length.less(notes[note[MIDI]][LENGTH], note[LENGTH]):
                 notes[note[MIDI]] = note
         return notes
-    raise ValueError(ERR_TIMING_NOT_A_POSITION.format(value=Sound.position(position)))
+    raise ValueError(errors.ERR_TIMING_NOT_A_POSITION.format(value=Sound.position(position)))
 
 
 def _glide_end(*, note, end, following):
@@ -175,7 +175,7 @@ def keyswitch_events(*, clip, clip_length):
         end = min(onset + (note.end - note.start), clip_length)
         start = min(onset if lead is None else max(onset - lead, ZERO_DELAY), clip_length)
         if end > start:
-            events.append(NoteEvent(start, end, note.midi_number, KEYSWITCH_VELOCITY))
+            events.append(NoteEvent(start, end, note.midi_number, defaults.KEYSWITCH_VELOCITY))
     events.sort(key=_start_of)
     return _without_overlaps(events)
 

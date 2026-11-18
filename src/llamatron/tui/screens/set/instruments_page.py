@@ -18,14 +18,9 @@
 
 from llamatron.composition.file_format import Section
 from llamatron.tui.drawing import Align
-from llamatron.strings.help import HELP_INSTRUMENTS_PAGE
+from llamatron.strings import help as help_text, labels, legends, marks, messages, names
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
 from llamatron.tui.screens.shared.named_list_page import NamedListPage
-from llamatron.strings.labels import Column, Crumb
-from llamatron.strings.legends import MSG_INSTRUMENT_WHAT
-from llamatron.strings.marks import MSG_NO_DEVICE_SHOWN
-from llamatron.strings.messages import MSG_RENAME_INSTRUMENT_PROMPT
-from llamatron.strings.names import MSG_NEW_INSTRUMENT_WORD
 from llamatron.composition.naming import new_name
 from llamatron.tui import keybindings
 
@@ -35,16 +30,16 @@ class InstrumentsPage(NamedListPage):
 
     KEYS = keybindings.InstrumentsPage
     LISTED_SECTION = Section.INSTRUMENTS
-    RENAME_PROMPT = MSG_RENAME_INSTRUMENT_PROMPT
-    WHAT = MSG_INSTRUMENT_WHAT
-    crumbs = (Crumb.INSTRUMENTS,)
-    HELP = HELP_INSTRUMENTS_PAGE
-    columns = ((Column.SELECT_INSTRUMENT, None, Align.LEFT), (Column.DEVICE, 36, Align.LEFT), (Column.CHANNEL, 3, Align.RIGHT), (Column.USED, 4, Align.RIGHT))
+    RENAME_PROMPT = messages.MSG_RENAME_INSTRUMENT_PROMPT
+    WHAT = legends.MSG_INSTRUMENT_WHAT
+    crumbs = (labels.Crumb.INSTRUMENTS,)
+    HELP = help_text.HELP_INSTRUMENTS_PAGE
+    columns = ((labels.Column.SELECT_INSTRUMENT, None, Align.LEFT), (labels.Column.DEVICE, 36, Align.LEFT), (labels.Column.CHANNEL, 3, Align.RIGHT), (labels.Column.USED, 4, Align.RIGHT))
 
     def rows(self):
         setlist = self.document().setlist()
         return [
-            (name, [name, setlist.get_instrument(name).get_device() or MSG_NO_DEVICE_SHOWN, setlist.get_instrument(name).get_channel(), len(self.uses(name))])
+            (name, [name, setlist.get_instrument(name).get_device() or marks.MSG_NO_DEVICE_SHOWN, setlist.get_instrument(name).get_channel(), len(self.uses(name))])
             for name in self.names()
         ]
 
@@ -54,7 +49,7 @@ class InstrumentsPage(NamedListPage):
     def add(self):
         """Add an instrument with no device yet, numbered like new tracks and scenes, and open it."""
         taken = self.names()
-        name = new_name(word=MSG_NEW_INSTRUMENT_WORD, taken=taken)
+        name = new_name(word=names.MSG_NEW_INSTRUMENT_WORD, taken=taken)
         self.document().add_instrument(name)
         self.put_cursor_on(name)
         self.show_page(InstrumentEditor(holder=self.holder, name=name))

@@ -17,13 +17,9 @@
 from fractions import Fraction
 from math import isfinite
 
-from llamatron.music.midi import HALF_STEPS_PER_OCTAVE, MAX_MIDI_NUMBER, MAX_VELOCITY, MIN_MIDI_NUMBER, MIN_VELOCITY
+from llamatron.music import midi
 from llamatron.support.rational import Rational
-from llamatron.strings.errors import (
-    ERR_BAD_DEGREE, ERR_BAD_GLIDE, ERR_BAD_LENGTH, ERR_BAD_NOTE_NAME, ERR_BAD_VELOCITY, ERR_NOT_A_CHORD_TYPE, ERR_NOT_AN_INTEGER,
-    ERR_NOTE_BAD_OCTAVE, ERR_OUTSIDE_MIDI,
-)
-from llamatron.strings.reprs import REPR_DEGREE, REPR_NOTE, REPR_REST
+from llamatron.strings import errors, reprs
 
 class NoteName:
     """Every way a note can be spelled: a letter, then # for sharp or b for flat.
@@ -117,13 +113,13 @@ _new = object.__new__
 def _check_integer(n):
     # bool is a subclass of int, but half_step(True) is not a real step count.
     if type(n) is not int:
-        raise ValueError(ERR_NOT_AN_INTEGER.format(value=n))
+        raise ValueError(errors.ERR_NOT_AN_INTEGER.format(value=n))
 
 
 def _check_length(length):
     # bool is a subclass of int, but True is not a real length.
     if not _is_positive_length(length):
-        raise ValueError(ERR_BAD_LENGTH.format(value=length))
+        raise ValueError(errors.ERR_BAD_LENGTH.format(value=length))
 
 
 def _is_positive_length(length):
@@ -162,7 +158,7 @@ class Rest:
         return hash((Rest, self._length))
 
     def __repr__(self):
-        return REPR_REST.format(length=self._length)
+        return reprs.REPR_REST.format(length=self._length)
 
 
 class Degree:
@@ -180,7 +176,7 @@ class Degree:
     def __init__(self, *, number, length=None, octave=0, scale_notes=0, half_steps=0):
         # bool is a subclass of int, but True is not a real degree.
         if type(number) is not int or number < FIRST_DEGREE:
-            raise ValueError(ERR_BAD_DEGREE.format(value=number, lowest=FIRST_DEGREE))
+            raise ValueError(errors.ERR_BAD_DEGREE.format(value=number, lowest=FIRST_DEGREE))
         if length is not None:
             _check_length(length)
         _check_integer(octave)
@@ -215,7 +211,7 @@ class Degree:
         """Return the Note that this degree plays in a scale, spelled as the root's half_step spells it."""
         return scale.note_at(
             degree=self._number, scale_notes=self._scale_notes, length=self._length,
-            half_steps=self._octave * HALF_STEPS_PER_OCTAVE + self._half_steps,
+            half_steps=self._octave * midi.HALF_STEPS_PER_OCTAVE + self._half_steps,
         )
 
     def _as_tuple(self):
@@ -230,7 +226,7 @@ class Degree:
         return hash(self._as_tuple())
 
     def __repr__(self):
-        return REPR_DEGREE.format(number=self._number, length=self._length, octave=self._octave, scale_notes=self._scale_notes, half_steps=self._half_steps)
+        return reprs.REPR_DEGREE.format(number=self._number, length=self._length, octave=self._octave, scale_notes=self._scale_notes, half_steps=self._half_steps)
 
 
 class Note:
@@ -249,17 +245,17 @@ class Note:
         if length is not None:
             _check_length(length)
         if velocity is not None and not _is_velocity(velocity):
-            raise ValueError(ERR_BAD_VELOCITY.format(value=velocity, lowest=MIN_VELOCITY, highest=MAX_VELOCITY))
+            raise ValueError(errors.ERR_BAD_VELOCITY.format(value=velocity, lowest=midi.MIN_VELOCITY, highest=midi.MAX_VELOCITY))
         if type(glide) is not bool:
-            raise ValueError(ERR_BAD_GLIDE.format(value=glide))
+            raise ValueError(errors.ERR_BAD_GLIDE.format(value=glide))
         if not isinstance(name, str) or name not in KNOWN_NOTE_NAMES:
-            raise ValueError(ERR_BAD_NOTE_NAME.format(value=name))
+            raise ValueError(errors.ERR_BAD_NOTE_NAME.format(value=name))
         # bool is a subclass of int, but Note('C', True) is not a real octave.
         if type(octave_number) is not int or not MIN_OCTAVE <= octave_number <= MAX_OCTAVE:
-            raise ValueError(ERR_NOTE_BAD_OCTAVE.format(value=octave_number, lowest=MIN_OCTAVE, highest=MAX_OCTAVE))
-        midi_number = octave_number * HALF_STEPS_PER_OCTAVE + SEMITONES_ABOVE_C[name]
-        if not MIN_MIDI_NUMBER <= midi_number <= MAX_MIDI_NUMBER:
-            raise ValueError(ERR_OUTSIDE_MIDI.format(name=name, octave=octave_number, number=midi_number))
+            raise ValueError(errors.ERR_NOTE_BAD_OCTAVE.format(value=octave_number, lowest=MIN_OCTAVE, highest=MAX_OCTAVE))
+        midi_number = octave_number * midi.HALF_STEPS_PER_OCTAVE + SEMITONES_ABOVE_C[name]
+        if not midi.MIN_MIDI_NUMBER <= midi_number <= midi.MAX_MIDI_NUMBER:
+            raise ValueError(errors.ERR_OUTSIDE_MIDI.format(name=name, octave=octave_number, number=midi_number))
         self._name = name
         self._octave_number = octave_number
         self._length = length
@@ -296,7 +292,7 @@ class Note:
         """
         name, octave_number = self.spelled_half_step(n)
         midi_number = self._midi_number + n
-        if not MIN_MIDI_NUMBER <= midi_number <= MAX_MIDI_NUMBER:
+        if not midi.MIN_MIDI_NUMBER <= midi_number <= midi.MAX_MIDI_NUMBER:
             # Outside the MIDI range, the constructor says what is wrong with the note.
             return Note(name=name, octave_number=octave_number, length=self._length, velocity=self._velocity, glide=self._glide)
         # A name half_step chose and a MIDI number in range need no checking, and the rest is this note's own.
@@ -308,7 +304,7 @@ class Note:
         """Return the name and octave number of the note n half steps away, spelled as half_step spells it."""
         _check_integer(n)
         names = FLAT_NAMES if self._name.endswith(FLAT_SIGN) else SHARP_NAMES
-        octave_number, semitones = divmod(self._midi_number + n, HALF_STEPS_PER_OCTAVE)
+        octave_number, semitones = divmod(self._midi_number + n, midi.HALF_STEPS_PER_OCTAVE)
         return names[semitones], octave_number
 
     def with_length(self, length):
@@ -320,7 +316,7 @@ class Note:
     def with_velocity(self, velocity):
         """Return the same note at another velocity."""
         if velocity is not None and not _is_velocity(velocity):
-            raise ValueError(ERR_BAD_VELOCITY.format(value=velocity, lowest=MIN_VELOCITY, highest=MAX_VELOCITY))
+            raise ValueError(errors.ERR_BAD_VELOCITY.format(value=velocity, lowest=midi.MIN_VELOCITY, highest=midi.MAX_VELOCITY))
         return self._at_this_pitch(length=self._length, velocity=velocity, glide=self._glide)
 
     def with_glide(self):
@@ -348,7 +344,7 @@ class Note:
         from llamatron.music.chord import Chord, ChordType
 
         if not isinstance(typ, ChordType):
-            raise ValueError(ERR_NOT_A_CHORD_TYPE.format(value=typ))
+            raise ValueError(errors.ERR_NOT_A_CHORD_TYPE.format(value=typ))
         return Chord([self, *(self.half_step(n) for n in typ.value)])
 
     def __eq__(self, other):
@@ -360,7 +356,7 @@ class Note:
         return hash((self._midi_number, self._length))
 
     def __repr__(self):
-        return REPR_NOTE.format(name=self._name, octave_number=self._octave_number, length=self._length, velocity=self._velocity, glide=self._glide)
+        return reprs.REPR_NOTE.format(name=self._name, octave_number=self._octave_number, length=self._length, velocity=self._velocity, glide=self._glide)
 
 
 def note_of_checked_values(*, name, octave_number, midi_number, length, velocity, glide):
@@ -382,4 +378,4 @@ def note_of_checked_values(*, name, octave_number, midi_number, length, velocity
 
 def _is_velocity(velocity):
     """Return whether a velocity is a whole number in MIDI's range for notes, not counting true and false."""
-    return type(velocity) is int and MIN_VELOCITY <= velocity <= MAX_VELOCITY
+    return type(velocity) is int and midi.MIN_VELOCITY <= velocity <= midi.MAX_VELOCITY

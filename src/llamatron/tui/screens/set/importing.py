@@ -26,9 +26,7 @@ told in a dialog, and the picker stays.
 import os
 
 from llamatron.importers.midi_import import MidiImport
-from llamatron.strings.errors import ERR_CANT_IMPORT_TITLE, ERR_CANT_READ_MIDI
-from llamatron.strings.importing import MSG_IMPORTED
-from llamatron.strings.labels import Crumb
+from llamatron.strings import errors, importing, labels
 from llamatron.tui.dialogs.import_dialog import ImportDialog
 from llamatron.tui.dialogs.imported_dialog import ImportedDialog
 from llamatron.tui.screens.set.open_page import OpenPage
@@ -46,7 +44,7 @@ def home_folder():
 
 def import_midi(page):
     """Show the file picker for a MIDI file to import, over the page."""
-    picker = OpenPage(holder=page.holder, then=None, suffixes=MIDI_SUFFIXES, folder=home_folder(), crumbs=(Crumb.IMPORT_MIDI,))
+    picker = OpenPage(holder=page.holder, then=None, suffixes=MIDI_SUFFIXES, folder=home_folder(), crumbs=(labels.Crumb.IMPORT_MIDI,))
     picker.chosen = lambda path: offer_import(page=picker, path=path)
     page.show_page(picker)
 
@@ -57,7 +55,7 @@ def offer_import(*, page, path):
     try:
         midi_import = MidiImport.from_path(path)
     except UNREADABLE as problem:
-        page.tell(ERR_CANT_IMPORT_TITLE, ERR_CANT_READ_MIDI.format(file=name, problem=problem))
+        page.tell(errors.ERR_CANT_IMPORT_TITLE, errors.ERR_CANT_READ_MIDI.format(file=name, problem=problem))
         return
     dialog = ImportDialog(midi_import=midi_import, setlist=page.document().setlist(), song_name=os.path.splitext(name)[0])
     page.ask(dialog=dialog, then=lambda imported: finish_import(page=page, imported=imported))
@@ -67,5 +65,5 @@ def finish_import(*, page, imported):
     """Add what the import made to the set, make the song current, go back to the main screen, and say what was made and what had to change, on the status line and in a dialog with one OK button."""
     page.document().import_song(imported.song)
     page.go_back()
-    page.say(MSG_IMPORTED.format(name=imported.song.name, tracks=imported.tracks, patterns=imported.patterns, scenes=imported.scenes))
+    page.say(importing.MSG_IMPORTED.format(name=imported.song.name, tracks=imported.tracks, patterns=imported.patterns, scenes=imported.scenes))
     page.app.push_screen(ImportedDialog(imported))

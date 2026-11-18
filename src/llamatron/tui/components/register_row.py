@@ -24,11 +24,11 @@ they had been toggles: a cell shows + for add, - for subtract and nothing for of
 
 from llamatron.composition.file_format import RegisterUse
 from llamatron.tui.components.cycle_row import CycleRow
-from llamatron.strings.marks import MSG_REGISTER_ADDS, MSG_REGISTER_SUBTRACTS, MSG_TOGGLE_OFF
+from llamatron.strings import marks
 from llamatron.tui import keybindings
 
 # What a cell shows for each use.
-USE_MARKS = {RegisterUse.ADD: MSG_REGISTER_ADDS, RegisterUse.SUBTRACT: MSG_REGISTER_SUBTRACTS, RegisterUse.OFF: MSG_TOGGLE_OFF}
+USE_MARKS = {RegisterUse.ADD: marks.MSG_REGISTER_ADDS, RegisterUse.SUBTRACT: marks.MSG_REGISTER_SUBTRACTS, RegisterUse.OFF: marks.MSG_TOGGLE_OFF}
 
 
 class RegisterRow(CycleRow):
@@ -43,4 +43,4 @@ class RegisterRow(CycleRow):
 
     def cell_text(self, *, step):
         value = self.value(step=step)
-        return MSG_TOGGLE_OFF if value is None else USE_MARKS[value]
+        return marks.MSG_TOGGLE_OFF if value is None else USE_MARKS[value]

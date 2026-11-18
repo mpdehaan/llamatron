@@ -15,13 +15,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """A row of numbers in a range, like Velocity, Prob and Ratchet: typed, nudged or asked for."""
 
-from llamatron.strings.errors import ERR_ROW_OUT_OF_RANGE, ERR_TYPED_NOT_AN_INTEGER
+from llamatron.strings import errors, labels, marks, messages
 from llamatron.tui.components.pattern_row import PatternRow
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.drawing import NOTHING
-from llamatron.strings.labels import MSG_ROW_LABELS
-from llamatron.strings.marks import MSG_UNSET_MARK
-from llamatron.strings.messages import MSG_NUMBER_PROMPT
 from llamatron.tui import keybindings
 
 # Where a nudge or Enter starts from on a row whose blank step plays as no number at all, which is a CC row: 0, since the
@@ -73,19 +70,19 @@ class NumberRow(PatternRow):
 
     def ask(self):
         low, high = self.range()
-        label = MSG_ROW_LABELS[self.name]
+        label = labels.MSG_ROW_LABELS[self.name]
 
         def answered(text):
             try:
                 number = int(text.strip())
             except ValueError:
-                self.editor.refuse(ERR_TYPED_NOT_AN_INTEGER.format(text=text))
+                self.editor.refuse(errors.ERR_TYPED_NOT_AN_INTEGER.format(text=text))
                 return
             if low <= number <= high:
                 self.set_value(number)
             else:
-                self.editor.refuse(ERR_ROW_OUT_OF_RANGE.format(row=label, low=low, high=high))
-        self.editor.ask(dialog=PromptDialog(title=MSG_NUMBER_PROMPT.format(row=label, low=low, high=high), value=self.number_now()), then=answered)
+                self.editor.refuse(errors.ERR_ROW_OUT_OF_RANGE.format(row=label, low=low, high=high))
+        self.editor.ask(dialog=PromptDialog(title=messages.MSG_NUMBER_PROMPT.format(row=label, low=low, high=high), value=self.number_now()), then=answered)
 
     def cell_text(self, *, step):
         """A value that isn't set shows the default, or a dot where the default means nothing happens."""
@@ -93,5 +90,5 @@ class NumberRow(PatternRow):
             return NOTHING
         value = self.value(step=step)
         if value is None:
-            return MSG_UNSET_MARK if self.described().is_quiet() else str(self.default())
+            return marks.MSG_UNSET_MARK if self.described().is_quiet() else str(self.default())
         return str(value)

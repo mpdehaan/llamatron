@@ -20,7 +20,7 @@ SAVE_THEN_QUIT, or None for Cancel."""
 
 from rich.text import Text
 
-from llamatron.strings.labels import MSG_QUIT_BUTTONS
+from llamatron.strings import labels
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.dialogs.dialog import DIALOG_MARGIN
 from llamatron.tui.dialogs.message_dialog import MessageDialog
@@ -60,12 +60,12 @@ class QuitDialog(MessageDialog):
         return max(super().wanted_width(), keys_on_one_line + DIALOG_MARGIN)
 
     def move(self, name):
-        self.choice = cursor_moved(place=self.choice, name=name, count=len(MSG_QUIT_BUTTONS))
+        self.choice = cursor_moved(place=self.choice, name=name, count=len(labels.MSG_QUIT_BUTTONS))
 
     def press_selected(self):
         self.dismiss(None if self.choice == CANCEL else self.choice)
 
     def lines(self, width):
         keys = (self.KEYS.QUIT[1], self.KEYS.SAVE[1], self.KEYS.CANCEL[1])
-        buttons = list(zip(keys, MSG_QUIT_BUTTONS))
+        buttons = list(zip(keys, labels.MSG_QUIT_BUTTONS))
         return [*self.message_lines(width), Text(NOTHING), *button_row(buttons=buttons, selected=self.choice)]

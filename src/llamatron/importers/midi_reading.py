@@ -26,7 +26,7 @@ from dataclasses import dataclass
 from typing import NamedTuple
 
 from llamatron.support.rational import Rational
-from llamatron.strings.importing import MSG_UNNAMED_MIDI_TRACK
+from llamatron.strings import importing
 
 # mido's names for the messages the import reads.
 NOTE_ON = 'note_on'
@@ -184,7 +184,7 @@ def read_midi(midi_file):
         controls_without_notes += sum(len(controls) for channel, controls in controls_by_channel.items() if channel not in notes_by_channel)
         if not notes_by_channel:
             continue
-        name = name or MSG_UNNAMED_MIDI_TRACK.format(number=numbered)
+        name = name or importing.MSG_UNNAMED_MIDI_TRACK.format(number=numbered)
         numbered += 1
         for channel in sorted(notes_by_channel):
             parts.append(MidiPart(name=name, channel=channel, notes=sorted(notes_by_channel[channel]), controls=controls_by_channel.get(channel, [])))

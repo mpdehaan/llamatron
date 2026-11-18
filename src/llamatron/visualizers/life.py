@@ -35,7 +35,7 @@ from llamatron.visualizers.cells import BRAILLE_BITS, BRAILLE_BLANK, SPACE, Cell
 from llamatron.visualizers.colour import TRACK_COLOURS, note_colour
 from llamatron.visualizers.heard import SILENCE
 from llamatron.visualizers.visualizer import Visualizer
-from llamatron.strings.visualizers import MSG_LIFE
+from llamatron.strings import visualizers
 
 SEED = 1
 LONGEST_FRAME_SECONDS = 0.2
@@ -85,7 +85,7 @@ class Life(Visualizer):
 
     __slots__ = ('_alive', '_colours', '_energy', '_target', '_drift', '_since_step', '_last', '_last_beat', '_chooser', '_cells', '_shape', '_left_bits', '_right_bits')
 
-    NAME = MSG_LIFE
+    NAME = visualizers.MSG_LIFE
     OPTION = 'life'
     DARK_IN_SILENCE = False
 

@@ -25,10 +25,8 @@ from typing import NamedTuple
 
 from rich.text import Text
 
-from llamatron.composition.limits import MAX_SCALE_LENGTH, MIN_SCALE_LENGTH, NEW_PATTERN_SCALE_LENGTH
-from llamatron.strings.labels import MSG_DRUM_PATTERN_LABEL, MSG_NEW_PATTERN_BUTTONS, MSG_SCALE_LENGTH_LABEL
-from llamatron.strings.marks import MSG_ANY_SCALE_LENGTH, MSG_BLOCKED_CELL, MSG_TOGGLE_ON
-from llamatron.strings.messages import MSG_NEW_PATTERN_TITLE
+from llamatron.composition import limits
+from llamatron.strings import labels, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.dialogs.dialog import Dialog
@@ -40,7 +38,7 @@ SCALE_LENGTH = 0
 DRUM = 1
 BUTTONS = 2
 ROWS = 3
-LABELS = (MSG_SCALE_LENGTH_LABEL, MSG_DRUM_PATTERN_LABEL)
+LABELS = (labels.MSG_SCALE_LENGTH_LABEL, labels.MSG_DRUM_PATTERN_LABEL)
 LABEL_WIDTH = max(len(label) for label in LABELS) + 4
 # The buttons, in the order drawn, and the binding whose key each shows.
 OK_BUTTON = 0
@@ -48,7 +46,7 @@ CANCEL_BUTTON = 1
 BUTTON_BINDINGS = (keybindings.NewPatternDialog.OK, keybindings.Dialog.CANCEL)
 NO_BUTTON = -1
 # What the Scale length steps through: any scale, then each number of notes.
-SCALE_LENGTHS = (None, *range(MIN_SCALE_LENGTH, MAX_SCALE_LENGTH + 1))
+SCALE_LENGTHS = (None, *range(limits.MIN_SCALE_LENGTH, limits.MAX_SCALE_LENGTH + 1))
 
 
 class NewPatternKind(NamedTuple):
@@ -65,8 +63,8 @@ class NewPatternDialog(Dialog):
 
     def __init__(self):
         super().__init__()
-        self.title = MSG_NEW_PATTERN_TITLE
-        self.scale_length = NEW_PATTERN_SCALE_LENGTH
+        self.title = messages.MSG_NEW_PATTERN_TITLE
+        self.scale_length = limits.NEW_PATTERN_SCALE_LENGTH
         self.drum = False
         self.row = SCALE_LENGTH
         self.button = OK_BUTTON
@@ -87,7 +85,7 @@ class NewPatternDialog(Dialog):
         self.row = cursor_moved(place=self.row, name=name, count=ROWS)
 
     def choose_button(self, name):
-        self.button = cursor_moved(place=self.button, name=name, count=len(MSG_NEW_PATTERN_BUTTONS))
+        self.button = cursor_moved(place=self.button, name=name, count=len(labels.MSG_NEW_PATTERN_BUTTONS))
 
     def step(self, direction):
         """Step the scale length, any scale below the fewest notes, stopping at either end."""
@@ -108,8 +106,8 @@ class NewPatternDialog(Dialog):
 
     def values(self):
         """Return each field's value as shown: a drum pattern's scale length is the blocked cell's mark."""
-        length = MSG_ANY_SCALE_LENGTH if self.scale_length is None else str(self.scale_length)
-        return (MSG_BLOCKED_CELL if self.drum else length, MSG_TOGGLE_ON if self.drum else NOTHING)
+        length = marks.MSG_ANY_SCALE_LENGTH if self.scale_length is None else str(self.scale_length)
+        return (marks.MSG_BLOCKED_CELL if self.drum else length, marks.MSG_TOGGLE_ON if self.drum else NOTHING)
 
     def lines(self, width):
         lines = []
@@ -118,5 +116,5 @@ class NewPatternDialog(Dialog):
             blocked = row == SCALE_LENGTH and self.drum
             line.append(value, style=Style.DIM if blocked else Style.BOLD if row == self.row else Style.PLAIN)
             lines.append(line)
-        buttons = [(binding[1], label) for label, binding in zip(MSG_NEW_PATTERN_BUTTONS, BUTTON_BINDINGS)]
+        buttons = [(binding[1], label) for label, binding in zip(labels.MSG_NEW_PATTERN_BUTTONS, BUTTON_BINDINGS)]
         return [*lines, Text(NOTHING), *button_row(buttons=buttons, selected=self.button if self.row == BUTTONS else NO_BUTTON)]

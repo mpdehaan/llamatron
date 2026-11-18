@@ -18,18 +18,14 @@
 
 from rich.text import Text
 
-from llamatron.composition.limits import MAX_NAME_LENGTH
+from llamatron.composition import limits
+from llamatron.strings import errors, marks, messages
 from llamatron.tui.dialogs.choice_dialog import completed, places_matching
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.strings.marks import MSG_MOVING_CLOSE, MSG_MOVING_OPEN
-from llamatron.strings.messages import MSG_MOVING, MSG_MOVING_ROW
 from llamatron.tui.drawing import cursor_mark, fit, NOTHING, SPACE, Style
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key, SPACE_CHARACTER
 from llamatron.tui.screens.shared.page import Page
-from llamatron.strings.errors import ERR_AND_MORE, ERR_CANT_DELETE_TITLE, ERR_STILL_USED
-from llamatron.strings.marks import MSG_ADD_ROW_MARK
-from llamatron.strings.messages import MSG_DELETE_QUESTION, MSG_DELETE_TITLE, MSG_SEARCH_STATUS
 from llamatron.tui import keybindings
 
 
@@ -53,7 +49,7 @@ class ListPage(Page):
     columns = ()
     # The most room the column with no width of its own takes, the names: a name is at most this long, so the columns after it
     # stay close to it however wide the console. None on a page whose first column isn't names, as files.
-    NAME_COLUMN_WIDTH = MAX_NAME_LENGTH
+    NAME_COLUMN_WIDTH = limits.MAX_NAME_LENGTH
 
     def __init__(self, holder):
         super().__init__(holder)
@@ -84,7 +80,7 @@ class ListPage(Page):
     def rows_with_plus(self):
         rows = self.remembered_rows()
         if self.can_add():
-            return [*rows, (None, [MSG_ADD_ROW_MARK, *[NOTHING] * (len(self.columns) - 1)])]
+            return [*rows, (None, [marks.MSG_ADD_ROW_MARK, *[NOTHING] * (len(self.columns) - 1)])]
         return rows
 
     def page_key_table(self):
@@ -149,7 +145,7 @@ class ListPage(Page):
         self.show_search()
 
     def show_search(self):
-        self.say(MSG_SEARCH_STATUS.format(text=self.typed))
+        self.say(messages.MSG_SEARCH_STATUS.format(text=self.typed))
 
     def keep(self):
         self.searching = False
@@ -199,7 +195,7 @@ class ListPage(Page):
         self.say_moving()
 
     def say_moving(self):
-        self.say(MSG_MOVING.format(what=MSG_MOVING_ROW.format(name=self.row_texts()[self.place])))
+        self.say(messages.MSG_MOVING.format(what=messages.MSG_MOVING_ROW.format(name=self.row_texts()[self.place])))
 
     def carry(self, offset):
         """Carry the picked-up row one place up or down, every carry of one move making one undo step."""
@@ -232,12 +228,12 @@ class ListPage(Page):
             carried = selected and self.moving
             # A row Move mode carries has its name between < and >, put where the spaces beside it were, so that nothing shifts.
             mark = cursor_mark(selected)
-            line.append(mark[:-1] + MSG_MOVING_OPEN if carried else mark)
+            line.append(mark[:-1] + marks.MSG_MOVING_OPEN if carried else mark)
             for column, (value, size, (_, _, align)) in enumerate(zip(values, sizes, self.columns)):
                 shown = fit(text=value, width=size, align=align)
                 if carried and column == 0:
                     end = len(shown.rstrip())
-                    shown = shown[:end] + MSG_MOVING_CLOSE + shown[end + 1:] if end < size else shown + MSG_MOVING_CLOSE
+                    shown = shown[:end] + marks.MSG_MOVING_CLOSE + shown[end + 1:] if end < size else shown + marks.MSG_MOVING_CLOSE
                     line.append(shown if end >= size else shown + SPACE, style=Style.BOLD)
                     continue
                 line.append(shown + SPACE)
@@ -260,16 +256,16 @@ class ListPage(Page):
     def delete_after_checks(self, *, what, uses, delete, extra=None):
         """Refuse if anything still uses an item, and otherwise confirm and delete it."""
         if uses:
-            lines = [ERR_STILL_USED.format(what=what), *uses[:MOST_USES_SHOWN]]
+            lines = [errors.ERR_STILL_USED.format(what=what), *uses[:MOST_USES_SHOWN]]
             if len(uses) > MOST_USES_SHOWN:
-                lines.append(ERR_AND_MORE.format(count=len(uses) - MOST_USES_SHOWN))
-            self.tell(ERR_CANT_DELETE_TITLE, *lines)
+                lines.append(errors.ERR_AND_MORE.format(count=len(uses) - MOST_USES_SHOWN))
+            self.tell(errors.ERR_CANT_DELETE_TITLE, *lines)
             return
-        message = [MSG_DELETE_QUESTION.format(what=what)]
+        message = [messages.MSG_DELETE_QUESTION.format(what=what)]
         if extra:
             message.append(extra)
 
         def confirmed(_):
             delete()
             self.clamp()
-        self.ask(dialog=ConfirmDialog(title=MSG_DELETE_TITLE, messages=message), then=confirmed)
+        self.ask(dialog=ConfirmDialog(title=messages.MSG_DELETE_TITLE, messages=message), then=confirmed)

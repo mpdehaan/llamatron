@@ -15,11 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The song wizard's Subgenre branch, under Genre: the subgenre and the settings that are the subgenre's own."""
 
-from llamatron.composition.limits import MAX_TEMPO, MIN_TEMPO
-from llamatron.strings.errors import ERR_WIZARD_CHOOSE_GENRE
-from llamatron.strings.labels import MSG_TEMPO_LABEL, MSG_WIZARD_SUBGENRE_BRANCH, MSG_WIZARD_SUBGENRE_LABEL, MSG_WIZARD_SWING_LABEL, MSG_WIZARD_VALUE_FROM, MSG_WIZARD_VARIANT_LABEL, MSG_WIZARD_VARIANT_NAMED
-from llamatron.strings.legends import MSG_FROM_GENRE_WHAT
-from llamatron.strings.marks import MSG_WIZARD_TEMPO_SHOWN
+from llamatron.composition import limits
+from llamatron.strings import errors, labels, legends, marks
 from llamatron.tui.screens.shared.field import ChoiceField, NumberField
 from llamatron.tui.screens.wizard.branch import Branch
 
@@ -30,10 +27,10 @@ class SubgenreBranch(Branch):
     __slots__ = ()
 
     def name(self):
-        return MSG_WIZARD_SUBGENRE_BRANCH
+        return labels.MSG_WIZARD_SUBGENRE_BRANCH
 
     def refusal(self):
-        return None if self.choices().get_genre() is not None else ERR_WIZARD_CHOOSE_GENRE
+        return None if self.choices().get_genre() is not None else errors.ERR_WIZARD_CHOOSE_GENRE
 
     def fields(self):
         choices = self.choices()
@@ -41,19 +38,19 @@ class SubgenreBranch(Branch):
         if choices.get_genre() is None:
             return []
         subgenres = choices.subgenres()
-        fields = [self.choice_from_nothing(label=MSG_WIZARD_SUBGENRE_LABEL, values=subgenres, names=subgenres, current=choices.get_subgenre(), set_value=choices.set_subgenre)]
+        fields = [self.choice_from_nothing(label=labels.MSG_WIZARD_SUBGENRE_LABEL, values=subgenres, names=subgenres, current=choices.get_subgenre(), set_value=choices.set_subgenre)]
         if not choices.is_ready():
             return fields
         if choices.variants():
             fields.append(self.variant_field())
         lowest, highest = choices.tempo_range()
-        fields.append(NumberField(page=page, label=MSG_TEMPO_LABEL, number=choices.get_tempo(), shown=MSG_WIZARD_TEMPO_SHOWN.format(tempo=choices.get_tempo(), low=lowest, high=highest),
-                                  lowest=MIN_TEMPO, highest=MAX_TEMPO, set=page.choosing(choices.set_tempo)))
+        fields.append(NumberField(page=page, label=labels.MSG_TEMPO_LABEL, number=choices.get_tempo(), shown=marks.MSG_WIZARD_TEMPO_SHOWN.format(tempo=choices.get_tempo(), low=lowest, high=highest),
+                                  lowest=limits.MIN_TEMPO, highest=limits.MAX_TEMPO, set=page.choosing(choices.set_tempo)))
         if choices.has_swing():
             # The subgenre's own swing is said to be the genre's.
             swing = choices.get_swing()
-            shown = MSG_WIZARD_VALUE_FROM.format(value=swing, origin=MSG_FROM_GENRE_WHAT) if swing == choices.swing_of_genre() else None
-            fields.append(ChoiceField(page=page, label=MSG_WIZARD_SWING_LABEL, choices=choices.swings(), current=swing, shown=shown, set=page.choosing(choices.set_swing)))
+            shown = labels.MSG_WIZARD_VALUE_FROM.format(value=swing, origin=legends.MSG_FROM_GENRE_WHAT) if swing == choices.swing_of_genre() else None
+            fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_SWING_LABEL, choices=choices.swings(), current=swing, shown=shown, set=page.choosing(choices.set_swing)))
         return fields
 
     def variant_field(self):
@@ -65,5 +62,5 @@ class SubgenreBranch(Branch):
         def chosen(kind):
             choices.set_variant(kind)
             page.say(choices.variant_says())
-        return ChoiceField(page=page, label=MSG_WIZARD_VARIANT_LABEL, choices=kinds, names=[MSG_WIZARD_VARIANT_NAMED.format(name=kind, says=choices.variant_says(variant=kind)) for kind in kinds],
+        return ChoiceField(page=page, label=labels.MSG_WIZARD_VARIANT_LABEL, choices=kinds, names=[labels.MSG_WIZARD_VARIANT_NAMED.format(name=kind, says=choices.variant_says(variant=kind)) for kind in kinds],
                            current=choices.get_variant(), set=page.choosing(chosen))

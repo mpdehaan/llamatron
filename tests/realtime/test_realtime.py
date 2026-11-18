@@ -38,7 +38,7 @@ from llamatron.composition.setlist import DEFAULT_SCALE
 from llamatron.music.note import ROOT_NAMES
 from llamatron.music.scale import ScaleType
 from llamatron.composition.setlist import Setlist
-from llamatron.music.midi import MAX_MIDI_NUMBER, MIN_MIDI_NUMBER
+from llamatron.music import midi
 from llamatron.exporters.midi_arrangement import MidiSong
 from llamatron.exporters.midi_messages import ticks
 from llamatron.playback.song_renderer import SongRenderer
@@ -47,7 +47,7 @@ from llamatron.realtime.outputs import RecordingOutput
 from llamatron.realtime.player import Player
 from llamatron.realtime.score import Score
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess, SenderNotStarted
-from llamatron.strings.errors import ERR_SENDER_DID_NOT_START
+from llamatron.strings import errors
 from tests.support.sender_under_capture import STARTED
 from llamatron.realtime.timeline import CONTROL_CHANGE, KIND_MASK, NOTE_OFF, NOTE_ON, NO_VELOCITY, Playing, Route, Tag, song_timeline
 from llamatron.support.example_sets import example_sets
@@ -276,7 +276,7 @@ class TestRealtimeSenderProcess(unittest.TestCase):
         sender = RealtimeMIDISenderProcess(ports=[NO_SUCH_PORT])
         with self.assertRaises(SenderNotStarted) as caught:
             sender.start()
-        self.assertEqual(str(caught.exception), ERR_SENDER_DID_NOT_START)
+        self.assertEqual(str(caught.exception), errors.ERR_SENDER_DID_NOT_START)
         self.assertIsNone(sender.close())
 
     def test_a_few_seconds_of_a_song_arrive_in_order_within_the_suites_limit_and_stop_silences(self):
@@ -620,5 +620,5 @@ class TestEngineSilence(unittest.TestCase):
         engine = PlaybackEngine(clock=SteppedClock(), outputs={PORT: output})
         engine.silence(channels=[(PORT, EXPORT_CHANNEL)])
         kinds = [data[0] & KIND_MASK for _, data in output.sent]
-        self.assertEqual(kinds.count(NOTE_OFF), MAX_MIDI_NUMBER - MIN_MIDI_NUMBER + 1)
+        self.assertEqual(kinds.count(NOTE_OFF), midi.MAX_MIDI_NUMBER - midi.MIN_MIDI_NUMBER + 1)
         self.assertEqual([data for _, data in output.sent][-2:], [[CONTROL_CHANGE | EXPORT_CHANNEL, ALL_NOTES_OFF, NO_VELOCITY], [CONTROL_CHANGE | EXPORT_CHANNEL, ALL_SOUND_OFF, NO_VELOCITY]])

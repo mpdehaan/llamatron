@@ -18,15 +18,10 @@
 from llamatron.composition.file_format import Section
 from llamatron.composition.groove import FACTORY_GROOVE_NAMES, is_factory_groove
 from llamatron.tui.drawing import Align
-from llamatron.strings.help import HELP_GROOVES_PAGE
+from llamatron.strings import help as help_text, labels, legends, marks, messages, names
 from llamatron.tui.screens.set.groove_editor import GrooveEditor
 from llamatron.tui.screens.shared.named_list_page import NamedListPage
 from llamatron.tui.screens.shared.shared import numbers_text
-from llamatron.strings.labels import Column, Crumb
-from llamatron.strings.legends import MSG_GROOVE_WHAT
-from llamatron.strings.marks import MSG_FACTORY_GROOVE_SHOWN, MSG_OWN_GROOVE_SHOWN
-from llamatron.strings.messages import MSG_RENAME_GROOVE_PROMPT
-from llamatron.strings.names import MSG_NEW_GROOVE_WORD
 from llamatron.composition.naming import new_name
 from llamatron.tui import keybindings
 
@@ -36,18 +31,18 @@ class GroovesPage(NamedListPage):
 
     KEYS = keybindings.GroovesPage
     LISTED_SECTION = Section.GROOVES
-    RENAME_PROMPT = MSG_RENAME_GROOVE_PROMPT
-    WHAT = MSG_GROOVE_WHAT
-    crumbs = (Crumb.GROOVES,)
-    HELP = HELP_GROOVES_PAGE
-    columns = ((Column.SELECT_GROOVE, None, Align.LEFT), (Column.FROM, 7, Align.LEFT), (Column.CELLS, 40, Align.LEFT), (Column.CELL, 5, Align.RIGHT), (Column.USED, 4, Align.RIGHT))
+    RENAME_PROMPT = messages.MSG_RENAME_GROOVE_PROMPT
+    WHAT = legends.MSG_GROOVE_WHAT
+    crumbs = (labels.Crumb.GROOVES,)
+    HELP = help_text.HELP_GROOVES_PAGE
+    columns = ((labels.Column.SELECT_GROOVE, None, Align.LEFT), (labels.Column.FROM, 7, Align.LEFT), (labels.Column.CELLS, 40, Align.LEFT), (labels.Column.CELL, 5, Align.RIGHT), (labels.Column.USED, 4, Align.RIGHT))
 
     def rows(self):
         document = self.document()
         song = document.song()
         return [
             (name, [
-                name, MSG_FACTORY_GROOVE_SHOWN if is_factory_groove(name) else MSG_OWN_GROOVE_SHOWN, numbers_text(song.get_groove(name).get_cells()),
+                name, marks.MSG_FACTORY_GROOVE_SHOWN if is_factory_groove(name) else marks.MSG_OWN_GROOVE_SHOWN, numbers_text(song.get_groove(name).get_cells()),
                 song.get_groove(name).get_cell_length_text(), len(self.uses(name)),
             ])
             for name in self.names()
@@ -69,7 +64,7 @@ class GroovesPage(NamedListPage):
     def add(self):
         """Add a straight groove, numbered like new tracks and scenes, and open it."""
         taken = self.names()
-        name = new_name(word=MSG_NEW_GROOVE_WORD, taken=taken)
+        name = new_name(word=names.MSG_NEW_GROOVE_WORD, taken=taken)
         self.document().add_groove(name)
         self.put_cursor_on(name)
         self.show_page(GrooveEditor(holder=self.holder, name=name))

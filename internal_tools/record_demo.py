@@ -66,7 +66,7 @@ import sys
 import tempfile
 import time
 
-from llamatron.composition.instrument import MAX_CHANNEL, MIN_CHANNEL
+from llamatron.music import midi
 from llamatron.composition.setlist import file_stem
 from llamatron.realtime.fluidsynth import AUDIO_DEVICE_VARIABLE, fluidsynth_path, is_installed, soundfont_path
 from llamatron.realtime.outputs import output_port_names
@@ -256,17 +256,17 @@ def parse_assignment(*, text, tracks):
         part = part.strip()
         if part == KEEP_OWN:
             channels.append(None)
-        elif part.isdigit() and MIN_CHANNEL <= int(part) <= MAX_CHANNEL:
+        elif part.isdigit() and midi.MIN_CHANNEL <= int(part) <= midi.MAX_CHANNEL:
             channels.append(int(part))
         else:
-            raise ValueError(BAD_CHANNEL.format(low=MIN_CHANNEL, high=MAX_CHANNEL, value=part))
+            raise ValueError(BAD_CHANNEL.format(low=midi.MIN_CHANNEL, high=midi.MAX_CHANNEL, value=part))
     return channels
 
 
 def auto_assignment(tracks):
     """Return channel 1 for the first track, 2 for the second and so on, going round after 16."""
-    count = MAX_CHANNEL - MIN_CHANNEL + 1
-    return [MIN_CHANNEL + place % count for place in range(len(tracks))]
+    count = midi.MAX_CHANNEL - midi.MIN_CHANNEL + 1
+    return [midi.MIN_CHANNEL + place % count for place in range(len(tracks))]
 
 
 def has_a_device(*, document, track):

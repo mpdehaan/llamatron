@@ -36,8 +36,8 @@ from llamatron.exporters.midi_messages import (
     FIRST_TICK, MULTI_TRACK_FILE, SINGLE_TRACK_FILE, TICKS_PER_BEAT, clip_events, midi_track, safe_file_name, tempo_event, ticks, time_signature_event,
 )
 from llamatron.exporters.timing import timed_events
-from llamatron.composition.limits import MIN_GM_SOUND
-from llamatron.strings.names import MSG_GENERAL_MIDI_EXPORT_LABEL, MSG_MIDI_FILE_EXPORT_LABEL, MSG_STEMS_EXPORT_LABEL
+from llamatron.composition import limits
+from llamatron.strings import names as names_text
 
 # The song's files are named after the song, like the Live set: <directory>/<name>.mid for the
 # whole song, and <directory>/<name>_stem_<track number>-<track name>.mid for each stem, with the
@@ -105,7 +105,7 @@ class MidiSong(WritesOneFile, _Arrangement):
     __slots__ = ()
 
     KIND = ExportKind.MIDI_FILE
-    LABEL = MSG_MIDI_FILE_EXPORT_LABEL
+    LABEL = names_text.MSG_MIDI_FILE_EXPORT_LABEL
     FILE = SONG_FILE
 
     def export(self):
@@ -137,7 +137,7 @@ class MidiGeneralMidi(WritesOneFile, _Arrangement):
 
     KIND = ExportKind.GENERAL_MIDI
     KEYSWITCHES = False
-    LABEL = MSG_GENERAL_MIDI_EXPORT_LABEL
+    LABEL = names_text.MSG_GENERAL_MIDI_EXPORT_LABEL
     FILE = GENERAL_MIDI_FILE
 
     def export(self):
@@ -166,7 +166,7 @@ class MidiGeneralMidi(WritesOneFile, _Arrangement):
         for track, channel in self.channels().items():
             sound = track.get_gm_sound()
             # A drum track's sound is the drum kit channel 10 plays, so no program change is sent there.
-            program = None if sound is None or track.is_drum() else sound - MIN_GM_SOUND
+            program = None if sound is None or track.is_drum() else sound - limits.MIN_GM_SOUND
             tracks.append(midi_track(name=track.get_name() or NO_NAME, events=self.track_events(track), end=end, channel=channel, program=program))
         return mido.MidiFile(type=MULTI_TRACK_FILE, ticks_per_beat=TICKS_PER_BEAT, tracks=tracks)
 
@@ -177,7 +177,7 @@ class MidiStems(WritesManyFiles, _Arrangement):
     __slots__ = ()
 
     KIND = ExportKind.STEMS
-    LABEL = MSG_STEMS_EXPORT_LABEL
+    LABEL = names_text.MSG_STEMS_EXPORT_LABEL
     FILES = STEM_FILES
     FILES_SHOWN = STEM_FILES_SHOWN
 

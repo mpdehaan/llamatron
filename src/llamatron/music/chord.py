@@ -17,8 +17,7 @@
 from enum import Enum
 
 from llamatron.music.note import Note
-from llamatron.strings.errors import ERR_CHORD_NOT_A_LIST, ERR_NO_NOTES, ERR_NOT_A_NOTE
-from llamatron.strings.reprs import REPR_CHORD
+from llamatron.strings import errors, reprs
 
 # A note with no length yet sorts as if it had none, after the ones that have one.
 NO_LENGTH = 0
@@ -79,12 +78,12 @@ class Chord:
 
     def __init__(self, notes):
         if not isinstance(notes, (list, tuple)):
-            raise ValueError(ERR_CHORD_NOT_A_LIST.format(value=notes))
+            raise ValueError(errors.ERR_CHORD_NOT_A_LIST.format(value=notes))
         if not notes:
-            raise ValueError(ERR_NO_NOTES)
+            raise ValueError(errors.ERR_NO_NOTES)
         for note in notes:
             if not isinstance(note, Note):
-                raise ValueError(ERR_NOT_A_NOTE.format(value=note))
+                raise ValueError(errors.ERR_NOT_A_NOTE.format(value=note))
         # Copied into a tuple so that changing the caller's list can't change the chord.
         self._notes = tuple(notes)
 
@@ -113,4 +112,4 @@ class Chord:
         return hash(self._sorted_pitches_and_lengths())
 
     def __repr__(self):
-        return REPR_CHORD.format(notes=self._notes)
+        return reprs.REPR_CHORD.format(notes=self._notes)

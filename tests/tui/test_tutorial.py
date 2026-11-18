@@ -34,20 +34,12 @@ from unittest import mock
 
 from llamatron.composition.file_format import PatternSetting, Row, SetlistSetting, Section
 from llamatron.composition.naming import new_name
-from llamatron.strings.names import MSG_NEW_GROUP_WORD
+from llamatron.strings import labels, legends, names, narration
 from llamatron.composition.setlist import Setlist
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime.engine import PlaybackEngine, SteppedClock
 from llamatron.realtime.outputs import RecordingOutput
 from llamatron.realtime.timeline import NOTE_ON, Route, song_timeline
-from llamatron.strings.legends import KeyName
-from llamatron.strings.labels import PageName
-from llamatron.strings.narration import (
-    MSG_A_PATTERN, MSG_A_SCENE, MSG_A_SONG, MSG_A_TRACK, MSG_CALL_LETTER, MSG_EXPLAIN_ARROWS, MSG_EXPLAIN_ARROWS_IN_ROWS, MSG_EXPLAIN_ARROWS_ON_ROLL, MSG_EXPLAIN_ESCAPE,
-    MSG_EXPLAIN_BACKSPACE_ON_ROLL, MSG_EXPLAIN_ENTER, MSG_EXPLAIN_SPACE_ON_ARRANGE, MSG_EXPLAIN_SPACE_ON_ROLL, MSG_EXPLAIN_SPACE_TOGGLES,
-    MSG_NARRATE_COMPLETE, MSG_NARRATE_DONE, MSG_NARRATE_EXPORT_KEY, MSG_NARRATE_GUIDE, MSG_NARRATE_PLAY, MSG_NARRATE_PLAY_LIVE, MSG_NARRATE_REAL_TIME,
-    MSG_NARRATE_OPENING, MSG_NARRATE_QUITTING, MSG_NARRATE_RENAMING, MSG_NARRATE_START, MSG_NARRATE_TUTORIAL_COMPLETE, MSG_NARRATE_WOULD_EXPORT, MSG_TUTORIAL_KEYS,
-)
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.drawing import NOTHING
 from llamatron.tui.document import Document
@@ -118,7 +110,7 @@ def comparable_data(setlist):
     data[Section.PATTERNS] = {name: {row: values for row, values in pattern.items() if row not in ROLL_ROWS} for name, pattern in data.get(Section.PATTERNS, {}).items()}
     for name, pattern in data[Section.PATTERNS].items():
         # A pattern is always built in a group, so one the set leaves in no group is held to the group the tutorial builds it in.
-        pattern.setdefault(PatternSetting.GROUP, setlist.first_track_playing(name) or new_name(word=MSG_NEW_GROUP_WORD, taken=[]))
+        pattern.setdefault(PatternSetting.GROUP, setlist.first_track_playing(name) or new_name(word=names.MSG_NEW_GROUP_WORD, taken=[]))
     return data
 
 
@@ -190,7 +182,7 @@ class TutorialTest(UITest):
 
     async def playing(self):
         """Wait until the tutorial has started the song, which it waits on before it quits."""
-        while self.app.driven is None or MSG_NARRATE_DONE.format(title=self.target.get_title()) not in self.said():
+        while self.app.driven is None or narration.MSG_NARRATE_DONE.format(title=self.target.get_title()) not in self.said():
             if self.app.driven is not None and self.app.driven.finished:
                 raise self.app.driven.problem or AssertionError(self.said())
             await asyncio.sleep(A_MOMENT)
@@ -200,7 +192,7 @@ class TutorialTest(UITest):
 
 def opened_before(*, said, text):
     """Return the last "Opening" line said before a line, which names the page the line was said on."""
-    openings = [line for line in said[:said.index(text)] if line.startswith(MSG_NARRATE_OPENING.format(cell=NOTHING))]
+    openings = [line for line in said[:said.index(text)] if line.startswith(narration.MSG_NARRATE_OPENING.format(cell=NOTHING))]
     return openings[-1]
 
 
@@ -212,35 +204,35 @@ class TestHelloWorldTutorial(TutorialTest):
         self.assertEqual(comparable_music(built), comparable_music(self.target))
         self.assertEqual(self.app.driven.plan.left_out, [])
         said = self.said()
-        self.assertEqual(said[0], MSG_NARRATE_START.format(title=self.target.get_title()))
+        self.assertEqual(said[0], narration.MSG_NARRATE_START.format(title=self.target.get_title()))
         # Without a port to play through, the tutorial shows the finished song, says how it would export, and quits without saving.
-        self.assertEqual(said[-4:], [MSG_NARRATE_COMPLETE, MSG_NARRATE_WOULD_EXPORT, MSG_NARRATE_TUTORIAL_COMPLETE, MSG_NARRATE_QUITTING])
+        self.assertEqual(said[-4:], [narration.MSG_NARRATE_COMPLETE, narration.MSG_NARRATE_WOULD_EXPORT, narration.MSG_NARRATE_TUTORIAL_COMPLETE, narration.MSG_NARRATE_QUITTING])
         self.assertTrue(self.exited)
-        self.assertNotIn(MSG_NARRATE_PLAY_LIVE, said)
-        self.assertNotIn(MSG_NARRATE_DONE.format(title=self.target.get_title()), said)
-        self.assertIn(MSG_NARRATE_OPENING.format(cell=PageName.ARRANGE), said)
+        self.assertNotIn(narration.MSG_NARRATE_PLAY_LIVE, said)
+        self.assertNotIn(narration.MSG_NARRATE_DONE.format(title=self.target.get_title()), said)
+        self.assertIn(narration.MSG_NARRATE_OPENING.format(cell=labels.PageName.ARRANGE), said)
         # Each rename is said once the list of its kind of thing shows.
-        self.assertEqual(opened_before(said=said, text=MSG_NARRATE_RENAMING.format(kind=MSG_A_SONG)), MSG_NARRATE_OPENING.format(cell=PageName.SONGS))
-        self.assertEqual(opened_before(said=said, text=MSG_NARRATE_RENAMING.format(kind=MSG_A_PATTERN)), MSG_NARRATE_OPENING.format(cell=PageName.PATTERNS))
-        for kind in (MSG_A_TRACK, MSG_A_SCENE):
-            self.assertEqual(opened_before(said=said, text=MSG_NARRATE_RENAMING.format(kind=kind)), MSG_NARRATE_OPENING.format(cell=PageName.ARRANGE))
+        self.assertEqual(opened_before(said=said, text=narration.MSG_NARRATE_RENAMING.format(kind=narration.MSG_A_SONG)), narration.MSG_NARRATE_OPENING.format(cell=labels.PageName.SONGS))
+        self.assertEqual(opened_before(said=said, text=narration.MSG_NARRATE_RENAMING.format(kind=narration.MSG_A_PATTERN)), narration.MSG_NARRATE_OPENING.format(cell=labels.PageName.PATTERNS))
+        for kind in (narration.MSG_A_TRACK, narration.MSG_A_SCENE):
+            self.assertEqual(opened_before(said=said, text=narration.MSG_NARRATE_RENAMING.format(kind=kind)), narration.MSG_NARRATE_OPENING.format(cell=labels.PageName.ARRANGE))
         # A page that is open already is gone back to, never opened again, so no two "Opening" lines come together.
-        openings = [index for index, line in enumerate(said) if line.startswith(MSG_NARRATE_OPENING.format(cell=NOTHING))]
+        openings = [index for index, line in enumerate(said) if line.startswith(narration.MSG_NARRATE_OPENING.format(cell=NOTHING))]
         self.assertEqual([index for index in openings if index - 1 in openings], [])
-        self.assertEqual(said.count(MSG_NARRATE_RENAMING.format(kind=MSG_A_SCENE)), 1)
-        self.assertEqual(said.count(MSG_EXPLAIN_ENTER), 1)
-        self.assertEqual(said.count(MSG_EXPLAIN_SPACE_ON_ROLL), 1)
-        self.assertEqual(said.count(MSG_EXPLAIN_ARROWS_ON_ROLL), 1)
-        self.assertEqual(said.count(MSG_EXPLAIN_ARROWS), 1)
-        self.assertLess(said.index(MSG_EXPLAIN_ARROWS), said.index(MSG_NARRATE_OPENING.format(cell=PageName.SONGS)))
-        self.assertEqual(said.count(MSG_EXPLAIN_ESCAPE), 1)
+        self.assertEqual(said.count(narration.MSG_NARRATE_RENAMING.format(kind=narration.MSG_A_SCENE)), 1)
+        self.assertEqual(said.count(narration.MSG_EXPLAIN_ENTER), 1)
+        self.assertEqual(said.count(narration.MSG_EXPLAIN_SPACE_ON_ROLL), 1)
+        self.assertEqual(said.count(narration.MSG_EXPLAIN_ARROWS_ON_ROLL), 1)
+        self.assertEqual(said.count(narration.MSG_EXPLAIN_ARROWS), 1)
+        self.assertLess(said.index(narration.MSG_EXPLAIN_ARROWS), said.index(narration.MSG_NARRATE_OPENING.format(cell=labels.PageName.SONGS)))
+        self.assertEqual(said.count(narration.MSG_EXPLAIN_ESCAPE), 1)
         # A new set's song, track and scene are there already, and are renamed to the demo's.
-        for kind in (MSG_A_SONG, MSG_A_TRACK, MSG_A_SCENE):
-            self.assertIn(MSG_NARRATE_RENAMING.format(kind=kind), said)
-        self.assertEqual(self.app.caption_strip().text(), parts(text=MSG_NARRATE_QUITTING, width=self.app.size.width)[-1])
+        for kind in (narration.MSG_A_SONG, narration.MSG_A_TRACK, narration.MSG_A_SCENE):
+            self.assertIn(narration.MSG_NARRATE_RENAMING.format(kind=kind), said)
+        self.assertEqual(self.app.caption_strip().text(), parts(text=narration.MSG_NARRATE_QUITTING, width=self.app.size.width)[-1])
         self.assertGreater(self.app.driven.pressed, 0)
         self.assertIsNone(self.app.get_document().get_path())
-        self.assertEqual(self.app.driven.report()[-1], MSG_TUTORIAL_KEYS.format(count=self.app.driven.pressed, seconds=self.app.driven.ended_at - self.app.driven.started_at))
+        self.assertEqual(self.app.driven.report()[-1], narration.MSG_TUTORIAL_KEYS.format(count=self.app.driven.pressed, seconds=self.app.driven.ended_at - self.app.driven.started_at))
 
 
 class TestEveryKindOfSettingTutorial(TutorialTest):
@@ -286,10 +278,10 @@ class TestTutorialPlays(TutorialTest):
             channels.append(instrument.get_channel())
         self.assertEqual(channels, list(range(1, len(song.get_track_names()) + 1)))
         said = self.said()
-        ending = [MSG_NARRATE_COMPLETE, MSG_NARRATE_PLAY_LIVE, MSG_NARRATE_EXPORT_KEY, MSG_NARRATE_REAL_TIME, MSG_NARRATE_GUIDE, MSG_NARRATE_PLAY, MSG_NARRATE_DONE.format(title=self.target.get_title())]
+        ending = [narration.MSG_NARRATE_COMPLETE, narration.MSG_NARRATE_PLAY_LIVE, narration.MSG_NARRATE_EXPORT_KEY, narration.MSG_NARRATE_REAL_TIME, narration.MSG_NARRATE_GUIDE, narration.MSG_NARRATE_PLAY, narration.MSG_NARRATE_DONE.format(title=self.target.get_title())]
         self.assertEqual([text for text in said if text in ending], ending)
-        self.assertLess(said.index(MSG_NARRATE_PLAY), said.index(MSG_EXPLAIN_SPACE_ON_ARRANGE))
-        self.assertNotIn(MSG_NARRATE_TUTORIAL_COMPLETE, said)
+        self.assertLess(said.index(narration.MSG_NARRATE_PLAY), said.index(narration.MSG_EXPLAIN_SPACE_ON_ARRANGE))
+        self.assertNotIn(narration.MSG_NARRATE_TUTORIAL_COMPLETE, said)
         self.assertIsInstance(self.app.screen, ArrangePage)
         self.assertTrue(self.app.transport.is_playing())
         self.assertFalse(self.exited)
@@ -300,7 +292,7 @@ class TestTutorialPlays(TutorialTest):
         note_ons = [data for _, data in self.outputs[PORT].sent if data[0] & KIND_MASK == NOTE_ON]
         self.assertGreater(len(note_ons), 0)
         await self.built()
-        self.assertEqual(self.said()[-1], MSG_NARRATE_QUITTING)
+        self.assertEqual(self.said()[-1], narration.MSG_NARRATE_QUITTING)
         self.assertTrue(self.exited)
 
 
@@ -343,7 +335,7 @@ class TestTutorialPace(unittest.TestCase):
         steps = list(plan.answer_prompt(TYPED_NAME))
         erase = first_key(keybindings.PromptDialog.ERASE)
         done = first_key(keybindings.PromptDialog.DONE)
-        self.assertEqual(steps, [Press(erase, True)] * len(OLD_NAME) + [Press(letter, True) for letter in TYPED_NAME] + [Say(MSG_EXPLAIN_ENTER), Press(done)])
+        self.assertEqual(steps, [Press(erase, True)] * len(OLD_NAME) + [Press(letter, True) for letter in TYPED_NAME] + [Say(narration.MSG_EXPLAIN_ENTER), Press(done)])
         runner = TutorialRunner(app=None, plan=plan, pace=HUMAN_PACE)
         self.assertEqual(runner.key_seconds(steps[-1]), HUMAN_PACE)
         self.assertEqual(runner.key_seconds(steps[len(OLD_NAME)]), HUMAN_PACE * DIALOG_TYPING_SHARE)
@@ -378,13 +370,13 @@ class TestTutorialCallsKeys(unittest.TestCase):
 
     def test_a_letter_elsewhere_is_called_with_its_legends_words_once_on_each_kind_of_page(self):
         self.app.screen = page_of(PatternsPage)
-        self.assertEqual(self.pressed(keybindings.ListPage.ADD), [Press(Key.A, False, MSG_CALL_LETTER.format(key=KeyName.A, what=keybindings.ListPage.ADD[WORDS]))])
+        self.assertEqual(self.pressed(keybindings.ListPage.ADD), [Press(Key.A, False, narration.MSG_CALL_LETTER.format(key=legends.KeyName.A, what=keybindings.ListPage.ADD[WORDS]))])
         self.assertEqual(self.pressed(keybindings.ListPage.ADD), [Press(Key.A)])
-        self.assertEqual(self.said(keybindings.ListPage.RENAME), [MSG_CALL_LETTER.format(key=KeyName.N, what=keybindings.ListPage.RENAME[WORDS])])
+        self.assertEqual(self.said(keybindings.ListPage.RENAME), [narration.MSG_CALL_LETTER.format(key=legends.KeyName.N, what=keybindings.ListPage.RENAME[WORDS])])
         self.app.screen = page_of(SongsPage)
-        self.assertEqual(self.said(keybindings.ListPage.ADD), [MSG_CALL_LETTER.format(key=KeyName.A, what=keybindings.ListPage.ADD[WORDS])])
+        self.assertEqual(self.said(keybindings.ListPage.ADD), [narration.MSG_CALL_LETTER.format(key=legends.KeyName.A, what=keybindings.ListPage.ADD[WORDS])])
         self.app.screen = mock.Mock(spec=ConfirmDialog)
-        self.assertEqual(self.said(keybindings.ConfirmDialog.YES), [MSG_CALL_LETTER.format(key=KeyName.Y, what=keybindings.ConfirmDialog.YES[WORDS])])
+        self.assertEqual(self.said(keybindings.ConfirmDialog.YES), [narration.MSG_CALL_LETTER.format(key=legends.KeyName.Y, what=keybindings.ConfirmDialog.YES[WORDS])])
 
     def test_other_keys_with_words_are_never_called(self):
         self.app.screen = page_of(PatternsPage)
@@ -392,33 +384,33 @@ class TestTutorialCallsKeys(unittest.TestCase):
 
     def test_esc_is_explained_the_first_time_anywhere_and_never_again(self):
         self.app.screen = page_of(PatternsPage)
-        self.assertEqual(self.pressed(keybindings.Page.BACK), [Say(MSG_EXPLAIN_ESCAPE), Press(Key.ESCAPE)])
+        self.assertEqual(self.pressed(keybindings.Page.BACK), [Say(narration.MSG_EXPLAIN_ESCAPE), Press(Key.ESCAPE)])
         self.app.screen = page_of(SongsPage)
         self.assertEqual(self.pressed(keybindings.Page.BACK), [Press(Key.ESCAPE)])
 
     def test_enter_is_explained_the_first_time_anywhere_and_never_again(self):
         self.app.screen = page_of(PatternsPage)
-        self.assertEqual(self.pressed(keybindings.ListPage.EDIT), [Say(MSG_EXPLAIN_ENTER), Press(Key.ENTER)])
+        self.assertEqual(self.pressed(keybindings.ListPage.EDIT), [Say(narration.MSG_EXPLAIN_ENTER), Press(Key.ENTER)])
         self.app.screen = page_of(SongsPage)
         self.assertEqual(self.pressed(keybindings.SongsPage.SETTINGS), [Press(Key.ENTER)])
 
     def test_the_arrows_are_explained_the_first_time_anywhere_and_again_once_on_the_piano_roll_and_once_in_the_rows_view(self):
         self.app.screen = page_of(PatternsPage)
-        self.assertEqual(self.pressed(Key.DOWN), [Say(MSG_EXPLAIN_ARROWS), Press(Key.DOWN)])
+        self.assertEqual(self.pressed(Key.DOWN), [Say(narration.MSG_EXPLAIN_ARROWS), Press(Key.DOWN)])
         self.assertEqual(self.pressed(Key.DOWN), [Press(Key.DOWN)])
         self.app.screen = pattern_editor_on(PianoRoll)
-        self.assertEqual(self.pressed(Key.RIGHT), [Say(MSG_EXPLAIN_ARROWS_ON_ROLL), Press(Key.RIGHT)])
+        self.assertEqual(self.pressed(Key.RIGHT), [Say(narration.MSG_EXPLAIN_ARROWS_ON_ROLL), Press(Key.RIGHT)])
         self.assertEqual(self.pressed(Key.UP), [Press(Key.UP)])
         self.app.screen = pattern_editor_on(PatternRows)
-        self.assertEqual(self.pressed(Key.DOWN), [Say(MSG_EXPLAIN_ARROWS_IN_ROWS), Press(Key.DOWN)])
+        self.assertEqual(self.pressed(Key.DOWN), [Say(narration.MSG_EXPLAIN_ARROWS_IN_ROWS), Press(Key.DOWN)])
         self.assertEqual(self.pressed(Key.LEFT), [Press(Key.LEFT)])
 
     def test_space_is_explained_once_on_each_kind_of_page_in_that_pages_words(self):
         explained = {
-            pattern_editor_on(PianoRoll): [MSG_EXPLAIN_SPACE_ON_ROLL, MSG_EXPLAIN_BACKSPACE_ON_ROLL],
-            page_of(ArrangePage): [MSG_EXPLAIN_SPACE_ON_ARRANGE],
-            pattern_editor_on(PatternRows): [MSG_EXPLAIN_SPACE_TOGGLES],
-            page_of(TrackEditor): [MSG_EXPLAIN_SPACE_TOGGLES],
+            pattern_editor_on(PianoRoll): [narration.MSG_EXPLAIN_SPACE_ON_ROLL, narration.MSG_EXPLAIN_BACKSPACE_ON_ROLL],
+            page_of(ArrangePage): [narration.MSG_EXPLAIN_SPACE_ON_ARRANGE],
+            pattern_editor_on(PatternRows): [narration.MSG_EXPLAIN_SPACE_TOGGLES],
+            page_of(TrackEditor): [narration.MSG_EXPLAIN_SPACE_TOGGLES],
         }
         for screen, sentences in explained.items():
             self.app.screen = screen
@@ -453,8 +445,8 @@ class TestTutorialRunnerPauses(unittest.IsolatedAsyncioTestCase):
         narrator = mock.Mock(spec=Narrator)
         narrator.say.side_effect = lambda *, text, seconds: happened.append(text)
         narrator.parts.side_effect = lambda text: [text]
-        called = MSG_CALL_LETTER.format(key=KeyName.A, what=keybindings.ListPage.ADD[WORDS])
-        plan = StepsOnly([Say(MSG_NARRATE_START), Press(Key.S), Press(Key.A, False, called), Press(Key.B)])
+        called = narration.MSG_CALL_LETTER.format(key=legends.KeyName.A, what=keybindings.ListPage.ADD[WORDS])
+        plan = StepsOnly([Say(narration.MSG_NARRATE_START), Press(Key.S), Press(Key.A, False, called), Press(Key.B)])
         runner = TutorialRunner(app=app, plan=plan, pace=HUMAN_PACE, narrator=narrator)
 
         async def paused(runner, *, pilot, seconds):
@@ -463,13 +455,13 @@ class TestTutorialRunnerPauses(unittest.IsolatedAsyncioTestCase):
             await runner.start()
         self.assertIsNone(runner.problem)
         # Every caption shows long enough to read, and a second more.
-        say_pause = max(HUMAN_PACE * SAY_PAUSES, len(MSG_NARRATE_START) / READING_CHARACTERS_PER_SECOND) + LINE_SECONDS
+        say_pause = max(HUMAN_PACE * SAY_PAUSES, len(narration.MSG_NARRATE_START) / READING_CHARACTERS_PER_SECOND) + LINE_SECONDS
         called_pause = len(called) / READING_CHARACTERS_PER_SECOND + LINE_SECONDS
-        self.assertEqual(happened, [MSG_NARRATE_START, say_pause, Key.S, HUMAN_PACE, called, called_pause, Key.A, HUMAN_PACE, Key.B, HUMAN_PACE])
+        self.assertEqual(happened, [narration.MSG_NARRATE_START, say_pause, Key.S, HUMAN_PACE, called, called_pause, Key.A, HUMAN_PACE, Key.B, HUMAN_PACE])
         self.assertEqual(runner.pressed, 3)
 
     def test_at_no_pace_a_caption_waits_nothing_and_a_long_one_waits_longer(self):
-        short = MSG_NARRATE_START[:SHORT_CAPTION]
+        short = narration.MSG_NARRATE_START[:SHORT_CAPTION]
         self.assertEqual(TutorialRunner(app=None, plan=StepsOnly([]), pace=NO_PACE).caption_seconds(part=short, least=NO_PACE), NO_PACE)
         paced = TutorialRunner(app=None, plan=StepsOnly([]), pace=HUMAN_PACE)
         self.assertLess(paced.caption_seconds(part=short, least=NO_PACE), paced.caption_seconds(part=short * LONGER, least=NO_PACE))

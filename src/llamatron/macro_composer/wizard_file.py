@@ -34,7 +34,7 @@ import os
 
 from llamatron.macro_composer.song_plan import BY_PLACE, PLAN_OF_SONG
 from llamatron.macro_composer.wizard_choices import EXTRAS_KEPT, FORM, OWN_SECTIONS, SEED, WizardChoices, data_laid_over
-from llamatron.strings.errors import ERR_SONG_FILE_FORM, ERR_SONG_FILE_FORM_ENTRY, ERR_SONG_FILE_NOT_A_MAPPING, ERR_SONG_FILE_NOT_READY
+from llamatron.strings import errors
 from llamatron.support.safe_yaml import load_safely
 from llamatron.support.files import FILE_ENCODING
 
@@ -51,7 +51,7 @@ def form_entries(*, form, path):
         if isinstance(entry, str):
             entry = {KIND: entry}
         if not isinstance(entry, dict) or not isinstance(entry.get(KIND), str):
-            raise ValueError(ERR_SONG_FILE_FORM_ENTRY.format(path=path, place=place, value=entry))
+            raise ValueError(errors.ERR_SONG_FILE_FORM_ENTRY.format(path=path, place=place, value=entry))
         entries.append(entry)
     return entries
 
@@ -59,7 +59,7 @@ def form_entries(*, form, path):
 def choices_of(*, data, path, seed=None):
     """The wizard's choices a song file's data describes, with a seed in place of the file's where one is given."""
     if not isinstance(data, dict):
-        raise ValueError(ERR_SONG_FILE_NOT_A_MAPPING.format(path=path))
+        raise ValueError(errors.ERR_SONG_FILE_NOT_A_MAPPING.format(path=path))
     kept = {field: value for field, value in data.items() if field not in (NAME, PLAN_OF_SONG, EXTRAS_KEPT)}
     plan = data.get(PLAN_OF_SONG, True)
     plan = dict(plan) if isinstance(plan, dict) else ({} if plan else None)
@@ -74,9 +74,9 @@ def choices_of(*, data, path, seed=None):
         kept[SEED] = seed
     choices = WizardChoices.from_data(kept)
     if not choices.is_ready():
-        raise ValueError(ERR_SONG_FILE_NOT_READY.format(path=path))
+        raise ValueError(errors.ERR_SONG_FILE_NOT_READY.format(path=path))
     if written and not choices.has_own_form():
-        raise ValueError(ERR_SONG_FILE_FORM.format(path=path))
+        raise ValueError(errors.ERR_SONG_FILE_FORM.format(path=path))
     extras = data_laid_over(under={PLAN_OF_SONG: plan} if plan is not None else {}, over=data.get(EXTRAS_KEPT) or {})
     if extras:
         choices.set_song_extras(extras)

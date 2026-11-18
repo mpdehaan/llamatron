@@ -17,7 +17,7 @@
 """The Tension row of the pattern editor: the notes added on top of a step's chord, like a flat ninth."""
 
 from llamatron.composition.file_format import Row
-from llamatron.strings.marks import MSG_TENSIONS_COUNTED, MSG_TENSIONS_IN_CELL_SEPARATOR, MSG_UNSET_MARK
+from llamatron.strings import marks
 from llamatron.tui.components.chord_row import ChordRow
 from llamatron.tui.drawing import NOTHING
 from llamatron.tui import keybindings
@@ -44,8 +44,8 @@ class TensionRow(ChordRow):
             return NOTHING
         value = self.value(step=step)
         if value is None:
-            return MSG_UNSET_MARK
-        for separator in (MSG_TENSIONS_IN_CELL_SEPARATOR, NOTHING):
+            return marks.MSG_UNSET_MARK
+        for separator in (marks.MSG_TENSIONS_IN_CELL_SEPARATOR, NOTHING):
             if len(separator.join(value)) <= CELL_ROOM:
                 return separator.join(value)
-        return MSG_TENSIONS_COUNTED.format(count=len(value))
+        return marks.MSG_TENSIONS_COUNTED.format(count=len(value))

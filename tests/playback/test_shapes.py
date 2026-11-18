@@ -26,7 +26,7 @@ from llamatron.composition.file_format import (
     ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, Shape, ShapePart, ShapeThen, shape_setting,
 )
 from llamatron.composition.generator_settings import ShapeSetting
-from llamatron.composition.limits import MAX_DENSITY, MAX_SWELL, MIN_ARTICULATE
+from llamatron.composition import limits
 from llamatron.composition.shapes import ShapeValues
 from llamatron.exporters.timing import timed_events
 from llamatron.playback.shapes import BAR_MIDDLE, BAR_START, FINER, ON_A_BEAT, ON_AN_EIGHTH, ON_A_SIXTEENTH, percent_at, plays_at, strength
@@ -150,7 +150,7 @@ class TestDensity(unittest.TestCase):
         self.assertEqual(len(notes(one_scene(scene=steady(shape=Shape.DENSITY, percent=NO_NOTES)))), NO_NOTES)
 
     def test_a_ramp_fills_in_across_the_repeats(self):
-        played = notes(one_scene(repeat=4, scene={at(shape=Shape.DENSITY, part=ShapePart.START): QUARTER, at(shape=Shape.DENSITY, part=ShapePart.END): MAX_DENSITY}))
+        played = notes(one_scene(repeat=4, scene={at(shape=Shape.DENSITY, part=ShapePart.START): QUARTER, at(shape=Shape.DENSITY, part=ShapePart.END): limits.MAX_DENSITY}))
         first_bar = [note for note in played if note[0] < 1]
         last_bar = [note for note in played if note[0] >= 3]
         self.assertLess(len(first_bar), len(last_bar))
@@ -175,7 +175,7 @@ class TestSwell(unittest.TestCase):
         self.assertEqual(set(velocities(one_scene(rows=rows, scene=steady(shape=Shape.SWELL, percent=HALF)))), {VELOCITY // 2})
 
     def test_it_is_held_from_1_to_127(self):
-        self.assertEqual(set(velocities(one_scene(scene=steady(shape=Shape.SWELL, percent=MAX_SWELL)))), {127})
+        self.assertEqual(set(velocities(one_scene(scene=steady(shape=Shape.SWELL, percent=limits.MAX_SWELL)))), {127})
         self.assertEqual(set(velocities(one_scene(scene=steady(shape=Shape.SWELL, percent=NO_NOTES)))), {1})
 
     def test_a_crescendo_across_the_clip(self):
@@ -232,7 +232,7 @@ class TestWhichShapeWins(unittest.TestCase):
 class TestShapeSettingsInAFile(unittest.TestCase):
 
     def test_a_percentage_outside_its_range_is_refused(self):
-        data = one_scene(scene=steady(shape=Shape.ARTICULATE, percent=MIN_ARTICULATE - 1))
+        data = one_scene(scene=steady(shape=Shape.ARTICULATE, percent=limits.MIN_ARTICULATE - 1))
         with self.assertRaises(SongFileError):
             setlist_from_data(data)
 

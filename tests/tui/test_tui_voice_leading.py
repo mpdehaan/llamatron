@@ -18,7 +18,7 @@
 from tests.support.ui_testing import SMOOTH, UITest
 from llamatron.composition.file_format import Section, GeneratorKind
 from llamatron.composition.generator_settings import DEFAULT_VOICING_HIGHEST_OCTAVE, DEFAULT_VOICING_LOWEST_OCTAVE
-from llamatron.strings.labels import MSG_HIGHEST_OCTAVE_LABEL, MSG_LOWEST_OCTAVE_LABEL, MSG_ROOT_IN_BASS_LABEL
+from llamatron.strings import labels
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.voice_leading_editor import VoiceLeadingEditor
 from llamatron.tui import keybindings
@@ -44,19 +44,19 @@ class TestVoiceLeadingEditor(UITest):
         return self.document.song().get_generator_settings(kind=GeneratorKind.VOICE_LEADING, name=SMOOTH)
 
     async def test_the_lowest_octave_never_passes_the_highest(self):
-        await self.select_field(MSG_LOWEST_OCTAVE_LABEL)
+        await self.select_field(labels.MSG_LOWEST_OCTAVE_LABEL)
         await self.press(*[keybindings.VoiceLeadingEditor.MORE] * (DEFAULT_VOICING_HIGHEST_OCTAVE - DEFAULT_VOICING_LOWEST_OCTAVE + 1))
         self.assertEqual(self.voicing().get_lowest_octave(), DEFAULT_VOICING_HIGHEST_OCTAVE)
 
     async def test_the_highest_octave_steps_down_and_bksp_puts_it_back(self):
-        await self.select_field(MSG_HIGHEST_OCTAVE_LABEL)
+        await self.select_field(labels.MSG_HIGHEST_OCTAVE_LABEL)
         await self.press(keybindings.VoiceLeadingEditor.LESS)
         self.assertEqual(self.voicing().get_highest_octave(), DEFAULT_VOICING_HIGHEST_OCTAVE - 1)
         await self.press(Key.BACKSPACE)
         self.assertEqual(self.voicing().get_highest_octave(), DEFAULT_VOICING_HIGHEST_OCTAVE)
 
     async def test_keep_the_root_in_the_bass_turns_on_and_off(self):
-        await self.select_field(MSG_ROOT_IN_BASS_LABEL)
+        await self.select_field(labels.MSG_ROOT_IN_BASS_LABEL)
         await self.press(keybindings.VoiceLeadingEditor.TOGGLE)
         self.assertTrue(self.voicing().keeps_root_in_bass())
         await self.press(keybindings.VoiceLeadingEditor.TOGGLE)

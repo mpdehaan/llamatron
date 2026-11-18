@@ -19,14 +19,9 @@
 from tests.support.ui_testing import DRUMS, LEAD, TUNE, UITest, first_key
 from llamatron.composition.file_format import KEYSWITCH_SLOT_COUNT, Row
 from llamatron.composition.instrument import NO_KEYSWITCH, Keyswitch
-from llamatron.composition.limits import MAX_KEYSWITCH_LEAD
-from llamatron.music.midi import HALF_STEPS_PER_OCTAVE, MAX_MIDI_NUMBER, MIN_MIDI_NUMBER
-from llamatron.strings.errors import ERR_NO_NOTE_ON_STEP
-from llamatron.strings.labels import MSG_KEYSWITCH_LEAD_LABEL, MSG_ROW_LABELS
-from llamatron.strings.marks import MSG_BLOCKED_CELL, MSG_KEYSWITCH_LIGHT, MSG_KEYSWITCH_SLOT_NAMED, MSG_NONE_SHOWN
-from llamatron.strings.messages import (
-    MSG_DESCRIBE_KEYSWITCHES, MSG_KEYSWITCH_DIALOG_TITLE, MSG_KEYSWITCH_MAP_TITLE, MSG_KEYSWITCH_NO_INSTRUMENT, MSG_KEYSWITCH_SEVERAL_INSTRUMENTS,
-)
+from llamatron.composition import limits
+from llamatron.strings import errors, labels, marks, messages
+from llamatron.music import midi
 from llamatron.tui.dialogs.keyswitch_dialog import KeyswitchDialog
 from llamatron.tui.dialogs.keyswitch_map_dialog import BUTTONS_PLACE, NAME_CELL, NOTE_CELL, KeyswitchMapDialog, first_note_offered
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
@@ -90,7 +85,7 @@ class TestKeyswitchMap(UITest):
 
     async def test_the_key_and_the_button_both_open_the_map_named_after_the_instrument(self):
         dialog = await self.open_map()
-        self.assertIn(MSG_KEYSWITCH_MAP_TITLE.format(instrument=VIOLIN), self.text())
+        self.assertIn(messages.MSG_KEYSWITCH_MAP_TITLE.format(instrument=VIOLIN), self.text())
         self.assertEqual(dialog.keyswitches, [NO_KEYSWITCH] * KEYSWITCH_SLOT_COUNT)
         await self.press(Key.ESCAPE)
         await self.press(*[Key.DOWN] * len(self.app.screen.fields()), Key.ENTER)
@@ -103,18 +98,18 @@ class TestKeyswitchMap(UITest):
         self.assertEqual(self.slots(), [NO_KEYSWITCH] * KEYSWITCH_SLOT_COUNT)
         await self.press(MAP.OK)
         self.assertIsInstance(self.app.screen, InstrumentEditor)
-        self.assertEqual(self.slots()[SUSTAIN_SLOT], Keyswitch(SUSTAIN, MIN_MIDI_NUMBER + 1))
+        self.assertEqual(self.slots()[SUSTAIN_SLOT], Keyswitch(SUSTAIN, midi.MIN_MIDI_NUMBER + 1))
         await self.press(keybindings.Page.UNDO)
         self.assertEqual(self.slots(), [NO_KEYSWITCH] * KEYSWITCH_SLOT_COUNT)
         await self.press(keybindings.Page.REDO)
-        self.assertEqual(self.slots()[SUSTAIN_SLOT], Keyswitch(SUSTAIN, MIN_MIDI_NUMBER + 1))
+        self.assertEqual(self.slots()[SUSTAIN_SLOT], Keyswitch(SUSTAIN, midi.MIN_MIDI_NUMBER + 1))
 
     async def test_the_cursor_is_on_the_name_where_enter_renames_or_on_the_note_where_enter_picks(self):
         dialog = await self.open_map()
         self.assertEqual(dialog.cell, NAME_CELL)
         await self.press(Key.LEFT)
         self.assertEqual(dialog.cell, NAME_CELL)
-        self.assertIn(cursor_mark(True) + MSG_NONE_SHOWN, self.text())
+        self.assertIn(cursor_mark(True) + marks.MSG_NONE_SHOWN, self.text())
         await self.press(MAP.RENAME_HERE)
         self.assertIsInstance(self.app.screen, PromptDialog)
         await self.type(SUSTAIN)
@@ -129,7 +124,7 @@ class TestKeyswitchMap(UITest):
         await self.press(MAP.NOTE)
         self.assertIsNotNone(dialog.picking)
         await self.press(MAP.TAKE_NOTE)
-        self.assertIn(cursor_mark(True) + keyswitch_note_text(setlist=self.document.setlist(), note=MIN_MIDI_NUMBER), self.text())
+        self.assertIn(cursor_mark(True) + keyswitch_note_text(setlist=self.document.setlist(), note=midi.MIN_MIDI_NUMBER), self.text())
 
     async def test_nothing_on_a_row_moves_when_the_cursor_moves(self):
         self.document.set_instrument_keyswitches(name=VIOLIN, keyswitches=[Keyswitch(SUSTAIN, SUSTAIN_NOTE), *[NO_KEYSWITCH] * (KEYSWITCH_SLOT_COUNT - 1)])
@@ -171,34 +166,34 @@ class TestKeyswitchMap(UITest):
         dialog = await self.open_map()
         await self.name_slot(SUSTAIN)
         await self.press(Key.RIGHT, MAP.NOTE, MAP.TAKE_NOTE)
-        self.assertEqual(dialog.keyswitches[SUSTAIN_SLOT], Keyswitch(SUSTAIN, MIN_MIDI_NUMBER))
+        self.assertEqual(dialog.keyswitches[SUSTAIN_SLOT], Keyswitch(SUSTAIN, midi.MIN_MIDI_NUMBER))
         await self.press(MAP.RENAME, *[Key.BACKSPACE] * len(SUSTAIN), Key.ENTER)
-        self.assertEqual(dialog.keyswitches[SUSTAIN_SLOT], Keyswitch(None, MIN_MIDI_NUMBER))
+        self.assertEqual(dialog.keyswitches[SUSTAIN_SLOT], Keyswitch(None, midi.MIN_MIDI_NUMBER))
         await self.press(MAP.CLEAR)
         self.assertEqual(dialog.keyswitches[SUSTAIN_SLOT], NO_KEYSWITCH)
 
     async def test_the_picker_opens_on_the_lowest_c_then_a_half_step_above_the_highest_note_then_on_the_slots_own(self):
         dialog = await self.open_map()
         await self.press(Key.RIGHT, MAP.NOTE)
-        self.assertEqual(dialog.picking, MIN_MIDI_NUMBER)
+        self.assertEqual(dialog.picking, midi.MIN_MIDI_NUMBER)
         await self.press(Key.UP, Key.UP, MAP.TAKE_NOTE, Key.DOWN, MAP.NOTE)
-        self.assertEqual(dialog.picking, 2 * HALF_STEPS_PER_OCTAVE + 1)
+        self.assertEqual(dialog.picking, 2 * midi.HALF_STEPS_PER_OCTAVE + 1)
         await self.press(MAP.CLOSE_PICKER)
         self.assertIsNone(dialog.picking)
         self.assertEqual(dialog.keyswitches[STACCATO_SLOT], NO_KEYSWITCH)
         await self.press(Key.UP, MAP.NOTE)
-        self.assertEqual(dialog.picking, 2 * HALF_STEPS_PER_OCTAVE)
-        self.assertEqual(first_note_offered([Keyswitch(None, MAX_MIDI_NUMBER)]), MAX_MIDI_NUMBER)
+        self.assertEqual(dialog.picking, 2 * midi.HALF_STEPS_PER_OCTAVE)
+        self.assertEqual(first_note_offered([Keyswitch(None, midi.MAX_MIDI_NUMBER)]), midi.MAX_MIDI_NUMBER)
 
     async def test_the_picker_moves_within_its_octave_and_by_octaves_and_stops_at_every_edge(self):
         dialog = await self.open_map()
         await self.press(Key.RIGHT, MAP.NOTE, Key.LEFT, Key.DOWN)
-        self.assertEqual(dialog.picking, MIN_MIDI_NUMBER)
-        await self.press(*[Key.RIGHT] * (HALF_STEPS_PER_OCTAVE + 1))
-        self.assertEqual(dialog.picking, HALF_STEPS_PER_OCTAVE - 1)
-        await self.press(*[Key.UP] * (MAX_MIDI_NUMBER // HALF_STEPS_PER_OCTAVE + 1))
-        self.assertLessEqual(dialog.picking, MAX_MIDI_NUMBER)
-        self.assertGreater(dialog.picking + HALF_STEPS_PER_OCTAVE, MAX_MIDI_NUMBER)
+        self.assertEqual(dialog.picking, midi.MIN_MIDI_NUMBER)
+        await self.press(*[Key.RIGHT] * (midi.HALF_STEPS_PER_OCTAVE + 1))
+        self.assertEqual(dialog.picking, midi.HALF_STEPS_PER_OCTAVE - 1)
+        await self.press(*[Key.UP] * (midi.MAX_MIDI_NUMBER // midi.HALF_STEPS_PER_OCTAVE + 1))
+        self.assertLessEqual(dialog.picking, midi.MAX_MIDI_NUMBER)
+        self.assertGreater(dialog.picking + midi.HALF_STEPS_PER_OCTAVE, midi.MAX_MIDI_NUMBER)
         self.assertIn(keyswitch_note_text(setlist=self.document.setlist(), note=dialog.picking), self.text())
 
     async def test_the_map_shows_each_slots_note_in_the_sets_octave_labels_with_its_number(self):
@@ -208,19 +203,19 @@ class TestKeyswitchMap(UITest):
         self.assertIn(str(SUSTAIN_NOTE), shown)
         self.assertIn(shown, self.text())
         self.assertIn(SUSTAIN, self.text())
-        self.assertIn(MSG_NONE_SHOWN, self.text())
+        self.assertIn(marks.MSG_NONE_SHOWN, self.text())
 
     async def test_the_lead_steps_from_nothing_and_stops_at_its_limit(self):
         instrument = self.document.setlist().get_instrument(VIOLIN)
-        await self.select_field(MSG_KEYSWITCH_LEAD_LABEL)
+        await self.select_field(labels.MSG_KEYSWITCH_LEAD_LABEL)
         await self.press(keybindings.FieldPage.MORE)
         self.assertEqual(instrument.get_keyswitch_lead(), 1)
         await self.press(keybindings.FieldPage.LESS)
         self.assertEqual(instrument.get_keyswitch_lead(), 0)
         self.assertIsNone(instrument.get_written_keyswitch_lead())
-        self.document.set_instrument_keyswitch_lead(name=VIOLIN, milliseconds=MAX_KEYSWITCH_LEAD)
+        self.document.set_instrument_keyswitch_lead(name=VIOLIN, milliseconds=limits.MAX_KEYSWITCH_LEAD)
         await self.press(keybindings.FieldPage.MORE)
-        self.assertEqual(instrument.get_keyswitch_lead(), MAX_KEYSWITCH_LEAD)
+        self.assertEqual(instrument.get_keyswitch_lead(), limits.MAX_KEYSWITCH_LEAD)
 
 
 class TestKeyswitchRow(PatternEditorTest):
@@ -235,14 +230,14 @@ class TestKeyswitchRow(PatternEditorTest):
         return self.app.screen
 
     async def test_the_row_is_in_basics_and_a_step_with_no_note_takes_none(self):
-        self.assertIn(MSG_ROW_LABELS[Row.KEYSWITCH], self.text())
+        self.assertIn(labels.MSG_ROW_LABELS[Row.KEYSWITCH], self.text())
         row = self.editor.row_for(Row.KEYSWITCH)
-        self.assertEqual(row.cell_lines(step=EMPTY_STEP), [MSG_BLOCKED_CELL])
+        self.assertEqual(row.cell_lines(step=EMPTY_STEP), [marks.MSG_BLOCKED_CELL])
         self.assertEqual(row.cell_lines(step=FIRST_STEP), [NOTHING])
 
     async def test_space_and_the_digits_turn_slots_on_and_enter_stores_them_as_one_undo_step(self):
         dialog = await self.open_dialog()
-        self.assertIn(MSG_KEYSWITCH_DIALOG_TITLE.format(step=FIRST_STEP + 1), self.text())
+        self.assertIn(messages.MSG_KEYSWITCH_DIALOG_TITLE.format(step=FIRST_STEP + 1), self.text())
         await self.press(PICK.FLIP)
         await self.press(DIGITS[3])
         self.assertEqual(dialog.place, 3)
@@ -279,9 +274,9 @@ class TestKeyswitchRow(PatternEditorTest):
 
     async def test_with_no_instrument_the_slots_go_by_number_and_the_dialog_says_why(self):
         await self.open_dialog()
-        self.assertIn(MSG_KEYSWITCH_NO_INSTRUMENT, self.text())
+        self.assertIn(messages.MSG_KEYSWITCH_NO_INSTRUMENT, self.text())
         await self.press(PICK.FLIP, PICK.DONE)
-        self.assertIn(MSG_DESCRIBE_KEYSWITCHES.format(names=MSG_KEYSWITCH_SLOT_NAMED.format(slot=SUSTAIN_SLOT)), self.text())
+        self.assertIn(messages.MSG_DESCRIBE_KEYSWITCHES.format(names=marks.MSG_KEYSWITCH_SLOT_NAMED.format(slot=SUSTAIN_SLOT)), self.text())
 
     async def test_one_instrument_for_every_use_names_the_slots_and_their_notes(self):
         add_violin(self.document)
@@ -291,7 +286,7 @@ class TestKeyswitchRow(PatternEditorTest):
         self.assertIn(STACCATO, text)
         self.assertIn(keyswitch_note_text(setlist=self.document.setlist(), note=STACCATO_NOTE), text)
         await self.press(DIGITS[STACCATO_SLOT], PICK.DONE)
-        self.assertIn(MSG_DESCRIBE_KEYSWITCHES.format(names=STACCATO), self.text())
+        self.assertIn(messages.MSG_DESCRIBE_KEYSWITCHES.format(names=STACCATO), self.text())
 
     async def test_a_slot_with_no_note_can_still_be_turned_on(self):
         add_violin(self.document)
@@ -305,7 +300,7 @@ class TestKeyswitchRow(PatternEditorTest):
         self.document.set_track_instrument(name=DRUMS, instrument=CELLO)
         self.document.add_clip_slot(index=SECOND_SCENE, track=DRUMS, pattern=TUNE)
         await self.open_dialog()
-        self.assertIn(MSG_KEYSWITCH_SEVERAL_INSTRUMENTS, self.text())
+        self.assertIn(messages.MSG_KEYSWITCH_SEVERAL_INSTRUMENTS, self.text())
         self.assertNotIn(STACCATO, self.text())
 
 
@@ -352,18 +347,18 @@ class TestKeyswitchesOnTheRoll(UITest):
     async def test_a_step_no_note_covers_is_refused_and_no_note_is_drawn(self):
         await self.press(*[Key.RIGHT] * (EMPTY_STEP + 1), keybindings.PianoRoll.KEYSWITCH)
         self.assertNotIsInstance(self.app.screen, KeyswitchDialog)
-        self.assertIn(ERR_NO_NOTE_ON_STEP, self.text())
+        self.assertIn(errors.ERR_NO_NOTE_ON_STEP, self.text())
         self.assertFalse(self.editor.is_note(step=self.editor.step))
 
     async def test_a_step_with_keyswitches_has_a_magenta_light_on_the_top_row_and_no_other_has(self):
-        self.assertNotIn(MSG_KEYSWITCH_LIGHT, self.top_row().plain)
+        self.assertNotIn(marks.MSG_KEYSWITCH_LIGHT, self.top_row().plain)
         self.document.set_step_value(name=TUNE, row=Row.KEYSWITCH, step=SECOND_STEP, value=[SUSTAIN_SLOT])
         line = self.top_row()
-        self.assertEqual(line.plain.count(MSG_KEYSWITCH_LIGHT), 1)
-        column = line.plain.index(MSG_KEYSWITCH_LIGHT)
+        self.assertEqual(line.plain.count(marks.MSG_KEYSWITCH_LIGHT), 1)
+        column = line.plain.index(marks.MSG_KEYSWITCH_LIGHT)
         self.assertIn(Style.KEYSWITCH_LIGHT, [str(span.style) for span in line.spans if span.start <= column < span.end])
         self.editor.draw()
-        self.assertIn(MSG_KEYSWITCH_LIGHT, self.text())
+        self.assertIn(marks.MSG_KEYSWITCH_LIGHT, self.text())
 
     async def test_the_light_is_drawn_over_a_note_on_the_top_row_and_the_line_keeps_its_width(self):
         before = self.top_row()

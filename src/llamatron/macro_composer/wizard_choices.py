@@ -28,7 +28,8 @@ import random
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.groove import FactoryGroove
-from llamatron.composition.limits import MAX_PROGRESSION_CHORDS, MAX_TEMPO, MIN_TEMPO
+from llamatron.composition import limits
+from llamatron.strings import labels as labels_text, macro_composer as composer_text, marks as marks_text
 from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer.interplay import LEAST_BUSY as LEAST_BUSY_BESIDE, MOST_BUSY as MOST_BUSY_BESIDE, USUAL_BUSY as USUAL_BUSY_BESIDE, WAITS, WAYS as WAYS_BESIDE
 from llamatron.macro_composer.characters import GAUGES as PLAYER_GAUGES, HIGHEST as HIGHEST_PLACE, LOWEST as LOWEST_PLACE, PRESET_PLACE, gauges_of, preset
@@ -59,16 +60,11 @@ from llamatron.macro_composer.song_plan import (
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
 from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, FLAT, KIT, LINES, OCTAVE, REST, SHARP, STEPS, VELOCITY, LOWEST_VELOCITY, HIGHEST_VELOCITY
-from llamatron.strings.macro_composer import MSG_PART_OF_SECTION
 from llamatron.macro_composer.melody import ARTICULATION, CHROMATIC, DEFAULT_EVOLVE, DEFAULT_LENGTHS, ENGINE, LENGTHS, LOUDNESS, PARTS_OF_A_LENGTH, EVOLVE, HALF_STEPS, LEAPS, MOVE, NOTES_IN_OCTAVE, DEFAULT_GAUGES, EVOLVING, FIRST_HOOK_TAKE, GRID, HIGHEST_GAUGE, HOOK, HOOK_TAKE, LOWEST_GAUGE, ROTATE, ROTATIONS, SERIAL, SMART, STEP_WALK
 from llamatron.music.note import ROOT_NAMES, SEMITONES_ABOVE_C
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MIN_GM_SOUND
-from llamatron.strings.labels import MSG_GM_SOUNDS
-from llamatron.strings.marks import MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SECTION_VARIANT
 from llamatron.support.version import VERSION as A_VERSION
 from llamatron.strings import errors
-from llamatron.strings.errors import ERR_WIZARD_NO_SUCH_VARIANT, ERR_WIZARD_CHORDS_SHARED, ERR_WIZARD_SWING, ERR_WIZARD_DYNAMICS, ERR_WIZARD_LOUDNESS, ERR_WIZARD_NO_RIFF, ERR_WIZARD_RIFF, ERR_WIZARD_RIFF_UNMADE, ERR_WIZARD_COMES_IN, ERR_WIZARD_LAYS_OUT, ERR_WIZARD_PLAYS_UNMADE, ERR_WIZARD_REACTS, ERR_WIZARD_CONTRAST, ERR_WIZARD_EXTRAS, ERR_WIZARD_END, ERR_WIZARD_FIRST_PLAYER, ERR_WIZARD_HOOK_LINE, ERR_WIZARD_HOOK_PART, ERR_WIZARD_SETUP_BARS, ERR_WIZARD_START, ERR_WIZARD_START_UNMADE, ERR_WIZARD_CHORDS, ERR_WIZARD_FORM_ANSWER, ERR_WIZARD_NO_FORM_QUESTIONS, ERR_WIZARD_INTRO_HOOK, ERR_WIZARD_PHRASING, ERR_WIZARD_SECTION_OWN, ERR_WIZARD_SECTION_OWN_UNMADE, ERR_WIZARD_GENRE_HAS_NO_PLAN, ERR_WIZARD_NO_SONG_PLAN, ERR_WIZARD_SWITCH, ERR_WIZARD_NO_SUCH_ROW, ERR_WIZARD_ROW, ERR_WIZARD_HOOK_TAKE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_MELODY_NUMBER, ERR_WIZARD_MELODY_SWITCH, ERR_WIZARD_NO_SUCH_MELODY_SETTING, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'
@@ -203,7 +199,7 @@ KEPT_BY = {
 
 def family_of(sound):
     """Return the place of the General MIDI family a sound is in."""
-    return (sound - MIN_GM_SOUND) // GM_FAMILY_SIZE
+    return (sound - limits.MIN_GM_SOUND) // limits.GM_FAMILY_SIZE
 
 
 # The melody styles, and the key a song keeps the one chosen under.
@@ -397,19 +393,19 @@ def chords_from_text(text):
         mark = word[0] if word and word[0] in MARKS_TYPED else None
         number = word[1:] if mark else word
         if not number.isdigit() or not FIRST_DEGREE_OF_SCALE <= int(number) <= LAST_DEGREE_OF_SCALE:
-            raise ValueError(ERR_WIZARD_CHORDS.format(value=text))
+            raise ValueError(errors.ERR_WIZARD_CHORDS.format(value=text))
         return {DEGREE: int(number), ACCIDENTAL: MARKS_TYPED[mark]} if mark else int(number)
     chords = []
     for word in str(text).split():
         # Two chords joined by a dash share a bar, each half of it.
         halves = word.split(SHARES_A_BAR)
         if len(halves) > CHORDS_IN_A_SHARED_BAR:
-            raise ValueError(ERR_WIZARD_CHORDS.format(value=text))
+            raise ValueError(errors.ERR_WIZARD_CHORDS.format(value=text))
         chords.append(chord_typed(word) if len(halves) == 1 else [chord_typed(half) for half in halves])
     if not chords:
-        raise ValueError(ERR_WIZARD_CHORDS.format(value=text))
+        raise ValueError(errors.ERR_WIZARD_CHORDS.format(value=text))
     if any(shares_a_bar(chord) for chord in chords) and not fits_by_halves(chords):
-        raise ValueError(ERR_WIZARD_CHORDS_SHARED.format(most=MAX_PROGRESSION_CHORDS // CHORDS_IN_A_SHARED_BAR, value=text))
+        raise ValueError(errors.ERR_WIZARD_CHORDS_SHARED.format(most=limits.MAX_PROGRESSION_CHORDS // CHORDS_IN_A_SHARED_BAR, value=text))
     return chords
 
 
@@ -626,7 +622,7 @@ class WizardChoices:
     def set_genre(self, genre):
         """Choose a genre, which leaves the subgenre to be chosen again, since each genre has its own."""
         if genre not in style_names():
-            raise ValueError(ERR_WIZARD_NO_SUCH_GENRE.format(value=genre))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_GENRE.format(value=genre))
         if genre != self._genre:
             self._genre = genre
             self._subgenre = None
@@ -657,7 +653,7 @@ class WizardChoices:
     def set_subgenre(self, subgenre):
         """Choose a subgenre of the genre, and take its usual tempo, scale and form, which a person may then change."""
         if subgenre not in self.subgenres():
-            raise ValueError(ERR_WIZARD_NO_SUCH_SUBGENRE.format(value=subgenre))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_SUBGENRE.format(value=subgenre))
         if subgenre != self._subgenre:
             self._subgenre = subgenre
             # The commonest kind of song the subgenre holds, which a person may change.
@@ -681,7 +677,7 @@ class WizardChoices:
     def set_variant(self, variant):
         """Choose the kind of song the subgenre makes, and take the kind's usual tempo, scale, form and band, as choosing a subgenre does."""
         if variant not in self.variants():
-            raise ValueError(ERR_WIZARD_NO_SUCH_VARIANT.format(choices=', '.join(self.variants()), value=variant))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_VARIANT.format(choices=', '.join(self.variants()), value=variant))
         if variant != self._variant:
             self._variant = variant
             self._take_usual_of_subgenre()
@@ -749,7 +745,7 @@ class WizardChoices:
 
     def set_root(self, root):
         if root not in ROOT_NAMES:
-            raise ValueError(ERR_WIZARD_NO_SUCH_ROOT.format(value=root))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_ROOT.format(value=root))
         self._root = root
 
     def get_scale_type(self):
@@ -757,7 +753,7 @@ class WizardChoices:
 
     def set_scale_type(self, scale_type):
         if scale_type not in SCALE_TYPES:
-            raise ValueError(ERR_WIZARD_NO_SUCH_SCALE_TYPE.format(value=scale_type))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_SCALE_TYPE.format(value=scale_type))
         self._scale_type = scale_type
 
     def get_tempo(self):
@@ -765,8 +761,8 @@ class WizardChoices:
 
     def set_tempo(self, tempo):
         """Set the tempo to any the tracker plays; the genre's usual range is advice."""
-        if isinstance(tempo, bool) or not isinstance(tempo, int) or not MIN_TEMPO <= tempo <= MAX_TEMPO:
-            raise ValueError(ERR_WIZARD_TEMPO.format(low=MIN_TEMPO, high=MAX_TEMPO, value=tempo))
+        if isinstance(tempo, bool) or not isinstance(tempo, int) or not limits.MIN_TEMPO <= tempo <= limits.MAX_TEMPO:
+            raise ValueError(errors.ERR_WIZARD_TEMPO.format(low=limits.MIN_TEMPO, high=limits.MAX_TEMPO, value=tempo))
         self._tempo = tempo
 
     # The swing.
@@ -791,7 +787,7 @@ class WizardChoices:
     def set_swing(self, swing):
         """Say the swing the song is played with, one of the grooves every set has or none; the subgenre's own is kept as the subgenre's."""
         if not self.has_swing() or swing not in SWINGS:
-            raise ValueError(ERR_WIZARD_SWING.format(choices=', '.join(SWINGS), value=swing))
+            raise ValueError(errors.ERR_WIZARD_SWING.format(choices=', '.join(SWINGS), value=swing))
         self._extras.pop(GROOVE, None)
         if swing != self.swing_of_genre():
             self._extras[GROOVE] = swing
@@ -820,7 +816,7 @@ class WizardChoices:
     def set_form(self, form):
         """Choose one of the forms the subgenre suggests, which puts its sections in place of any a person changed."""
         if form not in self.forms():
-            raise ValueError(ERR_WIZARD_NO_SUCH_FORM.format(value=form))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_FORM.format(value=form))
         self._form = form
         self._sections = None
         self._stages = {}
@@ -847,7 +843,7 @@ class WizardChoices:
     def _entry(self, place):
         entries = self._entries()
         if isinstance(place, bool) or not isinstance(place, int) or not 0 <= place < len(entries):
-            raise ValueError(ERR_WIZARD_NO_SUCH_SECTION.format(value=place))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_SECTION.format(value=place))
         return entries[place]
 
     def form_sections(self):
@@ -866,7 +862,7 @@ class WizardChoices:
             if own not in variants:
                 variants.append(own)
             place = variants.index(own)
-            names.append(entry[KIND] if not place else MSG_WIZARD_SECTION_VARIANT.format(kind=entry[KIND], letter=chr(ord(FIRST_VARIANT_LETTER) + place)))
+            names.append(entry[KIND] if not place else marks_text.MSG_WIZARD_SECTION_VARIANT.format(kind=entry[KIND], letter=chr(ord(FIRST_VARIANT_LETTER) + place)))
         return names
 
     def section_labels(self):
@@ -877,7 +873,7 @@ class WizardChoices:
         labels = []
         for kind in kinds:
             counts[kind] = counts.get(kind, 0) + 1
-            labels.append(kind if kinds.count(kind) == 1 else MSG_WIZARD_SECTION_NUMBERED.format(kind=kind, number=counts[kind]))
+            labels.append(kind if kinds.count(kind) == 1 else marks_text.MSG_WIZARD_SECTION_NUMBERED.format(kind=kind, number=counts[kind]))
         return labels
 
     def _song_sections(self):
@@ -947,9 +943,9 @@ class WizardChoices:
     def add_section(self, *, place, kind):
         """Put a new section of a kind before a place in the form, as the genre describes the kind."""
         if kind not in self.section_kinds():
-            raise ValueError(ERR_WIZARD_NO_SUCH_SECTION_KIND.format(value=kind))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_SECTION_KIND.format(value=kind))
         if isinstance(place, bool) or not isinstance(place, int) or not 0 <= place <= len(self._entries()):
-            raise ValueError(ERR_WIZARD_NO_SUCH_SECTION.format(value=place))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_SECTION.format(value=place))
         self._own_entries().insert(place, {KIND: kind})
 
     def copy_section(self, place):
@@ -960,7 +956,7 @@ class WizardChoices:
     def remove_section(self, place):
         self._entry(place)
         if len(self._entries()) == 1:
-            raise ValueError(ERR_WIZARD_LAST_SECTION)
+            raise ValueError(errors.ERR_WIZARD_LAST_SECTION)
         del self._own_entries()[place]
 
     def move_section(self, *, place, offset):
@@ -977,7 +973,7 @@ class WizardChoices:
         """Make a section another kind, as the genre describes that kind: what the section changed of its old kind is dropped."""
         self._entry(place)
         if kind not in self.section_kinds():
-            raise ValueError(ERR_WIZARD_NO_SUCH_SECTION_KIND.format(value=kind))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_SECTION_KIND.format(value=kind))
         self._own_entries()[place] = {KIND: kind}
 
     def _usual(self, place):
@@ -1011,7 +1007,7 @@ class WizardChoices:
 
     def set_section_bars(self, *, place, bars):
         if isinstance(bars, bool) or not isinstance(bars, int) or bars not in self.bars_offered(place):
-            raise ValueError(ERR_WIZARD_SECTION_BARS.format(value=bars))
+            raise ValueError(errors.ERR_WIZARD_SECTION_BARS.format(value=bars))
         entry = self._own_entries()[place]
         entry.pop(BARS, None)
         if bars != self._usual(place)[BARS]:
@@ -1022,7 +1018,7 @@ class WizardChoices:
         self._role(role)
         plays = [name for name in self.roles() if (name in self.section_plays(place) or (on and name == role)) and (on or name != role)]
         if not plays:
-            raise ValueError(ERR_WIZARD_SECTION_NEEDS_PLAYER)
+            raise ValueError(errors.ERR_WIZARD_SECTION_NEEDS_PLAYER)
         entry = self._own_entries()[place]
         entry.pop(PLAYS, None)
         if sorted(plays) != sorted(self._usual(place).get(PLAYS, [])):
@@ -1049,15 +1045,15 @@ class WizardChoices:
                 if BESIDE_KEPT in entry:
                     # What the answering player does in the section is kept as chosen, and is used wherever somebody answers there.
                     if entry[BESIDE_KEPT] not in WAYS_BESIDE:
-                        raise ValueError(ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=entry[BESIDE_KEPT]))
+                        raise ValueError(errors.ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=entry[BESIDE_KEPT]))
                     self._sections[place][BESIDE_KEPT] = entry[BESIDE_KEPT]
                 if entry.get(OWN_OF_SECTION):
                     self._sections[place][OWN_OF_SECTION] = {field: self._checked_own(field=field, value=value) for field, value in entry[OWN_OF_SECTION].items()}
             if not self._sections:
-                raise ValueError(ERR_WIZARD_LAST_SECTION)
+                raise ValueError(errors.ERR_WIZARD_LAST_SECTION)
         except (KeyError, TypeError, ValueError):
             self._sections = kept
-            raise ValueError(ERR_WIZARD_BAD_SECTIONS.format(value=sections)) from None
+            raise ValueError(errors.ERR_WIZARD_BAD_SECTIONS.format(value=sections)) from None
 
     # How the song starts and ends: stages before the first section with a tune and after the last, each a section of its own.
 
@@ -1177,7 +1173,7 @@ class WizardChoices:
         if way == OUTRO_THEN_CHORD and held is not None:
             return [self._stage(kind=outro), *chord]
         if way == SLOWS_DOWN:
-            return [self._stage(kind=outro, own={TEMPO_END_OF_PLACE: max(self._tempo * SLOWED_TO[0] // SLOWED_TO[1], MIN_TEMPO)}), *chord]
+            return [self._stage(kind=outro, own={TEMPO_END_OF_PLACE: max(self._tempo * SLOWED_TO[0] // SLOWED_TO[1], limits.MIN_TEMPO)}), *chord]
         if way == STRIPS_DOWN and len(players) > 2:
             return [*(self._stage(kind=outro, plays=players[:count]) for count in range(len(players) - 1, 0, -1)), *chord]
         if way == ONE_PLAYER_ALONE and len(players) > 1:
@@ -1248,7 +1244,7 @@ class WizardChoices:
             opening = entries[:head] if start is None else self._start_stages(start)
             closing = entries[len(entries) - tail:] if end is None else self._end_stages(end)
             if opening is None or closing is None or not body:
-                raise ValueError(ERR_WIZARD_START_UNMADE.format(problem=start if opening is None else end))
+                raise ValueError(errors.ERR_WIZARD_START_UNMADE.format(problem=start if opening is None else end))
             self._sections = [*(own_copy_of(entry) for entry in opening), *body, *(own_copy_of(entry) for entry in closing)]
             if start is not None:
                 self._stages[START_KEPT] = start
@@ -1259,26 +1255,26 @@ class WizardChoices:
         except (ValueError, KeyError, IndexError, SongFileError) as problem:
             self._sections, self._stages = before
             self._answers = {}
-            raise ValueError(ERR_WIZARD_START_UNMADE.format(problem=problem)) from None
+            raise ValueError(errors.ERR_WIZARD_START_UNMADE.format(problem=problem)) from None
 
     def set_start(self, way):
         if way not in self.starts():
-            raise ValueError(ERR_WIZARD_START.format(value=way))
+            raise ValueError(errors.ERR_WIZARD_START.format(value=way))
         self._restaged(change=lambda: None, start=way)
 
     def set_end(self, way):
         if way not in self.ends():
-            raise ValueError(ERR_WIZARD_END.format(value=way))
+            raise ValueError(errors.ERR_WIZARD_END.format(value=way))
         self._restaged(change=lambda: None, end=way)
 
     def set_first_player(self, role):
         if role not in self.first_players():
-            raise ValueError(ERR_WIZARD_FIRST_PLAYER.format(value=role))
+            raise ValueError(errors.ERR_WIZARD_FIRST_PLAYER.format(value=role))
         self._restaged(change=lambda: self._stages.update({FIRST_PLAYER_KEPT: role}))
 
     def set_setup_bars(self, bars):
         if isinstance(bars, bool) or bars not in self.setup_bars_offered():
-            raise ValueError(ERR_WIZARD_SETUP_BARS.format(value=bars))
+            raise ValueError(errors.ERR_WIZARD_SETUP_BARS.format(value=bars))
         self._restaged(change=lambda: self._stages.update({SETUP_BARS_KEPT: bars}))
 
     # A form made from a few answers, each question asked only where the subgenre can play the kind of section it is about.
@@ -1301,15 +1297,15 @@ class WizardChoices:
         """Return the kinds of section, in order, of the form some answers ask for: a question left out takes its usual answer."""
         asked = {name: (offered, usual) for name, offered, usual in self.form_questions()}
         if not asked:
-            raise ValueError(ERR_WIZARD_NO_FORM_QUESTIONS)
+            raise ValueError(errors.ERR_WIZARD_NO_FORM_QUESTIONS)
         given = {}
         for name, (offered, usual) in asked.items():
             given[name] = answers.get(name, usual)
             if given[name] not in offered:
-                raise ValueError(ERR_WIZARD_FORM_ANSWER.format(name=name, value=given[name]))
+                raise ValueError(errors.ERR_WIZARD_FORM_ANSWER.format(name=name, value=given[name]))
         unknown = [name for name in answers if name not in asked]
         if unknown:
-            raise ValueError(ERR_WIZARD_FORM_ANSWER.format(name=unknown[0], value=answers[unknown[0]]))
+            raise ValueError(errors.ERR_WIZARD_FORM_ANSWER.format(name=unknown[0], value=answers[unknown[0]]))
         kinds = self.section_kinds()
         before = given.get(PRE_CHORUSES, NO)
         solos = SOLO_COUNTS.index(given.get(SOLOS, NONE_OF))
@@ -1360,7 +1356,7 @@ class WizardChoices:
     def _role(self, role):
         found = next((entry for entry in self._style()[ROLES] if entry[ROLE] == role), None) if self.is_ready() else None
         if found is None:
-            raise ValueError(ERR_WIZARD_NO_SUCH_PLAYER.format(value=role))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_PLAYER.format(value=role))
         return found
 
     def roles(self):
@@ -1434,13 +1430,13 @@ class WizardChoices:
     def set_piece_on(self, *, piece, on):
         """Switch a piece of the kit on or off. The last piece stays on: a band with no drums leaves the drums out."""
         if piece not in self.pieces():
-            raise ValueError(ERR_WIZARD_NO_SUCH_PIECE.format(value=piece))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_PIECE.format(value=piece))
         if on:
             if piece in self._pieces_off:
                 self._pieces_off.remove(piece)
             return
         if [name for name in self.pieces() if self.piece_is_on(name)] == [piece]:
-            raise ValueError(ERR_WIZARD_LAST_PIECE)
+            raise ValueError(errors.ERR_WIZARD_LAST_PIECE)
         if piece not in self._pieces_off:
             self._pieces_off.append(piece)
 
@@ -1463,7 +1459,7 @@ class WizardChoices:
 
     def set_fills(self, position):
         if isinstance(position, bool) or not isinstance(position, int) or not FEWEST_FILLS <= position <= MOST_FILLS:
-            raise ValueError(ERR_WIZARD_FILLS.format(value=position))
+            raise ValueError(errors.ERR_WIZARD_FILLS.format(value=position))
         self._fills = position
 
     def _set_kept_fills(self, *, position):
@@ -1488,22 +1484,22 @@ class WizardChoices:
         """Have a piece of the kit sound as another drum of the kit, by name, or as a General MIDI sound, by number, on the note the
         piece had or the usual one; or None, as its own drum again."""
         if piece not in self.pieces():
-            raise ValueError(ERR_WIZARD_NO_SUCH_PIECE.format(value=piece))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_PIECE.format(value=piece))
         if sound is None or sound == piece:
             self._piece_sounds.pop(piece, None)
         elif isinstance(sound, str) and sound in KIT:
             self._piece_sounds[piece] = {PLAYED_DRUM: sound}
-        elif not isinstance(sound, (bool, str)) and isinstance(sound, int) and MIN_GM_SOUND <= sound <= MAX_GM_SOUND:
+        elif not isinstance(sound, (bool, str)) and isinstance(sound, int) and limits.MIN_GM_SOUND <= sound <= limits.MAX_GM_SOUND:
             self._piece_sounds[piece] = {PLAYED_SOUND: sound, PLAYED_NOTE: self.piece_note(piece) or USUAL_PIECE_NOTE}
         else:
-            raise ValueError(ERR_WIZARD_PIECE_SOUND.format(value=sound))
+            raise ValueError(errors.ERR_WIZARD_PIECE_SOUND.format(value=sound))
 
     def set_piece_note(self, *, piece, note):
         """Choose the note a piece plays in its General MIDI sound."""
         if self.piece_note(piece) is None:
-            raise ValueError(ERR_WIZARD_PIECE_HAS_NO_NOTE.format(value=piece))
+            raise ValueError(errors.ERR_WIZARD_PIECE_HAS_NO_NOTE.format(value=piece))
         if isinstance(note, bool) or not isinstance(note, int) or not LOWEST_NOTE <= note <= HIGHEST_NOTE:
-            raise ValueError(ERR_WIZARD_PIECE_NOTE.format(low=LOWEST_NOTE, high=HIGHEST_NOTE, value=note))
+            raise ValueError(errors.ERR_WIZARD_PIECE_NOTE.format(low=LOWEST_NOTE, high=HIGHEST_NOTE, value=note))
         self._piece_sounds[piece][PLAYED_NOTE] = note
 
     def _set_kept_piece_sound(self, *, piece, sounds_as):
@@ -1530,7 +1526,7 @@ class WizardChoices:
     def set_break(self, name):
         """Choose the break the drums play, or None for none."""
         if name is not None and name not in self.breaks():
-            raise ValueError(ERR_WIZARD_NO_SUCH_BREAK.format(value=name))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_BREAK.format(value=name))
         self._break = NO_BREAK if name is None else name
 
     def _set_kept_break(self, *, name):
@@ -1542,7 +1538,7 @@ class WizardChoices:
 
     def set_break_cut(self, position):
         if isinstance(position, bool) or not isinstance(position, int) or not LEAST_CUT <= position <= MOST_CUT:
-            raise ValueError(ERR_WIZARD_BREAK_CUT.format(low=LEAST_CUT, high=MOST_CUT, value=position))
+            raise ValueError(errors.ERR_WIZARD_BREAK_CUT.format(low=LEAST_CUT, high=MOST_CUT, value=position))
         self._break_cut = position
 
     def _set_kept_break_cut(self, *, position):
@@ -1568,7 +1564,7 @@ class WizardChoices:
 
     def set_gauge(self, *, name, position):
         if name not in DEFAULT_GAUGES or isinstance(position, bool) or not isinstance(position, int) or not LOWEST_GAUGE <= position <= HIGHEST_GAUGE:
-            raise ValueError(ERR_WIZARD_GAUGE.format(name=name, low=LOWEST_GAUGE, high=HIGHEST_GAUGE, value=position))
+            raise ValueError(errors.ERR_WIZARD_GAUGE.format(name=name, low=LOWEST_GAUGE, high=HIGHEST_GAUGE, value=position))
         self._gauges[name] = position
 
     def _melody_habits(self):
@@ -1599,19 +1595,19 @@ class WizardChoices:
     def set_melody_setting(self, *, name, value):
         """Set a setting of the song's melody style, refusing one the style does not have."""
         if name not in self.melody_settings():
-            raise ValueError(ERR_WIZARD_NO_SUCH_MELODY_SETTING.format(value=name))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_MELODY_SETTING.format(value=name))
         self._set_kept_melody_setting(name=name, value=value)
 
     def _set_kept_melody_setting(self, *, name, value):
         if name in MELODY_SWITCHES:
             if not isinstance(value, bool):
-                raise ValueError(ERR_WIZARD_MELODY_SWITCH.format(name=name, value=value))
+                raise ValueError(errors.ERR_WIZARD_MELODY_SWITCH.format(name=name, value=value))
         elif name in MELODY_NUMBERS:
             low, high = MELODY_NUMBERS[name]
             if isinstance(value, bool) or not isinstance(value, int) or not low <= value <= high:
-                raise ValueError(ERR_WIZARD_MELODY_NUMBER.format(name=name, low=low, high=high, value=value))
+                raise ValueError(errors.ERR_WIZARD_MELODY_NUMBER.format(name=name, low=low, high=high, value=value))
         else:
-            raise ValueError(ERR_WIZARD_NO_SUCH_MELODY_SETTING.format(value=name))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_MELODY_SETTING.format(value=name))
         self._melody_settings[name] = value
 
     # The serial style's rows of numbers, a player's own.
@@ -1634,7 +1630,7 @@ class WizardChoices:
     def get_player_row(self, *, role, name):
         """Return a player's row as the song will deal it: the player's own, or the genre's for the player."""
         if name not in self.player_rows(role):
-            raise ValueError(ERR_WIZARD_NO_SUCH_ROW.format(value=name))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_ROW.format(value=name))
         return list(self._rows.get(role, {}).get(name) or self.genre_row(role=role, name=name))
 
     def player_row_is_own(self, *, role, name):
@@ -1648,11 +1644,11 @@ class WizardChoices:
     def set_player_row(self, *, role, name, values):
         """Give a player a row of the player's own; the genre's own row given back is no row of the player's."""
         if name not in self.player_rows(role):
-            raise ValueError(ERR_WIZARD_NO_SUCH_ROW.format(value=name))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_ROW.format(value=name))
         low, high = ROW_LIMITS[name]
         if not isinstance(values, (list, tuple)) or not FEWEST_ROW_CELLS <= len(values) <= MOST_ROW_CELLS or any(
                 isinstance(value, bool) or not isinstance(value, int) or not low <= value <= high for value in values):
-            raise ValueError(ERR_WIZARD_ROW.format(name=name, low=low, high=high, fewest=FEWEST_ROW_CELLS, most=MOST_ROW_CELLS, value=values))
+            raise ValueError(errors.ERR_WIZARD_ROW.format(name=name, low=low, high=high, fewest=FEWEST_ROW_CELLS, most=MOST_ROW_CELLS, value=values))
         if list(values) == self.genre_row(role=role, name=name):
             self.clear_player_row(role=role, name=name)
         else:
@@ -1704,7 +1700,7 @@ class WizardChoices:
 
     def set_quiet_notes(self, on):
         if not isinstance(on, bool):
-            raise ValueError(ERR_WIZARD_QUIET_NOTES.format(value=on))
+            raise ValueError(errors.ERR_WIZARD_QUIET_NOTES.format(value=on))
         self._quiet_notes = on
 
     # One guitarist or two: a band whose one guitarist plays the chords and takes the solo, the chords
@@ -1727,7 +1723,7 @@ class WizardChoices:
     def set_guitarists(self, count):
         """Choose two guitarists or one. One guitarist takes the solo on the guitar, whatever took it before."""
         if isinstance(count, bool) or count not in GUITARIST_COUNTS or (count == ONE_GUITARIST_COUNT and not self.offers_one_guitarist()):
-            raise ValueError(ERR_WIZARD_GUITARISTS.format(value=count))
+            raise ValueError(errors.ERR_WIZARD_GUITARISTS.format(value=count))
         self._guitarists = count
         if count == ONE_GUITARIST_COUNT:
             one = self._one_guitarist()
@@ -1800,7 +1796,7 @@ class WizardChoices:
 
     def set_band_sounds(self, sounds):
         if sounds not in BAND_SOUNDS:
-            raise ValueError(ERR_WIZARD_BAND_SOUNDS.format(value=sounds))
+            raise ValueError(errors.ERR_WIZARD_BAND_SOUNDS.format(value=sounds))
         self._band_sounds = sounds
 
     def _set_kept_band_sounds(self, *, sounds):
@@ -1824,12 +1820,12 @@ class WizardChoices:
     def set_sound(self, *, role, sound):
         """Give a player a sound of its own, any General MIDI sound; or None, to follow the band's again."""
         if not self.has_sound(role):
-            raise ValueError(ERR_WIZARD_NO_SUCH_PLAYER.format(value=role))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_PLAYER.format(value=role))
         if sound is None:
             self._sounds.pop(role, None)
             return
-        if isinstance(sound, bool) or not isinstance(sound, int) or not MIN_GM_SOUND <= sound <= MAX_GM_SOUND:
-            raise ValueError(ERR_WIZARD_SOUND.format(low=MIN_GM_SOUND, high=MAX_GM_SOUND, value=sound))
+        if isinstance(sound, bool) or not isinstance(sound, int) or not limits.MIN_GM_SOUND <= sound <= limits.MAX_GM_SOUND:
+            raise ValueError(errors.ERR_WIZARD_SOUND.format(low=limits.MIN_GM_SOUND, high=limits.MAX_GM_SOUND, value=sound))
         self._sounds[role] = sound
 
     # What a sound is tried with: a run of the song's scale from its root, in the player's octave.
@@ -1861,7 +1857,7 @@ class WizardChoices:
     def sound_name(self, sound):
         """Return what a General MIDI sound is called: by the genre where the genre names it, or by General MIDI."""
         named = [name for name, number in self._style()[SOUNDS].items() if number == sound]
-        return named[0] if named else MSG_GM_SOUNDS[sound - MIN_GM_SOUND]
+        return named[0] if named else labels_text.MSG_GM_SOUNDS[sound - limits.MIN_GM_SOUND]
 
     def _song_sounds(self):
         """Return the sounds the song chooses itself, by player: each player in the band whose sound is not its way's usual one."""
@@ -1875,7 +1871,7 @@ class WizardChoices:
         entry = self._role(role)
         if not on:
             if self.roles_in() == [role]:
-                raise ValueError(ERR_WIZARD_LAST_PLAYER)
+                raise ValueError(errors.ERR_WIZARD_LAST_PLAYER)
             if role not in self._without:
                 self._without.append(role)
             return
@@ -1884,7 +1880,7 @@ class WizardChoices:
         if not entry.get(DRUMS) and not self._has_sound(trait=entry[TRAIT], value=self.get_way(entry[TRAIT])):
             ways = self.ways(role=role, trait=entry[TRAIT])
             if not ways:
-                raise ValueError(ERR_WIZARD_NO_WAY.format(value=role))
+                raise ValueError(errors.ERR_WIZARD_NO_WAY.format(value=role))
             self._ways[entry[TRAIT]] = ways[0]
 
     def _picks_with(self, ways):
@@ -1943,7 +1939,7 @@ class WizardChoices:
 
     def set_melody(self, style):
         if style is not None and style not in self.melody_styles():
-            raise ValueError(ERR_WIZARD_NO_SUCH_MELODY.format(value=style))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_MELODY.format(value=style))
         self._melody = style
 
     def _set_kept_melody(self, *, style):
@@ -1982,7 +1978,7 @@ class WizardChoices:
         sections = self._style()[SECTIONS]
         kind = next(kind for kind in self.section_kinds_in_form() if any(entry.get(HOOK) for entry in sections[kind].get(PLAN, [])))
         line = next(place for place, entry in enumerate(sections[kind][PLAN]) if entry.get(HOOK))
-        part = arranged(style=self._style(), song=self.song_picks(kind))[PARTS].get(MSG_PART_OF_SECTION.format(kind, player))
+        part = arranged(style=self._style(), song=self.song_picks(kind))[PARTS].get(composer_text.MSG_PART_OF_SECTION.format(kind, player))
         return (None, None) if part is None or LINES not in part else (part, line)
 
     def _hook_notes(self):
@@ -2003,7 +1999,7 @@ class WizardChoices:
 
     def set_hook(self, on):
         if on and not self.can_have_hook():
-            raise ValueError(ERR_WIZARD_NO_HOOK)
+            raise ValueError(errors.ERR_WIZARD_NO_HOOK)
         self._hook = None if bool(on) == self.usual_hook() else bool(on)
 
     def _set_kept_hook(self, *, on):
@@ -2016,12 +2012,12 @@ class WizardChoices:
     def new_hook(self):
         """Have another hook made, every other line of the song left as it was."""
         if not self.can_have_hook() or not self.has_hook():
-            raise ValueError(ERR_WIZARD_NO_HOOK)
+            raise ValueError(errors.ERR_WIZARD_NO_HOOK)
         self._hook_take += 1
 
     def _set_kept_hook_take(self, *, take):
         if isinstance(take, bool) or not isinstance(take, int) or take < FIRST_HOOK_TAKE:
-            raise ValueError(ERR_WIZARD_HOOK_TAKE.format(value=take))
+            raise ValueError(errors.ERR_WIZARD_HOOK_TAKE.format(value=take))
         self._hook_take = take
 
     def get_way(self, trait):
@@ -2029,7 +2025,7 @@ class WizardChoices:
 
     def set_way(self, *, trait, value):
         if not self.is_ready() or value not in values_of(style=self._style(), trait=trait) or not self._works(trait=trait, value=value):
-            raise ValueError(ERR_WIZARD_NO_SUCH_WAY.format(trait=trait, value=value))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_WAY.format(trait=trait, value=value))
         self._ways[trait] = value
 
     def has_busy(self, role):
@@ -2043,12 +2039,12 @@ class WizardChoices:
     def set_busy(self, *, role, level):
         """Choose how busy a player is. Players of one instrument, as a lead and a solo, share the level."""
         if not self.has_busy(role):
-            raise ValueError(ERR_WIZARD_BUSY.format(low=LEAST_BUSY, high=MOST_BUSY, value=level))
+            raise ValueError(errors.ERR_WIZARD_BUSY.format(low=LEAST_BUSY, high=MOST_BUSY, value=level))
         self._set_level(player=self._role(role)[PLAYER], level=level)
 
     def _set_level(self, *, player, level):
         if isinstance(level, bool) or not isinstance(level, int) or level not in self._style().get(PLAYERS, {}).get(player, {}):
-            raise ValueError(ERR_WIZARD_BUSY.format(low=LEAST_BUSY, high=MOST_BUSY, value=level))
+            raise ValueError(errors.ERR_WIZARD_BUSY.format(low=LEAST_BUSY, high=MOST_BUSY, value=level))
         self._levels[player] = level
         # A preset chosen puts every gauge of the player back where the preset has it.
         self._own_gauges.pop(player, None)
@@ -2111,7 +2107,7 @@ class WizardChoices:
         """Give a player a level of the song's own, a velocity, or give the level back to the genre with None."""
         is_number = number is None or (isinstance(number, int) and not isinstance(number, bool) and LOWEST_VELOCITY <= number <= HIGHEST_VELOCITY)
         if not self.has_loudness(role) or level not in LOUDNESS_LEVELS or not is_number:
-            raise ValueError(ERR_WIZARD_LOUDNESS.format(low=LOWEST_VELOCITY, high=HIGHEST_VELOCITY, value=(role, level, number)))
+            raise ValueError(errors.ERR_WIZARD_LOUDNESS.format(low=LOWEST_VELOCITY, high=HIGHEST_VELOCITY, value=(role, level, number)))
         own = self._extras.setdefault(LOUDNESS_OF, {}).setdefault(role, {})
         own.pop(level, None)
         if number is not None and number != self._levels_of_style(role)[level]:
@@ -2145,7 +2141,7 @@ class WizardChoices:
         """Say how far a player's loud and soft notes lie from the player's normal ones: not at all at the least, as the genre writes them
         in the middle, and twice as far at the most."""
         if not self.has_loudness(role) or isinstance(dynamics, bool) or not isinstance(dynamics, int) or not LEAST_DYNAMICS <= dynamics <= MOST_DYNAMICS:
-            raise ValueError(ERR_WIZARD_DYNAMICS.format(low=LEAST_DYNAMICS, high=MOST_DYNAMICS, value=dynamics))
+            raise ValueError(errors.ERR_WIZARD_DYNAMICS.format(low=LEAST_DYNAMICS, high=MOST_DYNAMICS, value=dynamics))
         of_players = self._extras.setdefault(DYNAMICS, {})
         of_players.pop(role, None)
         if dynamics != USUAL_DYNAMICS:
@@ -2186,9 +2182,9 @@ class WizardChoices:
     def set_answered_by(self, role):
         """Choose who answers the tune, or nobody with None."""
         if role is not None and role not in self.answerers():
-            raise ValueError(ERR_WIZARD_NO_SUCH_ANSWERER.format(value=role))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_ANSWERER.format(value=role))
         if self._beside is None:
-            raise ValueError(ERR_WIZARD_NO_SUCH_ANSWERER.format(value=role))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_ANSWERER.format(value=role))
         self._beside[BY] = role
 
     def ways_beside(self):
@@ -2202,7 +2198,7 @@ class WizardChoices:
     def set_role_plan(self, way):
         """Have the answering player do one thing in every section, or go by the genre's plan with None. Either drops what single sections were given."""
         if self.answered_by() is None or (way is not None and way not in WAYS_BESIDE):
-            raise ValueError(ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=way))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=way))
         self._beside[WAY] = way
         if self._sections is not None:
             for entry in self._sections:
@@ -2229,15 +2225,15 @@ class WizardChoices:
     def section_role(self, place):
         """Return what the answering player does in a section: the section's own choice, or the plan's."""
         if not self.section_has_role(place):
-            raise ValueError(ERR_WIZARD_SECTION_HAS_NO_ROLE.format(value=place))
+            raise ValueError(errors.ERR_WIZARD_SECTION_HAS_NO_ROLE.format(value=place))
         return self._entry(place).get(BESIDE_KEPT, self.planned_role(place))
 
     def set_section_role(self, *, place, way):
         """Choose what the answering player does in one section, or give the section back to the plan with None."""
         if not self.section_has_role(place):
-            raise ValueError(ERR_WIZARD_SECTION_HAS_NO_ROLE.format(value=place))
+            raise ValueError(errors.ERR_WIZARD_SECTION_HAS_NO_ROLE.format(value=place))
         if way is not None and way not in WAYS_BESIDE:
-            raise ValueError(ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=way))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=way))
         if way is None and not self.section_role_is_own(place):
             return
         entry = self._own_entries()[place]
@@ -2254,7 +2250,7 @@ class WizardChoices:
 
     def set_fills_busy(self, busy):
         if not self.has_fills_busy() or isinstance(busy, bool) or not isinstance(busy, int) or not LEAST_BUSY_BESIDE <= busy <= MOST_BUSY_BESIDE:
-            raise ValueError(ERR_WIZARD_FILLS_BUSY.format(low=LEAST_BUSY_BESIDE, high=MOST_BUSY_BESIDE, value=busy))
+            raise ValueError(errors.ERR_WIZARD_FILLS_BUSY.format(low=LEAST_BUSY_BESIDE, high=MOST_BUSY_BESIDE, value=busy))
         self._beside[BUSY_BESIDE] = busy
 
     def _usual_beside(self):
@@ -2278,9 +2274,9 @@ class WizardChoices:
         busy = kept.get(BUSY_BESIDE, usual[BUSY_BESIDE])
         # Who answers is kept as chosen even where the player cannot answer now, as the solo's player hidden by one guitarist, and answers again once the player can.
         if (by is not None and by not in self.roles()) or (way is not None and way not in WAYS_BESIDE):
-            raise ValueError(ERR_WIZARD_NO_SUCH_ANSWERER.format(value=by))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_ANSWERER.format(value=by))
         if isinstance(busy, bool) or not isinstance(busy, int) or not LEAST_BUSY_BESIDE <= busy <= MOST_BUSY_BESIDE:
-            raise ValueError(ERR_WIZARD_FILLS_BUSY.format(low=LEAST_BUSY_BESIDE, high=MOST_BUSY_BESIDE, value=busy))
+            raise ValueError(errors.ERR_WIZARD_FILLS_BUSY.format(low=LEAST_BUSY_BESIDE, high=MOST_BUSY_BESIDE, value=busy))
         self._beside = {BY: by, WAY: way, BUSY_BESIDE: busy}
 
     # A player's gauges: where each stands, the preset's place until moved.
@@ -2304,18 +2300,18 @@ class WizardChoices:
     def get_player_gauge(self, *, role, gauge):
         """Return where a gauge of a player stands, from the lowest place to the highest."""
         if gauge not in self.player_gauges(role):
-            raise ValueError(ERR_WIZARD_NO_SUCH_PLAYER_GAUGE.format(value=gauge))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_PLAYER_GAUGE.format(value=gauge))
         return self._character(self._role(role)[PLAYER])[gauge]
 
     def set_player_gauge(self, *, role, gauge, place):
         """Move a gauge of a player. Players of one instrument, as a lead and a solo, share their gauges."""
         if gauge not in self.player_gauges(role):
-            raise ValueError(ERR_WIZARD_NO_SUCH_PLAYER_GAUGE.format(value=gauge))
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_PLAYER_GAUGE.format(value=gauge))
         self._set_kept_player_gauge(player=self._role(role)[PLAYER], gauge=gauge, place=place)
 
     def _set_kept_player_gauge(self, *, player, gauge, place):
         if isinstance(place, bool) or not isinstance(place, int) or not LOWEST_PLACE <= place <= HIGHEST_PLACE or gauge not in PLAYER_GAUGES or player not in self._levels:
-            raise ValueError(ERR_WIZARD_PLAYER_GAUGE.format(low=LOWEST_PLACE, high=HIGHEST_PLACE, value=place))
+            raise ValueError(errors.ERR_WIZARD_PLAYER_GAUGE.format(low=LOWEST_PLACE, high=HIGHEST_PLACE, value=place))
         own = self._own_gauges.setdefault(player, {})
         own[gauge] = place
         if place == PRESET_PLACE[self._levels[player]]:
@@ -2362,7 +2358,7 @@ class WizardChoices:
 
     def set_seed(self, seed):
         if isinstance(seed, bool) or not isinstance(seed, int):
-            raise ValueError(ERR_WIZARD_SEED.format(value=seed))
+            raise ValueError(errors.ERR_WIZARD_SEED.format(value=seed))
         self._seed = seed
 
     def draw_seed(self, *, dice=None):
@@ -2495,7 +2491,7 @@ class WizardChoices:
 
     def set_intro_hook(self, role):
         if role is not None and role not in self.intro_hook_players():
-            raise ValueError(ERR_WIZARD_INTRO_HOOK.format(value=role))
+            raise ValueError(errors.ERR_WIZARD_INTRO_HOOK.format(value=role))
         self._plan().pop(INTRO_HOOK, None)
         if role is not None:
             self._plan()[INTRO_HOOK] = role
@@ -2588,28 +2584,28 @@ class WizardChoices:
             return value
         if field == CHORDS:
             return chords_from_text(chords_as_text(value) if isinstance(value, list) else value)
-        if field in (TEMPO_OF_PLACE, TEMPO_END_OF_PLACE) and not isinstance(value, bool) and isinstance(value, int) and MIN_TEMPO <= value <= MAX_TEMPO:
+        if field in (TEMPO_OF_PLACE, TEMPO_END_OF_PLACE) and not isinstance(value, bool) and isinstance(value, int) and limits.MIN_TEMPO <= value <= limits.MAX_TEMPO:
             return value
         if field == ROOT_OF_PLACE and value in ROOT_NAMES:
             return value
         if field == TYPE_OF_PLACE and value in SCALE_TYPES:
             return value
-        raise ValueError(ERR_WIZARD_SECTION_OWN.format(field=field, value=value))
+        raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=field, value=value))
 
     def _checked_line_own(self, given):
         """What one line of a section was given of its own, checked: notes written by hand, a breath in eighths and whether a note comes early."""
         if not isinstance(given, dict) or not set(given) <= {LINE_NOTES, LINE_BREATH, LINE_EARLY}:
-            raise ValueError(ERR_WIZARD_SECTION_OWN.format(field=LINES_OF_SECTION, value=given))
+            raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=LINES_OF_SECTION, value=given))
         checked = {}
         if LINE_NOTES in given:
             checked[LINE_NOTES] = self._checked_line(line=given[LINE_NOTES], steps=line_edits.steps_of(given[LINE_NOTES]) if isinstance(given[LINE_NOTES], list) and all(isinstance(note, dict) for note in given[LINE_NOTES]) else 0)
         if LINE_BREATH in given:
             if isinstance(given[LINE_BREATH], bool) or not isinstance(given[LINE_BREATH], int) or not phrasing.NO_BREATH <= given[LINE_BREATH] <= phrasing.LONGEST_BREATH:
-                raise ValueError(ERR_WIZARD_SECTION_OWN.format(field=LINE_BREATH, value=given[LINE_BREATH]))
+                raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=LINE_BREATH, value=given[LINE_BREATH]))
             checked[LINE_BREATH] = given[LINE_BREATH]
         if LINE_EARLY in given:
             if not isinstance(given[LINE_EARLY], bool):
-                raise ValueError(ERR_WIZARD_SECTION_OWN.format(field=LINE_EARLY, value=given[LINE_EARLY]))
+                raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=LINE_EARLY, value=given[LINE_EARLY]))
             checked[LINE_EARLY] = given[LINE_EARLY]
         return checked
 
@@ -2659,9 +2655,9 @@ class WizardChoices:
         """Give one line of a section its own notes, breath or early note, or give the field back with None. What the song cannot then be made with is refused."""
         lines = self.section_lines(place)
         if isinstance(line, bool) or not isinstance(line, int) or not 0 <= line < len(lines) or field not in (LINE_NOTES, LINE_BREATH, LINE_EARLY):
-            raise ValueError(ERR_WIZARD_SECTION_OWN.format(field=field, value=line))
+            raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=field, value=line))
         if field == LINE_NOTES and value is not None and (lines[line][LINE_NOTES] is None or not isinstance(value, list) or line_edits.steps_of(self._checked_line(line=value, steps=line_edits.steps_of(lines[line][LINE_NOTES]))) == 0):
-            raise ValueError(ERR_WIZARD_SECTION_OWN.format(field=field, value=value))
+            raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=field, value=value))
         own = {count: dict(given) for count, given in (self._entry(place).get(OWN_OF_SECTION, {}).get(LINES_OF_SECTION) or {}).items()}
         given = own.setdefault(line, {})
         given.pop(field, None)
@@ -2680,7 +2676,7 @@ class WizardChoices:
         self._entry(place)
         checked = None if value is None else self._checked_own(field=field, value=value)
         if field == SHAPE_OF_SECTION and checked is not None and checked not in self.section_shapes(place):
-            raise ValueError(ERR_WIZARD_SECTION_OWN.format(field=field, value=value))
+            raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=field, value=value))
         before = copy.deepcopy(self._sections)
         entry = self._own_entries()[place]
         own = entry.setdefault(OWN_OF_SECTION, {})
@@ -2695,7 +2691,7 @@ class WizardChoices:
         except (ValueError, KeyError, IndexError, SongFileError) as problem:
             self._sections = before
             self._answers = {}
-            raise ValueError(ERR_WIZARD_SECTION_OWN_UNMADE.format(field=field, value=value, problem=problem)) from None
+            raise ValueError(errors.ERR_WIZARD_SECTION_OWN_UNMADE.format(field=field, value=value, problem=problem)) from None
 
     def _picks_chosen(self, name):
         return {NAME: name, TITLE: name, STYLE: self._genre, TEMPLATE: self._subgenre, VARIANT: self._variant, KEY: {ROOT: self._root, TYPE: self._scale_type}, TEMPO: self._tempo, FORM: self.form_sections() if self.has_own_form() else self.get_form(), SEED: self._seed,
@@ -2715,7 +2711,7 @@ class WizardChoices:
     def set_song_extras(self, extras):
         """Lay a song file's own picks over what the choices make: the song's plan, and whatever a section is given."""
         if not isinstance(extras, dict):
-            raise ValueError(ERR_WIZARD_EXTRAS.format(value=extras))
+            raise ValueError(errors.ERR_WIZARD_EXTRAS.format(value=extras))
         self._extras = copy.deepcopy(extras)
         self._answers = {}
 
@@ -2733,9 +2729,9 @@ class WizardChoices:
 
     def set_song_plan(self, on):
         if not isinstance(on, bool):
-            raise ValueError(ERR_WIZARD_SWITCH.format(value=on))
+            raise ValueError(errors.ERR_WIZARD_SWITCH.format(value=on))
         if on and not self.can_have_song_plan():
-            raise ValueError(ERR_WIZARD_GENRE_HAS_NO_PLAN)
+            raise ValueError(errors.ERR_WIZARD_GENRE_HAS_NO_PLAN)
         if on and not isinstance(self._extras.get(PLAN_OF_SONG), dict):
             self._extras[PLAN_OF_SONG] = {}
         if not on:
@@ -2748,7 +2744,7 @@ class WizardChoices:
 
     def _plan(self):
         if not self.has_song_plan():
-            raise ValueError(ERR_WIZARD_NO_SONG_PLAN)
+            raise ValueError(errors.ERR_WIZARD_NO_SONG_PLAN)
         if not isinstance(self._extras.get(PLAN_OF_SONG), dict):
             self._extras[PLAN_OF_SONG] = {}
         return self._extras[PLAN_OF_SONG]
@@ -2758,7 +2754,7 @@ class WizardChoices:
 
     def set_contrast(self, contrast):
         if isinstance(contrast, bool) or not isinstance(contrast, int) or not LOWEST_ENERGY <= contrast <= HIGHEST_ENERGY:
-            raise ValueError(ERR_WIZARD_CONTRAST.format(low=LOWEST_ENERGY, high=HIGHEST_ENERGY, value=contrast))
+            raise ValueError(errors.ERR_WIZARD_CONTRAST.format(low=LOWEST_ENERGY, high=HIGHEST_ENERGY, value=contrast))
         self._plan()[CONTRAST] = contrast
         self._answers = {}
 
@@ -2786,7 +2782,7 @@ class WizardChoices:
     def set_reacts(self, *, role, reacts):
         """Have a player answer to Energy evenly, at the lowest, or dramatically, at the highest. Two players who are one person, as a singer who also plays, answer alike."""
         if not self.reacts(role) or isinstance(reacts, bool) or not isinstance(reacts, int) or not LOWEST_ENERGY <= reacts <= HIGHEST_ENERGY:
-            raise ValueError(ERR_WIZARD_REACTS.format(low=LOWEST_ENERGY, high=HIGHEST_ENERGY, value=reacts))
+            raise ValueError(errors.ERR_WIZARD_REACTS.format(low=LOWEST_ENERGY, high=HIGHEST_ENERGY, value=reacts))
         kept = dict(self._plan().get(REACTS) or {})
         kept.pop(self._role(role)[PLAYER], None)
         if reacts != USUAL_CONTRAST:
@@ -2853,7 +2849,7 @@ class WizardChoices:
     def set_comes_in(self, *, role, way):
         """Have a player come in at a place of the form and sit out every section before it; the sections after are left as they are."""
         if way not in self.comes_in_offered(role):
-            raise ValueError(ERR_WIZARD_COMES_IN.format(value=way))
+            raise ValueError(errors.ERR_WIZARD_COMES_IN.format(value=way))
         first = self._comes_in_places()[way]
         plays = [place for place in range(first, len(self._entries())) if place == first or role in self.section_plays(place)]
         self._set_plays_of(role=role, plays=plays)
@@ -2861,7 +2857,7 @@ class WizardChoices:
     def set_lays_out(self, *, role, way):
         """Have a player lay out never, only in the breakdowns, or whenever it is quiet, from the player's first section on."""
         if way not in self.lays_out_offered(role):
-            raise ValueError(ERR_WIZARD_LAYS_OUT.format(value=way))
+            raise ValueError(errors.ERR_WIZARD_LAYS_OUT.format(value=way))
         self._set_plays_of(role=role, plays=self._laid_out(role=role, way=way, first=self._first_place(role)))
 
     def _set_plays_of(self, *, role, plays):
@@ -2876,7 +2872,7 @@ class WizardChoices:
         except (ValueError, SongFileError) as problem:
             self._sections, self._stages = kept
             self._answers = {}
-            raise ValueError(ERR_WIZARD_PLAYS_UNMADE.format(problem=problem)) from None
+            raise ValueError(errors.ERR_WIZARD_PLAYS_UNMADE.format(problem=problem)) from None
 
     def has_phrasing(self):
         """Return whether the tune's lines breathe."""
@@ -2884,7 +2880,7 @@ class WizardChoices:
 
     def set_phrasing(self, on):
         if not isinstance(on, bool):
-            raise ValueError(ERR_WIZARD_SWITCH.format(value=on))
+            raise ValueError(errors.ERR_WIZARD_SWITCH.format(value=on))
         self._plan()[PHRASING] = on
         self._answers = {}
 
@@ -2895,7 +2891,7 @@ class WizardChoices:
     def set_phrasing_way(self, *, name, value):
         offered = PHRASING_OFFERED.get(name)
         if offered is None or isinstance(value, bool) or value not in offered:
-            raise ValueError(ERR_WIZARD_PHRASING.format(name=name, value=value))
+            raise ValueError(errors.ERR_WIZARD_PHRASING.format(name=name, value=value))
         ways = self._plan().setdefault(PHRASING_WAYS, {})
         ways.pop(name, None)
         if value != phrasing.USUAL_WAYS[name]:
@@ -2948,7 +2944,7 @@ class WizardChoices:
         """Write the hook's notes by hand, or give the hook back to the wizard with None. A line that is not as long as the hook's, or that the
         song cannot be made with, is refused and nothing changes."""
         if self.hook_line() is None:
-            raise ValueError(ERR_WIZARD_NO_HOOK)
+            raise ValueError(errors.ERR_WIZARD_NO_HOOK)
         before = copy.deepcopy(self._extras.get(MELODY))
         if line is None:
             self._extras.get(MELODY, {}).pop(HOOK_NOTES, None)
@@ -2964,7 +2960,7 @@ class WizardChoices:
             if before is not None:
                 self._extras[MELODY] = before
             self._answers = {}
-            raise ValueError(ERR_WIZARD_HOOK_LINE.format(problem=problem)) from problem
+            raise ValueError(errors.ERR_WIZARD_HOOK_LINE.format(problem=problem)) from problem
 
     # The tunes: one for each kind of section the tune's player plays in. A tune is written by the choices until a person edits its
     # pattern by hand; from then on the pattern is the person's own, and no choice writes over it.
@@ -3056,7 +3052,7 @@ class WizardChoices:
             parts = arranged(style=self._style(), song=trial.song_picks(PREVIEW_NAME))[PARTS]
         except (ValueError, KeyError, SongFileError):
             return []
-        return [role for role in self.roles_in() if MSG_PART_OF_SECTION.format(role, RIFF) in parts]
+        return [role for role in self.roles_in() if composer_text.MSG_PART_OF_SECTION.format(role, RIFF) in parts]
 
     def _take_riff_of_genre(self):
         """Give the song the riff its kind of music is built on, where the subgenre has one and its players can play it; a person may
@@ -3114,7 +3110,7 @@ class WizardChoices:
         offered = self.riff_said_offered()
         said = said or self.get_riff_said() or next((way for way in (RIFF_INTRO_AND_VERSES, RIFF_UNDER_VERSES) if way in offered), offered[0] if offered else None)
         if list(players) not in self.riff_players_offered() or said not in offered:
-            raise ValueError(ERR_WIZARD_RIFF.format(value=(players, said)))
+            raise ValueError(errors.ERR_WIZARD_RIFF.format(value=(players, said)))
         self._extras[RIFF] = {**(before or {}), RIFF_ROLES: list(players), RIFF_KINDS: self._riff_kinds(said)}
         self._riff_or_back(before=before, value=(players, said))
 
@@ -3127,7 +3123,7 @@ class WizardChoices:
             if before is not None:
                 self._extras[RIFF] = before
             self._answers = {}
-            raise ValueError(ERR_WIZARD_RIFF_UNMADE.format(value=value, problem=problem)) from None
+            raise ValueError(errors.ERR_WIZARD_RIFF_UNMADE.format(value=value, problem=problem)) from None
 
     def riff_steps_in_bar(self):
         """Return how many steps, eighths, a bar of the riff has."""
@@ -3185,9 +3181,9 @@ class WizardChoices:
     def set_riff_setting(self, *, field, value):
         """Choose a setting of the riff. What is no setting, and a riff the song cannot be made with, is refused."""
         if not self.has_riff():
-            raise ValueError(ERR_WIZARD_NO_RIFF)
+            raise ValueError(errors.ERR_WIZARD_NO_RIFF)
         if field not in RIFF_SETTINGS or value not in RIFF_SETTINGS[field]:
-            raise ValueError(ERR_WIZARD_RIFF.format(value=(field, value)))
+            raise ValueError(errors.ERR_WIZARD_RIFF.format(value=(field, value)))
         before = copy.deepcopy(self._extras[RIFF])
         self._extras[RIFF].pop(field, None)
         if value != RIFF_SETTINGS[field][0]:
@@ -3225,7 +3221,7 @@ class WizardChoices:
     def new_riff(self):
         """Have another riff made, the rest of the song left as it was; notes written by hand give way to the new riff."""
         if not self.has_riff():
-            raise ValueError(ERR_WIZARD_NO_RIFF)
+            raise ValueError(errors.ERR_WIZARD_NO_RIFF)
         riff = self._extras[RIFF]
         riff.pop(RIFF_LINE, None)
         riff[RIFF_TAKE] = riff.get(RIFF_TAKE, FIRST_RIFF_TAKE) + 1
@@ -3234,7 +3230,7 @@ class WizardChoices:
     def set_riff_line(self, line):
         """Write the riff's notes by hand, or give the riff back to the wizard with None. A line that is not as long as the riff, or that the song cannot be made with, is refused."""
         if not self.has_riff():
-            raise ValueError(ERR_WIZARD_NO_RIFF)
+            raise ValueError(errors.ERR_WIZARD_NO_RIFF)
         before = copy.deepcopy(self._extras[RIFF])
         if line is None:
             self._extras[RIFF].pop(RIFF_LINE, None)
@@ -3245,17 +3241,17 @@ class WizardChoices:
     def _checked_line(self, *, line, steps):
         """A line written by hand, checked: notes of a degree of the scale and rests, each a whole number of steps, as long as the line it stands for, with a note in it."""
         if not isinstance(line, list) or not all(isinstance(note, dict) for note in line):
-            raise ValueError(ERR_WIZARD_HOOK_LINE.format(problem=line))
+            raise ValueError(errors.ERR_WIZARD_HOOK_LINE.format(problem=line))
         for note in line:
             length = note.get(REST, note.get(STEPS))
             degree = note.get(DEGREE, line_edits.FIRST_DEGREE)
             numbers = [length, degree, note.get(OCTAVE, 0)]
             if any(isinstance(number, bool) or not isinstance(number, int) for number in numbers) or length < 1 or not line_edits.FIRST_DEGREE <= degree <= line_edits.NOTES_IN_SCALE:
-                raise ValueError(ERR_WIZARD_HOOK_LINE.format(problem=note))
+                raise ValueError(errors.ERR_WIZARD_HOOK_LINE.format(problem=note))
             if REST not in note and not line_edits.LOWEST_PLACE <= line_edits.place_of(note) <= line_edits.HIGHEST_PLACE:
-                raise ValueError(ERR_WIZARD_HOOK_LINE.format(problem=note))
+                raise ValueError(errors.ERR_WIZARD_HOOK_LINE.format(problem=note))
         if line_edits.steps_of(line) != steps or all(REST in note for note in line):
-            raise ValueError(ERR_WIZARD_HOOK_LINE.format(problem=line))
+            raise ValueError(errors.ERR_WIZARD_HOOK_LINE.format(problem=line))
         return copy.deepcopy(line)
 
     def set_hook_part(self, *, part, value):
@@ -3263,7 +3259,7 @@ class WizardChoices:
         self._plan()
         offered = HOOK_PARTS.get(part)
         if offered is None or (value is not None and value not in offered):
-            raise ValueError(ERR_WIZARD_HOOK_PART.format(part=part, value=value))
+            raise ValueError(errors.ERR_WIZARD_HOOK_PART.format(part=part, value=value))
         chosen = self._extras.setdefault(MELODY, {}).setdefault(HOOK_KIND, {})
         chosen.pop(part, None)
         if value is not None:
@@ -3329,7 +3325,7 @@ class WizardChoices:
         A run that has no seed yet draws one first, so that the same choices make the same song again.
         """
         if not self.is_ready():
-            raise ValueError(ERR_WIZARD_NOT_READY)
+            raise ValueError(errors.ERR_WIZARD_NOT_READY)
         if self._seed is None:
             self.draw_seed()
         made = None

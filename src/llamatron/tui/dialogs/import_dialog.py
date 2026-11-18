@@ -25,16 +25,11 @@ is added to the set until Import, which dismisses the dialog with what the impor
 
 from rich.text import Text
 
-from llamatron.composition.limits import MAX_NAME_LENGTH
+from llamatron.composition import limits
+from llamatron.strings import importing, marks
 from llamatron.composition.checks import fraction_text
 from llamatron.composition.naming import copy_name, default_scale_name
 from llamatron.importers.midi_import import LONGEST_PATTERN_CHOICES, ImportChoices
-from llamatron.strings.importing import (
-    MSG_IMPORT_AS_CHORDS, MSG_IMPORT_AS_TRACKS, MSG_IMPORT_AUTO_STEP, MSG_IMPORT_BUTTONS, MSG_IMPORT_CHORDS, MSG_IMPORT_CONTROLS, MSG_IMPORT_FOUND,
-    MSG_IMPORT_KEYS_JOIN, MSG_IMPORT_LONGEST, MSG_IMPORT_MAKES, MSG_IMPORT_MAKES_LONG, MSG_IMPORT_MORE_KEYS, MSG_IMPORT_SHARED,
-    MSG_IMPORT_SONG_NAME, MSG_IMPORT_SONG_PROMPT, MSG_IMPORT_STEP_SIZE, MSG_IMPORT_STEPS, MSG_IMPORT_TITLE, MSG_IMPORT_UNIQUE_NAMES,
-)
-from llamatron.strings.marks import MSG_CONFIRM_BUTTON_GAP, MSG_TOGGLE_ON
 from llamatron.support.rational import Rational
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
@@ -51,7 +46,7 @@ CONTROLS = 4
 STEP_SIZE = 5
 BUTTONS = 6
 ROWS = 7
-LABELS = (MSG_IMPORT_SONG_NAME, MSG_IMPORT_LONGEST, MSG_IMPORT_UNIQUE_NAMES, MSG_IMPORT_CHORDS, MSG_IMPORT_CONTROLS, MSG_IMPORT_STEP_SIZE)
+LABELS = (importing.MSG_IMPORT_SONG_NAME, importing.MSG_IMPORT_LONGEST, importing.MSG_IMPORT_UNIQUE_NAMES, importing.MSG_IMPORT_CHORDS, importing.MSG_IMPORT_CONTROLS, importing.MSG_IMPORT_STEP_SIZE)
 LABEL_WIDTH = max(len(label) for label in LABELS) + 2
 # The buttons, in the order drawn, and the binding whose key each shows.
 IMPORT_BUTTON = 0
@@ -77,7 +72,7 @@ class ImportDialog(Dialog):
 
     def __init__(self, *, midi_import, setlist, song_name):
         super().__init__()
-        self.title = MSG_IMPORT_TITLE
+        self.title = importing.MSG_IMPORT_TITLE
         self.midi_import = midi_import
         self.setlist = setlist
         taken = set(setlist.get_song_names())
@@ -112,7 +107,7 @@ class ImportDialog(Dialog):
         self.row = cursor_moved(place=self.row, name=name, count=ROWS)
 
     def choose_button(self, name):
-        self.button = cursor_moved(place=self.button, name=name, count=len(MSG_IMPORT_BUTTONS))
+        self.button = cursor_moved(place=self.button, name=name, count=len(importing.MSG_IMPORT_BUTTONS))
 
     def step(self, direction):
         """Step the Longest pattern or the Step size field through its choices, stopping at either end."""
@@ -137,7 +132,7 @@ class ImportDialog(Dialog):
             if text and text.strip():
                 self.choices.song_name = text.strip()
                 self.draw()
-        self.app.push_screen(PromptDialog(title=MSG_IMPORT_SONG_PROMPT, value=self.choices.song_name, max_length=MAX_NAME_LENGTH), renamed)
+        self.app.push_screen(PromptDialog(title=importing.MSG_IMPORT_SONG_PROMPT, value=self.choices.song_name, max_length=limits.MAX_NAME_LENGTH), renamed)
 
     def press(self):
         if self.button == IMPORT_BUTTON:
@@ -153,26 +148,26 @@ class ImportDialog(Dialog):
         made = self.made()
         choices = self.choices
         return (
-            made.song.name, MSG_IMPORT_STEPS.format(count=choices.longest_pattern), MSG_TOGGLE_ON if choices.unique_names else NOTHING,
-            MSG_IMPORT_AS_CHORDS if choices.chords else MSG_IMPORT_AS_TRACKS, MSG_TOGGLE_ON if choices.controls else NOTHING,
-            MSG_IMPORT_AUTO_STEP.format(size=fraction_text(made.step_size)) if choices.step_size is None else fraction_text(choices.step_size),
+            made.song.name, importing.MSG_IMPORT_STEPS.format(count=choices.longest_pattern), marks.MSG_TOGGLE_ON if choices.unique_names else NOTHING,
+            importing.MSG_IMPORT_AS_CHORDS if choices.chords else importing.MSG_IMPORT_AS_TRACKS, marks.MSG_TOGGLE_ON if choices.controls else NOTHING,
+            importing.MSG_IMPORT_AUTO_STEP.format(size=fraction_text(made.step_size)) if choices.step_size is None else fraction_text(choices.step_size),
         )
 
     def found_text(self):
         """Return the line of what the file holds, each key named once, in the order first heard."""
         found = self.midi_import.found()
         names = list(dict.fromkeys(default_scale_name(root=key.root, kind=key.kind) for key in found.keys))
-        keys = MSG_IMPORT_KEYS_JOIN.join(names) if len(names) <= KEYS_NAMED else MSG_IMPORT_MORE_KEYS.format(first=names[0], count=len(names) - 1)
-        return MSG_IMPORT_FOUND.format(tracks=found.tracks, bars=found.bars, time_signature=found.time_signature, tempo=found.tempo, keys=keys)
+        keys = importing.MSG_IMPORT_KEYS_JOIN.join(names) if len(names) <= KEYS_NAMED else importing.MSG_IMPORT_MORE_KEYS.format(first=names[0], count=len(names) - 1)
+        return importing.MSG_IMPORT_FOUND.format(tracks=found.tracks, bars=found.bars, time_signature=found.time_signature, tempo=found.tempo, keys=keys)
 
     def makes_text(self):
         """Return the line of what the import makes."""
         made = self.made()
         if made.long_patterns:
-            return MSG_IMPORT_MAKES_LONG.format(
+            return importing.MSG_IMPORT_MAKES_LONG.format(
                 tracks=made.tracks, patterns=made.patterns, long=made.long_patterns, longest=self.choices.longest_pattern, scenes=made.scenes,
             )
-        return MSG_IMPORT_MAKES.format(tracks=made.tracks, patterns=made.patterns, scenes=made.scenes)
+        return importing.MSG_IMPORT_MAKES.format(tracks=made.tracks, patterns=made.patterns, scenes=made.scenes)
 
     def lines(self, width):
         made = self.made()
@@ -184,7 +179,7 @@ class ImportDialog(Dialog):
         lines.append(Text(NOTHING))
         lines += wrapped(text=self.makes_text(), width=width)
         if made.song.shared:
-            lines.append(Text(MSG_IMPORT_SHARED.format(count=made.song.shared), style=Style.DIM))
+            lines.append(Text(importing.MSG_IMPORT_SHARED.format(count=made.song.shared), style=Style.DIM))
         for warning in made.warnings:
             lines += dimmed(wrapped(text=warning, width=width))
         lines += [Text(NOTHING), self.buttons_line()]
@@ -193,12 +188,12 @@ class ImportDialog(Dialog):
     def buttons_line(self):
         """Return Import and Cancel side by side, each its key reversed and then its name, the selected one marked when the cursor is on the buttons."""
         line = Text(no_wrap=True)
-        for place, (label, binding) in enumerate(zip(MSG_IMPORT_BUTTONS, BUTTON_BINDINGS)):
+        for place, (label, binding) in enumerate(zip(importing.MSG_IMPORT_BUTTONS, BUTTON_BINDINGS)):
             selected = self.row == BUTTONS and place == self.button
             _, key_name, _ = binding
             line.append(cursor_mark(selected))
             line.append(padded(key_name), style=Style.REVERSE)
             line.append(SPACE)
             line.append(label, style=Style.BOLD if selected else Style.PLAIN)
-            line.append(MSG_CONFIRM_BUTTON_GAP)
+            line.append(marks.MSG_CONFIRM_BUTTON_GAP)
         return line

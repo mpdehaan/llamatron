@@ -25,9 +25,9 @@ setting names something the song holds.
 """
 
 from llamatron.composition.checks import check_keys, check_name, reading
-from llamatron.composition.defaults import DEFAULT_REPEAT
+from llamatron.composition import defaults, limits
+from llamatron.strings import errors
 from llamatron.composition.file_format import strum_setting, FOLLOW_ACTION_CHOICES, DIRECTIONS, ClipSlotSetting, Section
-from llamatron.composition.limits import MAX_CLIP_REPEAT, MIN_REPEAT
 from llamatron.composition.llama_data import own_copy, LlamaData, settings_by_name, written_settings
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.chain import check_chain_names
@@ -36,13 +36,6 @@ from llamatron.composition.strum import strum_settings, strum_values
 from llamatron.composition.corrections import LEFT_OUT
 from llamatron.composition.setting import Checked, Choice, Flag, WholeNumber, check_settings, described
 from llamatron.generators.blend import BlendMode
-from llamatron.strings.errors import (
-    ERR_CHAIN_AND_CHAINS,
-    ERR_SCENE_NO_SUCH_SCALE,
-    ERR_BAD_FOLLOW_ACTION, ERR_BAD_DIRECTION, ERR_BAD_MORPH_STYLE, ERR_BAD_REPEAT, ERR_CLIP_SLOT_EXPECTED_SETTINGS, ERR_CLIP_SLOT_NO_SUCH_PATTERN, ERR_CLIP_SLOT_WHERE, ERR_GRABS_ITSELF,
-    ERR_LOOP_NOT_TRUE_OR_FALSE, ERR_MORPH_NEEDS_BOTH, ERR_MORPH_STYLE_WITHOUT_MORPH, ERR_MORPH_TOO_FEW_REPEATS, ERR_NEEDS_PATTERN,
-    ERR_NO_GRAB_TRACK,
-)
 from llamatron.support.revised import notes_change
 
 
@@ -61,19 +54,19 @@ MIN_MORPH_REPEAT = 2
 
 def _check_pattern_name(*, value, song):
     if not song.has_pattern(value):
-        raise InvalidValue(ERR_CLIP_SLOT_NO_SUCH_PATTERN.format(name=value))
+        raise InvalidValue(errors.ERR_CLIP_SLOT_NO_SUCH_PATTERN.format(name=value))
 
 
 def _check_scale_name(*, value, song):
     if not song.has_scale(value):
-        raise InvalidValue(ERR_SCENE_NO_SUCH_SCALE.format(scale=value))
+        raise InvalidValue(errors.ERR_SCENE_NO_SUCH_SCALE.format(scale=value))
 
 
 
 
 def _check_grab_track_name(*, value, song):
     if not song.has_track(value):
-        raise InvalidValue(ERR_NO_GRAB_TRACK.format(name=value))
+        raise InvalidValue(errors.ERR_NO_GRAB_TRACK.format(name=value))
 
 
 # A clip slot's settings, each described once, in the order they're written to a file.
@@ -81,13 +74,13 @@ SETTINGS = described(
     Checked(name=ClipSlotSetting.NAME, check=check_name),
     Checked(name=ClipSlotSetting.PATTERN, check=_check_pattern_name, needs_song=True),
     Checked(name=ClipSlotSetting.CHAINS, check=check_chain_names, needs_song=True),
-    Flag(name=ClipSlotSetting.LOOP, error=ERR_LOOP_NOT_TRUE_OR_FALSE),
-    WholeNumber(name=ClipSlotSetting.REPEAT, lowest=MIN_REPEAT, highest=MAX_CLIP_REPEAT, error=ERR_BAD_REPEAT),
-    Choice(name=ClipSlotSetting.DIRECTION, choices=DIRECTIONS, default=LEFT_OUT, error=ERR_BAD_DIRECTION),
+    Flag(name=ClipSlotSetting.LOOP, error=errors.ERR_LOOP_NOT_TRUE_OR_FALSE),
+    WholeNumber(name=ClipSlotSetting.REPEAT, lowest=limits.MIN_REPEAT, highest=limits.MAX_CLIP_REPEAT, error=errors.ERR_BAD_REPEAT),
+    Choice(name=ClipSlotSetting.DIRECTION, choices=DIRECTIONS, default=LEFT_OUT, error=errors.ERR_BAD_DIRECTION),
     Checked(name=ClipSlotSetting.MORPH_TO, check=_check_pattern_name, needs_song=True),
-    Choice(name=ClipSlotSetting.MORPH_STYLE, choices=sorted(MORPH_STYLES), default=FIRST_MORPH_STYLE, error=ERR_BAD_MORPH_STYLE),
+    Choice(name=ClipSlotSetting.MORPH_STYLE, choices=sorted(MORPH_STYLES), default=FIRST_MORPH_STYLE, error=errors.ERR_BAD_MORPH_STYLE),
     Checked(name=ClipSlotSetting.GRAB_TRACK, check=_check_grab_track_name, needs_song=True),
-    Choice(name=ClipSlotSetting.FOLLOW_ACTION, choices=FOLLOW_ACTION_CHOICES, default=LEFT_OUT, error=ERR_BAD_FOLLOW_ACTION),
+    Choice(name=ClipSlotSetting.FOLLOW_ACTION, choices=FOLLOW_ACTION_CHOICES, default=LEFT_OUT, error=errors.ERR_BAD_FOLLOW_ACTION),
     Checked(name=ClipSlotSetting.SCALE, check=_check_scale_name, needs_song=True),
     *shape_settings(),
     *strum_settings(),
@@ -120,19 +113,19 @@ class ClipSlot(LlamaData):
     @classmethod
     def from_data(cls, *, data, where, song=None, track=None):
         """Read the clip slot for a track in a scene. where names the scene, and song knows the names."""
-        where = ERR_CLIP_SLOT_WHERE.format(where=where, track=track)
+        where = errors.ERR_CLIP_SLOT_WHERE.format(where=where, track=track)
         with reading(where):
             if not isinstance(data, dict):
-                raise InvalidValue(ERR_CLIP_SLOT_EXPECTED_SETTINGS.format(data=data))
+                raise InvalidValue(errors.ERR_CLIP_SLOT_EXPECTED_SETTINGS.format(data=data))
             check_keys(data=data, allowed={*SETTINGS, ClipSlotSetting.CHAIN})
             _read_chain(data)
             check_settings(settings=SETTINGS, data=data, song=song)
             # What one setting may hold given another: a clip can't grab from its own track, a morph needs its target, its style and two repeats, and every clip plays a pattern.
             if ClipSlotSetting.GRAB_TRACK in data and data[ClipSlotSetting.GRAB_TRACK] == track:
-                raise InvalidValue(ERR_GRABS_ITSELF)
-            _check_morph(data=data, repeat=data.get(ClipSlotSetting.REPEAT, DEFAULT_REPEAT))
+                raise InvalidValue(errors.ERR_GRABS_ITSELF)
+            _check_morph(data=data, repeat=data.get(ClipSlotSetting.REPEAT, defaults.DEFAULT_REPEAT))
             if ClipSlotSetting.PATTERN not in data:
-                raise InvalidValue(ERR_NEEDS_PATTERN)
+                raise InvalidValue(errors.ERR_NEEDS_PATTERN)
             return cls(**data)
 
     def to_data(self):
@@ -185,7 +178,7 @@ class ClipSlot(LlamaData):
 
     def get_repeat(self):
         repeat = self._settings[ClipSlotSetting.REPEAT]
-        return DEFAULT_REPEAT if repeat is None else repeat
+        return defaults.DEFAULT_REPEAT if repeat is None else repeat
 
     def get_direction(self):
         """Return the direction it overrides its patterns with, or None to use theirs."""
@@ -251,7 +244,7 @@ class ClipSlot(LlamaData):
         """Set how many times it plays its pattern, where None or 1 is once. Going back to once drops its morph, which runs across repeats."""
         if repeat is not None:
             SETTINGS[ClipSlotSetting.REPEAT].check(repeat)
-        self._settings[ClipSlotSetting.REPEAT] = None if repeat == DEFAULT_REPEAT else repeat
+        self._settings[ClipSlotSetting.REPEAT] = None if repeat == defaults.DEFAULT_REPEAT else repeat
         if self.get_repeat() < MIN_MORPH_REPEAT:
             self.clear_morph()
 
@@ -266,7 +259,7 @@ class ClipSlot(LlamaData):
     def set_morph(self, *, target, style, song):
         """Make it morph to a pattern across its repeats, in a style like 'left'."""
         if self.get_repeat() < MIN_MORPH_REPEAT:
-            raise InvalidValue(ERR_MORPH_TOO_FEW_REPEATS.format(lowest=MIN_MORPH_REPEAT))
+            raise InvalidValue(errors.ERR_MORPH_TOO_FEW_REPEATS.format(lowest=MIN_MORPH_REPEAT))
         SETTINGS[ClipSlotSetting.MORPH_TO].check(target, song=song)
         SETTINGS[ClipSlotSetting.MORPH_STYLE].check(style)
         self._settings[ClipSlotSetting.MORPH_TO] = target
@@ -276,7 +269,7 @@ class ClipSlot(LlamaData):
     def set_morph_style(self, style):
         """Change how it morphs, which it has to be doing already."""
         if self.get_morph_target() is None:
-            raise InvalidValue(ERR_MORPH_STYLE_WITHOUT_MORPH)
+            raise InvalidValue(errors.ERR_MORPH_STYLE_WITHOUT_MORPH)
         SETTINGS[ClipSlotSetting.MORPH_STYLE].check(style)
         self._settings[ClipSlotSetting.MORPH_STYLE] = style
 
@@ -305,7 +298,7 @@ class ClipSlot(LlamaData):
         if name is not None:
             SETTINGS[ClipSlotSetting.GRAB_TRACK].check(name, song=song)
             if name == own_track:
-                raise InvalidValue(ERR_GRABS_ITSELF)
+                raise InvalidValue(errors.ERR_GRABS_ITSELF)
         self._settings[ClipSlotSetting.GRAB_TRACK] = name
 
     @notes_change
@@ -316,9 +309,9 @@ class ClipSlot(LlamaData):
 def _check_morph(*, data, repeat):
     """Refuse a morph without both its settings or without enough repeats, once each setting has been checked on its own."""
     if (ClipSlotSetting.MORPH_TO in data) != (ClipSlotSetting.MORPH_STYLE in data):
-        raise InvalidValue(ERR_MORPH_NEEDS_BOTH)
+        raise InvalidValue(errors.ERR_MORPH_NEEDS_BOTH)
     if ClipSlotSetting.MORPH_TO in data and repeat < MIN_MORPH_REPEAT:
-        raise InvalidValue(ERR_MORPH_TOO_FEW_REPEATS.format(lowest=MIN_MORPH_REPEAT))
+        raise InvalidValue(errors.ERR_MORPH_TOO_FEW_REPEATS.format(lowest=MIN_MORPH_REPEAT))
 
 
 def _read_chain(data):
@@ -326,5 +319,5 @@ def _read_chain(data):
     if ClipSlotSetting.CHAIN not in data:
         return
     if ClipSlotSetting.CHAINS in data:
-        raise InvalidValue(ERR_CHAIN_AND_CHAINS)
+        raise InvalidValue(errors.ERR_CHAIN_AND_CHAINS)
     data[ClipSlotSetting.CHAINS] = [data.pop(ClipSlotSetting.CHAIN)]

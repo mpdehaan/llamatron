@@ -21,12 +21,11 @@ import tempfile
 import unittest
 
 from llamatron.composition.file_format import CLOSED_PATTERN_GROUPS, ClipSlotSetting, PatternSetting, SceneSetting, Section
-from llamatron.composition.limits import MAX_NAME_LENGTH
+from llamatron.composition import limits
+from llamatron.strings import errors, names as names_text
 from llamatron.composition.naming import name_in_copied_group
 from llamatron.composition.setlist import Setlist, new_setlist
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.strings.errors import ERR_GROUP_COPY_NAME_TOO_LONG, ERR_NOT_TEXT
-from llamatron.strings.names import MSG_DEFAULT_SONG_NAME
 
 # The tests' own names.
 BASS = 'bass'
@@ -44,7 +43,7 @@ NO_SUCH_GROUP = 'gone'
 SAVED_FILE = 'groups.yml'
 STEPS = 4
 # A group's name that leaves a copied pattern's name one character too long.
-LONG_GROUP = 'g' * (MAX_NAME_LENGTH - len(LOOSE))
+LONG_GROUP = 'g' * (limits.MAX_NAME_LENGTH - len(LOOSE))
 
 
 def a_set():
@@ -54,7 +53,7 @@ def a_set():
         BASS_VERSE: {PatternSetting.GROUP: BASS, PatternSetting.STEPS: STEPS}, BASS_CHORUS: {PatternSetting.GROUP: BASS, PatternSetting.STEPS: STEPS},
         KICK: {PatternSetting.GROUP: DRUMS, PatternSetting.STEPS: STEPS}, LOOSE: {PatternSetting.STEPS: STEPS}, UNPLAYED: {PatternSetting.STEPS: STEPS},
     }
-    song = data[Section.SONGS][MSG_DEFAULT_SONG_NAME]
+    song = data[Section.SONGS][names_text.MSG_DEFAULT_SONG_NAME]
     song[Section.TRACKS] = {BASS: {}, LEAD: {}}
     song[Section.SCENES] = [{SceneSetting.TRACKS: {BASS: {ClipSlotSetting.PATTERN: BASS_VERSE}, LEAD: {ClipSlotSetting.PATTERN: LOOSE}}}, {SceneSetting.TRACKS: {BASS: {ClipSlotSetting.PATTERN: LOOSE}}}]
     return data
@@ -75,7 +74,7 @@ class TestAPatternsGroup(unittest.TestCase):
     def test_a_group_that_is_not_text_is_refused_by_a_file_and_by_the_setter_in_the_same_words(self):
         data = a_set()
         data[Section.PATTERNS][KICK][PatternSetting.GROUP] = A_NUMBER
-        refusal = ERR_NOT_TEXT.format(name=PatternSetting.GROUP, value=A_NUMBER)
+        refusal = errors.ERR_NOT_TEXT.format(name=PatternSetting.GROUP, value=A_NUMBER)
         with self.assertRaises(SongFileError) as refused:
             Setlist.from_data(data=data)
         self.assertIn(refusal, str(refused.exception))
@@ -91,7 +90,7 @@ class TestAPatternsGroup(unittest.TestCase):
     def test_a_new_sets_starter_pattern_is_in_the_group_named_after_its_track(self):
         setlist = Setlist.from_data(data=new_setlist())
         [pattern] = setlist.get_pattern_names()
-        [track] = setlist.get_song(MSG_DEFAULT_SONG_NAME).get_track_names()
+        [track] = setlist.get_song(names_text.MSG_DEFAULT_SONG_NAME).get_track_names()
         self.assertEqual(setlist.get_pattern(pattern).get_group(), track)
 
     def test_renaming_a_group_renames_it_for_every_pattern_in_it(self):
@@ -188,8 +187,8 @@ class TestCopyingAGroup(unittest.TestCase):
         with self.assertRaises(ValueError) as refused:
             self.setlist.copy_pattern_group(group=DRUMS, new=LONG_GROUP)
         too_long = name_in_copied_group(name=LOOSE, old=DRUMS, new=LONG_GROUP)
-        self.assertEqual(len(too_long), MAX_NAME_LENGTH + 1)
-        self.assertEqual(str(refused.exception), ERR_GROUP_COPY_NAME_TOO_LONG.format(name=too_long, most=MAX_NAME_LENGTH))
+        self.assertEqual(len(too_long), limits.MAX_NAME_LENGTH + 1)
+        self.assertEqual(str(refused.exception), errors.ERR_GROUP_COPY_NAME_TOO_LONG.format(name=too_long, most=limits.MAX_NAME_LENGTH))
         self.assertEqual(self.setlist.get_pattern_names(), names)
 
 
@@ -206,7 +205,7 @@ class TestGroupingByTrack(unittest.TestCase):
 
     def test_patterns_in_no_group_take_their_tracks_and_a_group_already_given_is_kept(self):
         self.setlist.get_pattern(BASS_VERSE).set_group(SOLO)
-        self.setlist.group_patterns_by_track(self.setlist.get_song(MSG_DEFAULT_SONG_NAME))
+        self.setlist.group_patterns_by_track(self.setlist.get_song(names_text.MSG_DEFAULT_SONG_NAME))
         self.assertEqual(self.setlist.get_pattern(LOOSE).get_group(), LEAD)
         self.assertEqual(self.setlist.get_pattern(BASS_VERSE).get_group(), SOLO)
         self.assertIsNone(self.setlist.get_pattern(UNPLAYED).get_group())

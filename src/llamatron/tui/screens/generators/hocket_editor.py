@@ -17,11 +17,7 @@
 
 from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition.generator_settings import HocketSetting
-from llamatron.strings.help import HELP_HOCKET_EDITOR
-from llamatron.strings.labels import Crumb, MSG_HOCKET_LABEL, MSG_SOURCE_TRACK_LABEL
-from llamatron.strings.legends import MSG_NO_SOURCE_WHAT
-from llamatron.strings.marks import MSG_NONE_SHOWN
-from llamatron.strings.messages import MSG_RENAME_GENERATOR_PROMPT
+from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared.field import ChoiceField, NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
@@ -33,10 +29,10 @@ from llamatron.tui.text import sorted_names
 class HocketEditor(ShowsNamedItem, FieldPage):
 
     KEYS = keybindings.HocketEditor
-    HELP = HELP_HOCKET_EDITOR
+    HELP = help_text.HELP_HOCKET_EDITOR
     SECTION = Section.HOCKETS
-    CRUMBS_BEFORE = (Crumb.GENERATORS,)
-    RENAME_PROMPT = MSG_RENAME_GENERATOR_PROMPT.format(label=MSG_HOCKET_LABEL)
+    CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_HOCKET_LABEL)
 
     def __init__(self, *, holder, name):
         super().__init__(holder)
@@ -60,8 +56,8 @@ class HocketEditor(ShowsNamedItem, FieldPage):
         return [
             NameField(value=lambda: self.item, rename=self.rename),
             ChoiceField(
-                page=self, label=MSG_SOURCE_TRACK_LABEL, choices=[MSG_NONE_SHOWN, *self.sources()], current=source or MSG_NONE_SHOWN,
-                set=lambda choice: self.store_source(None if choice == MSG_NONE_SHOWN else choice), clear=lambda: self.store_source(None), clear_what=MSG_NO_SOURCE_WHAT,
+                page=self, label=labels.MSG_SOURCE_TRACK_LABEL, choices=[marks.MSG_NONE_SHOWN, *self.sources()], current=source or marks.MSG_NONE_SHOWN,
+                set=lambda choice: self.store_source(None if choice == marks.MSG_NONE_SHOWN else choice), clear=lambda: self.store_source(None), clear_what=legends.MSG_NO_SOURCE_WHAT,
             ),
             restart_field(self),
         ]

@@ -31,8 +31,7 @@ from llamatron.exporters.exporter import ExportKind
 from llamatron.exporters.midi_arrangement import MidiGeneralMidi
 from llamatron.exporters.wave_level import normalize_wave
 from llamatron.realtime.fluidsynth import fluidsynth_path, is_installed, soundfont_path
-from llamatron.strings.errors import ERR_FLUIDSYNTH_RENDER_FAILED, ERR_NO_FLUIDSYNTH_TRACKS, ERR_WAV_NEEDS_FLUIDSYNTH
-from llamatron.strings.names import MSG_WAV_EXPORT_LABEL
+from llamatron.strings import errors, names
 
 WAV_FILE = '{name}.wav'
 # The MIDI file FluidSynth plays, in the temporary folder.
@@ -48,7 +47,7 @@ class WaveFluidSynth(MidiGeneralMidi):
     __slots__ = ()
 
     KIND = ExportKind.WAV
-    LABEL = MSG_WAV_EXPORT_LABEL
+    LABEL = names.MSG_WAV_EXPORT_LABEL
     FILE = WAV_FILE
 
     def sounding_tracks(self):
@@ -58,9 +57,9 @@ class WaveFluidSynth(MidiGeneralMidi):
     def export(self, *, render=subprocess.run):
         """Write the WAV file, unless it already exists, in which case this prints a warning and writes nothing. render runs FluidSynth, which the tests replace."""
         if not is_installed():
-            raise ValueError(ERR_WAV_NEEDS_FLUIDSYNTH)
+            raise ValueError(errors.ERR_WAV_NEEDS_FLUIDSYNTH)
         if not self.sounding_tracks():
-            raise ValueError(ERR_NO_FLUIDSYNTH_TRACKS)
+            raise ValueError(errors.ERR_NO_FLUIDSYNTH_TRACKS)
         path = self.path()
         if not self.can_write([os.path.basename(path)]):
             return
@@ -69,5 +68,5 @@ class WaveFluidSynth(MidiGeneralMidi):
             self.midi_file().save(midi)
             finished = render([fluidsynth_path(), *RENDER_OPTIONS, path, soundfont_path(), midi], capture_output=True, text=True, check=False)
         if finished.returncode != 0 or not os.path.exists(path):
-            raise ValueError(ERR_FLUIDSYNTH_RENDER_FAILED.format(problem=(finished.stderr or finished.stdout).strip()))
+            raise ValueError(errors.ERR_FLUIDSYNTH_RENDER_FAILED.format(problem=(finished.stderr or finished.stdout).strip()))
         normalize_wave(path)

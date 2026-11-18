@@ -16,8 +16,7 @@
 """Tests of the Swing field on the song wizard's Subgenre panel."""
 
 from llamatron.macro_composer.arranger import NO_GROOVE
-from llamatron.strings.labels import MSG_WIZARD_SUBGENRE_BRANCH, MSG_WIZARD_SWING_LABEL, MSG_WIZARD_VARIANT_LABEL, MSG_WIZARD_VALUE_FROM
-from llamatron.strings.legends import MSG_FROM_GENRE_WHAT
+from llamatron.strings import labels as labels_text, legends
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from tests.support.ui_testing import key_of
@@ -38,7 +37,7 @@ class SubgenrePanelTest(WizardTest):
         choices = self.choices()
         choices.set_genre(genre)
         choices.set_subgenre(subgenre)
-        await self.go_to_named_branch(MSG_WIZARD_SUBGENRE_BRANCH)
+        await self.go_to_named_branch(labels_text.MSG_WIZARD_SUBGENRE_BRANCH)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         return choices
 
@@ -53,17 +52,17 @@ class TestWizardSwingField(SubgenrePanelTest):
         choices = await self.to_genre(genre=A_GENRE, subgenre=A_KIND_THAT_SWINGS)
         usual = choices.swing_of_genre()
         self.assertNotEqual(usual, NO_GROOVE)
-        self.assertIn(MSG_WIZARD_VALUE_FROM.format(value=usual, origin=MSG_FROM_GENRE_WHAT), self.text())
-        await self.select_field(MSG_WIZARD_SWING_LABEL)
+        self.assertIn(labels_text.MSG_WIZARD_VALUE_FROM.format(value=usual, origin=legends.MSG_FROM_GENRE_WHAT), self.text())
+        await self.select_field(labels_text.MSG_WIZARD_SWING_LABEL)
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
         self.assertNotEqual(choices.get_swing(), usual)
         self.assertIn(choices.get_swing(), choices.swings())
-        self.assertNotIn(MSG_FROM_GENRE_WHAT, next(line for line in self.text().split(NEW_LINE) if MSG_WIZARD_SWING_LABEL in line))
+        self.assertNotIn(legends.MSG_FROM_GENRE_WHAT, next(line for line in self.text().split(NEW_LINE) if labels_text.MSG_WIZARD_SWING_LABEL in line))
         self.assertTrue(self.wizard().has_choices_to_lose())
 
     async def test_a_kind_written_in_triplets_has_no_swing_field(self):
         await self.to_genre(genre=A_GENRE_IN_TRIPLETS, subgenre=A_KIND_IN_TRIPLETS)
-        self.assertNotIn(MSG_WIZARD_SWING_LABEL, self.labels())
+        self.assertNotIn(labels_text.MSG_WIZARD_SWING_LABEL, self.labels())
 
 
 class TestWizardVariantField(SubgenrePanelTest):
@@ -72,8 +71,8 @@ class TestWizardVariantField(SubgenrePanelTest):
     async def test_a_subgenre_of_several_kinds_has_a_variant_field_that_chooses_one_and_says_what_it_is(self):
         choices = await self.to_genre(genre=A_GENRE, subgenre=A_KIND_OF_SEVERAL)
         first, other = choices.variants()[:2]
-        self.assertIn(first, next(line for line in self.text().split(NEW_LINE) if MSG_WIZARD_VARIANT_LABEL in line))
-        await self.select_field(MSG_WIZARD_VARIANT_LABEL)
+        self.assertIn(first, next(line for line in self.text().split(NEW_LINE) if labels_text.MSG_WIZARD_VARIANT_LABEL in line))
+        await self.select_field(labels_text.MSG_WIZARD_VARIANT_LABEL)
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(choices.get_variant(), other)
         self.assertIn(choices.variant_says(), self.text())
@@ -86,4 +85,4 @@ class TestWizardVariantField(SubgenrePanelTest):
 
     async def test_a_subgenre_of_one_kind_has_no_variant_field(self):
         await self.to_genre(genre=A_GENRE, subgenre=A_KIND_THAT_SWINGS)
-        self.assertNotIn(MSG_WIZARD_VARIANT_LABEL, self.labels())
+        self.assertNotIn(labels_text.MSG_WIZARD_VARIANT_LABEL, self.labels())

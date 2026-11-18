@@ -30,10 +30,7 @@ from llamatron.tui.keys import Key, RowSection
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.pattern.patterns_page import PatternsPage
 from llamatron.support.version import BUILD_DATE, BUILD_TIME, build_year, VERSION
-from llamatron.strings.about import MSG_ABOUT_BLOG, MSG_ABOUT_COPYRIGHT, MSG_ABOUT_LICENSE, MSG_ABOUT_MORE, MSG_ABOUT_POWERED, MSG_ABOUT_QUOTES, MSG_ABOUT_VERSION, MSG_ABOUT_WEB, MSG_COW, MSG_COW_BUBBLE_TEXT, MSG_EIGHT_BALL, MSG_EIGHT_BALL_ANSWERS, MSG_SITE
-from llamatron.strings.labels import MSG_SECTION_LABEL, MSG_SECTION_NAMES, MSG_HELP_PANELS
-from llamatron.strings.legends import KeyName
-from llamatron.strings.marks import MSG_SECTION_OPEN_MARK, MSG_NOTE_UNDER_CURSOR
+from llamatron.strings import about, labels, legends, marks
 from llamatron.tui import keybindings
 
 # The file the export tests save their set as, and where its untitled song's exports then go: beside it, as <set>_<song>.
@@ -63,10 +60,10 @@ class TestHelp(UITest):
         text = self.text()
         with self.subTest(where=where):
             self.assertIn(HELP, text)
-            self.assertIn(MSG_HELP_PANELS[1], text)
+            self.assertIn(labels.MSG_HELP_PANELS[1], text)
             self.assertIn('┏', text)
             self.assertIn('┗', text)
-            self.assertIn(f'« {KeyName.ENTER_ESCAPE} »', text)
+            self.assertIn(f'« {legends.KeyName.ENTER_ESCAPE} »', text)
         await self.press(Key.ENTER)
         self.assertIs(self.app.screen, page, where)
 
@@ -94,7 +91,7 @@ class TestHelp(UITest):
         await self.press(keybindings.MainPage.PATTERNS, Key.ENTER)
         text = self.text()
         # The piano roll comes first, with the cursor's row and the description on screen.
-        self.assertIn(MSG_NOTE_UNDER_CURSOR, text)
+        self.assertIn(marks.MSG_NOTE_UNDER_CURSOR, text)
         self.assertIn('Step 1:', text)
         self.assertIn('« ESC »', text)
         await self.press(keybindings.PatternEditor.TO_EDITOR)
@@ -102,7 +99,7 @@ class TestHelp(UITest):
         # The gauge, its number and the octave are pinned, and the first section's heading and at least one of its rows show under them.
         self.assertIn('│ Degree', text)
         self.assertIn('│ Octave', text)
-        self.assertIn(Box.BAR + SPACE + MSG_SECTION_LABEL.format(mark=MSG_SECTION_OPEN_MARK, name=MSG_SECTION_NAMES[RowSection.BASICS]), text)
+        self.assertIn(Box.BAR + SPACE + labels.MSG_SECTION_LABEL.format(mark=marks.MSG_SECTION_OPEN_MARK, name=labels.MSG_SECTION_NAMES[RowSection.BASICS]), text)
         self.assertIn('│ #/b', text)
         self.assertIn('Step 1:', text)
         self.assertIn('« ESC »', text)
@@ -116,7 +113,7 @@ class TestHelpDialog(UITest):
         dialog = self.app.screen
         self.assertIsInstance(dialog, HelpDialog)
         text = self.text()
-        self.assertIn(MSG_HELP_PANELS[0], text)
+        self.assertIn(labels.MSG_HELP_PANELS[0], text)
         # The dialog's own lines are between its side bars; the page shows through either side of them.
         lines = [line.split('┃')[1] for line in text.splitlines() if line.count('┃') >= 2]
         lines = [line for line in lines if '»' in line]
@@ -132,15 +129,15 @@ class TestHelpDialog(UITest):
         # The page's own keys start with ESC, the back key, and then the arrows.
         self.assertIn('« ESC »', lines[5])
         self.assertIn('« ↑↓ »', lines[6])
-        self.assertIn(f'« {KeyName.TAB_ARROWS} »', text)
+        self.assertIn(f'« {legends.KeyName.TAB_ARROWS} »', text)
         self.assertNotIn(HELP_PATTERNS_FIRST_WORDS, text)
         await self.press(Key.TAB)
-        self.assertIn(MSG_HELP_PANELS[1], self.text())
+        self.assertIn(labels.MSG_HELP_PANELS[1], self.text())
         self.assertIn(HELP_PATTERNS_FIRST_WORDS, self.text())
         await self.press(Key.RIGHT)
-        self.assertIn(MSG_HELP_PANELS[0], self.text())
+        self.assertIn(labels.MSG_HELP_PANELS[0], self.text())
         await self.press(Key.LEFT)
-        self.assertIn(MSG_HELP_PANELS[1], self.text())
+        self.assertIn(labels.MSG_HELP_PANELS[1], self.text())
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, PatternsPage)
         await self.press(keybindings.PatternsPage.HELP, Key.ENTER)
@@ -167,17 +164,17 @@ class TestAboutDialog(UITest):
             await self.press(*keys)
             self.assertIsInstance(self.app.screen, AboutDialog)
             text = self.text()
-            self.assertIn(MSG_COW_BUBBLE_TEXT.format(text=PROGRAM_NAME), text)
-            self.assertIn(MSG_COW[-1].strip(), text)
-            self.assertIn(MSG_ABOUT_VERSION.format(version=VERSION, date=BUILD_DATE, time=BUILD_TIME), text)
-            self.assertIn(MSG_ABOUT_WEB, text)
-            self.assertIn(MSG_ABOUT_BLOG, text)
-            self.assertIn(MSG_ABOUT_MORE.format(site=MSG_SITE), text)
-            self.assertIn(MSG_ABOUT_POWERED, text)
-            self.assertIn(MSG_ABOUT_LICENSE, text)
-            self.assertIn(MSG_ABOUT_COPYRIGHT.format(year=build_year()), text)
+            self.assertIn(about.MSG_COW_BUBBLE_TEXT.format(text=PROGRAM_NAME), text)
+            self.assertIn(about.MSG_COW[-1].strip(), text)
+            self.assertIn(about.MSG_ABOUT_VERSION.format(version=VERSION, date=BUILD_DATE, time=BUILD_TIME), text)
+            self.assertIn(about.MSG_ABOUT_WEB, text)
+            self.assertIn(about.MSG_ABOUT_BLOG, text)
+            self.assertIn(about.MSG_ABOUT_MORE.format(site=about.MSG_SITE), text)
+            self.assertIn(about.MSG_ABOUT_POWERED, text)
+            self.assertIn(about.MSG_ABOUT_LICENSE, text)
+            self.assertIn(about.MSG_ABOUT_COPYRIGHT.format(year=build_year()), text)
             self.assertIn(self.app.screen.quote, text)
-            self.assertTrue(self.app.screen.quote in MSG_ABOUT_QUOTES or self.app.screen.quote.startswith(fixed_text(MSG_EIGHT_BALL)))
+            self.assertTrue(self.app.screen.quote in about.MSG_ABOUT_QUOTES or self.app.screen.quote.startswith(fixed_text(about.MSG_EIGHT_BALL)))
             self.assertIn('┗', text)
             await self.press(Key.ESCAPE)
             self.assertNotIsInstance(self.app.screen, AboutDialog)
@@ -185,7 +182,7 @@ class TestAboutDialog(UITest):
     async def test_the_quote_is_the_eight_balls_answer_when_the_roll_falls_under_its_chance(self):
         with mock.patch.object(about_dialog.random, 'random', return_value=EIGHT_BALL_CHANCE / 2), mock.patch.object(about_dialog.random, 'choice', side_effect=lambda options: options[-1]):
             await self.press(keybindings.MainPage.ABOUT)
-        self.assertEqual(self.app.screen.quote, MSG_EIGHT_BALL.format(answer=MSG_EIGHT_BALL_ANSWERS[-1]))
+        self.assertEqual(self.app.screen.quote, about.MSG_EIGHT_BALL.format(answer=about.MSG_EIGHT_BALL_ANSWERS[-1]))
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, MainPage)
 
@@ -220,7 +217,7 @@ class TestAboutDialog(UITest):
         await self.press(Key.ENTER)
 
     async def test_every_quote_keeps_the_dialog_on_a_usual_console(self):
-        for quote in MSG_ABOUT_QUOTES:
+        for quote in about.MSG_ABOUT_QUOTES:
             with mock.patch.object(about_dialog, 'random_quote', return_value=quote):
                 await self.press(keybindings.MainPage.ABOUT)
             self.assertIn(Box.HEAVY_BOTTOM_LEFT, self.text(), quote)
@@ -229,8 +226,8 @@ class TestAboutDialog(UITest):
     async def test_the_quote_is_one_of_the_quotes_when_the_roll_falls_over_the_eight_balls_chance(self):
         with mock.patch.object(about_dialog.random, 'random', return_value=EIGHT_BALL_CHANCE + (1 - EIGHT_BALL_CHANCE) / 2):
             await self.press(keybindings.MainPage.ABOUT)
-        self.assertIn(self.app.screen.quote, MSG_ABOUT_QUOTES)
-        self.assertNotIn(fixed_text(MSG_EIGHT_BALL), self.app.screen.quote)
+        self.assertIn(self.app.screen.quote, about.MSG_ABOUT_QUOTES)
+        self.assertNotIn(fixed_text(about.MSG_EIGHT_BALL), self.app.screen.quote)
         await self.press(Key.ENTER)
 
     async def test_the_build_date_is_a_date_and_the_year_comes_from_it(self):

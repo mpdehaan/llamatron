@@ -25,7 +25,7 @@ from llamatron.composition.generator_settings import ArpSetting, DriftSetting
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.playback.drift import DriftPlay
-from llamatron.strings.labels import MSG_TIME_NAMES
+from llamatron.strings import labels
 from llamatron.support.rational import Rational
 from tests.generators.test_drift import drifting
 from tests.playback.test_shapes import notes, one_scene
@@ -51,12 +51,12 @@ class TestTheList(unittest.TestCase):
             self.assertEqual(TIME_CHOICES[place + 1:place + 3], [triplet, dotted])
 
     def test_the_straight_lengths_get_longer_and_the_list_ends_in_bars(self):
-        lengths = [time_length(time) for time in TIME_CHOICES if not isinstance(time_length(time), Bars) and time not in MSG_TIME_NAMES]
+        lengths = [time_length(time) for time in TIME_CHOICES if not isinstance(time_length(time), Bars) and time not in labels.MSG_TIME_NAMES]
         self.assertEqual(lengths, sorted(lengths))
         self.assertEqual([time_length(time).count for time in TIME_CHOICES if isinstance(time_length(time), Bars)], [1, 2, 4, 8, 16])
 
     def test_every_dotted_and_triplet_value_has_a_name(self):
-        for written, name in MSG_TIME_NAMES.items():
+        for written, name in labels.MSG_TIME_NAMES.items():
             self.assertIn(written, TIME_CHOICES, name)
 
 
@@ -145,6 +145,6 @@ class TestTimeField(unittest.TestCase):
 
     def test_a_dotted_length_shows_its_name(self):
         field, stored = self.field(written='3/32')
-        self.assertEqual(field.text(), MSG_TIME_NAMES['3/32'])
+        self.assertEqual(field.text(), labels.MSG_TIME_NAMES['3/32'])
         field.set('3/16')
         self.assertEqual(stored, ['3/16'])

@@ -17,19 +17,12 @@
 """The Registers page: the settings of the song's four registers, AX to DX."""
 
 from llamatron.composition.file_format import AT_LIMITS, REGISTER_NAMES, RegisterSetting
-from llamatron.composition.limits import MAX_REGISTER_VALUE, MIN_ALLOWED_INC_MAX, MIN_REGISTER_VALUE
+from llamatron.composition import limits
+from llamatron.strings import help as help_text, labels, legends, messages
 from llamatron.tui.screens.shared.field import ChoiceField, NumberField, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.strings.help import HELP_REGISTERS_PAGE
-from llamatron.strings.labels import (
-    Crumb, MSG_AT_LIMIT_NAMES, MSG_REGISTER_ALLOWED_INC_MAX_FIELD, MSG_REGISTER_AT_LIMIT_FIELD, MSG_REGISTER_FIELD_LABEL, MSG_REGISTER_NUMBER_FIELDS,
-    MSG_REGISTER_RESET_EACH_SCENE_FIELD,
-)
-from llamatron.strings.legends import MSG_REGISTER_CLEAR_WHAT, MSG_REGISTER_ENTER_WHAT
-from llamatron.strings.messages import MSG_REGISTER_PROMPT
 from rich.text import Text
 
-from llamatron.strings.labels import MSG_REGISTER_COLUMNS
 from llamatron.tui.drawing import NOTHING, SPACE, Style, cursor_mark, padded
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
@@ -50,8 +43,8 @@ class RegistersPage(FieldPage):
 
     KEYS = keybindings.RegistersPage
 
-    crumbs = (Crumb.REGISTERS,)
-    HELP = HELP_REGISTERS_PAGE
+    crumbs = (labels.Crumb.REGISTERS,)
+    HELP = help_text.HELP_REGISTERS_PAGE
 
     def fields(self):
         """Return every register's settings, register by register, each in the grid's order of columns."""
@@ -68,23 +61,23 @@ class RegistersPage(FieldPage):
             RegisterSetting.DEFAULT: register.get_default(), RegisterSetting.MINIMUM: register.get_minimum(),
             RegisterSetting.MAXIMUM: register.get_maximum(),
         }
-        numbers = {setting: self.number_field(name=name, setting=setting, what=what, value=values[setting]) for setting, what in MSG_REGISTER_NUMBER_FIELDS}
+        numbers = {setting: self.number_field(name=name, setting=setting, what=what, value=values[setting]) for setting, what in labels.MSG_REGISTER_NUMBER_FIELDS}
         result = []
         result.append(ChoiceField(
-            page=self, label=MSG_REGISTER_FIELD_LABEL.format(name=name, what=MSG_REGISTER_AT_LIMIT_FIELD), choices=AT_LIMITS, current=register.get_at_limit(),
-            names=[MSG_AT_LIMIT_NAMES[choice] for choice in AT_LIMITS], shown=MSG_AT_LIMIT_NAMES[register.get_at_limit()],
+            page=self, label=labels.MSG_REGISTER_FIELD_LABEL.format(name=name, what=labels.MSG_REGISTER_AT_LIMIT_FIELD), choices=AT_LIMITS, current=register.get_at_limit(),
+            names=[labels.MSG_AT_LIMIT_NAMES[choice] for choice in AT_LIMITS], shown=labels.MSG_AT_LIMIT_NAMES[register.get_at_limit()],
             set=lambda choice: self.change(name=name, setting=RegisterSetting.AT_LIMIT, value=None if choice == AT_LIMITS[0] else choice),
         ))
         reset = Toggle(
-            label=MSG_REGISTER_FIELD_LABEL.format(name=name, what=MSG_REGISTER_RESET_EACH_SCENE_FIELD), on=register.resets_each_scene(),
+            label=labels.MSG_REGISTER_FIELD_LABEL.format(name=name, what=labels.MSG_REGISTER_RESET_EACH_SCENE_FIELD), on=register.resets_each_scene(),
             set=lambda on: self.change(name=name, setting=RegisterSetting.RESET_EACH_SCENE, value=True if on else None),
         )
-        label = MSG_REGISTER_FIELD_LABEL.format(name=name, what=MSG_REGISTER_ALLOWED_INC_MAX_FIELD)
+        label = labels.MSG_REGISTER_FIELD_LABEL.format(name=name, what=labels.MSG_REGISTER_ALLOWED_INC_MAX_FIELD)
         result.insert(0, NumberField(
-            page=self, label=label, number=register.get_allowed_inc_max(), lowest=MIN_ALLOWED_INC_MAX, highest=MAX_REGISTER_VALUE,
-            title=MSG_REGISTER_PROMPT.format(label=label, lowest=MIN_ALLOWED_INC_MAX, highest=MAX_REGISTER_VALUE),
-            set=lambda number: self.change(name=name, setting=RegisterSetting.ALLOWED_INC_MAX, value=number), enter_what=MSG_REGISTER_ENTER_WHAT,
-            clear=lambda: self.change(name=name, setting=RegisterSetting.ALLOWED_INC_MAX, value=None), clear_what=MSG_REGISTER_CLEAR_WHAT,
+            page=self, label=label, number=register.get_allowed_inc_max(), lowest=limits.MIN_ALLOWED_INC_MAX, highest=limits.MAX_REGISTER_VALUE,
+            title=messages.MSG_REGISTER_PROMPT.format(label=label, lowest=limits.MIN_ALLOWED_INC_MAX, highest=limits.MAX_REGISTER_VALUE),
+            set=lambda number: self.change(name=name, setting=RegisterSetting.ALLOWED_INC_MAX, value=number), enter_what=legends.MSG_REGISTER_ENTER_WHAT,
+            clear=lambda: self.change(name=name, setting=RegisterSetting.ALLOWED_INC_MAX, value=None), clear_what=legends.MSG_REGISTER_CLEAR_WHAT,
         ))
         result += [numbers[RegisterSetting.MINIMUM], numbers[RegisterSetting.DEFAULT], numbers[RegisterSetting.MAXIMUM], reset]
         return result
@@ -119,9 +112,9 @@ class RegistersPage(FieldPage):
         fields = self.fields()
         self.field()
         cells = [[fields[row * GRID_COLUMNS + column].value() for column in range(GRID_COLUMNS)] for row in range(len(REGISTER_NAMES))]
-        widths = [max(len(MSG_REGISTER_COLUMNS[column]), *(len(str(cells[row][column])) for row in range(len(REGISTER_NAMES)))) + CELL_PADDING for column in range(GRID_COLUMNS)]
+        widths = [max(len(labels.MSG_REGISTER_COLUMNS[column]), *(len(str(cells[row][column])) for row in range(len(REGISTER_NAMES)))) + CELL_PADDING for column in range(GRID_COLUMNS)]
         heading = Text(SPACE * NAME_WIDTH, style=Style.BOLD, no_wrap=True)
-        for column, name in enumerate(MSG_REGISTER_COLUMNS):
+        for column, name in enumerate(labels.MSG_REGISTER_COLUMNS):
             heading.append(padded(name.ljust(widths[column] - CELL_PADDING)), style=Style.BOLD)
         lines = [Text(NOTHING), heading]
         for row, register in enumerate(REGISTER_NAMES):
@@ -135,12 +128,12 @@ class RegistersPage(FieldPage):
         return lines
 
     def number_field(self, *, name, setting, what, value):
-        label = MSG_REGISTER_FIELD_LABEL.format(name=name, what=what)
-        prompt = MSG_REGISTER_PROMPT.format(label=label, lowest=MIN_REGISTER_VALUE, highest=MAX_REGISTER_VALUE)
+        label = labels.MSG_REGISTER_FIELD_LABEL.format(name=name, what=what)
+        prompt = messages.MSG_REGISTER_PROMPT.format(label=label, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE)
         return NumberField(
-            page=self, label=label, number=value, lowest=MIN_REGISTER_VALUE, highest=MAX_REGISTER_VALUE, title=prompt,
-            set=lambda number: self.change(name=name, setting=setting, value=number), enter_what=MSG_REGISTER_ENTER_WHAT,
-            clear=lambda: self.change(name=name, setting=setting, value=None), clear_what=MSG_REGISTER_CLEAR_WHAT,
+            page=self, label=label, number=value, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, title=prompt,
+            set=lambda number: self.change(name=name, setting=setting, value=number), enter_what=legends.MSG_REGISTER_ENTER_WHAT,
+            clear=lambda: self.change(name=name, setting=setting, value=None), clear_what=legends.MSG_REGISTER_CLEAR_WHAT,
         )
 
     def change(self, *, name, setting, value):

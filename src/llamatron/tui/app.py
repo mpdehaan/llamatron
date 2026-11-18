@@ -46,9 +46,7 @@ from llamatron.tui.made_preview import MadePreview
 from llamatron.tui.pattern_preview import PatternPreview
 from llamatron.tui.transport import Transport
 from llamatron.tui.silent_instruments import warn_of_silent_instruments
-from llamatron.strings.errors import ERR_PRINTED
-from llamatron.strings.labels import MSG_WIZARD_START_CANCEL, MSG_WIZARD_START_NAMES, MSG_WIZARD_START_TITLE
-from llamatron.strings.messages import MSG_WIZARD_ALREADY_OPEN
+from llamatron.strings import errors, labels, messages
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 
 
@@ -212,18 +210,18 @@ class LlamatronApp(App, inherit_bindings=False):
     def show_wizard(self, page):
         """Open the song wizard over a page, which F5 does from anywhere, unless the page is the wizard itself."""
         if isinstance(page, WizardPage):
-            page.say(MSG_WIZARD_ALREADY_OPEN)
+            page.say(messages.MSG_WIZARD_ALREADY_OPEN)
         elif page.document().song().get_wizard_choices() is None:
             page.show_page(WizardPage(self))
         else:
             # On a song the wizard made, a dialog asks how to start first; ESC opens no wizard.
             # The last row is CANCEL, which opens no wizard, as ESC does.
-            names = [*(MSG_WIZARD_START_NAMES[start] for start in STARTS), MSG_WIZARD_START_CANCEL]
+            names = [*(labels.MSG_WIZARD_START_NAMES[start] for start in STARTS), labels.MSG_WIZARD_START_CANCEL]
 
             def answered(place):
                 if place < len(STARTS):
                     page.show_page(WizardPage(self, start=STARTS[place]))
-            page.ask(dialog=ChoiceDialog(title=MSG_WIZARD_START_TITLE, options=names), then=answered)
+            page.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_START_TITLE, options=names), then=answered)
 
     def show_arrange_on_new_song(self):
         """Close every page down to the main screen and open Arrange, which shows the current song: where the song wizard leaves a person once it has made one."""
@@ -411,12 +409,12 @@ def main(*, argv=None, launch=None, start_screen=False):
         try:
             document, corrections = Document.load_or_correct(arguments[0])
         except SongFileError as error:
-            print(ERR_PRINTED.format(problem=error), file=sys.stderr)
+            print(errors.ERR_PRINTED.format(problem=error), file=sys.stderr)
             return 1
     if launch is not None and launch.for_recording:
         problem = recording_problem(document.song())
         if problem is not None:
-            print(ERR_PRINTED.format(problem=problem), file=sys.stderr)
+            print(errors.ERR_PRINTED.format(problem=problem), file=sys.stderr)
             return 1
     LlamatronApp(document=document, corrections=corrections, launch=launch, start_screen=start_screen, cursor_on_open=not arguments).run()
     return 0

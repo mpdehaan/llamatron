@@ -20,11 +20,9 @@ from fractions import Fraction
 
 from tests.support.ui_testing import UITest
 from llamatron.composition.setlist import DEFAULT_SCALE
-from llamatron.strings.labels import MSG_TEMPO_LABEL
-from llamatron.strings.labels import MSG_DEFAULT_DRUM_OCTAVE_LABEL
-from llamatron.strings.labels import MSG_DEFAULT_OCTAVE_LABEL
+from llamatron.composition import defaults
+from llamatron.strings import labels, marks
 from llamatron.composition.file_format import FollowAction, OctaveLabels, Section, SetlistSetting
-from llamatron.composition.defaults import DEFAULT_DRUM_OCTAVE, DEFAULT_OCTAVE
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key
@@ -32,8 +30,6 @@ from llamatron.tui.screens.generators.chains_page import ChainsPage
 from llamatron.tui.screens.set.grooves_page import GroovesPage
 from llamatron.tui.screens.set.instruments_page import InstrumentsPage
 from llamatron.tui.screens.set.scales_page import ScalesPage
-from llamatron.strings.labels import MSG_OCTAVE_LABELS_LABEL, MSG_DEFAULT_FOLLOW_ACTION_LABEL, MSG_SCALE_LABEL
-from llamatron.strings.marks import MSG_PICKER_MARK
 from llamatron.tui import keybindings
 
 TEMPO = 'Tempo'
@@ -105,7 +101,7 @@ class TestSettingArrows(UITest):
 
     async def test_on_every_song_setting_with_a_value_to_step(self):
         await self.press(keybindings.MainPage.SONGS, Key.ENTER)
-        await self.select_field(MSG_SCALE_LABEL)
+        await self.select_field(labels.MSG_SCALE_LABEL)
         await self.press(Key.LEFT)
         self.assertIsNone(self.document.song().get_scale_name())
         await self.press(Key.RIGHT)
@@ -118,13 +114,13 @@ class TestSettingArrows(UITest):
         await self.select_field(STEP_SIZE)
         await self.press(Key.RIGHT)
         self.assertEqual(self.document.song().get_step_size(), Fraction(1, 8))
-        await self.select_field(MSG_DEFAULT_OCTAVE_LABEL)
+        await self.select_field(labels.MSG_DEFAULT_OCTAVE_LABEL)
         await self.press(Key.LEFT)
-        self.assertEqual(self.document.song().get_default_octave(), DEFAULT_OCTAVE - 1)
-        await self.select_field(MSG_DEFAULT_DRUM_OCTAVE_LABEL)
+        self.assertEqual(self.document.song().get_default_octave(), defaults.DEFAULT_OCTAVE - 1)
+        await self.select_field(labels.MSG_DEFAULT_DRUM_OCTAVE_LABEL)
         await self.press(Key.RIGHT)
-        self.assertEqual(self.document.song().get_default_drum_octave(), DEFAULT_DRUM_OCTAVE + 1)
-        await self.select_field(MSG_OCTAVE_LABELS_LABEL)
+        self.assertEqual(self.document.song().get_default_drum_octave(), defaults.DEFAULT_DRUM_OCTAVE + 1)
+        await self.select_field(labels.MSG_OCTAVE_LABELS_LABEL)
         await self.press(Key.RIGHT)
         self.assertEqual(self.document.song().get_octave_labels(), OctaveLabels.LLAMATRON)
         await self.press(Key.LEFT)
@@ -133,7 +129,7 @@ class TestSettingArrows(UITest):
     async def test_default_follow_action_is_chosen_from_a_list_and_written_only_when_set(self):
         # Real-time playback alone reads it, and a set that never sets it writes nothing, so the demos stay as they are.
         await self.press(keybindings.MainPage.FILE)
-        await self.select_field(MSG_DEFAULT_FOLLOW_ACTION_LABEL)
+        await self.select_field(labels.MSG_DEFAULT_FOLLOW_ACTION_LABEL)
         self.assertEqual(self.document.setlist().get_default_follow_action(), FollowAction.WITH_SCENE)
         self.assertNotIn(SetlistSetting.DEFAULT_FOLLOW_ACTION, self.document.setlist().to_data())
         await self.press(Key.ENTER)
@@ -146,7 +142,7 @@ class TestSettingArrows(UITest):
 
     async def test_octave_labels_are_chosen_from_a_list(self):
         await self.press(keybindings.MainPage.FILE)
-        await self.select_field(MSG_OCTAVE_LABELS_LABEL)
+        await self.select_field(labels.MSG_OCTAVE_LABELS_LABEL)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         await self.press(Key.DOWN, Key.ENTER)
@@ -159,8 +155,8 @@ class TestPickerMark(UITest):
     async def test_scale_shows_the_mark_and_tempo_does_not(self):
         await self.press(keybindings.MainPage.SONGS, Key.ENTER)
         lines = self.text().splitlines()
-        self.assertTrue(next(line for line in lines if MSG_SCALE_LABEL in line).rstrip().endswith(MSG_PICKER_MARK))
-        self.assertNotIn(MSG_PICKER_MARK, next(line for line in lines if MSG_TEMPO_LABEL in line))
+        self.assertTrue(next(line for line in lines if labels.MSG_SCALE_LABEL in line).rstrip().endswith(marks.MSG_PICKER_MARK))
+        self.assertNotIn(marks.MSG_PICKER_MARK, next(line for line in lines if labels.MSG_TEMPO_LABEL in line))
 
 
 class TestButtonRowOnASettingsPage(UITest):

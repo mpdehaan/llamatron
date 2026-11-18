@@ -17,8 +17,7 @@
 
 from llamatron.composition.file_format import SHAPE_PARTS, SHAPE_THENS, ShapePart
 from llamatron.composition.shapes import SHAPE_LIMITS
-from llamatron.strings.labels import MSG_SHAPE_FIELD_LABELS, MSG_SHAPE_NAMES, MSG_SHAPE_PART_LABELS, MSG_WHOLE_SPAN
-from llamatron.strings.marks import MSG_NONE_SHOWN
+from llamatron.strings import labels, marks
 from llamatron.tui.screens.shared.field import ChoiceField, NumberField
 from llamatron.tui.screens.generators.time_field import time_field
 
@@ -33,18 +32,18 @@ def shape_fields(*, page, shape, value, store, prefixed=True):
     page, where three shapes share the page; a shape generator's editor has one and leaves it off.
     """
     lowest, highest = SHAPE_LIMITS[shape]
-    name = MSG_SHAPE_NAMES[shape]
+    name = labels.MSG_SHAPE_NAMES[shape]
 
     def label(part):
-        return MSG_SHAPE_FIELD_LABELS[part].format(shape=name) if prefixed else MSG_SHAPE_PART_LABELS[part]
+        return labels.MSG_SHAPE_FIELD_LABELS[part].format(shape=name) if prefixed else labels.MSG_SHAPE_PART_LABELS[part]
 
     over = value(ShapePart.OVER)
     then = value(ShapePart.THEN)
     return [
-        *[NumberField(page=page, label=label(part), number=value(part), start=UNCHANGED, shown=MSG_NONE_SHOWN if value(part) is None else None,
+        *[NumberField(page=page, label=label(part), number=value(part), start=UNCHANGED, shown=marks.MSG_NONE_SHOWN if value(part) is None else None,
                       lowest=lowest, highest=highest, set=lambda number, part=part: store(part, number), clear=lambda part=part: store(part, None))
           for part in (ShapePart.START, ShapePart.END)],
-        time_field(page=page, label=label(ShapePart.OVER), written=over, first=MSG_WHOLE_SPAN, store=lambda choice: store(ShapePart.OVER, choice)),
+        time_field(page=page, label=label(ShapePart.OVER), written=over, first=labels.MSG_WHOLE_SPAN, store=lambda choice: store(ShapePart.OVER, choice)),
         ChoiceField(page=page, label=label(ShapePart.THEN), choices=SHAPE_THENS, current=then or SHAPE_THENS[0],
                     set=lambda choice: store(ShapePart.THEN, None if choice == SHAPE_THENS[0] else choice)),
     ]
@@ -52,5 +51,5 @@ def shape_fields(*, page, shape, value, store, prefixed=True):
 
 def shape_section(*, page, shape, value, store):
     """Return a shape's section on the Scene page or the clip page: its heading, closed until opened, saying when any part is set, and its four fields."""
-    heading = page.heading(label=MSG_SHAPE_NAMES[shape], is_set=lambda: any(value(part) is not None for part in SHAPE_PARTS))
+    heading = page.heading(label=labels.MSG_SHAPE_NAMES[shape], is_set=lambda: any(value(part) is not None for part in SHAPE_PARTS))
     return [heading, *shape_fields(page=page, shape=shape, value=value, store=store)]

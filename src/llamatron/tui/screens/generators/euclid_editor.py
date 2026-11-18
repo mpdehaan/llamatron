@@ -18,9 +18,7 @@
 from rich.text import Text
 
 from llamatron.composition.file_format import EuclidPart, GeneratorKind, Section
-from llamatron.strings.help import HELP_EUCLID_EDITOR
-from llamatron.strings.labels import Crumb, MSG_EUCLID_LABEL, MSG_EUCLID_PART_LABELS
-from llamatron.strings.messages import MSG_RENAME_GENERATOR_PROMPT
+from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.generators.euclid_fields import drawn_rhythm, euclid_fields, pick_rhythm
@@ -33,10 +31,10 @@ from llamatron.tui.drawing import Style
 class EuclidEditor(ShowsNamedItem, FieldPage):
 
     KEYS = keybindings.EuclidEditor
-    HELP = HELP_EUCLID_EDITOR
+    HELP = help_text.HELP_EUCLID_EDITOR
     SECTION = Section.EUCLIDS
-    CRUMBS_BEFORE = (Crumb.GENERATORS,)
-    RENAME_PROMPT = MSG_RENAME_GENERATOR_PROMPT.format(label=MSG_EUCLID_LABEL)
+    CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_EUCLID_LABEL)
 
     def __init__(self, *, holder, name):
         super().__init__(holder)
@@ -52,7 +50,7 @@ class EuclidEditor(ShowsNamedItem, FieldPage):
         return [NameField(value=lambda: self.item, rename=self.rename), *euclid_fields(page=self, value=self.euclid().get_euclid_setting, store=lambda part, value: self.store(part=part, value=value), prefixed=False), restart_field(self)]
 
     def page_keys(self):
-        if self.field().label == MSG_EUCLID_PART_LABELS[EuclidPart.HITS]:
+        if self.field().label == labels.MSG_EUCLID_PART_LABELS[EuclidPart.HITS]:
             return [self.bind(self.KEYS.PICK_RHYTHM, action=lambda: pick_rhythm(page=self, store=lambda part, value: self.store(part=part, value=value)))]
         return []
 

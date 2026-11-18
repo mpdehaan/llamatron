@@ -20,14 +20,13 @@ import unittest
 from fractions import Fraction
 
 from llamatron.composition.file_format import Section
-from llamatron.composition.limits import MAX_GM_SOUND, MAX_TEMPO, MIN_TEMPO
+from llamatron.composition import limits
+from llamatron.strings import errors, macro_composer as composer_text
 from llamatron.macro_composer.wizard_choices import HOOK_TAKE_KEPT, MOST_ROW_CELLS, PLAYER_ROWS, PLAYER_ROWS_KEPT, MELODY_SETTINGS_KEPT, MELODY_SETTINGS_OF, style_of, STAND_INS, LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, FEWEST_FILLS, FILLS_KEPT, MOST_FILLS, QUIET_NOTES_KEPT, PIECES_OFF_KEPT, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, USUAL_SOUNDS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, HOOK_KEPT, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
 from llamatron.macro_composer.melody import LENGTHS, DEFAULT_GAUGES, HIGHEST_GAUGE, EVOLVING, HOME, LADDER, LEAPS, LOWEST_GAUGE, MOVE, SERIAL, SMART
-from llamatron.strings.macro_composer import MSG_CHORDS_TRACK, MSG_PART_OF_SECTION
 from llamatron.macro_composer.notation import DEGREE, LINES
 from llamatron.macro_composer.arranger import PICKS, SCALE_TYPE, values_of, share_in, SOUNDS, BY_SCALE_TYPE, GRID, MELODY, PARTS, arranged, DRUMS, GENRE, PLAYERS, ROLE_TITLE, TYPE, WITHOUT, style_named, style_names
 from llamatron.music.note import NoteName
-from llamatron.strings.errors import ERR_WIZARD_GAUGE, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_SECTION_NEEDS_PLAYER
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.support.version import VERSION
 
@@ -144,7 +143,7 @@ class TestWizardChoices(unittest.TestCase):
         choices = chosen()
         for setter, value in [
             (choices.set_genre, NOT_A_CHOICE), (choices.set_subgenre, NOT_A_CHOICE), (choices.set_root, NOT_A_CHOICE), (choices.set_scale_type, NOT_A_CHOICE),
-            (choices.set_form, NOT_A_CHOICE), (choices.set_tempo, MIN_TEMPO - 1), (choices.set_tempo, MAX_TEMPO + 1), (choices.set_tempo, NOT_A_NUMBER), (choices.set_tempo, True),
+            (choices.set_form, NOT_A_CHOICE), (choices.set_tempo, limits.MIN_TEMPO - 1), (choices.set_tempo, limits.MAX_TEMPO + 1), (choices.set_tempo, NOT_A_NUMBER), (choices.set_tempo, True),
             (choices.set_seed, NOT_A_NUMBER),
         ]:
             with self.subTest(setter=setter.__name__, value=value):
@@ -156,7 +155,7 @@ class TestWizardChoices(unittest.TestCase):
     def test_any_tempo_the_tracker_plays_is_allowed_outside_the_usual_range_too(self):
         choices = chosen()
         _, highest = choices.tempo_range()
-        choices.set_tempo(MAX_TEMPO)
+        choices.set_tempo(limits.MAX_TEMPO)
         self.assertGreater(choices.get_tempo(), highest)
 
     def test_the_choices_are_kept_as_data_and_read_back_the_same(self):
@@ -346,7 +345,7 @@ class TestWizardForm(unittest.TestCase):
         choices = self.rock()
         while len(choices.form_sections()) > 1:
             choices.remove_section(0)
-        with self.assertRaisesRegex(ValueError, ERR_WIZARD_LAST_SECTION):
+        with self.assertRaisesRegex(ValueError, errors.ERR_WIZARD_LAST_SECTION):
             choices.remove_section(0)
         for refused in (lambda: choices.remove_section(1), lambda: choices.copy_section(-1), lambda: choices.add_section(place=5, kind=choices.section_kinds()[0]),
                         lambda: choices.add_section(place=0, kind=NOT_A_CHOICE), lambda: choices.set_section_kind(place=0, kind=NOT_A_CHOICE),
@@ -386,7 +385,7 @@ class TestWizardForm(unittest.TestCase):
         self.assertEqual(sorted(choices.section_plays(place)), sorted(players))
         for role in choices.section_plays(place)[1:]:
             choices.set_section_plays(place=place, role=role, on=False)
-        with self.assertRaisesRegex(ValueError, ERR_WIZARD_SECTION_NEEDS_PLAYER):
+        with self.assertRaisesRegex(ValueError, errors.ERR_WIZARD_SECTION_NEEDS_PLAYER):
             choices.set_section_plays(place=place, role=choices.section_plays(place)[0], on=False)
 
     def test_another_kind_starts_the_section_as_the_genre_describes_that_kind(self):
@@ -620,18 +619,18 @@ class TestWizardSounds(unittest.TestCase):
         choices = self.rock()
         choices.set_band_sounds(BAND_SOUNDS[1])
         band = choices.get_sound(A_BASS)
-        choices.set_sound(role=A_BASS, sound=MAX_GM_SOUND)
+        choices.set_sound(role=A_BASS, sound=limits.MAX_GM_SOUND)
         self.assertTrue(choices.has_own_sound(A_BASS))
-        self.assertEqual(self.sound_made(choices=choices, role=A_BASS), MAX_GM_SOUND)
+        self.assertEqual(self.sound_made(choices=choices, role=A_BASS), limits.MAX_GM_SOUND)
         choices.set_band_sounds(BAND_SOUNDS[2])
-        self.assertEqual(choices.get_sound(A_BASS), MAX_GM_SOUND)
+        self.assertEqual(choices.get_sound(A_BASS), limits.MAX_GM_SOUND)
         choices.set_band_sounds(BAND_SOUNDS[1])
         choices.set_sound(role=A_BASS, sound=None)
         self.assertEqual(choices.get_sound(A_BASS), band)
 
     def test_a_sound_that_plays_no_notes_or_is_no_sound_is_refused(self):
         choices = self.rock()
-        for refused in (0, MAX_GM_SOUND + 1, True, NOT_A_NUMBER):
+        for refused in (0, limits.MAX_GM_SOUND + 1, True, NOT_A_NUMBER):
             with self.assertRaises(ValueError):
                 choices.set_sound(role=A_BASS, sound=refused)
         with self.assertRaises(ValueError):
@@ -646,10 +645,10 @@ class TestWizardSounds(unittest.TestCase):
         choices = self.rock()
         self.assertNotIn(SOUNDS_KEPT, choices.to_data())
         choices.set_band_sounds(BAND_SOUNDS[-1])
-        choices.set_sound(role=A_BASS, sound=MAX_GM_SOUND)
+        choices.set_sound(role=A_BASS, sound=limits.MAX_GM_SOUND)
         again = WizardChoices.from_data(choices.to_data())
         self.assertEqual(again.to_data(), choices.to_data())
-        self.assertEqual(again.get_sound(A_BASS), MAX_GM_SOUND)
+        self.assertEqual(again.get_sound(A_BASS), limits.MAX_GM_SOUND)
         again.set_subgenre(again.subgenres()[1])
         self.assertEqual(again.get_band_sounds(), USUAL_SOUNDS)
         self.assertFalse(again.has_own_sound(A_BASS))
@@ -785,7 +784,7 @@ class TestWizardKit(unittest.TestCase):
         pieces = choices.pieces()
         for piece in pieces[1:]:
             choices.set_piece_on(piece=piece, on=False)
-        with self.assertRaisesRegex(ValueError, ERR_WIZARD_LAST_PIECE):
+        with self.assertRaisesRegex(ValueError, errors.ERR_WIZARD_LAST_PIECE):
             choices.set_piece_on(piece=pieces[0], on=False)
         with self.assertRaises(ValueError):
             choices.set_piece_on(piece=NOT_A_CHOICE, on=False)
@@ -1186,7 +1185,7 @@ class TestWizardMelodyGauges(unittest.TestCase):
         for refused_name, position in ((NO_SUCH_GAUGE, LOWEST_GAUGE), (name, LOWEST_GAUGE - 1), (name, HIGHEST_GAUGE + 1), (name, True), (name, A_GAUGE_IN_WORDS)):
             with self.assertRaises(ValueError) as refused:
                 choices.set_gauge(name=refused_name, position=position)
-            self.assertEqual(str(refused.exception), ERR_WIZARD_GAUGE.format(name=refused_name, low=LOWEST_GAUGE, high=HIGHEST_GAUGE, value=position))
+            self.assertEqual(str(refused.exception), errors.ERR_WIZARD_GAUGE.format(name=refused_name, low=LOWEST_GAUGE, high=HIGHEST_GAUGE, value=position))
 
 
 class TestWizardMinorTunes(unittest.TestCase):
@@ -1196,7 +1195,7 @@ class TestWizardMinorTunes(unittest.TestCase):
         """Return the scale degrees of every tune of the song the choices make: the lead's part in each section."""
         style = style_of(choices.get_genre())
         parts = arranged(style=style, song=choices.song_picks(A_NAME))[PARTS]
-        tunes = [part for name, part in parts.items() if name.endswith(MSG_PART_OF_SECTION.format(EMPTY, LEAD_ROLE)) and LINES in part]
+        tunes = [part for name, part in parts.items() if name.endswith(composer_text.MSG_PART_OF_SECTION.format(EMPTY, LEAD_ROLE)) and LINES in part]
         return {note[DEGREE] for part in tunes for line in part[LINES] for note in line if DEGREE in note}
 
     def habits(self, choices):
@@ -1422,7 +1421,7 @@ class TestWizardBand(unittest.TestCase):
         self.assertEqual(self.tracks_of(choices), whole)
         choices.set_role_in(role=DRUMS, on=False)
         left = self.tracks_of(choices)
-        self.assertEqual(left, [track for track in whole if track in choices.roles() or track == MSG_CHORDS_TRACK])
+        self.assertEqual(left, [track for track in whole if track in choices.roles() or track == composer_text.MSG_CHORDS_TRACK])
 
     def test_the_last_player_cannot_be_left_out(self):
         choices = self.rock()

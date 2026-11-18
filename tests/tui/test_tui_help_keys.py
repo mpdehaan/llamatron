@@ -45,9 +45,7 @@ from llamatron.tui.components.pattern_rows import SECTIONS
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.set.song_page import SongPage
 from llamatron.tui.screens.set.songs_page import SongsPage
-from llamatron.strings.help import HELP_NONE
-from llamatron.strings.labels import MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_SUBGENRE_BRANCH, MSG_GUITAR_BAR_LABEL, MSG_CHORDS_LABEL, MSG_STEPS_LABEL, MSG_CHAINS_LABEL, MSG_NOTES_LABEL, MSG_OFFSETS_LABEL
-from llamatron.strings.legends import KeyName
+from llamatron.strings import help as help_text, labels, legends
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import first_key
 from tests.support.ui_testing import key_of, leaf_pages, UITest
@@ -63,7 +61,7 @@ KEY_WORDS = {'Shift+Tab': Key.SHIFT_TAB, 'Up': Key.UP, 'Down': Key.DOWN, 'Left':
 
 def named_keys():
     """Return each key that has a name of more than one plain letter on screen, like Tab, Bksp and Ctrl+S, by that name: the keys that Key and KeyName call the same."""
-    names = {name: shown for name, shown in vars(KeyName).items() if name.isupper() and hasattr(Key, name)}
+    names = {name: shown for name, shown in vars(legends.KeyName).items() if name.isupper() and hasattr(Key, name)}
     return {shown: getattr(Key, name) for name, shown in names.items() if len(shown) > 1 and shown.isascii()}
 
 
@@ -237,7 +235,7 @@ class KeyTour(UITest):
     async def tour(self):
         """Open every page, each walked on the way back out, so that a walk never leaves the cursor where the next key needs it."""
         await self.press(keybindings.MainPage.FILE)
-        await self.select_field(MSG_NOTES_LABEL)
+        await self.select_field(labels.MSG_NOTES_LABEL)
         await self.press(Key.ENTER)
         await self.walk()
         await self.press(Key.TAB)
@@ -273,26 +271,26 @@ class KeyTour(UITest):
             await self.press(Key.ESCAPE)
         await self.press(Key.ESCAPE)
         await self.open_generator(section=Section.ARPS)
-        await self.select_field(MSG_OFFSETS_LABEL)
+        await self.select_field(labels.MSG_OFFSETS_LABEL)
         await self.press(Key.ENTER)
         await self.walk()
         await self.press(Key.ESCAPE, Key.ESCAPE, Key.ESCAPE)
         # A Glide's, a Shorten's, a Rush's and a Drag's Steps field opens its steps page.
         for section in (Section.GLIDES, Section.SHORTENS, Section.RUSHES, Section.DRAGS):
             await self.open_generator(section=section)
-            await self.select_field(MSG_STEPS_LABEL)
+            await self.select_field(labels.MSG_STEPS_LABEL)
             await self.press(Key.ENTER)
             await self.walk()
             await self.press(Key.ESCAPE, Key.ESCAPE, Key.ESCAPE)
         # A Guitarify's Bar field, in its Strokes section, opens the bar of strokes.
         await self.open_generator(section=Section.GUITARIFIES)
-        await self.select_field(MSG_GUITAR_BAR_LABEL)
+        await self.select_field(labels.MSG_GUITAR_BAR_LABEL)
         await self.press(Key.ENTER)
         await self.walk()
         await self.press(Key.ESCAPE, Key.ESCAPE, Key.ESCAPE)
         # A progression's Chords field opens the chord editor.
         await self.open_generator(section=Section.PROGRESSIONS)
-        await self.select_field(MSG_CHORDS_LABEL)
+        await self.select_field(labels.MSG_CHORDS_LABEL)
         await self.press(Key.ENTER)
         await self.walk()
         await self.press(Key.ESCAPE, Key.ESCAPE, Key.ESCAPE)
@@ -315,7 +313,7 @@ class KeyTour(UITest):
         await self.press(Key.ESCAPE, keybindings.MainPage.ARRANGE, Key.UP, Key.RIGHT, Key.ENTER)
         await self.walk()
         # The track editor's Chains field opens the list of its chains, given one so that its keys show.
-        await self.select_field(MSG_CHAINS_LABEL)
+        await self.select_field(labels.MSG_CHAINS_LABEL)
         await self.press(Key.ENTER, keybindings.ChainListPage.ADD, Key.ENTER)
         await self.walk()
         await self.press(Key.ESCAPE)
@@ -359,7 +357,7 @@ class KeyTour(UITest):
         # The walk left the tree's cursor on its last branch, so it goes back up to Genre first.
         await self.press(*[Key.UP] * len(self.app.screen.rows()), keybindings.WizardPage.INTO_FIELDS, more, keybindings.WizardPage.TO_TREE)
         # The subgenre is chosen on the panel under Genre, which a walk's Left may have closed.
-        if MSG_WIZARD_SUBGENRE_BRANCH not in [branch.name() for _, branch in self.app.screen.rows()]:
+        if labels.MSG_WIZARD_SUBGENRE_BRANCH not in [branch.name() for _, branch in self.app.screen.rows()]:
             await self.press(Key.RIGHT)
         await self.press(Key.DOWN, keybindings.WizardPage.INTO_FIELDS, more)
         await self.walk()
@@ -369,7 +367,7 @@ class KeyTour(UITest):
         await self.walk()
         # The Form branch opened and its first section under the cursor, which has a list's keys; then the section picked up, and
         # its settings. No walk here, since a walk's Left closes the branch it is in.
-        form = [branch.name() for _, branch in self.app.screen.rows()].index(MSG_WIZARD_FORM_BRANCH)
+        form = [branch.name() for _, branch in self.app.screen.rows()].index(labels.MSG_WIZARD_FORM_BRANCH)
         await self.press(*[Key.UP] * len(self.app.screen.rows()), *[Key.DOWN] * form, Key.RIGHT, Key.DOWN)
         self.note()
         await self.press(keybindings.WizardPage.MOVE)
@@ -397,7 +395,7 @@ class TestHelpNamesOnlyBoundKeys(KeyTour):
     async def test_every_key_a_pages_help_names_is_bound_on_that_page(self):
         await self.tour()
         for page in leaf_pages():
-            if page.HELP == HELP_NONE:
+            if page.HELP == help_text.HELP_NONE:
                 continue
             with self.subTest(page=page.__name__):
                 self.assertIn(page, self.bound, MSG_NOT_TOURED.format(page=page.__name__))

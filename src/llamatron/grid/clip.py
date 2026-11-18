@@ -28,10 +28,7 @@ from llamatron.music.chord import Chord
 from llamatron.music.held import Held
 from llamatron.music.note import Degree, Note, Rest
 from llamatron.music.sound import CHORD, HELD, HELD_SOUND, KIND, LENGTH, NOTES, PARTS, PHRASE, REST, Sound
-from llamatron.strings.errors import (
-    ERR_CLIP_GRID_NOT_A_POSITION, ERR_INVALID_SECTION, ERR_INVALID_TIMES, ERR_NOT_A_GROOVE, ERR_NO_LENGTH, ERR_NOT_CONTROLS, ERR_NOT_NOTES,
-)
-from llamatron.strings.reprs import REPR_CLIP
+from llamatron.strings import errors, reprs
 
 # The shorthand a clip's list accepts: each dash is a quarter note of rest, and a note is its name and octave.
 REST_DASH = '-'
@@ -58,7 +55,7 @@ def _to_position(value):
         match = NOTE_TEXT.fullmatch(value)
         if match:
             return Note(name=match[1], octave_number=int(match[2]))
-    raise ValueError(ERR_CLIP_GRID_NOT_A_POSITION.format(value=value))
+    raise ValueError(errors.ERR_CLIP_GRID_NOT_A_POSITION.format(value=value))
 
 
 def _same_objects(*, first, second):
@@ -138,7 +135,7 @@ class Clip:
 
     def set_notes(self, notes):
         if not isinstance(notes, (list, tuple)):
-            raise ValueError(ERR_NOT_NOTES.format(value=notes))
+            raise ValueError(errors.ERR_NOT_NOTES.format(value=notes))
         # This makes a new list, so that clips built from the same list don't share it. A note,
         # chord or rest is kept as it is, and only shorthand is read.
         self._notes = [position if type(position) in POSITION_KINDS else _to_position(position) for position in notes]
@@ -168,7 +165,7 @@ class Clip:
     def set_groove(self, groove):
         """Give the clip a Groove, or None, which the renderer does once the clip is finished, so generators never see one."""
         if groove is not None and not isinstance(groove, Groove):
-            raise ValueError(ERR_NOT_A_GROOVE.format(value=groove))
+            raise ValueError(errors.ERR_NOT_A_GROOVE.format(value=groove))
         self._groove = groove
 
     def get_strum(self):
@@ -250,7 +247,7 @@ class Clip:
 
     def _sorted_controls(self, controls):
         if not isinstance(controls, (list, tuple)) or not all(isinstance(item, Control) for item in controls):
-            raise ValueError(ERR_NOT_CONTROLS.format(value=controls))
+            raise ValueError(errors.ERR_NOT_CONTROLS.format(value=controls))
         return sorted(controls, key=_control_time)
 
     def resolved_notes(self):
@@ -284,7 +281,7 @@ class Clip:
     def _note_length_for(self, sound):
         """Return the length for a note or degree that has none, which is the clip's note_length, as a pair."""
         if self._note_length is None:
-            raise ValueError(ERR_NO_LENGTH.format(position=Sound.position(sound)))
+            raise ValueError(errors.ERR_NO_LENGTH.format(position=Sound.position(sound)))
         return Length.exact(self._note_length)
 
     def _resolved_length(self, sound):
@@ -326,7 +323,7 @@ class Clip:
         start = exact_length(start)
         end = exact_length(end)
         if start < 0 or end <= start:
-            raise ValueError(ERR_INVALID_SECTION.format(start=start, end=end))
+            raise ValueError(errors.ERR_INVALID_SECTION.format(start=start, end=end))
         # Every note is asked where it lies between the two ends, so the ends are pairs from here on.
         first = Length.of(start)
         last = Length.of(end)
@@ -354,7 +351,7 @@ class Clip:
     def repeated(self, times):
         """Return a new Clip that plays this one times in a row, so it lasts times as long."""
         if type(times) is not int or times < 1:
-            raise ValueError(ERR_INVALID_TIMES.format(times=times))
+            raise ValueError(errors.ERR_INVALID_TIMES.format(times=times))
         length = self.total_length()
         controls = [item.moved_by(length * place) for place in range(times) for item in self._controls]
         return Clip(
@@ -365,4 +362,4 @@ class Clip:
     def __repr__(self):
         # Printing a clip leaves it holding what it held, so the objects are made for the text alone.
         notes = self._notes if self._sounds is None else [Sound.position(sound) for sound in self._sounds]
-        return REPR_CLIP.format(name=self._name, notes=notes, scale=self._scale, length=self._length, note_length=self._note_length, id=self._id)
+        return reprs.REPR_CLIP.format(name=self._name, notes=notes, scale=self._scale, length=self._length, note_length=self._note_length, id=self._id)

@@ -33,7 +33,7 @@ import random
 from llamatron.macro_composer import hook_kinds
 from llamatron.macro_composer.joins import BUILD, DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL, TAIL_EIGHTHS
 from llamatron.macro_composer.melody import BREATHES, FIRST_HOOK_TAKE, HOOK, HOOK_KIND, HOOK_KINDS, HOOK_TAKE
-from llamatron.strings.macro_composer import MSG_PLAN_ENERGY, MSG_PLAN_HOOK, MSG_PLAN_LEAVES_FILL, MSG_PLAN_LEAVES_TAIL, MSG_PLAN_SET_UP, MSG_PLAN_STAGE, MSG_REPEATED_SCENE
+from llamatron.strings import macro_composer as composer_text
 
 # The fields of a song's plan, and of the plan a style gives.
 PLAN_OF_SONG = 'song_plan'
@@ -196,7 +196,7 @@ class SongPlan:
             met[name] = met.get(name, 0) + 1
             of_song = song.get(SECTIONS, {}).get(name, {})
             kind = of_song.get(KIND, name)
-            self._names.append(name if met[name] == 1 else MSG_REPEATED_SCENE.format(name, met[name]))
+            self._names.append(name if met[name] == 1 else composer_text.MSG_REPEATED_SCENE.format(name, met[name]))
             self._sections.append({**style[SECTIONS].get(kind, {}), **of_song, KIND: kind})
         self._energies = self._worked_energies()
 
@@ -442,11 +442,11 @@ class SongPlan:
             section = self._sections[place]
             of_song = self._song.get(SECTIONS, {}).get(self._form_names[place], {})
             energy = self._energies[place]
-            said = [MSG_PLAN_ENERGY.format(energy)]
+            said = [composer_text.MSG_PLAN_ENERGY.format(energy)]
             made = {KIND: section[KIND], DRAWN_AS: section[KIND]}
             if stages[place] is not None:
                 made[SECTION_PLAN] = stages[place][1]
-                said.append(MSG_PLAN_STAGE.format(stages[place][0]))
+                said.append(composer_text.MSG_PLAN_STAGE.format(stages[place][0]))
             if not section.get(HELD) and not section.get(DRUM_SOLO):
                 arrives = place > 0 and energy > self._energies[place - 1] and energy >= CRASH_FROM
                 after_tail = place > 0 and (joins[place - 1] or {}).get(TAIL) in (DROP_OUT, BUILD, STOPS)
@@ -469,16 +469,16 @@ class SongPlan:
                         made[MARKER] = marker
                         made[MARKER_EVERY] = MARKER_BARS
                     if joins[place].get(TAIL):
-                        said.append(MSG_PLAN_LEAVES_TAIL.format(joins[place][TAIL]))
+                        said.append(composer_text.MSG_PLAN_LEAVES_TAIL.format(joins[place][TAIL]))
                     elif joins[place].get(FILL_OF_JOIN):
-                        said.append(MSG_PLAN_LEAVES_FILL.format(joins[place][FILL_OF_JOIN]))
+                        said.append(composer_text.MSG_PLAN_LEAVES_FILL.format(joins[place][FILL_OF_JOIN]))
                 last_chord = self._last_chord(place)
                 if last_chord is not None:
                     made[LAST_CHORD] = last_chord
-                    said.append(MSG_PLAN_SET_UP.format(last_chord))
+                    said.append(composer_text.MSG_PLAN_SET_UP.format(last_chord))
             if not hook_said and self._has_hook() and any(entry.get(HOOK) for entry in section.get(SECTION_PLAN, [])) and self._given.get(HOOK_KINDS, True):
                 kind = {**hook_kinds.kind_of(seed=self._song.get(SEED, 0), take=self._song.get(HOOK_TAKE, FIRST_HOOK_TAKE)), **self._song.get(MELODY, {}).get(HOOK_KIND, {})}
-                said.append(MSG_PLAN_HOOK.format(hook_kinds.said_of(kind)))
+                said.append(composer_text.MSG_PLAN_HOOK.format(hook_kinds.said_of(kind)))
                 hook_said = True
             # What the song says of the section itself, and of this place of its form, stands over what the plan worked out.
             own = {field: value for field, value in self._at(place).items() if field not in (ENERGY, SETUP, LEAVES, RISES, FADES, *SCENE_FIELDS)}

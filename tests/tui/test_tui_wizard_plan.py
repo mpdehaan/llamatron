@@ -16,20 +16,14 @@
 
 """The song wizard's page on a planned song: the plan's fields on the Form panel and the hook's kind on the Hooks panel."""
 
-from llamatron.composition.limits import MAX_NAME_LENGTH
+from llamatron.composition import limits
+from llamatron.strings import errors, labels, marks
 from llamatron.macro_composer import hook_kinds, phrasing
 from llamatron.macro_composer.arranger import CHORDS
 from llamatron.macro_composer.joins import LEAVES
 from llamatron.macro_composer.song_plan import ENERGY, FADES, RISES, ROOT_OF_PLACE, TEMPO_END_OF_PLACE, TYPE_OF_PLACE
 from llamatron.macro_composer.wizard_choices import DRUM_SOLO_KIND, chords_as_text
-from llamatron.strings.errors import ERR_WIZARD_CHORDS
 from llamatron.macro_composer.song_plan import USUAL_CONTRAST
-from llamatron.strings.labels import MSG_WIZARD_GROUP_HOOK_KIND, MSG_WIZARD_GROUP_HARMONY, MSG_WIZARD_GROUP_JOINS, MSG_WIZARD_GROUP_PLAYERS, MSG_WIZARD_GROUP_SHAPE, MSG_WIZARD_GROUP_TUNE
-from llamatron.strings.marks import MSG_SECTION_SET
-from llamatron.strings.labels import (
-    MSG_WIZARD_CONTRAST_LABEL, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_FORM_QUESTION_TITLES, MSG_WIZARD_FORM_QUESTIONS_BUTTON, MSG_WIZARD_REPLACE_SECTIONS_TITLE, MSG_WIZARD_HOOK_PART_LABELS, MSG_WIZARD_HOOKS_BRANCH, MSG_WIZARD_MELODY_BRANCH, MSG_WIZARD_PHRASING_LABEL, MSG_WIZARD_PHRASING_WAY_LABELS, MSG_WIZARD_PICK_SHOWN,
-    MSG_WIZARD_SECTION_ORIGINS, MSG_WIZARD_SECTION_OWN_LABELS, MSG_WIZARD_SONG_PLAN_LABEL, MSG_WIZARD_VALUE_FROM,
-)
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from tests.support.ui_testing import key_of
@@ -57,15 +51,15 @@ class TestWizardPlan(WizardTest):
 
     async def go_to_hooks(self):
         names = [branch.name() for _, branch in self.wizard().rows()]
-        await self.go_to_branch(names.index(MSG_WIZARD_HOOKS_BRANCH))
+        await self.go_to_branch(names.index(labels.MSG_WIZARD_HOOKS_BRANCH))
 
     async def go_to_melody(self):
         names = [branch.name() for _, branch in self.wizard().rows()]
-        await self.go_to_branch(names.index(MSG_WIZARD_MELODY_BRANCH))
+        await self.go_to_branch(names.index(labels.MSG_WIZARD_MELODY_BRANCH))
 
     async def switch_plan_on(self):
         """Go into the Form panel's fields, where a genre with a plan has the plan on from the start."""
-        await self.go_to_named_branch(MSG_WIZARD_FORM_BRANCH)
+        await self.go_to_named_branch(labels.MSG_WIZARD_FORM_BRANCH)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
 
     async def test_a_genre_with_a_plan_plans_the_song_from_the_start_and_the_switch_takes_the_plan_s_fields_away(self):
@@ -74,53 +68,53 @@ class TestWizardPlan(WizardTest):
         choices = self.choices()
         self.assertTrue(choices.has_song_plan())
         shown = self.text()
-        self.assertIn(MSG_WIZARD_CONTRAST_LABEL, shown)
+        self.assertIn(labels.MSG_WIZARD_CONTRAST_LABEL, shown)
         for said in choices.said_of_sections():
             self.assertIn(said.split('.')[0], shown)
-        await self.select_field(MSG_WIZARD_SONG_PLAN_LABEL)
+        await self.select_field(labels.MSG_WIZARD_SONG_PLAN_LABEL)
         await self.press(Key.ENTER)
         self.assertFalse(choices.has_song_plan())
-        self.assertNotIn(MSG_WIZARD_CONTRAST_LABEL, self.text())
+        self.assertNotIn(labels.MSG_WIZARD_CONTRAST_LABEL, self.text())
         self.assertTrue(self.wizard().has_choices_to_lose())
 
     async def test_contrast_steps_and_phrasing_toggles(self):
         await self.choose()
         await self.switch_plan_on()
-        await self.select_field(MSG_WIZARD_CONTRAST_LABEL)
+        await self.select_field(labels.MSG_WIZARD_CONTRAST_LABEL)
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(self.choices().get_contrast(), USUAL_CONTRAST + 1)
         await self.press(keybindings.WizardPage.TO_TREE)
         await self.go_to_melody()
-        for label in MSG_WIZARD_PHRASING_WAY_LABELS.values():
+        for label in labels.MSG_WIZARD_PHRASING_WAY_LABELS.values():
             self.assertIn(label, self.text())
         await self.press(keybindings.WizardPage.INTO_FIELDS)
-        await self.select_field(MSG_WIZARD_PHRASING_WAY_LABELS[phrasing.BREATH])
+        await self.select_field(labels.MSG_WIZARD_PHRASING_WAY_LABELS[phrasing.BREATH])
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(self.choices().phrasing_way(phrasing.BREATH), phrasing.LONG)
-        await self.select_field(MSG_WIZARD_PHRASING_WAY_LABELS[phrasing.EARLY_NOTES])
+        await self.select_field(labels.MSG_WIZARD_PHRASING_WAY_LABELS[phrasing.EARLY_NOTES])
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(self.choices().phrasing_way(phrasing.EARLY_NOTES), phrasing.USUAL_EARLY + 1)
-        await self.select_field(MSG_WIZARD_PHRASING_LABEL)
+        await self.select_field(labels.MSG_WIZARD_PHRASING_LABEL)
         await self.press(Key.ENTER)
         self.assertFalse(self.choices().has_phrasing())
-        self.assertNotIn(MSG_WIZARD_PHRASING_WAY_LABELS[phrasing.BREATH], self.text())
+        self.assertNotIn(labels.MSG_WIZARD_PHRASING_WAY_LABELS[phrasing.BREATH], self.text())
 
     async def test_a_genre_with_no_plan_shows_no_switch_and_a_song_in_six_no_phrasing(self):
         await self.choose(genre=AN_UNPLANNED_GENRE, subgenre=None)
-        await self.go_to_named_branch(MSG_WIZARD_FORM_BRANCH)
-        self.assertNotIn(MSG_WIZARD_SONG_PLAN_LABEL, self.text())
+        await self.go_to_named_branch(labels.MSG_WIZARD_FORM_BRANCH)
+        self.assertNotIn(labels.MSG_WIZARD_SONG_PLAN_LABEL, self.text())
         await self.choose(subgenre=A_SUBGENRE_IN_SIX)
         await self.switch_plan_on()
-        self.assertIn(MSG_WIZARD_CONTRAST_LABEL, self.text())
+        self.assertIn(labels.MSG_WIZARD_CONTRAST_LABEL, self.text())
         await self.press(keybindings.WizardPage.TO_TREE)
         await self.go_to_melody()
-        self.assertNotIn(MSG_WIZARD_PHRASING_LABEL, self.text())
+        self.assertNotIn(labels.MSG_WIZARD_PHRASING_LABEL, self.text())
 
     async def open_kind(self):
         """Open the Hooks panel's Kind group where it is closed, so that the hook's parts show."""
         wizard = self.wizard()
-        if MSG_WIZARD_GROUP_HOOK_KIND not in self.app.open_field_sections:
-            wizard.toggle_section(MSG_WIZARD_GROUP_HOOK_KIND)
+        if labels.MSG_WIZARD_GROUP_HOOK_KIND not in self.app.open_field_sections:
+            wizard.toggle_section(labels.MSG_WIZARD_GROUP_HOOK_KIND)
             await self.press(Key.DOWN, Key.UP)
 
     async def test_the_hooks_panel_shows_the_kind_only_under_a_plan_and_marks_the_wizard_s_pick(self):
@@ -128,7 +122,7 @@ class TestWizardPlan(WizardTest):
         self.choices().set_song_plan(False)
         await self.press(Key.DOWN, Key.UP)
         await self.go_to_hooks()
-        for label in MSG_WIZARD_HOOK_PART_LABELS.values():
+        for label in labels.MSG_WIZARD_HOOK_PART_LABELS.values():
             self.assertNotIn(label, self.text())
         self.choices().set_song_plan(True)
         self.choices().set_hook_part(part=hook_kinds.CONTOUR, value=hook_kinds.CHANT)
@@ -138,8 +132,8 @@ class TestWizardPlan(WizardTest):
         shown = self.text()
         kind = self.choices().hook_kind()
         self.assertIn(hook_kinds.CHANT, shown)
-        self.assertNotIn(MSG_WIZARD_PICK_SHOWN.format(value=hook_kinds.CHANT), shown)
-        self.assertIn(MSG_WIZARD_PICK_SHOWN.format(value=kind[hook_kinds.RHYTHM]), shown)
+        self.assertNotIn(labels.MSG_WIZARD_PICK_SHOWN.format(value=hook_kinds.CHANT), shown)
+        self.assertIn(labels.MSG_WIZARD_PICK_SHOWN.format(value=kind[hook_kinds.RHYTHM]), shown)
 
     async def test_stepping_a_part_chooses_it_and_the_picture_follows(self):
         await self.choose()
@@ -149,7 +143,7 @@ class TestWizardPlan(WizardTest):
         await self.go_to_hooks()
         before = self.choices().hook_notes()
         await self.press(keybindings.WizardPage.INTO_FIELDS)
-        await self.select_field(MSG_WIZARD_HOOK_PART_LABELS[hook_kinds.CONTOUR])
+        await self.select_field(labels.MSG_WIZARD_HOOK_PART_LABELS[hook_kinds.CONTOUR])
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(self.choices().hook_kind()[hook_kinds.CONTOUR], hook_kinds.ARCH)
         self.assertNotEqual(self.choices().hook_notes(), before)
@@ -161,10 +155,10 @@ class TestWizardPlan(WizardTest):
         await self.press(Key.DOWN, Key.UP)
         await self.go_to_hooks()
         await self.open_kind()
-        self.assertIn(MSG_WIZARD_HOOK_PART_LABELS[hook_kinds.CONTOUR], self.text())
-        self.assertNotIn(MSG_WIZARD_HOOK_PART_LABELS[hook_kinds.DETAIL], self.text())
+        self.assertIn(labels.MSG_WIZARD_HOOK_PART_LABELS[hook_kinds.CONTOUR], self.text())
+        self.assertNotIn(labels.MSG_WIZARD_HOOK_PART_LABELS[hook_kinds.DETAIL], self.text())
 
-THE_GROUPS = (MSG_WIZARD_GROUP_TUNE, MSG_WIZARD_GROUP_HARMONY, MSG_WIZARD_GROUP_SHAPE, MSG_WIZARD_GROUP_JOINS, MSG_WIZARD_GROUP_PLAYERS)
+THE_GROUPS = (labels.MSG_WIZARD_GROUP_TUNE, labels.MSG_WIZARD_GROUP_HARMONY, labels.MSG_WIZARD_GROUP_SHAPE, labels.MSG_WIZARD_GROUP_JOINS, labels.MSG_WIZARD_GROUP_PLAYERS)
 
 
 class TestWizardSectionOwnFields(WizardTest):
@@ -182,7 +176,7 @@ class TestWizardSectionOwnFields(WizardTest):
         await self.press(keybindings.WizardPage.INTO_FIELDS)
 
     def label(self, field):
-        return MSG_WIZARD_SECTION_OWN_LABELS[field]
+        return labels.MSG_WIZARD_SECTION_OWN_LABELS[field]
 
     async def open_every_group(self):
         """Open each heading of the section's panel that is closed, so that every field shows."""
@@ -199,10 +193,10 @@ class TestWizardSectionOwnFields(WizardTest):
             self.assertIn(label, shown)
         self.assertIn(self.label(ENERGY), shown)
         self.assertNotIn(self.label(TEMPO_END_OF_PLACE), shown)
-        self.assertNotIn(MSG_SECTION_SET, shown)
+        self.assertNotIn(marks.MSG_SECTION_SET, shown)
         choices.set_section_own(place=A_PLACE, field=FADES, value=True)
         await self.press(Key.DOWN, Key.UP)
-        self.assertIn(MSG_SECTION_SET, self.text())
+        self.assertIn(marks.MSG_SECTION_SET, self.text())
         await self.open_every_group()
         self.assertIn(self.label(TEMPO_END_OF_PLACE), self.text())
 
@@ -215,7 +209,7 @@ class TestWizardSectionOwnFields(WizardTest):
             if field in (RISES, FADES):
                 # A switch shows on or off and no origin.
                 continue
-            self.assertIn(MSG_WIZARD_VALUE_FROM.format(value=choices.section_from_plan(place=A_PLACE, field=field), origin=MSG_WIZARD_SECTION_ORIGINS[field]), shown)
+            self.assertIn(labels.MSG_WIZARD_VALUE_FROM.format(value=choices.section_from_plan(place=A_PLACE, field=field), origin=labels.MSG_WIZARD_SECTION_ORIGINS[field]), shown)
 
     async def test_energy_steps_from_the_plan_s_and_bksp_gives_it_back(self):
         choices = self.choices()
@@ -223,7 +217,7 @@ class TestWizardSectionOwnFields(WizardTest):
         await self.select_field(self.label(ENERGY))
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(choices.section_own(place=A_PLACE, field=ENERGY), usual + 1)
-        self.assertNotIn(MSG_WIZARD_VALUE_FROM.format(value=usual, origin=MSG_WIZARD_SECTION_ORIGINS[ENERGY]), self.text())
+        self.assertNotIn(labels.MSG_WIZARD_VALUE_FROM.format(value=usual, origin=labels.MSG_WIZARD_SECTION_ORIGINS[ENERGY]), self.text())
         await self.press(keybindings.FieldPage.CLEAR)
         self.assertIsNone(choices.section_own(place=A_PLACE, field=ENERGY))
 
@@ -238,7 +232,7 @@ class TestWizardSectionOwnFields(WizardTest):
         choices = self.choices()
         await self.select_field(self.label(CHORDS))
         await self.press(Key.ENTER)
-        for _ in range(MAX_NAME_LENGTH):
+        for _ in range(limits.MAX_NAME_LENGTH):
             await self.press(Key.BACKSPACE)
         await self.type(SOME_CHORDS)
         await self.press(Key.ENTER)
@@ -247,7 +241,7 @@ class TestWizardSectionOwnFields(WizardTest):
         await self.type(NOT_A_CHORD)
         await self.press(Key.ENTER)
         self.assertEqual(chords_as_text(choices.section_own(place=A_PLACE, field=CHORDS)), SOME_CHORDS)
-        self.assertIn(ERR_WIZARD_CHORDS.split('{')[0][:A_FEW_WORDS], self.text())
+        self.assertIn(errors.ERR_WIZARD_CHORDS.split('{')[0][:A_FEW_WORDS], self.text())
 
     async def test_a_song_with_no_plan_keeps_the_chords_the_tempo_the_key_and_the_scale(self):
         self.choices().set_song_plan(False)
@@ -268,15 +262,15 @@ class TestWizardFormQuestions(WizardTest):
         choices.set_genre(A_PLANNED_GENRE)
         choices.set_subgenre(A_SUBGENRE)
         await self.press(Key.DOWN, Key.UP)
-        await self.go_to_named_branch(MSG_WIZARD_FORM_BRANCH)
+        await self.go_to_named_branch(labels.MSG_WIZARD_FORM_BRANCH)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
-        await self.select_field(MSG_WIZARD_FORM_QUESTIONS_BUTTON)
+        await self.select_field(labels.MSG_WIZARD_FORM_QUESTIONS_BUTTON)
 
     async def test_the_usual_answers_make_the_usual_form_of_the_questions(self):
         choices = self.choices()
         await self.press(Key.ENTER)
         for name, _, _ in choices.form_questions():
-            self.assertIn(MSG_WIZARD_FORM_QUESTION_TITLES[name], self.text())
+            self.assertIn(labels.MSG_WIZARD_FORM_QUESTION_TITLES[name], self.text())
             await self.press(Key.ENTER)
         self.assertTrue(choices.has_own_form())
         self.assertEqual(choices.section_kinds_in_form(), choices.form_of_answers({}))
@@ -303,7 +297,7 @@ class TestWizardFormQuestions(WizardTest):
         await self.press(Key.ENTER)
         for _ in choices.form_questions():
             await self.press(Key.ENTER)
-        self.assertIn(MSG_WIZARD_REPLACE_SECTIONS_TITLE, self.text())
+        self.assertIn(labels.MSG_WIZARD_REPLACE_SECTIONS_TITLE, self.text())
         await self.press(keybindings.ConfirmDialog.NO)
         self.assertEqual(choices.section_kinds_in_form(), before)
 
@@ -312,5 +306,5 @@ class TestWizardFormQuestions(WizardTest):
         choices.set_genre(AN_UNPLANNED_GENRE)
         choices.set_subgenre(choices.subgenres()[0])
         await self.press(keybindings.WizardPage.TO_TREE, Key.DOWN, Key.UP)
-        await self.go_to_named_branch(MSG_WIZARD_FORM_BRANCH)
-        self.assertNotIn(MSG_WIZARD_FORM_QUESTIONS_BUTTON, self.text())
+        await self.go_to_named_branch(labels.MSG_WIZARD_FORM_BRANCH)
+        self.assertNotIn(labels.MSG_WIZARD_FORM_QUESTIONS_BUTTON, self.text())

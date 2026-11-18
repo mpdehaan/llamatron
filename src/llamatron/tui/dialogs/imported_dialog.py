@@ -22,9 +22,7 @@ or Esc closes it.
 
 from rich.text import Text
 
-from llamatron.strings.importing import (
-    MSG_IMPORTED_BUTTON, MSG_IMPORTED_COUNTS, MSG_IMPORTED_NO_WARNINGS, MSG_IMPORTED_SONG, MSG_IMPORTED_TITLE, MSG_IMPORTED_WARNINGS,
-)
+from llamatron.strings import importing
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.drawing import NOTHING, wrapped
@@ -39,11 +37,11 @@ class ImportedDialog(MessageDialog):
 
     def __init__(self, imported):
         made = [
-            MSG_IMPORTED_SONG.format(name=imported.song.name),
-            MSG_IMPORTED_COUNTS.format(tracks=imported.tracks, patterns=imported.patterns, scenes=imported.scenes),
-            MSG_IMPORTED_WARNINGS if imported.warnings else MSG_IMPORTED_NO_WARNINGS,
+            importing.MSG_IMPORTED_SONG.format(name=imported.song.name),
+            importing.MSG_IMPORTED_COUNTS.format(tracks=imported.tracks, patterns=imported.patterns, scenes=imported.scenes),
+            importing.MSG_IMPORTED_WARNINGS if imported.warnings else importing.MSG_IMPORTED_NO_WARNINGS,
         ]
-        super().__init__(title=MSG_IMPORTED_TITLE, messages=made)
+        super().__init__(title=importing.MSG_IMPORTED_TITLE, messages=made)
         self.warnings = imported.warnings
 
     def lines(self, width):
@@ -51,4 +49,4 @@ class ImportedDialog(MessageDialog):
         for warning in self.warnings:
             lines += [Text(NOTHING), *wrapped(text=warning, width=width)]
         _, key_name, _ = self.KEYS.CLOSE
-        return [*lines, Text(NOTHING), *button_row(buttons=[(key_name, MSG_IMPORTED_BUTTON)], selected=0)]
+        return [*lines, Text(NOTHING), *button_row(buttons=[(key_name, importing.MSG_IMPORTED_BUTTON)], selected=0)]

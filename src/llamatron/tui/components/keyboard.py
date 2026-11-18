@@ -27,10 +27,10 @@ colour. chord_keys() says which keys a chord's notes are, from its root up.
 """
 
 from llamatron.composition.named_scale import SPELLING_OCTAVE
-from llamatron.music.midi import HALF_STEPS_PER_OCTAVE
+from llamatron.music import midi
 from llamatron.music.note import Note, SHARP_NAMES
 from llamatron.tui.drawing import NOTHING, SPACE
-from llamatron.strings.marks import MSG_KEY_IN_CHORD, MSG_KEY_IN_SCALE, MSG_KEY_OF_SCALE_OUTLINED, MSG_KEY_OUT_OF_SCALE, MSG_ROOT_KEY_NAME
+from llamatron.strings import marks
 
 # The white keys of an octave as half steps above C, and the black key after each white key that has one.
 WHITE_KEYS = [0, 2, 4, 5, 7, 9, 11]
@@ -43,7 +43,7 @@ KEY_STRIDE = KEY_WIDTH + KEY_GAP
 WHITE_ROW_INDENT = 4
 BLACK_KEY_SHIFT = 2
 # How many keys the keyboard has, numbered from its lowest C.
-KEY_COUNT = OCTAVES * HALF_STEPS_PER_OCTAVE
+KEY_COUNT = OCTAVES * midi.HALF_STEPS_PER_OCTAVE
 # The natural notes as half steps above C, and the marks that raise and lower one, for reading a note's name.
 NATURAL_HALF_STEPS = {'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11}
 SHARP_MARK = '#'
@@ -60,7 +60,7 @@ class KeyKind:
 
 def pitch_class_of(name):
     """Return a note name's half steps above C, such as 1 for C# and 10 for Bb, whatever sharps and flats spell it."""
-    return (NATURAL_HALF_STEPS[name[0]] + name.count(SHARP_MARK) - name[1:].count(FLAT_MARK)) % HALF_STEPS_PER_OCTAVE
+    return (NATURAL_HALF_STEPS[name[0]] + name.count(SHARP_MARK) - name[1:].count(FLAT_MARK)) % midi.HALF_STEPS_PER_OCTAVE
 
 
 def chord_keys(*, note_names, inversion=None):
@@ -72,12 +72,12 @@ def chord_keys(*, note_names, inversion=None):
     for name in note_names:
         key = pitch_class_of(name)
         while key <= last:
-            key += HALF_STEPS_PER_OCTAVE
+            key += midi.HALF_STEPS_PER_OCTAVE
         last = key
         keys.append(key)
     for place in range(min(inversion or 0, len(keys))):
-        keys[place] += HALF_STEPS_PER_OCTAVE
-    return {key if key < KEY_COUNT else key % HALF_STEPS_PER_OCTAVE + HALF_STEPS_PER_OCTAVE for key in keys}
+        keys[place] += midi.HALF_STEPS_PER_OCTAVE
+    return {key if key < KEY_COUNT else key % midi.HALF_STEPS_PER_OCTAVE + midi.HALF_STEPS_PER_OCTAVE for key in keys}
 
 
 class Keyboard:
@@ -92,15 +92,15 @@ class Keyboard:
         self.chord = set(chord)
 
     def root_pitch_class(self):
-        return Note(name=self.root, octave_number=SPELLING_OCTAVE).get_midi_number() % HALF_STEPS_PER_OCTAVE
+        return Note(name=self.root, octave_number=SPELLING_OCTAVE).get_midi_number() % midi.HALF_STEPS_PER_OCTAVE
 
     def pitch_classes(self):
         """Return the half steps above C of every note in the scale."""
         root = self.root_pitch_class()
-        return {(root + step) % HALF_STEPS_PER_OCTAVE for step in self.half_steps}
+        return {(root + step) % midi.HALF_STEPS_PER_OCTAVE for step in self.half_steps}
 
     def key_text(self, pitch_class):
-        return MSG_KEY_IN_SCALE if pitch_class in self.pitch_classes() else MSG_KEY_OUT_OF_SCALE
+        return marks.MSG_KEY_IN_SCALE if pitch_class in self.pitch_classes() else marks.MSG_KEY_OUT_OF_SCALE
 
     def white_keys(self):
         """Return the white keys across the octaves, as half steps above C, each with the column it starts at."""
@@ -129,14 +129,14 @@ class Keyboard:
         keys = self.white_keys()
         characters = list(SPACE * (WHITE_ROW_INDENT + len(keys) * KEY_STRIDE))
         for place, (pitch_class, column) in enumerate(keys):
-            name = MSG_ROOT_KEY_NAME.format(name=SHARP_NAMES[pitch_class]) if pitch_class == root else SHARP_NAMES[pitch_class].center(KEY_WIDTH)
+            name = marks.MSG_ROOT_KEY_NAME.format(name=SHARP_NAMES[pitch_class]) if pitch_class == root else SHARP_NAMES[pitch_class].center(KEY_WIDTH)
             if BLACK_KEY_AFTER.get(pitch_class) == root or (place > 0 and BLACK_KEY_AFTER.get(keys[place - 1][0]) == root):
                 # The root's name sits under its black key, so the white names either side make room for it.
                 name = NOTHING
             characters[column:column + len(name)] = list(name)
         for pitch_class, column in keys:
             if BLACK_KEY_AFTER.get(pitch_class) == root:
-                name = MSG_ROOT_KEY_NAME.format(name=self.root)
+                name = marks.MSG_ROOT_KEY_NAME.format(name=self.root)
                 start = column + BLACK_KEY_SHIFT + (KEY_WIDTH - len(name)) // 2
                 characters[start:start + len(name)] = list(name)
         return NOTHING.join(characters).rstrip()
@@ -148,12 +148,12 @@ class Keyboard:
         """Return what a key is, by its number from the lowest C."""
         if key in self.chord:
             return KeyKind.CHORD
-        return KeyKind.SCALE if key % HALF_STEPS_PER_OCTAVE in self.pitch_classes() else KeyKind.OUTSIDE
+        return KeyKind.SCALE if key % midi.HALF_STEPS_PER_OCTAVE in self.pitch_classes() else KeyKind.OUTSIDE
 
     def key_piece(self, key):
         """Return a key as a piece, its text and its kind: a chord's key filled, a scale's outlined and one outside the scale hatched."""
         kind = self.key_kind(key)
-        return {KeyKind.CHORD: MSG_KEY_IN_CHORD, KeyKind.SCALE: MSG_KEY_OF_SCALE_OUTLINED, KeyKind.OUTSIDE: MSG_KEY_OUT_OF_SCALE}[kind], kind
+        return {KeyKind.CHORD: marks.MSG_KEY_IN_CHORD, KeyKind.SCALE: marks.MSG_KEY_OF_SCALE_OUTLINED, KeyKind.OUTSIDE: marks.MSG_KEY_OUT_OF_SCALE}[kind], kind
 
     def rows(self):
         """Return the keyboard's three lines as pieces, each a text and a KeyKind, or None for what is no key: the black keys, the
@@ -162,7 +162,7 @@ class Keyboard:
         white = [(SPACE * WHITE_ROW_INDENT, None)]
         for octave in range(OCTAVES):
             for pitch_class in WHITE_KEYS:
-                first = octave * HALF_STEPS_PER_OCTAVE
+                first = octave * midi.HALF_STEPS_PER_OCTAVE
                 after = BLACK_KEY_AFTER.get(pitch_class)
                 black.append(self.key_piece(first + after) if after is not None else (SPACE * KEY_WIDTH, None))
                 black.append((SPACE * KEY_GAP, None))

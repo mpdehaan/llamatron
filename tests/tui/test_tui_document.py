@@ -22,7 +22,8 @@ from fractions import Fraction
 import yaml
 
 from llamatron.composition.clip_slot import morph_style_name
-from llamatron.composition.defaults import DEFAULT_DRUM_OCTAVE, DEFAULT_OCTAVE, DEFAULT_STEP_SIZE, DEFAULT_TEMPO, FIRST_NUMBER
+from llamatron.composition import defaults, limits
+from llamatron.strings import errors, labels as labels_text, marks as marks_text, names as names_text
 from llamatron.composition.file_format import (
     SetlistSetting,
     Accidental, OctaveLabels, ClipSlotSetting, ChordSymbol, Direction, GeneratorKind, PatternSetting, Row, SceneSetting, Section,
@@ -31,16 +32,13 @@ from llamatron.composition.generator_settings import ArpSetting, AutoRatchetSett
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.strings.errors import ERR_FILE_PROTECTED, ERR_SAVE_BEFORE_EXPORT
 from tests.support.rendering import render_song
 from llamatron.generators.arp import ChordOrder
 from llamatron.generators.blend import BlendMode
 from llamatron.music.note import Note, NoteName
 from llamatron.exporters.exports import ExportKind, export_name
 from llamatron.music.scale import ScaleType
-from llamatron.composition.limits import MAX_OCTAVE, MIN_OCTAVE
 from llamatron.composition.setlist import DEFAULT_SCALE, STARTER_DEGREE, STARTER_PATTERN_STEPS, STARTER_STEPS_PER_BEAT, Setlist, new_setlist
-from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_PATTERN_NAME, MSG_NEW_TRACK_NAME
 from llamatron.tui.document import Document
 from llamatron.tui.document_parts.pattern_edits import NEW_PATTERN_STEPS
 from llamatron.composition.naming import copy_name, unique_name
@@ -150,7 +148,7 @@ def root_and_kind(*, document, name):
 def song_with_things():
     """Return a document with a little of everything."""
     data = new_setlist()
-    song = data[Section.SONGS][MSG_DEFAULT_SONG_NAME]
+    song = data[Section.SONGS][names_text.MSG_DEFAULT_SONG_NAME]
     data[Section.PATTERNS] = {
         A: {PatternSetting.STEPS: 2, PatternSetting.STEP_SIZE: QUARTER, Row.DEGREE: [1, 3]},
         B: {PatternSetting.STEPS: 1, PatternSetting.STEP_SIZE: HALF, Row.DEGREE: [5]},
@@ -179,8 +177,8 @@ class TestNewSong(unittest.TestCase):
 
     def test_starts_with_a_pattern_of_the_root_on_each_beat_that_its_first_track_plays(self):
         document = Document()
-        first_pattern = MSG_NEW_PATTERN_NAME.format(number=FIRST_NUMBER)
-        first_track = MSG_NEW_TRACK_NAME.format(number=FIRST_NUMBER)
+        first_pattern = names_text.MSG_NEW_PATTERN_NAME.format(number=defaults.FIRST_NUMBER)
+        first_track = names_text.MSG_NEW_TRACK_NAME.format(number=defaults.FIRST_NUMBER)
         self.assertEqual(document.song().get_pattern_names(), [first_pattern])
         pattern = document.song().get_pattern(first_pattern)
         self.assertEqual(pattern.get_steps(), STARTER_PATTERN_STEPS)
@@ -194,13 +192,13 @@ class TestNewSong(unittest.TestCase):
 
     def test_the_starter_pattern_plays_four_notes_of_the_root_and_can_be_deleted_once_its_clip_is(self):
         document = Document()
-        first_pattern = MSG_NEW_PATTERN_NAME.format(number=FIRST_NUMBER)
-        first_track = MSG_NEW_TRACK_NAME.format(number=FIRST_NUMBER)
+        first_pattern = names_text.MSG_NEW_PATTERN_NAME.format(number=defaults.FIRST_NUMBER)
+        first_track = names_text.MSG_NEW_TRACK_NAME.format(number=defaults.FIRST_NUMBER)
         grid = render_song(document.song())
         clip = grid.get_clip(row=grid.get_rows()[0], column=grid.get_columns()[0])
         notes = [note for note in clip.resolved_notes() if isinstance(note, Note)]
         self.assertEqual(len(notes), STARTER_PATTERN_STEPS // STARTER_STEPS_PER_BEAT)
-        self.assertEqual({note.get_midi_number() for note in notes}, {Note(name=NoteName.C, octave_number=DEFAULT_OCTAVE).get_midi_number()})
+        self.assertEqual({note.get_midi_number() for note in notes}, {Note(name=NoteName.C, octave_number=defaults.DEFAULT_OCTAVE).get_midi_number()})
         document.delete_clip_slot(index=0, track=first_track)
         self.assertEqual(uses_of(setlist=document.setlist(), section=Section.PATTERNS, name=first_pattern), [])
         document.delete_named(section=Section.PATTERNS, name=first_pattern)
@@ -219,10 +217,10 @@ class TestNewSong(unittest.TestCase):
 
     def test_has_the_song_defaults(self):
         song = Document().song()
-        self.assertEqual(song.get_step_size(), Fraction(DEFAULT_STEP_SIZE))
+        self.assertEqual(song.get_step_size(), Fraction(defaults.DEFAULT_STEP_SIZE))
         self.assertNotIn(OLD_LENGTH_SETTING, song.to_data())
-        self.assertEqual(song.get_default_octave(), DEFAULT_OCTAVE)
-        self.assertEqual(song.get_default_drum_octave(), DEFAULT_DRUM_OCTAVE)
+        self.assertEqual(song.get_default_octave(), defaults.DEFAULT_OCTAVE)
+        self.assertEqual(song.get_default_drum_octave(), defaults.DEFAULT_DRUM_OCTAVE)
 
     def test_starts_with_nothing_unsaved(self):
         self.assertFalse(Document().is_dirty())
@@ -327,7 +325,7 @@ class TestSaving(unittest.TestCase):
             document = Document.load(path)
             with self.subTest(text=text):
                 self.assertEqual((document.song().get_track_names(), document.song().get_scenes()), ([], []))
-                self.assertEqual(document.song().get_tempo(), 90 if text else DEFAULT_TEMPO)
+                self.assertEqual(document.song().get_tempo(), 90 if text else defaults.DEFAULT_TEMPO)
 
     def test_a_protected_set_is_never_written_over_and_a_copy_of_it_is_not_protected(self):
         path = os.path.join(self.folder, 'demo.yml')
@@ -342,7 +340,7 @@ class TestSaving(unittest.TestCase):
         self.assertTrue(document.file_is_protected())
         with self.assertRaises(SongFileError) as raised:
             document.save()
-        self.assertIn(ERR_FILE_PROTECTED.format(path=path), str(raised.exception))
+        self.assertIn(errors.ERR_FILE_PROTECTED.format(path=path), str(raised.exception))
         self.assertNotEqual(Document.load(path).song().get_tempo(), OTHER_TEMPO)
         document.save_as(copy)
         saved = Document.load(copy)
@@ -358,7 +356,7 @@ class TestSaving(unittest.TestCase):
         document = Document(path='a/b/tune.yml')
         self.assertTrue(document.can_export())
         self.assertEqual(document.export_directory(), 'a/b')
-        self.assertEqual(document.export_name(), export_name(setlist=TUNE, song=MSG_DEFAULT_SONG_NAME))
+        self.assertEqual(document.export_name(), export_name(setlist=TUNE, song=names_text.MSG_DEFAULT_SONG_NAME))
         self.assertEqual(document.export_path(ExportKind.ABLETON), os.path.join('a/b', 'tune_untitled.als'))
 
     def test_an_unsaved_set_cannot_export(self):
@@ -366,7 +364,7 @@ class TestSaving(unittest.TestCase):
         self.assertIsNone(Document().export_directory())
         with self.assertRaises(SongFileError) as caught:
             song_with_things().export(ExportKind.ABLETON)
-        self.assertEqual(str(caught.exception), ERR_SAVE_BEFORE_EXPORT)
+        self.assertEqual(str(caught.exception), errors.ERR_SAVE_BEFORE_EXPORT)
 
 
 class TestRendering(unittest.TestCase):
@@ -499,7 +497,7 @@ class TestUses(unittest.TestCase):
     def test_what_the_document_remembers_about_a_pattern_follows_every_change_and_the_revision_moves_with_it(self):
         # The pattern editor asks the same questions for every row and cell, so the answers are kept until the set changes: a scene's scale, picking a song and an undo each move the revision and change the answer.
         document = Document()
-        starter = MSG_NEW_PATTERN_NAME.format(number=FIRST_NUMBER)
+        starter = names_text.MSG_NEW_PATTERN_NAME.format(number=defaults.FIRST_NUMBER)
         revision = document.revision()
         self.assertEqual(document.pattern_scale(starter), DEFAULT_SCALE)
         self.assertEqual(document.pattern_scale(starter), DEFAULT_SCALE)
@@ -512,7 +510,7 @@ class TestUses(unittest.TestCase):
         self.assertEqual(document.scales_of_pattern(starter), [NAMED])
         self.assertEqual(document.degree_limit(starter), document.scale_size(NAMED))
         before = document.revision()
-        document.select_song(MSG_DEFAULT_SONG_NAME)
+        document.select_song(names_text.MSG_DEFAULT_SONG_NAME)
         self.assertGreater(document.revision(), before)
         before = document.revision()
         document.undo()
@@ -888,9 +886,9 @@ class TestPatternSteps(unittest.TestCase):
 
     def test_the_octave_range_of_the_one_track_that_plays_a_pattern(self):
         document = song_with_things()
-        self.assertEqual(document.pattern_octave_range(A), (MIN_OCTAVE, MAX_OCTAVE))
+        self.assertEqual(document.pattern_octave_range(A), (limits.MIN_OCTAVE, limits.MAX_OCTAVE))
         document.set_track_lowest_octave(name=LEAD, octave=2)
-        self.assertEqual(document.pattern_octave_range(A), (2, MAX_OCTAVE))
+        self.assertEqual(document.pattern_octave_range(A), (2, limits.MAX_OCTAVE))
         # B is played by the bass and morphed to by the lead, which counts as a use, and nothing plays the unused pattern.
         self.assertIsNone(document.pattern_octave_range(B))
         self.assertIsNone(document.pattern_octave_range(UNUSED))
@@ -994,10 +992,8 @@ class TestPickerLayouts(unittest.TestCase):
 
     def test_every_chord_has_a_name_and_every_named_chord_a_short_name(self):
         from llamatron.composition.file_format import CHORD_SYMBOLS, FIXED_CHORDS
-        from llamatron.strings.labels import MSG_CHORD_NAMES
-        from llamatron.strings.marks import MSG_CHORD_SUFFIXES
-        self.assertEqual(set(MSG_CHORD_NAMES), set(CHORD_SYMBOLS))
-        self.assertEqual(set(MSG_CHORD_SUFFIXES), set(FIXED_CHORDS))
+        self.assertEqual(set(labels_text.MSG_CHORD_NAMES), set(CHORD_SYMBOLS))
+        self.assertEqual(set(marks_text.MSG_CHORD_SUFFIXES), set(FIXED_CHORDS))
 
     def test_scale_pages_hold_every_kind_once_except_melodic_minor(self):
         from llamatron.composition.named_scale import SCALE_TYPE_NAMES

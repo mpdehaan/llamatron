@@ -17,11 +17,8 @@
 
 from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition.generator_settings import DEFAULT_RUSH, NO_RUSH_OR_DRAG, StepRowSetting
-from llamatron.composition.limits import MAX_RUSH_OR_DRAG
-from llamatron.strings.labels import MSG_RUSH_AMOUNT_LABEL
-from llamatron.strings.help import HELP_RUSH_EDITOR
-from llamatron.strings.labels import Crumb, MSG_RUSH_LABEL
-from llamatron.strings.messages import MSG_RENAME_GENERATOR_PROMPT
+from llamatron.composition import limits
+from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.rush_steps_editor import RushStepsEditor
 from llamatron.tui.screens.generators.step_row_generator_editor import StepRowGeneratorEditor
@@ -30,13 +27,13 @@ from llamatron.tui.screens.generators.step_row_generator_editor import StepRowGe
 class RushEditor(StepRowGeneratorEditor):
 
     KEYS = keybindings.RushEditor
-    HELP = HELP_RUSH_EDITOR
+    HELP = help_text.HELP_RUSH_EDITOR
     SECTION = Section.RUSHES
     KIND = GeneratorKind.RUSH
     STEPS_EDITOR = RushStepsEditor
-    CRUMBS_BEFORE = (Crumb.GENERATORS,)
-    RENAME_PROMPT = MSG_RENAME_GENERATOR_PROMPT.format(label=MSG_RUSH_LABEL)
+    CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_RUSH_LABEL)
 
     def amount_fields(self):
-        return [self.percent_field(label=MSG_RUSH_AMOUNT_LABEL, setting=StepRowSetting.AMOUNT, current=self.generator().get_amount(), default=DEFAULT_RUSH,
-                                   lowest=NO_RUSH_OR_DRAG, highest=MAX_RUSH_OR_DRAG)]
+        return [self.percent_field(label=labels.MSG_RUSH_AMOUNT_LABEL, setting=StepRowSetting.AMOUNT, current=self.generator().get_amount(), default=DEFAULT_RUSH,
+                                   lowest=NO_RUSH_OR_DRAG, highest=limits.MAX_RUSH_OR_DRAG)]

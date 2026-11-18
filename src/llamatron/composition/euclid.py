@@ -25,9 +25,9 @@ from typing import NamedTuple
 
 from llamatron.composition.checks import time_length
 from llamatron.composition.file_format import EuclidPart, NamedRhythm, euclid_setting
-from llamatron.composition.limits import DEFAULT_EUCLID_STEPS, MAX_EUCLID, MIN_EUCLID, NO_ROTATION
+from llamatron.composition import limits
+from llamatron.strings import errors
 from llamatron.composition.setting import Checked, WholeNumber
-from llamatron.strings.errors import ERR_BAD_SHAPE_PERCENT
 
 # The named rhythms, each its hits and steps, in the order the picker offers them.
 NAMED_RHYTHMS = {
@@ -50,9 +50,9 @@ class EuclidValues(NamedTuple):
 def euclid_part_settings(named):
     """Return the descriptions of a mask's four parts, each named by named(part)."""
     return [
-        WholeNumber(name=named(EuclidPart.HITS), lowest=MIN_EUCLID, highest=MAX_EUCLID, error=ERR_BAD_SHAPE_PERCENT),
-        WholeNumber(name=named(EuclidPart.STEPS), lowest=MIN_EUCLID, highest=MAX_EUCLID, error=ERR_BAD_SHAPE_PERCENT),
-        WholeNumber(name=named(EuclidPart.ROTATE), lowest=NO_ROTATION, highest=MAX_EUCLID - 1, error=ERR_BAD_SHAPE_PERCENT),
+        WholeNumber(name=named(EuclidPart.HITS), lowest=limits.MIN_EUCLID, highest=limits.MAX_EUCLID, error=errors.ERR_BAD_SHAPE_PERCENT),
+        WholeNumber(name=named(EuclidPart.STEPS), lowest=limits.MIN_EUCLID, highest=limits.MAX_EUCLID, error=errors.ERR_BAD_SHAPE_PERCENT),
+        WholeNumber(name=named(EuclidPart.ROTATE), lowest=limits.NO_ROTATION, highest=limits.MAX_EUCLID - 1, error=errors.ERR_BAD_SHAPE_PERCENT),
         Checked(name=named(EuclidPart.STEP), check=time_length),
     ]
 
@@ -69,10 +69,10 @@ def euclid_values(value):
         return None
     steps = value(EuclidPart.STEPS)
     rotate = value(EuclidPart.ROTATE)
-    return EuclidValues(hits, DEFAULT_EUCLID_STEPS if steps is None else steps, NO_ROTATION if rotate is None else rotate, value(EuclidPart.STEP))
+    return EuclidValues(hits, limits.DEFAULT_EUCLID_STEPS if steps is None else steps, limits.NO_ROTATION if rotate is None else rotate, value(EuclidPart.STEP))
 
 
-def rhythm(*, hits, steps, rotate=NO_ROTATION):
+def rhythm(*, hits, steps, rotate=limits.NO_ROTATION):
     """Return a Euclidean rhythm as a hit or a miss for each step, Bjorklund's way, so that 3 over 8 is X..X..X. and 5 over 8 X.XX.XX., moved rotate steps later.
 
     Hits past the steps hit every step.

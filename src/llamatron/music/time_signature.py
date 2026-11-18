@@ -22,8 +22,7 @@ steps start a beat, and the exporters write it so that a DAW draws its bars in t
 import re
 
 from llamatron.support.rational import Rational
-from llamatron.strings.errors import ERR_BAD_TIME_SIGNATURE
-from llamatron.strings.reprs import REPR_TIME_SIGNATURE
+from llamatron.strings import errors, reprs
 
 # How a time signature is written, in a file and on screen: beats over the note that is one beat.
 TIME_SIGNATURE_TEXT = '{beats}/{unit}'
@@ -60,7 +59,7 @@ class TimeSignature:
 
     def __init__(self, *, beats, unit):
         if not is_time_signature(TIME_SIGNATURE_TEXT.format(beats=beats, unit=unit)):
-            raise ValueError(ERR_BAD_TIME_SIGNATURE.format(lowest=MIN_BEATS, highest=MAX_BEATS, units=UNITS_LISTED, value=TIME_SIGNATURE_TEXT.format(beats=beats, unit=unit)))
+            raise ValueError(errors.ERR_BAD_TIME_SIGNATURE.format(lowest=MIN_BEATS, highest=MAX_BEATS, units=UNITS_LISTED, value=TIME_SIGNATURE_TEXT.format(beats=beats, unit=unit)))
         self._beats = beats
         self._unit = unit
 
@@ -68,7 +67,7 @@ class TimeSignature:
     def from_text(cls, text):
         """Return the time signature written as text, like 6/8, or raise ValueError if it isn't one."""
         if not is_time_signature(text):
-            raise ValueError(ERR_BAD_TIME_SIGNATURE.format(lowest=MIN_BEATS, highest=MAX_BEATS, units=UNITS_LISTED, value=text))
+            raise ValueError(errors.ERR_BAD_TIME_SIGNATURE.format(lowest=MIN_BEATS, highest=MAX_BEATS, units=UNITS_LISTED, value=text))
         beats, unit = text.split(TIME_SIGNATURE_TEXT.format(beats='', unit=''))
         return cls(beats=int(beats), unit=int(unit))
 
@@ -107,4 +106,4 @@ class TimeSignature:
         return hash((self._beats, self._unit))
 
     def __repr__(self):
-        return REPR_TIME_SIGNATURE.format(beats=self._beats, unit=self._unit)
+        return reprs.REPR_TIME_SIGNATURE.format(beats=self._beats, unit=self._unit)

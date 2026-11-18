@@ -17,8 +17,7 @@
 
 from llamatron.macro_composer.loudness import ACCENT_ABOVE, NORMAL, USUAL_DYNAMICS
 from llamatron.macro_composer.notation import ACCENT, GHOST
-from llamatron.strings.labels import MSG_WIZARD_DYNAMICS_LABEL, MSG_WIZARD_DYNAMICS_SAID, MSG_WIZARD_GROUP_LOUDNESS, MSG_WIZARD_LEVEL_LABELS
-from llamatron.strings.marks import MSG_WIZARD_LEVEL_FROM_GENRE
+from llamatron.strings import labels as labels_text, marks
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from tests.support.ui_testing import key_of
@@ -56,38 +55,38 @@ class TestWizardLoudnessFields(WizardTest):
 
     async def test_dynamics_is_a_gauge_that_steps(self):
         choices = await self.to_player(THE_LEAD)
-        self.assertIn(MSG_WIZARD_DYNAMICS_SAID[USUAL_DYNAMICS], self.text())
-        await self.select_field(MSG_WIZARD_DYNAMICS_LABEL)
+        self.assertIn(labels_text.MSG_WIZARD_DYNAMICS_SAID[USUAL_DYNAMICS], self.text())
+        await self.select_field(labels_text.MSG_WIZARD_DYNAMICS_LABEL)
         await self.press(self.more())
         self.assertEqual(choices.get_dynamics(THE_LEAD), USUAL_DYNAMICS + 1)
-        self.assertIn(MSG_WIZARD_DYNAMICS_SAID[USUAL_DYNAMICS + 1], self.text())
-        self.assertEqual(self.wizard().label_under_cursor(), MSG_WIZARD_DYNAMICS_LABEL)
+        self.assertIn(labels_text.MSG_WIZARD_DYNAMICS_SAID[USUAL_DYNAMICS + 1], self.text())
+        self.assertEqual(self.wizard().label_under_cursor(), labels_text.MSG_WIZARD_DYNAMICS_LABEL)
 
     async def test_the_loudness_heading_is_closed_until_opened_and_shows_the_levels_the_player_plays(self):
         choices = await self.to_player(THE_LEAD)
-        self.assertIn(MSG_WIZARD_GROUP_LOUDNESS, self.labels())
-        self.assertNotIn(MSG_WIZARD_LEVEL_LABELS[NORMAL], self.labels())
-        await self.select_field(MSG_WIZARD_LEVEL_LABELS[NORMAL])
+        self.assertIn(labels_text.MSG_WIZARD_GROUP_LOUDNESS, self.labels())
+        self.assertNotIn(labels_text.MSG_WIZARD_LEVEL_LABELS[NORMAL], self.labels())
+        await self.select_field(labels_text.MSG_WIZARD_LEVEL_LABELS[NORMAL])
         offered = choices.loudness_levels_offered(THE_LEAD)
-        self.assertEqual(self.labels()[-len(offered):], [MSG_WIZARD_LEVEL_LABELS[level] for level in offered])
-        self.assertNotIn(MSG_WIZARD_LEVEL_LABELS[GHOST], self.labels())
-        self.assertIn(MSG_WIZARD_LEVEL_FROM_GENRE.format(number=choices.loudness_levels(THE_LEAD)[NORMAL]), self.text())
+        self.assertEqual(self.labels()[-len(offered):], [labels_text.MSG_WIZARD_LEVEL_LABELS[level] for level in offered])
+        self.assertNotIn(labels_text.MSG_WIZARD_LEVEL_LABELS[GHOST], self.labels())
+        self.assertIn(marks.MSG_WIZARD_LEVEL_FROM_GENRE.format(number=choices.loudness_levels(THE_LEAD)[NORMAL]), self.text())
 
     async def test_a_level_steps_to_the_songs_own_and_backspace_gives_it_back_to_the_genre(self):
         choices = await self.to_player(THE_LEAD)
         usual = choices.loudness_levels(THE_LEAD)
-        await self.select_field(MSG_WIZARD_LEVEL_LABELS[ACCENT])
+        await self.select_field(labels_text.MSG_WIZARD_LEVEL_LABELS[ACCENT])
         await self.press(self.more())
         self.assertTrue(choices.loudness_level_is_own(role=THE_LEAD, level=ACCENT))
         self.assertEqual(choices.loudness_levels(THE_LEAD)[ACCENT], usual[ACCENT] + 1)
-        self.assertNotIn(MSG_WIZARD_LEVEL_FROM_GENRE.format(number=usual[ACCENT] + 1), self.text())
+        self.assertNotIn(marks.MSG_WIZARD_LEVEL_FROM_GENRE.format(number=usual[ACCENT] + 1), self.text())
         await self.press(keybindings.WizardPage.CLEAR)
         self.assertFalse(choices.loudness_level_is_own(role=THE_LEAD, level=ACCENT))
         self.assertEqual(choices.loudness_levels(THE_LEAD), usual)
 
     async def test_the_normal_level_carries_the_accent_shown_with_it(self):
         choices = await self.to_player(THE_BASS)
-        await self.select_field(MSG_WIZARD_LEVEL_LABELS[NORMAL])
+        await self.select_field(labels_text.MSG_WIZARD_LEVEL_LABELS[NORMAL])
         await self.press(key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET))
         levels = choices.loudness_levels(THE_BASS)
         self.assertEqual(levels[ACCENT] - levels[NORMAL], ACCENT_ABOVE)

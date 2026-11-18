@@ -29,14 +29,15 @@ STRINGS_MODULE = SOURCE / 'strings' / 'names.py'
 # What a numbered name is made with, which nothing else may import.
 NUMBERING_CONSTANTS = ('MSG_NUMBERED_NAME', 'MSG_NUMBER_JOINT')
 MSG_NUMBERS_NAMES = 'these number a name themselves and should call composition/naming.py: {places}'
-PLACE = '{path} imports {name}'
+PLACE = '{path} uses {name}'
 LIST_SEPARATOR = ', '
 
 
 def imported_names(path):
-    """Return every name a module imports from another."""
+    """Return every name a module takes from another: each name it imports, and each it reads through a module, as names.MSG_NUMBERED_NAME."""
     tree = ast.parse(path.read_text())
-    return [alias.name for node in ast.walk(tree) if isinstance(node, ast.ImportFrom) for alias in node.names]
+    imported = [alias.name for node in ast.walk(tree) if isinstance(node, ast.ImportFrom) for alias in node.names]
+    return imported + [node.attr for node in ast.walk(tree) if isinstance(node, ast.Attribute)]
 
 
 def numbering_imports():

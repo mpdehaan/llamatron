@@ -34,7 +34,8 @@ import mido
 
 from llamatron.support.rational import Rational
 from llamatron.composition.checks import fraction_text
-from llamatron.composition.defaults import DEFAULT_VELOCITY
+from llamatron.composition import defaults
+from llamatron.strings import importing
 from llamatron.composition.file_format import (
     CC_ROWS, ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting,
 )
@@ -43,14 +44,13 @@ from llamatron.composition.naming import copy_name, default_scale_name, is_defau
 from llamatron.composition.pattern import Pattern
 from llamatron.composition.song import Song
 from llamatron.music.time_signature import TimeSignature
-from llamatron.strings.importing import MSG_SCENE_BAR, MSG_SCENE_BARS, MSG_WHERE_IMPORTED
 from llamatron.importers.steps import TIED
 
 FIRST_BAR_NUMBER = 1
 NO_REPEAT = 1
 MICROSECONDS_PER_MINUTE = 60000000
 # What a pattern, scale or song the import made is placed by in an error, which only a fault of the import's own can raise.
-WHERE_IMPORTED = MSG_WHERE_IMPORTED
+WHERE_IMPORTED = importing.MSG_WHERE_IMPORTED
 
 
 @dataclass(slots=True, kw_only=True)
@@ -80,7 +80,7 @@ def pattern_data(*, pattern, set_step_size):
             rows[Row.OCTAVE][place] = step.octave
             rows[Row.CHORD][place] = step.chord
             rows[Row.GATE][place] = step.gate
-            rows[Row.VELOCITY][place] = None if step.velocity == DEFAULT_VELOCITY else step.velocity
+            rows[Row.VELOCITY][place] = None if step.velocity == defaults.DEFAULT_VELOCITY else step.velocity
     data = {PatternSetting.STEPS: count}
     if step_size != set_step_size:
         data[PatternSetting.STEP_SIZE] = fraction_text(step_size)
@@ -259,8 +259,8 @@ class SongWriter:
         first_bar = self.bar_number(start)
         last_bar = self.bar_number(last)
         if first_bar == last_bar:
-            return MSG_SCENE_BAR.format(first=first_bar)
-        return MSG_SCENE_BARS.format(first=first_bar, last=last_bar)
+            return importing.MSG_SCENE_BAR.format(first=first_bar)
+        return importing.MSG_SCENE_BARS.format(first=first_bar, last=last_bar)
 
     def bar_number(self, time):
         """Return the number of the bar a time falls in, counted from 1."""

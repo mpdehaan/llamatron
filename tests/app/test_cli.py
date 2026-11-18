@@ -39,8 +39,7 @@ from llamatron.composition.file_format import Row
 from llamatron.composition.setlist import Setlist, file_stem
 from llamatron.composition.setlist_writer import dump_setlist
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.strings.cli import MSG_CLI_CHANGED, MSG_CLI_MADE_SONG, MSG_CLI_WOULD_CHANGE
-from llamatron.strings.errors import ERR_LAUNCH_NEEDS_SET, ERR_NEEDS_FORCE, ERR_ONLY_WITH_WIZARD, ERR_PRINTED, ERR_RECORDING_SONG_LOOPS, ERR_SONG_FILE_NOT_READY, ERR_WIZARD_ONLY_ALONE
+from llamatron.strings import cli, errors
 from tests.support.rendering import as_setlist, dump_song_data
 from tests.support.song_testing import BASIC, LEAD, lead_data
 
@@ -147,8 +146,8 @@ class TestCli(unittest.TestCase):
                 self.assertEqual(code, 1)
                 self.assertEqual(stdout, NOTHING)
                 lines = stderr.splitlines()
-                self.assertEqual(lines[:-1], [MSG_CLI_WOULD_CHANGE.format(change=correction.described()) for correction in corrections])
-                self.assertEqual(lines[-1], ERR_PRINTED.format(problem=ERR_NEEDS_FORCE.format(path=self.song)))
+                self.assertEqual(lines[:-1], [cli.MSG_CLI_WOULD_CHANGE.format(change=correction.described()) for correction in corrections])
+                self.assertEqual(lines[-1], errors.ERR_PRINTED.format(problem=errors.ERR_NEEDS_FORCE.format(path=self.song)))
                 self.assertEqual(self.written_files(), [])
         self.assertEqual(self.out_of_range_set(OUT_OF_RANGE), before)
 
@@ -157,7 +156,7 @@ class TestCli(unittest.TestCase):
         _, corrections = Setlist.read_file_corrected(self.song)
         code, stdout, stderr = self.run_cli('--to', ExportKind.MIDI_FILE, '--force')
         self.assertEqual(code, 0)
-        self.assertEqual(stderr.splitlines(), [MSG_CLI_CHANGED.format(change=correction.described()) for correction in corrections])
+        self.assertEqual(stderr.splitlines(), [cli.MSG_CLI_CHANGED.format(change=correction.described()) for correction in corrections])
         self.assertTrue(self.written_files())
         for name in self.written_files():
             mido.MidiFile(os.path.join(self.out, name))
@@ -180,7 +179,7 @@ class TestCli(unittest.TestCase):
             with self.subTest(arguments=arguments):
                 code, _, stderr = self.run_cli(*arguments)
                 self.assertEqual(code, 1)
-                self.assertEqual(stderr.splitlines(), [ERR_PRINTED.format(problem=refused.exception)])
+                self.assertEqual(stderr.splitlines(), [errors.ERR_PRINTED.format(problem=refused.exception)])
                 self.assertEqual(self.written_files(), [])
 
     def test_force_changes_nothing_about_a_set_with_nothing_wrong(self):
@@ -223,7 +222,7 @@ class TestCli(unittest.TestCase):
             with self.subTest(arguments=arguments), mock.patch('llamatron.tui.app.main') as tracker:
                 code, _, stderr = self.run_exactly(*arguments)
                 self.assertEqual(code, 2)
-                self.assertIn(ERR_LAUNCH_NEEDS_SET, stderr)
+                self.assertIn(errors.ERR_LAUNCH_NEEDS_SET, stderr)
                 tracker.assert_not_called()
             with self.subTest(arguments=arguments), mock.patch('llamatron.tui.app.main') as tracker:
                 code, _, stderr = self.run_exactly(self.song, '--to', *arguments)
@@ -246,7 +245,7 @@ class TestCli(unittest.TestCase):
         with mock.patch('llamatron.tui.app.LlamatronApp') as app:
             code, _, stderr = self.run_exactly(self.song, '--launch-for-recording')
             self.assertEqual(code, 1)
-            self.assertIn(ERR_RECORDING_SONG_LOOPS.split(RECORDING_LOOPS_PLACE)[0], stderr)
+            self.assertIn(errors.ERR_RECORDING_SONG_LOOPS.split(RECORDING_LOOPS_PLACE)[0], stderr)
             app.assert_not_called()
             self.assertEqual(self.run_exactly(self.song, '--autoplay')[0], 0)
 
@@ -412,7 +411,7 @@ class TestCliWizard(unittest.TestCase):
             code, said, _ = self.run_exactly(OPTION_WIZARD, self.song_file, OPTION_BATCH)
             app.assert_not_called()
         self.assertEqual(code, 0)
-        self.assertEqual(said.strip(), MSG_CLI_MADE_SONG.format(path=self.beside))
+        self.assertEqual(said.strip(), cli.MSG_CLI_MADE_SONG.format(path=self.beside))
         self.assertEqual(Setlist.read_file(self.beside).get_song_names(), [WIZARD_SONG_NAME])
 
     def test_out_names_the_set_and_a_seed_makes_another_song(self):
@@ -431,13 +430,13 @@ class TestCliWizard(unittest.TestCase):
             file.write(NOT_A_SONG_FILE)
         code, _, problem = self.run_exactly(OPTION_WIZARD, self.song_file, OPTION_BATCH)
         self.assertEqual(code, 1)
-        self.assertIn(ERR_SONG_FILE_NOT_READY.format(path=self.song_file), problem)
+        self.assertIn(errors.ERR_SONG_FILE_NOT_READY.format(path=self.song_file), problem)
         self.assertFalse(os.path.exists(self.beside))
 
     def test_wizard_stands_alone_and_batch_needs_it(self):
         code, _, problem = self.run_exactly(self.song_file, OPTION_WIZARD, self.song_file)
         self.assertNotEqual(code, 0)
-        self.assertIn(ERR_WIZARD_ONLY_ALONE, problem)
+        self.assertIn(errors.ERR_WIZARD_ONLY_ALONE, problem)
         code, _, problem = self.run_exactly(OPTION_BATCH)
         self.assertNotEqual(code, 0)
-        self.assertIn(ERR_ONLY_WITH_WIZARD.format(options=OPTION_BATCH), problem)
+        self.assertIn(errors.ERR_ONLY_WITH_WIZARD.format(options=OPTION_BATCH), problem)

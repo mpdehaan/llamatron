@@ -30,7 +30,7 @@ import time
 
 from textual.pilot import Pilot
 
-from llamatron.strings.narration import MSG_TUTORIAL_KEYS, MSG_TUTORIAL_LEFT_OUT, MSG_TUTORIAL_SAID
+from llamatron.strings import narration
 from llamatron.tui.key_table import key_event
 from llamatron.tui.caption_strip import CaptionStrip, parts
 from llamatron.tutorial.plan import TutorialPlan
@@ -173,10 +173,10 @@ class TutorialRunner:
 
     def report(self):
         """Return the lines of what the tutorial said and left out, and how many keys it pressed, for after the tracker has closed."""
-        lines = [MSG_TUTORIAL_SAID.format(seconds=seconds, text=text) for seconds, text in self.narrator.said]
-        lines += [MSG_TUTORIAL_LEFT_OUT.format(what=what) for what in self.plan.left_out]
+        lines = [narration.MSG_TUTORIAL_SAID.format(seconds=seconds, text=text) for seconds, text in self.narrator.said]
+        lines += [narration.MSG_TUTORIAL_LEFT_OUT.format(what=what) for what in self.plan.left_out]
         if self.ended_at is not None:
-            lines.append(MSG_TUTORIAL_KEYS.format(count=self.pressed, seconds=self.ended_at - self.started_at))
+            lines.append(narration.MSG_TUTORIAL_KEYS.format(count=self.pressed, seconds=self.ended_at - self.started_at))
         return lines
 
 

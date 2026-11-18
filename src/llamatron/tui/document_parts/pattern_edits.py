@@ -18,7 +18,7 @@
 
 
 from llamatron.composition.file_format import Section
-from llamatron.composition.limits import MAX_SCALE_LENGTH, MIN_SCALE_LENGTH
+from llamatron.composition import limits
 from llamatron.composition.pattern import Pattern
 
 # How many steps a new pattern has.
@@ -61,7 +61,7 @@ class PatternEdits:
         """Return the scale length a pattern would take from the one scale it plays under, or None where it plays under several or the scale is of a size no scale length says."""
         scale = self.pattern_scale(name)
         size = None if scale is None else self.scale_size(scale)
-        return size if size is not None and MIN_SCALE_LENGTH <= size <= MAX_SCALE_LENGTH else None
+        return size if size is not None and limits.MIN_SCALE_LENGTH <= size <= limits.MAX_SCALE_LENGTH else None
 
     def scales_unsuited_to_pattern(self, name):
         """Return the scales a pattern plays under that have another number of notes than the pattern was written for, in order: none for a pattern written for any scale."""

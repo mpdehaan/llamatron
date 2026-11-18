@@ -35,7 +35,7 @@ from rich.style import Style as RichStyle
 from rich.text import Text
 
 from llamatron.tui.drawing import NOTHING, SPACE
-from llamatron.strings.about import MSG_BLOCK, MSG_BLOCK_LETTERS, MSG_SPLASH_ADDRESS, MSG_SPLASH_WORD, MSG_START_PROMPT
+from llamatron.strings import about
 
 
 class Entrance:
@@ -116,11 +116,11 @@ def scale_for(*, word, width):
 
 def letter_rows(*, word, scale):
     """Return, for each letter of a word, its rows drawn scale columns to a block."""
-    return [[row.replace(MSG_BLOCK, MSG_BLOCK * scale).replace(SPACE, SPACE * scale) for row in MSG_BLOCK_LETTERS[letter]] for letter in word]
+    return [[row.replace(about.MSG_BLOCK, about.MSG_BLOCK * scale).replace(SPACE, SPACE * scale) for row in about.MSG_BLOCK_LETTERS[letter]] for letter in word]
 
 
 def words_width(*, word, scale):
-    return sum(len(MSG_BLOCK_LETTERS[letter][0]) * scale for letter in word) + LETTER_GAP * scale * (len(word) - 1)
+    return sum(len(about.MSG_BLOCK_LETTERS[letter][0]) * scale for letter in word) + LETTER_GAP * scale * (len(word) - 1)
 
 
 def wave_offset(*, elapsed, place, count):
@@ -197,9 +197,9 @@ def centred_text(*, text, width, colour, level):
 
 def title_lines(*, width, height, elapsed, prompt=False, seconds=None):
     """Return the title's lines for a screen width by height at a moment, with the prompt or without, fading out over its last moments when it is shown for seconds."""
-    scale = scale_for(word=MSG_SPLASH_WORD, width=width)
-    rows = letter_rows(word=MSG_SPLASH_WORD, scale=scale)
-    letters_width = words_width(word=MSG_SPLASH_WORD, scale=scale)
+    scale = scale_for(word=about.MSG_SPLASH_WORD, width=width)
+    rows = letter_rows(word=about.MSG_SPLASH_WORD, scale=scale)
+    letters_width = words_width(word=about.MSG_SPLASH_WORD, scale=scale)
     gap = LETTER_GAP * scale
     left = max((width - letters_width) // 2, 0)
     tall = (PROMPT_ROW if prompt else ADDRESS_ROW) + 1
@@ -222,16 +222,16 @@ def title_lines(*, width, height, elapsed, prompt=False, seconds=None):
         for offset in range(letters_width):
             level = scanner_level(column=offset, width=letters_width, elapsed=elapsed)
             if level > 0 and 0 <= left + offset < width:
-                cells[scanner_line][left + offset] = (MSG_BLOCK, SCANNER_BLUE, level * fade)
+                cells[scanner_line][left + offset] = (about.MSG_BLOCK, SCANNER_BLUE, level * fade)
     lines = [drawn_line(cells=row, width=width) for row in cells]
     address_line = top + ADDRESS_ROW
     if address_line < height:
-        lines[address_line] = centred_text(text=MSG_SPLASH_ADDRESS, width=width, colour=ADDRESS_BLUE, level=eased((elapsed - settled_at()) / ADDRESS_FADE_SECONDS) * fade)
+        lines[address_line] = centred_text(text=about.MSG_SPLASH_ADDRESS, width=width, colour=ADDRESS_BLUE, level=eased((elapsed - settled_at()) / ADDRESS_FADE_SECONDS) * fade)
     prompt_line = top + PROMPT_ROW
     if prompt and prompt_line < height:
         level = prompt_level(elapsed)
         colour = tuple(round(dim + (bright - dim) * level) for dim, bright in zip(PROMPT_DIM, PROMPT_BRIGHT))
-        lines[prompt_line] = centred_text(text=MSG_START_PROMPT, width=width, colour=colour, level=min(level * 2.5, 1.0) * fade)
+        lines[prompt_line] = centred_text(text=about.MSG_START_PROMPT, width=width, colour=colour, level=min(level * 2.5, 1.0) * fade)
     return lines
 
 

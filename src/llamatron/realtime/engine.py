@@ -25,7 +25,7 @@ an edit while playing replaces the passes that have not started, or stopped, wit
 import heapq
 import time
 
-from llamatron.music.midi import MAX_MIDI_NUMBER, MIN_MIDI_NUMBER
+from llamatron.music import midi
 from llamatron.realtime.timeline import CONTROL_CHANGE, NOTE_OFF, NOTE_ON, NO_VELOCITY, sort_key
 
 # The two controls that silence a channel, sent in this order when anything stops: all notes off, then all sound off, since some hardware gets stuck.
@@ -148,7 +148,7 @@ class PlaybackEngine:
         """Send a note off for every note, then all notes off and all sound off, on each (port, channel) given: the emergency stop, for a note stuck on hardware that nothing here knows is sounding."""
         for port, channel in channels:
             output = self._outputs[port]
-            for number in range(MIN_MIDI_NUMBER, MAX_MIDI_NUMBER + 1):
+            for number in range(midi.MIN_MIDI_NUMBER, midi.MAX_MIDI_NUMBER + 1):
                 self._sounding.pop((port, channel, number), None)
                 output.send([NOTE_OFF | channel, number, NO_VELOCITY])
             for number in SILENCING_CONTROLS:

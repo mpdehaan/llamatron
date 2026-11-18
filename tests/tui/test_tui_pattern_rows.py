@@ -24,11 +24,7 @@ from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.document import Document
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import Reconfigure
-from llamatron.strings.errors import ERR_AT_ALLOWED_INC_MAX
-from llamatron.strings.labels import MSG_ROW_LABELS
-from llamatron.strings.legends import KeyName
-from llamatron.strings.marks import MSG_UNSET_MARK, MSG_BLOCKED_CELL, MSG_TOGGLE_ON
-from llamatron.strings.messages import MSG_DESCRIBE_TIED
+from llamatron.strings import errors, labels as labels_text, legends, marks, messages
 from llamatron.tui import keybindings
 from tests.support.rendering import render_song
 from tests.support.pattern_editor_testing import PatternEditorTest
@@ -81,7 +77,7 @@ class TestTheRowsLimitsAreTheFiles(PatternEditorTest):
                 row = self.editor.row_for(name)
                 self.editor.set_value(value=None, row=name)
                 shown = row.cell_text(step=self.editor.step)
-                self.assertEqual(shown, MSG_UNSET_MARK if described.is_quiet() else str(described.get_default()))
+                self.assertEqual(shown, marks.MSG_UNSET_MARK if described.is_quiet() else str(described.get_default()))
 
 
 class TestRegisterChangeRows(PatternEditorTest):
@@ -96,7 +92,7 @@ class TestRegisterChangeRows(PatternEditorTest):
                 self.editor.set_value(value=most)
                 await self.press(keybindings.AddRow.MORE)
                 self.assertEqual(self.value(row=name), most)
-                self.assertIn(ERR_AT_ALLOWED_INC_MAX.format(register=register, most=most), self.text())
+                self.assertIn(errors.ERR_AT_ALLOWED_INC_MAX.format(register=register, most=most), self.text())
 
     async def test_a_narrower_allowed_inc_max_narrows_the_add_rows_line(self):
         self.document.set_register_setting(name=RegisterName.AX, setting=RegisterSetting.ALLOWED_INC_MAX, value=NARROW_INC_MAX)
@@ -195,25 +191,25 @@ class TestTieRow(UITest):
         return self.document.step_value(name=TUNE, row=Row.TIE, step=step)
 
     async def test_it_is_a_normal_row_and_toggles_on_an_empty_step(self):
-        self.assertIn(ROW_SHOWN.format(label=MSG_ROW_LABELS[Row.TIE]), self.text())
+        self.assertIn(ROW_SHOWN.format(label=labels_text.MSG_ROW_LABELS[Row.TIE]), self.text())
         await self.press(*[Key.RIGHT] * self.EMPTY_STEP)
         await self.press(Key.SPACE)
         self.assertIs(self.tie(self.EMPTY_STEP), True)
         # The tied step shows the toggle mark, the dividers stay, and a note's own step draws no tie: it can't take one.
         tie = self.editor.row_for(Row.TIE)
-        self.assertEqual(tie.cell_text(step=self.EMPTY_STEP), MSG_TOGGLE_ON)
+        self.assertEqual(tie.cell_text(step=self.EMPTY_STEP), marks.MSG_TOGGLE_ON)
         self.assertIsNone(tie.edge_text(step=self.EMPTY_STEP))
-        self.assertEqual(tie.cell_lines(step=self.EMPTY_STEP - 1), [MSG_BLOCKED_CELL])
-        self.assertEqual(tie.cell_lines(step=0), [MSG_BLOCKED_CELL])
+        self.assertEqual(tie.cell_lines(step=self.EMPTY_STEP - 1), [marks.MSG_BLOCKED_CELL])
+        self.assertEqual(tie.cell_lines(step=0), [marks.MSG_BLOCKED_CELL])
         self.assertIsNone(tie.edge_text(step=self.EMPTY_STEP - 1))
-        self.assertIn(MSG_DESCRIBE_TIED.format(step=self.EMPTY_STEP + 1), self.text())
+        self.assertIn(messages.MSG_DESCRIBE_TIED.format(step=self.EMPTY_STEP + 1), self.text())
         render_song(self.document.song())
         await self.press(Key.BACKSPACE)
         self.assertIs(self.tie(self.EMPTY_STEP), False)
 
     async def test_a_step_with_a_note_has_no_tie_keys(self):
         labels = [item.shown_label() for item in self.editor.key_table()]
-        self.assertNotIn(KeyName.SPACE, labels)
+        self.assertNotIn(legends.KeyName.SPACE, labels)
         await self.press(Key.SPACE)
         self.assertFalse(self.tie(0))
 

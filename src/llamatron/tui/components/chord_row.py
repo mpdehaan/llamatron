@@ -16,7 +16,8 @@
 """The Chord row: a chord symbol on a note, picked from a grid or cycled through."""
 
 from llamatron.composition.file_format import CHORD_SYMBOLS, Row
-from llamatron.composition.limits import INVERSIONS
+from llamatron.composition import limits
+from llamatron.strings import labels, marks, messages
 
 from rich.text import Text
 
@@ -27,9 +28,6 @@ from llamatron.tui.key_table import STEP_FORWARD
 from llamatron.tui.chord_text import ChordInWords
 from llamatron.tui.scale_categories import SCALE_CATEGORIES
 from llamatron.tui.dialogs.chord_dialog import QUALITY_LIST, SCALE_LIST, TENSION_LIST, ChordChoice, ChordDialog
-from llamatron.strings.labels import MSG_CHORD_NAMES
-from llamatron.strings.marks import MSG_CHORD_SYMBOL_NAMED
-from llamatron.strings.messages import MSG_CHORD_DIALOG_TITLE, MSG_CHORD_OF_STEP, MSG_QUALITY_SINGLE_NOTE
 from llamatron.tui import keybindings
 
 def chord_text(value):
@@ -49,7 +47,7 @@ OPENS_ON = {Row.CHORD: QUALITY_LIST, Row.TENSION: TENSION_LIST, Row.CHORD_SCALE:
 
 def quality_names(symbols):
     """Return what the Chord dialog calls each chord symbol: the symbol and what it is, like "m7  minor seventh"."""
-    return [MSG_CHORD_SYMBOL_NAMED.format(symbol=symbol, name=MSG_CHORD_NAMES[symbol]) for symbol in symbols]
+    return [marks.MSG_CHORD_SYMBOL_NAMED.format(symbol=symbol, name=labels.MSG_CHORD_NAMES[symbol]) for symbol in symbols]
 
 
 def step_chord_in_words(*, editor, step, choice=None):
@@ -112,8 +110,8 @@ def pick_chord(*, editor, step, opens_on=QUALITY_LIST):
         editor.draw()
 
     dialog = ChordDialog(
-        title=MSG_CHORD_DIALOG_TITLE.format(where=MSG_CHORD_OF_STEP.format(step=step + 1, pattern=editor.item)),
-        qualities=[None, *CHORD_SYMBOLS], quality_names=[MSG_QUALITY_SINGLE_NOTE, *quality_names(CHORD_SYMBOLS)], inversions=[None, *INVERSIONS], categories=SCALE_CATEGORIES,
+        title=messages.MSG_CHORD_DIALOG_TITLE.format(where=messages.MSG_CHORD_OF_STEP.format(step=step + 1, pattern=editor.item)),
+        qualities=[None, *CHORD_SYMBOLS], quality_names=[messages.MSG_QUALITY_SINGLE_NOTE, *quality_names(CHORD_SYMBOLS)], inversions=[None, *limits.INVERSIONS], categories=SCALE_CATEGORIES,
         current=step_choice(editor=editor, step=step), opens_on=opens_on, moved=moved,
         said=lambda choice: step_chord_in_words(editor=editor, step=step, choice=choice).sentences(),
         keyboard=lambda choice: step_keyboard(editor=editor, step=step, choice=choice),

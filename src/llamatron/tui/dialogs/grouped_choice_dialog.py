@@ -17,7 +17,7 @@
 
 from rich.text import Text
 
-from llamatron.strings.marks import MSG_GROUPED_CHOICE, MSG_GROUP_OF_CHOICES, MSG_SECTION_CLOSED_MARK, MSG_SECTION_OPEN_MARK
+from llamatron.strings import marks
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import cursor_mark, fit
@@ -122,9 +122,9 @@ class GroupedChoiceDialog(ChoiceDialog):
         for row in range(start, min(start + self.SHOWN, len(rows))):
             number, place = rows[row]
             if place is None:
-                mark = MSG_SECTION_OPEN_MARK if self.headings[number] in self.opened else MSG_SECTION_CLOSED_MARK
-                shown = MSG_GROUP_OF_CHOICES.format(mark=mark, name=self.headings[number])
+                mark = marks.MSG_SECTION_OPEN_MARK if self.headings[number] in self.opened else marks.MSG_SECTION_CLOSED_MARK
+                shown = marks.MSG_GROUP_OF_CHOICES.format(mark=mark, name=self.headings[number])
             else:
-                shown = MSG_GROUPED_CHOICE.format(name=self.options[place])
+                shown = marks.MSG_GROUPED_CHOICE.format(name=self.options[place])
             result.append(Text(fit(text=cursor_mark(row == self.row) + shown, width=width)))
         return result

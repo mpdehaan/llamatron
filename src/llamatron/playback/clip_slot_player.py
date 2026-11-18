@@ -34,7 +34,7 @@ from llamatron.generators.euclid import EuclidMask
 from llamatron.composition.checks import in_whole_notes
 from llamatron.grid.clip import Clip
 from llamatron.grid.keyswitch import SwitchNote
-from llamatron.strings.errors import ERR_CANT_PLAY, ERR_CLIP_SLOT_PLAYER_WHERE
+from llamatron.strings import errors
 
 # The seeds for a clip slot's random choices: which steps play, by probability, and the order of steps
 # in directions that choose as they go. They come from the render's seed, the scene and the track,
@@ -89,7 +89,7 @@ class ClipSlotPlayer:
         """
         clip_slot = self._clip_slot
         scene = self._scene
-        where = ERR_CLIP_SLOT_PLAYER_WHERE.format(scene=scene.get_number(), track=self._track_name)
+        where = errors.ERR_CLIP_SLOT_PLAYER_WHERE.format(scene=scene.get_number(), track=self._track_name)
         scale = self._clip_scale()
         drifts = self._renderer.drifts_of(scene=scene, track=self._track_name)
         origins = {name: self._renderer.drift_origin(scene=scene, name=name) for name in drifts}
@@ -122,7 +122,7 @@ class ClipSlotPlayer:
                 finished.set_keyswitches(self._switch_notes(switched=switched, end=end))
             return finished
         except (ValueError, TypeError) as error:
-            raise SongFileError(ERR_CANT_PLAY.format(where=where, problem=error)) from error
+            raise SongFileError(errors.ERR_CANT_PLAY.format(where=where, problem=error)) from error
 
     def _scale_name(self):
         """Return the name of the scale the clip plays in: its own, or else its scene's, which is the song's when the scene has none."""

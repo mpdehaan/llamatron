@@ -32,8 +32,7 @@ the denominator always positive and the two always in lowest terms.
 import math
 import sys
 from fractions import Fraction
-from llamatron.strings.errors import ERR_CANT_MAKE, ERR_DIVIDE_BY_ZERO
-from llamatron.strings.reprs import REPR_RATIONAL
+from llamatron.strings import errors, reprs
 
 # The denominator of a whole number.
 WHOLE = 1
@@ -76,7 +75,7 @@ class Rational:
         if denominator is None:
             return _from_one_value(value)
         if denominator == 0:
-            raise ZeroDivisionError(ERR_DIVIDE_BY_ZERO)
+            raise ZeroDivisionError(errors.ERR_DIVIDE_BY_ZERO)
         if denominator < 0:
             value, denominator = -value, -denominator
         return _reduced(numerator=value, denominator=denominator)
@@ -346,7 +345,7 @@ class Rational:
     # Text, and copying.
 
     def __repr__(self):
-        return REPR_RATIONAL.format(numerator=self.numerator, denominator=self.denominator)
+        return reprs.REPR_RATIONAL.format(numerator=self.numerator, denominator=self.denominator)
 
     def __str__(self):
         """Return it the way a song file writes a length: a whole number, or 5/16."""
@@ -378,7 +377,7 @@ def _from_one_value(value):
         return _reduced(numerator=numerator, denominator=denominator)
     if kind is str:
         return _from_fraction(Fraction(value))
-    raise TypeError(ERR_CANT_MAKE.format(value=value))
+    raise TypeError(errors.ERR_CANT_MAKE.format(value=value))
 
 
 def _from_fraction(fraction):
@@ -388,7 +387,7 @@ def _from_fraction(fraction):
 def _divided(*, numerator, denominator):
     """Return a Rational from a division whose denominator can be zero or negative."""
     if denominator == 0:
-        raise ZeroDivisionError(ERR_DIVIDE_BY_ZERO)
+        raise ZeroDivisionError(errors.ERR_DIVIDE_BY_ZERO)
     if denominator < 0:
         numerator, denominator = -numerator, -denominator
     return _reduced(numerator=numerator, denominator=denominator)

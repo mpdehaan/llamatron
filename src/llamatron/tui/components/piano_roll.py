@@ -32,21 +32,17 @@ Textual.
 import functools
 
 from llamatron.composition.file_format import ACCIDENTALS, STEP_SIZE_CHOICES, Accidental, Row
-from llamatron.composition.limits import MAX_OCTAVE, MIN_DEGREE, MIN_OCTAVE
+from llamatron.composition import limits
+from llamatron.strings import errors, labels, marks
 from llamatron.tui.components.chord_row import pick_chord
 from llamatron.tui.components.keyswitch_row import pick_keyswitches
 from llamatron.tui.components.degree_row import GAUGE_ROWS_WITHOUT_SCALE
-from llamatron.music.midi import HALF_STEPS_PER_OCTAVE
+from llamatron.music import midi
 from llamatron.music.note import ROOT_NAMES
 from llamatron.tui.drawing import NOTHING
 from llamatron.tui.key_table import STEP_BACK, STEP_FORWARD, cursor_moved, BindsKeys
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
-from llamatron.strings.errors import (
-    ERR_NO_NOTE_HERE, ERR_NO_NOTE_ON_STEP, ERR_NO_ROOM_AFTER, ERR_NOTE_IS_ONE_STEP, ERR_NOTHING_TO_SPLIT,
-)
-from llamatron.strings.labels import MSG_ENTRY_SIZE_LABEL, MSG_ROLL_ROW_LABEL, MSG_SONG_ENTRY_SIZE_CHOICE
-from llamatron.strings.marks import MSG_ROLL_OCTAVE_ONLY
 from llamatron.tui import keybindings
 
 # A natural note has no symbol in its bar.
@@ -65,7 +61,7 @@ def on_a_note(method):
     def on_the_note(self):
         start = self.note_here()
         if start is None:
-            self.editor.refuse(ERR_NO_NOTE_HERE)
+            self.editor.refuse(errors.ERR_NO_NOTE_HERE)
             return
         method(self, start)
     return on_the_note
@@ -120,7 +116,7 @@ class PianoRoll(BindsKeys):
 
     def per_octave(self):
         """Return how many pitches an octave has: twelve half steps when the scale is known, so that a sharp or flat has a row between two degrees, and otherwise one per row."""
-        return HALF_STEPS_PER_OCTAVE if self.scale_name() is not None else self.size()
+        return midi.HALF_STEPS_PER_OCTAVE if self.scale_name() is not None else self.size()
 
     def scale_steps(self):
         """Return the pitches within an octave that are the scale's degrees, in degree order: its half steps, or every pitch when the scale isn't known."""
@@ -133,7 +129,7 @@ class PianoRoll(BindsKeys):
         return self.document().scale_half_steps(scale)
 
     def highest_pitch(self):
-        return (MAX_OCTAVE + 1) * self.per_octave() - 1
+        return (limits.MAX_OCTAVE + 1) * self.per_octave() - 1
 
     def pitch_of(self, step):
         """Return the row of a step's note, a degree past the scale's size carried into the next octave and a sharp or flat a pitch up or down, or None on a rest."""
@@ -153,8 +149,8 @@ class PianoRoll(BindsKeys):
             if not self.document().step_value(name=self.name(), row=Row.GRAB, step=step):
                 return None
             # A file can mark a grab on a step with no note of its own, which the roll shows on the root, where marking it from the rows would put it.
-            degree = MIN_DEGREE
-        octaves_up, place = divmod(degree - MIN_DEGREE, self.size())
+            degree = limits.MIN_DEGREE
+        octaves_up, place = divmod(degree - limits.MIN_DEGREE, self.size())
         pitch = (self.step_octave(step) + octaves_up) * self.per_octave() + self.scale_steps()[place]
         if self.scale_name() is not None:
             pitch += ACCIDENTALS.get(self.accidental_symbol(step), 0)
@@ -174,14 +170,14 @@ class PianoRoll(BindsKeys):
         steps = self.scale_steps()
         octave, within = divmod(pitch, self.per_octave())
         if within in steps:
-            return steps.index(within) + MIN_DEGREE, octave, NO_ACCIDENTAL
+            return steps.index(within) + limits.MIN_DEGREE, octave, NO_ACCIDENTAL
         below = max(index for index, step in enumerate(steps) if step < within)
         above = steps[below + 1] if below + 1 < len(steps) else self.per_octave()
         flats = self.document().scale_spells_flats(self.scale_name())
         if within - steps[below] == 1 and not (flats and above - within == 1):
-            return below + MIN_DEGREE, octave, Accidental.SHARP
+            return below + limits.MIN_DEGREE, octave, Accidental.SHARP
         octaves_more, place = divmod(below + 1, len(steps))
-        return place + MIN_DEGREE, octave + octaves_more, Accidental.FLAT
+        return place + limits.MIN_DEGREE, octave + octaves_more, Accidental.FLAT
 
     def clamped(self, pitch):
         return max(min(pitch, self.highest_pitch()), 0)
@@ -197,7 +193,7 @@ class PianoRoll(BindsKeys):
 
     def _rows(self):
         per = self.per_octave()
-        pitches = {octave * per + step for octave in range(MAX_OCTAVE + 1) for step in self.scale_steps()}
+        pitches = {octave * per + step for octave in range(limits.MAX_OCTAVE + 1) for step in self.scale_steps()}
         for start in self.editor.pattern().get_note_steps():
             pitches.add(self.pitch_of(start))
             pitches |= self.ghost_pitches(start)
@@ -218,13 +214,13 @@ class PianoRoll(BindsKeys):
         song = self.document().song()
         scale = self.scale_name()
         if scale is None:
-            return MSG_ROLL_ROW_LABEL.format(note=MSG_ROLL_OCTAVE_ONLY.format(octave=song.shown_octave(octave)), degree=degree)
+            return labels.MSG_ROLL_ROW_LABEL.format(note=marks.MSG_ROLL_OCTAVE_ONLY.format(octave=song.shown_octave(octave)), degree=degree)
         if accidental is not NO_ACCIDENTAL:
             name, sounding = self.document().scale_note_at(name=scale, octave=octave, half_steps=pitch % self.per_octave())
-            return MSG_ROLL_ROW_LABEL.format(note=name + str(song.shown_octave(sounding)), degree=NOTHING).rstrip()
-        place = degree - MIN_DEGREE
+            return labels.MSG_ROLL_ROW_LABEL.format(note=name + str(song.shown_octave(sounding)), degree=NOTHING).rstrip()
+        place = degree - limits.MIN_DEGREE
         sounding = self.document().scale_degree_octave(name=scale, octave=octave, place=place)
-        return MSG_ROLL_ROW_LABEL.format(note=self.document().scale_note_names(scale)[place] + str(song.shown_octave(sounding)), degree=degree)
+        return labels.MSG_ROLL_ROW_LABEL.format(note=self.document().scale_note_names(scale)[place] + str(song.shown_octave(sounding)), degree=degree)
 
     def widest_row_label(self):
         """Return how wide a row's label can be, from the label's parts at their widest: the widest note name with the widest octave label, or the octave alone, and the largest degree.
@@ -232,9 +228,9 @@ class PianoRoll(BindsKeys):
         The width is worked out from the parts rather than from a row because a row's label needs a note that exists, and the top row's may not while a degree past the scale's top is being typed.
         """
         song = self.document().song()
-        octave = max((str(song.shown_octave(number)) for number in (MIN_OCTAVE, MAX_OCTAVE)), key=len)
-        notes = [MSG_ROLL_OCTAVE_ONLY.format(octave=octave), *[name + octave for name in ROOT_NAMES]]
-        return max(len(MSG_ROLL_ROW_LABEL.format(note=note, degree=self.size())) for note in notes)
+        octave = max((str(song.shown_octave(number)) for number in (limits.MIN_OCTAVE, limits.MAX_OCTAVE)), key=len)
+        notes = [marks.MSG_ROLL_OCTAVE_ONLY.format(octave=octave), *[name + octave for name in ROOT_NAMES]]
+        return max(len(labels.MSG_ROLL_ROW_LABEL.format(note=note, degree=self.size())) for note in notes)
 
     def starts_an_octave(self, pitch):
         """Return whether a row is the first degree of its octave, under which a rule is drawn."""
@@ -268,7 +264,7 @@ class PianoRoll(BindsKeys):
         if self.grabs(step):
             return ghosts
         for degree, octave, accidental in self.document().chord_tones(name=self.name(), step=step, octave=self.step_octave(step)):
-            octaves_up, place = divmod(degree - MIN_DEGREE, self.size())
+            octaves_up, place = divmod(degree - limits.MIN_DEGREE, self.size())
             pitch = (octave + octaves_up) * self.per_octave() + self.scale_steps()[place]
             if self.scale_name() is not None:
                 pitch += ACCIDENTALS.get(accidental, 0)
@@ -395,7 +391,7 @@ class PianoRoll(BindsKeys):
     def pick_keyswitches(self):
         """Open the dialog that picks the keyswitches of the note that covers the cursor's step, whichever row the cursor is on, as the chord key goes by the step. A step no note covers takes none, and says so."""
         if self.editor.step not in self.covering():
-            self.editor.refuse(ERR_NO_NOTE_ON_STEP)
+            self.editor.refuse(errors.ERR_NO_NOTE_ON_STEP)
             return
         pick_keyswitches(editor=self.editor, step=self.covering()[self.editor.step])
 
@@ -403,19 +399,19 @@ class PianoRoll(BindsKeys):
         """Split the note under the cursor at the cursor's step, which has to be one of the steps it holds, not its first."""
         start = self.note_here()
         if start is None or start == self.editor.step:
-            self.editor.refuse(ERR_NOTHING_TO_SPLIT)
+            self.editor.refuse(errors.ERR_NOTHING_TO_SPLIT)
             return
         self.document().split_note(name=self.name(), step=self.editor.step)
 
     @on_a_note
     def lengthen(self, start):
         if not self.document().lengthen_note(name=self.name(), step=start):
-            self.editor.refuse(ERR_NO_ROOM_AFTER)
+            self.editor.refuse(errors.ERR_NO_ROOM_AFTER)
 
     @on_a_note
     def shorten(self, start):
         if not self.document().shorten_note(name=self.name(), step=start):
-            self.editor.refuse(ERR_NOTE_IS_ONE_STEP)
+            self.editor.refuse(errors.ERR_NOTE_IS_ONE_STEP)
 
     @on_a_note
     def cycle_accidental(self, start):
@@ -439,6 +435,6 @@ class PianoRoll(BindsKeys):
         written = self.document().written_entry_size(self.name())
         place = choices.index(written) if written in choices else 0
         self.editor.ask(
-            dialog=ChoiceDialog(title=MSG_ENTRY_SIZE_LABEL, options=[MSG_SONG_ENTRY_SIZE_CHOICE, *STEP_SIZE_CHOICES], current=place),
+            dialog=ChoiceDialog(title=labels.MSG_ENTRY_SIZE_LABEL, options=[labels.MSG_SONG_ENTRY_SIZE_CHOICE, *STEP_SIZE_CHOICES], current=place),
             then=lambda chosen: self.document().set_pattern_entry_size(name=self.name(), entry_size=choices[chosen]),
         )

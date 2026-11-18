@@ -18,8 +18,7 @@
 from llamatron.composition.row_descriptions import ROW_DESCRIPTIONS
 from llamatron.tui.drawing import NOTHING
 from llamatron.tui.key_table import STEP_BACK, STEP_FORWARD, BindsKeys
-from llamatron.strings.labels import MSG_ROW_LABELS
-from llamatron.strings.marks import MSG_BLOCKED_CELL, MSG_UNSET_MARK
+from llamatron.strings import labels as labels_text, marks
 from llamatron.tui import keybindings
 
 
@@ -44,7 +43,7 @@ class PatternRow(BindsKeys):
         self.name = name
 
     def label(self):
-        return MSG_ROW_LABELS[self.name]
+        return labels_text.MSG_ROW_LABELS[self.name]
 
     def labels(self):
         """Return the label of each line the row takes, top to bottom, which is one line unless a subclass draws more."""
@@ -111,10 +110,10 @@ class PatternRow(BindsKeys):
         if not self.is_note(step=step) and not self.on_rests():
             return NOTHING
         value = self.value(step=step)
-        return MSG_UNSET_MARK if value is None else str(value)
+        return marks.MSG_UNSET_MARK if value is None else str(value)
 
     def cell_lines(self, *, step):
         """Return what a step's cell shows on each of the row's lines, top to bottom: its text, or the blocked mark on the value's line where the step can't take one."""
         if self.blocked(step=step):
-            return [NOTHING] * (self.height() - 1) + [MSG_BLOCKED_CELL]
+            return [NOTHING] * (self.height() - 1) + [marks.MSG_BLOCKED_CELL]
         return [self.cell_text(step=step)]

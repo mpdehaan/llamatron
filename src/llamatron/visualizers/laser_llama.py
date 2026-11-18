@@ -34,7 +34,7 @@ from llamatron.visualizers.cells import HALF_ROWS, SPACE, UPPER_HALF, CellPainte
 from llamatron.visualizers.colour import Limiter, note_colour
 from llamatron.visualizers.heard import SILENCE
 from llamatron.visualizers.visualizer import Visualizer
-from llamatron.strings.visualizers import MSG_LASER_LLAMA, MSG_LASER_LLAMA_DRAWING
+from llamatron.strings import visualizers
 
 SEED = 1
 LONGEST_FRAME_SECONDS = 0.2
@@ -105,7 +105,7 @@ class LaserLlama(Visualizer):
 
     __slots__ = ('_rows', '_columns', '_grid', '_backdrop', '_stars', '_scroll', '_llama', '_facing', '_beams', '_last', '_limiter', '_cells', '_chooser')
 
-    NAME = MSG_LASER_LLAMA
+    NAME = visualizers.MSG_LASER_LLAMA
     OPTION = 'laser_llama'
     DARK_IN_SILENCE = False
 
@@ -144,7 +144,7 @@ class LaserLlama(Visualizer):
         self._last = now
         tempo = heard.tempo_factor()
         self._scroll += GRID_SPEED * tempo * seconds
-        drawing = MSG_LASER_LLAMA_DRAWING if self._facing > 0 else mirrored_drawing(MSG_LASER_LLAMA_DRAWING)
+        drawing = visualizers.MSG_LASER_LLAMA_DRAWING if self._facing > 0 else mirrored_drawing(visualizers.MSG_LASER_LLAMA_DRAWING)
         drawing_width = max(len(line) for line in drawing)
         self._llama += self._facing * ROAM_SPEED * tempo * seconds
         if self._llama < 0 or self._llama * width + drawing_width > width:

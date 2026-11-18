@@ -27,14 +27,11 @@ note letters and has no gauge.
 """
 
 from llamatron.composition.file_format import Row
-from llamatron.composition.limits import MIN_DEGREE
-from llamatron.strings.errors import ERR_BOTTOM_OF_SCALE, ERR_TOP_OF_SCALE
+from llamatron.composition import limits
+from llamatron.strings import errors, labels as labels_text, legends, marks
 from llamatron.tui.components.pattern_row import PatternRow
 from llamatron.tui.drawing import NOTHING
 from llamatron.tui.keys import DIGITS
-from llamatron.strings.labels import MSG_ROW_LABELS
-from llamatron.strings.legends import MSG_DIGITS_RANGE_LABEL
-from llamatron.strings.marks import MSG_DRUM_LETTER_ROW, MSG_GAUGE_BAR, MSG_OVER_THE_TOP_MARK
 from llamatron.tui import keybindings
 
 # The gauge's rows when the scale isn't known, one per degree of a seven-note scale.
@@ -51,7 +48,7 @@ class DegreeRow(PatternRow):
     __slots__ = ()
 
     def label(self):
-        return MSG_DRUM_LETTER_ROW if self.editor.is_drum() else MSG_ROW_LABELS[self.name]
+        return marks.MSG_DRUM_LETTER_ROW if self.editor.is_drum() else labels_text.MSG_ROW_LABELS[self.name]
 
     def on_rests(self):
         return True
@@ -82,7 +79,7 @@ class DegreeRow(PatternRow):
         """Return the gauge's row labels from the top down: the scale's note names, or the degrees as numbers."""
         name = self.scale_name()
         if name is None:
-            names = [str(degree) for degree in range(MIN_DEGREE, self.full_rows() + 1)]
+            names = [str(degree) for degree in range(limits.MIN_DEGREE, self.full_rows() + 1)]
         else:
             names = self.editor.document().scale_note_names(name)
         return list(reversed(names[:self.rows_shown()]))
@@ -103,7 +100,7 @@ class DegreeRow(PatternRow):
         size = self.scale_size()
         if value is None or size is None or not self.has_gauge():
             return value
-        return (value - MIN_DEGREE) % size + MIN_DEGREE
+        return (value - limits.MIN_DEGREE) % size + limits.MIN_DEGREE
 
     def octave_shift(self, *, step=None):
         """Return how many octaves above its stored octave a note plays, for a degree past a known scale's size."""
@@ -111,7 +108,7 @@ class DegreeRow(PatternRow):
         size = self.scale_size()
         if value is None or size is None or not self.has_gauge():
             return 0
-        return (value - MIN_DEGREE) // size
+        return (value - limits.MIN_DEGREE) // size
 
     def limit(self):
         """Return the highest degree that can be typed: the scale's size when it's known, or the largest scale the pattern can play in."""
@@ -124,9 +121,9 @@ class DegreeRow(PatternRow):
             result = [self.bind(self.KEYS.NOTE, action=self.type_letter, wants_key=True)]
         else:
             limit = self.limit()
-            digits = DIGITS if limit > int(DIGITS[-1]) else tuple(str(number) for number in range(MIN_DEGREE, limit + 1))
+            digits = DIGITS if limit > int(DIGITS[-1]) else tuple(str(number) for number in range(limits.MIN_DEGREE, limit + 1))
             result = [
-                self.bind(self.KEYS.DEGREE, action=self.type_degree, wants_key=True, keys=digits, name=MSG_DIGITS_RANGE_LABEL.format(low=MIN_DEGREE, high=limit)),
+                self.bind(self.KEYS.DEGREE, action=self.type_degree, wants_key=True, keys=digits, name=legends.MSG_DIGITS_RANGE_LABEL.format(low=limits.MIN_DEGREE, high=limit)),
                 *self.adjust_keys(),
             ]
         if self.is_note():
@@ -134,7 +131,7 @@ class DegreeRow(PatternRow):
         return result
 
     def type_degree(self, digit):
-        number = self.editor.typed_number(digit=digit, low=MIN_DEGREE, high=self.limit())
+        number = self.editor.typed_number(digit=digit, low=limits.MIN_DEGREE, high=self.limit())
         if number is not None:
             self.set_value(number)
             self.editor.fill_in()
@@ -148,21 +145,21 @@ class DegreeRow(PatternRow):
         size = self.scale_size()
         if size is None:
             current = self.value() or 0
-            self.set_value(max(min(current + offset, self.limit()), MIN_DEGREE))
+            self.set_value(max(min(current + offset, self.limit()), limits.MIN_DEGREE))
             self.editor.fill_in()
             return
         current = self.shown_degree()
         if current is None:
             # A rest nudged either way becomes the root, as it did before the gauge.
-            degree = MIN_DEGREE
+            degree = limits.MIN_DEGREE
         else:
             degree = current + offset
             if degree > size:
-                self.editor.refuse(ERR_TOP_OF_SCALE.format(scale=self.scale_name()))
+                self.editor.refuse(errors.ERR_TOP_OF_SCALE.format(scale=self.scale_name()))
                 degree = size
-            elif degree < MIN_DEGREE:
-                self.editor.refuse(ERR_BOTTOM_OF_SCALE.format(scale=self.scale_name()))
-                degree = MIN_DEGREE
+            elif degree < limits.MIN_DEGREE:
+                self.editor.refuse(errors.ERR_BOTTOM_OF_SCALE.format(scale=self.scale_name()))
+                degree = limits.MIN_DEGREE
         if self.octave_shift():
             # A file's degree past the scale is written back within it, with its octave moved up to match.
             self.editor.set_value(value=self.editor.row_for(Row.OCTAVE).octave_now() + self.octave_shift(), row=Row.OCTAVE)
@@ -182,11 +179,11 @@ class DegreeRow(PatternRow):
         degree = self.shown_degree(step=step)
         if degree is None:
             return NOTHING
-        return str(degree) + (MSG_OVER_THE_TOP_MARK if degree > self.rows_shown() else NOTHING)
+        return str(degree) + (marks.MSG_OVER_THE_TOP_MARK if degree > self.rows_shown() else NOTHING)
 
     def cell_lines(self, *, step):
         if not self.has_gauge():
             return [self.cell_text(step=step)]
         degree = self.shown_degree(step=step) or 0
-        bars = [MSG_GAUGE_BAR if degree >= level else NOTHING for level in range(self.rows_shown(), 0, -1)]
+        bars = [marks.MSG_GAUGE_BAR if degree >= level else NOTHING for level in range(self.rows_shown(), 0, -1)]
         return [*bars, self.cell_text(step=step)]

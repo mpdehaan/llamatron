@@ -41,7 +41,7 @@ from llamatron.visualizers.plasma import Plasma
 from llamatron.visualizers.spectrum import Spectrum
 from llamatron.visualizers.warpzone import WarpZone
 from llamatron.visualizers.visualizer import Visualizer
-from llamatron.strings.visualizers import MSG_CYCLE
+from llamatron.strings import visualizers
 
 # How long each mode shows before the next, hard-coded for now, and the modes it goes through.
 CYCLE_SECONDS = 15.0
@@ -66,7 +66,7 @@ class Cycle(Visualizer):
 
     __slots__ = ('_order', '_place', '_showing', '_since')
 
-    NAME = MSG_CYCLE
+    NAME = visualizers.MSG_CYCLE
     OPTION = 'cycle'
 
     def __init__(self, *, hidden=()):

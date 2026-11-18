@@ -25,7 +25,7 @@ is.
 """
 
 from llamatron.generators.base import ClipGenerator
-from llamatron.music.midi import MAX_MIDI_NUMBER, MIN_MIDI_NUMBER
+from llamatron.music import midi
 from llamatron.music.sound import CHORD, HELD, HELD_SOUND, KIND, LENGTH, MIDI, NOTES, Sound
 
 HALF_STEPS_PER_OCTAVE = 12
@@ -65,8 +65,8 @@ class VoiceLeading(ClipGenerator):
 
     def _fits(self, pitches):
         """Return whether a voicing's notes all lie within the range and within MIDI's."""
-        lowest = max(self._lowest_octave * HALF_STEPS_PER_OCTAVE, MIN_MIDI_NUMBER)
-        highest = min((self._highest_octave + 1) * HALF_STEPS_PER_OCTAVE - 1, MAX_MIDI_NUMBER)
+        lowest = max(self._lowest_octave * HALF_STEPS_PER_OCTAVE, midi.MIN_MIDI_NUMBER)
+        highest = min((self._highest_octave + 1) * HALF_STEPS_PER_OCTAVE - 1, midi.MAX_MIDI_NUMBER)
         return all(lowest <= pitch <= highest for pitch in pitches)
 
     def _voiced(self, *, chord, before):

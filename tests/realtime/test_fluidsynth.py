@@ -30,7 +30,7 @@ from llamatron.realtime.fluidsynth import (
     AUDIO_DEVICE_SETTING, AUDIO_DEVICE_VARIABLE, FLUIDSYNTH_PORT, FLUIDSYNTH_PORT_PREFIX, GAIN, GAIN_OPTION, LOOK_SECONDS, PORT_NAME, START_SECONDS,
     FluidSynth, FluidSynthNotStarted, command,
 )
-from llamatron.strings.errors import ERR_FLUIDSYNTH_DID_NOT_START, ERR_FLUIDSYNTH_ENDED
+from llamatron.strings import errors
 
 OTHER_PORT = 'IAC Driver Bus 1'
 BLACKHOLE = 'BlackHole 2ch'
@@ -125,7 +125,7 @@ class TestFluidSynth(unittest.TestCase):
         synth = self.make(ports=Ports(appears_after=None), process=FakeProcess(code=FAILED))
         with self.assertRaises(FluidSynthNotStarted) as raised:
             synth.ensure_running()
-        self.assertEqual(str(raised.exception), ERR_FLUIDSYNTH_ENDED.format(code=FAILED))
+        self.assertEqual(str(raised.exception), errors.ERR_FLUIDSYNTH_ENDED.format(code=FAILED))
         self.assertFalse(synth.is_running())
 
     def test_a_port_that_never_appears_gives_up_and_ends_the_process(self):
@@ -133,7 +133,7 @@ class TestFluidSynth(unittest.TestCase):
         synth = self.make(ports=Ports(appears_after=None), process=process)
         with self.assertRaises(FluidSynthNotStarted) as raised:
             synth.ensure_running()
-        self.assertEqual(str(raised.exception), ERR_FLUIDSYNTH_DID_NOT_START.format(seconds=START_SECONDS))
+        self.assertEqual(str(raised.exception), errors.ERR_FLUIDSYNTH_DID_NOT_START.format(seconds=START_SECONDS))
         self.assertGreater(self.time, START_SECONDS)
         self.assertTrue(process.stdin.closed)
         self.assertFalse(synth.is_running())

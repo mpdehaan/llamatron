@@ -23,7 +23,7 @@ import unittest
 from llamatron.composition.file_format import Section
 from llamatron.composition.setlist import SECTIONS_TAKEN_IN, Setlist
 from llamatron.macro_composer.wizard_choices import WizardChoices, genre_names
-from llamatron.strings.names import MSG_DEFAULT_SONG_NAME
+from llamatron.strings import names
 from llamatron.support.version import VERSION
 from tests.support.rendering import render_song
 
@@ -66,7 +66,7 @@ class TestTakingIn(unittest.TestCase):
         setlist = a_new_set()
         before = setlist.to_data()
         self.assertEqual(setlist.take_in(made(name=FIRST)), [FIRST])
-        self.assertEqual(setlist.get_song_names(), [MSG_DEFAULT_SONG_NAME, FIRST])
+        self.assertEqual(setlist.get_song_names(), [names.MSG_DEFAULT_SONG_NAME, FIRST])
         for section in SECTIONS_TAKEN_IN:
             for name, item in (before.get(section) or {}).items():
                 self.assertEqual(setlist.get_item(section=section, name=name).to_data(), item)
@@ -141,7 +141,7 @@ class TestReplacingASong(unittest.TestCase):
         patterns = len(setlist.get_pattern_names())
         second = setlist.get_item(section=Section.SONGS, name=SECOND).to_data()
         setlist.replace_song(name=FIRST, other=made(name=A_FILE, genre=1))
-        self.assertEqual(setlist.get_song_names(), [MSG_DEFAULT_SONG_NAME, FIRST, SECOND])
+        self.assertEqual(setlist.get_song_names(), [names.MSG_DEFAULT_SONG_NAME, FIRST, SECOND])
         self.assertEqual(setlist.get_item(section=Section.SONGS, name=SECOND).to_data(), second)
         # Nothing the old song alone used is left: every pattern unused now was unused before.
         self.assertEqual(self.unused_patterns(setlist), unused)
@@ -168,13 +168,13 @@ class TestUntouchedSongs(unittest.TestCase):
 
     def test_a_new_sets_song_is_untouched_until_the_song_or_its_starter_pattern_changes(self):
         setlist = a_new_set()
-        self.assertTrue(setlist.song_is_untouched(MSG_DEFAULT_SONG_NAME))
-        song = setlist.get_song(MSG_DEFAULT_SONG_NAME)
+        self.assertTrue(setlist.song_is_untouched(names.MSG_DEFAULT_SONG_NAME))
+        song = setlist.get_song(names.MSG_DEFAULT_SONG_NAME)
         song.set_tempo(song.get_tempo() + 1)
-        self.assertFalse(setlist.song_is_untouched(MSG_DEFAULT_SONG_NAME))
+        self.assertFalse(setlist.song_is_untouched(names.MSG_DEFAULT_SONG_NAME))
         other = a_new_set()
         other.remove_item(section=Section.PATTERNS, name=other.get_pattern_names()[0])
-        self.assertFalse(other.song_is_untouched(MSG_DEFAULT_SONG_NAME))
+        self.assertFalse(other.song_is_untouched(names.MSG_DEFAULT_SONG_NAME))
 
     def test_a_song_just_added_is_untouched_and_a_made_song_is_not(self):
         setlist = a_new_set()
@@ -186,7 +186,7 @@ class TestUntouchedSongs(unittest.TestCase):
 
     def test_a_song_is_replaced_under_a_new_name_when_one_is_given(self):
         setlist = a_new_set()
-        self.assertEqual(setlist.replace_song(name=MSG_DEFAULT_SONG_NAME, other=made(name=FIRST), new=SECOND), SECOND)
+        self.assertEqual(setlist.replace_song(name=names.MSG_DEFAULT_SONG_NAME, other=made(name=FIRST), new=SECOND), SECOND)
         self.assertEqual(setlist.get_song_names(), [SECOND])
 
 
@@ -194,11 +194,11 @@ class TestWizardChoicesKept(unittest.TestCase):
     """A song keeps what the song wizard was told, as data of its own."""
 
     def test_a_song_the_wizard_did_not_make_keeps_none(self):
-        self.assertIsNone(a_new_set().get_song(MSG_DEFAULT_SONG_NAME).get_wizard_choices())
+        self.assertIsNone(a_new_set().get_song(names.MSG_DEFAULT_SONG_NAME).get_wizard_choices())
 
     def test_the_choices_are_kept_written_and_read_and_share_nothing_with_what_was_given(self):
         setlist = a_new_set()
-        song = setlist.get_song(MSG_DEFAULT_SONG_NAME)
+        song = setlist.get_song(names.MSG_DEFAULT_SONG_NAME)
         given = {key: (dict(value) if isinstance(value, dict) else value) for key, value in SOME_CHOICES.items()}
         song.set_wizard_choices(given)
         given[KEY][ROOT] = A_ROOT
@@ -208,7 +208,7 @@ class TestWizardChoicesKept(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             path = os.path.join(folder, A_FILE)
             setlist.write_file(path)
-            self.assertEqual(Setlist.read_file(path).get_song(MSG_DEFAULT_SONG_NAME).get_wizard_choices(), SOME_CHOICES)
+            self.assertEqual(Setlist.read_file(path).get_song(names.MSG_DEFAULT_SONG_NAME).get_wizard_choices(), SOME_CHOICES)
         song.set_wizard_choices(None)
         self.assertIsNone(song.get_wizard_choices())
 

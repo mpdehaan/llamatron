@@ -22,7 +22,7 @@ step that grabs can hold a chord, which is built on the grabbed note.
 """
 
 from llamatron.composition.file_format import Row
-from llamatron.composition.limits import MIN_DEGREE
+from llamatron.composition import limits
 from llamatron.music.note import NoteName
 from llamatron.tui.components.toggle_row import ToggleRow
 from llamatron.tui import keybindings
@@ -43,6 +43,6 @@ class GrabRow(ToggleRow):
 
     def toggle(self):
         if not self.value() and not self.is_note():
-            self.editor.set_value(value=DRUM_GRAB_NOTE if self.editor.is_drum() else MIN_DEGREE, row=Row.DEGREE)
+            self.editor.set_value(value=DRUM_GRAB_NOTE if self.editor.is_drum() else limits.MIN_DEGREE, row=Row.DEGREE)
             self.editor.fill_in()
         super().toggle()

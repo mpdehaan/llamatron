@@ -21,7 +21,7 @@ from llamatron.composition.groove import FactoryGroove
 from llamatron.macro_composer import arranger
 from llamatron.macro_composer.arranger import GROOVE, NO_GROOVE
 from llamatron.macro_composer.wizard_choices import SWINGS, WizardChoices
-from llamatron.strings.errors import ERR_WIZARD_SWING
+from llamatron.strings import errors
 from llamatron.support.version import VERSION
 from tests.support.ui_testing import fixed_text
 
@@ -100,12 +100,12 @@ class TestSwing(unittest.TestCase):
             choices = chosen(genre=genre, subgenre=subgenre)
             self.assertFalse(choices.has_swing())
             self.assertEqual(choices.get_swing(), NO_GROOVE)
-            with self.assertRaisesRegex(ValueError, fixed_text(ERR_WIZARD_SWING)):
+            with self.assertRaisesRegex(ValueError, fixed_text(errors.ERR_WIZARD_SWING)):
                 choices.set_swing(FactoryGroove.SWING_54)
 
     def test_what_is_no_swing_is_refused(self):
         choices = chosen()
-        with self.assertRaisesRegex(ValueError, fixed_text(ERR_WIZARD_SWING)):
+        with self.assertRaisesRegex(ValueError, fixed_text(errors.ERR_WIZARD_SWING)):
             choices.set_swing(NOT_A_SWING)
         self.assertEqual(choices.swings(), list(SWINGS))
 

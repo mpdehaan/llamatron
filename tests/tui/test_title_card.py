@@ -21,12 +21,11 @@ import unittest
 
 from rich.color import Color
 
-from llamatron.strings.about import MSG_BLOCK, MSG_SPLASH_ADDRESS, MSG_SPLASH_WORD, MSG_START_PROMPT
+from llamatron.strings import about
 from llamatron.tui import keybindings
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.components import scroll_text, title_card
 from llamatron.tui.components.scroll_text import BANNER_ROWS, COLUMNS_PER_SECOND, banner, demo_name, words_of, scroll_lines, scroll_seconds, scroll_text_for
-from llamatron.strings.about import MSG_BLOCK_LETTERS, MSG_DEMO_SCROLL
 from llamatron.tui.components.title_card import (
     ADDRESS_ROW, BLACK, LETTER_ROWS, NARROW, PROMPT_ROW, SCANNER_ROW, WIDE, Entrance, prompt_level, scan_end, scan_start, scanner_level,
     title_lines, whole_title_seconds, words_width,
@@ -57,7 +56,7 @@ def lines_at(*, elapsed, screen=WIDE_SCREEN, prompt=True, seconds=None):
 
 def block_rows(lines):
     """Return the numbers of the lines that hold blocks of the word, leaving out the scanner's line."""
-    return [number for number, line in enumerate(lines) if MSG_BLOCK in line.plain and line.plain.strip(MSG_BLOCK) != NO_TEXT]
+    return [number for number, line in enumerate(lines) if about.MSG_BLOCK in line.plain and line.plain.strip(about.MSG_BLOCK) != NO_TEXT]
 
 
 NO_TEXT = ''
@@ -97,10 +96,10 @@ class TestTitleCard(unittest.TestCase):
                 lines = lines_at(elapsed=settled(), screen=screen)
                 rows = block_rows(lines)
                 self.assertEqual(len(rows), LETTER_ROWS)
-                first = min(line.plain.index(MSG_BLOCK) for line in (lines[row] for row in rows))
+                first = min(line.plain.index(about.MSG_BLOCK) for line in (lines[row] for row in rows))
                 last = max(len(line.plain.rstrip()) for line in (lines[row] for row in rows))
-                self.assertEqual(last - first, words_width(word=MSG_SPLASH_WORD, scale=scale))
-                self.assertEqual(first, (screen[0] - words_width(word=MSG_SPLASH_WORD, scale=scale)) // 2)
+                self.assertEqual(last - first, words_width(word=about.MSG_SPLASH_WORD, scale=scale))
+                self.assertEqual(first, (screen[0] - words_width(word=about.MSG_SPLASH_WORD, scale=scale)) // 2)
 
     def test_the_letters_ride_waves_as_they_come_in_and_settle_onto_five_rows(self):
         self.assertEqual(title_card.ENTRANCE, Entrance.SINE_WAVES)
@@ -108,7 +107,7 @@ class TestTitleCard(unittest.TestCase):
         self.assertEqual(len(block_rows(lines_at(elapsed=settled()))), LETTER_ROWS)
 
     def test_the_scanner_sweeps_right_then_left_between_the_letters_settling_and_its_end(self):
-        width = words_width(word=MSG_SPLASH_WORD, scale=WIDE)
+        width = words_width(word=about.MSG_SPLASH_WORD, scale=WIDE)
         self.assertEqual(scanner_level(column=width // 2, width=width, elapsed=scan_start() - 0.01), 0.0)
         self.assertEqual(scanner_level(column=width // 2, width=width, elapsed=scan_end()), 0.0)
         quarter = scan_start() + (scan_end() - scan_start()) / 4
@@ -125,19 +124,19 @@ class TestTitleCard(unittest.TestCase):
         lines = lines_at(elapsed=settled())
         top = block_rows(lines)[0]
         address = lines[top + ADDRESS_ROW].plain
-        self.assertEqual(address.index(MSG_SPLASH_ADDRESS), (WIDE_SCREEN[0] - len(MSG_SPLASH_ADDRESS)) // 2)
+        self.assertEqual(address.index(about.MSG_SPLASH_ADDRESS), (WIDE_SCREEN[0] - len(about.MSG_SPLASH_ADDRESS)) // 2)
         self.assertEqual(ADDRESS_ROW, SCANNER_ROW + 2)
 
     def test_the_prompt_waits_for_the_scanner_then_pulses_without_going_dark(self):
         self.assertEqual(prompt_level(scan_end() - 0.01), 0.0)
         top = block_rows(lines_at(elapsed=settled()))[0]
-        self.assertNotIn(MSG_START_PROMPT, lines_at(elapsed=DURING_SCAN)[top + PROMPT_ROW].plain)
-        self.assertIn(MSG_START_PROMPT, lines_at(elapsed=LONG_AFTER)[top + PROMPT_ROW].plain)
+        self.assertNotIn(about.MSG_START_PROMPT, lines_at(elapsed=DURING_SCAN)[top + PROMPT_ROW].plain)
+        self.assertIn(about.MSG_START_PROMPT, lines_at(elapsed=LONG_AFTER)[top + PROMPT_ROW].plain)
         self.assertEqual(PROMPT_ROW, ADDRESS_ROW + 6)
         pulse = [prompt_level(LONG_AFTER + step / STEPS * 3) for step in range(STEPS)]
         self.assertGreater(min(pulse), 0.0)
         self.assertGreater(max(pulse) - min(pulse), 0.3)
-        self.assertFalse(any(MSG_START_PROMPT in line.plain for line in lines_at(elapsed=LONG_AFTER, prompt=False)))
+        self.assertFalse(any(about.MSG_START_PROMPT in line.plain for line in lines_at(elapsed=LONG_AFTER, prompt=False)))
 
     def test_a_title_shown_for_a_time_fades_to_black_at_its_end(self):
         seconds = whole_title_seconds()
@@ -153,7 +152,7 @@ class TestScrollText(unittest.TestCase):
         self.assertEqual(demo_name(A_LEARNING_DEMO), A_LEARNING_DEMO_NAME)
         self.assertEqual(demo_name(A_GENRE_DEMO), A_GENRE_DEMO_NAME)
         self.assertEqual(words_of(WORDS_WITH_A_NUMBER), WORDS_WITH_A_NUMBER_AS_WORDS)
-        self.assertEqual(scroll_text_for(A_LEARNING_DEMO), MSG_DEMO_SCROLL.format(name=A_LEARNING_DEMO_NAME))
+        self.assertEqual(scroll_text_for(A_LEARNING_DEMO), about.MSG_DEMO_SCROLL.format(name=A_LEARNING_DEMO_NAME))
 
     def test_a_name_that_is_only_a_number_keeps_it(self):
         self.assertEqual(demo_name(ONLY_A_NUMBER), ONLY_A_NUMBER_NAME)
@@ -161,14 +160,14 @@ class TestScrollText(unittest.TestCase):
     def test_every_letter_and_digit_has_a_shape_of_five_rows_of_five(self):
         for character in string.ascii_uppercase + string.digits + COLON_AND_SPACE:
             with self.subTest(character=character):
-                self.assertEqual([len(row) for row in MSG_BLOCK_LETTERS[character]], [scroll_text.LETTER_ROWS] * scroll_text.LETTER_ROWS)
+                self.assertEqual([len(row) for row in about.MSG_BLOCK_LETTERS[character]], [scroll_text.LETTER_ROWS] * scroll_text.LETTER_ROWS)
 
     def test_every_letter_is_a_capital_of_one_size(self):
         # The block letters have no lower case, so the words are capitals.
         self.assertEqual(banner(A_CAPITAL), banner(A_CAPITAL.lower()))
         self.assertEqual(len(banner(A_CAPITAL)), BANNER_ROWS)
         self.assertEqual(len(banner(A_CAPITAL)[0]), scroll_text.LETTER_ROWS * scroll_text.BLOCK_COLUMNS)
-        self.assertIn(MSG_BLOCK, banner(A_CAPITAL)[0])
+        self.assertIn(about.MSG_BLOCK, banner(A_CAPITAL)[0])
 
     def test_a_character_with_no_shape_is_a_space(self):
         self.assertEqual(banner(NO_SUCH_LETTER), banner(SPACE))
@@ -189,7 +188,7 @@ class TestScrollText(unittest.TestCase):
         lines = scroll_lines(rows=banner(scroll_text_for(A_LEARNING_DEMO)), width=width, height=height, elapsed=MANY_COLUMNS / COLUMNS_PER_SECOND)
         self.assertEqual(len(lines), height)
         self.assertEqual({len(line.plain) for line in lines}, {width})
-        colours = {span.style.color.triplet for line in lines for span in line.spans if line.plain[span.start] == MSG_BLOCK}
+        colours = {span.style.color.triplet for line in lines for span in line.spans if line.plain[span.start] == about.MSG_BLOCK}
         self.assertEqual(colours, {Color.from_rgb(*scroll_text.SCROLL_ORANGE).triplet})
         self.assertTrue(all(span.style.bgcolor.triplet == Color.from_rgb(*title_card.BLACK).triplet for line in lines for span in line.spans))
 
@@ -197,7 +196,7 @@ class TestScrollText(unittest.TestCase):
         """Return the columns that hold a block at a moment, on a wide screen."""
         width, height = WIDE_SCREEN
         lines = scroll_lines(rows=rows, width=width, height=height, elapsed=elapsed)
-        return sorted({column for line in lines for column, character in enumerate(line.plain) if character == MSG_BLOCK})
+        return sorted({column for line in lines for column, character in enumerate(line.plain) if character == about.MSG_BLOCK})
 
 
 class TestStartScreenWanted(unittest.TestCase):

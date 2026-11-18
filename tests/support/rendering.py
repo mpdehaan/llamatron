@@ -22,12 +22,12 @@ song, so that the same data builds a Setlist, a Song or a Document.
 
 import os
 
-from llamatron.composition.defaults import FIRST_NUMBER
+from llamatron.composition import defaults
+from llamatron.strings import names
 from llamatron.composition.file_format import Section
 from llamatron.composition.setlist import Setlist, as_setlist_data
 from llamatron.composition.setlist_writer import dump_setlist
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.strings.names import MSG_DEFAULT_SONG_NAME, MSG_NEW_PATTERN_NAME, MSG_NEW_TRACK_NAME
 from llamatron.support.memory import Memory
 from llamatron.tui.document import Document
 
@@ -43,7 +43,7 @@ def as_setlist(data):
     """Return data as a set's: one song's data becomes a set holding it as the untitled song, and a set's stays as it is."""
     if not isinstance(data, dict) or Section.SONGS in data:
         return data
-    return as_setlist_data(data=data, song_name=MSG_DEFAULT_SONG_NAME)
+    return as_setlist_data(data=data, song_name=names.MSG_DEFAULT_SONG_NAME)
 
 
 def setlist_from_data(data):
@@ -55,7 +55,7 @@ def song_from_data(data):
     """Return the one Song that a song's data describes, or the first song of a set's data, which an empty file gets as untitled."""
     setlist = setlist_from_data(data)
     if not setlist.get_song_names():
-        setlist.add_new_song(MSG_DEFAULT_SONG_NAME)
+        setlist.add_new_song(names.MSG_DEFAULT_SONG_NAME)
     return setlist.get_song(setlist.first_song_name())
 
 
@@ -103,6 +103,6 @@ STARTER_SCENE = 0
 def bare_document():
     """Return a new Document with the starter pattern and the clip that plays it removed, for a test that builds a song from nothing."""
     document = Document()
-    document.delete_clip_slot(index=STARTER_SCENE, track=MSG_NEW_TRACK_NAME.format(number=FIRST_NUMBER))
-    document.delete_named(section=Section.PATTERNS, name=MSG_NEW_PATTERN_NAME.format(number=FIRST_NUMBER))
+    document.delete_clip_slot(index=STARTER_SCENE, track=names.MSG_NEW_TRACK_NAME.format(number=defaults.FIRST_NUMBER))
+    document.delete_named(section=Section.PATTERNS, name=names.MSG_NEW_PATTERN_NAME.format(number=defaults.FIRST_NUMBER))
     return document

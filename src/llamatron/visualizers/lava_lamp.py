@@ -50,7 +50,7 @@ from llamatron.visualizers.fields import Discs, blurred, ripple_step
 from llamatron.visualizers.heard import SILENCE
 from llamatron.visualizers.visualizer import Visualizer
 from llamatron.visualizers.warp import Rotozoom
-from llamatron.strings.visualizers import MSG_LAVA_LAMP
+from llamatron.strings import visualizers
 
 # The derez: how much finer the simulation is than the big pixels, each way, and the colour steps the big pixels are rounded to.
 SUPERSAMPLE = 2
@@ -127,7 +127,7 @@ class LavaLamp(Visualizer):
 
     __slots__ = ('_rows', '_columns', '_water', '_water_before', '_colour', '_blobs', '_motion', '_last', '_discs', '_rotozoom', '_limiter', '_places')
 
-    NAME = MSG_LAVA_LAMP
+    NAME = visualizers.MSG_LAVA_LAMP
     OPTION = 'lava_lamp'
 
     def __init__(self):

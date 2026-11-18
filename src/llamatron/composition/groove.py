@@ -32,17 +32,13 @@ can't take a factory name.
 
 from llamatron.support.rational import Rational
 from llamatron.composition.checks import check_keys, is_whole_number, is_whole_number_from, listed, reading, written_length
-from llamatron.composition.defaults import DEFAULT_GROOVE_CELL_LENGTH
+from llamatron.composition import defaults, limits
+from llamatron.strings import errors
 from llamatron.composition.file_format import GrooveSetting
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.corrections import NO_NEAREST_VALUE
 from llamatron.composition.setting import Checked, Length, described
-from llamatron.composition.limits import MAX_GROOVE_AMOUNT, MAX_GROOVE_CELL_LENGTH, MAX_GROOVE_CELLS, MIN_GROOVE_AMOUNT, MIN_GROOVE_CELLS
 from llamatron.composition.llama_data import LlamaData, or_default
-from llamatron.strings.errors import (
-    ERR_BAD_GROOVE_AMOUNT, ERR_BAD_GROOVE_CELLS, ERR_FACTORY_GROOVE_NAME, ERR_GROOVE_EXPECTED_SETTINGS, ERR_GROOVE_NOT_NAME_OR_FALSE,
-    ERR_NO_SUCH_GROOVE, ERR_NO_SUCH_GROOVE_CELL, ERR_WHERE_WITHIN,
-)
 from llamatron.support.revised import notes_change
 
 # A groove's amounts are percentages of a cell.
@@ -92,14 +88,14 @@ class Groove(LlamaData):
     def from_data(cls, *, data, where, song=None):
         with reading(where):
             if not isinstance(data, dict):
-                raise InvalidValue(ERR_GROOVE_EXPECTED_SETTINGS.format(data=data))
+                raise InvalidValue(errors.ERR_GROOVE_EXPECTED_SETTINGS.format(data=data))
             check_keys(data=data, allowed=set(SETTINGS))
             # A groove needs its cells, so a file that leaves them out is refused as one that holds none.
             if GrooveSetting.CELLS not in data:
                 SETTINGS[GrooveSetting.CELLS].check(None)
             SETTINGS[GrooveSetting.CELLS].check_held(data)
             if GrooveSetting.CELL_LENGTH in data:
-                with reading(ERR_WHERE_WITHIN.format(where=where, part=GrooveSetting.CELL_LENGTH)):
+                with reading(errors.ERR_WHERE_WITHIN.format(where=where, part=GrooveSetting.CELL_LENGTH)):
                     SETTINGS[GrooveSetting.CELL_LENGTH].check_held(data)
             return cls(cells=data[GrooveSetting.CELLS], cell_length=data.get(GrooveSetting.CELL_LENGTH))
 
@@ -118,11 +114,11 @@ class Groove(LlamaData):
 
     def get_cell_length_text(self):
         """Return how long a cell is, as the file writes it, like 1/16."""
-        return or_default(value=self._cell_length, default=DEFAULT_GROOVE_CELL_LENGTH)
+        return or_default(value=self._cell_length, default=defaults.DEFAULT_GROOVE_CELL_LENGTH)
 
     def get_cell_length(self):
         """Return how long a cell is, in whole notes."""
-        return Rational(written_length(value=self.get_cell_length_text(), most=MAX_GROOVE_CELL_LENGTH))
+        return Rational(written_length(value=self.get_cell_length_text(), most=limits.MAX_GROOVE_CELL_LENGTH))
 
     def is_straight(self):
         """Return whether the groove moves nothing, like the factory groove none."""
@@ -145,14 +141,14 @@ class Groove(LlamaData):
     @notes_change
     def set_cell(self, *, step, amount):
         self._check_step(step)
-        if not is_whole_number_from(value=amount, lowest=MIN_GROOVE_AMOUNT, highest=MAX_GROOVE_AMOUNT):
-            raise InvalidValue(ERR_BAD_GROOVE_AMOUNT.format(lowest=MIN_GROOVE_AMOUNT, highest=MAX_GROOVE_AMOUNT, value=amount))
+        if not is_whole_number_from(value=amount, lowest=limits.MIN_GROOVE_AMOUNT, highest=limits.MAX_GROOVE_AMOUNT):
+            raise InvalidValue(errors.ERR_BAD_GROOVE_AMOUNT.format(lowest=limits.MIN_GROOVE_AMOUNT, highest=limits.MAX_GROOVE_AMOUNT, value=amount))
         self._cells[step] = amount
 
     @notes_change
     def insert_cell(self, step):
         """Add a straight cell before a step, up to the most a groove can have."""
-        if len(self._cells) >= MAX_GROOVE_CELLS:
+        if len(self._cells) >= limits.MAX_GROOVE_CELLS:
             return
         self._check_step(step)
         self._cells.insert(step, STRAIGHT)
@@ -160,7 +156,7 @@ class Groove(LlamaData):
     @notes_change
     def remove_cell(self, step):
         """Take a cell out, leaving at least one."""
-        if len(self._cells) <= MIN_GROOVE_CELLS:
+        if len(self._cells) <= limits.MIN_GROOVE_CELLS:
             return
         self._check_step(step)
         del self._cells[step]
@@ -170,37 +166,37 @@ class Groove(LlamaData):
         """Set how long a cell is, as the file writes it, like 1/8, or None for the default."""
         if value is not None:
             SETTINGS[GrooveSetting.CELL_LENGTH].check(value)
-        self._cell_length = None if value == DEFAULT_GROOVE_CELL_LENGTH else value
+        self._cell_length = None if value == defaults.DEFAULT_GROOVE_CELL_LENGTH else value
 
     def _check_step(self, step):
         if not is_whole_number_from(value=step, lowest=0, highest=len(self._cells) - 1):
-            raise InvalidValue(ERR_NO_SUCH_GROOVE_CELL.format(step=step, count=len(self._cells)))
+            raise InvalidValue(errors.ERR_NO_SUCH_GROOVE_CELL.format(step=step, count=len(self._cells)))
 
 
 def _is_cell_list(cells):
     """Return whether a value is a list of 1 to MAX_GROOVE_CELLS amounts, each within the limits."""
     return (
-        isinstance(cells, list) and MIN_GROOVE_CELLS <= len(cells) <= MAX_GROOVE_CELLS
-        and all(is_whole_number_from(value=amount, lowest=MIN_GROOVE_AMOUNT, highest=MAX_GROOVE_AMOUNT) for amount in cells)
+        isinstance(cells, list) and limits.MIN_GROOVE_CELLS <= len(cells) <= limits.MAX_GROOVE_CELLS
+        and all(is_whole_number_from(value=amount, lowest=limits.MIN_GROOVE_AMOUNT, highest=limits.MAX_GROOVE_AMOUNT) for amount in cells)
     )
 
 
 def _check_cells(cells):
     if not _is_cell_list(cells):
-        raise InvalidValue(ERR_BAD_GROOVE_CELLS.format(fewest=MIN_GROOVE_CELLS, most=MAX_GROOVE_CELLS, lowest=MIN_GROOVE_AMOUNT, highest=MAX_GROOVE_AMOUNT, value=cells))
+        raise InvalidValue(errors.ERR_BAD_GROOVE_CELLS.format(fewest=limits.MIN_GROOVE_CELLS, most=limits.MAX_GROOVE_CELLS, lowest=limits.MIN_GROOVE_AMOUNT, highest=limits.MAX_GROOVE_AMOUNT, value=cells))
 
 
 def _nearest_cells(cells):
     """Return cells with each amount outside the limits at the nearest limit, or NO_NEAREST_VALUE unless they're the right number of whole numbers."""
-    if not isinstance(cells, list) or not MIN_GROOVE_CELLS <= len(cells) <= MAX_GROOVE_CELLS or not all(is_whole_number(amount) for amount in cells):
+    if not isinstance(cells, list) or not limits.MIN_GROOVE_CELLS <= len(cells) <= limits.MAX_GROOVE_CELLS or not all(is_whole_number(amount) for amount in cells):
         return NO_NEAREST_VALUE
-    return [min(max(amount, MIN_GROOVE_AMOUNT), MAX_GROOVE_AMOUNT) for amount in cells]
+    return [min(max(amount, limits.MIN_GROOVE_AMOUNT), limits.MAX_GROOVE_AMOUNT) for amount in cells]
 
 
 # A groove's settings, each described once, in the order they're written to a file.
 SETTINGS = described(
     Checked(name=GrooveSetting.CELLS, check=_check_cells, nearest=_nearest_cells),
-    Length(name=GrooveSetting.CELL_LENGTH, most=MAX_GROOVE_CELL_LENGTH),
+    Length(name=GrooveSetting.CELL_LENGTH, most=limits.MAX_GROOVE_CELL_LENGTH),
 )
 
 
@@ -212,7 +208,7 @@ def new_groove():
 def swing_groove(*, percent, cell_length):
     """Return a swing of a percentage on cells of a length: every second cell is delayed by twice the percentage over 50."""
     delay = (percent - STRAIGHT_SWING) * SWING_DELAY_PER_PERCENT
-    return Groove(cells=[STRAIGHT, delay] * (GROOVE_CELLS // 2), cell_length=None if cell_length == DEFAULT_GROOVE_CELL_LENGTH else cell_length)
+    return Groove(cells=[STRAIGHT, delay] * (GROOVE_CELLS // 2), cell_length=None if cell_length == defaults.DEFAULT_GROOVE_CELL_LENGTH else cell_length)
 
 
 def push_groove():
@@ -245,7 +241,7 @@ def factory_groove(name):
 def check_groove_name(name):
     """Refuse a factory groove's name for a groove of the user's own."""
     if is_factory_groove(name):
-        raise InvalidValue(ERR_FACTORY_GROOVE_NAME.format(name=name, names=listed(FACTORY_GROOVE_NAMES)))
+        raise InvalidValue(errors.ERR_FACTORY_GROOVE_NAME.format(name=name, names=listed(FACTORY_GROOVE_NAMES)))
 
 
 def check_groove_choice(*, value, song):
@@ -253,9 +249,9 @@ def check_groove_choice(*, value, song):
     if value is None or value is False:
         return
     if not isinstance(value, str):
-        raise InvalidValue(ERR_GROOVE_NOT_NAME_OR_FALSE.format(value=value))
+        raise InvalidValue(errors.ERR_GROOVE_NOT_NAME_OR_FALSE.format(value=value))
     if not song.has_groove(value):
-        raise InvalidValue(ERR_NO_SUCH_GROOVE.format(name=value))
+        raise InvalidValue(errors.ERR_NO_SUCH_GROOVE.format(name=value))
 
 
 def groove_for(*, choices, song):

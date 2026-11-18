@@ -20,9 +20,7 @@ from rich.text import Text
 from llamatron.composition.chords import root_name
 from llamatron.composition.named_scale import NamedScale
 from llamatron.composition.progressions import quality_of, roman_numeral
-from llamatron.strings.labels import MSG_WIZARD_ANY_PROGRESSION, MSG_WIZARD_CHORDS_BRANCH, MSG_WIZARD_PROGRESSION_LABEL, MSG_WIZARD_SCALE_TYPE_NAMES
-from llamatron.strings.marks import MSG_NUMERALS_SEPARATOR, MSG_WIZARD_CHORD_SEPARATOR, MSG_WIZARD_CHORD_SUFFIXES, MSG_WIZARD_CHORDS_KEY, MSG_WIZARD_CHORDS_LINE, MSG_WIZARD_PROGRESSION_FOR, MSG_WIZARD_PROGRESSION_SHOWN
-from llamatron.strings.messages import MSG_WIZARD_CHORDS_DRAWN_LATER
+from llamatron.strings import labels, marks, messages
 from llamatron.tui.drawing import INDENT, Style
 from llamatron.tui.screens.shared.field import ChoiceField
 from llamatron.tui.screens.wizard.song_ways_branch import A_CHOICE, SongWaysBranch
@@ -35,7 +33,7 @@ class ChordsBranch(SongWaysBranch):
     __slots__ = ()
 
     def name(self):
-        return MSG_WIZARD_CHORDS_BRANCH
+        return labels.MSG_WIZARD_CHORDS_BRANCH
 
     def traits(self):
         return []
@@ -49,11 +47,11 @@ class ChordsBranch(SongWaysBranch):
     def progression(self):
         """Return the progression chosen, or the word for one left to chance."""
         choices = self.choices()
-        return MSG_WIZARD_ANY_PROGRESSION if choices.has_any_progression() else choices.get_way(choices.progression_trait())
+        return labels.MSG_WIZARD_ANY_PROGRESSION if choices.has_any_progression() else choices.get_way(choices.progression_trait())
 
     def set_progression(self, progression):
         choices = self.choices()
-        if progression == MSG_WIZARD_ANY_PROGRESSION:
+        if progression == labels.MSG_WIZARD_ANY_PROGRESSION:
             choices.set_any_progression()
         else:
             choices.set_way(trait=choices.progression_trait(), value=progression)
@@ -65,24 +63,24 @@ class ChordsBranch(SongWaysBranch):
     def numerals(self, chords):
         """Return chords, each a degree and its sharp or flat, as Roman numerals in the song's scale."""
         scale = self.scale()
-        return MSG_NUMERALS_SEPARATOR.join(roman_numeral(scale=scale, degree=degree, accidental=accidental) for degree, accidental in chords)
+        return marks.MSG_NUMERALS_SEPARATOR.join(roman_numeral(scale=scale, degree=degree, accidental=accidental) for degree, accidental in chords)
 
     def chord_names(self, chords):
         """Return chords as their names in the song's key, as the song plays them."""
         scale = self.scale()
-        return MSG_WIZARD_CHORD_SEPARATOR.join(
-            root_name(scale=scale, degree=degree, accidental=accidental) + MSG_WIZARD_CHORD_SUFFIXES[quality_of(scale=scale, degree=degree, accidental=accidental)] for degree, accidental in chords)
+        return marks.MSG_WIZARD_CHORD_SEPARATOR.join(
+            root_name(scale=scale, degree=degree, accidental=accidental) + marks.MSG_WIZARD_CHORD_SUFFIXES[quality_of(scale=scale, degree=degree, accidental=accidental)] for degree, accidental in chords)
 
     def shown(self, progression):
         """Return a progression as the field and its list show it: its name, its numerals where it is written as degrees, and the scale type it was written for where that is not the song's."""
-        if progression == MSG_WIZARD_ANY_PROGRESSION:
+        if progression == labels.MSG_WIZARD_ANY_PROGRESSION:
             return progression
         choices = self.choices()
         degrees = choices.progression_degrees(progression)
-        shown = MSG_WIZARD_PROGRESSION_SHOWN.format(name=progression, numerals=self.numerals(degrees)) if degrees else progression
+        shown = marks.MSG_WIZARD_PROGRESSION_SHOWN.format(name=progression, numerals=self.numerals(degrees)) if degrees else progression
         # A progression written for the other of major and minor says so: its borrowed chords were not meant for the song's scale.
         written_for = choices.progression_scale_type(progression)
-        return shown if written_for == choices.get_scale_type() else MSG_WIZARD_PROGRESSION_FOR.format(progression=shown, scale=MSG_WIZARD_SCALE_TYPE_NAMES[written_for])
+        return shown if written_for == choices.get_scale_type() else marks.MSG_WIZARD_PROGRESSION_FOR.format(progression=shown, scale=labels.MSG_WIZARD_SCALE_TYPE_NAMES[written_for])
 
     def summary(self):
         return self.shown(self.progression()) if self.offers_progressions() else None
@@ -92,8 +90,8 @@ class ChordsBranch(SongWaysBranch):
             return []
         choices = self.choices()
         # The first choice, the one a song starts with, leaves the progression to chance: each run takes one of the subgenre's.
-        offered = [MSG_WIZARD_ANY_PROGRESSION, *choices.song_ways(choices.progression_trait())]
-        return [ChoiceField(page=self.page(), label=MSG_WIZARD_PROGRESSION_LABEL, choices=offered, names=[self.shown(progression) for progression in offered],
+        offered = [labels.MSG_WIZARD_ANY_PROGRESSION, *choices.song_ways(choices.progression_trait())]
+        return [ChoiceField(page=self.page(), label=labels.MSG_WIZARD_PROGRESSION_LABEL, choices=offered, names=[self.shown(progression) for progression in offered],
                             current=self.progression(), shown=self.shown(self.progression()), set=self.page().choosing(self.set_progression))]
 
     def notes(self, width):
@@ -103,11 +101,11 @@ class ChordsBranch(SongWaysBranch):
             return super().notes(width)
         choices = self.choices()
         if choices.has_any_progression():
-            return [Text(), Text(INDENT + MSG_WIZARD_CHORDS_DRAWN_LATER, style=Style.DIM)]
+            return [Text(), Text(INDENT + messages.MSG_WIZARD_CHORDS_DRAWN_LATER, style=Style.DIM)]
         sections = choices.progression_chords(self.progression())
         if not sections:
             return []
         longest = max(len(kind) for kind, _ in sections)
-        key = MSG_WIZARD_CHORDS_KEY.format(root=choices.get_root(), scale=MSG_WIZARD_SCALE_TYPE_NAMES[choices.get_scale_type()])
+        key = marks.MSG_WIZARD_CHORDS_KEY.format(root=choices.get_root(), scale=labels.MSG_WIZARD_SCALE_TYPE_NAMES[choices.get_scale_type()])
         return [Text(), Text(INDENT + key, style=Style.DIM),
-                *(Text(INDENT + MSG_WIZARD_CHORDS_LINE.format(kind=kind, width=longest, chords=self.chord_names(chords))) for kind, chords in sections)]
+                *(Text(INDENT + marks.MSG_WIZARD_CHORDS_LINE.format(kind=kind, width=longest, chords=self.chord_names(chords))) for kind, chords in sections)]

@@ -16,7 +16,7 @@
 """The field of a time setting, Step, Every or Over, which every page with one shares: the one list of times, after the setting's own first choice."""
 
 from llamatron.composition.file_format import TIME_CHOICES
-from llamatron.strings.labels import MSG_TIME_NAMES
+from llamatron.strings import labels
 from llamatron.tui.screens.shared.field import ChoiceField
 
 
@@ -34,6 +34,6 @@ def time_field(*, page, label, written, first, store):
         times.append(current)
     choices = [first, *times]
     return ChoiceField(
-        page=page, label=label, choices=choices, current=current, names=[MSG_TIME_NAMES.get(choice, choice) for choice in choices],
-        shown=MSG_TIME_NAMES.get(current, current), set=lambda choice: store(None if choice == first else choice), clear=lambda: store(None),
+        page=page, label=label, choices=choices, current=current, names=[labels.MSG_TIME_NAMES.get(choice, choice) for choice in choices],
+        shown=labels.MSG_TIME_NAMES.get(current, current), set=lambda choice: store(None if choice == first else choice), clear=lambda: store(None),
     )

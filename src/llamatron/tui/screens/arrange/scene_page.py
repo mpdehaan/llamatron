@@ -18,31 +18,17 @@
 
 from rich.text import Text
 
-from llamatron.composition.limits import MAX_NAME_LENGTH
+from llamatron.composition import limits
+from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.composition.file_format import SECTION_KINDS, SHAPES, shape_setting, REGISTER_NAMES, Section
-from llamatron.composition.limits import MAX_SCENE_REPEAT, MAX_TEMPO, MIN_REPEAT, MIN_TEMPO
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.text import clock, plain_number, sorted_names, tempo_text
 from llamatron.tui.drawing import NOTHING, Style
-from llamatron.strings.help import HELP_SCENE_PAGE
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NameField, NumberField, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.arrange.groove_choice import groove_choice_field
 from llamatron.tui.screens.shared.shared import scene_name
-from llamatron.strings.labels import MSG_EDITING_CAPTION, MSG_SCENE_CAPTION_WORD
-from llamatron.strings.labels import (
-    Crumb, MSG_LAUNCH_TOGETHER_LABEL, MSG_SCENE_SECTION_LABEL, MSG_SCENE_CRUMB, MSG_REPEAT_LABEL, MSG_RESET_LABEL, MSG_SCALE_LABEL, MSG_SONG_OPTION, MSG_TEMPO_LABEL,
-    MSG_TEMPO_RAMP_LABEL,
-)
-from llamatron.strings.legends import MSG_NO_RAMP_WHAT, MSG_USE_SONG_GROOVE_WHAT, MSG_USE_SONG_SCALE_WHAT, MSG_USE_SONG_TEMPO_WHAT, What
-from llamatron.strings.marks import (
-    MSG_NONE_SHOWN,
-    MSG_RAMP_OFF_SHOWN, MSG_SONG_GROOVE_SHOWN, MSG_SONG_SCALE_SHOWN, MSG_SONG_TEMPO_SHOWN, MSG_TEMPO_SHOWN,
-)
-from llamatron.strings.messages import (
-    MSG_NO_SCALE, MSG_PROBLEM_NOTE, MSG_SCENE_LENGTH_NOTE, MSG_SCENE_GROOVE_TITLE, MSG_SCENE_NAME_PROMPT, MSG_SCENE_SCALE_TITLE,
-)
 from llamatron.tui.screens.arrange.chains_field import chains_field
 from llamatron.tui.screens.generators.shape_fields import shape_section
 from llamatron.tui import themes
@@ -56,7 +42,7 @@ class ScenePage(FieldPage):
 
     KEYS = keybindings.ScenePage
 
-    HELP = HELP_SCENE_PAGE
+    HELP = help_text.HELP_SCENE_PAGE
 
     def __init__(self, *, holder, index):
         super().__init__(holder)
@@ -74,10 +60,10 @@ class ScenePage(FieldPage):
             self.shown_name = renamed_scenes[self.index]
 
     def crumb_trail(self):
-        return (Crumb.ARRANGE, MSG_SCENE_CRUMB.format(name=scene_name(scene=self.scene(), index=self.index)))
+        return (labels.Crumb.ARRANGE, labels.MSG_SCENE_CRUMB.format(name=scene_name(scene=self.scene(), index=self.index)))
 
     def caption(self):
-        return MSG_EDITING_CAPTION.format(what=MSG_SCENE_CAPTION_WORD.upper(), name=scene_name(scene=self.scene(), index=self.index))
+        return labels.MSG_EDITING_CAPTION.format(what=labels.MSG_SCENE_CAPTION_WORD.upper(), name=scene_name(scene=self.scene(), index=self.index))
 
     def duration(self):
         return self.document().lengths().scene_seconds(self.index)
@@ -91,32 +77,32 @@ class ScenePage(FieldPage):
             if text:
                 self.document().set_scene_name(index=self.index, name=text)
                 self.shown_name = text
-                self.crumbs = (Crumb.ARRANGE, MSG_SCENE_CRUMB.format(name=text))
-        self.ask(dialog=PromptDialog(title=MSG_SCENE_NAME_PROMPT, value=self.scene().get_name() or NOTHING, max_length=MAX_NAME_LENGTH), then=named)
+                self.crumbs = (labels.Crumb.ARRANGE, labels.MSG_SCENE_CRUMB.format(name=text))
+        self.ask(dialog=PromptDialog(title=messages.MSG_SCENE_NAME_PROMPT, value=self.scene().get_name() or NOTHING, max_length=limits.MAX_NAME_LENGTH), then=named)
 
     def pick_scale(self):
         scales = sorted_names(self.document().song().get_scale_names())
-        options = [MSG_SONG_OPTION, *scales]
+        options = [labels.MSG_SONG_OPTION, *scales]
         current = self.scene().get_scale_name()
 
         def chosen(place):
             self.document().set_scene_scale(index=self.index, name=None if place == 0 else scales[place - 1])
-        self.ask(dialog=ChoiceDialog(title=MSG_SCENE_SCALE_TITLE, options=options, current=options.index(current) if current in options else 0), then=chosen)
+        self.ask(dialog=ChoiceDialog(title=messages.MSG_SCENE_SCALE_TITLE, options=options, current=options.index(current) if current in options else 0), then=chosen)
 
     def section_field(self):
         """Return the Section field: the kind of section the scene is, chosen from the kinds a scene may be, or none."""
         section = self.scene().get_section()
-        choices = [MSG_NONE_SHOWN, *SECTION_KINDS]
-        return ChoiceField(page=self, label=MSG_SCENE_SECTION_LABEL, choices=choices, current=section or MSG_NONE_SHOWN,
-                           set=lambda choice: self.document().set_scene_section(index=self.index, section=None if choice == MSG_NONE_SHOWN else choice))
+        choices = [marks.MSG_NONE_SHOWN, *SECTION_KINDS]
+        return ChoiceField(page=self, label=labels.MSG_SCENE_SECTION_LABEL, choices=choices, current=section or marks.MSG_NONE_SHOWN,
+                           set=lambda choice: self.document().set_scene_section(index=self.index, section=None if choice == marks.MSG_NONE_SHOWN else choice))
 
     def groove_field(self):
         """Return the Groove field: the song's by default, off to play straight, or one by name."""
         song_groove = self.document().song().get_groove_name()
         return groove_choice_field(
-            page=self, title=MSG_SCENE_GROOVE_TITLE, choice=self.scene().get_groove_choice(),
-            inherited_option=MSG_SONG_OPTION, inherited_shown=MSG_SONG_GROOVE_SHOWN.format(groove=song_groove),
-            choose=lambda choice: self.document().set_scene_groove(index=self.index, choice=choice), clear_what=MSG_USE_SONG_GROOVE_WHAT,
+            page=self, title=messages.MSG_SCENE_GROOVE_TITLE, choice=self.scene().get_groove_choice(),
+            inherited_option=labels.MSG_SONG_OPTION, inherited_shown=marks.MSG_SONG_GROOVE_SHOWN.format(groove=song_groove),
+            choose=lambda choice: self.document().set_scene_groove(index=self.index, choice=choice), clear_what=legends.MSG_USE_SONG_GROOVE_WHAT,
         )
 
     def clear_scale(self):
@@ -143,13 +129,13 @@ class ScenePage(FieldPage):
         scene_scale = self.scene().get_scale_name()
         if scene_scale is not None:
             return scene_scale
-        return MSG_SONG_SCALE_SHOWN.format(scale=self.document().song().get_scale_name() or MSG_NO_SCALE)
+        return marks.MSG_SONG_SCALE_SHOWN.format(scale=self.document().song().get_scale_name() or messages.MSG_NO_SCALE)
 
     def tempo_text(self):
         tempo = self.tempo()
         if tempo is not None:
-            return MSG_TEMPO_SHOWN.format(tempo=tempo)
-        return MSG_SONG_TEMPO_SHOWN.format(tempo=tempo_text(self.document().song().get_tempo()))
+            return marks.MSG_TEMPO_SHOWN.format(tempo=tempo)
+        return marks.MSG_SONG_TEMPO_SHOWN.format(tempo=tempo_text(self.document().song().get_tempo()))
 
     def fields(self):
         scene = self.scene()
@@ -160,23 +146,23 @@ class ScenePage(FieldPage):
         return [
             NameField(value=lambda: scene.get_name() or NOTHING, rename=self.rename),
             self.section_field(),
-            Field(label=MSG_SCALE_LABEL, value=self.scale_text, adjust=None, enter=self.pick_scale, enter_what=What.CHOOSE, clear=self.clear_scale, clear_what=MSG_USE_SONG_SCALE_WHAT),
+            Field(label=labels.MSG_SCALE_LABEL, value=self.scale_text, adjust=None, enter=self.pick_scale, enter_what=legends.What.CHOOSE, clear=self.clear_scale, clear_what=legends.MSG_USE_SONG_SCALE_WHAT),
             self.groove_field(),
             NumberField(
-                page=self, label=MSG_TEMPO_LABEL, number=tempo, start=song_tempo, shown=self.tempo_text(), lowest=MIN_TEMPO, highest=MAX_TEMPO,
-                set=self.set_tempo, clear=self.clear_tempo, clear_what=MSG_USE_SONG_TEMPO_WHAT,
+                page=self, label=labels.MSG_TEMPO_LABEL, number=tempo, start=song_tempo, shown=self.tempo_text(), lowest=limits.MIN_TEMPO, highest=limits.MAX_TEMPO,
+                set=self.set_tempo, clear=self.clear_tempo, clear_what=legends.MSG_USE_SONG_TEMPO_WHAT,
             ),
             NumberField(
-                page=self, label=MSG_TEMPO_RAMP_LABEL, number=end, start=tempo or song_tempo, shown=MSG_RAMP_OFF_SHOWN if end is None else MSG_TEMPO_SHOWN.format(tempo=end),
-                lowest=MIN_TEMPO, highest=MAX_TEMPO, set=self.set_ramp, clear=self.clear_ramp, clear_what=MSG_NO_RAMP_WHAT,
+                page=self, label=labels.MSG_TEMPO_RAMP_LABEL, number=end, start=tempo or song_tempo, shown=marks.MSG_RAMP_OFF_SHOWN if end is None else marks.MSG_TEMPO_SHOWN.format(tempo=end),
+                lowest=limits.MIN_TEMPO, highest=limits.MAX_TEMPO, set=self.set_ramp, clear=self.clear_ramp, clear_what=legends.MSG_NO_RAMP_WHAT,
             ),
             NumberField(
-                page=self, label=MSG_REPEAT_LABEL, number=repeat, lowest=MIN_REPEAT, highest=MAX_SCENE_REPEAT,
+                page=self, label=labels.MSG_REPEAT_LABEL, number=repeat, lowest=limits.MIN_REPEAT, highest=limits.MAX_SCENE_REPEAT,
                 set=lambda number: self.document().set_scene_repeat(index=self.index, repeat=number),
             ),
             *[self.reset_field(name) for name in REGISTER_NAMES],
             # Real-time playback alone reads it, so it comes last, after everything the export reads.
-            Toggle(label=MSG_LAUNCH_TOGETHER_LABEL, on=scene.launches_together(), set=lambda on: self.document().set_scene_launch_together(index=self.index, value=on)),
+            Toggle(label=labels.MSG_LAUNCH_TOGETHER_LABEL, on=scene.launches_together(), set=lambda on: self.document().set_scene_launch_together(index=self.index, value=on)),
             chains_field(page=self, names=lambda: self.scene().get_chain_names(), store=lambda names: self.document().set_scene_chains(index=self.index, names=names)),
             *[field for shape in SHAPES for field in self.shape_section(shape)],
         ]
@@ -192,12 +178,12 @@ class ScenePage(FieldPage):
     def reset_field(self, register):
         """Return the field that makes the scene reset a register as it starts."""
         on = self.document().resets(index=self.index, register=register)
-        return Toggle(label=MSG_RESET_LABEL.format(name=register), on=on, set=lambda on: self.document().set_reset(index=self.index, register=register, on=on))
+        return Toggle(label=labels.MSG_RESET_LABEL.format(name=register), on=on, set=lambda on: self.document().set_reset(index=self.index, register=register, on=on))
 
     def notes(self, width):
         document = self.document()
-        lines = [Text(MSG_SCENE_LENGTH_NOTE.format(length=clock(document.lengths().scene_seconds(self.index))), style=Style.DIM)]
+        lines = [Text(messages.MSG_SCENE_LENGTH_NOTE.format(length=clock(document.lengths().scene_seconds(self.index))), style=Style.DIM)]
         problem = document.lengths().scene_problem(self.index)
         if problem:
-            lines.append(Text(MSG_PROBLEM_NOTE.format(problem=problem)[:width]))
+            lines.append(Text(messages.MSG_PROBLEM_NOTE.format(problem=problem)[:width]))
         return lines

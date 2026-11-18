@@ -20,11 +20,7 @@ nothing uses it, and M moves it, the order kept in the set (Setlist.ordered_gene
 
 from llamatron.composition.file_format import NAMED_GENERATORS
 from llamatron.composition.naming import new_name, suggested_word
-from llamatron.strings.help import HELP_GENERATORS_PAGE
-from llamatron.strings.labels import Column, Crumb
-from llamatron.strings.legends import MSG_GENERATOR_WHAT
-from llamatron.strings.marks import MSG_GENERATOR_KIND_SHOWN
-from llamatron.strings.messages import MSG_COPIED_TO, MSG_RENAME_GENERATOR_PROMPT
+from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings, themes
 from llamatron.tui.drawing import Align
 from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES, generator_page_of_kind, generator_type_dialog
@@ -40,16 +36,16 @@ class GeneratorsPage(ListPage):
 
     THEME = themes.GENERATORS
     KEYS = keybindings.GeneratorsPage
-    crumbs = (Crumb.GENERATORS,)
-    HELP = HELP_GENERATORS_PAGE
-    columns = ((Column.SELECT_ANY_GENERATOR, None, Align.LEFT), (Column.KIND, KIND_WIDTH, Align.LEFT), (Column.USED, USED_WIDTH, Align.RIGHT))
+    crumbs = (labels.Crumb.GENERATORS,)
+    HELP = help_text.HELP_GENERATORS_PAGE
+    columns = ((labels.Column.SELECT_ANY_GENERATOR, None, Align.LEFT), (labels.Column.KIND, KIND_WIDTH, Align.LEFT), (labels.Column.USED, USED_WIDTH, Align.RIGHT))
 
     def generators(self):
         """Return every generator as (kind, name), in the page's order."""
         return self.document().setlist().ordered_generators()
 
     def rows(self):
-        return [((kind, name), [name, MSG_GENERATOR_KIND_SHOWN.format(kind=generator_page_of_kind(kind).label), len(self.uses(kind=kind, name=name))])
+        return [((kind, name), [name, marks.MSG_GENERATOR_KIND_SHOWN.format(kind=generator_page_of_kind(kind).label), len(self.uses(kind=kind, name=name))])
                 for kind, name in self.generators()]
 
     def uses(self, *, kind, name):
@@ -87,7 +83,7 @@ class GeneratorsPage(ListPage):
         kind, name = self.current()
         section = NAMED_GENERATORS[kind]
         self.ask_name(
-            title=MSG_RENAME_GENERATOR_PROMPT.format(label=generator_page_of_kind(kind).label), value=name, taken=self.document().names_of(section),
+            title=messages.MSG_RENAME_GENERATOR_PROMPT.format(label=generator_page_of_kind(kind).label), value=name, taken=self.document().names_of(section),
             then=lambda new: self.document().rename_named(section=section, old=name, new=new),
         )
 
@@ -95,13 +91,13 @@ class GeneratorsPage(ListPage):
         """Copy the selected generator, say what the copy is called and put the cursor on it."""
         kind, name = self.current()
         new = self.document().copy_named(section=NAMED_GENERATORS[kind], name=name)
-        self.say(MSG_COPIED_TO.format(name=new))
+        self.say(messages.MSG_COPIED_TO.format(name=new))
         self.put_cursor_on(kind=kind, name=new)
 
     def delete(self):
         """Delete the selected generator after asking, or say what still uses it."""
         kind, name = self.current()
-        what = MSG_GENERATOR_WHAT.format(label=generator_page_of_kind(kind).label, name=name)
+        what = legends.MSG_GENERATOR_WHAT.format(label=generator_page_of_kind(kind).label, name=name)
         self.delete_after_checks(what=what, uses=self.uses(kind=kind, name=name), delete=lambda: self.document().delete_named(section=NAMED_GENERATORS[kind], name=name))
 
     def shift(self, offset):

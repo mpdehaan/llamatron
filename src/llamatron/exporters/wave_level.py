@@ -29,7 +29,7 @@ import wave
 
 import numpy
 
-from llamatron.strings.errors import ERR_NOT_16_BIT_WAVE
+from llamatron.strings import errors
 
 # The loudest moment's level after normalizing, in decibels below full scale.
 PEAK_DECIBELS = -1.0
@@ -65,7 +65,7 @@ def normalize_wave(path, *, peak_decibels=PEAK_DECIBELS):
         parameters = file.getparams()
         frames = file.readframes(parameters.nframes)
     if parameters.sampwidth != SAMPLE_BYTES:
-        raise ValueError(ERR_NOT_16_BIT_WAVE.format(path=path, bits=parameters.sampwidth * BITS_A_BYTE))
+        raise ValueError(errors.ERR_NOT_16_BIT_WAVE.format(path=path, bits=parameters.sampwidth * BITS_A_BYTE))
     samples, factor = normalized_samples(numpy.frombuffer(frames, dtype=SAMPLE_TYPE), peak_decibels=peak_decibels)
     if factor is None:
         return None

@@ -25,12 +25,9 @@ import unittest
 from llamatron.macro_composer.wizard_choices import genre_names
 from llamatron.tui.screens.wizard.wizard_page import WizardPage
 from tests.support.ui_testing import BREATHES, FOLLOWS, PICKED, TRADE, CLIPS, LAZY, PUSH, SLIDES, CLAVE, CLIPPED, FADE, FOLK, POP, SMOOTH, SWAY, LEAD, ROLLS, THIN, UITest, UP_ARP, leaf_pages
-from llamatron.composition.limits import MAX_CLIP_REPEAT, MAX_SCENE_REPEAT, MAX_TEMPO, MIN_REPEAT, MIN_TEMPO
+from llamatron.composition import limits
+from llamatron.strings import errors, labels, legends, marks
 from llamatron.composition.setlist import DEFAULT_SCALE
-from llamatron.strings.errors import ERR_OUT_OF_RANGE
-from llamatron.strings.labels import MSG_NAME_LABEL, MSG_REPEAT_LABEL, MSG_SEED_LABEL, MSG_TEMPO_LABEL
-from llamatron.strings.legends import What
-from llamatron.strings.marks import MSG_FIELD_TOGGLE_OFF, MSG_TOGGLE_ON
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
@@ -123,14 +120,14 @@ class TestToggle(unittest.TestCase):
     def test_it_shows_the_dot_when_on_and_enter_stores_the_other_state(self):
         kept = Kept()
         field = Toggle(label=A_LABEL, on=True, set=kept.set)
-        self.assertEqual(field.value(), MSG_TOGGLE_ON)
+        self.assertEqual(field.value(), marks.MSG_TOGGLE_ON)
         field.enter()
         self.assertEqual(kept.stored, [False])
 
     def test_off_shows_a_blank_and_enter_turns_it_on(self):
         kept = Kept()
         field = Toggle(label=A_LABEL, on=False, set=kept.set)
-        self.assertEqual(field.value(), MSG_FIELD_TOGGLE_OFF)
+        self.assertEqual(field.value(), marks.MSG_FIELD_TOGGLE_OFF)
         field.enter()
         self.assertEqual(kept.stored, [True])
 
@@ -141,10 +138,10 @@ class TestToggle(unittest.TestCase):
     def test_only_a_toggle_says_it_is_one_and_it_steps_and_clears_nothing(self):
         field = Toggle(label=A_LABEL, on=True, set=Kept().set)
         self.assertTrue(field.is_toggle())
-        self.assertEqual(field.enter_what, What.TOGGLE)
+        self.assertEqual(field.enter_what, legends.What.TOGGLE)
         self.assertIsNone(field.adjust)
         self.assertIsNone(field.clear)
-        self.assertFalse(Field(label=A_LABEL, value=lambda: SHOWN, enter=Kept().set, enter_what=What.TOGGLE).is_toggle())
+        self.assertFalse(Field(label=A_LABEL, value=lambda: SHOWN, enter=Kept().set, enter_what=legends.What.TOGGLE).is_toggle())
 
 
 class TestNameField(unittest.TestCase):
@@ -152,9 +149,9 @@ class TestNameField(unittest.TestCase):
     def test_enter_renames_and_the_label_is_name(self):
         kept = Kept()
         field = NameField(value=lambda: SHOWN, rename=lambda: kept.set(SHOWN))
-        self.assertEqual(field.label, MSG_NAME_LABEL)
+        self.assertEqual(field.label, labels.MSG_NAME_LABEL)
         self.assertEqual(field.value(), SHOWN)
-        self.assertEqual(field.enter_what, What.RENAME)
+        self.assertEqual(field.enter_what, legends.What.RENAME)
         self.assertFalse(field.is_toggle())
         field.enter()
         self.assertEqual(kept.stored, [SHOWN])
@@ -232,7 +229,7 @@ class TestChoiceField(unittest.TestCase):
     def test_enter_opens_a_picker_on_the_current_choice_and_stores_the_one_picked(self):
         kept = Kept()
         field = self.field(kept=kept, current=CHOICES[2])
-        self.assertEqual(field.enter_what, What.CHOOSE)
+        self.assertEqual(field.enter_what, legends.What.CHOOSE)
         field.enter()
         self.assertIsInstance(kept.dialog, ChoiceDialog)
         self.assertEqual(kept.dialog.place, 2)
@@ -335,23 +332,23 @@ class TestFieldsOnThePages(UITest):
 
     async def test_the_songs_tempo_stops_at_both_ends_and_a_typed_one_past_an_end_is_refused(self):
         await self.press(keybindings.MainPage.SONGS, Key.ENTER)
-        await self.select_field(MSG_TEMPO_LABEL)
-        self.document.set_tempo(MAX_TEMPO)
+        await self.select_field(labels.MSG_TEMPO_LABEL)
+        self.document.set_tempo(limits.MAX_TEMPO)
         await self.press(Key.RIGHT)
-        self.assertEqual(self.document.song().get_tempo(), MAX_TEMPO)
-        self.document.set_tempo(MIN_TEMPO)
+        self.assertEqual(self.document.song().get_tempo(), limits.MAX_TEMPO)
+        self.document.set_tempo(limits.MIN_TEMPO)
         await self.press(Key.LEFT)
-        self.assertEqual(self.document.song().get_tempo(), MIN_TEMPO)
+        self.assertEqual(self.document.song().get_tempo(), limits.MIN_TEMPO)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, PromptDialog)
-        self.app.screen.value = str(MAX_TEMPO + 1)
+        self.app.screen.value = str(limits.MAX_TEMPO + 1)
         await self.press(Key.ENTER)
-        self.assertEqual(self.document.song().get_tempo(), MIN_TEMPO)
-        self.assertIn(ERR_OUT_OF_RANGE.format(number=MAX_TEMPO + 1, low=MIN_TEMPO, high=MAX_TEMPO), self.text())
+        self.assertEqual(self.document.song().get_tempo(), limits.MIN_TEMPO)
+        self.assertIn(errors.ERR_OUT_OF_RANGE.format(number=limits.MAX_TEMPO + 1, low=limits.MIN_TEMPO, high=limits.MAX_TEMPO), self.text())
 
     async def test_the_seed_has_no_ends_and_starts_from_nothing(self):
         await self.press(keybindings.MainPage.SONGS, Key.ENTER)
-        await self.select_field(MSG_SEED_LABEL)
+        await self.select_field(labels.MSG_SEED_LABEL)
         self.assertIsNone(self.document.song().get_seed())
         await self.press(Key.RIGHT, Key.RIGHT)
         self.assertEqual(self.document.song().get_seed(), 2)
@@ -360,19 +357,19 @@ class TestFieldsOnThePages(UITest):
 
     async def test_a_scenes_and_a_clips_repeat_stop_where_typing_stops(self):
         await self.show(ScenePage(holder=self.app.screen.holder, index=FIRST_SCENE))
-        await self.select_field(MSG_REPEAT_LABEL)
-        self.document.set_scene_repeat(index=FIRST_SCENE, repeat=MAX_SCENE_REPEAT)
+        await self.select_field(labels.MSG_REPEAT_LABEL)
+        self.document.set_scene_repeat(index=FIRST_SCENE, repeat=limits.MAX_SCENE_REPEAT)
         await self.press(Key.RIGHT)
-        self.assertEqual(self.document.song().get_scene(FIRST_SCENE).get_repeat(), MAX_SCENE_REPEAT)
+        self.assertEqual(self.document.song().get_scene(FIRST_SCENE).get_repeat(), limits.MAX_SCENE_REPEAT)
         await self.press(Key.ESCAPE)
         await self.show(ClipPage(holder=self.app.screen.holder, index=FIRST_SCENE, track=LEAD))
-        await self.select_field(MSG_REPEAT_LABEL)
-        self.document.set_clip_slot_repeat(index=FIRST_SCENE, track=LEAD, repeat=MAX_CLIP_REPEAT)
+        await self.select_field(labels.MSG_REPEAT_LABEL)
+        self.document.set_clip_slot_repeat(index=FIRST_SCENE, track=LEAD, repeat=limits.MAX_CLIP_REPEAT)
         await self.press(Key.RIGHT)
-        self.assertEqual(self.document.clip_slot(index=FIRST_SCENE, track=LEAD).get_repeat(), MAX_CLIP_REPEAT)
-        self.document.set_clip_slot_repeat(index=FIRST_SCENE, track=LEAD, repeat=MIN_REPEAT)
+        self.assertEqual(self.document.clip_slot(index=FIRST_SCENE, track=LEAD).get_repeat(), limits.MAX_CLIP_REPEAT)
+        self.document.set_clip_slot_repeat(index=FIRST_SCENE, track=LEAD, repeat=limits.MIN_REPEAT)
         await self.press(Key.LEFT)
-        self.assertEqual(self.document.clip_slot(index=FIRST_SCENE, track=LEAD).get_repeat(), MIN_REPEAT)
+        self.assertEqual(self.document.clip_slot(index=FIRST_SCENE, track=LEAD).get_repeat(), limits.MIN_REPEAT)
 
 
 if __name__ == '__main__':

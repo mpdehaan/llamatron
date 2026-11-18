@@ -37,7 +37,7 @@ until it does.
 
 from llamatron.composition.pattern import Pattern
 from llamatron.composition.setlist import Setlist
-from llamatron.strings.names import MSG_DEFAULT_SONG_NAME
+from llamatron.strings import names
 from llamatron.support.memory import Memory
 from llamatron.support.revised import ChangeMark, Revised
 from llamatron.tui.history import History
@@ -78,7 +78,7 @@ class Document(Revised, DocumentFiles, DocumentUndo, NamedEdits, SetEdits, SongE
         self._setlist = Setlist.new() if setlist is None else setlist
         self._setlist.fill_in_defaults()
         if not self._setlist.get_song_names():
-            self._setlist.add_new_song(MSG_DEFAULT_SONG_NAME)
+            self._setlist.add_new_song(names.MSG_DEFAULT_SONG_NAME)
         self._current = self._setlist.first_song_name()
         self._path = path
         self._dirty = False

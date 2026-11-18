@@ -17,15 +17,15 @@
 """A scale the song names, like main: { root: F, type: minor }, for the song and scenes to use."""
 
 from llamatron.composition.file_format import ACCIDENTALS, Accidental, ScaleSetting
-from llamatron.composition.limits import MIN_DEGREE
+from llamatron.composition import limits
+from llamatron.strings import errors
 from llamatron.composition.llama_data import LlamaData
 from llamatron.composition.checks import reading
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.setting import Checked, check_settings, described
-from llamatron.music.midi import HALF_STEPS_PER_OCTAVE
+from llamatron.music import midi
 from llamatron.music.note import NOTE_NAMES, Note
 from llamatron.music.scale import Scale, ScaleType
-from llamatron.strings.errors import ERR_EXPECTED_ROOT_AND_TYPE, ERR_EXPECTED_ROOT_NOTE, ERR_UNKNOWN_SCALE_TYPE
 from llamatron.support.revised import notes_change
 
 # Scale type names, as error messages list them.
@@ -63,7 +63,7 @@ class NamedScale(LlamaData):
     def from_data(cls, *, data, where, song=None):
         with reading(where):
             if not isinstance(data, dict) or set(data) != set(SETTINGS):
-                raise InvalidValue(ERR_EXPECTED_ROOT_AND_TYPE.format(data=data))
+                raise InvalidValue(errors.ERR_EXPECTED_ROOT_AND_TYPE.format(data=data))
             check_settings(settings=SETTINGS, data=data)
             return cls(root=data[ScaleSetting.ROOT], kind=data[ScaleSetting.TYPE])
 
@@ -101,18 +101,18 @@ class NamedScale(LlamaData):
         is neither, in a scale with a wide gap, is None, since no row can show it.
         """
         steps = self.get_half_steps()
-        octaves_up, place = divmod(degree - MIN_DEGREE, len(steps))
-        total = (octave + octaves_up) * HALF_STEPS_PER_OCTAVE + steps[place] + ACCIDENTALS.get(accidental, 0) + half_steps
-        tone_octave, within = divmod(total, HALF_STEPS_PER_OCTAVE)
+        octaves_up, place = divmod(degree - limits.MIN_DEGREE, len(steps))
+        total = (octave + octaves_up) * midi.HALF_STEPS_PER_OCTAVE + steps[place] + ACCIDENTALS.get(accidental, 0) + half_steps
+        tone_octave, within = divmod(total, midi.HALF_STEPS_PER_OCTAVE)
         below = max(index for index, step in enumerate(steps) if step <= within)
         if steps[below] == within:
-            return below + MIN_DEGREE, tone_octave, None
+            return below + limits.MIN_DEGREE, tone_octave, None
         if within - steps[below] == 1:
-            return below + MIN_DEGREE, tone_octave, Accidental.SHARP
-        above = steps[below + 1] if below + 1 < len(steps) else HALF_STEPS_PER_OCTAVE
+            return below + limits.MIN_DEGREE, tone_octave, Accidental.SHARP
+        above = steps[below + 1] if below + 1 < len(steps) else midi.HALF_STEPS_PER_OCTAVE
         if above - within == 1:
             octaves_more, place_above = divmod(below + 1, len(steps))
-            return place_above + MIN_DEGREE, tone_octave + octaves_more, Accidental.FLAT
+            return place_above + limits.MIN_DEGREE, tone_octave + octaves_more, Accidental.FLAT
         return None
 
     def get_note_names(self):
@@ -122,7 +122,7 @@ class NamedScale(LlamaData):
     def octave_of_degree(self, *, octave, place):
         """Return the octave a degree sounds in when the root is in an octave: the same one, or the next where the degree crosses C, since octaves are numbered from C."""
         root = Note(name=self._root, octave_number=SPELLING_OCTAVE)
-        return octave + (root.get_midi_number() + self.get_half_steps()[place]) // HALF_STEPS_PER_OCTAVE - SPELLING_OCTAVE
+        return octave + (root.get_midi_number() + self.get_half_steps()[place]) // midi.HALF_STEPS_PER_OCTAVE - SPELLING_OCTAVE
 
     def copy(self):
         return NamedScale(root=self._root, kind=self._kind)
@@ -176,12 +176,12 @@ def _scale_type_member(kind):
 
 def _check_root(root):
     if not is_root_note(root):
-        raise InvalidValue(ERR_EXPECTED_ROOT_NOTE.format(root=root))
+        raise InvalidValue(errors.ERR_EXPECTED_ROOT_NOTE.format(root=root))
 
 
 def _check_kind(kind):
     if not is_scale_type(kind):
-        raise InvalidValue(ERR_UNKNOWN_SCALE_TYPE.format(kind=kind, names=NAME_LIST_SEPARATOR.join(scale_type_names())))
+        raise InvalidValue(errors.ERR_UNKNOWN_SCALE_TYPE.format(kind=kind, names=NAME_LIST_SEPARATOR.join(scale_type_names())))
 
 
 # A named scale's two settings, each described once, in the order they're written to a file. A scale needs both.

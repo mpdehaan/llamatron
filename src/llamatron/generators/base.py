@@ -18,7 +18,7 @@ from abc import ABC, abstractmethod
 from typing import NamedTuple
 
 from llamatron.grid.clip import Clip
-from llamatron.strings.errors import ERR_NOT_A_CLIP
+from llamatron.strings import errors
 
 
 class Continuation(NamedTuple):
@@ -44,7 +44,7 @@ class ClipGenerator(ABC):
     def generate(self, clip):
         """Return a new Clip made from this one."""
         if not isinstance(clip, Clip):
-            raise ValueError(ERR_NOT_A_CLIP.format(value=clip))
+            raise ValueError(errors.ERR_NOT_A_CLIP.format(value=clip))
         # A clip's list can be appended to directly, and reading it as sounds refuses anything that is no position.
         sounds, length = self._generate(clip)
         return Clip(

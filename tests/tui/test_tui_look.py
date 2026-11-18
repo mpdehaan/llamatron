@@ -68,10 +68,7 @@ from llamatron.tui.screens.set.song_page import SongPage
 from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.tui.screens.arrange.track_editor import TrackEditor
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor, Reconfigure
-from llamatron.strings.about import MSG_SITE
-from llamatron.strings.labels import MSG_CAPTION_WORDS, MSG_EDITING_CAPTION, MSG_NEW_PATTERN_BUTTON
-from llamatron.strings.labels import Crumb, MSG_NAME_LABEL, MSG_SCALE_LABEL, MSG_TITLE_LABEL, PageName
-from llamatron.strings.marks import MSG_UNSAVED_MARK
+from llamatron.strings import about, labels, marks
 from llamatron.tui import keybindings
 from tests.support.rendering import render_song
 from tests.support.page_testing import boxed_line
@@ -113,9 +110,9 @@ class TestLookAndNewKeys(UITest):
         # No set-and-song line: the crumbs say the first and the cells count the set's things.
         lines = self.text().splitlines()
         self.assertIn(SPACE + PROGRAM_NAME + SPACE, lines[0])
-        self.assertNotIn(MSG_SITE, self.text())
+        self.assertNotIn(about.MSG_SITE, self.text())
         # No title drawn in block letters over the cells.
-        self.assertNotIn(BLOCK_LETTER, LINE_SEPARATOR.join(lines[:lines.index(next(line for line in lines if PageName.ARRANGE in line))]))
+        self.assertNotIn(BLOCK_LETTER, LINE_SEPARATOR.join(lines[:lines.index(next(line for line in lines if labels.PageName.ARRANGE in line))]))
         first_cell = next(number for number, line in enumerate(lines) if line.startswith((Box.TOP_LEFT, Box.DOUBLE_TOP_LEFT)))
         self.assertTrue(all(not line.strip() for line in lines[self.app.screen.header_lines():first_cell]))
 
@@ -237,17 +234,17 @@ class TestArrowsAndTheMark(UITest):
 
     async def test_the_main_screen_boxes_every_cell_and_the_selected_one_double_in_place_of_the_mark(self):
         self.assertNotIn(SELECTED_MARK, self.text())
-        self.assertIn(PageName.ARRANGE, boxed_line(self.text()))
+        self.assertIn(labels.PageName.ARRANGE, boxed_line(self.text()))
         # Every cell has a box, and the selected one's is double-lined, the only such box; a cell's name starts one space after the key.
         # The bar's six actions share one box, and Arrange's, selected, is the double one.
         self.assertEqual(self.text().count(Box.TOP_LEFT), len(self.app.screen.menu_items()) - BAR_ROWS * COLUMNS)
         self.assertEqual(self.text().count(Box.DOUBLE_TOP_LEFT), 1)
         await self.press(*self.app.screen.arrows_to(keybindings.MainPage.SONGS))
-        self.assertIn(f'« {key_name(keybindings.MainPage.SONGS)} » {PageName.SONGS}', boxed_line(self.text()))
+        self.assertIn(f'« {key_name(keybindings.MainPage.SONGS)} » {labels.PageName.SONGS}', boxed_line(self.text()))
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, SongsPage)
         await self.press(Key.ESCAPE)
-        self.assertIn(PageName.SONGS, boxed_line(self.text()))
+        self.assertIn(labels.PageName.SONGS, boxed_line(self.text()))
 
     async def test_each_pages_cell_is_boxed_in_its_theme_toned_to_one_brightness(self):
         page = self.app.screen
@@ -261,7 +258,7 @@ class TestArrowsAndTheMark(UITest):
     async def test_enter_on_the_quit_cell_quits(self):
         # The Quit cell is the last of the actions.
         await self.press(*self.app.screen.arrows_to(keybindings.MainPage.QUIT))
-        self.assertIn(PageName.QUIT, boxed_line(self.text()))
+        self.assertIn(labels.PageName.QUIT, boxed_line(self.text()))
         with mock.patch.object(self.app, EXIT) as leave:
             await self.press(Key.ENTER)
             leave.assert_called_once()
@@ -272,20 +269,20 @@ class TestArrowsAndTheMark(UITest):
         self.assertIn(TUNE, self.marked_line())
         self.assertNotIn('«', self.marked_line())
         await self.press(Key.DOWN)
-        self.assertIn(MSG_NEW_PATTERN_BUTTON, self.marked_line())
+        self.assertIn(labels.MSG_NEW_PATTERN_BUTTON, self.marked_line())
 
     async def test_a_settings_page_marks_the_selected_field_and_reverses_only_a_selected_button(self):
         await self.press(keybindings.MainPage.FILE)
-        await self.select_field(MSG_TITLE_LABEL)
+        await self.select_field(labels.MSG_TITLE_LABEL)
         line = self.marked_line()
-        self.assertIn(MSG_TITLE_LABEL, line)
+        self.assertIn(labels.MSG_TITLE_LABEL, line)
         self.assertNotIn('«', line)
         # The buttons are a row of boxes, the selected one double-lined, as the dialogs' are.
-        await self.select_field(PageName.SAVE)
-        line = next(line for line in self.text().splitlines() if PageName.SAVE in line and key_name(keybindings.Page.SAVE) in line)
-        self.assertLess(line.index(Box.DOUBLE_BAR), line.index(PageName.SAVE))
-        await self.select_field(MSG_TITLE_LABEL)
-        unselected = next(line for line in self.text().splitlines() if PageName.SAVE in line and key_name(keybindings.Page.SAVE) in line)
+        await self.select_field(labels.PageName.SAVE)
+        line = next(line for line in self.text().splitlines() if labels.PageName.SAVE in line and key_name(keybindings.Page.SAVE) in line)
+        self.assertLess(line.index(Box.DOUBLE_BAR), line.index(labels.PageName.SAVE))
+        await self.select_field(labels.MSG_TITLE_LABEL)
+        unselected = next(line for line in self.text().splitlines() if labels.PageName.SAVE in line and key_name(keybindings.Page.SAVE) in line)
         self.assertNotIn(Box.DOUBLE_BAR, unselected)
 
     async def test_a_picker_marks_the_highlighted_option(self):
@@ -328,7 +325,7 @@ class TestArrowsAndTheMark(UITest):
         last = len(self.app.screen.fields()) - 1
         await self.press(*[Key.DOWN] * (last + 1))
         self.assertEqual(self.app.screen.place, last)
-        await self.select_field(MSG_SCALE_LABEL)
+        await self.select_field(labels.MSG_SCALE_LABEL)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         await self.press(Key.UP)
@@ -394,9 +391,9 @@ class TestTitleInTheMiddle(UITest):
         self.assert_title(set_crumb=self.app.screen.set_crumb())
         page = self.app.screen
         long_crumb = LONG_SONG_WORD * page.size.width
-        line = page.header_line(width=page.size.width, left=long_crumb, names=NOTHING, names_start=page.size.width - 1, mark=MSG_UNSAVED_MARK, centre=PROGRAM_NAME).plain
+        line = page.header_line(width=page.size.width, left=long_crumb, names=NOTHING, names_start=page.size.width - 1, mark=marks.MSG_UNSAVED_MARK, centre=PROGRAM_NAME).plain
         self.assertNotIn(PROGRAM_NAME, line)
-        self.assertTrue(line.rstrip().endswith(MSG_UNSAVED_MARK))
+        self.assertTrue(line.rstrip().endswith(marks.MSG_UNSAVED_MARK))
     """Each kind of page has a theme colour, drawn as a stripe under the header in place of its rule; the main screen and Arrange keep the rule."""
 
     async def test_a_page_and_its_list_share_a_colour_the_main_screen_is_white_and_arrange_has_none(self):
@@ -423,13 +420,13 @@ class TestCaptionsAndNames(UITest):
 
     async def test_a_list_says_its_name_and_an_editor_says_what_it_edits(self):
         await self.press(keybindings.MainPage.PATTERNS)
-        self.assertEqual(self.app.screen.caption(), Crumb.PATTERNS)
+        self.assertEqual(self.app.screen.caption(), labels.Crumb.PATTERNS)
         await self.press(Key.ENTER)
-        self.assertEqual(self.app.screen.caption(), MSG_EDITING_CAPTION.format(what=MSG_CAPTION_WORDS[Section.PATTERNS].upper(), name=self.app.screen.item))
+        self.assertEqual(self.app.screen.caption(), labels.MSG_EDITING_CAPTION.format(what=labels.MSG_CAPTION_WORDS[Section.PATTERNS].upper(), name=self.app.screen.item))
         self.assertIn(self.app.screen.caption(), self.text().splitlines()[2])
 
     async def test_a_blank_line_follows_name(self):
         await self.press(keybindings.MainPage.SONGS, Key.ENTER)
         lines = [line.plain for line in self.app.screen.body(width=self.SIZE[0], height=self.SIZE[1])]
-        name_line = next(place for place, line in enumerate(lines) if MSG_NAME_LABEL in line)
+        name_line = next(place for place, line in enumerate(lines) if labels.MSG_NAME_LABEL in line)
         self.assertEqual(lines[name_line + 1].strip(), NOTHING)

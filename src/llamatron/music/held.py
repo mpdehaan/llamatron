@@ -24,8 +24,7 @@ the steps after it.
 
 from llamatron.music.chord import Chord
 from llamatron.music.note import Degree, Note, Rest, _check_length
-from llamatron.strings.errors import ERR_BAD_PHRASE_PART, ERR_BAD_SOUND
-from llamatron.strings.reprs import REPR_HELD
+from llamatron.strings import errors, reprs
 
 # What a held phrase can hold: anything a clip can, played one after another from the Held's start.
 PHRASE_TYPES = (Note, Chord, Rest, Degree)
@@ -46,9 +45,9 @@ class Held:
         if is_phrase(sound):
             for part in sound:
                 if not isinstance(part, (*PHRASE_TYPES, Held)):
-                    raise ValueError(ERR_BAD_PHRASE_PART.format(value=part))
+                    raise ValueError(errors.ERR_BAD_PHRASE_PART.format(value=part))
         elif not isinstance(sound, (Note, Chord, Degree)):
-            raise ValueError(ERR_BAD_SOUND.format(value=sound))
+            raise ValueError(errors.ERR_BAD_SOUND.format(value=sound))
         self._sound = sound
         self._length = length
 
@@ -67,7 +66,7 @@ class Held:
         return hash((self._sound, self._length))
 
     def __repr__(self):
-        return REPR_HELD.format(sound=self._sound, length=self._length)
+        return reprs.REPR_HELD.format(sound=self._sound, length=self._length)
 
 
 def is_phrase(sound):

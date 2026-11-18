@@ -32,9 +32,10 @@ from llamatron.composition.file_format import GuitarifySetting
 from llamatron.composition.generator_settings import FollowChordsSetting, FollowChordsSettings, PhrasingSetting, PhrasingSettings, GuitarifySettings, HocketSetting, HocketSettings, DriftSetting, DriftSettings, ProgressionSetting, ProgressionSettings, ShapeSetting, VoiceLeadingSetting, VoiceLeadingSettings, StepRowSetting, GlideSettings, ShortenSettings, RushSettings, SwellSettings, versioned, ArpSetting, ArpSettings, AutoRatchetSetting, AutoRatchetSettings
 from llamatron.composition.groove import Groove, new_groove
 from llamatron.composition.instrument import Instrument
-from llamatron.music.midi import MAX_CHANNEL
+from llamatron.music import midi
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.limits import MAX_OCTAVE, MAX_REGISTER_VALUE, MAX_TRANSPOSE, MIN_OCTAVE, MIN_REPEAT
+from llamatron.composition import limits
+from llamatron.strings import names as names_text
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.pattern import Pattern
 from llamatron.composition.register import Register
@@ -47,7 +48,6 @@ from llamatron.composition.track import Track
 from llamatron.generators.arp import MAX_OCTAVE_RANGE
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from llamatron.strings.names import MSG_NEW_PATTERN_NAME, MSG_NEW_TRACK_NAME
 
 # The settings the tests of each kind describe, and the messages they refuse with.
 SPEED = 'speed'
@@ -90,8 +90,8 @@ NOT_A_ROOT = 'H'
 NOT_A_LENGTH = 'long'
 # The names a file gives a new set's first pattern and track.
 FIRST = 1
-PATTERN_ONE = MSG_NEW_PATTERN_NAME.format(number=FIRST)
-TRACK_ONE = MSG_NEW_TRACK_NAME.format(number=FIRST)
+PATTERN_ONE = names_text.MSG_NEW_PATTERN_NAME.format(number=FIRST)
+TRACK_ONE = names_text.MSG_NEW_TRACK_NAME.format(number=FIRST)
 # The modules that hold classes of setting names.
 NAMING_MODULES = [file_format, generator_settings]
 SETTING_CLASS_ENDING = 'Setting'
@@ -342,11 +342,11 @@ class TestReadingAndSettingAgree(unittest.TestCase):
 
     def test_a_track(self):
         for name, value, change in [
-            (TrackSetting.TRANSPOSE, MAX_TRANSPOSE + 1, lambda: Track().set_transpose(MAX_TRANSPOSE + 1)),
+            (TrackSetting.TRANSPOSE, limits.MAX_TRANSPOSE + 1, lambda: Track().set_transpose(limits.MAX_TRANSPOSE + 1)),
             (TrackSetting.DRUM, 1, lambda: Track().set_drum(1)),
             (TrackSetting.MUTE, None, lambda: Track().set_mute(None)),
-            (TrackSetting.LOWEST_OCTAVE, MIN_OCTAVE - 1, lambda: Track().set_lowest_octave(MIN_OCTAVE - 1)),
-            (TrackSetting.HIGHEST_OCTAVE, MAX_OCTAVE + 1, lambda: Track().set_highest_octave(MAX_OCTAVE + 1)),
+            (TrackSetting.LOWEST_OCTAVE, limits.MIN_OCTAVE - 1, lambda: Track().set_lowest_octave(limits.MIN_OCTAVE - 1)),
+            (TrackSetting.HIGHEST_OCTAVE, limits.MAX_OCTAVE + 1, lambda: Track().set_highest_octave(limits.MAX_OCTAVE + 1)),
             (TrackSetting.GROOVE, NOT_A_NAME, lambda: Track().set_groove_choice(choice=NOT_A_NAME, song=self.song)),
         ]:
             with self.subTest(name=name):
@@ -355,7 +355,7 @@ class TestReadingAndSettingAgree(unittest.TestCase):
     def test_a_clip(self):
         clip = ClipSlot(pattern=PATTERN_ONE)
         for name, value, change in [
-            (ClipSlotSetting.REPEAT, MIN_REPEAT - 1, lambda: clip.set_repeat(MIN_REPEAT - 1)),
+            (ClipSlotSetting.REPEAT, limits.MIN_REPEAT - 1, lambda: clip.set_repeat(limits.MIN_REPEAT - 1)),
             (ClipSlotSetting.LOOP, 1, lambda: clip.set_loop(1)),
             (ClipSlotSetting.DIRECTION, NOT_A_DIRECTION, lambda: clip.set_direction(NOT_A_DIRECTION)),
             (ClipSlotSetting.PATTERN, NOT_A_NAME, lambda: clip.set_pattern_name(name=NOT_A_NAME, song=self.song)),
@@ -370,7 +370,7 @@ class TestReadingAndSettingAgree(unittest.TestCase):
     def test_a_scene(self):
         scene_one = self.song.get_scene(FIRST_SCENE)
         for name, value, change in [
-            (SceneSetting.REPEAT, MIN_REPEAT - 1, lambda: scene_one.set_repeat(MIN_REPEAT - 1)),
+            (SceneSetting.REPEAT, limits.MIN_REPEAT - 1, lambda: scene_one.set_repeat(limits.MIN_REPEAT - 1)),
             (SceneSetting.SCALE, NOT_A_NAME, lambda: scene_one.set_scale_name(name=NOT_A_NAME, song=self.song)),
             (SceneSetting.TEMPO, NOT_A_LENGTH, lambda: scene_one.set_tempo(NOT_A_LENGTH)),
             (SceneSetting.GROOVE, NOT_A_NAME, lambda: scene_one.set_groove_choice(choice=NOT_A_NAME, song=self.song)),
@@ -394,8 +394,8 @@ class TestReadingAndSettingAgree(unittest.TestCase):
 
     def test_a_set(self):
         for name, value, change in [
-            (SetlistSetting.DEFAULT_OCTAVE, MAX_OCTAVE + 1, lambda: self.setlist.set_default_octave(MAX_OCTAVE + 1)),
-            (SetlistSetting.DEFAULT_DRUM_OCTAVE, MIN_OCTAVE - 1, lambda: self.setlist.set_default_drum_octave(MIN_OCTAVE - 1)),
+            (SetlistSetting.DEFAULT_OCTAVE, limits.MAX_OCTAVE + 1, lambda: self.setlist.set_default_octave(limits.MAX_OCTAVE + 1)),
+            (SetlistSetting.DEFAULT_DRUM_OCTAVE, limits.MIN_OCTAVE - 1, lambda: self.setlist.set_default_drum_octave(limits.MIN_OCTAVE - 1)),
             (SetlistSetting.OCTAVE_LABELS, NOT_OCTAVE_LABELS, lambda: self.setlist.set_octave_labels(NOT_OCTAVE_LABELS)),
             (SetlistSetting.PROTECTED, 1, lambda: self.setlist.set_protected(1)),
             (SetlistSetting.STEP_SIZE, NOT_A_LENGTH, lambda: self.setlist.set_step_size(NOT_A_LENGTH)),
@@ -417,7 +417,7 @@ class TestReadingAndSettingAgree(unittest.TestCase):
                 self.assert_same_refusal(read=lambda: Pattern.from_data(data={PatternSetting.STEPS: STEPS, name: value}, where=HERE), change=change)
 
     def test_a_register(self):
-        for name, value in [(RegisterSetting.MAXIMUM, MAX_REGISTER_VALUE + 1), (RegisterSetting.RESET_EACH_SCENE, 1)]:
+        for name, value in [(RegisterSetting.MAXIMUM, limits.MAX_REGISTER_VALUE + 1), (RegisterSetting.RESET_EACH_SCENE, 1)]:
             with self.subTest(name=name):
                 self.assert_same_refusal(
                     read=lambda: Register.from_data(data={name: value}, where=HERE),
@@ -445,8 +445,8 @@ class TestReadingAndSettingAgree(unittest.TestCase):
     def test_an_instrument(self):
         synth = Instrument()
         self.assert_same_refusal(
-            read=lambda: Instrument.from_data(data={InstrumentSetting.CHANNEL: MAX_CHANNEL + 1}, where=HERE),
-            change=lambda: synth.set_channel(MAX_CHANNEL + 1),
+            read=lambda: Instrument.from_data(data={InstrumentSetting.CHANNEL: midi.MAX_CHANNEL + 1}, where=HERE),
+            change=lambda: synth.set_channel(midi.MAX_CHANNEL + 1),
         )
         self.assert_same_refusal(
             read=lambda: Instrument.from_data(data={InstrumentSetting.DEVICE: NOT_TEXT}, where=HERE),
@@ -488,13 +488,13 @@ class TestAChoiceKeepsItsFileNames(unittest.TestCase):
         self.assertEqual(clip_slot.SETTINGS[ClipSlotSetting.MORPH_STYLE].nearest(NOT_A_NAME), FIRST_MORPH_STYLE)
 
     def test_a_number_out_of_range_has_the_nearest_end(self):
-        self.assertEqual(track.SETTINGS[TrackSetting.TRANSPOSE].nearest(MAX_TRANSPOSE + 1), MAX_TRANSPOSE)
-        self.assertEqual(track.SETTINGS[TrackSetting.TRANSPOSE].nearest(-MAX_TRANSPOSE - 1), -MAX_TRANSPOSE)
-        self.assertEqual(track.SETTINGS[TrackSetting.HIGHEST_OCTAVE].nearest(MAX_OCTAVE + 1), MAX_OCTAVE)
-        self.assertEqual(clip_slot.SETTINGS[ClipSlotSetting.REPEAT].nearest(MIN_REPEAT - 1), MIN_REPEAT)
-        self.assertEqual(scene.SETTINGS[SceneSetting.REPEAT].nearest(MIN_REPEAT - 1), MIN_REPEAT)
-        self.assertEqual(setlist.SETTINGS[SetlistSetting.DEFAULT_OCTAVE].nearest(MAX_OCTAVE + 1), MAX_OCTAVE)
-        self.assertEqual(register.SETTINGS[RegisterSetting.MAXIMUM].nearest(MAX_REGISTER_VALUE + 1), MAX_REGISTER_VALUE)
+        self.assertEqual(track.SETTINGS[TrackSetting.TRANSPOSE].nearest(limits.MAX_TRANSPOSE + 1), limits.MAX_TRANSPOSE)
+        self.assertEqual(track.SETTINGS[TrackSetting.TRANSPOSE].nearest(-limits.MAX_TRANSPOSE - 1), -limits.MAX_TRANSPOSE)
+        self.assertEqual(track.SETTINGS[TrackSetting.HIGHEST_OCTAVE].nearest(limits.MAX_OCTAVE + 1), limits.MAX_OCTAVE)
+        self.assertEqual(clip_slot.SETTINGS[ClipSlotSetting.REPEAT].nearest(limits.MIN_REPEAT - 1), limits.MIN_REPEAT)
+        self.assertEqual(scene.SETTINGS[SceneSetting.REPEAT].nearest(limits.MIN_REPEAT - 1), limits.MIN_REPEAT)
+        self.assertEqual(setlist.SETTINGS[SetlistSetting.DEFAULT_OCTAVE].nearest(limits.MAX_OCTAVE + 1), limits.MAX_OCTAVE)
+        self.assertEqual(register.SETTINGS[RegisterSetting.MAXIMUM].nearest(limits.MAX_REGISTER_VALUE + 1), limits.MAX_REGISTER_VALUE)
         self.assertEqual(ArpSettings.SETTINGS[ArpSetting.OCTAVE_RANGE].nearest(MAX_OCTAVE_RANGE + 1), MAX_OCTAVE_RANGE)
 
 

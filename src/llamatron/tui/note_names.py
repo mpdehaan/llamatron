@@ -17,7 +17,7 @@
 """A MIDI note as its name and octave, shown and typed: C3 is note 36, as a drum pattern writes its notes."""
 
 from llamatron.music.note import SHARP_NAMES
-from llamatron.strings.marks import MSG_NOTE_NAME_SHOWN
+from llamatron.strings import marks
 from llamatron.tui.keys import SHARP_CHARACTER
 
 NOTES_IN_OCTAVE = 12
@@ -31,7 +31,7 @@ HALF_STEPS_OF_MARK = {SHARP: 1, FLAT: -1}
 
 def note_shown(note):
     """Return a MIDI note as its name and octave, a black key as a sharp."""
-    return MSG_NOTE_NAME_SHOWN.format(name=SHARP_NAMES[note % NOTES_IN_OCTAVE], octave=note // NOTES_IN_OCTAVE)
+    return marks.MSG_NOTE_NAME_SHOWN.format(name=SHARP_NAMES[note % NOTES_IN_OCTAVE], octave=note // NOTES_IN_OCTAVE)
 
 
 def note_typed(text):

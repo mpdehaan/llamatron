@@ -22,7 +22,7 @@ what it makes so that it sits among what the set has.
 import re
 
 from llamatron.composition.named_scale import MEMBER_WORD_GAP, WORD_GAP
-from llamatron.strings.names import MSG_DEFAULT_SCALE_NAME, MSG_LEGACY_SCALE_NAME, MSG_NUMBERED_NAME, MSG_NUMBER_JOINT
+from llamatron.strings import names
 
 # The number a duplicate of a name with no number gets: the name the user picked counts as the first, and is never renamed.
 FIRST_COPY_NUMBER = 2
@@ -63,12 +63,12 @@ def is_taken(*, name, taken):
 def default_scale_name(*, root, kind):
     """Return the name a scale gets from its root and kind, like C_major or F#_harmonic_minor: lowercase with underscores, as every
     name the tracker makes, but for the note's name, which keeps its capital, the one exception."""
-    return MSG_DEFAULT_SCALE_NAME.format(root=root, kind=suggested_word(words(kind)))
+    return names.MSG_DEFAULT_SCALE_NAME.format(root=root, kind=suggested_word(words(kind)))
 
 
 def legacy_scale_name(*, root, kind):
     """Return the name a scale got from its root and kind before names were lowercase, like C Major, which older files hold."""
-    return MSG_LEGACY_SCALE_NAME.format(root=root, kind=words(kind).title())
+    return names.MSG_LEGACY_SCALE_NAME.format(root=root, kind=words(kind).title())
 
 
 def is_default_scale_name(*, name, root, kind):
@@ -90,7 +90,7 @@ def copy_name(*, name, taken):
     until the name is free."""
     base, joint, number = split_trailing_number(name)
     if number is None:
-        joint = MSG_NUMBER_JOINT
+        joint = names.MSG_NUMBER_JOINT
         number = FIRST_COPY_NUMBER - 1
     number = max(FIRST_COPY_NUMBER, number + 1)
     while is_taken(name=base + joint + str(number), taken=taken):
@@ -107,7 +107,7 @@ def new_name(*, word, taken):
         base, _, number = split_trailing_number(str(other))
         if number is not None and same_name(one=base, other=word):
             highest = max(highest, number)
-    return MSG_NUMBERED_NAME.format(base=word, number=highest + 1)
+    return names.MSG_NUMBERED_NAME.format(base=word, number=highest + 1)
 
 
 def split_trailing_number(name):

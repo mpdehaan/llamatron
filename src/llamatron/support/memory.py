@@ -30,7 +30,7 @@ after anything at all has changed, and a difference raises StaleAnswer.
 
 from typing import NamedTuple
 
-from llamatron.strings.errors import ERR_STALE_ANSWER
+from llamatron.strings import errors
 from llamatron.support.revised import latest_revision
 
 # How many answers a memory keeps before it forgets them all, so that keys naming things long gone can't pile up for ever.
@@ -117,4 +117,4 @@ class Memory:
         again = compute()
         self._checked[key] = latest_revision()
         if again != kept.answer:
-            raise StaleAnswer(ERR_STALE_ANSWER.format(key=key, kept=kept.answer, again=again))
+            raise StaleAnswer(errors.ERR_STALE_ANSWER.format(key=key, kept=kept.answer, again=again))

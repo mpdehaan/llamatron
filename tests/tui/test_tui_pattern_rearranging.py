@@ -24,8 +24,7 @@ from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import HOME_END, Key
 from llamatron.tui.screens.pattern.pattern_editor import Munge, Reconfigure
-from llamatron.strings.errors import ERR_NOTHING_AFTER
-from llamatron.strings.legends import MSG_TO_EDITOR_WHAT, MSG_TO_ROLL_WHAT, What
+from llamatron.strings import errors, legends
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import first_key
 from tests.support.rendering import render_song
@@ -88,7 +87,7 @@ class TestRearrangingAPattern(UITest):
         await self.press(Key.END)
         await munge(test=self, choice=Munge.REVERSE_AFTER)
         self.assertEqual(self.rows(), [1, 2, 3, 4, 5])
-        self.assertIn(ERR_NOTHING_AFTER, self.text())
+        self.assertIn(errors.ERR_NOTHING_AFTER, self.text())
 
     async def test_pivot_exchanges_both_sides_of_the_cursor(self):
         await self.press(Key.RIGHT)
@@ -185,8 +184,8 @@ class TestTheEditorsTwoViews(UITest):
     async def test_each_view_says_what_tab_does_and_whether_its_legend_lists_the_step_keys(self):
         await self.press(keybindings.MainPage.PATTERNS, Key.ENTER)
         editor = self.app.screen
-        self.assertEqual(editor.roll.other_view_what(), MSG_TO_EDITOR_WHAT)
-        self.assertEqual(editor.rows_view.other_view_what(), MSG_TO_ROLL_WHAT)
+        self.assertEqual(editor.roll.other_view_what(), legends.MSG_TO_EDITOR_WHAT)
+        self.assertEqual(editor.rows_view.other_view_what(), legends.MSG_TO_ROLL_WHAT)
         self.assertFalse(editor.roll.lists_step_keys())
         self.assertTrue(editor.rows_view.lists_step_keys())
         # The roll neither inserts nor removes a step, as Live's piano roll never did; the rows view does both, in its legend.
@@ -219,8 +218,8 @@ class TestTheEditorsTwoViews(UITest):
         self.assertNotIn(first_key(keybindings.PatternEditor.TO_ROLL), [name for item in editor.keys() for name in item.keys])
         # On the Note row the letter D is a note, so it can't remove a step there, and it can on the row below.
         self.assertTrue(editor.rows_view.takes_note_letters())
-        self.assertFalse(any(item.what == What.REMOVE_STEP for item in editor.keys()))
+        self.assertFalse(any(item.what == legends.What.REMOVE_STEP for item in editor.keys()))
         await self.press(Key.DOWN)
         self.assertFalse(editor.rows_view.takes_note_letters())
-        self.assertTrue(any(item.what == What.REMOVE_STEP for item in editor.keys()))
+        self.assertTrue(any(item.what == legends.What.REMOVE_STEP for item in editor.keys()))
         self.assertFalse(editor.roll.takes_note_letters())

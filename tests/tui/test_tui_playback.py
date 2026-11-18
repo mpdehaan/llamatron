@@ -38,20 +38,7 @@ from llamatron.realtime.outputs import RecordingOutput
 from llamatron.realtime.timeline import NOTE_ON, PROGRAM_CHANGE, Route
 from llamatron.composition.checks import listed
 from llamatron.tui.uses import looping_scenes
-from llamatron.strings.errors import (
-    ERR_SCENE_PLAYING_SHOWN, ERR_TRACK_PLAYING_SHOWN,
-    ERR_ADD_INSTRUMENT_FIRST, ERR_CANT_PLAY_TITLE, ERR_DEVICE_NOT_CONNECTED, ERR_FLUIDSYNTH_NOT_INSTALLED, ERR_NO_INSTRUMENTS_TITLE, ERR_NO_TRACK_HAS_A_DEVICE, ERR_NO_TRACK_HAS_AN_INSTRUMENT,
-    ERR_LOOP_SCENES_TITLE, ERR_PREVIEW_DEVICE_NOT_CONNECTED, ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED, ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE, ERR_REAL_TIME_OFF, ERR_RECORDING_SONG_LOOPS,
-)
-from llamatron.strings.labels import MSG_PLAY_LABEL, MSG_STOP_LABEL
-from llamatron.strings.legends import MSG_LISTEN_WHAT, MSG_PLAY_CLIP_WHAT, MSG_PLAY_SONG_WHAT, MSG_STOP_CLIP_WHAT, MSG_STOP_WHAT
-from llamatron.strings.marks import MSG_NOTE_EDGE, MSG_READ_HEAD, MSG_PLAY_MARK, MSG_SAVED_MARK, MSG_SCENE_ANNOUNCED, MSG_SONG_BUTTON, MSG_SOUNDING_MARK, MSG_STOP_MARK, MSG_UNSAVED_CHANGES_MARK, MSG_UNSAVED_MARK
-from llamatron.strings.messages import MSG_REAL_TIME_OFF_STOPPED
-from llamatron.strings.messages import (
-    MSG_LIVE_EDIT_NOT_HEARD,
-    MSG_CLIP_ON_TRACK, MSG_LISTEN_INSTRUMENT_TITLE, MSG_LISTENING, MSG_LISTENING_GENERAL_MIDI, MSG_LISTENING_IN_SCALE, MSG_LISTENING_TO_PATTERN, MSG_NOTHING_TO_SILENCE, MSG_PLAYING_CLIP, MSG_PLAYING_FROM, MSG_SCENE_NUMBER,
-    MSG_SILENCED, MSG_STARTS_AT_NEXT_BAR, MSG_STOPPED, MSG_STOPPED_TRACK,
-)
+from llamatron.strings import about, errors, labels, legends, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.drawing import Style
@@ -64,10 +51,8 @@ from llamatron.tui.components.stage_drawing import Rect
 from llamatron.tui.screens.shared.shared import scene_name
 from llamatron.tui.screens.set.demo_scroll import DemoScroll
 from llamatron.tui.screens.set.splash import Splash
-from llamatron.strings.about import MSG_BLOCK
 from llamatron.tui.drawing import Box
 from llamatron.tui.screens.set.main_page import MainPage
-from llamatron.strings.marks import MSG_PLAYING_CLOCK
 from llamatron.tui.text import clock
 from llamatron.tui.keys import Key
 from llamatron.tui.transport import Transport
@@ -287,8 +272,8 @@ class TestFluidSynthPlayback(PlaybackTest):
     async def test_fluidsynth_not_installed_is_told_and_nothing_starts(self):
         self.fluidsynth_installed = False
         await self.press(*CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
-        self.assertIn(ERR_CANT_PLAY_TITLE, self.text())
-        self.assert_told(ERR_FLUIDSYNTH_NOT_INSTALLED)
+        self.assertIn(errors.ERR_CANT_PLAY_TITLE, self.text())
+        self.assert_told(errors.ERR_FLUIDSYNTH_NOT_INSTALLED)
         self.assertFalse(self.fluidsynth.running)
         self.assertFalse(self.transport().is_playing())
 
@@ -322,7 +307,7 @@ class TestArrangePlayback(PlaybackTest):
         self.assertTrue(self.transport().is_playing())
         await self.press(Key.ESCAPE, keybindings.MainPage.REAL_TIME)
         self.assertFalse(self.transport().is_playing())
-        self.assertIn(MSG_REAL_TIME_OFF_STOPPED, self.text())
+        self.assertIn(messages.MSG_REAL_TIME_OFF_STOPPED, self.text())
 
     async def test_deleting_the_last_instrument_while_the_song_plays_stops_it_at_the_next_tick(self):
         self.give_lead_an_instrument()
@@ -335,17 +320,17 @@ class TestArrangePlayback(PlaybackTest):
     async def test_with_real_time_off_the_corner_is_out_of_reach_and_space_is_not_a_key(self):
         await self.press(*CORNER_KEYS)
         self.assertFalse(self.page.on_corner())
-        self.assertNotIn(MSG_PLAY_SONG_WHAT.strip(), self.text())
-        self.assertNotIn(MSG_SONG_BUTTON.format(mark=MSG_PLAY_MARK), self.text())
+        self.assertNotIn(legends.MSG_PLAY_SONG_WHAT.strip(), self.text())
+        self.assertNotIn(marks.MSG_SONG_BUTTON.format(mark=marks.MSG_PLAY_MARK), self.text())
 
     async def test_with_real_time_on_but_no_instrument_space_tells_what_is_missing(self):
         self.document.set_real_time(True)
         await self.press(*CORNER_KEYS)
         self.assertTrue(self.page.on_corner())
-        self.assertIn(MSG_SONG_BUTTON.format(mark=MSG_PLAY_MARK), self.text())
+        self.assertIn(marks.MSG_SONG_BUTTON.format(mark=marks.MSG_PLAY_MARK), self.text())
         await self.press(keybindings.ArrangePage.PLAY_SONG)
-        self.assertIn(ERR_NO_INSTRUMENTS_TITLE, self.text())
-        self.assert_told(ERR_ADD_INSTRUMENT_FIRST)
+        self.assertIn(errors.ERR_NO_INSTRUMENTS_TITLE, self.text())
+        self.assert_told(errors.ERR_ADD_INSTRUMENT_FIRST)
         await self.press(Key.ENTER)
         self.assertFalse(self.transport().is_playing())
 
@@ -353,17 +338,17 @@ class TestArrangePlayback(PlaybackTest):
         self.document.add_instrument(SYNTH)
         self.document.set_instrument_device(name=SYNTH, device=SYNTH_PORT)
         await self.press(*CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
-        self.assertIn(ERR_CANT_PLAY_TITLE, self.text())
-        self.assert_told(ERR_NO_TRACK_HAS_AN_INSTRUMENT)
+        self.assertIn(errors.ERR_CANT_PLAY_TITLE, self.text())
+        self.assert_told(errors.ERR_NO_TRACK_HAS_AN_INSTRUMENT)
         await self.press(Key.ENTER)
         self.document.set_track_instrument(name=LEAD, instrument=SYNTH)
         self.document.set_instrument_device(name=SYNTH, device=None)
         await self.press(keybindings.ArrangePage.PLAY_SONG)
-        self.assert_told(ERR_NO_TRACK_HAS_A_DEVICE)
+        self.assert_told(errors.ERR_NO_TRACK_HAS_A_DEVICE)
         await self.press(Key.ENTER)
         self.document.set_instrument_device(name=SYNTH, device=UNPLUGGED_PORT)
         await self.press(keybindings.ArrangePage.PLAY_SONG)
-        self.assert_told(ERR_DEVICE_NOT_CONNECTED.format(instrument=SYNTH, device=UNPLUGGED_PORT))
+        self.assert_told(errors.ERR_DEVICE_NOT_CONNECTED.format(instrument=SYNTH, device=UNPLUGGED_PORT))
         await self.press(Key.ENTER)
         self.assertFalse(self.transport().is_playing())
 
@@ -374,7 +359,7 @@ class TestArrangePlayback(PlaybackTest):
         self.page.draw()
         await self.pilot.pause()
         self.assertIsNotNone(self.transport().problem())
-        self.assertEqual(self.transport().problem().lines, [ERR_REAL_TIME_OFF])
+        self.assertEqual(self.transport().problem().lines, [errors.ERR_REAL_TIME_OFF])
 
     async def test_on_the_main_screen_the_header_shows_the_play_mark_and_the_clock_while_the_song_plays(self):
         # The one thing on the main screen that says a song plays on, beside the song's length.
@@ -385,7 +370,7 @@ class TestArrangePlayback(PlaybackTest):
         await self.press(Key.ESCAPE)
         main = self.app.screen
         self.assertIsInstance(main, MainPage)
-        playing = MSG_PLAYING_CLOCK.format(at=clock(self.transport().song_position()), total=clock(self.transport().song_seconds()))
+        playing = marks.MSG_PLAYING_CLOCK.format(at=clock(self.transport().song_position()), total=clock(self.transport().song_seconds()))
         self.assertEqual(main.time_text(), playing)
         self.assertIn(playing, self.text().splitlines()[1])
         # Once nothing plays, the header shows the song's length alone.
@@ -393,27 +378,27 @@ class TestArrangePlayback(PlaybackTest):
         main.draw()
         await self.pilot.pause()
         self.assertEqual(main.time_text(), length)
-        self.assertNotIn(MSG_PLAYING_CLOCK.format(at=NOTHING, total=NOTHING).strip()[0], self.text().splitlines()[1])
+        self.assertNotIn(marks.MSG_PLAYING_CLOCK.format(at=NOTHING, total=NOTHING).strip()[0], self.text().splitlines()[1])
 
     async def test_space_on_the_corner_plays_the_song_lights_the_page_and_stops_it_again(self):
         self.give_lead_an_instrument()
         await self.press(*CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
-        self.assertIn(MSG_PLAYING_FROM.format(scene=MSG_SCENE_NUMBER.format(number=SCENE_ONE_NUMBER)), self.text())
+        self.assertIn(messages.MSG_PLAYING_FROM.format(scene=messages.MSG_SCENE_NUMBER.format(number=SCENE_ONE_NUMBER)), self.text())
         self.assertTrue(self.transport().is_playing())
-        self.assertIn(MSG_SONG_BUTTON.format(mark=MSG_STOP_MARK), self.text())
-        self.assertIn(MSG_STOP_WHAT.strip(), self.text())
+        self.assertIn(marks.MSG_SONG_BUTTON.format(mark=marks.MSG_STOP_MARK), self.text())
+        self.assertIn(legends.MSG_STOP_WHAT.strip(), self.text())
         await self.let_time_pass(A_MOMENT)
         # The lead sounds, so its name carries the mark; the drums have no instrument, so their clip runs silently and their name carries none.
-        self.assertIn(LEAD + MSG_SOUNDING_MARK, self.text().replace(SPACE, NOTHING))
-        self.assertNotIn(DRUMS + MSG_SOUNDING_MARK, self.text().replace(SPACE, NOTHING))
+        self.assertIn(LEAD + marks.MSG_SOUNDING_MARK, self.text().replace(SPACE, NOTHING))
+        self.assertNotIn(DRUMS + marks.MSG_SOUNDING_MARK, self.text().replace(SPACE, NOTHING))
         self.assertTrue(self.transport().is_clip_playing(index=FIRST_INDEX, track=LEAD))
         self.assertTrue(self.transport().is_clip_playing(index=FIRST_INDEX, track=DRUMS))
         self.assertFalse(self.transport().is_track_sounding(DRUMS))
         self.assertEqual(len(self.note_ons(SYNTH_PORT)), 1)
         await self.press(keybindings.ArrangePage.STOP_PLAYING)
-        self.assertIn(MSG_STOPPED, self.text())
+        self.assertIn(messages.MSG_STOPPED, self.text())
         self.assertFalse(self.transport().is_playing())
-        self.assertIn(MSG_SONG_BUTTON.format(mark=MSG_PLAY_MARK), self.text())
+        self.assertIn(marks.MSG_SONG_BUTTON.format(mark=marks.MSG_PLAY_MARK), self.text())
 
     async def test_the_song_ends_on_its_own_and_the_lights_go_out(self):
         # The drums loop in the first scene, which would hold the song there for the human, so they're taken out: the song is the lead's tune and then an empty scene.
@@ -423,13 +408,13 @@ class TestArrangePlayback(PlaybackTest):
         await self.let_time_pass(SCENE_ONE_SECONDS + A_MOMENT)
         self.assertFalse(self.transport().is_playing())
         self.assertEqual(len(self.note_ons(SYNTH_PORT)), TUNE_NOTE_ONS)
-        self.assertIn(MSG_SONG_BUTTON.format(mark=MSG_PLAY_MARK), self.text())
+        self.assertIn(marks.MSG_SONG_BUTTON.format(mark=marks.MSG_PLAY_MARK), self.text())
 
     async def test_a_scene_whose_every_clip_loops_is_refused_with_the_loop_errors_as_an_export_is(self):
         self.document.set_clip_slot_setting(index=FIRST_INDEX, track=LEAD, setting=ClipSlotSetting.LOOP, value=True)
         self.give_lead_an_instrument()
         await self.press(*CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
-        self.assertIn(ERR_LOOP_SCENES_TITLE, self.text())
+        self.assertIn(errors.ERR_LOOP_SCENES_TITLE, self.text())
         await self.press(Key.ENTER)
         self.assertFalse(self.transport().is_playing())
 
@@ -446,7 +431,7 @@ class TestArrangePlayback(PlaybackTest):
         await self.press(*CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
         await self.let_time_pass(A_MOMENT)
         await self.press(Key.DOWN, Key.DOWN, Key.LEFT, keybindings.ArrangePage.PLAY_SCENE)
-        self.assertIn(MSG_STARTS_AT_NEXT_BAR.format(what=MSG_SCENE_NUMBER.format(number=SECOND_INDEX + 1)), self.text())
+        self.assertIn(messages.MSG_STARTS_AT_NEXT_BAR.format(what=messages.MSG_SCENE_NUMBER.format(number=SECOND_INDEX + 1)), self.text())
         self.assertEqual(self.transport().playing_scenes(), [FIRST_INDEX])
         await self.let_time_pass(SCENE_ONE_SECONDS)
         self.assertEqual(self.transport().playing_scenes(), [])
@@ -454,23 +439,23 @@ class TestArrangePlayback(PlaybackTest):
     async def test_space_on_a_scene_name_plays_from_that_scene_and_space_again_stops_everything(self):
         self.give_lead_an_instrument()
         await self.press(keybindings.ArrangePage.PLAY_SCENE)
-        self.assertIn(MSG_PLAYING_FROM.format(scene=MSG_SCENE_NUMBER.format(number=SCENE_ONE_NUMBER)), self.text())
+        self.assertIn(messages.MSG_PLAYING_FROM.format(scene=messages.MSG_SCENE_NUMBER.format(number=SCENE_ONE_NUMBER)), self.text())
         self.assertEqual(self.transport().playing_scenes(), [FIRST_INDEX])
-        self.assertIn(MSG_STOP_WHAT.strip(), self.text())
+        self.assertIn(legends.MSG_STOP_WHAT.strip(), self.text())
         await self.press(keybindings.ArrangePage.STOP_PLAYING)
-        self.assertIn(MSG_STOPPED, self.text())
+        self.assertIn(messages.MSG_STOPPED, self.text())
         self.assertFalse(self.transport().is_playing())
 
     async def test_space_on_a_clip_plays_it_alone_and_space_again_stops_its_track(self):
         self.give_lead_an_instrument()
         await self.go_to_clip(index=FIRST_INDEX, track=LEAD)
-        self.assertIn(MSG_PLAY_CLIP_WHAT.strip(), self.text())
+        self.assertIn(legends.MSG_PLAY_CLIP_WHAT.strip(), self.text())
         await self.press(keybindings.ArrangePage.PLAY_CLIP)
-        self.assertIn(MSG_PLAYING_CLIP.format(clip=MSG_CLIP_ON_TRACK.format(name=TUNE, track=LEAD)), self.text())
+        self.assertIn(messages.MSG_PLAYING_CLIP.format(clip=messages.MSG_CLIP_ON_TRACK.format(name=TUNE, track=LEAD)), self.text())
         self.assertTrue(self.transport().is_clip_playing(index=FIRST_INDEX, track=LEAD))
-        self.assertIn(MSG_STOP_CLIP_WHAT.strip(), self.text())
+        self.assertIn(legends.MSG_STOP_CLIP_WHAT.strip(), self.text())
         await self.press(keybindings.ArrangePage.STOP_CLIP)
-        self.assertIn(MSG_STOPPED_TRACK.format(track=LEAD), self.text())
+        self.assertIn(messages.MSG_STOPPED_TRACK.format(track=LEAD), self.text())
         self.assertFalse(self.transport().is_clip_playing(index=FIRST_INDEX, track=LEAD))
 
     async def test_a_clip_on_a_track_with_no_instrument_plays_silently_but_still_runs(self):
@@ -478,7 +463,7 @@ class TestArrangePlayback(PlaybackTest):
         self.give_lead_an_instrument()
         await self.go_to_clip(index=FIRST_INDEX, track=DRUMS)
         await self.press(keybindings.ArrangePage.PLAY_CLIP)
-        self.assertIn(MSG_PLAYING_CLIP.format(clip=MSG_CLIP_ON_TRACK.format(name=BEAT, track=DRUMS)), self.text())
+        self.assertIn(messages.MSG_PLAYING_CLIP.format(clip=messages.MSG_CLIP_ON_TRACK.format(name=BEAT, track=DRUMS)), self.text())
         await self.let_time_pass(A_MOMENT)
         self.assertNotIn(DRUM_PORT, self.outputs)
         self.assertTrue(self.transport().is_clip_playing(index=FIRST_INDEX, track=DRUMS))
@@ -498,13 +483,13 @@ class TestArrangePlayback(PlaybackTest):
         self.give_lead_an_instrument()
         await self.press(*CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG, Key.RIGHT, keybindings.ArrangePage.DELETE_TRACK)
         self.assertIsInstance(self.app.screen, MessageDialog)
-        self.assert_told(ERR_TRACK_PLAYING_SHOWN)
+        self.assert_told(errors.ERR_TRACK_PLAYING_SHOWN)
         await self.press(Key.ENTER)
         await self.go_to_clip(index=FIRST_INDEX, track=LEAD)
         self.page.column = SCENE_COLUMN
         self.page.draw()
         await self.press(keybindings.ArrangePage.DELETE_SCENE)
-        self.assert_told(ERR_SCENE_PLAYING_SHOWN)
+        self.assert_told(errors.ERR_SCENE_PLAYING_SHOWN)
         await self.press(Key.ENTER)
         await self.go_to_clip(index=SECOND_INDEX, track=LEAD)
         self.page.column = SCENE_COLUMN
@@ -517,19 +502,19 @@ class TestArrangePlayback(PlaybackTest):
         await self.press(*CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
         await self.let_time_pass(A_MOMENT)
         await self.press(keybindings.Page.SILENCE)
-        self.assertIn(MSG_SILENCED.format(channels=ONE_CHANNEL, devices=ONE_DEVICE), self.text())
+        self.assertIn(messages.MSG_SILENCED.format(channels=ONE_CHANNEL, devices=ONE_DEVICE), self.text())
         self.assertFalse(self.transport().is_playing())
         self.assertEqual(self.transport().player().sender().sounding(), [])
 
     async def test_ctrl_t_with_no_connected_device_says_there_is_nothing_to_silence(self):
         self.give_lead_an_instrument(device=UNPLUGGED_PORT)
         await self.press(keybindings.Page.SILENCE)
-        self.assertIn(MSG_NOTHING_TO_SILENCE, self.text())
+        self.assertIn(messages.MSG_NOTHING_TO_SILENCE, self.text())
 
     async def test_ctrl_t_works_on_the_main_screen_too(self):
         self.give_lead_an_instrument()
         await self.press(Key.ESCAPE, keybindings.Page.SILENCE)
-        self.assertIn(MSG_SILENCED.format(channels=ONE_CHANNEL, devices=ONE_DEVICE), self.text())
+        self.assertIn(messages.MSG_SILENCED.format(channels=ONE_CHANNEL, devices=ONE_DEVICE), self.text())
 
 
 class TestLiveEditing(PlaybackTest):
@@ -625,7 +610,7 @@ class TestLiveEditing(PlaybackTest):
             self.app.screen.say(message)
             self.app.screen.draw()
         await self.pilot.pause()
-        self.assertIn(fixed_text(MSG_LIVE_EDIT_NOT_HEARD), self.text())
+        self.assertIn(fixed_text(messages.MSG_LIVE_EDIT_NOT_HEARD), self.text())
 
     async def test_another_song_made_current_stops_what_plays(self):
         await self.press(*CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
@@ -658,14 +643,14 @@ class TestClipPagePlayback(PlaybackTest):
         self.give_lead_an_instrument()
         await self.open_clip(track_steps=1)
         await self.press(keybindings.ClipPage.LISTEN)
-        self.assertIn(MSG_LISTENING.format(name=TUNE, track=LEAD), self.text())
+        self.assertIn(messages.MSG_LISTENING.format(name=TUNE, track=LEAD), self.text())
         self.assertTrue(self.page.is_listening())
         await self.let_time_pass(SCENE_ONE_SECONDS + A_MOMENT)
         # A clip listened to plays on past its scene's length, as a looping clip does.
         self.assertTrue(self.page.is_listening())
         self.assertGreater(len(self.note_ons(SYNTH_PORT)), TUNE_NOTE_ONS)
         await self.press(keybindings.ClipPage.STOP_LISTENING)
-        self.assertIn(MSG_STOPPED, self.text())
+        self.assertIn(messages.MSG_STOPPED, self.text())
         self.assertFalse(self.page.is_listening())
 
     async def test_a_preview_stops_when_its_page_is_left(self):
@@ -679,13 +664,13 @@ class TestClipPagePlayback(PlaybackTest):
     async def test_the_play_and_stop_buttons_do_the_same(self):
         self.give_lead_an_instrument()
         await self.open_clip(track_steps=1)
-        await self.select_field(MSG_PLAY_LABEL)
+        await self.select_field(labels.MSG_PLAY_LABEL)
         await self.press(Key.ENTER)
         self.assertTrue(self.page.is_listening())
-        await self.select_field(MSG_STOP_LABEL)
+        await self.select_field(labels.MSG_STOP_LABEL)
         await self.press(Key.ENTER)
         self.assertFalse(self.page.is_listening())
-        self.assertIn(MSG_STOPPED, self.text())
+        self.assertIn(messages.MSG_STOPPED, self.text())
 
     async def test_a_track_without_an_instrument_asks_which_to_listen_through(self):
         self.give_lead_an_instrument()
@@ -693,10 +678,10 @@ class TestClipPagePlayback(PlaybackTest):
         self.document.set_instrument_device(name=DRUM_MACHINE, device=DRUM_PORT)
         await self.open_clip(track_steps=2)
         await self.press(keybindings.ClipPage.LISTEN)
-        self.assertIn(MSG_LISTEN_INSTRUMENT_TITLE, self.text())
+        self.assertIn(messages.MSG_LISTEN_INSTRUMENT_TITLE, self.text())
         await self.type(DRUM_MACHINE)
         await self.press(Key.ENTER)
-        self.assertIn(MSG_LISTENING.format(name=BEAT, track=DRUMS), self.text())
+        self.assertIn(messages.MSG_LISTENING.format(name=BEAT, track=DRUMS), self.text())
         await self.let_time_pass(A_MOMENT)
         self.assertEqual(len(self.note_ons(DRUM_PORT)), 1)
         self.assertFalse(self.document.song().get_track(DRUMS).get_instrument_name())
@@ -705,14 +690,14 @@ class TestClipPagePlayback(PlaybackTest):
         self.fluidsynth_installed = False
         await self.open_clip(track_steps=1)
         await self.press(keybindings.ClipPage.LISTEN)
-        self.assertIn(ERR_CANT_PLAY_TITLE, self.text())
-        self.assert_told(ERR_REAL_TIME_OFF)
+        self.assertIn(errors.ERR_CANT_PLAY_TITLE, self.text())
+        self.assert_told(errors.ERR_REAL_TIME_OFF)
 
     async def test_with_real_time_off_the_clip_plays_through_general_midi_and_l_again_stops(self):
         self.assertFalse(self.document.setlist().is_real_time())
         await self.open_clip(track_steps=1)
         await self.press(keybindings.ClipPage.LISTEN)
-        self.assertIn(MSG_LISTENING_GENERAL_MIDI.format(name=TUNE), self.text())
+        self.assertIn(messages.MSG_LISTENING_GENERAL_MIDI.format(name=TUNE), self.text())
         self.assertTrue(self.page.is_listening())
         preview = self.app.pattern_preview()
         self.clock.advance(A_MOMENT)
@@ -724,7 +709,7 @@ class TestClipPagePlayback(PlaybackTest):
         self.assertEqual([data[0] for data in self.note_ons(FLUIDSYNTH_PORT)], [NOTE_ON | PREVIEW_CHANNEL_BYTE])
         await self.press(keybindings.ClipPage.STOP_LISTENING)
         self.assertFalse(self.page.is_listening())
-        self.assertIn(MSG_STOPPED, self.text())
+        self.assertIn(messages.MSG_STOPPED, self.text())
 
     async def test_with_real_time_off_a_drum_patterns_clip_plays_general_midis_drum_kit_and_leaving_stops_it(self):
         await self.open_clip(track_steps=2)
@@ -783,7 +768,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         await self.press(keybindings.PatternEditor.LISTEN)
         # Nothing is asked: the status line says the scale, the first of the scales the pattern's clips play in.
         self.assertIsInstance(self.app.screen, PatternEditor)
-        self.assertIn(MSG_LISTENING_IN_SCALE.format(name=TUNE, scale=self.document.scales_of_pattern(TUNE)[0]), self.text())
+        self.assertIn(messages.MSG_LISTENING_IN_SCALE.format(name=TUNE, scale=self.document.scales_of_pattern(TUNE)[0]), self.text())
         self.assertEqual(self.preview().playing_pattern(), TUNE)
         await self.let_the_preview_play(A_MOMENT)
         self.assertEqual(len(self.note_ons(SYNTH_PORT)), 1)
@@ -791,7 +776,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         self.assertEqual(self.document.revision(), revision_before)
         self.assertFalse(self.transport().is_playing())
         await self.press(keybindings.PatternEditor.STOP_LISTENING)
-        self.assertIn(MSG_STOPPED, self.text())
+        self.assertIn(messages.MSG_STOPPED, self.text())
         self.assertIsNone(self.preview().playing_pattern())
 
     async def test_it_plays_again_and_again(self):
@@ -828,7 +813,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         await self.open_pattern(BEAT)
         await self.press(keybindings.PatternEditor.LISTEN)
         # A drum pattern has no scale to say.
-        self.assertIn(MSG_LISTENING_TO_PATTERN.format(name=BEAT), self.text())
+        self.assertIn(messages.MSG_LISTENING_TO_PATTERN.format(name=BEAT), self.text())
         await self.let_the_preview_play(A_MOMENT)
         self.assertEqual([data[0] for data in self.note_ons(FLUIDSYNTH_PORT)], [NOTE_ON | DRUM_CHANNEL_BYTE])
         self.assertNotIn(SYNTH_PORT, self.outputs)
@@ -837,7 +822,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         self.fluidsynth_installed = False
         await self.open_pattern(TUNE)
         self.assertFalse(self.preview().can_sound(TUNE))
-        self.assertNotIn(key_name(keybindings.PatternEditor.LISTEN) + SPACE + MSG_LISTEN_WHAT, self.words_shown())
+        self.assertNotIn(key_name(keybindings.PatternEditor.LISTEN) + SPACE + legends.MSG_LISTEN_WHAT, self.words_shown())
         await self.press(keybindings.PatternEditor.LISTEN)
         self.assertIsNone(self.preview().playing_pattern())
         self.assertIsInstance(self.app.screen, PatternEditor)
@@ -850,17 +835,17 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         self.name_a_preview_instrument(device=UNPLUGGED_PORT)
         await self.open_pattern(TUNE)
         await self.press(keybindings.PatternEditor.LISTEN)
-        self.assertIn(ERR_PREVIEW_DEVICE_NOT_CONNECTED.format(name=SYNTH, device=UNPLUGGED_PORT), self.words_shown())
+        self.assertIn(errors.ERR_PREVIEW_DEVICE_NOT_CONNECTED.format(name=SYNTH, device=UNPLUGGED_PORT), self.words_shown())
         self.assertIsNone(self.preview().playing_pattern())
         # General MIDI is no silent substitute: FluidSynth was never started.
         self.assertEqual(self.fluidsynth.starts, 0)
         self.document.set_instrument_device(name=SYNTH, device=None)
         await self.press(keybindings.PatternEditor.LISTEN)
-        self.assertIn(ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE.format(name=SYNTH), self.words_shown())
+        self.assertIn(errors.ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE.format(name=SYNTH), self.words_shown())
         self.document.set_instrument_device(name=SYNTH, device=FLUIDSYNTH_DEVICE)
         self.fluidsynth_installed = False
         await self.press(keybindings.PatternEditor.LISTEN)
-        self.assertIn(ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED.format(name=SYNTH), self.words_shown())
+        self.assertIn(errors.ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED.format(name=SYNTH), self.words_shown())
 
     async def test_it_plays_with_real_time_off(self):
         self.assertFalse(self.document.setlist().is_real_time())
@@ -948,8 +933,8 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         await self.let_the_preview_play(PAST_THE_SECOND_NOTE)
         self.assertGreater(self.read_head_cells(), 0)
         drawing = self.page.roll_drawing
-        self.assertEqual(drawing.read_head_on(line=Text(MSG_NOTE_EDGE), column=FIRST_INDEX).plain, MSG_NOTE_EDGE)
-        self.assertEqual(drawing.read_head_on(line=Text(SPACE), column=FIRST_INDEX).plain, MSG_READ_HEAD)
+        self.assertEqual(drawing.read_head_on(line=Text(marks.MSG_NOTE_EDGE), column=FIRST_INDEX).plain, marks.MSG_NOTE_EDGE)
+        self.assertEqual(drawing.read_head_on(line=Text(SPACE), column=FIRST_INDEX).plain, marks.MSG_READ_HEAD)
 
     async def test_the_rows_view_shows_the_number_of_the_step_that_sounds_in_the_read_heads_colour(self):
         self.name_a_preview_instrument()
@@ -1142,9 +1127,9 @@ class TestAutoplayLaunch(LaunchTest):
         await self.wait_until_playing()
         self.check_order((SHOWED, ArrangePage), (PLAYED, None))
         self.assertTrue(self.app.autoplay_started())
-        self.assertIn(MSG_SONG_BUTTON.format(mark=MSG_STOP_MARK), self.text())
+        self.assertIn(marks.MSG_SONG_BUTTON.format(mark=marks.MSG_STOP_MARK), self.text())
         # The header keeps its save mark, unsaved for a test's song with no file: only a launch for recording leaves it off.
-        self.assertIn(MSG_UNSAVED_MARK, self.text())
+        self.assertIn(marks.MSG_UNSAVED_MARK, self.text())
 
 
 class TestAutoplayQuitLaunch(LaunchTest):
@@ -1185,12 +1170,12 @@ class TestRecordingLaunch(LaunchTest):
 
     async def test_the_splash_shows_the_title_then_arrange_plays_with_no_save_mark(self):
         self.assertIsInstance(self.app.screen, Splash)
-        self.assertNotIn(MSG_UNSAVED_MARK, self.text())
+        self.assertNotIn(marks.MSG_UNSAVED_MARK, self.text())
         await self.wait_until(self.shows(ArrangePage))
         await self.wait_until_playing()
         self.check_order((SHOWED, Splash), (SHOWED, ArrangePage), (PLAYED, None))
-        self.assertNotIn(MSG_SAVED_MARK, self.text())
-        self.assertNotIn(MSG_UNSAVED_CHANGES_MARK, self.text())
+        self.assertNotIn(marks.MSG_SAVED_MARK, self.text())
+        self.assertNotIn(marks.MSG_UNSAVED_CHANGES_MARK, self.text())
 
 
 class TestSplashQuitsAtOnce(LaunchTest):
@@ -1312,7 +1297,7 @@ class TestPlayingKeepsTheCursorsBoxOutsideARecording(LaunchTest):
         corners = double_corners(lines)
         self.assertEqual(len(corners), 1)
         self.assertNotIn(Style.PLAYING_SCENE, styles_at(line=corners[0], column=corners[0].plain.index(Box.DOUBLE_TOP_LEFT)))
-        self.assertNotIn(fixed_text(MSG_SCENE_ANNOUNCED), self.text())
+        self.assertNotIn(fixed_text(marks.MSG_SCENE_ANNOUNCED), self.text())
 
 
 class TestRecordingWithDetails(LaunchTest):
@@ -1335,7 +1320,7 @@ class TestRecordingAnnouncesScenes(LaunchTest):
     LAUNCH = Launch(quit_when_finished=True, for_recording=True, splash_seconds=RECORDING_SPLASH, lead_in_seconds=A_MOMENT, lead_out_seconds=LONG_LEAD_OUT, announce=True)
 
     def announcement(self, index):
-        return MSG_SCENE_ANNOUNCED.format(name=scene_name(scene=self.document.song().get_scenes()[index], index=index))
+        return marks.MSG_SCENE_ANNOUNCED.format(name=scene_name(scene=self.document.song().get_scenes()[index], index=index))
 
     async def test_the_scene_is_announced_over_the_clips_for_a_while_and_not_when_it_plays_on(self):
         await self.wait_until(self.shows(ArrangePage))
@@ -1433,7 +1418,7 @@ class TestDemoNameScrollsAfterTheTitle(LaunchTest):
         await self.wait_until(self.shows(DemoScroll))
         self.assertFalse(self.transport().is_playing())
         await self.wait_a_moment(A_MOMENT)
-        self.assertIn(MSG_BLOCK, self.text())
+        self.assertIn(about.MSG_BLOCK, self.text())
         await self.wait_until(self.shows(ArrangePage))
         await self.wait_until_playing()
         self.check_order((SHOWED, Splash), (SHOWED, DemoScroll), (SHOWED, ArrangePage), (PLAYED, None))
@@ -1476,6 +1461,6 @@ class TestRecordingProblem(unittest.TestCase):
         document = a_song()
         self.assertIsNone(recording_problem(document.song()))
         document.set_clip_slot_setting(index=FIRST_INDEX, track=LEAD, setting=ClipSlotSetting.LOOP, value=True)
-        self.assertEqual(recording_problem(document.song()), ERR_RECORDING_SONG_LOOPS.format(scenes=listed(looping_scenes(document.song()))))
-        self.assertIn(MSG_SCENE_NUMBER.format(number=FIRST_INDEX + 1), recording_problem(document.song()))
+        self.assertEqual(recording_problem(document.song()), errors.ERR_RECORDING_SONG_LOOPS.format(scenes=listed(looping_scenes(document.song()))))
+        self.assertIn(messages.MSG_SCENE_NUMBER.format(number=FIRST_INDEX + 1), recording_problem(document.song()))
 

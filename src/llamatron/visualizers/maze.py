@@ -31,7 +31,7 @@ from llamatron.visualizers.cells import SPACE, CellPainter
 from llamatron.visualizers.colour import track_colour, vivid
 from llamatron.visualizers.heard import SILENCE
 from llamatron.visualizers.visualizer import Visualizer
-from llamatron.strings.visualizers import MSG_MAZE
+from llamatron.strings import visualizers
 
 SEED = 1
 LONGEST_FRAME_SECONDS = 0.2
@@ -119,7 +119,7 @@ class Maze(Visualizer):
 
     __slots__ = ('_rows', '_columns', '_walls', '_corridors', '_wall_characters', '_trodden', '_ages', '_owners', '_walkers', '_last', '_chooser', '_fading', '_cells')
 
-    NAME = MSG_MAZE
+    NAME = visualizers.MSG_MAZE
     OPTION = 'maze'
 
     def __init__(self):

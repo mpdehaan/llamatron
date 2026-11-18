@@ -19,15 +19,12 @@
 import unittest
 
 from llamatron.composition.file_format import FLUIDSYNTH_DEVICE, PatternSetting, Row
-from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MIN_GM_SOUND
+from llamatron.composition import limits
+from llamatron.strings import errors, labels, legends, marks
 from llamatron.exporters.midi_arrangement import DRUM_CHANNEL_BYTE
 from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT
 from llamatron.realtime.timeline import NOTE_ON, PROGRAM_CHANGE
 from llamatron.music.note import NoteName
-from llamatron.strings.errors import ERR_NOT_A_NOTE_NAME, ERR_NOTHING_TO_TRY_A_SOUND_WITH, ERR_PREVIEW_DEVICE_NOT_CONNECTED, ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED, ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE
-from llamatron.strings.labels import MSG_GM_FAMILIES, MSG_GM_SOUND_LABEL, MSG_GM_SOUNDS
-from llamatron.strings.legends import MSG_LISTEN_WHAT
-from llamatron.strings.marks import MSG_FLYOUT_CHOSEN, MSG_FLYOUT_CLOSED, MSG_NONE_SHOWN, MSG_NOTE_NAME_SHOWN, MSG_SEARCH_SHOWN, MSG_SOUND_FOUND, MSG_SOUND_NOTE_ROW, MSG_SOUND_NOTE_TYPED
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.sound_dialog import SoundDialog
 from llamatron.tui.keys import Key
@@ -42,8 +39,8 @@ SYNTH = 'synth'
 PREVIEW = 'monitor'
 NOT_CONNECTED = 'No Such Port'
 A_SOUND_NAME = 'Banjo'
-A_SOUND = MSG_GM_SOUNDS.index(A_SOUND_NAME) + MIN_GM_SOUND
-ITS_FAMILY = (A_SOUND - MIN_GM_SOUND) // GM_FAMILY_SIZE
+A_SOUND = labels.MSG_GM_SOUNDS.index(A_SOUND_NAME) + limits.MIN_GM_SOUND
+ITS_FAMILY = (A_SOUND - limits.MIN_GM_SOUND) // limits.GM_FAMILY_SIZE
 NOT_A_SOUND = 'zzzz'
 A_ROOT = 9
 MINOR_STEPS = (0, 2, 3, 5, 7, 8, 10)
@@ -96,7 +93,7 @@ class TestSoundDialog(PatternPreviewTest):
         self.document.add_instrument(SYNTH)
         await self.press(keybindings.MainPage.INSTRUMENTS, Key.ENTER)
         self.assertIsInstance(self.app.screen, InstrumentEditor)
-        await self.select_field(MSG_GM_SOUND_LABEL)
+        await self.select_field(labels.MSG_GM_SOUND_LABEL)
         await self.press(Key.ENTER)
         self.dialog = self.app.screen
         self.assertIsInstance(self.dialog, SoundDialog)
@@ -119,29 +116,29 @@ class TestSoundDialog(PatternPreviewTest):
 
     def test_every_family_holds_its_eight_sounds_and_together_they_are_all_of_general_midi(self):
         families = sound_families()
-        self.assertEqual([name for name, _ in families], MSG_GM_FAMILIES)
-        self.assertEqual([sound for _, sounds in families for _, sound in sounds], list(range(MIN_GM_SOUND, MAX_GM_SOUND + 1)))
+        self.assertEqual([name for name, _ in families], labels.MSG_GM_FAMILIES)
+        self.assertEqual([sound for _, sounds in families for _, sound in sounds], list(range(limits.MIN_GM_SOUND, limits.MAX_GM_SOUND + 1)))
         for _, sounds in families:
-            self.assertEqual(len(sounds), GM_FAMILY_SIZE)
-        self.assertEqual(sound_families(numbered=True)[0][1][0][0], sound_text(MIN_GM_SOUND))
+            self.assertEqual(len(sounds), limits.GM_FAMILY_SIZE)
+        self.assertEqual(sound_families(numbered=True)[0][1][0][0], sound_text(limits.MIN_GM_SOUND))
 
     async def test_it_opens_on_none_above_the_families_each_drawn_as_a_button(self):
         shown = self.text()
-        self.assertIn(MSG_NONE_SHOWN, shown)
-        for family in MSG_GM_FAMILIES[:4]:
-            self.assertIn(MSG_FLYOUT_CLOSED.format(name=family), shown)
+        self.assertIn(marks.MSG_NONE_SHOWN, shown)
+        for family in labels.MSG_GM_FAMILIES[:4]:
+            self.assertIn(marks.MSG_FLYOUT_CLOSED.format(name=family), shown)
         self.assertEqual(self.dialog.place, 0)
 
     async def test_a_familys_flyout_opens_and_enter_takes_a_sound_which_the_family_then_shows(self):
         await self.press(Key.DOWN, keybindings.SoundDialog.OPEN)
         self.assertEqual(self.dialog.flyout, 0)
-        for name in MSG_GM_SOUNDS[:GM_FAMILY_SIZE]:
+        for name in labels.MSG_GM_SOUNDS[:limits.GM_FAMILY_SIZE]:
             self.assertIn(name, self.text())
         await self.press(Key.DOWN, keybindings.SoundDialog.CHOOSE)
-        self.assertEqual(self.instrument().get_gm_sound(), MIN_GM_SOUND + 1)
+        self.assertEqual(self.instrument().get_gm_sound(), limits.MIN_GM_SOUND + 1)
         await self.press(Key.ENTER)
         self.assertEqual(self.app.screen.place, 1)
-        self.assertIn(MSG_FLYOUT_CHOSEN.format(name=MSG_GM_FAMILIES[0], chosen=sound_text(MIN_GM_SOUND + 1)), self.text())
+        self.assertIn(marks.MSG_FLYOUT_CHOSEN.format(name=labels.MSG_GM_FAMILIES[0], chosen=sound_text(limits.MIN_GM_SOUND + 1)), self.text())
         # The flyout opens on the sound the instrument has.
         await self.press(keybindings.SoundDialog.OPEN)
         self.assertEqual(self.app.screen.flyout_place, 1)
@@ -168,24 +165,24 @@ class TestSoundDialog(PatternPreviewTest):
     async def test_the_cursor_stops_at_the_first_and_the_last_row_and_in_the_flyout(self):
         await self.press(Key.UP)
         self.assertEqual(self.dialog.place, 0)
-        await self.press(*[Key.DOWN] * (len(MSG_GM_FAMILIES) + 3))
-        self.assertEqual(self.dialog.place, len(MSG_GM_FAMILIES))
-        self.assertIn(MSG_FLYOUT_CLOSED.format(name=MSG_GM_FAMILIES[-1]), self.text())
-        await self.press(keybindings.SoundDialog.OPEN, *[Key.DOWN] * (GM_FAMILY_SIZE + 2))
-        self.assertEqual(self.dialog.flyout_place, GM_FAMILY_SIZE - 1)
+        await self.press(*[Key.DOWN] * (len(labels.MSG_GM_FAMILIES) + 3))
+        self.assertEqual(self.dialog.place, len(labels.MSG_GM_FAMILIES))
+        self.assertIn(marks.MSG_FLYOUT_CLOSED.format(name=labels.MSG_GM_FAMILIES[-1]), self.text())
+        await self.press(keybindings.SoundDialog.OPEN, *[Key.DOWN] * (limits.GM_FAMILY_SIZE + 2))
+        self.assertEqual(self.dialog.flyout_place, limits.GM_FAMILY_SIZE - 1)
         await self.press(keybindings.SoundDialog.CHOOSE)
-        self.assertEqual(self.instrument().get_gm_sound(), MAX_GM_SOUND)
+        self.assertEqual(self.instrument().get_gm_sound(), limits.MAX_GM_SOUND)
 
     async def test_a_search_finds_a_sound_in_any_family_and_enter_opens_its_flyout_on_it(self):
         await self.find(A_SOUND_NAME.lower())
         self.assertTrue(self.dialog.takes_text())
         shown = self.text()
-        self.assertIn(MSG_SEARCH_SHOWN.format(text=A_SOUND_NAME.lower()), shown)
-        self.assertIn(MSG_SOUND_FOUND.format(sound=sound_text(A_SOUND), group=MSG_GM_FAMILIES[ITS_FAMILY]), shown)
-        self.assertNotIn(MSG_FLYOUT_CLOSED.format(name=MSG_GM_FAMILIES[0]), shown)
+        self.assertIn(marks.MSG_SEARCH_SHOWN.format(text=A_SOUND_NAME.lower()), shown)
+        self.assertIn(marks.MSG_SOUND_FOUND.format(sound=sound_text(A_SOUND), group=labels.MSG_GM_FAMILIES[ITS_FAMILY]), shown)
+        self.assertNotIn(marks.MSG_FLYOUT_CLOSED.format(name=labels.MSG_GM_FAMILIES[0]), shown)
         await self.press(keybindings.SoundDialog.FIND)
         self.assertFalse(self.dialog.takes_text())
-        self.assertEqual((self.dialog.flyout, self.dialog.flyout_place), (ITS_FAMILY, (A_SOUND - MIN_GM_SOUND) % GM_FAMILY_SIZE))
+        self.assertEqual((self.dialog.flyout, self.dialog.flyout_place), (ITS_FAMILY, (A_SOUND - limits.MIN_GM_SOUND) % limits.GM_FAMILY_SIZE))
         await self.press(keybindings.SoundDialog.CHOOSE)
         self.assertEqual(self.instrument().get_gm_sound(), A_SOUND)
 
@@ -197,7 +194,7 @@ class TestSoundDialog(PatternPreviewTest):
         await self.press(Key.ESCAPE)
         self.assertIsNone(self.dialog.typed)
         self.assertIs(self.app.screen, self.dialog)
-        self.assertIn(MSG_FLYOUT_CLOSED.format(name=MSG_GM_FAMILIES[0]), self.text())
+        self.assertIn(marks.MSG_FLYOUT_CLOSED.format(name=labels.MSG_GM_FAMILIES[0]), self.text())
         await self.find(NOT_A_SOUND)
         await self.press(keybindings.SoundDialog.FIND)
         self.assertIsNotNone(self.dialog.typed)
@@ -205,13 +202,13 @@ class TestSoundDialog(PatternPreviewTest):
 
     async def test_l_tries_the_sound_under_the_cursor_as_a_run_once_and_l_again_or_a_move_stops_it(self):
         await self.press(Key.DOWN, keybindings.SoundDialog.OPEN, Key.DOWN)
-        self.assertIn(MSG_LISTEN_WHAT, self.text())
+        self.assertIn(legends.MSG_LISTEN_WHAT, self.text())
         await self.press(keybindings.SoundDialog.LISTEN)
-        sound = MIN_GM_SOUND + 1
+        sound = limits.MIN_GM_SOUND + 1
         self.assertEqual(self.preview().playing_sound(), sound)
         self.play_through()
         sent = [list(data) for _, data in self.outputs[FLUIDSYNTH_PORT].sent]
-        self.assertIn([PROGRAM_CHANGE | PREVIEW_CHANNEL_BYTE, sound - MIN_GM_SOUND], sent)
+        self.assertIn([PROGRAM_CHANGE | PREVIEW_CHANNEL_BYTE, sound - limits.MIN_GM_SOUND], sent)
         self.assertEqual([data[1] for data in self.note_ons(FLUIDSYNTH_PORT)], run_of())
         self.assertEqual({data[0] for data in self.note_ons(FLUIDSYNTH_PORT)}, {NOTE_ON | PREVIEW_CHANNEL_BYTE})
         # Played once: the run does not come round again.
@@ -237,12 +234,12 @@ class TestSoundDialog(PatternPreviewTest):
     async def test_without_fluidsynth_or_a_preview_instrument_l_says_what_to_do_until_the_next_key(self):
         self.fluidsynth_installed = False
         await self.press(Key.DOWN, keybindings.SoundDialog.OPEN)
-        self.assertIn(MSG_LISTEN_WHAT, self.text())
+        self.assertIn(legends.MSG_LISTEN_WHAT, self.text())
         await self.press(keybindings.SoundDialog.LISTEN)
         self.assertIsNone(self.preview().playing_sound())
-        self.assertIn(ERR_NOTHING_TO_TRY_A_SOUND_WITH, self.text())
+        self.assertIn(errors.ERR_NOTHING_TO_TRY_A_SOUND_WITH, self.text())
         await self.press(Key.DOWN)
-        self.assertNotIn(ERR_NOTHING_TO_TRY_A_SOUND_WITH, self.text())
+        self.assertNotIn(errors.ERR_NOTHING_TO_TRY_A_SOUND_WITH, self.text())
 
     async def test_without_fluidsynth_a_sound_is_tried_on_the_songs_preview_instrument_which_is_sent_no_sound(self):
         self.fluidsynth_installed = False
@@ -250,7 +247,7 @@ class TestSoundDialog(PatternPreviewTest):
         self.document.set_instrument_device(name=PREVIEW, device=SYNTH_PORT)
         self.document.set_preview_instrument_name(PREVIEW)
         await self.press(Key.DOWN, keybindings.SoundDialog.OPEN, keybindings.SoundDialog.LISTEN)
-        self.assertEqual(self.preview().playing_sound(), MIN_GM_SOUND)
+        self.assertEqual(self.preview().playing_sound(), limits.MIN_GM_SOUND)
         self.play_through()
         self.assertEqual([data[1] for data in self.note_ons(SYNTH_PORT)], run_of())
         self.assertNotIn(PROGRAM_CHANGE, [data[0] & KIND_MASK for _, data in self.outputs[SYNTH_PORT].sent])
@@ -261,12 +258,12 @@ class TestSoundDialog(PatternPreviewTest):
         self.document.add_instrument(PREVIEW)
         self.document.set_preview_instrument_name(PREVIEW)
         await self.press(Key.DOWN, keybindings.SoundDialog.OPEN, keybindings.SoundDialog.LISTEN)
-        self.assertIn(ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE.format(name=PREVIEW), SPACE.join(self.text().replace(Box.HEAVY_BAR, SPACE).split()))
+        self.assertIn(errors.ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE.format(name=PREVIEW), SPACE.join(self.text().replace(Box.HEAVY_BAR, SPACE).split()))
         self.document.set_instrument_device(name=PREVIEW, device=NOT_CONNECTED)
         await self.press(keybindings.SoundDialog.LISTEN)
-        self.assertEqual(self.preview().sound_refusal(), ERR_PREVIEW_DEVICE_NOT_CONNECTED.format(name=PREVIEW, device=NOT_CONNECTED))
+        self.assertEqual(self.preview().sound_refusal(), errors.ERR_PREVIEW_DEVICE_NOT_CONNECTED.format(name=PREVIEW, device=NOT_CONNECTED))
         self.document.set_instrument_device(name=PREVIEW, device=FLUIDSYNTH_DEVICE)
-        self.assertEqual(self.preview().sound_refusal(), ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED.format(name=PREVIEW))
+        self.assertEqual(self.preview().sound_refusal(), errors.ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED.format(name=PREVIEW))
         self.fluidsynth_installed = True
         self.assertIsNone(self.preview().sound_refusal())
 
@@ -282,8 +279,8 @@ class TestNoteNames(unittest.TestCase):
     """A MIDI note shown by name and octave, and a typed name read back."""
 
     def test_a_note_is_shown_by_its_name_and_octave_a_black_key_as_a_sharp(self):
-        self.assertEqual(note_shown(MIDDLE_C), MSG_NOTE_NAME_SHOWN.format(name=NoteName.C, octave=MIDDLE_C // NOTES_IN_OCTAVE))
-        self.assertEqual(note_shown(C_SHARP), MSG_NOTE_NAME_SHOWN.format(name=NoteName.C_SHARP, octave=C_SHARP // NOTES_IN_OCTAVE))
+        self.assertEqual(note_shown(MIDDLE_C), marks.MSG_NOTE_NAME_SHOWN.format(name=NoteName.C, octave=MIDDLE_C // NOTES_IN_OCTAVE))
+        self.assertEqual(note_shown(C_SHARP), marks.MSG_NOTE_NAME_SHOWN.format(name=NoteName.C_SHARP, octave=C_SHARP // NOTES_IN_OCTAVE))
 
     def test_every_note_typed_as_shown_is_that_note_in_capitals_or_not(self):
         for note in range(LOWEST_NOTE, HIGHEST_NOTE + 1):
@@ -309,26 +306,26 @@ class TestSoundDialogNoteRow(PatternPreviewTest):
         self.dialog = None
 
     async def open(self, *, note, current=None):
-        self.dialog = SoundDialog(title=A_TITLE, groups=sound_families(), top=[(MSG_NONE_SHOWN, None)], current=current, note=note,
+        self.dialog = SoundDialog(title=A_TITLE, groups=sound_families(), top=[(marks.MSG_NONE_SHOWN, None)], current=current, note=note,
                                   trial=SoundTrial(page=self.app.screen, played=lambda sound: None if sound is None else (hits_of(self.dialog.note), HITS_STEP, sound)))
         self.app.push_screen(self.dialog, self.answers.append)
         await self.settle()
 
     async def to_note_row(self):
-        await self.press(*[Key.DOWN] * (len(MSG_GM_FAMILIES) + 1))
+        await self.press(*[Key.DOWN] * (len(labels.MSG_GM_FAMILIES) + 1))
 
     async def test_the_note_row_stays_in_view_under_the_list_and_a_dialog_given_no_note_has_none(self):
         await self.open(note=MIDDLE_C)
-        self.assertIn(MSG_SOUND_NOTE_ROW.format(note=note_shown(MIDDLE_C)), self.text())
-        self.assertNotIn(MSG_GM_FAMILIES[-1], self.text())
+        self.assertIn(marks.MSG_SOUND_NOTE_ROW.format(note=note_shown(MIDDLE_C)), self.text())
+        self.assertNotIn(labels.MSG_GM_FAMILIES[-1], self.text())
         await self.to_note_row()
-        self.assertIn(MSG_GM_FAMILIES[-1], self.text())
-        self.assertIn(MSG_SOUND_NOTE_ROW.format(note=note_shown(MIDDLE_C)), self.text())
+        self.assertIn(labels.MSG_GM_FAMILIES[-1], self.text())
+        self.assertIn(marks.MSG_SOUND_NOTE_ROW.format(note=note_shown(MIDDLE_C)), self.text())
         self.assertTrue(self.dialog.on_note_row())
         await self.press(Key.ESCAPE)
         self.assertEqual(self.answers, [None])
         await self.open(note=None)
-        self.assertNotIn(MSG_SOUND_NOTE_ROW.format(note=note_shown(MIDDLE_C)), self.text())
+        self.assertNotIn(marks.MSG_SOUND_NOTE_ROW.format(note=note_shown(MIDDLE_C)), self.text())
         await self.to_note_row()
         self.assertFalse(self.dialog.on_note_row())
         self.assertFalse(self.dialog.takes_text())
@@ -344,15 +341,15 @@ class TestSoundDialogNoteRow(PatternPreviewTest):
         await self.press(*[keybindings.SoundDialog.NOTE_LESS] * 3)
         self.assertEqual(self.dialog.note, LOWEST_NOTE)
         await self.press(Key.UP, keybindings.SoundDialog.OPEN, keybindings.SoundDialog.CHOOSE)
-        self.assertEqual(self.answers[-1], (MAX_GM_SOUND - GM_FAMILY_SIZE + 1, LOWEST_NOTE))
+        self.assertEqual(self.answers[-1], (limits.MAX_GM_SOUND - limits.GM_FAMILY_SIZE + 1, LOWEST_NOTE))
 
     async def test_a_note_is_typed_by_name_and_set_with_enter_and_enter_again_takes_the_sound_the_dialog_opened_on(self):
         await self.open(note=MIDDLE_C, current=A_SOUND)
         await self.to_note_row()
         await self.type(D_FLAT_TYPED)
-        self.assertIn(MSG_SOUND_NOTE_TYPED.format(text=D_FLAT_TYPED), self.text())
+        self.assertIn(marks.MSG_SOUND_NOTE_TYPED.format(text=D_FLAT_TYPED), self.text())
         await self.press(keybindings.SoundDialog.ERASE)
-        self.assertIn(MSG_SOUND_NOTE_TYPED.format(text=D_FLAT_TYPED[:-1]), self.text())
+        self.assertIn(marks.MSG_SOUND_NOTE_TYPED.format(text=D_FLAT_TYPED[:-1]), self.text())
         await self.type(D_FLAT_TYPED[-1])
         await self.press(keybindings.SoundDialog.TAKE_NOTE)
         self.assertEqual(self.dialog.note, C_SHARP)
@@ -366,16 +363,16 @@ class TestSoundDialogNoteRow(PatternPreviewTest):
         await self.type(NOT_NOTES[0])
         await self.press(keybindings.SoundDialog.TAKE_NOTE)
         self.assertEqual(self.dialog.note, MIDDLE_C)
-        self.assertIn(ERR_NOT_A_NOTE_NAME.format(text=NOT_NOTES[0]), SPACE.join(self.text().replace(Box.HEAVY_BAR, SPACE).split()))
+        self.assertIn(errors.ERR_NOT_A_NOTE_NAME.format(text=NOT_NOTES[0]), SPACE.join(self.text().replace(Box.HEAVY_BAR, SPACE).split()))
         await self.type(D_FLAT_TYPED)
         await self.press(Key.UP, Key.DOWN)
-        self.assertIn(MSG_SOUND_NOTE_ROW.format(note=note_shown(MIDDLE_C)), self.text())
+        self.assertIn(marks.MSG_SOUND_NOTE_ROW.format(note=note_shown(MIDDLE_C)), self.text())
 
     async def test_l_tries_a_sound_on_the_note_the_row_shows(self):
         await self.open(note=MIDDLE_C)
         await self.to_note_row()
-        await self.press(keybindings.SoundDialog.NOTE_MORE, *[Key.UP] * len(MSG_GM_FAMILIES), keybindings.SoundDialog.OPEN, keybindings.SoundDialog.LISTEN)
-        self.assertEqual(self.preview().playing_sound(), MIN_GM_SOUND)
+        await self.press(keybindings.SoundDialog.NOTE_MORE, *[Key.UP] * len(labels.MSG_GM_FAMILIES), keybindings.SoundDialog.OPEN, keybindings.SoundDialog.LISTEN)
+        self.assertEqual(self.preview().playing_sound(), limits.MIN_GM_SOUND)
         for _ in range(MOMENTS_IN_A_WHILE):
             self.clock.advance(A_MOMENT)
             self.preview().tick()

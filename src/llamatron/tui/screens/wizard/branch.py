@@ -21,8 +21,7 @@ branch is added, moved or split by changing the branches alone (who expects to
 revise how the wizard is organized).
 """
 
-from llamatron.strings.legends import What
-from llamatron.strings.marks import MSG_WIZARD_CHOOSE, MSG_WIZARD_GAUGE_EMPTY, MSG_WIZARD_GAUGE_FULL, MSG_WIZARD_PLAYER_GAUGE_SHOWN
+from llamatron.strings import legends, marks
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import NOTHING
 from llamatron.tui.screens.shared.field import ChoiceField, Field
@@ -88,7 +87,7 @@ class Branch:
 
         def pick():
             page.ask(dialog=ChoiceDialog(title=label, options=names, current=FIRST_CHOICE), then=lambda place: chosen(values[place]))
-        return Field(label=label, value=lambda: MSG_WIZARD_CHOOSE, adjust=lambda offset: chosen(values[FIRST_CHOICE]), enter=pick, enter_what=What.CHOOSE)
+        return Field(label=label, value=lambda: marks.MSG_WIZARD_CHOOSE, adjust=lambda offset: chosen(values[FIRST_CHOICE]), enter=pick, enter_what=legends.What.CHOOSE)
 
     def refusal(self):
         """Return why the cursor cannot move into the branch's fields yet, or None when it can."""
@@ -140,5 +139,5 @@ class Branch:
 def gauge_shown(*, place, lowest, highest, said=None):
     """Return a number drawn as a horizontal gauge with the number after it, as the players' gauges are: a block for each place up to the number's,
     and what is said of the number, such as where it comes from, in place of the bare number."""
-    drawn = MSG_WIZARD_GAUGE_FULL * (place - lowest + 1) + MSG_WIZARD_GAUGE_EMPTY * (highest - place)
-    return MSG_WIZARD_PLAYER_GAUGE_SHOWN.format(gauge=drawn, place=place if said is None else said)
+    drawn = marks.MSG_WIZARD_GAUGE_FULL * (place - lowest + 1) + marks.MSG_WIZARD_GAUGE_EMPTY * (highest - place)
+    return marks.MSG_WIZARD_PLAYER_GAUGE_SHOWN.format(gauge=drawn, place=place if said is None else said)

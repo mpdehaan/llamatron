@@ -19,11 +19,10 @@
 from fractions import Fraction
 
 from tests.support.ui_testing import KEY_SHOWN, QUIET_VALUE, REVERSED, ROW_SHOWN, key_of
-from llamatron.composition.limits import MIN_DEGREE
+from llamatron.composition import defaults, limits
+from llamatron.strings import errors, labels as labels_text, legends, marks, messages
 from llamatron.composition.file_format import CHORD_SYMBOLS, Accidental, ChordSymbol, GateModifier, OctaveLabels, Row
-from llamatron.composition.limits import MAX_OCTAVE, MIN_OCTAVE
 from llamatron.composition.named_scale import scale_type_name
-from llamatron.composition.defaults import DEFAULT_TIME_SIGNATURE
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
 from llamatron.tui.drawing import Align, Box, NOTHING, Style, fit
@@ -37,11 +36,6 @@ from llamatron.tui.components.pattern_rows import PINNED_ROWS, SECTIONS
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor, Reconfigure, reconfigure_choices
 from llamatron.tui.components.degree_row import GAUGE_ROWS_WITHOUT_SCALE
 from llamatron.composition.setlist import DEFAULT_SCALE
-from llamatron.strings.errors import ERR_BOTTOM_OF_SCALE, ERR_TOP_OF_SCALE
-from llamatron.strings.labels import MSG_SCALE_HEADER, MSG_SEVERAL_SCALES, MSG_ROW_LABELS
-from llamatron.strings.legends import MSG_DRUM_ON_WHAT, MSG_LEGEND_WHAT, What, KeyName
-from llamatron.strings.marks import MSG_BLOCKED_CELL, MSG_GAUGE_BAR, MSG_FROM_SONG_SHOWN, MSG_MORE_AFTER, MSG_MORE_BEFORE, MSG_SEARCH_SHOWN, MSG_STEPS_SHOWN, MSG_STEP_SIZE_SHOWN, MSG_TIME_SIGNATURE_SHOWN, MSG_TOGGLE_OFF, MSG_TOGGLE_ON
-from llamatron.strings.messages import MSG_DESCRIBE_GATE_OVERRIDDEN
 from llamatron.tui import keybindings
 from tests.support.rendering import render_song
 from tests.support.pattern_editor_testing import PatternEditorTest, open_section
@@ -100,9 +94,9 @@ class TestPatternEditor(PatternEditorTest):
         await self.press(keybindings.PatternEditor.RECONFIGURE)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         self.assertEqual(self.app.screen.options, reconfigure_choices(drum=False))
-        self.assertEqual(self.app.screen.options[Reconfigure.MUNGE], What.MUNGE)
-        self.assertEqual(self.app.screen.options[Reconfigure.RENAME], What.RENAME)
-        self.assertEqual(self.app.screen.options[Reconfigure.DRUM], MSG_DRUM_ON_WHAT)
+        self.assertEqual(self.app.screen.options[Reconfigure.MUNGE], legends.What.MUNGE)
+        self.assertEqual(self.app.screen.options[Reconfigure.RENAME], legends.What.RENAME)
+        self.assertEqual(self.app.screen.options[Reconfigure.DRUM], legends.MSG_DRUM_ON_WHAT)
         await self.press(Key.ESCAPE)
         self.assertIs(self.app.screen, self.editor)
         self.assertEqual(self.document.song().get_pattern(TUNE).to_data(), before)
@@ -111,12 +105,12 @@ class TestPatternEditor(PatternEditorTest):
         # [ and ] are each named with what it does, where the legend once read [/] adjust.
         while self.editor.row_name() != Row.VELOCITY:
             await self.press(Key.DOWN)
-        less = KEY_SHOWN.format(label=KeyName.LEFT_BRACKET) + MSG_LEGEND_WHAT.format(what=What.LESS)
-        more = KEY_SHOWN.format(label=KeyName.RIGHT_BRACKET) + MSG_LEGEND_WHAT.format(what=What.MORE)
+        less = KEY_SHOWN.format(label=legends.KeyName.LEFT_BRACKET) + legends.MSG_LEGEND_WHAT.format(what=legends.What.LESS)
+        more = KEY_SHOWN.format(label=legends.KeyName.RIGHT_BRACKET) + legends.MSG_LEGEND_WHAT.format(what=legends.What.MORE)
         self.assertIn(less, self.text())
         self.assertIn(more, self.text())
         self.assertLess(self.text().index(less), self.text().index(more))
-        self.assertNotIn(KEY_SHOWN.format(label=KeyName.BRACKETS), self.text())
+        self.assertNotIn(KEY_SHOWN.format(label=legends.KeyName.BRACKETS), self.text())
 
     async def test_grid_size_comes_from_the_step_count_and_typing_never_grows_it(self):
         self.assertEqual(self.text().count('│ Degree'), 1)
@@ -172,14 +166,14 @@ class TestPatternEditor(PatternEditorTest):
         self.assertEqual(self.value(row=Row.DEGREE), 5)
         await self.press(keybindings.DegreeRow.MORE)
         self.assertEqual((self.value(row=Row.DEGREE), self.value(row=Row.OCTAVE)), (5, octave))
-        self.assertIn(ERR_TOP_OF_SCALE.format(scale=SMALL_SCALE), self.text())
+        self.assertIn(errors.ERR_TOP_OF_SCALE.format(scale=SMALL_SCALE), self.text())
         await self.press('1', keybindings.DegreeRow.LESS)
         self.assertEqual((self.value(row=Row.DEGREE), self.value(row=Row.OCTAVE)), (1, octave))
-        self.assertIn(ERR_BOTTOM_OF_SCALE.format(scale=SMALL_SCALE), self.text())
+        self.assertIn(errors.ERR_BOTTOM_OF_SCALE.format(scale=SMALL_SCALE), self.text())
         # The next key clears the message, and - in the middle of the scale says nothing.
         await self.press('3', keybindings.DegreeRow.LESS)
         self.assertEqual(self.value(row=Row.DEGREE), 2)
-        self.assertNotIn(ERR_BOTTOM_OF_SCALE.format(scale=SMALL_SCALE), self.text())
+        self.assertNotIn(errors.ERR_BOTTOM_OF_SCALE.format(scale=SMALL_SCALE), self.text())
 
     async def test_a_degree_past_the_scale_in_a_file_is_shown_within_the_scale_an_octave_up(self):
         # Seven notes in C major, so 9 is degree 2 of the next octave: the gauge and the number say 2, Octave one higher, and the file keeps 9.
@@ -200,13 +194,13 @@ class TestPatternEditor(PatternEditorTest):
 
     async def test_the_gauge_is_labelled_with_the_scales_notes_and_fills_to_the_degree(self):
         degree = self.editor.row_for(Row.DEGREE)
-        self.assertEqual(degree.labels(), [*reversed(C_MAJOR_NOTES), MSG_ROW_LABELS[Row.DEGREE]])
+        self.assertEqual(degree.labels(), [*reversed(C_MAJOR_NOTES), labels_text.MSG_ROW_LABELS[Row.DEGREE]])
         # Step 2 is degree 3: the three lowest rows are bars, and the rest blank.
         lines = degree.cell_lines(step=1)
-        self.assertEqual(lines, [*[NOTHING] * 4, *[MSG_GAUGE_BAR] * 3, '3'])
+        self.assertEqual(lines, [*[NOTHING] * 4, *[marks.MSG_GAUGE_BAR] * 3, '3'])
         self.assertEqual(degree.cell_lines(step=2), [NOTHING] * 8)
         self.assertTrue(degree.rule_after())
-        self.assertIn(MSG_SCALE_HEADER.format(scale=DEFAULT_SCALE), self.text())
+        self.assertIn(labels_text.MSG_SCALE_HEADER.format(scale=DEFAULT_SCALE), self.text())
 
     async def test_a_pattern_under_two_scales_has_a_numbered_gauge_and_the_header_says_so(self):
         self.document.add_scale(name=SMALL_SCALE, root=NoteName.C, kind=scale_type_name(ScaleType.MAJOR_PENTATONIC))
@@ -216,19 +210,19 @@ class TestPatternEditor(PatternEditorTest):
         await self.press(Key.LEFT, Key.RIGHT)
         degree = self.editor.row_for(Row.DEGREE)
         self.assertIsNone(degree.scale_name())
-        self.assertEqual(degree.labels(), [str(number) for number in range(GAUGE_ROWS_WITHOUT_SCALE, 0, -1)] + [MSG_ROW_LABELS[Row.DEGREE]])
-        self.assertIn(MSG_SEVERAL_SCALES, self.text())
+        self.assertEqual(degree.labels(), [str(number) for number in range(GAUGE_ROWS_WITHOUT_SCALE, 0, -1)] + [labels_text.MSG_ROW_LABELS[Row.DEGREE]])
+        self.assertIn(labels_text.MSG_SEVERAL_SCALES, self.text())
 
     async def test_the_description_says_when_ties_override_the_gate(self):
         await self.go_to_row(Row.GATE)
         await self.press(keybindings.GateRow.MORE)
-        self.assertNotIn(MSG_DESCRIBE_GATE_OVERRIDDEN, self.text())
+        self.assertNotIn(messages.MSG_DESCRIBE_GATE_OVERRIDDEN, self.text())
         self.document.set_step_value(name=TUNE, row=Row.TIE, step=1, value=True)
         await self.press(Key.RIGHT, Key.LEFT)
-        self.assertIn(MSG_DESCRIBE_GATE_OVERRIDDEN, self.text())
+        self.assertIn(messages.MSG_DESCRIBE_GATE_OVERRIDDEN, self.text())
         # A blank gate is one step, which ties only lengthen, so there's nothing to warn about.
         await self.press(Key.BACKSPACE)
-        self.assertNotIn(MSG_DESCRIBE_GATE_OVERRIDDEN, self.text())
+        self.assertNotIn(messages.MSG_DESCRIBE_GATE_OVERRIDDEN, self.text())
 
     async def test_deleting_a_note_clears_the_ties_that_followed_it(self):
         self.document.set_step_value(name=TUNE, row=Row.TIE, step=2, value=True)
@@ -262,7 +256,7 @@ class TestPatternEditor(PatternEditorTest):
         dialog = self.app.screen
         await self.type(SEARCH_TEXT)
         self.assertEqual(dialog.options[dialog.place], SEARCH_HIT)
-        self.assertIn(MSG_SEARCH_SHOWN.format(text=SEARCH_TEXT), self.text())
+        self.assertIn(marks.MSG_SEARCH_SHOWN.format(text=SEARCH_TEXT), self.text())
         self.assertNotIn(BEAT, self.text())
         await self.press(Key.TAB)
         self.assertEqual(dialog.typed, SEARCH_HIT)
@@ -353,12 +347,12 @@ class TestPatternEditorLengthsAndPitches(PatternEditorTest):
         self.app.screen.value = EIGHTH
         await self.press(Key.ENTER)
         self.assertEqual(self.document.song().get_pattern(TUNE).get_step_size(), Fraction(1, 8))
-        self.assertIn(MSG_STEP_SIZE_SHOWN.format(size=EIGHTH, whose=NOTHING), self.text())
+        self.assertIn(marks.MSG_STEP_SIZE_SHOWN.format(size=EIGHTH, whose=NOTHING), self.text())
         await self.reconfigure(Reconfigure.STEP_SIZE)
         self.app.screen.value = ''
         await self.press(Key.ENTER)
         self.assertIsNone(self.document.song().get_pattern(TUNE).get_step_size())
-        self.assertIn(MSG_STEP_SIZE_SHOWN.format(size=SIXTEENTH, whose=MSG_FROM_SONG_SHOWN), self.text())
+        self.assertIn(marks.MSG_STEP_SIZE_SHOWN.format(size=SIXTEENTH, whose=marks.MSG_FROM_SONG_SHOWN), self.text())
 
     async def test_space_and_plus_and_minus_cycle_sharp_and_flat(self):
         await self.go_to_row(Row.ACCIDENTAL)
@@ -381,13 +375,13 @@ class TestPatternEditorLengthsAndPitches(PatternEditorTest):
         await self.press(key_of(binding=keybindings.AccidentalRow.NEXT, key=Key.ENTER))
         self.assertEqual(self.value(row=Row.ACCIDENTAL), Accidental.SHARP)
         text = self.text()
-        self.assertIn(KEY_SHOWN.format(label=KeyName.SPACE_ENTER) + MSG_LEGEND_WHAT.format(what=What.NEXT), text)
-        self.assertIn(KEY_SHOWN.format(label=KeyName.LEFT_BRACKET) + MSG_LEGEND_WHAT.format(what=What.LESS), text)
-        self.assertIn(KEY_SHOWN.format(label=KeyName.RIGHT_BRACKET) + MSG_LEGEND_WHAT.format(what=What.MORE), text)
+        self.assertIn(KEY_SHOWN.format(label=legends.KeyName.SPACE_ENTER) + legends.MSG_LEGEND_WHAT.format(what=legends.What.NEXT), text)
+        self.assertIn(KEY_SHOWN.format(label=legends.KeyName.LEFT_BRACKET) + legends.MSG_LEGEND_WHAT.format(what=legends.What.LESS), text)
+        self.assertIn(KEY_SHOWN.format(label=legends.KeyName.RIGHT_BRACKET) + legends.MSG_LEGEND_WHAT.format(what=legends.What.MORE), text)
         # The Chord row keeps Enter for its picker, so Space alone goes to the next chord there.
         await self.go_to_row(Row.CHORD)
-        self.assertIn(KEY_SHOWN.format(label=KeyName.SPACE) + MSG_LEGEND_WHAT.format(what=What.NEXT), self.text())
-        self.assertIn(KEY_SHOWN.format(label=KeyName.RIGHT_BRACKET) + MSG_LEGEND_WHAT.format(what=What.MORE), self.text())
+        self.assertIn(KEY_SHOWN.format(label=legends.KeyName.SPACE) + legends.MSG_LEGEND_WHAT.format(what=legends.What.NEXT), self.text())
+        self.assertIn(KEY_SHOWN.format(label=legends.KeyName.RIGHT_BRACKET) + legends.MSG_LEGEND_WHAT.format(what=legends.What.MORE), self.text())
 
     async def test_octave_uses_whatever_is_typed_in_lives_labels_and_stores_the_files_numbering(self):
         song = self.document.song()
@@ -395,20 +389,20 @@ class TestPatternEditorLengthsAndPitches(PatternEditorTest):
         await self.press('7')
         self.assertEqual(self.value(row=Row.OCTAVE), song.stored_octave(7))
         await self.press(keybindings.OctaveRow.MORE, keybindings.OctaveRow.MORE, keybindings.OctaveRow.MORE)
-        self.assertEqual(self.value(row=Row.OCTAVE), MAX_OCTAVE)
+        self.assertEqual(self.value(row=Row.OCTAVE), limits.MAX_OCTAVE)
         for _ in range(12):
             await self.press(keybindings.OctaveRow.LESS)
-        self.assertEqual(self.value(row=Row.OCTAVE), MIN_OCTAVE)
-        self.assertEqual(song.shown_octave(MIN_OCTAVE), -2)
+        self.assertEqual(self.value(row=Row.OCTAVE), limits.MIN_OCTAVE)
+        self.assertEqual(song.shown_octave(limits.MIN_OCTAVE), -2)
 
     async def test_octave_is_typed_and_shown_from_0_with_llamatrons_labels(self):
         self.document.set_octave_labels(OctaveLabels.LLAMATRON)
         await self.go_to_row(Row.OCTAVE)
         await self.press('1', '0')
-        self.assertEqual(self.value(row=Row.OCTAVE), MAX_OCTAVE)
+        self.assertEqual(self.value(row=Row.OCTAVE), limits.MAX_OCTAVE)
         await self.press(keybindings.OctaveRow.MORE)
-        self.assertEqual(self.value(row=Row.OCTAVE), MAX_OCTAVE)
-        self.assertIn(str(MAX_OCTAVE), self.app.screen.cell_text(name=Row.OCTAVE, step=self.editor.step))
+        self.assertEqual(self.value(row=Row.OCTAVE), limits.MAX_OCTAVE)
+        self.assertIn(str(limits.MAX_OCTAVE), self.app.screen.cell_text(name=Row.OCTAVE, step=self.editor.step))
 
     async def test_chord_steps_through_the_symbols_and_stops_at_the_first_and_the_last(self):
         await self.go_to_row(Row.CHORD)
@@ -445,10 +439,10 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
         await self.press(key_of(binding=keybindings.DegreeRow.LESS, key=Key.MINUS))
         self.assertEqual(self.document.step_value(name=TUNE, row=Row.DEGREE, step=0), 3)
         # The legend names the brackets alone, one entry each, and never + or -.
-        self.assertIn(KEY_SHOWN.format(label=KeyName.LEFT_BRACKET) + MSG_LEGEND_WHAT.format(what=What.LESS), self.text())
-        self.assertIn(KEY_SHOWN.format(label=KeyName.RIGHT_BRACKET) + MSG_LEGEND_WHAT.format(what=What.MORE), self.text())
-        self.assertEqual(KeyName.LEFT_BRACKET, Key.LEFT_BRACKET)
-        self.assertEqual(KeyName.RIGHT_BRACKET, Key.RIGHT_BRACKET)
+        self.assertIn(KEY_SHOWN.format(label=legends.KeyName.LEFT_BRACKET) + legends.MSG_LEGEND_WHAT.format(what=legends.What.LESS), self.text())
+        self.assertIn(KEY_SHOWN.format(label=legends.KeyName.RIGHT_BRACKET) + legends.MSG_LEGEND_WHAT.format(what=legends.What.MORE), self.text())
+        self.assertEqual(legends.KeyName.LEFT_BRACKET, Key.LEFT_BRACKET)
+        self.assertEqual(legends.KeyName.RIGHT_BRACKET, Key.RIGHT_BRACKET)
         self.assertNotIn(KEY_SHOWN.format(label=Key.PLUS), self.text())
 
     async def test_nothing_on_the_rows_takes_shift_with_an_arrow(self):
@@ -477,15 +471,15 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
     async def test_a_cell_that_cannot_take_a_value_shows_the_blocked_mark_and_its_row_has_no_keys_there(self):
         # Step 3 of tune is empty: Octave, Chord and Velocity are blocked there, while Tie and the CC rows aren't, since a rest can hold them.
         for row in (Row.OCTAVE, Row.CHORD, Row.VELOCITY):
-            self.assertEqual(self.editor.row_for(row).cell_lines(step=EMPTY_STEP), [MSG_BLOCKED_CELL], row)
-        self.assertEqual(self.editor.row_for(Row.TIE).cell_lines(step=EMPTY_STEP), [MSG_TOGGLE_OFF])
+            self.assertEqual(self.editor.row_for(row).cell_lines(step=EMPTY_STEP), [marks.MSG_BLOCKED_CELL], row)
+        self.assertEqual(self.editor.row_for(Row.TIE).cell_lines(step=EMPTY_STEP), [marks.MSG_TOGGLE_OFF])
         self.assertEqual(self.editor.row_for(Row.CC1).cell_lines(step=EMPTY_STEP), [QUIET_VALUE])
         # Two empty steps, where every row open but Degree, Tie and the headings is blocked, and two notes, where only Tie is; the Chord section is opened, where Inversion and Tension are blocked on every step, since neither note has a chord.
         await open_section(test=self, section=RowSection.CHORD)
         await self.press(*[Key.UP] * len(self.editor.rows_view.reachable()))
         blocked_rows = [Row.OCTAVE, *[row for section in (*OPEN_AT_START, RowSection.CHORD) for row in SECTIONS[section] if row != Row.TIE]]
         rows = [*self.editor.rows_view.pinned_rows(), *self.editor.rows_view.scrolled_rows()]
-        blocked_cells = [(row.name, step) for row in rows for step in range(self.editor.steps()) if row.cell_lines(step=step) == [MSG_BLOCKED_CELL]]
+        blocked_cells = [(row.name, step) for row in rows for step in range(self.editor.steps()) if row.cell_lines(step=step) == [marks.MSG_BLOCKED_CELL]]
         self.assertEqual(len(blocked_cells), 2 * len(blocked_rows) + 2 + 2 + 2)
         self.assertEqual([step for name, step in blocked_cells if name == Row.TENSION], list(range(self.editor.steps())))
         self.assertEqual([step for name, step in blocked_cells if name == Row.INVERSION], list(range(self.editor.steps())))
@@ -495,31 +489,31 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
         while self.editor.row_name() != Row.VELOCITY:
             await self.press(Key.DOWN)
         self.assertFalse(self.editor.row_for(Row.VELOCITY).editable())
-        self.assertNotIn(KEY_SHOWN.format(label=KeyName.RIGHT_BRACKET), self.text())
-        self.assertIn(REVERSED.format(text=fit(text=MSG_BLOCKED_CELL, width=CELL_WIDTH, align=Align.CENTER)), self.text())
+        self.assertNotIn(KEY_SHOWN.format(label=legends.KeyName.RIGHT_BRACKET), self.text())
+        self.assertIn(REVERSED.format(text=fit(text=marks.MSG_BLOCKED_CELL, width=CELL_WIDTH, align=Align.CENTER)), self.text())
         # Marking the step to grab opens Octave, Velocity and Chord, since the step's chord is built on the grabbed note.
         self.document.set_step_value(name=TUNE, row=Row.GRAB, step=EMPTY_STEP, value=True)
-        self.document.set_step_value(name=TUNE, row=Row.DEGREE, step=EMPTY_STEP, value=MIN_DEGREE)
+        self.document.set_step_value(name=TUNE, row=Row.DEGREE, step=EMPTY_STEP, value=limits.MIN_DEGREE)
         self.document.changed()
         await self.press(Key.LEFT, Key.RIGHT)
         self.assertTrue(self.editor.row_for(Row.VELOCITY).editable())
-        self.assertIn(KEY_SHOWN.format(label=KeyName.RIGHT_BRACKET), self.text())
+        self.assertIn(KEY_SHOWN.format(label=legends.KeyName.RIGHT_BRACKET), self.text())
         self.assertEqual(self.editor.row_for(Row.OCTAVE).cell_lines(step=EMPTY_STEP), [str(self.document.song().shown_octave(self.document.song().get_default_octave()))])
-        self.assertNotEqual(self.editor.row_for(Row.CHORD).cell_lines(step=EMPTY_STEP), [MSG_BLOCKED_CELL])
+        self.assertNotEqual(self.editor.row_for(Row.CHORD).cell_lines(step=EMPTY_STEP), [marks.MSG_BLOCKED_CELL])
         self.assertFalse(self.editor.row_for(Row.CHORD).blocked(step=EMPTY_STEP))
 
     async def test_s_sets_the_pattern_time_signature_and_blank_uses_the_song(self):
-        self.assertIn(MSG_TIME_SIGNATURE_SHOWN.format(signature=DEFAULT_TIME_SIGNATURE, whose=MSG_FROM_SONG_SHOWN), self.text())
+        self.assertIn(marks.MSG_TIME_SIGNATURE_SHOWN.format(signature=defaults.DEFAULT_TIME_SIGNATURE, whose=marks.MSG_FROM_SONG_SHOWN), self.text())
         await self.reconfigure(Reconfigure.TIME_SIGNATURE)
         self.app.screen.value = WALTZ
         await self.press(Key.ENTER)
         self.assertEqual(self.document.song().get_pattern(TUNE).get_written_time_signature(), WALTZ)
-        self.assertIn(MSG_TIME_SIGNATURE_SHOWN.format(signature=WALTZ, whose=NOTHING), self.text())
+        self.assertIn(marks.MSG_TIME_SIGNATURE_SHOWN.format(signature=WALTZ, whose=NOTHING), self.text())
         await self.reconfigure(Reconfigure.TIME_SIGNATURE)
         self.app.screen.value = NOTHING
         await self.press(Key.ENTER)
         self.assertIsNone(self.document.song().get_pattern(TUNE).get_written_time_signature())
-        self.assertIn(MSG_TIME_SIGNATURE_SHOWN.format(signature=DEFAULT_TIME_SIGNATURE, whose=MSG_FROM_SONG_SHOWN), self.text())
+        self.assertIn(marks.MSG_TIME_SIGNATURE_SHOWN.format(signature=defaults.DEFAULT_TIME_SIGNATURE, whose=marks.MSG_FROM_SONG_SHOWN), self.text())
 
     async def test_the_step_numbers_on_beats_are_bold(self):
         # The tune has four 1/8 steps, so in 4/4 the first and third start a beat.
@@ -576,17 +570,17 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
         # The dot was chosen over a bar into the next step.
         await self.go_to_row(Row.GLIDE)
         glide = self.editor.row_for(Row.GLIDE)
-        self.assertEqual(glide.cell_text(step=0), MSG_TOGGLE_OFF)
+        self.assertEqual(glide.cell_text(step=0), marks.MSG_TOGGLE_OFF)
         await self.press(Key.SPACE)
         self.assertIs(self.value(row=Row.GLIDE), True)
-        self.assertEqual(glide.cell_text(step=0), MSG_TOGGLE_ON)
+        self.assertEqual(glide.cell_text(step=0), marks.MSG_TOGGLE_ON)
         self.assertIsNone(glide.edge_text(step=1))
         await self.press(Key.SPACE)
         self.assertIs(self.value(row=Row.GLIDE), False)
-        self.assertEqual(glide.cell_text(step=0), MSG_TOGGLE_OFF)
+        self.assertEqual(glide.cell_text(step=0), marks.MSG_TOGGLE_OFF)
         self.assertIsNone(glide.edge_text(step=1))
         # Enter toggles like Space, and the legend shows the two as one key.
-        self.assertIn(KEY_SHOWN.format(label=KeyName.SPACE_ENTER), self.text())
+        self.assertIn(KEY_SHOWN.format(label=legends.KeyName.SPACE_ENTER), self.text())
         await self.press(Key.ENTER)
         self.assertIs(self.value(row=Row.GLIDE), True)
         await self.press(Key.ENTER)
@@ -605,7 +599,7 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
         await self.press(Key.RIGHT, Key.RIGHT)
         await self.go_to_row(Row.VELOCITY)
         labels = [item.shown_label() for item in self.editor.keys()]
-        self.assertNotIn(KeyName.ENTER, labels)
+        self.assertNotIn(legends.KeyName.ENTER, labels)
         self.assertNotIn('+', labels)
 
     async def test_the_result_builds_and_saves(self):
@@ -657,13 +651,13 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
         self.app.screen.value = str(LONG)
         await self.press(Key.ENTER)
         shown = self.editor.drawing.steps_shown(self.SIZE[0])
-        self.assertIn(MSG_STEPS_SHOWN.format(before=NOTHING, first=1, last=shown, after=MSG_MORE_AFTER), self.text())
+        self.assertIn(marks.MSG_STEPS_SHOWN.format(before=NOTHING, first=1, last=shown, after=marks.MSG_MORE_AFTER), self.text())
         await self.press(*[Key.RIGHT] * HALFWAY)
         self.assertEqual(self.editor.step, HALFWAY)
         self.assertEqual(self.editor.first_step, HALFWAY - shown + 1)
-        self.assertIn(MSG_STEPS_SHOWN.format(before=MSG_MORE_BEFORE, first=HALFWAY - shown + 2, last=HALFWAY + 1, after=MSG_MORE_AFTER), self.text())
+        self.assertIn(marks.MSG_STEPS_SHOWN.format(before=marks.MSG_MORE_BEFORE, first=HALFWAY - shown + 2, last=HALFWAY + 1, after=marks.MSG_MORE_AFTER), self.text())
         self.assertIn(str(HALFWAY + 1), self.text())
-        self.assertNotIn(ROW_SHOWN.format(label=MSG_ROW_LABELS[Row.DEGREE]) + '  1  ', self.text())
+        self.assertNotIn(ROW_SHOWN.format(label=labels_text.MSG_ROW_LABELS[Row.DEGREE]) + '  1  ', self.text())
         # Moving left past the window's first step scrolls it back one step.
         await self.press(*[Key.LEFT] * shown)
         self.assertEqual(self.editor.first_step, HALFWAY - shown)
@@ -673,7 +667,7 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
         self.assertEqual(self.editor.first_step, 0)
         await self.press(Key.END)
         self.assertEqual(self.editor.step, LONG - 1)
-        self.assertIn(MSG_STEPS_SHOWN.format(before=MSG_MORE_BEFORE, first=LONG - shown + 1, last=LONG, after=NOTHING), self.text())
+        self.assertIn(marks.MSG_STEPS_SHOWN.format(before=marks.MSG_MORE_BEFORE, first=LONG - shown + 1, last=LONG, after=NOTHING), self.text())
 
     async def test_home_and_end_go_to_the_ends(self):
         await self.press(keybindings.PatternEditor.RESIZE)

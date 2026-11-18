@@ -28,7 +28,7 @@ from unittest import mock
 
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, Row, Section
 from llamatron.playback.song_renderer import GRAB_ARROW, QUARTER_NOTES_PER_WHOLE_NOTE, SECONDS_PER_MINUTE, SongRenderer
-from llamatron.strings.errors import ERR_NO_SCALE, ERR_WHERE_PATTERN
+from llamatron.strings import errors
 from llamatron.tui.lengths import measured
 from llamatron.support.example_sets import example_sets
 from tests.support.rendering import bare_document, song_from_file
@@ -192,8 +192,8 @@ class TestLengthsWithoutPlaying(unittest.TestCase):
 
     def test_degrees_with_no_scale_are_a_problem_without_playing(self):
         self.document.set_scale_name(None)
-        where = ERR_WHERE_PATTERN.format(name=TUNE)
-        self.assertEqual(self.document.lengths().scene_problem(FIRST), ERR_NO_SCALE.format(where=where, scene=FIRST + 1))
+        where = errors.ERR_WHERE_PATTERN.format(name=TUNE)
+        self.assertEqual(self.document.lengths().scene_problem(FIRST), errors.ERR_NO_SCALE.format(where=where, scene=FIRST + 1))
         self.assertIsNone(self.document.lengths().scene_seconds(FIRST))
         self.document.set_drum(name=TUNE, drum=True)
         self.document.set_drum(name=DRONE, drum=True)

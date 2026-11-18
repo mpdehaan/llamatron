@@ -34,24 +34,8 @@ the plan knows still builds the rest.
 from llamatron.composition.file_format import Row, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.composition.naming import new_name
 from llamatron.composition.row_descriptions import ROW_DESCRIPTIONS
-from llamatron.composition.limits import MIN_DEGREE, NEW_PATTERN_SCALE_LENGTH
-from llamatron.strings.labels import (
-    MSG_CHANNEL_LABEL, MSG_DEVICE_LABEL, MSG_DRUM_LABEL, MSG_INSTRUMENT_LABEL, MSG_KIND_LABEL, MSG_LOOP_LABEL, MSG_MUTE_LABEL, MSG_NAME_LABEL,
-    MSG_LAUNCH_TOGETHER_LABEL, MSG_PATTERN_LABEL, MSG_REPEAT_LABEL, MSG_ROOT_LABEL, MSG_GENRE_LABEL, MSG_SCALE_LABEL, MSG_TEMPO_LABEL, MSG_TIME_SIGNATURE_LABEL, MSG_TRANSPOSE_LABEL,
-)
-from llamatron.strings.narration import (
-    MSG_A_DRUM_PATTERN, MSG_A_PATTERN, MSG_A_SCALE, MSG_A_SCENE, MSG_A_SONG, MSG_A_TRACK, MSG_AN_INSTRUMENT,
-    MSG_CALL_LETTER, MSG_NARRATE_OPENING, MSG_NARRATE_TURNING_ON,
-    MSG_EXPLAIN_ARROWS, MSG_EXPLAIN_ARROWS_IN_ROWS, MSG_EXPLAIN_ARROWS_ON_ROLL, MSG_EXPLAIN_ESCAPE, MSG_EXPLAIN_BACKSPACE_ON_ROLL, MSG_EXPLAIN_ENTER, MSG_EXPLAIN_SPACE_ON_ARRANGE,
-    MSG_EXPLAIN_SPACE_ON_ROLL, MSG_EXPLAIN_SPACE_TOGGLES,
-    MSG_LEFT_OUT_CLIP_SETTING, MSG_LEFT_OUT_PATTERN_SETTING, MSG_LEFT_OUT_ROW, MSG_LEFT_OUT_SCALE, MSG_LEFT_OUT_SCENE_SETTING, MSG_LEFT_OUT_SONG_SETTING,
-    MSG_LEFT_OUT_TRACK_SETTING,
-    MSG_NARRATE_CLIP, MSG_NARRATE_COMPLETE, MSG_NARRATE_DONE, MSG_NARRATE_EXPORT_KEY, MSG_NARRATE_GUIDE, MSG_NARRATE_MAKING, MSG_NARRATE_PATTERN_ROWS,
-    MSG_NARRATE_PLAY, MSG_NARRATE_PLAY_LIVE, MSG_NARRATE_REAL_TIME, MSG_NARRATE_RENAMING, MSG_NARRATE_SONG, MSG_NARRATE_START,
-    MSG_NARRATE_QUITTING, MSG_NARRATE_TUTORIAL_COMPLETE, MSG_NARRATE_WOULD_EXPORT,
-)
-from llamatron.strings.labels import MSG_NEW_GROUP_BUTTON
-from llamatron.strings.names import MSG_NEW_GROUP_WORD, MSG_NEW_PATTERN_NAME
+from llamatron.composition import limits
+from llamatron.strings import labels as labels_text, names as names_text, narration
 from llamatron.tui import keybindings
 from llamatron.tui.components.chord_row import CHORD_SYMBOLS, ChordRow, chord_text
 from llamatron.tui.components.cycle_row import CycleRow
@@ -80,20 +64,20 @@ from llamatron.tutorial.steps import Gap, Press, Say, Wait
 
 # The song's settings the plan can set on the Song page, each by the label of its field, and whether its value is typed into a prompt (True) or chosen from a picker, which the plan tells apart by what Enter opens.
 SONG_FIELDS = {
-    SongSetting.TEMPO: (MSG_TEMPO_LABEL, True),
-    SongSetting.TIME_SIGNATURE: (MSG_TIME_SIGNATURE_LABEL, True),
-    SongSetting.SCALE: (MSG_SCALE_LABEL, False),
-    SongSetting.GENRE: (MSG_GENRE_LABEL, False),
+    SongSetting.TEMPO: (labels_text.MSG_TEMPO_LABEL, True),
+    SongSetting.TIME_SIGNATURE: (labels_text.MSG_TIME_SIGNATURE_LABEL, True),
+    SongSetting.SCALE: (labels_text.MSG_SCALE_LABEL, False),
+    SongSetting.GENRE: (labels_text.MSG_GENRE_LABEL, False),
 }
 # The parts of a song's data that aren't settings of the Song page.
 SONG_SECTIONS_BUILT = (Section.TRACKS, Section.SCENES, Section.REGISTERS)
 # What the first Space says on each kind of page that has a sentence of its own, every other kind saying that Space toggles.
 SPACE_EXPLAINED = {
-    PianoRoll: (MSG_EXPLAIN_SPACE_ON_ROLL, MSG_EXPLAIN_BACKSPACE_ON_ROLL),
-    ArrangePage: (MSG_EXPLAIN_SPACE_ON_ARRANGE,),
+    PianoRoll: (narration.MSG_EXPLAIN_SPACE_ON_ROLL, narration.MSG_EXPLAIN_BACKSPACE_ON_ROLL),
+    ArrangePage: (narration.MSG_EXPLAIN_SPACE_ON_ARRANGE,),
 }
 # What the first arrow says on the two kinds of page where the arrows are explained, the piano roll and the rows view.
-ARROWS_EXPLAINED = {PianoRoll: MSG_EXPLAIN_ARROWS_ON_ROLL}
+ARROWS_EXPLAINED = {PianoRoll: narration.MSG_EXPLAIN_ARROWS_ON_ROLL}
 # The page each main screen cell the plan opens shows, which the plan goes back to with Esc when it is open already, rather than opening it again.
 CELL_PAGES = {
     keybindings.MainPage.SONGS: SongsPage, keybindings.MainPage.SCALES: ScalesPage, keybindings.MainPage.PATTERNS: PatternsPage,
@@ -111,7 +95,7 @@ WORDS = 2
 FIRST_CHANNEL = 1
 # The first song of a new set is the one the tutorial builds.
 FIRST = 0
-STARTER_PATTERN = MSG_NEW_PATTERN_NAME.format(number=1)
+STARTER_PATTERN = names_text.MSG_NEW_PATTERN_NAME.format(number=1)
 
 
 def step_value(*, pattern, row, step):
@@ -177,7 +161,7 @@ class TutorialPlan:
     def steps(self):
         song = self.target_song()
         title = self.target.get_title() or self.target.get_song_names()[FIRST]
-        yield Say(MSG_NARRATE_START.format(title=title))
+        yield Say(narration.MSG_NARRATE_START.format(title=title))
         yield from self.build_scales()
         yield from self.set_up_song(song)
         yield from self.drop_spare_scales()
@@ -186,17 +170,17 @@ class TutorialPlan:
         yield from self.drop_starter_pattern()
         yield from self.show_the_finished_song()
         if self.driver is not None:
-            yield Say(MSG_NARRATE_PLAY_LIVE)
-            yield Say(MSG_NARRATE_EXPORT_KEY)
-            yield Say(MSG_NARRATE_REAL_TIME)
-            yield Say(MSG_NARRATE_GUIDE)
+            yield Say(narration.MSG_NARRATE_PLAY_LIVE)
+            yield Say(narration.MSG_NARRATE_EXPORT_KEY)
+            yield Say(narration.MSG_NARRATE_REAL_TIME)
+            yield Say(narration.MSG_NARRATE_GUIDE)
             yield from self.connect_instruments(song)
             yield from self.play()
-            yield Say(MSG_NARRATE_DONE.format(title=title))
+            yield Say(narration.MSG_NARRATE_DONE.format(title=title))
             yield Wait(until=self.song_has_ended, seconds=AFTER_THE_SONG_SECONDS)
         else:
-            yield Say(MSG_NARRATE_WOULD_EXPORT)
-            yield Say(MSG_NARRATE_TUTORIAL_COMPLETE)
+            yield Say(narration.MSG_NARRATE_WOULD_EXPORT)
+            yield Say(narration.MSG_NARRATE_TUTORIAL_COMPLETE)
         yield from self.quit()
 
     def song_has_ended(self):
@@ -205,7 +189,7 @@ class TutorialPlan:
     def quit(self):
         """Go back to the main screen and quit through the Quit cell, without saving."""
         yield from self.go_home()
-        yield Say(MSG_NARRATE_QUITTING)
+        yield Say(narration.MSG_NARRATE_QUITTING)
         yield from self.open_page(keybindings.MainPage.QUIT, said=False)
         if isinstance(self.screen(), QuitDialog):
             yield from self.press(keybindings.QuitDialog.PRESS)
@@ -213,7 +197,7 @@ class TutorialPlan:
     def show_the_finished_song(self):
         """Show the finished song on Arrange for a sentence, then go back to the main screen."""
         yield from self.open_page(keybindings.MainPage.ARRANGE)
-        yield Say(MSG_NARRATE_COMPLETE)
+        yield Say(narration.MSG_NARRATE_COMPLETE)
         yield from self.go_home()
 
     # Pressing keys and reading the screen.
@@ -250,19 +234,19 @@ class TutorialPlan:
         if key in ARROWS:
             if ARROWS not in self.explained:
                 self.explained.add(ARROWS)
-                yield Say(MSG_EXPLAIN_ARROWS)
+                yield Say(narration.MSG_EXPLAIN_ARROWS)
             if kind in (PianoRoll, PatternRows) and (ARROWS, kind) not in self.explained:
                 self.explained.add((ARROWS, kind))
-                yield Say(ARROWS_EXPLAINED.get(kind, MSG_EXPLAIN_ARROWS_IN_ROWS))
+                yield Say(ARROWS_EXPLAINED.get(kind, narration.MSG_EXPLAIN_ARROWS_IN_ROWS))
         elif key == Key.ESCAPE and Key.ESCAPE not in self.explained:
             self.explained.add(Key.ESCAPE)
-            yield Say(MSG_EXPLAIN_ESCAPE)
+            yield Say(narration.MSG_EXPLAIN_ESCAPE)
         elif key == Key.ENTER and Key.ENTER not in self.explained:
             self.explained.add(Key.ENTER)
-            yield Say(MSG_EXPLAIN_ENTER)
+            yield Say(narration.MSG_EXPLAIN_ENTER)
         elif key == Key.SPACE and (Key.SPACE, kind) not in self.explained:
             self.explained.add((Key.SPACE, kind))
-            for sentence in SPACE_EXPLAINED.get(kind, (MSG_EXPLAIN_SPACE_TOGGLES,)):
+            for sentence in SPACE_EXPLAINED.get(kind, (narration.MSG_EXPLAIN_SPACE_TOGGLES,)):
                 yield Say(sentence)
 
     def letter_call(self, *, key, what):
@@ -270,7 +254,7 @@ class TutorialPlan:
         if not (len(key) == 1 and key.isalpha()) or (key, self.page_kind()) in self.letters_called:
             return None
         self.letters_called.add((key, self.page_kind()))
-        return MSG_CALL_LETTER.format(key=key.upper(), what=what)
+        return narration.MSG_CALL_LETTER.format(key=key.upper(), what=what)
 
     def go_home(self):
         """Press Esc until the main screen shows."""
@@ -291,7 +275,7 @@ class TutorialPlan:
         if said:
             cell = cell_opened_by(first_key(binding))
             yield Gap()
-            yield Say((MSG_NARRATE_TURNING_ON if binding == keybindings.MainPage.REAL_TIME else MSG_NARRATE_OPENING).format(cell=cell))
+            yield Say((narration.MSG_NARRATE_TURNING_ON if binding == keybindings.MainPage.REAL_TIME else narration.MSG_NARRATE_OPENING).format(cell=cell))
         yield from self.press(keybindings.MainPage.OPEN)
 
     def go_back_to(self, page_class):
@@ -395,13 +379,13 @@ class TutorialPlan:
             if name in self.document().setlist().get_scale_names():
                 continue
             scale = self.target.get_named_scale(name)
-            yield Say(MSG_NARRATE_MAKING.format(kind=MSG_A_SCALE, name=name))
+            yield Say(narration.MSG_NARRATE_MAKING.format(kind=narration.MSG_A_SCALE, name=name))
             yield from self.open_page(keybindings.MainPage.SCALES)
             yield from self.press(keybindings.ListPage.ADD)
-            yield from self.set_field(label=MSG_ROOT_LABEL, answer=scale.get_root())
-            yield from self.set_field(label=MSG_KIND_LABEL, answer=scale_label(scale.get_kind()))
+            yield from self.set_field(label=labels_text.MSG_ROOT_LABEL, answer=scale.get_root())
+            yield from self.set_field(label=labels_text.MSG_KIND_LABEL, answer=scale_label(scale.get_kind()))
             if name not in self.document().setlist().get_scale_names():
-                yield from self.set_field(label=MSG_NAME_LABEL, answer=name)
+                yield from self.set_field(label=labels_text.MSG_NAME_LABEL, answer=name)
 
     def drop_spare_scales(self):
         """Delete the new set's scales that the target doesn't have, once the song no longer uses them."""
@@ -409,7 +393,7 @@ class TutorialPlan:
             if name in self.target.get_scale_names():
                 continue
             if self.document().uses(section=Section.SCALES, name=name):
-                self.left_out.append(MSG_LEFT_OUT_SCALE.format(name=name))
+                self.left_out.append(narration.MSG_LEFT_OUT_SCALE.format(name=name))
                 continue
             yield from self.open_page(keybindings.MainPage.SCALES)
             yield from self.go_to_list_row(name)
@@ -419,14 +403,14 @@ class TutorialPlan:
     def set_up_song(self, song):
         """Rename the new set's one song and set the settings that differ, on the Song page."""
         name = self.target.get_song_names()[FIRST]
-        yield Say(MSG_NARRATE_SONG)
+        yield Say(narration.MSG_NARRATE_SONG)
         yield from self.open_page(keybindings.MainPage.SONGS)
         # A rename is said on the list of the things renamed, where the thing already there shows.
         if self.document().current_song_name() != name:
-            yield Say(MSG_NARRATE_RENAMING.format(kind=MSG_A_SONG))
+            yield Say(narration.MSG_NARRATE_RENAMING.format(kind=narration.MSG_A_SONG))
         yield from self.press(keybindings.SongsPage.SETTINGS)
         if self.document().current_song_name() != name:
-            yield from self.set_field(label=MSG_NAME_LABEL, answer=name)
+            yield from self.set_field(label=labels_text.MSG_NAME_LABEL, answer=name)
         wanted = song.to_data()
         for setting, (label, _) in SONG_FIELDS.items():
             # A setting the target leaves out is its default, which a new song has too.
@@ -434,7 +418,7 @@ class TutorialPlan:
                 yield from self.set_field(label=label, answer=wanted[setting])
         for setting in wanted:
             if setting not in SONG_FIELDS and setting not in SONG_SECTIONS_BUILT and wanted[setting] != self.document().song().to_data().get(setting):
-                self.left_out.append(MSG_LEFT_OUT_SONG_SETTING.format(setting=setting))
+                self.left_out.append(narration.MSG_LEFT_OUT_SONG_SETTING.format(setting=setting))
 
     # Tracks, scenes, patterns and clips.
 
@@ -443,26 +427,26 @@ class TutorialPlan:
         current = self.document().song()
         was_there = place < len(current.get_track_names())
         if not was_there:
-            yield Say(MSG_NARRATE_MAKING.format(kind=MSG_A_TRACK, name=track))
+            yield Say(narration.MSG_NARRATE_MAKING.format(kind=narration.MSG_A_TRACK, name=track))
             yield from self.open_arrange()
             yield from self.go_to_cell(row=HEADER_ROW, column=len(current.get_track_names()) + FIRST_TRACK_COLUMN)
             yield from self.press(keybindings.ArrangePage.ADD_TRACK_HERE)
         old = self.document().song().get_track_names()[place]
         yield from self.open_arrange()
         if was_there and old != track:
-            yield Say(MSG_NARRATE_RENAMING.format(kind=MSG_A_TRACK))
+            yield Say(narration.MSG_NARRATE_RENAMING.format(kind=narration.MSG_A_TRACK))
         yield from self.go_to_cell(row=HEADER_ROW, column=place + FIRST_TRACK_COLUMN)
         yield from self.press(keybindings.ArrangePage.TRACK_SETTINGS)
         if old != track:
-            yield from self.set_field(label=MSG_NAME_LABEL, answer=track)
+            yield from self.set_field(label=labels_text.MSG_NAME_LABEL, answer=track)
         wanted = song.get_track(track)
         if wanted.is_drum() != self.document().song().get_track(track).is_drum():
-            yield from self.toggle_field(MSG_DRUM_LABEL)
+            yield from self.toggle_field(labels_text.MSG_DRUM_LABEL)
         if wanted.is_muted() != self.document().song().get_track(track).is_muted():
-            yield from self.toggle_field(MSG_MUTE_LABEL)
+            yield from self.toggle_field(labels_text.MSG_MUTE_LABEL)
         if not wanted.is_drum() and wanted.get_transpose() != self.document().song().get_track(track).get_transpose():
-            yield from self.set_field(label=MSG_TRANSPOSE_LABEL, answer=wanted.get_transpose())
-        self.note_left_out(wanted=without_instrument(wanted.to_data()), built=self.document().song().get_track(track).to_data(), message=MSG_LEFT_OUT_TRACK_SETTING, name=track)
+            yield from self.set_field(label=labels_text.MSG_TRANSPOSE_LABEL, answer=wanted.get_transpose())
+        self.note_left_out(wanted=without_instrument(wanted.to_data()), built=self.document().song().get_track(track).to_data(), message=narration.MSG_LEFT_OUT_TRACK_SETTING, name=track)
         for index, scene in enumerate(song.get_scenes()):
             yield from self.build_scene(song=song, index=index)
             if scene.has_clip_slot(track):
@@ -476,7 +460,7 @@ class TutorialPlan:
         wanted = song.get_scene(index)
         was_there = index < len(current.get_scenes())
         if not was_there:
-            yield Say(MSG_NARRATE_MAKING.format(kind=MSG_A_SCENE, name=wanted.get_name()))
+            yield Say(narration.MSG_NARRATE_MAKING.format(kind=narration.MSG_A_SCENE, name=wanted.get_name()))
             yield from self.open_arrange()
             yield from self.go_to_cell(row=len(current.get_scenes()), column=SCENE_COLUMN)
             yield from self.press(keybindings.ArrangePage.ADD_SCENE_HERE)
@@ -484,16 +468,16 @@ class TutorialPlan:
         if (built.get_name(), built.get_repeat(), built.launches_together()) != (wanted.get_name(), wanted.get_repeat(), wanted.launches_together()):
             yield from self.open_arrange()
             if was_there and built.get_name() != wanted.get_name():
-                yield Say(MSG_NARRATE_RENAMING.format(kind=MSG_A_SCENE))
+                yield Say(narration.MSG_NARRATE_RENAMING.format(kind=narration.MSG_A_SCENE))
             yield from self.go_to_cell(row=index, column=SCENE_COLUMN)
             yield from self.press(keybindings.ArrangePage.SCENE_SETTINGS)
             if built.get_name() != wanted.get_name():
-                yield from self.set_field(label=MSG_NAME_LABEL, answer=wanted.get_name())
+                yield from self.set_field(label=labels_text.MSG_NAME_LABEL, answer=wanted.get_name())
             if built.get_repeat() != wanted.get_repeat():
-                yield from self.set_field(label=MSG_REPEAT_LABEL, answer=wanted.get_repeat())
+                yield from self.set_field(label=labels_text.MSG_REPEAT_LABEL, answer=wanted.get_repeat())
             if built.launches_together() != wanted.launches_together():
-                yield from self.toggle_field(MSG_LAUNCH_TOGETHER_LABEL)
-        self.note_left_out(wanted=without_clips(wanted.to_data()), built=without_clips(self.document().song().get_scene(index).to_data()), message=MSG_LEFT_OUT_SCENE_SETTING, name=wanted.get_name())
+                yield from self.toggle_field(labels_text.MSG_LAUNCH_TOGETHER_LABEL)
+        self.note_left_out(wanted=without_clips(wanted.to_data()), built=without_clips(self.document().song().get_scene(index).to_data()), message=narration.MSG_LEFT_OUT_SCENE_SETTING, name=wanted.get_name())
 
     def note_left_out(self, *, wanted, built, message, name):
         """Report each setting of a thing that the target holds and the built thing doesn't, once the plan has set what it can."""
@@ -506,14 +490,14 @@ class TutorialPlan:
         pattern = wanted.get_pattern_name()
         if pattern not in self.document().setlist().get_pattern_names():
             yield from self.build_pattern(song=song, name=pattern)
-        yield Say(MSG_NARRATE_CLIP.format(pattern=pattern, track=track, scene=song.get_scene(index).get_name()))
+        yield Say(narration.MSG_NARRATE_CLIP.format(pattern=pattern, track=track, scene=song.get_scene(index).get_name()))
         yield from self.open_arrange()
         yield from self.go_to_cell(row=index, column=song.get_track_names().index(track) + FIRST_TRACK_COLUMN)
         scene = self.document().song().get_scene(index)
         if scene.has_clip_slot(track):
             yield from self.press(keybindings.ArrangePage.EDIT_CLIP)
             if scene.get_clip_slot(track).get_pattern_name() != pattern:
-                yield from self.set_field(label=MSG_PATTERN_LABEL, answer=pattern)
+                yield from self.set_field(label=labels_text.MSG_PATTERN_LABEL, answer=pattern)
         else:
             yield from self.press(keybindings.ArrangePage.ADD_CLIP)
             yield from self.choose(pattern)
@@ -521,12 +505,12 @@ class TutorialPlan:
             yield from self.press(keybindings.ArrangePage.EDIT_CLIP)
         current = self.document().song().get_scene(index).get_clip_slot(track)
         if wanted.get_repeat() != current.get_repeat():
-            yield from self.set_field(label=MSG_REPEAT_LABEL, answer=wanted.get_repeat())
+            yield from self.set_field(label=labels_text.MSG_REPEAT_LABEL, answer=wanted.get_repeat())
         if wanted.loops() != current.loops():
-            yield from self.toggle_field(MSG_LOOP_LABEL)
+            yield from self.toggle_field(labels_text.MSG_LOOP_LABEL)
         for setting in wanted.to_data():
             if wanted.to_data()[setting] != self.document().song().get_scene(index).get_clip_slot(track).to_data().get(setting):
-                self.left_out.append(MSG_LEFT_OUT_CLIP_SETTING.format(setting=setting, track=track, scene=song.get_scene(index).get_name()))
+                self.left_out.append(narration.MSG_LEFT_OUT_CLIP_SETTING.format(setting=setting, track=track, scene=song.get_scene(index).get_name()))
 
     def delete_clip(self, *, index, track):
         yield from self.open_arrange()
@@ -537,12 +521,12 @@ class TutorialPlan:
     def build_pattern(self, *, song, name):
         """Make a pattern on the Patterns page and fill it in the editor: its steps, its notes on the piano roll and then its other rows."""
         wanted = self.target.get_pattern(name)
-        kind = MSG_A_DRUM_PATTERN if wanted.is_drum() else MSG_A_PATTERN
+        kind = narration.MSG_A_DRUM_PATTERN if wanted.is_drum() else narration.MSG_A_PATTERN
         if not self.starter_pattern_is_spare():
-            yield Say(MSG_NARRATE_MAKING.format(kind=kind, name=name))
+            yield Say(narration.MSG_NARRATE_MAKING.format(kind=kind, name=name))
         yield from self.open_page(keybindings.MainPage.PATTERNS)
         if self.starter_pattern_is_spare():
-            yield Say(MSG_NARRATE_RENAMING.format(kind=kind))
+            yield Say(narration.MSG_NARRATE_RENAMING.format(kind=kind))
             yield from self.go_to_list_row(STARTER_PATTERN)
             yield from self.press(keybindings.ListPage.RENAME)
             yield from self.answer_prompt(name)
@@ -550,7 +534,7 @@ class TutorialPlan:
             yield from self.press(keybindings.ListPage.EDIT)
         else:
             # A drum pattern is made one later, which clears its scale length, so the dialog's number is left as it opens.
-            scale_length = NEW_PATTERN_SCALE_LENGTH if wanted.is_drum() else wanted.get_scale_length()
+            scale_length = limits.NEW_PATTERN_SCALE_LENGTH if wanted.is_drum() else wanted.get_scale_length()
             yield from self.add_to_group(name=name, group=self.group_wanted(name), scale_length=scale_length)
         self.expect(PatternEditor)
         if wanted.get_steps() != self.editor().steps():
@@ -566,11 +550,11 @@ class TutorialPlan:
             yield from self.write_drum_notes(wanted)
         else:
             yield from self.draw_notes(wanted)
-        yield Say(MSG_NARRATE_PATTERN_ROWS.format(name=name))
+        yield Say(narration.MSG_NARRATE_PATTERN_ROWS.format(name=name))
         yield from self.set_rows(wanted)
         for setting in wanted.to_data():
             if setting not in ROW_DESCRIPTIONS and setting not in self.document().setlist().get_pattern(name).to_data():
-                self.left_out.append(MSG_LEFT_OUT_PATTERN_SETTING.format(setting=setting, name=name))
+                self.left_out.append(narration.MSG_LEFT_OUT_PATTERN_SETTING.format(setting=setting, name=name))
 
     def group_wanted(self, name):
         """Return the group a pattern is built in: the target's for it, or else the one named after the first track of the target that plays it,
@@ -578,7 +562,7 @@ class TutorialPlan:
         group = self.target.get_pattern(name).get_group()
         if group is None:
             group = self.target.first_track_playing(name)
-        return group if group is not None else new_name(word=MSG_NEW_GROUP_WORD, taken=[])
+        return group if group is not None else new_name(word=names_text.MSG_NEW_GROUP_WORD, taken=[])
 
     def go_to_patterns_row(self, listed):
         """Move the Patterns page's cursor to a row by what the row is: a heading or a button."""
@@ -617,7 +601,7 @@ class TutorialPlan:
             return
         made = group in self.screen().groups()
         yield from self.press(keybindings.PatternsPage.GROUP)
-        yield from self.choose(group if made else MSG_NEW_GROUP_BUTTON)
+        yield from self.choose(group if made else labels_text.MSG_NEW_GROUP_BUTTON)
         if not made:
             yield from self.answer_prompt(group)
 
@@ -668,7 +652,7 @@ class TutorialPlan:
     def pitch_for(self, *, degree, octave):
         """Return the roll's row for a degree in an octave, a degree past the scale's size carried into the next octave, as the roll works it out."""
         roll = self.editor().roll
-        octaves_up, place = divmod(degree - MIN_DEGREE, roll.size())
+        octaves_up, place = divmod(degree - limits.MIN_DEGREE, roll.size())
         return roll.clamped((octave + octaves_up) * roll.per_octave() + roll.scale_steps()[place])
 
     def go_to_step(self, step):
@@ -785,7 +769,7 @@ class TutorialPlan:
                 yield from self.press(keybindings.NumberRow.ASK)
                 yield from self.answer_prompt(value)
         else:
-            self.left_out.append(MSG_LEFT_OUT_ROW.format(row=row, name=self.editor().item))
+            self.left_out.append(narration.MSG_LEFT_OUT_ROW.format(row=row, name=self.editor().item))
 
     # Arrange.
 
@@ -813,20 +797,20 @@ class TutorialPlan:
             yield from self.open_page(keybindings.MainPage.INSTRUMENTS)
             yield from self.press(keybindings.ListPage.ADD)
             self.instruments[track] = self.document().setlist().get_instrument_names()[-1]
-            yield Say(MSG_NARRATE_MAKING.format(kind=MSG_AN_INSTRUMENT, name=self.instruments[track]))
-            yield from self.set_field(label=MSG_DEVICE_LABEL, answer=self.driver)
-            yield from self.set_field(label=MSG_CHANNEL_LABEL, answer=FIRST_CHANNEL + number)
+            yield Say(narration.MSG_NARRATE_MAKING.format(kind=narration.MSG_AN_INSTRUMENT, name=self.instruments[track]))
+            yield from self.set_field(label=labels_text.MSG_DEVICE_LABEL, answer=self.driver)
+            yield from self.set_field(label=labels_text.MSG_CHANNEL_LABEL, answer=FIRST_CHANNEL + number)
         for place, track in enumerate(song.get_track_names()):
             yield from self.open_arrange()
             yield from self.go_to_cell(row=HEADER_ROW, column=place + FIRST_TRACK_COLUMN)
             yield from self.press(keybindings.ArrangePage.TRACK_SETTINGS)
-            yield from self.set_field(label=MSG_INSTRUMENT_LABEL, answer=self.instruments[track])
+            yield from self.set_field(label=labels_text.MSG_INSTRUMENT_LABEL, answer=self.instruments[track])
         if not self.document().setlist().is_real_time():
             yield from self.open_page(keybindings.MainPage.REAL_TIME)
 
     def play(self):
         """Say so, go into Arrange, and play the song from the corner."""
-        yield Say(MSG_NARRATE_PLAY)
+        yield Say(narration.MSG_NARRATE_PLAY)
         yield from self.open_page(keybindings.MainPage.ARRANGE)
         yield from self.go_to_cell(row=HEADER_ROW, column=SCENE_COLUMN)
         yield from self.press(keybindings.ArrangePage.PLAY_SONG)

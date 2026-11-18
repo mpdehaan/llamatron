@@ -16,7 +16,7 @@
 """A register's += row: how much a step adds to the register, or takes from it, within the register's Allowed Inc Max."""
 
 from llamatron.composition.file_format import REGISTER_ADD_ROWS
-from llamatron.strings.errors import ERR_AT_ALLOWED_INC_MAX
+from llamatron.strings import errors
 from llamatron.tui.components.control_row import ControlRow
 from llamatron.tui import keybindings
 
@@ -43,5 +43,5 @@ class AddRow(ControlRow):
         low, high = self.range()
         moved = self.number_now() + offset
         if not low <= moved <= high:
-            self.editor.refuse(ERR_AT_ALLOWED_INC_MAX.format(register=REGISTER_OF_ROW[self.name], most=high))
+            self.editor.refuse(errors.ERR_AT_ALLOWED_INC_MAX.format(register=REGISTER_OF_ROW[self.name], most=high))
         self.set_value(max(min(moved, high), low))

@@ -39,7 +39,8 @@ import random
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.composition.limits import MIN_GM_SOUND
+from llamatron.composition import limits
+from llamatron.strings import errors, messages
 from llamatron.exporters.midi_arrangement import DRUM_CHANNEL_BYTE, MELODIC_CHANNEL_BYTES
 from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT, FluidSynth, is_installed
 from llamatron.visualizers.heard import REFERENCE_SECONDS_PER_BEAT, SILENCE, Heard, HeardNote
@@ -51,11 +52,6 @@ from llamatron.realtime.score import Score
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess
 from llamatron.realtime.timeline import Route
 from llamatron.tui.uses import loop_error_lines
-from llamatron.strings.errors import (
-    ERR_CANT_PLAY_TITLE, ERR_DEVICE_NOT_CONNECTED, ERR_FLUIDSYNTH_NOT_INSTALLED, ERR_LOOP_SCENES_TITLE, ERR_NO_INSTRUMENTS_TITLE, ERR_ADD_INSTRUMENT_FIRST,
-    ERR_NO_TRACK_HAS_A_DEVICE, ERR_NO_TRACK_HAS_AN_INSTRUMENT, ERR_REAL_TIME_OFF,
-)
-from llamatron.strings.messages import MSG_LIVE_EDIT_NOT_HEARD, MSG_LIVE_EDIT_NEEDS_A_DEVICE, MSG_NOTHING_TO_SILENCE, MSG_SILENCED
 
 # How often the player plans ahead and the page redraws while something plays.
 TICK_SECONDS = 0.1
@@ -149,22 +145,22 @@ class Transport:
         setlist = self.document().setlist()
         song = self.document().song()
         if not setlist.is_real_time():
-            return Problem(title=ERR_CANT_PLAY_TITLE, lines=[ERR_REAL_TIME_OFF])
+            return Problem(title=errors.ERR_CANT_PLAY_TITLE, lines=[errors.ERR_REAL_TIME_OFF])
         if not setlist.get_instrument_names():
-            return Problem(title=ERR_NO_INSTRUMENTS_TITLE, lines=[ERR_ADD_INSTRUMENT_FIRST])
+            return Problem(title=errors.ERR_NO_INSTRUMENTS_TITLE, lines=[errors.ERR_ADD_INSTRUMENT_FIRST])
         if track is None and not any(song.get_track(name).get_instrument_name() for name in song.get_track_names()):
-            return Problem(title=ERR_CANT_PLAY_TITLE, lines=[ERR_NO_TRACK_HAS_AN_INSTRUMENT])
+            return Problem(title=errors.ERR_CANT_PLAY_TITLE, lines=[errors.ERR_NO_TRACK_HAS_AN_INSTRUMENT])
         # An instrument with no device, which may be there only for its General MIDI sound, leaves its tracks silent, so a song where every track is silent can't play.
         if track is None and not any(self.has_a_device(name) for name in song.get_track_names()):
-            return Problem(title=ERR_CANT_PLAY_TITLE, lines=[ERR_NO_TRACK_HAS_A_DEVICE])
+            return Problem(title=errors.ERR_CANT_PLAY_TITLE, lines=[errors.ERR_NO_TRACK_HAS_A_DEVICE])
         missing = self.missing_devices()
         if missing:
-            return Problem(title=ERR_CANT_PLAY_TITLE, lines=[ERR_DEVICE_NOT_CONNECTED.format(instrument=name, device=device) for name, device in missing])
+            return Problem(title=errors.ERR_CANT_PLAY_TITLE, lines=[errors.ERR_DEVICE_NOT_CONNECTED.format(instrument=name, device=device) for name, device in missing])
         if self.uses_fluidsynth() and not self._fluidsynth_installed():
-            return Problem(title=ERR_CANT_PLAY_TITLE, lines=[ERR_FLUIDSYNTH_NOT_INSTALLED])
+            return Problem(title=errors.ERR_CANT_PLAY_TITLE, lines=[errors.ERR_FLUIDSYNTH_NOT_INSTALLED])
         lines = loop_error_lines(song)
         if lines:
-            return Problem(title=ERR_LOOP_SCENES_TITLE, lines=lines)
+            return Problem(title=errors.ERR_LOOP_SCENES_TITLE, lines=lines)
         return None
 
     def has_a_device(self, track):
@@ -207,7 +203,7 @@ class Transport:
                 routes[track] = Route(FLUIDSYNTH_PORT, DRUM_CHANNEL_BYTE, None, keyswitches=False)
             elif not song.get_track(track).is_muted():
                 sound = instrument.get_gm_sound()
-                routes[track] = Route(FLUIDSYNTH_PORT, MELODIC_CHANNEL_BYTES[melodic % len(MELODIC_CHANNEL_BYTES)], None if sound is None else sound - MIN_GM_SOUND, keyswitches=False)
+                routes[track] = Route(FLUIDSYNTH_PORT, MELODIC_CHANNEL_BYTES[melodic % len(MELODIC_CHANNEL_BYTES)], None if sound is None else sound - limits.MIN_GM_SOUND, keyswitches=False)
                 melodic += 1
         return routes
 
@@ -270,10 +266,10 @@ class Transport:
         """The emergency stop: note offs, all notes off and all sound off on every channel the instruments use, and return what the status line says."""
         channels = self.channels_in_use()
         if not channels:
-            return MSG_NOTHING_TO_SILENCE
+            return messages.MSG_NOTHING_TO_SILENCE
         self.stop_all()
         self._sender_for(sorted({port for port, _ in channels})).silence(channels=channels)
-        return MSG_SILENCED.format(channels=len(channels), devices=len({port for port, _ in channels}))
+        return messages.MSG_SILENCED.format(channels=len(channels), devices=len({port for port, _ in channels}))
 
     def close(self):
         """Stop everything and end the process and FluidSynth, as the tracker quits."""
@@ -458,12 +454,12 @@ class Transport:
         song = self._playing_song()
         routes = self.routes(instead=self._instead)
         if set(route.port for route in routes.values()) - set(self._ports):
-            self._live_message = MSG_LIVE_EDIT_NEEDS_A_DEVICE
+            self._live_message = messages.MSG_LIVE_EDIT_NEEDS_A_DEVICE
             return
         try:
             score = Score(song=song, routes=routes, seed=self._seed)
         except (SongFileError, ValueError) as error:
-            self._live_message = MSG_LIVE_EDIT_NOT_HEARD.format(problem=error)
+            self._live_message = messages.MSG_LIVE_EDIT_NOT_HEARD.format(problem=error)
             return
         scene_map, track_map = self._places_after_the_edit(song)
         self._player.update_score(score=score, responsiveness=song.get_live_responsiveness(), scene_map=scene_map, track_map=track_map)

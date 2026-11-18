@@ -21,7 +21,7 @@ from textual.containers import Container
 from textual.screen import ModalScreen
 from textual.widgets import Static
 
-from llamatron.strings.messages import MSG_DELETE_TITLE
+from llamatron.strings import messages
 from llamatron.tui.drawing import Box, legend, LINE_BREAK, NOTHING, SELECTOR, SPACE, Style
 from llamatron.tui.key_table import pressed_key, quits_at_once, BindsKeys
 from llamatron.tui import keybindings
@@ -68,7 +68,7 @@ class Dialog(BindsKeys, ModalScreen):
 
     def heading(self, width):
         """Return the dialog's top line, in red for a question about deleting, so that it isn't answered by habit."""
-        return Text(self.title, style=Style.DELETE_TITLE if self.title == MSG_DELETE_TITLE else Style.BOLD)
+        return Text(self.title, style=Style.DELETE_TITLE if self.title == messages.MSG_DELETE_TITLE else Style.BOLD)
 
     def draw(self):
         if not self.is_attached or not self.query(DIALOG_VIEW_SELECTOR):

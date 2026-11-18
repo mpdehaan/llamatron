@@ -18,9 +18,7 @@
 from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition.generator_settings import DEFAULT_VOICING_HIGHEST_OCTAVE, DEFAULT_VOICING_LOWEST_OCTAVE, VoiceLeadingSetting
 from llamatron.music.note import MAX_OCTAVE, MIN_OCTAVE
-from llamatron.strings.help import HELP_VOICE_LEADING_EDITOR
-from llamatron.strings.labels import Crumb, MSG_HIGHEST_OCTAVE_LABEL, MSG_LOWEST_OCTAVE_LABEL, MSG_ROOT_IN_BASS_LABEL, MSG_VOICE_LEADING_LABEL
-from llamatron.strings.messages import MSG_RENAME_GENERATOR_PROMPT
+from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.shared.field import NameField, Toggle
@@ -32,10 +30,10 @@ from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 class VoiceLeadingEditor(ShowsNamedItem, FieldPage):
 
     KEYS = keybindings.VoiceLeadingEditor
-    HELP = HELP_VOICE_LEADING_EDITOR
+    HELP = help_text.HELP_VOICE_LEADING_EDITOR
     SECTION = Section.VOICE_LEADINGS
-    CRUMBS_BEFORE = (Crumb.GENERATORS,)
-    RENAME_PROMPT = MSG_RENAME_GENERATOR_PROMPT.format(label=MSG_VOICE_LEADING_LABEL)
+    CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_VOICE_LEADING_LABEL)
 
     def __init__(self, *, holder, name):
         super().__init__(holder)
@@ -52,13 +50,13 @@ class VoiceLeadingEditor(ShowsNamedItem, FieldPage):
         return [
             NameField(value=lambda: self.item, rename=self.rename),
             octave_field(
-                page=self, label=MSG_LOWEST_OCTAVE_LABEL, current=voicing.get_lowest_octave, lowest=lambda: MIN_OCTAVE, highest=voicing.get_highest_octave,
+                page=self, label=labels.MSG_LOWEST_OCTAVE_LABEL, current=voicing.get_lowest_octave, lowest=lambda: MIN_OCTAVE, highest=voicing.get_highest_octave,
                 default=DEFAULT_VOICING_LOWEST_OCTAVE, set_octave=lambda octave: self.store(setting=VoiceLeadingSetting.LOWEST_OCTAVE, value=octave),
             ),
             octave_field(
-                page=self, label=MSG_HIGHEST_OCTAVE_LABEL, current=voicing.get_highest_octave, lowest=voicing.get_lowest_octave, highest=lambda: MAX_OCTAVE,
+                page=self, label=labels.MSG_HIGHEST_OCTAVE_LABEL, current=voicing.get_highest_octave, lowest=voicing.get_lowest_octave, highest=lambda: MAX_OCTAVE,
                 default=DEFAULT_VOICING_HIGHEST_OCTAVE, set_octave=lambda octave: self.store(setting=VoiceLeadingSetting.HIGHEST_OCTAVE, value=octave),
             ),
-            Toggle(label=MSG_ROOT_IN_BASS_LABEL, on=voicing.keeps_root_in_bass(), set=lambda on: self.store(setting=VoiceLeadingSetting.ROOT_IN_BASS, value=on or None)),
+            Toggle(label=labels.MSG_ROOT_IN_BASS_LABEL, on=voicing.keeps_root_in_bass(), set=lambda on: self.store(setting=VoiceLeadingSetting.ROOT_IN_BASS, value=on or None)),
             restart_field(self),
         ]

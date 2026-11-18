@@ -27,9 +27,7 @@ or a problem with no correction stops it, and returns the corrections made, for 
 dialog or the command line to show before anything is opened. Nothing here changes a file.
 """
 
-from llamatron.strings.errors import ERR_WHERE_WITHIN
-from llamatron.strings.messages import MSG_CORRECTED, MSG_CORRECTED_SEVERAL, MSG_CORRECTED_TO_DEFAULT
-from llamatron.strings.names import MSG_THE_FILE
+from llamatron.strings import errors, messages, names
 
 # What nearest() answers for a value with no allowed value near it. None can't say so, since None is a value a file can hold.
 NO_NEAREST_VALUE = object()
@@ -47,8 +45,8 @@ def place_without(*, where, name):
     track (bass)". A setting of the set itself is in the file, not in any part of it.
     """
     if where is None or where == name:
-        return MSG_THE_FILE
-    ending = ERR_WHERE_WITHIN.format(where=NO_PLACE, part=name)
+        return names.MSG_THE_FILE
+    ending = errors.ERR_WHERE_WITHIN.format(where=NO_PLACE, part=name)
     return where[:-len(ending)] if where.endswith(ending) else where
 
 
@@ -110,7 +108,7 @@ class Correction:
         """Return one line saying where the value is, what was found and what is used in its place."""
         count = self.get_count()
         if count is not None:
-            return MSG_CORRECTED_SEVERAL.format(where=self.get_place(), name=self._name, count=count)
+            return messages.MSG_CORRECTED_SEVERAL.format(where=self.get_place(), name=self._name, count=count)
         if self._used is LEFT_OUT:
-            return MSG_CORRECTED_TO_DEFAULT.format(where=self.get_place(), name=self._name, found=self._found)
-        return MSG_CORRECTED.format(where=self.get_place(), name=self._name, found=self._found, used=self._used)
+            return messages.MSG_CORRECTED_TO_DEFAULT.format(where=self.get_place(), name=self._name, found=self._found)
+        return messages.MSG_CORRECTED.format(where=self.get_place(), name=self._name, found=self._found, used=self._used)

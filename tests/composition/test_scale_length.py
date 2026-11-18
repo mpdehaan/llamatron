@@ -18,10 +18,10 @@
 import unittest
 
 from llamatron.composition.file_format import PatternSetting, Section
-from llamatron.composition.limits import MAX_SCALE_LENGTH, MIN_SCALE_LENGTH, NEW_PATTERN_SCALE_LENGTH
+from llamatron.composition import limits
+from llamatron.strings import errors
 from llamatron.composition.pattern import Pattern
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.strings.errors import ERR_BAD_SCALE_LENGTH
 from tests.support.rendering import song_from_data
 from tests.support.song_testing import lead_data
 from tests.support.ui_testing import fixed_text
@@ -47,7 +47,7 @@ class TestScaleLength(unittest.TestCase):
 
     def test_every_length_can_be_set_written_and_cleared(self):
         pattern = a_pattern()
-        for length in range(MIN_SCALE_LENGTH, MAX_SCALE_LENGTH + 1):
+        for length in range(limits.MIN_SCALE_LENGTH, limits.MAX_SCALE_LENGTH + 1):
             pattern.set_scale_length(length)
             self.assertEqual(pattern.get_scale_length(), length)
             self.assertEqual(pattern.to_data()[PatternSetting.SCALE_LENGTH], length)
@@ -55,21 +55,21 @@ class TestScaleLength(unittest.TestCase):
         self.assertNotIn(PatternSetting.SCALE_LENGTH, pattern.to_data())
 
     def test_it_suits_only_a_scale_of_its_length(self):
-        pattern = a_pattern(scale_length=NEW_PATTERN_SCALE_LENGTH)
-        self.assertTrue(pattern.suits_scale_of(NEW_PATTERN_SCALE_LENGTH))
+        pattern = a_pattern(scale_length=limits.NEW_PATTERN_SCALE_LENGTH)
+        self.assertTrue(pattern.suits_scale_of(limits.NEW_PATTERN_SCALE_LENGTH))
         self.assertFalse(pattern.suits_scale_of(PENTATONIC))
 
     def test_a_length_out_of_range_is_refused_by_the_setter_and_by_a_file_in_the_same_words(self):
         pattern = a_pattern()
-        for bad in (MIN_SCALE_LENGTH - 1, MAX_SCALE_LENGTH + 1, str(NEW_PATTERN_SCALE_LENGTH)):
+        for bad in (limits.MIN_SCALE_LENGTH - 1, limits.MAX_SCALE_LENGTH + 1, str(limits.NEW_PATTERN_SCALE_LENGTH)):
             with self.assertRaises(ValueError) as refused:
                 pattern.set_scale_length(bad)
-            self.assertIn(fixed_text(ERR_BAD_SCALE_LENGTH), str(refused.exception))
+            self.assertIn(fixed_text(errors.ERR_BAD_SCALE_LENGTH), str(refused.exception))
             data = lead_data(A_STEP)
             data[Section.PATTERNS][A_PATTERN][PatternSetting.SCALE_LENGTH] = bad
             with self.assertRaises(SongFileError) as unread:
                 song_from_data(data)
-            self.assertIn(fixed_text(ERR_BAD_SCALE_LENGTH), str(unread.exception))
+            self.assertIn(fixed_text(errors.ERR_BAD_SCALE_LENGTH), str(unread.exception))
         self.assertIsNone(pattern.get_scale_length())
 
     def test_it_is_read_back_from_a_file_and_kept_by_a_copy(self):

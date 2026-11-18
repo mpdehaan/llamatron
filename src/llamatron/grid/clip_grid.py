@@ -21,11 +21,11 @@ from itertools import count
 from llamatron.support.rational import Rational
 from llamatron.composition.checks import check_scale, check_tempo, check_time_signature
 from llamatron.composition.checks import time_signature as time_signature_object
-from llamatron.composition.defaults import DEFAULT_TIME_SIGNATURE
+from llamatron.composition import defaults
+from llamatron.strings import errors
 from llamatron.grid.clip import Clip
 from llamatron.grid.clip_column import ClipColumn
 from llamatron.grid.clip_row import ClipRow
-from llamatron.strings.errors import ERR_COLUMN_NOT_IN_GRID, ERR_NOT_A_CLIP, ERR_NOT_A_CLIP_COLUMN, ERR_NOT_A_CLIP_ROW, ERR_ROW_NOT_IN_GRID
 
 # How long a row with no clips lasts.
 NO_LENGTH = 0
@@ -40,7 +40,7 @@ class ClipGrid:
 
     def __init__(self, *, tempo=DEFAULT_TEMPO, scale=None, time_signature=None):
         self.set_tempo(tempo)
-        self.set_time_signature(time_signature or time_signature_object(DEFAULT_TIME_SIGNATURE))
+        self.set_time_signature(time_signature or time_signature_object(defaults.DEFAULT_TIME_SIGNATURE))
         self.set_scale(scale)
         self._columns = {}
         self._rows = {}
@@ -82,7 +82,7 @@ class ClipGrid:
     def add_column(self, column):
         """Add a ClipColumn to the grid, give it its id and return it."""
         if not isinstance(column, ClipColumn):
-            raise ValueError(ERR_NOT_A_CLIP_COLUMN.format(value=column))
+            raise ValueError(errors.ERR_NOT_A_CLIP_COLUMN.format(value=column))
         column.set_id(next(self._next_column_id))
         self._columns[column.get_id()] = column
         return column
@@ -90,7 +90,7 @@ class ClipGrid:
     def add_row(self, row):
         """Add a ClipRow to the grid, give it its id and return it."""
         if not isinstance(row, ClipRow):
-            raise ValueError(ERR_NOT_A_CLIP_ROW.format(value=row))
+            raise ValueError(errors.ERR_NOT_A_CLIP_ROW.format(value=row))
         row.set_id(next(self._next_row_id))
         self._rows[row.get_id()] = row
         return row
@@ -99,7 +99,7 @@ class ClipGrid:
         """Put a Clip in a cell, replacing any clip already there, and return it."""
         self._check_clip_slot(row=row, column=column)
         if not isinstance(clip, Clip):
-            raise ValueError(ERR_NOT_A_CLIP.format(value=clip))
+            raise ValueError(errors.ERR_NOT_A_CLIP.format(value=clip))
         self._clips.setdefault(row.get_id(), {})[column.get_id()] = clip
         return clip
 
@@ -149,11 +149,11 @@ class ClipGrid:
 
     def _check_column(self, column):
         if not isinstance(column, ClipColumn) or self._columns.get(column.get_id()) is not column:
-            raise ValueError(ERR_COLUMN_NOT_IN_GRID.format(column=column))
+            raise ValueError(errors.ERR_COLUMN_NOT_IN_GRID.format(column=column))
 
     def _check_row(self, row):
         if not isinstance(row, ClipRow) or self._rows.get(row.get_id()) is not row:
-            raise ValueError(ERR_ROW_NOT_IN_GRID.format(row=row))
+            raise ValueError(errors.ERR_ROW_NOT_IN_GRID.format(row=row))
 
     def _check_clip_slot(self, *, row, column):
         self._check_row(row)

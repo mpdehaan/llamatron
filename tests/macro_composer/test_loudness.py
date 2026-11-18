@@ -23,7 +23,7 @@ from llamatron.macro_composer import arranger, loudness
 from llamatron.macro_composer.loudness import LEAST_DYNAMICS, LEVELS, MOST_DYNAMICS, NORMAL, USUAL_DYNAMICS
 from llamatron.macro_composer.notation import ACCENT, DEGREE, GHOST, HIGHEST_VELOCITY, LEVEL, LOUD, LOWEST_VELOCITY, NONE, PEAK, PICKUP, SOFT, STEP_SIZE, STEPS, STRESS, VELOCITY, drum_rows, tune_rows
 from llamatron.macro_composer.wizard_choices import WizardChoices
-from llamatron.strings.errors import ERR_WIZARD_DYNAMICS, ERR_WIZARD_LOUDNESS
+from llamatron.strings import errors
 from llamatron.support.version import VERSION
 from tests.support.ui_testing import fixed_text
 
@@ -287,12 +287,12 @@ class TestWizardLoudness(unittest.TestCase):
 
     def test_what_is_no_level_no_velocity_or_no_player_is_refused(self):
         choices = chosen()
-        refused = fixed_text(ERR_WIZARD_LOUDNESS)
+        refused = fixed_text(errors.ERR_WIZARD_LOUDNESS)
         for role, level, number in ((NOT_A_PLAYER, NORMAL, QUIET), (THE_BASS, NOT_A_LEVEL, QUIET), (THE_BASS, NORMAL, TOO_LOUD), (THE_BASS, NORMAL, LOWEST_VELOCITY - 1), (THE_BASS, NORMAL, True)):
             with self.assertRaisesRegex(ValueError, refused):
                 choices.set_loudness_level(role=role, level=level, number=number)
         for role, dynamics in ((NOT_A_PLAYER, USUAL_DYNAMICS), (THE_BASS, TOO_WIDE), (THE_BASS, LEAST_DYNAMICS - 1), (THE_BASS, True)):
-            with self.assertRaisesRegex(ValueError, fixed_text(ERR_WIZARD_DYNAMICS)):
+            with self.assertRaisesRegex(ValueError, fixed_text(errors.ERR_WIZARD_DYNAMICS)):
                 choices.set_dynamics(role=role, dynamics=dynamics)
         self.assertEqual(choices.to_data(), chosen().to_data())
 

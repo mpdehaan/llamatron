@@ -19,7 +19,7 @@
 from llamatron.composition.file_format import Section
 from llamatron.macro_composer.song_plan import HIGHEST_ENERGY, LOWEST_ENERGY, USUAL_CONTRAST
 from llamatron.macro_composer.wizard_choices import AFTER_FIRST_VERSE, AFTER_THE_INTRO, FROM_THE_START, IN_BREAKDOWNS, NEVER_LAYS_OUT, WHEN_QUIET
-from llamatron.strings.labels import MSG_WIZARD_COMES_IN_LABEL, MSG_WIZARD_LAYS_OUT_LABEL, MSG_WIZARD_OWN_START, MSG_WIZARD_REACTS_LABEL, MSG_WIZARD_REACTS_SAID
+from llamatron.strings import labels
 from llamatron.support.version import VERSION
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
@@ -124,18 +124,18 @@ class TestWizardPeople(WizardTest):
     async def test_the_player_s_panel_shows_the_three_and_steps_them(self):
         choices = await self.to_player(THE_BASS)
         shown = self.text()
-        for said in (MSG_WIZARD_COMES_IN_LABEL, MSG_WIZARD_LAYS_OUT_LABEL, MSG_WIZARD_REACTS_LABEL, FROM_THE_START, NEVER_LAYS_OUT, MSG_WIZARD_REACTS_SAID[USUAL_CONTRAST]):
+        for said in (labels.MSG_WIZARD_COMES_IN_LABEL, labels.MSG_WIZARD_LAYS_OUT_LABEL, labels.MSG_WIZARD_REACTS_LABEL, FROM_THE_START, NEVER_LAYS_OUT, labels.MSG_WIZARD_REACTS_SAID[USUAL_CONTRAST]):
             self.assertIn(said, shown)
-        await self.select_field(MSG_WIZARD_COMES_IN_LABEL)
+        await self.select_field(labels.MSG_WIZARD_COMES_IN_LABEL)
         await self.press(self.more())
         self.assertEqual(choices.get_comes_in(THE_BASS), choices.comes_in_offered(THE_BASS)[1])
-        await self.select_field(MSG_WIZARD_LAYS_OUT_LABEL)
+        await self.select_field(labels.MSG_WIZARD_LAYS_OUT_LABEL)
         await self.press(self.more())
         self.assertEqual(choices.get_lays_out(THE_BASS), IN_BREAKDOWNS)
-        await self.select_field(MSG_WIZARD_REACTS_LABEL)
+        await self.select_field(labels.MSG_WIZARD_REACTS_LABEL)
         await self.press(self.more())
         self.assertEqual(choices.get_reacts(THE_BASS), USUAL_CONTRAST + 1)
         self.assertTrue(self.wizard().has_choices_to_lose())
         choices.set_section_plays(place=len(choices.section_labels()) - 2, role=THE_BASS, on=False)
         await self.press(Key.DOWN, Key.UP)
-        self.assertIn(MSG_WIZARD_OWN_START, self.text())
+        self.assertIn(labels.MSG_WIZARD_OWN_START, self.text())

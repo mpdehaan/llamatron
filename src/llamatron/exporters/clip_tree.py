@@ -23,7 +23,7 @@ import mido
 from llamatron.exporters.exporter import Exporter, ExportKind, WritesManyFiles
 from llamatron.exporters.midi_messages import SINGLE_TRACK_FILE, TICKS_PER_BEAT, clip_events, midi_track, safe_file_name, tempo_event, ticks, time_signature_event
 from llamatron.exporters.timing import timed_events
-from llamatron.strings.names import MSG_CLIP_TREE_EXPORT_LABEL
+from llamatron.strings import names
 
 # A clip's file name: the song's name, then its scene and track, each as a number counted from 1
 # like Live's and zero-padded so that files sort in order, followed by the scene's or track's name if
@@ -67,7 +67,7 @@ class ClipTree(WritesManyFiles, Exporter):
     __slots__ = ()
 
     KIND = ExportKind.CLIP_TREE
-    LABEL = MSG_CLIP_TREE_EXPORT_LABEL
+    LABEL = names.MSG_CLIP_TREE_EXPORT_LABEL
     FILES = CLIP_FILES
     FILES_SHOWN = CLIP_FILES_SHOWN
 

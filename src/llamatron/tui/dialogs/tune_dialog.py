@@ -26,8 +26,7 @@ CANCEL, changing nothing.
 from rich.text import Text
 
 from llamatron.macro_composer import line_edits
-from llamatron.strings.labels import MSG_OK_CANCEL_BUTTONS
-from llamatron.strings.marks import MSG_TUNE_CURSOR, MSG_TUNE_CURSOR_NOTE, MSG_TUNE_NOTE_SAID, MSG_TUNE_REST_SAID, MSG_WIZARD_HOOK_BAR_LINE, MSG_WIZARD_HOOK_CELL, MSG_WIZARD_HOOK_FLOOR, MSG_WIZARD_HOOK_FLOOR_BAR, MSG_WIZARD_HOOK_GAP, MSG_WIZARD_HOOK_ROW
+from llamatron.strings import labels, marks
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.dialogs.dialog import DIALOG_MARGIN, Dialog
 from llamatron.tui.drawing import NOTHING, Style, legend
@@ -119,43 +118,43 @@ class TuneDialog(Dialog):
     def in_bars(self, cells):
         """Return a row's cells between bar lines."""
         size = self.steps_in_bar * STEP_WIDTH
-        return MSG_WIZARD_HOOK_BAR_LINE + MSG_WIZARD_HOOK_BAR_LINE.join(''.join(cells[at:at + size]) for at in range(0, len(cells), size)) + MSG_WIZARD_HOOK_BAR_LINE
+        return marks.MSG_WIZARD_HOOK_BAR_LINE + marks.MSG_WIZARD_HOOK_BAR_LINE.join(''.join(cells[at:at + size]) for at in range(0, len(cells), size)) + marks.MSG_WIZARD_HOOK_BAR_LINE
 
     def row_line(self, *, place, width):
         """Return one place's row: filled where a note at the place sounds, the note under the cursor shaded lighter so that it stands out."""
-        cells = [MSG_WIZARD_HOOK_GAP] * (self.steps() * STEP_WIDTH)
+        cells = [marks.MSG_WIZARD_HOOK_GAP] * (self.steps() * STEP_WIDTH)
         held, _ = self.under_cursor()
         at = 0
         for note in self.line:
             length = line_edits.length_of(note)
             if not line_edits.is_rest(note) and line_edits.place_of(note) == place:
                 filled = length * STEP_WIDTH - 1
-                cells[at * STEP_WIDTH:at * STEP_WIDTH + filled] = [MSG_TUNE_CURSOR_NOTE if note is held else MSG_WIZARD_HOOK_CELL] * filled
+                cells[at * STEP_WIDTH:at * STEP_WIDTH + filled] = [marks.MSG_TUNE_CURSOR_NOTE if note is held else marks.MSG_WIZARD_HOOK_CELL] * filled
             at += length
-        return Text(MSG_WIZARD_HOOK_ROW.format(name=note_shown(self.pitch_of_place(place)), width=width, cells=self.in_bars(cells)), no_wrap=True)
+        return Text(marks.MSG_WIZARD_HOOK_ROW.format(name=note_shown(self.pitch_of_place(place)), width=width, cells=self.in_bars(cells)), no_wrap=True)
 
     def floor_line(self, width):
         size = self.steps_in_bar * STEP_WIDTH
-        floor = MSG_WIZARD_HOOK_FLOOR_BAR.join([MSG_WIZARD_HOOK_FLOOR * size] * (self.steps() // self.steps_in_bar))
-        return Text(MSG_WIZARD_HOOK_ROW.format(name=NOTHING, width=width, cells=MSG_WIZARD_HOOK_FLOOR_BAR + floor + MSG_WIZARD_HOOK_FLOOR_BAR), style=Style.DIM, no_wrap=True)
+        floor = marks.MSG_WIZARD_HOOK_FLOOR_BAR.join([marks.MSG_WIZARD_HOOK_FLOOR * size] * (self.steps() // self.steps_in_bar))
+        return Text(marks.MSG_WIZARD_HOOK_ROW.format(name=NOTHING, width=width, cells=marks.MSG_WIZARD_HOOK_FLOOR_BAR + floor + marks.MSG_WIZARD_HOOK_FLOOR_BAR), style=Style.DIM, no_wrap=True)
 
     def cursor_line(self, width):
         """Return the line under the floor, with the cursor's mark under the cursor's step."""
-        cells = [MSG_WIZARD_HOOK_GAP] * (self.steps() * STEP_WIDTH)
-        cells[self.place * STEP_WIDTH] = MSG_TUNE_CURSOR
+        cells = [marks.MSG_WIZARD_HOOK_GAP] * (self.steps() * STEP_WIDTH)
+        cells[self.place * STEP_WIDTH] = marks.MSG_TUNE_CURSOR
         # Bar lines take a cell each in the rows above, so the marks are spaced as the rows are.
-        return Text(MSG_WIZARD_HOOK_ROW.format(name=NOTHING, width=width, cells=self.in_bars(cells).replace(MSG_WIZARD_HOOK_BAR_LINE, MSG_WIZARD_HOOK_GAP)), style=Style.BOLD, no_wrap=True)
+        return Text(marks.MSG_WIZARD_HOOK_ROW.format(name=NOTHING, width=width, cells=self.in_bars(cells).replace(marks.MSG_WIZARD_HOOK_BAR_LINE, marks.MSG_WIZARD_HOOK_GAP)), style=Style.BOLD, no_wrap=True)
 
     def said(self):
         """Return what the cursor is on, in words: the step, and the note there with its length, or a rest."""
         held, _ = self.under_cursor()
         if line_edits.is_rest(held):
-            return MSG_TUNE_REST_SAID.format(step=self.place + 1, steps=self.steps())
-        return MSG_TUNE_NOTE_SAID.format(step=self.place + 1, steps=self.steps(), note=note_shown(self.pitch_of_place(line_edits.place_of(held))), length=line_edits.length_of(held))
+            return marks.MSG_TUNE_REST_SAID.format(step=self.place + 1, steps=self.steps())
+        return marks.MSG_TUNE_NOTE_SAID.format(step=self.place + 1, steps=self.steps(), note=note_shown(self.pitch_of_place(line_edits.place_of(held))), length=line_edits.length_of(held))
 
     def lines(self, width):
         places = self.places_drawn()
         name_width = max(len(note_shown(self.pitch_of_place(place))) for place in places)
-        buttons = [(binding[1], label) for label, binding in zip(MSG_OK_CANCEL_BUTTONS, BUTTON_BINDINGS)]
+        buttons = [(binding[1], label) for label, binding in zip(labels.MSG_OK_CANCEL_BUTTONS, BUTTON_BINDINGS)]
         return [*[self.row_line(place=place, width=name_width) for place in places], self.floor_line(name_width), self.cursor_line(name_width),
                 Text(self.said(), style=Style.DIM), Text(NOTHING), *button_row(buttons=buttons, selected=OK)]

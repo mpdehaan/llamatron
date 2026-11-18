@@ -18,12 +18,9 @@
 
 from llamatron.composition.file_format import Section
 from llamatron.tui.drawing import Align, NOTHING
-from llamatron.strings.help import HELP_CHAINS_PAGE
+from llamatron.strings import help as help_text, labels, legends, messages
 from llamatron.tui.screens.generators.chain_editor import ChainEditor
 from llamatron.tui.screens.shared.named_list_page import NamedListPage
-from llamatron.strings.labels import Column, Crumb
-from llamatron.strings.legends import MSG_CHAIN_WHAT
-from llamatron.strings.messages import MSG_NEW_CHAIN_PROMPT, MSG_RENAME_CHAIN_PROMPT
 from llamatron.tui import keybindings
 
 
@@ -31,11 +28,11 @@ class ChainsPage(NamedListPage):
 
     KEYS = keybindings.ChainsPage
     LISTED_SECTION = Section.CHAINS
-    RENAME_PROMPT = MSG_RENAME_CHAIN_PROMPT
-    WHAT = MSG_CHAIN_WHAT
-    crumbs = (Crumb.CHAINS,)
-    HELP = HELP_CHAINS_PAGE
-    columns = ((Column.SELECT_CHAIN, None, Align.LEFT), (Column.STEPS, 5, Align.RIGHT), (Column.USED, 4, Align.RIGHT))
+    RENAME_PROMPT = messages.MSG_RENAME_CHAIN_PROMPT
+    WHAT = legends.MSG_CHAIN_WHAT
+    crumbs = (labels.Crumb.CHAINS,)
+    HELP = help_text.HELP_CHAINS_PAGE
+    columns = ((labels.Column.SELECT_CHAIN, None, Align.LEFT), (labels.Column.STEPS, 5, Align.RIGHT), (labels.Column.USED, 4, Align.RIGHT))
 
     def rows(self):
         song = self.document().song()
@@ -51,4 +48,4 @@ class ChainsPage(NamedListPage):
         def named(text):
             self.document().add_chain(text)
             self.put_cursor_on(text)
-        self.ask_name(title=MSG_NEW_CHAIN_PROMPT, value=NOTHING, taken=self.names(), then=named)
+        self.ask_name(title=messages.MSG_NEW_CHAIN_PROMPT, value=NOTHING, taken=self.names(), then=named)

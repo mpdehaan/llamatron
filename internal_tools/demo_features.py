@@ -32,7 +32,7 @@ import io
 import os
 import sys
 
-from llamatron.composition.defaults import DEFAULT_TIME_SIGNATURE
+from llamatron.composition import defaults, limits
 from llamatron.composition.file_format import (
     SHAPES, SHAPE_PARTS, shape_setting,
     CC_REGISTER_SETTINGS,
@@ -51,7 +51,6 @@ from llamatron.composition.file_format import (
     SongSetting,
     TrackSetting,
 )
-from llamatron.composition.limits import MIN_REPEAT
 from llamatron.composition.setlist import Setlist
 from llamatron.support.example_sets import example_sets
 
@@ -135,7 +134,7 @@ def any_song_section(section):
 
 
 def repeats(*, items, setting):
-    return any(item.get(setting, MIN_REPEAT) > MIN_REPEAT for item in items)
+    return any(item.get(setting, limits.MIN_REPEAT) > limits.MIN_REPEAT for item in items)
 
 
 def binds_registers(data):
@@ -144,7 +143,7 @@ def binds_registers(data):
 
 
 def uses_another_time_signature(data):
-    return any(song.get(SongSetting.TIME_SIGNATURE, DEFAULT_TIME_SIGNATURE) != DEFAULT_TIME_SIGNATURE for song in songs(data))
+    return any(song.get(SongSetting.TIME_SIGNATURE, defaults.DEFAULT_TIME_SIGNATURE) != defaults.DEFAULT_TIME_SIGNATURE for song in songs(data))
 
 
 # Each feature a set can use, in the order the table lists them, with how to tell from a set's data.

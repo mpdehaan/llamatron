@@ -20,13 +20,11 @@ import random
 import unittest
 
 from llamatron.composition.file_format import InstrumentSetting, Section
-from llamatron.composition.limits import MAX_GM_SOUND
+from llamatron.composition import limits
+from llamatron.strings import errors, macro_composer as composer_text
 from llamatron.macro_composer import arranger, breaks
 from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, KIT, LOUD, NONE, NOTE_NAMES, NOTES_IN_OCTAVE, OCTAVE, SOFT, STEPS, VELOCITY
 from llamatron.macro_composer.wizard_choices import USUAL_PIECE_NOTE, WizardChoices
-from llamatron.strings.errors import (ERR_BREAK_CUT, ERR_NO_SUCH_BREAK, ERR_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_PIECE_HAS_NO_NOTE,
-                                      ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND)
-from llamatron.strings.macro_composer import MSG_PIECE_INSTRUMENT
 from llamatron.support.version import VERSION
 
 ROCK = 'rock'
@@ -179,11 +177,11 @@ class TestSongWithABreak(unittest.TestCase):
     def test_a_break_and_a_cut_there_is_none_of_are_refused(self):
         with self.assertRaises(ValueError) as refused:
             self.parts(a_song(picks={arranger.BREAK: NO_SUCH}))
-        self.assertEqual(str(refused.exception), ERR_NO_SUCH_BREAK.format(NO_SUCH, arranger.listed(breaks.BREAKS)))
+        self.assertEqual(str(refused.exception), errors.ERR_NO_SUCH_BREAK.format(NO_SUCH, arranger.listed(breaks.BREAKS)))
         for cut in REFUSED_CUTS:
             with self.assertRaises(ValueError) as refused:
                 self.parts(a_song(picks={arranger.BREAK: breaks.TUMBLING, arranger.BREAK_CUT: cut}))
-            self.assertEqual(str(refused.exception), ERR_BREAK_CUT.format(breaks.LEAST_CUT, breaks.MOST_CUT, cut))
+            self.assertEqual(str(refused.exception), errors.ERR_BREAK_CUT.format(breaks.LEAST_CUT, breaks.MOST_CUT, cut))
 
 
 class TestWizardBreak(unittest.TestCase):
@@ -247,11 +245,11 @@ class TestWizardBreak(unittest.TestCase):
         choices = wizard()
         with self.assertRaises(ValueError) as refused:
             choices.set_break(NO_SUCH)
-        self.assertEqual(str(refused.exception), ERR_WIZARD_NO_SUCH_BREAK.format(value=NO_SUCH))
+        self.assertEqual(str(refused.exception), errors.ERR_WIZARD_NO_SUCH_BREAK.format(value=NO_SUCH))
         for cut in REFUSED_CUTS:
             with self.assertRaises(ValueError) as refused:
                 choices.set_break_cut(cut)
-            self.assertEqual(str(refused.exception), ERR_WIZARD_BREAK_CUT.format(low=breaks.LEAST_CUT, high=breaks.MOST_CUT, value=cut))
+            self.assertEqual(str(refused.exception), errors.ERR_WIZARD_BREAK_CUT.format(low=breaks.LEAST_CUT, high=breaks.MOST_CUT, value=cut))
         with self.assertRaises(ValueError):
             wizard(subgenre=BALLAD).set_break(breaks.TUMBLING)
 
@@ -296,7 +294,7 @@ class TestKitPieceSounds(unittest.TestCase):
         made = self.made({breaks.KICK: {arranger.PLAYED_SOUND: A_SOUND, arranger.PLAYED_NOTE: A_NOTE}})
         self.assertEqual(self.notes(made=made, piece=breaks.KICK), {A_NOTE})
         instrument = made[arranger.TRACKS][breaks.KICK]
-        self.assertEqual(instrument, MSG_PIECE_INSTRUMENT.format(breaks.KICK))
+        self.assertEqual(instrument, composer_text.MSG_PIECE_INSTRUMENT.format(breaks.KICK))
         self.assertEqual(made[arranger.INSTRUMENTS][instrument], A_SOUND)
         self.assertNotIn(breaks.KICK, made[arranger.DRUM_TRACKS])
         self.assertEqual([piece for piece in usual[arranger.DRUM_TRACKS] if piece != breaks.KICK], made[arranger.DRUM_TRACKS])
@@ -308,7 +306,7 @@ class TestKitPieceSounds(unittest.TestCase):
                           {arranger.PLAYED_SOUND: A_SOUND, arranger.PLAYED_NOTE: arranger.HIGHEST_NOTE + 1}, {}):
             with self.assertRaises(ValueError) as refused:
                 self.made({breaks.KICK: sounds_as})
-            self.assertEqual(str(refused.exception), ERR_PIECE_SOUND.format(breaks.KICK, sounds_as))
+            self.assertEqual(str(refused.exception), errors.ERR_PIECE_SOUND.format(breaks.KICK, sounds_as))
 
     def test_the_wizard_keeps_a_pieces_sound_and_note_and_gives_the_piece_its_drum_back(self):
         choices = wizard()
@@ -330,7 +328,7 @@ class TestKitPieceSounds(unittest.TestCase):
         self.assertEqual((again.piece_sound(breaks.KICK), again.piece_note(breaks.KICK)), (A_SOUND, A_NOTE))
         self.assertEqual(patterns_of(again), patterns_of(choices))
         data = again.made_setlist(name=SONG_NAME, version=VERSION).to_data()
-        self.assertEqual(data[Section.INSTRUMENTS][MSG_PIECE_INSTRUMENT.format(breaks.KICK)][InstrumentSetting.GM_SOUND], A_SOUND)
+        self.assertEqual(data[Section.INSTRUMENTS][composer_text.MSG_PIECE_INSTRUMENT.format(breaks.KICK)][InstrumentSetting.GM_SOUND], A_SOUND)
         # Another sound keeps the note chosen, and the piece's own name gives it its drum back.
         choices.set_piece_sound(piece=breaks.KICK, sound=A_SOUND + 1)
         self.assertEqual(choices.piece_note(breaks.KICK), A_NOTE)
@@ -341,16 +339,16 @@ class TestKitPieceSounds(unittest.TestCase):
         choices = wizard()
         with self.assertRaises(ValueError) as refused:
             choices.set_piece_sound(piece=NO_SUCH, sound=COWBELL)
-        self.assertEqual(str(refused.exception), ERR_WIZARD_NO_SUCH_PIECE.format(value=NO_SUCH))
-        for sound in (NO_SUCH, 0, MAX_GM_SOUND + 1, True, 2.5):
+        self.assertEqual(str(refused.exception), errors.ERR_WIZARD_NO_SUCH_PIECE.format(value=NO_SUCH))
+        for sound in (NO_SUCH, 0, limits.MAX_GM_SOUND + 1, True, 2.5):
             with self.assertRaises(ValueError) as refused:
                 choices.set_piece_sound(piece=breaks.KICK, sound=sound)
-            self.assertEqual(str(refused.exception), ERR_WIZARD_PIECE_SOUND.format(value=sound))
+            self.assertEqual(str(refused.exception), errors.ERR_WIZARD_PIECE_SOUND.format(value=sound))
         with self.assertRaises(ValueError) as refused:
             choices.set_piece_note(piece=breaks.KICK, note=A_NOTE)
-        self.assertEqual(str(refused.exception), ERR_WIZARD_PIECE_HAS_NO_NOTE.format(value=breaks.KICK))
+        self.assertEqual(str(refused.exception), errors.ERR_WIZARD_PIECE_HAS_NO_NOTE.format(value=breaks.KICK))
         choices.set_piece_sound(piece=breaks.KICK, sound=A_SOUND)
         for note in (arranger.LOWEST_NOTE - 1, arranger.HIGHEST_NOTE + 1, True, NO_SUCH):
             with self.assertRaises(ValueError) as refused:
                 choices.set_piece_note(piece=breaks.KICK, note=note)
-            self.assertEqual(str(refused.exception), ERR_WIZARD_PIECE_NOTE.format(low=arranger.LOWEST_NOTE, high=arranger.HIGHEST_NOTE, value=note))
+            self.assertEqual(str(refused.exception), errors.ERR_WIZARD_PIECE_NOTE.format(low=arranger.LOWEST_NOTE, high=arranger.HIGHEST_NOTE, value=note))

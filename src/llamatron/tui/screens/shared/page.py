@@ -23,7 +23,8 @@ while a page's footer shows only its own keys, so that it stays short.
 """
 
 from rich.color import Color
-from llamatron.composition.limits import MAX_NAME_LENGTH
+from llamatron.composition import limits
+from llamatron.strings import errors, help as help_text, labels, marks as marks_text
 from llamatron.composition.naming import is_taken
 from llamatron.tui.caption_strip import CAPTION_LINES
 from llamatron.tui.themes import luminance
@@ -38,12 +39,8 @@ from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.text import clock
 from llamatron.tui.drawing import Box, fit, legend, LINE_BREAK, NOTHING, SELECTOR, SPACE, Style
-from llamatron.strings.help import help_lines, HELP_NONE
 from llamatron.tui.key_table import pressed_key, BindsKeys, quits_at_once
 from llamatron.tui.screens.shared.everywhere import everywhere_keys
-from llamatron.strings.errors import ERR_EMPTY_NAME, ERR_NAME_IN_USE
-from llamatron.strings.labels import MSG_NO_FILE_CRUMB, MSG_SET_CRUMB, MSG_SONG_CRUMB
-from llamatron.strings.marks import MSG_CRUMB_SEPARATOR, MSG_NONE_SHOWN, MSG_PLAYING_CLOCK, MSG_SAVED_MARK, MSG_UNSAVED_CHANGES_MARK, MSG_UNSAVED_MARK
 from llamatron.tui import keybindings
 
 
@@ -84,7 +81,7 @@ class Page(BindsKeys, Screen):
     # A screen that draws its keys itself turns this off.
     shows_legend = True
     # What F1's second panel shows, as short lines that have to fit an 80 by 24 console.
-    HELP = HELP_NONE
+    HELP = help_text.HELP_NONE
 
     def __init__(self, document_holder):
         super().__init__()
@@ -165,10 +162,10 @@ class Page(BindsKeys, Screen):
         return [item for item in self.page_key_table() if item.shown]
 
     def show_help(self):
-        where = MSG_CRUMB_SEPARATOR.join(self.crumb_trail())
+        where = marks_text.MSG_CRUMB_SEPARATOR.join(self.crumb_trail())
         # F1 isn't listed in its own dialog: it closes the dialog, and leaving it out puts Undo and Redo in one column.
         everywhere = [key for key in everywhere_keys(self) if key.binding is not self.KEYS.HELP]
-        self.app.push_screen(HelpDialog(where=where, everywhere=everywhere, own=self.page_key_table(), about=help_lines(self.HELP)))
+        self.app.push_screen(HelpDialog(where=where, everywhere=everywhere, own=self.page_key_table(), about=help_text.help_lines(self.HELP)))
 
     def show_about(self):
         self.app.push_screen(AboutDialog(name=PROGRAM_NAME))
@@ -187,7 +184,7 @@ class Page(BindsKeys, Screen):
         position = transport.song_position()
         if position is None:
             return None
-        return MSG_PLAYING_CLOCK.format(at=clock(position), total=clock(transport.song_seconds()))
+        return marks_text.MSG_PLAYING_CLOCK.format(at=clock(position), total=clock(transport.song_seconds()))
 
     def time_text(self):
         """Return the text at the right of the crumbs: the duration as a clock, or nothing."""
@@ -250,23 +247,23 @@ class Page(BindsKeys, Screen):
         def named(text):
             text = text.strip()
             if not text:
-                self.refuse(ERR_EMPTY_NAME)
+                self.refuse(errors.ERR_EMPTY_NAME)
             elif text != value and is_taken(name=text, taken=[name for name in taken if name != value]):
-                self.refuse(ERR_NAME_IN_USE.format(name=text))
+                self.refuse(errors.ERR_NAME_IN_USE.format(name=text))
             elif text != value:
                 then(text)
-        self.ask(dialog=PromptDialog(title=title, value=value, max_length=MAX_NAME_LENGTH), then=named)
+        self.ask(dialog=PromptDialog(title=title, value=value, max_length=limits.MAX_NAME_LENGTH), then=named)
 
     def tell(self, title, *lines):
         self.app.push_screen(MessageDialog(title=title, messages=list(lines)))
 
     def set_crumb(self):
         """Return the words naming the open set's file, or (unsaved)."""
-        return MSG_SET_CRUMB.format(file=self.document().get_file_name() or MSG_NO_FILE_CRUMB)
+        return labels.MSG_SET_CRUMB.format(file=self.document().get_file_name() or labels.MSG_NO_FILE_CRUMB)
 
     def song_crumb(self):
         """Return the words naming the current song, or (none)."""
-        return MSG_SONG_CRUMB.format(song=self.document().current_song_name() or MSG_NONE_SHOWN)
+        return labels.MSG_SONG_CRUMB.format(song=self.document().current_song_name() or marks_text.MSG_NONE_SHOWN)
 
     def save_mark(self):
         """Return the mark at the header's right: unsaved for a set that has no file yet, unsaved changes for a set changed since its file was written or read, and saved otherwise."""
@@ -275,8 +272,8 @@ class Page(BindsKeys, Screen):
             return NOTHING
         document = self.document()
         if not document.get_path():
-            return MSG_UNSAVED_MARK
-        return MSG_UNSAVED_CHANGES_MARK if document.is_dirty() else MSG_SAVED_MARK
+            return marks_text.MSG_UNSAVED_MARK
+        return marks_text.MSG_UNSAVED_CHANGES_MARK if document.is_dirty() else marks_text.MSG_SAVED_MARK
 
     def header(self, width):
         """Return the header's lines: where you are and what is open, then the rule or the theme's stripe.
@@ -294,7 +291,7 @@ class Page(BindsKeys, Screen):
         marks_width = max(len(mark) for mark in marks)
         names_width = max(len(name) for name in names)
         names_start = max(width - 1 - marks_width - len(HEADER_GAP) - names_width, 1)
-        crumbs = MSG_CRUMB_SEPARATOR.join(self.crumb_trail())
+        crumbs = marks_text.MSG_CRUMB_SEPARATOR.join(self.crumb_trail())
         first = self.header_line(width=width, left=crumbs, names=names[0], names_start=names_start, mark=marks[0], centre=PROGRAM_NAME)
         second = self.header_line(width=width, left=NOTHING, names=names[1], names_start=names_start, mark=marks[1])
         theme = self.theme()

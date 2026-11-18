@@ -27,9 +27,7 @@ The amounts are named constants here, to tune by eye.
 """
 
 from llamatron.composition.file_format import LIVE_OCTAVE_OFFSET
-from llamatron.strings.visualizers import (
-    MSG_PIANO_ROLL, MSG_PIANO_ROLL_DRUM_LANES, MSG_PIANO_ROLL_LEGEND_GAP, MSG_PIANO_ROLL_LEGEND_MARK, MSG_PIANO_ROLL_OCTAVE_LABEL,
-)
+from llamatron.strings import visualizers
 from llamatron.visualizers.cells import CellPainter
 from llamatron.visualizers.heard import SILENCE
 from llamatron.visualizers.visualizer import Visualizer
@@ -39,7 +37,7 @@ COLUMNS_PER_BEAT = 4
 # The columns at the left for the octaves' and the lanes' labels, and the rows the legend and the drum lanes take.
 LABEL_COLUMNS = 7
 LEGEND_ROWS = 1
-DRUM_ROWS = len(MSG_PIANO_ROLL_DRUM_LANES)
+DRUM_ROWS = len(visualizers.MSG_PIANO_ROLL_DRUM_LANES)
 # Where the rows centre: how fast the middle eases toward where it is wanted, as a share of the way a second, slowly, and where it starts.
 CENTRE_EASE_PER_SECOND = 0.2
 START_CENTRE = 60
@@ -112,7 +110,7 @@ class PianoRoll(Visualizer):
 
     __slots__ = ('_cells', '_notes', '_centre', '_last', '_seconds_per_beat', '_names', '_heard_tracks', '_lowest', '_highest', '_placed')
 
-    NAME = MSG_PIANO_ROLL
+    NAME = visualizers.MSG_PIANO_ROLL
     OPTION = 'piano_roll'
 
     def __init__(self):
@@ -228,12 +226,12 @@ class PianoRoll(Visualizer):
             pitch = top - offset
             row = LEGEND_ROWS + offset
             if is_octave_line(pitch):
-                label = MSG_PIANO_ROLL_OCTAVE_LABEL.format(octave=pitch // HALF_STEPS_PER_OCTAVE - LIVE_OCTAVE_OFFSET)
+                label = visualizers.MSG_PIANO_ROLL_OCTAVE_LABEL.format(octave=pitch // HALF_STEPS_PER_OCTAVE - LIVE_OCTAVE_OFFSET)
                 for column in range(width):
                     characters[row][column] = label[column] if column < len(label) else LINE_CHARACTER
                     colours[row][column] = LABEL_COLOUR if column < len(label) else LINE_COLOUR
         if drums:
-            for lane, label in enumerate(MSG_PIANO_ROLL_DRUM_LANES):
+            for lane, label in enumerate(visualizers.MSG_PIANO_ROLL_DRUM_LANES):
                 row = LEGEND_ROWS + pitch_rows + DRUM_ROWS - 1 - lane
                 for column, character in enumerate(label[:LABEL_COLUMNS - 1]):
                     characters[row][column] = character
@@ -245,13 +243,13 @@ class PianoRoll(Visualizer):
         for track in sorted({note.track for note in self._notes}):
             if track >= len(self._names):
                 continue
-            text = MSG_PIANO_ROLL_LEGEND_MARK + self._names[track]
+            text = visualizers.MSG_PIANO_ROLL_LEGEND_MARK + self._names[track]
             if column + len(text) > width:
                 break
             for offset, character in enumerate(text):
                 characters[0][column + offset] = character
                 colours[0][column + offset] = self.track_colour(track)
-            column += len(text) + len(MSG_PIANO_ROLL_LEGEND_GAP)
+            column += len(text) + len(visualizers.MSG_PIANO_ROLL_LEGEND_GAP)
 
     def line(self, *, characters, colours):
         """Return a row of cells as text, each in its colour on black, a blank cell black."""

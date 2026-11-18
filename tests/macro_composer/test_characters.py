@@ -20,7 +20,7 @@ import unittest
 
 from llamatron.macro_composer import arranger, characters, players
 from llamatron.macro_composer.wizard_choices import USUAL_BUSY, WizardChoices
-from llamatron.strings.errors import ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE
+from llamatron.strings import errors
 from llamatron.support.version import VERSION
 
 ROCK = 'rock'
@@ -166,10 +166,10 @@ class TestWizardPlayerGauges(unittest.TestCase):
         for gauge in (NO_SUCH, characters.STRUMMING):
             with self.assertRaises(ValueError) as refused:
                 choices.set_player_gauge(role=drums, gauge=gauge, place=characters.LOWEST)
-            self.assertEqual(str(refused.exception), ERR_WIZARD_NO_SUCH_PLAYER_GAUGE.format(value=gauge))
+            self.assertEqual(str(refused.exception), errors.ERR_WIZARD_NO_SUCH_PLAYER_GAUGE.format(value=gauge))
             with self.assertRaises(ValueError):
                 choices.get_player_gauge(role=drums, gauge=gauge)
         for place in (characters.LOWEST - 1, characters.HIGHEST + 1, True, NO_SUCH):
             with self.assertRaises(ValueError) as refused:
                 choices.set_player_gauge(role=drums, gauge=characters.NOTES, place=place)
-            self.assertEqual(str(refused.exception), ERR_WIZARD_PLAYER_GAUGE.format(low=characters.LOWEST, high=characters.HIGHEST, value=place))
+            self.assertEqual(str(refused.exception), errors.ERR_WIZARD_PLAYER_GAUGE.format(low=characters.LOWEST, high=characters.HIGHEST, value=place))

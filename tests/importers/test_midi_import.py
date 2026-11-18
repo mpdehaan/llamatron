@@ -42,10 +42,7 @@ from llamatron.importers.voices import MOD_WHEEL, SUSTAIN, VOLUME, voices_of
 from llamatron.importers.writing import add_imported
 from llamatron.music.scale import ScaleType
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.strings.errors import ERR_MIDI_NO_NOTES
-from llamatron.strings.importing import (
-    MSG_DRUM_NAMES, MSG_UNNAMED_DRUM, MSG_WARN_CONTROLS_LEFT_OUT, MSG_WARN_CONTROLS_MOVED, MSG_WARN_CONTROLS_OFF, MSG_WARN_SWUNG, MSG_WARN_TEMPOS_MOVED,
-)
+from llamatron.strings import errors, importing
 from llamatron.support.rational import Rational
 from llamatron.support.example_sets import BY_GENRE, OTHER, LEARNING, SET_FOLDERS, example_sets, folder_of_example
 
@@ -251,7 +248,7 @@ class TestMidiReading(unittest.TestCase):
     def test_a_file_with_no_notes_is_refused(self):
         with self.assertRaises(MidiImportProblem) as raised:
             MidiImport(midi_file=midi_of(tracks=[]))
-        self.assertEqual(str(raised.exception), ERR_MIDI_NO_NOTES)
+        self.assertEqual(str(raised.exception), errors.ERR_MIDI_NO_NOTES)
 
 
 class TestKeys(unittest.TestCase):
@@ -292,7 +289,7 @@ class TestVoices(unittest.TestCase):
     def test_drums_are_a_voice_for_each_sound_named_by_general_midi(self):
         part = self.part(notes=[(0, 1, KICK), (0, 1, SNARE), (1, 1, UNNAMED_DRUM_NOTE)], channel=DRUM_CHANNEL)
         voices = voices_of(part=part, chords=True, controls=True)
-        self.assertEqual([voice.name for voice in voices], [MSG_UNNAMED_DRUM.format(number=1), MSG_DRUM_NAMES[KICK], MSG_DRUM_NAMES[SNARE]])
+        self.assertEqual([voice.name for voice in voices], [importing.MSG_UNNAMED_DRUM.format(number=1), importing.MSG_DRUM_NAMES[KICK], importing.MSG_DRUM_NAMES[SNARE]])
         self.assertTrue(all(voice.drum for voice in voices))
 
     def test_notes_together_in_a_chord_symbols_shape_are_one_chord_when_asked(self):
@@ -372,13 +369,13 @@ class TestScenesAndPatterns(unittest.TestCase):
         notes = [(12, 8, 60)] + melody(pitches=[62, 64, 65], start=20)
         imported = MidiImport(midi_file=midi_of(tracks=[('lead', 0, notes)], tempos=((0, TEMPO), (SIXTEENTHS_IN_A_BAR, FASTER)))).imported(
             setlist=Setlist.new(), choices=ImportChoices(song_name='tune'))
-        self.assertIn(MSG_WARN_TEMPOS_MOVED.format(count=1), imported.warnings)
+        self.assertIn(importing.MSG_WARN_TEMPOS_MOVED.format(count=1), imported.warnings)
 
     def test_notes_off_the_step_size_asked_for_are_moved_and_said(self):
         notes = melody(pitches=C_MAJOR_SCALE[:4], length=1, start=1)
         imported = MidiImport(midi_file=midi_of(tracks=[('lead', 0, notes)])).imported(
             setlist=Setlist.new(), choices=ImportChoices(song_name='tune', step_size=Rational(1, 8)))
-        self.assertIn(MSG_WARN_SWUNG.format(count=2), imported.warnings)
+        self.assertIn(importing.MSG_WARN_SWUNG.format(count=2), imported.warnings)
 
 
 class TestControls(unittest.TestCase):
@@ -396,14 +393,14 @@ class TestControls(unittest.TestCase):
         imported = MidiImport(midi_file=midi_of(tracks=[('lead', 0, melody(pitches=C_MAJOR_SCALE[:4]), controls)])).imported(
             setlist=Setlist.new(), choices=ImportChoices(song_name='tune'))
         self.assertEqual(imported.song.song[Section.TRACKS]['lead'][TrackSetting.CC], [MOD_WHEEL, VOLUME, SUSTAIN, EXPRESSION])
-        self.assertIn(MSG_WARN_CONTROLS_LEFT_OUT.format(count=1, numbers=REVERB), imported.warnings)
+        self.assertIn(importing.MSG_WARN_CONTROLS_LEFT_OUT.format(count=1, numbers=REVERB), imported.warnings)
 
     def test_with_import_ccs_off_none_come_in_and_the_dialog_says_so(self):
         controls = [(0, MOD_WHEEL, 10), (SIXTEENTH * 4, MOD_WHEEL, 20)]
         imported = MidiImport(midi_file=midi_of(tracks=[('lead', 0, melody(pitches=C_MAJOR_SCALE[:4]), controls)])).imported(
             setlist=Setlist.new(), choices=ImportChoices(song_name='tune', controls=False))
         self.assertNotIn(TrackSetting.CC, imported.song.song[Section.TRACKS]['lead'])
-        self.assertIn(MSG_WARN_CONTROLS_OFF.format(count=2, numbers=MOD_WHEEL), imported.warnings)
+        self.assertIn(importing.MSG_WARN_CONTROLS_OFF.format(count=2, numbers=MOD_WHEEL), imported.warnings)
 
     def test_a_parts_ccs_go_to_its_first_track_alone(self):
         notes = [(0, 4, pitch) for pitch in C_MAJOR_TRIAD]
@@ -417,7 +414,7 @@ class TestControls(unittest.TestCase):
         trip = round_trip(midi_file=midi_of(tracks=[('lead', 0, melody(pitches=C_MAJOR_SCALE[:4]), controls)]), choices=ImportChoices(song_name='tune'))
         largest, _ = trip.comparison.largest_control_difference()
         self.assertLessEqual(largest, CONTROL_TOLERANCE)
-        self.assertTrue(any(MSG_WARN_CONTROLS_MOVED.split(COUNT_FIELD)[1] in warning for warning in trip.imported.warnings))
+        self.assertTrue(any(importing.MSG_WARN_CONTROLS_MOVED.split(COUNT_FIELD)[1] in warning for warning in trip.imported.warnings))
 
 
 class TestNames(unittest.TestCase):

@@ -37,7 +37,7 @@ from llamatron.generators.arp import ChordOrder
 from llamatron.music.note import NoteName
 from llamatron.tui.app import LlamatronApp
 from llamatron.composition.setlist import Setlist, new_setlist
-from llamatron.strings.names import MSG_DEFAULT_SONG_NAME
+from llamatron.strings import names as names_text
 from llamatron.tui.screens.shared.page import PROGRAM_NAME
 from llamatron.support.memory import Memory
 from llamatron.tui.document import Document
@@ -130,7 +130,7 @@ def fixed_text(template):
 def a_song(*, path=None):
     """Return a Document holding a set of one song with a few patterns, two tracks, a chain and two scenes."""
     data = new_setlist()
-    song = data[Section.SONGS][MSG_DEFAULT_SONG_NAME]
+    song = data[Section.SONGS][names_text.MSG_DEFAULT_SONG_NAME]
     data[Section.AUTO_RATCHETS] = {ROLLS: {AutoRatchetSetting.COUNTS: [1, 4]}}
     data[Section.DRIFTS] = {SWAY: {DRIFT_SOFTER: -1}}
     # A shape generator of each kind, which no chain names, so that their pages have something to show.

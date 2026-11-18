@@ -26,12 +26,10 @@ import os
 from rich.text import Text
 
 from llamatron.tui.drawing import Align, INDENT, NOTHING, Style
-from llamatron.strings.help import HELP_OPEN_PAGE
+from llamatron.strings import help as help_text, labels, marks
 from llamatron.tui.screens.shared.everywhere import open_file
 from llamatron.tui.screens.shared.list_page import ListPage
 from llamatron.tui.screens.shared.shared import SONG_SUFFIXES
-from llamatron.strings.labels import Column, Crumb
-from llamatron.strings.marks import MSG_FOLDER_ROW, MSG_PARENT_ROW
 from llamatron.tui import themes
 from llamatron.tui import keybindings
 
@@ -50,9 +48,9 @@ class OpenPage(ListPage):
 
     KEYS = keybindings.OpenPage
 
-    crumbs = (Crumb.FILE, Crumb.OPEN)
-    HELP = HELP_OPEN_PAGE
-    columns = ((Column.SELECT_FILE, None, Align.LEFT),)
+    crumbs = (labels.Crumb.FILE, labels.Crumb.OPEN)
+    HELP = help_text.HELP_OPEN_PAGE
+    columns = ((labels.Column.SELECT_FILE, None, Align.LEFT),)
     # Files' names are as long as they are.
     NAME_COLUMN_WIDTH = None
 
@@ -88,8 +86,8 @@ class OpenPage(ListPage):
             names = []
         folders = [name for name in names if self.is_folder(name)]
         files = [name for name in names if name.lower().endswith(self.suffixes)]
-        rows = [(PARENT, [MSG_PARENT_ROW])]
-        rows += [(name, [MSG_FOLDER_ROW.format(name=name)]) for name in folders]
+        rows = [(PARENT, [marks.MSG_PARENT_ROW])]
+        rows += [(name, [marks.MSG_FOLDER_ROW.format(name=name)]) for name in folders]
         rows += [(name, [name]) for name in files]
         return rows
 

@@ -20,7 +20,7 @@ import unittest
 from tests.support.ui_testing import DRUMS, LEAD, NAMED, UITest, back_key, forward_key
 from llamatron.composition.file_format import ChordSymbol, ClipSlotSetting
 from llamatron.composition.setlist import Setlist
-from llamatron.strings.marks import MSG_SCENE_VIEW_FROM_SCENE, MSG_SCENE_VIEW_FROM_SONG, MSG_SCENE_VIEW_ONE_TAKE, MSG_SCENE_VIEW_PLAYED, MSG_SCENE_VIEW_WRITTEN
+from llamatron.strings import marks
 from llamatron.support.example_sets import example_sets
 from llamatron.tui import keybindings
 from llamatron.tui.components.inset_window import BORDER, INSET, PADDING, drawn_over, inside_size
@@ -132,12 +132,12 @@ class TestEffectiveValues(UITest):
     async def test_each_value_says_where_it_comes_from_and_a_clips_own_scale_is_named(self):
         song = self.document.song()
         effective = effective_values(song=song, index=0)
-        self.assertEqual((effective.scale_source, effective.tempo_source, effective.groove_source), (MSG_SCENE_VIEW_FROM_SONG,) * 3)
+        self.assertEqual((effective.scale_source, effective.tempo_source, effective.groove_source), (marks.MSG_SCENE_VIEW_FROM_SONG,) * 3)
         self.document.add_scale(name=OWN_SCALE, root=OWN_SCALE_ROOT, kind=OWN_SCALE_KIND)
         self.document.set_scene_scale(index=0, name=OWN_SCALE)
         self.document.set_scene_tempo_ramp(index=0, end=140)
         effective = effective_values(song=self.document.song(), index=0)
-        self.assertEqual((effective.scale, effective.scale_source, effective.tempo_source), (OWN_SCALE, MSG_SCENE_VIEW_FROM_SCENE, MSG_SCENE_VIEW_FROM_SCENE))
+        self.assertEqual((effective.scale, effective.scale_source, effective.tempo_source), (OWN_SCALE, marks.MSG_SCENE_VIEW_FROM_SCENE, marks.MSG_SCENE_VIEW_FROM_SCENE))
         self.document.set_scene_scale(index=0, name=None)
         self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.SCALE, value=OWN_SCALE)
         self.assertEqual(effective_values(song=self.document.song(), index=0).clip_scales, {LEAD: OWN_SCALE})
@@ -171,14 +171,14 @@ class TestSceneViewOnArrange(UITest):
     async def test_p_opens_it_on_a_scenes_name_with_the_written_caption_and_tab_turns_to_played(self):
         await self.press(keybindings.ArrangePage.SCENE_VIEW)
         self.assertIsInstance(self.page.inset, SceneView)
-        self.assertIn(MSG_SCENE_VIEW_WRITTEN, self.text())
+        self.assertIn(marks.MSG_SCENE_VIEW_WRITTEN, self.text())
         self.assertEqual(self.page.inset.border_colour(), WRITTEN_COLOUR)
         self.assertIn(track_label(name=LEAD, place=self.document.track_names().index(LEAD)), self.text())
         await self.press(keybindings.ArrangePage.TO_PLAYED)
         self.assertEqual(self.page.inset.border_colour(), PLAYED_COLOUR)
-        self.assertIn(MSG_SCENE_VIEW_PLAYED.format(take=MSG_SCENE_VIEW_ONE_TAKE)[:40], self.text())
+        self.assertIn(marks.MSG_SCENE_VIEW_PLAYED.format(take=marks.MSG_SCENE_VIEW_ONE_TAKE)[:40], self.text())
         await self.press(keybindings.ArrangePage.TO_WRITTEN)
-        self.assertIn(MSG_SCENE_VIEW_WRITTEN, self.text())
+        self.assertIn(marks.MSG_SCENE_VIEW_WRITTEN, self.text())
 
     async def test_esc_or_p_closes_it_and_esc_again_leaves_arrange(self):
         # Esc closes the topmost thing, so the first Esc closes Scene View and the second goes back from Arrange.

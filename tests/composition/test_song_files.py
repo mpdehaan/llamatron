@@ -29,7 +29,7 @@ from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, NO
 from llamatron.composition.generator_settings import ArpSetting, written_name
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.composition.sections import SECTION_LABELS
-from llamatron.strings.errors import ERR_PROTECTED_NOT_TRUE_OR_FALSE, ERR_SONG_NO_SUCH_PREVIEW_INSTRUMENT, ERR_WHERE_NAMED
+from llamatron.strings import errors
 from tests.support.song_testing import LEAD, X, pat, with_parts
 
 QUARTER = '1/4'
@@ -75,7 +75,7 @@ class TestErrors(unittest.TestCase):
         song[SongSetting.PREVIEW_INSTRUMENT] = NOPE
         with self.assertRaises(SongFileError) as caught:
             setlist_from_data(data)
-        self.assertIn(ERR_SONG_NO_SUCH_PREVIEW_INSTRUMENT.format(name=NOPE), str(caught.exception))
+        self.assertIn(errors.ERR_SONG_NO_SUCH_PREVIEW_INSTRUMENT.format(name=NOPE), str(caught.exception))
         # None is no preview instrument, and is read.
         song[SongSetting.PREVIEW_INSTRUMENT] = None
         self.assertIsNone(song_from_data(data).get_preview_instrument_name())
@@ -101,12 +101,12 @@ class TestErrors(unittest.TestCase):
     def test_unknown_generator_setting_names_the_generator(self):
         scenes = [{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAIN: X}}}]
         self.assert_error(
-            UNKNOWN_COUNT.format(where=ERR_WHERE_NAMED.format(label=SECTION_LABELS[Section.AUTO_RATCHETS], name=R)),
+            UNKNOWN_COUNT.format(where=errors.ERR_WHERE_NAMED.format(label=SECTION_LABELS[Section.AUTO_RATCHETS], name=R)),
             auto_ratchets={R: {COUNT: [2]}}, chains={X: [{GeneratorKind.AUTO_RATCHET: R}]}, scenes=scenes,
         )
 
     def test_a_generator_no_chain_uses_is_checked_too(self):
-        self.assert_error(UNKNOWN_COUNT.format(where=ERR_WHERE_NAMED.format(label=SECTION_LABELS[Section.AUTO_RATCHETS], name=R)), auto_ratchets={R: {COUNT: [2]}})
+        self.assert_error(UNKNOWN_COUNT.format(where=errors.ERR_WHERE_NAMED.format(label=SECTION_LABELS[Section.AUTO_RATCHETS], name=R)), auto_ratchets={R: {COUNT: [2]}})
         self.assert_error(NEEDS_COUNTS, auto_ratchets={R: {}})
 
     def test_missing_generator_setting(self):
@@ -170,7 +170,7 @@ class TestProtected(unittest.TestCase):
         for value in [1, 'yes', None]:
             with self.subTest(value=value), self.assertRaises(SongFileError) as raised:
                 setlist_from_data(with_parts(**{SetlistSetting.PROTECTED: value}))
-            self.assertIn(ERR_PROTECTED_NOT_TRUE_OR_FALSE.format(value=value), str(raised.exception))
+            self.assertIn(errors.ERR_PROTECTED_NOT_TRUE_OR_FALSE.format(value=value), str(raised.exception))
 
 
 class TestTitleAndAuthor(unittest.TestCase):

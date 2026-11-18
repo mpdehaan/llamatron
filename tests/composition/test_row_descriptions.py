@@ -24,13 +24,13 @@ description.
 import unittest
 
 from llamatron.composition.corrections import NO_NEAREST_VALUE
-from llamatron.composition.defaults import DEFAULT_PROBABILITY, DEFAULT_RATCHET, DEFAULT_VELOCITY
+from llamatron.composition import defaults, limits
+from llamatron.strings import errors, labels
 from llamatron.composition.file_format import (
     ACCIDENTAL_CYCLE, CC_ROWS, CHORD_SYMBOLS, KEYSWITCH_SLOTS, PATTERN_ROWS, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, Accidental,
     ChordSymbol, GateModifier, PatternSetting, RegisterName, RegisterUse, Row, Section, Tension,
 )
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.limits import MAX_GATE, MAX_OCTAVE, MAX_RATCHET, MAX_RATCHET_OFFSET, MIN_DEGREE, MIN_OCTAVE, MIN_RATCHET
 from llamatron.composition.pattern import NOTE_ROWS, REST_ROWS
 from llamatron.composition.row_descriptions import (
     ROW_DESCRIPTIONS, RowOfChoices, RowOfChords, RowOfDegrees, RowOfLengths, RowOfNoteMoves, RowOfNumbers, RowOfOctaves, RowOfRegisterUses, RowOfTensions, RowOfKeyswitches,
@@ -39,13 +39,8 @@ from llamatron.composition.row_descriptions import (
 )
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.music.midi import MAX_VELOCITY, MIN_VELOCITY
+from llamatron.music import midi
 from llamatron.music.note import NoteName
-from llamatron.strings.errors import (
-    ERR_BAD_STEP_VALUE, ERR_CHECKS_BAD_OCTAVE, ERR_CHORD_ON_DRUMS, ERR_NO_SUCH_ROW, ERR_NOT_ACCIDENTAL, ERR_NOT_CHORD, ERR_NOT_DEGREE,
-    ERR_NOT_GATE_MODIFIER, ERR_NOT_IN_RANGE, ERR_NOT_NOTE_LETTER, ERR_NOT_REGISTER_USE, ERR_PATTERN_NOT_TRUE_OR_FALSE, ERR_REGISTER_NOTE_ON_DRUMS,
-)
-from llamatron.strings.labels import MSG_ROW_LABELS
 from llamatron.tui.components.number_row import NumberRow
 from llamatron.tui.components.pattern_rows import PINNED_ROWS, ROW_CLASSES, SECTIONS
 
@@ -64,7 +59,7 @@ NOT_A_LETTER = 'H'
 TWO_LETTERS = 'CD'
 A_BARE_NUMBER_CHORD = 7
 # What each number row's blank step plays as, where the tests can name it from the program's own defaults.
-DEFAULTS = {Row.VELOCITY: DEFAULT_VELOCITY, Row.PROBABILITY: DEFAULT_PROBABILITY, Row.RATCHET: DEFAULT_RATCHET}
+DEFAULTS = {Row.VELOCITY: defaults.DEFAULT_VELOCITY, Row.PROBABILITY: defaults.DEFAULT_PROBABILITY, Row.RATCHET: defaults.DEFAULT_RATCHET}
 # The rows a blank step changes nothing on, which the editor shows as a dot until they're set.
 QUIET = (Row.RATCHET, Row.RATCHET_OFFSET, *CC_ROWS, *REGISTER_ADD_ROWS.values(), *REGISTER_SET_ROWS.values())
 
@@ -119,21 +114,21 @@ class TestRowsOfNumbers(unittest.TestCase):
                 row.check(row.get_highest(), drum=False)
                 self.assertIsNone(row.problem_with(row.get_lowest(), drum=False))
                 for wrong in (row.get_lowest() - 1, row.get_highest() + 1, NOT_A_NUMBER, HALF, True):
-                    self.assertEqual(row.problem_with(wrong, drum=False), ERR_NOT_IN_RANGE.format(lowest=row.get_lowest(), highest=row.get_highest()))
+                    self.assertEqual(row.problem_with(wrong, drum=False), errors.ERR_NOT_IN_RANGE.format(lowest=row.get_lowest(), highest=row.get_highest()))
                     with self.assertRaises(InvalidValue):
                         row.check(wrong, drum=False)
 
     def test_a_refusal_names_the_row_and_the_value(self):
         row = ROW_DESCRIPTIONS[Row.VELOCITY]
         with self.assertRaises(InvalidValue) as refused:
-            row.check(MAX_VELOCITY + 1, drum=False)
-        problem = ERR_NOT_IN_RANGE.format(lowest=MIN_VELOCITY, highest=MAX_VELOCITY)
-        self.assertEqual(str(refused.exception), ERR_BAD_STEP_VALUE.format(row=Row.VELOCITY, problem=problem, value=MAX_VELOCITY + 1))
+            row.check(midi.MAX_VELOCITY + 1, drum=False)
+        problem = errors.ERR_NOT_IN_RANGE.format(lowest=midi.MIN_VELOCITY, highest=midi.MAX_VELOCITY)
+        self.assertEqual(str(refused.exception), errors.ERR_BAD_STEP_VALUE.format(row=Row.VELOCITY, problem=problem, value=midi.MAX_VELOCITY + 1))
 
     def test_an_octave_is_refused_in_the_words_every_octave_is(self):
         with self.assertRaises(InvalidValue) as refused:
-            ROW_DESCRIPTIONS[Row.OCTAVE].check(MAX_OCTAVE + 1, drum=False)
-        self.assertEqual(str(refused.exception), ERR_CHECKS_BAD_OCTAVE.format(lowest=MIN_OCTAVE, highest=MAX_OCTAVE, value=MAX_OCTAVE + 1))
+            ROW_DESCRIPTIONS[Row.OCTAVE].check(limits.MAX_OCTAVE + 1, drum=False)
+        self.assertEqual(str(refused.exception), errors.ERR_CHECKS_BAD_OCTAVE.format(lowest=limits.MIN_OCTAVE, highest=limits.MAX_OCTAVE, value=limits.MAX_OCTAVE + 1))
 
     def test_the_nearest_value_is_the_nearest_end_and_nothing_for_what_is_no_number(self):
         for name, row in {**rows_of(RowOfNumbers), **rows_of(RowOfOctaves)}.items():
@@ -147,8 +142,8 @@ class TestRowsOfNumbers(unittest.TestCase):
     def test_a_ratchet_and_a_ratchet_offset_have_the_limits_the_editor_always_had(self):
         ratchet = ROW_DESCRIPTIONS[Row.RATCHET]
         offset = ROW_DESCRIPTIONS[Row.RATCHET_OFFSET]
-        self.assertEqual((ratchet.get_lowest(), ratchet.get_highest()), (MIN_RATCHET, MAX_RATCHET))
-        self.assertEqual((offset.get_lowest(), offset.get_highest()), (-MAX_RATCHET_OFFSET, MAX_RATCHET_OFFSET))
+        self.assertEqual((ratchet.get_lowest(), ratchet.get_highest()), (limits.MIN_RATCHET, limits.MAX_RATCHET))
+        self.assertEqual((offset.get_lowest(), offset.get_highest()), (-limits.MAX_RATCHET_OFFSET, limits.MAX_RATCHET_OFFSET))
 
     def test_what_a_blank_step_plays_as(self):
         for name, default in DEFAULTS.items():
@@ -177,7 +172,7 @@ class TestRowsOfToggles(unittest.TestCase):
                 self.assertIsNone(row.problem_with(True, drum=False))
                 self.assertIsNone(row.problem_with(False, drum=False))
                 for wrong in (1, 0, NOT_A_NUMBER, None):
-                    self.assertEqual(row.problem_with(wrong, drum=False), ERR_PATTERN_NOT_TRUE_OR_FALSE)
+                    self.assertEqual(row.problem_with(wrong, drum=False), errors.ERR_PATTERN_NOT_TRUE_OR_FALSE)
                 self.assertIs(row.nearest(1, drum=False), NO_NEAREST_VALUE)
 
     def test_a_blank_step_is_off_and_a_file_writes_true_and_false(self):
@@ -206,7 +201,7 @@ class TestRowsOfRegisterUses(unittest.TestCase):
                 for allowed in (RegisterUse.ADD, RegisterUse.SUBTRACT, RegisterUse.OFF, True, False):
                     self.assertIsNone(row.problem_with(allowed, drum=False))
                 for wrong in (2, -2, HALF, NOT_A_NUMBER, None, [RegisterUse.ADD]):
-                    self.assertEqual(row.problem_with(wrong, drum=False), ERR_NOT_REGISTER_USE)
+                    self.assertEqual(row.problem_with(wrong, drum=False), errors.ERR_NOT_REGISTER_USE)
                 self.assertIs(row.nearest(2, drum=False), NO_NEAREST_VALUE)
                 self.assertFalse(row.is_on_or_off())
                 self.assertTrue(row.is_kept_by_a_rest())
@@ -239,10 +234,10 @@ class TestRowsOfRegisterUses(unittest.TestCase):
         for name in REGISTER_NOTE_ROWS.values():
             row = ROW_DESCRIPTIONS[name]
             for on in (RegisterUse.ADD, RegisterUse.SUBTRACT, True):
-                self.assertEqual(row.problem_with(on, drum=True), ERR_REGISTER_NOTE_ON_DRUMS)
+                self.assertEqual(row.problem_with(on, drum=True), errors.ERR_REGISTER_NOTE_ON_DRUMS)
             self.assertIsNone(row.problem_with(RegisterUse.OFF, drum=True))
             self.assertIsNone(row.problem_with(False, drum=True))
-            self.assertEqual(row.problem_with(2, drum=True), ERR_NOT_REGISTER_USE)
+            self.assertEqual(row.problem_with(2, drum=True), errors.ERR_NOT_REGISTER_USE)
             self.assertFalse(row.is_in_drum_patterns())
         for name in REGISTER_VELOCITY_ROWS.values():
             self.assertIsNone(ROW_DESCRIPTIONS[name].problem_with(RegisterUse.SUBTRACT, drum=True))
@@ -256,13 +251,13 @@ class TestRowsOfChoices(unittest.TestCase):
         self.assertEqual(row.get_choices(), [GateModifier.DOTTED, GateModifier.TRIPLET])
         for choice in row.get_choices():
             self.assertIsNone(row.problem_with(choice, drum=False))
-        self.assertEqual(row.problem_with(NOT_A_CHOICE, drum=False), ERR_NOT_GATE_MODIFIER)
+        self.assertEqual(row.problem_with(NOT_A_CHOICE, drum=False), errors.ERR_NOT_GATE_MODIFIER)
 
     def test_the_accidental_row_takes_sharp_and_flat_in_the_cycles_order(self):
         row = ROW_DESCRIPTIONS[Row.ACCIDENTAL]
         self.assertEqual([None, *row.get_choices()], ACCIDENTAL_CYCLE)
         self.assertIsNone(row.problem_with(Accidental.SHARP, drum=True))
-        self.assertEqual(row.problem_with(NOT_A_CHOICE, drum=False), ERR_NOT_ACCIDENTAL)
+        self.assertEqual(row.problem_with(NOT_A_CHOICE, drum=False), errors.ERR_NOT_ACCIDENTAL)
 
     def test_a_value_that_is_not_text_is_refused_rather_than_breaking(self):
         for name in (Row.DOT, Row.ACCIDENTAL, Row.CHORD):
@@ -278,11 +273,11 @@ class TestRowsOfChoices(unittest.TestCase):
             self.assertIsNone(row.problem_with(symbol, drum=False))
         self.assertIsNone(row.problem_with(A_BARE_NUMBER_CHORD, drum=False))
         problem = row.problem_with(NOT_A_CHOICE, drum=False)
-        self.assertEqual(problem, ERR_NOT_CHORD.format(symbols=', '.join(CHORD_SYMBOLS)))
+        self.assertEqual(problem, errors.ERR_NOT_CHORD.format(symbols=', '.join(CHORD_SYMBOLS)))
 
     def test_a_drum_pattern_has_no_chords(self):
         row = ROW_DESCRIPTIONS[Row.CHORD]
-        self.assertEqual(row.problem_with(ChordSymbol.DOMINANT7, drum=True), ERR_CHORD_ON_DRUMS)
+        self.assertEqual(row.problem_with(ChordSymbol.DOMINANT7, drum=True), errors.ERR_CHORD_ON_DRUMS)
         self.assertFalse(row.is_in_drum_patterns())
 
 
@@ -290,43 +285,43 @@ class TestTheDegreeRow(unittest.TestCase):
 
     def test_a_degree_is_a_whole_number_from_the_lowest_with_no_highest(self):
         row = ROW_DESCRIPTIONS[Row.DEGREE]
-        self.assertEqual(row.get_lowest(), MIN_DEGREE)
-        self.assertIsNone(row.problem_with(MIN_DEGREE, drum=False))
-        self.assertIsNone(row.problem_with(MIN_DEGREE + MAX_VELOCITY, drum=False))
-        for wrong in (MIN_DEGREE - 1, NoteName.C, HALF, True):
-            self.assertEqual(row.problem_with(wrong, drum=False), ERR_NOT_DEGREE.format(lowest=MIN_DEGREE))
+        self.assertEqual(row.get_lowest(), limits.MIN_DEGREE)
+        self.assertIsNone(row.problem_with(limits.MIN_DEGREE, drum=False))
+        self.assertIsNone(row.problem_with(limits.MIN_DEGREE + midi.MAX_VELOCITY, drum=False))
+        for wrong in (limits.MIN_DEGREE - 1, NoteName.C, HALF, True):
+            self.assertEqual(row.problem_with(wrong, drum=False), errors.ERR_NOT_DEGREE.format(lowest=limits.MIN_DEGREE))
 
     def test_a_drum_patterns_step_holds_one_note_letter(self):
         row = ROW_DESCRIPTIONS[Row.DEGREE]
         self.assertIsNone(row.problem_with(NoteName.C, drum=True))
         for wrong in (A_DEGREE, NOT_A_LETTER, TWO_LETTERS):
-            self.assertEqual(row.problem_with(wrong, drum=True), ERR_NOT_NOTE_LETTER)
+            self.assertEqual(row.problem_with(wrong, drum=True), errors.ERR_NOT_NOTE_LETTER)
         self.assertTrue(is_note_letter(NoteName.G))
         self.assertFalse(is_note_letter(A_DEGREE))
 
     def test_a_degree_too_low_has_the_lowest_as_its_nearest_and_a_note_letter_has_none(self):
         row = ROW_DESCRIPTIONS[Row.DEGREE]
-        self.assertEqual(row.nearest(MIN_DEGREE - 1, drum=False), MIN_DEGREE)
+        self.assertEqual(row.nearest(limits.MIN_DEGREE - 1, drum=False), limits.MIN_DEGREE)
         self.assertEqual(row.nearest(A_DEGREE, drum=False), A_DEGREE)
         self.assertIs(row.nearest(NOT_A_NUMBER, drum=False), NO_NEAREST_VALUE)
-        self.assertIs(row.nearest(MIN_DEGREE - 1, drum=True), NO_NEAREST_VALUE)
+        self.assertIs(row.nearest(limits.MIN_DEGREE - 1, drum=True), NO_NEAREST_VALUE)
 
 
 class TestTheGateRow(unittest.TestCase):
 
     def test_a_gate_is_a_length_up_to_the_longest(self):
         row = ROW_DESCRIPTIONS[Row.GATE]
-        self.assertEqual(row.get_most(), MAX_GATE)
+        self.assertEqual(row.get_most(), limits.MAX_GATE)
         row.check(QUARTER, drum=False)
-        row.check(MAX_GATE, drum=False)
-        for wrong in (MAX_GATE + 1, NOT_A_NUMBER, HALF, 0):
+        row.check(limits.MAX_GATE, drum=False)
+        for wrong in (limits.MAX_GATE + 1, NOT_A_NUMBER, HALF, 0):
             with self.assertRaises(InvalidValue):
                 row.check(wrong, drum=False)
             self.assertIsNotNone(row.problem_with(wrong, drum=False))
 
     def test_a_gate_too_long_has_the_longest_as_its_nearest(self):
         row = ROW_DESCRIPTIONS[Row.GATE]
-        self.assertEqual(row.nearest(MAX_GATE + 1, drum=False), MAX_GATE)
+        self.assertEqual(row.nearest(limits.MAX_GATE + 1, drum=False), limits.MAX_GATE)
         self.assertIs(row.nearest(NOT_A_NUMBER, drum=False), NO_NEAREST_VALUE)
 
 
@@ -344,11 +339,11 @@ class TestEveryRowIsDescribedOnce(unittest.TestCase):
         self.assertIs(row_described(Row.GATE), ROW_DESCRIPTIONS[Row.GATE])
         with self.assertRaises(InvalidValue) as refused:
             row_described(NOT_A_ROW)
-        self.assertEqual(str(refused.exception), ERR_NO_SUCH_ROW.format(row=NOT_A_ROW))
+        self.assertEqual(str(refused.exception), errors.ERR_NO_SUCH_ROW.format(row=NOT_A_ROW))
 
     def test_the_tracker_has_a_component_and_a_label_for_every_described_row_and_no_other(self):
         self.assertEqual(set(ROW_CLASSES), set(ROW_DESCRIPTIONS))
-        self.assertEqual(set(MSG_ROW_LABELS), set(ROW_DESCRIPTIONS))
+        self.assertEqual(set(labels.MSG_ROW_LABELS), set(ROW_DESCRIPTIONS))
 
     def test_the_pattern_editor_shows_every_described_row_in_one_place(self):
         shown = [*PINNED_ROWS, *[name for names in SECTIONS.values() for name in names]]

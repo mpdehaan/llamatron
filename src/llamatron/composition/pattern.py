@@ -27,31 +27,28 @@ from llamatron.composition.file_format import (
 )
 from llamatron.music.note import Note
 from llamatron.support.random_source import random_source
-from llamatron.composition.limits import MAX_GATE, MAX_SCALE_LENGTH, MAX_STEP_SIZE, MIN_DEGREE, MIN_SCALE_LENGTH, MIN_STEPS
-from llamatron.music.midi import HALF_STEPS_PER_OCTAVE
+from llamatron.composition import limits
+from llamatron.strings import errors
+from llamatron.music import midi
 from llamatron.composition.llama_data import LlamaData, written_settings
 from llamatron.composition.pattern_notes import PatternNotes
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.corrections import LEFT_OUT, NO_NEAREST_VALUE, Correction
 from llamatron.composition.row_descriptions import ROW_DESCRIPTIONS, row_described, rows_where
 from llamatron.composition.setting import Checked, Choice, Flag, Length, Text, WholeNumber, described, settings_held
-from llamatron.strings.errors import (
-    ERR_BAD_DIRECTION, ERR_BAD_SCALE_LENGTH, ERR_BAD_STEPS, ERR_DRUM_NOT_TRUE_OR_FALSE, ERR_NOT_TEXT, ERR_PATTERN_EXPECTED_SETTINGS, ERR_PATTERN_NO_SUCH_STEP,
-    ERR_PATTERN_NOT_AN_ORDER, ERR_ROW_WRONG_LENGTH, ERR_TIE_ON_A_NOTE, ERR_TOGGLE_IS_NULL, ERR_WHERE_IN_ROW,
-)
 from llamatron.support.revised import notes_change
 
 # Steps are counted from 1 in messages, as the editor shows them.
 FIRST_STEP_NUMBER = 1
 # A pattern's settings besides its steps and rows, each described once, in the order they're written to a file.
 SETTINGS = described(
-    Length(name=PatternSetting.STEP_SIZE, most=MAX_STEP_SIZE),
+    Length(name=PatternSetting.STEP_SIZE, most=limits.MAX_STEP_SIZE),
     Checked(name=PatternSetting.TIME_SIGNATURE, check=time_signature),
-    Length(name=PatternSetting.ENTRY_SIZE, most=MAX_GATE),
-    Flag(name=PatternSetting.DRUM, error=ERR_DRUM_NOT_TRUE_OR_FALSE),
-    Choice(name=PatternSetting.DIRECTION, choices=DIRECTIONS, default=LEFT_OUT, error=ERR_BAD_DIRECTION),
-    Text(name=PatternSetting.GROUP, error=ERR_NOT_TEXT),
-    WholeNumber(name=PatternSetting.SCALE_LENGTH, lowest=MIN_SCALE_LENGTH, highest=MAX_SCALE_LENGTH, error=ERR_BAD_SCALE_LENGTH),
+    Length(name=PatternSetting.ENTRY_SIZE, most=limits.MAX_GATE),
+    Flag(name=PatternSetting.DRUM, error=errors.ERR_DRUM_NOT_TRUE_OR_FALSE),
+    Choice(name=PatternSetting.DIRECTION, choices=DIRECTIONS, default=LEFT_OUT, error=errors.ERR_BAD_DIRECTION),
+    Text(name=PatternSetting.GROUP, error=errors.ERR_NOT_TEXT),
+    WholeNumber(name=PatternSetting.SCALE_LENGTH, lowest=limits.MIN_SCALE_LENGTH, highest=limits.MAX_SCALE_LENGTH, error=errors.ERR_BAD_SCALE_LENGTH),
 )
 # The settings a file's problem with is placed by the setting's name, like "pattern (tune), step_size: ...". The messages of the others name the setting themselves.
 PLACED_BY_NAME = (PatternSetting.STEP_SIZE, PatternSetting.TIME_SIGNATURE, PatternSetting.ENTRY_SIZE)
@@ -94,14 +91,14 @@ class Pattern(PatternNotes, LlamaData):
     def from_data(cls, *, data, where, song=None):
         with reading(where):
             if not isinstance(data, dict):
-                raise InvalidValue(ERR_PATTERN_EXPECTED_SETTINGS)
+                raise InvalidValue(errors.ERR_PATTERN_EXPECTED_SETTINGS)
             check_keys(data=data, allowed={PatternSetting.STEPS, *SETTINGS, *PATTERN_ROWS})
             steps = data.get(PatternSetting.STEPS)
-            if not is_whole_number_from(value=steps, lowest=MIN_STEPS):
-                raise InvalidValue(ERR_BAD_STEPS.format(lowest=MIN_STEPS, value=steps))
+            if not is_whole_number_from(value=steps, lowest=limits.MIN_STEPS):
+                raise InvalidValue(errors.ERR_BAD_STEPS.format(lowest=limits.MIN_STEPS, value=steps))
             for setting in settings_held(settings=SETTINGS, data=data):
                 name = setting.get_name()
-                with reading(ERR_WHERE_IN_ROW.format(where=where, row=name) if name in PLACED_BY_NAME else where):
+                with reading(errors.ERR_WHERE_IN_ROW.format(where=where, row=name) if name in PLACED_BY_NAME else where):
                     setting.check_held(data)
             drum = data.get(PatternSetting.DRUM, False)
             for row in PATTERN_ROWS:
@@ -127,7 +124,7 @@ class Pattern(PatternNotes, LlamaData):
     def get_step_size(self):
         """Return how long each of its steps is, in whole notes, or None to use the song's step size."""
         step_size = self.get_written_step_size()
-        return None if step_size is None else written_length(value=step_size, most=MAX_STEP_SIZE)
+        return None if step_size is None else written_length(value=step_size, most=limits.MAX_STEP_SIZE)
 
     def get_written_step_size(self):
         """Return its step size as the file writes it, like 1/8, or None to use the song's."""
@@ -145,7 +142,7 @@ class Pattern(PatternNotes, LlamaData):
     def get_entry_size(self):
         """Return how long a note placed on its piano roll lasts, in whole notes, or None to use the song's entry size."""
         entry_size = self.get_written_entry_size()
-        return None if entry_size is None else written_length(value=entry_size, most=MAX_GATE)
+        return None if entry_size is None else written_length(value=entry_size, most=limits.MAX_GATE)
 
     def get_written_entry_size(self):
         """Return its entry size as the file writes it, like 1/8, or None to use the song's."""
@@ -279,8 +276,8 @@ class Pattern(PatternNotes, LlamaData):
             return None
         octave = default_octave if octave is None else octave
         half_steps = scale.get_half_steps()
-        octaves_up, place = divmod(degree - MIN_DEGREE, len(half_steps))
-        moved = half_steps[place] + octaves_up * HALF_STEPS_PER_OCTAVE + ACCIDENTALS.get(accidental, 0)
+        octaves_up, place = divmod(degree - limits.MIN_DEGREE, len(half_steps))
+        moved = half_steps[place] + octaves_up * midi.HALF_STEPS_PER_OCTAVE + ACCIDENTALS.get(accidental, 0)
         note = Note(name=scale.get_root(), octave_number=REFERENCE_OCTAVE).half_step(moved)
         return NOTE_NAME.format(name=note.get_name(), octave=note.get_octave_number() - REFERENCE_OCTAVE + octave - octave_label_offset)
 
@@ -336,8 +333,8 @@ class Pattern(PatternNotes, LlamaData):
     @notes_change
     def set_steps(self, steps):
         """Change how many steps it has, cutting steps off the end or adding empty ones."""
-        if not is_whole_number_from(value=steps, lowest=MIN_STEPS):
-            raise InvalidValue(ERR_BAD_STEPS.format(lowest=MIN_STEPS, value=steps))
+        if not is_whole_number_from(value=steps, lowest=limits.MIN_STEPS):
+            raise InvalidValue(errors.ERR_BAD_STEPS.format(lowest=limits.MIN_STEPS, value=steps))
         for row, values in self._rows.items():
             if values is not None:
                 self._rows[row] = (values + _blank_row(row=row, steps=steps))[:steps]
@@ -347,7 +344,7 @@ class Pattern(PatternNotes, LlamaData):
     def insert_step(self, step):
         """Put an empty step before a step, or at the end if step is the number of steps."""
         if not is_whole_number_from(value=step, lowest=0, highest=self._steps):
-            raise InvalidValue(ERR_PATTERN_NO_SUCH_STEP.format(step=step, steps=self._steps))
+            raise InvalidValue(errors.ERR_PATTERN_NO_SUCH_STEP.format(step=step, steps=self._steps))
         for row, values in self._rows.items():
             if values is not None:
                 values.insert(step, blank_value(row))
@@ -357,8 +354,8 @@ class Pattern(PatternNotes, LlamaData):
     def remove_step(self, step):
         """Take a step out, which a pattern with only one step can't do."""
         self._check_step(step)
-        if self._steps <= MIN_STEPS:
-            raise InvalidValue(ERR_BAD_STEPS.format(lowest=MIN_STEPS, value=self._steps - 1))
+        if self._steps <= limits.MIN_STEPS:
+            raise InvalidValue(errors.ERR_BAD_STEPS.format(lowest=limits.MIN_STEPS, value=self._steps - 1))
         for values in self._rows.values():
             if values is not None:
                 values.pop(step)
@@ -432,7 +429,7 @@ class Pattern(PatternNotes, LlamaData):
     def rearrange(self, order):
         """Put the steps in a new order, given as the old place of each new step, with every value of a step moving together."""
         if sorted(order) != list(range(self._steps)):
-            raise InvalidValue(ERR_PATTERN_NOT_AN_ORDER.format(order=order))
+            raise InvalidValue(errors.ERR_PATTERN_NOT_AN_ORDER.format(order=order))
         for row, values in self._rows.items():
             if values is not None:
                 self._rows[row] = [values[step] for step in order]
@@ -470,7 +467,7 @@ class Pattern(PatternNotes, LlamaData):
 
     def _check_step(self, step):
         if not is_whole_number_from(value=step, lowest=0, highest=self._steps - 1):
-            raise InvalidValue(ERR_PATTERN_NO_SUCH_STEP.format(step=step, steps=self._steps))
+            raise InvalidValue(errors.ERR_PATTERN_NO_SUCH_STEP.format(step=step, steps=self._steps))
 
 
 def _copied_rows(rows):
@@ -510,18 +507,18 @@ def _check_row(*, row, data, steps, drum, where):
     if values is None:
         return
     if not isinstance(values, list) or len(values) != steps:
-        raise InvalidValue(ERR_ROW_WRONG_LENGTH.format(row=row, steps=steps, value=values))
+        raise InvalidValue(errors.ERR_ROW_WRONG_LENGTH.format(row=row, steps=steps, value=values))
     description = ROW_DESCRIPTIONS[row]
     never_blank = description.is_on_or_off()
     for value in values:
         if value is None:
             if never_blank:
-                raise InvalidValue(ERR_TOGGLE_IS_NULL.format(row=row))
+                raise InvalidValue(errors.ERR_TOGGLE_IS_NULL.format(row=row))
         else:
             try:
                 description.check(value, drum=drum)
             except InvalidValue as problem:
-                with reading(ERR_WHERE_IN_ROW.format(where=where, row=row)):
+                with reading(errors.ERR_WHERE_IN_ROW.format(where=where, row=row)):
                     raise problem.with_correction(_row_correction(data=data, row=row, drum=drum)) from None
 
 
@@ -555,4 +552,4 @@ def _check_ties(*, data, steps):
         return
     for step in range(steps):
         if ties[step] and (degrees[step] is not None or grabs[step]):
-            raise InvalidValue(ERR_TIE_ON_A_NOTE.format(step=step + FIRST_STEP_NUMBER))
+            raise InvalidValue(errors.ERR_TIE_ON_A_NOTE.format(step=step + FIRST_STEP_NUMBER))

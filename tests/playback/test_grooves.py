@@ -22,11 +22,10 @@ from fractions import Fraction
 
 import mido
 
-from llamatron.composition.defaults import DEFAULT_GROOVE_CELL_LENGTH
+from llamatron.composition import defaults, limits
 from llamatron.composition.file_format import ClipSlotSetting, GrooveSetting, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.composition.groove import FACTORY_GROOVE_NAMES, FactoryGroove, Groove, GROOVE_CELLS, PUSH_AMOUNT, STRAIGHT, new_groove
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.limits import MAX_GROOVE_AMOUNT, MAX_GROOVE_CELLS, MIN_GROOVE_AMOUNT
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.clip_tree import MIDI_SUFFIX
@@ -93,13 +92,13 @@ class TestGrooveFiles(unittest.TestCase):
         self.assertEqual(groove.get_cell_length(), Rational(1, 8))
         self.assertEqual(groove.to_data(), {GrooveSetting.CELLS: [0, SWING_58_AMOUNT], GrooveSetting.CELL_LENGTH: '1/8'})
         plain = Groove.from_data(data={GrooveSetting.CELLS: [0]}, where=LATE)
-        self.assertEqual(plain.get_cell_length_text(), DEFAULT_GROOVE_CELL_LENGTH)
+        self.assertEqual(plain.get_cell_length_text(), defaults.DEFAULT_GROOVE_CELL_LENGTH)
         self.assertEqual(plain.to_data(), {GrooveSetting.CELLS: [0]})
 
     def test_bad_grooves_are_refused(self):
         for data in [
-            [0, 1], {}, {GrooveSetting.CELLS: []}, {GrooveSetting.CELLS: [MAX_GROOVE_AMOUNT + 1]}, {GrooveSetting.CELLS: [MIN_GROOVE_AMOUNT - 1]},
-            {GrooveSetting.CELLS: [NOT_A_WHOLE_NUMBER]}, {GrooveSetting.CELLS: [0] * (MAX_GROOVE_CELLS + 1)},
+            [0, 1], {}, {GrooveSetting.CELLS: []}, {GrooveSetting.CELLS: [limits.MAX_GROOVE_AMOUNT + 1]}, {GrooveSetting.CELLS: [limits.MIN_GROOVE_AMOUNT - 1]},
+            {GrooveSetting.CELLS: [NOT_A_WHOLE_NUMBER]}, {GrooveSetting.CELLS: [0] * (limits.MAX_GROOVE_CELLS + 1)},
             {GrooveSetting.CELLS: [0], GrooveSetting.CELL_LENGTH: TOO_LONG}, {GrooveSetting.CELLS: [0], LATE: 1},
         ]:
             with self.subTest(data=data), self.assertRaises(SongFileError):
@@ -138,28 +137,28 @@ class TestGrooveFiles(unittest.TestCase):
 
     def test_a_factory_groove_cannot_be_changed_through_the_set(self):
         setlist = Setlist.new()
-        setlist.get_groove(FactoryGroove.SWING_58).set_cell(step=0, amount=MAX_GROOVE_AMOUNT)
+        setlist.get_groove(FactoryGroove.SWING_58).set_cell(step=0, amount=limits.MAX_GROOVE_AMOUNT)
         self.assertEqual(setlist.get_groove(FactoryGroove.SWING_58).get_cells()[0], STRAIGHT)
 
     def test_editing_a_groove_checks_its_cells(self):
         groove = new_groove()
-        groove.set_cell(step=1, amount=MAX_GROOVE_AMOUNT)
-        self.assertEqual(groove.get_cells()[1], MAX_GROOVE_AMOUNT)
+        groove.set_cell(step=1, amount=limits.MAX_GROOVE_AMOUNT)
+        self.assertEqual(groove.get_cells()[1], limits.MAX_GROOVE_AMOUNT)
         with self.assertRaises(InvalidValue):
-            groove.set_cell(step=1, amount=MAX_GROOVE_AMOUNT + 1)
+            groove.set_cell(step=1, amount=limits.MAX_GROOVE_AMOUNT + 1)
         with self.assertRaises(InvalidValue):
             groove.set_cell(step=GROOVE_CELLS, amount=0)
         groove.insert_cell(0)
         self.assertEqual(len(groove.get_cells()), GROOVE_CELLS + 1)
-        for _ in range(MAX_GROOVE_CELLS):
+        for _ in range(limits.MAX_GROOVE_CELLS):
             groove.insert_cell(0)
-        self.assertEqual(len(groove.get_cells()), MAX_GROOVE_CELLS)
-        for _ in range(MAX_GROOVE_CELLS):
+        self.assertEqual(len(groove.get_cells()), limits.MAX_GROOVE_CELLS)
+        for _ in range(limits.MAX_GROOVE_CELLS):
             groove.remove_cell(0)
         self.assertEqual(len(groove.get_cells()), 1)
         groove.set_cell_length('1/8')
         self.assertEqual(groove.get_cell_length(), Rational(1, 8))
-        groove.set_cell_length(DEFAULT_GROOVE_CELL_LENGTH)
+        groove.set_cell_length(defaults.DEFAULT_GROOVE_CELL_LENGTH)
         self.assertNotIn(GrooveSetting.CELL_LENGTH, groove.to_data())
         with self.assertRaises(InvalidValue):
             groove.set_cell_length(TOO_LONG)
@@ -240,7 +239,7 @@ class TestGrooveTiming(unittest.TestCase):
             song = render_data(data)
             drums = clip(song=song, scene=1, track=DRUMS)
             return [event.midi_number for event in sorted(timed_events(clip=drums, scale=drums.get_scale())[0])]
-        self.assertEqual(grabbed([0, MAX_GROOVE_AMOUNT]), grabbed([0]))
+        self.assertEqual(grabbed([0, limits.MAX_GROOVE_AMOUNT]), grabbed([0]))
 
     def test_a_grooved_song_exports_to_midi(self):
         grid = render_data(groove_song(cells=[0, SWING_58_AMOUNT], song_groove=LATE))

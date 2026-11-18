@@ -30,7 +30,7 @@ from llamatron.macro_composer import hook_kinds
 from llamatron.macro_composer.notation import ACCIDENTAL, ARRIVAL, DEGREE, ENDING, FLAT, LOUDER, OCTAVE, REST, SHARP, STEPS, STRESS
 from llamatron.macro_composer.operations import backwards, moved, rotated, upside_down
 from llamatron.macro_composer.phrasing import LINE_BREATH, LINE_EARLY, breathed
-from llamatron.strings.errors import ERR_MELODY_NEEDS_RHYTHMS
+from llamatron.strings import errors
 
 # The fields of a style's melody habits.
 GRID = 'grid'
@@ -568,7 +568,7 @@ class Smart(StepWalk):
         song's list does not name draws one."""
         rhythms = sorted(self._habits[ANSWER_RHYTHMS] if self._answers else self._habits[RHYTHMS], key=sounds_in)
         if not rhythms:
-            raise ValueError(ERR_MELODY_NEEDS_RHYTHMS)
+            raise ValueError(errors.ERR_MELODY_NEEDS_RHYTHMS)
         wanted = self.gauge(GAUGE_NOTES) * (len(rhythms) - 1)
         nearest = sorted(range(len(rhythms)), key=lambda place: (abs(place - wanted), place))
         deck = [rhythms[place] for place in nearest[:max(SMALLEST_DECK, len(rhythms) - 1)]]

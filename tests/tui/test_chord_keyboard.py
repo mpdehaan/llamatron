@@ -24,7 +24,7 @@ from llamatron.composition.file_format import CHORD_SYMBOLS, ChordSymbol
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.music.note import NoteName, ROOT_NAMES
 from llamatron.music.scale import ScaleType
-from llamatron.strings.marks import MSG_KEY_IN_CHORD, MSG_KEY_IN_SCALE, MSG_KEY_OF_SCALE_OUTLINED, MSG_KEY_OUT_OF_SCALE
+from llamatron.strings import marks
 from llamatron.tui.components.keyboard import chord_keys, KEY_COUNT, Keyboard, KeyKind, pitch_class_of
 from llamatron.tui.drawing import NOTHING
 
@@ -88,7 +88,7 @@ class TestKeyboardRows(unittest.TestCase):
             drawn = self.row_text(row).rstrip()
             self.assertEqual(len(drawn), len(line))
             # A scale's key is outlined where the plain keyboard fills it, and the rest is the same.
-            self.assertEqual(drawn.replace(MSG_KEY_OF_SCALE_OUTLINED, MSG_KEY_IN_SCALE), line)
+            self.assertEqual(drawn.replace(marks.MSG_KEY_OF_SCALE_OUTLINED, marks.MSG_KEY_IN_SCALE), line)
 
     def test_a_chords_keys_are_filled_the_scales_outlined_and_the_rest_hatched(self):
         keyboard = self.keyboard(chord=chord_keys(note_names=C_MAJOR_TRIAD))
@@ -98,8 +98,8 @@ class TestKeyboardRows(unittest.TestCase):
         self.assertEqual(kinds[:7], [KeyKind.CHORD, KeyKind.SCALE, KeyKind.CHORD, KeyKind.SCALE, KeyKind.CHORD, KeyKind.SCALE, KeyKind.SCALE])
         self.assertEqual(set(kinds[7:]), {KeyKind.SCALE})
         self.assertEqual({kind for _, kind in black if kind is not None}, {KeyKind.OUTSIDE})
-        self.assertEqual(self.row_text(white).count(MSG_KEY_IN_CHORD), len(C_MAJOR_TRIAD))
-        self.assertIn(MSG_KEY_OUT_OF_SCALE, self.row_text(black))
+        self.assertEqual(self.row_text(white).count(marks.MSG_KEY_IN_CHORD), len(C_MAJOR_TRIAD))
+        self.assertIn(marks.MSG_KEY_OUT_OF_SCALE, self.row_text(black))
         self.assertEqual(self.row_text(names), keyboard.names_row())
         # A chord's note outside the scale is filled all the same: C minor's Eb.
         minor = self.keyboard(chord=chord_keys(note_names=spelled_chord(scale=NamedScale(root=NoteName.C, kind=MAJOR), degree=FIRST_DEGREE, symbol=ChordSymbol.MINOR).notes))
