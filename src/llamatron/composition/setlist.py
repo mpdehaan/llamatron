@@ -704,7 +704,8 @@ class Setlist(LlamaData):
         song's name, or a new name when one is given, and its name here is returned.
         """
         place = self.get_song_names().index(name)
-        used = [(section, item) for section, item in self.named_by_songs() if self._is_named(section=section, name=item)]
+        named = self.everything_named()
+        used = [(section, item) for section, item in self.named_by_songs() if (section, item) in named]
         self.remove_item(section=Section.SONGS, name=name)
         self._remove_unnamed(used)
         other.rename_item(section=Section.SONGS, old=other.get_song_names()[0], new=new or name)
@@ -726,13 +727,24 @@ class Setlist(LlamaData):
         """Take out those of some items, each (section, name), that nothing names. A chain goes first and the generators
         only it ran after, so the search goes round until nothing more is left unnamed."""
         while True:
-            unnamed = [(section, item) for section, item in items if self.has_item(section=section, name=item) and not self._is_named(section=section, name=item)]
+            named = self.everything_named()
+            unnamed = [(section, item) for section, item in items if self.has_item(section=section, name=item) and (section, item) not in named]
             if not unnamed:
                 return
             for section, item in unnamed:
                 self.remove_item(section=section, name=item)
 
-    def _is_named(self, *, section, name):
+    def everything_named(self):
+        """Return everything a song, a scene, a track, a clip or a chain of the set names, as a set of (section, name), found in
+        one walk of the set: what is_named() answers for one item, for a search that asks about every item."""
+        named = set()
+        for song in self.get_songs():
+            named |= song.everything_named()
+        for name in self.get_chain_names():
+            named |= self.get_chain(name).named_items()
+        return named
+
+    def is_named(self, *, section, name):
         """Return whether anything in the set names an item of a section: a song, a scene, a track, a clip or a chain."""
         namers = (self.songs_naming, self.scenes_naming, self.tracks_naming, self.clip_slots_naming, self.chains_naming)
         return any(naming(section=section, name=name) for naming in namers)

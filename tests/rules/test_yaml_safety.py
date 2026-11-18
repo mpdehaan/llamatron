@@ -62,12 +62,14 @@ class TestYamlSafety(unittest.TestCase):
         files = [Path(path) for pattern in ('src/**/*.py', 'tests/**/*.py', 'internal_tools/**/*.py', '*.py')
                  for path in glob.glob(str(ROOT / pattern), recursive=True)]
         self.assertTrue(files)
+        unsafe = []
         for path in files:
             if path.name in (Path(__file__).name, LOADER_MODULE):
                 continue
             for number, line in enumerate(path.read_text(encoding=FILE_ENCODING).splitlines(), start=1):
-                with self.subTest(file=str(path.relative_to(ROOT)), line=number):
-                    self.assertIsNone(UNSAFE.search(line), line.strip())
+                if UNSAFE.search(line):
+                    unsafe.append((str(path.relative_to(ROOT)), number, line.strip()))
+        self.assertEqual(unsafe, [])
 
     def test_only_the_file_reader_the_file_writer_and_the_loader_import_yaml(self):
         source = ROOT / 'src' / 'llamatron'
@@ -88,6 +90,9 @@ class TestYamlSafety(unittest.TestCase):
     def test_load_safely_reads_every_example_as_safe_load_does(self):
         # Whichever parser is in use, it has to agree with the pure-Python one on real files.
         self.assertTrue(EXAMPLES)
+        if not uses_c_parser():
+            # load_safely is then the pure-Python parser itself, and reading every example twice with it compares nothing.
+            return
         for path in EXAMPLES:
             with self.subTest(path=path), open(path) as first, open(path) as second:
                 self.assertEqual(load_safely(first), yaml.safe_load(second))

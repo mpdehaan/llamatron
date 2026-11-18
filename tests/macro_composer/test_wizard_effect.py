@@ -136,6 +136,8 @@ PLAYS_IN_SECTION = 'who plays in a section'
 # Rock and roll's planned song: its sections' Energies all ask for the hat in eighths, so choosing that cymbal is choosing what the plan already plays.
 LABEL = '{subgenre}: {what}'
 
+# The song each set of choices makes before a change, by the choices' data.
+USUAL_SONGS = {}
 
 def fresh(*, genre, subgenre):
     """Choices for a subgenre with a seed and its usual progression chosen, so that one choice alone differs from the next."""
@@ -525,9 +527,18 @@ def changes(*, genre, subgenre, change, firsts):
         made = fresh(genre=genre, subgenre=subgenre)
         first(made)
         change(made)
-        if song_of(made) != song_of(usual):
+        if song_of(made) != usual_song_of(usual):
             return True
     return False
+
+
+def usual_song_of(usual):
+    """The song the choices before a change make, made once for the choices as they stand: nearly every choice of a subgenre is
+    held against the same one."""
+    key = json.dumps(usual.to_data(), sort_keys=True, default=str)
+    if key not in USUAL_SONGS:
+        USUAL_SONGS[key] = song_of(usual)
+    return USUAL_SONGS[key]
 
 
 def positions_alike(*, genre, subgenre, role, first):

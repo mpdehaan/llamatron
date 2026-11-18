@@ -109,6 +109,26 @@ class LlamaData(Revised):
         """Return whether one of its own settings names an item of a section, as a clip names its pattern."""
         return any(_names(value=self._settings[setting], name=name) for setting in self.REFERENCES.get(section, ()))
 
+    def named_items(self):
+        """Return everything its own settings name, as a set of (section, name): what names_item() answers one item at a time,
+        gathered in one go for a search of everything a set uses."""
+        named = set()
+        for section, settings in self.REFERENCES.items():
+            for setting in settings:
+                value = self._settings[setting]
+                if isinstance(value, list):
+                    named.update((section, name) for name in value)
+                elif value is not None:
+                    named.add((section, value))
+        return named
+
+    def everything_named(self):
+        """Return everything it names and everything the objects it holds name, as a set of (section, name)."""
+        named = self.named_items()
+        for part in self.referring_parts():
+            named |= part.everything_named()
+        return named
+
     def referring_parts(self):
         """Return the objects it holds that may name things too, which a rename is passed on to: none, unless a subclass holds some."""
         return ()

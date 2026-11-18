@@ -16,6 +16,7 @@
 """A set taking in another set's songs with all they use, which the song wizard does with the set it made, and a song keeping the wizard's choices."""
 
 import os
+import pathlib
 import tempfile
 import unittest
 
@@ -38,6 +39,8 @@ ROOT = 'root'
 SOME_CHOICES = {'genre': 'rock', KEY: {ROOT: 'E'}}
 A_ROOT = 'A'
 SECOND_COPY = '{}-2'
+EXAMPLES = pathlib.Path(__file__).resolve().parent.parent.parent / 'examples'
+SET_FILES = '*.yml'
 
 
 def made(*, name, genre=0, subgenre=0, seed=A_SEED):
@@ -219,3 +222,37 @@ class TestWizardChoicesKept(unittest.TestCase):
             path = os.path.join(folder, A_FILE)
             setlist.write_file(path)
             self.assertEqual(Setlist.read_file(path).get_song(FIRST).get_preview_instrument_name(), instrument)
+
+
+class TestEverythingNamed(unittest.TestCase):
+    """What a set names, found in one walk, is what asking about each item one at a time finds."""
+
+    def assert_the_walk_agrees(self, setlist):
+        named = setlist.everything_named()
+        items = [(section, name) for section in SECTIONS_TAKEN_IN for name in setlist.get_item_names(section)]
+        self.assertTrue(items)
+        for section, name in items:
+            if section == Section.SONGS:
+                continue
+            with self.subTest(section=section, name=name):
+                self.assertEqual((section, name) in named, setlist.is_named(section=section, name=name))
+
+    def test_the_walk_and_the_question_agree_on_every_item_of_every_example(self):
+        for path in sorted(EXAMPLES.rglob(SET_FILES)):
+            with self.subTest(path=path.name):
+                self.assert_the_walk_agrees(Setlist.read_file(str(path)))
+
+    def test_they_agree_on_a_made_set_before_and_after_what_nothing_names_is_removed(self):
+        setlist = made(name=FIRST)
+        self.assert_the_walk_agrees(setlist)
+        chain = setlist.get_chain_names()[0]
+        generators = setlist.get_chain(chain).named_items()
+        self.assertTrue(generators)
+        song = setlist.get_song(FIRST)
+        for _, number, _, track in setlist.clip_slots_naming(section=Section.CHAINS, name=chain):
+            song.get_scenes()[number - 1].remove_clip_slot(track)
+        self.assert_the_walk_agrees(setlist)
+        setlist.remove_unused()
+        self.assert_the_walk_agrees(setlist)
+        for section, name in setlist.named_by_songs():
+            self.assertTrue(setlist.is_named(section=section, name=name), (section, name))

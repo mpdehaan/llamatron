@@ -25,6 +25,7 @@ modules import only names from the file format, the keys and each other, so that
 """
 
 import ast
+import collections
 import os
 import re
 import unittest
@@ -37,6 +38,9 @@ SOURCE_FOLDER = os.path.dirname(llamatron.__file__)
 TEST_FOLDER = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TOOLS_FOLDER = os.path.join(os.path.dirname(TEST_FOLDER), 'internal_tools')
 PYTHON_SUFFIX = '.py'
+# A word of a source file, which a constant's name is one of, and how often a constant nothing uses is named in its own module.
+WORD = re.compile(r'\w+')
+DEFINED_ONLY = 1
 FILE_ENCODING = 'utf-8'
 ERROR_PREFIX = 'ERR_'
 MESSAGE_PREFIX = 'MSG_'
@@ -156,19 +160,20 @@ class TestMessageConstants(unittest.TestCase):
                     self.assertFalse(any(word in REDUNDANT_WORDS[prefix] for word in words))
 
     def test_every_constant_is_used(self):
-        others = []
+        # Every word of every other file is gathered once, and each constant looked up among them: a search of the whole
+        # program for each of several thousand names took twenty seconds.
+        used_elsewhere = set()
         for folder in (SOURCE_FOLDER, TEST_FOLDER, TOOLS_FOLDER):
-            others += [source_of(path) for path in python_files(folder) if path not in OWN_PREFIX]
-        everything = '\n'.join(others)
+            for path in python_files(folder):
+                if path not in OWN_PREFIX:
+                    used_elsewhere.update(WORD.findall(source_of(path)))
+        unused = []
         for path, prefix in OWN_PREFIX.items():
-            own = source_of(path)
+            times_at_home = collections.Counter(WORD.findall(source_of(path)))
             for name in defined_constants(path):
-                if not name.startswith(prefix):
-                    continue
-                with self.subTest(name=name):
-                    used_elsewhere = re.search(rf'\b{name}\b', everything)
-                    used_at_home = len(re.findall(rf'\b{name}\b', own)) > 1
-                    self.assertTrue(used_elsewhere or used_at_home)
+                if name.startswith(prefix) and name not in used_elsewhere and times_at_home[name] <= DEFINED_ONLY:
+                    unused.append(name)
+        self.assertEqual(unused, [])
 
     def test_every_group_comment_names_a_module_that_exists(self):
         """The constants are grouped under a comment naming the module that uses them, and a module that moved takes its comment with it."""
