@@ -207,7 +207,9 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   templates are a discrete feature from the rest of the application. Where the professor's advice differs from how one of those
   works today, how it works today is never a reason against the advice. Claude checks the advice against the evidence (the
   templates, the code, songs made), reports the difference, and recommends on the music alone. The cost of the change is stated
-  separately and never offered as a musical argument. This does not extend to the rest of llamatron, whose designs are the user's
+  separately and never offered as a musical argument. The professor is told the same when asked: the data structures, the
+  templates' format and the wizard's panels are to change to fit the musical idea, and nothing about how they are built today
+  is to be taken as fixed. This does not extend to the rest of llamatron, whose designs are the user's
   and are changed only on the user's word, and it never extends to the example sets, which are rewritten only with the user's
   say-so.
 - **The code maintainability expert** (the user's rule): a fresh agent that reads the code knowing nothing of Claude's reasoning
