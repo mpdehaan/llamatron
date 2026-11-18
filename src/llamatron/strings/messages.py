@@ -174,7 +174,6 @@ MSG_TRANSPOSE_NOTE = '  Transpose counts notes of the scale, so 7 is an octave i
 MSG_NEW_GENERATOR_CHOICE = '(new generator)'
 MSG_NEW_GENERATOR_KIND_TITLE = 'New generator: choose type'
 MSG_ADD_TO_CHAIN_TITLE = 'Add to chain'
-MSG_ADD_CHAIN_TITLE = 'Add a chain'
 MSG_CHANGE_STEP_TITLE = 'Change step'
 MSG_OFFSETS_NOTE = '  Steps start again with each chord. A blank step is silent. Tab: next row'
 MSG_RENAME_SCALE_PROMPT = 'Rename scale'

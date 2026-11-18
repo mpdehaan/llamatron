@@ -45,7 +45,7 @@ class TestWizardTunes(WizardTest):
         await self.press(keybindings.WizardPage.INTO_FIELDS)
 
     def label(self, *, kind=A_KIND):
-        return labels.MSG_WIZARD_TUNE_LABEL.format(kind=kind)
+        return labels.MSG_WIZARD_KIND_TUNE_LABEL.format(kind=kind)
 
     async def open_tune(self):
         await self.select_field(self.label())

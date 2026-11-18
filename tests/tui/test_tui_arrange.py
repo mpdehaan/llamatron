@@ -55,7 +55,7 @@ from llamatron.strings.labels import (
     MSG_REGISTER_AT_LIMIT_FIELD, MSG_REGISTER_RESET_EACH_SCENE_FIELD, MSG_REGISTER_ALLOWED_INC_MAX_FIELD, MSG_AT_LIMIT_NAMES, Crumb, MSG_PATTERN_CRUMB, MSG_PATTERN_LABEL, MSG_REPEAT_LABEL,
 )
 from llamatron.strings.marks import MSG_CHAIN_JOIN, MSG_CRUMB_SEPARATOR, MSG_NONE_SHOWN
-from llamatron.strings.labels import MSG_SECTION_LABEL
+from llamatron.strings.labels import MSG_SCENE_SECTION_LABEL
 from llamatron.composition.file_format import SECTION_KINDS
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.strings.legends import MSG_LEGEND_WHAT, MSG_MOVE_SCENE_WHAT, MSG_MOVE_TRACK_WHAT, MSG_OPEN_PATTERN_WHAT, What, KeyName
@@ -743,8 +743,8 @@ class TestScenePage(UITest):
         self.assertIn('0:01', self.text())
 
     async def test_the_section_is_chosen_from_the_kinds_a_scene_may_be_and_stepped_back_to_none(self):
-        self.assertIn(MSG_NONE_SHOWN, next(line for line in self.text().split(NEW_LINE) if MSG_SECTION_LABEL in line))
-        await self.go_to(MSG_SECTION_LABEL)
+        self.assertIn(MSG_NONE_SHOWN, next(line for line in self.text().split(NEW_LINE) if MSG_SCENE_SECTION_LABEL in line))
+        await self.go_to(MSG_SCENE_SECTION_LABEL)
         await self.press(key_of(binding=keybindings.ScenePage.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(self.scene().get_section(), SECTION_KINDS[0])
         await self.press(Key.ENTER)

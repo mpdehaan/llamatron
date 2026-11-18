@@ -26,7 +26,7 @@ from rich.text import Text
 from llamatron.composition.generator_settings import StepRowSetting
 from llamatron.composition.limits import MAX_STEP_ROW, MIN_STEP_ROW
 from llamatron.strings.help import HELP_STEP_ROW_EDITOR
-from llamatron.strings.labels import Crumb, MSG_STEP_ROW_LABEL, MSG_STEP_ROW_NAMES
+from llamatron.strings.labels import Crumb, MSG_STEP_NUMBER_ROW_LABEL, MSG_STEP_ROW_NAMES
 from llamatron.strings.marks import MSG_TOGGLE_OFF, MSG_TOGGLE_ON
 from llamatron.strings.messages import MSG_STEP_ROW_NOTES
 from llamatron.tui import keybindings
@@ -100,7 +100,7 @@ class StepRowEditor(ShowsNamedItem, StepGrid, StepEditor):
             self.with_steps_shown(text=MSG_STEP_ROW_NOTES[self.SECTION], style=Style.DIM, width=width, first=first, last=last),
             Text(NOTHING),
             self.grid_rule(left=Box.TOP_LEFT, middle=Box.TOP_TEE, right=Box.TOP_RIGHT, count=len(places)),
-            self.grid_line(label=MSG_STEP_ROW_LABEL, cells=[(place, str(place + 1)) for place in places], selected=self.step, bold=True),
+            self.grid_line(label=MSG_STEP_NUMBER_ROW_LABEL, cells=[(place, str(place + 1)) for place in places], selected=self.step, bold=True),
             self.grid_rule(left=Box.LEFT_TEE, middle=Box.CROSS, right=Box.RIGHT_TEE, count=len(places)),
             self.grid_line(label=MSG_STEP_ROW_NAMES[self.SECTION], cells=[(place, MSG_TOGGLE_ON if values[place] else MSG_TOGGLE_OFF) for place in places], selected=self.step),
             self.grid_rule(left=Box.BOTTOM_LEFT, middle=Box.BOTTOM_TEE, right=Box.BOTTOM_RIGHT, count=len(places)),

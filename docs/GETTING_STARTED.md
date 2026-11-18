@@ -37,6 +37,7 @@ Every screen is laid out the same way, from top to bottom:
 | `Ctrl+C` | Quits at once, from any page or dialog, without asking about unsaved changes, and closes FluidSynth and the MIDI connections as quitting does. |
 | `F2` | Renames what the page shows or what the cursor is on, as `N` does. |
 | `F3` | About llamatron: its version, when it was built, where it lives and its license. |
+| `F5` | Opens the [Song Wizard](WIZARD.md), which makes a whole song from a few choices. |
 
 On a Mac, `F1`, `F2` and `F3` are `Fn`+`F1`, `Fn`+`F2` and `Fn`+`F3` unless System Settings sets the function keys as standard keys.
 

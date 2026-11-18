@@ -75,7 +75,7 @@ MSG_FOLLOW_ACTION_LABEL = 'Advance'
 MSG_DEFAULT_FOLLOW_ACTION_LABEL = 'Default follow action'
 MSG_FOLLOW_ACTION_NAMES = {FollowAction.WITH_SCENE: 'With Scene', FollowAction.NEXT: 'Next', FollowAction.OFF: 'Off'}
 MSG_LAUNCH_TOGETHER_LABEL = 'Launch together'
-MSG_SECTION_LABEL = 'Section'
+MSG_SCENE_SECTION_LABEL = 'Section'
 
 # tui/screens/shared/page.py and tui/key_table.py: the key names, the labels and the words every page shares
 # The file crumb, right after the title on every page: the file's name, or this before the set is saved.
@@ -393,7 +393,7 @@ MSG_SHORTEN_LABEL = 'Shorten amount'
 MSG_RUSH_AMOUNT_LABEL = 'Rush amount'
 MSG_DRAG_AMOUNT_LABEL = 'Drag amount'
 MSG_STEPS_LABEL = 'Steps'
-MSG_STEP_ROW_LABEL = 'Step'
+MSG_STEP_NUMBER_ROW_LABEL = 'Step'
 MSG_STEP_ROW_NAMES = {Section.GLIDES: 'Glide', Section.SHORTENS: 'Shorten', Section.RUSHES: 'Rush', Section.DRAGS: 'Drag'}
 MSG_RESTART_NAMES = {Restart.EVERY_CLIP: 'every clip', Restart.ON_NEW_SCENE: 'on new scene', Restart.WHOLE_SONG: 'whole song'}
 # tui/screens/generators/euclid_fields.py: a mask's section and fields, Euclid in front in a section, and the named rhythms the Hits field's H offers.
@@ -755,7 +755,7 @@ MSG_WIZARD_FILLS_COME = ['never', 'each section', 'every 4 bars', 'every 2 bars'
 MSG_WIZARD_KIT_PIECE = 'kit: {piece}'
 MSG_WIZARD_GUITARISTS_LABEL = 'Guitarists'
 # Who has the tune and who answers, the answering player's role, a section's own, and how busy the fills are.
-MSG_WIZARD_TUNE_LABEL = 'Tune'
+MSG_WIZARD_TUNE_LABEL = 'Tune played by'
 MSG_WIZARD_ANSWERED_BY_LABEL = 'Answered by'
 MSG_WIZARD_NOBODY = '(nobody)'
 MSG_WIZARD_ROLE_LABEL = 'Role'
@@ -773,7 +773,7 @@ MSG_WIZARD_MELODY_BRANCH = 'Melody'
 MSG_WIZARD_HOOKS_BRANCH = 'Hooks'
 # tui/screens/wizard/tunes_branch.py: the panel of the tunes, and the label of a kind of section's tune.
 MSG_WIZARD_TUNES_BRANCH = 'Tunes'
-MSG_WIZARD_TUNE_LABEL = '{kind} tune'
+MSG_WIZARD_KIND_TUNE_LABEL = '{kind} tune'
 MSG_WIZARD_HOOK_ON = 'on'
 MSG_WIZARD_HOOK_OFF = 'off'
 MSG_WIZARD_PROGRESSION_LABEL = 'Progression'
@@ -839,7 +839,6 @@ MSG_WIZARD_HOOK_PART_LABELS = {'contour': 'Contour', 'rhythm': 'Rhythm', 'detail
 MSG_WIZARD_PICK = "(wizard's pick)"
 # What a section of a planned song can be given of its own, and where each comes from until it is.
 MSG_WIZARD_INTRO_HOOK_LABEL = 'Intro hook'
-MSG_WIZARD_NOBODY = '(nobody)'
 MSG_WIZARD_SECTION_OWN_LABELS = {'shape': 'Shape', 'rises': 'Rises', 'energy': 'Energy', 'leaves': 'Leaves with', 'setup': 'Setup', 'chords': 'Chords', 'tempo': 'Tempo', 'tempo_end': 'Tempo at end', 'root': 'Key', 'type': 'Scale', 'fades': 'Fades'}
 MSG_WIZARD_SECTION_ORIGINS = {'shape': 'from genre', 'rises': 'from plan', 'energy': 'from plan', 'leaves': 'from plan', 'setup': 'from plan', 'chords': 'from progression', 'tempo': 'from song', 'tempo_end': 'from song', 'root': 'from song', 'type': 'from song', 'fades': 'from genre'}
 MSG_WIZARD_VALUE_FROM = '{value} ({origin})'

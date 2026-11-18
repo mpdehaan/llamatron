@@ -39,6 +39,7 @@ from llamatron.tui.key_table import first_key
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES
 from llamatron.composition.file_format import Section
+from llamatron.strings import labels
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SONG = ROOT / 'examples' / 'by_genre' / 'electronic' / 'minimal_techno.yml'
@@ -60,6 +61,12 @@ RUSH_SONG = ROOT / 'examples' / 'learning' / '14_acid_glide.yml'
 EUCLID_TRACK_PLACE = 5
 CHAINED_TRACK_PLACE = 4
 FOLDER = ROOT / 'docs' / 'screenshots'
+# What the song wizard's shots choose, and the player and the section whose panels are shown.
+WIZARD_GENRE = 'rock'
+WIZARD_SUBGENRE = 'folk rock'
+WIZARD_SEED = 7
+WIZARD_PLAYER = 'rhythm guitar'
+WIZARD_SECTION = 'verse-1'
 SUFFIX = '.svg'
 FILE_ENCODING = 'utf-8'
 # The terminal the screenshots show: wider than the 80 by 24 every page fits, so that the Arrange grid shows more tracks.
@@ -87,6 +94,9 @@ class Shot:
     # A generator section whose first generator the Generators page opens before the keys are pressed, since where it sits on
     # the one list depends on the song.
     generator: str = None
+    # A panel of the song wizard, by its name in the wizard's tree: the wizard is opened, the wizard's genre, subgenre and seed are
+    # chosen so that the shot is the same every time, and the tree's cursor goes to the panel.
+    wizard: str = None
 
 
 SHOTS = [
@@ -151,7 +161,34 @@ SHOTS = [
     Shot(name='rush_editor', generator=Section.RUSHES, keys=[], song=RUSH_SONG),
     Shot(name='drag_editor', generator=Section.DRAGS, keys=[], song=RUSH_SONG),
     Shot(name='chain_list', keys=[keybindings.MainPage.ARRANGE, *[Key.RIGHT] * CHAINED_TRACK_PLACE, Key.ENTER, Key.DOWN, Key.DOWN, Key.DOWN, Key.ENTER], song=PROGRESSION_SONG),
+    Shot(name='wizard_genre', wizard=labels.MSG_WIZARD_GENRE_BRANCH, keys=[]),
+    Shot(name='wizard_band', wizard=labels.MSG_WIZARD_BAND_BRANCH, keys=[]),
+    Shot(name='wizard_player', wizard=WIZARD_PLAYER, keys=[]),
+    Shot(name='wizard_chords', wizard=labels.MSG_WIZARD_CHORDS_BRANCH, keys=[]),
+    Shot(name='wizard_melody', wizard=labels.MSG_WIZARD_MELODY_BRANCH, keys=[]),
+    Shot(name='wizard_tunes', wizard=labels.MSG_WIZARD_TUNES_BRANCH, keys=[]),
+    Shot(name='wizard_hooks', wizard=labels.MSG_WIZARD_HOOKS_BRANCH, keys=[]),
+    Shot(name='wizard_form', wizard=labels.MSG_WIZARD_FORM_BRANCH, keys=[]),
+    Shot(name='wizard_section', wizard=WIZARD_SECTION, keys=[]),
+    Shot(name='wizard_apply', wizard=labels.MSG_WIZARD_CREATE_BRANCH, keys=[]),
 ]
+
+
+async def open_wizard_panel(*, app, pilot, panel):
+    """Open the song wizard, choose the genre, subgenre and seed every wizard shot shares, and put the tree's cursor on a panel."""
+    await pilot.press(first_key(keybindings.Page.WIZARD))
+    await pilot.pause()
+    choices = app.screen.choices()
+    choices.set_genre(WIZARD_GENRE)
+    choices.set_subgenre(WIZARD_SUBGENRE)
+    choices.set_seed(WIZARD_SEED)
+    # A key each way draws the tree again with what was chosen.
+    await pilot.press(Key.DOWN)
+    await pilot.press(Key.UP)
+    place = [branch.name() for _, branch in app.screen.rows()].index(panel)
+    for _ in range(place):
+        await pilot.press(Key.DOWN)
+    await pilot.pause()
 
 
 async def take(shot):
@@ -168,6 +205,8 @@ async def take(shot):
                 await pilot.press(Key.DOWN)
             await pilot.press(Key.ENTER)
             await pilot.pause()
+        if shot.wizard is not None:
+            await open_wizard_panel(app=app, pilot=pilot, panel=shot.wizard)
         for name in shot.keys:
             await pilot.press(name if isinstance(name, str) else first_key(name))
             await pilot.pause()
