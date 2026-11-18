@@ -17,6 +17,7 @@
 """A track: a column of the song, with settings that apply to every clip on it."""
 
 from llamatron.composition.chain import check_chain_names
+from llamatron.composition.conditions import statements_setting, with_statement
 from llamatron.composition.strum import strum_settings, strum_values
 from llamatron.composition.euclid import euclid_settings, euclid_values
 from llamatron.composition.checks import reading, check_keys, is_whole_number_from
@@ -71,6 +72,8 @@ SETTINGS = described(
     Checked(name=TrackSetting.CHAINS, check=check_chain_names, needs_song=True),
     *strum_settings(),
     *euclid_settings(),
+    statements_setting(TrackSetting.BYPASS_WHEN),
+    statements_setting(TrackSetting.SKIP_WHEN),
 )
 
 
@@ -90,7 +93,7 @@ class Track(LlamaData):
         self, *, drum=None, mute=None, transpose=None, lowest_octave=None, highest_octave=None, cc=None, groove=None, instrument=None,
         cc1_register=None, cc2_register=None, cc3_register=None, cc4_register=None, velocity_register=None, chains=None,
         strum_direction=None, strum_spread=None, strum_fade=None, strum_loose_timing=None, strum_upstroke_strings=None,
-        euclid_hits=None, euclid_steps=None, euclid_rotate=None, euclid_step=None,
+        euclid_hits=None, euclid_steps=None, euclid_rotate=None, euclid_step=None, bypass_when=None, skip_when=None,
     ):
         self.note_change()
         self._settings = {
@@ -101,6 +104,7 @@ class Track(LlamaData):
             TrackSetting.CHAINS: own_copy(chains), TrackSetting.STRUM_DIRECTION: strum_direction, TrackSetting.STRUM_SPREAD: strum_spread,
             TrackSetting.STRUM_FADE: strum_fade, TrackSetting.STRUM_LOOSE_TIMING: strum_loose_timing, TrackSetting.STRUM_UPSTROKE_STRINGS: strum_upstroke_strings,
             TrackSetting.EUCLID_HITS: euclid_hits, TrackSetting.EUCLID_STEPS: euclid_steps, TrackSetting.EUCLID_ROTATE: euclid_rotate, TrackSetting.EUCLID_STEP: euclid_step,
+            TrackSetting.BYPASS_WHEN: own_copy(bypass_when), TrackSetting.SKIP_WHEN: own_copy(skip_when),
         }
 
     @classmethod
@@ -238,6 +242,18 @@ class Track(LlamaData):
         if value is not None:
             SETTINGS[name].check(value)
         self._settings[name] = value
+
+    def get_statements(self, name):
+        """Return one of its tables of statements about the registers, by the setting's name: the one that bypasses its clips' generators or the one that makes its clips sit out."""
+        return own_copy(self._settings[name] or [])
+
+    @notes_change
+    def set_statement(self, *, name, place, statement):
+        """Write the statement at a place of one of its tables, add one just past the last, or remove one with None."""
+        table = with_statement(statements=self._settings[name], place=place, statement=statement)
+        if table is not None:
+            SETTINGS[name].check(table)
+        self._settings[name] = table
 
     def get_chain_names(self):
         """Return the names of the chains every clip on the track runs, after the clip's and the scene's, in order."""

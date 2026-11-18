@@ -20,7 +20,8 @@ from rich.text import Text
 
 from llamatron.composition import defaults, limits
 from llamatron.strings import help as help_text, labels, legends, marks, messages
-from llamatron.composition.file_format import EuclidPart, CC_ROWS, REGISTER_NAMES, Section
+from llamatron.composition.file_format import EuclidPart, CC_ROWS, REGISTER_NAMES, Section, TrackSetting
+from llamatron.tui.screens.shared.statements import FIRST_TABLE, SECOND_TABLE, statement_section
 from llamatron.tui.screens.shared.octave_field import octave_field
 from llamatron.tui.screens.generators.strum_fields import strum_section
 from llamatron.tui.screens.generators.euclid_fields import euclid_section, pick_rhythm
@@ -154,6 +155,13 @@ class TrackEditor(ShowsNamedItem, FieldPage):
             page=self, value=track.get_strum_setting, first=marks.MSG_NONE_SHOWN,
             store=lambda part, value: self.document().set_track_strum_setting(name=self.item, part=part, value=value),
         )
+        tables = ((labels.MSG_BYPASS_WHEN_LABEL, FIRST_TABLE, TrackSetting.BYPASS_WHEN), (labels.MSG_SKIP_WHEN_LABEL, SECOND_TABLE, TrackSetting.SKIP_WHEN))
+        for label, table, name in tables:
+            # The statements about the registers that bypass the generators of the track's clips, and that make its clips sit out.
+            result += statement_section(
+                page=self, label=label, table=table, statements=lambda name=name: track.get_statements(name),
+                store=lambda place, statement, name=name: self.document().set_track_statement(track=self.item, name=name, place=place, statement=statement),
+            )
         return result
 
     def store_euclid(self, *, part, value):

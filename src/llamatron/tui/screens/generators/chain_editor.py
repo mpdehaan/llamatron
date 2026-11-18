@@ -22,6 +22,7 @@ from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Align
 from llamatron.strings import help as help_text, labels as labels_text, marks, messages
 from llamatron.tui.screens.shared.list_page import ListPage
+from llamatron.tui.screens.generators.chain_statements_page import ChainStatementsPage
 from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES, generator_page_of_kind, generator_type_dialog
 from llamatron.composition.naming import new_name, suggested_word
 from llamatron.tui.screens.shared.shared import list_keys, move_key
@@ -81,7 +82,11 @@ class ChainEditor(ShowsNamedItem, ListPage):
             self.bind(self.KEYS.COPY, action=self.copy),
             self.bind(self.KEYS.REMOVE, action=self.remove_step),
             move_key(self),
-        ], always=[self.bind(self.KEYS.RENAME, action=self.rename)])
+        ], always=[self.bind(self.KEYS.RENAME, action=self.rename), self.bind(self.KEYS.WHEN, action=self.open_statements)])
+
+    def open_statements(self):
+        """Open the chain's statements about the registers, which say when a pass goes by the whole chain."""
+        self.show_page(ChainStatementsPage(holder=self.holder, name=self.item))
 
     def pick_generator(self, *, title, then):
         """Ask for a generator: a new one first, then every one the set has, each with its kind; then(kind=, name=) takes the one chosen."""

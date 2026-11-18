@@ -24,6 +24,7 @@ something the song holds.
 
 from llamatron.support.rational import Rational
 from llamatron.composition.clip_slot import ClipSlot
+from llamatron.composition.conditions import register_values_setting, statements_setting, with_register_value, with_statement
 from llamatron.composition.chain import check_chain_names
 from llamatron.composition.shapes import shape_settings, shape_values
 from llamatron.composition.checks import check_keys, listed, number, reading
@@ -76,6 +77,9 @@ SETTINGS = described(
     Flag(name=SceneSetting.LAUNCH_TOGETHER, error=errors.ERR_LAUNCH_TOGETHER_NOT_TRUE_OR_FALSE),
     Checked(name=SceneSetting.CHAINS, check=check_chain_names, needs_song=True),
     *shape_settings(),
+    register_values_setting(SceneSetting.SET_REGISTERS),
+    register_values_setting(SceneSetting.ADD_REGISTERS),
+    statements_setting(SceneSetting.BYPASS_WHEN),
 )
 # The settings a file is read without the plain check of: a name is kept as the file writes it, a number too, and
 # which of the tempo and its ramp are read depends on which the file gives (_check_tempo).
@@ -194,6 +198,23 @@ class Scene(LlamaData):
         reset = self._settings[SceneSetting.RESET] or []
         return [name for name in REGISTER_NAMES if name in reset]
 
+    def get_register_sets(self):
+        """Return what it sets registers to as it first starts, a value for each register it sets."""
+        return dict(self._settings[SceneSetting.SET_REGISTERS] or {})
+
+    def get_register_adds(self):
+        """Return what it adds to registers every time it plays, its first play and each repeat, an amount for each register it adds to."""
+        return dict(self._settings[SceneSetting.ADD_REGISTERS] or {})
+
+    def changes_registers(self):
+        """Return whether it, or any of its clips, sets a register or adds to one."""
+        own = self._settings[SceneSetting.SET_REGISTERS] or self._settings[SceneSetting.ADD_REGISTERS]
+        return bool(own) or any(clip_slot.get_register_sets() or clip_slot.get_register_adds() for clip_slot in (self._clip_slots or {}).values())
+
+    def get_bypass_when(self):
+        """Return the statements about the registers that, while any is true as a clip's pattern starts over, bypass the generators of that clip."""
+        return own_copy(self._settings[SceneSetting.BYPASS_WHEN] or [])
+
     def get_track_names(self):
         """Return the tracks it plays a clip slot on, in the order the file lists them."""
         return list(self._clip_slots or {})
@@ -300,6 +321,28 @@ class Scene(LlamaData):
         chosen = chosen | {register} if on else chosen - {register}
         reset = [name for name in REGISTER_NAMES if name in chosen]
         self._settings[SceneSetting.RESET] = reset or None
+
+    @notes_change
+    def set_register_set(self, *, register, value):
+        """Make it set a register to a value as it first starts, or None to leave the register alone."""
+        self._set_checked(name=SceneSetting.SET_REGISTERS, value=with_register_value(values=self._settings[SceneSetting.SET_REGISTERS], register=register, value=value))
+
+    @notes_change
+    def set_register_add(self, *, register, value):
+        """Make it add an amount to a register every time it plays, or None to add nothing."""
+        self._set_checked(name=SceneSetting.ADD_REGISTERS, value=with_register_value(values=self._settings[SceneSetting.ADD_REGISTERS], register=register, value=value or None))
+
+    @notes_change
+    def set_bypass_statement(self, *, place, statement):
+        """Write the statement at a place of its table, add one just past the last, or remove one with None."""
+        self._set_checked(name=SceneSetting.BYPASS_WHEN, value=with_statement(statements=self._settings[SceneSetting.BYPASS_WHEN], place=place, statement=statement))
+
+    @notes_change
+    def _set_checked(self, *, name, value):
+        """Keep a setting's new value once its description allows it, None leaving the setting out."""
+        if value is not None:
+            SETTINGS[name].check(value)
+        self._settings[name] = value
 
     @notes_change
     def set_clip_slot(self, *, track, clip_slot, song):

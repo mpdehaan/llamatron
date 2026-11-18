@@ -212,8 +212,15 @@ HELP_CHAIN_EDITOR = """
 The steps run from top to bottom, each working on what the last one made.
 
 A adds an arpeggiator or AutoRatchet, which you make on the Generators page. ENTER changes one, C copies it, and Bksp removes it. M picks up a step, Up and Down carry it, and ENTER drops it.
-N renames the chain, and every clip using it follows.
+N renames the chain, and every clip using it follows. W opens the chain's statements about the registers, which say when a pass goes by the whole chain.
 / searches the list as you type: Tab completes, ENTER keeps your place, ESC goes back to the whole list.
+"""
+
+# ChainStatementsPage
+HELP_CHAIN_STATEMENTS_PAGE = """
+Conditional Execution for a whole chain. Each line is a statement about a register, such as AX odd. Each time a clip's pattern starts over, the statements are read, and when any is true the clip's notes go by this chain untouched for that pass.
+
+Left and Right move between a line's parts and ENTER changes the part: the register, the operator, and a number or another register. A line set to ignored does nothing. Bksp sets a line back to ignored.
 """
 
 # GeneratorsPage

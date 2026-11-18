@@ -34,7 +34,7 @@ import sys
 
 from llamatron.composition import defaults, limits
 from llamatron.composition.file_format import (
-    SHAPES, SHAPE_PARTS, shape_setting,
+    BYPASS_WHEN, NAMED_GENERATORS, SHAPES, SHAPE_PARTS, shape_setting,
     CC_REGISTER_SETTINGS,
     CC_ROWS,
     CONDITION_ROWS,
@@ -133,6 +133,13 @@ def any_song_section(section):
     return lambda data: any(song.get(section) for song in songs(data))
 
 
+def bypasses_generators(data):
+    """Return whether any generator, chain, scene, clip or track of the set has statements that bypass generators."""
+    generators = [settings for section in NAMED_GENERATORS.values() for settings in data.get(section, {}).values()]
+    chains = [chain for chain in data.get(Section.CHAINS, {}).values() if isinstance(chain, dict)]
+    return any(BYPASS_WHEN in item for item in [*generators, *chains, *scenes(data), *clip_slots(data), *tracks(data)])
+
+
 def repeats(*, items, setting):
     return any(item.get(setting, limits.MIN_REPEAT) > limits.MIN_REPEAT for item in items)
 
@@ -192,6 +199,10 @@ FEATURES = [
     ('scene tempo', any_scene_setting(SceneSetting.TEMPO)),
     ('tempo ramps', any_scene_setting(SceneSetting.TEMPO_START)),
     ('register resets', any_scene_setting(SceneSetting.RESET)),
+    ('scene register sets', any_scene_setting(SceneSetting.SET_REGISTERS)),
+    ('scene register adds', any_scene_setting(SceneSetting.ADD_REGISTERS)),
+    ('skip playback when', lambda data: any_track_setting(TrackSetting.SKIP_WHEN)(data) or any_clip_slot_setting(ClipSlotSetting.SKIP_WHEN)(data)),
+    ('bypass generators when', bypasses_generators),
     ('scene groove', any_scene_setting(SceneSetting.GROOVE)),
     ('drum tracks', any_track_setting(TrackSetting.DRUM)),
     ('muted tracks', any_track_setting(TrackSetting.MUTE)),

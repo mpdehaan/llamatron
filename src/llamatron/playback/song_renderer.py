@@ -38,7 +38,7 @@ from llamatron.playback.drift import DriftPlay, drifts_named
 from llamatron.playback.pattern_player import check_pattern_has_a_scale
 from llamatron.playback.grab_source import GrabSource
 from llamatron.playback.tune_source import TuneSource
-from llamatron.playback.registers import RegisterChange, RegisterReader, RegisterRecorder, RegisterTimeline, starting_values, with_resets
+from llamatron.playback.registers import RegisterChange, RegisterReader, RegisterRecorder, RegisterTimeline, scene_change, starting_values, with_resets
 from llamatron.playback.written_scene import WrittenScene
 from llamatron.grid.clip_grid import ClipGrid
 from llamatron.grid.clip_row import ClipRow
@@ -425,6 +425,10 @@ class SongRenderer:
             return []
         length = self.get_scene_length(scene)
         changes = []
+        # A scene sets registers only as it first starts, and adds to them on every play, its repeats too.
+        own = scene_change(sets=scene.get_scene().get_register_sets() if scene.is_first_play() else {}, adds=scene.get_scene().get_register_adds())
+        if own is not None:
+            changes.append(own)
         for track in scene.get_track_names():
             changes += _before(changes=self._counted_clip(scene=scene, track=track)[1], end=length)
         start = self.scene_start(scene)

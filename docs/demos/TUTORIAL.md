@@ -29,6 +29,7 @@ The demos in `examples/learning/`, in the order to learn them, each teaching one
 - [Follow Chords](#follow_chords): `24_follow_chords.yml`
 - [Phrasing](#phrasing): `25_phrasing.yml`
 - [Musician](#musician): `26_musician.yml`
+- [Advanced Conditionals](#advanced_conditionals): `27_advanced_conditionals.yml`
 <!-- end of the generated index -->
 
 <a id="hello_world"></a>
@@ -502,3 +503,25 @@ breakdown the bass plays one hit a bar and the rhythm guitar is muted.
 | musician |
 | :---: |
 | [✓](../generators/MUSICIAN.md) |
+
+<a id="advanced_conditionals"></a>
+## Advanced Conditionals: `27_advanced_conditionals.yml`
+
+Conditional Execution in two scenes. In the first, four tracks each play one note a bar, each at a
+different place in the bar: one in every bar, one in every second bar, one in every third bar, and
+one whose pitch climbs with the count of the bars, so that the counting is heard. In the second, one
+pattern of four chords plays eight times on one guitar, and the chain's four Guitarify generators
+take turns, so the same chords are strummed, then picked, then chugged, then rolled, twice round.
+
+[`examples/learning/27_advanced_conditionals.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/27_advanced_conditionals.yml) · A minor pentatonic · 112 BPM · 2:34 · 2 scenes · 5 tracks
+
+| chords | chains | guitarify | key changes | tempo changes | registers | conditional execution |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../generators/GUITARIFY.md) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../REGISTERS.md) | [✓](../REGISTERS.md#conditional-execution) |
+<!-- end of the generated summary of 27_advanced_conditionals -->
+
+**New Features Introduced**
+
+| conditional execution |
+| :---: |
+| [✓](../REGISTERS.md#conditional-execution) |

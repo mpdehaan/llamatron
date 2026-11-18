@@ -18,8 +18,10 @@
 
 from typing import NamedTuple
 
+from llamatron.composition.conditions import statements_setting, with_statement
+from llamatron.composition.file_format import ChainSetting
 from llamatron.composition.generator_settings import GENERATOR_SETTINGS
-from llamatron.composition.llama_data import LlamaData
+from llamatron.composition.llama_data import LlamaData, own_copy
 from llamatron.composition.sections import GENERATOR_KINDS, NAMED_GENERATORS
 from llamatron.composition.checks import listed, reading
 from llamatron.composition.invalid_value import InvalidValue
@@ -28,6 +30,8 @@ from llamatron.support.revised import notes_change
 
 # Each step of a chain names exactly one generator.
 GENERATORS_PER_STEP = 1
+# The check of a chain's table of statements about the registers.
+BYPASS_WHEN = statements_setting(ChainSetting.BYPASS_WHEN)
 
 
 class ChainStep(NamedTuple):
@@ -44,15 +48,23 @@ class Chain(LlamaData):
     name, so that several chains can share one.
     """
 
-    __slots__ = ('_steps',)
+    __slots__ = ('_steps', '_bypass_when')
 
-    def __init__(self, steps):
+    def __init__(self, steps, *, bypass_when=None):
         self.note_change()
         self._steps = [ChainStep(kind, name) for kind, name in steps]
+        self._bypass_when = own_copy(bypass_when) or None
 
     @classmethod
     def from_data(cls, *, data, where, setlist=None):
+        """Read a chain: its list of steps, or, for a chain with statements, its steps and its statements under their names."""
         with reading(where):
+            bypass_when = None
+            if isinstance(data, dict) and ChainSetting.STEPS in data and set(data) <= {ChainSetting.STEPS, ChainSetting.BYPASS_WHEN}:
+                bypass_when = data.get(ChainSetting.BYPASS_WHEN)
+                if bypass_when is not None:
+                    BYPASS_WHEN.check(bypass_when)
+                data = data[ChainSetting.STEPS]
             if not isinstance(data, list):
                 raise InvalidValue(errors.ERR_EXPECTED_LIST)
             steps = []
@@ -61,10 +73,25 @@ class Chain(LlamaData):
                     raise InvalidValue(errors.ERR_ONE_GENERATOR_PER_STEP.format(step=step))
                 kind, name = next(iter(step.items()))
                 steps.append(_checked_step(kind=kind, name=name, setlist=setlist))
-            return cls(steps)
+            return cls(steps, bypass_when=bypass_when)
 
     def to_data(self):
-        return [{step.kind: step.name} for step in self._steps]
+        steps = [{step.kind: step.name} for step in self._steps]
+        if self._bypass_when is None:
+            return steps
+        return {ChainSetting.STEPS: steps, ChainSetting.BYPASS_WHEN: own_copy(self._bypass_when)}
+
+    def get_bypass_when(self):
+        """Return the statements about the registers that, while any is true as a clip's pattern starts over, leave the whole chain out for that pass."""
+        return own_copy(self._bypass_when or [])
+
+    @notes_change
+    def set_bypass_statement(self, *, place, statement):
+        """Write the statement at a place of its table, add one just past the last, or remove one with None."""
+        table = with_statement(statements=self._bypass_when, place=place, statement=statement)
+        if table is not None:
+            BYPASS_WHEN.check(table)
+        self._bypass_when = table
 
     def get_steps(self):
         """Return each step as a ChainStep, in the order they run."""
@@ -79,7 +106,7 @@ class Chain(LlamaData):
         return {(NAMED_GENERATORS[step.kind], step.name) for step in self._steps}
 
     def copy(self):
-        return Chain(self._steps)
+        return Chain(self._steps, bypass_when=self._bypass_when)
 
     # Changing the chain. Each step is checked against the set's generators, as reading a file does.
 

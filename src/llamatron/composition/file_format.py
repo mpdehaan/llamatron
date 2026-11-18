@@ -194,6 +194,9 @@ class TrackSetting:
     EUCLID_STEPS = 'euclid_steps'
     EUCLID_ROTATE = 'euclid_rotate'
     EUCLID_STEP = 'euclid_step'
+    # The register statements that bypass the generators of the track's clips, and that make its clips sit out a pass.
+    BYPASS_WHEN = 'bypass_when'
+    SKIP_WHEN = 'skip_when'
 
 
 class PatternSetting:
@@ -305,6 +308,12 @@ class ClipSlotSetting:
     FOLLOW_ACTION = 'follow_action'
     # A scale of the clip's own, which wins over the scene's and the song's.
     SCALE = 'scale'
+    # What the clip sets each register to as it launches, and adds to each register every time its pattern starts over.
+    SET_REGISTERS = 'set_registers'
+    ADD_REGISTERS = 'add_registers'
+    # The register statements that bypass its generators, and that make it sit out a pass.
+    BYPASS_WHEN = 'bypass_when'
+    SKIP_WHEN = 'skip_when'
 
 
 class SceneSetting:
@@ -336,6 +345,11 @@ class SceneSetting:
     ARTICULATE_END = 'articulate_end'
     ARTICULATE_OVER = 'articulate_over'
     ARTICULATE_THEN = 'articulate_then'
+    # What the scene sets each register to as it first starts, and adds to each register every time it plays.
+    SET_REGISTERS = 'set_registers'
+    ADD_REGISTERS = 'add_registers'
+    # The register statements that bypass the generators of its clips.
+    BYPASS_WHEN = 'bypass_when'
     TRACKS = 'tracks'
 
 
@@ -370,6 +384,56 @@ class Comparison:
 
 # The comparisons a key cycles through on a condition row, after blank.
 COMPARISONS = [Comparison.LESS, Comparison.MORE, Comparison.SAME]
+
+
+class StatementPart:
+    """The parts of one statement about a register, as a file names them: AX % 3 = 0 is a register, an operator, a value, a comparison and what the result is compared with."""
+
+    REGISTER = 'register'
+    OPERATOR = 'operator'
+    VALUE = 'value'
+    COMPARISON = 'comparison'
+    AGAINST = 'against'
+
+
+class Operator:
+    """What a statement does with its register: compares it, asks whether it is odd or even, or works a sum out to compare."""
+
+    LESS = '<'
+    AT_MOST = '<='
+    SAME = '='
+    AT_LEAST = '>='
+    MORE = '>'
+    ODD = 'odd'
+    EVEN = 'even'
+    DIFFERENT = '!='
+    PLUS = '+'
+    MINUS = '-'
+    REMAINDER = '%'
+    TIMES = '*'
+    DIVIDED_BY = '/'
+
+
+# The operators that compare, those that need no value, and those that work a sum out first, each in the order a picker lists them.
+COMPARING_OPERATORS = [Operator.LESS, Operator.AT_MOST, Operator.SAME, Operator.AT_LEAST, Operator.MORE, Operator.DIFFERENT]
+PARITY_OPERATORS = [Operator.ODD, Operator.EVEN]
+ARITHMETIC_OPERATORS = [Operator.PLUS, Operator.MINUS, Operator.REMAINDER, Operator.TIMES, Operator.DIVIDED_BY]
+DIVIDING_OPERATORS = [Operator.REMAINDER, Operator.DIVIDED_BY]
+OPERATORS = [
+    Operator.LESS, Operator.AT_MOST, Operator.SAME, Operator.AT_LEAST, Operator.MORE, Operator.ODD, Operator.EVEN, Operator.DIFFERENT,
+    *ARITHMETIC_OPERATORS,
+]
+# What a sum's result is compared with, in the order a picker lists them.
+RESULT_COMPARISONS = [Operator.AT_MOST, Operator.LESS, Operator.SAME, Operator.MORE, Operator.AT_LEAST, Operator.DIFFERENT]
+# Every generator's and every chain's statements, under the same name wherever they are written.
+BYPASS_WHEN = 'bypass_when'
+
+
+class ChainSetting:
+    """What a chain written with statements holds: its steps and the statements. A chain with none is written as its list of steps alone."""
+
+    STEPS = 'steps'
+    BYPASS_WHEN = BYPASS_WHEN
 
 
 class RegisterSetting:

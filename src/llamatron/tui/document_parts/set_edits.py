@@ -209,6 +209,14 @@ class SetEdits:
         """Set one setting of a named arp or AutoRatchet, or None to leave it out and use its default."""
         self._change(self._generator(section=section, name=name).set_setting, name=setting, value=value)
 
+    def set_generator_bypass_statement(self, *, section, name, place, statement):
+        """Write one statement of the table that bypasses a named generator, or None to remove it."""
+        self._change(self._generator(section=section, name=name).set_bypass_statement, place=place, statement=statement)
+
+    def set_chain_bypass_statement(self, *, chain, place, statement):
+        """Write one statement of the table that leaves a whole chain out, or None to remove it."""
+        self._change(self._chain(chain).set_bypass_statement, place=place, statement=statement)
+
     def set_musician_section(self, *, name, section, setting, value):
         """Set what a kind of section has of its own for a musician, whether the musician plays there or how the part is played, or None for what a section does unasked."""
         self._change(self._generator(section=Section.MUSICIANS, name=name).set_section_own, section=section, name=setting, value=value)

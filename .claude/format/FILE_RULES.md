@@ -321,6 +321,25 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   adds (`Setlist.changes_registers`).
 - Values carry from scene to scene. A scene's `reset: [AX, DX]` sets those back to their defaults
   as it first starts, not on its repeats.
+- A scene's and a clip's `set_registers: {AX: 0}` and `add_registers: {AX: 1}` (the user's design, shown as Set Registers and
+  Increment Registers): a scene's sets act as it first starts and its adds on every play; a clip's sets act on its first pass in
+  each written-out play of its scene and its adds as every pass starts (`registers.at_pass`). They are register changes like a
+  step's, recorded at places before any step's (`SCENE_PLACE`, `CLIPS_BEFORE_STEPS`), so the order at one moment is resets, the
+  scene's sets, the scene's adds, each clip's sets, each clip's adds, the steps. The user declined changing that order.
+- Conditional Execution (the user's name and design; `composition/conditions.py`): a table of at most `MAX_STATEMENTS` statements,
+  each a dictionary `{register, operator, value, comparison, against}` holding only the parts its operator takes
+  (`parts_of`): a comparison and a value, `odd` or `even` alone, or a sum, its number, a comparison of the result and what it is
+  compared with. A value is a whole number or a register's name. Whole-number math; a typed 0 after `/` or `%` is refused and a
+  register that divides holding 0 makes the statement true. Any true statement trips the table. The tables: `bypass_when` on a
+  generator (every kind, `BYPASS_SETTING`), a chain (written `{steps: [...], bypass_when: [...]}`, the plain list otherwise), a
+  scene, a clip and a track, and `skip_when` on a clip and a track, never a scene. The registers are read once as each pass of a
+  clip's pattern starts, after that moment's sets and adds (`ClipSlotPlayer._play_passes`).
+- How a table acts (`playback/clip_slot_player.py`): a sit-out pass is played and dropped for a rest of its length, so it counts
+  toward Repeat and makes every register change, since a register change may never depend on a register's value (the counting play
+  must find them all). A bypass runs the generator on the whole clip and splices the tripped passes' untouched notes back
+  (`_kept_where`), so a generator's own state never depends on the registers; a generator that changes the clip's length is taken
+  whole unless every pass tripped; a Density, Swell or Articulate named in a chain is judged at the clip's first pass; a Drift's
+  table is never read, and the Drift page shows none. A table stops only what it is on: a clip's, scene's and track's bypass leave out the chains of that clip.
 - A note pushed outside the MIDI range goes to the nearest octave that fits.
 
 ### Directions

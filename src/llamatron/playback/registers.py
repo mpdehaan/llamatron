@@ -36,6 +36,15 @@ from llamatron.composition.file_format import REGISTER_NAMES
 NO_VALUE = 0
 # A place after every track's, for the values once every track has made its change at a moment.
 LAST_PLACE = float('inf')
+# What happens at one moment happens in this order: the scene's own sets and adds, each clip's as its pattern starts over, in
+# track order, and then the steps', in track order. A clip's place is its track's, this far before every step's.
+SCENE_PLACE = float('-inf')
+CLIPS_BEFORE_STEPS = 1000000
+# The place a clip reads the registers from as its pattern starts over: after every clip's own change then, before any step's.
+AS_A_PASS_STARTS = -1
+NO_CHANGES = {}
+# When a scene's own changes happen: as it starts.
+SCENE_START = 0
 
 
 class RegisterChange(NamedTuple):
@@ -129,6 +138,12 @@ class RegisterRecorder:
             self._changes.append(RegisterChange(time, self._place, sets, adds))
         return no_values()
 
+    def at_pass(self, *, time, sets, adds):
+        """Note what a clip sets the registers to and adds to them as its pattern starts over at a time in the scene, and return None: nothing is known of the values yet."""
+        if sets or adds:
+            self._changes.append(RegisterChange(time, self._place - CLIPS_BEFORE_STEPS, sets, adds))
+        return None
+
     def is_counting(self):
         """Return true: a clip played to count its changes plays every note, as if neither probability nor a condition silenced one, so that what an arpeggiator adds for its notes is counted the same in every take."""
         return True
@@ -151,9 +166,18 @@ class RegisterReader:
         """Return false: a finished clip's notes are silenced by probability and conditions as they play."""
         return False
 
+    def at_pass(self, *, time, sets, adds):
+        """Return the values a clip sees as its pattern starts over at a time in the scene, after every clip's own sets and adds then, which are already in the timeline."""
+        return self._timeline.values_at(time=time, place=AS_A_PASS_STARTS)
+
     def at_step(self, *, time, sets, adds):
         """Return the values a step sees at a time in the scene. What it sets and adds is already in the timeline."""
         return self._timeline.values_at(time=time, place=self._place)
+
+
+def scene_change(*, sets, adds):
+    """Return what a scene itself sets the registers to and adds to them as it starts, before anything else at that moment, or None when it does neither."""
+    return RegisterChange(SCENE_START, SCENE_PLACE, sets, adds) if sets or adds else None
 
 
 def no_values():

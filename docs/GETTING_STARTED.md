@@ -112,10 +112,12 @@ flowchart TD
     InstrumentEditor["Instrument editor"]
     ScalePage["Scale"]
     SongPage["Song"]
+    ChainStatementsPage["Chain statements"]
     ArrangePage -- "ENTER" --> ClipPage
     ArrangePage --> PatternEditor
     ArrangePage -- "ENTER" --> ScenePage
     ArrangePage -- "ENTER" --> TrackEditor
+    ChainEditor --> ChainStatementsPage
     ChainsPage --> ChainEditor
     ClipPage --> PatternEditor
     FilePage -- "ENTER" --> NotesPage

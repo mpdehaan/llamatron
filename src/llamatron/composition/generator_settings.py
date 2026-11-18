@@ -21,9 +21,10 @@ that a problem is reported with the name of the generator, whether or not a chai
 are checked again when a chain makes the generator, since settings can be built without a file.
 """
 
+from llamatron.composition.conditions import statements_setting, with_statement
 from llamatron.composition.checks import Bars, check_keys, in_whole_notes, is_true_or_false, number, is_whole_number, is_whole_number_from, listed, reading, time_length
 from llamatron.composition.file_format import (
-    SECTION_KINDS, FIXED_CHORDS, GENERATOR_RESTART, RESTARTS, TENSIONS, Accidental, EuclidPart, NamedRhythm, Restart, StrumDirection, StrumPart, DRIFT_DIRECTIONS, DRIFT_VERSIONS, REGISTER_NAMES, SHAPE_PARTS, SHAPE_THENS, DriftValue, GeneratorKind, RegisterName, Shape, ShapePart, shape_setting, Section,
+    BYPASS_WHEN, SECTION_KINDS, FIXED_CHORDS, GENERATOR_RESTART, RESTARTS, TENSIONS, Accidental, EuclidPart, NamedRhythm, Restart, StrumDirection, StrumPart, DRIFT_DIRECTIONS, DRIFT_VERSIONS, REGISTER_NAMES, SHAPE_PARTS, SHAPE_THENS, DriftValue, GeneratorKind, RegisterName, Shape, ShapePart, shape_setting, Section,
 )
 from llamatron.composition.named_scale import scale_type_names
 from llamatron.composition.strum import strum_part_settings, strum_values
@@ -269,6 +270,15 @@ class GeneratorSettings(LlamaData):
             self.SETTINGS[name].check(value)
             self._settings[name] = own_copy(value)
 
+    def get_bypass_when(self):
+        """Return the statements about the registers that, while any is true as a clip's pattern starts over, bypass the generator for that pass."""
+        return own_copy(self._written(BYPASS_WHEN) or [])
+
+    @notes_change
+    def set_bypass_statement(self, *, place, statement):
+        """Write the statement at a place of its table, add one just past the last, or remove one with None."""
+        self.set_setting(name=BYPASS_WHEN, value=with_statement(statements=self._written(BYPASS_WHEN), place=place, statement=statement))
+
     def get_restart(self):
         """Return when the generator starts over, every clip unless set."""
         return self._written(GENERATOR_RESTART) or Restart.EVERY_CLIP
@@ -292,7 +302,7 @@ class GeneratorSettings(LlamaData):
 
     def _taken_values(self):
         """Return the settings as the generator takes them: a length as a number, a choice as what its name means, and the rest as written."""
-        return {name: self.TAKEN_AS[name](value) if name in self.TAKEN_AS else value for name, value in self._settings.items()}
+        return {name: self.TAKEN_AS[name](value) if name in self.TAKEN_AS else value for name, value in self._settings.items() if name != BYPASS_WHEN}
 
     def _with_defaults(self, *, values, default_seed, default_step, bar):
         """Return the generator's values, with a seed and a step added where it needs them. Most don't."""
@@ -1373,3 +1383,7 @@ GENERATOR_SETTINGS = {
     GeneratorKind.PHRASING: PhrasingSettings, GeneratorKind.MUSICIAN: MusicianSettings,
 }
 
+# Every generator keeps a table of statements about the registers, written last, which says when a clip's pass goes by it untouched.
+BYPASS_SETTING = statements_setting(BYPASS_WHEN)
+for _settings_class in GENERATOR_SETTINGS.values():
+    _settings_class.SETTINGS = {**_settings_class.SETTINGS, BYPASS_WHEN: BYPASS_SETTING}

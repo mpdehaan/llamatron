@@ -270,6 +270,17 @@ code.
 - `tests/tui/test_tui_fields.py` tests each kind, and tours every settings page for the ends of its
   numbers and the keys of its toggles.
 
+- Conditional Execution on a page (`tui/screens/shared/statements.py`, the user's design): `statement_section(page=, label=, table=,
+  statements=, store=)` gives a heading that never says `(set)` and a `Cells` line for each of the `MAX_STATEMENTS` statements, each
+  cell at a fixed width so nothing moves: the register (`ignored` first), the operator, and the parts the operator takes. A value's
+  ENTER offers `number` and each register. Bksp, or choosing `ignored`, removes the statement, and a line past the last statement
+  writes the next one, since a table keeps no gaps. A line's label is blank and as long as its place on the page (`table` tells a
+  page's two tables apart), which is how `restore_place` and the tests find a line. `register_fields` gives the Set Registers and
+  Increment Registers sections, a number for each register, `(none)` until typed. The Scene page, the clip page and the track
+  editor list their sections; every generator's page gets its table from `ShowsNamedItem.shared_sections`, which
+  `FieldPage.every_field` puts before the page's buttons; and the chain editor, a list page, opens `ChainStatementsPage` with `W`
+  (When). `tests/tui/test_tui_statements.py` tests them.
+
 ## Opening, saving and exporting
 
 - A file picker comes back to the directory it last showed, for the session and never saved, the user's ask: `OpenPage` keeps the

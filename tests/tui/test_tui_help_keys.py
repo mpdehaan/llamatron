@@ -258,7 +258,10 @@ class KeyTour(UITest):
         await self.walk()
         await self.press(Key.ESCAPE)
         await self.walk()
-        await self.press(Key.ESCAPE, keybindings.MainPage.CHAINS, Key.ENTER)
+        # The chain editor's When key opens the chain's statements about the registers.
+        await self.press(Key.ESCAPE, keybindings.MainPage.CHAINS, Key.ENTER, keybindings.ChainEditor.WHEN)
+        await self.walk()
+        await self.press(Key.ESCAPE)
         await self.walk()
         await self.press(Key.ESCAPE)
         await self.walk()

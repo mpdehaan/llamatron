@@ -135,6 +135,34 @@ class SongEdits:
         """Set one part of a clip's strum, or None to leave it blank and take its track's."""
         self._change(self.clip_slot(index=index, track=track).set_strum_setting, part=part, value=value)
 
+    def set_scene_register_set(self, *, index, register, value):
+        """Make a scene set a register to a value as it first starts, or None to leave the register alone."""
+        self._change(self._scene(index).set_register_set, register=register, value=value)
+
+    def set_scene_register_add(self, *, index, register, value):
+        """Make a scene add an amount to a register every time it plays, or None to add nothing."""
+        self._change(self._scene(index).set_register_add, register=register, value=value)
+
+    def set_scene_bypass_statement(self, *, index, place, statement):
+        """Write one statement of the table that bypasses the generators of a scene's clips, or None to remove it."""
+        self._change(self._scene(index).set_bypass_statement, place=place, statement=statement)
+
+    def set_clip_register_set(self, *, index, track, register, value):
+        """Make a clip set a register to a value as it launches, or None to leave the register alone."""
+        self._change(self.clip_slot(index=index, track=track).set_register_set, register=register, value=value)
+
+    def set_clip_register_add(self, *, index, track, register, value):
+        """Make a clip add an amount to a register every time its pattern starts over, or None to add nothing."""
+        self._change(self.clip_slot(index=index, track=track).set_register_add, register=register, value=value)
+
+    def set_clip_statement(self, *, index, track, name, place, statement):
+        """Write one statement of one of a clip's tables, by the table's file name, or None to remove it."""
+        self._change(self.clip_slot(index=index, track=track).set_statement, name=name, place=place, statement=statement)
+
+    def set_track_statement(self, *, track, name, place, statement):
+        """Write one statement of one of a track's tables, by the table's file name, or None to remove it."""
+        self._change(self._track(track).set_statement, name=name, place=place, statement=statement)
+
     def set_scene_shape_setting(self, *, index, name, value):
         """Set one part of a scene's Density, Swell or Articulate, by its file name like density_start, or None to leave it blank."""
         self._change(self._scene(index).set_shape_setting, name=name, value=value)
