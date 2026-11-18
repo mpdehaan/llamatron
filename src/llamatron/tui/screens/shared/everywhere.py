@@ -33,7 +33,7 @@ from llamatron.tui.dialogs.corrections_dialog import CorrectionsDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.screens.shared.shared import SONG_SUFFIX, SONG_SUFFIXES
 from llamatron.tui.uses import loop_error_lines
-from llamatron.strings.errors import ERR_CANT_EXPORT_TITLE, ERR_CANT_OPEN_TITLE, ERR_CANT_SAVE, ERR_CANT_SAVE_TITLE, ERR_LOOP_SCENES_TITLE, ERR_WAV_NEEDS_FLUIDSYNTH
+from llamatron.strings.errors import ERR_NOT_WHILE_DRAFTING, ERR_CANT_EXPORT_TITLE, ERR_CANT_OPEN_TITLE, ERR_CANT_SAVE, ERR_CANT_SAVE_TITLE, ERR_LOOP_SCENES_TITLE, ERR_WAV_NEEDS_FLUIDSYNTH
 from llamatron.strings.labels import MSG_EXPORT_CHOICES
 from llamatron.tui.dialogs.quit_dialog import SAVE_THEN_QUIT, QuitDialog
 from llamatron.strings.marks import MSG_CRUMB_SEPARATOR
@@ -55,6 +55,15 @@ UNSAVED_TITLE = '{title} ({note})'
 
 def everywhere_actions(page):
     """Return what each key that works everywhere does on a page, by its binding."""
+    if page.app.is_drafting():
+        # A draft is no set of its own: it is neither saved nor exported, and nothing is opened over the set behind it.
+        def refused():
+            page.refuse(ERR_NOT_WHILE_DRAFTING)
+        return {
+            page.KEYS.SAVE: refused, page.KEYS.OPEN_SET: refused, page.KEYS.EXPORT: refused, page.KEYS.WIZARD: refused,
+            page.KEYS.UNDO: lambda: undo(page), page.KEYS.REDO: lambda: redo(page), page.KEYS.HELP: page.show_help, page.KEYS.ABOUT: page.show_about,
+            page.KEYS.SILENCE: lambda: silence(page), page.KEYS.QUIT_NOW: page.app.exit,
+        }
     return {
         page.KEYS.SAVE: lambda: save(page), page.KEYS.OPEN_SET: lambda: open_set(page), page.KEYS.EXPORT: lambda: export(page),
         page.KEYS.UNDO: lambda: undo(page), page.KEYS.REDO: lambda: redo(page), page.KEYS.HELP: page.show_help, page.KEYS.ABOUT: page.show_about,

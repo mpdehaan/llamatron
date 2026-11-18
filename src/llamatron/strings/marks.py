@@ -455,3 +455,8 @@ MSG_TUNE_NOTE_SAID = 'step {step} of {steps}: {note}, {length} long'
 MSG_TUNE_REST_SAID = 'step {step} of {steps}: silent'
 MSG_WIZARD_COMPOSITION_LINE = '{name:<{width}}  {value}'
 MSG_WIZARD_SECTION_LINE = '{number:>2}  {name:<{width}}  {bars:>3} bars'
+
+# tui/screens/wizard/tunes_branch.py: a tune a person edited, a kind of section whose tune is not made, and the Composition panel's line about the tunes.
+MSG_WIZARD_TUNE_EDITED = '{name} (edited)'
+MSG_WIZARD_NO_TUNE_SHOWN = '(none)'
+MSG_WIZARD_TUNES_SHOWN = '{count}, {edited} edited'

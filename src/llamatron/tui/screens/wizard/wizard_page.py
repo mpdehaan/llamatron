@@ -38,11 +38,13 @@ from llamatron.macro_composer.wizard_choices import USUAL_PIECE_NOTE
 from llamatron.strings.labels import MSG_WIZARD_FORM_QUESTION_TITLES, MSG_WIZARD_GENRE_BRANCH, MSG_WIZARD_KIT_DRUMS, MSG_WIZARD_PIECE_SOUND_TITLE, Crumb, MSG_WIZARD_MORE_SOUNDS, MSG_WIZARD_MORE_SOUNDS_TITLE, MSG_WIZARD_SOUND_TITLE, MSG_WIZARD_ADD_SECTION_TITLE, MSG_WIZARD_INSERT_SECTION_TITLE, MSG_WIZARD_BAND_BRANCH, MSG_WIZARD_COMPOSITION_BRANCH, MSG_WIZARD_FORM_BRANCH, MSG_WIZARD_REPLACE_SECTIONS_TITLE, MSG_WIZARD_SUGGESTED_FORM_TITLE, MSG_WIZARD_CAPTION, MSG_WIZARD_REPLACE_CAPTION
 from llamatron.strings.marks import MSG_WIZARD_KIT_DRUM_SHOWN, MSG_WIZARD_OWN_DRUM_SHOWN, MSG_WIZARD_FROM_BAND, MSG_WIZARD_CARRIED, MSG_WIZARD_SUGGESTED_FORM, MSG_WIZARD_BRANCH_CLOSED, MSG_WIZARD_BRANCH_OPEN, MSG_WIZARD_EDITED_BRANCH
 from llamatron.strings.messages import MSG_WIZARD_CLOSE_QUESTION, MSG_WIZARD_CLOSE_UNCHANGED_QUESTION, MSG_WIZARD_CLOSE_TITLE, MSG_WIZARD_CREATED, MSG_WIZARD_MOVING, MSG_WIZARD_REPLACE_SECTIONS_QUESTION, MSG_WIZARD_NOTHING_TO_UNDO, MSG_WIZARD_REPLACED, MSG_WIZARD_SONG_NAME_PROMPT
-from llamatron.strings.messages import MSG_STOPPED, MSG_WIZARD_LISTENING
+from llamatron.strings.messages import MSG_STOPPED, MSG_WIZARD_LISTENING, MSG_WIZARD_TUNE_KEPT, MSG_WIZARD_TUNE_UNCHANGED
 from llamatron.strings.names import MSG_NEW_SONG_WORD
 from llamatron.support.version import VERSION
 from llamatron.tui import keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
+from llamatron.tui.document import Document
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.dialogs.sound_dialog import SoundDialog
 from llamatron.tui.screens.set.instrument_editor import sound_families
 from llamatron.tui.screens.shared.sound_trial import HITS_STEP, RUN_STEP, SoundTrial, hits_of, run_of
@@ -102,6 +104,9 @@ class WizardPage(FieldPage):
         self.in_fields = False
         # Move mode, the tracker's: whether M has picked up the branch under the tree's cursor.
         self.moving = False
+        # The tune whose notes the pattern editor has open over the wizard: its kind of section, its pattern's name in the draft set and
+        # the pattern as it was when opened. None when no tune is being edited.
+        self._tune_open = None
         if start is not None:
             self.start_with(start)
 
@@ -137,6 +142,49 @@ class WizardPage(FieldPage):
         places = [place for place, field in enumerate(self.shown_fields()) if getattr(field, LABEL_OF_FIELD, None) == label]
         if places and self.place not in places:
             self.place = min(places, key=lambda place: abs(place - self.place))
+
+    # Editing a tune's notes: the pattern editor opened over the wizard, on a draft of the set the choices make.
+
+    def edit_tune(self, kind):
+        """Open the pattern editor on a kind of section's tune. The editor works on a draft of the set the choices make, held by the
+        app until the editor closes; the notes are kept as the kind's own tune then, if they were changed."""
+        try:
+            setlist, _ = self._choices.made_for_listening()
+            name = self._choices.tune_pattern_name(kind)
+        except (ValueError, SongFileError) as problem:
+            self.refuse(str(problem))
+            return
+        if name is None:
+            self.refuse(ERR_WIZARD_NOTHING_TO_LISTEN_TO)
+            return
+        self.app.made_preview().stop()
+        draft = Document(setlist=setlist)
+        self._tune_open = (kind, name, draft.setlist().get_pattern(name).to_data())
+        self.app.open_draft(draft)
+        self.show_page(PatternEditor(holder=self.holder, name=name, opened_from=self))
+
+    def on_screen_resume(self):
+        """Take a tune's notes back from the pattern editor, which has closed, before the page is drawn again."""
+        if self._tune_open is not None and self.app.is_drafting():
+            self.keep_tune_edited(self.app.close_draft())
+        super().on_screen_resume()
+
+    def keep_tune_edited(self, draft):
+        """Keep the notes of the tune that was open as its kind's own, where the editor changed them, and say which happened. A pattern
+        that was renamed or deleted in the editor is not found, and nothing is kept."""
+        kind, name, before = self._tune_open
+        self._tune_open = None
+        setlist = draft.setlist()
+        after = setlist.get_pattern(name).to_data() if setlist.has_pattern(name) else before
+        if after == before:
+            self.say(MSG_WIZARD_TUNE_UNCHANGED.format(kind=kind))
+            return
+        try:
+            self.choosing(lambda pattern: self._choices.set_tune_pattern(kind=kind, pattern=pattern))(after)
+        except ValueError as problem:
+            self.refuse(str(problem))
+            return
+        self.say(MSG_WIZARD_TUNE_KEPT.format(kind=kind))
 
     # Listening: a part of the song as it would be made, heard through FluidSynth and thrown away.
 

@@ -26,10 +26,11 @@ from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.chords_branch import ChordsBranch
 from llamatron.tui.screens.wizard.hooks_branch import HooksBranch
 from llamatron.tui.screens.wizard.melody_branch import MelodyBranch
+from llamatron.tui.screens.wizard.tunes_branch import TunesBranch
 
 
 class CompositionBranch(Branch):
-    """The branches Chords, Melody and Hooks, with what each is set to shown at a glance; the words and the bass lines are to come."""
+    """The branches Chords, Melody, Tunes and Hooks, with what each is set to shown at a glance; the words and the bass lines are to come."""
 
     __slots__ = ()
 
@@ -41,7 +42,7 @@ class CompositionBranch(Branch):
 
     def children(self):
         page = self.page()
-        return [ChordsBranch(page=page), MelodyBranch(page=page), HooksBranch(page=page)]
+        return [ChordsBranch(page=page), MelodyBranch(page=page), TunesBranch(page=page), HooksBranch(page=page)]
 
     def notes(self, width):
         """Return each branch under this one with what it is set to, leaving out a branch the subgenre has nothing to choose in; or what to choose first."""

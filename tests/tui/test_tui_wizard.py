@@ -54,7 +54,7 @@ from tests.support.ui_testing import UITest, back_key, first_key, fixed_text, fo
 # The tree's branches by their places from the top, while none is open.
 GENRE_PLACE = 0
 # The branches under Composition, which the tree shows from the start, and the places of the branches after them.
-COMPOSITION_BRANCHES = 3
+COMPOSITION_BRANCHES = 4
 FORM_PLACE = 3 + COMPOSITION_BRANCHES
 # The tree's top panels and the Subgenre panel under Genre come before Create.
 CREATE_PLACE = 5 + COMPOSITION_BRANCHES

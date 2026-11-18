@@ -42,7 +42,7 @@ from llamatron.macro_composer.arranger import (
 )
 from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer import hook_kinds, line_edits, phrasing
-from llamatron.macro_composer.arranger import KICK as KICK_PIECE
+from llamatron.macro_composer.arranger import KICK as KICK_PIECE, OWN_TUNES
 from llamatron.macro_composer.notation import NONE as NO_HIT
 from llamatron.macro_composer.arranger import CHORDS, DYNAMICS, EIGHTHS_IN_WHOLE, GROOVE, LOUDNESS as LOUDNESS_OF, NO_GROOVE, SCENE_SETTINGS, form_of
 from llamatron.macro_composer.loudness import LEAST_DYNAMICS, LEVELS as LOUDNESS_LEVELS, MOST_DYNAMICS, USUAL_DYNAMICS, drum_levels, note_levels, with_own
@@ -67,6 +67,7 @@ from llamatron.composition.limits import GM_FAMILY_SIZE, MAX_GM_SOUND, MIN_GM_SO
 from llamatron.strings.labels import MSG_GM_SOUNDS
 from llamatron.strings.marks import MSG_WIZARD_SECTION_NUMBERED, MSG_WIZARD_SECTION_VARIANT
 from llamatron.support.version import VERSION as A_VERSION
+from llamatron.strings import errors
 from llamatron.strings.errors import ERR_WIZARD_NO_SUCH_VARIANT, ERR_WIZARD_CHORDS_SHARED, ERR_WIZARD_SWING, ERR_WIZARD_DYNAMICS, ERR_WIZARD_LOUDNESS, ERR_WIZARD_NO_RIFF, ERR_WIZARD_RIFF, ERR_WIZARD_RIFF_UNMADE, ERR_WIZARD_COMES_IN, ERR_WIZARD_LAYS_OUT, ERR_WIZARD_PLAYS_UNMADE, ERR_WIZARD_REACTS, ERR_WIZARD_CONTRAST, ERR_WIZARD_EXTRAS, ERR_WIZARD_END, ERR_WIZARD_FIRST_PLAYER, ERR_WIZARD_HOOK_LINE, ERR_WIZARD_HOOK_PART, ERR_WIZARD_SETUP_BARS, ERR_WIZARD_START, ERR_WIZARD_START_UNMADE, ERR_WIZARD_CHORDS, ERR_WIZARD_FORM_ANSWER, ERR_WIZARD_NO_FORM_QUESTIONS, ERR_WIZARD_INTRO_HOOK, ERR_WIZARD_PHRASING, ERR_WIZARD_SECTION_OWN, ERR_WIZARD_SECTION_OWN_UNMADE, ERR_WIZARD_GENRE_HAS_NO_PLAN, ERR_WIZARD_NO_SONG_PLAN, ERR_WIZARD_SWITCH, ERR_WIZARD_NO_SUCH_ROW, ERR_WIZARD_ROW, ERR_WIZARD_HOOK_TAKE, ERR_WIZARD_FILLS_BUSY, ERR_WIZARD_NO_SUCH_ANSWERER, ERR_WIZARD_NO_SUCH_WAY_BESIDE, ERR_WIZARD_SECTION_HAS_NO_ROLE, ERR_WIZARD_NO_SUCH_PLAYER_GAUGE, ERR_WIZARD_PLAYER_GAUGE, ERR_WIZARD_PIECE_HAS_NO_NOTE, ERR_WIZARD_PIECE_NOTE, ERR_WIZARD_PIECE_SOUND, ERR_WIZARD_BREAK_CUT, ERR_WIZARD_MELODY_NUMBER, ERR_WIZARD_MELODY_SWITCH, ERR_WIZARD_NO_SUCH_MELODY_SETTING, ERR_WIZARD_GAUGE, ERR_WIZARD_NO_SUCH_BREAK, ERR_WIZARD_BAD_SECTIONS, ERR_WIZARD_FILLS, ERR_WIZARD_QUIET_NOTES, ERR_WIZARD_LAST_PIECE, ERR_WIZARD_NO_SUCH_PIECE, ERR_WIZARD_GUITARISTS, ERR_WIZARD_BAND_SOUNDS, ERR_WIZARD_SOUND, ERR_WIZARD_NO_SUCH_MELODY, ERR_WIZARD_NO_HOOK, ERR_WIZARD_BUSY, ERR_WIZARD_LAST_PLAYER, ERR_WIZARD_LAST_SECTION, ERR_WIZARD_NO_SUCH_SECTION, ERR_WIZARD_NO_SUCH_SECTION_KIND, ERR_WIZARD_SECTION_BARS, ERR_WIZARD_SECTION_NEEDS_PLAYER, ERR_WIZARD_NO_SUCH_FORM, ERR_WIZARD_NO_SUCH_PLAYER, ERR_WIZARD_NO_SUCH_WAY, ERR_WIZARD_NO_WAY, ERR_WIZARD_NO_SUCH_GENRE, ERR_WIZARD_NO_SUCH_ROOT, ERR_WIZARD_NO_SUCH_SCALE_TYPE, ERR_WIZARD_NO_SUCH_SUBGENRE, ERR_WIZARD_NOT_READY, ERR_WIZARD_SEED, ERR_WIZARD_TEMPO
 
 # The fields of the choices as a song keeps them.
@@ -232,6 +233,8 @@ FILLS_TRAITS = ('fills',)
 # The key a song keeps its own sections under, and the letter the first section that differs from its kind's first is named with.
 OWN_SECTIONS = 'own_sections'
 PREVIEW_NAME = 'preview'
+# The key of the answer kept of a kind of section's tune in the set the choices make.
+TUNE_MADE_ANSWER = 'tune made'
 STAGES_ANSWER = 'stages'
 JOINS_ANSWER = 'joins'
 SETUP_BARS_ANSWER = 'setup bars'
@@ -2962,6 +2965,76 @@ class WizardChoices:
                 self._extras[MELODY] = before
             self._answers = {}
             raise ValueError(ERR_WIZARD_HOOK_LINE.format(problem=problem)) from problem
+
+    # The tunes: one for each kind of section the tune's player plays in. A tune is written by the choices until a person edits its
+    # pattern by hand; from then on the pattern is the person's own, and no choice writes over it.
+
+    def tune_kinds(self):
+        """Return each kind of section the song has a tune in, once, in the form's order: the kinds whose sections the tune's player plays in."""
+        player = self.tune_player()
+        kinds = []
+        for place, kind in enumerate(self.section_kinds_in_form()):
+            if kind not in kinds and player is not None and player in self.section_plays(place) and not self.section_is_held(place):
+                kinds.append(kind)
+        return kinds
+
+    def tune_place(self, kind):
+        """Return the place in the form of the first section of a kind the tune's player plays in, or None."""
+        player = self.tune_player()
+        places = range(len(self.section_labels()))
+        return next((place for place in places if self.section_kind(place) == kind and player in self.section_plays(place) and not self.section_is_held(place)), None)
+
+    def tune_is_own(self, kind):
+        """Return whether a kind of section's tune was written by hand, so that nothing the wizard chooses writes over it."""
+        return kind in self._extras.get(OWN_TUNES, {})
+
+    def tune_pattern_name(self, kind):
+        """Return the name of the pattern that holds a kind of section's tune in the set the choices make, or None where the set has none."""
+        return self._tune_in_made(kind)[0]
+
+    def tune_pattern(self, kind):
+        """Return a kind of section's tune as a pattern's data: the person's own, or the tune the choices write as they stand. None where no tune is made."""
+        own = self._extras.get(OWN_TUNES, {}).get(kind)
+        return copy.deepcopy(own if own is not None else self._tune_in_made(kind)[1])
+
+    def _tune_in_made(self, kind):
+        """The name and the data of the pattern the tune's player plays in the first section of a kind, in the set the choices make,
+        found once for the choices as they stand, since a page asks at every key and the answer means making the song."""
+        return self._remembered(key=(TUNE_MADE_ANSWER, kind), compute=lambda: self._found_tune_in_made(kind))
+
+    def _found_tune_in_made(self, kind):
+        place = self.tune_place(kind)
+        if place is None:
+            raise ValueError(errors.ERR_WIZARD_NO_TUNE_IN.format(value=kind))
+        setlist, name = self.made_for_listening()
+        scenes = setlist.get_song(name).get_scenes()
+        slot = scenes[place].get_clip_slot(self.tune_player()) if place < len(scenes) and scenes[place].has_clip_slot(self.tune_player()) else None
+        if slot is None:
+            return None, None
+        return slot.get_pattern_name(), setlist.get_pattern(slot.get_pattern_name()).to_data()
+
+    def set_tune_pattern(self, *, kind, pattern):
+        """Keep a pattern's data as a kind of section's own tune, or forget the person's own with None, so that the choices write the
+        tune again. A kind with no tune, and a pattern the song cannot be made with, are refused and nothing changes."""
+        if self.tune_place(kind) is None:
+            raise ValueError(errors.ERR_WIZARD_NO_TUNE_IN.format(value=kind))
+        before = copy.deepcopy(self._extras.get(OWN_TUNES))
+        own = self._extras.setdefault(OWN_TUNES, {})
+        if pattern is None:
+            own.pop(kind, None)
+        else:
+            own[kind] = copy.deepcopy(pattern)
+        if not own:
+            del self._extras[OWN_TUNES]
+        self._answers = {}
+        try:
+            self.made_for_listening()
+        except Exception as problem:
+            self._extras.pop(OWN_TUNES, None)
+            if before is not None:
+                self._extras[OWN_TUNES] = before
+            self._answers = {}
+            raise ValueError(errors.ERR_WIZARD_TUNE_PATTERN.format(problem=problem)) from problem
 
     # The riff, the song's second hook: two bars of single notes a rhythm player repeats while the chords move them.
 
