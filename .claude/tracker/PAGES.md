@@ -214,8 +214,8 @@ The user's design. `PatternsPage` (`tui/screens/pattern/patterns_page.py`) lists
 ## Registers
 
 - The Registers page (`R`) edits the current song's four registers as a grid, the user's design: a row for each register and
-  a column for each setting, `MSG_REGISTER_COLUMNS` (Allowed inc max, At limit, a `ChoiceField` of `AT_LIMITS` named by
-  `MSG_AT_LIMIT_NAMES`, Minimum, Default, Maximum, Reset each scene), the arrows moving over it (`move_in_grid`), `[` and `]`
+  a column for each setting, `MSG_REGISTER_COLUMNS` (Allowed inc max, Reset behavior, a `ChoiceField` of `RESET_BEHAVIORS` named by
+  `MSG_RESET_BEHAVIOR_NAMES`, Minimum, Default, Maximum, Reset each scene, headed `Scene reset`), the arrows moving over it (`move_in_grid`), `[` and `]`
   adjusting, the cursor's cell in reverse video and its field's label under the grid; each field still carries the
   register's name in its label.
   Lowering Allowed inc max calls `Setlist.hold_adds_within_limits` in the same edit (`set_register_setting`).

@@ -29,7 +29,7 @@ from fractions import Fraction
 from llamatron.composition.clip_slot import ClipSlot, morph_style_name
 from llamatron.composition.chain import Chain
 from llamatron.composition.file_format import (
-    CC_ROWS, PATTERN_ROWS, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, Accidental, AtLimit,
+    CC_ROWS, PATTERN_ROWS, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, Accidental, ResetBehavior,
     ClipSlotSetting, Direction, GeneratorKind, PatternSetting, RegisterName, RegisterSetting, Row, ScaleSetting, SceneSetting, Section,
     SetlistSetting, SongSetting, TrackSetting,
 )
@@ -187,55 +187,73 @@ RANDOM_TRIES = 200
 class TestRegister(RoundTrip):
 
     def test_round_trip_and_defaults(self):
-        self.assert_round_trip(Register, {RegisterSetting.DEFAULT: 1, RegisterSetting.MINIMUM: -3, RegisterSetting.MAXIMUM: 3, RegisterSetting.AT_LIMIT: AtLimit.OVERFLOW})
+        self.assert_round_trip(Register, {RegisterSetting.DEFAULT: 1, RegisterSetting.MINIMUM: -3, RegisterSetting.MAXIMUM: 3, RegisterSetting.RESET_BEHAVIOR: ResetBehavior.OVERFLOW})
         self.assert_round_trip(Register, {})
         plain = Register.from_data(data={}, where=HERE)
         self.assertEqual(
-            (plain.get_default(), plain.get_minimum(), plain.get_maximum(), plain.get_at_limit(), plain.resets_each_scene()),
-            (defaults.DEFAULT_REGISTER_VALUE, defaults.DEFAULT_REGISTER_MINIMUM, defaults.DEFAULT_REGISTER_MAXIMUM, defaults.DEFAULT_AT_LIMIT, defaults.DEFAULT_RESET_EACH_SCENE),
+            (plain.get_default(), plain.get_minimum(), plain.get_maximum(), plain.get_reset_behavior(), plain.resets_each_scene()),
+            (defaults.DEFAULT_REGISTER_VALUE, defaults.DEFAULT_REGISTER_MINIMUM, defaults.DEFAULT_REGISTER_MAXIMUM, defaults.DEFAULT_RESET_BEHAVIOR, defaults.DEFAULT_RESET_EACH_SCENE),
         )
 
-    def test_adding_stops_at_the_ends_or_wraps_to_the_other_one(self):
+    def test_adding_holds_at_the_ends_or_rolls_round_keeping_what_is_left_over(self):
         lowest = 0
         highest = 3
         stops = Register.from_data(data={RegisterSetting.MINIMUM: lowest, RegisterSetting.MAXIMUM: highest}, where=HERE)
         self.assertEqual([stops.added(value=highest - 1, amount=1), stops.added(value=highest - 1, amount=highest), stops.added(value=lowest, amount=-1)], [highest, highest, lowest])
-        wraps = Register.from_data(data={RegisterSetting.MINIMUM: lowest, RegisterSetting.MAXIMUM: highest, RegisterSetting.AT_LIMIT: AtLimit.OVERFLOW}, where=HERE)
-        # Past an end, it lands on the other end, whatever is left over.
-        self.assertEqual([wraps.added(value=highest - 1, amount=1), wraps.added(value=highest - 1, amount=highest), wraps.added(value=lowest, amount=-highest)], [highest, lowest, highest])
+        rolls = Register.from_data(data={RegisterSetting.MINIMUM: lowest, RegisterSetting.MAXIMUM: highest, RegisterSetting.RESET_BEHAVIOR: ResetBehavior.OVERFLOW}, where=HERE)
+        # One past the top is the bottom, two past is one above it, and the same downward.
+        self.assertEqual([rolls.added(value=highest - 1, amount=1), rolls.added(value=highest, amount=1), rolls.added(value=highest, amount=2)], [highest, lowest, lowest + 1])
+        self.assertEqual([rolls.added(value=lowest, amount=-1), rolls.added(value=lowest, amount=-2), rolls.added(value=lowest, amount=highest + 1)], [highest, highest - 1, lowest])
 
-    def test_each_at_limit_does_its_own_thing_past_each_end(self):
+    def test_each_reset_behavior_does_its_own_thing_past_each_end(self):
         lowest = 0
         default = 1
         highest = 3
-        # What each At limit gives past the top and past the bottom.
+        # What each Reset behavior gives one past the top and one past the bottom.
         expected = {
-            AtLimit.STOP: (highest, lowest), AtLimit.RESET: (default, default), AtLimit.OVERFLOW: (lowest, highest),
-            AtLimit.OVERFLOW_RIGHT: (lowest, lowest), AtLimit.OVERFLOW_LEFT: (highest, highest),
+            ResetBehavior.CLIP: (highest, lowest), ResetBehavior.RESET_TO_DEFAULT: (default, default), ResetBehavior.OVERFLOW: (lowest, highest),
+            ResetBehavior.RESET_CLIP: (lowest, lowest), ResetBehavior.CLIP_RESET: (highest, highest),
         }
-        for at_limit, (past_the_top, past_the_bottom) in expected.items():
-            with self.subTest(at_limit=at_limit):
+        for behavior, (past_the_top, past_the_bottom) in expected.items():
+            with self.subTest(behavior=behavior):
                 register = Register.from_data(data={
-                    RegisterSetting.MINIMUM: lowest, RegisterSetting.DEFAULT: default, RegisterSetting.MAXIMUM: highest, RegisterSetting.AT_LIMIT: at_limit,
+                    RegisterSetting.MINIMUM: lowest, RegisterSetting.DEFAULT: default, RegisterSetting.MAXIMUM: highest, RegisterSetting.RESET_BEHAVIOR: behavior,
                 }, where=HERE)
+                self.assertFalse(register.reverses())
                 self.assertEqual(register.added(value=highest, amount=1), past_the_top)
                 self.assertEqual(register.added(value=lowest, amount=-1), past_the_bottom)
                 self.assertEqual(register.added(value=lowest, amount=1), lowest + 1)
-        picks = Register.from_data(data={RegisterSetting.MINIMUM: lowest, RegisterSetting.MAXIMUM: highest, RegisterSetting.AT_LIMIT: AtLimit.PICK_RANDOM}, where=HERE)
+        picks = Register.from_data(data={RegisterSetting.MINIMUM: lowest, RegisterSetting.MAXIMUM: highest, RegisterSetting.RESET_BEHAVIOR: ResetBehavior.PICK_RANDOM}, where=HERE)
         chooser = random.Random(SEED)
         landed = {picks.added(value=highest, amount=1, chooser=chooser) for _ in range(RANDOM_TRIES)}
         self.assertEqual(landed, set(range(lowest, highest + 1)))
 
-    def test_a_file_from_before_at_limit_reads_wrap_as_overflow(self):
-        register = Register.from_data(data={RegisterSetting.WRAP: True}, where=HERE)
-        self.assertEqual(register.get_at_limit(), AtLimit.OVERFLOW)
-        self.assertEqual(register.to_data(), {RegisterSetting.AT_LIMIT: AtLimit.OVERFLOW})
-        self.assertEqual(Register.from_data(data={RegisterSetting.WRAP: False}, where=HERE).get_at_limit(), defaults.DEFAULT_AT_LIMIT)
+    def test_a_register_that_reverses_bounces_off_each_end_and_counts_the_other_way(self):
+        lowest = 0
+        highest = 4
+        register = Register.from_data(data={RegisterSetting.MINIMUM: lowest, RegisterSetting.MAXIMUM: highest, RegisterSetting.RESET_BEHAVIOR: ResetBehavior.REVERSE}, where=HERE)
+        self.assertTrue(register.reverses())
+        value = lowest
+        turned = False
+        seen = []
+        for _ in range(2 * highest + 1):
+            value, turned = register.reversed(value=value, amount=1, turned=turned)
+            seen.append(value)
+        self.assertEqual(seen, [1, 2, 3, 4, 3, 2, 1, 0, 1])
+        # What is left over carries on back the other way: 3 and 3 more is 4 and 2 back down.
+        self.assertEqual(register.reversed(value=3, amount=3, turned=False), (2, True))
+        # While turned a subtraction adds, and bounces off the top the same way.
+        self.assertEqual(register.reversed(value=3, amount=-3, turned=True), (2, False))
+        # An amount longer than the range bounces off both ends.
+        self.assertEqual(register.reversed(value=lowest, amount=2 * highest + 1, turned=False), (1, False))
+
+    def test_a_register_of_one_value_that_reverses_stays_there(self):
+        register = Register.from_data(data={RegisterSetting.MINIMUM: 0, RegisterSetting.MAXIMUM: 0, RegisterSetting.RESET_BEHAVIOR: ResetBehavior.REVERSE}, where=HERE)
+        self.assertEqual(register.reversed(value=0, amount=3, turned=False), (0, False))
 
     def test_refusals(self):
         too_high = limits.MAX_REGISTER_VALUE + 1
         self.assert_refused(f'maximum must be an integer from {limits.MIN_REGISTER_VALUE} to {limits.MAX_REGISTER_VALUE}', Register, {RegisterSetting.MAXIMUM: too_high})
-        self.assert_refused('wrap must be true or false', Register, {RegisterSetting.WRAP: 1})
         above = defaults.DEFAULT_REGISTER_MAXIMUM + 1
         expected = f'needs minimum ({defaults.DEFAULT_REGISTER_MINIMUM}) <= default ({above}) <= maximum ({defaults.DEFAULT_REGISTER_MAXIMUM})'
         self.assert_refused(expected, Register, {RegisterSetting.DEFAULT: above})

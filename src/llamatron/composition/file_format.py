@@ -443,32 +443,35 @@ class RegisterSetting:
     DEFAULT = 'default'
     MINIMUM = 'minimum'
     MAXIMUM = 'maximum'
-    # Only read, from a file saved before at_limit came: true reads as overflow.
-    WRAP = 'wrap'
-    AT_LIMIT = 'at_limit'
+    RESET_BEHAVIOR = 'reset_behavior'
     RESET_EACH_SCENE = 'reset_each_scene'
     # The most a step may add to the register or take from it, so that entry stays short.
     ALLOWED_INC_MAX = 'allowed_inc_max'
 
 
-class AtLimit:
-    """What a register does when an add would take it past its minimum or maximum."""
+class ResetBehavior:
+    """What a register does when an add or a subtraction would take it past its minimum or maximum. A set is never governed by it."""
 
-    # Stop at the end it reached.
-    STOP = 'stop'
+    # Hold at the end it reached.
+    CLIP = 'clip'
+    # Go to the minimum past the maximum, and hold at the minimum below it.
+    RESET_CLIP = 'reset_clip'
+    # Go to the maximum past the minimum, and hold at the maximum above it.
+    CLIP_RESET = 'clip_reset'
     # Go back to the register's default.
-    RESET = 'reset'
-    # Land exactly on the other end, past either end, as wrap did.
+    RESET_TO_DEFAULT = 'reset_to_default'
+    # Turn round at the end, what is left over carrying on the other way, and every change after it counting the other way until the other end turns it round again.
+    REVERSE = 'reverse'
+    # Roll round to the other end, keeping what is left over.
     OVERFLOW = 'overflow'
-    # Land on the minimum past the maximum, and stop at the minimum below it.
-    OVERFLOW_RIGHT = 'overflow_right'
-    # Land on the maximum past the minimum, and stop at the maximum above it.
-    OVERFLOW_LEFT = 'overflow_left'
     # Land on a random value from the minimum to the maximum.
     PICK_RANDOM = 'pick_random'
 
 
-AT_LIMITS = [AtLimit.STOP, AtLimit.RESET, AtLimit.OVERFLOW, AtLimit.OVERFLOW_RIGHT, AtLimit.OVERFLOW_LEFT, AtLimit.PICK_RANDOM]
+RESET_BEHAVIORS = [
+    ResetBehavior.CLIP, ResetBehavior.RESET_CLIP, ResetBehavior.CLIP_RESET, ResetBehavior.RESET_TO_DEFAULT, ResetBehavior.REVERSE, ResetBehavior.OVERFLOW,
+    ResetBehavior.PICK_RANDOM,
+]
 
 
 class Direction:

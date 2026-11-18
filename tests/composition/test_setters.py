@@ -377,7 +377,7 @@ class TestRegister(SetterTestCase):
         self.assertFalse(register.is_default())
         self.assertRefused(register, register.set_setting, name=RegisterSetting.DEFAULT, value=HIGH + 1)
         self.assertRefused(register, register.set_setting, name=RegisterSetting.MAXIMUM, value=TOO_HIGH)
-        self.assertRefused(register, register.set_setting, name=RegisterSetting.AT_LIMIT, value=NOT_A_NAME)
+        self.assertRefused(register, register.set_setting, name=RegisterSetting.RESET_BEHAVIOR, value=NOT_A_NAME)
         self.assertRefused(register, register.set_setting, name=NOT_A_NAME, value=LOW)
         register.set_setting(name=RegisterSetting.MAXIMUM, value=None)
         register.set_setting(name=RegisterSetting.DEFAULT, value=None)

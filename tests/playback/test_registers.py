@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The registers AX to DX: what steps add to them, how they stop or wrap, and the notes and velocities that use them.
+"""The registers AX to DX: what steps add to them, how they hold, roll round or turn round at their ends, and the notes and velocities that use them.
 
 Most tests say what they expect as the register values each note should see, like [ADD,
 MAXIMUM, MAXIMUM], and scale_notes turns those into the notes of C major they move C3 to.
@@ -26,8 +26,8 @@ from llamatron.music import midi
 from llamatron.composition.clip_slot import morph_style_name
 from llamatron.composition import defaults, limits
 from llamatron.composition.file_format import (
-    AtLimit, REGISTER_ADD_ROWS, REGISTER_NAMES, REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, ClipSlotSetting, PatternSetting,
-    RegisterName, RegisterSetting, RegisterUse, Row, ScaleSetting, SceneSetting, Section, SongSetting,
+    REGISTER_ADD_ROWS, REGISTER_NAMES, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, ClipSlotSetting, PatternSetting,
+    RegisterName, RegisterSetting, RegisterUse, ResetBehavior, Row, ScaleSetting, SceneSetting, Section, SongSetting,
 )
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.generators.blend import BlendMode
@@ -278,22 +278,48 @@ class TestLimits(unittest.TestCase):
         data = one_clip(rows={ADDS: [add], USES_NOTE: [ADDS_IT]}, repeat=3, registers={AX: {RegisterSetting.MINIMUM: minimum}})
         self.assertEqual(pitches(data), scale_notes([minimum] * 3))
 
-    def test_wrapping_jumps_to_the_other_end_and_drops_what_is_left(self):
-        # Two adds go past the maximum, and land on the minimum rather than past it.
-        add = 2
-        maximum = 3
-        registers = {AX: {RegisterSetting.MAXIMUM: maximum, RegisterSetting.AT_LIMIT: AtLimit.OVERFLOW}}
-        data = one_clip(rows={ADDS: [add], USES_NOTE: [ADDS_IT]}, repeat=4, registers=registers)
-        lowest = defaults.DEFAULT_REGISTER_MINIMUM
-        self.assertEqual(pitches(data), scale_notes([add, lowest, add, lowest]))
+    def test_overflow_rolls_round_to_the_other_end_keeping_what_is_left(self):
+        # AX runs 0 to 4 and each pass adds 3: 3, 6 which is 1, 4, 7 which is 2, 5 which is 0.
+        add = 3
+        maximum = 4
+        registers = {AX: {RegisterSetting.MAXIMUM: maximum, RegisterSetting.RESET_BEHAVIOR: ResetBehavior.OVERFLOW}}
+        data = one_clip(rows={ADDS: [add], USES_NOTE: [ADDS_IT]}, repeat=5, registers=registers)
+        self.assertEqual(pitches(data), scale_notes([3, 1, 4, 2, 0]))
 
-    def test_wrapping_below_the_minimum_jumps_to_the_maximum(self):
+    def test_overflow_below_the_minimum_rolls_round_to_the_maximum(self):
         add = -1
         minimum = -1
         maximum = 1
-        registers = {AX: {RegisterSetting.MINIMUM: minimum, RegisterSetting.MAXIMUM: maximum, RegisterSetting.AT_LIMIT: AtLimit.OVERFLOW}}
+        registers = {AX: {RegisterSetting.MINIMUM: minimum, RegisterSetting.MAXIMUM: maximum, RegisterSetting.RESET_BEHAVIOR: ResetBehavior.OVERFLOW}}
         data = one_clip(rows={ADDS: [add], USES_NOTE: [ADDS_IT]}, repeat=3, registers=registers)
         self.assertEqual(pitches(data), scale_notes([minimum, maximum, maximum + add]))
+
+    def test_reset_clip_goes_to_the_minimum_past_the_maximum(self):
+        registers = {AX: {RegisterSetting.MAXIMUM: 3, RegisterSetting.RESET_BEHAVIOR: ResetBehavior.RESET_CLIP}}
+        data = one_clip(rows={ADDS: [2], USES_NOTE: [ADDS_IT]}, repeat=4, registers=registers)
+        self.assertEqual(pitches(data), scale_notes([2, 0, 2, 0]))
+
+    def test_reverse_walks_up_and_back_down(self):
+        registers = {AX: {RegisterSetting.MAXIMUM: 3, RegisterSetting.RESET_BEHAVIOR: ResetBehavior.REVERSE}}
+        data = one_clip(rows={ADDS: [1], USES_NOTE: [ADDS_IT]}, repeat=8, registers=registers)
+        self.assertEqual(pitches(data), scale_notes([1, 2, 3, 2, 1, 0, 1, 2]))
+
+    def test_a_set_puts_a_reversed_register_back_to_counting_forward(self):
+        # Four steps: the fourth sets AX to 1 once it has turned round at 2, and the adds after it count up again.
+        registers = {AX: {RegisterSetting.MAXIMUM: 2, RegisterSetting.RESET_BEHAVIOR: ResetBehavior.REVERSE}}
+        rows = {ADDS: [1, 1, 1, 0, 1, 1], REGISTER_SET_ROWS[AX]: [None, None, None, 1, None, None], USES_NOTE: [ADDS_IT] * 6}
+        data = one_clip(steps=6, rows=rows, registers=registers)
+        self.assertEqual(pitches(data), scale_notes([1, 2, 1, 1, 2, 1]))
+
+    def test_a_reversed_register_keeps_counting_the_other_way_into_the_next_scene_unless_the_scene_resets_it(self):
+        registers = {AX: {RegisterSetting.MAXIMUM: 2, RegisterSetting.RESET_BEHAVIOR: ResetBehavior.REVERSE}}
+        slot = {ClipSlotSetting.PATTERN: X, ClipSlotSetting.REPEAT: 3}
+        for resets, heard in (([], [0, 1, 2]), ([AX], [1, 2, 1])):
+            with self.subTest(resets=resets):
+                scenes = [{SceneSetting.TRACKS: {LEAD: slot}}, {SceneSetting.TRACKS: {LEAD: slot}, SceneSetting.RESET: resets}]
+                data = song(patterns={X: pattern(1, **{ADDS: [1], USES_NOTE: [ADDS_IT]})}, scenes=scenes, registers=registers)
+                self.assertEqual(pitches(data), scale_notes([1, 2, 1]))
+                self.assertEqual(pitches(data, scene=2), scale_notes(heard))
 
 
 class TestVelocity(unittest.TestCase):
@@ -383,7 +409,7 @@ class TestSharing(unittest.TestCase):
 class TestTheFile(unittest.TestCase):
 
     def test_settings_and_resets_save_and_load(self):
-        registers = {AX: {RegisterSetting.MAXIMUM: 3, RegisterSetting.AT_LIMIT: AtLimit.OVERFLOW}, DX: {RegisterSetting.MINIMUM: -100}}
+        registers = {AX: {RegisterSetting.MAXIMUM: 3, RegisterSetting.RESET_BEHAVIOR: ResetBehavior.OVERFLOW}, DX: {RegisterSetting.MINIMUM: -100}}
         data = one_clip(rows={ADDS: [1], USES_NOTE: [ADDS_IT]}, registers=registers)
         data[Section.SCENES][0][SceneSetting.RESET] = [AX, DX]
         saved = song_from_data(data).to_data()
@@ -393,8 +419,8 @@ class TestTheFile(unittest.TestCase):
     def test_registers_the_file_leaves_out_have_their_defaults(self):
         register = song_from_data({}).get_register(CX)
         self.assertEqual(
-            (register.get_default(), register.get_minimum(), register.get_maximum(), register.get_at_limit(), register.resets_each_scene()),
-            (defaults.DEFAULT_REGISTER_VALUE, defaults.DEFAULT_REGISTER_MINIMUM, defaults.DEFAULT_REGISTER_MAXIMUM, AtLimit.STOP, False),
+            (register.get_default(), register.get_minimum(), register.get_maximum(), register.get_reset_behavior(), register.resets_each_scene()),
+            (defaults.DEFAULT_REGISTER_VALUE, defaults.DEFAULT_REGISTER_MINIMUM, defaults.DEFAULT_REGISTER_MAXIMUM, ResetBehavior.CLIP, False),
         )
 
     def test_bad_settings_are_refused(self):
@@ -402,7 +428,7 @@ class TestTheFile(unittest.TestCase):
             {EX: {}}, {AX: {RegisterSetting.MAXIMUM: limits.MAX_REGISTER_VALUE + 1}},
             {AX: {RegisterSetting.MINIMUM: defaults.DEFAULT_REGISTER_VALUE + 1}},
             {AX: {RegisterSetting.DEFAULT: defaults.DEFAULT_REGISTER_MAXIMUM + 1}},
-            {AX: {RegisterSetting.WRAP: YES}}, {AX: {RegisterSetting.AT_LIMIT: YES}}, {AX: {RegisterSetting.RESET_EACH_SCENE: YES}}, {AX: {LOUD: 1}}, {AX: {RegisterSetting.MAXIMUM: 1.5}}, [AX],
+            {AX: {RegisterSetting.RESET_BEHAVIOR: YES}}, {AX: {RegisterSetting.RESET_EACH_SCENE: YES}}, {AX: {LOUD: 1}}, {AX: {RegisterSetting.MAXIMUM: 1.5}}, [AX],
         ]:
             with self.subTest(registers=registers), self.assertRaises(SongFileError):
                 song_from_data(one_clip(rows={}, registers=registers))

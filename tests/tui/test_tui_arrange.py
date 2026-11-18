@@ -20,7 +20,7 @@ from tests.support.ui_testing import KEY_SHOWN, UITest, fixed_text, back_key, fo
 from llamatron.composition import defaults
 from llamatron.strings import errors, labels as labels_text, legends, marks, messages, names
 from llamatron.composition.file_format import (
-    AT_LIMITS,
+    RESET_BEHAVIORS,
     REGISTER_ADD_ROWS,
     FOLLOW_ACTION_CHOICES,
     FollowAction,
@@ -868,7 +868,7 @@ class TestRegistersPage(UITest):
         for name in REGISTER_NAMES:
             for _, what in labels_text.MSG_REGISTER_NUMBER_FIELDS:
                 self.assertIn(self.label(name=name, what=what), labels)
-            for what in (labels_text.MSG_REGISTER_AT_LIMIT_FIELD, labels_text.MSG_REGISTER_RESET_EACH_SCENE_FIELD, labels_text.MSG_REGISTER_ALLOWED_INC_MAX_FIELD):
+            for what in (labels_text.MSG_REGISTER_RESET_BEHAVIOR_FIELD, labels_text.MSG_REGISTER_RESET_EACH_SCENE_FIELD, labels_text.MSG_REGISTER_ALLOWED_INC_MAX_FIELD):
                 self.assertIn(self.label(name=name, what=what), labels)
 
     async def test_it_is_a_grid_the_arrows_move_over_stopping_at_every_edge(self):
@@ -907,13 +907,13 @@ class TestRegistersPage(UITest):
         self.assertEqual(self.register(RegisterName.AX).get_minimum(), defaults.DEFAULT_REGISTER_MINIMUM)
         self.assertIn(OUT_OF_ORDER_START, self.text())
 
-    async def test_at_limit_steps_through_its_choices_and_reset_each_scene_toggles(self):
-        await self.select_field(self.label(name=RegisterName.CX, what=labels_text.MSG_REGISTER_AT_LIMIT_FIELD))
+    async def test_reset_behavior_steps_through_its_choices_and_reset_each_scene_toggles(self):
+        await self.select_field(self.label(name=RegisterName.CX, what=labels_text.MSG_REGISTER_RESET_BEHAVIOR_FIELD))
         await self.press(key_of(binding=keybindings.RegistersPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(self.register(RegisterName.CX).get_at_limit(), AT_LIMITS[1])
-        self.assertIn(labels_text.MSG_AT_LIMIT_NAMES[AT_LIMITS[1]], self.text())
+        self.assertEqual(self.register(RegisterName.CX).get_reset_behavior(), RESET_BEHAVIORS[1])
+        self.assertIn(labels_text.MSG_RESET_BEHAVIOR_NAMES[RESET_BEHAVIORS[1]], self.text())
         await self.press(key_of(binding=keybindings.RegistersPage.LESS, key=Key.LEFT_BRACKET))
-        self.assertEqual(self.register(RegisterName.CX).get_at_limit(), AT_LIMITS[0])
+        self.assertEqual(self.register(RegisterName.CX).get_reset_behavior(), RESET_BEHAVIORS[0])
         self.assertNotIn(Section.REGISTERS, self.document.song().to_data())
         await self.select_field(self.label(name=RegisterName.CX, what=labels_text.MSG_REGISTER_RESET_EACH_SCENE_FIELD))
         await self.press(Key.ENTER)

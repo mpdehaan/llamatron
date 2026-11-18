@@ -20,8 +20,7 @@ from llamatron.composition.checks import check_keys, listed, reading
 from llamatron.composition import defaults, limits
 from llamatron.strings import errors
 from llamatron.composition.corrections import LEFT_OUT
-from llamatron.composition.file_format import AT_LIMITS, AtLimit, RegisterSetting
-from llamatron.composition.checks import is_true_or_false
+from llamatron.composition.file_format import RESET_BEHAVIORS, ResetBehavior, RegisterSetting
 from llamatron.composition.llama_data import LlamaData, written_settings
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.setting import Choice, Flag, WholeNumber, described
@@ -32,14 +31,14 @@ SETTINGS = described(
     WholeNumber(name=RegisterSetting.DEFAULT, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, error=errors.ERR_BAD_VALUE),
     WholeNumber(name=RegisterSetting.MINIMUM, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, error=errors.ERR_BAD_VALUE),
     WholeNumber(name=RegisterSetting.MAXIMUM, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, error=errors.ERR_BAD_VALUE),
-    Choice(name=RegisterSetting.AT_LIMIT, choices=AT_LIMITS, default=LEFT_OUT, error=errors.ERR_BAD_AT_LIMIT),
+    Choice(name=RegisterSetting.RESET_BEHAVIOR, choices=RESET_BEHAVIORS, default=LEFT_OUT, error=errors.ERR_BAD_RESET_BEHAVIOR),
     Flag(name=RegisterSetting.RESET_EACH_SCENE, error=errors.ERR_RESET_EACH_SCENE_NOT_TRUE_OR_FALSE),
     WholeNumber(name=RegisterSetting.ALLOWED_INC_MAX, lowest=limits.MIN_ALLOWED_INC_MAX, highest=limits.MAX_REGISTER_VALUE, error=errors.ERR_BAD_VALUE),
 )
 # What each setting is when the file leaves it out.
 DEFAULTS = {
     RegisterSetting.DEFAULT: defaults.DEFAULT_REGISTER_VALUE, RegisterSetting.MINIMUM: defaults.DEFAULT_REGISTER_MINIMUM,
-    RegisterSetting.MAXIMUM: defaults.DEFAULT_REGISTER_MAXIMUM, RegisterSetting.AT_LIMIT: defaults.DEFAULT_AT_LIMIT,
+    RegisterSetting.MAXIMUM: defaults.DEFAULT_REGISTER_MAXIMUM, RegisterSetting.RESET_BEHAVIOR: defaults.DEFAULT_RESET_BEHAVIOR,
     RegisterSetting.RESET_EACH_SCENE: defaults.DEFAULT_RESET_EACH_SCENE,
     RegisterSetting.ALLOWED_INC_MAX: defaults.DEFAULT_ALLOWED_INC_MAX,
 }
@@ -50,7 +49,7 @@ class Register(LlamaData):
 
     A register starts at its default when rendering starts, whenever a scene resets it, and as each
     scene starts when it resets each scene. Adding to it never takes it past its minimum or
-    maximum: what it does instead is its At limit (AtLimit). Settings the file leaves out are kept
+    maximum: what it does instead is its Reset behavior (ResetBehavior). Settings the file leaves out are kept
     as None, meaning their defaults.
     """
 
@@ -66,8 +65,7 @@ class Register(LlamaData):
             data = {} if data is None else data
             if not isinstance(data, dict):
                 raise InvalidValue(errors.ERR_REGISTER_EXPECTED_SETTINGS.format(data=data))
-            check_keys(data=data, allowed={*SETTINGS, RegisterSetting.WRAP})
-            _read_wrap(data)
+            check_keys(data=data, allowed=set(SETTINGS))
             return _checked(data)
 
     def to_data(self):
@@ -100,9 +98,9 @@ class Register(LlamaData):
     def get_maximum(self):
         return self._setting(RegisterSetting.MAXIMUM)
 
-    def get_at_limit(self):
-        """Return what the register does when an add would take it past an end, one of AtLimit."""
-        return self._setting(RegisterSetting.AT_LIMIT)
+    def get_reset_behavior(self):
+        """Return what the register does when an add would take it past an end, one of ResetBehavior."""
+        return self._setting(RegisterSetting.RESET_BEHAVIOR)
 
     def resets_each_scene(self):
         """Return whether the register goes back to its default as each scene first starts."""
@@ -116,13 +114,18 @@ class Register(LlamaData):
         """Return whether its default lies between its minimum and maximum, as it must."""
         return self.get_minimum() <= self.get_default() <= self.get_maximum()
 
+    def reverses(self):
+        """Return whether the register turns round at its ends, so that whoever keeps its value keeps which way it is counting too."""
+        return self.get_reset_behavior() == ResetBehavior.REVERSE
+
     def added(self, *, value, amount, chooser=None):
         """Return a value with an amount added, kept between the minimum and maximum.
 
-        Going past an end does what the register's At limit says: stop at the end, go back to the
-        default, land exactly on the other end (from either end, or only past the maximum, or only
-        past the minimum, stopping at the other), or land on a random value, drawn from chooser.
-        What's left over is always dropped, so a jump never lands part way along.
+        Going past an end does what the register's Reset behavior says: hold at the end; go to
+        the minimum past the maximum and hold below the minimum, or the mirror of that; go back
+        to the default; roll round to the other end, keeping what is left over; or land on a
+        random value, drawn from chooser. A register that reverses is asked reversed() instead,
+        since which way it counts has to be kept with its value.
         """
         result = value + amount
         lowest = self.get_minimum()
@@ -130,15 +133,35 @@ class Register(LlamaData):
         if lowest <= result <= highest:
             return result
         past_the_top = result > highest
-        at_limit = self.get_at_limit()
-        if at_limit == AtLimit.RESET:
+        behavior = self.get_reset_behavior()
+        if behavior == ResetBehavior.OVERFLOW:
+            return lowest + (result - lowest) % (highest - lowest + 1)
+        if behavior == ResetBehavior.RESET_TO_DEFAULT:
             return self.get_default()
-        if at_limit == AtLimit.PICK_RANDOM:
+        if behavior == ResetBehavior.PICK_RANDOM:
             return chooser.randint(lowest, highest)
-        jumps = at_limit == AtLimit.OVERFLOW or (at_limit == AtLimit.OVERFLOW_RIGHT and past_the_top) or (at_limit == AtLimit.OVERFLOW_LEFT and not past_the_top)
-        if past_the_top:
-            return lowest if jumps else highest
-        return highest if jumps else lowest
+        if behavior == ResetBehavior.RESET_CLIP:
+            return lowest
+        if behavior == ResetBehavior.CLIP_RESET:
+            return highest
+        return highest if past_the_top else lowest
+
+    def reversed(self, *, value, amount, turned):
+        """Return a value with an amount added by a register that reverses, and whether it then counts the other way.
+
+        While turned, an amount counts the other way: an add takes away and a subtraction adds.
+        Past an end the value bounces off it, what is left over carrying on back the other way,
+        and the register is turned, or turned back, until the other end is passed.
+        """
+        lowest = self.get_minimum()
+        highest = self.get_maximum()
+        if lowest == highest:
+            return lowest, turned
+        result = value - amount if turned else value + amount
+        while not lowest <= result <= highest:
+            result = 2 * highest - result if result > highest else 2 * lowest - result
+            turned = not turned
+        return result, turned
 
     def held(self, value):
         """Return a value a step sets the register to, kept between the minimum and maximum: a set is an exact value, so it stops at an end and never wraps."""
@@ -147,17 +170,6 @@ class Register(LlamaData):
     def _setting(self, name):
         value = self._settings[name]
         return DEFAULTS[name] if value is None else value
-
-
-def _read_wrap(data):
-    """Read wrap from a file saved before at_limit came, which true meant overflow, as at_limit, in the file's own data, so that a correction made after finds the data it reads."""
-    if RegisterSetting.WRAP not in data:
-        return
-    wrap = data.pop(RegisterSetting.WRAP)
-    if not is_true_or_false(wrap):
-        raise InvalidValue(errors.ERR_WRAP_NOT_TRUE_OR_FALSE.format(value=wrap))
-    if wrap and RegisterSetting.AT_LIMIT not in data:
-        data[RegisterSetting.AT_LIMIT] = AtLimit.OVERFLOW
 
 
 def _checked(settings):

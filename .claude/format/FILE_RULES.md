@@ -282,17 +282,20 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
 ### Registers
 
 - The song has four registers, `AX`, `BX`, `CX` and `DX` (`RegisterName`). Their names are fixed.
-- `registers:` holds the settings that differ from the defaults, like `AX: { maximum: 3, wrap:
-  true }`, with `default`, `minimum` and `maximum` from -127 to 127 (defaults 0, 0 and 10, in
-  order minimum <= default <= maximum), `at_limit`, `reset_each_scene` and `allowed_inc_max` (1 to 127,
+- `registers:` holds the settings that differ from the defaults, like `AX: { maximum: 3, reset_behavior:
+  overflow }`, with `default`, `minimum` and `maximum` from -127 to 127 (defaults 0, 0 and 10, in
+  order minimum <= default <= maximum), `reset_behavior`, `reset_each_scene` and `allowed_inc_max` (1 to 127,
   default `DEFAULT_ALLOWED_INC_MAX`, 20, enough for every example written before it), the most
   a step may add or take away, the user's design. The pattern editor's `+=` rows
   stop there (`Setlist.allowed_inc_max_for_pattern`: the narrowest of the songs that play the
   pattern), while a file is still read from -127 to 127.
-- `at_limit` (`AtLimit`, default `stop`) is what an add past an end does (`Register.added`):
-  `stop`, `reset` to the default, `overflow` to the other end (what `wrap: true` did, and how a
-  file saved before reads it, `_read_wrap`), `overflow_right` (only past the maximum, stopping at
-  the minimum), `overflow_left` (the reverse), or `pick_random` from minimum to maximum, drawn
+- `reset_behavior` (`ResetBehavior`, default `clip`; the user's design, which replaced `at_limit` and `wrap` with no
+  compatibility code) is what an add or a subtraction past an end does (`Register.added`): `clip` holds; `reset_clip`
+  (shown `reset/clip`) goes to the minimum past the maximum and holds below the minimum; `clip_reset` the mirror;
+  `reset_to_default`; `overflow` rolls round keeping what is left over; `reverse` bounces off the end, what is left over
+  carrying on back, and counts the other way until the other end (`Register.reversed`, the direction kept beside the values
+  by `Turned` in `playback/registers.py`, carried from scene to scene by `RegisterTimeline.end_turned`, and put forward
+  again by any set or reset); or `pick_random` from minimum to maximum, drawn
   from a generator of the render's own (`REGISTER_SEED_OFFSET` in `playback/song_renderer.py`),
   unseeded with the song. `reset_each_scene` (default false) sets the register back to its
   default as each scene first starts (`SongRenderer._resets_of`, `WrittenScene.is_first_play`).
@@ -306,7 +309,7 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   `playback/pattern_player.py` sums each register's value times its row's sign).
 - Within a step: sets, then adds, then uses (`+Note`, `+Vel` and the bound velocity), then
   probability decides whether the note sounds. Going past an end does what
-  `at_limit` says, dropping what is left over.
+  `reset_behavior` says.
 - A step's statements (the user's design; `STATEMENT_ROWS`, `StepStatement`): the rows `stop_c1` to `stop_c5`, `restart_c1` to
   `restart_c5` and `mute_c1` to `mute_c5` hold, step by step, the five parts of one Conditional Execution statement of each kind
   (register, operator, value, comparison, against), which `Pattern.get_statement` puts together (`conditions.statement_of`) and

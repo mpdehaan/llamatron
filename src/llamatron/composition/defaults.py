@@ -20,7 +20,7 @@ Every setting has a default, so that a file written by an older version of llama
 loads, and an empty file is an empty song.
 """
 
-from llamatron.composition.file_format import AtLimit, FollowAction, OctaveLabels
+from llamatron.composition.file_format import ResetBehavior, FollowAction, OctaveLabels
 
 DEFAULT_TEMPO = 120
 FIRST_NUMBER = 1
@@ -60,7 +60,7 @@ DEFAULT_TRANSPOSE = 0
 DEFAULT_REGISTER_MINIMUM = 0
 DEFAULT_REGISTER_MAXIMUM = 10
 DEFAULT_REGISTER_VALUE = 0
-DEFAULT_AT_LIMIT = AtLimit.STOP
+DEFAULT_RESET_BEHAVIOR = ResetBehavior.CLIP
 DEFAULT_RESET_EACH_SCENE = False
 # The most a step may add to a register or take from it, unless the register says otherwise: enough for every example written before the limit came.
 DEFAULT_ALLOWED_INC_MAX = 20

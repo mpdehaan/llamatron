@@ -16,7 +16,7 @@
 
 """The Registers page: the settings of the song's four registers, AX to DX."""
 
-from llamatron.composition.file_format import AT_LIMITS, REGISTER_NAMES, RegisterSetting
+from llamatron.composition.file_format import RESET_BEHAVIORS, REGISTER_NAMES, RegisterSetting
 from llamatron.composition import limits
 from llamatron.strings import help as help_text, labels, legends, messages
 from llamatron.tui.screens.shared.field import ChoiceField, NumberField, Toggle
@@ -54,7 +54,7 @@ class RegistersPage(FieldPage):
         return result
 
     def register_fields(self, name):
-        """Return one register's settings as fields, in the grid's order of columns: Allowed inc max, At limit, Minimum, Default,
+        """Return one register's settings as fields, in the grid's order of columns: Allowed inc max, Reset behavior, Minimum, Default,
         Maximum and Reset each scene."""
         register = self.document().register(name)
         values = {
@@ -64,9 +64,9 @@ class RegistersPage(FieldPage):
         numbers = {setting: self.number_field(name=name, setting=setting, what=what, value=values[setting]) for setting, what in labels.MSG_REGISTER_NUMBER_FIELDS}
         result = []
         result.append(ChoiceField(
-            page=self, label=labels.MSG_REGISTER_FIELD_LABEL.format(name=name, what=labels.MSG_REGISTER_AT_LIMIT_FIELD), choices=AT_LIMITS, current=register.get_at_limit(),
-            names=[labels.MSG_AT_LIMIT_NAMES[choice] for choice in AT_LIMITS], shown=labels.MSG_AT_LIMIT_NAMES[register.get_at_limit()],
-            set=lambda choice: self.change(name=name, setting=RegisterSetting.AT_LIMIT, value=None if choice == AT_LIMITS[0] else choice),
+            page=self, label=labels.MSG_REGISTER_FIELD_LABEL.format(name=name, what=labels.MSG_REGISTER_RESET_BEHAVIOR_FIELD), choices=RESET_BEHAVIORS, current=register.get_reset_behavior(),
+            names=[labels.MSG_RESET_BEHAVIOR_NAMES[choice] for choice in RESET_BEHAVIORS], shown=labels.MSG_RESET_BEHAVIOR_NAMES[register.get_reset_behavior()],
+            set=lambda choice: self.change(name=name, setting=RegisterSetting.RESET_BEHAVIOR, value=None if choice == RESET_BEHAVIORS[0] else choice),
         ))
         reset = Toggle(
             label=labels.MSG_REGISTER_FIELD_LABEL.format(name=name, what=labels.MSG_REGISTER_RESET_EACH_SCENE_FIELD), on=register.resets_each_scene(),
