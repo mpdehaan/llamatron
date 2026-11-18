@@ -878,12 +878,27 @@ class WizardChoices:
         return len(next((form_[SECTIONS] for form_ in self._forms() if form_[NAME] == form), []))
 
     def set_form(self, form):
-        """Choose one of the forms the subgenre suggests, which puts its sections in place of any a person changed."""
+        """Choose one of the forms the subgenre suggests, which puts its sections in place of any a person changed. How the song was
+        chosen to start and to end is kept, with who starts alone and how long a stage lasts, where the new form can start and end so."""
         if form not in self.forms():
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_FORM.format(value=form))
+        start = self.get_start() if START_KEPT in self._stages else None
+        end = self.get_end() if END_KEPT in self._stages else None
+        kept = {field: value for field, value in self._stages.items() if field not in (START_KEPT, END_KEPT)}
         self._form = form
         self._sections = None
         self._stages = {}
+        self._answers = {}
+        for way, offered, set_way in ((start, self.starts, self.set_start), (end, self.ends, self.set_end)):
+            if way is not None and way in offered():
+                self._stages.update(kept)
+                try:
+                    set_way(way)
+                except ValueError:
+                    # A way the new form cannot be made with is given up, and the form starts or ends as it usually does.
+                    pass
+        if START_KEPT not in self._stages and END_KEPT not in self._stages:
+            self._stages = {}
 
     # The form's sections, which follow the form chosen until a person changes one; the form is then the song's own.
 

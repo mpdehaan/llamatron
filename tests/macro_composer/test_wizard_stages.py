@@ -136,9 +136,28 @@ class TestWizardStarts(unittest.TestCase):
         again = WizardChoices.from_data(choices.to_data())
         self.assertEqual((again.get_start(), again.get_end(), again.get_first_player()), (LAYERS, STRIPS_DOWN, THE_BASS))
         self.assertEqual(made(again).to_data()[Section.PATTERNS], made(choices).to_data()[Section.PATTERNS])
-        # Another form's sections are that form's own start and ending.
+        # Another form keeps how the song was chosen to start and to end, and who starts alone.
         choices.set_form(choices.forms()[-1])
-        self.assertEqual(choices.get_start(), FULL_BAND)
+        self.assertEqual((choices.get_start(), choices.get_end(), choices.get_first_player()), (LAYERS, STRIPS_DOWN, THE_BASS))
+
+    def test_another_form_keeps_how_the_song_starts_and_ends_and_a_form_chosen_with_neither_is_the_forms_own(self):
+        choices = chosen()
+        another = next(form for form in choices.forms() if form != choices.get_form())
+        choices.set_start(LAYERS)
+        choices.set_end(STRIPS_DOWN)
+        choices.set_setup_bars(choices.setup_bars_offered()[-1])
+        bars = choices.get_setup_bars()
+        choices.set_form(another)
+        self.assertEqual(choices.get_form(), another)
+        self.assertEqual((choices.get_start(), choices.get_end(), choices.get_setup_bars()), (LAYERS, STRIPS_DOWN, bars))
+        made(choices)
+        plain = chosen()
+        plain.set_form(another)
+        self.assertFalse(plain.has_own_form())
+        self.assertEqual((plain.get_start(), plain.get_end()), (FULL_BAND, chosen().get_end()))
+        body = plain.section_kinds_in_form()[1:-1]
+        kinds = choices.section_kinds_in_form()
+        self.assertEqual([kind for kind in kinds if kind in body], body)
 
     def test_every_way_of_every_subgenre_makes_a_song(self):
         for genre in style_names():
